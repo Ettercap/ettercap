@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.22 2003/05/19 10:14:27 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.23 2003/05/20 16:42:22 alor Exp $
 */
 
 
@@ -80,6 +80,7 @@ void ec_usage(void)
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
+   fprintf(stdout, "  -d, --dns                   resolv ip addresses into hostnames\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -Z, --scan-delay <msec>     set the scanning delay to <msec>\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
@@ -116,6 +117,7 @@ void parse_options(int argc, char **argv)
       
       { "quiet", no_argument, NULL, 'q' },
       { "silent", no_argument, NULL, 'z' },
+      { "dns", no_argument, NULL, 'd' },
       { "scan-delay", required_argument, NULL, 'Z' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
@@ -143,11 +145,10 @@ void parse_options(int argc, char **argv)
    
    /* OPTIONS INITIALIZATION */
    GBL_PCAP->promisc = 1;
-
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDe:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:vw:Z:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDde:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:vw:Z:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -242,6 +243,10 @@ void parse_options(int argc, char **argv)
                   
          case 'z':
                   GBL_OPTIONS->silent = 1;
+                  break;
+                  
+         case 'd':
+                  GBL_OPTIONS->resolve = 1;
                   break;
                   
          case 'Z':

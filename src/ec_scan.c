@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.5 2003/05/19 10:14:27 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.6 2003/05/20 16:42:22 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_threads.h>
 #include <ec_send.h>
 #include <ec_decode.h>
+#include <ec_resolv.h>
 
 #include <pthread.h>
 #include <pcap.h>
@@ -61,7 +62,7 @@ void build_hosts_list(void)
 {
    pthread_t pid;
    struct hosts_list *hl;
-   int nhosts = 0;
+   int nhosts = 0, i = 1;
    //char tmp[MAX_ASCII_ADDR_LEN];
 
    DEBUG_MSG("build_hosts_list");
@@ -126,12 +127,32 @@ void build_hosts_list(void)
 
    USER_MSG("%d hosts added to the hosts list...\n", nhosts);
    ui_msg_flush(1);
+  
+   /* 
+    * resolve the hostnames only if we are scanning 
+    * the lan. when loading from file, hostnames are
+    * already in the file.
+    */
+   
+   if (!GBL_OPTIONS->load_hosts && GBL_OPTIONS->resolve) {
+      
+      USER_MSG("Resolving %d hostnames...\n", nhosts);
+      ui_msg_flush(1);
+      
+      LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+         char tmp[MAX_HOSTNAME_LEN];
+         
+         host_iptoa(&hl->ip, tmp);
+         hl->hostname = strdup(tmp);
+         
+         ui_progress(i++, nhosts);
+      }
+   }
    
    /* save the list to the file */
    if (GBL_OPTIONS->save_hosts)
       save_hosts(GBL_OPTIONS->hostsfile);
 
-   
 }
 
 
@@ -224,9 +245,7 @@ void scan_netmask(void)
 
    DEBUG_MSG("scan_netmask: %d hosts", nhosts);
 
-   USER_MSG("Scanning the whole netmask for %d hosts...\n\n", nhosts);
-   
-   /* print the above message */
+   USER_MSG("Randomizing %d hosts for scanning...\n", nhosts);
    ui_msg_flush(1);
   
    /* scan the netmask */
@@ -242,8 +261,13 @@ void scan_netmask(void)
       
       /* add to the list randomly */
       random_list(e, i);
+      
+      ui_progress(i, nhosts);
    }
 
+   USER_MSG("Scanning the whole netmask for %d hosts...\n", nhosts);
+   ui_msg_flush(1);
+   
    i = 1;
    
    /* send the actual ARP request */

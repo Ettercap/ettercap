@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.2 2003/10/12 17:40:43 alor Exp $
+    $Id: finger.c,v 1.3 2003/10/13 10:43:30 alor Exp $
 */
 
 
@@ -45,7 +45,9 @@ static int finger_init(void *);
 static int finger_fini(void *);
 
 static void get_finger(struct packet_object *po);
-static int get_target(struct ip_addr *ip, u_int16 *port);
+static int good_target(struct ip_addr *ip, u_int16 *port);
+static int get_user_target(struct ip_addr *ip, u_int16 *port);
+static void do_fingerprint(void);
 
 /* plugin operations */
 
@@ -56,8 +58,8 @@ struct plugin_ops finger_ops = {
    name:             "finger",  
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Fingerprint a remote host",  
-   /* the plugin version. note: 15 will be displayed as 1.5 */                    
-   version:          "1.0",   
+   /* the plugin version. */ 
+   version:          "1.5",   
    /* activation function */
    init:             &finger_init,
    /* deactivation function */                     
@@ -76,9 +78,6 @@ int plugin_load(void *handle)
 
 static int finger_init(void *dummy) 
 {
-   char tmp[MAX_ASCII_ADDR_LEN];
-   char os[OS_LEN + 1];
-   
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
    
@@ -87,45 +86,31 @@ static int finger_init(void *dummy)
    memset(&ip, 0, sizeof(struct ip_addr));
    port = 0;
 
-   /* get the target for the fingerprint */
-   if (get_target(&ip, &port) != ESUCCESS) {
-      INSTANT_USER_MSG("Cannot fingerprint %s:%d\n", ip_addr_ntoa(&ip, tmp), port);
-      return PLUGIN_FINISHED;
-   }
-  
-   /* convert the in ascii ip address */
-   ip_addr_ntoa(&ip, tmp);
-
    /* 
-    * add the hook to collect tcp SYN+ACK packets from 
-    * the target and extract the passive fingerprint
+    * can we use GBL_TARGETS ?
+    * else ask the user
     */
-   hook_add(PACKET_TCP, &get_finger);
+   if (good_target(&ip, &port) != ESUCCESS) {
+      /* get the target from user */
+      get_user_target(&ip, &port);
+      /* do the actual finterprinting */
+      do_fingerprint();   
+   } else {
+      struct ip_list *host;
    
-   INSTANT_USER_MSG("Fingerprinting %s:%d...\n\n", tmp, port);
-   
-   /* 
-    * open the connection and close it immediately.
-    * this ensure that a SYN will be sent to the port
-    */
-   close_socket(open_socket(tmp, port));
+      /* look over all the hosts in the TARGET */ 
+      SLIST_FOREACH(host, &GBL_TARGET1->ips, next) {
+         /* 
+          * copy the ip address 
+          * the port was alread retrived by good_target()
+          */
+         memcpy(&ip, &host->ip, sizeof(struct ip_addr));
 
-   /* wait for the response */
-   sleep(1);
-
-   /* remove the hook, we have collected the finger */
-   hook_del(PACKET_TCP, &get_finger);
-
-   INSTANT_USER_MSG(" FINGERPRINT      : %s\n", fingerprint);
-
-   /* decode the finterprint */
-   if (fingerprint_search(fingerprint, os) == ESUCCESS)
-      INSTANT_USER_MSG(" OPERATING SYSTEM : %s \n\n", os);
-   else {
-      INSTANT_USER_MSG(" OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
-      INSTANT_USER_MSG(" NEAREST ONE IS   : %s \n\n", os);
-   }  
+         /* do the actual finterprinting */
+         do_fingerprint();
+      }
       
+   }
    
    return PLUGIN_FINISHED;
 }
@@ -151,16 +136,11 @@ static void get_finger(struct packet_object *po)
 }
 
 /*
- * get the target
- * form GBL_TARGETS if it was specified
- * else from user input
+ * check if we can use GBL_TARGETS
  */
-static int get_target(struct ip_addr *ip, u_int16 *port)
+static int good_target(struct ip_addr *ip, u_int16 *port)
 {
    struct ip_list *host;
-   struct in_addr ipaddr;
-   char input[64];
-   char *p;
    
    /* is it possible to get it from GBL_TARGETS ? */
    if ((host = SLIST_FIRST(&GBL_TARGET1->ips)) != NULL) {
@@ -178,8 +158,20 @@ static int get_target(struct ip_addr *ip, u_int16 *port)
       /* port was found */
       if (*port != 0xffff)
          return ESUCCESS;
-      
    }
+   
+   return -ENOTFOUND;
+}
+
+
+/* 
+ * get the target from user input 
+ */
+static int get_user_target(struct ip_addr *ip, u_int16 *port)
+{
+   struct in_addr ipaddr;
+   char input[64];
+   char *p;
 
    /* get the user input */
    ui_input("Insert ip:port : ", input, sizeof(input));
@@ -203,6 +195,55 @@ static int get_target(struct ip_addr *ip, u_int16 *port)
 
    return -EINVALID;
 }
+
+
+/*
+ * fingerprint the host
+ */
+static void do_fingerprint(void)
+{
+   char tmp[MAX_ASCII_ADDR_LEN];
+   char os[OS_LEN + 1];
+   int fd;
+   
+   /* convert the in ascii ip address */
+   ip_addr_ntoa(&ip, tmp);
+
+   /* 
+    * add the hook to collect tcp SYN+ACK packets from 
+    * the target and extract the passive fingerprint
+    */
+   hook_add(PACKET_TCP, &get_finger);
+   
+   INSTANT_USER_MSG("Fingerprinting %s:%d...\n", tmp, port);
+   
+   /* 
+    * open the connection and close it immediately.
+    * this ensure that a SYN will be sent to the port
+    */
+   if ((fd = open_socket(tmp, port)) < 0)
+      return;
+   
+   /* close the socket */
+   close_socket(fd);
+
+   /* wait for the response */
+   sleep(1);
+
+   /* remove the hook, we have collected the finger */
+   hook_del(PACKET_TCP, &get_finger);
+
+   INSTANT_USER_MSG("\n FINGERPRINT      : %s\n", fingerprint);
+
+   /* decode the finterprint */
+   if (fingerprint_search(fingerprint, os) == ESUCCESS)
+      INSTANT_USER_MSG(" OPERATING SYSTEM : %s \n\n", os);
+   else {
+      INSTANT_USER_MSG(" OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
+      INSTANT_USER_MSG(" NEAREST ONE IS   : %s \n\n", os);
+   }  
+}
+
 
 /* EOF */
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger_submit.c,v 1.1 2003/10/12 17:40:43 alor Exp $
+    $Id: finger_submit.c,v 1.2 2003/10/13 10:43:30 alor Exp $
 */
 
 
@@ -46,7 +46,7 @@ struct plugin_ops finger_submit_ops = {
    name:             "finger_submit",  
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Submit a fingerprint to ettercap's website",  
-   /* the plugin version. note: 15 will be displayed as 1.5 */                    
+   /* the plugin version. */
    version:          "1.0",   
    /* activation function */
    init:             &finger_submit_init,

@@ -18,7 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dummy.c,v 1.8 2003/10/12 18:51:34 alor Exp $
+    $Id: dummy.c,v 1.9 2003/10/13 10:43:25 alor Exp $
 */
 
 
@@ -50,7 +50,7 @@ struct plugin_ops dummy_ops = {
    name:             "dummy",  
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Only a standalone plugin template",  
-   /* the plugin version. note: 15 will be displayed as 1.5 */                    
+   /* the plugin version. */ 
    version:          "3.0",   
    /* activation function */
    init:             &dummy_init,

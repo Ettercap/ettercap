@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.3 2004/02/16 20:21:55 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.4 2004/02/17 21:02:34 alor Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,11 @@
 #include <ec_manuf.h>
 #include <ec_services.h>
 #include <ec_format.h>
+
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 /* proto */
 
@@ -42,6 +47,11 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src);
 static void split_print_po(struct packet_object *po);
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src);
 static void join_print_po(struct packet_object *po);
+static void curses_connection_kill(void *conn);
+static void curses_connection_kill_wrapper(void);
+static void curses_connection_inject(void);
+static void curses_connection_inject_file(void);
+static void inject_file(char *path, char *file);
 
 /* globals */
 
@@ -94,6 +104,7 @@ void curses_show_connections(void)
    wdg_add_destroy_key(wdg_connections, CTRL('Q'), curses_kill_connections);
 
    wdg_dynlist_add_callback(wdg_connections, 'd', curses_connection_detail);
+   wdg_dynlist_add_callback(wdg_connections, 'k', curses_connection_kill);
 }
 
 static void curses_kill_connections(void)
@@ -246,6 +257,9 @@ static void curses_connection_data_split(void)
    wdg_add_destroy_key(wdg_conndata, CTRL('Q'), curses_destroy_conndata);
    
    wdg_compound_add_callback(wdg_conndata, 'j', curses_connection_data_join);
+   wdg_compound_add_callback(wdg_conndata, 'y', curses_connection_inject);
+   wdg_compound_add_callback(wdg_conndata, 'Y', curses_connection_inject_file);
+   wdg_compound_add_callback(wdg_conndata, 'k', curses_connection_kill_wrapper);
    
    wdg_draw_object(wdg_conndata);
    wdg_set_focus(wdg_conndata);
@@ -344,8 +358,13 @@ static void curses_connection_data_join(void)
    
    /* add the destroy callback */
    wdg_add_destroy_key(wdg_conndata, CTRL('Q'), curses_destroy_conndata);
-   
+  
+   /* 
+    * do not add inject callback because we can determine where to inject in
+    * joined mode...
+    */
    wdg_compound_add_callback(wdg_conndata, 'j', curses_connection_data_split);
+   wdg_compound_add_callback(wdg_conndata, 'k', curses_connection_kill_wrapper);
    
    wdg_draw_object(wdg_conndata);
    wdg_set_focus(wdg_conndata);
@@ -395,6 +414,122 @@ static void join_print_po(struct packet_object *po)
       wdg_scroll_print(wdg_join, EC_COLOR_JOIN2, "%s", dispbuf);
 }
 
+/*
+ * kill the selected connection connection
+ */
+static void curses_connection_kill(void *conn)
+{
+   struct conn_object *c = (struct conn_object *)conn;
+   
+   DEBUG_MSG("curses_connection_kill");
+   
+   /* XXX - implement the killing function */
+   curses_message("KILL: not yet implemented");
+   return;
+   /* set the status */
+   c->status = CONN_KILLED;
+   curses_message("The connection was killed !!");
+}
+
+/*
+ * call the specialized funtion as this is a callback 
+ * without the parameter
+ */
+static void curses_connection_kill_wrapper(void)
+{
+   curses_connection_kill(curr_conn);
+}
+
+/*
+ * inject interactively with the user
+ */
+static void curses_connection_inject(void)
+{
+   DEBUG_MSG("curses_connection_inject");
+   
+   /* check where to inject */
+   if (wdg_c1->flags & WDG_OBJ_FOCUSED) {
+      //inject(buf, curr_conn, 1);
+   } else if (wdg_c2->flags & WDG_OBJ_FOCUSED) {
+      //inject(buf, curr_conn, 2);
+   }
+   
+   curses_message("INJECT: not yet implemented");
+   return;
+}
+
+/*
+ * inject form a file 
+ */
+static void curses_connection_inject_file(void)
+{
+   wdg_t *fop;
+   
+   DEBUG_MSG("curses_connection_inject_file");
+   
+   wdg_create_object(&fop, WDG_FILE, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   
+   wdg_set_title(fop, "Select a file to inject...", WDG_ALIGN_LEFT);
+   wdg_set_color(fop, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(fop, WDG_COLOR_WINDOW, EC_COLOR_MENU);
+   wdg_set_color(fop, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(fop, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+
+   wdg_file_set_callback(fop, inject_file);
+   
+   wdg_draw_object(fop);
+   
+   wdg_set_focus(fop);
+}
+
+/*
+ * map the file into memory and pass the buffer to the inject function
+ */
+static void inject_file(char *path, char *file)
+{
+   char *filename;
+   int fd;
+   void *buf;
+   size_t size;
+   
+   DEBUG_MSG("inject_file %s/%s", path, file);
+   
+   SAFE_CALLOC(filename, strlen(path)+strlen(file)+2, sizeof(char));
+
+   sprintf(filename, "%s/%s", path, file);
+
+   /* open the file */
+   if ((fd = open(filename, O_RDONLY)) == -1) {
+      ui_error("Can't load the file");
+      return;
+   }
+      
+   SAFE_FREE(filename);
+
+   /* calculate the size of the file */
+   size = lseek(fd, 0, SEEK_END);
+   
+   /* map it to the memory */
+   buf = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+   if (buf == MAP_FAILED) {
+      ui_error("Can't mmap the file");
+      return;
+   }
+
+   /* check where to inject */
+   if (wdg_c1->flags & WDG_OBJ_FOCUSED) {
+      //inject(buf, curr_conn, 1);
+   } else if (wdg_c2->flags & WDG_OBJ_FOCUSED) {
+      //inject(buf, curr_conn, 2);
+   }
+
+   close(fd);
+   munmap(buf, size);
+   
+   curses_message("INJECT FILE: not yet implemented");
+   return;
+   
+}
 
 /* EOF */
 

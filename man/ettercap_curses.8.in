@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.11 2004/02/15 15:48:14 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.12 2004/02/17 21:02:28 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -224,10 +224,12 @@ Save the current hosts list to a file.
 .TP
 .B Connections
 Displays the connection list. To see detailed information about a connection,
-press 'd'. To see the traffic for a specific connection,
+press 'd' or press 'k' to kill it. To see the traffic for a specific connection,
 select it and press enter. Once the two-panel interface is displayed you can
 move the focus with the arrow keys. Press 'j' to switch between joined and
-splitted visualization.
+splitted visualization. Press 'k' to kill the connection. Press 'y' to inject
+interactively and 'Y' to inject a file. Note that it is important which panel
+has the focus as it is where the injection is destinated.
 .br
 HINT: connections marked with an asterisk contain account(s) informations.
 .TP

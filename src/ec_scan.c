@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.37 2004/05/07 09:54:37 alor Exp $
+    $Id: ec_scan.c,v 1.38 2004/07/01 20:45:43 alor Exp $
 */
 
 #include <ec.h>
@@ -540,6 +540,7 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
       
       if (ip_addr_cmp(&h->ip, &hl->ip) == 0) {
          /* the ip was already collected skip it */
+         SAFE_FREE(h->hostname);
          SAFE_FREE(h);
          return;
       } else if (ip_addr_cmp(&hl->ip, &h->ip) < 0 && LIST_NEXT(hl, next) != LIST_END(&GBL_HOSTLIST) )

@@ -1,5 +1,5 @@
 
-/* $Id: ec_log.h,v 1.21 2004/03/11 10:50:11 alor Exp $ */
+/* $Id: ec_log.h,v 1.22 2004/07/01 20:45:43 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -134,6 +134,7 @@ void log_close(struct log_fd *fd);
 int log_write_header(struct log_fd *fd, int type);
 void log_write_packet(struct log_fd *fd, struct packet_object *po);
 void log_write_info(struct log_fd *fd, struct packet_object *po);
+void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po);
 
 
 #endif

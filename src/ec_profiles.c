@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.39 2004/05/13 09:54:56 alor Exp $
+    $Id: ec_profiles.c,v 1.40 2004/07/01 20:45:43 alor Exp $
 */
 
 #include <ec.h>
@@ -667,7 +667,7 @@ int profile_dump_to_file(char *filename)
       memcpy(&po.PASSIVE.fingerprint, h->fingerprint, FINGER_LEN);
       
       /* log for each host */
-      log_write_info(&fd, &po);
+      log_write_info_arp_icmp(&fd, &po);
       
       LIST_FOREACH(o, &(h->open_ports_head), next) {
          

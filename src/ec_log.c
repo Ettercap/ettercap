@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.39 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_log.c,v 1.40 2004/07/01 20:45:43 alor Exp $
 */
 
 #include <ec.h>
@@ -56,7 +56,7 @@ static void log_packet(struct packet_object *po);
 static void log_info(struct packet_object *po);
 void log_write_packet(struct log_fd *fd, struct packet_object *po);
 void log_write_info(struct log_fd *fd, struct packet_object *po);
-static void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po);
+void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po);
 
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define LOG_LOCK     do{ pthread_mutex_lock(&log_mutex); } while(0)
@@ -578,7 +578,7 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
  * log hosts through ARP and ICMP discovery
  */
 
-static void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po)
+void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po)
 {
    struct log_header_info hi;
    int c, zerr;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_strings.c,v 1.12 2004/06/25 14:12:00 alor Exp $
+    $Id: ec_strings.c,v 1.13 2004/07/01 20:45:43 alor Exp $
 */
 
 #include <ec.h>
@@ -331,6 +331,8 @@ char * ec_strtok(char *s, const char *delim, char **ptrptr)
    return strtok_r(s, delim, ptrptr);
 #else
    #warning unsafe strtok
+   /* to avoid the warning on this function (the wrapper macro) */
+   #undef strtok
    return strtok(s, delim);
 #endif
 }

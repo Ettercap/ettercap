@@ -17,6 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+    $Id: ec_vnc.c,v 1.6 2003/09/10 16:50:47 alor Exp $
 */
 
 #include <ec.h>

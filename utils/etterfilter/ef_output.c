@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_output.c,v 1.6 2003/10/05 17:07:20 alor Exp $
+    $Id: ef_output.c,v 1.7 2003/10/05 17:42:17 alor Exp $
 */
 
 #include <ef.h>
@@ -75,7 +75,7 @@ int write_output(void)
    write(fd, data, fh.code - fh.data);
    
    /* write the instructions */
-   for (i = 0; i < ninst; i++) {
+   for (i = 0; i <= ninst; i++) {
       print_progress_bar(&fop[i]);
       write(fd, &fop[i], sizeof(struct filter_op));
    }
@@ -84,7 +84,7 @@ int write_output(void)
    
    fprintf(stdout, " done.\n\n");
   
-   fprintf(stdout, " -> Script encoded into %d instructions.\n\n", i);
+   fprintf(stdout, " -> Script encoded into %d instructions.\n\n", i - 1);
    
    return ESUCCESS;
 }

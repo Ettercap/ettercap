@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.22 2003/10/05 17:07:20 alor Exp $
+    $Id: ec_filter.c,v 1.23 2003/10/05 17:42:14 alor Exp $
 */
 
 #include <ec.h>
@@ -79,7 +79,7 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
   
    /* sanity check */
    BUG_IF(fop == NULL);
-   
+
    /* loop until EXIT */
    while (fop[eip].opcode != FOP_EXIT) {
 
@@ -120,8 +120,6 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
                eip = fop[eip].op.jmp;
                continue;
             }
-            continue;
-
             break;
             
          case FOP_JFALSE:
@@ -130,7 +128,6 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
                eip = fop[eip].op.jmp;
                continue;
             }
-
             break;
             
          default:
@@ -142,7 +139,7 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
       /* autoincrement the instruction pointer */
       eip++;
    }
-            
+
    return 0;
 }
 

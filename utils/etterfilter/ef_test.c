@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.13 2003/10/05 17:07:20 alor Exp $
+    $Id: ef_test.c,v 1.14 2003/10/05 17:42:17 alor Exp $
 */
 
 #include <ef.h>
@@ -69,7 +69,7 @@ void test_filter(char *filename)
       eip++;
    }
 
-   printf("\n");
+   printf("\n %d instructions decoded.\n\n", fenv.len / sizeof(struct filter_op));
 
    exit(0);
 }

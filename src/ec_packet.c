@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.29 2004/03/17 22:13:32 lordnaga Exp $
+    $Id: ec_packet.c,v 1.30 2004/03/17 22:19:46 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -143,17 +143,20 @@ struct packet_object * packet_dup(struct packet_object *po, u_char flag)
     */
    dup_po->DATA.disp_data = po->DATA.disp_data;
    po->DATA.disp_data = NULL;
+   po->DATA.disp_len = 0;
    
    /* copy only if the buffer exists */
-   dup_po->packet = NULL;
    if ( (flag & PO_DUP_PACKET) && po->packet != NULL) {  
       /* duplicate the po buffer */
       SAFE_CALLOC(dup_po->packet, po->len, sizeof(u_char));
   
       /* copy the buffer */
       memcpy(dup_po->packet, po->packet, po->len);
+   } else {
+      dup_po->len = 0;
+      dup_po->packet = NULL;
    }
-
+   
    /* 
     * adjust all the pointers as the difference
     * between the old buffer and the pointer

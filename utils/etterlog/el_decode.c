@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_decode.c,v 1.4 2004/11/04 10:37:16 alor Exp $
+    $Id: el_decode.c,v 1.5 2004/11/04 10:48:55 alor Exp $
 */
 
 
@@ -25,6 +25,7 @@
 #include <el_functions.h>
 
 #include <fcntl.h>
+#include <libgen.h>
 
 /* globals */
 
@@ -144,6 +145,7 @@ int decode_to_file(char *host, char *proto, char *file)
    char dir[1024];
    char *p;
    char *path = strdup(file);
+   char *filetmp = strdup(file);
    int fd;
 
    /* always create the base, host and proto directory */
@@ -164,7 +166,7 @@ int decode_to_file(char *host, char *proto, char *file)
       strlcat(dir, p, sizeof(dir));
       
       /* the token is a directory, create it */
-      if (strcmp(p, basename(file))) {
+      if (strcmp(p, basename(filetmp))) {
          mkdir(dir, 0700);
       } else {
          /* exit the parsing and open the file */
@@ -175,6 +177,7 @@ int decode_to_file(char *host, char *proto, char *file)
    /* actually open the file */
    fd = open(dir, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, 0600);
 
+   SAFE_FREE(filetmp);
    SAFE_FREE(path);
    
    return fd;

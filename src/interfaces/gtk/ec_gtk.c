@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.36 2004/10/12 21:43:03 daten Exp $
+    $Id: ec_gtk.c,v 1.37 2004/10/18 23:42:34 daten Exp $
 */
 
 #include <ec.h>
@@ -315,6 +315,7 @@ static int gtkui_progress(char *title, int value, int max)
 {
    static GtkWidget *progress_dialog = NULL;
    static GtkWidget *progress_bar = NULL;
+   static GtkWidget *hbox, *button;
 
    gdk_threads_enter();
 
@@ -334,10 +335,19 @@ static int gtkui_progress(char *title, int value, int max)
       gtk_window_set_position(GTK_WINDOW (progress_dialog), GTK_WIN_POS_CENTER);
       gtk_container_set_border_width(GTK_CONTAINER (progress_dialog), 5);
       g_signal_connect(G_OBJECT (progress_dialog), "delete_event", G_CALLBACK (gtkui_progress_cancel), NULL);
+
+      hbox = gtk_hbox_new(FALSE, 3);
+      gtk_container_add(GTK_CONTAINER (progress_dialog), hbox);
+      gtk_widget_show(hbox);
     
       progress_bar = gtk_progress_bar_new();
-      gtk_container_add(GTK_CONTAINER (progress_dialog), progress_bar);
+      gtk_box_pack_start(GTK_BOX (hbox), progress_bar, TRUE, TRUE, 0);
       gtk_widget_show(progress_bar);
+
+      button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+      gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
+      g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_progress_cancel), progress_dialog);
+      gtk_widget_show(button);
 
       gtk_widget_show(progress_dialog);
    } 
@@ -365,6 +375,10 @@ static int gtkui_progress(char *title, int value, int max)
 
 static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) {
    progress_cancelled = TRUE;
+
+   /* the progress dialog must be manually destroyed if the cancel button is used */
+   if(data != NULL && GTK_IS_WIDGET(data))
+       gtk_widget_destroy(data);
 
    return(FALSE);
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: autoadd.c,v 1.1 2004/05/06 16:20:45 alor Exp $
+    $Id: autoadd.c,v 1.2 2004/05/07 09:54:37 alor Exp $
 */
 
 
@@ -51,7 +51,7 @@ struct plugin_ops autoadd_ops = {
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Automatically add new victims in the target range",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   version:          "1.1",   
    /* activation function */
    init:             &autoadd_init,
    /* deactivation function */                     
@@ -110,6 +110,7 @@ static void parse_arp(struct packet_object *po)
       if (!ip_addr_cmp(&t->ip, &po->L3.src)) 
          if (add_to_victims(&group_two_head, po) == ESUCCESS)
             USER_MSG("autoadd: %s %s added to GROUP2\n", ip_addr_ntoa(&po->L3.src, tmp), mac_addr_ntoa(po->L2.src, tmp2));
+
 }
 
 /*
@@ -119,9 +120,12 @@ static void parse_arp(struct packet_object *po)
  */
 static int add_to_victims(void *group, struct packet_object *po)
 {
+   char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h;
    LIST_HEAD(, hosts_list) *head = group;
 
+   (void)tmp;
+   
    /* search if it was already inserted in the list */
    LIST_FOREACH(h, head, next)
       if (!ip_addr_cmp(&h->ip, &po->L3.src)) 
@@ -131,8 +135,26 @@ static int add_to_victims(void *group, struct packet_object *po)
    
    memcpy(&h->ip, &po->L3.src, sizeof(struct ip_addr));
    memcpy(&h->mac, &po->L2.src, MEDIA_ADDR_LEN);
-         
+     
+   DEBUG_MSG("autoadd: added %s to arp groups", ip_addr_ntoa(&h->ip, tmp));
    LIST_INSERT_HEAD(head, h, next);
+   
+   /* add the host even in the hosts list */
+   LIST_FOREACH(h, &GBL_HOSTLIST, next)
+      if (!ip_addr_cmp(&h->ip, &po->L3.src)) 
+         return ESUCCESS;
+   
+   /* 
+    * we need another copy, since the group lists 
+    * are freed by the mitm process
+    */
+   SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
+   
+   memcpy(&h->ip, &po->L3.src, sizeof(struct ip_addr));
+   memcpy(&h->mac, &po->L2.src, MEDIA_ADDR_LEN);
+   
+   DEBUG_MSG("autoadd: added %s to hosts list", ip_addr_ntoa(&h->ip, tmp));
+   LIST_INSERT_HEAD(&GBL_HOSTLIST, h, next);
    
    return ESUCCESS;
 }

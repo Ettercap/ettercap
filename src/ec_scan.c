@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.36 2004/04/10 15:02:25 alor Exp $
+    $Id: ec_scan.c,v 1.37 2004/05/07 09:54:37 alor Exp $
 */
 
 #include <ec.h>
@@ -115,7 +115,7 @@ void build_hosts_list(void)
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
   
    /* 
-    * if at least one target is ANY, scan the wole netmask
+    * if at least one target is ANY, scan the whole netmask
     * else scan only the specified targets
     */
    if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
@@ -261,7 +261,29 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
  */
 static void get_response(struct packet_object *po)
 {
-   add_host(&po->L3.src, po->L2.src, NULL);
+   struct ip_list *t;
+   
+   /* if at least one target is the whole netmask, add the entry */
+   if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all) {
+      add_host(&po->L3.src, po->L2.src, NULL);
+      return;
+   }
+   
+   /* else only add arp replies within the targets */
+   
+   /* search in target 1 */
+   LIST_FOREACH(t, &GBL_TARGET1->ips, next)
+      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+         add_host(&po->L3.src, po->L2.src, NULL);
+         return;
+      }
+   
+   /* search in target 2 */
+   LIST_FOREACH(t, &GBL_TARGET2->ips, next)
+      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+         add_host(&po->L3.src, po->L2.src, NULL);
+         return;
+      }
 }
 
 

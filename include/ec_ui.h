@@ -1,5 +1,5 @@
 
-/* $Id: ec_ui.h,v 1.14 2004/02/29 17:37:21 alor Exp $ */
+/* $Id: ec_ui.h,v 1.15 2004/05/07 09:54:37 alor Exp $ */
 
 #ifndef EC_UI_H
 #define EC_UI_H
@@ -48,7 +48,7 @@ extern void ui_register(struct ui_ops *ops);
  * else display a message and continue with the current GUI (curses or gtk)
  */
 #define SEMIFATAL_ERROR(x, ...) do {                              \
-   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)   \
+   if (!GBL_UI->initialized || GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)   \
       FATAL_ERROR(x, ## __VA_ARGS__);                             \
    else                                                           \
       FATAL_MSG(x, ## __VA_ARGS__);                               \

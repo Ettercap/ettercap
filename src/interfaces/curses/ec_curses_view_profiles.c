@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_profiles.c,v 1.4 2004/02/29 17:37:21 alor Exp $
+    $Id: ec_curses_view_profiles.c,v 1.5 2004/03/21 14:16:48 alor Exp $
 */
 
 #include <ec.h>
@@ -39,6 +39,7 @@ static void curses_profiles_remote(void *dummy);
 static void curses_profiles_convert(void *dummy);
 static void curses_profiles_dump(void *dummy);
 static void dump_profiles(void);
+static void curses_profiles_help(void *dummy);
 
 /* globals */
 
@@ -90,6 +91,7 @@ void curses_show_profiles(void)
    wdg_dynlist_add_callback(wdg_profiles, 'r', curses_profiles_remote);
    wdg_dynlist_add_callback(wdg_profiles, 'c', curses_profiles_convert);
    wdg_dynlist_add_callback(wdg_profiles, 'd', curses_profiles_dump);
+   wdg_dynlist_add_callback(wdg_profiles, ' ', curses_profiles_help);
 }
 
 static void curses_kill_profiles(void)
@@ -99,6 +101,18 @@ static void curses_kill_profiles(void)
 
    /* the object does not exist anymore */
    wdg_profiles = NULL;
+}
+
+static void curses_profiles_help(void *dummy)
+{
+   char help[] = "HELP: shortcut list:\n\n"
+                 "  ENTER - show the infos about the host\n"
+                 "    l   - remove the remote hosts from the list\n"
+                 "    r   - remove the local hosts from the list\n"
+                 "    c   - convert the profile list into hosts list\n"
+                 "    d   - dump the profiles information to a file";
+
+   curses_message(help);
 }
 
 static void refresh_profiles(void)
@@ -120,7 +134,7 @@ static void curses_profile_detail(void *profile)
    struct active_user *u;
    char tmp[MAX_ASCII_ADDR_LEN];
    char os[OS_LEN+1];
-   
+  
    DEBUG_MSG("curses_profile_detail");
 
    /* if the object already exist, set the focus to it */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.13 2004/03/18 15:29:12 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.14 2004/03/21 14:16:48 alor Exp $
 */
 
 #include <ec.h>
@@ -55,6 +55,8 @@ static void curses_connection_inject(void);
 static void inject_user(void);
 static void curses_connection_inject_file(void);
 static void inject_file(char *path, char *file);
+static void curses_connection_help(void *dummy);
+static void curses_connection_data_help(void);
 
 /* globals */
 
@@ -109,6 +111,7 @@ void curses_show_connections(void)
 
    wdg_dynlist_add_callback(wdg_connections, 'd', curses_connection_detail);
    wdg_dynlist_add_callback(wdg_connections, 'k', curses_connection_kill);
+   wdg_dynlist_add_callback(wdg_connections, ' ', curses_connection_help);
 }
 
 static void curses_kill_connections(void)
@@ -118,6 +121,16 @@ static void curses_kill_connections(void)
 
    /* the object does not exist anymore */
    wdg_connections = NULL;
+}
+
+static void curses_connection_help(void *dummy)
+{
+   char help[] = "HELP: shortcut list:\n\n"
+                 "  ENTER - open the data panel in real time\n"
+                 "    d   - show details of the current connection\n"
+                 "    k   - kill the connection";
+
+   curses_message(help);
 }
 
 static void refresh_connections(void)
@@ -216,6 +229,18 @@ static void curses_connection_data(void *conn)
    curses_connection_data_split();
 }
 
+static void curses_connection_data_help(void)
+{
+   char help[] = "HELP: shortcut list:\n\n"
+                 "  ARROWS - switch between panels\n" 
+                 "    j    - switch from splitted to joined view\n"
+                 "    y    - inject characters interactively\n"
+                 "    Y    - inject characters from a file\n"
+                 "    k    - kill the connection";
+
+   curses_message(help);
+}
+
 /*
  * show the content of the connection
  */
@@ -273,6 +298,7 @@ static void curses_connection_data_split(void)
    wdg_compound_add_callback(wdg_conndata, 'y', curses_connection_inject);
    wdg_compound_add_callback(wdg_conndata, 'Y', curses_connection_inject_file);
    wdg_compound_add_callback(wdg_conndata, 'k', curses_connection_kill_wrapper);
+   wdg_compound_add_callback(wdg_conndata, ' ', curses_connection_data_help);
    
    wdg_draw_object(wdg_conndata);
    wdg_set_focus(wdg_conndata);
@@ -404,6 +430,7 @@ static void curses_connection_data_join(void)
     */
    wdg_compound_add_callback(wdg_conndata, 'j', curses_connection_data_split);
    wdg_compound_add_callback(wdg_conndata, 'k', curses_connection_kill_wrapper);
+   wdg_compound_add_callback(wdg_conndata, ' ', curses_connection_data_help);
    
    wdg_draw_object(wdg_conndata);
    wdg_set_focus(wdg_conndata);

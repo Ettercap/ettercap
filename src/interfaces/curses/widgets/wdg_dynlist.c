@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dynlist.c,v 1.8 2004/02/08 19:58:41 alor Exp $
+    $Id: wdg_dynlist.c,v 1.9 2004/03/21 14:16:48 alor Exp $
 */
 
 #include <wdg.h>
@@ -254,7 +254,8 @@ static int wdg_dynlist_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_
          break;
          
       case KEY_RETURN:
-         WDG_EXECUTE(ww->select_callback, ww->current);
+         if (ww->current)
+            WDG_EXECUTE(ww->select_callback, ww->current);
          break;
          
       /* message not handled */
@@ -573,7 +574,8 @@ static void wdg_dynlist_mouse(struct wdg_object *wo, int key, struct wdg_mouse_e
 
    /* if double click, execute the callback */
    if (mouse->event == BUTTON1_DOUBLE_CLICKED)
-      WDG_EXECUTE(ww->select_callback, ww->current);
+      if (ww->current)
+         WDG_EXECUTE(ww->select_callback, ww->current);
 
    wdg_dynlist_refresh(wo);
 }

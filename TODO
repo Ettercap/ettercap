@@ -24,25 +24,15 @@
       - then found all the bugs....
       - dll instead of plugins (argh!)
 
->>> to be developed...
-
-this is the unofficial and floating in time roadmap:
+>>> to be implemented
 
    + DOCUMENTATION
       - how to code a plugin 
-
-   + CURSES GUI
-      - context sensitive help
-
-   + GTK GUI
-      - split join scrolling window problem
 
    + DISSECTORS
       - convert all the old dissectors:
          - https (over the ssl one)
       - SSL unified dissector for https, impas, pop3s ecc ecc
-      - TDS
-      - MS-SQL (http://www.nii.co.in/vuln/sqlpass.html)
    
    + BRIDGED SNIFFING
       - keep track of source mac addresses
@@ -78,6 +68,8 @@ this is the unofficial and floating in time roadmap:
       - Microsoft RPC
       - postgresql
       - pcanywhere
+      - TDS
+      - MS-SQL (http://www.nii.co.in/vuln/sqlpass.html)
 
    + INET
       - handle fragmented packets

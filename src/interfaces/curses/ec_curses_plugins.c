@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_plugins.c,v 1.12 2004/02/15 13:35:28 alor Exp $
+    $Id: ec_curses_plugins.c,v 1.13 2004/03/21 14:16:48 alor Exp $
 */
 
 #include <ec.h>
@@ -37,6 +37,7 @@ static void curses_refresh_plug_array(char active, struct plugin_ops *ops);
 static void curses_plug_destroy(void);
 static void curses_select_plugin(void *plugin);
 static void curses_create_plug_array(void);
+static void curses_plugin_help(void *dummy);
 
 /* globals */
 
@@ -139,7 +140,8 @@ static void curses_plugin_mgmt(void)
   
    /* add the callback */
    wdg_list_select_callback(wdg_plugin, curses_select_plugin);
-   
+   wdg_list_add_callback(wdg_plugin, ' ', curses_plugin_help);
+     
    wdg_draw_object(wdg_plugin);
    
    wdg_set_focus(wdg_plugin);
@@ -148,6 +150,14 @@ static void curses_plugin_mgmt(void)
 static void curses_plug_destroy(void)
 {
    wdg_plugin = NULL;
+}
+
+static void curses_plugin_help(void *dummy)
+{
+   char help[] = "HELP: shortcut list:\n\n"
+                 "  ENTER - activate/deactivate a plugin";
+
+   curses_message(help);
 }
 
 

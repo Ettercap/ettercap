@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_list.c,v 1.8 2004/02/01 16:46:53 alor Exp $
+    $Id: wdg_list.c,v 1.9 2004/03/21 14:16:48 alor Exp $
 */
 
 #include <wdg.h>
@@ -261,7 +261,8 @@ static int wdg_list_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          break;
 
       case KEY_RETURN:
-         WDG_EXECUTE(ww->select_callback, item_userptr(current_item(ww->menu)));
+         if (item_userptr(current_item(ww->menu))) 
+            WDG_EXECUTE(ww->select_callback, item_userptr(current_item(ww->menu)));
          break;
          
       /* message not handled */
@@ -394,7 +395,8 @@ static int wdg_list_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
 
    /* one item has been selected */
    if (c == E_UNKNOWN_COMMAND) {
-      WDG_EXECUTE(ww->select_callback, item_userptr(current_item(ww->menu)));
+      if (item_userptr(current_item(ww->menu)))
+         WDG_EXECUTE(ww->select_callback, item_userptr(current_item(ww->menu)));
    }
    
    /* tring to go outside edges */

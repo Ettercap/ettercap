@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.11 2004/02/29 17:37:21 alor Exp $
+    $Id: ec_curses_targets.c,v 1.12 2004/03/21 14:16:48 alor Exp $
 */
 
 #include <ec.h>
@@ -41,6 +41,7 @@ static void curses_add_target1(void *);
 static void curses_add_target2(void *);
 static void add_target1(void);
 static void add_target2(void);
+static void curses_target_help(void);
 
 /* globals */
 
@@ -226,6 +227,7 @@ static void curses_current_targets(void)
    
    /* add the destroy callback */
    wdg_add_destroy_key(wdg_comp, CTRL('Q'), curses_destroy_tsel);
+   wdg_compound_add_callback(wdg_comp, ' ', curses_target_help);
    
    wdg_draw_object(wdg_comp);
    wdg_set_focus(wdg_comp);
@@ -235,6 +237,16 @@ static void curses_current_targets(void)
 static void curses_destroy_tsel(void)
 {
    wdg_comp = NULL;
+}
+
+static void curses_target_help(void)
+{
+   char help[] = "HELP: shortcut list:\n\n"
+                 "  ARROWS - switch between panels\n" 
+                 "    a    - to add a new host\n"
+                 "    d    - to delete an host from the list";
+
+   curses_message(help);
 }
 
 /*

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_hosts.c,v 1.10 2004/02/29 17:37:21 alor Exp $
+    $Id: ec_curses_hosts.c,v 1.11 2004/03/21 14:16:48 alor Exp $
 */
 
 #include <ec.h>
@@ -38,6 +38,7 @@ static void curses_create_hosts_array(void);
 static void curses_delete_host(void *host);
 static void curses_host_target1(void *host);
 static void curses_host_target2(void *host);
+static void curses_hosts_help(void *dummy);
 
 /* globals */
 
@@ -204,6 +205,7 @@ static void curses_host_list(void)
    wdg_list_add_callback(wdg_hosts, 'd', curses_delete_host);
    wdg_list_add_callback(wdg_hosts, '1', curses_host_target1);
    wdg_list_add_callback(wdg_hosts, '2', curses_host_target2);
+   wdg_list_add_callback(wdg_hosts, ' ', curses_hosts_help);
    
    wdg_draw_object(wdg_hosts);
    
@@ -213,6 +215,16 @@ static void curses_host_list(void)
 static void curses_hosts_destroy(void)
 {
    wdg_hosts = NULL;
+}
+
+static void curses_hosts_help(void *dummy)
+{
+   char help[] = "HELP: shortcut list:\n\n"
+                 "  d - to delete an host from the list\n"
+                 "  1 - to add the host to TARGET1\n"
+                 "  2 - to add the host to TARGET2";
+
+   curses_message(help);
 }
 
 

@@ -1,10 +1,12 @@
 
-/* $Id: ec_gtk.h,v 1.11 2004/03/19 17:55:53 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.12 2004/04/13 18:34:49 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
 #define G_DISABLE_CONST_RETURNS
 #include <gtk/gtk.h>
+
+#define LOGO_FILE "ettercap.png"
 
 /* ec_gtk.c */
 extern GtkWidget *window;  /* main window */
@@ -39,6 +41,7 @@ extern void gtkui_page_left(void);
  * 1 for live menus
  */
 extern void gtkui_create_menu(int live);
+extern void gtkui_create_tab_menu(void);
 
 /* ec_gtk_start.c */
 extern void gtkui_start_sniffing(void);

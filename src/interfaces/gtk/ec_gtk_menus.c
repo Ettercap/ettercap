@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.7 2004/03/07 14:38:40 alor Exp $
+    $Id: ec_gtk_menus.c,v 1.8 2004/04/13 18:34:49 daten Exp $
 */
 
 #include <ec.h>
@@ -117,8 +117,8 @@ void gtkui_create_menu(int live);
 void gtkui_create_menu(int live)
 {
    GtkAccelGroup *accel_group;
-   GtkWidget *vbox, *item, *context;
-   GtkItemFactory *root_menu, *if_tabs;
+   GtkWidget *vbox, *item;
+   GtkItemFactory *root_menu;
    int num_items = 0;
    
    DEBUG_MSG("gtk_create_menu");
@@ -194,6 +194,15 @@ void gtkui_create_menu(int live)
    main_menu = gtk_item_factory_get_widget (root_menu, "<main>");
    gtk_box_pack_start(GTK_BOX(vbox), main_menu, FALSE, FALSE, 0);
    gtk_widget_show(main_menu);
+}
+
+void gtkui_create_tab_menu(void)
+{
+   GtkAccelGroup *accel_group;
+   GtkWidget *context;
+   GtkItemFactory *if_tabs;
+
+   accel_group = gtk_accel_group_new ();
 
    /* context menu for notebook */
    if_tabs = gtk_item_factory_new(GTK_TYPE_MENU, "<notebook>", accel_group);

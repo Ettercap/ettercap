@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.18 2004/04/10 14:30:51 alor Exp $
+    $Id: ec_gtk.c,v 1.19 2004/04/13 18:34:49 daten Exp $
 */
 
 #include <ec.h>
@@ -34,6 +34,7 @@ GtkWidget *window = NULL;   /* main window */
 GtkWidget *notebook = NULL;
 GtkWidget *main_menu = NULL;
 
+static GtkWidget     *notebook_frame = NULL;
 static GtkWidget     *textview = NULL;
 static GtkTextBuffer *msgbuffer = NULL;
 static GtkTextMark   *endmark = NULL;
@@ -393,7 +394,7 @@ static void toggle_nopromisc(void)
 static void gtkui_setup(void)
 {
    GtkTextIter iter;
-   GtkWidget *item, *vbox, *scroll, *vpaned, *frame;
+   GtkWidget *item, *vbox, *scroll, *vpaned, *logo;
    GtkItemFactory *item_factory;
    GClosure *closure = NULL;
    GdkModifierType mods;
@@ -462,20 +463,15 @@ static void gtkui_setup(void)
    vpaned = gtk_vpaned_new();
 
    /* notebook for MDI pages */
-   frame = gtk_frame_new(NULL);
-   gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_IN);
-   gtk_paned_pack1(GTK_PANED(vpaned), frame, TRUE, TRUE);
-   gtk_widget_show(frame);
+   notebook_frame = gtk_frame_new(NULL);
+   gtk_frame_set_shadow_type(GTK_FRAME (notebook_frame), GTK_SHADOW_IN);
+   gtk_paned_pack1(GTK_PANED(vpaned), notebook_frame, TRUE, TRUE);
+   gtk_widget_show(notebook_frame);
 
-   notebook = gtk_notebook_new();
-   gtk_notebook_set_tab_pos(GTK_NOTEBOOK (notebook), GTK_POS_TOP);
-   gtk_notebook_set_scrollable(GTK_NOTEBOOK (notebook), TRUE);
-   gtk_container_add(GTK_CONTAINER (frame), notebook);
-   gtk_widget_show(notebook);
-
-#if GTK_MINOR_VERSION == 2
-   g_signal_connect(G_OBJECT (notebook), "switch-page", G_CALLBACK(gtkui_page_defocus_tabs), NULL);
-#endif
+   logo = gtk_image_new_from_file(INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE);
+   gtk_misc_set_alignment (GTK_MISC (logo), 0.5, 0.5);
+   gtk_container_add(GTK_CONTAINER (notebook_frame), logo);
+   gtk_widget_show(logo);
 
    /* messages */
    scroll = gtk_scrolled_window_new(NULL, NULL);
@@ -946,6 +942,22 @@ GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(
    parent = gtk_frame_new(NULL);
    gtk_frame_set_shadow_type(GTK_FRAME(parent), GTK_SHADOW_NONE);
    gtk_widget_show(parent);
+
+   if(!notebook && notebook_frame) {
+      gtk_container_remove(GTK_CONTAINER (notebook_frame), gtk_bin_get_child(GTK_BIN (notebook_frame)));
+
+      notebook = gtk_notebook_new();
+      gtk_notebook_set_tab_pos(GTK_NOTEBOOK (notebook), GTK_POS_TOP);
+      gtk_notebook_set_scrollable(GTK_NOTEBOOK (notebook), TRUE);
+      gtk_container_add(GTK_CONTAINER (notebook_frame), notebook);
+      gtk_widget_show(notebook);
+
+      #if GTK_MINOR_VERSION == 2
+      g_signal_connect(G_OBJECT (notebook), "switch-page", G_CALLBACK(gtkui_page_defocus_tabs), NULL);
+      #endif 
+
+      gtkui_create_tab_menu();
+   }
 
    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), parent, hbox);
 

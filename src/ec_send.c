@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.27 2003/11/10 22:46:24 alor Exp $
+    $Id: ec_send.c,v 1.28 2003/11/11 17:17:53 alor Exp $
 */
 
 #include <ec.h>
@@ -506,10 +506,6 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
    
    SEND_LOCK;
   
-   /* the 64 bit of the original datagram */
-   t = libnet_build_data( po->L4.header, 8, GBL_LNET->lnet, 0);
-   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_bridge));
-   
    /* create the ICMP header */
    t = libnet_build_icmpv4_redirect(
            ICMP_REDIRECT,                       /* type */
@@ -525,8 +521,8 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
               ip->ip_sum,                          /* original checksum */
               ip_addr_to_int32(&ip->ip_src),       /* original source */
               ip_addr_to_int32(&ip->ip_dst),       /* original dest */
-              NULL,                                /* payload */
-              0,                                   /* payload size */
+              po->L4.header,                       /* the 64 bit of the original datagram */
+              8,                                   /* payload size */
            GBL_LNET->lnet,                      /* libnet handle */
            0);                                  /* pblock id */
    ON_ERROR(t, -1, "libnet_build_icmpv4_redirect: %s", libnet_geterror(GBL_LNET->lnet));

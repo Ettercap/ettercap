@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.2 $                                      # 
-#  Last updated on : $Date: 2003/10/28 21:10:55 $                          #
+#  Version         : $Revision: 1.3 $                                      # 
+#  Last updated on : $Date: 2003/11/11 17:17:35 $                          #
 #                                                                          #
 ############################################################################
 
@@ -53,7 +53,7 @@
 # split proto because it is not aligned
    proto1:1 = 19
    proto2:1 = 20
-   
+
 #
 # wireless header at layer 1 / 2
 #

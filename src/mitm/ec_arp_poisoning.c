@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.16 2003/11/10 22:46:24 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.17 2003/11/11 17:17:53 alor Exp $
 */
 
 #include <ec.h>
@@ -74,23 +74,25 @@ void __init arp_poisoning_init(void)
 static void arp_poisoning_start(char *args)
 {
    int ret;
+   char *p;
   
    poison_oneway = 0; 
      
    DEBUG_MSG("arp_poisoning_start");
    
-   /* check the parameter */
-   if (strcasestr(args, "remote")) {
-      /* 
-       * allow sniffing of remote host even 
-       * if the target is local (used for gw)
-       */
-      GBL_OPTIONS->remote = 1;
-   } else if (strcasestr(args, "oneway")) {
-      poison_oneway = 1; 
-   } else if (strcmp(args, "")) {
-      USER_MSG("FATAL: ARP poisoning: paramenter incorrect.\n");
-      return;
+   for (p = strsep(&args, ","); p != NULL; p = strsep(&args, ",")) {
+      if (!strcasecmp(p, "remote")) {
+         /* 
+         * allow sniffing of remote host even 
+         * if the target is local (used for gw)
+         */
+         GBL_OPTIONS->remote = 1;
+      } else if (!strcasecmp(p, "oneway")) {
+         poison_oneway = 1; 
+      } else {
+         USER_MSG("FATAL: ARP poisoning: paramenter incorrect.\n");
+         return;
+      }
    }
 
    /* arp poisoning only on etherenet */

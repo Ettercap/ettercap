@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.5 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_sniff_bridge.c,v 1.6 2003/11/11 17:17:53 alor Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,10 @@ void start_bridge_sniff(void)
 
 void forward_bridge_sniff(struct packet_object *po)
 {
+   /* don't forward dropped packets */
+   if ((po->flags & PO_DROPPED) == 0)
+      return;
+         
    /* 
     * send the packet to the other interface.
     * the socket was opened during the initialization

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.7 2003/11/11 14:59:31 alor Exp $
+    $Id: ec_mitm.c,v 1.8 2003/11/11 17:17:53 alor Exp $
 */
 
 #include <ec.h>
@@ -150,7 +150,7 @@ void only_mitm(void)
 {
    char ch = 0;
 
-   INSTANT_USER_MSG("Activated the mitm attack only...\n");
+   INSTANT_USER_MSG("Activated the mitm attack only... (press 'q' to exit)\n");
    
    while (ch != 'q' && ch != 'Q'){
       /* if there is a pending char to be read */

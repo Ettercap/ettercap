@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.31 2004/04/05 12:18:03 alor Exp $
+    $Id: ec_plugins.c,v 1.32 2004/05/10 09:59:05 alor Exp $
 */
 
 #include <ec.h>
@@ -71,6 +71,7 @@ int plugin_is_activated(char *name);
 int search_plugin(char *name);
 void plugin_list(void);
 static void plugin_print(char active, struct plugin_ops *ops);
+static int plugin_filter(const struct dirent *d);
 
 /*******************************************/
 
@@ -118,6 +119,16 @@ int plugin_load_single(char *path, char *name)
 #endif
 }
 
+/*
+ * filter for the scandir function
+ */
+static int plugin_filter(const struct dirent *d)
+{
+   if ( match_pattern(d->d_name, PLUGIN_PATTERN LTDL_SHLIB_EXT) )
+      return 1;
+
+   return 0;
+}
 
 /*
  * search and load all plugins in INSTALL_PREFIX/lib
@@ -140,36 +151,34 @@ void plugin_load_all(void)
    where = INSTALL_LIBDIR "/" EC_PROGRAM;
    
    /* first search in  INSTALL_LIBDIR/ettercap" */
-   n = scandir(where, &namelist, 0, alphasort);
+   n = scandir(where, &namelist, plugin_filter, alphasort);
    /* on error fall back to the current dir */
    if (n <= 0) {
       DEBUG_MSG("plugin_loadall: no plugin in %s searching locally", where);
       /* change the path to the local one */
       where = ".";
-      n = scandir(where, &namelist, 0, alphasort);
+      n = scandir(where, &namelist, plugin_filter, alphasort);
    }
   
    for(i = n-1; i >= 0; i--) {
-      if ( match_pattern(namelist[i]->d_name, PLUGIN_PATTERN LTDL_SHLIB_EXT) ) {
-         ret = plugin_load_single(where, namelist[i]->d_name);
-         switch (ret) {
-            case ESUCCESS:
-               t++;
-               break;
-            case -EDUPLICATE:
-               USER_MSG("plugin %s already loaded...\n", namelist[i]->d_name);
-               DEBUG_MSG("plugin %s already loaded...", namelist[i]->d_name);
-               break;
-            case -EVERSION:
-               USER_MSG("plugin %s was compiled for a different ettercap version...\n", namelist[i]->d_name);
-               DEBUG_MSG("plugin %s was compiled for a different ettercap version...", namelist[i]->d_name);
-               break;
-            case -EINVALID:
-            default:
-               USER_MSG("plugin %s cannot be loaded...\n", namelist[i]->d_name);
-               DEBUG_MSG("plugin %s cannot be loaded...", namelist[i]->d_name);
-               break;
-         }
+      ret = plugin_load_single(where, namelist[i]->d_name);
+      switch (ret) {
+         case ESUCCESS:
+            t++;
+            break;
+         case -EDUPLICATE:
+            USER_MSG("plugin %s already loaded...\n", namelist[i]->d_name);
+            DEBUG_MSG("plugin %s already loaded...", namelist[i]->d_name);
+            break;
+         case -EVERSION:
+            USER_MSG("plugin %s was compiled for a different ettercap version...\n", namelist[i]->d_name);
+            DEBUG_MSG("plugin %s was compiled for a different ettercap version...", namelist[i]->d_name);
+            break;
+         case -EINVALID:
+         default:
+            USER_MSG("plugin %s cannot be loaded...\n", namelist[i]->d_name);
+            DEBUG_MSG("plugin %s cannot be loaded...", namelist[i]->d_name);
+            break;
       }
       SAFE_FREE(namelist[i]);
    }

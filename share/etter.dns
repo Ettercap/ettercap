@@ -1,6 +1,6 @@
 ############################################################################
 #                                                                          #
-#  ettercap -- etter.dns -- host file for phantom plugin                   #
+#  ettercap -- etter.dns -- host file for dns_spoof plugin                 #
 #                                                                          #
 #  Copyright (C) 2001-2003  ALoR & NaGA                                    #
 #                                                                          #
@@ -31,14 +31,6 @@
 198.182.196.56	microsoft.com
 198.182.196.56	*.microsoft.com
 198.182.196.56	www.microsoft.com
-
-
-################################
-# Intel vs AMD...  swap them
-#
-
-192.102.198.160	www.amd.com
-139.95.253.1	www.intel.com
 
 
 ##########################################

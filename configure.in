@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.71 2003/11/21 08:32:10 alor Exp $
+dnl    $Id: configure.in,v 1.72 2003/11/22 13:57:06 alor Exp $
 dnl
 
 AC_INIT
@@ -702,8 +702,14 @@ EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $GTK_LIBS $PTHREADLI
 AC_SUBST(EC_CFLAGS)
 AC_SUBST(EC_LIBS)
 
+AC_SUBST(PCAPLIB)
+AC_SUBST(LNETLIB)
+AC_SUBST(SSLLIB)
+AC_SUBST(PCRELIB)
+AC_SUBST(NCURSLIB)
+
 dnl  for the plugins
-PL_CFLAGS="$DEBUG_FLAGS"
+PL_CFLAGS="$DEBUG_FLAGS $PCREINC"
 AC_SUBST(PL_CFLAGS)
 
 dnl ===============
@@ -733,6 +739,7 @@ AC_CONFIG_FILES(  Makefile
                   utils/etterfilter/Makefile
                   plug-ins/Makefile
                   plug-ins/chk_poison/Makefile
+                  plug-ins/dns_spoof/Makefile
                   plug-ins/dummy/Makefile
                   plug-ins/find_conn/Makefile
                   plug-ins/finger/Makefile

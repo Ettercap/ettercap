@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.15 2003/11/16 21:11:53 alor Exp $ */
+/* $Id: wdg.h,v 1.16 2003/11/22 13:57:11 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <missing/queue.h>
+#include <ec_queue.h>
 
 #include <limits.h>
 

@@ -1,9 +1,10 @@
 
-# $Id: Makefile.am,v 1.12 2003/11/16 15:06:54 lordnaga Exp $
+# $Id: Makefile.am,v 1.13 2003/11/22 13:57:10 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 SUBDIRS =   chk_poison \
+            dns_spoof \
             dummy \
             find_conn \
             finger \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.30 2003/11/21 08:32:15 alor Exp $
+    $Id: ec_send.c,v 1.31 2003/11/22 13:57:11 alor Exp $
 */
 
 #include <ec.h>
@@ -66,6 +66,7 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
 int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip);
 int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct packet_object *po);
 int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
+int send_dns_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen);
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SEND_LOCK     do{ pthread_mutex_lock(&send_mutex); } while(0)
@@ -675,6 +676,85 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
    /* clear the pblock */
    libnet_clear_packet(GBL_LNET->lnet);
 
+   SEND_UNLOCK;
+   
+   return c;
+}
+
+/*
+ * send a dns reply
+ */
+int send_dns_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen)
+{
+   libnet_ptag_t t;
+   int c;
+ 
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet == 0);
+  
+   SEND_LOCK;
+
+   /* create the dns packet */
+    t = libnet_build_dnsv4(
+             LIBNET_UDP_DNSV4_H,    /* TCP or UDP */
+             id,                    /* id */
+             0x8400,                /* standard reply, no error */
+             1,                     /* num_q */
+             1,                     /* num_anws_rr */
+             0,                     /* num_auth_rr */
+             0,                     /* num_addi_rr */
+             data,
+             datalen,
+             GBL_LNET->lnet,        /* libnet handle */
+             0);                    /* libnet id */
+   ON_ERROR(t, -1, "libnet_build_dns: %s", libnet_geterror(GBL_LNET->lnet));
+  
+   /* create the udp header */
+   t = libnet_build_udp(
+            htons(EC_MAGIC_16),                             /* source port */
+            53,                                             /* destination port */
+            LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen,    /* packet size */
+            0,                                              /* checksum */
+            NULL,                                           /* payload */
+            0,                                              /* payload size */
+            GBL_LNET->lnet,                                 /* libnet handle */
+            0);                                             /* libnet id */
+   ON_ERROR(t, -1, "libnet_build_udp: %s", libnet_geterror(GBL_LNET->lnet));
+   
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+  
+   /* create the IP header */
+   t = libnet_build_ipv4(                                                                          
+           LIBNET_IPV4_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen, /* length */
+           0,                                                           /* TOS */
+           htons(EC_MAGIC_16),                                          /* IP ID */
+           0,                                                           /* IP Frag */
+           64,                                                          /* TTL */
+           IPPROTO_UDP,                                                 /* protocol */
+           0,                                                           /* checksum */
+           ip_addr_to_int32(&sip->addr),                                /* source IP */
+           ip_addr_to_int32(&tip->addr),                                /* destination IP */
+           NULL,                                                        /* payload */
+           0,                                                           /* payload size */
+           GBL_LNET->lnet,                                              /* libnet handle */ 
+           0);
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
+  
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   
+   /* add the media header */
+   t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
+   ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
+   
+   /* send the packet to Layer 2 */
+   c = libnet_write(GBL_LNET->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
+
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet);
+   
    SEND_UNLOCK;
    
    return c;

@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.18 2003/10/22 20:35:56 alor Exp $ */
+/* $Id: ec.h,v 1.19 2003/11/22 13:57:10 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -24,9 +24,8 @@
 #include <unistd.h>
 #include <time.h>
 
-/* use this file, all the other aren't good */
-#include <missing/queue.h>
-
+/* these are often needed... */
+#include <ec_queue.h>
 #include <ec_error.h>
 #include <ec_debug.h>
 #include <ec_stdint.h>

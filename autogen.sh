@@ -21,13 +21,13 @@ if test x`which aclocal` = x; then
    echo "ERROR: aclocal not found"
    exit
 fi
-if test x`which libtool` = x; then
-   echo "ERROR: libtool not found"
-   exit
-fi
 if test x`which libtoolize` = x; then
-   echo "ERROR: libtoolize not found"
-   exit
+   if test x`which glibtoolize` = x; then
+      echo "ERROR: libtoolize not found"
+      exit
+   else
+      USEGLIBTOOLIZE = 1
+   fi
 fi
 
 echo "Suggested version:"
@@ -40,7 +40,11 @@ echo "Actual version:"
 echo
 echo "     `autoconf --version | head -n 1`"
 echo "     `automake --version | head -n 1`"
-echo "     `libtool --version | head -n 1`"
+if [[ $USEGLIBTOOLIZE ]]; then
+   echo "     `glibtoolize --version | head -n 1`"
+else
+   echo "     `libtoolize --version | head -n 1`"
+fi
 echo
 
 echo "cleaning up config files..."
@@ -54,7 +58,11 @@ find . -name 'Makefile.in' -exec rm -f {} \;
 echo "running aclocal"
 aclocal
 echo "running libtoolize"
-libtoolize --force --copy 
+if [[ $USEGLIBTOOLIZE ]]; then
+   glibtoolize --force --copy 
+else
+   libtoolize --force --copy 
+fi
 echo "running aclocal"
 aclocal
 echo "running autoheader"

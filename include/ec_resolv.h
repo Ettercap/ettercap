@@ -1,5 +1,5 @@
 
-/* $Id: ec_resolv.h,v 1.7 2003/11/08 14:59:47 alor Exp $ */
+/* $Id: ec_resolv.h,v 1.8 2003/11/22 13:57:10 alor Exp $ */
 
 #ifndef EC_RESOLV_H
 #define EC_RESOLV_H
@@ -28,6 +28,7 @@
    #define ns_t_cname   T_CNAME
    #define ns_t_ptr     T_PTR
    #define ns_t_a       T_A
+   #define ns_o_query   QUERY
 #endif
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dns.c,v 1.7 2003/10/28 22:15:03 alor Exp $
+    $Id: ec_dns.c,v 1.8 2003/11/22 13:57:11 alor Exp $
 */
 
 #include <ec.h>
@@ -45,38 +45,38 @@
 
 
 struct dns_header {
-   u_int16 id;                // DNS packet ID
+   u_int16 id;                /* DNS packet ID */
 #ifdef WORDS_BIGENDIAN
-   u_char  qr: 1;             // response flag
-   u_char  opcode: 4;         // purpose of message
-   u_char  aa: 1;             // authoritative answer
-   u_char  tc: 1;             // truncated message
-   u_char  rd: 1;             // recursion desired
-   u_char  ra: 1;             // recursion available
-   u_char  unused: 1;         // unused bits (MBZ as of 4.9.3a3)
-   u_char  ad: 1;             // authentic data from named
-   u_char  cd: 1;             // checking disabled by resolver
-   u_char  rcode: 4;          // response code
-#else // WORDS_LITTLEENDIAN
-   u_char  rd: 1;             // recursion desired
-   u_char  tc: 1;             // truncated message
-   u_char  aa: 1;             // authoritative answer
-   u_char  opcode: 4;         // purpose of message
-   u_char  qr: 1;             // response flag
-   u_char  rcode: 4;          // response code
-   u_char  cd: 1;             // checking disabled by resolver
-   u_char  ad: 1;             // authentic data from named
-   u_char  unused: 1;         // unused bits (MBZ as of 4.9.3a3)
-   u_char  ra: 1;             // recursion available
+   u_char  qr: 1;             /* response flag */
+   u_char  opcode: 4;         /* purpose of message */
+   u_char  aa: 1;             /* authoritative answer */
+   u_char  tc: 1;             /* truncated message */
+   u_char  rd: 1;             /* recursion desired */
+   u_char  ra: 1;             /* recursion available */
+   u_char  unused: 1;         /* unused bits */
+   u_char  ad: 1;             /* authentic data from named */
+   u_char  cd: 1;             /* checking disabled by resolver */
+   u_char  rcode: 4;          /* response code */
+#else /* WORDS_LITTLEENDIAN */
+   u_char  rd: 1;             /* recursion desired */
+   u_char  tc: 1;             /* truncated message */
+   u_char  aa: 1;             /* authoritative answer */
+   u_char  opcode: 4;         /* purpose of message */
+   u_char  qr: 1;             /* response flag */
+   u_char  rcode: 4;          /* response code */
+   u_char  cd: 1;             /* checking disabled by resolver */
+   u_char  ad: 1;             /* authentic data from named */
+   u_char  unused: 1;         /* unused bits */
+   u_char  ra: 1;             /* recursion available */
 #endif
-   u_int16 num_q;             // Number of questions
-   u_int16 num_answer;        // Number of answer resource records
-   u_int16 num_auth;          // Number of authority resource records
-   u_int16 num_res;           // Number of additional resource records
+   u_int16 num_q;             /* Number of questions */
+   u_int16 num_answer;        /* Number of answer resource records */
+   u_int16 num_auth;          /* Number of authority resource records */
+   u_int16 num_res;           /* Number of additional resource records */
 };
 
 
-#define DNS_HEADER_LEN   0xc  // 12 bytes
+#define DNS_HEADER_LEN   0xc  /* 12 bytes */
 
 /* protos */
 
@@ -133,10 +133,8 @@ FUNC_DECODER(dissector_dns)
    if (class != ns_c_in)
       return NULL;
 
-#if 0 
-   if ( dns->opcode == ns_o_query && htons(dns->num_q) == 1 && htons(dns->num_answer) == 0)
-      DISSECT_MSG("DNS: query\n");
-#endif
+   /* HOOK POINT: HOOK_PROTO_DNS */
+   hook_point(HOOK_PROTO_DNS, PACKET);
    
    /* this is a DNS answer */
    if (dns->qr && dns->rcode == ns_r_noerror && htons(dns->num_answer) > 0) {

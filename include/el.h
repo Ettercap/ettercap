@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.13 2003/10/27 21:25:44 alor Exp $ */
+/* $Id: el.h,v 1.14 2003/11/22 13:57:10 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -23,12 +23,12 @@
 #include <strings.h>
 #include <unistd.h>
 #include <time.h>
-#include <missing/queue.h>
 
 #ifndef HAVE_STRSEP
    #include <missing/strsep.h>
 #endif
 
+#include <ec_queue.h>
 #include <ec_stdint.h>
 #include <ec_error.h>
 #include <ec_log.h>

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.20 2004/03/18 15:29:12 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.21 2004/03/18 19:19:59 daten Exp $
 */
 
 #include <ec.h>
@@ -84,10 +84,6 @@ static GtkTextBuffer *joinedbuf = NULL;
 static GtkTextMark    *endmark1 = NULL;
 static GtkTextMark    *endmark2 = NULL;
 static GtkTextMark    *endmark3 = NULL;
-
-static pthread_mutex_t display_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define DISPLAY_LOCK     do{ pthread_mutex_lock(&display_mutex); } while(0)
-#define DISPLAY_UNLOCK   do{ pthread_mutex_unlock(&display_mutex); } while(0)
 
 /* keep it global, so the memory region is always the same (reallocing it) */
 static u_char *dispbuf;
@@ -489,8 +485,7 @@ static void gtkui_connection_data_split(void)
    DEBUG_MSG("gtk_connection_data_split");
 
    /* if we're switching views, make sure old hook is gone */
-   if(curr_conn)
-      conntrack_hook_conn_del(curr_conn, join_print_po);
+   conntrack_hook_conn_del(curr_conn, join_print_po);
 
    if(data_window) {
       child = gtk_bin_get_child(GTK_BIN (data_window));
@@ -498,7 +493,7 @@ static void gtkui_connection_data_split(void)
    } else {
       data_window = gtkui_page_new("Connection data", &gtkui_destroy_conndata, &gtkui_connection_data_detach);
    }
-   
+
    /* don't timeout this connection */
    curr_conn->flags |= CONN_VIEWING;
 
@@ -608,18 +603,18 @@ static void gtkui_connection_data_split(void)
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
-   /* print the old data */
-   connbuf_print(&curr_conn->data, split_print);
-
-   /* add the hook on the connection to receive data only from it */
-   conntrack_hook_conn_add(curr_conn, split_print_po);
-
    gtk_widget_show(data_window);
 
    if(GTK_IS_WINDOW (data_window))
       gtk_window_present(GTK_WINDOW (data_window));
    else
       gtkui_page_present(data_window);
+
+   /* print the old data */
+   connbuf_print(&curr_conn->data, split_print);
+
+   /* add the hook on the connection to receive data only from it */
+   conntrack_hook_conn_add(curr_conn, split_print_po);
 }
 
 static void gtkui_connection_data_detach(GtkWidget *child)
@@ -648,7 +643,17 @@ static void gtkui_destroy_conndata(void)
 {
    DEBUG_MSG("gtkui_destroy_conndata");
 
+   if (curr_conn) {
+      conntrack_hook_conn_del(curr_conn, split_print_po);
+      conntrack_hook_conn_del(curr_conn, join_print_po);
+      curr_conn->flags &= ~CONN_VIEWING;
+      curr_conn = NULL;
+   }
+
    gtk_widget_destroy(data_window);
+   textview1 = NULL;
+   textview2 = NULL;
+   textview3 = NULL;
    data_window = NULL;
 }
 
@@ -658,8 +663,8 @@ static void gtkui_data_print(int buffer, char *data, int color)
    GtkTextBuffer *textbuf = NULL;
    GtkWidget *textview = NULL;
    GtkTextMark *endmark = NULL;
+   char *unicode = NULL;
 
-   DISPLAY_LOCK;
    switch(buffer) {
       case 1:
          textbuf = splitbuf1;
@@ -680,19 +685,22 @@ static void gtkui_data_print(int buffer, char *data, int color)
          return;
    }
 
-   if(!textbuf || !textview || !endmark)
+   /* convert ASCII to UTF8 */
+   unicode = g_locale_to_utf8 (data, -1, NULL, NULL, NULL);
+
+   /* if interface has been destroyed or unicode conversion failed */
+   if(!data_window || !textbuf || !textview || !endmark || !unicode)
       return;
-   
+
    gtk_text_buffer_get_end_iter(textbuf, &iter);
    if(color == 2)
-      gtk_text_buffer_insert_with_tags_by_name(textbuf, &iter, data, 
+      gtk_text_buffer_insert_with_tags_by_name(textbuf, &iter, unicode, 
          -1, "blue_fg", "monospace", NULL);
    else
-      gtk_text_buffer_insert_with_tags_by_name(textbuf, &iter, data, 
+      gtk_text_buffer_insert_with_tags_by_name(textbuf, &iter, unicode, 
          -1, "monospace", NULL);
    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview), 
       endmark, 0, FALSE, 0, 0);
-   DISPLAY_UNLOCK;
 }
 
 static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
@@ -762,8 +770,7 @@ static void gtkui_connection_data_join(void)
    DEBUG_MSG("gtk_connection_data_join");
 
    /* if we're switching views, make sure old hook is gone */
-   if(curr_conn)
-      conntrack_hook_conn_del(curr_conn, split_print_po);
+   conntrack_hook_conn_del(curr_conn, split_print_po);
 
    if(data_window) {
       child = gtk_bin_get_child(GTK_BIN (data_window));
@@ -825,18 +832,18 @@ static void gtkui_connection_data_join(void)
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
-   /* print the old data */
-   connbuf_print(&curr_conn->data, join_print);
-
-   /* add the hook on the connection to receive data only from it */
-   conntrack_hook_conn_add(curr_conn, join_print_po);
-
    gtk_widget_show(data_window);
 
    if(GTK_IS_WINDOW (data_window))
       gtk_window_present(GTK_WINDOW (data_window));
    else
       gtkui_page_present(data_window);
+
+   /* print the old data */
+   connbuf_print(&curr_conn->data, join_print);
+
+   /* add the hook on the connection to receive data only from it */
+   conntrack_hook_conn_add(curr_conn, join_print_po);
 }
 
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)

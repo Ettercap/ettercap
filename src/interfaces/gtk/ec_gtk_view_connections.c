@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.33 2004/05/26 11:52:56 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.34 2004/05/27 03:13:28 daten Exp $
 */
 
 #include <ec.h>
@@ -401,8 +401,8 @@ static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct ro
    proto[0] = desc[48];
 
    /* trim off leading spaces */
-   for(src_ptr = src; *src_ptr != ' '; src_ptr++);
-   for(dst_ptr = dst; *dst_ptr != ' '; dst_ptr++);
+   for(src_ptr = src; *src_ptr == ' '; src_ptr++);
+   for(dst_ptr = dst; *dst_ptr == ' '; dst_ptr++);
 
    /* add it to GTK list */
    gtk_list_store_append (ls_conns, &iter);

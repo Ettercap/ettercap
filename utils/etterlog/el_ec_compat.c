@@ -3,6 +3,8 @@
                 here are stored functions needed by ec_* source
                 but not linked in etterlog
 
+    Copyright (C) ALoR & NaGA
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_ec_compat.c,v 1.2 2003/04/05 13:58:41 alor Exp $
+    $Id: el_ec_compat.c,v 1.3 2003/04/15 07:57:37 alor Exp $
 */
 
 #include <el.h>

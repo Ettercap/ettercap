@@ -2,7 +2,7 @@
     dummy -- ettercap plugin -- it does nothig !
                                 only demostrates how to write a plugin !
 
-    Copyright (C) 2001  ALoR <alor@users.sourceforge.net>, NaGA <crwm@freemail.it>
+    Copyright (C) ALoR & NaGA
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dummy.c,v 1.4 2003/03/22 15:41:21 alor Exp $
+    $Id: dummy.c,v 1.5 2003/04/15 07:57:36 alor Exp $
 */
 
 

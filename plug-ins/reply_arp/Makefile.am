@@ -1,11 +1,11 @@
 
-# $Id: Makefile.am,v 1.3 2004/01/03 11:07:43 alor Exp $
+# $Id: Makefile.am,v 1.4 2005/01/14 09:02:38 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 pkglib_LTLIBRARIES = ec_reply_arp.la
 
-ec_reply_arp_la_CFLAGS = @PL_CFLAGS@ @LNETINC@
+ec_reply_arp_la_CFLAGS = @EC_CFLAGS@
 
 ec_reply_arp_la_SOURCES = reply_arp.c
 

@@ -1,11 +1,11 @@
 
-# $Id: Makefile.am,v 1.3 2004/01/03 11:07:43 alor Exp $
+# $Id: Makefile.am,v 1.4 2005/01/14 09:02:37 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 pkglib_LTLIBRARIES = ec_gre_relay.la
 
-ec_gre_relay_la_CFLAGS = @PL_CFLAGS@ @LNETINC@
+ec_gre_relay_la_CFLAGS = @EC_CFLAGS@
 
 ec_gre_relay_la_SOURCES = gre_relay.c
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.2 2003/12/13 20:08:30 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.3 2003/12/14 15:25:15 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -28,12 +28,16 @@
 #include <ec_strings.h>
 
 /* globals */
+struct packet_list {
+   struct packet_object *po;
+   TAILQ_ENTRY(packet_list) next;
+}
 
 struct steal_list {
    struct ip_addr ip;
    u_char mac[MEDIA_ADDR_LEN];
    u_char wait_reply;
-   LIST_HEAD(, packet_list) packet_table;
+   TAILQ_HEAD(, packet_list) packet_table;
    LIST_ENTRY(steal_list) next;
 };
 
@@ -59,6 +63,12 @@ struct arp_header {
 #define FAKE_PCK_LEN sizeof(eth_header)+sizeof(arp_header)+sizeof(arp_eth_header)
 struct packet_object fake_po;
 char fake_pck[FAKE_PCK_LEN];
+
+/* mutexes */
+static pthread_mutex_t steal_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define STEAL_LOCK     do{ pthread_mutex_lock(&steal_mutex); } while(0)
+#define STEAL_UNLOCK   do{ pthread_mutex_unlock(&steal_mutex); } while(0)
+
 
 /* protos */
 
@@ -135,6 +145,7 @@ static void port_stealing_start(char *args)
       SAFE_CALLOC(s, 1, sizeof(struct steal_list));
       memcpy(&s->ip, &h->ip, sizeof(struct ip_addr));
       memcpy(s->mac, h->mac, MEDIA_ADDR_LEN);
+      TAILQ_INIT(s->packet_table);
       LIST_INSERT_HEAD(&steal_table, s, next);
    }
 
@@ -144,6 +155,10 @@ static void port_stealing_start(char *args)
    heth = (struct eth_header *)fake_pck;
    harp = (struct arp_header)(heth + 1);
 
+   /* If we use our MAC address we won't generate traffic
+    * flooding on the LAN but we will reach only direct
+    * connected switch with the stealing process 
+    */
    if (steal_tree)
       memcpy(heth->dha, bogus_mac, ETH_ADDR_LEN);
    else
@@ -159,8 +174,8 @@ static void port_stealing_start(char *args)
    packet_create_object(&fake_po, fake_pck, FAKE_PCK_LEN);
    
    /* Add the hooks:
-    * - handle stealed packets (send arp request, stop stealing)
-    * - put the packet in the send queue after "filtering"
+    * - handle stealed packets (mark it as forwardable)
+    * - put the packet in the send queue after "filtering" (send arp request, stop stealing)
     * - send the queue on arp reply (port restored, restart stealing)
     */
    hook_add(HOOK_PACKET_ETH, &parse_received);
@@ -178,7 +193,11 @@ static void port_stealing_start(char *args)
 static void port_stealing_stop(void)
 {
    pthread_t pid;
-   
+   struct steal_list *s, *tmp_s = NULL;
+   struct packet_list *p, *tmp_p = NULL;
+
+   int i;
+      
    DEBUG_MSG("port_stealing_stop");
    
    /* destroy the poisoner thread */
@@ -189,19 +208,43 @@ static void port_stealing_stop(void)
       ec_thread_destroy(pid);
    else
       return;
-        
-   USER_MSG("Prot Stealing deactivated.\n");
-   USER_MSG("Restoring Switch tables...\n");
-  
-   ui_msg_flush(2);
    
    /* Remove the Hooks */
    hook_del(HOOK_PACKET_ETH, &parse_received);
    hook_del(HOOK_PRE_FORWARD, &put_queue);
    hook_del(HOOK_PACKET_ARP_RP, &send_queue);
+        
+   USER_MSG("Prot Stealing deactivated.\n");
+   USER_MSG("Restoring Switch tables...\n");
+  
+   ui_msg_flush(2);
 
-   /* XXX - (mutex lock) Restore Switch Tables (2 times) */
-   /* XXX - Free the stealing list (mutex unlock) */
+   STEAL_LOCK;
+   /* Restore Switch Tables (2 times) 
+    * by sending arp requests.
+    */
+   for (i=0; i<2; i++) {
+      LIST_FOREACH(s, &steal_table, next) {
+         send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
+         usleep(GBL_CONF->arp_storm_delay * 1000);  
+      }      
+   }
+   
+   /* Free the stealing list */
+   LIST_FOREACH_SAFE(s, &steal_table, next, tmp_s) {
+   
+      /* Free the sending queue for each host */
+      TAILQ_FOREACH_SAFE(p, &s->packet_table, next, tmp_p) {
+         packet_destroy_object(p->po);
+         TAILQ_REMOVE(&s->packet_table, p, next);
+         SAFE_FREE(p);
+      }
+      
+      LIST_REMOVE(s, next);
+      SAFE_FREE(s);
+   }
+   
+   STEAL_UNLOCK;
 }
 
 
@@ -223,31 +266,136 @@ EC_THREAD_FUNC(port_stealer)
       
       CANCELLATION_POINT();
       
-      /* walk the list and steal the ports */
+      /* Walk the list and steal the ports 
+       * We use a mutex to avoid race conditions with freeing.
+       */
+      STEAL_LOCK;
       LIST_FOREACH(s, &steal_table, next) {
-         /* steal only ports for hosts where no packet is in queue */
+         /* Steal only ports for hosts where no packet is in queue */
          if (!s->wait_reply) {
             memcpy(heth->sha, s->mac, ETH_ADDR_LEN);
             send_L2(&fake_po); 
-            //usleep(GBL_CONF->arp_storm_delay * 1000);  
+            usleep(GBL_CONF->port_steal_delay * 1000);  
          }
       }      
-      //usleep(GBL_CONF->arp_storm_delay * 1000);
+      STEAL_UNLOCK;
+      usleep(GBL_CONF->port_steal_delay * 1000);
    }
    
    return NULL; 
 }
 
+/* Check if it's a stolen packet */
 static void parse_received(struct packet_object *po)
 {
+   struct steal_list *s;
+
+   /* If the dest MAC is in the stealing list
+    * mark the packet as forwardable
+    */
+   LIST_FOREACH(s, &steal_table, next) {
+      if (!memcmp(po->L2.dst, s->mac, ETH_ADDR_LEN)) {
+         po->flags |= PO_FORWARDABLE;
+         break;
+      }
+   }
 }
 
+/* If the packet was stolen put it in the sending
+ * queue waiting for the port-restoring arp reply
+ */
 static void put_queue(struct packet_object *po)
 {
+   struct steal_list *s;
+   struct packet_list *p;
+
+   if (po->flags & PO_DROPPED)
+      return;
+      
+   LIST_FOREACH(s, &steal_table, next) {
+      if (!memcmp(po->L2.dst, s->mac, ETH_ADDR_LEN)) {
+           
+         /* If the packet was not dropped stop the stealing
+          * thread for this address, send the arp request
+          * and put a duplicate in the host sending queue
+          */
+         if (!s->wait_reply) {
+	    s->wait_reply = 1;
+	    send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
+         }
+	   
+	 SAFE_CALLOC(p, 1, sizeof(struct packet_list));
+	 p->po = packet_dup(po);
+         TAILQ_INSERT_HEAD(&(s->packet_table), p, next);
+	   
+	 /* Avoid standard forwarding method */
+	 po->flags |= PO_DROPPED;
+         break;
+      }
+   }
 }
 
+/* If we was waiting this reply from stolen host
+ * send its sending queue and restart stealing process
+ */
 static void send_queue(struct packet_object *po)
 {
+   struct steal_list *s;
+   struct packet_list *p, *tmp = NULL;
+   struct eth_header *heth;
+   int to_wait = 0;
+
+   /* Check if it's an arp reply for us */
+   if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))
+      return;
+      
+   LIST_FOREACH(s, &steal_table, next) {
+      if (!memcmp(po->L2.src, s->mac, ETH_ADDR_LEN)) {
+         /* If we was waiting for the reply it means
+          * that there is a queue to be sent
+          */
+         if (s->wait_reply) {
+            /* Send the packet queue (starting from 
+             * the first received packet)
+             */
+            TAILQ_FOREACH_SAFE(p, &s->packet_table, next, tmp) {
+	       /* If the source of the packet to send is not in the 
+                * stealing list, change the MAC address with ours
+                */
+               in_list = 0;
+	       LIST_FOREACH(s, &steal_table, next) {
+                  if (!memcmp(p->po->L2.src, s->mac, ETH_ADDR_LEN)) {
+		     in_list = 1;
+		     break;
+                  }
+               }
+	       if (!in_list) {
+	          heth = (struct eth_header *)p->po->packet;
+                  memcpy(heth->sha, GBL_IFACE->mac, ETH_ADDR_LEN);
+	       }
+
+               /* Send the packet on the wire */
+	       send_L2(p->po);
+
+               /* Destroy the packet duplicate and remove 
+                * it from the queue
+                */
+	       packet_destroy_object(p->po);
+               TAILQ_REMOVE(&s->packet_table, p, next);
+               SAFE_FREE(p);
+	      
+	       /* Sleep only if we have more than one packet to send */
+	       if (to_wait) 
+                  usleep(GBL_CONF->port_steal_sending_delay);
+               to_wait = 1;
+            }
+	    
+            /* Restart the stealing process for this host */
+	    s->wait_reply = 0;
+         }
+         break;
+      }
+   }
 }
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_conn.c,v 1.11 2004/10/05 15:33:11 alor Exp $
+    $Id: el_conn.c,v 1.12 2004/10/11 14:55:49 alor Exp $
 */
 
 #include <el.h>
@@ -304,6 +304,7 @@ void conn_decode(void)
    char proto[5];
    char ipsrc[MAX_ASCII_ADDR_LEN];
    char ipdst[MAX_ASCII_ADDR_LEN];
+   int ret;
 
    /* walk thru the connections list */
    SLIST_FOREACH(c, &conn_list_head, next) {
@@ -320,11 +321,17 @@ void conn_decode(void)
       ip_addr_ntoa(&c->L3_src, ipsrc);
       ip_addr_ntoa(&c->L3_dst, ipdst);
       
-      fprintf(stdout, "DECODING  %s: %s:%d <--> %s:%d...\n", proto, ipsrc, ntohs(c->L4_src), 
+      fprintf(stdout, "DECODING  %s: %s:%d <--> %s:%d... ", proto, ipsrc, ntohs(c->L4_src), 
                                                              ipdst, ntohs(c->L4_dst)); 
-     
+      fflush(stdout);
+      
       /* extract the files from this connection */
-      decode_stream(&c->so);
+      ret = decode_stream(&c->so);
+
+      if (ret == STREAM_SKIPPED)
+         fprintf(stdout, "skipped.\n");
+      else
+         fprintf(stdout, "done.\n");
    }
 
    fprintf(stdout, "\n");

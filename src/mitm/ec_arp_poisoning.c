@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.28 2004/07/28 08:06:31 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.29 2004/10/11 14:55:48 alor Exp $
 */
 
 #include <ec.h>
@@ -210,6 +210,8 @@ static void arp_poisoning_stop(void)
       SAFE_FREE(h);
    }
 
+   /* reset the remote flag */
+   GBL_OPTIONS->remote = 0;
 }
 
 

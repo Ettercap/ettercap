@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_decode.c,v 1.2 2004/10/05 15:33:11 alor Exp $
+    $Id: el_decode.c,v 1.3 2004/10/11 14:55:49 alor Exp $
 */
 
 
@@ -37,7 +37,7 @@ struct dec_entry {
 
 /* protos */
 
-void decode_stream(struct stream_object *so);
+int decode_stream(struct stream_object *so);
 
 void add_extractor(u_int8 level, u_int32 type, FUNC_EXTRACTOR_PTR(extractor));
 void * get_extractor(u_int8 level, u_int32 type);
@@ -47,10 +47,11 @@ void * get_extractor(u_int8 level, u_int32 type);
 /*
  * decode the stream 
  */
-void decode_stream(struct stream_object *so)
+int decode_stream(struct stream_object *so)
 {
    struct po_list *pl;
    FUNC_EXTRACTOR_PTR(app_extractor);
+   int ret = 0;
 
    /* get the port used by the stream, looking at the first packet */
    pl = TAILQ_FIRST(&so->po_head);
@@ -62,19 +63,21 @@ void decode_stream(struct stream_object *so)
    switch (pl->po.L4.proto) {
       case NL_TYPE_TCP:
          app_extractor = get_extractor(APP_LAYER_TCP, ntohs(pl->po.L4.src));
-         EXECUTE_EXTRACTOR(app_extractor, so);
+         EXECUTE_EXTRACTOR(app_extractor, so, ret);
          app_extractor = get_extractor(APP_LAYER_TCP, ntohs(pl->po.L4.dst));
-         EXECUTE_EXTRACTOR(app_extractor, so);
+         EXECUTE_EXTRACTOR(app_extractor, so, ret);
          break;
          
       case NL_TYPE_UDP:
          app_extractor = get_extractor(APP_LAYER_UDP, ntohs(pl->po.L4.src));
-         EXECUTE_EXTRACTOR(app_extractor, so);
+         EXECUTE_EXTRACTOR(app_extractor, so, ret);
          app_extractor = get_extractor(APP_LAYER_UDP, ntohs(pl->po.L4.dst));
-         EXECUTE_EXTRACTOR(app_extractor, so);
+         EXECUTE_EXTRACTOR(app_extractor, so, ret);
          break;
    }
    
+   /* if at least one extractor has found something ret is positive */
+   return ret;
 }
 
 

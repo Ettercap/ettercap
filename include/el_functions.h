@@ -1,5 +1,5 @@
 
-/* $Id: el_functions.h,v 1.19 2004/10/05 15:33:11 alor Exp $ */
+/* $Id: el_functions.h,v 1.20 2004/10/11 14:55:48 alor Exp $ */
 
 #ifndef EL_FUNCTIONS_H
 #define EL_FUNCTIONS_H
@@ -54,22 +54,23 @@ EL_API_EXTERN void *get_host_list_ptr(void);
 struct po_list {
    struct packet_object po;
    int type;
-      #define STREAM_SIDE1 1
-      #define STREAM_SIDE2 2
    TAILQ_ENTRY(po_list) next;
 };
 
 struct stream_object {
    TAILQ_HEAD (po_list_head, po_list) po_head;
-   struct packet_object *po_curr;
+   struct po_list *pl_curr;
    size_t po_off;
 };
 
 EL_API_EXTERN void stream_init(struct stream_object *so);
 EL_API_EXTERN int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf);
-EL_API_EXTERN int stream_search(struct stream_object *so, char *buf, int versus);
+EL_API_EXTERN int stream_search(struct stream_object *so, char *buf, int mode);
 EL_API_EXTERN int stream_read(struct stream_object *so, char *buf, size_t size, int mode);
-EL_API_EXTERN void stream_move(struct stream_object *so, int offset, int whence);
+   #define STREAM_BOTH  0
+   #define STREAM_SIDE1 1
+   #define STREAM_SIDE2 2
+EL_API_EXTERN void stream_move(struct stream_object *so, size_t offset, int whence, int mode);
 
 /* el_decode */
 
@@ -78,16 +79,18 @@ enum {
    APP_LAYER_UDP = 52,
 };
 
-#define FUNC_EXTRACTOR(func) void * func(struct stream_object *so)
-#define FUNC_EXTRACTOR_PTR(func) void * (*func)(struct stream_object *so)
-#define EXECUTE_EXTRACTOR(x, so) do{ \
+#define FUNC_EXTRACTOR(func) int func(struct stream_object *so)
+#define FUNC_EXTRACTOR_PTR(func) int (*func)(struct stream_object *so)
+#define EXECUTE_EXTRACTOR(x, so, ret) do{ \
    if (x) \
-      x(so); \
+      ret += x(so); \
 }while(0)
 
 #define STREAM so
 
-EL_API_EXTERN void decode_stream(struct stream_object *so);
+EL_API_EXTERN int decode_stream(struct stream_object *so);
+   #define STREAM_SKIPPED  0
+   #define STREAM_DECODED  1
 EL_API_EXTERN void add_extractor(u_int8 level, u_int32 type, FUNC_EXTRACTOR_PTR(extractor));
 EL_API_EXTERN void * get_extractor(u_int8 level, u_int32 type);
 

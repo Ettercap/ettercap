@@ -13,6 +13,8 @@
 
    + shortcut for scan canellation in gtk
 
+   + refresh the host list after the scan
+
 ============================
   In the next release(s)
 ============================

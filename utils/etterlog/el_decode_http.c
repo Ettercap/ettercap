@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_decode_http.c,v 1.1 2004/10/05 15:33:11 alor Exp $
+    $Id: el_decode_http.c,v 1.2 2004/10/11 14:55:49 alor Exp $
 */
 
 #include <el.h>
@@ -45,13 +45,27 @@ void __init http_init(void)
 
 FUNC_EXTRACTOR(extractor_http)
 {
-   struct po_list *pl;
+   char buf[10240];
 
-   pl = TAILQ_FIRST(&STREAM->po_head);
+   memset(buf, 0, sizeof(buf));
 
-   printf("\t%d %d\n", ntohs(pl->po.L4.src), ntohs(pl->po.L4.dst));
+   stream_read(STREAM, buf, 10, STREAM_BOTH);
+
+   printf("\n");
    
-   return NULL;
+   printf("buf: %s\n", buf);
+
+   memset(buf, 0, sizeof(buf));
+   
+   stream_search(STREAM, "\r\n\r\n", STREAM_BOTH);
+
+   //stream_move(STREAM, 0, SEEK_SET, STREAM_BOTH);
+   
+   stream_read(STREAM, buf, 29, STREAM_BOTH);
+
+   printf("buf: %s\n", buf);
+   
+   return STREAM_DECODED;
 }
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.23 2004/04/07 11:30:47 lordnaga Exp $
+    $Id: ec_gtk_view_connections.c,v 1.24 2004/04/10 18:32:25 daten Exp $
 */
 
 #include <ec.h>
@@ -213,9 +213,9 @@ void gtkui_show_connections(void)
 
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_conns));
 
-   /* refresh the list every 500 ms */
+   /* refresh the list every 1000 ms */
    /* gtk_idle_add refreshes too fast, uses all cpu */
-   connections_idle = gtk_timeout_add(500, refresh_connections, NULL);
+   connections_idle = gtk_timeout_add(1000, refresh_connections, NULL);
 
    gtk_widget_show(conns_window);
 }
@@ -491,6 +491,9 @@ static void gtkui_connection_data_split(void)
    if(data_window) {
       child = gtk_bin_get_child(GTK_BIN (data_window));
       gtk_container_remove(GTK_CONTAINER (data_window), child);
+      textview3 = NULL;
+      joinedbuf = NULL;
+      endmark3 = NULL;     
    } else {
       data_window = gtkui_page_new("Connection data", &gtkui_destroy_conndata, &gtkui_connection_data_detach);
    }
@@ -779,6 +782,12 @@ static void gtkui_connection_data_join(void)
    if(data_window) {
       child = gtk_bin_get_child(GTK_BIN (data_window));
       gtk_container_remove(GTK_CONTAINER (data_window), child);
+      textview1 = NULL;
+      textview2 = NULL;
+      splitbuf1 = NULL;
+      splitbuf2 = NULL;
+      endmark1 = NULL;
+      endmark2 = NULL;
    } else {
       data_window = gtkui_page_new("Connection data", &gtkui_destroy_conndata, &gtkui_connection_data_detach);
    }
@@ -855,11 +864,11 @@ static void gtkui_connection_data_join(void)
 
 static gboolean gtkui_connections_scroll(gpointer data)
 {
-   if((int)data == 1) {
+   if((int)data == 1 && textview1 && endmark1 && textview2 && endmark2) {
       /* scroll split data views to bottom */
       gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview1), endmark1, 0, FALSE, 0, 0);
       gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview2), endmark2, 0, FALSE, 0, 0); 
-   } else {
+   } else if(textview3 && endmark3) {
       /* scroll joined data view to bottom */
       gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview3), endmark3, 0, FALSE, 0, 0);
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.8 2004/06/25 14:12:00 alor Exp $
+    $Id: dns_spoof.c,v 1.9 2004/06/25 14:24:28 alor Exp $
 */
 
 
@@ -26,7 +26,6 @@
 #include <ec_file.h>
 #include <ec_hook.h>
 #include <ec_resolv.h>
-#include <ec_strings.h>
 #include <ec_send.h>
 
 #include <stdlib.h>

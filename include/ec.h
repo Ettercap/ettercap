@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.23 2003/12/02 21:02:37 alor Exp $ */
+/* $Id: ec.h,v 1.24 2004/06/25 14:24:23 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -30,6 +30,7 @@
 #include <ec_debug.h>
 #include <ec_stdint.h>
 #include <ec_globals.h>
+#include <ec_strings.h>
 
 
 #define SAFE_CALLOC(x, n, s) do { \

@@ -17,13 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_update.c,v 1.13 2004/06/25 14:12:00 alor Exp $
+    $Id: ec_update.c,v 1.14 2004/06/25 14:24:29 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_socket.h>
 #include <ec_file.h>
-#include <ec_strings.h>
 
 #define ERR_MAX_LEN  128
 
@@ -184,7 +183,7 @@ static void update_file(char *tokens)
 
 /* 
  * get the current file revision 
- * it is stored in the cvs var $Revision: 1.13 $
+ * it is stored in the cvs var $Revision: 1.14 $
  */
 static int get_current_rev(char *file, char **curr, char *errbuf)
 {

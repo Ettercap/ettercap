@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp_spoofing.c,v 1.8 2004/05/04 20:11:49 alor Exp $
+    $Id: ec_dhcp_spoofing.c,v 1.9 2004/06/25 14:24:29 alor Exp $
 */
 
 #include <ec.h>
@@ -27,7 +27,6 @@
 #include <ec_threads.h>
 #include <ec_hook.h>
 #include <ec_packet.h>
-#include <ec_strings.h>
 #include <ec_proto.h>
 
 /* globals */

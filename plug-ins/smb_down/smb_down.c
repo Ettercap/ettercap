@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: smb_down.c,v 1.1 2003/10/16 16:46:48 alor Exp $
+    $Id: smb_down.c,v 1.2 2004/06/25 14:24:29 alor Exp $
 */
 
 
@@ -25,7 +25,6 @@
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_packet.h>
 #include <ec_hook.h>
-#include <ec_strings.h>
 
 
 typedef struct {

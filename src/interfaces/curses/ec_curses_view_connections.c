@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.18 2004/04/27 09:42:32 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.19 2004/06/25 14:24:29 alor Exp $
 */
 
 #include <ec.h>
@@ -26,7 +26,6 @@
 #include <ec_conntrack.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
-#include <ec_strings.h>
 #include <ec_format.h>
 #include <ec_inject.h>
 

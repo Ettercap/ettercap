@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: find_ettercap.c,v 1.4 2004/04/20 10:34:56 alor Exp $
+    $Id: find_ettercap.c,v 1.5 2004/06/25 14:24:28 alor Exp $
 */
 
 
@@ -25,7 +25,6 @@
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_file.h>
 #include <ec_hook.h>
-#include <ec_strings.h>
 
 #include <stdlib.h>
 #include <string.h>

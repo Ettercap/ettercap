@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_tables.c,v 1.12 2003/11/11 16:47:20 alor Exp $
+    $Id: ef_tables.c,v 1.13 2004/06/25 14:24:30 alor Exp $
 */
 
 #include <ef.h>
@@ -75,7 +75,7 @@ void load_tables(void)
    char *name = NULL, *oname = NULL;
    u_int8 level = 0, size = 0;
    u_int16 offset = 0;
-   
+   char *tok;
 
    /* open the file */ 
    fc = open_data("share", "etterfilter.tbl", FOPEN_READ_TEXT);
@@ -135,8 +135,8 @@ void load_tables(void)
       }
       
       /* parse the offsets and add them to the table */
-      oname = strtok(q, ":");
-      q = strtok(NULL, ":");
+      oname = ec_strtok(q, ":", &tok);
+      q = ec_strtok(NULL, ":", &tok);
       if (q && ((p = strchr(q, ' ')) || (p = strchr(q, '='))))
          *p = '\0';
       else
@@ -248,8 +248,8 @@ void load_constants(void)
    FILE *fc;
    char line[128];
    int lineno = 0, nconst = 0;
-   char *p, *q, *end;
-   
+   char *p, *q, *end, *tok;
+ 
    /* open the file */ 
    fc = open_data("share", "etterfilter.cnt", FOPEN_READ_TEXT);
    ON_ERROR(fc, NULL, "Cannot find file etterfilter.cnt");
@@ -279,7 +279,7 @@ void load_constants(void)
       for (q = line; *q == ' ' && q < end; q++);
 
       /* get the constant */
-      if (strstr(line, "=") && (q = strtok(line, "=")) != NULL) {
+      if (strstr(line, "=") && (q = ec_strtok(line, "=", &tok)) != NULL) {
          /* trim out the space */
          if ((p = strchr(q, ' ')))
             *p = '\0';
@@ -289,7 +289,7 @@ void load_constants(void)
          /* get the name */
          c->name = strdup(q);
          
-         if ((q = strtok(NULL, "=")) == NULL)
+         if ((q = ec_strtok(NULL, "=", &tok)) == NULL)
             FATAL_ERROR("Invalid constant on line %d", lineno);
 
          /* eat the empty spaces */

@@ -17,14 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.22 2004/02/16 21:15:32 alor Exp $
+    $Id: ef_grammar.y,v 1.23 2004/06/25 14:24:30 alor Exp $
 */
 
 %{
 
 #include <ef.h>
 #include <ef_functions.h>
-#include <ec_strings.h>
 #include <ec_filter.h>
 
 #define YYERROR_VERBOSE

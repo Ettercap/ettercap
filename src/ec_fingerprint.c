@@ -17,13 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_fingerprint.c,v 1.22 2004/06/08 20:05:36 alor Exp $
+    $Id: ec_fingerprint.c,v 1.23 2004/06/25 14:24:29 alor Exp $
 
 */
 
 #include <ec.h>
 #include <ec_file.h>
-#include <ec_strings.h>
 #include <ec_socket.h>
 #include <ec_fingerprint.h>
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.32 2004/05/05 12:34:52 alor Exp $
+    $Id: ec_pop.c,v 1.33 2004/06/25 14:24:29 alor Exp $
 */
 
 /*
@@ -35,7 +35,6 @@
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_session.h>
-#include <ec_strings.h>
 #include <ec_sslwrap.h>
 
 /* protos */

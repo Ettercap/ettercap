@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.28 2004/06/25 14:12:00 alor Exp $
+    $Id: ec_wifi.c,v 1.29 2004/06/25 14:24:30 alor Exp $
 */
 
 #include <ec.h>
@@ -25,7 +25,6 @@
 #include <ec_dissect.h>
 #include <ec_capture.h>
 #include <ec_checksum.h>
-#include <ec_strings.h>
 
 #ifdef HAVE_OPENSSL
    #include <openssl/rc4.h>

@@ -20,7 +20,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: gw_discover.c,v 1.3 2004/04/17 15:12:37 alor Exp $
+    $Id: gw_discover.c,v 1.4 2004/06/25 14:24:28 alor Exp $
 */
 
 
@@ -104,7 +104,7 @@ static int get_remote_target(struct ip_addr *ip, u_int16 *port)
 {
    struct in_addr ipaddr;
    char input[24];
-   char *p;
+   char *p, *tok;
 
    memset(input, 0, sizeof(input));
    
@@ -116,14 +116,14 @@ static int get_remote_target(struct ip_addr *ip, u_int16 *port)
       return -EINVALID;
    
    /* get the hostname */
-   if ((p = strtok(input, ":")) != NULL) {
+   if ((p = ec_strtok(input, ":", &tok)) != NULL) {
       if (inet_aton(p, &ipaddr) == 0)
          return -EINVALID;
 
       ip_addr_init(ip, AF_INET, (char *)&ipaddr);
 
       /* get the port */
-      if ((p = strtok(NULL, ":")) != NULL) {
+      if ((p = ec_strtok(NULL, ":", &tok)) != NULL) {
          *port = atoi(p);
 
          /* correct parsing */

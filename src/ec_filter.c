@@ -17,12 +17,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.50 2004/04/07 07:14:46 alor Exp $
+    $Id: ec_filter.c,v 1.51 2004/06/25 14:24:29 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_filter.h>
-#include <ec_strings.h>
 #include <ec_version.h>
 #include <ec_threads.h>
 #include <ec_send.h>

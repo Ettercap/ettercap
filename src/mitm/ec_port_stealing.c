@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.12 2004/04/08 09:02:39 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.13 2004/06/25 14:24:29 alor Exp $
 */
 
 #include <ec.h>
@@ -25,7 +25,6 @@
 #include <ec_send.h>
 #include <ec_threads.h>
 #include <ec_ui.h>
-#include <ec_strings.h>
 #include <ec_hook.h>
 
 

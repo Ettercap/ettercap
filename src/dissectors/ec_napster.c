@@ -17,13 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_napster.c,v 1.5 2004/06/25 14:12:00 alor Exp $
+    $Id: ec_napster.c,v 1.6 2004/06/25 14:24:29 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
-#include <ec_strings.h>
 
 /* globals */
 

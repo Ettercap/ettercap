@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.17 2004/05/19 13:17:27 alor Exp $ */
+/* $Id: el.h,v 1.18 2004/06/25 14:24:26 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -33,6 +33,7 @@
 #include <ec_error.h>
 #include <ec_log.h>
 #include <ec_profiles.h>
+#include <ec_strings.h>
 
 #include <zlib.h>
 #include <regex.h>

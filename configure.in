@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.109 2004/04/05 12:17:59 alor Exp $
+dnl    $Id: configure.in,v 1.110 2004/04/06 15:12:56 alor Exp $
 dnl
 
 AC_INIT
@@ -454,7 +454,7 @@ if test "$OS" = "WINDOWS"; then
    AC_CHECK_LIB(wpcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect libpcap version. winpcap >= 0.8.1 required]))
    AC_CHECK_LIB(packet, PacketInitPacket,, AC_MSG_ERROR([Incorrect libpacket version. winpcap >= 0.8.1 required]))
    AC_CHECK_LIB(ws2_32, ntohs,, AC_MSG_ERROR([Incorrect ws2_32 version.]))
-   AC_CHECK_LIB(iphlpapi, SendARP,, AC_MSG_ERROR([Incorrect iphlpapi version.]))
+   AC_CHECK_LIB(iphlpapi, main)
 else
    AC_CHECK_LIB(pcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
 fi

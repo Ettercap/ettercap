@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.14 2004/03/19 19:36:07 daten Exp $
+    $Id: ec_gtk.c,v 1.15 2004/04/06 15:13:02 alor Exp $
 */
 
 #include <ec.h>
@@ -607,7 +607,7 @@ static void gtkui_unified_sniff(void)
 {
    char err[PCAP_ERRBUF_SIZE];
    
-#define IFACE_LEN  10
+#define IFACE_LEN  50
    
    DEBUG_MSG("gtk_unified_sniff");
    
@@ -627,7 +627,7 @@ static void gtkui_unified_sniff(void)
 static void gtkui_unified_sniff_default(void) {
    char err[PCAP_ERRBUF_SIZE];
    
-   #define IFACE_LEN  10
+#define IFACE_LEN  50
 
    DEBUG_MSG("gtkui_unified_sniff_default");
 

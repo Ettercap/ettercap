@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.56 2004/03/26 17:22:17 alor Exp $ */
+/* $Id: ec_globals.h,v 1.57 2004/04/06 15:12:57 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -81,6 +81,7 @@ struct program_env {
 
 /* pcap structure */
 struct pcap_env {
+   void     *ifs;          /* this is a pcap_if_t pointer */
    void     *pcap;         /* this is a pcap_t pointer */
    void     *pcap_bridge;  /* this is a pcap_t pointer */
    void     *dump;         /* this is a pcap_dumper_t pointer */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.43 2004/04/02 15:23:25 alor Exp $
+    $Id: ec_capture.c,v 1.44 2004/04/06 15:12:57 alor Exp $
 */
 
 #include <ec.h>
@@ -63,6 +63,7 @@ EC_THREAD_FUNC(capture);
 EC_THREAD_FUNC(capture_bridge);
 
 void get_hw_info(void);
+void capture_getifs(void);
 int is_pcap_file(char *file, char *errbuf);
 
 static void set_alignment(int dlt);
@@ -278,6 +279,58 @@ EC_THREAD_FUNC(capture_bridge)
    return NULL;
 }
 
+/*
+ * get the list of all network interfaces
+ */
+void capture_getifs(void)
+{
+   pcap_if_t *dev, *pdev, *ndev;
+   char pcap_errbuf[PCAP_ERRBUF_SIZE];
+   
+   DEBUG_MSG("capture_getifs");
+  
+   /* retrieve the list */
+   if (pcap_findalldevs((pcap_if_t **)&GBL_PCAP->ifs, pcap_errbuf) == -1)
+      ERROR_MSG("%s", pcap_errbuf);
+
+   /* analize the list and remove unwanted entries */
+   for (pdev = dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = ndev) {
+      
+      /* the next entry in the list */
+      ndev = dev->next;
+      
+      /* set the description for the local loopback */
+      if (dev->flags & PCAP_IF_LOOPBACK) {
+         SAFE_FREE(dev->description);
+         dev->description = strdup("Local Loopback");
+      }
+     
+      /* fill the empty descriptions */
+      if (dev->description == NULL)
+         dev->description = dev->name;
+
+      /* remove the pseudo device 'any' */
+      if (!strcmp(dev->name, "any")) {
+         SAFE_FREE(dev->name);
+         SAFE_FREE(dev->description);
+         SAFE_FREE(dev);
+       
+         /* chek if it is the first in the list */
+         if (pdev == GBL_PCAP->ifs)
+            GBL_PCAP->ifs = ndev;
+         else
+            pdev->next = ndev;
+
+         continue;
+      }
+     
+      /* remember the previous device for the next loop */
+      pdev = dev;
+      
+      DEBUG_MSG("capture_getifs: [%s] %s", dev->name, dev->description);
+   }
+                   
+}
 
 /* 
  * retrieve the IP and the MAC address of the hardware

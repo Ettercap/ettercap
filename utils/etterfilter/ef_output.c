@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_output.c,v 1.8 2003/11/13 21:35:43 alor Exp $
+    $Id: ef_output.c,v 1.9 2004/09/30 16:01:45 alor Exp $
 */
 
 #include <ef.h>
@@ -54,7 +54,7 @@ int write_output(void)
       return -ENOTHANDLED;
 
    /* create the file */
-   fd = open(GBL_OPTIONS.output_file, O_CREAT | O_RDWR | O_TRUNC, 0644);
+   fd = open(GBL_OPTIONS.output_file, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0644);
    ON_ERROR(fd, -1, "Can't create file %s", GBL_OPTIONS.output_file);
 
    /* display the message */

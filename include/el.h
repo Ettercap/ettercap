@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.23 2004/09/24 15:10:01 alor Exp $ */
+/* $Id: el.h,v 1.24 2004/09/30 16:01:45 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -60,6 +60,11 @@
 #define __init __attribute__ ((constructor))
 
 #define LOOP for(;;)
+
+/* file operations */ 
+#ifndef OS_WINDOWS
+   #define O_BINARY  0
+#endif
 
 struct ip_list {
    struct ip_addr ip;

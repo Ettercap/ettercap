@@ -1,5 +1,5 @@
 
-/* $Id: ef.h,v 1.16 2004/07/29 09:46:47 alor Exp $ */
+/* $Id: ef.h,v 1.17 2004/09/30 16:01:45 alor Exp $ */
 
 #ifndef EF_H
 #define EF_H
@@ -56,6 +56,10 @@
 
 #define LOOP for(;;)
 
+/* file operations */ 
+#ifndef OS_WINDOWS
+   #define O_BINARY  0
+#endif
 
 struct globals {
    char *source_file;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.40 2004/07/01 20:45:43 alor Exp $
+    $Id: ec_log.c,v 1.41 2004/09/30 16:01:45 alor Exp $
 */
 
 #include <ec.h>
@@ -190,7 +190,7 @@ int log_open(struct log_fd *fd, char *filename)
       if (fd->cfd == NULL)
          SEMIFATAL_ERROR("%s", gzerror(fd->cfd, &zerr));
    } else {
-      fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR);
+      fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY);
       if (fd->fd == -1)
          SEMIFATAL_ERROR("Can't create %s: %s", filename, strerror(errno));
    }

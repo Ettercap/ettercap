@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.40 2004/09/30 14:54:14 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.41 2004/09/30 16:01:45 alor Exp $
 */
 
 #include <ec.h>
@@ -1343,7 +1343,7 @@ static void gtkui_inject_file(char *filename, int side)
    DEBUG_MSG("inject_file %s", filename);
    
    /* open the file */
-   if ((fd = open(filename, O_RDONLY)) == -1) {
+   if ((fd = open(filename, O_RDONLY | O_BINARY)) == -1) {
       ui_error("Can't load the file");
       return;
    }

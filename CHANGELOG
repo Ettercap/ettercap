@@ -15,6 +15,7 @@ NG-0.7.2         200410
      (see the man page etter.conf(5) for details)
    !! do not drop privs under windows (useless) 
    !! fixed the mmap problem under windows
+   !! fixed file operation under windows (O_BINARY related)
 
 
 NG-0.7.1         20040920

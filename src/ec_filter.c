@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.55 2004/09/30 14:54:14 alor Exp $
+    $Id: ec_filter.c,v 1.56 2004/09/30 16:01:45 alor Exp $
 */
 
 #include <ec.h>
@@ -33,13 +33,6 @@
 #include <regex.h>
 #ifdef HAVE_PCRE
    #include <pcre.h>
-#endif
-
-#ifndef O_BINARY
-   /* usually this is defined only under windows. so let do nothing
-    * if we are compiling under a different platform
-    */
-   #define O_BINARY  0
 #endif
 
 

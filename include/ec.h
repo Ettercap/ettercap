@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.29 2004/07/23 07:25:27 alor Exp $ */
+/* $Id: ec.h,v 1.30 2004/09/30 16:01:45 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -95,6 +95,11 @@
 #endif
 #ifndef MAX
    #define MAX(a, b)    (((a) > (b)) ? (a) : (b))
+#endif
+
+/* file operations */ 
+#ifndef OS_WINDOWS
+   #define O_BINARY  0
 #endif
 
 /* bit operations */

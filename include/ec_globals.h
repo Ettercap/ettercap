@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.41 2003/10/28 22:15:02 alor Exp $ */
+/* $Id: ec_globals.h,v 1.42 2003/10/29 23:34:40 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -125,8 +125,6 @@ struct hosts_list {
 
 /* the globals container */
 struct globals {
-   /* set to 1 to stop thread creation (used by clean_exit) */
-   int global_lock;
    struct ec_conf *conf;
    struct ec_options *options;
    struct gbl_stats *stats;
@@ -147,8 +145,6 @@ struct globals {
 extern struct globals *gbls;
 
 #define GBLS gbls
-
-#define GBL_LOCK           (GBLS->global_lock)
 
 #define GBL_CONF           (GBLS->conf)
 #define GBL_OPTIONS        (GBLS->options)

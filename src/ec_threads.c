@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.18 2003/10/29 22:38:19 alor Exp $
+    $Id: ec_threads.c,v 1.19 2003/10/29 23:34:50 alor Exp $
 */
 
 #include <ec.h>
@@ -176,12 +176,6 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
 {
    pthread_t id;
 
-   /* don't create new threads if the lock is set (clean_exit called) */
-   if (GBL_LOCK) {
-      DEBUG_MSG("ec_thread_new -- stopped by GBL_LOCK");
-      return 0;
-   }
-   
    DEBUG_MSG("ec_thread_new -- %s", name);
 
    /* 

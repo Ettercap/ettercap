@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.24 2003/10/25 21:57:42 alor Exp $
+    $Id: ec_ui.c,v 1.25 2003/10/29 23:34:50 alor Exp $
 */
 
 #include <ec.h>
@@ -249,9 +249,13 @@ int ui_msg_flush(int max)
 {
    int i = 0;
    struct ui_message *msg;
-
+   
    /* the queue is updated by other threads */
    UI_MSG_LOCK;
+   
+   /* sanity check */
+   if (!GBL_UI->initialized)
+      return 0;
       
    while ( (msg = SIMPLEQ_FIRST(&messages_queue)) != NULL) {
 

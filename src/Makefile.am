@@ -4,81 +4,96 @@ include $(top_srcdir)/Makefile.am.common
 bin_PROGRAMS = ettercap
 
 ettercap_SOURCES = ec_capture.c \
-               ec_checksum.c \
-               ec_conf.c \
-               ec_connbuf.c \
-               ec_conntrack.c \
-               ec_debug.c \
-               ec_decode.c \
-               ec_dispatcher.c \
-               ec_dissect.c \
-               ec_error.c \
-               ec_file.c \
-               ec_filter.c \
-               ec_fingerprint.c \
-               ec_format.c \
-               ec_globals.c \
-               ec_hash.c \
-               ec_hook.c \
-               ec_inet.c \
-               ec_inject.c \
-               ec_log.c \
-               ec_main.c \
-               ec_manuf.c \
-               ec_mitm.c \
-               ec_packet.c \
-               ec_parser.c \
-               ec_passive.c \
-               ec_plugins.c \
-               ec_poll.c \
-               ec_profiles.c \
-               ec_resolv.c \
-               ec_scan.c \
-               ec_send.c \
-               ec_services.c \
-               ec_session.c \
-               ec_signals.c \
-               ec_socket.c \
-               ec_sniff.c \
-               ec_sniff_bridge.c \
-               ec_sniff_unified.c \
-               ec_stats.c \
-               ec_streambuf.c \
-               ec_strings.c \
-               ec_threads.c \
-               ec_ui.c \
-               ec_update.c \
-				   interfaces/console/ec_console.c \
-				   interfaces/console/ec_console_conn.c \
-				   interfaces/console/ec_console_display.c \
-				   interfaces/console/ec_console_profile.c \
-				   interfaces/console/ec_console_plugin.c \
-				   interfaces/daemon/ec_daemon.c \
-               mitm/ec_arp_poisoning.c \
-				   protocols/ec_eth.c \
-				   protocols/ec_wifi.c \
-				   protocols/ec_arp.c \
-				   protocols/ec_ip.c \
-				   protocols/ec_ip6.c \
-				   protocols/ec_tcp.c \
-				   protocols/ec_udp.c \
-				   protocols/ec_icmp.c \
-				   dissectors/ec_ftp.c \
-				   dissectors/ec_imap.c \
-				   dissectors/ec_irc.c \
-				   dissectors/ec_mysql.c \
-				   dissectors/ec_nntp.c \
-				   dissectors/ec_pop.c \
-				   dissectors/ec_rlogin.c \
-				   dissectors/ec_snmp.c \
-				   dissectors/ec_telnet.c \
-				   dissectors/ec_vnc.c \
-				   dissectors/ec_x11.c 
+                   ec_checksum.c \
+                   ec_conf.c \
+                   ec_connbuf.c \
+                   ec_conntrack.c \
+                   ec_debug.c \
+                   ec_decode.c \
+                   ec_dispatcher.c \
+                   ec_dissect.c \
+                   ec_error.c \
+                   ec_file.c \
+                   ec_filter.c \
+                   ec_fingerprint.c \
+                   ec_format.c \
+                   ec_globals.c \
+                   ec_hash.c \
+                   ec_hook.c \
+                   ec_inet.c \
+                   ec_inject.c \
+                   ec_log.c \
+                   ec_main.c \
+                   ec_manuf.c \
+                   ec_mitm.c \
+                   ec_packet.c \
+                   ec_parser.c \
+                   ec_passive.c \
+                   ec_plugins.c \
+                   ec_poll.c \
+                   ec_profiles.c \
+                   ec_resolv.c \
+                   ec_scan.c \
+                   ec_send.c \
+                   ec_services.c \
+                   ec_session.c \
+                   ec_signals.c \
+                   ec_socket.c \
+                   ec_sniff.c \
+                   ec_sniff_bridge.c \
+                   ec_sniff_unified.c \
+                   ec_stats.c \
+                   ec_streambuf.c \
+                   ec_strings.c \
+                   ec_threads.c \
+                   ec_ui.c \
+                   ec_update.c 
 
-### Conditiaonal compilations 
+ettercap_SOURCES += interfaces/console/ec_console.c \
+                    interfaces/console/ec_console_conn.c \
+                    interfaces/console/ec_console_display.c \
+                    interfaces/console/ec_console_profile.c \
+                    interfaces/console/ec_console_plugin.c
+                    
+ettercap_SOURCES += interfaces/daemon/ec_daemon.c
 
+if NCURSES
+#ettercap_SOURCES += interfaces/ncurses/ec_ncurses.c
+endif
+
+if GTK
+#ettercap_SOURCES += interfaces/gtk/ec_gtk.c
+endif
+                    
+ettercap_SOURCES += mitm/ec_arp_poisoning.c
+
+ettercap_SOURCES += protocols/ec_eth.c \
+				        protocols/ec_wifi.c \
+				        protocols/ec_arp.c \
+				        protocols/ec_ip.c \
+				        protocols/ec_ip6.c \
+				        protocols/ec_tcp.c \
+				        protocols/ec_udp.c \
+				        protocols/ec_icmp.c 
+               
 if HAVE_DN_EXPAND
 ettercap_SOURCES += dissectors/ec_dns.c
+endif
+
+ettercap_SOURCES += dissectors/ec_ftp.c \
+				        dissectors/ec_imap.c \
+				        dissectors/ec_irc.c \
+				        dissectors/ec_mysql.c \
+				        dissectors/ec_nntp.c \
+				        dissectors/ec_pop.c \
+				        dissectors/ec_rlogin.c \
+				        dissectors/ec_snmp.c \
+				        dissectors/ec_telnet.c \
+				        dissectors/ec_vnc.c \
+				        dissectors/ec_x11.c 
+if OPENSSL
+#ettercap_SOURCES += dissectors/ec_https.c \
+#                    dissector/ec_ssh.c
 endif
 
 ### OS dependent
@@ -97,10 +112,6 @@ ettercap_SOURCES += os/ec_solaris.c
 endif
 if CYGWIN
 ettercap_SOURCES += os/ec_cygwin.c
-endif
-
-if NCURSES
-#ettercap_SOURCES += interfaces/ncurses/ec_ncurses.c
 endif
 
 

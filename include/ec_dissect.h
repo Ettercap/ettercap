@@ -1,5 +1,5 @@
 
-/* $Id: ec_dissect.h,v 1.12 2003/10/09 12:07:15 lordnaga Exp $ */
+/* $Id: ec_dissect.h,v 1.13 2003/10/17 15:21:50 lordnaga Exp $ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H
@@ -42,7 +42,7 @@ extern int dissect_on_port(char *name, u_int16 port);
  */
 
 #define CREATE_SESSION_ON_SYN_ACK(name, session) do{        \
-      if (dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS && (PACKET->L4.flags & TH_SYN) && (PACKET->L4.flags & TH_ACK)) { \
+      if ((PACKET->L4.flags & TH_SYN) && (PACKET->L4.flags & TH_ACK) && dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS) { \
          DEBUG_MSG("%s --> create_session_on_syn_ack", name);   \
          /* create the session */                           \
          dissect_create_session(&session, PACKET);          \

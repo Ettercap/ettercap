@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.2 2003/03/13 11:01:48 alor Exp $
 */
 
 #include <ec.h>
@@ -28,6 +28,8 @@
 #include <ec_dispatcher.h>
 #include <ec_send.h>
 #include <ec_inet.h>
+#include <ec_fingerprint.h>
+#include <ec_manuf.h>
 #include <ec_ui.h>
 
 /* global vars */
@@ -87,10 +89,10 @@ int main(int argc, char *argv[])
    drop_privs();
   
    /* load the mac-fingerprints */
-//   manuf_init();
+   manuf_init();
 
    /* load the tcp-fingerprints */
-//   fingerprint_init();
+   fingerprint_init();
    
 /**** INITIALIZATION PHASE TERMINATED ****/
    
@@ -125,10 +127,22 @@ int main(int argc, char *argv[])
 
 void drop_privs(void)
 {
-   DEBUG_MSG("drop_privs: setuid(%d)", DROP_TO_UID);
+   int uid;
+   char *var;
+  
+   /* get the env variable for the UID to drop privs to */
+   var = getenv("EC_UID");
+   
+   /* if the EC_UID variable is not set, default to DROP_TO_UID (nobody) */
+   if (var != NULL)
+      uid = atoi(var);
+   else
+      uid = DROP_TO_UID;
+   
+   DEBUG_MSG("drop_privs: setuid(%d)", uid);
    
    /* drop to a good uid ;) */
-   if ( setuid(DROP_TO_UID) < 0)
+   if ( setuid(uid) < 0)
       ERROR_MSG("setuid()");
 
    if (setuid(0) == 0)

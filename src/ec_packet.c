@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.3 2003/03/12 17:21:50 alor Exp $
+    $Id: ec_packet.c,v 1.4 2003/03/13 11:01:48 alor Exp $
 */
 
 #include <ec.h>
@@ -78,6 +78,9 @@ int packet_destroy_object(struct packet_object **po)
    SAFE_FREE((*po)->INFO.user);
    SAFE_FREE((*po)->INFO.pass);
    SAFE_FREE((*po)->INFO.info);
+  
+   /* XXX - passive needs it */
+   fingerprint_destroy(&(*po)->PASSIVE.fingerprint);
    
    /* 
     * free the disp_data pointer i
@@ -166,6 +169,7 @@ void packet_print(struct packet_object *po)
    USER_MSG("INFO:user    %s\n", po->INFO.user);
    USER_MSG("     pass    %s\n", po->INFO.pass);
    USER_MSG("     info    %s\n", po->INFO.info);
+   USER_MSG("PASS:finger  %s\n", po->PASSIVE.fingerprint);
    
 }
    

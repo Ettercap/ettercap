@@ -5,12 +5,18 @@
    + PO incapsulated ?
    + lnet ptag thread safe (check it)
    + speed up the visualization of user_msg (poll related)
- 
+
+   + man page for EC_UID (drop privs)
+
+   + utils
 
    + DISSECTORS over decoders
       - vbuf functions
 
-   !! dissector malloc the infos, someone have to free them... !!
+   + PASSIVE FINGERPRINT
+   
+   !! dissector malloc the INFO, someone have to free them... !!
+   !! dissector malloc the PASSIVE, someone have to free them... !!
 
    + SNIFFING ENGINE
       - arp sniff
@@ -19,6 +25,8 @@
          - only possible on eth
       - bridged sniffing (for now it is one-way)
          - dump on bridge
+   
+   + PLUGINS ENGINE
    
    + FILTERING ENGINE
       - implement the sessions
@@ -30,11 +38,12 @@
          - passive mapping
          - sniffing
          - logging
-         
-   + PASSIVE FINGERPRINT
-
-   + PLUGINS ENGINE
-
+   
+   
+   + DISSECTORS
+      - all the old dissectors
+      - HTTPS without the dirty trick (can we use loopback?)
+      
    + INTERFACE ENGINE
       - console
       - daemonized

@@ -4,6 +4,7 @@
 
 #include <ec_proto.h>
 #include <ec_profiles.h>
+#include <ec_fingerprint.h>
 #include <ec_inet.h>
 
 struct packet_object {
@@ -74,6 +75,9 @@ struct packet_object {
     * the "char *" are malloc(ed) by dissectors
     */
    struct dissector_info INFO;
+  
+   /* the struct for passive identification */
+   struct passive_info PASSIVE;
    
 };
 

@@ -15,11 +15,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.2 2003/03/13 11:01:48 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
+#include <ec_fingerprint.h>
 
 /* globals */
 
@@ -104,20 +105,17 @@ FUNC_DECODER(decode_ip)
    
    /* XXX - implemet checksum check */
 
-#if 0
-   /* XXX - implement fingerprint */
    
-   /* if there is a TCP packet, try to passive fingerprint it */
-   if (ip->protocol == LN_TYPE_TCP) {
+   /* if it is a TCP packet, try to passive fingerprint it */
+   if (ip->protocol == NL_TYPE_TCP) {
       /* initialize passive fingerprint */
-      BUCKET->L4->fingerprint = fingerprint_alloc();
+      PACKET->PASSIVE.fingerprint = fingerprint_alloc();
   
       /* collect ifos for passive fingerprint */
-      fingerprint_push(BUCKET->L4->fingerprint, FINGER_TTL, ip->ttl);
-      fingerprint_push(BUCKET->L4->fingerprint, FINGER_DF, ntohs(ip->frag_off) & IP_DF);
-      fingerprint_push(BUCKET->L4->fingerprint, FINGER_LT, ip->ihl * 4);
+      fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_TTL, ip->ttl);
+      fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_DF, ntohs(ip->frag_off) & IP_DF);
+      fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_LT, ip->ihl * 4);
    }
-#endif
    
    next_decoder = get_decoder(PROTO_LAYER, ip->protocol);
 

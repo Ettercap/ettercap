@@ -15,11 +15,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.3 2003/03/12 17:21:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.4 2003/03/13 11:01:48 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
+#include <ec_fingerprint.h>
 
 
 /* globals */
@@ -115,20 +116,18 @@ FUNC_DECODER(decode_tcp)
    
    /* XXX - implemet checksum check */
      
-#if 0
    /* 
-    * complete the passive fingerprint
+    * complete the passive fingerprint (started at IP layer)
     * we are intereste only in SYN or SYN+ACK packets 
     * else we can destroy the fingerprint
     */
 
-   if (tcp->flags & TH_SYN) {
+   if ( (PACKET->PASSIVE.fingerprint != NULL) && (tcp->flags & TH_SYN)) {
    
-      
-      fingerprint_push(BUCKET->L4->fingerprint, FINGER_WINDOW, ntohs(tcp->win));
-      fingerprint_push(BUCKET->L4->fingerprint, FINGER_TCPFLAG, (tcp->flags & TH_ACK) ? 1 : 0);
-      /* this should be added to the len of ip header */
-      fingerprint_push(BUCKET->L4->fingerprint, FINGER_LT, tcp->off * 4);
+      fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_WINDOW, ntohs(tcp->win));
+      fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_TCPFLAG, (tcp->flags & TH_ACK) ? 1 : 0);
+      /* this is added to the len of ip header (automatic) */
+      fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_LT, tcp->off * 4);
    
       while (opt_start < opt_end) {
          switch (*opt_start) {
@@ -137,25 +136,25 @@ FUNC_DECODER(decode_tcp)
                opt_start = opt_end;
                break;
             case TCPOPT_NOP:
-               fingerprint_push(BUCKET->L4->fingerprint, FINGER_NOP, 1);
+               fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_NOP, 1);
                opt_start++;
                break;
             case TCPOPT_SACKOK:
-               fingerprint_push(BUCKET->L4->fingerprint, FINGER_SACK, 1);
+               fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_SACK, 1);
                opt_start += 2;
                break;
             case TCPOPT_MAXSEG:
                opt_start += 2;
-               fingerprint_push(BUCKET->L4->fingerprint, FINGER_MSS, ntohs(ptohs(opt_start)));
+               fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_MSS, ntohs(ptohs(opt_start)));
                opt_start += 2;
                break;
             case TCPOPT_WSCALE:
                opt_start += 2;
-               fingerprint_push(BUCKET->L4->fingerprint, FINGER_WS, *opt_start);
+               fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_WS, *opt_start);
                opt_start++;
                break;
             case TCPOPT_TIMESTAMP:
-               fingerprint_push(BUCKET->L4->fingerprint, FINGER_TIMESTAMP, 1);
+               fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_TIMESTAMP, 1);
                opt_start++;
                opt_start += (*opt_start - 1);
                break;
@@ -168,9 +167,9 @@ FUNC_DECODER(decode_tcp)
       }
       
    } else {
-      fingerprint_destroy(&BUCKET->L4->fingerprint);
+      /* not an interesting packet */
+      fingerprint_destroy(&PACKET->PASSIVE.fingerprint);
    }
-#endif
    
    /* get the next decoder */
    next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);

@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.30 2004/01/20 10:03:51 alor Exp $ */
+/* $Id: wdg.h,v 1.31 2004/02/01 15:47:22 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -39,7 +39,7 @@
 #endif
 
 
-#define LIBWDG_VERSION "0.9.1"
+#define LIBWDG_VERSION "0.10.0"
    
 /********************************************/
 
@@ -161,6 +161,7 @@ struct wdg_object {
       #define WDG_FILE        7
       #define WDG_INPUT       8
       #define WDG_LIST        9
+      #define WDG_DYNLIST    10
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
@@ -254,6 +255,10 @@ struct wdg_list {
 void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list);
 void wdg_list_add_callback(wdg_t *wo, int key, void (*callback)(void *));
 void wdg_list_refresh(wdg_t *wo);
+/* dynlist objects */
+void wdg_dynlist_refresh(wdg_t *wo);
+void wdg_dynlist_print_callback(wdg_t *wo, void * func(int mode, void *list, char **desc, size_t len));
+void wdg_dynlist_add_callback(wdg_t *wo, int key, void (*callback)(void *));
 
 
 /* EXPORTED FUNCTIONS */

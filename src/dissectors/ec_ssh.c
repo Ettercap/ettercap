@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.12 2003/10/28 22:15:04 alor Exp $
+    $Id: ec_ssh.c,v 1.13 2003/10/29 20:41:08 alor Exp $
 */
 
 #include <ec.h>
@@ -111,7 +111,7 @@ void __init ssh_init(void)
 
 FUNC_DECODER(dissector_ssh)
 {
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    ssh_session_data *session_data;
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];

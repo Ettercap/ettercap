@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socks.c,v 1.5 2003/10/28 22:15:04 alor Exp $
+    $Id: ec_socks.c,v 1.6 2003/10/29 20:41:08 alor Exp $
 */
 
 #include <ec.h>
@@ -47,7 +47,7 @@ void __init socks_init(void)
 FUNC_DECODER(dissector_socks)
 {
    DECLARE_DISP_PTR_END(ptr, end);
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
    u_int16 d_len; /* We don't want heap overflows :) */

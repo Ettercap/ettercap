@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.50 2003/10/28 22:15:03 alor Exp $
+    $Id: ec_parser.c,v 1.51 2003/10/29 20:41:07 alor Exp $
 */
 
 
@@ -363,12 +363,12 @@ void parse_options(int argc, char **argv)
    /* if not specified default to // */
    if (!GBL_OPTIONS->target1)
       GBL_OPTIONS->target1 = strdup("//");
-   else if (!strcmp(GBL_OPTIONS->target1, "//"))
+   else if (!strncmp(GBL_OPTIONS->target1, "//", 2))
       GBL_TARGET1->scan_all = 1;
    
    if (!GBL_OPTIONS->target2)
       GBL_OPTIONS->target2 = strdup("//");
-   else if (!strcmp(GBL_OPTIONS->target2, "//"))
+   else if (!strncmp(GBL_OPTIONS->target2, "//", 2))
       GBL_TARGET2->scan_all = 1;
  
    /* create the list form the TARGET format (MAC/IPrange/PORTrange) */

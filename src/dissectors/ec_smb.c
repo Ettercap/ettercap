@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.10 2003/10/28 22:15:04 alor Exp $
+    $Id: ec_smb.c,v 1.11 2003/10/29 20:41:07 alor Exp $
 */
 
 #include <ec.h>
@@ -90,7 +90,7 @@ void __init smb_init(void)
 FUNC_DECODER(dissector_smb)
 {
    u_char *ptr;
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    smb_session_data *session_data;
    void *ident = NULL;
    SMB_header *smb;

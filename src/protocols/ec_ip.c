@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.31 2003/10/24 12:49:29 lordnaga Exp $
+    $Id: ec_ip.c,v 1.32 2003/10/29 20:41:08 alor Exp $
 */
 
 #include <ec.h>
@@ -77,7 +77,7 @@ FUNC_INJECTOR(inject_ip);
 FUNC_INJECTOR(stateless_ip);
 void ip_init(void);
 int ip_match(void *id_sess, void *id_curr);
-void ip_create_session(struct session **s, struct packet_object *po);
+void ip_create_session(struct ec_session **s, struct packet_object *po);
 size_t ip_create_ident(void **i, struct packet_object *po);            
 
 
@@ -100,7 +100,7 @@ FUNC_DECODER(decode_ip)
 {
    FUNC_DECODER_PTR(next_decoder);
    struct ip_header *ip;
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    void *ident = NULL;
    struct ip_status *status = NULL;
 
@@ -251,7 +251,7 @@ FUNC_DECODER(decode_ip)
 /*******************************************/
 FUNC_INJECTOR(inject_ip)
 {
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    struct ip_status *status;
    struct ip_header *iph;
    size_t further_len, payload_len;
@@ -331,7 +331,7 @@ FUNC_INJECTOR(inject_ip)
 /* Used to link sessionless udp with correct ip session */
 FUNC_INJECTOR(stateless_ip)
 {
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    void *ident = NULL;
 
    /* Find the correct IP session */
@@ -414,14 +414,14 @@ int ip_match(void *id_sess, void *id_curr)
  * for ip layer.
  */
 
-void ip_create_session(struct session **s, struct packet_object *po)
+void ip_create_session(struct ec_session **s, struct packet_object *po)
 {
    void *ident;
 
    DEBUG_MSG("ip_create_session");
    
    /* allocate the session */
-   SAFE_CALLOC(*s, 1, sizeof(struct session));
+   SAFE_CALLOC(*s, 1, sizeof(struct ec_session));
    
    /* create the ident */
    (*s)->ident_len = ip_create_ident(&ident, po);

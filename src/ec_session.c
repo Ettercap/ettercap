@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.17 2003/10/09 14:49:45 alor Exp $
+    $Id: ec_session.c,v 1.18 2003/10/29 20:41:07 alor Exp $
 */
 
 #include <ec.h>
@@ -36,7 +36,7 @@
 struct session_list {
    pthread_t id;
    time_t ts;
-   struct session *s;
+   struct ec_session *s;
    LIST_ENTRY (session_list) next;
 };
 
@@ -46,13 +46,13 @@ static LIST_HEAD(, session_list) session_list_head[TABSIZE];
 
 /* protos */
 
-void session_put(struct session *s);
-int session_get(struct session **s, void *ident, size_t ident_len);
+void session_put(struct ec_session *s);
+int session_get(struct ec_session **s, void *ident, size_t ident_len);
 int session_del(void *ident, size_t ident_len);
-int session_get_and_del(struct session **s, void *ident, size_t ident_len);
+int session_get_and_del(struct ec_session **s, void *ident, size_t ident_len);
 u_int32 session_hash(void *ident, size_t ilen);
 
-void session_free(struct session *s);
+void session_free(struct ec_session *s);
 
 #ifdef DEBUG
 void __init session_handler(void);
@@ -72,7 +72,7 @@ static pthread_mutex_t session_mutex = PTHREAD_MUTEX_INITIALIZER;
  * also check for timeouted session and remove them
  */
 
-void session_put(struct session *s)
+void session_put(struct ec_session *s)
 {
    struct session_list *sl, *old = NULL;
    time_t ti = time(NULL);
@@ -88,7 +88,7 @@ void session_put(struct session *s)
       /* sessions are unique per thread */
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, s->ident) ) {
 
-         DEBUG_MSG("session_put: [%d][%p] updated", sl->id, sl->s->ident);
+         DEBUG_MSG("session_put: [%u][%p] updated", (u_int32)sl->id, sl->s->ident);
          /* destroy the old session */
          session_free(sl->s);
          /* link the new session */
@@ -104,7 +104,7 @@ void session_put(struct session *s)
       SAFE_FREE(old);
       
       if (sl->ts < (ti - GBL_CONF->connection_timeout) ) {
-         DEBUG_MSG("session_put: [%d][%p] timeouted", sl->id, sl->s->ident);
+         DEBUG_MSG("session_put: [%u][%p] timeouted", (u_int32)sl->id, sl->s->ident);
          session_free(sl->s);
          LIST_REMOVE(sl, next);
          /* remember the pointer and free it the next loop */
@@ -130,7 +130,7 @@ void session_put(struct session *s)
    /* link the session */
    sl->s = s;
    
-   DEBUG_MSG("session_put: [%d][%p] new session", sl->id, sl->s->ident);
+   DEBUG_MSG("session_put: [%u][%p] new session", (u_int32)sl->id, sl->s->ident);
 
    /* 
     * put it in the head.
@@ -147,7 +147,7 @@ void session_put(struct session *s)
  * get the info contained in a session
  */
 
-int session_get(struct session **s, void *ident, size_t ident_len)
+int session_get(struct ec_session **s, void *ident, size_t ident_len)
 {
    struct session_list *sl;
    time_t ti = time(NULL);
@@ -198,7 +198,7 @@ int session_del(void *ident, size_t ident_len)
    LIST_FOREACH(sl, &session_list_head[h], next) {
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
          
-         DEBUG_MSG("session_del: [%d][%p]", sl->id, sl->s->ident);
+         DEBUG_MSG("session_del: [%u][%p]", (u_int32)sl->id, sl->s->ident);
 
          /* free the session */
          session_free(sl->s);
@@ -223,7 +223,7 @@ int session_del(void *ident, size_t ident_len)
  * atomic operations
  */
 
-int session_get_and_del(struct session **s, void *ident, size_t ident_len)
+int session_get_and_del(struct ec_session **s, void *ident, size_t ident_len)
 {
    struct session_list *sl;
    u_int32 h;
@@ -237,7 +237,7 @@ int session_get_and_del(struct session **s, void *ident, size_t ident_len)
    LIST_FOREACH(sl, &session_list_head[h], next) {
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
          
-         DEBUG_MSG("session_get_and_del: [%d][%p]", sl->id, sl->s->ident);
+         DEBUG_MSG("session_get_and_del: [%u][%p]", (u_int32)sl->id, sl->s->ident);
          
          /* return the session */
          *s = sl->s;
@@ -260,7 +260,7 @@ int session_get_and_del(struct session **s, void *ident, size_t ident_len)
  * free a session structure
  */
 
-void session_free(struct session *s)
+void session_free(struct ec_session *s)
 {
    SAFE_FREE(s->ident);
    SAFE_FREE(s->data);
@@ -319,7 +319,7 @@ static void session_dump(int sig)
    /* dump the list in the debug file */
    for (i = 0; i < TABSIZE; i++) {
       LIST_FOREACH(sl, &session_list_head[i], next)
-         DEBUG_MSG("session_dump: [%d][%d][%p]", i, sl->id, sl->s->ident);
+         DEBUG_MSG("session_dump: [%d][%u][%p]", i, (u_int32)sl->id, sl->s->ident);
    }
    
    SESSION_UNLOCK;

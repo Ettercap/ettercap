@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.16 2003/09/30 09:05:35 alor Exp $
+    $Id: ec_dissect.c,v 1.17 2003/10/29 20:41:06 alor Exp $
 */
 
 #include <ec.h>
@@ -43,7 +43,7 @@ void dissect_del(char *name);
 int dissect_modify(int mode, char *name, u_int32 port);
 
 int dissect_match(void *id_sess, void *id_curr);
-void dissect_create_session(struct session **s, struct packet_object *po);
+void dissect_create_session(struct ec_session **s, struct packet_object *po);
 size_t dissect_create_ident(void **i, struct packet_object *po);            
 void dissect_wipe_session(struct packet_object *po);
 
@@ -100,14 +100,14 @@ int dissect_match(void *id_sess, void *id_curr)
  * for a dissector.
  */
 
-void dissect_create_session(struct session **s, struct packet_object *po)
+void dissect_create_session(struct ec_session **s, struct packet_object *po)
 {
    void *ident;
 
    DEBUG_MSG("dissect_create_session");
    
    /* allocate the session */
-   SAFE_CALLOC(*s, 1, sizeof(struct session));
+   SAFE_CALLOC(*s, 1, sizeof(struct ec_session));
    
    /* create the ident */
    (*s)->ident_len = dissect_create_ident(&ident, po);
@@ -155,7 +155,7 @@ size_t dissect_create_ident(void **i, struct packet_object *po)
 void dissect_wipe_session(struct packet_object *po)
 {
    void *ident;
-   struct session *s;   
+   struct ec_session *s;   
 
    DEBUG_MSG("dissect_wipe_session");
    

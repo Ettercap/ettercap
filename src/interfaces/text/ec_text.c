@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.8 2003/10/23 19:50:58 uid42100 Exp $
+    $Id: ec_text.c,v 1.9 2003/10/29 20:41:08 alor Exp $
 */
 
 #include <ec.h>
@@ -434,7 +434,7 @@ static void text_run_plugin(void)
  */
 static void text_stats(void)
 {
-   DEBUG_MSG("text_stats (pcap) : %d %d %d", GBL_STATS->ps_recv, 
+   DEBUG_MSG("text_stats (pcap) : %llu %llu %llu", GBL_STATS->ps_recv, 
                                                 GBL_STATS->ps_drop,
                                                 GBL_STATS->ps_ifdrop);
    DEBUG_MSG("text_stats (BH) : [%d][%d] p/s -- [%d][%d] b/s", 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.40 2003/10/28 22:54:26 alor Exp $
+    $Id: ec_main.c,v 1.41 2003/10/29 20:41:06 alor Exp $
 */
 
 #include <ec.h>
@@ -145,7 +145,8 @@ int main(int argc, char *argv[])
    ec_thread_new("top_half", "dispatching module", &top_half, NULL);
 
    /* create the timeouter thread */
-   ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
+   if (!GBL_OPTIONS->read)
+      ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
    
    /* this thread becomes the UI then displays it */
    ec_thread_register(EC_SELF, GBL_PROGRAM, "the user interface");

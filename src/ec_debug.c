@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.13 2003/10/28 22:54:26 alor Exp $
+    $Id: ec_debug.c,v 1.14 2003/10/29 20:41:06 alor Exp $
 
 */
 
@@ -118,9 +118,8 @@ void debug_close(void)
    fprintf (debug_file, "\n\nDEVICE CLOSED FOR DEBUGGING\n\n");
    fflush(debug_file);
    fclose (debug_file);
-
-   /* the debug is the last to be closed, make sure to exit */
-   _exit(0);
+   /* set it to null and check from other threads */
+   debug_file = NULL;
 }
 
 

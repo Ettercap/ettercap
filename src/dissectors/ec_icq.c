@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icq.c,v 1.4 2003/10/28 22:15:03 alor Exp $
+    $Id: ec_icq.c,v 1.5 2003/10/29 20:41:07 alor Exp $
 */
 
 #include <ec.h>
@@ -121,7 +121,7 @@ FUNC_DECODER(dissector_icq)
       /* move the pointer */
       thdr = (struct tlv_hdr *) ((char *)thdr + sizeof(struct tlv_hdr) + thdr->len[1]);
 
-      DEBUG_MSG("\tdissector_icq : TLV TYPE [%d] should be [%d]", thdr->type[1], TLV_PASS);
+      DEBUG_MSG("\tdissector_icq : TLV TYPE [%d]", thdr->type[1]);
             
       /* catch the pass */
       if (memcmp(thdr->type, TLV_PASS, sizeof(thdr->type)))

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.16 2003/10/28 22:54:26 alor Exp $
+    $Id: ec_threads.c,v 1.17 2003/10/29 20:41:07 alor Exp $
 */
 
 #include <ec.h>
@@ -137,7 +137,7 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    if (id == EC_SELF)
       id = pthread_self();
    
-   DEBUG_MSG("ec_thread_register -- [%d] %s", id, name);
+   DEBUG_MSG("ec_thread_register -- [%u] %s", (u_int32)id, name);
 
    SAFE_CALLOC(newelem, 1, sizeof(struct thread_list));
               
@@ -234,7 +234,7 @@ void ec_thread_destroy(pthread_t id)
 
 void ec_thread_init(void)
 {
-   DEBUG_MSG("ec_thread_init -- %d", pthread_self());
+   DEBUG_MSG("ec_thread_init -- %u", (u_int32)pthread_self());
    
    /* 
     * allow a thread to be cancelled as soon as the

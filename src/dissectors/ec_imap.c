@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_imap.c,v 1.10 2003/10/28 22:15:03 alor Exp $
+    $Id: ec_imap.c,v 1.11 2003/10/29 20:41:07 alor Exp $
 */
 
 /*
@@ -58,7 +58,7 @@ void __init imap_init(void)
 FUNC_DECODER(dissector_imap)
 {
    DECLARE_DISP_PTR_END(ptr, end);
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
    

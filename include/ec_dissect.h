@@ -1,5 +1,5 @@
 
-/* $Id: ec_dissect.h,v 1.14 2003/10/28 22:15:02 alor Exp $ */
+/* $Id: ec_dissect.h,v 1.15 2003/10/29 20:41:06 alor Exp $ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H
@@ -30,7 +30,7 @@ extern int dissect_modify(int mode, char *name, u_int32 port);
 #define MODE_REP  1
 
 extern int dissect_match(void *id_sess, void *id_curr);
-extern void dissect_create_session(struct session **s, struct packet_object *po); 
+extern void dissect_create_session(struct ec_session **s, struct packet_object *po); 
 extern void dissect_wipe_session(struct packet_object *po);
 extern size_t dissect_create_ident(void **i, struct packet_object *po); 
 

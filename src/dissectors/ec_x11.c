@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_x11.c,v 1.7 2003/10/28 22:15:04 alor Exp $
+    $Id: ec_x11.c,v 1.8 2003/10/29 20:41:08 alor Exp $
 */
 
 #include <ec.h>
@@ -62,7 +62,7 @@ void __init x11_init(void)
 
 FUNC_DECODER(dissector_x11)
 {
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    void *ident;
    char tmp[MAX_ASCII_ADDR_LEN];
    struct x11_request *x11;

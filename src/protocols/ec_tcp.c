@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.30 2003/10/24 13:00:43 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.31 2003/10/29 20:41:08 alor Exp $
 */
 
 #include <ec.h>
@@ -96,7 +96,7 @@ FUNC_DECODER(decode_tcp);
 FUNC_INJECTOR(inject_tcp);
 void tcp_init(void);
 int tcp_match(void *id_sess, void *id_curr);
-void tcp_create_session(struct session **s, struct packet_object *po);
+void tcp_create_session(struct ec_session **s, struct packet_object *po);
 size_t tcp_create_ident(void **i, struct packet_object *po);            
 int tcp_find_direction(void *ids, void *id);
 
@@ -119,7 +119,7 @@ FUNC_DECODER(decode_tcp)
    FUNC_DECODER_PTR(next_decoder);
    struct tcp_header *tcp;
    u_char *opt_start, *opt_end;
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    void *ident = NULL;
    struct tcp_status *status = NULL;
    int direction = 0;
@@ -324,7 +324,7 @@ FUNC_DECODER(decode_tcp)
 
 FUNC_INJECTOR(inject_tcp)
 {
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    void *ident = NULL;
    struct tcp_status *status;
    int direction;
@@ -480,14 +480,14 @@ int tcp_match(void *id_sess, void *id_curr)
  * for a dissector.
  */
 
-void tcp_create_session(struct session **s, struct packet_object *po)
+void tcp_create_session(struct ec_session **s, struct packet_object *po)
 {
    void *ident;
 
    DEBUG_MSG("tcp_create_session");
 
    /* allocate the session */
-   SAFE_CALLOC(*s, 1, sizeof(struct session));
+   SAFE_CALLOC(*s, 1, sizeof(struct ec_session));
    
    /* create the ident */
    (*s)->ident_len = tcp_create_ident(&ident, po);

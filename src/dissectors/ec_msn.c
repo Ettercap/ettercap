@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_msn.c,v 1.3 2003/10/28 22:15:03 alor Exp $
+    $Id: ec_msn.c,v 1.4 2003/10/29 20:41:07 alor Exp $
 */
 
 #include <ec.h>
@@ -49,7 +49,7 @@ FUNC_DECODER(dissector_msn)
 {
    DECLARE_DISP_PTR_END(ptr, end);
    char tmp[MAX_ASCII_ADDR_LEN];
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    void *ident = NULL;
 
    /* don't complain about unused var */

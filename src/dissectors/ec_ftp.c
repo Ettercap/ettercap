@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ftp.c,v 1.15 2003/10/28 22:15:03 alor Exp $
+    $Id: ec_ftp.c,v 1.16 2003/10/29 20:41:07 alor Exp $
 */
 
 #include <ec.h>
@@ -46,7 +46,7 @@ void __init ftp_init(void)
 FUNC_DECODER(dissector_ftp)
 {
    DECLARE_DISP_PTR_END(ptr, end);
-   struct session *s = NULL;
+   struct ec_session *s = NULL;
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
 

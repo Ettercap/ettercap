@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.25 2003/10/27 21:25:44 alor Exp $ */
+/* $Id: ec_packet.h,v 1.26 2003/10/29 20:41:06 alor Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -74,7 +74,7 @@ struct packet_object {
    u_char * packet;        /* the buffer containing the real packet */
 
    /* Trace current session for injector chain */
-   struct session *session;  
+   struct ec_session *session;  
     
    
    u_int8 flags;                       /* flags relative to the packet */

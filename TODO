@@ -29,6 +29,8 @@ this is the unofficial and floating in time roadmap:
 
    + FIXING
       - get_iface_mtu for win32
+      - debug problem
+      - thread delayed startup
       
       
 Oct 2003:

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.21 2004/03/22 17:47:15 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.22 2004/03/23 14:45:32 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -94,7 +94,6 @@ struct sslw_ident {
 
 SSL_CTX   *ssl_ctx_client, *ssl_ctx_server;
 EVP_PKEY *global_pk;
-X509_NAME *global_issuer;
 
 /* protos */
 
@@ -115,7 +114,7 @@ static int sslw_match(void *id_sess, void *id_curr);
 static void sslw_create_session(struct ec_session **s, struct packet_object *po);
 static size_t sslw_create_ident(void **i, struct packet_object *po);            
 static void sslw_hook_handled(struct packet_object *po);
-static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert);
+static int sslw_create_selfsigned(X509 *serv_cert);
 static int firewall_insert_redirect(u_int16 sport, u_int16 dport);
 
 
@@ -258,11 +257,7 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 }
    
 static int sslw_sync_ssl(struct accepted_entry *ae) 
-{
-   // XXX - Metterli nella sessioni e liberarli
-   // Anche in caso di fallimento
-   X509 *serv_cert = NULL;
-   
+{   
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
    SSL_set_connect_state(ae->ssl[SSL_SERVER]);
    SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
@@ -278,7 +273,7 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    }
 
    /* XXX - NULL cypher can give no certificate */
-   if ( (serv_cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
+   if ( (ae->cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
       DEBUG_MSG("Can't get peer certificate");
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);
@@ -287,16 +282,16 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
       return -EINVALID;
    }
 
-   if (sslw_create_selfsigned(serv_cert, &ae->cert) != ESUCCESS) {
+   if (sslw_create_selfsigned(ae->cert) != ESUCCESS) {
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);
       ae->ssl[SSL_SERVER] = NULL;
       ae->ssl[SSL_CLIENT] = NULL;
-      X509_free(serv_cert);   
+      X509_free(ae->cert);   
+      ae->cert = NULL;   
       return -EINVALID;
    }
    
-   X509_free(serv_cert);
    SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
    
    if (SSL_accept(ae->ssl[SSL_CLIENT]) != 1) {
@@ -304,7 +299,6 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
       SSL_free(ae->ssl[SSL_CLIENT]);
       ae->ssl[SSL_SERVER] = NULL;
       ae->ssl[SSL_CLIENT] = NULL;
-
       X509_free(ae->cert);
       ae->cert = NULL;   
       return -EINVALID;
@@ -568,34 +562,15 @@ static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
 /* 
  * Create a self-signed certificate
  */
-static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert)
-{
-   X509_NAME *name;
-
-   if ( (*out_cert=X509_new() ) == NULL) {
-      DEBUG_MSG("Can't create a new X509");
-      return -EINVALID;
-   }
-
-   /* Set version, expiration time */ 
-   X509_set_version(*out_cert, 0x2);
-   X509_set_notBefore(*out_cert, X509_get_notBefore(serv_cert));
-   X509_set_notAfter(*out_cert, X509_get_notAfter(serv_cert));
-   
+static int sslw_create_selfsigned(X509 *serv_cert)
+{   
    /* Set out public key, our issuer and real server name */
-   X509_set_pubkey(*out_cert, global_pk);   
-   name = X509_get_subject_name(serv_cert);
-   X509_set_subject_name(*out_cert, name);
-   X509_set_issuer_name(*out_cert, global_issuer);
-
-   /* Set the serial */
-   X509_set_serialNumber(*out_cert, X509_get_serialNumber(serv_cert));
-   
+   X509_set_pubkey(serv_cert, global_pk);   
+   X509_NAME_add_entry_by_txt(X509_get_issuer_name(serv_cert), "L", MBSTRING_ASC, " ", -1, -1, 0);
+  
    /* Self-sign our certificate */
-   if (!X509_sign(*out_cert, global_pk, EVP_sha1())) {
+   if (!X509_sign(serv_cert, global_pk, EVP_sha1())) {
       DEBUG_MSG("Error self-signing X509");
-      X509_free(*out_cert);
-      *out_cert = NULL; 
       return -EINVALID;
    }
      
@@ -609,8 +584,6 @@ static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert)
 static void sslw_init(void)
 {
    SSL *dummy_ssl=NULL;
-   X509 *my_cert=NULL;
-   SSL_CTX *dummy_ctx=NULL;
 
    SSL_library_init();
 
@@ -630,21 +603,7 @@ static void sslw_init(void)
    if ( (global_pk = SSL_get_privatekey(dummy_ssl)) == NULL ) 
       FATAL_ERROR("Can't get private key from file");
 
-   SSL_free(dummy_ssl);
-   
-   /* Get the issuer from our cert file */
-   dummy_ctx = SSL_CTX_new(SSLv23_server_method());
-
-   if (SSL_CTX_use_certificate_file(dummy_ctx, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
-      if (SSL_CTX_use_certificate_file(dummy_ctx, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
-   }
- 
-   dummy_ssl = SSL_new(dummy_ctx); 
-   my_cert = SSL_get_certificate(dummy_ssl);
-   global_issuer = X509_NAME_dup(X509_get_issuer_name(my_cert));
-   
-   SSL_CTX_free(dummy_ctx);
+   SSL_free(dummy_ssl);   
 }
 
 

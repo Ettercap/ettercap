@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.10 2004/03/02 20:53:01 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.11 2004/03/03 02:46:36 daten Exp $
 */
 
 #include <ec.h>
@@ -67,7 +67,6 @@ static GtkListStore  *ls_conns = NULL;
 static GtkTreeSelection   *selection = NULL;
 static struct conn_object *curr_conn = NULL;
 static guint connections_idle = 0;
-static guint remove_inactive = 0;
 
 /* split data view */
 static GtkWidget   *data_window = NULL;
@@ -226,7 +225,6 @@ static void gtkui_kill_connections(void)
 {
    DEBUG_MSG("gtk_kill_connections");
    gtk_timeout_remove(connections_idle);
-   gtk_timeout_remove(remove_inactive);
 
    gtk_widget_destroy(conns_window);
    conns_window = NULL;

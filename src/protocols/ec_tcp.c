@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.17 2003/09/30 11:30:55 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.18 2003/10/07 14:51:27 alor Exp $
 */
 
 #include <ec.h>
@@ -193,7 +193,7 @@ FUNC_DECODER(decode_tcp)
                break;
             case TCPOPT_MAXSEG:
                opt_start += 2;
-               fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_MSS, ntohs(ptohs(opt_start)));
+               fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_MSS, pntos(opt_start));
                opt_start += 2;
                break;
             case TCPOPT_WSCALE:

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.42 2003/10/05 17:07:16 alor Exp $
+dnl    $Id: configure.in,v 1.43 2003/10/07 14:51:18 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -311,12 +311,12 @@ AC_ARG_ENABLE(debug, [  --enable-debug          create a file for debugging mess
       AC_MSG_RESULT(yes)
       ac_cv_ec_debug=yes
       ;;
-   no)  AC_MSG_RESULT(no.)
+   no)  AC_MSG_RESULT(no)
       DEBUG_FLAGS="$CFLAGS -O2 -funroll-loops -fomit-frame-pointer -Wall"
       ac_cv_ec_debug=no
       ;;
 esac ],
-   AC_MSG_RESULT(no. disabled by default.)
+   AC_MSG_RESULT(no)
    DEBUG_FLAGS="$CFLAGS -O2 -funroll-loops -fomit-frame-pointer -Wall"
    ac_cv_ec_debug=no
 )

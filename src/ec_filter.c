@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.27 2003/10/07 13:16:55 lordnaga Exp $
+    $Id: ec_filter.c,v 1.28 2003/10/07 14:51:27 alor Exp $
 */
 
 #include <ec.h>
@@ -820,12 +820,14 @@ void filter_unload(struct filter_env *fenv)
          switch(fop[i].op.func.op) {
             case FFUNC_REGEX:
                regfree(fop[i].op.func.ropt->regex);
+               SAFE_FREE(fop[i].op.func.ropt);
                break;
                
             case FFUNC_PCRE:
                #ifdef HAVE_PCRE
                pcre_free(fop[i].op.func.ropt->pregex);
                pcre_free(fop[i].op.func.ropt->preg_extra);
+               SAFE_FREE(fop[i].op.func.ropt);
                #endif               
                break;
          }
@@ -903,6 +905,8 @@ static int compile_regex(struct filter_env *fenv, struct filter_header *fh)
          switch(fop[i].op.func.op) {
             case FFUNC_REGEX:
 
+               /* alloc the structures */
+               SAFE_CALLOC(fop[i].op.func.ropt, 1, sizeof(struct regex_opt));
                SAFE_CALLOC(fop[i].op.func.ropt->regex, 1, sizeof(regex_t));
    
                /* prepare the regex */
@@ -915,6 +919,9 @@ static int compile_regex(struct filter_env *fenv, struct filter_header *fh)
                
             case FFUNC_PCRE:
                #ifdef HAVE_PCRE
+
+               /* alloc the structure */
+               SAFE_CALLOC(fop[i].op.func.ropt, 1, sizeof(struct regex_opt));
 
                /* prepare the regex (with default option) */
                fop[i].op.func.ropt->pregex = pcre_compile(fop[i].op.func.string, 0, &perrbuf, &err, NULL );

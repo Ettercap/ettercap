@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.15 2003/10/05 17:07:20 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.16 2003/10/07 14:51:27 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -199,10 +199,18 @@ regex(DECODED.data, ".*login.*")
 
 
 .TP
-.B pcre_regex(\fIwhere\fR, \fIpcre_regex\fR)
-this fuction will evaluate a perl compatible regular expression. You can match
-agains both DATA and DECODED, but if your expression modify the buffer, it
-makes sense to operato only on DATA.
+.B pcre_regex(\fIwhere\fR, \fIpcre_regex\fR ... )
+this function will evaluate a perl compatible regular expression. You can match
+against both DATA and DECODED, but if your expression modify the buffer, it
+makes sense to operate only on DATA. The function accepts 2 or 3 parameters
+depending on the operation you want. The two parameter form is used only to
+match a patter. The three paramenter form means that you want to make a
+substitution. In both cases, the second parameter is the search string.
+.br
+You can use $n in the replacement string. This
+placeholder are referred to the groups created in the rearch string. (e.g.
+pcre_regex(DATA.data, "^var1=([:digit:]*)&var2=([:digit:]*)", "var1=$2&var2=$1")
+will swap the value of var1 and var2).
 .br
 NOTE: The pcre support is optional in ettercap and will be enables only if you
 have the libpcre installed.
@@ -212,7 +220,9 @@ warning.
 .Sp
 example:
 .br
-pcre_regex(DATA.data, "s/foo/bar/g")
+pcre_regex(DATA.data, ".*foo$")
+.br
+pcre_regex(DATA.data, "([^ ]*) bar ([^ ]*)", "foo $1 $2")
 
 
 .TP

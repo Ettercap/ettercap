@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.13 2003/10/05 17:42:17 alor Exp $
+    $Id: ef_encode.c,v 1.14 2003/10/07 14:51:28 alor Exp $
 */
 
 #include <ef.h>
@@ -329,9 +329,10 @@ static char ** decode_args(char *args, int *nargs)
          arg[strlen(arg) - 1] = '\0';
          arg++;
       }
-            
       /* put in in the array */
       parsed[i - 1] = strdup(arg);
+      
+      ef_debug(5, "ARGUMENT: %s\n", arg);
    }
 
    /* return the number of args */

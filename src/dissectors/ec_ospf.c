@@ -17,14 +17,16 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ospf.c,v 1.3 2003/09/30 09:05:35 alor Exp $
+    $Id: ec_ospf.c,v 1.4 2003/10/07 14:51:27 alor Exp $
 */
 
 /*
+ * RFC: 2328
+ * 
  *      0                   1                   2                   3
  *       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  *      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *      |   Version #   |       5       |         Packet length         |
+ *      |   Version #   |     Type      |         Packet length         |
  *      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *      |                          Router ID                            |
  *      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -46,6 +48,18 @@
 #define OSPF_AUTH_LEN   8
 #define OSPF_AUTH       1
 #define OSPF_NO_AUTH    0
+
+struct ospf_hdr {
+   u_int8   ver;
+   u_int8   type;
+   u_int16  len;
+   u_int32  rid;
+   u_int32  aid;
+   u_int16  csum;
+   u_int16  auth_type;
+   u_int32  auth1;
+   u_int32  auth2;
+};
 
 /* protos */
 
@@ -73,6 +87,7 @@ void __init ospf_init(void)
 FUNC_DECODER(dissector_ospf)
 {
    DECLARE_DISP_PTR_END(ptr, end);
+   struct ospf_hdr *ohdr;
    char tmp[MAX_ASCII_ADDR_LEN];
    char pass[12];
 
@@ -85,8 +100,10 @@ FUNC_DECODER(dissector_ospf)
 
    DEBUG_MSG("OSPF --> dissector_ospf");
   
+   ohdr = (struct ospf_hdr *)ptr;
+   
    /* authentication */
-   if ( ptohs(ptr + 14) == OSPF_AUTH ) {
+   if ( ntohs(ohdr->auth_type) == OSPF_AUTH ) {
       
       DEBUG_MSG("\tDissector_ospf PASS");
       
@@ -94,12 +111,12 @@ FUNC_DECODER(dissector_ospf)
        * we use a local variable since this does 
        * not need to reach the top half
        */
-      strncpy(pass, ptr + 16, OSPF_AUTH_LEN);
+      strncpy(pass, (char *)ohdr->auth1, OSPF_AUTH_LEN);
       
    } 
 
    /* no authentication */
-   if ( ptohs(ptr + 14) == OSPF_NO_AUTH ) {
+   if ( ntohs(ohdr->auth_type) == OSPF_NO_AUTH ) {
       
       DEBUG_MSG("\tDissector_ospf NO AUTH");
       

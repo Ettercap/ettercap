@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.11 2003/10/06 15:33:14 lordnaga Exp $ */
+/* $Id: ec_inet.h,v 1.12 2003/10/07 14:51:27 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -52,24 +52,40 @@ extern void disable_ip_forward(void);
 
 #ifdef WORDS_BIGENDIAN       
    /* BIG ENDIAN */
-   #define ptohs(x) ( (u_int16)                       \
+   #define phtos(x) ( (u_int16)                       \
                       ((u_int16)*((u_int8 *)x+1)<<8|  \
                       (u_int16)*((u_int8 *)x+0)<<0)   \
                     )
 
-   #define ptohl(x) ( (u_int32)*((u_int8 *)x+3)<<24|  \
+   #define phtol(x) ( (u_int32)*((u_int8 *)x+3)<<24|  \
                       (u_int32)*((u_int8 *)x+2)<<16|  \
                       (u_int32)*((u_int8 *)x+1)<<8|   \
                       (u_int32)*((u_int8 *)x+0)<<0    \
                     )
+
+   #define pntos(x) ( (u_int16)                       \
+                      ((u_int16)*((u_int8 *)x+1)<<0|  \
+                      (u_int16)*((u_int8 *)x+0)<<8)   \
+                    )
+
+   #define pntol(x) ( (u_int32)*((u_int8 *)x+3)<<0|   \
+                      (u_int32)*((u_int8 *)x+2)<<8|   \
+                      (u_int32)*((u_int8 *)x+1)<<16|  \
+                      (u_int32)*((u_int8 *)x+0)<<24   \
+                    )
+   
 
    #define ORDER_ADD_SHORT(a, b)   a = a + b
    #define ORDER_ADD_LONG(a, b)	  a = a + b
 
 #else
    /* LITTLE ENDIAN */
-   #define ptohs(x) *(u_int16 *)(x)
-   #define ptohl(x) *(u_int32 *)(x)
+   #define phtos(x) *(u_int16 *)(x)
+   #define phtol(x) *(u_int32 *)(x)
+
+   #define pntos(x) ntohs(*(u_int16 *)(x))
+   #define pntol(x) ntohl(*(u_int32 *)(x))
+   
    
    #define ORDER_ADD_SHORT(a, b)   a = htons(ntohs(a) + (int16)b)
    #define ORDER_ADD_LONG(a, b)	  a = htonl(ntohl(a) + (int32)b)

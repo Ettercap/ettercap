@@ -34,8 +34,8 @@ Oct 2003:
       - perl regex (with libpcre)
          - set the correct delta !!
          - made substitution possible
-         - parsing parentesys inside strings
       
+
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - don't inject in unoffensive mode

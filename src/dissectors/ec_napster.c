@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_napster.c,v 1.2 2003/09/28 21:06:53 alor Exp $
+    $Id: ec_napster.c,v 1.3 2003/10/07 14:51:27 alor Exp $
 */
 
 #include <ec.h>
@@ -74,10 +74,10 @@ FUNC_DECODER(dissector_napster)
    /* cast the napster header */
    nap = (struct nap_hdr *)ptr;
    
-   DEBUG_MSG("NAPSTER --> TCP dissector_napster (%d)", ptohs(&nap->type));
+   DEBUG_MSG("NAPSTER --> TCP dissector_napster (%d)", phtos(&nap->type));
 
    /* not a login packet */
-   if (ptohs(&nap->type) != NAPSTER_CMD_LOGIN)
+   if (phtos(&nap->type) != NAPSTER_CMD_LOGIN)
       return NULL;
 
    /*
@@ -92,8 +92,7 @@ FUNC_DECODER(dissector_napster)
    ptr = (char *)(nap + 1);
    
    /* get the len of the command */
-   tlen = ptohs(&nap->len);
-
+   tlen = phtos(&nap->len);
 
    /* use a temp buffer to operate on */
    SAFE_CALLOC(tbuf, tlen + 1, sizeof(char));

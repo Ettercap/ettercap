@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_compound.c,v 1.3 2004/01/20 10:03:51 alor Exp $
+    $Id: wdg_compound.c,v 1.4 2004/02/03 16:32:38 alor Exp $
 */
 
 #include <wdg.h>
@@ -226,14 +226,29 @@ static int wdg_compound_lost_focus(struct wdg_object *wo)
 static int wdg_compound_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
    WDG_WO_EXT(struct wdg_compound, ww);
+   struct wdg_widget_list *wl;
 
    /* handle the message */
    switch (key) {
       case KEY_MOUSE:
          /* is the mouse event within our edges ? */
          if (wenclose(ww->win, mouse->y, mouse->x)) {
-            /* XXX set the focus to the proper widget */
             wdg_set_focus(wo);
+            /* dispatch to the proper widget */
+            TAILQ_FOREACH(wl, &ww->widgets_list, next)
+               if (wl->wdg->get_msg(wl->wdg, key, mouse) == WDG_ESUCCESS) {
+                  /* 
+                   * the widget has handled the message,
+                   * set to the focused one 
+                   */
+                  ww->focused = wl;
+                  /* 
+                   * regain focus to the compound
+                   * this is needed because it is always the 
+                   * compound that must receive the messages
+                   */
+                  wdg_set_focus(wo);
+               }
          }
          else 
             return -WDG_ENOTHANDLED;

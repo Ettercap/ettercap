@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.31 2004/02/01 15:47:22 alor Exp $
+    $Id: wdg.c,v 1.32 2004/02/03 16:32:38 alor Exp $
 */
 
 #include <wdg.h>
@@ -427,7 +427,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
          }
       }
 
-   /* it is a key event */
+   /* it is a keyboard event */
    } else {
 
       /* first dispatch to the root object */

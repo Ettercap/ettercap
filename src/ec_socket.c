@@ -17,17 +17,20 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.10 2004/06/09 19:15:32 alor Exp $
+    $Id: ec_socket.c,v 1.11 2004/06/27 12:51:01 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_signals.h>
 #include <ec_poll.h>
 
-#include <netdb.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#ifndef OS_MINGW
+   #include <netdb.h>
+   #include <sys/socket.h>
+   #include <netinet/in.h>
+   #include <arpa/inet.h>
+#endif
+
 #include <fcntl.h>
 
 /* protos */
@@ -45,6 +48,10 @@ int socket_recv(int s, u_char *payload, size_t size);
  */
 void set_blocking(int s, int set)
 {
+#ifdef OS_MINGW
+   u_long on = set;
+   ioctlsocket(s, FIONBIO, &on);
+#else
    int ret;
 
    /* get the current flags */
@@ -58,6 +65,7 @@ void set_blocking(int s, int set)
    
    /* set the flag */
    fcntl (s, F_SETFL, ret);
+#endif   
 }
 
 
@@ -141,7 +149,11 @@ int close_socket(int s)
    DEBUG_MSG("close_socket: %d", s);
 
    /* close the socket */
+#ifdef OS_MINGW
+   return closesocket(s);
+#else   
    return close(s);
+#endif   
 }
 
 
@@ -151,7 +163,7 @@ int close_socket(int s)
 int socket_send(int s, u_char *payload, size_t size)
 {
    /* send data to the socket */
-   return write(s, payload, size);
+   return send(s, payload, size, 0);
 }
 
 /*
@@ -160,7 +172,7 @@ int socket_send(int s, u_char *payload, size_t size)
 int socket_recv(int sh, u_char *payload, size_t size)
 {
    /* read up to size byte */
-   return read(sh, payload, size);
+   return recv(sh, payload, size, 0);
 }
 
 

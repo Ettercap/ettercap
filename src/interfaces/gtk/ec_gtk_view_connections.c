@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.36 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.37 2004/06/27 12:51:02 alor Exp $
 */
 
 #include <ec.h>
@@ -28,7 +28,9 @@
 #include <ec_format.h>
 #include <ec_inject.h>
 
-#include <sys/mman.h>
+#ifndef OS_MINGW
+   #include <sys/mman.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

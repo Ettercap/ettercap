@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.24 2004/06/25 14:24:23 alor Exp $ */
+/* $Id: ec.h,v 1.25 2004/06/27 12:51:01 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -13,6 +13,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef OS_MINGW
+   #include <windows.h>
+#endif
+
 #if !defined (__USE_GNU)  /* for memmem(), strsignal(), etc etc... */
    #define __USE_GNU
 #endif
@@ -25,6 +30,9 @@
 #include <time.h>
 
 /* these are often needed... */
+#ifdef OS_MINGW
+   #undef SLIST_ENTRY   /* declared in <winnt.h> */
+#endif
 #include <ec_queue.h>
 #include <ec_error.h>
 #include <ec_debug.h>
@@ -32,6 +40,28 @@
 #include <ec_globals.h>
 #include <ec_strings.h>
 
+#ifdef OS_MINGW
+   #include <ec_os_mingw.h>
+#endif
+
+
+/*  
+ * On Windows (MinGw) we must export all ettercap.exe variables/function
+ * used in plugins and functions in plugins must be declared as 'importable'
+ */
+#ifdef OS_MINGW
+   #define EC_API_EXPORTED __declspec (dllexport)
+   #define EC_API_IMPORTED __declspec (dllimport)
+   #define EC_API_PUBLIC   
+   #define EC_API_PRIVATE  
+#else
+   #define EC_API_EXPORTED extern
+   #define EC_API_IMPORTED 
+   #define EC_API_PUBLIC   
+   #define EC_API_PRIVATE  static
+#endif
+
+/* wrappers for safe memory allocation */
 
 #define SAFE_CALLOC(x, n, s) do { \
    x = calloc(n, s); \
@@ -81,15 +111,26 @@
 #define RESTORE_OFFSET(o,b)  o=(u_int8 *)((int)o+(int)b)   
 
 /* ANSI colors */
+#ifndef OS_WINDOWS
+   #define EC_COLOR_END    "\033[0m"
+   #define EC_COLOR_BOLD   "\033[1m"
 
-#define EC_COLOR_END    "\033[0m"
-#define EC_COLOR_BOLD   "\033[1m"
+   #define EC_COLOR_RED    "\033[31m"EC_COLOR_BOLD
+   #define EC_COLOR_YELLOW "\033[33m"EC_COLOR_BOLD
+   #define EC_COLOR_GREEN  "\033[32m"EC_COLOR_BOLD
+   #define EC_COLOR_BLUE   "\033[34m"EC_COLOR_BOLD
+   #define EC_COLOR_CYAN   "\033[36m"EC_COLOR_BOLD
+#else
+   /* Windows console doesn't grok ANSI */
+   #define EC_COLOR_END    
+   #define EC_COLOR_BOLD   
 
-#define EC_COLOR_RED    "\033[31m"EC_COLOR_BOLD
-#define EC_COLOR_YELLOW "\033[33m"EC_COLOR_BOLD
-#define EC_COLOR_GREEN  "\033[32m"EC_COLOR_BOLD
-#define EC_COLOR_BLUE   "\033[34m"EC_COLOR_BOLD
-#define EC_COLOR_CYAN   "\033[36m"EC_COLOR_BOLD
+   #define EC_COLOR_RED    
+   #define EC_COLOR_YELLOW 
+   #define EC_COLOR_GREEN  
+   #define EC_COLOR_BLUE   
+   #define EC_COLOR_CYAN  
+#endif
 
 /* magic numbers */
 
@@ -98,7 +139,7 @@
 #define EC_MAGIC_32  0xe77ee77e
 
 /* exported by ec_main */
-extern void clean_exit(int errcode);
+EC_API_EXPORTED void clean_exit(int errcode);
 
 
 #endif   /*  EC_H */

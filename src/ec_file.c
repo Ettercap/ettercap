@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_file.c,v 1.11 2004/03/24 11:28:01 alor Exp $
+    $Id: ec_file.c,v 1.12 2004/06/27 12:51:01 alor Exp $
 */
 
 #include <ec.h>
@@ -26,8 +26,8 @@
 
 /* protos */
 
-static char * get_full_path(const char *dir, const char *file);
-static char * get_local_path(const char *file);
+char * get_full_path(const char *dir, const char *file);
+char * get_local_path(const char *file);
 FILE * open_data(char *dir, char *file, char *mode);
 
 /*******************************************/
@@ -36,7 +36,7 @@ FILE * open_data(char *dir, char *file, char *mode);
  * add the prefix to a given filename
  */
 
-static char * get_full_path(const char *dir, const char *file)
+char * get_full_path(const char *dir, const char *file)
 {
    char *filename;
    int len = 256;
@@ -57,13 +57,20 @@ static char * get_full_path(const char *dir, const char *file)
  * add the local path to a given filename
  */
 
-static char * get_local_path(const char *file)
+char * get_local_path(const char *file)
 {
    char *filename;
 
-   SAFE_CALLOC(filename, strlen("./share/") + strlen(file) + 1, sizeof(char));
+#ifdef OS_MINGW   
+   /* get the path in wich ettercap is running */
+   char *self_root = ec_win_get_ec_dir();
+#else
+   char *self_root = ".";
+#endif
+
+   SAFE_CALLOC(filename, strlen(self_root) + strlen("/share/") + strlen(file) + 1, sizeof(char));
    
-   sprintf(filename, "./share/%s", file);
+   sprintf(filename, "%s/share/%s", self_root, file);
    
    DEBUG_MSG("get_local_path -- %s", filename);
    

@@ -33,7 +33,8 @@ int scandir(const char *dir, struct dirent ***namelist,
 
       entrysize=sizeof(struct dirent)-sizeof(entry->d_name)+strlen(entry->d_name)+1;
       (*namelist)[i]=(struct dirent *)malloc(entrysize);
-      if ((*namelist)[i] == NULL) return(-1);
+      if ((*namelist)[i] == NULL) 
+         return(-1);
 
       memcpy((*namelist)[i], entry, entrysize);
       i++;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.51 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_filter.c,v 1.52 2004/06/27 12:51:01 alor Exp $
 */
 
 #include <ec.h>
@@ -26,7 +26,13 @@
 #include <ec_threads.h>
 #include <ec_send.h>
 
-#include <sys/mman.h>
+#ifndef OS_MINGW
+   /* 
+    * mmap is not available under mingw. it is implemented
+    * int ec_os_mingw.c
+    */
+   #include <sys/mman.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -35,6 +41,14 @@
 #ifdef HAVE_PCRE
    #include <pcre.h>
 #endif
+
+#ifndef O_BINARY
+   /* usually this is defined only under windows. so let do nothing
+    * if we are compiling under a different platform
+    */
+   #define O_BINARY  0
+#endif
+
 
 #define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x "\n", ## __VA_ARGS__); return -EFATAL; } while(0)
 
@@ -627,7 +641,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    DEBUG_MSG("filter engine: func_inject %s", fop->op.func.string);
    
    /* open the file */
-   if ((fd = open(fop->op.func.string, O_RDONLY)) == -1) {
+   if ((fd = open(fop->op.func.string, O_RDONLY | O_BINARY)) == -1) {
       USER_MSG("filter engine: inject(): File not found (%s)\n", fop->op.func.string);
       return -EFATAL;
    }
@@ -676,7 +690,7 @@ static int func_log(struct filter_op *fop, struct packet_object *po)
    DEBUG_MSG("filter engine: func_log");
    
    /* open the file */
-   fd = open(fop->op.func.string, O_CREAT | O_APPEND | O_RDWR, 0600);
+   fd = open(fop->op.func.string, O_CREAT | O_APPEND | O_RDWR | O_BINARY, 0600);
    if (fd == -1) {
       USER_MSG("filter engine: Cannot open file %s\n", fop->op.func.string);
       return -EFATAL;
@@ -749,6 +763,8 @@ static int func_kill(struct packet_object *po)
  */
 static int func_exec(struct filter_op *fop)
 {
+   pid_t pid;
+   
    DEBUG_MSG("filter engine: func_exec: %s", fop->op.func.string);
    
    /* 
@@ -756,7 +772,14 @@ static int func_exec(struct filter_op *fop)
     * we are forwding packets, and we cannot wait 
     * for the execution of the command 
     */
-   if (!fork()) {
+   pid = fork();
+   
+   /* check if the fork was successfull */
+   if (pid == -1)
+      SEMIFATAL_ERROR("filter engine: fork() failed, cannot execute %s", fop->op.func.string);
+   
+   /* differentiate between the parent and the child */
+   if (!pid) {
       char **param = NULL;
       char *q = fop->op.func.string;
       char *p;
@@ -841,7 +864,7 @@ int filter_load_file(char *filename, struct filter_env *fenv)
    DEBUG_MSG("filter_load_file (%s)", filename);
    
    /* open the file */
-   if ((fd = open(filename, O_RDONLY)) == -1)
+   if ((fd = open(filename, O_RDONLY | O_BINARY)) == -1)
       FATAL_MSG("File not found or permission denied");
 
    /* read the header */

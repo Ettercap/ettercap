@@ -1,12 +1,19 @@
 
-/* $Id: ec_inet.h,v 1.22 2004/06/19 15:49:02 alor Exp $ */
+/* $Id: ec_inet.h,v 1.23 2004/06/27 12:51:01 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
 
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
+#ifdef OS_MINGW
+   #include <winsock2.h>
+   #include <ws2tcpip.h>
+   #include <missing/inet_aton.h>
+#else
+   #include <netinet/in.h>
+   #include <arpa/inet.h>
+   #include <sys/socket.h>
+#endif
+
 #include <sys/stat.h>
 
 #ifdef OS_CYGWIN

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.1 2003/10/14 13:13:14 alor Exp $
+# $Id: Makefile.am,v 1.2 2004/06/27 12:51:02 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -27,6 +27,10 @@ endif
 
 if CYGWIN
    libec_os_a_SOURCES += ec_cygwin.c
+endif
+
+if MINGW
+   libec_os_a_SOURCES += ec_mingw.c
 endif
 
    

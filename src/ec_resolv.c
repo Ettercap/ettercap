@@ -17,14 +17,16 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.15 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_resolv.c,v 1.16 2004/06/27 12:51:01 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_resolv.h>
 #include <ec_hash.h>
 
-#include <netdb.h>
+#ifndef OS_MINGW
+   #include <netdb.h>
+#endif
 
 #define TABBIT    9 /* 2^9 bit tab entries: 512 SLISTS */
 #define TABSIZE   (1UL<<TABBIT)

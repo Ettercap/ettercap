@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.37 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_plugins.c,v 1.38 2004/06/27 12:51:01 alor Exp $
 */
 
 #include <ec.h>
@@ -30,7 +30,9 @@
 #endif
 
 #ifdef HAVE_PLUGINS
-   #include <ltdl.h>
+   #ifdef HAVE_LTDL_H
+      #include <ltdl.h>
+   #endif
    #ifdef HAVE_DLFCN_H
       #include <dlfcn.h>
    #endif

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.39 2004/02/27 11:06:28 alor Exp $
+    $Id: ec_capture.c,v 1.40 2004/02/27 15:03:11 alor Exp $
 */
 
 #include <ec.h>
@@ -36,8 +36,10 @@
    /* LINUX does not care about timeout */
    /* OPENBSD needs 0, but it sucks up all the CPU */
    #define PCAP_TIMEOUT 0
+#elif defined(OS_SOLARIS)
+   /* SOLARIS needs > 1 */
+   #define PCAP_TIMEOUT 10
 #else
-   /* SOLARIS needs 1 */
    /* FREEBSD needs 1 */
    /* MACOSX  needs 1 */
    #define PCAP_TIMEOUT 1
@@ -131,10 +133,6 @@ void capture_init(void)
    DEBUG_MSG("requested snapshot: %d assigned: %d", GBL_PCAP->snaplen, pcap_snapshot(pd));
    GBL_PCAP->snaplen = pcap_snapshot(pd);
   
-   /* check if pcap give us the requested snaplen */
-   if (!GBL_OPTIONS->read && GBL_PCAP->snaplen != UINT16_MAX) 
-      FATAL_ERROR("pcap buffer not alloc'd correctly");
-     
    /* get the file size */
    if (GBL_OPTIONS->read) {
       struct stat st;
@@ -243,6 +241,8 @@ void capture_close(void)
 
 EC_THREAD_FUNC(capture)
 {
+   int ret;
+   
    /* init the thread and wait for start up */
    ec_thread_init();
    
@@ -255,8 +255,9 @@ EC_THREAD_FUNC(capture)
     * infinite loop 
     * dispatch packets to ec_decode
     */
-   pcap_loop(GBL_PCAP->pcap, -1, ec_decode, EC_THREAD_PARAM);
-
+   ret = pcap_loop(GBL_PCAP->pcap, -1, ec_decode, EC_THREAD_PARAM);
+   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_PCAP->pcap));
+   
    return NULL;
 }
 

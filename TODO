@@ -8,7 +8,6 @@
       - dissect_free_session
       - input for curses gui
       - remove the quiet from some plugins
-      - it does not sniff under solaris/sparc
       - flush packets in the buffer when starting the capture thread
 
    + PCAP RELATED

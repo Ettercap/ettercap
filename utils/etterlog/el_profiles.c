@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.14 2003/11/10 22:46:24 alor Exp $
+    $Id: el_profiles.c,v 1.15 2004/01/04 17:01:52 alor Exp $
 */
 
 #include <el.h>
@@ -58,6 +58,15 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
    struct host_profile *h;
    struct host_profile *c;
    struct host_profile *last = NULL;
+
+   /* 
+    * do not store profiles for hosts with ip == 0.0.0.0
+    * they are hosts requesting for a dhcp/bootp reply.
+    * they will get an ip address soon and we are interested
+    * only in the latter.
+    */
+   if (ip_addr_is_zero(&inf->L3_addr))
+      return 0;
    
    /* 
     * if the type is FP_HOST_NONLOCAL 
@@ -70,12 +79,16 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
    if (inf->type & FP_HOST_NONLOCAL)
       memset(inf->L2_addr, 0, MEDIA_ADDR_LEN);
   
-   /* parse the list */
+   /* search if it already exists */
    LIST_FOREACH(h, &hosts_list_head, next) {
-      /* search the host.
-       * it is identified by the mac and the ip address */
-      if (!memcmp(h->L2_addr, inf->L2_addr, MEDIA_ADDR_LEN) &&
+      /* an host is identified by the mac and the ip address */
+      /* if the mac address is null also update it since it could
+       * be captured as a DNS packet specifying the GW 
+       */
+      if ((!memcmp(h->L2_addr, inf->L2_addr, MEDIA_ADDR_LEN) ||
+           !memcmp(inf->L2_addr, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) &&
           !ip_addr_cmp(&h->L3_addr, &inf->L3_addr) ) {
+
          update_info(h, inf, buf);
          /* the host was already in the list
           * return 0 host added */

@@ -12,7 +12,6 @@
 
    + WINDOWS PORTING
       - make the whole thing compile ;)
-      - then found all the bugs....
       - dll instead of plugins (argh!)
 
 ============================

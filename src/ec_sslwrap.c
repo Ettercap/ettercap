@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.50 2004/07/12 19:57:26 alor Exp $
+    $Id: ec_sslwrap.c,v 1.51 2004/07/14 14:59:55 alor Exp $
 */
 
 #include <ec.h>
@@ -731,7 +731,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    if (len < 0) {
       int err = GET_SOCK_ERRNO();
 
-      if (err == EINTR || err == EAGAIN || err == EWOULDBLOCK)
+      if (err == EINTR || err == EAGAIN)
          return -ENOTHANDLED;
       else
          return -EINVALID;

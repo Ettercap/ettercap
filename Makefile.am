@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.20 2004/01/03 11:08:34 alor Exp $
+# $Id: Makefile.am,v 1.21 2004/07/14 14:59:44 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -22,6 +22,7 @@ EXTRA_DIST = AUTHORS \
              TODO \
              TODO.TESTING \
              Makefile.am.common \
+             Makefile.mingw.in \
              shtool \
              doc/*
 

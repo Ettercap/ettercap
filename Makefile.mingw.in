@@ -45,7 +45,7 @@ PANGO_ROOT = $(MINGW_ROOT)/include/pango-1.0
 ATK_ROOT   = $(MINGW_ROOT)/include/atk-1.0
 
 #
-# These should be in $(MINGW32)/lib. Win threads in glib seems buggy, leave it for now.
+# These should be in $(MINGW32)/lib. 
 #
 GLIB_LIBS = -lglib-2.0.dll -lgmodule-2.0.dll -lgobject-2.0.dll -lgthread-2.0.dll
 

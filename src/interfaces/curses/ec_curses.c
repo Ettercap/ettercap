@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.34 2004/01/06 15:03:15 alor Exp $
+    $Id: ec_curses.c,v 1.35 2004/02/08 19:58:40 alor Exp $
 */
 
 #include <ec.h>
@@ -171,7 +171,7 @@ static void curses_msg(const char *msg)
    if (sysmsg_win == NULL)
       return;
 
-   wdg_scroll_print(sysmsg_win, (char *)msg);
+   wdg_scroll_print(sysmsg_win, EC_COLOR, (char *)msg);
 }
 
 

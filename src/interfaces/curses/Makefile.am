@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.8 2004/01/06 15:03:15 alor Exp $
+# $Id: Makefile.am,v 1.9 2004/02/08 19:58:39 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -21,7 +21,9 @@ libec_curses_a_SOURCES = ec_curses.c \
                          ec_curses_plugins.c \
                          ec_curses_start.c \
                          ec_curses_targets.c \
-                         ec_curses_view.c 
+                         ec_curses_view.c \
+                         ec_curses_view_connections.c \
+                         ec_curses_view_profiles.c 
 
 # hack to include libwdg.a objects into libec_curses.a
 all: libec_curses.a 

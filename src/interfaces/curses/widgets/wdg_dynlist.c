@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dynlist.c,v 1.7 2004/02/08 11:41:44 alor Exp $
+    $Id: wdg_dynlist.c,v 1.8 2004/02/08 19:58:41 alor Exp $
 */
 
 #include <wdg.h>
@@ -92,6 +92,7 @@ void wdg_create_dynlist(struct wdg_object *wo)
 static int wdg_dynlist_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_dynlist, ww);
+   struct wdg_dynlist_call *c;
    
    WDG_DEBUG_MSG("wdg_dynlist_destroy (%p)", wo);
 
@@ -106,6 +107,13 @@ static int wdg_dynlist_destroy(struct wdg_object *wo)
    /* dealloc the structures */
    delwin(ww->sub);
    delwin(ww->win);
+   
+   /* free the callback list */
+   while (SLIST_FIRST(&ww->callbacks) != NULL) {
+      c = SLIST_FIRST(&ww->callbacks);
+      SLIST_REMOVE_HEAD(&ww->callbacks, next);
+      WDG_SAFE_FREE(c);
+   }
 
    WDG_SAFE_FREE(wo->extend);
 
@@ -326,7 +334,7 @@ void wdg_dynlist_select_callback(wdg_t *wo, void (*callback)(void *))
 }
 
 /*
- * add the callback on key presse by the user
+ * add the callback on key pressed by the user
  */
 void wdg_dynlist_add_callback(wdg_t *wo, int key, void (*callback)(void *))
 {

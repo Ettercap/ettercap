@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.33 2004/02/01 21:11:52 alor Exp $ */
+/* $Id: wdg.h,v 1.34 2004/02/08 19:58:40 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -216,12 +216,14 @@ typedef struct wdg_object wdg_t;
 extern void wdg_compound_add(wdg_t *wo, wdg_t *widget);
 extern void wdg_compound_set_focus(wdg_t *wo, wdg_t *widget);
 extern wdg_t * wdg_compound_get_focused(wdg_t *wo);
+void wdg_compound_add_callback(wdg_t *wo, int key, void (*callback)(void));
 /* window ojbects */
 extern void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
 /* panel ojbects */
 extern void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
 /* scroll ojbects */
-extern void wdg_scroll_print(wdg_t *wo, char *fmt, ...);
+extern void wdg_scroll_erase(wdg_t *wo);
+extern void wdg_scroll_print(wdg_t *wo, int color, char *fmt, ...);
 extern void wdg_scroll_set_lines(wdg_t *wo, size_t lines);
 /* menu objects */
 struct wdg_menu {

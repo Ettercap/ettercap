@@ -17,17 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.15 2004/02/08 11:41:44 alor Exp $
+    $Id: ec_curses_view.c,v 1.16 2004/02/08 19:58:40 alor Exp $
 */
 
 #include <ec.h>
 #include <wdg.h>
 #include <ec_curses.h>
 #include <ec_format.h>
-#include <ec_profiles.h>
-#include <ec_conntrack.h>
-#include <ec_manuf.h>
-#include <ec_services.h>
 
 /* proto */
 
@@ -37,24 +33,13 @@ static void curses_stop_stats(void);
 static void refresh_stats(void);
 static void curses_vis_method(void);
 static void set_method(void);
-static void curses_show_profiles(void);
-static void curses_kill_profiles(void);
-static void refresh_profiles(void);
-static void curses_profile_detail(void *profile);
-static void curses_profiles_local(void *dummy);
-static void curses_profiles_remote(void *dummy);
-static void curses_profiles_convert(void *dummy);
-static void curses_show_connections(void);
-static void curses_kill_connections(void);
-static void refresh_connections(void);
-static void curses_connection_detail(void *conn);
+extern void curses_show_profiles(void);
+extern void curses_show_connections(void);
 
 /* globals */
 
 static char tag_resolve[] = " ";
 static wdg_t *wdg_stats;
-static wdg_t *wdg_profiles, *wdg_pro_detail;
-static wdg_t *wdg_connections, *wdg_conn_detail;
 #define VLEN 8
 static char vmethod[VLEN];
 
@@ -175,301 +160,6 @@ static void set_method(void)
    set_format(vmethod);
 }
 
-/*
- * the auto-refreshing list of profiles 
- */
-static void curses_show_profiles(void)
-{
-   DEBUG_MSG("curses_show_profiles");
-
-   /* if the object already exist, set the focus to it */
-   if (wdg_profiles) {
-      wdg_set_focus(wdg_profiles);
-      return;
-   }
-   
-   wdg_create_object(&wdg_profiles, WDG_DYNLIST, WDG_OBJ_WANT_FOCUS);
-   
-   wdg_set_title(wdg_profiles, "Collected passive profiles:", WDG_ALIGN_LEFT);
-   wdg_set_size(wdg_profiles, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
-   wdg_set_color(wdg_profiles, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(wdg_profiles, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(wdg_profiles, WDG_COLOR_BORDER, EC_COLOR_BORDER);
-   wdg_set_color(wdg_profiles, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(wdg_profiles, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_draw_object(wdg_profiles);
- 
-   wdg_set_focus(wdg_profiles);
-
-   /* set the list print callback */
-   wdg_dynlist_print_callback(wdg_profiles, profile_print);
-   
-   /* set the select callback */
-   wdg_dynlist_select_callback(wdg_profiles, curses_profile_detail);
-  
-   /* add the callback on idle to refresh the profile list */
-   wdg_add_idle_callback(refresh_profiles);
-
-   /* add the destroy callback */
-   wdg_add_destroy_key(wdg_profiles, CTRL('Q'), curses_kill_profiles);
-
-   wdg_dynlist_add_callback(wdg_profiles, 'l', curses_profiles_local);
-   wdg_dynlist_add_callback(wdg_profiles, 'r', curses_profiles_remote);
-   wdg_dynlist_add_callback(wdg_profiles, 'c', curses_profiles_convert);
-}
-
-static void curses_kill_profiles(void)
-{
-   DEBUG_MSG("curses_kill_profiles");
-   wdg_del_idle_callback(refresh_profiles);
-
-   /* the object does not exist anymore */
-   wdg_profiles = NULL;
-}
-
-static void refresh_profiles(void)
-{
-   /* if not focused don't refresh it */
-   if (!(wdg_profiles->flags & WDG_OBJ_FOCUSED))
-      return;
-   
-   wdg_dynlist_refresh(wdg_profiles);
-}
-
-/*
- * display details for a profile
- */
-static void curses_profile_detail(void *profile)
-{
-   struct host_profile *h = (struct host_profile *)profile;
-   struct open_port *o;
-   struct active_user *u;
-   char tmp[MAX_ASCII_ADDR_LEN];
-   char os[OS_LEN+1];
-   
-   DEBUG_MSG("curses_profile_detail");
-
-   /* if the object already exist, set the focus to it */
-   if (wdg_pro_detail) {
-      wdg_destroy_object(&wdg_pro_detail);
-      wdg_pro_detail = NULL;
-   }
-   
-   wdg_create_object(&wdg_pro_detail, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
-   
-   wdg_set_title(wdg_pro_detail, "Profile details:", WDG_ALIGN_LEFT);
-   wdg_set_size(wdg_pro_detail, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
-   wdg_set_color(wdg_pro_detail, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(wdg_pro_detail, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(wdg_pro_detail, WDG_COLOR_BORDER, EC_COLOR_BORDER);
-   wdg_set_color(wdg_pro_detail, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(wdg_pro_detail, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_draw_object(wdg_pro_detail);
- 
-   wdg_set_focus(wdg_pro_detail);
-
-   wdg_add_destroy_key(wdg_pro_detail, CTRL('Q'), NULL);
-   wdg_scroll_set_lines(wdg_pro_detail, 100);
-
-   memset(os, 0, sizeof(os));
-   
-   wdg_scroll_print(wdg_pro_detail, " IP address   : %s \n", ip_addr_ntoa(&h->L3_addr, tmp));
-   if (strcmp(h->hostname, ""))
-      wdg_scroll_print(wdg_pro_detail, " Hostname     : %s \n\n", h->hostname);
-   else
-      wdg_scroll_print(wdg_pro_detail, "\n");   
-      
-   if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
-      wdg_scroll_print(wdg_pro_detail, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
-      wdg_scroll_print(wdg_pro_detail, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
-   }
-
-   wdg_scroll_print(wdg_pro_detail, " DISTANCE     : %d   \n", h->distance);
-   if (h->type & FP_GATEWAY)
-      wdg_scroll_print(wdg_pro_detail, " TYPE         : GATEWAY\n\n");
-   else if (h->type & FP_HOST_LOCAL)
-      wdg_scroll_print(wdg_pro_detail, " TYPE         : LAN host\n\n");
-   else if (h->type & FP_ROUTER)
-      wdg_scroll_print(wdg_pro_detail, " TYPE         : REMOTE ROUTER\n\n");
-   else if (h->type & FP_HOST_NONLOCAL)
-      wdg_scroll_print(wdg_pro_detail, " TYPE         : REMOTE host\n\n");
-   else if (h->type == FP_UNKNOWN)
-      wdg_scroll_print(wdg_pro_detail, " TYPE         : unknown\n\n");
-      
-   
-   wdg_scroll_print(wdg_pro_detail, " FINGERPRINT      : %s\n", h->fingerprint);
-   if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
-      wdg_scroll_print(wdg_pro_detail, " OPERATING SYSTEM : %s \n\n", os);
-   else {
-      wdg_scroll_print(wdg_pro_detail, " OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
-      wdg_scroll_print(wdg_pro_detail, " NEAREST ONE IS   : %s \n\n", os);
-   }
-      
-   
-   LIST_FOREACH(o, &(h->open_ports_head), next) {
-      
-      wdg_scroll_print(wdg_pro_detail, "   PORT     : %s %d | %s \t[%s]\n", 
-                  (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , 
-                  ntohs(o->L4_addr),
-                  service_search(o->L4_addr, o->L4_proto), 
-                  (o->banner) ? o->banner : "");
-      
-      LIST_FOREACH(u, &(o->users_list_head), next) {
-        
-         if (u->failed)
-            wdg_scroll_print(wdg_pro_detail, "      ACCOUNT : * %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
-         else
-            wdg_scroll_print(wdg_pro_detail, "      ACCOUNT : %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
-         if (u->info)
-            wdg_scroll_print(wdg_pro_detail, "      INFO    : %s\n\n", u->info);
-         else
-            wdg_scroll_print(wdg_pro_detail, "\n");
-      }
-   }
-}
-
-static void curses_profiles_local(void *dummy)
-{
-   profile_purge_remote();
-   wdg_dynlist_reset(wdg_profiles);
-   wdg_dynlist_refresh(wdg_profiles);
-}
-
-static void curses_profiles_remote(void *dummy)
-{
-   profile_purge_local();
-   wdg_dynlist_reset(wdg_profiles);
-   wdg_dynlist_refresh(wdg_profiles);
-}
-
-static void curses_profiles_convert(void *dummy)
-{
-   profile_convert_to_hostlist();
-   curses_message("The hosts list was populated with local profiles");
-}
-
-/*
- * the auto-refreshing list of connections
- */
-static void curses_show_connections(void)
-{
-   DEBUG_MSG("curses_show_connections");
-
-   /* if the object already exist, set the focus to it */
-   if (wdg_connections) {
-      wdg_set_focus(wdg_connections);
-      return;
-   }
-   
-   wdg_create_object(&wdg_connections, WDG_DYNLIST, WDG_OBJ_WANT_FOCUS);
-   
-   wdg_set_title(wdg_connections, "Live connections:", WDG_ALIGN_LEFT);
-   wdg_set_size(wdg_connections, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
-   wdg_set_color(wdg_connections, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(wdg_connections, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(wdg_connections, WDG_COLOR_BORDER, EC_COLOR_BORDER);
-   wdg_set_color(wdg_connections, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(wdg_connections, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_draw_object(wdg_connections);
- 
-   wdg_set_focus(wdg_connections);
-
-   /* set the list print callback */
-   wdg_dynlist_print_callback(wdg_connections, conntrack_print);
-   
-   /* set the select callback */
-   //wdg_dynlist_select_callback(wdg_connections, curses_profile_detail);
-  
-   /* add the callback on idle to refresh the profile list */
-   wdg_add_idle_callback(refresh_connections);
-
-   /* add the destroy callback */
-   wdg_add_destroy_key(wdg_connections, CTRL('Q'), curses_kill_connections);
-
-   wdg_dynlist_add_callback(wdg_connections, 'd', curses_connection_detail);
-   //wdg_dynlist_add_callback(wdg_connections, 'r', curses_profiles_remote);
-   //wdg_dynlist_add_callback(wdg_connections, 'c', curses_profiles_convert);
-}
-
-static void curses_kill_connections(void)
-{
-   DEBUG_MSG("curses_kill_connections");
-   wdg_del_idle_callback(refresh_connections);
-
-   /* the object does not exist anymore */
-   wdg_connections = NULL;
-}
-
-static void refresh_connections(void)
-{
-   /* if not focused don't refresh it */
-   if (!(wdg_connections->flags & WDG_OBJ_FOCUSED))
-      return;
-   
-   wdg_dynlist_refresh(wdg_connections);
-}
-
-/* 
- * details for a connection
- */
-static void curses_connection_detail(void *conn)
-{
-   struct conn_tail *c = (struct conn_tail *)conn;
-   char tmp[MAX_ASCII_ADDR_LEN];
-   char *proto = "";
-   
-   DEBUG_MSG("curses_connection_detail");
-
-   /* if the object already exist, set the focus to it */
-   if (wdg_conn_detail) {
-      wdg_destroy_object(&wdg_conn_detail);
-      wdg_conn_detail = NULL;
-   }
-   
-   wdg_create_object(&wdg_conn_detail, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
-   
-   wdg_set_title(wdg_conn_detail, "Connection detail:", WDG_ALIGN_LEFT);
-   wdg_set_size(wdg_conn_detail, 1, 2, 70, 21);
-   wdg_set_color(wdg_conn_detail, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(wdg_conn_detail, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(wdg_conn_detail, WDG_COLOR_BORDER, EC_COLOR_BORDER);
-   wdg_set_color(wdg_conn_detail, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(wdg_conn_detail, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_draw_object(wdg_conn_detail);
- 
-   wdg_set_focus(wdg_conn_detail);
-  
-   /* add the destroy callback */
-   wdg_add_destroy_key(wdg_conn_detail, CTRL('Q'), NULL);
-   
-   /* print the information */
-   wdg_window_print(wdg_conn_detail, 1, 1, "Source MAC address      :  %s", mac_addr_ntoa(c->co->L2_addr1, tmp));
-   wdg_window_print(wdg_conn_detail, 1, 2, "Destination MAC address :  %s", mac_addr_ntoa(c->co->L2_addr2, tmp));
-   
-   wdg_window_print(wdg_conn_detail, 1, 4, "Source IP address       :  %s", ip_addr_ntoa(&(c->co->L3_addr1), tmp));
-   wdg_window_print(wdg_conn_detail, 1, 5, "Destination IP address  :  %s", ip_addr_ntoa(&(c->co->L3_addr2), tmp));
-   
-   switch (c->co->L4_proto) {
-      case NL_TYPE_UDP:
-         proto = "UDP";
-         break;
-      case NL_TYPE_TCP:
-         proto = "TCP";
-         break;
-   }
-   
-   wdg_window_print(wdg_conn_detail, 1, 7, "Protocol                :  %s", proto);
-   wdg_window_print(wdg_conn_detail, 1, 8, "Source port             :  %-5d  %s", ntohs(c->co->L4_addr1), service_search(c->co->L4_addr1, c->co->L4_proto));
-   wdg_window_print(wdg_conn_detail, 1, 9, "Destination port        :  %-5d  %s", ntohs(c->co->L4_addr2), service_search(c->co->L4_addr2, c->co->L4_proto));
-   
-   wdg_window_print(wdg_conn_detail, 1, 11, "Transferred bytes       :  %d", c->co->xferred);
-   
-   if (c->co->DISSECTOR.user) {
-      wdg_window_print(wdg_conn_detail, 1, 13, "Account                 :  %s / %s", c->co->DISSECTOR.user, c->co->DISSECTOR.pass);
-      if (c->co->DISSECTOR.info)
-         wdg_window_print(wdg_conn_detail, 1, 14, "Additional Info         :  %s", c->co->DISSECTOR.info);
-   }
-}
 
 /* EOF */
 

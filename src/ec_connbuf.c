@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_connbuf.c,v 1.6 2003/11/08 14:59:44 alor Exp $
+    $Id: ec_connbuf.c,v 1.7 2004/02/08 19:58:37 alor Exp $
 */
 
 #include <ec.h>
@@ -35,7 +35,7 @@
 void connbuf_init(struct conn_buf *cb, size_t size);
 int connbuf_add(struct conn_buf *cb, struct packet_object *po);
 void connbuf_wipe(struct conn_buf *cb);
-int connbuf_print(struct conn_buf *cb, struct ip_addr *L3_src, void (*)(u_char *, size_t));
+int connbuf_print(struct conn_buf *cb, void (*)(u_char *, size_t, struct ip_addr *L3_src));
 
 /************************************************/
 
@@ -164,30 +164,21 @@ void connbuf_wipe(struct conn_buf *cb)
  *
  * returns the number of printed chars
  */
-int connbuf_print(struct conn_buf *cb, struct ip_addr *L3_src, void (*func)(u_char *, size_t))
+int connbuf_print(struct conn_buf *cb, void (*func)(u_char *, size_t, struct ip_addr *L3_src))
 {
    struct conn_pck_list *e;
    int n = 0;
   
-   DEBUG_MSG("connbuf_print");
-   
    CONNBUF_LOCK(cb->connbuf_mutex);
    
    /* print the buffer */
    TAILQ_FOREACH_REVERSE(e, &cb->connbuf_tail, next, connbuf_head) {
-      /*
-       * print only packet that matches the L3 filter.
-       * if L3_src is NULL, print all the packets
-       * they will be shown as in a joined view
+      /* 
+       * remember that the size is comprehensive
+       * of the struct size
        */
-      if (L3_src == NULL || !ip_addr_cmp(&e->L3_src, L3_src)) {
-         /* 
-          * remember that the size is comprehensive
-          * of the struct size
-          */
-         func(e->buf, e->size - sizeof(struct conn_pck_list));
-         n += e->size - sizeof(struct conn_pck_list);
-      }
+      func(e->buf, e->size - sizeof(struct conn_pck_list), &e->L3_src);
+      n += e->size - sizeof(struct conn_pck_list);
    }
    
    CONNBUF_UNLOCK(cb->connbuf_mutex);

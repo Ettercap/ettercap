@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_scroll.c,v 1.4 2003/12/27 18:49:52 alor Exp $
+    $Id: wdg_scroll.c,v 1.5 2004/02/08 19:58:41 alor Exp $
 */
 
 #include <wdg.h>
@@ -49,7 +49,8 @@ static int wdg_scroll_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_e
 
 static void wdg_scroll_border(struct wdg_object *wo);
 
-void wdg_scroll_print(wdg_t *wo, char *fmt, ...);
+void wdg_scroll_erase(wdg_t *wo);
+void wdg_scroll_print(wdg_t *wo, int color, char *fmt, ...);
 void wdg_scroll_set_lines(wdg_t *wo, size_t lines);
 static void wdg_set_scroll(struct wdg_object *wo, int s);
 static void wdg_mouse_scroll(struct wdg_object *wo, int s);
@@ -324,9 +325,25 @@ static void wdg_scroll_border(struct wdg_object *wo)
 }
 
 /*
+ * erase the subwindow
+ */
+void wdg_scroll_erase(wdg_t *wo)
+{
+   WDG_WO_EXT(struct wdg_scroll, ww);
+   size_t c = wdg_get_ncols(wo);
+   size_t l = wdg_get_nlines(wo);
+   size_t x = wdg_get_begin_x(wo);
+   size_t y = wdg_get_begin_y(wo);
+   
+   werase(ww->sub);
+   
+   WDG_PAD_REFRESH(ww, c, l, x, y);
+}
+
+/*
  * print a string in the window
  */
-void wdg_scroll_print(wdg_t *wo, char *fmt, ...)
+void wdg_scroll_print(wdg_t *wo, int color, char *fmt, ...)
 {
    WDG_WO_EXT(struct wdg_scroll, ww);
    size_t c = wdg_get_ncols(wo);
@@ -340,10 +357,14 @@ void wdg_scroll_print(wdg_t *wo, char *fmt, ...)
    /* move to the bottom of the pad */
    wdg_set_scroll(wo, ww->y_max - l + 1);
 
+   wbkgdset(ww->sub, COLOR_PAIR(color));
+
    /* print the message */
    va_start(ap, fmt);
    vw_printw(ww->sub, fmt, ap);
    va_end(ap);
+   
+   wbkgdset(ww->sub, COLOR_PAIR(wo->window_color));
    
    WDG_PAD_REFRESH(ww, c, l, x, y);
 }

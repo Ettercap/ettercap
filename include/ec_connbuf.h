@@ -1,5 +1,5 @@
 
-/* $Id: ec_connbuf.h,v 1.4 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_connbuf.h,v 1.5 2004/02/08 19:58:25 alor Exp $ */
 
 #ifndef EC_CONNBUF_H
 #define EC_CONNBUF_H
@@ -34,7 +34,7 @@ struct conn_pck_list {
 extern void connbuf_init(struct conn_buf *cb, size_t size);
 extern int connbuf_add(struct conn_buf *cb, struct packet_object *po);
 extern void connbuf_wipe(struct conn_buf *cb);
-extern int connbuf_print(struct conn_buf *cb, struct ip_addr *L3_src, void (*)(u_char *, size_t));
+extern int connbuf_print(struct conn_buf *cb, void (*)(u_char *, size_t, struct ip_addr *));
 
 
 #endif

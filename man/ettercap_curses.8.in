@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.9 2004/02/08 14:38:55 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.10 2004/02/08 19:58:37 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -226,7 +226,8 @@ Save the current hosts list to a file.
 Displays the connection list. To see detailed information about a connection,
 press 'd'. To see the traffic for a specific connection,
 select it and press enter. Once the two-panel interface is displayed you can
-move the focus with the arrow keys.
+move the focus with the arrow keys. Press 'j' to switch between joined and
+splitted visualization.
 .br
 HINT: connections marked with an asterisk contain account(s) informations.
 .TP

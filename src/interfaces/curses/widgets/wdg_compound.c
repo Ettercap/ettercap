@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_compound.c,v 1.4 2004/02/03 16:32:38 alor Exp $
+    $Id: wdg_compound.c,v 1.5 2004/02/08 19:58:41 alor Exp $
 */
 
 #include <wdg.h>
@@ -26,6 +26,12 @@
 #include <stdarg.h>
 
 /* GLOBALS */
+
+struct wdg_compound_call {
+   int key;
+   void (*callback)(void);
+   SLIST_ENTRY(wdg_compound_call) next;
+};
 
 struct wdg_widget_list {
    struct wdg_object *wdg;
@@ -36,6 +42,7 @@ struct wdg_compound {
    WINDOW *win;
    struct wdg_widget_list *focused;
    TAILQ_HEAD(wtail, wdg_widget_list) widgets_list;
+   SLIST_HEAD(, wdg_compound_call) callbacks;
 };
 
 /* PROTOS */
@@ -55,6 +62,7 @@ static int wdg_compound_dispatch(struct wdg_object *wo, int key, struct wdg_mous
 void wdg_compound_add(wdg_t *wo, wdg_t *widget);
 void wdg_compound_set_focus(wdg_t *wo, wdg_t *widget);
 wdg_t * wdg_compound_get_focused(wdg_t *wo);
+void wdg_compound_add_callback(wdg_t *wo, int key, void (*callback)(void));
 
 /*******************************************/
 
@@ -89,6 +97,7 @@ static int wdg_compound_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_compound, ww);
    struct wdg_widget_list *e, *tmp;
+   struct wdg_compound_call *c;
    
    WDG_DEBUG_MSG("wdg_compound_destroy");
 
@@ -104,6 +113,13 @@ static int wdg_compound_destroy(struct wdg_object *wo)
    TAILQ_FOREACH_SAFE(e, &(ww->widgets_list), next, tmp) {
       wdg_destroy_object(&e->wdg);
       WDG_SAFE_FREE(e);
+   }
+   
+   /* free the callback list */
+   while (SLIST_FIRST(&ww->callbacks) != NULL) {
+      c = SLIST_FIRST(&ww->callbacks);
+      SLIST_REMOVE_HEAD(&ww->callbacks, next);
+      WDG_SAFE_FREE(c);
    }
 
    WDG_SAFE_FREE(wo->extend);
@@ -313,6 +329,20 @@ static void wdg_compound_move(struct wdg_object *wo, int key)
 static int wdg_compound_dispatch(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
    WDG_WO_EXT(struct wdg_compound, ww);
+   struct wdg_compound_call *c;
+
+   /* first: check if the key is linked to a callback */
+   SLIST_FOREACH(c, &ww->callbacks, next) {
+      if (c->key == key) {
+         
+         WDG_DEBUG_MSG("wdg_compound_callback");
+         
+         /* execute the callback */
+         WDG_EXECUTE(c->callback);
+         
+         return WDG_ESUCCESS;
+      }
+   }
 
    /* pass the message to the focused widget */
    return ww->focused->wdg->get_msg(ww->focused->wdg, key, mouse);
@@ -416,6 +446,22 @@ wdg_t * wdg_compound_get_focused(wdg_t *wo)
         return e->wdg;
   
    return NULL;
+}
+
+/*
+ * add the callback on key presse by the user
+ */
+void wdg_compound_add_callback(wdg_t *wo, int key, void (*callback)(void))
+{
+   WDG_WO_EXT(struct wdg_compound, ww);
+   struct wdg_compound_call *c;
+
+   WDG_SAFE_CALLOC(c, 1, sizeof(struct wdg_compound_call));
+   
+   c->key = key;
+   c->callback = callback;
+
+   SLIST_INSERT_HEAD(&ww->callbacks, c, next);
 }
 
 /* EOF */

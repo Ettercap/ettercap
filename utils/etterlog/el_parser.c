@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_parser.c,v 1.23 2004/09/24 15:10:02 alor Exp $
+    $Id: el_parser.c,v 1.24 2004/10/05 15:33:11 alor Exp $
 */
 
 
@@ -309,7 +309,7 @@ void parse_options(int argc, char **argv)
    if (argv[optind])
       open_log(argv[optind]);
    else
-      FATAL_ERROR("You MUST specify a logfile");
+      FATAL_ERROR("You MUST specify a logfile\n");
   
    /* default to ASCII view */ 
    if (GBL.format == NULL)

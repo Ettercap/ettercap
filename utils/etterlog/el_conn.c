@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_conn.c,v 1.10 2004/09/24 15:10:02 alor Exp $
+    $Id: el_conn.c,v 1.11 2004/10/05 15:33:11 alor Exp $
 */
 
 #include <el.h>
@@ -325,7 +325,6 @@ void conn_decode(void)
      
       /* extract the files from this connection */
       decode_stream(&c->so);
-      
    }
 
    fprintf(stdout, "\n");

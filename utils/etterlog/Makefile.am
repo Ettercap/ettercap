@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.16 2004/09/24 15:10:01 alor Exp $
+# $Id: Makefile.am,v 1.17 2004/10/05 15:33:11 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -11,6 +11,7 @@ bin_PROGRAMS = etterlog
 etterlog_SOURCES = el_analyze.c \
                    el_conn.c \
                    el_decode.c \
+                   el_decode_http.c \
                    el_display.c \
                    el_ec_compat.c \
                    el_log.c \

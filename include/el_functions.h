@@ -1,5 +1,5 @@
 
-/* $Id: el_functions.h,v 1.18 2004/09/24 15:10:01 alor Exp $ */
+/* $Id: el_functions.h,v 1.19 2004/10/05 15:33:11 alor Exp $ */
 
 #ifndef EL_FUNCTIONS_H
 #define EL_FUNCTIONS_H
@@ -73,7 +73,23 @@ EL_API_EXTERN void stream_move(struct stream_object *so, int offset, int whence)
 
 /* el_decode */
 
+enum {
+   APP_LAYER_TCP = 51,
+   APP_LAYER_UDP = 52,
+};
+
+#define FUNC_EXTRACTOR(func) void * func(struct stream_object *so)
+#define FUNC_EXTRACTOR_PTR(func) void * (*func)(struct stream_object *so)
+#define EXECUTE_EXTRACTOR(x, so) do{ \
+   if (x) \
+      x(so); \
+}while(0)
+
+#define STREAM so
+
 EL_API_EXTERN void decode_stream(struct stream_object *so);
+EL_API_EXTERN void add_extractor(u_int8 level, u_int32 type, FUNC_EXTRACTOR_PTR(extractor));
+EL_API_EXTERN void * get_extractor(u_int8 level, u_int32 type);
 
 #endif
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.53 2004/07/12 19:57:26 alor Exp $
+    $Id: ec_capture.c,v 1.54 2004/07/13 09:35:44 alor Exp $
 */
 
 #include <ec.h>
@@ -87,10 +87,10 @@ static char *iface_name(const char *s)
       DEBUG_MSG("iface_name: '%S', is_unicode '%s'", s, buf);
       return buf;
    }
-#else
+#endif
+
    SAFE_STRDUP(buf, s);
    return buf;
-#endif
 }
 
 /*
@@ -350,6 +350,17 @@ void capture_getifs(void)
       pdev = dev;
       
       DEBUG_MSG("capture_getifs: [%s] %s", dev->name, dev->description);
+   }
+
+   /* do we have to print the list ? */
+   if (GBL_OPTIONS->iflist) {
+     
+      USER_MSG("List of available Network Interfaces:\n\n");
+      
+      for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next)
+         USER_MSG(" %s  \t%s\n", dev->name, dev->description);
+
+      clean_exit(0);
    }
                    
 }

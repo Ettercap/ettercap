@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_cygwin.c,v 1.6 2004/06/27 12:51:02 alor Exp $
+    $Id: ec_cygwin.c,v 1.7 2004/07/13 09:35:44 alor Exp $
 */
 
 #include <ec.h>
@@ -27,7 +27,7 @@ static HKEY handle;
 
 void disable_ip_forward(void);
 static void restore_ip_forward(void);
-u_int16 get_iface_mtu(char *iface);
+u_int16 get_iface_mtu(const char *iface);
 
 /*******************************************/
 
@@ -121,7 +121,7 @@ static void restore_ip_forward(void)
 /* 
  * get the MTU parameter from the interface 
  */
-u_int16 get_iface_mtu(char *iface)
+u_int16 get_iface_mtu(const char *iface)
 {
    int mtu = 1500;
    NOT_IMPLEMENTED();

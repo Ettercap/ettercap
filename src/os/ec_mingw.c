@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.4 2004/07/09 14:54:05 alor Exp $
+    $Id: ec_mingw.c,v 1.5 2004/07/13 09:35:44 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -25,8 +25,6 @@
 
  */
 
-#define FD_SETSIZE  2048
-
 #include <ec.h>
 #include <errno.h>
 #include <signal.h>
@@ -34,12 +32,29 @@
 #include <sys/timeb.h>
 #include <conio.h>
 #include <io.h>
+
+#ifndef WPCAP
+#define WPCAP  /* makes <pcap.h> include <Win32-Extensions.h> */
+#endif
+
 #include <pcap.h>
+#include <Packet32.h>
+#include <NtddNdis.h>
+
+#ifdef HAVE_NCURSES
+    #include <missing/ncurses.h>
+    #include <wdg.h>
+
+    extern bool trace_on;   /* From <curspriv.h> */
+    extern int  PDC_check_bios_key (void);
+    extern void PDC_debug (char*, ...);
+#endif
 
 #ifndef __inline
 #define __inline
 #endif
 
+/* Most of this is *not* MingW specific, but Ettercap requires gcc */
 #ifndef __GNUC__
 #error "You must be joking"
 #endif
@@ -49,22 +64,98 @@
    EC_API_EXPORTED LIST_HEAD(, hosts_list) group_two_head;
 #endif
 
+static void pdc_ncurses_init(void);
+
+/***************************************/
+
 static void __init win_init(void)
 {
    /* Dr MingW JIT */
    LoadLibrary ("exchndl.dll");   
+   pdc_ncurses_init();
 }
 
-u_int16 get_iface_mtu(char *iface)
+/*
+ * Ask NDIS for the device MTU
+ */
+static BOOL get_interface_mtu (ADAPTER *adapter, DWORD *mtu)
 {
-   (void)iface;
-   /* XXX - implement this function */
-   return (1514);
+#ifdef OID_GEN_MAXIMUM_TOTAL_SIZE  /* Not an old <NtddNdis.h> */
+  struct {
+    PACKET_OID_DATA oidData;
+    DWORD mtu;
+  } oid;
+
+  memset (&oid, 0, sizeof(oid));
+  oid.oidData.Oid = OID_GEN_MAXIMUM_TOTAL_SIZE;
+  oid.oidData.Length = sizeof(oid);
+
+  if (!PacketRequest(adapter, FALSE, &oid.oidData))
+     return (FALSE);
+  *mtu = *(DWORD*) &oid.oidData.Data;
+  return (TRUE);
+#else
+  (void) adapter;
+  (void) mtu;
+  return (FALSE);
+#endif
 }
+
+u_int16 get_iface_mtu(const char *iface)
+{
+   if (iface) {
+      ADAPTER *adapter;
+      DWORD    mtu = 0;
+
+      adapter = PacketOpenAdapter ((PCHAR)iface);
+      if (adapter) {
+         BOOL rc = get_interface_mtu (adapter, &mtu);
+
+         DEBUG_MSG("get_interface_mtu(): mtu %lu, %s", mtu, rc ? "okay" : "failed");
+      
+         PacketCloseAdapter (adapter);
+         if (rc & mtu)
+            return (mtu);
+      } else
+         DEBUG_MSG("get_interface_mtu(): failed to open iface \"%s\"; %s",
+                iface, ec_win_strerror(GetLastError()));
+   }
+   
+   return (1514);  /* Assume ethernet */
+}
+
 
 void disable_ip_forward (void)
 {
-   DEBUG_MSG ("disable_ip_forward (no-op\n");
+   DEBUG_MSG ("disable_ip_forward (no-op)\n");
+}
+
+/*
+ * Get and set the read-event assosiated with the pcap handle. This
+ * causes pcap_loop() to terminate (ReadFile hopefully returns 0).
+ * Note: this function is called outside the capture thread, so take
+ * care not to modify the pcap_handle in any way.
+ */
+int ec_win_pcap_stop (const void *pcap_handle)
+{
+  static CRITICAL_SECTION crit;
+  HANDLE hnd = pcap_getevent ((pcap_t*)pcap_handle);
+  BOOL   rc;
+  DWORD  err;
+
+  DEBUG_MSG("%s: signalling pcap to stop...", __FUNCTION__);
+  if (!hnd) {
+    DEBUG_MSG("no event-handle!?\n");
+    return (0);
+  }
+
+  InitializeCriticalSection (&crit);
+  EnterCriticalSection (&crit);
+  rc  = SetEvent (hnd);
+  err = !rc ? GetLastError() : 0UL;
+  LeaveCriticalSection (&crit);
+  DEBUG_MSG("rc %d, %s\n", rc, ec_win_strerror(err));
+  return (1);
 }
 
 /*
@@ -85,8 +176,7 @@ int ec_win_gettimeofday (struct timeval *tv, struct timezone *tz)
   _ftime (&tb);
   tv->tv_sec  = tb.time;
   tv->tv_usec = tb.millitm * 1000 + 500;
-  if (tz)
-  {
+  if (tz) {
     tz->tz_minuteswest = -60 * _timezone;
     tz->tz_dsttime = _daylight;
   }
@@ -94,13 +184,11 @@ int ec_win_gettimeofday (struct timeval *tv, struct timezone *tz)
 }
 
 /*
- * Use PDcurses' kbhit() if initialised
+ * Use PDcurses' keyboard checker if it's initialised.
  */
 static int __inline win_kbhit (void)
 {
 #ifdef HAVE_NCURSES
-   int PDC_check_bios_key (void); /* <curspriv.h> */
-
    if ((current_screen.flags & WDG_SCR_INITIALIZED))
       return PDC_check_bios_key();
 #endif
@@ -123,8 +211,7 @@ int ec_win_poll (struct pollfd *p, int num, int timeout)
   FD_ZERO (&excpt);
 
   n = -1;
-  for (i = 0; i < num; i++)
-  {
+  for (i = 0; i < num; i++) {
     if (p[i].fd < 0)
        continue;
 
@@ -146,15 +233,13 @@ int ec_win_poll (struct pollfd *p, int num, int timeout)
 
   if (timeout < 0)
      ret = select (n+1, &read[0], &write[0], &excpt[0], NULL);
-  else
-  {
+  else {
     tv.tv_sec  = timeout / 1000;
     tv.tv_usec = 1000 * (timeout % 1000);
     ret = select (n+1, &read[0], &write[0], &excpt[0], &tv);
   }
 
-  for (i = 0; ret >= 0 && i < num; i++)
-  {
+  for (i = 0; ret >= 0 && i < num; i++) {
     p[i].revents = 0;
     if (FD_ISSET (p[i].fd, &read[0]))
        p[i].revents |= POLLIN;
@@ -164,13 +249,12 @@ int ec_win_poll (struct pollfd *p, int num, int timeout)
        p[i].revents |= POLLERR;
   }
 
-  if ((p[STDIN_FILENO].events & POLLIN) && num >= STDIN_FILENO && win_kbhit())
-  {
+  if ((p[STDIN_FILENO].events & POLLIN) && num >= STDIN_FILENO && win_kbhit()) {
     p [STDIN_FILENO].revents = POLLIN;
     ret++;
   }
-  if ((p[STDOUT_FILENO].events & POLLOUT) && num >= STDOUT_FILENO && isatty(STDOUT_FILENO) >= 0)
-  {
+  if ((p[STDOUT_FILENO].events & POLLOUT) && num >= STDOUT_FILENO &&
+      isatty(STDOUT_FILENO) >= 0) {
     p [STDOUT_FILENO].revents = POLLOUT;
     ret++;
   }
@@ -214,17 +298,16 @@ const char *ec_win_get_user_dir (void)
   home = getenv ("HOME");
   if (home)
      strncpy (path, home, sizeof(path)-1);
-  else
-  {
+  else {
     home = getenv ("APPDATA");         /* Win-9x/ME */
     if (home)
        strncpy (path, home, sizeof(path)-1);
-    else
-    {
+    else {
       home = getenv ("USERPROFILE");   /* Win-2K/XP */
       if (home)
            snprintf (path, sizeof(path)-1, "%s\\Application Data", home);
-      else strncpy (path, ec_win_get_ec_dir(), sizeof(path)-1);
+      else
+        strncpy (path, ec_win_get_ec_dir(), sizeof(path)-1);
     }
   }
   path [sizeof(path)-1] = '\0';
@@ -252,8 +335,7 @@ const char *ec_win_strsignal (int signo)
 {
   static char buf [20];
 
-  switch (signo)
-  {
+  switch (signo) {
     case 0:
          return ("None");
 #ifdef SIGINT
@@ -425,6 +507,14 @@ int ec_win_fork(void)
 }
 
 /*
+ * No fork() in Windows, just beep
+ */
+void set_daemon_interface (void)
+{
+  _putch ('\a');
+}
+
+/*
  * A simple mmap() emulation.
  */
 struct mmap_list {
@@ -466,8 +556,7 @@ add_mmap_node (const void *file_ptr, const HANDLE os_map, DWORD size)
   return (m);
 }
 
-static __inline struct mmap_list *
-unlink_mmap (struct mmap_list *This)
+static __inline void unlink_mmap (struct mmap_list *This)
 {
   struct mmap_list *m, *prev, *next;
 
@@ -479,9 +568,8 @@ unlink_mmap (struct mmap_list *This)
     else prev->next = m->next;
     next = m->next;
     free (m);
-    return (next);
+    break;
   }
-  return (NULL);
 }
 
 void *ec_win_mmap (int fd, size_t size, int prot)
@@ -492,7 +580,7 @@ void *ec_win_mmap (int fd, size_t size, int prot)
    void  *file_ptr;
 
    if (fd < 0 || size == 0 || !(prot & (PROT_READ|PROT_WRITE))) {
-      SetLastError(errno = EINVAL);
+    SetLastError (errno = EINVAL);
       return (MAP_FAILED);
    }
 
@@ -522,7 +610,7 @@ void *ec_win_mmap (int fd, size_t size, int prot)
       }
    }
    
-   file_ptr = (map ? map->file_ptr : NULL);
+   file_ptr = (map ? (void *)map->file_ptr : NULL);
    if (!file_ptr)
       CloseHandle (os_map);
   
@@ -558,6 +646,7 @@ int ec_win_munmap (const void *file_ptr, size_t size)
 #ifndef INDIR_MASK
    #define INDIR_MASK  0xc0
 #endif
+
 #ifndef MAXLABEL
    #define MAXLABEL    63         /* maximum length of domain label */
 #endif
@@ -579,23 +668,19 @@ static int dn_find (u_char *exp_dn, u_char *msg, u_char **dnptrs, u_char **lastd
 {
   u_char **cpp;
 
-  for (cpp = dnptrs; cpp < lastdnptr; cpp++)
-  {
+  for (cpp = dnptrs; cpp < lastdnptr; cpp++) {
     u_char *dn = exp_dn;
     u_char *sp = *cpp;
     u_char *cp = *cpp;
     int     n;
 
-    while ((n = *cp++) != 0)
-    {
+    while ((n = *cp++) != 0) {
       /*
        * check for indirection
        */
-      switch (n & INDIR_MASK)
-      {
+      switch (n & INDIR_MASK) {
         case 0:    /* normal case, n == len */
-             while (--n >= 0)
-             {
+             while (--n >= 0) {
                if (*dn == '.')
                   goto next;
                if (*dn == '\\')
@@ -629,7 +714,7 @@ int ec_win_dn_expand (const u_char *msg, const u_char *eom_orig,
 {
   const u_char *cp;
   char *dn, *eom;
-  int   n, len = -1, checked = 0;
+  int   c, n, len = -1, checked = 0;
 
   dn  = exp_dn;
   cp  = comp_dn;
@@ -637,14 +722,11 @@ int ec_win_dn_expand (const u_char *msg, const u_char *eom_orig,
 
   /* Fetch next label in domain name
    */
-  while ((n = *cp++) != 0)
-  {
+  while ((n = *cp++) != 0) {
     /* Check for indirection */
-    switch (n & INDIR_MASK)
-    {
+    switch (n & INDIR_MASK) {
       case 0:
-           if (dn != exp_dn)
-           {
+           if (dn != exp_dn) {
              if (dn >= eom)
                 return (-1);
              *dn++ = '.';
@@ -652,11 +734,9 @@ int ec_win_dn_expand (const u_char *msg, const u_char *eom_orig,
            if (dn+n >= eom)
               return (-1);
            checked += n + 1;
-           while (--n >= 0)
-           {
+           while (--n >= 0) {
              int c = *cp++;
-             if ((c == '.') || (c == '\\'))
-             {
+             if ((c == '.') || (c == '\\')) {
                if (dn + n + 2 >= eom)
                   return (-1);
                *dn++ = '\\';
@@ -689,12 +769,11 @@ int ec_win_dn_expand (const u_char *msg, const u_char *eom_orig,
   }
 
   *dn = '\0';
-  {
-    int c;
-    for (dn = exp_dn; (c = *dn) != '\0'; dn++)
-        if (isascii(c) && isspace(c))
-           return (-1);
-  }
+  
+  for (dn = exp_dn; (c = *dn) != '\0'; dn++)
+    if (isascii(c) && isspace(c))
+      return (-1);
+    
   if (len < 0)
      len = cp - comp_dn;
   return (len);
@@ -725,10 +804,9 @@ int dn_comp (const char *exp_dn, u_char *comp_dn, int length,
   cp  = comp_dn;
   eob = cp + length;
   lpp = cpp = NULL;
-  if (dnptrs)
-  {
-    if ((msg = *dnptrs++) != NULL)
-    {
+  if (dnptrs) {
+    msg = *dnptrs++;
+    if (msg) {
       for (cpp = dnptrs; *cpp; cpp++)
           ;
       lpp = cpp;  /* end of list to search */
@@ -737,13 +815,10 @@ int dn_comp (const char *exp_dn, u_char *comp_dn, int length,
   else
     msg = NULL;
 
-  for (c = *dn++; c != '\0'; )
-  {
+  for (c = *dn++; c != '\0'; ) {
     /* look to see if we can use pointers */
-    if (msg)
-    {
-      if ((l = dn_find (dn-1, msg, dnptrs, lpp)) >= 0)
-      {
+    if (msg) {
+      if ((l = dn_find (dn-1, msg, dnptrs, lpp)) >= 0) {
         if (cp+1 >= eob)
            return (-1);
         *cp++ = (l >> 8) | INDIR_MASK;
@@ -751,27 +826,22 @@ int dn_comp (const char *exp_dn, u_char *comp_dn, int length,
         return (cp - comp_dn);
       }
       /* not found, save it */
-      if (lastdnptr && cpp < lastdnptr-1)
-      {
+      if (lastdnptr && cpp < lastdnptr-1) {
         *cpp++ = cp;
         *cpp = NULL;
       }
     }
     sp = cp++;  /* save ptr to length byte */
-    do
-    {
-      if (c == '.')
-      {
+    do {
+      if (c == '.') {
         c = *dn++;
         break;
       }
-      if (c == '\\')
-      {
+      if (c == '\\') {
         if ((c = *dn++) == '\0')
            break;
       }
-      if (cp >= eob)
-      {
+      if (cp >= eob) {
         if (msg)
            *lpp = NULL;
         return (-1);
@@ -781,21 +851,18 @@ int dn_comp (const char *exp_dn, u_char *comp_dn, int length,
     while ((c = *dn++) != '\0');
 
     /* catch trailing '.'s but not '..' */
-    if ((l = cp - sp - 1) == 0 && c == '\0')
-    {
+    if ((l = cp - sp - 1) == 0 && c == '\0') {
       cp--;
       break;
     }
-    if (l <= 0 || l > MAXLABEL)
-    {
+    if (l <= 0 || l > MAXLABEL) {
       if (msg)
          *lpp = NULL;
       return (-1);
     }
     *sp = l;
   }
-  if (cp >= eob)
-  {
+  if (cp >= eob) {
     if (msg)
        *lpp = NULL;
     return (-1);
@@ -806,7 +873,7 @@ int dn_comp (const char *exp_dn, u_char *comp_dn, int length,
 
 
 /*
- * dlopen() emulation (not exported)
+ * dlopen() emulation (should not be exported)
  */
 static const char *last_func;
 static DWORD last_error;
@@ -863,8 +930,7 @@ static char *get_winsock_error (int err, char *buf, size_t len)
 {
   char *p;
 
-  switch (err)
-  {
+  switch (err) {
     case WSAEINTR:
         p = _("Call interrupted.");
         break;
@@ -1059,7 +1125,7 @@ char *ec_win_strerror (int err)
   }
   else
   {
-    if (!get_winsock_error (err, buf, sizeof(buf)) &&
+  if (!get_winsock_error (err, buf, sizeof(buf)) &&
         !FormatMessage (flags, NULL, err,
                         lang, buf, sizeof(buf)-1, NULL))
      sprintf (buf, "Unknown error %d (%#x)", err, err);
@@ -1067,9 +1133,54 @@ char *ec_win_strerror (int err)
             
 
   /* strip trailing '\r\n' or '\n'. */
-  if ((p = strrchr(buf,'\n')) != NULL && (p - buf) >= 2)
+  p = strrchr (buf, '\n'); 
+  if (p && (p - buf) >= 2)
      *p = '\0';
-  if ((p = strrchr(buf,'\r')) != NULL && (p - buf) >= 1)
+  
+  p = strrchr (buf, '\r'); 
+  if (p && (p - buf) >= 1)
      *p = '\0';
+  
   return (buf);
 }
+
+#if defined(HAVE_NCURSES)
+int vwprintw (WINDOW *win, const char *fmt, va_list args)
+{
+  char buf[1024];
+
+  if (trace_on)
+     PDC_debug ("vwprintw() - called\n");
+  _vsnprintf (buf, sizeof(buf), fmt, args);
+  return wprintw (win, buf);
+}
+#endif  /* HAVE_NCURSES */
+
+static void pdc_ncurses_init (void)
+{
+#ifdef HAVE_NCURSES
+  const char *env = getenv ("CURSES_TRACE");
+
+  if (env && atoi(env) > 0) {
+    traceon();
+    putenv ("NCURSES_TRACE=1");
+  }
+
+  putenv ("PDC_RESTORE_SCREEN=1");
+  putenv ("PDC_PRESERVE_SCREEN=1");
+
+#if 0
+  /* if stdout is redirected, initscr() fails with
+   * "LINES value must be >= 2 and <= x: got y"
+   */
+  if (isatty(fileno(stdout)) <= 0) {
+    putenv ("COLS=2");
+    putenv ("LINES=2");
+  }
+#endif
+#endif
+}
+
+
+/* EOF */
+

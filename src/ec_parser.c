@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.63 2004/06/08 09:54:03 alor Exp $
+    $Id: ec_parser.c,v 1.64 2004/07/13 09:35:44 alor Exp $
 */
 
 
@@ -95,6 +95,7 @@ void ec_usage(void)
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
+   fprintf(stdout, "  -I, --iflist                show all the network interfaces\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
@@ -125,6 +126,7 @@ void parse_options(int argc, char **argv)
       { "update", no_argument, NULL, 'U' },
       
       { "iface", required_argument, NULL, 'i' },
+      { "iflist", no_argument, NULL, 'I' },
       { "netmask", required_argument, NULL, 'n' },
       { "write", required_argument, NULL, 'w' },
       { "read", required_argument, NULL, 'r' },
@@ -182,7 +184,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:oP:pQqiRr:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -242,6 +244,12 @@ void parse_options(int argc, char **argv)
                   
          case 'i':
                   GBL_OPTIONS->iface = strdup(optarg);
+                  break;
+                  
+         case 'I':
+                  /* this option is only useful in the text interface */
+                  select_text_interface();
+                  GBL_OPTIONS->iflist = 1;
                   break;
          
          case 'n':

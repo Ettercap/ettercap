@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: autoadd.c,v 1.3 2004/06/30 13:36:09 alor Exp $
+    $Id: autoadd.c,v 1.4 2004/07/13 09:35:44 alor Exp $
 */
 
 
@@ -99,8 +99,10 @@ static void parse_arp(struct packet_object *po)
    if (!is_mitm_active("arp"))
       return;
 
-   /* don't add our address */
+   /* don't add our addresses */
    if (!ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src))
+      return;
+   if (!memcmp(&GBL_IFACE->mac, &po->L2.src, MEDIA_ADDR_LEN))
       return;
    
    /* search in target 1 */

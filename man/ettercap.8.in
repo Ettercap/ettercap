@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.71 2004/06/08 20:05:31 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.72 2004/07/13 09:35:44 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -514,6 +514,12 @@ ettercap in debug mode.
 Use this <IFACE> instead of the default one. The interface can be unconfigured
 (requires libnet >= 1.1.2), but in this case you cannot use MITM attacks and
 you should set the unoffensive flag.
+
+.TP
+\fB\-I\fR, \fB\-\-iflist\fR
+This option will print the list of all available network interfaces that can be
+used within ettercap. The option is particulary usefull under windows where the
+name of the interface is not so obvious as under *nix.
 
 .TP
 \fB\-n\fR, \fB\-\-netmask <NETMASK>\fR

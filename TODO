@@ -6,17 +6,14 @@
    
    + FIXING
       - remove GBL_OPTIONS->quiet from some plugins
-      - fix dying top_half under solaris
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
 
    + WINDOWS PORTING
-      - get_iface_mtu 
       - make the whole thing compile ;)
       - then found all the bugs....
       - dll instead of plugins (argh!)
-      - merge the patch for mingw
 
 ============================
   In the next release(s)

@@ -10,9 +10,6 @@
       - use libldtdl (problems even on openbsd)
       - LTDL_SHLIB_EXT
 
-   + SOLARIS PORTING
-      - checksum (WORD_BIGENDIAN on intel ???)
-
    + BSD PORTING
       - hack_pcap_lnet is not usable
       - bpf filter on outgoing packets
@@ -42,7 +39,7 @@ Nov 2003:
       - widgets:
          - menu 
             - shortcuts
-         - input
+         - input (with forms ?)
          - selectable lists
          - file selection
 

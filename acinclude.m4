@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.8 2003/11/21 08:32:10 alor Exp $
+dnl $Id: acinclude.m4,v 1.9 2003/11/23 18:08:42 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -21,27 +21,35 @@ AC_DEFUN(EC_CHECK_OPTION,[
 
 dnl
 dnl EC_PTHREAD_CHECK()
-dnl ac_ec_nopthread=1 (if fails)
 dnl
 
 AC_DEFUN(EC_PTHREAD_CHECK,[
 
-   AC_SEARCH_LIBS(pthread_create, pthread,,
+   AC_SEARCH_LIBS(pthread_create, c_r pthread,,
       [
          AC_MSG_CHECKING(whether $CC accepts -pthread)
-         CFLAGS_store="$CFLAGS"
-         CFLAGS="$CFLAGS -pthread"
-         AC_TRY_COMPILE([#include <pthread.h>],[pthread_create(NULL, NULL, NULL, NULL);],
+         LDFLAGS_store="$LDFLAGS"
+         LDFLAGS="$LDFLAGS -pthread"
+         AC_TRY_LINK([
+            #include <pthread.h>
+            ],
+            [
+               int main(int argc, char **argv)
+               {
+                  pthread_create(NULL, NULL, NULL, NULL);
+                  return 0;
+               }
+            ],
             [AC_MSG_RESULT(yes)
-             LIBS="$LIBS -pthread"],
+             PTHREADLIB="-pthread"],
             [AC_MSG_RESULT(no)
-               CFLAGS="$CFLAGS_store"
+               LDFLAGS="$LDFLAGS_store"
                AC_MSG_WARN(***************************);
                AC_MSG_WARN(* PTHREAD ARE REQUIRED !! *);
                AC_MSG_WARN(***************************);
                exit
             ])
-         unset CFLAGS_store
+         unset LDFLAGS_store
       ]
    )
 

@@ -40,7 +40,7 @@ echo "Actual version:"
 echo
 echo "     `autoconf --version | head -n 1`"
 echo "     `automake --version | head -n 1`"
-if [[ $USEGLIBTOOLIZE ]]; then
+if test $USEGLIBTOOLIZE; then
    echo "     `glibtoolize --version | head -n 1`"
 else
    echo "     `libtoolize --version | head -n 1`"
@@ -58,7 +58,7 @@ find . -name 'Makefile.in' -exec rm -f {} \;
 echo "running aclocal"
 aclocal
 echo "running libtoolize"
-if [[ $USEGLIBTOOLIZE ]]; then
+if test $USEGLIBTOOLIZE; then
    glibtoolize --force --copy 
 else
    libtoolize --force --copy 

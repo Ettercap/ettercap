@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.21 2003/11/21 08:32:15 alor Exp $
+    $Id: ec_plugins.c,v 1.22 2003/11/23 18:08:43 alor Exp $
 */
 
 #include <ec.h>
@@ -30,8 +30,10 @@
    #include <missing/scandir.h>
 #endif
 
-#include <ltdl.h>
-#include <dlfcn.h>
+#ifdef HAVE_PLUGINS
+   #include <ltdl.h>
+   #include <dlfcn.h>
+#endif
 
 /* symbol prefix for some OSes */
 #ifdef NEED_USCORE

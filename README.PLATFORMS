@@ -31,17 +31,17 @@ SOLARIS
 ------------------------------------------------------------------------------
    SunOS 5.8 (sparc)    FULL           tested on a SunFire V100 sparc64
    
-   Solaris 2.8 (intel)  untested
+   Solaris 5.8 (intel)  FULL           tested on SunOS solaris 5.8 (i386) 
 
 
 *BSD
 ------------------------------------------------------------------------------
-   FreeBSD 5.x          PARTIAL        tested on FreeBSD 5.1-RELEASE (i386)
-                                       - plugins not tested
-                                       - the BPF problem has to be addressed
+   FreeBSD 5.x          FULL           tested on FreeBSD 5.1-RELEASE (i386)
+   
    FreeBSD 4.x          untested
 
    OpenBSD 3.x          untested 
+   
    OpenBSD 2.x          untested
 
    NetBSD 1.5.x         untested
@@ -49,7 +49,7 @@ SOLARIS
 
 MAC OS X (Darwin)
 ------------------------------------------------------------------------------
-   Darwin 7.x           FULL           tested on  
+   Darwin 7.x           FULL           tested on darwin 7.0.0 (powerpc)
    
    Darwin 6.x           untested 
    

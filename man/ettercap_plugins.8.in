@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.14 2003/11/18 17:53:35 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.15 2003/11/23 18:08:42 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -43,7 +43,7 @@ The following is a list of available plugins:
 .B chk_poison
 .Sp
 It performs a check to see if the arp poisoning module of ettercap was successful.
-It sends spoofed ICMP ehco packets to all the victims of the poisoning 
+It sends spoofed ICMP echo packets to all the victims of the poisoning 
 pretending to be each of the other targets. If we can catch an ICMP reply with
 our MAC address as destination it means that the poisoning between those
 two targets is successful. It checks both ways of each communication.
@@ -52,10 +52,24 @@ The test fails if you specify only one target in silent mode.
 You can't run this plugin from command line because the poisoning process
 is not started yet. You have to launch it from the proper menu.
 
+
+.TP 
+.B dns_spoof
+.Sp
+This plugin intercepts DNS query and reply with a spoofed answer. You can chose
+to which address the plugin has to reply by modifying the etter.dns file. The
+plugin intercept both A and PTR request. If it was an A request, the name is
+searched in the file and the ip address is returned (you can use wildcards in
+the name). If if was a PTR request, the ip is searched in the file and the name
+is returned (except for those name containing a wildcard). The first address
+or name that matches is returned, so be careful with the order.
+
+
 .TP 
 .B dummy
 .Sp
 Only a template to demonstrate how to write a plugin.
+
 
 .TP 
 .B find_conn

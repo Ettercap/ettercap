@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.16 2003/11/17 10:58:16 alor Exp $
+# $Id: Makefile.am,v 1.17 2003/11/23 18:08:42 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -25,7 +25,7 @@ EXTRA_DIST = AUTHORS \
              shtool \
              doc/*
 
-CLEANFILES = *.log *.out *.cache *.so ettercap etterlog etterfilter
+CLEANFILES = -R auto4te.cache *~ *.log *.out *.cache *.so ettercap etterlog etterfilter
 
 dist-hook:
 	rm -rf `find $(distdir)/doc -name CVS`
@@ -39,5 +39,5 @@ test: all
 	find ./plug-ins -name '*.so' -exec ln -fs {} ./ \;
 	./shtool fixperm ./
 
-# vim:ts=4:noexpandtab=1
+# vim:ts=4:noexpandtab
 

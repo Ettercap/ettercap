@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.68 2003/11/11 17:17:53 alor Exp $
+# $Id: Makefile.am,v 1.69 2003/11/23 18:08:43 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -112,7 +112,7 @@ ettercap_SOURCES += dissectors/ec_socks.c \
 
 ettercap_CFLAGS = @EC_CFLAGS@
 
-ettercap_LDADD = @LIBOBJS@ @EC_LIBS@ \
+ettercap_LDADD = @LIBOBJS@ \
                  os/libec_os.a \
                  interfaces/daemon/libec_daemon.a \
                  interfaces/text/libec_text.a 
@@ -125,7 +125,7 @@ if GTK
 #ettercap_LDADD += interfaces/gtk/libec_gtk.a
 endif
 
-ettercap_LDFLAGS = -export-dynamic
+ettercap_LDFLAGS = -export-dynamic @EC_LIBS@ 
 
 CLEANFILES = *.log *.out core* missing/*.o *~
 

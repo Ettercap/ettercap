@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.15 2004/01/18 19:30:31 alor Exp $
+# $Id: Makefile.am,v 1.16 2004/01/21 16:03:32 lordnaga Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -23,6 +23,7 @@ etterfilter_SOURCES = ef_compiler.c \
                       $(top_srcdir)/src/ec_error.c \
                       $(top_srcdir)/src/ec_file.c \
                       $(top_srcdir)/src/ec_filter.c \
+                      $(top_srcdir)/src/ec_send.c \
                       $(top_srcdir)/src/ec_strings.c
 
 noinst_HEADERS = ef_grammar.h
@@ -49,7 +50,7 @@ if BSD
    etterfilter_CFLAGS += -pthread
 endif
    
-etterfilter_LDADD = 
+etterfilter_LDADD = -lnet -lpcap 
 
 if HAVE_PCRE
    etterfilter_LDADD += @PCRELIB@ -lpcre

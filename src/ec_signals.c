@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.8 2003/08/21 14:36:02 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.9 2003/09/09 16:42:11 alor Exp $
 */
 
 #include <ec.h>
@@ -75,8 +75,8 @@ RETSIGTYPE signal_SEGV(int sig)
    
    ui_cleanup();
    
-   fprintf (stderr, "\n"COLOR_YELLOW"Ooops !! This shouldn't happen...\n\n"END_COLOR);
-   fprintf (stderr, COLOR_RED"Segmentation Fault...\n\n"END_COLOR);
+   fprintf (stderr, "\n"EC_COLOR_YELLOW"Ooops !! This shouldn't happen...\n\n"EC_COLOR_END);
+   fprintf (stderr, EC_COLOR_RED"Segmentation Fault...\n\n"EC_COLOR_END);
 
    fprintf (stderr, "===========================================================================\n");
    fprintf (stderr, " To report this error follow these steps:\n\n");
@@ -92,8 +92,8 @@ RETSIGTYPE signal_SEGV(int sig)
    fprintf (stderr, "  6) mail us the output of gdb and the error.tar.gz\n");
    fprintf (stderr, "============================================================================\n");
    
-   fprintf (stderr, COLOR_CYAN"\nOverriding any 'ulimit -c 0'... (RLIMIT_CORE = RLIM_INFINITY)\n\n"END_COLOR
-                    BOLD_COLOR" Core dumping... (use the 'core' file for gdb analysis)\n\n"END_COLOR);
+   fprintf (stderr, EC_COLOR_CYAN"\nOverriding any 'ulimit -c 0'... (RLIMIT_CORE = RLIM_INFINITY)\n\n"EC_COLOR_END
+                    EC_COLOR_BOLD" Core dumping... (use the 'core' file for gdb analysis)\n\n"EC_COLOR_END);
    
    /* force the coredump */
    
@@ -105,8 +105,8 @@ RETSIGTYPE signal_SEGV(int sig)
    
    ui_cleanup();
    
-   fprintf(stderr, COLOR_YELLOW"Ooops ! This shouldn't happen...\n"END_COLOR);
-   fprintf(stderr, COLOR_RED"Segmentation fault !\n\n"END_COLOR);
+   fprintf(stderr, EC_COLOR_YELLOW"Ooops ! This shouldn't happen...\n"EC_COLOR_END);
+   fprintf(stderr, EC_COLOR_RED"Segmentation fault !\n\n"EC_COLOR_END);
    fprintf(stderr, "Please recompile in debug mode, reproduce the bug and send a bugreport\n\n");
    
    exit(666);

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.4 2003/09/09 14:59:29 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.5 2003/09/09 16:42:11 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -229,9 +229,9 @@ Compiles the source filter.ecf into a binary filter.ef
 
 
 .SH AUTHORS
-Alberto Ornaghi (ALoR) <alor@users.sourceforge.net>
+Alberto Ornaghi (ALoR) <alor@users.sf.net>
 .br
-Marco Valleri (NaGA) <crwm@freemail.it>
+Marco Valleri (NaGA) <naga@antifork.org>
 
 
 

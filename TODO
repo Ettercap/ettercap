@@ -28,6 +28,10 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
+   + crwm@freemail.it
+   + source ip address for pass
+   + failed attempts
+
    + FILTERING ENGINE
       - include all the protocols in the filter rule
          - protocols table
@@ -35,6 +39,7 @@ Sep 2003:
       - functions
          - replace over mtu
       - quick filter
+      - comparison ( '<' '>' ecc)
       
 
    + MITM METHODS

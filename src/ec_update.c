@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_update.c,v 1.3 2003/07/16 20:45:30 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_update.c,v 1.4 2003/09/09 16:42:11 alor Exp $
 */
 
 #include <ec.h>
@@ -77,7 +77,7 @@ void global_update(void)
    len = socket_recv(sock, buffer, sizeof(buffer) - 1);
 
    if (len == 0)
-      FATAL_ERROR(COLOR_RED"ERROR"END_COLOR" The server does not respond");
+      FATAL_ERROR(EC_COLOR_RED"ERROR"EC_COLOR_END" The server does not respond");
       
    DEBUG_MSG("global_update - RECEIVE \n\n%s\n\n", buffer);
 
@@ -86,13 +86,13 @@ void global_update(void)
    /* skip the HTTP headers */
    ptr = strstr(buffer, "\r\n\r\n");
    if (ptr == NULL)
-      FATAL_ERROR(COLOR_RED"ERROR"END_COLOR" Bad response from server");
+      FATAL_ERROR(EC_COLOR_RED"ERROR"EC_COLOR_END" Bad response from server");
   
    ptr += 4;
 
    /* the first word MUST be "ettercap" */
    if (strncmp(ptr, GBL_PROGRAM, strlen(GBL_PROGRAM)))
-      FATAL_ERROR(COLOR_RED"ERROR"END_COLOR" Bad response from server");
+      FATAL_ERROR(EC_COLOR_RED"ERROR"EC_COLOR_END" Bad response from server");
   
    ptr += strlen(GBL_PROGRAM) + 1;
 
@@ -101,11 +101,11 @@ void global_update(void)
    /* move the ptr after the first token */
    ptr += strlen(latest) + 1;
    
-   fprintf(stdout, " + %-18s -> version "COLOR_BLU"%-4s"END_COLOR" latest is ", GBL_PROGRAM, GBL_VERSION);
+   fprintf(stdout, " + %-18s -> version "EC_COLOR_BLUE"%-4s"EC_COLOR_END" latest is ", GBL_PROGRAM, GBL_VERSION);
    if (!strcmp(GBL_VERSION, latest))
-      fprintf(stdout, COLOR_GREEN"%-4s"END_COLOR"\n\n", latest );
+      fprintf(stdout, EC_COLOR_GREEN"%-4s"EC_COLOR_END"\n\n", latest );
    else
-      fprintf(stdout, COLOR_YELLOW"%-4s"END_COLOR"\n\n", latest );
+      fprintf(stdout, EC_COLOR_YELLOW"%-4s"EC_COLOR_END"\n\n", latest );
       
    SAFE_FREE(latest);
 
@@ -151,19 +151,19 @@ static void update_file(char *tokens)
    
    /* get the current revision */
    if (get_current_rev(file, &curr, errbuf) == 0) {
-      fprintf(stdout, " + %-18s -> "COLOR_RED"ERROR"END_COLOR"  %s\n", file, errbuf);
+      fprintf(stdout, " + %-18s -> "EC_COLOR_RED"ERROR"EC_COLOR_END"  %s\n", file, errbuf);
    } else {
-      fprintf(stdout, " + %-18s -> revision "COLOR_BLU"%-4s"END_COLOR" updating to "COLOR_CYAN"%-4s"END_COLOR"... ", file, curr, rev );
+      fprintf(stdout, " + %-18s -> revision "EC_COLOR_BLUE"%-4s"EC_COLOR_END" updating to "EC_COLOR_CYAN"%-4s"EC_COLOR_END"... ", file, curr, rev );
       fflush(stdout);
   
       /* update it if the current rev is different (newer) */
       if (!strcmp(curr, rev))
-         fprintf(stdout, COLOR_GREEN"OK"END_COLOR"\n");
+         fprintf(stdout, EC_COLOR_GREEN"OK"EC_COLOR_END"\n");
       else {
          if (do_update(file, url, errbuf))
-            fprintf(stdout, COLOR_YELLOW"UPDATED"END_COLOR"\n");
+            fprintf(stdout, EC_COLOR_YELLOW"UPDATED"EC_COLOR_END"\n");
          else
-            fprintf(stdout, COLOR_RED"ERROR"END_COLOR"  %s\n", errbuf);
+            fprintf(stdout, EC_COLOR_RED"ERROR"EC_COLOR_END"  %s\n", errbuf);
       }
    }
    
@@ -175,7 +175,7 @@ static void update_file(char *tokens)
 
 /* 
  * get the current file revision 
- * it is stored in the cvs var $Revision: 1.3 $
+ * it is stored in the cvs var $Revision: 1.4 $
  */
 static int get_current_rev(char *file, char **curr, char *errbuf)
 {

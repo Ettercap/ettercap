@@ -95,6 +95,16 @@ extern struct globals gbls;
 #define BIT_TEST(r,b)      ( r[b>>3]  &   1<<(b&7) )
 #define BIT_NOT(r,b)       ( r[b>>3] ^=   1<<(b&7) )
 
+/* ANSI colors */
+
+#define EC_COLOR_END    "\033[0m"
+#define EC_COLOR_BOLD   "\033[1m"
+
+#define EC_COLOR_RED    "\033[31m"EC_COLOR_BOLD
+#define EC_COLOR_YELLOW "\033[33m"EC_COLOR_BOLD
+#define EC_COLOR_GREEN  "\033[32m"EC_COLOR_BOLD
+#define EC_COLOR_BLUE   "\033[34m"EC_COLOR_BOLD
+#define EC_COLOR_CYAN   "\033[36m"EC_COLOR_BOLD
 
 #define COL_RED      31
 #define COL_GREEN    32

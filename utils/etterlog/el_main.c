@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.8 2003/04/15 07:57:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.9 2003/09/09 16:42:11 alor Exp $
 */
 
 #include <el.h>
@@ -97,7 +97,7 @@ void set_color(int color)
 
 void reset_color(void)
 {
-   fprintf(stdout, "\033[0m");   
+   fprintf(stdout, "%s", EC_COLOR_END);   
 }
 
 

@@ -53,14 +53,14 @@
 
 /* ANSI colors */
 
-#define END_COLOR    "\033[0m"
-#define BOLD_COLOR   "\033[1m"
+#define EC_COLOR_END    "\033[0m"
+#define EC_COLOR_BOLD   "\033[1m"
 
-#define COLOR_RED    "\033[31m"BOLD_COLOR
-#define COLOR_YELLOW "\033[33m"BOLD_COLOR
-#define COLOR_GREEN  "\033[32m"BOLD_COLOR
-#define COLOR_BLU    "\033[34m"BOLD_COLOR
-#define COLOR_CYAN   "\033[36m"BOLD_COLOR
+#define EC_COLOR_RED    "\033[31m"EC_COLOR_BOLD
+#define EC_COLOR_YELLOW "\033[33m"EC_COLOR_BOLD
+#define EC_COLOR_GREEN  "\033[32m"EC_COLOR_BOLD
+#define EC_COLOR_BLUE   "\033[34m"EC_COLOR_BOLD
+#define EC_COLOR_CYAN   "\033[36m"EC_COLOR_BOLD
 
 /* magic numbers */
 

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.13 2003/08/28 19:55:20 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.14 2003/09/09 16:42:11 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -309,9 +309,9 @@ the headers are omitted, you will get the file as it was.
 
 
 .SH AUTHORS
-Alberto Ornaghi (ALoR) <alor@users.sourceforge.net>
+Alberto Ornaghi (ALoR) <alor@users.sf.net>
 .br
-Marco Valleri (NaGA) <crwm@freemail.it>
+Marco Valleri (NaGA) <naga@antifork.org>
 
 
 

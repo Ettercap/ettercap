@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_profiles.c,v 1.6 2004/03/02 00:41:59 daten Exp $
+    $Id: ec_gtk_view_profiles.c,v 1.7 2004/03/02 20:53:01 daten Exp $
 */
 
 #include <ec.h>
@@ -129,9 +129,6 @@ void gtkui_show_profiles(void)
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_remote), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show_all(hbox);
-
-   hbox = gtk_hbox_new(TRUE, 5);
-   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("_Convert to Host List");
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_convert), NULL);

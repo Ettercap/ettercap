@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.5 2004/03/02 00:41:59 daten Exp $
+    $Id: ec_gtk_menus.c,v 1.6 2004/03/02 20:53:01 daten Exp $
 */
 
 #include <ec.h>
@@ -26,55 +26,55 @@
 /* globals */
 
 GtkItemFactoryEntry gmenu_start[] = {
-   {"/_Start",                NULL,          NULL,               0, "<Branch>" },
+   {"/_Start",                NULL,          NULL,                 0, "<Branch>" },
    {"/Start/Start sniffing",  "<control>w",  gtkui_start_sniffing, 0, "<StockItem>", GTK_STOCK_YES },
    {"/Start/Stop sniffing",   "<control>e",  gtkui_stop_sniffing,  0, "<StockItem>", GTK_STOCK_NO },
-   {"/Start/sep1",            NULL,          NULL,               0, "<Separator>" },
-   {"/Start/E_xit",           "<control>x",  gtk_main_quit,      0, "<StockItem>", GTK_STOCK_QUIT }
+   {"/Start/sep1",            NULL,          NULL,                 0, "<Separator>" },
+   {"/Start/E_xit",           "<control>x",  gtk_main_quit,        0, "<StockItem>", GTK_STOCK_QUIT }
 };
 
 GtkItemFactoryEntry gmenu_targets[] = {
-   {"/_Targets",                 NULL,          NULL,                0, "<Branch>" },
+   {"/_Targets",                 NULL,          NULL,                  0, "<Branch>" },
    {"/Targets/Current _Targets", "t",           gtkui_current_targets, 0, "<StockItem>", GTK_STOCK_FIND },
    {"/Targets/Select TARGET(s)", "<control>t",  gtkui_select_targets,  0, "<StockItem>", GTK_STOCK_ADD },
-   {"/Targets/sep1",             NULL,          NULL,                0, "<Separator>" },
+   {"/Targets/sep1",             NULL,          NULL,                  0, "<Separator>" },
    {"/Targets/_Protocol...",     "p",           gtkui_select_protocol, 0, "<StockItem>", GTK_STOCK_JUMP_TO },
-   {"/Targets/Reverse matching", NULL,          toggle_reverse,      0, "<ToggleItem>" },
-   {"/Targets/sep2",             NULL,          NULL,                0, "<Separator>" },
-   {"/Targets/_Wipe targets",    "<shift>W",    wipe_targets,        0, "<StockItem>", GTK_STOCK_CLEAR }
+   {"/Targets/Reverse matching", NULL,          toggle_reverse,        0, "<ToggleItem>" },
+   {"/Targets/sep2",             NULL,          NULL,                  0, "<Separator>" },
+   {"/Targets/_Wipe targets",    "<shift>W",    wipe_targets,          0, "<StockItem>", GTK_STOCK_CLEAR }
 };
 
 GtkItemFactoryEntry gmenu_hosts[] = {
-   {"/_Hosts",                  NULL,         NULL,           0, "<Branch>" },
+   {"/_Hosts",                  NULL,         NULL,             0, "<Branch>" },
    {"/Hosts/_Hosts list",       "h",          gtkui_host_list,  0, "<StockItem>", GTK_STOCK_INDEX },
-   {"/Hosts/sep1",              NULL,         NULL,           0, "<Separator>" },
+   {"/Hosts/sep1",              NULL,         NULL,             0, "<Separator>" },
    {"/Hosts/_Scan for hosts",   "<control>s", gtkui_scan,       0, "<StockItem>", GTK_STOCK_FIND },
    {"/Hosts/Load from file...", NULL,         gtkui_load_hosts, 0, "<StockItem>", GTK_STOCK_OPEN },
    {"/Hosts/Save to file...",   NULL,         gtkui_save_hosts, 0, "<StockItem>", GTK_STOCK_SAVE }
 };
 
 GtkItemFactoryEntry gmenu_view[] = {
-   {"/_View",                        NULL, NULL,                 0, "<Branch>" },
+   {"/_View",                        NULL, NULL,                   0, "<Branch>" },
    {"/View/_Connections",      "<shift>C", gtkui_show_connections, 0, "<StockItem>", GTK_STOCK_JUSTIFY_FILL },
    {"/View/Pr_ofiles",         "<shift>O", gtkui_show_profiles,    0, "<StockItem>", GTK_STOCK_JUSTIFY_LEFT },
    {"/View/_Statistics",              "s", gtkui_show_stats,       0, "<StockItem>", GTK_STOCK_PROPERTIES },
-   {"/View/sep1",                    NULL, NULL,                 0, "<Separator>" },
-   {"/View/Resolve IP addresses",    NULL, toggle_resolve,       0, "<ToggleItem>" },
+   {"/View/sep1",                    NULL, NULL,                   0, "<Separator>" },
+   {"/View/Resolve IP addresses",    NULL, toggle_resolve,         0, "<ToggleItem>" },
    {"/View/_Visualization method...", "v", gtkui_vis_method,       0, "<StockItem>", GTK_STOCK_PREFERENCES }
 };
 
 GtkItemFactoryEntry gmenu_mitm[] = {
-   {"/_Mitm",                    NULL, NULL,              0, "<Branch>" },
+   {"/_Mitm",                    NULL, NULL,                0, "<Branch>" },
    {"/Mitm/Arp poisoning...",    NULL, gtkui_arp_poisoning, 0, "<Item>" },
    {"/Mitm/Icmp redirect...",    NULL, gtkui_icmp_redir,    0, "<Item>" },
    {"/Mitm/Port stealing...",    NULL, gtkui_port_stealing, 0, "<Item>" },
    {"/Mitm/Dhcp spoofing...",    NULL, gtkui_dhcp_spoofing, 0, "<Item>" },
-   {"/Mitm/sep1",                NULL, NULL,              0, "<Separator>" },
+   {"/Mitm/sep1",                NULL, NULL,                0, "<Separator>" },
    {"/Mitm/Stop mitm attack(s)", NULL, gtkui_mitm_stop,     0, "<StockItem>", GTK_STOCK_STOP }
 };
 
 GtkItemFactoryEntry gmenu_filters[] = {
-   {"/_Filters",                 NULL,         NULL,            0, "<Branch>" },
+   {"/_Filters",                 NULL,         NULL,              0, "<Branch>" },
    {"/Filters/Load a filter...", "<control>f", gtkui_load_filter, 0, "<StockItem>", GTK_STOCK_OPEN },
    {"/Filters/Stop _filtering",  "f",          gtkui_stop_filter, 0, "<StockItem>", GTK_STOCK_STOP }
 };
@@ -82,19 +82,27 @@ GtkItemFactoryEntry gmenu_filters[] = {
 GtkItemFactoryEntry gmenu_logging[] = {
    {"/_Logging",                             NULL, NULL,            0, "<Branch>" },
    {"/Logging/Log all packets and infos...", "<shift>I", gtkui_log_all, 0, "<StockItem>", GTK_STOCK_SAVE },
-   {"/Logging/Log only infos...",            "i",  gtkui_log_info,    0, "<StockItem>", GTK_STOCK_SAVE_AS },
-   {"/Logging/Stop logging infos",           NULL, gtkui_stop_log,    0, "<StockItem>", GTK_STOCK_STOP },
+   {"/Logging/Log only infos...",            "i",  gtkui_log_info,  0, "<StockItem>", GTK_STOCK_SAVE_AS },
+   {"/Logging/Stop logging infos",           NULL, gtkui_stop_log,  0, "<StockItem>", GTK_STOCK_STOP },
    {"/Logging/sep1",                         NULL, NULL,            0, "<Separator>" },
-   {"/Logging/Log user messages...",         "m",  gtkui_log_msg,     0, "<StockItem>", GTK_STOCK_REVERT_TO_SAVED },
-   {"/Logging/Stop logging messages",        NULL, gtkui_stop_msg,    0, "<StockItem>", GTK_STOCK_STOP },
+   {"/Logging/Log user messages...",         "m",  gtkui_log_msg,   0, "<StockItem>", GTK_STOCK_REVERT_TO_SAVED },
+   {"/Logging/Stop logging messages",        NULL, gtkui_stop_msg,  0, "<StockItem>", GTK_STOCK_STOP },
    {"/Logging/sep2",                         NULL, NULL,            0, "<Separator>" },
    {"/Logging/Compressed file",              NULL, toggle_compress, 0, "<ToggleItem>" }
 };
 
 GtkItemFactoryEntry gmenu_plugins[] = {
-   {"/_Plugins",                   NULL,         NULL,            0, "<Branch>" },
+   {"/_Plugins",                   NULL,         NULL,              0, "<Branch>" },
    {"/Plugins/Manage the plugins", "<control>p", gtkui_plugin_mgmt, 0, "<StockItem>", GTK_STOCK_EXECUTE },
    {"/Plugins/Load a plugin...",   NULL,         gtkui_plugin_load, 0, "<StockItem>", GTK_STOCK_OPEN }
+};
+
+GtkItemFactoryEntry tab_menu[] = {
+  { "/Detach page",    "<control>D", gtkui_page_detach_current, 0, "<StockItem>", GTK_STOCK_GO_UP },
+  { "/Close page",     "<control>Q", gtkui_page_close_current,  0, "<StockItem>", GTK_STOCK_CLOSE },
+  { "/sep1",           NULL,         NULL,                      0, "<Separator>"  },
+  { "/Next page",      "<control>0", gtkui_page_right,    0, "<StockItem>", GTK_STOCK_GO_FORWARD },
+  { "/Previous page",  "<control>9", gtkui_page_left,     0, "<StockItem>", GTK_STOCK_GO_BACK }
 };
 
 /* proto */
@@ -108,8 +116,8 @@ void gtkui_create_menu(int live);
 void gtkui_create_menu(int live)
 {
    GtkAccelGroup *accel_group;
-   GtkWidget *vbox, *item;
-   GtkItemFactory *root_menu;
+   GtkWidget *vbox, *item, *context;
+   GtkItemFactory *root_menu, *if_tabs;
    int num_items = 0;
    
    DEBUG_MSG("gtk_create_menu");
@@ -185,6 +193,13 @@ void gtkui_create_menu(int live)
    main_menu = gtk_item_factory_get_widget (root_menu, "<main>");
    gtk_box_pack_start(GTK_BOX(vbox), main_menu, FALSE, FALSE, 0);
    gtk_widget_show(main_menu);
+
+   /* context menu for notebook */
+   if_tabs = gtk_item_factory_new(GTK_TYPE_MENU, "<notebook>", accel_group);
+   gtk_item_factory_create_items(if_tabs, 5, tab_menu, NULL);
+   context = gtk_item_factory_get_widget(if_tabs, "<notebook>");
+
+   g_signal_connect(G_OBJECT(notebook), "button-press-event", G_CALLBACK(gtkui_context_menu), context);
 }
 
 

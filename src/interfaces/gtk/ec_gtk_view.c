@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view.c,v 1.3 2004/02/28 00:08:57 daten Exp $
+    $Id: ec_gtk_view.c,v 1.4 2004/03/02 20:53:01 daten Exp $
 */
 
 #include <ec.h>
@@ -70,18 +70,22 @@ void gtkui_show_stats(void)
    /* if the object already exist, set the focus to it */
    if (stats_window) {
       /* if window was hidden, we have to start the refresh callback again */
-      if (!GTK_WIDGET_VISIBLE(stats_window))
-         stats_idle = gtk_timeout_add(200, refresh_stats, NULL);
+      //if (!GTK_WIDGET_VISIBLE(stats_window))
+      //   stats_idle = gtk_timeout_add(200, refresh_stats, NULL);
 
       /* show stats window */
-      gtk_window_present(GTK_WINDOW (stats_window));
+      //gtk_window_present(GTK_WINDOW (stats_window));
+      gtkui_page_present(stats_window);
       return;
    }
    
+/*
    stats_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (stats_window), "Statistics");
    gtk_container_set_border_width(GTK_CONTAINER (stats_window), 10);
    g_signal_connect (G_OBJECT (stats_window), "delete_event", G_CALLBACK (gtkui_stop_stats), NULL);
+*/
+   stats_window = gtkui_page_new("Statistics", &gtkui_stop_stats);
 
    /* alright, this is a lot of code but it'll keep everything lined up nicely */
    /* if you need to add a row, don't forget to increase the number in gtk_table_new */
@@ -213,7 +217,8 @@ static void gtkui_stop_stats(void)
    DEBUG_MSG("gtk_stop_stats");
    gtk_timeout_remove(stats_idle);
 
-   gtk_widget_hide(stats_window);
+   gtk_widget_destroy(stats_window);
+   stats_window = NULL;
 }
 
 static gboolean refresh_stats(gpointer data)

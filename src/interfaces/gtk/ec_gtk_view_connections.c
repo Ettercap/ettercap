@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.9 2004/03/02 00:41:59 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.10 2004/03/02 20:53:01 daten Exp $
 */
 
 #include <ec.h>
@@ -36,7 +36,6 @@
 /* proto */
 
 void gtkui_show_connections(void);
-static gboolean gtkui_connection_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
 static void gtkui_kill_connections(void);
 static gboolean refresh_connections(gpointer data);
 static void gtkui_connection_detail(void);
@@ -64,11 +63,11 @@ extern void conntrack_unlock(void);
 /* connection list */
 static GtkWidget *conns_window = NULL;
 static GtkWidget     *treeview = NULL; 
-static GtkWidget *context_menu = NULL;
 static GtkListStore  *ls_conns = NULL;
 static GtkTreeSelection   *selection = NULL;
 static struct conn_object *curr_conn = NULL;
 static guint connections_idle = 0;
+static guint remove_inactive = 0;
 
 /* split data view */
 static GtkWidget   *data_window = NULL;
@@ -99,6 +98,7 @@ static u_char *injectbuf;
 void gtkui_show_connections(void)
 {
    GtkWidget *scrolled, *vbox, *items, *hbox, *button;
+   GtkWidget *context_menu;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
 
@@ -210,7 +210,7 @@ void gtkui_show_connections(void)
    g_signal_connect (G_OBJECT (items), "activate", G_CALLBACK (gtkui_connection_kill), NULL);
    gtk_widget_show (items);
 
-   g_signal_connect(G_OBJECT(treeview), "button-press-event", G_CALLBACK(gtkui_connection_context_menu), NULL);
+   g_signal_connect(G_OBJECT(treeview), "button-press-event", G_CALLBACK(gtkui_context_menu), context_menu);
 
    /* initialize the list */
    refresh_connections(NULL);
@@ -222,16 +222,11 @@ void gtkui_show_connections(void)
    gtk_widget_show(conns_window);
 }
 
-static gboolean gtkui_connection_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-    if(event->button == 3)
-        gtk_menu_popup(GTK_MENU(context_menu), NULL, NULL, NULL, NULL, 3, event->time);
-    return(FALSE);
-}
-
 static void gtkui_kill_connections(void)
 {
    DEBUG_MSG("gtk_kill_connections");
    gtk_timeout_remove(connections_idle);
+   gtk_timeout_remove(remove_inactive);
 
    gtk_widget_destroy(conns_window);
    conns_window = NULL;
@@ -245,19 +240,20 @@ static gboolean refresh_connections(gpointer data)
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
    char *proto = "", *status = "", *flags = " ";
-   GtkTreeIter iter;
+   GtkTreeIter iter, *next = NULL;
    GtkTreeModel *model = NULL;
    gboolean gotiter = FALSE;
+   guint now = time(NULL), check = 0;
 
    if(ls_conns) {
       if (!GTK_WIDGET_VISIBLE(conns_window))
          return(FALSE);
    } else {
-      ls_conns = gtk_list_store_new (10, 
+      ls_conns = gtk_list_store_new (11, 
                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
-                    G_TYPE_POINTER);
+                    G_TYPE_POINTER, G_TYPE_UINT);
       gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_conns));
    }
 
@@ -299,7 +295,7 @@ static gboolean refresh_connections(gpointer data)
          gtk_tree_model_get (model, &iter, 9, &curr, -1);
          if(c == curr) {
             gtk_list_store_set (ls_conns, &iter,
-                                0, flags, 7, status, 8, c->co->xferred, -1);
+                                0, flags, 7, status, 8, c->co->xferred, 10, now, -1);
             break;
          }
          gotiter = gtk_tree_model_iter_next(model, &iter);
@@ -325,7 +321,24 @@ static gboolean refresh_connections(gpointer data)
                           3, "-",
                           4, dst, 5, ntohs(c->co->L4_addr2),
                           6, proto, 7, status, 8, c->co->xferred, 
-                          9, c, -1);
+                          9, c, 10, now, -1);
+   }
+
+   /* remove old connections */
+   gotiter = gtk_tree_model_get_iter_first(model, &iter);
+   while (gotiter) {
+      gtk_tree_model_get (model, &iter, 10, &check, -1);
+
+      if(check != now)
+         next = gtk_tree_iter_copy(&iter);
+
+      gotiter = gtk_tree_model_iter_next(model, &iter);
+
+      if(next) {
+         gtk_list_store_remove(GTK_LIST_STORE(ls_conns), next);
+         gtk_tree_iter_free(next);
+         next = NULL;
+      }
    }
 
    return(TRUE);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.10 2004/03/02 02:42:24 daten Exp $
+    $Id: ec_gtk.c,v 1.11 2004/03/02 20:53:01 daten Exp $
 */
 
 #include <ec.h>
@@ -74,11 +74,16 @@ static void gtkui_pcap_filter(void);
 GtkTextBuffer *gtkui_details_window(char *title);
 void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
 void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
+gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
 
 /* MDI pages */
 GtkWidget *gtkui_page_new(char *title, void (*callback)(void));
 void gtkui_page_present(GtkWidget *child);
 void gtkui_page_close(GtkWidget *widget, gpointer data);
+void gtkui_page_close_current(void);
+void gtkui_page_detach_current(void);
+void gtkui_page_right(void);
+void gtkui_page_left(void);
 
 /***#****************************************/
 
@@ -391,29 +396,30 @@ static void gtkui_setup(void)
    char title[50];
 
    GtkItemFactoryEntry file_menu[] = {
-      { "/_File",         "<shift>F",   NULL,           0, "<Branch>" },
+      { "/_File",         "<shift>F",   NULL,             0, "<Branch>" },
       { "/File/_Open",    "<control>O", gtkui_file_open,  0, "<StockItem>", GTK_STOCK_OPEN },
       { "/File/_Save",    "<control>S", gtkui_file_write, 0, "<StockItem>", GTK_STOCK_SAVE },
-      { "/File/sep1",     NULL,         NULL,           0, "<Separator>" },
+      { "/File/sep1",     NULL,         NULL,             0, "<Separator>" },
       { "/File/E_xit",    "<control>x", gtkui_exit,       0, "<StockItem>", GTK_STOCK_QUIT },
-      { "/_Sniff",        "<shift>S",   NULL,           0, "<Branch>" },
+      { "/_Sniff",        "<shift>S",   NULL,             0, "<Branch>" },
       { "/Sniff/Unified sniffing...",  "<shift>U", gtkui_unified_sniff, 0, "<StockItem>", GTK_STOCK_DND },
       { "/Sniff/Bridged sniffing...",  "<shift>B", gtkui_bridged_sniff, 0, "<StockItem>", GTK_STOCK_DND_MULTIPLE },
-      { "/Sniff/sep2",    NULL,         NULL,           0, "<Separator>" },
+      { "/Sniff/sep2",    NULL,         NULL,             0, "<Separator>" },
       { "/Sniff/Set pcap filter...",    "p",       gtkui_pcap_filter,   0, "<StockItem>", GTK_STOCK_PREFERENCES },
       { "/_Options",                    "<shift>O", NULL, 0, "<Branch>" },
       { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>" },
       { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" }
    };
    gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);
-   
+
    DEBUG_MSG("gtkui_setup");
 
    /* create menu window */
    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
    snprintf(title, 50, "%s %s", EC_PROGRAM, EC_VERSION);
    gtk_window_set_title(GTK_WINDOW (window), title);
-   gtk_window_set_default_size(GTK_WINDOW (window), 560, 400);
+   gtk_window_set_default_size(GTK_WINDOW (window), 600, 440);
+
    g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gtkui_exit), NULL);
 
    accel_group = gtk_accel_group_new ();
@@ -821,12 +827,14 @@ GtkWidget *gtkui_page_new(char *title, void (*callback)(void)) {
 
    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), parent, hbox);
 
-   /* callback to destroy the tab/page */
+   /* attach callback to destroy the tab/page */
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK(gtkui_page_close), parent);
 
-   /* callback to do specific clean-up */
+   /* attach callback to do specific clean-up */
    if(callback)
       g_object_set_data(G_OBJECT (parent), "destroy", callback);
+
+   gtkui_page_present(parent);
 
    return(parent);
 }
@@ -854,6 +862,34 @@ void gtkui_page_close(GtkWidget *widget, gpointer data) {
    callback = g_object_get_data(G_OBJECT (child), "destroy");
    if(callback)
       callback();
+}
+
+void gtkui_page_close_current(void) {
+   GtkWidget *child;
+   gint num = 0;
+
+   num = gtk_notebook_get_current_page(GTK_NOTEBOOK (notebook));
+   child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook), num);
+
+   gtkui_page_close(NULL, child);
+}
+
+gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    if(event->button == 3)
+        gtk_menu_popup(GTK_MENU(data), NULL, NULL, NULL, NULL, 3, event->time);
+    return(FALSE);
+}
+
+void gtkui_page_detach_current(void) {
+   gtkui_message("DETACH: not yet implemented");
+}
+
+void gtkui_page_right(void) {
+   gtk_notebook_next_page(GTK_NOTEBOOK (notebook));
+}
+
+void gtkui_page_left(void) {
+   gtk_notebook_prev_page(GTK_NOTEBOOK (notebook));
 }
 
 /* EOF */

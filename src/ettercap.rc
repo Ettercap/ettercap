@@ -2,7 +2,7 @@
 #include "../include/ec_version.h"
 
 LANGUAGE            0x09,0x01
-ETTERCAP_ICON ICON  "../contrib/nsis/eNG.ico"
+ETTERCAP_ICON ICON  "contrib/nsis/eNG.ico"
 
 #define RC_VERSION  EC_VERSION_MAJOR, EC_VERSION_MINOR, EC_VERSION_REVISION, 0
 

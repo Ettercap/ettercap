@@ -17,7 +17,7 @@
 ;   along with this program; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;
-;   $Id: EttercapNG.nsi,v 1.4 2004/09/13 16:02:30 alor Exp $
+;   $Id: EttercapNG.nsi,v 1.5 2004/09/17 19:38:38 alor Exp $
 ;
 ; NOTE: this .NSI script is designed for NSIS v2.0+
 
@@ -73,7 +73,7 @@
 ;--------------------------------
 ;Interface Configuration
 
-;   !define MUI_ICON "e.ico"
+   !define MUI_ICON "eNG.ico"
    !define MUI_HEADERIMAGE
    !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\win.bmp"
    !define MUI_CUSTOMFUNCTION_ABORT UserAbort
@@ -154,29 +154,29 @@ Section "Ettercap NG core" SecCore
    SetOverwrite on
 
    SetOutPath "$INSTDIR"
-   File ..\ettercap.exe
-   File ..\*.dll
+   File ..\..\ettercap.exe
+   File ..\..\*.dll
    
    SetOutPath "$INSTDIR\share"
-   File ..\share\*
+   File ..\..\share\*
    
    SetOutPath "$INSTDIR\etc\pango"
-   File ..\etc\pango\*
+   File ..\..\etc\pango\*
 
    SetOutPath "$INSTDIR\etc\gtk-2.0"
-   File ..\etc\gtk-2.0\*
+   File ..\..\etc\gtk-2.0\*
 
    SetOutPath "$INSTDIR\etc\fonts"
-   File ..\etc\fonts\*
+   File ..\..\etc\fonts\*
 
    SetOutPath "$INSTDIR\lib\pango\1.2.0\modules"
-   File ..\lib\pango\1.2.0\modules\*
+   File ..\..\lib\pango\1.2.0\modules\*
 
    SetOutPath "$INSTDIR\\lib\gtk-2.0\2.2.0\engines"
-   File ..\lib\gtk-2.0\2.2.0\engines\*
+   File ..\..\lib\gtk-2.0\2.2.0\engines\*
 
    SetOutPath "$INSTDIR\\lib\gtk-2.0\2.2.0\loaders"
-   File ..\lib\gtk-2.0\2.2.0\loaders\*
+   File ..\..\lib\gtk-2.0\2.2.0\loaders\*
 
 SectionEnd
 
@@ -185,7 +185,7 @@ Section "Etterlog" SecEtterlog
    SetOutPath "$INSTDIR"
 
    SetOverwrite on
-   File ..\etterlog.exe
+   File ..\..\etterlog.exe
 
 SectionEnd
 
@@ -194,7 +194,7 @@ Section "Etterfilter" SecEtterfilter
    SetOutPath "$INSTDIR"
 
    SetOverwrite on
-   File ..\etterfilter.exe
+   File ..\..\etterfilter.exe
 
 SectionEnd
 
@@ -203,7 +203,7 @@ Section "Plugins" SecPlugins
    SetOutPath "$INSTDIR\lib"
 
    SetOverwrite on
-   File ..\lib\*.dll
+   File ..\..\lib\*.dll
 
 
 SectionEnd

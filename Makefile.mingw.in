@@ -376,8 +376,8 @@ utils/etterfilter/ef_grammar.c utils/etterfilter/ef_grammar.h: utils/etterfilter
 utils/etterfilter/ef_syntax.c: utils/etterfilter/ef_syntax.l
 	flex -t $^ > $@
 
-$(OBJ_DIR)/ettercap.res: src/ettercap.rc src/eNG.ico
-	windres $(RCFLAGS) -O COFF -I./src -o $@ -i src/ettercap.rc
+$(OBJ_DIR)/ettercap.res: src/ettercap.rc contrib/nsis/eNG.ico
+	windres $(RCFLAGS) -O COFF -o $@ -i src/ettercap.rc
 
 clean:
 	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/ettercap.res

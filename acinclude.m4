@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.20 2004/08/03 19:33:44 alor Exp $
+dnl $Id: acinclude.m4,v 1.21 2004/09/17 19:38:34 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -266,6 +266,7 @@ directories="../winpcap/lib ../winpcap/include
    dnl under mingw there is a special makefile
    dnl make the final adjustment
    sed -e "s/@VERSION@/${VERSION}/" < Makefile.mingw.in > Makefile
+   mkdir lib
 ])
 
 dnl vim:ts=3:expandtab

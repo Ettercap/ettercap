@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.53 2004/07/12 19:57:26 alor Exp $
+    $Id: ec_filter.c,v 1.54 2004/09/17 19:38:39 alor Exp $
 */
 
 #include <ec.h>
@@ -873,7 +873,7 @@ int filter_load_file(char *filename, struct filter_env *fenv)
 
    /* sanity checks */
    if (fh.magic != htons(EC_FILTER_MAGIC))
-      FATAL_MSG("Bad magic in filter file");
+      FATAL_MSG("Bad magic in filter file\nMake sure to compile the filter with etterfilter");
   
    /* which version has compiled the filter ? */
    if (strcmp(fh.version, EC_VERSION))

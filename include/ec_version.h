@@ -1,10 +1,10 @@
 
-/* $Id: ec_version.h,v 1.15 2004/09/13 16:02:30 alor Exp $ */
+/* $Id: ec_version.h,v 1.16 2004/09/17 19:38:38 alor Exp $ */
 
 #ifndef EC_VERS_H
 #define EC_VERS_H
 
-#define EC_VERSION            "NG-0.7.1_cvs"
+#define EC_VERSION            "NG-0.7.1"
 #define EC_VERSION_MAJOR      0
 #define EC_VERSION_MINOR      7
 #define EC_VERSION_REVISION   1

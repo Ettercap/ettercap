@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.12 2003/10/28 22:15:04 alor Exp $
+    $Id: ec_telnet.c,v 1.13 2003/10/29 15:11:25 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -236,14 +236,14 @@ FUNC_DECODER(dissector_telnet)
  */
 void skip_telnet_command(u_char **ptr, u_char *end)
 {
-   while(**ptr == 0xff && *ptr != end) {
+   while(**ptr == 0xff && *ptr < end) {
       /* sub option 0xff 0xfa ... ... 0xff 0xf0 */
       if (*(*ptr + 1) == 0xfa) {
          *ptr += 1;
          /* search the sub-option end (0xff 0xf0) */
          do {
             *ptr += 1;
-         } while(**ptr != 0xff && *ptr != end);
+         } while(**ptr != 0xff && *ptr < end);
          /* skip the sub-option end */
          *ptr += 2;
       } else {

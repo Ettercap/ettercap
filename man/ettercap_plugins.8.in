@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.9 2003/11/09 13:02:23 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.10 2003/11/10 11:52:25 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -100,9 +100,9 @@ accurate.
 .Sp
 .I example :
 .Sp
-ettercap -TP link_type /192.168.0.1/
+ettercap -TQP link_type /192.168.0.1/
 .br
-ettercap -TP link_type //
+ettercap -TQP link_type //
 
 .TP 
 .B scan_poisoner
@@ -121,7 +121,7 @@ You can't perform this active test in unoffensive mode .
 .Sp
 .I example :
 .Sp
-ettercap -TP scan_poisoner //
+ettercap -TQP scan_poisoner //
 
 .TP 
 .B search_promisc
@@ -136,9 +136,9 @@ arp request.
 .Sp
 .I example :
 .Sp
-ettercap -TP search_promisc /192.168.0.1/
+ettercap -TQP search_promisc /192.168.0.1/
 .br
-ettercap -TP search_promisc //
+ettercap -TQP search_promisc //
 
 
 .TP 

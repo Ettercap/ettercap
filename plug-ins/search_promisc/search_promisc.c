@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: search_promisc.c,v 1.2 2003/11/07 17:15:23 lordnaga Exp $
+    $Id: search_promisc.c,v 1.3 2003/11/08 13:23:01 lordnaga Exp $
 */
 
 
@@ -33,6 +33,7 @@
 
 /* globals */
 LIST_HEAD(, hosts_list) promisc_table;
+LIST_HEAD(, hosts_list) collected_table;
 
 /* mutexes */
 static pthread_mutex_t promisc_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -55,7 +56,7 @@ struct plugin_ops search_promisc_ops = {
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Search promisc NICs in the LAN",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   version:          "1.2",   
    /* activation function */
    init:             &search_promisc_init,
    /* deactivation function */                     
@@ -123,8 +124,9 @@ static int search_promisc_init(void *dummy)
          INSTANT_USER_MSG("- NONE \n");
       else 
          LIST_FOREACH(h, &promisc_table, next) 
-	    INSTANT_USER_MSG("- %s\n",ip_addr_ntoa(&h->ip, tmp));
+            INSTANT_USER_MSG("- %s\n",ip_addr_ntoa(&h->ip, tmp));
          
+
       PROMISC_LOCK;          
       /* Delete the list */
       while (!LIST_EMPTY(&promisc_table)) {
@@ -134,6 +136,15 @@ static int search_promisc_init(void *dummy)
       }
       PROMISC_UNLOCK;
    }
+
+   PROMISC_LOCK;          
+   /* Delete the list */
+   while (!LIST_EMPTY(&collected_table)) {
+      h = LIST_FIRST(&collected_table);
+      LIST_REMOVE(h, next);
+      SAFE_FREE(h);
+   }
+   PROMISC_UNLOCK;
      
    return PLUGIN_FINISHED;
 }
@@ -150,23 +161,27 @@ static int search_promisc_fini(void *dummy)
 static void parse_arp(struct packet_object *po)
 {
    struct hosts_list *h;
-   
+
    /* We'll parse only replies for us */
-   if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN));
+   if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))
       return;
    
    PROMISC_LOCK;
    /* Check if it's already in the list */
-   LIST_FOREACH(h, &promisc_table, next) 
+   LIST_FOREACH(h, &collected_table, next) 
       if (!ip_addr_cmp(&(po->L3.src), &h->ip)) {
          PROMISC_UNLOCK;
          return;
       }
        
-   /* create the element and insert it in the list */
+   /* create the element and insert it in the two lists */
    SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
    memcpy(&h->ip, &(po->L3.src), sizeof(struct ip_addr));
    LIST_INSERT_HEAD(&promisc_table, h, next);
+
+   SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
+   memcpy(&h->ip, &(po->L3.src), sizeof(struct ip_addr));
+   LIST_INSERT_HEAD(&collected_table, h, next);
 
    PROMISC_UNLOCK;
 }

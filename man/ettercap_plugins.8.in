@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.6 2003/11/05 10:22:57 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.7 2003/11/08 13:23:01 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -103,6 +103,23 @@ accurate.
 ettercap -TP link_type /192.168.0.1/
 .br
 ettercap -TP link_type //
+
+.TP 
+.B search_promisc
+.Sp
+It tries to find if anyone is sniffing in promisc mode. It sends two different
+kinds of malformed arp request to each target in the host list and waits for
+replies. If a reply arrives to one of the two kinds of request, it's more or
+less probable that this target is sniffing. It could generate false-positives.
+You can launch it either from the command line or from the plugin menu.
+Since it listens for arp replies you better use this plugin while sending no
+arp request. 
+.Sp
+.I example :
+.Sp
+ettercap -TP search_promisc /192.168.0.1/
+.br
+ettercap -TP search_promisc //
 
 
 .TP 

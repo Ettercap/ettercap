@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.55 2003/12/16 10:34:24 lordnaga Exp $
+.\"  $Id: ettercap.8.in,v 1.56 2004/01/04 17:02:43 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -49,7 +49,7 @@ It has two main sniffing options:
 interface in promisc mode (-p option). The packet not directed to the host
 running ettercap will be forwarded automatically using layer 3 routing. So you
 can use a mitm attack launched from a different tool and let ettercap modify the
-packets and forward them for you. You can also run it on a gateway.
+packets and forward them for you. 
 .PP
 \fIBRIDGED\fR, it uses two network interfaces and forward the traffic from one to the other
 while performing sniffing and content filtering. This sniffing method is
@@ -180,6 +180,10 @@ packet.
 You have full control of what ettercap should receive. You can use the internal
 mitm attacks, set the interface in promisc mode, use plugins or use every
 method you want.
+.Sp
+IMPORTANT NOTE: if you run ettercap on a gateway, remember to re-enable the
+ip_forwarding after you have killed ettercap. Since ettercap drops its
+privileges, it cannot restore the ip_forwarding for you.
 .TP
 \fB\-M\fR, \fB\-\-mitm <METHOD:ARGS>\fR
 MITM attack 
@@ -441,13 +445,18 @@ example:
 .Sp
 ettercap -Tq -L dumpfile -r pcapfile
 
+
 .TP
 \fB\-C\fR, \fB\-\-curses\fR
 .br
+Ncurses based GUI. see ettercap_curses(8) for a full description.
+
 
 .TP
 \fB\-G\fR, \fB\-\-gtk\fR
 .br
+Not yet implemented
+
 
 .TP
 \fB\-D\fR, \fB\-\-daemonize\fR
@@ -467,7 +476,7 @@ ettercap in debug mode.
 .TP
 \fB\-i\fR, \fB\-\-iface <IFACE>\fR
 Use this <IFACE> instead of the default one. The interface must have an ip
-address. This is a libnet limitation (for now). Altough you can launch ettercap
+address. This is a libnet limitation (for now). You can launch ettercap
 on ifaces without IP address if you execute it in unoffensive mode (-u option).
 
 .TP
@@ -510,8 +519,7 @@ all the other instances doing their work without forwarding them. Else you will
 get packet duplicates.
 .br
 It also disable the internal creation of the sessions for each connection. It
-increases performances, but you will lost the possibility to modify packets on
-the fly.
+increases performances, but you will not be able to modify packets on the fly.
 .br
 If you want to use a mitm attack you have to use a separate instance.
 

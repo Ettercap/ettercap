@@ -1,0 +1,172 @@
+.\"  ettercap_curses -- man page for the Ncurses GUI
+.\"
+.\"  This program is free software; you can redistribute it and/or modify
+.\"  it under the terms of the GNU General Public License as published by
+.\"  the Free Software Foundation; either version 2 of the License, or
+.\"  (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+.\"
+.\"  $Id: ettercap_curses.8.in,v 1.1 2004/01/04 17:02:43 alor Exp $
+.\"
+.de Sp
+.if n .sp
+.if t .sp 0.4
+..
+.TH ETTERCAP-CURSES "8" "" "ettercap @VERSION@"
+.SH NAME
+.B ettercap @VERSION@ \- Man page for the Ncurses GUI.
+
+.SH GENERAL DESCRIPTION
+The curses GUI is quite simple and intuitive.
+.br
+It is menu-driven. Every flag or functions can be modified/called thru the
+upper menu. All the user messages are printed in the bottom window. If you want
+to see the old messages, you can scroll the window buffer by pressing the UP,
+DOWN, PPAGE, NPAGE keys. 
+The middle part is used to display informations or dialogs for the user.
+.Sp
+The menus can be opened by pressing the relative hotkey. For the menus the
+hotkey is represented by the uppercase initial letter of the title (e.g. 'S'
+for Sniffing, 'T' for Targets). The functions within a menu can be called by
+pressing the hotkey depicted near the function name on the right. Hotkeys
+prefixed with 'C-' are to be used in conjunction with the CTRL key (e.g. 'C-f'
+means CTRL+f).
+.Sp
+You can switch the focus between the objects on the screen by pressing the TAB
+key or by clicking on it with the mouse (if you are running ettercap within an
+xterm). Mouse events are supported only thru the xterm. You can use the mouse
+to select objects, open a menu, chose a function, scroll the elevators for the
+scrolling windows, etc etc.
+.Sp
+When you open more than one windows in the middle part, they will overlap. Use
+the TAB key to switch between them. Use CTRL+Q to close the focused window.
+.br
+You can also use CTRL+Q to close input dialog if you want to cancel the
+requested input. (i.e. you have selected the wrong function and you want to go
+back).
+
+
+.SH HOW TO SELECT IT
+To use the ncurses GUI you have to:
+.Sp
+- compile ettercap with ncurses support (obviously)
+.br
+- run it with the -C flag 
+.Sp
+Passing the -C flag is sufficient, but if you want you can pass other flags
+that will be automatically set even for the curses GUI. You will be able to
+override them using the menu to change the options.
+
+
+.SH ONCE STARTED
+As soon as ettercap is launched with the Ncurses GUI, you will be prompted with
+multiple choices. The first screen let you select if you want to open a pcap
+file or dump the sniffed traffic to a file, if you want unified sniffing or
+bridged one, permits you to set a pcap file on the captured traffic and enables
+you to log all the sniffed data.
+.Sp
+Once you have selected a sniffing method (from file, unified or bridged) this
+screen will not be reachable anymore. The only way is to restart ettercap.
+
+
+Let analyze each menu in the start screen:
+
+.TP 
+.B File
+.RS
+.TP
+.B Open...  
+Open a pcap file and analyze it. All the functionalities available for live
+sniffing are in place except for those sending or forwarding packets (mitm
+attacks and so on...).
+.TP
+.B Dump to file...
+All the traffic sniffed by the live capture will be dumped in that file. The
+filters nor the targets have effects on this file, all the packets received by
+pcap will be dumped. The only way to not dump a certain packet is to set a pcap
+filter (see below).
+.TP
+.B Exit
+.br
+Exits from ettercap and returns to the command prompt.
+.RE
+
+
+
+.TP 
+.B Sniff
+.RS
+.TP
+.B Unified sniffing...  
+Choosing this function you will be prompted to select the network interface to be 
+used for sniffing. The first up and running interface is suggested in the input
+box.
+For an explanation of what unified sniffing is, refer to ettercap(8).
+.br.
+TIP: if you press 'u' as an hotkey, this step will be skipped and the default
+interface is automatically selected.
+.TP
+.B Bridged sniffing...  
+After giving the two interfaces to be used, you will enter the Bridged sniffing
+mode. For an explanation of what bridged sniffing is, refer to ettercap(8).
+.TP
+.B Set pcap filter...
+Here you can insert a tcpdump-like filter for the capturing process.
+.br
+IMPORTANT: if you manage to use a mitm attack, remember that if ettercap does
+not see a packet, it will NOT be forwarded. So be sure of what you are doing by
+setting a pcap filter.
+.RE
+
+
+.TP 
+.B Options
+.RS
+.TP
+.B Unoffensive  
+This enable/disable the unoffensive flag. The asterisc '*' means "the option is
+enabled" else the option is not enabled.
+.TP
+.B Promisc mode
+Enable/disable the promisc mode for the live caputre forn a network interface.
+This is an "asterisc-option" as the unoffensive one.
+.RE
+
+
+.TP 
+.B Logging
+.RS
+.TP
+.B Log all packets and infos...
+Given a file name, it will create two file: filename.eci (for informations
+about hosts) and filename.ecp (for all the interesting packets). This is the
+same as the -L option.
+.TP
+.B Log only infos...
+This is used only to sniff informations about hosts (same as the -l option).
+.TP
+.B Log user messages...
+Will log all the message appearing in the bottom window (same as -m option).
+.TP
+.B Compressed file
+Asterisc-option to control whether or not the logfile should be compressed.
+.RE
+
+
+
+
+.SH "SEE ALSO"
+.I "ettercap(8)"
+.I "ettercap_plugin(8)"
+.I "etterlog(8)"
+.I "etterfilter(8)"
+.I "etter.conf(5)"
+.LP

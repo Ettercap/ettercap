@@ -27,12 +27,11 @@ LINUX
    Linux 2.2.x          FULL
    
 
-
 SOLARIS
 ------------------------------------------------------------------------------
    SunOS 5.8 (sparc)    FULL           tested on a SunFire V100 sparc64
    
-   Solaris 5.8 (intel)  FULL           tested on SunOS solaris 5.8 (i386) 
+   Solaris 8 (intel)    FULL           tested on SunOS solaris 5.8 (i386) 
 
 
 *BSD
@@ -42,7 +41,6 @@ SOLARIS
    FreeBSD 4.x          untested
 
    OpenBSD 3.x          PARTIAL        tested on OpenBSD 3.4 GENERIC#18 i386
-                                       plugins not tested
                                        test the PCAP_TIMEOUT on OpenBSD <= 3.3
    
    OpenBSD 2.x          untested
@@ -133,9 +131,15 @@ waiting the input from some betatester... ;)
 
  + OPENBSD
 
+   Same recommendations as for FreeBSD, but you have to find a way to install
+   libltdl since it seems that newer version of libtool aren't in the ports
+   collection.
+
 ------------------------------------------------------------------------------
    W I N D O W S
 ------------------------------------------------------------------------------
+
+Currently the support for windows is dropped.
 
 
 ==============================================================================

@@ -8,6 +8,9 @@
       - dissect_free_session
       - what about truncated pcap file ?
       - input for curses gui
+      - in unoffensive we get UNKNOWN for all the profiles
+
+   + PCAP RELATED
       + when libpcap 0.8.1 will be released
          - pcap_datalink_val_to_name  
          - pcap_lib_version
@@ -36,14 +39,12 @@ this is the unofficial and floating in time roadmap:
       - developer docs
          - plugins
 
-   + PROFILES
-      - dhcp infos
-
    + LIBWDG
+      - logging menu
       - fix the box() under freebsd
-      - inline help (with callback on 'h')
       - widgets:
          - selectable lists (auto refresh)
+         - compound objects
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

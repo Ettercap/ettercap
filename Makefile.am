@@ -6,12 +6,16 @@ SUBDIRS = man src include utils plug-ins
 EXTRA_DIST = LICENSE \
              AUTHORS \
              CHANGELOG \
-			 TODO \
+             TODO \
              Makefile.am.common \
              shtool \
-			 share/* 
+             share/* 
 
-CLEANFILES = *.log *.out *.cache
+CLEANFILES = *.log *.out *.cache *.so ettercap
 
+test: all
+	ln -fs ./src/ettercap ./
+	find ./plug-ins -name '*.so' -exec ln -fs {} ./ \;
+	./shtool fixperm ./
 
-# vim:ts=4:noexpandtab
+# vim:ts=4: noexpandtab

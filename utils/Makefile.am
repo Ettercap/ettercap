@@ -14,12 +14,16 @@ lcconvert_LIBS =
 
 
 etterlog_SOURCES = el_main.c \
+                   el_parser.c \
+                   el_error.c \
+                   el_analyze.c \
+                   el_log.c \
                    ../src/ec_inet.c \
                    ../src/ec_format.c
 
 etterlog_CFLAGS = @EC_CFLAGS@
 
-etterlog_LIBS =
+etterlog_LDADD = -lz
 
 
 CLEANFILES = *.log *.out core* *~

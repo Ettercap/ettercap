@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_file.c,v 1.1 2003/03/13 11:01:47 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_file.c,v 1.2 2003/03/24 22:45:05 alor Exp $
 */
 
 #include <ec.h>
@@ -58,10 +58,10 @@ char * get_local_path(char *file)
 {
    char *filename;
 
-   filename = calloc(strlen("../share/") + strlen(file) + 1, sizeof(char));
+   filename = calloc(strlen("./share/") + strlen(file) + 1, sizeof(char));
    ON_ERROR(filename, NULL, "out of memory");
    
-   sprintf(filename, "../share/%s", file);
+   sprintf(filename, "./share/%s", file);
    
    DEBUG_MSG("get_local_path -- %s", filename);
    

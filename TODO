@@ -18,11 +18,9 @@
       - make test with dlopen-test
 
    + LOGGING ENGINE
-      - use unified external formatting functions
-      - unified binary output
-      - differentiate between info, passive and packet
       - gzip compression
-      - etterlog (log analizer)
+      - ETTERLOG
+         - respect the first_header
       - integrate the lcocnvert in etterlog
 
    + ARP SCAN

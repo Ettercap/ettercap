@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.10 2003/03/24 15:54:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.11 2003/03/24 22:45:06 alor Exp $
 */
 
 
@@ -128,7 +128,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:ChDd:f:Gi:L:l:NP:piRr:t:v", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:ChDd:f:Ghi:L:l:NP:piRr:t:v", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 

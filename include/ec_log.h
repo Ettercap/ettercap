@@ -3,11 +3,16 @@
 #define EC_LOG_H
 
 #include <ec_inet.h>
+#include <ec_packet.h>
+
 #include <sys/time.h>
 
 /*******************************************
  * NOTE:  all the int variable are stored  *
  *        in network order in the logfile  *
+ *                                         *
+ * NOTE:  log files are compressed with    *
+ *        the deflate algorithm            *
  *******************************************/
 
 /*
@@ -16,13 +21,16 @@
  */
 
 struct log_global_header {
+   /* a magic number for file identification */
+   u_short magic;
+#define LOG_MAGIC 0xe77e
    /* 
     * offset to the first header in the log file 
     * this assure that we can change this header 
     * and the etterlog parser will be able to 
     * parse also files created by older version
     */
-   u_int first_header;
+   u_short first_header;
    /* ettercap version */
    char version[10];
    /* creation time of the log */

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.1 2003/03/24 15:56:12 alor Exp $
+    $Id: ec_log.c,v 1.2 2003/03/24 22:45:06 alor Exp $
 */
 
 #include <ec.h>
@@ -78,6 +78,9 @@ void set_loglevel(int level, char *filename)
          
          /* initialize the log file */
          log_write_header(fd_eci, LOG_INFO);
+
+         /* XXX - implement the info hook */
+         
          break;
    }
 
@@ -109,14 +112,19 @@ static int log_write_header(int fd, int type)
    DEBUG_MSG("log_write_header : fd %d  type %d", fd, type);
 
    memset(&lh, 0, sizeof(lh));
+
+   /* the magic number */
+   lh.magic = htons(LOG_MAGIC);
    
    /* the offset of the first header is equal to the size of this header */
-   lh.first_header = htonl(sizeof(struct log_global_header));
+   lh.first_header = htons(sizeof(struct log_global_header));
    
    strlcpy(lh.version, GBL_VERSION, sizeof(lh.version));
    
    /* creation time of the file */
    gettimeofday(&lh.tv, 0);
+   lh.tv.tv_sec = htonl(lh.tv.tv_sec);
+   lh.tv.tv_usec = htonl(lh.tv.tv_usec);
       
    lh.type = htonl(type);
 
@@ -135,7 +143,10 @@ void log_packet(struct packet_object *po)
    struct log_header_packet hp;
    int c;
 
+   /* adjust the timestamp */
    memcpy(&hp.tv, &po->ts, sizeof(struct timeval));
+   hp.tv.tv_sec = htonl(hp.tv.tv_sec);
+   hp.tv.tv_usec = htonl(hp.tv.tv_usec);
   
    memcpy(&hp.L2_src, &po->L2.src, ETH_ADDR_LEN);
    memcpy(&hp.L2_dst, &po->L2.dst, ETH_ADDR_LEN);

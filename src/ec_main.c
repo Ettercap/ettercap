@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.6 2003/03/24 15:54:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.7 2003/03/24 22:45:06 alor Exp $
 */
 
 #include <ec.h>
@@ -65,12 +65,12 @@ int main(int argc, char *argv[])
    /* activate the signal handler */
    signal_handler();
    
-   /* getopt related parsing...  */
-   parse_options(argc, argv);
-  
    /* ettercap copyright */
    fprintf(stdout, "\n\033[01m\033[1m%s %s\033[0m copyright %s %s\n\n", 
          GBL_PROGRAM, GBL_VERSION, EC_COPYRIGHT, EC_AUTHORS);
+   
+   /* getopt related parsing...  */
+   parse_options(argc, argv);
 
    /* initialize the user interface */
    ui_init();

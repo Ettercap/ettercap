@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.42 2003/12/05 12:01:41 lordnaga Exp $
+    $Id: ec_filter.c,v 1.43 2003/12/14 18:00:36 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_filter.h>
 #include <ec_strings.h>
 #include <ec_version.h>
+#include <ec_threads.h>
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -36,6 +37,10 @@
 #endif
 
 #define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x, ## __VA_ARGS__); return -EFATAL; } while(0)
+
+static pthread_mutex_t filters_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define FILTERS_LOCK     do{ pthread_mutex_lock(&filters_mutex); }while(0)
+#define FILTERS_UNLOCK   do{ pthread_mutex_unlock(&filters_mutex); }while(0)
 
 /* protos */
 
@@ -80,6 +85,8 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
   
    /* sanity check */
    BUG_IF(fop == NULL);
+
+   FILTERS_LOCK;
 
    /* loop until EXIT */
    while (fop[eip].opcode != FOP_EXIT) {
@@ -132,14 +139,16 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
             break;
             
          default:
+            FILTERS_UNLOCK;
             JIT_FAULT("unsupported opcode [%d] (execution interrupted)", fop[eip].opcode);
-            return 0;
             break;
       }
     
       /* autoincrement the instruction pointer */
       eip++;
    }
+   
+   FILTERS_UNLOCK;
 
    return 0;
 }
@@ -827,23 +836,27 @@ int filter_load_file(char *filename, struct filter_env *fenv)
    file = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
    if (file == MAP_FAILED)
       FATAL_MSG("Cannot mmap file");
+   
+   /* the mmap will remain active even if we close the fd */
+   close(fd);
 
    /* make sure we don't override a previous filter */
    filter_unload(fenv);
 
+   FILTERS_LOCK;
+   
    /* set the global variables */
    fenv->map = file;
    fenv->chain = (struct filter_op *)(file + fh.code);
    fenv->len = size - sizeof(struct filter_header) - fh.code;
-
-   /* the mmap will remain active even if we close the fd */
-   close(fd);
 
    /* 
     * adjust all the string pointers 
     * they must point to the data segment
     */
    reconstruct_strings(fenv, &fh);
+
+   FILTERS_UNLOCK;
 
    /* compile the regex to speed up the matching */
    if (compile_regex(fenv, &fh) != ESUCCESS)
@@ -864,6 +877,12 @@ void filter_unload(struct filter_env *fenv)
    
    DEBUG_MSG("filter_unload");
 
+   /* if not loaded, return */
+   if (fenv->map == NULL || fenv->chain == NULL)
+      return;
+      
+   FILTERS_LOCK;
+   
    /* free the memory alloc'd for regex */
    while (fop != NULL && i < (fenv->len / sizeof(struct filter_op)) ) {
       /* search for func regex and pcre */
@@ -893,6 +912,8 @@ void filter_unload(struct filter_env *fenv)
    fenv->map = NULL;
    fenv->chain = NULL;
    fenv->len = 0;
+
+   FILTERS_UNLOCK;
 }
 
 

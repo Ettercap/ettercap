@@ -19,6 +19,7 @@ NG-0.7.0_rc1     200405
    !! fixed uninitialized data that caused segfault in the dhcp dissector
    !! etterlog -c respect the -f specification
    !! fixed some problems with non blocking ssl sockets
+   !! "should be checksum" is now correct
    
 
 NG-0.7.0_pre2    20040517

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.39 2004/05/27 10:59:52 alor Exp $
+    $Id: ec_tcp.c,v 1.40 2004/06/10 14:55:31 alor Exp $
 */
 
 #include <ec.h>
@@ -111,6 +111,7 @@ FUNC_DECODER(decode_tcp)
    void *ident = NULL;
    struct tcp_status *status = NULL;
    int direction = 0;
+   u_int16 sum;
 
    tcp = (struct tcp_header *)DECODE_DATA;
    
@@ -159,7 +160,7 @@ FUNC_DECODER(decode_tcp)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && L4_checksum(PACKET) != CSUM_RESULT) {
+   if (!GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
       char tmp[MAX_ASCII_ADDR_LEN];
 #ifdef OS_DARWIN
       /* 
@@ -178,8 +179,9 @@ FUNC_DECODER(decode_tcp)
       if (!ip_addr_cmp(&PACKET->L3.src, &GBL_IFACE->ip))
          return NULL;
 #endif
-      USER_MSG("Invalid TCP packet from %s:%d : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
-                                    ntohs(tcp->sport), L4_checksum(PACKET), ntohs(tcp->csum) );
+      if (GBL_CONF->checksum_check)
+         USER_MSG("Invalid TCP packet from %s:%d : csum [%#x] should be (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
+                                    ntohs(tcp->sport), ntohs(tcp->csum), checksum_shouldbe(tcp->csum, sum));
       return NULL;
    }
      

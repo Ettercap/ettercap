@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.41 2004/05/27 10:59:52 alor Exp $
+    $Id: ec_ip.c,v 1.42 2004/06/10 14:55:31 alor Exp $
 */
 
 #include <ec.h>
@@ -104,6 +104,7 @@ FUNC_DECODER(decode_ip)
    void *ident = NULL;
    struct ip_status *status = NULL;
    u_int32 t_len;
+   u_int16 sum;
 
    ip = (struct ip_header *)DECODE_DATA;
   
@@ -160,9 +161,10 @@ FUNC_DECODER(decode_ip)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET->L3.header, PACKET->L3.len) != CSUM_RESULT) {
-      USER_MSG("Invalid IP packet from %s : csum [%#x] (%#x)\n", int_ntoa(ip->saddr), 
-                              L3_checksum(PACKET->L3.header, PACKET->L3.len), ntohs(ip->csum));      
+   if (!GBL_OPTIONS->unoffensive && (sum = L3_checksum(PACKET->L3.header, PACKET->L3.len)) != CSUM_RESULT) {
+      if (GBL_CONF->checksum_check)
+         USER_MSG("Invalid IP packet from %s : csum [%#x] should be (%#x)\n", int_ntoa(ip->saddr), 
+                              ntohs(ip->csum), checksum_shouldbe(ip->csum, sum));      
       return NULL;
    }
    

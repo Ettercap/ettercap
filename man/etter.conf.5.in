@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.27 2004/05/21 14:25:22 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.28 2004/06/10 14:55:31 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -213,6 +213,15 @@ or by the kernel. It will generate packets duplicates in conjuction with
 arp mitm method (for example). It could be useful while running ettercap
 in unoffensive mode on a host with more than one network interface
 (waiting for the multiple-interface feature...)   
+
+.TP
+.B checksum_check
+If you set the value to 0 the messages about incorrect checksums will not be
+displayed in the user messages windows (nor logged to a file with -m). 
+.br
+Note that this option won't disable the check on the packets, but only prevent
+the message to be displayed. The check on the packets is performed to avoid
+ettercap spotting thru bad checsum packets (see Phrack 60/12)
 
 
 .TP 20

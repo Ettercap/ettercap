@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_checksum.c,v 1.8 2004/05/13 15:15:15 alor Exp $
+    $Id: ec_checksum.c,v 1.9 2004/06/10 14:55:31 alor Exp $
 */
 
 #include <ec.h>
@@ -28,6 +28,7 @@
 
 u_int16 L3_checksum(u_char *buf, size_t len);
 u_int16 L4_checksum(struct packet_object *po);
+u_int16 checksum_shouldbe(u_int16 sum, u_int16 computed_sum);
 u_int32 CRC_checksum(u_char *buf, size_t len, u_int32 init);
 
 /*******************************************/
@@ -70,7 +71,7 @@ u_int16 L4_checksum(struct packet_object *po)
    u_int16 *buf = (u_int16 *)po->L4.header;
 
    /* calculate the checksum */
-   while( nleft > 1 ) {
+   while (nleft > 1) {
       csum += *buf++;
       nleft -= sizeof(u_int16);
    }
@@ -151,6 +152,59 @@ u_int32 CRC_checksum(u_char *buf, size_t len, u_int32 init)
       crc = crc_32_tab[(crc ^ buf[i]) & 0xff] ^ (crc>>8);
 
     return crc;
+}
+
+/* stolen from ethereal source code (in_cksum.c) */
+
+/*
+ * Given the network-byte-order value of the checksum field in a packet
+ * header, and the network-byte-order computed checksum of the data
+ * that the checksum covers (including the checksum itself), compute
+ * what the checksum field *should* have been.
+ */
+u_int16 checksum_shouldbe(u_int16 sum, u_int16 computed_sum)
+{
+	u_int32 shouldbe;
+
+	/*
+	 * The value that should have gone into the checksum field
+	 * is the negative of the value gotten by summing up everything
+	 * *but* the checksum field.
+	 *
+	 * We can compute that by subtracting the value of the checksum
+	 * field from the sum of all the data in the packet, and then
+	 * computing the negative of that value.
+	 *
+	 * "sum" is the value of the checksum field, and "computed_sum"
+	 * is the negative of the sum of all the data in the packets,
+	 * so that's -(-computed_sum - sum), or (sum + computed_sum).
+	 *
+	 * All the arithmetic in question is one's complement, so the
+	 * addition must include an end-around carry; we do this by
+	 * doing the arithmetic in 32 bits (with no sign-extension),
+	 * and then adding the upper 16 bits of the sum, which contain
+	 * the carry, to the lower 16 bits of the sum, and then do it
+	 * again in case *that* sum produced a carry.
+	 *
+	 * As RFC 1071 notes, the checksum can be computed without
+	 * byte-swapping the 16-bit words; summing 16-bit words
+	 * on a big-endian machine gives a big-endian checksum, which
+	 * can be directly stuffed into the big-endian checksum fields
+	 * in protocol headers, and summing words on a little-endian
+	 * machine gives a little-endian checksum, which must be
+	 * byte-swapped before being stuffed into a big-endian checksum
+	 * field.
+	 *
+	 * "computed_sum" is a network-byte-order value, so we must put
+	 * it in host byte order before subtracting it from the
+	 * host-byte-order value from the header; the adjusted checksum
+	 * will be in host byte order, which is what we'll return.
+	 */
+	shouldbe = ntohs(sum);
+	shouldbe += ntohs(computed_sum);
+	shouldbe = (shouldbe & 0xFFFF) + (shouldbe >> 16);
+	shouldbe = (shouldbe & 0xFFFF) + (shouldbe >> 16);
+	return shouldbe;
 }
 
 

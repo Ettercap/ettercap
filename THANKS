@@ -48,6 +48,8 @@
    The Apache group                          for the base64_decode function
                                              (took from ap_base64.c)
 
+   Ethereal team                             for the in_cksum_shouldbe function
+
    
 if you think you should be in the list, please mail me.
 

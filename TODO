@@ -8,7 +8,7 @@
       - remove the quiet from some plugins
       - check SSL thru proxy
       - fix dying top_half under solaris
-      - incoorect csum on dns replies
+      - incorrect csum on dns replies
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
@@ -23,10 +23,12 @@
 ============================
   Not in the first release  
 ============================
+   
+   + SAFE_STRTOK
 
    + CURSES
       - modifiable text in widgets
-      
+
    + NETWORK MAPPER
       - automatic scan (all the host in the profile list)
       - specified ip address
@@ -38,8 +40,6 @@
  
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
-
-   + SAFE_STRTOK
 
    + multiple dissector on a single port
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_udp.c,v 1.18 2004/05/27 10:59:52 alor Exp $
+    $Id: ec_udp.c,v 1.19 2004/06/10 14:55:31 alor Exp $
 */
 
 #include <ec.h>
@@ -58,6 +58,7 @@ FUNC_DECODER(decode_udp)
 {
    FUNC_DECODER_PTR(next_decoder);
    struct udp_header *udp;
+   u_int16 sum;
 
    udp = (struct udp_header *)DECODE_DATA;
 
@@ -89,7 +90,7 @@ FUNC_DECODER(decode_udp)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && L4_checksum(PACKET) != CSUM_RESULT) {
+   if (!GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
       char tmp[MAX_ASCII_ADDR_LEN];
 #ifdef OS_DARWIN
       /* 
@@ -108,8 +109,9 @@ FUNC_DECODER(decode_udp)
       if (!ip_addr_cmp(&PACKET->L3.src, &GBL_IFACE->ip))
          return NULL;
 #endif
-      USER_MSG("Invalid UDP packet from %s:%d : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
-                                    ntohs(udp->sport), L4_checksum(PACKET), ntohs(udp->csum) );
+      if (GBL_CONF->checksum_check)
+         USER_MSG("Invalid UDP packet from %s:%d : csum [%#x] should be (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
+                                    ntohs(udp->sport), ntohs(udp->csum), checksum_shouldbe(udp->csum, sum));
       return NULL;
    }
 

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.8 2003/04/30 16:50:09 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.9 2003/06/01 10:07:23 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -154,7 +154,7 @@ Display only packets matching the regex <REGEX>.
 .br
 If this option is used agains a LOG_PACKET logfile the regex is executed on the
 payload of the packet. If the type il LOG_INFO, the regex is executed on all
-the field of the host's profile (OS, banners and ethernet adapter).
+the field of the host's profile (OS, banners, service and ethernet adapter).
 .br
 NOTE: the regex is compiled with the REG_ICASE flag (case insensitive).
 

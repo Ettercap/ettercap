@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.18 2003/05/31 13:30:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.19 2003/06/01 10:07:30 alor Exp $
 */
 
 #include <el.h>
@@ -319,18 +319,21 @@ static int match_regex(struct host_profile *h)
    if (!GBL.regex)
       return 1;
 
-   /* check in the manufacturer */
+   /* check the manufacturer */
    if (regexec(GBL.regex, manuf_search(h->L2_addr), 0, NULL, 0) == 0)
       return 1;
   
-   /* check in the OS */
+   /* check the OS */
    fingerprint_search(h->fingerprint, os);
    
    if (regexec(GBL.regex, os, 0, NULL, 0) == 0)
       return 1;
 
-   /* check the open ports banners */
+   /* check the open ports banners and service */
    LIST_FOREACH(o, &(h->open_ports_head), next) {
+      if (regexec(GBL.regex, service_search(o->L4_addr, o->L4_proto), 0, NULL, 0) == 0)
+         return 1;
+      
       if (o->banner && regexec(GBL.regex, o->banner, 0, NULL, 0) == 0)
          return 1;
    }

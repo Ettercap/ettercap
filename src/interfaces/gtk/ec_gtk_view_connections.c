@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.16 2004/03/05 13:10:22 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.17 2004/03/05 13:37:04 daten Exp $
 */
 
 #include <ec.h>
@@ -673,6 +673,9 @@ static void gtkui_data_print(int buffer, char *data, int color)
       default:
          return;
    }
+
+   if(!textbuf || !textview || !endmark)
+      return;
    
    gtk_text_buffer_get_end_iter(textbuf, &iter);
    if(color == 2)
@@ -916,7 +919,7 @@ static void gtkui_connection_inject(void)
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
    vbox = GTK_DIALOG (dialog)->vbox;
 
-   label = gtk_label_new ("Packet source:");
+   label = gtk_label_new ("Packet destination:");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
    gtk_widget_show(label);
@@ -925,12 +928,12 @@ static void gtkui_connection_inject(void)
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 
-   button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
+   button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button1, FALSE, FALSE, 0);
    gtk_widget_show(button1);
 
    button2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (button1),
-               ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
+               ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button2, FALSE, FALSE, 0);
    gtk_widget_show(button2);
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.17 2004/04/09 12:07:17 daten Exp $
+    $Id: ec_gtk.c,v 1.18 2004/04/10 14:30:51 alor Exp $
 */
 
 #include <ec.h>
@@ -595,9 +595,6 @@ static void write_pcapfile(void)
    /* set the options for writing to a file */
    GBL_OPTIONS->write = 1;
    GBL_OPTIONS->read = 0;
-   
-   /* exit the setup interface, and go to the primary one */
-   gtk_main_quit();
 }
 
 /*

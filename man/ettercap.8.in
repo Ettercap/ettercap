@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.61 2004/04/10 13:56:16 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.62 2004/04/10 14:30:50 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -188,6 +188,8 @@ openssl x509 -req -days 1825 -in tmp.csr -signkey etter.ssl.crt -out tmp.new
 cat tmp.new >> etter.ssl.crt
 .br
 rm -f tmp.new tmp.csr
+.SP
+NOTE: SSL mitm is not available (for now) in bridged mode.
 
 
 .SH OPTIONS

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.43 2004/04/06 15:13:02 alor Exp $
+    $Id: ec_curses.c,v 1.44 2004/04/10 14:30:50 alor Exp $
 */
 
 #include <ec.h>
@@ -512,9 +512,6 @@ static void write_pcapfile(void)
    /* set the options for writing to a file */
    GBL_OPTIONS->write = 1;
    GBL_OPTIONS->read = 0;
-   
-   /* exit the setup interface, and go to the primary one */
-   wdg_exit();
 }
 
 /*

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.9 2003/09/16 12:08:41 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.10 2003/09/24 19:28:51 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -172,6 +172,19 @@ is used only internally and never reach the wire.
 example:
 .br
 replace("ethercap", "ettercap")
+
+
+.TP
+.B inject(\fIwhat\fR)
+this function inject the content of the file 'what' after the packet being
+processed. It always inject in DATA.data. You can use it to replace the entire
+packet with a fake one using the drop() funcion right before the inject() command. 
+In that case the filtering engine will drop the current packet and inject the
+fake one.
+.Sp
+example:
+.br
+inject("./fake_packet")
 
 
 .TP

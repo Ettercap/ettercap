@@ -66,6 +66,17 @@ if (DATA.data + 40 == "ette") {
    log(DATA.data, "./logfile");
 }
 
+# inject a file after a specific packet
+if (ip.src == 21 && search(DATA.data, "root")) {
+   inject("./fake_response");
+}
+
+# replace the entire packet with another
+if (ip.src == 23 && search(DATA.data, "microsoft")) {
+   drop();
+   inject("./fake_telnet");
+}
+
 # eof
 
 # vim:ts=3:expandtab

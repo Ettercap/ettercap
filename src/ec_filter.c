@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.13 2003/09/22 17:52:50 alor Exp $
+    $Id: ec_filter.c,v 1.14 2003/09/24 19:28:51 alor Exp $
 */
 
 #include <ec.h>
@@ -44,6 +44,7 @@ static int execute_func(struct filter_op *fop, struct packet_object *po);
 static int func_search(struct filter_op *fop, struct packet_object *po);
 static int func_regex(struct filter_op *fop, struct packet_object *po);
 static int func_replace(struct filter_op *fop, struct packet_object *po);
+static int func_inject(struct filter_op *fop, struct packet_object *po);
 static int func_log(struct filter_op *fop, struct packet_object *po);
 static int func_drop(struct packet_object *po);
 static int func_exec(struct filter_op *fop);
@@ -159,6 +160,12 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
       case FFUNC_REPLACE:
          /* replace the string */
          if (func_replace(fop, po) == ESUCCESS)
+            return FLAG_TRUE;
+         break;
+         
+      case FFUNC_INJECT:
+         /* replace the string */
+         if (func_inject(fop, po) == ESUCCESS)
             return FLAG_TRUE;
          break;
          
@@ -457,6 +464,19 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
    } while(ptr != NULL && ptr < end);
   
 
+   return ESUCCESS;
+}
+
+/*
+ * inject a file into the communication
+ */
+static int func_inject(struct filter_op *fop, struct packet_object *po)
+{
+   DEBUG_MSG("filter engine: func_inject");
+  
+   /* XXX - TODO */
+   NOT_IMPLEMENTED();
+   
    return ESUCCESS;
 }
 

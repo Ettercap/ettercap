@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_main.c,v 1.10 2003/09/19 16:47:51 alor Exp $
+    $Id: ef_main.c,v 1.11 2003/09/24 19:28:51 alor Exp $
 */
 
 #include <ef.h>
@@ -78,7 +78,8 @@ int main(int argc, char *argv[])
       
   
    /* write to file */
-   // write_output();
+   if (write_output() != ESUCCESS)
+      FATAL_ERROR("Cannot write output file (%s)", GBL_OPTIONS.output_file);
 
    return 0;
 }

@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.13 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec.h,v 1.14 2003/09/24 19:28:50 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -47,6 +47,16 @@
 
 #define EXECUTE(x, ...) do{ if(x != NULL) x( __VA_ARGS__ ); }while(0)
 
+/* min and max */
+
+#ifndef MIN
+   #define MIN(a, b)    (((a) < (b)) ? (a) : (b))
+#endif
+#ifndef MAX
+   #define MAX(a, b)    (((a) > (b)) ? (a) : (b))
+#endif
+
+/* bit operations */
 
 #define BIT_SET(r,b)       ( r[b>>3] |=   1<<(b&7) )
 #define BIT_RESET(r,b)     ( r[b>>3] &= ~ 1<<(b&7) )

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.8 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_sniff_unified.c,v 1.9 2003/09/24 19:28:51 alor Exp $
 */
 
 #include <ec.h>
@@ -51,15 +51,14 @@ void forward_unified_sniff(struct packet_object *po)
    if (GBL_OPTIONS->unoffensive)
       return;
 
-   /* don't forward dropped packets */
-   if (po->flags & PO_DROPPED)
-      return;
-      
    /* 
     * forward the packet to Layer 3, the kernel
     * will route them to the correct destination (host or gw)
     */
-    send_to_L3(po);
+
+   /* don't forward dropped packets */
+   if ((po->flags & PO_DROPPED) == 0)
+      send_to_L3(po);
 
     /* 
      * if the packet was modified and it exceeded the mtu,

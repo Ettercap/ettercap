@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.16 2003/09/19 16:47:51 alor Exp $
+    $Id: ec_ui.c,v 1.17 2003/09/24 19:28:51 alor Exp $
 */
 
 #include <ec.h>
@@ -137,6 +137,9 @@ void ui_error(const char *fmt, ...)
       ON_ERROR(msg, NULL, "can't allocate memory");
    }
 
+   /* dump the error in the debug file */
+   DEBUG_MSG("%s", msg);
+   
    /* call the function */
    if (GBL_UI->error)
       EXECUTE(GBL_UI->error, msg);

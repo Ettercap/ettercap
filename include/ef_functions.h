@@ -1,5 +1,5 @@
 
-/* $Id: ef_functions.h,v 1.8 2003/09/19 16:47:47 alor Exp $ */
+/* $Id: ef_functions.h,v 1.9 2003/09/24 19:28:50 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
@@ -28,6 +28,10 @@ extern int get_constant(char *name, u_int32 *value);
 extern int encode_offset(char *string, struct filter_op *fop);
 extern int encode_function(char *string, struct filter_op *fop);
 extern int encode_const(char *string, struct filter_op *fop);
+
+/* ef_output */
+
+extern int write_output(void);
 
 
 #endif

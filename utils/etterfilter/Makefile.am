@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.9 2003/09/19 16:47:51 alor Exp $
+# $Id: Makefile.am,v 1.10 2003/09/24 19:28:51 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -17,6 +17,7 @@ etterfilter_SOURCES = ef_compiler.c \
                       ef_parser.c \
                       ef_test.c \
                       ef_grammar.y \
+                      ef_output.c \
                       ef_syntax.l \
                       ef_tables.c \
                       $(top_srcdir)/src/ec_error.c \

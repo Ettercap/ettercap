@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.11 2003/09/19 16:47:47 alor Exp $ */
+/* $Id: ec_filter.h,v 1.12 2003/09/24 19:28:50 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -62,10 +62,11 @@ struct filter_op {
             #define FFUNC_SEARCH    0
             #define FFUNC_REGEX     1
             #define FFUNC_REPLACE   2
-            #define FFUNC_LOG       3
-            #define FFUNC_DROP      4
-            #define FFUNC_MSG       5
-            #define FFUNC_EXEC      6
+            #define FFUNC_INJECT    3
+            #define FFUNC_LOG       4
+            #define FFUNC_DROP      5
+            #define FFUNC_MSG       6
+            #define FFUNC_EXEC      7
          u_int8 level; 
          u_int8 value[MAX_FILTER_LEN];
          size_t value_len;

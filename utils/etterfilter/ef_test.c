@@ -17,11 +17,17 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.7 2003/09/19 16:47:51 alor Exp $
+    $Id: ef_test.c,v 1.8 2003/09/24 19:28:51 alor Exp $
 */
 
 #include <ef.h>
 #include <ec_filter.h>
+#include <ec_version.h>
+
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 /* protos */
 
@@ -38,51 +44,47 @@ void print_function(struct filter_op *fop, u_int32 eip);
  */
 void test_filter(char *filename)
 {
+   int fd;
+   struct filter_header fh;
    struct filter_op *fop;
    u_int32 eip = 0;
    size_t size = 7;
 
-   NOT_IMPLEMENTED();
-   
-   fop = calloc(size, sizeof(struct filter_op));
-   
-   /* if (DATA.data, search("OpenSSH")) { */
-   fop[0].opcode = FOP_FUNC;
-   fop[0].op.func.op = FFUNC_SEARCH;
-   fop[0].op.func.level = 5;
-   strcpy(fop[0].op.func.value, "OpenSSH");
-   fop[0].op.func.value_len = strlen(fop[0].op.func.value);
-   
-   fop[1].opcode = FOP_JFALSE;
-   fop[1].op.jmp = 5;
+   /* open the file */
+   if ((fd = open(filename, O_RDONLY)) == -1)
+      FATAL_ERROR("File not found or permission denied");
 
-   /* replace("SSH-1.99", "SSH-1.51"); */
-   fop[2].opcode = FOP_FUNC;
-   fop[2].op.func.op = FFUNC_REPLACE;
-   fop[2].op.func.level = 5;
-   strcpy(fop[2].op.func.value, "SSH-1.99");
-   fop[2].op.func.value_len = strlen(fop[2].op.func.value);
-   strcpy(fop[2].op.func.value2, "SSH-1.51");
-   fop[2].op.func.value2_len = strlen(fop[2].op.func.value2);
+   /* read the header */
+   if (read(fd, &fh, sizeof(struct filter_header)) != sizeof(struct filter_header))
+      FATAL_ERROR("The file is corrupted");
+
+   /* sanity checks */
+   if (fh.magic != htons(EC_FILTER_MAGIC))
+      FATAL_ERROR("Bad magic in filter file");
   
-   /* msg("SSH downgraded to version 1"); */
-   fop[3].opcode = FOP_FUNC;
-   fop[3].op.func.op = FFUNC_MSG;
-   strcpy(fop[3].op.func.value, "SSH downgraded to version 1");
+   /* which version has compiled the filter ? */
+   if (strcmp(fh.version, EC_VERSION))
+      FATAL_ERROR("Filter compiled for a different version");
    
-   fop[4].opcode = FOP_JMP;
-   fop[4].op.jmp = 6;
-   
-   /* } else { DATA.data + 3 = '+' */
-   fop[5].opcode = FOP_ASSIGN;
-   fop[5].op.assign.level = 5;
-   fop[5].op.assign.offset = 3;
-   fop[5].op.assign.size = 1;
-   fop[5].op.assign.value = '+';
+   /* get the size */
+   size = lseek(fd, 0, SEEK_END) - sizeof(struct filter_header);
 
-   /* } */
-   fop[6].opcode = FOP_EXIT;
- 
+   /* size must be a multiple of filter_op */
+   if ((size % sizeof(struct filter_op) != 0) || size == 0)
+      FATAL_ERROR("The file contains invalid instructions");
+   
+   /* 
+    * load the file in memory 
+    * skipping the initial header
+    */
+   fop = (struct filter_op *) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, sizeof(struct filter_header));
+   if (fop == MAP_FAILED)
+      FATAL_ERROR("Cannot mmap file");
+
+   /* the mmap will remain active even if we close the fd */
+   close(fd);
+
+   
    fprintf(stdout, "Debugging \"%s\" content...\n\n", filename);
   
    /* loop all the instructions and print their content */
@@ -128,6 +130,9 @@ void test_filter(char *filename)
    }
 
    printf("\n");
+
+   /* unmap the file */
+   munmap((void *)fop, size);
 
    exit(0);
 }
@@ -202,6 +207,11 @@ void print_function(struct filter_op *fop, u_int32 eip)
       case FFUNC_REPLACE:
          fprintf(stdout, "%04d: REPLACE \"%s\" --> \"%s\"\n", eip, 
                fop->op.func.value, fop->op.func.value2);
+         break;
+         
+      case FFUNC_INJECT:
+         fprintf(stdout, "%04d: INJECT \"%s\"\n", eip, 
+               fop->op.func.value);
          break;
          
       case FFUNC_LOG:

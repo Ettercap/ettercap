@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.7 2003/09/18 22:15:04 alor Exp $
+    $Id: ef_encode.c,v 1.8 2003/09/24 19:28:51 alor Exp $
 */
 
 #include <ef.h>
@@ -161,6 +161,15 @@ int encode_function(char *string, struct filter_op *fop)
          fop->op.func.level = 5;
          fop->op.func.value_len = strescape(fop->op.func.value, dec_args[0]);
          fop->op.func.value2_len = strescape(fop->op.func.value2, dec_args[1]);
+         ret = ESUCCESS;
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
+   } else if (!strcmp(name, "inject")) {
+      if (nargs == 1) {
+         fop->op.func.op = FFUNC_INJECT;
+         /* inject always operate at DATA level */
+         fop->op.func.level = 5;
+         strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
          ret = ESUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);

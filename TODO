@@ -31,8 +31,6 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
-   + check the file leght for etterfilter
-
    + pay attention on network order for constants
 
    + FILTERING ENGINE
@@ -76,6 +74,7 @@ Nov 2003:
       - convert all the old plugins
       - check for poisoner
       - linktype
+         - use arp query instead of icmp (some hosts don't reply to it)
       - "active" passive fingerprint
 
 Dec 2003:

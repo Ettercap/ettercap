@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.58 2004/01/23 08:50:51 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.59 2004/02/29 18:48:02 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -248,7 +248,7 @@ poisoned clients will not be able to navigate the Internet.
 \fBicmp\fR (MAC/IP) 
 This attack implements ICMP redirection. It sends a spoofed icmp redirect
 message to the hosts in the lan pretending to be a best route for internet. All
-the connections to internet will be redirected to the attacker which, in turn,
+connections to internet will be redirected to the attacker which, in turn,
 will forward them to the real gateway. The resulting attack is an HALF-DUPLEX
 mitm. Only the client is redirected, since the gateway will not accept redirect
 messages for a directly connected network. BE SURE TO NOT USE FILTERS THAT

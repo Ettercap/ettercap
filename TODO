@@ -9,14 +9,8 @@
       - remove the quiet from some plugins
 
    + PCAP RELATED
-      + reset the stats when the sniffing thread starts
       + when libpcap 0.8.2 will be released
          - pcap_stat fix (even under linux the stats are cumulative)
-
-   + LNET RELATED
-      + when libnet 1.1.2 will be released
-         - add support for unconfigured interface
-         - check if the icmp redirect gw is correct
 
    + BSD PORTING
       - find a way for bridged sniff under OpenBSD 
@@ -35,7 +29,6 @@
 this is the unofficial and floating in time roadmap:
 
    + DOCUMENTATION
-      - write the requirements for each os
       - how to code a plugin 
 
    + CURSES GUI
@@ -57,7 +50,6 @@ this is the unofficial and floating in time roadmap:
       - TDS
    
    + PLUGINS
-      - automatic add of new hosts
       port all the plugins to NG:
          - lurker    -> find_ettercap
          - golem     -> res_exhaust
@@ -71,9 +63,6 @@ this is the unofficial and floating in time roadmap:
   Not in the first release  
 ============================
    
-   + INTERFACE ENGINE
-      - gtk
-
    + NETWORK MAPPER
 
    + BINDER
@@ -83,6 +72,9 @@ this is the unofficial and floating in time roadmap:
    
    + FILTERING ENGINE
       - quick filter on a connection
+   
+   + PLUGINS
+      - automatic add of new hosts
 
 ==================
   LONG TERM TODO

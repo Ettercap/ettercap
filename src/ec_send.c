@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.47 2004/01/23 10:12:38 lordnaga Exp $
+    $Id: ec_send.c,v 1.48 2004/02/29 18:48:02 alor Exp $
 */
 
 #include <ec.h>
@@ -600,7 +600,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
            ICMP_REDIRECT,                       /* type */
            type,                                /* code */
            0,                                   /* checksum */
-           ntohl(ip_addr_to_int32(&gw->addr)),  /* gateway ip */
+           ip_addr_to_int32(&gw->addr),         /* gateway ip */
               ntohs(ip->ip_len),                   /* original len */
               ip->ip_tos,                          /* original tos */
               ntohs(ip->ip_id),                    /* original id */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.19 2004/03/20 17:19:02 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.20 2004/03/21 12:49:11 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -272,6 +272,8 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    if (SSL_connect(ae->ssl[SSL_SERVER]) != 1) {
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);
+      ae->ssl[SSL_SERVER] = NULL;
+      ae->ssl[SSL_CLIENT] = NULL;
       return -EINVALID;
    }
 
@@ -280,12 +282,16 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
       DEBUG_MSG("Can't get peer certificate");
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);
+      ae->ssl[SSL_SERVER] = NULL;
+      ae->ssl[SSL_CLIENT] = NULL;
       return -EINVALID;
    }
 
    if (sslw_create_selfsigned(serv_cert, &ae->cert) != ESUCCESS) {
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);
+      ae->ssl[SSL_SERVER] = NULL;
+      ae->ssl[SSL_CLIENT] = NULL;
       X509_free(serv_cert);   
       return -EINVALID;
    }
@@ -296,7 +302,11 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    if (SSL_accept(ae->ssl[SSL_CLIENT]) != 1) {
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);
-      X509_free(ae->cert);   
+      ae->ssl[SSL_SERVER] = NULL;
+      ae->ssl[SSL_CLIENT] = NULL;
+
+      X509_free(ae->cert);
+      ae->cert = NULL;   
       return -EINVALID;
    }
 
@@ -512,18 +522,18 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
 static void sslw_wipe_connection(struct accepted_entry *ae)
 {
    // XXX - SSL_free chiude anche gli fd?
-   if (ae->ssl[SSL_CLIENT]) {
-      /* They are initialized together */
+   if (ae->ssl[SSL_CLIENT]) 
       SSL_free(ae->ssl[SSL_CLIENT]);
-      SSL_free(ae->ssl[SSL_SERVER]);
-   } 
 
+   if (ae->ssl[SSL_SERVER]) 
+      SSL_free(ae->ssl[SSL_SERVER]);
+ 
    close(ae->fd[SSL_CLIENT]);
    close(ae->fd[SSL_SERVER]);
 
    if (ae->cert)
       X509_free(ae->cert);
-      
+
    SAFE_FREE(ae);
 }
 
@@ -584,6 +594,7 @@ static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert)
    if (!X509_sign(*out_cert, global_pk, EVP_sha1())) {
       DEBUG_MSG("Error self-signing X509");
       X509_free(*out_cert);
+      *out_cert = NULL; 
       return -EINVALID;
    }
      
@@ -666,7 +677,7 @@ EC_THREAD_FUNC(sslw_child)
 	    
    if ((ae->status & SSL_ENABLED) && 
        sslw_sync_ssl(ae) == -EINVALID) {
-      SAFE_FREE(ae);
+      sslw_wipe_connection(ae);
       return NULL;
    }
 
@@ -697,6 +708,13 @@ EC_THREAD_FUNC(sslw_child)
 
             ret_val = sslw_write_data(ae, !direction, &po);
             BREAK_ON_ERROR(ret_val,ae,po);
+	    
+	    if (po.flags & PO_SSLSTART) {
+               ae->status |= SSL_ENABLED; 
+               ret_val = sslw_sync_ssl(ae);
+	       BREAK_ON_ERROR(ret_val,ae,po);
+	    }
+	    
 	    sslw_initialize_po(&po, po.DATA.data);
          }  
       }

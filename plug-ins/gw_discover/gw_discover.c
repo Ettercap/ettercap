@@ -20,7 +20,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: gw_discover.c,v 1.1 2004/03/19 13:55:02 alor Exp $
+    $Id: gw_discover.c,v 1.2 2004/03/24 09:05:36 alor Exp $
 */
 
 
@@ -103,7 +103,7 @@ static int gw_discover_fini(void *dummy)
 static int get_remote_target(struct ip_addr *ip, u_int16 *port)
 {
    struct in_addr ipaddr;
-   char input[64];
+   char input[24];
    char *p;
 
    memset(input, 0, sizeof(input));

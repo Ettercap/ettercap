@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.10 2004/03/19 13:55:02 alor Exp $
+    $Id: finger.c,v 1.11 2004/03/24 09:05:30 alor Exp $
 */
 
 
@@ -175,7 +175,7 @@ static int good_target(struct ip_addr *ip, u_int16 *port)
 static int get_user_target(struct ip_addr *ip, u_int16 *port)
 {
    struct in_addr ipaddr;
-   char input[64];
+   char input[24];
    char *p;
 
    memset(input, 0, sizeof(input));

@@ -1,11 +1,12 @@
 
-# $Id: Makefile.am,v 1.7 2003/10/16 16:46:48 alor Exp $
+# $Id: Makefile.am,v 1.8 2003/10/27 15:34:58 lordnaga Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 SUBDIRS =   dummy \
             finger \
             finger_submit \
+            link_type \
             smb_clear \
             smb_down 
 

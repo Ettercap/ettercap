@@ -17,26 +17,87 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.1 2003/10/14 13:13:14 alor Exp $
+    $Id: wdg.c,v 1.2 2003/10/20 14:41:52 alor Exp $
 */
 
 #include <wdg.h>
 
+#include <curses.h>
+
 /* globals */
+
+/* informations about the current screen */
+struct wdg_scr current_screen;
 
 /* proto */
 
-int wdg_init(void);
+void wdg_init(void);
+void wdg_cleanup(void);
 
 /*******************************************/
 
-int wdg_init(void)
+/*
+ * init the widgets interface
+ */
+void wdg_init(void)
 {
-   printf("WDG !!\n");
+   /* initialize the curses interface */
+   initscr(); 
 
-   return 0;
+   /* disable buffering until carriage return */
+   cbreak(); 
+
+   /* disable echo of typed chars */
+   noecho();
+  
+   /* better compatibility with return key */
+   nonl();
+
+   /* don't flush input on break */
+   intrflush(stdscr, FALSE);
+  
+   /* enable function and arrow keys */ 
+   keypad(stdscr, TRUE);
+  
+   /* activate colors if available */
+   if (has_colors()) {
+      current_screen.colors = TRUE;
+      start_color();
+   }
+
+   /* hide the cursor */
+   curs_set(FALSE);
+
+   /* remember the current screen size */
+   current_screen.lines = LINES;
+   current_screen.cols = COLS;
+
+   /* the wdg is initialized */
+   current_screen.initialized = TRUE;
 }
 
+
+/*
+ * cleanup the widgets interface
+ */
+void wdg_cleanup(void)
+{
+
+   /* show the cursor */
+   curs_set(TRUE);
+
+   /* clear the screen */
+   clear();
+
+   /* do the refresh */
+   refresh();
+
+   /* end the curses interface */
+   endwin();
+
+   /* wdg is not initialized */
+   current_screen.initialized = FALSE;
+}
 
 /* EOF */
 

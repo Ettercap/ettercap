@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.2 2003/10/14 13:13:14 alor Exp $
+    $Id: ec_curses.c,v 1.3 2003/10/20 14:41:50 alor Exp $
 */
 
 #include <ec.h>
@@ -68,14 +68,16 @@ void set_curses_interface(void)
  */
 static void curses_init(void)
 {
-   
+   DEBUG_MSG("curses_init");
+  
+   /* init the widgets library */
    wdg_init();
-   
-   ui_error("not yet implemented...");
-   
-   NOT_IMPLEMENTED();
-   
-   clean_exit(0);
+
+   DEBUG_MSG("curses_init: screen %dx%d colors: %d", current_screen.cols, current_screen.lines,
+                                                     current_screen.colors);
+  
+   curses_cleanup();
+  
 }
 
 
@@ -84,6 +86,11 @@ static void curses_init(void)
  */
 static void curses_cleanup(void)
 {
+   DEBUG_MSG("curses_cleanup");
+
+   wdg_cleanup();
+
+   NOT_IMPLEMENTED();
 }
 
 

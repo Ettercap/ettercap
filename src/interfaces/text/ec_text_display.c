@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_display.c,v 1.1 2003/10/11 19:44:39 alor Exp $
+    $Id: ec_text_display.c,v 1.2 2003/10/20 14:41:52 alor Exp $
 */
 
 #include <ec.h>
@@ -37,7 +37,7 @@ void text_print_packet(struct packet_object *po)
 {
    /* 
     * keep it static so it is always the same
-    * memory region used fro this operation
+    * memory region used for this operation
     */
    static u_char *tmp = NULL;
    int ret;

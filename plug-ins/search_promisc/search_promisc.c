@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: search_promisc.c,v 1.3 2003/11/08 13:23:01 lordnaga Exp $
+    $Id: search_promisc.c,v 1.4 2003/11/10 12:15:31 lordnaga Exp $
 */
 
 
@@ -79,7 +79,7 @@ static int search_promisc_init(void *dummy)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h;
    char bogus_mac[2][6]={"\xfd\xfd\x00\x00\x00\x00", "\xff\xff\x00\x00\x00\x00"};
-   char messages[2][48]={"\nMost probably sniffing NICs:\n", "\nLess probably sniffing NICs:\n"};
+   char messages[2][48]={"\nLess probably sniffing NICs:\n", "\nMost probably sniffing NICs:\n"};
    u_char i;
    
    /* don't show packets while operating */

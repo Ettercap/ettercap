@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.37 2004/06/27 12:51:02 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.38 2004/06/28 13:47:55 daten Exp $
 */
 
 #include <ec.h>
@@ -279,7 +279,8 @@ static gboolean refresh_connections(gpointer data)
    void *list, *next, *listend;
    char *desc;                  /* holds line from conntrack_print */
    GtkTreeIter iter;            /* points to a specific row */
-   char flags[2], status[8], *xferred = NULL;
+   char flags[2], status[8];
+   unsigned int xferred = 0;
    struct row_pairs *row = NULL, *nextrow = NULL, top, bottom;
 
    /* null terminate strings */
@@ -291,10 +292,12 @@ static gboolean refresh_connections(gpointer data)
       if (!GTK_WIDGET_VISIBLE(conns_window))
          return(FALSE);
    } else {
+      /* Columns:   Flags, Host, Port, "-",   Host, Port,
+                    Proto, State, Bytes, (hidden) pointer */
       ls_conns = gtk_list_store_new (10, 
-                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
-                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
-                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
+                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
+                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
+                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
                     G_TYPE_POINTER);
       connections = NULL;
    }
@@ -359,7 +362,7 @@ static gboolean refresh_connections(gpointer data)
       /* extract changing values from conntrack_print string */
       flags[0] = desc[0];
       strncpy(status, desc+50, 7);
-      xferred = desc+62;
+      sscanf(desc+62, "%u", &xferred);
 
       gtk_list_store_set (ls_conns, &iter, 0, flags, 7, status, 8, xferred, -1);
 
@@ -373,8 +376,9 @@ static gboolean refresh_connections(gpointer data)
 
 static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct row_pairs **list) {
    GtkTreeIter iter;
-   char flags[2], src[16], src_port[6], dst[16], dst_port[6];
-   char proto[2], status[8], *xferred = NULL, *src_ptr = NULL, *dst_ptr = NULL;
+   char flags[2], src[16], dst[16];
+   char proto[2], status[8], *src_ptr = NULL, *dst_ptr = NULL;
+   unsigned int src_port = 0, dst_port = 0, xferred = 0;
    struct row_pairs *row = NULL;
 
    /* even if list is empty, we need a pointer to the NULL pointer */
@@ -387,19 +391,19 @@ static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct ro
    proto[1] = 0;
    src[15] = 0;
    dst[15] = 0;
-   src_port[5] = 0;
-   dst_port[5] = 0;
    status[7] = 0;
 
    /* copy data from conntrack_print string */
    flags[0] = desc[0];
-   strncpy(status, desc+50, 7);
-   xferred = desc+62;
-   strncpy(src, desc+2, 15);
-   strncpy(src_port, desc+18, 5);
-   strncpy(dst, desc+26, 15);
-   strncpy(dst_port, desc+42, 5);
    proto[0] = desc[48];
+
+   strncpy(src, desc+2, 15);
+   strncpy(dst, desc+26, 15);
+   strncpy(status, desc+50, 7);
+
+   sscanf(desc+18, "%u", &src_port);
+   sscanf(desc+42, "%u", &dst_port);
+   sscanf(desc+62, "%u", &xferred);
 
    /* trim off leading spaces */
    for(src_ptr = src; *src_ptr == ' '; src_ptr++);

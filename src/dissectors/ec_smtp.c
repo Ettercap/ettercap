@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smtp.c,v 1.3 2003/10/29 20:41:08 alor Exp $
+    $Id: ec_smtp.c,v 1.4 2004/01/21 20:20:06 alor Exp $
 */
 
 #include <ec.h>
@@ -51,10 +51,10 @@ FUNC_DECODER(dissector_smtp)
    char tmp[MAX_ASCII_ADDR_LEN];
    
    /* the connection is starting... create the session */
-   CREATE_SESSION_ON_SYN_ACK("smtp", s);
+   CREATE_SESSION_ON_SYN_ACK("smtp", s, dissector_smtp);
    
    /* check if it is the first packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("smtp", s, ident) {
+   IF_FIRST_PACKET_FROM_SERVER("smtp", s, ident, dissector_smtp) {
           
       DEBUG_MSG("\tdissector_smtp BANNER");
        
@@ -103,10 +103,10 @@ FUNC_DECODER(dissector_smtp)
       DEBUG_MSG("\tDissector_smtp AUTH LOGIN");
 
       /* destroy any previous session */
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_smtp));
       
       /* create the new session */
-      dissect_create_session(&s, PACKET);
+      dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_smtp));
      
       /* remember the state (used later) */
       s->data = strdup("AUTH");
@@ -119,7 +119,7 @@ FUNC_DECODER(dissector_smtp)
    }
    
    /* search the session (if it exist) */
-   dissect_create_ident(&ident, PACKET);
+   dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_smtp));
    if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
       SAFE_FREE(ident);
       return NULL;
@@ -129,7 +129,7 @@ FUNC_DECODER(dissector_smtp)
    
    /* the session is invalid */
    if (s->data == NULL) {
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_smtp));
       return NULL;
    }
    
@@ -173,7 +173,7 @@ FUNC_DECODER(dissector_smtp)
       
       SAFE_FREE(pass);
       /* destroy the session */
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_smtp));
       
       /* print the message */
       DISSECT_MSG("SMTP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_msn.c,v 1.5 2003/11/27 16:13:25 lordnaga Exp $
+    $Id: ec_msn.c,v 1.6 2004/01/21 20:20:06 alor Exp $
 */
 
 #include <ec.h>
@@ -67,7 +67,7 @@ FUNC_DECODER(dissector_msn)
 
       /* FIRST STEP: the client sends the login */
 
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_msn));
       /* if the session does not exist... */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
       
@@ -81,7 +81,7 @@ FUNC_DECODER(dissector_msn)
          DEBUG_MSG("\tDissector_msn - LOGIN ");
          
          /* create the new session */
-         dissect_create_session(&s, PACKET);
+         dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_msn));
 	 
          /* save the login */
          s->data = strdup(ptr + strlen("MD5 I "));
@@ -95,7 +95,7 @@ FUNC_DECODER(dissector_msn)
       
       /* THIRD STEP: the client sends the MD5 password */
          
-         dissect_create_ident(&ident, PACKET);
+         dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_msn));
          /* if the session does not exist... */
          if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
          
@@ -137,7 +137,7 @@ FUNC_DECODER(dissector_msn)
                }									   
             }
             /* wipe the session */
-            dissect_wipe_session(PACKET);
+            dissect_wipe_session(PACKET, DISSECT_CODE(dissector_msn));
          }
       }
       
@@ -146,7 +146,7 @@ FUNC_DECODER(dissector_msn)
       
       /* SECOND STEP: the server sends the challenge */
       
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_msn));
       /* if the session does not exist... */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
       

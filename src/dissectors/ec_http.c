@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.7 2003/12/02 21:02:44 alor Exp $
+    $Id: ec_http.c,v 1.8 2004/01/21 20:20:06 alor Exp $
 */
 
 #include <ec.h>
@@ -155,7 +155,7 @@ FUNC_DECODER(dissector_http)
       else if (!strncmp(ptr, "POST ", 5))
          Parse_Method_Post(ptr + strlen("POST "), PACKET);
       else {
-         dissect_create_ident(&ident, PACKET);
+         dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_http));
          if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
             conn_status = (struct http_status *) s->data;
 	 
@@ -173,7 +173,7 @@ FUNC_DECODER(dissector_http)
          /* Since the server replies there's no need to
           * wait for POST termination or client response
           */
-         dissect_wipe_session(PACKET);
+         dissect_wipe_session(PACKET, DISSECT_CODE(dissector_http));
 
          /* Check Proxy or WWW Auth (server challenge) */
          /* XXX - Is the NTLM challenge always in the same 
@@ -301,7 +301,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
       challenge_struct = (tSmbNtlmAuthChallenge *) to_decode;
       
       /* Create a session to remember the server challenge */
-      dissect_create_session(&s, po);
+      dissect_create_session(&s, po, DISSECT_CODE(dissector_http));
       SAFE_CALLOC(s->data, 1, sizeof(struct http_status));                  
       conn_status = (struct http_status *) s->data;
       conn_status->c_status = NTLM_WAIT_RESPONSE;
@@ -313,7 +313,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
       char *outstr;
       
       /* Take the challenge from the session */
-      dissect_create_ident(&ident, po);
+      dissect_create_ident(&ident, po, DISSECT_CODE(dissector_http));
       if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
          conn_status = (struct http_status *) s->data;
 	 
@@ -370,7 +370,7 @@ static void Parse_Post_Payload(u_char *ptr, struct http_status *conn_status, str
          po->DISSECTOR.user = user;
          po->DISSECTOR.pass = pass;
          po->DISSECTOR.info = strdup(conn_status->c_data);
-         dissect_wipe_session(po);
+         dissect_wipe_session(po, DISSECT_CODE(dissector_http));
          Print_Pass(po);
       } else
          SAFE_FREE(user);
@@ -393,7 +393,7 @@ static void Parse_Method_Post(u_char *ptr, struct packet_object *po)
     * fragmented into more packets. The session will be
     * wiped on HTTP server reply.
     */
-   dissect_create_session(&s, po);
+   dissect_create_session(&s, po, DISSECT_CODE(dissector_http));
    SAFE_CALLOC(s->data, 1, sizeof(struct http_status));                  
    conn_status = (struct http_status *) s->data;
    conn_status->c_status = POST_WAIT_DELIMITER;

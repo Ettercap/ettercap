@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_portmap.c,v 1.6 2004/01/20 21:17:10 alor Exp $
+    $Id: ec_portmap.c,v 1.7 2004/01/21 20:20:06 alor Exp $
 */
 
 #include <ec.h>
@@ -100,7 +100,7 @@ FUNC_DECODER(dissector_portmap)
    proc = pntol(ptr + 20);
    type = pntol(ptr + 4);
 
-   dissect_create_ident(&ident, PACKET);
+   dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_portmap));
 
    /* CALL */
    if (FROM_CLIENT("portmap", PACKET)) {
@@ -110,7 +110,7 @@ FUNC_DECODER(dissector_portmap)
       }
       
       SAFE_FREE(ident);
-      dissect_create_session(&s, PACKET);
+      dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_portmap));
       SAFE_CALLOC(s->data, 1, sizeof(portmap_session));
       pe = (portmap_session *)s->data;
 
@@ -221,7 +221,7 @@ FUNC_DECODER(dissector_portmap)
    if ( PACKET->L4.proto == NL_TYPE_TCP && !(pntol(ptr - 4)&LAST_FRAG) )
       pe->status = MORE_FRAG;
    else
-      dissect_wipe_session(PACKET);      
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_portmap));      
 
    return NULL;
 }

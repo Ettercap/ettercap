@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.34 2004/01/20 21:46:42 alor Exp $
+    $Id: ec_capture.c,v 1.35 2004/01/21 20:20:06 alor Exp $
 */
 
 #include <ec.h>
@@ -115,8 +115,8 @@ void capture_init(void)
    GBL_PCAP->snaplen = pcap_snapshot(pd);
   
    /* check if pcap give us the requested snaplen */
-   if (GBL_PCAP->snaplen != UINT16_MAX) 
-      FATAL_ERROR("pcap buffer not alloc'd correctly");
+   //if (GBL_PCAP->snaplen != UINT16_MAX) 
+   //   FATAL_ERROR("pcap buffer not alloc'd correctly");
      
    /* allocate the buffer for the packets */
    SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX, sizeof(char));

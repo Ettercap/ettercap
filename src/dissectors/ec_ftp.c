@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ftp.c,v 1.16 2003/10/29 20:41:07 alor Exp $
+    $Id: ec_ftp.c,v 1.17 2004/01/21 20:20:06 alor Exp $
 */
 
 #include <ec.h>
@@ -51,10 +51,10 @@ FUNC_DECODER(dissector_ftp)
    char tmp[MAX_ASCII_ADDR_LEN];
 
    /* the connection is starting... create the session */
-   CREATE_SESSION_ON_SYN_ACK("ftp", s);
+   CREATE_SESSION_ON_SYN_ACK("ftp", s, dissector_ftp);
    
    /* check if it is the first packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("ftp", s, ident) {
+   IF_FIRST_PACKET_FROM_SERVER("ftp", s, ident, dissector_ftp) {
             
       DEBUG_MSG("\tdissector_ftp BANNER");
       /*
@@ -94,7 +94,7 @@ FUNC_DECODER(dissector_ftp)
       DEBUG_MSG("\tDissector_FTP USER");
       
       /* create the session */
-      dissect_create_session(&s, PACKET);
+      dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_ftp));
       
       ptr += 5;
 
@@ -122,7 +122,7 @@ FUNC_DECODER(dissector_ftp)
       ptr += 5;
       
       /* create an ident to retrieve the session */
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_ftp));
       
       /* retrieve the session and delete it */
       if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {

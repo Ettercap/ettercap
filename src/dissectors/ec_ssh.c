@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.20 2004/01/13 10:31:34 lordnaga Exp $
+    $Id: ec_ssh.c,v 1.21 2004/01/21 20:20:07 alor Exp $
 */
 
 #include <ec.h>
@@ -143,7 +143,7 @@ FUNC_DECODER(dissector_ssh)
    if (PACKET->DATA.len == 0)
       return NULL;
 
-   dissect_create_ident(&ident, PACKET);
+   dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_ssh));
    
    /* Is this a brand new session ?
     * If the aggressive dissectors are 
@@ -157,7 +157,7 @@ FUNC_DECODER(dissector_ssh)
 
          /* Only if we are interested on key substitution */         
          if (GBL_CONF->aggressive_dissectors && !GBL_OPTIONS->unoffensive) {
-            dissect_create_session(&s, PACKET);
+            dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_ssh));
             SAFE_CALLOC(s->data, sizeof(ssh_session_data), 1);
             session_put(s);
             session_data =(ssh_session_data *)s->data;
@@ -324,7 +324,7 @@ FUNC_DECODER(dissector_ssh)
        * key exchange. Otherwise wipe the session.
        */
       if(!(PACKET->flags & PO_FORWARDABLE)) {
-         dissect_wipe_session(PACKET);
+         dissect_wipe_session(PACKET, DISSECT_CODE(dissector_ssh));
          return NULL;
       }
        
@@ -360,7 +360,7 @@ FUNC_DECODER(dissector_ssh)
                my_mask |= (1<<SSH_CIPHER_BLOWFISH);
 	       
             if (!my_mask) {
-               dissect_wipe_session(PACKET);
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_ssh));
                return NULL;
             }
 	    
@@ -451,7 +451,7 @@ FUNC_DECODER(dissector_ssh)
             /* Client Banner */
             if (!memcmp(PACKET->DATA.data,"SSH-2",5)) {
                DEBUG_MSG("Dissector_ssh SSHv2");
-               dissect_wipe_session(PACKET);
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_ssh));
             } else
                session_data->status = WAITING_PUBLIC_KEY;
          } else if (session_data->status == WAITING_SESSION_KEY && ssh_packet_type == CMSG_SESSION_KEY) {
@@ -464,7 +464,7 @@ FUNC_DECODER(dissector_ssh)
             /* Get the cypher and the cookie */
             cypher = *ptr;
             if (cypher != SSH_CIPHER_3DES && cypher != SSH_CIPHER_BLOWFISH) {
-               dissect_wipe_session(PACKET);
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_ssh));
                return NULL;
             }
 	    

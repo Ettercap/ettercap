@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.16 2004/01/05 16:58:48 alor Exp $
+    $Id: ec_telnet.c,v 1.17 2004/01/21 20:20:07 alor Exp $
 */
 
 #include <ec.h>
@@ -66,7 +66,7 @@ FUNC_DECODER(dissector_telnet)
    char tmp[MAX_ASCII_ADDR_LEN];
 
    /* the connection is starting... create the session */
-   CREATE_SESSION_ON_SYN_ACK("telnet", s);
+   CREATE_SESSION_ON_SYN_ACK("telnet", s, dissector_telnet);
 
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
@@ -88,7 +88,7 @@ FUNC_DECODER(dissector_telnet)
    convert_zeros(ptr, end);
       
    /* create an ident to retrieve the session */
-   dissect_create_ident(&ident, PACKET);
+   dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_telnet));
    
    /* is the message from the server or the client ? */
    if (FROM_SERVER("telnet", PACKET)) {
@@ -99,7 +99,7 @@ FUNC_DECODER(dissector_telnet)
             DEBUG_MSG("\tdissector_telnet - BEGIN");
          
             /* create the session to begin the collection */
-            dissect_create_session(&s, PACKET);
+            dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_telnet));
             /* use this value to remember to not collect the banner again */
             s->data = "\xe7\x7e";
             session_put(s);
@@ -188,7 +188,7 @@ FUNC_DECODER(dissector_telnet)
                                        PACKET->DISSECTOR.pass);
 
                   /* delete the session to stop the collection */
-                  dissect_wipe_session(PACKET);
+                  dissect_wipe_session(PACKET, DISSECT_CODE(dissector_telnet));
                }
                SAFE_FREE(ident);
                return NULL;
@@ -201,7 +201,7 @@ FUNC_DECODER(dissector_telnet)
    SAFE_FREE(ident);
 
    /* check if it is the first readable packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("telnet", s, ident) {
+   IF_FIRST_PACKET_FROM_SERVER("telnet", s, ident, dissector_telnet) {
       size_t i;
       u_char *q;
    
@@ -240,7 +240,7 @@ FUNC_DECODER(dissector_telnet)
          DEBUG_MSG("\tdissector_telnet - BEGIN");
          
          /* create the session to begin the collection */
-         dissect_create_session(&s, PACKET);
+         dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_telnet));
          /* use this value to remember to not collect the banner again */
          s->data = "\xe7\x7e";
          session_put(s);

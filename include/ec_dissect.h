@@ -1,5 +1,5 @@
 
-/* $Id: ec_dissect.h,v 1.16 2004/01/18 14:08:37 lordnaga Exp $ */
+/* $Id: ec_dissect.h,v 1.17 2004/01/21 20:19:56 alor Exp $ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H
@@ -12,7 +12,6 @@
 
 struct dissect_ident {
    u_int32 magic;
-      #define DISSECT_MAGIC  0x0500e77e
    struct ip_addr L3_src;
    struct ip_addr L3_dst;
    u_int16 L4_src;
@@ -22,6 +21,8 @@ struct dissect_ident {
 
 #define DISSECT_IDENT_LEN sizeof(struct dissect_ident)
 
+#define DISSECT_CODE(x) (u_int32)(&x)
+
 /* exported functions */
 
 extern void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder));
@@ -30,9 +31,9 @@ extern int dissect_modify(int mode, char *name, u_int32 port);
 #define MODE_REP  1
 
 extern int dissect_match(void *id_sess, void *id_curr);
-extern void dissect_create_session(struct ec_session **s, struct packet_object *po); 
-extern void dissect_wipe_session(struct packet_object *po);
-extern size_t dissect_create_ident(void **i, struct packet_object *po); 
+extern void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int32 code); 
+extern void dissect_wipe_session(struct packet_object *po, u_int32 code);
+extern size_t dissect_create_ident(void **i, struct packet_object *po, u_int32 code); 
 
 extern int dissect_on_port(char *name, u_int16 port);
 extern int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
@@ -42,14 +43,14 @@ extern int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
  * the server (SYN+ACK)
  */
 
-#define CREATE_SESSION_ON_SYN_ACK(name, session) do{        \
+#define CREATE_SESSION_ON_SYN_ACK(name, session, func) do{              \
       if ((PACKET->L4.flags & TH_SYN) && (PACKET->L4.flags & TH_ACK) && dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS) { \
-         DEBUG_MSG("%s --> create_session_on_syn_ack", name);   \
-         /* create the session */                           \
-         dissect_create_session(&session, PACKET);          \
-         session_put(session);                              \
-         return NULL;                                       \
-      }                                                     \
+         DEBUG_MSG("%s --> create_session_on_syn_ack", name);           \
+         /* create the session */                                       \
+         dissect_create_session(&session, PACKET, DISSECT_CODE(func));  \
+         session_put(session);                                          \
+         return NULL;                                                   \
+      }                                                                 \
    }while(0)
 
 /*
@@ -65,12 +66,12 @@ extern int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
  *
  */
 
-#define IF_FIRST_PACKET_FROM_SERVER(name, session, ident)                  \
+#define IF_FIRST_PACKET_FROM_SERVER(name, session, ident, func)               \
    if (dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS && PACKET->L4.flags & TH_PSH) {  \
-      dissect_create_ident(&ident, PACKET);                                \
-      /* the session exist */                                              \
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(func));               \
+      /* the session exist */                                                 \
       if (session_get(&session, ident, sizeof(struct dissect_ident)) != -ENOTFOUND) { \
-         /* prevent the deletion of session created for the user and pass */ \
+         /* prevent the deletion of session created for the user and pass */  \
          if (session->data == NULL)                                        
 
 

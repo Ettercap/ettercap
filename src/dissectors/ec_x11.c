@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_x11.c,v 1.8 2003/10/29 20:41:08 alor Exp $
+    $Id: ec_x11.c,v 1.9 2004/01/21 20:20:07 alor Exp $
 */
 
 #include <ec.h>
@@ -72,7 +72,7 @@ FUNC_DECODER(dissector_x11)
     * check if it is the first packet sent by the server i
     * after the session is created (cookie already sent)
     */
-   IF_FIRST_PACKET_FROM_SERVER("x11", s, ident) {
+   IF_FIRST_PACKET_FROM_SERVER("x11", s, ident, dissector_x11) {
             
       DEBUG_MSG("\tdissector_x11 BANNER");
       /*
@@ -128,7 +128,7 @@ FUNC_DECODER(dissector_x11)
     * banner on the next packet sent by server
     * the check is made by IF_FIRST_PACKET_FROM_SERVER
     */
-   dissect_create_session(&s, PACKET);
+   dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_x11));
    session_put(s);
    
    /* print the message */

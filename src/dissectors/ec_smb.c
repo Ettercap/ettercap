@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.12 2004/01/14 12:23:02 lordnaga Exp $
+    $Id: ec_smb.c,v 1.13 2004/01/21 20:20:06 alor Exp $
 */
 
 #include <ec.h>
@@ -106,7 +106,7 @@ FUNC_DECODER(dissector_smb)
    /* Let's go to the data */
    ptr = (u_char *)(smb + 1);
 
-   dissect_create_ident(&ident, PACKET);
+   dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_smb));
    
    /* Is this a brand new session? */
    if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
@@ -120,7 +120,7 @@ FUNC_DECODER(dissector_smb)
       if (smb->cmd == 0x72 && FROM_SERVER("smb", PACKET)) { 
          PACKET->DISSECTOR.banner = strdup("SMB");
          /* Create the session */
-         dissect_create_session(&s, PACKET);
+         dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_smb));
          SAFE_CALLOC(s->data, 1, sizeof(smb_session_data));
          session_put(s);
          session_data = (smb_session_data *)s->data;
@@ -159,7 +159,7 @@ FUNC_DECODER(dissector_smb)
          if (ptr[8]!=1)
             return NULL; 
          /* Create the session */
-         dissect_create_session(&s, PACKET);
+         dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_smb));
          SAFE_CALLOC(s->data, 1, sizeof(smb_session_data));
          session_put(s);
          session_data = (smb_session_data *)s->data;
@@ -221,7 +221,7 @@ FUNC_DECODER(dissector_smb)
             if (session_data->auth_type == NTLMSSP_AUTH && session_data->status == LOGON_COMPLETED_FAILURE)
                session_data->status = WAITING_CHALLENGE;
             else 
-               dissect_wipe_session(PACKET);
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_smb));
 	       
             return NULL;	    
          }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_irc.c,v 1.6 2003/10/29 20:41:07 alor Exp $
+    $Id: ec_irc.c,v 1.7 2004/01/21 20:20:06 alor Exp $
 */
 
 #include <ec.h>
@@ -78,7 +78,7 @@ FUNC_DECODER(dissector_irc)
       
       ptr += 5;
 
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_irc));
       
       /* get the saved nick */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
@@ -184,7 +184,7 @@ FUNC_DECODER(dissector_irc)
       
       pass += 9;
 
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_irc));
       
       /* get the saved nick */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
@@ -225,7 +225,7 @@ FUNC_DECODER(dissector_irc)
       
       pass += 9;
 
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_irc));
       
       /* get the saved nick */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
@@ -268,7 +268,7 @@ FUNC_DECODER(dissector_irc)
       if (*++pass == ':') 
          pass += 1;
 
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_irc));
       
       /* get the saved nick */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
@@ -306,9 +306,9 @@ FUNC_DECODER(dissector_irc)
       ptr += 5;
       
       /* delete any previous saved nick */
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_irc));
       /* create the new session */
-      dissect_create_session(&s, PACKET);
+      dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_irc));
      
       /* save the nick */
       s->data = strdup(ptr);
@@ -335,7 +335,7 @@ FUNC_DECODER(dissector_irc)
 
    /* delete the user */
    if (!strncasecmp(ptr, "QUIT ", 5)) {
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_irc));
 
       return NULL;
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_vnc.c,v 1.10 2003/10/29 20:41:08 alor Exp $
+    $Id: ec_vnc.c,v 1.11 2004/01/21 20:20:07 alor Exp $
 */
 
 #include <ec.h>
@@ -78,7 +78,7 @@ FUNC_DECODER(dissector_vnc)
       if (PACKET->DATA.len < 4)
          return NULL;
 
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_vnc));
    
       /* if the session does not exist... */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
@@ -96,7 +96,7 @@ FUNC_DECODER(dissector_vnc)
                *ptr = '\0';
        
             /* create the new session */
-            dissect_create_session(&s, PACKET);
+            dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_vnc));
        
             /* remember the state (used later) */
             SAFE_CALLOC(s->data, 1, sizeof(struct vnc_status));
@@ -135,7 +135,7 @@ FUNC_DECODER(dissector_vnc)
             } else if (!memcmp(ptr, "\x00\x00\x00\x00", 4)) { /* Connection Failed */
 
                /*...so destroy the session*/ 
-               dissect_wipe_session(PACKET);
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_vnc));
                SAFE_FREE(ident);
                return NULL;
          
@@ -177,7 +177,7 @@ FUNC_DECODER(dissector_vnc)
       }
    } else { /* Packets coming from the client */
 
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_vnc));
 
       /* Only if we catched the connection from the beginning */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
@@ -196,7 +196,7 @@ FUNC_DECODER(dissector_vnc)
 
             DISSECT_MSG("VNC : %s:%d -> No authentication required\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                                     ntohs(PACKET->L4.dst));
-            dissect_wipe_session(PACKET);
+            dissect_wipe_session(PACKET, DISSECT_CODE(dissector_vnc));
          } else    /* If we have catched server result */
             
             if (conn_status->status >= LOGIN_OK) {
@@ -232,7 +232,7 @@ FUNC_DECODER(dissector_vnc)
                                                   PACKET->DISSECTOR.pass);
                }
             
-               dissect_wipe_session(PACKET);
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_vnc));
          } else { /* If we are waiting for client response (don't care ACKs) */
             if (conn_status->status == WAIT_RESPONSE && PACKET->DATA.len >= 16) {
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.25 2003/11/28 23:34:28 alor Exp $
+    $Id: ec_pop.c,v 1.26 2004/01/21 20:20:06 alor Exp $
 */
 
 /*
@@ -62,11 +62,11 @@ FUNC_DECODER(dissector_pop)
    char tmp[MAX_ASCII_ADDR_LEN];
    
    /* the connection is starting... create the session */
-   CREATE_SESSION_ON_SYN_ACK("pop", s);
+   CREATE_SESSION_ON_SYN_ACK("pop", s, dissector_pop);
    
    /* check if it is the first packet sent by the server */
    if (FROM_SERVER("pop", PACKET) && PACKET->L4.flags & TH_PSH) {  
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_pop));
       /* the session exist */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) != -ENOTFOUND) { 
          /* prevent the deletion of session created for the user and pass */
@@ -103,7 +103,7 @@ FUNC_DECODER(dissector_pop)
              * else delete the session
              */
             if (strstr(ptr, "-ERR"))
-               dissect_wipe_session(PACKET);
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_pop));
          }
       }                         
       SAFE_FREE(ident);         
@@ -133,10 +133,10 @@ FUNC_DECODER(dissector_pop)
       DEBUG_MSG("\tDissector_POP USER");
 
       /* destroy any previous session */
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_pop));
       
       /* create the new session */
-      dissect_create_session(&s, PACKET);
+      dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_pop));
       
       ptr += 5;
       
@@ -164,7 +164,7 @@ FUNC_DECODER(dissector_pop)
       ptr += 5;
       
       /* create an ident to retrieve the session */
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_pop));
       
       /* retrieve the session and delete it */
       if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
@@ -210,7 +210,7 @@ FUNC_DECODER(dissector_pop)
       DEBUG_MSG("\tDissector_POP APOP");
       
       /* create an ident to retrieve the session */
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_pop));
       
       /* retrieve the session and delete it */
       if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
@@ -269,10 +269,10 @@ FUNC_DECODER(dissector_pop)
       DEBUG_MSG("\tDissector_POP AUTH LOGIN");
 
       /* destroy any previous session */
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_pop));
       
       /* create the new session */
-      dissect_create_session(&s, PACKET);
+      dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_pop));
      
       /* remember the state (used later) */
       s->data = strdup("AUTH");
@@ -285,7 +285,7 @@ FUNC_DECODER(dissector_pop)
    }
    
    /* search the session (if it exist) */
-   dissect_create_ident(&ident, PACKET);
+   dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_pop));
    if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
       SAFE_FREE(ident);
       return NULL;
@@ -295,7 +295,7 @@ FUNC_DECODER(dissector_pop)
    
    /* the session is invalid */
    if (s->data == NULL) {
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_pop));
       return NULL;
    }
 
@@ -342,7 +342,7 @@ FUNC_DECODER(dissector_pop)
       
       SAFE_FREE(pass);
       /* destroy the session */
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_pop));
       
       /* print the message */
       DISSECT_MSG("POP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
@@ -364,10 +364,10 @@ FUNC_DECODER(dissector_pop)
       DEBUG_MSG("\tDissector_POP AUTH PLAIN");
 
       /* destroy any previous session */
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_pop));
       
       /* create the new session */
-      dissect_create_session(&s, PACKET);
+      dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_pop));
      
       /* remember the state (used later) */
       s->data = strdup("AUTH PLAIN");
@@ -401,7 +401,7 @@ FUNC_DECODER(dissector_pop)
       
       SAFE_FREE(decode);
       
-      dissect_wipe_session(PACKET);
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_pop));
       
       /* print the message */
       DISSECT_MSG("POP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),

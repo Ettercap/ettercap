@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socks.c,v 1.6 2003/10/29 20:41:08 alor Exp $
+    $Id: ec_socks.c,v 1.7 2004/01/21 20:20:07 alor Exp $
 */
 
 #include <ec.h>
@@ -77,11 +77,11 @@ FUNC_DECODER(dissector_socks)
       if (ptr[1] != USER_PASS || ptr[1] != NO_AUTH) 
          return NULL;
     
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_socks));
       /* if the session does not exist... */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
          /* create the new session */
-         dissect_create_session(&s, PACKET);
+         dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_socks));
 	 
          if (ptr[1] == NO_AUTH)
             s->data = strdup("NO AUTH");
@@ -91,7 +91,7 @@ FUNC_DECODER(dissector_socks)
           
    } else { /* Packets coming from the client */
    
-      dissect_create_ident(&ident, PACKET);
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_socks));
       /* Only if the server accepted user/pass scheme */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
          
@@ -126,7 +126,7 @@ FUNC_DECODER(dissector_socks)
                                                          PACKET->DISSECTOR.pass);
          }
 	 
-         dissect_wipe_session(PACKET);
+         dissect_wipe_session(PACKET, DISSECT_CODE(dissector_socks));
       }
    }        
    

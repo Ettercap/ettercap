@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.22 2004/01/20 21:46:42 alor Exp $
+    $Id: ec_dissect.c,v 1.23 2004/01/21 20:20:06 alor Exp $
 */
 
 #include <ec.h>
@@ -43,9 +43,9 @@ void dissect_del(char *name);
 int dissect_modify(int mode, char *name, u_int32 port);
 
 int dissect_match(void *id_sess, void *id_curr);
-void dissect_create_session(struct ec_session **s, struct packet_object *po);
-size_t dissect_create_ident(void **i, struct packet_object *po);            
-void dissect_wipe_session(struct packet_object *po);
+void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int32 code);
+size_t dissect_create_ident(void **i, struct packet_object *po, u_int32 code);            
+void dissect_wipe_session(struct packet_object *po, u_int32 code);
 
 int dissect_on_port(char *name, u_int16 port);
 
@@ -100,7 +100,7 @@ int dissect_match(void *id_sess, void *id_curr)
  * for a dissector.
  */
 
-void dissect_create_session(struct ec_session **s, struct packet_object *po)
+void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int32 code)
 {
    void *ident;
 
@@ -110,7 +110,7 @@ void dissect_create_session(struct ec_session **s, struct packet_object *po)
    SAFE_CALLOC(*s, 1, sizeof(struct ec_session));
    
    /* create the ident */
-   (*s)->ident_len = dissect_create_ident(&ident, po);
+   (*s)->ident_len = dissect_create_ident(&ident, po, code);
    
    /* link to the session */
    (*s)->ident = ident;
@@ -123,15 +123,15 @@ void dissect_create_session(struct ec_session **s, struct packet_object *po)
  * create the ident for a session
  */
 
-size_t dissect_create_ident(void **i, struct packet_object *po)
+size_t dissect_create_ident(void **i, struct packet_object *po, u_int32 code)
 {
    struct dissect_ident *ident;
    
    /* allocate the ident for that session */
    SAFE_CALLOC(ident, 1, sizeof(struct dissect_ident));
    
-   /* the magic */
-   ident->magic = DISSECT_MAGIC;
+   /* the magic number (usually the pointer for the function) */
+   ident->magic = code;
       
    /* prepare the ident */
    memcpy(&ident->L3_src, &po->L3.src, sizeof(struct ip_addr));
@@ -152,7 +152,7 @@ size_t dissect_create_ident(void **i, struct packet_object *po)
 /*
  * totally destroy the session bound to this connection
  */
-void dissect_wipe_session(struct packet_object *po)
+void dissect_wipe_session(struct packet_object *po, u_int32 code)
 {
    void *ident;
    struct ec_session *s;   
@@ -160,7 +160,7 @@ void dissect_wipe_session(struct packet_object *po)
    DEBUG_MSG("dissect_wipe_session");
    
    /* create an ident to retrieve the session */
-   dissect_create_ident(&ident, po);
+   dissect_create_ident(&ident, po, code);
 
    /* retrieve the session and delete it */
    if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.8 2004/03/01 00:19:01 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.9 2004/03/02 00:41:59 daten Exp $
 */
 
 #include <ec.h>
@@ -106,14 +106,19 @@ void gtkui_show_connections(void)
 
    /* if the object already exist, set the focus to it */
    if (conns_window) {
-      gtk_window_present(GTK_WINDOW (conns_window));
+      //gtk_window_present(GTK_WINDOW (conns_window));
+      gtkui_page_present(conns_window);
       return;
    }
 
+/*
    conns_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (conns_window), "Live connections");
    gtk_window_set_default_size(GTK_WINDOW (conns_window), 500, 250);
-   g_signal_connect (G_OBJECT (conns_window), "delete_event", G_CALLBACK (gtkui_kill_connections), NULL);
+   g_signal_connect(G_OBJECT(conns_window), "delete_event", G_CALLBACK(gtkui_kill_connections), NULL);
+*/
+
+   conns_window = gtkui_page_new("Connections", &gtkui_kill_connections);
 
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (conns_window), vbox);
@@ -228,7 +233,8 @@ static void gtkui_kill_connections(void)
    DEBUG_MSG("gtk_kill_connections");
    gtk_timeout_remove(connections_idle);
 
-   gtk_widget_hide(conns_window);
+   gtk_widget_destroy(conns_window);
+   conns_window = NULL;
 }
 
 static gboolean refresh_connections(gpointer data)
@@ -454,18 +460,21 @@ static void gtkui_connection_data_split(void)
       child = gtk_bin_get_child(GTK_BIN (data_window));
       gtk_container_remove(GTK_CONTAINER (data_window), child);
    } else {
+      data_window = gtkui_page_new("Connection data", &gtkui_destroy_conndata);
+/*
       data_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
       gtk_window_set_title(GTK_WINDOW (data_window), "Connection data");
       gtk_window_set_default_size(GTK_WINDOW (data_window), 600, 400);
       gtk_container_set_border_width(GTK_CONTAINER (data_window), 5);
-      g_signal_connect (G_OBJECT (data_window), "delete_event", G_CALLBACK (gtkui_destroy_conndata), NULL);
+      g_signal_connect(G_OBJECT(data_window), "delete_event", G_CALLBACK(gtkui_destroy_conndata), NULL);
+*/
    }
 
    hbox_big = gtk_hbox_new(TRUE, 5);
    gtk_container_add(GTK_CONTAINER(data_window), hbox_big);
    gtk_widget_show(hbox_big);
 
-  /*** right side ***/
+  /*** left side ***/
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, TRUE, TRUE, 0);
    gtk_widget_show(vbox);
@@ -574,10 +583,13 @@ static void gtkui_connection_data_split(void)
    conntrack_hook_conn_add(curr_conn, split_print_po);
 
    gtk_widget_show(data_window);
+   gtkui_page_present(data_window);
 }
 
 static void gtkui_destroy_conndata(void)
 {
+   DEBUG_MSG("gtkui_destroy_conndata");
+
    gtk_widget_destroy(data_window);
    data_window = NULL;
 }
@@ -684,11 +696,14 @@ static void gtkui_connection_data_join(void)
       child = gtk_bin_get_child(GTK_BIN (data_window));
       gtk_container_remove(GTK_CONTAINER (data_window), child);
    } else {
+      data_window = gtkui_page_new("Connection data", &gtkui_destroy_conndata);
+/*
       data_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
       gtk_window_set_title(GTK_WINDOW (data_window), "Connection data");
       gtk_window_set_default_size(GTK_WINDOW (data_window), 600, 400);
       gtk_container_set_border_width(GTK_CONTAINER (data_window), 5);
-      g_signal_connect (G_OBJECT (data_window), "delete_event", G_CALLBACK (gtkui_destroy_conndata), NULL);
+      g_signal_connect(G_OBJECT(data_window), "delete_event", G_CALLBACK(gtkui_destroy_conndata), NULL);
+*/
    }
    
    vbox = gtk_vbox_new(FALSE, 0);

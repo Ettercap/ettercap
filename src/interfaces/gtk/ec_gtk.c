@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.8 2004/03/01 00:18:56 daten Exp $
+    $Id: ec_gtk.c,v 1.9 2004/03/02 00:41:59 daten Exp $
 */
 
 #include <ec.h>
@@ -31,6 +31,7 @@
 /* globals */
 
 GtkWidget *window = NULL;   /* main window */
+GtkWidget *notebook = NULL;
 GtkWidget *main_menu = NULL;
 
 static GtkWidget     *textview = NULL;
@@ -73,6 +74,11 @@ static void gtkui_pcap_filter(void);
 GtkTextBuffer *gtkui_details_window(char *title);
 void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
 void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
+
+/* MDI pages */
+GtkWidget *gtkui_page_new(char *title, void (*callback)(void));
+void gtkui_page_present(GtkWidget *child);
+void gtkui_page_close(GtkWidget *widget, gpointer data);
 
 /***#****************************************/
 
@@ -377,7 +383,7 @@ static void toggle_nopromisc(void)
 static void gtkui_setup(void)
 {
    GtkTextIter iter;
-   GtkWidget *item, *vbox, *scroll;
+   GtkWidget *item, *vbox, *scroll, *vpaned, *frame;
    GtkItemFactory *item_factory;
    GClosure *closure = NULL;
    GdkModifierType mods;
@@ -407,7 +413,7 @@ static void gtkui_setup(void)
    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
    snprintf(title, 50, "%s %s", EC_PROGRAM, EC_VERSION);
    gtk_window_set_title(GTK_WINDOW (window), title);
-   gtk_window_set_default_size(GTK_WINDOW (window), 450, 175);
+   gtk_window_set_default_size(GTK_WINDOW (window), 540, 380);
    g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gtkui_exit), NULL);
 
    accel_group = gtk_accel_group_new ();
@@ -428,17 +434,40 @@ static void gtkui_setup(void)
    gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
    gtk_widget_show(main_menu);
 
-   item = gtk_item_factory_get_item(item_factory, "/Options/Promisc mode");
-   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), (GBL_PCAP->promisc)?TRUE:FALSE);
+   if(GBL_PCAP->promisc) {
+      /* setting the menu item active will toggle this setting */
+      /* it will be TRUE after the menu is updated */
+      GBL_PCAP->promisc = 0;
+      item = gtk_item_factory_get_item(item_factory, "/Options/Promisc mode");
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+   }
 
-   item = gtk_item_factory_get_item(item_factory, "/Options/Unoffensive");
-   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), (GBL_OPTIONS->unoffensive)?TRUE:FALSE);
+   if(GBL_OPTIONS->unoffensive) {
+      GBL_OPTIONS->unoffensive = 0;
+      item = gtk_item_factory_get_item(item_factory, "/Options/Unoffensive");
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+   }
 
+   vpaned = gtk_vpaned_new();
+
+   /* notebook for MDI pages */
+   frame = gtk_frame_new(NULL);
+   gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_IN);
+   gtk_paned_add1(GTK_PANED(vpaned), frame);
+   gtk_widget_show(frame);
+
+   notebook = gtk_notebook_new();
+   gtk_notebook_set_tab_pos(GTK_NOTEBOOK (notebook), GTK_POS_TOP);
+   gtk_notebook_set_scrollable(GTK_NOTEBOOK (notebook), TRUE);
+   gtk_container_add(GTK_CONTAINER (frame), notebook);
+   gtk_widget_show(notebook);
+
+   /* messages */
    scroll = gtk_scrolled_window_new(NULL, NULL);
    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll),
                                   GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
-   gtk_box_pack_end(GTK_BOX(vbox), scroll, TRUE, TRUE, 0);
+   gtk_paned_add2(GTK_PANED(vpaned), scroll);
    gtk_widget_show(scroll);
 
    textview = gtk_text_view_new();
@@ -451,6 +480,10 @@ static void gtkui_setup(void)
    msgbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (textview));
    gtk_text_buffer_get_end_iter(msgbuffer, &iter);
    endmark = gtk_text_buffer_create_mark(msgbuffer, "end", &iter, FALSE);
+
+   gtk_paned_set_position(GTK_PANED(vpaned), 250);
+   gtk_box_pack_end(GTK_BOX(vbox), vpaned, TRUE, TRUE, 0);
+   gtk_widget_show(vpaned);
 
    gtk_widget_show(window);
 
@@ -753,6 +786,72 @@ void gtkui_dialog_enter(GtkWidget *widget, gpointer data) {
 
    dialog = g_object_get_data(G_OBJECT(widget), "dialog");
    gtk_dialog_response(GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+}
+
+GtkWidget *gtkui_page_new(char *title, void (*callback)(void)) {
+   GtkWidget *parent, *label;
+   GtkWidget *hbox, *button, *image;
+
+   /* a container to hold the close button and tab label */
+   hbox = gtk_hbox_new(FALSE, 0);
+   gtk_widget_show(hbox);
+
+   /* the close button */
+   button = gtk_button_new();
+   gtk_button_set_relief(GTK_BUTTON (button), GTK_RELIEF_NONE);
+   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+   gtk_widget_set_size_request(button, 20, 20);
+   gtk_widget_show(button);
+
+   /* an image for the button */
+   image = gtk_image_new_from_stock (GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
+   gtk_container_add(GTK_CONTAINER (button), image);
+   gtk_widget_show(image);
+
+   /* the label for the tab title */
+   label = gtk_label_new(title);
+   gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
+   gtk_widget_show(label);
+
+   /* a parent to pack the contents into */
+   parent = gtk_frame_new(NULL);
+   gtk_frame_set_shadow_type(GTK_FRAME(parent), GTK_SHADOW_NONE);
+   gtk_widget_show(parent);
+
+   gtk_notebook_append_page(GTK_NOTEBOOK(notebook), parent, hbox);
+
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK(gtkui_page_close), parent);
+
+   if(callback)
+      g_object_set_data(G_OBJECT (parent), "destroy", callback);
+
+   return(parent);
+}
+
+void gtkui_page_present(GtkWidget *child) {
+   int num = 0;
+
+   num = gtk_notebook_page_num(GTK_NOTEBOOK (notebook), child);
+   gtk_notebook_set_current_page(GTK_NOTEBOOK (notebook), num);
+}
+
+void gtkui_page_close(GtkWidget *widget, gpointer data) {
+   GtkWidget *child;
+   gint num = 0;
+   void (*callback)(void);
+
+   num = gtk_notebook_page_num(GTK_NOTEBOOK(notebook), GTK_WIDGET (data));
+   child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook), num);
+   g_object_ref(G_OBJECT(child));
+
+   /* a callback can be assigned with g_object_set_data */
+   callback = g_object_get_data(G_OBJECT (child), "destroy");
+   if(callback)
+      callback();
+
+   gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), num);
+
+   DEBUG_MSG("gtkui_page_close");
 }
 
 /* EOF */

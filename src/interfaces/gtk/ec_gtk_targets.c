@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_targets.c,v 1.3 2004/02/29 17:37:21 alor Exp $
+    $Id: ec_gtk_targets.c,v 1.4 2004/03/02 00:41:59 daten Exp $
 */
 
 #include <ec.h>
@@ -40,6 +40,7 @@ static void gtkui_add_target2(void *);
 static void add_target1(void);
 static void add_target2(void);
 static struct ip_list *gtkui_target_selected(int list);
+static void gtkui_targets_destroy(void);
 
 /* globals */
 
@@ -199,14 +200,19 @@ void gtkui_current_targets(void)
    gtkui_create_targets_array();
   
    if(targets_window) {
-      gtk_window_present(GTK_WINDOW (targets_window));
+      //gtk_window_present(GTK_WINDOW (targets_window));
+      gtkui_page_present(targets_window);
       return;
    }
 
+/*
    targets_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (targets_window), "Current Targets");
    gtk_window_set_default_size(GTK_WINDOW (targets_window), 400, 300);
    g_signal_connect (G_OBJECT (targets_window), "delete_event", G_CALLBACK (gtk_widget_hide), NULL);
+*/
+
+   targets_window = gtkui_page_new("Targets", &gtkui_targets_destroy);
 
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (targets_window), vbox);
@@ -277,6 +283,11 @@ void gtkui_current_targets(void)
    gtk_widget_show(targets_window);
 }
 
+static void gtkui_targets_destroy(void)
+{
+   gtk_widget_destroy(targets_window);
+   targets_window = NULL;
+}
 
 /*
  * create the array for the widget.

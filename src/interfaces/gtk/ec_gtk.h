@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.5 2004/03/01 00:19:01 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.6 2004/03/02 00:41:59 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -8,6 +8,7 @@
 
 /* ec_gtk.c */
 extern GtkWidget *window;  /* main window */
+extern GtkWidget *notebook;
 extern GtkWidget *main_menu;
 
 extern void gtkui_message(const char *msg);
@@ -18,6 +19,12 @@ extern void gtkui_sniff_live(void);
 
 extern GtkTextBuffer *gtkui_details_window(char *title);
 extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
+void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
+
+/* MDI pages */
+GtkWidget *gtkui_page_new(char *title, void (*callback)(void));
+extern void gtkui_page_present(GtkWidget *child);
+extern void gtkui_page_close(GtkWidget *widget, gpointer data);
 
 /* ec_gtk_menus.c */
 /*

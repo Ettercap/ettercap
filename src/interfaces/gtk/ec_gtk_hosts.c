@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_hosts.c,v 1.3 2004/02/29 17:37:21 alor Exp $
+    $Id: ec_gtk_hosts.c,v 1.4 2004/03/02 00:41:59 daten Exp $
 */
 
 #include <ec.h>
@@ -34,6 +34,7 @@ void gtkui_refresh_host_list(void);
 
 static void load_hosts(char *file);
 static void save_hosts(void);
+static void gtkui_hosts_destroy(void);
 static void gtkui_delete_host(GtkWidget *widget, gpointer data);
 static void gtkui_host_target1(GtkWidget *widget, gpointer data);
 static void gtkui_host_target2(GtkWidget *widget, gpointer data);
@@ -176,10 +177,14 @@ void gtkui_host_list(void)
       return;
    }
    
+/*
    hosts_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (hosts_window), "Hosts list");
    gtk_window_set_default_size(GTK_WINDOW (hosts_window), 400, 300);
    g_signal_connect (G_OBJECT (hosts_window), "delete_event", G_CALLBACK (gtk_widget_hide), NULL);
+*/
+
+   hosts_window = gtkui_page_new("Host List", &gtkui_hosts_destroy);
 
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (hosts_window), vbox);
@@ -239,6 +244,12 @@ void gtkui_host_list(void)
    gtk_widget_show(button);
 
    gtk_widget_show(hosts_window);
+}
+
+void gtkui_hosts_destroy(void)
+{
+   gtk_widget_destroy(hosts_window);
+   hosts_window = NULL;
 }
 
 /*

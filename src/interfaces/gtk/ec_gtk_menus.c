@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.4 2004/02/28 00:08:57 daten Exp $
+    $Id: ec_gtk_menus.c,v 1.5 2004/03/02 00:41:59 daten Exp $
 */
 
 #include <ec.h>
@@ -108,7 +108,7 @@ void gtkui_create_menu(int live);
 void gtkui_create_menu(int live)
 {
    GtkAccelGroup *accel_group;
-   GtkWidget *vbox;
+   GtkWidget *vbox, *item;
    GtkItemFactory *root_menu;
    int num_items = 0;
    
@@ -162,6 +162,24 @@ void gtkui_create_menu(int live)
       gtk_item_factory_create_items (root_menu, num_items, gmenu_plugins, NULL);
    }
 #endif
+
+   if(GBL_OPTIONS->reversed) {
+      GBL_OPTIONS->reversed = 0;
+      item = gtk_item_factory_get_item(root_menu, "/Targets/Reverse matching");
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+   }
+
+   if(GBL_OPTIONS->resolve) {
+      GBL_OPTIONS->resolve = 0;
+      item = gtk_item_factory_get_item(root_menu, "/View/Resolve IP addresses");
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+   }
+
+   if(GBL_OPTIONS->compress) {
+      GBL_OPTIONS->compress = 0;
+      item = gtk_item_factory_get_item(root_menu, "/Logging/Compressed file");
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+   }
 
    /* get the menu widget and add it to the window */
    main_menu = gtk_item_factory_get_widget (root_menu, "<main>");

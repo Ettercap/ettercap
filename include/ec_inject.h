@@ -1,10 +1,11 @@
 
-/* $Id: ec_inject.h,v 1.7 2003/12/17 16:05:31 lordnaga Exp $ */
+/* $Id: ec_inject.h,v 1.8 2004/03/03 21:43:19 alor Exp $ */
 
 #ifndef EC_INJECT_H
 #define EC_INJECT_H
 
 #include <ec_packet.h>
+#include <ec_conntrack.h>
 
 #define FUNC_INJECTOR_PTR(func) int (*func)(struct packet_object *, size_t *)
 #define FUNC_INJECTOR(func) int func(struct packet_object *po, size_t *len)
@@ -32,6 +33,8 @@ extern int inject_buffer(struct packet_object *po);
 extern void add_injector(u_int8 level, u_int32 type, FUNC_INJECTOR_PTR(injector));
 extern void * get_injector(u_int8 level, u_int32 type);
 extern void inject_split_data(struct packet_object *po);
+
+extern void user_kill(struct conn_object *co);
 
 #define CHAIN_ENTRY 1
 #define CHAIN_LINKED 2

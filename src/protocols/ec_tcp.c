@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.34 2004/01/20 22:24:22 alor Exp $
+    $Id: ec_tcp.c,v 1.35 2004/03/03 21:43:19 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_fingerprint.h>
 #include <ec_checksum.h>
 #include <ec_session.h>
+#include <ec_session_tcp.h>
 #include <ec_inject.h>
 
 
@@ -62,19 +63,6 @@ struct tcp_header {
 #define TCPOPT_SACKOK           4
 #define TCPOPT_TIMESTAMP        8
 
-/* Session data structure */
-struct tcp_half_status {
-   u_int32  last_seq;
-   u_int32  last_ack;
-   int32    seq_adj;
-   u_char   injectable;
-#define INJ_FIN 1
-#define INJ_FWD 2
-};
-
-struct tcp_status {
-   struct tcp_half_status way[2];
-};
 
 /* Session identifier 
  * It has to be even-lenghted for session hash matching */

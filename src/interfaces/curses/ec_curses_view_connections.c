@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.6 2004/02/26 11:07:26 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.7 2004/03/03 21:43:19 alor Exp $
 */
 
 #include <ec.h>
@@ -28,6 +28,7 @@
 #include <ec_services.h>
 #include <ec_strings.h>
 #include <ec_format.h>
+#include <ec_inject.h>
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -425,10 +426,10 @@ static void curses_connection_kill(void *conn)
    struct conn_object *c = (struct conn_object *)conn;
    
    DEBUG_MSG("curses_connection_kill");
+  
+   /* kill it */
+   user_kill(curr_conn);
    
-   /* XXX - implement the killing function */
-   curses_message("KILL: not yet implemented");
-   return;
    /* set the status */
    c->status = CONN_KILLED;
    curses_message("The connection was killed !!");

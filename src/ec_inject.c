@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.6 2003/10/14 21:20:47 lordnaga Exp $
+    $Id: ec_inject.c,v 1.7 2004/03/03 21:43:19 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
 #include <ec_inject.h>
 #include <ec_send.h>
+#include <ec_session_tcp.h>
 
 /* globals */
 static SLIST_HEAD (, inj_entry) injectors_table;
@@ -43,6 +44,8 @@ void add_injector(u_int8 level, u_int32 type, FUNC_INJECTOR_PTR(injector));
 void * get_injector(u_int8 level, u_int32 type);
 size_t inject_protocol(struct packet_object *po);
 void inject_split_data(struct packet_object *po);
+
+void user_kill(struct conn_object *co);
 
 /*******************************************/
 
@@ -182,6 +185,47 @@ void inject_split_data(struct packet_object *po)
       po->DATA.delta -= po->DATA.len - max_len;
       po->DATA.len = max_len;
    } 
+}
+
+/*
+ * kill the connection on user request
+ */
+void user_kill(struct conn_object *co)
+{
+   struct ec_session *s = NULL;
+   void *ident;
+   struct packet_object po;
+   size_t ident_len, direction;
+   struct tcp_status *status;
+
+   /* we can kill only tcp connection */
+   if (co->L4_proto != NL_TYPE_TCP)
+      return;
+   
+   /* prepare the fake packet object */
+   memcpy(&po.L3.src, &co->L3_addr1, sizeof(struct ip_addr));
+   memcpy(&po.L3.dst, &co->L3_addr2, sizeof(struct ip_addr));
+
+   po.L4.src = co->L4_addr1;
+   po.L4.dst = co->L4_addr2;
+
+   /* retrieve the ident for the session */
+   ident_len = tcp_create_ident(&ident, &po);
+
+   /* get the session */
+   if (session_get(&s, ident, ident_len) == -ENOTFOUND) {
+      SAFE_FREE(ident); 
+      return;
+   }
+      
+   /* Select right comunication way */
+   direction = tcp_find_direction(s->ident, ident);
+   SAFE_FREE(ident); 
+
+   status = (struct tcp_status *)s->data;
+      
+   send_tcp(&po.L3.src, &po.L3.dst, po.L4.src, po.L4.dst, status->way[direction].last_ack, 0, TH_RST);
+   send_tcp(&po.L3.dst, &po.L3.src, po.L4.dst, po.L4.src, status->way[!direction].last_ack, 0, TH_RST);
 }
 
 /* EOF */

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.29 2003/11/30 12:02:47 alor Exp $
+# $Id: Makefile.am,v 1.30 2004/03/03 21:43:19 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -41,6 +41,7 @@ noinst_HEADERS = ec.h \
                  ec_send.h \
                  ec_services.h \
                  ec_session.h \
+                 ec_session_tcp.h \
                  ec_signals.h \
                  ec_socket.h \
                  ec_sniff.h \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.48 2004/02/17 21:14:38 alor Exp $
+    $Id: ec_filter.c,v 1.49 2004/03/03 21:43:19 alor Exp $
 */
 
 #include <ec.h>
@@ -732,6 +732,10 @@ static int func_kill(struct packet_object *po)
 
    if (po->L4.proto == NL_TYPE_TCP) {
       /* reset both sides */
+      /* 
+       * we can trust the ack number.
+       * at least one side will be reset. the other is automatically reset 
+       */
       send_tcp(&po->L3.src, &po->L3.dst, po->L4.src, po->L4.dst, po->L4.seq, 0, TH_RST);
       send_tcp(&po->L3.dst, &po->L3.src, po->L4.dst, po->L4.src, po->L4.ack, 0, TH_RST);
    } else if (po->L4.proto == NL_TYPE_UDP) {

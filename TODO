@@ -51,8 +51,6 @@ this is the unofficial and floating in time roadmap:
    
    + PLUGINS
       port all the plugins to NG:
-         - lurker    -> find_ettercap
-         - leech     -> isolate
          - triton    -> gw_discover
 
    + BRIDGED SNIFFING

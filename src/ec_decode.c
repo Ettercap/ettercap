@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.50 2004/02/27 11:06:28 alor Exp $
+    $Id: ec_decode.c,v 1.51 2004/03/03 21:43:19 alor Exp $
 */
 
 #include <ec.h>
@@ -228,11 +228,11 @@ FUNC_DECODER(decode_data)
       
    CANCELLATION_POINT();
 
+   /* reset the flag PO_IGNORE if the packet should be processed */
+   EXECUTE(GBL_SNIFF->interesting, po);
+
    /* HOOK POINT: HANDLED */ 
    hook_point(HOOK_HANDLED, po);
-
-   /* reset the flag PO_INGNORE if the packet should be processed */
-   EXECUTE(GBL_SNIFF->interesting, po);
 
    /* 
     * the display engine has stated that this

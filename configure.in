@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.121 2004/04/29 19:56:05 alor Exp $
+dnl    $Id: configure.in,v 1.122 2004/04/29 20:04:04 alor Exp $
 dnl
 
 AC_INIT
@@ -448,17 +448,14 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
   AC_MSG_RESULT(yes) ]
 )
 
-OLDLDFLAGS="${LDFLAGS}"
-LDFLAGS="$PCAPLIB"
 if test "$OS" = "WINDOWS"; then
-   AC_CHECK_LIB(wpcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect libpcap version. winpcap >= 0.8.1 required]))
-   AC_CHECK_LIB(packet, PacketInitPacket,, AC_MSG_ERROR([Incorrect libpacket version. winpcap >= 0.8.1 required]))
+   EC_CHECK_FUNC(wpcap, pcap_datalink_val_to_description, $PCAPLIB,,AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
+   EC_CHECK_FUNC(packet, PacketInitPacket, $PCAPLIB,,AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
    AC_CHECK_LIB(ws2_32, ntohs,, AC_MSG_ERROR([Incorrect ws2_32 version.]))
    AC_CHECK_LIB(iphlpapi, main)
 else
-   AC_CHECK_LIB(pcap, pcap_datalink_val_to_description,, AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
+   EC_CHECK_FUNC(pcap, pcap_datalink_val_to_description, $PCAPLIB,,AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
 fi
-LDFLAGS="${OLDLDFLAGS}"
 
 dnl ---------
 dnl  libnet
@@ -497,11 +494,7 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
 ]
 )
 
-OLDLDFLAGS="${LDFLAGS}"
-LDFLAGS="$LNETLIB"
-AC_CHECK_LIB(net, libnet_adv_free_packet,, AC_MSG_ERROR([Incorrect libnet version. libnet >= 1.1.2.1 required]))
-LDFLAGS="${OLDLDFLAGS}"
-
+EC_CHECK_FUNC(net, libnet_adv_free_packet, $LNETLIB,,AC_MSG_ERROR([Incorrect libnet version. libnet >= 1.1.2.1 required]))
 
 dnl ------------------
 dnl Checks for openssl

@@ -18,6 +18,7 @@ NG-0.7.0_pre2    200404??
    !! compiles against old openssl 0.9.6x
    !! better error handling on file creation failure
    !! fingerprint submissions works again
+   !! fixed the configure checks for libpcap and libnet
    
 
 NG-0.7.0_pre1    20040415

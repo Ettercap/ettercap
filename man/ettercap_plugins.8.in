@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.12 2003/11/16 15:04:13 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.13 2003/11/16 21:11:53 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -42,7 +42,7 @@ The following is a list of available plugins:
 .TP 
 .B chk_poison
 .Sp
-It performs a check to see if the arp poisoning module of ettercap i successful.
+It performs a check to see if the arp poisoning module of ettercap was successful.
 It sends spoofed ICMP ehco packets to all the victims of the poisoning 
 pretending to be each of the other targets. If we can catch an ICMP reply with
 our MAC address as destination it means that the poisoning between those
@@ -60,7 +60,7 @@ Only a template to demonstrate how to write a plugin.
 .TP 
 .B find_conn
 .Sp
-Very simple plugin that listens for arp requests to see who a machine
+Very simple plugin that listens for arp requests to show you all the targets an host
 wants to talk to.
 .Sp
 .I example :
@@ -123,12 +123,12 @@ First of all it checks if two hosts in the list have the same mac address.
 It could mean that one of those is poisoning us pretending to be the other.
 It could generate many false-positives in a proxy-arp environment.
 You have to build hosts list to perform this check.
-After that it sends icmp echo packets to each host in the list and checks
+After that, it sends icmp echo packets to each host in the list and checks
 if the source mac address of the reply differs from the address we have
 stored in the list for that ip.
 It could mean that someone is poisoning that host pretending to have our ip
 address and forwards intercepted packets to us.
-You can't perform this active test in unoffensive mode .
+You can't perform this active test in unoffensive mode.
 .Sp
 .I example :
 .Sp

@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.6 2003/11/14 20:46:54 alor Exp $
+dnl $Id: acinclude.m4,v 1.7 2003/11/16 21:11:50 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -157,7 +157,7 @@ AC_DEFUN(EC_RESOLVE_CHECK,[
    AC_SEARCH_LIBS(dn_expand, resolv c,
       [
          AC_MSG_CHECKING(for additional -lresolv needed by dn_expand)
-         AC_TRY_COMPILE([
+         AC_TRY_LINK([
                #include <sys/types.h>
                #include <netinet/in.h>
                #include <arpa/nameser.h>
@@ -176,7 +176,6 @@ AC_DEFUN(EC_RESOLVE_CHECK,[
             [AC_MSG_RESULT(needed)
              LIBS="$LIBS -lresolv"]
          )
-         
          AM_CONDITIONAL(HAVE_DN_EXPAND, true) ac_cv_ec_dns=yes 
       ],
       [AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_cv_ec_dns=no])

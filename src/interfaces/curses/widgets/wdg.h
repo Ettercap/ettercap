@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.14 2003/11/10 16:11:19 alor Exp $ */
+/* $Id: wdg.h,v 1.15 2003/11/16 21:11:53 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -15,6 +15,29 @@
 
 #include <missing/queue.h>
 
+#include <limits.h>
+
+#if defined HAVE_STDINT_H && !defined OS_SOLARIS
+	#include <stdint.h>
+#elif !defined OS_SOLARIS
+	#include <sys/types.h>
+#elif defined OS_SOLARIS
+	#include <sys/inttypes.h>
+#endif
+
+#ifndef TYPES_DEFINED
+#define TYPES_DEFINED
+	typedef int8_t    int8;
+	typedef int16_t   int16;
+	typedef int32_t   int32;
+	typedef int64_t   int64;
+
+	typedef uint8_t   u_int8;
+	typedef uint16_t  u_int16;
+	typedef uint32_t  u_int32;
+	typedef uint64_t  u_int64;
+#endif
+   
 /********************************************/
 
 enum {

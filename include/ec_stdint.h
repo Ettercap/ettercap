@@ -1,5 +1,5 @@
 
-/* $Id: ec_stdint.h,v 1.3 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: ec_stdint.h,v 1.4 2003/11/16 21:11:53 alor Exp $ */
 
 #ifndef EC_STDINT_H
 #define EC_STDINT_H
@@ -20,6 +20,8 @@
 
 #endif
 
+#ifndef TYPES_DEFINED
+#define TYPES_DEFINED
 	typedef int8_t    int8;
 	typedef int16_t   int16;
 	typedef int32_t   int32;
@@ -29,7 +31,8 @@
 	typedef uint16_t  u_int16;
 	typedef uint32_t  u_int32;
 	typedef uint64_t  u_int64;
-
+#endif
+   
 #endif
 
 /* EOF */

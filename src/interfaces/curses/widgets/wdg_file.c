@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.11 2003/12/27 18:49:52 alor Exp $
+    $Id: wdg_file.c,v 1.12 2003/12/28 18:27:08 alor Exp $
 */
 
 #include <wdg.h>
@@ -184,12 +184,14 @@ static int wdg_file_redraw(struct wdg_object *wo)
 
       wbkgd(ww->win, COLOR_PAIR(wo->window_color));
       werase(ww->win);
-      wdg_file_borders(wo);
       
       /* create the file list */
       wdg_file_menu_create(wo);
-     
+
       touchwin(ww->win);
+
+      wdg_file_borders(wo);
+     
 
    /* the first time we have to allocate the window */
    } else {
@@ -198,15 +200,15 @@ static int wdg_file_redraw(struct wdg_object *wo)
       if ((ww->win = newwin(l, c, y, x)) == NULL)
          return -WDG_EFATAL;
 
-      /* draw the titles */
-      wdg_file_borders(wo);
-      
       /* create the file list */
       wdg_file_menu_create(wo);
 
       /* set the window color */
       wbkgd(ww->win, COLOR_PAIR(wo->window_color));
       redrawwin(ww->win);
+      
+      /* draw the titles */
+      wdg_file_borders(wo);
 
       /* no scrolling */
       scrollok(ww->win, FALSE);

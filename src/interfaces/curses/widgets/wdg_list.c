@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_list.c,v 1.5 2003/12/28 17:19:39 alor Exp $
+    $Id: wdg_list.c,v 1.6 2003/12/28 18:27:08 alor Exp $
 */
 
 #include <wdg.h>
@@ -417,7 +417,7 @@ static void wdg_list_menu_create(struct wdg_object *wo)
    /* get the geometry to make a window */
    scale_menu(ww->menu, &mrows, &mcols);
 
-   ww->mwin = newwin(mrows, mcols, y + 2, x + 2);
+   ww->mwin = newwin(mrows + 1, mcols, y + 2, x + 2);
    /* set the color */
    wbkgd(ww->mwin, COLOR_PAIR(wo->window_color));
    keypad(ww->mwin, TRUE);

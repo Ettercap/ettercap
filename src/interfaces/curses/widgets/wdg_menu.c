@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.13 2003/12/28 17:19:39 alor Exp $
+    $Id: wdg_menu.c,v 1.14 2003/12/28 18:27:08 alor Exp $
 */
 
 #include <wdg.h>
@@ -572,7 +572,7 @@ static void wdg_menu_close(struct wdg_object *wo)
    WDG_BUG_IF(ww->focus_unit == NULL);
    
    /* nothing to clear */
-   if (ww->focus_unit->active == 0)
+   if (ww->focus_unit->active == 0 || ww->focus_unit->m == NULL)
       return;
    
    /* hide the menu */
@@ -588,6 +588,8 @@ static void wdg_menu_close(struct wdg_object *wo)
 
    /* delete the memory */
    free_menu(ww->focus_unit->m);
+   ww->focus_unit->m = NULL;
+
    delwin(ww->focus_unit->win);
   
    /* repaint the whole screen since a menu might have overlapped something */

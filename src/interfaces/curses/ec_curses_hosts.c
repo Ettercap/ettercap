@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_hosts.c,v 1.3 2003/12/28 17:19:56 alor Exp $
+    $Id: ec_curses_hosts.c,v 1.4 2003/12/28 18:26:59 alor Exp $
 */
 
 #include <ec.h>
@@ -128,6 +128,8 @@ static void load_hosts(char *path, char *file)
    scan_load_hosts(tmp);
    
    SAFE_FREE(tmp);
+   
+   curses_host_list();
 }
 
 /*

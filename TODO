@@ -47,7 +47,7 @@ this is the unofficial and floating in time roadmap:
       - callback on menu shortcuts
       - inline help (with callback on 'h')
       - widgets:
-         - selectable lists
+         - selectable lists (auto refresh)
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

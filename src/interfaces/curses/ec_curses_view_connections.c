@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.5 2004/02/22 12:00:54 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.6 2004/02/26 11:07:26 alor Exp $
 */
 
 #include <ec.h>
@@ -26,6 +26,7 @@
 #include <ec_conntrack.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
+#include <ec_strings.h>
 #include <ec_format.h>
 
 #include <sys/mman.h>
@@ -62,6 +63,7 @@ static struct conn_object *curr_conn;
    
 /* keep it global, so the memory region is always the same (reallocing it) */
 static u_char *dispbuf;
+static u_char *injectbuf;
 
 /*******************************************/
 
@@ -450,13 +452,16 @@ static void curses_connection_inject(void)
    
    DEBUG_MSG("curses_connection_inject");
    
+   SAFE_REALLOC(injectbuf, 501 * sizeof(char));
+   memset(injectbuf, 0, 501);
+   
    wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
    wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, 50, 4);
-   wdg_input_add(in, 1, 1, "Chars to be injected  :", NULL, 10);
+   wdg_input_size(in, 75, 12);
+   wdg_input_add(in, 1, 1, "Chars to be injected  :", injectbuf, 50, 10);
    wdg_input_set_callback(in, inject_user);
    
    wdg_draw_object(in);
@@ -466,12 +471,16 @@ static void curses_connection_inject(void)
 
 static void inject_user(void) 
 {
+   size_t len;
+
+   /* escape the sequnces in the buffer */
+   len = strescape(injectbuf, injectbuf);
    
    /* check where to inject */
    if (wdg_c1->flags & WDG_OBJ_FOCUSED) {
-      //inject(buf, curr_conn, 1);
+      //inject(injectbuf, len, curr_conn, 1);
    } else if (wdg_c2->flags & WDG_OBJ_FOCUSED) {
-      //inject(buf, curr_conn, 2);
+      //inject(injectbuf, len, curr_conn, 2);
    }
    
    curses_message("INJECT: not yet implemented");
@@ -538,9 +547,9 @@ static void inject_file(char *path, char *file)
 
    /* check where to inject */
    if (wdg_c1->flags & WDG_OBJ_FOCUSED) {
-      //inject(buf, curr_conn, 1);
+      //inject(buf, size, curr_conn, 1);
    } else if (wdg_c2->flags & WDG_OBJ_FOCUSED) {
-      //inject(buf, curr_conn, 2);
+      //inject(buf, size, curr_conn, 2);
    }
 
    close(fd);

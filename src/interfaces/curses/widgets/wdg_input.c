@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_input.c,v 1.5 2003/12/27 18:49:52 alor Exp $
+    $Id: wdg_input.c,v 1.6 2004/02/26 11:07:26 alor Exp $
 */
 
 #include <wdg.h>
@@ -60,7 +60,7 @@ static void wdg_input_form_create(struct wdg_object *wo);
 static void wdg_input_consolidate(struct wdg_object *wo);
 
 void wdg_input_size(wdg_t *wo, size_t x, size_t y);
-void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len);
+void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len, size_t lines);
 void wdg_input_set_callback(wdg_t *wo, void (*callback)(void));
 
 /*******************************************/
@@ -486,7 +486,7 @@ void wdg_input_size(wdg_t *wo, size_t x, size_t y)
 /* 
  * add a field to the form 
  */
-void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len)
+void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len, size_t lines)
 {
    WDG_WO_EXT(struct wdg_input_handle, ww);
    
@@ -505,7 +505,7 @@ void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf
    set_field_fore(ww->fields[ww->nfields - 2], COLOR_PAIR(wo->focus_color));
 
    /* and the modifiable field */
-   ww->fields[ww->nfields - 1] = new_field(1, len, y, x + strlen(caption) + 2, 0, 0);
+   ww->fields[ww->nfields - 1] = new_field(lines, len, y, x + strlen(caption) + 2, 0, 0);
    set_field_back(ww->fields[ww->nfields - 1], A_UNDERLINE);
    field_opts_off(ww->fields[ww->nfields - 1], O_WRAP);
    set_field_buffer(ww->fields[ww->nfields - 1], 0, buf);

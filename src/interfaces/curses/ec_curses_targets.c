@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.9 2004/02/03 16:33:59 alor Exp $
+    $Id: ec_curses_targets.c,v 1.10 2004/02/26 11:07:26 alor Exp $
 */
 
 #include <ec.h>
@@ -138,8 +138,8 @@ static void curses_select_targets(void)
    wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
    wdg_input_size(in, strlen("TARGET1 :") + TARGET_LEN, 4);
-   wdg_input_add(in, 1, 1, "TARGET1 :", GBL_OPTIONS->target1, TARGET_LEN);
-   wdg_input_add(in, 1, 2, "TARGET2 :", GBL_OPTIONS->target2, TARGET_LEN);
+   wdg_input_add(in, 1, 1, "TARGET1 :", GBL_OPTIONS->target1, TARGET_LEN, 1);
+   wdg_input_add(in, 1, 2, "TARGET2 :", GBL_OPTIONS->target2, TARGET_LEN, 1);
    wdg_input_set_callback(in, set_targets);
    
    wdg_draw_object(in);

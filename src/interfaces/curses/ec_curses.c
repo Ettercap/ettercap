@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.37 2004/02/22 12:00:54 alor Exp $
+    $Id: ec_curses.c,v 1.38 2004/02/26 11:07:25 alor Exp $
 */
 
 #include <ec.h>
@@ -230,7 +230,7 @@ static void curses_input(const char *title, char *input, size_t n)
    wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
    wdg_input_size(in, strlen(title) + n, 3);
-   wdg_input_add(in, 1, 1, title, input, n);
+   wdg_input_add(in, 1, 1, title, input, n, 1);
    wdg_draw_object(in);
       
    wdg_set_focus(in);
@@ -251,7 +251,7 @@ void curses_input_call(const char *title, char *input, size_t n, void (*callback
    wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
    wdg_input_size(in, strlen(title) + n, 3);
-   wdg_input_add(in, 1, 1, title, input, n);
+   wdg_input_add(in, 1, 1, title, input, n, 1);
    wdg_input_set_callback(in, callback);
    wdg_draw_object(in);
       
@@ -561,8 +561,8 @@ static void curses_bridged_sniff(void)
    wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
    wdg_input_size(in, strlen("Second network interface :") + IFACE_LEN, 4);
-   wdg_input_add(in, 1, 1, "First network interface  :", GBL_OPTIONS->iface, IFACE_LEN);
-   wdg_input_add(in, 1, 2, "Second network interface :", GBL_OPTIONS->iface_bridge, IFACE_LEN);
+   wdg_input_add(in, 1, 1, "First network interface  :", GBL_OPTIONS->iface, IFACE_LEN, 1);
+   wdg_input_add(in, 1, 2, "Second network interface :", GBL_OPTIONS->iface_bridge, IFACE_LEN, 1);
    wdg_input_set_callback(in, bridged_sniff);
    
    wdg_draw_object(in);

@@ -39,8 +39,6 @@ this is the unofficial and floating in time roadmap:
       - how to code a plugin 
 
    + CURSES GUI
-      - injection panel
-      - extend the input widget
       - regex on the content
       - input for curses_input
       - context sensitive help

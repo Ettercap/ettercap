@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.16 2004/03/14 17:26:28 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.17 2004/03/14 17:55:53 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -109,7 +109,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
 static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct packet_object *po);
 static void sslw_wipe_connection(struct accepted_entry *ae);
 static void sslw_init(void);
-static void sslw_initialize_po(struct packet_object *po);
+static void sslw_initialize_po(struct packet_object *po, u_char *p_data);
 static int sslw_match(void *id_sess, void *id_curr);
 static void sslw_create_session(struct ec_session **s, struct packet_object *po);
 static size_t sslw_create_ident(void **i, struct packet_object *po);            
@@ -345,9 +345,9 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    int len, ret_err;
    
    if (ae->status & SSL_ENABLED)
-      len = SSL_read(ae->ssl[direction], po->DATA.data, GBL_IFACE->mtu);
+      len = SSL_read(ae->ssl[direction], po->DATA.data, 1024);
    else       
-      len = read(ae->fd[direction], po->DATA.data, GBL_IFACE->mtu);
+      len = read(ae->fd[direction], po->DATA.data, 1024);
 
    if (len < 0 && ae->status & SSL_ENABLED) {
       ret_err = SSL_get_error(ae->ssl[direction], len);
@@ -496,7 +496,7 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
 }
 
 
-static void sslw_initialize_po(struct packet_object *po)
+static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
 {
    /* 
     * Allocate the data buffer and initialize 
@@ -504,7 +504,11 @@ static void sslw_initialize_po(struct packet_object *po)
     * XXX - Be sure to not modify these len.
     */
    memset(po, 0, sizeof(struct packet_object));
-   SAFE_CALLOC(po->DATA.data, 1, UINT16_MAX);
+   if (p_data == NULL)
+      SAFE_CALLOC(po->DATA.data, 1, UINT16_MAX);
+   else
+      po->DATA.data = p_data;
+      
    po->L2.header  = po->DATA.data; 
    po->L3.header  = po->DATA.data;
    po->L3.options = po->DATA.data;
@@ -639,12 +643,12 @@ EC_THREAD_FUNC(sslw_child)
 
    /* A fake SYN ACK for profiles */
    /* XXX - Does anyone care about packet len after this point? */
-   sslw_initialize_po(&po);
+   sslw_initialize_po(&po, NULL);
    po.len = 64;
    po.L4.flags = (TH_SYN | TH_ACK);
    packet_disp_data(&po, po.DATA.data, po.DATA.len);
    sslw_parse_packet(ae, SSL_SERVER, &po);
-   sslw_initialize_po(&po);
+   sslw_initialize_po(&po, po.DATA.data);
    
    LOOP {
       data_read = 0;
@@ -661,7 +665,7 @@ EC_THREAD_FUNC(sslw_child)
 
             ret_val = sslw_write_data(ae, !direction, &po);
             BREAK_ON_ERROR(ret_val,ae,po);
-	    sslw_initialize_po(&po);
+	    sslw_initialize_po(&po, po.DATA.data);
          }  
       }
       /* XXX - Set a proper sleep time */

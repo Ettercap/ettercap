@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.23 2003/12/07 18:21:05 alor Exp $
+    $Id: wdg.c,v 1.24 2003/12/08 16:34:16 alor Exp $
 */
 
 #include <wdg.h>
@@ -596,8 +596,11 @@ int wdg_destroy_object(struct wdg_object **wo)
             wdg_root_obj = NULL;
   
          /* it was the focused one */
-         if (wdg_focused_obj && wdg_focused_obj->wo == *wo)
+         if (wdg_focused_obj && wdg_focused_obj->wo == *wo) {
+            /* remove the modal flat to enable the switch */
+            (*wo)->flags &= ~WDG_OBJ_FOCUS_MODAL;
             wdg_switch_focus();
+         }
          
          /* 
           * check if it was the only object in the list

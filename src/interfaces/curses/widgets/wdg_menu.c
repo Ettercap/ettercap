@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.9 2003/11/30 12:02:31 alor Exp $
+    $Id: wdg_menu.c,v 1.10 2003/12/08 16:34:16 alor Exp $
 */
 
 #include <wdg.h>
@@ -272,8 +272,6 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
                wdg_menu_driver(wo, key, mouse);
             else
                wdg_menu_open(wo);
-            /* repaint */
-            wdg_menu_redraw(wo);
          } else
             return -WDG_ENOTHANDLED;
          break;
@@ -281,12 +279,10 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
       case KEY_UP:
          /* move only if focused */
          if (wo->flags & WDG_OBJ_FOCUSED) {
-            /* if the menu is open */
-            if (ww->focus_unit->active)
-               if (wdg_menu_driver(wo, key, mouse) != WDG_ESUCCESS)
-                  wdg_menu_close(wo);
-            /* repaint */
-            wdg_menu_redraw(wo);
+            if (wdg_menu_driver(wo, key, mouse) != WDG_ESUCCESS) {
+               wdg_menu_close(wo);
+               return -WDG_ENOTHANDLED;
+            }
          }  else 
             return -WDG_ENOTHANDLED;
          break;
@@ -480,6 +476,8 @@ static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
       /* execute the callback */
       if (func != NULL)
          func();
+
+      return WDG_ESUCCESS;
    }
 
    /* tring to go outside edges */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.9 2003/12/07 18:21:05 alor Exp $
+    $Id: wdg_file.c,v 1.10 2003/12/08 16:34:16 alor Exp $
 */
 
 #include <wdg.h>
@@ -43,14 +43,12 @@ struct wdg_file_handle {
    ITEM **items;
    size_t nitems;
    size_t nlist;
+   size_t x, y;
    struct dirent **namelist;
    char curpath[PATH_MAX];
    char initpath[PATH_MAX];
    void (*callback)(char *path, char *file);
 };
-
-#define FILE_COLS    50
-#define FILE_LINES   18
 
 /* PROTOS */
 
@@ -98,12 +96,10 @@ void wdg_create_file(struct wdg_object *wo)
     */
    ww = (struct wdg_file_handle *)wo->extend;
    getcwd(ww->initpath, PATH_MAX);
-   
-   /* default dimentions */
-   wo->x1 = (current_screen.cols - FILE_COLS) / 2;
-   wo->y1 = (current_screen.lines - FILE_LINES) / 2;
-   wo->x2 = -wo->x1;
-   wo->y2 = -wo->y1;
+  
+   /* default geometry */
+   ww->x = 50;
+   ww->y = 18;
 }
 
 /* 
@@ -148,15 +144,27 @@ static int wdg_file_resize(struct wdg_object *wo)
 static int wdg_file_redraw(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
-   size_t c = wdg_get_ncols(wo);
-   size_t l = wdg_get_nlines(wo);
-   size_t x = wdg_get_begin_x(wo);
-   size_t y = wdg_get_begin_y(wo);
- 
+   size_t c, l, x, y;
+   
+   /* default dimentions */
+   wo->x1 = (current_screen.cols - ww->x) / 2;
+   wo->y1 = (current_screen.lines - ww->y) / 2;
+   wo->x2 = -wo->x1;
+   wo->y2 = -wo->y1;
+   
+   c = wdg_get_ncols(wo);
+   l = wdg_get_nlines(wo);
+   x = wdg_get_begin_x(wo);
+   y = wdg_get_begin_y(wo);
+
+   /* deal with rouding */
+   if (l != ww->y) l = ww->y;
+   if (c != ww->x) c = ww->x;
+
    /* the window already exist */
    if (ww->win) {
       /* erase the border */
-      wbkgd(ww->win, COLOR_PAIR(wo->window_color));
+      wbkgd(ww->win, COLOR_PAIR(wo->screen_color));
       werase(ww->win);
       /* destroy the file list */ 
       wdg_file_menu_destroy(wo);
@@ -167,6 +175,9 @@ static int wdg_file_redraw(struct wdg_object *wo)
       /* resize the window and draw the new border */
       mvwin(ww->win, y, x);
       wresize(ww->win, l, c);
+
+      wbkgd(ww->win, COLOR_PAIR(wo->window_color));
+      werase(ww->win);
       wdg_file_borders(wo);
       
       /* create the file list */
@@ -490,7 +501,7 @@ static void wdg_file_menu_create(struct wdg_object *wo)
    ww->m = new_menu(ww->items);
 
    /* set the dimensions */
-   set_menu_format(ww->m, FILE_LINES - 1, 1);
+   set_menu_format(ww->m, ww->y - 2, 1);
    set_menu_spacing(ww->m, 2, 0, 0);
 
    /* get the geometry to make a window */
@@ -501,8 +512,7 @@ static void wdg_file_menu_create(struct wdg_object *wo)
     * adapt to the new dimensions
     */
    if (mcols > (int)c - 4) {
-      wo->x1 = (current_screen.cols - (mcols + 4)) / 2;
-      wo->x2 = -wo->x1;
+      ww->x = mcols + 4;
       wdg_file_redraw(wo);
       return;
    }
@@ -539,11 +549,23 @@ static void wdg_file_callback(struct wdg_object *wo, char *path, char *file)
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
    void (*callback)(char *, char *);
-   
+   char *p, *f;
+  
+   /* save the values before destroying the object */
    callback = ww->callback;
+   WDG_SAFE_STRDUP(p, path);
+   WDG_SAFE_STRDUP(f, file);
+  
+   /* destroy the object */
    wdg_destroy_object(&wo);
    wdg_redraw_all();
-   WDG_EXECUTE(callback, path, file);
+   
+   /* call the callback */
+   WDG_EXECUTE(callback, p, f);
+
+   /* free saved data */
+   WDG_SAFE_FREE(f);
+   WDG_SAFE_FREE(p);
 }
 
 /*

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_input.c,v 1.2 2003/12/07 18:21:05 alor Exp $
+    $Id: wdg_input.c,v 1.3 2003/12/08 16:34:16 alor Exp $
 */
 
 #include <wdg.h>
@@ -35,6 +35,7 @@ struct wdg_input_handle {
    WINDOW *fwin;
    FIELD **fields;
    size_t nfields;
+   size_t x, y;
    char **buffers;
    void (*callback)(void);
 };
@@ -130,10 +131,22 @@ static int wdg_input_resize(struct wdg_object *wo)
 static int wdg_input_redraw(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_input_handle, ww);
-   size_t c = wdg_get_ncols(wo);
-   size_t l = wdg_get_nlines(wo);
-   size_t x = wdg_get_begin_x(wo);
-   size_t y = wdg_get_begin_y(wo);
+   size_t c, l, x, y;
+   
+   /* center the window on the screen */
+   wo->x1 = (current_screen.cols - (ww->x + 2)) / 2;
+   wo->y1 = (current_screen.lines - (ww->y + 2)) / 2;
+   wo->x2 = -wo->x1;
+   wo->y2 = -wo->y1;
+   
+   c = wdg_get_ncols(wo);
+   l = wdg_get_nlines(wo);
+   x = wdg_get_begin_x(wo);
+   y = wdg_get_begin_y(wo);
+   
+   /* deal with rouding */
+   if (l != ww->y + 2) l = ww->y + 2;
+   if (c != ww->x + 2) c = ww->x + 2;
  
    /* the window already exist */
    if (ww->win) {
@@ -145,15 +158,15 @@ static int wdg_input_redraw(struct wdg_object *wo)
       
       touchwin(ww->win);
       wnoutrefresh(ww->win);
-     
-      /* set the menu color */
+
+      /* set the form color */
       wbkgd(ww->win, COLOR_PAIR(wo->window_color));
      
-      /* resize the menu */
+      /* resize the window */
       mvwin(ww->win, y, x);
       wresize(ww->win, l, c);
       
-      /* redraw the menu */
+      /* redraw the window */
       wdg_input_borders(wo);
       
       /* create the internal form */
@@ -206,6 +219,8 @@ static int wdg_input_get_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_input_redraw(wo);
    
+   curs_set(TRUE);
+
    return WDG_ESUCCESS;
 }
 
@@ -219,6 +234,8 @@ static int wdg_input_lost_focus(struct wdg_object *wo)
    
    /* redraw the window */
    wdg_input_redraw(wo);
+   
+   curs_set(FALSE);
    
    return WDG_ESUCCESS;
 }
@@ -239,8 +256,9 @@ static int wdg_input_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_ev
             wdg_set_focus(wo);
             /* redraw the menu */
             wdg_input_redraw(wo);
-         } else 
+         } else {
             return -WDG_ENOTHANDLED;
+         }
          break;
       
       case KEY_ESC:
@@ -254,11 +272,12 @@ static int wdg_input_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_ev
          if (wo->flags & WDG_OBJ_FOCUSED) {
             if (wdg_input_driver(wo, key, mouse) != WDG_ESUCCESS)
                wdg_input_redraw(wo);
-         } else
+         } else {
             return -WDG_ENOTHANDLED;
+         }
          break;
    }
-  
+   
    return WDG_ESUCCESS;
 }
 
@@ -356,9 +375,9 @@ static int wdg_input_driver(struct wdg_object *wo, int key, struct wdg_mouse_eve
 {
    WDG_WO_EXT(struct wdg_input_handle, ww);
    int c;
- 
+
    c = form_driver(ww->form, wdg_input_virtualize(wo, key) );
-  
+   
    /* one item has been selected */
    if (c == E_UNKNOWN_COMMAND) {
       /* send a command to the form in order to validate the current field */
@@ -388,7 +407,7 @@ static void wdg_input_form_destroy(struct wdg_object *wo)
    unpost_form(ww->form);
    free_form(ww->form);
    ww->form = NULL;
-
+   delwin(ww->fwin);
 }
 
 /*
@@ -412,16 +431,6 @@ static void wdg_input_form_create(struct wdg_object *wo)
    /* get the geometry to make a window */
    scale_form(ww->form, &mrows, &mcols);
 
-   /* 
-    * if the menu is larger than the main window
-    * adapt to the new dimensions
-    */
-   if (mcols > (int)c - 4) {
-      wo->x1 = (current_screen.cols - (mcols + 4)) / 2;
-      wo->x2 = -wo->x1;
-      wdg_input_redraw(wo);
-      return;
-   }
    /* create the window for the form */
    ww->fwin = newwin(mrows, MAX(mcols, (int)c - 4), y + 1, x + 2);
    /* set the color */
@@ -446,6 +455,14 @@ static void wdg_input_form_create(struct wdg_object *wo)
  */
 void wdg_input_size(wdg_t *wo, size_t x, size_t y)
 {
+   WDG_WO_EXT(struct wdg_input_handle, ww);
+
+   /* add 2 for the space between the label and the field
+    * add 2 for the borders 
+    */
+   ww->x = x + 2 + 4;
+   ww->y = y;
+   
    /* center the window on the screen */
    wo->x1 = (current_screen.cols - (x + 2)) / 2;
    wo->y1 = (current_screen.lines - (y + 2)) / 2;

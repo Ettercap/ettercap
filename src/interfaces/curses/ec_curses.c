@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.22 2003/12/07 18:21:05 alor Exp $
+    $Id: ec_curses.c,v 1.23 2003/12/08 16:34:08 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 
 #include <ec_curses.h>
 #include <ec_capture.h>
+#include <ec_log.h>
 
 /* globals */
 
@@ -32,6 +33,8 @@ static wdg_t *sysmsg_win;
 static char tag_unoff[] = " ";
 static char tag_promisc[] = "*";
 static char tag_compress[] = " ";
+
+static char *logfile;
 
 /* proto */
 
@@ -60,7 +63,14 @@ static void write_pcapfile(void);
 static void curses_unified_sniff(void);
 static void curses_bridged_sniff(void);
 static void bridged_sniff(void);
+static void curses_pcap_filter(void);
 
+static void curses_log_all(void);
+static void log_all(void);
+static void curses_log_info(void);
+static void log_info(void);
+static void curses_log_msg(void);
+static void log_msg(void);
 
 /*******************************************/
 
@@ -319,35 +329,35 @@ static void curses_setup(void)
 {
    wdg_t *menu;
    
-   struct wdg_menu file[] = { {"File", "F", NULL},
-                              {"Open...", "", curses_file_open},
+   struct wdg_menu file[] = { {"File",     "F", NULL},
+                              {"Open...",  "", curses_file_open},
                               {"Write...", "", curses_file_write},
-                              {"-", "", NULL},
-                              {"Exit", "", curses_exit},
+                              {"-",        "", NULL},
+                              {"Exit",     "", curses_exit},
                               {NULL, NULL, NULL},
                             };
    
-   struct wdg_menu live[] = { {"Sniff", "S", NULL},
+   struct wdg_menu live[] = { {"Sniff",              "S", NULL},
                               {"Unified sniffing...", "", curses_unified_sniff},
                               {"Bridged sniffing...", "", curses_bridged_sniff},
-                              {"-", "", NULL},
-                              {"Set pcap filter...", "", NULL},
+                              {"-",                   "", NULL},
+                              {"Set pcap filter...",  "", curses_pcap_filter},
                               {NULL, NULL, NULL},
                             };
    
-   struct wdg_menu options[] = { {"Options", "O", NULL},
-                                 {"Unoffensive", tag_unoff, toggle_unoffensive},
+   struct wdg_menu options[] = { {"Options",      "O",         NULL},
+                                 {"Unoffensive",  tag_unoff,   toggle_unoffensive},
                                  {"Promisc mode", tag_promisc, toggle_nopromisc},
                                  {NULL, NULL, NULL},
                                };
    
-   struct wdg_menu logging[] = { {"Logging", "L", NULL},
-                                 {"Log all packets and infos...", "", NULL},
-                                 {"Log only infos...", "", NULL},
-                                 {"-", "", NULL},
-                                 {"Log user messages...", "", NULL},
-                                 {"-", "", NULL},
-                                 {"Compressed file", tag_compress, toggle_compress},
+   struct wdg_menu logging[] = { {"Logging",                     "L", NULL},
+                                 {"Log all packets and infos...", "", curses_log_all},
+                                 {"Log only infos...",            "", curses_log_info},
+                                 {"-",                            "", NULL},
+                                 {"Log user messages...",         "", curses_log_msg},
+                                 {"-",                            "", NULL},
+                                 {"Compressed file",    tag_compress, toggle_compress},
                                  {NULL, NULL, NULL},
                                };
    
@@ -542,7 +552,7 @@ static void curses_bridged_sniff(void)
    wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, strlen("Second network interface :") + IFACE_LEN, 5);
+   wdg_input_size(in, strlen("Second network interface :") + IFACE_LEN, 4);
    wdg_input_add(in, 1, 1, "First network interface  :", GBL_OPTIONS->iface, IFACE_LEN);
    wdg_input_add(in, 1, 2, "Second network interface :", GBL_OPTIONS->iface_bridge, IFACE_LEN);
    /* calling wdg_exit will go to the next interface :) */
@@ -558,6 +568,136 @@ static void bridged_sniff(void)
    set_bridge_sniff();
    
    wdg_exit();
+}
+
+/*
+ * display the pcap filter dialog
+ */
+static void curses_pcap_filter(void)
+{
+   wdg_t *in;
+   
+#define PCAP_FILTER_LEN  50
+   
+   DEBUG_MSG("curses_pcap_filter");
+   
+   SAFE_CALLOC(GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
+
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, strlen("Pcap filter :") + PCAP_FILTER_LEN, 3);
+   wdg_input_add(in, 1, 1, "Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN);
+   /* 
+    * no callback, the filter is set but we have to return to
+    * the interface for other user input
+    */
+   wdg_input_set_callback(in, NULL);
+   
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+}
+
+/*
+ * display the log dialog 
+ */
+static void curses_log_all(void)
+{
+   wdg_t *in;
+   
+   DEBUG_MSG("curses_log_all");
+
+   /* make sure to free if already set */
+   SAFE_FREE(logfile);
+   SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
+
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, strlen("Output File :") + FILE_LEN, 3);
+   wdg_input_add(in, 1, 1, "Output File :", logfile, FILE_LEN);
+   wdg_input_set_callback(in, log_all);
+   
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+}
+
+static void log_all(void)
+{
+   set_loglevel(LOG_PACKET, logfile);
+   SAFE_FREE(logfile);
+}
+
+/*
+ * display the log dialog 
+ */
+static void curses_log_info(void)
+{
+   wdg_t *in;
+   
+   DEBUG_MSG("curses_log_info");
+
+   /* make sure to free if already set */
+   SAFE_FREE(logfile);
+   SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
+
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, strlen("Output File :") + FILE_LEN, 3);
+   wdg_input_add(in, 1, 1, "Output File :", logfile, FILE_LEN);
+   wdg_input_set_callback(in, log_info);
+   
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+}
+
+static void log_info(void)
+{
+   set_loglevel(LOG_INFO, logfile);
+   SAFE_FREE(logfile);
+}
+
+/*
+ * display the log dialog 
+ */
+static void curses_log_msg(void)
+{
+   wdg_t *in;
+   
+   DEBUG_MSG("curses_log_msg");
+
+   /* make sure to free if already set */
+   SAFE_FREE(logfile);
+   SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
+
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, strlen("Output File :") + FILE_LEN, 3);
+   wdg_input_add(in, 1, 1, "Output File :", logfile, FILE_LEN);
+   wdg_input_set_callback(in, log_msg);
+   
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+}
+
+static void log_msg(void)
+{
+   set_msg_loglevel(LOG_TRUE, logfile);
+   SAFE_FREE(logfile);
 }
 
 /* EOF */

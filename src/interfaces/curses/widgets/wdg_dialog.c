@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dialog.c,v 1.3 2003/11/27 21:37:07 alor Exp $
+    $Id: wdg_dialog.c,v 1.4 2003/12/08 16:34:16 alor Exp $
 */
 
 #include <wdg.h>
@@ -158,6 +158,10 @@ static int wdg_dialog_redraw(struct wdg_object *wo)
    l = wdg_get_nlines(wo);
    x = wdg_get_begin_x(wo);
    y = wdg_get_begin_y(wo);
+   
+   /* deal with rouding */
+   if (l != lines + 4) l = lines + 4;
+   if (c != cols + 4) c = cols + 4;
  
    /* the window already exist */
    if (ww->win) {

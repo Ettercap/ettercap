@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.18 2004/03/05 14:50:43 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.19 2004/03/07 14:38:40 alor Exp $
 */
 
 #include <ec.h>
@@ -692,6 +692,12 @@ static void gtkui_data_print(int buffer, char *data, int color)
 static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
 {
    int ret;
+   
+   /* check the regex filter */
+   if (GBL_OPTIONS->regex && 
+       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+      return;
+   }
 
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
@@ -713,6 +719,12 @@ static void split_print_po(struct packet_object *po)
    /* if not open don't refresh it */
    if (!data_window)
       return;
+   
+   /* check the regex filter */
+   if (GBL_OPTIONS->regex && 
+       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+      return;
+   }
    
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
@@ -822,6 +834,12 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
 {
    int ret;
    
+   /* check the regex filter */
+   if (GBL_OPTIONS->regex && 
+       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+      return;
+   }
+   
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
    
@@ -842,6 +860,12 @@ static void join_print_po(struct packet_object *po)
    /* if not focused don't refresh it */
    if (!data_window)
       return;
+   
+   /* check the regex filter */
+   if (GBL_OPTIONS->regex && 
+       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+      return;
+   }
    
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);

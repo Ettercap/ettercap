@@ -32,7 +32,6 @@ this is the unofficial and floating in time roadmap:
       - how to code a plugin 
 
    + CURSES GUI
-      - regex on the content
       - context sensitive help
 
    + DISSECTORS

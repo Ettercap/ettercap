@@ -17,18 +17,21 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view.c,v 1.6 2004/03/04 12:59:10 daten Exp $
+    $Id: ec_gtk_view.c,v 1.7 2004/03/07 14:38:40 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_gtk.h>
 #include <ec_format.h>
+#include <ec_parser.h>
 
 /* proto */
 
 void gtkui_show_stats(void);
 void toggle_resolve(void);
 void gtkui_vis_method(void);
+void gtkui_vis_regex(void);
+static void gtkui_set_regex(void);
 
 static void gtkui_stop_stats(void);
 static void gtkui_stats_detach(GtkWidget *child);
@@ -42,6 +45,8 @@ extern void gtkui_show_connections(void);
 
 #define VLEN 8
 static char vmethod[VLEN] = "ascii";
+#define RLEN 50
+static char vregex[RLEN];
 static guint stats_idle; /* for removing the idle call */
 /* for stats window */
 static GtkWidget *stats_window, *packets_recv, *packets_drop, *packets_forw, 
@@ -363,6 +368,21 @@ void gtkui_vis_method(void)
    }
 
    gtk_widget_destroy(dialog);
+}
+
+/*
+ * set the visualization regex 
+ */
+void gtkui_vis_regex(void)
+{
+   DEBUG_MSG("gtk_vis_regex");
+
+   gtkui_input("Visualization regex :", vregex, RLEN, gtkui_set_regex);
+}
+
+static void gtkui_set_regex(void)
+{
+   set_regex(vregex);
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.10 2004/03/05 13:10:22 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.11 2004/03/07 14:38:40 alor Exp $
 */
 
 #include <ec.h>
@@ -286,6 +286,12 @@ static void curses_destroy_conndata(void)
 static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
 {
    int ret;
+   
+   /* check the regex filter */
+   if (GBL_OPTIONS->regex && 
+       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+      return;
+   }
 
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
@@ -308,6 +314,12 @@ static void split_print_po(struct packet_object *po)
    /* if not focused don't refresh it */
    if (!(wdg_conndata->flags & WDG_OBJ_FOCUSED))
       return;
+   
+   /* check the regex filter */
+   if (GBL_OPTIONS->regex && 
+       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+      return;
+   }
    
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
@@ -384,6 +396,12 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
 {
    int ret;
    
+   /* check the regex filter */
+   if (GBL_OPTIONS->regex && 
+       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+      return;
+   }
+   
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
    
@@ -404,6 +422,12 @@ static void join_print_po(struct packet_object *po)
    /* if not focused don't refresh it */
    if (!(wdg_conndata->flags & WDG_OBJ_FOCUSED))
       return;
+   
+   /* check the regex filter */
+   if (GBL_OPTIONS->regex && 
+       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+      return;
+   }
    
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);

@@ -71,6 +71,8 @@ NG-0.7.0    ????????
       + mouse event are supported
       + customizable colors
       + completely new menu-driven interface
+   + totally redesigne GTK+ interface
+   + you can filter set a visualization regexp
    + profiles can be dumped to a file
    + A lot of new bugs^H^H^H^H random features to be discovered ;)
    !! offline sniffing actually does not bind to any NICs

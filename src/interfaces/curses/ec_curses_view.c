@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.18 2004/02/29 17:37:21 alor Exp $
+    $Id: ec_curses_view.c,v 1.19 2004/03/07 14:38:40 alor Exp $
 */
 
 #include <ec.h>
 #include <wdg.h>
 #include <ec_curses.h>
 #include <ec_format.h>
+#include <ec_parser.h>
 
 /* proto */
 
@@ -32,7 +33,9 @@ static void curses_show_stats(void);
 static void curses_stop_stats(void);
 static void refresh_stats(void);
 static void curses_vis_method(void);
-static void set_method(void);
+static void curses_set_method(void);
+static void curses_vis_regex(void);
+static void curses_set_regex(void);
 extern void curses_show_profiles(void);
 extern void curses_show_connections(void);
 
@@ -42,6 +45,8 @@ static char tag_resolve[] = " ";
 static wdg_t *wdg_stats;
 #define VLEN 8
 static char vmethod[VLEN];
+#define RLEN 50
+static char vregex[RLEN];
 
 struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
                                 {"Connections",          'C', "C", curses_show_connections},
@@ -50,6 +55,7 @@ struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
                                 {"-",                     0,  "",  NULL},
                                 {"Resolve IP addresses",  0, tag_resolve,   toggle_resolve},
                                 {"Visualization method...", 'v', "v", curses_vis_method},
+                                {"Visualization regex...", 'r', "r", curses_vis_regex},
                                 {NULL, 0, NULL, NULL},
                               };
 
@@ -152,14 +158,28 @@ static void curses_vis_method(void)
 {
    DEBUG_MSG("curses_vis_method");
 
-   curses_input("Visualization method :", vmethod, VLEN, set_method);
+   curses_input("Visualization method :", vmethod, VLEN, curses_set_method);
 }
 
-static void set_method(void)
+static void curses_set_method(void)
 {
    set_format(vmethod);
 }
 
+/*
+ * change the visualization regex 
+ */
+static void curses_vis_regex(void)
+{
+   DEBUG_MSG("curses_vis_regex");
+
+   curses_input("Visualization regex :", vregex, RLEN, curses_set_regex);
+}
+
+static void curses_set_regex(void)
+{
+   set_regex(vregex);
+}
 
 /* EOF */
 

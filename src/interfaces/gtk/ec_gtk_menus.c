@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.6 2004/03/02 20:53:01 daten Exp $
+    $Id: ec_gtk_menus.c,v 1.7 2004/03/07 14:38:40 alor Exp $
 */
 
 #include <ec.h>
@@ -60,7 +60,8 @@ GtkItemFactoryEntry gmenu_view[] = {
    {"/View/_Statistics",              "s", gtkui_show_stats,       0, "<StockItem>", GTK_STOCK_PROPERTIES },
    {"/View/sep1",                    NULL, NULL,                   0, "<Separator>" },
    {"/View/Resolve IP addresses",    NULL, toggle_resolve,         0, "<ToggleItem>" },
-   {"/View/_Visualization method...", "v", gtkui_vis_method,       0, "<StockItem>", GTK_STOCK_PREFERENCES }
+   {"/View/_Visualization method...", "v", gtkui_vis_method,       0, "<StockItem>", GTK_STOCK_PREFERENCES },
+   {"/View/Visualization _regex...",  "r", gtkui_vis_regex,        0, "<StockItem>", GTK_STOCK_FIND }
 };
 
 GtkItemFactoryEntry gmenu_mitm[] = {

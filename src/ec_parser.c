@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.57 2004/02/22 12:00:53 alor Exp $
+    $Id: ec_parser.c,v 1.58 2004/03/07 14:38:40 alor Exp $
 */
 
 
@@ -86,7 +86,7 @@ void ec_usage(void)
    fprintf(stdout, "\nVisualization options:\n");
    fprintf(stdout, "  -d, --dns                   resolves ip addresses into hostnames\n");
    fprintf(stdout, "  -V, --visual <format>       set the visualization format\n");
-   fprintf(stdout, "  -e, --regex <regex>         handle only packets matching this regex\n");
+   fprintf(stdout, "  -e, --regex <regex>         visualize only packets matching this regex\n");
    fprintf(stdout, "  -E, --ext-headers           print extended header for every pck\n");
    fprintf(stdout, "  -Q, --superquiet            do not display user and password\n");
    
@@ -497,6 +497,12 @@ int set_regex(char *regex)
    /* free any previous compilation */
    if (GBL_OPTIONS->regex)
       regfree(GBL_OPTIONS->regex);
+
+   /* unset the regex if empty */
+   if (!strcmp(regex, "")) {
+      SAFE_FREE(GBL_OPTIONS->regex);
+      return ESUCCESS;
+   }
   
    /* allocate the new structure */
    SAFE_CALLOC(GBL_OPTIONS->regex, 1, sizeof(regex_t));

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.34 2004/04/29 09:28:34 alor Exp $
+    $Id: ec_conf.c,v 1.35 2004/06/08 09:54:03 alor Exp $
 */
 
 #include <ec.h>
@@ -221,7 +221,7 @@ void load_conf(void)
 {
    FILE *fc;
    char line[128];
-   char *p, **tmp;
+   char *p, *q, **tmp;
    int lineno = 0;
    struct conf_entry *curr_section = NULL;
    void *value = NULL;
@@ -230,10 +230,17 @@ void load_conf(void)
    init_structures();
    
    DEBUG_MSG("load_conf");
-   
-   /* errors are handled by the function */
-   fc = open_data("etc", ETTER_CONF, FOPEN_READ_TEXT);
-   ON_ERROR(fc, NULL, "Cannot open %s", ETTER_CONF);
+  
+   /* the user has specified an alternative config file */
+   if (GBL_CONF->file) {
+      DEBUG_MSG("load_conf: alternative config: %s", GBL_CONF->file);
+      fc = fopen(GBL_CONF->file, FOPEN_READ_TEXT);
+      ON_ERROR(fc, NULL, "Cannot open %s", GBL_CONF->file);
+   } else {
+      /* errors are handled by the function */
+      fc = open_data("etc", ETTER_CONF, FOPEN_READ_TEXT);
+      ON_ERROR(fc, NULL, "Cannot open %s", ETTER_CONF);
+   }
   
    /* read the file */
    while (fgets(line, 128, fc) != 0) {
@@ -249,12 +256,18 @@ void load_conf(void)
       if ((p = strchr(line, '\n')))
          *p = '\0';
 
+      q = line;
+      
+      /* trim the initial spaces */
+      while (q < line + sizeof(line) && *q == ' ')
+         q++;
+      
       /* skip empty lines */
-      if (line[0] == '\0' || line[0] == ' ')
+      if (line[0] == '\0' || *q == '\0')
          continue;
-
+      
       /* here starts a new section [...] */
-      if (line[0] == '[') {
+      if (*q == '[') {
          
          /* remove the square brackets */
          if ((p = strchr(line, ']')))
@@ -262,7 +275,7 @@ void load_conf(void)
          else
             FATAL_ERROR("Missing ] in %s line %d", ETTER_CONF, lineno);
          
-         p = line + 1;
+         p = q + 1;
          
          DEBUG_MSG("load_conf: SECTION: %s", p);
 
@@ -279,11 +292,12 @@ void load_conf(void)
          FATAL_ERROR("Entry outside a section in %s line %d", ETTER_CONF, lineno);
       
       /* sanity check */
-      if (!strchr(line, '='))
+      if (!strchr(q, '='))
          FATAL_ERROR("Parse error %s line %d", ETTER_CONF, lineno);
       
-      /* remove the spaces or '=' */
-      p = line;
+      p = q;
+
+      /* split the entry name from the value */
       do {
          if (*p == ' ' || *p == '='){
             *p = '\0';
@@ -303,12 +317,12 @@ void load_conf(void)
        * do it in a different way
        */
       if (curr_section == (struct conf_entry *)&dissectors) {
-         set_dissector(line, p, lineno);
+         set_dissector(q, p, lineno);
          continue;
       }
-      
+     
       /* search the entry name */
-      if ( (value = search_entry(curr_section, line)) == NULL)
+      if ( (value = search_entry(curr_section, q)) == NULL)
          FATAL_ERROR("Invalid entry in %s line %d", ETTER_CONF, lineno);
    
       /* strings must be handled in a different way */
@@ -328,13 +342,12 @@ void load_conf(void)
                *p = 0;
          } while (p++ < *tmp + strlen(*tmp) );
          
-         DEBUG_MSG("load_conf: \tENTRY: %s  [%s]", line, *tmp);
+         DEBUG_MSG("load_conf: \tENTRY: %s  [%s]", q, *tmp);
       } else {
          /* set the integer value */ 
          *(int *)value = strtol(p, (char **)NULL, 10);
-         DEBUG_MSG("load_conf: \tENTRY: %s  %d", line, *(int *)value);
+         DEBUG_MSG("load_conf: \tENTRY: %s  %d", q, *(int *)value);
       }
-
    }
   
    fclose(fc);

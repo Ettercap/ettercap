@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.60 2004/05/12 15:27:04 alor Exp $ */
+/* $Id: ec_globals.h,v 1.61 2004/06/08 09:54:03 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -16,6 +16,7 @@
 
 /* options form etter.conf */
 struct ec_conf {
+   char *file;
    int ec_uid;
    int ec_gid;
    int arp_storm_delay;

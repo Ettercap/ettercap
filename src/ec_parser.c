@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.62 2004/05/27 10:59:52 alor Exp $
+    $Id: ec_parser.c,v 1.63 2004/06/08 09:54:03 alor Exp $
 */
 
 
@@ -101,7 +101,8 @@ void ec_usage(void)
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
-   fprintf(stdout, "  -W, --wep-key <n:key>       use this wep key to decrypt wifi packets\n");
+   fprintf(stdout, "  -W, --wep-key <wkey>        use this wep key to decrypt wifi packets\n");
+   fprintf(stdout, "  -a, --config <config>       use the alterative config file <config>\n");
    
    fprintf(stdout, "\nStandard options:\n");
    fprintf(stdout, "  -U, --update                updates the databases from ettercap website\n");
@@ -143,6 +144,7 @@ void parse_options(int argc, char **argv)
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
       { "wep-key", required_argument, NULL, 'W' },
+      { "config", required_argument, NULL, 'a' },
       
       { "dns", no_argument, NULL, 'd' },
       { "regex", required_argument, NULL, 'e' },
@@ -180,7 +182,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:oP:pQqiRr:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:oP:pQqiRr:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -332,6 +334,10 @@ void parse_options(int argc, char **argv)
                   
          case 'W':
                   set_wep_key(optarg);
+                  break;
+                  
+         case 'a':
+                  GBL_CONF->file = strdup(optarg);
                   break;
          
          case 'U':

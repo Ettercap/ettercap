@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.89 2004/01/06 15:03:14 alor Exp $
+dnl    $Id: configure.in,v 1.90 2004/01/10 13:34:50 lordnaga Exp $
 dnl
 
 AC_INIT
@@ -784,7 +784,8 @@ AC_CONFIG_FILES(  Makefile
                   plug-ins/scan_poisoner/Makefile
                   plug-ins/search_promisc/Makefile
                   plug-ins/smb_clear/Makefile
-                  plug-ins/smb_down/Makefile)
+                  plug-ins/smb_down/Makefile
+                  plug-ins/stp_mangler/Makefile)
 
 AC_OUTPUT
 

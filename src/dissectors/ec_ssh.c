@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.10 2003/10/21 14:35:22 lordnaga Exp $
+    $Id: ec_ssh.c,v 1.11 2003/10/25 16:45:37 alor Exp $
 */
 
 #include <ec.h>
@@ -54,36 +54,35 @@ typedef struct {
 
 /* Session Key data */
 typedef struct {
-    RSA *serverkey;
-    RSA *hostkey;
-    ssh_my_key *ptrkey;
-    void *key_state[2];
-    struct stream_buf data_buffer[2];
-#define MAX_USER_LEN 28
-    u_char user[MAX_USER_LEN+1];
-    u_char status;
-#define WAITING_CLIENT_BANNER 1
-#define WAITING_PUBLIC_KEY 2
-#define WAITING_SESSION_KEY 3
-#define WAITING_ENCRYPTED_PCK 4
+   RSA *serverkey;
+   RSA *hostkey;
+   ssh_my_key *ptrkey;
+   void *key_state[2];
+   struct stream_buf data_buffer[2];
+      #define MAX_USER_LEN 64
+   u_char user[MAX_USER_LEN + 1];
+   u_char status;
+      #define WAITING_CLIENT_BANNER 1
+      #define WAITING_PUBLIC_KEY    2
+      #define WAITING_SESSION_KEY   3
+      #define WAITING_ENCRYPTED_PCK 4
    u_char compression_status;
-#define  NO_COMPRESSION 0
-#define  COMPRESSION_REQUEST 1
-#define  COMPRESSION_ON 2
+      #define  NO_COMPRESSION       0
+      #define  COMPRESSION_REQUEST  1
+      #define  COMPRESSION_ON       2
 } ssh_session_data;
 
 struct des3_state
 {
-   des_key_schedule        k1, k2, k3;
-   des_cblock              iv1, iv2, iv3;
+   des_key_schedule k1, k2, k3;
+   des_cblock iv1, iv2, iv3;
 };
 
 
 /* globals */
 
 /* Pointer to our RSA key list */
-ssh_my_key *ssh_conn_key=NULL;
-
+ssh_my_key *ssh_conn_key = NULL;
 
 /* protos */
 
@@ -125,7 +124,7 @@ FUNC_DECODER(dissector_ssh)
 
    dissect_create_ident(&ident, PACKET);
    
-   /* Is this a brand new session?.
+   /* Is this a brand new session ?
     * If the aggressive dissectors are 
     * off performs only banner catching.
     */
@@ -154,7 +153,7 @@ FUNC_DECODER(dissector_ssh)
       
       /* If we are ready to decrypt packets */
       if (session_data->status == WAITING_ENCRYPTED_PCK) {
-         u_char direction, *crypted_packet=NULL, *clear_packet=NULL;
+         u_char direction, *crypted_packet = NULL, *clear_packet = NULL;
          u_int32 data_len;
 	 
          /* Check what key and stream buffer we have to use */	 
@@ -183,7 +182,7 @@ FUNC_DECODER(dissector_ssh)
             SAFE_CALLOC(clear_packet, ssh_len + ssh_mod, 1);
 	        
             /* Decrypt the packet (jumping over pck len) using correct key */
-            des3_decrypt(crypted_packet+4, clear_packet, ssh_len + ssh_mod, session_data->key_state[direction]);
+            des3_decrypt(crypted_packet + 4, clear_packet, ssh_len + ssh_mod, session_data->key_state[direction]);
 
             if (session_data->compression_status == COMPRESSION_ON) {
                /* XXX Handle compressed packets */ 
@@ -196,15 +195,18 @@ FUNC_DECODER(dissector_ssh)
 
             /* Catch data len and slide to the payload */
             data_len = pntol(ptr);
-            ptr+=4;
+            ptr += 4;
 
-            if (ssh_packet_type==CMSG_USER) { /* USER */
+            /* USER */
+            if (ssh_packet_type == CMSG_USER) {
                DEBUG_MSG("\tDissector_ssh USER");
                /* User will always be NULL terminated 
                 * (it's calloc'd MAX_USER_LEN + 1)
                 */
                 memcpy(session_data->user, ptr, (data_len>MAX_USER_LEN) ? MAX_USER_LEN : data_len);
-            } else if (ssh_packet_type==CMSG_AUTH_PASSWORD) { /* AUTH_PASSWORD */
+                
+            /* AUTH_PASSWORD */    
+            } else if (ssh_packet_type == CMSG_AUTH_PASSWORD) {
                DEBUG_MSG("\tDissector_ssh PASS");
                /* avoid bof */
                if (data_len > MAX_USER_LEN) {
@@ -212,8 +214,8 @@ FUNC_DECODER(dissector_ssh)
                   SAFE_FREE(crypted_packet);
                   return NULL;
                }
-               if (data_len > 0) {	              
-                  SAFE_CALLOC(PACKET->DISSECTOR.pass, data_len+1, 1);	    
+               if (data_len > 0) {
+                  SAFE_CALLOC(PACKET->DISSECTOR.pass, data_len + 1, 1);	    
                   memcpy(PACKET->DISSECTOR.pass, ptr, data_len);
                } else
                   PACKET->DISSECTOR.pass = strdup("(empty)");
@@ -224,7 +226,7 @@ FUNC_DECODER(dissector_ssh)
                                                                PACKET->DISSECTOR.user,
                                                                PACKET->DISSECTOR.pass);
 
-            } else if (ssh_packet_type==CMSG_AUTH_RHOSTS) {
+            } else if (ssh_packet_type == CMSG_AUTH_RHOSTS) {
                DEBUG_MSG("\tDissector_ssh RHOSTS");
                PACKET->DISSECTOR.user = strdup(session_data->user);
                /* XXX Do we need to catch more infos from this kind of packet? */
@@ -233,7 +235,7 @@ FUNC_DECODER(dissector_ssh)
                                                          ntohs(PACKET->L4.dst),
                                                          PACKET->DISSECTOR.user,
                                                          PACKET->DISSECTOR.pass);
-            } else if (ssh_packet_type==CMSG_AUTH_RSA) {
+            } else if (ssh_packet_type == CMSG_AUTH_RSA) {
                DEBUG_MSG("\tDissector_ssh RSA AUTH");
                PACKET->DISSECTOR.user = strdup(session_data->user);
                PACKET->DISSECTOR.pass = strdup("RSA-AUTH\n");
@@ -241,20 +243,24 @@ FUNC_DECODER(dissector_ssh)
                                                          ntohs(PACKET->L4.dst),
                                                          PACKET->DISSECTOR.user,
                                                          PACKET->DISSECTOR.pass);
-            } else if (ssh_packet_type==CMSG_REQUEST_COMPRESSION) {
+               
+            } else if (ssh_packet_type == CMSG_REQUEST_COMPRESSION) {
+               
                session_data->compression_status = COMPRESSION_REQUEST;
+               
             } else if (session_data->compression_status == COMPRESSION_REQUEST) {
-               if (ssh_packet_type==SMSG_SUCCESS) {
+               
+               if (ssh_packet_type == SMSG_SUCCESS) {
                   session_data->compression_status = COMPRESSION_ON;
                   /* XXX We should notify top half */
                }
-               if (ssh_packet_type==SMSG_FAILURE)
+               if (ssh_packet_type == SMSG_FAILURE)
                   session_data->compression_status = NO_COMPRESSION;
             }
 	    
             /* These are readable packets so copy it in the DISPDATA */
             if ((ssh_packet_type>=CMSG_STDIN_DATA && ssh_packet_type<=SMSG_STDERR_DATA) ||
-                 ssh_packet_type==4 || ssh_packet_type==9) {
+                 ssh_packet_type == 4 || ssh_packet_type == 9) {
                u_char *temp_disp_data;
 
                /* Avoid int overflow or bogus data_len (realloc is too optimistic) */
@@ -317,13 +323,13 @@ FUNC_DECODER(dissector_ssh)
           * if the server sends the public key twice we have 
           * to replace both. 
           */	  
-         if ((session_data->status==WAITING_PUBLIC_KEY ||  session_data->status==WAITING_SESSION_KEY) && ssh_packet_type==SMSG_PUBLIC_KEY) {
+         if ((session_data->status == WAITING_PUBLIC_KEY || session_data->status == WAITING_SESSION_KEY) && ssh_packet_type == SMSG_PUBLIC_KEY) {
             ssh_my_key **index_ssl;
             u_int32 server_mod, host_mod;
  
             /* Remember where to put the key */
-            ptr+=8; 
-            key_to_put=ptr;
+            ptr += 8; 
+            key_to_put = ptr;
 	    
             /* If it's the first time we catch the public key */
             if (session_data->ptrkey == NULL) { 
@@ -355,7 +361,7 @@ FUNC_DECODER(dissector_ssh)
 
                /* Check if we already have a suitable RSA key to substitute */
                index_ssl = &ssh_conn_key;
-               while(*index_ssl != NULL && ( (*index_ssl)->server_mod!=server_mod || (*index_ssl)->host_mod!=host_mod))
+               while(*index_ssl != NULL && ( (*index_ssl)->server_mod != server_mod || (*index_ssl)->host_mod != host_mod))
                   index_ssl = (ssh_my_key **)&((*index_ssl)->next);
 
                /* ...otherwise generate it */
@@ -363,12 +369,12 @@ FUNC_DECODER(dissector_ssh)
                   SAFE_CALLOC(*index_ssl, 1, sizeof(ssh_my_key));
 
                   /* Generate the new key */
-                  (*index_ssl)->myserverkey=(RSA *)RSA_generate_key(server_mod, 35, NULL, NULL);
-                  (*index_ssl)->myhostkey=(RSA *)RSA_generate_key(host_mod, 35, NULL, NULL);
-                  (*index_ssl)->server_mod=server_mod;
-                  (*index_ssl)->host_mod=host_mod;
+                  (*index_ssl)->myserverkey = (RSA *)RSA_generate_key(server_mod, 35, NULL, NULL);
+                  (*index_ssl)->myhostkey = (RSA *)RSA_generate_key(host_mod, 35, NULL, NULL);
+                  (*index_ssl)->server_mod = server_mod;
+                  (*index_ssl)->host_mod = host_mod;
                   (*index_ssl)->next = NULL;
-                  if ((*index_ssl)->myserverkey==NULL || (*index_ssl)->myhostkey==NULL) {
+                  if ((*index_ssl)->myserverkey == NULL || (*index_ssl)->myhostkey == NULL) {
                      SAFE_FREE(*index_ssl);
                      return NULL;
                   }
@@ -395,14 +401,14 @@ FUNC_DECODER(dissector_ssh)
             session_data->status = WAITING_SESSION_KEY;
          }	 
       } else { /* Client Packets */
-         if (session_data->status==WAITING_CLIENT_BANNER) {
+         if (session_data->status == WAITING_CLIENT_BANNER) {
             /* Client Banner */
             if (!memcmp(PACKET->DATA.data,"SSH-2",5)) {
                DEBUG_MSG("Dissector_ssh SSHv2");
                dissect_wipe_session(PACKET);
             } else
-               session_data->status=WAITING_PUBLIC_KEY;
-         } else if (session_data->status==WAITING_SESSION_KEY && ssh_packet_type==CMSG_SESSION_KEY) {
+               session_data->status = WAITING_PUBLIC_KEY;
+         } else if (session_data->status == WAITING_SESSION_KEY && ssh_packet_type == CMSG_SESSION_KEY) {
             /* Ready to catch and modify SESSION_KEY */
             u_char cookie[8], sesskey[32], session_id1[16], session_id2[16];
             u_char *temp_session_id;
@@ -411,14 +417,14 @@ FUNC_DECODER(dissector_ssh)
 
             /* Get the cookie */
             memcpy(cookie, ++ptr, 8);
-            ptr+=8; 
-            key_to_put=ptr;
+            ptr += 8; 
+            key_to_put = ptr;
 
             /* Calculate real session id and our fake session id */
-            temp_session_id=ssh_session_id(cookie, session_data->hostkey->n,session_data->serverkey->n);
+            temp_session_id = ssh_session_id(cookie, session_data->hostkey->n, session_data->serverkey->n);
             if (temp_session_id)
                memcpy(session_id1, temp_session_id, 16);
-            temp_session_id=ssh_session_id(cookie, session_data->ptrkey->myhostkey->n,session_data->ptrkey->myserverkey->n);
+            temp_session_id=ssh_session_id(cookie, session_data->ptrkey->myhostkey->n, session_data->ptrkey->myserverkey->n);
             if (temp_session_id)
                memcpy(session_id2, temp_session_id, 16);
 

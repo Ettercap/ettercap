@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp.c,v 1.9 2003/09/18 22:15:04 alor Exp $
+    $Id: ec_arp.c,v 1.10 2003/10/12 13:03:37 alor Exp $
 */
 
 #include <ec.h>
@@ -94,6 +94,14 @@ FUNC_DECODER(decode_arp)
       ip_addr_init(&PACKET->L3.src, AF_INET, (char *)&earp->arp_spa);
       ip_addr_init(&PACKET->L3.dst, AF_INET, (char *)&earp->arp_tpa);
            
+
+      /* 
+       * for ARP packets we can overwrite the L2 addresses with the 
+       * information within the ARP header 
+       */
+      memcpy(PACKET->L2.src, (char *)&earp->arp_sha, ETH_ADDR_LEN);
+      memcpy(PACKET->L2.dst, (char *)&earp->arp_tha, ETH_ADDR_LEN);
+      
       /* 
        * HOOK POINT:  PACKET_ARP 
        * differentiate between REQUEST and REPLY

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.22 2004/03/19 17:55:53 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.23 2004/04/07 11:30:47 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -429,7 +429,7 @@ static void gtkui_connection_detail(void)
       gtkui_details_print(textbuf, line);
 
       if (c->co->DISSECTOR.info) {
-         snprintf(line, 200, "Additional Info: %s\n", c->co->DISSECTOR.info);
+         snprintf(line, 200, "  Additional Info: %s\n", c->co->DISSECTOR.info);
          gtkui_details_print(textbuf, line);
       }
    }

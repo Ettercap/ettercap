@@ -17,10 +17,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.23 2003/12/25 17:19:57 alor Exp $
+    $Id: ec_signals.c,v 1.24 2004/01/06 15:01:59 alor Exp $
 */
 
 #include <ec.h>
+#include <ec_version.h>
 #include <ec_ui.h>
 #include <ec_mitm.h>
 #include <ec_threads.h>
@@ -51,8 +52,11 @@ void signal_handler(void)
    signal_handle(SIGINT, signal_TERM, 0);
    signal_handle(SIGTERM, signal_TERM, 0);
    signal_handle(SIGCHLD, signal_CHLD, 0);
+   /* needed by solaris */
    signal_handle(SIGALRM, SIG_IGN, 0);
-
+   /* allow the user to type "ettercap .. &" */
+   signal_handle(SIGTTOU, SIG_IGN, 0);
+   signal_handle(SIGTTIN, SIG_IGN, 0);
 }
 
 
@@ -101,12 +105,12 @@ static RETSIGTYPE signal_SEGV(int sig)
    fprintf (stderr, "  1) set ec_uid to 0 (so the core will be dumped)\n\n");
    fprintf (stderr, "  2) execute ettercap with \"-w debug_dump.pcap\"\n\n");
    fprintf (stderr, "  3) reproduce the critical situation\n\n");
-   fprintf (stderr, "  4) make a report : \n\t\"tar zcvf error.tar.gz %s%s_debug.log debug_dump.pcap\"\n\n", GBL_PROGRAM, GBL_VERSION);
+   fprintf (stderr, "  4) make a report : \n\t\"tar zcvf error.tar.gz %s%s_debug.log debug_dump.pcap\"\n\n", EC_PROGRAM, EC_VERSION);
    fprintf (stderr, "  5) get the gdb backtrace :\n"
                     "  \t - \"gdb %s core\"\n"
                     "  \t - at the gdb prompt \"bt\"\n"
                     "  \t - at the gdb prompt \"quit\" and return to the shell\n"
-                    "  \t - copy and paste this output.\n\n", GBL_PROGRAM);
+                    "  \t - copy and paste this output.\n\n", EC_PROGRAM);
    fprintf (stderr, "  6) mail us the output of gdb and the error.tar.gz\n");
    fprintf (stderr, "============================================================================\n");
    
@@ -129,7 +133,7 @@ static RETSIGTYPE signal_SEGV(int sig)
       fprintf (stderr, EC_COLOR_RED"Segmentation Fault...\n\n"EC_COLOR_END);
    fprintf(stderr, "Please recompile in debug mode, reproduce the bug and send a bugreport\n\n");
    
-   exit(666);
+   _exit(666);
 #endif
 }
 
@@ -179,9 +183,7 @@ static RETSIGTYPE signal_CHLD(int sig)
 {
    int stat;
    
-   /* 
-    * wait for the child to return and not become a zombie
-    */
+   /* wait for the child to return and not become a zombie */
    while (waitpid (-1, &stat, WNOHANG) > 0);
 }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_hosts.c,v 1.7 2004/03/04 12:59:10 daten Exp $
+    $Id: ec_gtk_hosts.c,v 1.8 2004/03/18 19:44:38 daten Exp $
 */
 
 #include <ec.h>
@@ -35,10 +35,7 @@ void gtkui_refresh_host_list(void);
 static void load_hosts(char *file);
 static void save_hosts(void);
 static void gtkui_hosts_destroy(void);
-static void gtkui_delete_host(GtkWidget *widget, gpointer data);
-static void gtkui_host_target1(GtkWidget *widget, gpointer data);
-static void gtkui_host_target2(GtkWidget *widget, gpointer data);
-static struct hosts_list *gtkui_host_selected(void);
+static void gtkui_button_callback(GtkWidget *widget, gpointer data);
 static void gtkui_hosts_detach(GtkWidget *child);
 static void gtkui_hosts_attach(void);
 
@@ -46,6 +43,7 @@ static void gtkui_hosts_attach(void);
 static GtkWidget      *hosts_window = NULL;
 static GtkTreeSelection  *selection = NULL;
 static GtkListStore      *liststore = NULL;
+enum { HOST_DELETE, HOST_TARGET1, HOST_TARGET2 };
 
 /*******************************************/
 
@@ -228,17 +226,17 @@ void gtkui_host_list(void)
 
    button = gtk_button_new_with_mnemonic("_Delete Host");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_host), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)HOST_DELETE);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("Add to Target _1");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_host_target1), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)HOST_TARGET1);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("Add to Target _2");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_host_target2), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)HOST_TARGET2);
    gtk_widget_show(button);
 
    gtk_widget_show(hosts_window);
@@ -315,86 +313,47 @@ void gtkui_refresh_host_list(void)
    }
 }
 
-/*
- * deletes one host from the list
- */
-static void gtkui_delete_host(GtkWidget *widget, gpointer data)
+void gtkui_button_callback(GtkWidget *widget, gpointer data)
 {
    GtkTreeIter iter;
    GtkTreeModel *model;
+   char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *hl = NULL;
 
    model = GTK_TREE_MODEL (liststore);
 
-   if (!gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) 
-      return; /* nothing is selected */
- 
-   hl = gtkui_host_selected();
+   if(gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
+      gtk_tree_model_get(model, &iter, 3, &hl, -1);
 
-   gtk_list_store_remove(GTK_LIST_STORE (liststore), &iter);
+      switch((int)data) {
+         case HOST_DELETE:
+            DEBUG_MSG("gtkui_button_callback: delete host");
+            gtk_list_store_remove(GTK_LIST_STORE (liststore), &iter);
 
-   /* remove the host from the list */
-   LIST_REMOVE(hl, next);
-   SAFE_FREE(hl->hostname);
-   SAFE_FREE(hl);
+            /* remove the host from the list */
+            LIST_REMOVE(hl, next);
+            SAFE_FREE(hl->hostname);
+            SAFE_FREE(hl);
+            break;
+         case HOST_TARGET1:
+            DEBUG_MSG("gtkui_button_callback: add target1");
+            /* add the ip to the target */
+            add_ip_list(&hl->ip, GBL_TARGET1);
+
+            USER_MSG("Host %s added to TARGET1\n", ip_addr_ntoa(&hl->ip, tmp));
+            break;
+         case HOST_TARGET2:
+            DEBUG_MSG("gtkui_button_callback: add target2");
+            /* add the ip to the target */
+            add_ip_list(&hl->ip, GBL_TARGET2);
+   
+            USER_MSG("Host %s added to TARGET2\n", ip_addr_ntoa(&hl->ip, tmp));
+            break;
+      }
+   }
 }
 
-/*
- * add an host to TARGET 1
- */
-static void gtkui_host_target1(GtkWidget *widget, gpointer data)
-{
-   struct hosts_list *hl;
-   char tmp[MAX_ASCII_ADDR_LEN];
-  
-   DEBUG_MSG("gtk_host_target1");
-   
-   hl = gtkui_host_selected();
-   if(!hl)
-      return;
-  
-   /* add the ip to the target */
-   add_ip_list(&hl->ip, GBL_TARGET1);
-
-   USER_MSG("Host %s added to TARGET1\n", ip_addr_ntoa(&hl->ip, tmp));
-}
-
-/*
- * add an host to TARGET 2
- */
-static void gtkui_host_target2(GtkWidget *widget, gpointer data)
-{
-   struct hosts_list *hl;
-   char tmp[MAX_ASCII_ADDR_LEN];
-   
-   DEBUG_MSG("gtk_host_target2");
-   
-   hl = gtkui_host_selected();
-   if(!hl)
-      return;
-  
-   /* add the ip to the target */
-   add_ip_list(&hl->ip, GBL_TARGET2);
-   
-   USER_MSG("Host %s added to TARGET2\n", ip_addr_ntoa(&hl->ip, tmp));
-}
-
-static struct hosts_list *gtkui_host_selected(void) {
-   GtkTreeIter iter;
-   GtkTreeModel *model;
-   struct hosts_list *hl = NULL;
-
-   model = GTK_TREE_MODEL (liststore);
-
-   if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get (model, &iter, 3, &hl, -1);
-   } else 
-      return(NULL); /* nothing is selected */
- 
-   return(hl);
-}
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

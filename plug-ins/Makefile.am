@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.24 2004/04/12 15:31:51 alor Exp $
+# $Id: Makefile.am,v 1.25 2004/04/17 15:12:36 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -9,6 +9,7 @@ SUBDIRS =   arp_cop \
             dos_attack \
             dummy \
             find_conn \
+            find_ettercap \
             find_ip \
             finger \
             finger_submit \

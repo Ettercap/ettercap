@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: remote_browser.c,v 1.3 2004/04/14 09:54:24 lordnaga Exp $
+    $Id: remote_browser.c,v 1.4 2004/04/17 15:12:37 alor Exp $
 */
 
 
@@ -69,7 +69,6 @@ static int remote_browser_init(void *dummy)
 {
    /* 
     * add the hook in the dissector.
-    * this will pass only valid dns packets
     */
    hook_add(HOOK_PROTO_HTTP, &remote_browser);
    

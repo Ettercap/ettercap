@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.36 2004/04/14 08:02:45 alor Exp $
+    $Id: ec_sslwrap.c,v 1.37 2004/04/17 15:12:37 alor Exp $
 */
 
 #include <ec.h>
@@ -483,7 +483,7 @@ static int sslw_is_ssl(struct packet_object *po)
  */ 
 static void sslw_bind_wrapper(void)
 {
-   u_int16 bind_port = 0xe77e; 
+   u_int16 bind_port = EC_MAGIC_16; 
    struct listen_entry *le;
    struct sockaddr_in sa_in;
 

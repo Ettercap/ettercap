@@ -20,7 +20,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: gw_discover.c,v 1.2 2004/03/24 09:05:36 alor Exp $
+    $Id: gw_discover.c,v 1.3 2004/04/17 15:12:37 alor Exp $
 */
 
 
@@ -158,7 +158,7 @@ static void do_discover(void)
       INSTANT_USER_MSG("Sending the SYN packet to %-15s [%s]\n", ip_addr_ntoa(&h->ip, tmp), mac_addr_ntoa(h->mac, tmp2));
       
       /* send the syn packet */
-      send_tcp_ether(h->mac, &GBL_IFACE->ip, &ip, htons(0xe77e), htons(port), 0xabadc0de, 0xabadc0de, TH_SYN);
+      send_tcp_ether(h->mac, &GBL_IFACE->ip, &ip, htons(EC_MAGIC_16), htons(port), 0xabadc0de, 0xabadc0de, TH_SYN);
    }
   
    /* wait some time for slower replies */
@@ -189,7 +189,7 @@ static void get_replies(struct packet_object *po)
       return;
 
    /* this is not the requested connection */
-   if (po->L4.src != htons(port) || po->L4.dst != htons(0xe77e))
+   if (po->L4.src != htons(port) || po->L4.dst != htons(EC_MAGIC_16))
       return;
 
    /* search the source mac address in the host list */

@@ -1,6 +1,6 @@
-=========================
-  TODO for the NG serie
-=========================
+==========================
+  TODO for the NG series
+==========================
 
 >>> things to be fixed
    
@@ -43,6 +43,7 @@
    
    + PLUGINS
       - automatic add of new hosts
+      - lurker
 
 ==================
   LONG TERM TODO

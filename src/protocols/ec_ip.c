@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.23 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_ip.c,v 1.24 2003/10/12 17:50:15 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -186,6 +186,8 @@ FUNC_DECODER(decode_ip)
          session_put(s);
       }
       SAFE_FREE(ident);
+      
+      SESSION_PASSTHRU(s, PACKET);
    
       /* Record last packet's ID */
       status = (struct ip_status *)s->data;
@@ -265,13 +267,13 @@ FUNC_INJECTOR(inject_ip)
    iph->frag_off = 0;            
    iph->ttl      = 125;   
    iph->protocol = PACKET->L4.proto; 
-   iph->saddr    = htonl(ip_addr_to_int32(PACKET->L3.src.addr));   
-   iph->daddr    = htonl(ip_addr_to_int32(PACKET->L3.dst.addr));   
+   iph->saddr    = ip_addr_to_int32(PACKET->L3.src.addr);   
+   iph->daddr    = ip_addr_to_int32(PACKET->L3.dst.addr);   
 
    /* Take the session and fill remaining fields */
    s = PACKET->session;
    status = (struct ip_status *)s->data;
-   iph->id = htons(status->last_id + status->id_adj);
+   iph->id = htons(status->last_id + status->id_adj + 1);
 
    /* Renew session timestamp (XXX it locks the sessions) */
    if (session_get(&s, s->ident, IP_IDENT_LEN) == -ENOTFOUND) 

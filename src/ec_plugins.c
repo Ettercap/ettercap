@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.12 2003/07/10 12:49:55 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.13 2003/07/18 21:08:11 alor Exp $
 */
 
 #include <ec.h>
@@ -107,9 +107,6 @@ int plugin_load_single(char *path, char *name)
     * function
     */
    return plugin_load(handle);
-#else
-   FATAL_MSG("Plugin support was disabled by configure...");
-   return -EINVALID;
 #endif
 }
 
@@ -120,6 +117,7 @@ int plugin_load_single(char *path, char *name)
 
 void plugin_load_all(void)
 {
+#ifdef HAVE_PLUGINS
    struct dirent **namelist;
    int n, i, ret;
    int t = 0;
@@ -156,7 +154,9 @@ void plugin_load_all(void)
    USER_MSG("%4d ettercap plugins\n", t);
 
    atexit(&plugin_unload_all);
-
+#else
+   USER_MSG("Plugin support was disabled by configure...");
+#endif
 }
 
 
@@ -166,6 +166,7 @@ void plugin_load_all(void)
 
 void plugin_unload_all(void)
 {
+#ifdef HAVE_PLUGINS
    struct plugin_entry *p;
    
    DEBUG_MSG("ATEXIT: plugin_unload_all");   
@@ -178,6 +179,7 @@ void plugin_unload_all(void)
    
    if (lt_dlexit() != 0)
       ERROR_MSG("lt_dlexit()");
+#endif
 }
 
 
@@ -186,6 +188,7 @@ void plugin_unload_all(void)
  */
 int plugin_register(void *handle, struct plugin_ops *ops)
 {
+#ifdef HAVE_PLUGINS
    struct plugin_entry *p;
 
    if (strcmp(ops->ettercap_version, EC_VERSION)) {
@@ -202,6 +205,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
    SLIST_INSERT_HEAD(&plugin_head, p, next);
 
    return ESUCCESS;
+#endif
 }
 
 /* 

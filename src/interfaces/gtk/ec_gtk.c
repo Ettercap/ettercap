@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.13 2004/03/04 12:59:10 daten Exp $
+    $Id: ec_gtk.c,v 1.14 2004/03/19 19:36:07 daten Exp $
 */
 
 #include <ec.h>
@@ -86,7 +86,9 @@ void gtkui_page_detach_current(void);
 void gtkui_page_attach_shortcut(GtkWidget *win, void (*attacher)(void));
 void gtkui_page_right(void);
 void gtkui_page_left(void);
+#if GTK_MINOR_VERSION == 2
 static void gtkui_page_defocus_tabs(void);
+#endif
 
 /***#****************************************/
 
@@ -471,7 +473,9 @@ static void gtkui_setup(void)
    gtk_container_add(GTK_CONTAINER (frame), notebook);
    gtk_widget_show(notebook);
 
+#if GTK_MINOR_VERSION == 2
    g_signal_connect(G_OBJECT (notebook), "switch-page", G_CALLBACK(gtkui_page_defocus_tabs), NULL);
+#endif
 
    /* messages */
    scroll = gtk_scrolled_window_new(NULL, NULL);
@@ -865,15 +869,17 @@ void gtkui_page_present(GtkWidget *child) {
    num = gtk_notebook_page_num(GTK_NOTEBOOK (notebook), child);
    gtk_notebook_set_current_page(GTK_NOTEBOOK (notebook), num);
 
+#if GTK_MINOR_VERSION == 2
    gtkui_page_defocus_tabs();
+#endif
 }
 
 /* defocus tab buttons in notebook (gtk bug work-around */
+/* GTK+ 2.0 doesn't have gtk_notebook_get_n_pages and this */
+/* bug is fixedin 2.4 so only include this when building on 2.2 */
+#if GTK_MINOR_VERSION == 2
 static void gtkui_page_defocus_tabs(void)
 {
-   /* gtk_notebook_get_n_pages was added in GTK+ 2.2 */
-   /* so we'll leave this section out if building on GTK+ 2.0 */
-   #if GTK_MINOR_VERSION >= 2
    GList *list = NULL, *curr = NULL;
    GtkWidget *contents, *label;
    int pages = 0;
@@ -888,8 +894,8 @@ static void gtkui_page_defocus_tabs(void)
          if(GTK_IS_BUTTON (curr->data))
             gtk_button_leave(GTK_BUTTON (curr->data));
    }
-   #endif
 }
+#endif
 
 /* close the page containing the child passed in "data" */
 void gtkui_page_close(GtkWidget *widget, gpointer data) {

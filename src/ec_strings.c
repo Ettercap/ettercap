@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_strings.c,v 1.13 2004/07/01 20:45:43 alor Exp $
+    $Id: ec_strings.c,v 1.14 2004/07/20 09:53:53 alor Exp $
 */
 
 #include <ec.h>
@@ -36,6 +36,7 @@ int strescape(char *dst, char *src);
 int str_replace(char **text, const char *s, const char *d);
 size_t strlen_utf8(const char *s);
 char * ec_strtok(char *s, const char *delim, char **ptrptr);
+char getchar_buffer(char **buf);
 
 /*******************************************/
 
@@ -337,6 +338,52 @@ char * ec_strtok(char *s, const char *delim, char **ptrptr)
 #endif
 }
 
+/*
+ * simulate the getchar() on a buffer instead of on the stdin.
+ * also simulate sleep with s(x) for x seconds.
+ */
+char getchar_buffer(char **buf)
+{
+   char ret;
+
+   DEBUG_MSG("getchar_buffer: %s", *buf);
+   
+   /* the buffer is empty, do nothing */
+   if (**buf == 0)
+      return 0;
+
+   /* simulate the sleep if we find s(x) */
+   if (*(*buf + 0) == 's' && *(*buf + 1) == '(') {
+      char *p;
+      int time = 0;
+      
+      p = strchr(*buf, ')');
+      if (p != NULL) {
+
+         *p = '\0';
+
+         /* get the number of seconds to wait */
+         time = atoi(*buf + 2);
+         
+         DEBUG_MSG("getchar_buffer: sleeping %d secs", time);
+
+         /* move the buffer after the s(x) */
+         *buf = p + 1;
+      
+         sleep(time);
+      }
+   }
+   
+   /* get the first char of the buffer */
+   ret = *buf[0];
+
+   /* increment the buffer pointer */
+   *buf = *buf + 1;
+   
+   DEBUG_MSG("getchar_buffer: returning %c", ret);
+   
+   return ret;
+}
 
 /* EOF */
 

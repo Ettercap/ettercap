@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_poll.c,v 1.4 2003/10/14 16:54:08 alor Exp $
+    $Id: ec_poll.c,v 1.5 2004/07/20 09:53:53 alor Exp $
 */
 
 #include <ec.h>
@@ -36,6 +36,7 @@
 
 int ec_poll_in(int fd, u_int msec);
 int ec_poll_out(int fd, u_int msec);
+int ec_poll_buffer(char *buf);
 
 /************************************************/
 
@@ -134,6 +135,19 @@ int ec_poll_out(int fd, u_int msec)
 #else
    #error "you don't have neither poll nor select"
 #endif
+}
+
+/*
+ * a fake poll implementation on string buffers
+ * it returns != 0 if there are char(s) to read,
+ * 0 if the first char is null
+ */
+int ec_poll_buffer(char *buf)
+{
+   if (buf)
+      return *buf;
+   else
+      return 0;
 }
 
 /* EOF */

@@ -182,9 +182,38 @@ Currently the porting to the windows platform is not completed yet.
          fully working... my bad :(
    5) run the ettercap NG configure and make it      
 
- + MINGW
+ + MINGW / MSYS
    
-   http://www.bgnett.no/~giva/misc/
+   1) download the wpdpack from the winpcap website
+   2) download the libnet tarball from packetfactory.net
+   3) download pthreads from: ftp://sources.redhat.com/pub/pthreads-win32
+   3) download all the other required library from: 
+         http://gnuwin32.sourceforge.net/packages.html
+   4) unpak all the packages as shown in the following tree:
+
+      .
+      |-> ettercap_ng
+      |-> winpcap
+      |   |-> Lib
+      |   |-> Include
+      |-> libnet
+      |   |-> src
+      |   |-> include
+      |-> other_libraries
+      |   |-> lib
+      |   |-> include
+      .
+      .
+  
+      make sure each directory contains an include dir with the .h files and a
+      lib directory with the .a files.
+  
+   5) enter the ettercap_ng directory and execute the configure script
+   6) make it
+
+   
+   if you want precompiled packages:
+      http://www.bgnett.no/~giva/misc/
 
 
 ==============================================================================

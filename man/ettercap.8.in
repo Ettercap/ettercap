@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.72 2004/07/13 09:35:44 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.73 2004/07/20 09:53:52 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -480,6 +480,20 @@ ettercap log files.
 example:
 .Sp
 ettercap -Tq -L dumpfile -r pcapfile
+
+.TP
+\fB\-s\fR, \fB\-\-script <COMMANDS>\fR
+With this option you can feed ettercap with command as they were typed on the
+keyboard by the user. This way you can use ettercap within your favourite
+scripts. There is a special command you can issue thru this command: s(x). this
+command will sleep for x seconds.
+.Sp
+example:
+.Sp
+ettercap -T -s 'lq'  will print the list of the hosts and exit
+.br
+ettercap -T -s 's(300)olqq'  will collect the infos for 5 minutes, print the
+list of the local profiles and exit
 
 
 .TP

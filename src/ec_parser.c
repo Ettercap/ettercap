@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.64 2004/07/13 09:35:44 alor Exp $
+    $Id: ec_parser.c,v 1.65 2004/07/20 09:53:53 alor Exp $
 */
 
 
@@ -75,6 +75,7 @@ void ec_usage(void)
    fprintf(stdout, "\nUser Interface Type:\n");
    fprintf(stdout, "  -T, --text                  use text only GUI\n");
    fprintf(stdout, "       -q, --quiet                 do not display packet contents\n");
+   fprintf(stdout, "       -s, --script <CMD>          issue these commands to the GUI\n");
    fprintf(stdout, "  -C, --curses                use curses GUI\n");
    fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
    fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
@@ -141,6 +142,7 @@ void parse_options(int argc, char **argv)
       
       { "superquiet", no_argument, NULL, 'Q' },
       { "quiet", no_argument, NULL, 'q' },
+      { "script", required_argument, NULL, 's' },
       { "silent", no_argument, NULL, 'z' },
       { "unoffensive", no_argument, NULL, 'u' },
       { "load-hosts", required_argument, NULL, 'j' },
@@ -184,7 +186,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -306,6 +308,10 @@ void parse_options(int argc, char **argv)
                   /* no break, quiet must be enabled */
          case 'q':
                   GBL_OPTIONS->quiet = 1;
+                  break;
+                  
+         case 's':
+                  GBL_OPTIONS->script = strdup(optarg);
                   break;
                   
          case 'z':

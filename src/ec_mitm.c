@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.14 2004/05/06 16:20:45 alor Exp $
+    $Id: ec_mitm.c,v 1.15 2004/07/20 09:53:52 alor Exp $
 */
 
 #include <ec.h>
@@ -193,10 +193,15 @@ void only_mitm(void)
    INSTANT_USER_MSG("Activated the mitm attack only... (press 'q' to exit)\n");
   
    /* wait for user to exit */
-   while (ch != 'q' && ch != 'Q'){
+   while (ch != 'q' && ch != 'Q') {
       /* if there is a pending char to be read */
-      if (ec_poll_in(fileno(stdin), 1)) 
-         ch = getchar();
+      if ( ec_poll_in(fileno(stdin), 1) || ec_poll_buffer(GBL_OPTIONS->script) ) {
+         /* get the input from the stdin or the buffer */
+         if (ec_poll_buffer(GBL_OPTIONS->script))
+            ch = getchar_buffer(&GBL_OPTIONS->script);
+         else
+            ch = getchar();
+      }
    }
    
    INSTANT_USER_MSG("Exiting...\n\n");

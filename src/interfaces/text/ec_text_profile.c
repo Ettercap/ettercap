@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_profile.c,v 1.6 2004/07/13 13:41:03 alor Exp $
+    $Id: ec_text_profile.c,v 1.7 2004/07/20 09:53:53 alor Exp $
 */
 
 #include <ec.h>
@@ -58,10 +58,15 @@ void text_profiles(void)
       CANCELLATION_POINT();
       
       /* if there is a pending char to be read */
-      if ( ec_poll_in(fileno(stdin), 10) ) {
+      if ( ec_poll_in(fileno(stdin), 10) || ec_poll_buffer(GBL_OPTIONS->script) ) {
          
          char ch = 0;
-         ch = getchar();
+
+         /* get the input from the stdin or the buffer */
+         if (ec_poll_buffer(GBL_OPTIONS->script))
+            ch = getchar_buffer(&GBL_OPTIONS->script);
+         else
+            ch = getchar();
 
          switch(ch) {
             case 'H':

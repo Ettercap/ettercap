@@ -1,5 +1,5 @@
 
-/* $Id: ec_strings.h,v 1.9 2004/06/25 14:11:59 alor Exp $ */
+/* $Id: ec_strings.h,v 1.10 2004/07/20 09:53:52 alor Exp $ */
 
 #ifndef EC_STRINGS_H
 #define EC_STRINGS_H
@@ -32,6 +32,7 @@ extern int strescape(char *dst, char *src);
 extern int str_replace(char **text, const char *s, const char *d);   
 extern size_t strlen_utf8(const char *s);
 extern char * ec_strtok(char *s, const char *delim, char **ptrptr);
+extern char getchar_buffer(char **buf);
 
 #define strtok(x,y) DON_T_USE_STRTOK_DIRECTLY_USE__EC_STRTOK__INSTEAD
 

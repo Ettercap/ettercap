@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.5 2004/07/13 09:35:44 alor Exp $
+    $Id: ec_mingw.c,v 1.6 2004/07/20 09:53:53 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -156,14 +156,6 @@ int ec_win_pcap_stop (const void *pcap_handle)
   LeaveCriticalSection (&crit);
   DEBUG_MSG("rc %d, %s\n", rc, ec_win_strerror(err));
   return (1);
-}
-
-/*
- * No fork() in Windows, just beep
- */
-void set_daemon_interface (void)
-{
-  _putch ('\a');
 }
 
 int ec_win_gettimeofday (struct timeval *tv, struct timezone *tz)

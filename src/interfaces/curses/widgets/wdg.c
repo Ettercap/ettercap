@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.32 2004/02/03 16:32:38 alor Exp $
+    $Id: wdg.c,v 1.33 2004/02/08 14:38:26 alor Exp $
 */
 
 #include <wdg.h>
@@ -417,6 +417,17 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
          if (wdg_root_obj->get_msg(wdg_root_obj, key, mouse) == WDG_ESUCCESS)
             /* the root object handled the message */
             return;
+      }
+
+      /* 
+       * then dispatch to the focused object.
+       * it may overlap and needs to event before the others
+       * to prevent an undesired raising of underlaying objects
+       */
+      if (wdg_focused_obj != NULL) {
+         if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse) == WDG_ESUCCESS)
+            /* the focused object handled the message */
+            return;     
       }
 
       /* dispatch to all the other objects */

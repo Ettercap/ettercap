@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_snmp.c,v 1.2 2003/07/18 18:46:30 alor Exp $
+    $Id: ec_snmp.c,v 1.3 2003/08/07 20:25:18 alor Exp $
 */
 
 #include <ec.h>
@@ -122,10 +122,9 @@ FUNC_DECODER(dissector_snmp)
    /* put the number in the string */
    PACKET->DISSECTOR.info[6] = version + 48;
    
-   USER_MSG("SNMP : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+   USER_MSG("SNMP : %s:%d -> COMMUNITY: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                  ntohs(PACKET->L4.dst), 
                                  PACKET->DISSECTOR.user,
-                                 PACKET->DISSECTOR.pass,
                                  PACKET->DISSECTOR.info);
    
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.6 2003/07/16 20:45:30 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.7 2003/08/07 20:25:18 alor Exp $
 */
 
 #include <ec.h>
@@ -79,15 +79,16 @@ RETSIGTYPE signal_SEGV(int sig)
 
    fprintf (stderr, "===========================================================================\n");
    fprintf (stderr, " To report this error follow these steps:\n\n");
-   fprintf (stderr, "  1) execute ettercap with \"-w debug_dump.pcap\"\n\n");
-   fprintf (stderr, "  2) reproduce the critical situation\n\n");
-   fprintf (stderr, "  3) make a report : \n\t\"tar zcvf error.tar.gz %s%s_debug.log debug_dump.pcap\"\n\n", GBL_PROGRAM, GBL_VERSION);
-   fprintf (stderr, "  4) get the gdb backtrace :\n"
+   fprintf (stderr, "  1) set ec_uid to 0 (so the core will be dumped)\n\n");
+   fprintf (stderr, "  2) execute ettercap with \"-w debug_dump.pcap\"\n\n");
+   fprintf (stderr, "  3) reproduce the critical situation\n\n");
+   fprintf (stderr, "  4) make a report : \n\t\"tar zcvf error.tar.gz %s%s_debug.log debug_dump.pcap\"\n\n", GBL_PROGRAM, GBL_VERSION);
+   fprintf (stderr, "  5) get the gdb backtrace :\n"
                     "  \t - \"gdb %s core\"\n"
                     "  \t - at the gdb prompt \"bt\"\n"
                     "  \t - at the gdb prompt \"quit\" and return to the shell\n"
                     "  \t - copy and paste this output.\n\n", GBL_PROGRAM);
-   fprintf (stderr, "  5) mail us the output of gdb and the error.tar.gz\n");
+   fprintf (stderr, "  6) mail us the output of gdb and the error.tar.gz\n");
    fprintf (stderr, "============================================================================\n");
    
    fprintf (stderr, COLOR_CYAN"\nOverriding any 'ulimit -c 0'... (RLIMIT_CORE = RLIM_INFINITY)\n\n"END_COLOR

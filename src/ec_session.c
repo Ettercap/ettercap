@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.9 2003/08/04 13:59:07 alor Exp $
+    $Id: ec_session.c,v 1.10 2003/08/07 20:25:18 alor Exp $
 */
 
 #include <ec.h>
@@ -47,7 +47,6 @@ static LIST_HEAD(, session_list) session_list_head[TABSIZE];
 
 /* protos */
 
-u_int32 session_hash(struct session *s);
 void session_put(struct session *s);
 int session_get(struct session **s, void *ident, size_t ident_len);
 int session_del(void *ident, size_t ident_len);
@@ -66,16 +65,6 @@ static pthread_mutex_t session_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /************************************************/
 
-/* create the hash for a session 
- *
- * it is used to create the hash table of the sessions
- */
-
-u_int32 session_hash(struct session *s)
-{
-   return fnv_32(s->ident, s->ident_len) & TABMASK;
-}
-
 /*
  * create a session if it does not exits
  * update a session if it already exists
@@ -87,11 +76,15 @@ void session_put(struct session *s)
 {
    struct session_list *sl, *old = NULL;
    time_t ti = time(NULL);
+   u_int32 h;
 
    SESSION_LOCK;
    
+   /* calculate the hash */
+   h = fnv_32(s->ident, s->ident_len) & TABMASK;
+   
    /* search if it already exist */
-   LIST_FOREACH(sl, &session_list_head[session_hash(s)], next) {
+   LIST_FOREACH(sl, &session_list_head[h], next) {
       /* sessions are unique per thread */
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, s->ident) ) {
 
@@ -145,7 +138,7 @@ void session_put(struct session *s)
     * put it in the head.
     * it is likely to be retrived early
     */
-   LIST_INSERT_HEAD(&session_list_head[session_hash(s)], sl, next);
+   LIST_INSERT_HEAD(&session_list_head[h], sl, next);
 
    SESSION_UNLOCK;
   
@@ -160,11 +153,15 @@ int session_get(struct session **s, void *ident, size_t ident_len)
 {
    struct session_list *sl;
    time_t ti = time(NULL);
+   u_int32 h;
 
    SESSION_LOCK;
    
+   /* calculate the hash */
+   h = fnv_32(ident, ident_len) & TABMASK;
+
    /* search if it already exist */
-   LIST_FOREACH(sl, &session_list_head[fnv_32(ident, ident_len) & TABMASK], next) {
+   LIST_FOREACH(sl, &session_list_head[h], next) {
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
    
          DEBUG_MSG("session_get: [%d][%p]", sl->id, sl->s->ident);
@@ -192,11 +189,15 @@ int session_get(struct session **s, void *ident, size_t ident_len)
 int session_del(void *ident, size_t ident_len)
 {
    struct session_list *sl;
+   u_int32 h;
 
    SESSION_LOCK;
    
+   /* calculate the hash */
+   h = fnv_32(ident, ident_len) & TABMASK;
+   
    /* search if it already exist */
-   LIST_FOREACH(sl, &session_list_head[fnv_32(ident, ident_len) & TABMASK], next) {
+   LIST_FOREACH(sl, &session_list_head[h], next) {
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
          
          DEBUG_MSG("session_del: [%d][%p]", sl->id, sl->s->ident);
@@ -227,11 +228,15 @@ int session_del(void *ident, size_t ident_len)
 int session_get_and_del(struct session **s, void *ident, size_t ident_len)
 {
    struct session_list *sl;
+   u_int32 h;
 
    SESSION_LOCK;
    
+   /* calculate the hash */
+   h = fnv_32(ident, ident_len) & TABMASK;
+   
    /* search if it already exist */
-   LIST_FOREACH(sl, &session_list_head[fnv_32(ident, ident_len) & TABMASK], next) {
+   LIST_FOREACH(sl, &session_list_head[h], next) {
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
          
          DEBUG_MSG("session_get_and_del: [%d][%p]", sl->id, sl->s->ident);

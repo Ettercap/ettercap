@@ -32,7 +32,6 @@ Ago 2003:
    + TOP HALF
       - connection tracking (with buffered conn)
          - hook points
-         - hash table for search
 
    
    + ARP POISON ENGINE

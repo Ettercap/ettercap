@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.4 2003/08/06 20:06:32 alor Exp $
+    $Id: ec_conntrack.c,v 1.5 2003/08/07 20:25:18 alor Exp $
 */
 
 #include <ec.h>
@@ -26,21 +26,36 @@
 #include <ec_proto.h>
 #include <ec_hook.h>
 #include <ec_conntrack.h>
+#include <ec_hash.h>
 
 /* globals */
 
 struct conn_tail {
    struct conn_object *co;
+   struct conn_hash_search *cs;
    TAILQ_ENTRY(conn_tail) next;
 };
+
+/* the hash table used to index the tailq */
+struct conn_hash_search {
+   struct conn_tail *cl;
+   LIST_ENTRY(conn_hash_search) next;
+};
+
+#define TABBIT    10             /* 2^10 bit tab entries: 1024 LISTS */
+#define TABSIZE   (1 << TABBIT)
+#define TABMASK   (TABSIZE - 1)
 
 /*
  * the connection list.
  * this list is created adding new element in the tail.
- * the search method is established in the search function 
- * (using an hash table).
+ * the search method is established in the search function. 
+ * an hash table is used and it is double-linked with the 
+ * tailq so from each element you can delete the corresponding
+ * in the tailq or viceversa
  */
 static TAILQ_HEAD(conn_head, conn_tail) conntrack_tail_head = TAILQ_HEAD_INITIALIZER(conntrack_tail_head);
+static LIST_HEAD(, conn_hash_search) conntrack_search_head[TABSIZE];
 
 /* global mutex on connections list */
 
@@ -53,6 +68,7 @@ static pthread_mutex_t conntrack_mutex = PTHREAD_MUTEX_INITIALIZER;
 void __init conntrack_init(void);
 
 static void conntrack_parse(struct packet_object *po);
+static u_int32 conntrack_hash(struct packet_object *po);
 static struct conn_object *conntrack_search(struct packet_object *po);
 static void conntrack_update(struct conn_object *co, struct packet_object *po);
 static void conntrack_add(struct packet_object *po);
@@ -71,7 +87,6 @@ void __init conntrack_init(void)
 {
    /* receive all the top half packets */
    hook_add(HOOK_DISPATCHER, &conntrack_parse);
-   
 }
 
 /*
@@ -95,6 +110,28 @@ static void conntrack_parse(struct packet_object *po)
    CONNTRACK_UNLOCK;
 }
 
+/* 
+ * calculate the hash for a packet object 
+ */
+static u_int32 conntrack_hash(struct packet_object *po)
+{
+   u_int32 hash_array[4];
+
+   /* 
+    * put them in an array and then compute the hash on the array.
+    * use XOR on src and dst because the hash must be equal for 
+    * packets from dst to src and viceversa
+    */
+   hash_array[0] = fnv_32((u_char *)&po->L2.src, ETH_ADDR_LEN) ^
+                   fnv_32((u_char *)&po->L2.dst, ETH_ADDR_LEN);
+   hash_array[1] = fnv_32((u_char *)&po->L3.src, sizeof(struct ip_addr)) ^
+                   fnv_32((u_char *)&po->L3.dst, sizeof(struct ip_addr));
+   hash_array[2] = po->L4.src ^ po->L4.dst;
+   hash_array[3] = po->L4.proto;
+
+   /* compute the resulting hash */
+   return fnv_32((u_char *)&hash_array, sizeof(hash_array)) & TABMASK;
+}
 
 /* 
  * search the connection in the connection table
@@ -102,11 +139,23 @@ static void conntrack_parse(struct packet_object *po)
  */
 static struct conn_object *conntrack_search(struct packet_object *po)
 {
-   struct conn_tail *cl;
+   struct conn_hash_search *cs;
+   u_int32 h;
   
-   /* XXX - use an hash table to find the connection */
+   /* use the hash table to find the connection in the tailq */
+   h = conntrack_hash(po);
    
-   /* search in the list */
+   LIST_FOREACH(cs, &conntrack_search_head[h], next) {
+      if (conntrack_match(cs->cl->co, po) == ESUCCESS) {
+         return cs->cl->co;
+      }
+   }
+
+   return NULL;
+#if 0   
+   struct conn_tail *cl;
+   
+   /* search in the list sequentially */
    TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
       if (conntrack_match(cl->co, po) == ESUCCESS) {
          return cl->co;
@@ -114,6 +163,7 @@ static struct conn_object *conntrack_search(struct packet_object *po)
    }
 
    return NULL;
+#endif
 }
 
 
@@ -189,6 +239,7 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po)
 static void conntrack_add(struct packet_object *po)
 {
    struct conn_tail *cl;
+   struct conn_hash_search *cs;
 
    DEBUG_MSG("conntrack_add: NEW CONNECTION");
    
@@ -224,9 +275,24 @@ static void conntrack_add(struct packet_object *po)
    /* update the connection entry */
    conntrack_update(cl->co, po);
    
+   /* alloc the hash table element */
+   cs = calloc(1, sizeof(struct conn_hash_search));
+   ON_ERROR(cs, NULL, "Can't allocate memory");
+   
+   /* set the pointer to the list */
+   cs->cl = cl;
+  
+   /* 
+    * set the pointer to the element in the hash table 
+    * it is used when a connection is deleted because
+    * even the element in the hash table must be deleted
+    */
+   cl->cs = cs;
+   
    /* insert the new connection in the tail */
    TAILQ_INSERT_TAIL(&conntrack_tail_head, cl, next);
-   
+   /* insert the new connection in the tail */
+   LIST_INSERT_HEAD(&conntrack_search_head[conntrack_hash(po)], cs, next);
 }
 
 /*
@@ -342,12 +408,17 @@ EC_THREAD_FUNC(conntrack_timeouter)
           * update it only if the staus is active,
           * all the other status must be left as they are
           */
-         if (cl->co->status == CONN_ACTIVE && diff.tv_sec > GBL_CONF->connection_idle)
+         if (cl->co->status == CONN_ACTIVE && diff.tv_sec >= GBL_CONF->connection_idle)
             cl->co->status = CONN_IDLE;
          
          /* delete the timeouted connections */
-         if (diff.tv_sec > GBL_CONF->connection_timeout) {
+         if (diff.tv_sec >= GBL_CONF->connection_timeout) {
+            /* wipe the connection */
             conntrack_del(cl->co);
+            /* remove the element in the hash table */
+            LIST_REMOVE(cl->cs, next);
+            SAFE_FREE(cl->cs);
+            /* remove the element in the tailq */
             TAILQ_REMOVE(&conntrack_tail_head, cl, next);
             old = cl;
          }

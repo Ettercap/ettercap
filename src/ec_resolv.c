@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.4 2003/07/03 20:12:49 alor Exp $
+    $Id: ec_resolv.c,v 1.5 2003/08/07 20:25:18 alor Exp $
 */
 
 #include <ec.h>
@@ -127,8 +127,12 @@ int host_iptoa(struct ip_addr *ip, char *name)
 static int resolv_cache_search(struct ip_addr *ip, char *name)
 {
    struct resolv_entry *r;
+   u_int32 h;
+
+   /* calculate the hash */
+   h = fnv_32(ip->addr, ip->addr_size) & TABMASK;
       
-   SLIST_FOREACH(r, &resolv_cache_head[fnv_32(ip->addr, ip->addr_size) & TABMASK], next) {
+   SLIST_FOREACH(r, &resolv_cache_head[h], next) {
       if (!ip_addr_cmp(&r->ip, ip)) {
          /* found in the cache */
          
@@ -150,13 +154,17 @@ static int resolv_cache_search(struct ip_addr *ip, char *name)
 void resolv_cache_insert(struct ip_addr *ip, char *name)
 {
    struct resolv_entry *r;
+   u_int32 h;
+
+   /* calculate the hash */
+   h = fnv_32(ip->addr, ip->addr_size) & TABMASK;
 
    /* 
     * search if it is already in the cache.
     * this will pervent passive insertion to overwrite
     * previous cached results
     */
-   SLIST_FOREACH(r, &resolv_cache_head[fnv_32(ip->addr, ip->addr_size) & TABMASK], next) {
+   SLIST_FOREACH(r, &resolv_cache_head[h], next) {
       /* found in the cache skip it */
       if (!ip_addr_cmp(&r->ip, ip))
          return; 
@@ -168,7 +176,7 @@ void resolv_cache_insert(struct ip_addr *ip, char *name)
    memcpy(&r->ip, ip, sizeof(struct ip_addr));
    r->hostname = strdup(name);
    
-   SLIST_INSERT_HEAD(&(resolv_cache_head[fnv_32(ip->addr, ip->addr_size) & TABMASK]), r, next);
+   SLIST_INSERT_HEAD(&(resolv_cache_head[h]), r, next);
 
    DEBUG_MSG("DNS cache_insert: %s", r->hostname);
 }

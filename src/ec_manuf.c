@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.8 2003/07/11 16:50:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.9 2003/08/07 20:25:18 alor Exp $
 
 */
 
@@ -160,13 +160,16 @@ char * manuf_search(char *m)
 {
    struct entry *l;
    char mac[4];
+   u_int32 h;
 
    mac[0] = *m++;
    mac[1] = *m++;
    mac[2] = *m;
    mac[3] = 0;
 
-   SLIST_FOREACH(l, &manuf_head[fnv_32(mac, 4) & TABMASK], entries) {
+   h = fnv_32(mac, 4) & TABMASK;
+   
+   SLIST_FOREACH(l, &manuf_head[h], entries) {
       if (l->mac == *(u_int *) mac)
          return (l->vendor);
    }

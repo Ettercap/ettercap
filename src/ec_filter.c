@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.23 2003/10/05 17:42:14 alor Exp $
+    $Id: ec_filter.c,v 1.24 2003/10/05 20:44:41 alor Exp $
 */
 
 #include <ec.h>
@@ -42,6 +42,7 @@
 int filter_load_file(char *filename, struct filter_env *fenv);
 void filter_unload(struct filter_env *fenv);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
+static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
    
 int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
@@ -397,26 +398,15 @@ static int func_search(struct filter_op *fop, struct packet_object *po)
  */
 static int func_regex(struct filter_op *fop, struct packet_object *po)
 {
-   int err;
-   regex_t regex;
-   char errbuf[100];
-
-   /* prepare the regex */
-   err = regcomp(&regex, fop->op.func.string, REG_EXTENDED | REG_NOSUB | REG_ICASE );
-   if (err) {
-      regerror(err, &regex, errbuf, sizeof(errbuf));
-      JIT_FAULT("%s", errbuf);
-   } 
-   
    switch (fop->op.func.level) {
       case 5:
          /* search in the real packet */
-         if (regexec(&regex, po->DATA.data, 0, NULL, 0) == 0)
+         if (regexec(fop->op.func.ropt->regex, po->DATA.data, 0, NULL, 0) == 0)
             return ESUCCESS;
          break;
       case 6:
          /* search in the decoded/decrypted packet */
-         if (regexec(&regex, po->DATA.disp_data, 0, NULL, 0) == 0)
+         if (regexec(fop->op.func.ropt->regex, po->DATA.disp_data, 0, NULL, 0) == 0)
             return ESUCCESS;
          break;
       default:
@@ -433,36 +423,20 @@ static int func_regex(struct filter_op *fop, struct packet_object *po)
  */
 static int func_pcre(struct filter_op *fop, struct packet_object *po)
 {
-   
 #ifndef HAVE_PCRE
    JIT_FAULT("pcre_regex support not compiled in ettercap");
    return -ENOTFOUND
 #else
-   pcre *pregex;
-   pcre_extra *preg_extra;
-   const char *errbuf = NULL;
-   int erroff, ret;
-
-   /* prepare the regex (with default option) */
-   pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
-   if (pregex == NULL)
-      JIT_FAULT("%s\n", errbuf);
-  
-   preg_extra = pcre_study(pregex, 0, &errbuf);
-   if (errbuf != NULL)
-      JIT_FAULT("failed to study pcre\n");
-      
    
    switch (fop->op.func.level) {
       case 5:
          /* search in the real packet */
-         ret = pcre_exec(pregex, preg_extra, po->DATA.data, po->DATA.len, 0, 0, NULL, 0);
-         if (ret < 0)
+         if ( pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.data, po->DATA.len, 0, 0, NULL, 0) < 0)
             return -ENOTFOUND;
          break;
       case 6:
-         ret = pcre_exec(pregex, preg_extra, po->DATA.disp_data, po->DATA.disp_len, 0, 0, NULL, 0);
-         if (ret < 0)
+         /* search in the decoded one */
+         if ( pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.disp_data, po->DATA.disp_len, 0, 0, NULL, 0) < 0)
             return -ENOTFOUND;
          break;
       default:
@@ -810,6 +784,10 @@ int filter_load_file(char *filename, struct filter_env *fenv)
     * they must point to the data segment
     */
    reconstruct_strings(fenv, &fh);
+
+   /* compile the regex to speed up the matching */
+   if (compile_regex(fenv, &fh) != ESUCCESS)
+      return -EFATAL;
    
    USER_MSG("Content filters loaded from %s...\n", filename);
    
@@ -821,8 +799,31 @@ int filter_load_file(char *filename, struct filter_env *fenv)
  */
 void filter_unload(struct filter_env *fenv)
 {
+   size_t i = 0;
+   struct filter_op *fop = fenv->chain;
+   
    DEBUG_MSG("filter_unload");
 
+   /* free the memory alloc'd for regex */
+   while (i < (fenv->len / sizeof(struct filter_op)) ) {
+      /* search for func regex and pcre */
+      if(fop[i].opcode == FOP_FUNC) {
+         switch(fop[i].op.func.op) {
+            case FFUNC_REGEX:
+               regfree(fop[i].op.func.ropt->regex);
+               break;
+               
+            case FFUNC_PCRE:
+               #ifdef HAVE_PCRE
+               pcre_free(fop[i].op.func.ropt->pregex);
+               pcre_free(fop[i].op.func.ropt->preg_extra);
+               #endif               
+               break;
+         }
+      }
+      i++;
+   }
+   
    /* unmap the memory area (from file) */
    munmap(fenv->map, fenv->len + sizeof(struct filter_header)); 
 
@@ -872,6 +873,59 @@ static void reconstruct_strings(struct filter_env *fenv, struct filter_header *f
    
 }
 
+/*
+ * compile the regex of a filter_op
+ */
+static int compile_regex(struct filter_env *fenv, struct filter_header *fh)
+{
+   size_t i = 0;
+   struct filter_op *fop = fenv->chain;
+   char errbuf[100];
+   int err;
+#ifdef HAVE_PCRE
+   const char *perrbuf = NULL;
+#endif
+     
+   /* parse all the instruction */ 
+   while (i < (fenv->len / sizeof(struct filter_op)) ) {
+      
+      /* search for func regex and pcre */
+      if(fop[i].opcode == FOP_FUNC) {
+         switch(fop[i].op.func.op) {
+            case FFUNC_REGEX:
+
+               SAFE_CALLOC(fop[i].op.func.ropt->regex, 1, sizeof(regex_t));
+   
+               /* prepare the regex */
+               err = regcomp(fop[i].op.func.ropt->regex, fop[i].op.func.string, REG_EXTENDED | REG_NOSUB | REG_ICASE );
+               if (err) {
+                  regerror(err, fop[i].op.func.ropt->regex, errbuf, sizeof(errbuf));
+                  FATAL_MSG("filter engine: %s", errbuf);
+               } 
+               break;
+               
+            case FFUNC_PCRE:
+               #ifdef HAVE_PCRE
+
+               /* prepare the regex (with default option) */
+               fop[i].op.func.ropt->pregex = pcre_compile(fop[i].op.func.string, 0, &perrbuf, &err, NULL );
+               if (fop[i].op.func.ropt->pregex == NULL)
+                  FATAL_MSG("filter engine: %s\n", perrbuf);
+  
+               /* optimize the pcre */
+               fop[i].op.func.ropt->preg_extra = pcre_study(fop[i].op.func.ropt->pregex, 0, &perrbuf);
+               if (perrbuf != NULL)
+                  FATAL_MSG("filter engine: %s\n", perrbuf);
+               
+               #endif               
+               break;
+         }
+      }
+      i++;
+   } 
+
+   return ESUCCESS;
+}
 
 /* EOF */
 

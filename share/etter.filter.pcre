@@ -25,7 +25,7 @@
 # swap first two words of a udp packet
 
 if (ip.proto == UDP) {
-   pcre_regex(DATA.data, "s/^([^ ]*) *([^ ]*)/$2 $1/");
+   pcre_regex(DATA.data, "/^([^ ]*) *([^ ]*)/$2 $1/");
 }
 
 

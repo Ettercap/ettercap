@@ -29,14 +29,10 @@ this is the unofficial and floating in time roadmap:
 
 Oct 2003:
 
-
    + FILTERING ENGINE
-      - pay attention on network order for constants
-      - compile the regex in the loader
       - quick filter on a connection
       - perl regex (with libpcre)
          - set the correct delta !!
-      
       
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
@@ -65,7 +61,6 @@ Nov 2003:
       - dhcp poisoning
       - port stealing
       - dns poisoning
-
 
    + LOGGING
       - selective log on connections
@@ -110,13 +105,10 @@ Dec 2003:
       - TACACS dissector
       - new netbios
       - postgresql
-      - cvs
       - tds
 
    + Inet
       - handle fragmented packets
       - IPv6 support
-
-   + PORTING TO 64 bit ARCH
 
 

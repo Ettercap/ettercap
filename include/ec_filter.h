@@ -1,10 +1,15 @@
 
-/* $Id: ec_filter.h,v 1.16 2003/10/05 17:07:20 alor Exp $ */
+/* $Id: ec_filter.h,v 1.17 2003/10/05 20:44:41 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
 
 #include <ec_packet.h>
+
+#include <regex.h>
+#ifdef HAVE_PCRE
+   #include <pcre.h>
+#endif
 
 /* 
  * this is the struct used by the filtering engine
@@ -29,8 +34,9 @@ struct filter_op {
       #define FOP_JFALSE   6
 
    /*
-    * the first two filed of the structs (op and level) must
+    * the first two field of the structs (op and level) must
     * overlap the same memory region. it is abused in ef_encode.c
+    * encoding a function that uses an offset as an argument
     */
    union {
       /* functions */
@@ -50,6 +56,7 @@ struct filter_op {
          size_t slen;
          u_int8 *replace;
          size_t rlen;
+         struct regex_opt *ropt;
       } func;
       
       /* tests */
@@ -101,6 +108,15 @@ struct filter_env {
    void *map;
    struct filter_op *chain;
    size_t len;
+};
+
+/* uset to compile the regex while loading the file */
+struct regex_opt {
+   regex_t *regex;
+#ifdef HAVE_PCRE
+   pcre *pregex;
+   pcre_extra *preg_extra;   
+#endif
 };
 
 /* exported functions */

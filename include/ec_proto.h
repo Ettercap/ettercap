@@ -1,5 +1,5 @@
 
-/* $Id: ec_proto.h,v 1.14 2004/05/06 10:54:45 alor Exp $ */
+/* $Id: ec_proto.h,v 1.15 2004/06/08 08:58:42 alor Exp $ */
 
 #ifndef EC_PROTO_H
 #define EC_PROTO_H
@@ -14,6 +14,7 @@ enum {
    IL_TYPE_RAWIP = 0x0c,   /* raw ip dump file */
    IL_TYPE_WIFI  = 0x69,   /* wireless */
    IL_TYPE_COOK  = 0x71,   /* linux cooked */
+   IL_TYPE_PRISM = 0x77,   /* prism2 header for wifi dumps */
 };
    
 /* link layer types */

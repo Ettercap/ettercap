@@ -8,6 +8,7 @@
       - remove the quiet from some plugins
       - check SSL thru proxy
       - fix dying top_half under solaris
+      - incoorect csum on dns replies
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
@@ -36,6 +37,8 @@
  
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
+
+   + multiple dissector on one port
 
    + ETTERFILTER
       - possibility to set flags in scripts 

@@ -8,7 +8,8 @@ Legenda:
 
 NG-0.7.0_rc1     200405
 
-   + added WEP decryption for WiFi packets
+   + WEP decryption for WiFi packets
+   + support for prism2 headers
    + added the -I search option in etterlog
    + you can now apply filters on pcapfiles and dump the results
    !! log to file works again

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.124 2004/05/06 16:20:22 alor Exp $
+dnl    $Id: configure.in,v 1.125 2004/06/08 08:58:35 alor Exp $
 dnl
 
 AC_INIT
@@ -329,7 +329,7 @@ AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug,create a file for debugging m
 [ case "$enableval" in
    yes)
       AC_DEFINE(DEBUG, 1)
-      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Werror -Wformat-security -Wsign-compare -Wall"
+      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Werror -Wformat-security -Wsign-compare -Wall"
       AC_MSG_RESULT(yes)
       ac_ec_debug=yes
       ;;

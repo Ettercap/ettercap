@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_target.c,v 1.14 2003/10/27 21:25:45 alor Exp $
+    $Id: el_target.c,v 1.15 2004/04/08 14:35:15 alor Exp $
 */
 
 #include <el.h>
@@ -286,13 +286,12 @@ int is_target_pck(struct log_header_packet *pck)
         (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_dst))) )
       good = 1;   
   
-
    /* check the reverse option */
    if (GBL.reverse ^ (good && proto) ) 
       return 1;
-   else
-      return 0;
-
+      
+   
+   return 0;
 }
 
 /*

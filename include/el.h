@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.15 2004/01/26 20:59:46 alor Exp $ */
+/* $Id: el.h,v 1.16 2004/04/08 14:35:07 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -76,7 +76,6 @@ struct globals {
    char connections:1;
    char showmac:1;
    char showclient:1;
-   char reverse:1;
    char only_source:1;
    char only_dest:1;
    char only_local:1;
@@ -84,6 +83,7 @@ struct globals {
    char passwords:1;
    char color:1;
    char xml:1;
+   char reverse;
    int (*format)(const u_char *, size_t, u_char *);
    char *user;
    char *logfile;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.2 2004/02/27 09:00:44 alor Exp $
 */
 
 #include <ec.h>
@@ -299,7 +299,7 @@ static gboolean refresh_connections(gpointer data)
       ip_addr_ntoa(&c->co->L3_addr2, dst);
 
       if(ntohs(c->co->L4_addr1) == 0)
-         fprintf(stderr, "Possible BAD LINE - %08x\n", c);
+         fprintf(stderr, "Possible BAD LINE - %p\n", c);
 
       gtk_list_store_set (ls_conns, (iter3)?iter3:&iter, 
                           0, (c->co->DISSECTOR.user) ? "X" : " ",
@@ -947,6 +947,7 @@ static void gui_connection_inject(void)
 
    wdg_set_focus(in);
 */
+   (void)inject_user;
 }
 
 static void inject_user(void)

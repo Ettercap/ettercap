@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.52 2004/04/06 21:12:19 lordnaga Exp $
+    $Id: ec_send.c,v 1.53 2004/04/07 07:14:46 alor Exp $
 */
 
 #include <ec.h>
@@ -245,6 +245,8 @@ void capture_only_incoming(pcap_t *p, libnet_t *l)
    */
    
    DEBUG_MSG("hack_pcap_lnet (before) pcap %d | lnet %d", pcap_fileno(p), l->fd);
+
+   /* needed to avoid double execution (for portstealing) */
    if (pcap_fileno(p) == l->fd)
       return;
       

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.14 2004/04/06 21:08:11 lordnaga Exp $
+    $Id: ec_sniff_bridge.c,v 1.15 2004/04/07 07:14:46 alor Exp $
 */
 
 #include <ec.h>
@@ -112,7 +112,6 @@ void forward_bridge_sniff(struct packet_object *po)
     * the socket was opened during the initialization
     * phase (parameters parsing) by bridge_init()
     */
-
    if (po->flags & PO_FROMIFACE)
       send_to_bridge(po);
    else if (po->flags & PO_FROMBRIDGE)

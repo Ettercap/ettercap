@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip6.c,v 1.11 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_ip6.c,v 1.12 2004/04/07 07:14:47 alor Exp $
 */
 
 #include <ec.h>
@@ -171,8 +171,9 @@ FUNC_DECODER(decode_ip6)
     * External L3 header sets itself 
     * as the packet to be forwarded.
     */
-   PACKET->fwd_packet = (u_char *)DECODE_DATA;
-   PACKET->fwd_len = ntohs(ip6->payload_len) + DECODED_LEN;
+   /* XXX - recheck this */
+   //PACKET->fwd_packet = (u_char *)DECODE_DATA;
+   //PACKET->fwd_len = ntohs(ip6->payload_len) + DECODED_LEN;
    
    return NULL;
 }

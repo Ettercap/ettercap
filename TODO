@@ -28,9 +28,6 @@
    + CURSES GUI
       - lines without \n while sniffing
    
-   + BRIDGED SNIFFING
-      - keep track of source mac addresses
-    
 
 ============================
   Not in the first release  

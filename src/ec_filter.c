@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.49 2004/03/03 21:43:19 alor Exp $
+    $Id: ec_filter.c,v 1.50 2004/04/07 07:14:46 alor Exp $
 */
 
 #include <ec.h>
@@ -37,7 +37,7 @@
    #include <pcre.h>
 #endif
 
-#define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x, ## __VA_ARGS__); return -EFATAL; } while(0)
+#define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x "\n", ## __VA_ARGS__); return -EFATAL; } while(0)
 
 static pthread_mutex_t filters_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define FILTERS_LOCK     do{ pthread_mutex_lock(&filters_mutex); }while(0)

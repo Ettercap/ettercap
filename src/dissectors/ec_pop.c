@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.26 2004/01/21 20:20:06 alor Exp $
+    $Id: ec_pop.c,v 1.27 2004/04/07 07:14:47 alor Exp $
 */
 
 /*
@@ -171,10 +171,20 @@ FUNC_DECODER(dissector_pop)
          SAFE_FREE(ident);
          return NULL;
       }
+      
+      SAFE_FREE(ident);
 
       /* check that the user was sent before the pass */
       if (s->data == NULL) {
-         SAFE_FREE(ident);
+         return NULL;
+      }
+     
+      /* 
+       * if the PASS command is issued before the USER one, we have to APOP
+       * digest in the s->data. we can check it on the first char. who has an
+       * username beginning with '<' ??? :)
+       */
+      if (*(char *)(s->data) == '<') {
          return NULL;
       }
       
@@ -187,7 +197,6 @@ FUNC_DECODER(dissector_pop)
 
       /* free the session */
       session_free(s);
-      SAFE_FREE(ident);
 
       /* print the message */
       DISSECT_MSG("POP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),

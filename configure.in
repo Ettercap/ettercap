@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.131 2004/09/14 00:18:30 daten Exp $
+dnl    $Id: configure.in,v 1.132 2004/10/05 20:12:33 alor Exp $
 dnl
 
 AC_INIT
@@ -467,7 +467,14 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
      AC_MSG_ERROR(["*** ettercap cannot operate without libnet. ***"])
      ;;
   *)
-     if test -f $withval/include/libnet.h; then
+     if test -f $withval/lnet.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        LNETINC="-I$withval"
+        LNETLIB="-L$withval -lnet"
+        ac_ec_libnet=$withval
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/include/libnet.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         LNETINC="-I$withval/include"

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.9 2003/05/19 10:58:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.10 2003/07/08 18:50:20 alor Exp $
 */
 
 #include <ec.h>
@@ -30,7 +30,7 @@
    #include <missing/scandir.h>
 #endif
 
-//#include <ltdl.h>
+#include <ltdl.h>
 #ifdef HAVE_DLFCN_H
    #include <dlfcn.h>
 #endif
@@ -84,19 +84,19 @@ int plugin_load_single(char *path, char *name)
    DEBUG_MSG("plugin_load: %s", file);
    
    /* load the plugin */
-   handle = dlopen(file, RTLD_NOW);
+   handle = lt_dlopen(file);
 
    if (handle == NULL) {
-      DEBUG_MSG("plugin_load_single - %s - dlopen() | %s", file, dlerror());
+      DEBUG_MSG("plugin_load_single - %s - lt_dlopen() | %s", file, lt_dlerror());
       return -EINVALID;
    }
    
    /* find the loading function */
-   plugin_load = dlsym(handle, SYM_PREFIX "plugin_load");
+   plugin_load = lt_dlsym(handle, SYM_PREFIX "plugin_load");
    
    if (plugin_load == NULL) {
-      DEBUG_MSG("plugin_load_single - %s - dlsym() | %s", file, dlerror());
-      dlclose(handle);
+      DEBUG_MSG("plugin_load_single - %s - lt_dlsym() | %s", file, lt_dlerror());
+      lt_dlclose(handle);
       return -EINVALID;
    }
 
@@ -126,8 +126,8 @@ void plugin_load_all(void)
    
    DEBUG_MSG("plugin_loadall");
 
-//   if (lt_dlinit() != 0)
-//      ERROR_MSG("lt_dlinit()");
+   if (lt_dlinit() != 0)
+      ERROR_MSG("lt_dlinit()");
 
    /* XXX - replace "." with INSTALL_PREFIX"/lib/" */
 
@@ -172,12 +172,12 @@ void plugin_unload_all(void)
    
    while (SLIST_FIRST(&plugin_head) != NULL) {
       p = SLIST_FIRST(&plugin_head);
-      dlclose(p->handle);
+      lt_dlclose(p->handle);
       SLIST_REMOVE_HEAD(&plugin_head, next);
    }
    
-//   if (lt_dlexit() != 0)
-//      ERROR_MSG("lt_dlexit()");
+   if (lt_dlexit() != 0)
+      ERROR_MSG("lt_dlexit()");
 }
 
 
@@ -189,7 +189,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
    struct plugin_entry *p;
 
    if (strcmp(ops->ettercap_version, EC_VERSION)) {
-      dlclose(handle);
+      lt_dlclose(handle);
       return -EVERSION;
    }
 

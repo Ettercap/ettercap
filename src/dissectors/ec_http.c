@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.11 2004/04/06 08:49:10 alor Exp $
+    $Id: ec_http.c,v 1.12 2004/04/06 19:12:49 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -29,8 +29,8 @@
 #include <ec_sslwrap.h>
 
 /* globals */
-#define USER 1
-#define PASS 2
+#define USER 0
+#define PASS 1
 
 struct http_status {
    u_char c_status;

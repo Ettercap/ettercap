@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.11 2003/04/15 07:57:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.12 2003/04/28 08:12:39 alor Exp $
 */
 
 
@@ -76,6 +76,7 @@ void el_usage(void)
    fprintf(stdout, "  -E, --ebcdic                print packets in ebcdic mode\n");
    fprintf(stdout, "  -H, --html                  print packets in html mode\n");
    fprintf(stdout, "  -Z, --zero                  do not print packets, only headers\n");
+   fprintf(stdout, "  -x, --xml                   print host infos in xml format\n");
    
    fprintf(stdout, "\nStandard Options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
@@ -102,6 +103,7 @@ void parse_options(int argc, char **argv)
       { "ebcdic", no_argument, NULL, 'E' },
       { "html", no_argument, NULL, 'H' },
       { "zero", no_argument, NULL, 'Z' },
+      { "xml", no_argument, NULL, 'x' },
       
       { "analyze", no_argument, NULL, 'a' },
       { "connections", no_argument, NULL, 'c' },
@@ -126,7 +128,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhkLlmnrsTt:u:vXZ", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhkLlmnrsTt:u:vXxZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -216,6 +218,10 @@ void parse_options(int argc, char **argv)
                   
          case 'Z':
                   GBL.format = &zero_format;
+                  break;
+                  
+         case 'x':
+                  GBL.xml = 1;
                   break;
                   
          case 'h':

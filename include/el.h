@@ -68,6 +68,7 @@ struct globals {
    char only_local:1;
    char only_remote:1;
    char color:1;
+   char xml:1;
    int (*format)(const u_char *, size_t, u_char *);
    char *user;
    char *logfile;

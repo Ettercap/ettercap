@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_profiles.c,v 1.4 2004/02/29 17:37:21 alor Exp $
+    $Id: ec_gtk_view_profiles.c,v 1.5 2004/03/01 00:19:01 daten Exp $
 */
 
 #include <ec.h>
@@ -39,7 +39,6 @@ static void gtkui_profiles_convert(void);
 static void gtkui_profiles_dump(void *dummy);
 static void dump_profiles(void);
 
-static void gtkui_print_details(GtkTextBuffer *textbuf, char *data);
 extern void gtkui_refresh_host_list(void);
 static struct host_profile *gtkui_profile_selected(void);
 
@@ -124,6 +123,10 @@ void gtkui_show_profiles(void)
    button = gtk_button_new_with_mnemonic("Purge _Remote");
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_remote), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+   gtk_widget_show_all(hbox);
+
+   hbox = gtk_hbox_new(TRUE, 5);
+   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("_Convert to Host List");
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_convert), NULL);
@@ -132,8 +135,8 @@ void gtkui_show_profiles(void)
    button = gtk_button_new_with_mnemonic("_Dump to File");
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_dump), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
-
    gtk_widget_show_all(hbox);
+
    gtk_widget_show(profiles_window);
 
    /* refresh the stats window every 200 ms */
@@ -220,7 +223,6 @@ static gboolean refresh_profiles(gpointer data)
  */
 static void gtkui_profile_detail(void)
 {
-   GtkWidget *window, *scrolled, *textview;
    GtkTextBuffer *textbuf;
    char line[200];
 
@@ -230,105 +232,78 @@ static void gtkui_profile_detail(void)
    char tmp[MAX_ASCII_ADDR_LEN];
    char os[OS_LEN+1];
    
-   DEBUG_MSG("gtk_profile_detail");
+   DEBUG_MSG("gtkui_profile_detail");
 
-   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (window), "Profile details");
-   gtk_window_set_default_size(GTK_WINDOW (window), 400, 400);
-   g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gtk_widget_destroy), NULL);
-   
-   scrolled = gtk_scrolled_window_new(NULL, NULL);
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scrolled), GTK_SHADOW_IN);
-   gtk_container_add(GTK_CONTAINER (window), scrolled);
-   gtk_widget_show(scrolled);
-
-   textview = gtk_text_view_new();
-   gtk_text_view_set_editable(GTK_TEXT_VIEW (textview), FALSE);
-   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (textview), FALSE);
-   gtk_container_add(GTK_CONTAINER (scrolled), textview);
-   gtk_widget_show(textview);
-
-   textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW (textview));
+   textbuf = gtkui_details_window("Profile Details");
 
    memset(os, 0, sizeof(os));
    
-   snprintf(line, 200, " IP address   : %s \n", ip_addr_ntoa(&h->L3_addr, tmp));
-   gtkui_print_details(textbuf, line);
+   snprintf(line, 200, " IP Address: \t%s \n", ip_addr_ntoa(&h->L3_addr, tmp));
+   gtkui_details_print(textbuf, line);
 
    if (strcmp(h->hostname, ""))
-      snprintf(line, 200, " Hostname     : %s \n\n", h->hostname);
+      snprintf(line, 200, " Hostname: \t%s \n\n", h->hostname);
    else
       snprintf(line, 200, "\n");   
-   gtkui_print_details(textbuf, line);
+   gtkui_details_print(textbuf, line);
       
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
-      snprintf(line, 200, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
-      gtkui_print_details(textbuf, line);
-      snprintf(line, 200, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
-      gtkui_print_details(textbuf, line);
+      snprintf(line, 200, " MAC address:  \t%s \n", mac_addr_ntoa(h->L2_addr, tmp));
+      gtkui_details_print(textbuf, line);
+      snprintf(line, 200, " Manufacturer: \t%s \n\n", manuf_search(h->L2_addr));
+      gtkui_details_print(textbuf, line);
    }
 
-   snprintf(line, 200, " DISTANCE     : %d   \n", h->distance);
-   gtkui_print_details(textbuf, line);
+   snprintf(line, 200, " Distance: \t\t%d   \n", h->distance);
+   gtkui_details_print(textbuf, line);
    if (h->type & FP_GATEWAY)
-      snprintf(line, 200, " TYPE         : GATEWAY\n\n");
+      snprintf(line, 200, " Type: \t\tGATEWAY\n\n");
    else if (h->type & FP_HOST_LOCAL)
-      snprintf(line, 200, " TYPE         : LAN host\n\n");
+      snprintf(line, 200, " Type: \t\tLAN host\n\n");
    else if (h->type & FP_ROUTER)
-      snprintf(line, 200, " TYPE         : REMOTE ROUTER\n\n");
+      snprintf(line, 200, " Type: \t\tREMOTE ROUTER\n\n");
    else if (h->type & FP_HOST_NONLOCAL)
-      snprintf(line, 200, " TYPE         : REMOTE host\n\n");
+      snprintf(line, 200, " Type: \t\tREMOTE host\n\n");
    else if (h->type == FP_UNKNOWN)
-      snprintf(line, 200, " TYPE         : unknown\n\n");
-   gtkui_print_details(textbuf, line);
+      snprintf(line, 200, " Type: \t\tunknown\n\n");
+   gtkui_details_print(textbuf, line);
       
    
-   snprintf(line, 200, " FINGERPRINT      : %s\n", h->fingerprint);
-   gtkui_print_details(textbuf, line);
+   snprintf(line, 200, " Fingerprint: \t%s\n", h->fingerprint);
+   gtkui_details_print(textbuf, line);
    if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
-      snprintf(line, 200, " OPERATING SYSTEM : %s \n\n", os);
+      snprintf(line, 200, " Operating System: \t%s \n\n", os);
    else {
-      snprintf(line, 200, " OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
-      gtkui_print_details(textbuf, line);
-      snprintf(line, 200, " NEAREST ONE IS   : %s \n\n", os);
+      snprintf(line, 200, " Operating System: \tunknown fingerprint (please submit it) \n");
+      gtkui_details_print(textbuf, line);
+      snprintf(line, 200, " Nearest one is: \t%s \n\n", os);
    }
-   gtkui_print_details(textbuf, line);
+   gtkui_details_print(textbuf, line);
       
    
    LIST_FOREACH(o, &(h->open_ports_head), next) {
       
-      snprintf(line, 200, "   PORT     : %s %d | %s \t[%s]\n", 
+      snprintf(line, 200, "   Port: \t%s %d | %s \t[%s]\n", 
                   (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , 
                   ntohs(o->L4_addr),
                   service_search(o->L4_addr, o->L4_proto), 
                   (o->banner) ? o->banner : "");
-      gtkui_print_details(textbuf, line);
+      gtkui_details_print(textbuf, line);
       
       LIST_FOREACH(u, &(o->users_list_head), next) {
         
          if (u->failed)
-            snprintf(line, 200, "      ACCOUNT : * %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
+            snprintf(line, 200, "   Account: * %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
          else
-            snprintf(line, 200, "      ACCOUNT : %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
-         gtkui_print_details(textbuf, line);
+            snprintf(line, 200, "   Account: %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
+         gtkui_details_print(textbuf, line);
          if (u->info)
-            snprintf(line, 200, "      INFO    : %s\n\n", u->info);
+            snprintf(line, 200, "   Info: \t%s\n\n", u->info);
          else
             snprintf(line, 200, "\n");
-         gtkui_print_details(textbuf, line);
+         gtkui_details_print(textbuf, line);
       }
    }
-
-   gtk_widget_show(window);
-}
-
-static void gtkui_print_details(GtkTextBuffer *textbuf, char *data)
-{
-   GtkTextIter iter;
-
-   gtk_text_buffer_get_end_iter(textbuf, &iter);
-   gtk_text_buffer_insert(textbuf, &iter, data, -1);
 }
 
 static void gtkui_profiles_local(void)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.7 2004/02/29 20:06:06 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.8 2004/03/01 00:19:01 daten Exp $
 */
 
 #include <ec.h>
@@ -330,13 +330,14 @@ static gboolean refresh_connections(gpointer data)
  */
 static void gtkui_connection_detail(void)
 {
-   GtkWidget *detail_window, *table, *label;
    GtkTreeIter iter;
    GtkTreeModel *model;
+   GtkTextBuffer *textbuf;
+   char line[200];
    struct conn_tail *c = NULL;
-   char tmp[MAX_ASCII_ADDR_LEN], line[100];
+   char tmp[MAX_ASCII_ADDR_LEN];
    char *proto = "";
-   
+
    DEBUG_MSG("gtk_connection_detail");
 
    model = GTK_TREE_MODEL (ls_conns);
@@ -349,70 +350,22 @@ static void gtkui_connection_detail(void)
    if(!c || !c->co)
       return;
 
-   detail_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (detail_window), "Connection details");
-   gtk_container_set_border_width(GTK_CONTAINER (detail_window), 10);
-   g_signal_connect (G_OBJECT (detail_window), "delete_event", G_CALLBACK (gtk_widget_destroy), NULL);
-   
-   /* alright, this is a lot of code but it'll keep everything lined up nicely */
-   /* if you need to add a row, don't forget to increase the number in gtk_table_new */
-   table = gtk_table_new(15, 2, FALSE); /* rows, cols, size */
-   gtk_table_set_col_spacings(GTK_TABLE (table), 10);
-   gtk_container_add(GTK_CONTAINER (detail_window), table);
+   textbuf = gtkui_details_window("Connection Details");
 
-   /* Source MAC */
-   label = gtk_label_new("Source MAC address");
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 0, 1);
+   snprintf(line, 200, "Source MAC address: \t%s\n", mac_addr_ntoa(c->co->L2_addr1, tmp));
+   gtkui_details_print(textbuf, line);
 
-   label = gtk_label_new(mac_addr_ntoa(c->co->L2_addr1, tmp));
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 0, 1);
+   snprintf(line, 200, "Destination MAC address: \t%s\n\n", mac_addr_ntoa(c->co->L2_addr2, tmp));
+   gtkui_details_print(textbuf, line);
 
-   /* Destination MAC */
-   label = gtk_label_new("Destination MAC address");
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 1, 2);
 
-   label = gtk_label_new(mac_addr_ntoa(c->co->L2_addr2, tmp));
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 1, 2);
+   snprintf(line, 200, "Source IP address: \t\t%s\n", ip_addr_ntoa(&(c->co->L3_addr1), tmp));
+   gtkui_details_print(textbuf, line);
 
-   /* empty space */
-   label = gtk_label_new("                        ");
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 2, 2, 3);
+   snprintf(line, 200, "Destination IP address: \t%s\n\n", ip_addr_ntoa(&(c->co->L3_addr2), tmp));
+   gtkui_details_print(textbuf, line);
 
-   /* Source IP */
-   label = gtk_label_new("Source IP address");
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 3, 4);
-
-   label = gtk_label_new(ip_addr_ntoa(&(c->co->L3_addr1), tmp));
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 3, 4);
-
-   /* Destination IP */
-   label = gtk_label_new("Destination IP address");
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 4, 5);
-
-   label = gtk_label_new(ip_addr_ntoa(&(c->co->L3_addr2), tmp));
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 4, 5);
-
-   /* empty space */
-   label = gtk_label_new("                        ");
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 2, 5, 6);
-
-   /* Protocol */
+      /* Protocol */
    switch (c->co->L4_proto) {
       case NL_TYPE_UDP:
          proto = "UDP";
@@ -422,92 +375,28 @@ static void gtkui_connection_detail(void)
          break;
    }
 
-   label = gtk_label_new("Protocol");
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 6, 7);
+   snprintf(line, 200, "Protocol: \t\t\t%s\n", proto);
+   gtkui_details_print(textbuf, line);
 
-   label = gtk_label_new(proto);
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 6, 7);
+   snprintf(line, 200, "Source port: \t\t%-5d  %s\n", ntohs(c->co->L4_addr1), service_search(c->co->L4_addr1, c->co->L4_proto));
+   gtkui_details_print(textbuf, line);
 
-   /* Source Port */
-   label = gtk_label_new("Source port");
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 7, 8);
+   snprintf(line, 200, "Destination port: \t%-5d  %s\n\n", ntohs(c->co->L4_addr2), service_search(c->co->L4_addr2, c->co->L4_proto));
+   gtkui_details_print(textbuf, line);
 
-   snprintf(line, 100, "%-5d  %s", ntohs(c->co->L4_addr1), service_search(c->co->L4_addr1, c->co->L4_proto));
-
-   label = gtk_label_new(line);
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 7, 8);
-
-   /* Destination Port */
-   label = gtk_label_new("Destination port");
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 8, 9);
-
-   snprintf(line, 100, "%-5d  %s", ntohs(c->co->L4_addr2), service_search(c->co->L4_addr2, c->co->L4_proto));
-
-   label = gtk_label_new(line);
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 8, 9);
-
-   /* empty space */
-   label = gtk_label_new("                        ");
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 2, 9, 10);
-
-   /* Transferred */
-   label = gtk_label_new("Transferred bytes");
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 10, 11); 
-
-   snprintf(line, 100, "%d",  c->co->xferred);
-
-   label = gtk_label_new(line);
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 10, 11);
-
-   /* empty space */
-   label = gtk_label_new("                        ");
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 2, 11, 12);
+   snprintf(line, 200, "Transferred bytes: %d\n\n", c->co->xferred);
+   gtkui_details_print(textbuf, line);
 
    /* Login Information */
    if (c->co->DISSECTOR.user) {
-      label = gtk_label_new("Account");
-      gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-      gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 12, 13);
-
-      snprintf(line, 100, "%s / %s", c->co->DISSECTOR.user, c->co->DISSECTOR.pass);
-
-      label = gtk_label_new(line);
-      gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-      gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 12, 13);
+      snprintf(line, 200, "Account: \t%s / %s", c->co->DISSECTOR.user, c->co->DISSECTOR.pass);
+      gtkui_details_print(textbuf, line);
 
       if (c->co->DISSECTOR.info) {
-         label = gtk_label_new("Additional Info");
-         gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-         gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-         gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 13, 14);
-
-         label = gtk_label_new(c->co->DISSECTOR.info);
-         gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-         gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-         gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 13, 14);
+         snprintf(line, 200, "Additional Info: %s\n", c->co->DISSECTOR.info);
+         gtkui_details_print(textbuf, line);
       }
    }
-
-   gtk_widget_show_all(table);
-   gtk_widget_show(detail_window);
 }
 
 static void gtkui_connection_data(void)

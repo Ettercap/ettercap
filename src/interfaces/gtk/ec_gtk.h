@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.4 2004/02/29 17:37:21 alor Exp $ */
+/* $Id: ec_gtk.h,v 1.5 2004/03/01 00:19:01 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -15,6 +15,9 @@ extern void gtkui_input(const char *title, char *input, size_t n, void (*callbac
 
 extern void gtkui_sniff_offline(void);
 extern void gtkui_sniff_live(void);
+
+extern GtkTextBuffer *gtkui_details_window(char *title);
+extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
 
 /* ec_gtk_menus.c */
 /*

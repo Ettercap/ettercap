@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.7 2004/02/29 17:37:21 alor Exp $
+    $Id: ec_gtk.c,v 1.8 2004/03/01 00:18:56 daten Exp $
 */
 
 #include <ec.h>
@@ -65,10 +65,14 @@ static void read_pcapfile(char *file);
 static void gtkui_file_write(void);
 static void write_pcapfile(void);
 static void gtkui_unified_sniff(void);
+static void gtkui_unified_sniff_default(void);
 static void gtkui_bridged_sniff(void);
 static void bridged_sniff(void);
 static void gtkui_pcap_filter(void);
 
+GtkTextBuffer *gtkui_details_window(char *title);
+void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
+void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 
 /***#****************************************/
 
@@ -233,6 +237,8 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
    gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
    
    entry = gtk_entry_new_with_max_length(n);
+   g_object_set_data(G_OBJECT (entry), "dialog", dialog);
+   g_signal_connect(G_OBJECT (entry), "activate", G_CALLBACK (gtkui_dialog_enter), NULL);
    
    if (input)
       gtk_entry_set_text(GTK_ENTRY (entry), input); 
@@ -373,6 +379,9 @@ static void gtkui_setup(void)
    GtkTextIter iter;
    GtkWidget *item, *vbox, *scroll;
    GtkItemFactory *item_factory;
+   GClosure *closure = NULL;
+   GdkModifierType mods;
+   gint keyval;
    char title[50];
 
    GtkItemFactoryEntry file_menu[] = {
@@ -404,6 +413,11 @@ static void gtkui_setup(void)
    accel_group = gtk_accel_group_new ();
    item_factory = gtk_item_factory_new (GTK_TYPE_MENU_BAR, "<main>", accel_group);
    gtk_item_factory_create_items (item_factory, nmenu_items, file_menu, NULL);
+
+   /* hidden shortcut to start Unified Sniffing with default interface */
+   closure = g_cclosure_new(G_CALLBACK(gtkui_unified_sniff_default), NULL, NULL);
+   gtk_accelerator_parse ("u", &keyval, &mods);
+   gtk_accel_group_connect(accel_group, keyval, mods, 0, closure);
 
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (window), vbox);
@@ -559,6 +573,25 @@ static void gtkui_unified_sniff(void)
    gtkui_input("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, gtk_main_quit);
 }
 
+/* 
+ * start unified sniffing with default interface
+ */
+static void gtkui_unified_sniff_default(void) {
+   char err[PCAP_ERRBUF_SIZE];
+   
+   #define IFACE_LEN  10
+
+   DEBUG_MSG("gtkui_unified_sniff_default");
+
+   if (GBL_OPTIONS->iface == NULL) { 
+      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+      strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+   }
+
+   /* close setup interface and start sniffing */
+   gtk_main_quit();
+}
+
 /*
  * display the interface selection for bridged sniffing
  */
@@ -661,6 +694,65 @@ static void gtkui_pcap_filter(void)
     * the interface for other user input
     */
    gtkui_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
+}
+
+GtkTextBuffer *gtkui_details_window(char *title)
+{
+   GtkWidget *dwindow, *dscrolled, *dtextview;
+   GtkWidget *vbox, *hbox, *button;     
+                                        
+   DEBUG_MSG("gtkui_details_window");
+   
+   dwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+   gtk_window_set_title(GTK_WINDOW (dwindow), title);
+   gtk_window_set_default_size(GTK_WINDOW (dwindow), 300, 300);
+   gtk_container_set_border_width(GTK_CONTAINER (dwindow), 5);
+   gtk_window_set_position(GTK_WINDOW (dwindow), GTK_WIN_POS_CENTER);
+   g_signal_connect (G_OBJECT (dwindow), "delete_event", G_CALLBACK (gtk_widget_destroy), NULL);
+   
+   vbox = gtk_vbox_new(FALSE, 5);
+   gtk_container_add(GTK_CONTAINER (dwindow), vbox);
+   gtk_widget_show(vbox);
+   
+   dscrolled = gtk_scrolled_window_new(NULL, NULL); 
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (dscrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (dscrolled), GTK_SHADOW_IN);
+   gtk_box_pack_start(GTK_BOX(vbox), dscrolled, TRUE, TRUE, 0);
+   gtk_widget_show(dscrolled);
+
+   dtextview = gtk_text_view_new();
+   gtk_text_view_set_editable(GTK_TEXT_VIEW (dtextview), FALSE);
+   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (dtextview), FALSE);
+   gtk_container_add(GTK_CONTAINER (dscrolled), dtextview);
+   gtk_widget_show(dtextview);
+
+   hbox = gtk_hbox_new(FALSE, 0);
+   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+   gtk_widget_show(hbox);
+
+   button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+   g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(gtk_widget_destroy), dwindow);
+   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+   gtk_widget_show(button);
+
+   gtk_widget_show(dwindow);
+
+   return(gtk_text_view_get_buffer(GTK_TEXT_VIEW (dtextview)));
+}
+
+void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
+{
+   GtkTextIter iter;
+
+   gtk_text_buffer_get_end_iter(textbuf, &iter);
+   gtk_text_buffer_insert(textbuf, &iter, data, -1);
+}
+
+void gtkui_dialog_enter(GtkWidget *widget, gpointer data) {
+   GtkWidget *dialog;
+
+   dialog = g_object_get_data(G_OBJECT(widget), "dialog");
+   gtk_dialog_response(GTK_DIALOG (dialog), GTK_RESPONSE_OK);
 }
 
 /* EOF */

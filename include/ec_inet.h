@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.19 2004/01/20 21:17:10 alor Exp $ */
+/* $Id: ec_inet.h,v 1.20 2004/04/04 14:14:09 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -7,6 +7,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+
+#ifdef OS_CYGWIN
+   #ifndef AF_INET6
+      /* XXX - ugly hack only to make it compile */
+      #define AF_INET6 23
+   #endif
+#endif
 
 enum {
    NS_IN6ADDRSZ            = 16,

@@ -1,16 +1,20 @@
 
-/* $Id: ec_resolv.h,v 1.10 2004/03/07 13:42:08 alor Exp $ */
+/* $Id: ec_resolv.h,v 1.11 2004/04/04 14:14:09 alor Exp $ */
 
 #ifndef EC_RESOLV_H
 #define EC_RESOLV_H
 
 #include <ec_inet.h>
 
-#include <arpa/nameser.h>
-#ifndef OS_BSD_OPEN
-   #include <arpa/nameser_compat.h>
+#ifdef HAVE_NAMESER_H
+   #include <arpa/nameser.h>
+   #ifndef OS_BSD_OPEN
+      #include <arpa/nameser_compat.h>
+   #endif
+   #include <resolv.h>
+#else
+   #include <missing/nameser.h>
 #endif
-#include <resolv.h>
 
 /*
  * glibc 2.1.x does not have new NG_GET* macros...

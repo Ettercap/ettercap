@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.36 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_ip.c,v 1.37 2004/03/10 08:36:05 alor Exp $
 */
 
 #include <ec.h>
@@ -298,8 +298,7 @@ FUNC_INJECTOR(inject_ip)
    /* Rember length of further headers */
    further_len = LENGTH;
    
-   if (s->prev_session != NULL)
-   {
+   if (s->prev_session != NULL) {
       /* Prepare data for next injector */
       PACKET->session = s->prev_session;
       memcpy(&magic, s->prev_session->ident, 4);
@@ -325,8 +324,7 @@ FUNC_INJECTOR(inject_ip)
    iph->csum = L3_checksum(PACKET->L3.header, PACKET->L3.len);
 
    /* Set fields to forward the packet (only if the chain is ended) */
-   if (s->prev_session == NULL)
-   {
+   if (s->prev_session == NULL) {
       PACKET->fwd_packet = PACKET->packet;
       PACKET->fwd_len = PACKET->L3.len;
    }

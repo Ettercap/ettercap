@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.24 2004/01/06 15:01:59 alor Exp $
+    $Id: ec_signals.c,v 1.25 2004/03/10 08:35:55 alor Exp $
 */
 
 #include <ec.h>
@@ -52,6 +52,8 @@ void signal_handler(void)
    signal_handle(SIGINT, signal_TERM, 0);
    signal_handle(SIGTERM, signal_TERM, 0);
    signal_handle(SIGCHLD, signal_CHLD, 0);
+   /* needed by sslwrap */
+   signal_handle(SIGPIPE, SIG_IGN, 0);
    /* needed by solaris */
    signal_handle(SIGALRM, SIG_IGN, 0);
    /* allow the user to type "ettercap .. &" */

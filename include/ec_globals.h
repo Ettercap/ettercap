@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.36 2003/10/25 16:20:06 alor Exp $ */
+/* $Id: ec_globals.h,v 1.37 2003/10/25 21:57:42 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -10,6 +10,7 @@
 #include <ec_stats.h>
 #include <ec_profiles.h>
 #include <ec_filter.h>
+#include <ec_interfaces.h>
 
 #include <pcap.h>
 #include <regex.h>
@@ -28,6 +29,7 @@ struct ec_conf {
    int close_on_eof;
    int aggressive_dissectors;
    int store_profiles;
+   struct curses_color colors;
 };
 
 /* options from getopt */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.21 2003/10/21 16:56:45 alor Exp $
+    $Id: ec_conf.c,v 1.22 2003/10/25 21:57:42 alor Exp $
 */
 
 #include <ec.h>
@@ -64,6 +64,24 @@ static struct conf_entry misc[] = {
    { NULL, NULL },
 };
 
+static struct conf_entry curses[] = {
+   { "color_bg", NULL },
+   { "color_fg", NULL },
+   { "color_border", NULL },
+   { "color_title", NULL },
+   { "color_focus", NULL },
+   { "color_menu_bg", NULL },
+   { "color_menu_fg", NULL },
+   { "color_window_bg", NULL },
+   { "color_window_fg", NULL },
+   { "color_selection_fg", NULL },
+   { "color_selection_bg", NULL },
+   { "color_error_bg", NULL },
+   { "color_error_fg", NULL },
+   { "color_error_border", NULL },
+   { NULL, NULL },
+};
+
 /* this is fake, dissector use a different registration */
 static struct conf_entry dissectors[] = {
    { "fake", &number_of_dissectors },
@@ -76,6 +94,7 @@ static struct conf_section sections[] = {
    { "stats", (struct conf_entry *)&stats},
    { "misc", (struct conf_entry *)&misc},
    { "dissectors", (struct conf_entry *)&dissectors},
+   { "curses", (struct conf_entry *)&curses},
    { NULL, NULL },
 };
 
@@ -116,6 +135,20 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&misc, "close_on_eof", &GBL_CONF->close_on_eof);
    set_pointer((struct conf_entry *)&misc, "store_profiles", &GBL_CONF->store_profiles);
    set_pointer((struct conf_entry *)&misc, "aggressive_dissectors", &GBL_CONF->aggressive_dissectors);
+   set_pointer((struct conf_entry *)&curses, "color_bg", &GBL_CONF->colors.bg);
+   set_pointer((struct conf_entry *)&curses, "color_fg", &GBL_CONF->colors.fg);
+   set_pointer((struct conf_entry *)&curses, "color_border", &GBL_CONF->colors.border);
+   set_pointer((struct conf_entry *)&curses, "color_title", &GBL_CONF->colors.title);
+   set_pointer((struct conf_entry *)&curses, "color_focus", &GBL_CONF->colors.focus);
+   set_pointer((struct conf_entry *)&curses, "color_menu_bg", &GBL_CONF->colors.menu_bg);
+   set_pointer((struct conf_entry *)&curses, "color_menu_fg", &GBL_CONF->colors.menu_fg);
+   set_pointer((struct conf_entry *)&curses, "color_window_bg", &GBL_CONF->colors.window_bg);
+   set_pointer((struct conf_entry *)&curses, "color_window_fg", &GBL_CONF->colors.window_fg);
+   set_pointer((struct conf_entry *)&curses, "color_selection_bg", &GBL_CONF->colors.selection_bg);
+   set_pointer((struct conf_entry *)&curses, "color_selection_fg", &GBL_CONF->colors.selection_fg);
+   set_pointer((struct conf_entry *)&curses, "color_error_bg", &GBL_CONF->colors.error_bg);
+   set_pointer((struct conf_entry *)&curses, "color_error_fg", &GBL_CONF->colors.error_fg);
+   set_pointer((struct conf_entry *)&curses, "color_error_border", &GBL_CONF->colors.error_border);
 
    /* sanity check */
    do {
@@ -202,7 +235,7 @@ void load_conf(void)
          /* get the pointer to the right structure */
          if ( (curr_section = search_section(p)) == NULL)
             FATAL_ERROR("Invalid section in %s line %d", ETTER_CONF, lineno);
-        
+         
          /* read the next line */
          continue;
       }

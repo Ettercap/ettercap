@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.53 2003/10/22 20:36:25 alor Exp $
+dnl    $Id: configure.in,v 1.54 2003/10/25 21:57:39 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -589,7 +589,7 @@ AC_ARG_WITH(libncurses,
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         NCURSINC="-I$withval"
-        NCURSLIB="-L$withval -lncurses"
+        NCURSLIB="-L$withval -lpanel -lncurses"
         AC_DEFINE(HAVE_NCURSES, 1)
         AM_CONDITIONAL(NCURSES, true)
         ac_cv_ec_libncurses=$withval
@@ -599,7 +599,7 @@ AC_ARG_WITH(libncurses,
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         NCURSINC="-I$withval/include -I$withval/include/ncurses"
-        NCURSLIB="-L$withval/lib -lncurses"
+        NCURSLIB="-L$withval/lib -lpanel -lncurses"
         AC_DEFINE(HAVE_NCURSES, 1)
         AM_CONDITIONAL(NCURSES, true)
         ac_cv_ec_libncurses=$withval
@@ -610,13 +610,13 @@ AC_ARG_WITH(libncurses,
   esac ],
 [ if test -f /usr/include/ncurses/ncurses.h; then
      NCURSINC="-I/usr/include/ncurses"
-     NCURSLIB="-lncurses"
+     NCURSLIB="-lpanel -lncurses"
      AC_DEFINE(HAVE_NCURSES, 1)
      AM_CONDITIONAL(NCURSES, true)
      ac_cv_ec_libncurses=default
      AC_MSG_RESULT(yes)
   elif test -f /usr/include/ncurses.h; then
-     NCURSLIB="-lncurses"
+     NCURSLIB="-lpanel -lncurses"
      AC_DEFINE(HAVE_NCURSES, 1)
      AM_CONDITIONAL(NCURSES, true)
      ac_cv_ec_libncurses=default

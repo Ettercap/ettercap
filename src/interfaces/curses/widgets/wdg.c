@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.9 2003/10/25 11:21:53 alor Exp $
+    $Id: wdg.c,v 1.10 2003/10/25 21:57:42 alor Exp $
 */
 
 #include <wdg.h>
@@ -72,6 +72,8 @@ int wdg_destroy_object(struct wdg_object **wo);
 void wdg_resize_object(struct wdg_object *wo, int x1, int y1, int x2, int y2);
 void wdg_draw_object(struct wdg_object *wo);
 size_t wdg_get_type(struct wdg_object *wo);
+void wdg_init_color(u_char pair, u_char fg, u_char bg);
+void wdg_set_color(wdg_t *wo, size_t part, u_char pair);
 
 size_t wdg_get_nlines(struct wdg_object *wo);
 size_t wdg_get_ncols(struct wdg_object *wo);
@@ -80,6 +82,7 @@ size_t wdg_get_begin_y(struct wdg_object *wo);
 
 /* creation function from other widgets */
 extern void wdg_create_window(struct wdg_object *wo);
+extern void wdg_create_panel(struct wdg_object *wo);
 
 /*******************************************/
 
@@ -298,7 +301,7 @@ static void wdg_dispatch_msg(int key)
     */
    if (wdg_focused_obj != NULL) {
       if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key) == WDG_ESUCCESS)
-         /* the root object handled the message */
+         /* the focused object handled the message */
          return;
    }
    
@@ -398,6 +401,10 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
          wdg_create_window(*wo);
          break;
          
+      case WDG_PANEL:
+         wdg_create_panel(*wo);
+         break;
+         
       default:
          WDG_SAFE_FREE(*wo);
          return -WDG_EFATAL;
@@ -426,6 +433,10 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
 int wdg_destroy_object(struct wdg_object **wo)
 {
    struct wdg_obj_list *wl;
+  
+   /* sanity check */
+   if (*wo == NULL)
+      return -WDG_ENOTHANDLED;
    
    /* was it the root object ? */
    if ((*wo)->flags & WDG_OBJ_ROOT_OBJECT)
@@ -438,20 +449,30 @@ int wdg_destroy_object(struct wdg_object **wo)
    /* delete it from the obj_list */
    TAILQ_FOREACH(wl, &wdg_objects_list, next) {
       if (wl->wo == *wo) {
+         /* 
+          * check if it was the only object in the list
+          * and it has gained the focus with the previous
+          * call to wdg_switch_focus();
+          */
+         if (wl == wdg_focused_obj)
+            wdg_focused_obj = NULL;
+
+         /* remove the object */
          TAILQ_REMOVE(&wdg_objects_list, wl, next);
          WDG_SAFE_FREE(wl);
-         break;
+         
+         /* call the specialized destroy function */
+         WDG_BUG_IF((*wo)->destroy == NULL);
+         WDG_EXECUTE((*wo)->destroy, *wo);
+   
+         /* then free the object */
+         WDG_SAFE_FREE(*wo);
+         
+         return WDG_ESUCCESS;
       }
    }
-   
-   /* call the specialized destroy function */
-   WDG_BUG_IF((*wo)->destroy == NULL);
-   WDG_EXECUTE((*wo)->destroy, *wo);
-   
-   /* then free the object */
-   WDG_SAFE_FREE(*wo);
 
-   return WDG_ESUCCESS;
+   return -WDG_ENOTHANDLED;
 }
 
 /*
@@ -488,6 +509,37 @@ size_t wdg_get_type(struct wdg_object *wo)
    return wo->type;
 }
 
+/* 
+ * set the color of an object
+ */
+void wdg_set_color(wdg_t *wo, size_t part, u_char pair)
+{
+   switch (part) {
+      case WDG_COLOR_TITLE:
+         wo->title_color = pair;
+         break;
+      case WDG_COLOR_BORDER:
+         wo->border_color = pair;
+         break;
+      case WDG_COLOR_FOCUS:
+         wo->focus_color = pair;
+         break;
+      case WDG_COLOR_WINDOW:
+         wo->window_color = pair;
+         break;
+      case WDG_COLOR_SELECT:
+         wo->select_color = pair;
+         break;
+   }
+}
+
+/*
+ * init a color pair
+ */
+void wdg_init_color(u_char pair, u_char fg, u_char bg)
+{
+   init_pair(pair, fg, bg);
+}
 
 /* 
  * functions to calculate real dimensions

@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.7 2003/10/25 11:21:53 alor Exp $ */
+/* $Id: wdg.h,v 1.8 2003/10/25 21:57:42 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <missing/queue.h>
 
@@ -62,11 +63,13 @@ struct wdg_object {
    size_t flags;
       #define WDG_OBJ_WANT_FOCUS     1
       #define WDG_OBJ_FOCUS_MODAL    (1<<1)
-      #define WDG_OBJ_VISIBLE        (1<<2)
+      #define WDG_OBJ_FOCUSED        (1<<2)
+      #define WDG_OBJ_VISIBLE        (1<<3)
       #define WDG_OBJ_ROOT_OBJECT    (1<<7)
    /* object type */
    size_t type;
       #define WDG_WINDOW      1
+      #define WDG_PANEL       2
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
@@ -83,17 +86,39 @@ struct wdg_object {
    /* object cohordinates */
    int x1, y1, x2, y2;
 
+   /* object colors */
+   u_char border_color;
+   u_char focus_color;
+   u_char title_color;
+   u_char window_color;
+   u_char select_color;
+
    /* here is the pointer to extend a wdg object
     * it is a sort of inheritance...
     */
    void *extend;
 };
 
-#define WDG_WO_EXT(type, var) type *var = (type *)(wo->extend);
-
 typedef struct wdg_object wdg_t;
 
 /* WIDGETS */
+
+#define WDG_MOVE_PANEL(pan, y, x)   do{ WDG_ON_ERROR(move_panel(pan, y, x), ERR, "Resized too much... (%d,%d)", x, y); }while(0)
+#define WDG_WRESIZE(win, l, c)   do{ WDG_ON_ERROR(wresize(win, l, c), ERR, "Resized too much...(%dx%d)", c, l); }while(0)
+
+#define WDG_WO_EXT(type, var) type *var = (type *)(wo->extend);
+
+/* alignment */
+#define WDG_ALIGN_LEFT     0
+#define WDG_ALIGN_CENTER   1
+#define WDG_ALIGN_RIGHT    2
+
+/* window ojbects */
+extern void wdg_window_set_title(wdg_t *wo, char *title, size_t align);
+extern void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
+/* panel ojbects */
+extern void wdg_panel_set_title(wdg_t *wo, char *title, size_t align);
+extern void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
 
 
 /* EXPORTED FUNCTIONS */
@@ -108,21 +133,28 @@ extern void wdg_add_idle_callback(void (*callback)(void));
 extern void wdg_del_idle_callback(void (*callback)(void));
 
 /* object creation */
-extern int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags);
-extern int wdg_destroy_object(struct wdg_object **wo);
+extern int wdg_create_object(wdg_t **wo, size_t type, size_t flags);
+extern int wdg_destroy_object(wdg_t **wo);
 
 /* object modifications */
-extern void wdg_resize_object(struct wdg_object *wo, int x1, int y1, int x2, int y2);
-extern void wdg_set_colors(struct wdg_object *wo, int color, size_t type); 
-extern void wdg_draw_object(struct wdg_object *wo);
-extern size_t wdg_get_type(struct wdg_object *wo);
-extern void wdg_set_focus(struct wdg_object *wo);
+extern void wdg_resize_object(wdg_t *wo, int x1, int y1, int x2, int y2);
+extern void wdg_set_colors(wdg_t *wo, int color, size_t type); 
+extern void wdg_draw_object(wdg_t *wo);
+extern size_t wdg_get_type(wdg_t *wo);
+extern void wdg_set_focus(wdg_t *wo);
+extern void wdg_init_color(u_char pair, u_char fg, u_char bg);
+extern void wdg_set_color(wdg_t *wo, size_t part, u_char pair);
+   #define WDG_COLOR_TITLE    1
+   #define WDG_COLOR_BORDER   2
+   #define WDG_COLOR_FOCUS    3
+   #define WDG_COLOR_WINDOW   4
+   #define WDG_COLOR_SELECT   5
 
 /* object size */
-extern size_t wdg_get_nlines(struct wdg_object *wo);
-extern size_t wdg_get_ncols(struct wdg_object *wo);
-extern size_t wdg_get_begin_x(struct wdg_object *wo);
-extern size_t wdg_get_begin_y(struct wdg_object *wo);
+extern size_t wdg_get_nlines(wdg_t *wo);
+extern size_t wdg_get_ncols(wdg_t *wo);
+extern size_t wdg_get_begin_x(wdg_t *wo);
+extern size_t wdg_get_begin_y(wdg_t *wo);
 
 #endif 
 

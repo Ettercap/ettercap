@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.20 2003/10/10 21:16:25 alor Exp $
+    $Id: ec_send.c,v 1.21 2003/10/25 21:57:42 alor Exp $
 */
 
 #include <ec.h>
@@ -65,18 +65,21 @@ void send_init(void)
    /* check when to not initialize libnet */
    if (GBL_OPTIONS->read || GBL_OPTIONS->unoffensive) {
       DEBUG_MSG("send_init: skipping... (reading offline of unoffensive)");
+      GBL_OPTIONS->unoffensive = 1;
       return;
    }
    
    /* don't send packet on loopback */
    if (!strcasecmp(GBL_OPTIONS->iface, "lo")) {
       DEBUG_MSG("send_init: skipping... (using loopback)");
+      GBL_OPTIONS->unoffensive = 1;
       return;
    }
 
    /* in wireless monitor mode we cannot send packets */
    if (GBL_PCAP->dlt == DLT_IEEE802_11) {
       DEBUG_MSG("send_init: skipping... (using wireless)");
+      GBL_OPTIONS->unoffensive = 1;
       return;
    }
    

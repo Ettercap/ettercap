@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.23 2003/10/24 20:51:23 alor Exp $
+    $Id: ec_ui.c,v 1.24 2003/10/25 21:57:42 alor Exp $
 */
 
 #include <ec.h>
@@ -159,7 +159,7 @@ void ui_fatal_error(const char *msg)
     * call the function 
     * make sure that the globals have been alloc'd
     */
-   if (GBLS && GBL_UI && GBL_UI->fatal_error)
+   if (GBLS && GBL_UI && GBL_UI->fatal_error && GBL_UI->initialized)
       EXECUTE(GBL_UI->fatal_error, msg);
    /* the interface is not yet initialized */
    else {

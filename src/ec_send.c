@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.23 2003/10/28 21:10:55 alor Exp $
+    $Id: ec_send.c,v 1.24 2003/10/28 21:28:13 alor Exp $
 */
 
 #include <ec.h>
@@ -282,8 +282,8 @@ static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac)
 {
    libnet_ptag_t t = (libnet_ptag_t)pthread_self();
-   u_char *packet;
-   u_long packet_s;
+   //u_int8 *packet;
+   //u_int32 packet_s;
    int c;
  
    /* if not lnet warn the developer ;) */
@@ -321,8 +321,8 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
    
    /* coalesce the pblocks */
-   c = libnet_adv_cull_packet(GBL_LNET->lnet, &packet, &packet_s);
-   ON_ERROR(c, -1, "libnet_adv_cull_packet: %s", libnet_geterror(GBL_LNET->lnet));
+   //c = libnet_adv_cull_packet(GBL_LNET->lnet, &packet, &packet_s);
+   //ON_ERROR(c, -1, "libnet_adv_cull_packet: %s", libnet_geterror(GBL_LNET->lnet));
   
    /* send the packet */
    c = libnet_write(GBL_LNET->lnet);
@@ -332,7 +332,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    libnet_clear_packet(GBL_LNET->lnet);
 
    /* free the packet */
-   SAFE_FREE(packet);
+   //SAFE_FREE(packet);
    
    SEND_UNLOCK;
    

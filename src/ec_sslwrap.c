@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.30 2004/03/28 15:07:26 alor Exp $
+    $Id: ec_sslwrap.c,v 1.31 2004/03/28 15:20:26 alor Exp $
 */
 
 #include <ec.h>
@@ -188,8 +188,18 @@ void ssl_wrap_init(void)
    DEBUG_MSG("ssl_wrap_init: not supported");
    return;
 #else
-   if (!GBL_CONF->aggressive_dissectors)
+   /* disable if the aggressive flag is not set */
+   if (!GBL_CONF->aggressive_dissectors) {
+      DEBUG_MSG("ssl_wrap_init: not aggressive");
       return;
+   }
+   
+   /* a valid script for the redirection must be set */
+   if (!GBL_CONF->redir_command_on) {
+      DEBUG_MSG("ssl_wrap_init: no redirect script");
+      USER_MSG("SSL dissection needs a valid 'redir_command_on' script in the etter.conf file\n");
+      return;
+   }
 
    DEBUG_MSG("ssl_wrap_init");
    sslw_init();
@@ -211,10 +221,7 @@ void ssl_wrap_fini(void)
 {
    struct listen_entry *le;
 
-   /* no script was configured */
-   if (GBL_CONF->redir_command_off == NULL)
-      return;
-      
+   /* remove every redirect rule */   
    LIST_FOREACH(le, &listen_ports, next)
       sslw_remove_redirect(le->sslw_port, le->redir_port);
 }
@@ -246,7 +253,12 @@ EC_THREAD_FUNC(sslw_start)
    
    ec_thread_init();
 
+   /* disabled if not accressive */
    if (!GBL_CONF->aggressive_dissectors)
+      return NULL;
+   
+   /* a valid script for the redirection must be set */
+   if (!GBL_CONF->redir_command_on)
       return NULL;
    
    DEBUG_MSG("sslw_start: initialized and ready");

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.5 2004/03/09 22:25:08 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.6 2004/03/09 22:42:02 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -393,16 +393,16 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
 {
    int len, err;
    
-   if (ae->status == SSL_ENABLED)
+   if (ae->status & SSL_ENABLED)
       len = SSL_read(ae->ssl[direction], po->DATA.data, GBL_IFACE->mtu);
    else       
       len = read(ae->fd[direction], po->DATA.data, GBL_IFACE->mtu);
 
    if (len < 0) {
-      if (ae->status != SSL_ENABLED && errno == EAGAIN)
+      if (!(ae->status & SSL_ENABLED) && errno == EAGAIN)
          return -ENOTHANDLED; 
       
-      if (ae->status == SSL_ENABLED) {
+      if (ae->status & SSL_ENABLED) {
          err = SSL_get_error(ae->ssl[direction], len);
 	 if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
 	    return -ENOTHANDLED;     
@@ -429,17 +429,19 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
 {
    int len, err;
    
+   DEBUG_MSG("sslw - WRITING DATA");
+   
    /* Write packet data */
-   if (ae->status == SSL_ENABLED)
+   if (ae->status & SSL_ENABLED)
       len = SSL_write(ae->ssl[direction], po->DATA.data, po->DATA.len + po->DATA.inject_len);
    else       
       len = write(ae->fd[direction], po->DATA.data, po->DATA.len + po->DATA.inject_len);
 
    if (len < 0) {
-      if (ae->status != SSL_ENABLED && errno == EAGAIN)
+      if (! (ae->status & SSL_ENABLED) && errno == EAGAIN)
          return -ENOTHANDLED; 
       
-      if (ae->status == SSL_ENABLED) {
+      if (ae->status & SSL_ENABLED) {
          err = SSL_get_error(ae->ssl[direction], len);
 	 if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
 	    return -ENOTHANDLED;     
@@ -534,7 +536,7 @@ EC_THREAD_FUNC(sslw_start)
    struct accepted_entry *ae;
    u_int16 number_of_services, number_of_connections, i, j;
    u_int32 len = sizeof(struct sockaddr_in);
-   int ret_val;
+   int ret_val, new_inserted;
    struct sockaddr_in client_sin;
    struct packet_object po;
    
@@ -570,6 +572,7 @@ EC_THREAD_FUNC(sslw_start)
          number_of_services++;
 
       number_of_connections = 0;
+      new_inserted = 0;
       LIST_FOREACH(ae, &accepted_conn, next) 
          number_of_connections++;
 
@@ -635,8 +638,13 @@ EC_THREAD_FUNC(sslw_start)
                continue;
             }
 	    
-            LIST_INSERT_HEAD(&accepted_conn, ae, next);    
+            LIST_INSERT_HEAD(&accepted_conn, ae, next);   
+	    new_inserted = 1; 
          }
+	 
+      /* Repeat the poll if we have accepted new connections */
+      if (new_inserted)
+         continue;
 
       /* Check if we have data to read */
       for(i=0; i<number_of_connections*2; i++) 

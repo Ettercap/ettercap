@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.23 2004/05/06 16:20:45 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.24 2004/06/13 18:22:52 alor Exp $
 */
 
 #include <ec.h>
@@ -166,6 +166,10 @@ static void arp_poisoning_stop(void)
 
             /* equal ip must be skipped */
             if (!ip_addr_cmp(&g1->ip, &g2->ip))
+               continue;
+
+            /* skip even equal mac address... */
+            if (!memcmp(g1->mac, g2->mac, MEDIA_ADDR_LEN))
                continue;
             
             /* the effective poisoning packets */

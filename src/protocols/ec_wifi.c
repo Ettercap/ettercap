@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.26 2004/05/27 10:59:52 alor Exp $
+    $Id: ec_wifi.c,v 1.27 2004/06/13 18:22:52 alor Exp $
 */
 
 #include <ec.h>
@@ -245,7 +245,7 @@ FUNC_DECODER(decode_wifi)
    
    /* org_code != encapsulated ethernet not yet supported */
    if (memcmp(llc->org_code, WIFI_ORG_CODE, 3))
-      NOT_IMPLEMENTED();
+      return NULL;
       
    /* fill the packet object with sensitive data */
    PACKET->L2.header = (u_char *)DECODE_DATA;

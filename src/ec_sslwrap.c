@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.23 2004/03/23 15:33:47 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.24 2004/03/24 09:18:41 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -255,6 +255,7 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 	 
    return ESUCCESS;
 }
+
    
 static int sslw_sync_ssl(struct accepted_entry *ae) 
 {   
@@ -266,48 +267,25 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    ae->ssl[SSL_CLIENT] = SSL_new(ssl_ctx_client);
    SSL_set_fd(ae->ssl[SSL_CLIENT], ae->fd[SSL_CLIENT]);
  
-   if (SSL_connect(ae->ssl[SSL_SERVER]) != 1) {
-      SSL_free(ae->ssl[SSL_SERVER]);
-      SSL_free(ae->ssl[SSL_CLIENT]);
-      ae->ssl[SSL_SERVER] = NULL;
-      ae->ssl[SSL_CLIENT] = NULL;
+   if (SSL_connect(ae->ssl[SSL_SERVER]) != 1) 
       return -EINVALID;
-   }
 
    /* XXX - NULL cypher can give no certificate */
    if ( (server_cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
       DEBUG_MSG("Can't get peer certificate");
-      SSL_free(ae->ssl[SSL_SERVER]);
-      SSL_free(ae->ssl[SSL_CLIENT]);
-      ae->ssl[SSL_SERVER] = NULL;
-      ae->ssl[SSL_CLIENT] = NULL;
       return -EINVALID;
    }
 
    ae->cert = X509_dup(server_cert);
    X509_free(server_cert);
 
-   if (sslw_create_selfsigned(ae->cert) != ESUCCESS) {
-      SSL_free(ae->ssl[SSL_SERVER]);
-      SSL_free(ae->ssl[SSL_CLIENT]);
-      ae->ssl[SSL_SERVER] = NULL;
-      ae->ssl[SSL_CLIENT] = NULL;
-      X509_free(ae->cert);   
-      ae->cert = NULL;   
+   if (sslw_create_selfsigned(ae->cert) != ESUCCESS) 
       return -EINVALID;
-   }
    
    SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
    
-   if (SSL_accept(ae->ssl[SSL_CLIENT]) != 1) {
-      SSL_free(ae->ssl[SSL_SERVER]);
-      SSL_free(ae->ssl[SSL_CLIENT]);
-      ae->ssl[SSL_SERVER] = NULL;
-      ae->ssl[SSL_CLIENT] = NULL;
-      X509_free(ae->cert);
-      ae->cert = NULL;   
+   if (SSL_accept(ae->ssl[SSL_CLIENT]) != 1) 
       return -EINVALID;
-   }
 
    return ESUCCESS;   
 }

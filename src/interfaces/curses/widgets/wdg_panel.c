@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_panel.c,v 1.1 2003/10/25 21:57:42 alor Exp $
+    $Id: wdg_panel.c,v 1.2 2003/10/26 09:42:04 alor Exp $
 */
 
 #include <wdg.h>
@@ -46,7 +46,7 @@ static int wdg_panel_resize(struct wdg_object *wo);
 static int wdg_panel_redraw(struct wdg_object *wo);
 static int wdg_panel_get_focus(struct wdg_object *wo);
 static int wdg_panel_lost_focus(struct wdg_object *wo);
-static int wdg_panel_get_msg(struct wdg_object *wo, int key);
+static int wdg_panel_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 
 void wdg_panel_set_title(struct wdg_object *wo, char *title, size_t align);
 static void wdg_panel_border(struct wdg_object *wo);
@@ -142,7 +142,7 @@ static int wdg_panel_redraw(struct wdg_object *wo)
       WDG_WRESIZE(W(ww->sub), l - 2, c - 2);
       replace_panel(ww->sub, W(ww->sub));
       /* set the window color */
-      wbkgdset(W(ww->sub), COLOR_PAIR(wo->window_color));
+      wbkgd(W(ww->sub), COLOR_PAIR(wo->window_color));
       touchwin(W(ww->sub));
 
    /* the first time we have to allocate the window */
@@ -160,7 +160,7 @@ static int wdg_panel_redraw(struct wdg_object *wo)
          return -WDG_EFATAL;
       
       /* set the window color */
-      wbkgdset(W(ww->sub), COLOR_PAIR(wo->window_color));
+      wbkgd(W(ww->sub), COLOR_PAIR(wo->window_color));
       
       /* initialize the pointer */
       wmove(W(ww->sub), 0, 0);
@@ -212,7 +212,7 @@ static int wdg_panel_lost_focus(struct wdg_object *wo)
 /* 
  * called by the messages dispatcher when the window is focused
  */
-static int wdg_panel_get_msg(struct wdg_object *wo, int key)
+static int wdg_panel_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
    WDG_WO_EXT(struct wdg_window, ww);
    wprintw(W(ww->sub), "WDG WIN: char %d\n", key);
@@ -220,10 +220,18 @@ static int wdg_panel_get_msg(struct wdg_object *wo, int key)
    update_panels();
    doupdate();
 
-   if (key == 'q')
+   /* is the mouse event witin out edges ? */
+   if (WDG_MOUSE_ENCLOSE(W(ww->win), key, mouse)) {
+      wdg_set_focus(wo);
+      return WDG_ESUCCESS;
+   }
+
+   if (key == 'q') {
       wdg_destroy_object(&wo);
+      return WDG_ESUCCESS;
+   }
    
-   return WDG_ESUCCESS;
+   return -WDG_ENOTHANDLED;
 }
 
 /*

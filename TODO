@@ -32,9 +32,7 @@ this is the unofficial and floating in time roadmap:
 Oct 2003:
 
    + NCURSES INTERFACE
-      - customizable colors
       + LIBWDG
-         - mouse events
          - widgets:
             - scroll_win 
             - menu
@@ -44,10 +42,11 @@ Oct 2003:
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - reset modified connection (on user request)
+      - flag to mark encripted connections
 
    + DISSECTORS
       - convert all the old dissectors
-      - HTTPS without the dirty trick (can we use loopback?)
+      - SSL unified dissector for https, impas, pop3s ecc ecc
       - HTTP sniff cookies
       - SSH has to support DES, 3DES, blowfish and zlib compression
       - WIFI decoder support for WEP (key given)

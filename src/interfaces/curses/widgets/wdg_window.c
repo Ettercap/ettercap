@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_window.c,v 1.3 2003/10/25 21:57:42 alor Exp $
+    $Id: wdg_window.c,v 1.4 2003/10/26 09:42:04 alor Exp $
 */
 
 #include <wdg.h>
@@ -43,7 +43,7 @@ static int wdg_window_resize(struct wdg_object *wo);
 static int wdg_window_redraw(struct wdg_object *wo);
 static int wdg_window_get_focus(struct wdg_object *wo);
 static int wdg_window_lost_focus(struct wdg_object *wo);
-static int wdg_window_get_msg(struct wdg_object *wo, int key);
+static int wdg_window_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 
 void wdg_window_set_title(struct wdg_object *wo, char *title, size_t align);
 static void wdg_window_border(struct wdg_object *wo);
@@ -198,16 +198,24 @@ static int wdg_window_lost_focus(struct wdg_object *wo)
 /* 
  * called by the messages dispatcher when the window is focused
  */
-static int wdg_window_get_msg(struct wdg_object *wo, int key)
+static int wdg_window_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
    WDG_WO_EXT(struct wdg_window, ww);
    wprintw(ww->sub, "WDG WIN: char %d\n", key);
    wrefresh(ww->sub);
 
-   if (key == 'q')
+   /* is the mouse event witin out edges ? */
+   if (WDG_MOUSE_ENCLOSE(ww->win, key, mouse)) {
+      wdg_set_focus(wo);
+      return WDG_ESUCCESS;
+   }
+
+   if (key == 'q') {
       wdg_destroy_object(&wo);
+      return WDG_ESUCCESS;
+   }
    
-   return WDG_ESUCCESS;
+   return -WDG_ENOTHANDLED;
 }
 
 /*

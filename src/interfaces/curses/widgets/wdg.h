@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.8 2003/10/25 21:57:42 alor Exp $ */
+/* $Id: wdg.h,v 1.9 2003/10/26 09:42:04 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -57,6 +57,14 @@ struct wdg_scr {
 /* global scruct for current screen */
 extern struct wdg_scr current_screen;
 
+/* struct for mouse events */
+struct wdg_mouse_event {
+   size_t x;
+   size_t y;
+   size_t event;
+};
+#define WDG_MOUSE_ENCLOSE(win, key, mouse) (key == KEY_MOUSE && wenclose(win, mouse->y, mouse->x))
+
 /* struct for all wdg objects */
 struct wdg_object {
    /* object flags */
@@ -81,7 +89,7 @@ struct wdg_object {
    int (*get_focus)(struct wdg_object *wo);
    int (*lost_focus)(struct wdg_object *wo);
    /* called to process an input from the user */
-   int (*get_msg)(struct wdg_object *wo, int key);
+   int (*get_msg)(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 
    /* object cohordinates */
    int x1, y1, x2, y2;

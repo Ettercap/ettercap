@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.10 2003/10/25 21:57:42 alor Exp $
+    $Id: wdg.c,v 1.11 2003/10/26 09:42:04 alor Exp $
 */
 
 #include <wdg.h>
@@ -62,7 +62,7 @@ void wdg_add_idle_callback(void (*callback)(void));
 void wdg_del_idle_callback(void (*callback)(void));
 
 int wdg_events_handler(int exit_key);
-static void wdg_dispatch_msg(int key);
+static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse);
 static void wdg_switch_focus(void);
 void wdg_set_focus(struct wdg_object *wo);
 
@@ -133,6 +133,11 @@ void wdg_init(void)
 
    /* sync the virtual and the physical screen */
    refresh();
+
+#ifdef NCURSES_MOUSE_VERSION
+   /* activate the mask to receive mouse events */
+   mousemask(ALL_MOUSE_EVENTS, (mmask_t *) 0);
+#endif
 }
 
 
@@ -159,6 +164,11 @@ void wdg_cleanup(void)
 
    /* wdg is not initialized */
    current_screen.flags &= ~WDG_SCR_INITIALIZED;
+
+#ifdef NCURSES_MOUSE_VERSION
+   /* reset the mouse event reception */
+   mousemask(0, (mmask_t *) 0);
+#endif
 }
 
 
@@ -189,6 +199,7 @@ static void wdg_resize(void)
 int wdg_events_handler(int exit_key)
 {
    int key;
+   struct wdg_mouse_event mouse;
    
    /* infinite loop */
    WDG_LOOP {
@@ -207,7 +218,7 @@ int wdg_events_handler(int exit_key)
             /* the screen has been resized */
             wdg_resize();
             break;
-              
+            
          case ERR:
             /* 
              * non-blocking input reached the timeout:
@@ -230,9 +241,23 @@ int wdg_events_handler(int exit_key)
             /* emergency exit key */
             if (key == exit_key)
                return WDG_ESUCCESS;
+
+#ifdef NCURSES_MOUSE_VERSION
+            /* handle mouse events */
+            if (key == KEY_MOUSE) {
+               MEVENT event;
             
+               getmouse(&event);
+               mouse.x = event.x;
+               mouse.y = event.y;
+               mouse.event = event.bstate;
+            }
+#else            
+            /* we don't support mouse events */
+            memset(&mouse, 0, sizeof(mouse));
+#endif
             /* dispatch the user input */
-            wdg_dispatch_msg(key);
+            wdg_dispatch_msg(key, &mouse);
             break;
       }
    }
@@ -279,35 +304,59 @@ void wdg_del_idle_callback(void (*callback)(void))
  * first dispatch to the root_obj, if not handled
  * dispatch to the focused object.
  */
-static void wdg_dispatch_msg(int key)
+static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
 {
    /* the focused object is modal ! send only to it */
    if (wdg_focused_obj && (wdg_focused_obj->wo->flags & WDG_OBJ_FOCUS_MODAL)) {
-      wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key);
+      wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse);
       /* other objects must not receive the msg */
       return;
    }
    
-   /* first dispatch to the root object */
-   if (wdg_root_obj != NULL) {
-      if (wdg_root_obj->get_msg(wdg_root_obj, key) == WDG_ESUCCESS)
-         /* the root object handled the message */
-         return;
-   }
-
-   /* 
-    * the root_object has not handled it.
-    * dispatch to the focused one
+   /*
+    * if it is a mouse event, we have to dispatch to all 
+    * the object in the list until someone handles it
     */
-   if (wdg_focused_obj != NULL) {
-      if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key) == WDG_ESUCCESS)
-         /* the focused object handled the message */
-         return;
+   if (key == KEY_MOUSE) {
+      struct wdg_obj_list *wl;
+
+      TAILQ_FOREACH(wl, &wdg_objects_list, next) {
+         if ((wl->wo->flags & WDG_OBJ_WANT_FOCUS) && (wl->wo->flags & WDG_OBJ_VISIBLE) ) {
+            if (wl->wo->get_msg(wl->wo, key, mouse) == WDG_ESUCCESS)
+               return;
+         }
+      }
+
+   /* it is a key event */
+   } else {
+
+      /* first dispatch to the root object */
+      if (wdg_root_obj != NULL) {
+         if (wdg_root_obj->get_msg(wdg_root_obj, key, mouse) == WDG_ESUCCESS)
+            /* the root object handled the message */
+            return;
+      }
+
+      /* 
+       * the root_object has not handled it.
+       * dispatch to the focused one
+       */
+      if (wdg_focused_obj != NULL) {
+         if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse) == WDG_ESUCCESS)
+            /* the focused object handled the message */
+            return;
+      }
+      
+      /* noone handled the message, flash an error */
+      flash();
+      beep();
    }
    
-   /* reached if noone handle the message */
+   printw("WDG: NOT HANDLED: char %d (%c)\n", key, (char)key);
+   if (key == KEY_MOUSE)
+      printw("WDG: NOT HANDLED: mouse %dx%d\n", mouse->x, mouse->y);
    
-   printw("WDG: NOT HANDLED: char %d (%c)\n", key, (char)key); refresh();
+   refresh();
 }
 
 /*

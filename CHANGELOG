@@ -48,8 +48,22 @@ NG-0.7.0    ????????
    + plugins were unified, no more distinctions between standalone and hooking
    + new plugins:
       + finger (SYN+ACK fingerprinting on remote hosts)
-      + smb_clear, smb_down (attack versus the SMB protocol)
+      + smb_clear, smb_down (attacks against the SMB protocol)
+   + curses interface improvements:
+      + resizable under X11
+      + mouse event are supported
    !! offline sniffing actually does not bind to any NICs
+
+
+0.6.b       20030710
+
+   + Plugins now works with GTK+ interface
+   + Updated the passive OS fingerprint database (1279 records)
+   !! Fixed internal refreshing (for huge traffic loads)
+   !! Fixed wifi-dump support
+   !! Fixed doppleganger re-arp
+   !! Fixed a problem with signed char under mac G3
+   !! Fixed some possible buffer overflows
 
 
 0.6.a       20030505

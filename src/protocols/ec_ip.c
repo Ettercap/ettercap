@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.42 2004/06/10 14:55:31 alor Exp $
+    $Id: ec_ip.c,v 1.43 2004/09/28 09:56:13 alor Exp $
 */
 
 #include <ec.h>
@@ -161,11 +161,13 @@ FUNC_DECODER(decode_ip)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && (sum = L3_checksum(PACKET->L3.header, PACKET->L3.len)) != CSUM_RESULT) {
-      if (GBL_CONF->checksum_check)
-         USER_MSG("Invalid IP packet from %s : csum [%#x] should be (%#x)\n", int_ntoa(ip->saddr), 
+   if (GBL_CONF->checksum_check) {
+      if (!GBL_OPTIONS->unoffensive && (sum = L3_checksum(PACKET->L3.header, PACKET->L3.len)) != CSUM_RESULT) {
+         if (GBL_CONF->checksum_warning)
+            USER_MSG("Invalid IP packet from %s : csum [%#x] should be (%#x)\n", int_ntoa(ip->saddr), 
                               ntohs(ip->csum), checksum_shouldbe(ip->csum, sum));      
-      return NULL;
+         return NULL;
+      }
    }
    
    /* if it is a TCP packet, try to passive fingerprint it */

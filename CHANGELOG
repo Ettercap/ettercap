@@ -6,9 +6,12 @@ Legenda:
 
 =========================================
 
-NG-0.7.2         2004
+NG-0.7.2         200410
 
    + the netmask can now be specified within the GUI
+   + checksum_check was renamed to checksum_warning
+     and a new option to prevent the check was introduced
+     (see the man page etter.conf(5) for details)
    !! do not drop privs under windows (useless) 
 
 

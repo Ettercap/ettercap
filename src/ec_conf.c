@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.38 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_conf.c,v 1.39 2004/09/28 09:56:12 alor Exp $
 */
 
 #include <ec.h>
@@ -69,6 +69,7 @@ static struct conf_entry misc[] = {
    { "store_profiles", NULL },
    { "aggressive_dissectors", NULL },
    { "skip_forwarded_pcks", NULL },
+   { "checksum_warning", NULL },
    { "checksum_check", NULL },
    { NULL, NULL },
 };
@@ -164,6 +165,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&misc, "store_profiles", &GBL_CONF->store_profiles);
    set_pointer((struct conf_entry *)&misc, "aggressive_dissectors", &GBL_CONF->aggressive_dissectors);
    set_pointer((struct conf_entry *)&misc, "skip_forwarded_pcks", &GBL_CONF->skip_forwarded);
+   set_pointer((struct conf_entry *)&misc, "checksum_warning", &GBL_CONF->checksum_warning);
    set_pointer((struct conf_entry *)&misc, "checksum_check", &GBL_CONF->checksum_check);
    set_pointer((struct conf_entry *)&curses, "color_bg", &GBL_CONF->colors.bg);
    set_pointer((struct conf_entry *)&curses, "color_fg", &GBL_CONF->colors.fg);

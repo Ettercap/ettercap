@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.41 2004/07/29 09:46:47 alor Exp $
+    $Id: ec_tcp.c,v 1.42 2004/09/28 09:56:13 alor Exp $
 */
 
 #include <ec.h>
@@ -160,32 +160,34 @@ FUNC_DECODER(decode_tcp)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
-      char tmp[MAX_ASCII_ADDR_LEN];
+   if (GBL_CONF->checksum_check) {
+      if (!GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
+         char tmp[MAX_ASCII_ADDR_LEN];
 #if defined(OS_DARWIN) || defined (OS_WINDOWS)
-      /* 
-       * XXX - hugly hack here !  Mac OS X really sux
-       * 
-       * Packets transmitted on interfaces with TCP checksum offloading
-       * don't have valid checksums as presented to the machine's packet-capture
-       * mechanism, as those packets are wrapped around internally rather
-       * than being captured after passing through the network interface, as
-       * the OS doesn't bother computing the checksum and adding it to the packet
-       * it leaves that up to the network interface.
-       *                (taken from a bug report by Guy Harris - libpcap engineer)
-       *
-       * For Windows at least, TCP checksum off-loading can be disabled with a
-       * registry setting.
-       *
-       * if the source is the ettercap host, don't display the message 
-       */
-      if (!ip_addr_cmp(&PACKET->L3.src, &GBL_IFACE->ip))
-         return NULL;
+         /* 
+          * XXX - hugly hack here !  Mac OS X really sux
+          * 
+          * Packets transmitted on interfaces with TCP checksum offloading
+          * don't have valid checksums as presented to the machine's packet-capture
+          * mechanism, as those packets are wrapped around internally rather
+          * than being captured after passing through the network interface, as
+          * the OS doesn't bother computing the checksum and adding it to the packet
+          * it leaves that up to the network interface.
+          *                (taken from a bug report by Guy Harris - libpcap engineer)
+          *
+          * For Windows at least, TCP checksum off-loading can be disabled with a
+          * registry setting.
+          *
+          * if the source is the ettercap host, don't display the message 
+          */
+         if (!ip_addr_cmp(&PACKET->L3.src, &GBL_IFACE->ip))
+            return NULL;
 #endif
-      if (GBL_CONF->checksum_check)
-         USER_MSG("Invalid TCP packet from %s:%d : csum [%#x] should be (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
+         if (GBL_CONF->checksum_warning)
+            USER_MSG("Invalid TCP packet from %s:%d : csum [%#x] should be (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                     ntohs(tcp->sport), ntohs(tcp->csum), checksum_shouldbe(tcp->csum, sum));
-      return NULL;
+         return NULL;
+      }
    }
      
    /* 

@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.66 2004/07/24 10:43:21 alor Exp $ */
+/* $Id: ec_globals.h,v 1.67 2004/09/28 09:56:11 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -38,6 +38,7 @@ struct ec_conf {
    int aggressive_dissectors;
    int skip_forwarded;
    int checksum_check;
+   int checksum_warning;
    int store_profiles;
    struct curses_color colors;
    char *redir_command_on;

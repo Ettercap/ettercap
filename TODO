@@ -4,8 +4,6 @@
 
 >>> things to be fixed
 
-   + lnet ptag thread safe (check it)
-
    + PLUGINS ENGINE
       - replace the search point form . to INSTALL_PREFIX/lib
       - cygwin issue (study libltdl)
@@ -15,7 +13,6 @@
 
    + SOLARIS PORTING
       - checksum (WORD_BIGENDIAN on intel ???)
-      - fix dissectors: telnet, rsh, rlogin
 
    + BSD PORTING
       - hack_pcap_lnet is not usable

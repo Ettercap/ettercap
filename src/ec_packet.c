@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.22 2003/09/18 20:55:14 alor Exp $
+    $Id: ec_packet.c,v 1.23 2003/09/26 12:05:58 alor Exp $
 */
 
 #include <ec.h>
@@ -65,7 +65,8 @@ inline int packet_create_object(struct packet_object *po, u_char *buf, size_t le
 
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
 {
-   po->DATA.disp_data = calloc(len, sizeof(u_char));
+   /* disp_data is always null terminated */
+   po->DATA.disp_data = calloc(len + 1, sizeof(u_char));
    ON_ERROR(po->DATA.disp_data, NULL, "calloc: can't allocate disp_data");
 
    po->DATA.disp_len = len;

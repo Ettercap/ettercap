@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.13 2003/09/24 19:28:41 alor Exp $
+# $Id: Makefile.am,v 1.14 2003/09/26 12:05:49 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -32,10 +32,12 @@ dist-hook:
 	cat $(distdir)/Makefile.am.common | sed s/#no/no/g > $(distdir)/Makefile.am.common
 
 test: all
+	rm -f ettercap etterfilter etterlog *.so
 	ln -fs ./src/ettercap ./
 	ln -fs ./utils/etterlog/etterlog ./
 	ln -fs ./utils/etterfilter/etterfilter ./
 	find ./plug-ins -name '*.so' -exec ln -fs {} ./ \;
 	./shtool fixperm ./
 
-# vim:ts=4:noexpandtab
+# vim:ts=4:noexpandtab=1
+

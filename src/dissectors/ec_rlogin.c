@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_rlogin.c,v 1.6 2003/09/07 19:47:51 alor Exp $
+    $Id: ec_rlogin.c,v 1.7 2003/09/26 12:05:58 alor Exp $
 */
 
 #include <ec.h>
@@ -120,13 +120,12 @@ FUNC_DECODER(dissector_rlogin)
    
    /* concat the pass to the collected user */
    if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
-      char str[strlen(s->data) + strlen(ptr) + 2];
+      char str[strlen(s->data) + PACKET->DATA.disp_len + 2];
 
       memset(str, 0, sizeof(str));
-     
+    
       /* concat the char to the previous one */
-      sprintf(str, "%s%s", (char *)s->data, ptr);
-
+      snprintf(str, strlen(s->data) + PACKET->DATA.disp_len + 2, "%s%s", (char *)s->data, ptr);
       /* save the new string */
       SAFE_FREE(s->data);
       s->data = strdup(str);

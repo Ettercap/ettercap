@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.6 2004/03/09 22:42:02 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.7 2004/03/09 23:05:35 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -536,7 +536,8 @@ EC_THREAD_FUNC(sslw_start)
    struct accepted_entry *ae;
    u_int16 number_of_services, number_of_connections, i, j;
    u_int32 len = sizeof(struct sockaddr_in);
-   int ret_val, new_inserted;
+   int ret_val;
+   //int new_inserted;
    struct sockaddr_in client_sin;
    struct packet_object po;
    
@@ -572,7 +573,7 @@ EC_THREAD_FUNC(sslw_start)
          number_of_services++;
 
       number_of_connections = 0;
-      new_inserted = 0;
+      //new_inserted = 0;
       LIST_FOREACH(ae, &accepted_conn, next) 
          number_of_connections++;
 
@@ -639,25 +640,28 @@ EC_THREAD_FUNC(sslw_start)
             }
 	    
             LIST_INSERT_HEAD(&accepted_conn, ae, next);   
-	    new_inserted = 1; 
+	    //new_inserted = 1; 
          }
 	 
       /* Repeat the poll if we have accepted new connections */
-      if (new_inserted)
-         continue;
+      //if (new_inserted)
+         //continue;
 
       /* Check if we have data to read */
       for(i=0; i<number_of_connections*2; i++) 
          if (poll_fd[i+number_of_services].revents & (POLLIN | POLLOUT | POLLHUP | POLLERR | POLLNVAL)) {
-            u_int32 direction, connection;
+            u_int32 direction;//, connection;
 	    
             /* Check if it's server or client and which connection */
             direction = i%2;
-            connection = i/2;
+            //connection = i/2;
             LIST_FOREACH(ae, &accepted_conn, next) {
-               if (connection == 0)
-                  break;
-               connection--;
+	       if (poll_fd[i+number_of_services].fd == ae->fd[SSL_CLIENT] ||
+	           poll_fd[i+number_of_services].fd == ae->fd[SSL_SERVER]);
+	          break;
+               //if (connection == 0)
+                  //break;
+               //connection--;
             }
 	    
 	    /* Error checking */

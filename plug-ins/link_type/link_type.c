@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: link_type.c,v 1.6 2003/11/01 15:52:58 alor Exp $
+    $Id: link_type.c,v 1.7 2003/11/07 14:05:10 lordnaga Exp $
 */
 
 
@@ -76,6 +76,12 @@ static int link_type_init(void *dummy)
    
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
+
+   /* It doesn't work if unoffensive */
+   if (GBL_OPTIONS->unoffensive) {
+      INSTANT_USER_MSG("link_type: plugin doesn't work in UNOFFENSIVE mode\n");
+      return PLUGIN_FINISHED;
+   }
 
   /* Performs some checks */
    if (GBL_PCAP->dlt != IL_TYPE_ETH) {

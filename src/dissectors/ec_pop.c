@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.5 2003/04/01 22:13:44 alor Exp $
+    $Id: ec_pop.c,v 1.6 2003/04/03 15:10:44 alor Exp $
 */
 
 #include <ec.h>
@@ -59,23 +59,23 @@ FUNC_DECODER(dissector_pop)
       ptr += 5;
       DEBUG_MSG("\tDissector_POP USER");
       /* the \n is already present in the packet, no need to add it */
-      PACKET->INFO.user = strdup(ptr);
-      if ( (ptr = strchr(PACKET->INFO.user,'\r')) != NULL )
+      PACKET->DISSECTOR.user = strdup(ptr);
+      if ( (ptr = strchr(PACKET->DISSECTOR.user,'\r')) != NULL )
          *ptr = '\0';
          
       USER_MSG("POP : %s:%d -> USER: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                    ntohs(PACKET->L4.dst), PACKET->INFO.user);
+                                    ntohs(PACKET->L4.dst), PACKET->DISSECTOR.user);
    }
 
    if ( !strncasecmp(ptr, "PASS ", 5) ) {
       ptr += 5;
       DEBUG_MSG("\tDissector_POP PASS");
       /* the \n is already present in the packet, no need to add it */
-      PACKET->INFO.pass = strdup(ptr);
-      if ( (ptr = strchr(PACKET->INFO.pass,'\r')) != NULL )
+      PACKET->DISSECTOR.pass = strdup(ptr);
+      if ( (ptr = strchr(PACKET->DISSECTOR.pass,'\r')) != NULL )
          *ptr = '\0';
       USER_MSG("POP : %s:%d -> PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                    ntohs(PACKET->L4.dst), PACKET->INFO.pass);
+                                    ntohs(PACKET->L4.dst), PACKET->DISSECTOR.pass);
    }
    
    return NULL;

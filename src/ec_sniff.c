@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.11 2003/03/31 21:46:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.12 2003/04/03 15:10:43 alor Exp $
 */
 
 #include <ec.h>
@@ -69,8 +69,13 @@ void set_forwardable_flag(struct packet_object *po)
    if (GBL_SNIFF->type == SM_BRIDGED)
       po->flags |= PO_FORWARDABLE;
    
+   /* 
+    * if the mac is our, but the ip is not...
+    * it has to be forwarded
+    */
+   
    if (!memcmp(GBL_IFACE->mac, po->L2.dst, ETH_ADDR_LEN) &&
-       !ip_addr_cmp(&GBL_IFACE->ip, &po->L3.dst) )
+       ip_addr_cmp(&GBL_IFACE->ip, &po->L3.dst) )
       po->flags |= PO_FORWARDABLE;
    
 }
@@ -516,7 +521,7 @@ int cmp_ip_list(struct ip_addr *ip, struct target_env *t)
    IP_LIST_LOCK;
    
    SLIST_FOREACH (e, &t->ips, next)
-      if (ip_addr_cmp(&(e->ip), ip)) {
+      if (!ip_addr_cmp(&(e->ip), ip)) {
          IP_LIST_UNLOCK;
          return 1;
       }
@@ -537,7 +542,7 @@ void del_ip_list(struct ip_addr *ip, struct target_env *t)
    IP_LIST_LOCK;
    
    SLIST_FOREACH (e, &t->ips, next) {
-      if (ip_addr_cmp(&(e->ip), ip)) {
+      if (!ip_addr_cmp(&(e->ip), ip)) {
          SLIST_REMOVE(&t->ips, e, ip_list, next);
          SAFE_FREE(e);
          IP_LIST_UNLOCK;

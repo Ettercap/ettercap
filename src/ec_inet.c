@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.4 2003/04/02 11:56:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.5 2003/04/03 15:10:33 alor Exp $
 */
 
 #include <ec.h>
@@ -71,10 +71,7 @@ int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
    if (sa->type != sb->type)
       return 0;
 
-   if (!memcmp(sa->addr, sb->addr, sa->addr_size))
-      return 1;
-   else
-      return 0;
+   return memcmp(sa->addr, sb->addr, sa->addr_size);
    
 }
 

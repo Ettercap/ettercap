@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.9 2003/04/02 11:56:36 alor Exp $
+    $Id: ec_packet.c,v 1.10 2003/04/03 15:10:43 alor Exp $
 */
 
 #include <ec.h>
@@ -86,10 +86,10 @@ int packet_destroy_object(struct packet_object **po)
       SAFE_FREE((*po)->packet);
       
       /* XXX - dispatcher needs them */
-      SAFE_FREE((*po)->INFO.user);
-      SAFE_FREE((*po)->INFO.pass);
-      SAFE_FREE((*po)->INFO.info);
-      SAFE_FREE((*po)->INFO.banner);
+      SAFE_FREE((*po)->DISSECTOR.user);
+      SAFE_FREE((*po)->DISSECTOR.pass);
+      SAFE_FREE((*po)->DISSECTOR.info);
+      SAFE_FREE((*po)->DISSECTOR.banner);
 
    }
       
@@ -205,10 +205,10 @@ void packet_print(struct packet_object *po)
    USER_MSG("DATA:len     %d\n", po->DATA.len);
    hex_format(po->DATA.data, po->DATA.len, hex);
    USER_MSG("     data    \n%s\n", hex);
-   USER_MSG("INFO:user    %s\n", po->INFO.user);
-   USER_MSG("     pass    %s\n", po->INFO.pass);
-   USER_MSG("     info    %s\n", po->INFO.info);
-   USER_MSG("     banner  %s\n", po->INFO.banner);
+   USER_MSG("INFO:user    %s\n", po->DISSECTOR.user);
+   USER_MSG("     pass    %s\n", po->DISSECTOR.pass);
+   USER_MSG("     info    %s\n", po->DISSECTOR.info);
+   USER_MSG("     banner  %s\n", po->DISSECTOR.banner);
    USER_MSG("PASS:finger  %s\n", po->PASSIVE.fingerprint);
    
 }

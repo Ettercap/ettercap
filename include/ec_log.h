@@ -88,7 +88,7 @@ struct log_header_info {
    u_int8 distance;
    u_int8 type;
    
-   u_char finger[FINGER_LEN+1];
+   u_char fingerprint[FINGER_LEN+1];
 
    struct variable {
       u_int16 user_len;

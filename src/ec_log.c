@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.8 2003/04/01 22:13:43 alor Exp $
+    $Id: ec_log.c,v 1.9 2003/04/03 15:10:40 alor Exp $
 */
 
 #include <ec.h>
@@ -332,31 +332,31 @@ void log_write_info(struct packet_object *po)
     */
    hi.distance = TTL_PREDICTOR(po->L3.ttl) - po->L3.ttl + 1;
    /* our machine is at distance 0 (special case) */
-   if (ip_addr_cmp(&po->L3.src, &GBL_IFACE->ip))
+   if (!ip_addr_cmp(&po->L3.src, &GBL_IFACE->ip))
       hi.distance = 0;
 
    /* OS identification */
-   memcpy(&hi.finger, po->PASSIVE.fingerprint, FINGER_LEN);
+   memcpy(&hi.fingerprint, po->PASSIVE.fingerprint, FINGER_LEN);
    
    /* local, non local, gateway ecc ecc */
    hi.type = po->PASSIVE.flags;
 
    /* set the length of the fields */
-   if (po->INFO.user)
-      hi.var.user_len = htons(strlen(po->INFO.user));
+   if (po->DISSECTOR.user)
+      hi.var.user_len = htons(strlen(po->DISSECTOR.user));
 
-   if (po->INFO.pass)
-      hi.var.pass_len = htons(strlen(po->INFO.pass));
+   if (po->DISSECTOR.pass)
+      hi.var.pass_len = htons(strlen(po->DISSECTOR.pass));
    
-   if (po->INFO.info)
-      hi.var.info_len = htons(strlen(po->INFO.info));
+   if (po->DISSECTOR.info)
+      hi.var.info_len = htons(strlen(po->DISSECTOR.info));
    
-   if (po->INFO.banner)
-      hi.var.banner_len = htons(strlen(po->INFO.banner));
+   if (po->DISSECTOR.banner)
+      hi.var.banner_len = htons(strlen(po->DISSECTOR.banner));
    
    /* check if the packet is interesting... else return */
    if (hi.L4_addr == 0 && 
-       !strcmp(hi.finger, "") &&
+       !strcmp(hi.fingerprint, "") &&
        hi.var.user_len == 0 &&
        hi.var.pass_len == 0 &&
        hi.var.info_len == 0 &&
@@ -371,23 +371,23 @@ void log_write_info(struct packet_object *po)
       ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
     
       /* and now write the variable fields */
-      if (po->INFO.user) {
-         c = gzwrite(fd_ci, po->INFO.user, strlen(po->INFO.user) );
+      if (po->DISSECTOR.user) {
+         c = gzwrite(fd_ci, po->DISSECTOR.user, strlen(po->DISSECTOR.user) );
          ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
       }
 
-      if (po->INFO.pass) {
-         c = gzwrite(fd_ci, po->INFO.pass, strlen(po->INFO.pass) );
+      if (po->DISSECTOR.pass) {
+         c = gzwrite(fd_ci, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass) );
          ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
       }
 
-      if (po->INFO.info) {
-         c = gzwrite(fd_ci, po->INFO.info, strlen(po->INFO.info) );
+      if (po->DISSECTOR.info) {
+         c = gzwrite(fd_ci, po->DISSECTOR.info, strlen(po->DISSECTOR.info) );
          ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
       }
       
-      if (po->INFO.banner) {
-         c = gzwrite(fd_ci, po->INFO.banner, strlen(po->INFO.banner) );
+      if (po->DISSECTOR.banner) {
+         c = gzwrite(fd_ci, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
          ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
       }
       
@@ -395,23 +395,23 @@ void log_write_info(struct packet_object *po)
       c = write(fd_i, &hi, sizeof(hi));
       ON_ERROR(c, -1, "Can't write to logfile");
       
-      if (po->INFO.user) {
-         c = write(fd_i, po->INFO.user, strlen(po->INFO.user) );
+      if (po->DISSECTOR.user) {
+         c = write(fd_i, po->DISSECTOR.user, strlen(po->DISSECTOR.user) );
          ON_ERROR(c, -1, "Can't write to logfile");
       }
 
-      if (po->INFO.pass) {
-         c = write(fd_i, po->INFO.pass, strlen(po->INFO.pass) );
+      if (po->DISSECTOR.pass) {
+         c = write(fd_i, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass) );
          ON_ERROR(c, -1, "Can't write to logfile");
       }
 
-      if (po->INFO.info) {
-         c = write(fd_i, po->INFO.info, strlen(po->INFO.info) );
+      if (po->DISSECTOR.info) {
+         c = write(fd_i, po->DISSECTOR.info, strlen(po->DISSECTOR.info) );
          ON_ERROR(c, -1, "Can't write to logfile");
       }
       
-      if (po->INFO.banner) {
-         c = write(fd_i, po->INFO.banner, strlen(po->INFO.banner) );
+      if (po->DISSECTOR.banner) {
+         c = write(fd_i, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
          ON_ERROR(c, -1, "Can't write to logfile");
       }
    }

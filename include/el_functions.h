@@ -3,6 +3,7 @@
 #define EL_FUNCTIONS_H
 
 #include <ec_log.h>
+#include <ec_profiles.h>
 
 /* el_parser */
 extern void parse_options(int argc, char **argv);
@@ -11,14 +12,16 @@ extern int match_pattern(const char *s, const char *pattern);
 
 /* el_analyze */
 extern void analyze(void);
+extern void create_hosts_list(void);
 
 /* el_main */
-extern void open_log(char *file);
 extern void progress(int value, int max);
 
 /* el_log */
+extern void open_log(char *file);
 extern int get_header(struct log_global_header *hdr);
 extern int get_packet(struct log_header_packet *pck, u_char **buf);
+extern int get_info(struct log_header_info *inf, struct dissector_info *buf);
 
 /* el_display */
 extern void display(void);

@@ -15,16 +15,38 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.3 2003/03/26 22:17:41 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.4 2003/04/03 15:10:47 alor Exp $
 */
 
 #include <el.h>
 #include <ec_log.h>
 
+void open_log(char *file);
 int get_header(struct log_global_header *hdr);
 int get_packet(struct log_header_packet *pck, u_char **buf);
+int get_info(struct log_header_info *inf, struct dissector_info *buf);
 
 /*******************************************/
+
+/* 
+ * open the logfile, then drop the privs
+ */
+
+void open_log(char *file)
+{
+   int zerr;
+   
+   GBL_LOGFILE = strdup(file);
+
+   GBL_LOG_FD = gzopen(file, "rb");
+   ON_ERROR(GBL_LOG_FD, NULL, "%s", gzerror(GBL_LOG_FD, &zerr));
+ 
+   /* if we are root, drop privs... */
+   
+   if ( getuid() == 0 && setuid(65535) < 0)
+      ERROR_MSG("Cannot drop priviledges...");
+
+}
 
 /*
  * returns the global header 
@@ -92,6 +114,73 @@ int get_packet(struct log_header_packet *pck, u_char **buf)
    return ESUCCESS;
 }
 
+/*
+ * read the header for the info and
+ * return the user, pass ecc in buf
+ */
+
+int get_info(struct log_header_info *inf, struct dissector_info *buf)
+{
+   int c;
+
+   c = gzread(GBL_LOG_FD, inf, sizeof(struct log_header_info));
+
+   if (c != sizeof(struct log_header_info))
+      return -EINVALID;
+  
+   /* adjust the variable lengths */
+   inf->var.user_len = ntohs(inf->var.user_len);
+   inf->var.pass_len = ntohs(inf->var.pass_len);
+   inf->var.info_len = ntohs(inf->var.info_len);
+   inf->var.banner_len = ntohs(inf->var.banner_len);
+
+
+   /* 
+    * get the dissectors info
+    *
+    * we can deal only with associated user and pass,
+    * so there must be present all of them
+    */
+   if (inf->var.user_len && inf->var.pass_len && inf->var.info_len) {
+      buf->user = calloc(inf->var.user_len+1, sizeof(char));
+      ON_ERROR(buf->user, NULL, "can't allocate memory");
+      
+      c = gzread(GBL_LOG_FD, buf->user, inf->var.user_len);
+      if (c != inf->var.user_len)
+         return -EINVALID;
+      
+      buf->pass = calloc(inf->var.pass_len+1, sizeof(char));
+      ON_ERROR(buf->pass, NULL, "can't allocate memory");
+      
+      c = gzread(GBL_LOG_FD, buf->pass, inf->var.pass_len);
+      if (c != inf->var.pass_len)
+         return -EINVALID;
+      
+      buf->info = calloc(inf->var.info_len+1, sizeof(char));
+      ON_ERROR(buf->info, NULL, "can't allocate memory");
+      
+      c = gzread(GBL_LOG_FD, buf->info, inf->var.info_len);
+      if (c != inf->var.info_len)
+         return -EINVALID;
+   }
+   
+   /* 
+    * get the banner.
+    * it is different... only one banner per port, it
+    * can be alone.
+    */
+   if (inf->var.banner_len) {
+      buf->banner = calloc(inf->var.banner_len+1, sizeof(char));
+      ON_ERROR(buf->banner, NULL, "can't allocate memory");
+      
+      c = gzread(GBL_LOG_FD, buf->banner, inf->var.banner_len);
+      if (c != inf->var.banner_len)
+         return -EINVALID;
+   }
+   
+   
+   return ESUCCESS; 
+}
 
 /* EOF */
 

@@ -15,11 +15,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.6 2003/03/30 00:50:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.7 2003/04/03 15:10:46 alor Exp $
 */
 
 #include <el.h>
 #include <ec_log.h>
+#include <ec_profiles.h>
 #include <el_functions.h>
 
 #include <sys/stat.h>
@@ -27,6 +28,8 @@
 void analyze(void);
 void analyze_packet(void);
 void analyze_info(void);
+
+void create_hosts_list(void);
 
 /*******************************************/
 
@@ -42,12 +45,6 @@ void analyze(void)
    }
 }
 
-/* analyze an inf log file */
-
-void analyze_info(void)
-{
-   NOT_IMPLEMENTED();
-}
 
 /* analyze a packet log file */
 
@@ -65,6 +62,9 @@ void analyze_packet(void)
    
    /* read the logfile */
    LOOP {
+      
+      memset(&pck, 0, sizeof(struct log_header_packet));
+      
       ret = get_packet(&pck, &buf);
 
       /* on error exit the loop */
@@ -101,6 +101,45 @@ void analyze_packet(void)
    fprintf(stdout, "\n");
    
    return;
+}
+
+/* analyze an info log file */
+
+void analyze_info(void)
+{
+   /* create the hosts' list */
+   create_hosts_list(); 
+   
+   NOT_IMPLEMENTED();
+}
+
+
+void create_hosts_list(void)
+{
+   struct log_header_info inf;
+   int ret;
+   struct dissector_info buf;
+   
+   /* read the logfile */
+   LOOP {
+
+      memset(&inf, 0, sizeof(struct log_header_info));
+      memset(&buf, 0, sizeof(struct dissector_info));
+      
+      ret = get_info(&inf, &buf);
+
+      /* on error exit the loop */
+      if (ret != ESUCCESS)
+         break;
+      
+      printf("create_hosts_list: finger %s\n\n", inf.fingerprint);
+      
+      printf("create_hosts_list: user %s\n", buf.user); 
+      printf("create_hosts_list: pass %s\n", buf.pass); 
+      printf("create_hosts_list: info %s\n", buf.info); 
+      printf("create_hosts_list: banner %s\n\n", buf.banner); 
+   }
+
 }
 
 /* EOF */

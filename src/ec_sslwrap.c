@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.28 2004/03/26 17:22:17 alor Exp $
+    $Id: ec_sslwrap.c,v 1.29 2004/03/27 20:38:19 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,12 @@
 
 #define BREAK_ON_ERROR(x,y,z) do {  \
    if (x == -EINVALID) {            \
+      SAFE_FREE(z.DATA.disp_data);  \
+      sslw_initialize_po(&z, z.DATA.data); \
+      z.len = 64;                   \
+      z.L4.flags = TH_RST;          \
+      packet_disp_data(&z, z.DATA.data, z.DATA.len); \
+      sslw_parse_packet(y, SSL_SERVER, &z); \
       sslw_wipe_connection(y);      \
       SAFE_FREE(z.DATA.data);       \
       SAFE_FREE(z.DATA.disp_data);  \
@@ -95,7 +101,7 @@ struct sslw_ident {
 #define SSLW_RETRY 5
 #define SSLW_WAIT 10000
 
-static SSL_CTX   *ssl_ctx_client, *ssl_ctx_server;
+static SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
 static EVP_PKEY *global_pk;
 static u_int16 number_of_services;
 static struct pollfd *poll_fd = NULL;
@@ -127,7 +133,7 @@ static int sslw_match(void *id_sess, void *id_curr);
 static void sslw_create_session(struct ec_session **s, struct packet_object *po);
 static size_t sslw_create_ident(void **i, struct packet_object *po);            
 static void sslw_hook_handled(struct packet_object *po);
-static int sslw_create_selfsigned(X509 *serv_cert);
+static X509 *sslw_create_selfsigned(X509 *serv_cert);
 static int sslw_insert_redirect(u_int16 sport, u_int16 dport);
 static int sslw_remove_redirect(u_int16 sport, u_int16 dport);
 
@@ -303,8 +309,8 @@ static void sslw_hook_handled(struct packet_object *po)
    if (!sslw_is_ssl(po))
       return;
       
-   /* If it's an ssl packet don't parse it and don't forward */
-   po->flags |= (PO_DROPPED | PO_IGNORE);
+   /* If it's an ssl packet don't forward */
+   po->flags |= PO_DROPPED;
    
    /* If it's a new connection */
    if ( (po->flags & PO_FORWARDABLE) && 
@@ -316,7 +322,8 @@ static void sslw_hook_handled(struct packet_object *po)
       /* Remember the real destination IP */
       memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
       session_put(s);
-   }
+   } else /* Pass only the SYN for conntrack */
+      po->flags |= PO_IGNORE;
 }
 
 /*
@@ -442,10 +449,10 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
       return -EINVALID;
    }
 
-   ae->cert = X509_dup(server_cert);
+   ae->cert = sslw_create_selfsigned(server_cert);  
    X509_free(server_cert);
 
-   if (sslw_create_selfsigned(ae->cert) != ESUCCESS) 
+   if (ae->cert == NULL)
       return -EINVALID;
    
    SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
@@ -635,12 +642,10 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    
    po->L4.src = ae->port[direction];
    po->L4.dst = ae->port[!direction];
+   po->L4.flags |= TH_PSH;
    
    po->flags |= PO_FROMSSL;
-   
-   po->DATA.inject = NULL;
-   po->DATA.inject_len = 0;
-   
+      
    /* get current time */
    gettimeofday(&po->ts, NULL);
 
@@ -718,19 +723,47 @@ static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
 /* 
  * Create a self-signed certificate
  */
-static int sslw_create_selfsigned(X509 *serv_cert)
+static X509 *sslw_create_selfsigned(X509 *server_cert)
 {   
-   /* Set out public key, our issuer and real server name */
-   X509_set_pubkey(serv_cert, global_pk);   
-   X509_NAME_add_entry_by_txt(X509_get_issuer_name(serv_cert), "L", MBSTRING_ASC, " ", -1, -1, 0);
-  
+   X509 *out_cert;
+//   X509_EXTENSION *ext;
+//   int index = 0;
+   
+   if ((out_cert = X509_new()) == NULL)
+      return NULL;
+      
+   /* Set out public key, real server name... */
+   X509_set_version(out_cert, 0x2);
+   X509_set_serialNumber(out_cert, X509_get_serialNumber(server_cert));   
+   X509_set_notBefore(out_cert, X509_get_notBefore(server_cert));
+   X509_set_notAfter(out_cert, X509_get_notAfter(server_cert));
+   X509_set_pubkey(out_cert, global_pk);
+   X509_set_subject_name(out_cert, X509_get_subject_name(server_cert));
+   X509_set_issuer_name(out_cert, X509_get_issuer_name(server_cert));  
+   
+   /* Modify the issuer a little bit */ 
+   X509_NAME_add_entry_by_txt(X509_get_issuer_name(out_cert), "L", MBSTRING_ASC, " ", -1, -1, 0);
+
+/*
+   index = X509_get_ext_by_NID(server_cert, NID_authority_key_identifier, -1);
+   if (index >=0) {
+      ext = X509_get_ext(server_cert, index);
+      if (ext) {
+         ext->value->data[7] = 0xe7;
+         ext->value->data[8] = 0x7e;
+         X509_add_ext(out_cert, ext, -1);
+      }
+   }
+*/
+
    /* Self-sign our certificate */
-   if (!X509_sign(serv_cert, global_pk, EVP_sha1())) {
+   if (!X509_sign(out_cert, global_pk, EVP_sha1())) {
+      X509_free(out_cert);
       DEBUG_MSG("Error self-signing X509");
-      return -EINVALID;
+      return NULL;
    }
      
-   return ESUCCESS;
+   return out_cert;
 }
 
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_conn.c,v 1.3 2003/03/31 21:46:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_conn.c,v 1.4 2003/04/03 15:13:25 alor Exp $
 */
 
 #include <el.h>
@@ -116,16 +116,16 @@ static int insert_table(struct log_header_packet *pck)
       if (c->L4_proto == pck->L4_proto &&
           c->L4_src == pck->L4_src &&
           c->L4_dst == pck->L4_dst &&
-          ip_addr_cmp(&c->L3_src, &pck->L3_src) &&
-          ip_addr_cmp(&c->L3_dst, &pck->L3_dst))
+          !ip_addr_cmp(&c->L3_src, &pck->L3_src) &&
+          !ip_addr_cmp(&c->L3_dst, &pck->L3_dst))
          return 0;
       
       /* form dest to source */
       if (c->L4_proto == pck->L4_proto &&
           c->L4_src == pck->L4_dst &&
           c->L4_dst == pck->L4_src &&
-          ip_addr_cmp(&c->L3_src, &pck->L3_dst) &&
-          ip_addr_cmp(&c->L3_dst, &pck->L3_src))
+          !ip_addr_cmp(&c->L3_src, &pck->L3_dst) &&
+          !ip_addr_cmp(&c->L3_dst, &pck->L3_src))
          return 0;
    }
 
@@ -228,8 +228,8 @@ int is_conn(struct log_header_packet *pck, int *versus)
     */
  
    /* from source to dest */
-   if ( ip_addr_cmp(&pck->L3_src, &conn_target.L3_src) &&
-        ip_addr_cmp(&pck->L3_dst, &conn_target.L3_dst) &&
+   if ( !ip_addr_cmp(&pck->L3_src, &conn_target.L3_src) &&
+        !ip_addr_cmp(&pck->L3_dst, &conn_target.L3_dst) &&
         pck->L4_src == conn_target.L4_src &&
         pck->L4_dst == conn_target.L4_dst &&
         /* the packet is from source, but we are interested only in dest */
@@ -239,8 +239,8 @@ int is_conn(struct log_header_packet *pck, int *versus)
    }
    
    /* from dest to source */
-   if ( ip_addr_cmp(&pck->L3_src, &conn_target.L3_dst) &&
-        ip_addr_cmp(&pck->L3_dst, &conn_target.L3_src) &&
+   if ( !ip_addr_cmp(&pck->L3_src, &conn_target.L3_dst) &&
+        !ip_addr_cmp(&pck->L3_dst, &conn_target.L3_src) &&
         pck->L4_src == conn_target.L4_dst &&
         pck->L4_dst == conn_target.L4_src &&
         /* the packet is from dest, but we are interested only in source */

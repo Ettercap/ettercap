@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.3 2003/04/02 11:56:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.4 2003/04/03 15:13:26 alor Exp $
 */
 
 #include <el.h>
@@ -227,7 +227,7 @@ int cmp_ip_list(struct ip_addr *ip, struct target_env *t)
    struct ip_list *e;
 
    SLIST_FOREACH (e, &t->ips, next)
-      if (ip_addr_cmp(&(e->ip), ip))
+      if (!ip_addr_cmp(&(e->ip), ip))
          return 1;
 
    return 0;

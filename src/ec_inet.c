@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.5 2003/04/03 15:10:33 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.6 2003/04/03 15:13:25 alor Exp $
 */
 
 #include <ec.h>
@@ -62,7 +62,6 @@ int ip_addr_init(struct ip_addr *sa, int type, char *addr)
 
 /* 
  * compare two ip_addr structure.
- * returns 1 if equal, else 0
  */
 
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)

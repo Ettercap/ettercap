@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.33 2004/10/10 13:49:51 daten Exp $
+    $Id: ec_gtk.c,v 1.34 2004/10/10 15:09:41 daten Exp $
 */
 
 #include <ec.h>
@@ -194,11 +194,15 @@ static void gtkui_cleanup(void)
 static void gtkui_msg(const char *msg)
 {
    GtkTextIter iter;
+   gchar *unicode = NULL;
 
    DEBUG_MSG("gtkui_msg: %s", msg);
 
+   if((unicode = gtkui_utf8_validate(msg)) == NULL)
+         return;
+
    gtk_text_buffer_get_end_iter(msgbuffer, &iter);
-   gtk_text_buffer_insert(msgbuffer, &iter, msg, -1);
+   gtk_text_buffer_insert(msgbuffer, &iter, unicode, -1);
    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview), 
                                 endmark, 0, FALSE, 0, 0);
    return;
@@ -218,11 +222,15 @@ gboolean gtkui_flush_msg(gpointer data)
 static void gtkui_error(const char *msg)
 {
    GtkWidget *dialog;
+   gchar *unicode = NULL;
    
    DEBUG_MSG("gtkui_error: %s", msg);
 
+   if((unicode = gtkui_utf8_validate(msg)) == NULL)
+            return;
+
    dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL, 
-                                   GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", msg);
+                                   GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", unicode);
    gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
 
    /* blocking - displays dialog waits for user to click OK */

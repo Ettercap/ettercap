@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.18 2003/10/21 16:16:02 alor Exp $
+    $Id: ec_signals.c,v 1.19 2003/10/23 21:00:59 alor Exp $
 */
 
 #include <ec.h>
@@ -164,7 +164,7 @@ static RETSIGTYPE signal_TERM(int sig)
    /* stop the mitm process (if activated) */
    mitm_stop();
    
-   /* perform a clean exit */
+   //_exit(0);
    clean_exit(0);
 }
 

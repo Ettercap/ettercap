@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.7 2003/10/23 19:50:58 uid42100 Exp $
+    $Id: wdg.c,v 1.8 2003/10/23 21:01:08 alor Exp $
 */
 
 #include <wdg.h>
@@ -365,6 +365,9 @@ void wdg_set_focus(struct wdg_object *wo)
    /* search the object and focus it */
    CIRCLEQ_FOREACH(wl, &wdg_objects_list, next) {
       if ( wl->wo == wo ) {
+         /* unfocus the current object */
+         if (wdg_focused_obj)
+            WDG_EXECUTE(wdg_focused_obj->wo->lost_focus, wdg_focused_obj->wo);
          /* set the focused object */
          wdg_focused_obj = wl;
          /* focus current object */
@@ -431,7 +434,6 @@ int wdg_destroy_object(struct wdg_object **wo)
    if (wdg_focused_obj && wdg_focused_obj->wo == *wo)
       wdg_switch_focus();
   
-
    /* delete it from the obj_list */
    CIRCLEQ_FOREACH(wl, &wdg_objects_list, next) {
       if (wl->wo == *wo) {

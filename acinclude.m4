@@ -1,11 +1,12 @@
 
-dnl $Id: acinclude.m4,v 1.17 2004/05/02 11:51:46 alor Exp $
+dnl $Id: acinclude.m4,v 1.18 2004/06/25 14:11:55 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
 dnl
 
-AC_DEFUN(EC_MESSAGE,[
+AC_DEFUN([EC_MESSAGE],
+[
    AC_MSG_RESULT()
    AC_MSG_RESULT(${SB}$1...${EB})
    AC_MSG_RESULT()
@@ -15,7 +16,8 @@ dnl
 dnl EC_CHECK_OPTION(STRING, VAR)
 dnl
 
-AC_DEFUN(EC_CHECK_OPTION,[
+AC_DEFUN([EC_CHECK_OPTION],
+[
    echo "$1 ${SB}$2${EB}"
 ])
 
@@ -24,8 +26,8 @@ dnl
 dnl EC_CHECK_FUNC(lib, func, ldflags, libs, action-if-found, action-if-not-found)
 dnl
 
-AC_DEFUN(EC_CHECK_FUNC,[
-
+AC_DEFUN([EC_CHECK_FUNC],
+[
    OLDLDFLAGS="${LDFLAGS}"
    OLDLIBS="${LIBS}"
    LDFLAGS="$3"
@@ -40,8 +42,8 @@ dnl
 dnl EC_PTHREAD_CHECK()
 dnl
 
-AC_DEFUN(EC_PTHREAD_CHECK,[
-
+AC_DEFUN([EC_PTHREAD_CHECK],
+[
    AC_SEARCH_LIBS(pthread_create, c_r pthread,,)
    
    if test "$OS" = "SOLARIS"; then
@@ -78,8 +80,8 @@ dnl
 dnl EC_WINDOWS_KERNEL()
 dnl
 
-AC_DEFUN(EC_WINDOWS_KERNEL,[
-
+AC_DEFUN([EC_WINDOWS_KERNEL],
+[
    AC_MSG_CHECKING(Windows kernel version)
    tech=`uname | cut -f2 -d"_" | cut -f1 -d"-"`
    major=`uname | cut -f2 -d"-" | cut -f1 -d"."`
@@ -113,8 +115,8 @@ dnl
 dnl check if the compiler support __VA_ARGS__ in macro declarations
 dnl
 
-AC_DEFUN(EC_GCC_MACRO,[
-
+AC_DEFUN([EC_GCC_MACRO],
+[
    AC_MSG_CHECKING(if your compiler supports __VA_ARGS__ in macro declarations)
    
    AC_TRY_RUN([
@@ -137,7 +139,6 @@ AC_DEFUN(EC_GCC_MACRO,[
    ],
      AC_MSG_RESULT(unkown when cross-compiling)
    )
-
 ])
 
 dnl
@@ -148,8 +149,8 @@ dnl
 
 AH_TEMPLATE(HAVE_NS_GET, [nameser NS_GET32])
 
-AC_DEFUN(EC_NS_GET,[
-
+AC_DEFUN([EC_NS_GET],
+[
    AC_CHECK_HEADERS(arpa/nameser.h)
    AC_MSG_CHECKING(for NS_GET32)
    AC_TRY_RUN([
@@ -175,8 +176,8 @@ dnl
 dnl EC_RESOLVE_CHECK()
 dnl
 
-AC_DEFUN(EC_RESOLVE_CHECK,[
-
+AC_DEFUN([EC_RESOLVE_CHECK],
+[
    AC_SEARCH_LIBS(dn_expand, resolv c,
       [
          AC_MSG_CHECKING(for additional -lresolv needed by dn_expand)

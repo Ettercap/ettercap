@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.7 2004/06/10 16:11:14 lordnaga Exp $
+    $Id: dns_spoof.c,v 1.8 2004/06/25 14:12:00 alor Exp $
 */
 
 
@@ -152,6 +152,7 @@ static int load_db(void)
    char line[128];
    char *ptr, *ip, *name, *p;
    int lines = 0, type;
+   char *tok;
    
    /* open the file */
    f = open_data("share", ETTER_DNS, FOPEN_READ_TEXT);
@@ -178,7 +179,7 @@ static int load_db(void)
          type = TYPE_MX;
          p = line + 3;
          /* get the name and the ip */
-         if ((name = strtok(p, "\t")) == NULL || (ip = strtok(NULL, "\n")) == NULL)
+         if ((name = ec_strtok(p, "\t", &tok)) == NULL || (ip = ec_strtok(NULL, "\n", &tok)) == NULL)
             continue;
         
       } else {
@@ -186,7 +187,7 @@ static int load_db(void)
          p = line;
          
          /* get the ip and the name */
-         if ((ip = strtok(p, "\t")) == NULL || (name = strtok(NULL, "\n")) == NULL)
+         if ((ip = ec_strtok(p, "\t", &tok)) == NULL || (name = ec_strtok(NULL, "\n", &tok)) == NULL)
             continue;
       }
       

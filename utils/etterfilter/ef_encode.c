@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.19 2004/02/17 14:42:47 alor Exp $
+    $Id: ef_encode.c,v 1.20 2004/06/25 14:12:00 alor Exp $
 */
 
 #include <ef.h>
@@ -48,7 +48,7 @@ static char * strsep_quotes(char **stringp, const char delim);
  */
 int encode_offset(char *string, struct filter_op *fop)
 {
-   char *str, *p, *q;
+   char *str, *p, *q, *tok;
    int ret;
 
    memset(fop, 0, sizeof(struct filter_op));
@@ -62,8 +62,8 @@ int encode_offset(char *string, struct filter_op *fop)
     * will not have passed it here if it is not
     * in the right form.
     */
-   p = strtok(str, ".");
-   q = strtok(NULL, ".");
+   p = ec_strtok(str, ".", &tok);
+   q = ec_strtok(NULL, ".", &tok);
 
    /* the the virtual pointer from the table */
    ret = get_virtualpointer(p, q, &fop->op.test.level, &fop->op.test.offset, &fop->op.test.size);
@@ -143,11 +143,12 @@ int encode_function(char *string, struct filter_op *fop)
    char *name, *args;
    int nargs = 0, i;
    char **dec_args = NULL;
+   char *tok;
 
    memset(fop, 0, sizeof(struct filter_op));
    
    /* get the name of the function */
-   name = strtok(string, "(");
+   name = ec_strtok(string, "(", &tok);
    /* get all the args */
    args = name + strlen(name) + 1;
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_strings.c,v 1.11 2004/05/03 10:10:20 alor Exp $
+    $Id: ec_strings.c,v 1.12 2004/06/25 14:12:00 alor Exp $
 */
 
 #include <ec.h>
@@ -35,6 +35,7 @@ static int hextoint(int c);
 int strescape(char *dst, char *src);
 int str_replace(char **text, const char *s, const char *d);
 size_t strlen_utf8(const char *s);
+char * ec_strtok(char *s, const char *delim, char **ptrptr);
 
 /*******************************************/
 
@@ -319,6 +320,21 @@ size_t strlen_utf8(const char *s)
 
    return len;
 }
+
+
+/*
+ * a reentrant version of strtok
+ */
+char * ec_strtok(char *s, const char *delim, char **ptrptr)
+{
+#ifdef HAVE_STRTOK_R
+   return strtok_r(s, delim, ptrptr);
+#else
+   #warning unsafe strtok
+   return strtok(s, delim);
+#endif
+}
+
 
 /* EOF */
 

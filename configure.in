@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.125 2004/06/08 08:58:35 alor Exp $
+dnl    $Id: configure.in,v 1.126 2004/06/25 14:11:55 alor Exp $
 dnl
 
 AC_INIT
@@ -261,7 +261,7 @@ EC_PTHREAD_CHECK()
 AC_CHECK_FUNCS(getifaddrs)
 AC_CHECK_FUNCS(gettimeofday)
 AC_CHECK_FUNCS(vsnprintf)
-AC_CHECK_FUNCS(select poll strdup strerror strstr strsignal)
+AC_CHECK_FUNCS(select poll strdup strerror strstr strsignal strtok_r)
 AC_CHECK_FUNCS(uname)
 AC_CHECK_FUNCS(daemon)
 

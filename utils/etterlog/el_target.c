@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_target.c,v 1.15 2004/04/08 14:35:15 alor Exp $
+    $Id: el_target.c,v 1.16 2004/06/25 14:12:00 alor Exp $
 */
 
 #include <el.h>
@@ -139,13 +139,14 @@ static void expand_range_ip(char *str, void *target)
    char *p, *q;
    int i = 0, j;
    int permut = 1;
+   char *tok;
                      
    memset(&ADDR, 0, sizeof(ADDR));
 
    p = str;
 
    /* tokenize the ip into 4 slices */
-   while ( (q = strtok(p, ".")) ) {
+   while ( (q = ec_strtok(p, ".", &tok)) ) {
       addr[i++] = strdup(q);
       /* reset p for the next strtok */
       if (p != NULL) p = NULL;

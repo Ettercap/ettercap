@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_update.c,v 1.12 2004/06/08 20:05:36 alor Exp $
+    $Id: ec_update.c,v 1.13 2004/06/25 14:12:00 alor Exp $
 */
 
 #include <ec.h>
@@ -47,6 +47,7 @@ void global_update(void)
    char getmsg[512];
    char buffer[8192];
    int len;
+   char *tok;
    char host[] = "ettercap.sourceforge.net";
 //   char host[] = "local.alor.org";
    char page[] = "/updateNG.php";
@@ -98,7 +99,7 @@ void global_update(void)
    ptr += strlen(GBL_PROGRAM) + 1;
 
    /* the first line in the response is the latest version */
-   latest = strdup(strtok(ptr, "\n"));
+   latest = strdup(ec_strtok(ptr, "\n", &tok));
    /* move the ptr after the first token */
    ptr += strlen(latest) + 1;
    
@@ -132,6 +133,7 @@ static void update_file(char *tokens)
    char *curr = NULL;
    char *url = NULL;
    size_t i, n = 0;
+   char *tok;
    char errbuf[ERR_MAX_LEN];
   
    DEBUG_MSG("update_file");
@@ -146,9 +148,9 @@ static void update_file(char *tokens)
       return;
    
    /* split the tokens */
-   file = strdup(strtok(tokens, " "));
-   rev = strdup(strtok(NULL, " "));
-   url = strdup(strtok(NULL, " "));
+   file = strdup(ec_strtok(tokens, " ", &tok));
+   rev = strdup(ec_strtok(NULL, " ", &tok));
+   url = strdup(ec_strtok(NULL, " ", &tok));
    
    /* get the current revision */
    if (get_current_rev(file, &curr, errbuf) == 0) {
@@ -182,7 +184,7 @@ static void update_file(char *tokens)
 
 /* 
  * get the current file revision 
- * it is stored in the cvs var $Revision: 1.12 $
+ * it is stored in the cvs var $Revision: 1.13 $
  */
 static int get_current_rev(char *file, char **curr, char *errbuf)
 {

@@ -22,8 +22,6 @@
   Not in the first release  
 ============================
 
-   + SAFE_STRTOK
-   
    + multiple dissector on a single port
 
    + CURSES
@@ -48,6 +46,7 @@
 
    + SSH - SSL
       - decryption with given keys
+      - DES support
 
 ==================
   LONG TERM TODO

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.18 2004/05/27 19:00:48 lordnaga Exp $
+    $Id: ec_http.c,v 1.19 2004/06/25 14:12:00 alor Exp $
 */
 
 #include <ec.h>
@@ -276,7 +276,7 @@ static void Get_Banner(u_char *ptr, struct packet_object *po)
 /* Parse Passport Authentication */ 
 static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
-   char *token, *to_decode;
+   char *token, *to_decode, *tok;
 
    DEBUG_MSG("HTTP --> dissector http (Passport Auth)");
 
@@ -289,12 +289,12 @@ static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object 
    }
    
    /* Catch the original URL */
-   strtok(token, ",");
+   ec_strtok(token, ",", &tok);
    po->DISSECTOR.info = strdup(token + strlen("OrgURL="));
    Decode_Url(po->DISSECTOR.info);
    
    /* Catch user and password */
-   while ( (token = strtok(NULL, ",")) != NULL ) {
+   while ( (token = ec_strtok(NULL, ",", &tok)) != NULL ) {
       if (!strncmp(token, "sign-in=", strlen("sign-in="))) {
          po->DISSECTOR.user = strdup(token + strlen("sign-in="));
          Decode_Url(po->DISSECTOR.user);
@@ -316,7 +316,7 @@ static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object 
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
    int Proxy_Auth = 0;
-   char *token, *to_decode;
+   char *token, *to_decode, *tok;
 
    DEBUG_MSG("HTTP --> dissector http (Basic Auth)");
 
@@ -334,7 +334,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
    if (!(to_decode = strdup(from_here)))
       return 1;
        
-   strtok(to_decode, "\r");
+   ec_strtok(to_decode, "\r", &tok);
    base64_decode(to_decode, to_decode);
    
    /* Parse the cleartext auth string */
@@ -360,7 +360,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
 /* Parse NTLM challenge and response for both Proxy and WWW Auth */ 
 static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
-   char *to_decode, msgType; 
+   char *to_decode, msgType, *tok; 
    tSmbStdHeader *hSmb;
    int Proxy_Auth = 0;
    void *ident = NULL;
@@ -383,7 +383,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
    if (!(to_decode = strdup(from_here)))
       return 1;
        
-   strtok(to_decode, "\r");
+   ec_strtok(to_decode, "\r", &tok);
 
    base64_decode(to_decode, to_decode);
    hSmb = (tSmbStdHeader *) to_decode;
@@ -622,20 +622,21 @@ static void Find_Url_Referer(u_char *to_parse, char **ret)
 {
    u_char *fromhere, *page=NULL, *host=NULL;     
    u_int32 len;
+   char *tok;
 
    /* If the referer exists */
    if ((fromhere = strstr(to_parse, "Referer: "))) {
       if ((*ret = strdup(fromhere + strlen("Referer: "))))
-         strtok(*ret, "\r");
+         ec_strtok(*ret, "\r", &tok);
    } else {
       /* Get the page from the request */
       page = strdup(to_parse);
-      strtok(page, " HTTP");
+      ec_strtok(page, " HTTP", &tok);
 
       /* If the path is relative, search for the Host */
       if ((*page=='/') && (fromhere = strstr(to_parse, "Host: "))) {
          host = strdup( fromhere + strlen("Host: ") );
-         strtok(host, "\r");
+         ec_strtok(host, "\r", &tok);
       } else 
          host = strdup("");
 	 
@@ -656,6 +657,7 @@ static void Find_Url(u_char *to_parse, char **ret)
 {
    u_char *fromhere, *page=NULL, *host=NULL;     
    u_int32 len;
+   char *tok;
 
    if (!strncmp(to_parse, "GET ", 4))
       to_parse += strlen("GET ");
@@ -666,12 +668,12 @@ static void Find_Url(u_char *to_parse, char **ret)
       
    /* Get the page from the request */
    page = strdup(to_parse);
-   strtok(page, " HTTP");
+   ec_strtok(page, " HTTP", &tok);
 
    /* If the path is relative, search for the Host */
    if ((*page=='/') && (fromhere = strstr(to_parse, "Host: "))) {
       host = strdup( fromhere + strlen("Host: ") );
-      strtok(host, "\r");
+      ec_strtok(host, "\r", &tok);
    } else 
       host = strdup("");
 	 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.27 2004/06/13 18:22:52 alor Exp $
+    $Id: ec_wifi.c,v 1.28 2004/06/25 14:12:00 alor Exp $
 */
 
 #include <ec.h>
@@ -367,6 +367,7 @@ int set_wep_key(u_char *string)
 {
    int bit = 0, i;
    u_char *p, type;
+   char *tok;
    char s[strlen(string) + 1];
    
    DEBUG_MSG("set_wep_key: %s", string);
@@ -374,7 +375,7 @@ int set_wep_key(u_char *string)
    memset(wkey, 0, sizeof(wkey));
    strcpy(s, string);
 
-   p = strtok(s, ":");
+   p = ec_strtok(s, ":", &tok);
    if (p == NULL)
       SEMIFATAL_ERROR("Invalid parsing of the WEP key");
 
@@ -395,14 +396,14 @@ int set_wep_key(u_char *string)
       SEMIFATAL_ERROR("Unsupported WEP key lenght");
 
    /* get the type of the key */
-   p = strtok(NULL, ":");
+   p = ec_strtok(NULL, ":", &tok);
    if (p == NULL)
       SEMIFATAL_ERROR("Invalid parsing of the WEP key");
   
    type = *p;
    
    /* get the third part of the string */
-   p = strtok(NULL, ":");
+   p = ec_strtok(NULL, ":", &tok);
    if (p == NULL)
       SEMIFATAL_ERROR("Invalid parsing of the WEP key");
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_napster.c,v 1.4 2003/10/28 22:15:03 alor Exp $
+    $Id: ec_napster.c,v 1.5 2004/06/25 14:12:00 alor Exp $
 */
 
 #include <ec.h>
@@ -59,6 +59,7 @@ FUNC_DECODER(dissector_napster)
    struct nap_hdr *nap;
    u_char *tbuf, *user, *pass, *client;
    size_t tlen;
+   char *tok;
 
    /* don't complain about unused var */
    (void)end;
@@ -99,19 +100,19 @@ FUNC_DECODER(dissector_napster)
    strlcpy(tbuf, ptr, tlen + 1);   
 
    /* get the user */
-   if ((user = strtok(tbuf, " ")) == NULL)
+   if ((user = ec_strtok(tbuf, " ", &tok)) == NULL)
       goto bad;
    
    /* get the pass */
-   if ((pass = strtok(NULL, " ")) == NULL)
+   if ((pass = ec_strtok(NULL, " ", &tok)) == NULL)
       goto bad;
 
    /* skip the port */
-   if ((client = strtok(NULL, " ")) == NULL)
+   if ((client = ec_strtok(NULL, " ", &tok)) == NULL)
       goto bad;
 
    /* get the client */
-   if ((client = strtok(NULL, "\"")) == NULL)
+   if ((client = ec_strtok(NULL, "\"", &tok)) == NULL)
       goto bad;
    
    PACKET->DISSECTOR.user = strdup(user);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dynlist.c,v 1.5 2004/02/02 22:28:29 alor Exp $
+    $Id: wdg_dynlist.c,v 1.6 2004/02/03 13:13:51 alor Exp $
 */
 
 #include <wdg.h>
@@ -437,7 +437,7 @@ void wdg_dynlist_refresh(wdg_t *wo)
    }
 
    WDG_SAFE_FREE(desc);
-   
+
    wnoutrefresh(ww->sub);
 }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_conn.c,v 1.4 2004/02/02 22:28:29 alor Exp $
+    $Id: ec_text_conn.c,v 1.5 2004/02/03 13:13:51 alor Exp $
 */
 
 #include <ec.h>
@@ -32,74 +32,31 @@
 /* proto */
 
 void text_connections(void);
-void conn_print(int n, struct conn_object *co);
 
 /*******************************************/
 
 void text_connections(void)
 {   
+   void *list;
+   char *desc;
+   
+   SAFE_CALLOC(desc, 100, sizeof(char));
+
+   /* retrieve the first element */
+   list = conntrack_print(0, NULL, NULL, 0);
+   
    fprintf(stdout, "\nConnections list:\n\n");
   
-   /* call the callbacking function */
-   conntrack_print_old(1, INT_MAX, &conn_print); 
+   /* walk the connection list */
+   while(list) {
+      /* get the next element */
+      list = conntrack_print(+1, list, &desc, 99);
+      fprintf(stdout, "%s\n", desc);
+   }
 
    fprintf(stdout, "\n");
-}
 
-/*
- * prints a connection
- */
-void conn_print(int n, struct conn_object *co)
-{
-   char tmp[MAX_ASCII_ADDR_LEN];
-
-   fprintf(stdout, "%3d)  ", n);
-   switch (co->L4_proto) {
-      case NL_TYPE_UDP:
-         fprintf(stdout, "U ");
-         break;
-      case NL_TYPE_TCP:
-         fprintf(stdout, "T ");
-         break;
-      default:
-         fprintf(stdout, "  ");
-         break;
-   }
-   fprintf(stdout, "%15s:%-5d -- ", ip_addr_ntoa(&co->L3_addr1, tmp), ntohs(co->L4_addr1));   
-   fprintf(stdout, "%15s:%-5d ", ip_addr_ntoa(&co->L3_addr2, tmp), ntohs(co->L4_addr2));   
-   switch (co->status) {
-      case CONN_IDLE:
-         fprintf(stdout, "IDLE    ");
-         break;
-      case CONN_OPENING:
-         fprintf(stdout, "OPENING ");
-         break;
-      case CONN_OPEN:
-         fprintf(stdout, "OPEN    ");
-         break;
-      case CONN_ACTIVE:
-         fprintf(stdout, "ACTIVE  ");
-         break;
-      case CONN_CLOSING:
-         fprintf(stdout, "CLOSING ");
-         break;
-      case CONN_CLOSED:
-         fprintf(stdout, "CLOSED  ");
-         break;
-      case CONN_KILLED:
-         fprintf(stdout, "KILLED  ");
-         break;
-   }
-   fprintf(stdout, "  TX: %d", co->xferred);
-
-   if (co->DISSECTOR.user) {
-      fprintf(stdout, "\n\t\tACCOUNT: %s / %s", co->DISSECTOR.user, co->DISSECTOR.pass);
-      if (co->DISSECTOR.info)
-         fprintf(stdout, "\n\t\tINFO: %s", co->DISSECTOR.info);
-   }
-   
-   fprintf(stdout, "\n");
-
+   SAFE_FREE(desc);
 }
 
 

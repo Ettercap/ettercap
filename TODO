@@ -38,11 +38,10 @@ this is the unofficial and floating in time roadmap:
       - how to code a plugin 
 
    + CURSES GUI
-      - profile management
-      - connection management
+      - connection view
       + LIBWDG
-         - fix the box() under freebsd
          - mouse events on focus
+         - fix ww->top ww->current problem when the elements disappear
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
@@ -74,7 +73,6 @@ this is the unofficial and floating in time roadmap:
      
    + CONNECTION
       - kill a connection
-      - type (service)
     
 
 ============================

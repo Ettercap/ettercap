@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.14 2004/02/02 22:28:29 alor Exp $
+    $Id: ec_conntrack.c,v 1.15 2004/02/03 13:13:51 alor Exp $
 */
 
 #include <ec.h>
@@ -29,12 +29,6 @@
 #include <ec_hash.h>
 
 /* globals */
-
-struct conn_tail {
-   struct conn_object *co;
-   struct conn_hash_search *cs;
-   TAILQ_ENTRY(conn_tail) next;
-};
 
 /* the hash table used to index the tailq */
 struct conn_hash_search {
@@ -75,7 +69,6 @@ static void conntrack_add(struct packet_object *po);
 static void conntrack_del(struct conn_object *co);
 static int conntrack_match(struct conn_object *co, struct packet_object *po);
 EC_THREAD_FUNC(conntrack_timeouter);
-int conntrack_print_old(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
 void * conntrack_print(int mode, void *list, char **desc, size_t len);
 
 int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_object *po));
@@ -582,37 +575,6 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
    return NULL;
 }
 
-/*
- * print the connection list from spos to epos.
- * you can use 0, MAX_INT to print all the connections
- */
-int conntrack_print_old(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co))
-{
-   struct conn_tail *cl;
-   u_int32 i = 1, count = 0;
-  
-   CONNTRACK_LOCK;
-   
-   /* search in the list */
-   TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
-      /* print within the given range */
-      if (i >= spos && i <= epos) {
-         /* update the couter */
-         count++;
-         /* callback */
-         func(count, cl->co);
-
-      } 
-      i++;
-      /* speed up the exit */
-      if (i > epos)
-         break;
-   }
-
-   CONNTRACK_UNLOCK;
-
-   return count;
-}
 /* EOF */
 
 // vim:ts=3:expandtab

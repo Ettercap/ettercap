@@ -1,5 +1,5 @@
 
-/* $Id: ec_conntrack.h,v 1.8 2004/02/02 22:28:22 alor Exp $ */
+/* $Id: ec_conntrack.h,v 1.9 2004/02/03 13:13:51 alor Exp $ */
 
 #ifndef EC_CONNTRACK_H
 #define EC_CONNTRACK_H
@@ -48,6 +48,13 @@ struct conn_object {
    SLIST_HEAD(, ct_hook_list) hook_head;
 };
 
+struct conn_tail {
+   struct conn_object *co; 
+   struct conn_hash_search *cs;
+   TAILQ_ENTRY(conn_tail) next;
+};
+
+
 enum {
    CONN_IDLE      = 0,
    CONN_OPENING   = 1,
@@ -60,7 +67,6 @@ enum {
 
 /* exported functions */
 extern void * conntrack_print(int mode, void *list, char **desc, size_t len);
-extern int conntrack_print_old(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
 extern EC_THREAD_FUNC(conntrack_timeouter); 
 
 extern int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_object *po));

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_main.c,v 1.12 2003/09/27 17:22:24 alor Exp $
+    $Id: el_main.c,v 1.13 2004/04/09 08:14:22 alor Exp $
 */
 
 #include <el.h>
@@ -90,14 +90,17 @@ int main(int argc, char *argv[])
 
 void set_color(int color)
 {
-   fprintf(stdout, "\033[%dm", color);
+   char str[8];
+   
+   sprintf(str, "\033[%dm", color);
+   write(fileno(stdout), str, strlen(str));
 }
 
 /* reset the color to default */
 
 void reset_color(void)
 {
-   fprintf(stdout, "%s", EC_COLOR_END);   
+   write(fileno(stdout), EC_COLOR_END, 4);   
 }
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_display.c,v 1.36 2004/04/04 13:04:06 alor Exp $
+    $Id: el_display.c,v 1.37 2004/04/09 08:14:22 alor Exp $
 */
 
 #include <el.h>
@@ -124,23 +124,20 @@ static void display_packet(void)
                break;
          }
          set_color(color);
-         fflush(stdout);
       }
       
       /* print it */
       write(fileno(stdout), tmp, ret);
       
-      if (GBL.color) {
+      if (GBL.color) 
          reset_color();
-         fflush(stdout);
-      }
       
       SAFE_FREE(buf);
       SAFE_FREE(tmp);
    }
 
    if (!GBL.no_headers)
-      fprintf(stdout, "\n\n");
+      write(fileno(stdout), "\n\n", 2);
    
    return;
 }
@@ -158,23 +155,26 @@ static void display_headers(struct log_header_packet *pck)
    char flags[8];
    char *p = flags;
    char proto[5];
+   char str[128];
    
    memset(flags, 0, sizeof(flags));
    
-   fprintf(stdout, "\n\n");
+   write(fileno(stdout), "\n\n", 2);
    
    /* remove the final '\n' */
    strcpy(time, ctime((time_t *)&pck->tv.tv_sec));
    time[strlen(time)-1] = 0;
    
    /* displat the date */
-   fprintf(stdout, "%s [%lu]\n", time, (unsigned long)pck->tv.tv_usec);
+   sprintf(str, "%s [%lu]\n", time, (unsigned long)pck->tv.tv_usec);
+   write(fileno(stdout), str, strlen(str));
   
    if (GBL.showmac) {
       /* display the mac addresses */
       mac_addr_ntoa(pck->L2_src, tmp1);
       mac_addr_ntoa(pck->L2_dst, tmp2);
-      fprintf(stdout, "%17s --> %17s\n", tmp1, tmp2 );
+      sprintf(str, "%17s --> %17s\n", tmp1, tmp2 );
+      write(fileno(stdout), str, strlen(str));
    }
   
    /* calculate the flags */
@@ -197,11 +197,12 @@ static void display_headers(struct log_header_packet *pck)
    /* display the ip addresses */
    ip_addr_ntoa(&pck->L3_src, tmp1);
    ip_addr_ntoa(&pck->L3_dst, tmp2);
-   fprintf(stdout, "%s  %s:%d --> %s:%d | %s\n", proto, tmp1, ntohs(pck->L4_src), 
+   sprintf(str, "%s  %s:%d --> %s:%d | %s\n", proto, tmp1, ntohs(pck->L4_src), 
                                                         tmp2, ntohs(pck->L4_dst),
                                                         flags);
+   write(fileno(stdout), str, strlen(str));
 
-   fprintf(stdout, "\n");
+   write(fileno(stdout), "\n", 1);
 }
 
 /*

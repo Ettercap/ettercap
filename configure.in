@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.113 2004/04/20 10:34:44 alor Exp $
+dnl    $Id: configure.in,v 1.114 2004/04/21 10:01:54 alor Exp $
 dnl
 
 AC_INIT
@@ -522,20 +522,28 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/include"
-        SSLLIB="-L$withval -lcrypto -lssl"
+        SSLLIB="-L$withval -lssl -lcrypto"
         AC_DEFINE(HAVE_OPENSSL, 1)
         AM_CONDITIONAL(OPENSSL, true)
         ac_ec_libssl=$withval
         AC_MSG_RESULT($withval)
+        OLDLDFLAGS="${LDFLAGS}"
+        LDFLAGS="$SSLLIB"
+        AC_CHECK_LIB(crypto, DES_set_key,, AC_MSG_ERROR([Incorrect openssl version. openssl >= 0.9.7 required]))
+        LDFLAGS="${OLDLDFLAGS}"
      elif test -f $withval/ssl/include/openssl/ssl.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/ssl/include"
-        SSLLIB="-L$withval/ssl/lib -lcrypto -lssl"
+        SSLLIB="-L$withval/ssl/lib -lssl -lcrypto"
         AC_DEFINE(HAVE_OPENSSL, 1)
         AM_CONDITIONAL(OPENSSL, true)
         ac_ec_libssl=$withval
         AC_MSG_RESULT($withval)
+        OLDLDFLAGS="${LDFLAGS}"
+        LDFLAGS="$SSLLIB"
+        AC_CHECK_LIB(crypto, DES_set_key,, AC_MSG_ERROR([Incorrect openssl version. openssl >= 0.9.7 required]))
+        LDFLAGS="${OLDLDFLAGS}"
      else
         AC_MSG_RESULT(no)
         AC_MSG_ERROR([ssl.h not found in $withval])
@@ -543,11 +551,15 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
      ;;
   esac ],
 [ if test -f /usr/include/openssl/ssl.h; then
-     SSLLIB="-lcrypto -lssl"
+     SSLLIB="-lssl -lcrypto"
      AC_DEFINE(HAVE_OPENSSL, 1)
      AM_CONDITIONAL(OPENSSL, true)
      AC_MSG_RESULT(yes)
      ac_ec_libssl=default
+     OLDLDFLAGS="${LDFLAGS}"
+     LDFLAGS="$SSLLIB"
+     AC_CHECK_LIB(crypto, DES_set_key,, AC_MSG_ERROR([Incorrect openssl version. openssl >= 0.9.7 required]))
+     LDFLAGS="${OLDLDFLAGS}"
   else
      AC_MSG_RESULT(no)
   fi]

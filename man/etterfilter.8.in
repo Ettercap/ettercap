@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.19 2004/02/16 21:15:32 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.20 2004/04/21 10:02:45 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -99,10 +99,13 @@ if (tcp.src == 21 && search(DATA.data, "ettercap")) {
 .br
 }
 .Sp
-Pay attention on the operator precedence. OR has higher precedence over AND.
+Pay attention on the operator precedence. 
 You cannot use parenthesis to group conditions, so be careful of the order. An
 AND at the beginning of a conditions block will exclude all the other tests if
-it is evaluated as false.
+it is evaluated as false. The parsing is left-to-right, when an operator is
+found: if it is an AND and the previous condition is false, all the statement
+is evaluated as false; if it is an OR the parsing goes on even if the condition 
+is false.
 .Sp
 Example:
 .br

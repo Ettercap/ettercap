@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.32 2004/04/12 15:31:52 alor Exp $
+    $Id: ec_conf.c,v 1.33 2004/04/21 10:02:47 alor Exp $
 */
 
 #include <ec.h>
@@ -326,7 +326,7 @@ void load_conf(void)
                *p = 0;
          } while (p++ < *tmp + strlen(*tmp) );
          
-         DEBUG_MSG("load_conf: \tENTRY: %s  [%s]", line, (char *)value);
+         DEBUG_MSG("load_conf: \tENTRY: %s  [%s]", line, *tmp);
       } else {
          /* set the integer value */ 
          *(int *)value = strtol(p, (char **)NULL, 10);

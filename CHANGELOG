@@ -8,9 +8,11 @@ Legenda:
 
 NG-0.7.0_pre2    200404??
 
-   + telnet collector enhacements
+   + telnet collector enhacements (catch cisco login)
    + added the find_ettercap plugin
    !! fixed the $prefix issue in the configure
+   !! fixed a linking problem against openssl
+   !! some fixes in the man pages
    
 
 NG-0.7.0_pre1    20040415
@@ -79,8 +81,8 @@ NG-0.7.0_pre1    20040415
       + mouse event are supported
       + customizable colors
       + completely new menu-driven interface
-   + totally redesigne GTK+ interface
-   + you can filter set a visualization regexp
+   + totally redesigned GTK+ interface
+   + you can filter data with a visualization regexp
    + profiles can be dumped to a file
    + A lot of new bugs^H^H^H^H random features to be discovered ;)
    !! offline sniffing actually does not bind to any NICs

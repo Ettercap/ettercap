@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.129 2004/07/12 19:57:19 alor Exp $
+dnl    $Id: configure.in,v 1.130 2004/07/13 13:40:42 alor Exp $
 dnl
 
 AC_INIT
@@ -68,7 +68,6 @@ AH_TEMPLATE(OS_WINDOWS, [compiling under windows])
 dnl the subtype does matter
 AH_TEMPLATE(OS_CYGWIN, [compiling under cygwin])
 AH_TEMPLATE(OS_MINGW, [compiling under mingw])
-AH_TEMPLATE(OS_SFU, [compiling under Services For Unix interix])
 
 dnl initialize the conditionals
 AM_CONDITIONAL(LINUX, false)
@@ -115,6 +114,7 @@ case "$host_os" in
    ;;
 *cygwin*)
    EC_WINDOWS_KERNEL()
+   EC_CYGWIN_KERNEL()
    AC_DEFINE(OS_CYGWIN)
    AM_CONDITIONAL(CYGWIN, true)
    OS="WINDOWS"
@@ -122,11 +122,15 @@ case "$host_os" in
    PL_LDFLAGS="-no-undefined"
    ;;
 *mingw*)
+   EC_WINDOWS_KERNEL()
+   EC_MINGW_KERNEL()
    AC_DEFINE(OS_WINDOWS)
    AC_DEFINE(OS_MINGW)
    AM_CONDITIONAL(MINGW, true)
    OS="WINDWOS"
    OS_SUB="MINGW"
+   EC_MINGW_SPECIAL_MAKEFILE()
+   exit
    ;;
 *)
    echo
@@ -813,6 +817,7 @@ dnl ===============
 EC_MESSAGE(Writing output files)
 
 AC_CONFIG_FILES(  Makefile
+                  Makefile.mingw
                   man/Makefile 
                   man/ettercap.8 
                   man/ettercap_curses.8 
@@ -894,8 +899,7 @@ echo
 echo "=================================================="
 echo
 
-
-
+dnl ================
 
 
 dnl vim:ts=3:expandtab

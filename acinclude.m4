@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.18 2004/06/25 14:11:55 alor Exp $
+dnl $Id: acinclude.m4,v 1.19 2004/07/13 13:40:42 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -94,7 +94,14 @@ AC_DEFUN([EC_WINDOWS_KERNEL],
    else
       ac_ec_windows_version="-DWIN2K_XP"
    fi
+])
 
+dnl
+dnl EC_CYGWIN_KERNEL()
+dnl
+
+AC_DEFUN([EC_CYGWIN_KERNEL],
+[
    AC_MSG_CHECKING(Cygwin dll version)
    uname=`uname -r | cut -f1 -d"("`
    major=`uname -r | cut -f1 -d"(" | cut -f1 -d"."`
@@ -104,6 +111,25 @@ AC_DEFUN([EC_WINDOWS_KERNEL],
       AC_MSG_WARN(****************************);
       AC_MSG_WARN(* Cygwin 1.3.x REQUIRED !! *);
       AC_MSG_WARN(****************************);
+      exit;
+   fi
+])
+
+dnl
+dnl EC_MINGW_KERNEL()
+dnl
+
+AC_DEFUN([EC_MINGW_KERNEL],
+[
+   AC_MSG_CHECKING(MingW32 version)
+   uname=`uname -r | cut -f1 -d"("`
+   major=`uname -r | cut -f1 -d"(" | cut -f1 -d"."`
+   minor=`uname -r | cut -f1 -d"(" | cut -f2 -d"."`
+   AC_MSG_RESULT($uname)
+   if test "$major$minor" -lt 10; then
+      AC_MSG_WARN(*****************************);
+      AC_MSG_WARN(* MingW32 1.0.x REQUIRED !! *);
+      AC_MSG_WARN(*****************************);
       exit;
    fi
 ])
@@ -204,6 +230,18 @@ AC_DEFUN([EC_RESOLVE_CHECK],
       ],
       [AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_ec_dns=no])
 
+])
+
+dnl
+dnl EC_MINGW_SPECIAL_MAKEFILE()
+dnl
+
+AC_DEFUN([EC_MINGW_SPECIAL_MAKEFILE],
+[
+   EC_MESSAGE(Writing output files)
+   dnl under mingw there is a special makefile
+   dnl make the final adjustment
+   cp -f Makefile.mingw.in Makefile
 ])
 
 dnl vim:ts=3:expandtab

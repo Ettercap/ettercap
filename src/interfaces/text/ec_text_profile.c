@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_profile.c,v 1.5 2004/02/01 16:48:51 alor Exp $
+    $Id: ec_text_profile.c,v 1.6 2004/07/13 13:41:03 alor Exp $
 */
 
 #include <ec.h>
@@ -27,7 +27,11 @@
 #include <ec_profiles.h>
 #include <ec_passive.h>
 
-#include <termios.h>
+#ifdef OS_WINDOWS
+   #include <missing/termios_mingw.h>
+#else
+   #include <termios.h>
+#endif
 
 /* globals */
 

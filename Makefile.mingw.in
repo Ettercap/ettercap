@@ -1,0 +1,493 @@
+#
+#  Ettercap NG Makefile for MingW32
+#  by G. Vanem <giva@bgnett.no>
+#
+
+.SUFFIXES: .exe .dll
+
+VERSION = NG-0.7.1_cvs
+
+#
+# Choose your weapons
+# USE_SSL=1 currently not possible on Windows.
+#
+USE_SSL    = 0
+USE_PLUGIN = 1
+USE_GTK    = 1
+USE_CURSES = 1
+USE_DEBUG  = 1
+
+#
+# Root directories. Change to suite.
+# These are required:
+#   MINGW32, PCAP_ROOT, LIBNET_ROOT, PTHREADS_ROOT and ICONV_ROOT.
+# The rest are optional depending on what USE_x you've set above.
+#
+# If USE_CURSES=1, we need Ncurses with PD-curses at bottom.
+# Missing packages should
+#
+MINGW_ROOT    = $(subst \,/,$(MINGW32))
+PCAP_ROOT     = ../libpcap
+LIBNET_ROOT   = ../libnet-1.1.2
+OPENSSL_ROOT  = ../OpenSSL-0.9.8
+NCURSES_ROOT  = ../../ncurses-5.4
+PDCURSES_ROOT = ../../PDcurses-2.6
+PTHREADS_ROOT = ../../pthreads-2004-06-22
+ICONV_ROOT    = ../../libiconv-1.9.1
+ZLIB_ROOT     = ../../zlib-1.2.1
+GLIB_ROOT     = $(MINGW_ROOT)/include/glib-2.0
+
+#
+# And the inbelievable messy GTK layout.
+#
+GTK_ROOT   = $(MINGW_ROOT)/include/gtk-2.0
+PANGO_ROOT = $(MINGW_ROOT)/include/pango-1.0
+ATK_ROOT   = $(MINGW_ROOT)/include/atk-1.0
+
+#
+# These should be in $(MINGW32)/lib. Win threads in glib seems buggy, leave it for now.
+#
+GLIB_LIBS = -lglib-2.0.dll -lgmodule-2.0.dll -lgobject-2.0.dll #-lgthread-2.0.dll
+
+#
+# These should be in $(MINGW32)/lib if you installed the package right.
+#
+GTK_LIBS = -lgdk-win32-2.0.dll -lgdk_pixbuf-2.0.dll -lgtk-win32-2.0.dll -lpango-1.0.dll
+
+#
+# My private winpcap.
+#
+ifeq ($(USER),gv)
+  LIBPCAP_LIB = $(PCAP_ROOT)/libwpcap2.dll.a
+else
+  LIBPCAP_LIB = $(PCAP_ROOT)/libwpcap.a
+endif
+
+VPATH = utils/etterfilter utils/etterlog src \
+        $(addprefix src/, dissectors protocols mitm interfaces/curses \
+          interfaces/curses/widgets interfaces/gtk interfaces/text missing os)
+
+
+PROGRAMS = ettercap.exe etterfilter.exe etterlog.exe
+
+DEPEND_REQ = $(addprefix utils/etterfilter/, ef_syntax.c ef_grammar.c ef_grammar.h)
+
+MAN_PAGES = $(addprefix man/, etter.conf.5 ettercap.8 ettercap_curses.8 \
+            ettercap_plugins.8 etterfilter.8 etterlog.8)
+
+MAN_BASE = $(MINGW_ROOT)/man
+
+CC = gcc
+
+CFLAGS = -g -Wall -O2 -mcpu=pentium -fno-strength-reduce -DOS_MINGW -DOS_WINDOWS
+
+CFLAGS += -DWIN32 -D_WIN32 -DWIN32_LEAN_AND_MEAN -DHAVE_STRSIGNAL -DHAVE_CTYPE_H \
+          -I$(ZLIB_ROOT) -I$(ICONV_ROOT)include -DRETSIGTYPE=void -DGCC_VERSION=\"MingW\"
+
+CFLAGS += -DHAVE_INT8_T -DHAVE_U_INT8_T -DHAVE_INT16_T -DHAVE_U_INT16_T -DHAVE_UTF8 \
+          -DHAVE_INT32_T -DHAVE_U_INT32_T -DHAVE_STDINT_H -D_BSDTYPES_DEFINED \
+          -Du_int8_t='unsigned char' -Du_int32_t='unsigned int' \
+          -Du_int16_t='unsigned short' -Du_int=unsigned -Duint=unsigned \
+          -Du_char=u_int8_t -Du_short=u_int16_t -Du_long='unsigned long'
+
+EX_LIBS = $(PTHREADS_ROOT)/libpthreadGC.a
+
+CFLAGS += -I./src -I./include -I./include/missing -I./src/interfaces/text \
+          -I./src/interfaces/curses -I./src/interfaces/curses/widgets \
+          -I$(PCAP_ROOT) -I$(PCAP_ROOT)/Win32/Include -I$(LIBNET_ROOT)/include \
+          -I$(LIBNET_ROOT)/include/win32 -I$(PTHREADS_ROOT) \
+          -DPCAP_NO_INLINES
+
+#
+# May not actually build DLLs, but we could try to find them anyway :)
+#
+CFLAGS += -DHAVE_PLUGINS
+
+ifeq ($(USE_DEBUG),1)
+  CFLAGS += -DDEBUG
+endif
+
+ifeq ($(USE_CURSES),1)
+  CFLAGS += -DHAVE_NCURSES -DPDC_STATIC_BUILD -I$(PDCURSES_ROOT) -I$(NCURSES_ROOT) \
+            -I$(NCURSES_ROOT)/include -I$(NCURSES_ROOT)/form -I$(NCURSES_ROOT)/menu \
+            -I$(NCURSES_ROOT)/panel
+  EX_LIBS += $(NCURSES_ROOT)/libncurses.a $(PDCURSES_ROOT)/pdcurses.a
+endif
+
+ifeq ($(USE_GTK),1)
+  CFLAGS += -DHAVE_GTK -mms-bitfields -DG_DISABLE_CAST_CHECKS -I./src/interfaces/gtk \
+            -I$(GLIB_ROOT) -I$(GTK_ROOT) -I$(GTK_ROOT)/gdk -I$(GTK_ROOT)/gtk \
+            -I$(PANGO_ROOT) -I$(ATK_ROOT)
+  EX_LIBS += $(GLIB_LIBS) $(GTK_LIBS)
+  LDFLAGS += # -Wl,--subsystem,windows  # Don't; we want to see printf's
+endif
+
+ifeq ($(USE_SSL),1)
+  CFLAGS  += -DHAVE_OPENSSL -DOPENSSL_NO_KRB5 -I$(OPENSSL_ROOT)/outinc
+  EX_LIBS += $(OPENSSL_ROOT)/out/libssl32.dll.a $(OPENSSL_ROOT)/out/libeay32.dll.a -lgdi32
+endif
+
+EX_LIBS += $(LIBPCAP_LIB) $(LIBNET_ROOT)/libnet.dll.a $(ICONV_ROOT)/libiconv.dll.a \
+           $(ZLIB_ROOT)/libz.a -lregex -lws2_32
+
+LDFLAGS = # -s
+
+OBJ_DIR = MingW_obj
+
+SOURCE = $(addprefix src/,                                                       \
+           ec_capture.c     ec_checksum.c     ec_conf.c          ec_connbuf.c    \
+           ec_conntrack.c   ec_debug.c        ec_decode.c        ec_dispatcher.c \
+           ec_dissect.c     ec_error.c        ec_file.c          ec_filter.c     \
+           ec_fingerprint.c ec_format.c       ec_globals.c       ec_hash.c       \
+           ec_hook.c        ec_inet.c         ec_inject.c        ec_interfaces.c \
+           ec_log.c         ec_main.c         ec_manuf.c         ec_mitm.c       \
+           ec_packet.c      ec_parser.c       ec_passive.c       ec_plugins.c    \
+           ec_poll.c        ec_profiles.c     ec_resolv.c        ec_scan.c       \
+           ec_send.c        ec_services.c     ec_session.c       ec_signals.c    \
+           ec_sniff.c       ec_sniff_bridge.c ec_sniff_unified.c ec_socket.c     \
+           ec_stats.c       ec_streambuf.c    ec_strings.c       ec_threads.c    \
+           ec_sslwrap.c     ec_ui.c           ec_update.c)
+
+SOURCE += $(addprefix src/dissectors/,                                             \
+            ec_bgp.c    ec_cvs.c     ec_dhcp.c  ec_dns.c     ec_vrrp.c   ec_x11.c  \
+            ec_ftp.c    ec_http.c    ec_icq.c   ec_imap.c    ec_irc.c    ec_ldap.c \
+            ec_mountd.c ec_msn.c     ec_mysql.c ec_napster.c ec_nntp.c   ec_ospf.c \
+            ec_pop.c    ec_portmap.c ec_rcon.c  ec_rip.c     ec_rlogin.c ec_smb.c  \
+            ec_smtp.c   ec_snmp.c    ec_socks.c ec_telnet.c ec_vnc.c               \
+            ec_ymsg.c)
+
+ifeq ($(USE_SSL),1)
+  SOURCE += src/dissectors/ec_ssh.c
+endif
+
+SOURCE += $(addprefix src/protocols/, ec_arp.c ec_cooked.c ec_eth.c ec_fddi.c \
+            ec_gre.c ec_icmp.c ec_ip.c ec_ip6.c ec_ppp.c ec_tcp.c ec_tr.c ec_udp.c \
+            ec_wifi.c)
+
+ifeq ($(USE_CURSES),1)
+  SOURCE += $(addprefix src/interfaces/curses/, ec_curses.c ec_curses_filters.c \
+              ec_curses_hosts.c ec_curses_live.c ec_curses_logging.c ec_curses_mitm.c \
+              ec_curses_offline.c ec_curses_plugins.c ec_curses_start.c ec_curses_targets.c \
+              ec_curses_view.c ec_curses_view_connections.c ec_curses_view_profiles.c)
+
+  SOURCE += $(addprefix src/interfaces/curses/widgets/, wdg.c wdg_compound.c wdg_debug.c \
+            wdg_dialog.c wdg_dynlist.c wdg_error.c wdg_file.c wdg_input.c wdg_list.c \
+            wdg_menu.c wdg_panel.c wdg_percentage.c wdg_scroll.c wdg_window.c)
+endif
+
+ifeq ($(USE_GTK),1)
+  SOURCE += $(addprefix src/interfaces/gtk/, ec_gtk.c ec_gtk_filters.c ec_gtk_hosts.c \
+              ec_gtk_live.c ec_gtk_logging.c ec_gtk_menus.c ec_gtk_mitm.c ec_gtk_offline.c \
+              ec_gtk_plugins.c ec_gtk_start.c ec_gtk_targets.c ec_gtk_view.c \
+              ec_gtk_view_connections.c ec_gtk_view_profiles.c)
+endif
+
+SOURCE += $(addprefix src/interfaces/text/, ec_text.c ec_text_conn.c ec_text_display.c \
+            ec_text_plugin.c ec_text_profile.c)
+
+SOURCE += $(addprefix src/mitm/, ec_arp_poisoning.c ec_dhcp_spoofing.c \
+            ec_icmp_redirect.c ec_port_stealing.c)
+
+SOURCE += $(addprefix src/missing/, getopt.c inet_aton.c memmem.c scandir.c \
+            strcasestr.c strlcat.c strlcpy.c strsep.c) src/os/ec_mingw.c
+
+SOURCE := $(strip $(SOURCE))
+
+#
+# All source names are luckily unique
+#
+OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(SOURCE:.c=.o)))
+
+EF_SOURCE = $(addprefix utils/etterfilter/, ef_compiler.c ef_ec_compat.c ef_encode.c \
+              ef_grammar.c ef_main.c ef_output.c ef_parser.c ef_tables.c ef_test.c \
+              ef_syntax.c) \
+            $(addprefix src/, ec_error.c ec_file.c ec_filter.c ec_strings.c \
+              missing/memmem.c missing/inet_aton.c missing/strsep.c)
+
+EL_SOURCE = $(addprefix utils/etterlog/, el_analyze.c el_conn.c el_display.c \
+              el_ec_compat.c el_log.c el_main.c el_parser.c el_profiles.c el_target.c) \
+            $(addprefix src/, ec_error.c ec_file.c ec_hash.c ec_inet.c ec_format.c \
+              ec_services.c ec_strings.c ec_passive.c ec_fingerprint.c ec_manuf.c \
+              missing/strsep.c missing/strcasestr.c missing/inet_aton.c)
+
+EF_OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(EF_SOURCE:.c=.o)) ef_mingw.o)
+EL_OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(EL_SOURCE:.c=.o)) el_mingw.o)
+
+$(EF_OBJECTS): CFLAGS += -I./utils/etterfilter
+$(EL_OBJECTS): CFLAGS += -I./utils/etterlog
+
+
+ifeq ($(USE_PLUGIN),1)
+  #
+  # The import library used for linking the plugin DLLs
+  # Note: some old plugins (from Ettercap 0.6) may be included below.
+  #
+  EC_IMPORT = ettercap.a
+
+  VPATH += $(addprefix plug-ins/, autoadd arp_cop chk_poison dns_spoof dos_attack \
+             dummy dummy_hook find_conn find_ip finger finger_submit gre_relay \
+             gw_discover isolate link_type pptp_chapms1 pptp_clear pptp_pap \
+             pptp_reneg rand_flood reply_arp scan_poisoner search_promisc \
+             smb_clear smb_down stp_mangler remote_browser)
+
+  DLL_CFLAGS = $(CFLAGS) -shared $(EC_IMPORT) -DBUILDING_PLUGIN \
+            # -DEC_API_EXTERN=__declspec(dllimport)
+
+  PLUGIN_SRC = $(addprefix plug-ins/,            \
+                 arp_cop/arp_cop.c               \
+                 autoadd/autoadd.c               \
+                 chk_poison/chk_poison.c         \
+                 dns_spoof/dns_spoof.c           \
+                 dos_attack/dos_attack.c         \
+                 dummy/dummy.c                   \
+                 dummy_hook/dummy_hook.c         \
+                 find_conn/find_conn.c           \
+                 find_ip/find_ip.c               \
+                 finger/finger.c                 \
+                 finger_submit/finger_submit.c   \
+                 gre_relay/gre_relay.c           \
+                 gw_discover/gw_discover.c       \
+                 link_type/link_type.c           \
+                 pptp_chapms1/pptp_chapms1.c     \
+                 pptp_clear/pptp_clear.c         \
+                 pptp_pap/pptp_pap.c             \
+                 pptp_reneg/pptp_reneg.c         \
+                 rand_flood/rand_flood.c         \
+                 remote_browser/remote_browser.c \
+                 reply_arp/reply_arp.c           \
+                 scan_poisoner/scan_poisoner.c   \
+                 search_promisc/search_promisc.c \
+                 smb_clear/smb_clear.c           \
+                 smb_down/smb_down.c             \
+                 stp_mangler/stp_mangler.c)
+
+  PLUGIN_DLLS = $(addprefix lib/,       \
+                  ec_arp_cop.dll        \
+                  ec_chk_poison.dll     \
+                  ec_dns_spoof.dll      \
+                  ec_dos_attack.dll     \
+                  ec_dummy.dll          \
+                  ec_find_conn.dll      \
+                  ec_find_ip.dll        \
+                  ec_finger.dll         \
+                  ec_finger_submit.dll  \
+                  ec_gre_relay.dll      \
+                  ec_gw_discover.dll    \
+                  ec_isolate.dll        \
+                  ec_link_type.dll      \
+                  ec_pptp_chapms1.dll   \
+                  ec_pptp_clear.dll     \
+                  ec_pptp_pap.dll       \
+                  ec_pptp_reneg.dll     \
+                  ec_rand_flood.dll     \
+                  ec_remote_browser.dll \
+                  ec_reply_arp.dll      \
+                  ec_scan_poisoner.dll  \
+                  ec_search_promisc.dll \
+                  ec_smb_clear.dll      \
+                  ec_smb_down.dll       \
+                  ec_stp_mangler.dll)
+
+  UNPORTABLE_DLLS = lib/ec_dummy_hook.dll
+
+  ifeq ($(USE_SSL),1)
+    DLL_CFLAGS += $(OPENSSL_ROOT)/out/libssl32.dll.a $(OPENSSL_ROOT)/out/libeay32.dll.a -lgdi32
+  endif
+
+  DLL_CFLAGS += $(PTHREADS_ROOT)/libpthreadGC.a -lws2_32
+endif
+
+
+all: $(OBJ_DIR) $(PROGRAMS) $(PLUGIN_DLLS) man_pages
+	@echo "Welcome to EtterCap NG"
+
+
+ifeq ($(USE_PLUGIN),1)
+ettercap.exe $(EC_IMPORT): $(OBJECTS)
+	$(CC) $(LDFLAGS) -Wl,--out-implib,$(EC_IMPORT) -o ettercap.exe $^ $(EX_LIBS)
+      # Should need no .def-file
+      # dlltool --output-lib $(EC_IMPORT) --dllname ettercap.exe --input-def src/ettercap.def
+else
+ettercap.exe: $(OBJECTS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(EX_LIBS)
+endif
+	@echo
+
+etterfilter.exe: rm_ec_mingw $(EF_OBJECTS)
+	$(CC) $(LDFLAGS) -o $@ $(EF_OBJECTS) $(EX_LIBS)
+	rm -f $(OBJ_DIR)/ec_mingw.o
+	@echo
+
+etterlog.exe: rm_ec_mingw $(EL_OBJECTS)
+	$(CC) $(LDFLAGS) -o $@ $(EL_OBJECTS) $(EX_LIBS)
+	rm -f $(OBJ_DIR)/ec_mingw.o
+	@echo
+
+rm_ec_mingw:
+	rm -f $(OBJ_DIR)/ec_mingw.o
+
+plugins: $(PLUGIN_DLLS)
+
+man_pages: $(MAN_PAGES)
+
+$(OBJ_DIR):
+	- mkdir $(OBJ_DIR)
+
+$(OBJ_DIR)/ef_mingw.o: src/os/ec_mingw.c
+	$(CC) -c $(CFLAGS) -UHAVE_NCURSES -o $@ -c $<
+	@echo
+
+$(OBJ_DIR)/el_mingw.o: src/os/ec_mingw.c
+	$(CC) -c $(CFLAGS) -UHAVE_NCURSES -o $@ -c $<
+	@echo
+
+$(OBJ_DIR)/%.o: %.c
+	$(CC) -c $(CFLAGS) -o $@ -c $<
+	@echo
+
+man/%.5: man/%.5.in
+	sed -e 's/@VERSION/$(VERSION)/' < $< > $@
+	cp -u $@ $(MAN_BASE)/man5
+
+man/%.8: man/%.8.in
+	sed -e 's/@VERSION/$(VERSION)/' < $< > $@
+	cp -u $@ $(MAN_BASE)/man8
+
+utils/etterfilter/ef_grammar.c utils/etterfilter/ef_grammar.h: utils/etterfilter/ef_grammar.y
+	bison --yacc --defines $^
+	mv -f y.tab.c utils/etterfilter/ef_grammar.c
+	mv -f y.tab.h utils/etterfilter/ef_grammar.h
+
+utils/etterfilter/ef_syntax.c: utils/etterfilter/ef_syntax.l
+	flex -t $^ > $@
+
+clean:
+	rm -f $(OBJ_DIR)/*.o
+
+realclean vclean: clean
+	rm -f $(PROGRAMS) $(PLUGIN_DLLS) $(EC_IMPORT) $(MAN_PAGES) $(DEPEND_REQ) .depend
+	- rmdir $(OBJ_DIR)
+
+#
+# Rules for building plugins. Isn't there a simpler way?
+#
+lib/ec_dummy.dll: plug-ins/dummy/dummy.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_dummy_hook.dll: plug-ins/dummy_hook/dummy_hook.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_arp_cop.dll: plug-ins/arp_cop/arp_cop.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_autoadd.dll: plug-ins/autoadd/autoadd.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_chk_poison.dll: plug-ins/chk_poison/chk_poison.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_dns_spoof.dll: plug-ins/dns_spoof/dns_spoof.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_dos_attack.dll: plug-ins/dos_attack/dos_attack.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_find_conn.dll: plug-ins/find_conn/find_conn.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_find_ip.dll: plug-ins/find_ip/find_ip.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_finger.dll: plug-ins/finger/finger.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_finger_submit.dll: plug-ins/finger_submit/finger_submit.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_gre_relay.dll: plug-ins/gre_relay/gre_relay.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_gw_discover.dll: plug-ins/gw_discover/gw_discover.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_link_type.dll: plug-ins/link_type/link_type.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_pptp_chapms1.dll: plug-ins/pptp_chapms1/pptp_chapms1.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_pptp_clear.dll: plug-ins/pptp_clear/pptp_clear.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_pptp_pap.dll: plug-ins/pptp_pap/pptp_pap.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_pptp_reneg.dll: plug-ins/pptp_reneg/pptp_reneg.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_rand_flood.dll: plug-ins/rand_flood/rand_flood.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_reply_arp.dll: plug-ins/reply_arp/reply_arp.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_scan_poisoner.dll: plug-ins/scan_poisoner/scan_poisoner.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_search_promisc.dll: plug-ins/search_promisc/search_promisc.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_smb_clear.dll: plug-ins/smb_clear/smb_clear.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_smb_down.dll: plug-ins/smb_down/smb_down.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_stp_mangler.dll: plug-ins/stp_mangler/stp_mangler.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_remote_browser.dll: plug-ins/remote_browser/remote_browser.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_isolate.dll: plug-ins/isolate/isolate.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+#
+# Create dependencies
+#
+depend: $(DEPEND_REQ)
+	$(CC) -MM $(CFLAGS) $(SOURCE) $(EF_SOURCE) $(EL_SOURCE)| \
+	  sed -e 's/^\([a-zA-Z0-9_-]*\.o:\)/$$(OBJ_DIR)\/\1/' > .depend
+ifeq ($(USE_PLUGIN),1)
+	$(CC) -MM $(CFLAGS) -DBUILDING_PLUGIN $(PLUGIN_SRC) | \
+	  sed -e 's/^\([a-zA-Z0-9_-]*\)\.o:/lib\/ec_\1\.dll:/' >> .depend
+endif
+
+-include .depend

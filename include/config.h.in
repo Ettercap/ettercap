@@ -358,9 +358,6 @@
 /* compiling under mingw */
 #undef OS_MINGW
 
-/* compiling under Services For Unix interix */
-#undef OS_SFU
-
 /* compiling under solaris */
 #undef OS_SOLARIS
 

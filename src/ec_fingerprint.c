@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.16 2003/07/11 16:50:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.17 2003/09/01 15:39:50 alor Exp $
 
 */
 
 #include <ec.h>
 #include <ec_file.h>
 #include <ec_strings.h>
+#include <ec_socket.h>
 #include <ec_fingerprint.h>
 
 #define LOAD_ENTRY(p,h,v) do {                                 \
@@ -54,6 +55,8 @@ int fingerprint_search(const char *f, char *dst);
 void fingerprint_default(char *finger);
 void fingerprint_push(char *finger, int param, int value);
 u_int8 TTL_PREDICTOR(u_int8 x);
+int fingerprint_submit(char *finger, char *os);
+   
 /*****************************************/
 
 
@@ -294,6 +297,58 @@ u_int8 TTL_PREDICTOR(u_int8 x)
       return ( j ? j : 0xff );
 }
 
+
+/*
+ * submit a fingerprint to the ettercap website
+ */
+int fingerprint_submit(char *finger, char *os)
+{
+   int sock;
+   char host[] = "ettercap.sourceforge.net";
+   char page[] = "/index.php?s=stuff&p=fingerprint";
+   char getmsg[1024];
+   char *os_encoded;
+   size_t i;
+ 
+   memset(getmsg, 0, sizeof(getmsg));
+  
+   /* some sanity checks */
+   if (strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
+      return -EINVALID;
+   
+   USER_MSG("Connecting to http://%s...\n", host);
+      
+   /* prepare the socket */
+   sock = open_socket(host, 80);
+  
+   os_encoded = strdup(os);
+   /* sanitize the os (encode the ' ' to '+') */
+   for (i = 0; i < strlen(os_encoded); i++)
+      if (os_encoded[i] == ' ') 
+         os_encoded[i] = '+';
+      
+   /* prepare the HTTP request */
+   snprintf(getmsg, sizeof(getmsg), "GET %s&finger=%s&os=%s HTTP/1.0\r\n"
+                                     "Host: %s\r\n"
+                                     "User-Agent: %s (%s)\r\n"
+                                     "\r\n", page, finger, os_encoded, host, GBL_PROGRAM, GBL_VERSION );
+  
+   SAFE_FREE(os_encoded);
+
+   USER_MSG("Submitting the fingerprint to %s...\n", page);
+   
+   /* send the request to the server */
+   socket_send(sock, getmsg, strlen(getmsg));
+
+   DEBUG_MSG("fingerprint_submit - SEND \n\n%s\n\n", getmsg);
+
+   /* ignore the server response */
+   close_socket(sock);
+
+   USER_MSG("New fingerprint submitted to the ettercap website...\n");
+
+   return ESUCCESS;
+}
 
 
 /* EOF */

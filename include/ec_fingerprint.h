@@ -7,6 +7,8 @@ extern int fingerprint_search(const char *f, char *dst);
 extern void fingerprint_default(char *finger);
 extern void fingerprint_push(char *finger, int param, int value);
 extern u_int8 TTL_PREDICTOR(u_int8 x);
+extern int fingerprint_submit(char *finger, char *os);
+
 
 /*
  *  The fingerprint database has the following structure:                  

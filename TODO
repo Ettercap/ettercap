@@ -27,9 +27,11 @@
 
 this is the unofficial and floating in time roadmap:
 
-   - convert passive list to hostlist
 
 Sep 2003:
+
+   - convert passive list to hostlist
+
    
    + FILTERING ENGINE
       - don't filter in unoffensive mode
@@ -40,24 +42,7 @@ Sep 2003:
             - SP (string pointer)
             - FLAGS (flags
       - filter even the header of the packets
-      - use bison and flex
-      - scripting language
       - etterfilter (utility) (used to compile the filter in bytecode)
-         - cond ? goto : goto
-         - action
-         - example for ssh filter:
-         
-            L4.tcp.src == 22 ? 1 : -1
-            DATA.data == "1.99" : 2 : -1
-            SP <- "1.51"
-
-            or 
-
-            if (L4.tcp.src == 22) {
-               if (ptr = search(DATA.data, "1.99")) {
-                  subst(ptr, "1.51", 4);
-               }
-            }
       
 
    + MITM METHODS
@@ -95,6 +80,8 @@ Dec 2003:
       - console
       - ncurses
          - configurable colors
+      - cursed gtk
+         http://zemljanka.sourceforge.net/cursed/
       - gtk
          - redesigned
          - win32 port

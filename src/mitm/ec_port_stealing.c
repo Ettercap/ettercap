@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.10 2004/03/17 20:47:26 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.11 2004/03/17 22:13:32 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -338,7 +338,7 @@ static void put_queue(struct packet_object *po)
          if (po->fwd_packet) 
             po->len = po->fwd_len + sizeof(struct eth_header);
 		  
-         p->po = packet_dup(po);
+         p->po = packet_dup(po, PO_DUP_PACKET);
          TAILQ_INSERT_TAIL(&(s->packet_table), p, next);
 	   
          /* Avoid standard forwarding method */

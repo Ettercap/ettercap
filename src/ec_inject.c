@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.13 2004/03/05 13:22:04 alor Exp $
+    $Id: ec_inject.c,v 1.14 2004/03/17 22:13:32 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -131,7 +131,7 @@ int inject_buffer(struct packet_object *po)
    }
    
    /* Duplicate the packet to modify the payload buffer */
-   pd = packet_dup(po);
+   pd = packet_dup(po, PO_DUP_NONE);
 
    /* Allocate memory for the packet (double sized)*/
    SAFE_CALLOC(pck_buf, 1, (GBL_IFACE->mtu * 2));

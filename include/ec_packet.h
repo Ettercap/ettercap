@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.29 2004/03/08 12:12:49 lordnaga Exp $ */
+/* $Id: ec_packet.h,v 1.30 2004/03/17 22:13:26 lordnaga Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -108,7 +108,11 @@ struct packet_object {
 extern inline int packet_create_object(struct packet_object *po, u_char * buf, size_t len);
 extern inline int packet_destroy_object(struct packet_object *po);
 extern int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
-extern struct packet_object * packet_dup(struct packet_object *po);
+extern struct packet_object * packet_dup(struct packet_object *po, u_char flag);
+
+/* Do we want to duplicate data? */
+#define PO_DUP_PACKET 1
+#define PO_DUP_NONE 0
 
 #endif
 

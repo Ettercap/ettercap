@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.28 2004/03/17 21:14:08 lordnaga Exp $
+    $Id: ec_packet.c,v 1.29 2004/03/17 22:13:32 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -31,7 +31,7 @@
 inline int packet_create_object(struct packet_object *po, u_char *buf, size_t len);
 inline int packet_destroy_object(struct packet_object *po);
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
-struct packet_object * packet_dup(struct packet_object *po);
+struct packet_object * packet_dup(struct packet_object *po, u_char flag);
 
 /* --------------------------- */
 
@@ -104,7 +104,11 @@ inline int packet_destroy_object(struct packet_object *po)
       
    /* 
     * free the disp_data pointer
-    * it was malloced by tcp or udp decoder
+    * it was malloced by tcp or udp decoder.
+    * If the packet was duplicated, disp_data points to NULL
+    * (the dup func set it)
+    * because the duplicate points to the real data and will 
+    * free them.
     */
    SAFE_FREE(po->DATA.disp_data);
    
@@ -116,7 +120,7 @@ inline int packet_destroy_object(struct packet_object *po)
  * duplicate a po and return
  * the new allocated one
  */
-struct packet_object * packet_dup(struct packet_object *po)
+struct packet_object * packet_dup(struct packet_object *po, u_char flag)
 {
    struct packet_object *dup_po;
 
@@ -131,17 +135,18 @@ struct packet_object * packet_dup(struct packet_object *po)
     */
    memcpy(dup_po, po, sizeof(struct packet_object));
 
-   /* copy only if the buffer exists */
-   if (po->DATA.disp_data != NULL) {  
-      /* duplicate the po dispdata */
-      SAFE_CALLOC(dup_po->DATA.disp_data, po->DATA.disp_len, sizeof(u_char));
-  
-      /* copy the buffer */
-      memcpy(dup_po->DATA.disp_data, po->DATA.disp_data, po->DATA.disp_len);
-   }
+   /*
+    * We set disp_data to NULL to avoid free in the 
+    * original packet. Descending decoder chain doesn't
+    * care about disp_data. top_half will free it when 
+    * necessary, destroying the packet duplicate.
+    */
+   dup_po->DATA.disp_data = po->DATA.disp_data;
+   po->DATA.disp_data = NULL;
    
    /* copy only if the buffer exists */
-   if (po->packet != NULL) {  
+   dup_po->packet = NULL;
+   if ( (flag & PO_DUP_PACKET) && po->packet != NULL) {  
       /* duplicate the po buffer */
       SAFE_CALLOC(dup_po->packet, po->len, sizeof(u_char));
   

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.33 2004/01/04 16:29:28 alor Exp $
+    $Id: ec_dispatcher.c,v 1.34 2004/03/17 22:13:32 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -156,7 +156,7 @@ void top_half_queue_add(struct packet_object *po)
 
    SAFE_CALLOC(e, 1, sizeof(struct po_queue_entry));
    
-   e->po = packet_dup(po);
+   e->po = packet_dup(po, PO_DUP_NONE);
    
    PO_QUEUE_LOCK;
    

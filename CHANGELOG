@@ -12,6 +12,7 @@ NG-0.7.1         200407
    + added the -I options to show the list of NICs
    + ported to windows (mingw)
    + added a new plugin: isolate
+   + updated os and mac fingerprints
    !! fixed compilation of strtok_r under solaris
    !! fixed a pthread problem under mac os X
 

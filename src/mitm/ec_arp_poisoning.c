@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.12 2003/11/01 15:52:58 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.13 2003/11/04 13:28:17 alor Exp $
 */
 
 #include <ec.h>
@@ -171,6 +171,9 @@ EC_THREAD_FUNC(arp_poisoner)
 {
    int i = 1;
    struct hosts_list *g1, *g2;
+   
+   /* init the thread and wait for start up */
+   ec_thread_init();
   
    /* never ending loop */
    LOOP {

@@ -20,7 +20,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: rand_flood.c,v 1.1 2003/12/18 10:57:35 lordnaga Exp $
+    $Id: rand_flood.c,v 1.2 2003/12/18 11:07:04 lordnaga Exp $
 */
 
 
@@ -30,7 +30,6 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_threads.h>
-#include <pthread.h>
 
 /* globals */
 struct eth_header

@@ -1,5 +1,5 @@
 
-/* $Id: el_functions.h,v 1.17 2004/09/13 16:02:30 alor Exp $ */
+/* $Id: el_functions.h,v 1.18 2004/09/24 15:10:01 alor Exp $ */
 
 #ifndef EL_FUNCTIONS_H
 #define EL_FUNCTIONS_H
@@ -32,7 +32,9 @@ EL_API_EXTERN void display(void);
 EL_API_EXTERN void set_display_regex(char *regex);
 
 /* el_conn */
-EL_API_EXTERN void conn_table(void);
+EL_API_EXTERN void conn_table_create(void);
+EL_API_EXTERN void conn_table_display(void);
+EL_API_EXTERN void conn_decode(void);
 EL_API_EXTERN void filcon_compile(char *conn);
 EL_API_EXTERN int is_conn(struct log_header_packet *pck, int *versus);
 #define VERSUS_SOURCE   0
@@ -49,18 +51,29 @@ EL_API_EXTERN int profile_add_info(struct log_header_info *inf, struct dissector
 EL_API_EXTERN void *get_host_list_ptr(void);
 
 /* el_stream */
-
 struct po_list {
    struct packet_object po;
    int type;
-   LIST_ENTRY(po_list) next;
+      #define STREAM_SIDE1 1
+      #define STREAM_SIDE2 2
+   TAILQ_ENTRY(po_list) next;
 };
 
 struct stream_object {
-   LIST_HEAD (,po_list) po_head;
-   struct packet_object po_curr;
+   TAILQ_HEAD (po_list_head, po_list) po_head;
+   struct packet_object *po_curr;
    size_t po_off;
 };
+
+EL_API_EXTERN void stream_init(struct stream_object *so);
+EL_API_EXTERN int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf);
+EL_API_EXTERN int stream_search(struct stream_object *so, char *buf, int versus);
+EL_API_EXTERN int stream_read(struct stream_object *so, char *buf, size_t size, int mode);
+EL_API_EXTERN void stream_move(struct stream_object *so, int offset, int whence);
+
+/* el_decode */
+
+EL_API_EXTERN void decode_stream(struct stream_object *so);
 
 #endif
 

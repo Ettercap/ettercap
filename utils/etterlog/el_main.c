@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_main.c,v 1.15 2004/08/03 19:33:53 alor Exp $
+    $Id: el_main.c,v 1.16 2004/09/24 15:10:02 alor Exp $
 */
 
 #include <el.h>
@@ -70,10 +70,18 @@ int main(int argc, char *argv[])
    gzrewind(GBL_LOG_FD);
    get_header(&GBL.hdr);
    
-   /* display the connection table */
+   /* create the connection table (respecting the filters) */
    if (GBL.connections)
-      conn_table();
+      conn_table_create();
 
+   /* display the connection table */
+   if (GBL.connections && !GBL.decode)
+      conn_table_display();
+
+   /* extract files from the connections */
+   if (GBL.decode)
+      conn_decode();
+   
    /* not interested in the content... only analysis */
    if (GBL.analyze || GBL.connections)
       return 0;

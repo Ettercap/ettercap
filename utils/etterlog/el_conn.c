@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_conn.c,v 1.9 2004/05/31 14:30:54 alor Exp $
+    $Id: el_conn.c,v 1.10 2004/09/24 15:10:02 alor Exp $
 */
 
 #include <el.h>
@@ -31,6 +31,7 @@ struct conn_list {
    u_int16 L4_src;
    u_int16 L4_dst;
    u_char L4_proto;
+   struct stream_object so;
    SLIST_ENTRY(conn_list) next;
 };
 
@@ -41,24 +42,23 @@ static struct conn_list conn_target;
 
 /* proto */
 
-void conn_table(void);
-static int insert_table(struct log_header_packet *pck);
+void conn_table_create(void);
+void conn_table_display(void);
+void conn_decode(void);
+static int insert_table(struct log_header_packet *pck, char *buf);
 void filcon_compile(char *conn);
 int is_conn(struct log_header_packet *pck, int *versus);
 
 /*******************************************/
 
-/* analyze a packet log file */
-
-void conn_table(void)
+/* 
+ * create the list of connections 
+ */
+void conn_table_create(void)
 {
    struct log_header_packet pck;
-   struct conn_list *c;
    int ret, count = 0;
    u_char *buf;
-   char proto[5];
-   char ipsrc[MAX_ASCII_ADDR_LEN];
-   char ipdst[MAX_ASCII_ADDR_LEN];
 
    if (GBL.hdr.type == LOG_INFO)
       FATAL_ERROR("LOG_INFO files don't contain connections !");
@@ -74,13 +74,25 @@ void conn_table(void)
       if (ret != ESUCCESS)
          break;
       
-      count += insert_table(&pck);
+      count += insert_table(&pck, buf);
       
       SAFE_FREE(buf);
    }
   
    fprintf(stdout, "\nFound %d connection...\n\n", count);
    
+}
+
+/*
+ * display the connection list
+ */
+void conn_table_display(void)
+{
+   struct conn_list *c;
+   char proto[5];
+   char ipsrc[MAX_ASCII_ADDR_LEN];
+   char ipdst[MAX_ASCII_ADDR_LEN];
+
    SLIST_FOREACH(c, &conn_list_head, next) {
       switch(c->L4_proto) {
          case NL_TYPE_TCP:
@@ -108,7 +120,7 @@ void conn_table(void)
  * if it isn't already there
  */
 
-static int insert_table(struct log_header_packet *pck)
+static int insert_table(struct log_header_packet *pck, char *buf)
 {
    struct conn_list *c;
 
@@ -125,16 +137,28 @@ static int insert_table(struct log_header_packet *pck)
           c->L4_src == pck->L4_src &&
           c->L4_dst == pck->L4_dst &&
           !ip_addr_cmp(&c->L3_src, &pck->L3_src) &&
-          !ip_addr_cmp(&c->L3_dst, &pck->L3_dst))
+          !ip_addr_cmp(&c->L3_dst, &pck->L3_dst)) {
+
+         /* add to the stream (if necessary) */
+         if (GBL.decode)
+            stream_add(&c->so, pck, buf);
+         
          return 0;
+      }
       
       /* form dest to source */
       if (c->L4_proto == pck->L4_proto &&
           c->L4_src == pck->L4_dst &&
           c->L4_dst == pck->L4_src &&
           !ip_addr_cmp(&c->L3_src, &pck->L3_dst) &&
-          !ip_addr_cmp(&c->L3_dst, &pck->L3_src))
+          !ip_addr_cmp(&c->L3_dst, &pck->L3_src)) {
+         
+         /* add to the stream (if necessary) */
+         if (GBL.decode)
+            stream_add(&c->so, pck, buf);
+         
          return 0;
+      }
    }
 
    /* not found in the list... add it */
@@ -147,6 +171,13 @@ static int insert_table(struct log_header_packet *pck)
    
    memcpy(&c->L3_src, &pck->L3_src, sizeof(struct ip_addr));
    memcpy(&c->L3_dst, &pck->L3_dst, sizeof(struct ip_addr));
+ 
+   /* init the stream object */
+   stream_init(&c->so);
+   
+   /* add to the stream (if necessary) */
+   if (GBL.decode)
+      stream_add(&c->so, pck, buf);
    
    SLIST_INSERT_HEAD(&conn_list_head, c, next);
    
@@ -264,7 +295,41 @@ int is_conn(struct log_header_packet *pck, int *versus)
    return 1;
 }
 
+/*
+ * decode a connection and extract files from the stream
+ */
+void conn_decode(void)
+{
+   struct conn_list *c;
+   char proto[5];
+   char ipsrc[MAX_ASCII_ADDR_LEN];
+   char ipdst[MAX_ASCII_ADDR_LEN];
 
+   /* walk thru the connections list */
+   SLIST_FOREACH(c, &conn_list_head, next) {
+      
+      switch(c->L4_proto) {
+         case NL_TYPE_TCP:
+            strcpy(proto, "TCP");
+            break;
+         case NL_TYPE_UDP:
+            strcpy(proto, "UDP");
+            break;
+      }
+      
+      ip_addr_ntoa(&c->L3_src, ipsrc);
+      ip_addr_ntoa(&c->L3_dst, ipdst);
+      
+      fprintf(stdout, "DECODING  %s: %s:%d <--> %s:%d...\n", proto, ipsrc, ntohs(c->L4_src), 
+                                                             ipdst, ntohs(c->L4_dst)); 
+     
+      /* extract the files from this connection */
+      decode_stream(&c->so);
+      
+   }
+
+   fprintf(stdout, "\n");
+}
 
 /* EOF */
 

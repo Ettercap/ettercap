@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_stream.c,v 1.1 2004/09/13 16:02:31 alor Exp $
+    $Id: el_stream.c,v 1.2 2004/09/24 15:10:02 alor Exp $
 */
 
 
@@ -26,16 +26,71 @@
 
 /* protos... */
 
-int stream_create(struct stream_object *so, struct log_header_packet *pck);
+void stream_init(struct stream_object *so);
+int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf);
 int stream_search(struct stream_object *so, char *buf, int versus);
 int stream_read(struct stream_object *so, char *buf, size_t size, int mode);
 void stream_move(struct stream_object *so, int offset, int whence);
    
 /*******************************************/
 
-int stream_create(struct stream_object *so, struct log_header_packet *pck)
+/*
+ * initialize a stream object
+ */
+void stream_init(struct stream_object *so)
 {
-   return 0;
+   TAILQ_INIT(&so->po_head);
+   so->po_off = 0;
+   so->po_curr = NULL;
+}
+
+/*
+ * add a packet to a stream
+ */
+int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf)
+{
+   struct po_list *pl, *tmp;
+
+   /* skip ack packet or zero lenght packet */
+   if (pck->len == 0)
+      return 0;
+
+   /* the packet is good, add it */
+   SAFE_CALLOC(pl, 1, sizeof(struct po_list));
+
+   /* create the packet object */
+   memcpy(&pl->po.L3.src, &pck->L3_src, sizeof(struct ip_addr));
+   memcpy(&pl->po.L3.dst, &pck->L3_dst, sizeof(struct ip_addr));
+   
+   pl->po.L4.src = pck->L4_src;
+   pl->po.L4.dst = pck->L4_dst;
+   pl->po.L4.proto = pck->L4_proto;
+  
+   SAFE_CALLOC(pl->po.DATA.data, pck->len, sizeof(char));
+   
+   memcpy(pl->po.DATA.data, buf, pck->len);
+   pl->po.DATA.len = pck->len;
+   
+   /* set the stream direction */
+
+   /* this is the first packet in the stream */
+   if (TAILQ_FIRST(&so->po_head) == TAILQ_END(&so->po_head)) {
+      pl->type = STREAM_SIDE1;
+   /* check the previous one and set it accordingly */
+   } else {
+      tmp = TAILQ_LAST(&so->po_head, po_list_head);
+      if (!ip_addr_cmp(&tmp->po.L3.src, &pl->po.L3.src))
+         /* same direction */
+         pl->type = tmp->type;
+      else 
+         /* change detected */
+         pl->type = (tmp->type == STREAM_SIDE1) ? STREAM_SIDE2 : STREAM_SIDE1;
+   }
+      
+   /* add to the queue */
+   TAILQ_INSERT_TAIL(&so->po_head, pl, next);
+   
+   return pck->len;
 }
 
 int stream_search(struct stream_object *so, char *buf, int versus)

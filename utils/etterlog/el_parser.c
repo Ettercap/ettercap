@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_parser.c,v 1.22 2004/05/19 13:17:27 alor Exp $
+    $Id: el_parser.c,v 1.23 2004/09/24 15:10:02 alor Exp $
 */
 
 
@@ -73,6 +73,7 @@ void el_usage(void)
    fprintf(stdout, "\nEditing Options:\n");
    fprintf(stdout, "  -C, --concat                concatenate more files into one single file\n");
    fprintf(stdout, "  -o, --outfile <file>        the file used as output for concatenation\n");
+   fprintf(stdout, "  -D, --decode                used to extract files from connections\n");
    
    fprintf(stdout, "\nVisualization Method:\n");
    fprintf(stdout, "  -B, --binary                print packets as they are\n");
@@ -131,6 +132,7 @@ void parse_options(int argc, char **argv)
       
       { "outfile", required_argument, NULL, 'o' },
       { "concat", no_argument, NULL, 'C' },
+      { "decode", no_argument, NULL, 'D' },
       
       { "user", required_argument, NULL, 'u' },
       { "regex", required_argument, NULL, 'e' },
@@ -143,7 +145,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBCcdEe:F:f:HhiI:kLlmno:prsTt:U:u:vXxZ", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBCcDdEe:F:f:HhiI:kLlmno:prsTt:U:u:vXxZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -153,6 +155,11 @@ void parse_options(int argc, char **argv)
                   
          case 'c':
                   GBL.connections = 1;
+                  break;
+                  
+         case 'D':
+                  GBL.connections = 1;
+                  GBL.decode = 1;
                   break;
          
          case 'f':

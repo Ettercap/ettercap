@@ -227,7 +227,7 @@ EF_SOURCE = $(addprefix utils/etterfilter/, ef_compiler.c ef_ec_compat.c ef_enco
             $(addprefix src/, ec_error.c ec_file.c ec_filter.c ec_strings.c \
               missing/memmem.c missing/inet_aton.c)
 
-EL_SOURCE = $(addprefix utils/etterlog/, el_analyze.c el_conn.c el_display.c \
+EL_SOURCE = $(addprefix utils/etterlog/, el_analyze.c el_conn.c el_decode.c el_display.c \
               el_ec_compat.c el_log.c el_main.c el_parser.c el_profiles.c el_stream.c el_target.c) \
             $(addprefix src/, ec_error.c ec_file.c ec_hash.c ec_inet.c ec_format.c \
               ec_services.c ec_strings.c ec_passive.c ec_fingerprint.c ec_manuf.c \

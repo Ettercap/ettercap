@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.15 2004/09/13 16:02:31 alor Exp $
+# $Id: Makefile.am,v 1.16 2004/09/24 15:10:01 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -8,16 +8,17 @@ LIBS =
 
 bin_PROGRAMS = etterlog
 
-etterlog_SOURCES = el_main.c \
-                   el_parser.c \
-                   el_analyze.c \
+etterlog_SOURCES = el_analyze.c \
                    el_conn.c \
-                   el_target.c \
+                   el_decode.c \
                    el_display.c \
+                   el_ec_compat.c \
                    el_log.c \
+                   el_main.c \
+                   el_parser.c \
                    el_profiles.c \
                    el_stream.c \
-                   el_ec_compat.c \
+                   el_target.c \
                    $(top_srcdir)/src/ec_error.c \
                    $(top_srcdir)/src/ec_fingerprint.c \
                    $(top_srcdir)/src/ec_manuf.c \

@@ -20,7 +20,7 @@ SYSTEM                  STATUS                NOTES
 
 LINUX
 ------------------------------------------------------------------------------
-   Linux 2.6.x          FULL           
+   Linux 2.6.x          FULL           (primary development platform) 
 
    Linux 2.4.x          FULL           (primary development platform)
    
@@ -54,16 +54,21 @@ MAC OS X (Darwin)
    Darwin 6.x           untested 
    
 
+WINDOWS (native/mingw)                 thanks to G. Vanem <giva@bgnett.no>
+------------------------------------------------------------------------------
+   Windows 2000         untested
+   
+   Windows XP           FULL
+   
+   Windows 2003         untested
+
+
 WINDOWS (cygwin)
 ------------------------------------------------------------------------------
-   Windows XP           in progress...
-   
    Windows 2000         in progress...
    
+   Windows XP           in progress...
 
-WINDOWS (native/mingw)
-------------------------------------------------------------------------------
-   Windows              FULL           thanks to G. Vanem <giva@bgnett.no>
 
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.35 2004/05/19 12:26:11 alor Exp $
+    $Id: ec_plugins.c,v 1.36 2004/05/21 10:40:14 alor Exp $
 */
 
 #include <ec.h>
@@ -31,9 +31,7 @@
 #endif
 
 #ifdef HAVE_PLUGINS
-   #ifdef HAVE_LTDL_H
-      #include <ltdl.h>
-   #endif
+   #include <ltdl.h>
    #ifdef HAVE_DLFCN_H
       #include <dlfcn.h>
    #endif
@@ -71,12 +69,10 @@ int plugin_is_activated(char *name);
 int search_plugin(char *name);
 void plugin_list(void);
 static void plugin_print(char active, struct plugin_ops *ops);
-#ifdef HAVE_PLUGINS
 #if defined(OS_BSD) || defined (OS_DARWIN)
-static int plugin_filter(struct dirent *d);
+int plugin_filter(struct dirent *d);
 #else
-static int plugin_filter(const struct dirent *d);
-#endif
+int plugin_filter(const struct dirent *d);
 #endif
 
 /*******************************************/
@@ -128,11 +124,10 @@ int plugin_load_single(char *path, char *name)
 /*
  * filter for the scandir function
  */
-#ifdef HAVE_PLUGINS
 #if defined(OS_BSD) || defined (OS_DARWIN)
-static int plugin_filter(struct dirent *d)
+int plugin_filter(struct dirent *d)
 #else
-static int plugin_filter(const struct dirent *d)
+int plugin_filter(const struct dirent *d)
 #endif
 {
    if ( match_pattern(d->d_name, PLUGIN_PATTERN LTDL_SHLIB_EXT) )
@@ -140,7 +135,6 @@ static int plugin_filter(const struct dirent *d)
 
    return 0;
 }
-#endif
 
 /*
  * search and load all plugins in INSTALL_PREFIX/lib
@@ -209,7 +203,6 @@ void plugin_load_all(void)
 /*
  * unload all the plugin
  */
-
 void plugin_unload_all(void)
 {
 #ifdef HAVE_PLUGINS
@@ -224,8 +217,7 @@ void plugin_unload_all(void)
       SAFE_FREE(p);
    }
    
-   if (lt_dlexit() != 0)
-      ERROR_MSG("lt_dlexit()");
+   lt_dlexit();
 #endif
 }
 

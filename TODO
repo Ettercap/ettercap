@@ -29,21 +29,11 @@ this is the unofficial and floating in time roadmap:
 
 Oct 2003:
 
-   + FILTERING ENGINE
-      - quick filter on a connection
-      - perl regex (with libpcre)
-         - set the correct delta !!
-         - made substitution possible
-      
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
-
+      - fix the segfault on replace
 
    + DISSECTORS
-      - TELNET:
-         - fix the initial session
-         - empty password
-         - only password (for routers)
       - convert all the old dissectors
       - HTTPS without the dirty trick (can we use loopback?)
       - HTTP sniff cookies
@@ -89,6 +79,9 @@ Dec 2003:
 
    + ETTERLOG
       - extract files from streams looking for mime content
+   
+   + FILTERING ENGINE
+      - quick filter on a connection
 
 25 Jan 2004:
 

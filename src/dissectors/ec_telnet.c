@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.10 2003/09/29 10:00:41 alor Exp $
+    $Id: ec_telnet.c,v 1.11 2003/10/11 17:05:01 alor Exp $
 */
 
 #include <ec.h>
@@ -50,12 +50,11 @@ void __init telnet_init(void)
  * so we have to make sessions to collect 
  * the string among the packet stram.
  *
- * once the user and pass are colected, the dissector
- * sets a fake session (containing 0xff) to remember
- * to not collect other chars.
- * if the login is not successful, the server will send
- * something like "*ogin". in this case, reset the fake
- * session and restart to collect characters
+ * the telnet collector collects user and pass only if
+ * a session is present.
+ * the session is created looking at the server response
+ * and searching for "login:", "failed" ecc... so we will
+ * collect even failed logins.
  */
 
 FUNC_DECODER(dissector_telnet)
@@ -67,7 +66,7 @@ FUNC_DECODER(dissector_telnet)
 
    /* the connection is starting... create the session */
    CREATE_SESSION_ON_SYN_ACK("telnet", s);
-   
+
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;
@@ -80,6 +79,9 @@ FUNC_DECODER(dissector_telnet)
       return NULL;
 
    DEBUG_MSG("TELNET --> TCP dissector_telnet");
+      
+   /* create an ident to retrieve the session */
+   dissect_create_ident(&ident, PACKET);
    
    /* is the message from the server or the client ? */
    if (FROM_SERVER("telnet", PACKET)) {
@@ -88,124 +90,143 @@ FUNC_DECODER(dissector_telnet)
        * the collectin process is active if the session is empty
        * (as the one created on SYN+ACK)
        */
-      if (match_login_regex(ptr)) {
-         dissect_create_ident(&ident, PACKET);
-         //session_get(&s, ident, DISSECT_IDENT_LEN);
-         //SAFE_FREE(s->data);
-         session_del(ident, DISSECT_IDENT_LEN);
+      /* this is not the session created on synack */
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+         if (match_login_regex(ptr)) {
+            DEBUG_MSG("\tdissector_telnet - BEGIN");
+         
+            /* create the session to begin the collection */
+            dissect_create_session(&s, PACKET);
+            /* use this value to remember to not collect the banner again */
+            s->data = "\xe7\x7e";
+            session_put(s);
+
+            return NULL;
+         }
       }
    } else {
       
-      /* create an ident to retrieve the session */
-      dissect_create_ident(&ident, PACKET);
       /* retrieve the session */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
-      
-         /* the characters are not printable, skip them */
-         if (!isprint((int)*ptr)) {
-            SAFE_FREE(ident);
-            return NULL;
-         }
-         /* 
-          * create the new session and save the first char 
-          * this is done only the first time
-          */
-         dissect_create_session(&s, PACKET);
-         /* remember the state (used later) */
-         s->data = strdup(ptr);
-         /* save the session */
-         session_put(s);
-      } else {
-         char str[strlen(s->data) + PACKET->DATA.disp_len + 2];
-         u_char *p;
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
 
-         memset(str, 0, sizeof(str));
-        
-         /* this is the fake session, user and pass already collected */
-         if (*(char *)s->data == '\xff') {
-            SAFE_FREE(ident);
-            return NULL;
-         }
-
-         /* concat the char to the previous one */
-         sprintf(str, "%s%s", (char *)s->data, ptr);
-
-         /* save the new string */
-         SAFE_FREE(s->data);
-         p = s->data = strdup(str);
+         /* if the collecting process has to be initiated */
+         if (!strcmp(s->data, "\xe7\x7e")) {
          
-         /* terminate the string at \n */
-         if ((p = strchr(s->data, '\n')) != NULL)
-            *p = '\0';
-         
-         /* 
-          * the user input is terminated
-          * check if it was the password by checking
-          * the presence of \r in the string
-          * we store "user\rpass\r" and then we split it
-          */
-         if (strchr(ptr, '\r') || strchr(ptr, '\n')) {
-            /* there is the \r and it is not the last char */
-            if ( ((ptr = strchr(s->data, '\r')) || (ptr = strchr(s->data, '\n')))
-                  && ptr != s->data + strlen(s->data) - 1 ) {
-
-               /* fill the structure */
-               PACKET->DISSECTOR.user = strdup(s->data);
-               if ( (ptr = strchr(PACKET->DISSECTOR.user, '\r')) != NULL )
-                  *ptr = '\0';
-      
-               PACKET->DISSECTOR.pass = strdup(ptr + 1);
-               if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
-                  *ptr = '\0';
-               
-               /* 
-                * set a fake session to remember we have 
-                * collected the user and pass 
-                */
-               SAFE_FREE(s->data);
-               s->data = strdup("\xff");
-               
-               /* display the message */
-               USER_MSG("TELNET : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                    ntohs(PACKET->L4.dst), 
-                                    PACKET->DISSECTOR.user,
-                                    PACKET->DISSECTOR.pass);
+            /* the characters are not printable, skip them */
+            if (!isprint((int)*ptr)) {
+               SAFE_FREE(ident);
+               return NULL;
             }
-            SAFE_FREE(ident);
-            return NULL;
+            
+            DEBUG_MSG("\tdissector_telnet - FIRST PACKET");
+
+            /* save the first packet */
+            s->data = strdup(ptr);
+         
+         /* collect the subsequent packets */
+         } else {
+            size_t i;
+            u_char *p;
+            u_char str[strlen(s->data) + PACKET->DATA.disp_len + 2];
+
+            memset(str, 0, sizeof(str));
+
+            /* concat the char to the previous one */
+            sprintf(str, "%s%s", (char *)s->data, ptr);
+            
+            /* parse the string for backspaces and erase as wanted */
+            for (p = str, i = 0; i < strlen(str); i++) {
+               if (str[i] == '\b' || str[i] == 0x7f) {
+                  p--;
+               } else {
+                  *p = str[i];
+                  p++;  
+               }
+            }
+            *p = '\0';
+
+            /* save the new string */
+            SAFE_FREE(s->data);
+            p = s->data = strdup(str);
+            
+            /* terminate the string at \n */
+            if ((p = strchr(s->data, '\n')) != NULL)
+               *p = '\0';
+            
+            /* 
+             * the user input is terminated
+             * check if it was the password by checking
+             * the presence of \r in the string
+             * we store "user\rpass\r" and then we split it
+             */
+            if (strchr(ptr, '\r') || strchr(ptr, '\n')) {
+               /* there is the \r and it is not the last char */
+               if ( ((ptr = strchr(s->data, '\r')) || (ptr = strchr(s->data, '\n')))
+                     && ptr != s->data + strlen(s->data) - 1 ) {
+
+                  /* fill the structure */
+                  PACKET->DISSECTOR.user = strdup(s->data);
+                  if ( (ptr = strchr(PACKET->DISSECTOR.user, '\r')) != NULL )
+                     *ptr = '\0';
+         
+                  PACKET->DISSECTOR.pass = strdup(ptr + 1);
+                  if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
+                     *ptr = '\0';
+                  
+                  
+                  /* display the message */
+                  USER_MSG("TELNET : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                       ntohs(PACKET->L4.dst), 
+                                       PACKET->DISSECTOR.user,
+                                       PACKET->DISSECTOR.pass);
+
+                  /* delete the session to stop the collection */
+                  dissect_wipe_session(PACKET);
+               }
+               SAFE_FREE(ident);
+               return NULL;
+            }
          }
       }
    }
-   
+  
+   /* delete the ident */
    SAFE_FREE(ident);
 
    /* check if it is the first readable packet sent by the server */
-   if (dissect_on_port("telnet", ntohs(PACKET->L4.src)) == ESUCCESS && PACKET->L4.flags & TH_PSH) {
-      dissect_create_ident(&ident, PACKET);
-      /* the session exist */
-      if (session_get(&s, ident, sizeof(struct dissect_ident)) != -ENOTFOUND) {
-         /* prevent the deletion of session created for the user and pass */ 
-         if (s->data == NULL) {
-            size_t i;
-            
-            DEBUG_MSG("\tdissector_telnet BANNER");
-            /* get the banner */
-            PACKET->DISSECTOR.banner = strdup(ptr);
-            ptr = PACKET->DISSECTOR.banner;
-            /* replace \r\n with spaces */ 
-            for (i = 0; i < strlen(ptr); i++) {
-               if (ptr[i] == '\r' || ptr[i] == '\n')
-                  ptr[i] = ' ';
-            }
-           
-            /* the banner has been collected use a session to remember it */
-            //s->data = strdup("\xe7\x7e");
-            session_del(ident, sizeof(struct dissect_ident));
-         }
+   IF_FIRST_PACKET_FROM_SERVER("telnet", s, ident) {
+      size_t i;
+   
+      DEBUG_MSG("\tdissector_telnet BANNER");
+      
+      /* get the banner */
+      SAFE_CALLOC(PACKET->DISSECTOR.banner, PACKET->DATA.len + 1, sizeof(char));
+      memcpy(PACKET->DISSECTOR.banner, ptr, end - ptr );
+
+      ptr = PACKET->DISSECTOR.banner;
+      /* replace \r\n with spaces */ 
+      for (i = 0; i < PACKET->DATA.len; i++) {
+         if (ptr[i] == '\r' || ptr[i] == '\n' || ptr[i] == '\0')
+         ptr[i] = ' ';
       }
-      SAFE_FREE(ident);
-      return NULL;
-   }  
+
+      /* 
+       * some OS (e.g. windows and ipso) send the "login:" in the
+       * same packet as teh banner...
+       */
+      if (match_login_regex(ptr)) {
+         DEBUG_MSG("\tdissector_telnet - BEGIN");
+         
+         /* create the session to begin the collection */
+         dissect_create_session(&s, PACKET);
+         /* use this value to remember to not collect the banner again */
+         s->data = "\xe7\x7e";
+         session_put(s);
+
+         return NULL;
+      }
+
+   } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident);           
       
    return NULL;
 }
@@ -238,51 +259,24 @@ void skip_telnet_command(u_char **ptr, u_char *end)
  */
 int match_login_regex(char *ptr)
 {
-#if 0
-   
-   /* XXX regex is too slow !!! */
-   
-   regex_t *regex;
-   int ret = 0;
-
-   /*
-    * matches: 
-    *    - login at the beginning of the buffer
-    *    - inccorect, failed, failure
-    */
-#define LOGIN_REGEX "\\`login.*|.*incorrect.*|.*failed.*|.*failure.*"
-   
-   /* allocate the new structure */
-   SAFE_CALLOC(regex, 1, sizeof(regex_t));
-
-   /* failed compilation of regex */
-   if (regcomp(regex, LOGIN_REGEX, REG_EXTENDED | REG_NOSUB | REG_ICASE ) != 0) {
-      SAFE_FREE(regex);
-      return 0;
-   }
-
-   /* execute the regex */
-   if (regexec(regex, ptr, 0, NULL, 0) == 0)
-      ret = 1;
-    
-   SAFE_FREE(regex);
-   return ret;
-#else
-   char *words[] = { "incorrect", "failed", "failure", NULL };
+   char *words[] = {"incorrect", "failed", "failure", NULL };
    int i = 0;
-   
-   /* check "login" at the beginning */
-   if (!strncasecmp(ptr, "login", 5))
+  
+   /* 
+    * "login:" is a special case, we have to take care
+    * of messages from the server, they can contain login:
+    * even if it is not the login prompt
+    */
+   if (strcasestr(ptr, "login:") && !strcasestr(ptr, "last") && !strcasestr(ptr, "from"))
       return 1;
    
+   /* search for keywords */ 
    do {
       if (strcasestr(ptr, words[i]))
          return 1;
-      
    } while (words[++i] != NULL);
    
    return 0;
-#endif
 }
 
 /* EOF */

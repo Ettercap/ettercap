@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_rlogin.c,v 1.8 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_rlogin.c,v 1.9 2003/10/11 17:05:01 alor Exp $
 */
 
 #include <ec.h>
@@ -119,12 +119,26 @@ FUNC_DECODER(dissector_rlogin)
    
    /* concat the pass to the collected user */
    if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
-      char str[strlen(s->data) + PACKET->DATA.disp_len + 2];
+      size_t i;
+      u_char *p;
+      u_char str[strlen(s->data) + PACKET->DATA.disp_len + 2];
 
       memset(str, 0, sizeof(str));
     
       /* concat the char to the previous one */
       snprintf(str, strlen(s->data) + PACKET->DATA.disp_len + 2, "%s%s", (char *)s->data, ptr);
+      
+      /* parse the string for backspaces and erase as wanted */
+      for (p = str, i = 0; i < strlen(str); i++) {
+         if (str[i] == '\b' || str[i] == 0x7f) {
+            p--;
+         } else {
+            *p = str[i];
+            p++;  
+         }
+      }
+      *p = '\0';
+            
       /* save the new string */
       SAFE_FREE(s->data);
       s->data = strdup(str);

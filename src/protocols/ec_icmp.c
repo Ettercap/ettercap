@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icmp.c,v 1.6 2003/10/30 21:48:54 alor Exp $
+    $Id: ec_icmp.c,v 1.7 2003/11/04 13:25:47 alor Exp $
 */
 
 #include <ec.h>
@@ -70,8 +70,10 @@ FUNC_DECODER(decode_icmp)
   
    DECODED_LEN = sizeof(struct icmp_header);
 
+   /* include the data in this level */
+   PACKET->L4.len = PACKET->L3.payload_len;
+   
    /* fill the data */
-   PACKET->L4.len = DECODED_LEN;
    PACKET->L4.header = (u_char *)DECODE_DATA;
    PACKET->L4.options = NULL;
    

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.4 2003/03/17 19:42:25 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.5 2003/03/18 22:56:29 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -240,345 +240,40 @@ this option to dump the packets to a file and then load it into your favourite
 application.
 
 
+.TP
+.B USER INTERFACES OPTIONS
+.TP
+\fB\-C\fR, \fB\-\-console\fR
+.br 
+
+.TP
+\fB\-N\fR, \fB\-\-ncurses\fR
+.br
+
+.TP
+\fB\-G\fR, \fB\-\-gtk\fR
+.br
+
+.TP
+\fB\-D\fR, \fB\-\-daemonize\fR
+.br
+Daemonize ettercap. This option will detach ettercap from the current
+controlling terminal and set it as a daemon. You can combine this feature with
+the "log" option to log all the traffic in the background. If the daemon fail
+for any reasons, it will create the file "/tmp/ettercap_daemonized.log" in
+which is present the error caught by ettercap. Furthermore, if you want to have
+a complete debug of the daemon process, you are encouraged to recompile
+ettercap in debug mode.
+
+
+
 .SH ***** NOT UP TO DATE AFTER THIS POINT ******
 XXX-TODO
 
 .TP
 .B GENERAL OPTIONS
 .TP
-\fB\-N\fR, \fB\-\-simple\fR
-NON interactive mode (without ncurses)
-.br
-This method is useful if you want to launch ettercap from a script or if you already
-know some informations of your target or if you want to launch ettercap in background
-collecting data or password for you (in combination with the --quiet option).
-.br
-Some features are not available in this method, obviously the ones which requires
-interaction with the user, such as characters injection. But others (for example filtering)
-are fully supported, so you can set up ettercap to poison two host (a victim and its gateway)
-and to filter all its connection on the port 80 and replace some string with others,
-all its traffic to the Internet will be changed as you wish.
-.TP
-\fB\-z\fR, \fB\-\-silent\fR
-start in silent mode (no arp storm on start up)
-.br
-If you want to launch ettercap with a non invasive method (some NIDS may raise a warn
-if they detects too much arp request). You have to know all the requested data of the
-target in order to use this options. For example if you want to poison two host, you need
-the two IP and the two MAC addresses of the victims.
-If you select ipsniff or macsniff this method is automatically selected, because you don't
-need to know the list of the host in the LAN.
-.br
-To know the entire list of the hosts use "ettercap -Nl", but remember that it is a invasive
-method.
-.TP
-\fB\-O\fR, \fB\-\-passive\fR
-Collect infos in passive mode. This method WILL NOT SEND ANY packet on the wire.
-It will put the interface in promiscuous mode and look for packets passing through it.
-every interesting packet (SYN or SYN+ACK) is analyzed and used to make a complete map of the
-LAN.
-.br
-The infos collected are: IP and MAC of the hosts, type of Operating System (passive OS fingerprint),
-network adapter vendor and running services. (for a technical description refer to README)
-In the list are show even other infos: "GW" if the host is a GateWay, "NL" if the IP is not
-belonging to the LAN and "RT" if the host act as a router.
-.br
-Useful if you want to make a start up host list in complete passive mode, when you are satisfied
-of the collected infos, you can convert it to the startup host list by simply press 'C', and then
-work as usual.
-.br
-The description of its functionality in simple mode is explained in the next section.
-.TP
-\fB\-b\fR, \fB\-\-broadping\fR
-use a broadcast ping instead of arp storm on start up.
-.br
-this method is less intrusive, but even less accurate. some hosts will not respond at the
-broadcast ping (es. Windows) so they remain invisible to this method. Useful if you want to
-scan a LAN with Linux hosts. As usual you can combine this option with --list to have a
-list of the hosts "ettercap -Nlb"
-.TP
-\fB\-D\fR, \fB\-\-delay <n sec>\fR
-the delay in seconds between the arp replies if you have selected an ARP poison sniffing
-method. This is useful if you want to be less aggressive in the poisoning. On many OS the
-default validity interval of the arp cache is more than a minute (on FreeBSD is 1200 sec).
-.br
-The default delay value is 30 sec.
-.TP
-\fB\-Z\fR, \fB\-\-stormdelay <n usec>\fR
-the delay in micro-seconds between the arp request on arp storm at start up.
-This is useful if you want to be less aggressive in the scanning. Many IDS will report
-massive arp request, but if you send them in a slower rate, they will not report any strange
-behavior.
-.br
-The default delay value is 1500 usec.
-.TP
-\fB\-S\fR, \fB\-\-spoof <IP>\fR
-If you want to elude some IDS, you can specify a spoofed IP used to scan the LAN with
-arp request. The source MAC can't be spoofed because a well configured switch will block
-your request.
-.TP
-\fB\-H\fR, \fB\-\-hosts <IP1[;IP2][;IP3][;...]>\fR
-on start up, scan only these hosts.
-.br
-this is useful if you want to use an ARP scanning of the LAN but only on certain IPs.
-so you can benefit from a ARP scan but remaining less invasive.
-Useful even if you want to do PUBLIC ARP but you want to poison only specific hosts.
-since with a list PUBLIC ARP is automatically converted to SMARTARP, only these host
-will be poisoned and you can leave untouched the arp caches of the other hosts.
-.br
-the IP list must be in dotted notation and separated by semi-colon (without blank spaces
-between them), you can use range ip (use the hyphen) or single ip list (use the
-comma).
-.br
-EXAMPLES:
-.Sp
-   192.168.0.2-25   --> from 2 to 25
-.Sp
-   192.168.0.1,3,5  --> host 1, 3 and 5
-.Sp
-   192.168.0-3.1-10;192.168.4.5,7 --> will scan from 1 to 10 in the 192.168.0, 192.168.1,
-192.168.2, 192.168.3 subnet and hosts 5 and 7 in the 192.168.4
-.TP
-\fB\-d\fR, \fB\-\-dontresolve\fR
-don't resolve IPs on start up. this is useful if you experience an insane "Resolving
-n hostnames..." message on start up. This is due to a very slow DNS in your environment.
-.TP
-\fB\-i\fR, \fB\-\-iface <IFACE>\fR
-network interface to be used for all the operation. you can even specify network aliases
-in order to scan a subnet with different ip form your current one.
-.TP
-\fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
-the netmask used to scan the LAN. (in dotted notation). the default is your current
-ifconfig netmask. but your netmask is for example 255.255.0.0 I encourage you to specify
-a more restrictive one, if you managed to do an ARP scanning on start up.
-.TP
-\fB\-e\fR, \fB\-\-etterconf <FILENAME>\fR
-use the config file instead of command line options
-.br
-etter.conf example file is packaged in the tarball, refer to it to know how to write a
-config file. all the instruction are written in this example. via the conf file you
-can disable selectively one protocol dissector or move it on one other port.
-.br
-command line options and config file can be mixed for much flexibility, but remember
-that the options in the config file override the command line, so if in etter.conf
-you have specified IFACE: eth0, and you launch "ettercap -i eth1 -e etter.conf"
-the selected iface will be eth0.
-.br
-NOTE: the "-e etter.conf" options has to be specified after all other options.
-.TP
-\fB\-g\fR, \fB\-\-linktype\fR
-this flag has two complementary function. so mind it !
-.br
-if used in interactive mode it DOESN'T check for lan type. On the other hand, if used
-in conjunction with command line mode (-N) it DOES a check to discover if you are on a
-switched LAN or not...
-Sometimes if there are only 2 hosts in the lan this discovery method can fail.
-.TP
-\fB\-j\fR, \fB\-\-loadhosts <FILENAME>\fR
-it is used to load an hosts list from a file created by the -k option. (see below)
-.TP
-\fB\-k\fR, \fB\-\-savehosts\fR
-saves the hosts list to a file. useful when you have many hosts and you don't want to
-do an arp storm at startup any time you use ettercap. simply use this options and dump
-the list to a file, then to load the information from it use the -j <filename> option.
-.br
-the file is in the form "netaddress_netmask.ehl"
-.TP
-\fB\-X\fR, \fB\-\-forceip\fR
-disable the spoofed ICMP packet before poisoning.
-.TP
-\fB\-v\fR, \fB\-\-version\fR
-check for the latest ettercap version.
-.br
-All operation are under your control. Every step requires a user confirmation.
-With this option ettercap will connect to the http://ettercap.sourceforge.net:80 web
-site and ask for the page /latest.php. then the result are parsed and compared with
-your current version. If there is a newer version available, ettercap will ask you if
-you want to wget it. (wget must be in the path).
-.br
-If you want to automatically answer yes at all the question add the option -y
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-prints the help screen with a short summary of the available options.
 
-
-
-.TP
-.B SILENT MODE OPTIONS (only combined with -N)
-.TP
-\fB\-t\fR, \fB\-\-proto <PROTO>\fR
-sniff only PROTO packets (default is TCP + UDP).
-This option is only useful in "simple" mode, if you start ettercap in interactive mode
-both TCP and UDP are sniffed.
-.br
-PROTO can be "tcp", "udp" or "all" for both.
-.TP
-\fB\-J\fR, \fB\-\-onlypoison\fR
-With this option ettercap wont sniff anything, but it only poison the victims.
-This can be useful if you want to poison with ettercap and sniff with ethereal
-or tcpdump. (remember in this case to enable IP_forwarding).
-.Sp
-Another use is for multitarget sniffing.
-.br
-As you know, with ettercap you can sniff connection between two target (ARP
-BASED) or to and from a single target (SMART ARP). With this option you can
-sniff from couples of target at a time (as you have launched many instance
-together).
-.Sp
-Launch the first instance in SMART ARP, and use the -H options to limitate the
-smart feature to the hosts you want to poison (remember that if you want to involve
-the Gateway in the poisoning, you MUST select it from the smart arp instance). 
-Then launch the other "ettercap -J".
-.TP
-\fB\-R\fR, \fB\-\-reverse\fR
-sniff all the connection but the selected one. This option is useful if you are using
-ettercap on a remote machine and you want to sniff all the traffic but you connection from
-local to remote, because including it will sniff even the ettercap output and it will be
-screwed up...
-.TP
-\fB\-O\fR, \fB\-\-passive\fR
-Collect infos in passive mode as described in the previous section.
-In simple mode we can use this option in many mode.
-.br
-"ettercap -NO" will start ettercap in semi-interactive mode, hit 'h' for help.
-You can view or log to a file a detailed report of the collected infos, or simply
-view each alert of analyzed packet.
-.br
-"ettercap -NOL" as above but it log automatically the data into a file every 5 min.
-.br
-"ettercap -NOLq" deminizes ettercap and log to a file every 5 minutes. Go away and smoke
-your cigarette... return and a complete report of the lan is there waiting for you... ;)
-.TP
-\fB\-p\fR, \fB\-\-plugin <NAME>\fR
-run the external plugin "NAME".
-.br
-most plugins need a destination host. simply specify it after plugin name, in fact
-hosts are parsed on command line as first the DEST and so the SOURCE.
-.br
-To have a list of the available external plugins use "list" (without quotes) as plugin name.
-.Sp
-Since ettercap 0.6.2 hooking plugins system is provided, so some plugins are not
-executed as a separated program, they can interact with ettercap and can be enabled or
-disabled via the interface or conf file.
-.Sp
-More detailed info about plugins and about how to write your own are found in the
-README.PLUGINS file.
-.TP
-\fB\-l\fR, \fB\-\-list\fR
-lists all the hosts in the LAN, reporting each MAC address.
-.br
-Commonly combined options are -b (for broadcast ping) and -d (don't resolve hostname).
-.TP
-\fB\-C\fR, \fB\-\-collect\fR
-collect all users and password from the hosts specified on command line.
-.br
-Password collector are configured in the config file (etter.conf), if you want
-you can disable them selectively or move them on other port. This is useful if you
-don't want to sniff SSH connection (the key change alert will raise suspects) but
-want to sniff all other supported protocols. Or even if you know that a host has the
-telnet service on port 4567, simply move the telnet dissector on 4567/tcp
-.TP
-\fB\-f\fR, \fB\-\-fingerprint <HOST>\fR
-do OS fingerprinting on HOST.
-.br
-This option uses the same database and the same method used by
-.I nmap (c) Fyodor <fyodor@insecure.org>
-so I report a piece of its man page :
-.Sp
-This option activates remote host identification via TCP/IP fingerprinting. In other
-words, it uses a bunch of techniques to detect subtleties in the underlying operating
-system network stack of the computers you are scanning. It uses this information to
-create a  'fingerprint' which it compares with its database of known OS fingerprints
-(the nmap-os-fingerprints file) to decide what type of system you are scanning.
-.Sp
-the -f options even provides you the vendor of the network adapter of the scanned host.
-the info are stored in the mac-fingerprints database.
-.TP
-\fB\-1\fR, \fB\-\-hexview\fR
-to dump data in hex mode.
-.br
-TIP: while sniffing you can change the visualization mode by hitting 'a' for ascii or 'x' for hex.
-on line help is recalled by 'h'.
-.TP
-\fB\-2\fR, \fB\-\-textview\fR
-to dump data in text mode.
-.TP
-\fB\-3\fR, \fB\-\-ebcdicview\fR
-to dump data in ebcdic mode.
-.TP
-\fB\-L\fR, \fB\-\-logtofile\fR
-if used alone logs all data to specific file(s). it crates a separate file for each connection
-in the form "YYYYMMDD-P-IP:PORT-IP:PORT.log" (under unix) and "P-IP[PORT]-IP[PORT].log" under
-windows due to filename limitations.
-.br
-if used with -C (collector) it creates a file with all the password sniffed in the session in
-the form "YYYYMMDD-collected-pass.log"
-.TP
-\fB\-q\fR, \fB\-\-quiet\fR
-"demonize" ettercap.
-.br
-useful if you want to log all data in background. this options will detach
-ettercap from the current tty and set it as a demon collecting data to files. it must be
-combined with -NL (or -NLC) otherwise it has no effects. Obviously the sniffing method
-is required, so you have to combine it with this option.
-.TP
-\fB\-w\fR, \fB\-\-newcert\fR
-create a new cert file for HTTPS man-in-the-middle.
-.br
-useful if you want to create a certfile with social engineered information...
-.br
-the new file is created in the current working directory. to permanently substitute the
-default cert file (etter.sll.crt) you have to overwrite @prefix@/share/@PROG@/etter.ssl.crt
-.TP
-\fB\-F\fR, \fB\-\-filter <FILENAME>\fR
-load the filters chains  from FILENAME
-.br
-the Filtering chains file is written in pseudo XML format. You can write by hand this
-file or (better) use the ncurses interface to let ettercap create it (press 'F' in the
-connection list interface). If you are skilled in XML parsing, you can write your own
-program to make a filter chain file.
-.Sp
-the rules are simple:
-.Sp
-If the proto <proto> AND the source port <source> AND the dest port <dest> AND the payload <search>
-match the rules, after the filter as done its action <action>, it jumps in the chain
-to the filter id specified in the <goto> field, else it jumps to <elsegoto>.
-If these field are left blank the chain is interrupted. Source and dest port equal to
-0 (zero) means ANY port. You can use wildcards in the search string (see README for detail)
-.Sp
-NOTE: with this options filter are enabled by default, if you want to
-disable them on the fly, press "S" (for source) or "D" (for dest) while sniffing
-.Sp
-NOTE: on command line the hosts are parsed as "ettercap -F etter.filter DEST SOURCE", so
-the first host is bound to the dest chain and the second to the source chain.
-.Sp
-VERY IMPORTANT: the source chain is applied to data COMING FROM source and NOT GOING TO
-source. keep this in mind !! the same is for dest...
-.TP
-\fB\-c\fR, \fB\-\-check\fR
-check if you were poisoned by other poisoners in the LAN
-
-
-
-
-
-.SH INTERACTIVE MODE
-The interactive mode (ncurses mode) is automatically selected if ettercap is launched
-without the option -N . Explain what you can do with it will take pages and pages... and I'm
-not a good writer... so if you don't know what you can do in some circumstances, simply
-press 'H' and a help screen will popup. There you can find a detailed list of all available
-commands.
-
-
-.SH WORKING OFF-LINE
-
-If you want to analize a file saved with tcpdump or ethereal in the libpcap
-format, you can use the Sprite plugin.
-You can use it to recontruct the connections list, the password collecting
-process or the Passive OS Fingerprint.
-Simply you have to specify the file in the -T option and then use ettercap
-as you were sniffing from the net.
-To save a tcpdump file for further analysis use the -Y option.
 
 .SH EXAMPLES
 Here are some examples of using ettercap.

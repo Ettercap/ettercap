@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.39 2003/10/14 21:20:47 lordnaga Exp $
+    $Id: ec_decode.c,v 1.40 2003/10/15 10:13:34 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -86,7 +86,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    struct pcap_stat ps;
    int len;
    u_char *data;
-   int datalen;
+   size_t datalen;
    
    CANCELLATION_POINT();
 
@@ -140,11 +140,14 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    data = (u_char *)pkt;
    datalen = pkthdr->caplen;
 
+   /* An interface with MTU > 65000 ???? */
+   BUG_IF(GBL_PCAP->snaplen<=datalen);
+   
    /* alloc the packet object structure to be passet through decoders */
    packet_create_object(&po, data, datalen);
 
    /* Be sure to NULL terminate our data buffer */
-   *(data + datalen + 1) = 0;
+   *(data + datalen) = 0;
    
    /* set the po timestamp */
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));

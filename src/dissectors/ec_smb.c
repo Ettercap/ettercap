@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.4 2003/10/14 13:38:34 alor Exp $
+    $Id: ec_smb.c,v 1.5 2003/10/15 10:13:36 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -223,7 +223,9 @@ FUNC_DECODER(dissector_smb)
          
                if (pwlen > 0) 
                   memcpy(session_data->response1, Blob, sizeof(session_data->response1) - 1);
-	 
+               else
+                  sprintf(session_data->response1, "(empty)");
+		  	 
                Blob = GetUser(Blob+pwlen+unilen, session_data->user, 200);
                GetUser(Blob, session_data->domain, 200);
                session_data->status = WAITING_LOGON_RESPONSE;

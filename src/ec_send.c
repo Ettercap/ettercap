@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.59 2004/05/31 08:49:05 alor Exp $
+    $Id: ec_send.c,v 1.60 2004/12/03 09:10:30 alor Exp $
 */
 
 #include <ec.h>
@@ -288,8 +288,10 @@ void capture_only_incoming(pcap_t *p, libnet_t *l)
    
    DEBUG_MSG("hack_pcap_lnet: setting BIOCSSEESENT on pcap handler");
    
-   /* mac os supports BIOCSSEESENT */
+   /* not all darwin versions support BIOCSSEESENT */
+   #ifdef BIOCSSEESENT
    ioctl(pcap_fileno(p), BIOCSSEESENT, &val);
+   #endif
 #endif
 
 #ifdef OS_SOLARIS

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.14 2004/05/13 15:15:16 alor Exp $
+    $Id: ec_wifi.c,v 1.15 2004/05/14 07:59:17 alor Exp $
 */
 
 #include <ec.h>
@@ -91,12 +91,17 @@ struct wep_header {
 /* encapsulated ethernet */
 u_int8 WIFI_ORG_CODE[3] = {0x00, 0x00, 0x00};
 
+u_int8 wkey[32];  /* 256 bit */
+size_t wlen;
+ 
+
 /* protos */
 
 FUNC_DECODER(decode_wifi);
 FUNC_ALIGNER(align_wifi);
 void wifi_init(void);
 static int wep_decrypt(u_char *buf, size_t len);
+int set_wep_key(u_char *string);
 
 /*******************************************/
 
@@ -238,9 +243,6 @@ static int wep_decrypt(u_char *buf, size_t len)
    struct wep_header *wep;
    u_char tmpbuf[len];
 
-   u_char wkey[] = "12345";
-   size_t wlen = 5;
- 
    USER_MSG("WEP: detected crypted packet\n");
    
    /* get the wep header */
@@ -281,6 +283,50 @@ static int wep_decrypt(u_char *buf, size_t len)
 #else
    return -EFATAL;
 #endif
+}
+
+/*
+ * check if the string is ok to be used as a key
+ * for WEP.
+ * the format is:  n:string  where n is the number of bit used 
+ * for the RC4 seed. you can use strings or hex values.
+ * for example:
+ *    64:alor1
+ *    128:ettercapng070
+ *    64:01:02:03:04:05
+ */
+int set_wep_key(u_char *string)
+{
+   int bit = 0;
+   u_char *p;
+   
+   DEBUG_MSG("set_wep_key: %s", string);
+   
+   memset(wkey, 0, sizeof(wkey));
+
+   p = strtok(string, ":");
+   if (p == NULL)
+      SEMIFATAL_ERROR("Invalid WEP key");
+
+   bit = atoi(p);
+
+   /* get the second part of the string */
+   p = strtok(NULL, ":");
+   if (p == NULL)
+      SEMIFATAL_ERROR("Invalid WEP key");
+   
+   /* the len of the secret part of the RC4 seed */
+   wlen = bit / 8 - IV_LEN;
+   
+   /* sanity check */
+   if (wlen > sizeof(wkey))
+      SEMIFATAL_ERROR("Unsupported WEP key lenght");
+  
+   if (bit != 64 && bit != 128 && bit != 256)
+      SEMIFATAL_ERROR("Unsupported WEP key lenght");
+
+
+   return ESUCCESS;
 }
 
 /* EOF */

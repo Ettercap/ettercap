@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dynlist.c,v 1.1 2004/02/01 15:47:22 alor Exp $
+    $Id: wdg_dynlist.c,v 1.2 2004/02/01 16:46:53 alor Exp $
 */
 
 #include <wdg.h>
@@ -40,6 +40,7 @@ struct wdg_dynlist {
    void *top;
    void *bottom;
    void *current;
+   void (*select_callback)(void *);
    SLIST_HEAD(, wdg_dynlist_call) callbacks;
 };
 
@@ -60,6 +61,7 @@ static void wdg_dynlist_mouse(struct wdg_object *wo, int key, struct wdg_mouse_e
 
 void wdg_dynlist_refresh(wdg_t *wo);
 void wdg_dynlist_print_callback(wdg_t *wo, void * func(int mode, void *list, char **desc, size_t len));
+void wdg_dynlist_select_callback(wdg_t *wo, void (*callback)(void *));
 void wdg_dynlist_add_callback(wdg_t *wo, int key, void (*callback)(void *));
 static int wdg_dynlist_callback(struct wdg_object *wo, int key);
 
@@ -240,6 +242,10 @@ static int wdg_dynlist_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_
          wdg_dynlist_move(wo, key);
          break;
          
+      case KEY_RETURN:
+         WDG_EXECUTE(ww->select_callback, ww->current);
+         break;
+         
       /* message not handled */
       default:
          return wdg_dynlist_callback(wo, key);
@@ -302,6 +308,18 @@ void wdg_dynlist_print_callback(wdg_t *wo, void * func(int mode, void *list, cha
    WDG_DEBUG_MSG("wdg_dynlist_print_callback %p", func);
 
    ww->func = func;
+}
+
+/*
+ * set the select callback
+ */
+void wdg_dynlist_select_callback(wdg_t *wo, void (*callback)(void *))
+{
+   WDG_WO_EXT(struct wdg_dynlist, ww);
+   
+   WDG_DEBUG_MSG("wdg_dynlist_select_callback %p", callback);
+
+   ww->select_callback = callback;
 }
 
 /*
@@ -498,7 +516,6 @@ static void wdg_dynlist_mouse(struct wdg_object *wo, int key, struct wdg_mouse_e
 {
    WDG_WO_EXT(struct wdg_dynlist, ww);
    /* we are for sure within the edges */
-   //size_t l = wdg_get_nlines(wo) - 4;
    size_t y = wdg_get_begin_y(wo) + 2;
    size_t line, i = 0;
    void *next;
@@ -516,6 +533,10 @@ static void wdg_dynlist_mouse(struct wdg_object *wo, int key, struct wdg_mouse_e
       if (++i == line)
          break;
    }
+
+   /* if double click, execute the callback */
+   if (mouse->event == BUTTON1_DOUBLE_CLICKED)
+      WDG_EXECUTE(ww->select_callback, ww->current);
 
    wdg_dynlist_refresh(wo);
 }

@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.31 2004/02/01 15:47:22 alor Exp $ */
+/* $Id: wdg.h,v 1.32 2004/02/01 16:46:53 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -255,10 +255,12 @@ struct wdg_list {
 void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list);
 void wdg_list_add_callback(wdg_t *wo, int key, void (*callback)(void *));
 void wdg_list_refresh(wdg_t *wo);
+void wdg_list_select_callback(wdg_t *wo, void (*callback)(void *));
 /* dynlist objects */
 void wdg_dynlist_refresh(wdg_t *wo);
-void wdg_dynlist_print_callback(wdg_t *wo, void * func(int mode, void *list, char **desc, size_t len));
 void wdg_dynlist_add_callback(wdg_t *wo, int key, void (*callback)(void *));
+void wdg_dynlist_print_callback(wdg_t *wo, void * func(int mode, void *list, char **desc, size_t len));
+void wdg_dynlist_select_callback(wdg_t *wo, void (*callback)(void *));
 
 
 /* EXPORTED FUNCTIONS */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_list.c,v 1.7 2004/01/20 11:42:30 alor Exp $
+    $Id: wdg_list.c,v 1.8 2004/02/01 16:46:53 alor Exp $
 */
 
 #include <wdg.h>
@@ -42,6 +42,7 @@ struct wdg_list_handle {
    ITEM *current;
    ITEM **items;
    size_t nitems;
+   void (*select_callback)(void *);
    SLIST_HEAD(, wdg_list_call) callbacks;
 };
 
@@ -65,6 +66,7 @@ static void wdg_list_menu_destroy(struct wdg_object *wo);
 
 void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list);
 void wdg_list_add_callback(wdg_t *wo, int key, void (*callback)(void *));
+void wdg_list_select_callback(wdg_t *wo, void (*callback)(void *));
 static int wdg_list_callback(struct wdg_object *wo, int key);
 void wdg_list_refresh(wdg_t *wo);
 
@@ -257,6 +259,10 @@ static int wdg_list_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          } else
             return -WDG_ENOTHANDLED;
          break;
+
+      case KEY_RETURN:
+         WDG_EXECUTE(ww->select_callback, item_userptr(current_item(ww->menu)));
+         break;
          
       /* message not handled */
       default:
@@ -386,6 +392,11 @@ static int wdg_list_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
    if ( !(item_opts(current_item(ww->menu)) & O_SELECTABLE) )
       c = menu_driver(ww->menu, wdg_list_virtualize(key) );
 
+   /* one item has been selected */
+   if (c == E_UNKNOWN_COMMAND) {
+      WDG_EXECUTE(ww->select_callback, item_userptr(current_item(ww->menu)));
+   }
+   
    /* tring to go outside edges */
    if (c == E_REQUEST_DENIED)
       return -WDG_ENOTHANDLED;
@@ -476,6 +487,16 @@ static void wdg_list_menu_destroy(struct wdg_object *wo)
    free_menu(ww->menu);
 
    ww->menu = NULL;
+}
+
+/*
+ * set the select callback
+ */
+void wdg_list_select_callback(wdg_t *wo, void (*callback)(void *))
+{
+   WDG_WO_EXT(struct wdg_list_handle, ww);
+
+   ww->select_callback = callback;
 }
 
 /*

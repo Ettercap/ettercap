@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.12 2004/03/11 11:44:04 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.13 2004/03/11 13:55:13 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -379,6 +379,24 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    po->DATA.inject = NULL;
    po->DATA.inject_len = 0;
    
+   /* get current time */
+   gettimeofday(&po->ts, NULL);
+
+   /* calculate if the dest is local or not */
+   switch (ip_addr_is_local(&PACKET->L3.src)) {
+      case ESUCCESS:
+         PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
+         PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
+         break;
+      case -ENOTFOUND:
+         PACKET->PASSIVE.flags &= ~FP_HOST_LOCAL;
+         PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
+         break;
+      case -EINVALID:
+         PACKET->PASSIVE.flags = FP_UNKNOWN;
+         break;
+   }
+
    /* Let's start from the last stage of decoder chain */
    start_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
    start_decoder(po->DATA.data, po->DATA.len, &len, po);
@@ -474,13 +492,12 @@ EC_THREAD_FUNC(sslw_child)
    po.L4.proto = NL_TYPE_TCP;
 
    /* A fake SYN ACK for profiles */
-   // XXX - Quali servono davvero?
-   //po.DATA.len = 1;
-   //po.len = 1;
-   //po.L4.flags = (TH_SYN | TH_ACK);
-   //packet_disp_data(&po, po.DATA.data, po.DATA.len);
-   //sslw_parse_packet(ae, SSL_SERVER, &po);
-   //po.L4.flags = 0;
+   /* XXX - Does anyone care about packet len after this point? */
+   po.len = 64;
+   po.L4.flags = (TH_SYN | TH_ACK);
+   packet_disp_data(&po, po.DATA.data, po.DATA.len);
+   sslw_parse_packet(ae, SSL_SERVER, &po);
+   po.L4.flags = 0;
    
    LOOP {
       // XXX Posso metterlo fuori dal ciclo?

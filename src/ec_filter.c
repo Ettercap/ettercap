@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.17 2003/09/25 15:30:45 alor Exp $
+    $Id: ec_filter.c,v 1.18 2003/09/27 09:53:33 alor Exp $
 */
 
 #include <ec.h>
@@ -412,23 +412,43 @@ static int func_regex(struct filter_op *fop, struct packet_object *po)
    return -ENOTFOUND;
 }
 
+
 /* 
  * replace a string in the packet object DATA.data
  */
 static int func_replace(struct filter_op *fop, struct packet_object *po)
 {
-   u_int8 *ptr = po->DATA.data;
-   u_int8 *end = po->DATA.data + po->DATA.len;
-   u_int32 len;
+   u_int8 *tmp;
+   u_int8 *ptr;
+   u_int8 *end;
+   size_t len;
    size_t slen = fop->op.func.value_len;
    size_t rlen = fop->op.func.value2_len;
+   int delta = 0;
+   size_t max_len, new_len;
+  
+   /* 
+    * calculate the max len of data this packet can contain.
+    * subtract to the MTU all the headers len
+    */
+   max_len = GBL_IFACE->mtu - (po->L4.header - po->fwd_packet + po->L4.len);
   
    /* check if it exist at least one */
    if (!memmem(po->DATA.data, po->DATA.len, fop->op.func.value, fop->op.func.value_len) )
       return -ENOTFOUND;
 
-   DEBUG_MSG("filter engine: func_replace");
-  
+   DEBUG_MSG("filter engine: func_replace : max_len %d", max_len);
+
+   /* make a copy of the buffer and operate on that */
+   tmp = calloc(po->DATA.len, sizeof(u_int8));
+   ON_ERROR(tmp, NULL, "cannot allocate memory");
+
+   memcpy(tmp, po->DATA.data, po->DATA.len);
+
+   /* take the beginning and the end of the data */
+   ptr = tmp;
+   end = tmp + po->DATA.len;
+   
    /* do the replacement */
    do {
       /* the len of the buffer to be analized */
@@ -443,26 +463,53 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       if (ptr == NULL)
          break;
       
+      /* set the delta */
+      delta += rlen - slen;
+
+      /* resize the buffer to contain the new data */
+      tmp = realloc(tmp, po->DATA.len + delta);
+      ON_ERROR(tmp, NULL, "Cannot reallocate memory");
+      
       /* move the buffer to make room for the replacement string */   
       memmove(ptr + rlen, ptr + slen, len); 
       /* copy the replacemente string */
       memcpy(ptr, fop->op.func.value2, rlen);
       /* move the ptr after the replaced string */
       ptr += rlen; 
-      /* set the delta */
-      po->DATA.delta += rlen - slen;
       /* adjust the new buffer end */
-      end += po->DATA.delta;
+      end += delta;
                                                             
       /* mark the packet as modified */
       po->flags |= PO_MODIFIED;
 
-      /* if the new packet exceed the mtu */
-      /* XXX - TODO */
-      //if (po->len + po->delta > GBL_IFACE->mtu - po->L2.len)
-     
    } while(ptr != NULL && ptr < end);
   
+   /* if there was a modification, update the packet */
+   if (po->flags & PO_MODIFIED) {
+
+      /* the packet has exceeded the MTU */
+      if (po->DATA.len + delta > max_len) {
+         po->DATA.delta = max_len - po->DATA.len;
+      } else {
+         /* the new buffer fits the packet */
+         po->DATA.delta = delta;
+      }
+      /* new lenght is the minimum between the max len and the modified len */ 
+      new_len = MIN(po->DATA.len + po->DATA.delta, max_len);
+      /* wipe the old buffer */
+      memset(po->DATA.data, 0, po->DATA.len);
+      /* check if we are overflowing pcap buffer */
+      BUG(GBL_PCAP->snaplen - (po->L4.header - po->fwd_packet + po->L4.len) < new_len);
+      /* copy the temp buffer on the original packet */
+      memcpy(po->DATA.data, tmp, new_len);
+      
+      /* copy the rest in the inject buffer */
+      if (delta != po->DATA.delta) {
+         po->inject = calloc(po->DATA.len + delta - max_len, sizeof(u_char));
+         ON_ERROR(po->inject, NULL, "Cannot allocate memory");
+         memcpy(po->inject, tmp + new_len, po->DATA.len + delta - max_len);
+      }
+   }
 
    return ESUCCESS;
 }
@@ -472,10 +519,37 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
  */
 static int func_inject(struct filter_op *fop, struct packet_object *po)
 {
-   DEBUG_MSG("filter engine: func_inject");
-  
-   /* XXX - TODO */
-   NOT_IMPLEMENTED();
+   int fd;
+   void *file;
+   size_t size;
+
+   DEBUG_MSG("filter engine: func_inject %s", fop->op.func.value);
+   
+   /* open the file */
+   if ((fd = open(fop->op.func.value, O_RDONLY)) == -1)
+      USER_MSG("inject(): File not found (%s)", fop->op.func.value);
+
+   /* get the size */
+   size = lseek(fd, 0, SEEK_END);
+
+   /* load the file in memory */
+   file = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+   if (file == MAP_FAILED)
+      USER_MSG("inject(): Cannot mmap file");
+ 
+   
+   po->inject = calloc(size, sizeof(u_char));
+   ON_ERROR(po->inject, NULL, "Cannot allocate memory");
+
+   /* copy the file into the buffer */
+   memcpy(po->inject, file, size);
+
+   /* set the size */
+   po->inject_len = size;
+   
+   /* close and unmap the file */
+   close(fd);
+   munmap(file, size);
    
    return ESUCCESS;
 }

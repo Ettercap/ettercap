@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.9 2003/09/24 19:28:51 alor Exp $
+    $Id: ec_sniff_unified.c,v 1.10 2003/09/27 09:53:33 alor Exp $
 */
 
 #include <ec.h>
@@ -65,9 +65,7 @@ void forward_unified_sniff(struct packet_object *po)
      * we have to inject the exceeded data
      */
     if (po->inject) {
-       inject_po(po->inject);
-       /* free the inject packet chain */
-       inject_chain_free(po);
+       /* XXX - inject_buffer(po); */
     }
 }
 

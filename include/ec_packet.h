@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.17 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_packet.h,v 1.18 2003/09/27 09:53:33 alor Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -68,12 +68,8 @@ struct packet_object {
    size_t len;             /* total lenght of the packet */
    u_char * packet;        /* the buffer containing the real packet */
 
-   /* 
-    * chain of packets created by the filter engine 
-    * when the filtered data exceeded the mtu.
-    * we have to inject some packet after the replaced one
-    */
-   struct packet_object *inject; 
+   size_t inject_len;      /* len of the injection */
+   u_char *inject;         /* the fuffer used for injection */
    
    u_int8 flags;                       /* flags relative to the packet */
       #define PO_IGNORE       ((u_int8)(1))        /* this packet should not be processed (e.g. sniffing filter didn't match it) */

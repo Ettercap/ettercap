@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.21 2003/09/25 12:17:46 alor Exp $
+    $Id: ec_capture.c,v 1.22 2003/09/27 09:53:33 alor Exp $
 */
 
 #include <ec.h>
@@ -89,7 +89,7 @@ void capture_init(void)
       USER_MSG("Listening on %s...\n\n", GBL_OPTIONS->iface);
    
    /* set the snaplen to maximum */
-   GBL_PCAP->snaplen = 9999;
+   GBL_PCAP->snaplen = INT16_MAX;
    
    /* 
     * open the interface from GBL_OPTIONS (user specified)
@@ -103,6 +103,13 @@ void capture_init(void)
    
    ON_ERROR(pd, NULL, "%s", pcap_errbuf);
 
+   /* 
+    * update to the reap assigned snapshot.
+    * this may be different reading from files
+    */
+   DEBUG_MSG("requested snapshot: %d assigned: %d", GBL_PCAP->snaplen, pcap_snapshot(pd));
+   GBL_PCAP->snaplen = pcap_snapshot(pd);
+   
    /* get the file size */
    if (GBL_OPTIONS->read) {
       struct stat st;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.2 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_inject.c,v 1.3 2003/09/27 09:53:33 alor Exp $
 */
 
 #include <ec.h>
@@ -27,7 +27,6 @@
 
 int inject_buffer(struct packet_object *po, u_int8 buf, size_t len);
 int inject_po(struct packet_object *po);
-void inject_chain_free(struct packet_object *po);
 
 /*******************************************/
 
@@ -106,35 +105,6 @@ int inject_po(struct packet_object *po)
 }
 
 
-/*
- * recursively destroy all the inject packet chain
- */
-void inject_chain_free(struct packet_object *po)
-{
-   
-   /* 
-    * stop the recursion when there aren't 
-    * other packet in the chain
-    */
-   if (po->inject == NULL)
-      return;
-   
-   /* 
-    * IMPORTANT !!
-    * the injected packet MUST have the packet
-    * alloc'd in the heap.
-    * we set the PO_DUP flag to free all the data
-    */
-   po->inject->flags |= PO_DUP;
-   packet_destroy_object(po->inject);
-
-   /* start the recursion */
-   inject_chain_free(po->inject);
-  
-   /* free the packet returing from recursion */
-   SAFE_FREE(po->inject);
-   
-}
 
 /* EOF */
 

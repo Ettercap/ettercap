@@ -36,36 +36,33 @@ Sep 2003:
       - etterfilter (utility) (used to compile the filter in bytecode)
       - functions
          - replace over mtu
-         - inject from file
       - quick filter
       
+   + INJECTION 
+      - it is done by the ui looking the sessions (locking them)
+      - don't inject in unoffensive mode
+      - don't inject after RST or FIN+ACK
 
-   + MITM METHODS
-      - icmp redirect
-      - dhcp poisoning
-      - port stealing
-      - dns poisoning
       
 Oct 2003:
 
    + LOGGING
       - selective log on connections
 
-   + INJECTION 
-      - it is done by the ui looking the sessions (locking them)
-      - don't inject in unoffensive mode
-      - don't inject after RST or FIN+ACK
-      - binder
-   
    + DISSECTORS
       - convert all the old dissectors
-      - record failed attempts
       - HTTPS without the dirty trick (can we use loopback?)
       - HTTP sniff cookies
       - SSH has to support DES, 3DES, blowfish and zlib compression
       - WIFI decoder support for WEP (key given)
       - PPP decoder
       - DHCP
+   
+   + MITM METHODS
+      - icmp redirect
+      - dhcp poisoning
+      - port stealing
+      - dns poisoning
 
 Nov 2003:
 
@@ -88,6 +85,8 @@ Dec 2003:
       - gtk
          - redesigned
          - win32 port
+
+   + BINDER
 
    + ETTERLOG
       - extract files from streams looking for mime content

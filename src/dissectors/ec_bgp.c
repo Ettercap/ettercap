@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_bgp.c,v 1.2 2003/09/22 16:43:53 alor Exp $
+    $Id: ec_bgp.c,v 1.3 2003/09/27 09:53:33 alor Exp $
 */
 
 /*
@@ -118,7 +118,7 @@ void __init bgp_init(void)
 
 FUNC_DECODER(dissector_bgp)
 {
-   u_char *ptr = PACKET->DATA.data;
+   u_char *ptr = PACKET->DATA.disp_data;
    char tmp[MAX_ASCII_ADDR_LEN];
    u_char *parameters;
    u_char param_length;

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.34 2003/09/26 12:48:57 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.35 2003/09/27 09:53:33 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -526,6 +526,9 @@ Stores profiles information belonging only to remote hosts.
 \fB\-U\fR, \fB\-\-update\fR
 Connects to the ettercap website (ettercap.sf.net) and retrieve the lates
 databases used by ettercap for passive profiling.
+.br
+If you want only to check if an update is available, prepend the -z option.
+The order does matter: ettercap -zU
 .Sp
 .B SECURITY NOTE: 
 The updates are not signed so an attacker may poison your DNS server 

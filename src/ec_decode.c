@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.35 2003/09/19 16:47:51 alor Exp $
+    $Id: ec_decode.c,v 1.36 2003/09/27 09:53:33 alor Exp $
 */
 
 #include <ec.h>
@@ -204,8 +204,12 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* free the structure */
    packet_destroy_object(&po);
    
-   /* clear the buffer */
-   memset((u_char *)pkt, 0, pkthdr->caplen);
+   /* clear the buffer, 
+    * so we are sure to have null terminated buffer 
+    * snapshot is chosen during the init phase and
+    * its value is 9999
+    */
+   memset((u_char *)pkt, 0, GBL_PCAP->snaplen);
    
    /* calculate the stats */
    stats_half_end(&GBL_STATS->bh, pkthdr->caplen);

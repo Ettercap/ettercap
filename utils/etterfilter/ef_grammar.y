@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.13 2003/09/24 19:28:51 alor Exp $
+    $Id: ef_grammar.y,v 1.14 2003/09/27 09:53:33 alor Exp $
 */
 
 %{
@@ -104,16 +104,16 @@ input: /* empty line */
       ;
      
 block:   /* empty block */
+      |  single_instruction block { 
+            printf("\t\t block_add single\n"); 
+         }
+         
       |  if_statement block { 
             printf("\t\t block_add if\n"); 
          }
 
       |  if_else_statement block { 
             printf("\t\t block_add if_else\n"); 
-         }
-
-      |  single_instruction block { 
-            printf("\t\t block_add single\n"); 
          }
       ;
       

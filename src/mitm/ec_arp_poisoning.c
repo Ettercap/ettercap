@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.8 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.9 2003/10/24 22:05:46 alor Exp $
 */
 
 #include <ec.h>
@@ -108,11 +108,19 @@ static void arp_poisoning_stop(void)
    int i;
    struct hosts_list *h;
    struct hosts_list *g1, *g2;
+   pthread_t pid;
    
    DEBUG_MSG("arp_poisoning_stop");
    
    /* destroy the poisoner thread */
-   ec_thread_destroy(ec_thread_getpid("poisoner"));
+   pid = ec_thread_getpid("poisoner");
+   
+   /* the thread is active or not ? */
+   if (pid != 0)
+      ec_thread_destroy(pid);
+   else
+      return;
+        
    USER_MSG("ARP poisoner deactivated.\n");
  
    USER_MSG("RE-ARPing the victims...\n");

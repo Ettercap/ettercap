@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.35 2004/03/18 14:22:19 alor Exp $
+    $Id: ec_dispatcher.c,v 1.36 2004/07/23 07:25:27 alor Exp $
 */
 
 #include <ec.h>
@@ -141,8 +141,9 @@ EC_THREAD_FUNC(top_half)
       
       /* start the counter for the TopHalf */
       stats_half_end(&GBL_STATS->th, pck_len);
-      
    } 
+
+   return NULL;
 }
 
 /* 

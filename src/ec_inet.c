@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.26 2004/06/19 15:49:02 alor Exp $
+    $Id: ec_inet.c,v 1.27 2004/07/23 07:25:27 alor Exp $
 */
 
 #include <ec.h>
@@ -175,6 +175,9 @@ inet_ntop6(const u_char *src, char *dst, size_t size)
 	struct { int base, len; } best, cur;
 	u_int words[NS_IN6ADDRSZ / NS_INT16SZ];
 	int i;
+
+	best.len = 0;
+	cur.len = 0;
 
 	/*
 	 * Preprocess:

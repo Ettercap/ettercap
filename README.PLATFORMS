@@ -207,6 +207,8 @@ Currently the porting to the windows platform is not completed yet.
   
       make sure each directory contains an include dir with the .h files and a
       lib directory with the .a files.
+      the name of the directory is the name of the library WITHOUT the version
+      number.
   
    5) enter the ettercap_ng directory and execute the configure script
    6) make it

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.22 2004/04/23 12:55:36 alor Exp $
+    $Id: ec_conntrack.c,v 1.23 2004/07/23 07:25:27 alor Exp $
 */
 
 #include <ec.h>
@@ -449,6 +449,8 @@ EC_THREAD_FUNC(conntrack_timeouter)
          CANCELLATION_POINT();
       }
    }
+   
+   return NULL;
 }
 
 

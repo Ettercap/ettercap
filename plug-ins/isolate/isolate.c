@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: isolate.c,v 1.1 2004/07/06 10:56:23 alor Exp $
+    $Id: isolate.c,v 1.2 2004/07/23 07:25:27 alor Exp $
 */
 
 
@@ -202,6 +202,7 @@ EC_THREAD_FUNC(isolate)
       sleep(GBL_CONF->arp_poison_warm_up * 3);
    }
 
+   return NULL;
 }
 
 /* EOF */

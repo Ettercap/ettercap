@@ -15,6 +15,7 @@ NG-0.7.1         200407
    + updated os and mac fingerprints
    !! fixed compilation of strtok_r under solaris
    !! fixed a pthread problem under mac os X
+   !! fixed the compilation with gcc 3.5.x
 
 
 NG-0.7.0         20040705

@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.28 2004/07/12 19:57:26 alor Exp $ */
+/* $Id: ec.h,v 1.29 2004/07/23 07:25:27 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -43,7 +43,7 @@
       #define EC_API_EXTERN __declspec(dllexport)
    #endif
 #else
-   #define EC_API_EXTERN
+   #define EC_API_EXTERN extern
 #endif
 
 /* these are often needed... */

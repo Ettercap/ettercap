@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.39 2004/07/12 19:57:27 alor Exp $ */
+/* $Id: wdg.h,v 1.40 2004/07/23 07:25:27 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -76,10 +76,10 @@ extern void wdg_debug_msg(const char *message, ...);
    #define WDG_DEBUG_MSG(x, ...)
 #endif
 
-extern void wdg_error_msg(char *file, char *function, int line, char *message, ...);
+extern void wdg_error_msg(char *file, const char *function, int line, char *message, ...);
 #define WDG_ON_ERROR(x, y, fmt, ...) do { if (x == y) wdg_error_msg(__FILE__, __FUNCTION__, __LINE__, fmt, ## __VA_ARGS__ ); } while(0)
 
-extern void wdg_bug(char *file, char *function, int line, char *message);
+extern void wdg_bug(char *file, const char *function, int line, char *message);
 #define WDG_BUG_IF(x) do { if (x) wdg_bug(__FILE__, __FUNCTION__, __LINE__, #x); }while(0)
 #define WDG_NOT_IMPLEMENTED() do { wdg_bug(__FILE__, __FUNCTION__, __LINE__, "Not yet implemented"); } while(0)
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_error.c,v 1.2 2004/07/12 19:57:27 alor Exp $
+    $Id: wdg_error.c,v 1.3 2004/07/23 07:25:27 alor Exp $
 */
 
 #include <wdg.h>
@@ -30,15 +30,15 @@
 
 /* PROTOS */
 
-void wdg_bug(char *file, char *function, int line, char *message);
-void wdg_error_msg(char *file, char *function, int line, char *message, ...);
+void wdg_bug(char *file, const char *function, int line, char *message);
+void wdg_error_msg(char *file, const char *function, int line, char *message, ...);
 
 /*******************************************/
 
 /*
  * raise an error
  */
-void wdg_error_msg(char *file, char *function, int line, char *message, ...)
+void wdg_error_msg(char *file, const char *function, int line, char *message, ...)
 {
    va_list ap;
    char errmsg[ERROR_MSG_LEN + 1];    /* should be enough */
@@ -69,7 +69,7 @@ void wdg_error_msg(char *file, char *function, int line, char *message, ...)
  * used in sanity check
  * it represent a BUG in the software
  */
-void wdg_bug(char *file, char *function, int line, char *message)
+void wdg_bug(char *file, const char *function, int line, char *message)
 {
    /* close the interface and display the error */
    wdg_cleanup();

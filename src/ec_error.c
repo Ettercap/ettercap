@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_error.c,v 1.11 2004/07/12 19:57:26 alor Exp $
+    $Id: ec_error.c,v 1.12 2004/07/23 07:25:27 alor Exp $
 */
 
 #include <ec.h>
@@ -28,16 +28,16 @@
 
 #define ERROR_MSG_LEN 200
 
-void error_msg(char *file, char *function, int line, char *message, ...);
+void error_msg(char *file, const char *function, int line, char *message, ...);
 void fatal_error_msg(char *message, ...);
-void bug(char *file, char *function, int line, char *message);
+void bug(char *file, const char *function, int line, char *message);
 
 /*******************************************/
 
 /*
  * raise an error
  */
-void error_msg(char *file, char *function, int line, char *message, ...)
+void error_msg(char *file, const char *function, int line, char *message, ...)
 {
    va_list ap;
    char errmsg[ERROR_MSG_LEN + 1];    /* should be enough */
@@ -99,7 +99,7 @@ void fatal_error(char *message, ...)
  * it represent a BUG in the software
  */
 
-void bug(char *file, char *function, int line, char *message)
+void bug(char *file, const char *function, int line, char *message)
 {
    DEBUG_MSG("BUG : [%s:%s:%d] %s \n", file, function, line, message );
    

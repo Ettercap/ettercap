@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dos_attack.c,v 1.6 2004/02/29 17:37:21 alor Exp $
+    $Id: dos_attack.c,v 1.7 2004/07/23 07:25:27 alor Exp $
 */
 
 
@@ -179,6 +179,8 @@ EC_THREAD_FUNC(syn_flooder)
 	 
       usleep(500);
    }
+   
+   return NULL;
 }
 
 /* Parse the arp packets and reply for the fake host */

@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.14 2004/09/16 04:16:32 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.15 2004/09/22 16:18:31 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -7,6 +7,10 @@
 #include <gtk/gtk.h>
 
 #define LOGO_FILE "ettercap.png"
+
+#ifndef GTK_WRAP_WORD_CHAR
+#define GTK_WRAP_WORD_CHAR GTK_WRAP_WORD
+#endif
 
 struct gtk_conf_entry {
    char *name;

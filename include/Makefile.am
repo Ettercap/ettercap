@@ -17,7 +17,7 @@ noinst_HEADERS = ec.h \
                  ec_dispatcher.h \
                  ec_send.h \
                  ec_sniff.h \
-                 ec_sniff_classic.h \
+                 ec_sniff_unified.h \
                  ec_sniff_bridge.h \
                  ec_sniff_arp.h \
                  ec_inet.h \
@@ -28,7 +28,8 @@ noinst_HEADERS = ec.h \
                  ec_fingerprint.h \
                  ec_hash.h \
                  ec_manuf.h \
-                 ec_interfaces.h
+                 ec_interfaces.h \
+                 el.h
    
 EXTRA_DIST = missing/*
 

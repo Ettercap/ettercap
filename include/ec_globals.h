@@ -4,6 +4,7 @@
 
 #include <ec_sniff.h>
 #include <ec_inet.h>
+#include <ec_ui.h>
 
 struct ec_options {
    char dump:1;
@@ -60,6 +61,7 @@ struct target_env {
 
 struct globals {
    struct ec_options *options;
+   struct ui_ops *ui;
    struct program_env *env;
    struct pcap_env *pcap;
    struct lnet_env *lnet;
@@ -75,6 +77,7 @@ extern struct globals *gbls;
 #define GBLS gbls
 
 #define GBL_OPTIONS        (GBLS->options)
+#define GBL_UI             (GBLS->ui)
 #define GBL_ENV            (GBLS->env)
 #define GBL_PCAP           (GBLS->pcap)
 #define GBL_LNET           (GBLS->lnet)

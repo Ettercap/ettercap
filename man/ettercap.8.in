@@ -14,19 +14,19 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.3 2003/03/13 11:01:46 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.4 2003/03/17 19:42:25 alor Exp $
 .\"
 .de Sp
 .if n .sp
 .if t .sp 0.4
 ..
-.TH ETTERCAP "8" "@SERIAL@" "ettercap @VERSION@"
+.TH ETTERCAP "8" "" "ettercap @VERSION@"
 .SH NAME
-.B ettercap @VERSION@ \- A multipurpose sniffer/content filter for man in the
-middle attacks
+.B ettercap @VERSION@ 
+\- A multipurpose sniffer/content filter for man in the middle attacks
 
 .SH ***** IMPORTANT NOTE ******
-Since ettercap 0.7.0 all the options have been changed. Even the target
+Since ettercap NG (formerly 0.7.0) all the options have been changed. Even the target
 specification have been changed. \fIPlease read carefully this man page.\fR
 
 .SH SYNOPSIS
@@ -151,7 +151,9 @@ going to 10.0.0.1 you can specify "./ettercap -R /10.0.0.1/"
 .B NOTE:
 .br
 When using content filtering engine, TARGET1 filters are applied on traffic
-COMING FROM TARGET1 and not GOING TO ! Keep this in mind when appling content filters.
+COMING FROM TARGET1 and not GOING TO it !
+.br
+Keep this in mind when appling content filters.
 .PP
 
 
@@ -171,37 +173,30 @@ Options that make sense together can generally be combined. ettercap will warn t
 about unsupported option combinations.
 .TP
 .B SNIFFING METHODS
-.TP
-\fB\-S\fR, \fB\-\-sniff\fR
-CLASSIC sniffing
+.PP
+ettercap NG has a new unified sniffing method. This implies that ip_forwarding
+in the kernel is always disabled and the forwarding is done by ettercap. Every
+packet with destination mac address equal to the host's mac address and
+destination ip address different for the one bound to the iface will be
+forwarded by ettercap. Before forwarding them, ettercap can content filter,
+sniff, log or drop them. It does not matter how these packet are hijacked,
+ettercap will process them. You can even use external program to hijack
+packet.
 .br
-This is the good old style sniffing method. It rocks on "hubbed" LAN, but useless on switched
-ones. It puts the interface in "promisc" mode (unless you specify it with the
--p option) and capture all the traffic that hit the NIC.
-.br
-You can filter the traffic based on MAC address, IP address or tcp/udp PORT,
-see the "target specification" for further details.
-.br
-.B IMPORTANT NOTE:
-.br
-If you want to sniff your own connection you MUST use this method. Active
-sniffing does not sniff outgoing packets because they must not be forwarded.
-There is also a logical intrerpretation of this fact: it is useless to use
-man in the middle to sniff yourself.
+You have full control of what ettercap should receive. You can use the internal
+ARP poisoner, set the interface in promisc mode, use plugins or use every
+method you want.
 .TP
 \fB\-A\fR, \fB\-\-arp-poison\fR
 ARP BASED sniffing
 .br
-This is THE sniffing method for switched LAN, and if you want to use the man-in-the-middle
-technique you have to use it. In conjunction with the silent mode (-z option) you must
-specify ONLY two IP and two MAC for ARPBASED (full-duplex) or one IP and one MAC for PUBLICARP
-(half-duplex). In PUBLICARP the ARP replies are sent in broadcast, but if ettercap has
-the complete host list (on start up it has scanned the LAN) SMARTARP method is automatically
-selected, and the arp replies are sent to all the hosts but the victim. The packet are forwarded
-at layer 3 so the kernel will be responsible for correct routing. 
+This option will activate the ARP poisoner. If you want to use the man-in-the-middle
+technique you have to use it. You can use it in conjunction with other
+hijacking method. The packet are forwarded (as always) at layer 3, so the kernel is
+responsible for correct routing. 
 .br
 .B NOTE: 
-if you manage to poison a client with the smart arp sniffing, you have to set correct routing
+if you manage to poison a client, you have to set correct routing
 table in the kernel specifying the GW. If your routing table are incorrect, the
 poisoned clients will not be able to navigate the Internet.
 .br

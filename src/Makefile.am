@@ -23,7 +23,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_file.c \
 				   ec_manuf.c \
 				   ec_sniff.c \
-				   ec_sniff_classic.c \
+				   ec_sniff_unified.c \
 				   ec_sniff_bridge.c \
 				   ec_sniff_arp.c \
 				   protocols/ec_eth.c \

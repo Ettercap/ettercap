@@ -6,10 +6,8 @@
 
 struct sniffing_method {
    char type;              /* the type of the sniffing method */
-      #define SM_CLASSIC      0
+      #define SM_UNIFIED      0
       #define SM_ARPSNIFF     1
-      #define SM_ARP_PUBLIC   (1<<1)
-      #define SM_ARP_SMART    (1<<2)
       #define SM_BRIDGED      (1<<3)
    void (*start)(void);
    void (*cleanup)(void);
@@ -21,7 +19,7 @@ struct sniffing_method {
 
 extern void set_sniffing_method(struct sniffing_method *sm);
 
-extern void set_classic_sniff(void);
+extern void set_unified_sniff(void);
 extern void set_bridge_sniff(void);
 extern void set_arp_sniff(void);
 

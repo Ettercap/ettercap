@@ -2,6 +2,10 @@
   TODO for NG
 ==================
 
+   + CVS
+      ADD unified, etterlog, man pages, TODO.TESTING
+
+
    + PO incapsulated ?
    + lnet ptag thread safe (check it)
    + speed up the visualization of user_msg (poll related)
@@ -11,26 +15,30 @@
    !! dissector malloc the INFO, someone have to free them... !!
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
-   + UNIFIED SNIFFING
-      - set_default_sniff
-
+   + PCAP
+      - pcapdump must respect the filters (with hookpoint)
+      - pcap filters
+   
    + PLUGINS ENGINE
 
    + LOGGING ENGINE
-      - etterlog
+      - unified binary output
+      - etterlog (log analizer)
 
-   + SNIFFING ENGINE
-      - arp sniff
-         - arp poisoner
-         - only possible on eth
-      - bridged sniffing (for now it is one-way)
-         - dump on bridge
-   
+   + ARP POISON ENGINE
+      - arp poisoner
+      - multipoison
    
    + FILTERING ENGINE
       - implement the sessions
       - use regexp for filtering
-      - INJECTION is done by the ui looking the sessions (locking them)
+      - include the ip in the filter rule
+      - filter even the header of the packets
+      - use bison and flex
+      - scripting language
+   
+   + INJECTION 
+      - it is done by the ui looking the sessions (locking them)
    
    + TOP HALF
       - processing engine to differenziate the activity (hook point DISPATCHER)
@@ -50,92 +58,9 @@
       - ncurses
       - gtk
 
-==================
-  TODO for 0.6.x
-==================
-
-   + PORTING TO SUNOS      (TO BE TESTED, TESTED and TESTED...)
-      + ifr.ifru_mtu
-      + plugins !!
-
-   + ICQ DISSECTOR v 7
-
-   + create the Align Buffer function ???
-
-==================
-  TODO for 0.7.0
-==================
-
-   FEATURE FREEZED RELEASE
-
-   + PLUGINS makefile
-
-   + PACKET OBJECT
-      better handling of received packet (speed up illithid)
-
-   + REMOVE different struct CONNECTION and SNIFFED_DATA
-      unified struct with payload in the heap.
-      destroy the heap buffer when displayed or logged
-
-   + VIRTUAL BUFFER 
-      for dissectors
-
-   + MULTI DISSECTOR
-      - implement a list for dissectors
-      - dissector registration on IP_PROTO
-         - make special contenitor dissector for TCP and UDP
-
-   + DYNAMIC INTERNAL BUFFERS
-   
-   + CODE REVIEW
-      - illithid (the sniffing engine) must be recoded from scratch
-      - doppleganger must be cleaned
-
-   + CODE TUNING
-      - Convert some structures to speed up the ncurses interface
-
-   + CONNECTION BUFFER
-      - keep track of a buffer of packet of each connection
-        so you can view it even if the connection is too fast and it
-        is already closed
-
    + DEVELOPMENT DOCUMENTATION
 
-   + HTTPS dissector to be recoded to support even BSD and MACOS
 
-   + FILTER THE SNIFFED DATA FORM ILLITHID AND NOT FROM INTERFACE.
-     - Collector must respect the IP:PORT directive
-     - pcapdump must respect the filters
-     - everything must respect filter but forwarding
-
-   + GLOBAL OPTIONS
-      - interface, ip, mac can be changed at any time
-      - give plugins the access to all options (fusys wireless)
-
-   + FILTERS
-      - specify even the ip in the filters chain so filters can be
-      set even on smart arping non local connection
-
-
-==================
-  TODO for 0.7.x
-==================
-
-   + SELECTIVE LOGGING FROM SNIFFING INTERFACE (decoder thread)
-      - review the connection array structure
-
-   + Spoof source mac during poisoning for LAN without switch
-
-   + MULTI-POISONING
-      - allow multi target in arp based mode
-      - hybrid sniffing
-
-   + USE FLEX & BISON 
-      - parse the configure file
-      - write a scripting language for filters
-
-   + PASSIVE FINGERPRINT
-      fix the RT problem
 
 ==================
   LONG TERM TODO

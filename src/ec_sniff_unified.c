@@ -1,5 +1,5 @@
 /*
-    ettercap -- bridged sniffing method module
+    ettercap -- unified sniffing method module
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff_bridge.c,v 1.3 2003/03/17 19:42:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff_unified.c,v 1.1 2003/03/17 19:42:26 alor Exp $
 */
 
 #include <ec.h>
@@ -24,38 +24,32 @@
 #include <ec_threads.h>
 
 /* proto */
-void start_bridge_sniff(void);
-void forward_bridge_sniff(struct packet_object *po);
+void start_unified_sniff(void);
+void forward_unified_sniff(struct packet_object *po);
 
 /*******************************************/
 
-void start_bridge_sniff(void)
+void start_unified_sniff(void)
 {
-   DEBUG_MSG("start_bridge_sniff");
+   DEBUG_MSG("start_unified_sniff");
 
    /* create the thread for packet capture */
-   ec_thread_new("capture", "pcap handler and packet decoder", &capture, NULL);
-   
-   /* create the thread for packet capture on the bridged interface */
-   ec_thread_new("bridge", "pcap handler and packet decoder", &capture_bridge, NULL);
+   ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
 }
 
 
-void forward_bridge_sniff(struct packet_object *po)
+void forward_unified_sniff(struct packet_object *po)
 {
+
    /* 
-    * send the packet to the other interface.
-    * the socket was opened during the initialization
-    * phase (parameters parsing) by bridge_init()
+    * forward the packet to Layer 3, the kernel
+    * will route them to the correct destination (host or gw)
+    *
+    * don't forward if we are reading from pcap file
     */
-
-   if (po->flags & PO_FROMIFACE)
-      send_to_bridge(po);
-   else if (po->flags & PO_FROMBRIDGE)
-      send_to_L2(po);
-   
+   if (!GBL_OPTIONS->read)
+      send_to_L3(po);
 }
-
 
 /* EOF */
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.5 2003/03/14 23:46:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.6 2003/03/17 19:42:26 alor Exp $
 */
 
 #include <ec.h>
@@ -49,11 +49,11 @@ void send_init(void)
    
    /* open the socket at layer 3 */
    l3 = libnet_init(LIBNET_RAW4_ADV, GBL_OPTIONS->iface, lnet_errbuf);               
-   ON_ERROR(l3, NULL, "libnet_init() failed: %s", lnet_errbuf);
+   ON_ERROR(l3, NULL, "libnet_init(LIBNET_RAW4_ADV) failed: %s", lnet_errbuf);
    
-   /* open the socket at layer 2 */
+   /* open the socket at layer 2 ( GBL_OPTIONS->iface doesn't matter ) */
    l = libnet_init(LIBNET_LINK_ADV, GBL_OPTIONS->iface, lnet_errbuf);               
-   ON_ERROR(l, NULL, "libnet_init() failed: %s", lnet_errbuf);
+   ON_ERROR(l, NULL, "libnet_init(LIBNET_LINK_ADV) failed: %s", lnet_errbuf);
    
    if (GBL_SNIFF->type == SM_BRIDGED) {
       /* open the socket on the other iface for bridging */
@@ -168,7 +168,7 @@ static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
    DEBUG_MSG("hack_pcap_lnet (before) pcap %d | lnet %d", pcap_fileno(p), l->fd);
    
    /* close the lnet socket */
-   close(l->fd);
+   close(libnet_getfd(l));
 
    /* use the socket opened by pcap */
    l->fd = pcap_fileno(p);

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_globals.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_globals.c,v 1.2 2003/03/17 19:42:26 alor Exp $
 */
 
 #include <ec.h>
@@ -44,6 +44,9 @@ void globals_alloc(void)
    gbls->options = calloc(1, sizeof(struct ec_options));
    ON_ERROR(gbls->options, NULL, "can't allocate ec_options");
 
+   gbls->ui = calloc(1, sizeof(struct ui_ops));
+   ON_ERROR(gbls->ui, NULL, "can't allocate ui_ops");
+   
    gbls->env = calloc(1, sizeof(struct program_env));
    ON_ERROR(gbls->env, NULL, "can't allocate program_env");
   

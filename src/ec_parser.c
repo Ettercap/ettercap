@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.3 2003/03/13 13:22:04 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.4 2003/03/17 19:42:26 alor Exp $
 */
 
 
@@ -49,7 +49,6 @@ void ec_usage(void)
    fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
    
    fprintf(stdout, "\nSniffing Method:\n");
-   fprintf(stdout, "  -S, --sniff                 use classical sniff\n");
    fprintf(stdout, "  -A, --arp-poison            use ARP poisoning sniff\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
@@ -92,7 +91,6 @@ void parse_options(int argc, char **argv)
       { "gtk", no_argument, NULL, 'G' },
       { "daemon", no_argument, NULL, 'D' },
       
-      { "sniff", no_argument, NULL, 'S' },
       { "arp-poison", no_argument, NULL, 'A' },
       { "bridge", required_argument, NULL, 'B' },
       { "promisc", no_argument, NULL, 'p' },
@@ -110,16 +108,11 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:ChDd:Gi:NpiRr:Sv", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:ChDd:Gi:NpiRr:v", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
-         case 'S':
-                  set_classic_sniff();
-                  break;
-         
          case 'A':
-                  GBL_PCAP->promisc = 0;
                   set_arp_sniff();
                   NOT_IMPLEMENTED();
                   break;
@@ -209,7 +202,7 @@ void parse_options(int argc, char **argv)
    if (!GBL_OPTIONS->target2)   
       GBL_OPTIONS->target2 = strdup("//");
  
-   /* create the list form the TARGET format (MAC:IPrange:PORTrange) */
+   /* create the list form the TARGET format (MAC/IPrange/PORTrange) */
    compile_display_filter();
    
    DEBUG_MSG("parse_options: targets parsed");
@@ -220,10 +213,13 @@ void parse_options(int argc, char **argv)
       FATAL_MSG("You cannote dump and read at the same time...");
 
    if (GBL_SNIFF->start == NULL)
-      FATAL_MSG("Select at least one sniffing method");
+      set_unified_sniff();
 
-   if (GBL_OPTIONS->read && GBL_SNIFF->type != SM_CLASSIC )
-      FATAL_MSG("You can read froma a file ONLY in classic sniffing mode !");
+   if (GBL_UI->init == NULL)
+      FATAL_MSG("Please select an User Interface");
+   
+   if (GBL_OPTIONS->read && GBL_SNIFF->type != SM_UNIFIED )
+      FATAL_MSG("You can read from a file ONLY in unified sniffing mode !");
    
    if (GBL_SNIFF->type == SM_BRIDGED && GBL_PCAP->promisc == 0)
       FATAL_MSG("During bridged sniffing the iface must be in promisc mode !");

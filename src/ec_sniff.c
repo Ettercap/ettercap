@@ -15,13 +15,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.7 2003/03/15 00:21:56 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.8 2003/03/17 19:42:26 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_parser.h>
 #include <ec_sniff.h>
-#include <ec_sniff_classic.h>
+#include <ec_sniff_unified.h>
 #include <ec_sniff_bridge.h>
 #include <ec_sniff_arp.h>
 #include <ec_packet.h>
@@ -32,7 +32,7 @@
 /* proto */
 
 void set_sniffing_method(struct sniffing_method *sm);
-void set_classic_sniff(void);
+void set_unified_sniff(void);
 void set_bridge_sniff(void);
 void set_arp_sniff(void);
 
@@ -40,7 +40,7 @@ void display_packet_for_us(struct packet_object *po);
 void compile_display_filter(void);
 void reset_display_filter(struct target_env *t);
 
-static void set_forwardable(struct packet_object *po);
+static void set_forwardable_flag(struct packet_object *po);
 
 static void add_port(void *ports, int n);
 static void add_ip(void *digit, int n);
@@ -63,7 +63,7 @@ static pthread_mutex_t ip_list_mutex = PTHREAD_MUTEX_INITIALIZER;
  * not the same as GBL_IFACE->ip, the packet is not
  * for us and we can do mitm on it before forwarding.
  */
-void set_forwardable(struct packet_object *po)
+void set_forwardable_flag(struct packet_object *po)
 {
    /* in bridged sniffing all the packet have to be forwarded */
    if (GBL_SNIFF->type == SM_BRIDGED)
@@ -87,17 +87,17 @@ void set_sniffing_method(struct sniffing_method *sm)
  * based on IP and MAC filtering
  */
 
-void set_classic_sniff(void)
+void set_unified_sniff(void)
 {
    struct sniffing_method sm;
 
-   DEBUG_MSG("set_classic_sniff");
+   DEBUG_MSG("set_unified_sniff");
    
-   sm.type = SM_CLASSIC;
-   sm.start = &start_classic_sniff;
+   sm.type = SM_UNIFIED;
+   sm.start = &start_unified_sniff;
    sm.cleanup = NULL;
-   /* no forwarding in classic sniff, it is passive */
-   sm.forward = NULL;
+   /* unified forwarding is done at layer 3 */
+   sm.forward = &forward_unified_sniff;
    sm.display = &display_packet_for_us;
 
    set_sniffing_method(&sm);
@@ -139,7 +139,7 @@ void set_arp_sniff(void)
    sm.type = SM_ARPSNIFF;
    sm.start = &start_arp_sniff;
    sm.cleanup = &stop_arp_sniff;
-   sm.forward = &forward_arp_sniff;
+   sm.forward = &forward_unified_sniff;
    sm.display = &display_packet_for_us;
 
    set_sniffing_method(&sm);
@@ -158,7 +158,7 @@ void display_packet_for_us(struct packet_object *po)
    char good = 0;
 
    /* check if the packet is OUTGOING */
-   set_forwardable(po);
+   set_forwardable_flag(po);
   
    /*
     * we have to check if the packet is complying with the filter

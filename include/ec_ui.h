@@ -5,10 +5,10 @@
 #include <stdarg.h>
 
 struct ui_ops {
-   void (*ui_init)(void);
-   void (*ui_start)(void);
-   void (*ui_cleanup)(void);
-   void (*ui_msg)(const char *msg);
+   void (*init)(void);
+   void (*start)(void);
+   void (*cleanup)(void);
+   void (*msg)(const char *msg);
    char initialized;
 };
 

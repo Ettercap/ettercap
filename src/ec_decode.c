@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.5 2003/03/15 00:21:56 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.6 2003/03/17 19:42:26 alor Exp $
 */
 
 #include <ec.h>
@@ -48,7 +48,7 @@ struct dec_entry {
 void __init data_init(void);
 FUNC_DECODER(decode_data);
 
-void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
+void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 int set_L2_decoder(u_int16 dlt);
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 void del_decoder(u_int8 level, u_int32 type);
@@ -58,10 +58,14 @@ static pthread_mutex_t decoders_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define DECODERS_LOCK     do{ pthread_mutex_lock(&decoders_mutex); } while(0)
 #define DECODERS_UNLOCK   do{ pthread_mutex_unlock(&decoders_mutex); } while(0)
 
+static pthread_mutex_t dump_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define DUMP_LOCK     do{ pthread_mutex_lock(&dump_mutex); } while(0)
+#define DUMP_UNLOCK   do{ pthread_mutex_unlock(&dump_mutex); } while(0)
+
 /*******************************************/
 
 
-void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
+void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
 {
    struct packet_object *po;
    int len;
@@ -73,11 +77,18 @@ void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
    USER_MSG("\n***************************************************************\n");
    USER_MSG("ec_get_packets (one packet dispatched from pcap)\n");
 
-   USER_MSG("CAPTURED: 0x%04x bytes \n", pkthdr->caplen );
+   USER_MSG("CAPTURED: 0x%04x bytes form %s\n", pkthdr->caplen, param );
    
    /* dump packet to file if specified on command line */
-   if (GBL_OPTIONS->dump)
+   if (GBL_OPTIONS->dump) {
+      /* 
+       * we need to lock this because in SM_BRIDGED the
+       * packets are dumped in the log file by two threads
+       */
+      DUMP_LOCK;
       pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
+      DUMP_UNLOCK;
+   }
   
    /* extract data and datalen from pcap packet */
    data = (u_char *)pkt;
@@ -85,7 +96,13 @@ void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
    
    /* alloc the packet object structure to be passet through decoders */
    packet_create_object(&po, data, datalen);
-  
+ 
+   /* set the interface from which the packet comes */
+   if (!strcmp(param, GBL_OPTIONS->iface))
+      po->flags |= PO_FROMIFACE;
+   else
+      po->flags |= PO_FROMBRIDGE;
+
    /* HOOK POINT: RECEIVED */ 
    hook_point(HOOK_RECEIVED, po);
    

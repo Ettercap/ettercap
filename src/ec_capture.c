@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.4 2003/03/14 23:46:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.5 2003/03/17 19:42:25 alor Exp $
 */
 
 #include <ec.h>
@@ -164,8 +164,7 @@ EC_THREAD_FUNC(capture)
     * dispatch packets to ec_decode
     */
 
-   /* XXX - add a parameter to ec_decode */
-   pcap_loop(GBL_PCAP->pcap, -1, ec_decode, NULL);
+   pcap_loop(GBL_PCAP->pcap, -1, ec_decode, EC_THREAD_PARAM);
 
    return NULL;
 }
@@ -173,7 +172,7 @@ EC_THREAD_FUNC(capture)
 
 EC_THREAD_FUNC(capture_bridge)
 {
-   DEBUG_MSG("neverending loop (capture)");
+   DEBUG_MSG("neverending loop (capture_bridge)");
   
    ec_thread_init();
    
@@ -182,8 +181,7 @@ EC_THREAD_FUNC(capture_bridge)
     * dispatch packets to ec_decode
     */
         
-   /* XXX - add a parameter to ec_decode */
-   pcap_loop(GBL_PCAP->pcap_bridge, -1, ec_decode, NULL);
+   pcap_loop(GBL_PCAP->pcap_bridge, -1, ec_decode, EC_THREAD_PARAM);
 
    return NULL;
 }

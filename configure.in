@@ -204,7 +204,6 @@ AC_FUNC_VPRINTF
 EC_PTHREAD_CHECK()
 AC_SEARCH_LIBS(gethostbyname,c nsl,,AC_MSG_ERROR(libnsl not found.))
 AC_SEARCH_LIBS(socket,c socket,,AC_MSG_ERROR(libsocket not found.))
-AC_SEARCH_LIBS(dn_expand,c resolv,,)
 AC_SEARCH_LIBS(poll,poll,,)
 AC_CHECK_FUNCS(getifaddrs)
 AC_CHECK_FUNCS(gettimeofday)
@@ -510,7 +509,7 @@ dnl ===============
 EC_MESSAGE(Writing output files)
 
 AC_OUTPUT(Makefile
-          man/ettercap.8 man/Makefile 
+          man/Makefile man/ettercap.8 man/ettercap_plugins.8 man/etterlog.8
           src/Makefile 
           include/Makefile
           utils/Makefile

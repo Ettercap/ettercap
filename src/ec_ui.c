@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.2 2003/03/10 09:08:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.3 2003/03/17 19:42:26 alor Exp $
 */
 
 #include <ec.h>
@@ -33,17 +33,7 @@ struct ui_message {
 
 SIMPLEQ_HEAD(, ui_message) messages_queue = SIMPLEQ_HEAD_INITIALIZER(messages_queue);
 
-/* default hook */
-
-static struct ui_ops ui = {
-   .ui_init = NULL,
-   .ui_start = NULL,
-   .ui_cleanup = NULL,
-   .ui_msg = (void (*)(const char *))&printf,
-   .initialized = 0,
-};
-
-/* globa mutex on interface */
+/* global mutex on interface */
 
 static pthread_mutex_t ui_msg_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define UI_MSG_LOCK     pthread_mutex_lock(&ui_msg_mutex)
@@ -67,9 +57,9 @@ void ui_init(void)
 {
    DEBUG_MSG("ui_init");
 
-   EXECUTE(ui.ui_init);
+   EXECUTE(GBL_UI->init);
 
-   ui.initialized = 1;
+   GBL_UI->initialized = 1;
 }
 
 /* called to run the user interface */
@@ -78,17 +68,17 @@ void ui_start(void)
 {
    DEBUG_MSG("ui_start");
 
-   EXECUTE(ui.ui_start);
+   EXECUTE(GBL_UI->start);
 }
 
 /* called to end the user interface */
 
 void ui_cleanup(void)
 {
-   if (ui.initialized) {
+   if (GBL_UI->initialized) {
       DEBUG_MSG("ui_cleanup");
-      EXECUTE(ui.ui_cleanup);
-      ui.initialized = 0;
+      EXECUTE(GBL_UI->cleanup);
+      GBL_UI->initialized = 0;
    }
 }
 
@@ -170,7 +160,7 @@ int ui_msg_flush(int max)
    while ( (msg = SIMPLEQ_FIRST(&messages_queue)) != NULL) {
 
       /* diplay the message */
-      ui.ui_msg(msg->message);
+      GBL_UI->msg(msg->message);
 
       /* free the message */
       SAFE_FREE(msg->message);
@@ -202,17 +192,17 @@ int ui_msg_flush(int max)
 void ui_register(struct ui_ops *ops)
 {
         
-   ON_ERROR(ops->ui_init, NULL, "BUG: ui_init is equal to NULL");
-   ui.ui_init = ops->ui_init;
+   ON_ERROR(ops->init, NULL, "BUG: ui_init is equal to NULL");
+   GBL_UI->init = ops->init;
    
-   ON_ERROR(ops->ui_cleanup, NULL, "BUG: ui_cleanup is equal to NULL");
-   ui.ui_cleanup = ops->ui_cleanup;
+   ON_ERROR(ops->cleanup, NULL, "BUG: ui_cleanup is equal to NULL");
+   GBL_UI->cleanup = ops->cleanup;
    
-   ON_ERROR(ops->ui_start, NULL, "BUG: ui_start is equal to NULL");
-   ui.ui_start = ops->ui_start;
+   ON_ERROR(ops->start, NULL, "BUG: ui_start is equal to NULL");
+   GBL_UI->start = ops->start;
         
-   ON_ERROR(ops->ui_msg, NULL, "BUG: ui_msg is equal to NULL");
-   ui.ui_msg = ops->ui_msg;
+   ON_ERROR(ops->msg, NULL, "BUG: ui_msg is equal to NULL");
+   GBL_UI->msg = ops->msg;
    
 }
 

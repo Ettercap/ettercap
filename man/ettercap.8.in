@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.68 2004/05/24 14:17:20 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.69 2004/05/26 14:46:32 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -456,6 +456,10 @@ application.
 NOTE: dump file collect ALL the packets disregarding the TARGET. This is done
 because you may want to log even protocols not supported by ettercap, so you
 can analyze them with other tools.
+.Sp
+TIP: you can use the -w option in conjunction with the -r one. This way you
+will be able to filter the payload of the dumped packets or decrypt
+WEP-encrypted WiFi traffic and dump them to another file.
 
 
 .TP

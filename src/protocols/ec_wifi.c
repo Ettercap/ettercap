@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.24 2004/05/24 14:17:20 alor Exp $
+    $Id: ec_wifi.c,v 1.25 2004/05/26 14:46:33 alor Exp $
 */
 
 #include <ec.h>
@@ -231,20 +231,20 @@ FUNC_DECODER(decode_wifi)
       /* decrypt the packet */
       if (wep_decrypt((u_char *)wep, DECODE_DATALEN - DECODED_LEN) != ESUCCESS)
          return NULL;
-      
-      /* get the logical link layer header */
-      llc = (struct llc_header *)(wep + 1);
-      DECODED_LEN += sizeof(struct llc_header);
-   } else {
+     
+      /* the wep header was overwritten, remove it from the decoded portion */
+      DECODED_LEN -= sizeof(struct wep_header);
+
+      /* remove the WEP bit from the header since the data are now decrypted */
+      wifi->control &= ~WIFI_WEP;
+   } 
    
-      /* get the logical link layer header */
-      llc = (struct llc_header *)(wifi + 1);
-      DECODED_LEN += sizeof(struct llc_header);
-   }
+   /* get the logical link layer header */
+   llc = (struct llc_header *)(wifi + 1);
+   DECODED_LEN += sizeof(struct llc_header);
    
    /* org_code != encapsulated ethernet not yet supported */
    if (memcmp(llc->org_code, WIFI_ORG_CODE, 3))
-      //return NULL;
       NOT_IMPLEMENTED();
       
    /* fill the packet object with sensitive data */
@@ -332,8 +332,12 @@ static int wep_decrypt(u_char *buf, size_t len)
       return -ENOTHANDLED;
    } 
   
-   /* copy the decrypted packet over the original one */
-   memcpy(encbuf, decbuf, len);
+   /* 
+    * copy the decrypted packet over the original one
+    * overwriting the wep header. this way the packet is
+    * identical to a non-WEP one.
+    */
+   memcpy(buf, decbuf, len);
    
    return ESUCCESS;
 #else

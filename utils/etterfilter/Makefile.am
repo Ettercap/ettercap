@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.18 2004/02/03 16:33:59 alor Exp $
+# $Id: Makefile.am,v 1.19 2004/02/26 09:26:16 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -51,8 +51,12 @@ endif
    
 etterfilter_LDADD = 
 
+if INET_ATON_WANTS_RESOLV
+   etterfilter_LDADD += -lresolv
+endif
+
 if HAVE_PCRE
-   etterfilter_LDADD += @PCRELIB@ -lpcre
+   etterfilter_LDADD += @PCRELIB@ 
 endif
 
 CLEANFILES = *.log *.out core* *~

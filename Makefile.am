@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.18 2003/11/26 20:39:10 alor Exp $
+# $Id: Makefile.am,v 1.19 2003/11/27 21:37:01 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -38,13 +38,6 @@ test: all
 	ln -fs ./utils/etterfilter/etterfilter ./
 	find ./plug-ins -name '*.so' -exec ln -fs {} ./ \;
 	./shtool fixperm ./
-
-# only for developers
-deep-debug:
-	@echo Setting root privs for ettercap...
-	@export EC_UID=0
-	@echo Setting hard checks on heap corruption...
-	@export MALLOC_CHECK_=2
 
 # vim:ts=4:noexpandtab
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_panel.c,v 1.4 2003/11/02 20:36:44 alor Exp $
+    $Id: wdg_panel.c,v 1.5 2003/11/27 21:37:07 alor Exp $
 */
 
 #include <wdg.h>
@@ -74,6 +74,7 @@ void wdg_create_panel(struct wdg_object *wo)
 static int wdg_panel_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_panel, ww);
+   WINDOW *win, *sub;
 
    /* erase the window */
    wbkgd(W(ww->sub), COLOR_PAIR(wo->screen_color));
@@ -82,10 +83,12 @@ static int wdg_panel_destroy(struct wdg_object *wo)
    werase(W(ww->win));
    
    /* dealloc the structures */
-   delwin(W(ww->sub));
-   delwin(W(ww->win));
+   win = W(ww->win);
+   sub = W(ww->sub);
    del_panel(ww->win);
    del_panel(ww->sub);
+   delwin(win);
+   delwin(sub);
 
    /* update the screen */
    update_panels();

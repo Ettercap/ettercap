@@ -30,6 +30,7 @@ this is the unofficial and floating in time roadmap:
       - developer docs
 
    + FIXING
+      - SAFE_STRDUP
       - dissect_free_session
       + when libpcap 0.8.1 will be released
          - pcap_datalink_val_to_name  
@@ -42,6 +43,7 @@ Nov 2003:
 
    + LIBWDG
       - is there a heap corruption ??
+      - add debug
       - widgets:
          - input (with forms ?)
          - selectable lists

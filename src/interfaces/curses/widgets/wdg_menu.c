@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.7 2003/11/23 22:22:54 alor Exp $
+    $Id: wdg_menu.c,v 1.8 2003/11/27 21:37:07 alor Exp $
 */
 
 #include <wdg.h>
@@ -113,6 +113,7 @@ static int wdg_menu_destroy(struct wdg_object *wo)
       }
 
       TAILQ_REMOVE(&ww->menu_list, mu, next);
+      WDG_SAFE_FREE(mu->items);
       WDG_SAFE_FREE(mu);
    }   
    
@@ -348,7 +349,7 @@ void wdg_menu_add(struct wdg_object *wo, struct wdg_menu *menu)
 
    WDG_SAFE_CALLOC(mu, 1, sizeof(struct wdg_menu_unit));
    
-   mu->title = strdup(menu[i].name);
+   WDG_SAFE_STRDUP(mu->title, menu[i].name);
    /* set the shortcut */
    mu->shortcut = menu[i].shortcut[0];
    

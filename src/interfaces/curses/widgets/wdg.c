@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.18 2003/11/23 18:07:57 alor Exp $
+    $Id: wdg.c,v 1.19 2003/11/27 21:37:07 alor Exp $
 */
 
 #include <wdg.h>
@@ -99,6 +99,9 @@ extern void wdg_create_file(struct wdg_object *wo);
  */
 void wdg_init(void)
 {
+
+   WDG_DEBUG_INIT();
+   
    /* initialize the curses interface */
    initscr(); 
 
@@ -179,6 +182,8 @@ void wdg_cleanup(void)
    /* reset the mouse event reception */
    mousemask(0, (mmask_t *) 0);
 #endif
+   
+   WDG_DEBUG_CLOSE();
 }
 
 /*
@@ -589,6 +594,7 @@ int wdg_destroy_object(struct wdg_object **wo)
    
          /* free the title */
          WDG_SAFE_FREE((*wo)->title);
+         WDG_BUG_IF((*wo)->title != NULL);
          /* then free the object */
          WDG_SAFE_FREE(*wo);
          
@@ -675,7 +681,7 @@ void wdg_set_title(struct wdg_object *wo, char *title, size_t align)
 {
    /* copy the values */
    wo->align = align;
-   wo->title = strdup(title);
+   WDG_SAFE_STRDUP(wo->title, title);
 }
 
 /* 

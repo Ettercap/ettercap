@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dialog.c,v 1.2 2003/11/10 16:11:19 alor Exp $
+    $Id: wdg_dialog.c,v 1.3 2003/11/27 21:37:07 alor Exp $
 */
 
 #include <wdg.h>
@@ -114,6 +114,7 @@ static int wdg_dialog_destroy(struct wdg_object *wo)
 
    /* free the text string */
    WDG_SAFE_FREE(ww->text);
+   WDG_BUG_IF(ww->text != NULL);
 
    WDG_SAFE_FREE(wo->extend);
 
@@ -338,7 +339,7 @@ void wdg_dialog_text(wdg_t *wo, size_t flags, const char *text)
    int first = 1;
 
    ww->flags = flags;
-   ww->text = strdup(text);
+   WDG_SAFE_STRDUP(ww->text, text);
    
    /* mark the buttons to be used */
    if (ww->flags & WDG_OK) {

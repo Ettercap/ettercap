@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.17 2003/11/23 18:07:57 alor Exp $ */
+/* $Id: wdg.h,v 1.18 2003/11/27 21:37:07 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -37,6 +37,9 @@
 	typedef uint32_t  u_int32;
 	typedef uint64_t  u_int64;
 #endif
+
+
+#define LIBWDG_VERSION "0.0.0"
    
 /********************************************/
 
@@ -55,6 +58,19 @@ enum {
    #define MAX(a, b)    (((a) > (b)) ? (a) : (b))
 #endif
 
+extern void wdg_debug_init(void);
+extern void wdg_debug_close(void);
+extern void wdg_debug_msg(const char *message, ...);
+#ifdef DEBUG
+   #define WDG_DEBUG_INIT()      wdg_debug_init() 
+   #define WDG_DEBUG_CLOSE()     wdg_debug_close()
+   #define WDG_DEBUG_MSG(x, ...) wdg_debug_msg(x, ## __VA_ARGS__ )
+#else
+   #define WDG_DEBUG_INIT()
+   #define WDG_DEBUG_CLOSE()
+   #define WDG_DEBUG_MSG(x, ...)
+#endif
+
 extern void wdg_error_msg(char *file, char *function, int line, char *message, ...);
 #define WDG_ON_ERROR(x, y, fmt, ...) do { if (x == y) wdg_error_msg(__FILE__, __FUNCTION__, __LINE__, fmt, ## __VA_ARGS__ ); } while(0)
 
@@ -65,14 +81,29 @@ extern void wdg_bug(char *file, char *function, int line, char *message);
 #define WDG_SAFE_CALLOC(x, n, s) do { \
    x = calloc(n, s); \
    WDG_ON_ERROR(x, NULL, "virtual memory exhausted"); \
+   /* WDG_DEBUG_MSG("[%s:%d] WDG_SAFE_CALLOC: %#x", __FUNCTION__, __LINE__, x); */ \
 } while(0)
 
 #define WDG_SAFE_REALLOC(x, s) do { \
+   /* WDG_DEBUG_MSG("[%s:%d] WDG_SAFE_REALLOC: before %#x", __FUNCTION__, __LINE__, x); */ \
    x = realloc(x, s); \
    WDG_ON_ERROR(x, NULL, "virtual memory exhausted"); \
+   /* WDG_DEBUG_MSG("[%s:%d] WDG_SAFE_REALLOC: after %#x", __FUNCTION__, __LINE__, x); */ \
 } while(0)
 
-#define WDG_SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
+#define WDG_SAFE_FREE(x) do{                 \
+   /* WDG_DEBUG_MSG("[%s:%d] WDG_SAFE_FREE: %#x", __FUNCTION__, __LINE__, x);   */  \
+   if (x) {                                  \
+      free(x);                               \
+      x = NULL;                              \
+   }                                         \
+}while(0)
+
+#define WDG_SAFE_STRDUP(x, s) do{ \
+   x = strdup(s); \
+   WDG_ON_ERROR(x, NULL, "virtual memory exhausted"); \
+   /* WDG_DEBUG_MSG("[%s:%d] WDG_SAFE_STRDUP: %#x", __FUNCTION__, __LINE__, x); */  \
+}while(0)
 
 #define WDG_EXECUTE(x, ...) do{ if(x != NULL) x( __VA_ARGS__ ); }while(0)
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.27 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.28 2003/07/18 21:36:45 alor Exp $
 */
 
 #include <ec.h>
@@ -135,10 +135,14 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* set the po timestamp */
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
    
-   /* set the interface from which the packet comes */
-   if (!strcmp(param, GBL_OPTIONS->iface))
+   /* 
+    * set the interface from which the packet comes 
+    * 
+    * GBL_OPTIONS->iface may be null when reading from file
+    */
+   if (GBL_OPTIONS->iface && !strcmp(param, GBL_OPTIONS->iface))
       po.flags |= PO_FROMIFACE;
-   else
+   else if (GBL_OPTIONS->iface_bridge && !strcmp(param, GBL_OPTIONS->iface_bridge))
       po.flags |= PO_FROMBRIDGE;
 
    /* HOOK POINT: RECEIVED */ 

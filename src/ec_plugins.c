@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.14 2003/07/18 21:12:39 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.15 2003/07/18 21:36:45 alor Exp $
 */
 
 #include <ec.h>
@@ -30,7 +30,7 @@
    #include <missing/scandir.h>
 #endif
 
-#ifdef HAVE_LTDL
+#ifdef HAVE_LTDL_H
    #include <ltdl.h>
 #endif
 #ifdef HAVE_DLFCN_H

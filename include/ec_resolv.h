@@ -11,7 +11,7 @@
  * implement the hack here.
  */
 
-#ifndef HAVE_NS_GET
+#if !defined HAVE_NS_GET && !defined NS_GET16
    /* functions */
    #define NS_GET16     GETSHORT
    #define NS_GET32     GETLONG

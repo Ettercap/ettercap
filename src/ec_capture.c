@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.18 2003/07/07 10:43:19 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.19 2003/07/18 21:36:45 alor Exp $
 */
 
 #include <ec.h>
@@ -66,7 +66,7 @@ void capture_init(void)
     * we have to found one...
     */
    
-   if (GBL_OPTIONS->iface == NULL) {
+   if (!GBL_OPTIONS->read && GBL_OPTIONS->iface == NULL) {
       char *ifa = pcap_lookupdev(pcap_errbuf);
       ON_ERROR(ifa, NULL, "No suitable interface found...");
       

@@ -162,6 +162,8 @@ AM_PROG_LIBTOOL
 AC_SEARCH_LIBS(dlopen,c dl,,)
 AC_LIB_LTDL
 AC_SEARCH_LIBS(lt_dlopen,c dl ltdl,,)
+AC_CHECK_HEADERS(dlfcn.h)
+AC_CHECK_HEADERS(ltdl.h)
 
 dnl ======================
 dnl   Machine Endianness
@@ -190,7 +192,6 @@ AC_CHECK_HEADERS(sys/types.h stdint.h)
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
 AC_CHECK_HEADERS(termios.h)
 AC_CHECK_HEADERS(sys/poll.h poll.h sys/select.h)
-AC_CHECK_HEADERS(dlfcn.h)
 dnl nameser NS_GET32 and so on...
 EC_NS_GET()
 

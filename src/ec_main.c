@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.24 2003/07/15 21:31:34 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.25 2003/07/18 21:36:45 alor Exp $
 */
 
 #include <ec.h>
@@ -94,10 +94,12 @@ int main(int argc, char *argv[])
    /* get hardware infos */
    get_hw_info();
   
-   /* always disable the kernel ip forwarding.
-    * it is done by ettercap.
+   /* 
+    * always disable the kernel ip forwarding (except when reading from file).
+    * the forwarding will be done by ettercap.
     */
-   disable_ip_forward();
+   if (!GBL_OPTIONS->read)
+      disable_ip_forward();
    
    /* 
     * drop root priviledges 
@@ -166,6 +168,10 @@ static void drop_privs(void)
 {
    u_int uid;
    char *var;
+
+   /* are we root ? */
+   if (getuid() != 0)
+      return;
 
    /* get the env variable for the UID to drop privs to */
    var = getenv("EC_UID");

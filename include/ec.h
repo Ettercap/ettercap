@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.21 2003/11/28 22:02:20 alor Exp $ */
+/* $Id: ec.h,v 1.22 2003/11/29 11:22:32 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -47,6 +47,11 @@
    x = realloc(x, s); \
    ON_ERROR(x, NULL, "virtual memory exhausted"); \
 } while(0)
+
+#define SAFE_STRDUP(x, s) do{ \
+   x = strdup(s); \
+   ON_ERROR(x, NULL, "virtual memory exhausted"); \
+}while(0)
 
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 

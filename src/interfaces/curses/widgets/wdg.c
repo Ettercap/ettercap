@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.19 2003/11/27 21:37:07 alor Exp $
+    $Id: wdg.c,v 1.20 2003/11/29 11:22:35 alor Exp $
 */
 
 #include <wdg.h>
@@ -151,6 +151,8 @@ void wdg_init(void)
    /* activate the mask to receive mouse events */
    mousemask(ALL_MOUSE_EVENTS, (mmask_t *) 0);
 #endif
+
+   WDG_DEBUG_MSG("wdg_init: initialized");
 }
 
 
@@ -159,6 +161,8 @@ void wdg_init(void)
  */
 void wdg_cleanup(void)
 {
+   WDG_DEBUG_MSG("wdg_cleanup");
+   
    /* can only cleanup if it was initialized */
    if (!(current_screen.flags & WDG_SCR_INITIALIZED))
       return;
@@ -194,6 +198,8 @@ void wdg_cleanup(void)
  */
 void wdg_exit(void)
 {
+   WDG_DEBUG_MSG("wdg_exit");
+   
    /* put the exit key in the input buffer */
    ungetch(wdg_exit_key);
 }
@@ -212,6 +218,8 @@ void wdg_update_screen(void)
 void wdg_redraw_all(void)
 {
    struct wdg_obj_list *wl;
+   
+   WDG_DEBUG_MSG("wdg_redraw_all");
    
    /* remember the current screen size */
    getmaxyx(stdscr, current_screen.lines, current_screen.cols);
@@ -233,6 +241,8 @@ int wdg_events_handler(int exit_key)
 {
    int key;
    struct wdg_mouse_event mouse;
+   
+   WDG_DEBUG_MSG("wdg_events_handler (%c)", exit_key);
 
    /* set the global exit key (used by wdg_exit()) */
    wdg_exit_key = exit_key;
@@ -323,6 +333,8 @@ int wdg_events_handler(int exit_key)
 void wdg_add_idle_callback(void (*callback)(void))
 {
    struct wdg_call_list *cl;
+   
+   WDG_DEBUG_MSG("wdg_add_idle_callback (%p)", callback);
 
    WDG_SAFE_CALLOC(cl, 1, sizeof(struct wdg_call_list));
 
@@ -339,6 +351,8 @@ void wdg_add_idle_callback(void (*callback)(void))
 void wdg_del_idle_callback(void (*callback)(void))
 {
    struct wdg_call_list *cl;
+   
+   WDG_DEBUG_MSG("wdg_del_idle_callback (%p)", callback);
 
    SLIST_FOREACH(cl, &wdg_callbacks_list, next) {
       if (cl->idle_callback == callback) {
@@ -494,6 +508,8 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
 {
    struct wdg_obj_list *wl;
    
+   WDG_DEBUG_MSG("wdg_create_object (%d)", type);
+   
    /* alloc the struct */
    WDG_SAFE_CALLOC(*wo, 1, sizeof(struct wdg_object));
 
@@ -559,6 +575,8 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
 int wdg_destroy_object(struct wdg_object **wo)
 {
    struct wdg_obj_list *wl;
+   
+   WDG_DEBUG_MSG("wdg_destroy_object (%p)", *wo);
   
    /* sanity check */
    if (*wo == NULL)
@@ -626,6 +644,8 @@ void wdg_set_size(struct wdg_object *wo, int x1, int y1, int x2, int y2)
  */
 void wdg_draw_object(struct wdg_object *wo)
 {
+   WDG_DEBUG_MSG("wdg_draw_object (%p)", wo);
+   
    /* display the object */
    WDG_BUG_IF(wo->redraw == NULL);
    WDG_EXECUTE(wo->redraw, wo);

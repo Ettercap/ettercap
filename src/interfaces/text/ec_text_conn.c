@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_conn.c,v 1.2 2003/11/14 20:17:46 alor Exp $
+    $Id: ec_text_conn.c,v 1.3 2003/11/29 11:22:36 alor Exp $
 */
 
 #include <ec.h>
@@ -93,8 +93,7 @@ void conn_print(int n, struct conn_object *co)
    fprintf(stdout, "  TX: %d", co->xferred);
 
    if (co->DISSECTOR.user) {
-      fprintf(stdout, "\n\t\tUSER: %s", co->DISSECTOR.user);
-      fprintf(stdout, "\n\t\tPASS: %s", co->DISSECTOR.pass);
+      fprintf(stdout, "\n\t\tACCOUNT: %s / %s", co->DISSECTOR.user, co->DISSECTOR.pass);
       if (co->DISSECTOR.info)
          fprintf(stdout, "\n\t\tINFO: %s", co->DISSECTOR.info);
    }

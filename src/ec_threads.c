@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.22 2003/11/02 20:36:44 alor Exp $
+    $Id: ec_threads.c,v 1.23 2003/11/29 11:22:35 alor Exp $
 */
 
 #include <ec.h>
@@ -66,17 +66,24 @@ char * ec_thread_getname(pthread_t id)
    if (id == EC_SELF)
       id = pthread_self();
 
+   /* don't lock here to avoid deadlock in debug messages */
+#ifndef DEBUG   
    THREADS_LOCK;
+#endif
    
    LIST_FOREACH(current, &thread_list_head, next) {
       if (current->t.id == id) {
          name = current->t.name;
+#ifndef DEBUG
          THREADS_UNLOCK;
+#endif
          return name;
       }
    }
-
+   
+#ifndef DEBUG
    THREADS_UNLOCK;
+#endif
 
    return "NR_THREAD";
 }
@@ -267,16 +274,34 @@ void ec_thread_destroy(pthread_t id)
 
 void ec_thread_kill_all(void)
 {
-   struct thread_list *current;
+   struct thread_list *current, *old;
    pthread_t id = pthread_self();
 
    DEBUG_MSG("ec_thread_kill_all -- caller %u [%s]", (u_int32)id, ec_thread_getname(id));
 
-   LIST_FOREACH(current, &thread_list_head, next) {
+   THREADS_LOCK;
+   
+   LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {
+      /* skip ourself */
       if (current->t.id != id) {
-         ec_thread_destroy(current->t.id);      
+         DEBUG_MSG("ec_thread_destroy -- terminating %u [%s]", (u_int32)current->t.id, current->t.name);
+
+         /* send the cancel signal to the thread */
+         pthread_cancel((pthread_t)current->t.id);
+
+         /* wait until it has finished */
+         pthread_join((pthread_t)current->t.id, NULL);
+
+         DEBUG_MSG("ec_thread_destroy -- [%s] terminated", current->t.name);
+      
+         SAFE_FREE(current->t.name);
+         SAFE_FREE(current->t.description);
+         LIST_REMOVE(current, next);
+         SAFE_FREE(current);
       }
    }
+   
+   THREADS_UNLOCK;
 
 }
 

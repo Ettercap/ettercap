@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.4 2003/11/26 20:39:16 alor Exp $
+    $Id: wdg_file.c,v 1.5 2003/11/29 11:22:36 alor Exp $
 */
 
 #include <wdg.h>
@@ -42,6 +42,8 @@ struct wdg_file_handle {
    WINDOW *mwin;
    ITEM **items;
    size_t nitems;
+   size_t nlist;
+   struct dirent **namelist;
    char curpath[PATH_MAX];
    char initpath[PATH_MAX];
    void (*callback)(char *path, char *file);
@@ -387,20 +389,24 @@ static int wdg_file_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
 static void wdg_file_menu_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
-   int i = 0;
+   size_t i = 0;
    
    /* nothing to free */
    if (ww->nitems == 0)
       return;
    
+   free_menu(ww->m);
+
    /* free all the items */
-   while(ww->items[i] != NULL)
+   while(ww->items[i] != NULL) 
       free_item(ww->items[i++]);
+
+   for (i = 0; i < ww->nlist; i++)
+      WDG_SAFE_FREE(ww->namelist[i]);
   
    /* free the array */
    WDG_SAFE_FREE(ww->items);
-
-   free_menu(ww->m);
+   WDG_SAFE_FREE(ww->namelist);
    
    /* reset the counter */
    ww->nitems = 0;
@@ -412,9 +418,8 @@ static void wdg_file_menu_destroy(struct wdg_object *wo)
 static void wdg_file_menu_create(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
-   struct dirent **namelist;
-   int n, i;
    int mrows, mcols;
+   size_t i;
    size_t c = wdg_get_ncols(wo);
    size_t x = wdg_get_begin_x(wo);
    size_t y = wdg_get_begin_y(wo);
@@ -428,10 +433,10 @@ static void wdg_file_menu_create(struct wdg_object *wo)
    getcwd(ww->curpath, PATH_MAX);
          
    /* scan the directory */
-   n = scandir(".", &namelist, 0, alphasort);
+   ww->nlist = scandir(".", &ww->namelist, 0, alphasort);
 
    /* on error display the message in the box */
-   if (n < 0) {
+   if (ww->nlist < 0) {
       ww->nitems++;
       WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
       ww->items[ww->nitems - 1] = new_item("Cannot open the directory", "");
@@ -439,34 +444,34 @@ static void wdg_file_menu_create(struct wdg_object *wo)
    }
 
    /* for each directory in the directory */
-   for (i = 0; i < n; i++) {
+   for (i = 0; i < ww->nlist; i++) {
       
       /* skip the current dir */
-      if (!strcmp(namelist[i]->d_name, "."))
+      if (!strcmp(ww->namelist[i]->d_name, "."))
          continue;
       
       /* get the file properties */
-      stat(namelist[i]->d_name, &buf);
+      stat(ww->namelist[i]->d_name, &buf);
       
       if (S_ISDIR(buf.st_mode)) {
          ww->nitems++;
          WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
-         ww->items[ww->nitems - 1] = new_item(namelist[i]->d_name, "[...]");
+         ww->items[ww->nitems - 1] = new_item(ww->namelist[i]->d_name, "[...]");
       }
       // if not readable
       //item_opts_off(ww->items[ww->nitems - 1], O_SELECTABLE);
    }
    
    /* and now add the files */
-   for (i = 0; i < n; i++) {
+   for (i = 0; i < ww->nlist; i++) {
       
       /* get the file properties */
-      stat(namelist[i]->d_name, &buf);
+      stat(ww->namelist[i]->d_name, &buf);
       
       if (!S_ISDIR(buf.st_mode)) {
          ww->nitems++;
          WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
-         ww->items[ww->nitems - 1] = new_item(namelist[i]->d_name, "");
+         ww->items[ww->nitems - 1] = new_item(ww->namelist[i]->d_name, "");
       }
    }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.5 2003/06/28 08:08:00 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.6 2003/06/28 14:22:33 alor Exp $
 */
 
 #include <ec.h>
@@ -39,6 +39,7 @@ struct dissect_entry {
 /* protos */
 
 void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder));
+void dissect_del(char *name);
 int dissect_modify(int mode, char *name, u_int32 port);
 
 int dissect_match(void *id_sess, void *id_curr);
@@ -171,6 +172,29 @@ void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decode
 }
 
 /*
+ * remove all istances of a dissector in the dissectors list
+ */
+
+void dissect_del(char *name)
+{
+   struct dissect_entry *e, *old = NULL;
+
+   SLIST_FOREACH (e, &dissect_list, next) {
+      /* remove the old entry */
+      SAFE_FREE(old);
+      
+      if (!strcasecmp(e->name, name)) {
+         /* add the default decoder */
+         del_decoder(e->level, e->type);
+         SLIST_REMOVE(&dissect_list, e, dissect_entry, next);
+         old = e;
+      }
+   }
+   
+   return;
+}
+
+/*
  * given the name of the dissector add or remove it 
  * from the decoders' table.
  * is it possible to add multiple port with MODE_ADD
@@ -179,6 +203,8 @@ void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decode
 int dissect_modify(int mode, char *name, u_int32 port)
 {
    struct dissect_entry *e;
+   int level;
+   void *decoder;
 
    SLIST_FOREACH (e, &dissect_list, next) {
       if (!strcasecmp(e->name, name)) {
@@ -187,23 +213,26 @@ int dissect_modify(int mode, char *name, u_int32 port)
                DEBUG_MSG("dissect_modify: %s added on %d", name, port);
                /* add in the lists */
                dissect_add(e->name, e->level, port, e->decoder);
-               add_decoder(e->level, port, e->decoder);
                return ESUCCESS;
                break;
             case MODE_REP:
-               /* no modifications needed */
-               if (e->type == port)
-                  return ESUCCESS;
 
-               DEBUG_MSG("dissect_modify: %s replaced from %d to %d", name, e->type, port);
-               del_decoder(e->level, e->type);
+               DEBUG_MSG("dissect_modify: %s replaced to %d", name, port);
+              
+               /* save them because the dissect_del may delete this values */
+               level = e->level;
+               decoder = e->decoder;
+               
+               /* remove all the previous istances */
+               dissect_del(name);
+               
                /* a value of 0 will disable the dissector */
                if (port == 0)
                   return ESUCCESS;
               
-               /* replace with the new value */
-               add_decoder(e->level, port, e->decoder);
-               e->type = port;
+               /* add the new value */
+               dissect_add(name, level, port, decoder);
+               
                return ESUCCESS;
                break;
          }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.2 2003/06/24 16:36:00 alor Exp $
+    $Id: ec_conf.c,v 1.3 2003/06/28 14:22:33 alor Exp $
 */
 
 #include <ec.h>
@@ -268,23 +268,31 @@ static int * search_entry(struct conf_entry *section, char *name)
  */
 static void set_dissector(char *name, char *values, int lineno)
 {
-   char *p;
+   char *p, *q = values;
    u_int32 value;
 
    /* remove trailing spaces */
    if ((p = strchr(values, ' ')) != NULL)
       *p = '\0';
    
-
    /* expand multiple ports dissectors */
    for(p=strsep(&values, ","); p != NULL; p=strsep(&values, ",")) {
       /* get the value for the port */
       value = atoi(p);
       DEBUG_MSG("load_conf: \tDISSECTOR: %s\t%d", name, value);
+    
+      /* the first value replaces all the previous */
+      if (p == q) {
+         if (dissect_modify(MODE_REP, name, value) != ESUCCESS)
+            FATAL_ERROR("Dissector \"%s\" does not exists (%s line %d)", name, ETTER_CONF, lineno);
+      } else {
+         /* the other values have to be added */
+         if (dissect_modify(MODE_ADD, name, value) != ESUCCESS)
+            FATAL_ERROR("Dissector \"%s\" does not exists (%s line %d)", name, ETTER_CONF, lineno);
+      }
       
-      if (dissect_modify(MODE_REP, name, value) != ESUCCESS)
-         FATAL_ERROR("Dissector \"%s\" does not exists in %s line %d", name, ETTER_CONF, lineno);
    }
+
 }
 
 /* EOF */

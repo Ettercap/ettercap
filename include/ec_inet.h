@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.10 2003/09/25 15:30:45 alor Exp $ */
+/* $Id: ec_inet.h,v 1.11 2003/10/06 15:33:14 lordnaga Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -63,16 +63,16 @@ extern void disable_ip_forward(void);
                       (u_int32)*((u_int8 *)x+0)<<0    \
                     )
 
-   #define ORDER_ADD_SHORT(a, b)   a = htons(ntohs(a) + b)
-   #define ORDER_ADD_LONG(a, b)	  a = htonl(ntohl(a) + b)
+   #define ORDER_ADD_SHORT(a, b)   a = a + b
+   #define ORDER_ADD_LONG(a, b)	  a = a + b
 
 #else
    /* LITTLE ENDIAN */
    #define ptohs(x) *(u_int16 *)(x)
    #define ptohl(x) *(u_int32 *)(x)
    
-   #define ORDER_ADD_SHORT(a, b)   a = a + b
-   #define ORDER_ADD_LONG(a, b)	  a = a + b
+   #define ORDER_ADD_SHORT(a, b)   a = htons(ntohs(a) + (int16)b)
+   #define ORDER_ADD_LONG(a, b)	  a = htonl(ntohl(a) + (int32)b)
 
 #endif
       

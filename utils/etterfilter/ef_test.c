@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_test.c,v 1.3 2003/09/07 19:47:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_test.c,v 1.4 2003/09/13 10:04:15 alor Exp $
 */
 
 #include <ef.h>
@@ -43,8 +43,8 @@ void test_filter(void)
    /* if (DATA.data, search("OpenSSH")) { */
    istr[0].opcode = FOP_FUNC;
    istr[0].op.func.opcode = FFUNC_SEARCH;
-   istr[0].op.func.level = 0;
-   strcpy(istr[0].op.func.value, "OpensSSH");
+   istr[0].op.func.level = 5;
+   strcpy(istr[0].op.func.value, "OpenSSH");
    istr[0].op.func.value_len = strlen(istr[0].op.func.value);
    
    istr[1].opcode = FOP_JFALSE;
@@ -53,7 +53,7 @@ void test_filter(void)
    /* replace("SSH-1.99", "SSH-1.51"); */
    istr[2].opcode = FOP_FUNC;
    istr[2].op.func.opcode = FFUNC_REPLACE;
-   istr[0].op.func.level = 0;
+   istr[2].op.func.level = 5;
    strcpy(istr[2].op.func.value, "SSH-1.99");
    istr[2].op.func.value_len = strlen(istr[2].op.func.value);
    strcpy(istr[2].op.func.value2, "SSH-1.51");
@@ -76,7 +76,9 @@ void test_filter(void)
 
    /* } */
    istr[6].opcode = FOP_EXIT;
-   
+  
+   memset(&po, 0, sizeof(struct packet_object));
+
    po.DATA.data = strdup("SSH-1.99-OpenSSH_3.6.1p2");
    po.DATA.len = strlen(po.DATA.data);
    

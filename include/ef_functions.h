@@ -2,6 +2,8 @@
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
 
+#define SCRIPT_ERROR(x, ...) FATAL_ERROR("[%s:%d]: "x, GBL_OPTIONS.source_file, GBL.lineno, ## __VA_ARGS__ );
+
 /* ef_parser */
 extern void parse_options(int argc, char **argv);
 

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.7 2003/09/09 21:32:56 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.8 2003/09/13 10:04:13 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -63,6 +63,16 @@ make branches with the 'if' statements. 'if' and 'if/else' statement are the onl
 supported. No loops are implemented. The syntax is almost like the C code
 except that you have to put if blocks into graph parentesys '{' '}', even if it
 contains only one instruction.
+.Sp
+NOTE: you have to put a space between the 'if' and the '('. you must not put the 
+space between function name and the '('.
+.Sp
+Example:
+.br
+if (conditions) { }
+.br
+func(args...);
+
 .Sp
 The conditions for an 'if' statement can be either functions or comparisons.
 Two or more conditions can be linked together with logical operator like 

@@ -21,9 +21,9 @@
 #                        SSH-1.51   only ssh1 supported
 ##
 
-if (L4.proto == TCP) {
-   if (L4.tcp.port == 22) {
-      if ( replace(DATA.data, "SSH-1.99", "SSH-1.51") ) {
+if (ip.proto == TCP) {
+   if (tcp.src == 22) {
+      if ( replace("SSH-1.99", "SSH-1.51") ) {
          msg("SSH downgraded from version 2 to 1");
       } else {
          if ( search(DATA.data, "SSH-2.00") ) {

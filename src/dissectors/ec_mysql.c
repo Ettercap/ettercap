@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mysql.c,v 1.3 2003/09/10 16:50:47 alor Exp $
+    $Id: ec_mysql.c,v 1.4 2003/09/13 10:04:13 alor Exp $
 */
 
 #include <ec.h>
@@ -64,10 +64,10 @@ FUNC_DECODER(dissector_mysql)
          u_int index = 5;
     
          /* Check magic numbers and catch the banner */
-         if (!memcmp(ptr+1, "\x00\x00\x00\x0a\x33\x2e", 6)) {
+         if (!memcmp(ptr + 1, "\x00\x00\x00\x0a\x33\x2e", 6)) {
             DEBUG_MSG("\tdissector_mysql BANNER");
             PACKET->DISSECTOR.banner = strdup("MySQL v3.xx.xx");
-         } else if (!memcmp(ptr+1, "\x00\x00\x00\x0a\x34\x2e", 6)) {
+         } else if (!memcmp(ptr + 1, "\x00\x00\x00\x0a\x34\x2e", 6)) {
             DEBUG_MSG("\tdissector_mysql BANNER");
             PACKET->DISSECTOR.banner = strdup("MySQL v4.xx.xx");
          } else {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.5 2003/09/07 19:47:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.6 2003/09/13 10:04:13 alor Exp $
 */
 
 #include <ec.h>
@@ -243,7 +243,7 @@ int strescape(char *dst, char *src)
                *dst++ = (char) val;
                break;
          }
-      } else if (c == 8 || c == 263)  // the backspace
+      } else if (c == 8 || c == 263)  /* the backspace */
          dst--;
       else
          *dst++ = (char) c;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_encode.c,v 1.1 2003/09/10 21:10:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_encode.c,v 1.2 2003/09/13 10:04:15 alor Exp $
 */
 
 #include <ef.h>
@@ -32,6 +32,7 @@
 int encode_offset(char *string, struct filter_op *fop);
 int encode_function(char *string, struct filter_op *fop);
 int encode_const(char *string, struct filter_op *fop);
+static char ** decode_args(char *args, int *nargs);
 
 /*******************************************/
 
@@ -41,16 +42,27 @@ int encode_const(char *string, struct filter_op *fop);
  */
 int encode_offset(char *string, struct filter_op *fop)
 {
-   return ESUCCESS;
-}
+   char *str, *p, *q;
+   int ret;
 
+   /* make the modifications on a copy */
+   str = strdup(string);
+   
+   /*
+    * the offset contains at least one '.'
+    * we are sure because the syntax parser
+    * will not have passed it here if it is not
+    * in the right form.
+    */
+   p = strtok(str, ".");
+   q = strtok(NULL, ".");
 
-/*
- * parse a function and its arguments and fill the structure
- */
-int encode_function(char *string, struct filter_op *fop)
-{
-   return ESUCCESS;
+   /* the the virtual pointer from the table */
+   ret = get_virtualpointer(p, q, &fop->op.test.level, &fop->op.test.offset, &fop->op.test.size);
+
+   SAFE_FREE(str);
+
+   return ret;
 }
 
 
@@ -74,11 +86,16 @@ int encode_const(char *string, struct filter_op *fop)
    /* it is a string */
    } else if (string[0] == '\"' && string[strlen(string) - 1] == '\"') {
   
+      /* check if the string is short enough */
+      if (strlen(string) > MAX_FILTER_LEN)
+         SCRIPT_ERROR("String too long. (max %d char)", MAX_FILTER_LEN)
+            
       /* remove the quotes */
       p = strchr(string + 1, '\"');
       *p = '\0';
-      /* copy it */
-      strlcpy(fop->op.test.string, string + 1, MAX_FILTER_LEN);
+
+      /* escape it in the structure */
+      fop->op.test.string_len = strescape(fop->op.test.string, string);
      
       return ESUCCESS;
       
@@ -91,6 +108,149 @@ int encode_const(char *string, struct filter_op *fop)
    return -ENOTFOUND;
 }
 
+
+/*
+ * parse a function and its arguments and fill the structure
+ */
+int encode_function(char *string, struct filter_op *fop)
+{
+   char *str = strdup(string);
+   int ret = -ENOTFOUND;
+   char *name, *args;
+   int nargs = 0, i;
+   char **dec_args = NULL;
+
+   /* get the name of the function */
+   name = strtok(string, "(");
+   /* get all the args */
+   args = strtok(NULL, "(");
+
+   /* analyze the arguments */
+   dec_args = decode_args(args, &nargs);
+
+   /* check if it is a known function */
+   if (!strcmp(name, "search")) {
+      if (nargs == 2) {
+         /* get the level (DATA or DECODED) */
+         if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+            fop->op.func.opcode = FFUNC_SEARCH;
+            fop->op.func.value_len = strescape(fop->op.func.value, dec_args[1]);
+            ret = ESUCCESS;
+         }
+      }
+   } else if (!strcmp(name, "regex")) {
+      if (nargs == 2) {
+         /* get the level (DATA or DECODED) */
+         if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+            fop->op.func.opcode = FFUNC_REGEX;
+            fop->op.func.value_len = strescape(fop->op.func.value, dec_args[1]);
+            ret = ESUCCESS;
+         }
+      }
+   } else if (!strcmp(name, "replace")) {
+      if (nargs == 2) {
+         fop->op.func.opcode = FFUNC_REPLACE;
+         /* replace always operate at DATA level */
+         fop->op.func.level = 5;
+         fop->op.func.value_len = strescape(fop->op.func.value, dec_args[0]);
+         fop->op.func.value2_len = strescape(fop->op.func.value2, dec_args[1]);
+         ret = ESUCCESS;
+      }
+   } else if (!strcmp(name, "log")) {
+      if (nargs == 2) {
+         /* get the level (DATA or DECODED) */
+         if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+            fop->op.func.opcode = FFUNC_LOG;
+            strncpy(fop->op.func.value, dec_args[1], MAX_FILTER_LEN);
+            ret = ESUCCESS;
+         }
+      }
+   } else if (!strcmp(name, "drop")) {
+      if (nargs == 0) {
+         fop->op.func.opcode = FFUNC_DROP;
+         ret = ESUCCESS;
+      }
+   } else if (!strcmp(name, "msg")) {
+      if (nargs == 1) {
+         fop->op.func.opcode = FFUNC_MSG;
+         strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
+         fop->op.func.value_len = strlen(dec_args[0]);
+         ret = ESUCCESS;
+      }
+   } else if (!strcmp(name, "exec")) {
+      if (nargs == 1) {
+         fop->op.func.opcode = FFUNC_EXEC;
+         strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
+         fop->op.func.value_len = strlen(dec_args[0]);
+         ret = ESUCCESS;
+      }
+   } else if (!strcmp(name, "exit")) {
+      if (nargs == 0) {
+         fop->opcode = FOP_EXIT;
+         ret = ESUCCESS;
+      }
+   }
+
+   /* free the array */
+   for (i = 0; i < nargs; i++)
+      SAFE_FREE(dec_args[i]);
+      
+   SAFE_FREE(dec_args);
+   SAFE_FREE(str);
+   return ret;
+}
+
+/*
+ * split the args of a function and return
+ * the number of found args
+ */
+static char ** decode_args(char *args, int *nargs)
+{
+   char *p, *q, *arg;
+   int i = 0;
+   char **parsed;
+
+   *nargs = 0;
+  
+   /* get the end */
+   p = strchr(args, ')');
+   *p = '\0';
+   
+   /* trim the empty spaces */
+   for (; *args == ' '; args++);
+   for (q = args + strlen(args) - 1; *q == ' '; q--)
+      *q = '\0';
+
+   /* there are no arguments */
+   if (!strchr(args, ',') && strlen(args) == 0)
+      return NULL;
+   
+   parsed = calloc(1, sizeof(char *));
+   
+   /* split the arguments */
+   for (p = strsep(&args, ","), i = 1; p != NULL; p = strsep(&args, ","), i++) {
+      
+      /* alloc the array for the arguments */
+      parsed = (char **)realloc(parsed, (i+1) * sizeof(char *));
+      
+      /* trim the empty spaces */
+      for (arg = p; *arg == ' '; arg++);
+      for (q = arg + strlen(arg) - 1; *q == ' '; q--)
+         *q = '\0';
+    
+      /* check if the string is short enough */
+      if (strlen(arg) > MAX_FILTER_LEN)
+         SCRIPT_ERROR("String too long. (max %d char)", MAX_FILTER_LEN)
+            
+      /* put in in the array */
+      parsed[i - 1] = strdup(arg);
+   }
+
+   /* return the number of args */
+   *nargs = i - 1;
+   
+   return parsed;
+}
 
 /* EOF */
 

@@ -49,6 +49,10 @@ struct filter_op {
       #define FOP_JTRUE    5
       #define FOP_JFALSE   6
 
+   /*
+    * the first two filed of the structs (op and level) must
+    * overlap the same memory region. it is abused in ef_encode.c
+    */
    union {
       /* functions */
       struct {

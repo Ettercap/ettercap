@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.7 2003/09/10 21:10:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.8 2003/09/13 10:04:13 alor Exp $
 */
 
 #include <ec.h>
@@ -322,7 +322,6 @@ static int execute_assign(struct filter_op *fop, struct packet_object *po)
     */
    switch (fop->op.assign.size) {
       case 0:
-         /* string comparizon */
          memcpy(base + fop->op.assign.offset, fop->op.assign.string, fop->op.assign.string_len);
          break;
       case 1:
@@ -421,11 +420,12 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       return -ENOTFOUND;
 
    DEBUG_MSG("filter engine: func_replace");
-   
+  
    /* do the replacement */
    do {
       /* the len of the buffer to be analized */
       len = end - ptr;
+
       /* search the string */
       ptr = memmem(ptr, len, fop->op.func.value, slen);
       /* update the len */

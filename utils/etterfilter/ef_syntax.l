@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.7 2003/09/10 21:10:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.8 2003/09/13 10:04:15 alor Exp $
 */
 
 %{
@@ -29,9 +29,6 @@
 #include <ef_grammar.h>
 
 #define YY_NO_UNPUT
-
-/* declared in ef_grammar.y */
-extern u_int32 lineno;
 
 %}
 
@@ -143,7 +140,7 @@ SPACES         [ \t]+
 }
 
 ";" {
-   printf("}\n");
+   printf(";\n");
    return TOKEN_OP_END;
 }
 
@@ -151,7 +148,7 @@ SPACES         [ \t]+
    printf("OFFSET: %s\n", yytext);
    
    if (encode_offset(yytext, &yylval.fop) != ESUCCESS)
-      FATAL_ERROR("[%s:%d]: Offset \"%s\" not recognized", GBL_OPTIONS.source_file, lineno, yytext);
+      SCRIPT_ERROR("Offset \"%s\" not recognized", yytext);
    
    return TOKEN_OFFSET;
 }
@@ -160,7 +157,7 @@ SPACES         [ \t]+
    printf("FUNCTION: %s\n", yytext);
    
    if (encode_function(yytext, &yylval.fop) != ESUCCESS)
-      FATAL_ERROR("[%s:%d]: Function \"%s\" not recognized or bad argument list", GBL_OPTIONS.source_file, lineno, yytext);
+      SCRIPT_ERROR("Function \"%s\" not recognized", yytext);
    
    return TOKEN_FUNCTION;
 }
@@ -169,7 +166,7 @@ SPACES         [ \t]+
    printf("CONST: %s\n", yytext);
    
    if (encode_const(yytext, &yylval.fop) != ESUCCESS)
-      FATAL_ERROR("[%s:%d]: Constant \"%s\" not recognized", GBL_OPTIONS.source_file, lineno, yytext);
+      SCRIPT_ERROR("Constant \"%s\" not recognized", yytext);
    
    return TOKEN_CONST;
 }
@@ -178,7 +175,7 @@ SPACES         [ \t]+
    printf("STRING: %s\n", yytext);
    
    if (encode_const(yytext, &yylval.fop) != ESUCCESS)
-      FATAL_ERROR("[%s:%d]: Invalid string [%s]", GBL_OPTIONS.source_file, lineno, yytext);
+      SCRIPT_ERROR("Invalid string [%s]", yytext);
    
    return TOKEN_STRING;
 }
@@ -190,7 +187,7 @@ SPACES         [ \t]+
 
 [\n\r] {
    /* increment the line number (used for error reporting) */
-   lineno++;
+   GBL.lineno++;
 }
 
 . {

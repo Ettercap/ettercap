@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.7 2003/09/10 21:10:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.8 2003/09/13 10:04:15 alor Exp $
 */
 
 %{
@@ -29,8 +29,6 @@
 
 #define YYERROR_VERBOSE
 
-u_int32 lineno = 1;
- 
 %}
  
 /* 
@@ -41,18 +39,17 @@ u_int32 lineno = 1;
  
 /* definition for the yylval (global variable) */
 %union {
-   int value;        /* semantic value for integer variables or numbers */
-   char *string;     /* a string identifying the name of a variable */
+   char *string;     
    struct filter_op fop;
 }
 
 /* token definitions */
 %token TOKEN_EOL
 
-%token <value>  TOKEN_CONST     /* an integer number */
-%token <string> TOKEN_OFFSET    /* an offset in the form xxxx.yyy.zzzzz */
-%token <string> TOKEN_STRING    /* a string "xxxxxx" */
-%token <string> TOKEN_FUNCTION  /* a function */
+%token <fop> TOKEN_CONST     /* an integer number */
+%token <fop> TOKEN_OFFSET    /* an offset in the form xxxx.yyy.zzzzz */
+%token <fop> TOKEN_STRING    /* a string "xxxxxx" */
+%token <fop> TOKEN_FUNCTION  /* a function */
 
 %token TOKEN_IF          /*  if ( ) {  */
 %token TOKEN_ELSE        /*  } else {  */
@@ -79,7 +76,9 @@ u_int32 lineno = 1;
 %token TOKEN_UNKNOWN
 
 /* non terminals */
-%type <value> math_expr
+%type <fop> math_expr
+%type <fop> conditions
+%type <fop> offset
 
 /* precedences */
 %left TOKEN_OP_SUB TOKEN_OP_ADD
@@ -155,14 +154,14 @@ offset:
 
 /* math expression */
 math_expr: 
-         TOKEN_CONST  { $$ = $1; }
+         TOKEN_CONST  { /* $$ = $1; */ }
       |  TOKEN_OFFSET {}
-      |  math_expr TOKEN_OP_ADD math_expr { $$ = $1 + $3; }
-      |  math_expr TOKEN_OP_SUB math_expr { $$ = $1 - $3; }
-      |  math_expr TOKEN_OP_MUL math_expr { $$ = $1 * $3; }
-      |  math_expr TOKEN_OP_DIV math_expr { $$ = $1 / $3; }
-      |  TOKEN_OP_SUB math_expr %prec TOKEN_UMINUS { $$ = -$2; }
-      |  TOKEN_PAR_OPEN math_expr TOKEN_PAR_CLOSE { $$ = $2; }
+      |  math_expr TOKEN_OP_ADD math_expr { /* $$ = $1 + $3; */ }
+      |  math_expr TOKEN_OP_SUB math_expr { /* $$ = $1 - $3; */ }
+      |  math_expr TOKEN_OP_MUL math_expr { /* $$ = $1 * $3; */ }
+      |  math_expr TOKEN_OP_DIV math_expr { /* $$ = $1 / $3; */ }
+      |  TOKEN_OP_SUB math_expr %prec TOKEN_UMINUS { /* $$ = -$2; */ }
+      |  TOKEN_PAR_OPEN math_expr TOKEN_PAR_CLOSE { /* $$ = $2; */ }
       ;
 
 %%
@@ -226,11 +225,13 @@ int yyerror(char *s)
    } while(errors_array[++i].name != NULL);
 
    /* special case for UNKNOWN */
-   if (strstr(error, "TOKEN_UNKNOWN"))
+   if (strstr(error, "TOKEN_UNKNOWN")) {
+      str_replace(&error, "TOKEN_UNKNOWN", "'TOKEN_UNKNOWN'");
       str_replace(&error, "TOKEN_UNKNOWN", yylval.string);
+   }
  
    /* print the actual error message */
-   fprintf (stderr, "[%s:%d]: %s\n", GBL_OPTIONS.source_file, lineno, error);
+   SCRIPT_ERROR("%s", error);
 
    SAFE_FREE(error);
 

@@ -18,7 +18,6 @@ etterfilter_SOURCES = ef_compiler.c \
                       ef_syntax.l \
                       ef_tables.c \
                       $(top_srcdir)/src/ec_error.c \
-                      $(top_srcdir)/src/ec_hash.c \
                       $(top_srcdir)/src/ec_file.c \
                       $(top_srcdir)/src/ec_filter.c \
                       $(top_srcdir)/src/ec_strings.c

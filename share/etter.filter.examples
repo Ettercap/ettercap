@@ -16,15 +16,19 @@ exit();
 
 
 # display a message if the tcp port is 22
-if (ip.proto == TCP && tcp.port == 22) {
-   msg("SSH packet");
+if (ip.proto == TCP) {
+   if (tcp.src == 22 || tcp.dst == 22) {
+      msg("SSH packet");
+   }
 }
 
 
 # log all telnet traffic, also execute ./program on every packet
-if (ip.proto == TCP && tcp.port == 23) {
-   log(DATA.data, "./logfile.log");
-   exec("./program");
+if (ip.proto == TCP) {
+   if (tcp.src == 23 || tcp.dst == 23) {
+      log(DATA.data, "./logfile.log");
+      exec("./program");
+   }
 }
 
 
@@ -44,9 +48,11 @@ if (search(DECODED.data, "ettercap")) {
 
 
 # log ssh decrypted packets matching the regexp
-if (ip.proto == TCP && tcp.port == 22) {
-   if (regex(DECODED.data, ".*login.*")) {
-      log(DECODED.data, "./decrypted_log");
+if (ip.proto == TCP) {
+   if (tcp.src == 22 || tcp.dst == 22) {
+      if (regex(DECODED.data, ".*login.*")) {
+         log(DECODED.data, "./decrypted_log");
+      }
    }
 }
 
@@ -57,7 +63,7 @@ if (ip.ttl < 5) {
 
 # string comparison at a given offset
 if (DATA.data + 40 == "ette") {
-   log();
+   log(DATA.data, "./logfile");
 }
 
 # eof

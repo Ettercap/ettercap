@@ -10,6 +10,7 @@ pkgdata_DATA = etter.dns \
                etter.mime \
                etter.services \
                etter.ssl.crt \
+               etterfilter.cnt \
                etterfilter.tbl \
                etterlog.dtd 
 

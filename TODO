@@ -28,12 +28,9 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
-   + constant table
    + pay attention on network order for constants
 
    + FILTERING ENGINE
-      - include all the protocols in the filter rule
-         - protocols table
       - etterfilter (utility) (used to compile the filter in bytecode)
       - functions
          - replace over mtu

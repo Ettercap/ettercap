@@ -42,12 +42,14 @@ struct globals {
    char test:1;
    char *source_file;
    char *output_file;
+   u_int32 lineno;
 };
 
 /* in el_main.c */
 extern struct globals gbls;
 
-#define GBL_OPTIONS gbls
+#define GBL_OPTIONS  gbls
+#define GBL          gbls
 
 #define GBL_PROGRAM "etterfilter"
 

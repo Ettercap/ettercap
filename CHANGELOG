@@ -37,6 +37,7 @@ NG-0.7.0    ????????
       + X11 (banner discovery)
       + TELNET (collect even failed attempts)
       + SNMP fixes
+      + MySQL fixes
    !! offline sniffing actually does not bind to any NICs
 
 

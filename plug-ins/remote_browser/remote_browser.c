@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: remote_browser.c,v 1.1 2004/04/12 15:31:51 alor Exp $
+    $Id: remote_browser.c,v 1.2 2004/04/14 08:02:35 alor Exp $
 */
 
 
@@ -93,6 +93,8 @@ static void remote_browser(struct packet_object *po)
    char *tmp, *p;
    char *url, *host;
    char *command;
+   char **param = NULL;
+   int i = 0;
    
    /* the client is making a request */
    if (po->DATA.disp_len != 0 && strstr(po->DATA.disp_data, "GET")) {
@@ -129,9 +131,26 @@ static void remote_browser(struct packet_object *po)
       
       USER_MSG("REMOTE COMMAND: %s\n", command);
       
-      /* execute the command */
-      system(command);
-
+      /* split the string in the parameter array */
+      for (p = strsep(&command, " "); p != NULL; p = strsep(&command, " ")) {
+         /* allocate the array */
+         SAFE_REALLOC(param, (i + 1) * sizeof(char *));
+                        
+         /* copy the tokens in the array */
+         param[i++] = strdup(p);
+      }
+   
+      /* NULL terminate the array */
+      SAFE_REALLOC(param, (i + 1) * sizeof(char *));
+               
+      param[i] = NULL;
+               
+      /* execute the script */ 
+      if (fork() == 0) {
+         execvp(param[0], param);
+      }
+         
+      SAFE_FREE(param);
       SAFE_FREE(command);
 bad:
       SAFE_FREE(tmp);

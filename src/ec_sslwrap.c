@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.35 2004/04/05 07:31:45 alor Exp $
+    $Id: ec_sslwrap.c,v 1.36 2004/04/14 08:02:45 alor Exp $
 */
 
 #include <ec.h>
@@ -389,8 +389,10 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
          execvp(param[0], param);
          exit(EINVALID);
       case -1:
+         SAFE_FREE(param);
          return -EINVALID;
       default:
+         SAFE_FREE(param);
          wait(&ret_val);
          if (ret_val == EINVALID)
             return -EINVALID;

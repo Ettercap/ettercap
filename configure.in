@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.57 2003/11/02 20:36:35 alor Exp $
+dnl    $Id: configure.in,v 1.58 2003/11/05 10:14:31 lordnaga Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -719,6 +719,7 @@ AC_CONFIG_FILES(  Makefile
                   utils/etterlog/Makefile
                   utils/etterfilter/Makefile
                   plug-ins/Makefile
+                  plug-ins/chk_poison/Makefile
                   plug-ins/dummy/Makefile
                   plug-ins/finger/Makefile
                   plug-ins/finger_submit/Makefile

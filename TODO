@@ -6,7 +6,6 @@
    
    + FIXING
       - remove the quiet from some plugins
-      - fix strange behaviour on http filtering
       - check SSL thru proxy
 
    + PCAP RELATED
@@ -61,6 +60,7 @@
         (http://www.xi0n.com/forums/showthread.php?s=8dc997a1e1f0d3216c8956d64fcdb414&postid=2767#post2767
          http://www.venkydude.com/articles/yahoo.htm)
       - RDesktop
+      - MSN9 (http://www.hackerscenter.com/Articles/Article.asp?id=54)
 
    + INET
       - handle fragmented packets

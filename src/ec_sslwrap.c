@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.41 2004/05/19 12:02:54 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.42 2004/05/26 09:13:48 alor Exp $
 */
 
 #include <ec.h>
@@ -532,15 +532,18 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 static int sslw_sync_ssl(struct accepted_entry *ae) 
 {   
    X509 *server_cert;
+   int ret;
    
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
    SSL_set_connect_state(ae->ssl[SSL_SERVER]);
    SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
    ae->ssl[SSL_CLIENT] = SSL_new(ssl_ctx_client);
    SSL_set_fd(ae->ssl[SSL_CLIENT], ae->fd[SSL_CLIENT]);
+   
  
-   if (SSL_connect(ae->ssl[SSL_SERVER]) != 1) 
+   if ((ret = SSL_connect(ae->ssl[SSL_SERVER])) != 1) {
       return -EINVALID;
+   }
 
    /* XXX - NULL cypher can give no certificate */
    if ( (server_cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
@@ -925,7 +928,7 @@ EC_THREAD_FUNC(sslw_child)
    }	    
 	    
    if ((ae->status & SSL_ENABLED) && 
-       sslw_sync_ssl(ae) == -EINVALID) {
+      sslw_sync_ssl(ae) == -EINVALID) {
       sslw_wipe_connection(ae);
       return NULL;
    }

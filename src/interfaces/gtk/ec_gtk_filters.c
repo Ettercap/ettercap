@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_filters.c,v 1.3 2004/03/24 11:28:01 alor Exp $
+    $Id: ec_gtk_filters.c,v 1.4 2004/07/06 14:14:43 alor Exp $
 */
 
 #include <ec.h>
-#include <ec_gtk.h>
+#include <ec_file.h>
 #include <ec_filter.h>
 #include <ec_version.h>
+#include <ec_gtk.h>
 
 /* proto */
 
@@ -43,12 +44,20 @@ void gtkui_load_filter(void)
    GtkWidget *dialog;
    char *filename;
    int response = 0;
+#ifdef OS_MINGW
+   char *path = get_share_path("");
+#else
    char *path = INSTALL_DATADIR "/" EC_PROGRAM "/";
+#endif
 
    DEBUG_MSG("gtk_load_filter");
 
    dialog = gtk_file_selection_new ("Select a precompiled filter file...");
    gtk_file_selection_set_filename(GTK_FILE_SELECTION(dialog), path);
+
+#ifdef OS_MINGW
+   SAFE_FREE(path);
+#endif
 
    response = gtk_dialog_run (GTK_DIALOG (dialog));
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.50 2004/06/19 15:49:02 alor Exp $
+    $Id: ec_capture.c,v 1.51 2004/07/06 14:14:43 alor Exp $
 */
 
 #include <ec.h>
@@ -66,8 +66,32 @@ int is_pcap_file(char *file, char *errbuf);
 
 static void set_alignment(int dlt);
 void add_aligner(int dlt, int (*aligner)(void));
+static char *iface_name(char *s);
 
 /*******************************************/
+
+/* 
+ * return the name of the interface.
+ * used to deal with unicode under Windows
+ */
+static char *iface_name(char *s)
+{
+#if defined(OS_MINGW) || defined(OS_CYGWIN)
+   
+   char *buf;
+   size_t len = wcslen ((const wchar_t*)real_name);
+   
+   if (!s[1]) {   /* should probly use IsTextUnicode() ... */
+      SAFE_CALLOC(buf, len, sizeof(char));
+      
+      sprintf (buf, "%S", s);
+      DEBUG_MSG("iface_name: '%S', is_unicode '%s'", s, buf);
+      return buf;
+   }
+#else
+   return strdup(s);
+#endif
+}
 
 /*
  * set up the pcap to capture from the specified interface
@@ -87,12 +111,11 @@ void capture_init(void)
     * if the user didn't specified the interface,
     * we have to found one...
     */
-   
    if (!GBL_OPTIONS->read && GBL_OPTIONS->iface == NULL) {
       char *ifa = pcap_lookupdev(pcap_errbuf);
       ON_ERROR(ifa, NULL, "No suitable interface found...");
       
-      GBL_OPTIONS->iface = strdup(ifa);
+      GBL_OPTIONS->iface = iface_name(ifa);
    }
   
    if (GBL_OPTIONS->iface)

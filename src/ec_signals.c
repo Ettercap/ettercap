@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.25 2004/03/10 08:35:55 alor Exp $
+    $Id: ec_signals.c,v 1.26 2004/07/06 14:14:43 alor Exp $
 */
 
 #include <ec.h>
@@ -27,8 +27,11 @@
 #include <ec_threads.h>
 
 #include <signal.h>
-#include <sys/resource.h>
-#include <sys/wait.h>
+
+#ifndef OS_MINGW
+   #include <sys/resource.h>
+   #include <sys/wait.h>
+#endif
 
 typedef void handler_t(int);
 
@@ -47,23 +50,49 @@ void signal_handler(void)
 {
    DEBUG_MSG("signal_handler activated");
 
+#ifdef SIGSEGV
    signal_handle(SIGSEGV, signal_SEGV, 0);
+#endif
+#ifdef SIGBUS
    signal_handle(SIGBUS, signal_SEGV, 0);
+#endif
+#ifdef SIGINT
    signal_handle(SIGINT, signal_TERM, 0);
+#endif
+#ifdef SIGTERM
    signal_handle(SIGTERM, signal_TERM, 0);
+#endif
+#ifdef SIGCHLD
    signal_handle(SIGCHLD, signal_CHLD, 0);
+#endif
+#ifdef SIGPIPE
    /* needed by sslwrap */
    signal_handle(SIGPIPE, SIG_IGN, 0);
+#endif
+#ifdef SIGALRM
    /* needed by solaris */
    signal_handle(SIGALRM, SIG_IGN, 0);
+#endif
+#ifdef SIGTTOU
    /* allow the user to type "ettercap .. &" */
    signal_handle(SIGTTOU, SIG_IGN, 0);
+#endif
+#ifdef SIGTTIN
    signal_handle(SIGTTIN, SIG_IGN, 0);
+#endif
 }
 
 
 static handler_t *signal_handle(int signo, handler_t *handler, int flags)
 {
+#ifdef OS_MINGW
+   handler_t *old = signal (signo, handler);
+   
+   /* avoid "unused variable" warning */
+   (void)flags;
+   
+   return (old);
+#else
    struct sigaction act, old_act;
 
    act.sa_handler = handler;
@@ -77,6 +106,7 @@ static handler_t *signal_handle(int signo, handler_t *handler, int flags)
       ERROR_MSG("sigaction() failed");
 
    return (old_act.sa_handler);
+#endif   
 }
 
 
@@ -87,19 +117,25 @@ static RETSIGTYPE signal_SEGV(int sig)
 {
 #ifdef DEBUG
 
+#ifndef OS_MINGW
    struct rlimit corelimit = {RLIM_INFINITY, RLIM_INFINITY};
+#endif
 
+#ifdef SIGBUS
    if (sig == SIGBUS)
       DEBUG_MSG(" !!! BUS ERROR !!!");
    else
+#endif
       DEBUG_MSG(" !!! SEGMENTATION FAULT !!!");
    
    ui_cleanup();
    
    fprintf (stderr, "\n"EC_COLOR_YELLOW"Ooops !! This shouldn't happen...\n\n"EC_COLOR_END);
+#ifdef SIGBUS
    if (sig == SIGBUS)
       fprintf (stderr, EC_COLOR_RED"Bus error...\n\n"EC_COLOR_END);
    else
+#endif
       fprintf (stderr, EC_COLOR_RED"Segmentation Fault...\n\n"EC_COLOR_END);
 
    fprintf (stderr, "===========================================================================\n");
@@ -119,8 +155,9 @@ static RETSIGTYPE signal_SEGV(int sig)
    fprintf (stderr, EC_COLOR_CYAN"\n Core dumping... (use the 'core' file for gdb analysis)\n\n"EC_COLOR_END);
    
    /* force the coredump */
-   
+#ifndef OS_MINGW   
    setrlimit(RLIMIT_CORE, &corelimit);
+#endif
    signal(sig, SIG_DFL);
    raise(sig);
 
@@ -129,9 +166,11 @@ static RETSIGTYPE signal_SEGV(int sig)
    ui_cleanup();
    
    fprintf(stderr, EC_COLOR_YELLOW"Ooops ! This shouldn't happen...\n"EC_COLOR_END);
+#ifdef SIGBUS
    if (sig == SIGBUS)
       fprintf (stderr, EC_COLOR_RED"Bus error...\n\n"EC_COLOR_END);
    else
+#endif
       fprintf (stderr, EC_COLOR_RED"Segmentation Fault...\n\n"EC_COLOR_END);
    fprintf(stderr, "Please recompile in debug mode, reproduce the bug and send a bugreport\n\n");
    
@@ -183,13 +222,13 @@ static RETSIGTYPE signal_TERM(int sig)
  */
 static RETSIGTYPE signal_CHLD(int sig)
 {
+#ifndef OS_MINGW
    int stat;
    
    /* wait for the child to return and not become a zombie */
    while (waitpid (-1, &stat, WNOHANG) > 0);
+#endif
 }
-
-
 
 /* EOF */
 

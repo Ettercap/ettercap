@@ -1,11 +1,13 @@
 
-# $Id: Makefile.am,v 1.81 2004/06/08 08:58:42 alor Exp $
+# $Id: Makefile.am,v 1.82 2004/09/14 07:58:17 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 SUBDIRS = os interfaces
 
 bin_PROGRAMS = ettercap
+
+EXTRA_DIST = ettercap.rc
 
 ettercap_SOURCES = ec_capture.c \
                    ec_checksum.c \

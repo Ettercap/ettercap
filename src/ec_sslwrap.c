@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.54 2004/08/03 19:33:53 alor Exp $
+    $Id: ec_sslwrap.c,v 1.55 2004/09/14 07:58:17 alor Exp $
 */
 
 #include <ec.h>
@@ -473,8 +473,9 @@ static int sslw_is_ssl(struct packet_object *po)
 {
    struct listen_entry *le;
    
-   /* If it's already coming from ssl wrapper */ 
-   if (po->flags & PO_FROMSSL) 
+   /* If it's already coming from ssl wrapper 
+    * or the connection is not TCP */ 
+   if (po->flags & PO_FROMSSL || po->L4.proto != NL_TYPE_TCP) 
       return 0;
 
    LIST_FOREACH(le, &listen_ports, next) {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ppp.c,v 1.1 2003/12/01 16:33:41 lordnaga Exp $
+    $Id: ec_ppp.c,v 1.2 2003/12/01 17:35:08 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -100,12 +100,13 @@ FUNC_DECODER(decode_ppp)
 
 
    ppph = (struct ppp_header *)DECODE_DATA;
-   
+
    /* We have to guess if header compression was negotiated */
+   /* XXX - && or || ??? */
    if (ppph->address != 0xff && ppph->control != 0x3) {
       proto = *((u_char *)ppph);
       
-      if (proto == 0) {
+      if (proto != PPP_PROTO_IP) {
          proto = ntohs(*((u_int16 *)ppph));
          DECODED_LEN = 2;
       } else 
@@ -115,7 +116,9 @@ FUNC_DECODER(decode_ppp)
       proto = ntohs(ppph->proto);
       DECODED_LEN = sizeof(ppph);
 	    
-      if (proto != PPP_PROTO_IP) {   
+      if (proto != PPP_PROTO_IP && 
+          proto != PPP_PROTO_CHAP && 
+          proto != PPP_PROTO_PAP) {   
          proto = *((u_char *)ppph + 2);
          DECODED_LEN = 3;
       }	    
@@ -169,7 +172,7 @@ FUNC_DECODER(decode_ppp)
                DISSECT_MSG("%s\n", ip_addr_ntoa(&PACKET->L3.dst, temp));
             }
 		
-            DISSECT_MSG("PPP: CHAP Password:   %s:\"\":\"\":", user);
+            DISSECT_MSG("PPP : MS-CHAP Password:   %s:\"\":\"\":", user);
 		
             if (version == 1) {        
                for (i = 0; i < 24; i++) 
@@ -178,7 +181,7 @@ FUNC_DECODER(decode_ppp)
 			
                for (i = 0; i < 24; i++) 
                   DISSECT_MSG("%02X", chapch->value.response_v1.nt[i]);
-               DISSECT_MSG(":%s\n",schallenge);
+               DISSECT_MSG(":%s\n\n",schallenge);
 		  	
             } else if (version == 2) {
 	       
@@ -201,7 +204,7 @@ FUNC_DECODER(decode_ppp)
 
                for (i = 0; i < 8; i++) 
                   DISSECT_MSG("%02X", digest[i]);
-               DISSECT_MSG("\n");			
+               DISSECT_MSG("\n\n");			
             }
             version = 0;
          break;
@@ -220,7 +223,7 @@ FUNC_DECODER(decode_ppp)
             DISSECT_MSG("%s\n", ip_addr_ntoa(&PACKET->L3.dst, temp));
          }
       
-         DISSECT_MSG("PPTP PAP User: ");
+         DISSECT_MSG("PPP : PAP User: ");
 	
          auth_len = *pap_auth;
          if (auth_len > sizeof(temp)-2) 
@@ -237,7 +240,7 @@ FUNC_DECODER(decode_ppp)
             auth_len = sizeof(temp)-2;
          memcpy(temp, pap_auth, auth_len);
          temp[auth_len] = 0;
-         DISSECT_MSG("PPTP PAP Pass: %s\n\n", temp);   
+         DISSECT_MSG("PPP : PAP Pass: %s\n\n", temp);   
       }
    }
 

@@ -10,6 +10,7 @@ struct dissector_info {
    char *pass;
    char *info;
    char *banner;
+   char failed;
 };
 
 
@@ -18,6 +19,8 @@ struct active_user {
    char *user;
    char *pass;
    char *info;
+   u_int8 failed;
+   struct ip_addr client;
    LIST_ENTRY(active_user) next;
 };
 

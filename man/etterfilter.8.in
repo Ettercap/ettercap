@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.5 2003/09/09 16:42:11 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.6 2003/09/09 20:10:55 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -112,10 +112,10 @@ will be translated as <L=3, O=9, S=1>. Indeed it is the 9th byte of level 3 and
 its size is 1 byte. 'ip.ttl + 1' is the same of 'ip.proto' since the 10th byte
 of the IP header is the protocol incapsulated in the IP packet.
 .Sp
-The list of all supported virtual pointer are in the file etterfilter.conf. You
+The list of all supported virtual pointer are in the file etterfilter.tbl. You
 can add your own virtual pointer by adding a new table or modifying the
 existing one. Refear to the comments at the beginning of the file for the
-syntax of etterfilter.conf file.
+syntax of etterfilter.tbl file.
 
 
 .TP

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_passive.c,v 1.7 2003/07/07 10:43:20 alor Exp $
+    $Id: ec_passive.c,v 1.8 2003/09/09 20:10:55 alor Exp $
 */
 
 #include <ec.h>
@@ -140,8 +140,11 @@ void print_host(struct host_profile *h)
                   o->banner);
       
       LIST_FOREACH(u, &(o->users_list_head), next) {
-         
-         fprintf(stdout, "      ACCOUNT : %s  %s \n", u->user, u->pass);
+        
+         if (u->failed)
+            fprintf(stdout, "      ACCOUNT : * %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
+         else
+            fprintf(stdout, "      ACCOUNT : %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
          if (u->info)
             fprintf(stdout, "      INFO     : %s\n", u->info);
       }
@@ -209,9 +212,14 @@ void print_host_xml(struct host_profile *h)
       
       LIST_FOREACH(u, &(o->users_list_head), next) {
          
-         fprintf(stdout, "\t\t\t<account user=\"%s\">\n", u->user);
+         if (u->failed)  
+            fprintf(stdout, "\t\t\t<account user=\"%s\" failed=\"1\">\n", u->user);
+         else
+            fprintf(stdout, "\t\t\t<account user=\"%s\">\n", u->user);
+            
          fprintf(stdout, "\t\t\t\t<user>%s</user>\n", u->user);
          fprintf(stdout, "\t\t\t\t<pass>%s</pass>\n", u->pass);
+         fprintf(stdout, "\t\t\t\t<client>%s</client>\n", ip_addr_ntoa(&u->client, tmp));
          if (u->info)
             fprintf(stdout, "\t\t\t\t<info>%s</info>\n", u->info);
          

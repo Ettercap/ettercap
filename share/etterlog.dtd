@@ -17,8 +17,10 @@
 <!ATTLIST port addr CDATA #REQUIRED>
 <!ATTLIST port service CDATA #REQUIRED>
 <!ELEMENT banner (#PCDATA)>
-<!ELEMENT account (user, pass, info?)>
+<!ELEMENT account (user, pass, client, info?)>
 <!ATTLIST account user CDATA #REQUIRED>
+<!ATTLIST account failed CDATA>
 <!ELEMENT user (#PCDATA)>
 <!ELEMENT pass (#PCDATA)>
+<!ELEMENT client (#PCDATA)>
 <!ELEMENT info (#PCDATA)>

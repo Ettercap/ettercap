@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.9 2003/07/01 19:15:45 alor Exp $
+    $Id: el_profiles.c,v 1.10 2003/09/09 20:10:55 alor Exp $
 */
 
 #include <el.h>
@@ -245,6 +245,8 @@ static void update_user_list(struct open_port *o, struct log_header_info *inf, s
    if (buf->user && buf->pass) {
       u->user = strdup(buf->user);
       u->pass = strdup(buf->pass);
+      u->failed = inf->failed;
+      memcpy(&u->client, &inf->client, sizeof(struct ip_addr));
    } else {
       SAFE_FREE(u);
       return;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.10 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.11 2003/09/09 20:10:55 alor Exp $
 */
 
 #include <el.h>
@@ -125,11 +125,13 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
 {
    int c;
 
+   /* get the whole header */
    c = gzread(GBL_LOG_FD, inf, sizeof(struct log_header_info));
 
+   /* truncated ? */
    if (c != sizeof(struct log_header_info))
       return -EINVALID;
-  
+
    /* adjust the variable lengths */
    inf->var.user_len = ntohs(inf->var.user_len);
    inf->var.pass_len = ntohs(inf->var.pass_len);

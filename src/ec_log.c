@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.22 2003/08/23 07:37:45 alor Exp $
+    $Id: ec_log.c,v 1.23 2003/09/09 20:10:55 alor Exp $
 */
 
 #include <ec.h>
@@ -309,6 +309,7 @@ static void log_write_info(struct packet_object *po)
    
    /* the ip address */
    memcpy(&hi.L3_addr, &po->L3.src, sizeof(struct ip_addr));
+   /* the account must be associated with the server, so use dst */
    memcpy(&hid.L3_addr, &po->L3.dst, sizeof(struct ip_addr));
   
    /* the protocol */
@@ -366,6 +367,10 @@ static void log_write_info(struct packet_object *po)
          hid.type = FP_UNKNOWN;
          break;
    }
+   
+   /* set account informations */
+   hid.failed = po->DISSECTOR.failed;
+   memcpy(&hid.client, &po->L3.src, sizeof(struct ip_addr));
    
    /* set the length of the fields */
    if (po->DISSECTOR.user)

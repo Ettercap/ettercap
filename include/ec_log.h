@@ -94,6 +94,10 @@ struct log_header_info {
    
    u_char fingerprint[FINGER_LEN+1];
 
+   /* account informations */
+   u_int8 failed;
+   struct ip_addr client;
+
    struct variable {
       u_int16 user_len;
       u_int16 pass_len;

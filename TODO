@@ -28,10 +28,6 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
-   + crwm@freemail.it
-   + source ip address for pass
-   + failed attempts
-
    + FILTERING ENGINE
       - include all the protocols in the filter rule
          - protocols table
@@ -60,6 +56,7 @@ Oct 2003:
    
    + DISSECTORS
       - convert all the old dissectors
+      - record failed attempts
       - HTTPS without the dirty trick (can we use loopback?)
       - HTTP sniff cookies
       - SSH has to support DES, 3DES, blowfish and zlib compression

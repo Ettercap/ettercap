@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.25 2003/07/15 21:31:34 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.26 2003/09/09 20:10:55 alor Exp $
 */
 
 #include <el.h>
@@ -367,11 +367,13 @@ static void print_pass(struct host_profile *h)
             if (strcmp(h->hostname, ""))
                fprintf(stdout, "(%s)", h->hostname);
             
-            fprintf(stdout, "\t%s %d\tUSER: %s  PASS: %s",
+            fprintf(stdout, "\t%s %d\t%s USER: %s \tPASS: %s \tclient: %s",
                   (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , 
                   ntohs(o->L4_addr),
+                  (u->failed) ? "*" : "",
                   u->user,
-                  u->pass);
+                  u->pass,
+                  ip_addr_ntoa(&u->client, tmp));
             if (u->info)
                fprintf(stdout, "  INFO: %s\n", u->info);
             else

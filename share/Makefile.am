@@ -10,9 +10,9 @@ pkgdata_DATA = etter.dns \
                etter.mime \
                etter.services \
                etter.ssl.crt \
+               etterfilter.tbl \
                etterlog.dtd 
 
-sysconf_DATA = etter.conf \
-               etterfilter.conf
+sysconf_DATA = etter.conf
 
 EXTRA_DIST = etter*

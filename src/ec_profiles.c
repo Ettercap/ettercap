@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.14 2003/09/02 14:51:01 alor Exp $
+    $Id: ec_profiles.c,v 1.15 2003/09/09 20:10:55 alor Exp $
 */
 
 #include <ec.h>
@@ -370,6 +370,9 @@ static int profile_add_user(struct packet_object *po)
    if (po->DISSECTOR.user && po->DISSECTOR.pass) {
       u->user = strdup(po->DISSECTOR.user);
       u->pass = strdup(po->DISSECTOR.pass);
+      u->failed = po->DISSECTOR.failed;
+      /* save the source of the connection */
+      memcpy(&u->client, &po->L3.src, sizeof(struct ip_addr));
    } else {
       SAFE_FREE(u);
       PROFILE_UNLOCK;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.37 2003/10/16 14:45:20 lordnaga Exp $
+    $Id: ec_filter.c,v 1.38 2003/10/16 15:33:08 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -633,6 +633,10 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    /* mark the packet as modified */
    po->flags |= PO_MODIFIED;
    
+   /* unset the flag to be dropped */
+   if (po->flags & PO_DROPPED)
+      po->flags ^= PO_DROPPED;
+
    /* close and unmap the file */
    close(fd);
    munmap(file, size);
@@ -689,7 +693,7 @@ static int func_drop(struct packet_object *po)
    po->flags |= PO_DROPPED;
 
    /* the delta is all the payload */
-   po->DATA.delta = -po->DATA.len;
+   po->DATA.delta -= po->DATA.len;
    po->DATA.len = 0;
    
    return ESUCCESS;

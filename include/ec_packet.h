@@ -27,6 +27,7 @@ struct packet_object {
       u_char * header;
       u_char * options;
       size_t len;
+      size_t payload_len;
       size_t optlen;
       struct ip_addr src;
       struct ip_addr dst;

@@ -11,6 +11,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_error.c \
 				   ec_ui.c \
 				   ec_inet.c \
+				   ec_checksum.c \
 				   ec_threads.c \
 				   ec_capture.c \
 				   ec_send.c \

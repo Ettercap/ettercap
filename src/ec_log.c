@@ -1,6 +1,8 @@
 /*
     ettercap -- log handling module
 
+    Copyright (C) ALoR & NaGA
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -15,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.12 2003/04/07 21:57:55 alor Exp $
+    $Id: ec_log.c,v 1.13 2003/04/14 21:05:20 alor Exp $
 */
 
 #include <ec.h>

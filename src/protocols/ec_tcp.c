@@ -15,12 +15,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.8 2003/04/02 11:56:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.9 2003/04/14 21:06:13 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_fingerprint.h>
+#include <ec_checksum.h>
 
 
 /* globals */
@@ -45,7 +46,7 @@ struct tcp_header {
 #define TH_ACK  0x10
 #define TH_URG  0x20
    u_int16  win;        /* window */
-   u_int16  sum;        /* checksum */
+   u_int16  csum;       /* checksum */
    u_int16  urp;        /* urgent pointer */
 };
 
@@ -112,12 +113,21 @@ FUNC_DECODER(decode_tcp)
 
    /* set up the data poiters */
    PACKET->DATA.data = opt_end;
-   PACKET->DATA.len = DECODE_DATALEN - DECODED_LEN;
+   PACKET->DATA.len = PACKET->L3.payload_len - DECODED_LEN;
 
    /* create the buffer to be displayed */
    packet_disp_data(PACKET, PACKET->DATA.data, PACKET->DATA.len);
    
-   /* XXX - implemet checksum check */
+   /* 
+    * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
+    * the checksum is should be 0 and not equal to ip->csum ;)
+    */
+   if (L4_checksum(PACKET) != 0) {
+      char tmp[MAX_ASCII_ADDR_LEN];
+      USER_MSG("Invalid TCP packet from %s:%d : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
+                                    ntohs(tcp->sport), L4_checksum(PACKET), ntohs(tcp->csum) );
+      return NULL;
+   }
      
    /* 
     * complete the passive fingerprint (started at IP layer)

@@ -1,6 +1,8 @@
 /*
     ettercap -- packet object handling
 
+    Copyright (C) ALoR & NaGA
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -15,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.10 2003/04/03 15:10:43 alor Exp $
+    $Id: ec_packet.c,v 1.11 2003/04/14 21:05:22 alor Exp $
 */
 
 #include <ec.h>

@@ -1,6 +1,8 @@
 /*
     ettercap -- decoder module
 
+    Copyright (C) ALoR & NaGA
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -15,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.15 2003/04/12 19:11:34 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.16 2003/04/14 21:05:13 alor Exp $
 */
 
 #include <ec.h>
@@ -88,6 +90,19 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    if (GBL_OPTIONS->read)
       GBL_PCAP->dump_off = ftell(pcap_file(GBL_PCAP->pcap));
 
+   /* 
+    * dump packet to file if specified on command line 
+    * it dumps all the packets disregarding the filter
+    */
+   if (GBL_OPTIONS->dump) {
+      /* 
+       * we need to lock this because in SM_BRIDGED the
+       * packets are dumped in the log file by two threads
+       */
+      DUMP_LOCK;
+      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
+      DUMP_UNLOCK;
+   }
    
    /* extract data and datalen from pcap packet */
    data = (u_char *)pkt;
@@ -127,19 +142,6 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    hook_point(HOOK_DECODED, po);
    
-   /* 
-    * dump packet to file if specified on command line 
-    * and if it passes the display filter
-    */
-   if (GBL_OPTIONS->dump) {
-      /* 
-       * we need to lock this because in SM_BRIDGED the
-       * packets are dumped in the log file by two threads
-       */
-      DUMP_LOCK;
-      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
-      DUMP_UNLOCK;
-   }
    
    /* 
     * use the sniffing method funcion to forward the packet 

@@ -1,6 +1,8 @@
 /*
     ettercap -- plugin handling
 
+    Copyright (C) ALoR & NaGA
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -15,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.6 2003/04/09 10:03:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.7 2003/04/14 21:05:24 alor Exp $
 */
 
 #include <ec.h>

@@ -1,6 +1,8 @@
 /*
     ettercap -- thread handling
 
+    Copyright (C) ALoR & NaGA
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -15,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.5 2003/03/31 21:46:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.6 2003/04/14 21:05:27 alor Exp $
 */
 
 #include <ec.h>

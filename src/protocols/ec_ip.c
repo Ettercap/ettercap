@@ -15,13 +15,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.6 2003/04/05 09:25:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.7 2003/04/14 21:06:11 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_inet.h>
 #include <ec_decode.h>
 #include <ec_fingerprint.h>
+#include <ec_checksum.h>
 
 
 /* globals */
@@ -41,7 +42,7 @@ struct ip_header {
 #define IP_DF 0x4000
    u_int8   ttl;
    u_int8   protocol;
-   u_int16  check;
+   u_int16  csum;
    u_int32  saddr;
    u_int32  daddr;
 /*The options start here. */
@@ -93,6 +94,9 @@ FUNC_DECODER(decode_ip)
    /* other relevant infos */
    PACKET->L3.header = (u_char *)DECODE_DATA;
    PACKET->L3.len = DECODED_LEN;
+
+   /* this is needed at upper layer to calculate the tcp payload size */
+   PACKET->L3.payload_len = ntohs(ip->tot_len) - DECODED_LEN;
    
    if (ip->ihl * 4 != sizeof(struct ip_header)) {
       PACKET->L3.options = (u_char *)(DECODE_DATA) + sizeof(struct ip_header);
@@ -104,8 +108,16 @@ FUNC_DECODER(decode_ip)
    
    PACKET->L3.proto = htons(LL_TYPE_IP);
    PACKET->L3.ttl = ip->ttl;
-   
-   /* XXX - implemet checksum check */
+  
+   /* 
+    * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
+    * the checksum is should be 0 and not equal to ip->csum ;)
+    */
+   if (L3_checksum(PACKET) != 0) {
+      USER_MSG("Invalid IP packet from %s : csum [%#x] (%#x)\n", int_ntoa(ip->saddr), 
+                              L3_checksum(PACKET), ntohs(ip->csum));
+      return NULL;
+   }
    
    /* if it is a TCP packet, try to passive fingerprint it */
    if (ip->protocol == NL_TYPE_TCP) {

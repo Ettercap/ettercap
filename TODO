@@ -14,9 +14,6 @@
       - LTDL_SHLIB_EXT
       - make test with dlopen-test
 
-   + INET
-      - checksumming functions
-
    + ARP SCAN
 
    + ARP POISON ENGINE
@@ -24,7 +21,6 @@
       - multipoison
    
    + FILTERING ENGINE
-      - implement the sessions
       - use regexp for filtering
       - include the ip in the filter rule
       - filter even the header of the packets

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.14 2003/11/02 20:36:44 alor Exp $
+    $Id: wdg.c,v 1.15 2003/11/02 22:08:44 alor Exp $
 */
 
 #include <wdg.h>
@@ -50,10 +50,14 @@ static TAILQ_HEAD(, wdg_obj_list) wdg_objects_list = TAILQ_HEAD_INITIALIZER(wdg_
 /* the currently focused object */
 static struct wdg_obj_list *wdg_focused_obj;
 
+/* pressing this key, the event_handler will exit */
+static int wdg_exit_key;
+
 /* PROTOS */
 
 void wdg_init(void);
 void wdg_cleanup(void);
+void wdg_exit(void);
 void wdg_redraw_all(void);
 
 void wdg_add_idle_callback(void (*callback)(void));
@@ -173,6 +177,17 @@ void wdg_cleanup(void)
 #endif
 }
 
+/*
+ * used to exit from the events_handler.
+ * this function will put in the input buffer
+ * the exit key, so the handler will get it 
+ * and perfrom a clean exit 
+ */
+void wdg_exit(void)
+{
+   /* put the exit key in the input buffer */
+   ungetch(wdg_exit_key);
+}
 
 /* 
  * called upon screen resize
@@ -201,6 +216,9 @@ int wdg_events_handler(int exit_key)
 {
    int key;
    struct wdg_mouse_event mouse;
+
+   /* set the global exit key (used by wdg_exit()) */
+   wdg_exit_key = exit_key;
    
    /* infinite loop */
    WDG_LOOP {
@@ -251,7 +269,7 @@ int wdg_events_handler(int exit_key)
             
          default:
             /* emergency exit key */
-            if (key == exit_key)
+            if (key == wdg_exit_key)
                return WDG_ESUCCESS;
 
 #ifdef NCURSES_MOUSE_VERSION
@@ -334,7 +352,19 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
     */
    if (key == KEY_MOUSE) {
       struct wdg_obj_list *wl;
+      
+      /* 
+       * first dispatch to the root object,
+       * since it is usually a menu, it may overlap
+       * other objects and needs to get the event first
+       */
+      if (wdg_root_obj != NULL) {
+         if (wdg_root_obj->get_msg(wdg_root_obj, key, mouse) == WDG_ESUCCESS)
+            /* the root object handled the message */
+            return;
+      }
 
+      /* dispatch to all the other objects */
       TAILQ_FOREACH(wl, &wdg_objects_list, next) {
          if ((wl->wo->flags & WDG_OBJ_WANT_FOCUS) && (wl->wo->flags & WDG_OBJ_VISIBLE) ) {
             if (wl->wo->get_msg(wl->wo, key, mouse) == WDG_ESUCCESS)
@@ -366,8 +396,6 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
       flash();
       beep();
    }
-   
-   refresh();
 }
 
 /*

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.11 2003/11/02 20:36:44 alor Exp $
+    $Id: ec_curses.c,v 1.12 2003/11/02 22:08:35 alor Exp $
 */
 
 #include <ec.h>
@@ -149,7 +149,7 @@ void curses_interface(void)
                               {"Open...", "",  NULL},
                               {"Close",   "",  NULL},
                               {"-",       "", NULL},
-                              {"Exit",    "Q", NULL},
+                              {"Exit",    "Q", wdg_exit},
                               {NULL, NULL, NULL},
                             };
    struct wdg_menu view[] = { {"View",    "V",  NULL},

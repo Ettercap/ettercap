@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.11 2003/11/02 20:36:44 alor Exp $ */
+/* $Id: wdg.h,v 1.12 2003/11/02 22:08:44 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -158,6 +158,7 @@ extern void wdg_menu_add(wdg_t *wo, struct wdg_menu *menu);
 
 extern void wdg_init(void);
 extern void wdg_cleanup(void);
+extern void wdg_exit(void);
 extern void wdg_redraw_all(void);
 
 /* the main dispatching loop */

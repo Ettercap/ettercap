@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.1 2003/11/02 20:36:44 alor Exp $
+    $Id: wdg_menu.c,v 1.2 2003/11/02 22:08:44 alor Exp $
 */
 
 #include <wdg.h>
@@ -441,21 +441,25 @@ static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
    
    c = menu_driver(focus_unit->m, wdg_menu_virtualize(key) );
    
-   //move(1, 35); printw("%02d ", c);
+   move(1, 35); printw("%02d ", c);
 
    /* skip non selectable items */
    if ( !(item_opts(current_item(focus_unit->m)) & O_SELECTABLE) )
       c = menu_driver(focus_unit->m, wdg_menu_virtualize(key) );
 
    if (c == E_UNKNOWN_COMMAND) {
+      /* the item is not selectable (probably selected with mouse */
+      if ( !(item_opts(current_item(focus_unit->m)) & O_SELECTABLE) )
+         return WDG_ESUCCESS;
+         
       /* XXX - handle the menu selection */
       func = item_userptr(current_item(focus_unit->m));
       
-      //printw("%s %p", item_name(current_item(focus_unit->m)), func);
+      printw("%s %p", item_name(current_item(focus_unit->m)), func);
 
       /* close the menu */
       wdg_menu_close(wo);
-      
+
       /* execute the callback */
       if (func != NULL)
          func();
@@ -515,7 +519,7 @@ static void wdg_menu_open(struct wdg_object *wo)
    set_menu_win(focus_unit->m, focus_unit->win);
    
    /* the subwin for the menu */
-   set_menu_sub(focus_unit->m, derwin(focus_unit->win, mrows, mcols, 1, 1));
+   set_menu_sub(focus_unit->m, derwin(focus_unit->win, mrows + 1, mcols, 1, 1));
 
    /* menu attributes */
    set_menu_mark(focus_unit->m, "");

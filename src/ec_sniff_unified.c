@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.15 2003/12/17 15:56:36 alor Exp $
+    $Id: ec_sniff_unified.c,v 1.16 2004/01/03 15:13:24 alor Exp $
 */
 
 #include <ec.h>
@@ -41,6 +41,11 @@ void start_unified_sniff(void)
 {
    DEBUG_MSG("start_unified_sniff");
    
+   if (GBL_SNIFF->active == 1) {
+      USER_MSG("Unified sniffing already started...\n");
+      return;
+   }
+   
    USER_MSG("Starting Unified sniffing...\n\n");
    
    /* create the timeouter thread */
@@ -49,6 +54,8 @@ void start_unified_sniff(void)
 
    /* create the thread for packet capture */
    ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
+
+   GBL_SNIFF->active = 1;
 }
 
 
@@ -60,11 +67,19 @@ void stop_unified_sniff(void)
    pthread_t pid;
    
    DEBUG_MSG("stop_unified_sniff");
+   
+   if (GBL_SNIFF->active == 0) {
+      USER_MSG("Unified sniffing is not running...\n");
+      return;
+   }
   
    /* get the pid and kill it */
    if ((pid = ec_thread_getpid("capture")) != 0)
       ec_thread_destroy(pid);
 
+   USER_MSG("Unified sniffing was stopped.\n");
+
+   GBL_SNIFF->active = 0;
 }
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.19 2003/11/01 15:52:58 alor Exp $
+    $Id: ec_session.c,v 1.20 2003/11/08 14:59:44 alor Exp $
 */
 
 #include <ec.h>
@@ -74,7 +74,7 @@ static pthread_mutex_t session_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void session_put(struct ec_session *s)
 {
-   struct session_list *sl, *old = NULL;
+   struct session_list *sl, *tmp = NULL;
    time_t ti = time(NULL);
    u_int32 h;
 
@@ -84,7 +84,7 @@ void session_put(struct ec_session *s)
    h = session_hash(s->ident, s->ident_len);
    
    /* search if it already exist */
-   LIST_FOREACH(sl, &session_list_head[h], next) {
+   LIST_FOREACH_SAFE(sl, &session_list_head[h], next, tmp) {
       /* sessions are unique per thread */
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, s->ident) ) {
 
@@ -100,21 +100,14 @@ void session_put(struct ec_session *s)
          return;
       }
 
-      /* delete timeouted sessions */
-      SAFE_FREE(old);
-      
       if (sl->ts < (ti - GBL_CONF->connection_timeout) ) {
          DEBUG_MSG("session_put: [%u][%p] timeouted", (u_int32)sl->id, sl->s->ident);
          session_free(sl->s);
          LIST_REMOVE(sl, next);
-         /* remember the pointer and free it the next loop */
-         old = sl;
+         SAFE_FREE(sl);
       }
    }
    
-   /* if it was the last element, free it */   
-   SAFE_FREE(old);
-
    /* sanity check */
    BUG_IF(s->match == NULL);
   

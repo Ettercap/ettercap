@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_connbuf.c,v 1.5 2003/11/06 20:09:09 alor Exp $
+    $Id: ec_connbuf.c,v 1.6 2003/11/08 14:59:44 alor Exp $
 */
 
 #include <ec.h>
@@ -102,10 +102,9 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
     * if we have to free some packets
     */
    if (cb->size + p->size > cb->max_size) {
-      struct conn_pck_list *old = NULL;
+      struct conn_pck_list *tmp = NULL;
       
-      TAILQ_FOREACH_REVERSE(e, &cb->connbuf_tail, next, connbuf_head) {
-         SAFE_FREE(old);
+      TAILQ_FOREACH_REVERSE_SAFE(e, &cb->connbuf_tail, next, connbuf_head, tmp) {
          
          /* we have freed enough bytes */
          if (cb->size + p->size <= cb->max_size)
@@ -116,9 +115,8 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
          /* remove the elemnt */
          SAFE_FREE(e->buf);
          TAILQ_REMOVE(&cb->connbuf_tail, e, next);
-         old = e;
+         SAFE_FREE(e);
       }
-      SAFE_FREE(old);
    }
    
    /* insert the packet in the tail */

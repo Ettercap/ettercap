@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_streambuf.c,v 1.5 2003/10/19 16:46:19 lordnaga Exp $
+    $Id: ec_streambuf.c,v 1.6 2003/11/08 14:59:44 alor Exp $
 */
 
 #include <ec.h>
@@ -120,7 +120,7 @@ int streambuf_seq_add(struct stream_buf *sb, struct packet_object *po)
 int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode)
 {
    struct stream_pck_list *p;
-   struct stream_pck_list *old = NULL;
+   struct stream_pck_list *tmp = NULL;
    size_t size = 0, to_copy = 0;
 
    /* check if we have enough data */
@@ -130,10 +130,8 @@ int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode)
    STREAMBUF_LOCK(sb->streambuf_mutex);
    
    /* packets in the tail */
-   TAILQ_FOREACH(p, &sb->streambuf_tail, next) {
+   TAILQ_FOREACH_SAFE(p, &sb->streambuf_tail, next, tmp) {
 
-      SAFE_FREE(old);
-      
       /* we have copied all the needed bytes */
       if (size >= len)
          break;
@@ -168,11 +166,8 @@ int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode)
       /* remove the entry from the tail */
       SAFE_FREE(p->buf);
       TAILQ_REMOVE(&sb->streambuf_tail, p, next);
-      old = p;
-      
+      SAFE_FREE(p);
    }
-
-   SAFE_FREE(old);
 
    /* update the total size */
    sb->size -= size;

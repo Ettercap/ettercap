@@ -1,3 +1,12 @@
+
+/*      
+ * $Id: queue.h,v 1.3 2003/11/08 14:59:47 alor Exp $
+ *      
+ *      added the _SAFE functions from:
+ *      $FreeBSD: queue.h,v 1.56 2003/08/14 14:49:26 kan Exp $          
+ *
+ *      the rest is copyrighted by:
+ */
 /*      $OpenBSD: queue.h,v 1.14.4.3 2003/06/07 11:09:08 ho Exp $       */
 /*      $NetBSD: queue.h,v 1.11 1996/05/16 05:17:14 mycroft Exp $       */
 
@@ -111,6 +120,12 @@ struct {                                                                \
             (var) != SLIST_END(head);                                   \
             (var) = SLIST_NEXT(var, field))
 
+   
+#define  SLIST_FOREACH_SAFE(var, head, field, tvar)                     \
+        for ((var) = SLIST_FIRST((head));                               \
+             (var) && ((tvar) = SLIST_NEXT((var), field), 1);           \
+             (var) = (tvar))
+
 /*
  * Singly-linked List functions.
  */
@@ -174,6 +189,13 @@ struct {                                                                \
         for((var) = LIST_FIRST(head);                                   \
             (var)!= LIST_END(head);                                     \
             (var) = LIST_NEXT(var, field))
+
+#define  LIST_FOREACH_SAFE(var, head, field, tvar)                      \
+        for ((var) = LIST_FIRST((head));                                \
+             (var) && ((tvar) = LIST_NEXT((var), field), 1);            \
+             (var) = (tvar))
+
+   
 
 /*
  * List functions.
@@ -249,6 +271,11 @@ struct {                                                                \
             (var) != SIMPLEQ_END(head);                                 \
             (var) = SIMPLEQ_NEXT(var, field))
 
+#define  SIMPLEQ_FOREACH_SAFE(var, head, field, tvar)                   \
+        for ((var) = SIMPLEQ_FIRST((head));                             \
+             (var) && ((tvar) = SIMPLEQ_NEXT((var), field), 1);         \
+             (var) = (tvar))
+   
 /*
  * Simple queue functions.
  */
@@ -317,11 +344,21 @@ struct {                                                                \
             (var) != TAILQ_END(head);                                   \
             (var) = TAILQ_NEXT(var, field))
 
+#define  TAILQ_FOREACH_SAFE(var, head, field, tvar)                     \
+        for ((var) = TAILQ_FIRST((head));                               \
+             (var) && ((tvar) = TAILQ_NEXT((var), field), 1);           \
+             (var) = (tvar))
+   
 #define TAILQ_FOREACH_REVERSE(var, head, field, headname)               \
         for((var) = TAILQ_LAST(head, headname);                         \
             (var) != TAILQ_END(head);                                   \
             (var) = TAILQ_PREV(var, headname, field))
 
+#define  TAILQ_FOREACH_REVERSE_SAFE(var, head, field, headname, tvar)   \
+        for ((var) = TAILQ_LAST((head), headname);                      \
+             (var) && ((tvar) = TAILQ_PREV((var), headname, field), 1); \
+             (var) = (tvar))
+   
 /*
  * Tail queue functions.
  */

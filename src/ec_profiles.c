@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.26 2003/10/28 21:52:20 alor Exp $
+    $Id: ec_profiles.c,v 1.27 2003/11/08 14:59:44 alor Exp $
 */
 
 #include <ec.h>
@@ -461,50 +461,37 @@ void profile_purge_all(void)
  */
 static void profile_purge(int flags)
 {
-   struct host_profile *h, *old_h = NULL;
-   struct open_port *o, *old_o = NULL;
-   struct active_user *u, *old_u = NULL;
+   struct host_profile *h, *tmp_h = NULL;
+   struct open_port *o, *tmp_o = NULL;
+   struct active_user *u, *tmp_u = NULL;
    
    PROFILE_LOCK;
 
-   LIST_FOREACH(h, &GBL_PROFILES, next) {
+   LIST_FOREACH_SAFE(h, &GBL_PROFILES, next, tmp_h) {
 
-      /* free the previous entry */
-      SAFE_FREE(old_h);
-      
       /* the host matches the flags */
       if (h->type & flags) {
          /* free all the alloc'd ports */
-         LIST_FOREACH(o, &(h->open_ports_head), next) {
+         LIST_FOREACH_SAFE(o, &(h->open_ports_head), next, tmp_o) {
             
-            /* free the previous entry */
-            SAFE_FREE(old_o);
             SAFE_FREE(o->banner);
             
-            LIST_FOREACH(u, &(o->users_list_head), next) {
-               /* free the previous entry */
-               SAFE_FREE(old_u);
+            LIST_FOREACH_SAFE(u, &(o->users_list_head), next, tmp_u) {
                /* free the current infos */
                SAFE_FREE(u->user);
                SAFE_FREE(u->pass);
                SAFE_FREE(u->info);
-               /* user has to be free'd the next loop */
-               old_u = u;
+               /* remove from the list */
                LIST_REMOVE(u, next);
+               SAFE_FREE(u);
             }
-            SAFE_FREE(old_u);
-            /* port has to be free'd the next loop */
-            old_o = o;
             LIST_REMOVE(o, next);
+            SAFE_FREE(o);
          }
-         SAFE_FREE(old_u);
-         /* host has to be free'd the next loop */
-         old_h = h; 
          LIST_REMOVE(h, next);
+         SAFE_FREE(h);
       }
-      SAFE_FREE(old_o);
    }
-   SAFE_FREE(old_h);
    
    PROFILE_UNLOCK;
 }

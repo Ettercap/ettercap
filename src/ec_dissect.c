@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.17 2003/10/29 20:41:06 alor Exp $
+    $Id: ec_dissect.c,v 1.18 2003/11/08 14:59:44 alor Exp $
 */
 
 #include <ec.h>
@@ -205,22 +205,16 @@ void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decode
 
 void dissect_del(char *name)
 {
-   struct dissect_entry *e, *old = NULL;
+   struct dissect_entry *e, *tmp = NULL;
 
-   SLIST_FOREACH (e, &dissect_list, next) {
-      /* remove the old entry */
-      SAFE_FREE(old);
-      
+   SLIST_FOREACH_SAFE(e, &dissect_list, next, tmp) {
       if (!strcasecmp(e->name, name)) {
          /* add the default decoder */
          del_decoder(e->level, e->type);
          SLIST_REMOVE(&dissect_list, e, dissect_entry, next);
-         old = e;
+         SAFE_FREE(e);
       }
    }
-   
-   /* if it was the last element, free it */   
-   SAFE_FREE(old);
    
    return;
 }

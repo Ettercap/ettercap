@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.28 2003/10/28 21:10:55 alor Exp $
+    $Id: ec_scan.c,v 1.29 2003/11/08 14:59:44 alor Exp $
 */
 
 #include <ec.h>
@@ -177,16 +177,13 @@ void build_hosts_list(void)
  */
 void del_hosts_list(void)
 {
-   struct hosts_list *hl, *old = NULL;
+   struct hosts_list *hl, *tmp = NULL;
    
-   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
-      SAFE_FREE(old);
+   LIST_FOREACH_SAFE(hl, &GBL_HOSTLIST, next, tmp) {
       SAFE_FREE(hl->hostname);
       LIST_REMOVE(hl, next);
-      old = hl;
+      SAFE_FREE(hl);
    }
-
-   SAFE_FREE(old);
 }
 
 

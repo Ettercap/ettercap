@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.12 2003/11/01 15:52:58 alor Exp $
+    $Id: ec_conntrack.c,v 1.13 2003/11/08 14:59:44 alor Exp $
 */
 
 #include <ec.h>
@@ -366,7 +366,7 @@ EC_THREAD_FUNC(conntrack_timeouter)
    struct timeval ts;
    struct timeval diff;
    struct conn_tail *cl;
-   struct conn_tail *old = NULL;
+   struct conn_tail *tmp = NULL;
    size_t sec;
    
    /* initialize the thread */
@@ -401,15 +401,13 @@ EC_THREAD_FUNC(conntrack_timeouter)
        * the list to permit the conntrack functions to operate on the
        * list even when timeouter goes thru the list
        */
-      TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
+      TAILQ_FOREACH_SAFE(cl, &conntrack_tail_head, next, tmp) {
          
          CONNTRACK_LOCK;
          
          /* calculate the difference */
          time_sub(&ts, &cl->co->ts, &diff);
          
-         /* delete pending request */
-         SAFE_FREE(old);
          /* 
           * update it only if the staus is active,
           * all the other status must be left as they are
@@ -426,15 +424,13 @@ EC_THREAD_FUNC(conntrack_timeouter)
             SAFE_FREE(cl->cs);
             /* remove the element in the tailq */
             TAILQ_REMOVE(&conntrack_tail_head, cl, next);
-            old = cl;
+            SAFE_FREE(cl);
          }
 
          CONNTRACK_UNLOCK;
    
          CANCELLATION_POINT();
       }
-      /* if it was the last one */
-      SAFE_FREE(old);
    }
 }
 

@@ -1,5 +1,5 @@
 
-/* $Id: ec_resolv.h,v 1.6 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_resolv.h,v 1.7 2003/11/08 14:59:47 alor Exp $ */
 
 #ifndef EC_RESOLV_H
 #define EC_RESOLV_H
@@ -7,6 +7,7 @@
 #include <ec_inet.h>
 
 #include <arpa/nameser.h>
+#include <arpa/nameser_compat.h>
 #include <resolv.h>
 
 /*

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.16 2003/09/30 09:05:35 alor Exp $
+    $Id: ec_conf.c,v 1.17 2003/09/30 16:38:14 alor Exp $
 */
 
 #include <ec.h>
@@ -162,6 +162,7 @@ void load_conf(void)
    
    /* errors are handled by the function */
    fc = open_data("etc", ETTER_CONF, "r");
+   ON_ERROR(fc, NULL, "Cannot open %s", ETTER_CONF);
   
    /* read the file */
    while (fgets(line, 128, fc) != 0) {

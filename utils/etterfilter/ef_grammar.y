@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.17 2003/09/30 13:07:18 alor Exp $
+    $Id: ef_grammar.y,v 1.18 2003/09/30 16:38:15 alor Exp $
 */
 
 %{
@@ -45,6 +45,7 @@
    struct block *blk;
    struct instruction *ins;
    struct ifblock *ifb;
+   struct conditions *cnd;
 }
 
 /* token definitions */
@@ -81,7 +82,7 @@
 
 /* non terminals */
 %type <fop> instruction
-%type <fop> conditions
+%type <fop> condition
 %type <fop> offset
 %type <fop> math_expr
 
@@ -89,6 +90,7 @@
 %type <ins> single_instruction
 %type <ifb> if_statement
 %type <ifb> if_else_statement
+%type <cnd> conditions_block
 
 /* precedences */
 %left TOKEN_OP_SUB TOKEN_OP_ADD
@@ -163,21 +165,41 @@ instruction:
 
 /* the if statement */
 if_statement: 
-         TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END { 
-            ef_debug(2, "\t\t IF\n"); 
-            //$$ = compiler_create_ifblock($3, $6);
+         TOKEN_IF TOKEN_PAR_OPEN conditions_block TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END { 
+            ef_debug(2, "\t\t IF BLOCK\n"); 
+            $$ = compiler_create_ifblock($3, $6);
          }
       ;
       
 /* if {} else {} */      
 if_else_statement: 
-         TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END TOKEN_ELSE TOKEN_BLK_BEGIN block TOKEN_BLK_END { 
-            ef_debug(2, "\t\t IF ELSE\n"); 
+         TOKEN_IF TOKEN_PAR_OPEN conditions_block TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END TOKEN_ELSE TOKEN_BLK_BEGIN block TOKEN_BLK_END { 
+            ef_debug(2, "\t\t IF ELSE BLOCK\n"); 
+            $$ = compiler_create_ifelseblock($3, $6, $10);
          }
       ;
 
 /* conditions used by the if statement */
-conditions: 
+conditions_block:
+         condition {
+            ef_debug(2, "\t\t CONDITION\n"); 
+         }
+
+      |  TOKEN_OP_NOT conditions_block { 
+            ef_debug(2, "\t\t NOT\n"); 
+         }
+         
+      |  conditions_block TOKEN_OP_AND conditions_block { 
+            ef_debug(2, "\t\t AND\n"); 
+         }
+         
+      |  conditions_block TOKEN_OP_OR conditions_block { 
+            ef_debug(2, "\t\t OR\n"); 
+         } 
+      ;
+     
+/* a single condition */     
+condition: 
          offset TOKEN_OP_CMP_EQ TOKEN_STRING { 
             ef_debug(2, "\tcondition cmp string\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
@@ -230,10 +252,6 @@ conditions:
             ef_debug(2, "\tcondition func\n"); 
             /* functions are encoded by the lexycal analyzer */
          }
-
-      |  TOKEN_OP_NOT conditions { ef_debug(2, "\t\t NOT\n"); }
-      |  conditions TOKEN_OP_AND conditions { ef_debug(2, "\t\t AND\n"); } 
-      |  conditions TOKEN_OP_OR conditions { ef_debug(2, "\t\t OR\n"); } 
       ;
 
 /* offsets definitions */

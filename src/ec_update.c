@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_update.c,v 1.6 2003/09/27 09:53:33 alor Exp $
+    $Id: ec_update.c,v 1.7 2003/09/30 16:38:14 alor Exp $
 */
 
 #include <ec.h>
@@ -179,7 +179,7 @@ static void update_file(char *tokens)
 
 /* 
  * get the current file revision 
- * it is stored in the cvs var $Revision: 1.6 $
+ * it is stored in the cvs var $Revision: 1.7 $
  */
 static int get_current_rev(char *file, char **curr, char *errbuf)
 {
@@ -196,7 +196,7 @@ static int get_current_rev(char *file, char **curr, char *errbuf)
    /* check if the file exists */
    fd = open_data("share", file, "r");
    if (fd == NULL) {
-      snprintf(errbuf, ERR_MAX_LEN, "cannot open file");
+      snprintf(errbuf, ERR_MAX_LEN, "cannot open file %s", file);
       return 0;
    }
 
@@ -250,7 +250,7 @@ static int do_update(char *file, char *url, char *errbuf)
    /* open the file for writing */
    fd = open_data("share", file, "w");
    if (fd == NULL) {
-      snprintf(errbuf, ERR_MAX_LEN, "cannot open file");
+      snprintf(errbuf, ERR_MAX_LEN, "cannot open %s", file);
       return 0;
    }
   

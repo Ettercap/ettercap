@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_compiler.c,v 1.5 2003/09/30 13:07:18 alor Exp $
+    $Id: ef_compiler.c,v 1.6 2003/09/30 16:38:15 alor Exp $
 */
 
 #include <ef.h>
@@ -36,6 +36,7 @@ struct block * compiler_add_ifblk(struct ifblock *ifb, struct block *blk);
 
 struct instruction * compiler_create_instruction(struct filter_op *fop);
 struct ifblock * compiler_create_ifblock(struct conditions *conds, struct block *blk);
+struct ifblock * compiler_create_ifelseblock(struct conditions *conds, struct block *blk, struct block *elseblk);
 
 
 /*******************************************/
@@ -65,6 +66,7 @@ struct instruction * compiler_create_instruction(struct filter_op *fop)
    return ins;
 }
 
+
 /*
  * allocate a ifblock container
  */
@@ -78,6 +80,22 @@ struct ifblock * compiler_create_ifblock(struct conditions *conds, struct block 
 
    return ifblk;
 }
+
+
+/*
+ * allocate a if_else_block container
+ */
+struct ifblock * compiler_create_ifelseblock(struct conditions *conds, struct block *blk, struct block *elseblk)
+{
+   struct ifblock *ifblk;
+
+   SAFE_CALLOC(ifblk, 1, sizeof(struct ifblock));
+   
+   NOT_IMPLEMENTED();
+
+   return ifblk;
+}
+
 
 /*
  * add an instruction to a block
@@ -145,8 +163,6 @@ size_t compile_tree(struct filter_op **fop)
    struct block *b = tree_root;
    struct filter_op *array;
 
-   NOT_IMPLEMENTED();
-
    /* sanity check */
    BUG_IF(b == NULL);
 
@@ -157,9 +173,12 @@ size_t compile_tree(struct filter_op **fop)
 
       /* alloc the array */
       SAFE_REALLOC(array, i * sizeof(struct filter_op));
-     
-      /* copy the instruction */
-      memcpy(&array[i - 1], b->un.ins, sizeof(struct filter_op));
+   
+      if (b->type == BLK_INSTR)
+         /* copy the instruction */
+         memcpy(&array[i - 1], b->un.ins, sizeof(struct filter_op));
+      else
+         NOT_IMPLEMENTED();
       
       print_fop(&(array[i - 1]), i - 1);
       

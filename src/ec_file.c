@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_file.c,v 1.8 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_file.c,v 1.9 2003/09/30 16:38:14 alor Exp $
 */
 
 #include <ec.h>
@@ -95,7 +95,7 @@ FILE * open_data(char *dir, char *file, char *mode)
       DEBUG_MSG("open_data dropping to %s", filename);
       
       fd = fopen(filename, mode);
-      /* don't check the fd, it is done be the caller */
+      /* don't check the fd, it is done by the caller */
    }
  
    SAFE_FREE(filename);

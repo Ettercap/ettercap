@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_main.c,v 1.12 2003/09/28 21:07:49 alor Exp $
+    $Id: ef_main.c,v 1.13 2003/09/30 16:38:15 alor Exp $
 */
 
 #include <ef.h>
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
    setbuf(yyin, NULL);
    setbuf(stdout, NULL);
    setbuf(stderr, NULL);
-   
+
    
    /* load the tables in etterfilter.tbl */
    load_tables();

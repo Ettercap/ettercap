@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_syntax.l,v 1.11 2003/09/28 21:07:49 alor Exp $
+    $Id: ef_syntax.l,v 1.12 2003/09/30 16:38:15 alor Exp $
 */
 
 %{
@@ -134,12 +134,12 @@ SPACES         [ \t]+
 }
 
 "{" {
-   ef_debug(3, "{\n");
+   ef_debug(4, "{\n");
    return TOKEN_BLK_BEGIN;
 }
 
 "}" {
-   ef_debug(3, "{\n");
+   ef_debug(4, "}\n");
    return TOKEN_BLK_END;
 }
 

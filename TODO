@@ -47,11 +47,9 @@ this is the unofficial and floating in time roadmap:
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - reset modified connection (on user request)
-      - flag to mark encripted connections
 
    + CONNECTION
       - kill a connection
-      - flag for injected/modified connection
 
    + DISSECTORS
       - convert all the old dissectors:

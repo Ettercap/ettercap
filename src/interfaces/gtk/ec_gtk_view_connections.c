@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.5 2004/02/28 00:08:57 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.6 2004/02/29 11:50:37 alor Exp $
 */
 
 #include <ec.h>
@@ -238,7 +238,7 @@ static gboolean refresh_connections(gpointer data)
    struct conn_tail *curr = NULL;
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
-   char *proto = "", *status = "";
+   char *proto = "", *status = "", *flags = " ";
    GtkTreeIter iter;
    GtkTreeModel *model = NULL;
    gboolean gotiter = FALSE;
@@ -257,13 +257,13 @@ static gboolean refresh_connections(gpointer data)
 
    /* get first item in connection list */
    cl = conntrack_print(0, NULL, NULL, 0);
-   if(cl == NULL)
+   if (cl == NULL)
       return(TRUE);
 
    /* get iter for first item in list widget */
    model = GTK_TREE_MODEL(ls_conns);
 
-   for(c = cl; c != NULL; c = c->next.tqe_next) {
+   for (c = cl; c != NULL; c = c->next.tqe_next) {
       /* we'll set status on new and old items */
       switch (c->co->status) {
          case CONN_IDLE:    status = "idle   "; break;
@@ -274,22 +274,29 @@ static gboolean refresh_connections(gpointer data)
          case CONN_CLOSED:  status = "closed "; break;
          case CONN_KILLED:  status = "killed "; break;
       }
-
+      
+      /* determine the flags */
+      if (c->co->flags & CONN_MODIFIED)
+         flags = "M";
+      if (c->co->flags & CONN_INJECTED)
+         flags = "I";
+      if (c->co->DISSECTOR.user)
+         flags = "X";
+      
       /* see if the item is already in our list */
       gotiter = gtk_tree_model_get_iter_first(model, &iter);
-      while(gotiter) {
+      while (gotiter) {
          gtk_tree_model_get (model, &iter, 9, &curr, -1);
          if(c == curr) {
             gtk_list_store_set (ls_conns, &iter,
-                                0, (c->co->DISSECTOR.user) ? "X" : " ",
-                                7, status, 8, c->co->xferred, -1);
+                                0, flags, 7, status, 8, c->co->xferred, -1);
             break;
          }
          gotiter = gtk_tree_model_iter_next(model, &iter);
       }
 
       /* if it is, move on to next item */
-      if(gotiter)
+      if (gotiter)
          continue;
 
       /* if we got here, we're making a new list item, set all values */
@@ -304,8 +311,7 @@ static gboolean refresh_connections(gpointer data)
 
       gtk_list_store_append (ls_conns, &iter);
       gtk_list_store_set (ls_conns, &iter, 
-                          0, (c->co->DISSECTOR.user) ? "X" : " ",
-                          1, src, 2, ntohs(c->co->L4_addr1),
+                          0, flags, 1, src, 2, ntohs(c->co->L4_addr1),
                           3, "-",
                           4, dst, 5, ntohs(c->co->L4_addr2),
                           6, proto, 7, status, 8, c->co->xferred, 

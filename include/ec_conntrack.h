@@ -1,5 +1,5 @@
 
-/* $Id: ec_conntrack.h,v 1.10 2004/02/15 13:35:28 alor Exp $ */
+/* $Id: ec_conntrack.h,v 1.11 2004/02/29 11:50:37 alor Exp $ */
 
 #ifndef EC_CONNTRACK_H
 #define EC_CONNTRACK_H
@@ -41,6 +41,9 @@ struct conn_object {
    /* connection status */
    int status;
 
+   /* flags for injection/modifications */
+   int flags;
+
    /* username and password */
    struct dissector_info DISSECTOR;
 
@@ -63,6 +66,11 @@ enum {
    CONN_CLOSING   = 4,
    CONN_CLOSED    = 5,
    CONN_KILLED    = 6,
+};
+
+enum {
+   CONN_INJECTED = 1,
+   CONN_MODIFIED = 2,
 };
 
 /* exported functions */

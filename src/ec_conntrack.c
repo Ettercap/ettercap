@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.17 2004/02/15 13:35:28 alor Exp $
+    $Id: ec_conntrack.c,v 1.18 2004/02/29 11:50:37 alor Exp $
 */
 
 #include <ec.h>
@@ -208,6 +208,14 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po)
     * may be longer or shorted than DATA.data
     */
    co->xferred += po->DATA.len;
+
+   /*
+    * update the flags:
+    * if the packet was modified or dropped, the connection
+    * must be marked as well.
+    */
+   if (po->flags & PO_MODIFIED || po->flags & PO_DROPPED)
+      co->flags |= CONN_MODIFIED;
 
    /* 
     * update the password 
@@ -559,7 +567,7 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
    struct conn_tail *cl;
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
-   char proto, *status = "";
+   char proto, *status = "", flags = ' ';
 
    /* NULL is used to retrieve the first element */
    if (list == NULL)
@@ -583,6 +591,7 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       ip_addr_ntoa(&c->co->L3_addr1, src);
       ip_addr_ntoa(&c->co->L3_addr2, dst);
 
+      /* determine the status */
       switch (c->co->status) {
          case CONN_IDLE:
             status = "idle   ";
@@ -607,7 +616,17 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
             break;
       }
       
-      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %d", (c->co->DISSECTOR.user) ? '*' : ' ', 
+      /* determine the flags:
+       * account collection has precedence over injection/modification
+       */
+      if (c->co->flags & CONN_MODIFIED)
+         flags = 'M';
+      if (c->co->flags & CONN_INJECTED)
+         flags = 'I';
+      if (c->co->DISSECTOR.user)
+         flags = '*';
+      
+      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %d", flags, 
                                            src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
                                            proto, status, c->co->xferred);
    }

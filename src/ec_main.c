@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.54 2004/01/23 08:52:50 alor Exp $
+    $Id: ec_main.c,v 1.55 2004/02/29 11:50:37 alor Exp $
 */
 
 #include <ec.h>
@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
       disable_ip_forward();
    
    /* 
-    * drop root priviledges 
-    * we have alread opened the sockets with high priviledges
+    * drop root privileges 
+    * we have alread opened the sockets with high privileges
     * we don't need any more root privs.
     */
    drop_privs();
@@ -221,7 +221,7 @@ static void drop_privs(void)
       ERROR_MSG("setuid()");
 
    DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
-   USER_MSG("Priviledges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() ); 
+   USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() ); 
 }
 
 

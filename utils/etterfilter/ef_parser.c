@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_parser.c,v 1.4 2003/09/19 16:47:51 alor Exp $
+    $Id: ef_parser.c,v 1.5 2003/09/24 20:03:46 alor Exp $
 */
 
 
@@ -114,8 +114,9 @@ void parse_options(int argc, char **argv)
       GBL_OPTIONS.source_file = strdup(argv[optind]);
    }
    
-   /* XXX - check for incompatible options */
-   
+   /* make the default name */
+   if (GBL_OPTIONS.output_file == NULL)
+      GBL_OPTIONS.output_file = strdup("filter.ef");
    
    return;
 }

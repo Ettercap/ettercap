@@ -17,11 +17,17 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_output.c,v 1.1 2003/09/24 19:28:51 alor Exp $
+    $Id: ef_output.c,v 1.2 2003/09/24 20:03:46 alor Exp $
 */
 
 #include <ef.h>
 #include <ec_filter.h>
+#include <ec_version.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 
 /* protos */
 
@@ -31,7 +37,9 @@ int write_output(void);
 
 int write_output(void)
 {
+   int fd;
    struct filter_op *fop;
+   struct filter_header fh;
 
    fop = calloc(7, sizeof(struct filter_op));
    
@@ -73,6 +81,23 @@ int write_output(void)
    fop[6].opcode = FOP_EXIT;
 
 
+   NOT_IMPLEMENTED();
+
+   /* create the file */
+   fd = open(GBL_OPTIONS.output_file, O_CREAT | O_RDWR | O_TRUNC, 0644);
+   ON_ERROR(fd, -1, "Can't create file %s", GBL_OPTIONS.output_file);
+
+   /* write the header */
+   fh.magic = htons(EC_FILTER_MAGIC);
+   strncpy(fh.version, EC_VERSION, sizeof(fh.version));
+   
+   write(fd, &fh, sizeof(struct filter_header));
+   
+   /* write the instructions */
+   write(fd, fop, sizeof(struct filter_op) * 7);
+
+   close(fd);
+   
    return ESUCCESS;
 }
 

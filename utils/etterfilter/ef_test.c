@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.8 2003/09/24 19:28:51 alor Exp $
+    $Id: ef_test.c,v 1.9 2003/09/24 20:03:46 alor Exp $
 */
 
 #include <ef.h>
@@ -77,18 +77,20 @@ void test_filter(char *filename)
     * load the file in memory 
     * skipping the initial header
     */
-   fop = (struct filter_op *) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, sizeof(struct filter_header));
+   fop = (struct filter_op *) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
    if (fop == MAP_FAILED)
       FATAL_ERROR("Cannot mmap file");
 
    /* the mmap will remain active even if we close the fd */
    close(fd);
 
+   /* skip the header in the file */
+   fop = (struct filter_op *)((char *)fop + sizeof(struct filter_header));
    
    fprintf(stdout, "Debugging \"%s\" content...\n\n", filename);
   
    /* loop all the instructions and print their content */
-   while (eip < size) {
+   while (eip < (size / sizeof(struct filter_op)) ) {
 
       switch (fop[eip].opcode) {
          case FOP_TEST:

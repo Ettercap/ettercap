@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.14 2003/09/24 19:28:51 alor Exp $
+    $Id: ec_filter.c,v 1.15 2003/09/24 20:03:34 alor Exp $
 */
 
 #include <ec.h>
@@ -650,7 +650,7 @@ int filter_load_file(char *filename)
     * load the file in memory 
     * skipping the initial header
     */
-   file = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, sizeof(struct filter_header));
+   file = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
    if (file == MAP_FAILED)
       FATAL_MSG("Cannot mmap file");
 
@@ -658,12 +658,14 @@ int filter_load_file(char *filename)
    filter_unload();
 
    /* set the global variables */
-   GBL_FILTERS->chain = (struct filter_op *) file;
+   GBL_FILTERS->chain = (struct filter_op *) file + sizeof(struct filter_header);
    GBL_FILTERS->len = size;
 
    /* the mmap will remain active even if we close the fd */
    close(fd);
-  
+ 
+   USER_MSG("Content filters loaded from %s...\n", filename);
+   
    return ESUCCESS;
 }
 

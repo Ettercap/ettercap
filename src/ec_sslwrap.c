@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.17 2004/03/14 17:55:53 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.18 2004/03/14 17:59:30 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -690,10 +690,7 @@ EC_THREAD_FUNC(sslw_start)
    ec_thread_init();
    
    sslw_init();
-DEBUG_MSG("AAA - pippo 1");
-
    sslw_bind_wrapper();
-DEBUG_MSG("AAA - pippo 2");
 
    hook_add(HOOK_HANDLED, &sslw_hook_handled);
 

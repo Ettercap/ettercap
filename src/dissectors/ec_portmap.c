@@ -17,22 +17,21 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_portmap.c,v 1.2 2004/01/18 14:29:06 lordnaga Exp $
+    $Id: ec_portmap.c,v 1.3 2004/01/18 15:08:08 lordnaga Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
+#include <ec_session.h>
 
 /* globals */
-struct portmap_entry {
+typedef struct {
    u_int32 xid;
    u_int32 prog;
    u_int32 ver;
-   u_int32 spr;
    u_int32 proto;
-   SLIST_ENTRY(portmap_entry) next;
-};
+} portmap_session;
 #define DUMP 1
 #define MAP_LEN 20
 
@@ -51,8 +50,6 @@ RPC_DISSECTOR Available_RPC_Dissectors[] = {
    {100005,  3, "mountd", dissector_mountd },
    {     0,  0, "", NULL }
 };
-
-SLIST_HEAD(, portmap_entry) portmap_table;
 
 /* protos */
 FUNC_DECODER(dissector_portmap);
@@ -75,7 +72,9 @@ FUNC_DECODER(dissector_portmap)
 {
    DECLARE_DISP_PTR_END(ptr, end);
    u_int32 type, xid, proc, port, proto, program, version, offs, i;
-   struct portmap_entry *pe;
+   portmap_session *pe;
+   struct ec_session *s = NULL;
+   void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
 
    /* don't complain about unused var */
@@ -100,33 +99,37 @@ FUNC_DECODER(dissector_portmap)
       if (type != 0) 
          return NULL;
 
-      SAFE_CALLOC(pe, sizeof(struct portmap_entry), sizeof(char));
+      dissect_create_session(&s, PACKET);
+      SAFE_CALLOC(s->data, 1, sizeof(portmap_session));
+      pe = (portmap_session *)s->data;
+
       pe->xid   = xid;
       pe->prog  = pntol(ptr + 40);
       pe->ver   = pntol(ptr + 44);
       pe->proto = pntol(ptr + 48);
-      pe->spr   = PACKET->L4.proto;
 
       /* DUMP */
       if ( proc == 4 ) 
          pe->prog = DUMP;
 
-      SLIST_INSERT_HEAD(&portmap_table, pe, next);
+      session_put(s);
 
       return NULL;
    }
 
    /* REPLY */
-   SLIST_FOREACH(pe, &portmap_table, next) {
-      if (pe->xid == xid && pe->spr == PACKET->L4.proto)
-         break;
-   }   
+   dissect_create_ident(&ident, PACKET);
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      SAFE_FREE(ident);
+      return NULL;
+   }
+
+   SAFE_FREE(ident);
+   pe = (portmap_session *)s->data;
 
    /* Unsuccess or not a reply */
-   if (!pe || pntol(ptr + 8) != 0 || type != 1) 
+   if (!pe || pe->xid != xid || pntol(ptr + 8) != 0 || type != 1) 
       return NULL;
-
-   SLIST_REMOVE(&portmap_table, pe, portmap_entry, next);
 
    /* GETPORT Reply */
    if (pe->prog != DUMP) {
@@ -187,6 +190,8 @@ FUNC_DECODER(dissector_portmap)
          offs += MAP_LEN;
       }
    }
+
+   dissect_wipe_session(PACKET);
    return NULL;
 }
 

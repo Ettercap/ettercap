@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_rlogin.c,v 1.1 2003/07/15 21:31:34 alor Exp $
+    $Id: ec_rlogin.c,v 1.2 2003/07/16 20:45:30 alor Exp $
 */
 
 #include <ec.h>
@@ -31,7 +31,6 @@
 FUNC_DECODER(dissector_rlogin);
 void rlogin_init(void);
 void skip_rlogin_command(u_char **ptr, u_char *end);
-//int match_login_regex(char *ptr);
 
 /************************************************/
 
@@ -59,6 +58,8 @@ FUNC_DECODER(dissector_rlogin)
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
 
+   (void)end;
+   
    /* skip messages from the server */
    if (dissect_on_port("rlogin", ntohs(PACKET->L4.src)) == ESUCCESS)
       return NULL;
@@ -99,14 +100,16 @@ FUNC_DECODER(dissector_rlogin)
          if (localuser + strlen(localuser) + 2 < end)
             remoteuser = localuser + strlen(localuser) + 1;
          else {
+            /* bad packet, abort the collection process */
+            session_del(ident);
             SAFE_FREE(ident);
             return NULL;
          }
 
          SAFE_FREE(s->data);
 
-         /* one byte for space, one for \r and one for null */
-         s->data = calloc(strlen(localuser) + strlen(remoteuser) + 3, sizeof(char));
+         /* make room for the string */
+         s->data = calloc(strlen(localuser) + strlen(remoteuser) + 5, sizeof(char));
          ON_ERROR(s->data, NULL, "can't allocate memory");
          
          sprintf(s->data, "%s (%s)\r", remoteuser, localuser);
@@ -115,15 +118,15 @@ FUNC_DECODER(dissector_rlogin)
          return NULL;
       }
    }
-  
+   
    /* concat the pass to the collected user */
    if (session_get(&s, ident) == ESUCCESS) {
-      char str[strlen(s->data) + 2];
+      char str[strlen(s->data) + strlen(ptr) + 2];
 
       memset(str, 0, sizeof(str));
      
       /* concat the char to the previous one */
-      sprintf(str, "%s%c", (char *)s->data, *ptr);
+      sprintf(str, "%s%s", (char *)s->data, ptr);
 
       /* save the new string */
       SAFE_FREE(s->data);
@@ -154,6 +157,7 @@ FUNC_DECODER(dissector_rlogin)
              * user and pass was collected
              */
             session_del(ident);
+            SAFE_FREE(ident);
             
             /* display the message */
             USER_MSG("RLOGIN : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
@@ -163,49 +167,12 @@ FUNC_DECODER(dissector_rlogin)
          }
       }
    }
-     
+
    SAFE_FREE(ident);
    
    return NULL;
 }
 
-#if 0
-/* 
- * serach the strings which can identify failed login...
- * return 1 on succes, 0 on failure
- */
-int match_login_regex(char *ptr)
-{
-   regex_t *regex;
-   int ret = 0;
-
-   /*
-    * matches: 
-    *    - login at the beginning of the buffer
-    *    - inccorect
-    *    - failed
-    *    - failure
-    */
-#define LOGIN_REGEX "\\`login.*|.*incorrect.*|.*failed.*|.*failure.*"
-   
-   /* allocate the new structure */
-   regex = calloc(1, sizeof(regex_t));
-   ON_ERROR(regex, NULL, "can't allocate memory");
-
-   /* failed compilation of regex */
-   if (regcomp(regex, LOGIN_REGEX, REG_EXTENDED | REG_NOSUB | REG_ICASE ) != 0) {
-      SAFE_FREE(regex);
-      return 0;
-   }
-
-   /* execute the regex */
-   if (regexec(regex, ptr, 0, NULL, 0) == 0)
-      ret = 1;
-    
-   SAFE_FREE(regex);
-   return ret;
-}
-#endif
 
 /* EOF */
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.6 2003/07/10 12:49:55 alor Exp $
+    $Id: ec_conf.c,v 1.7 2003/07/16 20:45:30 alor Exp $
 */
 
 #include <ec.h>
@@ -29,6 +29,7 @@
    
 /* used only to keep track of how many dissector are loaded */
 int number_of_dissectors;
+int number_of_ports;
    
 static struct conf_entry privs[] = {
    { "ec_uid", NULL },
@@ -216,7 +217,6 @@ void load_conf(void)
        */
       if (curr_section == (struct conf_entry *)&dissectors) {
          set_dissector(line, p, lineno);
-         number_of_dissectors++;
          continue;
       }
       
@@ -277,6 +277,7 @@ static void set_dissector(char *name, char *values, int lineno)
 {
    char *p, *q = values;
    u_int32 value;
+   int first = 0;
 
    /* remove trailing spaces */
    if ((p = strchr(values, ' ')) != NULL)
@@ -287,6 +288,15 @@ static void set_dissector(char *name, char *values, int lineno)
       /* get the value for the port */
       value = atoi(p);
       DEBUG_MSG("load_conf: \tDISSECTOR: %s\t%d", name, value);
+
+      /* count the dissectors and the port monitored */
+      if (value) {
+         number_of_ports++;
+         if (first == 0) {
+            number_of_dissectors++;
+            first = 1;
+         }
+      }
     
       /* the first value replaces all the previous */
       if (p == q) {
@@ -309,6 +319,7 @@ static void set_dissector(char *name, char *values, int lineno)
 void conf_dissectors(void)
 {
    USER_MSG("%4d protocol dissectors\n", number_of_dissectors);   
+   USER_MSG("%4d ports monitored\n", number_of_ports);   
 }
 
 /* EOF */

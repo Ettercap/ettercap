@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_update.c,v 1.2 2003/07/13 15:22:57 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_update.c,v 1.3 2003/07/16 20:45:30 alor Exp $
 */
 
 #include <ec.h>
@@ -26,16 +26,6 @@
 #include <ec_strings.h>
 
 #define ERR_MAX_LEN  128
-
-#define END_COLOR    "\033[0m"
-#define BOLD_COLOR   "\033[1m"
-
-#define COLOR_RED    "\033[31m"BOLD_COLOR
-#define COLOR_YELLOW "\033[33m"BOLD_COLOR
-#define COLOR_GREEN  "\033[32m"BOLD_COLOR
-#define COLOR_BLU    "\033[34m"BOLD_COLOR
-#define COLOR_CYAN   "\033[36m"BOLD_COLOR
-
 
 /* protos */
 
@@ -185,7 +175,7 @@ static void update_file(char *tokens)
 
 /* 
  * get the current file revision 
- * it is stored in the cvs var $Revision: 1.2 $
+ * it is stored in the cvs var $Revision: 1.3 $
  */
 static int get_current_rev(char *file, char **curr, char *errbuf)
 {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.5 2003/04/14 21:05:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.6 2003/07/16 20:45:30 alor Exp $
 */
 
 #include <ec.h>
@@ -70,30 +70,28 @@ RETSIGTYPE signal_SEGV(int sig)
 
    struct rlimit corelimit = {RLIM_INFINITY, RLIM_INFINITY};
 
-   DEBUG_MSG("Segmentation Fault...");
+   DEBUG_MSG(" !!! SEGMENTATION FAULT !!!");
    
    ui_cleanup();
    
-   fprintf (stderr, "\n\033[01m\033[1m Ooops !! This shouldn't happen...\n\n");
-   fprintf (stderr, "Segmentation Fault...\033[0m\n\n");
+   fprintf (stderr, "\n"COLOR_YELLOW"Ooops !! This shouldn't happen...\n\n"END_COLOR);
+   fprintf (stderr, COLOR_RED"Segmentation Fault...\n\n"END_COLOR);
 
    fprintf (stderr, "===========================================================================\n");
    fprintf (stderr, " To report this error follow these steps:\n\n");
-   fprintf (stderr, "  1) recompile %s in debug mode : \n"
-                    "  \t\"configure --enable-debug && make clean && make\"\n\n", GBL_PROGRAM);
+   fprintf (stderr, "  1) execute ettercap with \"-w debug_dump.pcap\"\n\n");
    fprintf (stderr, "  2) reproduce the critical situation\n\n");
-   fprintf (stderr, "  3) make a report : \"tar zcvf error.tar.gz %s%s_debug.log \"\n\n", GBL_PROGRAM, GBL_VERSION);
+   fprintf (stderr, "  3) make a report : \n\t\"tar zcvf error.tar.gz %s%s_debug.log debug_dump.pcap\"\n\n", GBL_PROGRAM, GBL_VERSION);
    fprintf (stderr, "  4) get the gdb backtrace :\n"
                     "  \t - \"gdb %s core\"\n"
                     "  \t - at the gdb prompt \"bt\"\n"
                     "  \t - at the gdb prompt \"quit\" and return to the shell\n"
                     "  \t - copy and paste this output.\n\n", GBL_PROGRAM);
-   fprintf (stderr, "  5) mail me the output of gdb and the error.tar.gz\n");
+   fprintf (stderr, "  5) mail us the output of gdb and the error.tar.gz\n");
    fprintf (stderr, "============================================================================\n");
    
-   fprintf (stderr, "\n\033[01m\033[1m Overriding any 'ulimit -c 0'...\n"
-                   " Setting core size to RLIM_INFINITY...\n\n"
-                   " Core dumping... (use the 'core' file for gdb analysis)\033[0m\n\n");
+   fprintf (stderr, COLOR_CYAN"\nOverriding any 'ulimit -c 0'... (RLIMIT_CORE = RLIM_INFINITY)\n\n"END_COLOR
+                    BOLD_COLOR" Core dumping... (use the 'core' file for gdb analysis)\n\n"END_COLOR);
    
    /* force the coredump */
    
@@ -105,9 +103,9 @@ RETSIGTYPE signal_SEGV(int sig)
    
    ui_cleanup();
    
-   fprintf(stderr, "Ooops ! This shouldn't happen...");
-   fprintf(stderr, "Segmentation fault !");
-   fprintf(stderr, "Please recompile in debug mode and send a bugreport");
+   fprintf(stderr, COLOR_YELLOW"Ooops ! This shouldn't happen...\n"END_COLOR);
+   fprintf(stderr, COLOR_RED"Segmentation fault !\n\n"END_COLOR);
+   fprintf(stderr, "Please recompile in debug mode, reproduce the bug and send a bugreport\n\n");
    
    exit(666);
 #endif

@@ -29,6 +29,10 @@ this is the unofficial and floating in time roadmap:
 
 Jul 2003:
 
+   + DISSECTOR
+      - telnet session removal
+      - IRC
+
    + TOP HALF
       - connection tracking (with buffered conn)
 

@@ -61,6 +61,17 @@
 #define BIT_TEST(r,b)      ( r[b>>3]  &   1<<(b&7) )
 #define BIT_NOT(r,b)       ( r[b>>3] ^=   1<<(b&7) )
 
+/* ANSI colors */
+
+#define END_COLOR    "\033[0m"
+#define BOLD_COLOR   "\033[1m"
+
+#define COLOR_RED    "\033[31m"BOLD_COLOR
+#define COLOR_YELLOW "\033[33m"BOLD_COLOR
+#define COLOR_GREEN  "\033[32m"BOLD_COLOR
+#define COLOR_BLU    "\033[34m"BOLD_COLOR
+#define COLOR_CYAN   "\033[36m"BOLD_COLOR
+
 /* exported by ec_main */
 extern void clean_exit(int errcode);
 

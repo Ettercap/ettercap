@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.2 2003/07/15 21:31:34 alor Exp $
+    $Id: ec_telnet.c,v 1.3 2003/07/16 20:45:30 alor Exp $
 */
 
 #include <ec.h>
@@ -102,7 +102,7 @@ FUNC_DECODER(dissector_telnet)
          /* save the session */
          session_put(s);
       } else {
-         char str[strlen(s->data) + 2];
+         char str[strlen(s->data) + strlen(ptr) + 2];
 
          memset(str, 0, sizeof(str));
         
@@ -113,7 +113,7 @@ FUNC_DECODER(dissector_telnet)
          }
 
          /* concat the char to the previous one */
-         sprintf(str, "%s%c", (char *)s->data, *ptr);
+         sprintf(str, "%s%s", (char *)s->data, ptr);
 
          /* save the new string */
          SAFE_FREE(s->data);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.7 2003/07/10 12:49:55 alor Exp $
+    $Id: ec_session.c,v 1.8 2003/07/16 20:45:30 alor Exp $
 */
 
 #include <ec.h>
@@ -267,13 +267,12 @@ static void session_dump(int sig)
    SESSION_LOCK;
    
    /* dump the list in the debug file */
-   LIST_FOREACH(sl, &session_list_head, next) {
-         
+   LIST_FOREACH(sl, &session_list_head, next)
       DEBUG_MSG("session_dump: [%d][%p]", sl->id, sl->s->ident);
-         
-   }
    
    SESSION_UNLOCK;
+   
+   DEBUG_MSG("session_dump invoked: END of session list...");
 }
 
 #endif

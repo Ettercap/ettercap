@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.11 2003/07/08 20:59:53 alor Exp $
+    $Id: ec_profiles.c,v 1.12 2003/07/16 20:45:30 alor Exp $
 */
 
 #include <ec.h>
@@ -180,6 +180,8 @@ static int profile_add_host(struct packet_object *po)
       LIST_INSERT_AFTER(last, h, next);
 
    PROFILE_UNLOCK;
+   
+   DEBUG_MSG("profile_add_host: ADDED");
    
    return 1;   
 }

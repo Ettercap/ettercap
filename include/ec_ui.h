@@ -1,5 +1,5 @@
 
-/* $Id: ec_ui.h,v 1.11 2003/10/12 15:28:27 alor Exp $ */
+/* $Id: ec_ui.h,v 1.12 2003/10/23 19:50:57 uid42100 Exp $ */
 
 #ifndef EC_UI_H
 #define EC_UI_H
@@ -14,7 +14,7 @@ struct ui_ops {
    void (*error)(const char *msg);
    void (*fatal_error)(const char *msg);
    void (*input)(const char *title, char *input, size_t n);
-   void (*progress)(int value, int max);
+   void (*progress)(char *title, int value, int max);
    char initialized;
    char type;
       #define UI_TEXT      0
@@ -30,7 +30,7 @@ extern void ui_msg(const char *fmt, ...);
 extern void ui_error(const char *fmt, ...);
 extern void ui_fatal_error(const char *msg);
 extern void ui_input(const char *title, char *input, size_t n);
-extern void ui_progress(int value, int max);
+extern void ui_progress(char *title, int value, int max);
 extern int ui_msg_flush(int max);
 #define MSG_ALL   INT_MAX
 

@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.5 2003/10/22 20:36:25 alor Exp $ */
+/* $Id: wdg.h,v 1.6 2003/10/23 19:50:58 uid42100 Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -61,7 +61,8 @@ struct wdg_object {
    /* object flags */
    size_t flags;
       #define WDG_OBJ_WANT_FOCUS     1
-      #define WDG_OBJ_VISIBLE        (1<<1)
+      #define WDG_OBJ_FOCUS_MODAL    (1<<1)
+      #define WDG_OBJ_VISIBLE        (1<<2)
       #define WDG_OBJ_ROOT_OBJECT    (1<<7)
    /* object type */
    size_t type;
@@ -100,8 +101,9 @@ extern void wdg_cleanup(void);
 
 /* the main dispatching loop */
 extern int wdg_events_handler(int exit_key);
-/* se the function to be called when idle */
-extern void wdg_set_idle_callback(void (*callback)(void));
+/* add/delete functions to be called when idle */
+extern void wdg_add_idle_callback(void (*callback)(void));
+extern void wdg_del_idle_callback(void (*callback)(void));
 
 /* object creation */
 extern int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags);
@@ -112,6 +114,7 @@ extern void wdg_resize_object(struct wdg_object *wo, int x1, int y1, int x2, int
 extern void wdg_set_colors(struct wdg_object *wo, int color, size_t type); 
 extern void wdg_draw_object(struct wdg_object *wo);
 extern size_t wdg_get_type(struct wdg_object *wo);
+extern void wdg_set_focus(struct wdg_object *wo);
 
 #endif 
 

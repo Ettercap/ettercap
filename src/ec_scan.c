@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.22 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_scan.c,v 1.23 2003/10/23 19:50:57 uid42100 Exp $
 */
 
 #include <ec.h>
@@ -81,8 +81,7 @@ void build_hosts_list(void)
       LIST_FOREACH(hl, &GBL_HOSTLIST, next)
          nhosts++;
 
-      USER_MSG("%d hosts added to the hosts list...\n", nhosts);
-      ui_msg_flush(1);
+      INSTANT_USER_MSG("%d hosts added to the hosts list...\n", nhosts);
    }
    
    /* in silent mode, the list should not be created */
@@ -135,8 +134,7 @@ void build_hosts_list(void)
       nhosts++;
    }
 
-   USER_MSG("%d hosts added to the hosts list...\n", nhosts);
-   ui_msg_flush(1);
+   INSTANT_USER_MSG("%d hosts added to the hosts list...\n", nhosts);
   
    /* 
     * resolve the hostnames only if we are scanning 
@@ -145,9 +143,11 @@ void build_hosts_list(void)
     */
    
    if (!GBL_OPTIONS->load_hosts && GBL_OPTIONS->resolve) {
+      char title[50];
       
-      USER_MSG("Resolving %d hostnames...\n", nhosts);
-      ui_msg_flush(1);
+      snprintf(title, sizeof(title), "Resolving %d hostnames...", nhosts);
+      
+      INSTANT_USER_MSG("%s\n", title);
       
       LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
          char tmp[MAX_HOSTNAME_LEN];
@@ -155,7 +155,7 @@ void build_hosts_list(void)
          host_iptoa(&hl->ip, tmp);
          hl->hostname = strdup(tmp);
          
-         ui_progress(i++, nhosts);
+         ui_progress(title, i++, nhosts);
       }
    }
    
@@ -264,6 +264,7 @@ static void scan_netmask(void)
    int nhosts, i;
    struct ip_addr scanip;
    struct ip_list *e; 
+   char title[100];
 
    netmask = ip_addr_to_int32(&GBL_IFACE->netmask.addr);
    myip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
@@ -273,8 +274,7 @@ static void scan_netmask(void)
 
    DEBUG_MSG("scan_netmask: %d hosts", nhosts);
 
-   USER_MSG("Randomizing %d hosts for scanning...\n", nhosts);
-   ui_msg_flush(1);
+   INSTANT_USER_MSG("Randomizing %d hosts for scanning...\n", nhosts);
   
    /* scan the netmask */
    for (i = 1; i <= nhosts; i++) {
@@ -292,8 +292,8 @@ static void scan_netmask(void)
       //ui_progress(i, nhosts);
    }
 
-   USER_MSG("Scanning the whole netmask for %d hosts...\n", nhosts);
-   ui_msg_flush(1);
+   snprintf(title, sizeof(title), "Scanning the whole netmask for %d hosts...", nhosts);
+   INSTANT_USER_MSG("%s\n", title);
    
    i = 1;
    
@@ -303,7 +303,7 @@ static void scan_netmask(void)
       send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, ETH_BROADCAST);
 
       /* update the progress bar */
-      ui_progress(i++, nhosts);
+      ui_progress(title, i++, nhosts);
       
       /* wait for a delay */
       usleep(GBL_CONF->arp_storm_delay * 1000);
@@ -325,6 +325,7 @@ static void scan_targets(void)
 {
    int nhosts = 0, found, n = 1;
    struct ip_list *e, *i, *m; 
+   char title[100];
    
    DEBUG_MSG("scan_targets: merging targets...");
 
@@ -373,19 +374,16 @@ static void scan_targets(void)
    
    DEBUG_MSG("scan_targets: %d hosts to be scanned", nhosts);
 
-   USER_MSG("Scanning for merged targets (%d hosts)...\n\n", nhosts);
-   
-   /* print the above message */
-   ui_msg_flush(1);
+   snprintf(title, sizeof(title), "Scanning for merged targets (%d hosts)...", nhosts);
+   INSTANT_USER_MSG("%s\n\n", title);
    
    /* and now scan the LAN */
-
    SLIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
       send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, ETH_BROADCAST);
 
       /* update the progress bar */
-      ui_progress(n++, nhosts);
+      ui_progress(title, n++, nhosts);
       
       /* wait for a delay */
       usleep(GBL_CONF->arp_storm_delay * 1000);
@@ -418,9 +416,7 @@ static void load_hosts(char *filename)
    hf = fopen(filename, FOPEN_READ_TEXT);
    ON_ERROR(hf, NULL, "Cannot open %s", filename);
  
-   USER_MSG("Loading hosts list from file %s\n", filename);
-   /* print the above message */
-   ui_msg_flush(1);
+   INSTANT_USER_MSG("Loading hosts list from file %s\n", filename);
    
    /* XXX - adapt to IPv6 */
    /* read the file */
@@ -477,10 +473,7 @@ static void save_hosts(char *filename)
    /* close the file */
    fclose(hf);
    
-   USER_MSG("%d hosts saved to file %s\n", nhosts, filename);
-   /* print the above message */
-   ui_msg_flush(1);
-   
+   INSTANT_USER_MSG("%d hosts saved to file %s\n", nhosts, filename);
 }
 
 

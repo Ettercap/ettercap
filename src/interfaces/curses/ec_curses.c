@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.5 2003/10/22 20:36:25 alor Exp $
+    $Id: ec_curses.c,v 1.6 2003/10/23 19:50:57 uid42100 Exp $
 */
 
 #include <ec.h>
@@ -35,7 +35,7 @@ static void curses_msg(const char *msg);
 static void curses_error(const char *msg);
 static void curses_fatal_error(const char *msg);
 static void curses_input(const char *title, char *input, size_t n);
-static void curses_progress(int value, int max);
+static void curses_progress(char *title, int value, int max);
 
 /*******************************************/
 
@@ -124,7 +124,7 @@ static void curses_input(const char *title, char *input, size_t n)
 /* 
  * implement the progress bar 
  */
-static void curses_progress(int value, int max)
+static void curses_progress(char *title, int value, int max)
 {
 }
 
@@ -143,6 +143,8 @@ void curses_interface(void)
    //wdg_window_set_title(wo, "Title: ");
    wdg_resize_object(wo, 3, 15, -3, -4);
    wdg_draw_object(wo);
+
+   wdg_set_focus(wo);
    
    /* 
     * give the control to the event dispatcher

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.6 2003/10/22 20:36:25 alor Exp $
+    $Id: wdg.c,v 1.7 2003/10/23 19:50:58 uid42100 Exp $
 */
 
 #include <wdg.h>
@@ -31,16 +31,24 @@
 
 /* informations about the current screen */
 struct wdg_scr current_screen;
+
 /* called when idle */
-static void (*wdg_idle_callback)(void);
+struct wdg_call_list {
+   void (*idle_callback)(void);
+   SLIST_ENTRY(wdg_call_list) next;
+};
+static SLIST_HEAD(, wdg_call_list) wdg_callbacks_list;
+
 /* the root object (usually the menu) */
 static struct wdg_object *wdg_root_obj;
+
 /* the focus list */
 struct wdg_obj_list {
    struct wdg_object *wo;
    CIRCLEQ_ENTRY(wdg_obj_list) next;
 };
 static CIRCLEQ_HEAD(, wdg_obj_list) wdg_objects_list = CIRCLEQ_HEAD_INITIALIZER(wdg_objects_list);
+
 /* the currently focused object */
 static struct wdg_obj_list *wdg_focused_obj;
 
@@ -50,10 +58,13 @@ void wdg_init(void);
 void wdg_cleanup(void);
 static void wdg_resize(void);
 
+void wdg_add_idle_callback(void (*callback)(void));
+void wdg_del_idle_callback(void (*callback)(void));
+
 int wdg_events_handler(int exit_key);
-void wdg_set_idle_callback(void (*callback)(void));
 static void wdg_dispatch_msg(int key);
 static void wdg_switch_focus(void);
+void wdg_set_focus(struct wdg_object *wo);
 
 int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags);
 int wdg_destroy_object(struct wdg_object **wo);
@@ -193,16 +204,19 @@ int wdg_events_handler(int exit_key)
               
          case ERR:
             /* 
-             * non-blockin input reached the timeout:
+             * non-blocking input reached the timeout:
              * call the idle function if present, else
              * sleep to not eat up all the cpu
              */
-            if (wdg_idle_callback != NULL)
-               wdg_idle_callback();
-            else { 
-               usleep(WDG_INPUT_TIMEOUT * 1000);
+            if (SLIST_EMPTY(&wdg_callbacks_list)) {
+               /* sleep for milliseconds */
+               napms(WDG_INPUT_TIMEOUT * 10);
                /* XXX - too many refresh ? */
                refresh();
+            } else {
+               struct wdg_call_list *cl;
+               SLIST_FOREACH(cl, &wdg_callbacks_list, next)
+                  cl->idle_callback();
             }
             break;
             
@@ -223,12 +237,35 @@ int wdg_events_handler(int exit_key)
 }
 
 /*
- * set the function to be called when idle 
+ * add a function to the idle callbacks list 
  */
-void wdg_set_idle_callback(void (*callback)(void))
+void wdg_add_idle_callback(void (*callback)(void))
 {
-   /* set the global pointer */
-   wdg_idle_callback = callback;
+   struct wdg_call_list *cl;
+
+   WDG_SAFE_CALLOC(cl, 1, sizeof(struct wdg_call_list));
+
+   /* store the callback */
+   cl->idle_callback = callback;
+
+   /* insert in the list */
+   SLIST_INSERT_HEAD(&wdg_callbacks_list, cl, next);
+}
+
+/*
+ * delete a function from the callbacks list
+ */
+void wdg_del_idle_callback(void (*callback)(void))
+{
+   struct wdg_call_list *cl;
+
+   SLIST_FOREACH(cl, &wdg_callbacks_list, next) {
+      if (cl->idle_callback == callback) {
+         SLIST_REMOVE(&wdg_callbacks_list, cl, wdg_call_list, next);
+         WDG_SAFE_FREE(cl);
+         return;
+      }
+   }
 }
 
 /*
@@ -238,6 +275,13 @@ void wdg_set_idle_callback(void (*callback)(void))
  */
 static void wdg_dispatch_msg(int key)
 {
+   /* the focused object is modal ! send only to it */
+   if (wdg_focused_obj && (wdg_focused_obj->wo->flags & WDG_OBJ_FOCUS_MODAL)) {
+      wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key);
+      /* other objects must not receive the msg */
+      return;
+   }
+   
    /* first dispatch to the root object */
    if (wdg_root_obj != NULL) {
       if (wdg_root_obj->get_msg(wdg_root_obj, key) == WDG_ESUCCESS)
@@ -268,6 +312,10 @@ static void wdg_switch_focus(void)
 {
    struct wdg_obj_list *wl;
 
+   /* the focused object is modal ! don't switch */
+   if (wdg_focused_obj && (wdg_focused_obj->wo->flags & WDG_OBJ_FOCUS_MODAL))
+      return;
+   
    printw("WDG: switch focus\n"); refresh();
    
    /* if there is not a focused object, create it */
@@ -305,6 +353,25 @@ static void wdg_switch_focus(void)
    WDG_BUG_IF(wdg_focused_obj->wo->get_focus == NULL);
    WDG_EXECUTE(wdg_focused_obj->wo->get_focus, wdg_focused_obj->wo);
    
+}
+
+/*
+ * set focus to the given object
+ */
+void wdg_set_focus(struct wdg_object *wo)
+{
+   struct wdg_obj_list *wl;
+
+   /* search the object and focus it */
+   CIRCLEQ_FOREACH(wl, &wdg_objects_list, next) {
+      if ( wl->wo == wo ) {
+         /* set the focused object */
+         wdg_focused_obj = wl;
+         /* focus current object */
+         WDG_BUG_IF(wdg_focused_obj->wo->get_focus == NULL);
+         WDG_EXECUTE(wdg_focused_obj->wo->get_focus, wdg_focused_obj->wo);
+      }
+   }
 }
 
 /*
@@ -354,13 +421,25 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
  */
 int wdg_destroy_object(struct wdg_object **wo)
 {
-   /* it was the root object ? */
+   struct wdg_obj_list *wl;
+   
+   /* was it the root object ? */
    if ((*wo)->flags & WDG_OBJ_ROOT_OBJECT)
       wdg_root_obj = NULL;
   
    /* it was the focused one */
    if (wdg_focused_obj && wdg_focused_obj->wo == *wo)
-      wdg_focused_obj = NULL;
+      wdg_switch_focus();
+  
+
+   /* delete it from the obj_list */
+   CIRCLEQ_FOREACH(wl, &wdg_objects_list, next) {
+      if (wl->wo == *wo) {
+         CIRCLEQ_REMOVE(&wdg_objects_list, wl, next);
+         WDG_SAFE_FREE(wl);
+         break;
+      }
+   }
    
    /* call the specialized destroy function */
    WDG_BUG_IF((*wo)->destroy == NULL);

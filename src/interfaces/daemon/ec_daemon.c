@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_daemon.c,v 1.8 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_daemon.c,v 1.9 2003/10/23 19:50:58 uid42100 Exp $
 */
 
 #include <ec.h>
@@ -38,7 +38,7 @@ static void daemon_init(void);
 static void daemon_cleanup(void);
 static void daemon_msg(const char *msg);
 static void daemon_error(const char *msg);
-static void daemon_progress(int value, int max);
+static void daemon_progress(char *title, int value, int max);
 static void daemonize(void);
 
 /*******************************************/
@@ -96,7 +96,7 @@ static void daemon_cleanup(void)
  * implement the progress bar (none for daemon) 
  */
 
-static void daemon_progress(int value, int max)
+static void daemon_progress(char *title, int value, int max)
 {
    return;                    
 }

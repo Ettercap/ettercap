@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.31 2004/09/28 13:50:38 alor Exp $
+    $Id: ec_gtk.c,v 1.32 2004/09/30 01:56:30 daten Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,7 @@ static GtkWidget     *textview = NULL;
 static GtkTextBuffer *msgbuffer = NULL;
 static GtkTextMark   *endmark = NULL;
 static GtkAccelGroup *accel_group = NULL;
+static gboolean progress_cancelled = FALSE;
 
 /* proto */
 
@@ -78,6 +79,7 @@ static void gtkui_bridged_sniff(void);
 static void bridged_sniff(void);
 static void gtkui_pcap_filter(void);
 static void gtkui_set_netmask(void);
+static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data);
 
 GtkTextBuffer *gtkui_details_window(char *title);
 void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
@@ -304,6 +306,15 @@ static int gtkui_progress(char *title, int value, int max)
 {
    static GtkWidget *dialog = NULL;
    static GtkWidget *pbar = NULL;
+
+   if (progress_cancelled == TRUE) {
+      dialog = NULL;
+      pbar = NULL;
+      progress_cancelled = FALSE;
+      return UI_PROGRESS_INTERRUPTED;
+   }
+
+   gdk_threads_enter();
    
    /* the first time, create the object */
    if (pbar == NULL) {
@@ -312,7 +323,7 @@ static int gtkui_progress(char *title, int value, int max)
       gtk_window_set_modal(GTK_WINDOW (dialog), TRUE);
       gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
       gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
-      g_signal_connect(G_OBJECT (dialog), "delete_event", G_CALLBACK (gtk_true), NULL);
+      g_signal_connect(G_OBJECT (dialog), "delete_event", G_CALLBACK (gtkui_progress_cancel), NULL);
     
       pbar = gtk_progress_bar_new();
       gtk_container_add(GTK_CONTAINER (dialog), pbar);
@@ -326,22 +337,33 @@ static int gtkui_progress(char *title, int value, int max)
    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (pbar), (gdouble)((gdouble)value / (gdouble)max));
 
    /* a nasty little loop that lets gtk update the progress bar immediately */
-   while (gtk_events_pending ())
-      gtk_main_iteration ();
+//   while (gtk_events_pending ())
+//      gtk_main_iteration ();
+
+   gdk_threads_leave();
 
    /* 
     * when 100%, destroy it
     */
    if (value == max) {
+      gdk_threads_enter();
       gtk_widget_hide(dialog);
       gtk_widget_destroy(pbar);
       gtk_widget_destroy(dialog);
+      gdk_threads_leave();
       dialog = NULL;
       pbar = NULL;
       return UI_PROGRESS_FINISHED;
    }
 
    return UI_PROGRESS_UPDATED;
+}
+
+static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) {
+   progress_cancelled = TRUE;
+
+   /* the whole progress dialog will be destroyed by gtk after returning FALSE */
+   return(FALSE);
 }
 
 /*

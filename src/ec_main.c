@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.28 2003/08/18 21:25:16 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.29 2003/08/21 14:36:02 alor Exp $
 */
 
 #include <ec.h>
@@ -156,9 +156,12 @@ int main(int argc, char *argv[])
  * reached only when the UI is shutted down 
  ********************************************/
 
+   /* flush the exit message */
+   ui_msg_flush(1);
+   
    /* stop the mitm attack */
    mitm_stop();
-   
+
    /* terminate the sniffing engine */
    EXECUTE(GBL_SNIFF->cleanup);
    

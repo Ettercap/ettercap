@@ -29,11 +29,7 @@ this is the unofficial and floating in time roadmap:
 
 Ago 2003:
 
-   + ARP POISON ENGINE
-      - arp poisoner
-      - multipoison
-      - rearp in demon mode (clean shutdown of all thread)
-
+   ! Fix packet forwarding
 
 Sep 2003:
    

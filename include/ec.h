@@ -72,6 +72,12 @@
 #define COLOR_BLU    "\033[34m"BOLD_COLOR
 #define COLOR_CYAN   "\033[36m"BOLD_COLOR
 
+/* magic numbers */
+
+#define EC_MAGIC_8   0xec
+#define EC_MAGIC_16  0xe77e
+#define EC_MAGIC_32  0xe77ee77e
+
 /* exported by ec_main */
 extern void clean_exit(int errcode);
 

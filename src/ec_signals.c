@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.7 2003/08/07 20:25:18 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.8 2003/08/21 14:36:02 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_ui.h>
+#include <ec_mitm.h>
 
 #include <signal.h>
 #include <sys/resource.h>
@@ -116,6 +117,7 @@ RETSIGTYPE signal_SEGV(int sig)
 
 RETSIGTYPE signal_TERM(int sig)
 {
+   /* terminate the UI */
    ui_cleanup();
    
    #ifdef HAVE_STRSIGNAL
@@ -136,6 +138,10 @@ RETSIGTYPE signal_TERM(int sig)
    
    signal(sig, SIG_IGN);
 
+   /* stop the mitm process (if activated) */
+   mitm_stop();
+   
+   /* perform a clean exit */
    clean_exit(0);
 
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.16 2003/08/20 16:00:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.17 2003/08/21 14:36:02 alor Exp $
 */
 
 #include <ec.h>
@@ -43,6 +43,7 @@ int send_to_bridge(struct packet_object *po);
 static void hack_pcap_lnet(pcap_t *p, libnet_t *l);
 
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac);
+int send_icmp_echo(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac);
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SEND_LOCK     do{ pthread_mutex_lock(&send_mutex); } while(0)
@@ -263,7 +264,6 @@ static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
 /*
  * helper function to send out an ARP packet
  */
-
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac)
 {
    libnet_ptag_t t = (libnet_ptag_t)pthread_self();
@@ -284,8 +284,8 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    t = libnet_build_arp(
            ARPHRD_ETHER,            /* hardware addr */
            ETHERTYPE_IP,            /* protocol addr */
-           6,                       /* hardware addr size */
-           4,                       /* protocol addr size */
+           ETH_ADDR_LEN,            /* hardware addr size */
+           IP_ADDR_LEN,             /* protocol addr size */
            type,                    /* operation type */
            smac,                    /* sender hardware addr */
            (u_char *)&(sip->addr),  /* sender protocol addr */
@@ -322,6 +322,68 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    /* free the packet */
    SAFE_FREE(packet);
    
+   SEND_UNLOCK;
+   
+   return c;
+}
+
+
+/*
+ * helper function to send out an ICMP ECHO packet
+ */
+int send_icmp_echo(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac)
+{
+   libnet_ptag_t t = (libnet_ptag_t)pthread_self();
+   int c;
+ 
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet_L3 == 0);
+   
+   SEND_LOCK;
+
+   /* create the ICMP header */
+   t = libnet_build_icmpv4_echo(
+           type,                    /* type */
+           0,                       /* code */
+           0,                       /* checksum */
+           htons(EC_MAGIC_16),      /* identification number */
+           htons(EC_MAGIC_16),      /* sequence number */
+           NULL,                    /* payload */
+           0,                       /* payload size */
+           GBL_LNET->lnet_L3,       /* libnet handle */
+           0);                      /* libnet id */
+   ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_LNET->lnet_L3));
+  
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+  
+   /* create the IP header */
+   t = libnet_build_ipv4(                                                                          
+           LIBNET_IPV4_H + LIBNET_ICMPV4_ECHO_H,       /* length */                                    
+           0,                                          /* TOS */                                       
+           htons(EC_MAGIC_16),                         /* IP ID */                                     
+           0,                                          /* IP Frag */                                   
+           64,                                         /* TTL */                                       
+           IPPROTO_ICMP,                               /* protocol */                                  
+           0,                                          /* checksum */                                  
+           *(u_long *)&(sip->addr),                    /* source IP */                                 
+           *(u_long *)&(tip->addr),                    /* destination IP */                            
+           NULL,                                       /* payload */                                   
+           0,                                          /* payload size */                              
+           GBL_LNET->lnet_L3,                          /* libnet handle */                             
+           0);
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_L3));
+  
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+ 
+   /* send the packet to Layer 3 */
+   c = libnet_write(GBL_LNET->lnet_L3);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet_L3));
+
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet_L3);
+
    SEND_UNLOCK;
    
    return c;

@@ -13,6 +13,7 @@ noinst_HEADERS = ec.h \
                  ec_dissect.h \
                  ec_error.h \
                  ec_file.h \
+                 ec_filter.h \
                  ec_fingerprint.h \
                  ec_format.h \
                  ec_globals.h \
@@ -42,6 +43,7 @@ noinst_HEADERS = ec.h \
                  ec_sniff_unified.h \
                  ec_stats.h \
                  ec_stdint.h \
+                 ec_streambuf.h \
                  ec_strings.h \
                  ec_threads.h \
                  ec_ui.h \

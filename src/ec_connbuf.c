@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_connbuf.c,v 1.2 2003/08/04 13:59:07 alor Exp $
+    $Id: ec_connbuf.c,v 1.3 2003/08/22 19:23:40 alor Exp $
 */
 
 #include <ec.h>
@@ -50,7 +50,7 @@ void connbuf_init(struct conn_buf *cb, size_t size)
    cb->size = 0;
    cb->max_size = size;
    /* init the tail */
-   TAILQ_INIT(&cb->buf_tail);
+   TAILQ_INIT(&cb->connbuf_tail);
    /* init the mutex */
    CONNBUF_INIT_LOCK(cb->connbuf_mutex);
 }
@@ -66,10 +66,10 @@ void connbuf_init(struct conn_buf *cb, size_t size)
  */
 int connbuf_add(struct conn_buf *cb, struct packet_object *po)
 {
-   struct pck_list *p;
-   struct pck_list *e;
+   struct conn_pck_list *p;
+   struct conn_pck_list *e;
 
-   p = calloc(1, sizeof(struct pck_list));
+   p = calloc(1, sizeof(struct conn_pck_list));
    ON_ERROR(p, NULL, "Can't allocate memory");
 
    /* 
@@ -77,7 +77,7 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
     * (ack packets) the real memory occupation will overflow
     * the max_size
     */
-   p->size = sizeof(struct pck_list) + po->DATA.disp_len;
+   p->size = sizeof(struct conn_pck_list) + po->DATA.disp_len;
   
    memcpy(&p->L3_src, &po->L3.src, sizeof(struct ip_addr));
 
@@ -104,9 +104,9 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
     * if we have to free some packets
     */
    if (cb->size + p->size > cb->max_size) {
-      struct pck_list *old = NULL;
+      struct conn_pck_list *old = NULL;
       
-      TAILQ_FOREACH_REVERSE(e, &cb->buf_tail, next, buf_head) {
+      TAILQ_FOREACH_REVERSE(e, &cb->connbuf_tail, next, connbuf_head) {
          SAFE_FREE(old);
          
          /* we have freed enough bytes */
@@ -117,14 +117,14 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
          cb->size -= e->size;
          /* remove the elemnt */
          SAFE_FREE(e->buf);
-         TAILQ_REMOVE(&cb->buf_tail, e, next);
+         TAILQ_REMOVE(&cb->connbuf_tail, e, next);
          old = e;
       }
       SAFE_FREE(old);
    }
    
    /* insert the packet in the tail */
-   TAILQ_INSERT_HEAD(&cb->buf_tail, p, next);
+   TAILQ_INSERT_HEAD(&cb->connbuf_tail, p, next);
       
    /* update the total buffer size */
    cb->size += p->size;
@@ -140,22 +140,22 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
  */
 void connbuf_wipe(struct conn_buf *cb)
 {
-   struct pck_list *e;
+   struct conn_pck_list *e;
 
    DEBUG_MSG("connbuf_wipe");
    
    CONNBUF_LOCK(cb->connbuf_mutex);
    
    /* delete the list */
-   while ((e = TAILQ_FIRST(&cb->buf_tail)) != TAILQ_END(&cb->buf_tail)) {
-      TAILQ_REMOVE(&cb->buf_tail, e, next);
+   while ((e = TAILQ_FIRST(&cb->connbuf_tail)) != TAILQ_END(&cb->connbuf_tail)) {
+      TAILQ_REMOVE(&cb->connbuf_tail, e, next);
       SAFE_FREE(e->buf);
       SAFE_FREE(e);
    }
 
    /* reset the buffer */
    cb->size = 0;
-   TAILQ_INIT(&cb->buf_tail);
+   TAILQ_INIT(&cb->connbuf_tail);
    
    CONNBUF_UNLOCK(cb->connbuf_mutex);
 }
@@ -170,7 +170,7 @@ void connbuf_wipe(struct conn_buf *cb)
  */
 int connbuf_print(struct conn_buf *cb, struct ip_addr *L3_src, void (*func)(u_char *, size_t))
 {
-   struct pck_list *e;
+   struct conn_pck_list *e;
    int n = 0;
   
    DEBUG_MSG("connbuf_print");
@@ -178,7 +178,7 @@ int connbuf_print(struct conn_buf *cb, struct ip_addr *L3_src, void (*func)(u_ch
    CONNBUF_LOCK(cb->connbuf_mutex);
    
    /* print the buffer */
-   TAILQ_FOREACH_REVERSE(e, &cb->buf_tail, next, buf_head) {
+   TAILQ_FOREACH_REVERSE(e, &cb->connbuf_tail, next, connbuf_head) {
       /*
        * print only packet that matches the L3 filter.
        * if L3_src is NULL, print all the packets
@@ -189,8 +189,8 @@ int connbuf_print(struct conn_buf *cb, struct ip_addr *L3_src, void (*func)(u_ch
           * remember that the size is comprehensive
           * of the struct size
           */
-         func(e->buf, e->size - sizeof(struct pck_list));
-         n += e->size - sizeof(struct pck_list);
+         func(e->buf, e->size - sizeof(struct conn_pck_list));
+         n += e->size - sizeof(struct conn_pck_list);
       }
    }
    

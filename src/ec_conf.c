@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.12 2003/08/20 16:00:53 alor Exp $
+    $Id: ec_conf.c,v 1.13 2003/08/22 19:23:40 alor Exp $
 */
 
 #include <ec.h>
@@ -55,8 +55,9 @@ static struct conf_entry stats[] = {
    { NULL, NULL },
 };
 
-static struct conf_entry various[] = {
+static struct conf_entry misc[] = {
    { "close_on_eof", NULL },
+   { "aggressive_dissectors", NULL },
    { NULL, NULL },
 };
 
@@ -70,7 +71,7 @@ static struct conf_section sections[] = {
    { "mitm", (struct conf_entry *)&mitm},
    { "connections", (struct conf_entry *)&connections},
    { "stats", (struct conf_entry *)&stats},
-   { "various", (struct conf_entry *)&various},
+   { "misc", (struct conf_entry *)&misc},
    { "dissectors", (struct conf_entry *)&dissectors},
    { NULL, NULL },
 };
@@ -108,7 +109,8 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&connections, "connection_idle", &GBL_CONF->connection_idle);
    set_pointer((struct conf_entry *)&connections, "connection_buffer", &GBL_CONF->connection_buffer);
    set_pointer((struct conf_entry *)&stats, "sampling_rate", &GBL_CONF->sampling_rate);
-   set_pointer((struct conf_entry *)&various, "close_on_eof", &GBL_CONF->close_on_eof);
+   set_pointer((struct conf_entry *)&misc, "close_on_eof", &GBL_CONF->close_on_eof);
+   set_pointer((struct conf_entry *)&misc, "aggressive_dissectors", &GBL_CONF->aggressive_dissectors);
 
    /* sanity check */
    do {

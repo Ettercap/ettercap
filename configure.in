@@ -152,6 +152,13 @@ AC_PROG_GCC_TRADITIONAL
 EC_GCC_MACRO
 
 dnl ========================
+dnl   Bison/Flex related...
+dnl ========================
+
+AC_PROG_YACC
+AC_PROG_LEX
+
+dnl ========================
 dnl   Libtool related...
 dnl ========================
 
@@ -564,6 +571,7 @@ AC_OUTPUT(Makefile
           include/Makefile
           utils/Makefile
           utils/etterlog/Makefile
+          utils/etterfilter/Makefile
           plug-ins/Makefile
           plug-ins/dummy/Makefile
           plug-ins/dummy_hook/Makefile)

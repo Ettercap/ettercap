@@ -27,6 +27,7 @@ dist-hook:
 test: all
 	ln -fs ./src/ettercap ./
 	ln -fs ./utils/etterlog/etterlog ./
+	ln -fs ./utils/etterfilter/etterfilter ./
 	find ./plug-ins -name '*.so' -exec ln -fs {} ./ \;
 	./shtool fixperm ./
 

@@ -14,6 +14,7 @@ ettercap_SOURCES = ec_capture.c \
                ec_dissect.c \
                ec_error.c \
                ec_file.c \
+               ec_filter.c \
                ec_fingerprint.c \
                ec_format.c \
                ec_globals.c \
@@ -41,6 +42,7 @@ ettercap_SOURCES = ec_capture.c \
                ec_sniff_bridge.c \
                ec_sniff_unified.c \
                ec_stats.c \
+               ec_streambuf.c \
                ec_strings.c \
                ec_threads.c \
                ec_ui.c \

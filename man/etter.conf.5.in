@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.6 2003/08/20 16:00:53 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.7 2003/08/22 19:23:40 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -65,6 +65,7 @@ is read with root privs. Be sure the uid has enough privs to read other files (e
 You can bypass this variable by setting the evironment variable EC_UID.
 
 
+
 .TP 20
 .B [mitm]
 .TP
@@ -91,6 +92,7 @@ IDS) up to the timeout of the ARP cache (it depends on the operating system
 poisoned).
 
 
+
 .TP 20
 .B [connections]
 .TP
@@ -113,6 +115,7 @@ allocated all together at the first packet of a connection, but it is filled as
 the packets arrive.
 
 
+
 .TP 20
 .B [stats]
 .TP
@@ -125,14 +128,21 @@ smoother picture. The total average will not change, but the worst value will
 be heavily influenced by this value.
 
 
+
 .TP 20
-.B [various]
+.B [misc]
 .TP
 .B close_on_eof
 When reading form a dump file and using console or daemon UI, this variable is
 used to determine what action has to be done on EOF. It is a boolean value. If
 set to 1 ettercap will close itself (useful in scripts) else the session will
 continue till the user input.
+
+.TP
+.B aggressive_dissectors
+Some dissectors (such as SSH and HTTPS) needs to modify the payload of the
+packets in order to collect passwords and perform a decryption attack. If you
+want to disable all the "dangerous" dissector at a time, set this value to 0.
 
 
 

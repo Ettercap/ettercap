@@ -27,6 +27,7 @@
 
 this is the unofficial and floating in time roadmap:
 
+   - escape string
 
 Sep 2003:
    
@@ -61,6 +62,7 @@ Sep 2003:
    + MITM METHODS
       - icmp redirect
       - dhcp poisoning
+      - port stealing
       
 Oct 2003:
 

@@ -13,11 +13,11 @@ struct conn_buf {
    /* actual buffer size */
    size_t size;
    /* the real buffer made up of a tail of packets */
-   TAILQ_HEAD(buf_head, pck_list) buf_tail;
+   TAILQ_HEAD(connbuf_head, conn_pck_list) connbuf_tail;
 };
 
 /* an entry in the tail */
-struct pck_list {
+struct conn_pck_list {
    /* size of the element (including the struct size) */
    size_t size;
    /* the source of the packet */
@@ -25,7 +25,7 @@ struct pck_list {
    /* the data */
    u_char *buf;
    /* the link to the next element */
-   TAILQ_ENTRY(pck_list) next;
+   TAILQ_ENTRY(conn_pck_list) next;
 };
 
 /* functions */

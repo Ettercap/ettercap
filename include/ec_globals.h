@@ -22,6 +22,7 @@ struct ec_conf {
    int connection_buffer;
    int sampling_rate;
    int close_on_eof;
+   int aggressive_dissectors;
 };
 
 /* options from getopt */

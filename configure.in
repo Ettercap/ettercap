@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.61 2003/11/09 13:23:09 lordnaga Exp $
+dnl    $Id: configure.in,v 1.62 2003/11/12 18:10:17 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -266,15 +266,15 @@ AM_CONDITIONAL(MISSING_SCANDIR, false)
 
 dnl AC_REPLACE_FUNCS(strlcpy)
 
-AC_CHECK_FUNCS([strlcpy], , AC_LIBOBJ(missing/strlcpy) AM_CONDITIONAL(MISSING_STRLCPY, true) )
-AC_CHECK_FUNCS([strlcat], , AC_LIBOBJ(missing/strlcat) AM_CONDITIONAL(MISSING_STRLCAT, true) )
-AC_CHECK_FUNCS([strsep], , AC_LIBOBJ(missing/strsep) AM_CONDITIONAL(MISSING_STRSEP, true) )
-AC_CHECK_FUNCS([memmem], , AC_LIBOBJ(missing/memmem) AM_CONDITIONAL(MISSING_MEMMEM, true) )
-AC_CHECK_FUNCS([memcmp], , AC_LIBOBJ(missing/memcmp) AM_CONDITIONAL(MISSING_MEMCMP, true) )
-AC_CHECK_FUNCS([getopt_long], , AC_LIBOBJ(missing/getopt) AM_CONDITIONAL(MISSING_GETOPT_LONG, true) )
-AC_CHECK_FUNCS([strcasestr], , AC_LIBOBJ(missing/strcasestr) AM_CONDITIONAL(MISSING_STRCASESTR, true) )
-AC_CHECK_FUNCS([scandir], , AC_LIBOBJ(missing/scandir) AM_CONDITIONAL(MISSING_SCANDIR, true) )
-AC_CHECK_FUNCS([inet_aton], , AC_LIBOBJ(missing/inet_aton) AM_CONDITIONAL(MISSING_INET_ATON, true) )
+AC_CHECK_FUNCS([strlcpy], , [AC_LIBOBJ(missing/strlcpy) AM_CONDITIONAL(MISSING_STRLCPY, true)])
+AC_CHECK_FUNCS([strlcat], , [AC_LIBOBJ(missing/strlcat) AM_CONDITIONAL(MISSING_STRLCAT, true)])
+AC_CHECK_FUNCS([strsep], , [AC_LIBOBJ(missing/strsep) AM_CONDITIONAL(MISSING_STRSEP, true)])
+AC_CHECK_FUNCS([memmem], , [AC_LIBOBJ(missing/memmem) AM_CONDITIONAL(MISSING_MEMMEM, true)])
+AC_CHECK_FUNCS([memcmp], , [AC_LIBOBJ(missing/memcmp) AM_CONDITIONAL(MISSING_MEMCMP, true)])
+AC_CHECK_FUNCS([getopt_long], , [AC_LIBOBJ(missing/getopt) AM_CONDITIONAL(MISSING_GETOPT_LONG, true)])
+AC_CHECK_FUNCS([strcasestr], , [AC_LIBOBJ(missing/strcasestr) AM_CONDITIONAL(MISSING_STRCASESTR, true)])
+AC_CHECK_FUNCS([scandir], , [AC_LIBOBJ(missing/scandir) AM_CONDITIONAL(MISSING_SCANDIR, true)])
+AC_CHECK_FUNCS([inet_aton], , [AC_LIBOBJ(missing/inet_aton) AM_CONDITIONAL(MISSING_INET_ATON, true)])
 
 AC_CHECK_LIB(resolv, inet_aton,
    AM_CONDITIONAL(INET_ATON_WANTS_RESOLV, true), 

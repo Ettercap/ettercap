@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ppp.c,v 1.6 2003/12/04 14:51:44 lordnaga Exp $
+    $Id: ec_ppp.c,v 1.7 2003/12/04 16:12:00 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -106,6 +106,12 @@ FUNC_DECODER(decode_ppp)
 
    ppph = (struct ppp_header *)DECODE_DATA;
 
+   /* Set the L4 header for the hook */
+   PACKET->L4.header = (u_char *)DECODE_DATA;
+         
+   /* HOOK POINT: HOOK_PACKET_PPP */
+   hook_point(HOOK_PACKET_PPP, PACKET);
+
    /* We have to guess if header compression was negotiated */
    /* XXX - && or || ??? */
    if (ppph->address != 0xff && ppph->control != 0x3) {
@@ -130,12 +136,6 @@ FUNC_DECODER(decode_ppp)
    }
 
    /* XXX - Add PACKET->L2 stuff if it's not set yet */
-
-   /* Set the L4 header for the hook */
-   PACKET->L4.header = (u_char *)DECODE_DATA;
-         
-   /* HOOK POINT: HOOK_PACKET_PPP */
-   hook_point(HOOK_PACKET_PPP, PACKET);
 
    /* Set the L4 header to LCP for subsequent hooks */
    PACKET->L4.header = (u_char *)(DECODE_DATA + DECODED_LEN);

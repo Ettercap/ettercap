@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: stp_mangler.c,v 1.1 2004/01/10 13:27:20 lordnaga Exp $
+    $Id: stp_mangler.c,v 1.2 2004/01/20 21:17:10 alor Exp $
 */
 
 
@@ -159,9 +159,9 @@ EC_THREAD_FUNC(mangler)
    hstp->bridge_priority = 0;
    memcpy(hstp->bridge_id, GBL_IFACE->mac, ETH_ADDR_LEN);
    hstp->port_id = htons(0x8000);
-   hstp->max_age = inv_htons(20);
-   hstp->hello_time = inv_htons(2);
-   hstp->forward_delay = inv_htons(15);
+   hstp->max_age = htons_inv(20);
+   hstp->hello_time = htons_inv(2);
+   hstp->forward_delay = htons_inv(15);
 
    packet_create_object(&fake_po, fake_pck, FAKE_PCK_LEN);
 

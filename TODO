@@ -9,10 +9,16 @@
       - input for curses gui
       - in unoffensive we get UNKNOWN for all the profiles
       - the problem of packet boundary with BPF (off by one/null terminate)
+      - magic number for dissector session (only retrieve my sessions)
 
    + PCAP RELATED
       + when libpcap 0.8.2 will be released
          - pcap_stat fix (even under linux the stats are cumulative)
+
+   + LNET RELATED
+      + when libnet 1.1.2 will be released
+         - add support for unconfigured interface
+         - check if the icmp redirect gw is correct
 
    + BSD PORTING
       - find a way for bridged sniff under OpenBSD 
@@ -35,6 +41,7 @@ this is the unofficial and floating in time roadmap:
       - how to code a plugin 
 
    + CURSES GUI
+      - fix del host (until crash)
       - profile management
       - connection management
       + LIBWDG
@@ -52,7 +59,6 @@ this is the unofficial and floating in time roadmap:
    + DISSECTORS
       - convert all the old dissectors:
          - https (over the ssl one)
-         - ldap
          - pcanywhere
          - yahoo
       - SSL unified dissector for https, impas, pop3s ecc ecc
@@ -65,12 +71,11 @@ this is the unofficial and floating in time roadmap:
       - automatic add of new hosts
       port all the plugins to NG:
          - lurker    -> find_ettercap
-         - roper     -> stop_ipsec
+         - roper     -> will not be ported (use filters)
          - dwarf     -> (will be integrated with etterlog)
          - thief     -> (same as dwarf)
-         - banshee   -> killer
+         - banshee   -> will not be ported (use filters)
          - golem     -> res_exhaust
-         - imp       -> nbt_names
          - leech     -> isolate
          - ooze      -> will not be ported (never used)
          - shadow    -> will not be ported (never used) (use nmap instead)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.20 2004/01/18 14:09:15 lordnaga Exp $
+    $Id: ec_dissect.c,v 1.21 2004/01/20 21:17:10 alor Exp $
 */
 
 #include <ec.h>
@@ -240,6 +240,7 @@ int dissect_modify(int mode, char *name, u_int32 port)
 
                /* save them because the dissect_del may delete this values */
                level = e->level;
+printf("level %d %d\n", level, port);               
                decoder = e->decoder;
                
                /* remove all the previous istances */

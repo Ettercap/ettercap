@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.18 2004/01/10 12:26:19 lordnaga Exp $ */
+/* $Id: ec_inet.h,v 1.19 2004/01/20 21:17:10 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -36,7 +36,6 @@ struct ip_addr {
    u_int8 addr[MAX_IP_ADDR_LEN];
 };
 
-extern u_int16 inv_htons(u_int16 value);
 extern int ip_addr_init(struct ip_addr *sa, int type, char *addr);
 extern int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 extern int ip_addr_null(struct ip_addr *sa);
@@ -82,6 +81,8 @@ extern u_int16 get_iface_mtu(char *iface);
                       (u_int32)*((u_int8 *)x+0)<<24   \
                     )
    
+   /* return little endian */
+   #define htons_inv(x) (u_int16)(x << 8) | (x >> 8) 
 
    #define ORDER_ADD_SHORT(a, b)   a = a + b
    #define ORDER_ADD_LONG(a, b)	  a = a + b
@@ -93,7 +94,9 @@ extern u_int16 get_iface_mtu(char *iface);
 
    #define pntos(x) ntohs(*(u_int16 *)(x))
    #define pntol(x) ntohl(*(u_int32 *)(x))
-   
+      
+   /* return little endian */
+   #define htons_inv(x) (u_int16)x
    
    #define ORDER_ADD_SHORT(a, b)   a = htons(ntohs(a) + (int16)b)
    #define ORDER_ADD_LONG(a, b)	  a = htonl(ntohl(a) + (int32)b)
@@ -104,7 +107,7 @@ extern u_int16 get_iface_mtu(char *iface);
 #define int_ntoa(x)   inet_ntoa(*((struct in_addr *)&(x)))
 
 #define ip_addr_to_int32(x)  *(u_int32 *)(x)
-   
+  
 #endif
 
 

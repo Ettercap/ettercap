@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.21 2004/01/10 12:26:38 lordnaga Exp $
+    $Id: ec_inet.c,v 1.22 2004/01/20 21:17:10 alor Exp $
 */
 
 #include <ec.h>
@@ -329,13 +329,6 @@ int ip_addr_is_local(struct ip_addr *sa)
    return -ENOTFOUND;
 }
 
-u_int16 inv_htons(u_int16 value)
-{
-    u_int16 out;
-    out = htons(value);
-    out = (out << 8) | (out >> 8);
-    return(out);
-}
 
 /* EOF */
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.7 2004/01/20 11:42:27 alor Exp $
+    $Id: ec_curses_targets.c,v 1.8 2004/01/20 21:17:10 alor Exp $
 */
 
 #include <ec.h>
@@ -33,6 +33,7 @@ static void wipe_targets(void);
 static void curses_select_targets(void);
 static void set_targets(void);
 static void curses_current_targets(void);
+static void curses_destroy_tsel(void);
 static void curses_create_targets_array(void);
 static void curses_delete_target1(void *);
 static void curses_delete_target2(void *);
@@ -220,11 +221,16 @@ static void curses_current_targets(void)
    wdg_compound_add(wdg_comp, wdg_t2);
    
    /* add the destroy callback */
-   wdg_add_destroy_key(wdg_comp, CTRL('Q'), NULL);
+   wdg_add_destroy_key(wdg_comp, CTRL('Q'), curses_destroy_tsel);
    
    wdg_draw_object(wdg_comp);
    wdg_set_focus(wdg_comp);
    
+}
+
+static void curses_destroy_tsel(void)
+{
+   wdg_comp = NULL;
 }
 
 /*

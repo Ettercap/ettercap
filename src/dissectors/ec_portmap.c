@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_portmap.c,v 1.5 2004/01/20 14:28:47 lordnaga Exp $
+    $Id: ec_portmap.c,v 1.6 2004/01/20 21:17:10 alor Exp $
 */
 
 #include <ec.h>
@@ -69,8 +69,9 @@ void portmap_init(void);
 
 void __init portmap_init(void)
 {
-   dissect_add("portmap", APP_LAYER_TCP, 111, dissector_portmap);
+   /* UDP come first for the precedence in the dissector list */
    dissect_add("portmap", APP_LAYER_UDP, 111, dissector_portmap);
+   dissect_add("portmap", APP_LAYER_TCP, 111, dissector_portmap);
 }
 
 FUNC_DECODER(dissector_portmap)

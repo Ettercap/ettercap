@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.18 2003/06/13 15:45:03 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.19 2003/06/28 10:47:37 alor Exp $
 */
 
 #include <ec.h>
@@ -45,9 +45,6 @@ static pthread_mutex_t po_mutex = PTHREAD_MUTEX_INITIALIZER;
 void top_half_queue_add(struct packet_object *po);
 EC_THREAD_FUNC(top_half);
 
-/* XXX - remove me */
-void __init init_packet_print(void);
-
 /*******************************************/
 
 /*
@@ -73,7 +70,7 @@ EC_THREAD_FUNC(top_half)
      
       CANCELLATION_POINT();
       
-      /* the queue is updated by other threads */
+      /* the queue is updated by other thread, lock it */
       PO_QUEUE_LOCK;
       
       /* get the first element */
@@ -90,7 +87,24 @@ EC_THREAD_FUNC(top_half)
       /* start the counter for the TopHalf */
       stats_half_start(&GBL_STATS->th);
        
-      /* check if it is the last packet of a file */
+      /* remove the packet form the queue */
+      SIMPLEQ_REMOVE_HEAD(&po_queue, e, next);
+     
+      /* update the queue stats */
+      stats_queue_del();
+      
+      /* 
+       * we have extracted the element, unlock the queue 
+       *
+       * the bottom half MUST be very fast and it cannot
+       * wait on the top half lock.
+       */
+      PO_QUEUE_UNLOCK;
+      
+      /* 
+       * check if it is the last packet of a file...
+       * and exit if we are in console or demonize mode
+       */
       if (GBL_UI->type == UI_CONSOLE || GBL_UI->type == UI_DAEMONIZE) {
          if (e->po->flags & PO_EOF) {
             USER_MSG("\nEnd of dump file...\n");
@@ -100,12 +114,6 @@ EC_THREAD_FUNC(top_half)
       
       /* HOOK_POINT: DISPATCHER */
       hook_point(HOOK_DISPATCHER, e->po);
-     
-      /* remove the packet form the queue */
-      SIMPLEQ_REMOVE_HEAD(&po_queue, e, next);
-     
-      /* update the stats */
-      stats_queue_del();
 
       /* save the len before the free() */
       pck_len = e->po->len;
@@ -117,7 +125,6 @@ EC_THREAD_FUNC(top_half)
       /* start the counter for the TopHalf */
       stats_half_end(&GBL_STATS->th, pck_len);
       
-      PO_QUEUE_UNLOCK;
    } 
 }
 
@@ -146,12 +153,6 @@ void top_half_queue_add(struct packet_object *po)
    PO_QUEUE_UNLOCK;
 }
 
-
-/* XXX - remove this */
-void __init init_packet_print(void)
-{
-   //hook_add(HOOK_DISPATCHER, &packet_print);
-}
 
 /* EOF */
 

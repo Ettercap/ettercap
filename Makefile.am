@@ -11,6 +11,8 @@ endif
 EXTRA_DIST = LICENSE \
              AUTHORS \
              CHANGELOG \
+             PORTINGS \
+             THANKS \
              TODO \
              TODO.TESTING \
              Makefile.am.common \

@@ -25,9 +25,6 @@
 
 >>> current developmet state 
 
-   + ETTERCONF
-      - man file
-   
    + TOP HALF
       - passive profiling (almost done in etterlog)
       - connection tracking (with buffered conn)

@@ -100,7 +100,6 @@ case "$host_os" in
    AM_CONDITIONAL(DARWIN, true)
    OS="DARWIN"
    PTHREADLIB="-lpthread"
-   PLUG_LDFLAGS="-no-undefined"
    ;;
 *solaris*)
    AC_DEFINE(OS_SOLARIS)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.29 2003/12/27 18:50:10 alor Exp $
+    $Id: ec_curses.c,v 1.30 2003/12/28 17:19:56 alor Exp $
 */
 
 #include <ec.h>
@@ -384,11 +384,11 @@ static void curses_setup(void)
 {
    wdg_t *menu;
    
-   struct wdg_menu file[] = { {"File",     "F", NULL},
-                              {"Open...",  "", curses_file_open},
-                              {"Write...", "", curses_file_write},
-                              {"-",        "", NULL},
-                              {"Exit",     "", curses_exit},
+   struct wdg_menu file[] = { {"File",           "F", NULL},
+                              {"Open...",         "", curses_file_open},
+                              {"Dump to file...", "", curses_file_write},
+                              {"-",               "", NULL},
+                              {"Exit",            "", curses_exit},
                               {NULL, NULL, NULL},
                             };
    

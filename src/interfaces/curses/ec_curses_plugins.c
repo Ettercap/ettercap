@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_plugins.c,v 1.5 2003/12/27 12:10:36 alor Exp $
+    $Id: ec_curses_plugins.c,v 1.6 2003/12/28 17:19:56 alor Exp $
 */
 
 #include <ec.h>
@@ -25,7 +25,7 @@
 #include <ec_curses.h>
 #include <ec_plugins.h>
 
-#define MAX_DESC_LEN 80
+#define MAX_DESC_LEN 70
 
 /* proto */
 

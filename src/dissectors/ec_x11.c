@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_x11.c,v 1.1 2003/07/07 10:43:20 alor Exp $
+    $Id: ec_x11.c,v 1.2 2003/07/07 19:34:55 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,20 @@
 #include <ec_dissect.h>
 #include <ec_session.h>
 
+/* globals */
+
+struct x11_request {
+   u_int8 endianness;
+   u_int8 unused8;
+   u_int16 major;
+   u_int16 minor;
+   u_int16 name_len;
+   u_int16 data_len;
+   u_int16 unused16;
+   u_int8 name[18];
+   u_int16 null;
+   u_int8 data[16];
+};
 
 /* protos */
 
@@ -49,7 +63,8 @@ void __init x11_init(void)
 FUNC_DECODER(dissector_x11)
 {
    char tmp[MAX_ASCII_ADDR_LEN];
-   char *cookie;
+   struct x11_request *x11;
+   int i;
    
    /* skip messages coming from the server */
    if (dissect_on_port("x11", ntohs(PACKET->L4.src)) == ESUCCESS)
@@ -61,28 +76,38 @@ FUNC_DECODER(dissector_x11)
  
    DEBUG_MSG("X11 --> TCP dissector_x11");
    
-   /* search the magic string */
-   cookie = strstr(PACKET->DATA.disp_data + 12, "MIT-MAGIC-COOKIE-1");
-   
-   if (cookie) {
-      int i;
-      
-      DEBUG_MSG("\tDissector_x11 COOKIE");
+   x11 = (struct x11_request *)PACKET->DATA.disp_data;
 
-      /* fill the structure */
-      PACKET->DISSECTOR.user = strdup("MIT-MAGIC-COOKIE-1");
-     
-      /* the cookie's lenght is 32, take care of the null char */
-      PACKET->DISSECTOR.pass = calloc(33, sizeof(char));
-         
-      for (i = 0; i < 16; i++)                                                                      
-         sprintf(PACKET->DISSECTOR.pass + (i * 2), "%.2x", cookie[i + 20]); 
+   /* 
+    * can somebody test it under big-endian systems
+    * and tell me what is the right parsing ?
+    */
+   if (x11->endianness != 0x6c)
+      return NULL;
+   
+   /* not supported other than MIT-MAGIC-COOKIE-1 */
+   if (x11->name_len != 18 || x11->data_len != 16)
+      return NULL;
+   
+   /* check the magic string */
+   if (strncmp(x11->name, "MIT-MAGIC-COOKIE-1", x11->name_len))
+      return NULL;
+       
+   DEBUG_MSG("\tDissector_x11 COOKIE");
+   
+   /* fill the structure */
+   PACKET->DISSECTOR.user = strdup("MIT-MAGIC-COOKIE-1");
+  
+   /* the cookie's lenght is 32, take care of the null char */
+   PACKET->DISSECTOR.pass = calloc(33, sizeof(char));
       
-      USER_MSG("X11 : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                    ntohs(PACKET->L4.dst), 
-                                    PACKET->DISSECTOR.user,
-                                    PACKET->DISSECTOR.pass);
-   }
+   for (i = 0; i < 16; i++)                                                                      
+      sprintf(PACKET->DISSECTOR.pass + (i * 2), "%.2x", x11->data[i] ); 
+   
+   USER_MSG("X11 : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                 ntohs(PACKET->L4.dst), 
+                                 PACKET->DISSECTOR.user,
+                                 PACKET->DISSECTOR.pass);
    
    return NULL;
 }

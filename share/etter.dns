@@ -15,11 +15,11 @@
 #                                                                          #
 # the format is (for PTR and A query):                                     #
 #                                                                          #
-#  xxx.xxx.xxx.xxx<TAB>www.myhostname.com                                  #
+#  xxx.xxx.xxx.xxx  www.myhostname.com                                     #
 #                                                                          #
 # or (for MX query):                                                       #
 #                                                                          #
-#  MX<space>domain.com<TAB>xxx.xxx.xxx.xxx                                 #
+#  MX<space>domain.com  xxx.xxx.xxx.xxx                                    #
 #                                                                          #
 # NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
 #       so if you want to reverse poison you have to specify a plain       #
@@ -34,7 +34,7 @@
 
 198.182.196.56	microsoft.com
 198.182.196.56	*.microsoft.com
-198.182.196.56	www.microsoft.com
+198.182.196.56   www.microsoft.com    # We handle trailing comments too.
 
 ##########################################
 # no one out there can have our domains...

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.9 2004/06/25 14:24:28 alor Exp $
+    $Id: dns_spoof.c,v 1.10 2004/10/14 12:43:02 alor Exp $
 */
 
 
@@ -85,6 +85,7 @@ static void dns_spoof(struct packet_object *po);
 static int get_spoofed_a(char *a, struct ip_addr **ip);
 static int get_spoofed_ptr(char *arpa, char **a);
 static int get_spoofed_mx(char *a, struct ip_addr **ip);
+static void dns_spoof_dump(void);
 
 /* plugin operations */
 
@@ -114,6 +115,8 @@ int plugin_load(void *handle)
    if (load_db() != ESUCCESS)
       return -EINVALID;
    
+   dns_spoof_dump();
+
    return plugin_register(handle, &dns_spoof_ops);
 }
 
@@ -174,11 +177,11 @@ static int load_db(void)
          continue;
       
       /* check if it is an MX record */
-      if (!strncmp(line, "MX ", 3)) {
+      if (!strncasecmp(line, "MX ", 3)) {
          type = TYPE_MX;
          p = line + 3;
          /* get the name and the ip */
-         if ((name = ec_strtok(p, "\t", &tok)) == NULL || (ip = ec_strtok(NULL, "\n", &tok)) == NULL)
+         if ((name = ec_strtok(p, "\t ", &tok)) == NULL || (ip = ec_strtok(NULL, " #\r\n", &tok)) == NULL)
             continue;
         
       } else {
@@ -186,7 +189,7 @@ static int load_db(void)
          p = line;
          
          /* get the ip and the name */
-         if ((ip = ec_strtok(p, "\t", &tok)) == NULL || (name = ec_strtok(NULL, "\n", &tok)) == NULL)
+         if ((ip = ec_strtok(p, "\t ", &tok)) == NULL || (name = ec_strtok(NULL, " #\r\n", &tok)) == NULL)
             continue;
       }
       
@@ -436,6 +439,22 @@ static int get_spoofed_mx(char *a, struct ip_addr **ip)
    }
    
    return -ENOTFOUND;
+}
+
+static void dns_spoof_dump(void)
+{
+   struct dns_spoof_entry *d;
+
+   if (!debug_file)
+      return;
+
+   DEBUG_MSG("dns_spoof entries:");
+   SLIST_FOREACH(d, &dns_spoof_head, next) {
+      if (ntohs(d->ip.addr_type) == AF_INET)
+         DEBUG_MSG("  %s -> [%s], type %d", d->name, int_ntoa(d->ip.addr), d->type);
+      else
+         DEBUG_MSG("  %s -> ??", d->name);   /* IPv6 possible? */
+   }
 }
    
 /* EOF */

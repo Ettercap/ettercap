@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_linux.c,v 1.6 2004/04/06 08:49:10 alor Exp $
+    $Id: ec_linux.c,v 1.7 2004/04/06 19:54:36 alor Exp $
 */
 
 #include <ec.h>
@@ -61,8 +61,8 @@ static void restore_ip_forward(void)
    char current_status;
    
    /* no modification needed */
-   //if (saved_status == '0')
-   //   return;
+   if (saved_status == '0')
+      return;
    
    /* read the current status to know if we need to modify it */
    fd = fopen("/proc/sys/net/ipv4/ip_forward", "r");

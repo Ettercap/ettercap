@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.55 2004/03/31 13:03:08 alor Exp $
+    $Id: ec_decode.c,v 1.56 2004/04/06 19:54:36 alor Exp $
 */
 
 #include <ec.h>
@@ -173,6 +173,12 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    packet_decoder = get_decoder(LINK_LAYER, GBL_PCAP->dlt);
    BUG_IF(packet_decoder == NULL);
    packet_decoder(data, datalen, &len, &po);
+  
+   /* special case for bridged sniffing */
+   if (GBL_SNIFF->type == SM_BRIDGED) {
+      EXECUTE(GBL_SNIFF->check_forwarded, &po);
+      EXECUTE(GBL_SNIFF->set_forwardable, &po);
+   }
    
    /* XXX - BIG WARNING !!
     *
@@ -183,7 +189,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     */
    
    /* use the sniffing method funcion to forward the packet */
-   if (po.flags & PO_FORWARDABLE ) {
+   if ( (po.flags & PO_FORWARDABLE) && !(po.flags & PO_FORWARDED) ) {
       /* HOOK POINT: PRE_FORWARD */ 
       hook_point(HOOK_PRE_FORWARD, &po);
       EXECUTE(GBL_SNIFF->forward, &po);

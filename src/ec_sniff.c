@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.48 2004/03/31 13:03:08 alor Exp $
+    $Id: ec_sniff.c,v 1.49 2004/04/06 19:54:36 alor Exp $
 */
 
 #include <ec.h>
@@ -101,8 +101,6 @@ void set_bridge_sniff(void)
 
    DEBUG_MSG("set_bridge_sniff");
 
-   NOT_IMPLEMENTED();
-   
    sm.type = SM_BRIDGED;
    sm.start = &start_bridge_sniff;
    sm.cleanup = &stop_bridge_sniff;

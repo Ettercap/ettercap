@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.22 2004/03/31 13:03:08 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.23 2004/04/06 19:54:36 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -263,6 +263,9 @@ etc).
 .B %rport
 The internally bound port to which ettercap listens for connections.
 .RE
+NOTE: this script is executed with an execve(), so you can't use pipes or
+output redirection as you were in a shell. We suggest you to make a script if
+you need those commands.
 
 .TP
 .B redir_command_off

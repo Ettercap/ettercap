@@ -22,7 +22,8 @@
    + SESSION
       - dissect_free_session
 
-   + fix the ip_forward strangeness
+   + PROFILES
+      - don't collect profiles for arp packets
 
    + CURSES GUI
       - lines without \n while sniffing

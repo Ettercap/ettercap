@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.2 2003/03/10 09:08:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.3 2003/03/10 14:05:06 alor Exp $
 */
 
 #include <ec.h>
@@ -137,7 +137,8 @@ void __init data_init(void)
 
 FUNC_DECODER(decode_data)
 {
-   
+   //FUNC_DECODER_PTR(app_decoder);
+      
    /* HOOK POINT: HANDLED */ 
    hook_point(HOOK_HANDLED, po);
 
@@ -151,7 +152,32 @@ FUNC_DECODER(decode_data)
    if ( (po->flags & PO_IGNORE) || 
         (GBL_SNIFF->type != SM_CLASSIC && po->flags & PO_OUTGOING) )
       return NULL;
-   
+  
+
+   /* 
+    * run the APP_LAYER decoders 
+    *
+    * we should run the decoder on both the tcp/udp ports
+    * since we may be interested in both client and server traffic.
+    */
+#if 0
+   switch (po->L4.proto) {
+      case NL_TYPE_TCP:
+         USER_MSG("NL_TYPE_TCP: %d %d", ntohs(po->L4.src), ntohs(po->L4.dst));
+         app_decoder = get_decoder(APP_LAYER_TCP, ntohs(po->L4.src));
+         EXECUTE_DECODER(app_decoder);
+         app_decoder = get_decoder(APP_LAYER_TCP, ntohs(po->L4.dst));
+         EXECUTE_DECODER(app_decoder);
+         break;
+         
+      case NL_TYPE_UDP:
+         app_decoder = get_decoder(APP_LAYER_UDP, ntohs(po->L4.src));
+         EXECUTE_DECODER(app_decoder);
+         app_decoder = get_decoder(APP_LAYER_UDP, ntohs(po->L4.dst));
+         EXECUTE_DECODER(app_decoder);
+         break;
+   }
+#endif   
    /*
     * here we can filter the content of the packet.
     * the injection is done elsewhere.
@@ -229,13 +255,16 @@ void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder))
 void * get_decoder(u_int8 level, u_int32 type)
 {
    struct dec_entry *e;
+   void *ret;
 
    DECODERS_LOCK;
    
    SLIST_FOREACH (e, &decoders_table, next) {
-      if (e->level == level && e->type == type)
+      if (e->level == level && e->type == type) {
+         ret = (void *)e->decoder;
          DECODERS_UNLOCK;
-         return (void *)e->decoder;
+         return ret;
+      }
    }
 
 /*   DEBUG_MSG("L%d 0x%04x not found !!", level, type); */

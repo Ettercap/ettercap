@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.25 2003/09/30 11:30:55 lordnaga Exp $
+    $Id: ec_packet.c,v 1.26 2003/12/01 12:20:49 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -66,7 +66,10 @@ inline int packet_create_object(struct packet_object *po, u_char *buf, size_t le
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
 {
    /* disp_data is always null terminated */
-   SAFE_CALLOC(po->DATA.disp_data, len + 1, sizeof(u_char));
+   if (len + 1)
+      SAFE_CALLOC(po->DATA.disp_data, len + 1, sizeof(u_char));
+   else
+      ERROR_MSG("packet_disp_data() negative len");
 
    po->DATA.disp_len = len;
    memcpy(po->DATA.disp_data, buf, len);

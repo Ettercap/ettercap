@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.33 2003/10/30 21:48:54 alor Exp $
+    $Id: ec_ip.c,v 1.34 2003/12/01 12:21:11 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -103,26 +103,30 @@ FUNC_DECODER(decode_ip)
    struct ec_session *s = NULL;
    void *ident = NULL;
    struct ip_status *status = NULL;
+   u_int32 t_len;
 
    ip = (struct ip_header *)DECODE_DATA;
   
-   DECODED_LEN = ip->ihl * 4;
+   DECODED_LEN = (u_int32)(ip->ihl * 4);
 
    /* IP addresses */
    ip_addr_init(&PACKET->L3.src, AF_INET, (char *)&ip->saddr);
    ip_addr_init(&PACKET->L3.dst, AF_INET, (char *)&ip->daddr);
    
    /* this is needed at upper layer to calculate the tcp payload size */
-   PACKET->L3.payload_len = ntohs(ip->tot_len) - DECODED_LEN;
+   t_len = (u_int32) ntohs(ip->tot_len);
+   if (t_len < (u_int32)DECODED_LEN)
+      return NULL;
+   PACKET->L3.payload_len = t_len - (u_int32)DECODED_LEN;
 
    /* other relevant infos */
    PACKET->L3.header = (u_char *)DECODE_DATA;
    PACKET->L3.len = DECODED_LEN;
    
    /* parse the options */
-   if (ip->ihl * 4 != sizeof(struct ip_header)) {
+   if ( (u_int32)(ip->ihl * 4) > sizeof(struct ip_header)) {
       PACKET->L3.options = (u_char *)(DECODE_DATA) + sizeof(struct ip_header);
-      PACKET->L3.optlen = (ip->ihl * 4) - sizeof(struct ip_header);
+      PACKET->L3.optlen = (u_int32)(ip->ihl * 4) - sizeof(struct ip_header);
    } else {
       PACKET->L3.options = NULL;
       PACKET->L3.optlen = 0;

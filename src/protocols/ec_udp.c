@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_udp.c,v 1.14 2003/10/24 10:11:36 lordnaga Exp $
+    $Id: ec_udp.c,v 1.15 2003/12/01 12:21:11 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -76,7 +76,9 @@ FUNC_DECODER(decode_udp)
 
    /* set up the data poiters */
    PACKET->DATA.data = ((u_char *)udp) + sizeof(struct udp_header);
-   PACKET->DATA.len = ntohs(udp->ulen) - sizeof(struct udp_header);
+   if (ntohs(udp->ulen) < (u_int16)sizeof(struct udp_header))
+      return NULL;
+   PACKET->DATA.len = ntohs(udp->ulen) - (u_int16)sizeof(struct udp_header);
   
    /* create the buffer to be displayed */
    packet_disp_data(PACKET, PACKET->DATA.data, PACKET->DATA.len);

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.19 2003/12/09 16:34:52 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.20 2003/12/16 17:15:07 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -203,6 +203,18 @@ Furthermore you can launch it to use pptp_pap, pptp_chapms1 or pptp_clear on
 existing tunnels (those plugins work only during negotiation phase).
 You have to be in the "middle" of the connection to use it successfully.
 It hooks the ppp dissector, so you have to keep them active. 
+
+.TP 
+.B reply_arp
+.Sp
+Simple arp responder. When it intercepts an arp request for a host 
+in the targets' lists, it replies with attacker's MAC address.
+.Sp
+.I example :
+.Sp
+ettercap -TQzP reply_arp /192.168.0.1/
+.br
+ettercap -TQzP reply_arp //
 
 .TP 
 .B scan_poisoner

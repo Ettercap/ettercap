@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.11 2003/04/07 21:58:40 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.12 2003/04/08 08:14:33 alor Exp $
 */
 
 #include <el.h>
@@ -35,6 +35,7 @@ static void display_packet(void);
 static void display_info(void);
 static void display_headers(struct log_header_packet *pck);
 void set_display_regex(char *regex);
+static int match_regex(struct host_profile *h);
 
 /*******************************************/
 
@@ -210,7 +211,7 @@ void set_display_regex(char *regex)
    GBL.regex = calloc(1, sizeof(regex_t));
    ON_ERROR(GBL.regex, NULL, "can't allocate memory");
 
-   err = regcomp(GBL.regex, regex, REG_EXTENDED | REG_NOSUB );
+   err = regcomp(GBL.regex, regex, REG_EXTENDED | REG_NOSUB | REG_ICASE );
 
    if (err) {
       regerror(err, GBL.regex, errbuf, sizeof(errbuf));
@@ -251,6 +252,10 @@ static void display_info(void)
      
       /* we are searching one particular user */
       if (find_user(h, GBL.user) == -ENOTFOUND)
+         continue;
+     
+      /* if the regex was set, respect it */
+      if (!match_regex(h))
          continue;
       
       /* skip the host respecting the options */
@@ -319,6 +324,38 @@ static void display_info(void)
    fprintf(stdout, "\n\n");
 
 }
+
+/* 
+ * return 1 if h matches the regex 
+ */
+
+static int match_regex(struct host_profile *h)
+{
+   struct open_port *o;
+   char os[OS_LEN+1];
+
+   if (!GBL.regex)
+      return 1;
+
+   /* check in the manufacturer */
+   if (regexec(GBL.regex, manuf_search(h->L2_addr), 0, NULL, 0) == 0)
+      return 1;
+  
+   /* check in the OS */
+   fingerprint_search(h->fingerprint, os);
+   
+   if (regexec(GBL.regex, os, 0, NULL, 0) == 0)
+      return 1;
+
+   /* check the open ports banners */
+   LIST_FOREACH(o, &(h->open_ports_head), next) {
+      if (o->banner && regexec(GBL.regex, o->banner, 0, NULL, 0) == 0)
+         return 1;
+   }
+      
+   return 0;
+}
+
 
 /* EOF */
 

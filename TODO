@@ -15,15 +15,11 @@
       - use libldtdl (problems even on openbsd)
       - LTDL_SHLIB_EXT
       - make test with dlopen-test
-      - conditional plugin compilation 
 
    + dissector must send associated user, pass and info (state machine required)
 
    + LOGGING ENGINE
       - banner extracted by dissectors (state machine required)
-
-   + ETTERLOG
-      - regex on all fields
 
    + INET
       - checksumming functions
@@ -68,6 +64,8 @@
 
    + DEVELOPMENT DOCUMENTATION
 
+   + ETTERLOG
+      - extract files from streams looking for mime content
 
 ==================
   LONG TERM TODO

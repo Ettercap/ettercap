@@ -1,14 +1,21 @@
 
 include $(top_srcdir)/Makefile.am.common
 
-SUBDIRS = man src include utils plug-ins 
+SUBDIRS = man src include utils
+
+if PLUGINS
+   SUBDIRS += plug-ins
+endif
+
 
 EXTRA_DIST = LICENSE \
              AUTHORS \
              CHANGELOG \
              TODO \
+             TODO.TESTING \
              Makefile.am.common \
              shtool \
+             doc/* \
              share/* 
 
 CLEANFILES = *.log *.out *.cache *.so ettercap etterlog

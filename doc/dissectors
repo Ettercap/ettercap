@@ -1,0 +1,17 @@
+
+TOPIC:      dissector
+
+ABSTRACT:   this file describes how to write a dissector and how to fill the
+            correct structures in order to ettercap understand them
+
+NOTE:        
+
+A dissector must use the macro provided in the ec_decode.h file. The main
+function must be declared as:
+
+   FUNC_DECODER(new_dissector) 
+   {
+      ...
+   }
+
+within the function code, some macro are provided to handle the structures.

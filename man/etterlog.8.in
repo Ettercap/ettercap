@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.6 2003/04/07 21:57:54 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.7 2003/04/08 08:14:33 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -154,7 +154,9 @@ Display only packets matching the regex <REGEX>.
 .br
 If this option is used agains a LOG_PACKET logfile the regex is executed on the
 payload of the packet. If the type il LOG_INFO, the regex is executed on all
-the field of the host's profile (OS, banners and ethernet adapter)
+the field of the host's profile (OS, banners and ethernet adapter).
+.br
+NOTE: the regex is compiled with the REG_ICASE flag (case insensitive).
 
 .TP
 \fB\-u\fR, \fB\-\-user <USER>\fR
@@ -258,9 +260,9 @@ Dump all HTTP traffic and strip html tags.
 Displays only the headers of all connections but the ssh on host 10.0.0.2
 
 .TP
-.B etterlog -A -e '[Uu]ser' -f //110 dump.ecp
+.B etterlog -A -e 'user' -f //110 dump.ecp
 .Sp
-Display only POP packets containing the '[Uu]ser' regexp.
+Display only POP packets containing the 'user' regexp (case insensitive).
 
 .TP
 .B etterlog -u root dump.eci
@@ -286,6 +288,12 @@ Displays information about all the hosts with the tcp port 110 open.
 .B etterlog -t udp dump.eci
 .Sp
 Displays information about all the hosts with at least one UDP port open.
+
+.TP
+.B etterlog -B -s -n -F TCP:10.0.0.1:20:10.0.0.2:35426 logfile.ecp > example.tar.gz
+.Sp
+Dumps in binary form the data sent by 10.0.0.1 on the data port of FTP. Since
+the headers are omitted, you will get the file as it was.
 
 
 

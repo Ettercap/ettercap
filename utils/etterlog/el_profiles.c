@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.16 2004/02/01 16:49:21 alor Exp $
+    $Id: el_profiles.c,v 1.17 2004/02/16 20:21:56 alor Exp $
 */
 
 #include <el.h>
@@ -59,6 +59,7 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
    struct host_profile *c;
    struct host_profile *last = NULL;
 
+
    /* 
     * do not store profiles for hosts with ip == 0.0.0.0
     * they are hosts requesting for a dhcp/bootp reply.
@@ -72,18 +73,17 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
     * if the type is FP_HOST_NONLOCAL 
     * search for the GW and mark it
     */
-   if (inf->type & FP_HOST_NONLOCAL)
+   if (inf->type & FP_HOST_NONLOCAL) {
       set_gateway(inf->L2_addr);
-
-   /* non local ip address must not carry mac address */
-   if (inf->type & FP_HOST_NONLOCAL)
+      /* the mac address of non local should not be saved */
       memset(inf->L2_addr, 0, MEDIA_ADDR_LEN);
-  
+   }
+
    /* search if it already exists */
    TAILQ_FOREACH(h, &hosts_list_head, next) {
       /* an host is identified by the mac and the ip address */
       /* if the mac address is null also update it since it could
-       * be captured as a DNS packet specifying the GW 
+       * be captured as a DHCP packet specifying the GW 
        */
       if ((!memcmp(h->L2_addr, inf->L2_addr, MEDIA_ADDR_LEN) ||
            !memcmp(inf->L2_addr, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) &&
@@ -123,14 +123,16 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
 
 static void update_info(struct host_profile *h, struct log_header_info *inf, struct dissector_info *buf)
 {
-   
-   /* if it is marked as the gateway or unkown, don't update */
-   if ( !(h->type & FP_GATEWAY) && !(h->type & FP_UNKNOWN) )
+   /* update the type only if not previously saved */ 
+   if (h->type == 0)
       h->type = inf->type;
    
-   /* update the mac address only if local or unknown */
+   /* update the mac address only if local or unknown 
+    * and only if it is not null
+    */
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN)
-      memcpy(h->L2_addr, inf->L2_addr, MEDIA_ADDR_LEN);
+      if (memcmp(inf->L2_addr, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN))
+         memcpy(h->L2_addr, inf->L2_addr, MEDIA_ADDR_LEN);
    
    /* the ip address */
    memcpy(&h->L3_addr, &inf->L3_addr, sizeof(struct ip_addr));
@@ -166,6 +168,10 @@ static void set_gateway(u_char *L2_addr)
 {
    struct host_profile *h;
 
+   /* skip null mac addresses */
+   if (!memcmp(L2_addr, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN))
+      return;
+      
    TAILQ_FOREACH(h, &hosts_list_head, next) {
       if (!memcmp(h->L2_addr, L2_addr, MEDIA_ADDR_LEN) ) {
          h->type |= FP_GATEWAY; 

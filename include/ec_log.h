@@ -1,5 +1,5 @@
 
-/* $Id: ec_log.h,v 1.19 2004/02/15 15:48:14 alor Exp $ */
+/* $Id: ec_log.h,v 1.20 2004/02/16 20:21:55 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -131,6 +131,7 @@ extern int set_msg_loglevel(int level, char *filename);
 
 int log_open(struct log_fd *fd, char *filename);
 void log_close(struct log_fd *fd);
+int log_write_header(struct log_fd *fd, int type);
 void log_write_packet(struct log_fd *fd, struct packet_object *po);
 void log_write_info(struct log_fd *fd, struct packet_object *po);
 

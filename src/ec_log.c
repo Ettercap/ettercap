@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.31 2004/02/15 15:48:14 alor Exp $
+    $Id: ec_log.c,v 1.32 2004/02/16 20:21:55 alor Exp $
 */
 
 #include <ec.h>
@@ -107,15 +107,12 @@ int set_loglevel(int level, char *filename)
       case LOG_PACKET:
          if (GBL_OPTIONS->compress) {
             fdp.type = LOG_COMPRESSED;
-            log_open(&fdp, ecp);
          } else {
             fdp.type = LOG_UNCOMPRESSED;
-            log_open(&fdp, ecp);
          }
-
-         /* set the permissions */
-         chmod(ecp, 0600);
          
+         log_open(&fdp, ecp);
+
          /* initialize the log file */
          log_write_header(&fdp, LOG_PACKET);
          
@@ -127,14 +124,11 @@ int set_loglevel(int level, char *filename)
       case LOG_INFO:
          if (GBL_OPTIONS->compress) {
             fdi.type = LOG_COMPRESSED;
-            log_open(&fdi, eci);
          } else {
             fdi.type = LOG_UNCOMPRESSED;
-            log_open(&fdi, eci);
          }
          
-         /* set the permissions */
-         chmod(eci, 0600);
+         log_open(&fdi, eci);
          
          /* initialize the log file */
          log_write_header(&fdi, LOG_INFO);
@@ -183,6 +177,8 @@ int log_open(struct log_fd *fd, char *filename)
 {
    int zerr;
 
+   memset(fd, 0, sizeof(struct log_fd));
+
    if (fd->type == LOG_COMPRESSED) {
       fd->cfd = gzopen(filename, "wb9");
       if (fd->cfd == NULL)
@@ -192,6 +188,9 @@ int log_open(struct log_fd *fd, char *filename)
       if (fd->fd == -1)
          FATAL_MSG("Can't create %s", filename);
    }
+   
+   /* set the permissions */
+   chmod(filename, 0600);
 
    return ESUCCESS;
 }

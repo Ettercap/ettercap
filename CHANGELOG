@@ -70,6 +70,8 @@ NG-0.7.0    ????????
       + resizable under X11
       + mouse event are supported
       + customizable colors
+      + completely new menu-driven interface
+   + profiles can be dumped to a file
    + A lot of new bugs^H^H^H^H random features to be discovered ;)
    !! offline sniffing actually does not bind to any NICs
    - packet factory was removed

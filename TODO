@@ -7,6 +7,7 @@
    + FIXING
       - dissect_free_session
       - input for curses gui
+      - ip address in the filter
 
    + PCAP RELATED
       + reset the stats when the sniffing thread starts
@@ -48,14 +49,10 @@ this is the unofficial and floating in time roadmap:
       - it is done by the ui looking the sessions (locking them)
       - reset modified connection (on user request)
       - flag to mark encripted connections
-      - pptp
-      - gre
 
-   + LOGGING
-      - log current profiles
-   
    + CONNECTION
       - kill a connection
+      - flag for injected/modified connection
 
    + DISSECTORS
       - convert all the old dissectors:
@@ -81,6 +78,8 @@ this is the unofficial and floating in time roadmap:
    
    + INTERFACE ENGINE
       - gtk
+
+   + NETWORK MAPPER
 
    + BINDER
    

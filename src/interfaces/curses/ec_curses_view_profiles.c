@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_profiles.c,v 1.2 2004/02/15 15:48:14 alor Exp $
+    $Id: ec_curses_view_profiles.c,v 1.3 2004/02/16 20:21:55 alor Exp $
 */
 
 #include <ec.h>
@@ -236,8 +236,9 @@ static void curses_profiles_dump(void *dummy)
 
 static void dump_profiles(void)
 {
-   profile_dump_to_file(logfile);
-   curses_message("Profiles dumped to file");
+   /* dump the profiles */
+   if (profile_dump_to_file(logfile) == ESUCCESS)
+      curses_message("Profiles dumped to file");
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.2 2004/02/15 13:35:28 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.3 2004/02/16 20:21:55 alor Exp $
 */
 
 #include <ec.h>
@@ -180,6 +180,16 @@ static void curses_connection_data(void *conn)
 {
    struct conn_tail *c = (struct conn_tail *)conn;
    DEBUG_MSG("curses_connection_data");
+  
+   /* 
+    * remove any hook on the open connection.
+    * this is done to prevent a switch of connection
+    * with the panel opened
+    */
+   if (curr_conn) {
+      conntrack_hook_conn_del(curr_conn, split_print_po);
+      conntrack_hook_conn_del(curr_conn, join_print_po);
+   }
    
    /* set the global variable to pass the parameter to other functions */
    curr_conn = c->co;
@@ -200,8 +210,6 @@ static void curses_connection_data_split(void)
 
    if (wdg_conndata) {
       wdg_destroy_object(&wdg_conndata);
-      conntrack_hook_conn_del(curr_conn, split_print_po);
-      conntrack_hook_conn_del(curr_conn, join_print_po);
    }
 
    wdg_create_object(&wdg_conndata, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);
@@ -310,8 +318,6 @@ static void curses_connection_data_join(void)
 
    if (wdg_conndata) {
       wdg_destroy_object(&wdg_conndata);
-      conntrack_hook_conn_del(curr_conn, split_print_po);
-      conntrack_hook_conn_del(curr_conn, join_print_po);
    }
 
    wdg_create_object(&wdg_conndata, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);

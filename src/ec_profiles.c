@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.34 2004/02/15 15:48:14 alor Exp $
+    $Id: ec_profiles.c,v 1.35 2004/02/16 20:21:55 alor Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,7 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_scan.h>
+#include <ec_log.h>
 
 #define ONLY_REMOTE_PROFILES  3
 #define ONLY_LOCAL_PROFILES   2
@@ -40,7 +41,7 @@ void profile_purge_local(void);
 void profile_purge_remote(void);
 void profile_purge_all(void);
 int profile_convert_to_hostlist(void);
-void profile_dump_to_file(char *filename);
+int profile_dump_to_file(char *filename);
 
 void profile_parse(struct packet_object *po);
 static int profile_add_host(struct packet_object *po);
@@ -285,6 +286,10 @@ static void set_gateway(u_char *L2_addr)
 {
    struct host_profile *h;
 
+   /* skip null mac addresses */
+   if (!memcmp(L2_addr, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN))
+      return;
+   
    PROFILE_LOCK;
 
    TAILQ_FOREACH(h, &GBL_PROFILES, next) {
@@ -613,9 +618,101 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
 /*
  * dump the whole profile list into an eci file
  */
-void profile_dump_to_file(char *filename)
+int profile_dump_to_file(char *filename)
 {
+   struct log_fd fd;
+   char eci[strlen(filename)+5];
+   struct host_profile *h;
+   struct open_port *o;
+   struct active_user *u;
+   struct packet_object po;
+  
    DEBUG_MSG("profile_dump_to_file: %s", filename);
+
+   /* append the extension */
+   sprintf(eci, "%s.eci", filename);
+   
+   if (GBL_OPTIONS->compress)
+      fd.type = LOG_COMPRESSED;
+   else
+      fd.type = LOG_UNCOMPRESSED;
+        
+   /* open the file for dumping */
+   if (log_open(&fd, eci) != ESUCCESS)
+      return -EFATAL;
+
+   /* this is an INFO file */
+   log_write_header(&fd, LOG_INFO);
+
+   /* now parse the profile list and dump to the file */
+   PROFILE_LOCK;
+
+   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+      
+      memset(&po, 0, sizeof(struct packet_object));
+      
+      /* create the po for logging */
+      memcpy(&po.L2.src, h->L2_addr, MEDIA_ADDR_LEN);
+      memcpy(&po.L3.src, &h->L3_addr, sizeof(struct ip_addr));
+
+      /* fake the distance by subtracting it from a power of 2 */
+      po.L3.ttl = 128 - h->distance + 1;
+      po.PASSIVE.flags = h->type;
+      memcpy(&po.PASSIVE.fingerprint, h->fingerprint, FINGER_LEN);
+      
+      /* log for each host */
+      log_write_info(&fd, &po);
+      
+      LIST_FOREACH(o, &(h->open_ports_head), next) {
+         
+         memcpy(&po.L2.src, h->L2_addr, MEDIA_ADDR_LEN);
+         memcpy(&po.L3.src, &h->L3_addr, sizeof(struct ip_addr));
+         memset(&po.PASSIVE.fingerprint, 0, FINGER_LEN);
+         
+         po.L4.src = o->L4_addr;
+         /* put the fake syn+ack to impersonate an open port */
+         po.L4.flags = TH_SYN | TH_ACK;
+         po.L4.proto = o->L4_proto;
+         
+         /* log the packet for the open port */
+         log_write_info(&fd, &po);
+        
+         po.DISSECTOR.banner = o->banner;
+         
+         /* log for the banner */
+         if (o->banner)
+            log_write_info(&fd, &po);
+      
+         LIST_FOREACH(u, &(o->users_list_head), next) {
+
+            memcpy(&po.L3.dst, &h->L3_addr, sizeof(struct ip_addr));
+            /* the source addr is the client address */
+            memcpy(&po.L3.src, &u->client, sizeof(struct ip_addr));
+        
+            /* to exclude the open port check */
+            po.L4.flags = TH_PSH;
+            po.L4.dst = o->L4_addr;
+            po.L4.src = 0;
+            
+            po.DISSECTOR.user = u->user;
+            po.DISSECTOR.pass = u->pass;
+            po.DISSECTOR.info = u->info;
+            po.DISSECTOR.failed = u->failed;
+
+            /* log for each account:
+             * the host must be on the dest
+             */
+            log_write_info(&fd, &po);
+         }
+      }
+   }
+
+   PROFILE_UNLOCK;
+   
+   /* close the file */
+   log_close(&fd);
+
+   return ESUCCESS;
 }
 
 /* EOF */

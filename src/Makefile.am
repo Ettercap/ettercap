@@ -28,6 +28,7 @@ ettercap_SOURCES = ec_main.c \
 				   protocols/ec_ip6.c \
 				   protocols/ec_tcp.c \
 				   protocols/ec_udp.c \
+				   dissectors/ec_pop.c \
 				   interfaces/console/ec_console.c 
 
 if NCURSES

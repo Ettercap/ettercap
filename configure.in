@@ -20,8 +20,8 @@ dnl
 
 AC_INIT(include/ettercap.h)
 
-dnl Force autoconf 2.5 
-AC_PREREQ(2.5)
+dnl Force autoconf 2.57 
+AC_PREREQ(2.57)
 
 VERSION=`grep EC_VERSION ./include/ec_version.h | cut -f2 -d"\""`
 
@@ -343,6 +343,10 @@ AC_ARG_WITH(libnet,
         elif test -f $withval/libnet-config; then
            LNETINC="`$withval/libnet-config --defines`"
         else
+           AC_PATH_PROG(LNET_CONFIG, "libnet-config")
+           if test ! -n "$LNET_CONFIG"; then
+              AC_ERROR(libnet-config not found)
+           fi
            LNETINC="`libnet-config --defines`"
         fi
         LNETINC="$LNETINC -I$withval/include"
@@ -354,6 +358,10 @@ AC_ARG_WITH(libnet,
      ;;
   esac ],
 [ if test -f /usr/include/libnet.h; then
+     AC_PATH_PROG(LNET_CONFIG, "libnet-config")
+     if test ! -n "$LNET_CONFIG"; then
+        AC_ERROR(libnet-config not found)
+     fi
      LNETINC="`libnet-config --defines`"
      LNETLIB="`libnet-config --libs`"
   else

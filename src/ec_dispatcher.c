@@ -15,11 +15,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.2 2003/03/10 14:43:17 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_threads.h>
+
+/* XXX - remove */
+#include <ec_ui.h>
 
 /* proto */
 
@@ -52,6 +55,8 @@ EC_THREAD_FUNC(top_half)
 void top_half_queue_add(struct packet_object *po)
 {
    /* XXX -- implement the list */
+   USER_MSG("---------- TOP_HALF ----------");
+   
    packet_print(po);
 }
 

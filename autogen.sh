@@ -6,12 +6,12 @@ rm -f aclocal.m4
 find . -name 'Makefile' -exec rm -f {} \;
 find . -name 'Makefile.in' -exec rm -f {} \;
 
-echo "running aclocal..."
+echo "running `aclocal --version | head -n 1`"
 aclocal
-echo "running autoheader..."
+echo "running `autoheader --version | head -n 1`"
 autoheader
-echo "running autoconf..."
+echo "running `autoconf --version | head -n 1`"
 autoconf
-echo "running automake..."
+echo "running `automake --version | head -n 1`"
 automake
 

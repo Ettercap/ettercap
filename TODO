@@ -6,8 +6,10 @@
 
    + lnet ptag thread safe
 
+   + speed up the visualization of user_msg (poll related)
  
    + DISSECTORS over decoders
+      - vbuf functions
       - add a buffer to po (it will be the visible one)
       - middleware data_decode
 

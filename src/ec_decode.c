@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.3 2003/03/10 14:05:06 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.4 2003/03/10 14:43:17 alor Exp $
 */
 
 #include <ec.h>
@@ -73,7 +73,7 @@ void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
    USER_MSG("\n***************************************************************\n");
    USER_MSG("ec_get_packets (one packet dispatched from pcap)\n");
 
-   USER_MSG("CAPTURED: 0x%04x bytes\n", pkthdr->caplen);
+   USER_MSG("CAPTURED: 0x%04x bytes \n", pkthdr->caplen );
    
    /* dump packet to file if specified on command line */
    if (GBL_OPTIONS->dump)
@@ -121,6 +121,9 @@ void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
    /* free the structure */
    packet_destroy_object(&po);
    
+   /* clean the buffer */
+   memset((u_char *)pkt, 0, pkthdr->caplen);
+   
    return;
 }
 
@@ -137,7 +140,7 @@ void __init data_init(void)
 
 FUNC_DECODER(decode_data)
 {
-   //FUNC_DECODER_PTR(app_decoder);
+   FUNC_DECODER_PTR(app_decoder);
       
    /* HOOK POINT: HANDLED */ 
    hook_point(HOOK_HANDLED, po);
@@ -160,10 +163,8 @@ FUNC_DECODER(decode_data)
     * we should run the decoder on both the tcp/udp ports
     * since we may be interested in both client and server traffic.
     */
-#if 0
    switch (po->L4.proto) {
       case NL_TYPE_TCP:
-         USER_MSG("NL_TYPE_TCP: %d %d", ntohs(po->L4.src), ntohs(po->L4.dst));
          app_decoder = get_decoder(APP_LAYER_TCP, ntohs(po->L4.src));
          EXECUTE_DECODER(app_decoder);
          app_decoder = get_decoder(APP_LAYER_TCP, ntohs(po->L4.dst));
@@ -177,7 +178,6 @@ FUNC_DECODER(decode_data)
          EXECUTE_DECODER(app_decoder);
          break;
    }
-#endif   
    /*
     * here we can filter the content of the packet.
     * the injection is done elsewhere.

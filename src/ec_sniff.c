@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.4 2003/03/10 10:35:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.5 2003/03/10 14:43:17 alor Exp $
 */
 
 #include <ec.h>
@@ -210,8 +210,9 @@ void reset_display_filter(struct target_env *t)
 
 void compile_display_filter(void)
 {
+#define MAX_TOK 3
    char valid[] = "1234567890/.,-;:";
-   char *tok[3];
+   char *tok[MAX_TOK];
    char *p;
    int i = 0;
    
@@ -227,10 +228,10 @@ void compile_display_filter(void)
    for(p=strsep(&GBL_OPTIONS->target1, "/"); p != NULL; p=strsep(&GBL_OPTIONS->target1, "/")) {
       tok[i++] = strdup(p);
       /* bad parsing */
-      if (i > 3) break;
+      if (i > MAX_TOK) break;
    }
   
-   if (i != 3)
+   if (i != MAX_TOK)
       FATAL_MSG("Incorrect number of token (//) in TARGET1 !!");
    
    DEBUG_MSG("MAC  : [%s]", tok[0]);
@@ -261,7 +262,7 @@ void compile_display_filter(void)
       expand_token(tok[2], 1<<16, &add_port, GBL_TARGET1->ports);
    
    
-   for(i=0; i<3; i++)
+   for(i=0; i < MAX_TOK; i++)
       SAFE_FREE(tok[i]);
 
    DEBUG_MSG("compile_display_filter TARGET2: %s", GBL_OPTIONS->target2);
@@ -272,10 +273,10 @@ void compile_display_filter(void)
    for(p=strsep(&GBL_OPTIONS->target2, "/"); p != NULL; p=strsep(&GBL_OPTIONS->target2, "/")) {
       tok[i++] = strdup(p);
       /* bad parsing */
-      if (i > 3) break;
+      if (i > MAX_TOK) break;
    }
   
-   if (i != 3)
+   if (i != MAX_TOK)
       FATAL_MSG("Incorrect number of token (//) in TARGET2 !!");
    
    DEBUG_MSG("MAC  : [%s]", tok[0]);
@@ -301,7 +302,7 @@ void compile_display_filter(void)
    else
       expand_token(tok[2], 1<<16, &add_port, GBL_TARGET2->ports);
 
-   for(i=0; i<3; i++)
+   for(i=0; i < MAX_TOK; i++)
       SAFE_FREE(tok[i]);
  
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_live.c,v 1.5 2003/12/14 14:20:40 alor Exp $
+    $Id: ec_curses_live.c,v 1.6 2003/12/14 20:57:28 alor Exp $
 */
 
 #include <ec.h>
@@ -51,11 +51,19 @@ void curses_sniff_live(void)
    wdg_set_color(menu, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    /* add the menu from external files */
    wdg_menu_add(menu, menu_start);
+   
    wdg_menu_add(menu, menu_targets);
-   wdg_menu_add(menu, menu_hosts);
+   
+   if (GBL_SNIFF->type != SM_BRIDGED)
+      wdg_menu_add(menu, menu_hosts);
+   
    wdg_menu_add(menu, menu_view);
-   wdg_menu_add(menu, menu_mitm);
+   
+   if (GBL_SNIFF->type != SM_BRIDGED)
+      wdg_menu_add(menu, menu_mitm);
+   
    wdg_menu_add(menu, menu_filters);
+
 #ifdef HAVE_PLUGINS
    wdg_menu_add(menu, menu_plugins);
 #endif

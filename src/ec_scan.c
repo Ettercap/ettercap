@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.30 2003/11/21 08:32:15 alor Exp $
+    $Id: ec_scan.c,v 1.31 2003/12/14 20:57:28 alor Exp $
 */
 
 #include <ec.h>
@@ -46,8 +46,8 @@ void del_hosts_list(void);
 static void scan_netmask(void);
 static void scan_targets(void);
 
-static void load_hosts(char *filename);
-static void save_hosts(char *filename);
+int scan_load_hosts(char *filename);
+static void scan_save_hosts(char *filename);
 
 void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name);
 
@@ -80,7 +80,7 @@ void build_hosts_list(void)
     * this option automatically enable GBL_OPTIONS->silent
     */
    if (GBL_OPTIONS->load_hosts) {
-      load_hosts(GBL_OPTIONS->hostsfile);
+      scan_load_hosts(GBL_OPTIONS->hostsfile);
       
       LIST_FOREACH(hl, &GBL_HOSTLIST, next)
          nhosts++;
@@ -171,7 +171,7 @@ void build_hosts_list(void)
    
    /* save the list to the file */
    if (GBL_OPTIONS->save_hosts)
-      save_hosts(GBL_OPTIONS->hostsfile);
+      scan_save_hosts(GBL_OPTIONS->hostsfile);
 
 }
 
@@ -415,7 +415,7 @@ static void scan_targets(void)
 /*
  * load the hosts list from this file
  */
-static void load_hosts(char *filename)
+int scan_load_hosts(char *filename)
 {
    FILE *hf;
    int nhosts;
@@ -424,12 +424,13 @@ static void load_hosts(char *filename)
    struct ip_addr hip;
    u_int8 hmac[MEDIA_ADDR_LEN];
    
-   DEBUG_MSG("load_hosts: %s", filename);
+   DEBUG_MSG("scan_load_hosts: %s", filename);
 
    /* open the file */
    hf = fopen(filename, FOPEN_READ_TEXT);
-   ON_ERROR(hf, NULL, "Cannot open %s", filename);
- 
+   if (hf == NULL)
+      SEMIFATAL_ERROR("Cannot open %s", filename);
+   
    INSTANT_USER_MSG("Loading hosts list from file %s\n", filename);
    
    /* XXX - adapt to IPv6 */
@@ -440,8 +441,10 @@ static void load_hosts(char *filename)
       /* convert to network */
       mac_addr_aton(mac, hmac);
       
-      if (inet_aton(ip, &tip) == 0)
-         FATAL_ERROR("Bad parsing on line %d", nhosts);
+      if (inet_aton(ip, &tip) == 0) {
+         del_hosts_list();
+         SEMIFATAL_ERROR("Bad parsing on line %d", nhosts);
+      }
       
       ip_addr_init(&hip, AF_INET, (char *)&tip);
       
@@ -454,20 +457,22 @@ static void load_hosts(char *filename)
    }
 
    fclose(hf);
+
+   return ESUCCESS;
 }
 
 
 /*
  * save the host list to this file 
  */
-static void save_hosts(char *filename)
+static void scan_save_hosts(char *filename)
 {
    FILE *hf;
    int nhosts = 0;
    struct hosts_list *hl;
    char tmp[MAX_ASCII_ADDR_LEN];
    
-   DEBUG_MSG("save_hosts: %s", filename);
+   DEBUG_MSG("scan_save_hosts: %s", filename);
    
    /* open the file */
    hf = fopen(filename, FOPEN_WRITE_TEXT);

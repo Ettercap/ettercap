@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.39 2003/12/13 18:41:11 alor Exp $
+    $Id: ec_sniff.c,v 1.40 2003/12/14 20:57:28 alor Exp $
 */
 
 #include <ec.h>
@@ -285,6 +285,7 @@ int compile_display_filter(void)
    /* if not specified default to // */
    if (!GBL_OPTIONS->target1)
       GBL_OPTIONS->target1 = strdup("//");
+   /* if // was specified, select all */
    else if (!strncmp(GBL_OPTIONS->target1, "//", 2))
       GBL_TARGET1->scan_all = 1;
    

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.53 2003/11/30 12:02:47 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.54 2003/12/15 16:16:41 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -304,6 +304,61 @@ reply to DHCP offer and request.
 -M dhcp:/255.255.255.0/192.168.0.1
 .br
 reply only to DHCP request.
+
+.TP
+\fBport\fR ([remote],[tree])
+This attack implements Port Stealing. This techinque is useful to sniff in a 
+switched environment when ARP poisoning is not effective (for example where 
+static mapped ARPs are used).
+.Sp
+It floods the LAN (based on port_steal_delay option in etter.conf) with 
+ARP packets. If you don't specify the "tree" option, the destination MAC 
+address of each "stealing" packet is the same as the attacker's one (other NICs 
+won't see these packets), the source MAC address will be one of the MACs in the 
+host list. This process "steals" the switch's port of each victim host in the
+host list. 
+Using low delays, packets destinated to "stolen" MAC addresses will be received 
+by the attacker, winning the race condition with the real port owner. 
+When the attacker receives packets for "stolen" hosts, it stops the flooding 
+process and performs an ARP request for the real destination of the packet. 
+When it receives the ARP reply it's sure that the victim has "taken back" his 
+port, so ettercap can re-send the packet to the destination as is.
+Now we can re-start the flooding process waiting for new packets.
+.Sp
+If you use the "tree" option, the destination MAC address of each stealing 
+packet will be a bougs one, so these packet will be propagated to other 
+switches (not only the direct connected one). This way you will be able
+to steal ports on other switches in the tree (if any), but you will 
+generate a huge amount of traffic (according to port_steal_delay).
+The "remote" option has the same meaning as in "arp" mitm method.
+.Sp
+When you stop the attack, ettercap will send ARP request to each stolen
+host giving back their switch ports.
+.br
+You can perform either HALF or FULL DUPLEX mitm according to target selection.
+.Sp
+NOTE: Use this mitm method carefully, it could produce performances loss
+or general havoc.
+.Sp
+NOTE: You can NOT use this method in only-mitm mode (-o flag), because it
+hooks the sniffing engine. 
+.Sp
+NOTE: This mitm method doesn't work on Solaris and Windows because of
+the lipcap and libnet design and the lack of certains ioctl().
+(We will feature this method on these OSes if someone will request it...)  
+.Sp
+Example:
+.Sp
+The targets are: /10.0.0.1/ /10.0.0.15/
+.br
+You will intercept and visualize traffic between 10.0.0.1 and 10.0.0.15,
+but you will receive all the traffic for 10.0.0.1 and 10.0.0.15 too. 
+.Sp
+The target is: /10.0.0.1/
+.br
+You will intercept and visualize all the traffic for 10.0.0.1. 
+
+.Sp
 
 
 .RE

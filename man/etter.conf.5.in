@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.17 2003/11/18 17:53:35 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.18 2003/12/15 16:16:41 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -116,7 +116,20 @@ the attack has finished. On the other and some clients will prefer higher lease
 time, so you have to increase it to win the race condition with the real
 erver.
 
+.TP
+.B port_steal_delay
+This is the delay time (in milliseconds) between stealing packets for the 
+"port" mitm method. With low delays you will be able to intercept more
+packets, but you will generate more traffic. You have to tune this value
+depending on full/half duplex channels, network drivers and adapters,
+network general configuration and hardware, to find a good balance between
+the number of intercepted packets, re-transmitted packets and lost packets.
 
+.TP
+.B port_steal_send_delay
+This is the delay time (in microseconds) between packets when the 
+"port" mitm method have to re-send packets queues. As said for port_steal_delay
+you have to tune this option to the lowest acceptable value.
 
 .TP 20
 .B [connections]
@@ -190,6 +203,13 @@ Some dissectors (such as SSH and HTTPS) needs to modify the payload of the
 packets in order to collect passwords and perform a decryption attack. If you
 want to disable all the "dangerous" dissector at a time, set this value to 0.
 
+.TP
+.B skip_forwarded_pcks
+If you set this value to 0 you will sniff even packets forwarded by ettercap
+or by the kernel. It will generate packets duplicates in conjuction with
+arp mitm method (for example). It could be useful while running ettercap
+in unoffensive mode on a host with more than one netwrok interface
+(waiting for the multiple-interface feature...)   
 
 .TP 20
 .B [dissectors]

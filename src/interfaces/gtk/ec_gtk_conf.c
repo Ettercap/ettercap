@@ -17,14 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_conf.c,v 1.1 2004/09/16 04:16:32 daten Exp $
+    $Id: ec_gtk_conf.c,v 1.2 2004/09/30 02:09:27 daten Exp $
 */
 
 #include <ec.h>
 #include <ec_gtk.h>
 
-void gtkui_conf_set(char *name, unsigned short value);
-unsigned short gtkui_conf_get(char *name);
+void gtkui_conf_set(char *name, short value);
+short gtkui_conf_get(char *name);
 void gtkui_conf_read(void);
 void gtkui_conf_save(void);
 
@@ -37,8 +37,8 @@ static struct gtk_conf_entry settings[] = {
    { NULL, 0 },
 };
 
-void gtkui_conf_set(char *name, unsigned short value) {
-   unsigned short c = 0;
+void gtkui_conf_set(char *name, short value) {
+   short c = 0;
 
    DEBUG_MSG("gtkui_conf_set: name=%s value=%hu", name, value);
 
@@ -50,7 +50,7 @@ void gtkui_conf_set(char *name, unsigned short value) {
    }
 }
 
-unsigned short gtkui_conf_get(char *name) {
+short gtkui_conf_get(char *name) {
    unsigned short c = 0;
 
    DEBUG_MSG("gtkui_conf_get: name=%s", name);
@@ -67,7 +67,7 @@ void gtkui_conf_read(void) {
    FILE *fd;
    char *path;
    char line[50], name[30];
-   unsigned short value;
+   short value;
 
 #ifdef OS_WINDOWS
    path = ec_win_get_user_dir();
@@ -86,7 +86,7 @@ void gtkui_conf_read(void) {
       return;
 
    while(fgets(line, 100, fd)) {
-      sscanf(line, "%s = %hu", name, &value);
+      sscanf(line, "%s = %hd", name, &value);
 
       gtkui_conf_set(name, value);
    }
@@ -105,7 +105,7 @@ void gtkui_conf_save(void) {
    fd = fopen(filename, "w");
    if(fd != NULL) {
       for(c = 0; settings[c].name != NULL; c++)
-         fprintf(fd, "%s = %hu\n", settings[c].name, settings[c].value);
+         fprintf(fd, "%s = %hd\n", settings[c].name, settings[c].value);
       fclose(fd);
    }
 

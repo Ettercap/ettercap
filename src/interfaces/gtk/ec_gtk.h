@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.15 2004/09/22 16:18:31 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.16 2004/09/30 02:09:26 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -14,7 +14,7 @@
 
 struct gtk_conf_entry {
    char *name;
-   unsigned short value;
+   short value;
 };
 
 
@@ -109,8 +109,8 @@ extern void gtkui_plugin_load(void);
 extern void gtkui_show_connections(void);
 
 /* ec_gtk_conf.c */
-extern void gtkui_conf_set(char *name, unsigned short value);
-extern unsigned short gtkui_conf_get(char *name);
+extern void gtkui_conf_set(char *name, short value);
+extern short gtkui_conf_get(char *name);
 extern void gtkui_conf_read(void);
 extern void gtkui_conf_save(void);
 

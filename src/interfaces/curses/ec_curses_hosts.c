@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_hosts.c,v 1.8 2004/01/18 19:30:31 alor Exp $
+    $Id: ec_curses_hosts.c,v 1.9 2004/01/21 15:19:34 alor Exp $
 */
 
 #include <ec.h>
@@ -72,6 +72,10 @@ static void curses_scan(void)
    
    /* perform a new scan */
    build_hosts_list();
+   
+   /* if the window is open, refresh it */
+   if (wdg_hosts)
+      curses_host_list();
 }
 
 /*
@@ -272,7 +276,11 @@ static void curses_create_hosts_array(void)
 static void curses_delete_host(void *host)
 {
    struct hosts_list *hl;
-   
+ 
+   /* sanity check */
+   if (host == NULL)
+      return;
+
    /* cast the parameter */
    hl = (struct hosts_list *)host;
 

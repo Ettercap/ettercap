@@ -40,7 +40,6 @@ this is the unofficial and floating in time roadmap:
       - how to code a plugin 
 
    + CURSES GUI
-      - fix del host (until crash)
       - profile management
       - connection management
       + LIBWDG

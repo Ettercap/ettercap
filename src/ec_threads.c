@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.7 2003/04/30 16:50:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.8 2003/05/16 19:56:21 alor Exp $
 */
 
 #include <ec.h>
@@ -95,8 +95,12 @@ pthread_t ec_thread_getpid(char *name)
    }
 
    THREADS_UNLOCK;
-
-   return -ENOTFOUND;
+   
+   /* under some OSes (MacOSX) pthread_t is a pointer
+    * we cannot return -ENOTFOUND.
+    * NULL should be ok.
+    */
+   return NULL;
 }
 
 /* returns the description of a thread */

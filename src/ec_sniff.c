@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.49 2004/04/06 19:54:36 alor Exp $
+    $Id: ec_sniff.c,v 1.50 2004/04/10 14:05:21 alor Exp $
 */
 
 #include <ec.h>
@@ -64,6 +64,8 @@ void set_sniffing_method(struct sniffing_method *sm)
 {
    /* set the method and all its pointer */
    memcpy(GBL_SNIFF, sm, sizeof(struct sniffing_method));
+   /* on startup it is not active */
+   GBL_SNIFF->active = 0;
 }
 
 /*

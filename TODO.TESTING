@@ -4,11 +4,7 @@
 
    + BRIDGED SNIFFING
       - dump to file 
-      - test it on various platforms
 
    + WIFI
       - test the decoder with adapters other than cisco aironet
 
-   + PERFORMANCE MEASUREMENT
-
-   + unconfigured interfaces

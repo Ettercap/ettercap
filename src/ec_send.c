@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.46 2004/01/21 21:05:52 alor Exp $
+    $Id: ec_send.c,v 1.47 2004/01/23 10:12:38 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -68,6 +68,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
 int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
 int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr);
 int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
+int send_L3_icmp_unreach(struct packet_object *po);
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SEND_LOCK     do{ pthread_mutex_lock(&send_mutex); } while(0)
@@ -380,6 +381,67 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    
    /* clear the pblock */
    libnet_clear_packet(GBL_LNET->lnet);
+
+   SEND_UNLOCK;
+   
+   return c;
+}
+
+/*
+ * helper function to send out an ICMP PORT UNREACH packet at layer 3
+ */
+int send_L3_icmp_unreach(struct packet_object *po)
+{
+   libnet_ptag_t t;
+   int c;
+ 
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet_L3 == 0);
+   
+   SEND_LOCK;
+
+   /* create the ICMP header */
+   t = libnet_build_icmpv4_echo(
+           3,                       /* type */
+           3,                       /* code */
+           0,                       /* checksum */
+           htons(EC_MAGIC_16),      /* identification number */
+           htons(EC_MAGIC_16),      /* sequence number */
+           po->L3.header,           /* payload */
+           po->L3.len + 8,          /* payload size */
+           GBL_LNET->lnet_L3,       /* libnet handle */
+           0);                      /* pblock id */
+   ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet_L3));
+  
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+  
+   /* create the IP header */
+   t = libnet_build_ipv4(                                                                          
+           LIBNET_IPV4_H + LIBNET_ICMPV4_ECHO_H,       /* length */                                    
+           0,                                          /* TOS */                                       
+           htons(EC_MAGIC_16),                         /* IP ID */                                     
+           0,                                          /* IP Frag */                                   
+           64,                                         /* TTL */                                       
+           IPPROTO_ICMP,                               /* protocol */                                  
+           0,                                          /* checksum */                                  
+           ip_addr_to_int32(&po->L3.dst.addr),         /* source IP */                                 
+           ip_addr_to_int32(&po->L3.src.addr),         /* destination IP */                            
+           NULL,                                       /* payload */                                   
+           0,                                          /* payload size */                              
+           GBL_LNET->lnet_L3,                          /* libnet handle */                             
+           0);
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_L3));
+  
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+ 
+   /* send the packet to Layer 3 */
+   c = libnet_write(GBL_LNET->lnet_L3);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet_L3));
+
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet_L3);
 
    SEND_UNLOCK;
    

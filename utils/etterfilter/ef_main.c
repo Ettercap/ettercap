@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_main.c,v 1.9 2003/09/18 22:15:04 alor Exp $
+    $Id: ef_main.c,v 1.10 2003/09/19 16:47:51 alor Exp $
 */
 
 #include <ef.h>
@@ -46,12 +46,6 @@ int main(int argc, char *argv[])
    /* getopt related parsing...  */
    parse_options(argc, argv);
 
-   /* test the file */
-   if (GBL_OPTIONS.test) {
-      test_filter();
-      exit(0);
-   }
-   
    /* set the input for source file */
    if (GBL_OPTIONS.source_file) {
       yyin = fopen(GBL_OPTIONS.source_file, "r");

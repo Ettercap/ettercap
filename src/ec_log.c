@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.23 2003/09/09 20:10:55 alor Exp $
+    $Id: ec_log.c,v 1.24 2003/09/19 16:47:51 alor Exp $
 */
 
 #include <ec.h>
@@ -194,7 +194,7 @@ static int log_write_header(int type)
    memset(&lh, 0, sizeof(struct log_global_header));
 
    /* the magic number */
-   lh.magic = htons(LOG_MAGIC);
+   lh.magic = htons(EC_LOG_MAGIC);
    
    /* the offset of the first header is equal to the size of this header */
    lh.first_header = htons(sizeof(struct log_global_header));

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.34 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_decode.c,v 1.35 2003/09/19 16:47:51 alor Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,7 @@
 #include <ec_ui.h>
 #include <ec_packet.h>
 #include <ec_hook.h>
+#include <ec_filter.h>
 
 #include <pcap.h>
 #include <pthread.h>
@@ -273,9 +274,13 @@ FUNC_DECODER(decode_data)
     * here we can filter the content of the packet.
     * the injection is done elsewhere.
     */
-   /* XXX -- filter ?? */
-   //  fiter_engine(po);
+   if (GBL_FILTERS->chain)
+      filter_engine(GBL_FILTERS->chain, po);
 
+   /* 
+    * this hook point is executed only it the packet
+    * has to be forwarded 
+    */
    if (po->flags & PO_FORWARDABLE) {
       /* HOOK POINT: FILTER */ 
       hook_point(HOOK_FILTER, po);

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.8 2003/09/18 22:15:04 alor Exp $
+# $Id: Makefile.am,v 1.9 2003/09/19 16:47:51 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -21,7 +21,6 @@ etterfilter_SOURCES = ef_compiler.c \
                       ef_tables.c \
                       $(top_srcdir)/src/ec_error.c \
                       $(top_srcdir)/src/ec_file.c \
-                      $(top_srcdir)/src/ec_filter.c \
                       $(top_srcdir)/src/ec_strings.c
 
 noinst_HEADERS = ef_grammar.h

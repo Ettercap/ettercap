@@ -1,5 +1,5 @@
 
-/* $Id: ef_functions.h,v 1.7 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: ef_functions.h,v 1.8 2003/09/19 16:47:47 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
@@ -10,7 +10,7 @@
 extern void parse_options(int argc, char **argv);
 
 /* ef_test */
-extern void test_filter(void);
+extern void test_filter(char *filename);
 
 /* ef_syntax && ef_grammar */
 extern int yyerror(char *);                                                                         

@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.10 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_filter.h,v 1.11 2003/09/19 16:47:47 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -95,9 +95,21 @@ struct filter_op {
    } op;
 };
 
+/* the header for a binary filter file */
+
+struct filter_header {
+   /* magic number */
+   u_int16 magic; 
+      #define EC_FILTER_MAGIC 0xe77e
+   /* ettercap version */
+   char version[10];
+};
+
 /* exported functions */
 
 extern int filter_engine(struct filter_op *fop, struct packet_object *po);
+extern int filter_load_file(char *filename);
+extern void filter_unload(void);
 
 #endif
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_parser.c,v 1.3 2003/09/18 22:15:04 alor Exp $
+    $Id: ef_parser.c,v 1.4 2003/09/19 16:47:51 alor Exp $
 */
 
 
@@ -47,6 +47,7 @@ void ef_usage(void)
 
    fprintf(stdout, "\nGeneral Options:\n");
    fprintf(stdout, "  -o, --output <file>         output file (default is filter.ef)\n");
+   fprintf(stdout, "  -t, --test <file>           test the file (debug mode)\n");
    
    fprintf(stdout, "\nStandard Options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
@@ -66,7 +67,7 @@ void parse_options(int argc, char **argv)
       { "help", no_argument, NULL, 'h' },
       { "version", no_argument, NULL, 'v' },
       
-      { "test", no_argument, NULL, 't' },
+      { "test", required_argument, NULL, 't' },
       { "output", required_argument, NULL, 'o' },
       
       { 0 , 0 , 0 , 0}
@@ -75,12 +76,12 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "ohtv", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "o:ht:v", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
          case 't':
-                  GBL_OPTIONS.test = 1;
+                  test_filter(optarg);
                   break;
                   
          case 'o':

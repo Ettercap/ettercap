@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.35 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_parser.c,v 1.36 2003/09/19 16:47:51 alor Exp $
 */
 
 
@@ -29,6 +29,7 @@
 #include <ec_format.h>
 #include <ec_update.h>
 #include <ec_mitm.h>
+#include <ec_filter.h>
 
 #include <ctype.h>
 
@@ -90,6 +91,7 @@ void ec_usage(void)
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
+   fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
@@ -124,6 +126,8 @@ void parse_options(int argc, char **argv)
       { "proto", required_argument, NULL, 't' },
       
       { "plugin", required_argument, NULL, 'P' },
+      
+      { "filter", required_argument, NULL, 'F' },
       
       { "quiet", no_argument, NULL, 'q' },
       { "silent", no_argument, NULL, 'z' },
@@ -167,7 +171,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "B:CchDdEe:f:Ghi:j:k:L:l:M:Nn:OoP:pqiRr:t:UuV:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:Nn:OoP:pqiRr:t:UuV:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -235,6 +239,11 @@ void parse_options(int argc, char **argv)
                   
          case 'f':
                   GBL_PCAP->filter = strdup(optarg);
+                  break;
+                  
+         case 'F':
+                  if (filter_load_file(optarg) != ESUCCESS)
+                     FATAL_ERROR("Cannot load filter file \"%s\"", optarg);
                   break;
                   
          case 'L':

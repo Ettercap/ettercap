@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.31 2003/09/09 16:42:11 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.32 2003/09/19 16:47:51 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -383,6 +383,16 @@ NOTE: you can also activate plugins directly from the interfaces (always press
 More detailed info about plugins and about how to write your own are found in
 the man page ettercap_plugin(8)
 
+.TP
+\fB\-F\fR, \fB\-\-filter <FILE>\fR
+Load the filter from the file <FILE>. The filter must be compiled with
+etterfilter(8). The utility will compile the filter script and produce a binary
+filter file compliant for ettercap. Read the etterfilter(8) man page for the
+list of function you can use inside a filter script.
+.br
+NOTE: these filters are different from those set with --pcapfilter. An ettercap
+filter is a content filter and can modify the payload of a packet before
+forwarfing it. Pcap filter are used to capture only certain packets.
 
 
 .TP

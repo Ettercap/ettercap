@@ -1,5 +1,5 @@
 
-/* $Id: ec_log.h,v 1.14 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_log.h,v 1.15 2003/09/19 16:47:47 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -26,15 +26,15 @@
 
 struct log_global_header {
    /* a magic number for file identification */
-   u_short magic;
-#define LOG_MAGIC 0xe77e
+   u_int16 magic;
+   #define EC_LOG_MAGIC 0xe77e
    /* 
     * offset to the first header in the log file 
     * this assure that we can change this header 
     * and the etterlog parser will be able to 
     * parse also files created by older version
     */
-   u_short first_header;
+   u_int16 first_header;
    /* ettercap version */
    char version[10];
    /* creation time of the log */

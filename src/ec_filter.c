@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.11 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_filter.c,v 1.12 2003/09/19 16:47:51 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_filter.h>
 
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -32,6 +33,8 @@
 
 /* protos */
 
+int filter_load_file(char *filename);
+void filter_unload(void);
 int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
 static int execute_assign(struct filter_op *fop, struct packet_object *po);
@@ -62,13 +65,15 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
    u_int32 flags = 0;
       #define FLAG_FALSE   0
       #define FLAG_TRUE    1
+  
+   /* sanity check */
+   BUG_IF(fop == NULL);
    
    /* loop until EXIT */
    while (fop[eip].opcode != FOP_EXIT) {
 
       switch (fop[eip].opcode) {
          case FOP_TEST:
-            printf("%d OPCODE: TEST \n", eip);
             if (execute_test(&fop[eip], po) == FLAG_TRUE)
                flags |= FLAG_TRUE;
             else
@@ -77,7 +82,6 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
             break;
             
          case FOP_ASSIGN:
-            printf("%d OPCODE: ASSIGN \n", eip);
             execute_assign(&fop[eip], po);
             /* assignment always return true */
             flags |= FLAG_TRUE;
@@ -85,7 +89,6 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
             break;
             
          case FOP_FUNC:
-            printf("%d OPCODE: FUNC %d \n", eip, fop[eip].op.func.op);
             if (execute_func(&fop[eip], po) == FLAG_TRUE)
                flags |= FLAG_TRUE;
             else
@@ -94,8 +97,6 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
             break;
             
          case FOP_JMP:
-            printf("%d OPCODE: JMP %d\n", eip, fop[eip].op.jmp);
-            
             /* jump the the next eip */
             eip = fop[eip].op.jmp;
             continue;
@@ -103,8 +104,6 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
             break;
             
          case FOP_JTRUE:
-            printf("%d OPCODE: JTRUE %d\n", eip, fop[eip].op.jmp);
-            
             /* jump the the next eip if the TRUE FLAG is set*/
             if (flags & FLAG_TRUE) {
                eip = fop[eip].op.jmp;
@@ -115,8 +114,6 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
             break;
             
          case FOP_JFALSE:
-            printf("%d OPCODE: JFALSE %d\n", eip, fop[eip].op.jmp);
-            
             /* jump the the next eip if the TRUE FLAG is NOT set */
             if (!(flags & FLAG_TRUE)) {
                eip = fop[eip].op.jmp;
@@ -124,14 +121,17 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
             }
 
             break;
+            
+         default:
+            JIT_FAULT("unsupported opcode [%d] (execution interrupted)", fop[eip].opcode);
+            return 0;
+            break;
       }
     
       /* autoincrement the instruction pointer */
       eip++;
    }
             
-   printf("%d OPCODE: EXIT\n", eip);
-   
    return 0;
 }
 
@@ -590,6 +590,70 @@ static int cmp_geq(u_int32 a, u_int32 b)
    return (a >= b);
 }
 
+/*
+ * load the filter from a file 
+ */
+int filter_load_file(char *filename)
+{
+   int fd;
+   void *file;
+   size_t size;
+   struct filter_header fh;
+
+   DEBUG_MSG("filter_load_file (%s)", filename);
+   
+   /* open the file */
+   if ((fd = open(filename, O_RDONLY)) == -1)
+      FATAL_MSG("File not found or permission denied");
+
+   /* readh the header */
+   read(fd, &fh, sizeof(struct filter_header));
+
+   /* sanity checks */
+   if (fh.magic != htons(EC_FILTER_MAGIC))
+      FATAL_MSG("Bad magic in filter file");
+  
+   /* which version has compiled the filter ? */
+   if (strcmp(fh.version, GBL_VERSION))
+      FATAL_MSG("Filter compile for a different version");
+   
+   /* get the size */
+   size = lseek(fd, 0, SEEK_END) - sizeof(struct filter_header);
+
+   /* 
+    * load the file in memory 
+    * skipping the initial header
+    */
+   file = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, sizeof(struct filter_header));
+   if (file == MAP_FAILED)
+      FATAL_MSG("Cannot mmap file");
+
+   /* make sure we don't override a previous filter */
+   filter_unload();
+
+   /* set the global variables */
+   GBL_FILTERS->chain = (struct filter_op *) file;
+   GBL_FILTERS->len = size;
+
+   /* the mmap will remain active even if we close the fd */
+   close(fd);
+  
+   return ESUCCESS;
+}
+
+/* 
+ * unload a filter chain.
+ */
+void filter_unload(void)
+{
+   DEBUG_MSG("filter_unload");
+
+   /* unmap the memory area (from file) */
+   munmap((void *)GBL_FILTERS->chain, GBL_FILTERS->len); 
+
+   /* wipe the pointer */
+   GBL_FILTERS->chain = NULL;
+}
 
 /* EOF */
 

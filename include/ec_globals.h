@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.26 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_globals.h,v 1.27 2003/09/19 16:47:47 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -115,6 +115,12 @@ struct hosts_list {
    LIST_ENTRY(hosts_list) next;
 };
 
+/* filters */
+struct filter_env {
+   struct filter_op *chain;
+   size_t len;
+};
+
 /* the globals container */
 struct globals {
    /* set to 1 to stop thread creation (used by clean_exit) */
@@ -133,6 +139,7 @@ struct globals {
    struct target_env *t2;
    LIST_HEAD(, hosts_list) hosts_list_head;
    LIST_HEAD(, host_profile) profiles_list_head;
+   struct filter_env *filters;
 };
 
 extern struct globals *gbls;
@@ -155,6 +162,7 @@ extern struct globals *gbls;
 #define GBL_TARGET2        (GBLS->t2)
 #define GBL_HOSTLIST       (GBLS->hosts_list_head)
 #define GBL_PROFILES       (GBLS->profiles_list_head)
+#define GBL_FILTERS        (GBLS->filters)
 
 #define GBL_FORMAT         (GBL_OPTIONS->format)
 

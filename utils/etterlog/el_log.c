@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_log.c,v 1.12 2003/09/18 22:15:05 alor Exp $
+    $Id: el_log.c,v 1.13 2003/09/19 16:47:51 alor Exp $
 */
 
 #include <el.h>
@@ -67,7 +67,7 @@ int get_header(struct log_global_header *hdr)
    
    hdr->magic = ntohs(hdr->magic);
    
-   if (hdr->magic != LOG_MAGIC)
+   if (hdr->magic != EC_LOG_MAGIC)
       return -EINVALID;
    
    hdr->first_header = ntohs(hdr->first_header);

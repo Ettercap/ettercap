@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.13 2004/11/08 08:50:17 alor Exp $
+    $Id: dns_spoof.c,v 1.14 2004/11/23 08:45:13 alor Exp $
 */
 
 
@@ -89,7 +89,7 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip);
 static int get_spoofed_ptr(const char *arpa, char **a);
 static int get_spoofed_mx(const char *a, struct ip_addr **ip);
 static int get_spoofed_wins(const char *a, struct ip_addr **ip);
-static const char *type_str(int type);
+char *type_str(int type);
 static void dns_spoof_dump(void);
 
 /* plugin operations */
@@ -534,7 +534,7 @@ static int get_spoofed_wins(const char *a, struct ip_addr **ip)
    return -ENOTFOUND;
 }
 
-static const char *type_str (int type)
+char *type_str (int type)
 {
    return (type == ns_t_a    ? "A" :
            type == ns_t_ptr  ? "PTR" :
@@ -545,9 +545,6 @@ static const char *type_str (int type)
 static void dns_spoof_dump(void)
 {
    struct dns_spoof_entry *d;
-
-   if (!debug_file)
-      return;
 
    DEBUG_MSG("dns_spoof entries:");
    SLIST_FOREACH(d, &dns_spoof_head, next) {

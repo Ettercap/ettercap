@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.4 2003/03/17 19:42:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.5 2003/03/17 22:23:47 alor Exp $
 */
 
 
@@ -62,7 +62,8 @@ void ec_usage(void)
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
    fprintf(stdout, "  -d, --dump <file>           dump sniffed data to <file>\n");
-   fprintf(stdout, "  -r, --read <file>           load data from <file>\n\n");
+   fprintf(stdout, "  -r, --read <file>           load data from <file>\n");
+   fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n\n");
    fprintf(stdout, "  -R, --reversed              use reversed TARGET matching\n\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
@@ -84,6 +85,7 @@ void parse_options(int argc, char **argv)
       { "iface", required_argument, NULL, 'i' },
       { "dump", required_argument, NULL, 'd' },
       { "read", required_argument, NULL, 'r' },
+      { "pcapfilter", required_argument, NULL, 'f' },
       { "reversed", no_argument, NULL, 'R' },
       
       { "console", no_argument, NULL, 'C' },
@@ -108,7 +110,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:ChDd:Gi:NpiRr:v", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:ChDd:f:Gi:NpiRr:v", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -120,7 +122,6 @@ void parse_options(int argc, char **argv)
          case 'B':
                   GBL_OPTIONS->iface_bridge = strdup(optarg);
                   set_bridge_sniff();
-                  NOT_IMPLEMENTED();
                   break;
                   
          case 'p':
@@ -144,6 +145,10 @@ void parse_options(int argc, char **argv)
                   NOT_IMPLEMENTED();
                   break;
                   
+         case 'R':
+                  GBL_OPTIONS->reversed = 1;
+                  break;
+                  
          case 'i':
                   GBL_OPTIONS->iface = strdup(optarg);
                   break;
@@ -152,14 +157,14 @@ void parse_options(int argc, char **argv)
                   GBL_OPTIONS->read = 1;
                   GBL_OPTIONS->dumpfile = strdup(optarg);
                   break;
-         
-         case 'R':
-                  GBL_OPTIONS->reversed = 1;
-                  break;
                  
          case 'd':
                   GBL_OPTIONS->dump = 1;
                   GBL_OPTIONS->dumpfile = strdup(optarg);
+                  break;
+                  
+         case 'f':
+                  GBL_PCAP->filter = strdup(optarg);
                   break;
                   
          case 'h':

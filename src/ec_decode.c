@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.6 2003/03/17 19:42:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.7 2003/03/17 22:23:47 alor Exp $
 */
 
 #include <ec.h>
@@ -79,16 +79,6 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
 
    USER_MSG("CAPTURED: 0x%04x bytes form %s\n", pkthdr->caplen, param );
    
-   /* dump packet to file if specified on command line */
-   if (GBL_OPTIONS->dump) {
-      /* 
-       * we need to lock this because in SM_BRIDGED the
-       * packets are dumped in the log file by two threads
-       */
-      DUMP_LOCK;
-      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
-      DUMP_UNLOCK;
-   }
   
    /* extract data and datalen from pcap packet */
    data = (u_char *)pkt;
@@ -118,11 +108,27 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * if the packet can be handled it will reach the top of the stack
     * where the decoder_data will add it to the top_half queue,
     * else the packet will not be handled but it should be forwarded
+    *
+    * after this fuction the packet is completed (all flags set)
     */
    l2_decoder(data, datalen, &len, po);
    
    /* HOOK POINT: DECODED */ 
    hook_point(HOOK_DECODED, po);
+   
+   /* 
+    * dump packet to file if specified on command line 
+    * and if it passes the display filter
+    */
+   if (GBL_OPTIONS->dump && !(po->flags & PO_IGNORE) ) {
+      /* 
+       * we need to lock this because in SM_BRIDGED the
+       * packets are dumped in the log file by two threads
+       */
+      DUMP_LOCK;
+      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
+      DUMP_UNLOCK;
+   }
    
    /* 
     * use the sniffing method funcion to forward the packet 

@@ -25,10 +25,11 @@ struct program_env {
 };
 
 struct pcap_env {
-   void *pcap;         /* this is a pcap_t */
-   void *pcap_bridge;  /* this is a pcap_t */
-   void *dump;         /* this is a pcap_dumper_t */
+   void *pcap;          /* this is a pcap_t */
+   void *pcap_bridge;   /* this is a pcap_t */
+   void *dump;          /* this is a pcap_dumper_t */
    char promisc:1;
+   char *filter;        /* pcap filter */
    u_int16 snaplen;
    int dlt;
 };
@@ -41,6 +42,8 @@ struct lnet_env {
 
 struct iface_env {
    struct ip_addr ip;
+   struct ip_addr network;
+   struct ip_addr netmask;
    u_char mac[ETH_ADDR_LEN];
 };
 

@@ -2,10 +2,6 @@
   TODO for NG
 ==================
 
-   + CVS
-      ADD unified, etterlog, man pages, TODO.TESTING
-
-
    + PO incapsulated ?
    + lnet ptag thread safe (check it)
    + speed up the visualization of user_msg (poll related)
@@ -15,10 +11,6 @@
    !! dissector malloc the INFO, someone have to free them... !!
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
-   + PCAP
-      - pcapdump must respect the filters (with hookpoint)
-      - pcap filters
-   
    + PLUGINS ENGINE
 
    + LOGGING ENGINE

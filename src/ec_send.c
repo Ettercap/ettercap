@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.6 2003/03/17 19:42:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.7 2003/03/17 22:23:47 alor Exp $
 */
 
 #include <ec.h>
@@ -32,6 +32,11 @@ int send_to_L2(struct packet_object *po);
 int send_to_bridge(struct packet_object *po);
 
 static void hack_pcap_lnet(pcap_t *p, libnet_t *l);
+
+static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define SEND_LOCK     do{ pthread_mutex_lock(&send_mutex); } while(0)
+#define SEND_UNLOCK   do{ pthread_mutex_unlock(&send_mutex); } while(0)
+
 /*******************************************/
 
 /*
@@ -100,11 +105,15 @@ int send_to_L3(struct packet_object *po)
    libnet_ptag_t t = (libnet_ptag_t)pthread_self();
    int c;
 
+   SEND_LOCK;
+   
    t = libnet_build_data( po->fwd_packet, po->fwd_len, GBL_LNET->lnet_L3, t);
    ON_ERROR(t, -1, "libnet_build_data");
    
    c = libnet_write(GBL_LNET->lnet_L3);
    ON_ERROR(c, -1, "libnet_write %d (%d)", po->fwd_len, c);
+   
+   SEND_UNLOCK;
    
    return c;
 }
@@ -123,11 +132,15 @@ int send_to_L2(struct packet_object *po)
    libnet_ptag_t t = (libnet_ptag_t)pthread_self();
    int c;
    
+   SEND_LOCK;
+   
    t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet, t);
    ON_ERROR(t, -1, "libnet_build_data");
    
    c = libnet_write(GBL_LNET->lnet);
    ON_ERROR(c, -1, "libnet_write %d (%d)", po->len, c);
+   
+   SEND_UNLOCK;
    
    return c;
 }
@@ -145,11 +158,15 @@ int send_to_bridge(struct packet_object *po)
    libnet_ptag_t t = (libnet_ptag_t)pthread_self();
    int c;
  
+   SEND_LOCK;
+
    t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet_bridge, t);
    ON_ERROR(t, -1, "libnet_build_data");
    
    c = libnet_write(GBL_LNET->lnet_bridge);
    ON_ERROR(c, -1, "libnet_write %d (%d)", po->len, c);
+   
+   SEND_UNLOCK;
    
    return c;
 }

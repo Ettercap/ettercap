@@ -15,13 +15,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.2 2003/03/17 22:23:47 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_inet.h>
+#include <ec_ui.h>
 
 #include <libnet.h>
+#include <pcap.h>
 
 /* prototypes */
 int ip_addr_init(struct ip_addr *sa, int type, char *addr);
@@ -251,14 +253,23 @@ void get_hw_info(void)
 {
    u_long ip;
    struct libnet_ether_addr *ea;
+   bpf_u_int32 network, netmask;
+   char pcap_errbuf[PCAP_ERRBUF_SIZE];
   
    DEBUG_MSG("get_hw_info");
    
    ip = libnet_get_ipaddr4(GBL_LNET->lnet);
 
-   if (ip != -1)
+   if (ip != -1) {
       ip_addr_init(&GBL_IFACE->ip, AF_INET, (char *)&ip);
-   else
+      
+      if (pcap_lookupnet(GBL_OPTIONS->iface, &network, &netmask, pcap_errbuf) == -1)
+         ERROR_MSG("%s", pcap_errbuf);
+      
+      ip_addr_init(&GBL_IFACE->network, AF_INET, (char *)&network);
+      ip_addr_init(&GBL_IFACE->netmask, AF_INET, (char *)&netmask);
+      
+   } else
       DEBUG_MSG("NO IP on %s", GBL_OPTIONS->iface);
    
    ea = libnet_get_hwaddr(GBL_LNET->lnet);
@@ -268,15 +279,28 @@ void get_hw_info(void)
    else
       DEBUG_MSG("NO MAC for %s", GBL_OPTIONS->iface);
 
+
+   USER_MSG("%6s ->\t%s  ",  GBL_OPTIONS->iface,
+            mac_addr_ntoa(GBL_IFACE->mac, pcap_errbuf));
+   USER_MSG("%16s  ", ip_addr_ntoa(&GBL_IFACE->ip, pcap_errbuf));
+   USER_MSG("%16s\n\n", ip_addr_ntoa(&GBL_IFACE->netmask, pcap_errbuf) );
+   
    /* if not in bridged sniffing, return */
    if (GBL_SNIFF->type != SM_BRIDGED)
       return;
    
    ip = libnet_get_ipaddr4(GBL_LNET->lnet_bridge);
 
-   if (ip != -1) 
+   if (ip != -1) {
       ip_addr_init(&GBL_BRIDGE->ip, AF_INET, (char *)&ip);
-   else
+      
+      if (pcap_lookupnet(GBL_OPTIONS->iface_bridge, &network, &netmask, pcap_errbuf) == -1)
+         ERROR_MSG("%s", pcap_errbuf);
+      
+      ip_addr_init(&GBL_BRIDGE->network, AF_INET, (char *)&network);
+      ip_addr_init(&GBL_BRIDGE->netmask, AF_INET, (char *)&netmask);
+      
+   } else
       DEBUG_MSG("NO IP on %s", GBL_OPTIONS->iface_bridge);
    
    ea = libnet_get_hwaddr(GBL_LNET->lnet_bridge);
@@ -286,6 +310,11 @@ void get_hw_info(void)
    else
       DEBUG_MSG("NO MAC for %s", GBL_OPTIONS->iface);
    
+   
+   USER_MSG("%6s ->\t%s  ",  GBL_OPTIONS->iface_bridge,
+            mac_addr_ntoa(GBL_BRIDGE->mac, pcap_errbuf));
+   USER_MSG("%16s  ", ip_addr_ntoa(&GBL_BRIDGE->ip, pcap_errbuf));
+   USER_MSG("%16s\n\n", ip_addr_ntoa(&GBL_BRIDGE->netmask, pcap_errbuf) );
 }
 
 /* EOF */

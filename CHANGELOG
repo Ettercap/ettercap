@@ -13,6 +13,8 @@ NG          ????????
       + IPv6 support
       + layer 3 routing (forwarding packets)
       + wifi support
+      + unified sniffing
+      + pcap filter
 
 
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.5 2003/03/17 19:42:25 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.6 2003/03/17 22:23:47 alor Exp $
 */
 
 #include <ec.h>
@@ -51,6 +51,8 @@ void capture_init(void)
    pcap_t *pd;
    pcap_t *pb = NULL; /* for the bridge */
    pcap_dumper_t *pdump;
+   bpf_u_int32 net, mask;
+   struct bpf_program bpf;
    int dlt;
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
    
@@ -75,10 +77,7 @@ void capture_init(void)
    } else
       USER_MSG("Listening on %s...\n\n", GBL_OPTIONS->iface);
    
-   /*
-    * set the snaplen to maximum
-    */
-   
+   /* set the snaplen to maximum */
    GBL_PCAP->snaplen = 9999;
    
    /* 
@@ -93,22 +92,54 @@ void capture_init(void)
    
    ON_ERROR(pd, NULL, "%s", pcap_errbuf);
 
+
+   /* set the pcap filters */
+   if (GBL_PCAP->filter != NULL) {
+   
+      if (pcap_lookupnet(GBL_OPTIONS->iface, &net, &mask, pcap_errbuf) == -1)
+         ERROR_MSG("%s", pcap_errbuf);
+
+      if (pcap_compile(pd, &bpf, GBL_PCAP->filter, 1, mask) < 0)
+         ERROR_MSG("%s", pcap_errbuf);
+            
+      if (pcap_setfilter(pd, &bpf) == -1)
+         ERROR_MSG("pcap_setfilter");
+
+      pcap_freecode(&bpf);
+   }
+   
    /* if in bridged sniffing, we have to open even the other iface */
    if (GBL_SNIFF->type == SM_BRIDGED) {
       pb = pcap_open_live(GBL_OPTIONS->iface_bridge, GBL_PCAP->snaplen, GBL_PCAP->promisc, 
                    PCAP_TIMEOUT, pcap_errbuf);
    
       ON_ERROR(pb, NULL, "%s", pcap_errbuf);
+   
+      /* set the pcap filters */
+      if (GBL_PCAP->filter != NULL) {
+   
+         if (pcap_lookupnet(GBL_OPTIONS->iface_bridge, &net, &mask, pcap_errbuf) == -1)
+            ERROR_MSG("%s", pcap_errbuf);
+
+         if (pcap_compile(pb, &bpf, GBL_PCAP->filter, 1, mask) < 0)
+            ERROR_MSG("%s", pcap_errbuf);
+            
+         if (pcap_setfilter(pb, &bpf) == -1)
+            ERROR_MSG("pcap_setfilter");
+
+         pcap_freecode(&bpf);
+      }
    }
 
+
+   /* open the dump file */
    if (GBL_OPTIONS->dump) {
       pdump = pcap_dump_open(pd, GBL_OPTIONS->dumpfile);
       GBL_PCAP->dump = pdump;               
    }
    
-   /*
-    * set the right decoder for L2
-    */
+   
+   /* set the right decoder for L2 */
    
    dlt = pcap_datalink(pd);
    
@@ -120,7 +151,7 @@ void capture_init(void)
       if (GBL_OPTIONS->read)
          FATAL_MSG("Dump file not supported (DLT = %d)", dlt);
       else
-         FATAL_MSG("Inteface %s not supported (DLT = %d)", GBL_OPTIONS->iface, dlt);
+         FATAL_MSG("Inteface \"%s\" not supported (DLT = %d)", GBL_OPTIONS->iface, dlt);
    }
   
    GBL_PCAP->dlt = dlt;

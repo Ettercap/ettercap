@@ -12,9 +12,7 @@
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
    + UNIFIED SNIFFING
-      - PO_MODIFIABLE (remove PO_PCKHOST)
       - set_default_sniff
-      - disable forwarding (always)
 
    + PLUGINS ENGINE
 

@@ -51,8 +51,7 @@ struct packet_object {
 
    u_int8 flags;                       /* flags relative to the packet */
       #define PO_IGNORE       ((u_int8)(1))      /* this packet should not be processed (e.g. sniffing filter didn't match it) */
-      #define PO_OUTGOING     ((u_int8)(1<<1))   /* this is outgoing and should not be forwarded again */
-      #define PO_PCKHOST      ((u_int8)(1<<2))   /* the packet is directed to us */
+      #define PO_FORWARDABLE  ((u_int8)(1<<2))   /* the packet has our MAC address, by the IP is not ours */
       
       #define PO_FROMIFACE    ((u_int8)(1<<5))   /* this packet comes from the primary interface */
       #define PO_FROMBRIDGE   ((u_int8)(1<<6))   /* this packet comes form the bridged interface */

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.4 2003/03/10 14:43:17 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.5 2003/03/15 00:21:56 alor Exp $
 */
 
 #include <ec.h>
@@ -109,10 +109,8 @@ void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
    
    /* 
     * use the sniffing method funcion to forward the packet 
-    * do NOT forward OUTGOING packet !!
-    * they are forwarded packet and we MUST avoid infinite loop !
     */
-   if (!(po->flags & PO_OUTGOING) ) {
+   if (po->flags & PO_FORWARDABLE ) {
       /* HOOK POINT: PRE_FORWARD */ 
       hook_point(HOOK_PRE_FORWARD, po);
       EXECUTE(GBL_SNIFF->forward, po);
@@ -152,8 +150,7 @@ FUNC_DECODER(decode_data)
     * the display engine has stated that this
     * packet should not be processed by us.
     */
-   if ( (po->flags & PO_IGNORE) || 
-        (GBL_SNIFF->type != SM_CLASSIC && po->flags & PO_OUTGOING) )
+   if ( po->flags & PO_IGNORE )
       return NULL;
   
 
@@ -184,10 +181,12 @@ FUNC_DECODER(decode_data)
     */
    
    /* XXX -- filter ?? */
-   // fiter_packet(po);
+   if (po->flags & PO_FORWARDABLE) {
+   //  fiter_packet(po);
    
-   /* HOOK POINT: FILTER */ 
-   hook_point(HOOK_FILTER, po);
+      /* HOOK POINT: FILTER */ 
+      hook_point(HOOK_FILTER, po);
+   }
    
    /* 
     * add the packet to the queue and return.

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.4 2003/09/07 19:47:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.5 2003/09/08 21:03:03 alor Exp $
 */
 
 #include <ef.h>
@@ -46,6 +46,8 @@ int main(int argc, char *argv[])
    /* getopt related parsing...  */
    parse_options(argc, argv);
 
+   /* load the tables in etterfilter.conf */
+   load_tables();
 
    /* test the file */
    if (GBL_OPTIONS.test) {
@@ -58,16 +60,19 @@ int main(int argc, char *argv[])
       yyin = fopen(GBL_OPTIONS.source_file, "r");
       if (yyin == NULL)
          FATAL_ERROR("Input file not found !");
-   } else
-      yyin = stdin;
+   
+      /* print the message */
+      fprintf(stdout, "Compiling source file %s...\n\n", GBL_OPTIONS.source_file);
+
+   } else {
+      FATAL_ERROR("No source file.");
+   }
 
    /* no buffering */
    setbuf(yyin, NULL);
    setbuf(stdout, NULL);
    setbuf(stderr, NULL);
  
-   fprintf(stdout, "Compiling...\n\n");
-
    /* begin the parsing */
    if (yyparse() == 0)
       fprintf(stdout, "\nDone.\n\n");

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.20 2004/04/02 15:14:53 alor Exp $
+    $Id: ec_text.c,v 1.21 2004/04/02 15:23:25 alor Exp $
 */
 
 #include <ec.h>
@@ -457,14 +457,14 @@ static void text_stats(void)
                                                 GBL_STATS->ps_drop,
                                                 GBL_STATS->ps_ifdrop);
    DEBUG_MSG("text_stats (BH) : [%lu][%lu] p/s -- [%lu][%lu] b/s", 
-         GBL_STATS->bh.rate_adv, GBL_STATS->bh.rate_worst, 
-         GBL_STATS->bh.thru_adv, GBL_STATS->bh.thru_worst); 
+         (unsigned long)GBL_STATS->bh.rate_adv, (unsigned long)GBL_STATS->bh.rate_worst, 
+         (unsigned long)GBL_STATS->bh.thru_adv, (unsigned long)GBL_STATS->bh.thru_worst); 
    
    DEBUG_MSG("text_stats (TH) : [%lu][%lu] p/s -- [%lu][%lu] b/s", 
-         GBL_STATS->th.rate_adv, GBL_STATS->th.rate_worst, 
-         GBL_STATS->th.thru_adv, GBL_STATS->th.thru_worst); 
+         (unsigned long)GBL_STATS->th.rate_adv, (unsigned long)GBL_STATS->th.rate_worst, 
+         (unsigned long)GBL_STATS->th.thru_adv, (unsigned long)GBL_STATS->th.thru_worst); 
    
-   DEBUG_MSG("text_stats (queue) : %lu %lu", GBL_STATS->queue_curr, GBL_STATS->queue_max); 
+   DEBUG_MSG("text_stats (queue) : %lu %lu", (unsigned long)GBL_STATS->queue_curr, (unsigned long)GBL_STATS->queue_max); 
   
    
    fprintf(stdout, "\n Received packets    : %8lld\n", GBL_STATS->ps_recv);
@@ -472,7 +472,7 @@ static void text_stats(void)
          (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv : 0 );
    fprintf(stdout,   " Forwarded           : %8lld  bytes: %8lld\n\n", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
    
-   fprintf(stdout,   " Current queue len   : %lu/%lu\n", GBL_STATS->queue_curr, GBL_STATS->queue_max);
+   fprintf(stdout,   " Current queue len   : %lu/%lu\n", (unsigned long)GBL_STATS->queue_curr, (unsigned long)GBL_STATS->queue_max);
    fprintf(stdout,   " Sampling rate       : %d\n\n", GBL_CONF->sampling_rate);
    
    fprintf(stdout,   " Bottom Half received packet : pck: %8lld  byte: %8lld\n", 
@@ -483,14 +483,14 @@ static void text_stats(void)
          (GBL_STATS->bh.pck_recv) ? (float)GBL_STATS->th.pck_recv * 100 / GBL_STATS->bh.pck_recv : 0 );
 
    fprintf(stdout,   " Bottom Half packet rate : worst: %8lu  adv: %8lu p/s\n", 
-         GBL_STATS->bh.rate_worst, GBL_STATS->bh.rate_adv);
+         (unsigned long)GBL_STATS->bh.rate_worst, (unsigned long)GBL_STATS->bh.rate_adv);
    fprintf(stdout,   " Top Half packet rate    : worst: %8lu  adv: %8lu p/s\n\n", 
-         GBL_STATS->th.rate_worst, GBL_STATS->th.rate_adv);
+         (unsigned long)GBL_STATS->th.rate_worst, (unsigned long)GBL_STATS->th.rate_adv);
    
    fprintf(stdout,   " Bottom Half thruoutput  : worst: %8lu  adv: %8lu b/s\n", 
-         GBL_STATS->bh.thru_worst, GBL_STATS->bh.thru_adv);
+         (unsigned long)GBL_STATS->bh.thru_worst, (unsigned long)GBL_STATS->bh.thru_adv);
    fprintf(stdout,   " Top Half thruoutput     : worst: %8lu  adv: %8lu b/s\n\n", 
-         GBL_STATS->th.thru_worst, GBL_STATS->th.thru_adv);
+         (unsigned long)GBL_STATS->th.thru_worst, (unsigned long)GBL_STATS->th.thru_adv);
 }
 
 /*

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.42 2004/03/10 20:49:12 alor Exp $
+    $Id: ec_capture.c,v 1.43 2004/04/02 15:23:25 alor Exp $
 */
 
 #include <ec.h>
@@ -388,8 +388,12 @@ void get_hw_info(void)
    USER_MSG("%16s  ", ip_addr_ntoa(&GBL_BRIDGE->ip, pcap_errbuf));
    USER_MSG("%16s\n\n", ip_addr_ntoa(&GBL_BRIDGE->netmask, pcap_errbuf) );
 
+   /* some sanity checks */
    if (GBL_BRIDGE->mtu != GBL_IFACE->mtu)
       FATAL_ERROR("The two interfaces must have the same MTU.");
+
+   if (!memcmp(GBL_BRIDGE->mac, GBL_IFACE->mac, MEDIA_ADDR_LEN))
+      FATAL_ERROR("The two bridged interfaces must be phisically different");
 }
 
 /*

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.15 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_dissect.c,v 1.16 2003/09/30 09:05:35 alor Exp $
 */
 
 #include <ec.h>
@@ -230,7 +230,6 @@ void dissect_del(char *name)
  * from the decoders' table.
  * is it possible to add multiple port with MODE_ADD
  */
-
 int dissect_modify(int mode, char *name, u_int32 port)
 {
    struct dissect_entry *e;
@@ -248,8 +247,6 @@ int dissect_modify(int mode, char *name, u_int32 port)
                break;
             case MODE_REP:
 
-               DEBUG_MSG("dissect_modify: %s replaced to %d", name, port);
-              
                /* save them because the dissect_del may delete this values */
                level = e->level;
                decoder = e->decoder;
@@ -258,9 +255,13 @@ int dissect_modify(int mode, char *name, u_int32 port)
                dissect_del(name);
                
                /* a value of 0 will disable the dissector */
-               if (port == 0)
+               if (port == 0) {
+                  DEBUG_MSG("dissect_modify: %s disabled", name);
                   return ESUCCESS;
+               }
               
+               DEBUG_MSG("dissect_modify: %s replaced to %d", name, port);
+               
                /* add the new value */
                dissect_add(name, level, port, decoder);
                

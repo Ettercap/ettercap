@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.15 2003/09/29 20:31:57 alor Exp $
+    $Id: ec_conf.c,v 1.16 2003/09/30 09:05:35 alor Exp $
 */
 
 #include <ec.h>
@@ -59,7 +59,6 @@ static struct conf_entry stats[] = {
 static struct conf_entry misc[] = {
    { "close_on_eof", NULL },
    { "aggressive_dissectors", NULL },
-   { "non_standard_dissectors", NULL },
    { NULL, NULL },
 };
 
@@ -113,7 +112,6 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&stats, "sampling_rate", &GBL_CONF->sampling_rate);
    set_pointer((struct conf_entry *)&misc, "close_on_eof", &GBL_CONF->close_on_eof);
    set_pointer((struct conf_entry *)&misc, "aggressive_dissectors", &GBL_CONF->aggressive_dissectors);
-   set_pointer((struct conf_entry *)&misc, "non_standard_dissectors", &GBL_CONF->non_standard_dissectors);
 
    /* sanity check */
    do {

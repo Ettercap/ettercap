@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.8 2003/08/28 19:55:20 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.9 2003/09/30 09:05:23 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -143,7 +143,6 @@ continue till the user input.
 Some dissectors (such as SSH and HTTPS) needs to modify the payload of the
 packets in order to collect passwords and perform a decryption attack. If you
 want to disable all the "dangerous" dissector at a time, set this value to 0.
-
 
 
 .TP 20

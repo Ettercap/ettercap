@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ospf.c,v 1.2 2003/09/29 20:32:04 alor Exp $
+    $Id: ec_ospf.c,v 1.3 2003/09/30 09:05:35 alor Exp $
 */
 
 /*
@@ -41,6 +41,7 @@
  
 #include <ec.h>
 #include <ec_decode.h>
+#include <ec_dissect.h>
 
 #define OSPF_AUTH_LEN   8
 #define OSPF_AUTH       1
@@ -60,7 +61,7 @@ void ospf_init(void);
 
 void __init ospf_init(void)
 {
-   add_decoder(PROTO_LAYER, NL_TYPE_OSPF, dissector_ospf);
+   dissect_add("ospf", PROTO_LAYER, NL_TYPE_OSPF, dissector_ospf);
 }
 
 /* 
@@ -78,10 +79,6 @@ FUNC_DECODER(dissector_ospf)
    /* don't complain about unused var */
    (void)end;
 
-   /* we have been disabled */
-   if (!GBL_CONF->non_standard_dissectors)
-      return NULL;
-   
    /* skip empty packets */
    if (PACKET->DATA.len == 0)
       return NULL;

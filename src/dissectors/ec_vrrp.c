@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_vrrp.c,v 1.1 2003/09/29 20:32:04 alor Exp $
+    $Id: ec_vrrp.c,v 1.2 2003/09/30 09:05:35 alor Exp $
 */
 
 /*
@@ -47,6 +47,7 @@
 
 #include <ec.h>
 #include <ec_decode.h>
+#include <ec_dissect.h>
 
 /* globals */
 
@@ -79,7 +80,7 @@ void vrrp_init(void);
 
 void __init vrrp_init(void)
 {
-   add_decoder(PROTO_LAYER, NL_TYPE_VRRP, dissector_vrrp);
+   dissect_add("vrrp", PROTO_LAYER, NL_TYPE_VRRP, dissector_vrrp);
 }
 
 /* 
@@ -98,10 +99,6 @@ FUNC_DECODER(dissector_vrrp)
    /* don't complain about unused var */
    (void)end;
 
-   /* we have been disabled */
-   if (!GBL_CONF->non_standard_dissectors)
-      return NULL;
-   
    /* skip empty packets */
    if (PACKET->DATA.len < sizeof(struct vrrp_hdr))
       return NULL;

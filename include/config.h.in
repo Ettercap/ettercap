@@ -72,6 +72,9 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
+/* gtk+ support */
+#undef HAVE_GTK
+
 /* Define to 1 if you have the `index' function. */
 #undef HAVE_INDEX
 

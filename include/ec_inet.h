@@ -59,14 +59,14 @@ extern void disable_ip_forward(void);
                     )
 
    #define ORDER_ADD_SHORT(a, b)   a = htons(ntohs(a) + b)
-   #define ORDER_ADD_LONG(a, b)	   a = htonl(ntohl(a) + b)
+   #define ORDER_ADD_LONG(a, b)	  a = htonl(ntohl(a) + b)
 
 #else
    #define ptohs(x) *(u_int16 *)(x)
    #define ptohl(x) *(u_int32 *)(x)
    
    #define ORDER_ADD_SHORT(a, b)   a = a + b
-   #define ORDER_ADD_LONG(a, b)	   a = a + b
+   #define ORDER_ADD_LONG(a, b)	  a = a + b
 
 #endif
       

@@ -329,15 +329,18 @@ dnl   Check for libs
 dnl ==================
 
 
+dnl ---------
 dnl  libpcap
+dnl ---------
 ac_cv_ec_libpcap=default
 
 AC_MSG_CHECKING(for libpcap)
 AC_ARG_WITH(libpcap,
 [  --with-libpcap=DIR      use libpcap in DIR],
 [ case "$withval" in
-  yes|no)
+  no)
      AC_MSG_RESULT(no)
+     AC_ERROR("*** ettercap cannot operate without libpcap. ***")
      ;;
   *)
      AC_MSG_RESULT($withval)
@@ -380,15 +383,18 @@ LDFLAGS="$PCAPLIB"
 AC_CHECK_LIB(pcap, pcap_file,, AC_ERROR(Incorrect pcap version))
 LDFLAGS="${OLDLDFLAGS}"
 
+dnl ---------
 dnl  libnet
+dnl ---------
 ac_cv_ec_libnet=default
 
 AC_MSG_CHECKING(for libnet)
 AC_ARG_WITH(libnet,
 [  --with-libnet=DIR       use libnet in DIR],
 [ case "$withval" in
-  yes|no)
+  no)
      AC_MSG_RESULT(no)
+     AC_ERROR("*** ettercap cannot operate without libnet. ***")
      ;;
   *)
      AC_MSG_RESULT($withval)
@@ -438,62 +444,10 @@ LDFLAGS="$LNETLIB"
 AC_CHECK_LIB(net, libnet_init,, AC_ERROR(Incorrect lnet version))
 LDFLAGS="${OLDLDFLAGS}"
 
-dnl  ncurses
-AH_TEMPLATE(HAVE_NCURSES, [ncurses support])
-AM_CONDITIONAL(NCURSES, false)
 
-ac_cv_ec_libncurses=default
-
-AC_MSG_CHECKING(for libncurses)
-AC_ARG_WITH(libncurses,
-[  --with-libncurses=DIR      use libncurses in DIR],
-[ case "$withval" in
-  yes|no)
-     AC_MSG_RESULT(no)
-     ;;
-  *)
-     AC_MSG_RESULT($withval)
-     if test -f $withval/ncurses.h -a -f $withval/libncurses.a; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
-        NCURSINC="-I$withval"
-        NCURSLIB="-L$withval -lncurses"
-        AC_DEFINE(HAVE_NCURSES, 1)
-        AM_CONDITIONAL(NCURSES, true)
-        ac_cv_ec_libncurses=$withval
-     elif test -f $withval/include/ncurses.h \
-               -o -f $withval/include/ncurses/ncurses.h \
-               -a -f $withval/lib/libncurses.a; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
-        NCURSINC="-I$withval/include"
-        NCURSLIB="-L$withval/lib -lncurses"
-        AC_DEFINE(HAVE_NCURSES, 1)
-        AM_CONDITIONAL(NCURSES, true)
-        ac_cv_ec_libncurses=$withval
-     else
-        AC_ERROR(ncurses.h or libncurses.a not found in $withval)
-     fi
-     ;;
-  esac ],
-[ if test -f /usr/include/ncurses/ncurses.h; then
-     NCURSINC="-I/usr/include/ncurses"
-     NCURSLIB="-lncurses"
-     AC_DEFINE(HAVE_NCURSES, 1)
-     AM_CONDITIONAL(NCURSES, true)
-     AC_MSG_RESULT(yes)
-  elif test -f /usr/include/ncurses.h; then
-     NCURSLIB="-lncurses"
-     AC_DEFINE(HAVE_NCURSES, 1)
-     AM_CONDITIONAL(NCURSES, true)
-     AC_MSG_RESULT(yes)
-  else
-     AC_MSG_RESULT(no)
-  fi]
-)
-
-
+dnl ---------
 dnl Checks for openssl
+dnl ---------
 
 AH_TEMPLATE(HAVE_OPENSSL, [openssl executable path])
 ac_cv_ec_libssl=default
@@ -548,9 +502,110 @@ else
   AC_DEFINE_UNQUOTED(OPENSSL_PATH, "")
 fi
 
+dnl ---------
+dnl  ncurses
+dnl ---------
+AH_TEMPLATE(HAVE_NCURSES, [ncurses support])
+AM_CONDITIONAL(NCURSES, false)
 
+ac_cv_ec_libncurses="NO"
+
+AC_MSG_CHECKING(for libncurses)
+AC_ARG_WITH(libncurses,
+[  --with-libncurses=DIR      use libncurses in DIR],
+[ case "$withval" in
+  yes|no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     AC_MSG_RESULT($withval)
+     if test -f $withval/ncurses.h -a -f $withval/libncurses.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NCURSINC="-I$withval"
+        NCURSLIB="-L$withval -lncurses"
+        AC_DEFINE(HAVE_NCURSES, 1)
+        AM_CONDITIONAL(NCURSES, true)
+        ac_cv_ec_libncurses=$withval
+     elif test -f $withval/include/ncurses.h \
+               -o -f $withval/include/ncurses/ncurses.h \
+               -a -f $withval/lib/libncurses.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NCURSINC="-I$withval/include"
+        NCURSLIB="-L$withval/lib -lncurses"
+        AC_DEFINE(HAVE_NCURSES, 1)
+        AM_CONDITIONAL(NCURSES, true)
+        ac_cv_ec_libncurses=$withval
+     else
+        AC_ERROR(ncurses.h or libncurses.a not found in $withval)
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/ncurses/ncurses.h; then
+     NCURSINC="-I/usr/include/ncurses"
+     NCURSLIB="-lncurses"
+     AC_DEFINE(HAVE_NCURSES, 1)
+     AM_CONDITIONAL(NCURSES, true)
+     ac_cv_ec_libncurses=default
+     AC_MSG_RESULT(yes)
+  elif test -f /usr/include/ncurses.h; then
+     NCURSLIB="-lncurses"
+     AC_DEFINE(HAVE_NCURSES, 1)
+     AM_CONDITIONAL(NCURSES, true)
+     ac_cv_ec_libncurses=default
+     AC_MSG_RESULT(yes)
+  else
+     AC_MSG_RESULT(no)
+  fi]
+)
+
+
+dnl ---------
+dnl  GTK
+dnl ---------
+
+AH_TEMPLATE(HAVE_GTK, [gtk+ support])
+AM_CONDITIONAL(GTK, false)
+
+ac_cv_ec_gtk="NO"
+
+AC_MSG_CHECKING(for gtk+)
+AC_ARG_ENABLE(gtk, [  --enable-gtk            enable the gtk interface.],
+[ case "$enableval" in
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  yes)
+      AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+      if test "$PKG_CONFIG" = "no" ; then
+         AC_MSG_RESULT(pkg-config not found)
+      else
+         PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0 pango >= 1.0 atk >= 1.0,
+            [ AC_DEFINE(HAVE_GTK, 1)
+              AM_CONDITIONAL(GTK, true)
+              ac_cv_ec_gtk=yes ]
+         )
+      fi
+     ;;
+  esac ],
+[ 
+      AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+      if test "$PKG_CONFIG" = "no" ; then
+         AC_MSG_RESULT(pkg-config not found)
+      else
+         PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0 pango >= 1.0 atk >= 1.0,
+            [ AC_DEFINE(HAVE_GTK, 1)
+              AM_CONDITIONAL(GTK, true)
+              ac_cv_ec_gtk=yes ]
+         )
+      fi
+])
+
+
+dnl ---------
 dnl  set up the final vars
-
+dnl ---------
 EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $NCURSINC"
 EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $NCURSLIB $PTHREADLIB $SOCKETLIB"
 
@@ -597,9 +652,10 @@ echo
 echo
    EC_CHECK_OPTION(" LIBPCAP ........... ",${ac_cv_ec_libpcap})
    EC_CHECK_OPTION(" LIBNET ............ ",${ac_cv_ec_libnet})
-   EC_CHECK_OPTION(" LIBNCURSES ........ ",${ac_cv_ec_libncurses})
    EC_CHECK_OPTION(" LIBSSL ............ ",${ac_cv_ec_libssl})
    EC_CHECK_OPTION(" OPENSSL ........... ",${ac_cv_ec_openssl})
+   EC_CHECK_OPTION(" NCURSES ........... ",${ac_cv_ec_libncurses})
+   EC_CHECK_OPTION(" GTK+ .............. ",${ac_cv_ec_gtk})
 echo
    EC_CHECK_OPTION("Functionalities :", "")
 echo

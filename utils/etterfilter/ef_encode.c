@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_encode.c,v 1.3 2003/09/13 10:37:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_encode.c,v 1.4 2003/09/15 16:37:40 alor Exp $
 */
 
 #include <ef.h>
@@ -26,7 +26,6 @@
 #include <ec_strings.h>
 
 #include <ctype.h>
-#include <netinet/in.h>
 
 /* protos */
 
@@ -70,7 +69,7 @@ int encode_offset(char *string, struct filter_op *fop)
 /*
  * assing the value of the const to the fop.value
  *
- * all the value are integer32 and are save in network order
+ * all the value are integer32 and are saved in host order
  */
 int encode_const(char *string, struct filter_op *fop)
 {
@@ -78,12 +77,12 @@ int encode_const(char *string, struct filter_op *fop)
    
    /* it is an hexadecimal value */
    if (!strncmp(string, "0x", 2) && isdigit((int)string[2])) {
-      fop->op.test.value = htonl(strtoul(string, NULL, 16));
+      fop->op.test.value = strtoul(string, NULL, 16);
       return ESUCCESS;
       
    /* it is an integer value */
    } else if (isdigit((int)string[0])) {
-      fop->op.test.value = htonl(strtoul(string, NULL, 10));
+      fop->op.test.value = strtoul(string, NULL, 10);
       return ESUCCESS;
       
    /* it is a string */

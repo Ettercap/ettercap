@@ -25,6 +25,9 @@
 
 this is the unofficial and floating in time roadmap:
 
+   + DOCUMENTATION
+      - write the requirements for each os
+      - developer docs
 
 Sep 2003:
 
@@ -83,8 +86,6 @@ Dec 2003:
       - gtk
          - redesigned
          - win32 port
-
-   + DEVELOPMENT DOCUMENTATION
 
    + ETTERLOG
       - extract files from streams looking for mime content

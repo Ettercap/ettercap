@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.11 2003/09/15 16:16:59 lordnaga Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.12 2003/09/15 16:37:40 alor Exp $
 */
 
 #include <ec.h>
@@ -250,17 +250,22 @@ FUNC_DECODER(decode_tcp)
     * - seq_adj according to PACKET->delta for modifications 
     *   or the whole payload for dropped packets.
     */   
+   
    /* XXX [...] over TCP encapsulation not supported yet: 
     * upper layer may modify L3 structure
     */
+   
    if (PACKET->flags & PO_DROPPED)
       status->way[direction].seq_adj -= PACKET->DATA.len;
    else if ((PACKET->flags & PO_MODIFIED) || 
             (status->way[direction].seq_adj != 0) || 
             (status->way[!direction].seq_adj != 0)) {
+     
+      /* adjust with the previously injected/dropped seq/ack */
       ORDER_ADD_LONG(tcp->seq, status->way[direction].seq_adj);
       ORDER_ADD_LONG(tcp->ack, -status->way[!direction].seq_adj);
 
+      /* and now save the new delta */
       status->way[direction].seq_adj += PACKET->delta;
 
       /* XXX We assume len>=delta (required for checksum) */

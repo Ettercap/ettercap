@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.14 2003/09/15 16:16:59 lordnaga Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.15 2003/09/15 16:37:40 alor Exp $
 */
 
 #include <ec.h>
@@ -206,7 +206,10 @@ FUNC_DECODER(decode_ip)
    if (PACKET->flags & PO_DROPPED)
       status->id_adj--;
    else if ((PACKET->flags & PO_MODIFIED) || (status->id_adj != 0)) {
+      
+      /* se the correct id for this packet */
       ORDER_ADD_SHORT(ip->id, status->id_adj);
+      /* adjust the packet length */
       ORDER_ADD_SHORT(ip->tot_len, PACKET->delta);
 
       /* 

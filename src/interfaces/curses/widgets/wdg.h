@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.35 2004/02/26 11:07:26 alor Exp $ */
+/* $Id: wdg.h,v 1.36 2004/02/29 17:37:21 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -249,6 +249,7 @@ extern void wdg_file_set_callback(wdg_t *wo, void (*callback)(char *path, char *
 extern void wdg_input_size(wdg_t *wo, size_t x, size_t y);
 extern void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len, size_t lines);
 extern void wdg_input_set_callback(wdg_t *wo, void (*callback)(void));
+extern void wdg_input_get_input(wdg_t *wo);
 /* list objects */
 struct wdg_list {
    char *desc;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_hosts.c,v 1.9 2004/01/21 15:19:34 alor Exp $
+    $Id: ec_curses_hosts.c,v 1.10 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -147,7 +147,7 @@ static void curses_save_hosts(void)
    SAFE_FREE(GBL_OPTIONS->hostsfile);
    SAFE_CALLOC(GBL_OPTIONS->hostsfile, FILE_LEN, sizeof(char));
    
-   curses_input_call("Output file :", GBL_OPTIONS->hostsfile, FILE_LEN, save_hosts);
+   curses_input("Output file :", GBL_OPTIONS->hostsfile, FILE_LEN, save_hosts);
 }
 
 static void save_hosts(void)

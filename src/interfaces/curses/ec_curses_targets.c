@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.10 2004/02/26 11:07:26 alor Exp $
+    $Id: ec_curses_targets.c,v 1.11 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -102,7 +102,7 @@ static void curses_select_protocol(void)
       strcpy(GBL_OPTIONS->proto, "all");
    }
 
-   curses_input_call("Protocol :", GBL_OPTIONS->proto, 3, set_protocol);
+   curses_input("Protocol :", GBL_OPTIONS->proto, 3, set_protocol);
 }
 
 static void set_protocol(void)
@@ -347,14 +347,14 @@ static void curses_add_target1(void *entry)
 {
    DEBUG_MSG("curses_add_target1");
 
-   curses_input_call("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target1);
+   curses_input("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target1);
 }
 
 static void curses_add_target2(void *entry)
 {
    DEBUG_MSG("curses_add_target2");
 
-   curses_input_call("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target2);
+   curses_input("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target2);
 }
 
 static void add_target1(void)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_profiles.c,v 1.3 2004/02/28 00:08:57 daten Exp $
+    $Id: ec_gtk_view_profiles.c,v 1.4 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -358,7 +358,7 @@ static void gtkui_profiles_dump(void *dummy)
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, 50, sizeof(char));
 
-   gtkui_input_call("Log File :", logfile, 50, dump_profiles);
+   gtkui_input("Log File :", logfile, 50, dump_profiles);
 
 }
 

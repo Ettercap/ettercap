@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.27 2003/11/30 21:31:56 alor Exp $
+    $Id: ec_ui.c,v 1.28 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -49,7 +49,7 @@ void ui_cleanup(void);
 void ui_msg(const char *fmt, ...);
 void ui_error(const char *fmt, ...);
 void ui_fatal_error(const char *msg);
-void ui_input(const char *title, char *input, size_t n);
+void ui_input(const char *title, char *input, size_t n, void (*callback)(void));
 void ui_progress(char *title, int value, int max);
 int ui_msg_flush(int max);
 int ui_msg_purge_all(void);
@@ -231,13 +231,11 @@ void ui_msg(const char *fmt, ...)
 /*
  * get the user input
  */
-void ui_input(const char *title, char *input, size_t n)
+void ui_input(const char *title, char *input, size_t n, void (*callback)(void))
 {
    DEBUG_MSG("ui_input");
 
-   EXECUTE(GBL_UI->input, title, input, n);
-   
-   DEBUG_MSG("ui_input: user returned: %s", input);
+   EXECUTE(GBL_UI->input, title, input, n, callback);
 }
 
 /* 

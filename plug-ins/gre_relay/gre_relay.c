@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: gre_relay.c,v 1.3 2003/12/07 15:23:37 lordnaga Exp $
+    $Id: gre_relay.c,v 1.4 2004/02/29 17:37:21 alor Exp $
 */
 
 
@@ -100,7 +100,9 @@ static int gre_relay_init(void *dummy)
    /* don't display messages while operating */
    GBL_OPTIONS->quiet = 1;
 
-   ui_input("Unused IP address: ", tmp, sizeof(tmp));
+   memset(tmp, 0, sizeof(tmp));
+   
+   ui_input("Unused IP address: ", tmp, sizeof(tmp), NULL);
    if (!inet_aton(tmp, &fake_ip)) {
       INSTANT_USER_MSG("gre_relay: Bad IP address\n");
       return PLUGIN_FINISHED;

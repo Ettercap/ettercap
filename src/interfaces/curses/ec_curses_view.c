@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.17 2004/02/22 12:00:54 alor Exp $
+    $Id: ec_curses_view.c,v 1.18 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -152,7 +152,7 @@ static void curses_vis_method(void)
 {
    DEBUG_MSG("curses_vis_method");
 
-   curses_input_call("Visualization method :", vmethod, VLEN, set_method);
+   curses_input("Visualization method :", vmethod, VLEN, set_method);
 }
 
 static void set_method(void)

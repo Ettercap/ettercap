@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.18 2004/01/10 14:15:26 alor Exp $
+    $Id: ec_text.c,v 1.19 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -49,7 +49,7 @@ static void text_cleanup(void);
 static void text_msg(const char *msg);
 static void text_error(const char *msg);
 static void text_fatal_error(const char *msg);
-static void text_input(const char *title, char *input, size_t n);
+static void text_input(const char *title, char *input, size_t n, void (*callback)(void));
 static void text_help(void);
 static void text_progress(char *title, int value, int max);
 static void text_run_plugin(void);
@@ -162,7 +162,7 @@ static void text_fatal_error(const char *msg)
 /*
  * display the 'title' and get the 'input' from the user
  */
-static void text_input(const char *title, char *input, size_t n)
+static void text_input(const char *title, char *input, size_t n, void (*callback)(void))
 {
    char *p;
    
@@ -193,6 +193,13 @@ static void text_input(const char *title, char *input, size_t n)
 
    /* disable buffered input */
    tcsetattr(0, TCSANOW, &new_tc);
+
+   /* 
+    * call the supplied function
+    * the callee is aware of the buffer to be used
+    */
+   if (callback != NULL)
+      callback();
 }
 
 /* 

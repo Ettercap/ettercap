@@ -6,7 +6,6 @@
    
    + FIXING
       - dissect_free_session
-      - input for curses gui
       - remove the quiet from some plugins
 
    + PCAP RELATED
@@ -41,7 +40,6 @@ this is the unofficial and floating in time roadmap:
 
    + CURSES GUI
       - regex on the content
-      - input for curses_input
       - context sensitive help
 
    + INJECTION 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dos_attack.c,v 1.5 2004/02/04 10:18:02 lordnaga Exp $
+    $Id: dos_attack.c,v 1.6 2004/02/29 17:37:21 alor Exp $
 */
 
 
@@ -89,14 +89,17 @@ static int dos_attack_init(void *dummy)
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
 
-   ui_input("Insert victim IP: ", dos_addr, sizeof(dos_addr));
+   memset(dos_addr, 0, sizeof(dos_addr));
+   memset(unused_addr, 0, sizeof(dos_addr));
+
+   ui_input("Insert victim IP: ", dos_addr, sizeof(dos_addr), NULL);
    if (inet_aton(dos_addr, &ipaddr) == 0) {
       INSTANT_USER_MSG("dos_attack: Invalid IP address.\n");
       return PLUGIN_FINISHED;
    }
    ip_addr_init(&victim_host, AF_INET, (char *)&ipaddr);
 
-   ui_input("Insert unused IP: ", unused_addr, sizeof(unused_addr));
+   ui_input("Insert unused IP: ", unused_addr, sizeof(unused_addr), NULL);
    if (inet_aton(unused_addr, &ipaddr) == 0) {
       INSTANT_USER_MSG("dos_attack: Invalid IP address.\n");
       return PLUGIN_FINISHED;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger_submit.c,v 1.5 2003/10/20 14:42:24 alor Exp $
+    $Id: finger_submit.c,v 1.6 2004/02/29 17:37:21 alor Exp $
 */
 
 
@@ -71,15 +71,18 @@ static int finger_submit_init(void *dummy)
    
    /* don't display messages while operating */
    GBL_OPTIONS->quiet = 1;
-  
+ 
+   memset(finger, 0, sizeof(finger));
+   memset(os, 0, sizeof(finger));
+   
    /* get the user input */
-   ui_input("Fingerprint      ('quit' to exit) : ", finger, sizeof(finger));
+   ui_input("Fingerprint      ('quit' to exit) : ", finger, sizeof(finger), NULL);
    
    /* exit on user request */
    if (!strcasecmp(finger, "quit") || !strcmp(finger, ""))
       return PLUGIN_FINISHED;
    
-   ui_input("Operating System ('quit' to exit) : ", os, sizeof(os));
+   ui_input("Operating System ('quit' to exit) : ", os, sizeof(os), NULL);
 
    /* exit on user request */
    if (!strcasecmp(os, "quit") || !strcmp(os, ""))

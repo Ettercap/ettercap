@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_logging.c,v 1.2 2004/02/01 16:48:51 alor Exp $
+    $Id: ec_curses_logging.c,v 1.3 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -80,7 +80,7 @@ static void curses_log_all(void)
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   curses_input_call("Log File :", logfile, FILE_LEN, log_all);
+   curses_input("Log File :", logfile, FILE_LEN, log_all);
 }
 
 static void log_all(void)
@@ -100,7 +100,7 @@ static void curses_log_info(void)
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   curses_input_call("Log File :", logfile, FILE_LEN, log_info);
+   curses_input("Log File :", logfile, FILE_LEN, log_info);
 }
 
 static void log_info(void)
@@ -126,7 +126,7 @@ static void curses_log_msg(void)
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   curses_input_call("Log File :", logfile, FILE_LEN, log_msg);
+   curses_input("Log File :", logfile, FILE_LEN, log_msg);
 }
 
 static void log_msg(void)

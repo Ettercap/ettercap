@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.3 2004/02/27 20:03:40 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.4 2004/02/29 17:37:21 alor Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -11,8 +11,7 @@ extern GtkWidget *window;  /* main window */
 extern GtkWidget *main_menu;
 
 extern void gtkui_message(const char *msg);
-extern void gtkui_input(const char *title, char *input, size_t n);
-extern void gtkui_input_call(const char *title, char *input, size_t n, void (*callback)(void));
+extern void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
 
 extern void gtkui_sniff_offline(void);
 extern void gtkui_sniff_live(void);

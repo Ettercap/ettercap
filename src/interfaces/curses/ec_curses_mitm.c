@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_mitm.c,v 1.3 2004/01/03 11:03:02 alor Exp $
+    $Id: ec_curses_mitm.c,v 1.4 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -58,7 +58,7 @@ static void curses_arp_poisoning(void)
 
    sprintf(params, "arp:");
 
-   curses_input_call("Parameters :", params + strlen("arp:"), PARAMS_LEN - strlen("arp:"), curses_start_mitm);
+   curses_input("Parameters :", params + strlen("arp:"), PARAMS_LEN - strlen("arp:"), curses_start_mitm);
 }
 
 static void curses_icmp_redir(void)
@@ -67,7 +67,7 @@ static void curses_icmp_redir(void)
 
    sprintf(params, "icmp:");
    
-   curses_input_call("Parameters :", params + strlen("icmp:"), PARAMS_LEN - strlen("icmp:"), curses_start_mitm);
+   curses_input("Parameters :", params + strlen("icmp:"), PARAMS_LEN - strlen("icmp:"), curses_start_mitm);
 }
 
 static void curses_port_stealing(void)
@@ -76,7 +76,7 @@ static void curses_port_stealing(void)
 
    sprintf(params, "port:");
    
-   curses_input_call("Parameters :", params + strlen("port:"), PARAMS_LEN - strlen("port:"), curses_start_mitm);
+   curses_input("Parameters :", params + strlen("port:"), PARAMS_LEN - strlen("port:"), curses_start_mitm);
 }
 
 static void curses_dhcp_spoofing(void)
@@ -85,7 +85,7 @@ static void curses_dhcp_spoofing(void)
 
    sprintf(params, "dhcp:");
    
-   curses_input_call("Parameters :", params + strlen("dhcp:"), PARAMS_LEN - strlen("dhcp:"), curses_start_mitm);
+   curses_input("Parameters :", params + strlen("dhcp:"), PARAMS_LEN - strlen("dhcp:"), curses_start_mitm);
 }
 
 

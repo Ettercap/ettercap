@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.6 2004/02/28 13:09:26 alor Exp $
+    $Id: ec_gtk.c,v 1.7 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -44,8 +44,7 @@ void set_gtk_interface(void);
 void gtkui_start(void);
 
 void gtkui_message(const char *msg);
-void gtkui_input(const char *title, char *input, size_t n);
-void gtkui_input_call(const char *title, char *input, size_t n, void (*callback)(void));
+void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
    
 static void gtkui_init(void);
 static void gtkui_cleanup(void);
@@ -209,54 +208,9 @@ static void gtkui_fatal_error(const char *msg)
 
 
 /*
- * get an input from the user blocking
+ * get an input from the user
  */
-void gtkui_input(const char *title, char *input, size_t n)
-{
-   GtkWidget *dialog, *entry, *label, *hbox, *image;
-
-   /* since plugins use this and don't initialize their string.. */
-   memset(input, 0, n);
-
-   dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK, 
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
-   gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
-   gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
-  
-   hbox = gtk_hbox_new (FALSE, 6);
-   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
-  
-   image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
-   gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.0);
-   gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
-   
-   label = gtk_label_new (title);
-   gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
-   gtk_label_set_selectable (GTK_LABEL (label), TRUE);
-   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
-         
-   entry = gtk_entry_new_with_max_length(n);
-   gtk_box_pack_start(GTK_BOX (hbox), entry, FALSE, FALSE, 5);
-   gtk_widget_show_all (hbox);
-
-   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-
-      strncpy(input, gtk_entry_get_text(GTK_ENTRY (entry)), n);
-
-   }
-   gtk_widget_destroy(dialog);
-
-   /* a nasty little loop that lets gtk destroy the dialog immediately */
-   /* this helps when being called from plugins on the same thread */
-   while (gtk_events_pending ())
-      gtk_main_iteration ();
-}
-
-/*
- * get an input from the user with a callback
- */
-void gtkui_input_call(const char *title, char *input, size_t n, void (*callback)(void))
+void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void))
 {
    GtkWidget *dialog, *entry, *label, *hbox, *image;
 
@@ -279,18 +233,23 @@ void gtkui_input_call(const char *title, char *input, size_t n, void (*callback)
    gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
    
    entry = gtk_entry_new_with_max_length(n);
-   if(input)
-      gtk_entry_set_text(GTK_ENTRY (entry), input); 
-   gtk_box_pack_start(GTK_BOX (hbox), entry, FALSE, FALSE, 5);
    
+   if (input)
+      gtk_entry_set_text(GTK_ENTRY (entry), input); 
+   
+   gtk_box_pack_start(GTK_BOX (hbox), entry, FALSE, FALSE, 5);
    gtk_widget_show_all (hbox);
 
-   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
 
       strncpy(input, gtk_entry_get_text(GTK_ENTRY (entry)), n);
 
-      if(callback != NULL)
+      if (callback != NULL) {
+         gtk_widget_destroy(dialog);
+
          callback();
+         return;
+      }
    }
    gtk_widget_destroy(dialog);
 }
@@ -550,7 +509,7 @@ static void gtkui_file_write(void)
    
    SAFE_CALLOC(GBL_OPTIONS->dumpfile, FILE_LEN, sizeof(char));
 
-   gtkui_input_call("Output file :", GBL_OPTIONS->dumpfile, FILE_LEN, write_pcapfile);
+   gtkui_input("Output file :", GBL_OPTIONS->dumpfile, FILE_LEN, write_pcapfile);
 }
 
 static void write_pcapfile(void)
@@ -597,7 +556,7 @@ static void gtkui_unified_sniff(void)
    }
 
    /* calling gtk_main_quit will go to the next interface :) */
-   gtkui_input_call("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, gtk_main_quit);
+   gtkui_input("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, gtk_main_quit);
 }
 
 /*
@@ -701,7 +660,7 @@ static void gtkui_pcap_filter(void)
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   gtkui_input_call("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
+   gtkui_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
 /* EOF */

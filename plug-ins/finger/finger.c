@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.8 2004/01/18 19:30:31 alor Exp $
+    $Id: finger.c,v 1.9 2004/02/29 17:37:21 alor Exp $
 */
 
 
@@ -91,9 +91,10 @@ static int finger_init(void *dummy)
     */
    if (good_target(&ip, &port) != ESUCCESS) {
       /* get the target from user */
-      get_user_target(&ip, &port);
-      /* do the actual finterprinting */
-      do_fingerprint();   
+      if (get_user_target(&ip, &port) == ESUCCESS) {
+         /* do the actual finterprinting */
+         do_fingerprint();   
+      }
    } else {
       struct ip_list *host;
    
@@ -177,9 +178,15 @@ static int get_user_target(struct ip_addr *ip, u_int16 *port)
    char input[64];
    char *p;
 
+   memset(input, 0, sizeof(input));
+   
    /* get the user input */
-   ui_input("Insert ip:port : ", input, sizeof(input));
+   ui_input("Insert ip:port : ", input, sizeof(input), NULL);
 
+   /* no input was entered */
+   if (strlen(input) == 0)
+      return -EINVALID;
+   
    /* get the hostname */
    if ((p = strtok(input, ":")) != NULL) {
       if (inet_aton(p, &ipaddr) == 0)

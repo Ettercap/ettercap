@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_input.c,v 1.6 2004/02/26 11:07:26 alor Exp $
+    $Id: wdg_input.c,v 1.7 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <wdg.h>
@@ -62,6 +62,7 @@ static void wdg_input_consolidate(struct wdg_object *wo);
 void wdg_input_size(wdg_t *wo, size_t x, size_t y);
 void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len, size_t lines);
 void wdg_input_set_callback(wdg_t *wo, void (*callback)(void));
+void wdg_input_get_input(wdg_t *wo);
 
 /*******************************************/
 
@@ -564,6 +565,79 @@ void wdg_input_set_callback(wdg_t *wo, void (*callback)(void))
    ww->callback = callback;
 }
 
+/*
+ * this function will get the input from the user.
+ * CAUTION: this is an hack, since it uses wgetch()
+ * it will takeover the main dispatching loop !!!
+ */
+void wdg_input_get_input(wdg_t *wo)
+{
+   int key;
+   struct wdg_mouse_event mouse;
+  
+   WDG_DEBUG_MSG("wdg_input_get_input");
+   
+   /* dispatch keys to self */
+   WDG_LOOP {
+
+      key = wgetch(stdscr);
+      
+      switch (key) {
+            
+         case KEY_CTRL_L:
+            /* redrawing the screen is equivalent to resizing it */
+         case KEY_RESIZE:
+            /* the screen has been resized */
+            wdg_redraw_all();
+            /* update the screen */
+            doupdate();
+            break;
+            
+         case ERR:
+            /* non-blocking input reached the timeout */
+            /* sleep for milliseconds */
+            napms(WDG_INPUT_TIMEOUT * 10);
+            refresh();
+            doupdate();
+            break;
+            
+         default:
+
+#ifdef NCURSES_MOUSE_VERSION
+            /* handle mouse events */
+            if (key == KEY_MOUSE) {
+               MEVENT event;
+            
+               getmouse(&event);
+               mouse_trafo(&event.y, &event.x, TRUE);
+               mouse.x = event.x;
+               mouse.y = event.y;
+               mouse.event = event.bstate;
+            }
+#else            
+            /* we don't support mouse events */
+            memset(&mouse, 0, sizeof(mouse));
+#endif
+            /* dispatch the user input */
+            wdg_input_get_msg(wo, key, &mouse); 
+            /* update the screen */
+            doupdate();
+
+            /* 
+             * if the object is destroyed or the input finished, 
+             * then return to the main loop
+             */
+            if (key == CTRL('Q') || key == KEY_ESC || key == KEY_RETURN) {
+               WDG_DEBUG_MSG("wdg_input_get_input: return to main loop");
+               return;
+            }
+            
+            break;
+      }
+   }
+   
+
+}
 
 /* EOF */
 

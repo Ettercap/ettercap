@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.39 2004/02/28 13:09:26 alor Exp $
+    $Id: ec_curses.c,v 1.40 2004/02/29 17:37:21 alor Exp $
 */
 
 #include <ec.h>
@@ -47,8 +47,7 @@ static void curses_cleanup(void);
 static void curses_msg(const char *msg);
 static void curses_error(const char *msg);
 static void curses_fatal_error(const char *msg);
-static void curses_input(const char *title, char *input, size_t n);
-void curses_input_call(const char *title, char *input, size_t n, void (*callback)(void));
+void curses_input(const char *title, char *input, size_t n, void (*callback)(void));
 static void curses_progress(char *title, int value, int max);
 
 static void curses_setup(void);
@@ -218,30 +217,9 @@ static void curses_fatal_error(const char *msg)
 
 
 /*
- * get an input from the user blocking
+ * get an input from the user 
  */
-static void curses_input(const char *title, char *input, size_t n)
-{
-   wdg_t *in;
-
-   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, strlen(title) + n, 3);
-   wdg_input_add(in, 1, 1, title, input, n, 1);
-   wdg_draw_object(in);
-      
-   wdg_set_focus(in);
-                     
-   NOT_IMPLEMENTED();
-}
-
-/*
- * get an input from the user with a callback
- */
-void curses_input_call(const char *title, char *input, size_t n, void (*callback)(void))
+void curses_input(const char *title, char *input, size_t n, void (*callback)(void))
 {
    wdg_t *in;
 
@@ -253,11 +231,14 @@ void curses_input_call(const char *title, char *input, size_t n, void (*callback
    wdg_input_size(in, strlen(title) + n, 3);
    wdg_input_add(in, 1, 1, title, input, n, 1);
    wdg_input_set_callback(in, callback);
+   
    wdg_draw_object(in);
-      
+   
    wdg_set_focus(in);
+  
+   /* block until user input */
+   wdg_input_get_input(in);
 }
-
 
 /* 
  * implement the progress bar 
@@ -493,7 +474,7 @@ static void curses_file_write(void)
    
    SAFE_CALLOC(GBL_OPTIONS->dumpfile, FILE_LEN, sizeof(char));
 
-   curses_input_call("Output file :", GBL_OPTIONS->dumpfile, FILE_LEN, write_pcapfile);
+   curses_input("Output file :", GBL_OPTIONS->dumpfile, FILE_LEN, write_pcapfile);
 }
 
 static void write_pcapfile(void)
@@ -540,7 +521,7 @@ static void curses_unified_sniff(void)
    }
 
    /* calling wdg_exit will go to the next interface :) */
-   curses_input_call("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, wdg_exit);
+   curses_input("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, wdg_exit);
 }
 
 /*
@@ -598,7 +579,7 @@ static void curses_pcap_filter(void)
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   curses_input_call("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
+   curses_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
 

@@ -188,6 +188,7 @@ AC_CHECK_HEADERS(sys/types.h stdint.h)
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
 AC_CHECK_HEADERS(termios.h)
 AC_CHECK_HEADERS(sys/poll.h poll.h sys/select.h)
+AC_CHECK_HEADERS(dlfcn.h)
 
 
 dnl ==================================================================

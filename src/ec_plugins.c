@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.8 2003/04/25 12:22:57 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.9 2003/05/19 10:58:53 alor Exp $
 */
 
 #include <ec.h>
@@ -31,7 +31,9 @@
 #endif
 
 //#include <ltdl.h>
-#include <dlfcn.h>
+#ifdef HAVE_DLFCN_H
+   #include <dlfcn.h>
+#endif
 
 /* symbol prefix for some OSes */
 #ifdef NEED_USCORE
@@ -72,6 +74,7 @@ int plugin_is_activated(char *name);
 
 int plugin_load_single(char *path, char *name)
 {
+#ifdef HAVE_PLUGINS
    char file[strlen(path)+strlen(name)+1];
    void *handle;
    int (*plugin_load)(void *);
@@ -104,6 +107,10 @@ int plugin_load_single(char *path, char *name)
     * function
     */
    return plugin_load(handle);
+#else
+   FATAL_MSG("Plugin support was disabled by configure...");
+   return -EINVALID;
+#endif
 }
 
 

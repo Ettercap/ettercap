@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip6.c,v 1.9 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_ip6.c,v 1.10 2003/11/26 20:39:17 alor Exp $
 */
 
 #include <ec.h>
@@ -73,6 +73,9 @@ FUNC_DECODER(decode_ip6)
    FUNC_DECODER_PTR(next_decoder);
    struct ip6_header *ip6;
    int opt; /* -1 means no options defined, if 0 an option is present */
+  
+   /* XXX - not yet supported */
+   return NULL;
    
    ip6 = (struct ip6_header *)DECODE_DATA;
   

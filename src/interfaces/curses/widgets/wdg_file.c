@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.3 2003/11/25 20:28:29 alor Exp $
+    $Id: wdg_file.c,v 1.4 2003/11/26 20:39:16 alor Exp $
 */
 
 #include <wdg.h>
@@ -488,14 +488,12 @@ static void wdg_file_menu_create(struct wdg_object *wo)
     * if the menu is larger than the main window
     * adapt to the new dimensions
     */
-#if 0
-   if (mcols > c - 4) {
+   if (mcols > (int)c - 4) {
       wo->x1 = (current_screen.cols - (mcols + 4)) / 2;
       wo->x2 = -wo->x1;
       wdg_file_redraw(wo);
       return;
    }
-#endif
    /* create the window for the menu */
    ww->mwin = newwin(mrows, MAX(mcols, (int)c - 4), y + 1, x + 2);
    /* set the color */

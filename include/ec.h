@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.19 2003/11/22 13:57:10 alor Exp $ */
+/* $Id: ec.h,v 1.20 2003/11/26 20:39:16 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -23,6 +23,14 @@
 #include <strings.h>
 #include <unistd.h>
 #include <time.h>
+
+/* 
+ * use the system bpf.h not the pcap one... 
+ * needed by ec_send.c
+ */
+#if defined(OS_DARWIN) || defined(OS_BSD)
+   #include <net/bpf.h>
+#endif
 
 /* these are often needed... */
 #include <ec_queue.h>

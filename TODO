@@ -6,19 +6,20 @@
 
    + PLUGINS ENGINE
       - replace the search point form . to INSTALL_PREFIX/lib
-      - cygwin issue (study libltdl)
-      - use libldtdl (problems even on openbsd)
       - LTDL_SHLIB_EXT
 
    + BSD PORTING
       - find a way for bridged sniff under OpenBSD 
+      - test the plugin engine under OpenBSD
 
    + SOLARIS PORTING
       - test the bridged sniffing
 
    + WINDOWS PORTING
       - get_iface_mtu 
-      - totally untested
+      - make the whole thing compile ;)
+      - then found all the bugs....
+      - dll instead of plugins (argh!)
 
 >>> to be developed...
 
@@ -30,6 +31,9 @@ this is the unofficial and floating in time roadmap:
 
    + FIXING
       - dissect_free_session
+      + when libpcap 0.8.1 will be released
+         - pcap_datalink_val_to_name  
+         - pcap_lib_version
       
 Nov 2003:
 
@@ -39,7 +43,6 @@ Nov 2003:
    + LIBWDG
       - is there a heap corruption ??
       - widgets:
-         - resizable file widget
          - input (with forms ?)
          - selectable lists
 
@@ -49,10 +52,14 @@ Nov 2003:
       - flag to mark encripted connections
 
    + DISSECTORS
-      - convert all the old dissectors
+      - convert all the old dissectors:
+         - http  (with cookie enhancements)
+         - https (over the ssl one)
+         - ldap
+         - mountd
+         - pcanywhere
+         - yahoo
       - SSL unified dissector for https, impas, pop3s ecc ecc
-      - HTTP sniff cookies
-      - WIFI decoder support for WEP (key given)
       - PPP 
       - GRE
       - TDS
@@ -63,14 +70,29 @@ Dec 2003:
    + MITM METHODS
       - port stealing
 
-   + INTERFACE ENGINE
-      - gtk
-
    + LOGGING
       - selective log on connections
       
    + PLUGINS
-      - convert all the old plugins
+      port all the plugins to NG:
+         - lurker    -> find_ettercappers
+         - zaratan   ->
+         - troll     -> arp_responder
+         - hydra     -> (with a PPP decoder) + plugins
+         - roper     -> stop_ipsec
+         - dwarf     -> (will be integrated with etterlog)
+         - thief     -> (same as dwarf)
+         - arpcop    -> arpcop
+         - banshee   -> killer
+         - confusion -> (mitm method)
+         - golem     -> res_exhaust
+         - imp       -> nbt_names
+         - lamia     -> stp_root (or mitm attack?)
+         - leech     -> isolate
+         - ooze      -> will not be ported (never used)
+         - shadow    -> will not be ported (never used) (use nmap instead)
+         - spectre   -> mac_flood
+         - triton    -> gw_discover
 
    + BRIDGED SNIFFING
       
@@ -85,7 +107,14 @@ Dec 2003:
 25 Jan 2004:
 
    + FIRST PUBLIC (pre)RELEASE
+   
 
+2004:
+   
+   + INTERFACE ENGINE
+      - gtk
+
+   + WIFI decoder support for WEP (key given)
 
 ==================
   LONG TERM TODO

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.25 2003/10/25 15:35:33 alor Exp $
+    $Id: ec_scan.c,v 1.26 2003/10/25 16:19:59 alor Exp $
 */
 
 #include <ec.h>
@@ -82,6 +82,8 @@ void build_hosts_list(void)
          nhosts++;
 
       INSTANT_USER_MSG("%d hosts added to the hosts list...\n", nhosts);
+
+      return;
    }
    
    /* in silent mode, the list should not be created */
@@ -89,7 +91,12 @@ void build_hosts_list(void)
       return;
       
    /* it not initialized don't make the list */
-   if (GBL_LNET->lnet == 0)
+   if (GBL_LNET->lnet == NULL)
+      return;
+  
+   /* no target defined... */
+   if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip && 
+       !GBL_TARGET1->scan_all && !GBL_TARGET2->scan_all)
       return;
    
    /*
@@ -97,7 +104,6 @@ void build_hosts_list(void)
     * the right HOOK POINT. so we only have to hook to 
     * ARP packets.
     */
-
    hook_add(HOOK_PACKET_ARP_RP, &get_response);
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
   
@@ -105,7 +111,7 @@ void build_hosts_list(void)
     * if at least one target is ANY, scan the wole netmask
     * else scan only the specified targets
     */
-   if (GBL_TARGET1->not_specified || GBL_TARGET2->not_specified)
+   if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
       scan_netmask();
    else
       scan_targets();
@@ -373,6 +379,10 @@ static void scan_targets(void)
    }
    
    DEBUG_MSG("scan_targets: %d hosts to be scanned", nhosts);
+
+   /* don't scan if there are no hosts */
+   if (nhosts == 0)
+      return;
 
    snprintf(title, sizeof(title), "Scanning for merged targets (%d hosts)...", nhosts);
    INSTANT_USER_MSG("%s\n\n", title);

@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.35 2003/10/25 15:35:37 alor Exp $ */
+/* $Id: ec_globals.h,v 1.36 2003/10/25 16:20:06 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -104,7 +104,7 @@ struct ip_list {
 
 /* target specifications */
 struct target_env {
-   char not_specified:1;
+   char scan_all:1;
    char all_mac:1;            /* these one bit flags are used as wildcards */
    char all_ip:1;
    char all_port:1;

@@ -36,7 +36,7 @@ struct log_global_header {
    /* creation time of the log */
    struct timeval tv;
    /* the type of the log (packet or info) */
-   int type;
+   u_int32 type;
 };
 
 
@@ -60,7 +60,7 @@ struct log_header_packet {
    u_int16 L4_src;
    u_int16 L4_dst;
    
-   u_int len;
+   u_int32 len;
 };
 
 

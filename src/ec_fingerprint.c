@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.3 2003/03/20 16:25:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.4 2003/03/26 20:38:00 alor Exp $
 
 */
 
@@ -51,8 +51,7 @@ static void fingerprint_discard(void);
 int fingerprint_init(void);
 char * fingerprint_search(char *f);
 
-char * fingerprint_alloc(void);
-char * fingerprint_destroy(char **finger);
+void fingerprint_default(char *finger);
 void fingerprint_push(char *finger, int param, int value);
 static u_char TTL_PREDICTOR(u_char x);
 /*****************************************/
@@ -148,31 +147,14 @@ char * fingerprint_search(char *f)
  * initialize the fingerprint string
  */
 
-char * fingerprint_alloc(void)
+void fingerprint_default(char *finger)
 {
-   char *q;
-
-   q = calloc(FINGER_LEN+1, sizeof(char));
-   ON_ERROR(q, NULL, "can't callocate memory");
-
    /* 
     * initialize the fingerprint 
     *
     * WWWW:_MSS:TT:WS:S:N:D:T:F:LT
     */
-   strcpy(q,"0000:_MSS:TT:WS:0:0:0:0:F:LT");
-   
-   return q;
-}
-
-/*
- * destroy a fingerprint
- */
-
-char * fingerprint_destroy(char **finger)
-{
-   SAFE_FREE(*finger);
-   return NULL;
+   strcpy(finger,"0000:_MSS:TT:WS:0:0:0:0:F:LT");  
 }
 
 /*

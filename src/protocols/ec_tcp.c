@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.4 2003/03/13 11:01:48 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.5 2003/03/26 20:38:02 alor Exp $
 */
 
 #include <ec.h>
@@ -110,7 +110,7 @@ FUNC_DECODER(decode_tcp)
    /* set up the data poiters */
    PACKET->DATA.data = opt_end;
    PACKET->DATA.len = DECODE_DATALEN - DECODED_LEN;
- 
+
    /* create the buffer to be displayed */
    packet_disp_data(PACKET, PACKET->DATA.data, PACKET->DATA.len);
    
@@ -121,8 +121,7 @@ FUNC_DECODER(decode_tcp)
     * we are intereste only in SYN or SYN+ACK packets 
     * else we can destroy the fingerprint
     */
-
-   if ( (PACKET->PASSIVE.fingerprint != NULL) && (tcp->flags & TH_SYN)) {
+   if ( tcp->flags & TH_SYN ) {
    
       fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_WINDOW, ntohs(tcp->win));
       fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_TCPFLAG, (tcp->flags & TH_ACK) ? 1 : 0);
@@ -168,7 +167,7 @@ FUNC_DECODER(decode_tcp)
       
    } else {
       /* not an interesting packet */
-      fingerprint_destroy(&PACKET->PASSIVE.fingerprint);
+      memset(PACKET->PASSIVE.fingerprint, 0, FINGER_LEN);
    }
    
    /* get the next decoder */

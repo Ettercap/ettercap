@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.2 2003/03/24 22:45:06 alor Exp $
+    $Id: ec_log.c,v 1.3 2003/03/26 20:38:00 alor Exp $
 */
 
 #include <ec.h>
@@ -25,11 +25,14 @@
 
 #include <fcntl.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+
+#include <zlib.h>
 
 /* globals */
 
-static int fd_ecp;
-static int fd_eci;
+static gzFile fd_ecp;
+static gzFile fd_eci;
 
 /* protos */
 
@@ -37,7 +40,7 @@ void set_loglevel(int level, char *filename);
 void log_packet(struct packet_object *po);
 void log_close(void);
 
-static int log_write_header(int fd, int type);
+static int log_write_header(gzFile fd, int type);
 
 /************************************************/
 
@@ -62,9 +65,12 @@ void set_loglevel(int level, char *filename)
    /* open the file(s) */
    switch(level) {
       case LOG_PACKET:
-         fd_ecp = open(ecp, O_CREAT | O_APPEND | O_TRUNC | O_RDWR, 0600);
-         ON_ERROR(fd_ecp, -1, "Can't create %s", ecp);
+         fd_ecp = gzopen(ecp, "wb9");
+         ON_ERROR(fd_ecp, NULL, "Can't create %s", ecp);
 
+         /* set the permissions */
+         chmod(ecp, 0600);
+         
          /* initialize the log file */
          log_write_header(fd_ecp, LOG_PACKET);
          
@@ -73,8 +79,11 @@ void set_loglevel(int level, char *filename)
          /* no break here, loglevel is incremental */
          
       case LOG_INFO:
-         fd_eci = open(eci, O_CREAT | O_APPEND | O_TRUNC | O_RDWR, 0600);
-         ON_ERROR(fd_eci, -1, "Can't create %s", eci);
+         fd_eci = gzopen(eci, "wb9");
+         ON_ERROR(fd_eci, NULL, "Can't create %s", eci);
+         
+         /* set the permissions */
+         chmod(eci, 0600);
          
          /* initialize the log file */
          log_write_header(fd_eci, LOG_INFO);
@@ -90,13 +99,13 @@ void set_loglevel(int level, char *filename)
 /* close the log files */
 void log_close(void)
 {
-   DEBUG_MSG("ATEXIT: log_close %d %d", fd_ecp, fd_eci);
+   DEBUG_MSG("ATEXIT: log_close");
 
    if (fd_ecp) 
-      close(fd_ecp);
+      gzclose(fd_ecp);
    
    if (fd_eci) 
-      close(fd_eci);
+      gzclose(fd_eci);
 }
 
 /*
@@ -104,12 +113,12 @@ void log_close(void)
  * the propre header
  */
 
-static int log_write_header(int fd, int type)
+static int log_write_header(gzFile fd, int type)
 {
    struct log_global_header lh;
    int c;
    
-   DEBUG_MSG("log_write_header : fd %d  type %d", fd, type);
+   DEBUG_MSG("log_write_header : type %d", type);
 
    memset(&lh, 0, sizeof(lh));
 
@@ -128,7 +137,7 @@ static int log_write_header(int fd, int type)
       
    lh.type = htonl(type);
 
-   c = write(fd, &lh, sizeof(lh));
+   c = gzwrite(fd, &lh, sizeof(lh));
    ON_ERROR(c, -1, "Can't write to the logfile");
          
    return c;
@@ -160,10 +169,10 @@ void log_packet(struct packet_object *po)
    
    hp.len = htonl(po->disp_len);
 
-   c = write(fd_ecp, &hp, sizeof(hp));
+   c = gzwrite(fd_ecp, &hp, sizeof(hp));
    ON_ERROR(c, -1, "Can't write to the logfile");
 
-   c = write(fd_ecp, po->disp_data, po->disp_len);
+   c = gzwrite(fd_ecp, po->disp_data, po->disp_len);
    ON_ERROR(c, -1, "Can't write to the logfile");
    
 }

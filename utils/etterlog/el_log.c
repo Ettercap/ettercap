@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.1 2003/03/25 18:43:14 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.2 2003/03/26 20:38:02 alor Exp $
 */
 
 #include <el.h>
@@ -34,12 +34,28 @@ int get_header(struct log_global_header *hdr)
 {
    int c;
 
-   c = read(GBL_LOG_FD, hdr, sizeof(struct log_global_header));
+   c = gzread(GBL_LOG_FD, hdr, sizeof(struct log_global_header));
 
    if (c != sizeof(struct log_global_header))
       return -EINVALID;
-   else
-      return ESUCCESS;
+   
+   /* convert to host order */
+   
+   hdr->magic = ntohs(hdr->magic);
+   
+   if (hdr->magic != LOG_MAGIC)
+      return -EINVALID;
+   
+   hdr->first_header = ntohs(hdr->first_header);
+   gzseek(GBL_LOG_FD, hdr->first_header, SEEK_SET);
+  
+   /* adjust the timestamp */
+   hdr->tv.tv_sec = ntohl(hdr->tv.tv_sec);
+   hdr->tv.tv_usec = ntohl(hdr->tv.tv_usec);
+   
+   hdr->type = ntohl(hdr->type);
+      
+   return ESUCCESS;
 }
 
 
@@ -50,23 +66,27 @@ int get_header(struct log_global_header *hdr)
 
 int get_packet(struct log_header_packet *pck, u_char **buf)
 {
-   int c, len;
+   int c;
 
-   c = read(GBL_LOG_FD, pck, sizeof(struct log_header_packet));
+   c = gzread(GBL_LOG_FD, pck, sizeof(struct log_header_packet));
 
    if (c != sizeof(struct log_header_packet))
       return -EINVALID;
    
-   len = ntohl(pck->len);
-   
+   pck->len = ntohl(pck->len);
+  
+   /* adjust the timestamp */
+   pck->tv.tv_sec = ntohl(pck->tv.tv_sec);
+   pck->tv.tv_usec = ntohl(pck->tv.tv_usec);
+  
    /* allocate the memory for the buffer */
-   *buf = calloc(len, sizeof(u_char));
+   *buf = calloc(pck->len, sizeof(u_char));
    ON_ERROR(*buf, NULL, "Can't allocate memory");
 
    /* copy the data of the packet */
-   c = read(GBL_LOG_FD, *buf, len);
+   c = gzread(GBL_LOG_FD, *buf, pck->len);
    
-   if (c != len)
+   if (c != pck->len)
       return -EINVALID;
    
    return ESUCCESS;

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.7 2003/03/22 15:41:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.8 2003/03/26 20:38:01 alor Exp $
 */
 
 #include <ec.h>
@@ -101,7 +101,6 @@ void ui_msg(const char *fmt, ...)
    struct ui_message *msg;
    int n, size = 50;
 
-
    msg = (struct ui_message *) calloc(1, sizeof(struct ui_message));
    ON_ERROR(msg, NULL, "can't allocate ui_message");
 
@@ -165,10 +164,9 @@ int ui_msg_flush(int max)
       /* diplay the message */
       GBL_UI->msg(msg->message);
 
+      SIMPLEQ_REMOVE_HEAD(&messages_queue, msg, next);
       /* free the message */
       SAFE_FREE(msg->message);
-      
-      SIMPLEQ_REMOVE_HEAD(&messages_queue, msg, next);
       SAFE_FREE(msg);
       
       /* do not display more then 'max' messages */
@@ -195,9 +193,9 @@ int ui_msg_purge_all(void)
    UI_MSG_LOCK;
       
    while ( (msg = SIMPLEQ_FIRST(&messages_queue)) != NULL) {
+      SIMPLEQ_REMOVE_HEAD(&messages_queue, msg, next);
       /* free the message */
       SAFE_FREE(msg->message);
-      SIMPLEQ_REMOVE_HEAD(&messages_queue, msg, next);
       SAFE_FREE(msg);
    }
    

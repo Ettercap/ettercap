@@ -10,6 +10,10 @@
    !! dissector malloc the INFO, someone have to free them... !!
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
+
+   !! FIX THE HEX_FORMAT FUNCTION
+
+
    + PLUGINS ENGINE
       - replace the search point form . to INSTALL_PREFIX/lib
       - cygwin issue (study libltdl)
@@ -18,11 +22,17 @@
       - make test with dlopen-test
 
    + LOGGING ENGINE
-      - gzip compression
-      - ETTERLOG
-         - respect the first_header
-      - integrate the lcocnvert in etterlog
+      - info packet
 
+   + ETTERLOG
+      - hex format
+      - ascii format
+      - ebcdic format
+      - html format
+      - joined view
+      - follow a connection
+      - connection list
+   
    + ARP SCAN
 
    + ARP POISON ENGINE

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.8 2003/03/24 15:54:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.9 2003/03/26 20:37:59 alor Exp $
 */
 
 #include <ec.h>
@@ -178,7 +178,6 @@ FUNC_DECODER(decode_data)
     */
    if ( po->flags & PO_IGNORE )
       return NULL;
-  
 
    /* 
     * run the APP_LAYER decoders 

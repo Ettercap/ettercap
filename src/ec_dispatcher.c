@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.6 2003/03/21 14:16:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.7 2003/03/26 20:38:00 alor Exp $
 */
 
 #include <ec.h>
@@ -65,9 +65,11 @@ EC_THREAD_FUNC(top_half)
    ec_thread_init();
 
    LOOP { 
-     
+   
+      ec_thread_testcancel();
+      
       /* XXX - this is responsible for the responsiveness */
-      usleep(1000); 
+      usleep(1); 
       
       /* the queue is updated by other threads */
       PO_QUEUE_LOCK;
@@ -96,7 +98,7 @@ EC_THREAD_FUNC(top_half)
 void top_half_queue_add(struct packet_object *po)
 {
    struct po_queue_entry *e;
-   
+
    e = calloc(1, sizeof(struct po_queue_entry));
    ON_ERROR(e, NULL, "can't allocate memory");
    

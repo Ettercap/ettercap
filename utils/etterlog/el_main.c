@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.1 2003/03/25 18:43:15 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.2 2003/03/26 20:38:03 alor Exp $
 */
 
 #include <el.h>
@@ -62,8 +62,8 @@ void open_log(char *file)
 {
    GBL_LOGFILE = strdup(file);
 
-   GBL_LOG_FD = open(file, O_RDONLY);
-   ON_ERROR(GBL_LOG_FD, -1, "Can't open %s", file);
+   GBL_LOG_FD = gzopen(file, "rb");
+   ON_ERROR(GBL_LOG_FD, NULL, "Can't open %s", file);
  
    /* if we are root, drop privs... */
    

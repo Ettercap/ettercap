@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.6 2003/03/24 15:54:38 alor Exp $
+    $Id: ec_packet.c,v 1.7 2003/03/26 20:38:00 alor Exp $
 */
 
 #include <ec.h>
@@ -82,24 +82,21 @@ int packet_destroy_object(struct packet_object **po)
     * alse free data directed to top_half
     */
    if ((*po)->flags & PO_DUP) {
-      
+     
       SAFE_FREE((*po)->packet);
       
       /* XXX - dispatcher needs them */
       SAFE_FREE((*po)->INFO.user);
       SAFE_FREE((*po)->INFO.pass);
       SAFE_FREE((*po)->INFO.info);
-  
-      /* XXX - passive needs it */
-      fingerprint_destroy(&(*po)->PASSIVE.fingerprint);
-   
-      /* 
-      * free the disp_data pointer
-      * it was malloced by tcp or udp decoder
-      */
-      SAFE_FREE((*po)->disp_data);
 
    }
+      
+   /* 
+    * free the disp_data pointer
+    * it was malloced by tcp or udp decoder
+    */
+   SAFE_FREE((*po)->disp_data);
    
    /* then the po structure */
    SAFE_FREE(*po);
@@ -124,10 +121,18 @@ struct packet_object * packet_dup(struct packet_object *po)
     * copy the po over the dup_po 
     * but this is not sufficient, we have to adjust all 
     * the pointer to the po->packet.
-    * so allocate a new paaket, then recalculate the
+    * so allocate a new packet, then recalculate the
     * pointers
     */
    memcpy(dup_po, po, sizeof(struct packet_object));
+  
+   /* duplicate the po dispdata */
+   dup_po->disp_data = calloc(po->disp_len, sizeof(u_char));
+   ON_ERROR(dup_po->disp_data, NULL, "can't allocate memory");
+  
+   /* copy the buffer */
+   memcpy(dup_po->disp_data, po->disp_data, po->disp_len);
+
    
    /* duplicate the po buffer */
    dup_po->packet = calloc(po->len, sizeof(u_char));
@@ -151,10 +156,10 @@ struct packet_object * packet_dup(struct packet_object *po)
    dup_po->DATA.data = dup_po->packet + (po->DATA.data - po->packet);
 
    dup_po->fwd_packet = dup_po->packet + (po->fwd_packet - po->packet);
-   
+
    /* this packet is a duplicate */
    dup_po->flags |= PO_DUP;
-   
+
    return dup_po;
 }
 
@@ -168,9 +173,9 @@ void packet_print(struct packet_object *po)
    /* XXX - REMOVE THIS FUNCTION */
    
    char tmp[MAX_ASCII_ADDR_LEN];
-   char hex[hex_len(1500)];
+   u_char hex[hex_len(2000)];
    
-   USER_MSG("\n=========================================\n");
+   USER_MSG("\n========================================= \n");
    USER_MSG("Packet len:  %d\n", po->len);
    USER_MSG("Packet flag: %#x\n", po->flags);
    USER_MSG("L2 : len     %d\n", po->L2.len);

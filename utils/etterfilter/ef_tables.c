@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_tables.c,v 1.11 2003/10/12 15:27:57 alor Exp $
+    $Id: ef_tables.c,v 1.12 2003/11/11 16:47:20 alor Exp $
 */
 
 #include <ef.h>
@@ -104,6 +104,10 @@ void load_tables(void)
       
       /* eat the empty spaces */
       for (q = line; *q == ' ' && q < end; q++);
+      
+      /* skip empty lines */
+      if (*q == '\0')
+         continue;
 
       /* begin of a new section */
       if (*q == '[') {
@@ -133,7 +137,7 @@ void load_tables(void)
       /* parse the offsets and add them to the table */
       oname = strtok(q, ":");
       q = strtok(NULL, ":");
-      if ((p = strchr(q, ' ')) || (p = strchr(q, '=')))
+      if (q && ((p = strchr(q, ' ')) || (p = strchr(q, '='))))
          *p = '\0';
       else
          FATAL_ERROR("Parse error in etterfilter.conf on line %d", lineno);

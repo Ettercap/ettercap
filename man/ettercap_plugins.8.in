@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.8 2003/11/09 12:12:46 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.9 2003/11/09 13:02:23 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -103,6 +103,25 @@ accurate.
 ettercap -TP link_type /192.168.0.1/
 .br
 ettercap -TP link_type //
+
+.TP 
+.B scan_poisoner
+.Sp
+Check if someone is poisoning between some host in the list and us.
+First of all it checks if two hosts in the list have the same mac address.
+It could mean that one of those is poisoning us pretending to be the other.
+It could generate many false-positives in a proxy-arp environment.
+You have to build hosts list to perform this check.
+After that it sends icmp echo packets to each host in the list and checks
+if the source mac address of the reply differs from the address we have
+stored in the list for that ip.
+It could mean that someone is poisoning that host pretending to have our ip
+address and forwards intercepted packets to us.
+You can't perform this active test in unoffensive mode .
+.Sp
+.I example :
+.Sp
+ettercap -TP scan_poisoner //
 
 .TP 
 .B search_promisc

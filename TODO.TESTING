@@ -9,11 +9,6 @@
    + WIFI
       - test the decoder with adapters other than cisco aironet
 
-   + PROFILES
-      - convert to hosts list
-
    + PERFORMANCE MEASUREMENT
-
-   + all the menu from the curses GUI
 
    + TEST reading from truncated pcap file

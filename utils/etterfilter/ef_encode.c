@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.18 2004/02/16 21:15:32 alor Exp $
+    $Id: ef_encode.c,v 1.19 2004/02/17 14:42:47 alor Exp $
 */
 
 #include <ef.h>
@@ -105,7 +105,7 @@ int encode_const(char *string, struct filter_op *fop)
       if (inet_aton(string + 1, &ipaddr) == 0)
          return -EFATAL;
       
-      fop->op.test.value = *(u_int32 *)&ipaddr;
+      fop->op.test.value = ntohl(ipaddr.s_addr);
       return ESUCCESS;
       
    /* it is a string */

@@ -1,5 +1,5 @@
 
-/* $Id: ec_threads.h,v 1.5 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: ec_threads.h,v 1.6 2004/06/10 10:00:39 lordnaga Exp $ */
 
 #ifndef EC_THREADS_H
 #define EC_THREADS_H
@@ -27,6 +27,7 @@ extern void ec_thread_register(pthread_t id, char *name, char *desc);
 extern pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
 extern void ec_thread_destroy(pthread_t id);
 extern void ec_thread_init(void);
+extern void ec_thread_exit(void);
 extern void ec_thread_kill_all(void);
 
 #define RETURN_IF_NOT_MAIN() do{ if (strcmp(ec_thread_getname(EC_SELF), GBL_PROGRAM)) return; }while(0)

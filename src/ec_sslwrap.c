@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.46 2004/06/09 09:06:36 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.47 2004/06/10 09:59:56 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -57,7 +57,7 @@
       sslw_wipe_connection(y);      \
       SAFE_FREE(z.DATA.data);       \
       SAFE_FREE(z.DATA.disp_data);  \
-      return NULL;                  \
+      ec_thread_exit();             \
    }                                \
 } while(0)
 
@@ -999,13 +999,13 @@ EC_THREAD_FUNC(sslw_child)
    if (sslw_sync_conn(ae) == -EINVALID) {
       close(ae->fd[SSL_CLIENT]);
       SAFE_FREE(ae);
-      return NULL;
+      ec_thread_exit();
    }	    
 	    
    if ((ae->status & SSL_ENABLED) && 
       sslw_sync_ssl(ae) == -EINVALID) {
       sslw_wipe_connection(ae);
-      return NULL;
+      ec_thread_exit();
    }
 
    /* A fake SYN ACK for profiles */

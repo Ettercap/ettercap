@@ -1,0 +1,55 @@
+############################################################################
+#                                                                          #
+#  ettercap -- etter.filter -- filter chain file                           #
+#                                                                          #
+#  Copyright (C) 2001  ALoR <alor@users.sourceforge.net>                   #
+#                      NaGA <crwm@freemail.it>                             #
+#                                                                          #
+#  This program is free software; you can redistribute it and/or modify    #
+#  it under the terms of the GNU General Public License as published by    #
+#  the Free Software Foundation; either version 2 of the License, or       #
+#  (at your option) any later version.                                     #
+#                                                                          #
+############################################################################
+
+##
+#
+#   This filter will substitute the SSH server response from SSH-1.99 to
+#   SSH-1.51, so if the server supports both ssh1 and ssh2 we will force
+#   it to use ssh1... ;)
+#   server response :    SSH-1.99    both ssh1 and ssh2 supported
+#                        SSH-1.51    only ssh1 supported
+##
+
+##############################
+#### FILTER ON SOURCE IP #####
+##############################
+
+<filter source>
+   <id>0</id>
+   <proto>T</proto>
+   <source>22</source>
+   <dest>0</dest>
+   <search>1.99</search>
+   <action>R</action>
+   <replace>1.51</replace>
+   <goto></goto>
+   <elsegoto></elsegoto>
+</filter source>
+
+############################
+#### FILTER ON DEST IP #####
+############################
+
+<filter dest>
+   <id>0</id>
+   <proto>T</proto>
+   <source>0</source>
+   <dest>22</dest>
+   <search>1.99</search>
+   <action>R</action>
+   <replace>1.51</replace>
+   <goto></goto>
+   <elsegoto></elsegoto>
+</filter dest>
+

@@ -1,0 +1,72 @@
+
+include $(top_srcdir)/Makefile.am.common
+
+sbin_PROGRAMS = ettercap
+
+ettercap_SOURCES = ec_main.c \
+				   ec_signals.c \
+				   ec_parser.c \
+				   ec_globals.c \
+				   ec_debug.c \
+				   ec_error.c \
+				   ec_ui.c \
+				   ec_inet.c \
+				   ec_threads.c \
+				   ec_capture.c \
+				   ec_send.c \
+				   ec_decode.c \
+				   ec_dispatcher.c \
+				   ec_packet.c \
+				   ec_sniff.c \
+				   ec_sniff_classic.c \
+				   ec_sniff_bridge.c \
+				   protocols/ec_eth.c \
+				   protocols/ec_wifi.c \
+				   protocols/ec_arp.c \
+				   protocols/ec_ip.c \
+				   protocols/ec_ip6.c \
+				   protocols/ec_tcp.c \
+				   protocols/ec_udp.c \
+				   interfaces/console/ec_console.c 
+
+if NCURSES
+#ettercap_SOURCES += interfaces/ncurses/ec_ncurses.c
+endif
+
+
+ettercap_CFLAGS = @EC_CFLAGS@
+
+ettercap_LDADD = @LIBOBJS@ @EC_LIBS@ 
+
+CLEANFILES = *.log *.out core* missing/*.o *~
+
+## MISSING FUNCTIONS
+
+missing/strlcat.o:
+	$(COMPILE) -c missing/strlcat.c -o missing/strlcat.o
+
+missing/strlcpy.o:
+	$(COMPILE) -c missing/strlcpy.c -o missing/strlcpy.o
+	
+missing/strsep.o:
+	$(COMPILE) -c missing/strsep.c -o missing/strsep.o
+	
+missing/strcasestr.o:
+	$(COMPILE) -c missing/strcasestr.c -o missing/strcasestr.o
+	
+missing/scandir.o:
+	$(COMPILE) -c missing/scandir.c -o missing/scandir.o
+	
+missing/memmem.o:
+	$(COMPILE) -c missing/memmem.c -o missing/memmem.o
+	
+missing/memcmp.o:
+	$(COMPILE) -c missing/memcmp.c -o missing/memcmp.o
+	
+missing/getopt.o:
+	$(COMPILE) -c missing/getopt.c -o missing/getopt.o
+	
+missing/getopt_long.o:
+	$(COMPILE) -c missing/getopt_long.c -o missing/getopt_long.o
+	
+# vim:ts=4:noexpandtab

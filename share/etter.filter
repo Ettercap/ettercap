@@ -1,0 +1,74 @@
+############################################################################
+#                                                                          #
+#  ettercap -- etter.filter -- filter chain file                           #
+#                                                                          #
+#  Copyright (C) 2001  ALoR <alor@users.sourceforge.net>                   #
+#                      NaGA <crwm@freemail.it>                             #
+#                                                                          #
+#  This program is free software; you can redistribute it and/or modify    #
+#  it under the terms of the GNU General Public License as published by    #
+#  the Free Software Foundation; either version 2 of the License, or       #
+#  (at your option) any later version.                                     #
+#                                                                          #
+############################################################################
+#                                                                          #
+#  Filtering chains, in pseudo XML format.                                 #
+#                                                                          #
+# You can write by hand this file or (better) use the ncurses interface to #
+# let ettercap create it.                                                  #
+# If you are skilled in XML parsing, you can write your own program to     #
+# make a filter chain file.                                                #
+#                                                                          #
+# the rules are simple:                                                    #
+#                                                                          #
+#  If ( the proto <proto> &&                                               #
+#       the source port <source> &&                                        #
+#       the dest port <dest> &&                                            #
+#       the payload <search> ) match the rules, {                          #
+#                                                                          #
+#     after the filter has done its action (<action>),                     #
+#     it jumps in the chain to the filter id specified in the <goto> field #
+#                                                                          #
+#  } else {                                                                #
+#     it jumps to <elsegoto>.                                              #
+#  }                                                                       #
+#                                                                          #
+#  If these field are left blank the chain is interrupted.                 #
+#                                                                          #
+#  Source and dest port equal to 0 (zero) means ANY port.                  #
+#                                                                          #
+############################################################################
+
+
+##############################
+#### FILTER ON SOURCE IP #####
+##############################
+
+<filter source>
+	<id>0</id>
+	<proto>T</proto>
+	<source>0</source>
+	<dest>0</dest>
+	<search>ettercap</search>
+	<action>R</action>
+	<replace>source</replace>
+	<goto></goto>
+	<elsegoto></elsegoto>
+</filter source>
+
+############################
+#### FILTER ON DEST IP #####
+############################
+
+<filter dest>
+	<id>0</id>
+	<proto>T</proto>
+	<source>0</source>
+	<dest>0</dest>
+	<search>ettercap</search>
+	<action>R</action>
+	<replace>dest</replace>
+	<goto></goto>
+	<elsegoto></elsegoto>
+</filter dest>
+

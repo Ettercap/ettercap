@@ -1,0 +1,96 @@
+/*
+    ettercap -- UDP decoder module
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_udp.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+*/
+
+#include <ec.h>
+#include <ec_decode.h>
+
+
+/* globals */
+
+struct udp_header {
+   u_int16  sport;           /* source port */
+   u_int16  dport;           /* destination port */
+   u_int16  ulen;            /* udp length */
+   u_int16  sum;             /* udp checksum */
+};
+
+/* protos */
+
+FUNC_DECODER(decode_udp);
+void udp_init(void);
+
+/*******************************************/
+
+/*
+ * this function is the initializer.
+ * it adds the entry in the table of registered decoder
+ */
+
+void __init udp_init(void)
+{
+   add_decoder(PROTO_LAYER, NL_TYPE_UDP, decode_udp);
+}
+
+
+FUNC_DECODER(decode_udp)
+{
+   FUNC_DECODER_PTR(next_decoder);
+   struct udp_header *udp;
+
+   udp = (struct udp_header *)DECODE_DATA;
+
+   DECODED_LEN = sizeof(struct udp_header);
+
+   /* source and dest port */
+   PACKET->L4.src = udp->sport;
+   PACKET->L4.dst = udp->dport;
+
+   PACKET->L4.len = DECODED_LEN;
+   PACKET->L4.header = (u_char *)DECODE_DATA;
+   PACKET->L4.options = NULL;
+   
+   /* this is UDP */
+   PACKET->L4.proto = NL_TYPE_UDP;
+
+   /* set up the data poiters */
+   PACKET->DATA.data = ((u_char *)udp) + sizeof(struct udp_header);
+   PACKET->DATA.len = ntohs(udp->ulen) - sizeof(struct udp_header);
+  
+   /* XXX - implemet checksum check */
+
+   /* get the next decoder */
+   next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
+
+   EXECUTE_DECODER(next_decoder);
+   
+   /* XXX - implement modification checks */
+#if 0
+   if (po->flags & PO_MOD_LEN)
+      
+   if (po->flags & PO_MOD_CHECK)
+#endif   
+
+   return NULL;
+}
+
+/* EOF */
+
+// vim:ts=3:expandtab
+

@@ -1,0 +1,61 @@
+############################################################################
+#                                                                          #
+#  ettercap -- etter.dns -- host file for phantom plugin                   #
+#                                                                          #
+#  Copyright (C) 2001  ALoR <alor@users.sourceforge.net>                   #
+#                      NaGA <crwm@freemail.it>                             #
+#                                                                          #
+#  This program is free software; you can redistribute it and/or modify    #
+#  it under the terms of the GNU General Public License as published by    #
+#  the Free Software Foundation; either version 2 of the License, or       #
+#  (at your option) any later version.                                     #
+#                                                                          #
+############################################################################
+#                                                                          #
+# Sample hosts file for phantom plugin                                     #
+#                                                                          #
+# the format is :                                                          #
+#                                                                          #
+#  xxx.xxx.xxx.xxx<TAB>www.myhostname.com                                  #
+#                                                                          #
+# NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
+#       so if you want to reverse poison you have to specify a plain       #
+#       host. (look at the microsoft example)                              #
+#                                                                          #
+############################################################################
+
+################################
+# microsoft sucks ;)
+# redirect it to www.linux.org
+#
+
+198.182.196.56	microsoft.com
+198.182.196.56	*.microsoft.com
+198.182.196.56	www.microsoft.com
+
+
+################################
+# Intel vs AMD...  swap them
+#
+
+192.102.198.160	www.amd.com
+139.95.253.1	www.intel.com
+
+
+##########################################
+# no one out there can have our domains...
+#
+
+127.0.0.1	www.alor.org
+127.0.0.1	www.naga.org
+
+
+###############################################
+# one day we will have our ettercap.org domain
+#
+
+127.0.0.1	www.ettercap.org
+216.136.171.201	ettercap.sourceforge.net
+
+
+# vim:ts=8:noexpandtab

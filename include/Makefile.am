@@ -1,0 +1,30 @@
+
+include $(top_srcdir)/Makefile.am.common
+
+noinst_HEADERS = ec.h \
+                 ec_debug.h \
+                 ec_error.h \
+                 ec_globals.h \
+                 ec_parser.h \
+                 ec_proto.h \
+                 ec_packet.h \
+                 ec_signals.h \
+                 ec_stdint.h \
+                 ec_ui.h \
+                 ec_version.h \
+                 ec_threads.h \
+                 ec_capture.h \
+                 ec_dispatcher.h \
+                 ec_send.h \
+                 ec_sniff.h \
+                 ec_sniff_classic.h \
+                 ec_sniff_bridge.h \
+                 ec_inet.h \
+                 ec_decode.h \
+                 ec_interfaces.h
+   
+EXTRA_DIST = missing/*
+
+CLEANFILES = *.log *.out core.* *~ .*swp
+
+# vim:ts=4:expandtab             

@@ -1,0 +1,512 @@
+dnl
+dnl    ettercap -- configure script
+dnl
+dnl    Copyright (C) 2001  ALoR <alor@antifork.org>
+dnl
+dnl    This program is free software; you can redistribute it and/or modify
+dnl    it under the terms of the GNU General Public License as published by
+dnl    the Free Software Foundation; either version 2 of the License, or
+dnl    (at your option) any later version.
+dnl
+dnl    This program is distributed in the hope that it will be useful,
+dnl    but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl    GNU General Public License for more details.
+dnl
+dnl    You should have received a copy of the GNU General Public License
+dnl    along with this program; if not, write to the Free Software
+dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+dnl
+
+AC_INIT(include/ettercap.h)
+
+dnl Force autoconf 2.5 
+AC_PREREQ(2.5)
+
+VERSION=`grep EC_VERSION ./include/ec_version.h | cut -f2 -d"\""`
+
+AC_CONFIG_SRCDIR(src)
+AM_INIT_AUTOMAKE(ettercap, $VERSION)
+
+AM_CONFIG_HEADER(include/config.h)
+dnl AC_CONFIG_HEADERS(include/config.h)
+
+SB=`./shtool echo -n -e %B`
+EB=`./shtool echo -n -e %b`
+
+AC_SUBST(SB)
+AC_SUBST(EB)
+
+AC_SUBST(VERSION)
+
+EC_MESSAGE(Configuring ettercap-$VERSION)
+
+
+dnl ================
+dnl   Check the OS
+dnl ================
+
+AC_CANONICAL_HOST
+
+AH_TEMPLATE(OS_LINUX, [compiling under linux])    
+
+AH_TEMPLATE(OS_BSD, [compiling under bsd])
+dnl the subtype for BSD only used if there are significant differences
+AH_TEMPLATE(OS_BSD_FREE, [compiling under free bsd])
+AH_TEMPLATE(OS_BSD_OPEN, [compiling under open bsd])
+AH_TEMPLATE(OS_BSD_NET, [compiling under net bsd])
+
+AH_TEMPLATE(OS_MACOSX, [compiling under macosx])
+
+AH_TEMPLATE(OS_SOLARIS, [compiling under solaris])
+
+AH_TEMPLATE(OS_CYGWIN, [compiling under cygwin win32])
+
+case "$host_os" in
+*linux*)
+   AC_DEFINE(OS_LINUX)
+   OS="LINUX"
+   PTHREADLIB="-lpthread"
+   ;;
+*freebsd*)
+   AC_DEFINE(OS_BSD)
+   AC_DEFINE(OS_BSD_FREE)
+   OS="FREEBSD"
+   PTHREADLIB="-pthread"
+   ;;
+*openbsd*)
+   AC_DEFINE(OS_BSD)
+   AC_DEFINE(OS_BSD_OPEN)
+   OS="FREEBSD"
+   PTHREADLIB="-pthread"
+   ;;
+*netbsd*)
+   AC_DEFINE(OS_BSD)
+   AC_DEFINE(OS_BSD_NET)
+   OS="FREEBSD"
+   PTHREADLIB="-pthread"
+   ;;
+*darwin*)
+   AC_DEFINE(OS_MACOSX)
+   OS="DARWIN"
+   PTHREADLIB="-lpthread"
+   ;;
+*solaris*)
+   AC_DEFINE(OS_SOLARIS)
+   OS="SOLARIS"
+   PTHREADLIB="-lpthread"
+   SOCKETLIB="-lsocket -lnsl"
+   ;;
+*cygwin*)
+   AC_DEFINE(OS_CYGWIN)
+   OS="CYGWIN"
+   PTHREADLIB="-lpthread"
+   ;;
+*)
+   echo
+   echo "NOT A SUPPORTED SYSTEM / OR SYSTEM NOT RECOGNIZED"
+   echo
+   exit 1
+   ;;
+esac
+
+
+dnl ======================
+dnl   Initialize prefix.
+dnl ======================
+
+AC_PREFIX_DEFAULT(/usr/local)
+
+if test "$prefix" = "NONE"; then
+   prefix="/usr/local"
+fi
+
+AH_TEMPLATE(INSTALL_PREFIX, [where can I find my conf file ?])
+
+AC_DEFINE_UNQUOTED(INSTALL_PREFIX, "${prefix}")
+
+dnl ========================
+dnl   Check the C compiler
+dnl ========================
+
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_GCC_TRADITIONAL
+
+dnl ========================
+dnl   Libtool related...
+dnl ========================
+
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
+
+dnl ======================
+dnl   Machine Endianness
+dnl ======================
+
+AC_C_BIGENDIAN
+
+dnl =====================
+dnl   Check for headers
+dnl =====================
+
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_HEADER_DIRENT
+
+dnl These are required !!
+AC_CHECK_HEADERS(unistd.h stdlib.h signal.h stdarg.h sys/ioctl.h sys/types.h dirent.h errno.h,,
+   AC_MSG_WARN(****************************************************);
+   AC_MSG_WARN(* REQUIRED !! I cant believe you don't have this !!*);
+   AC_MSG_WARN(****************************************************);
+   exit 1)
+
+AC_CHECK_HEADERS(queue.h)
+AC_CHECK_HEADERS(fcntl.h ctype.h)
+AC_CHECK_HEADERS(sys/types.h stdint.h)
+AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
+AC_CHECK_HEADERS(termios.h)
+AC_CHECK_HEADERS(sys/poll.h poll.h)
+
+
+dnl ==================================================================
+dnl   Checks for typedefs, structures, and compiler characteristics.
+dnl ==================================================================
+
+AC_STRUCT_TM
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_C_CONST
+
+dnl =====================
+dnl   Check for libs
+dnl =====================
+
+AC_FUNC_MALLOC
+AC_TYPE_SIGNAL
+AC_FUNC_VPRINTF
+EC_PTHREAD_CHECK()
+AC_SEARCH_LIBS(gethostbyname,c nsl,,AC_MSG_ERROR(libnsl not found.))
+AC_SEARCH_LIBS(socket,c socket,,AC_MSG_ERROR(libsocket not found.))
+AC_SEARCH_LIBS(dn_expand,c resolv,,)
+AC_SEARCH_LIBS(poll,poll,,)
+AC_CHECK_FUNCS(getifaddrs)
+AC_CHECK_FUNCS(gettimeofday)
+AC_CHECK_FUNCS(vsnprintf)
+AC_CHECK_FUNCS(select strdup strerror strstr strsignal)
+AC_CHECK_FUNCS(uname)
+
+dnl ===============================
+dnl   Check for non standard libs
+dnl ===============================
+
+AC_CHECK_FUNCS([strlcpy], , AC_LIBOBJ(missing/strlcpy) )
+AC_CHECK_FUNCS([strlcat], , AC_LIBOBJ(missing/strlcat) )
+AC_CHECK_FUNCS([strsep], , AC_LIBOBJ(missing/strsep) )
+AC_CHECK_FUNCS([memmem], , AC_LIBOBJ(missing/memmem) )
+AC_CHECK_FUNCS([memcmp], , AC_LIBOBJ(missing/memcmp) )
+AC_CHECK_FUNCS([getopt_long], , AC_LIBOBJ(missing/getopt) AC_LIBOBJ(missing/getopt_long) )
+AC_CHECK_FUNCS([strcasestr], , AC_LIBOBJ(missing/strcasestr) )
+AC_CHECK_FUNCS([inet_aton], , AC_LIBOBJ(missing/inet_aton) )
+AC_CHECK_FUNCS([scandir], , AC_LIBOBJ(missing/scandir) )
+
+
+dnl =======================================
+dnl   Check user defined --enable-FEATURE
+dnl =======================================
+
+EC_MESSAGE(Checking user defined options)
+
+dnl -----------
+dnl -- DEBUG --
+dnl -----------
+
+AH_TEMPLATE(DEBUG, [debug support])
+
+ac_cv_ec_debug=no
+AC_MSG_CHECKING([if --enable-debug option is specified])
+AC_ARG_ENABLE(debug, [  --enable-debug          create a file for debugging messages.],
+[ case "$enableval" in
+   yes)
+      AC_DEFINE(DEBUG, 1)
+      CFLAGS="$CFLAGS -g -ggdb -Wmissing-prototypes -Werror -Wall"
+      AC_MSG_RESULT(yes)
+      ac_cv_ec_debug=yes
+      ;;
+   no)  AC_MSG_RESULT(no.)
+      CFLAGS="$CFLAGS -O2 -funroll-loops -fomit-frame-pointer -Wall"
+      ac_cv_ec_debug=no
+      ;;
+esac ],
+   AC_MSG_RESULT(no. disabled by default.)
+   CFLAGS="$CFLAGS -O2 -funroll-loops -fomit-frame-pointer -Wall"
+   ac_cv_ec_debug=no
+)
+
+dnl -------------
+dnl -- PLUGINS --
+dnl -------------
+
+AH_TEMPLATE(PERMIT_PLUGINS, [can ettercap use plugins ?])
+
+check_plugins=0
+ac_cv_ec_plugin=no
+AC_MSG_CHECKING([if --enable-plugins option is specified])
+AC_ARG_ENABLE(plugins, [  --enable-plugins        enable the use of plugins in ettercap.],
+[ case "$enableval" in
+   yes)
+      AC_MSG_RESULT(yes.)
+      ac_cv_ec_plugin=yes
+      ;;
+   no)  AC_MSG_RESULT(no.)
+      ac_cv_ec_plugin=no
+      ;;
+esac ],
+   AC_MSG_RESULT(yes. enabled by default.)
+   ac_cv_ec_plugin=yes
+)
+
+dnl ==================
+dnl   Check for libs
+dnl ==================
+
+
+dnl  libpcap
+ac_cv_ec_libpcap=default
+
+AC_MSG_CHECKING(for libpcap)
+AC_ARG_WITH(libpcap,
+[  --with-libpcap=DIR      use libpcap in DIR],
+[ case "$withval" in
+  yes|no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     AC_MSG_RESULT($withval)
+     if test -f $withval/pcap.h -a -f $withval/libpcap.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        PCAPINC="-I$withval"
+        PCAPLIB="-L$withval -lpcap"
+        ac_cv_ec_libpcap=$withval
+     elif test -f $withval/include/pcap.h -a \
+               -f $withval/include/net/bpf.h -a \
+               -f $withval/lib/libpcap.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        PCAPINC="-I$withval/include"
+        PCAPLIB="-L$withval/lib -lpcap"
+        ac_cv_ec_libpcap=$withval
+     else
+        AC_ERROR(pcap.h, net/bpf.h, or libpcap.a not found in $withval)
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/pcap/pcap.h; then
+     PCAPINC="-I/usr/include/pcap"
+     PCAPLIB="-lpcap"
+  elif test -f /usr/include/pcap.h; then
+     PCAPLIB="-lpcap"
+  elif test -f /usr/local/include/pcap.h; then
+     PCAPINC="-I/usr/local/include"
+     PCAPLIB="-lpcap"
+  else
+     AC_MSG_RESULT(no)
+     AC_ERROR(libpcap not found)
+  fi
+  AC_MSG_RESULT(yes) ]
+)
+
+dnl  libnet
+ac_cv_ec_libnet=default
+
+AC_MSG_CHECKING(for libnet)
+AC_ARG_WITH(libnet,
+[  --with-libnet=DIR       use libnet in DIR],
+[ case "$withval" in
+  yes|no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     AC_MSG_RESULT($withval)
+     if test -f $withval/include/libnet.h -a -f $withval/src/libnet.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        if test -f $withval/bin/libnet-config; then
+           LNETINC="`$withval/bin/libnet-config --defines`"
+        elif test -f $withval/libnet-config; then
+           LNETINC="`$withval/libnet-config --defines`"
+        else
+           LNETINC="`libnet-config --defines`"
+        fi
+        LNETINC="$LNETINC -I$withval/include"
+        LNETLIB="-L$withval/src `$withval/libnet-config --libs`"
+        ac_cv_ec_libnet=$withval
+     else
+        AC_ERROR(libnet.h or libnet.a not found in $withval)
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/libnet.h; then
+     LNETINC="`libnet-config --defines`"
+     LNETLIB="`libnet-config --libs`"
+  else
+     AC_MSG_RESULT(no)
+     AC_ERROR(libnet >= 1.1.0 not found)
+  fi
+  AC_MSG_RESULT(yes) ]
+)
+
+
+dnl  ncurses
+AH_TEMPLATE(HAVE_NCURSES, [ncurses support])
+
+ac_cv_ec_libncurses=default
+
+AC_MSG_CHECKING(for libncurses)
+AC_ARG_WITH(libncurses,
+[  --with-libncurses=DIR      use libncurses in DIR],
+[ case "$withval" in
+  yes|no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     AC_MSG_RESULT($withval)
+     if test -f $withval/ncurses.h -a -f $withval/libncurses.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NCURSINC="-I$withval"
+        NCURSLIB="-L$withval -lncurses"
+        AC_DEFINE(HAVE_NCURSES, 1)
+        AM_CONDITIONAL(NCURSES, true)
+        ac_cv_ec_libncurses=$withval
+     elif test -f $withval/include/ncurses.h -a \
+               -f $withval/lib/libncurses.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NCURSINC="-I$withval/include"
+        NCURSLIB="-L$withval/lib -lncurses"
+        AC_DEFINE(HAVE_NCURSES, 1)
+        AM_CONDITIONAL(NCURSES, true)
+        ac_cv_ec_libncurses=$withval
+     else
+        AC_ERROR(ncurses.h or libncurses.a not found in $withval)
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/ncurses/ncurses.h; then
+     NCURSINC="-I/usr/include/ncurses"
+     NCURSLIB="-lncurses"
+     AC_DEFINE(HAVE_NCURSES, 1)
+     AM_CONDITIONAL(NCURSES, true)
+  elif test -f /usr/include/ncurses.h; then
+     NCURSLIB="-lncurses"
+     AC_DEFINE(HAVE_NCURSES, 1)
+     AM_CONDITIONAL(NCURSES, true)
+  else
+     AC_MSG_RESULT(no)
+  fi
+  AC_MSG_RESULT(yes) ]
+)
+
+
+dnl Checks for openssl
+
+ac_cv_ec_libssl=default
+
+AC_MSG_CHECKING(for openssl)
+AC_ARG_WITH(openssl,
+[  --with-openssl=DIR   use openssl in DIR],
+[ case "$withval" in
+  yes|no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     AC_MSG_RESULT($withval)
+     if test -f $withval/include/openssl/ssl.h -a -f $withval/libcripto.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        SSLINC="-I$withval/include"
+        SSLLIB="-L$withval -lcrypto"
+        ac_cv_ec_libssl=$withval
+     elif test -f $withval/ssl/include/openssl/ssl.h -a \
+               -f $withval/ssl/lib/libcrypto.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        SSLINC="-I$withval/ssl/include"
+        SSLLIB="-L$withval/ssl/lib -lcrypto"
+        ac_cv_ec_libssl=$withval
+     else
+        AC_ERROR(ssl.h or libssl.a not found in $withval)
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/openssl/ssl.h; then
+     SSLLIB="-lcrypto"
+  else
+     AC_MSG_RESULT(no)
+     AC_ERROR(openssl not found)
+  fi
+  AC_MSG_RESULT(yes) ]
+)
+
+AH_TEMPLATE(OPENSSL_PATH, [openssl executable path])
+
+AC_PATH_PROGS(OPENSSL_PATH, openssl,, $PATH:/usr/local/ssl/bin:${prefix}/bin:$withval/bin:$withval/ssl/bin)
+if test -n "$OPENSSL_PATH"; then
+  AC_DEFINE_UNQUOTED(OPENSSL_PATH, "$OPENSSL_PATH")
+  ac_cv_ec_openssl=$OPENSSL_PATH
+else
+  AC_DEFINE_UNQUOTED(OPENSSL_PATH, "")
+fi
+
+
+dnl  set up the final vars
+
+EC_CFLAGS="$PCAPINC $LNETINC $SSLINC $NCURSINC"
+EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $NCURSLIB $PTHREADLIB $SOCKETLIB"
+
+AC_SUBST(EC_CFLAGS)
+AC_SUBST(EC_LIBS)
+
+
+dnl ===============
+dnl   FINISHED !!
+dnl ===============
+
+EC_MESSAGE(Writing output files)
+
+AC_OUTPUT(man/ettercap.8 Makefile man/Makefile src/Makefile include/Makefile 
+          plug-ins/Makefile
+          plug-ins/dummy/Makefile)
+
+
+dnl ===============
+dnl   THE SUMMARY
+dnl ===============
+
+EC_MESSAGE(ettercap has been configured as follow)
+
+echo "=================================================="
+echo
+   EC_CHECK_OPTION(" Install directory: ",${prefix})
+echo
+echo
+   EC_CHECK_OPTION(" DEBUG mode ....... ",${ac_cv_ec_debug})
+   EC_CHECK_OPTION(" PLUG-IN .......... ",${ac_cv_ec_plugin})
+   EC_CHECK_OPTION(" LIBPCAP .......... ",${ac_cv_ec_libpcap})
+   EC_CHECK_OPTION(" LIBNET ........... ",${ac_cv_ec_libnet})
+   EC_CHECK_OPTION(" LIBNCURSES ....... ",${ac_cv_ec_libncurses})
+   EC_CHECK_OPTION(" LIBSSL ........... ",${ac_cv_ec_libssl})
+   EC_CHECK_OPTION(" OPENSSL .......... ",${ac_cv_ec_openssl})
+echo
+echo "=================================================="
+echo
+
+
+
+
+
+dnl vim:ts=3:expandtab
+

@@ -1,0 +1,332 @@
+
+Legenda:
+         + new feature
+         - old feature removed
+         ! bug fixed
+
+=========================================
+
+NG          ????????
+      
+      + Rewrite from scratch
+      + root privs dropped after initialization
+      + IPv6 support
+      + layer 3 routing (forwarding packets)
+
+
+
+
+
+0.6.9       20030125
+
+      + GTK+ 2.0 interface (experimental) (--enable-devel)
+      + Windows Plugins porting
+		+ Updated the passive OS fingerprint database (1093 records)
+      + Dissector Proxy 8080
+      + NTLM auth
+      + Enhanced poisoning method (solaris issue)
+      + NEW PLUGIN: troll, PPTP suite
+      + text and ebcdic view from command line
+      + lc-convert utility (share dir)
+      !! Fixed a LIBS problem under MacOSX (-lpoll)
+      !! Fixed the VNC dissector
+      !! A bouch of bug fix (too many to list here)
+      
+      
+0.6.7       20020702    
+   
+      + Updated the passive OS fingerprint database (853 records)
+      !! Fixed the strlcpy bug in the the telnet dissector (oops alor mistake)
+      !! Fixed a possible sigfault in the rlogin dissector
+      !! Fixed the exit_func for Mac OS X
+      
+      
+0.6.6.6     20020603
+
+      + Solaris porting
+      + Sparc architecture support even for all other OSes
+      + Windows 9X porting
+      + Increased the speed of arp storm under windows
+      + Added the ability to bind a port on which ettercap forwards the sniffed trafic
+      + The -H option now supports range ip
+      + NEW PLUGIN: lamia (become root of a switches spanning tree)
+      + Updated the passive OS fingerprint database (825 records)
+      !! Fixed the pthread_join problem under MacOSX
+      !! Fixed the -w options (openssl path related bug)
+      !! Fixed the conflicting options -Y and -a
+      !! Fixed the FindIface function under BSD
+
+
+0.6.5       20020423
+
+      + Windows (CYGWIN) porting
+      + Dumping to and sniffing from tcpdump file format is now supported
+      + Sniffing from command line now capture UDP+TCP packet by default
+      + Logging engine doesn't log the same user/pass/ip twice
+      + Under *BSD and MacOSX ettercap now uses only one bpf
+      + Added the -J options (onlyposion) to allow multitarget arp sniffing
+      + NEW PLUGIN :
+         - roper   (Tries to stop ISAKMP for IPSEC traffic)
+      + NEW password collector for: QUAKE 3, ICQ v7, MSN, YMSG
+      + DISSECTORS enhanced: HTTPS - IMAP - NAPSTER (opennap) - IRC
+      + PLUGIN enhanced:
+         - leech (now it rearps the victim after isolation)
+      + DOCUMENTATION translated in Polish and Dutch
+      !! Better handling of CTRL+C
+      !! Fixed a bug the the dlsym on OpenBSD 3.0 (plugin related)
+      !! Fixed a bug in the handling of debug file
+      !! Fixed the "not scrolling" JOINED visualization
+
+
+0.6.4       20020212
+
+      + You can sniff traffic from a romote cisco router
+        and make mitm attacks on it using GRE tunnels.
+      + Added some bits for the passive OS fingerprint database.
+        Now even the length of the packet make sense.
+      + The sniffing interface now supports JOINED view
+      + NEW PLUGIN :
+         - thief   (dumps all files from HTTP)
+         - zaratan (redirect GRE tunnels)
+      + ICQ dissector now searches for passwords on all ports
+      + Updated the passive OS fingerprint database (675 records)
+      + Changed arg 2 of Plugin_HookPoint for PCK_RECEIVED_RAW
+      !! Under OpenBSD the pflog interface is ingored
+      !! Fixed the DATA_PATH issue in the phantom plugin
+      !! Fixed an unsigned short in state_machine
+      !! Fixed some plugins that don't recognize the 'yes' answer
+      !! Fixed the plugins symbol problem on Mac OS X (strip -x)
+      !! Fixed the possibility of remote exploitation on interface with MTU > 1500
+
+
+0.6.3.1     20011213
+
+      !! Fixed the truncation of passwords in some dissectors
+      !! Fixed the -undefined error problem for Mac OS X (darwin 1.4.x / 5.1)
+
+
+0.6.3       20011212
+
+      + Grell dissector (HTTPS) now handles proxy auth
+      + Grell dissector (HTTPS) now correctly handles SSL & TLS
+      + Better connection status handling
+      + Updated the passive OS fingerprint database (530 records)
+      - Removed the --enable-suid option, so it is clear that ettercap is only for root
+      !! Fixed a bug that implied to send on the net every packet sniffed from it (introduced in ettercap 0.6.2)
+      !! Fixed the ENOBUFS error on BSD
+      !! Fixed a bug for the compilation with --disable-plugins
+      !! Fixed a bug for the compilation on Mac OS X without dlcompat libs
+      !! Fixed the configure script to handle the -bundle_loader option under Mac OS X
+      !! Fixed the command line format bug exploit (`ettercap %x%x%x%x%x`) !!
+      !! Fixed many security threats in the code
+
+
+0.6.2       20011112
+
+      + Ettercap is now a multi-thread single process.
+      + The connection handling engine was enhanched and speeded up
+      + Now filtered (replaced) data can exceed the MTU
+      + Completely new plugin conception (hooking plugin)
+      + Better handling for unknown passive fingerprints
+      + Possibility to load/save the hosts list from/to a file (-j -k options)
+      - the -k (newcert) options was renamed to -w
+      + Updated the passive OS fingerprint database (501 records)
+      + Updated the active OS fingerprint database (2001/10/14)
+      + New 'TEXT only' view on sniffed data
+      + NEW password collector for: HALF LIFE, NFS, SNMP, LDAP
+      + ENHANCEMENT in the password collector for: MySQL
+      + NEW PLUGIN : dwarf (logs all POP and SMTP activity)
+      !! Fixed a bug when recognizing HUB or SWITCH
+      !! Fixed a bug in the banshee plugin
+      !! Fixed a bug in the filtering engine from command line
+      !! Fixed a sigfault in the HTTP dissector
+      !! Plugins are now installed in {prefix}/lib/ettercap, not in share/ettercap
+      !! ettercap is now installed in the more appropriate {prefix}/sbin/
+      !! now the configure script doesn't require root privledges to run
+      !! configure now handles correctly the --datadir=DIR and --libdir=DIR directive.
+
+
+0.6.0       20010917
+
+      + Passive scanning of the LAN
+      + Plugins ported to Mac OS X (darwin)
+      + Doppleganger now uses the new REQUEST ARP POISON (see readme)
+      + Grell (HTTPS) now supports virtual hosts
+      + The Logging engine for the simple mode was rewritten from scratch
+      + Now MAC sniffing can have only one parameter
+      + Updated the active OS fingerprint database
+      + Updated the MAC fingerprint database
+      + NEW PLUGIN : beholder and basilisk
+      + PLUGIN enhanced: imp and triton
+      !! configure script tuned up. now it compiles missing libs only if needed
+      !! Fixed a bug preventing SSL sniffing
+      !! Fixed a problem in illithid related to the smart arp sniffing
+      !! Fixed a compilation problem for FreeBSD 4.0 (getifaddrs related)
+      !! Fixed a compilation problem for MacOsX (termios related)
+      !! Fixed a ioctl() problem in phantom plugin on *BSD and MacOsX
+
+0.5.4       20010726
+
+      + Porting for Mac Os X (darwin 1.3.x)
+      + Reverse IP matching (-R option)
+      + Spoofing of the source ip on start up
+      + Customizable delay between arp request on startup
+      + Added the Inet_CloseRawSock API (for debugging purpose)
+      + Better handling of SIGSEGV and SIGBUS (for debugging purpose)
+      + Updated the OS fingerprint database
+      + ENHANCEMENT in the password collector for: IRC
+      + PLUGIN enhanced: triton
+      + NEW PLUGIN : arpcop, phantom, imp
+      !! Fixed the "make_label" compilation problem
+      !! Fixed a sigfault on OS fingerprinting
+      !! Fixed ip_forwarding restoring bug
+      !! Fixed some ncurses visualization errors
+
+0.5.2       20010707
+
+      + Plugins ported to OpenBSD
+      + Porting for NetBSD 1.5
+      + Added FreeBSD 4 support for source MAC address spoofing
+      + Illithid (the sniffer engine) totally rewritten and tuned up
+      + Doppleganger (the arp poisoner) totally rewritten and tuned up
+      + New programmable filtering engine (see README for details)
+      + Filter can be used in command line mode (-F option)
+      + Possibility to scan only chosen IPs (-H option)
+      + Possibility to select the delay between arp replies (-D option)
+      + Checking for the latest ettercap version (-v option)
+      + More accurate and faster start up host scanning
+      + Connection killing method enhanced
+      + New and more detailed man pages
+      + ENHANCEMENT in the password collector for: HTTP (<form> parsing)
+      + NEW PLUGIN : spectre, triton
+      !! Fixed the interface shutdown bug... yeah !
+      !! Fixed "can't find grell_ssl.crt" error message in the rpm version.
+
+
+0.5.0       20010611
+
+      + Full-duplex HTTPS man-in-the-middle support
+      + Support for HTTPS through a proxy
+      + SSH sniffing even from command line
+      + Enable/Disable dissectors via conf file
+      + Public ARP in simple mode
+      + Smart Public arp (all but the target)
+      + Dump of the pass to a file from interactive mode
+      + Packet Factory enhancement (now the payload can be loaded from a file)
+      + The newest config.guess and config.sub are now included
+      + Updated the OS fingerprint database (2001/06/04 09:40:50 fyodor)
+      + NEW password collector for: HTTPS, PROXYHTTPS
+      + ENHANCEMENT in the password collector for: SMB, HTTP, MySQL
+      + FIXED password collecor for: IRC
+      + DOCUMENTATION translated in : French, Italian
+      ! Fixed many many bug... but some still persist... ;)
+
+
+0.4.3       20010511
+
+      + Added a Protocol State Machine for dissectors
+      + Added the rule "Log" to the filtering form
+      + Packet Factory (create and send packets on the fly)
+      + Configuration file
+      + Code cleanup !!
+      + Plugins can be launched from connection list
+      + NEW plugin : banshee
+      + ENHANCEMENT in the password collector for: SOCKS 5, IMAP, VNC, SMB, MySQL
+      + FIXED password collecor for: SOCKS 5
+
+
+0.4.2       20010429
+
+      + You can specify the IP "ANY"
+      + Logging all data to specific file(s)
+      + Added the "demonization" feature (--quiet)
+      + Packet filtering/dropping/search/replace
+      + Improved the user/password hunting in datadecode module
+      + Tuning of Doppelganger poison/rearp
+      + NEW plugin : lurker
+      + NEW password collector for: NNTP, X11, NAPSTER, IRC, RIP, BGP, SOCKS 5, IMAP 4, VNC
+      + ENHANCEMENT in the password collector for: POP, SMB, MySQL
+      ! fixed a bug in the fingerprint for *BSD
+      ! fixed the handling of eth aliases
+      ! fixed the activation/deactivation of Active Dissectors
+
+
+0.4.0       20010409
+
+      + Full duplex SSH man-in-the-middle support !!
+      + new startup mode (--broadping -b).
+      + new sniffig metod (PublicARP)
+      + Injector now supports escape sequences
+      + netmask switch added
+      + added support for getopt_long even on *BSD
+      + NEW password collector for :  SSH1, SMB, RLOGIN, HTTP, ICQ, MySQL
+      ! fixed the "sendto() 1518 byte" bug
+
+
+0.3.1       20010323
+
+      ! fixed a nasty bug sniffing/sending big packets
+      ! fixed telnet dissector
+
+
+0.3.0       20010319
+
+      + Ported on OpenBSD 2.7
+      + UDP support
+      + OS Fingerprint
+      + Network Adapter Fingerprint
+      + Password collector for:  FTP, POP, TELNET
+      + Injection interface redesigned
+      + Possibility to check if you are in a switched lan or not.
+      ! various bugfix
+
+
+0.2.4       20010309
+
+      + Ported on FreeBSD 4.x
+      + Plugin version control
+      + Added -x option for hex mode in command line
+      - Removed -1 and -2 options (better getopt parsing)
+      + Ability to sniff in all direction (no more two hosts limit)
+      + Silent mode (--silent or -z) (no arp storm on start up)
+
+
+0.2.1       20010223
+
+      + Scrolling window for plugin output
+      + detailed packets view in hex mode (SEQ, ACK and FLAGS)
+      + identification of connections type (FTP, telnet, ecc)
+      + ability to kill a connection from connection list
+      ! sigfault when no plugin found and press return
+
+
+0.2.0       20010219
+
+      + Plug-In support
+      + Inet module totally rewritten and redesigned.
+      + Downported to 2.0.x Linux Kernels (EXPERIMENTAL)
+      + Added support for glibc 2.0.x  2.1.x  2.2.x
+      + Scroll back in sniffing window (*very* *very* usefull !!)
+      ! after injection the connections are cleanly RSTted
+
+
+0.1.1       20010209
+
+      + detect if there is another man-in-the-middle in the LAN
+      + full telnet injection support
+      ! ettercap defaults to the first up and running iface
+      ! removed possible sigfault making host list
+      ! now works with openwall
+      ! various bugfixing
+
+
+0.1.0.beta  20010125
+
+      * Initial public release...
+
+      + Easy to use ncurses interface
+      + Command line mode (without ncurses)
+      + IP based sniffing (old style sniffing)
+      + MAC based sniffing (for traffic between hosts and gateways)
+      + ARP based sniffing (with arp poisoning for switched lan)
+      + Characters injection in an established connection

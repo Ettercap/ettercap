@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.120 2004/04/29 19:29:06 alor Exp $
+dnl    $Id: configure.in,v 1.121 2004/04/29 19:56:05 alor Exp $
 dnl
 
 AC_INIT
@@ -651,12 +651,8 @@ AC_ARG_WITH(iconv, AC_HELP_STRING(--with-iconv=DIR,use iconv in DIR),
 ]
 )
 
-OLDLDFLAGS="${LDFLAGS}"
-LDFLAGS="$ICONVLIB"
-AC_CHECK_LIB(c, iconv, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes])
-AC_CHECK_LIB(iconv, iconv, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes])
-LDFLAGS="${OLDLDFLAGS}"
-
+EC_CHECK_FUNC(c, iconv, $ICONVLIB, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes])
+EC_CHECK_FUNC(iconv, iconv, $ICONVLIB, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes])
 
 dnl ---------
 dnl  ncurses

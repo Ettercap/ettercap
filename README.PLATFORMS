@@ -148,6 +148,9 @@ doubt, go with the latest copy.
    re-libtoolize the package and recompile it or download the cvs version and 
    run the autogen.sh script.
 
+   probably you will have to append the --with-iconv=/usr/local to the
+   configure command line.
+
  + OPENBSD
 
    Same recommendations as for FreeBSD, but you have to find a way to install
@@ -156,6 +159,9 @@ doubt, go with the latest copy.
 
    Furthermode OpenBSD requires libpcap 0.8.3 since it fixed a segfault in
    pcap_findalldevs();
+
+   probably you will have to append the --with-iconv=/usr/local to the
+   configure command line.
 
 ------------------------------------------------------------------------------
    W I N D O W S

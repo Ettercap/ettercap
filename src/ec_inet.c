@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.19 2004/01/04 16:29:28 alor Exp $
+    $Id: ec_inet.c,v 1.20 2004/01/04 17:02:12 alor Exp $
 */
 
 #include <ec.h>
@@ -290,7 +290,7 @@ int mac_addr_aton(char *str, u_char *mac)
  * the choice is make reading the GBL_IFACE infos
  *
  * if the GBL_IFACE is not filled (while reading from files)
- * returns an error.
+ * returns -EINVALID.
  */
 
 int ip_addr_is_local(struct ip_addr *sa)
@@ -309,6 +309,7 @@ int ip_addr_is_local(struct ip_addr *sa)
          
          /* make a check on GBL_IFACE (is it initialized ?) */
          if ( !memcmp(&nw->addr, "\x00\x00\x00\x00", sa->addr_size) )
+            /* return UNKNOWN */
             return -EINVALID;
    
          address = ip_addr_to_int32(sa->addr);

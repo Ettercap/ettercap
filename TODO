@@ -27,28 +27,26 @@ this is the unofficial and floating in time roadmap:
       - write the requirements for each os
       - developer docs
 
-Sep 2003:
+Oct 2003:
 
-   + pay attention on network order for constants
 
    + FILTERING ENGINE
+      - pay attention on network order for constants
       - remove the ugly huge buffer for strings
-      - etterfilter (utility) (used to compile the filter in bytecode)
+         - pay attention of memcpy in ef_grammar
       - quick filter
+      - perl regex (with libpcre) to support:
+          s/^([^ ]*) *([^ ]*)/$2 $1/;     # swap first two words
       
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - don't inject in unoffensive mode
       - don't inject after RST or FIN+ACK
 
-      
-Oct 2003:
-
-   + LOGGING
-      - selective log on connections
 
    + DISSECTORS
       - TELNET:
+         - fix the initial session
          - empty password
          - only password (for routers)
       - convert all the old dissectors
@@ -59,14 +57,19 @@ Oct 2003:
       - PPP decoder
       - DHCP
    
+
+Nov 2003:
+
    + MITM METHODS
       - icmp redirect
       - dhcp poisoning
       - port stealing
       - dns poisoning
 
-Nov 2003:
 
+   + LOGGING
+      - selective log on connections
+      
    + PLUGINS
       - convert all the old plugins
       - check for poisoner

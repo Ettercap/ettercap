@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_main.c,v 1.13 2003/09/30 16:38:15 alor Exp $
+    $Id: ef_main.c,v 1.14 2003/10/04 14:58:34 alor Exp $
 */
 
 #include <ef.h>
@@ -45,7 +45,9 @@ int main(int argc, char *argv[])
    /* etterfilter copyright */
    fprintf(stderr, "\n\033[01m\033[1m%s %s\033[0m copyright %s %s\n\n",
                       GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
-  
+ 
+   /* initialize the line number */
+   GBL.lineno = 1;
   
    /* getopt related parsing...  */
    parse_options(argc, argv);
@@ -71,15 +73,14 @@ int main(int argc, char *argv[])
    load_constants();
 
    /* print the message */
-   fprintf(stdout, "\nCompiling source file %s...\n\n", GBL_OPTIONS.source_file);
-
+   fprintf(stdout, "\n Parsing source file \'%s\' ", GBL_OPTIONS.source_file);
+   fflush(stdout);
 
    /* begin the parsing */
    if (yyparse() == 0)
-      fprintf(stdout, "\nDone.\n\n");
+      fprintf(stdout, " done.\n\n");
    else
-      fprintf(stdout, "\nThe script contains errors...\n\n");
-      
+      fprintf(stdout, "\n\nThe script contains errors...\n\n");
   
    /* write to file */
    if (write_output() != ESUCCESS)
@@ -103,6 +104,7 @@ void ef_debug(u_char level, const char *message, ...)
    /* print the mesasge */ 
    va_start(ap, message);
    vfprintf (stderr, message, ap);
+   fflush(stderr);
    va_end(ap);
    
 }

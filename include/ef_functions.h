@@ -1,5 +1,5 @@
 
-/* $Id: ef_functions.h,v 1.14 2003/09/30 16:37:04 alor Exp $ */
+/* $Id: ef_functions.h,v 1.15 2003/10/04 14:58:34 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
@@ -44,11 +44,10 @@ struct block {
       struct instruction *ins;
       struct ifblock *ifb;
    } un;
-   u_int16 n;
+   struct block *next;
    u_int8 type;
       #define BLK_INSTR 0
       #define BLK_IFBLK 1
-   struct block *next;
 };
 
 struct instruction {
@@ -56,16 +55,17 @@ struct instruction {
 };
 
 struct ifblock {
-   struct conditions *conds;
+   struct condition *conds;
    struct block *blk;
    struct block *elseblk;
 };
 
-struct conditions {
-   u_int16 operator;
-   u_int16 n;
+struct condition {
    struct filter_op fop;
-   struct conditions *next;
+   struct condition *next;
+   u_int16 op;
+      #define COND_AND  0
+      #define COND_OR  1
 };
 
 extern int compiler_set_root(struct block *blk);
@@ -73,8 +73,10 @@ extern size_t compile_tree(struct filter_op **fop);
 extern struct block * compiler_add_instr(struct instruction *ins, struct block *blk);
 extern struct block * compiler_add_ifblk(struct ifblock *ifb, struct block *blk);
 extern struct instruction * compiler_create_instruction(struct filter_op *fop);
-extern struct ifblock * compiler_create_ifblock(struct conditions *conds, struct block *blk);
-extern struct ifblock * compiler_create_ifelseblock(struct conditions *conds, struct block *blk, struct block *elseblk);
+extern struct condition * compiler_create_condition(struct filter_op *fop);
+extern struct condition * compiler_concat_conditions(struct condition *a, u_int16 op, struct condition *b);
+extern struct ifblock * compiler_create_ifblock(struct condition *conds, struct block *blk);
+extern struct ifblock * compiler_create_ifelseblock(struct condition *conds, struct block *blk, struct block *elseblk);
 
 #endif
 

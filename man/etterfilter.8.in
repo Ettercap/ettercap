@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.13 2003/09/30 18:04:03 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.14 2003/10/04 14:58:34 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -45,9 +45,9 @@ is filter.ef.
 
 .TP
 \fB\-t\fR, \fB\-\-test <FILE>\fR
-you can analize a compiled filter file with this option. etterfilter will print
+you can analyze a compiled filter file with this option. etterfilter will print
 in a human readable form all the instruction contained in it. it is a sort of
-"disassempler" for binary filter files.
+"disassembler" for binary filter files.
 
 .TP
 \fB\-d\fR, \fB\-\-debug\fR
@@ -72,7 +72,7 @@ prints the help screen with a short summary of the available options.
 A script is a compound of instruction. It is executed sequentially and you can
 make branches with the 'if' statements. 'if' and 'if/else' statement are the only
 supported. No loops are implemented. The syntax is almost like the C code
-except that you have to put if blocks into graph parentesys '{' '}', even if it
+except that you have to put if blocks into graph parenthesis '{' '}', even if it
 contains only one instruction.
 .Sp
 NOTE: you have to put a space between the 'if' and the '('. you must not put the 
@@ -94,6 +94,27 @@ Example:
 if (tcp.src == 21 && search(DATA.data, "ettercap")) {
 .br
 }
+.Sp
+Pay attention on the operator precedence. OR has higher precedence over AND.
+You cannot use parenthesis to group conditions, so be careful of the order. An
+AND at the beginning of a conditions block will exclude all the other tests if
+it is evaluated as false.
+.Sp
+Example:
+.br
+if (ip.proto == UDP || ip.proto == TCP && tcp.src == 80) {
+.br
+}
+.Sp
+if (ip.proto == TCP && tcp.src == 80 || ip.proto == UDP) {
+.br
+}
+.Sp
+the former conditions will match all udp or http traffic. the latter is wrong,
+because if the packet is not tcp, the whole condition block will be evaluated as false.
+if you want to make complex conditions, the better is to split them into nested "if
+block.
+
 .Sp
 Every instruction in a block must end with a semicolon ';'. 
 .Sp
@@ -124,7 +145,7 @@ DATA.data + 7 = "ettercan NG";
 An offset is identified by a virtual pointer. In short word, an offset is a
 pointer to the packet buffer. The virtual pointer is a tuple <L, O, S>, where 
 L is the iso/osi level, O is the offset in that level and S is the size of the virtual pointer.
-You can make algebric operation on a virtual pointer and the result is still an
+You can make algebraic operation on a virtual pointer and the result is still an
 offset. Specifying 'vp + n' will result in a new virtual pointer <L, O+n, S>.
 And this is perfectly legal, we have changed the internal offset of that
 level. 
@@ -133,11 +154,11 @@ Virtual pointers are in the form 'name.field.subfield'. For example 'ip.ttl' is
 the virtual pointer for the Time To Live field in the IP header of a packet. It
 will be translated as <L=3, O=9, S=1>. Indeed it is the 9th byte of level 3 and
 its size is 1 byte. 'ip.ttl + 1' is the same of 'ip.proto' since the 10th byte
-of the IP header is the protocol incapsulated in the IP packet.
+of the IP header is the protocol encapsulated in the IP packet.
 .Sp
 The list of all supported virtual pointer are in the file etterfilter.tbl. You
 can add your own virtual pointer by adding a new table or modifying the
-existing one. Refear to the comments at the beginning of the file for the
+existing one. Refer to the comments at the beginning of the file for the
 syntax of etterfilter.tbl file.
 
 
@@ -166,7 +187,7 @@ this function will return true if the 'regex' has matched the buffer 'where'.
 The considerations about 'DECODED.data' and 'DATA.data' mentioned for the function 'search'
 are the same for the regex function.
 .Sp
-NOTE: regex can be used only agains string buffer.
+NOTE: regex can be used only against string buffer.
 .Sp
 example:
 .br
@@ -189,7 +210,7 @@ replace("ethercap", "ettercap")
 .B inject(\fIwhat\fR)
 this function inject the content of the file 'what' after the packet being
 processed. It always inject in DATA.data. You can use it to replace the entire
-packet with a fake one using the drop() funcion right before the inject() command. 
+packet with a fake one using the drop() function right before the inject() command. 
 In that case the filtering engine will drop the current packet and inject the
 fake one.
 .Sp
@@ -205,7 +226,7 @@ stored about the packet, only the payload is dumped. So you will see the stream
 in the file. If you want to log packets in a more enhanced mode, you need to
 use the ettercap -L option and analyze it with etterlog(8).
 .br
-The file 'where' must be writeable to the user EC_UID (see etter.conf(5)).
+The file 'where' must be writable to the user EC_UID (see etter.conf(5)).
 .Sp
 example:
 .br
@@ -215,7 +236,7 @@ log(DECODED.data, "/tmp/interesting.log")
 .TP
 .B msg(\fImessage\fR)
 this function displays a message to the user in the User Messages window. It is
-useful to let the user know that a particular filter has been succesful or not.
+useful to let the user know that a particular filter has been successful or not.
 .Sp
 example:
 .br
@@ -234,10 +255,10 @@ drop()
 
 .TP
 .B exec(\fIcommand\fR)
-this function executes a shell command. You have to provice the full path to
+this function executes a shell command. You have to provide the full path to
 the command since it is executed without any environment. There is no way to
-determine if the command was succesfull or not. Furthermore, it is executed
-asyncronously since it is forked by the main process.
+determine if the command was successfull or not. Furthermore, it is executed
+asynchronously since it is forked by the main process.
 .Sp
 example:
 .br

@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.14 2003/09/30 18:03:53 alor Exp $ */
+/* $Id: ec_filter.h,v 1.15 2003/10/04 14:58:34 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -82,6 +82,9 @@ struct filter_header {
       #define EC_FILTER_MAGIC 0xe77e
    /* ettercap version */
    char version[10];
+   /* pointers to the sections */
+   u_int16 data;
+   u_int16 code;
 };
 
 /* exported functions */

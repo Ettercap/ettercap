@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.10 2003/09/28 21:07:49 alor Exp $
+    $Id: ef_encode.c,v 1.11 2003/10/04 14:58:34 alor Exp $
 */
 
 #include <ef.h>
@@ -95,6 +95,8 @@ int encode_const(char *string, struct filter_op *fop)
       /* remove the quotes */
       p = strchr(string + 1, '\"');
       *p = '\0';
+
+      memset(fop->op.test.string, 0, MAX_FILTER_LEN);
 
       /* escape it in the structure */
       fop->op.test.string_len = strescape(fop->op.test.string, string + 1);

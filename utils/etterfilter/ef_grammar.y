@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.19 2003/09/30 18:04:03 alor Exp $
+    $Id: ef_grammar.y,v 1.20 2003/10/04 14:58:34 alor Exp $
 */
 
 %{
@@ -45,7 +45,7 @@
    struct block *blk;
    struct instruction *ins;
    struct ifblock *ifb;
-   struct conditions *cnd;
+   struct condition *cnd;
 }
 
 /* token definitions */
@@ -113,10 +113,9 @@
 input: /* empty line */ 
       | input block { 
          /* 
-          * at this point the tree is completed,
+          * at this point the meta-tree is completed,
           * we only have to link it to the entry point
           */
-         ef_debug(1, "\t\t end input\n"); 
          compiler_set_root($2);
       }
       ;
@@ -125,17 +124,17 @@ block:   /* empty block */ {
             $$ = NULL;
       }
       |  single_instruction block { 
-            ef_debug(1, "\t\t block_add single\n"); 
+            ef_debug(2, "\t\t block_add single\n"); 
             $$ = compiler_add_instr($1, $2);
          }
          
       |  if_statement block { 
-            ef_debug(1, "\t\t block_add if\n"); 
+            ef_debug(2, "\t\t block_add if\n"); 
             $$ = compiler_add_ifblk($1, $2);
          }
 
       |  if_else_statement block { 
-            ef_debug(1, "\t\t block_add if_else\n"); 
+            ef_debug(2, "\t\t block_add if_else\n"); 
             $$ = compiler_add_ifblk($1, $2);
          }
       ;
@@ -143,7 +142,6 @@ block:   /* empty block */ {
 /* every instruction must be terminated with ; */      
 single_instruction: 
          instruction TOKEN_OP_END {
-            ef_debug(2, "\t\t INSTRUCTION\n");
             $$ = compiler_create_instruction(&$1);
          }
       ;
@@ -151,22 +149,36 @@ single_instruction:
 /* instructions are functions or assignment */
 instruction: 
          TOKEN_FUNCTION { 
-            ef_debug(2, "\tfunction\n"); 
+            ef_debug(1, ".");
+            ef_debug(3, "\tfunction\n"); 
             /* functions are encoded by the lexycal analyzer */
+         }
+      
+      |  offset TOKEN_OP_ASSIGN TOKEN_STRING { 
+            ef_debug(1, "=");
+            ef_debug(3, "\tassignment string\n"); 
+            memcpy(&$$, &$1, sizeof(struct filter_op));
+            $$.opcode = FOP_ASSIGN;
+            memset(&$$.op.assign.string, 0, MAX_FILTER_LEN);
+            memcpy(&$$.op.assign.string, &$3.op.assign.string, $3.op.assign.string_len);
+            /* this is a string */
+            $$.op.assign.size = 0;
          }
 
       |  offset TOKEN_OP_ASSIGN math_expr { 
-            ef_debug(2, "\tassignment\n"); 
-            /* math_expr is always a value, so we can add it to an offset */
-            $$.op.assign.offset = $1.op.assign.offset + $3.op.assign.value;
+            ef_debug(1, "=");
+            ef_debug(3, "\tassignment\n"); 
+            memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_ASSIGN;
+            $$.op.assign.value = $3.op.assign.value;
          }
       ;
 
 /* the if statement */
 if_statement: 
          TOKEN_IF TOKEN_PAR_OPEN conditions_block TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END { 
-            ef_debug(2, "\t\t IF BLOCK\n"); 
+            ef_debug(1, "#");
+            ef_debug(3, "\t\t IF BLOCK\n"); 
             $$ = compiler_create_ifblock($3, $6);
          }
       ;
@@ -174,7 +186,8 @@ if_statement:
 /* if {} else {} */      
 if_else_statement: 
          TOKEN_IF TOKEN_PAR_OPEN conditions_block TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END TOKEN_ELSE TOKEN_BLK_BEGIN block TOKEN_BLK_END { 
-            ef_debug(2, "\t\t IF ELSE BLOCK\n"); 
+            ef_debug(1, "@");
+            ef_debug(3, "\t\t IF ELSE BLOCK\n"); 
             $$ = compiler_create_ifelseblock($3, $6, $10);
          }
       ;
@@ -182,38 +195,51 @@ if_else_statement:
 /* conditions used by the if statement */
 conditions_block:
          condition {
-            ef_debug(2, "\t\t CONDITION\n"); 
+            ef_debug(1, "?");
+            ef_debug(3, "\t\t CONDITION\n"); 
+            $$ = compiler_create_condition(&$1);
          }
 
       |  conditions_block TOKEN_OP_AND conditions_block { 
-            ef_debug(2, "\t\t AND\n"); 
+            ef_debug(1, "&");
+            ef_debug(3, "\t\t AND\n"); 
+            $$ = compiler_concat_conditions($1, COND_AND, $3);
          }
          
       |  conditions_block TOKEN_OP_OR conditions_block { 
-            ef_debug(2, "\t\t OR\n"); 
+            ef_debug(1, "|");
+            ef_debug(3, "\t\t OR\n"); 
+            $$ = compiler_concat_conditions($1, COND_OR, $3);
          } 
       ;
      
 /* a single condition */     
 condition: 
          offset TOKEN_OP_CMP_EQ TOKEN_STRING { 
-            ef_debug(2, "\tcondition cmp eq string\n"); 
+            ef_debug(4, "\tcondition cmp eq string\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
             $$.op.test.value = $3.op.test.value;
+            memset(&$$.op.test.string, 0, MAX_FILTER_LEN);
+            memcpy(&$$.op.test.string, &$3.op.test.string, $3.op.test.string_len);
+            /* this is a string */
+            $$.op.test.size = 0;
          }
       
       |  offset TOKEN_OP_CMP_NEQ TOKEN_STRING { 
-            ef_debug(2, "\tcondition cmp not eq string\n"); 
+            ef_debug(4, "\tcondition cmp not eq string\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_NEQ;
-            $$.op.test.value = $3.op.test.value;
+            memset(&$$.op.test.string, 0, MAX_FILTER_LEN);
+            memcpy(&$$.op.test.string, &$3.op.test.string, $3.op.test.string_len);
+            /* this is a string */
+            $$.op.test.size = 0;
          }
 
       |  offset TOKEN_OP_CMP_EQ TOKEN_CONST { 
-            ef_debug(2, "\tcondition cmp eq\n");
+            ef_debug(4, "\tcondition cmp eq\n");
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
@@ -221,7 +247,7 @@ condition:
          }
       
       |  offset TOKEN_OP_CMP_NEQ TOKEN_CONST { 
-            ef_debug(2, "\tcondition cmp eq\n");
+            ef_debug(4, "\tcondition cmp not eq\n");
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_NEQ;
@@ -229,7 +255,7 @@ condition:
          }
          
       |  offset TOKEN_OP_CMP_LT TOKEN_CONST { 
-            ef_debug(2, "\tcondition cmp lt\n"); 
+            ef_debug(4, "\tcondition cmp lt\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_LT;
@@ -237,7 +263,7 @@ condition:
          }
 
       |  offset TOKEN_OP_CMP_GT TOKEN_CONST { 
-            ef_debug(2, "\tcondition cmp gt\n");
+            ef_debug(4, "\tcondition cmp gt\n");
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_GT;
@@ -245,7 +271,7 @@ condition:
          }
 
       |  offset TOKEN_OP_CMP_LEQ TOKEN_CONST { 
-            ef_debug(2, "\tcondition cmp leq\n");
+            ef_debug(4, "\tcondition cmp leq\n");
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_LEQ;
@@ -253,7 +279,7 @@ condition:
          }
 
       |  offset TOKEN_OP_CMP_GEQ TOKEN_CONST { 
-            ef_debug(2, "\tcondition cmp geq\n"); 
+            ef_debug(4, "\tcondition cmp geq\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_GEQ;
@@ -261,7 +287,7 @@ condition:
          }
       
       |  TOKEN_FUNCTION { 
-            ef_debug(2, "\tcondition func\n"); 
+            ef_debug(4, "\tcondition func\n"); 
             /* functions are encoded by the lexycal analyzer */
          }
       ;
@@ -269,12 +295,12 @@ condition:
 /* offsets definitions */
 offset:
          TOKEN_OFFSET {
-            ef_debug(3, "\toffset\n"); 
+            ef_debug(4, "\toffset\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
          }
          
       |  offset TOKEN_OP_ADD math_expr {
-            ef_debug(3, "\toffset add\n"); 
+            ef_debug(4, "\toffset add\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             /* 
              * we are lying here, but math_expr operates
@@ -284,7 +310,7 @@ offset:
          }
          
       |  offset TOKEN_OP_SUB math_expr {
-            ef_debug(3, "\toffset sub\n"); 
+            ef_debug(4, "\toffset sub\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.op.test.offset = $1.op.test.offset - $3.op.test.value; 
          }
@@ -336,6 +362,7 @@ struct {
       { "TOKEN_CONST", "integer" },
       { "TOKEN_OFFSET", "offset" },
       { "TOKEN_FUNCTION", "function" },
+      { "TOKEN_STRING", "string" },
       { "TOKEN_IF", "'if'" },
       { "TOKEN_ELSE", "'else'" },
       { "TOKEN_OP_AND", "'&&'" },

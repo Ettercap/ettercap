@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.14 2004/03/11 16:04:12 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.15 2004/03/12 15:11:54 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -91,7 +91,7 @@ struct sslw_ident {
 #define SSLW_WAIT 10000
 
 SSL_CTX   *ssl_ctx_client, *ssl_ctx_server;
-
+EVP_PKEY *global_pk;
 
 /* protos */
 
@@ -223,7 +223,11 @@ static int sslw_sync_conn(struct accepted_entry *ae)
    return ESUCCESS;
 }
    
-static int sslw_sync_ssl(struct accepted_entry *ae) {
+static int sslw_sync_ssl(struct accepted_entry *ae) 
+{
+   // XXX - Metterli nella sessioni e liberarli
+   // Anche in caso di fallimento
+   X509 *serv_cert = NULL;
    
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
    SSL_set_connect_state(ae->ssl[SSL_SERVER]);
@@ -237,13 +241,30 @@ static int sslw_sync_ssl(struct accepted_entry *ae) {
       return -EINVALID;
    }
 
+   // XXX - Se non da' certificato usarne uno nostro
+   if ( (serv_cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
+      DEBUG_MSG("XXX - get_peer_certificate");
+      return -EINVALID;
+   }
+   
+   X509_set_pubkey(serv_cert, global_pk);         
+   if (!X509_sign(serv_cert, global_pk, EVP_sha1())) {
+      DEBUG_MSG("XXX - Can't self sign certificate");
+      return -EINVALID;
+   }
+      
+   SSL_use_certificate(ae->ssl[SSL_CLIENT], serv_cert);
+
+   if (SSL_check_private_key(ae->ssl[SSL_CLIENT]) == 0) 
+      FATAL_ERROR("Child Bad SSL Key couple !!");
+   
    if (SSL_accept(ae->ssl[SSL_CLIENT]) != 1) {
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);
       return -EINVALID;
    }
 
-   return ESUCCESS;
+   return ESUCCESS;   
 }
 
 
@@ -453,15 +474,12 @@ static void sslw_initialize_po(struct packet_object *po)
  */
 static void sslw_init(void)
 {
+   SSL *dummy_ssl;
+   
    SSL_library_init();
 
    ssl_ctx_client = SSL_CTX_new(SSLv23_server_method());
    ssl_ctx_server = SSL_CTX_new(SSLv23_client_method());
-
-   if (SSL_CTX_use_certificate_file(ssl_ctx_client, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
-      if (SSL_CTX_use_certificate_file(ssl_ctx_client, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
-   }
 
    if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
       DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- %s", DATA_PATH "/" CERT_FILE);
@@ -470,8 +488,12 @@ static void sslw_init(void)
          FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
    }
 
-   if (SSL_CTX_check_private_key(ssl_ctx_client) == 0)
-      FATAL_ERROR("Bad SSL Key couple !!");
+   dummy_ssl = SSL_new(ssl_ctx_client);
+   if ( (global_pk = SSL_get_privatekey(dummy_ssl)) == NULL ) 
+      FATAL_ERROR("Can't get private key from file");
+   
+   SSL_free(dummy_ssl);
+
 }
 
 EC_THREAD_FUNC(sslw_child)

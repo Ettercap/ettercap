@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.17 2003/12/06 18:46:33 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.18 2003/12/09 13:35:10 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -75,11 +75,34 @@ Only a template to demonstrate how to write a plugin.
 .B find_conn
 .Sp
 Very simple plugin that listens for arp requests to show you all the targets an host
-wants to talk to.
+wants to talk to. It can also help you finding addresses in an unknown LAN.
 .Sp
 .I example :
 .Sp
 ettercap -TQzP find_conn 
+.Sp
+ettercap -TQu -i eth0 -P find_conn 
+
+.TP 
+.B find_ip
+.Sp
+Find the first unused IP address in the range specified by the user in the target
+list. Some other plugins (such as gre_relay) need an unused IP address of the 
+LAN to create a "fake" host.   
+It can also be useful to obtain an IP address in an unknown LAN where there is 
+no dhcp server. You can use find_conn to determine the IP addressing of the LAN,
+and then find_ip.
+You have to build host list to use this plugin so you can't use it in unoffensive
+mode. If you don't have an IP address for your interface, give it a bogus one 
+(ie: if the LAN is 192.168.0.0/24, use 10.0.0.1 to avoid conflicting IP), then 
+launch this plugin specifying the subnet range.
+You can run it either from the command line or from the proper menu.
+.Sp
+.I example :
+.Sp
+ettercap -TQP find_conn // 
+.Sp
+ettercap -TQP find_conn /192.168.0.1-254/ 
 
 
 .TP 
@@ -113,6 +136,21 @@ database. Thank you very much.
 .I example :
 .Sp
 ettercap -TzP finger_submit
+
+.TP 
+.B gre_relay
+.Sp
+This plugin can be used to sniff GRE-redirected remote traffic.
+The basic idea is to create a GRE tunnel that sends all the traffic on a router
+interface to the ettercap machine. The plugin will send back the GRE packets 
+to the router, after ettercap "manipulation" (you can use "active" plugins
+such as smb_down, ssh decryption, filters, etc... on redirected traffic) 
+It needs a "fake" host where the traffic has to be redirected to (to avoid 
+kernel's responses). The "fake" IP will be the tunnel endpoint. 
+Gre_relay plugin will impersonate the "fake" host. 
+To find an unused IP address for the "fake" host you can use find_ip plugin.  
+Based on the original Tunnelx technique by Anthony C. Zboralski published
+in http://www.phrack.org/show.php?p=56&a=10 by HERT.
 
 
 .TP 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_hosts.c,v 1.9 2004/03/19 17:55:53 daten Exp $
+    $Id: ec_gtk_hosts.c,v 1.10 2004/04/05 20:31:34 daten Exp $
 */
 
 #include <ec.h>
@@ -88,6 +88,7 @@ void gtkui_load_hosts(void)
       filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
 
       load_hosts(filename);
+      gtkui_refresh_host_list();
    }
    gtk_widget_destroy (dialog);
 }

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.2 2003/03/10 16:05:22 alor Exp $
 */
 
 #include <ec.h>
@@ -109,7 +109,10 @@ FUNC_DECODER(decode_tcp)
    /* set up the data poiters */
    PACKET->DATA.data = opt_end;
    PACKET->DATA.len = DECODE_DATALEN - DECODED_LEN;
-  
+ 
+   /* create the buffer to be displayed */
+   packet_disp_data(PACKET, PACKET->DATA.data, PACKET->DATA.len);
+   
    /* XXX - implemet checksum check */
      
 #if 0

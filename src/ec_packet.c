@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Id: ec_packet.c,v 1.2 2003/03/10 16:04:53 alor Exp $
 */
 
 #include <ec.h>
@@ -25,7 +25,8 @@
 
 /* protos... */
 
-int packet_create_object(struct packet_object **po, u_char *buf, int len);
+int packet_create_object(struct packet_object **po, u_char *buf, size_t len);
+int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
 int packet_destroy_object(struct packet_object **po);
 int packet_duplicate(struct packet_object *po, char level, u_char **buf);
 
@@ -38,20 +39,32 @@ void packet_print(struct packet_object *po);
  * associate it to the buffer
  */
 
-int packet_create_object(struct packet_object **po, u_char *buf, int len)
+int packet_create_object(struct packet_object **po, u_char *buf, size_t len)
 {
 
    *po = (struct packet_object *)calloc(1, sizeof(struct packet_object));
-   ON_ERROR(*po, NULL, "calloc: cant allocate memory");
+   ON_ERROR(*po, NULL, "calloc: cant allocate po");
    
-   /*
-    * set the buffer and the len of the received packet 
-    */
-   
+   /* set the buffer and the len of the received packet */
    (*po)->packet = buf;
    (*po)->len = len;
    
    return (0);
+}
+
+/*
+ * allocate the buffer for displayed data 
+ */
+
+int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
+{
+   po->disp_data = calloc(len, sizeof(u_char));
+   ON_ERROR(po->disp_data, NULL, "calloc: can't allocate disp_data");
+
+   po->disp_len = len;
+   memcpy(po->disp_data, buf, len);
+
+   return len;
 }
 
 /*
@@ -60,7 +73,9 @@ int packet_create_object(struct packet_object **po, u_char *buf, int len)
 
 int packet_destroy_object(struct packet_object **po)
 {
-
+   /* free the disp_data pointer */
+   SAFE_FREE((*po)->disp_data);
+   /* then the po structure */
    SAFE_FREE(*po);
 
    return 0;

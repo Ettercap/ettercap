@@ -15,12 +15,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.3 2003/03/10 09:08:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.4 2003/03/10 16:04:53 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
 
+#include <pthread.h>
 #include <pcap.h>
 #include <libnet.h>
 
@@ -92,7 +93,11 @@ void send_close(void)
 
 int send_to_L3(struct packet_object *po)
 {
-   static libnet_ptag_t t;
+   /* XXX - ???
+    * use one ptag per thread.
+    * this should be enough to assure thread safety
+    */
+   libnet_ptag_t t = (libnet_ptag_t)pthread_self();
    int c;
 
    t = libnet_build_data( po->fwd_packet, po->fwd_len, GBL_LNET->lnet_L3, t);
@@ -111,7 +116,11 @@ int send_to_L3(struct packet_object *po)
 
 int send_to_L2(struct packet_object *po)
 {
-   static libnet_ptag_t t;
+   /* XXX - ???
+    * use one ptag per thread.
+    * this should be enough to assure thread safety
+    */
+   libnet_ptag_t t = (libnet_ptag_t)pthread_self();
    int c;
    
    t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet, t);
@@ -129,7 +138,11 @@ int send_to_L2(struct packet_object *po)
 
 int send_to_bridge(struct packet_object *po)
 {
-   static libnet_ptag_t t;
+   /* XXX - ???
+    * use one ptag per thread.
+    * this should be enough to assure thread safety
+    */
+   libnet_ptag_t t = (libnet_ptag_t)pthread_self();
    int c;
  
    t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet_bridge, t);

@@ -6,17 +6,20 @@ Legenda:
 
 =========================================
 
-NG-0.7.0_pre2    200404??
+NG-0.7.0_pre2    200405??
 
    + added support for UTF-8 strings
    + telnet collector enhacements (catches cisco login)
-   + added the find_ettercap plugin
+   + added new plutins:
+      + find_ettercap
+      + autoadd
    + the live connections list can be purged by the user
    + new dissector for:
       + imaps
       + pop3s
    + support for vlan tagging (802.1q header)
    + support for rawip file dumps
+   + multiple selections in the GTK ui for targets and hosts
    !! fixed the $prefix issue in the configure
    !! fixed a linking problem against openssl
    !! some fixes in the man pages

@@ -32,9 +32,6 @@
    + SSL MITM
       - enable it in bridged sniffing
 
-   + PLUGINS
-      - automatic add of new hosts
-
 ==================
   LONG TERM TODO
 ==================

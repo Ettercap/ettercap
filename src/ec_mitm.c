@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.13 2004/04/13 13:27:43 alor Exp $
+    $Id: ec_mitm.c,v 1.14 2004/05/06 16:20:45 alor Exp $
 */
 
 #include <ec.h>
@@ -42,10 +42,11 @@ static char *mitm_args = "";
 /* protos */
 
 void mitm_add(struct mitm_method *mm);
-int mitm_set(u_char *name);
+int mitm_set(char *name);
 int mitm_start(void);
 void mitm_stop(void);
 void only_mitm(void);
+int is_mitm_active(char *name);
 
 /*******************************************/
 
@@ -72,7 +73,7 @@ void mitm_add(struct mitm_method *mm)
  * set the 'selected' flag in the table
  * used by ec_parse.c
  */
-int mitm_set(u_char *name)
+int mitm_set(char *name)
 {
    struct mitm_entry *e;
 
@@ -96,6 +97,20 @@ int mitm_set(u_char *name)
    return -ENOTFOUND;
 }
 
+/*
+ * return 1 if the mitm method is active
+ */
+int is_mitm_active(char *name)
+{
+   struct mitm_entry *e;
+   
+   /* search the name and set it */
+   SLIST_FOREACH(e, &mitm_table, next)
+      if (!strcasecmp(e->mm->name, name))
+         return e->started;
+         
+   return 0;
+}
 
 /* 
  * starts all the method with the selected flag set.

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.22 2004/01/18 19:30:31 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.23 2004/05/06 16:20:45 alor Exp $
 */
 
 #include <ec.h>
@@ -74,6 +74,7 @@ void __init arp_poisoning_init(void)
  */
 static int arp_poisoning_start(char *args)
 {
+   struct hosts_list *g, *tmp;
    int ret;
    char *p;
   
@@ -101,7 +102,17 @@ static int arp_poisoning_start(char *args)
    /* arp poisoning only on etherenet */
    if (GBL_PCAP->dlt != IL_TYPE_ETH && GBL_PCAP->dlt != IL_TYPE_TR && GBL_PCAP->dlt != IL_TYPE_FDDI)
       SEMIFATAL_ERROR("ARP poisoning does not support this media.\n");
-
+   
+   /* wipe the previous lists */
+   LIST_FOREACH_SAFE(g, &group_one_head, next, tmp) {
+      LIST_REMOVE(g, next);
+      SAFE_FREE(g);
+   }
+   
+   LIST_FOREACH_SAFE(g, &group_two_head, next, tmp) {
+      LIST_REMOVE(g, next);
+      SAFE_FREE(g);
+   }
 
    /* create the list used later to poison the targets */
    if (GBL_OPTIONS->silent && !GBL_OPTIONS->load_hosts)

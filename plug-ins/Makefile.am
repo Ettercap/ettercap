@@ -1,9 +1,10 @@
 
-# $Id: Makefile.am,v 1.25 2004/04/17 15:12:36 alor Exp $
+# $Id: Makefile.am,v 1.26 2004/05/06 16:20:45 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 SUBDIRS =   arp_cop \
+            autoadd \
             chk_poison \
             dns_spoof \
             dos_attack \

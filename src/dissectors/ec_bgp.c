@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_bgp.c,v 1.9 2003/10/28 22:15:03 alor Exp $
+    $Id: ec_bgp.c,v 1.10 2004/05/06 16:20:45 alor Exp $
 */
 
 /*
@@ -137,7 +137,7 @@ FUNC_DECODER(dissector_bgp)
    if ( ptr[19] != 4 ) 
       return 0;                  
    
-   /* not a OPEN message */
+   /* not an OPEN message */
    if ( ptr[18] != 1 ) 
       return 0;
                      

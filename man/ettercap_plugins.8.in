@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.31 2004/04/17 16:10:57 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.32 2004/05/06 16:20:45 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -55,6 +55,16 @@ If you build the initial host list the plugin will run more accurately.
 .I example :
 .Sp
 ettercap -TQP arp_cop // 
+
+
+.TP 
+.B autoadd
+.Sp
+It will automatically add new victims to the ARP poisoning mitm attack when
+they come up. It looks for ARP requests on the lan and when detected it will
+add the host to the victims list if it was specified in the TARGET. The host is
+added when an arp request is seen form it, since communicating hosts are alive :)
+
 
 .TP 
 .B chk_poison

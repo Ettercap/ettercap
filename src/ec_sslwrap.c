@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.18 2004/03/14 17:59:30 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.19 2004/03/20 17:19:02 lordnaga Exp $
 */
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 
 // XXX - check if we have poll.h
@@ -115,6 +116,7 @@ static void sslw_create_session(struct ec_session **s, struct packet_object *po)
 static size_t sslw_create_ident(void **i, struct packet_object *po);            
 static void sslw_hook_handled(struct packet_object *po);
 static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert);
+static int firewall_insert_redirect(u_int16 sport, u_int16 dport);
 
 
 /* 
@@ -143,6 +145,32 @@ static void sslw_hook_handled(struct packet_object *po)
       memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
       session_put(s);
    }
+}
+
+
+static int firewall_insert_redirect(u_int16 sport, u_int16 dport)
+{
+   char asc_sport[16];
+   char asc_dport[16];
+   int ret_val;
+   
+   sprintf(asc_sport, "%u", sport);
+   sprintf(asc_dport, "%u", dport);
+
+   switch (fork()) {
+      case 0:
+         execlp("iptables", "iptables", "-t", "nat", "-I", "PREROUTING", "1", "-p", "tcp", 
+	        "--dport", asc_sport, "-j", "REDIRECT", "--to-port", asc_dport, NULL);
+         exit(EINVALID);
+      case -1:
+         return -EINVALID;
+      default:
+         wait(&ret_val);
+	 if (ret_val == EINVALID)
+	    return -EINVALID;
+   }    
+   
+   return ESUCCESS;
 }
 
 
@@ -186,7 +214,8 @@ static int sslw_is_ssl(struct packet_object *po)
 
 
 /*
- * Bind all registered wrappers to free ports. 
+ * Bind all registered wrappers to free ports 
+ * and isnert redirects.
  */ 
 static void sslw_bind_wrapper(void)
 {
@@ -200,6 +229,7 @@ static void sslw_bind_wrapper(void)
 
       memset(&sa_in, 0, sizeof(sa_in));
       sa_in.sin_family = AF_INET;
+      // XXX - posso bindare e fare il redirect su 127.0.0.1
       sa_in.sin_addr.s_addr = INADDR_ANY;
    
       do {
@@ -210,6 +240,8 @@ static void sslw_bind_wrapper(void)
 
       DEBUG_MSG("sslw - bind %d on %d", le->sslw_port, le->redir_port);
       listen(le->fd, 100);      
+      if (firewall_insert_redirect(le->sslw_port, le->redir_port) != ESUCCESS)
+        FATAL_ERROR("Can't insert firewall redirects");
    }
 }
 

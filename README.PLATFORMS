@@ -175,6 +175,7 @@ doubt, go with the latest copy.
  + MINGW / MSYS (suggested)
    
    1) download the wpdpack from the winpcap website
+      - install the drivers (version >= 3.1 beta)
    2) download the libnet tarball from packetfactory.net
         apply this patch:
         http://ettercap.sf.net/devel/libnet-1.1.2.1-mingw.tar.gz
@@ -221,6 +222,7 @@ doubt, go with the latest copy.
  + CYGWIN (deprecated)
 
    1) download the wpdpack from the winpcap website
+      - install the drivers (version >= 3.1 beta)
    2) download the libnet tarball from packetfactory.net
    3) copy the libs in Wpdpack/lib into /usr/lib
       copy the includes in Wpdpack/include into /usr/include/pcap

@@ -6,6 +6,7 @@
    
    + FIXING
       - remove the quiet from some plugins
+      - fix strange behaviour on http filtering
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
@@ -24,8 +25,6 @@
    + NETWORK MAPPER
 
    + BINDER
-   
-   + fix strange behaviour on http filtering
  
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
@@ -42,7 +41,7 @@
    
    + WIFI decoder support for WEP (given the key)
 
-   + SSH2 dissection :)
+   + SSH2 dissection :) (yes, it can be done)
 
    + SOCKS
       - decode the internal connection

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.62 2004/04/10 14:30:50 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.63 2004/04/15 19:39:43 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -94,9 +94,9 @@ or UDP payload and replace it with yours or drop the entire packet. The
 filtering engine can match any field of the network protocols and modify
 whatever you want (see etterfilter(8)).
 .PP
-.B Remote traffic sniffing through GRE tunnel:
-you can sniff remote traffic through a GRE tunnel from a remote cisco router
-and make mitm attack on it
+.B Remote traffic sniffing through tunnels and route mangling:
+You can play with linux cooked interfaces or use the integrated plugin to sniff
+tunneled or route-mangled remote connections and perform mitm attacks on them. 
 .PP
 .B Plug-ins support :
 You can create your own plugin using the ettercap's API.
@@ -375,7 +375,9 @@ NOTE: Use this mitm method only on ethernet switches. Use it carefully,
 it could produce performances loss or general havoc.
 .Sp
 NOTE: You can NOT use this method in only-mitm mode (-o flag), because it
-hooks the sniffing engine. 
+hooks the sniffing engine, and you can't use interactive data injection.
+.Sp
+NOTE: It could be dangerous to use it in conjunction with other mitm methods.
 .Sp
 NOTE: This mitm method doesn't work on Solaris and Windows because of
 the lipcap and libnet design and the lack of certain ioctl().
@@ -485,7 +487,7 @@ Ncurses based GUI. see ettercap_curses(8) for a full description.
 .TP
 \fB\-G\fR, \fB\-\-gtk\fR
 .br
-Not yet implemented
+The nice GTK2 interface (thanks Daten...).
 
 
 .TP

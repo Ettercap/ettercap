@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.29 2004/04/12 15:31:51 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.30 2004/04/15 19:39:43 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -33,6 +33,8 @@ configure script.
 Some of older ettercap plugins (roper, banshee, and so on) have not been ported 
 in the new version.
 By the way, you can achieve the same results by using new filtering engine.
+.br
+If you use interactive mode, most plugins need to "Start Sniff" before using them.
 
 .TP
 To have a list of plugins installed in your system do that command:
@@ -273,6 +275,7 @@ It sends to the browser the URLs sniffed thru HTTP sessions. So you
 are able to see the webpages in real time. The command executed is configurable
 in the etter.conf(5) file. It sends to the browser only the GET requests and
 only for webpages, ignoring single request to images or other amenities.
+Don't use it to view your own connection :)
 
 
 .TP 

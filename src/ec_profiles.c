@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.38 2004/04/10 13:56:17 alor Exp $
+    $Id: ec_profiles.c,v 1.39 2004/05/13 09:54:56 alor Exp $
 */
 
 #include <ec.h>
@@ -86,12 +86,8 @@ void __init profiles_init(void)
 void profile_parse(struct packet_object *po)
 {
 
-   /* 
-    * we don't want profiles in memory.
-    * remove the hooks and return
-    */
+   /* we don't want profiles in memory. */
    if (!GBL_CONF->store_profiles) {
-      DEBUG_MSG("profile_parse: profile collection disabled");
       return;
    }
    

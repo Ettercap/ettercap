@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: arp_cop.c,v 1.3 2004/01/05 18:11:47 lordnaga Exp $
+    $Id: arp_cop.c,v 1.4 2004/05/13 09:54:55 alor Exp $
 */
 
 
@@ -112,7 +112,9 @@ static void parse_arp(struct packet_object *po)
          /* Someone is spoofing, check if we already know its mac address */    
          LIST_FOREACH(h2, &arp_cop_table, next) {
             if (!memcmp(po->L2.src, h2->mac, MEDIA_ADDR_LEN)) {
-               USER_MSG("arp_cop: (WARNING) %s[%s] pretends to be %s[%s]\n", ip_addr_ntoa(&h2->ip, tmp1), 
+               /* don't report my own poisoning */
+               if (ip_addr_cmp(&h2->ip, &GBL_IFACE->ip))
+                  USER_MSG("arp_cop: (WARNING) %s[%s] pretends to be %s[%s]\n", ip_addr_ntoa(&h2->ip, tmp1), 
                                                                              mac_addr_ntoa(h2->mac, str1), 
                                                                              ip_addr_ntoa(&h1->ip, tmp2),
                                                                              mac_addr_ntoa(h1->mac, str2));

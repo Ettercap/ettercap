@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.33 2004/04/23 14:44:18 alor Exp $
+    $Id: ec_log.c,v 1.34 2004/05/13 09:54:56 alor Exp $
 */
 
 #include <ec.h>
@@ -57,7 +57,7 @@ static void log_packet(struct packet_object *po);
 static void log_info(struct packet_object *po);
 void log_write_packet(struct log_fd *fd, struct packet_object *po);
 void log_write_info(struct log_fd *fd, struct packet_object *po);
-static void log_write_info_arp_icmp(struct packet_object *po);
+static void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po);
 
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define LOG_LOCK     do{ pthread_mutex_lock(&log_mutex); } while(0)
@@ -141,14 +141,14 @@ int set_loglevel(int level, char *filename)
          hook_add(HOOK_DISPATCHER, &log_info);
         
          /* add the hook for the ARP packets */
-         hook_add(HOOK_PACKET_ARP, &log_write_info_arp_icmp);
+         hook_add(HOOK_PACKET_ARP, &log_info);
          
          /* add the hook for ICMP packets */
-         hook_add(HOOK_PACKET_ICMP, &log_write_info_arp_icmp);
+         hook_add(HOOK_PACKET_ICMP, &log_info);
          
          /* add the hook for DHCP packets */
          /* (fake icmp packets from DHCP discovered GW and DNS) */
-         hook_add(HOOK_PROTO_DHCP_PROFILE, &log_write_info_arp_icmp);
+         hook_add(HOOK_PROTO_DHCP_PROFILE, &log_info);
 
          break;
    }
@@ -166,9 +166,9 @@ static void log_stop(void)
    /* remove all the hooks */
    hook_del(HOOK_DISPATCHER, &log_packet);
    hook_del(HOOK_DISPATCHER, &log_info);
-   hook_del(HOOK_PACKET_ARP, &log_write_info_arp_icmp);
-   hook_del(HOOK_PACKET_ICMP, &log_write_info_arp_icmp);
-   hook_del(HOOK_PROTO_DHCP_PROFILE, &log_write_info_arp_icmp);
+   hook_del(HOOK_PACKET_ARP, &log_info);
+   hook_del(HOOK_PACKET_ICMP, &log_info);
+   hook_del(HOOK_PROTO_DHCP_PROFILE, &log_info);
 
    log_close(&fdp);
    log_close(&fdi);
@@ -221,6 +221,26 @@ void log_close(struct log_fd *fd)
  */
 static void log_packet(struct packet_object *po)
 {
+   /* 
+    * skip packet sent (spoofed) by us
+    * else we will get duplicated hosts with our mac address
+    * this is necessary because check_forwarded() is executed
+    * in ec_ip.c, but here we are getting even arp packets...
+    */
+   EXECUTE(GBL_SNIFF->check_forwarded, po);
+   if (po->flags & PO_FORWARDED)
+      return;
+
+   /*
+    * recheck if the packet is compliant with the visualization filters.
+    * we need to redo the test, because here we are hooked to ARP and ICMP
+    * packets that are before the test in ec_decode.c
+    */
+   po->flags |= PO_IGNORE;
+   EXECUTE(GBL_SNIFF->interesting, po);
+   if ( po->flags & PO_IGNORE )
+       return;
+
    /* the regex is set, respect it */
    if (GBL_OPTIONS->regex) {
       if (regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) == 0)
@@ -238,7 +258,31 @@ static void log_packet(struct packet_object *po)
  */
 static void log_info(struct packet_object *po)
 {
-   log_write_info(&fdi, po);
+   /* 
+    * skip packet sent (spoofed) by us
+    * else we will get duplicated hosts with our mac address
+    * this is necessary because check_forwarded() is executed
+    * in ec_ip.c, but here we are getting even arp packets...
+    */
+   EXECUTE(GBL_SNIFF->check_forwarded, po);
+   if (po->flags & PO_FORWARDED)
+      return;
+
+   /*
+    * recheck if the packet is compliant with the visualization filters.
+    * we need to redo the test, because here we are hooked to ARP and ICMP
+    * packets that are before the test in ec_decode.c
+    */
+   po->flags |= PO_IGNORE;
+   EXECUTE(GBL_SNIFF->interesting, po);
+   if ( po->flags & PO_IGNORE )
+       return;
+
+   /* if all the tests are ok, write it to the disk */
+   if (po->L4.proto == NL_TYPE_ICMP || po->L3.proto == htons(LL_TYPE_ARP))
+      log_write_info_arp_icmp(&fdi, po);      
+   else
+      log_write_info(&fdi, po);
 }
 
 /*
@@ -532,7 +576,7 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
  * log hosts through ARP and ICMP discovery
  */
 
-static void log_write_info_arp_icmp(struct packet_object *po)
+static void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po)
 {
    struct log_header_info hi;
    int c, zerr;
@@ -564,11 +608,11 @@ static void log_write_info_arp_icmp(struct packet_object *po)
    
    LOG_LOCK;
    
-   if (fdi.type == LOG_COMPRESSED) {
-      c = gzwrite(fdi.cfd, &hi, sizeof(hi));
-      ON_ERROR(c, -1, "%s", gzerror(fdi.cfd, &zerr));
+   if (fd->type == LOG_COMPRESSED) {
+      c = gzwrite(fd->cfd, &hi, sizeof(hi));
+      ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
    } else {
-      c = write(fdi.fd, &hi, sizeof(hi));
+      c = write(fd->fd, &hi, sizeof(hi));
       ON_ERROR(c, -1, "Can't write to logfile");
    }
 

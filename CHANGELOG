@@ -35,6 +35,9 @@ NG-0.7.0_pre2    200405??
    !! fixed the configure checks for libpcap and libnet
    !! ec[ip] files are now platform independent
    !! fixed the "etter.ssl.crt not found" bug
+   !! the arp_cop plugin now does not report the ettercap poisoning
+   !! the filters are respected even logging to a eci file
+   !! profiles in the eci file are not duplicated if arp poisoning
    
 
 NG-0.7.0_pre1    20040415

@@ -19,6 +19,8 @@ etterfilter_SOURCES = ef_main.c \
                       $(top_srcdir)/src/ec_file.c \
                       $(top_srcdir)/src/ec_filter.c \
                       $(top_srcdir)/src/ec_strings.c
+
+noinst_HEADERS = ef_grammar.h
                    
 if MISSING_STRSEP
    etterfilter_SOURCES += $(top_srcdir)/src/missing/strsep.c

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.2 2003/09/07 19:47:50 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.3 2003/09/08 18:49:24 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -59,7 +59,7 @@ prints the help screen with a short summary of the available options.
 .TP
 .B SCRIPTS SYNTAX
 A script is a compound of instruction. It is executed sequentially and you can
-make branches with the 'if' statements. if and if/else statement are the only
+make branches with the 'if' statements. 'if' and 'if/else' statement are the only
 supported. No loops are implemented. The syntax is almost like the C code
 except that you have to put if blocks into graph parentesys '{' '}', even if it
 contains only one instruction.
@@ -74,10 +74,10 @@ if (tcp.port == 21 && search(DATA.data, "ettercap")) {
 .br
 }
 .Sp
-Every instruction must end with a semicolon ';'. 
+Every instruction in a block must end with a semicolon ';'. 
 .Sp
 Comparisons are implemented with the '==' operator and can be used to compare 
-numbers and strings.
+numbers and strings. The lvalue of a comparison must be and offset (see later)
 .Sp
 Example:
 .br
@@ -85,11 +85,37 @@ if (DATA.data + 20 == "ettercap") {
 .br
 }
 .Sp
-Assignments are implemented with the '=' operator and the lvalue can be an
-expression to point to a specific offset.
+Assignments are implemented with the '=' operator and the lvalue can be an 
+offset (see later). The rvalue can be a string, an integer or an hexadecimal
+value.
+.Sp
+Example:
+.br
+ip.ttl = 0xff;
+.br
+DATA.data + 7 = "ettercan NG"; 
 
 
-XXX - TODO
+.TP
+.B OFFSET DEFINITION
+An offset is identified by a virtual pointer. In short word, an offset is a
+pointer to the packet buffer. The virtual pointer is a tuple <L, O, S>, where 
+L is the iso/osi level, O is the offset in that level and S is the size of the virtual pointer.
+You can make algebric operation on a virtual pointer and the result is still an
+offset. Specifying 'vp + n' will result in a new virtual pointer <L, O+n, S>.
+And this is perfectly legal, we have changed the internal offset of that
+level. 
+.Sp
+Virtual pointers are in the form 'name.field.subfield'. For example 'ip.ttl' is
+the virtual pointer for the Time To Live field in the IP header of a packet. It
+will be translated as <L=3, O=9, S=1>. Indeed it is the 9th byte of level 3 and
+its size is 1 byte. 'ip.ttl + 1' is the same of 'ip.proto' since the 10th byte
+of the IP header is the protocol incapsulated in the IP packet.
+.Sp
+The list of all supported virtual pointer are in the file etterfilter.conf. You
+can add your own virtual pointer by adding a new table or modifying the
+existing one. Refear to the comments at the beginning of the file for the
+syntax of etterfilter.conf file.
 
 
 .TP

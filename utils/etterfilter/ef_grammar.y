@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.3 2003/09/07 19:47:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.4 2003/09/08 18:49:28 alor Exp $
 */
 
 %{
@@ -97,11 +97,8 @@ input: /* empty line */
       ;
      
 block:   /* empty block */
-      |  if_statement 
       |  if_statement block
-      |  if_else_statement 
       |  if_else_statement block
-      |  single_instruction 
       |  single_instruction block
       ;
       

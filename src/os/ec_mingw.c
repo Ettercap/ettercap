@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.3 2004/07/09 08:27:19 alor Exp $
+    $Id: ec_mingw.c,v 1.4 2004/07/09 14:54:05 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -49,18 +49,8 @@
    EC_API_EXPORTED LIST_HEAD(, hosts_list) group_two_head;
 #endif
 
-/* current libpcap/WinPcap doesn't have this */
-char pcap_version[60] = "unknown";      
-
 static void __init win_init(void)
 {
-   const char *ver = pcap_lib_version();
-   
-   if (ver) {
-      strncpy (pcap_version, ver, sizeof(pcap_version)-1);
-      pcap_version [sizeof(pcap_version)-1] = '\0';
-   }
-   
    /* Dr MingW JIT */
    LoadLibrary ("exchndl.dll");   
 }

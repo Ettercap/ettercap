@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.26 2003/10/19 09:55:49 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.27 2003/10/24 10:11:36 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -67,7 +67,9 @@ struct tcp_half_status {
    u_int32  last_seq;
    u_int32  last_ack;
    int32    seq_adj;
-   u_char   fin;
+   u_char   injectable;
+#define INJ_FIN 1
+#define INJ_FWD 2
 };
 
 struct tcp_status {
@@ -259,9 +261,15 @@ FUNC_DECODER(decode_tcp)
 
       /* Take trace of the RST flag (to block injection) */
       if ( tcp->flags & TH_RST ) { 
-         status->way[direction].fin = 1;      
-         status->way[!direction].fin = 1;
+         status->way[direction].injectable |= INJ_FIN;      
+         status->way[!direction].injectable |= INJ_FIN;
       }
+      
+      /* Take trace if this side of connection is mitm'd */
+      if (PACKET->flags & PO_FORWARDABLE)
+         status->way[direction].injectable |= INJ_FWD;
+      else if (status->way[direction].injectable & INJ_FWD)
+         status->way[direction].injectable ^= INJ_FWD;
    } 
    
    /* get the next decoder */
@@ -276,24 +284,26 @@ FUNC_DECODER(decode_tcp)
        * It's here to permit some strange tricks with filters.
        */
       if ( tcp->flags & TH_FIN )
-         status->way[direction].fin = 1;
+         status->way[direction].injectable |= INJ_FIN;
       
       /* 
        * Modification checks and adjustments.
        * - tcp->seq and tcp->ack accoridng to injected/dropped bytes
        * - seq_adj according to PACKET->delta for modifications 
        *   or the whole payload for dropped packets.
+       * Don't adjust sequence if not forwardable.
        */   
       
       /* XXX [...] over TCP encapsulation not supported yet: 
        * upper layer may modify L3 structure
        */
       
-      if (PACKET->flags & PO_DROPPED)
+      if ((PACKET->flags & PO_DROPPED) && (PACKET->flags & PO_FORWARDABLE))
          status->way[direction].seq_adj += PACKET->DATA.delta;
-      else if ((PACKET->flags & PO_MODIFIED) || 
+      else if (((PACKET->flags & PO_MODIFIED) || 
                (status->way[direction].seq_adj != 0) || 
-               (status->way[!direction].seq_adj != 0)) {
+               (status->way[!direction].seq_adj != 0)) && 
+               (PACKET->flags & PO_FORWARDABLE)) {
         
          /* adjust with the previously injected/dropped seq/ack */
          ORDER_ADD_LONG(tcp->seq, status->way[direction].seq_adj);
@@ -353,7 +363,7 @@ FUNC_INJECTOR(inject_tcp)
    SAFE_FREE(ident);  
 
    /* Is this an injectable connection? */
-   if (status->way[direction].fin || status->way[direction].last_seq==0 || status->way[!direction].last_seq==0)
+   if ((status->way[direction].injectable & INJ_FIN) || !(status->way[direction].injectable & INJ_FWD) || !(status->way[!direction].injectable & INJ_FWD))
       return -ENOTHANDLED;
          
    tcph->seq = htonl(status->way[direction].last_seq + status->way[direction].seq_adj);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_udp.c,v 1.13 2003/10/18 09:01:58 alor Exp $
+    $Id: ec_udp.c,v 1.14 2003/10/24 10:11:36 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -107,7 +107,7 @@ FUNC_DECODER(decode_udp)
     */
 
    /* Adjustments after filters */
-   if (PACKET->flags & PO_MODIFIED) {
+   if ((PACKET->flags & PO_MODIFIED) && (PACKET->flags & PO_FORWARDABLE)) {
             
       /* Recalculate checksum */
       udp->csum = 0; 

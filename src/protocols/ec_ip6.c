@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip6.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip6.c,v 1.2 2003/04/02 11:56:37 alor Exp $
 */
 
 #include <ec.h>
@@ -140,6 +140,9 @@ FUNC_DECODER(decode_ip6)
    /* if (opt == 0)
       return get_decoder(OPT6_LAYER, ip6->next_hdr);
    else */
+  
+   /* HOOK POINT: PACKET_IP6 */
+   hook_point(PACKET_IP6, po);
    
    next_decoder = get_decoder(PROTO_LAYER, ip6->next_hdr);
 

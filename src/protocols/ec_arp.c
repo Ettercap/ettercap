@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_arp.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_arp.c,v 1.2 2003/04/02 11:56:37 alor Exp $
 */
 
 #include <ec.h>
@@ -79,6 +79,8 @@ FUNC_DECODER(decode_arp)
     * XXX - TODO
     *
     *    1) differentiate between request and reply
+    *
+    *    2) implement a NDIS decoder of IPv6
     */
 
    PACKET->L3.len = DECODED_LEN;
@@ -96,6 +98,8 @@ FUNC_DECODER(decode_arp)
       memcpy(&PACKET->L3.src, &earp->arp_spa, IP_ADDR_LEN);
       memcpy(&PACKET->L3.dst, &earp->arp_tpa, IP_ADDR_LEN);
            
+      /* HOOK POINT:  PACKET_ARP */
+      hook_point(PACKET_ARP, po);
    }
    
    return NULL;

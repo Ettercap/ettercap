@@ -30,9 +30,8 @@
       - respect TARGET
       - regex on all fields
 
-   + QUIET MODE (-q option)
-      - useful to convert from pcap to etterlog
-      - display only USER_MSG not packet
+   + INET
+      - checksumming functions
 
    + ARP SCAN
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.5 2003/04/01 22:13:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.6 2003/04/02 11:56:37 alor Exp $
 */
 
 #include <el.h>
@@ -48,12 +48,6 @@ void display(void)
    }
 }
 
-/* display an inf log file */
-
-static void display_info(void)
-{
-   NOT_IMPLEMENTED();
-}
 
 /* display a packet log file */
 
@@ -74,7 +68,7 @@ static void display_packet(void)
          break;
 
       /* the packet should complain to the target specifications */
-      if (!is_target(&pck)) {
+      if (!is_target_pck(&pck)) {
          SAFE_FREE(buf);
          continue;
       }
@@ -220,6 +214,40 @@ void set_display_regex(char *regex)
       regerror(err, GBL.regex, errbuf, sizeof(errbuf));
       FATAL_ERROR("%s\n", errbuf);
    }                      
+}
+
+/* display an inf log file */
+
+static void display_info(void)
+{
+#if 0
+   struct log_header_info pck;
+   int ret;
+   u_char *buf;
+   int versus;
+   
+   /* read the logfile */
+   LOOP {
+      ret = get_info(&pck, &buf);
+
+      /* on error exit the loop */
+      if (ret != ESUCCESS)
+         break;
+
+      /* the packet should complain to the target specifications */
+      if (!is_target_info(&pck)) {
+         SAFE_FREE(buf);
+         continue;
+      }
+      
+      /* if the regex does not match, the packet is not interesting */
+      
+      SAFE_FREE(buf);
+   }
+
+   fprintf(stdout, "\n\n");
+#endif
+   NOT_IMPLEMENTED();
 }
 
 /* EOF */

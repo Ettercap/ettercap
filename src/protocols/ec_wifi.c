@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_wifi.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_wifi.c,v 1.2 2003/04/02 11:56:37 alor Exp $
 */
 
 #include <ec.h>
@@ -94,6 +94,9 @@ FUNC_DECODER(decode_wifi)
    memcpy(PACKET->L2.src, wifi->sha, ETH_ADDR_LEN);
    memcpy(PACKET->L2.dst, wifi->dha, ETH_ADDR_LEN);
 
+   /* HOOK POINT: PACKET_WIFI */
+   hook_point(PACKET_WIFI, po);
+   
    /* leave the control to the next decoder */
    EXECUTE_DECODER(next_decoder);
   

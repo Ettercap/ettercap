@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_eth.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_eth.c,v 1.2 2003/04/02 11:56:37 alor Exp $
 */
 
 #include <ec.h>
@@ -66,6 +66,9 @@ FUNC_DECODER(decode_eth)
    memcpy(PACKET->L2.src, eth->sha, ETH_ADDR_LEN);
    memcpy(PACKET->L2.dst, eth->dha, ETH_ADDR_LEN);
 
+   /* HOOK POINT : PACKET_ETH */
+   hook_point(PACKET_ETH, po);
+   
    /* leave the control to the next decoder */   
    next_decoder = get_decoder(NET_LAYER, ntohs(eth->proto));
 

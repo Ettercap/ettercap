@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.7 2003/03/27 22:18:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.8 2003/04/02 11:56:37 alor Exp $
 */
 
 #include <ec.h>
@@ -172,6 +172,10 @@ FUNC_DECODER(decode_tcp)
       /* not an interesting packet */
       memset(PACKET->PASSIVE.fingerprint, 0, FINGER_LEN);
    }
+  
+   /* HOOK POINT: PACKET_TCP */
+   hook_point(PACKET_TCP, po);
+
    
    /* get the next decoder */
    next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);

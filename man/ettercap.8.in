@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.12 2003/03/30 00:50:26 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.13 2003/04/02 11:56:36 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -244,11 +244,20 @@ application.
 .B USER INTERFACES OPTIONS
 .TP
 \fB\-C\fR, \fB\-\-console\fR
-.br 
 The console interface, only printf ;)
 .br
 It is quite interactive, press 'h' in every moment to get the help of what you
 can do.
+
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
+Quiet mode. It can be used only in conjunction with the console interface. It
+does not print packet content. It is useful if you want to convert pcap file to
+ettercap log files.
+.Sp
+example:
+.Sp
+ettercap -Cq -L dumpfile -r pcapfile
 
 .TP
 \fB\-N\fR, \fB\-\-ncurses\fR
@@ -264,7 +273,7 @@ can do.
 Daemonize ettercap. This option will detach ettercap from the current
 controlling terminal and set it as a daemon. You can combine this feature with
 the "log" option to log all the traffic in the background. If the daemon fail
-for any reasons, it will create the file "/tmp/ettercap_daemonized.log" in
+for any reasons, it will create the file "./ettercap_daemonized.log" in
 which is present the error caught by ettercap. Furthermore, if you want to have
 a complete debug of the daemon process, you are encouraged to recompile
 ettercap in debug mode.
@@ -335,6 +344,18 @@ capable of handling both compressed and uncompresse log files.
 \fB\-e\fR, \fB\-\-regex <REGEX>\fR
 This option is useful in conjunction with -L. It logs only packets that match
 the posiz regex REGEX.
+
+
+.TP
+.B STANDARD OPTIONS
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+Print the version and exit.
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+prints the help screen with a short summary of the available options.
+
 
 
 

@@ -33,7 +33,8 @@ extern int is_conn(struct log_header_packet *pck, int *versus);
 
 /* el_target */
 extern void target_compile(char *target);
-extern int is_target(struct log_header_packet *pck);
+extern int is_target_pck(struct log_header_packet *pck);
+extern int is_target_info(struct log_header_info *pck);
 
 #endif
 

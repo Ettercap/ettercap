@@ -17,7 +17,8 @@ NG          ????????
       + pcap filter
       + etterlog utility for logfiles parsing
       + regex matching 
-
+      + hook point per packet type (TCP, UDP... )
+      + quiet mode
 
 
 

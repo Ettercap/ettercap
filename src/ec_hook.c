@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_hook.c,v 1.2 2003/03/22 15:41:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_hook.c,v 1.3 2003/04/02 11:56:36 alor Exp $
 */
 
 #include <ec.h>
@@ -32,12 +32,19 @@ struct hook_list {
 
 /* global data */
 
+/* the list for the HOOK_* */
 static LIST_HEAD(, hook_list) hook_list_head;
+/* the list for the PACKET_* */
+static LIST_HEAD(, hook_list) hook_pck_list_head;
 
 pthread_mutex_t hook_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define HOOK_LOCK     do{ pthread_mutex_lock(&hook_mutex); } while(0)
 #define HOOK_UNLOCK   do{ pthread_mutex_unlock(&hook_mutex); } while(0)
    
+pthread_mutex_t hook_pck_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define HOOK_PCK_LOCK     do{ pthread_mutex_lock(&hook_pck_mutex); } while(0)
+#define HOOK_PCK_UNLOCK   do{ pthread_mutex_unlock(&hook_pck_mutex); } while(0)
+
 /* protos... */
 
 void hook_point(int point, struct packet_object *po);
@@ -52,13 +59,27 @@ void hook_point(int point, struct packet_object *po)
 {
    struct hook_list *current;
 
-   HOOK_LOCK;
+   /* the hook is for a PACKET_* type */
+   if (point > PACKET_BASE) {
+      
+      HOOK_PCK_LOCK;
    
-   LIST_FOREACH(current, &hook_list_head, next) 
-      if (current->point == point)
-         current->func(po);
+      LIST_FOREACH(current, &hook_pck_list_head, next) 
+         if (current->point == point)
+            current->func(po);
    
-   HOOK_UNLOCK;
+      HOOK_PCK_UNLOCK;
+   
+   } else {
+   
+      HOOK_LOCK;
+   
+      LIST_FOREACH(current, &hook_list_head, next) 
+         if (current->point == point)
+            current->func(po);
+   
+      HOOK_UNLOCK;
+   }
    
    return;
 }
@@ -76,11 +97,16 @@ void hook_add(int point, void (*func)(struct packet_object *po) )
    newelem->point = point;
    newelem->func = func;
 
-   HOOK_LOCK;
-   
-   LIST_INSERT_HEAD(&hook_list_head, newelem, next);
-   
-   HOOK_UNLOCK;
+   /* the hook is for a PACKET_* type */
+   if (point > PACKET_BASE) {
+      HOOK_PCK_LOCK;
+      LIST_INSERT_HEAD(&hook_pck_list_head, newelem, next);
+      HOOK_PCK_UNLOCK;
+   } else {
+      HOOK_LOCK;
+      LIST_INSERT_HEAD(&hook_list_head, newelem, next);
+      HOOK_UNLOCK;
+   }
    
 }
 
@@ -92,19 +118,35 @@ int hook_del(int point, void (*func)(struct packet_object *po) )
 
    DEBUG_MSG("hook_del -- %d [%p]", point, func);
 
-   HOOK_LOCK;
+   /* the hook is for a PACKET_* type */
+   if (point > PACKET_BASE) {
+      HOOK_PCK_LOCK;
    
-   LIST_FOREACH(current, &hook_list_head, next) {
-      if (current->point == point && current->func == func) {
-         LIST_REMOVE(current, next);
-         SAFE_FREE(current);
-         HOOK_UNLOCK;
-         return ESUCCESS;
+      LIST_FOREACH(current, &hook_pck_list_head, next) {
+         if (current->point == point && current->func == func) {
+            LIST_REMOVE(current, next);
+            SAFE_FREE(current);
+            HOOK_PCK_UNLOCK;
+            return ESUCCESS;
+         }
       }
+ 
+      HOOK_PCK_UNLOCK;
+   } else {
+      HOOK_LOCK;
+   
+      LIST_FOREACH(current, &hook_list_head, next) {
+         if (current->point == point && current->func == func) {
+            LIST_REMOVE(current, next);
+            SAFE_FREE(current);
+            HOOK_UNLOCK;
+            return ESUCCESS;
+         }
+      }
+ 
+      HOOK_UNLOCK;
    }
-
-   HOOK_UNLOCK;
-
+   
    return -ENOTFOUND;
 }
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.2 2003/03/31 21:46:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.3 2003/04/02 11:56:37 alor Exp $
 */
 
 #include <el.h>
@@ -29,7 +29,8 @@ static void add_ip(void *digit, int n);
 static void expand_range_ip(char *str, void *target);
 int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
 void add_ip_list(struct ip_addr *ip, struct target_env *t);
-int is_target(struct log_header_packet *pck);
+int is_target_pck(struct log_header_packet *pck);
+int is_target_info(struct log_header_info *pck);
 
 /*******************************************/
 
@@ -237,7 +238,7 @@ int cmp_ip_list(struct ip_addr *ip, struct target_env *t)
  * return true if the packet conform to TARGET
  */
 
-int is_target(struct log_header_packet *pck)
+int is_target_pck(struct log_header_packet *pck)
 {
    int proto = 0;
    int good = 0;
@@ -289,6 +290,65 @@ int is_target(struct log_header_packet *pck)
 
 }
 
+/*
+ * return true if the packet conform to TARGET
+ */
+
+int is_target_info(struct log_header_info *pck)
+{
+#if 0   
+   int proto = 0;
+   int good = 0;
+   
+   /* 
+    * first check the protocol.
+    * if it is not the one specified it is 
+    * useless to parse the mac, ip and port
+    */
+
+   /* XXX - implement */
+    if (!GBL_TARGET->proto || !strcasecmp(GBL_TARGET->proto, "all"))  
+       proto = 1;
+
+    if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "tcp") 
+          && pck->L4_proto == NL_TYPE_TCP)
+       proto = 1;
+   
+    if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "udp") 
+          && pck->L4_proto == NL_TYPE_UDP)
+       proto = 1;
+    
+    /* the protocol does not match */
+    if (!GBL.reverse && proto == 0)
+       return 0;
+    
+   /*
+    * we have to check if the packet is complying with the filter
+    * specified by the users.
+    */
+ 
+   /* it is in the source */
+   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_src, ETH_ADDR_LEN)) &&
+        (GBL_TARGET->all_ip   || cmp_ip_list(&pck->L3_src, GBL_TARGET) ) &&
+        (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_src))) )
+      good = 1;
+
+   /* it is in the dest */
+   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_dst, ETH_ADDR_LEN)) &&
+        (GBL_TARGET->all_ip   || cmp_ip_list(&pck->L3_dst, GBL_TARGET)) &&
+        (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_dst))) )
+      good = 1;   
+  
+
+   /* check the reverse option */
+   if (GBL.reverse ^ (good && proto) ) 
+      return 1;
+   else
+      return 0;
+
+#endif
+   return 0;
+}
 
 /* EOF */
 

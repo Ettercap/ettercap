@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.17 2003/04/01 22:13:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.18 2003/04/02 11:56:37 alor Exp $
 */
 
 
@@ -62,6 +62,7 @@ void ec_usage(void)
    
    fprintf(stdout, "\nInterface Type:\n");
    fprintf(stdout, "  -C, --console               use console only GUI\n");
+   fprintf(stdout, "       -q, --quiet                 do not display packet contents\n");
    fprintf(stdout, "  -N, --ncurses               use ncurses GUI (default)\n");
    fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
    fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
@@ -105,6 +106,8 @@ void parse_options(int argc, char **argv)
       
       { "plugin", required_argument, NULL, 'P' },
       
+      { "quiet", no_argument, NULL, 'q' },
+      
       { "log", required_argument, NULL, 'L' },
       { "log-info", required_argument, NULL, 'l' },
       { "compress", no_argument, NULL, 'c' },
@@ -132,7 +135,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDd:e:f:Ghi:L:l:NP:piRr:t:v", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDd:e:f:Ghi:L:l:NP:pqiRr:t:v", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -215,6 +218,10 @@ void parse_options(int argc, char **argv)
                      clean_exit(-EFATAL);
                   break;
                   
+         case 'q':
+                  GBL_OPTIONS->quiet = 1;
+                  break;
+                  
          case 'h':
                   ec_usage();
                   break;
@@ -277,6 +284,8 @@ void parse_options(int argc, char **argv)
    if (GBL_SNIFF->type == SM_BRIDGED && GBL_PCAP->promisc == 0)
       FATAL_ERROR("During bridged sniffing the iface must be in promisc mode !");
    
+   if (GBL_OPTIONS->quiet && GBL_UI->type != UI_CONSOLE)
+      FATAL_ERROR("The quiet option is useful only with Console UI");
    
    /* XXX - check for incompatible options */
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.16 2003/10/14 16:54:08 alor Exp $
+    $Id: ec_signals.c,v 1.17 2003/10/21 09:02:16 alor Exp $
 */
 
 #include <ec.h>
@@ -50,6 +50,7 @@ void signal_handler(void)
    signal_handle(SIGINT, signal_TERM, 0);
    signal_handle(SIGTERM, signal_TERM, 0);
    signal_handle(SIGCHLD, signal_CHLD, 0);
+   signal_handle(SIGALRM, SIG_IGN, 0);
 
 }
 

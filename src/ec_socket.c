@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.5 2003/10/15 13:12:04 alor Exp $
+    $Id: ec_socket.c,v 1.6 2003/10/21 09:02:16 alor Exp $
 */
 
 #include <ec.h>
@@ -115,7 +115,7 @@ int open_socket(char *host, u_int16 port)
    }
 
    /* error while connecting */
-   if (ret < 0) {
+   if (ret < 0 && errno != EISCONN) {
       DEBUG_MSG("open_socket: connect() error: %d", errno);
       FATAL_MSG("Error connecting to %s on port %d", host, port);
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.28 2004/04/25 13:37:23 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.29 2004/04/26 08:11:44 daten Exp $
 */
 
 #include <ec.h>
@@ -965,6 +965,7 @@ static void gtkui_connection_purge(void *conn)
    DEBUG_MSG("gtkui_connection_purge");
 
    conntrack_purge();
+   gtk_list_store_clear(GTK_LIST_STORE (ls_conns));
 }
 
 /*

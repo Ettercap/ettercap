@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.24 2004/04/10 18:32:25 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.25 2004/04/11 09:40:02 alor Exp $
 */
 
 #include <ec.h>
@@ -55,7 +55,7 @@ static void split_print_po(struct packet_object *po);
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src);
 static void join_print_po(struct packet_object *po);
 static void gtkui_connection_kill(void *conn);
-static void gtkui_connection_kill_wrapper(void);
+static void gtkui_connection_kill_curr_conn(void);
 static void gtkui_connection_inject(void);
 static void gtkui_inject_user(int side);
 static void gtkui_connection_inject_file(void);
@@ -119,7 +119,7 @@ void gtkui_show_connections(void)
    gtk_container_add(GTK_CONTAINER (conns_window), vbox);
    gtk_widget_show(vbox);
 
-  /* list */
+   /* list */
    scrolled = gtk_scrolled_window_new(NULL, NULL);
    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scrolled), GTK_SHADOW_IN);
@@ -193,15 +193,15 @@ void gtkui_show_connections(void)
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
-  /* context menu */
-   context_menu = gtk_menu_new ();
+   /* context menu */
+   context_menu = gtk_menu_new();
    
-   items = gtk_menu_item_new_with_label ("View Details");
+   items = gtk_menu_item_new_with_label("View Details");
    gtk_menu_shell_append (GTK_MENU_SHELL (context_menu), items);
    g_signal_connect (G_OBJECT (items), "activate", G_CALLBACK (gtkui_connection_detail), NULL);
    gtk_widget_show (items);
 
-   items = gtk_menu_item_new_with_label ("Kill Connection");
+   items = gtk_menu_item_new_with_label("Kill Connection");
    gtk_menu_shell_append (GTK_MENU_SHELL (context_menu), items);
    g_signal_connect (G_OBJECT (items), "activate", G_CALLBACK (gtkui_connection_kill), NULL);
    gtk_widget_show (items);
@@ -603,7 +603,7 @@ static void gtkui_connection_data_split(void)
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Kill Connection");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill_wrapper), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill_curr_conn), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
@@ -841,7 +841,7 @@ static void gtkui_connection_data_join(void)
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Kill Connection");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill_wrapper), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill_curr_conn), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
@@ -934,9 +934,21 @@ static void join_print_po(struct packet_object *po)
  */
 static void gtkui_connection_kill(void *conn)
 {
-   struct conn_tail *c = (struct conn_tail *)conn;
-   
-   DEBUG_MSG("gtk_connection_kill");
+   GtkTreeIter iter;
+   GtkTreeModel *model;
+   struct conn_tail *c = NULL;
+
+   DEBUG_MSG("gtkui_connection_kill");
+
+   model = GTK_TREE_MODEL (ls_conns);
+
+   if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
+      gtk_tree_model_get (model, &iter, 9, &c, -1);
+   } else
+      return; /* nothing is selected */
+
+   if (!c || !c->co)
+      return;
    
    /* kill it */
    switch (user_kill(c->co)) {
@@ -955,14 +967,21 @@ static void gtkui_connection_kill(void *conn)
  * call the specialized funtion as this is a callback 
  * without the parameter
  */
-static void gtkui_connection_kill_wrapper(void)
+static void gtkui_connection_kill_curr_conn(void)
 {
-   struct conn_tail c;
-
-   /* create the fake conn_tail object */
-   c.co = curr_conn;
+   DEBUG_MSG("gtkui_connection_kill_curr_conn");
    
-   gtkui_connection_kill(&c);
+   /* kill it */
+   switch (user_kill(curr_conn)) {
+      case ESUCCESS:
+         /* set the status */
+         curr_conn->status = CONN_KILLED;
+         gtkui_message("The connection was killed !!");
+         break;
+      case -EFATAL:
+         gtkui_message("Cannot kill UDP connections !!");
+         break;
+   }
 }
 
 /*

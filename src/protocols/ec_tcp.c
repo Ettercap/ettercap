@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.35 2004/03/03 21:43:19 alor Exp $
+    $Id: ec_tcp.c,v 1.36 2004/04/11 09:40:03 alor Exp $
 */
 
 #include <ec.h>
@@ -155,7 +155,7 @@ FUNC_DECODER(decode_tcp)
    
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
-    * the checksum is should be 0 and not equal to ip->csum ;)
+    * the checksum is should be 0 and not equal to tcp->csum ;)
     *
     * don't perform the check in unoffensive mode
     */

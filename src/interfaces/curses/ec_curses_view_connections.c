@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.14 2004/03/21 14:16:48 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.15 2004/04/11 09:39:57 alor Exp $
 */
 
 #include <ec.h>
@@ -527,6 +527,8 @@ static void curses_connection_kill_wrapper(void)
 {
    struct conn_tail c;
 
+   DEBUG_MSG("curses_connection_kill_wrapper");
+   
    /* create the fake conn_tail object */
    c.co = curr_conn;
    

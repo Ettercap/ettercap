@@ -1,5 +1,5 @@
 
-/* $Id: ec_threads.h,v 1.8 2004/07/24 10:43:21 alor Exp $ */
+/* $Id: ec_threads.h,v 1.9 2004/11/04 09:23:03 alor Exp $ */
 
 #ifndef EC_THREADS_H
 #define EC_THREADS_H
@@ -16,6 +16,9 @@ struct ec_thread {
 enum {
    EC_SELF = 0,
 };
+
+/* a value to be used to return errors in fuctcions using pthread_t values */
+pthread_t EC_PTHREAD_NULL;
 
 #define EC_THREAD_FUNC(x) void * x(void *args)
 #define EC_THREAD_PARAM  args

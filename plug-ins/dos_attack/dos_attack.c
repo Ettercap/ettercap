@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dos_attack.c,v 1.7 2004/07/23 07:25:27 alor Exp $
+    $Id: dos_attack.c,v 1.8 2004/11/04 09:23:02 alor Exp $
 */
 
 
@@ -139,7 +139,7 @@ static int dos_attack_fini(void *dummy)
    pid = ec_thread_getpid("golem");
    
    /* the thread is active or not ? */
-   if (pid != 0)
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
 
    INSTANT_USER_MSG("dos_attack: plugin terminated...\n");

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: rand_flood.c,v 1.3 2004/01/10 12:07:26 lordnaga Exp $
+    $Id: rand_flood.c,v 1.4 2004/11/04 09:23:03 alor Exp $
 */
 
 
@@ -115,7 +115,7 @@ static int rand_flood_fini(void *dummy)
    pid = ec_thread_getpid("flooder");
 
    /* the thread is active or not ? */
-   if (pid != 0)
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
 
    INSTANT_USER_MSG("rand_flood: plugin stopped...\n");

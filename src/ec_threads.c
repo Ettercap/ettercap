@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.32 2004/10/26 10:09:15 alor Exp $
+    $Id: ec_threads.c,v 1.33 2004/11/04 09:22:34 alor Exp $
 */
 
 #include <ec.h>
@@ -116,7 +116,7 @@ pthread_t ec_thread_getpid(char *name)
 
    THREADS_UNLOCK;
   
-   return 0;
+   return EC_PTHREAD_NULL;
 }
 
 /* returns the description of a thread */

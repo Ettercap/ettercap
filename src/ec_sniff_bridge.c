@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.16 2004/04/10 13:41:22 lordnaga Exp $
+    $Id: ec_sniff_bridge.c,v 1.17 2004/11/04 09:22:34 alor Exp $
 */
 
 #include <ec.h>
@@ -82,10 +82,12 @@ void stop_bridge_sniff(void)
    }
   
    /* get the pid and kill it */
-   if ((pid = ec_thread_getpid("capture")) != 0)
+   pid = ec_thread_getpid("capture");
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
    
-   if ((pid = ec_thread_getpid("bridge")) != 0)
+   pid = ec_thread_getpid("bridge");
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
 
    USER_MSG("Bridged sniffing was stopped.\n");

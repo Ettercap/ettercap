@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: isolate.c,v 1.2 2004/07/23 07:25:27 alor Exp $
+    $Id: isolate.c,v 1.3 2004/11/04 09:23:03 alor Exp $
 */
 
 
@@ -95,7 +95,7 @@ static int isolate_fini(void *dummy)
    pid = ec_thread_getpid("isolate");
    
    /* the thread is active or not ? */                                                              
-   if (pid != 0)                                                                                    
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);   
    
    /* free the list */

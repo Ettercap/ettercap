@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.23 2004/06/11 08:44:25 lordnaga Exp $
+    $Id: ec_sniff_unified.c,v 1.24 2004/11/04 09:22:34 alor Exp $
 */
 
 #include <ec.h>
@@ -52,8 +52,13 @@ void start_unified_sniff(void)
    USER_MSG("Starting Unified sniffing...\n\n");
    
    /* create the timeouter thread */
-   if (!GBL_OPTIONS->read && ec_thread_getpid("timer") == 0)
-      ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
+   if (!GBL_OPTIONS->read) { 
+      pthread_t pid;
+      
+      pid = ec_thread_getpid("timer");
+      if (!pthread_equal(pid, EC_PTHREAD_NULL))
+         ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
+   }
 
    /* create the thread for packet capture */
    ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
@@ -81,11 +86,12 @@ void stop_unified_sniff(void)
    }
   
    /* get the pid and kill it */
-   if ((pid = ec_thread_getpid("capture")) != 0)
+   pid = ec_thread_getpid("capture");
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
-
-   /* get the pid and kill it */
-   if ((pid = ec_thread_getpid("sslwrap")) != 0)
+   
+   pid = ec_thread_getpid("sslwrap");
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
 
    USER_MSG("Unified sniffing was stopped.\n");

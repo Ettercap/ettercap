@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.14 2004/10/26 10:09:16 alor Exp $
+    $Id: ec_port_stealing.c,v 1.15 2004/11/04 09:23:02 alor Exp $
 */
 
 #include <ec.h>
@@ -215,7 +215,7 @@ static void port_stealing_stop(void)
    pid = ec_thread_getpid("port_stealer");
    
    /* the thread is active or not ? */
-   if (pid != 0)
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
    else
       return;

@@ -8,5 +8,5 @@
    + SESSIONS
       - it should not segfault ;)
 
-   + RANDOMIZED ARP SCAN
-      - test if all hosts are scanned
+   + WIFI
+      - test the decoder with adapted other than cisco aironet

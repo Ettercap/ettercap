@@ -4,6 +4,7 @@
 
 #include <ec_packet.h>
 #include <ec_session.h>
+#include <ec_decode.h>
 
 /* session identifier */
 
@@ -18,6 +19,11 @@ struct dissect_ident {
 };
 
 /* exported functions */
+
+extern void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder));
+extern int dissect_modify(int mode, char *name, u_int32 port);
+#define MODE_ADD  0
+#define MODE_REP  1
 
 extern int dissect_match(void *id_sess, void *id_curr);
 extern void dissect_create_session(struct session **s, struct packet_object *po); 

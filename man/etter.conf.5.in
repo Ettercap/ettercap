@@ -1,0 +1,55 @@
+.\"  ettercap -- a multipurpose sniffer/interceptor utility
+.\"
+.\"  This program is free software; you can redistribute it and/or modify
+.\"  it under the terms of the GNU General Public License as published by
+.\"  the Free Software Foundation; either version 2 of the License, or
+.\"  (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+.\"
+.\"  $Id: etter.conf.5.in,v 1.1 2003/06/24 16:36:00 alor Exp $
+.\"
+.de Sp
+.if n .sp
+.if t .sp 0.4
+..
+.TH ETTER.CONF 5 "" "ettercap @VERSION@"
+.SH NAME
+.B etter.conf 
+\- Ettercap configuration file
+
+.SH DESCRIPTION
+.B "etter.conf"
+is the configuration file that determines the ettercap behaviour...
+.LP
+The file contains entries of the form:
+.RS
+.nf
+.ft B
+.sp
+[section]
+.ft B
+entry = value
+.I "..."
+.ft R
+.fi
+.RE
+.LP
+Each entry defines a variable that can be customized...
+.LP
+The following is a list of available variables:
+.TP 17
+.B [privs]
+.TP
+.B ec_uid
+This variable specifies the UID to drop the priviledges on startup.
+
+
+

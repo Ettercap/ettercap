@@ -26,8 +26,7 @@
 >>> current developmet state 
 
    + ETTERCONF
-      - decoder_add to replace explicit hook_add for dissectors
-      - dissectors enable/disable
+      - man file
    
    + TOP HALF
       - passive profiling (almost done in etterlog)

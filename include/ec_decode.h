@@ -14,8 +14,8 @@ enum {
    NET_LAYER    = 3,
    PROTO_LAYER  = 4,
    APP_LAYER    = 5,
-   APP_LAYER_TCP = 6,
-   APP_LAYER_UDP = 7,
+   APP_LAYER_TCP = 51,
+   APP_LAYER_UDP = 52,
 };
 
 #define FUNC_DECODER(func) void * func(u_char *buf, u_int16 buflen, int *len, struct packet_object *po)

@@ -26,6 +26,7 @@ NG-0.7.0    ????????
    + extended headers for every packet
    + passive DNS answer caching
    + global conf file always loaded to tweak internal variables
+   + etter.conf supports dissectors on multiple ports
    !! offline sniffing actually does not bind to any NICs
 
 

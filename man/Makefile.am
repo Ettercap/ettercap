@@ -1,9 +1,9 @@
 
 include $(top_srcdir)/Makefile.am.common
 
-man_MANS = ettercap.8 ettercap_plugins.8 etterlog.8
+man_MANS = ettercap.8 ettercap_plugins.8 etterlog.8 etter.conf.5
 
 EXTRA_DIST = $(man_MANS)
 
-CLEANFILES = *.8
+CLEANFILES = *.8 *.5
 

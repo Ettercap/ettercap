@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.3 2003/04/30 16:50:12 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.4 2003/06/24 16:36:00 alor Exp $
 */
 
 #include <ec.h>
@@ -26,8 +26,20 @@
 
 /* globals */
 
+static SLIST_HEAD (, dissect_entry) dissect_list;
+
+struct dissect_entry {
+   char *name;
+   u_int32 type;
+   u_int8 level;
+   FUNC_DECODER_PTR(decoder);
+   SLIST_ENTRY (dissect_entry) next;
+};
 
 /* protos */
+
+void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder));
+int dissect_modify(int mode, char *name, u_int32 port);
 
 int dissect_match(void *id_sess, void *id_curr);
 void dissect_create_session(struct session **s, struct packet_object *po);
@@ -129,6 +141,73 @@ void dissect_create_ident(void **i, struct packet_object *po)
    /* return the ident */
    *i = ident;
 }
+
+
+/*
+ * register a dissector in the dissectors list
+ * and add it to the decoder list.
+ * this list i used by dissect_modify during the parsing
+ * of etter.conf to enable/disable the dissectors via their name.
+ */
+
+void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder))
+{
+   struct dissect_entry *e;
+
+   e = calloc(1, sizeof(struct dissect_entry));
+   ON_ERROR(e, NULL, "can't allocate memory");
+
+   e->name = strdup(name);
+   e->level = level;
+   e->type = port;
+   e->decoder = decoder;
+
+   SLIST_INSERT_HEAD (&dissect_list, e, next); 
+
+   /* add the default decoder */
+   add_decoder(level, port, decoder);
+      
+   return;
+}
+
+/*
+ * given the name of the dissector add or remove it 
+ * from the decoders' table.
+ * is it possible to add multiple port with MODE_ADD
+ */
+
+int dissect_modify(int mode, char *name, u_int32 port)
+{
+   struct dissect_entry *e;
+
+   SLIST_FOREACH (e, &dissect_list, next) {
+      if (!strcasecmp(e->name, name)) {
+         switch (mode) {
+            case MODE_ADD:
+               DEBUG_MSG("dissect_modify: %s added on %d", name, port);
+               /* add in the lists */
+               dissect_add(e->name, e->level, port, e->decoder);
+               add_decoder(e->level, port, e->decoder);
+               return ESUCCESS;
+               break;
+            case MODE_REP:
+               /* no modifications needed */
+               if (e->type == port)
+                  return ESUCCESS;
+
+               DEBUG_MSG("dissect_modify: %s replaced from %d to %d", name, e->type, port);
+               del_decoder(e->level, e->type);
+               add_decoder(e->level, port, e->decoder);
+               e->type = port;
+               return ESUCCESS;
+               break;
+         }
+      }
+   }
+
+   return -ENOTFOUND;
+}
+
 
 /* EOF */
 

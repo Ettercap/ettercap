@@ -17,16 +17,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.1 2003/06/21 13:58:42 alor Exp $
+    $Id: ec_conf.c,v 1.2 2003/06/24 16:36:00 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_conf.h>
 #include <ec_file.h>
+#include <ec_dissect.h>
 
 /* globals */
-
-static int dummy;
 
 static struct conf_entry privs[] = {
    { "ec_uid", NULL },
@@ -50,11 +49,8 @@ static struct conf_entry stats[] = {
    { NULL, NULL },
 };
 
+/* this is fake, dissector use a different registration */
 static struct conf_entry dissectors[] = {
-   { "ftp", &dummy },
-   { "pop", &dummy },
-   { "dns", &dummy },
-   { NULL, NULL },
 };
 
 static struct conf_section sections[] = {
@@ -73,6 +69,7 @@ void load_conf(void);
 static void init_structures(void);
 static void set_pointer(struct conf_entry *entry, char *name, int *ptr);
 
+static void set_dissector(char *name, char *values, int lineno);
 static struct conf_entry * search_section(char *title);
 static int * search_entry(struct conf_entry *section, char *name);
 
@@ -175,13 +172,15 @@ void load_conf(void)
          
          DEBUG_MSG("load_conf: SECTION: %s", p);
 
+         /* get the pointer to the right structure */
          if ( (curr_section = search_section(p)) == NULL)
             FATAL_ERROR("Invalid section in %s line %d", ETTER_CONF, lineno);
         
          /* read the next line */
          continue;
       }
-
+   
+      /* variable outside a section */
       if (curr_section == NULL)
          FATAL_ERROR("Entry outside a section in %s line %d", ETTER_CONF, lineno);
       
@@ -198,17 +197,27 @@ void load_conf(void)
          }
       } while (p++ < line + sizeof(line) );
       
-      /* search the entry name */
-      if ( (value = search_entry(curr_section, line)) == NULL)
-         FATAL_ERROR("Invalid entry in %s line %d", ETTER_CONF, lineno);
-     
       /* move p to the integer value */
       p++;
       do {
          if (*p != ' ' && *p != '=')
             break;
       } while (p++ < line + sizeof(line) );
+      
+      /* 
+       * if it is the "dissector" section,
+       * do it in a different way
+       */
+      if (curr_section == (struct conf_entry *)&dissectors) {
+         set_dissector(line, p, lineno);
+         continue;
+      }
+      
+      /* search the entry name */
+      if ( (value = search_entry(curr_section, line)) == NULL)
+         FATAL_ERROR("Invalid entry in %s line %d", ETTER_CONF, lineno);
      
+      /* get the value */ 
       *value = strtol(p, (char **)NULL, 10);
       
       DEBUG_MSG("load_conf: \tENTRY: %s  %d", line, *value);
@@ -252,6 +261,30 @@ static int * search_entry(struct conf_entry *section, char *name)
    } while (section[++i].name != NULL);
 
    return NULL;
+}
+
+/*
+ * handle the special case of dissectors 
+ */
+static void set_dissector(char *name, char *values, int lineno)
+{
+   char *p;
+   u_int32 value;
+
+   /* remove trailing spaces */
+   if ((p = strchr(values, ' ')) != NULL)
+      *p = '\0';
+   
+
+   /* expand multiple ports dissectors */
+   for(p=strsep(&values, ","); p != NULL; p=strsep(&values, ",")) {
+      /* get the value for the port */
+      value = atoi(p);
+      DEBUG_MSG("load_conf: \tDISSECTOR: %s\t%d", name, value);
+      
+      if (dissect_modify(MODE_REP, name, value) != ESUCCESS)
+         FATAL_ERROR("Dissector \"%s\" does not exists in %s line %d", name, ETTER_CONF, lineno);
+   }
 }
 
 /* EOF */

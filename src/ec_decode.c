@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.24 2003/06/13 15:45:03 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.25 2003/06/24 16:36:00 alor Exp $
 */
 
 #include <ec.h>
@@ -359,7 +359,7 @@ void del_decoder(u_int8 level, u_int32 type)
    
    SLIST_FOREACH (e, &decoders_table, next) {
       if (e->level == level && e->type == type) {
-         DEBUG_MSG("L%d 0x%04x removed !!", level, type);
+         //DEBUG_MSG("L%d 0x%04x removed !!", level, type);
          SLIST_REMOVE(&decoders_table, e, dec_entry, next);
          SAFE_FREE(e);
          DECODERS_UNLOCK;

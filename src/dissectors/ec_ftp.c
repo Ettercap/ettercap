@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ftp.c,v 1.3 2003/06/13 15:45:05 alor Exp $
+    $Id: ec_ftp.c,v 1.4 2003/06/24 16:36:00 alor Exp $
 */
 
 #include <ec.h>
@@ -40,7 +40,7 @@ void ftp_init(void);
 
 void __init ftp_init(void)
 {
-   add_decoder(APP_LAYER_TCP, 21, dissector_ftp);
+   dissect_add("ftp", APP_LAYER_TCP, 21, dissector_ftp);
 }
 
 FUNC_DECODER(dissector_ftp)

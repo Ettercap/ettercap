@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.12 2003/06/13 15:45:06 alor Exp $
+    $Id: ec_pop.c,v 1.13 2003/06/24 16:36:00 alor Exp $
 */
 
 #include <ec.h>
@@ -40,7 +40,7 @@ void pop_init(void);
 
 void __init pop_init(void)
 {
-   add_decoder(APP_LAYER_TCP, 110, dissector_pop);
+   dissect_add("pop", APP_LAYER_TCP, 110, dissector_pop);
 }
 
 FUNC_DECODER(dissector_pop)

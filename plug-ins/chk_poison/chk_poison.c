@@ -20,7 +20,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: chk_poison.c,v 1.1 2003/11/04 16:51:20 lordnaga Exp $
+    $Id: chk_poison.c,v 1.2 2003/11/05 10:10:06 lordnaga Exp $
 */
 
 
@@ -30,6 +30,9 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 
+#include <pthread.h>
+
+/* Yeah!!! extern variables from mitm */
 extern LIST_HEAD(, hosts_list) group_one_head;
 extern LIST_HEAD(, hosts_list) group_two_head;
 
@@ -41,6 +44,11 @@ struct poison_list {
 
 /* globals */
 SLIST_HEAD(, poison_list) poison_table;
+
+/* mutexes */
+static pthread_mutex_t poison_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define POISON_LOCK     do{ pthread_mutex_lock(&poison_mutex); } while(0)
+#define POISON_UNLOCK   do{ pthread_mutex_unlock(&poison_mutex); } while(0)
 
 /* protos */
 int plugin_load(void *);
@@ -58,7 +66,7 @@ struct plugin_ops chk_poison_ops = {
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Check if the poisoning had success",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   version:          "1.1",   
    /* activation function */
    init:             &chk_poison_init,
    /* deactivation function */                     
@@ -154,18 +162,15 @@ static int chk_poison_init(void *dummy)
                INSTANT_USER_MSG("chk_poison: No poisoning between %s -> %s\n", ip_addr_ntoa(&(p->ip[i]), tmp1), ip_addr_ntoa(&(p->ip[!i]), tmp2) );
       }
    
-   /* XXX - Horrible workaround to be sure that the 
-    * call-back hooking function is no longer accessing the list
-    */
-   sleep(1);
-       
+   POISON_LOCK;          
    /* delete the poisoning list */
    while (!SLIST_EMPTY(&poison_table)) {
       p = SLIST_FIRST(&poison_table);
       SLIST_REMOVE_HEAD(&poison_table, next);
       SAFE_FREE(p);
    }
-      
+   POISON_UNLOCK;
+         
    return PLUGIN_FINISHED;
 }
 
@@ -191,6 +196,7 @@ static void parse_icmp(struct packet_object *po)
    /* Check if it's in the poisoning list. If so this poisoning 
     * is successfull.
     */
+    POISON_LOCK;
     SLIST_FOREACH(p, &poison_table, next) {
        if (!ip_addr_cmp(&(po->L3.src), &(p->ip[0])) && !ip_addr_cmp(&(po->L3.dst), &(p->ip[1])))
           p->poison_success[0] = 1;
@@ -198,6 +204,7 @@ static void parse_icmp(struct packet_object *po)
        if (!ip_addr_cmp(&(po->L3.src), &(p->ip[1])) && !ip_addr_cmp(&(po->L3.dst), &(p->ip[0])))
           p->poison_success[1] = 1;
    }	  
+   POISON_UNLOCK;
 }
 
 

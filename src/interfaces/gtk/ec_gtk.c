@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.22 2004/05/12 15:27:07 alor Exp $
+    $Id: ec_gtk.c,v 1.23 2004/06/11 20:43:58 daten Exp $
 */
 
 #include <ec.h>
@@ -126,7 +126,7 @@ static void gtkui_init(void)
    g_thread_init(NULL);
    gdk_threads_init();
    if(!gtk_init_check(0, NULL)) {
-   	DEBUG_MSG("GTK+ failed to initialize.");
+   	FATAL_ERROR("GTK+ failed to initialize. Is X running?");
 	   return;
    }
 
@@ -399,7 +399,7 @@ static void gtkui_setup(void)
    GClosure *closure = NULL;
    GdkModifierType mods;
    gint keyval;
-   char title[50], *path = NULL;
+   char *path = NULL;
 
    GtkItemFactoryEntry file_menu[] = {
       { "/_File",         "<shift>F",   NULL,             0, "<Branch>" },
@@ -422,8 +422,7 @@ static void gtkui_setup(void)
 
    /* create menu window */
    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-   snprintf(title, 50, "%s %s", EC_PROGRAM, EC_VERSION);
-   gtk_window_set_title(GTK_WINDOW (window), title);
+   gtk_window_set_title(GTK_WINDOW (window), EC_PROGRAM" "EC_VERSION);
    gtk_window_set_default_size(GTK_WINDOW (window), 600, 440);
 
    g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gtkui_exit), NULL);

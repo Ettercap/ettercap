@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.34 2004/05/27 03:13:28 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.35 2004/06/11 20:43:58 daten Exp $
 */
 
 #include <ec.h>
@@ -467,7 +467,8 @@ static void gtkui_connection_list_row(int top, struct row_pairs *pair) {
          pair->iter = iter;
          pair->conn = row;
       }
-      gtk_tree_path_free(path);
+      if(path)
+         gtk_tree_path_free(path);
    }
 
    return;

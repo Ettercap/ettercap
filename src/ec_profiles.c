@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.22 2003/10/21 16:56:45 alor Exp $
+    $Id: ec_profiles.c,v 1.23 2003/10/24 12:49:29 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -82,9 +82,9 @@ void profile_parse(struct packet_object *po)
     */
    if (!GBL_CONF->store_profiles) {
       DEBUG_MSG("profile_parse: profile collection disabled");
-      hook_del(HOOK_PACKET_ARP, &profile_parse);
-      hook_del(HOOK_PACKET_ICMP, &profile_parse);
-      hook_del(HOOK_DISPATCHER, &profile_parse);
+//      hook_del(HOOK_PACKET_ARP, &profile_parse);
+//      hook_del(HOOK_PACKET_ICMP, &profile_parse);
+//      hook_del(HOOK_DISPATCHER, &profile_parse);
       return;
    }
    

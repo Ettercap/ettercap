@@ -1,5 +1,5 @@
 
-/* $Id: ec_sniff.h,v 1.6 2003/10/16 16:46:48 alor Exp $ */
+/* $Id: ec_sniff.h,v 1.7 2003/10/24 12:48:08 lordnaga Exp $ */
 
 #ifndef EC_SNIFF_H
 #define EC_SNIFF_H
@@ -27,6 +27,7 @@ extern void set_arp_sniff(void);
 
 extern int compile_display_filter(void);
 extern void set_forwardable_flag(struct packet_object *po);
+extern int check_forwarded(struct packet_object *po);
 
 /* forwarder (the struct is in ec_globals.h) */
 struct target_env;

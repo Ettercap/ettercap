@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.28 2003/10/24 11:10:42 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.29 2003/10/24 12:49:29 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -266,8 +266,8 @@ FUNC_DECODER(decode_tcp)
       }
       
       /* Take trace if this side of connection is mitm'd */
-      if (PACKET->flags & PO_FORWARDABLE)
-         status->way[direction].injectable |= INJ_FWD;
+      if (PACKET->flags & PO_FORWARDABLE) 
+         status->way[direction].injectable |= INJ_FWD; 
    } 
    
    /* get the next decoder */
@@ -361,7 +361,7 @@ FUNC_INJECTOR(inject_tcp)
    SAFE_FREE(ident);  
 
    /* Is this an injectable connection? */
-   if ((status->way[direction].injectable & INJ_FIN) || !(status->way[direction].injectable & INJ_FWD) || !(status->way[!direction].injectable & INJ_FWD))
+   if ((status->way[direction].injectable & INJ_FIN) || !(status->way[direction].injectable & INJ_FWD) || !(status->way[!direction].injectable & INJ_FWD)) 
       return -ENOTHANDLED;
          
    tcph->seq = htonl(status->way[direction].last_seq + status->way[direction].seq_adj);

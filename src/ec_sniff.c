@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.30 2003/10/18 09:53:13 alor Exp $
+    $Id: ec_sniff.c,v 1.31 2003/10/24 12:49:29 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -43,6 +43,7 @@ int compile_display_filter(void);
 void reset_display_filter(struct target_env *t);
 
 void set_forwardable_flag(struct packet_object *po);
+int check_forwarded(struct packet_object *po);
 
 static void add_port(void *ports, u_int n);
 static void add_ip(void *digit, u_int n);
@@ -83,6 +84,19 @@ void set_forwardable_flag(struct packet_object *po)
    
 }
 
+int check_forwarded(struct packet_object *po) 
+{
+   /* 
+    * dont sniff forwarded packets (equal mac, different ip) 
+    * but only if we are on live connections
+    */
+   if ( !GBL_OPTIONS->read &&
+        !memcmp(GBL_IFACE->mac, po->L2.src, ETH_ADDR_LEN) &&
+        ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
+      return 1;
+   }
+   return 0;   
+}
 
 void set_sniffing_method(struct sniffing_method *sm)
 {
@@ -182,16 +196,6 @@ static void display_packet_for_us(struct packet_object *po)
     * 3) reject packet with source mac address equal to attacker's one and ip
     * different form attacker's ip.
     */
-
-   /* 
-    * dont sniff forwarded packets (equal mac, different ip) 
-    * but only if we are on live connections
-    */
-   if ( !GBL_OPTIONS->read &&
-        !memcmp(GBL_IFACE->mac, po->L2.src, ETH_ADDR_LEN) &&
-        ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
-      return;
-   }
     
    /* FROM TARGET1 TO TARGET2 */
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.30 2003/10/24 10:11:36 lordnaga Exp $
+    $Id: ec_ip.c,v 1.31 2003/10/24 12:49:29 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -133,6 +133,9 @@ FUNC_DECODER(decode_ip)
 
    /* First IP decoder set its header as packet to be forwarded */
    if (PACKET->fwd_packet == NULL) {
+      /* Don't parse packets we have forwarded */
+      if (check_forwarded(PACKET))
+         return NULL;
       /* 
        * set PO_FORWARDABLE flag:
        * the mac address is our but ip addres isn't

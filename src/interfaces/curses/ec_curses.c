@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.26 2003/12/14 21:33:42 alor Exp $
+    $Id: ec_curses.c,v 1.27 2003/12/17 16:38:54 alor Exp $
 */
 
 #include <ec.h>
@@ -133,6 +133,9 @@ static void curses_init(void)
    wdg_init_color(EC_COLOR_ERROR, GBL_CONF->colors.error_fg, GBL_CONF->colors.error_bg);
    wdg_init_color(EC_COLOR_ERROR_BORDER, GBL_CONF->colors.error_border, GBL_CONF->colors.error_bg);
 
+   /* set the screen color */
+   wdg_screen_color(EC_COLOR);
+   
    /* call the setup interface */
    curses_setup();
 
@@ -327,7 +330,7 @@ void curses_message(const char *msg)
 void curses_interface(void)
 {
    DEBUG_MSG("curses_interface");
-
+   
    /* which interface do we have to display ? */
    if (GBL_OPTIONS->read)
       curses_sniff_offline();

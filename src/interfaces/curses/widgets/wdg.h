@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.23 2003/12/14 17:07:17 alor Exp $ */
+/* $Id: wdg.h,v 1.24 2003/12/17 16:38:54 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -275,6 +275,7 @@ extern void wdg_set_color(wdg_t *wo, size_t part, u_char pair);
    #define WDG_COLOR_FOCUS    3
    #define WDG_COLOR_WINDOW   4
    #define WDG_COLOR_SELECT   5
+extern void wdg_screen_color(u_char pair);
 
 /* object size */
 extern size_t wdg_get_nlines(wdg_t *wo);

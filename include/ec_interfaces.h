@@ -1,5 +1,5 @@
 
-/* $Id: ec_interfaces.h,v 1.12 2003/10/25 21:57:42 alor Exp $ */
+/* $Id: ec_interfaces.h,v 1.13 2003/12/17 16:38:36 alor Exp $ */
 
 #ifndef EC_INTERFACES_H
 #define EC_INTERFACES_H
@@ -23,15 +23,15 @@ struct curses_color {
 };
 
 /* color pairs */
-#define EC_COLOR              0
-#define EC_COLOR_BORDER       1
-#define EC_COLOR_TITLE        2
-#define EC_COLOR_FOCUS        3
-#define EC_COLOR_MENU         4
-#define EC_COLOR_WINDOW       5
-#define EC_COLOR_SELECTION    6
-#define EC_COLOR_ERROR        7
-#define EC_COLOR_ERROR_BORDER 8
+#define EC_COLOR              1
+#define EC_COLOR_BORDER       2
+#define EC_COLOR_TITLE        3
+#define EC_COLOR_FOCUS        4
+#define EC_COLOR_MENU         5
+#define EC_COLOR_WINDOW       6
+#define EC_COLOR_SELECTION    7
+#define EC_COLOR_ERROR        8
+#define EC_COLOR_ERROR_BORDER 9
 
 /* exported functions */
 

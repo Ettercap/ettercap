@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.25 2003/12/14 12:21:54 alor Exp $
+    $Id: wdg.c,v 1.26 2003/12/17 16:38:54 alor Exp $
 */
 
 #include <wdg.h>
@@ -78,6 +78,7 @@ void wdg_draw_object(struct wdg_object *wo);
 size_t wdg_get_type(struct wdg_object *wo);
 void wdg_init_color(u_char pair, u_char fg, u_char bg);
 void wdg_set_color(wdg_t *wo, size_t part, u_char pair);
+void wdg_screen_color(u_char pair);
 
 size_t wdg_get_nlines(struct wdg_object *wo);
 size_t wdg_get_ncols(struct wdg_object *wo);
@@ -732,6 +733,16 @@ void wdg_set_color(wdg_t *wo, size_t part, u_char pair)
 void wdg_init_color(u_char pair, u_char fg, u_char bg)
 {
    init_pair(pair, fg, bg);
+}
+
+/*
+ * erase the screen with the specified color
+ */
+void wdg_screen_color(u_char pair)
+{
+   wbkgd(stdscr, COLOR_PAIR(pair));
+   erase();
+   refresh();
 }
 
 /*

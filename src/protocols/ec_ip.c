@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.32 2003/10/29 20:41:08 alor Exp $
+    $Id: ec_ip.c,v 1.33 2003/10/30 21:48:54 alor Exp $
 */
 
 #include <ec.h>
@@ -158,9 +158,9 @@ FUNC_DECODER(decode_ip)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET) != 0) {
+   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET->L3.header, PACKET->L3.len) != 0) {
       USER_MSG("Invalid IP packet from %s : csum [%#x] (%#x)\n", int_ntoa(ip->saddr), 
-                              L3_checksum(PACKET), ntohs(ip->csum));      
+                              L3_checksum(PACKET->L3.header, PACKET->L3.len), ntohs(ip->csum));      
       return NULL;
    }
    
@@ -239,7 +239,7 @@ FUNC_DECODER(decode_ip)
       
          /* ...recalculate checksum */
          ip->csum = 0; 
-         ip->csum = L3_checksum(PACKET);
+         ip->csum = L3_checksum(PACKET->L3.header, PACKET->L3.len);
       }
    }
    /* Last ip decoder in cascade will set the correct fwd_len */
@@ -316,7 +316,7 @@ FUNC_INJECTOR(inject_ip)
    
    /* Calculate checksum */
    PACKET->L3.header = (u_char *)iph;
-   iph->csum = L3_checksum(PACKET);        
+   iph->csum = L3_checksum(PACKET->L3.header, PACKET->L3.len);
 
    /* Set fields to forward the packet (only if the chain is ended) */
    if (s->prev_session == NULL)

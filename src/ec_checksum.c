@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_checksum.c,v 1.5 2003/09/25 15:30:45 alor Exp $
+    $Id: ec_checksum.c,v 1.6 2003/10/30 21:48:54 alor Exp $
 */
 
 #include <ec.h>
@@ -25,7 +25,7 @@
 
 /* protos... */
 
-u_int16 L3_checksum(struct packet_object *po);
+u_int16 L3_checksum(u_char *buf, size_t len);
 u_int16 L4_checksum(struct packet_object *po);
 u_int32 CRC_checksum(u_char *buf, size_t len);
 
@@ -35,19 +35,19 @@ u_int32 CRC_checksum(u_char *buf, size_t len);
  * calculate the checksum of a Layer 3 packet
  */
 
-u_int16 L3_checksum(struct packet_object *po)
+u_int16 L3_checksum(u_char *buf, size_t len)
 {
    u_int32 csum = 0;
-   int nleft = po->L3.len;
-   u_int16 *buf = (u_int16 *)po->L3.header;
+   int nleft = len;
+   u_int16 *cbuf = (u_int16 *)buf;
 
    while(nleft > 1) {
-      csum += *buf++;
+      csum += *cbuf++;
       nleft -= sizeof(u_int16);
    }
 
    if (nleft == 1) 
-      csum += htons(*(u_char *)buf<<8);
+      csum += htons(*(u_char *)cbuf << 8);
 
    csum = (csum >> 16) + (csum & 0xffff);
    csum += (csum >> 16);

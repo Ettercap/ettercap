@@ -17,28 +17,29 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icmp.c,v 1.5 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_icmp.c,v 1.6 2003/10/30 21:48:54 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
+#include <ec_checksum.h>
 
 /* globals */
 
 struct icmp_header {
    u_int8   type;     /* message type */
    u_int8   code;     /* type sub-code */
-   u_int16  checksum;
+   u_int16  csum;
    union {
       struct {
          u_int16  id;
          u_int16  sequence;
-      } echo;       /* echo datagram */
-      u_int32     gateway; /* gateway address */
+      } echo;              /* echo datagram */
+      u_int32     gateway; /* gateway address (for redirect) */
       struct {
          u_int16  unused;
          u_int16  mtu;
-      } frag;       /* path mtu discovery */
+      } frag;              /* path mtu discovery */
    } un;
 };
 
@@ -79,7 +80,18 @@ FUNC_DECODER(decode_icmp)
    /* this is a lie... but we have to put this somewhere */
    PACKET->L4.flags = icmp->type;
   
-   /* XXX - checksum check */
+   /* 
+    * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
+    * the checksum should be 0 ;)
+    *
+    * don't perform the check in unoffensive mode
+    */
+   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET->L4.header, PACKET->L4.len) != 0) {
+      char tmp[MAX_ASCII_ADDR_LEN];
+      USER_MSG("Invalid ICMP packet from %s : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                              L3_checksum(PACKET->L4.header, PACKET->L4.len), ntohs(icmp->csum));      
+      return NULL;
+   }
    
    /* 
     * if the host is sending strange 

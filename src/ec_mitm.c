@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.11 2003/12/28 17:20:13 alor Exp $
+    $Id: ec_mitm.c,v 1.12 2004/01/21 21:17:16 alor Exp $
 */
 
 #include <ec.h>
@@ -43,7 +43,7 @@ static char *mitm_args = "";
 
 void mitm_add(struct mitm_method *mm);
 int mitm_set(u_char *name);
-void mitm_start(void);
+int mitm_start(void);
 void mitm_stop(void);
 void only_mitm(void);
 
@@ -101,16 +101,23 @@ int mitm_set(u_char *name)
  * starts all the method with the selected flag set.
  * it is possible to start multiple method simultaneusly
  */
-void mitm_start(void)
+int mitm_start(void)
 {
    struct mitm_entry *e;
 
    /* reading from file we won't start mitm */
    if (GBL_OPTIONS->read || GBL_OPTIONS->unoffensive) {
       DEBUG_MSG("mitm_start: skipping");
-      return;
+      return -EINVALID;
    }
-   
+
+   /* cant use -R with mitm methods */
+   if (GBL_OPTIONS->reversed)
+      SEMIFATAL_ERROR("Reverse target matching can't be used with MITM attacks");
+  
+   if (!GBL_IFACE->configured)
+      SEMIFATAL_ERROR("MITM attacks can't be used on unconfigured interfaces");
+      
    DEBUG_MSG("mitm_start");
    
    /* start all the selected methods */
@@ -128,6 +135,8 @@ void mitm_start(void)
             e->selected = 0;
       }
    }
+
+   return ESUCCESS;
 }
 
 

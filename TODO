@@ -2,6 +2,8 @@
   TODO for NG
 ==================
 
+>>> things to be fixed
+
    + lnet ptag thread safe (check it)
 
    !! dissector malloc the DISSECTOR, someone have to free them... !!
@@ -19,11 +21,17 @@
    + BSD PORTING
       - hack_pcap_lnet is not usable
       - bpf filter on outgoing packets
-      - BIOCSSEESENT
+      - BIOCSSEESENT (only under freebsd)
+
+>>> current developmet state 
 
    + PCAP STAT
       - stats for dropped packets
 
+   + TOP HALF
+      - passive profiling (almost done in etterlog)
+      - connection tracking (with buffered conn)
+      
    + ARP POISON ENGINE
       - arp poisoner
       - multipoison
@@ -38,11 +46,6 @@
    
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
-   
-   + TOP HALF
-      - passive mapping
-      - "active" passive fingerprint
-      - sniffing (connection tracking)
       - binder
    
    + DISSECTORS
@@ -54,12 +57,12 @@
       - convert all the old plugins
       - check for poisoner
       - linktype
+      - "active" passive fingerprint
      
    + ETTERCONF
      
    + INTERFACE ENGINE
       - console
-      - daemonized
       - ncurses
       - gtk
 

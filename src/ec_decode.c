@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.32 2003/09/17 11:55:25 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.33 2003/09/17 11:57:12 alor Exp $
 */
 
 #include <ec.h>
@@ -267,7 +267,7 @@ FUNC_DECODER(decode_data)
    }
    
    /* HOOK POINT: DECODED (the po structure is filled) */ 
-   hook_point(HOOK_DECODED, &po);
+   hook_point(HOOK_DECODED, po);
 
    /*
     * here we can filter the content of the packet.

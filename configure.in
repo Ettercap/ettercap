@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.69 2003/11/18 15:30:06 alor Exp $
+dnl    $Id: configure.in,v 1.70 2003/11/18 19:47:11 alor Exp $
 dnl
 
 AC_INIT
@@ -361,13 +361,13 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
      AC_MSG_ERROR(["*** ettercap cannot operate without libpcap. ***"])
      ;;
   *)
-     AC_MSG_RESULT($withval)
      if test -f $withval/pcap.h -a -f $withval/libpcap.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         PCAPINC="-I$withval"
         PCAPLIB="-L$withval -lpcap"
         ac_cv_ec_libpcap=$withval
+        AC_MSG_RESULT($withval)
      elif test -f $withval/include/pcap.h -a \
                -f $withval/include/net/bpf.h -a \
                -f $withval/lib/libpcap.a; then
@@ -376,7 +376,9 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
         PCAPINC="-I$withval/include"
         PCAPLIB="-L$withval/lib -lpcap"
         ac_cv_ec_libpcap=$withval
+        AC_MSG_RESULT($withval)
      else
+        AC_MSG_RESULT(no)
         AC_MSG_ERROR([pcap.h or libpcap.a not found in $withval])
      fi
      ;;
@@ -414,7 +416,6 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
      AC_MSG_ERROR(["*** ettercap cannot operate without libnet. ***"])
      ;;
   *)
-     AC_MSG_RESULT($withval)
      if test -f $withval/include/libnet.h \
              -a -f $withval/src/libnet.a \
              -o -f $withval/lib/libnet.a; then
@@ -423,7 +424,9 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
         LNETINC="-I$withval/include"
         LNETLIB="-L$withval/lib -L$withval/src -lnet"
         ac_cv_ec_libnet=$withval
+        AC_MSG_RESULT($withval)
      else
+        AC_MSG_RESULT(no)
         AC_MSG_ERROR([libnet.h or libnet.a not found in $withval])
      fi
      ;;
@@ -461,7 +464,6 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
      AC_MSG_RESULT(no)
      ;;
   *)
-     AC_MSG_RESULT($withval)
      if test -f $withval/include/openssl/ssl.h \
              -a -f $withval/lib/libcrypto.a \
              -o -f $withval/libcrypto.a; then
@@ -472,6 +474,7 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
         AC_DEFINE(HAVE_OPENSSL, 1)
         AM_CONDITIONAL(OPENSSL, true)
         ac_cv_ec_libssl=$withval
+        AC_MSG_RESULT($withval)
      elif test -f $withval/ssl/include/openssl/ssl.h -a \
                -f $withval/ssl/lib/libcrypto.a; then
         owd=`pwd`
@@ -481,7 +484,9 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
         AC_DEFINE(HAVE_OPENSSL, 1)
         AM_CONDITIONAL(OPENSSL, true)
         ac_cv_ec_libssl=$withval
+        AC_MSG_RESULT($withval)
      else
+        AC_MSG_RESULT(no)
         AC_MSG_ERROR([ssl.h or libssl.a not found in $withval])
      fi
      ;;
@@ -523,7 +528,6 @@ AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
      AC_MSG_RESULT(no)
      ;;
   *)
-     AC_MSG_RESULT($withval)
      if test -f $withval/pcre.h \
              -a -f $withval/libpcre.a; then
         owd=`pwd`
@@ -533,8 +537,20 @@ AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
         AM_CONDITIONAL(HAVE_PCRE, true) 
         AC_DEFINE(HAVE_PCRE, 1)
         ac_cv_ec_pcre=yes
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/include/pcre.h \
+               -a -f $withval/lib/libpcre.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        PCREINC="-I$withval/include"
+        PCRELIB="-L$withval/lib -lpcre"
+        AM_CONDITIONAL(HAVE_PCRE, true) 
+        AC_DEFINE(HAVE_PCRE, 1)
+        ac_cv_ec_pcre=yes
+        AC_MSG_RESULT($withval)
      else
-        AM_CONDITIONAL(HAVE_PCRE, false) 
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR([pcre.h or libpcre.a not found in $withval])
      fi
      ;;
   esac ],
@@ -568,7 +584,6 @@ AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in D
      AC_MSG_RESULT(no)
      ;;
   *)
-     AC_MSG_RESULT($withval)
      if test -f $withval/ncurses.h -a -f $withval/libncurses.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
@@ -577,6 +592,7 @@ AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in D
         AC_DEFINE(HAVE_NCURSES, 1)
         AM_CONDITIONAL(NCURSES, true)
         ac_cv_ec_libncurses=$withval
+        AC_MSG_RESULT($withval)
      elif test -f $withval/include/ncurses.h \
                -o -f $withval/include/ncurses/ncurses.h \
                -a -f $withval/lib/libncurses.a; then
@@ -587,7 +603,9 @@ AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in D
         AC_DEFINE(HAVE_NCURSES, 1)
         AM_CONDITIONAL(NCURSES, true)
         ac_cv_ec_libncurses=$withval
+        AC_MSG_RESULT($withval)
      else
+        AC_MSG_RESULT(no)
         AC_MSG_ERROR([ncurses.h or libncurses.a not found in $withval])
      fi
      ;;

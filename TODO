@@ -7,7 +7,6 @@
    + FIXING
       - dissect_free_session
       - input for curses gui
-      - bug SMB domain scrambled ????????????????
 
    + PCAP RELATED
       + reset the stats when the sniffing thread starts
@@ -41,8 +40,7 @@ this is the unofficial and floating in time roadmap:
 
    + CURSES GUI
       - connection view
-      + LIBWDG
-         - mouse events on focus
+      - input for curses_input
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

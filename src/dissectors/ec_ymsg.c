@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ymsg.c,v 1.3 2004/02/04 15:20:46 lordnaga Exp $
+    $Id: ec_ymsg.c,v 1.4 2004/02/08 14:38:55 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_session.h>
+#include <ec_strings.h>
 
 /* globals */
 

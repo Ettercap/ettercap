@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.8 2004/02/03 13:13:51 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.9 2004/02/08 14:38:55 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -227,6 +227,8 @@ Displays the connection list. To see detailed information about a connection,
 press 'd'. To see the traffic for a specific connection,
 select it and press enter. Once the two-panel interface is displayed you can
 move the focus with the arrow keys.
+.br
+HINT: connections marked with an asterisk contain account(s) informations.
 .TP
 .B Profiles
 Diplays the passive profile hosts list. Selecting an host will display the
@@ -234,6 +236,8 @@ relative details (including account with user and pass for that host).
 .br
 You can convert the list of passive profile into the hosts list by pressing 'c'. 
 To purge remote hosts, press 'l'. To purge local hosts, press 'r'.
+.br
+HINT: profiles marked with an asterisk contain account(s) informations.
 .TP
 .B Statistics
 Displays some statistics about the sniffing process.

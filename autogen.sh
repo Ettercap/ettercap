@@ -32,9 +32,9 @@ fi
 
 echo "Suggested version:"
 echo
-echo "     autoconf 2.57"
+echo "     autoconf 2.59"
 echo "     automake 1.7.x"
-echo "     libtool  1.4.x"
+echo "     libtool  1.5.x"
 echo
 echo "Actual version:"
 echo

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ppp.c,v 1.5 2003/12/04 14:35:21 lordnaga Exp $
+    $Id: ec_ppp.c,v 1.6 2003/12/04 14:51:44 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -131,8 +131,14 @@ FUNC_DECODER(decode_ppp)
 
    /* XXX - Add PACKET->L2 stuff if it's not set yet */
 
+   /* Set the L4 header for the hook */
+   PACKET->L4.header = (u_char *)DECODE_DATA;
+         
    /* HOOK POINT: HOOK_PACKET_PPP */
    hook_point(HOOK_PACKET_PPP, PACKET);
+
+   /* Set the L4 header to LCP for subsequent hooks */
+   PACKET->L4.header = (u_char *)(DECODE_DATA + DECODED_LEN);
 
    /* XXX - Add standard CHAP parsing */
 
@@ -254,21 +260,12 @@ FUNC_DECODER(decode_ppp)
          DISSECT_MSG("PPP : PAP Pass: %s\n\n", temp);   
       }
    } else if (proto == PPP_PROTO_LCP) { 
-      /* Set the L4 header for the hook */
-      PACKET->L4.header = (u_char *)(DECODE_DATA + DECODED_LEN);
-         
       /* HOOK POINT: HOOK_PACKET_LCP */
       hook_point(HOOK_PACKET_LCP, PACKET);
    } else if (proto == PPP_PROTO_ECP || proto == PPP_PROTO_CCP) { 
-      /* Set the L4 header for the hook */
-      PACKET->L4.header = (u_char *)(DECODE_DATA + DECODED_LEN);
-         
       /* HOOK POINT: HOOK_PACKET_ECP */
       hook_point(HOOK_PACKET_ECP, PACKET);
    } else if (proto == PPP_PROTO_IPCP) { 
-      /* Set the L4 header for the hook */
-      PACKET->L4.header = (u_char *)(DECODE_DATA + DECODED_LEN);
-         
       /* HOOK POINT: HOOK_PACKET_IPCP */
       hook_point(HOOK_PACKET_IPCP, PACKET);
    }

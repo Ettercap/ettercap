@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: search_promisc.c,v 1.1 2003/11/07 16:50:40 lordnaga Exp $
+    $Id: search_promisc.c,v 1.2 2003/11/07 17:15:23 lordnaga Exp $
 */
 
 
@@ -29,9 +29,10 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 
+#include <pthread.h>
 
 /* globals */
-SLIST_HEAD(, hosts_list) promisc_table;
+LIST_HEAD(, hosts_list) promisc_table;
 
 /* mutexes */
 static pthread_mutex_t promisc_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -118,17 +119,17 @@ static int search_promisc_init(void *dummy)
 
       /* Print results */
       INSTANT_USER_MSG(messages[i]);
-      if(SLIST_EMPTY(&promisc_table))
+      if(LIST_EMPTY(&promisc_table))
          INSTANT_USER_MSG("- NONE \n");
       else 
-         SLIST_FOREACH(h, &GBL_HOSTLIST, next) 
-	    INSTANT_USER_MSG("- %s\n",ip_addr_ntoa(&h->ip), tmp)
+         LIST_FOREACH(h, &promisc_table, next) 
+	    INSTANT_USER_MSG("- %s\n",ip_addr_ntoa(&h->ip, tmp));
          
       PROMISC_LOCK;          
       /* Delete the list */
-      while (!SLIST_EMPTY(&promisc_table)) {
-         h = SLIST_FIRST(&promisc_table);
-         SLIST_REMOVE_HEAD(&promisc_table, next);
+      while (!LIST_EMPTY(&promisc_table)) {
+         h = LIST_FIRST(&promisc_table);
+         LIST_REMOVE(h, next);
          SAFE_FREE(h);
       }
       PROMISC_UNLOCK;
@@ -148,26 +149,26 @@ static int search_promisc_fini(void *dummy)
 /* Parse the reply to our bougs requests */
 static void parse_arp(struct packet_object *po)
 {
-   struct hosts_list *p;
+   struct hosts_list *h;
    
    /* We'll parse only replies for us */
    if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN));
       return;
    
-   POISON_LOCK;
+   PROMISC_LOCK;
    /* Check if it's already in the list */
-   SLIST_FOREACH(h, &hosts_table, next) 
+   LIST_FOREACH(h, &promisc_table, next) 
       if (!ip_addr_cmp(&(po->L3.src), &h->ip)) {
-         POISON_UNLOCK;
+         PROMISC_UNLOCK;
          return;
       }
        
    /* create the element and insert it in the list */
-   SAFE_CALLOC(h, 1, sizeof(struct poison_list));
+   SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
    memcpy(&h->ip, &(po->L3.src), sizeof(struct ip_addr));
-   SLIST_INSERT_HEAD(&hosts_table, h, next);
+   LIST_INSERT_HEAD(&promisc_table, h, next);
 
-   POISON_UNLOCK;
+   PROMISC_UNLOCK;
 }
 
 

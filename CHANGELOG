@@ -21,6 +21,7 @@ NG-0.7.0    ????????
    + quiet mode
    + enhanced passive open port discoverer 
    + randomized ARP scan
+   + cached dns resolution (increase speed)
    !! offline sniffing actually does not bind to any NICs
 
 

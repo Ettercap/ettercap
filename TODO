@@ -21,7 +21,7 @@
       - service resolution
 
    + ARP SCAN
-      - dns resolution
+      - better randomization
 
    + ARP POISON ENGINE
       - arp poisoner

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.16 2003/05/05 09:04:49 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.17 2003/05/20 16:30:18 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -305,6 +305,16 @@ This is useful if you want to select a port via the TARGET specification but
 you want to differentiate between tcp or udp.
 .br
 PROTO can be "tcp", "udp" or "all" for both.
+
+.TP
+\fB\-d\fR, \fB\-\-dns\fR
+Resolve ip addresses into hostnames. 
+.br
+NOTE: this may seriously slow down ettercap while logging passive informations.
+Every time a new host is found, a query to the dns is performed. Ettercap keeps
+a cache for already resolved host to increase the speed, but new hosts need a
+new query and the dns may take up to 2 or 3 seconds to respond for an unknown
+host.
 
 .TP
 \fB\-z\fR, \fB\-\-silent\fR

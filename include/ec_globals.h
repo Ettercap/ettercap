@@ -15,6 +15,7 @@ struct ec_options {
    char silent:1;
    char load_hosts:1;
    char save_hosts:1;
+   char resolve:1;
    char reversed;
    int scan_delay;
    char *hostsfile;

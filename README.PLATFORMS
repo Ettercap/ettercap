@@ -40,7 +40,7 @@ SOLARIS
    
    FreeBSD 4.x          untested
 
-   OpenBSD 3.x          PARTIAL        tested on OpenBSD 3.4 GENERIC#18 i386
+   OpenBSD 3.x          FULL           tested on OpenBSD 3.4 GENERIC#18 i386
    
    OpenBSD 2.x          untested
 
@@ -175,6 +175,8 @@ Currently the porting to the windows platform is not completed yet.
    5) run the ettercap NG configure and make it      
 
  + MINGW
+   
+   http://www.bgnett.no/~giva/misc/
 
 
 ==============================================================================

@@ -6,7 +6,12 @@ Legenda:
 
 =========================================
 
-NG-0.7.0    20040415
+NG-0.7.0_pre2    20040415
+
+   + telnet collector enhacements
+   
+
+NG-0.7.0_pre1    20040415
       
    + rewrite from scratch (the code is now cleaner and well commented)
    + it now requirese libpcap and libnet

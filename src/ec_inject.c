@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.11 2004/03/05 11:15:02 lordnaga Exp $
+    $Id: ec_inject.c,v 1.12 2004/03/05 13:10:20 alor Exp $
 */
 
 #include <ec.h>
@@ -197,7 +197,7 @@ int user_kill(struct conn_object *co)
    struct packet_object po;
    size_t ident_len, direction;
    struct tcp_status *status;
-   
+
    /* we can kill only tcp connection */
    if (co->L4_proto != NL_TYPE_TCP)
       return -EFATAL;

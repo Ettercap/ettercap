@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.15 2004/03/05 10:39:35 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.16 2004/03/05 13:10:22 alor Exp $
 */
 
 #include <ec.h>
@@ -883,7 +883,12 @@ static void gtkui_connection_kill(void *conn)
  */
 static void gtkui_connection_kill_wrapper(void)
 {
-   gtkui_connection_kill(curr_conn);
+   struct conn_tail c;
+
+   /* create the fake conn_tail object */
+   c.co = curr_conn;
+   
+   gtkui_connection_kill(&c);
 }
 
 /*

@@ -219,7 +219,7 @@ FUNC_DECODER(dissector_vnc)
                   sprintf(str_ptr + (index * 2), "%.2x", conn_status->response[index]);
        
                if (conn_status->status > LOGIN_OK) {
-                  PACKET->DISSECTOR.failed = TRUE;
+                  PACKET->DISSECTOR.failed = 1;
                   USER_MSG("vnc : %s:%d -> %s (Login Failed)\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                                  ntohs(PACKET->L4.dst), 
                                                                  PACKET->DISSECTOR.pass);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.26 2004/03/25 21:25:37 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.27 2004/03/25 21:35:20 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -156,12 +156,18 @@ void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_cha
 
 void sslw_dissect_move(char *name, u_int16 port)
 {
-   struct listen_entry *le;
+   struct listen_entry *le, *tmp;
 
-   LIST_FOREACH(le, &listen_ports, next) 
+   LIST_FOREACH_SAFE(le, &listen_ports, next, tmp) 
       if(!strcmp(name, le->name)) {
          DEBUG_MSG("sslw_dissect_move: %s [%u]", name, port);
          le->sslw_port = port;
+	 
+	 /* move to zero means disable */
+	 if (port == 0) {
+	    LIST_REMOVE(le, next);
+	    SAFE_FREE(le);
+         }
       }
 }
 

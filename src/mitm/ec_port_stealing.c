@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.8 2003/12/15 15:20:15 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.9 2003/12/16 11:20:16 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -330,6 +330,14 @@ static void put_queue(struct packet_object *po)
          }
 
          SAFE_CALLOC(p, 1, sizeof(struct packet_list));
+
+         /* If it's a L3 packet we have to adjust
+          * raw packet len for L2 sending (just in
+          * case of filters' modifications)
+          */
+         if (po->fwd_packet) 
+            po->len = po->fwd_len + sizeof(struct eth_header);
+		  
          p->po = packet_dup(po);
          TAILQ_INSERT_HEAD(&(s->packet_table), p, next);
 	   

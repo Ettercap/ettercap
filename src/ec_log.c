@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.19 2003/07/01 19:15:44 alor Exp $
+    $Id: ec_log.c,v 1.20 2003/07/04 21:51:38 alor Exp $
 */
 
 #include <ec.h>
@@ -315,13 +315,13 @@ static void log_write_info(struct packet_object *po)
    hid.L4_proto = po->L4.proto;
 
    /* open on the source ? */
-   if (is_open_src_port(po))
+   if (is_open_port(po->L4.proto, po->L4.src, po->L4.flags))
       hi.L4_addr = po->L4.src;
    else
       hi.L4_addr = 0;
   
    /* open on the dest ? */
-   if (is_open_dst_port(po))
+   if (is_open_port(po->L4.proto, po->L4.dst, po->L4.flags))
       hid.L4_addr = po->L4.dst;
    else
       hid.L4_addr = 0;

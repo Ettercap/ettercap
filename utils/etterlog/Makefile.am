@@ -8,7 +8,6 @@ bin_PROGRAMS = etterlog
 
 etterlog_SOURCES = el_main.c \
                    el_parser.c \
-                   el_error.c \
                    el_analyze.c \
                    el_conn.c \
                    el_target.c \
@@ -16,6 +15,7 @@ etterlog_SOURCES = el_main.c \
                    el_log.c \
                    el_profiles.c \
                    el_ec_compat.c \
+                   $(top_srcdir)/src/ec_error.c \
                    $(top_srcdir)/src/ec_fingerprint.c \
                    $(top_srcdir)/src/ec_manuf.c \
                    $(top_srcdir)/src/ec_services.c \

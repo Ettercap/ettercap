@@ -6,6 +6,8 @@
 #include <ec_inet.h>
 #include <ec_ui.h>
 #include <ec_stats.h>
+#include <ec_profiles.h>
+
 #include <pcap.h>
 #include <regex.h>
 
@@ -30,6 +32,8 @@ struct ec_options {
    char save_hosts:1;
    char resolve:1;
    char ext_headers:1;
+   char only_local:1;
+   char only_remote:1;
    char reversed;
    char *hostsfile;
    char *plugin;
@@ -51,7 +55,7 @@ struct program_env {
    char *debug_file;
 };
 
-/* pcap structures */
+/* pcap structure */
 struct pcap_env {
    pcap_t            *pcap;      
    pcap_t            *pcap_bridge;
@@ -64,7 +68,7 @@ struct pcap_env {
    u_int32           dump_off;      /* current offset */
 };
 
-/* lnet structures */
+/* lnet structure */
 struct lnet_env {
    void *lnet_L3;       /* this is a libnet_t pointer */
    void *lnet;          /* this is a libnet_t pointer */ 
@@ -118,6 +122,7 @@ struct globals {
    struct target_env *t1;
    struct target_env *t2;
    LIST_HEAD(, hosts_list) hosts_list_head;
+   LIST_HEAD(, host_profile) profiles_list_head;
 };
 
 extern struct globals *gbls;
@@ -137,6 +142,7 @@ extern struct globals *gbls;
 #define GBL_TARGET1        (GBLS->t1)
 #define GBL_TARGET2        (GBLS->t2)
 #define GBL_HOSTLIST       (GBLS->hosts_list_head)
+#define GBL_PROFILES       (GBLS->profiles_list_head)
 
 #define GBL_FORMAT         (GBL_OPTIONS->format)
 

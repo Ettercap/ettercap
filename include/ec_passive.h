@@ -2,11 +2,7 @@
 #ifndef EC_PASSIVE_H
 #define EC_PASSIVE_H
 
-#include <ec_packet.h>
-
-extern int is_open_src_port(struct packet_object *po);
-extern int is_open_dst_port(struct packet_object *po);
-
+extern int is_open_port(u_int8 proto, u_int16 port, u_int8 flags);
 
 #endif
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.7 2003/07/01 19:15:44 alor Exp $
+    $Id: ec_profiles.c,v 1.8 2003/07/04 21:51:38 alor Exp $
 */
 
 #include <ec.h>
@@ -25,10 +25,6 @@
 #include <ec_profiles.h>
 #include <ec_packet.h>
 #include <ec_hook.h>
-
-/* globals */
-
-LIST_HEAD(, host_profile) hosts_list_head;
 
 /* protos */
 
@@ -70,14 +66,14 @@ void profile_parse(struct packet_object *po)
     * we don't want to log conversations, only
     * open ports, OSes etc etc ;)
     */
-   if ( po->L3.proto == htons(LL_TYPE_ARP) ||               /* arp packets */
-        po->L4.proto == htons(NL_TYPE_ICMP) ||              /* icmp packets */
-        (is_open_src_port(po) || is_open_dst_port(po)) ||   /* the port is open */
-        strcmp(po->PASSIVE.fingerprint, "") ||              /* collected fingerprint */  
-        po->DISSECTOR.banner                                /* banner */
+   if ( po->L3.proto == htons(LL_TYPE_ARP) ||                     /* arp packets */
+        po->L4.proto == NL_TYPE_ICMP ||                           /* icmp packets */
+        is_open_port(po->L4.proto, po->L4.src, po->L4.flags) ||   /* src port is open */
+        strcmp(po->PASSIVE.fingerprint, "") ||                    /* collected fingerprint */  
+        po->DISSECTOR.banner                                      /* banner */
       )
       profile_add_host(po);
-      
+
    /* 
     * usernames and passwords are to be bound to 
     * destination host, not source.
@@ -104,12 +100,6 @@ static int profile_add_host(struct packet_object *po)
    struct host_profile *c;
    struct host_profile *last = NULL;
 
-//char tmp[MAX_ASCII_ADDR_LEN];
-//char tmp2[MAX_ASCII_ADDR_LEN];
-//printf("[%s] [%s] [%s] [%s] [%s]\n", po->PASSIVE.fingerprint,
-//         po->DISSECTOR.user, po->DISSECTOR.pass,
-//         po->DISSECTOR.info, po->DISSECTOR.banner);
-   
    /* 
     * if the type is FP_HOST_NONLOCAL 
     * search for the GW and mark it
@@ -121,12 +111,9 @@ static int profile_add_host(struct packet_object *po)
    }
 
    /* parse the list */
-   LIST_FOREACH(h, &hosts_list_head, next) {
+   LIST_FOREACH(h, &GBL_PROFILES, next) {
       /* search the host.
        * it is identified by the mac and the ip address */
-//ip_addr_ntoa(&h->L3_addr, tmp);
-//mac_addr_ntoa(h->L2_addr, tmp2);
-//printf("%s [%s] --> %s\n", tmp, tmp2, h->fingerprint);
       if (!memcmp(h->L2_addr, po->L2.src, ETH_ADDR_LEN) &&
           !ip_addr_cmp(&h->L3_addr, &po->L3.src) ) {
          update_info(h, po);
@@ -136,8 +123,22 @@ static int profile_add_host(struct packet_object *po)
       }
    }
   
-   /* the host was not found, create a new entry */
+   DEBUG_MSG("profile_add_host");
    
+   /* 
+    * the host was not found, create a new entry 
+    * before the creation check if it has to be stored...
+    */
+   
+   /* this is a local and we want only remote */
+   if ((po->PASSIVE.flags & FP_HOST_LOCAL) && GBL_OPTIONS->only_remote)
+      return 0;
+   
+   /* this is remote and we want only local */
+   if ((po->PASSIVE.flags & FP_HOST_NONLOCAL) && GBL_OPTIONS->only_local)
+      return 0;
+   
+   /* create the new host */
    h = calloc(1, sizeof(struct host_profile));
    ON_ERROR(h, NULL, "can't allocate memory");
 
@@ -145,14 +146,14 @@ static int profile_add_host(struct packet_object *po)
    update_info(h, po);
    
    /* search the right point to inser it (ordered ascending) */
-   LIST_FOREACH(c, &hosts_list_head, next) {
+   LIST_FOREACH(c, &GBL_PROFILES, next) {
       if ( ip_addr_cmp(&c->L3_addr, &h->L3_addr) > 0 )
          break;
       last = c;
    }
    
-   if (LIST_FIRST(&hosts_list_head) == NULL) 
-      LIST_INSERT_HEAD(&hosts_list_head, h, next);
+   if (LIST_FIRST(&GBL_PROFILES) == NULL) 
+      LIST_INSERT_HEAD(&GBL_PROFILES, h, next);
    else if (c != NULL) 
       LIST_INSERT_BEFORE(c, h, next);
    else 
@@ -178,9 +179,11 @@ static void update_info(struct host_profile *h, struct packet_object *po)
    memcpy(&h->L3_addr, &po->L3.src, sizeof(struct ip_addr));
 
    /* the distance in HOP */
-   if (h->distance == 0)
+   if (po->L3.ttl > 1)
       h->distance = TTL_PREDICTOR(po->L3.ttl) - po->L3.ttl + 1;
-
+   else
+      h->distance = po->L3.ttl;
+      
    /* get the hostname */
    host_iptoa(&po->L3.src, h->hostname);
    
@@ -208,7 +211,7 @@ static void set_gateway(u_char *L2_addr)
 {
    struct host_profile *h;
 
-   LIST_FOREACH(h, &hosts_list_head, next) {
+   LIST_FOREACH(h, &GBL_PROFILES, next) {
       if (!memcmp(h->L2_addr, L2_addr, ETH_ADDR_LEN) ) {
          h->type |= FP_GATEWAY; 
          return;
@@ -228,14 +231,10 @@ static void update_port_list(struct host_profile *h, struct packet_object *po)
 
    /* search for an existing port */
    LIST_FOREACH(o, &(h->open_ports_head), next) {
-
-//printf("\t port: %d\n", ntohs(o->L4_addr));
-
       if (o->L4_proto == po->L4.proto && o->L4_addr == po->L4.src) {
          /* set the banner for the port */
          if (o->banner == NULL && po->DISSECTOR.banner)
-            o->banner = strdup(po->DISSECTOR.banner);
-//printf("\t banner: %s\n", o->banner);
+            o->banner = po->DISSECTOR.banner;
          /* already logged */
          return;
       }
@@ -244,7 +243,7 @@ static void update_port_list(struct host_profile *h, struct packet_object *po)
    /* skip this port, the packet was logged for
     * another reason, not the open port */
    //if ( !is_open_src_port(po) && !is_open_dst_port(po))
-   if ( !is_open_src_port(po) )
+   if ( !is_open_port(po->L4.proto, po->L4.src, po->L4.flags) )
       return;
 
    /* create a new entry */
@@ -255,8 +254,6 @@ static void update_port_list(struct host_profile *h, struct packet_object *po)
    o->L4_proto = po->L4.proto;
    o->L4_addr = po->L4.src;
    
-//printf("\t insert port: %d %d\n", ntohs(po->L4.src), ntohs(po->L4.dst));
-
    /* search the right point to inser it (ordered ascending) */
    LIST_FOREACH(p, &(h->open_ports_head), next) {
       if ( ntohs(p->L4_addr) > ntohs(o->L4_addr) )
@@ -287,31 +284,29 @@ static int profile_add_user(struct packet_object *po)
    struct active_user *last = NULL;
    int found = 0;
 
-//char tmp[MAX_ASCII_ADDR_LEN];
-   
    /* no info to update */
    if (po->DISSECTOR.user == NULL || po->DISSECTOR.pass == NULL)
       return 0;
   
+   DEBUG_MSG("profile_add_user");
+   
    /* search the right port on the right host */
-   LIST_FOREACH(h, &hosts_list_head, next) {
+   LIST_FOREACH(h, &GBL_PROFILES, next) {
       
-//ip_addr_ntoa(&h->L3_addr, tmp);
-//printf("\t%s --> %s\n", tmp, h->fingerprint);
-
       /* right host */
       if ( !ip_addr_cmp(&h->L3_addr, &po->L3.dst) ) {
       
          LIST_FOREACH(o, &(h->open_ports_head), next) {
-      
-//printf("\t\t port: %d\n", ntohs(o->L4_addr));
             /* right port and proto */
             if (o->L4_proto == po->L4.proto && o->L4_addr == po->L4.dst) {
-               
                found = 1;
+               break;
             }
          }
       }
+      /* if already found, exit the loop */
+      if (found) 
+         break;
    }
    
    /* 
@@ -323,11 +318,8 @@ static int profile_add_user(struct packet_object *po)
    if (!found || o == NULL)
       return 0;
    
-   
+   /* search if the user was already logged */ 
    LIST_FOREACH(u, &(o->users_list_head), next) {
-
-//printf("\t\t info: %s %s\n", u->user, u->pass);
-
       if (!strcmp(u->user, po->DISSECTOR.user) && 
           !strcmp(u->pass, po->DISSECTOR.pass))
          return 0;

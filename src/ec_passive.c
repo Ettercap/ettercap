@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_passive.c,v 1.5 2003/07/01 19:15:44 alor Exp $
+    $Id: ec_passive.c,v 1.6 2003/07/04 21:51:38 alor Exp $
 */
 
 #include <ec.h>
@@ -29,8 +29,7 @@
 
 /* protos */
 
-int is_open_src_port(struct packet_object *po);
-int is_open_dst_port(struct packet_object *po);
+int is_open_port(u_int8 proto, u_int16 port, u_int8 flags);
 
 /************************************************/
   
@@ -47,10 +46,10 @@ int is_open_dst_port(struct packet_object *po);
  *
  */
 
-int is_open_src_port(struct packet_object *po)
+int is_open_port(u_int8 proto, u_int16 port, u_int8 flags)
 {
 
-   switch (po->L4.proto) {
+   switch (proto) {
       case NL_TYPE_TCP:
 #if 0 
          /* detect priviledged port */
@@ -58,10 +57,10 @@ int is_open_src_port(struct packet_object *po)
             return 1;
 #endif
          /* SYN+ACK packet are coming from open ports */
-         if ( (po->L4.flags & TH_SYN) && (po->L4.flags & TH_ACK) )
+         if ( (flags & TH_SYN) && (flags & TH_ACK) )
             return 1;
          /* look in the table */
-         if ( get_decoder(APP_LAYER_TCP, ntohs(po->L4.src)) != NULL)
+         if ( get_decoder(APP_LAYER_TCP, ntohs(port)) != NULL)
             return 1;
          break;
       case NL_TYPE_UDP:
@@ -69,10 +68,10 @@ int is_open_src_port(struct packet_object *po)
           * we cannot determine if the port is open or not...
           * suppose that all priveledged port used are open.
           */
-         if (ntohs(po->L4.src) > 0 && ntohs(po->L4.src) < 1024 )
+         if (ntohs(port) > 0 && ntohs(port) < 1024 )
             return 1;
          /* look up in the table */
-         if ( get_decoder(APP_LAYER_UDP, ntohs(po->L4.src)) != NULL)
+         if ( get_decoder(APP_LAYER_UDP, ntohs(port)) != NULL)
             return 1;
          break;
    }
@@ -80,38 +79,6 @@ int is_open_src_port(struct packet_object *po)
    return 0;
 }
 
-int is_open_dst_port(struct packet_object *po)
-{
-
-   switch (po->L4.proto) {
-      case NL_TYPE_TCP:
-#if 0 
-         /* detect priviledged port */
-         if (ntohs(po->L4.dst) > 0 && ntohs(po->L4.dst) < 1024 )
-            return 1;
-#endif
-         /* SYN+ACK packet are coming from open ports */
-         if ( (po->L4.flags & TH_SYN) && (po->L4.flags & TH_ACK) )
-            return 1;
-         /* look in the table */
-         if ( get_decoder(APP_LAYER_TCP, ntohs(po->L4.dst)) != NULL)
-            return 1;
-         break;
-      case NL_TYPE_UDP:
-         /* 
-          * we cannot determine if the port is open or not...
-          * suppose that all priveledged port used are open.
-          */
-         if (ntohs(po->L4.dst) > 0 && ntohs(po->L4.dst) < 1024 )
-            return 1;
-         /* look up in the table */
-         if ( get_decoder(APP_LAYER_UDP, ntohs(po->L4.dst)) != NULL)
-            return 1;
-         break;
-   }
-
-   return 0;
-}
 
 /* EOF */
 

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.21 2003/06/24 16:36:00 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.22 2003/07/04 21:51:38 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -444,6 +444,19 @@ for each host. The file will be named LOGFILE.eci
 \fB\-c\fR, \fB\-\-compress\fR
 Compress the logfile with the gzip algorithm while it is dumped. etterlog(8) is
 capable of handling both compressed and uncompresse log files.
+
+.TP
+\fB\-o\fR, \fB\-\-only-local\fR
+Stores profiles information belonging only to the LAN hosts.
+.br
+NOTE: this option is effective only against the profiles collected in memory.
+while logging to a file ALL the host are logged, if you want to split them, use
+the related etterlog(8) option.
+
+.TP
+\fB\-O\fR, \fB\-\-only-remote\fR
+Stores profiles information belonging only to remote hosts.
+
 
 
 

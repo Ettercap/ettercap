@@ -42,6 +42,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_sniff_arp.c \
 				   interfaces/console/ec_console.c \
 				   interfaces/console/ec_console_display.c \
+				   interfaces/console/ec_console_profile.c \
 				   interfaces/console/ec_console_plugin.c \
 				   interfaces/daemon/ec_daemon.c \
 				   protocols/ec_eth.c \

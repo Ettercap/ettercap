@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_ec_compat.c,v 1.4 2003/06/17 12:15:12 alor Exp $
+    $Id: el_ec_compat.c,v 1.5 2003/07/04 21:51:38 alor Exp $
 */
 
 #include <el.h>
@@ -33,6 +33,7 @@ FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
 void debug_msg(const char *message, ...);
 void ui_msg(const char *fmt, ...);
 void ui_error(const char *fmt, ...);
+void ui_cleanup(void);
 
 /************************************************/
  
@@ -58,6 +59,8 @@ void ui_error(const char *fmt, ...)
    vfprintf (stderr, fmt, ap);
    va_end(ap);
 }
+
+void ui_cleanup(void) { }
 
 /* EOF */
 

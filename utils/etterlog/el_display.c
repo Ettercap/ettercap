@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.21 2003/07/01 19:15:45 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.22 2003/07/04 21:51:38 alor Exp $
 */
 
 #include <el.h>
@@ -377,7 +377,6 @@ void print_host(struct host_profile *h)
       fprintf(stdout, " TYPE         : REMOTE host\n\n");
    else if (h->type == FP_UNKNOWN)
       fprintf(stdout, " TYPE         : unknown\n\n");
-      
       
    
    fprintf(stdout, " FINGERPRINT      : %s\n", h->fingerprint);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_icmp.c,v 1.2 2003/07/01 19:15:45 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_icmp.c,v 1.3 2003/07/04 21:51:38 alor Exp $
 */
 
 #include <ec.h>
@@ -74,7 +74,7 @@ FUNC_DECODER(decode_icmp)
    PACKET->L4.header = (u_char *)DECODE_DATA;
    PACKET->L4.options = NULL;
    
-   PACKET->L4.proto = htons(NL_TYPE_ICMP);
+   PACKET->L4.proto = NL_TYPE_ICMP;
    
    /* this is a lie... but we have to put this somewhere */
    PACKET->L4.flags = icmp->type;
@@ -98,7 +98,7 @@ FUNC_DECODER(decode_icmp)
          PACKET->PASSIVE.flags |= FP_ROUTER;
          break;
    }
-   
+
    /* 
     * HOOK POINT:  PACKET_ICMP 
     */

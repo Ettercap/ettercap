@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.29 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.30 2003/07/04 21:51:38 alor Exp $
 */
 
 
@@ -75,6 +75,8 @@ void ec_usage(void)
    fprintf(stdout, "  -L, --log <logfile>         log all the traffic to this <logfile>\n");
    fprintf(stdout, "  -l, --log-info <logfile>    log only passive infos to this <logfile>\n");
    fprintf(stdout, "  -c, --compress              use gzip compression on log files\n");
+   fprintf(stdout, "  -o, --only-local            store profiles only for local hosts\n");
+   fprintf(stdout, "  -O, --only-remote           store profiles only for remote hosts\n");
    
    fprintf(stdout, "\nVisualization options:\n");
    fprintf(stdout, "  -d, --dns                   resolves ip addresses into hostnames\n");
@@ -132,6 +134,8 @@ void parse_options(int argc, char **argv)
       { "log", required_argument, NULL, 'L' },
       { "log-info", required_argument, NULL, 'l' },
       { "compress", no_argument, NULL, 'c' },
+      { "only-local", no_argument, NULL, 'o' },
+      { "only-remote", no_argument, NULL, 'O' },
       
       { "console", no_argument, NULL, 'C' },
       { "ncurses", no_argument, NULL, 'N' },
@@ -158,7 +162,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDdEe:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:V:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDdEe:f:Ghi:j:k:L:l:Nn:OoP:pqiRr:t:V:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -240,6 +244,14 @@ void parse_options(int argc, char **argv)
                   
          case 'c':
                   GBL_OPTIONS->compress = 1;
+                  break;
+
+         case 'o':
+                  GBL_OPTIONS->only_local = 1;
+                  break;
+                  
+         case 'O':
+                  GBL_OPTIONS->only_remote = 1;
                   break;
                   
          case 'e':

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.5 2003/09/09 21:32:56 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.6 2003/09/10 12:41:23 alor Exp $
 */
 
 #include <ec.h>
@@ -221,6 +221,9 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
       case 5:
          base = po->DATA.data;
          break;
+      case 6:
+         base = po->DATA.disp_data;
+         break;
       default:
          JIT_FAULT("unsupported test level [%d]", fop->op.test.level);
          break;
@@ -256,7 +259,7 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
    switch (fop->op.test.size) {
       case 0:
          /* string comparison */
-         if (!memcmp(base + fop->op.test.offset, fop->op.test.string, fop->op.test.string_len))
+         if (cmp_func(memcmp(base + fop->op.test.offset, fop->op.test.string, fop->op.test.string_len), 0) )
             return FLAG_TRUE;
          break;
       case 1:
@@ -346,18 +349,18 @@ static int execute_assign(struct filter_op *fop, struct packet_object *po)
 static int func_search(struct filter_op *fop, struct packet_object *po)
 {
    switch (fop->op.func.level) {
-      case 0:
+      case 5:
          /* search in the real packet */
          if (memmem(po->DATA.data, po->DATA.len, fop->op.func.value, fop->op.func.value_len))
             return ESUCCESS;
          break;
-      case 1:
+      case 6:
          /* search in the decoded/decrypted packet */
          if (memmem(po->DATA.disp_data, po->DATA.disp_len, fop->op.func.value, fop->op.func.value_len))
             return ESUCCESS;
          break;
       default:
-         JIT_FAULT("unsupported DATA level [%d]", fop->op.func.level);
+         JIT_FAULT("unsupported search level [%d]", fop->op.func.level);
          break;
    }
    
@@ -381,18 +384,18 @@ static int func_regex(struct filter_op *fop, struct packet_object *po)
    } 
    
    switch (fop->op.func.level) {
-      case 0:
+      case 5:
          /* search in the real packet */
          if (regexec(&regex, po->DATA.data, 0, NULL, 0) == 0)
             return ESUCCESS;
          break;
-      case 1:
+      case 6:
          /* search in the decoded/decrypted packet */
          if (regexec(&regex, po->DATA.disp_data, 0, NULL, 0) == 0)
             return ESUCCESS;
          break;
       default:
-         JIT_FAULT("unsupported DATA level [%d]", fop->op.func.level);
+         JIT_FAULT("unsupported regex level [%d]", fop->op.func.level);
          break;
    }
 
@@ -472,16 +475,16 @@ static int func_log(struct filter_op *fop, struct packet_object *po)
 
    /* which data should I have to log ? */
    switch(fop->op.func.level) {
-      case 0:
+      case 5:
          if (write(fd, po->DATA.data, po->DATA.len) < 0)
             USER_MSG("filter engine: Cannot write to file...%d\n", errno);
          break;
-      case 1:
+      case 6:
          if (write(fd, po->DATA.disp_data, po->DATA.disp_len) < 0)
             USER_MSG("filter engine: Cannot write to file...\n");
          break;
       default:
-         JIT_FAULT("unsupported DATA level [%d]", fop->op.func.level);
+         JIT_FAULT("unsupported log level [%d]", fop->op.func.level);
          break;
    }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.10 2003/09/09 20:10:55 alor Exp $
+    $Id: el_profiles.c,v 1.11 2003/09/10 12:41:29 alor Exp $
 */
 
 #include <el.h>
@@ -233,7 +233,9 @@ static void update_user_list(struct open_port *o, struct log_header_info *inf, s
    
    /* search for an existing user and pass */
    LIST_FOREACH(u, &(o->users_list_head), next) {
-      if (!strcmp(u->user, buf->user) && !strcmp(u->pass, buf->pass)) {
+      if (!strcmp(u->user, buf->user) && 
+          !strcmp(u->pass, buf->pass) &&
+          !ip_addr_cmp(&u->client, &inf->client) ) {
          return;
       }
    }

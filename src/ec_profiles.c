@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.15 2003/09/09 20:10:55 alor Exp $
+    $Id: ec_profiles.c,v 1.16 2003/09/10 12:41:23 alor Exp $
 */
 
 #include <ec.h>
@@ -357,7 +357,8 @@ static int profile_add_user(struct packet_object *po)
    /* search if the user was already logged */ 
    LIST_FOREACH(u, &(o->users_list_head), next) {
       if (!strcmp(u->user, po->DISSECTOR.user) && 
-          !strcmp(u->pass, po->DISSECTOR.pass)) {
+          !strcmp(u->pass, po->DISSECTOR.pass) &&
+          !ip_addr_cmp(&u->client, &po->L3.src)) {
          PROFILE_UNLOCK;
          return 0;
       }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_input.c,v 1.7 2004/02/29 17:37:21 alor Exp $
+    $Id: wdg_input.c,v 1.8 2004/03/06 18:06:58 alor Exp $
 */
 
 #include <wdg.h>
@@ -581,8 +581,14 @@ void wdg_input_get_input(wdg_t *wo)
    WDG_LOOP {
 
       key = wgetch(stdscr);
+     
+      WDG_DEBUG_MSG("keypress: %d", key);
       
       switch (key) {
+         
+         /* ugly hack to prevent the unexpected behaviour of the 'end' key */
+         case KEY_END:
+            break;
             
          case KEY_CTRL_L:
             /* redrawing the screen is equivalent to resizing it */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.6 2003/10/21 09:02:16 alor Exp $
+    $Id: ec_socket.c,v 1.7 2004/03/06 18:06:53 alor Exp $
 */
 
 #include <ec.h>
@@ -75,13 +75,13 @@ int open_socket(char *host, u_int16 port)
    DEBUG_MSG("open_socket -- [%s]:[%d]", host, port);
 
    /* prepare the structures */
-   bzero((char*)&sa_in, sizeof(sa_in));
+   memset((char*)&sa_in, 0, sizeof(sa_in));
    sa_in.sin_family = AF_INET;
    sa_in.sin_port = htons(port);
 
    /* resolve the hostname */
    if ( (infh = gethostbyname(host)) )
-      bcopy(infh->h_addr, (char*)&sa_in.sin_addr, infh->h_length);
+      memcpy(&sa_in.sin_addr, infh->h_addr, infh->h_length);
    else {
       if ( inet_aton(host, (struct in_addr *)&sa_in.sin_addr.s_addr) == 0 )
          FATAL_MSG("Cannot resolve %s", host);

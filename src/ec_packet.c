@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.12 2003/06/02 19:41:13 alor Exp $
+    $Id: ec_packet.c,v 1.13 2003/06/09 12:03:14 alor Exp $
 */
 
 #include <ec.h>
@@ -28,9 +28,9 @@
 
 /* protos... */
 
-int packet_create_object(struct packet_object **po, u_char *buf, size_t len);
+int packet_create_object(struct packet_object *po, u_char *buf, size_t len);
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
-int packet_destroy_object(struct packet_object **po);
+int packet_destroy_object(struct packet_object *po);
 struct packet_object * packet_dup(struct packet_object *po);
 
 /* XXX - remove this */
@@ -39,19 +39,18 @@ void packet_print(struct packet_object *po);
 /* --------------------------- */
 
 /*
- * allocate memory for the packet object
- * associate it to the buffer
+ * associate the buffer to the packet object
  */
 
-int packet_create_object(struct packet_object **po, u_char *buf, size_t len)
+int packet_create_object(struct packet_object *po, u_char *buf, size_t len)
 {
 
-   *po = (struct packet_object *)calloc(1, sizeof(struct packet_object));
-   ON_ERROR(*po, NULL, "calloc: cant allocate po");
+   /* clear the memory */
+   memset(po, 0, sizeof(struct packet_object));
    
    /* set the buffer and the len of the received packet */
-   (*po)->packet = buf;
-   (*po)->len = len;
+   po->packet = buf;
+   po->len = len;
    
    return (0);
 }
@@ -75,7 +74,7 @@ int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
  * free the packet object memory
  */
 
-int packet_destroy_object(struct packet_object **po)
+int packet_destroy_object(struct packet_object *po)
 {
    
    /* 
@@ -83,27 +82,23 @@ int packet_destroy_object(struct packet_object **po)
     * we have to free even the packet buffer.
     * alse free data directed to top_half
     */
-   if ((*po)->flags & PO_DUP) {
+   if (po->flags & PO_DUP) {
      
-      SAFE_FREE((*po)->packet);
+      SAFE_FREE(po->packet);
       
       /* XXX - dispatcher needs them */
-      SAFE_FREE((*po)->DISSECTOR.user);
-      SAFE_FREE((*po)->DISSECTOR.pass);
-      SAFE_FREE((*po)->DISSECTOR.info);
-      SAFE_FREE((*po)->DISSECTOR.banner);
-
+      SAFE_FREE(po->DISSECTOR.user);
+      SAFE_FREE(po->DISSECTOR.pass);
+      SAFE_FREE(po->DISSECTOR.info);
+      SAFE_FREE(po->DISSECTOR.banner);
    }
       
    /* 
     * free the disp_data pointer
     * it was malloced by tcp or udp decoder
     */
-   SAFE_FREE((*po)->disp_data);
+   SAFE_FREE(po->disp_data);
    
-   /* then the po structure */
-   SAFE_FREE(*po);
-
    return 0;
 
 }

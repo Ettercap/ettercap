@@ -91,9 +91,9 @@ struct packet_object {
    
 };
 
-extern int packet_create_object(struct packet_object **po, u_char * buf, size_t len);
+extern int packet_create_object(struct packet_object *po, u_char * buf, size_t len);
 extern int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
-extern int packet_destroy_object(struct packet_object **po);
+extern int packet_destroy_object(struct packet_object *po);
 extern struct packet_object * packet_dup(struct packet_object *po);
 
 extern void packet_print(struct packet_object *po);

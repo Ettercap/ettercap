@@ -22,6 +22,7 @@ NG-0.7.0    ????????
    + enhanced passive open port discoverer 
    + randomized ARP scan
    + cached dns resolution (increase speed)
+   + enhanced statistics on ettercap performances
    !! offline sniffing actually does not bind to any NICs
 
 

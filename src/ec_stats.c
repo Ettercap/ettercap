@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_stats.c,v 1.2 2003/06/05 21:10:35 alor Exp $
+    $Id: ec_stats.c,v 1.3 2003/06/09 12:03:15 alor Exp $
 */
 
 #include <ec.h>
@@ -96,10 +96,11 @@ void stats_half_end(struct half_stats *hs, u_int32 len)
    hs->tmp_size += len;
    
    if ( (hs->pck_recv % SAMPLING_RATE) == 0 ) {
+#if 0
       DEBUG_MSG("PACKET RATE: %f %f %f [%.2f] [%.2f] -- [%.0f] [%.0f]\n", time, ptime, ttime, 
             SAMPLING_RATE/ptime, hs->pck_recv/ttime,
             hs->tmp_size/ptime, hs->pck_size/ttime);
-      
+#endif       
       /* save the average and the worst sampling */
       hs->rate_adv = hs->pck_recv/ttime;
       if (hs->rate_worst > SAMPLING_RATE/ptime || hs->rate_worst == 0)
@@ -108,7 +109,13 @@ void stats_half_end(struct half_stats *hs, u_int32 len)
       hs->thru_adv = hs->pck_size/ttime;
       if (hs->thru_worst > hs->tmp_size/ptime || hs->thru_worst == 0)
          hs->thru_worst = hs->tmp_size/ptime;
-      
+
+#if 1
+      DEBUG_MSG("PACKET RATE: %d [%d] [%d] -- [%d] [%d]\n", hs->pck_recv,
+         hs->rate_worst, hs->rate_adv,
+         hs->thru_worst, hs->thru_adv);
+#endif
+            
       /* reset the partial */
       memset(&hs->tpar, 0, sizeof(struct timeval));
       hs->tmp_size = 0;

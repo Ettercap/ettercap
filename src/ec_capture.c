@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.13 2003/05/19 10:14:27 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.14 2003/06/09 12:03:13 alor Exp $
 */
 
 #include <ec.h>
@@ -79,6 +79,8 @@ void capture_init(void)
       if (!strcmp(GBL_OPTIONS->iface, GBL_OPTIONS->iface_bridge))
          FATAL_ERROR("Bridging iface must be different from %s", GBL_OPTIONS->iface);
       USER_MSG("Bridging %s and %s...\n\n", GBL_OPTIONS->iface, GBL_OPTIONS->iface_bridge);
+   } else if (GBL_OPTIONS->read) {
+      USER_MSG("Reading from %s...\n\n", GBL_OPTIONS->dumpfile);
    } else
       USER_MSG("Listening on %s...\n\n", GBL_OPTIONS->iface);
    
@@ -239,7 +241,11 @@ void get_hw_info(void)
    struct libnet_ether_addr *ea;
    bpf_u_int32 network, netmask;
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
-  
+ 
+   /* do not touch the interface if reading from a file */
+   if (GBL_OPTIONS->read)
+      return;
+   
    DEBUG_MSG("get_hw_info");
    
    ip = libnet_get_ipaddr4(GBL_LNET->lnet);

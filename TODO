@@ -25,16 +25,15 @@
 
 >>> current developmet state 
 
-   + STATISTICS
-      - bottom half stats
-
    + TOP HALF
       - passive profiling (almost done in etterlog)
       - connection tracking (with buffered conn)
+      - packet display (almost done in etterlog & format)
       
    + ARP POISON ENGINE
       - arp poisoner
       - multipoison
+      - rearp in demon mode (clean shutdown of all thread)
    
    + FILTERING ENGINE
       - use regexp for filtering
@@ -77,13 +76,6 @@
 
    + SFTP
    + FTP-SSL
-
-   + RESEARCH
-      - How does VPN work ?
-      - How does Kerberos work ?
-
-   + Protocol Injection
-      - with ncurses form (different injector for different protocol)
 
    + NEW DISSECTOR
       - TACACS dissector

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.16 2003/06/05 20:07:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.17 2003/06/09 12:03:14 alor Exp $
 */
 
 #include <ec.h>
@@ -111,7 +111,7 @@ EC_THREAD_FUNC(top_half)
       pck_len = e->po->len;
       
       /* destroy the duplicate packet object */
-      packet_destroy_object(&e->po);
+      packet_destroy_object(e->po);
       SAFE_FREE(e);
       
       /* start the counter for the TopHalf */

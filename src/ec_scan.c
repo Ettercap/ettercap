@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.9 2003/05/26 20:02:14 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.10 2003/06/09 12:03:14 alor Exp $
 */
 
 #include <ec.h>
@@ -185,7 +185,7 @@ EC_THREAD_FUNC(capture_scan)
 
 void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
 {
-   struct packet_object *po;
+   struct packet_object po;
    int len;
    u_char *data;
    int datalen;
@@ -200,19 +200,19 @@ void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *
    packet_create_object(&po, data, datalen);
 
    /* set the po timestamp */
-   memcpy(&po->ts, &pkthdr->ts, sizeof(struct timeval));
+   memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
    
    /* 
     * in this special parsing, the packet must be ingored by
     * application layer, leave this un touched.
     */
-   po->flags |= PO_IGNORE;
+   po.flags |= PO_IGNORE;
   
    /* 
     * start the analysis through the decoders stack 
     * after this fuction the packet is completed (all flags set)
     */
-   l2_decoder(data, datalen, &len, po);
+   l2_decoder(data, datalen, &len, &po);
    
    /* free the structure */
    packet_destroy_object(&po);

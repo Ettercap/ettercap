@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.22 2003/06/05 20:07:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.23 2003/06/09 12:03:13 alor Exp $
 */
 
 #include <ec.h>
@@ -71,7 +71,7 @@ static pthread_mutex_t dump_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
 {
-   struct packet_object *po;
+   struct packet_object po;
    struct pcap_stat ps;
    int len;
    u_char *data;
@@ -131,22 +131,22 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    packet_create_object(&po, data, datalen);
 
    /* set the po timestamp */
-   memcpy(&po->ts, &pkthdr->ts, sizeof(struct timeval));
+   memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
    
    /* set the interface from which the packet comes */
    if (!strcmp(param, GBL_OPTIONS->iface))
-      po->flags |= PO_FROMIFACE;
+      po.flags |= PO_FROMIFACE;
    else
-      po->flags |= PO_FROMBRIDGE;
+      po.flags |= PO_FROMBRIDGE;
 
    /* HOOK POINT: RECEIVED */ 
-   hook_point(HOOK_RECEIVED, po);
+   hook_point(HOOK_RECEIVED, &po);
    
    /* 
     * by default the packet should not be processed by ettercap.
     * if the sniffing filter matches it, the flag will be reset.
     */
-   po->flags |= PO_IGNORE;
+   po.flags |= PO_IGNORE;
   
    /* 
     * start the analysis through the decoders stack 
@@ -157,17 +157,18 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     *
     * after this fuction the packet is completed (all flags set)
     */
-   l2_decoder(data, datalen, &len, po);
+   l2_decoder(data, datalen, &len, &po);
    
-   hook_point(HOOK_DECODED, po);
+   /* HOOK POINT: DECODED (the po structure is filled) */ 
+   hook_point(HOOK_DECODED, &po);
   
    /* 
     * use the sniffing method funcion to forward the packet 
     */
-   if (po->flags & PO_FORWARDABLE ) {
+   if (po.flags & PO_FORWARDABLE ) {
       /* HOOK POINT: PRE_FORWARD */ 
-      hook_point(HOOK_PRE_FORWARD, po);
-      EXECUTE(GBL_SNIFF->forward, po);
+      hook_point(HOOK_PRE_FORWARD, &po);
+      EXECUTE(GBL_SNIFF->forward, &po);
    }
    
    /* 
@@ -177,8 +178,8 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * might be dropped by the filter.
     */
    if (GBL_OPTIONS->read && GBL_PCAP->dump_size == GBL_PCAP->dump_off) {
-      po->flags |= PO_EOF;
-      top_half_queue_add(po);
+      po.flags |= PO_EOF;
+      top_half_queue_add(&po);
    }
    
    /* free the structure */

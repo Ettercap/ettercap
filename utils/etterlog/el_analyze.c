@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_analyze.c,v 1.14 2003/09/18 22:15:04 alor Exp $
+    $Id: el_analyze.c,v 1.15 2004/02/01 16:49:21 alor Exp $
 */
 
 #include <el.h>
@@ -149,7 +149,7 @@ void analyze_info(void)
    struct host_profile *h;
    struct open_port *o;
    struct active_user *u;
-   LIST_HEAD(, host_profile) *hosts_list_head = get_host_list_ptr();
+   TAILQ_HEAD(, host_profile) *hosts_list_head = get_host_list_ptr();
    int nhl = 0, nhnl = 0, ngw = 0;
    int nports = 0, nusers = 0, nhosts = 0;
    
@@ -157,7 +157,7 @@ void analyze_info(void)
    create_hosts_list(); 
 
 
-   LIST_FOREACH(h, hosts_list_head, next) {
+   TAILQ_FOREACH(h, hosts_list_head, next) {
       if (h->type & FP_HOST_LOCAL)
          nhl++;
       

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.15 2004/01/04 17:01:52 alor Exp $
+    $Id: el_profiles.c,v 1.16 2004/02/01 16:49:21 alor Exp $
 */
 
 #include <el.h>
@@ -26,7 +26,7 @@
 
 /* globals */
 
-LIST_HEAD(, host_profile) hosts_list_head;
+TAILQ_HEAD(, host_profile) hosts_list_head = TAILQ_HEAD_INITIALIZER(hosts_list_head);
 
 /* protos */
 
@@ -80,7 +80,7 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
       memset(inf->L2_addr, 0, MEDIA_ADDR_LEN);
   
    /* search if it already exists */
-   LIST_FOREACH(h, &hosts_list_head, next) {
+   TAILQ_FOREACH(h, &hosts_list_head, next) {
       /* an host is identified by the mac and the ip address */
       /* if the mac address is null also update it since it could
        * be captured as a DNS packet specifying the GW 
@@ -103,18 +103,18 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
    update_info(h, inf, buf);
    
    /* search the right point to inser it (ordered ascending) */
-   LIST_FOREACH(c, &hosts_list_head, next) {
+   TAILQ_FOREACH(c, &hosts_list_head, next) {
       if ( ip_addr_cmp(&c->L3_addr, &h->L3_addr) > 0 )
          break;
       last = c;
    }
    
-   if (LIST_FIRST(&hosts_list_head) == NULL) 
-      LIST_INSERT_HEAD(&hosts_list_head, h, next);
+   if (TAILQ_FIRST(&hosts_list_head) == NULL) 
+      TAILQ_INSERT_HEAD(&hosts_list_head, h, next);
    else if (c != NULL) 
-      LIST_INSERT_BEFORE(c, h, next);
+      TAILQ_INSERT_BEFORE(c, h, next);
    else 
-      LIST_INSERT_AFTER(last, h, next);
+      TAILQ_INSERT_AFTER(&hosts_list_head, last, h, next);
 
    return 1;   
 }
@@ -166,7 +166,7 @@ static void set_gateway(u_char *L2_addr)
 {
    struct host_profile *h;
 
-   LIST_FOREACH(h, &hosts_list_head, next) {
+   TAILQ_FOREACH(h, &hosts_list_head, next) {
       if (!memcmp(h->L2_addr, L2_addr, MEDIA_ADDR_LEN) ) {
          h->type |= FP_GATEWAY; 
          return;

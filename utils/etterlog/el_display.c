@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_display.c,v 1.33 2003/11/10 22:46:24 alor Exp $
+    $Id: el_display.c,v 1.34 2004/02/01 16:49:21 alor Exp $
 */
 
 #include <el.h>
@@ -230,7 +230,7 @@ void set_display_regex(char *regex)
 static void display_info(void)
 {
    struct host_profile *h;
-   LIST_HEAD(, host_profile) *hosts_list_head = get_host_list_ptr();
+   TAILQ_HEAD(, host_profile) *hosts_list_head = get_host_list_ptr();
    
    /* create the hosts' list */
    create_hosts_list(); 
@@ -260,7 +260,7 @@ static void display_info(void)
       fprintf(stdout, "\n\n");
    
    /* parse the list */
-   LIST_FOREACH(h, hosts_list_head, next) {
+   TAILQ_FOREACH(h, hosts_list_head, next) {
 
       /* respect the TARGET selection */
       if (!is_target_info(h))

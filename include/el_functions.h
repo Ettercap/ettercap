@@ -39,7 +39,8 @@ extern int is_conn(struct log_header_packet *pck, int *versus);
 /* el_target */
 extern void target_compile(char *target);
 extern int is_target_pck(struct log_header_packet *pck);
-extern int is_target_info(struct log_header_info *inf);
+extern int is_target_info(struct host_profile *hst);
+extern int find_user(struct host_profile *hst, char *user);
 
 /* el_profiles */
 extern int profile_add_info(struct log_header_info *inf, struct dissector_info *buf);

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_arp.c,v 1.2 2003/04/02 11:56:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_arp.c,v 1.3 2003/04/07 21:58:39 alor Exp $
 */
 
 #include <ec.h>
@@ -95,8 +95,8 @@ FUNC_DECODER(decode_arp)
       struct arp_eth_header *earp;
       earp = (struct arp_eth_header *)(arp + 1);
       
-      memcpy(&PACKET->L3.src, &earp->arp_spa, IP_ADDR_LEN);
-      memcpy(&PACKET->L3.dst, &earp->arp_tpa, IP_ADDR_LEN);
+      ip_addr_init(&PACKET->L3.src, AF_INET, (char *)&earp->arp_spa);
+      ip_addr_init(&PACKET->L3.dst, AF_INET, (char *)&earp->arp_tpa);
            
       /* HOOK POINT:  PACKET_ARP */
       hook_point(PACKET_ARP, po);

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.13 2003/04/03 21:17:59 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.14 2003/04/07 21:57:56 alor Exp $
 */
 
 #include <ec.h>
@@ -264,7 +264,7 @@ void reset_display_filter(struct target_env *t)
 int compile_display_filter(void)
 {
 #define MAX_TOK 3
-   char valid[] = "1234567890/.,-;:";
+   char valid[] = "1234567890/.,-;:ABCDEFabcdef";
    char *tok[MAX_TOK];
    char *p;
    int i = 0;

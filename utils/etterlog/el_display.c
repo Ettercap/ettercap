@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.10 2003/04/06 10:40:11 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.11 2003/04/07 21:58:40 alor Exp $
 */
 
 #include <el.h>
@@ -244,16 +244,29 @@ static void display_info(void)
    LIST_FOREACH(h, hosts_list_head, next) {
 
       memset(os, 0, sizeof(os));
+     
+      /* respect the TARGET selection */
+      if (!is_target_info(h))
+         continue;
+     
+      /* we are searching one particular user */
+      if (find_user(h, GBL.user) == -ENOTFOUND)
+         continue;
       
-      /* XXX respect the TARGET and regex */
+      /* skip the host respecting the options */
+      if (GBL.only_local && (h->type & FP_HOST_NONLOCAL))
+         continue;
+      
+      if (GBL.only_remote && (h->type & FP_HOST_LOCAL))
+         continue;
       
       /* set the color */
       if (GBL.color) {
          if (h->type & FP_GATEWAY)
             set_color(COL_RED);
-         if (h->type & FP_HOST_LOCAL)
+         else if (h->type & FP_HOST_LOCAL)
             set_color(COL_GREEN);
-         if (h->type & FP_HOST_NONLOCAL)
+         else if (h->type & FP_HOST_NONLOCAL)
             set_color(COL_BLUE);
       }
       
@@ -265,13 +278,13 @@ static void display_info(void)
          fprintf(stdout, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
       }
       
-      fprintf(stdout, " DISTANCE : %d   \n", h->distance);
+      fprintf(stdout, " DISTANCE     : %d   \n", h->distance);
       if (h->type & FP_GATEWAY)
-         fprintf(stdout, " TYPE     : GATEWAY\n\n");
+         fprintf(stdout, " TYPE         : GATEWAY\n\n");
       else if (h->type & FP_HOST_LOCAL)
-         fprintf(stdout, " TYPE     : LAN host\n\n");
+         fprintf(stdout, " TYPE         : LAN host\n\n");
       else if (h->type & FP_HOST_NONLOCAL)
-         fprintf(stdout, " TYPE     : REMOTE host\n\n");
+         fprintf(stdout, " TYPE         : REMOTE host\n\n");
       
       fprintf(stdout, " FINGERPRINT      : %s\n", h->fingerprint);
       if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
@@ -293,6 +306,7 @@ static void display_info(void)
             fprintf(stdout, "      PASS     : %s\n", u->pass);
             fprintf(stdout, "      INFO     : %s\n", u->info);
          }
+         fprintf(stdout, "\n");
       }
       
       fprintf(stdout, "\n==================================================\n\n");

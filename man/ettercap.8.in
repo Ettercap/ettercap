@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.13 2003/04/02 11:56:36 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.14 2003/04/07 21:57:53 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -238,6 +238,10 @@ This is useful if you have to use "active" sniffing (arp poison) on a switched
 LAN but you want to analyze the packets with tcpdump or ethereal. You can use
 this option to dump the packets to a file and then load it into your favourite
 application.
+.Sp
+NOTE: dump file collect ALL the packets disregarding the TARGET. This is done
+because you may want to log even protocols not supported by ettercap, so you
+can analyze them with other tools.
 
 
 .TP

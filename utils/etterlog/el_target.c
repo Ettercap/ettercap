@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.4 2003/04/03 15:13:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.5 2003/04/07 21:58:42 alor Exp $
 */
 
 #include <el.h>
@@ -29,8 +29,11 @@ static void add_ip(void *digit, int n);
 static void expand_range_ip(char *str, void *target);
 int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
 void add_ip_list(struct ip_addr *ip, struct target_env *t);
+
 int is_target_pck(struct log_header_packet *pck);
-int is_target_info(struct log_header_info *pck);
+int is_target_info(struct host_profile *hst);
+
+int find_user(struct host_profile *hst, char *user);
 
 /*******************************************/
 
@@ -38,7 +41,7 @@ int is_target_info(struct log_header_info *pck);
 void target_compile(char *target)
 {
 #define MAX_TOK 3
-   char valid[] = "1234567890/.,-;:";
+   char valid[] = "1234567890/.,-;:ABCDEFabcdef";
    char *tok[MAX_TOK];
    char *p;
    int i = 0;
@@ -291,14 +294,15 @@ int is_target_pck(struct log_header_packet *pck)
 }
 
 /*
- * return true if the packet conform to TARGET
+ * return 1 if the packet conform to TARGET
  */
 
-int is_target_info(struct log_header_info *pck)
+int is_target_info(struct host_profile *hst)
 {
-#if 0   
+   struct open_port *o;
    int proto = 0;
-   int good = 0;
+   int port = 0;
+   int host = 0;
    
    /* 
     * first check the protocol.
@@ -306,49 +310,75 @@ int is_target_info(struct log_header_info *pck)
     * useless to parse the mac, ip and port
     */
 
-   /* XXX - implement */
-    if (!GBL_TARGET->proto || !strcasecmp(GBL_TARGET->proto, "all"))  
-       proto = 1;
-
-    if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "tcp") 
-          && pck->L4_proto == NL_TYPE_TCP)
-       proto = 1;
+   if (!GBL_TARGET->proto || !strcasecmp(GBL_TARGET->proto, "all"))  
+      proto = 1;
    
-    if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "udp") 
-          && pck->L4_proto == NL_TYPE_UDP)
-       proto = 1;
+   /* all the ports are good */
+   if (GBL_TARGET->all_port && proto)
+      port = 1;
+   else {
+      LIST_FOREACH(o, &(hst->open_ports_head), next) {
     
-    /* the protocol does not match */
-    if (!GBL.reverse && proto == 0)
-       return 0;
-    
+         if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "tcp") 
+             && o->L4_proto == NL_TYPE_TCP)
+            proto = 1;
+   
+         if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "udp") 
+             && o->L4_proto == NL_TYPE_UDP)
+            proto = 1;
+
+         /* if the port is open, it matches */
+         if (proto && (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(o->L4_addr))) ) {
+            port = 1;
+            break;
+         }
+      }
+   }
+
    /*
     * we have to check if the packet is complying with the filter
     * specified by the users.
     */
  
    /* it is in the source */
-   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_src, ETH_ADDR_LEN)) &&
-        (GBL_TARGET->all_ip   || cmp_ip_list(&pck->L3_src, GBL_TARGET) ) &&
-        (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_src))) )
-      good = 1;
+   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, hst->L2_addr, ETH_ADDR_LEN)) &&
+        (GBL_TARGET->all_ip   || cmp_ip_list(&hst->L3_addr, GBL_TARGET) ) )
+      host = 1;
 
-   /* it is in the dest */
-   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_dst, ETH_ADDR_LEN)) &&
-        (GBL_TARGET->all_ip   || cmp_ip_list(&pck->L3_dst, GBL_TARGET)) &&
-        (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_dst))) )
-      good = 1;   
-  
 
    /* check the reverse option */
-   if (GBL.reverse ^ (good && proto) ) 
+   if (GBL.reverse ^ (host && port) ) 
       return 1;
    else
       return 0;
 
-#endif
-   return 0;
 }
+
+
+/* 
+ * return ESUCCESS if the user 'user' is in the user list
+ */
+
+int find_user(struct host_profile *hst, char *user)
+{
+   struct open_port *o;
+   struct active_user *u;
+      
+   if (user == NULL)
+      return ESUCCESS;
+   
+   LIST_FOREACH(o, &(hst->open_ports_head), next) {
+      LIST_FOREACH(u, &(o->users_list_head), next) {
+         if (strcasecmp(u->user, user))
+            return ESUCCESS;
+      }
+   }
+
+   return -ENOTFOUND;
+}
+
+
+
 
 /* EOF */
 

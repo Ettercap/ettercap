@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.9 2003/04/05 13:58:41 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.10 2003/04/07 21:58:40 alor Exp $
 */
 
 
@@ -59,6 +59,8 @@ void el_usage(void)
    fprintf(stdout, "  -n, --no-headers            skip header informations between packets\n");
    fprintf(stdout, "  -m, --show-mac              show mac addresses in the headers\n");
    fprintf(stdout, "  -k, --color                 colorize the output\n");
+   fprintf(stdout, "  -l, --only-local            show only local hosts parsing info files\n");
+   fprintf(stdout, "  -L, --only-remote           show only remote hosts parsing info files\n");
    
    fprintf(stdout, "\nSearch Options:\n");
    fprintf(stdout, "  -e, --regex <regex>         display only packets that match the regex\n");
@@ -110,6 +112,8 @@ void parse_options(int argc, char **argv)
       { "color", no_argument, NULL, 'k' },
       { "reverse", no_argument, NULL, 'r' },
       { "proto", required_argument, NULL, 't' },
+      { "only-local", required_argument, NULL, 'l' },
+      { "only-remote", required_argument, NULL, 'L' },
       
       { "user", required_argument, NULL, 'u' },
       { "regex", required_argument, NULL, 'e' },
@@ -120,7 +124,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhkmnrsTt:u:vXZ", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhkLlmnrsTt:u:vXZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -168,8 +172,16 @@ void parse_options(int argc, char **argv)
                   GBL.showmac = 1;
                   break;
 
+         case 'l':
+                  GBL.only_local = 1;
+                  break;
+         
+         case 'L':
+                  GBL.only_remote = 1;
+                  break;
+                  
          case 'u':
-                  NOT_IMPLEMENTED();
+                  GBL.user = strdup(optarg);
                   break;
 
          case 'e':

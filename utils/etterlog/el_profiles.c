@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.3 2003/04/05 13:11:10 alor Exp $
+    $Id: el_profiles.c,v 1.4 2003/04/07 21:58:41 alor Exp $
 */
 
 #include <el.h>
@@ -54,7 +54,9 @@ void *get_host_list_ptr(void)
 int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
 {
    struct host_profile *h;
-
+   struct host_profile *c;
+   struct host_profile *last = NULL;
+   
    /* 
     * if the type is FP_HOST_NONLOCAL 
     * search for the GW and mark it
@@ -65,7 +67,7 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
    /* non local ip address must not carry mac address */
    if (inf->type & FP_HOST_NONLOCAL)
       memset(inf->L2_addr, 0, ETH_ADDR_LEN);
-   
+  
    /* parse the list */
    LIST_FOREACH(h, &hosts_list_head, next) {
       /* search the host.
@@ -85,9 +87,21 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
    ON_ERROR(h, NULL, "can't allocate memory");
 
    update_info(h, inf, buf);
-
-   LIST_INSERT_HEAD(&hosts_list_head, h, next);
    
+   /* search the right point to inser it (ordered ascending) */
+   LIST_FOREACH(c, &hosts_list_head, next) {
+      if ( ip_addr_cmp(&c->L3_addr, &h->L3_addr) > 0 )
+         break;
+      last = c;
+   }
+   
+   if (LIST_FIRST(&hosts_list_head) == NULL) 
+      LIST_INSERT_HEAD(&hosts_list_head, h, next);
+   else if (c != NULL) 
+      LIST_INSERT_BEFORE(c, h, next);
+   else 
+      LIST_INSERT_AFTER(last, h, next);
+
    return 1;   
 }
 
@@ -151,6 +165,8 @@ static void set_gateway(u_char *L2_addr)
 static void update_port_list(struct host_profile *h, struct log_header_info *inf, struct dissector_info *buf)
 {
    struct open_port *o;
+   struct open_port *p;
+   struct open_port *last = NULL;
 
    /* search for an existing port */
    LIST_FOREACH(o, &(h->open_ports_head), next) {
@@ -172,18 +188,33 @@ static void update_port_list(struct host_profile *h, struct log_header_info *inf
 
    o->L4_proto = inf->L4_proto;
    o->L4_addr = inf->L4_addr;
-   
-   /* insert in the list */
-   LIST_INSERT_HEAD(&(h->open_ports_head), o, next);
-
+  
    /* add user and pass */
    update_user_list(o, inf, buf);
+
+   /* search the right point to inser it (ordered ascending) */
+   LIST_FOREACH(p, &(h->open_ports_head), next) {
+      if ( ntohs(p->L4_addr) > ntohs(o->L4_addr) )
+         break;
+      last = p;
+   }
+
+   /* insert in the right position */
+   if (LIST_FIRST(&(h->open_ports_head)) == NULL) 
+      LIST_INSERT_HEAD(&(h->open_ports_head), o, next);
+   else if (p != NULL) 
+      LIST_INSERT_BEFORE(p, o, next);
+   else 
+      LIST_INSERT_AFTER(last, o, next);
+   
 }
 
 
 static void update_user_list(struct open_port *o, struct log_header_info *inf, struct dissector_info *buf)
 {
    struct active_user *u;
+   struct active_user *a;
+   struct active_user *last = NULL;
 
    /* search for an existing user and pass */
    LIST_FOREACH(u, &(o->users_list_head), next) {
@@ -206,8 +237,21 @@ static void update_user_list(struct open_port *o, struct log_header_info *inf, s
   
    if (buf->info)
       u->info = strdup(buf->info);
+  
+   /* search the right point to inser it (ordered alphabetically) */
+   LIST_FOREACH(a, &(o->users_list_head), next) {
+      if ( strcmp(a->user, u->user) > 0 )
+         break;
+      last = a;
+   }
    
-   LIST_INSERT_HEAD(&(o->users_list_head), u, next);
+   /* insert in the right position */
+   if (LIST_FIRST(&(o->users_list_head)) == NULL) 
+      LIST_INSERT_HEAD(&(o->users_list_head), u, next);
+   else if (a != NULL) 
+      LIST_INSERT_BEFORE(a, u, next);
+   else 
+      LIST_INSERT_AFTER(last, u, next);
      
 }
 

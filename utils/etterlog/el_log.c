@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.6 2003/04/05 13:11:10 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.7 2003/04/07 21:58:40 alor Exp $
 */
 
 #include <el.h>
@@ -43,9 +43,8 @@ void open_log(char *file)
  
    /* if we are root, drop privs... */
  
-   /* XXX - uncomment this */
-//   if ( getuid() == 0 && setuid(65535) < 0)
-//      ERROR_MSG("Cannot drop priviledges...");
+   if ( getuid() == 0 && setuid(65535) < 0)
+      ERROR_MSG("Cannot drop priviledges...");
 
 }
 

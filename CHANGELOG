@@ -6,7 +6,7 @@ Legenda:
 
 =========================================
 
-NG          ????????
+NG-0.7.0    ????????
       
       + Rewrite from scratch
       + root privs dropped after initialization

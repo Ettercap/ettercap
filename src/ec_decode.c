@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.13 2003/04/05 09:25:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.14 2003/04/07 21:57:55 alor Exp $
 */
 
 #include <ec.h>
@@ -129,7 +129,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * dump packet to file if specified on command line 
     * and if it passes the display filter
     */
-   if (GBL_OPTIONS->dump && !(po->flags & PO_IGNORE) ) {
+   if (GBL_OPTIONS->dump) {
       /* 
        * we need to lock this because in SM_BRIDGED the
        * packets are dumped in the log file by two threads

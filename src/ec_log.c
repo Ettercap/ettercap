@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.11 2003/04/05 13:11:09 alor Exp $
+    $Id: ec_log.c,v 1.12 2003/04/07 21:57:55 alor Exp $
 */
 
 #include <ec.h>
@@ -49,9 +49,10 @@ int set_loglevel(int level, char *filename);
 
 void log_packet(struct packet_object *po);
 
-void log_write_info(struct packet_object *po);
 static int log_write_header(int type);
 static void log_write_packet(struct packet_object *po);
+static void log_write_info(struct packet_object *po);
+static void log_write_info_arp(struct packet_object *po);
 
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define LOG_LOCK     do{ pthread_mutex_lock(&log_mutex); } while(0)
@@ -123,7 +124,10 @@ int set_loglevel(int level, char *filename)
          
          /* add the hook point to DISPATCHER */
          hook_add(HOOK_DISPATCHER, &log_write_info);
-         
+        
+         /* add the hook for the ARP packets */
+         hook_add(PACKET_ARP, &log_write_info_arp);
+
          break;
    }
 
@@ -299,7 +303,7 @@ void log_write_packet(struct packet_object *po)
 
 
 /*
- * log passive infomations
+ * log passive informations
  *
  * hi is the source
  * hid is the dest, used to log password.
@@ -308,7 +312,7 @@ void log_write_packet(struct packet_object *po)
  *    so we create a new entry in the logfile
  */
 
-void log_write_info(struct packet_object *po)
+static void log_write_info(struct packet_object *po)
 {
    struct log_header_info hi;
    struct log_header_info hid;
@@ -378,9 +382,9 @@ void log_write_info(struct packet_object *po)
       hi.var.banner_len = htons(strlen(po->DISSECTOR.banner));
   
    /* check if the packet is interesting... else return */
-   if (hi.L4_addr == 0 && 
-       !strcmp(hi.fingerprint, "") &&
-       hid.var.user_len == 0 &&
+   if (hi.L4_addr == 0 &&                 // the port is not open
+       !strcmp(hi.fingerprint, "") &&     // no fingerprint
+       hid.var.user_len == 0 &&           // no user and pass infos...
        hid.var.pass_len == 0 &&
        hid.var.info_len == 0 &&
        hi.var.banner_len == 0
@@ -464,6 +468,48 @@ void log_write_info(struct packet_object *po)
 
    LOG_UNLOCK;
 }
+
+/*
+ * log hosts through ARP discovery
+ */
+
+static void log_write_info_arp(struct packet_object *po)
+{
+   struct log_header_info hi;
+   int c, zerr;
+
+   memset(&hi, 0, sizeof(struct log_header_info));
+
+   /* the mac address */
+   memcpy(&hi.L2_addr, &po->L2.src, ETH_ADDR_LEN);
+   
+   /* the ip address */
+   memcpy(&hi.L3_addr, &po->L3.src, sizeof(struct ip_addr));
+  
+   /* ARP discovered hosts are always at distance 1 */
+   hi.distance = 1;
+   
+   /* this was our arp request, and we are at distance 0 */
+   if (!ip_addr_cmp(&po->L3.src, &GBL_IFACE->ip))
+      hi.distance = 0;
+   
+   /* local, non local ecc ecc */
+   hi.type |= LOG_ARP_HOST;
+   hi.type |= FP_HOST_LOCAL;
+   
+   LOG_LOCK;
+   
+   if (GBL_OPTIONS->compress) {
+      c = gzwrite(fd_ci, &hi, sizeof(hi));
+      ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+   } else {
+      c = write(fd_i, &hi, sizeof(hi));
+      ON_ERROR(c, -1, "Can't write to logfile");
+   }
+
+   LOG_UNLOCK;
+}
+
 
 
 /* EOF */

@@ -87,6 +87,7 @@ struct log_header_info {
 
    u_int8 distance;
    u_int8 type;
+      #define LOG_ARP_HOST (1<<7)
    
    u_char fingerprint[FINGER_LEN+1];
 

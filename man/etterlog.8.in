@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.5 2003/04/05 13:58:41 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.6 2003/04/07 21:57:54 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -136,6 +136,14 @@ If used in conjunction with -F it displays the source and dest of the connection
 in different colors. If used with a LOG_INFO file it prints LAN hosts in green, REMOTE
 hosts in blue and GATEWAYS in red.
 
+.TP
+\fB\-l\fR, \fB\-\-only-local\fR
+Used displaying an INFO file, it displays informations only on local hosts.
+  
+.TP
+\fB\-L\fR, \fB\-\-only-remote\fR
+Used displaying an INFO file, it displays informations only on remote hosts.
+
 
 .TP
 .B SEARCH OPTIONS
@@ -213,6 +221,72 @@ Print the version and exit.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 prints the help screen with a short summary of the available options.
+
+
+
+.SH EXAMPLES
+Here are some examples of using etterlog.
+.TP
+.B etterlog -k -l dump.eci
+.Sp
+Displays infos about local hosts in different color.
+
+.TP
+.B etterlog -X dump.ecp
+.Sp
+Print packets in HEX mode with full headers.
+
+.TP
+.B etterlog -c dump.ecp
+.Sp
+Displays the list of connections logged in the file.
+
+.TP
+.B etterlog -Akn -F TCP:10.0.0.1:13423:213.203.143.52:6666 dump.ecp
+.Sp
+Displays the IRC traffic made by 10.0.0.1 in ASCII mode, without headers
+information and in colored mode.
+
+.TP
+.B etterlog -H -t tcp -f //80 dump.ecp
+.Sp
+Dump all HTTP traffic and strip html tags.
+
+.TP
+.B etterlog -Z -r -f /10.0.0.2/22 dump.ecp
+.Sp
+Displays only the headers of all connections but the ssh on host 10.0.0.2
+
+.TP
+.B etterlog -A -e '[Uu]ser' -f //110 dump.ecp
+.Sp
+Display only POP packets containing the '[Uu]ser' regexp.
+
+.TP
+.B etterlog -u root dump.eci
+.Sp
+Displays information about all the accounts of the user 'root'.
+
+.TP
+.B etterlog -e Apache dump.eci
+.Sp
+Displays information about all the hosts running 'Apache'.
+
+.TP
+.B etterlog -e Linux dump.eci
+.Sp
+Displays information about all the hosts with the 'Linux' operating system.
+
+.TP
+.B etterlog -t tcp -f //110 dump.eci
+.Sp
+Displays information about all the hosts with the tcp port 110 open.
+
+.TP
+.B etterlog -t udp dump.eci
+.Sp
+Displays information about all the hosts with at least one UDP port open.
+
 
 
 .SH AUTHORS

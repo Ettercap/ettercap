@@ -19,7 +19,7 @@ NG-0.7.0    ????????
    + fddi support
    + unified sniffing (you can use external hijacker)
    + new MITM methods:
-      + advanced ARP poisoning engine
+      + advanced ARP poisoning engine (with many-to-many support)
       + ICMP redirect
       + DCHP spoofing
    + multiple target selection

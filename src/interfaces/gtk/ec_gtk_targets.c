@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_targets.c,v 1.9 2004/05/06 14:51:49 daten Exp $
+    $Id: ec_gtk_targets.c,v 1.10 2004/05/19 14:08:55 alor Exp $
 */
 
 #include <ec.h>
@@ -124,11 +124,16 @@ void gtkui_select_targets(void)
 
    hbox = gtk_hbox_new(FALSE, 0);
    label = gtk_label_new ("Target 1: ");
+   
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
    gtk_widget_show(label);
 
    entry1 = gtk_entry_new_with_max_length(TARGET_LEN);
    gtk_entry_set_width_chars (GTK_ENTRY (entry1), TARGET_LEN);
+   
+   if (GBL_OPTIONS->target1)
+      gtk_entry_set_text(GTK_ENTRY (entry1), GBL_OPTIONS->target1); 
+   
    gtk_box_pack_start(GTK_BOX (hbox), entry1, FALSE, FALSE, 0);
    gtk_widget_show(entry1);
    gtk_box_pack_start(GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, TRUE, TRUE, 5);
@@ -141,6 +146,10 @@ void gtkui_select_targets(void)
 
    entry2 = gtk_entry_new_with_max_length(TARGET_LEN);
    gtk_entry_set_width_chars (GTK_ENTRY (entry2), TARGET_LEN);
+   
+   if (GBL_OPTIONS->target2)
+      gtk_entry_set_text(GTK_ENTRY (entry2), GBL_OPTIONS->target2); 
+   
    gtk_box_pack_start(GTK_BOX (hbox), entry2, FALSE, FALSE, 0);
    gtk_widget_show(entry2);
    gtk_box_pack_start(GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, TRUE, TRUE, 5);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.13 2004/03/31 14:30:19 alor Exp $
+    $Id: ec_curses_targets.c,v 1.14 2004/05/19 14:08:54 alor Exp $
 */
 
 #include <ec.h>
@@ -131,11 +131,9 @@ static void curses_select_targets(void)
    
    DEBUG_MSG("curses_select_target1");
 
-   SAFE_FREE(GBL_OPTIONS->target1);
-   SAFE_FREE(GBL_OPTIONS->target2);
-   
-   SAFE_CALLOC(GBL_OPTIONS->target1, TARGET_LEN, sizeof(char));
-   SAFE_CALLOC(GBL_OPTIONS->target2, TARGET_LEN, sizeof(char));
+   /* make sure we have enough space */
+   SAFE_REALLOC(GBL_OPTIONS->target1, TARGET_LEN * sizeof(char));
+   SAFE_REALLOC(GBL_OPTIONS->target2, TARGET_LEN * sizeof(char));
    
    wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
    wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);

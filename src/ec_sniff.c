@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.50 2004/04/10 14:05:21 alor Exp $
+    $Id: ec_sniff.c,v 1.51 2004/05/19 14:08:34 alor Exp $
 */
 
 #include <ec.h>
@@ -240,6 +240,8 @@ void reset_display_filter(struct target_env *t)
  */
 int compile_display_filter(void)
 {
+   char *t1, *t2;
+   
    /* if not specified default to // */
    if (!GBL_OPTIONS->target1)
       GBL_OPTIONS->target1 = strdup("//");
@@ -252,15 +254,19 @@ int compile_display_filter(void)
    else if (!strncmp(GBL_OPTIONS->target2, "//", 2))
       GBL_TARGET2->scan_all = 1;
 
+   /* make a copy to operate on */
+   t1 = strdup(GBL_OPTIONS->target1);
+   t2 = strdup(GBL_OPTIONS->target2);
+   
    /* compile TARGET1 */
-   compile_target(GBL_OPTIONS->target1, GBL_TARGET1);
+   compile_target(t1, GBL_TARGET1);
    
    /* compile TARGET2 */
-   compile_target(GBL_OPTIONS->target2, GBL_TARGET2);
+   compile_target(t2, GBL_TARGET2);
 
    /* the strings were modified, we can't use them anymore */
-   SAFE_FREE(GBL_OPTIONS->target1);
-   SAFE_FREE(GBL_OPTIONS->target2);
+   SAFE_FREE(t1);
+   SAFE_FREE(t2);
    
    return ESUCCESS;
 }

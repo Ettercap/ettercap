@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.28 2004/01/03 11:03:23 alor Exp $ */
+/* $Id: wdg.h,v 1.29 2004/01/11 20:53:09 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -151,6 +151,7 @@ struct wdg_object {
       #define WDG_OBJ_ROOT_OBJECT    (1<<7)
    /* object type */
    size_t type;
+      #define WDG_COMPOUND    0
       #define WDG_WINDOW      1
       #define WDG_PANEL       2
       #define WDG_SCROLL      3
@@ -210,6 +211,8 @@ typedef struct wdg_object wdg_t;
 #define WDG_ALIGN_CENTER   1
 #define WDG_ALIGN_RIGHT    2
 
+/* compound ojbects */
+extern void wdg_compound_add(wdg_t *wo, wdg_t *widget);
 /* window ojbects */
 extern void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
 /* panel ojbects */

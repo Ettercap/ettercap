@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.12 2003/12/25 17:19:57 alor Exp $
+# $Id: Makefile.am,v 1.13 2004/01/11 20:53:09 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -10,6 +10,7 @@ noinst_LIBRARIES = libwdg.a
 libwdg_a_CFLAGS = @EC_CFLAGS@
 
 libwdg_a_SOURCES = wdg.c \
+                   wdg_compound.c \
                    wdg_debug.c \
                    wdg_dialog.c \
                    wdg_error.c \

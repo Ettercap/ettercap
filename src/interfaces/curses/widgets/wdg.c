@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.28 2003/12/28 17:19:39 alor Exp $
+    $Id: wdg.c,v 1.29 2004/01/11 20:53:09 alor Exp $
 */
 
 #include <wdg.h>
@@ -86,6 +86,7 @@ size_t wdg_get_begin_x(struct wdg_object *wo);
 size_t wdg_get_begin_y(struct wdg_object *wo);
 
 /* creation function from other widgets */
+extern void wdg_create_compound(struct wdg_object *wo);
 extern void wdg_create_window(struct wdg_object *wo);
 extern void wdg_create_panel(struct wdg_object *wo);
 extern void wdg_create_scroll(struct wdg_object *wo);
@@ -549,6 +550,10 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
   
    /* call the specific function */
    switch (type) {
+      case WDG_COMPOUND:
+         wdg_create_compound(*wo);
+         break;
+         
       case WDG_WINDOW:
          wdg_create_window(*wo);
          break;

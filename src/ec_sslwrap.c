@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.34 2004/04/04 18:12:09 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.35 2004/04/05 07:31:45 alor Exp $
 */
 
 #include <ec.h>
@@ -115,7 +115,6 @@ void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_cha
 void sslw_dissect_move(char *name, u_int16 port);
 EC_THREAD_FUNC(sslw_start);
 void ssl_wrap_init(void);
-static void ssl_wrap_fini(void);
 
 #ifdef HAVE_OPENSSL
 
@@ -137,6 +136,7 @@ static void sslw_hook_handled(struct packet_object *po);
 static X509 *sslw_create_selfsigned(X509 *serv_cert);
 static int sslw_insert_redirect(u_int16 sport, u_int16 dport);
 static int sslw_remove_redirect(u_int16 sport, u_int16 dport);
+static void ssl_wrap_fini(void);
 
 #endif /* HAVE_OPENSSL */
 
@@ -189,6 +189,9 @@ void ssl_wrap_init(void)
    struct listen_entry *le;
 
 #ifndef HAVE_OPENSSL
+   /* avoid gcc warning about unused variable */
+   (void)le;
+   
    DEBUG_MSG("ssl_wrap_init: not supported");
    return;
 #else
@@ -222,7 +225,9 @@ void ssl_wrap_init(void)
 #endif
 }
 
-void ssl_wrap_fini(void)
+
+#ifdef HAVE_OPENSSL
+static void ssl_wrap_fini(void)
 {
    struct listen_entry *le;
 
@@ -230,34 +235,27 @@ void ssl_wrap_fini(void)
    LIST_FOREACH(le, &listen_ports, next)
       sslw_remove_redirect(le->sslw_port, le->redir_port);
 }
-
-#ifndef HAVE_OPENSSL
-
-/*
- * implement a fake function if the user does not have
- * openssl support.
- * the function will return without doing nothing...
- */
-EC_THREAD_FUNC(sslw_start)
-{
-   DEBUG_MSG("sslw_start: openssl support not compiled in");
-   return NULL;
-}
-
-#else /* HAVE_OPENSSL  compile all the functions below */
+#endif
 
 /* 
  * SSL thread main function.
  */
 EC_THREAD_FUNC(sslw_start)
 {
+#ifdef HAVE_OPENSSL
    struct listen_entry *le;
    struct accepted_entry *ae;
    u_int len = sizeof(struct sockaddr_in), i;
    struct sockaddr_in client_sin;
-   
+#endif
+
    ec_thread_init();
 
+#ifndef HAVE_OPENSSL
+   DEBUG_MSG("sslw_start: openssl support not compiled in");
+   return NULL;
+#else
+   
    /* disabled if not accressive */
    if (!GBL_CONF->aggressive_dissectors)
       return NULL;
@@ -310,8 +308,12 @@ EC_THREAD_FUNC(sslw_start)
             ec_thread_new("sslw_child", "ssl child", &sslw_child, ae);
          }
    }
+
+#endif /* HAVE_OPENSSL */
+   
 }	 
 
+#ifdef HAVE_OPENSSL
 
 /* 
  * Filter SSL related packets and create NAT sessions.

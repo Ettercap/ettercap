@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.19 2004/01/05 12:18:20 alor Exp $
+    $Id: ec_ssh.c,v 1.20 2004/01/13 10:31:34 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -59,6 +59,8 @@ typedef struct {
     RSA *myhostkey;
     u_int32 server_mod;
     u_int32 host_mod;
+    u_char server_exp;
+    u_char host_exp;
     struct ssh_my_key *next;
 } ssh_my_key;
 
@@ -346,15 +348,15 @@ FUNC_DECODER(dissector_ssh)
          if ((session_data->status == WAITING_PUBLIC_KEY || session_data->status == WAITING_SESSION_KEY) && ssh_packet_type == SMSG_PUBLIC_KEY) {
             ssh_my_key **index_ssl;
             u_int32 server_mod, host_mod, cypher_mask, my_mask=0;
- 
-            /* Set the mask to 3DES, blowfish or none (if supported) */
+            BN_ULONG server_exp, host_exp;
+	     
+            /* Set the mask to 3DES or blowfish (if supported) */
             cypher_mask = *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 12);
             cypher_mask = htonl(cypher_mask);
-            if (cypher_mask & (1<<SSH_CIPHER_NONE))
-               my_mask |= (1<<SSH_CIPHER_NONE);
-            if (cypher_mask & (1<<SSH_CIPHER_3DES))
+            if (cypher_mask & (1<<SSH_CIPHER_3DES)) 
                my_mask |= (1<<SSH_CIPHER_3DES);
-            if (cypher_mask & (1<<SSH_CIPHER_BLOWFISH))
+	       
+            if (cypher_mask & (1<<SSH_CIPHER_BLOWFISH)) 
                my_mask |= (1<<SSH_CIPHER_BLOWFISH);
 	       
             if (!my_mask) {
@@ -396,9 +398,16 @@ FUNC_DECODER(dissector_ssh)
                get_bn(session_data->hostkey->e, &ptr);
                get_bn(session_data->hostkey->n, &ptr);
 
+               server_exp = *(session_data->serverkey->e->d);
+               host_exp   = *(session_data->hostkey->e->d);
+
                /* Check if we already have a suitable RSA key to substitute */
                index_ssl = &ssh_conn_key;
-               while(*index_ssl != NULL && ( (*index_ssl)->server_mod != server_mod || (*index_ssl)->host_mod != host_mod))
+               while(*index_ssl != NULL && 
+                     ((*index_ssl)->server_mod != server_mod || 
+                      (*index_ssl)->host_mod != host_mod || 
+                      (*index_ssl)->server_exp != server_exp || 
+                      (*index_ssl)->host_exp != host_exp))
                   index_ssl = (ssh_my_key **)&((*index_ssl)->next);
 
                /* ...otherwise generate it */
@@ -406,10 +415,12 @@ FUNC_DECODER(dissector_ssh)
                   SAFE_CALLOC(*index_ssl, 1, sizeof(ssh_my_key));
 
                   /* Generate the new key */
-                  (*index_ssl)->myserverkey = (RSA *)RSA_generate_key(server_mod, 35, NULL, NULL);
-                  (*index_ssl)->myhostkey = (RSA *)RSA_generate_key(host_mod, 35, NULL, NULL);
+                  (*index_ssl)->myserverkey = (RSA *)RSA_generate_key(server_mod, server_exp, NULL, NULL);
+                  (*index_ssl)->myhostkey = (RSA *)RSA_generate_key(host_mod, host_exp, NULL, NULL);
                   (*index_ssl)->server_mod = server_mod;
                   (*index_ssl)->host_mod = host_mod;
+                  (*index_ssl)->server_exp = server_exp;
+                  (*index_ssl)->host_exp = host_exp;		  
                   (*index_ssl)->next = NULL;
                   if ((*index_ssl)->myserverkey == NULL || (*index_ssl)->myhostkey == NULL) {
                      SAFE_FREE(*index_ssl);
@@ -452,6 +463,11 @@ FUNC_DECODER(dissector_ssh)
 
             /* Get the cypher and the cookie */
             cypher = *ptr;
+            if (cypher != SSH_CIPHER_3DES && cypher != SSH_CIPHER_BLOWFISH) {
+               dissect_wipe_session(PACKET);
+               return NULL;
+            }
+	    
             memcpy(cookie, ++ptr, 8);
             ptr += 8; 
             key_to_put = ptr;

@@ -27,7 +27,26 @@ code, btw fixes and patches are welcome.
 
 ==============================================================================
 
-ToDo...
+
+==============================================================================
+                     R E Q U I R E D   L I B R A R I E S
+==============================================================================
+
+MANDATORY:
+
+   - libpcap >= 0.8.1
+   - libnet  >= 1.1.1
+   - libpthread
+
+OPTIONAL:
+
+   - libltdl (part of libtool)   (for the plugin support)
+   - libpcre                     (for perl regexp in the filters)
+   - openssl                     (for ssh and ssl support)
+   - ncurses                     (for the curses GUI)
+
+
+
 
 ==============================================================================
 

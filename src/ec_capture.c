@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.32 2003/12/27 18:50:10 alor Exp $
+    $Id: ec_capture.c,v 1.33 2004/01/05 11:06:47 alor Exp $
 */
 
 #include <ec.h>
@@ -173,7 +173,7 @@ void capture_init(void)
    /* set the right dlt type for the iface */
    GBL_PCAP->dlt = pcap_datalink(pd);
      
-   DEBUG_MSG("capture_init: dlt %d", GBL_PCAP->dlt);
+   DEBUG_MSG("capture_init: %s", pcap_datalink_val_to_description(GBL_PCAP->dlt));
    
    /* check that the bridge type is the same as the main iface */
    if (GBL_SNIFF->type == SM_BRIDGED && pcap_datalink(pb) != GBL_PCAP->dlt)
@@ -182,9 +182,9 @@ void capture_init(void)
    /* check if we support this media */
    if (get_decoder(LINK_LAYER, GBL_PCAP->dlt) == NULL) {
       if (GBL_OPTIONS->read)
-         FATAL_ERROR("Dump file not supported (DLT = %d)", GBL_PCAP->dlt);
+         FATAL_ERROR("Dump file not supported (%s)", pcap_datalink_val_to_description(GBL_PCAP->dlt));
       else
-         FATAL_ERROR("Inteface \"%s\" not supported (DLT = %d)", GBL_OPTIONS->iface, GBL_PCAP->dlt);
+         FATAL_ERROR("Inteface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
    }
   
    /* set the global descriptor for both the iface and the bridge */

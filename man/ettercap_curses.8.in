@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.1 2004/01/04 17:02:43 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.2 2004/01/05 11:06:47 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -160,6 +160,8 @@ Will log all the message appearing in the bottom window (same as -m option).
 Asterisc-option to control whether or not the logfile should be compressed.
 .RE
 
+
+.SH THE INTERESTING PART
 
 
 

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.86 2004/01/04 17:02:43 alor Exp $
+dnl    $Id: configure.in,v 1.87 2004/01/05 11:06:39 alor Exp $
 dnl
 
 AC_INIT
@@ -375,7 +375,6 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
         ac_ec_libpcap=$withval
         AC_MSG_RESULT($withval)
      elif test -f $withval/include/pcap.h -a \
-               -f $withval/include/net/bpf.h -a \
                -f $withval/lib/libpcap.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
@@ -406,7 +405,7 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$PCAPLIB"
-AC_CHECK_LIB(pcap, pcap_findalldevs,, AC_MSG_ERROR([Incorrect pcap version. pcap >= 0.7.x required]))
+AC_CHECK_LIB(pcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect pcap version. pcap >= 0.8.1 required]))
 LDFLAGS="${OLDLDFLAGS}"
 
 dnl ---------

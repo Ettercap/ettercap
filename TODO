@@ -11,10 +11,7 @@
       - in unoffensive we get UNKNOWN for all the profiles
 
    + PCAP RELATED
-      + when libpcap 0.8.1 will be released
-         - pcap_datalink_val_to_name  
-         - pcap_lib_version
-      + when libpcap 0.8.x will be released
+      + when libpcap 0.8.2 will be released
          - pcap_stat fix (even under linux the stats are cumulative)
 
    + BSD PORTING
@@ -36,8 +33,7 @@ this is the unofficial and floating in time roadmap:
    + DOCUMENTATION
       - write the requirements for each os
       - write a man for the curses GUI
-      - developer docs
-         - plugins
+      - how to code a plugin 
 
    + LIBWDG
       - logging menu
@@ -99,16 +95,15 @@ this is the unofficial and floating in time roadmap:
       - quick filter on a connection
 
 
-2004:
-   
    + INTERFACE ENGINE
       - gtk
 
-   + WIFI decoder support for WEP (key given)
 
 ==================
   LONG TERM TODO
 ==================
+   
+   + WIFI decoder support for WEP (given the key)
 
    + SOCKS
       - decode the internal connection

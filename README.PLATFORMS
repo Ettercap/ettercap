@@ -87,7 +87,7 @@ No known issue, just be sure to have all the required components.
 After installing the following packages from http://http://www.sunfreeware.com
 
    - libtool   1.5      (needed for libltdl)
-   - libpcap   0.7.2
+   - libpcap   0.8.1
    - gcc       3.3.1
    - binutils  2.11.2
    - make      3.80

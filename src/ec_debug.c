@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.15 2003/10/29 22:38:19 alor Exp $
+    $Id: ec_debug.c,v 1.16 2004/01/05 11:06:47 alor Exp $
 
 */
 
@@ -43,7 +43,6 @@
    #include <pcre.h>
 #endif
 
-extern char pcap_version[];
 #include <libnet.h>
 #include <zlib.h>
 
@@ -94,7 +93,7 @@ void debug_init(void)
    #if defined (__GLIBC__) && defined (__GLIBC_MINOR__)
       fprintf (debug_file, "-> glibc version %d.%d\n", __GLIBC__, __GLIBC_MINOR__);
    #endif
-   fprintf(debug_file, "-> libpcap version %s\n", pcap_version);
+   fprintf(debug_file, "-> %s\n", pcap_lib_version());
    fprintf(debug_file, "-> libnet version %s\n", LIBNET_VERSION);
    fprintf(debug_file, "-> libz version %s\n", zlibVersion());
    #ifdef HAVE_PCRE

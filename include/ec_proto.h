@@ -1,5 +1,5 @@
 
-/* $Id: ec_proto.h,v 1.12 2003/12/11 13:46:39 lordnaga Exp $ */
+/* $Id: ec_proto.h,v 1.13 2004/05/06 09:43:56 alor Exp $ */
 
 #ifndef EC_PROTO_H
 #define EC_PROTO_H
@@ -21,6 +21,7 @@ enum {
    LL_TYPE_IP6  = 0x86DD,
    LL_TYPE_ARP  = 0x0806,
    LL_TYPE_PPP  = 0x880B,
+   LL_TYPE_VLAN = 0x8100,
 };
 
 /* network layer types */

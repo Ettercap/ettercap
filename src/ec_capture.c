@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.46 2004/04/29 16:27:56 alor Exp $
+    $Id: ec_capture.c,v 1.47 2004/05/06 09:43:56 alor Exp $
 */
 
 #include <ec.h>
@@ -108,9 +108,9 @@ void capture_init(void)
          FATAL_ERROR("Bridging iface must be different from %s", GBL_OPTIONS->iface);
       USER_MSG("Bridging %s and %s...\n\n", GBL_OPTIONS->iface, GBL_OPTIONS->iface_bridge);
    } else if (GBL_OPTIONS->read) {
-      USER_MSG("Reading from %s...\n\n", GBL_OPTIONS->dumpfile);
+      USER_MSG("Reading from %s... ", GBL_OPTIONS->dumpfile);
    } else
-      USER_MSG("Listening on %s...\n\n", GBL_OPTIONS->iface);
+      USER_MSG("Listening on %s... ", GBL_OPTIONS->iface);
    
    /* set the snaplen to maximum */
    GBL_PCAP->snaplen = UINT16_MAX;
@@ -191,6 +191,7 @@ void capture_init(void)
    GBL_PCAP->dlt = pcap_datalink(pd);
      
    DEBUG_MSG("capture_init: %s", pcap_datalink_val_to_description(GBL_PCAP->dlt));
+   USER_MSG("(%s)\n\n", pcap_datalink_val_to_description(GBL_PCAP->dlt));
  
    /* check that the bridge type is the same as the main iface */
    if (GBL_SNIFF->type == SM_BRIDGED && pcap_datalink(pb) != GBL_PCAP->dlt)

@@ -15,6 +15,7 @@ NG-0.7.0_pre2    200404??
    + new dissector for:
       + imaps
       + pop3s
+   + support for vlan tagging (802.1q header)
    !! fixed the $prefix issue in the configure
    !! fixed a linking problem against openssl
    !! some fixes in the man pages

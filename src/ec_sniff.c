@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.33 2003/11/01 15:52:58 alor Exp $
+    $Id: ec_sniff.c,v 1.34 2003/11/05 09:31:11 alor Exp $
 */
 
 #include <ec.h>
@@ -200,7 +200,7 @@ static void set_interesting_flag(struct packet_object *po)
    /* T1.mac == src & T1.ip = src & T1.port = src */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.src, GBL_TARGET1) || 
-            ((ip_addr_is_local(&po->L3.src) != ESUCCESS) && GBL_TARGET1->all_ip) ) &&
+            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src) != ESUCCESS) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.src))) )
       value = 1;
 
@@ -208,7 +208,7 @@ static void set_interesting_flag(struct packet_object *po)
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2) || 
-            (ip_addr_is_local(&po->L3.dst) != ESUCCESS && GBL_TARGET2->all_ip) ) &&
+            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst) != ESUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
       good = 1;   
   
@@ -229,7 +229,7 @@ static void set_interesting_flag(struct packet_object *po)
    /* T1.mac == dst & T1.ip = dst & T1.port = dst */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) || 
-            ((ip_addr_is_local(&po->L3.dst) != ESUCCESS) && GBL_TARGET1->all_ip) ) &&
+            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst) != ESUCCESS) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.dst))) )
       value = 1;
 
@@ -237,7 +237,7 @@ static void set_interesting_flag(struct packet_object *po)
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.src, GBL_TARGET2) || 
-            ((ip_addr_is_local(&po->L3.src) != ESUCCESS) && GBL_TARGET1->all_ip) ) &&
+            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src) != ESUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.src))) ) )
       good = 1;   
    

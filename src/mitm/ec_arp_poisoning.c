@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.13 2003/11/04 13:28:17 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.14 2003/11/05 09:31:11 alor Exp $
 */
 
 #include <ec.h>
@@ -75,6 +75,18 @@ static void arp_poisoning_start(char *args)
   
    
    DEBUG_MSG("arp_poisoning_start");
+   
+   /* check the parameter */
+   if (!strcasecmp(args, "remote")) {
+      /* 
+       * allow sniffing of remote host even 
+       * if the target is local (used for gw)
+       */
+      GBL_OPTIONS->remote = 1;
+   } else if (strcmp(args, "")) {
+      USER_MSG("FATAL: ARP poisoning: paramenter incorrect.\n");
+      return;
+   }
 
    /* arp poisoning only on etherenet */
    if (GBL_PCAP->dlt != IL_TYPE_ETH) {

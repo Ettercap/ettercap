@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp.c,v 1.1 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_dhcp.c,v 1.2 2003/10/16 20:24:22 alor Exp $
 */
 
 /*
@@ -77,6 +77,11 @@ struct dhcp_hdr {
    u_int8   file[128];
 };
 
+#define DHCP_DISCOVER      0x01
+#define DHCP_OFFER         0x02
+#define DHCP_REQUEST       0x03
+#define DHCP_ACK           0x05
+
 #define DHCP_MAGIC_COOKIE  "\x63\x82\x53\x63"
 #define OPT_NETMASK        0x01
 #define OPT_ROUTER         0x03
@@ -135,27 +140,89 @@ FUNC_DECODER(dissector_dhcp)
    /* move to the first option */
    options += 4;
    
-   /* we are interested in dhcp requests */
+   /* search the "message type" option */
+   opt = get_option(OPT_MSG_TYPE, options, end);
+
+   /* option not found */
+   if (opt == NULL)
+      return NULL;
+      
+   /* client requests */ 
    if (FROM_CLIENT("dhcp", PACKET)) {
       
-      /* search the "message type" option */
-      opt = get_option(OPT_MSG_TYPE, options, end);
-
-      /* option not found */
-      if (opt == NULL)
+      /* clients only send request */
+      if (dhcp->op != BOOTREQUEST)
          return NULL;
       
+      switch (*(opt + 1)) {
+         case DHCP_DISCOVER:
+            DEBUG_MSG("\tDissector_DHCP DISCOVER");
+            
+            USER_MSG("DHCP: [%s] DISCOVER \n", mac_addr_ntoa(dhcp->chaddr, tmp)); 
+            
+            break;
+            
+         case DHCP_REQUEST:
+            DEBUG_MSG("\tDissector_DHCP REQUEST");
+      
+            USER_MSG("DHCP: [%s] REQUEST \n", mac_addr_ntoa(dhcp->chaddr, tmp)); 
+      
+            break;
+      }
+
       /* HOOK POINT: HOOK_PROTO_DHCP */
       hook_point(HOOK_PROTO_DHCP, PACKET);
       
-      USER_MSG("client: %s\n", mac_addr_ntoa(dhcp->chaddr, tmp)); 
          
+   /* server replies */ 
    } else {
+      struct ip_addr netmask;
+      struct ip_addr router;
+      struct ip_addr client;
+      struct ip_addr dns;
+      char domain[64];
       
-      USER_MSG("server\n"); 
+      /* servers only send replies */
+      if (dhcp->op != BOOTREPLY)
+         return NULL;
 
-   }
+      switch (*(opt + 1)) {
+         case DHCP_ACK:
+            DEBUG_MSG("\tDissector_DHCP ACK");
    
+            /* get the assigned ip */
+            ip_addr_init(&client, AF_INET, (char *)&dhcp->yiaddr );
+            
+            /* netmask */
+            if ((opt = get_option(OPT_NETMASK, options, end)) != NULL)
+               ip_addr_init(&netmask, AF_INET, opt + 1);
+            
+            /* default gateway */
+            if ((opt = get_option(OPT_ROUTER, options, end)) != NULL)
+               ip_addr_init(&router, AF_INET, opt + 1);
+            
+            USER_MSG("DHCP: [%s] ACK : ", ip_addr_ntoa(&PACKET->L3.src, tmp)); 
+            USER_MSG("%s ", ip_addr_ntoa(&client, tmp)); 
+            USER_MSG("%s ", ip_addr_ntoa(&netmask, tmp)); 
+            USER_MSG("GW %s ", ip_addr_ntoa(&router, tmp)); 
+            
+            /* dns server */
+            if ((opt = get_option(OPT_DNS, options, end)) != NULL) {
+               ip_addr_init(&dns, AF_INET, opt + 1);
+            
+               /* dns domain */
+               if ((opt = get_option(OPT_DOMAIN, options, end)) != NULL)
+                  strncpy(domain, opt + 1, MIN(*opt, sizeof(domain)) );
+            
+               USER_MSG("DNS %s \"%s\" \n", ip_addr_ntoa(&dns, tmp), domain); 
+
+            } else
+               USER_MSG("\n");
+            
+            break;
+            
+      }
+   }
       
    return NULL;
 }
@@ -163,11 +230,25 @@ FUNC_DECODER(dissector_dhcp)
 
 /*
  * return the pointer to the named option
+ * or NULL if not found
+ * ptr will point to the length of the option
  */
 static u_int8 * get_option(u_int8 opt, u_int8 *ptr, u_int8 *end)
 {
+   do {
 
-   NOT_IMPLEMENTED();
+      /* we have found our option */
+      if (*ptr == opt)
+         return ptr + 1;
+
+      /* 
+       * move thru options :
+       *
+       * OPT LEN .. .. .. OPT LEN .. ..
+       */
+      ptr = ptr + 2 + (*(ptr + 1));
+
+   } while (*ptr != OPT_END && ptr < end);
    
    return NULL;
 }

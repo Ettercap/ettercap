@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.9 2003/09/27 17:22:24 alor Exp $
+    $Id: ef_encode.c,v 1.10 2003/09/28 21:07:49 alor Exp $
 */
 
 #include <ef.h>
@@ -97,7 +97,7 @@ int encode_const(char *string, struct filter_op *fop)
       *p = '\0';
 
       /* escape it in the structure */
-      fop->op.test.string_len = strescape(fop->op.test.string, string);
+      fop->op.test.string_len = strescape(fop->op.test.string, string + 1);
      
       return ESUCCESS;
       
@@ -253,8 +253,7 @@ static char ** decode_args(char *args, int *nargs)
    for (p = strsep(&args, ","), i = 1; p != NULL; p = strsep(&args, ","), i++) {
       
       /* alloc the array for the arguments */
-      parsed = (char **)realloc(parsed, (i+1) * sizeof(char *));
-      ON_ERROR(parsed, NULL, "virtual memory exhausted");
+      SAFE_REALLOC(parsed, (i + 1) * sizeof(char *));
       
       /* trim the empty spaces */
       for (arg = p; *arg == ' '; arg++);
@@ -264,6 +263,12 @@ static char ** decode_args(char *args, int *nargs)
       /* check if the string is short enough */
       if (strlen(arg) > MAX_FILTER_LEN)
          SCRIPT_ERROR("String too long. (max %d char)", MAX_FILTER_LEN)
+      
+      /* remove the quotes (if there are) */
+      if (*arg == '\"' && arg[strlen(arg) - 1] == '\"') {      
+         arg[strlen(arg) - 1] = '\0';
+         arg++;
+      }
             
       /* put in in the array */
       parsed[i - 1] = strdup(arg);

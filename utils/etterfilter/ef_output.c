@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_output.c,v 1.3 2003/09/27 17:22:24 alor Exp $
+    $Id: ef_output.c,v 1.4 2003/09/28 21:07:49 alor Exp $
 */
 
 #include <ef.h>
@@ -41,13 +41,17 @@ int write_output(void)
    int fd;
    struct filter_op *fop;
    struct filter_header fh;
+   size_t ninst;
 
    /* conver the tree to an array of filter_op */
-   fop = compile_tree();
+   ninst = compile_tree(&fop);
 
    if (fop == NULL)
       return -ENOTHANDLED;
 
+   fprintf(stdout, "Writing output to \"%s\"...", GBL_OPTIONS.output_file);
+   fflush(stdout);
+   
    /* create the file */
    fd = open(GBL_OPTIONS.output_file, O_CREAT | O_RDWR | O_TRUNC, 0644);
    ON_ERROR(fd, -1, "Can't create file %s", GBL_OPTIONS.output_file);
@@ -59,9 +63,11 @@ int write_output(void)
    write(fd, &fh, sizeof(struct filter_header));
    
    /* write the instructions */
-   write(fd, fop, sizeof(struct filter_op) * 7);
+   write(fd, fop, sizeof(struct filter_op) * ninst);
 
    close(fd);
+   
+   fprintf(stdout, "done.\n\n");
    
    return ESUCCESS;
 }

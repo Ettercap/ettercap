@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_compiler.c,v 1.3 2003/09/27 17:22:24 alor Exp $
+    $Id: ef_compiler.c,v 1.4 2003/09/28 21:07:49 alor Exp $
 */
 
 #include <ef.h>
@@ -25,13 +25,13 @@
 
 /* globals */
 
-struct block *init;
+struct block *tree_root;
 
 /* protos */
 
-int compiler_set_init(struct block *blk);
-struct filter_op * compile_tree(void);
-struct block * compiler_add_block(struct instruction *ins, struct block *blk);
+int compiler_set_root(struct block *blk);
+size_t compile_tree(struct filter_op **fop);
+struct block * compiler_add_instr(struct instruction *ins, struct block *blk);
 struct instruction * compiler_create_instruction(struct filter_op *fop);
 
 
@@ -40,10 +40,10 @@ struct instruction * compiler_create_instruction(struct filter_op *fop);
 /*
  * set the entry point of the filter tree
  */
-int compiler_set_init(struct block *blk)
+int compiler_set_root(struct block *blk)
 {
-   BUG(blk == NULL);
-   init = blk;
+   BUG_IF(blk == NULL);
+   tree_root = blk;
    return ESUCCESS;
 }
 
@@ -56,27 +56,80 @@ struct instruction * compiler_create_instruction(struct filter_op *fop)
 
    SAFE_CALLOC(ins, 1, sizeof(struct instruction));
    
-   return NULL;
+   /* copy the instruction */
+   memcpy(&ins->fop, fop, sizeof(struct filter_op));
+
+   return ins;
 }
 
 /*
  * add an instruction to a block
  */
-struct block * compiler_add_block(struct instruction *ins, struct block *blk)
+struct block * compiler_add_instr(struct instruction *ins, struct block *blk)
 {
-   
-   return NULL;
+   struct block *bl;
+
+   SAFE_CALLOC(bl, 1, sizeof(struct block));
+
+   /* copy the current instruction in the block */
+   bl->type = BLK_INSTR;
+   bl->un.ins = ins;
+
+   /* link it to the old block chain */
+   bl->next = blk;
+
+   /* 
+    * update the counter by adding the number
+    * of instructions in the old block
+    */
+   bl->n = 1;
+   if (blk != NULL)
+      bl->n += blk->n;
+
+   return bl;
 }
 
 
 /*
- * 
  * parses the tree and produce a compiled
  * array of filter_op
  */
-struct filter_op * compile_tree(void)
+size_t compile_tree(struct filter_op **fop)
 {
-   return NULL;
+   int i = 1;
+   struct block *b = tree_root;
+   struct filter_op *array;
+
+   NOT_IMPLEMENTED();
+
+   /* sanity check */
+   BUG_IF(b == NULL);
+
+   /* make sure the realloc will allocate the first time */
+   array = NULL;
+   
+   do {
+
+      /* alloc the array */
+      SAFE_REALLOC(array, i * sizeof(struct filter_op));
+     
+      /* copy the instruction */
+      memcpy(&array[i - 1], b->un.ins, sizeof(struct filter_op));
+      
+      print_fop(&(array[i - 1]), i - 1);
+      
+      i++;
+      
+   } while ((b = b->next));
+
+   /* always append the exit function to a script */
+   SAFE_REALLOC(array, i * sizeof(struct filter_op));
+   array[i - 1].opcode = FOP_EXIT;
+   
+   /* return the pointer to the array */
+   *fop = array;
+   
+   return (i);
 }
 
 

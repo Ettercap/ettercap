@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.10 2003/09/25 12:17:46 alor Exp $
+    $Id: ef_test.c,v 1.11 2003/09/28 21:07:49 alor Exp $
 */
 
 #include <ef.h>
@@ -33,9 +33,10 @@
 
 void test_filter(char *filename);
 
-void print_test(struct filter_op *fop, u_int32 eip);
-void print_assign(struct filter_op *fop, u_int32 eip);
-void print_function(struct filter_op *fop, u_int32 eip);
+void print_fop(struct filter_op *fop, u_int32 eip);
+static void print_test(struct filter_op *fop, u_int32 eip);
+static void print_assign(struct filter_op *fop, u_int32 eip);
+static void print_function(struct filter_op *fop, u_int32 eip);
 
 /*******************************************/
 
@@ -92,41 +93,9 @@ void test_filter(char *filename)
    /* loop all the instructions and print their content */
    while (eip < (size / sizeof(struct filter_op)) ) {
 
-      switch (fop[eip].opcode) {
-         case FOP_TEST:
-            print_test(&fop[eip], eip);
-            break;
-            
-         case FOP_ASSIGN:
-            print_assign(&fop[eip], eip);
-            break;
-            
-         case FOP_FUNC:
-            print_function(&fop[eip], eip);
-            break;
-            
-         case FOP_JMP:
-            fprintf(stdout, "%04d: JUMP ALWAYS to %04d\n", eip, fop[eip].op.jmp);
-            break;
-            
-         case FOP_JTRUE:
-            fprintf(stdout, "%04d: JUMP IF TRUE to %04d\n", eip, fop[eip].op.jmp);
-            break;
-            
-         case FOP_JFALSE:
-            fprintf(stdout, "%04d: JUMP IF FALSE to %04d\n", eip, fop[eip].op.jmp);
-            break;
-            
-         case FOP_EXIT:
-            fprintf(stdout, "%04d: EXIT\n", eip);
-            break;
-            
-         default:
-            fprintf(stderr, "UNDEFINED OPCODE (%d) !!\n", fop[eip].opcode);
-            exit(-1);
-            break;
-      }
-    
+      /* print the instruction */
+      print_fop(&fop[eip], eip);
+      
       /* autoincrement the instruction pointer */
       eip++;
    }
@@ -139,6 +108,43 @@ void test_filter(char *filename)
 /*
  * helper functions to print instructions
  */
+void print_fop(struct filter_op *fop, u_int32 eip)
+{
+      switch (fop->opcode) {
+         case FOP_TEST:
+            print_test(fop, eip);
+            break;
+            
+         case FOP_ASSIGN:
+            print_assign(fop, eip);
+            break;
+            
+         case FOP_FUNC:
+            print_function(fop, eip);
+            break;
+            
+         case FOP_JMP:
+            fprintf(stdout, "%04d: JUMP ALWAYS to %04d\n", eip, fop->op.jmp);
+            break;
+            
+         case FOP_JTRUE:
+            fprintf(stdout, "%04d: JUMP IF TRUE to %04d\n", eip, fop->op.jmp);
+            break;
+            
+         case FOP_JFALSE:
+            fprintf(stdout, "%04d: JUMP IF FALSE to %04d\n", eip, fop->op.jmp);
+            break;
+            
+         case FOP_EXIT:
+            fprintf(stdout, "%04d: EXIT\n", eip);
+            break;
+            
+         default:
+            fprintf(stderr, "UNDEFINED OPCODE (%d) !!\n", fop->opcode);
+            exit(-1);
+            break;
+      }
+}
 
 void print_test(struct filter_op *fop, u_int32 eip)
 {

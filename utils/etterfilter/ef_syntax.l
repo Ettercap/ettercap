@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_syntax.l,v 1.10 2003/09/18 22:15:04 alor Exp $
+    $Id: ef_syntax.l,v 1.11 2003/09/28 21:07:49 alor Exp $
 */
 
 %{
@@ -49,96 +49,107 @@ SPACES         [ \t]+
 %%
 
 "if" {
+   ef_debug(4, "IF\n");
    return TOKEN_IF;
 }
 
 "else" {
+   ef_debug(4, "ELSE\n");
    return TOKEN_ELSE;
 }
 
 "!" {
-   printf("NOT\n");
+   ef_debug(3, "NOT\n");
    return TOKEN_OP_NOT;
 }
 
 "&&" {
-   printf("AND\n");
+   ef_debug(3, "AND\n");
    return TOKEN_OP_AND;
 }
 
 "||" {
-   printf("OR\n");
+   ef_debug(3, "OR\n");
    return TOKEN_OP_OR;
 }
 
 "==" {
-   printf("CMP EQ\n");
+   ef_debug(3, "CMP EQ\n");
    return TOKEN_OP_CMP_EQ;
 }
 
 "<" {
-   printf("CMP LT\n");
+   ef_debug(3, "CMP LT\n");
    return TOKEN_OP_CMP_LT;
 }
 
 ">" {
-   printf("CMP GT\n");
+   ef_debug(3, "CMP GT\n");
    return TOKEN_OP_CMP_GT;
 }
 
 "<=" {
-   printf("CMP LEQ\n");
+   ef_debug(3, "CMP LEQ\n");
    return TOKEN_OP_CMP_LEQ;
 }
 
 ">=" {
-   printf("CMP GEQ\n");
+   ef_debug(3, "CMP GEQ\n");
    return TOKEN_OP_CMP_GEQ;
 }
 
 "=" {
-   printf("ASSIGN\n");
+   ef_debug(3, "ASSIGN\n");
    return TOKEN_OP_ASSIGN;
 }
 
 "*" {
+   ef_debug(5, "*\n");
    return TOKEN_OP_MUL;
 }
 
 "+" {
+   ef_debug(5, "+\n");
    return TOKEN_OP_ADD;
 }
 
 "-" {
+   ef_debug(5, "-\n");
    return TOKEN_OP_SUB;
 }
 
 "/" {
+   ef_debug(5, "/\n");
    return TOKEN_OP_DIV;
 }
 
 "(" {
+   ef_debug(4, "(\n");
    return TOKEN_PAR_OPEN;
 }
 
 ")" {
+   ef_debug(4, ")\n");
    return TOKEN_PAR_CLOSE;
 }
 
 "{" {
+   ef_debug(3, "{\n");
    return TOKEN_BLK_BEGIN;
 }
 
 "}" {
+   ef_debug(3, "{\n");
    return TOKEN_BLK_END;
 }
 
 ";" {
+   ef_debug(5, ";\n");
    return TOKEN_OP_END;
 }
 
 {OFFSET} {
-   printf("OFFSET: %s\n", yytext);
+   ef_debug(3, "OFFSET: %s\n", yytext);
    
    if (encode_offset(yytext, &yylval.fop) != ESUCCESS)
       SCRIPT_ERROR("Offset \"%s\" not recognized", yytext);
@@ -147,7 +158,7 @@ SPACES         [ \t]+
 }
 
 {FUNCTION} {
-   printf("FUNCTION: %s\n", yytext);
+   ef_debug(3, "FUNCTION: %s\n", yytext);
    
    if (encode_function(yytext, &yylval.fop) != ESUCCESS)
       SCRIPT_ERROR("Function \"%s\" not recognized", yytext);
@@ -156,7 +167,7 @@ SPACES         [ \t]+
 }
 
 {CONST} {
-   printf("CONST: %s\n", yytext);
+   ef_debug(3, "CONST: %s\n", yytext);
    
    if (encode_const(yytext, &yylval.fop) != ESUCCESS)
       SCRIPT_ERROR("Constant \"%s\" not recognized", yytext);
@@ -165,7 +176,7 @@ SPACES         [ \t]+
 }
 
 {STRING} {
-   printf("STRING: %s\n", yytext);
+   ef_debug(3, "STRING: %s\n", yytext);
    
    if (encode_const(yytext, &yylval.fop) != ESUCCESS)
       SCRIPT_ERROR("Invalid string [%s]", yytext);

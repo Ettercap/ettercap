@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_parser.c,v 1.5 2003/09/24 20:03:46 alor Exp $
+    $Id: ef_parser.c,v 1.6 2003/09/28 21:07:49 alor Exp $
 */
 
 
@@ -48,6 +48,7 @@ void ef_usage(void)
    fprintf(stdout, "\nGeneral Options:\n");
    fprintf(stdout, "  -o, --output <file>         output file (default is filter.ef)\n");
    fprintf(stdout, "  -t, --test <file>           test the file (debug mode)\n");
+   fprintf(stdout, "  -d, --debug                 print some debug info while compiling\n");
    
    fprintf(stdout, "\nStandard Options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
@@ -69,6 +70,7 @@ void parse_options(int argc, char **argv)
       
       { "test", required_argument, NULL, 't' },
       { "output", required_argument, NULL, 'o' },
+      { "debug", no_argument, NULL, 'd' },
       
       { 0 , 0 , 0 , 0}
    };
@@ -76,7 +78,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "o:ht:v", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "do:ht:v", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -86,6 +88,11 @@ void parse_options(int argc, char **argv)
                   
          case 'o':
                   GBL_OPTIONS.output_file = strdup(optarg);
+                  break;
+                  
+         case 'd':
+                  /* use many times to encrease debug level */
+                  GBL_OPTIONS.debug++;
                   break;
                   
          case 'h':

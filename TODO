@@ -34,8 +34,6 @@ Sep 2003:
    + FILTERING ENGINE
       - remove the ugly huge buffer for strings
       - etterfilter (utility) (used to compile the filter in bytecode)
-      - functions
-         - replace over mtu
       - quick filter
       
    + INJECTION 
@@ -50,6 +48,9 @@ Oct 2003:
       - selective log on connections
 
    + DISSECTORS
+      - telnet:
+         - empty password
+         - only password (for routers)
       - convert all the old dissectors
       - HTTPS without the dirty trick (can we use loopback?)
       - HTTP sniff cookies

@@ -17,12 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_main.c,v 1.11 2003/09/24 19:28:51 alor Exp $
+    $Id: ef_main.c,v 1.12 2003/09/28 21:07:49 alor Exp $
 */
 
 #include <ef.h>
 #include <ef_functions.h>
 #include <ec_version.h>
+
+#include <stdarg.h>
 
 /* globals */
 
@@ -32,6 +34,8 @@ extern int yyparse (void);    /* from parser */
 /* global options */
 struct globals gbls;
 
+/* protos */
+void ef_debug(u_char level, const char *message, ...);
 
 /*******************************************/
 
@@ -85,6 +89,23 @@ int main(int argc, char *argv[])
 }
 
 
+/*
+ * prints debug informations
+ */
+void ef_debug(u_char level, const char *message, ...)
+{ 
+   va_list ap;
+   
+   /* if not in debug don't print anything */
+   if (GBL_OPTIONS.debug < level)
+      return;
+
+   /* print the mesasge */ 
+   va_start(ap, message);
+   vfprintf (stderr, message, ap);
+   va_end(ap);
+   
+}
 
 /* EOF */
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.19 2004/04/13 18:34:49 daten Exp $
+    $Id: ec_gtk.c,v 1.20 2004/04/15 12:08:58 daten Exp $
 */
 
 #include <ec.h>
@@ -399,7 +399,7 @@ static void gtkui_setup(void)
    GClosure *closure = NULL;
    GdkModifierType mods;
    gint keyval;
-   char title[50];
+   char title[50], *path = NULL;
 
    GtkItemFactoryEntry file_menu[] = {
       { "/_File",         "<shift>F",   NULL,             0, "<Branch>" },
@@ -468,7 +468,12 @@ static void gtkui_setup(void)
    gtk_paned_pack1(GTK_PANED(vpaned), notebook_frame, TRUE, TRUE);
    gtk_widget_show(notebook_frame);
 
-   logo = gtk_image_new_from_file(INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE);
+   path = INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE;
+   if(g_file_test(path, G_FILE_TEST_EXISTS))
+      logo = gtk_image_new_from_file(path);
+   else /* if neither path is valid gtk will use a broken image icon */
+      logo = gtk_image_new_from_file("./share/" LOGO_FILE);
+
    gtk_misc_set_alignment (GTK_MISC (logo), 0.5, 0.5);
    gtk_container_add(GTK_CONTAINER (notebook_frame), logo);
    gtk_widget_show(logo);

@@ -75,7 +75,7 @@ WINDOWS (native/mingw)
    L I N U X
 ------------------------------------------------------------------------------
 
-No known issue, just be sure to have all the required components.
+No known issue, just be sure to have all the required components. (see README)
 
 
 
@@ -153,6 +153,9 @@ doubt, go with the latest copy.
    Same recommendations as for FreeBSD, but you have to find a way to install
    libltdl since it seems that newer version of libtool aren't in the ports
    collection.
+
+   Furthermode OpenBSD requires libpcap 0.8.3 since it fixed a segfault in
+   pcap_findalldevs();
 
 ------------------------------------------------------------------------------
    W I N D O W S

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.14 2004/03/21 14:16:48 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.15 2004/04/12 10:43:13 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -54,7 +54,7 @@ requested input. (i.e. you have selected the wrong function and you want to go
 back).
 .Sp
 To have a quick help of shortcut you can use against a particular window press
-teh SPACE key. An help window will be displayed with a list of shortcut that
+the SPACE key. An help window will be displayed with a list of shortcut that
 can be used. If the window does not appear, no shortcut are available.
 
 
@@ -261,6 +261,10 @@ for free... ;)
 .B Visualization method
 Change the visualization method for the sniffed data. Available methods: ascii,
 hex, ebcdic, text, html. 
+.TP
+.B Visualization regex
+Set the visualization regular expression. Only packets matching this regex will
+be displayed in the connection data window.
 .RE
 
 

@@ -1,6 +1,6 @@
-==================
-  TODO for NG
-==================
+=========================
+  TODO for the NG serie
+=========================
 
 >>> things to be fixed
    
@@ -17,14 +17,12 @@
       - dll instead of plugins (argh!)
       - merge the patch for mingw
 
->>> to be implemented
-
-   + SESSION
-      - dissect_free_session
-
 ============================
   Not in the first release  
 ============================
+   
+   + SESSIONS
+      - dissect_free_session
    
    + NETWORK MAPPER
 

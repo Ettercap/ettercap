@@ -23,6 +23,9 @@ AC_INIT(include/ec.h)
 dnl Force autoconf 2.57 
 AC_PREREQ(2.57)
 
+dnl Force automake 1.7 or better
+dnl AM_INIT_AUTOMAKE(1.7.0)
+
 VERSION=`grep EC_VERSION ./include/ec_version.h | cut -f2 -d"\""`
 SB=`./shtool echo -n -e %B`
 EB=`./shtool echo -n -e %b`
@@ -548,6 +551,7 @@ EC_MESSAGE(Writing output files)
 
 AC_OUTPUT(Makefile
           man/Makefile man/ettercap.8 man/ettercap_plugins.8 man/etterlog.8
+          share/Makefile 
           src/Makefile 
           include/Makefile
           utils/Makefile

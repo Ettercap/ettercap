@@ -1,7 +1,7 @@
 
 include $(top_srcdir)/Makefile.am.common
 
-sbin_PROGRAMS = ettercap
+bin_PROGRAMS = ettercap
 
 ettercap_SOURCES = ec_main.c \
 				   ec_signals.c \

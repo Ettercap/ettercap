@@ -25,6 +25,11 @@
 
 >>> current developmet state 
 
+   + ETTERCONF
+      - uid
+      - timeouts
+      - dissectors enable/disable
+   
    + TOP HALF
       - passive profiling (almost done in etterlog)
       - connection tracking (with buffered conn)
@@ -57,8 +62,6 @@
       - check for poisoner
       - linktype
       - "active" passive fingerprint
-     
-   + ETTERCONF
      
    + INTERFACE ENGINE
       - console

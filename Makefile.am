@@ -1,7 +1,7 @@
 
 include $(top_srcdir)/Makefile.am.common
 
-SUBDIRS = man src include utils
+SUBDIRS = man share include include src utils
 
 if PLUGINS
    SUBDIRS += plug-ins
@@ -15,10 +15,12 @@ EXTRA_DIST = LICENSE \
              TODO.TESTING \
              Makefile.am.common \
              shtool \
-             doc/* \
-             share/* 
+             doc/*
 
 CLEANFILES = *.log *.out *.cache *.so ettercap etterlog
+
+dist-hook:
+	rm -rf `find $(distdir)/doc -name CVS`
 
 test: all
 	ln -fs ./src/ettercap ./
@@ -26,4 +28,4 @@ test: all
 	find ./plug-ins -name '*.so' -exec ln -fs {} ./ \;
 	./shtool fixperm ./
 
-# vim:ts=4: noexpandtab
+# vim:ts=4:noexpandtab

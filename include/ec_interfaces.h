@@ -6,7 +6,7 @@
 
 /* console related */
 extern void set_console_interface(void);
-extern int console_plugin(void);
+extern int console_plugin(char *plugin);
 
 /* daemon related */
 extern void set_daemon_interface(void);

@@ -13,7 +13,6 @@
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
    + PLUGINS ENGINE
-      - possibility to activate/deactivate hook plugins from console interface
       - cygwin issue (study libltdl)
       - use libldtdl (problem even on openbsd)
       - LTDL_SHLIB_EXT

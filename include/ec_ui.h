@@ -19,6 +19,8 @@ extern void ui_cleanup(void);
 extern void ui_msg(const char *fmt, ...);
 extern void ui_progress(int value, int max);
 extern int ui_msg_flush(int max);
+#define MSG_ALL   INT32_MAX
+
 extern int ui_msg_purge_all(void);
 extern void ui_register(struct ui_ops *ops);
 

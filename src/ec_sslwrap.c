@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.43 2004/05/26 10:39:11 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.44 2004/06/08 20:14:12 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -30,6 +30,7 @@
 #include <ec_file.h>
 #include <ec_strings.h>
 #include <ec_version.h>
+#include <ec_socket.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -103,6 +104,8 @@ struct sslw_ident {
 #define SSLW_RETRY 5
 #define SSLW_WAIT 10000
 
+#define TSLEEP (250*1000) /* 250 milliseconds */
+
 static SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
 static EVP_PKEY *global_pk;
 static u_int16 number_of_services;
@@ -138,6 +141,8 @@ static X509 *sslw_create_selfsigned(X509 *serv_cert);
 static int sslw_insert_redirect(u_int16 sport, u_int16 dport);
 static int sslw_remove_redirect(u_int16 sport, u_int16 dport);
 static void ssl_wrap_fini(void);
+static int sslw_ssl_connect(SSL *ssl_sk);
+static int sslw_ssl_accept(SSL *ssl_sk);
 
 #endif /* HAVE_OPENSSL */
 
@@ -519,9 +524,70 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 	 
    if(sslw_connect_server(ae) != ESUCCESS)
          return -EINVALID;
-	 
+
+   /* set nonbloking socket */
+   set_blocking(ae->fd[SSL_CLIENT], 0);
+   set_blocking(ae->fd[SSL_SERVER], 0);
+
    return ESUCCESS;
 }
+
+
+/* 
+ * Perform a blocking SSL_connect with a
+ * configurable timeout on a non-blocing socket 
+ */
+static int sslw_ssl_connect(SSL *ssl_sk)
+{ 
+   int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
+   int ret, ssl_err;
+   
+   do {
+      /* connect to the server */
+      if ( (ret = SSL_connect(ssl_sk)) == 1)
+         return ESUCCESS;
+
+      ssl_err = SSL_get_error(ssl_sk, ret);
+      
+      /* there was an error... */
+      if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE) 
+         return -EINVALID;
+      
+      /* sleep a quirk of time... */
+      usleep(TSLEEP);
+   } while(loops--);
+
+   return -EINVALID;
+}
+
+
+/* 
+ * Perform a blocking SSL_accept with a
+ * configurable timeout on a non-blocing socket 
+ */
+static int sslw_ssl_accept(SSL *ssl_sk)
+{ 
+   int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
+   int ret, ssl_err;
+   
+   do {
+      /* accept the ssl connection */
+      if ( (ret = SSL_accept(ssl_sk)) == 1)
+         return ESUCCESS;
+
+      ssl_err = SSL_get_error(ssl_sk, ret);
+      
+      /* there was an error... */
+      if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE) 
+         return -EINVALID;
+      
+      /* sleep a quirk of time... */
+      usleep(TSLEEP);
+   } while(loops--);
+
+   return -EINVALID;
+}
+
 
 /* 
  * Create an SSL connection to the real server.
@@ -538,11 +604,9 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
    ae->ssl[SSL_CLIENT] = SSL_new(ssl_ctx_client);
    SSL_set_fd(ae->ssl[SSL_CLIENT], ae->fd[SSL_CLIENT]);
-   
- 
-   if (SSL_connect(ae->ssl[SSL_SERVER]) != 1) {
+    
+   if (sslw_ssl_connect(ae->ssl[SSL_SERVER]) != ESUCCESS) 
       return -EINVALID;
-   }
 
    /* XXX - NULL cypher can give no certificate */
    if ( (server_cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
@@ -559,11 +623,12 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    
    SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
    
-   if (SSL_accept(ae->ssl[SSL_CLIENT]) != 1) 
+   if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != ESUCCESS) 
       return -EINVALID;
 
    return ESUCCESS;   
 }
+
 
 /* 
  * Take the IP address of the server 
@@ -613,22 +678,22 @@ static int sslw_get_peer(struct accepted_entry *ae)
  */
 static int sslw_connect_server(struct accepted_entry *ae)
 {
-   struct sockaddr_in sin;
+   char *dest_ip;
    
-   memset(&sin, 0, sizeof(sin));
-   sin.sin_family = AF_INET;
-   sin.sin_port = ae->port[SSL_SERVER];
-   sin.sin_addr.s_addr = ip_addr_to_int32(ae->ip[SSL_SERVER].addr);
+   /* 
+    * XXX - int_ntoa is not thread-safe. 
+    * strdup it to avoid race conditions.
+    * Btw int_ntoa is not so used in the code.
+    */
+   dest_ip = strdup(int_ntoa(ip_addr_to_int32(ae->ip[SSL_SERVER].addr)));
  
    /* Standard connection to the server */
-   if ( (ae->fd[SSL_SERVER] = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+   if (!dest_ip || (ae->fd[SSL_SERVER] = open_socket(dest_ip, ntohs(ae->port[SSL_SERVER]))) < 0) {
+      SAFE_FREE(dest_ip);   
       return -EINVALID;
-
-   if (connect(ae->fd[SSL_SERVER], (struct sockaddr *)&sin, sizeof(struct sockaddr)) == -1) {
-      close(ae->fd[SSL_SERVER]);
-      return -EINVALID;   
-   }      
-	       
+   }
+   
+   SAFE_FREE(dest_ip);	       
    return ESUCCESS;   
 }
 
@@ -939,9 +1004,6 @@ EC_THREAD_FUNC(sslw_child)
       return NULL;
    }
 
-   fcntl(ae->fd[SSL_CLIENT], F_SETFL, O_NONBLOCK);
-   fcntl(ae->fd[SSL_SERVER], F_SETFL, O_NONBLOCK);
-
    /* A fake SYN ACK for profiles */
    sslw_initialize_po(&po, NULL);
    po.len = 64;
@@ -968,14 +1030,7 @@ EC_THREAD_FUNC(sslw_child)
 	    
             if ((po.flags & PO_SSLSTART) && !(ae->status & SSL_ENABLED)) {
                ae->status |= SSL_ENABLED; 
-               /* XXX - only a temporary workaround */
-               fcntl(ae->fd[SSL_CLIENT], F_SETFL, 0);
-               fcntl(ae->fd[SSL_SERVER], F_SETFL, 0);
-
                ret_val = sslw_sync_ssl(ae);
-               fcntl(ae->fd[SSL_CLIENT], F_SETFL, O_NONBLOCK);
-               fcntl(ae->fd[SSL_SERVER], F_SETFL, O_NONBLOCK);
-
                BREAK_ON_ERROR(ret_val,ae,po);
             }
 	    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.6 2003/09/10 12:41:23 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.7 2003/09/10 21:10:37 alor Exp $
 */
 
 #include <ec.h>
@@ -338,6 +338,9 @@ static int execute_assign(struct filter_op *fop, struct packet_object *po)
          JIT_FAULT("unsupported assign size [%d]", fop->op.assign.size);
          break;
    }
+      
+   /* mark the packet as modified */
+   po->flags |= PO_MODIFIED;
 
    return FLAG_TRUE;
 }

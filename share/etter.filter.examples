@@ -55,6 +55,11 @@ if (ip.ttl < 5) {
    msg("The packet will die soon");
 }
 
+# string comparison at a given offset
+if (DATA.data + 40 == "ette") {
+   log();
+}
+
 # eof
 
 # vim:ts=3:expandtab

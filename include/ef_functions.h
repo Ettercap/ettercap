@@ -14,7 +14,17 @@ extern int yylex(void);
 
 /* ef_tables */
 extern void load_tables(void);
+extern void load_constants(void);
 extern int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size);
+extern int get_constant(char *name, u_int32 *value);
+
+#include <ec_filter.h>
+
+/* ef_encode */
+extern int encode_offset(char *string, struct filter_op *fop);
+extern int encode_function(char *string, struct filter_op *fop);
+extern int encode_const(char *string, struct filter_op *fop);
+
 
 #endif
 

@@ -28,6 +28,9 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
+   + constant table
+   + pay attention on network order for constants
+
    + FILTERING ENGINE
       - include all the protocols in the filter rule
          - protocols table
@@ -35,7 +38,6 @@ Sep 2003:
       - functions
          - replace over mtu
       - quick filter
-      - bitwise operator
       
 
    + MITM METHODS

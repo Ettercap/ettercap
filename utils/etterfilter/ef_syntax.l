@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.6 2003/09/10 16:31:46 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.7 2003/09/10 21:10:37 alor Exp $
 */
 
 %{
@@ -46,6 +46,7 @@ extern u_int32 lineno;
 OFFSET         [[:alnum:]]+\.[A-Za-z]+[\.[A-Za-z]+]*
 FUNCTION       [A-Za-z]+\([^\)]*\)
 CONST          [0-9]+|0x[0-9]+|[A-Z]+
+STRING         \"[[:graph:]]*\"
 SPACES         [ \t]+
 
 %%
@@ -148,33 +149,48 @@ SPACES         [ \t]+
 
 {OFFSET} {
    printf("OFFSET: %s\n", yytext);
-   yylval.string = strdup(yytext);
+   
+   if (encode_offset(yytext, &yylval.fop) != ESUCCESS)
+      FATAL_ERROR("[%s:%d]: Offset \"%s\" not recognized", GBL_OPTIONS.source_file, lineno, yytext);
+   
    return TOKEN_OFFSET;
 }
 
 {FUNCTION} {
    printf("FUNCTION: %s\n", yytext);
-   yylval.string = strdup(yytext);
+   
+   if (encode_function(yytext, &yylval.fop) != ESUCCESS)
+      FATAL_ERROR("[%s:%d]: Function \"%s\" not recognized or bad argument list", GBL_OPTIONS.source_file, lineno, yytext);
+   
    return TOKEN_FUNCTION;
 }
 
 {CONST} {
    printf("CONST: %s\n", yytext);
-   if (!strncmp(yytext, "0x", 2))
-      yylval.value = strtoul(yytext, NULL, 16);
-   else
-      yylval.value = strtoul(yytext, NULL, 10);
+   
+   if (encode_const(yytext, &yylval.fop) != ESUCCESS)
+      FATAL_ERROR("[%s:%d]: Constant \"%s\" not recognized", GBL_OPTIONS.source_file, lineno, yytext);
+   
    return TOKEN_CONST;
 }
 
-{SPACES}       /* eat up the blank space */
+{STRING} {
+   printf("STRING: %s\n", yytext);
+   
+   if (encode_const(yytext, &yylval.fop) != ESUCCESS)
+      FATAL_ERROR("[%s:%d]: Invalid string [%s]", GBL_OPTIONS.source_file, lineno, yytext);
+   
+   return TOKEN_STRING;
+}
+
+{SPACES}       /* eat up the blank spaces */
 
 "/*".*"*/"     /* eat up one line comments */
 "#".*
 
 [\n\r] {
+   /* increment the line number (used for error reporting) */
    lineno++;
-   //return TOKEN_EOL;
 }
 
 . {

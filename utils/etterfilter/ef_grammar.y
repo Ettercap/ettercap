@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.6 2003/09/10 16:31:46 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.7 2003/09/10 21:10:37 alor Exp $
 */
 
 %{
@@ -51,6 +51,7 @@ u_int32 lineno = 1;
 
 %token <value>  TOKEN_CONST     /* an integer number */
 %token <string> TOKEN_OFFSET    /* an offset in the form xxxx.yyy.zzzzz */
+%token <string> TOKEN_STRING    /* a string "xxxxxx" */
 %token <string> TOKEN_FUNCTION  /* a function */
 
 %token TOKEN_IF          /*  if ( ) {  */
@@ -133,7 +134,8 @@ if_else_statement:
 
 /* conditions used by the if statement */
 conditions: 
-         offset TOKEN_OP_CMP_EQ math_expr { printf("\tcondition cmp eq\n"); }
+         offset TOKEN_OP_CMP_EQ TOKEN_STRING { printf("\tcondition cmp string\n"); }
+      |  offset TOKEN_OP_CMP_EQ math_expr { printf("\tcondition cmp eq\n"); }
       |  offset TOKEN_OP_CMP_LT math_expr { printf("\tcondition cmp lt\n"); }
       |  offset TOKEN_OP_CMP_GT math_expr { printf("\tcondition cmp gt\n"); }
       |  offset TOKEN_OP_CMP_LEQ math_expr { printf("\tcondition cmp leq\n"); }
@@ -188,7 +190,11 @@ struct {
       { "TOKEN_OP_AND", "'&&'" },
       { "TOKEN_OP_OR", "'||'" },
       { "TOKEN_OP_EQ", "'='" },
-      { "TOKEN_OP_CMP", "'=='" },
+      { "TOKEN_CMP_EQ", "'=='" },
+      { "TOKEN_CMP_LT", "'<'" },
+      { "TOKEN_CMP_GT", "'>'" },
+      { "TOKEN_CMP_LEQ", "'<='" },
+      { "TOKEN_CMP_GEQ", "'>='" },
       { "TOKEN_OP_END", "';'" },
       { "TOKEN_OP_ADD", "'+'" },
       { "TOKEN_OP_MUL", "'*'" },

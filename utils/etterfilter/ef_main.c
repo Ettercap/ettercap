@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.7 2003/09/10 15:41:23 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.8 2003/09/10 21:10:37 alor Exp $
 */
 
 #include <ef.h>
@@ -67,11 +67,13 @@ int main(int argc, char *argv[])
    setbuf(stderr, NULL);
    
    
-   /* load the tables in etterfilter.conf */
+   /* load the tables in etterfilter.tbl */
    load_tables();
+   /* load the constants in etterfilter.cnt */
+   load_constants();
 
    /* print the message */
-   fprintf(stdout, "Compiling source file %s...\n\n", GBL_OPTIONS.source_file);
+   fprintf(stdout, "\nCompiling source file %s...\n\n", GBL_OPTIONS.source_file);
 
 
    /* begin the parsing */

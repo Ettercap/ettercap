@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_tables.c,v 1.3 2003/09/09 20:10:55 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_tables.c,v 1.4 2003/09/10 21:10:37 alor Exp $
 */
 
 #include <ef.h>
@@ -43,16 +43,27 @@ struct table_entry {
 
 static SLIST_HEAD (, table_entry) table_head;
 
+struct const_entry {
+   char *name;
+   u_int32 value;
+   SLIST_ENTRY(const_entry) next;
+};
+
+static SLIST_HEAD (, const_entry) const_head;
+
 /* protos */
 
 void load_tables(void);
 static void add_virtualpointer(char *name, u_int8 level, char *offname, u_int16 offset, u_int8 size);
 int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size);
 
+void load_constants(void);
+int get_constant(char *name, u_int32 *value);
+
 /*******************************************/
 
 /* 
- * parse the config file 
+ * load the tables for file 
  */
 void load_tables(void)
 {
@@ -143,7 +154,7 @@ void load_tables(void)
    fprintf(stdout, "\t");
    SLIST_FOREACH(t, &table_head, next)
       fprintf(stdout, "%s ", t->name);
-   fprintf(stdout, "\n\n");
+   fprintf(stdout, "\n");
   
 }
 
@@ -219,6 +230,101 @@ int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset
             }
          }
          return -ENOTFOUND;
+      }
+   }
+   
+   return -ENOTFOUND;
+}
+
+
+/*
+ * load constants from the file 
+ */
+void load_constants(void)
+{
+   struct const_entry *c;
+   FILE *fc;
+   char line[128];
+   int lineno = 0, nconst = 0;
+   char *p, *q, *end;
+   
+
+   /* errors are handled by the function */
+   fc = open_data("share", "etterfilter.cnt", "r");
+
+   /* read the file */
+   while (fgets(line, 128, fc) != 0) {
+     
+      /* pointer to the end of the line */
+      end = line + strlen(line);
+      
+      /* count the lines */
+      lineno++;
+
+      /* trim out the comments */
+      if ((p = strchr(line, '#')))
+         *p = '\0';
+
+      /* trim out the new line */
+      if ((p = strchr(line, '\n')))
+         *p = '\0';
+
+      /* skip empty lines */
+      if (line[0] == '\0')
+         continue;
+      
+      /* eat the empty spaces */
+      for (q = line; *q == ' ' && q < end; q++);
+
+      /* get the constant */
+      if (strstr(line, "=") && (q = strtok(line, "=")) != NULL) {
+         /* trim out the space */
+         if ((p = strchr(q, ' ')))
+            *p = '\0';
+         
+         c = calloc(1, sizeof(struct const_entry));
+         ON_ERROR(c, NULL, "Can't allocate memory");
+         
+         /* get the name */
+         c->name = strdup(q);
+         
+         if ((q = strtok(NULL, "=")) == NULL)
+            FATAL_ERROR("Invalid constant on line %d", lineno);
+
+         /* eat the empty spaces */
+         for (p = q; *p == ' ' && p < end; p++);
+
+         c->value = strtoul(p, NULL, 16);
+
+         /* update the counter */
+         nconst++;
+      } else
+         FATAL_ERROR("Invalid constant on line %d", lineno);
+
+      /* insert in the list */
+      SLIST_INSERT_HEAD(&const_head, c, next);
+   }
+   
+   /* print some nice informations */
+   fprintf(stdout, "\n%3d constants loaded:\n", nconst);
+   fprintf(stdout, "\t");
+   SLIST_FOREACH(c, &const_head, next)
+      fprintf(stdout, "%s ", c->name);
+   fprintf(stdout, "\n");
+}
+
+
+/*
+ * return the value of a constant 
+ */
+int get_constant(char *name, u_int32 *value)
+{
+   struct const_entry *c;
+
+   SLIST_FOREACH(c, &const_head, next) {
+      if (!strcmp(name, c->name)) {
+         *value = c->value;
+         return ESUCCESS;
       }
    }
    

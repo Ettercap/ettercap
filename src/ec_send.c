@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.17 2003/08/21 14:36:02 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.18 2003/08/21 15:47:13 alor Exp $
 */
 
 #include <ec.h>
@@ -139,7 +139,7 @@ int send_to_L3(struct packet_object *po)
    
    SEND_LOCK;
    
-   t = libnet_build_data( po->fwd_packet, po->fwd_len, GBL_LNET->lnet_L3, t);
+   t = libnet_build_data( po->fwd_packet, po->fwd_len, GBL_LNET->lnet_L3, 0);
    ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_L3));
    
    c = libnet_write(GBL_LNET->lnet_L3);
@@ -172,7 +172,7 @@ int send_to_L2(struct packet_object *po)
    
    SEND_LOCK;
    
-   t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet, t);
+   t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet, 0);
    ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet));
    
    c = libnet_write(GBL_LNET->lnet);
@@ -204,7 +204,7 @@ int send_to_bridge(struct packet_object *po)
    
    SEND_LOCK;
 
-   t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet_bridge, t);
+   t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet_bridge, 0);
    ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_bridge));
    
    c = libnet_write(GBL_LNET->lnet_bridge);

@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/mitm/ec_arp_poisoning.c,v 1.3 2003/08/21 14:36:02 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/mitm/ec_arp_poisoning.c,v 1.4 2003/08/21 15:47:13 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_mitm.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <ec_ui.h>
 
 #include <libnet.h>
 
@@ -160,9 +161,10 @@ static void arp_poisoning_stop(void)
    ec_thread_destroy(ec_thread_getpid("poisoner"));
    USER_MSG("ARP poisoner deactivated.\n");
  
-
    USER_MSG("RE-ARPing the victims...\n");
-   
+  
+   ui_msg_flush(2);
+
    /* rearp the victims 3 time*/
    for (i = 0; i < 3; i++) {
       

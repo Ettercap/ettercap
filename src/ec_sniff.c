@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.19 2003/08/18 21:25:16 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.20 2003/08/21 15:47:13 alor Exp $
 */
 
 #include <ec.h>
@@ -170,6 +170,11 @@ void display_packet_for_us(struct packet_object *po)
    /*
     * we have to check if the packet is complying with the filter
     * specified by the users.
+    *
+    * also accept the packet if the destination mac addre is equal
+    * to the attacker mac address. this is because we need to sniff
+    * during mitm attacks even if the targets specified have different
+    * mac addresses.
     */
  
    /* FROM TARGET1 TO TARGET2 */
@@ -182,7 +187,7 @@ void display_packet_for_us(struct packet_object *po)
 
    /* T2.mac == dst & T2.ip = dst & T2.port = dst */
    if ( value && (
-        (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, ETH_ADDR_LEN)) &&
+        (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, ETH_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, ETH_ADDR_LEN)) &&
         (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2)) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
       good = 1;   
@@ -198,7 +203,7 @@ void display_packet_for_us(struct packet_object *po)
    /* FROM TARGET12 TO TARGET1 */
    
    /* T1.mac == dst & T1.ip = dst & T1.port = dst */
-   if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, ETH_ADDR_LEN)) &&
+   if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, ETH_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, ETH_ADDR_LEN)) &&
         (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.dst))) )
       value = 1;

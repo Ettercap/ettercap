@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_mitm.c,v 1.1 2003/08/18 21:25:16 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_mitm.c,v 1.2 2003/08/21 15:47:13 alor Exp $
 */
 
 #include <ec.h>
@@ -78,7 +78,7 @@ int mitm_set(u_char *name)
    
    /* search the name and set it */
    SLIST_FOREACH(e, &mitm_table, next) {
-      if (!strcmp(e->mm->name, name)) {
+      if (!strcasecmp(e->mm->name, name)) {
          e->selected = 1;
          return ESUCCESS;
       }

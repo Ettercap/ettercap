@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.28 2003/08/21 14:36:02 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.29 2003/08/21 15:47:13 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -102,10 +102,6 @@ nmap (c) Fyodor database)
 .B Kill a connection:
 from the connections list you can kill all the connections you want
 .PP
-.B Packet factory:
-You can create and sent packet forged on the fly. The factory let you to forge from Ethernet
-header to application level.
-.PP
 .B Bind sniffed data to a local port
 You can connect to that port with a client and decode unknown protocols or
 inject data to it (only in arp based mode)
@@ -148,23 +144,16 @@ you can reverse the matching of the TARGET by adding the -R option to the
 command line. So if you want to sniff ALL the traffic BUT the one coming or
 going to 10.0.0.1 you can specify "./ettercap -R /10.0.0.1/"
 .PP
-.B NOTE:
-.br
-When using content filtering engine, TARGET1 filters are applied on traffic
-COMING FROM TARGET1 and not GOING TO it !
-.br
-Keep this in mind when appling content filters.
-.PP
 
 
 .SH PRIVILEDGES DROPPING
 ettercap needs root priviledges to open the Link Layer sockets. After the
-initialization phase the root privs are not needed anymore. So ettercap drop
-them to UID = 65535 (nobody). Since ettercap have to write (create) log files,
+initialization phase, the root privs are not needed anymore, so ettercap drop
+them to UID = 65535 (nobody). Since ettercap has to write (create) log files,
 it must be executed in a directory with the right permissions (e.g. /tmp/). If
 you want to drop privs to a different uid, you can export the environment
 variable EC_UID witht the value of the uid you want to drop the privs to (e.g.
-export EC_UID=500). 
+export EC_UID=500) or set the correct parameter in the etter.conf file.
 
 
 
@@ -190,14 +179,19 @@ method you want.
 \fB\-M\fR, \fB\-\-mitm <METHOD>\fR
 MITM attack 
 .br
-This option will activate the man in the middle attack. You can choose the mitm
-attack that you prefer. 
+This option will activate the man in the middle attack. The mimt attack is
+totally independed from the sniffing. The aim of the attack is to hijack
+packets and redirect them to ettercap. The sniffing engine will forward them if
+necessary.
+.br
+You can choose the mitm attack that you prefer and also combine some of them to
+perform different attacks at the same time.
 .Sp
 The following mitm attack are available:
 .RS
 .TP
 \fBarp\fR 
-this method implement the ARP poisoning mitm attack. ARP
+This method implement the ARP poisoning mitm attack. ARP
 request/reply are sent to the victims to poison their ARP cache. Once the cache
 has been poisoned the victims will send all packets to the attacker which, in
 turn, can modify them and forward to the real destination.
@@ -205,6 +199,23 @@ turn, can modify them and forward to the real destination.
 In silent mode (-z option) only the first target is selected, if you want to
 posion multiple target in silent mode use the -j option to load a list from a
 file.
+.br
+You can select empty targets and they will be expanede as 'ANY' (all the host in
+the LAN). The target list is joined with the hosts list (created by the arp
+scan) and the result is used to determine the victims of the attack.
+.Sp
+Example:
+.Sp
+the targets are: /10.0.0.1-5/ /10.0.0.15-20/
+.br
+and the host list is: 10.0.0.1 10.0.0.3 10.0.0.16 10.0.0.18
+.Sp
+the associations between the victims will be:
+.br
+1 and 16, 1 and 18, 3 and 16, 3 and 18
+.Sp
+if the targets overlap each other, the association with identical ip address
+will be skipped.
 .Sp
 NOTE: if you manage to poison a client, you have to set correct routing
 table in the kernel specifying the GW. If your routing table are incorrect, the
@@ -530,15 +541,26 @@ messages, will be displayed.
 
 .TP
 .B ettercap -C -j /tmp/victims -M arp /10.0.0.1-7/ /10.0.0.10-20/
+.Sp
+Will load the hosts list from /tmp/victims and perfrom an ARP poisonin attack
+agains the the two target. The list will be joined with the target and the
+resulting list is used for ARP poisoning.
 
 .TP
 .B ettercap -C -M arp // //
+.Sp
+Perform the ARP poisoning attack against all the host in the LAN. BE CAREFULL
+!!
 
 .TP
 .B ettercap -Czq //110
+.SP
+Sniff only the pop3 protocol from every hosts.
 
 .TP
 .B ettercap -Czq /10.0.0.1/21,22,23 
+.Sp
+Sniff telnet, ftp and ssh connections to 10.0.0.1.
 
 
 .SH PLATFORMS
@@ -585,27 +607,6 @@ It just develops random features.   ;)
 .PP
 .B KNOWN-BUGS
 .PP
-- It is better that you don't launch ettercap on a host that is a gateway
-because man-in-the-middle attacks require to disable ip_forwarding, it may
-cause problem with routing. But if you want to scan the LAN passively
-the gateway is the right place to run ettercap... so be aware of what you
-are doing.
-.PP
-- You cannot use plugins on yourself. outgoing link layer packets are not
-captured by the same socket, so they will be ignored.
-.PP
-- While poisoning on a switched LAN, ettercap won't sniff the traffic made
-by your host to others. the technical reason is: otherwise ettercap will
-forward your packets two time (and this is not good...) the artistic
-reason is: why sniffing yourself with a man-in-the-middle method ? use
-simple sniffing instead ! ;)
-.PP
-- While sniffing in Public ARP mode, ettercap can "view" only one way of
-the connection, so some protocol dissectors can fail...
-.PP
-- under X11 resizing the xterm can give a corrupted visualization of the
-interface. SIGWINCH is *partially* supported.
-.PP
 - ettercap doesn't handle fragmented packets... only the first segment
 will be displayed by the sniffer. However all the fragments are correctly
 forwarded.
@@ -614,14 +615,12 @@ forwarded.
 or visit http://ettercap.sourceforge.net/forum/  and post it in the BUGS section.
 .PP
 + to report a bug, recompile ettercap with 'configure --enable-debug'
-and attach ettercap_debug.log to the mail in which U explain the problem.
+and attach ettercap_debug.log to the mail in which you explain the problem.
 
 
 .SH FILOLOGICAL HISTORY
 "Even if blessed with a feeble intelligence, they are cruel and smart..."
 this is the description of Ettercap, a monster of the RPG Advanced Dungeons & Dragon.
-Any process forked by ettercap has a name of a monster: illithid, doppleganger,
-grell, dryad. Even the plugins (coded by us) are monsters.
 .PP
 The name "ettercap" was chosen because it has an assonance with "ethercap" which
 means "ethernet capture" (what ettercap actually does) and also because such

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.1 2003/10/12 15:26:33 alor Exp $
+# $Id: Makefile.am,v 1.2 2003/10/14 13:13:13 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -9,7 +9,7 @@ ec_finger_la_CFLAGS = @PL_CFLAGS@
 
 ec_finger_la_SOURCES = finger.c
 
-ec_finger_la_LDFLAGS = @PLUG_LDFLAGS@ -module -avoid-version
+ec_finger_la_LDFLAGS = @PL_LDFLAGS@ -module -avoid-version
 
 LIBS =
 ec_finger_la_LIBS = 

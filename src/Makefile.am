@@ -1,7 +1,9 @@
 
-# $Id: Makefile.am,v 1.59 2003/10/13 14:22:08 lordnaga Exp $
+# $Id: Makefile.am,v 1.60 2003/10/14 13:13:14 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
+
+SUBDIRS = os interfaces
 
 bin_PROGRAMS = ettercap
 
@@ -51,22 +53,11 @@ ettercap_SOURCES = ec_capture.c \
                    ec_ui.c \
                    ec_update.c 
 
-ettercap_SOURCES += interfaces/text/ec_text.c \
-                    interfaces/text/ec_text_conn.c \
-                    interfaces/text/ec_text_display.c \
-                    interfaces/text/ec_text_profile.c \
-                    interfaces/text/ec_text_plugin.c
-                    
-ettercap_SOURCES += interfaces/daemon/ec_daemon.c
+#
+# these cannot be compiled as a lib because
+# they use __init functions
+#
 
-if SLANG
-ettercap_SOURCES += interfaces/curses/ec_curses.c
-endif
-
-if GTK
-#ettercap_SOURCES += interfaces/gtk/ec_gtk.c
-endif
-                    
 ettercap_SOURCES += mitm/ec_arp_poisoning.c
 
 ettercap_SOURCES += protocols/ec_eth.c \
@@ -78,13 +69,15 @@ ettercap_SOURCES += protocols/ec_eth.c \
 				        protocols/ec_udp.c \
 				        protocols/ec_icmp.c 
                
+
+ettercap_SOURCES += dissectors/ec_bgp.c \
+                    dissectors/ec_cvs.c 
+
 if HAVE_DN_EXPAND
 ettercap_SOURCES += dissectors/ec_dns.c
 endif
 
-ettercap_SOURCES += dissectors/ec_bgp.c \
-                    dissectors/ec_cvs.c \
-                    dissectors/ec_ftp.c \
+ettercap_SOURCES += dissectors/ec_ftp.c \
 				        dissectors/ec_imap.c \
 				        dissectors/ec_icq.c \
 				        dissectors/ec_irc.c \
@@ -110,29 +103,21 @@ if OPENSSL
 #                    dissector/ec_ssh.c
 endif
 
-### OS dependent
-
-if LINUX
-ettercap_SOURCES += os/ec_linux.c
-endif
-if BSD
-ettercap_SOURCES += os/ec_bsd.c
-endif
-if DARWIN
-ettercap_SOURCES += os/ec_darwin.c
-endif
-if SOLARIS
-ettercap_SOURCES += os/ec_solaris.c
-endif
-if CYGWIN
-ettercap_SOURCES += os/ec_cygwin.c
-endif
-
 
 ettercap_CFLAGS = @EC_CFLAGS@
 
-#ettercap_LDADD = @LTLIBOBJS@ @EC_LIBS@ 
-ettercap_LDADD = @LIBOBJS@ @EC_LIBS@ 
+ettercap_LDADD = @LIBOBJS@ @EC_LIBS@ \
+                 os/libec_os.a \
+                 interfaces/daemon/libec_daemon.a \
+                 interfaces/text/libec_text.a 
+
+if NCURSES
+ettercap_LDADD += interfaces/curses/libec_curses.a 
+endif
+
+if GTK
+#ettercap_LDADD += interfaces/gtk/libec_gtk.a
+endif
 
 ettercap_LDFLAGS = -export-dynamic
 

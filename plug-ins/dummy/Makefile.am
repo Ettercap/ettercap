@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.7 2003/10/12 15:26:04 alor Exp $
+# $Id: Makefile.am,v 1.8 2003/10/14 13:13:13 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -9,7 +9,7 @@ ec_dummy_la_CFLAGS = @PL_CFLAGS@
 
 ec_dummy_la_SOURCES = dummy.c
 
-ec_dummy_la_LDFLAGS = @PLUG_LDFLAGS@ -module -avoid-version
+ec_dummy_la_LDFLAGS = @PL_LDFLAGS@ -module -avoid-version
 
 LIBS =
 ec_dummy_la_LIBS = 

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.47 2003/10/12 18:51:31 alor Exp $
+dnl    $Id: configure.in,v 1.48 2003/10/14 13:13:09 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -116,7 +116,7 @@ case "$host_os" in
    AM_CONDITIONAL(CYGWIN, true)
    OS="CYGWIN $ac_cv_ec_windows_version"
    PTHREADLIB="-lpthread"
-   PLUG_LDFLAGS="-no-undefined"
+   PL_LDFLAGS="-no-undefined"
    ;;
 *)
    echo
@@ -126,7 +126,7 @@ case "$host_os" in
    ;;
 esac
 
-AC_SUBST(PLUG_LDFLAGS)
+AC_SUBST(PLLDFLAGS)
 
 dnl ======================
 dnl   Initialize prefix.
@@ -744,6 +744,12 @@ AC_CONFIG_FILES(  Makefile
                   man/etter.conf.5
                   share/Makefile 
                   src/Makefile 
+                  src/os/Makefile 
+                  src/interfaces/Makefile 
+                  src/interfaces/daemon/Makefile 
+                  src/interfaces/text/Makefile 
+                  src/interfaces/curses/Makefile 
+                  src/interfaces/curses/widgets/Makefile 
                   include/Makefile
                   utils/Makefile
                   utils/etterlog/Makefile

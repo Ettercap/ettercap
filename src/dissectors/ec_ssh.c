@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.18 2004/01/04 19:01:18 lordnaga Exp $
+    $Id: ec_ssh.c,v 1.19 2004/01/05 12:18:20 alor Exp $
 */
 
 #include <ec.h>
@@ -32,6 +32,7 @@
 
 #include <openssl/ssl.h>
 #include <openssl/des.h>
+#include <openssl/blowfish.h>
 #include <openssl/md5.h>
 #include <zlib.h>
 

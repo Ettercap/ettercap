@@ -54,7 +54,7 @@ NG-0.7.0    ????????
       + MySQL fixes
       + HalfLife and Quake3 were unified
       + SMB
-      + SSH
+      + SSH (blowfish support)
       + HTTP has gained performance overhaul
       + ...many others
    + new dissectors:

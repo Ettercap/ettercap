@@ -18,7 +18,6 @@
 
    + ARP SCAN
       - dns resolution
-      - result handling in a list
       - pseudo random scan
 
    + ARP POISON ENGINE

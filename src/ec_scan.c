@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.2 2003/04/30 16:50:16 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.3 2003/04/30 20:42:20 alor Exp $
 */
 
 #include <ec.h>
@@ -52,6 +52,9 @@ void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *
 void build_hosts_list(void)
 {
    pthread_t pid;
+   struct hosts_list *hl;
+   int nhosts = 0;
+   //char tmp[MAX_ASCII_ADDR_LEN];
 
    DEBUG_MSG("build_hosts_list");
 
@@ -61,7 +64,12 @@ void build_hosts_list(void)
     */
    if (GBL_OPTIONS->load_hosts) {
       load_hosts(GBL_OPTIONS->hostsfile);
-      NOT_IMPLEMENTED();
+      
+      LIST_FOREACH(hl, &GBL_HOSTLIST, next)
+         nhosts++;
+
+      USER_MSG("%d hosts added to the hosts list...\n", nhosts);
+      ui_msg_flush(1);
    }
    
    /* in silent mode, the list should not be created */
@@ -93,12 +101,23 @@ void build_hosts_list(void)
    ec_thread_destroy(pid);
    hook_del(PACKET_ARP, &get_response);
    
+   /* count the hosts and print the message */
+   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+      char tmp[MAX_ASCII_ADDR_LEN];
+      (void)tmp;
+      DEBUG_MSG("Host: %s", ip_addr_ntoa(&hl->ip, tmp));
+      nhosts++;
+   }
+
+   USER_MSG("%d hosts added to the hosts list...\n", nhosts);
+   ui_msg_flush(1);
    
    /* save the list to the file */
    if (GBL_OPTIONS->save_hosts)
       save_hosts(GBL_OPTIONS->hostsfile);
 
-   NOT_IMPLEMENTED();
+   
+   //NOT_IMPLEMENTED();
 }
 
 
@@ -374,16 +393,41 @@ void save_hosts(char *filename)
 
 /*
  * add an host to the list 
+ * order the list while inserting the elements
  */
 
 void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name)
 {
-   char tmp[MAX_ASCII_ADDR_LEN];
+   struct hosts_list *hl, *h;
 
-   DEBUG_MSG("add_host: %s", ip_addr_ntoa(ip, tmp));
+   h = calloc(1, sizeof(struct hosts_list));
+   ON_ERROR(h, NULL, "can't allocate memory");
+
+   /* fill the struct */
+   memcpy(&h->ip, ip, sizeof(struct ip_addr));
+   memcpy(&h->mac, mac, ETH_ADDR_LEN);
+
+   if (name)
+      h->hostname = strdup(name);
    
-   printf("HOST: %s ", ip_addr_ntoa(ip, tmp));
-   printf("%s %s\n", mac_addr_ntoa(mac, tmp), name);
+   /* insert in order (ascending) */
+   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+      
+      if (ip_addr_cmp(&hl->ip, &h->ip) < 0 && LIST_NEXT(hl, next) != LIST_END(&GBL_HOSTLIST) )
+         continue;
+      else if (ip_addr_cmp(&h->ip, &hl->ip) > 0) {
+         LIST_INSERT_AFTER(hl, h, next);  
+         break;
+      } else {
+         LIST_INSERT_BEFORE(hl, h, next);
+         break;
+      }
+         
+   }
+
+   /* the first element */
+   if (LIST_FIRST(&GBL_HOSTLIST) == LIST_END(&GBL_HOSTLIST))
+      LIST_INSERT_HEAD(&GBL_HOSTLIST, h, next);
    
 }
 

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.4 2004/01/10 16:32:54 lordnaga Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.5 2004/01/11 17:09:31 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -27,7 +27,7 @@
 .SH GENERAL DESCRIPTION
 The curses GUI is quite simple and intuitive.
 .br
-It is menu-driven. Every flag or functions can be modified/called thru the
+It is menu-driven. Every flag or functions can be modified/called through the
 upper menu. All the user messages are printed in the bottom window. If you want
 to see the old messages, you can scroll the window buffer by pressing the UP,
 DOWN, PPAGE, NPAGE keys. 
@@ -42,7 +42,7 @@ means CTRL+f).
 .Sp
 You can switch the focus between the objects on the screen by pressing the TAB
 key or by clicking on it with the mouse (if you are running ettercap within an
-xterm). Mouse events are supported only thru the xterm. You can use the mouse
+xterm). Mouse events are supported only through the xterm. You can use the mouse
 to select objects, open a menu, chose a function, scroll the elevators for the
 scrolling windows, etc etc.
 .Sp
@@ -132,11 +132,11 @@ setting a pcap filter.
 .RS
 .TP
 .B Unoffensive  
-This enable/disable the unoffensive flag. The asterisc '*' means "the option is
+This enable/disable the unoffensive flag. The asterisk '*' means "the option is
 enabled" else the option is not enabled.
 .TP
 .B Promisc mode
-Enable/disable the promisc mode for the live caputre forn a network interface.
+Enable/disable the promisc mode for the live capture on a network interface.
 This is an "asterisk-option" as the unoffensive one.
 .RE
 
@@ -154,10 +154,15 @@ Some of the following menu are only available in live capture.
 .RS
 .TP
 .B Start sniffing
+Starts the sniffing process depending on what you have selected on startup
+(live or from file)
 .TP
 .B Stop sniffing
+Stops the sniffing thread.
 .TP
 .B Exit
+.br
+Returns to your favourite shell ;)
 .RE
 
 
@@ -167,14 +172,23 @@ Some of the following menu are only available in live capture.
 .RS
 .TP
 .B Current Targets
+Displays a list of hosts in each TARGET. You can selectively remove an host by
+selecting it and press 'd' or add a new host pressing 'a'. To move between the
+two lists, use the ARROWS keys.
 .TP
 .B Select TARGET(s)
+Let you select the TARGET(s) as explained on ettercap(8). The syntax is the
+same as for command line specification.
 .TP
 .B Protocol...
+You can choose to sniff only TCP, only UDP or both (ALL).
 .TP
 .B Reverse matching
+Reverse the matching of a packet. It is equivalent to a NOT before the target
+specification.
 .TP
 .B Wipe Targets
+Restores both TARGETS to ANY/ANY/ANY
 .RE
 
 
@@ -183,12 +197,24 @@ Some of the following menu are only available in live capture.
 .RS
 .TP
 .B Hosts list
+Displays the list of hosts detected through an ARP scan or converted from the
+passive profiles. This list is used by MITM attacks when the ANY target is
+selected, so if you want to exclude an host from the attack, simply delete it
+from the list.
+.br
+You can remove an host from the list by pressing 'd', add to TARGET1 by
+pressing '1' and add to TARGET2 by pressing '2'.
 .TP
 .B Scan for hosts
+Perform the ARP scan of the netmask if no TARGETS are selected. If TARGETS was
+specified it only scans for those hosts.
 .TP
 .B Load from file...
+Loads the hosts list from a file previously saved with "save to file" or hand
+crafted.
 .TP
 .B Save to file...
+Save the current hosts list to a file.
 .RE
 
 
@@ -197,12 +223,26 @@ Some of the following menu are only available in live capture.
 .RS
 .TP
 .B Connections
+Displays the connection list. To see the traffic for a specific connection,
+select it and press enter. Once the two-panel interface is displayed you can
+move the focus with the arrow keys or change the visualization method by
+pressing 'v'.
 .TP
 .B Profiles
+Diplays the passive profile hosts list. Selecting an host will display the
+relative details (including account with user and pass for that host).
+.br
+You can convert the list of passive profile into the hosts list by pressing 'c'.
 .TP
 .B Resolve IP addresses
+Enables DNS resolution for all the sniffed IP address. CAUTION: this will
+extremely slow down ettercap. By the way the passive dns resolution is always
+active. It sniffs dns replies and stores it in a cache. If an ip address is
+present in that cache, it will be automatically resolved. It is dns resolution
+for free... ;)
 .TP
 .B Statistics
+Displays some statistics about the sniffing process.
 .RE
 
 
@@ -211,8 +251,12 @@ Some of the following menu are only available in live capture.
 .RS
 .TP
 .B [...]
+For each type of attack, a menu entry is displayed. Simply select the attack you
+want and fill the arguments when asked. You can activate more than once at a
+time.
 .TP
 .B Stop mitm attack(s)
+Stops all the mitm attack currently active.
 .RE
 
 
@@ -221,8 +265,11 @@ Some of the following menu are only available in live capture.
 .RS
 .TP
 .B Load a filter...
+Load a precompiled filter file. The file must be compiled with etterfilter(8)
+before it can be loaded.
 .TP
 .B Stop filtering
+Unload the filter and stop filtering the connections.
 .RE
 
 
@@ -254,8 +301,13 @@ Asterisk-option to control whether or not the logfile should be compressed.
 .RS
 .TP
 .B Manage the plugins
+Opens the plugin management window. You can select a plugin and activate it by
+pressing 'enter'. Plugins already active can be recognized by the [1] symbol
+instead of [0]. If you select an active plugin, it will be deactivated.
 .TP
 .B Load a plugin...
+You can load a plugin file that is not in the default serach path. (remember
+that you can browse directory with EC_UID permissions).
 .RE
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.17 2004/05/27 10:59:52 alor Exp $
+    $Id: ec_http.c,v 1.18 2004/05/27 19:00:48 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -101,6 +101,7 @@ static void Parse_Post_Payload(u_char *ptr, struct http_status *conn_status, str
 static void Print_Pass(struct packet_object *po);
 static void Get_Banner(u_char *ptr, struct packet_object *po);
 static u_char Parse_Form(u_char *to_parse, char **ret, int mode);
+static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object *po);
 static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po);
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po);
 static char *unicodeToString(char *p, size_t len);
@@ -158,7 +159,9 @@ FUNC_DECODER(dissector_http)
       /* Check Proxy or WWW auth first
        * then password in the GET or POST.
        */
-      if ((from_here = strstr(ptr, ": NTLM ")) && 
+      if ((from_here = strstr(ptr, "Authorization: Passport")) && 
+         Parse_Passport_Auth(ptr, from_here + strlen("Authorization: Passport"), PACKET));       
+      else if ((from_here = strstr(ptr, ": NTLM ")) && 
          Parse_NTLM_Auth(ptr, from_here + strlen(": NTLM "), PACKET));
       else if ((from_here = strstr(ptr, ": Basic ")) &&
          Parse_Basic_Auth(ptr, from_here  + strlen(": Basic "), PACKET));
@@ -267,6 +270,45 @@ static void Get_Banner(u_char *ptr, struct packet_object *po)
          }
       }
    }
+}
+
+
+/* Parse Passport Authentication */ 
+static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object *po)
+{
+   char *token, *to_decode;
+
+   DEBUG_MSG("HTTP --> dissector http (Passport Auth)");
+
+   if (!(to_decode = strdup(from_here)))
+      return 1;
+
+   if ( (token = strstr(to_decode, "OrgURL=")) == NULL ) {
+      SAFE_FREE(to_decode);
+      return 1;
+   }
+   
+   /* Catch the original URL */
+   strtok(token, ",");
+   po->DISSECTOR.info = strdup(token + strlen("OrgURL="));
+   Decode_Url(po->DISSECTOR.info);
+   
+   /* Catch user and password */
+   while ( (token = strtok(NULL, ",")) != NULL ) {
+      if (!strncmp(token, "sign-in=", strlen("sign-in="))) {
+         po->DISSECTOR.user = strdup(token + strlen("sign-in="));
+         Decode_Url(po->DISSECTOR.user);
+      } else if (!strncmp(token, "pwd=", strlen("pwd="))) {
+         po->DISSECTOR.pass = strdup(token + strlen("pwd="));
+         Decode_Url(po->DISSECTOR.pass);
+         /* password is the last interesting field */
+         break;
+      }
+   }
+
+   Print_Pass(po);
+   SAFE_FREE(to_decode);
+   return 1;      
 }
 
 

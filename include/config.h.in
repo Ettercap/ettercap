@@ -24,6 +24,9 @@
 /* Define to 1 if you have the `argz_stringify' function. */
 #undef HAVE_ARGZ_STRINGIFY
 
+/* Define to 1 if you have the <arpa/nameser.h> header file. */
+#undef HAVE_ARPA_NAMESER_H
+
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
@@ -101,6 +104,9 @@
 
 /* Define to 1 if you have the `net' library (-lnet). */
 #undef HAVE_LIBNET
+
+/* Define to 1 if you have the `packet' library (-lpacket). */
+#undef HAVE_LIBPACKET
 
 /* Define to 1 if you have the `pcap' library (-lpcap). */
 #undef HAVE_LIBPCAP

@@ -56,9 +56,9 @@ MAC OS X (Darwin)
 
 WINDOWS (cygwin)
 ------------------------------------------------------------------------------
-   Windows XP           todo 
+   Windows XP           in progress...
    
-   Windows 2000         todo 
+   Windows 2000         in progress...
    
 
 WINDOWS (native/mingw)
@@ -158,7 +158,20 @@ doubt, go with the latest copy.
    W I N D O W S
 ------------------------------------------------------------------------------
 
-Currently the support for windows is dropped.
+Currently the porting to the windows platform is not completed yet.
+
+ + CYGWIN
+
+   1) download the wpdpack from the winpcap website
+   2) download the libnet tarball from packetfactory.net
+   3) copy the libs in Wpdpack/lib into /usr/lib
+      copy the includes in Wpdpack/include into /usr/include/pcap
+      rename the /usr/include/pcap/pthread.h to /usr/include/pcap/_pthread.h
+   4) compile the libnet source...
+         you have to search in the mailing list for the patch for cygwin.
+   5) run the ettercap NG configure and make it      
+
+ + MINGW
 
 
 ==============================================================================

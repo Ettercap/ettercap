@@ -1,12 +1,12 @@
 
-/* $Id: ec_resolv.h,v 1.11 2004/04/04 14:14:09 alor Exp $ */
+/* $Id: ec_resolv.h,v 1.12 2004/04/04 14:27:31 alor Exp $ */
 
 #ifndef EC_RESOLV_H
 #define EC_RESOLV_H
 
 #include <ec_inet.h>
 
-#ifdef HAVE_NAMESER_H
+#ifdef HAVE_ARPA_NAMESER_H
    #include <arpa/nameser.h>
    #ifndef OS_BSD_OPEN
       #include <arpa/nameser_compat.h>

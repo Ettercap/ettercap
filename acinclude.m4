@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.11 2004/03/03 15:33:01 alor Exp $
+dnl $Id: acinclude.m4,v 1.12 2004/04/04 14:27:30 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -29,7 +29,7 @@ AC_DEFUN(EC_PTHREAD_CHECK,[
    
    if test "$OS" = "SOLARIS"; then
       AC_SEARCH_LIBS(_getfp, pthread,,)
-   elif test "$OS" != "MACOSX"; then
+   elif test "$OS" != "MACOSX" -a "$OS" != "WINDOWS"; then
       AC_MSG_CHECKING(whether $CC accepts -pthread)
       LDFLAGS_store="$LDFLAGS"
       LDFLAGS="$LDFLAGS -pthread"
@@ -133,6 +133,7 @@ AH_TEMPLATE(HAVE_NS_GET, [nameser NS_GET32])
 
 AC_DEFUN(EC_NS_GET,[
 
+   AC_CHECK_HEADERS(arpa/nameser.h)
    AC_MSG_CHECKING(for NS_GET32)
    AC_TRY_RUN([
       #include <arpa/nameser.h>

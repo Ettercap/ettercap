@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.107 2004/03/31 13:03:04 alor Exp $
+dnl    $Id: configure.in,v 1.108 2004/04/04 14:27:30 alor Exp $
 dnl
 
 AC_INIT
@@ -118,20 +118,23 @@ case "$host_os" in
    AC_DEFINE(OS_WINDOWS)
    AC_DEFINE(OS_CYGWIN)
    AM_CONDITIONAL(CYGWIN, true)
-   OS="CYGWIN $ac_ec_windows_version"
+   OS="WINDOWS"
+   OS_SUB="CYGWIN $ac_ec_windows_version"
    PL_LDFLAGS="-no-undefined"
    ;;
 *mingw*)
    AC_DEFINE(OS_WINDOWS)
    AC_DEFINE(OS_MINGW)
    AM_CONDITIONAL(MINGW, true)
-   OS="MINGW"
+   OS="WINDWOS"
+   OS_SUB="MINGW"
    ;;
 *interix*)
    AC_DEFINE(OS_WINDOWS)
    AC_DEFINE(OS_SFU)
    AM_CONDITIONAL(SFU, true)
-   OS="SFU"
+   OS="WINDOWS"
+   OS_SUB="SFU"
    ;;
 *)
    echo
@@ -394,14 +397,22 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         PCAPINC="-I$withval"
-        PCAPLIB="-L$withval -lpcap"
+        if test "$OS" = "WINDOWS"; then
+           PCAPLIB="-L$withval -lwpcap -lpacket"
+        else
+           PCAPLIB="-L$withval -lpcap"
+        fi
         ac_ec_libpcap=$withval
         AC_MSG_RESULT($withval)
      elif test -f $withval/include/pcap.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         PCAPINC="-I$withval/include"
-        PCAPLIB="-L$withval/lib -lpcap"
+        if test "$OS" = "WINDOWS"; then
+           PCAPLIB="-L$withval/lib -lwpcap -lpacket"
+        else
+           PCAPLIB="-L$withval/lib -lpcap"
+        fi
         ac_ec_libpcap=$withval
         AC_MSG_RESULT($withval)
      else
@@ -412,12 +423,24 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
   esac ],
 [ if test -f /usr/include/pcap/pcap.h; then
      PCAPINC="-I/usr/include/pcap"
-     PCAPLIB="-lpcap"
+     if test "$OS" = "WINDOWS"; then
+        PCAPLIB="-lwpcap -lpacket"
+     else
+        PCAPLIB="-lpcap"
+     fi
   elif test -f /usr/include/pcap.h; then
-     PCAPLIB="-lpcap"
+     if test "$OS" = "WINDOWS"; then
+        PCAPLIB="-lwpcap -lpacket"
+     else
+        PCAPLIB="-lpcap"
+     fi
   elif test -f /usr/local/include/pcap.h; then
      PCAPINC="-I/usr/local/include"
-     PCAPLIB="-lpcap"
+     if test "$OS" = "WINDOWS"; then
+        PCAPLIB="-lwpcap -lpacket"
+     else
+        PCAPLIB="-lpcap"
+     fi
   else
      AC_MSG_RESULT(no)
      AC_MSG_ERROR([libpcap not found])
@@ -427,7 +450,14 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$PCAPLIB"
-AC_CHECK_LIB(pcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
+if test "$OS" = "WINDOWS"; then
+   AC_CHECK_LIB(wpcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect libpcap version. winpcap >= 0.8.1 required]))
+   AC_CHECK_LIB(packet, PacketInitPacket,, AC_MSG_ERROR([Incorrect libpacket version. winpcap >= 0.8.1 required]))
+   AC_CHECK_LIB(ws2_32, ntohs,, AC_MSG_ERROR([Incorrect ws2_32 version.]))
+   AC_CHECK_LIB(iphlpapi, SendARP,, AC_MSG_ERROR([Incorrect iphlpapi version.]))
+else
+   AC_CHECK_LIB(pcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
+fi
 LDFLAGS="${OLDLDFLAGS}"
 
 dnl ---------

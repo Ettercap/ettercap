@@ -65,6 +65,7 @@ ettercap_SOURCES = ec_capture.c \
 				   dissectors/ec_ftp.c \
 				   dissectors/ec_imap.c \
 				   dissectors/ec_irc.c \
+				   dissectors/ec_mysql.c \
 				   dissectors/ec_nntp.c \
 				   dissectors/ec_pop.c \
 				   dissectors/ec_rlogin.c \

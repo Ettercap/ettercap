@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_snmp.c,v 1.8 2003/10/19 16:24:16 lordnaga Exp $
+    $Id: ec_snmp.c,v 1.9 2003/10/28 12:17:39 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -58,7 +58,7 @@ FUNC_DECODER(dissector_snmp)
    DECLARE_DISP_PTR_END(ptr, end);
    size_t clen = 0;
    char tmp[MAX_ASCII_ADDR_LEN];
-   int version, n;
+   u_int32 version, n;
 
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
@@ -67,10 +67,10 @@ FUNC_DECODER(dissector_snmp)
    DEBUG_MSG("SNMP --> UDP dissector_snmp");
 
    /* get the version */
-   while (*ptr++ != ASN1_INTEGER && ptr != end);
+   while (*ptr++ != ASN1_INTEGER && ptr < end);
    
    /* reached the end */
-   if (ptr == end) return NULL;
+   if (ptr >= end) return NULL;
       
    /* move to the len */
    ptr += *ptr;
@@ -85,10 +85,10 @@ FUNC_DECODER(dissector_snmp)
       version = 3;
    
    /* move till the community name len */
-   while(*ptr++ != ASN1_STRING && ptr != end);
+   while(*ptr++ != ASN1_STRING && ptr < end);
    
    /* reached the end */
-   if (ptr == end) return NULL;
+   if (ptr >= end) return NULL;
 
    /* get the community name lenght */
    n = *ptr;

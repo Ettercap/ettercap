@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.23 2004/04/04 14:11:46 alor Exp $
+    $Id: ec_session.c,v 1.24 2004/04/18 10:02:02 alor Exp $
 */
 
 #include <ec.h>
@@ -34,7 +34,6 @@
 /* globals */
 
 struct session_list {
-   pthread_t id;
    time_t ts;
    struct ec_session *s;
    LIST_ENTRY (session_list) next;
@@ -80,10 +79,9 @@ void session_put(struct ec_session *s)
    
    /* search if it already exist */
    LIST_FOREACH_SAFE(sl, &session_list_head[h], next, tmp) {
-      /* sessions are unique per thread */
-      if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, s->ident) ) {
+      if ( sl->s->match(sl->s->ident, s->ident) ) {
 
-         DEBUG_MSG("session_put: [%lu][%p] updated", (unsigned long)sl->id, sl->s->ident);
+         DEBUG_MSG("session_put: [%p] updated", sl->s->ident);
          /* destroy the old session */
          session_free(sl->s);
          /* link the new session */
@@ -96,7 +94,7 @@ void session_put(struct ec_session *s)
       }
 
       if (sl->ts < (ti - GBL_CONF->connection_timeout) ) {
-         DEBUG_MSG("session_put: [%lu][%p] timeouted", (unsigned long)sl->id, sl->s->ident);
+         DEBUG_MSG("session_put: [%p] timeouted", sl->s->ident);
          session_free(sl->s);
          LIST_REMOVE(sl, next);
          SAFE_FREE(sl);
@@ -109,16 +107,13 @@ void session_put(struct ec_session *s)
    /* create the element in the list */
    SAFE_CALLOC(sl, 1, sizeof(struct session_list));
    
-   /* mark the session for the current thread */
-   sl->id = pthread_self();
-
    /* the timestamp */
    sl->ts = ti;
 
    /* link the session */
    sl->s = s;
    
-   DEBUG_MSG("session_put: [%lu][%p] new session", (unsigned long)sl->id, sl->s->ident);
+   DEBUG_MSG("session_put: [%p] new session", sl->s->ident);
 
    /* 
     * put it in the head.
@@ -148,10 +143,9 @@ int session_get(struct ec_session **s, void *ident, size_t ident_len)
 
    /* search if it already exist */
    LIST_FOREACH(sl, &session_list_head[h], next) {
-      /* No more per-thread sessions */
-      if ( /*sl->id == pthread_self() &&*/ sl->s->match(sl->s->ident, ident) ) {
+      if ( sl->s->match(sl->s->ident, ident) ) {
    
-         //DEBUG_MSG("session_get: [%lu][%p]", (unsigned long)sl->id, sl->s->ident);
+         //DEBUG_MSG("session_get: [%p]", sl->s->ident);
          /* return the session */
          *s = sl->s;
          
@@ -185,9 +179,9 @@ int session_del(void *ident, size_t ident_len)
    
    /* search if it already exist */
    LIST_FOREACH(sl, &session_list_head[h], next) {
-      if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
+      if ( sl->s->match(sl->s->ident, ident) ) {
          
-         DEBUG_MSG("session_del: [%lu][%p]", (unsigned long)sl->id, sl->s->ident);
+         DEBUG_MSG("session_del: [%p]", sl->s->ident);
 
          /* free the session */
          session_free(sl->s);
@@ -224,9 +218,9 @@ int session_get_and_del(struct ec_session **s, void *ident, size_t ident_len)
    
    /* search if it already exist */
    LIST_FOREACH(sl, &session_list_head[h], next) {
-      if ( /*sl->id == pthread_self() && */sl->s->match(sl->s->ident, ident) ) {
+      if ( sl->s->match(sl->s->ident, ident) ) {
          
-         DEBUG_MSG("session_get_and_del: [%lu][%p]", (unsigned long)sl->id, sl->s->ident);
+         DEBUG_MSG("session_get_and_del: [%p]", sl->s->ident);
          
          /* return the session */
          *s = sl->s;
@@ -252,6 +246,10 @@ int session_get_and_del(struct ec_session **s, void *ident, size_t ident_len)
 void session_free(struct ec_session *s)
 {
    SAFE_FREE(s->ident);
+   /* call the cleanup function to free pointers in the data portion */
+   if (s->free)
+      s->free(s->data, s->data_len);
+   /* data is free'd here, don't free it in the s->free function */
    SAFE_FREE(s->data);
    SAFE_FREE(s);
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: find_ettercap.c,v 1.2 2004/04/17 16:10:57 alor Exp $
+    $Id: find_ettercap.c,v 1.3 2004/04/18 10:02:02 alor Exp $
 */
 
 
@@ -101,7 +101,7 @@ static void parse_ip(struct packet_object *po)
    ip = (struct libnet_ipv4_hdr *)po->L3.header;
 
    if (ntohs(ip->ip_id) == EC_MAGIC_16)
-      USER_MSG("ettercap traces from %s...\n", ip_addr_ntoa(&po->L3.src, tmp));
+      USER_MSG("ettercap traces (ip) from %s...\n", ip_addr_ntoa(&po->L3.src, tmp));
    
    if (ntohs(ip->ip_id) == 0xbadc)
       USER_MSG("ettercap plugin (banshee) is killing from %s to %s...\n", ip_addr_ntoa(&po->L3.src, tmp), ip_addr_ntoa(&po->L3.dst, tmp2));
@@ -119,7 +119,7 @@ static void parse_icmp(struct packet_object *po)
    icmp = (struct libnet_icmpv4_hdr *)po->L4.header;
 
    if (ntohs(icmp->hun.echo.id) == EC_MAGIC_16 && ntohs(icmp->hun.echo.seq) == EC_MAGIC_16)
-      USER_MSG("ettercap traces from %s...\n", ip_addr_ntoa(&po->L3.src, tmp));
+      USER_MSG("ettercap traces (icmp) from %s...\n", ip_addr_ntoa(&po->L3.src, tmp));
 
 }
 
@@ -136,10 +136,10 @@ static void parse_tcp(struct packet_object *po)
   
    switch (ntohl(tcp->th_seq)) {
       case EC_MAGIC_16:
-         USER_MSG("ettercap traces from %s...\n", ip_addr_ntoa(&po->L3.src, tmp));
+         USER_MSG("ettercap traces (tcp) from %s...\n", ip_addr_ntoa(&po->L3.src, tmp));
          break;
       case 6969:
-         USER_MSG("ettercap plugin (shadow) is scanning from %s to %s...\n", ip_addr_ntoa(&po->L3.src, tmp), ip_addr_ntoa(&po->L3.dst, tmp2));
+         USER_MSG("ettercap plugin (shadow) is scanning from %s to %s:%d...\n", ip_addr_ntoa(&po->L3.src, tmp), ip_addr_ntoa(&po->L3.dst, tmp2), ntohs(po->L4.dst));
          break;
       case 0xabadc0de:
          if (ntohl(tcp->th_ack) == 0xabadc0de)

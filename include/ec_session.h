@@ -1,5 +1,5 @@
 
-/* $Id: ec_session.h,v 1.6 2003/10/29 20:41:06 alor Exp $ */
+/* $Id: ec_session.h,v 1.7 2004/04/18 10:02:01 alor Exp $ */
 
 #ifndef EC_SESSION_H
 #define EC_SESSION_H
@@ -13,6 +13,7 @@ struct ec_session {
    /* Used to trace headers for injection */
    struct ec_session *prev_session;
    int (*match)(void *id_sess, void *id);
+   void (*free)(void *data, size_t data_len);
 };
 
 extern void session_put(struct ec_session *s);

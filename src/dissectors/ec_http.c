@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.8 2004/01/21 20:20:06 alor Exp $
+    $Id: ec_http.c,v 1.9 2004/03/21 12:08:34 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -26,6 +26,7 @@
 #include <ec_dissect.h>
 #include <ec_session.h>
 #include <ec_strings.h>
+#include <ec_sslwrap.h>
 
 /* globals */
 #define USER 1
@@ -36,6 +37,8 @@ struct http_status {
 #define POST_WAIT_DELIMITER 1
 #define POST_LAST_CHANCE 2
 #define NTLM_WAIT_RESPONSE 3
+#define PROXY_WAIT_OK 4
+#define PROXY_WAIT_DELIMITER 5
    u_char c_data[150];
 /* XXX - Manage this array dinamically (with session_destroyer) */
 };
@@ -91,6 +94,7 @@ void http_init(void);
 static void Parse_Method_Get(u_char *ptr, struct packet_object *po);
 static void Parse_Method_Post(u_char *ptr, struct packet_object *po);
 static void Decode_Url(u_char *src);
+static int Check_CONNECT(u_char *ptr, struct packet_object *po);
 static void Find_Url(u_char *to_parse, char **ret);
 static void Find_Url_Referer(u_char *to_parse, char **ret);
 static void Parse_Post_Payload(u_char *ptr, struct http_status *conn_status, struct packet_object *po);
@@ -119,8 +123,10 @@ int http_fields_init(void);
 
 void __init http_init(void)
 {
+   /* XXX - Quoted to make CVS version compile */
+   //sslw_dissect_add("https", 443, dissector_http, SSL_ENABLED);
+   //sslw_dissect_add("proxy", 8080, dissector_http, SSL_DISABLED);
    dissect_add("http", APP_LAYER_TCP, 80, dissector_http);
-   dissect_add("proxy", APP_LAYER_TCP, 8080, dissector_http);
 }
 
 
@@ -139,10 +145,14 @@ FUNC_DECODER(dissector_http)
    if (PACKET->DATA.len == 0)
       return NULL;
 
+   /* XXX - This way we won't catch ProxyAuth on CONNECT */
+   if (Check_CONNECT(ptr, PACKET))
+      return NULL;         
+
    /* Parse client requests.
     * Check the request type first. 
     */
-   if (FROM_CLIENT("http", PACKET) || FROM_CLIENT("proxy", PACKET)) {
+   if (FROM_CLIENT("http", PACKET) || FROM_CLIENT("proxy", PACKET) || FROM_CLIENT("https", PACKET)) {
       /* Check Proxy or WWW auth first
        * then password in the GET or POST.
        */
@@ -188,6 +198,46 @@ FUNC_DECODER(dissector_http)
    return NULL;
 }
 
+/* Set the SSL flag (for ssl wrapper) when the CONNECT is finished */
+static int Check_CONNECT(u_char *ptr, struct packet_object *po)
+{
+   void *ident = NULL;
+   struct ec_session *s = NULL;
+   struct http_status *conn_status = NULL;
+
+   /* If we don't activate SSL wrappers we don't need to trace CONNECT */
+   if (!GBL_CONF->aggressive_dissectors || GBL_OPTIONS->unoffensive)
+      return 0;
+      
+   dissect_create_ident(&ident, po, DISSECT_CODE(dissector_http));
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      conn_status = (struct http_status *) s->data;
+
+      if (FROM_SERVER("proxy", po)) {
+         if (conn_status->c_status == PROXY_WAIT_OK && !strncmp(ptr + 8, " 200 ", 5)) 
+            conn_status->c_status = PROXY_WAIT_DELIMITER;
+
+         if (conn_status->c_status == PROXY_WAIT_DELIMITER && 
+	     (strstr(ptr, "\r\n\r\n") || (ptr[0]!='\r' && ptr[1]!='\n'))) {
+	    dissect_wipe_session(po, DISSECT_CODE(dissector_http));
+	    conn_status = NULL;
+	    po->flags |= PO_SSLSTART;
+         }
+      }      
+   } else if (FROM_CLIENT("proxy", po) && !strncmp(ptr, "CONNECT ", 8)) {
+      dissect_create_session(&s, po, DISSECT_CODE(dissector_http));
+      SAFE_CALLOC(s->data, 1, sizeof(struct http_status));                  
+      conn_status = (struct http_status *) s->data;
+      conn_status->c_status = PROXY_WAIT_OK;
+      session_put(s);
+   }
+
+   SAFE_FREE(ident);
+   if (conn_status && (conn_status->c_status == PROXY_WAIT_DELIMITER || conn_status->c_status == PROXY_WAIT_OK))  
+      return 1;
+      
+   return 0;
+}
 
 /* Get the server banner from the headers */       
 static void Get_Banner(u_char *ptr, struct packet_object *po)
@@ -198,6 +248,8 @@ static void Get_Banner(u_char *ptr, struct packet_object *po)
    /* This is the banner of the remote 
     * server and not of the proxy
     */
+    DEBUG_MSG("http - GET BANNER");
+    
    if (FROM_SERVER("proxy", po))
       po->DISSECTOR.banner=strdup("Proxy");
    else {
@@ -358,14 +410,18 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
 static void Parse_Post_Payload(u_char *ptr, struct http_status *conn_status, struct packet_object *po)
 { 
    char *user=NULL, *pass=NULL;
+
+   DEBUG_MSG("HTTP - Parse First chance");
    
    if (conn_status->c_status == POST_WAIT_DELIMITER)
       if ((ptr = strstr(ptr, "\r\n\r\n"))) { 
          ptr+=4;
          conn_status->c_status = POST_LAST_CHANCE;
       }
-   
+   DEBUG_MSG("HTTP - Parse Last chance");
    if (conn_status->c_status == POST_LAST_CHANCE) {
+   DEBUG_MSG("HTTP - Parse Form");
+
       if (Parse_Form(ptr, &user, USER) && Parse_Form(ptr, &pass, PASS)) {
          po->DISSECTOR.user = user;
          po->DISSECTOR.pass = pass;
@@ -386,7 +442,7 @@ static void Parse_Method_Post(u_char *ptr, struct packet_object *po)
    struct http_status *conn_status;
      
    DEBUG_MSG("HTTP --> dissector http (method POST)");
-   
+  
    Find_Url_Referer(ptr, &url);
    
    /* We create a session just in case the post was 
@@ -469,7 +525,9 @@ static u_char Parse_Form(u_char *to_parse, char **ret, int mode)
       q = to_parse;  
       do {
          if (*q == '&') q++;
+DEBUG_MSG("FORM: %s %s",q, d->name);
          if (!strncasecmp(q, d->name, strlen(d->name)) && *(q+strlen(d->name)) == '=' ) {
+
             /* Return the value past the '=' */
             if (!(*ret = strdup(q + strlen(d->name) + 1)))
                return 0;

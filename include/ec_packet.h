@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.31 2004/03/19 13:57:11 alor Exp $ */
+/* $Id: ec_packet.h,v 1.32 2004/03/21 12:06:11 lordnaga Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -94,6 +94,8 @@ struct packet_object {
       #define PO_EOF          ((u_int16)(1<<8))     /* we are reading from a file and this is the last packet */
 
       #define PO_FROMSSL      ((u_int16)(1<<9))     /* the packet is coming from a ssl wrapper */
+
+      #define PO_SSLSTART     ((u_int16)(1<<9))     /* ssl wrapper has to enter SSL state */
    
    /* 
     * here are stored the user and pass collected by dissectors 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_hosts.c,v 1.11 2004/05/06 00:23:03 daten Exp $
+    $Id: ec_gtk_hosts.c,v 1.12 2004/10/10 13:49:51 daten Exp $
 */
 
 #include <ec.h>
@@ -64,8 +64,6 @@ void gtkui_scan(void)
    
    /* perform a new scan */
    build_hosts_list();
-
-   gtkui_refresh_host_list();
 }
 
 /*

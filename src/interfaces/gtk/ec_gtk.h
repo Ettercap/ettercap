@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.16 2004/09/30 02:09:26 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.17 2004/10/10 13:49:51 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -35,6 +35,7 @@ extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
 extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 extern gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
 extern void gtkui_filename_browse(GtkWidget *widget, gpointer data);
+extern char *gtkui_utf8_validate(char *data);
 
 /* MDI pages */
 extern GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));

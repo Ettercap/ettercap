@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.32 2004/09/30 01:56:30 daten Exp $
+    $Id: ec_gtk.c,v 1.33 2004/10/10 13:49:51 daten Exp $
 */
 
 #include <ec.h>
@@ -45,7 +45,7 @@ static GtkWidget     *textview = NULL;
 static GtkTextBuffer *msgbuffer = NULL;
 static GtkTextMark   *endmark = NULL;
 static GtkAccelGroup *accel_group = NULL;
-static gboolean progress_cancelled = FALSE;
+static gboolean       progress_cancelled = FALSE;
 
 /* proto */
 
@@ -55,6 +55,8 @@ void gtkui_exit(void);
 
 void gtkui_message(const char *msg);
 void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
+
+char *gtkui_utf8_validate(char *data);
    
 static void gtkui_init(void);
 static void gtkui_cleanup(void);
@@ -121,7 +123,6 @@ void set_gtk_interface(void)
    ops.type = UI_GTK;
    
    ui_register(&ops);
-   
 }
 
 
@@ -304,41 +305,38 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
  */
 static int gtkui_progress(char *title, int value, int max)
 {
-   static GtkWidget *dialog = NULL;
-   static GtkWidget *pbar = NULL;
+   static GtkWidget *progress_dialog = NULL;
+   static GtkWidget *progress_bar = NULL;
+
+   gdk_threads_enter();
 
    if (progress_cancelled == TRUE) {
-      dialog = NULL;
-      pbar = NULL;
+      progress_dialog = NULL;
+      progress_bar = NULL;
       progress_cancelled = FALSE;
+      gdk_threads_leave();
       return UI_PROGRESS_INTERRUPTED;
    }
 
-   gdk_threads_enter();
-   
    /* the first time, create the object */
-   if (pbar == NULL) {
-      dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-      gtk_window_set_title(GTK_WINDOW (dialog), EC_PROGRAM);
-      gtk_window_set_modal(GTK_WINDOW (dialog), TRUE);
-      gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
-      gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
-      g_signal_connect(G_OBJECT (dialog), "delete_event", G_CALLBACK (gtkui_progress_cancel), NULL);
+   if (progress_bar == NULL) {
+      progress_dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+      gtk_window_set_title(GTK_WINDOW (progress_dialog), EC_PROGRAM);
+      gtk_window_set_modal(GTK_WINDOW (progress_dialog), TRUE);
+      gtk_window_set_position(GTK_WINDOW (progress_dialog), GTK_WIN_POS_CENTER);
+      gtk_container_set_border_width(GTK_CONTAINER (progress_dialog), 5);
+      g_signal_connect(G_OBJECT (progress_dialog), "delete_event", G_CALLBACK (gtkui_progress_cancel), NULL);
     
-      pbar = gtk_progress_bar_new();
-      gtk_container_add(GTK_CONTAINER (dialog), pbar);
-      gtk_widget_show(pbar);
+      progress_bar = gtk_progress_bar_new();
+      gtk_container_add(GTK_CONTAINER (progress_dialog), progress_bar);
+      gtk_widget_show(progress_bar);
 
-      gtk_widget_show(dialog);
+      gtk_widget_show(progress_dialog);
    } 
    
    /* the subsequent calls have to only update the object */
-   gtk_progress_bar_set_text(GTK_PROGRESS_BAR (pbar), title);
-   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (pbar), (gdouble)((gdouble)value / (gdouble)max));
-
-   /* a nasty little loop that lets gtk update the progress bar immediately */
-//   while (gtk_events_pending ())
-//      gtk_main_iteration ();
+   gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
+   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
 
    gdk_threads_leave();
 
@@ -347,12 +345,10 @@ static int gtkui_progress(char *title, int value, int max)
     */
    if (value == max) {
       gdk_threads_enter();
-      gtk_widget_hide(dialog);
-      gtk_widget_destroy(pbar);
-      gtk_widget_destroy(dialog);
+      gtk_widget_destroy(progress_dialog);
+      progress_dialog = NULL;
+      progress_bar = NULL;
       gdk_threads_leave();
-      dialog = NULL;
-      pbar = NULL;
       return UI_PROGRESS_FINISHED;
    }
 
@@ -362,7 +358,6 @@ static int gtkui_progress(char *title, int value, int max)
 static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) {
    progress_cancelled = TRUE;
 
-   /* the whole progress dialog will be destroyed by gtk after returning FALSE */
    return(FALSE);
 }
 
@@ -984,9 +979,13 @@ GtkTextBuffer *gtkui_details_window(char *title)
 void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
 {
    GtkTextIter iter;
+   gchar *unicode;
+
+   if((unicode = gtkui_utf8_validate(data)) == NULL)
+      return;
 
    gtk_text_buffer_get_end_iter(textbuf, &iter);
-   gtk_text_buffer_insert(textbuf, &iter, data, -1);
+   gtk_text_buffer_insert(textbuf, &iter, unicode, -1);
 }
 
 /* hitting "Enter" key in dialog does same as clicking OK button */
@@ -1195,6 +1194,26 @@ void gtkui_filename_browse(GtkWidget *widget, gpointer data)
       gtk_entry_set_text(GTK_ENTRY (data), filename);
    }
    gtk_widget_destroy(dialog);
+}
+
+/* make sure data is valid UTF8 */
+char *gtkui_utf8_validate(char *data) {
+   const gchar *end;
+   char *unicode = NULL;
+
+   unicode = data;
+   if(!g_utf8_validate (data, -1, &end)) {
+      /* if "end" pointer is at begining of string, we have no valid text to print */
+      if(end == unicode) return(NULL);
+
+      /* cut off the invalid part so we don't lose the whole string */
+      /* this shouldn't happen often */
+      unicode = (char *)end;
+      *unicode = 0;
+      unicode = data;
+   }
+
+   return(unicode);
 }
 
 /* EOF */

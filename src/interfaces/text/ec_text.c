@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.9 2003/10/29 20:41:08 alor Exp $
+    $Id: ec_text.c,v 1.10 2003/11/13 21:35:43 alor Exp $
 */
 
 #include <ec.h>
@@ -148,7 +148,7 @@ static void text_error(const char *msg)
 static void text_fatal_error(const char *msg)
 {
    /* avoid implicit format bugs */
-   fprintf(stdout, "\nFATAL: %s\n\n", msg);
+   fprintf(stdout, "\n"EC_COLOR_RED"FATAL: "EC_COLOR_END"%s\n\n", msg);
    /* allow non buffered messages */
    fflush(stdout);
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_output.c,v 1.7 2003/10/05 17:42:17 alor Exp $
+    $Id: ef_output.c,v 1.8 2003/11/13 21:35:43 alor Exp $
 */
 
 #include <ef.h>
@@ -84,7 +84,7 @@ int write_output(void)
    
    fprintf(stdout, " done.\n\n");
   
-   fprintf(stdout, " -> Script encoded into %d instructions.\n\n", i - 1);
+   fprintf(stdout, " -> Script encoded into %d instructions.\n\n", (int)(i - 1));
    
    return ESUCCESS;
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp_spoofing.c,v 1.2 2003/11/12 16:59:17 alor Exp $
+    $Id: ec_dhcp_spoofing.c,v 1.3 2003/11/13 21:35:43 alor Exp $
 */
 
 #include <ec.h>
@@ -67,21 +67,20 @@ static void dhcp_spoofing_start(char *args)
 {
    struct in_addr ipaddr;
    char *p;
-   int i = 0;
+   int i = 1;
   
    DEBUG_MSG("dhcp_spoofing_start");
 
-   if (!strcmp(args, "")) {
-      USER_MSG("FATAL: DHCP spoofing needs a parameter.\n");
-      return;
-   }
+   if (!strcmp(args, ""))
+      FATAL_ERROR("DHCP spoofing needs a parameter.\n");
+   
    /* check the parameter:
     *
     * ip_pool/netmask/dns
     */
    for (p = strsep(&args, "/"); p != NULL; p = strsep(&args, "/")) {
       /* first parameter (the ip_pool) */
-      if (i == 0) {
+      if (i == 1) {
          char tmp[strlen(p)+3];
 
          /* add the / to be able to use the target parsing function */
@@ -91,7 +90,7 @@ static void dhcp_spoofing_start(char *args)
             break;
          
       /* second parameter (the netmask) */
-      } else if (i == 1) {
+      } else if (i == 2) {
          /* convert from string */
          if (inet_aton(p, &ipaddr) == 0)
             break;
@@ -99,7 +98,8 @@ static void dhcp_spoofing_start(char *args)
          ip_addr_init(&dhcp_netmask, AF_INET, (char *)&ipaddr);
          
       /* third parameter (the dns server) */
-      } else if (i == 2) {
+      } else if (i == 3) {
+         char tmp[MAX_ASCII_ADDR_LEN];
 
          /* convert from string */
          if (inet_aton(p, &ipaddr) == 0)
@@ -108,16 +108,18 @@ static void dhcp_spoofing_start(char *args)
          ip_addr_init(&dhcp_dns, AF_INET, (char *)&ipaddr);
          
          /* all the parameters were parsed correctly... */
+         USER_MSG("DHCP spoofing: using specified ip_pool, netmask %s", ip_addr_ntoa(&dhcp_netmask, tmp));
+         USER_MSG(", dns %s\n", ip_addr_ntoa(&dhcp_dns, tmp));
          /* add the hookpoint */
          hook_add(HOOK_PROTO_DHCP_REQ, dhcp_spoofing);
          return;
       }
-
+      
+      i++;
    }
 
    /* error parsing the parameter */
-   USER_MSG("FATAL: DHCP spoofing: parameter incorrect.\n");
-   return;
+   FATAL_ERROR("DHCP spoofing: parameter number %d is incorrect.\n", i);
 }
 
 

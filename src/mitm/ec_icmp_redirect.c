@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icmp_redirect.c,v 1.2 2003/11/12 16:59:17 alor Exp $
+    $Id: ec_icmp_redirect.c,v 1.3 2003/11/13 21:35:43 alor Exp $
 */
 
 #include <ec.h>
@@ -70,8 +70,7 @@ static void icmp_redirect_start(char *args)
 
    /* check the parameter */
    if (!strcmp(args, "")) {
-      USER_MSG("FATAL: ICMP redirect needs a parameter.\n");
-      return;
+      FATAL_ERROR("ICMP redirect needs a parameter.\n");
    } else {
       char tmp[strlen(args)+2];
 
@@ -83,9 +82,8 @@ static void icmp_redirect_start(char *args)
    }
 
    /* we need both mac and ip addresses */
-   if (redirected_gw.all_mac || redirected_gw.all_ip) {
+   if (redirected_gw.all_mac || redirected_gw.all_ip)
       FATAL_ERROR("You must specify both MAC and IP addresses for the GW");
-   }
 
    i = SLIST_FIRST(&redirected_gw.ips);
    USER_MSG("ICMP redirect: victim GW %s\n", ip_addr_ntoa(&i->ip, tmp));

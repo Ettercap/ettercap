@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.18 2003/11/12 16:59:17 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.19 2003/11/13 21:35:43 alor Exp $
 */
 
 #include <ec.h>
@@ -92,17 +92,14 @@ static void arp_poisoning_start(char *args)
          } else if (!strcasecmp(p, "oneway")) {
             poison_oneway = 1; 
          } else {
-            USER_MSG("FATAL: ARP poisoning: paramenter incorrect.\n");
-            return;
+            FATAL_ERROR("ARP poisoning: paramenter incorrect.\n");
          }
       }
    }
 
    /* arp poisoning only on etherenet */
-   if (GBL_PCAP->dlt != IL_TYPE_ETH) {
-      USER_MSG("FATAL: ARP poisoning works only on ethernet networks.\n");
-      return;
-   }
+   if (GBL_PCAP->dlt != IL_TYPE_ETH && GBL_PCAP->dlt != IL_TYPE_TR && GBL_PCAP->dlt != IL_TYPE_FDDI)
+      FATAL_ERROR("ARP poisoning does not support this media.\n");
 
    /* create the list used later to poison the targets */
    if (GBL_OPTIONS->silent && !GBL_OPTIONS->load_hosts)
@@ -110,10 +107,8 @@ static void arp_poisoning_start(char *args)
    else
       ret = create_list();
 
-   if (ret != ESUCCESS) {
-      USER_MSG("FATAL: ARP poisoning process cannot start.\n");
-      return;
-   }
+   if (ret != ESUCCESS)
+      FATAL_ERROR("ARP poisoning process cannot start.\n");
 
    /* create the poisoning thread */
    ec_thread_new("arp_poisoner", "ARP poisoning module", &arp_poisoner, NULL);

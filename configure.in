@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.62 2003/11/12 18:10:17 alor Exp $
+dnl    $Id: configure.in,v 1.63 2003/11/13 21:35:38 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -419,22 +419,8 @@ AC_ARG_WITH(libnet, AC_HELP_STRING([--with-libnet=DIR], [use libnet in DIR]),
              -o -f $withval/lib/libnet.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
-        if test -f $withval/bin/libnet-config; then
-           LNETINC="`$withval/bin/libnet-config --defines`"
-           LNETLIB="`$withval/bin/libnet-config --libs`"
-        elif test -f $withval/libnet-config; then
-           LNETINC="`$withval/libnet-config --defines`"
-           LNETLIB="`$withval/libnet-config --libs`"
-        else
-           AC_PATH_PROG(LNET_CONFIG, "libnet-config")
-           if test ! -n "$LNET_CONFIG"; then
-              AC_ERROR(libnet-config not found)
-           fi
-           LNETINC="`libnet-config --defines`"
-           LNETLIB="`libnet-config --libs`"
-        fi
-        LNETINC="$LNETINC -I$withval/include"
-        LNETLIB="-L$withval/lib -L$withval/src $LNETLIB"
+        LNETINC="-I$withval/include"
+        LNETLIB="-L$withval/lib -L$withval/src -lnet"
         ac_cv_ec_libnet=$withval
      else
         AC_ERROR(libnet.h or libnet.a not found in $withval)
@@ -443,12 +429,8 @@ AC_ARG_WITH(libnet, AC_HELP_STRING([--with-libnet=DIR], [use libnet in DIR]),
   esac ],
 [ if test -f /usr/include/libnet.h; then
      AC_MSG_RESULT(yes)
-     AC_PATH_PROG(LNET_CONFIG, "libnet-config")
-     if test ! -n "$LNET_CONFIG"; then
-        AC_ERROR(libnet-config not found)
-     fi
-     LNETINC="`libnet-config --defines`"
-     LNETLIB="`libnet-config --libs`"
+     LNETINC=""
+     LNETLIB="-lnet"
   else
      AC_MSG_RESULT(no)
      AC_ERROR(libnet >= 1.1.1 not found)

@@ -47,9 +47,9 @@ SOLARIS
 
 MAC OS X (Darwin)
 ------------------------------------------------------------------------------
-   Darwin 7.x           FULL
+   Darwin 7.x           in progress...
    
-   Darwin 6.x           PARTIAL        (problems with plugins)
+   Darwin 6.x           untested 
    
 
 WINDOWS (cygwin)
@@ -101,6 +101,8 @@ compiled by your own.
 ------------------------------------------------------------------------------
    M A C  O S  X
 ------------------------------------------------------------------------------
+
+waiting the input from some betatester... ;)
 
 
 ------------------------------------------------------------------------------

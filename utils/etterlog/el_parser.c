@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.15 2003/07/15 20:28:07 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.16 2003/08/25 19:44:02 alor Exp $
 */
 
 
@@ -41,7 +41,7 @@ void parse_options(int argc, char **argv);
 
 void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t );
 
-//-----------------------------------
+/*******************************************/
 
 void el_usage(void)
 {

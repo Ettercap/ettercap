@@ -29,6 +29,9 @@ etterlog_SOURCES = el_main.c \
 if MISSING_STRSEP
    etterlog_SOURCES += $(top_srcdir)/src/missing/strsep.c
 endif
+if MISSING_STRCASESTR
+   etterlog_SOURCES += $(top_srcdir)/src/missing/strcasestr.c
+endif
 if MISSING_INET_ATON
    etterlog_SOURCES += $(top_srcdir)/src/missing/inet_aton.c
 endif

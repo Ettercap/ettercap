@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.8 2003/07/15 21:31:34 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.9 2003/08/25 19:44:02 alor Exp $
 */
 
 #include <el.h>
 #include <el_functions.h>
+#include <ec_strings.h>
 
 /* proto */
 

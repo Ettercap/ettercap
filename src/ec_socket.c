@@ -17,10 +17,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.2 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_socket.c,v 1.3 2003/10/13 10:43:50 alor Exp $
 */
 
 #include <ec.h>
+#include <ec_signals.h>
 
 #include <netdb.h>
 #include <sys/socket.h>
@@ -64,10 +65,16 @@ int open_socket(char *host, u_int16 port)
    /* open the socket */
    if ( (sh = socket(AF_INET, SOCK_STREAM, 0)) < 0)
       ERROR_MSG("Cannot create the socket");
+ 
+   /* set the timeout */
+   signal_timeout(GBL_CONF->connect_timeout);
    
    /* connect to the server */
    if ( connect(sh, (struct sockaddr *)&sa_in, sizeof(sa_in)) < 0)
-      ERROR_MSG("Can't connect to %s on port %d", host, port);
+      FATAL_MSG("Can't connect to %s on port %d", host, port);
+   
+   /* reset the timeout */
+   signal_timeout(0);
 
    DEBUG_MSG("open_socket: %d", sh);
    

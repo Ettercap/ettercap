@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_update.c,v 1.9 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_update.c,v 1.10 2003/10/13 10:43:50 alor Exp $
 */
 
 #include <ec.h>
@@ -58,7 +58,8 @@ void global_update(void)
    fprintf(stdout, "Connecting to http://%s\n", host);
 
    /* open the socket with the server */
-   sock = open_socket(host, 80);
+   if ((sock = open_socket(host, 80)) < 0)
+      return;
 
    fprintf(stdout, "Requesting %s\n\n", page);
 
@@ -181,7 +182,7 @@ static void update_file(char *tokens)
 
 /* 
  * get the current file revision 
- * it is stored in the cvs var $Revision: 1.9 $
+ * it is stored in the cvs var $Revision: 1.10 $
  */
 static int get_current_rev(char *file, char **curr, char *errbuf)
 {

@@ -31,7 +31,7 @@ Oct 2003:
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
-      - fix the segfault on replace
+      - fix the replace over mtu
 
    + DISSECTORS
       - convert all the old dissectors

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.2 2003/10/12 18:51:34 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.3 2003/10/13 10:43:50 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -51,11 +51,17 @@ Only a template to demonstrate how to write a plugin.
 Uses the passive fingerprint capabilities to fingeerprint a remote host. It
 does a connect() to the remote host to force the kernel to reply
 to the SYN with a SYN+ACK packet. The reply will be collected and the
-fingerprint is displayed.
+fingerprint is displayed. The connect() obey to the connect_timeout parameter
+in etter.conf(5). You can specify a target on commandline or let the plugin ask
+the target host to be fingerprinted. You can also specify multiple target with
+the usual multi-target specification (see ettercap(8)), but only one port at a
+time can be used.
 .Sp
 .I example :
 .Sp
 ettercap -TzP finger /192.168.0.1/22
+.br
+ettercap -TzP finger /192.168.0.1-50/22
 
 
 .TP 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.3 2003/10/12 18:51:34 alor Exp $
+    $Id: ec_text.c,v 1.4 2003/10/13 10:43:50 alor Exp $
 */
 
 #include <ec.h>
@@ -252,12 +252,12 @@ void text_interface(void)
   
    /* if we have to activate a plugin */
    if (GBL_OPTIONS->plugin) {
-      /* if it returns an error it was a STANDALONE plugin, 
-       * so return and exit the program.
-       * else it was an hooking plugin and we can continue with the
-       * normal interface.
+      /* 
+       * execute the plugin and close the interface if 
+       * the plugin was not found or it has completed
+       * its execution
        */
-      if (text_plugin(GBL_OPTIONS->plugin) == PLUGIN_FINISHED)
+      if (text_plugin(GBL_OPTIONS->plugin) != PLUGIN_RUNNING)
          /* end the interface */
          return;
    }

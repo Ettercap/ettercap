@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.9 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_resolv.c,v 1.10 2003/10/13 10:43:50 alor Exp $
 */
 
 #include <ec.h>
@@ -61,9 +61,6 @@ void resolv_cache_insert(struct ip_addr *ip, char *name);
 int host_iptoa(struct ip_addr *ip, char *name)
 {
    struct hostent *host = NULL;
-#ifdef CYGWIN
-   WSADATA wsdata;
-#endif
    
    /*
     * if the entry is already present in the cache
@@ -89,18 +86,10 @@ int host_iptoa(struct ip_addr *ip, char *name)
    DEBUG_MSG("host_iptoa: %#x", ip_addr_to_int32(&ip->addr));
    
    /* if not found in the cache, resolve it */
-#ifdef CYGWIN
-   if ( WSAStartup(MAKEWORD(2, 2), &wsdata) != 0)
-      ERROR_MSG("Cannot inizialize winsock WSAStartup()");
-#endif
   
    /* XXX - add support for IPv6 */
    host = gethostbyaddr((char *)ip->addr, sizeof(struct in_addr), AF_INET);
 
-#ifdef CYGWIN
-   WSACleanup();
-#endif
-   
    /* not found or error */
    if (host == NULL) {
       /* 

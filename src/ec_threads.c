@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.25 2004/05/21 10:40:14 alor Exp $
+    $Id: ec_threads.c,v 1.26 2004/06/09 19:15:32 alor Exp $
 */
 
 #include <ec.h>
@@ -53,6 +53,7 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
 void ec_thread_destroy(pthread_t id);
 void ec_thread_init(void);
 void ec_thread_kill_all(void);
+void ec_thread_exit(void);
 
 /*******************************************/
 
@@ -306,9 +307,35 @@ void ec_thread_kill_all(void)
    }
    
    THREADS_UNLOCK;
-
 }
 
+/*
+ * used by a thread that wants to terminate itself
+ */
+void ec_thread_exit(void)
+{
+   struct thread_list *current, *old;
+   pthread_t id = pthread_self();
+
+   DEBUG_MSG("ec_thread_exit -- caller %lu [%s]", (unsigned long)id, ec_thread_getname(id));
+
+   THREADS_LOCK;
+   
+   LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {
+      /* delete our entry */
+      if (current->t.id == id) {
+         SAFE_FREE(current->t.name);
+         SAFE_FREE(current->t.description);
+         LIST_REMOVE(current, next);
+         SAFE_FREE(current);
+      }
+   }
+
+   /* perform a clean exit of the thread */
+   pthread_exit(0);
+   
+   THREADS_UNLOCK;
+}
 
 /* EOF */
 

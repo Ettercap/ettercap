@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.9 2004/06/09 10:05:02 lordnaga Exp $
+    $Id: ec_socket.c,v 1.10 2004/06/09 19:15:32 alor Exp $
 */
 
 #include <ec.h>
@@ -103,7 +103,7 @@ int open_socket(char *host, u_int16 port)
          /* sleep a quirk of time... */
          usleep(TSLEEP);
       } else { 
-         /* there was an error */
+         /* there was an error or the connect was successful */
          break;
       }
    } while(loops--);

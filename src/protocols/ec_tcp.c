@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.36 2004/04/11 09:40:03 alor Exp $
+    $Id: ec_tcp.c,v 1.37 2004/05/07 12:29:17 alor Exp $
 */
 
 #include <ec.h>
@@ -161,6 +161,23 @@ FUNC_DECODER(decode_tcp)
     */
    if (!GBL_OPTIONS->unoffensive && L4_checksum(PACKET) != 0) {
       char tmp[MAX_ASCII_ADDR_LEN];
+#ifdef OS_DARWIN
+      /* 
+       * XXX - hugly hack here !  Mac OS X really sux
+       * 
+       * Packets transmitted on interfaces with TCP checksum offloading
+       * don't have valid checksums as presented to the machine's packet-capture
+       * mechanism, as those packets are wrapped around internally rather
+       * than being captured after passing through the network interface, as
+       * the OS doesn't bother computing the checksum and adding it to the packet
+       * it leaves that up to the network interface.
+       *                (taken from a bug report by Guy Harris - libpcap engineer)
+       *
+       * if the source is the ettercap host, don't display the message 
+       */
+      if (!ip_addr_cmp(&PACKET->L3.src, &GBL_IFACE->ip))
+         return NULL;
+#endif
       USER_MSG("Invalid TCP packet from %s:%d : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                     ntohs(tcp->sport), L4_checksum(PACKET), ntohs(tcp->csum) );
       return NULL;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.17 2004/04/25 13:37:23 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.18 2004/04/27 09:42:32 alor Exp $
 */
 
 #include <ec.h>
@@ -536,6 +536,8 @@ static void curses_connection_purge(void *conn)
    DEBUG_MSG("curses_connection_purge");
    
    conntrack_purge();
+
+   refresh_connections();
 }
 
 /*

@@ -32,6 +32,12 @@ if (ip.proto == TCP) {
 }
 
 
+# log all traffic except http
+if (ip.proto == TCP && tcp.src != 80 && tcp.dst != 80) {
+   log(DATA.data, "./logfile.log");
+}
+
+
 # some operation on the payload of the packet
 if ( DATA.data + 20 == 0x4142 ) {
    DATA.data + 20 = 0x4243;

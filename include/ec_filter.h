@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.13 2003/09/28 21:06:53 alor Exp $ */
+/* $Id: ec_filter.h,v 1.14 2003/09/30 18:03:53 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -55,10 +55,11 @@ struct filter_op {
       struct {
          u_int8   op;
             #define FTEST_EQ   0
-            #define FTEST_LT   1   
-            #define FTEST_GT   2
-            #define FTEST_LEQ  3
-            #define FTEST_GEQ  4
+            #define FTEST_NEQ  1
+            #define FTEST_LT   2   
+            #define FTEST_GT   3
+            #define FTEST_LEQ  4
+            #define FTEST_GEQ  5
          u_int8   level;
          u_int8   size;
          u_int16  offset;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.20 2003/09/28 21:06:50 alor Exp $
+    $Id: ec_filter.c,v 1.21 2003/09/30 18:04:03 alor Exp $
 */
 
 #include <ec.h>
@@ -50,6 +50,7 @@ static int func_drop(struct packet_object *po);
 static int func_exec(struct filter_op *fop);
 
 static int cmp_eq(u_int32 a, u_int32 b);
+static int cmp_neq(u_int32 a, u_int32 b);
 static int cmp_lt(u_int32 a, u_int32 b);
 static int cmp_gt(u_int32 a, u_int32 b);
 static int cmp_leq(u_int32 a, u_int32 b);
@@ -241,6 +242,9 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
    switch(fop->op.test.op) {
       case FTEST_EQ:
          cmp_func = &cmp_eq;
+         break;
+      case FTEST_NEQ:
+         cmp_func = &cmp_neq;
          break;
       case FTEST_LT:
          cmp_func = &cmp_lt;
@@ -662,6 +666,11 @@ static int func_exec(struct filter_op *fop)
 static int cmp_eq(u_int32 a, u_int32 b)
 {
    return (a == b);
+}
+
+static int cmp_neq(u_int32 a, u_int32 b)
+{
+   return (a != b);
 }
 
 static int cmp_lt(u_int32 a, u_int32 b)

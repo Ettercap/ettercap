@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.11 2003/09/28 21:07:49 alor Exp $
+    $Id: ef_test.c,v 1.12 2003/09/30 18:04:03 alor Exp $
 */
 
 #include <ef.h>
@@ -155,6 +155,15 @@ void print_test(struct filter_op *fop, u_int32 eip)
                fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value);
          else
             fprintf(stdout, "%04d: TEST level %d, offset %d, \"%s\"\n", eip,
+               fop->op.test.level, fop->op.test.offset, fop->op.test.string);
+         break;
+         
+      case FTEST_NEQ:
+         if (fop->op.test.size != 0)
+            fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, != %d\n", eip,
+               fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value);
+         else
+            fprintf(stdout, "%04d: TEST level %d, offset %d, not \"%s\"\n", eip,
                fop->op.test.level, fop->op.test.offset, fop->op.test.string);
          break;
 

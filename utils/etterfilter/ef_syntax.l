@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_syntax.l,v 1.12 2003/09/30 16:38:15 alor Exp $
+    $Id: ef_syntax.l,v 1.13 2003/09/30 18:04:03 alor Exp $
 */
 
 %{
@@ -58,11 +58,6 @@ SPACES         [ \t]+
    return TOKEN_ELSE;
 }
 
-"!" {
-   ef_debug(3, "NOT\n");
-   return TOKEN_OP_NOT;
-}
-
 "&&" {
    ef_debug(3, "AND\n");
    return TOKEN_OP_AND;
@@ -71,6 +66,11 @@ SPACES         [ \t]+
 "||" {
    ef_debug(3, "OR\n");
    return TOKEN_OP_OR;
+}
+
+"!=" {
+   ef_debug(3, "CMP NOT EQ\n");
+   return TOKEN_OP_CMP_NEQ;
 }
 
 "==" {

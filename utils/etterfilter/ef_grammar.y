@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.18 2003/09/30 16:38:15 alor Exp $
+    $Id: ef_grammar.y,v 1.19 2003/09/30 18:04:03 alor Exp $
 */
 
 %{
@@ -59,14 +59,14 @@
 %token TOKEN_IF          /*  if ( ) {  */
 %token TOKEN_ELSE        /*  } else {  */
 
-%token TOKEN_OP_NOT      /*  !  */
 %token TOKEN_OP_AND      /*  &&  */
 %token TOKEN_OP_OR       /*  ||  */
 
-%token TOKEN_OP_ASSIGN   /*  =  */
+%token TOKEN_OP_ASSIGN   /*  =   */
+%token TOKEN_OP_CMP_NEQ  /*  !=  */
 %token TOKEN_OP_CMP_EQ   /*  ==  */
-%token TOKEN_OP_CMP_LT   /*  <  */
-%token TOKEN_OP_CMP_GT   /*  >  */
+%token TOKEN_OP_CMP_LT   /*  <   */
+%token TOKEN_OP_CMP_GT   /*  >   */
 %token TOKEN_OP_CMP_LEQ  /*  <=  */
 %token TOKEN_OP_CMP_GEQ  /*  >=  */
 
@@ -185,10 +185,6 @@ conditions_block:
             ef_debug(2, "\t\t CONDITION\n"); 
          }
 
-      |  TOKEN_OP_NOT conditions_block { 
-            ef_debug(2, "\t\t NOT\n"); 
-         }
-         
       |  conditions_block TOKEN_OP_AND conditions_block { 
             ef_debug(2, "\t\t AND\n"); 
          }
@@ -201,10 +197,18 @@ conditions_block:
 /* a single condition */     
 condition: 
          offset TOKEN_OP_CMP_EQ TOKEN_STRING { 
-            ef_debug(2, "\tcondition cmp string\n"); 
+            ef_debug(2, "\tcondition cmp eq string\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
+            $$.op.test.value = $3.op.test.value;
+         }
+      
+      |  offset TOKEN_OP_CMP_NEQ TOKEN_STRING { 
+            ef_debug(2, "\tcondition cmp not eq string\n"); 
+            memcpy(&$$, &$1, sizeof(struct filter_op));
+            $$.opcode = FOP_TEST;
+            $$.op.test.op = FTEST_NEQ;
             $$.op.test.value = $3.op.test.value;
          }
 
@@ -213,6 +217,14 @@ condition:
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
+            $$.op.test.value = $3.op.test.value;
+         }
+      
+      |  offset TOKEN_OP_CMP_NEQ TOKEN_CONST { 
+            ef_debug(2, "\tcondition cmp eq\n");
+            memcpy(&$$, &$1, sizeof(struct filter_op));
+            $$.opcode = FOP_TEST;
+            $$.op.test.op = FTEST_NEQ;
             $$.op.test.value = $3.op.test.value;
          }
          
@@ -326,10 +338,10 @@ struct {
       { "TOKEN_FUNCTION", "function" },
       { "TOKEN_IF", "'if'" },
       { "TOKEN_ELSE", "'else'" },
-      { "TOKEN_OP_NOT", "'!'" },
       { "TOKEN_OP_AND", "'&&'" },
       { "TOKEN_OP_OR", "'||'" },
       { "TOKEN_OP_ASSIGN", "'='" },
+      { "TOKEN_OP_CMP_NEQ", "'!='" },
       { "TOKEN_CMP_EQ", "'=='" },
       { "TOKEN_CMP_LT", "'<'" },
       { "TOKEN_CMP_GT", "'>'" },

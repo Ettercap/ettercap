@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.36 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_main.c,v 1.37 2003/10/10 21:16:25 alor Exp $
 */
 
 #include <ec.h>
@@ -88,9 +88,8 @@ int main(int argc, char *argv[])
    /* initialize libpcap */
    capture_init();
 
-   /* initialize libnet */
-   if (!GBL_OPTIONS->unoffensive)
-      send_init();
+   /* initialize libnet (the function contain all the checks) */
+   send_init();
  
    /* get hardware infos */
    get_hw_info();

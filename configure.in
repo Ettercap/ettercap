@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.43 2003/10/07 14:51:18 alor Exp $
+dnl    $Id: configure.in,v 1.44 2003/10/10 21:16:16 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -246,19 +246,6 @@ AC_SEARCH_LIBS(dn_expand, c resolv,
    AM_CONDITIONAL(HAVE_DN_EXPAND, true) ac_cv_ec_dns=yes, 
    AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_cv_ec_dns=no)
 
-dnl
-dnl  Do we have libpcre ?
-dnl
-
-AH_TEMPLATE(HAVE_PCRE, [perl compatible regex])
-
-AC_SEARCH_LIBS(pcre_compile, pcre,
-   AM_CONDITIONAL(HAVE_PCRE, true) 
-   AC_DEFINE(HAVE_PCRE, 1)
-   ac_cv_ec_pcre=yes, 
-   AM_CONDITIONAL(HAVE_PCRE, false) 
-   ac_cv_ec_pcre=no)
-
 dnl ===============================
 dnl   Check for non standard libs
 dnl ===============================
@@ -459,11 +446,12 @@ AC_ARG_WITH(libnet,
      fi
      LNETINC="`libnet-config --defines`"
      LNETLIB="`libnet-config --libs`"
+     AC_MSG_RESULT(yes)
   else
      AC_MSG_RESULT(no)
      AC_ERROR(libnet >= 1.1.0 not found)
   fi
-  AC_MSG_RESULT(yes) ]
+]
 )
 
 OLDLDFLAGS="${LDFLAGS}"
@@ -482,7 +470,7 @@ ac_cv_ec_libssl="NO"
 
 AC_MSG_CHECKING(for openssl)
 AC_ARG_WITH(openssl,
-[  --with-openssl=DIR   use openssl in DIR],
+[  --with-openssl=DIR      use openssl in DIR],
 [ case "$withval" in
   yes|no)
      AC_MSG_RESULT(no)
@@ -534,6 +522,53 @@ else
   AC_DEFINE_UNQUOTED(OPENSSL_PATH, "")
 fi
 
+
+dnl ---------
+dnl  libpcre
+dnl ---------
+
+AH_TEMPLATE(HAVE_PCRE, [perl compatible regex])
+
+ac_cv_ec_pcre=no
+
+AC_MSG_CHECKING(for libpcre)
+AC_ARG_WITH(libpcre,
+[  --with-libpcre=DIR      use libpcre in DIR],
+[ case "$withval" in
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     AC_MSG_RESULT($withval)
+     if test -f $withval/pcre.h \
+             -a -f $withval/libpcre.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        PCREINC="-I$withval/"
+        PCRELIB="-L$withval/"
+        AM_CONDITIONAL(HAVE_PCRE, true) 
+        AC_DEFINE(HAVE_PCRE, 1)
+        ac_cv_ec_pcre=yes
+     else
+        AM_CONDITIONAL(HAVE_PCRE, false) 
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/pcre.h; then
+     AM_CONDITIONAL(HAVE_PCRE, true) 
+     AC_DEFINE(HAVE_PCRE, 1)
+     ac_cv_ec_pcre=yes
+     LNETINC=""
+     LNETLIB="-lpcre"
+     AC_MSG_RESULT(yes)
+  else
+     AC_MSG_RESULT(no)
+     AM_CONDITIONAL(HAVE_PCRE, false) 
+  fi
+]
+)
+
+
 dnl ---------
 dnl  ncurses
 dnl ---------
@@ -544,7 +579,7 @@ ac_cv_ec_libncurses="NO"
 
 AC_MSG_CHECKING(for libncurses)
 AC_ARG_WITH(libncurses,
-[  --with-libncurses=DIR      use libncurses in DIR],
+[  --with-libncurses=DIR   use libncurses in DIR],
 [ case "$withval" in
   yes|no)
      AC_MSG_RESULT(no)

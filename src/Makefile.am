@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.55 2003/10/08 20:41:41 alor Exp $
+# $Id: Makefile.am,v 1.56 2003/10/10 21:16:25 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -97,6 +97,7 @@ ettercap_SOURCES += dissectors/ec_bgp.c \
 				        dissectors/ec_rcon.c \
 				        dissectors/ec_rip.c \
 				        dissectors/ec_rlogin.c \
+				        dissectors/ec_smtp.c \
 				        dissectors/ec_snmp.c \
 				        dissectors/ec_socks.c \
 				        dissectors/ec_telnet.c \

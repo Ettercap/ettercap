@@ -35,10 +35,8 @@ Oct 2003:
          - set the correct delta !!
          - made substitution possible
       
-
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
-      - don't inject in unoffensive mode
 
 
    + DISSECTORS

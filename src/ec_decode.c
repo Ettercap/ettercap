@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.37 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_decode.c,v 1.38 2003/10/10 21:16:25 alor Exp $
 */
 
 #include <ec.h>
@@ -209,7 +209,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * snapshot is chosen during the init phase and
     * its value is 9999
     */
-   memset((u_char *)pkt, 0, GBL_PCAP->snaplen);
+   memset((u_char *)pkt, 0, pkthdr->caplen + 1);
    
    /* calculate the stats */
    stats_half_end(&GBL_STATS->bh, pkthdr->caplen);

@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector IMAP -- TCP 143 220
+    ettercap -- dissector SMTP -- TCP 25
 
     Copyright (C) ALoR & NaGA
 
@@ -17,19 +17,8 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_imap.c,v 1.9 2003/10/10 21:16:25 alor Exp $
+    $Id: ec_smtp.c,v 1.1 2003/10/10 21:16:25 alor Exp $
 */
-
-/*
- * The authentication schema can be found here:
- *
- * ftp://ftp.rfc-editor.org/in-notes/rfc1730.txt
- * ftp://ftp.rfc-editor.org/in-notes/rfc1731.txt
- *
- * we currently support:
- *    - LOGIN
- *    - AUTHENTICATE LOGIN
- */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -39,8 +28,8 @@
 
 /* protos */
 
-FUNC_DECODER(dissector_imap);
-void imap_init(void);
+FUNC_DECODER(dissector_smtp);
+void smtp_init(void);
 
 /************************************************/
 
@@ -49,13 +38,12 @@ void imap_init(void);
  * it adds the entry in the table of registered decoder
  */
 
-void __init imap_init(void)
+void __init smtp_init(void)
 {
-   dissect_add("imap", APP_LAYER_TCP, 143, dissector_imap);
-   dissect_add("imap", APP_LAYER_TCP, 220, dissector_imap);
+   dissect_add("smtp", APP_LAYER_TCP, 25, dissector_smtp);
 }
 
-FUNC_DECODER(dissector_imap)
+FUNC_DECODER(dissector_smtp)
 {
    DECLARE_DISP_PTR_END(ptr, end);
    struct session *s = NULL;
@@ -63,26 +51,20 @@ FUNC_DECODER(dissector_imap)
    char tmp[MAX_ASCII_ADDR_LEN];
    
    /* the connection is starting... create the session */
-   CREATE_SESSION_ON_SYN_ACK("imap", s);
+   CREATE_SESSION_ON_SYN_ACK("smtp", s);
    
    /* check if it is the first packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("imap", s, ident) {
+   IF_FIRST_PACKET_FROM_SERVER("smtp", s, ident) {
           
-      DEBUG_MSG("\tdissector_imap BANNER");
+      DEBUG_MSG("\tdissector_smtp BANNER");
+       
       /*
        * get the banner 
-       * "* OK banner"
+       * ptr + 4 to skip the initial 220 response
        */
-       
-      /* skip the number, go to response */
-      while(*ptr != ' ' && ptr != end) ptr++;
-      
-      /* reached the end */
-      if (ptr == end) return NULL;
-      
-      if (!strncmp(ptr, " OK ", 4)) {
-         PACKET->DISSECTOR.banner = strdup(ptr + 3);
-      
+      if (!strncmp(ptr, "220", 3)) {
+         PACKET->DISSECTOR.banner = strdup(ptr + 4);
+         
          /* remove the \r\n */
          if ( (ptr = strchr(PACKET->DISSECTOR.banner, '\r')) != NULL )
             *ptr = '\0';
@@ -91,64 +73,34 @@ FUNC_DECODER(dissector_imap)
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    
    /* skip messages coming from the server */
-   if (FROM_SERVER("imap", PACKET))
+   if (FROM_SERVER("smtp", PACKET))
       return NULL;
    
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;
  
-   DEBUG_MSG("IMAP --> TCP dissector_imap");
    
+   DEBUG_MSG("SMTP --> TCP dissector_smtp");
 
    /* skip the number, move to the command */
-   while(*ptr != ' ' && ptr != end) ptr++;
+   while(*ptr == ' ' && ptr != end) ptr++;
   
    /* reached the end */
    if (ptr == end) return NULL;
 
-/*
- * LOGIN authentication:
- *
- * n LOGIN user pass
- */
-   if ( !strncasecmp(ptr, " LOGIN ", 7) ) {
-
-      DEBUG_MSG("\tDissector_imap LOGIN");
-
-      ptr += 7;
-      
-      PACKET->DISSECTOR.user = strdup(ptr);
-      
-      /* split the string */
-      if ( (ptr = strchr(PACKET->DISSECTOR.user, ' ')) != NULL )
-         *ptr = '\0';
-      
-      /* save the second part */
-      PACKET->DISSECTOR.pass = strdup(ptr + 1);
-      
-      if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
-         *ptr = '\0';
-      
-      /* print the message */
-      USER_MSG("IMAP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                    ntohs(PACKET->L4.dst), 
-                                    PACKET->DISSECTOR.user,
-                                    PACKET->DISSECTOR.pass);
-      return NULL;
-   }
 
 /* 
- * AUTHENTICATE LOGIN
+ * AUTH LOGIN
  *
  * digest(user)
  * digest(pass)
  *
  * the digests are in base64
  */
-   if ( !strncasecmp(ptr, "AUTHENTICATE LOGIN", 19) ) {
+   if ( !strncasecmp(ptr, "AUTH LOGIN", 10) ) {
       
-      DEBUG_MSG("\tDissector_imap AUTHENTICATE LOGIN");
+      DEBUG_MSG("\tDissector_smtp AUTH LOGIN");
 
       /* destroy any previous session */
       dissect_wipe_session(PACKET);
@@ -185,7 +137,7 @@ FUNC_DECODER(dissector_imap)
       char *user;
       int i;
      
-      DEBUG_MSG("\tDissector_imap AUTHENTICATE LOGIN USER");
+      DEBUG_MSG("\tDissector_smtp AUTH LOGIN USER");
       
       SAFE_CALLOC(user, strlen(ptr), sizeof(char));
      
@@ -208,7 +160,7 @@ FUNC_DECODER(dissector_imap)
    if (!strncmp(s->data, "AUTH USER", 9)) {
       char *pass;
      
-      DEBUG_MSG("\tDissector_imap AUTHENTICATE LOGIN PASS");
+      DEBUG_MSG("\tDissector_smtp AUTH LOGIN PASS");
       
       SAFE_CALLOC(pass, strlen(ptr), sizeof(char));
       
@@ -224,7 +176,7 @@ FUNC_DECODER(dissector_imap)
       dissect_wipe_session(PACKET);
       
       /* print the message */
-      USER_MSG("IMAP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      USER_MSG("SMTP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass);

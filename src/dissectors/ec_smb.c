@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.11 2003/10/29 20:41:07 alor Exp $
+    $Id: ec_smb.c,v 1.12 2004/01/14 12:23:02 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -149,6 +149,25 @@ FUNC_DECODER(dissector_smb)
                session_data->auth_type = NTLMSSP_AUTH;
             }
          }
+      }
+      
+      /* Session Setup if Negotiate Protocol has been done */      
+      if (smb->cmd == 0x73 && FROM_CLIENT("smb", PACKET)) {
+         ptr += ( (*ptr) * 2 + 3 );
+         if ( (ptr = (char *)memmem(ptr, 128, "NTLMSSP", 8)) == NULL) 
+            return NULL;
+         if (ptr[8]!=1)
+            return NULL; 
+         /* Create the session */
+         dissect_create_session(&s, PACKET);
+         SAFE_CALLOC(s->data, 1, sizeof(smb_session_data));
+         session_put(s);
+         session_data = (smb_session_data *)s->data;
+         session_data->status = WAITING_CHALLENGE;
+         session_data->auth_type = NTLMSSP_AUTH;
+	 	    
+         /* HOOK POINT: HOOK_PACKET_SMB_CHL */
+         hook_point(HOOK_PROTO_SMB_CHL, PACKET);
       } 
    } else {
       SAFE_FREE(ident);

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/interfaces/daemon/ec_daemon.c,v 1.1 2003/03/18 14:18:16 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/interfaces/daemon/ec_daemon.c,v 1.2 2003/03/18 22:56:59 alor Exp $
 */
 
 #include <ec.h>
@@ -117,12 +117,27 @@ static void daemon_init(void)
 #endif
 }
 
+
 /*
- * reset to the previous state
+ * open a file and dup2 it to in, out and err.
+ *
+ * in this way the user can track errors verified during 
+ * daemonization
  */
 
 static void daemon_cleanup(void)
 {
+   int fd;
+   
+   fd = open("/tmp/ettercap_demonized.log", O_CREAT|O_TRUNC|O_WRONLY);
+   ON_ERROR(fd, -1, "Can't open exit file");
+
+   /* redirect in, out and err to fd */
+   dup2(fd, STDIN_FILENO);
+   dup2(fd, STDOUT_FILENO);
+   dup2(fd, STDERR_FILENO);
+
+   fprintf(stdout, "\nettercap errors during daemonization are reported below:\n\n");
 }
 
 

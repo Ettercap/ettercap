@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_irc.c,v 1.4 2003/09/07 19:47:51 alor Exp $
+    $Id: ec_irc.c,v 1.5 2003/10/28 22:15:03 alor Exp $
 */
 
 #include <ec.h>
@@ -94,7 +94,7 @@ FUNC_DECODER(dissector_irc)
 
       PACKET->DISSECTOR.info = strdup("/PASS password");
       
-      USER_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass,
@@ -127,7 +127,7 @@ FUNC_DECODER(dissector_irc)
 
       PACKET->DISSECTOR.info = strdup("/MODE #channel +k password");
       
-      USER_MSG("IRC : %s:%d -> CHANNEL: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("IRC : %s:%d -> CHANNEL: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass,
@@ -159,7 +159,7 @@ FUNC_DECODER(dissector_irc)
 
       PACKET->DISSECTOR.info = strdup("/JOIN #channel password");
       
-      USER_MSG("IRC : %s:%d -> CHANNEL: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("IRC : %s:%d -> CHANNEL: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass,
@@ -200,7 +200,7 @@ FUNC_DECODER(dissector_irc)
 
       PACKET->DISSECTOR.info = strdup("/msg nickserv identify password");
       
-      USER_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass,
@@ -241,7 +241,7 @@ FUNC_DECODER(dissector_irc)
 
       PACKET->DISSECTOR.info = strdup("/nickserv identify password");
       
-      USER_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass,
@@ -284,7 +284,7 @@ FUNC_DECODER(dissector_irc)
 
       PACKET->DISSECTOR.info = strdup("/identify password");
       
-      USER_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass,
@@ -321,7 +321,7 @@ FUNC_DECODER(dissector_irc)
          if ( (p = strchr(user, '\r')) != NULL )
             *p = '\0';
          
-         USER_MSG("IRC : %s:%d -> USER: %s (%s)\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+         DISSECT_MSG("IRC : %s:%d -> USER: %s (%s)\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     s->data, 
                                     user);

@@ -1,5 +1,5 @@
 
-/* $Id: ec_dissect.h,v 1.13 2003/10/17 15:21:50 lordnaga Exp $ */
+/* $Id: ec_dissect.h,v 1.14 2003/10/28 22:15:02 alor Exp $ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H
@@ -88,6 +88,11 @@ extern int dissect_on_port(char *name, u_int16 port);
 /* return true if the packet is coming from the client */
 #define FROM_CLIENT(name, pack) (dissect_on_port(name, ntohs(pack->L4.dst)) == ESUCCESS)
 
+
+#define DISSECT_MSG(x, ...) do {    \
+   if (!GBL_OPTIONS->superquiet)    \
+      USER_MSG(x, ## __VA_ARGS__ ); \
+} while(0)
 
 #endif
 

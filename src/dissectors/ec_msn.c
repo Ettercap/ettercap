@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_msn.c,v 1.2 2003/10/10 21:16:25 alor Exp $
+    $Id: ec_msn.c,v 1.3 2003/10/28 22:15:03 alor Exp $
 */
 
 #include <ec.h>
@@ -124,7 +124,7 @@ FUNC_DECODER(dissector_msn)
             PACKET->DISSECTOR.pass = strdup(strtok(NULL, " "));
 
             /* display the message */
-            USER_MSG("MSN : %s:%d -> USER: %s  MD5 PASS: %s  CHALLENGE: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+            DISSECT_MSG("MSN : %s:%d -> USER: %s  MD5 PASS: %s  CHALLENGE: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                        ntohs(PACKET->L4.dst), 
                                        PACKET->DISSECTOR.user,
                                        PACKET->DISSECTOR.pass,

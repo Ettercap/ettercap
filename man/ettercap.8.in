@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.41 2003/10/25 16:20:06 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.42 2003/10/28 22:15:02 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -294,7 +294,7 @@ ettercap log files.
 .Sp
 example:
 .Sp
-ettercap -Cq -L dumpfile -r pcapfile
+ettercap -Tq -L dumpfile -r pcapfile
 
 .TP
 \fB\-C\fR, \fB\-\-curses\fR
@@ -484,6 +484,19 @@ resolution for free... ;)
 \fB\-E\fR, \fB\-\-ext-headers\fR
 Print extended headers for every displayed packet. (e.g. mac addresses)
 
+.TP
+\fB\-Q\fR, \fB\-\-superquiet\fR
+Super quiet mode. Do not print users and passwords as they are collected. Only
+store them in the profiles. It can be useful to run ettercap in text only mode
+but you don't want to be flooded with dissectors messages. Useful when using
+plugins because the sniffing process is always active, it will print all the
+collected infos, with this option you can suppress these messages.
+.br
+NOTE: this options automatically sets the -q option.
+.Sp
+example:
+.Sp
+ettercap -TQP finger /192.168.0.1/22
 
 
 
@@ -570,38 +583,38 @@ prints the help screen with a short summary of the available options.
 .SH EXAMPLES
 Here are some examples of using ettercap.
 .TP
-.B ettercap -Cp
+.B ettercap -Tp
 .Sp
 Use the console interface and do not put the interface in promisc mode. You
 will see only your traffic.
 
 .TP
-.B ettercap -Czq
+.B ettercap -Tzq
 .Sp
 Use the console interface, do not ARP scan the net and be quiet. The packet
 content will not be displayed, but user and passwords, as well as other
 messages, will be displayed.
 
 .TP
-.B ettercap -C -j /tmp/victims -M arp /10.0.0.1-7/ /10.0.0.10-20/
+.B ettercap -T -j /tmp/victims -M arp /10.0.0.1-7/ /10.0.0.10-20/
 .Sp
 Will load the hosts list from /tmp/victims and perform an ARP poisoning attack
 against the the two target. The list will be joined with the target and the
 resulting list is used for ARP poisoning.
 
 .TP
-.B ettercap -C -M arp // //
+.B ettercap -T -M arp // //
 .Sp
 Perform the ARP poisoning attack against all the host in the LAN. BE CAREFUL
 !!
 
 .TP
-.B ettercap -Czq //110
+.B ettercap -Tzq //110
 .SP
 Sniff only the pop3 protocol from every hosts.
 
 .TP
-.B ettercap -Czq /10.0.0.1/21,22,23 
+.B ettercap -Tzq /10.0.0.1/21,22,23 
 .Sp
 Sniff telnet, ftp and ssh connections to 10.0.0.1.
 

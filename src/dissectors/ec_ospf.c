@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ospf.c,v 1.4 2003/10/07 14:51:27 alor Exp $
+    $Id: ec_ospf.c,v 1.5 2003/10/28 22:15:03 alor Exp $
 */
 
 /*
@@ -123,7 +123,7 @@ FUNC_DECODER(dissector_ospf)
       strcpy(pass, "No Auth");
    }
    
-   USER_MSG("OSPF : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+   DISSECT_MSG("OSPF : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                              ntohs(PACKET->L4.dst), 
                                              pass);
 

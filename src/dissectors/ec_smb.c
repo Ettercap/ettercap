@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.9 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_smb.c,v 1.10 2003/10/28 22:15:04 alor Exp $
 */
 
 #include <ec.h>
@@ -167,7 +167,7 @@ FUNC_DECODER(dissector_smb)
 	    	    
             if (session_data->auth_type == PLAIN_TEXT_AUTH) {
                PACKET->DISSECTOR.pass = strdup(session_data->response1);
-               USER_MSG("SMB : %s:%d -> USER: %s  PASS: %s ", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+               DISSECT_MSG("SMB : %s:%d -> USER: %s  PASS: %s ", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                           ntohs(PACKET->L4.dst),
                                                           PACKET->DISSECTOR.user,
                                                           PACKET->DISSECTOR.pass);
@@ -183,20 +183,20 @@ FUNC_DECODER(dissector_smb)
 	       
                PACKET->DISSECTOR.pass = strdup(ascii_hash);  
                
-               USER_MSG("SMB : %s:%d -> USER: %s  HASH: %s", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+               DISSECT_MSG("SMB : %s:%d -> USER: %s  HASH: %s", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                           ntohs(PACKET->L4.dst),
                                                           PACKET->DISSECTOR.user,
                                                           PACKET->DISSECTOR.pass);
             }
 
             if (PACKET->DISSECTOR.info!=NULL)
-               USER_MSG(" %s", PACKET->DISSECTOR.info);
+               DISSECT_MSG(" %s", PACKET->DISSECTOR.info);
 	    
             if (session_data->status == LOGON_COMPLETED_FAILURE) {
                PACKET->DISSECTOR.failed = 1;
-               USER_MSG(" (Login Failed)\n");
+               DISSECT_MSG(" (Login Failed)\n");
             } else
-               USER_MSG("\n");
+               DISSECT_MSG("\n");
 
             /* Catch multiple retries for NTLMSSP */
             if (session_data->auth_type == NTLMSSP_AUTH && session_data->status == LOGON_COMPLETED_FAILURE)

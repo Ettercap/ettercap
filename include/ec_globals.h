@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.40 2003/10/28 21:52:17 alor Exp $ */
+/* $Id: ec_globals.h,v 1.41 2003/10/28 22:15:02 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -38,6 +38,7 @@ struct ec_options {
    char read:1;
    char compress:1;
    char quiet:1;
+   char superquiet:1;
    char silent:1;
    char unoffensive:1;
    char load_hosts:1;

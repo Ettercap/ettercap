@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_rip.c,v 1.2 2003/10/27 20:54:18 alor Exp $
+    $Id: ec_rip.c,v 1.3 2003/10/28 22:15:04 alor Exp $
 */
 
 /*
@@ -109,7 +109,7 @@ FUNC_DECODER(dissector_rip)
             PACKET->DISSECTOR.user = strdup("RIPv2");
             PACKET->DISSECTOR.pass = strdup((char *)rip->auth);
             
-            USER_MSG("RIPv2 : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+            DISSECT_MSG("RIPv2 : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                    ntohs(PACKET->L4.dst), 
                                                    PACKET->DISSECTOR.pass);
          }

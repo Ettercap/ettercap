@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_vrrp.c,v 1.2 2003/09/30 09:05:35 alor Exp $
+    $Id: ec_vrrp.c,v 1.3 2003/10/28 22:15:04 alor Exp $
 */
 
 /*
@@ -114,7 +114,7 @@ FUNC_DECODER(dissector_vrrp)
    /* point to the auth */
    auth = ptr + sizeof(struct vrrp_hdr) + (vhdr->naddr * IP_ADDR_LEN);
    
-   USER_MSG("VRRP : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+   DISSECT_MSG("VRRP : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                              ntohs(PACKET->L4.dst), 
                                              auth);
 

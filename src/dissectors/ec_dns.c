@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dns.c,v 1.6 2003/10/09 14:49:45 alor Exp $
+    $Id: ec_dns.c,v 1.7 2003/10/28 22:15:03 alor Exp $
 */
 
 #include <ec.h>
@@ -135,7 +135,7 @@ FUNC_DECODER(dissector_dns)
 
 #if 0 
    if ( dns->opcode == ns_o_query && htons(dns->num_q) == 1 && htons(dns->num_answer) == 0)
-      USER_MSG("DNS: query\n");
+      DISSECT_MSG("DNS: query\n");
 #endif
    
    /* this is a DNS answer */
@@ -192,7 +192,7 @@ FUNC_DECODER(dissector_dns)
             /* display the user message */
             ip_addr_ntoa(&ip, aip);
             
-            //USER_MSG("DNS: %s ->> %s ->> %s\n", name, alias, aip);
+            //DISSECT_MSG("DNS: %s ->> %s ->> %s\n", name, alias, aip);
             DEBUG_MSG("DNS: %s ->> %s ->> %s\n", name, alias, aip);
          }
       }

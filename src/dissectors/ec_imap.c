@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_imap.c,v 1.9 2003/10/10 21:16:25 alor Exp $
+    $Id: ec_imap.c,v 1.10 2003/10/28 22:15:03 alor Exp $
 */
 
 /*
@@ -131,7 +131,7 @@ FUNC_DECODER(dissector_imap)
          *ptr = '\0';
       
       /* print the message */
-      USER_MSG("IMAP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("IMAP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass);
@@ -224,7 +224,7 @@ FUNC_DECODER(dissector_imap)
       dissect_wipe_session(PACKET);
       
       /* print the message */
-      USER_MSG("IMAP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("IMAP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass);

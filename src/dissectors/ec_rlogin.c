@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_rlogin.c,v 1.9 2003/10/11 17:05:01 alor Exp $
+    $Id: ec_rlogin.c,v 1.10 2003/10/28 22:15:04 alor Exp $
 */
 
 #include <ec.h>
@@ -171,7 +171,7 @@ FUNC_DECODER(dissector_rlogin)
             SAFE_FREE(ident);
             
             /* display the message */
-            USER_MSG("RLOGIN : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+            DISSECT_MSG("RLOGIN : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                  ntohs(PACKET->L4.dst), 
                                  PACKET->DISSECTOR.user,
                                  PACKET->DISSECTOR.pass);

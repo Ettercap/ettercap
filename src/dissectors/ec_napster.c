@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_napster.c,v 1.3 2003/10/07 14:51:27 alor Exp $
+    $Id: ec_napster.c,v 1.4 2003/10/28 22:15:03 alor Exp $
 */
 
 #include <ec.h>
@@ -118,7 +118,7 @@ FUNC_DECODER(dissector_napster)
    PACKET->DISSECTOR.pass = strdup(pass);
    PACKET->DISSECTOR.info = strdup(client);
 
-   USER_MSG("NAPSTER : %s:%d -> USER: %s  PASS: %s  CLIENT: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+   DISSECT_MSG("NAPSTER : %s:%d -> USER: %s  PASS: %s  CLIENT: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                  ntohs(PACKET->L4.dst), 
                                  PACKET->DISSECTOR.user,
                                  PACKET->DISSECTOR.pass,

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.49 2003/10/28 21:52:20 alor Exp $
+    $Id: ec_parser.c,v 1.50 2003/10/28 22:15:03 alor Exp $
 */
 
 
@@ -87,6 +87,7 @@ void ec_usage(void)
    fprintf(stdout, "  -V, --visual <format>       set the visualization format\n");
    fprintf(stdout, "  -e, --regex <regex>         handle only packets matching this regex\n");
    fprintf(stdout, "  -E, --ext-headers           print extended header for every pck\n");
+   fprintf(stdout, "  -Q, --superquiet            do not display user and password\n");
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
@@ -130,6 +131,7 @@ void parse_options(int argc, char **argv)
       
       { "filter", required_argument, NULL, 'F' },
       
+      { "superquiet", no_argument, NULL, 'Q' },
       { "quiet", no_argument, NULL, 'q' },
       { "silent", no_argument, NULL, 'z' },
       { "unoffensive", no_argument, NULL, 'u' },
@@ -171,7 +173,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:P:pqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:P:pQqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -277,7 +279,10 @@ void parse_options(int argc, char **argv)
                   if (set_regex(optarg) == -EFATAL)
                      clean_exit(-EFATAL);
                   break;
-                  
+         
+         case 'Q':
+                  GBL_OPTIONS->superquiet = 1;
+                  /* no break, quiet must be enabled */
          case 'q':
                   GBL_OPTIONS->quiet = 1;
                   break;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp.c,v 1.4 2003/10/21 16:16:03 alor Exp $
+    $Id: ec_dhcp.c,v 1.5 2003/10/28 22:15:03 alor Exp $
 */
 
 /*
@@ -159,7 +159,7 @@ FUNC_DECODER(dissector_dhcp)
          case DHCP_DISCOVER:
             DEBUG_MSG("\tDissector_DHCP DISCOVER");
             
-            USER_MSG("DHCP: [%s] DISCOVER \n", mac_addr_ntoa(dhcp->chaddr, tmp)); 
+            DISSECT_MSG("DHCP: [%s] DISCOVER \n", mac_addr_ntoa(dhcp->chaddr, tmp)); 
             
             break;
             
@@ -170,8 +170,8 @@ FUNC_DECODER(dissector_dhcp)
             if ((opt = get_option(OPT_RQ_ADDR, options, end)) != NULL)
                ip_addr_init(&client, AF_INET, opt + 1);
             
-            USER_MSG("DHCP: [%s] REQUEST ", mac_addr_ntoa(dhcp->chaddr, tmp)); 
-            USER_MSG("%s\n", ip_addr_ntoa(&client, tmp)); 
+            DISSECT_MSG("DHCP: [%s] REQUEST ", mac_addr_ntoa(dhcp->chaddr, tmp)); 
+            DISSECT_MSG("%s\n", ip_addr_ntoa(&client, tmp)); 
       
             break;
       }
@@ -219,19 +219,19 @@ FUNC_DECODER(dissector_dhcp)
             if ((opt = get_option(OPT_DNS, options, end)) != NULL)
                ip_addr_init(&dns, AF_INET, opt + 1);
             
-            USER_MSG("DHCP: [%s] %s : ", ip_addr_ntoa(&PACKET->L3.src, tmp), (resp == DHCP_ACK) ? "ACK" : "OFFER"); 
-            USER_MSG("%s ", ip_addr_ntoa(&client, tmp)); 
-            USER_MSG("%s ", ip_addr_ntoa(&netmask, tmp)); 
-            USER_MSG("GW %s ", ip_addr_ntoa(&router, tmp)); 
-            USER_MSG("DNS %s ", ip_addr_ntoa(&dns, tmp)); 
+            DISSECT_MSG("DHCP: [%s] %s : ", ip_addr_ntoa(&PACKET->L3.src, tmp), (resp == DHCP_ACK) ? "ACK" : "OFFER"); 
+            DISSECT_MSG("%s ", ip_addr_ntoa(&client, tmp)); 
+            DISSECT_MSG("%s ", ip_addr_ntoa(&netmask, tmp)); 
+            DISSECT_MSG("GW %s ", ip_addr_ntoa(&router, tmp)); 
+            DISSECT_MSG("DNS %s ", ip_addr_ntoa(&dns, tmp)); 
             
             /* dns domain */
             if ((opt = get_option(OPT_DOMAIN, options, end)) != NULL) {
                   strncpy(domain, opt + 1, MIN(*opt, sizeof(domain)) );
             
-               USER_MSG("\"%s\"\n", domain);
+               DISSECT_MSG("\"%s\"\n", domain);
             } else
-               USER_MSG("\n");
+               DISSECT_MSG("\n");
             
             break;
       }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.11 2003/10/25 16:45:37 alor Exp $
+    $Id: ec_ssh.c,v 1.12 2003/10/28 22:15:04 alor Exp $
 */
 
 #include <ec.h>
@@ -221,7 +221,7 @@ FUNC_DECODER(dissector_ssh)
                   PACKET->DISSECTOR.pass = strdup("(empty)");
 		  
                PACKET->DISSECTOR.user = strdup(session_data->user); /* Surely NULL terminated */
-               USER_MSG("SSH : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+               DISSECT_MSG("SSH : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                                ntohs(PACKET->L4.dst),
                                                                PACKET->DISSECTOR.user,
                                                                PACKET->DISSECTOR.pass);
@@ -231,7 +231,7 @@ FUNC_DECODER(dissector_ssh)
                PACKET->DISSECTOR.user = strdup(session_data->user);
                /* XXX Do we need to catch more infos from this kind of packet? */
                PACKET->DISSECTOR.pass = strdup("RHOSTS-AUTH\n");
-               USER_MSG("SSH : %s:%d -> USER: %s  %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+               DISSECT_MSG("SSH : %s:%d -> USER: %s  %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                          ntohs(PACKET->L4.dst),
                                                          PACKET->DISSECTOR.user,
                                                          PACKET->DISSECTOR.pass);
@@ -239,7 +239,7 @@ FUNC_DECODER(dissector_ssh)
                DEBUG_MSG("\tDissector_ssh RSA AUTH");
                PACKET->DISSECTOR.user = strdup(session_data->user);
                PACKET->DISSECTOR.pass = strdup("RSA-AUTH\n");
-               USER_MSG("SSH : %s:%d -> USER: %s  %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+               DISSECT_MSG("SSH : %s:%d -> USER: %s  %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                          ntohs(PACKET->L4.dst),
                                                          PACKET->DISSECTOR.user,
                                                          PACKET->DISSECTOR.pass);

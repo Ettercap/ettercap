@@ -18,9 +18,14 @@ echo "cleaning up config files..."
 echo 
 rm -f configure
 rm -f aclocal.m4
+rm -f ltmain.sh
 find . -name 'Makefile' -exec rm -f {} \;
 find . -name 'Makefile.in' -exec rm -f {} \;
 
+echo "running aclocal"
+aclocal
+echo "running libtoolize"
+libtoolize --force --copy 
 echo "running aclocal"
 aclocal
 echo "running autoheader"
@@ -28,5 +33,5 @@ autoheader
 echo "running autoconf"
 autoconf
 echo "running automake"
-automake
+automake --add-missing --copy
 

@@ -140,6 +140,7 @@ dnl   Check the C compiler
 dnl ========================
 
 AC_PROG_CC
+AM_PROG_CC_STDC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_GCC_TRADITIONAL
@@ -151,7 +152,7 @@ dnl ========================
 AC_DISABLE_STATIC
 AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
-AC_SEARCH_LIBS(dlopen,c dl,,)
+dnl AC_SEARCH_LIBS(dlopen,c dl,,)
 
 dnl ======================
 dnl   Machine Endianness

@@ -37,12 +37,11 @@
       - it is done by the ui looking the sessions (locking them)
    
    + TOP HALF
-      - processing engine to differenziate the activity (hook point DISPATCHER)
-         - passive mapping
-         - "active" passive fingerprint
-         - sniffing (connection tracking)
-         - logging
-         - binder
+      - passive mapping
+      - "active" passive fingerprint
+      - sniffing (connection tracking)
+      - logging
+      - binder
    
    
    + DISSECTORS

@@ -1,5 +1,5 @@
 
-/* $Id: ec_ui.h,v 1.9 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: ec_ui.h,v 1.10 2003/10/11 19:43:42 alor Exp $ */
 
 #ifndef EC_UI_H
 #define EC_UI_H
@@ -15,9 +15,9 @@ struct ui_ops {
    void (*progress)(int value, int max);
    char initialized;
    char type;
-      #define UI_CONSOLE   0
+      #define UI_TEXT      0
       #define UI_DAEMONIZE 1
-      #define UI_NCURSES   2
+      #define UI_CURSES    2
       #define UI_GTK       3
 };
 

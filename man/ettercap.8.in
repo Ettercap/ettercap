@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.37 2003/10/09 20:44:25 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.38 2003/10/11 19:43:42 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -271,8 +271,8 @@ can analyze them with other tools.
 .TP
 .B USER INTERFACES OPTIONS
 .TP
-\fB\-C\fR, \fB\-\-console\fR
-The console interface, only printf ;)
+\fB\-T\fR, \fB\-\-text\fR
+The text only interface, only printf ;)
 .br
 It is quite interactive, press 'h' in every moment to get the help of what you
 can do.
@@ -288,7 +288,7 @@ example:
 ettercap -Cq -L dumpfile -r pcapfile
 
 .TP
-\fB\-N\fR, \fB\-\-ncurses\fR
+\fB\-C\fR, \fB\-\-curses\fR
 .br
 
 .TP

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.23 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_dispatcher.c,v 1.24 2003/10/11 19:43:42 alor Exp $
 */
 
 #include <ec.h>
@@ -103,9 +103,9 @@ EC_THREAD_FUNC(top_half)
       
       /* 
        * check if it is the last packet of a file...
-       * and exit if we are in console or demonize mode
+       * and exit if we are in text only or demonize mode
        */
-      if (GBL_UI->type == UI_CONSOLE || GBL_UI->type == UI_DAEMONIZE) {
+      if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE) {
          if (e->po->flags & PO_EOF) {
             DEBUG_MSG("End of dump file...");
             USER_MSG("\nEnd of dump file...\n");

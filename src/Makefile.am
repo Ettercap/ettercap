@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.56 2003/10/10 21:16:25 alor Exp $
+# $Id: Makefile.am,v 1.57 2003/10/11 19:43:42 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -51,11 +51,11 @@ ettercap_SOURCES = ec_capture.c \
                    ec_ui.c \
                    ec_update.c 
 
-ettercap_SOURCES += interfaces/console/ec_console.c \
-                    interfaces/console/ec_console_conn.c \
-                    interfaces/console/ec_console_display.c \
-                    interfaces/console/ec_console_profile.c \
-                    interfaces/console/ec_console_plugin.c
+ettercap_SOURCES += interfaces/text/ec_text.c \
+                    interfaces/text/ec_text_conn.c \
+                    interfaces/text/ec_text_display.c \
+                    interfaces/text/ec_text_profile.c \
+                    interfaces/text/ec_text_plugin.c
                     
 ettercap_SOURCES += interfaces/daemon/ec_daemon.c
 

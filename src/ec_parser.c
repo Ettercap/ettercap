@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.41 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_parser.c,v 1.42 2003/10/11 19:43:42 alor Exp $
 */
 
 
@@ -68,9 +68,9 @@ void ec_usage(void)
    fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n");
    
    fprintf(stdout, "\nUser Interface Type:\n");
-   fprintf(stdout, "  -C, --console               use console only GUI\n");
+   fprintf(stdout, "  -T, --text                  use text only GUI\n");
    fprintf(stdout, "       -q, --quiet                 do not display packet contents\n");
-   fprintf(stdout, "  -N, --ncurses               use ncurses GUI (default)\n");
+   fprintf(stdout, "  -C, --curses                use curses GUI\n");
    fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
    fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
    
@@ -147,8 +147,8 @@ void parse_options(int argc, char **argv)
       { "only-local", no_argument, NULL, 'o' },
       { "only-remote", no_argument, NULL, 'O' },
       
-      { "console", no_argument, NULL, 'C' },
-      { "ncurses", no_argument, NULL, 'N' },
+      { "text", no_argument, NULL, 'T' },
+      { "curses", no_argument, NULL, 'C' },
       { "gtk", no_argument, NULL, 'G' },
       { "daemon", no_argument, NULL, 'D' },
       
@@ -172,7 +172,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:Nn:OoP:pqiRr:t:UuV:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:n:OoP:pqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -191,11 +191,11 @@ void parse_options(int argc, char **argv)
                   GBL_PCAP->promisc = 0;
                   break;
                  
-         case 'C':
-                  set_console_interface();
+         case 'T':
+                  set_text_interface();
                   break;
                   
-         case 'N':
+         case 'C':
                   NOT_IMPLEMENTED();
                   break;
                   
@@ -387,8 +387,8 @@ void parse_options(int argc, char **argv)
    if (GBL_SNIFF->type == SM_BRIDGED && GBL_PCAP->promisc == 0)
       FATAL_ERROR("During bridged sniffing the iface must be in promisc mode !");
    
-   if (GBL_OPTIONS->quiet && GBL_UI->type != UI_CONSOLE)
-      FATAL_ERROR("The quiet option is useful only with Console UI");
+   if (GBL_OPTIONS->quiet && GBL_UI->type != UI_TEXT)
+      FATAL_ERROR("The quiet option is useful only with text only UI");
   
    if (GBL_OPTIONS->load_hosts && GBL_OPTIONS->save_hosts)
       FATAL_ERROR("Cannot load and save at the same time the hosts list...");

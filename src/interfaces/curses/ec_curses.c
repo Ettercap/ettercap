@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.14 2003/11/09 12:13:17 alor Exp $
+    $Id: ec_curses.c,v 1.15 2003/11/10 16:11:19 alor Exp $
 */
 
 #include <ec.h>
@@ -38,6 +38,7 @@ static void curses_input(const char *title, char *input, size_t n);
 static void curses_progress(char *title, int value, int max);
 
 void msg(void);
+void percent(void);
 
 /*******************************************/
 
@@ -237,6 +238,7 @@ void curses_interface(void)
    wdg_set_color(dlg, WDG_COLOR_TITLE, EC_COLOR_ERROR);
    wdg_dialog_text(dlg, WDG_YES | WDG_NO | WDG_CANCEL, "Do you like the new widget interface ?\nI hope so.");
    wdg_dialog_add_callback(dlg, WDG_YES, msg);
+   wdg_dialog_add_callback(dlg, WDG_NO, percent);
    wdg_draw_object(dlg);
    
    wdg_set_focus(dlg);
@@ -273,6 +275,34 @@ void msg(void)
    wdg_draw_object(dlg);
    
    wdg_set_focus(dlg);
+}
+
+void percent(void)
+{
+   wdg_t *per;
+   int i;
+   
+   wdg_create_object(&per, WDG_PERCENTAGE, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   ON_ERROR(per, NULL, "Cannot create object");
+   
+   wdg_set_title(per, "percentage...", WDG_ALIGN_CENTER);
+   wdg_set_color(per, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(per, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(per, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(per, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_draw_object(per);
+   
+   wdg_set_focus(per);
+
+   for (i = 0; i <= 100; i++) {
+      wdg_percentage_set(per, i, 100);
+      wdg_update_screen();
+      usleep(20000);
+   }
+   
+   wdg_destroy_object(&per);
+
+   wdg_redraw_all();
 }
 
 /* EOF */

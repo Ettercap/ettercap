@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.13 2003/11/09 12:13:17 alor Exp $ */
+/* $Id: wdg.h,v 1.14 2003/11/10 16:11:19 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -91,6 +91,7 @@ struct wdg_object {
       #define WDG_SCROLL      3
       #define WDG_MENU        4
       #define WDG_DIALOG      5
+      #define WDG_PERCENTAGE  6
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
@@ -160,6 +161,8 @@ extern void wdg_dialog_text(wdg_t *wo, size_t flags, const char *text);
    #define WDG_NO       (1<<2)
    #define WDG_CANCEL   (1<<3)
 extern void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(void));
+/* percentage objects */
+extern void wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
 
 
 /* EXPORTED FUNCTIONS */
@@ -167,6 +170,7 @@ extern void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(voi
 extern void wdg_init(void);
 extern void wdg_cleanup(void);
 extern void wdg_exit(void);
+extern void wdg_update_screen(void);
 extern void wdg_redraw_all(void);
 
 /* the main dispatching loop */

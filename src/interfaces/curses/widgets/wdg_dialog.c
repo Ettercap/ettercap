@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dialog.c,v 1.1 2003/11/09 12:13:17 alor Exp $
+    $Id: wdg_dialog.c,v 1.2 2003/11/10 16:11:19 alor Exp $
 */
 
 #include <wdg.h>
@@ -146,9 +146,9 @@ static int wdg_dialog_redraw(struct wdg_object *wo)
    if (cols + 4 >= current_screen.cols)
       wo->x1 = 0;
    else
-      wo->x1 = (current_screen.cols - (cols + 4)) / 2 ;
+      wo->x1 = (current_screen.cols - (cols + 4)) / 2;
    
-   wo->y1 = (current_screen.lines - (lines + 4)) / 2 ;
+   wo->y1 = (current_screen.lines - (lines + 4)) / 2;
    wo->x2 = -wo->x1;
    wo->y2 = -wo->y1;
    
@@ -257,11 +257,8 @@ static int wdg_dialog_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_e
          if (wenclose(ww->win, mouse->y, mouse->x)) {
             wdg_set_focus(wo);
             /* if the mouse click was over a button */
-            if (wdg_dialog_mouse_move(wo, mouse) == WDG_ESUCCESS) {
+            if (wdg_dialog_mouse_move(wo, mouse) == WDG_ESUCCESS)
                wdg_dialog_callback(wo);
-               wdg_destroy_object(&wo);
-               wdg_redraw_all();
-            }
          } else 
             return -WDG_ENOTHANDLED;
          break;
@@ -274,8 +271,6 @@ static int wdg_dialog_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_e
 
       case KEY_RETURN:
          wdg_dialog_callback(wo);
-         wdg_destroy_object(&wo);
-         wdg_redraw_all();
          break;
          
       /* message not handled */
@@ -514,13 +509,18 @@ static int wdg_dialog_mouse_move(struct wdg_object *wo, struct wdg_mouse_event *
 }
 
 /*
+ * destroy the dialog and
  * call the function associated to the button
  */
 static void wdg_dialog_callback(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_dialog, ww);
+   void (*callback)(void);
    
-   WDG_EXECUTE(ww->buttons[ww->focus_button].callback);
+   callback = ww->buttons[ww->focus_button].callback;
+   wdg_destroy_object(&wo);
+   wdg_redraw_all();
+   WDG_EXECUTE(callback);
 }
 
 /*

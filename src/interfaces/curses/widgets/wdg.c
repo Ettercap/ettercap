@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.16 2003/11/09 12:13:17 alor Exp $
+    $Id: wdg.c,v 1.17 2003/11/10 16:11:19 alor Exp $
 */
 
 #include <wdg.h>
@@ -58,6 +58,7 @@ static int wdg_exit_key;
 void wdg_init(void);
 void wdg_cleanup(void);
 void wdg_exit(void);
+void wdg_update_screen(void);
 void wdg_redraw_all(void);
 
 void wdg_add_idle_callback(void (*callback)(void));
@@ -88,6 +89,7 @@ extern void wdg_create_panel(struct wdg_object *wo);
 extern void wdg_create_scroll(struct wdg_object *wo);
 extern void wdg_create_menu(struct wdg_object *wo);
 extern void wdg_create_dialog(struct wdg_object *wo);
+extern void wdg_create_percentage(struct wdg_object *wo);
 
 /*******************************************/
 
@@ -188,6 +190,14 @@ void wdg_exit(void)
 {
    /* put the exit key in the input buffer */
    ungetch(wdg_exit_key);
+}
+
+/*
+ * update the screen
+ */
+void wdg_update_screen(void)
+{
+   doupdate();
 }
 
 /* 
@@ -505,6 +515,10 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
          
       case WDG_DIALOG:
          wdg_create_dialog(*wo);
+         break;
+         
+      case WDG_PERCENTAGE:
+         wdg_create_percentage(*wo);
          break;
          
       default:

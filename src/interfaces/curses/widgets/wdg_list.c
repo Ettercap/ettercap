@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_list.c,v 1.6 2003/12/28 18:27:08 alor Exp $
+    $Id: wdg_list.c,v 1.7 2004/01/20 11:42:30 alor Exp $
 */
 
 #include <wdg.h>
@@ -317,7 +317,12 @@ void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list)
 {
    WDG_WO_EXT(struct wdg_list_handle, ww);
    size_t i = 0;
-   
+ 
+   wdg_list_menu_destroy(wo);
+
+   /* forget the curren position, we are creating a new menu */
+   ww->current = NULL;
+ 
    /* free any previously alloc'd item */
    while (ww->items && ww->items[i] != NULL)
       free_item(ww->items[i++]);
@@ -342,6 +347,7 @@ void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list)
    WDG_SAFE_REALLOC(ww->items, (ww->nitems + 1) * sizeof(ITEM *));
    ww->items[ww->nitems] = NULL;
 
+   wdg_list_menu_create(wo);
 }
 
 
@@ -445,7 +451,7 @@ static void wdg_list_menu_create(struct wdg_object *wo)
 }
 
 /*
- * close a menu unit
+ * destroy the menu
  */
 static void wdg_list_menu_destroy(struct wdg_object *wo)
 {

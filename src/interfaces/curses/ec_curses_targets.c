@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.6 2004/01/20 10:04:32 alor Exp $
+    $Id: ec_curses_targets.c,v 1.7 2004/01/20 11:42:27 alor Exp $
 */
 
 #include <ec.h>
@@ -174,9 +174,15 @@ static void curses_current_targets(void)
 {
    DEBUG_MSG("curses_current_targets");
    
+   /* prepare the arrays for the target lists */
+   curses_create_targets_array();
+  
    /* if the object already exist, recreate it */
    if (wdg_comp) {
-      wdg_destroy_object(&wdg_comp);
+      /* set the new arrays */
+      wdg_list_set_elements(wdg_t1, wdg_t1_elm);
+      wdg_list_set_elements(wdg_t2, wdg_t2_elm);
+      return;
    }
 
    wdg_create_object(&wdg_comp, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);
@@ -186,9 +192,6 @@ static void curses_current_targets(void)
    wdg_set_color(wdg_comp, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_set_title(wdg_comp, "Current targets", WDG_ALIGN_LEFT);
    wdg_set_size(wdg_comp, 1, 2, 42, SYSMSG_WIN_SIZE - 1);
-
-   /* prepare the arrays for the target lists */
-   curses_create_targets_array();
    
    wdg_create_object(&wdg_t1, WDG_LIST, 0);
    wdg_set_title(wdg_t1, "Target 1", WDG_ALIGN_LEFT);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_plugins.c,v 1.9 2004/01/06 17:44:16 alor Exp $
+    $Id: ec_curses_plugins.c,v 1.10 2004/01/20 11:42:27 alor Exp $
 */
 
 #include <ec.h>
@@ -25,7 +25,7 @@
 #include <ec_curses.h>
 #include <ec_plugins.h>
 
-#define MAX_DESC_LEN 70
+#define MAX_DESC_LEN 75
 
 /* proto */
 
@@ -110,9 +110,14 @@ static void curses_plugin_mgmt(void)
 {
    DEBUG_MSG("curses_plugin_mgmt");
    
+   /* create the array for the list widget */
+   curses_create_plug_array();
+   
    /* if the object already exist, set the focus to it */
    if (wdg_plugin) {
-      wdg_destroy_object(&wdg_plugin);
+      /* set the new array */
+      wdg_list_set_elements(wdg_plugin, wdg_plugin_elements);
+      return;
    }
    
    wdg_create_object(&wdg_plugin, WDG_LIST, WDG_OBJ_WANT_FOCUS);
@@ -125,8 +130,6 @@ static void curses_plugin_mgmt(void)
    wdg_set_color(wdg_plugin, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(wdg_plugin, WDG_COLOR_TITLE, EC_COLOR_TITLE);
 
-   /* create the array for the list widget */
-   curses_create_plug_array();
   
    /* set the elements */
    wdg_list_set_elements(wdg_plugin, wdg_plugin_elements);

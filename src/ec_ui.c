@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.6 2003/03/21 14:16:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.7 2003/03/22 15:41:22 alor Exp $
 */
 
 #include <ec.h>
@@ -47,6 +47,7 @@ void ui_cleanup(void);
 void ui_msg(const char *fmt, ...);
 void ui_progress(int value, int max);
 int ui_msg_flush(int max);
+int ui_msg_purge_all(void);
 void ui_register(struct ui_ops *ops);
 
 
@@ -156,10 +157,6 @@ int ui_msg_flush(int max)
    int i = 0;
    struct ui_message *msg;
 
-   /* no messages, no actions */
-   if (SIMPLEQ_FIRST(&messages_queue) == NULL)
-      return 0;
-   
    /* the queue is updated by other threads */
    UI_MSG_LOCK;
       
@@ -186,6 +183,30 @@ int ui_msg_flush(int max)
    
 }
 
+/*
+ * empty all the message queue
+ */
+int ui_msg_purge_all(void)
+{
+   int i = 0;
+   struct ui_message *msg;
+
+   /* the queue is updated by other threads */
+   UI_MSG_LOCK;
+      
+   while ( (msg = SIMPLEQ_FIRST(&messages_queue)) != NULL) {
+      /* free the message */
+      SAFE_FREE(msg->message);
+      SIMPLEQ_REMOVE_HEAD(&messages_queue, msg, next);
+      SAFE_FREE(msg);
+   }
+   
+   UI_MSG_UNLOCK;
+   
+   /* returns the number of purgeded messages */
+   return i;
+   
+}
 
 /*
  * register the function pointer for

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.3 2003/03/21 14:16:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.4 2003/03/22 15:41:22 alor Exp $
 */
 
 #include <ec.h>
@@ -23,17 +23,11 @@
 #include <ec_parser.h>
 
 #include <dirent.h>
+//#include <ltdl.h>
 #include <dlfcn.h>
 
-#ifdef OS_OPENBSD
-/* The below define is a lie since we are really doing RTLD_LAZY since the
- * system doesn't support RTLD_NOW.
- */
-   #define RTLD_NOW DL_LAZY
-#endif
-
 /* symbol prefix for some OSes */
-#if defined(OS_OPENBSD) || defined(OS_DARWIN)
+#ifdef NEED_USCORE
    #define SYM_PREFIX "_"
 #else
    #define SYM_PREFIX ""
@@ -54,11 +48,13 @@ static SLIST_HEAD(, plugin_entry) plugin_head;
 /* protos... */
 
 void plugin_load_all(void);
+void plugin_unload_all(void);
 int plugin_load_single(char *path, char *name);
 int plugin_register(void *handle, struct plugin_ops *ops);
 int plugin_init(char *name);
 int plugin_fini(char *name);
-int plugin_list_print(int min, int max, void (*func)(char *, char *, char *));
+int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *));
+int plugin_get_type(char *name);
 
 /*******************************************/
 
@@ -115,6 +111,11 @@ void plugin_load_all(void)
    
    DEBUG_MSG("plugin_loadall");
 
+//   if (lt_dlinit() != 0)
+//      ERROR_MSG("lt_dlinit()");
+
+   /* XXX - replace "." with INSTALL_PREFIX"/lib/" */
+
    n = scandir(".", &namelist, 0, alphasort);
   
    for(i = n-1; i >= 0; i--) {
@@ -138,8 +139,32 @@ void plugin_load_all(void)
    }
    
    USER_MSG("%4d plugins loaded\n", t);
-   
+
+   atexit(&plugin_unload_all);
+
 }
+
+
+/*
+ * unload all the plugin
+ */
+
+void plugin_unload_all(void)
+{
+   struct plugin_entry *p;
+   
+   DEBUG_MSG("ATEXIT: plugin_unload_all");   
+   
+   while (SLIST_FIRST(&plugin_head) != NULL) {
+      p = SLIST_FIRST(&plugin_head);
+      dlclose(p->handle);
+      SLIST_REMOVE_HEAD(&plugin_head, next);
+   }
+   
+//   if (lt_dlexit() != 0)
+//      ERROR_MSG("lt_dlexit()");
+}
+
 
 /*
  * function used by plugins to register themself
@@ -175,6 +200,7 @@ int plugin_init(char *name)
 
    SLIST_FOREACH(p, &plugin_head, next) {
       if (!strcmp(p->ops->name, name)) {
+         p->activated = 1;
          return p->ops->init(NULL);
       }
    }
@@ -192,7 +218,8 @@ int plugin_fini(char *name)
    struct plugin_entry *p;
 
    SLIST_FOREACH(p, &plugin_head, next) {
-      if (!strcmp(p->ops->name, name)) {
+      if (p->activated == 1 && !strcmp(p->ops->name, name)) {
+         p->activated = 0;
          return p->ops->fini(NULL);
       }
    }
@@ -212,19 +239,36 @@ int plugin_fini(char *name)
  * max it the n-th plugin to stop to print
  */
 
-int plugin_list_print(int min, int max, void (*func)(char *, char *, char *))
+int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *))
 {
    struct plugin_entry *p;
-   int i = 1;
+   int i = min;
 
    SLIST_FOREACH(p, &plugin_head, next) {
-      if (min < i && i > max)
-         return i;
-      func(p->ops->name, p->ops->version, p->ops->info);
+      if (i > max)
+         return (i-1);
+      func(p->activated, p->ops);
       i++;
    }
    
-   return i;
+   return (i == min) ? -ENOTFOUND : (i-1);
+}
+
+/* 
+ * returns the type of the plugin 
+ */
+
+int plugin_get_type(char *name)
+{
+   struct plugin_entry *p;
+
+   SLIST_FOREACH(p, &plugin_head, next) {
+      if (!strcmp(p->ops->name, name)) {
+         return p->ops->type;
+      }
+   }
+   
+   return -ENOTFOUND;
 }
 
 /* EOF */

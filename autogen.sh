@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export WANT_AUTOMAKE=1.7
+
 echo
 echo "Suggested version:"
 echo

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_globals.c,v 1.2 2003/03/17 19:42:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_globals.c,v 1.3 2003/03/22 15:41:22 alor Exp $
 */
 
 #include <ec.h>
@@ -96,8 +96,13 @@ void globals_free(void)
    GBL_FREE(gbls->env->debug_file);
    GBL_FREE(gbls->env);
    
+   GBL_FREE(gbls->options->plugin);
+   GBL_FREE(gbls->options->proto);
    GBL_FREE(gbls->options->dumpfile);
    GBL_FREE(gbls->options->iface);
+   GBL_FREE(gbls->options->iface_bridge);
+   GBL_FREE(gbls->options->target1);
+   GBL_FREE(gbls->options->target2);
    GBL_FREE(gbls->options);
    
    GBL_FREE(gbls);

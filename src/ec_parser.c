@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.8 2003/03/20 21:13:31 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.9 2003/03/22 15:41:22 alor Exp $
 */
 
 
@@ -69,6 +69,8 @@ void ec_usage(void)
    fprintf(stdout, "  -R, --reversed              use reversed TARGET matching\n\n");
    fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n\n");
    
+   fprintf(stdout, "  -P, --plugin <plugin>       launch this plugin\n\n");
+   
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
 
@@ -94,6 +96,8 @@ void parse_options(int argc, char **argv)
       { "reversed", no_argument, NULL, 'R' },
       { "proto", required_argument, NULL, 't' },
       
+      { "plugin", required_argument, NULL, 'P' },
+      
       { "console", no_argument, NULL, 'C' },
       { "ncurses", no_argument, NULL, 'N' },
       { "gtk", no_argument, NULL, 'G' },
@@ -116,7 +120,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:ChDd:f:Gi:NpiRr:t:v", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:ChDd:f:Gi:NP:piRr:t:v", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -156,6 +160,10 @@ void parse_options(int argc, char **argv)
                   
          case 't':
                   GBL_OPTIONS->proto = strdup(optarg);
+                  break;
+                  
+         case 'P':
+                  GBL_OPTIONS->plugin = strdup(optarg);
                   break;
                   
          case 'i':

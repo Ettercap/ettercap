@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_hook.c,v 1.1 2003/03/10 09:08:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_hook.c,v 1.2 2003/03/22 15:41:22 alor Exp $
 */
 
 #include <ec.h>
@@ -95,7 +95,7 @@ int hook_del(int point, void (*func)(struct packet_object *po) )
    HOOK_LOCK;
    
    LIST_FOREACH(current, &hook_list_head, next) {
-      if (current->func == func) {
+      if (current->point == point && current->func == func) {
          LIST_REMOVE(current, next);
          SAFE_FREE(current);
          HOOK_UNLOCK;

@@ -5,6 +5,7 @@
    + PO incapsulated ?
    + lnet ptag thread safe (check it)
    + speed up the visualization of user_msg (poll related)
+   !! under bsd the ip_forwarding is not repristinated !!
 
    ?? VBUF functions for dissectors ??
    
@@ -12,8 +13,11 @@
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
    + PLUGINS ENGINE
-      - direct launch from console
+      - possibility to activate/deactivate hook plugins from console interface
       - cygwin issue (study libltdl)
+      - use libldtdl (problem even on openbsd)
+      - LTDL_SHLIB_EXT
+      - make testi with dlopen-test
 
    + LOGGING ENGINE
       - unified binary output

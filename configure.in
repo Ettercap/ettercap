@@ -150,9 +150,12 @@ dnl   Libtool related...
 dnl ========================
 
 AC_DISABLE_STATIC
+AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 dnl AC_SEARCH_LIBS(dlopen,c dl,,)
+AC_LIB_LTDL
+AC_SEARCH_LIBS(lt_dlopen,c dl ltdl,,)
 
 dnl ======================
 dnl   Machine Endianness
@@ -512,7 +515,8 @@ AC_OUTPUT(Makefile
           include/Makefile
           utils/Makefile
           plug-ins/Makefile
-          plug-ins/dummy/Makefile)
+          plug-ins/dummy/Makefile
+          plug-ins/dummy_hook/Makefile)
 
 
 dnl ===============

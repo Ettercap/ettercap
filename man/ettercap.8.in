@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.6 2003/03/20 21:13:31 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.7 2003/03/22 15:41:21 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -270,7 +270,10 @@ ettercap in debug mode.
 .TP
 .B GENERAL OPTIONS
 .TP
-
+\fB\-R\fR, \fB\-\-reverse\fR
+Reverse the matching in the TARGET selection. It means not(TARGET). All but the
+selected TARGET.
+.TP
 \fB\-t\fR, \fB\-\-proto <PROTO>\fR
 Sniff only PROTO packets (default is TCP + UDP).
 .br
@@ -278,6 +281,21 @@ This is useful if you want to select a port via the TARGET specification but
 you want to differentiate between tcp or udp.
 .br
 PROTO can be "tcp", "udp" or "all" for both.
+.TP
+\fB\-P\fR, \fB\-\-plugin <PLUGIN>\fR
+Run the selected PLUGIN. Many plugins need target specification, use TARGET as
+always.
+.br
+In console mode (-C option), standalone plugin are executed and then the
+application exits. Hook plugin are activated and the normal sniffing is
+performed.
+.br
+To have a list of the available external plugins use "list" (without quotes) as
+plugin name (e.g. ./ettercap -CP list).
+.Sp
+More detailed info about plugins and about how to write your own are found in
+the man page ettercap_plugin(8)
+
 
 
 .SH EXAMPLES

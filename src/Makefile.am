@@ -36,6 +36,7 @@ ettercap_SOURCES = ec_main.c \
 				   protocols/ec_udp.c \
 				   dissectors/ec_pop.c \
 				   interfaces/console/ec_console.c \
+				   interfaces/console/ec_console_plugin.c \
 				   interfaces/daemon/ec_daemon.c 
                
 if LINUX

@@ -19,6 +19,7 @@ extern void ui_cleanup(void);
 extern void ui_msg(const char *fmt, ...);
 extern void ui_progress(int value, int max);
 extern int ui_msg_flush(int max);
+extern int ui_msg_purge_all(void);
 extern void ui_register(struct ui_ops *ops);
 
 #define USER_MSG(x, args...) ui_msg(x, ## args )

@@ -27,19 +27,19 @@
 /* globals */
 
 struct vnc_status {
- u_char status;
- u_char challenge[16];
- u_char response[16];
+   u_char status;
+   u_char challenge[16];
+   u_char response[16];
 };
 
-#define WAIT_AUTH 1
-#define WAIT_CHALLENGE 2
-#define WAIT_RESPONSE 3
-#define WAIT_RESULT 4
-#define NO_AUTH 5
-#define LOGIN_OK 6
-#define LOGIN_FAILED 7
-#define LOGIN_TOOMANY 8
+#define WAIT_AUTH       1
+#define WAIT_CHALLENGE  2
+#define WAIT_RESPONSE   3
+#define WAIT_RESULT     4
+#define NO_AUTH         5
+#define LOGIN_OK        6
+#define LOGIN_FAILED    7
+#define LOGIN_TOOMANY   8
 
 
 /* protos */
@@ -71,7 +71,7 @@ FUNC_DECODER(dissector_vnc)
    struct vnc_status *conn_status;
    
    /* Packets coming from the server */
-   if (dissect_on_port("vnc", ntohs(PACKET->L4.src)) == ESUCCESS) {
+   if (FROM_SERVER("vnc", PACKET)) {
 
       /* Interesting packets have len >= 4 */
       if (PACKET->DATA.len < 4)
@@ -89,14 +89,14 @@ FUNC_DECODER(dissector_vnc)
     
             /* Catch the banner that is like "RFB xxx.yyy" */   
             PACKET->DISSECTOR.banner = strdup(ptr);
-	 
+    
             /* remove the \n */
             if ( (ptr = strchr(PACKET->DISSECTOR.banner, '\n')) != NULL )
                *ptr = '\0';
-	    
+       
             /* create the new session */
             dissect_create_session(&s, PACKET);
-	    
+       
             /* remember the state (used later) */
             s->data = malloc(sizeof(struct vnc_status));
             conn_status = (struct vnc_status *) s->data;
@@ -112,62 +112,64 @@ FUNC_DECODER(dissector_vnc)
          
          /* If we are waiting for auth scheme by the server */
          if (conn_status->status == WAIT_AUTH) {
-	 
-         /* Authentication scheme requested by the server: 
-            0 - Connection Failed
-            1 - No Authentication
-            2 - VNC Authentication
-         */
-	
+    
+            /* Authentication scheme requested by the server: 
+             *  0 - Connection Failed
+             *  1 - No Authentication
+             *  2 - VNC Authentication
+             */
+   
             DEBUG_MSG("\tDissector_vnc AUTH");
 
             /* No authentication required!!! */
             if (!memcmp(ptr, "\x00\x00\x00\x01", 4)) {
                
-               /* Free authentication will be notified on 
-                  next client's packet */
+               /* 
+                * Free authentication will be notified on 
+                * next client's packet 
+                */
                conn_status->status = NO_AUTH;   
-	       
+          
             } else if (!memcmp(ptr, "\x00\x00\x00\x00", 4)) { /* Connection Failed */
 
                /*...so destroy the session*/ 
                dissect_wipe_session(PACKET);
                SAFE_FREE(ident);
                return NULL;
-	      
+         
             } else if (!memcmp(ptr, "\x00\x00\x00\x02", 4)) { /* VNC Auth required */
               
                /* Skip Authentication type code (if the challenge is in the same packet) */
                ptr+=4;
-	       
+          
                /* ...and waits for the challenge */
                conn_status->status = WAIT_CHALLENGE;   
             }
          } 
 
-         /* We are waiting for the server challenge */	 
-         if ((conn_status->status == WAIT_CHALLENGE) && (ptr<end)) {
-	    
+         /* We are waiting for the server challenge */    
+         if ((conn_status->status == WAIT_CHALLENGE) && (ptr < end)) {
+       
             DEBUG_MSG("\tDissector_vnc CHALLENGE");
 
             /* Saves the server challenge (16byte) in the session data */
             conn_status->status = WAIT_RESPONSE;
             memcpy(conn_status->challenge, ptr, 16);
-	    
+       
          } else if (conn_status->status == WAIT_RESULT) { /* We are waiting for login result */
-	    
+       
             /* Login Result
-               0 - Ok
-               1 - Failed
-               2 - Too many attempts 
-            */
+             *  0 - Ok
+             *  1 - Failed
+             *  2 - Too many attempts 
+             */
             DEBUG_MSG("\tDissector_vnc RESULT");
 
             if (!memcmp(ptr, "\x00\x00\x00\x00", 4)) 
                conn_status->status = LOGIN_OK;
             else if (!memcmp(ptr, "\x00\x00\x00\x01", 4)) 
                conn_status->status = LOGIN_FAILED;
-            else if (!memcmp(ptr, "\x00\x00\x00\x02", 4))	       
+            else if (!memcmp(ptr, "\x00\x00\x00\x02", 4))          
                conn_status->status = LOGIN_TOOMANY;
          }
       }
@@ -193,44 +195,50 @@ FUNC_DECODER(dissector_vnc)
             USER_MSG("vnc : %s:%d -> No authentication required\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                                     ntohs(PACKET->L4.dst));
             dissect_wipe_session(PACKET);
-         } else	 /* If we have catched server result */
-         if (conn_status->status >= LOGIN_OK) {
-            u_char *str_ptr, index;
-            	    
-            DEBUG_MSG("\tDissector_vnc DUMP ENCRYPTED");
-
-            PACKET->DISSECTOR.user = strdup("");
-            PACKET->DISSECTOR.pass = calloc(256,1);
+         } else    /* If we have catched server result */
             
-            /* Dump Challenge and Response */
-            sprintf(PACKET->DISSECTOR.pass,"Challenge:");
-            str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
-            for (index = 0; index < 16; index++)
-               sprintf(str_ptr + (index * 2), "%.2x", conn_status->challenge[index]);
-            strcat(str_ptr, " Response:");
-            str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
-            for (index = 0; index < 16; index++)
-               sprintf(str_ptr + (index * 2), "%.2x", conn_status->response[index]);
-	    
-            if (conn_status->status > LOGIN_OK) PACKET->DISSECTOR.info=strdup("Login Failed");
+            if (conn_status->status >= LOGIN_OK) {
+               u_char *str_ptr, index;
+                   
+               DEBUG_MSG("\tDissector_vnc DUMP ENCRYPTED");
 
-            USER_MSG("vnc : %s:%d -> %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+               PACKET->DISSECTOR.user = strdup("");
+               PACKET->DISSECTOR.pass = calloc(256,1);
+            
+               /* Dump Challenge and Response */
+               sprintf(PACKET->DISSECTOR.pass,"Challenge:");
+               str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
+            
+               for (index = 0; index < 16; index++)
+                  sprintf(str_ptr + (index * 2), "%.2x", conn_status->challenge[index]);
+            
+               strcat(str_ptr, " Response:");
+               str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
+            
+               for (index = 0; index < 16; index++)
+                  sprintf(str_ptr + (index * 2), "%.2x", conn_status->response[index]);
+       
+               if (conn_status->status > LOGIN_OK) 
+                  PACKET->DISSECTOR.info=strdup("Login Failed");
+
+               USER_MSG("vnc : %s:%d -> %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                             ntohs(PACKET->L4.dst), 
                                             PACKET->DISSECTOR.pass);
 
             dissect_wipe_session(PACKET);
-         } else  /* If we are waiting for client response (don't care ACKs) */
-         if (conn_status->status == WAIT_RESPONSE && PACKET->DATA.len>=16) {
+         } else { /* If we are waiting for client response (don't care ACKs) */
+            if (conn_status->status == WAIT_RESPONSE && PACKET->DATA.len >= 16) {
 
-            DEBUG_MSG("\tDissector_vnc RESPONSE");
+               DEBUG_MSG("\tDissector_vnc RESPONSE");
 
-            /* Saves the client response (16byte) in the session data */
-            conn_status->status = WAIT_RESULT;
-            memcpy(conn_status->response, ptr, 16);
+               /* Saves the client response (16byte) in the session data */
+               conn_status->status = WAIT_RESULT;
+               memcpy(conn_status->response, ptr, 16);
+            }
          }
       }
    }        
-	
+   
    SAFE_FREE(ident);
    return NULL;
 }      

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.19 2003/10/15 20:40:59 alor Exp $
+    $Id: ec_profiles.c,v 1.20 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -59,10 +59,10 @@ static pthread_mutex_t profile_mutex = PTHREAD_MUTEX_INITIALIZER;
 void __init profiles_init(void)
 {
    /* add the hook for the ARP packets */
-   hook_add(PACKET_ARP, &profile_parse);
+   hook_add(HOOK_PACKET_ARP, &profile_parse);
    
    /* add the hook for ICMP packets */
-   hook_add(PACKET_ICMP, &profile_parse);
+   hook_add(HOOK_PACKET_ICMP, &profile_parse);
          
    /* receive all the top half packets */
    hook_add(HOOK_DISPATCHER, &profile_parse);

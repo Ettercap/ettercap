@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.6 2003/09/18 22:15:04 alor Exp $
+    $Id: ec_wifi.c,v 1.7 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -98,8 +98,8 @@ FUNC_DECODER(decode_wifi)
    memcpy(PACKET->L2.src, wifi->sha, ETH_ADDR_LEN);
    memcpy(PACKET->L2.dst, wifi->dha, ETH_ADDR_LEN);
 
-   /* HOOK POINT: PACKET_WIFI */
-   hook_point(PACKET_WIFI, po);
+   /* HOOK POINT: HOOK_PACKET_WIFI */
+   hook_point(HOOK_PACKET_WIFI, po);
    
    /* leave the control to the next decoder */
    EXECUTE_DECODER(next_decoder);

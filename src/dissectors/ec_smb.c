@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.8 2003/10/16 14:45:21 lordnaga Exp $
+    $Id: ec_smb.c,v 1.9 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -125,8 +125,8 @@ FUNC_DECODER(dissector_smb)
          session_put(s);
          session_data = (smb_session_data *)s->data;
 
-         /* HOOK POINT: PACKET_SMB */
-         hook_point(PACKET_SMB, PACKET);
+         /* HOOK POINT: HOOK_PROTO_SMB */
+         hook_point(HOOK_PROTO_SMB, PACKET);
 
          /* 
           * Check the Security Mode 
@@ -233,8 +233,8 @@ FUNC_DECODER(dissector_smb)
                session_data->status = WAITING_LOGON_RESPONSE;
             } else if (session_data->status == WAITING_CHALLENGE) {
 	    
-               /* HOOK POINT: PACKET_SMB2 */
-               hook_point(PACKET_SMB2, PACKET);
+               /* HOOK POINT: HOOK_PACKET_SMB_CHL */
+               hook_point(HOOK_PROTO_SMB_CHL, PACKET);
               
             } else if (session_data->status == WAITING_RESPONSE) {
                char *Blob;

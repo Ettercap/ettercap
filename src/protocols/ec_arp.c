@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp.c,v 1.10 2003/10/12 13:03:37 alor Exp $
+    $Id: ec_arp.c,v 1.11 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -103,13 +103,13 @@ FUNC_DECODER(decode_arp)
       memcpy(PACKET->L2.dst, (char *)&earp->arp_tha, ETH_ADDR_LEN);
       
       /* 
-       * HOOK POINT:  PACKET_ARP 
+       * HOOK POINT:  HOOK_PACKET_ARP 
        * differentiate between REQUEST and REPLY
        */
       if (ntohs(arp->ar_op) == ARPOP_REQUEST)
-         hook_point(PACKET_ARP_RQ, po);
+         hook_point(HOOK_PACKET_ARP_RQ, po);
       else if (ntohs(arp->ar_op) == ARPOP_REPLY)
-         hook_point(PACKET_ARP_RP, po);
+         hook_point(HOOK_PACKET_ARP_RP, po);
       
       /* ARP packets are always local (our machine is at distance 0) */
       if (!ip_addr_cmp(&po->L3.src, &GBL_IFACE->ip))
@@ -117,8 +117,8 @@ FUNC_DECODER(decode_arp)
       else
          PACKET->L3.ttl = 1;
    
-      /* PACKET_ARP is for all type of arp, no distinctions */
-      hook_point(PACKET_ARP, po);
+      /* HOOK_PACKET_ARP is for all type of arp, no distinctions */
+      hook_point(HOOK_PACKET_ARP, po);
    }
    
    return NULL;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.27 2003/10/11 17:05:01 alor Exp $
+    $Id: ec_sniff.c,v 1.28 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -42,7 +42,7 @@ static void display_packet_for_us(struct packet_object *po);
 int compile_display_filter(void);
 void reset_display_filter(struct target_env *t);
 
-static void set_forwardable_flag(struct packet_object *po);
+void set_forwardable_flag(struct packet_object *po);
 
 static void add_port(void *ports, u_int n);
 static void add_ip(void *digit, u_int n);
@@ -65,7 +65,7 @@ static pthread_mutex_t ip_list_mutex = PTHREAD_MUTEX_INITIALIZER;
  * not the same as GBL_IFACE->ip, the packet is not
  * for us and we can do mitm on it before forwarding.
  */
-static void set_forwardable_flag(struct packet_object *po)
+void set_forwardable_flag(struct packet_object *po)
 {
 
    /* in bridged sniffing all the packet have to be forwarded */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.21 2003/10/12 13:03:45 alor Exp $
+    $Id: ec_scan.c,v 1.22 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -99,7 +99,7 @@ void build_hosts_list(void)
     * ARP packets.
     */
 
-   hook_add(PACKET_ARP_RP, &get_response);
+   hook_add(HOOK_PACKET_ARP_RP, &get_response);
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
   
    /* 
@@ -125,7 +125,7 @@ void build_hosts_list(void)
 
    /* destroy the thread and remove the hook function */
    ec_thread_destroy(pid);
-   hook_del(PACKET_ARP, &get_response);
+   hook_del(HOOK_PACKET_ARP, &get_response);
    
    /* count the hosts and print the message */
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {

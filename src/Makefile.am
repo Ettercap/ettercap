@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.61 2003/10/14 14:06:09 alor Exp $
+# $Id: Makefile.am,v 1.62 2003/10/16 16:46:48 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -61,18 +61,19 @@ ettercap_SOURCES = ec_capture.c \
 
 ettercap_SOURCES += mitm/ec_arp_poisoning.c
 
-ettercap_SOURCES += protocols/ec_eth.c \
-				        protocols/ec_wifi.c \
-				        protocols/ec_arp.c \
+ettercap_SOURCES += protocols/ec_arp.c \
+                    protocols/ec_eth.c \
+				        protocols/ec_icmp.c \
 				        protocols/ec_ip.c \
 				        protocols/ec_ip6.c \
 				        protocols/ec_tcp.c \
 				        protocols/ec_udp.c \
-				        protocols/ec_icmp.c 
+				        protocols/ec_wifi.c
                
 
 ettercap_SOURCES += dissectors/ec_bgp.c \
-                    dissectors/ec_cvs.c 
+                    dissectors/ec_cvs.c \
+                    dissectors/ec_dhcp.c 
 
 if HAVE_DN_EXPAND
 ettercap_SOURCES += dissectors/ec_dns.c

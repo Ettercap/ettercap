@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.5 2003/10/14 21:20:47 lordnaga Exp $
+    $Id: finger.c,v 1.6 2003/10/16 16:46:48 alor Exp $
 */
 
 
@@ -215,7 +215,7 @@ static void do_fingerprint(void)
     * add the hook to collect tcp SYN+ACK packets from 
     * the target and extract the passive fingerprint
     */
-   hook_add(PACKET_TCP, &get_finger);
+   hook_add(HOOK_PACKET_TCP, &get_finger);
    
    INSTANT_USER_MSG("Fingerprinting %s:%d...\n", tmp, port);
    
@@ -233,7 +233,7 @@ static void do_fingerprint(void)
    sleep(1);
 
    /* remove the hook, we have collected the finger */
-   hook_del(PACKET_TCP, &get_finger);
+   hook_del(HOOK_PACKET_TCP, &get_finger);
 
    /* no fingerprint collected */
    if (!strcmp(fingerprint, ""))

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_eth.c,v 1.5 2003/09/18 22:15:04 alor Exp $
+    $Id: ec_eth.c,v 1.6 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -69,8 +69,8 @@ FUNC_DECODER(decode_eth)
    memcpy(PACKET->L2.src, eth->sha, ETH_ADDR_LEN);
    memcpy(PACKET->L2.dst, eth->dha, ETH_ADDR_LEN);
 
-   /* HOOK POINT : PACKET_ETH */
-   hook_point(PACKET_ETH, po);
+   /* HOOK POINT : HOOK_PACKET_ETH */
+   hook_point(HOOK_PACKET_ETH, po);
    
    /* leave the control to the next decoder */   
    next_decoder = get_decoder(NET_LAYER, ntohs(eth->proto));

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.25 2003/10/14 21:20:47 lordnaga Exp $
+    $Id: ec_ip.c,v 1.26 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -145,6 +145,9 @@ FUNC_DECODER(decode_ip)
    if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET) != 0) {
       USER_MSG("Invalid IP packet from %s : csum [%#x] (%#x)\n", int_ntoa(ip->saddr), 
                               L3_checksum(PACKET), ntohs(ip->csum));
+      
+      /* is the packet forwardable ? */
+      set_forwardable_flag(PACKET);
       return NULL;
    }
    
@@ -172,8 +175,8 @@ FUNC_DECODER(decode_ip)
          break;
    }
    
-   /* HOOK POINT: PACKET_IP */
-   hook_point(PACKET_IP, po);
+   /* HOOK POINT: HOOK_PACKET_IP */
+   hook_point(HOOK_PACKET_IP, po);
 
    /* don't save the sessions in unoffensive mode */
    if (!GBL_OPTIONS->unoffensive) {

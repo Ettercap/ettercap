@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.50 2003/10/16 14:45:14 lordnaga Exp $
+dnl    $Id: configure.in,v 1.51 2003/10/16 16:46:40 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -126,7 +126,7 @@ case "$host_os" in
    ;;
 esac
 
-AC_SUBST(PLLDFLAGS)
+AC_SUBST(PL_LDFLAGS)
 
 dnl ======================
 dnl   Initialize prefix.
@@ -628,47 +628,6 @@ AC_ARG_WITH(libncurses,
 )
 
 dnl ---------
-dnl  S-Lang
-dnl ---------
-AH_TEMPLATE(HAVE_SLANG, [s-lang support])
-AM_CONDITIONAL(SLANG, false)
-
-ac_cv_ec_slang="NO"
-
-AC_MSG_CHECKING(for slang)
-AC_ARG_WITH(slang,
-[  --with-slang=DIR       use s-lang in DIR],
-[ case "$withval" in
-  yes|no)
-     AC_MSG_RESULT(no)
-     ;;
-  *)
-     AC_MSG_RESULT($withval)
-     if test -f $withval/slang.h -a -f $withval/libslang.a; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
-        SLANGINC="-I$withval"
-        SLANGLIB="-L$withval -lslang"
-        AC_DEFINE(HAVE_SLANG, 1)
-        AM_CONDITIONAL(SLANG, true)
-        ac_cv_ec_slang=$withval
-     else
-        AC_ERROR(slang.h or libslang.a not found in $withval)
-     fi
-     ;;
-  esac ],
-[ if test -f /usr/include/slang.h; then
-     SLANGLIB="-lslang"
-     AC_DEFINE(HAVE_SLANG, 1)
-     AM_CONDITIONAL(SLANG, true)
-     ac_cv_ec_slang=default
-     AC_MSG_RESULT(yes)
-  else
-     AC_MSG_RESULT(no)
-  fi]
-)
-
-dnl ---------
 dnl  GTK
 dnl ---------
 
@@ -719,8 +678,8 @@ dnl      fi
 dnl -----------------------
 dnl  set up the final vars
 dnl -----------------------
-EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $PCREINC $NCURSINC $SLANGINC $GTK_CFLAGS"
-EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $SLANGLIB $GTK_LIBS $PTHREADLIB $SOCKETLIB"
+EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $PCREINC $NCURSINC $GTK_CFLAGS"
+EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $GTK_LIBS $PTHREADLIB $SOCKETLIB"
 
 AC_SUBST(EC_CFLAGS)
 AC_SUBST(EC_LIBS)
@@ -757,9 +716,9 @@ AC_CONFIG_FILES(  Makefile
                   plug-ins/Makefile
                   plug-ins/dummy/Makefile
                   plug-ins/finger/Makefile
-                  plug-ins/smbdown/Makefile
-                  plug-ins/smb_nontlm2/Makefile
-                  plug-ins/finger_submit/Makefile)
+                  plug-ins/finger_submit/Makefile
+                  plug-ins/smb_clear/Makefile
+                  plug-ins/smb_down/Makefile)
 
 AC_OUTPUT()
 
@@ -781,7 +740,6 @@ echo
    EC_CHECK_OPTION(" LIBSSL ................. ",${ac_cv_ec_libssl})
    EC_CHECK_OPTION(" OPENSSL ................ ",${ac_cv_ec_openssl})
    EC_CHECK_OPTION(" NCURSES ................ ",${ac_cv_ec_libncurses})
-   EC_CHECK_OPTION(" S-LANG ................. ",${ac_cv_ec_slang})
    EC_CHECK_OPTION(" GTK+ ................... ",${ac_cv_ec_gtk})
 echo
    EC_CHECK_OPTION("Functionalities :", "")

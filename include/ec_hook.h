@@ -1,5 +1,5 @@
 
-/* $Id: ec_hook.h,v 1.8 2003/10/16 14:45:20 lordnaga Exp $ */
+/* $Id: ec_hook.h,v 1.9 2003/10/16 16:46:48 alor Exp $ */
 
 #ifndef EC_HOOK_H
 #define EC_HOOK_H
@@ -15,19 +15,23 @@ void hook_point(int point, struct packet_object *po);
    #define HOOK_DISPATCHER    5     /* in the TOP HALF (the packet is a copy) */
 
    /* these are used the hook received packets */
-   #define PACKET_BASE        50
-   #define PACKET_ETH         (PACKET_BASE+1)
-   #define PACKET_WIFI        (PACKET_BASE+2)
-   #define PACKET_ARP         (PACKET_BASE+3)
-   #define PACKET_ARP_RQ      (PACKET_BASE+4)
-   #define PACKET_ARP_RP      (PACKET_BASE+5)
-   #define PACKET_IP          (PACKET_BASE+6)
-   #define PACKET_IP6         (PACKET_BASE+7)
-   #define PACKET_UDP         (PACKET_BASE+8)
-   #define PACKET_TCP         (PACKET_BASE+9)
-   #define PACKET_ICMP        (PACKET_BASE+10)
-   #define PACKET_SMB         (PACKET_BASE+11)		
-   #define PACKET_SMB2        (PACKET_BASE+12)		
+   #define HOOK_PACKET_BASE      50
+   #define HOOK_PACKET_ETH       (HOOK_PACKET_BASE + 1)
+   #define HOOK_PACKET_WIFI      (HOOK_PACKET_BASE + 2)
+   #define HOOK_PACKET_ARP       (HOOK_PACKET_BASE + 3)
+   #define HOOK_PACKET_ARP_RQ    (HOOK_PACKET_BASE + 4)
+   #define HOOK_PACKET_ARP_RP    (HOOK_PACKET_BASE + 5)
+   #define HOOK_PACKET_IP        (HOOK_PACKET_BASE + 6)
+   #define HOOK_PACKET_IP6       (HOOK_PACKET_BASE + 7)
+   #define HOOK_PACKET_UDP       (HOOK_PACKET_BASE + 8)
+   #define HOOK_PACKET_TCP       (HOOK_PACKET_BASE + 9)
+   #define HOOK_PACKET_ICMP      (HOOK_PACKET_BASE + 10)
+
+   /* high level protocol hooks */
+   #define HOOK_PROTO_BASE       100
+   #define HOOK_PROTO_SMB        (HOOK_PROTO_BASE + 1)		
+   #define HOOK_PROTO_SMB_CHL    (HOOK_PROTO_BASE + 2)		
+   #define HOOK_PROTO_DHCP       (HOOK_PROTO_BASE + 3)		
 
 void hook_add(int point, void (*func)(struct packet_object *po) );
 int hook_del(int point, void (*func)(struct packet_object *po) );

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_hook.c,v 1.6 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_hook.c,v 1.7 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -61,8 +61,8 @@ void hook_point(int point, struct packet_object *po)
 {
    struct hook_list *current;
 
-   /* the hook is for a PACKET_* type */
-   if (point > PACKET_BASE) {
+   /* the hook is for a HOOK_PACKET_* type */
+   if (point > HOOK_PACKET_BASE) {
       
       HOOK_PCK_LOCK;
    
@@ -98,8 +98,8 @@ void hook_add(int point, void (*func)(struct packet_object *po) )
    newelem->point = point;
    newelem->func = func;
 
-   /* the hook is for a PACKET_* type */
-   if (point > PACKET_BASE) {
+   /* the hook is for a HOOK_PACKET_* type */
+   if (point > HOOK_PACKET_BASE) {
       HOOK_PCK_LOCK;
       LIST_INSERT_HEAD(&hook_pck_list_head, newelem, next);
       HOOK_PCK_UNLOCK;
@@ -119,8 +119,8 @@ int hook_del(int point, void (*func)(struct packet_object *po) )
 
    DEBUG_MSG("hook_del -- %d [%p]", point, func);
 
-   /* the hook is for a PACKET_* type */
-   if (point > PACKET_BASE) {
+   /* the hook is for a HOOK_PACKET_* type */
+   if (point > HOOK_PACKET_BASE) {
       HOOK_PCK_LOCK;
    
       LIST_FOREACH(current, &hook_pck_list_head, next) {

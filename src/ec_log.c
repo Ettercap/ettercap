@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.24 2003/09/19 16:47:51 alor Exp $
+    $Id: ec_log.c,v 1.25 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -134,10 +134,10 @@ int set_loglevel(int level, char *filename)
          hook_add(HOOK_DISPATCHER, &log_write_info);
         
          /* add the hook for the ARP packets */
-         hook_add(PACKET_ARP, &log_write_info_arp_icmp);
+         hook_add(HOOK_PACKET_ARP, &log_write_info_arp_icmp);
          
          /* add the hook for ICMP packets */
-         hook_add(PACKET_ICMP, &log_write_info_arp_icmp);
+         hook_add(HOOK_PACKET_ICMP, &log_write_info_arp_icmp);
 
          break;
    }

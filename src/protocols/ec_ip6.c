@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip6.c,v 1.8 2003/09/18 22:15:04 alor Exp $
+    $Id: ec_ip6.c,v 1.9 2003/10/16 16:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -148,8 +148,8 @@ FUNC_DECODER(decode_ip6)
       return get_decoder(OPT6_LAYER, ip6->next_hdr);
    else */
   
-   /* HOOK POINT: PACKET_IP6 */
-   hook_point(PACKET_IP6, po);
+   /* HOOK POINT: HOOK_PACKET_IP6 */
+   hook_point(HOOK_PACKET_IP6, po);
    
    next_decoder = get_decoder(PROTO_LAYER, ip6->next_hdr);
 

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.119 2004/04/29 16:27:49 alor Exp $
+dnl    $Id: configure.in,v 1.120 2004/04/29 19:29:06 alor Exp $
 dnl
 
 AC_INIT
@@ -276,11 +276,6 @@ dnl
 dnl  Do we have dn_expand ?
 dnl
 EC_RESOLVE_CHECK()
-
-dnl
-dnl  iconv functions 
-dnl
-EC_ICONV()
 
 dnl ===============================
 dnl   Check for non standard libs
@@ -612,6 +607,56 @@ AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
 ]
 )
 
+dnl ------------------
+dnl  iconv / libiconv
+dnl ------------------
+
+AH_TEMPLATE(HAVE_UTF8, [support for UTF-8])
+
+ac_ec_utf8=no
+
+AC_MSG_CHECKING(for iconv)
+AC_ARG_WITH(iconv, AC_HELP_STRING(--with-iconv=DIR,use iconv in DIR),
+[ case "$withval" in
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     if test -f $withval/iconv.h; then 
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        ICONVINC="-I$withval/"
+        ICONVLIB="-L$withval/ -liconv"
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/include/iconv.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        ICONVINC="-I$withval/include"
+        ICONVLIB="-L$withval/lib -liconv"
+        AC_MSG_RESULT($withval)
+     else
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR([iconv.h not found in $withval])
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/iconv.h; then
+     AC_MSG_RESULT(yes)
+     ICONVINC=""
+     ICONVLIB=""
+     AC_SEARCH_LIBS(iconv, c, , ICONVLIB="-liconv")
+  else
+     AC_MSG_RESULT(no)
+  fi
+]
+)
+
+OLDLDFLAGS="${LDFLAGS}"
+LDFLAGS="$ICONVLIB"
+AC_CHECK_LIB(c, iconv, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes])
+AC_CHECK_LIB(iconv, iconv, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes])
+LDFLAGS="${OLDLDFLAGS}"
+
 
 dnl ---------
 dnl  ncurses
@@ -752,8 +797,8 @@ AC_ARG_ENABLE(gtk, AC_HELP_STRING(--enable-gtk,enable the gtk interface),
 dnl -----------------------
 dnl  set up the final vars
 dnl -----------------------
-EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $PCREINC"
-EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $GTK_LIBS $PTHREADLIB"
+EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $PCREINC $ICONVINC"
+EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $GTK_LIBS $ICONVLIB"
 
 AC_SUBST(EC_CFLAGS)
 AC_SUBST(EC_LIBS)
@@ -772,7 +817,6 @@ AC_SUBST(PCRELIB)
 AC_SUBST(NCURSLIB)
 AC_SUBST(GTK_LIBS)
 
-AC_SUBST(PTHREADLIB)
 AC_SUBST(ICONVLIB)
 
 dnl  for the plugins
@@ -860,6 +904,7 @@ echo
    EC_CHECK_OPTION(" Plugin support ......... ",${ac_ec_plugin})
    EC_CHECK_OPTION(" Passive DNS ............ ",${ac_ec_dns})
    EC_CHECK_OPTION(" Perl regex in filters .. ",${ac_ec_pcre})
+   EC_CHECK_OPTION(" UTF-8 support iconv .... ",${ac_ec_utf8})
 echo
 echo "=================================================="
 echo

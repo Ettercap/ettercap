@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_format.c,v 1.15 2004/04/29 16:27:56 alor Exp $
+    $Id: ec_format.c,v 1.16 2004/04/29 19:29:21 alor Exp $
 
 */
 
@@ -26,13 +26,13 @@
 #include <ec_ui.h>
 
 #include <ctype.h>
-#ifdef HAVE_ICONV
+#ifdef HAVE_UTF8
    #include <iconv.h>
 #endif
 
 /* globals */
 
-#ifdef HAVE_ICONV
+#ifdef HAVE_UTF8
    static char *utf8_encoding;
 #endif
 
@@ -352,7 +352,7 @@ int zero_format(const u_char *buf, size_t len, u_char *dst)
 
 int utf8_format(const u_char *buf, size_t len, u_char *dst)
 {
-#ifndef HAVE_ICONV
+#ifndef HAVE_UTF8
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
       strcpy(dst, "");
@@ -404,7 +404,7 @@ int utf8_format(const u_char *buf, size_t len, u_char *dst)
  */
 int set_utf8_encoding(u_char *fromcode)
 {
-#ifndef HAVE_ICONV
+#ifndef HAVE_UTF8
    USER_MSG("UTF-8 support not compiled in.");
    return ESUCCESS;
 #else

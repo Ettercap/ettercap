@@ -87,9 +87,6 @@
 /* gtk+ support */
 #undef HAVE_GTK
 
-/* iconv funcion for UTF-8 */
-#undef HAVE_ICONV
-
 /* Define to 1 if you have the `index' function. */
 #undef HAVE_INDEX
 
@@ -101,9 +98,6 @@
 
 /* Define if you have the libdl library or equivalent. */
 #undef HAVE_LIBDL
-
-/* Define to 1 if you have the `iconv' library (-liconv). */
-#undef HAVE_LIBICONV
 
 /* Define to 1 if you have the `iphlpapi' library (-liphlpapi). */
 #undef HAVE_LIBIPHLPAPI
@@ -286,6 +280,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* support for UTF-8 */
+#undef HAVE_UTF8
 
 /* Define to 1 if you have the `vprintf' function. */
 #undef HAVE_VPRINTF

@@ -32,9 +32,6 @@ this is the unofficial and floating in time roadmap:
       
 Oct 2003:
 
-   + CONNECTIONS
-      - add the type to overwrite etter.services
-  
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - reset modified connection (on user request)

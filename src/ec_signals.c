@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.17 2003/10/21 09:02:16 alor Exp $
+    $Id: ec_signals.c,v 1.18 2003/10/21 16:16:02 alor Exp $
 */
 
 #include <ec.h>
@@ -140,14 +140,14 @@ static RETSIGTYPE signal_SEGV(int sig)
  */
 static RETSIGTYPE signal_TERM(int sig)
 {
-   /* terminate the UI */
-   ui_cleanup();
-   
    #ifdef HAVE_STRSIGNAL
       DEBUG_MSG("Signal handler... (caught SIGNAL: %d) | %s", sig, strsignal(sig));
    #else
       DEBUG_MSG("Signal handler... (caught SIGNAL: %d)", sig);
    #endif
+      
+   /* terminate the UI */
+   ui_cleanup();
 
    if (sig == SIGINT) {
       fprintf(stderr, "\n\nUser requested a CTRL+C... (deprecated, next time use 'q')\n\n");
@@ -166,7 +166,6 @@ static RETSIGTYPE signal_TERM(int sig)
    
    /* perform a clean exit */
    clean_exit(0);
-
 }
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp.c,v 1.3 2003/10/17 16:19:30 alor Exp $
+    $Id: ec_dhcp.c,v 1.4 2003/10/21 16:16:03 alor Exp $
 */
 
 /*
@@ -176,8 +176,8 @@ FUNC_DECODER(dissector_dhcp)
             break;
       }
 
-      /* HOOK POINT: HOOK_PROTO_DHCP */
-      hook_point(HOOK_PROTO_DHCP, PACKET);
+      /* HOOK POINT: HOOK_PROTO_DHCP_REQ */
+      hook_point(HOOK_PROTO_DHCP_REQ, PACKET);
       
          
    /* server replies */ 
@@ -187,14 +187,22 @@ FUNC_DECODER(dissector_dhcp)
       struct ip_addr client;
       struct ip_addr dns;
       char domain[64];
+      char resp;
       
       /* servers only send replies */
       if (dhcp->op != BOOTREPLY)
          return NULL;
 
-      switch (*(opt + 1)) {
+      resp = *(opt + 1);
+      
+      switch (resp) {
          case DHCP_ACK:
-            DEBUG_MSG("\tDissector_DHCP ACK");
+         case DHCP_OFFER:
+
+            if (resp == DHCP_ACK)
+               DEBUG_MSG("\tDissector_DHCP ACK");
+            else
+               DEBUG_MSG("\tDissector_DHCP OFFER");
    
             /* get the assigned ip */
             ip_addr_init(&client, AF_INET, (char *)&dhcp->yiaddr );
@@ -211,7 +219,7 @@ FUNC_DECODER(dissector_dhcp)
             if ((opt = get_option(OPT_DNS, options, end)) != NULL)
                ip_addr_init(&dns, AF_INET, opt + 1);
             
-            USER_MSG("DHCP: [%s] ACK : ", ip_addr_ntoa(&PACKET->L3.src, tmp)); 
+            USER_MSG("DHCP: [%s] %s : ", ip_addr_ntoa(&PACKET->L3.src, tmp), (resp == DHCP_ACK) ? "ACK" : "OFFER"); 
             USER_MSG("%s ", ip_addr_ntoa(&client, tmp)); 
             USER_MSG("%s ", ip_addr_ntoa(&netmask, tmp)); 
             USER_MSG("GW %s ", ip_addr_ntoa(&router, tmp)); 
@@ -226,8 +234,10 @@ FUNC_DECODER(dissector_dhcp)
                USER_MSG("\n");
             
             break;
-            
       }
+      
+      /* HOOK POINT: HOOK_PROTO_DHCP_REP */
+      hook_point(HOOK_PROTO_DHCP_REP, PACKET);
    }
       
    return NULL;

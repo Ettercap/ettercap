@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.11 2003/10/13 10:43:50 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.12 2003/10/21 16:16:02 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -165,6 +165,12 @@ value of 0 will disable the dissector. The name of the variable is the same of
 the protocol name. You can specify non standard port for each dissector as well
 as multiple ports. The syntax for multiport selection is the following:
 port1,port2,port3,...
+.br
+NOTE: some dissectors are compiled in conditionally. this means that depending
+on the library found in your sistem some dissectors will be enable and some
+other not. by default etter.conf is filled with all the supported dissector. if
+you got an "FATAL: Dissector "xxx" does not exists (etter.conf line yy)" error,
+you have to comment out the yy line in etter.conf.
 
 
 .SH "SEE ALSO"

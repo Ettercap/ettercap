@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.17 2004/01/10 16:32:54 lordnaga Exp $
+.\"  $Id: etterfilter.8.in,v 1.18 2004/01/21 21:26:28 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -282,6 +282,17 @@ forwarded to the real destination.
 example:
 .br
 drop()
+
+
+.TP
+.B kill()
+this function kills the connection that own the matched packet. if it was a TCP
+connection, a RST is sent to both side of the connection. if it was an UDP
+connection, an ICMP PORT UNREACHABLE is sent to the source of the packet.
+.Sp
+example:
+.br
+kill()
 
 
 .TP

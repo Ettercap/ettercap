@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.16 2003/09/28 21:06:53 alor Exp $ */
+/* $Id: ec.h,v 1.17 2003/10/07 13:16:48 lordnaga Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -72,6 +72,10 @@
 #define BIT_RESET(r,b)     ( r[b>>3] &= ~ 1<<(b&7) )
 #define BIT_TEST(r,b)      ( r[b>>3]  &   1<<(b&7) )
 #define BIT_NOT(r,b)       ( r[b>>3] ^=   1<<(b&7) )
+
+/* Save and restore relative offsets for pointers into a buffer */
+#define SAVE_OFFSET(o,b)     o=(u_int8 *)((int)o-(int)b)
+#define RESTORE_OFFSET(o,b)  o=(u_int8 *)((int)o+(int)b)   
 
 /* ANSI colors */
 

@@ -24,17 +24,17 @@
 if (ip.proto == TCP) {
    if (tcp.src == 22) {
       if ( replace("SSH-1.99", "SSH-1.51") ) {
-         msg("SSH downgraded from version 2 to 1");
+         msg("[SSH Filter] SSH downgraded from version 2 to 1\n");
       } else {
          if ( search(DATA.data, "SSH-2.00") ) {
-            msg("Server support only SSH version 2");
+            msg("[SSH Filter] Server supports only SSH version 2\n");
          } else {
             if ( search(DATA.data, "SSH-1.51") ) {
-               msg("Server already support only version 1");
+               msg("[SSH Filter] Server already supports only version 1\n");
             }
          }
       }
-   }
+   } 
 }
 
 

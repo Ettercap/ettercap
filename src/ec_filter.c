@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.26 2003/10/06 13:14:03 alor Exp $
+    $Id: ec_filter.c,v 1.27 2003/10/07 13:16:55 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -467,7 +467,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
     * calculate the max len of data this packet can contain.
     * subtract to the MTU all the headers len
     */
-   max_len = GBL_IFACE->mtu - (po->L4.header - po->fwd_packet + po->L4.len);
+   max_len = GBL_IFACE->mtu - (po->L4.header - (po->packet + po->L2.len) + po->L4.len);
   
    /* check if it exist at least one */
    if (!memmem(po->DATA.data, po->DATA.len, fop->op.func.string, fop->op.func.slen) )
@@ -491,18 +491,27 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
 
       /* search the string */
       ptr = memmem(ptr, len, fop->op.func.string, slen);
-      /* update the len */
-      len -= fop->op.func.slen;
 
       /* string no found, exit */
       if (ptr == NULL)
          break;
+	 
+      /* update the len */
+      len = end - ptr - slen;
       
       /* set the delta */
       delta += rlen - slen;
 
+      /* Save relative offset to tmp if the buffer is moved after realloc */
+      SAVE_OFFSET(ptr, tmp);
+      SAVE_OFFSET(end, tmp);
+      
       /* resize the buffer to contain the new data */
       SAFE_REALLOC(tmp, po->DATA.len + delta);
+      
+      /* Restore 'relative' values */
+      RESTORE_OFFSET(ptr, tmp);
+      RESTORE_OFFSET(end, tmp);
       
       /* move the buffer to make room for the replacement string */   
       memmove(ptr + rlen, ptr + slen, len); 
@@ -533,7 +542,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       /* wipe the old buffer */
       memset(po->DATA.data, 0, po->DATA.len);
       /* check if we are overflowing pcap buffer */
-      BUG(GBL_PCAP->snaplen - (po->L4.header - po->fwd_packet + po->L4.len) < new_len);
+      BUG_IF(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) < new_len);
       /* copy the temp buffer on the original packet */
       memcpy(po->DATA.data, tmp, new_len);
       

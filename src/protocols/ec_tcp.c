@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.20 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_tcp.c,v 1.21 2003/10/12 17:56:35 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -342,7 +342,7 @@ FUNC_INJECTOR(inject_tcp)
    tcph->win   = htons(32120); 
    tcph->csum  = 0;            
    tcph->urp   = 0;            
-   tcph->flags = TH_PSH;      
+   tcph->flags = TH_PSH | TH_ACK;      
    
    /* Take the rest of the data from the sessions */
    status = (struct tcp_status *)s->data;

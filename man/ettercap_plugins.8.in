@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.5 2003/10/28 21:10:55 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.6 2003/11/05 10:22:57 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -38,6 +38,19 @@ To have a list of plugins installed in your system do that command:
 .LP
 .LP
 The following is a list of available plugins:
+
+.TP 
+.B chk_poison
+.Sp
+It performs a check to see if the arp poisoning module of ettercap i successful.
+It sends spoofed ICMP ehco packets to all the victims of the poisoning 
+pretending to be each of the other targets. If we can catch an ICMP reply with
+our MAC address as destination it means that the poisoning between those
+two targets is succesful. It checks both ways of each comunication.
+This plugin makes sense only where poisoning makes sense.
+The test fails if you specify only one target in silent mode.
+You can't run this plugin from command line because the poisoning process
+is not started yet. You have to launch it from the proper menu.
 
 .TP 
 .B dummy

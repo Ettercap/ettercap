@@ -1,5 +1,5 @@
 /*
-    dos_attack -- ettercap plugin -- Run a D.O.S. attack (based on naphta)
+    dos_attack -- ettercap plugin -- Run a D.O.S. attack (based on Naptha)
 
     Copyright (C) ALoR & NaGA
     
@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dos_attack.c,v 1.4 2004/02/03 15:13:50 lordnaga Exp $
+    $Id: dos_attack.c,v 1.5 2004/02/04 10:18:02 lordnaga Exp $
 */
 
 
@@ -155,6 +155,9 @@ EC_THREAD_FUNC(syn_flooder)
    u_int16 sport = 0xe77e, dport;
    u_int32 seq = 0xabadc0de;
    struct port_list *p;
+
+   /* init the thread and wait for start up */
+   ec_thread_init();
  
    /* First "scan" ports from 1 to 1024 */
    for (dport=1; dport<1024; dport++) {

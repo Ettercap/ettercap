@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.75 2004/01/18 16:42:40 lordnaga Exp $
+# $Id: Makefile.am,v 1.76 2004/02/05 13:12:39 lordnaga Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -115,7 +115,8 @@ ettercap_SOURCES += dissectors/ec_socks.c \
 				        dissectors/ec_telnet.c \
 				        dissectors/ec_vnc.c \
 				        dissectors/ec_vrrp.c \
-				        dissectors/ec_x11.c 
+				        dissectors/ec_x11.c \
+				        dissectors/ec_ymsg.c 
 
 
 ettercap_CFLAGS = @EC_CFLAGS@

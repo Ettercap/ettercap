@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.19 2004/01/20 22:24:22 alor Exp $ */
+/* $Id: ec_filter.h,v 1.20 2004/03/11 09:05:26 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -98,7 +98,7 @@ struct filter_header {
    u_int16 magic; 
       #define EC_FILTER_MAGIC 0xe77e
    /* ettercap version */
-   char version[10];
+   char version[16];
    /* pointers to the segments */
    u_int16 data;
    u_int16 code;

@@ -39,6 +39,7 @@ Nov 2003:
    + LIBWDG
       - is there a heap corruption ??
       - widgets:
+         - resizable file widget
          - input (with forms ?)
          - selectable lists
 

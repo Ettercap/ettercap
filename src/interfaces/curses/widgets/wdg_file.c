@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.2 2003/11/23 20:36:17 alor Exp $
+    $Id: wdg_file.c,v 1.3 2003/11/25 20:28:29 alor Exp $
 */
 
 #include <wdg.h>
@@ -414,7 +414,7 @@ static void wdg_file_menu_create(struct wdg_object *wo)
    WDG_WO_EXT(struct wdg_file_handle, ww);
    struct dirent **namelist;
    int n, i;
-   size_t mrows, mcols;
+   int mrows, mcols;
    size_t c = wdg_get_ncols(wo);
    size_t x = wdg_get_begin_x(wo);
    size_t y = wdg_get_begin_y(wo);
@@ -497,7 +497,7 @@ static void wdg_file_menu_create(struct wdg_object *wo)
    }
 #endif
    /* create the window for the menu */
-   ww->mwin = newwin(mrows, MAX(mcols, c - 4), y + 1, x + 2);
+   ww->mwin = newwin(mrows, MAX(mcols, (int)c - 4), y + 1, x + 2);
    /* set the color */
    wbkgd(ww->mwin, COLOR_PAIR(wo->window_color));
    keypad(ww->mwin, TRUE);

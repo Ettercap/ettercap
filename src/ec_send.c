@@ -17,16 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.31 2003/11/22 13:57:11 alor Exp $
+    $Id: ec_send.c,v 1.32 2003/11/25 20:28:29 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
 #include <ec_send.h>
-
-#include <pthread.h>
-#include <pcap.h>
-#include <libnet.h>
 
 #if defined(OS_DARWIN) || defined(OS_BSD)
    #include <sys/types.h>
@@ -34,6 +30,11 @@
    #include <sys/ioctl.h>
    #include <net/bpf.h>
 #endif
+
+#include <pthread.h>
+#include <pcap.h>
+#include <libnet.h>
+
 
 /* globals */
 

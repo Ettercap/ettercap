@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.51 2004/03/03 21:43:19 alor Exp $
+    $Id: ec_decode.c,v 1.52 2004/03/10 20:49:12 alor Exp $
 */
 
 #include <ec.h>
@@ -109,7 +109,11 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
       pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
       DUMP_UNLOCK;
    }
-  
+ 
+   /* bad packet */
+   if (pkthdr->caplen > UINT16_MAX)
+      return;
+   
    /* 
     * copy the packet in a "safe" buffer 
     * we don't want other packets after the end of the packet (as in BPF)

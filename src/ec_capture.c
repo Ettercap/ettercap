@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.41 2004/02/28 13:09:26 alor Exp $
+    $Id: ec_capture.c,v 1.42 2004/03/10 20:49:12 alor Exp $
 */
 
 #include <ec.h>
@@ -114,10 +114,7 @@ void capture_init(void)
    /* set the snaplen to maximum */
    GBL_PCAP->snaplen = UINT16_MAX;
    
-   /* 
-    * open the interface from GBL_OPTIONS (user specified)
-    */
-
+   /* open the interface from GBL_OPTIONS (user specified) */
    if (GBL_OPTIONS->read)
       pd = pcap_open_offline(GBL_OPTIONS->dumpfile, pcap_errbuf);
    else
@@ -344,6 +341,10 @@ void get_hw_info(void)
 
    /* get the MTU */
    GBL_IFACE->mtu = get_iface_mtu(GBL_OPTIONS->iface);
+   
+   /* check the mtu */
+   if (GBL_IFACE->mtu > INT16_MAX)
+      FATAL_ERROR("MTU too large");
 
    USER_MSG("%6s ->\t%s  ",  GBL_OPTIONS->iface,
             mac_addr_ntoa(GBL_IFACE->mac, pcap_errbuf));
@@ -378,6 +379,9 @@ void get_hw_info(void)
    
    /* get the MTU */
    GBL_BRIDGE->mtu = get_iface_mtu(GBL_OPTIONS->iface_bridge);
+   
+   if (GBL_BRIDGE->mtu > INT16_MAX)
+      FATAL_ERROR("MTU too large");
 
    USER_MSG("%6s ->\t%s  ",  GBL_OPTIONS->iface_bridge,
             mac_addr_ntoa(GBL_BRIDGE->mac, pcap_errbuf));

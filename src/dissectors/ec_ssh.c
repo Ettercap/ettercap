@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.9 2003/10/21 14:02:29 lordnaga Exp $
+    $Id: ec_ssh.c,v 1.10 2003/10/21 14:35:22 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -258,7 +258,7 @@ FUNC_DECODER(dissector_ssh)
                u_char *temp_disp_data;
 
                /* Avoid int overflow or bogus data_len (realloc is too optimistic) */
-               if ((PACKET->DATA.disp_len + data_len + 1 < PACKET->DATA.disp_len) || (data_len > INT16_MAX)) {
+               if ((PACKET->DATA.disp_len + data_len + 1 < PACKET->DATA.disp_len) || (data_len > ssh_len)) {
                   SAFE_FREE(clear_packet);	 
                   SAFE_FREE(crypted_packet);
                   return NULL;

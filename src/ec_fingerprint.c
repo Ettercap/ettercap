@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_fingerprint.c,v 1.20 2003/10/08 20:03:18 alor Exp $
+    $Id: ec_fingerprint.c,v 1.21 2004/04/24 09:23:11 alor Exp $
 
 */
 
@@ -304,7 +304,7 @@ int fingerprint_submit(char *finger, char *os)
 {
    int sock;
    char host[] = "ettercap.sourceforge.net";
-   char page[] = "/index.php?s=stuff&p=fingerprint";
+   char page[] = "/fingerprint.php";
    char getmsg[1024];
    char *os_encoded;
    size_t i;
@@ -327,7 +327,7 @@ int fingerprint_submit(char *finger, char *os)
          os_encoded[i] = '+';
       
    /* prepare the HTTP request */
-   snprintf(getmsg, sizeof(getmsg), "GET %s&finger=%s&os=%s HTTP/1.0\r\n"
+   snprintf(getmsg, sizeof(getmsg), "GET %s?finger=%s&os=%s HTTP/1.0\r\n"
                                      "Host: %s\r\n"
                                      "User-Agent: %s (%s)\r\n"
                                      "\r\n", page, finger, os_encoded, host, GBL_PROGRAM, GBL_VERSION );

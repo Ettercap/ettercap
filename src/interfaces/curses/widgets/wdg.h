@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.19 2003/11/30 12:02:31 alor Exp $ */
+/* $Id: wdg.h,v 1.20 2003/12/06 18:45:50 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -116,6 +116,8 @@ extern void wdg_bug(char *file, char *function, int line, char *message);
 #define KEY_RETURN   '\r'
 #define KEY_TAB      '\t'
 #define KEY_CTRL_L   12
+#define CTRL(x)      ((x) & 0x1f)
+#define KEY_ESC      CTRL('[')
 
 /* informations about the current screen */
 struct wdg_scr {
@@ -156,6 +158,7 @@ struct wdg_object {
       #define WDG_DIALOG      5
       #define WDG_PERCENTAGE  6
       #define WDG_FILE        7
+      #define WDG_INPUT       8
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
@@ -229,6 +232,9 @@ extern void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(voi
 extern void wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
 /* file dialog objects */
 extern void wdg_file_set_callback(wdg_t *wo, void (*callback)(char *path, char *file));
+/* input dialog objects */
+extern void wdg_input_size(wdg_t *wo, size_t x, size_t y);
+extern void wdg_input_add(wdg_t *wo, size_t x, size_t y, char *caption, char *buf, size_t len);
 
 
 /* EXPORTED FUNCTIONS */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.21 2003/11/30 12:02:31 alor Exp $
+    $Id: wdg.c,v 1.22 2003/12/06 18:45:50 alor Exp $
 */
 
 #include <wdg.h>
@@ -91,6 +91,7 @@ extern void wdg_create_menu(struct wdg_object *wo);
 extern void wdg_create_dialog(struct wdg_object *wo);
 extern void wdg_create_percentage(struct wdg_object *wo);
 extern void wdg_create_file(struct wdg_object *wo);
+extern void wdg_create_input(struct wdg_object *wo);
 
 /*******************************************/
 
@@ -108,9 +109,6 @@ void wdg_init(void)
    /* disable buffering until carriage return */
    cbreak(); 
 
-   /* set the non-blocking timeout (10th of seconds) */
-   halfdelay(WDG_INPUT_TIMEOUT);
-   
    /* disable echo of typed chars */
    noecho();
   
@@ -118,7 +116,10 @@ void wdg_init(void)
    nonl();
 
    /* get controlling key (^C^X^Z^S^Q) uninterpreted */
-   //raw();
+   raw();
+
+   /* set the non-blocking timeout (10th of seconds) */
+   halfdelay(WDG_INPUT_TIMEOUT);
 
    /* don't flush input on break */
    intrflush(stdscr, FALSE);
@@ -176,6 +177,9 @@ void wdg_cleanup(void)
    /* do the refresh */
    refresh();
 
+   /* restore the terminal */
+   noraw();
+   
    /* end the curses interface */
    endwin();
 
@@ -545,6 +549,10 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
          
       case WDG_FILE:
          wdg_create_file(*wo);
+         break;
+         
+      case WDG_INPUT:
+         wdg_create_input(*wo);
          break;
          
       default:

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_file.c,v 1.2 2003/12/01 21:52:07 alor Exp $
+    $Id: ec_curses_file.c,v 1.3 2003/12/06 18:45:47 alor Exp $
 */
 
 #include <ec.h>
@@ -43,7 +43,7 @@ void curses_sniff_offline(void)
                               {"Start sniffing", "", NULL},
                               {"Stop sniffing",  "", NULL},
                               {"-",              "", NULL},
-                              {"Exit",          "Q", wdg_exit},
+                              {"Exit",          "C-x", wdg_exit},
                               {NULL, NULL, NULL},
                             };
    struct wdg_menu target[] = { {"Targets",         "T", NULL},
@@ -91,7 +91,7 @@ void curses_sniff_offline(void)
     * give the control to the event dispatcher
     * with the emergency exit key 'Q'
     */
-   wdg_events_handler('Q');
+   wdg_events_handler(CTRL('X'));
 
    wdg_destroy_object(&menu);
 }

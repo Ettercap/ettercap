@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.20 2003/12/01 21:52:07 alor Exp $
+    $Id: ec_curses.c,v 1.21 2003/12/06 18:45:47 alor Exp $
 */
 
 #include <ec.h>
@@ -37,6 +37,7 @@ static char tag_compress[] = " ";
 
 void set_curses_interface(void);
 void curses_interface(void);
+void curses_flush_msg(void);
 static void curses_init(void);
 static void curses_cleanup(void);
 static void curses_msg(const char *msg);
@@ -50,7 +51,6 @@ static void curses_exit(void);
 static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
 static void toggle_compress(void);
-void curses_flush_msg(void);
 static void curses_file_open(void);
 static void read_pcapfile(char *path, char *file);
 
@@ -238,7 +238,6 @@ static void curses_progress(char *title, int value, int max)
 
 void curses_interface(void)
 {
-   
    DEBUG_MSG("curses_interface");
 
    /* which interface do we have to display ? */
@@ -355,7 +354,7 @@ static void curses_setup(void)
  
    /* give the focus to the menu */
    wdg_set_focus(menu);
-   
+  
    /* give the control to the interface */
    wdg_events_handler('U');
    

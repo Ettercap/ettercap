@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.14 2003/11/10 22:46:24 alor Exp $
+    $Id: ec_ssh.c,v 1.15 2003/11/11 17:30:02 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -611,7 +611,7 @@ static u_char *ssh_session_id(u_char *cookie, BIGNUM *hostkey_n, BIGNUM *serverk
 static void rsa_public_encrypt(BIGNUM *out, BIGNUM *in, RSA *key)
 {
    u_char *inbuf, *outbuf;
-   int len, ilen, olen;
+   u_int32 len, ilen, olen;
 
    olen = BN_num_bytes(key->n);
    outbuf = malloc(olen);
@@ -623,7 +623,8 @@ static void rsa_public_encrypt(BIGNUM *out, BIGNUM *in, RSA *key)
 
    len = RSA_public_encrypt(ilen, inbuf, outbuf, key, RSA_PKCS1_PADDING);
 
-   BN_bin2bn(outbuf, len, out);
+   if (len<=olen)
+      BN_bin2bn(outbuf, len, out);
 
    free(outbuf);
    free(inbuf);
@@ -632,7 +633,7 @@ static void rsa_public_encrypt(BIGNUM *out, BIGNUM *in, RSA *key)
 static void rsa_private_decrypt(BIGNUM *out, BIGNUM *in, RSA *key)
 {
    u_char *inbuf, *outbuf;
-   int len, ilen, olen;
+   u_int32 len, ilen, olen;
 
    olen = BN_num_bytes(key->n);
    outbuf = malloc(olen);
@@ -644,7 +645,8 @@ static void rsa_private_decrypt(BIGNUM *out, BIGNUM *in, RSA *key)
 
    len = RSA_private_decrypt(ilen, inbuf, outbuf, key, RSA_PKCS1_PADDING);
 
-   BN_bin2bn(outbuf, len, out);
+   if (len<=olen)
+      BN_bin2bn(outbuf, len, out);
 
    free(outbuf);
    free(inbuf);

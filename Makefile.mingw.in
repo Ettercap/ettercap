@@ -14,7 +14,7 @@ VERSION = NG-0.7.1_cvs
 USE_SSL    = 0
 USE_PLUGIN = 1
 USE_GTK    = 1
-USE_CURSES = 1
+USE_CURSES = 0
 USE_DEBUG  = 1
 
 #

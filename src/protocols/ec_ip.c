@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.26 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_ip.c,v 1.27 2003/10/17 10:29:27 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -133,8 +133,13 @@ FUNC_DECODER(decode_ip)
   
    /* XXX - implement the handling of fragmented packet */
    /* don't process fragmented packets */
-   if (ntohs(ip->frag_off) & IP_FRAG || ntohs(ip->frag_off) & IP_MF)
+   if (ntohs(ip->frag_off) & IP_FRAG || ntohs(ip->frag_off) & IP_MF) {
+      /* is the packet forwardable ? */
+      set_forwardable_flag(PACKET);
+      PACKET->fwd_packet = (u_char *)DECODE_DATA;
+      PACKET->fwd_len = ntohs(ip->tot_len);
       return NULL;
+    }
    
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
@@ -148,6 +153,8 @@ FUNC_DECODER(decode_ip)
       
       /* is the packet forwardable ? */
       set_forwardable_flag(PACKET);
+      PACKET->fwd_packet = (u_char *)DECODE_DATA;
+      PACKET->fwd_len = ntohs(ip->tot_len);
       return NULL;
    }
    
@@ -233,7 +240,7 @@ FUNC_DECODER(decode_ip)
     * External L3 header sets itself 
     * as the packet to be forwarded.
     *
-    * if the packet is encapsulated, evere L3 layer
+    * if the packet is encapsulated, every L3 layer
     * will set this field, and the external one will
     * overwrite it. so only the last (correct) one
     * will set this field.

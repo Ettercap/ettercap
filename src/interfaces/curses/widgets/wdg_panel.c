@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_panel.c,v 1.2 2003/10/26 09:42:04 alor Exp $
+    $Id: wdg_panel.c,v 1.3 2003/10/26 18:20:48 alor Exp $
 */
 
 #include <wdg.h>
@@ -30,11 +30,9 @@
 
 /* GLOBALS */
 
-struct wdg_window {
+struct wdg_panel {
    PANEL *win;
    PANEL *sub;
-   char *title;
-   char align;
 };
 
 /* PROTOS */
@@ -48,7 +46,6 @@ static int wdg_panel_get_focus(struct wdg_object *wo);
 static int wdg_panel_lost_focus(struct wdg_object *wo);
 static int wdg_panel_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 
-void wdg_panel_set_title(struct wdg_object *wo, char *title, size_t align);
 static void wdg_panel_border(struct wdg_object *wo);
 
 void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
@@ -68,7 +65,7 @@ void wdg_create_panel(struct wdg_object *wo)
    wo->lost_focus = wdg_panel_lost_focus;
    wo->get_msg = wdg_panel_get_msg;
 
-   WDG_SAFE_CALLOC(wo->extend, 1, sizeof(struct wdg_window));
+   WDG_SAFE_CALLOC(wo->extend, 1, sizeof(struct wdg_panel));
 }
 
 /* 
@@ -76,7 +73,7 @@ void wdg_create_panel(struct wdg_object *wo)
  */
 static int wdg_panel_destroy(struct wdg_object *wo)
 {
-   WDG_WO_EXT(struct wdg_window, ww);
+   WDG_WO_EXT(struct wdg_panel, ww);
 
    /* erase the window */
    werase(W(ww->sub));
@@ -91,8 +88,6 @@ static int wdg_panel_destroy(struct wdg_object *wo)
    /* update the screen */
    update_panels();
    doupdate();
-
-   WDG_SAFE_FREE(ww->title);
 
    WDG_SAFE_FREE(wo->extend);
 
@@ -114,7 +109,7 @@ static int wdg_panel_resize(struct wdg_object *wo)
  */
 static int wdg_panel_redraw(struct wdg_object *wo)
 {
-   WDG_WO_EXT(struct wdg_window, ww);
+   WDG_WO_EXT(struct wdg_panel, ww);
    size_t c = wdg_get_ncols(wo);
    size_t l = wdg_get_nlines(wo);
    size_t x = wdg_get_begin_x(wo);
@@ -214,40 +209,35 @@ static int wdg_panel_lost_focus(struct wdg_object *wo)
  */
 static int wdg_panel_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
-   WDG_WO_EXT(struct wdg_window, ww);
-   wprintw(W(ww->sub), "WDG WIN: char %d\n", key);
-   /* update the screen */
-   update_panels();
-   doupdate();
+   WDG_WO_EXT(struct wdg_panel, ww);
+   /* handle the message */
+   switch (key) {
+      case 'q':
+         wdg_destroy_object(&wo);
+         break;
+      case KEY_MOUSE:
+         /* is the mouse event within our edges ? */
+         if (wenclose(W(ww->win), mouse->y, mouse->x))
+            wdg_set_focus(wo);
+         else 
+            return -WDG_ENOTHANDLED;
+         break;
 
-   /* is the mouse event witin out edges ? */
-   if (WDG_MOUSE_ENCLOSE(W(ww->win), key, mouse)) {
-      wdg_set_focus(wo);
-      return WDG_ESUCCESS;
+      /* message not handled */
+      default:
+         return -WDG_ENOTHANDLED;
+         break;
    }
-
-   if (key == 'q') {
-      wdg_destroy_object(&wo);
-      return WDG_ESUCCESS;
-   }
-   
-   return -WDG_ENOTHANDLED;
+  
+   return WDG_ESUCCESS;
 }
 
 /*
- * set the window's title 
+ * draw the borders and title
  */
-void wdg_panel_set_title(struct wdg_object *wo, char *title, size_t align)
-{
-   WDG_WO_EXT(struct wdg_window, ww);
-
-   ww->align = align;
-   ww->title = strdup(title);
-}
-
 static void wdg_panel_border(struct wdg_object *wo)
 {
-   WDG_WO_EXT(struct wdg_window, ww);
+   WDG_WO_EXT(struct wdg_panel, ww);
    size_t c = wdg_get_ncols(wo);
       
    /* the object was focused */
@@ -266,19 +256,19 @@ static void wdg_panel_border(struct wdg_object *wo)
    wbkgdset(W(ww->win), COLOR_PAIR(wo->title_color));
 
    /* there is a title: print it */
-   if (ww->title) {
-      switch (ww->align) {
+   if (wo->title) {
+      switch (wo->align) {
          case WDG_ALIGN_LEFT:
             wmove(W(ww->win), 0, 3);
             break;
          case WDG_ALIGN_CENTER:
-            wmove(W(ww->win), 0, (c - strlen(ww->title)) / 2);
+            wmove(W(ww->win), 0, (c - strlen(wo->title)) / 2);
             break;
          case WDG_ALIGN_RIGHT:
-            wmove(W(ww->win), 0, c - strlen(ww->title) - 3);
+            wmove(W(ww->win), 0, c - strlen(wo->title) - 3);
             break;
       }
-      wprintw(W(ww->win), ww->title);
+      wprintw(W(ww->win), wo->title);
    }
    
    /* restore the attribute */
@@ -291,7 +281,7 @@ static void wdg_panel_border(struct wdg_object *wo)
  */
 void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...)
 {
-   WDG_WO_EXT(struct wdg_window, ww);
+   WDG_WO_EXT(struct wdg_panel, ww);
    va_list ap;
 
    /* move the pointer */

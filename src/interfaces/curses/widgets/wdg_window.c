@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_window.c,v 1.4 2003/10/26 09:42:04 alor Exp $
+    $Id: wdg_window.c,v 1.5 2003/10/26 18:20:48 alor Exp $
 */
 
 #include <wdg.h>
@@ -30,8 +30,6 @@
 struct wdg_window {
    WINDOW *win;
    WINDOW *sub;
-   char *title;
-   char align;
 };
 
 /* PROTOS */
@@ -45,7 +43,6 @@ static int wdg_window_get_focus(struct wdg_object *wo);
 static int wdg_window_lost_focus(struct wdg_object *wo);
 static int wdg_window_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 
-void wdg_window_set_title(struct wdg_object *wo, char *title, size_t align);
 static void wdg_window_border(struct wdg_object *wo);
 
 void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
@@ -84,8 +81,6 @@ static int wdg_window_destroy(struct wdg_object *wo)
    /* dealloc the structures */
    delwin(ww->sub);
    delwin(ww->win);
-
-   WDG_SAFE_FREE(ww->title);
 
    WDG_SAFE_FREE(wo->extend);
 
@@ -201,34 +196,32 @@ static int wdg_window_lost_focus(struct wdg_object *wo)
 static int wdg_window_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
    WDG_WO_EXT(struct wdg_window, ww);
-   wprintw(ww->sub, "WDG WIN: char %d\n", key);
-   wrefresh(ww->sub);
 
-   /* is the mouse event witin out edges ? */
-   if (WDG_MOUSE_ENCLOSE(ww->win, key, mouse)) {
-      wdg_set_focus(wo);
-      return WDG_ESUCCESS;
-   }
+   /* handle the message */
+   switch (key) {
+      case 'q':
+         wdg_destroy_object(&wo);
+         break;
+      case KEY_MOUSE:
+         /* is the mouse event within our edges ? */
+         if (wenclose(ww->win, mouse->y, mouse->x))
+            wdg_set_focus(wo);
+         else 
+            return -WDG_ENOTHANDLED;
+         break;
 
-   if (key == 'q') {
-      wdg_destroy_object(&wo);
-      return WDG_ESUCCESS;
+      /* message not handled */
+      default:
+         return -WDG_ENOTHANDLED;
+         break;
    }
-   
-   return -WDG_ENOTHANDLED;
+  
+   return WDG_ESUCCESS;
 }
 
 /*
- * set the window's title 
+ * draw the borders and title
  */
-void wdg_window_set_title(struct wdg_object *wo, char *title, size_t align)
-{
-   WDG_WO_EXT(struct wdg_window, ww);
-
-   ww->align = align;
-   ww->title = strdup(title);
-}
-
 static void wdg_window_border(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_window, ww);
@@ -248,19 +241,19 @@ static void wdg_window_border(struct wdg_object *wo)
    wbkgdset(ww->win, COLOR_PAIR(wo->title_color));
    
    /* there is a title: print it */
-   if (ww->title) {
-      switch (ww->align) {
+   if (wo->title) {
+      switch (wo->align) {
          case WDG_ALIGN_LEFT:
             wmove(ww->win, 0, 3);
             break;
          case WDG_ALIGN_CENTER:
-            wmove(ww->win, 0, (c - strlen(ww->title)) / 2);
+            wmove(ww->win, 0, (c - strlen(wo->title)) / 2);
             break;
          case WDG_ALIGN_RIGHT:
-            wmove(ww->win, 0, c - strlen(ww->title) - 3);
+            wmove(ww->win, 0, c - strlen(wo->title) - 3);
             break;
       }
-      wprintw(ww->win, ww->title);
+      wprintw(ww->win, wo->title);
    }
    
    /* restore the attribute */

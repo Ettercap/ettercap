@@ -31,13 +31,11 @@ this is the unofficial and floating in time roadmap:
       
 Oct 2003:
 
-   + NCURSES INTERFACE
-      + LIBWDG
-         - widgets:
-            - scroll_win 
-            - menu
-            - input
-            - error_win
+   + LIBWDG
+      - widgets:
+         - menu
+         - input
+         - question [YES] [NO] [Cancel]
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

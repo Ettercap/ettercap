@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.9 2003/10/26 09:42:04 alor Exp $ */
+/* $Id: wdg.h,v 1.10 2003/10/26 18:20:48 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -63,6 +63,7 @@ struct wdg_mouse_event {
    size_t y;
    size_t event;
 };
+
 #define WDG_MOUSE_ENCLOSE(win, key, mouse) (key == KEY_MOUSE && wenclose(win, mouse->y, mouse->x))
 
 /* struct for all wdg objects */
@@ -78,6 +79,7 @@ struct wdg_object {
    size_t type;
       #define WDG_WINDOW      1
       #define WDG_PANEL       2
+      #define WDG_SCROLL      3
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
@@ -101,6 +103,10 @@ struct wdg_object {
    u_char window_color;
    u_char select_color;
 
+   /* title */
+   char *title;
+   char align;
+
    /* here is the pointer to extend a wdg object
     * it is a sort of inheritance...
     */
@@ -122,12 +128,12 @@ typedef struct wdg_object wdg_t;
 #define WDG_ALIGN_RIGHT    2
 
 /* window ojbects */
-extern void wdg_window_set_title(wdg_t *wo, char *title, size_t align);
 extern void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
 /* panel ojbects */
-extern void wdg_panel_set_title(wdg_t *wo, char *title, size_t align);
 extern void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
-
+/* scroll ojbects */
+extern void wdg_scroll_print(wdg_t *wo, char *fmt, ...);
+extern void wdg_scroll_set_lines(wdg_t *wo, size_t lines);
 
 /* EXPORTED FUNCTIONS */
 
@@ -145,11 +151,12 @@ extern int wdg_create_object(wdg_t **wo, size_t type, size_t flags);
 extern int wdg_destroy_object(wdg_t **wo);
 
 /* object modifications */
-extern void wdg_resize_object(wdg_t *wo, int x1, int y1, int x2, int y2);
+extern void wdg_set_size(wdg_t *wo, int x1, int y1, int x2, int y2);
 extern void wdg_set_colors(wdg_t *wo, int color, size_t type); 
 extern void wdg_draw_object(wdg_t *wo);
 extern size_t wdg_get_type(wdg_t *wo);
 extern void wdg_set_focus(wdg_t *wo);
+extern void wdg_set_title(wdg_t *wo, char *title, size_t align);
 extern void wdg_init_color(u_char pair, u_char fg, u_char bg);
 extern void wdg_set_color(wdg_t *wo, size_t part, u_char pair);
    #define WDG_COLOR_TITLE    1

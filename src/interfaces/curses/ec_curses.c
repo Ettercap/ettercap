@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.8 2003/10/25 21:57:42 alor Exp $
+    $Id: ec_curses.c,v 1.9 2003/10/26 18:20:48 alor Exp $
 */
 
 #include <ec.h>
@@ -148,42 +148,44 @@ void curses_interface(void)
    
    DEBUG_MSG("curses_interface");
 
-   wdg_create_object(&win1, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
+   wdg_create_object(&win1, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
    ON_ERROR(win1, NULL, "Cannot create object");
    
-   wdg_window_set_title(win1, "Window number 1:", WDG_ALIGN_RIGHT);
-   wdg_resize_object(win1, 3, -15, -3, -2);
+   wdg_set_title(win1, "Scroll Window number 1:", WDG_ALIGN_RIGHT);
+   wdg_set_size(win1, 3, 17, -3, -2);
    wdg_set_color(win1, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(win1, WDG_COLOR_BORDER, EC_COLOR_BORDER);
    wdg_set_color(win1, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(win1, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+   wdg_scroll_set_lines(win1, 500);
    wdg_draw_object(win1);
-   wdg_window_print(win1, 2, 2, "still in development...");
+   wdg_scroll_print(win1, "this is a scrollig window...\n");
 
    wdg_create_object(&win2, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
    ON_ERROR(win2, NULL, "Cannot create object");
    
-   wdg_window_set_title(win2, "Window number 2:", WDG_ALIGN_CENTER);
-   wdg_resize_object(win2, 3, 3, -3, 10);
+   wdg_set_title(win2, "Window number 2:", WDG_ALIGN_CENTER);
+   wdg_set_size(win2, 3, 3, -3, 10);
    wdg_set_color(win2, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(win2, WDG_COLOR_BORDER, EC_COLOR_BORDER);
    wdg_set_color(win2, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(win2, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_draw_object(win2);
-   wdg_window_print(win2, 1, 1, "...test string...");
+   wdg_window_print(win2, 1, 1, "...test string...\n");
    
    wdg_create_object(&win3, WDG_PANEL, WDG_OBJ_WANT_FOCUS);
    ON_ERROR(win3, NULL, "Cannot create object");
    
-   wdg_panel_set_title(win3, "Panel number 3:", WDG_ALIGN_LEFT);
-   wdg_resize_object(win3, 3, 11, -3, -15);
+   wdg_set_title(win3, "Panel number 3:", WDG_ALIGN_LEFT);
+   wdg_set_size(win3, 3, 11, -3, 16);
    wdg_set_color(win3, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(win3, WDG_COLOR_BORDER, EC_COLOR_BORDER);
    wdg_set_color(win3, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(win3, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_draw_object(win3);
+   wdg_panel_print(win3, 0, 1, "this is a panel, it may overlap other panels...\n");
    
-   wdg_set_focus(win3);
+   wdg_set_focus(win1);
    
    /* 
     * give the control to the event dispatcher

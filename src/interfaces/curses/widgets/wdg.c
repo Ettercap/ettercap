@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.11 2003/10/26 09:42:04 alor Exp $
+    $Id: wdg.c,v 1.12 2003/10/26 18:20:48 alor Exp $
 */
 
 #include <wdg.h>
@@ -25,7 +25,8 @@
 #include <ncurses.h>
 
 /* not defined in curses.h */
-#define KEY_TAB   '\t'
+#define KEY_TAB      '\t'
+#define KEY_CTRL_L   12
 
 /* GLOBALS */
 
@@ -69,7 +70,7 @@ void wdg_set_focus(struct wdg_object *wo);
 int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags);
 int wdg_destroy_object(struct wdg_object **wo);
 
-void wdg_resize_object(struct wdg_object *wo, int x1, int y1, int x2, int y2);
+void wdg_set_size(struct wdg_object *wo, int x1, int y1, int x2, int y2);
 void wdg_draw_object(struct wdg_object *wo);
 size_t wdg_get_type(struct wdg_object *wo);
 void wdg_init_color(u_char pair, u_char fg, u_char bg);
@@ -83,6 +84,7 @@ size_t wdg_get_begin_y(struct wdg_object *wo);
 /* creation function from other widgets */
 extern void wdg_create_window(struct wdg_object *wo);
 extern void wdg_create_panel(struct wdg_object *wo);
+extern void wdg_create_scroll(struct wdg_object *wo);
 
 /*******************************************/
 
@@ -213,7 +215,9 @@ int wdg_events_handler(int exit_key)
             /* switch focus between objects */
             wdg_switch_focus();
             break;
-           
+
+         case KEY_CTRL_L:
+            /* redrawing the screen is equivalent to resizing it */
          case KEY_RESIZE:
             /* the screen has been resized */
             wdg_resize();
@@ -454,6 +458,10 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
          wdg_create_panel(*wo);
          break;
          
+      case WDG_SCROLL:
+         wdg_create_scroll(*wo);
+         break;
+         
       default:
          WDG_SAFE_FREE(*wo);
          return -WDG_EFATAL;
@@ -467,7 +475,7 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
    wl->wo = *wo;
 
    /* insert it in the list */
-   TAILQ_INSERT_HEAD(&wdg_objects_list, wl, next);
+   TAILQ_INSERT_TAIL(&wdg_objects_list, wl, next);
    
    /* this is the root object */
    if (flags & WDG_OBJ_ROOT_OBJECT)
@@ -514,6 +522,8 @@ int wdg_destroy_object(struct wdg_object **wo)
          WDG_BUG_IF((*wo)->destroy == NULL);
          WDG_EXECUTE((*wo)->destroy, *wo);
    
+         /* free the title */
+         WDG_SAFE_FREE((*wo)->title);
          /* then free the object */
          WDG_SAFE_FREE(*wo);
          
@@ -527,7 +537,7 @@ int wdg_destroy_object(struct wdg_object **wo)
 /*
  * set or reset the size of an object
  */
-void wdg_resize_object(struct wdg_object *wo, int x1, int y1, int x2, int y2)
+void wdg_set_size(struct wdg_object *wo, int x1, int y1, int x2, int y2)
 {
    /* set the new object cohordinates */
    wo->x1 = x1;
@@ -588,6 +598,16 @@ void wdg_set_color(wdg_t *wo, size_t part, u_char pair)
 void wdg_init_color(u_char pair, u_char fg, u_char bg)
 {
    init_pair(pair, fg, bg);
+}
+
+/*
+ * set the object's title 
+ */
+void wdg_set_title(struct wdg_object *wo, char *title, size_t align)
+{
+   /* copy the values */
+   wo->align = align;
+   wo->title = strdup(title);
 }
 
 /* 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.15 2003/09/15 16:37:40 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.16 2003/09/17 10:57:40 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -110,17 +110,6 @@ FUNC_DECODER(decode_ip)
    /* this is needed at upper layer to calculate the tcp payload size */
    PACKET->L3.payload_len = ntohs(ip->tot_len) - DECODED_LEN;
 
-   /*
-    * if the L3 is parsed for the first time,
-    * set the fwd_packet pointer
-    * this is needed because incapsulated packet may 
-    * overwrite the L3.header pointer used by send_to_L3
-    */
-   if (PACKET->L3.header == NULL) {
-      PACKET->fwd_packet = (u_char *)DECODE_DATA;
-      PACKET->fwd_len = PACKET->L3.payload_len + DECODED_LEN;
-   }
-   
    /* other relevant infos */
    PACKET->L3.header = (u_char *)DECODE_DATA;
    PACKET->L3.len = DECODED_LEN;
@@ -182,12 +171,9 @@ FUNC_DECODER(decode_ip)
    /* Find or create the correct session */
    ip_create_ident(&ident, PACKET);
    if (session_get(&s, ident, IP_IDENT_LEN) == -ENOTFOUND) {
-      
       ip_create_session(&s, PACKET);
-      s->data = calloc(1, sizeof(struct ip_status));
       session_put(s);
    }
-   
    SAFE_FREE(ident);
    
    /* Record last packet's ID */
@@ -223,6 +209,13 @@ FUNC_DECODER(decode_ip)
       ip->csum = 0; 
       ip->csum = L3_checksum(PACKET);
    }
+
+   /*
+    * External L3 header sets itself 
+    * as the packet to be forwarded.
+    */
+   PACKET->fwd_packet = (u_char *)DECODE_DATA;
+   PACKET->fwd_len = ntohs(ip->tot_len);
       
    return NULL;
 }
@@ -311,6 +304,9 @@ void ip_create_session(struct session **s, struct packet_object *po)
 
    /* the matching function */
    (*s)->match = &ip_match;
+   
+   /* alloc of data element */
+   (*s)->data = calloc(1, sizeof(struct ip_status));
 }
 
 /* EOF */

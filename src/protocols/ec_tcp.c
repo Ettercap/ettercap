@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.12 2003/09/15 16:37:40 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.13 2003/09/17 10:57:40 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -223,8 +223,6 @@ FUNC_DECODER(decode_tcp)
    tcp_create_ident(&ident, PACKET);
    if (session_get(&s, ident, TCP_IDENT_LEN) == -ENOTFOUND) {
       tcp_create_session(&s, PACKET);
-
-      s->data = calloc(1, sizeof(struct tcp_status));
       session_put(s);
    }
 
@@ -268,7 +266,6 @@ FUNC_DECODER(decode_tcp)
       /* and now save the new delta */
       status->way[direction].seq_adj += PACKET->delta;
 
-      /* XXX We assume len>=delta (required for checksum) */
       PACKET->DATA.len += PACKET->delta;
             
       /* Recalculate checksum */
@@ -389,6 +386,9 @@ void tcp_create_session(struct session **s, struct packet_object *po)
 
    /* the matching function */
    (*s)->match = &tcp_match;
+
+   /* alloca of data elements */
+   (*s)->data = calloc(1, sizeof(struct tcp_status));
 }
 
 /* EOF */

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.16 2003/10/04 15:13:15 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.17 2003/10/09 14:49:45 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -129,6 +129,11 @@ NOTE: the time stamp in the header is in the form: Thu Mar 27 23:03:31 2003
 \fB\-m\fR, \fB\-\-show-mac\fR
 In the headers show even the mac addresses of corresponding to the ip
 addresses.
+
+.TP
+\fB\-i\fR, \fB\-\-show-client\fR
+Show even the client ip address when displaying the collected users and
+passwords. It may be useful when ACLs are in place.
 
 .TP
 \fB\-k\fR, \fB\-\-color\fR

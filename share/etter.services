@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.5 $                                      # 
-#  Last updated on : $Date: 2003/07/11 16:50:24 $                          #
+#  Version         : $Revision: 1.6 $                                      # 
+#  Last updated on : $Date: 2003/10/09 14:49:45 $                          #
 #  Total entries   : 2183                                                  #
 #                                                                          #
 ############################################################################
@@ -1938,8 +1938,8 @@ telelpathstart    5010/tcp   #
 telelpathstart    5010/udp   # 
 telelpathattack   5011/tcp   # 
 telelpathattack   5011/udp   # 
-mmcc              5050/tcp   # multimedia conference control tool
-mmcc              5050/udp   # multimedia conference control tool
+yahoo_msg         5050/tcp   # yahoo messenger
+yahoo_msg         5050/udp   # yahoo messenger
 admd              5100/tcp   # (chili!soft asp admin port)
 admdog            5101/tcp   # (chili!soft asp)
 admeng            5102/tcp   # (chili!soft asp)

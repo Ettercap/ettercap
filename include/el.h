@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.11 2003/09/28 21:06:53 alor Exp $ */
+/* $Id: el.h,v 1.12 2003/10/09 14:49:41 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -74,6 +74,7 @@ struct globals {
    char no_headers:1;
    char connections:1;
    char showmac:1;
+   char showclient:1;
    char reverse:1;
    char only_source:1;
    char only_dest:1;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_target.c,v 1.12 2003/09/27 17:22:24 alor Exp $
+    $Id: el_target.c,v 1.13 2003/10/09 14:49:45 alor Exp $
 */
 
 #include <el.h>
@@ -371,7 +371,7 @@ int find_user(struct host_profile *hst, char *user)
    
    LIST_FOREACH(o, &(hst->open_ports_head), next) {
       LIST_FOREACH(u, &(o->users_list_head), next) {
-         if (strcasestr(user, u->user))
+         if (strcasestr(u->user, user))
             return ESUCCESS;
       }
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_parser.c,v 1.17 2003/09/18 22:15:05 alor Exp $
+    $Id: el_parser.c,v 1.18 2003/10/09 14:49:45 alor Exp $
 */
 
 
@@ -59,6 +59,7 @@ void el_usage(void)
    fprintf(stdout, "  -r, --reverse               reverse the target/connection matching\n");
    fprintf(stdout, "  -n, --no-headers            skip header informations between packets\n");
    fprintf(stdout, "  -m, --show-mac              show mac addresses in the headers\n");
+   fprintf(stdout, "  -i, --show-client           show client address in the password profiles\n");
    fprintf(stdout, "  -k, --color                 colorize the output\n");
    fprintf(stdout, "  -l, --only-local            show only local hosts parsing info files\n");
    fprintf(stdout, "  -L, --only-remote           show only remote hosts parsing info files\n");
@@ -113,6 +114,7 @@ void parse_options(int argc, char **argv)
       { "only-source", no_argument, NULL, 's' },
       { "only-dest", no_argument, NULL, 'd' },
       { "show-mac", no_argument, NULL, 'm' },
+      { "show-client", no_argument, NULL, 'i' },
       { "color", no_argument, NULL, 'k' },
       { "reverse", no_argument, NULL, 'r' },
       { "proto", required_argument, NULL, 't' },
@@ -129,7 +131,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhkLlmnprsTt:u:vXxZ", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhikLlmnprsTt:u:vXxZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -175,6 +177,10 @@ void parse_options(int argc, char **argv)
                   
          case 'm':
                   GBL.showmac = 1;
+                  break;
+                  
+         case 'i':
+                  GBL.showclient = 1;
                   break;
 
          case 'l':

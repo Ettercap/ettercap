@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.39 2003/10/05 17:07:20 alor Exp $
+    $Id: ec_parser.c,v 1.40 2003/10/09 14:49:45 alor Exp $
 */
 
 
@@ -235,6 +235,7 @@ void parse_options(int argc, char **argv)
          case 'r':
                   /* we don't want to scan the lan while reading from file */
                   GBL_OPTIONS->silent = 1;
+                  GBL_OPTIONS->unoffensive = 1;
                   GBL_OPTIONS->read = 1;
                   GBL_OPTIONS->dumpfile = strdup(optarg);
                   break;

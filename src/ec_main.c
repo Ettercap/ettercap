@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.34 2003/10/08 20:03:18 alor Exp $
+    $Id: ec_main.c,v 1.35 2003/10/09 14:49:45 alor Exp $
 */
 
 #include <ec.h>
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
    signal_handler();
    
    /* ettercap copyright */
-   fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END "copyright %s %s\n\n", 
+   fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
          GBL_PROGRAM, GBL_VERSION, EC_COPYRIGHT, EC_AUTHORS);
    
    /* getopt related parsing...  */
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     * always disable the kernel ip forwarding (except when reading from file).
     * the forwarding will be done by ettercap.
     */
-   if (!GBL_OPTIONS->read || GBL_OPTIONS->unoffensive)
+   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive)
       disable_ip_forward();
    
    /* 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.6 2003/10/20 15:23:17 lordnaga Exp $
+    $Id: ec_ssh.c,v 1.7 2003/10/20 15:27:22 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -365,7 +365,7 @@ FUNC_DECODER(dissector_ssh)
       } else { /* Client Packets */
          if (session_data->status==WAITING_PUBLIC_KEY) {
             /* Client Banner */
-            if (!memcmp(PACKET->DATA.data,"SSH-2",5) {
+            if (!memcmp(PACKET->DATA.data,"SSH-2",5)) {
                DEBUG_MSG("Dissector_ssh SSHv2");
                dissect_wipe_session(PACKET);
             }

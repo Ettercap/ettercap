@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.15 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_threads.c,v 1.16 2003/10/28 22:54:26 alor Exp $
 */
 
 #include <ec.h>
@@ -208,6 +208,8 @@ void ec_thread_destroy(pthread_t id)
    /* wait until it has finished */
    pthread_join((pthread_t)id, NULL);
 
+   DEBUG_MSG("ec_thread_destroy -- [%s] terminated", ec_thread_getname(id));
+   
    THREADS_LOCK;
    
    LIST_FOREACH(current, &thread_list_head, next) {

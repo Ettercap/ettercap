@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.9 2003/10/27 21:25:44 alor Exp $
+    $Id: ec_conntrack.c,v 1.10 2003/10/28 22:54:26 alor Exp $
 */
 
 #include <ec.h>
@@ -367,6 +367,7 @@ EC_THREAD_FUNC(conntrack_timeouter)
    struct timeval diff;
    struct conn_tail *cl;
    struct conn_tail *old = NULL;
+   size_t sec;
   
    LOOP {
 
@@ -374,9 +375,17 @@ EC_THREAD_FUNC(conntrack_timeouter)
        * sleep for the maximum time possible
        * (determined as the minumum of the timeouts)
        */
-      sleep(MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout));
+      sec = MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout);
+    
+      DEBUG_MSG("conntrack_timeouter: sleeping for %d sec", sec);
+      
+      /* always check if a cancel is requested */
+      while (sec--) {
+         CANCELLATION_POINT();
+         sleep(1);
+      }
      
-      DEBUG_MSG("conntrack_timeouter: %d", MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout));
+      DEBUG_MSG("conntrack_timeouter: woke up");
       
       /* get current time */
       gettimeofday(&ts, NULL);
@@ -418,6 +427,8 @@ EC_THREAD_FUNC(conntrack_timeouter)
          }
 
          CONNTRACK_UNLOCK;
+   
+         CANCELLATION_POINT();
       }
       /* if it was the last one */
       SAFE_FREE(old);

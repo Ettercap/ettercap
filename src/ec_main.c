@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.39 2003/10/23 21:00:58 alor Exp $
+    $Id: ec_main.c,v 1.40 2003/10/28 22:54:26 alor Exp $
 */
 
 #include <ec.h>
@@ -223,6 +223,7 @@ void clean_exit(int errcode)
    /* close the UI */
    ui_cleanup();
 
+   /* call all the ATEXIT functions */
    exit(errcode);
 }
 

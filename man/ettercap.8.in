@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.42 2003/10/28 22:15:02 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.43 2003/10/28 22:54:23 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -496,7 +496,7 @@ NOTE: this options automatically sets the -q option.
 .Sp
 example:
 .Sp
-ettercap -TQP finger /192.168.0.1/22
+ettercap -TzQP finger /192.168.0.1/22
 
 
 

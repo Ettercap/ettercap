@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.9 2004/03/10 21:18:11 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.10 2004/03/10 21:48:32 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -457,7 +457,6 @@ EC_THREAD_FUNC(sslw_child)
     * fake headers. Headers len is set to 0.
     * XXX - Be sure to not modify these len.
     */
-    // XXX DISALLOCARE IL PO
    memset(&po, 0, sizeof(struct packet_object));
    SAFE_CALLOC(po.DATA.data, 1, UINT16_MAX);
    po.L2.header  = po.DATA.data; 
@@ -473,10 +472,11 @@ EC_THREAD_FUNC(sslw_child)
    po.L4.proto = NL_TYPE_TCP;
 
    /* A fake SYN ACK for profiles */
-   po.DATA.len = 0;
-   po.L4.flags = (TH_SYN | TH_ACK);
-   sslw_parse_packet(ae, SSL_SERVER, &po);
-
+   //po.DATA.len = 0;
+   //po.L4.flags = (TH_SYN | TH_ACK);
+   //sslw_parse_packet(ae, SSL_SERVER, &po);
+   //po.L4.flags = 0;
+   
    LOOP {
       // XXX Posso metterlo fuori dal ciclo?
       poll_fd[SSL_CLIENT].fd = ae->fd[SSL_CLIENT];

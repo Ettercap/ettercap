@@ -62,9 +62,10 @@ struct gbl_stats {
    u_int32 ps_recv;     /* number of packets received */
    u_int32 ps_drop;     /* number of packets dropped */
    u_int32 ps_ifdrop;   /* drops by interface XXX not yet supported */
-   u_int32 max_queue;   /* maximum queue len ever reached */
-   u_int32 curr_queue;  /* current queue len */
-   u_int32 processed;   /* number of packet processed */
+   u_int32 queue_max;   /* maximum queue len ever reached */
+   u_int32 queue_curr;  /* current queue len */
+   u_int32 proc_pck;    /* number of packet processed */
+   u_int32 proc_size;   /* amount of data processed */
 };
 
 /* per interface informations */

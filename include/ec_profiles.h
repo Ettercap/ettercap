@@ -60,11 +60,6 @@ struct host_profile {
    LIST_ENTRY(host_profile) next;
 };
 
-/* forward the declaration */
-struct packet_object;
-
-extern int profile_add(struct packet_object *po);
-
 
 #endif
 

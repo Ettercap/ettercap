@@ -25,6 +25,9 @@
 
 >>> current developmet state 
 
+   + STATISTICS
+      - bottom half stats
+
    + TOP HALF
       - passive profiling (almost done in etterlog)
       - connection tracking (with buffered conn)

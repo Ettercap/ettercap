@@ -8,7 +8,8 @@ bin_PROGRAMS = etterfilter
 
 AM_YFLAGS = --defines
 
-etterfilter_SOURCES = ef_main.c \
+etterfilter_SOURCES = ef_compiler.c \
+                      ef_main.c \
                       ef_ec_compat.c \
                       ef_parser.c \
                       ef_test.c \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.4 2003/09/09 21:32:56 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.5 2003/09/10 15:41:23 alor Exp $
 */
 
 %{
@@ -41,9 +41,9 @@ extern u_int32 lineno;
  
 %option  noyywrap
 
-OFFSET         [A-Za-z]+[[:alnum:]]*[\.[A-Za-z]+]*
+OFFSET         [[:alnum:]]+\.[A-Za-z]+[\.[A-Za-z]+]*
 FUNCTION       [A-Za-z]+\([^\)]*\)
-CONST          [0-9]+|0x[0-9]+
+CONST          [0-9]+|0x[0-9]+|[A-Z]+
 SPACES         [ \t]+
 
 %%

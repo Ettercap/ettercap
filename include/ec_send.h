@@ -1,5 +1,5 @@
 
-/* $Id: ec_send.h,v 1.11 2003/12/15 14:38:37 lordnaga Exp $ */
+/* $Id: ec_send.h,v 1.12 2004/01/01 17:33:49 alor Exp $ */
 
 #ifndef EC_SEND_H
 #define EC_SEND_H
@@ -17,7 +17,7 @@ extern int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *t
 extern int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip);
 extern int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct packet_object *po);
 extern int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
-extern int send_dns_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen);
+extern int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen);
 
 extern void capture_only_incoming(pcap_t *p, libnet_t *l);
 

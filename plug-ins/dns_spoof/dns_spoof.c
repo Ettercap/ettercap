@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.2 2003/11/27 22:27:47 alor Exp $
+    $Id: dns_spoof.c,v 1.3 2004/01/01 17:33:52 alor Exp $
 */
 
 
@@ -255,7 +255,7 @@ static void dns_spoof(struct packet_object *po)
          memcpy(p + 12, &reply->addr, reply->addr_size);  /* data */
 
          /* send the fake reply */
-         send_dns_reply(&po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer));
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer));
          
          USER_MSG("dns_spoof: [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
          
@@ -288,7 +288,7 @@ static void dns_spoof(struct packet_object *po)
          NS_PUT16(rlen, p);
 
          /* send the fake reply */
-         send_dns_reply(&po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, (q - data) + 12 + rlen);
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, (q - data) + 12 + rlen);
          
          USER_MSG("dns_spoof: [%s] spoofed to [%s]\n", name, a);
          

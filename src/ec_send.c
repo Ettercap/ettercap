@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.39 2003/12/15 14:38:40 lordnaga Exp $
+    $Id: ec_send.c,v 1.40 2004/01/01 17:33:52 alor Exp $
 */
 
 #include <ec.h>
@@ -64,7 +64,7 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
 int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip);
 int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct packet_object *po);
 int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
-int send_dns_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen);
+int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen);
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SEND_LOCK     do{ pthread_mutex_lock(&send_mutex); } while(0)
@@ -685,7 +685,7 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
 /*
  * send a dns reply
  */
-int send_dns_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen)
+int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen)
 {
    libnet_ptag_t t;
    int c;
@@ -712,8 +712,8 @@ int send_dns_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int
   
    /* create the udp header */
    t = libnet_build_udp(
-            htons(EC_MAGIC_16),                             /* source port */
-            53,                                             /* destination port */
+            53,                                             /* source port */
+            htons(dport),                                   /* destination port */
             LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen,    /* packet size */
             0,                                              /* checksum */
             NULL,                                           /* payload */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.1 2003/10/13 12:10:15 lordnaga Exp $
+    $Id: ec_smb.c,v 1.2 2003/10/13 13:10:21 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -135,13 +135,13 @@ FUNC_DECODER(dissector_smb)
          } else {
             ptr += (*ptr)*2; /* Last Word Field */
 	 
-	    /* Check Encryption Key Len */
+            /* Check Encryption Key Len */
             if (*ptr!=0) {
-	       ptr += 3; /* Got to Blob */
-	       memcpy(session_data->challenge, ptr, 8);
-	       session_data->status = WAITING_ENCRYPT;
+               ptr += 3; /* Got to Blob */
+               memcpy(session_data->challenge, ptr, 8);
+               session_data->status = WAITING_ENCRYPT;
                session_data->auth_type = CHALLENGE_RESPONSE_AUTH;
-	    } else { /* If the challenge is not in this packet */
+            } else { /* If the challenge is not in this packet */
                session_data->status = WAITING_CHALLENGE;
                session_data->auth_type = NTLMSSP_AUTH;
             }
@@ -162,9 +162,9 @@ FUNC_DECODER(dissector_smb)
                snprintf(PACKET->DISSECTOR.info, MAX_USER_LEN + 16, "DOMAIN:%s", session_data->domain);
             }
 	    	    
-	    if (session_data->auth_type==PLAIN_TEXT_AUTH) {
-	       PACKET->DISSECTOR.pass = strdup(session_data->response1);
-	       USER_MSG("SMB : %s:%d -> USER:%s PASS:%s", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+            if (session_data->auth_type==PLAIN_TEXT_AUTH) {
+               PACKET->DISSECTOR.pass = strdup(session_data->response1);
+               USER_MSG("SMB : %s:%d -> USER:%s PASS:%s", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                           ntohs(PACKET->L4.dst),
                                                           PACKET->DISSECTOR.user,
                                                           PACKET->DISSECTOR.pass);
@@ -172,25 +172,25 @@ FUNC_DECODER(dissector_smb)
                char ascii_hash[256];
 
                sprintf(ascii_hash, "%s:\"\":\"\":",session_data->user);  
-	       GetBinaryE(session_data->response1, ascii_hash, 24);
-	       strcat(ascii_hash, ":");
-	       GetBinaryE(session_data->response2, ascii_hash, 24);
-	       strcat(ascii_hash, ":");
-	       GetBinaryE(session_data->challenge, ascii_hash, 8);
+               GetBinaryE(session_data->response1, ascii_hash, 24);
+               strcat(ascii_hash, ":");
+               GetBinaryE(session_data->response2, ascii_hash, 24);
+               strcat(ascii_hash, ":");
+               GetBinaryE(session_data->challenge, ascii_hash, 8);
 	       
                PACKET->DISSECTOR.pass = strdup(ascii_hash);  
                
-	       USER_MSG("SMB : %s:%d -> USER:%s HASH:%s", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+               USER_MSG("SMB : %s:%d -> USER:%s HASH:%s", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                           ntohs(PACKET->L4.dst),
                                                           PACKET->DISSECTOR.user,
                                                           PACKET->DISSECTOR.pass);
-	    }
+            }
 
             if (PACKET->DISSECTOR.info!=NULL)
                USER_MSG(" %s", PACKET->DISSECTOR.info);
 	    
-	    if (session_data->status == LOGON_COMPLETED_FAILURE) {
-	       PACKET->DISSECTOR.failed = 1;
+            if (session_data->status == LOGON_COMPLETED_FAILURE) {
+               PACKET->DISSECTOR.failed = 1;
                USER_MSG(" (Login Failed)\n");
             } else
                USER_MSG("\n");
@@ -212,10 +212,10 @@ FUNC_DECODER(dissector_smb)
                u_int16 pwlen, unilen;
                char *Blob;
 	 
-	       Blob = ptr;
-	       Blob += ( (*ptr)*2 + 3 );
+               Blob = ptr;
+               Blob += ( (*ptr)*2 + 3 );
         
-	       ptr += 15;
+               ptr += 15;
                pwlen = phtos(ptr);        /* ANSI password len */
                ptr += 2;
                unilen = phtos(ptr);       /* UNICODE password len */
@@ -231,57 +231,56 @@ FUNC_DECODER(dissector_smb)
                /* Jump the Words */
                ptr += ( (*ptr)*2 + 3 );
 	 
-	       /* Jump ID String */
-	       if ( (ptr = (char *)memmem(ptr, 128, "NTLMSSP", 8)) == NULL)  
+               /* Jump ID String */
+               if ( (ptr = (char *)memmem(ptr, 128, "NTLMSSP", 8)) == NULL)  
                   return NULL; 
 		     
-	       Blob = ptr;
-	       ptr = strchr(ptr, 0);
-	       ptr++;
+               Blob = ptr;
+               ptr = strchr(ptr, 0);
+               ptr++;
 	 
-	       if (*ptr == 3) /* Msg Type AUTH */ 
-	       {
- 	          int LM_Offset, LM_Len, NT_Offset, NT_Len, Domain_Offset, Domain_Len, User_Offset, User_Len;
+               if (*ptr == 3) { /* Msg Type AUTH */ 
+                  int LM_Offset, LM_Len, NT_Offset, NT_Len, Domain_Offset, Domain_Len, User_Offset, User_Len;
                   ptr += 4;
-	          LM_Len = *(u_int16 *)ptr;
-	          ptr += 4;
-	          LM_Offset = *(u_int32 *)ptr;
-	          ptr += 4;
-	          NT_Len = *(u_int16 *)ptr;
-	          ptr += 4;
+                  LM_Len = *(u_int16 *)ptr;
+                  ptr += 4;
+                  LM_Offset = *(u_int32 *)ptr;
+                  ptr += 4;
+                  NT_Len = *(u_int16 *)ptr;
+                  ptr += 4;
                   NT_Offset = *(u_int32 *)ptr;
                   ptr += 4;
-	          Domain_Len = *(u_int16 *)ptr;
-	          ptr += 4;
+                  Domain_Len = *(u_int16 *)ptr;
+                  ptr += 4;
                   Domain_Offset = *(u_int32 *)ptr;
-	          ptr += 4;
-	          User_Len = *(u_int16 *)ptr;
-	          ptr += 4;
-	          User_Offset = *(u_int32 *)ptr;
+                  ptr += 4;
+                  User_Len = *(u_int16 *)ptr;
+                  ptr += 4;
+                  User_Offset = *(u_int32 *)ptr;
 	
-	          if (NT_Len!=24) {
-	             session_data->status = WAITING_CHALLENGE;     
-	             return NULL;
-	          }
+                  if (NT_Len!=24) {
+                     session_data->status = WAITING_CHALLENGE;     
+                     return NULL;
+                  }
 		  
-	          GetUser(Blob+User_Offset, session_data->user, User_Len);
+                  GetUser(Blob+User_Offset, session_data->user, User_Len);
                   GetUser(Blob+Domain_Offset, session_data->domain, Domain_Len);
 		 
-	          if (LM_Len == 24)
-                     memcpy(session_data->response1, Blob+LM_Offset, 24); 
-		 
+                  if (LM_Len == 24) 
+                     memcpy(session_data->response1, Blob+LM_Offset, 24);
+ 
                   memcpy(session_data->response2, Blob+NT_Offset, 24);
                   session_data->status = WAITING_LOGON_RESPONSE;
                }
             } else if (session_data->status == WAITING_ENCRYPT) {
                char *Blob;
 	 
-	       Blob = ptr;
-	       Blob += ( (*ptr)*2 + 3 );
+               Blob = ptr;
+               Blob += ( (*ptr)*2 + 3 );
 
-	       memcpy(session_data->response1, Blob, 24);
+               memcpy(session_data->response1, Blob, 24);
                memcpy(session_data->response2, Blob+24, 24);
-	       Blob = GetUser(Blob+49, session_data->user, 200);
+               Blob = GetUser(Blob+48, session_data->user, 200);
                /* Get the domain with GetUser :) */
                GetUser(Blob, session_data->domain, 200);
                session_data->status = WAITING_LOGON_RESPONSE;
@@ -291,17 +290,17 @@ FUNC_DECODER(dissector_smb)
          if (smb->cmd == 0x73) { /* Session SetUp packets */
             if (session_data->status == WAITING_CHALLENGE) {
                ptr += ( (*ptr)*2 + 3 );
-	       if ( (ptr = (char *)memmem(ptr, 128, "NTLMSSP", 8)) == NULL) 
+               if ( (ptr = (char *)memmem(ptr, 128, "NTLMSSP", 8)) == NULL) 
                   return NULL;
-	       ptr = strchr(ptr, 0);
-	       ptr++;
+               ptr = strchr(ptr, 0);
+               ptr++;
 	  
-	       if (*ptr == 2) {
-	          ptr +=16; 
-	          memcpy(session_data->challenge, ptr, 8);	   
-	          session_data->status = WAITING_RESPONSE;
-	       }	     
-	    } else if (session_data->status == WAITING_LOGON_RESPONSE) {
+               if (*ptr == 2) {
+                  ptr +=16; 
+                  memcpy(session_data->challenge, ptr, 8);	   
+                  session_data->status = WAITING_RESPONSE;
+               }	     
+            } else if (session_data->status == WAITING_LOGON_RESPONSE) {
                if(!memcmp(smb->err, "\x00\x00\x00\x00", 4))
                   session_data->status = LOGON_COMPLETED_OK;
                else	    
@@ -323,9 +322,14 @@ char *GetUser(char *user, char *dest, int len)
 {
    char Unicode=1;
    int i=0;
-     
+
+   /* Skip 0 padding for odd unicode chars */
+   if (user[0]==0) 
+      user++;
+        
    /* Does anyone uses 2 chars users? I think it's unicode */
-   if (user[1]==0) Unicode=2; 
+   if (user[1]==0) 
+      Unicode=2; 
                             
    while(*user!=0 && i<(MAX_USER_LEN-1) && len>0) {
       *dest = *user;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.32 2004/05/25 23:14:03 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.33 2004/05/26 11:52:56 daten Exp $
 */
 
 #include <ec.h>
@@ -1087,8 +1087,9 @@ static void join_print_po(struct packet_object *po)
  */
 static void gtkui_connection_purge(void *conn)
 {
-   DEBUG_MSG("gtkui_connection_purge");
    struct row_pairs *row, *nextrow, *list = connections;
+
+   DEBUG_MSG("gtkui_connection_purge");
 
    connections = NULL;
    for(row = list; row; row = nextrow) {

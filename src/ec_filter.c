@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.41 2003/12/05 11:25:44 lordnaga Exp $
+    $Id: ec_filter.c,v 1.42 2003/12/05 12:01:41 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -499,7 +499,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
 	    
             /* check if we are overflowing pcap buffer */
             BUG_IF(po->DATA.data < po->packet);
-            BUG_IF(GBL_PCAP->snaplen - (po->DATA.data - po->packet) <= nlen);
+            BUG_IF((u_int16)(GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <= nlen);
 
             /* copy the temp buffer on the original packet */
             memcpy(po->DATA.data, replaced, nlen);
@@ -576,7 +576,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       
       /* check if we are overflowing pcap buffer */
       BUG_IF(po->DATA.data < po->packet);
-      BUG_IF(GBL_PCAP->snaplen - (po->DATA.data - po->packet) <=  po->DATA.len);
+      BUG_IF((u_int16)(GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <=  po->DATA.len);
       
       /* move the buffer to make room for the replacement string */   
       memmove(ptr + rlen, ptr + slen, len); 

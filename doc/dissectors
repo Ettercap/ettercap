@@ -5,7 +5,7 @@ TOPIC:      dissector
 ABSTRACT:   this file describes how to write a dissector and how to fill the
             correct structures in order to ettercap understand them
 
-NOTE:       dissectors refears to functions analyzine application protocols
+NOTE:       dissectors refears to functions analyzing application protocols
             such as FTP or POP. functions that handle the lower level of the
             TCP/IP stack are called decoder and they are stored in the
             src/protocols directory.
@@ -22,9 +22,9 @@ function must be declared as:
 
 within the function code, some macro are provided to properly handle the structures.
 
-DECODE_DATALEN    (int) it is the len of the data the decoder can parse 
+DECODE_DATALEN    (int) is the len of the data the decoder can parse 
 
-DECODE_DATA       (u_char) it is the buffer contaning the data
+DECODE_DATA       (u_char) is the buffer contaning the data
 
 PACKET            (struct packet_object) the PO structure associated with data 
 
@@ -46,6 +46,7 @@ User and pass information must be sent in the same packet. This is mandatory
 for the correct association with the passive profiling of the servers. They
 must be sent associated with a packet GOING TO the server. 
 
+
 The banner identification of the service have to be sent associate with a
 packet COMING FROM the server port.
 
@@ -54,8 +55,6 @@ Since the dissector function is invoked one time per packet, the dissector has
 the scope of a single packet not a stream. You have to take care of this and
 use the sessions management (see the relative documentation) to pass data
 through subsequent activation of the function.
-
-Don't forget the lock the sessions while using them !
 
 
 EOF

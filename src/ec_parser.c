@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.20 2003/04/30 16:50:15 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.21 2003/05/05 09:04:50 alor Exp $
 */
 
 
@@ -57,7 +57,7 @@ void ec_usage(void)
    fprintf(stdout, "  -A, --arp-poison            perform ARP poisoning while sniff\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
-   fprintf(stdout, "  -r, --read <file>           load data from <file>\n");
+   fprintf(stdout, "  -r, --read <file>           read data from pcapfile <file>\n");
    fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n");
    fprintf(stdout, "  -R, --reversed              use reversed TARGET matching\n");
    fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n");
@@ -70,7 +70,7 @@ void ec_usage(void)
    fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
    
    fprintf(stdout, "\nLogging options:\n");
-   fprintf(stdout, "  -d, --dump <file>           dump sniffed data to pcapfile <file>\n");
+   fprintf(stdout, "  -w, --write <file>          write sniffed data to pcapfile <file>\n");
    fprintf(stdout, "  -L, --log <logfile>         log all the traffic to this <logfile>\n");
    fprintf(stdout, "  -l, --log-info <logfile>    log only passive infos to this <logfile>\n");
    fprintf(stdout, "  -c, --compress              use gzip compression on log files\n");
@@ -105,7 +105,7 @@ void parse_options(int argc, char **argv)
       
       { "iface", required_argument, NULL, 'i' },
       { "netmask", required_argument, NULL, 'n' },
-      { "dump", required_argument, NULL, 'd' },
+      { "write", required_argument, NULL, 'w' },
       { "read", required_argument, NULL, 'r' },
       { "pcapfilter", required_argument, NULL, 'f' },
       
@@ -147,7 +147,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDd:e:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:vZ:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDe:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:vw:Z:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -208,8 +208,8 @@ void parse_options(int argc, char **argv)
                   GBL_OPTIONS->dumpfile = strdup(optarg);
                   break;
                  
-         case 'd':
-                  GBL_OPTIONS->dump = 1;
+         case 'w':
+                  GBL_OPTIONS->write = 1;
                   GBL_OPTIONS->dumpfile = strdup(optarg);
                   break;
                   
@@ -309,7 +309,7 @@ void parse_options(int argc, char **argv)
    
    /* check for other options */
    
-   if (GBL_OPTIONS->dump && GBL_OPTIONS->read)
+   if (GBL_OPTIONS->write && GBL_OPTIONS->read)
       FATAL_ERROR("You cannote dump and read at the same time...");
 
    if (GBL_SNIFF->start == NULL)

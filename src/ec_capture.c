@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.11 2003/04/30 16:50:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.12 2003/05/05 09:04:49 alor Exp $
 */
 
 #include <ec.h>
@@ -144,7 +144,7 @@ void capture_init(void)
 
 
    /* open the dump file */
-   if (GBL_OPTIONS->dump) {
+   if (GBL_OPTIONS->write) {
       pdump = pcap_dump_open(pd, GBL_OPTIONS->dumpfile);
       GBL_PCAP->dump = pdump;               
    }
@@ -182,7 +182,7 @@ void capture_init(void)
 void capture_close(void)
 {
    pcap_close(GBL_PCAP->pcap);
-   if (GBL_OPTIONS->dump)
+   if (GBL_OPTIONS->write)
       pcap_dump_close(GBL_PCAP->dump);
    
    if (GBL_SNIFF->type == SM_BRIDGED)

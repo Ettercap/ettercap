@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.15 2003/04/30 16:50:07 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.16 2003/05/05 09:04:49 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -231,8 +231,8 @@ to make an analysis (search for passwords or passive fingerprint) on it.
 Obviously you cannot use "active" sniffing (arp poisoning or bridging) while
 sniffing from a file.
 .TP
-\fB\-d\fR, \fB\-\-dump <FILE>\fR
-DUMP packet to a pcap file
+\fB\-w\fR, \fB\-\-write <FILE>\fR
+WRITE packet to a pcap file
 .br
 This is useful if you have to use "active" sniffing (arp poison) on a switched
 LAN but you want to analyze the packets with tcpdump or ethereal. You can use

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.3 2003/04/30 20:42:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.4 2003/05/05 09:04:50 alor Exp $
 */
 
 #include <ec.h>
@@ -30,6 +30,12 @@
 #include <pcap.h>
 #include <libnet.h>
 
+/* globals */
+
+SLIST_HEAD (, ip_list) ip_list_head;
+
+/* protos */
+
 void build_hosts_list(void);
 void scan_netmask(void);
 void scan_targets(void);
@@ -38,6 +44,8 @@ void load_hosts(char *filename);
 void save_hosts(char *filename);
 
 void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name);
+
+void random_list(struct ip_list *e, int max);
 
 void get_response(struct packet_object *po);
 EC_THREAD_FUNC(capture_scan);
@@ -94,7 +102,10 @@ void build_hosts_list(void)
    else
       scan_targets();
 
-   /* wait for some delayed packets... */
+   /* 
+    * wait for some delayed packets... 
+    * the other thread is listening for ARP pachets
+    */
    sleep(1);
 
    /* destroy the thread and remobe the hook function */
@@ -117,7 +128,6 @@ void build_hosts_list(void)
       save_hosts(GBL_OPTIONS->hostsfile);
 
    
-   //NOT_IMPLEMENTED();
 }
 
 
@@ -200,6 +210,7 @@ void scan_netmask(void)
    u_int32 netmask, current, myip;
    int nhosts, i;
    struct ip_addr scanip;
+   struct ip_list *e; 
 
    netmask = *(u_int32 *)&GBL_IFACE->netmask.addr;
    myip = *(u_int32 *)&GBL_IFACE->ip.addr;
@@ -220,15 +231,35 @@ void scan_netmask(void)
       current = (myip & netmask) | htonl(i);
       ip_addr_init(&scanip, AF_INET, (char *)&current);
       
+      e = calloc(1, sizeof(struct ip_list));
+      ON_ERROR(e, NULL, "can't allocate memory");
+      
+      memcpy(&e->ip, &scanip, sizeof(struct ip_addr));
+      
+      /* add to the list randomly */
+      random_list(e, i);
+   }
+
+   i = 1;
+   
+   /* send the actual ARP request */
+   SLIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
-      send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &scanip, ETH_BROADCAST);
+      send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, ETH_BROADCAST);
 
       /* update the progress bar */
-      ui_progress(i, nhosts);
+      ui_progress(i++, nhosts);
       
       /* wait for a delay */
       usleep(GBL_OPTIONS->scan_delay * 1000);
    }
+   
+   /* delete the temporary list */
+   while (SLIST_FIRST(&ip_list_head) != NULL) {                                                           
+      e = SLIST_FIRST(&ip_list_head);                                                                     
+      SLIST_REMOVE_HEAD(&ip_list_head, next);                                                             
+      SAFE_FREE(e);                                                                                 
+   }  
 }
 
 /*
@@ -238,7 +269,6 @@ void scan_netmask(void)
 void scan_targets(void)
 {
    int nhosts = 0, found, n = 1;
-   SLIST_HEAD (, ip_list) ip_list_head = SLIST_HEAD_INITIALIZER(&ip_list_head);
    struct ip_list *e, *i, *m; 
    
    DEBUG_MSG("scan_targets: merging targets...");
@@ -256,9 +286,10 @@ void scan_targets(void)
       
       memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
       
-      SLIST_INSERT_HEAD(&ip_list_head, e, next);
-      
       nhosts++;
+      
+      /* add to the list randomly */
+      random_list(e, nhosts);
    }
 
    /* then merge the target2 ips */
@@ -281,8 +312,9 @@ void scan_targets(void)
       
       /* add it */
       if (!found) {
-         SLIST_INSERT_HEAD(&ip_list_head, e, next);
          nhosts++;
+         /* add to the list randomly */
+         random_list(e, nhosts);
       }
    }
    
@@ -307,7 +339,6 @@ void scan_targets(void)
    }
   
    /* delete the temporary list */
-      
    while (SLIST_FIRST(&ip_list_head) != NULL) {                                                           
       e = SLIST_FIRST(&ip_list_head);                                                                     
       SLIST_REMOVE_HEAD(&ip_list_head, next);                                                             
@@ -429,6 +460,38 @@ void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name)
    if (LIST_FIRST(&GBL_HOSTLIST) == LIST_END(&GBL_HOSTLIST))
       LIST_INSERT_HEAD(&GBL_HOSTLIST, h, next);
    
+}
+
+
+/*
+ * insert the element in the list randomly.
+ * 'max' is the number of elements in the list
+ */
+
+void random_list(struct ip_list *e, int max)
+{
+   int rnd, i = 0;
+   struct ip_list *l;
+   
+   srand(time(NULL));
+
+   /* calculate the position in the list. */
+   rnd = rand() % ((max == 1) ? max : max - 1);
+  
+   /* the first element */
+   if (SLIST_FIRST(&ip_list_head) == SLIST_END(&ip_list_head)) {
+      SLIST_INSERT_HEAD(&ip_list_head, e, next);
+      return;
+   }
+  
+   /* find the random position and insert the element */
+   SLIST_FOREACH(l, &ip_list_head, next) {
+      if (i++ == rnd) {
+         SLIST_INSERT_AFTER(l, e, next);
+         break;
+      }
+   }
+      
 }
 
 /* EOF */

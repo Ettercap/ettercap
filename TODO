@@ -16,9 +16,12 @@
    + SOLARIS PORTING
       - checksum (WORD_BIGENDIAN on intel ???)
 
+   + ETTERLOG
+      - dns resolution
+      - service resolution
+
    + ARP SCAN
       - dns resolution
-      - pseudo random scan
 
    + ARP POISON ENGINE
       - arp poisoner

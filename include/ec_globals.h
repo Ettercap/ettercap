@@ -8,7 +8,7 @@
 
 /* options from getopt */
 struct ec_options {
-   char dump:1;
+   char write:1;
    char read:1;
    char compress:1;
    char quiet:1;

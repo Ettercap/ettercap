@@ -20,6 +20,7 @@ NG-0.7.0    ????????
       + hook point per packet type (TCP, UDP... )
       + quiet mode
       + enhanced passive open port discoverer 
+      + randomized ARP scan
 
 
 

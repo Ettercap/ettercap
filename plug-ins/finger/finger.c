@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.1 2003/10/12 15:26:33 alor Exp $
+    $Id: finger.c,v 1.2 2003/10/12 17:40:43 alor Exp $
 */
 
 
@@ -58,8 +58,6 @@ struct plugin_ops finger_ops = {
    info:             "Fingerprint a remote host",  
    /* the plugin version. note: 15 will be displayed as 1.5 */                    
    version:          "1.0",   
-   /* the pluging type: PL_STANDALONE or PL_HOOK */                    
-   type:             PL_STANDALONE,
    /* activation function */
    init:             &finger_init,
    /* deactivation function */                     

@@ -18,7 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dummy.c,v 1.6 2003/10/12 15:26:04 alor Exp $
+    $Id: dummy.c,v 1.7 2003/10/12 17:40:43 alor Exp $
 */
 
 
@@ -52,8 +52,6 @@ struct plugin_ops dummy_ops = {
    info:             "Only a standalone plugin template",  
    /* the plugin version. note: 15 will be displayed as 1.5 */                    
    version:          "3.0",   
-   /* the pluging type: PL_STANDALONE or PL_HOOK */                    
-   type:             PL_STANDALONE,
    /* activation function */
    init:             &dummy_init,
    /* deactivation function */                     
@@ -94,7 +92,8 @@ static int dummy_init(void *dummy)
 
    /* return PLUGIN_FINISHED if the plugin has terminated
     * its execution.
-    * return PLUGIN_RUNNING if it has spawned a thread and
+    * return PLUGIN_RUNNING if it has spawned a thread or it
+    * is hooked to an ettercap hookpoint and
     * it needs to be deactivated with the fini method.
     */
    return PLUGIN_FINISHED;
@@ -103,7 +102,8 @@ static int dummy_init(void *dummy)
 
 static int dummy_fini(void *dummy) 
 {
-   /* called to terminate a plugin.
+   /* 
+    * called to terminate a plugin.
     * usually to kill threads created in the 
     * init function or to remove hook added 
     * previously.

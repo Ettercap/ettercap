@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.40 2004/07/01 20:45:43 alor Exp $
+    $Id: ec_profiles.c,v 1.41 2004/10/05 13:31:49 alor Exp $
 */
 
 #include <ec.h>
@@ -668,6 +668,11 @@ int profile_dump_to_file(char *filename)
       
       /* log for each host */
       log_write_info_arp_icmp(&fd, &po);
+      
+      /* log the info. needed to record the fingerprint.
+       * the above function will not log it 
+       */
+      log_write_info(&fd, &po);
       
       LIST_FOREACH(o, &(h->open_ports_head), next) {
          

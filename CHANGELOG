@@ -17,6 +17,7 @@ NG-0.7.2         200410
    !! fixed the mmap problem under windows
    !! fixed file operation under windows (O_BINARY related)
    !! fixed the IRC password collector (\r \n related)
+   !! fixes the dumping of the profiles to a file (fingerprint not recorded)
 
 
 NG-0.7.1         20040920

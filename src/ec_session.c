@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.12 2003/09/09 14:59:29 alor Exp $
+    $Id: ec_session.c,v 1.13 2003/09/09 15:44:51 alor Exp $
 */
 
 #include <ec.h>
@@ -270,14 +270,31 @@ void session_free(struct session *s)
 
 /*
  * calculate the hash for an ident.
- * use a TCP like checksum so if some word will be exchanged
+ * use a IP-like checksum so if some word will be exchanged
  * the hash will be the same. it is useful for dissectors
  * to find the same session if the packet is goint to the
  * server or to the client.
  */
 u_int32 session_hash(void *ident, size_t ilen)
 {
+   u_int32 hash = 0;
+   u_int16 *buf = (u_int16 *)ident;
+
    return 0;
+   
+   while(ilen > 1) {
+      hash += *buf++;
+      ilen -= sizeof(u_int16);
+   }
+
+   if (ilen == 1) 
+      hash += htons(*(u_char *)buf << 8);
+
+   hash = (hash >> 16) + (hash & 0xffff);
+   hash += (hash >> 16);
+  
+   /* the hash must be within the TABSIZE */
+   return (u_int16)(~hash) & TABSIZE;
 }
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.2 2004/03/08 12:38:01 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.3 2004/03/08 15:53:10 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -27,7 +27,7 @@
 // XXX - check if we have poll.h
 #include <sys/poll.h>
 
-/* don't include kreberos. RH sux !! */
+/* don't include kerberos. RH sux !! */
 #define OPENSSL_NO_KRB5 1
 
 #include <openssl/ssl.h>
@@ -41,7 +41,7 @@
 #include <ec_sslwrap.h>
 
 //XXX - Only to make it compile
-#define CERT_FILE "/cert.cer"
+#define CERT_FILE "etter.ssl.crt"
 #define DATA_PATH "/"
 
 /* globals */
@@ -79,7 +79,7 @@ struct sslw_ident {
 };
 #define SSLW_IDENT_LEN sizeof(struct sslw_ident)
 
-#define SSLW_RETRY 3
+#define SSLW_RETRY 5
 #define SSLW_WAIT 10000
 
 SSL_CTX   *ssl_ctx_client;
@@ -90,7 +90,7 @@ SSL_CTX   *ssl_ctx_client;
 void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_char status);
 EC_THREAD_FUNC(sslw_start);
 static int sslw_is_ssl(struct packet_object *po);
-static int sslw_client_accept(struct accepted_entry *ae, struct sockaddr_in *sin);
+static int sslw_client_accept(struct accepted_entry *ae);
 static int sslw_ssl_connect(void *method, struct accepted_entry *ae);
 static int sslw_connect_server(struct accepted_entry *ae);
 static void sslw_bind_wrapper(void);
@@ -122,7 +122,7 @@ static void sslw_hook_handled(struct packet_object *po)
    /* If it's a new connection */
    if ( (po->flags & PO_FORWARDABLE) && 
         (po->L4.flags & TH_SYN) &&
-	!(po->L4.flags & TH_ACK) ) {
+        !(po->L4.flags & TH_ACK) ) {
 	
       sslw_create_session(&s, PACKET);
 
@@ -163,11 +163,11 @@ static int sslw_is_ssl(struct packet_object *po)
    if (po->flags & PO_FROMSSL) 
       return 0;
 
-   LIST_FOREACH(le, &listen_ports, next) 
+   LIST_FOREACH(le, &listen_ports, next) {
       if (ntohs(po->L4.dst) == le->sslw_port ||
           ntohs(po->L4.src) == le->sslw_port)
          return 1;
-   
+   }
    return 0;
 }
 
@@ -198,6 +198,7 @@ static void sslw_bind_wrapper(void)
          le->redir_port = bind_port;
       } while ( bind(le->fd, (struct sockaddr *)&sa_in, sizeof(sa_in)) != 0);
 
+      DEBUG_MSG("sslw - bind %d on %d", le->sslw_port, le->redir_port);
       listen(le->fd, 100);      
    }
 }
@@ -206,11 +207,8 @@ static void sslw_bind_wrapper(void)
 /* 
  * Initialize client connection 
  */
-static int sslw_client_accept(struct accepted_entry *ae, struct sockaddr_in *sin)
+static int sslw_client_accept(struct accepted_entry *ae)
 {
-   /* Set the peer (client) in the connection list entry */
-   ae->port[SSL_CLIENT] = sin->sin_port;
-   ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (char *)&(sin->sin_addr.s_addr));
 
    /* Initialize SSL status */
    if (ae->status == SSL_ENABLED) {
@@ -229,12 +227,13 @@ static int sslw_client_accept(struct accepted_entry *ae, struct sockaddr_in *sin
 static int sslw_ssl_connect(void *method, struct accepted_entry *ae)
 {
    SSL_CTX *ctx_server;
-  
+   
    ctx_server = SSL_CTX_new(method);
    ae->ssl[SSL_SERVER] = SSL_new(ctx_server);
    SSL_set_connect_state(ae->ssl[SSL_SERVER]);
    SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
 
+   // XXX - Is it blocking????
    return SSL_connect(ae->ssl[SSL_SERVER]);
 }
 
@@ -249,8 +248,8 @@ static int sslw_connect_server(struct accepted_entry *ae)
    struct sockaddr_in sin;
    struct ec_session *s = NULL;
    struct packet_object po;
-   struct ip_addr *wip;
-   void *ident;
+   struct ip_addr *wip = NULL;
+   void *ident = NULL;
    int i;
 
    /* Take the server IP address from the NAT sessions */
@@ -264,7 +263,7 @@ static int sslw_connect_server(struct accepted_entry *ae)
     * A little waiting loop because the sniffing thread , 
     * which creates the session, may be slower than this
     */
-   for (i=0; i<SSLW_RETRY && session_get_and_del(&s, ident, SSLW_IDENT_LEN)==-ENOTFOUND; i++)
+   for (i=0; i<SSLW_RETRY && session_get_and_del(&s, ident, SSLW_IDENT_LEN)!=ESUCCESS; i++)
       usleep(SSLW_WAIT);
 
    if (i==SSLW_RETRY) {
@@ -273,6 +272,12 @@ static int sslw_connect_server(struct accepted_entry *ae)
    }
    
    wip = (struct ip_addr *)s->data;
+
+   /* Remember the server IP address in the sessions */
+   memcpy(&ae->ip[SSL_SERVER], wip, sizeof(struct ip_addr));
+           
+   memset(&sin, 0, sizeof(sin));
+   sin.sin_family = AF_INET;
    sin.sin_port = ae->port[SSL_SERVER];
    sin.sin_addr.s_addr = ip_addr_to_int32(wip->addr);
  
@@ -283,22 +288,25 @@ static int sslw_connect_server(struct accepted_entry *ae)
    /* Standard connection to the server */
    if ( (ae->fd[SSL_SERVER] = socket(AF_INET, SOCK_STREAM, 0)) == -1)
       return -EINVALID;
-       
+
+   // XXX - Make it non-blocking
    if (connect(ae->fd[SSL_SERVER], (struct sockaddr *)&sin, sizeof(struct sockaddr)) == -1) {
       close(ae->fd[SSL_SERVER]);
       return -EINVALID;   
    }      
 
    /* SSL-connect the server */
+   // XXX - If the first fails, do the others connect?????
+   // XXX - If the peer closes connection, is it a BrokenPipe????
    if (ae->status == SSL_ENABLED) {
-      if (sslw_ssl_connect(SSLv3_client_method(), ae) != 1 &&
+      if (sslw_ssl_connect(SSLv23_client_method(), ae) != 1 &&
           sslw_ssl_connect(SSLv2_client_method(), ae) != 1 &&
           sslw_ssl_connect(TLSv1_client_method(), ae) != 1) {
          close(ae->fd[SSL_SERVER]);
          return -EINVALID;   
       }      
    }
-   
+	       
    return ESUCCESS;   
 }
 
@@ -419,7 +427,7 @@ static void sslw_init(void)
 
    if (SSL_CTX_use_certificate_file(ssl_ctx_client, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
       if (SSL_CTX_use_certificate_file(ssl_ctx_client, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         ;//Error_msg("Can't open \"%s\" file !!", CERT_FILE);
+         FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
    }
 
    if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
@@ -443,7 +451,7 @@ EC_THREAD_FUNC(sslw_start)
    struct listen_entry *le;
    struct accepted_entry *ae;
    u_int16 number_of_services, number_of_connections, i, j;
-   u_int32 dummy;
+   u_int32 len = sizeof(struct sockaddr_in);
    struct sockaddr_in client_sin;
    struct packet_object po;
    
@@ -495,7 +503,7 @@ EC_THREAD_FUNC(sslw_start)
       LIST_FOREACH(ae, &accepted_conn, next) {
          poll_fd[i].fd = ae->fd[SSL_CLIENT];
          poll_fd[i++].events = POLLIN;
-	 poll_fd[i].fd = ae->fd[SSL_SERVER];
+         poll_fd[i].fd = ae->fd[SSL_SERVER];
          poll_fd[i++].events = POLLIN;
       }
 
@@ -507,38 +515,42 @@ EC_THREAD_FUNC(sslw_start)
       for(i=0; i<number_of_services; i++) 
          if (poll_fd[i].revents & POLLIN) {
 	 
-	    j = 0;
+            j = 0;
             LIST_FOREACH(le, &listen_ports, next) {
-	       if (j==i)
-	          break;
+               if (j==i)
+                  break;
                j++;   
             }        
 	    
             DEBUG_MSG("ssl_wrapper -- got a connection on port %d [%d]", le->redir_port, le->sslw_port);
-	    SAFE_CALLOC(ae, 1, sizeof(struct accepted_entry));
+            SAFE_CALLOC(ae, 1, sizeof(struct accepted_entry));
 	    
-            ae->fd[SSL_CLIENT] = accept(poll_fd[i].fd, (struct sockaddr *)&client_sin, &dummy);
+            ae->fd[SSL_CLIENT] = accept(poll_fd[i].fd, (struct sockaddr *)&client_sin, &len);
 	    
-	    /* Error checking */
-	    if (ae->fd[SSL_CLIENT] == -1) {
-	       SAFE_FREE(ae);
-	       continue;
-	    }
-	    
-	    /* Set the server original port for protocol dissection */
-	    ae->port[SSL_SERVER] = htons(le->sslw_port);
+            /* Error checking */
+            if (ae->fd[SSL_CLIENT] == -1) {
+               SAFE_FREE(ae);
+               continue;
+            }
+
+            /* Set the server original port for protocol dissection */
+            ae->port[SSL_SERVER] = htons(le->sslw_port);
             
             /* Check if we have to enter SSL status */
-	    ae->status = le->status;
+            ae->status = le->status;
+	       
+            /* Set the peer (client) in the connection list entry */
+            ae->port[SSL_CLIENT] = client_sin.sin_port;
+            ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (char *)&(client_sin.sin_addr.s_addr));
+
+            /* Contact the real server */
+            if (sslw_connect_server(ae) != ESUCCESS) {
+               close(ae->fd[SSL_CLIENT]);
+               SAFE_FREE(ae);
+               continue;
+            }
 	    
-	    /* Contact the real server */
-	    if (sslw_connect_server(ae) != ESUCCESS) {
-	       SAFE_FREE(ae);
-	       close(ae->fd[SSL_CLIENT]);
-	       continue;
-	    }
-	    
-	    sslw_client_accept(ae, &client_sin);
+            sslw_client_accept(ae);
 
             LIST_INSERT_HEAD(&accepted_conn, ae, next);    
          }
@@ -548,29 +560,29 @@ EC_THREAD_FUNC(sslw_start)
          if (poll_fd[i+number_of_services].revents & (POLLIN | POLLHUP | POLLERR | POLLNVAL)) {
             u_int32 direction, connection;
 	    
-	    /* Check if it's server or client and which connection */
-	    direction = i%2;
-	    connection = i/2;
+            /* Check if it's server or client and which connection */
+            direction = i%2;
+            connection = i/2;
             LIST_FOREACH(ae, &accepted_conn, next) {
-	       if (connection == 0)
-	          break;
+               if (connection == 0)
+                  break;
                connection--;
             }
 	    
-	    /* Data to read.. */
-	    if (poll_fd[i+number_of_services].revents & POLLIN) {
-	       if (sslw_read_data(ae, direction, &po) != ESUCCESS) {
-	          sslw_wipe_connection(ae);
-	          continue;
-	       }
+            /* Data to read.. */
+            if (poll_fd[i+number_of_services].revents & POLLIN) {
+               if (sslw_read_data(ae, direction, &po) != ESUCCESS) {
+                  sslw_wipe_connection(ae);
+                  continue;
+               }
 	       
-	       sslw_parse_packet(ae, direction, &po);
+               sslw_parse_packet(ae, direction, &po);
 
-	       if (sslw_write_data(ae, !direction, &po) != ESUCCESS) 
-	          sslw_wipe_connection(ae);
-	    } else 
-	       /* if HUP remove the entry from the list */
-	       sslw_wipe_connection(ae);
+               if (sslw_write_data(ae, !direction, &po) != ESUCCESS) 
+                  sslw_wipe_connection(ae);
+            } else 
+               /* if HUP remove the entry from the list */
+               sslw_wipe_connection(ae);
          }
    }
 }
@@ -617,7 +629,7 @@ static int sslw_match(void *id_sess, void *id_curr)
     */
    if (ids->magic != id->magic)
       return 0;
-   
+
    if (ids->L4_src == id->L4_src &&
        ids->L4_dst == id->L4_dst &&
        !ip_addr_cmp(&ids->L3_src, &id->L3_src)) 

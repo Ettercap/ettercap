@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.17 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.18 2003/07/07 10:43:19 alor Exp $
 */
 
 #include <ec.h>
@@ -243,8 +243,8 @@ void get_hw_info(void)
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
  
    /* dont touch the interface reading from file */
-   if (GBL_OPTIONS->read) {
-      DEBUG_MSG("get_hw_info: skipping... (reading offline)");
+   if (!GBL_LNET->lnet) {
+      DEBUG_MSG("get_hw_info: skipping... (not initialized)");
       return;
    }
    

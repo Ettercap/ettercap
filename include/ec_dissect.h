@@ -28,15 +28,16 @@ extern int dissect_modify(int mode, char *name, u_int32 port);
 extern int dissect_match(void *id_sess, void *id_curr);
 extern void dissect_create_session(struct session **s, struct packet_object *po); 
 extern void dissect_create_ident(void **i, struct packet_object *po); 
-
+extern int dissect_on_port(char *name, u_int16 port);
+   
 /*
  * creates the session on the first packet sent from
  * the server (SYN+ACK)
  */
 
-#define CREATE_SESSION_ON_SYN_ACK(port, session) do{        \
-      if (ntohs(PACKET->L4.src) == port && (PACKET->L4.flags & TH_SYN) && (PACKET->L4.flags & TH_ACK)) { \
-         DEBUG_MSG("create_session_on_syn_ack %d", port);   \
+#define CREATE_SESSION_ON_SYN_ACK(name, session) do{        \
+      if (dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS && (PACKET->L4.flags & TH_SYN) && (PACKET->L4.flags & TH_ACK)) { \
+         DEBUG_MSG("create_session_on_syn_ack %s", name);   \
          /* create the session */                           \
          dissect_create_session(&session, PACKET);          \
          session_put(session);                              \
@@ -57,21 +58,21 @@ extern void dissect_create_ident(void **i, struct packet_object *po);
  *
  */
 
-#define IF_FIRST_PACKET_FROM_SERVER(port, session, ident) \
-   if (ntohs(PACKET->L4.src) == port && PACKET->L4.flags & TH_PSH) {  \
-      dissect_create_ident(&ident, PACKET);                          \
-      /* the session exist */                                        \
+#define IF_FIRST_PACKET_FROM_SERVER(name, session, ident)                  \
+   if (dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS && PACKET->L4.flags & TH_PSH) {  \
+      dissect_create_ident(&ident, PACKET);                                \
+      /* the session exist */                                              \
       if (session_get(&session, ident) != -ENOTFOUND) {                    \
          /* prevent to delete the session created for the user and pass */ \
          if (session->data == NULL)                                        
 
 
-#define ENDIF_FIRST_PACKET_FROM_SERVER(port, session, ident)   \
-         if (session->data == NULL)                            \
-            session_del(ident);                                \
-      }                                                        \
-      SAFE_FREE(ident);                                        \
-      return NULL;                                             \
+#define ENDIF_FIRST_PACKET_FROM_SERVER(session, ident)   \
+         if (session->data == NULL)                      \
+            session_del(ident);                          \
+      }                                                  \
+      SAFE_FREE(ident);                                  \
+      return NULL;                                       \
    }  
 
 

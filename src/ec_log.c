@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.20 2003/07/04 21:51:38 alor Exp $
+    $Id: ec_log.c,v 1.21 2003/07/07 10:43:20 alor Exp $
 */
 
 #include <ec.h>
@@ -168,7 +168,7 @@ void log_packet(struct packet_object *po)
 {
    /* the regex is set, respect it */
    if (GBL_OPTIONS->regex) {
-      if (regexec(GBL_OPTIONS->regex, po->disp_data, 0, NULL, 0) == 0)
+      if (regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) == 0)
          log_write_packet(po);
    } else {
       /* if no regex is set, dump all the packets */
@@ -261,7 +261,7 @@ void log_write_packet(struct packet_object *po)
    hp.L4_dst = po->L4.dst;
  
    /* the length of the payload */
-   hp.len = htonl(po->disp_len);
+   hp.len = htonl(po->DATA.disp_len);
 
    LOG_LOCK;
    
@@ -269,13 +269,13 @@ void log_write_packet(struct packet_object *po)
       c = gzwrite(fd_cp, &hp, sizeof(hp));
       ON_ERROR(c, -1, "%s", gzerror(fd_cp, &zerr));
 
-      c = gzwrite(fd_cp, po->disp_data, po->disp_len);
+      c = gzwrite(fd_cp, po->DATA.disp_data, po->DATA.disp_len);
       ON_ERROR(c, -1, "%s", gzerror(fd_cp, &zerr));
    } else {
       c = write(fd_p, &hp, sizeof(hp));
       ON_ERROR(c, -1, "Can't write to logfile");
 
-      c = write(fd_p, po->disp_data, po->disp_len);
+      c = write(fd_p, po->DATA.disp_data, po->DATA.disp_len);
       ON_ERROR(c, -1, "Can't write to logfile");
    }
    

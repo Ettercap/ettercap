@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff_unified.c,v 1.3 2003/06/10 10:39:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff_unified.c,v 1.4 2003/07/07 10:43:20 alor Exp $
 */
 
 #include <ec.h>
@@ -42,7 +42,10 @@ void start_unified_sniff(void)
 
 void forward_unified_sniff(struct packet_object *po)
 {
-
+   /* if it was not initialized, no packet are forwardable */
+   if (!GBL_LNET->lnet)
+      return;
+   
    /* 
     * forward the packet to Layer 3, the kernel
     * will route them to the correct destination (host or gw)

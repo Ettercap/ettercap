@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.19 2003/07/04 21:51:38 alor Exp $
+    $Id: ec_packet.c,v 1.20 2003/07/07 10:43:20 alor Exp $
 */
 
 #include <ec.h>
@@ -60,16 +60,16 @@ inline int packet_create_object(struct packet_object *po, u_char *buf, size_t le
  * disp data is usefull when the protocol is
  * encrypted and we want to forward the packet as is
  * but display the decrypted data.
- * decoders should decrypt data from po->DATA.data to po->disp_data
+ * decoders should decrypt data from po->DATA.data to po->DATA.disp_data
  */
 
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
 {
-   po->disp_data = calloc(len, sizeof(u_char));
-   ON_ERROR(po->disp_data, NULL, "calloc: can't allocate disp_data");
+   po->DATA.disp_data = calloc(len, sizeof(u_char));
+   ON_ERROR(po->DATA.disp_data, NULL, "calloc: can't allocate disp_data");
 
-   po->disp_len = len;
-   memcpy(po->disp_data, buf, len);
+   po->DATA.disp_len = len;
+   memcpy(po->DATA.disp_data, buf, len);
 
    return len;
 }
@@ -96,7 +96,7 @@ inline int packet_destroy_object(struct packet_object *po)
     * free the disp_data pointer
     * it was malloced by tcp or udp decoder
     */
-   SAFE_FREE(po->disp_data);
+   SAFE_FREE(po->DATA.disp_data);
    
    return 0;
 
@@ -124,11 +124,11 @@ struct packet_object * packet_dup(struct packet_object *po)
    memcpy(dup_po, po, sizeof(struct packet_object));
   
    /* duplicate the po dispdata */
-   dup_po->disp_data = calloc(po->disp_len, sizeof(u_char));
-   ON_ERROR(dup_po->disp_data, NULL, "can't allocate memory");
+   dup_po->DATA.disp_data = calloc(po->DATA.disp_len, sizeof(u_char));
+   ON_ERROR(dup_po->DATA.disp_data, NULL, "can't allocate memory");
   
    /* copy the buffer */
-   memcpy(dup_po->disp_data, po->disp_data, po->disp_len);
+   memcpy(dup_po->DATA.disp_data, po->DATA.disp_data, po->DATA.disp_len);
 
    
    /* duplicate the po buffer */

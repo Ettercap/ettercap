@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.12 2003/06/21 13:58:42 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.13 2003/07/07 10:43:20 alor Exp $
 */
 
 #include <ec.h>
@@ -86,8 +86,8 @@ void build_hosts_list(void)
    if (GBL_OPTIONS->silent)
       return;
       
-   /* even in offline sniffing the list should not be created */
-   if (GBL_OPTIONS->read)
+   /* it not initialized don't make the list */
+   if (GBL_LNET->lnet == 0)
       return;
    
    /*

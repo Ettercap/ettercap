@@ -25,6 +25,11 @@
 
 >>> current developmet state 
 
+   + DISSECTOR
+      - nntp authinfo 
+      - pop APOP
+      - x11 banner
+
    + TOP HALF
       - connection tracking (with buffered conn)
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.17 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.18 2003/07/07 10:43:20 alor Exp $
 */
 
 #include <ec.h>
@@ -68,11 +68,6 @@ static pthread_mutex_t ip_list_mutex = PTHREAD_MUTEX_INITIALIZER;
  */
 void set_forwardable_flag(struct packet_object *po)
 {
-   /* we are reading from file,
-    * no packets are forwardable
-    */
-   if (GBL_OPTIONS->read)
-      return;
 
    /* in bridged sniffing all the packet have to be forwarded */
    if (GBL_SNIFF->type == SM_BRIDGED)

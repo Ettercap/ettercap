@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.13 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.14 2003/07/07 10:43:20 alor Exp $
 */
 
 #include <ec.h>
@@ -60,9 +60,15 @@ void send_init(void)
    libnet_t *l3;
    libnet_t *lb;
    char lnet_errbuf[LIBNET_ERRBUF_SIZE];
-  
+ 
+   /* check if it must not be lnet */
    if (GBL_OPTIONS->read) {
       DEBUG_MSG("send_init: skipping... (reading offline)");
+      return;
+   }
+   
+   if (!strcasecmp(GBL_OPTIONS->iface, "lo")) {
+      DEBUG_MSG("send_init: skipping... (using loopback)");
       return;
    }
    
@@ -90,9 +96,8 @@ void send_init(void)
       
    /* use the same socket for lnet and pcap */
    hack_pcap_lnet(GBL_PCAP->pcap, GBL_LNET->lnet);
- 
+
    atexit(send_close);
-   
 }
 
 
@@ -121,8 +126,8 @@ int send_to_L3(struct packet_object *po)
    libnet_ptag_t t = (libnet_ptag_t)pthread_self();
    int c;
 
-   /* in offline sniffig we MUST NOT send anything ! */
-   BUG_IF(GBL_OPTIONS->read);
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet == 0);
    
    SEND_LOCK;
    
@@ -154,8 +159,8 @@ int send_to_L2(struct packet_object *po)
    libnet_ptag_t t = (libnet_ptag_t)pthread_self();
    int c;
    
-   /* in offline sniffig we MUST NOT send anything ! */
-   BUG_IF(GBL_OPTIONS->read);
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet == 0);
    
    SEND_LOCK;
    
@@ -186,8 +191,8 @@ int send_to_bridge(struct packet_object *po)
    libnet_ptag_t t = (libnet_ptag_t)pthread_self();
    int c;
   
-   /* in offline sniffig we MUST NOT send anything ! */
-   BUG_IF(GBL_OPTIONS->read);
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet == 0);
    
    SEND_LOCK;
 
@@ -259,8 +264,8 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    u_long packet_s;
    int c;
  
-   /* in offline sniffig we MUST NOT send anything ! */
-   BUG_IF(GBL_OPTIONS->read);
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet == 0);
    
    SEND_LOCK;
 

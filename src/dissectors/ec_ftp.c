@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ftp.c,v 1.4 2003/06/24 16:36:00 alor Exp $
+    $Id: ec_ftp.c,v 1.5 2003/07/07 10:43:20 alor Exp $
 */
 
 #include <ec.h>
@@ -51,25 +51,28 @@ FUNC_DECODER(dissector_ftp)
    char tmp[MAX_ASCII_ADDR_LEN];
 
    /* the connection is starting... create the session */
-   CREATE_SESSION_ON_SYN_ACK(21, s);
+   CREATE_SESSION_ON_SYN_ACK("ftp", s);
    
    /* check if it is the first packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER(21, s, ident) {
+   IF_FIRST_PACKET_FROM_SERVER("ftp", s, ident) {
             
-      /* get the banner */
-      PACKET->DISSECTOR.banner = strdup(ptr+4);
+      /*
+       * get the banner 
+       * ptr + 4 to skip the initial 200 response
+       */
+      PACKET->DISSECTOR.banner = strdup(ptr + 4);
      
-   } ENDIF_FIRST_PACKET_FROM_SERVER(21, s, ident)
+   } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    
    /* skip messages coming from the server */
-   if (ntohs(PACKET->L4.src) == 21) 
+   if (dissect_on_port("ftp", ntohs(PACKET->L4.src)) == ESUCCESS)
       return NULL;
 
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;
    
-   DEBUG_MSG("FTP --> TCP 21  dissector_ftp");
+   DEBUG_MSG("FTP --> TCP dissector_ftp");
  
    /* skip the whitespaces at the beginning */
    while(*ptr == ' ' && ptr != end) ptr++;

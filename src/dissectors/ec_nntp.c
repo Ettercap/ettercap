@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector POP3 -- TCP 110
+    ettercap -- dissector NNTP -- TCP 119
 
     Copyright (C) ALoR & NaGA
 
@@ -17,13 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.14 2003/07/07 10:43:20 alor Exp $
+    $Id: ec_nntp.c,v 1.1 2003/07/07 10:43:20 alor Exp $
 */
 
 /*
  * The authentication schema can be found here:
  * 
- * ftp://ftp.rfc-editor.org/in-notes/std/std53.txt
+ * ftp://ftp.rfc-editor.org/in-notes/rfc2980.txt
  * 
  */
 
@@ -35,8 +35,8 @@
 
 /* protos */
 
-FUNC_DECODER(dissector_pop);
-void pop_init(void);
+FUNC_DECODER(dissector_nntp);
+void nntp_init(void);
 
 /************************************************/
 
@@ -45,12 +45,12 @@ void pop_init(void);
  * it adds the entry in the table of registered decoder
  */
 
-void __init pop_init(void)
+void __init nntp_init(void)
 {
-   dissect_add("pop", APP_LAYER_TCP, 110, dissector_pop);
+   dissect_add("nntp", APP_LAYER_TCP, 119, dissector_nntp);
 }
 
-FUNC_DECODER(dissector_pop)
+FUNC_DECODER(dissector_nntp)
 {
    DECLARE_DISP_PTR_END(ptr, end);
    struct session *s = NULL;
@@ -58,48 +58,47 @@ FUNC_DECODER(dissector_pop)
    char tmp[MAX_ASCII_ADDR_LEN];
    
    /* the connection is starting... create the session */
-   CREATE_SESSION_ON_SYN_ACK("pop", s);
+   CREATE_SESSION_ON_SYN_ACK("nntp", s);
    
    /* check if it is the first packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("pop", s, ident) {
+   IF_FIRST_PACKET_FROM_SERVER("nntp", s, ident) {
             
-      /* get the banner */
-      if (!strncmp(ptr, "+OK", 3))
-         PACKET->DISSECTOR.banner = strdup(ptr+4);
-     
-      /* remove the trailing numbers */
-      if ( (ptr = strchr(PACKET->DISSECTOR.banner, '<')) != NULL )
-         *ptr = '\0';
+      /*
+       * get the banner 
+       * ptr + 4 to skip the initial 200 response
+       */
+      PACKET->DISSECTOR.banner = strdup(ptr + 4);
             
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
-
    
    /* skip messages coming from the server */
-   if (dissect_on_port("pop", ntohs(PACKET->L4.src)) == ESUCCESS)
+   if (dissect_on_port("nntp", ntohs(PACKET->L4.src)) == ESUCCESS)
       return NULL;
 
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;
  
-   DEBUG_MSG("POP --> TCP dissector_pop");
+   DEBUG_MSG("NNTP --> TCP dissector_nntp");
    
    /* skip the whitespaces at the beginning */
    while(*ptr == ' ' && ptr != end) ptr++;
   
    /* harvest the username */
-   if ( !strncasecmp(ptr, "USER ", 5) ) {
+   if ( !strncasecmp(ptr, "AUTHINFO USER ", 14) ) {
 
-      DEBUG_MSG("\tDissector_POP USER");
+      DEBUG_MSG("\tDissector_nntp USER");
       
       /* create the session */
       dissect_create_session(&s, PACKET);
       
-      ptr += 5;
+      ptr += 14;
+
       /* fill the session data */
       s->data = strdup(ptr);
       s->data_len = strlen(ptr);
       
+      /* remove the \r\n */
       if ( (ptr = strchr(s->data,'\r')) != NULL )
          *ptr = '\0';
       
@@ -108,11 +107,11 @@ FUNC_DECODER(dissector_pop)
    }
 
    /* harvest the password */
-   if ( !strncasecmp(ptr, "PASS ", 5) ) {
+   if ( !strncasecmp(ptr, "AUTHINFO PASS ", 14) ) {
 
-      DEBUG_MSG("\tDissector_POP PASS");
+      DEBUG_MSG("\tDissector_nntp PASS");
       
-      ptr += 5;
+      ptr += 14;
       
       /* create an ident to retrieve the session */
       dissect_create_ident(&ident, PACKET);
@@ -136,7 +135,7 @@ FUNC_DECODER(dissector_pop)
       if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
          *ptr = '\0';
 
-      USER_MSG("POP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      USER_MSG("NNTP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass);

@@ -60,6 +60,10 @@ struct host_profile {
    LIST_ENTRY(host_profile) next;
 };
 
+/* exported functions */
+extern void profile_purge_local(void);
+extern void profile_purge_remote(void);
+extern void profile_purge_all(void);
 
 #endif
 

@@ -12,21 +12,22 @@ NG-0.7.0    ????????
    + root privs dropped after initialization
    + layer 3 routing (forwarding packets)
    + wifi support
-   + unified sniffing
+   + unified sniffing (you can use external hijacker)
    + multiple target selection
    + pcap filter
    + etterlog utility for logfiles parsing
    + regex matching 
    + hook point per packet type (TCP, UDP... )
-   + quiet mode
+   + quiet mode (don't print packet content)
    + enhanced passive open port discoverer 
    + randomized ARP scan
-   + cached dns resolution (increase speed)
+   + cached dns resolution (increase speed and stealth)
    + enhanced statistics on ettercap performances
    + extended headers for every packet
    + passive DNS answer caching
    + global conf file always loaded to tweak internal variables
    + etter.conf supports dissectors on multiple ports
+   + possibility to sniff on loopback
    !! offline sniffing actually does not bind to any NICs
 
 

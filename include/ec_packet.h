@@ -48,6 +48,14 @@ struct packet_object {
    struct data {
       u_char * data;
       size_t len;
+      /* 
+       * buffer containing the data to be displayed.
+       * some dissector decripts the traffic, but the packet must be forwarded as
+       * is, so the decripted data must be placed in a different buffer. 
+       * this is that bufffer and it is malloced by tcp or udp dissector.
+       */
+      size_t disp_len;
+      u_char * disp_data;
    } DATA;
 
    size_t fwd_len;         /* lenght of the packet to be forwarded */
@@ -72,13 +80,6 @@ struct packet_object {
    
    int delta;  /* for modified packet this is the delta for the lenght */
    
-   /* buffer containing the data to be displayed.
-    * some dissector decripts the traffic, but the packet must be forwarded as
-    * is, so the decripted data must be placed in a different buffer. 
-    * this is that bufffer and it is malloced by tcp or udp dissector.
-    */
-   size_t disp_len;
-   u_char * disp_data;
 
    /* 
     * here are stored the user and pass collected by dissectors 

@@ -17,10 +17,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.8 2003/07/04 21:51:38 alor Exp $
+    $Id: ec_profiles.c,v 1.9 2003/07/07 10:43:20 alor Exp $
 */
 
 #include <ec.h>
+#include <ec_threads.h>
 #include <ec_passive.h>
 #include <ec_profiles.h>
 #include <ec_packet.h>
@@ -29,12 +30,24 @@
 /* protos */
 
 void __init profiles_init(void);
-void profile_parse(struct packet_object *po);
+
+static void profile_purge(int flag);
+void profile_purge_local(void);
+void profile_purge_remote(void);
+void profile_purge_all(void);
+
+static void profile_parse(struct packet_object *po);
 static int profile_add_host(struct packet_object *po);
 static int profile_add_user(struct packet_object *po);
 static void update_info(struct host_profile *h, struct packet_object *po);
 static void update_port_list(struct host_profile *h, struct packet_object *po);
 static void set_gateway(u_char *L2_addr);
+
+/* global mutex on interface */
+
+static pthread_mutex_t profile_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define PROFILE_LOCK     pthread_mutex_lock(&profile_mutex)
+#define PROFILE_UNLOCK   pthread_mutex_unlock(&profile_mutex)
 
 /************************************************/
   
@@ -110,6 +123,8 @@ static int profile_add_host(struct packet_object *po)
       memset(&po->L2.src, 0, ETH_ADDR_LEN);
    }
 
+   PROFILE_LOCK;
+
    /* parse the list */
    LIST_FOREACH(h, &GBL_PROFILES, next) {
       /* search the host.
@@ -119,9 +134,12 @@ static int profile_add_host(struct packet_object *po)
          update_info(h, po);
          /* the host was already in the list
           * return 0 host added */
+         PROFILE_UNLOCK;
          return 0;
       }
    }
+  
+   PROFILE_UNLOCK;
   
    DEBUG_MSG("profile_add_host");
    
@@ -144,6 +162,8 @@ static int profile_add_host(struct packet_object *po)
 
    /* fill the structure with the collected infos */
    update_info(h, po);
+
+   PROFILE_LOCK;
    
    /* search the right point to inser it (ordered ascending) */
    LIST_FOREACH(c, &GBL_PROFILES, next) {
@@ -159,6 +179,8 @@ static int profile_add_host(struct packet_object *po)
    else 
       LIST_INSERT_AFTER(last, h, next);
 
+   PROFILE_UNLOCK;
+   
    return 1;   
 }
 
@@ -211,12 +233,17 @@ static void set_gateway(u_char *L2_addr)
 {
    struct host_profile *h;
 
+   PROFILE_LOCK;
+
    LIST_FOREACH(h, &GBL_PROFILES, next) {
       if (!memcmp(h->L2_addr, L2_addr, ETH_ADDR_LEN) ) {
          h->type |= FP_GATEWAY; 
+         PROFILE_UNLOCK;
          return;
       }
    }
+   
+   PROFILE_UNLOCK;
 }
 
 /* 
@@ -289,6 +316,8 @@ static int profile_add_user(struct packet_object *po)
       return 0;
   
    DEBUG_MSG("profile_add_user");
+  
+   PROFILE_LOCK; 
    
    /* search the right port on the right host */
    LIST_FOREACH(h, &GBL_PROFILES, next) {
@@ -315,14 +344,18 @@ static int profile_add_user(struct packet_object *po)
     * don't worry, we have lost this for now, 
     * but the next time it will be captured.
     */
-   if (!found || o == NULL)
+   if (!found || o == NULL) {
+      PROFILE_UNLOCK;
       return 0;
+   }
    
    /* search if the user was already logged */ 
    LIST_FOREACH(u, &(o->users_list_head), next) {
       if (!strcmp(u->user, po->DISSECTOR.user) && 
-          !strcmp(u->pass, po->DISSECTOR.pass))
+          !strcmp(u->pass, po->DISSECTOR.pass)) {
+         PROFILE_UNLOCK;
          return 0;
+      }
    }
    
    u = calloc(1, sizeof(struct active_user));
@@ -334,6 +367,7 @@ static int profile_add_user(struct packet_object *po)
       u->pass = po->DISSECTOR.pass;
    } else {
       SAFE_FREE(u);
+      PROFILE_UNLOCK;
       return 0;
    }
   
@@ -355,9 +389,84 @@ static int profile_add_user(struct packet_object *po)
    else 
       LIST_INSERT_AFTER(last, u, next);
    
+   PROFILE_UNLOCK;
+   
    return 1;
 }
 
+/*
+ * purge local hosts from the list
+ */
+void profile_purge_local(void)
+{
+   profile_purge(FP_HOST_LOCAL);
+   return;
+}
+
+/*
+ * purge local hosts from the list
+ */
+void profile_purge_remote(void)
+{
+   profile_purge(FP_HOST_NONLOCAL);
+   return;
+}
+
+/*
+ * purge all the host list 
+ */
+void profile_purge_all(void)
+{
+   profile_purge( FP_HOST_LOCAL | FP_HOST_NONLOCAL );
+   return;
+}
+
+/*
+ * do the actual elimination 
+ */
+static void profile_purge(int flags)
+{
+   struct host_profile *h, *old_h = NULL;
+   struct open_port *o, *old_o = NULL;
+   struct active_user *u, *old_u = NULL;
+   
+   PROFILE_LOCK;
+
+   LIST_FOREACH(h, &GBL_PROFILES, next) {
+
+      /* free the previous entry */
+      SAFE_FREE(old_h);
+      
+      /* the host matches the flags */
+      if (h->type & flags) {
+         /* free all the alloc'd ports */
+         LIST_FOREACH(o, &(h->open_ports_head), next) {
+            
+            /* free the previous entry */
+            SAFE_FREE(old_o);
+            
+            LIST_FOREACH(u, &(o->users_list_head), next) {
+               /* free the previous entry */
+               SAFE_FREE(old_u);
+               /* free the current infos */
+               SAFE_FREE(u->user);
+               SAFE_FREE(u->pass);
+               SAFE_FREE(u->info);
+               /* user has to be free'd the next loop */
+               old_u = u;
+            }
+         }
+         SAFE_FREE(old_u);
+         /* host has to be free'd the next loop */
+         old_h = h; 
+      }
+      SAFE_FREE(old_o);
+   }
+   
+   SAFE_FREE(old_h);
+   
+   PROFILE_UNLOCK;
+}
 
 /* EOF */
 

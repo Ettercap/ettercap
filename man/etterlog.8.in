@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.10 2003/06/10 10:39:37 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.11 2003/07/07 10:43:19 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -309,20 +309,12 @@ Alberto Ornaghi (ALoR) <alor@users.sourceforge.net>
 Marco Valleri (NaGA) <crwm@freemail.it>
 
 
-.SH AVAILABILITY
-http://ettercap.sourceforge.net/download/
 
-.SH CVS
-cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap login
-.br
-cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap co ettercap_ng
+.SH "SEE ALSO"
+.I "ettercap(8)"
+.I "etter.conf(5)"
+.I "ettercap_plugin(8)"
+.LP
 
-.SH BUGS
-Our software never has bugs.
-.br
-It just develops random features.   ;)
-.PP
-If you found a bug or you have a suggestion for a feature enhancement, please
-post in the ettercap forum http://ettercap.sf.net/forum/
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.8 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.9 2003/07/07 10:43:19 alor Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,8 @@ int dissect_modify(int mode, char *name, u_int32 port);
 int dissect_match(void *id_sess, void *id_curr);
 void dissect_create_session(struct session **s, struct packet_object *po);
 void dissect_create_ident(void **i, struct packet_object *po);            
+
+int dissect_on_port(char *name, u_int16 port);
 
 /*******************************************/
 
@@ -242,6 +244,28 @@ int dissect_modify(int mode, char *name, u_int32 port)
       }
    }
 
+   return -ENOTFOUND;
+}
+
+/*
+ * return ESUCCESS if the dissector is on
+ * the specified port 
+ */
+
+int dissect_on_port(char *name, u_int16 port)
+{
+   struct dissect_entry *e;
+
+   /* 
+    * return ESUCCESS if at leas one port is bound 
+    * to the dissector name
+    */
+   SLIST_FOREACH (e, &dissect_list, next) {
+      if (!strcasecmp(e->name, name) && e->type == port) {
+         return ESUCCESS;
+      } 
+   }
+   
    return -ENOTFOUND;
 }
 

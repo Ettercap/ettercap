@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_ec_compat.c,v 1.5 2003/07/04 21:51:38 alor Exp $
+    $Id: el_ec_compat.c,v 1.6 2003/07/07 10:43:20 alor Exp $
 */
 
 #include <el.h>
@@ -34,6 +34,7 @@ void debug_msg(const char *message, ...);
 void ui_msg(const char *fmt, ...);
 void ui_error(const char *fmt, ...);
 void ui_cleanup(void);
+void * get_decoder(u_int8 level, u_int32 type);
 
 /************************************************/
  
@@ -61,6 +62,13 @@ void ui_error(const char *fmt, ...)
 }
 
 void ui_cleanup(void) { }
+
+/* for ec_passive is_open_port */
+void * get_decoder(u_int8 level, u_int32 type)
+{
+   return NULL;
+}
+
 
 /* EOF */
 

@@ -5,19 +5,19 @@ export WANT_AUTOMAKE
 
 echo
 
-if ! test -f `which autoconf`; then
+if test ! -f `which autoconf`; then
    echo "ERROR: autoconf not found"
    exit
 fi
-if ! test -f `which automake`; then
+if test ! -f `which automake`; then
    echo "ERROR: automake not found"
    exit
 fi
-if ! test -f `which aclocal`; then
+if test ! -f `which aclocal`; then
    echo "ERROR: aclocal not found"
    exit
 fi
-if ! test -f `which libtool`; then
+if test ! -f `which libtool`; then
    echo "ERROR: libtool not found"
    exit
 fi

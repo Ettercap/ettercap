@@ -4,19 +4,15 @@
 
 >>> things to be fixed
    
-   + FIXING
-      - remove GBL_OPTIONS->quiet from some plugins
-      - the host list is not refreshed after a scan
+   + remove GBL_OPTIONS->quiet from some plugins
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
 
-   + shortcut for scan canellation in gtk
-
    + refresh the host list after the scan
 
    + libnet_write under windows
-   
+
 ============================
   In the next release(s)
 ============================
@@ -24,7 +20,7 @@
    + ETTERLOG
       - extractors for HTTP, POP, SMTP, FTP, TFTP
 
-   + reslove ip in the message window
+   + resolve ip in the message window
 
    + record the MSS for the packet splitting
 

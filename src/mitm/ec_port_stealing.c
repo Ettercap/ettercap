@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.13 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_port_stealing.c,v 1.14 2004/10/26 10:09:16 alor Exp $
 */
 
 #include <ec.h>
@@ -143,10 +143,10 @@ static int port_stealing_start(char *args)
       SEMIFATAL_ERROR("Port Stealing does not support this media.\n");
 
    if (LIST_EMPTY(&GBL_HOSTLIST)) 
-      USER_MSG("Host List is empty - No host for Port Stealing\n\n"); 
-   else
-      /* Avoid sniffing loops. XXX - it remains even after mitm stopping */
-      capture_only_incoming(GBL_PCAP->pcap, GBL_LNET->lnet);
+      SEMIFATAL_ERROR("Port stealing needs a non empty hosts list.\n");
+      
+   /* Avoid sniffing loops. XXX - it remains even after mitm stopping */
+   capture_only_incoming(GBL_PCAP->pcap, GBL_LNET->lnet);
       
    /* Create the port stealing list from hosts list */   
    LIST_FOREACH(h, &GBL_HOSTLIST, next) {

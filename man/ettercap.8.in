@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.75 2004/09/23 09:24:00 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.76 2004/10/26 10:09:15 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -931,8 +931,7 @@ forwarded.
 + please send bug-report, patches or suggestions to <alor@users.sourceforge.net>
 or visit http://ettercap.sourceforge.net/forum/  and post it in the BUGS section.
 .PP
-+ to report a bug, recompile ettercap with 'configure --enable-debug'
-and attach ettercap_debug.log to the mail in which you explain the problem.
++ to report a bug, follow the instructions in the README.BUGS file
 
 
 .SH PHILOLOGICAL HISTORY

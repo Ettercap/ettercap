@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.14 2003/11/05 09:31:11 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.15 2003/11/05 10:12:26 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -35,8 +35,8 @@
  * if one associtation has two equal element, it will be skipped.
  * this is done to permit overlapping groups
  */
-static LIST_HEAD(, hosts_list) group_one_head;
-static LIST_HEAD(, hosts_list) group_two_head;
+LIST_HEAD(, hosts_list) group_one_head;
+LIST_HEAD(, hosts_list) group_two_head;
 
 /* protos */
 

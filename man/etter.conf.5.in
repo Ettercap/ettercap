@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.20 2004/01/10 16:32:54 lordnaga Exp $
+.\"  $Id: etter.conf.5.in,v 1.21 2004/03/28 16:51:36 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -230,6 +230,46 @@ on the library found in your system some dissectors will be enable and some
 other not. by default etter.conf is filled with all the supported dissector. if
 you got an "FATAL: Dissector "xxx" does not exists (etter.conf line yy)" error,
 you have to comment out the yy line in etter.conf.
+
+
+.TP 20
+.B [curses]
+.TP
+.B color
+You can customize the colors of the curses GUI.
+.br
+Simply set a field to one of the following values and look at the GUI aspect :)
+.br
+Here is a list of values: 0 Black, 1 Red, 2 Green, 3 Yellow, 4 Blue, 5 Magenta,
+6 Cyan, 7 White
+
+
+.TP 20
+.B [strings]
+.TP
+.B redir_command_on
+You have to provide a valid command (or script) to enable tcp redirection at
+kernel level in order to be able to use SSL dissection. Your script should be
+able to get 3 parameter:
+.RS
+.TP
+.B %iface
+The network interface on which the rule must be set
+.TP
+.B %port
+The source port of the packets to be redirected (443 for HTTP, 993 for imaps,
+etc).
+.TP
+.B %rport
+The internally bound port to which ettercap listens for connections.
+.RE
+
+.TP
+.B redir_command_off
+This script is used to remove the redirect rules applied by 'redir_command_on'.
+You should note that this script is called atexit() and thus it has not high
+privileges. You should provide a setuid script or set ec_uid to 0 in order to
+be sure that the script was executed successfully.
 
 
 .SH "SEE ALSO"

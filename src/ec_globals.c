@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_globals.c,v 1.8 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_globals.c,v 1.9 2003/09/22 16:43:53 alor Exp $
 */
 
 #include <ec.h>
@@ -78,6 +78,9 @@ void globals_alloc(void)
    
    gbls->t2 = calloc(1, sizeof(struct target_env));
    ON_ERROR(gbls->t2, NULL, "can't allocate target t2");
+   
+   gbls->filters = calloc(1, sizeof(struct filter_env));
+   ON_ERROR(gbls->filters, NULL, "can't allocatefilter_env");
    
    return;
 }

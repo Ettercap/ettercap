@@ -17,9 +17,83 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_bgp.c,v 1.1 2003/09/22 12:30:42 lordnaga Exp $
+    $Id: ec_bgp.c,v 1.2 2003/09/22 16:43:53 alor Exp $
 */
 
+/*
+ *
+ *       BPG version 4     RFC 1771
+ *
+ *        0                   1                   2                   3
+ *        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    0  |                                                               |
+ *       +                                                               +
+ *    4  |                                                               |
+ *       +                             Marker                            +
+ *    8  |                                                               |
+ *       +                                                               +
+ *   12  |                                                               |
+ *       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   16  |          Length               |      Type     |    Version    |
+ *       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   20  |     My Autonomous System      |           Hold Time           |
+ *       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   24  |                         BGP Identifier                        |
+ *       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   28  | Opt Parm Len  |                                               |
+ *       +-+-+-+-+-+-+-+-+       Optional Parameters                     |
+ *   32  |                                                               |
+ *       |                                                               |
+ *       ~                                                               ~
+ *       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ *        0                   1
+ *        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-...
+ *       |  Parm. Type   | Parm. Length  |  Parameter Value (variable)
+ *       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-...
+ *
+ *
+ *         a) Authentication Information (Parameter Type 1):
+ *
+ *            This optional parameter may be used to authenticate a BGP
+ *            peer. The Parameter Value field contains a 1-octet
+ *            Authentication Code followed by a variable length
+ *            Authentication Data.
+ *
+ *                 0 1 2 3 4 5 6 7 8
+ *                +-+-+-+-+-+-+-+-+
+ *                |  Auth. Code   |
+ *                +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *                |                                                     |
+ *                |              Authentication Data                    |
+ *                |                                                     |
+ *                +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ *               Authentication Code:
+ *
+ *                  This 1-octet unsigned integer indicates the
+ *                  authentication mechanism being used.  Whenever an
+ *                  authentication mechanism is specified for use within
+ *                  BGP, three things must be included in the
+ *                  specification:
+ *
+ *                  - the value of the Authentication Code which indicates
+ *                  use of the mechanism,
+ *                  - the form and meaning of the Authentication Data, and
+ *                  - the algorithm for computing values of Marker fields.
+ *
+ *                  Note that a separate authentication mechanism may be
+ *                  used in establishing the transport level connection.
+ *
+ *               Authentication Data:
+ *
+ *                  The form and meaning of this field is a variable-
+ *                  length field depend on the Authentication Code.
+ *
+ */
+ 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
@@ -44,7 +118,7 @@ void __init bgp_init(void)
 
 FUNC_DECODER(dissector_bgp)
 {
-   DECLARE_DISP_PTR_END(ptr, end);
+   u_char *ptr = PACKET->DATA.data;
    char tmp[MAX_ASCII_ADDR_LEN];
    u_char *parameters;
    u_char param_length;
@@ -78,18 +152,18 @@ FUNC_DECODER(dissector_bgp)
    DEBUG_MSG("\tDissector_BGP");
 
    /* move through the param list */
-   for ( i = 0; i <= param_length; i += (parameters[i+1]+2) ) {
+   for ( i = 0; i <= param_length; i += (parameters[i + 1] + 2) ) {
 
       /* the parameter is an authentication type (1) */
       if (parameters[i] == 1) {
          u_char j, *str_ptr;
-         u_char len = parameters[i+1];
+         u_char len = parameters[i + 1];
         
          DEBUG_MSG("\tDissector_BGP 4 AUTH");
          
          PACKET->DISSECTOR.user = strdup("");
-         PACKET->DISSECTOR.pass = calloc(len*3+10 ,1);
-         PACKET->DISSECTOR.info = calloc(32,1);
+         PACKET->DISSECTOR.pass = calloc(len * 3 + 10 ,1);
+         PACKET->DISSECTOR.info = calloc(32, 1);
 
          /* Get authentication type */
          sprintf(PACKET->DISSECTOR.info, "AUTH TYPE [0x%02x]", parameters[i+2]);
@@ -100,12 +174,12 @@ FUNC_DECODER(dissector_bgp)
             str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
             
             for (j = 0; j < (len-1); j++)
-               sprintf(str_ptr + (j * 3), " %.2x", parameters[i+3+j]);
+               sprintf(str_ptr + (j * 3), " %.2x", parameters[i + 3 + j]);
          
             strcat(str_ptr, " )");
          }	 
          
-         USER_MSG("bgp : %s:%d -> %s  %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+         USER_MSG("BGP : %s:%d -> %s  %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                              ntohs(PACKET->L4.dst), 
                                              PACKET->DISSECTOR.info,
                                              PACKET->DISSECTOR.pass);

@@ -31,12 +31,15 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
+   + check the file leght for etterfilter
+
    + pay attention on network order for constants
 
    + FILTERING ENGINE
       - etterfilter (utility) (used to compile the filter in bytecode)
       - functions
          - replace over mtu
+         - inject from file
       - quick filter
       
 

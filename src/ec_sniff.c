@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.8 2003/03/17 19:42:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.9 2003/03/20 21:13:31 alor Exp $
 */
 
 #include <ec.h>
@@ -156,10 +156,32 @@ void display_packet_for_us(struct packet_object *po)
 {
    char value = 0;
    char good = 0;
+   char proto = 0;
 
    /* check if the packet is OUTGOING */
    set_forwardable_flag(po);
   
+   /* 
+    * first check the protocol.
+    * if it is not the one specified it is 
+    * useless to parse the mac, ip and port
+    */
+
+    if (!GBL_OPTIONS->proto || !strcasecmp(GBL_OPTIONS->proto, "all"))  
+       proto = 1;
+
+    if (GBL_OPTIONS->proto && !strcasecmp(GBL_OPTIONS->proto, "tcp") 
+          && po->L4.proto == NL_TYPE_TCP)
+       proto = 1;
+   
+    if (GBL_OPTIONS->proto && !strcasecmp(GBL_OPTIONS->proto, "udp") 
+          && po->L4.proto == NL_TYPE_UDP)
+       proto = 1;
+    
+    /* the protocol does not match */
+    if (proto == 0)
+       return;
+    
    /*
     * we have to check if the packet is complying with the filter
     * specified by the users.

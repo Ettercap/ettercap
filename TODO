@@ -12,6 +12,13 @@
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
    + PLUGINS ENGINE
+      - plugin_[init,fini]()
+      - plugin_list(min, max, callback)
+      - direct launch from console
+
+   + display filter on protocol
+      - -t option
+
 
    + LOGGING ENGINE
       - unified binary output
@@ -42,8 +49,11 @@
    
    
    + DISSECTORS
-      - all the old dissectors
+      - convert all the old dissectors
       - HTTPS without the dirty trick (can we use loopback?)
+      
+   + PLUGINS
+      - convert all the old plugins
       
    + INTERFACE ENGINE
       - console

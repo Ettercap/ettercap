@@ -4,7 +4,8 @@ echo
 echo "Suggested version:"
 echo
 echo "     autoconf 2.57"
-echo "     automake 1.7"
+echo "     automake 1.7.x"
+echo "     libtool  1.4.x"
 echo
 
 echo "cleaning up config files"

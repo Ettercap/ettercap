@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.5 2003/03/18 22:56:29 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.6 2003/03/20 21:13:31 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -267,129 +267,40 @@ ettercap in debug mode.
 
 
 
-.SH ***** NOT UP TO DATE AFTER THIS POINT ******
-XXX-TODO
-
 .TP
 .B GENERAL OPTIONS
 .TP
+
+\fB\-t\fR, \fB\-\-proto <PROTO>\fR
+Sniff only PROTO packets (default is TCP + UDP).
+.br
+This is useful if you want to select a port via the TARGET specification but
+you want to differentiate between tcp or udp.
+.br
+PROTO can be "tcp", "udp" or "all" for both.
 
 
 .SH EXAMPLES
 Here are some examples of using ettercap.
 .TP
-.B ettercap -b
+.B ettercap -Cp
 .Sp
-On startup use broadcast ping to scan the LAN instead of ARP request all the
-subnet IPs.
-.TP
-.B ettercap -H "192.168.0.?,192.168.0.3?,192.168.0.2*"
-.Sp
-On startup scan only the host 192.168.0.1-9, 192.168.0.30-39, 192.168.0.2,
-192.168.0.20-29 and 192.168.0.200-255.
-if the PUBLICARP method is be selected only these host will be poisoned.
-.TP
-.B ettercap -Ozs
-.Sp
-Enter the interactive mode begin to collect infos in passive mode.
-.br
-In simple mode it is very useful to launch "ettercap -NOLq" and return after an
-hour... ;)
-.TP
-.B ettercap -s 192.168.0.1 192.168.0.2
-.Sp
-Enter the interactive mode and sniff only the connections between 192.168.0.1 and 192.168.0.2
-.TP
-.B ettercap -Nzs -F etter.filter 192.168.0.1 192.168.0.2
-.Sp
-Load filter from etter.filter and activate them on all the connection between 192.168.0.1
-and 192.168.0.2 . Only Log action will be supported because it is a -s (ipsniffing) method.
-192.168.0.1 is bound to the dest chain and 192.168.0.2 to the source one.
-To enable even the replacement and drop actions you have to launch "ettercap -Nza -F
-etter.filter IP IP MAC MAC"
-.TP
-.B ettercap -zs -e etter.conf
-.Sp
-Use the ip based sniffing mode and load the other option from the config file (etter.conf).
-Note that options in the file override command line.
-.TP
-.B ettercap -Nzs victim.my.net ANY:80
-.Sp
-Sniffs in console mode (non interactive) only the connection to and from "victim.my.net"
-starting or ending to all other hosts but on port 80 (www). data are dumped in ASCII
-mode. to dump in HEX mode add the -x option.
-.TP
-.B ettercap -NRzs remote.host.net:23 my.local.host.com
-.Sp
-Useful to sniffs in console mode (non interactive) all the connection on a remote LAN
-on which you are executing ettercap. this example will prevent to show your telnet (:23)
-connection from "my.local.host.com" to "remote.host.net".
-.TP
-.B ettercap -Nclg
-.Sp
-This will provide you the entire list of hosts in the LAN. Will check if someone is
-poisoning you and will report its IP. Will tell you if you are on a switched LAN or not.
-.TP
-.B ettercap -NCLzs --quiet
-.Sp
-This will detach ettercap from console and log to a file all the collected password.
-Only works if the LAN is hubbed, or if collected password are directed to your host.
-.TP
-.B ettercap -NCza -D 100 192.168.0.1 192.168.0.2 55:23:A5:B4:C7:89 00:A3:56:FE:4F:6D
-.Sp
-Collect password to stdout on a switched LAN. this will poison the two host 192.168.0.1
-and 192.168.0.2 each other. The delay between arp replies is set to 100 sec.
-.TP
-.B ettercap -Np triton
-.Sp
-Launch the plugin "triton" that will try to passively search for the LAN gateway.
-.TP
-.B ettercap -Np ooze victim.mynet.org
-.Sp
-Launch the plugin "ooze" that will portscan the host "victim.mynet.org" that will be translated
-with the right IP
+Use the console interface and do not put the interface in promisc mode. You
+will see only your traffic.
+
 
 .SH PLATFORMS
 Linux 2.0.x  2.2.x  2.4.x
 .br
-FreeBSD 4.x
+FreeBSD 4.x 5.x
 .br
-OpenBSD 2.[789] 3.0
+OpenBSD 2.x 3.x
 .br
 NetBSD 1.5
 .br
 Mac OS X (darwin 1.3.x 1.4.x 5.x)
 .br
 Windows NT4  2000  XP
-
-
-.SH FILES
-.I @prefix@/share/@PROG@/etter.conf
- - the config file
-.br
-.I @prefix@/share/@PROG@/etter.dns
- - the host file for the phantom plugin
-.br
-.I @prefix@/share/@PROG@/etter.filter
- - the filter chains
-.br
-.I @prefix@/share/@PROG@/etter.mime
- - the mime types use by the Thief plugin
-.br
-.I @prefix@/share/@PROG@/etter.passive.os.fp
- - the passive OS fingerpring database
-.br
-.I @prefix@/share/@PROG@/etter.ssl.crt
- - the SSL certificate for HTTPS m-i-t-m
-.br
-.I @prefix@/share/@PROG@/mac-fingerprints
- - the network adapter vendor database
-.br
-.I @prefix@/share/@PROG@/nmap-os-fingerprints
- - the nmap (c) Fyodor os fingerprint
-.br
-.I @prefix@/doc/@PROG@-@VERSION@/*
- - the DOCUMENTATION
 
 
 .SH AUTHORS
@@ -400,13 +311,11 @@ Marco Valleri (NaGA) <crwm@freemail.it>
 
 .SH AVAILABILITY
 http://ettercap.sourceforge.net/download/
-.Sp
-Or if you want to do an automatic check of the latest version try "ettercap -vy"
 
 .SH CVS
 cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap login
 .br
-cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap co ettercap
+cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap co ettercap_ng
 
 .SH BUGS
 Our software never has bugs.

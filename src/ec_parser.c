@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.7 2003/03/20 16:25:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.8 2003/03/20 21:13:31 alor Exp $
 */
 
 
@@ -65,7 +65,10 @@ void ec_usage(void)
    fprintf(stdout, "  -d, --dump <file>           dump sniffed data to <file>\n");
    fprintf(stdout, "  -r, --read <file>           load data from <file>\n");
    fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n\n");
+   
    fprintf(stdout, "  -R, --reversed              use reversed TARGET matching\n\n");
+   fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n\n");
+   
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
 
@@ -87,7 +90,9 @@ void parse_options(int argc, char **argv)
       { "dump", required_argument, NULL, 'd' },
       { "read", required_argument, NULL, 'r' },
       { "pcapfilter", required_argument, NULL, 'f' },
+      
       { "reversed", no_argument, NULL, 'R' },
+      { "proto", required_argument, NULL, 't' },
       
       { "console", no_argument, NULL, 'C' },
       { "ncurses", no_argument, NULL, 'N' },
@@ -111,7 +116,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:ChDd:f:Gi:NpiRr:v", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:ChDd:f:Gi:NpiRr:t:v", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -147,6 +152,10 @@ void parse_options(int argc, char **argv)
                   
          case 'R':
                   GBL_OPTIONS->reversed = 1;
+                  break;
+                  
+         case 't':
+                  GBL_OPTIONS->proto = strdup(optarg);
                   break;
                   
          case 'i':

@@ -24,23 +24,18 @@ dnl Force autoconf 2.57
 AC_PREREQ(2.57)
 
 VERSION=`grep EC_VERSION ./include/ec_version.h | cut -f2 -d"\""`
+SB=`./shtool echo -n -e %B`
+EB=`./shtool echo -n -e %b`
+AC_SUBST(SB)
+AC_SUBST(EB)
+AC_SUBST(VERSION)
+EC_MESSAGE(Configuring ettercap $VERSION)
 
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(ettercap, $VERSION)
 
 AM_CONFIG_HEADER(include/config.h)
 dnl AC_CONFIG_HEADERS(include/config.h)
-
-SB=`./shtool echo -n -e %B`
-EB=`./shtool echo -n -e %b`
-
-AC_SUBST(SB)
-AC_SUBST(EB)
-
-AC_SUBST(VERSION)
-
-EC_MESSAGE(Configuring ettercap-$VERSION)
-
 
 dnl ================
 dnl   Check the OS

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.1 2003/03/20 16:25:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.2 2003/03/20 21:13:31 alor Exp $
 */
 
 #include <ec.h>
@@ -107,28 +107,28 @@ int plugin_load_single(char *path, char *name)
 void plugin_load_all(void)
 {
    struct dirent **namelist;
-   int n, i, t, ret;
+   int n, i, ret;
+   int t = 0;
    
    DEBUG_MSG("plugin_loadall");
 
    n = scandir(".", &namelist, 0, alphasort);
   
-   t = 0;
-   
    for(i = n-1; i >= 0; i--) {
       if ( match_pattern(namelist[i]->d_name, PLUGIN_PATTERN) ) {
          ret = plugin_load_single("./", namelist[i]->d_name);
          switch (ret) {
-            case -EINVALID:
-               USER_MSG("plugin %s cannot be loaded...", namelist[i]->d_name);
-               DEBUG_MSG("plugin %s cannot be loaded...", namelist[i]->d_name);
+            case ESUCCESS:
+               t++;
                break;
             case -EVERSION:
-               USER_MSG("plugin %s was compiled for a different ettercap version...", namelist[i]->d_name);
+               USER_MSG("plugin %s was compiled for a different ettercap version...\n", namelist[i]->d_name);
                DEBUG_MSG("plugin %s was compiled for a different ettercap version...", namelist[i]->d_name);
                break;
+            case -EINVALID:
             default:
-               t++;
+               USER_MSG("plugin %s cannot be loaded...\n", namelist[i]->d_name);
+               DEBUG_MSG("plugin %s cannot be loaded...", namelist[i]->d_name);
                break;
          }
       }

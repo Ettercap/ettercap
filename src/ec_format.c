@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.8 2003/06/17 12:15:12 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.9 2003/07/01 19:15:44 alor Exp $
 
 */
 
@@ -150,7 +150,7 @@ int hex_len(int len)
 
 int hex_format(const u_char *buf, size_t len, u_char *dst)
 {
-   int i, j, jm, c;
+   u_int i, j, jm, c;
    int dim = 0;
   
    /* some sanity checks */
@@ -201,7 +201,7 @@ int hex_format(const u_char *buf, size_t len, u_char *dst)
 
 int ascii_format(const u_char *buf, size_t len, u_char *dst)
 {
-   int i = 0;
+   u_int i = 0;
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
@@ -226,7 +226,7 @@ int ascii_format(const u_char *buf, size_t len, u_char *dst)
 
 int text_format(const u_char *buf, size_t len, u_char *dst)
 {
-   int i, j = 0;
+   u_int i, j = 0;
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
@@ -284,7 +284,7 @@ int ebcdic_format(const u_char *buf, size_t len, u_char *dst)
 
 int html_format(const u_char *buf, size_t len, u_char *dst)
 {
-   int i, j = 0;
+   u_int i, j = 0;
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {

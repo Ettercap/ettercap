@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_services.c,v 1.2 2003/06/21 13:58:42 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_services.c,v 1.3 2003/07/01 19:15:44 alor Exp $
 
 */
 
@@ -52,8 +52,8 @@ static void discard_servdb(void)
    while (SLIST_FIRST(&serv_head) != NULL) {
       l = SLIST_FIRST(&serv_head);
       SLIST_REMOVE_HEAD(&serv_head, next);
-      free(l->name);
-      free(l);
+      SAFE_FREE(l->name);
+      SAFE_FREE(l);
    }
 
    DEBUG_MSG("ATEXIT: discard_servdb");

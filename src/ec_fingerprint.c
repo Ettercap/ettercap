@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.12 2003/06/21 13:58:42 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.13 2003/07/01 19:15:44 alor Exp $
 
 */
 
@@ -64,8 +64,8 @@ static void fingerprint_discard(void)
    while (SLIST_FIRST(&finger_head) != NULL) {
       l = SLIST_FIRST(&finger_head);
       SLIST_REMOVE_HEAD(&finger_head, next);
-      free(l->os);
-      free(l);
+      SAFE_FREE(l->os);
+      SAFE_FREE(l);
    }
 
    DEBUG_MSG("ATEXIT: fingerprint_discard");

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.18 2003/06/14 13:39:13 alor Exp $
+    $Id: ec_log.c,v 1.19 2003/07/01 19:15:44 alor Exp $
 */
 
 #include <ec.h>
@@ -52,7 +52,7 @@ void log_packet(struct packet_object *po);
 static int log_write_header(int type);
 static void log_write_packet(struct packet_object *po);
 static void log_write_info(struct packet_object *po);
-static void log_write_info_arp(struct packet_object *po);
+static void log_write_info_arp_icmp(struct packet_object *po);
 
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define LOG_LOCK     do{ pthread_mutex_lock(&log_mutex); } while(0)
@@ -82,7 +82,7 @@ int set_loglevel(int level, char *filename)
       USER_MSG("WARINING: while reading form file we cannot determine\n");
       USER_MSG("if an host is local or not because the ip address of\n");
       USER_MSG("the NIC may be changed from the time of the dump.\n");
-      USER_MSG("******************************************************\n");
+      USER_MSG("******************************************************\n\n");
    }
    
    sprintf(eci, "%s.eci", filename);
@@ -129,13 +129,14 @@ int set_loglevel(int level, char *filename)
          /* initialize the log file */
          log_write_header(LOG_INFO);
 
-         /* XXX -- add other hook for ICMP, ARP and so on.. */
-         
          /* add the hook point to DISPATCHER */
          hook_add(HOOK_DISPATCHER, &log_write_info);
         
          /* add the hook for the ARP packets */
-         hook_add(PACKET_ARP, &log_write_info_arp);
+         hook_add(PACKET_ARP, &log_write_info_arp_icmp);
+         
+         /* add the hook for ICMP packets */
+         hook_add(PACKET_ICMP, &log_write_info_arp_icmp);
 
          break;
    }
@@ -467,10 +468,10 @@ static void log_write_info(struct packet_object *po)
 }
 
 /*
- * log hosts through ARP discovery
+ * log hosts through ARP and ICMP discovery
  */
 
-static void log_write_info_arp(struct packet_object *po)
+static void log_write_info_arp_icmp(struct packet_object *po)
 {
    struct log_header_info hi;
    int c, zerr;
@@ -483,20 +484,22 @@ static void log_write_info_arp(struct packet_object *po)
    /* the ip address */
    memcpy(&hi.L3_addr, &po->L3.src, sizeof(struct ip_addr));
   
-   /* ARP discovered hosts are always at distance 1 */
-   hi.distance = 1;
+   /* set the distance */
+   if (po->L3.ttl > 1)
+      hi.distance = TTL_PREDICTOR(po->L3.ttl) - po->L3.ttl + 1;
+   else
+      hi.distance = po->L3.ttl;
    
    /* resolve the host */
-   if (GBL_OPTIONS->resolve)
-      host_iptoa(&po->L3.src, hi.hostname);
-   
-   /* this was our arp request, and we are at distance 0 */
-   if (!ip_addr_cmp(&po->L3.src, &GBL_IFACE->ip))
-      hi.distance = 0;
+   host_iptoa(&po->L3.src, hi.hostname);
    
    /* local, non local ecc ecc */
-   hi.type |= LOG_ARP_HOST;
-   hi.type |= FP_HOST_LOCAL;
+   if (po->L3.proto == htons(LL_TYPE_ARP)) {
+      hi.type |= LOG_ARP_HOST;
+      hi.type |= FP_HOST_LOCAL;
+   } else {
+      hi.type = po->PASSIVE.flags;
+   }
    
    LOG_LOCK;
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.4 2003/06/21 13:58:42 alor Exp $
+    $Id: ec_session.c,v 1.5 2003/07/01 19:15:44 alor Exp $
 */
 
 #include <ec.h>
@@ -67,7 +67,7 @@ static pthread_mutex_t session_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void session_put(struct session *s)
 {
-   struct session_list *sl;
+   struct session_list *sl, *old = NULL;
    time_t ti = time(NULL);
 
    SESSION_LOCK;
@@ -90,13 +90,20 @@ void session_put(struct session *s)
       }
 
       /* delete timeouted sessions */
+
+      SAFE_FREE(old);
+      
       if (sl->ts < (ti - GBL_CONF->connection_timeout) ) {
          DEBUG_MSG("session_put: [%d][%p] timeouted", sl->id, sl->s->ident);
          session_free(sl->s);
          LIST_REMOVE(sl, next);
-         free(sl);
+         /* remember the pointer and free it the next loop */
+         old = sl;
       }
    }
+   
+   /* if it was the last element, free it */   
+   SAFE_FREE(old);
 
    /* sanity check */
    BUG_IF(s->match, NULL);

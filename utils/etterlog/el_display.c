@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.20 2003/06/14 09:29:35 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.21 2003/07/01 19:15:45 alor Exp $
 */
 
 #include <el.h>
@@ -366,8 +366,6 @@ void print_host(struct host_profile *h)
       fprintf(stdout, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
    }
 
-printf("type %#x\n", h->type);
-   
    fprintf(stdout, " DISTANCE     : %d   \n", h->distance);
    if (h->type & FP_GATEWAY)
       fprintf(stdout, " TYPE         : GATEWAY\n\n");

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.15 2003/06/14 09:29:35 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.16 2003/07/01 19:15:44 alor Exp $
 */
 
 #include <ec.h>
@@ -252,7 +252,8 @@ void get_hw_info(void)
    
    ip = libnet_get_ipaddr4(GBL_LNET->lnet);
 
-   if (ip != -1) {
+   /* if ip is equal to -1 there was an error */
+   if (ip != ~0) {
       ip_addr_init(&GBL_IFACE->ip, AF_INET, (char *)&ip);
       
       if (pcap_lookupnet(GBL_OPTIONS->iface, &network, &netmask, pcap_errbuf) == -1)
@@ -293,7 +294,8 @@ void get_hw_info(void)
    
    ip = libnet_get_ipaddr4(GBL_LNET->lnet_bridge);
 
-   if (ip != -1) {
+   /* if ip is equal to -1 there was an error */
+   if (ip != ~0) {
       ip_addr_init(&GBL_BRIDGE->ip, AF_INET, (char *)&ip);
       
       if (pcap_lookupnet(GBL_OPTIONS->iface_bridge, &network, &netmask, pcap_errbuf) == -1)

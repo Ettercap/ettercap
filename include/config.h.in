@@ -114,6 +114,9 @@
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 #undef HAVE_NDIR_H
 
+/* nameser NS_GET32 */
+#undef HAVE_NS_GET
+
 /* openssl executable path */
 #undef HAVE_OPENSSL
 

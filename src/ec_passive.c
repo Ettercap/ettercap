@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_passive.c,v 1.4 2003/04/14 21:05:23 alor Exp $
+    $Id: ec_passive.c,v 1.5 2003/07/01 19:15:44 alor Exp $
 */
 
 #include <ec.h>
@@ -50,12 +50,13 @@ int is_open_dst_port(struct packet_object *po);
 int is_open_src_port(struct packet_object *po)
 {
 
-   /* for both protocols */
-   if (ntohs(po->L4.src) < 1024)
-      return 1;
-            
    switch (po->L4.proto) {
       case NL_TYPE_TCP:
+#if 0 
+         /* detect priviledged port */
+         if (ntohs(po->L4.src) > 0 && ntohs(po->L4.src) < 1024 )
+            return 1;
+#endif
          /* SYN+ACK packet are coming from open ports */
          if ( (po->L4.flags & TH_SYN) && (po->L4.flags & TH_ACK) )
             return 1;
@@ -64,6 +65,12 @@ int is_open_src_port(struct packet_object *po)
             return 1;
          break;
       case NL_TYPE_UDP:
+         /* 
+          * we cannot determine if the port is open or not...
+          * suppose that all priveledged port used are open.
+          */
+         if (ntohs(po->L4.src) > 0 && ntohs(po->L4.src) < 1024 )
+            return 1;
          /* look up in the table */
          if ( get_decoder(APP_LAYER_UDP, ntohs(po->L4.src)) != NULL)
             return 1;
@@ -76,12 +83,13 @@ int is_open_src_port(struct packet_object *po)
 int is_open_dst_port(struct packet_object *po)
 {
 
-   /* for both protocols */
-   if (ntohs(po->L4.dst) < 1024)
-      return 1;
-            
    switch (po->L4.proto) {
       case NL_TYPE_TCP:
+#if 0 
+         /* detect priviledged port */
+         if (ntohs(po->L4.dst) > 0 && ntohs(po->L4.dst) < 1024 )
+            return 1;
+#endif
          /* SYN+ACK packet are coming from open ports */
          if ( (po->L4.flags & TH_SYN) && (po->L4.flags & TH_ACK) )
             return 1;
@@ -90,6 +98,12 @@ int is_open_dst_port(struct packet_object *po)
             return 1;
          break;
       case NL_TYPE_UDP:
+         /* 
+          * we cannot determine if the port is open or not...
+          * suppose that all priveledged port used are open.
+          */
+         if (ntohs(po->L4.dst) > 0 && ntohs(po->L4.dst) < 1024 )
+            return 1;
          /* look up in the table */
          if ( get_decoder(APP_LAYER_UDP, ntohs(po->L4.dst)) != NULL)
             return 1;

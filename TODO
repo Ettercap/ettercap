@@ -25,8 +25,11 @@
 
 >>> current developmet state 
 
+   + rework the is_open_port
+
    + TOP HALF
       - passive profiling (almost done in etterlog)
+         - user not shown
       - connection tracking (with buffered conn)
 
 

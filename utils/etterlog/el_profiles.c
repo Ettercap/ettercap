@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.8 2003/06/14 09:29:35 alor Exp $
+    $Id: el_profiles.c,v 1.9 2003/07/01 19:15:45 alor Exp $
 */
 
 #include <el.h>
@@ -131,7 +131,7 @@ static void update_info(struct host_profile *h, struct log_header_info *inf, str
    strncpy(h->hostname, inf->hostname, MAX_HOSTNAME_LEN);
    
    /* 
-    * update the fingerprint only there isn't a previous one
+    * update the fingerprint only if there isn't a previous one
     * or if the previous fingerprint was an ACK
     * fingerprint. SYN fingers are more reliable
     */

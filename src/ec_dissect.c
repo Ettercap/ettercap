@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.6 2003/06/28 14:22:33 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.7 2003/07/01 19:15:44 alor Exp $
 */
 
 #include <ec.h>
@@ -190,6 +190,9 @@ void dissect_del(char *name)
          old = e;
       }
    }
+   
+   /* if it was the last element, free it */   
+   SAFE_FREE(old);
    
    return;
 }

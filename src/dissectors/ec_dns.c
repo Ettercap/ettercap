@@ -17,16 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dns.c,v 1.2 2003/06/24 16:36:00 alor Exp $
+    $Id: ec_dns.c,v 1.3 2003/07/01 19:15:44 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_resolv.h>
-
-#include <arpa/nameser.h>
-#include <resolv.h>
 
 /*
  *                                     1  1  1  1  1  1

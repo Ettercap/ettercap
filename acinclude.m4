@@ -116,5 +116,34 @@ AC_DEFUN(EC_GCC_MACRO,[
 
 ])
 
+dnl
+dnl EC_NS_GET()
+dnl
+dnl   returns  HAVE_NS_GET
+dnl
+
+AH_TEMPLATE(HAVE_NS_GET, [nameser NS_GET32])
+
+AC_DEFUN(EC_NS_GET,[
+
+   AC_MSG_CHECKING(for NS_GET32)
+   AC_TRY_RUN([
+      #include <arpa/nameser.h>
+
+      int main()
+      {
+         int i;
+         char *p = "\x01\x02\x03\x04";
+         NS_GET32(i, p);
+
+         return 0;
+      }
+   ],
+   [  AC_MSG_RESULT(yes)
+      AC_DEFINE(HAVE_NS_GET,1) ],
+   [  AC_MSG_RESULT(no); ]
+   )
+
+])
 
 dnl vim:ts=3:expandtab

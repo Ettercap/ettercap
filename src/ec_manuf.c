@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.5 2003/06/21 13:58:42 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.6 2003/07/01 19:15:44 alor Exp $
 
 */
 
@@ -91,16 +91,15 @@ char * manuf_search(char *m);
 static void discard_macdb(void)
 {
    struct entry *l;
-
-   int i;
+   u_int i;
 
    for (i = 0; i < TABSIZE; i++) {
 
       while (SLIST_FIRST(&manuf_head[i]) != NULL) {
          l = SLIST_FIRST(&manuf_head[i]);
          SLIST_REMOVE_HEAD(&manuf_head[i], entries);
-         free(l->vendor);
-         free(l);
+         SAFE_FREE(l->vendor);
+         SAFE_FREE(l);
       }
    }
 
@@ -167,7 +166,7 @@ char * manuf_search(char *m)
    mac[3] = 0;
 
    SLIST_FOREACH(l, &manuf_head[fnv_32(mac, 4) & TABMASK], entries) {
-      if (l->mac == *(int *) mac)
+      if (l->mac == *(u_int *) mac)
          return (l->vendor);
    }
 

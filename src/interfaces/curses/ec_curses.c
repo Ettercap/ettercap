@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.38 2004/02/26 11:07:25 alor Exp $
+    $Id: ec_curses.c,v 1.39 2004/02/28 13:09:26 alor Exp $
 */
 
 #include <ec.h>
@@ -532,9 +532,12 @@ static void curses_unified_sniff(void)
 #define IFACE_LEN  10
    
    DEBUG_MSG("curses_unified_sniff");
-   
-   SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-   strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+  
+   /* if the user has not specified an interface, get the first one */
+   if (GBL_OPTIONS->iface == NULL) {
+      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+      strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+   }
 
    /* calling wdg_exit will go to the next interface :) */
    curses_input_call("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, wdg_exit);
@@ -550,8 +553,11 @@ static void curses_bridged_sniff(void)
    
    DEBUG_MSG("curses_bridged_sniff");
    
-   SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-   strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+   /* if the user has not specified an interface, get the first one */
+   if (GBL_OPTIONS->iface == NULL) {
+      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+      strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+   }
    
    SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
 

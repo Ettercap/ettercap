@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.40 2004/02/27 15:03:11 alor Exp $
+    $Id: ec_capture.c,v 1.41 2004/02/28 13:09:26 alor Exp $
 */
 
 #include <ec.h>
@@ -271,7 +271,7 @@ EC_THREAD_FUNC(capture_bridge)
    
    /* wipe the stats */
    stats_wipe();
-
+   
    /* 
     * infinite loop 
     * dispatch packets to ec_decode

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.5 2004/02/28 00:08:57 daten Exp $
+    $Id: ec_gtk.c,v 1.6 2004/02/28 13:09:26 alor Exp $
 */
 
 #include <ec.h>
@@ -590,8 +590,11 @@ static void gtkui_unified_sniff(void)
    
    DEBUG_MSG("gtk_unified_sniff");
    
-   SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-   strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+   /* if the user has not specified an interface, get the first one */
+   if (GBL_OPTIONS->iface == NULL) {
+      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+      strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+   }
 
    /* calling gtk_main_quit will go to the next interface :) */
    gtkui_input_call("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, gtk_main_quit);
@@ -639,7 +642,12 @@ static void gtkui_bridged_sniff(void)
 
    entry1 = gtk_entry_new_with_max_length(IFACE_LEN);
    gtk_entry_set_width_chars (GTK_ENTRY (entry1), 6);
-   gtk_entry_set_text (GTK_ENTRY (entry1), pcap_lookupdev(err));
+   
+   if (GBL_OPTIONS->iface == NULL)
+      gtk_entry_set_text (GTK_ENTRY (entry1), pcap_lookupdev(err));
+   else
+      gtk_entry_set_text (GTK_ENTRY (entry1), GBL_OPTIONS->iface);
+   
    gtk_box_pack_start(GTK_BOX (hbox), entry1, FALSE, FALSE, 0);
    gtk_widget_show(entry1);
 

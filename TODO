@@ -42,6 +42,7 @@ this is the unofficial and floating in time roadmap:
       - injection panel
       - regex on the content
       - input for curses_input
+      - context sensitive help
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
@@ -52,7 +53,6 @@ this is the unofficial and floating in time roadmap:
 
    + LOGGING
       - log current profiles
-      - selective log on connections
    
    + CONNECTION
       - kill a connection
@@ -61,7 +61,6 @@ this is the unofficial and floating in time roadmap:
       - convert all the old dissectors:
          - https (over the ssl one)
          - pcanywhere
-         - yahoo
       - SSL unified dissector for https, impas, pop3s ecc ecc
       - TDS
    

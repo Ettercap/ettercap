@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.30 2004/01/06 15:03:14 alor Exp $
+    $Id: ec_log.c,v 1.31 2004/02/15 15:48:14 alor Exp $
 */
 
 #include <ec.h>
@@ -39,22 +39,24 @@
 
 /* globals */
 
-static gzFile fd_cp;
-static gzFile fd_ci;
-static int fd_p;
-static int fd_i;
+static struct log_fd fdp;
+static struct log_fd fdi;
 
 /* protos */
 
-static void log_close(void);
 int set_loglevel(int level, char *filename);
 int set_msg_loglevel(int level, char *filename);
+static void log_stop(void);
 
-void log_packet(struct packet_object *po);
+int log_open(struct log_fd *fd, char *filename);
+void log_close(struct log_fd *fd);
 
-static int log_write_header(int type);
-static void log_write_packet(struct packet_object *po);
-static void log_write_info(struct packet_object *po);
+int log_write_header(struct log_fd *fd, int type);
+
+static void log_packet(struct packet_object *po);
+static void log_info(struct packet_object *po);
+void log_write_packet(struct log_fd *fd, struct packet_object *po);
+void log_write_info(struct log_fd *fd, struct packet_object *po);
 static void log_write_info_arp_icmp(struct packet_object *po);
 
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -75,10 +77,9 @@ int set_loglevel(int level, char *filename)
 {
    char eci[strlen(filename)+5];
    char ecp[strlen(filename)+5];
-   int zerr;
  
    /* close any previously opened file */
-   log_close();
+   log_stop();
   
    /* if we want to stop logging, return here */
    if (level == LOG_STOP) {
@@ -105,20 +106,18 @@ int set_loglevel(int level, char *filename)
 
       case LOG_PACKET:
          if (GBL_OPTIONS->compress) {
-            fd_cp = gzopen(ecp, "wb9");
-            if (fd_cp == NULL)
-               FATAL_MSG("%s", gzerror(fd_cp, &zerr));
+            fdp.type = LOG_COMPRESSED;
+            log_open(&fdp, ecp);
          } else {
-            fd_p = open(ecp, O_CREAT | O_TRUNC | O_RDWR);
-            if (fd_p == -1)
-               FATAL_MSG("Can't create %s", ecp);
+            fdp.type = LOG_UNCOMPRESSED;
+            log_open(&fdp, ecp);
          }
 
          /* set the permissions */
          chmod(ecp, 0600);
          
          /* initialize the log file */
-         log_write_header(LOG_PACKET);
+         log_write_header(&fdp, LOG_PACKET);
          
          /* add the hook point to DISPATCHER */
          hook_add(HOOK_DISPATCHER, &log_packet);
@@ -127,23 +126,21 @@ int set_loglevel(int level, char *filename)
          
       case LOG_INFO:
          if (GBL_OPTIONS->compress) {
-            fd_ci = gzopen(eci, "wb9");
-            if (fd_ci == NULL)
-               FATAL_MSG("%s", gzerror(fd_ci, &zerr));
+            fdi.type = LOG_COMPRESSED;
+            log_open(&fdi, eci);
          } else {
-            fd_i = open(eci, O_CREAT | O_TRUNC | O_RDWR);
-            if (fd_i == -1)
-               FATAL_MSG("Can't create %s", eci);
+            fdi.type = LOG_UNCOMPRESSED;
+            log_open(&fdi, eci);
          }
          
          /* set the permissions */
          chmod(eci, 0600);
          
          /* initialize the log file */
-         log_write_header(LOG_INFO);
+         log_write_header(&fdi, LOG_INFO);
 
          /* add the hook point to DISPATCHER */
-         hook_add(HOOK_DISPATCHER, &log_write_info);
+         hook_add(HOOK_DISPATCHER, &log_info);
         
          /* add the hook for the ARP packets */
          hook_add(HOOK_PACKET_ARP, &log_write_info_arp_icmp);
@@ -158,54 +155,96 @@ int set_loglevel(int level, char *filename)
          break;
    }
 
-   atexit(&log_close);
+   atexit(&log_stop);
 
    return ESUCCESS;
 }
 
-/* close the log files */
-static void log_close(void)
+/*
+ * removes the hook points and closes the log files
+ */
+static void log_stop(void)
 {
    /* remove all the hooks */
    hook_del(HOOK_DISPATCHER, &log_packet);
-   hook_del(HOOK_DISPATCHER, &log_write_info);
+   hook_del(HOOK_DISPATCHER, &log_info);
    hook_del(HOOK_PACKET_ARP, &log_write_info_arp_icmp);
    hook_del(HOOK_PACKET_ICMP, &log_write_info_arp_icmp);
    hook_del(HOOK_PROTO_DHCP_PROFILE, &log_write_info_arp_icmp);
-   
-   if (fd_cp) gzclose(fd_cp);
-   if (fd_ci) gzclose(fd_ci);
 
-   if (fd_p) close(fd_p);
-   if (fd_i) close(fd_i);
+   log_close(&fdp);
+   log_close(&fdi);
+}
+
+/*
+ * open a file in the appropriate log_fd struct
+ */
+int log_open(struct log_fd *fd, char *filename)
+{
+   int zerr;
+
+   if (fd->type == LOG_COMPRESSED) {
+      fd->cfd = gzopen(filename, "wb9");
+      if (fd->cfd == NULL)
+         FATAL_MSG("%s", gzerror(fd->cfd, &zerr));
+   } else {
+      fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR);
+      if (fd->fd == -1)
+         FATAL_MSG("Can't create %s", filename);
+   }
+
+   return ESUCCESS;
+}
+
+/* 
+ * closes a log_fd struct 
+ */
+void log_close(struct log_fd *fd)
+{
+   if (fd->cfd) {
+      gzclose(fd->cfd);
+      fd->cfd = NULL;
+   }
+
+   if (fd->fd) {
+      close(fd->fd);
+      fd->fd = 0;
+   }
 }
 
 /* 
  * function registered to HOOK_DISPATCHER
  * check the regex (if present) and log packets
  */
-
-void log_packet(struct packet_object *po)
+static void log_packet(struct packet_object *po)
 {
    /* the regex is set, respect it */
    if (GBL_OPTIONS->regex) {
       if (regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) == 0)
-         log_write_packet(po);
+         log_write_packet(&fdp, po);
    } else {
       /* if no regex is set, dump all the packets */
-      log_write_packet(po);
+      log_write_packet(&fdp, po);
    }
    
 }
+
+/* 
+ * function registered to HOOK_DISPATCHER
+ * it is a wrapper to the real one
+ */
+static void log_info(struct packet_object *po)
+{
+   log_write_info(&fdi, po);
+}
+
 /*
  * initialize the log file with 
  * the propre header
  */
 
-static int log_write_header(int type)
+int log_write_header(struct log_fd *fd, int type)
 {
-   gzFile fdc = 0;
-   int fd = 0;
    struct log_global_header lh;
    int c, zerr;
    
@@ -228,24 +267,13 @@ static int log_write_header(int type)
       
    lh.type = htonl(type);
 
-   switch(type) {
-      case LOG_PACKET:
-         fdc = fd_cp;
-         fd = fd_p;
-         break;
-      case LOG_INFO:
-         fdc = fd_ci;
-         fd = fd_i;
-         break;
-   }
-
    LOG_LOCK;
    
-   if (GBL_OPTIONS->compress) {
-      c = gzwrite(fdc, &lh, sizeof(lh));
-      ON_ERROR(c, -1, "%s", gzerror(fdc, &zerr));
+   if (fd->type == LOG_COMPRESSED) {
+      c = gzwrite(fd->cfd, &lh, sizeof(lh));
+      ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
    } else {
-      c = write(fd, &lh, sizeof(lh));
+      c = write(fd->fd, &lh, sizeof(lh));
       ON_ERROR(c, -1, "Can't write to logfile");
    }
 
@@ -258,7 +286,7 @@ static int log_write_header(int type)
 
 /* log all the packet to the logfile */
 
-void log_write_packet(struct packet_object *po)
+void log_write_packet(struct log_fd *fd, struct packet_object *po)
 {
    struct log_header_packet hp;
    int c, zerr;
@@ -286,17 +314,17 @@ void log_write_packet(struct packet_object *po)
 
    LOG_LOCK;
    
-   if (GBL_OPTIONS->compress) {
-      c = gzwrite(fd_cp, &hp, sizeof(hp));
-      ON_ERROR(c, -1, "%s", gzerror(fd_cp, &zerr));
+   if (fd->type == LOG_COMPRESSED) {
+      c = gzwrite(fd->cfd, &hp, sizeof(hp));
+      ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
 
-      c = gzwrite(fd_cp, po->DATA.disp_data, po->DATA.disp_len);
-      ON_ERROR(c, -1, "%s", gzerror(fd_cp, &zerr));
+      c = gzwrite(fd->cfd, po->DATA.disp_data, po->DATA.disp_len);
+      ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
    } else {
-      c = write(fd_p, &hp, sizeof(hp));
+      c = write(fd->fd, &hp, sizeof(hp));
       ON_ERROR(c, -1, "Can't write to logfile");
 
-      c = write(fd_p, po->DATA.disp_data, po->DATA.disp_len);
+      c = write(fd->fd, po->DATA.disp_data, po->DATA.disp_len);
       ON_ERROR(c, -1, "Can't write to logfile");
    }
    
@@ -314,7 +342,7 @@ void log_write_packet(struct packet_object *po)
  *    so we create a new entry in the logfile
  */
 
-static void log_write_info(struct packet_object *po)
+void log_write_info(struct log_fd *fd, struct packet_object *po)
 {
    struct log_header_info hi;
    struct log_header_info hid;
@@ -422,23 +450,23 @@ static void log_write_info(struct packet_object *po)
    
    LOG_LOCK;
    
-   if (GBL_OPTIONS->compress) {
-      c = gzwrite(fd_ci, &hi, sizeof(hi));
-      ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+   if (fd->type == LOG_COMPRESSED) {
+      c = gzwrite(fd->cfd, &hi, sizeof(hi));
+      ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
     
       /* and now write the variable fields */
       
       if (po->DISSECTOR.banner) {
-         c = gzwrite(fd_ci, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
-         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+         c = gzwrite(fd->cfd, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
+         ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
       }
       
    } else {
-      c = write(fd_i, &hi, sizeof(hi));
+      c = write(fd->fd, &hi, sizeof(hi));
       ON_ERROR(c, -1, "Can't write to logfile");
       
       if (po->DISSECTOR.banner) {
-         c = write(fd_i, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
+         c = write(fd->fd, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
          ON_ERROR(c, -1, "Can't write to logfile");
       }
    }
@@ -453,42 +481,42 @@ static void log_write_info(struct packet_object *po)
    }
 
    
-   if (GBL_OPTIONS->compress) {
-      c = gzwrite(fd_ci, &hid, sizeof(hi));
-      ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+   if (fd->type == LOG_COMPRESSED) {
+      c = gzwrite(fd->cfd, &hid, sizeof(hi));
+      ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
     
       /* and now write the variable fields */
       if (po->DISSECTOR.user) {
-         c = gzwrite(fd_ci, po->DISSECTOR.user, strlen(po->DISSECTOR.user) );
-         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+         c = gzwrite(fd->cfd, po->DISSECTOR.user, strlen(po->DISSECTOR.user) );
+         ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
       }
 
       if (po->DISSECTOR.pass) {
-         c = gzwrite(fd_ci, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass) );
-         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+         c = gzwrite(fd->cfd, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass) );
+         ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
       }
 
       if (po->DISSECTOR.info) {
-         c = gzwrite(fd_ci, po->DISSECTOR.info, strlen(po->DISSECTOR.info) );
-         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+         c = gzwrite(fd->cfd, po->DISSECTOR.info, strlen(po->DISSECTOR.info) );
+         ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
       }
       
    } else {
-      c = write(fd_i, &hid, sizeof(hi));
+      c = write(fd->fd, &hid, sizeof(hi));
       ON_ERROR(c, -1, "Can't write to logfile");
       
       if (po->DISSECTOR.user) {
-         c = write(fd_i, po->DISSECTOR.user, strlen(po->DISSECTOR.user) );
+         c = write(fd->fd, po->DISSECTOR.user, strlen(po->DISSECTOR.user) );
          ON_ERROR(c, -1, "Can't write to logfile");
       }
 
       if (po->DISSECTOR.pass) {
-         c = write(fd_i, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass) );
+         c = write(fd->fd, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass) );
          ON_ERROR(c, -1, "Can't write to logfile");
       }
 
       if (po->DISSECTOR.info) {
-         c = write(fd_i, po->DISSECTOR.info, strlen(po->DISSECTOR.info) );
+         c = write(fd->fd, po->DISSECTOR.info, strlen(po->DISSECTOR.info) );
          ON_ERROR(c, -1, "Can't write to logfile");
       }
       
@@ -533,11 +561,11 @@ static void log_write_info_arp_icmp(struct packet_object *po)
    
    LOG_LOCK;
    
-   if (GBL_OPTIONS->compress) {
-      c = gzwrite(fd_ci, &hi, sizeof(hi));
-      ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+   if (fdi.type == LOG_COMPRESSED) {
+      c = gzwrite(fdi.cfd, &hi, sizeof(hi));
+      ON_ERROR(c, -1, "%s", gzerror(fdi.cfd, &zerr));
    } else {
-      c = write(fd_i, &hi, sizeof(hi));
+      c = write(fdi.fd, &hi, sizeof(hi));
       ON_ERROR(c, -1, "Can't write to logfile");
    }
 

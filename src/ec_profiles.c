@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.33 2004/02/08 11:41:44 alor Exp $
+    $Id: ec_profiles.c,v 1.34 2004/02/15 15:48:14 alor Exp $
 */
 
 #include <ec.h>
@@ -40,6 +40,7 @@ void profile_purge_local(void);
 void profile_purge_remote(void);
 void profile_purge_all(void);
 int profile_convert_to_hostlist(void);
+void profile_dump_to_file(char *filename);
 
 void profile_parse(struct packet_object *po);
 static int profile_add_host(struct packet_object *po);
@@ -607,6 +608,14 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
    }
          
    return NULL;
+}
+
+/*
+ * dump the whole profile list into an eci file
+ */
+void profile_dump_to_file(char *filename)
+{
+   DEBUG_MSG("profile_dump_to_file: %s", filename);
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_profiles.c,v 1.1 2004/02/08 19:58:40 alor Exp $
+    $Id: ec_curses_view_profiles.c,v 1.2 2004/02/15 15:48:14 alor Exp $
 */
 
 #include <ec.h>
@@ -37,10 +37,13 @@ static void curses_profile_detail(void *profile);
 static void curses_profiles_local(void *dummy);
 static void curses_profiles_remote(void *dummy);
 static void curses_profiles_convert(void *dummy);
+static void curses_profiles_dump(void *dummy);
+static void dump_profiles(void);
 
 /* globals */
 
 static wdg_t *wdg_profiles, *wdg_pro_detail;
+static char *logfile;
 
 
 /*******************************************/
@@ -86,6 +89,7 @@ void curses_show_profiles(void)
    wdg_dynlist_add_callback(wdg_profiles, 'l', curses_profiles_local);
    wdg_dynlist_add_callback(wdg_profiles, 'r', curses_profiles_remote);
    wdg_dynlist_add_callback(wdg_profiles, 'c', curses_profiles_convert);
+   wdg_dynlist_add_callback(wdg_profiles, 'd', curses_profiles_dump);
 }
 
 static void curses_kill_profiles(void)
@@ -218,6 +222,23 @@ static void curses_profiles_convert(void *dummy)
    curses_message("The hosts list was populated with local profiles");
 }
 
+static void curses_profiles_dump(void *dummy)
+{
+   DEBUG_MSG("curses_profiles_dump");
+
+   /* make sure to free if already set */
+   SAFE_FREE(logfile);
+   SAFE_CALLOC(logfile, 50, sizeof(char));
+
+   curses_input_call("Log File :", logfile, 50, dump_profiles);
+
+}
+
+static void dump_profiles(void)
+{
+   profile_dump_to_file(logfile);
+   curses_message("Profiles dumped to file");
+}
 
 /* EOF */
 

@@ -1,5 +1,5 @@
 
-/* $Id: ec_log.h,v 1.18 2004/01/06 15:03:14 alor Exp $ */
+/* $Id: ec_log.h,v 1.19 2004/02/15 15:48:14 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -9,7 +9,18 @@
 #include <ec_fingerprint.h>
 #include <ec_resolv.h>
 
+#include <zlib.h>
 #include <sys/time.h>
+
+
+struct log_fd {
+   int type;
+      #define LOG_COMPRESSED     1
+      #define LOG_UNCOMPRESSED   0
+   gzFile cfd;
+   int fd;
+};
+
 
 /*******************************************
  * NOTE:  all the int variable are stored  *
@@ -114,11 +125,15 @@ extern int set_loglevel(int level, char *filename);
 #define LOG_INFO     1
 #define LOG_PACKET   2
 
-extern void log_packet(struct packet_object *po);
-   
 extern int set_msg_loglevel(int level, char *filename);
 #define LOG_TRUE     1
 #define LOG_FALSE    0
+
+int log_open(struct log_fd *fd, char *filename);
+void log_close(struct log_fd *fd);
+void log_write_packet(struct log_fd *fd, struct packet_object *po);
+void log_write_info(struct log_fd *fd, struct packet_object *po);
+
 
 #endif
 

@@ -72,6 +72,8 @@ NG-0.7.0    ????????
       + customizable colors
    + A lot of new bugs^H^H^H^H random features to be discovered ;)
    !! offline sniffing actually does not bind to any NICs
+   - packet factory was removed
+   - some plugins were not ported
 
    +++ too many other improvements to be listed here +++
 

@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.16 2003/12/01 16:33:32 lordnaga Exp $ */
+/* $Id: ec_inet.h,v 1.17 2004/01/04 16:29:26 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -39,6 +39,7 @@ struct ip_addr {
 extern int ip_addr_init(struct ip_addr *sa, int type, char *addr);
 extern int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 extern int ip_addr_null(struct ip_addr *sa);
+extern int ip_addr_is_zero(struct ip_addr *sa);
 
 extern char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 extern char *mac_addr_ntoa(u_char *mac, char *dst);
@@ -47,7 +48,7 @@ extern int mac_addr_aton(char *str, u_char *mac);
 extern int ip_addr_is_local(struct ip_addr *sa);
 
 /*
- * this prototype is implemented in ./os/.../
+ * this prototypes are implemented in ./os/.../
  * each OS implement its specific function
  */
 

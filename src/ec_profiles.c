@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.28 2003/11/28 22:02:40 alor Exp $
+    $Id: ec_profiles.c,v 1.29 2004/01/04 16:29:28 alor Exp $
 */
 
 #include <ec.h>
@@ -66,6 +66,9 @@ void __init profiles_init(void)
    
    /* add the hook for ICMP packets */
    hook_add(HOOK_PACKET_ICMP, &profile_parse);
+   
+   /* add the hook for DHCP packets */
+   hook_add(HOOK_PROTO_DHCP_PROFILE, &profile_parse);
          
    /* receive all the top half packets */
    hook_add(HOOK_DISPATCHER, &profile_parse);
@@ -100,6 +103,9 @@ void profile_parse(struct packet_object *po)
    /*
     * call the add function only if the packet
     * is interesting...
+    *    - ARP packets
+    *    - ICMP packets
+    *    - DNS packets that contain GW information (they use fake icmp po)
     */
    if ( po->L3.proto == htons(LL_TYPE_ARP) ||                     /* arp packets */
         po->L4.proto == NL_TYPE_ICMP                              /* icmp packets */
@@ -141,7 +147,16 @@ static int profile_add_host(struct packet_object *po)
    struct host_profile *h;
    struct host_profile *c;
    struct host_profile *last = NULL;
-
+   
+   /* 
+    * do not store profiles for hosts with ip == 0.0.0.0
+    * they are hosts requesting for a dhcp/bootp reply.
+    * they will get an ip address soon and we are interested
+    * only in the latter.
+    */
+   if (ip_addr_is_zero(&po->L3.src))
+      return 0;
+   
    /* 
     * if the type is FP_HOST_NONLOCAL 
     * search for the GW and mark it
@@ -154,12 +169,16 @@ static int profile_add_host(struct packet_object *po)
 
    PROFILE_LOCK;
 
-   /* parse the list */
+   /* search if it already exists */
    LIST_FOREACH(h, &GBL_PROFILES, next) {
-      /* search the host.
-       * it is identified by the mac and the ip address */
-      if (!memcmp(h->L2_addr, po->L2.src, MEDIA_ADDR_LEN) &&
+      /* an host is identified by the mac and the ip address */
+      /* if the mac address is null also update it since it could
+       * be captured as a DNS packet specifying the GW 
+       */
+      if ((!memcmp(h->L2_addr, po->L2.src, MEDIA_ADDR_LEN) ||
+           !memcmp(po->L2.src, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) &&
           !ip_addr_cmp(&h->L3_addr, &po->L3.src) ) {
+
          update_info(h, po);
          /* the host was already in the list
           * return 0 host added */

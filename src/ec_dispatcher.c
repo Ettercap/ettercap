@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.32 2003/12/17 15:56:36 alor Exp $
+    $Id: ec_dispatcher.c,v 1.33 2004/01/04 16:29:28 alor Exp $
 */
 
 #include <ec.h>
@@ -74,6 +74,7 @@ EC_THREAD_FUNC(top_half)
       DEBUG_MSG("top_half: profile collection disabled");
       hook_del(HOOK_PACKET_ARP, &profile_parse);
       hook_del(HOOK_PACKET_ICMP, &profile_parse);
+      hook_del(HOOK_PROTO_DHCP_PROFILE, &profile_parse);
       hook_del(HOOK_DISPATCHER, &profile_parse);
    }
    

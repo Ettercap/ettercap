@@ -1,5 +1,5 @@
 
-/* $Id: ec_hook.h,v 1.15 2003/12/03 14:47:54 lordnaga Exp $ */
+/* $Id: ec_hook.h,v 1.16 2004/01/04 16:29:26 alor Exp $ */
 
 #ifndef EC_HOOK_H
 #define EC_HOOK_H
@@ -40,7 +40,8 @@ void hook_point(int point, struct packet_object *po);
    #define HOOK_PROTO_SMB_CHL       (HOOK_PROTO_BASE + 2)
    #define HOOK_PROTO_DHCP_REQUEST  (HOOK_PROTO_BASE + 3)
    #define HOOK_PROTO_DHCP_DISCOVER (HOOK_PROTO_BASE + 4)
-   #define HOOK_PROTO_DNS           (HOOK_PROTO_BASE + 5)
+   #define HOOK_PROTO_DHCP_PROFILE  (HOOK_PROTO_BASE + 5)
+   #define HOOK_PROTO_DNS           (HOOK_PROTO_BASE + 6)
 
 void hook_add(int point, void (*func)(struct packet_object *po) );
 int hook_del(int point, void (*func)(struct packet_object *po) );

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.18 2003/12/01 16:33:40 lordnaga Exp $
+    $Id: ec_inet.c,v 1.19 2004/01/04 16:29:28 alor Exp $
 */
 
 #include <ec.h>
@@ -32,6 +32,7 @@
 int ip_addr_init(struct ip_addr *sa, int type, char *addr);
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 int ip_addr_null(struct ip_addr *sa);
+int ip_addr_is_zero(struct ip_addr *sa);
 
 char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 char *mac_addr_ntoa(u_char *mac, char *dst);
@@ -65,6 +66,9 @@ int ip_addr_init(struct ip_addr *sa, int type, char *addr)
 };
 
 
+/*
+ * returns 0 if the ip address is IPv4 or IPv6
+ */
 int ip_addr_null(struct ip_addr *sa)
 {
    if (sa->type == AF_INET || sa->type == AF_INET6) 
@@ -77,7 +81,6 @@ int ip_addr_null(struct ip_addr *sa)
 /* 
  * compare two ip_addr structure.
  */
-
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
 {
    /* different type are incompatible */
@@ -87,6 +90,28 @@ int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
    return memcmp(sa->addr, sb->addr, sa->addr_size);
    
 }
+
+
+/*
+ * return true if an ip address is 0.0.0.0 or invalid
+ */
+int ip_addr_is_zero(struct ip_addr *sa)
+{
+   switch (sa->type) {
+      case AF_INET:
+         if (memcmp(sa->addr, "\x00\x00\x00\x00", IP_ADDR_LEN))
+            return 0;
+         break;
+      case AF_INET6:
+         if (memcmp(sa->addr, "\x00\x00\x00\x00\x00\x00\x00\x00"
+                               "\x00\x00\x00\x00\x00\x00\x00\x00", IP6_ADDR_LEN))
+            return 0;
+         break;
+   };
+  
+   return 1;
+}
+
 
 /*
  * print an ip_add structure

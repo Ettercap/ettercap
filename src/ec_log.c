@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.28 2003/11/10 22:46:24 alor Exp $
+    $Id: ec_log.c,v 1.29 2004/01/04 16:29:28 alor Exp $
 */
 
 #include <ec.h>
@@ -140,6 +140,10 @@ int set_loglevel(int level, char *filename)
          
          /* add the hook for ICMP packets */
          hook_add(HOOK_PACKET_ICMP, &log_write_info_arp_icmp);
+         
+         /* add the hook for DHCP packets */
+         /* (fake icmp packets from DHCP discovered GW and DNS) */
+         hook_add(HOOK_PROTO_DHCP_PROFILE, &log_write_info_arp_icmp);
 
          break;
    }

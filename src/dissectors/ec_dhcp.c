@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp.c,v 1.7 2003/11/18 15:30:13 alor Exp $
+    $Id: ec_dhcp.c,v 1.8 2004/01/04 16:29:28 alor Exp $
 */
 
 /*
@@ -85,6 +85,7 @@ FUNC_DECODER(dissector_dhcp);
 void dhcp_init(void);
 u_int8 * get_dhcp_option(u_int8 opt, u_int8 *ptr, u_int8 *end);
 void put_dhcp_option(u_int8 opt, u_int8 *value, u_int8 len, u_int8 **ptr);
+static void dhcp_add_profile(struct ip_addr *sa, size_t flag);
 
 /************************************************/
 
@@ -216,8 +217,10 @@ FUNC_DECODER(dissector_dhcp)
             DISSECT_MSG("%s ", ip_addr_ntoa(&client, tmp)); 
             DISSECT_MSG("%s ", ip_addr_ntoa(&netmask, tmp)); 
             DISSECT_MSG("GW %s ", ip_addr_ntoa(&router, tmp)); 
-            DISSECT_MSG("DNS %s ", ip_addr_ntoa(&dns, tmp)); 
-            
+            if (!ip_addr_is_zero(&dns)) {
+               DISSECT_MSG("DNS %s ", ip_addr_ntoa(&dns, tmp)); 
+            }
+
             /* dns domain */
             if ((opt = get_dhcp_option(DHCP_OPT_DOMAIN, options, end)) != NULL) {
                   strncpy(domain, opt + 1, MIN(*opt, sizeof(domain)) );
@@ -225,6 +228,10 @@ FUNC_DECODER(dissector_dhcp)
                DISSECT_MSG("\"%s\"\n", domain);
             } else
                DISSECT_MSG("\n");
+            
+            /* add the GW and the DNS to hosts' profiles */
+            dhcp_add_profile(&router, FP_GATEWAY | FP_HOST_LOCAL);
+            dhcp_add_profile(&dns, FP_UNKNOWN);
             
             break;
       }
@@ -278,6 +285,34 @@ void put_dhcp_option(u_int8 opt, u_int8 *value, u_int8 len, u_int8 **ptr)
 
    *ptr = p;
 }
+
+
+/*
+ * create a fake packet object to feed the profile_parse function
+ */
+static void dhcp_add_profile(struct ip_addr *sa, size_t flag)
+{
+   struct packet_object po;
+
+   DEBUG_MSG("dhcp_add_profile");
+   
+   /* wipe the object */
+   memset(&po, 0, sizeof(struct packet_object));
+   
+   memcpy(&po.L3.src, sa, sizeof(struct ip_addr));
+
+   /* this is a ludicrious(tm) lie !
+    * in order to add the host to the profiles we pretend
+    * to have seen an icmp from it 
+    */
+   po.L4.proto = NL_TYPE_ICMP;
+   po.PASSIVE.flags = flag;
+
+   /* HOOK POINT: HOOK_PROTO_DHCP_PROFILE */
+   /* used by profile_parse and log_packet */
+   hook_point(HOOK_PROTO_DHCP_PROFILE, &po);
+}
+
 
 /* EOF */
 

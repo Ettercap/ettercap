@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.6 2003/10/23 19:50:57 uid42100 Exp $
+    $Id: ec_curses.c,v 1.7 2003/10/25 11:21:53 alor Exp $
 */
 
 #include <ec.h>
@@ -133,18 +133,31 @@ static void curses_progress(char *title, int value, int max)
 
 void curses_interface(void)
 {
-   wdg_t *wo;
+   wdg_t *win1, *win2, *win3;
    
    DEBUG_MSG("curses_interface");
 
-   wdg_create_object(&wo, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
-   ON_ERROR(wo, NULL, "Cannot create object");
+   wdg_create_object(&win1, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
+   ON_ERROR(win1, NULL, "Cannot create object");
    
    //wdg_window_set_title(wo, "Title: ");
-   wdg_resize_object(wo, 3, 15, -3, -4);
-   wdg_draw_object(wo);
+   //wdg_resize_object(win1, 3, -15, -3, -2);
+   wdg_resize_object(win1, 3, -15, -3, -2);
+   wdg_draw_object(win1);
 
-   wdg_set_focus(wo);
+   wdg_create_object(&win2, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
+   ON_ERROR(win2, NULL, "Cannot create object");
+   
+   wdg_resize_object(win2, 3, 3, -3, 10);
+   wdg_draw_object(win2);
+   
+   wdg_create_object(&win3, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
+   ON_ERROR(win3, NULL, "Cannot create object");
+   
+   wdg_resize_object(win3, 3, 11, -3, 17);
+   wdg_draw_object(win3);
+   
+   wdg_set_focus(win3);
    
    /* 
     * give the control to the event dispatcher
@@ -152,7 +165,8 @@ void curses_interface(void)
     */
    wdg_events_handler('Q');
 
-   wdg_destroy_object(&wo);
+   wdg_destroy_object(&win1);
+   wdg_destroy_object(&win2);
 }
 
 

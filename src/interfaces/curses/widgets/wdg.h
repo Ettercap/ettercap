@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.6 2003/10/23 19:50:58 uid42100 Exp $ */
+/* $Id: wdg.h,v 1.7 2003/10/25 11:21:53 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -80,7 +80,7 @@ struct wdg_object {
    /* called to process an input from the user */
    int (*get_msg)(struct wdg_object *wo, int key);
 
-   /* object size */
+   /* object cohordinates */
    int x1, y1, x2, y2;
 
    /* here is the pointer to extend a wdg object
@@ -88,6 +88,8 @@ struct wdg_object {
     */
    void *extend;
 };
+
+#define WDG_WO_EXT(type, var) type *var = (type *)(wo->extend);
 
 typedef struct wdg_object wdg_t;
 
@@ -115,6 +117,12 @@ extern void wdg_set_colors(struct wdg_object *wo, int color, size_t type);
 extern void wdg_draw_object(struct wdg_object *wo);
 extern size_t wdg_get_type(struct wdg_object *wo);
 extern void wdg_set_focus(struct wdg_object *wo);
+
+/* object size */
+extern size_t wdg_get_nlines(struct wdg_object *wo);
+extern size_t wdg_get_ncols(struct wdg_object *wo);
+extern size_t wdg_get_begin_x(struct wdg_object *wo);
+extern size_t wdg_get_begin_y(struct wdg_object *wo);
 
 #endif 
 

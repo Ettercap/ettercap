@@ -31,6 +31,16 @@ this is the unofficial and floating in time roadmap:
       
 Oct 2003:
 
+   + NCURSES INTERFACE
+      - customizable colors
+      + LIBWDG
+         - mouse events
+         - widgets:
+            - scroll_win 
+            - menu
+            - input
+            - error_win
+
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - reset modified connection (on user request)
@@ -67,12 +77,6 @@ Nov 2003:
 Dec 2003:
 
    + INTERFACE ENGINE
-      - ncurses
-         - restyle
-         - configurable colors
-         - better winch handling
-      - cursed gtk
-         http://zemljanka.sourceforge.net/cursed/
       - gtk
          - redesigned
          - win32 port

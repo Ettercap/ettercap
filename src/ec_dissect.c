@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.7 2003/07/01 19:15:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.8 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -60,8 +60,8 @@ int dissect_match(void *id_sess, void *id_curr)
    struct dissect_ident *id = id_curr;
 
    /* sanity check */
-   BUG_IF(ids, NULL);
-   BUG_IF(id, NULL);
+   BUG_IF(ids == NULL);
+   BUG_IF(id == NULL);
   
    /* 
     * is this ident from our level ?

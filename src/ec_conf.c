@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.3 2003/06/28 14:22:33 alor Exp $
+    $Id: ec_conf.c,v 1.4 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -97,7 +97,10 @@ static void init_structures(void)
    /* sanity check */
    do {
       do {
-         BUG_ON(sections[i].entries[j].value == NULL);
+         if (sections[i].entries[j].value == NULL) {
+            DEBUG_MSG("INVALID init: %s", sections[i].entries[j].name);
+            BUG("check the debug file...");
+         }
       } while (sections[i].entries[++j].name != NULL);
       j = 0;
    } while (sections[++i].title != NULL);

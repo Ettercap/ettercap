@@ -38,13 +38,34 @@
       - multipoison
       - rearp in demon mode (clean shutdown of all thread)
    
+   
    + FILTERING ENGINE
       - use regexp for filtering
-      - include the ip in the filter rule
+      - include all the protocols in the filter rule
+         - protocols table
+         - parsing engine
+            - SP (string pointer)
+            - FLAGS (flags
       - filter even the header of the packets
       - use bison and flex
       - scripting language
-      - etterfilter (utility)
+      - etterfilter (utility) (used to compile the filter in bytecode)
+         - cond ? goto : goto
+         - action
+         - example for ssh filter:
+         
+            L4.tcp.src == 22 ? 1 : -1
+            DATA.data == "1.99" : 2 : -1
+            SP <- "1.51"
+
+            or 
+
+            if (L4.tcp.src == 22) {
+               if (ptr = search(DATA.data, "1.99")) {
+                  subst(ptr, "1.51");
+               }
+            }
+            
    
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

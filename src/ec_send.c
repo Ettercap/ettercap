@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.12 2003/06/02 13:06:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.13 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -122,7 +122,7 @@ int send_to_L3(struct packet_object *po)
    int c;
 
    /* in offline sniffig we MUST NOT send anything ! */
-   BUG_ON(GBL_OPTIONS->read);
+   BUG_IF(GBL_OPTIONS->read);
    
    SEND_LOCK;
    
@@ -155,7 +155,7 @@ int send_to_L2(struct packet_object *po)
    int c;
    
    /* in offline sniffig we MUST NOT send anything ! */
-   BUG_ON(GBL_OPTIONS->read);
+   BUG_IF(GBL_OPTIONS->read);
    
    SEND_LOCK;
    
@@ -187,7 +187,7 @@ int send_to_bridge(struct packet_object *po)
    int c;
   
    /* in offline sniffig we MUST NOT send anything ! */
-   BUG_ON(GBL_OPTIONS->read);
+   BUG_IF(GBL_OPTIONS->read);
    
    SEND_LOCK;
 
@@ -260,7 +260,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    int c;
  
    /* in offline sniffig we MUST NOT send anything ! */
-   BUG_ON(GBL_OPTIONS->read);
+   BUG_IF(GBL_OPTIONS->read);
    
    SEND_LOCK;
 

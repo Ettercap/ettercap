@@ -13,17 +13,17 @@
 
 #ifndef HAVE_NS_GET
    /* functions */
-   #define NS_GET16 GETSHORT
-   #define NS_GET32 GETLONG
-   #define NS_PUT16 PUTSHORT
-   #define NS_PUT32 PUTLONG
+   #define NS_GET16     GETSHORT
+   #define NS_GET32     GETLONG
+   #define NS_PUT16     PUTSHORT
+   #define NS_PUT32     PUTLONG
    /* constants */
-   #define NS_MAXDNAME MAXDNAME
-   #define ns_c_in C_IN
+   #define NS_MAXDNAME  MAXDNAME
+   #define ns_c_in      C_IN
    #define ns_r_noerror NOERROR
-   #define ns_t_cname T_CNAME
-   #define ns_t_ptr T_PTR
-   #define ns_t_a T_A
+   #define ns_t_cname   T_CNAME
+   #define ns_t_ptr     T_PTR
+   #define ns_t_a       T_A
 #endif
 
 

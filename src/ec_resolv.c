@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.3 2003/06/14 13:35:11 alor Exp $
+    $Id: ec_resolv.c,v 1.4 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -63,8 +63,6 @@ int host_iptoa(struct ip_addr *ip, char *name)
 #ifdef CYGWIN
    WSADATA wsdata;
 #endif
-
-   DEBUG_MSG("host_iptoa: %#x", *(u_int32 *)&ip->addr);
    
    /*
     * if the entry is already present in the cache
@@ -86,6 +84,8 @@ int host_iptoa(struct ip_addr *ip, char *name)
     */
    if (!GBL_OPTIONS->resolve)
       return -ENOTFOUND;
+   
+   DEBUG_MSG("host_iptoa: %#x", *(u_int32 *)&ip->addr);
    
    /* if not found in the cache, resolve it */
 #ifdef CYGWIN
@@ -139,8 +139,6 @@ static int resolv_cache_search(struct ip_addr *ip, char *name)
       }
    }
    
-   DEBUG_MSG("DNS cache_search: cache missed !");
-
    /* cache miss */
    return -ENOTFOUND;
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_poll.c,v 1.2 2003/04/14 21:05:24 alor Exp $
+    $Id: ec_poll.c,v 1.3 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -79,7 +79,7 @@ int ec_poll_read(int fd, u_int msec)
                
    return 0;
 #else
-   #error "you don't have either poll nor select"
+   #error "you don't have neither poll nor select"
 #endif
 }
 

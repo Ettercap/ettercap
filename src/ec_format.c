@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.9 2003/07/01 19:15:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.10 2003/07/03 20:12:49 alor Exp $
 
 */
 
@@ -261,7 +261,7 @@ int text_format(const u_char *buf, size_t len, u_char *dst)
 
 int ebcdic_format(const u_char *buf, size_t len, u_char *dst)
 {
-   int i = 0;
+   u_int i = 0;
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {

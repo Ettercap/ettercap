@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dns.c,v 1.3 2003/07/01 19:15:44 alor Exp $
+    $Id: ec_dns.c,v 1.4 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -191,6 +191,7 @@ FUNC_DECODER(dissector_dns)
             /* display the user message */
             ip_addr_ntoa(&ip, aip);
             USER_MSG("DNS: %s ->> %s ->> %s\n", name, alias, aip);
+            DEBUG_MSG("DNS: %s ->> %s ->> %s\n", name, alias, aip);
          }
       }
       

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.5 2003/07/01 19:15:44 alor Exp $
+    $Id: ec_session.c,v 1.6 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -106,7 +106,7 @@ void session_put(struct session *s)
    SAFE_FREE(old);
 
    /* sanity check */
-   BUG_IF(s->match, NULL);
+   BUG_IF(s->match == NULL);
   
    /* create the element in the list */
    sl = calloc(1, sizeof(struct session_list));

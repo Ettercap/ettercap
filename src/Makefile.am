@@ -40,6 +40,10 @@ ettercap_SOURCES = ec_main.c \
 				   ec_sniff_unified.c \
 				   ec_sniff_bridge.c \
 				   ec_sniff_arp.c \
+				   interfaces/console/ec_console.c \
+				   interfaces/console/ec_console_display.c \
+				   interfaces/console/ec_console_plugin.c \
+				   interfaces/daemon/ec_daemon.c \
 				   protocols/ec_eth.c \
 				   protocols/ec_wifi.c \
 				   protocols/ec_arp.c \
@@ -48,14 +52,17 @@ ettercap_SOURCES = ec_main.c \
 				   protocols/ec_tcp.c \
 				   protocols/ec_udp.c \
 				   protocols/ec_icmp.c \
-				   dissectors/ec_dns.c \
 				   dissectors/ec_ftp.c \
-				   dissectors/ec_pop.c \
-				   interfaces/console/ec_console.c \
-				   interfaces/console/ec_console_display.c \
-				   interfaces/console/ec_console_plugin.c \
-				   interfaces/daemon/ec_daemon.c 
-               
+				   dissectors/ec_pop.c 
+
+### Conditiaonal compilations 
+
+if HAVE_DN_EXPAND
+ettercap_SOURCES += dissectors/ec_dns.c
+endif
+
+### OS dependent
+
 if LINUX
 ettercap_SOURCES += os/ec_linux.c
 endif

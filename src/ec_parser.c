@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.28 2003/06/21 13:58:42 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.29 2003/07/03 20:12:49 alor Exp $
 */
 
 
@@ -41,7 +41,7 @@
 static void ec_usage(void);
 void parse_options(int argc, char **argv);
 
-int expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t );
+int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t );
 int match_pattern(const char *s, const char *pattern);
 int set_regex(char *regex);
 
@@ -364,7 +364,7 @@ void parse_options(int argc, char **argv)
  * and fill the structure with expanded numbers.
  */
 
-int expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t )
+int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t )
 {
    char *str = strdup(s);
    char *p, *q, r;

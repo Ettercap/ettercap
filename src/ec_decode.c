@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.26 2003/06/28 14:22:33 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.27 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -51,7 +51,7 @@ void __init data_init(void);
 FUNC_DECODER(decode_data);
 
 void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
-int set_L2_decoder(u_int16 dlt);
+int set_L2_decoder(int dlt);
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 void del_decoder(u_int8 level, u_int32 type);
 void * get_decoder(u_int8 level, u_int32 type);
@@ -279,14 +279,14 @@ FUNC_DECODER(decode_data)
  * available
  */
 
-int set_L2_decoder(u_int16 dlt)
+int set_L2_decoder(int dlt)
 {
    struct dec_entry *e;
 
    DECODERS_LOCK;
    
    SLIST_FOREACH (e, &decoders_table, next) {
-      if (e->level == 2 && e->type == dlt) {
+      if (e->level == 2 && e->type == (u_int16)dlt) {
          DEBUG_MSG("DLT = %d : decoder found !", dlt);
          l2_decoder = e->decoder;
          DECODERS_UNLOCK;

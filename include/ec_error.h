@@ -23,9 +23,9 @@ extern void bug(char *file, char *function, int line, char *message);
 
 #define ON_ERROR(x, y, fmt, ...) do { if (x == y) ERROR_MSG(fmt, ## __VA_ARGS__ ); } while(0)
 
-#define BUG_IF(x, y) do { if (x == y) bug(__FILE__, __FUNCTION__, __LINE__, #x" is equal to "#y); }while(0)
+#define BUG_IF(x) do { if (x) bug(__FILE__, __FUNCTION__, __LINE__, #x); }while(0)
 
-#define BUG_ON(x) do { if (x) bug(__FILE__, __FUNCTION__, __LINE__, #x); }while(0)
+#define BUG(x) do { bug(__FILE__, __FUNCTION__, __LINE__, #x); }while(0)
 
 #define NOT_IMPLEMENTED() do { ERROR_MSG("Not yet implemented"); } while(0)
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.12 2003/04/14 21:05:27 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.13 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -105,7 +105,8 @@ void ui_progress(int value, int max)
 void ui_error(const char *fmt, ...)
 {
    va_list ap;
-   int n, size = 50;
+   int n;
+   size_t size = 50;
    char *msg;
 
    /* 
@@ -123,7 +124,7 @@ void ui_error(const char *fmt, ...)
       va_end(ap);
       
       /* If that worked, we have finished. */
-      if (n > -1 && n < size)
+      if (n > -1 && (size_t)n < size)
          break;
    
       /* Else try again with more space. */
@@ -152,7 +153,8 @@ void ui_msg(const char *fmt, ...)
 {
    va_list ap;
    struct ui_message *msg;
-   int n, size = 50;
+   int n;
+   size_t size = 50;
 
    msg = (struct ui_message *) calloc(1, sizeof(struct ui_message));
    ON_ERROR(msg, NULL, "can't allocate ui_message");
@@ -172,7 +174,7 @@ void ui_msg(const char *fmt, ...)
       va_end(ap);
       
       /* If that worked, we have finished. */
-      if (n > -1 && n < size)
+      if (n > -1 && (size_t)n < size)
          break;
    
       /* Else try again with more space. */
@@ -270,22 +272,22 @@ int ui_msg_purge_all(void)
 void ui_register(struct ui_ops *ops)
 {
         
-   BUG_IF(ops->init, NULL);
+   BUG_IF(ops->init == NULL);
    GBL_UI->init = ops->init;
    
-   BUG_IF(ops->cleanup, NULL);
+   BUG_IF(ops->cleanup == NULL);
    GBL_UI->cleanup = ops->cleanup;
    
-   BUG_IF(ops->start, NULL);
+   BUG_IF(ops->start == NULL);
    GBL_UI->start = ops->start;
         
-   BUG_IF(ops->msg, NULL);
+   BUG_IF(ops->msg == NULL);
    GBL_UI->msg = ops->msg;
    
-   BUG_IF(ops->error, NULL);
+   BUG_IF(ops->error == NULL);
    GBL_UI->error = ops->error;
    
-   BUG_IF(ops->progress, NULL);
+   BUG_IF(ops->progress == NULL);
    GBL_UI->progress = ops->progress;
 }
 

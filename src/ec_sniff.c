@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.16 2003/06/10 10:39:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.17 2003/07/03 20:12:49 alor Exp $
 */
 
 #include <ec.h>
@@ -45,8 +45,8 @@ void reset_display_filter(struct target_env *t);
 
 static void set_forwardable_flag(struct packet_object *po);
 
-static void add_port(void *ports, int n);
-static void add_ip(void *digit, int n);
+static void add_port(void *ports, u_int n);
+static void add_ip(void *digit, u_int n);
 static int expand_range_ip(char *str, void *target);
 
 void del_ip_list(struct ip_addr *ip, struct target_env *t);
@@ -372,7 +372,7 @@ int compile_display_filter(void)
    return ESUCCESS;
 }
 
-static void add_port(void *ports, int n)
+static void add_port(void *ports, u_int n)
 {
    u_int8 *bitmap = ports;
   
@@ -472,7 +472,7 @@ static int expand_range_ip(char *str, void *target)
 }
 
 /* fill the digit structure with data */
-static void add_ip(void *digit, int n)
+static void add_ip(void *digit, u_int n)
 {
    struct digit *buf = digit;
    

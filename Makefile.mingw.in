@@ -188,7 +188,7 @@ SOURCE += $(addprefix src/protocols/, ec_arp.c ec_cooked.c ec_eth.c ec_fddi.c \
             ec_wifi.c)
 
 ifeq ($(USE_CURSES),1)
-  SOURCE += $(addprefix src/interfaces/curses/, ec_curses.c ec_curses_filters.c \
+  SOURCE += $(addprefix src/interfaces/curses/, ec_curses.c ec_curses_filters.c ec_curses_help.c \
               ec_curses_hosts.c ec_curses_live.c ec_curses_logging.c ec_curses_mitm.c \
               ec_curses_offline.c ec_curses_plugins.c ec_curses_start.c ec_curses_targets.c \
               ec_curses_view.c ec_curses_view_connections.c ec_curses_view_profiles.c)

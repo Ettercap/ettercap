@@ -13,6 +13,7 @@ NG-0.7.2         200410
    + checksum_check was renamed to checksum_warning
      and a new option to prevent the check was introduced
      (see the man page etter.conf(5) for details)
+   + added the help menu (inline man pages)
    !! do not drop privs under windows (useless) 
    !! fixed the mmap problem under windows
    !! fixed file operation under windows (O_BINARY related)

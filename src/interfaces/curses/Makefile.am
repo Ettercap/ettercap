@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.10 2004/02/22 12:00:53 alor Exp $
+# $Id: Makefile.am,v 1.11 2004/10/12 14:27:28 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -13,6 +13,7 @@ libec_curses_a_CFLAGS = @EC_CFLAGS@ @NCURSINC@ -Iwidgets
 
 libec_curses_a_SOURCES = ec_curses.c \
                          ec_curses_filters.c \
+                         ec_curses_help.c \
                          ec_curses_hosts.c \
                          ec_curses_live.c \
                          ec_curses_logging.c \

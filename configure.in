@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.63 2003/11/13 21:35:38 alor Exp $
+dnl    $Id: configure.in,v 1.64 2003/11/14 20:46:54 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -240,10 +240,7 @@ AC_SEARCH_LIBS(gzopen,c z,,AC_MSG_ERROR(zlib not found.))
 dnl
 dnl  Do we have dn_expand ?
 dnl
-
-AC_SEARCH_LIBS(dn_expand, resolv c,
-   AM_CONDITIONAL(HAVE_DN_EXPAND, true) ac_cv_ec_dns=yes, 
-   AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_cv_ec_dns=no)
+EC_RESOLVE_CHECK()
 
 dnl ===============================
 dnl   Check for non standard libs

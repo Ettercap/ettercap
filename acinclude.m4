@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.5 2003/09/18 22:14:52 alor Exp $
+dnl $Id: acinclude.m4,v 1.6 2003/11/14 20:46:54 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -145,6 +145,41 @@ AC_DEFUN(EC_NS_GET,[
       AC_DEFINE(HAVE_NS_GET,1) ],
    [  AC_MSG_RESULT(no); ]
    )
+
+])
+
+dnl
+dnl EC_RESOLVE_CHECK()
+dnl
+
+AC_DEFUN(EC_RESOLVE_CHECK,[
+
+   AC_SEARCH_LIBS(dn_expand, resolv c,
+      [
+         AC_MSG_CHECKING(for additional -lresolv needed by dn_expand)
+         AC_TRY_COMPILE([
+               #include <sys/types.h>
+               #include <netinet/in.h>
+               #include <arpa/nameser.h>
+               #include <resolv.h>
+            ],
+            [
+               int main(int argc, char **argv)
+               {
+                  char *q;
+                  char p[NS_MAXDNAME];
+
+                  dn_expand(q, q, q, p, sizeof(p));
+               } 
+            ],
+            [AC_MSG_RESULT(not needed)],
+            [AC_MSG_RESULT(needed)
+             LIBS="$LIBS -lresolv"]
+         )
+         
+         AM_CONDITIONAL(HAVE_DN_EXPAND, true) ac_cv_ec_dns=yes 
+      ],
+      [AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_cv_ec_dns=no])
 
 ])
 

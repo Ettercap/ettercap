@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_profiles.c,v 1.9 2004/03/04 12:59:10 daten Exp $
+    $Id: ec_gtk_view_profiles.c,v 1.10 2004/03/04 13:16:24 daten Exp $
 */
 
 #include <ec.h>
@@ -111,6 +111,9 @@ void gtkui_show_profiles(void)
    gtk_tree_view_column_set_sort_column_id (column, 2);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
+   refresh_profiles(NULL);
+   gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_profiles));
+
    hbox = gtk_hbox_new(TRUE, 5);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
@@ -183,7 +186,6 @@ static gboolean refresh_profiles(gpointer data)
 
    if(!ls_profiles) {
       ls_profiles = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
-      gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_profiles));
    }
 
    /* get iter for first item in list widget */

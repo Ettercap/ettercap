@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.13 2004/03/04 12:59:10 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.14 2004/03/04 13:16:24 daten Exp $
 */
 
 #include <ec.h>
@@ -214,6 +214,8 @@ void gtkui_show_connections(void)
    /* initialize the list */
    refresh_connections(NULL);
 
+   gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_conns));
+
    /* refresh the list every 500 ms */
    /* gtk_idle_add refreshes too fast, uses all cpu */
    connections_idle = gtk_timeout_add(500, refresh_connections, NULL);
@@ -273,7 +275,6 @@ static gboolean refresh_connections(gpointer data)
                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
                     G_TYPE_POINTER, G_TYPE_UINT);
-      gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_conns));
    }
 
    /* get first item in connection list */

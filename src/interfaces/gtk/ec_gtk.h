@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.8 2004/03/03 13:52:35 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.9 2004/03/04 12:59:10 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -21,13 +21,15 @@ extern GtkTextBuffer *gtkui_details_window(char *title);
 extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
 extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 extern gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
+extern void gtkui_filename_browse(GtkWidget *widget, gpointer data);
 
 /* MDI pages */
-GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));
+extern GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));
 extern void gtkui_page_present(GtkWidget *child);
 extern void gtkui_page_close(GtkWidget *widget, gpointer data);
 extern void gtkui_page_close_current(void);
 extern void gtkui_page_detach_current(void);
+extern void gtkui_page_attach_shortcut(GtkWidget *win, void (*attacher)(void));
 extern void gtkui_page_right(void);
 extern void gtkui_page_left(void);
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_targets.c,v 1.5 2004/03/03 13:52:35 daten Exp $
+    $Id: ec_gtk_targets.c,v 1.6 2004/03/04 12:59:10 daten Exp $
 */
 
 #include <ec.h>
@@ -42,6 +42,7 @@ static void add_target2(void);
 static struct ip_list *gtkui_target_selected(int list);
 static void gtkui_targets_destroy(void);
 static void gtkui_targets_detach(GtkWidget *child);
+static void gtkui_targets_attach(void);
 
 /* globals */
 
@@ -284,11 +285,20 @@ static void gtkui_targets_detach(GtkWidget *child)
    targets_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (targets_window), "Current Targets");
    gtk_window_set_default_size(GTK_WINDOW (targets_window), 400, 300);
-   g_signal_connect (G_OBJECT (targets_window), "delete_event", G_CALLBACK (gtk_widget_hide), NULL);
+   g_signal_connect (G_OBJECT (targets_window), "delete_event", G_CALLBACK (gtkui_targets_destroy), NULL);
+
+   /* make <ctrl>d shortcut turn the window back into a tab */
+   gtkui_page_attach_shortcut(targets_window, gtkui_targets_attach);
 
    gtk_container_add(GTK_CONTAINER (targets_window), child);
 
    gtk_window_present(GTK_WINDOW (targets_window));
+}
+
+static void gtkui_targets_attach(void)
+{
+   gtkui_targets_destroy();
+   gtkui_current_targets();
 }
 
 static void gtkui_targets_destroy(void)

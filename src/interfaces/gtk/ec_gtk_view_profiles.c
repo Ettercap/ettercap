@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_profiles.c,v 1.8 2004/03/03 13:52:35 daten Exp $
+    $Id: ec_gtk_view_profiles.c,v 1.9 2004/03/04 12:59:10 daten Exp $
 */
 
 #include <ec.h>
@@ -31,6 +31,7 @@
 
 void gtkui_show_profiles(void);
 static void gtkui_profiles_detach(GtkWidget *child);
+static void gtkui_profiles_attach(void);
 static void gtkui_kill_profiles(void);
 static gboolean refresh_profiles(gpointer data);
 static void gtkui_profile_detail(void);
@@ -145,9 +146,18 @@ static void gtkui_profiles_detach(GtkWidget *child)
    gtk_window_set_default_size(GTK_WINDOW (profiles_window), 400, 300);
    g_signal_connect (G_OBJECT (profiles_window), "delete_event", G_CALLBACK (gtkui_kill_profiles), NULL);
 
+   /* make <ctrl>d shortcut turn the window back into a tab */
+   gtkui_page_attach_shortcut(profiles_window, gtkui_profiles_attach);
+
    gtk_container_add(GTK_CONTAINER (profiles_window), child);
 
    gtk_window_present(GTK_WINDOW (profiles_window));
+}
+
+static void gtkui_profiles_attach(void)
+{
+   gtkui_kill_profiles();
+   gtkui_show_profiles();
 }
 
 static void gtkui_kill_profiles(void)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.12 2004/03/03 13:52:35 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.13 2004/03/04 12:59:10 daten Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,7 @@
 #include <ec_services.h>
 #include <ec_strings.h>
 #include <ec_format.h>
+#include <ec_inject.h>
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -37,6 +38,7 @@
 
 void gtkui_show_connections(void);
 static void gtkui_connections_detach(GtkWidget *child);
+static void gtkui_connections_attach(void);
 static void gtkui_kill_connections(void);
 static gboolean refresh_connections(gpointer data);
 static void gtkui_connection_detail(void);
@@ -44,6 +46,7 @@ static void gtkui_connection_data(void);
 static void gtkui_connection_data_split(void);
 static void gtkui_connection_data_join(void);
 static void gtkui_connection_data_detach(GtkWidget *child);
+static void gtkui_connection_data_attach(void);
 static void gtkui_destroy_conndata(void);
 static void gtkui_data_print(int buffer, char *data, int color);
 static void split_print(u_char *text, size_t len, struct ip_addr *L3_src);
@@ -53,9 +56,9 @@ static void join_print_po(struct packet_object *po);
 static void gtkui_connection_kill(void *conn);
 static void gtkui_connection_kill_wrapper(void);
 static void gtkui_connection_inject(void);
-static void inject_user(void);
+static void gtkui_inject_user(int side);
 static void gtkui_connection_inject_file(void);
-static void inject_file(char *filename);
+static void gtkui_inject_file(char *filename, int side);
 
 extern void conntrack_lock(void);
 extern void conntrack_unlock(void);
@@ -184,6 +187,7 @@ void gtkui_show_connections(void)
 
    button = gtk_button_new_with_mnemonic("View _Details");
    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_detail), NULL);
+   
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
@@ -224,9 +228,18 @@ void gtkui_connections_detach(GtkWidget *child)
    gtk_window_set_default_size(GTK_WINDOW (conns_window), 500, 250);
    g_signal_connect(G_OBJECT(conns_window), "delete_event", G_CALLBACK(gtkui_kill_connections), NULL);
 
+   /* make <ctrl>d shortcut turn the window back into a tab */
+   gtkui_page_attach_shortcut(conns_window, gtkui_connections_attach);
+
    gtk_container_add(GTK_CONTAINER (conns_window), child);
 
    gtk_window_present(GTK_WINDOW (conns_window));
+}
+
+static void gtkui_connections_attach(void)
+{
+   gtkui_kill_connections();
+   gtkui_show_connections();
 }
 
 static void gtkui_kill_connections(void)
@@ -610,9 +623,18 @@ static void gtkui_connection_data_detach(GtkWidget *child)
    gtk_container_set_border_width(GTK_CONTAINER (data_window), 5);
    g_signal_connect(G_OBJECT(data_window), "delete_event", G_CALLBACK(gtkui_destroy_conndata), NULL);
 
+   /* make <ctrl>d shortcut turn the window back into a tab */
+   gtkui_page_attach_shortcut(data_window, gtkui_connection_data_attach);
+
    gtk_container_add(GTK_CONTAINER(data_window), child);
 
    gtk_window_present(GTK_WINDOW (data_window));
+}
+
+static void gtkui_connection_data_attach(void)
+{
+   gtkui_destroy_conndata();
+   gtkui_connection_data_split();
 }
 
 static void gtkui_destroy_conndata(void)
@@ -841,9 +863,9 @@ static void gtkui_connection_kill(void *conn)
    
    DEBUG_MSG("gtk_connection_kill");
    
-   /* XXX - implement the killing function */
-   gtkui_message("KILL: not yet implemented");
-   return;
+   /* kill it */
+   user_kill(curr_conn);
+
    /* set the status */
    c->status = CONN_KILLED;
    gtkui_message("The connection was killed !!");
@@ -863,31 +885,57 @@ static void gtkui_connection_kill_wrapper(void)
  */
 static void gtkui_connection_inject(void)
 {
-   GtkWidget *dialog, *text, *label, *vbox;
+   GtkWidget *dialog, *text, *label, *vbox, *frame;
+   GtkWidget *button1, *button2, *hbox;
    GtkTextBuffer *buf;
    GtkTextIter start, end;
+   char tmp[MAX_ASCII_ADDR_LEN];
    gint response = 0;
 
    DEBUG_MSG("gtk_connection_inject");
 
+   if(curr_conn == NULL)
+      return;
+
    dialog = gtk_dialog_new_with_buttons("Character Injection", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
-   gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 150);
+   gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 200);
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
    vbox = GTK_DIALOG (dialog)->vbox;
 
-   label = gtk_label_new ("Characters to be injected:");
-   gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
-   gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+   label = gtk_label_new ("Packet source:");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
    gtk_widget_show(label);
 
+   hbox = gtk_hbox_new(FALSE, 5);
+   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+   gtk_widget_show(hbox);
+
+   button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
+   gtk_box_pack_start(GTK_BOX(hbox), button1, FALSE, FALSE, 0);
+   gtk_widget_show(button1);
+
+   button2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (button1),
+               ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
+   gtk_box_pack_start(GTK_BOX(hbox), button2, FALSE, FALSE, 0);
+   gtk_widget_show(button2);
+
+   label = gtk_label_new ("Characters to be injected:");
+   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
+   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+   gtk_widget_show(label);
+
+   frame = gtk_frame_new(NULL);
+   gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_IN);
+   gtk_box_pack_start(GTK_BOX (vbox), frame, TRUE, TRUE, 5);
+   gtk_widget_show(frame);
+
    text = gtk_text_view_new();
    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (text), GTK_WRAP_CHAR);
-   gtk_box_pack_start(GTK_BOX (vbox), text, TRUE, TRUE, 5);
+   gtk_container_add(GTK_CONTAINER (frame), text);
    gtk_widget_show(text);
     
    response = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -907,13 +955,16 @@ static void gtkui_connection_inject(void)
       
       strcpy(injectbuf, gtk_text_buffer_get_text(buf, &start, &end, FALSE));
 
-      inject_user();
+      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1)))
+         gtkui_inject_user(1);
+      else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2)))
+         gtkui_inject_user(2);
    }
 
    gtk_widget_destroy(dialog);
 }
 
-static void inject_user(void)
+static void gtkui_inject_user(int side)
 {
    size_t len;
     
@@ -921,14 +972,9 @@ static void inject_user(void)
    len = strescape(injectbuf, injectbuf);
 
    /* check where to inject */
-//   if (wdg_c1->flags & WDG_OBJ_FOCUSED) {
-//      inject(injectbuf, len, curr_conn, 1);
-//   } else if (wdg_c2->flags & WDG_OBJ_FOCUSED) {
-//      inject(injectbuf, len, curr_conn, 2);
-//   }
-   
-   gtkui_message("INJECT: not yet implemented");
-   return;
+   if (side == 1 || side == 2) {
+      user_inject(injectbuf, len, curr_conn, side);
+   }
 }
 
 /*
@@ -936,21 +982,72 @@ static void inject_user(void)
  */
 static void gtkui_connection_inject_file(void)
 {
-   GtkWidget *dialog = NULL;
-   gint response = 0;
+/* START */
+   GtkWidget *dialog, *label, *vbox, *hbox;
+   GtkWidget *button1, *button2, *button, *entry;
+   char tmp[MAX_ASCII_ADDR_LEN];
    char *filename = NULL;
+   gint response = 0;
    
    DEBUG_MSG("gtk_connection_inject_file");
 
-   dialog = gtk_file_selection_new ("Select a file to inject...");
+   if(curr_conn == NULL)
+      return;
 
-   response = gtk_dialog_run (GTK_DIALOG (dialog));
+   dialog = gtk_dialog_new_with_buttons("Character Injection", GTK_WINDOW (window),
+                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+   gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 150);
+   gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+   gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
+   vbox = GTK_DIALOG (dialog)->vbox;
 
-   if (response == GTK_RESPONSE_OK) {
+   label = gtk_label_new ("Packet source:");
+   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
+   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+   gtk_widget_show(label);
+
+   hbox = gtk_hbox_new(FALSE, 5);
+   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+   gtk_widget_show(hbox);
+      
+   button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
+   gtk_box_pack_start(GTK_BOX(hbox), button1, FALSE, FALSE, 0);
+   gtk_widget_show(button1);
+   
+   button2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (button1),
+               ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
+   gtk_box_pack_start(GTK_BOX(hbox), button2, FALSE, FALSE, 0);
+   gtk_widget_show(button2);
+   
+   label = gtk_label_new ("File to inject:");
+   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
+   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+   gtk_widget_show(label);
+
+   hbox = gtk_hbox_new(FALSE, 5);
+   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+   gtk_widget_show(hbox);
+
+   entry = gtk_entry_new();
+   gtk_box_pack_start(GTK_BOX (hbox), entry, TRUE, TRUE, 0);
+   gtk_widget_show(entry);
+
+   button = gtk_button_new_with_label("...");
+   gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_filename_browse), entry);
+   gtk_widget_show(button);
+
+   response = gtk_dialog_run(GTK_DIALOG (dialog));
+   if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
-
-      inject_file(filename);
+      filename = gtk_entry_get_text(GTK_ENTRY (entry));
+      if(filename && strlen(filename) > 0) {
+         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1)))
+            gtkui_inject_file(filename, 1);
+         else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2)))
+            gtkui_inject_file(filename, 2);
+      }
    }
    gtk_widget_destroy(dialog);
 }
@@ -958,7 +1055,7 @@ static void gtkui_connection_inject_file(void)
 /*
  * map the file into memory and pass the buffer to the inject function
  */
-static void inject_file(char *filename)
+static void gtkui_inject_file(char *filename, int side)
 {
    int fd;
    void *buf;
@@ -983,18 +1080,12 @@ static void inject_file(char *filename)
    }
 
    /* check where to inject */
-//   if (wdg_c1->flags & WDG_OBJ_FOCUSED) {
-//      inject(buf, size, curr_conn, 1);
-//   } else if (wdg_c2->flags & WDG_OBJ_FOCUSED) {
-//      inject(buf, size, curr_conn, 1);
-//   }
+   if (side == 1 || side == 2) {
+      user_inject(buf, size, curr_conn, side);
+   }
 
    close(fd);
    munmap(buf, size);
-   
-   gtkui_message("INJECT FILE: not yet implemented");
-   return;
-   
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.12 2004/03/03 13:52:35 daten Exp $
+    $Id: ec_gtk.c,v 1.13 2004/03/04 12:59:10 daten Exp $
 */
 
 #include <ec.h>
@@ -75,6 +75,7 @@ GtkTextBuffer *gtkui_details_window(char *title);
 void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
 void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
+void gtkui_filename_browse(GtkWidget *widget, gpointer data);
 
 /* MDI pages */
 GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));
@@ -82,6 +83,7 @@ void gtkui_page_present(GtkWidget *child);
 void gtkui_page_close(GtkWidget *widget, gpointer data);
 void gtkui_page_close_current(void);
 void gtkui_page_detach_current(void);
+void gtkui_page_attach_shortcut(GtkWidget *win, void (*attacher)(void));
 void gtkui_page_right(void);
 void gtkui_page_left(void);
 static void gtkui_page_defocus_tabs(void);
@@ -743,12 +745,18 @@ static void gtkui_pcap_filter(void)
 GtkTextBuffer *gtkui_details_window(char *title)
 {
    GtkWidget *dwindow, *dscrolled, *dtextview;
-   GtkWidget *vbox, *hbox, *button;     
-                                        
+   GtkWidget *vbox, *hbox, *button;
+   GdkGeometry hints;
+
    DEBUG_MSG("gtkui_details_window");
    
    dwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (dwindow), title);
+
+   hints.max_width = 640;
+   hints.max_height = 480;
+   gtk_window_set_geometry_hints(GTK_WINDOW (dwindow), dwindow, &hints, GDK_HINT_MAX_SIZE);
+
    gtk_window_set_default_size(GTK_WINDOW (dwindow), 300, 300);
    gtk_container_set_border_width(GTK_CONTAINER (dwindow), 5);
    gtk_window_set_position(GTK_WINDOW (dwindow), GTK_WIN_POS_CENTER);
@@ -759,7 +767,7 @@ GtkTextBuffer *gtkui_details_window(char *title)
    gtk_widget_show(vbox);
    
    dscrolled = gtk_scrolled_window_new(NULL, NULL); 
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (dscrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (dscrolled), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (dscrolled), GTK_SHADOW_IN);
    gtk_box_pack_start(GTK_BOX(vbox), dscrolled, TRUE, TRUE, 0);
    gtk_widget_show(dscrolled);
@@ -802,6 +810,7 @@ void gtkui_dialog_enter(GtkWidget *widget, gpointer data) {
 }
 
 /* create a new notebook (tab) page */
+/* returns a parent widget to pack the contents of the page into */
 GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *)) {
    GtkWidget *parent, *label;
    GtkWidget *hbox, *button, *image;
@@ -926,6 +935,8 @@ void gtkui_page_detach_current(void) {
    gint num = 0;
 
    num = gtk_notebook_get_current_page(GTK_NOTEBOOK (notebook));
+   if(num < 0)
+      return;
    child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook), num);
    g_object_ref(G_OBJECT(child));
 
@@ -936,6 +947,20 @@ void gtkui_page_detach_current(void) {
       detacher(child);
 }
 
+void gtkui_page_attach_shortcut(GtkWidget *win, void (*attacher)(void))
+{
+   GtkAccelGroup *accel;
+   GClosure *closure = NULL;
+   GdkModifierType mods;
+   gint keyval;
+
+   accel = gtk_accel_group_new ();
+   gtk_window_add_accel_group(GTK_WINDOW (win), accel);
+   closure = g_cclosure_new(G_CALLBACK(attacher), NULL, NULL);
+   gtk_accelerator_parse ("<control>D", &keyval, &mods);
+   gtk_accel_group_connect(accel, keyval, mods, 0, closure);
+}
+
 /* change view and focus to the next notebook page */
 void gtkui_page_right(void) {
    gtk_notebook_next_page(GTK_NOTEBOOK (notebook));
@@ -944,6 +969,26 @@ void gtkui_page_right(void) {
 /* change view and focus to previous notebook page */
 void gtkui_page_left(void) {
    gtk_notebook_prev_page(GTK_NOTEBOOK (notebook));
+}
+
+/* for connecting to browse buttons, pass entry widget as callback "data" */
+void gtkui_filename_browse(GtkWidget *widget, gpointer data)
+{  
+   GtkWidget *dialog = NULL;
+   gint response = 0;
+   char *filename = NULL;
+   
+   dialog = gtk_file_selection_new ("Select a file...");
+   
+   response = gtk_dialog_run (GTK_DIALOG (dialog));
+   
+   if (response == GTK_RESPONSE_OK) {
+      gtk_widget_hide(dialog); 
+      filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
+
+      gtk_entry_set_text(GTK_ENTRY (data), filename);
+   }
+   gtk_widget_destroy(dialog);
 }
 
 /* EOF */

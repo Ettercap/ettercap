@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_plugins.c,v 1.6 2004/03/03 13:52:35 daten Exp $
+    $Id: ec_gtk_plugins.c,v 1.7 2004/03/04 12:59:10 daten Exp $
 */
 
 #include <ec.h>
@@ -34,6 +34,7 @@ static void gtkui_load_plugin(char *full);
 static void gtkui_add_plugin(char active, struct plugin_ops *ops);
 static void gtkui_plug_destroy(void);
 static void gtkui_plugins_detach(GtkWidget *child);
+static void gtkui_plugins_attach(void);
 static void gtkui_select_plugin(void);
 static void gtkui_create_plug_array(void);
 
@@ -186,9 +187,18 @@ static void gtkui_plugins_detach(GtkWidget *child)
    gtk_window_set_default_size(GTK_WINDOW (plugins_window), 400, 300);
    g_signal_connect (G_OBJECT (plugins_window), "delete_event", G_CALLBACK (gtkui_plug_destroy), NULL);
 
+   /* make <ctrl>d shortcut turn the window back into a tab */
+   gtkui_page_attach_shortcut(plugins_window, gtkui_plugins_attach);
+
    gtk_container_add(GTK_CONTAINER (plugins_window), child);
 
    gtk_window_present(GTK_WINDOW (plugins_window));
+}
+
+static void gtkui_plugins_attach(void)
+{
+   gtkui_plug_destroy();
+   gtkui_plugin_mgmt();
 }
 
 static void gtkui_plug_destroy(void)

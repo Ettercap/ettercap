@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view.c,v 1.5 2004/03/03 13:52:35 daten Exp $
+    $Id: ec_gtk_view.c,v 1.6 2004/03/04 12:59:10 daten Exp $
 */
 
 #include <ec.h>
@@ -32,6 +32,7 @@ void gtkui_vis_method(void);
 
 static void gtkui_stop_stats(void);
 static void gtkui_stats_detach(GtkWidget *child);
+static void gtkui_stats_attach(void);
 static gboolean refresh_stats(gpointer data);
 
 extern void gtkui_show_profiles(void);
@@ -211,10 +212,19 @@ static void gtkui_stats_detach(GtkWidget *child)
    gtk_window_set_title(GTK_WINDOW (stats_window), "Statistics");
    gtk_container_set_border_width(GTK_CONTAINER (stats_window), 10);
    g_signal_connect (G_OBJECT (stats_window), "delete_event", G_CALLBACK (gtkui_stop_stats), NULL);
+
+   /* make <ctrl>d shortcut turn the window back into a tab */
+   gtkui_page_attach_shortcut(stats_window, gtkui_stats_attach);
    
    gtk_container_add(GTK_CONTAINER (stats_window), child);
 
    gtk_window_present(GTK_WINDOW (stats_window));
+}
+
+static void gtkui_stats_attach(void)
+{
+   gtkui_stop_stats();
+   gtkui_show_stats();
 }
 
 static void gtkui_stop_stats(void)

@@ -32,11 +32,11 @@ Oct 2003:
 
    + FILTERING ENGINE
       - pay attention on network order for constants
-      - remove the ugly huge buffer for strings
-         - pay attention of memcpy in ef_grammar
-      - quick filter
-      - perl regex (with libpcre) to support:
-          s/^([^ ]*) *([^ ]*)/$2 $1/;     # swap first two words
+      - compile the regex in the loader
+      - quick filter on a connection
+      - perl regex (with libpcre)
+         - set the correct delta !!
+      
       
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

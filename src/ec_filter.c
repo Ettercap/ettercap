@@ -17,25 +17,32 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.21 2003/09/30 18:04:03 alor Exp $
+    $Id: ec_filter.c,v 1.22 2003/10/05 17:07:20 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_filter.h>
 #include <ec_strings.h>
+#include <ec_version.h>
 
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <regex.h>
 
-#define JIT_FAULT(x, ...) FATAL_ERROR("JIT FAULT: " x, ## __VA_ARGS__)
+#include <regex.h>
+#ifdef HAVE_PCRE
+   #include <pcre.h>
+#endif
+
+#define JIT_FAULT(x, ...) USER_MSG("JIT FILTER FAULT: " x, ## __VA_ARGS__)
 
 /* protos */
 
-int filter_load_file(char *filename);
-void filter_unload(void);
+int filter_load_file(char *filename, struct filter_env *fenv);
+void filter_unload(struct filter_env *fenv);
+static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
+   
 int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
 static int execute_assign(struct filter_op *fop, struct packet_object *po);
@@ -43,6 +50,7 @@ static int execute_func(struct filter_op *fop, struct packet_object *po);
 
 static int func_search(struct filter_op *fop, struct packet_object *po);
 static int func_regex(struct filter_op *fop, struct packet_object *po);
+static int func_pcre(struct filter_op *fop, struct packet_object *po);
 static int func_replace(struct filter_op *fop, struct packet_object *po);
 static int func_inject(struct filter_op *fop, struct packet_object *po);
 static int func_log(struct filter_op *fop, struct packet_object *po);
@@ -157,6 +165,12 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
          if (func_regex(fop, po) == ESUCCESS)
             return FLAG_TRUE;
          break;
+         
+      case FFUNC_PCRE:
+         /* evaluate a perl regex */
+         if (func_pcre(fop, po) == ESUCCESS)
+            return FLAG_TRUE;
+         break;
 
       case FFUNC_REPLACE:
          /* replace the string */
@@ -184,7 +198,7 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
          
       case FFUNC_MSG:
          /* display the message to the user */
-         USER_MSG("%s", fop->op.func.value);
+         USER_MSG("%s", fop->op.func.string);
          return FLAG_TRUE;
          break;
          
@@ -210,7 +224,7 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
 {
    /* initialize to the beginning of the packet */
    u_char *base = po->L2.header;
-   int (*cmp_func)(u_int32, u_int32);
+   int (*cmp_func)(u_int32, u_int32) = &cmp_eq;
 
    /* 
     * point to the right base.
@@ -271,7 +285,7 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
    switch (fop->op.test.size) {
       case 0:
          /* string comparison */
-         if (cmp_func(memcmp(base + fop->op.test.offset, fop->op.test.string, fop->op.test.string_len), 0) )
+         if (cmp_func(memcmp(base + fop->op.test.offset, fop->op.test.string, fop->op.test.slen), 0) )
             return FLAG_TRUE;
          break;
       case 1:
@@ -334,7 +348,7 @@ static int execute_assign(struct filter_op *fop, struct packet_object *po)
     */
    switch (fop->op.assign.size) {
       case 0:
-         memcpy(base + fop->op.assign.offset, fop->op.assign.string, fop->op.assign.string_len);
+         memcpy(base + fop->op.assign.offset, fop->op.assign.string, fop->op.assign.slen);
          break;
       case 1:
          *(u_int8 *)(base + fop->op.assign.offset) = (fop->op.assign.value & 0xff);
@@ -365,12 +379,12 @@ static int func_search(struct filter_op *fop, struct packet_object *po)
    switch (fop->op.func.level) {
       case 5:
          /* search in the real packet */
-         if (memmem(po->DATA.data, po->DATA.len, fop->op.func.value, fop->op.func.value_len))
+         if (memmem(po->DATA.data, po->DATA.len, fop->op.func.string, fop->op.func.slen))
             return ESUCCESS;
          break;
       case 6:
          /* search in the decoded/decrypted packet */
-         if (memmem(po->DATA.disp_data, po->DATA.disp_len, fop->op.func.value, fop->op.func.value_len))
+         if (memmem(po->DATA.disp_data, po->DATA.disp_len, fop->op.func.string, fop->op.func.slen))
             return ESUCCESS;
          break;
       default:
@@ -391,7 +405,7 @@ static int func_regex(struct filter_op *fop, struct packet_object *po)
    char errbuf[100];
 
    /* prepare the regex */
-   err = regcomp(&regex, fop->op.func.value, REG_EXTENDED | REG_NOSUB | REG_ICASE );
+   err = regcomp(&regex, fop->op.func.string, REG_EXTENDED | REG_NOSUB | REG_ICASE );
    if (err) {
       regerror(err, &regex, errbuf, sizeof(errbuf));
       JIT_FAULT("%s", errbuf);
@@ -417,6 +431,53 @@ static int func_regex(struct filter_op *fop, struct packet_object *po)
 }
 
 
+/*
+ * evaluate a perl regex and return TRUE if found
+ */
+static int func_pcre(struct filter_op *fop, struct packet_object *po)
+{
+   
+#ifndef HAVE_PCRE
+   JIT_FAULT("pcre_regex support not compiled in ettercap");
+   return -ENOTFOUND
+#else
+   pcre *pregex;
+   pcre_extra *preg_extra;
+   const char *errbuf = NULL;
+   int erroff, ret;
+
+   /* prepare the regex (with default option) */
+   pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
+   if (pregex == NULL)
+      JIT_FAULT("%s\n", errbuf);
+  
+   preg_extra = pcre_study(pregex, 0, &errbuf);
+   if (errbuf != NULL)
+      JIT_FAULT("failed to study pcre\n");
+      
+   
+   switch (fop->op.func.level) {
+      case 5:
+         /* search in the real packet */
+         ret = pcre_exec(pregex, preg_extra, po->DATA.data, po->DATA.len, 0, 0, NULL, 0);
+         if (ret < 0)
+            return -ENOTFOUND;
+         break;
+      case 6:
+         ret = pcre_exec(pregex, preg_extra, po->DATA.disp_data, po->DATA.disp_len, 0, 0, NULL, 0);
+         if (ret < 0)
+            return -ENOTFOUND;
+         break;
+      default:
+         JIT_FAULT("unsupported pcre_regex level [%d]", fop->op.func.level);
+         break;
+   }
+
+   return ESUCCESS;
+#endif
+}
+
+
 /* 
  * replace a string in the packet object DATA.data
  */
@@ -426,8 +487,8 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
    u_int8 *ptr;
    u_int8 *end;
    size_t len;
-   size_t slen = fop->op.func.value_len;
-   size_t rlen = fop->op.func.value2_len;
+   size_t slen = fop->op.func.slen;
+   size_t rlen = fop->op.func.rlen;
    int delta = 0;
    size_t max_len, new_len;
   
@@ -438,7 +499,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
    max_len = GBL_IFACE->mtu - (po->L4.header - po->fwd_packet + po->L4.len);
   
    /* check if it exist at least one */
-   if (!memmem(po->DATA.data, po->DATA.len, fop->op.func.value, fop->op.func.value_len) )
+   if (!memmem(po->DATA.data, po->DATA.len, fop->op.func.string, fop->op.func.slen) )
       return -ENOTFOUND;
 
    DEBUG_MSG("filter engine: func_replace : max_len %d", max_len);
@@ -458,9 +519,9 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       len = end - ptr;
 
       /* search the string */
-      ptr = memmem(ptr, len, fop->op.func.value, slen);
+      ptr = memmem(ptr, len, fop->op.func.string, slen);
       /* update the len */
-      len -= fop->op.func.value_len;
+      len -= fop->op.func.slen;
 
       /* string no found, exit */
       if (ptr == NULL)
@@ -475,7 +536,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       /* move the buffer to make room for the replacement string */   
       memmove(ptr + rlen, ptr + slen, len); 
       /* copy the replacemente string */
-      memcpy(ptr, fop->op.func.value2, rlen);
+      memcpy(ptr, fop->op.func.replace, rlen);
       /* move the ptr after the replaced string */
       ptr += rlen; 
       /* adjust the new buffer end */
@@ -526,19 +587,23 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    void *file;
    size_t size;
 
-   DEBUG_MSG("filter engine: func_inject %s", fop->op.func.value);
+   DEBUG_MSG("filter engine: func_inject %s", fop->op.func.string);
    
    /* open the file */
-   if ((fd = open(fop->op.func.value, O_RDONLY)) == -1)
-      USER_MSG("inject(): File not found (%s)", fop->op.func.value);
+   if ((fd = open(fop->op.func.string, O_RDONLY)) == -1) {
+      USER_MSG("filter engine: inject(): File not found (%s)\n", fop->op.func.string);
+      return -EFATAL;
+   }
 
    /* get the size */
    size = lseek(fd, 0, SEEK_END);
 
    /* load the file in memory */
    file = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-   if (file == MAP_FAILED)
-      USER_MSG("inject(): Cannot mmap file");
+   if (file == MAP_FAILED) {
+      USER_MSG("filter engine: inject(): Cannot mmap file");
+      return -EFATAL;
+   }
  
    SAFE_CALLOC(po->inject, size, sizeof(u_char));
    
@@ -566,9 +631,9 @@ static int func_log(struct filter_op *fop, struct packet_object *po)
    DEBUG_MSG("filter engine: func_log");
    
    /* open the file */
-   fd = open(fop->op.func.value, O_CREAT | O_APPEND | O_RDWR, 0600);
+   fd = open(fop->op.func.string, O_CREAT | O_APPEND | O_RDWR, 0600);
    if (fd == -1) {
-      USER_MSG("filter engine: Cannot open file %s\n", fop->op.func.value);
+      USER_MSG("filter engine: Cannot open file %s\n", fop->op.func.string);
       return -EFATAL;
    }
 
@@ -614,7 +679,7 @@ static int func_drop(struct packet_object *po)
  */
 static int func_exec(struct filter_op *fop)
 {
-   DEBUG_MSG("filter engine: func_exec: %s", fop->op.func.value);
+   DEBUG_MSG("filter engine: func_exec: %s", fop->op.func.string);
    
    /* 
     * the command must be executed by a child.
@@ -623,7 +688,7 @@ static int func_exec(struct filter_op *fop)
     */
    if (!fork()) {
       char **param = NULL;
-      char *q = fop->op.func.value;
+      char *q = fop->op.func.string;
       char *p;
       int i = 0;
 
@@ -696,7 +761,7 @@ static int cmp_geq(u_int32 a, u_int32 b)
 /*
  * load the filter from a file 
  */
-int filter_load_file(char *filename)
+int filter_load_file(char *filename, struct filter_env *fenv)
 {
    int fd;
    void *file;
@@ -718,34 +783,37 @@ int filter_load_file(char *filename)
       FATAL_MSG("Bad magic in filter file");
   
    /* which version has compiled the filter ? */
-   if (strcmp(fh.version, GBL_VERSION))
+   if (strcmp(fh.version, EC_VERSION))
       FATAL_MSG("Filter compiled for a different version");
    
    /* get the size */
    size = lseek(fd, 0, SEEK_END);
 
-   /* size must be a multiple of filter_op */
-   if ((size % sizeof(struct filter_op) != 0) || size == 0)
-      FATAL_MSG("The file contains invalid instructions");
-   
    /* 
     * load the file in memory 
     * skipping the initial header
     */
-   file = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+   file = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
    if (file == MAP_FAILED)
       FATAL_MSG("Cannot mmap file");
 
    /* make sure we don't override a previous filter */
-   filter_unload();
+   filter_unload(fenv);
 
    /* set the global variables */
-   GBL_FILTERS->chain = (struct filter_op *) file + sizeof(struct filter_header);
-   GBL_FILTERS->len = size - sizeof(struct filter_header);
+   fenv->map = file;
+   fenv->chain = (struct filter_op *)(file + fh.code);
+   fenv->len = size - sizeof(struct filter_header) - fh.code;
 
    /* the mmap will remain active even if we close the fd */
    close(fd);
- 
+
+   /* 
+    * adjust all the string pointers 
+    * they must point to the data segment
+    */
+   reconstruct_strings(fenv, &fh);
+   
    USER_MSG("Content filters loaded from %s...\n", filename);
    
    return ESUCCESS;
@@ -754,18 +822,59 @@ int filter_load_file(char *filename)
 /* 
  * unload a filter chain.
  */
-void filter_unload(void)
+void filter_unload(struct filter_env *fenv)
 {
    DEBUG_MSG("filter_unload");
 
    /* unmap the memory area (from file) */
-   munmap((void *)GBL_FILTERS->chain - sizeof(struct filter_header), 
-         GBL_FILTERS->len + sizeof(struct filter_header)); 
+   munmap(fenv->map, fenv->len + sizeof(struct filter_header)); 
 
    /* wipe the pointer */
-   GBL_FILTERS->chain = NULL;
-   GBL_FILTERS->len = 0;
+   fenv->map = NULL;
+   fenv->chain = NULL;
+   fenv->len = 0;
 }
+
+
+/*
+ * replace relative offset to real address in the strings fields
+ */
+static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh)
+{
+   size_t i = 0;
+   struct filter_op *fop = fenv->chain;
+     
+   /* parse all the instruction */ 
+   while (i < (fenv->len / sizeof(struct filter_op)) ) {
+         
+      /* 
+       * the real address for a string is the base of the mmap'd file
+       * plus the base of the data segment plus the offset in the field
+       */
+      switch(fop[i].opcode) {
+         case FOP_FUNC:
+            if (fop[i].op.func.slen)
+               fop[i].op.func.string = (char *)(fenv->map + fh->data + (int)fop[i].op.func.string);
+            if (fop[i].op.func.rlen)
+               fop[i].op.func.replace = (char *)(fenv->map + fh->data + (int)fop[i].op.func.replace);
+            break;
+            
+         case FOP_TEST:
+            if (fop[i].op.test.slen)
+               fop[i].op.test.string = (char *)(fenv->map + fh->data + (int)fop[i].op.test.string);
+            break;
+         
+         case FOP_ASSIGN:
+            if (fop[i].op.assign.slen)
+               fop[i].op.assign.string = (char *)(fenv->map + fh->data + (int)fop[i].op.assign.string);
+            break;
+      }
+      
+      i++;
+   }  
+   
+}
+
 
 /* EOF */
 

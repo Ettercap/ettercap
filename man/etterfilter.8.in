@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.14 2003/10/04 14:58:34 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.15 2003/10/05 17:07:20 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -54,6 +54,10 @@ in a human readable form all the instruction contained in it. it is a sort of
 prints some debug messages during the compilation. use it more than once to
 increase the debug level ( etterfilter -ddd ... ).
                            
+.TP
+\fB\-w\fR, \fB\-\-suppress-warnings\fR
+Don't exit on warnings. With this options the compiler will compile the script
+even if it contains warnings.
                            
 .TP
 .B STANDARD OPTIONS
@@ -192,6 +196,23 @@ NOTE: regex can be used only against string buffer.
 example:
 .br
 regex(DECODED.data, ".*login.*")
+
+
+.TP
+.B pcre_regex(\fIwhere\fR, \fIpcre_regex\fR)
+this fuction will evaluate a perl compatible regular expression. You can match
+agains both DATA and DECODED, but if your expression modify the buffer, it
+makes sense to operato only on DATA.
+.br
+NOTE: The pcre support is optional in ettercap and will be enables only if you
+have the libpcre installed.
+The compiler will warn you if you try to compile a filter that contains
+pcre expressions but you don't have libpcre. Use the -w option to suppress the
+warning.
+.Sp
+example:
+.br
+pcre_regex(DATA.data, "s/foo/bar/g")
 
 
 .TP

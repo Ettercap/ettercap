@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.20 2003/10/04 14:58:34 alor Exp $
+    $Id: ef_grammar.y,v 1.21 2003/10/05 17:07:20 alor Exp $
 */
 
 %{
@@ -159,8 +159,8 @@ instruction:
             ef_debug(3, "\tassignment string\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_ASSIGN;
-            memset(&$$.op.assign.string, 0, MAX_FILTER_LEN);
-            memcpy(&$$.op.assign.string, &$3.op.assign.string, $3.op.assign.string_len);
+            $$.op.assign.string = strdup($3.op.assign.string);
+            $$.op.assign.slen = $3.op.assign.slen;
             /* this is a string */
             $$.op.assign.size = 0;
          }
@@ -220,9 +220,8 @@ condition:
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
-            $$.op.test.value = $3.op.test.value;
-            memset(&$$.op.test.string, 0, MAX_FILTER_LEN);
-            memcpy(&$$.op.test.string, &$3.op.test.string, $3.op.test.string_len);
+            $$.op.test.string = strdup($3.op.test.string);
+            $$.op.test.slen = $3.op.assign.slen;
             /* this is a string */
             $$.op.test.size = 0;
          }
@@ -232,8 +231,8 @@ condition:
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_NEQ;
-            memset(&$$.op.test.string, 0, MAX_FILTER_LEN);
-            memcpy(&$$.op.test.string, &$3.op.test.string, $3.op.test.string_len);
+            $$.op.test.string = strdup($3.op.test.string);
+            $$.op.test.slen = $3.op.assign.slen;
             /* this is a string */
             $$.op.test.size = 0;
          }
@@ -307,12 +306,16 @@ offset:
              * only on values, so we can add it to offset
              */
             $$.op.test.offset = $1.op.test.offset + $3.op.test.value; 
+            if ($$.op.test.offset % $$.op.test.size)
+               WARNING("Unaligned offset");
          }
          
       |  offset TOKEN_OP_SUB math_expr {
             ef_debug(4, "\toffset sub\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.op.test.offset = $1.op.test.offset - $3.op.test.value; 
+            if ($$.op.test.offset % $$.op.test.size)
+               WARNING("Unaligned offset");
          }
       ;
 

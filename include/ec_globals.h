@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.29 2003/09/30 09:05:35 alor Exp $ */
+/* $Id: ec_globals.h,v 1.30 2003/10/05 17:07:20 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -9,6 +9,7 @@
 #include <ec_ui.h>
 #include <ec_stats.h>
 #include <ec_profiles.h>
+#include <ec_filter.h>
 
 #include <pcap.h>
 #include <regex.h>
@@ -115,11 +116,6 @@ struct hosts_list {
    LIST_ENTRY(hosts_list) next;
 };
 
-/* filters */
-struct filter_env {
-   struct filter_op *chain;
-   size_t len;
-};
 
 /* the globals container */
 struct globals {

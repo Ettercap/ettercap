@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.38 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_parser.c,v 1.39 2003/10/05 17:07:20 alor Exp $
 */
 
 
@@ -249,7 +249,7 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'F':
-                  if (filter_load_file(optarg) != ESUCCESS)
+                  if (filter_load_file(optarg, GBL_FILTERS) != ESUCCESS)
                      FATAL_ERROR("Cannot load filter file \"%s\"", optarg);
                   break;
                   
@@ -475,7 +475,8 @@ int set_regex(char *regex)
    DEBUG_MSG("set_regex: %s", regex);
 
    /* free any previous compilation */
-   SAFE_FREE(GBL_OPTIONS->regex);
+   if (GBL_OPTIONS->regex)
+      regfree(GBL_OPTIONS->regex);
   
    /* allocate the new structure */
    SAFE_CALLOC(GBL_OPTIONS->regex, 1, sizeof(regex_t));
@@ -485,7 +486,6 @@ int set_regex(char *regex)
 
    if (err) {
       regerror(err, GBL_OPTIONS->regex, errbuf, sizeof(errbuf));
-      SAFE_FREE(GBL_OPTIONS->regex);
       FATAL_MSG("%s\n", errbuf);
    }
 

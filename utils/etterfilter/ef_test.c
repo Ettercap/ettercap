@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.12 2003/09/30 18:04:03 alor Exp $
+    $Id: ef_test.c,v 1.13 2003/10/05 17:07:20 alor Exp $
 */
 
 #include <ef.h>
@@ -45,53 +45,22 @@ static void print_function(struct filter_op *fop, u_int32 eip);
  */
 void test_filter(char *filename)
 {
-   int fd;
-   struct filter_header fh;
    struct filter_op *fop;
+   struct filter_env fenv;
    u_int32 eip = 0;
-   size_t size = 7;
 
-   /* open the file */
-   if ((fd = open(filename, O_RDONLY)) == -1)
-      FATAL_ERROR("File not found or permission denied");
-
-   /* read the header */
-   if (read(fd, &fh, sizeof(struct filter_header)) != sizeof(struct filter_header))
-      FATAL_ERROR("The file is corrupted");
-
-   /* sanity checks */
-   if (fh.magic != htons(EC_FILTER_MAGIC))
-      FATAL_ERROR("Bad magic in filter file");
-  
-   /* which version has compiled the filter ? */
-   if (strcmp(fh.version, EC_VERSION))
-      FATAL_ERROR("Filter compiled for a different version");
-   
-   /* get the size */
-   size = lseek(fd, 0, SEEK_END) - sizeof(struct filter_header);
-
-   /* size must be a multiple of filter_op */
-   if ((size % sizeof(struct filter_op) != 0) || size == 0)
-      FATAL_ERROR("The file contains invalid instructions");
-   
-   /* 
-    * load the file in memory 
-    * skipping the initial header
-    */
-   fop = (struct filter_op *) mmap(NULL, size + sizeof(struct filter_header), PROT_READ, MAP_PRIVATE, fd, 0);
-   if (fop == MAP_FAILED)
-      FATAL_ERROR("Cannot mmap file");
-
-   /* the mmap will remain active even if we close the fd */
-   close(fd);
+   /* load the file */
+   if (filter_load_file(filename, &fenv) != ESUCCESS) {
+      exit(-1);
+   }
 
    /* skip the header in the file */
-   fop = (struct filter_op *)((char *)fop + sizeof(struct filter_header));
+   fop = fenv.chain;
    
-   fprintf(stdout, "Debugging \"%s\" content...\n\n", filename);
+   fprintf(stdout, "Disassebling \"%s\" content...\n\n", filename);
   
    /* loop all the instructions and print their content */
-   while (eip < (size / sizeof(struct filter_op)) ) {
+   while (eip < (fenv.len / sizeof(struct filter_op)) ) {
 
       /* print the instruction */
       print_fop(&fop[eip], eip);
@@ -188,7 +157,7 @@ void print_test(struct filter_op *fop, u_int32 eip)
          break;
 
       default:
-         fprintf(stderr, "%04d: UNDEFINED TEST OPCODE (%d) !!", eip, fop->op.test.op);
+         fprintf(stderr, "%04d: UNDEFINED TEST OPCODE (%d) !!\n", eip, fop->op.test.op);
          break;
            
    }
@@ -210,26 +179,31 @@ void print_function(struct filter_op *fop, u_int32 eip)
    switch (fop->op.func.op) {
       case FFUNC_SEARCH:
          fprintf(stdout, "%04d: SEARCH level %d, string \"%s\"\n", eip, 
-               fop->op.func.level, fop->op.func.value);
+               fop->op.func.level, fop->op.func.string);
          break;
          
       case FFUNC_REGEX:
          fprintf(stdout, "%04d: REGEX level %d, string \"%s\"\n", eip, 
-               fop->op.func.level, fop->op.func.value);
+               fop->op.func.level, fop->op.func.string);
+         break;
+         
+      case FFUNC_PCRE:
+         fprintf(stdout, "%04d: PCRE_REGEX level %d, string \"%s\"\n", eip, 
+               fop->op.func.level, fop->op.func.string);
          break;
 
       case FFUNC_REPLACE:
          fprintf(stdout, "%04d: REPLACE \"%s\" --> \"%s\"\n", eip, 
-               fop->op.func.value, fop->op.func.value2);
+               fop->op.func.string, fop->op.func.replace);
          break;
          
       case FFUNC_INJECT:
          fprintf(stdout, "%04d: INJECT \"%s\"\n", eip, 
-               fop->op.func.value);
+               fop->op.func.string);
          break;
          
       case FFUNC_LOG:
-         fprintf(stdout, "%04d: LOG to \"%s\"\n", eip, fop->op.func.value);
+         fprintf(stdout, "%04d: LOG to \"%s\"\n", eip, fop->op.func.string);
          break;
          
       case FFUNC_DROP:
@@ -237,15 +211,15 @@ void print_function(struct filter_op *fop, u_int32 eip)
          break;
          
       case FFUNC_MSG:
-         fprintf(stdout, "%04d: MSG \"%s\"\n", eip, fop->op.func.value);
+         fprintf(stdout, "%04d: MSG \"%s\"\n", eip, fop->op.func.string);
          break;
          
       case FFUNC_EXEC:
-         fprintf(stdout, "%04d: EXEC \"%s\"\n", eip, fop->op.func.value);
+         fprintf(stdout, "%04d: EXEC \"%s\"\n", eip, fop->op.func.string);
          break;
          
       default:
-         fprintf(stderr, "%04d: UNDEFINED TEST OPCODE (%d)!!", eip, fop->op.func.op);
+         fprintf(stderr, "%04d: UNDEFINED FUNCTION OPCODE (%d)!!\n", eip, fop->op.func.op);
          break;
    }
 

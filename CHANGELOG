@@ -9,13 +9,14 @@ Legenda:
 NG-0.7.0    ????????
       
    + Rewrite from scratch (the code is clean and well commented)
+   + etterlog utility for logfiles parsing
+   + etterfilter utility to compile advanced content filters
    + root privs dropped after initialization
    + layer 3 routing (forwarding packets)
    + wifi support
    + unified sniffing (you can use external hijacker)
    + multiple target selection
    + pcap filter on capture
-   + etterlog utility for logfiles parsing
    + regex packet matching 
    + hook point per packet type (TCP, UDP... )
    + quiet mode (don't print packet content)

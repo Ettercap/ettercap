@@ -129,6 +129,9 @@
 /* openssl executable path */
 #undef HAVE_OPENSSL
 
+/* perl compatible regex */
+#undef HAVE_PCRE
+
 /* plugins support */
 #undef HAVE_PLUGINS
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.11 2003/10/04 14:58:34 alor Exp $
+    $Id: ef_encode.c,v 1.12 2003/10/05 17:07:20 alor Exp $
 */
 
 #include <ef.h>
@@ -26,6 +26,11 @@
 #include <ec_strings.h>
 
 #include <ctype.h>
+
+#include <regex.h>
+#ifdef HAVE_PCRE
+   #include <pcre.h>
+#endif
 
 /* protos */
 
@@ -45,6 +50,8 @@ int encode_offset(char *string, struct filter_op *fop)
    char *str, *p, *q;
    int ret;
 
+   memset(fop, 0, sizeof(struct filter_op));
+   
    /* make the modifications on a copy */
    str = strdup(string);
    
@@ -75,6 +82,8 @@ int encode_const(char *string, struct filter_op *fop)
 {
    char *p;
    
+   memset(fop, 0, sizeof(struct filter_op));
+   
    /* it is an hexadecimal value */
    if (!strncmp(string, "0x", 2) && isdigit((int)string[2])) {
       fop->op.test.value = strtoul(string, NULL, 16);
@@ -88,18 +97,15 @@ int encode_const(char *string, struct filter_op *fop)
    /* it is a string */
    } else if (string[0] == '\"' && string[strlen(string) - 1] == '\"') {
   
-      /* check if the string is short enough */
-      if (strlen(string) > MAX_FILTER_LEN)
-         SCRIPT_ERROR("String too long. (max %d char)", MAX_FILTER_LEN)
-            
       /* remove the quotes */
       p = strchr(string + 1, '\"');
       *p = '\0';
 
-      memset(fop->op.test.string, 0, MAX_FILTER_LEN);
-
+      /* copy the string */
+      fop->op.test.string = strdup(string + 1);
+         
       /* escape it in the structure */
-      fop->op.test.string_len = strescape(fop->op.test.string, string + 1);
+      fop->op.test.slen = strescape(fop->op.test.string, fop->op.test.string);
      
       return ESUCCESS;
       
@@ -124,10 +130,12 @@ int encode_function(char *string, struct filter_op *fop)
    int nargs = 0, i;
    char **dec_args = NULL;
 
+   memset(fop, 0, sizeof(struct filter_op));
+   
    /* get the name of the function */
    name = strtok(string, "(");
    /* get all the args */
-   args = strtok(NULL, "(");
+   args = name + strlen(name) + 1;
 
    /* analyze the arguments */
    dec_args = decode_args(args, &nargs);
@@ -140,29 +148,79 @@ int encode_function(char *string, struct filter_op *fop)
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */
          if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+            /* encode offset wipe the fop !! */
+            fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_SEARCH;
-            fop->op.func.value_len = strescape(fop->op.func.value, dec_args[1]);
+            fop->op.func.string = strdup(dec_args[1]);
+            fop->op.func.slen = strescape(fop->op.func.string, fop->op.func.string);
             ret = ESUCCESS;
          }
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "regex")) {
       if (nargs == 2) {
+         int err;
+         regex_t regex;
+         char errbuf[100];
+         
          /* get the level (DATA or DECODED) */
          if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+            /* encode offset wipe the fop !! */
+            fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_REGEX;
-            fop->op.func.value_len = strescape(fop->op.func.value, dec_args[1]);
+            fop->op.func.string = strdup(dec_args[1]);
+            fop->op.func.slen = strescape(fop->op.func.string, fop->op.func.string);
             ret = ESUCCESS;
          }
+
+         /* check if the regex is valid */
+         err = regcomp(&regex, fop->op.func.string, REG_EXTENDED | REG_NOSUB | REG_ICASE );
+         if (err) {
+            regerror(err, &regex, errbuf, sizeof(errbuf));
+            SCRIPT_ERROR("%s", errbuf);
+         } 
+         
+         regfree(&regex);
+                        
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
+   } else if (!strcmp(name, "pcre_regex")) {
+#ifndef HAVE_PCRE
+      WARNING("The script contains pcre_regex, but you don't have support for it.");
+#else
+      if (nargs == 2) {
+         pcre *pregex;
+         const char *errbuf = NULL;
+         int erroff;
+                     
+         /* get the level (DATA or DECODED) */
+         if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+            /* encode offset wipe the fop !! */
+            fop->opcode = FOP_FUNC;
+            fop->op.func.op = FFUNC_PCRE;
+            fop->op.func.string = strdup(dec_args[1]);
+            fop->op.func.slen = strlen(fop->op.func.string);
+            ret = ESUCCESS;
+         }
+
+         pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
+         if (pregex == NULL)
+            SCRIPT_ERROR("%s\n", errbuf);
+
+         pcre_free(pregex);
+               
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
+#endif
    } else if (!strcmp(name, "replace")) {
       if (nargs == 2) {
          fop->op.func.op = FFUNC_REPLACE;
          /* replace always operate at DATA level */
          fop->op.func.level = 5;
-         fop->op.func.value_len = strescape(fop->op.func.value, dec_args[0]);
-         fop->op.func.value2_len = strescape(fop->op.func.value2, dec_args[1]);
+         fop->op.func.string = strdup(dec_args[0]);
+         fop->op.func.slen = strescape(fop->op.func.string, fop->op.func.string);
+         fop->op.func.replace = strdup(dec_args[1]);
+         fop->op.func.rlen = strescape(fop->op.func.replace, fop->op.func.replace);
          ret = ESUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
@@ -171,7 +229,8 @@ int encode_function(char *string, struct filter_op *fop)
          fop->op.func.op = FFUNC_INJECT;
          /* inject always operate at DATA level */
          fop->op.func.level = 5;
-         strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
+         fop->op.func.string = strdup(dec_args[0]);
+         fop->op.func.slen = strlen(fop->op.func.string);
          ret = ESUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
@@ -179,8 +238,11 @@ int encode_function(char *string, struct filter_op *fop)
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */
          if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+            /* encode offset wipe the fop !! */
+            fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_LOG;
-            strncpy(fop->op.func.value, dec_args[1], MAX_FILTER_LEN);
+            fop->op.func.string = strdup(dec_args[1]);
+            fop->op.func.slen = strlen(fop->op.func.string);
             ret = ESUCCESS;
          }
       } else
@@ -194,16 +256,16 @@ int encode_function(char *string, struct filter_op *fop)
    } else if (!strcmp(name, "msg")) {
       if (nargs == 1) {
          fop->op.func.op = FFUNC_MSG;
-         strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
-         fop->op.func.value_len = strlen(dec_args[0]);
+         fop->op.func.string = strdup(dec_args[0]);
+         fop->op.func.slen = strlen(fop->op.func.string);
          ret = ESUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "exec")) {
       if (nargs == 1) {
          fop->op.func.op = FFUNC_EXEC;
-         strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
-         fop->op.func.value_len = strlen(dec_args[0]);
+         fop->op.func.string = strdup(dec_args[0]);
+         fop->op.func.slen = strlen(fop->op.func.string);
          ret = ESUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
@@ -237,8 +299,8 @@ static char ** decode_args(char *args, int *nargs)
    *nargs = 0;
   
    /* get the end */
-   p = strchr(args, ')');
-   *p = '\0';
+   if ((p = strrchr(args, ')')) != NULL)
+      *p = '\0';
    
    /* trim the empty spaces */
    for (; *args == ' '; args++);
@@ -262,10 +324,6 @@ static char ** decode_args(char *args, int *nargs)
       for (q = arg + strlen(arg) - 1; *q == ' '; q--)
          *q = '\0';
     
-      /* check if the string is short enough */
-      if (strlen(arg) > MAX_FILTER_LEN)
-         SCRIPT_ERROR("String too long. (max %d char)", MAX_FILTER_LEN)
-      
       /* remove the quotes (if there are) */
       if (*arg == '\"' && arg[strlen(arg) - 1] == '\"') {      
          arg[strlen(arg) - 1] = '\0';

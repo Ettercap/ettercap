@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_output.c,v 1.5 2003/10/04 14:58:34 alor Exp $
+    $Id: ef_output.c,v 1.6 2003/10/05 17:07:20 alor Exp $
 */
 
 #include <ef.h>
@@ -34,6 +34,8 @@
 
 int write_output(void);
 static void print_progress_bar(struct filter_op *fop);
+static u_char * create_data_segment(struct filter_header *fh, struct filter_op *fop, size_t n);
+static size_t add_data_segment(u_char **data, size_t base, u_char **string, size_t slen);
 
 /*******************************************/
 
@@ -43,6 +45,7 @@ int write_output(void)
    struct filter_op *fop;
    struct filter_header fh;
    size_t ninst, i;
+   u_char *data;
 
    /* conver the tree to an array of filter_op */
    ninst = compile_tree(&fop);
@@ -58,11 +61,18 @@ int write_output(void)
    fprintf(stdout, " Writing output to \'%s\' ", GBL_OPTIONS.output_file);
    fflush(stdout);
    
-   /* write the header */
+   /* compute the header */
    fh.magic = htons(EC_FILTER_MAGIC);
    strncpy(fh.version, EC_VERSION, sizeof(fh.version));
+   fh.data = sizeof(fh);
+
+   data = create_data_segment(&fh, fop, ninst);
    
+   /* write the header */
    write(fd, &fh, sizeof(struct filter_header));
+
+   /* write the data segment */
+   write(fd, data, fh.code - fh.data);
    
    /* write the instructions */
    for (i = 0; i < ninst; i++) {
@@ -77,6 +87,74 @@ int write_output(void)
    fprintf(stdout, " -> Script encoded into %d instructions.\n\n", i);
    
    return ESUCCESS;
+}
+
+/*
+ * creates the data segment into an array
+ * and update the file header
+ */
+static u_char * create_data_segment(struct filter_header *fh, struct filter_op *fop, size_t n)
+{
+   size_t i, len = 0;
+   u_char *data = NULL;
+
+   for (i = 0; i < n; i++) {
+      
+      switch(fop[i].opcode) {
+         case FOP_FUNC:
+            if (fop[i].op.func.slen) {
+               ef_debug(1, "@");
+               len += add_data_segment(&data, len, &fop[i].op.func.string, fop[i].op.func.slen);
+            }
+            if (fop[i].op.func.rlen) {
+               ef_debug(1, "@");
+               len += add_data_segment(&data, len, &fop[i].op.func.replace, fop[i].op.func.rlen);
+            }
+            break;
+            
+         case FOP_TEST:
+            if (fop[i].op.test.slen) {
+               ef_debug(1, "@");
+               len += add_data_segment(&data, len, &fop[i].op.test.string, fop[i].op.test.slen);
+            }
+            break;
+
+         case FOP_ASSIGN:
+            if (fop[i].op.assign.slen) {
+               ef_debug(1, "@");
+               len += add_data_segment(&data, len, &fop[i].op.test.string, fop[i].op.test.slen);
+            }
+            break;
+      }
+
+   }
+  
+   /* where starts the code ? */
+   fh->code = fh->data + len;
+   
+   return data;
+}
+
+
+/* 
+ * add a string to the buffer 
+ */
+static size_t add_data_segment(u_char **data, size_t base, u_char **string, size_t slen)
+{
+   /* make room for the new string */
+   SAFE_REALLOC(*data, base + slen + 1);
+
+   /* copy the string, NULL separated */
+   memcpy(*data + base, *string, slen + 1);
+
+   /* 
+    * change the pointer to the new string location 
+    * it is an offset from the base of the data segment
+    */
+   *string = (u_char *)base;
+   
+   /* retur the len of the added string */
+   return slen + 1;
 }
 
 /*

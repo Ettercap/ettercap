@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.10 2003/09/24 19:28:51 alor Exp $
+# $Id: Makefile.am,v 1.11 2003/10/05 17:07:20 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -22,6 +22,7 @@ etterfilter_SOURCES = ef_compiler.c \
                       ef_tables.c \
                       $(top_srcdir)/src/ec_error.c \
                       $(top_srcdir)/src/ec_file.c \
+                      $(top_srcdir)/src/ec_filter.c \
                       $(top_srcdir)/src/ec_strings.c
 
 noinst_HEADERS = ef_grammar.h
@@ -43,6 +44,9 @@ etterfilter_CFLAGS = @EC_CFLAGS@
 
 etterfilter_LDADD = 
 
+if HAVE_PCRE
+   etterfilter_LDADD += -lpcre
+endif
 
 CLEANFILES = *.log *.out core* *~
 

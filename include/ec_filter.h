@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.15 2003/10/04 14:58:34 alor Exp $ */
+/* $Id: ec_filter.h,v 1.16 2003/10/05 17:07:20 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -16,7 +16,7 @@
  *
  */
 
-#define MAX_FILTER_LEN  200
+//#define MAX_FILTER_LEN  200
 
 struct filter_op {
    char opcode;
@@ -38,17 +38,18 @@ struct filter_op {
          char op;
             #define FFUNC_SEARCH    0
             #define FFUNC_REGEX     1
-            #define FFUNC_REPLACE   2
-            #define FFUNC_INJECT    3
-            #define FFUNC_LOG       4
-            #define FFUNC_DROP      5
-            #define FFUNC_MSG       6
-            #define FFUNC_EXEC      7
+            #define FFUNC_PCRE      2
+            #define FFUNC_REPLACE   3
+            #define FFUNC_INJECT    4
+            #define FFUNC_LOG       5
+            #define FFUNC_DROP      6
+            #define FFUNC_MSG       7
+            #define FFUNC_EXEC      8
          u_int8 level; 
-         u_int8 value[MAX_FILTER_LEN];
-         size_t value_len;
-         u_int8 value2[MAX_FILTER_LEN];
-         size_t value2_len;
+         u_int8 *string;
+         size_t slen;
+         u_int8 *replace;
+         size_t rlen;
       } func;
       
       /* tests */
@@ -64,8 +65,8 @@ struct filter_op {
          u_int8   size;
          u_int16  offset;
          u_int32  value;
-         char     string[MAX_FILTER_LEN];
-         size_t   string_len;
+         u_int8   *string;
+         size_t   slen;
       } test, assign;
 
       /* jumps */
@@ -74,24 +75,39 @@ struct filter_op {
    } op;
 };
 
-/* the header for a binary filter file */
-
+/* the header for a binary filter file 
+ *
+ * a file is structured as follow:
+ *    the header
+ *    the data segment (containing all the strings)
+ *    the code segment (containing all the instructions)
+ *
+ * when the file is loaded all the string must be referenced
+ * by the instructions
+ */
 struct filter_header {
    /* magic number */
    u_int16 magic; 
       #define EC_FILTER_MAGIC 0xe77e
    /* ettercap version */
    char version[10];
-   /* pointers to the sections */
+   /* pointers to the segments */
    u_int16 data;
    u_int16 code;
+};
+
+/* filters header for mmapped region */
+struct filter_env {
+   void *map;
+   struct filter_op *chain;
+   size_t len;
 };
 
 /* exported functions */
 
 extern int filter_engine(struct filter_op *fop, struct packet_object *po);
-extern int filter_load_file(char *filename);
-extern void filter_unload(void);
+extern int filter_load_file(char *filename, struct filter_env *fenv);
+extern void filter_unload(struct filter_env *fenv);
 
 #endif
 

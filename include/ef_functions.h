@@ -1,5 +1,5 @@
 
-/* $Id: ef_functions.h,v 1.15 2003/10/04 14:58:34 alor Exp $ */
+/* $Id: ef_functions.h,v 1.16 2003/10/05 17:07:20 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
@@ -7,6 +7,13 @@
 #include <ec_filter.h>
 
 #define SCRIPT_ERROR(x, ...) FATAL_ERROR("[%s:%d]: "x, GBL_OPTIONS.source_file, GBL.lineno, ## __VA_ARGS__ );
+
+#define WARNING(x) do {                   \
+if (!GBL_OPTIONS.suppress_warnings)       \
+   FATAL_ERROR("\n[%s:%d]: WARINING "x, GBL_OPTIONS.source_file, GBL.lineno);  \
+else                                      \
+   fprintf(stderr, "\n[%s:%d]: WARINING "x, GBL_OPTIONS.source_file, GBL.lineno);  \
+} while(0)
 
 /* ef_main */
 extern void ef_debug(u_char level, const char *message, ...);

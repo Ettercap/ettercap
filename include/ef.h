@@ -1,5 +1,5 @@
 
-/* $Id: ef.h,v 1.9 2003/09/28 21:06:53 alor Exp $ */
+/* $Id: ef.h,v 1.10 2003/10/05 17:07:20 alor Exp $ */
 
 #ifndef EF_H
 #define EF_H
@@ -54,6 +54,7 @@ struct globals {
    char *output_file;
    u_int32 lineno;
    u_int8 debug;
+   u_int8 suppress_warnings;
 };
 
 /* in el_main.c */

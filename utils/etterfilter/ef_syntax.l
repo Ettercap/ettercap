@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_syntax.l,v 1.14 2003/10/04 14:58:34 alor Exp $
+    $Id: ef_syntax.l,v 1.15 2003/10/05 17:07:20 alor Exp $
 */
 
 %{
@@ -41,7 +41,7 @@
 %option  noyywrap
 
 OFFSET         [[:alnum:]]+\.[A-Za-z]+[\.[A-Za-z]+]*
-FUNCTION       [A-Za-z]+\([^\)]*\)
+FUNCTION       [a-z_]+\(.*\)
 CONST          [0-9]+|0x[0-9]+|[A-Z]+
 STRING         \"[[:graph:]]*\"
 SPACES         [ \t]+

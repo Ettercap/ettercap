@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_ec_compat.c,v 1.3 2003/09/28 21:07:49 alor Exp $
+    $Id: ef_ec_compat.c,v 1.4 2003/10/05 17:07:20 alor Exp $
 */
 
 #include <ef.h>
@@ -50,6 +50,7 @@ void ui_msg(const char *fmt, ...)
    va_start(ap, fmt);
    vfprintf (stderr, fmt, ap);
    va_end(ap);
+   fprintf(stderr, "\n");
 }
 
 void ui_error(const char *fmt, ...) 
@@ -59,10 +60,10 @@ void ui_error(const char *fmt, ...)
    va_start(ap, fmt);
    vfprintf (stderr, fmt, ap);
    va_end(ap);
+   fprintf(stderr, "\n");
 }
 
 void ui_cleanup(void) { }
-
 
 
 /* EOF */

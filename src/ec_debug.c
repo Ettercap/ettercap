@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.8 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_debug.c,v 1.9 2003/10/05 17:07:20 alor Exp $
 
 */
 
@@ -38,6 +38,9 @@
 #ifdef HAVE_OPENSSL
    #include <openssl/opensslv.h>
    #include <openssl/crypto.h>
+#endif
+#ifdef HAVE_PCRE
+   #include <pcre.h>
 #endif
 
 extern char pcap_version[];
@@ -90,6 +93,9 @@ void debug_init(void)
    fprintf(debug_file, "-> libpcap version %s\n", pcap_version);
    fprintf(debug_file, "-> libnet version %s\n", LIBNET_VERSION);
    fprintf(debug_file, "-> libz version %s\n", zlibVersion());
+   #ifdef HAVE_PCRE
+   fprintf(debug_file, "-> libpcre version %s\n", pcre_version());
+   #endif
    #ifdef HAVE_OPENSSL 
       fprintf (debug_file, "-> lib     %s\n", SSLeay_version(SSLEAY_VERSION));
       fprintf (debug_file, "-> headers %s\n", OPENSSL_VERSION_TEXT);

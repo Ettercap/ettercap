@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_ec_compat.c,v 1.7 2003/09/01 15:39:50 alor Exp $
+    $Id: el_ec_compat.c,v 1.8 2003/10/05 17:07:20 alor Exp $
 */
 
 #include <el.h>
@@ -54,6 +54,7 @@ void ui_msg(const char *fmt, ...)
    va_start(ap, fmt);
    vfprintf (stderr, fmt, ap);
    va_end(ap);
+   fprintf(stderr, "\n");
 }
 
 void ui_error(const char *fmt, ...) 
@@ -63,6 +64,7 @@ void ui_error(const char *fmt, ...)
    va_start(ap, fmt);
    vfprintf (stderr, fmt, ap);
    va_end(ap);
+   fprintf(stderr, "\n");
 }
 
 void ui_cleanup(void) { }

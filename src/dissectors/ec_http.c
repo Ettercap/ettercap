@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.6 2003/11/29 16:02:35 lordnaga Exp $
+    $Id: ec_http.c,v 1.7 2003/12/02 21:02:44 alor Exp $
 */
 
 #include <ec.h>
@@ -521,10 +521,10 @@ static void Find_Url_Referer(u_char *to_parse, char **ret)
    u_int32 len;
 
    /* If the referer exists */
-   if ((fromhere = strstr(to_parse, "Referer: "))) 
-            if ((*ret = strdup(fromhere + strlen("Referer: "))))
-               strtok(*ret, "\r");
-   else {
+   if ((fromhere = strstr(to_parse, "Referer: "))) {
+      if ((*ret = strdup(fromhere + strlen("Referer: "))))
+         strtok(*ret, "\r");
+   } else {
       /* Get the page from the request */
       page = strdup(to_parse);
       strtok(page, " HTTP");

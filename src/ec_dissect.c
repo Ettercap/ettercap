@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.19 2003/12/25 17:19:57 alor Exp $
+    $Id: ec_dissect.c,v 1.20 2004/01/18 14:09:15 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -279,6 +279,27 @@ int dissect_on_port(char *name, u_int16 port)
     */
    SLIST_FOREACH (e, &dissect_list, next) {
       if (!strcasecmp(e->name, name) && e->type == port) {
+         return ESUCCESS;
+      } 
+   }
+   
+   return -ENOTFOUND;
+}
+
+/*
+ * return ESUCCESS if the dissector is on
+ * the specified port of the specified protocol (TCP or UDP)
+ */
+int dissect_on_port_level(char *name, u_int16 port, u_int8 level)
+{
+   struct dissect_entry *e;
+
+   /* 
+    * return ESUCCESS if at least one port is bound 
+    * to the dissector name
+    */
+   SLIST_FOREACH (e, &dissect_list, next) {
+      if (!strcasecmp(e->name, name) && e->type == port && e->level == level) {
          return ESUCCESS;
       } 
    }

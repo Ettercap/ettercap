@@ -1,5 +1,5 @@
 
-/* $Id: ec_dissect.h,v 1.15 2003/10/29 20:41:06 alor Exp $ */
+/* $Id: ec_dissect.h,v 1.16 2004/01/18 14:08:37 lordnaga Exp $ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H
@@ -35,6 +35,7 @@ extern void dissect_wipe_session(struct packet_object *po);
 extern size_t dissect_create_ident(void **i, struct packet_object *po); 
 
 extern int dissect_on_port(char *name, u_int16 port);
+extern int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
    
 /*
  * creates the session on the first packet sent from

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.18 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_profiles.c,v 1.19 2003/10/15 20:40:59 alor Exp $
 */
 
 #include <ec.h>
@@ -75,15 +75,28 @@ void __init profiles_init(void)
  */
 void profile_parse(struct packet_object *po)
 {
+   
+   /* 
+    * skip packet sent (spoofed) by us
+    * else we will get duplicated hosts with our mac address
+    */
+   if (!memcpy(po->L2.src, GBL_IFACE->mac, ETH_ADDR_LEN))
+      return;
+         
    /*
     * call the add function only if the packet
     * is interesting...
+    */
+   if ( po->L3.proto == htons(LL_TYPE_ARP) ||                     /* arp packets */
+        po->L4.proto == NL_TYPE_ICMP                              /* icmp packets */
+      )
+      profile_add_host(po);
+      
+   /*  
     * we don't want to log conversations, only
     * open ports, OSes etc etc ;)
     */
-   if ( po->L3.proto == htons(LL_TYPE_ARP) ||                     /* arp packets */
-        po->L4.proto == NL_TYPE_ICMP ||                           /* icmp packets */
-        is_open_port(po->L4.proto, po->L4.src, po->L4.flags) ||   /* src port is open */
+   if ( is_open_port(po->L4.proto, po->L4.src, po->L4.flags) ||   /* src port is open */
         strcmp(po->PASSIVE.fingerprint, "") ||                    /* collected fingerprint */  
         po->DISSECTOR.banner                                      /* banner */
       )

@@ -29,7 +29,8 @@ this is the unofficial and floating in time roadmap:
 
 Oct 2003:
 
-   + PROFILES more hosts with your mac address while poisoning
+   + FIXING
+      - inject() in filters
    
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

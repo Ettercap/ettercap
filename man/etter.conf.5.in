@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.16 2003/11/18 15:30:13 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.17 2003/11/18 17:53:35 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -114,7 +114,7 @@ value to permit the victims to receive a correct dhcp reply after you have
 stopped your attack. Using higher timeout can seriously mess your network after
 the attack has finished. On the other and some clients will prefer higher lease
 time, so you have to increase it to win the race condition with the real
-server.
+erver.
 
 
 
@@ -202,7 +202,7 @@ as multiple ports. The syntax for multiport selection is the following:
 port1,port2,port3,...
 .br
 NOTE: some dissectors are compiled in conditionally. this means that depending
-on the library found in your sistem some dissectors will be enable and some
+on the library found in your system some dissectors will be enable and some
 other not. by default etter.conf is filled with all the supported dissector. if
 you got an "FATAL: Dissector "xxx" does not exists (etter.conf line yy)" error,
 you have to comment out the yy line in etter.conf.

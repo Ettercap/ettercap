@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.13 2003/11/16 21:11:53 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.14 2003/11/18 17:53:35 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -46,7 +46,7 @@ It performs a check to see if the arp poisoning module of ettercap was successfu
 It sends spoofed ICMP ehco packets to all the victims of the poisoning 
 pretending to be each of the other targets. If we can catch an ICMP reply with
 our MAC address as destination it means that the poisoning between those
-two targets is succesful. It checks both ways of each comunication.
+two targets is successful. It checks both ways of each communication.
 This plugin makes sense only where poisoning makes sense.
 The test fails if you specify only one target in silent mode.
 You can't run this plugin from command line because the poisoning process
@@ -71,11 +71,11 @@ ettercap -TQzP find_conn
 .TP 
 .B finger
 .Sp
-Uses the passive fingerprint capabilities to fingeerprint a remote host. It
+Uses the passive fingerprint capabilities to fingerprint a remote host. It
 does a connect() to the remote host to force the kernel to reply
 to the SYN with a SYN+ACK packet. The reply will be collected and the
 fingerprint is displayed. The connect() obey to the connect_timeout parameter
-in etter.conf(5). You can specify a target on commandline or let the plugin ask
+in etter.conf(5). You can specify a target on command-line or let the plugin ask
 the target host to be fingerprinted. You can also specify multiple target with
 the usual multi-target specification (see ettercap(8)). if you specify multiple
 ports, all the ports will be tested on all the IPs.
@@ -156,7 +156,7 @@ ettercap -TQP search_promisc //
 .B smb_clear
 .Sp
 It forces the client to send smb password in clear-text by mangling protocol 
-negotiation. You have to be in the "middle" of the connection to succesfully
+negotiation. You have to be in the "middle" of the connection to successfully
 use it. It hooks the smb dissector, so you have to keep it active. 
 If you use it against a windows client it will probably result in a failure. 
 Try it against a *nix smbclient :)
@@ -167,7 +167,7 @@ Try it against a *nix smbclient :)
 .Sp
 It forces the client to not to use NTLMv2 password exchange during smb 
 authentication. This way, obtained hashes can be easily cracked by LC4.
-You have to be in the "middle" of the connection to succesfully use it.
+You have to be in the "middle" of the connection to successfully use it.
 It hooks the smb dissector, so you have to keep it active. 
 
 

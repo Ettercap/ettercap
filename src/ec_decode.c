@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.40 2003/10/15 10:13:34 lordnaga Exp $
+    $Id: ec_decode.c,v 1.41 2003/10/27 20:54:14 alor Exp $
 */
 
 #include <ec.h>
@@ -92,7 +92,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
 
    /* start the timer for the stats */
    stats_half_start(&GBL_STATS->bh);
-   
+  
    /* XXX -- remove this */
 #if 0
    if (!GBL_OPTIONS->quiet) {
@@ -235,7 +235,7 @@ FUNC_DECODER(decode_data)
    FUNC_DECODER_PTR(app_decoder);
       
    CANCELLATION_POINT();
-   
+
    /* HOOK POINT: HANDLED */ 
    hook_point(HOOK_HANDLED, po);
 

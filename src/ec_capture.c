@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.22 2003/09/27 09:53:33 alor Exp $
+    $Id: ec_capture.c,v 1.23 2003/10/27 20:54:13 alor Exp $
 */
 
 #include <ec.h>
@@ -254,7 +254,7 @@ void get_hw_info(void)
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
  
    /* dont touch the interface reading from file */
-   if (!GBL_LNET->lnet) {
+   if (!GBL_LNET->lnet || GBL_OPTIONS->read) {
       DEBUG_MSG("get_hw_info: skipping... (not initialized)");
       return;
    }

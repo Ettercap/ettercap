@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.51 2003/10/29 20:41:07 alor Exp $
+    $Id: ec_parser.c,v 1.52 2003/10/30 21:20:31 alor Exp $
 */
 
 
@@ -59,7 +59,7 @@ void ec_usage(void)
    fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
    
    fprintf(stdout, "\nSniffing options:\n");
-   fprintf(stdout, "  -M, --mitm <METHOD>         perform a mitm attack\n");
+   fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
    fprintf(stdout, "  -u, --unoffensive           do not forward packets\n");

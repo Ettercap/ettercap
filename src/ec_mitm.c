@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.4 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_mitm.c,v 1.5 2003/10/30 21:20:31 alor Exp $
 */
 
 #include <ec.h>
@@ -35,6 +35,7 @@ struct mitm_entry {
    SLIST_ENTRY (mitm_entry) next;
 };
 
+static char *mitm_args;
 
 /* protos */
 
@@ -72,7 +73,12 @@ int mitm_set(u_char *name)
 {
    struct mitm_entry *e;
 
-   DEBUG_MSG("mitm_set: %s", name);
+   if ((mitm_args = strchr(name, ':')) != NULL) {
+      *mitm_args = '\0';
+      mitm_args ++;
+   }
+   
+   DEBUG_MSG("mitm_set: %s (%s)", name, mitm_args);
    
    /* search the name and set it */
    SLIST_FOREACH(e, &mitm_table, next) {
@@ -100,7 +106,7 @@ void mitm_start(void)
    SLIST_FOREACH(e, &mitm_table, next) {
       if (e->selected) {
          DEBUG_MSG("mitm_start: starting %s", e->mm->name);
-         e->mm->start();
+         e->mm->start(mitm_args);
          e->started = 1;
       }
    }

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.43 2003/10/28 22:54:23 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.44 2003/10/30 21:20:31 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -181,7 +181,7 @@ You have full control of what ettercap should receive. You can use the internal
 mitm attacks, set the interface in promisc mode, use plugins or use every
 method you want.
 .TP
-\fB\-M\fR, \fB\-\-mitm <METHOD>\fR
+\fB\-M\fR, \fB\-\-mitm <METHOD:ARGS>\fR
 MITM attack 
 .br
 This option will activate the man in the middle attack. The mimt attack is
@@ -191,11 +191,14 @@ necessary.
 .br
 You can choose the mitm attack that you prefer and also combine some of them to
 perform different attacks at the same time.
+.br
+If a mitm method requires some parameters you can specify them after the colon.
+(e.g.  -M dhcp:ip_pool,netmask,ecc )
 .Sp
 The following mitm attack are available:
 .RS
 .TP
-\fBarp\fR 
+\fBarp\fR (no argument)
 This method implement the ARP poisoning mitm attack. ARP
 request/reply are sent to the victims to poison their ARP cache. Once the cache
 has been poisoned the victims will send all packets to the attacker which, in

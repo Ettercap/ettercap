@@ -29,13 +29,9 @@ this is the unofficial and floating in time roadmap:
 
    + FIXING
       - get_iface_mtu for win32
-      - fix telent dump not collected
-      
       
 Oct 2003:
 
-   + options for -M method:options...
-   
    + LIBWDG
       - widgets:
          - menu

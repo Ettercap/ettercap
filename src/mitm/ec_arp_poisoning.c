@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.10 2003/10/27 21:25:44 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.11 2003/10/30 21:20:31 alor Exp $
 */
 
 #include <ec.h>
@@ -44,7 +44,7 @@ static LIST_HEAD(, hosts_list) group_two_head;
 
 void arp_poisoning_init(void);
 EC_THREAD_FUNC(poisoner);
-static void arp_poisoning_start(void);
+static void arp_poisoning_start(char *args);
 static void arp_poisoning_stop(void);
 static int create_silent_list(void);
 static int create_list(void);
@@ -71,7 +71,7 @@ void __init arp_poisoning_init(void)
 /*
  * init the ARP POISONING attack
  */
-static void arp_poisoning_start(void)
+static void arp_poisoning_start(char *args)
 {
    int ret;
   

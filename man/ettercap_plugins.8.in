@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.21 2003/12/18 10:57:35 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.22 2004/01/07 13:46:15 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -38,6 +38,17 @@ To have a list of plugins installed in your system do that command:
 .LP
 .LP
 The following is a list of available plugins:
+
+.TP 
+.B arp_cop
+.Sp
+It reports suspicious ARP activity by passively monitoring ARP requests/replies.
+It can report ARP posioning attempts, or simple IP-conflicts or IP-changes.
+If you build the initial host list the plugin will run more accurately.
+.Sp
+.I example :
+.Sp
+ettercap -TQP arp_cop // 
 
 .TP 
 .B chk_poison
@@ -74,7 +85,7 @@ Only a template to demonstrate how to write a plugin.
 .TP 
 .B find_conn
 .Sp
-Very simple plugin that listens for arp requests to show you all the targets an host
+Very simple plugin that listens for ARP requests to show you all the targets an host
 wants to talk to. It can also help you finding addresses in an unknown LAN.
 .Sp
 .I example :

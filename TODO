@@ -5,7 +5,7 @@
 >>> things to be fixed
    
    + FIXING
-      - remove the quiet from some plugins
+      - remove GBL_OPTIONS->quiet from some plugins
       - fix dying top_half under solaris
 
    + PCAP RELATED
@@ -23,6 +23,8 @@
 ============================
 
    + multiple dissector on a single port
+
+   + isolate plugin
 
    + CURSES
       - modifiable text in widgets

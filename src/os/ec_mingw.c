@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.1 2004/06/27 12:51:02 alor Exp $
+    $Id: ec_mingw.c,v 1.2 2004/06/30 13:36:09 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -48,39 +48,25 @@
 
 extern int ettercap_main (int, char**);  /* ec_main.c */
 
-char pcap_version [60] = "unknown";      /* current libpcap/WinPcap doesn't have this */
-
-static void __init get_pcap_version (void)
-{
-  const char *ver = pcap_lib_version();
-
-  if (ver)
-  {
-    strncpy (pcap_version, ver, sizeof(pcap_version)-1);
-    pcap_version [sizeof(pcap_version)-1] = '\0';
-  }
-}
-
 #ifdef HAVE_GTK  /* give use back the console prompt */
 int _stdcall WinMain (struct HINSTANCE__ *hInstance,
                       struct HINSTANCE__ *hPrevInstance,
                       char               *lpszCmdLine,
                       int                 nCmdShow)
 {
-  get_pcap_version();
   return ettercap_main (__argc, __argv);
 }
 #endif
 
 u_int16 get_iface_mtu(char *iface)
 {
-  (void)iface;
-  return 1514;
+   (void)iface;
+   return 1514;
 }
 
 void disable_ip_forward (void)
 {
-  DEBUG_MSG ("disable_ip_forward (no-op\n");
+   DEBUG_MSG ("disable_ip_forward (no-op\n");
 }
 
 /*

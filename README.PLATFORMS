@@ -178,6 +178,8 @@ Currently the porting to the windows platform is not completed yet.
       rename the /usr/include/pcap/pthread.h to /usr/include/pcap/_pthread.h
    4) compile the libnet source...
          you have to search in the mailing list for the patch for cygwin.
+         this is the hardest part... since libnet porting to cygwin is not
+         fully working... my bad :(
    5) run the ettercap NG configure and make it      
 
  + MINGW

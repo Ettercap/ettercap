@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: autoadd.c,v 1.2 2004/05/07 09:54:37 alor Exp $
+    $Id: autoadd.c,v 1.3 2004/06/30 13:36:09 alor Exp $
 */
 
 
@@ -51,7 +51,7 @@ struct plugin_ops autoadd_ops = {
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Automatically add new victims in the target range",  
    /* the plugin version. */ 
-   version:          "1.1",   
+   version:          "1.2",   
    /* activation function */
    init:             &autoadd_init,
    /* deactivation function */                     
@@ -97,6 +97,10 @@ static void parse_arp(struct packet_object *po)
 
    /* if arp poisonin is not running, do nothing */
    if (!is_mitm_active("arp"))
+      return;
+
+   /* don't add our address */
+   if (!ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src))
       return;
    
    /* search in target 1 */

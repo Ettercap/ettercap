@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.97 2004/02/25 22:32:26 daten Exp $
+dnl    $Id: configure.in,v 1.98 2004/02/26 08:45:34 alor Exp $
 dnl
 
 AC_INIT
@@ -698,6 +698,7 @@ AC_ARG_ENABLE(gtk, AC_HELP_STRING(--enable-gtk,enable the gtk interface),
             [ AC_DEFINE(HAVE_GTK, 1)
               AM_CONDITIONAL(GTK, true)
               AC_MSG_RESULT(yes)
+              GTK_LIBS="$GTK_LIBS -lgthread-2.0"
               ac_ec_gtk=yes ],
             [ AC_MSG_RESULT(no) ]
          )
@@ -712,6 +713,7 @@ AC_ARG_ENABLE(gtk, AC_HELP_STRING(--enable-gtk,enable the gtk interface),
         PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0 pango >= 1.0 atk >= 1.0,
            [ AC_DEFINE(HAVE_GTK, 1)
              AM_CONDITIONAL(GTK, true)
+             GTK_LIBS="$GTK_LIBS -lgthread-2.0"
              ac_ec_gtk=yes ]
         )
      fi
@@ -719,7 +721,6 @@ AC_ARG_ENABLE(gtk, AC_HELP_STRING(--enable-gtk,enable the gtk interface),
      AC_MSG_RESULT(no)
 ])
 
-GTK_LIBS="$GTK_LIBS -lgthread-2.0"
 
 dnl -----------------------
 dnl  set up the final vars

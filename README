@@ -41,10 +41,24 @@ MANDATORY:
 
 OPTIONAL:
 
-   - libltdl (part of libtool)   (for the plugin support)
-   - libpcre                     (for perl regexp in the filters)
-   - openssl 0.9.7               (for ssh and ssl support)
-   - ncurses                     (for the curses GUI)
+   To enable plugins:
+      - libltdl (part of libtool)
+
+   To have perl regexp in the filters:
+      - libpcre
+
+   To support SSH and SSL decryption:
+      - openssl 0.9.7
+
+   For the cursed GUI:
+      - ncurses >= 5.3
+
+   For the GTK+ GUI:
+      - pkgconfig 0.15.0
+      - Glib 2.2.2
+      - Gtk+ 2.2.2
+      - Atk 1.2.4
+      - Pango 1.2.3
 
 
 

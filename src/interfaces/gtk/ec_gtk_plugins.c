@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_plugins.c,v 1.10 2004/07/09 08:27:19 alor Exp $
+    $Id: ec_gtk_plugins.c,v 1.11 2004/07/12 19:57:43 alor Exp $
 */
 
 #include <ec.h>
@@ -56,7 +56,7 @@ void gtkui_plugin_load(void)
    GtkWidget *dialog;
    char *filename;
    int response = 0;
-#ifdef OS_MINGW
+#ifdef OS_WINDOWS
    char *path = get_full_path("/lib/", "");
 #else
    char *path = INSTALL_LIBDIR "/" EC_PROGRAM "/";
@@ -67,7 +67,7 @@ void gtkui_plugin_load(void)
    dialog = gtk_file_selection_new ("Select a plugin...");
    gtk_file_selection_set_filename(GTK_FILE_SELECTION(dialog), path);   
 
-#ifdef OS_MINGW
+#ifdef OS_WINDOWS
    SAFE_FREE(path);
 #endif
    

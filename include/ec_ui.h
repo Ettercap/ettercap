@@ -1,5 +1,5 @@
 
-/* $Id: ec_ui.h,v 1.15 2004/05/07 09:54:37 alor Exp $ */
+/* $Id: ec_ui.h,v 1.16 2004/07/12 19:57:26 alor Exp $ */
 
 #ifndef EC_UI_H
 #define EC_UI_H
@@ -23,19 +23,19 @@ struct ui_ops {
       #define UI_GTK       3
 };
 
-extern void ui_init(void);
-extern void ui_start(void);
-extern void ui_cleanup(void);
-extern void ui_msg(const char *fmt, ...);
-extern void ui_error(const char *fmt, ...);
-extern void ui_fatal_error(const char *msg);
-extern void ui_input(const char *title, char *input, size_t n, void (*callback)(void));
-extern void ui_progress(char *title, int value, int max);
-extern int ui_msg_flush(int max);
+EC_API_EXTERN void ui_init(void);
+EC_API_EXTERN void ui_start(void);
+EC_API_EXTERN void ui_cleanup(void);
+EC_API_EXTERN void ui_msg(const char *fmt, ...);
+EC_API_EXTERN void ui_error(const char *fmt, ...);
+EC_API_EXTERN void ui_fatal_error(const char *msg);
+EC_API_EXTERN void ui_input(const char *title, char *input, size_t n, void (*callback)(void));
+EC_API_EXTERN void ui_progress(char *title, int value, int max);
+EC_API_EXTERN int ui_msg_flush(int max);
 #define MSG_ALL   INT_MAX
 
-extern int ui_msg_purge_all(void);
-extern void ui_register(struct ui_ops *ops);
+EC_API_EXTERN int ui_msg_purge_all(void);
+EC_API_EXTERN void ui_register(struct ui_ops *ops);
 
 #define USER_MSG(x, ...) ui_msg(x, ## __VA_ARGS__ )
 

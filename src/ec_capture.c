@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.52 2004/07/09 08:27:18 alor Exp $
+    $Id: ec_capture.c,v 1.53 2004/07/12 19:57:26 alor Exp $
 */
 
 #include <ec.h>
@@ -66,7 +66,6 @@ int is_pcap_file(char *file, char *errbuf);
 
 static void set_alignment(int dlt);
 void add_aligner(int dlt, int (*aligner)(void));
-static char *iface_name(char *s);
 
 /*******************************************/
 
@@ -74,22 +73,23 @@ static char *iface_name(char *s);
  * return the name of the interface.
  * used to deal with unicode under Windows
  */
-static char *iface_name(char *s)
+static char *iface_name(const char *s)
 {
-#if defined(OS_MINGW) || defined(OS_CYGWIN)
-   
    char *buf;
+   
+#if defined(OS_WINDOWS) || defined(OS_CYGWIN)
    size_t len = wcslen ((const wchar_t*)s);
    
-   if (!s[1]) {   /* should probly use IsTextUnicode() ... */
-      SAFE_CALLOC(buf, len, sizeof(char));
+   if (!s[1]) {   /* should probably use IsTextUnicode() ... */
+      SAFE_CALLOC(buf, len + 1, sizeof(char));
       
       sprintf (buf, "%S", s);
       DEBUG_MSG("iface_name: '%S', is_unicode '%s'", s, buf);
       return buf;
    }
 #else
-   return strdup(s);
+   SAFE_STRDUP(buf, s);
+   return buf;
 #endif
 }
 

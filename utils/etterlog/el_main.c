@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_main.c,v 1.13 2004/04/09 08:14:22 alor Exp $
+    $Id: el_main.c,v 1.14 2004/07/12 19:57:44 alor Exp $
 */
 
 #include <el.h>
@@ -90,17 +90,23 @@ int main(int argc, char *argv[])
 
 void set_color(int color)
 {
+   /* windows does not like ansi colors... */
+#ifndef OS_WINDOWS   
    char str[8];
    
    sprintf(str, "\033[%dm", color);
    write(fileno(stdout), str, strlen(str));
+#endif
 }
 
 /* reset the color to default */
 
 void reset_color(void)
 {
+   /* windows does not like ansi colors... */
+#ifndef OS_WINDOWS   
    write(fileno(stdout), EC_COLOR_END, 4);   
+#endif
 }
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.29 2004/07/11 11:46:57 alor Exp $
+    $Id: ec_threads.c,v 1.30 2004/07/12 19:57:26 alor Exp $
 */
 
 #include <ec.h>
@@ -25,7 +25,7 @@
 
 #include <pthread.h>
 
-#if defined(OS_DARWIN) || defined(OS_MINGW) || defined(OS_CYGWIN)
+#if defined(OS_DARWIN) || defined(OS_WINDOWS) || defined(OS_CYGWIN)
    /* XXX - darwin and windows are broken, pthread_join hangs up forever */
    #define BROKEN_PTHREAD_JOIN
 #endif
@@ -47,6 +47,12 @@ static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t init_mtx = PTHREAD_MUTEX_INITIALIZER;
 #define INIT_LOCK     do{ DEBUG_MSG("thread_init_lock"); pthread_mutex_lock(&init_mtx); } while(0)
 #define INIT_UNLOCK   do{ DEBUG_MSG("thread_init_unlock"); pthread_mutex_unlock(&init_mtx); } while(0)
+
+/* XXX - pthreads on darwin/Windows is broken, pthread_join hangs up forever
+ */
+#if defined(OS_DARWIN) || defined(OS_WINDOWS)
+#define BROKEN_PTHREAD_JOIN
+#endif
 
 /* protos... */
 
@@ -289,6 +295,12 @@ void ec_thread_kill_all(void)
    DEBUG_MSG("ec_thread_kill_all -- caller %lu [%s]", (unsigned long)id, ec_thread_getname(id));
 
    THREADS_LOCK;
+
+#ifdef OS_WINDOWS
+   /* prevent hanging UI. Not sure how this works, but it does... */
+   if (GBL_PCAP->pcap)
+      ec_win_pcap_stop(GBL_PCAP->pcap);
+#endif
    
    LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {
       /* skip ourself */

@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.19 2004/07/09 08:27:18 alor Exp $ */
+/* $Id: el.h,v 1.20 2004/07/12 19:57:26 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -28,9 +28,11 @@
    #include <missing/strsep.h>
 #endif
 
-#ifdef OS_MINGW
-   #include <ec_os_mingw.h>
+#ifdef OS_WINDOWS
+   #include <windows.h>
 #endif
+
+#define EC_API_EXTERN
 
 #include <ec_queue.h>
 #include <ec_stdint.h>
@@ -116,15 +118,26 @@ extern struct globals gbls;
 #define BIT_NOT(r,b)       ( r[b>>3] ^=   1<<(b&7) )
 
 /* ANSI colors */
+#ifndef OS_WINDOWS
+   #define EC_COLOR_END    "\033[0m"
+   #define EC_COLOR_BOLD   "\033[1m"
 
-#define EC_COLOR_END    "\033[0m"
-#define EC_COLOR_BOLD   "\033[1m"
-
-#define EC_COLOR_RED    "\033[31m"EC_COLOR_BOLD
-#define EC_COLOR_YELLOW "\033[33m"EC_COLOR_BOLD
-#define EC_COLOR_GREEN  "\033[32m"EC_COLOR_BOLD
-#define EC_COLOR_BLUE   "\033[34m"EC_COLOR_BOLD
-#define EC_COLOR_CYAN   "\033[36m"EC_COLOR_BOLD
+   #define EC_COLOR_RED    "\033[31m"EC_COLOR_BOLD
+   #define EC_COLOR_YELLOW "\033[33m"EC_COLOR_BOLD
+   #define EC_COLOR_GREEN  "\033[32m"EC_COLOR_BOLD
+   #define EC_COLOR_BLUE   "\033[34m"EC_COLOR_BOLD
+   #define EC_COLOR_CYAN   "\033[36m"EC_COLOR_BOLD
+#else
+   /* Windows console doesn't grok ANSI */
+   #define EC_COLOR_END
+   #define EC_COLOR_BOLD
+   
+   #define EC_COLOR_RED
+   #define EC_COLOR_YELLOW
+   #define EC_COLOR_GREEN
+   #define EC_COLOR_BLUE
+   #define EC_COLOR_CYAN
+#endif
 
 #define COL_RED      31
 #define COL_GREEN    32

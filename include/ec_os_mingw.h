@@ -1,6 +1,9 @@
 #ifndef EC_OS_MINGW_H
 #define EC_OS_MINGW_H
 
+/* This file is *not* MingW specific, but Ettercap requires gcc.
+ * So that leaves other Win32 compilers out.
+ */
 #include <malloc.h>     /* for alloca() */
 #include <winsock2.h>   /* u_char etc. */
 
@@ -44,7 +47,7 @@
    #define srandom(s)    srand(s)
 #endif
 
-#if !defined(_TIMEVAL_DEFINED)
+#if !defined(_TIMEVAL_DEFINED) && !defined(HAVE_STRUCT_TIMEVAL)
    #define _TIMEVAL_DEFINED
    struct timeval {
           long    tv_sec;
@@ -75,9 +78,20 @@
 #define EALREADY     WSAEALREADY
 #endif
 
+#ifndef EWOULDBLOCK
+#define EWOULDBLOCK  WSAEWOULDBLOCK
+#endif
+
 #ifndef EISCONN
 #define EISCONN WSAEISCONN
 #endif
+
+/* Only used in socket code */
+#undef  EINTR
+#define EINTR        WSAEINTR
+
+#undef  EAGAIN
+#define EAGAIN       WSAEWOULDBLOCK
 
 #define gettimeofday(tv,tz)    ec_win_gettimeofday (tv, tz)
 #define strsignal(signo)       ec_win_strsignal (signo)
@@ -249,6 +263,7 @@ extern const char *ec_win_get_ec_dir (void);
  * Misc. stuff
  */
 #define strerror ec_win_strerror
-EC_API_EXPORTED char *ec_win_strerror (int err);
+EC_API_EXTERN char *ec_win_strerror(int err);
+EC_API_EXTERN int  ec_win_pcap_stop(const void *pcap_handle);
   
 #endif /* EC_WIN_MISC_H */

@@ -36,11 +36,14 @@
  * SUCH DAMAGE.
  */
 
-
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
+#ifdef OS_WINDOWS
+    #include <winsock2.h>
+#else
+    #include <sys/types.h>
+    #include <netinet/in.h>
+    #include <netdb.h>
+    #include <arpa/inet.h>
+#endif
 
 int inet_aton(const char *cp, struct in_addr *);
 

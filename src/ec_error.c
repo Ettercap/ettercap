@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_error.c,v 1.10 2004/01/10 14:15:09 alor Exp $
+    $Id: ec_error.c,v 1.11 2004/07/12 19:57:26 alor Exp $
 */
 
 #include <ec.h>
@@ -41,21 +41,31 @@ void error_msg(char *file, char *function, int line, char *message, ...)
 {
    va_list ap;
    char errmsg[ERROR_MSG_LEN + 1];    /* should be enough */
+   int err_code;
+
+#ifdef OS_WINDOWS
+   err_code = GetLastError();  /* Most likely not a libc error */
+   if (err_code == 0)
+      err_code = errno;
+#else
+   err_code = errno;
+#endif
+   
 
    va_start(ap, message);
    vsnprintf(errmsg, ERROR_MSG_LEN, message, ap);
    va_end(ap);
 
-   DEBUG_MSG("ERROR : %d, %s\n[%s:%s:%d] %s \n",  errno, strerror(errno),
+   DEBUG_MSG("ERROR : %d, %s\n[%s:%s:%d] %s \n",  err_code, strerror(err_code),
                    file, function, line, errmsg );
    
    /* close the interface and display the error */
    ui_cleanup();
   
-   fprintf(stderr, "ERROR : %d, %s\n[%s:%s:%d]\n\n %s \n\n",  errno, strerror(errno),
+   fprintf(stderr, "ERROR : %d, %s\n[%s:%s:%d]\n\n %s \n\n",  err_code, strerror(err_code),
                    file, function, line, errmsg );
 
-   exit(-errno);
+   exit(-err_code);
 }
 
 

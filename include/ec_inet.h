@@ -1,10 +1,10 @@
 
-/* $Id: ec_inet.h,v 1.23 2004/06/27 12:51:01 alor Exp $ */
+/* $Id: ec_inet.h,v 1.24 2004/07/12 19:57:26 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
 
-#ifdef OS_MINGW
+#ifdef OS_WINDOWS
    #include <winsock2.h>
    #include <ws2tcpip.h>
    #include <missing/inet_aton.h>

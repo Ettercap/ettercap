@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.49 2004/07/09 08:27:19 alor Exp $
+    $Id: ec_sslwrap.c,v 1.50 2004/07/12 19:57:26 alor Exp $
 */
 
 #include <ec.h>
@@ -32,7 +32,7 @@
 #include <ec_socket.h>
 
 #include <sys/types.h>
-#ifndef OS_MINGW
+#ifndef OS_WINDOWS
    #include <sys/wait.h>
 #endif
 #include <fcntl.h>
@@ -729,7 +729,9 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
 
    /* Only if no ssl */
    if (len < 0) {
-      if (errno == EINTR || errno == EAGAIN)
+      int err = GET_SOCK_ERRNO();
+
+      if (err == EINTR || err == EAGAIN || err == EWOULDBLOCK)
          return -ENOTHANDLED;
       else
          return -EINVALID;
@@ -786,7 +788,9 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       }
 
       if (len < 0 && !(ae->status & SSL_ENABLED)) {
-         if (errno == EINTR || errno == EAGAIN)
+         int err = GET_SOCK_ERRNO();
+
+         if (err == EINTR || err == EAGAIN)
             not_written = 1;
          else
             return -EINVALID;

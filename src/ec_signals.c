@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.26 2004/07/06 14:14:43 alor Exp $
+    $Id: ec_signals.c,v 1.27 2004/07/12 19:57:26 alor Exp $
 */
 
 #include <ec.h>
@@ -28,7 +28,7 @@
 
 #include <signal.h>
 
-#ifndef OS_MINGW
+#ifndef OS_WINDOWS
    #include <sys/resource.h>
    #include <sys/wait.h>
 #endif
@@ -85,7 +85,7 @@ void signal_handler(void)
 
 static handler_t *signal_handle(int signo, handler_t *handler, int flags)
 {
-#ifdef OS_MINGW
+#ifdef OS_WINDOWS
    handler_t *old = signal (signo, handler);
    
    /* avoid "unused variable" warning */
@@ -117,7 +117,7 @@ static RETSIGTYPE signal_SEGV(int sig)
 {
 #ifdef DEBUG
 
-#ifndef OS_MINGW
+#ifndef OS_WINDOWS
    struct rlimit corelimit = {RLIM_INFINITY, RLIM_INFINITY};
 #endif
 
@@ -155,7 +155,7 @@ static RETSIGTYPE signal_SEGV(int sig)
    fprintf (stderr, EC_COLOR_CYAN"\n Core dumping... (use the 'core' file for gdb analysis)\n\n"EC_COLOR_END);
    
    /* force the coredump */
-#ifndef OS_MINGW   
+#ifndef OS_WINDOWS
    setrlimit(RLIMIT_CORE, &corelimit);
 #endif
    signal(sig, SIG_DFL);
@@ -222,7 +222,7 @@ static RETSIGTYPE signal_TERM(int sig)
  */
 static RETSIGTYPE signal_CHLD(int sig)
 {
-#ifndef OS_MINGW
+#ifndef OS_WINDOWS
    int stat;
    
    /* wait for the child to return and not become a zombie */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_error.c,v 1.1 2003/10/22 20:36:25 alor Exp $
+    $Id: wdg_error.c,v 1.2 2004/07/12 19:57:27 alor Exp $
 */
 
 #include <wdg.h>
@@ -42,6 +42,15 @@ void wdg_error_msg(char *file, char *function, int line, char *message, ...)
 {
    va_list ap;
    char errmsg[ERROR_MSG_LEN + 1];    /* should be enough */
+   int err_code;
+
+#ifdef OS_WINDOWS
+   err_code = GetLastError();  /* Most likely not a libc error */
+   if (err_code == 0)
+      err_code = errno;
+#else
+   err_code = errno;
+#endif
 
    va_start(ap, message);
    vsnprintf(errmsg, ERROR_MSG_LEN, message, ap);
@@ -50,10 +59,10 @@ void wdg_error_msg(char *file, char *function, int line, char *message, ...)
    /* close the interface and display the error */
    wdg_cleanup();
   
-   fprintf(stderr, "WDG ERROR : %d, %s\n[%s:%s:%d]\n\n %s \n\n",  errno, strerror(errno),
+   fprintf(stderr, "WDG ERROR : %d, %s\n[%s:%s:%d]\n\n %s \n\n",  err_code, strerror(err_code),
                    file, function, line, errmsg );
 
-   exit(-errno);
+   exit(-err_code);
 }
 
 /*

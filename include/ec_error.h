@@ -1,5 +1,5 @@
 
-/* $Id: ec_error.h,v 1.15 2004/06/08 20:05:25 alor Exp $ */
+/* $Id: ec_error.h,v 1.16 2004/07/12 19:57:26 alor Exp $ */
 
 #ifndef EC_ERROR_H
 #define EC_ERROR_H
@@ -19,9 +19,9 @@ enum {
    EFATAL      = 255,
 };
 
-extern void error_msg(char *file, char *function, int line, char *message, ...);
-extern void fatal_error(char *message, ...);
-extern void bug(char *file, char *function, int line, char *message);
+EC_API_EXTERN void error_msg(char *file, char *function, int line, char *message, ...);
+EC_API_EXTERN void fatal_error(char *message, ...);
+EC_API_EXTERN void bug(char *file, char *function, int line, char *message);
 
 #define ERROR_MSG(x, ...) error_msg(__FILE__, __FUNCTION__, __LINE__, x, ## __VA_ARGS__ )
 

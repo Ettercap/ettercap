@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.24 2004/07/09 08:27:19 alor Exp $
+    $Id: ec_gtk.c,v 1.25 2004/07/12 19:57:27 alor Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,16 @@
 #include <ec_version.h>
 
 #include <pcap.h>
+
+#ifdef OS_WINDOWS
+  /* \Device\NPF{...} and description are huge. There should be 2 buffers
+   * for this; one for dev-name and 1 for description. Note: dev->description
+   * on WinPcap can contain <tab> and newlines!
+   */
+   #define IFACE_LEN  100
+#else
+   #define IFACE_LEN  50
+#endif
 
 /* globals */
 
@@ -123,7 +133,7 @@ static void gtkui_init(void)
 {
    DEBUG_MSG("gtk_init");
 
-#ifndef OS_MINGW
+#ifndef OS_WINDOWS
    g_thread_init(NULL);
    gdk_threads_init();
 #endif
@@ -610,7 +620,6 @@ static void gtkui_unified_sniff(void)
    GtkWidget *iface_combo;
    pcap_if_t *dev;
    GtkWidget *dialog, *label, *hbox, *image;
-   #define IFACE_LEN  50
 
    DEBUG_MSG("gtk_unified_sniff");
 
@@ -688,8 +697,6 @@ static void gtkui_unified_sniff(void)
 static void gtkui_unified_sniff_default(void) {
    char err[PCAP_ERRBUF_SIZE];
    
-#define IFACE_LEN  50
-
    DEBUG_MSG("gtkui_unified_sniff_default");
 
    if (GBL_OPTIONS->iface == NULL) { 

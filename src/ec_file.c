@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_file.c,v 1.12 2004/06/27 12:51:01 alor Exp $
+    $Id: ec_file.c,v 1.13 2004/07/12 19:57:26 alor Exp $
 */
 
 #include <ec.h>
@@ -61,7 +61,7 @@ char * get_local_path(const char *file)
 {
    char *filename;
 
-#ifdef OS_MINGW   
+#ifdef OS_WINDOWS
    /* get the path in wich ettercap is running */
    char *self_root = ec_win_get_ec_dir();
 #else

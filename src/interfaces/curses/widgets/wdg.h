@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.38 2004/05/19 12:26:12 alor Exp $ */
+/* $Id: wdg.h,v 1.39 2004/07/12 19:57:27 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -12,6 +12,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef OS_WINDOWS
+   #include <windows.h>
+#endif
 
 #include <ec_queue.h>
 

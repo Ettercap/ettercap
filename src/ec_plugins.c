@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.38 2004/06/27 12:51:01 alor Exp $
+    $Id: ec_plugins.c,v 1.39 2004/07/12 19:57:26 alor Exp $
 */
 
 #include <ec.h>
@@ -153,18 +153,28 @@ void plugin_load_all(void)
 
    if (lt_dlinit() != 0)
       ERROR_MSG("lt_dlinit()");
+#ifdef OS_WINDOWS
+   /* Assume .DLLs are under "<ec_root>/lib". This should be unified for
+    * all; ec_get_lib_path()?
+    */
+   char path[MAX_PATH];
 
+   snprintf(path, sizeof(path), "%s%s", ec_win_get_ec_dir(), INSTALL_LIBDIR);
+   where = path;
+#else
    /* default path */
    where = INSTALL_LIBDIR "/" EC_PROGRAM;
+#endif
    
    /* first search in  INSTALL_LIBDIR/ettercap" */
    n = scandir(where, &namelist, plugin_filter, alphasort);
    /* on error fall back to the current dir */
    if (n <= 0) {
-      DEBUG_MSG("plugin_loadall: no plugin in %s searching locally", where);
+      DEBUG_MSG("plugin_loadall: no plugin in %s searching locally...", where);
       /* change the path to the local one */
       where = ".";
       n = scandir(where, &namelist, plugin_filter, alphasort);
+      DEBUG_MSG("plugin_loadall: %d found", n);
    }
   
    for(i = n-1; i >= 0; i--) {

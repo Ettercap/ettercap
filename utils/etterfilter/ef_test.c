@@ -17,14 +17,17 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.20 2004/04/04 13:03:43 alor Exp $
+    $Id: ef_test.c,v 1.21 2004/07/12 19:57:44 alor Exp $
 */
 
 #include <ef.h>
 #include <ec_filter.h>
 #include <ec_version.h>
 
-#include <sys/mman.h>
+#ifndef OS_WINDOWS
+    #include <sys/mman.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

@@ -17,14 +17,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.11 2004/06/27 12:51:01 alor Exp $
+    $Id: ec_socket.c,v 1.12 2004/07/12 19:57:26 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_signals.h>
 #include <ec_poll.h>
+#include <ec_socket.h>
 
-#ifndef OS_MINGW
+#ifndef OS_WINDOWS
    #include <netdb.h>
    #include <sys/socket.h>
    #include <netinet/in.h>
@@ -48,7 +49,7 @@ int socket_recv(int s, u_char *payload, size_t size);
  */
 void set_blocking(int s, int set)
 {
-#ifdef OS_MINGW
+#ifdef OS_WINDOWS
    u_long on = set;
    ioctlsocket(s, FIONBIO, &on);
 #else
@@ -76,7 +77,7 @@ int open_socket(char *host, u_int16 port)
 {
    struct hostent *infh;
    struct sockaddr_in sa_in;
-   int sh, ret;
+   int sh, err, ret;
 #define TSLEEP (50*1000) /* 50 milliseconds */
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
 
@@ -88,7 +89,7 @@ int open_socket(char *host, u_int16 port)
    sa_in.sin_port = htons(port);
 
    /* resolve the hostname */
-   if ( (infh = gethostbyname(host)) )
+   if ( (infh = gethostbyname(host)) != NULL )
       memcpy(&sa_in.sin_addr, infh->h_addr, infh->h_length);
    else {
       if ( inet_aton(host, (struct in_addr *)&sa_in.sin_addr.s_addr) == 0 )
@@ -99,7 +100,7 @@ int open_socket(char *host, u_int16 port)
    if ( (sh = socket(AF_INET, SOCK_STREAM, 0)) < 0)
       return -EFATAL;
  
-   /* set nonbloking socket */
+   /* set nonblocking socket */
    set_blocking(sh, 0);
   
    do {
@@ -107,26 +108,31 @@ int open_socket(char *host, u_int16 port)
       ret = connect(sh, (struct sockaddr *)&sa_in, sizeof(sa_in));
       
       /* connect is in progress... */
-      if (ret < 0 && (errno == EINPROGRESS || errno == EALREADY || errno == EAGAIN)) {
-         /* sleep a quirk of time... */
-         usleep(TSLEEP);
+      if (ret < 0) {
+         err = GET_SOCK_ERRNO();
+         if (err == EINPROGRESS || err == EALREADY || err == EWOULDBLOCK || err == EAGAIN) {
+            /* sleep a quirk of time... */
+            usleep(TSLEEP);
+         }
       } else { 
          /* there was an error or the connect was successful */
          break;
       }
    } while(loops--);
-  
+ 
+   err = ret < 0 ? GET_SOCK_ERRNO() : 0;
+   
    /* reached the timeout */
-   if (ret < 0 && (errno == EINPROGRESS || errno == EALREADY || errno == EAGAIN)) {
-      DEBUG_MSG("open_socket: connect() timeout: %d", errno);
-      close(sh);
+   if (ret < 0 && (err == EINPROGRESS || err == EALREADY || err == EAGAIN)) {
+      DEBUG_MSG("open_socket: connect() timeout: %d", err);
+      close_socket(sh);
       return -ETIMEOUT;
    }
 
    /* error while connecting */
-   if (ret < 0 && errno != EISCONN) {
-      DEBUG_MSG("open_socket: connect() error: %d", errno);
-      close(sh);
+   if (ret < 0 && err != EISCONN) {
+      DEBUG_MSG("open_socket: connect() error: %d", err);
+      close_socket(sh);
       return -EINVALID;
    }
       
@@ -149,7 +155,7 @@ int close_socket(int s)
    DEBUG_MSG("close_socket: %d", s);
 
    /* close the socket */
-#ifdef OS_MINGW
+#ifdef OS_WINDOWS
    return closesocket(s);
 #else   
    return close(s);

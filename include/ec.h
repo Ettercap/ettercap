@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.27 2004/07/09 08:27:18 alor Exp $ */
+/* $Id: ec.h,v 1.28 2004/07/12 19:57:26 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef OS_MINGW
+#ifdef OS_WINDOWS
    #include <windows.h>
 #endif
 
@@ -32,32 +32,27 @@
 #include <unistd.h>
 #include <time.h>
 
-/* these are often needed... */
-#ifdef OS_MINGW
-   #undef SLIST_ENTRY   /* declared in <winnt.h> */
+/*
+ * On Windows (MinGw) we must export all ettercap.exe variables/function
+ * used in plugins and functions in plugins must be declared as 'importable'
+ */
+#if defined(OS_WINDOWS)
+   #if defined(BUILDING_PLUGIN)
+      #define EC_API_EXTERN __declspec(dllimport)
+   #else
+      #define EC_API_EXTERN __declspec(dllexport)
+   #endif
+#else
+   #define EC_API_EXTERN
 #endif
+
+/* these are often needed... */
 #include <ec_queue.h>
 #include <ec_error.h>
 #include <ec_debug.h>
 #include <ec_stdint.h>
 #include <ec_globals.h>
 #include <ec_strings.h>
-
-/*  
- * On Windows (MinGw) we must export all ettercap.exe variables/function
- * used in plugins and functions in plugins must be declared as 'importable'
- */
-#ifdef OS_MINGW
-   #define EC_API_EXPORTED __declspec (dllexport)
-   #define EC_API_IMPORTED __declspec (dllimport)
-   #define EC_API_PUBLIC   
-   #define EC_API_PRIVATE  
-#else
-   #define EC_API_EXPORTED extern
-   #define EC_API_IMPORTED 
-   #define EC_API_PUBLIC   
-   #define EC_API_PRIVATE  static
-#endif
 
 #ifdef OS_MINGW
    #include <ec_os_mingw.h>
@@ -142,7 +137,7 @@
 #define EC_MAGIC_32  0xe77ee77e
 
 /* exported by ec_main */
-EC_API_EXPORTED void clean_exit(int errcode);
+EC_API_EXTERN void clean_exit(int errcode);
 
 
 #endif   /*  EC_H */

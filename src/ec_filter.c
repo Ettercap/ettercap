@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.52 2004/06/27 12:51:01 alor Exp $
+    $Id: ec_filter.c,v 1.53 2004/07/12 19:57:26 alor Exp $
 */
 
 #include <ec.h>
@@ -26,9 +26,9 @@
 #include <ec_threads.h>
 #include <ec_send.h>
 
-#ifndef OS_MINGW
+#ifndef OS_WINDOWS
    /* 
-    * mmap is not available under mingw. it is implemented
+    * mmap is not available under windows. it is implemented
     * int ec_os_mingw.c
     */
    #include <sys/mman.h>

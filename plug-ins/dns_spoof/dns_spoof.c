@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.12 2004/10/25 10:15:07 alor Exp $
+    $Id: dns_spoof.c,v 1.13 2004/11/08 08:50:17 alor Exp $
 */
 
 
@@ -215,10 +215,10 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
    static char ip[20+1];
    char type[10+1];
 
-/* DEBUG_MSG("%s:%d str '%s'", ETTER_DNS, line, str); */
+ DEBUG_MSG("%s:%d str '%s'", ETTER_DNS, line, str); 
 
    if (sscanf(str,"%100s %10s %20[^\r\n# ]", name, type, ip) != 3) {
-      USER_MSG("%s:%d Invalid entry %s\n", ETTER_DNS, str, line);
+      USER_MSG("%s:%d Invalid entry %s\n", ETTER_DNS, line, str);
       return (0);
    }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.23 2003/10/23 19:50:57 uid42100 Exp $
+    $Id: ec_scan.c,v 1.24 2003/10/24 21:07:00 alor Exp $
 */
 
 #include <ec.h>
@@ -102,10 +102,10 @@ void build_hosts_list(void)
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
   
    /* 
-    * no target were specified, we have to make a list
-    * scanning the whole netmask
+    * if at least one target is ANY, scan the wole netmask
+    * else scan only the specified targets
     */
-   if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip)
+   if (GBL_TARGET1->all_ip || GBL_TARGET2->all_ip)
       scan_netmask();
    else
       scan_targets();

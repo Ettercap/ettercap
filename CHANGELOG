@@ -15,6 +15,7 @@ NG-0.7.0_pre2    200404??
    !! fixed a linking problem against openssl
    !! some fixes in the man pages
    !! compiles against old openssl 0.9.6x
+   !! better error handling on file creation failure
    
 
 NG-0.7.0_pre1    20040415

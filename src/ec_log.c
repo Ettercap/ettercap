@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.32 2004/02/16 20:21:55 alor Exp $
+    $Id: ec_log.c,v 1.33 2004/04/23 14:44:18 alor Exp $
 */
 
 #include <ec.h>
@@ -87,7 +87,7 @@ int set_loglevel(int level, char *filename)
       return ESUCCESS;
    }
    
-   DEBUG_MSG("set_loglevel(%d,%s)", level, filename); 
+   DEBUG_MSG("set_loglevel(%d, %s)", level, filename); 
 
    /* all the host type will be unknown, warn the user */
    if (GBL_OPTIONS->read) {
@@ -111,7 +111,9 @@ int set_loglevel(int level, char *filename)
             fdp.type = LOG_UNCOMPRESSED;
          }
          
-         log_open(&fdp, ecp);
+         /* create the file */
+         if (log_open(&fdp, ecp) != ESUCCESS)
+            return -EFATAL;
 
          /* initialize the log file */
          log_write_header(&fdp, LOG_PACKET);
@@ -128,7 +130,9 @@ int set_loglevel(int level, char *filename)
             fdi.type = LOG_UNCOMPRESSED;
          }
          
-         log_open(&fdi, eci);
+         /* create the file */
+         if (log_open(&fdi, eci) != ESUCCESS)
+            return -EFATAL;
          
          /* initialize the log file */
          log_write_header(&fdi, LOG_INFO);
@@ -182,11 +186,11 @@ int log_open(struct log_fd *fd, char *filename)
    if (fd->type == LOG_COMPRESSED) {
       fd->cfd = gzopen(filename, "wb9");
       if (fd->cfd == NULL)
-         FATAL_MSG("%s", gzerror(fd->cfd, &zerr));
+         SEMIFATAL_ERROR("%s", gzerror(fd->cfd, &zerr));
    } else {
       fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR);
       if (fd->fd == -1)
-         FATAL_MSG("Can't create %s", filename);
+         SEMIFATAL_ERROR("Can't create %s: %s", filename, strerror(errno));
    }
    
    /* set the permissions */

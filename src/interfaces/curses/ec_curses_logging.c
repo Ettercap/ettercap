@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_logging.c,v 1.3 2004/02/29 17:37:21 alor Exp $
+    $Id: ec_curses_logging.c,v 1.4 2004/04/23 14:44:18 alor Exp $
 */
 
 #include <ec.h>
@@ -85,6 +85,12 @@ static void curses_log_all(void)
 
 static void log_all(void)
 {
+   /* a check on the input */
+   if (strlen(logfile) == 0) {
+      ui_error("Please specify a filename");
+      return;
+   }
+   
    set_loglevel(LOG_PACKET, logfile);
    SAFE_FREE(logfile);
 }
@@ -105,6 +111,12 @@ static void curses_log_info(void)
 
 static void log_info(void)
 {
+   /* a check on the input */
+   if (strlen(logfile) == 0) {
+      ui_error("Please specify a filename");
+      return;
+   }
+
    set_loglevel(LOG_INFO, logfile);
    SAFE_FREE(logfile);
 }
@@ -131,6 +143,12 @@ static void curses_log_msg(void)
 
 static void log_msg(void)
 {
+   /* a check on the input */
+   if (strlen(logfile) == 0) {
+      ui_error("Please specify a filename");
+      return;
+   }
+   
    set_msg_loglevel(LOG_TRUE, logfile);
    SAFE_FREE(logfile);
 }

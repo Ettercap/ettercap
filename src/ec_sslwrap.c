@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.7 2004/03/09 23:05:35 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.8 2004/03/10 11:14:05 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -45,14 +45,13 @@
 #define DATA_PATH "/"
 
 
-#define BREAK_ON_ERROR(x,y) do { \
-   if (x == -EINVALID) { \
+#define BREAK_ON_ERROR(x,y) if (x == -EINVALID) { \
       sslw_wipe_connection(y); \
       break; \
    } \
    if (x != ESUCCESS) \
       continue; \
-} while(0)
+
 
 /* globals */
 
@@ -217,7 +216,7 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 {   
    int ret_val, err;
    
-   DEBUG_MSG("sslw - XXX Start SYNC");
+   //DEBUG_MSG("sslw - XXX Start SYNC");
    if (! (ae->status & SSL_PEER_DONE) ) {
       if (sslw_get_peer(ae) != ESUCCESS)
          return -EINVALID;
@@ -232,6 +231,7 @@ static int sslw_sync_conn(struct accepted_entry *ae)
          case -ENOTHANDLED:
 	    ae->poll_stat[SSL_CLIENT] = 0;
 	    ae->poll_stat[SSL_SERVER] = POLLOUT;
+	    DEBUG_MSG("SYNC CONN");
 	    return -ENOTHANDLED;
 	    break;
 	 default:
@@ -276,7 +276,8 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 	          ae->poll_stat[SSL_SERVER] = POLLOUT;
 	       else 
 	          return -EINVALID;
-		  
+	
+	DEBUG_MSG("SYNC SERV");	  
 	       return -ENOTHANDLED;
 	       break;
          }
@@ -307,13 +308,13 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 	          ae->poll_stat[SSL_CLIENT] = POLLOUT;
 	       else
 	          return -EINVALID;
-		  
+	DEBUG_MSG("SYNC CLIENT %d", (u_int32)ae);	  
 	       return -ENOTHANDLED;
 	       break;
          }
       }               
    }
-   DEBUG_MSG("sslw - XXX End SYNC");
+   //DEBUG_MSG("sslw - XXX End SYNC");
    return ESUCCESS;
 }
 
@@ -393,11 +394,13 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
 {
    int len, err;
    
+   DEBUG_MSG("xx to read xxx");
    if (ae->status & SSL_ENABLED)
       len = SSL_read(ae->ssl[direction], po->DATA.data, GBL_IFACE->mtu);
    else       
       len = read(ae->fd[direction], po->DATA.data, GBL_IFACE->mtu);
 
+   DEBUG_MSG("xx letti %d xx", len);
    if (len < 0) {
       if (!(ae->status & SSL_ENABLED) && errno == EAGAIN)
          return -ENOTHANDLED; 
@@ -409,7 +412,12 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
       } 
       return -EINVALID;
    }   
-          
+
+   if (ae->status & SSL_ENABLED && len == 0) {
+      DEBUG_MSG("XXX INVALIDO");
+      return -EINVALID;
+   }
+   
    po->DATA.len = len;
    /* NULL terminate the data buffer */
    po->DATA.data[po->DATA.len] = 0;
@@ -429,13 +437,17 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
 {
    int len, err;
    
-   DEBUG_MSG("sslw - WRITING DATA");
+   DEBUG_MSG("sslw - WRITING DATA %d", (u_int32)ae);
    
    /* Write packet data */
    if (ae->status & SSL_ENABLED)
       len = SSL_write(ae->ssl[direction], po->DATA.data, po->DATA.len + po->DATA.inject_len);
    else       
       len = write(ae->fd[direction], po->DATA.data, po->DATA.len + po->DATA.inject_len);
+   DEBUG_MSG("sslw - WRITING DATA LEN %d %d",po->DATA.len + po->DATA.inject_len, len);
+if (po->DATA.len + po->DATA.inject_len != (u_int32)len)
+ DEBUG_MSG("MANNAGGIA LA PUTTANA DI EVA'''''''''''''''''''''''''''''''''''");
+
 
    if (len < 0) {
       if (! (ae->status & SSL_ENABLED) && errno == EAGAIN)
@@ -448,7 +460,15 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       } 
       return -EINVALID;
    }   
-      
+
+
+   // XXX Lo lascio???????????????????????/
+   if (ae->status & SSL_ENABLED && len == 0) {
+      DEBUG_MSG("XXX INVALIDO WRITE");
+      return -EINVALID;
+   }
+
+   //DEBUG_MSG("sslw - END WRITING");      
    return ESUCCESS;
 }
 
@@ -485,6 +505,7 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
  */
 static void sslw_wipe_connection(struct accepted_entry *ae)
 {
+//DEBUG_MSG("XXX -- wipe");
    LIST_REMOVE(ae, next);
    if (ae->ssl[SSL_CLIENT]) {
       /* They are initialized together */
@@ -494,6 +515,7 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
       close(ae->fd[SSL_CLIENT]);
       close(ae->fd[SSL_SERVER]);
    }
+//DEBUG_MSG("XXX -- End wipe");
 
    SAFE_FREE(ae);
 }
@@ -537,7 +559,6 @@ EC_THREAD_FUNC(sslw_start)
    u_int16 number_of_services, number_of_connections, i, j;
    u_int32 len = sizeof(struct sockaddr_in);
    int ret_val;
-   //int new_inserted;
    struct sockaddr_in client_sin;
    struct packet_object po;
    
@@ -573,7 +594,6 @@ EC_THREAD_FUNC(sslw_start)
          number_of_services++;
 
       number_of_connections = 0;
-      //new_inserted = 0;
       LIST_FOREACH(ae, &accepted_conn, next) 
          number_of_connections++;
 
@@ -596,6 +616,7 @@ EC_THREAD_FUNC(sslw_start)
 
       CANCELLATION_POINT();
       // XXX - CONTROLLARE ERRORI POSSIBILI DELLA POLL
+      DEBUG_MSG("---------------- NUOVA POLL --------------------");
       poll(poll_fd, number_of_connections*2 + number_of_services, -1);
       CANCELLATION_POINT();
       
@@ -640,51 +661,55 @@ EC_THREAD_FUNC(sslw_start)
             }
 	    
             LIST_INSERT_HEAD(&accepted_conn, ae, next);   
-	    //new_inserted = 1; 
          }
 	 
-      /* Repeat the poll if we have accepted new connections */
-      //if (new_inserted)
-         //continue;
 
       /* Check if we have data to read */
       for(i=0; i<number_of_connections*2; i++) 
          if (poll_fd[i+number_of_services].revents & (POLLIN | POLLOUT | POLLHUP | POLLERR | POLLNVAL)) {
             u_int32 direction;//, connection;
-	    
+
+DEBUG_MSG("-- conn accpted --");	    
             /* Check if it's server or client and which connection */
             direction = i%2;
-            //connection = i/2;
             LIST_FOREACH(ae, &accepted_conn, next) {
 	       if (poll_fd[i+number_of_services].fd == ae->fd[SSL_CLIENT] ||
 	           poll_fd[i+number_of_services].fd == ae->fd[SSL_SERVER]);
 	          break;
-               //if (connection == 0)
-                  //break;
-               //connection--;
             }
-	    
 	    /* Error checking */
+	    if (!ae)
+	       break; 
+DEBUG_MSG("-- conn found --");	    
+
 	    if (poll_fd[i+number_of_services].revents & (POLLHUP | POLLERR | POLLNVAL)) {
                /* if HUP remove the entry from the list */
                sslw_wipe_connection(ae);
 	       break;
 	    }
+DEBUG_MSG("-- conn action --");	    
 
             ret_val = sslw_sync_conn(ae);
 	    BREAK_ON_ERROR(ret_val, ae);
+DEBUG_MSG("-- conn read --");	    
             
 	    ret_val = sslw_read_data(ae, direction, &po);
 	    BREAK_ON_ERROR(ret_val, ae);
-	       
+
+DEBUG_MSG("-- conn parse --");	    
+
+//DEBUG_MSG("YYYYYYYY %d", ret_val);	       
             sslw_parse_packet(ae, direction, &po);
    
             /* Don't write dropped data */
             if (po.flags & PO_DROPPED)
 	       continue;
+DEBUG_MSG("-- conn  write --");	    
 		  
 	    ret_val = sslw_write_data(ae, !direction, &po);
-	    BREAK_ON_ERROR(ret_val, ae); 
+	    BREAK_ON_ERROR(ret_val, ae);
+DEBUG_MSG("-- conn end --");	    
+ 
          }
    }
 }

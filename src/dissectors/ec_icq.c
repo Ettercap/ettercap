@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icq.c,v 1.2 2003/09/29 20:32:04 alor Exp $
+    $Id: ec_icq.c,v 1.3 2003/10/08 20:41:44 alor Exp $
 */
 
 #include <ec.h>
@@ -80,6 +80,14 @@ FUNC_DECODER(dissector_icq)
 
    /* parse only version 7/8 */
    if (ptr[0] != 0x2a || ptr[1] > 4) 
+      return NULL;
+   
+   /* skip empty packets (ACK packets) */
+   if (PACKET->DATA.len == 0)
+      return NULL;
+   
+   /* skip messages coming from the server */
+   if (FROM_SERVER("icq", PACKET))
       return NULL;
   
    DEBUG_MSG("ICQ --> TCP dissector_icq [%d.%d]", ptr[0], ptr[1]);

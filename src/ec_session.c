@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.20 2003/11/08 14:59:44 alor Exp $
+    $Id: ec_session.c,v 1.21 2004/03/05 10:39:31 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -153,7 +153,8 @@ int session_get(struct ec_session **s, void *ident, size_t ident_len)
 
    /* search if it already exist */
    LIST_FOREACH(sl, &session_list_head[h], next) {
-      if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
+      /* No more per-thread sessions */
+      if ( /*sl->id == pthread_self() &&*/ sl->s->match(sl->s->ident, ident) ) {
    
          //DEBUG_MSG("session_get: [%d][%p]", sl->id, sl->s->ident);
          /* return the session */

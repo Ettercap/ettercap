@@ -192,7 +192,7 @@ FUNC_DECODER(dissector_vnc)
             PACKET->DISSECTOR.user = strdup("");
             PACKET->DISSECTOR.pass = strdup("No Password!!!");
 
-            USER_MSG("vnc : %s:%d -> No authentication required\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+            USER_MSG("VNC : %s:%d -> No authentication required\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                                     ntohs(PACKET->L4.dst));
             dissect_wipe_session(PACKET);
          } else    /* If we have catched server result */
@@ -220,12 +220,12 @@ FUNC_DECODER(dissector_vnc)
        
                if (conn_status->status > LOGIN_OK) {
                   PACKET->DISSECTOR.failed = 1;
-                  USER_MSG("vnc : %s:%d -> %s (Login Failed)\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                  USER_MSG("VNC : %s:%d -> %s (Login Failed)\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                                  ntohs(PACKET->L4.dst), 
                                                                  PACKET->DISSECTOR.pass);
 
                } else {
-                  USER_MSG("vnc : %s:%d -> %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                  USER_MSG("VNC : %s:%d -> %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                   ntohs(PACKET->L4.dst), 
                                                   PACKET->DISSECTOR.pass);
                }

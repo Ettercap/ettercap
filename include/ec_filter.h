@@ -89,7 +89,6 @@ struct filter_op {
    } op;
 };
 
-
 /* exported functions */
 
 extern int filter_engine(struct filter_op *fop, struct packet_object *po);

@@ -17,13 +17,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.5 2003/09/10 15:41:23 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.6 2003/09/10 16:31:46 alor Exp $
 */
 
 %{
 
 #include <ef.h>
 #include <ef_functions.h>
+#include <ec_filter.h>
+/* from bison */
 #include <ef_grammar.h>
 
 #define YY_NO_UNPUT

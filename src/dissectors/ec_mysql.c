@@ -60,8 +60,8 @@ FUNC_DECODER(dissector_mysql)
 
       /* if the session does not exist... */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
-         u_int index=5;
-	 
+         u_int index = 5;
+    
          /* Check magic numbers and catch the banner */
          if (!memcmp(ptr+1, "\x00\x00\x00\x0a\x33\x2e", 6)) {
             DEBUG_MSG("\tdissector_mysql BANNER");
@@ -73,16 +73,16 @@ FUNC_DECODER(dissector_mysql)
             SAFE_FREE(ident);
             return NULL;
          }
-	 
+    
          /* Search for 000 padding */
-         while( (ptr+index)<end && (ptr[index] != ptr[index-1] != ptr[index-2] != 0) )
+         while( (ptr + index) < end && (ptr[index] != ptr[index - 1] != ptr[index - 2] != 0) )
             index++;
           
          /* create the new session */
          dissect_create_session(&s, PACKET);
        
          /* Save the seed */
-         s->data = strdup(ptr+index+1);
+         s->data = strdup(ptr + index + 1);
 
          /* save the session */
          session_put(s);
@@ -95,19 +95,20 @@ FUNC_DECODER(dissector_mysql)
          DEBUG_MSG("\tDissector_mysql DUMP ENCRYPTED");
 
          /* Reach the username */
-         ptr+=9;
+         ptr += 9;
+         /* save the username */
          PACKET->DISSECTOR.user = strdup(ptr);
-	 
+    
          /* Reach the encrypted password */
          ptr += strlen(PACKET->DISSECTOR.user) + 1;
          if (ptr < end && strlen(ptr)!=0) {
             PACKET->DISSECTOR.pass = malloc(strlen(s->data) + strlen(ptr) + 128);
-            sprintf(PACKET->DISSECTOR.pass, "Seed:%s Encrypted:%s", s->data, ptr);
+            sprintf(PACKET->DISSECTOR.pass, "Seed:%s Encrypted:%s", (char *)s->data, ptr);
          } else {
             PACKET->DISSECTOR.pass = strdup("No Password!!!");
          }
-	 
-         USER_MSG("mysql : %s:%d -> USER:%s %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+    
+         USER_MSG("MYSQL : %s:%d -> USER:%s %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                    ntohs(PACKET->L4.dst),
                                                    PACKET->DISSECTOR.user,
                                                    PACKET->DISSECTOR.pass);

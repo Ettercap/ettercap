@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.5 2003/09/09 21:32:56 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.6 2003/09/10 16:31:46 alor Exp $
 */
 
 %{
@@ -25,6 +25,7 @@
 #include <ef.h>
 #include <ef_functions.h>
 #include <ec_strings.h>
+#include <ec_filter.h>
 
 #define YYERROR_VERBOSE
 
@@ -42,6 +43,7 @@ u_int32 lineno = 1;
 %union {
    int value;        /* semantic value for integer variables or numbers */
    char *string;     /* a string identifying the name of a variable */
+   struct filter_op fop;
 }
 
 /* token definitions */

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.21 2004/04/22 15:47:05 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.22 2005/01/04 14:35:43 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -146,6 +146,13 @@ Example:
 ip.ttl = 0xff;
 .br
 DATA.data + 7 = "ettercap NG"; 
+.Sp
+You can also use the 'inc' and 'dec' operations on the packet fields. The operators
+used are '+=' and '-='. The rvalue can be an integer or a hexadecimal value.
+.Sp
+Example:
+.br
+ip.ttl += 5;
 
 
 .TP

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.9 2004/03/04 08:58:28 alor Exp $
+    $Id: ec_inject.c,v 1.10 2004/03/05 10:34:16 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -230,8 +230,8 @@ int user_kill(struct conn_object *co)
    status = (struct tcp_status *)s->data;
      
    /* send the reset. at least one should work */
-   send_tcp(&po.L3.src, &po.L3.dst, po.L4.src, po.L4.dst, status->way[direction].last_ack, 0, TH_RST);
-   send_tcp(&po.L3.dst, &po.L3.src, po.L4.dst, po.L4.src, status->way[!direction].last_ack, 0, TH_RST);
+   send_tcp(&po.L3.src, &po.L3.dst, po.L4.src, po.L4.dst, htonl(status->way[!direction].last_ack), 0, TH_RST);
+   send_tcp(&po.L3.dst, &po.L3.src, po.L4.dst, po.L4.src, htonl(status->way[direction].last_ack), 0, TH_RST);
 
    return ESUCCESS;
 }

@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.59 2004/04/29 09:28:34 alor Exp $ */
+/* $Id: ec_globals.h,v 1.60 2004/05/12 15:27:04 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -66,7 +66,8 @@ struct ec_options {
    char *netmask;
    char *iface;
    char *iface_bridge;
-   char *dumpfile;
+   char *pcapfile_in;
+   char *pcapfile_out;
    char *target1;
    char *target2;
    FILE *msg_fd;

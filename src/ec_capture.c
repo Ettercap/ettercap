@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.48 2004/05/06 10:54:45 alor Exp $
+    $Id: ec_capture.c,v 1.49 2004/05/12 15:27:05 alor Exp $
 */
 
 #include <ec.h>
@@ -108,7 +108,7 @@ void capture_init(void)
          FATAL_ERROR("Bridging iface must be different from %s", GBL_OPTIONS->iface);
       USER_MSG("Bridging %s and %s...\n\n", GBL_OPTIONS->iface, GBL_OPTIONS->iface_bridge);
    } else if (GBL_OPTIONS->read) {
-      USER_MSG("Reading from %s... ", GBL_OPTIONS->dumpfile);
+      USER_MSG("Reading from %s... ", GBL_OPTIONS->pcapfile_in);
    } else
       USER_MSG("Listening on %s... ", GBL_OPTIONS->iface);
    
@@ -117,7 +117,7 @@ void capture_init(void)
    
    /* open the interface from GBL_OPTIONS (user specified) */
    if (GBL_OPTIONS->read)
-      pd = pcap_open_offline(GBL_OPTIONS->dumpfile, pcap_errbuf);
+      pd = pcap_open_offline(GBL_OPTIONS->pcapfile_in, pcap_errbuf);
    else
       pd = pcap_open_live(GBL_OPTIONS->iface, GBL_PCAP->snaplen, GBL_PCAP->promisc, 
                    PCAP_TIMEOUT, pcap_errbuf);
@@ -181,8 +181,8 @@ void capture_init(void)
 
    /* open the dump file */
    if (GBL_OPTIONS->write) {
-      DEBUG_MSG("dumpfile: %s", GBL_OPTIONS->dumpfile);
-      pdump = pcap_dump_open(pd, GBL_OPTIONS->dumpfile);
+      DEBUG_MSG("pcapfile_out: %s", GBL_OPTIONS->pcapfile_out);
+      pdump = pcap_dump_open(pd, GBL_OPTIONS->pcapfile_out);
       ON_ERROR(pdump, NULL, "%s", pcap_geterr(pd));
       GBL_PCAP->dump = pdump;               
    }
@@ -457,7 +457,7 @@ int is_pcap_file(char *file, char *errbuf)
 {
    pcap_t *pd;
    
-   pd = pcap_open_offline(GBL_OPTIONS->dumpfile, errbuf);
+   pd = pcap_open_offline(file, errbuf);
    if (pd == NULL)
       return -EINVALID;
 

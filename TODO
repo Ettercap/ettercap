@@ -38,6 +38,8 @@
 ==================
    
    + WIFI decoder support for WEP (given the key)
+      - option in etter.conf (default)
+      - option from command line (to decrypt multiple file in a script)
 
    + SSH2 dissection :) (yes, it can be done)
 

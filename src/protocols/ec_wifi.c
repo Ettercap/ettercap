@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.11 2004/05/08 10:17:10 alor Exp $
+    $Id: ec_wifi.c,v 1.12 2004/05/12 15:27:07 alor Exp $
 */
 
 #include <ec.h>
@@ -32,15 +32,40 @@ struct wifi_header {
       #define WIFI_BACON   0x80
       #define WIFI_ACK     0xd4
    u_int8   control;
-      #define WIFI_EXITING  0x01
-      #define WIFI_ENTERING 0x02
-      #define WIFI_ADHOC    0x03
-      #define WIFI_WEP      0x40
+      #define WIFI_STA_TO_STA 0x00  /* ad hoc mode */
+      #define WIFI_STA_TO_AP  0x01
+      #define WIFI_AP_TO_STA  0x02
+      #define WIFI_AP_TO_AP   0x03
+      #define WIFI_WEP        0x40
    u_int16  duration;
-   u_int8   dha[ETH_ADDR_LEN];
-   u_int8   sha[ETH_ADDR_LEN];
-   u_int8   bssid[ETH_ADDR_LEN];
+   /*
+    * the following three fields has different meanings
+    * depending on the control value... argh !!
+    *
+    *    - WIFI_STA_TO_STA  (ad hoc)
+    *       ha1 -> dst 
+    *       ha2 -> src
+    *       ha3 -> bssid
+    *    - WIFI_STA_TO_AP  
+    *       ha1 -> bssid  
+    *       ha2 -> src
+    *       ha3 -> dst
+    *    - WIFI_AP_TO_AP
+    *       ha1 -> rx 
+    *       ha2 -> tx
+    *       ha3 -> dst
+    *       ha4 -> src
+    *    - WIFI_AP_TO_STA
+    *       ha1 -> dst
+    *       ha2 -> bssid
+    *       ha3 -> src
+    */    
+   u_int8   ha1[ETH_ADDR_LEN];
+   u_int8   ha2[ETH_ADDR_LEN];
+   u_int8   ha3[ETH_ADDR_LEN];
    u_int16  seq;
+   /* this field is present only if control is WIFI_AP_TO_AP */
+   /* u_int8   ha3[ETH_ADDR_LEN]; */
 };
 
 struct llc_header {
@@ -101,24 +126,59 @@ FUNC_DECODER(decode_wifi)
    }
    
    /* 
-    * capture only "complete" and not retransitted packets 
+    * capture only "complete" and not retransmitted packets 
     * we don't want to deal with fragments (0x04) or retransmission (0x08) 
     */
-   if (wifi->control == WIFI_ENTERING || wifi->control == WIFI_EXITING) {
-      /* get the logica link layer header */
-      llc = (struct llc_header *)(wifi + 1);
-      DECODED_LEN += sizeof(struct llc_header);
+   switch (wifi->control) {
       
-   } else if (wifi->control == WIFI_ADHOC) {
-      /* 
-       * get the logica link layer header i
-       * there is one more field in adhoc mode
-       */
-      llc = (struct llc_header *)((u_char *)wifi + sizeof(struct wifi_header) + MEDIA_ADDR_LEN);
-      DECODED_LEN += sizeof(struct llc_header) + MEDIA_ADDR_LEN;
+      case WIFI_STA_TO_STA:
+         /* get the logical link layer header */
+         llc = (struct llc_header *)(wifi + 1);
+         DECODED_LEN += sizeof(struct llc_header);
+   
+         memcpy(PACKET->L2.src, wifi->ha2, ETH_ADDR_LEN);
+         memcpy(PACKET->L2.dst, wifi->ha1, ETH_ADDR_LEN);
+         break;
+   
+   
+      case WIFI_STA_TO_AP:
+         /* get the logical link layer header */
+         llc = (struct llc_header *)(wifi + 1);
+         DECODED_LEN += sizeof(struct llc_header);
+   
+         memcpy(PACKET->L2.src, wifi->ha2, ETH_ADDR_LEN);
+         memcpy(PACKET->L2.dst, wifi->ha3, ETH_ADDR_LEN);
+         break;
+   
+      case WIFI_AP_TO_STA:
+         /* get the logical link layer header */
+         llc = (struct llc_header *)(wifi + 1);
+         DECODED_LEN += sizeof(struct llc_header);
+   
+         memcpy(PACKET->L2.src, wifi->ha3, ETH_ADDR_LEN);
+         memcpy(PACKET->L2.dst, wifi->ha1, ETH_ADDR_LEN);
+         break;
+         
+      case WIFI_AP_TO_AP:
+         /* 
+          * get the logical link layer header 
+          * there is one more field (ha4) in this case
+          */
+         llc = (struct llc_header *)((u_char *)wifi + sizeof(struct wifi_header) + ETH_ADDR_LEN);
+         DECODED_LEN += sizeof(struct llc_header) + ETH_ADDR_LEN;
+         
+         memcpy(PACKET->L2.src, (char *)(wifi + 1), ETH_ADDR_LEN);
+         memcpy(PACKET->L2.dst, wifi->ha3, ETH_ADDR_LEN);
+         /* 
+          * XXX - fix this or ignore this case...
+          *
+          * SHIT !! we have alignment problems here...
+          */
+         return NULL;
+         break;
       
-   } else {
-      return NULL;
+      default:
+         return NULL;
    }
    
    /* org_code != encapsulated ethernet not yet supported */
@@ -126,13 +186,10 @@ FUNC_DECODER(decode_wifi)
       //return NULL;
       NOT_IMPLEMENTED();
       
-   /* fill the bucket with sensitive data */
+   /* fill the packet object with sensitive data */
    PACKET->L2.header = (u_char *)DECODE_DATA;
    PACKET->L2.proto = IL_TYPE_WIFI;
    PACKET->L2.len = DECODED_LEN;
-   
-   memcpy(PACKET->L2.src, wifi->sha, ETH_ADDR_LEN);
-   memcpy(PACKET->L2.dst, wifi->dha, ETH_ADDR_LEN);
 
    /* HOOK POINT: HOOK_PACKET_WIFI */
    hook_point(HOOK_PACKET_WIFI, po);
@@ -152,7 +209,7 @@ FUNC_DECODER(decode_wifi)
 FUNC_ALIGNER(align_wifi)
 {
    /* already aligned */
-   return (32 - sizeof(struct wifi_header));
+   return (32 - sizeof(struct wifi_header) - sizeof(struct llc_header));
 }
 
 /* EOF */

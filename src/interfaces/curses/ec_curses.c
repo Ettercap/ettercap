@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.45 2004/05/07 14:55:51 alor Exp $
+    $Id: ec_curses.c,v 1.46 2004/05/12 15:27:06 alor Exp $
 */
 
 #include <ec.h>
@@ -456,14 +456,14 @@ static void read_pcapfile(char *path, char *file)
    
    DEBUG_MSG("read_pcapfile %s/%s", path, file);
    
-   SAFE_CALLOC(GBL_OPTIONS->dumpfile, strlen(path)+strlen(file)+2, sizeof(char));
+   SAFE_CALLOC(GBL_OPTIONS->pcapfile_in, strlen(path)+strlen(file)+2, sizeof(char));
 
-   sprintf(GBL_OPTIONS->dumpfile, "%s/%s", path, file);
+   sprintf(GBL_OPTIONS->pcapfile_in, "%s/%s", path, file);
 
    /* check if the file is good */
-   if (is_pcap_file(GBL_OPTIONS->dumpfile, errbuf) != ESUCCESS) {
+   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, errbuf) != ESUCCESS) {
       ui_error("%s", errbuf);
-      SAFE_FREE(GBL_OPTIONS->dumpfile);
+      SAFE_FREE(GBL_OPTIONS->pcapfile_in);
       return;
    }
    
@@ -486,9 +486,9 @@ static void curses_file_write(void)
    
    DEBUG_MSG("curses_file_write");
    
-   SAFE_CALLOC(GBL_OPTIONS->dumpfile, FILE_LEN, sizeof(char));
+   SAFE_CALLOC(GBL_OPTIONS->pcapfile_out, FILE_LEN, sizeof(char));
 
-   curses_input("Output file :", GBL_OPTIONS->dumpfile, FILE_LEN, write_pcapfile);
+   curses_input("Output file :", GBL_OPTIONS->pcapfile_out, FILE_LEN, write_pcapfile);
 }
 
 static void write_pcapfile(void)
@@ -498,16 +498,16 @@ static void write_pcapfile(void)
    DEBUG_MSG("write_pcapfile");
    
    /* check if the file is writeable */
-   f = fopen(GBL_OPTIONS->dumpfile, "w");
+   f = fopen(GBL_OPTIONS->pcapfile_out, "w");
    if (f == NULL) {
-      ui_error("Cannot write %s", GBL_OPTIONS->dumpfile);
-      SAFE_FREE(GBL_OPTIONS->dumpfile);
+      ui_error("Cannot write %s", GBL_OPTIONS->pcapfile_out);
+      SAFE_FREE(GBL_OPTIONS->pcapfile_out);
       return;
    }
  
    /* if ok, delete it */
    fclose(f);
-   unlink(GBL_OPTIONS->dumpfile);
+   unlink(GBL_OPTIONS->pcapfile_out);
 
    /* set the options for writing to a file */
    GBL_OPTIONS->write = 1;

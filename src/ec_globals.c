@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_globals.c,v 1.12 2004/02/01 16:48:51 alor Exp $
+    $Id: ec_globals.c,v 1.13 2004/05/12 15:27:05 alor Exp $
 */
 
 #include <ec.h>
@@ -84,7 +84,8 @@ void globals_free(void)
    
    GBL_FREE(gbls->options->plugin);
    GBL_FREE(gbls->options->proto);
-   GBL_FREE(gbls->options->dumpfile);
+   GBL_FREE(gbls->options->pcapfile_in);
+   GBL_FREE(gbls->options->pcapfile_out);
    GBL_FREE(gbls->options->iface);
    GBL_FREE(gbls->options->iface_bridge);
    GBL_FREE(gbls->options->target1);

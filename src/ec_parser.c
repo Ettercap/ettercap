@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.59 2004/03/31 13:03:08 alor Exp $
+    $Id: ec_parser.c,v 1.60 2004/05/12 15:27:05 alor Exp $
 */
 
 
@@ -246,12 +246,12 @@ void parse_options(int argc, char **argv)
                   GBL_OPTIONS->silent = 1;
                   GBL_OPTIONS->unoffensive = 1;
                   GBL_OPTIONS->read = 1;
-                  GBL_OPTIONS->dumpfile = strdup(optarg);
+                  GBL_OPTIONS->pcapfile_in = strdup(optarg);
                   break;
                  
          case 'w':
                   GBL_OPTIONS->write = 1;
-                  GBL_OPTIONS->dumpfile = strdup(optarg);
+                  GBL_OPTIONS->pcapfile_out = strdup(optarg);
                   break;
                   
          case 'f':
@@ -376,9 +376,6 @@ void parse_options(int argc, char **argv)
    
    if (GBL_SNIFF->start == NULL)
       set_unified_sniff();
-   
-   if (GBL_OPTIONS->write && GBL_OPTIONS->read)
-      FATAL_ERROR("You cannote dump and read at the same time...");
    
    if (GBL_OPTIONS->read && GBL_PCAP->filter)
       FATAL_ERROR("Cannot read from file and set a filter on interface");

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.26 2004/04/29 09:28:34 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.27 2004/05/21 14:25:22 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -291,7 +291,7 @@ you need those commands.
 .B redir_command_off
 This script is used to remove the redirect rules applied by 'redir_command_on'.
 You should note that this script is called atexit() and thus it has not high
-privileges. You should provide a setuid script or set ec_uid to 0 in order to
+privileges. You should provide a setuid program or set ec_uid to 0 in order to
 be sure that the script is executed successfully.
 
 

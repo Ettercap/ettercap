@@ -1,5 +1,5 @@
 
-/* $Id: ec_error.h,v 1.13 2003/12/17 22:04:15 alor Exp $ */
+/* $Id: ec_error.h,v 1.14 2004/05/21 14:25:22 alor Exp $ */
 
 #ifndef EC_ERROR_H
 #define EC_ERROR_H
@@ -32,7 +32,7 @@ extern void bug(char *file, char *function, int line, char *message);
 
 #define BUG(x) do { bug(__FILE__, __FUNCTION__, __LINE__, #x); }while(0)
 
-#define NOT_IMPLEMENTED() do { BUG("Not yet implemented"); } while(0)
+#define NOT_IMPLEMENTED() do { BUG("Not yet implemented, please contact the authors"); } while(0)
 
 
 #endif

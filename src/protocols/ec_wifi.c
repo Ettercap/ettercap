@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.20 2004/05/21 10:35:47 alor Exp $
+    $Id: ec_wifi.c,v 1.21 2004/05/21 14:25:23 alor Exp $
 */
 
 #include <ec.h>
@@ -82,6 +82,41 @@ struct llc_header {
    u_int8   org_code[3];
    u_int16  proto;
 };
+
+/*
+ * WEP is based on RSA's rc4 stream cipher and uses a 24-bit initialization
+ * vector (iv), which is concatenated with a 40-bit or 104-bit secret shared key
+ * to create a 64-bit or 128-bit key which is used as the rc4 seed. Most cards
+ * either generate the 24-bit iv using a counter or by using some sort of pseudo
+ * random number generator (prng). The payload is then encrypted along with an
+ * appended 32-bit checksum and sent out with the iv in plaintext as illustrated:
+ * 
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |                                                               |
+ *   |                         802.11 Header                         |
+ *   |                                                               |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |     IV[0]     |     IV[1]     |     IV[2]     |    Key ID     |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   | . . . . . . SNAP[0] . . . . . | . . . . . SNAP[1] . . . . . . |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   | . . . . . . SNAP[2] . . . . . | . . . . Protocol ID . . . . . |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+ *   | . . . . . . . . . . . . . Payload . . . . . . . . . . . . . . |
+ *   | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   | . . . . . . . . . . . 32-bit Checksum . . . . . . . . . . . . |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * 
+ *   . - denotes encrypted portion of packet
+ * 
+ * After the data is sent out, the receiver simply concatenates the received iv
+ * with their secret key to decrypt the payload. If the checksum checks out, then
+ * the packet is valid.
+ */
 
 #define IV_LEN 3
 

@@ -8,6 +8,7 @@ Legenda:
 
 NG-0.7.0_rc1     200405
 
+   + added WEP decryption for WiFi packets
    + added the -I search option in etterlog
    !! log to file works again
    !! fixed a segfault dumping profiles to file

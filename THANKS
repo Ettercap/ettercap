@@ -19,6 +19,12 @@
    Michele De Martin                         has provided me a token ring dump
 
    Iceman <iceman@northernfortress.net>      for the fixes to the man pages
+
+   rgovostes <ryan@roogroup.com>             for the redir_command for Mac Os X
+   bartocc <julien.palmas@mac.com>
+   hack101 <hack101@glock.co.uk>
+
+   Hex <hex@thepurplebuffalo.net>            for the redir_command for Open BSD
    
 ---------------------------------------
   Copyrighted part of code or stuff...

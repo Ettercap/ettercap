@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view.c,v 1.9 2004/04/29 12:21:11 daten Exp $
+    $Id: ec_gtk_view.c,v 1.10 2004/05/21 14:25:22 alor Exp $
 */
 
 #include <ec.h>
@@ -32,6 +32,8 @@ void toggle_resolve(void);
 void gtkui_vis_method(void);
 void gtkui_vis_regex(void);
 static void gtkui_set_regex(void);
+void gtkui_wep_key(void);
+static void gtkui_set_wepkey(void);
 
 static void gtkui_stop_stats(void);
 static void gtkui_stats_detach(GtkWidget *child);
@@ -41,12 +43,17 @@ static gboolean refresh_stats(gpointer data);
 extern void gtkui_show_profiles(void);
 extern void gtkui_show_connections(void);
 
+/* from the ec_wifi.c decoder */
+extern int set_wep_key(u_char *string);
+
 /* globals */
 
 #define VLEN 8
 static char vmethod[VLEN] = "ascii";
 #define RLEN 50
 static char vregex[RLEN];
+#define WLEN 70
+static char wkey[WLEN];
 static guint stats_idle; /* for removing the idle call */
 /* for stats window */
 static GtkWidget *stats_window, *packets_recv, *packets_drop, *packets_forw, 
@@ -442,6 +449,21 @@ void gtkui_vis_regex(void)
 static void gtkui_set_regex(void)
 {
    set_regex(vregex);
+}
+
+/*
+ * set the WEP key
+ */
+void gtkui_wep_key(void)
+{
+   DEBUG_MSG("gtk_wep_key");
+
+   gtkui_input("WEP key :", wkey, WLEN, gtkui_set_wepkey);
+}
+
+static void gtkui_set_wepkey(void)
+{
+   set_wep_key(wkey);
 }
 
 /* EOF */

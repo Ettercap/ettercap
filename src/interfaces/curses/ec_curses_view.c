@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.19 2004/03/07 14:38:40 alor Exp $
+    $Id: ec_curses_view.c,v 1.20 2004/05/21 14:25:22 alor Exp $
 */
 
 #include <ec.h>
@@ -36,8 +36,13 @@ static void curses_vis_method(void);
 static void curses_set_method(void);
 static void curses_vis_regex(void);
 static void curses_set_regex(void);
+static void curses_wep_key(void);
+static void curses_set_wepkey(void);
 extern void curses_show_profiles(void);
 extern void curses_show_connections(void);
+
+/* from the ec_wifi.c decoder */
+extern int set_wep_key(u_char *string);
 
 /* globals */
 
@@ -47,6 +52,8 @@ static wdg_t *wdg_stats;
 static char vmethod[VLEN];
 #define RLEN 50
 static char vregex[RLEN];
+#define WLEN 70
+static char wkey[WLEN];
 
 struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
                                 {"Connections",          'C', "C", curses_show_connections},
@@ -56,6 +63,8 @@ struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
                                 {"Resolve IP addresses",  0, tag_resolve,   toggle_resolve},
                                 {"Visualization method...", 'v', "v", curses_vis_method},
                                 {"Visualization regex...", 'r', "r", curses_vis_regex},
+                                {"-",                     0,  "",  NULL},
+                                {"Set the WEP key...",   'w', "w", curses_wep_key},
                                 {NULL, 0, NULL, NULL},
                               };
 
@@ -180,6 +189,22 @@ static void curses_set_regex(void)
 {
    set_regex(vregex);
 }
+
+/*
+ * change the WEP key for wifi
+ */
+static void curses_wep_key(void)
+{
+   DEBUG_MSG("curses_wep_key");
+
+   curses_input("WEP key :", wkey, WLEN, curses_set_wepkey);
+}
+
+static void curses_set_wepkey(void)
+{
+   set_wep_key(wkey);
+}
+
 
 /* EOF */
 

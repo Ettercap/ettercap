@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.60 2004/05/12 15:27:05 alor Exp $
+    $Id: ec_parser.c,v 1.61 2004/05/21 14:25:22 alor Exp $
 */
 
 
@@ -49,7 +49,10 @@ void parse_options(int argc, char **argv);
 int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t );
 int set_regex(char *regex);
 
-//-----------------------------------
+/* from the ec_wifi.c decoder */
+extern int set_wep_key(u_char *string);
+
+/*****************************************/
 
 void ec_usage(void)
 {
@@ -98,6 +101,7 @@ void ec_usage(void)
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
+   fprintf(stdout, "  -W, --wep-key <n:key>       use this wep key to decrypt wifi packets\n");
    
    fprintf(stdout, "\nStandard options:\n");
    fprintf(stdout, "  -U, --update                updates the databases from ettercap website\n");
@@ -138,6 +142,7 @@ void parse_options(int argc, char **argv)
       { "unoffensive", no_argument, NULL, 'u' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
+      { "wep-key", required_argument, NULL, 'W' },
       
       { "dns", no_argument, NULL, 'd' },
       { "regex", required_argument, NULL, 'e' },
@@ -175,7 +180,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:oP:pQqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:oP:pQqiRr:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -324,6 +329,10 @@ void parse_options(int argc, char **argv)
                   
          case 'E':
                   GBL_OPTIONS->ext_headers = 1;
+                  break;
+                  
+         case 'W':
+                  set_wep_key(optarg);
                   break;
          
          case 'U':

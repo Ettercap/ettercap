@@ -33,8 +33,10 @@
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
 
-   + WIFI decoder support for WEP (given the key)
-      - option from command line (to decrypt multiple file in a script)
+   + WIFI decoder & WEP 
+      - support for multiple keys
+      - support for passfrase generation
+
 
 ==================
   LONG TERM TODO

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.66 2004/04/29 09:28:34 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.67 2004/05/21 14:25:22 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -599,6 +599,21 @@ list of functions you can use inside a filter script.
 NOTE: these filters are different from those set with --pcapfilter. An ettercap
 filter is a content filter and can modify the payload of a packet before
 forwarding it. Pcap filter are used to capture only certain packets.
+
+.TP
+\fB\-W\fR, \fB\-\-wep-key <N:KEY>\fR
+You can specify a WEP key to decrypt WiFi packets. Only the packets decrypted
+successfully will be passed to the decoders stack, the others will be skipped
+with a message.
+.br
+The parameter has the following syntax: N:KEY. Where N is the bit length of the
+wep key (64, 128 or 256) and KEY can be a string or an escaped hex sequences.
+.Sp
+example:
+.br
+--wep-key 128:ettercapwep0
+.br
+--wep-key '64:\\x01\\x02\\x03\\x04\\x05'
 
 
 .TP

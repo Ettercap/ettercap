@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.26 2003/12/26 17:58:35 alor Exp $ */
+/* $Id: wdg.h,v 1.27 2003/12/27 16:08:47 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -203,7 +203,7 @@ typedef struct wdg_object wdg_t;
 #define WDG_MOVE_PANEL(pan, y, x)   do{ WDG_ON_ERROR(move_panel(pan, y, x), ERR, "Resized too much... (%d,%d)", x, y); }while(0)
 #define WDG_WRESIZE(win, l, c)   do{ WDG_ON_ERROR(wresize(win, l, c), ERR, "Resized too much...(%dx%d)", c, l); }while(0)
 
-#define WDG_WO_EXT(type, var) type *var = (type *)(wo->extend);
+#define WDG_WO_EXT(type, var) type *var = (type *)(wo->extend)
 
 /* alignment */
 #define WDG_ALIGN_LEFT     0

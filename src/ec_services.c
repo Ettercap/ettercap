@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_services.c,v 1.8 2003/10/08 20:03:18 alor Exp $
+    $Id: ec_services.c,v 1.9 2003/12/27 16:08:47 alor Exp $
 
 */
 
@@ -80,7 +80,7 @@ int services_init(void)
 
    while (fgets(line, 80, f) != 0) {
 
-      if (sscanf(line, "%32s%u/%8s", name, &serv, type) != 3)
+      if (sscanf(line, "%31s%u/%7s", name, &serv, type) != 3)
          continue;
 
       /* only tcp and udp services */

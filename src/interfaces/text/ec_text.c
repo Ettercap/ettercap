@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.14 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_text.c,v 1.15 2003/12/27 16:08:47 alor Exp $
 */
 
 #include <ec.h>
@@ -516,7 +516,7 @@ static void text_hosts_list(void)
 
 static void text_visualization(void)
 {
-   char format[15];
+   char format[16];
    int restore = 0;
    
    /* stop the visualization while the plugin interface is running */

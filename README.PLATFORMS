@@ -22,8 +22,7 @@ LINUX
 ------------------------------------------------------------------------------
    Linux 2.6.x          FULL           not tested ;)
 
-   Linux 2.4.x          FULL           tested only on IA-32
-                                       (primary development platform)
+   Linux 2.4.x          FULL           (primary development platform)
    
    Linux 2.2.x          FULL
    
@@ -42,7 +41,7 @@ SOLARIS
    
    FreeBSD 4.x          untested
 
-   OpenBSD 3.x          untested 
+   OpenBSD 3.x          PROBLEMS       test outside vmware is required 
    
    OpenBSD 2.x          untested
 
@@ -116,13 +115,21 @@ waiting the input from some betatester... ;)
    B S D
 ------------------------------------------------------------------------------
 
-In order to have plugins support you have to install the following package:
-
-   - libltdl (part of libtool 1.5)
+ + FREEBSD
    
-all the other libs can be installed from ports (except for libnet 1.1.1, at 
-the moment)
+   In order to have plugins support you have to install the following package:
 
+      - libltdl (part of libtool 1.5)
+   
+   all the other libs can be installed from ports (except for libnet 1.1.1, at 
+   the moment)
+
+   if you encounter some linking problem compiling the tarball, it is due to
+   the libtool version provided within our tarball. to solve the problem
+   re-libtoolize the package and recompile it or download the cvs version and 
+   run the autogen.sh script.
+
+ + OPENBSD
 
 ------------------------------------------------------------------------------
    W I N D O W S

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.17 2004/01/21 20:25:11 alor Exp $
+# $Id: Makefile.am,v 1.18 2004/02/03 16:33:59 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -49,7 +49,7 @@ if BSD
    etterfilter_CFLAGS += -pthread
 endif
    
-etterfilter_LDADD = -lnet -lpcap 
+etterfilter_LDADD = 
 
 if HAVE_PCRE
    etterfilter_LDADD += @PCRELIB@ -lpcre

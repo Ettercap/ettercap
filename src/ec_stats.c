@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_stats.c,v 1.6 2003/10/29 20:41:07 alor Exp $
+    $Id: ec_stats.c,v 1.7 2004/02/03 16:33:59 alor Exp $
 */
 
 #include <ec.h>
@@ -105,7 +105,7 @@ void stats_half_end(struct half_stats *hs, u_int32 len)
       if (hs->thru_worst > hs->tmp_size/ptime || hs->thru_worst == 0)
          hs->thru_worst = hs->tmp_size/ptime;
 
-#if 1
+#if 0
       DEBUG_MSG("PACKET RATE: %llu [%d] [%d] -- [%d] [%d]\n", hs->pck_recv,
          hs->rate_worst, hs->rate_adv,
          hs->thru_worst, hs->thru_adv);

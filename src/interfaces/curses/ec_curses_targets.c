@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.8 2004/01/20 21:17:10 alor Exp $
+    $Id: ec_curses_targets.c,v 1.9 2004/02/03 16:33:59 alor Exp $
 */
 
 #include <ec.h>
@@ -166,6 +166,10 @@ static void set_targets(void)
    
    /* compile the filters */
    compile_display_filter();
+
+   /* if the 'current targets' window is displayed, refresh it */
+   if (wdg_comp)
+      curses_current_targets();
 }
 
 /*

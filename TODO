@@ -9,6 +9,7 @@
       - input for curses gui
 
    + PCAP RELATED
+      + reset the stats when the sniffing thread starts
       + when libpcap 0.8.2 will be released
          - pcap_stat fix (even under linux the stats are cumulative)
 

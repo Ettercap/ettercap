@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.33 2004/07/06 10:56:23 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.34 2004/10/25 21:26:33 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -328,6 +328,23 @@ ettercap -TQzP reply_arp /192.168.0.1/
 .br
 ettercap -TQzP reply_arp //
 
+.TP
+.B repoison_arp
+.Sp
+It solicits poisoning packets after broadcast ARP requests (or replies) from a posioned host.
+For example: we are poisoning Group1 impersonating Host2. If Host2 makes a broadcast
+ARP request for Host3, it is possible that Group1 caches the right MAC address for Host2
+contained in the ARP packet. This plugin re-poisons Group1 cache immediately after a
+legal broadcast ARP request (or reply).
+.br
+This plugin is effective only during an arp-posioning session.
+.br
+In conjuction with reply_arp plugin, repoison_arp is a good support for standard
+arp-poisoning mitm method.
+.Sp
+.I example :
+.Sp
+ettercap -T -M arp:remote -P repoison_arp /192.168.0.10-20/ /192.168.0.1/
 
 .TP 
 .B scan_poisoner

@@ -10,6 +10,7 @@ NG-0.7.0         200406
 
    + implemeted a thread safe strtok
    + prepared the source for a smooth mingw porting
+   !! fixed numeric sorting in gtk interface
 
 
 NG-0.7.0_rc1     20040614

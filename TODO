@@ -17,8 +17,10 @@
       - checksum (WORD_BIGENDIAN on intel ???)
 
    + ETTERLOG
-      - dns resolution
       - service resolution
+
+   + PCAP STAT
+      - stats for dropped packets
 
    + ARP POISON ENGINE
       - arp poisoner
@@ -44,6 +46,7 @@
    + DISSECTORS
       - convert all the old dissectors
       - HTTPS without the dirty trick (can we use loopback?)
+      - SSH has to support DES, 3DES, blowfish and zlib compression
       
    + PLUGINS
       - convert all the old plugins

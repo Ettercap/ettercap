@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.16 2003/04/28 19:58:35 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.17 2003/05/22 20:48:08 alor Exp $
 */
 
 #include <el.h>
@@ -349,8 +349,12 @@ void print_host(struct host_profile *h)
    memset(os, 0, sizeof(os));
    
    fprintf(stdout, "==================================================\n");
-   fprintf(stdout, " IP address   : %s \n\n", ip_addr_ntoa(&h->L3_addr, tmp));
-   
+   fprintf(stdout, " IP address   : %s \n", ip_addr_ntoa(&h->L3_addr, tmp));
+   if (strcmp(h->hostname, ""))
+      fprintf(stdout, " Hostname     : %s \n\n", h->hostname);
+   else
+      fprintf(stdout, "\n");   
+         
    if (h->type != FP_HOST_NONLOCAL) {
       fprintf(stdout, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
       fprintf(stdout, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
@@ -405,6 +409,8 @@ void print_host_xml(struct host_profile *h)
    memset(os, 0, sizeof(os));
    
    fprintf(stdout, "\t<host ip=\"%s\">\n", ip_addr_ntoa(&h->L3_addr, tmp));
+   if (strcmp(h->hostname, ""))
+      fprintf(stdout, "\t\t<hostname>%s</hostname>\n", h->hostname);
    
    if (h->type != FP_HOST_NONLOCAL) {
       fprintf(stdout, "\t\t<mac>%s</mac>\n", mac_addr_ntoa(h->L2_addr, tmp));

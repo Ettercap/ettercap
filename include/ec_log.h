@@ -5,6 +5,7 @@
 #include <ec_inet.h>
 #include <ec_packet.h>
 #include <ec_fingerprint.h>
+#include <ec_resolv.h>
 
 #include <sys/time.h>
 
@@ -84,6 +85,8 @@ struct log_header_info {
    
    u_int16 L4_addr;
    u_int8 L4_proto;
+
+   char hostname[MAX_HOSTNAME_LEN];
 
    u_int8 distance;
    u_int8 type;

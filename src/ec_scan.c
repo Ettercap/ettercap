@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.7 2003/05/20 20:41:21 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.8 2003/05/22 20:48:08 alor Exp $
 */
 
 #include <ec.h>
@@ -270,7 +270,7 @@ void scan_netmask(void)
       /* add to the list randomly */
       random_list(e, i);
       
-      ui_progress(i, nhosts);
+      //ui_progress(i, nhosts);
    }
 
    USER_MSG("Scanning the whole netmask for %d hosts...\n", nhosts);
@@ -512,6 +512,8 @@ void random_list(struct ip_list *e, int max)
 
    /* calculate the position in the list. */
    rnd = rand() % ((max == 1) ? max : max - 1);
+   
+   //rnd = 1+(int) ((float)max*rand()/(RAND_MAX+1.0));
 
    /* allocate the array used to keep track of the pointer
     * to the elements in the list. this array speed up the

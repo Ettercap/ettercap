@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.13 2003/04/14 21:05:20 alor Exp $
+    $Id: ec_log.c,v 1.14 2003/05/22 20:48:08 alor Exp $
 */
 
 #include <ec.h>
@@ -26,6 +26,7 @@
 #include <ec_passive.h>
 #include <ec_threads.h>
 #include <ec_hook.h>
+#include <ec_resolv.h>
 
 #include <fcntl.h>
 #include <sys/time.h>
@@ -346,7 +347,15 @@ static void log_write_info(struct packet_object *po)
       hid.L4_addr = po->L4.dst;
    else
       hid.L4_addr = 0;
-   
+
+   /*
+    * if hostnames resolution was activated
+    * resolve the host
+    */
+   if (GBL_OPTIONS->resolve) {
+      host_iptoa(&po->L3.src, hi.hostname);
+      host_iptoa(&po->L3.dst, hid.hostname);
+   }
    /* 
     * distance in hop :
     *
@@ -490,6 +499,10 @@ static void log_write_info_arp(struct packet_object *po)
   
    /* ARP discovered hosts are always at distance 1 */
    hi.distance = 1;
+   
+   /* resolve the host */
+   if (GBL_OPTIONS->resolve)
+      host_iptoa(&po->L3.src, hi.hostname);
    
    /* this was our arp request, and we are at distance 0 */
    if (!ip_addr_cmp(&po->L3.src, &GBL_IFACE->ip))

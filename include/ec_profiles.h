@@ -3,6 +3,7 @@
 #define EC_PROFILES_H
 
 #include <ec_fingerprint.h>
+#include <ec_resolv.h>
 
 struct dissector_info {
    char *user;
@@ -43,6 +44,8 @@ struct host_profile {
 
    struct ip_addr L3_addr;
 
+   char hostname[MAX_HOSTNAME_LEN];
+   
    /* the list of open ports */
    LIST_HEAD(, open_port) open_ports_head;
    

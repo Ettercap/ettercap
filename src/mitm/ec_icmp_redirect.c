@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icmp_redirect.c,v 1.5 2004/01/18 19:30:31 alor Exp $
+    $Id: ec_icmp_redirect.c,v 1.6 2004/03/30 09:31:30 alor Exp $
 */
 
 #include <ec.h>
@@ -78,7 +78,7 @@ static int icmp_redirect_start(char *args)
       sprintf(tmp, "%s/", args);
       
       if (compile_target(tmp, &redirected_gw) != ESUCCESS)
-         clean_exit(-EFATAL);
+         SEMIFATAL_ERROR("Wrong target parameter");
    }
 
    /* we need both mac and ip addresses */

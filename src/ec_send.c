@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.49 2004/03/19 13:56:16 alor Exp $
+    $Id: ec_send.c,v 1.50 2004/03/30 09:31:30 alor Exp $
 */
 
 #include <ec.h>
@@ -595,24 +595,33 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
    ip = (struct libnet_ipv4_hdr *)po->L3.header;
    
    SEND_LOCK;
-  
+
+   /* create the fake ip header for the icmp payload */
+   t = libnet_build_ipv4(
+            LIBNET_IPV4_H + 8,
+            //ntohs(ip->ip_len),                   /* original len */
+            ip->ip_tos,                          /* original tos */
+            ntohs(ip->ip_id),                    /* original id */
+            ntohs(ip->ip_off),                   /* original fragments */
+            ip->ip_ttl,                          /* original ttl */
+            ip->ip_p,                            /* original proto */
+            ip->ip_sum,                          /* original checksum */
+            ip_addr_to_int32(&ip->ip_src),       /* original source */
+            ip_addr_to_int32(&ip->ip_dst),       /* original dest */
+            po->L4.header,                       /* the 64 bit of the original datagram */
+            8,                                   /* payload size */
+            GBL_LNET->lnet,
+            0);
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
+   
    /* create the ICMP header */
    t = libnet_build_icmpv4_redirect(
            ICMP_REDIRECT,                       /* type */
            type,                                /* code */
            0,                                   /* checksum */
            ip_addr_to_int32(&gw->addr),         /* gateway ip */
-              ntohs(ip->ip_len),                   /* original len */
-              ip->ip_tos,                          /* original tos */
-              ntohs(ip->ip_id),                    /* original id */
-              ntohs(ip->ip_off),                   /* original fragments */
-              ip->ip_ttl,                          /* original ttl */
-              ip->ip_p,                            /* original proto */
-              ip->ip_sum,                          /* original checksum */
-              ip_addr_to_int32(&ip->ip_src),       /* original source */
-              ip_addr_to_int32(&ip->ip_dst),       /* original dest */
-              po->L4.header,                       /* the 64 bit of the original datagram */
-              8,                                   /* payload size */
+           NULL,                                /* payload */
+           0,                                   /* payload len */
            GBL_LNET->lnet,                      /* libnet handle */
            0);                                  /* pblock id */
    ON_ERROR(t, -1, "libnet_build_icmpv4_redirect: %s", libnet_geterror(GBL_LNET->lnet));

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.53 2004/03/19 13:56:16 alor Exp $
+    $Id: ec_decode.c,v 1.54 2004/03/30 09:31:30 alor Exp $
 */
 
 #include <ec.h>
@@ -284,14 +284,8 @@ FUNC_DECODER(decode_data)
    /* If the modified packet exceeds the MTU split it into inject buffer */
    inject_split_data(po);
    
-   /* 
-    * this hook point is executed only it the packet
-    * has to be forwarded 
-    */
-   if (po->flags & PO_FORWARDABLE) {
-      /* HOOK POINT: FILTER */ 
-      hook_point(HOOK_FILTER, po);
-   }
+   /* HOOK POINT: FILTER */ 
+   hook_point(HOOK_FILTER, po);
    
    /* 
     * add the packet to the queue and return.

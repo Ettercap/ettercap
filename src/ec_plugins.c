@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.25 2003/12/26 17:58:35 alor Exp $
+    $Id: ec_plugins.c,v 1.26 2004/01/03 11:08:03 alor Exp $
 */
 
 #include <ec.h>
@@ -131,12 +131,16 @@ void plugin_load_all(void)
    if (lt_dlinit() != 0)
       ERROR_MSG("lt_dlinit()");
 
-   /* XXX - replace "." with INSTALL_PREFIX"/lib/" */
-
-   n = scandir(".", &namelist, 0, alphasort);
+   /* first search in  INSTALL_PREFIX"/lib/ettercap" */
+   n = scandir(INSTALL_PREFIX "/lib/" EC_PROGRAM, &namelist, 0, alphasort);
+   /* on error fall back to the current dir */
+   if (n <= 0) {
+      DEBUG_MSG("plugin_loadall: no plugin in "INSTALL_PREFIX "/lib/" EC_PROGRAM ". searching locally");
+      n = scandir(".", &namelist, 0, alphasort);
+   }
   
    for(i = n-1; i >= 0; i--) {
-      if ( match_pattern(namelist[i]->d_name, PLUGIN_PATTERN) ) {
+      if ( match_pattern(namelist[i]->d_name, PLUGIN_PATTERN LTDL_SHLIB_EXT) ) {
          ret = plugin_load_single(".", namelist[i]->d_name);
          switch (ret) {
             case ESUCCESS:

@@ -1,5 +1,5 @@
 /*
-    find_ettercap -- ettercap plugin -- send to the browser the sniffed websites
+    find_ettercap -- ettercap plugin -- Try to discover ettercap activity on the lan
 
     Copyright (C) ALoR & NaGA
     
@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: find_ettercap.c,v 1.3 2004/04/18 10:02:02 alor Exp $
+    $Id: find_ettercap.c,v 1.4 2004/04/20 10:34:56 alor Exp $
 */
 
 

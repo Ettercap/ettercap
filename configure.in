@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.112 2004/04/17 15:12:32 alor Exp $
+dnl    $Id: configure.in,v 1.113 2004/04/20 10:34:44 alor Exp $
 dnl
 
 AC_INIT
@@ -155,7 +155,7 @@ if test "$prefix" = "NONE"; then
    prefix="/usr/local"
 fi
 if test "$exec_prefix" = "NONE"; then
-   exec_prefix="/usr/local"
+   exec_prefix=$prefix
 fi
 
 AH_TEMPLATE(INSTALL_PREFIX, [the prefix passed by configure])

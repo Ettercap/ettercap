@@ -10,6 +10,7 @@ NG-0.7.0_pre2    200404??
 
    + telnet collector enhacements
    + added the find_ettercap plugin
+   !! fixed the $prefix issue in the configure
    
 
 NG-0.7.0_pre1    20040415

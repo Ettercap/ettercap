@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.7 2003/10/20 15:27:22 lordnaga Exp $
+    $Id: ec_ssh.c,v 1.8 2003/10/20 16:07:55 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -48,9 +48,10 @@ typedef struct {
 #define MAX_USER_LEN 28
     u_char user[MAX_USER_LEN+1];
     u_char status;
-#define WAITING_PUBLIC_KEY 1
-#define WAITING_SESSION_KEY 2
-#define WAITING_ENCRYPTED_PCK 3
+#define WAITING_CLIENT_BANNER 1
+#define WAITING_PUBLIC_KEY 2
+#define WAITING_SESSION_KEY 3
+#define WAITING_ENCRYPTED_PCK 4
 
 } ssh_session_data;
 
@@ -127,7 +128,7 @@ FUNC_DECODER(dissector_ssh)
             SAFE_CALLOC(s->data, sizeof(ssh_session_data), 1);
             session_put(s);
             session_data =(ssh_session_data *)s->data;
-            session_data->status = WAITING_PUBLIC_KEY;
+            session_data->status = WAITING_CLIENT_BANNER;
          }
 
          /* Catch the version banner */
@@ -363,12 +364,13 @@ FUNC_DECODER(dissector_ssh)
             session_data->status = WAITING_SESSION_KEY;
          }	 
       } else { /* Client Packets */
-         if (session_data->status==WAITING_PUBLIC_KEY) {
+         if (session_data->status==WAITING_CLIENT_BANNER) {
             /* Client Banner */
             if (!memcmp(PACKET->DATA.data,"SSH-2",5)) {
                DEBUG_MSG("Dissector_ssh SSHv2");
                dissect_wipe_session(PACKET);
-            }
+            } else
+               session_data->status=WAITING_PUBLIC_KEY;
          } else if (session_data->status==WAITING_SESSION_KEY && ssh_packet_type==PCK_SESSION_KEY) {
             /* Ready to catch and modify SESSION_KEY */
             u_char cookie[8], sesskey[32], session_id1[16], session_id2[16];

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.13 2004/01/21 20:20:06 alor Exp $
+    $Id: ec_smb.c,v 1.14 2004/05/08 13:56:38 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -312,6 +312,16 @@ FUNC_DECODER(dissector_smb)
                Blob = GetUser(Blob + 48, session_data->user, 200);
                /* Get the domain with GetUser :) */
                GetUser(Blob, session_data->domain, 200);
+	       
+               /* XXX - 5-minutes workaround for empty sessions */
+               if ( !memcmp(session_data->response1, "\x00\x00\x00", 3) && 
+                    memcmp(session_data->response1, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 24) ) {
+                    memset(session_data->response1, 0, 24);
+                    memset(session_data->response2, 0, 24);
+                    strcpy(session_data->user, "(empty)");
+                    session_data->domain[0]=0;		    		    
+               }
+	       
                session_data->status = WAITING_LOGON_RESPONSE;
             }   
          }

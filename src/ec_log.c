@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.36 2004/05/19 12:52:18 alor Exp $
+    $Id: ec_log.c,v 1.37 2004/05/20 10:06:21 alor Exp $
 */
 
 #include <ec.h>
@@ -166,6 +166,8 @@ int set_loglevel(int level, char *filename)
  */
 static void log_stop(void)
 {
+   DEBUG_MSG("log_stop");
+   
    /* remove all the hooks */
    hook_del(HOOK_DISPATCHER, &log_packet);
    hook_del(HOOK_DISPATCHER, &log_info);
@@ -205,10 +207,12 @@ int log_open(struct log_fd *fd, char *filename)
  */
 void log_close(struct log_fd *fd)
 {
-   if (fd->type == LOG_COMPRESSED) {
+   DEBUG_MSG("log_close: type: %d [%p][%d]", fd->type, fd->cfd, fd->fd);
+   
+   if (fd->type == LOG_COMPRESSED && fd->cfd) {
       gzclose(fd->cfd);
       fd->cfd = NULL;
-   } else {
+   } else if (fd->type == LOG_UNCOMPRESSED && fd->fd) {
       close(fd->fd);
       fd->fd = 0;
    }

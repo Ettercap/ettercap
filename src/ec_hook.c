@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_hook.c,v 1.9 2003/10/24 22:05:36 alor Exp $
+    $Id: ec_hook.c,v 1.10 2004/05/20 10:06:21 alor Exp $
 */
 
 #include <ec.h>
@@ -117,7 +117,6 @@ int hook_del(int point, void (*func)(struct packet_object *po) )
 {
    struct hook_list *current;
 
-   DEBUG_MSG("hook_del -- %d [%p]", point, func);
 
    /* the hook is for a HOOK_PACKET_* type */
    if (point > HOOK_PACKET_BASE) {
@@ -128,6 +127,7 @@ int hook_del(int point, void (*func)(struct packet_object *po) )
             LIST_REMOVE(current, next);
             SAFE_FREE(current);
             HOOK_PCK_UNLOCK;
+            DEBUG_MSG("hook_del -- %d [%p]", point, func);
             return ESUCCESS;
          }
       }
@@ -141,6 +141,7 @@ int hook_del(int point, void (*func)(struct packet_object *po) )
             LIST_REMOVE(current, next);
             SAFE_FREE(current);
             HOOK_UNLOCK;
+            DEBUG_MSG("hook_del -- %d [%p]", point, func);
             return ESUCCESS;
          }
       }

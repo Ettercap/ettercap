@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_display.c,v 1.35 2004/03/24 09:43:17 alor Exp $
+    $Id: el_display.c,v 1.36 2004/04/04 13:04:06 alor Exp $
 */
 
 #include <el.h>
@@ -168,7 +168,7 @@ static void display_headers(struct log_header_packet *pck)
    time[strlen(time)-1] = 0;
    
    /* displat the date */
-   fprintf(stdout, "%s [%u]\n", time, (u_int32)pck->tv.tv_usec);
+   fprintf(stdout, "%s [%lu]\n", time, (unsigned long)pck->tv.tv_usec);
   
    if (GBL.showmac) {
       /* display the mac addresses */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_stats.c,v 1.4 2003/06/21 13:58:42 alor Exp $
+    $Id: ec_stats.c,v 1.5 2003/06/28 09:29:53 alor Exp $
 */
 
 #include <ec.h>
@@ -81,9 +81,9 @@ void stats_half_end(struct half_stats *hs, u_int32 len)
    /* get the time */
    gettimeofday(&hs->te, 0);
 
-   timersub(&hs->te, &hs->ts, &diff);
-   timeradd(&hs->ttot, &diff, &hs->ttot);
-   timeradd(&hs->tpar, &diff, &hs->tpar);
+   time_sub(&hs->te, &hs->ts, &diff);
+   time_add(&hs->ttot, &diff, &hs->ttot);
+   time_add(&hs->tpar, &diff, &hs->tpar);
 
    /* calculate the rate (packet/time) */
    time = diff.tv_sec + diff.tv_usec/1.0e6;

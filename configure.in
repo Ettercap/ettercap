@@ -397,7 +397,7 @@ AC_ARG_WITH(libnet,
            LNETLIB="`libnet-config --libs`"
         fi
         LNETINC="$LNETINC -I$withval/include"
-        LNETLIB="-L$withval/src $LNETLIB"
+        LNETLIB="-L$withval/lib -L$withval/src $LNETLIB"
         ac_cv_ec_libnet=$withval
      else
         AC_ERROR(libnet.h or libnet.a not found in $withval)

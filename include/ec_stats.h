@@ -36,7 +36,7 @@ struct gbl_stats {
    u_int32 queue_curr;
 };
 
-#define timersub(a, b, result) do {                  \
+#define time_sub(a, b, result) do {                  \
    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;     \
    (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;  \
    if ((result)->tv_usec < 0) {                      \
@@ -45,7 +45,7 @@ struct gbl_stats {
    }                                                 \
 } while (0)
 
-#define timeradd(a, b, result) do {                  \
+#define time_add(a, b, result) do {                  \
    (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;     \
    (result)->tv_usec = (a)->tv_usec + (b)->tv_usec;  \
    if ((result)->tv_usec >= 1000000) {               \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.51 2004/04/06 11:11:38 lordnaga Exp $
+    $Id: ec_send.c,v 1.52 2004/04/06 21:12:19 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -123,8 +123,6 @@ void send_init(void)
       lb = libnet_init(LIBNET_LINK_ADV, GBL_OPTIONS->iface_bridge, lnet_errbuf);               
       ON_ERROR(lb, NULL, "libnet_init() failed: %s", lnet_errbuf);
       GBL_LNET->lnet_bridge = lb;
-      /* do not capture the packets we send at layer 2 */ 
-      capture_only_incoming(GBL_PCAP->pcap_bridge, GBL_LNET->lnet_bridge);
    }
    
    GBL_LNET->lnet_L3 = l3;               

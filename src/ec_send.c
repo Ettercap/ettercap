@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.53 2004/04/07 07:14:46 alor Exp $
+    $Id: ec_send.c,v 1.54 2004/05/11 09:16:58 alor Exp $
 */
 
 #include <ec.h>
@@ -151,6 +151,7 @@ static void send_close(void)
 int send_to_L3(struct packet_object *po)
 {
    libnet_ptag_t t;
+   char tmp[MAX_ASCII_ADDR_LEN];
    int c;
 
    /* if not lnet warn the developer ;) */
@@ -158,11 +159,15 @@ int send_to_L3(struct packet_object *po)
    
    SEND_LOCK;
    
-   t = libnet_build_data( po->fwd_packet, po->fwd_len, GBL_LNET->lnet_L3, 0);
+   t = libnet_build_data(po->fwd_packet, po->fwd_len, GBL_LNET->lnet_L3, 0);
    ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_L3));
    
    c = libnet_write(GBL_LNET->lnet_L3);
-   ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(GBL_LNET->lnet_L3));
+   //ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(GBL_LNET->lnet_L3));
+   if (c == -1)
+      USER_MSG("SEND L3 ERROR: a packet (%#x) destined to %s was not forwarded (%s)\n", 
+            ntohs(po->L3.proto), ip_addr_ntoa(&po->L3.dst, tmp), 
+            libnet_geterror(GBL_LNET->lnet_L3));
    
    /* clear the pblock */
    libnet_clear_packet(GBL_LNET->lnet_L3);

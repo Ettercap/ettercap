@@ -10,7 +10,7 @@
 #  (at your option) any later version.                                     #
 #                                                                          #
 ############################################################################
-#  Version         : $Revision: 1.4 $                                      # 
+#  Version         : $Revision: 1.5 $                                      # 
 ############################################################################
 #                                                                          # 
 #  This file contains the form fields recognized as user or password by    #
@@ -42,6 +42,7 @@ member
 mailaddress
 membername
 login_username
+login_email
 uin
 
 

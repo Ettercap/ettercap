@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_decode_http.c,v 1.2 2004/10/11 14:55:49 alor Exp $
+    $Id: el_decode_http.c,v 1.3 2004/10/13 15:31:21 alor Exp $
 */
 
 #include <el.h>
@@ -46,25 +46,32 @@ void __init http_init(void)
 FUNC_EXTRACTOR(extractor_http)
 {
    char buf[10240];
+   int ret;
 
    memset(buf, 0, sizeof(buf));
-
-   stream_read(STREAM, buf, 10, STREAM_BOTH);
 
    printf("\n");
    
+//   stream_move(STREAM, 5, SEEK_CUR, STREAM_BOTH);
+//   stream_move(STREAM, 5, SEEK_CUR, STREAM_BOTH);
+   stream_read(STREAM, buf, 10, STREAM_BOTH);
+   
    printf("buf: %s\n", buf);
 
    memset(buf, 0, sizeof(buf));
    
-   stream_search(STREAM, "\r\n\r\n", STREAM_BOTH);
-
-   //stream_move(STREAM, 0, SEEK_SET, STREAM_BOTH);
-   
-   stream_read(STREAM, buf, 29, STREAM_BOTH);
-
+   stream_move(STREAM, 0, SEEK_SET, STREAM_BOTH);
+   stream_read(STREAM, buf, 10, STREAM_BOTH);
    printf("buf: %s\n", buf);
+#if 1
+   ret = stream_search(STREAM, "HTTP", 4, STREAM_BOTH);
    
+   if (ret != 0) {
+      stream_read(STREAM, buf, 100, STREAM_BOTH);
+
+      printf("buf: %s\n", buf);
+   }
+#endif
    return STREAM_DECODED;
 }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_stream.c,v 1.3 2004/10/11 14:55:49 alor Exp $
+    $Id: el_stream.c,v 1.4 2004/10/13 15:31:21 alor Exp $
 */
 
 
@@ -28,9 +28,9 @@
 
 void stream_init(struct stream_object *so);
 int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf);
-int stream_search(struct stream_object *so, char *buf, int mode);
-int stream_read(struct stream_object *so, char *buf, size_t size, int mode);
-void stream_move(struct stream_object *so, size_t offset, int whence, int mode);
+int stream_read(struct stream_object *so, u_char *buf, size_t size, int mode);
+int stream_move(struct stream_object *so, size_t offset, int whence, int mode);
+int stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode);
    
 /*******************************************/
 
@@ -91,6 +91,12 @@ int stream_add(struct stream_object *so, struct log_header_packet *pck, char *bu
       
    /* add to the queue */
    TAILQ_INSERT_TAIL(&so->po_head, pl, next);
+
+   /* update the total lenght */
+   if (pl->type == STREAM_SIDE1)
+      so->len1 += pck->len;
+   else
+      so->len2 += pck->len;
    
    return pck->len;
 }
@@ -103,7 +109,7 @@ int stream_add(struct stream_object *so, struct log_header_packet *pck, char *bu
  *    STREAM_SIDE1 reads only from the first side (usually client to server)
  *    STREAM_SIDE2 reads only from the other side
  */
-int stream_read(struct stream_object *so, char *buf, size_t size, int mode)
+int stream_read(struct stream_object *so, u_char *buf, size_t size, int mode)
 {
    size_t buf_off = 0;
    size_t tmp_size = 0;
@@ -127,7 +133,10 @@ int stream_read(struct stream_object *so, char *buf, size_t size, int mode)
       memcpy(buf + buf_off, so->pl_curr->po.DATA.data + so->po_off, tmp_size);
       
       /* the offset is the portion of the data copied into the buffer */
-      so->po_off = tmp_size;
+      if (tmp_size == size)
+         so->po_off += size;
+      else
+         so->po_off = tmp_size;
 
       /* update the pointer into the buffer */
       buf_off += tmp_size;
@@ -153,16 +162,16 @@ int stream_read(struct stream_object *so, char *buf, size_t size, int mode)
    }
   
    /* return the total byte read */
-   return buf_off + tmp_size;
+   return buf_off;
 }
 
 /*
  * move the pointers into the stream
  */
-void stream_move(struct stream_object *so, size_t offset, int whence, int mode)
+int stream_move(struct stream_object *so, size_t offset, int whence, int mode)
 {
    size_t tmp_size = 0;
-
+   size_t move = 0;
 
    /* 
     * the offest is calculated from the beginning,
@@ -181,7 +190,7 @@ void stream_move(struct stream_object *so, size_t offset, int whence, int mode)
          so->pl_curr = TAILQ_NEXT(so->pl_curr, next);
          /* don't go after the end of the stream */
          if (so->pl_curr == TAILQ_END(&so->pl_head))
-            return;
+            return 0;
       }
    }
 
@@ -190,10 +199,16 @@ void stream_move(struct stream_object *so, size_t offset, int whence, int mode)
       tmp_size = (so->pl_curr->po.DATA.len - so->po_off < offset) ? so->pl_curr->po.DATA.len - so->po_off : offset;
 
       /* update the offset */
-      so->po_off = tmp_size;
+      if (tmp_size == offset)
+         so->po_off += offset;
+      else
+         so->po_off = tmp_size;
 
-      /* decrement the total size to be copied */
+      /* decrement the total offset by the packet lenght */
       offset -= tmp_size;
+
+      /* update the total movement */
+      move += tmp_size;
       
       /* we have reached the end of the packet, go to the next one */
       if (so->po_off == so->pl_curr->po.DATA.len) {
@@ -203,7 +218,7 @@ void stream_move(struct stream_object *so, size_t offset, int whence, int mode)
                
             /* don't go after the end of the stream */
             if (so->pl_curr == TAILQ_END(&so->pl_head))
-               return;
+               return move;
             
          } while (mode != STREAM_BOTH && so->pl_curr->type != mode);
 
@@ -211,15 +226,62 @@ void stream_move(struct stream_object *so, size_t offset, int whence, int mode)
          so->po_off = 0;
       }
    }
+
+   return move;
 }
 
 
 /*
  * search a pattern into the stream 
  */
-int stream_search(struct stream_object *so, char *buf, int mode)
+int stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode)
 {
-   return 0;
+   struct po_list *pl;
+   u_char *tmpbuf = NULL, *find;
+   size_t offset = 0, len = 0;
+
+   if (mode != STREAM_BOTH) {
+      /* search the first packet matching the selected mode */
+      while (so->pl_curr->type != mode) {
+         so->pl_curr = TAILQ_NEXT(so->pl_curr, next);
+         /* don't go after the end of the stream */
+         if (so->pl_curr == TAILQ_END(&so->pl_head))
+            return 0;
+      }
+   }
+
+   /* create the buffer from the current position to the end */ 
+   for (pl = so->pl_curr; pl != TAILQ_END(so->po_head); pl = TAILQ_NEXT(pl, next)) {
+     
+      /* skip packet in the wrong side */
+      if (mode != STREAM_BOTH && pl->type != mode)
+         continue;
+      
+      len += pl->po.DATA.len;
+      
+      SAFE_REALLOC(tmpbuf, len);
+      
+      /* 
+       * add the packet to the end of the buffer 
+       * containing the whole conversation 
+       */
+      if (pl == so->pl_curr)
+         memcpy(tmpbuf + len - pl->po.DATA.len, pl->po.DATA.data + so->po_off, pl->po.DATA.len - so->po_off);
+      else
+         memcpy(tmpbuf + len - pl->po.DATA.len, pl->po.DATA.data, pl->po.DATA.len);
+   }
+
+   /* the buffer is found in the conversation */
+   if ((find = memmem(tmpbuf, len, buf, buflen))) {
+      offset = find - tmpbuf;
+   }
+   
+   SAFE_FREE(tmpbuf);
+
+   /* move the stream pointers to the buffer found */
+   stream_move(so, offset, SEEK_CUR, mode);
+
+   return offset;
 }
 
 

@@ -1,5 +1,5 @@
 
-/* $Id: el_functions.h,v 1.20 2004/10/11 14:55:48 alor Exp $ */
+/* $Id: el_functions.h,v 1.21 2004/10/13 15:31:21 alor Exp $ */
 
 #ifndef EL_FUNCTIONS_H
 #define EL_FUNCTIONS_H
@@ -61,16 +61,19 @@ struct stream_object {
    TAILQ_HEAD (po_list_head, po_list) po_head;
    struct po_list *pl_curr;
    size_t po_off;
+   /* the total lenght for both side */
+   size_t len1;
+   size_t len2;
 };
 
 EL_API_EXTERN void stream_init(struct stream_object *so);
 EL_API_EXTERN int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf);
-EL_API_EXTERN int stream_search(struct stream_object *so, char *buf, int mode);
-EL_API_EXTERN int stream_read(struct stream_object *so, char *buf, size_t size, int mode);
+EL_API_EXTERN int stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode);
+EL_API_EXTERN int stream_read(struct stream_object *so, u_char *buf, size_t size, int mode);
    #define STREAM_BOTH  0
    #define STREAM_SIDE1 1
    #define STREAM_SIDE2 2
-EL_API_EXTERN void stream_move(struct stream_object *so, size_t offset, int whence, int mode);
+EL_API_EXTERN int stream_move(struct stream_object *so, size_t offset, int whence, int mode);
 
 /* el_decode */
 

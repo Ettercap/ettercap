@@ -14,6 +14,8 @@
    + shortcut for scan canellation in gtk
 
    + refresh the host list after the scan
+
+   + libnet_write under windows
    
 ============================
   In the next release(s)

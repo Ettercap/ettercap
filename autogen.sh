@@ -29,12 +29,17 @@ if test x`which libtoolize` = x; then
       USEGLIBTOOLIZE = 1
    fi
 fi
+if test x`which pkg-config` = x; then
+   echo "ERROR: pkg-config not found"
+   exit
+fi
 
 echo "Suggested version:"
 echo
-echo "     autoconf 2.59"
-echo "     automake 1.7.x"
-echo "     libtool  1.5.x"
+echo "     autoconf     2.59"
+echo "     automake     1.7.x"
+echo "     libtool      1.5.x"
+echo "     pkg-config   0.15.0"
 echo
 echo "Actual version:"
 echo
@@ -45,6 +50,7 @@ if test $USEGLIBTOOLIZE; then
 else
    echo "     `libtoolize --version | head -n 1`"
 fi
+echo "     pkg-config `pkg-config --version`"
 echo
 
 echo "cleaning up config files..."

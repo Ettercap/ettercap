@@ -204,7 +204,7 @@ doubt, go with the latest copy.
       |-> zlib
   
       make sure each directory contains an 'include' dir with the .h files and a
-      'lib' directory with the .a files.
+      'lib' directory with the .a/.dll files.
   
    5) enter the ettercap_ng directory and execute the configure script
    6) issue the 'make' command and have fun :)
@@ -216,7 +216,6 @@ doubt, go with the latest copy.
    
    if you want precompiled packages:
       http://sourceforge.net/project/showfiles.php?group_id=17435
-      http://www.bgnett.no/~giva/misc/
 
 
  + CYGWIN (deprecated)

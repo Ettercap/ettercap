@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_bgp.c,v 1.6 2003/09/29 10:00:40 alor Exp $
+    $Id: ec_bgp.c,v 1.7 2003/10/10 10:40:07 lordnaga Exp $
 */
 
 /*
@@ -164,7 +164,7 @@ FUNC_DECODER(dissector_bgp)
         
          DEBUG_MSG("\tDissector_BGP 4 AUTH");
          
-         PACKET->DISSECTOR.user = strdup("");
+         PACKET->DISSECTOR.user = strdup("BGP4");
          SAFE_CALLOC(PACKET->DISSECTOR.pass, len * 3 + 10, sizeof(char));
          SAFE_CALLOC(PACKET->DISSECTOR.info, 32, sizeof(char));
 

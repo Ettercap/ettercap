@@ -18,7 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: pptp_chapms1.c,v 1.1 2003/12/03 14:50:00 lordnaga Exp $
+    $Id: pptp_chapms1.c,v 1.2 2003/12/11 15:45:20 lordnaga Exp $
 */
 
 
@@ -143,7 +143,7 @@ static void parse_ppp(struct packet_object *po)
       }
    }
 
-   if (lcp->code == PPP_CONFIGURE_NAK && chcode[4] == PPP_REQUEST_DUMMY) 
+   if (lcp->code == PPP_CONFIGURE_NAK && chcode[4] == PPP_REQUEST_MSCHAP2) 
       chcode[4] = PPP_REQUEST_MSCHAP1;
 	      
    if (lcp->code == PPP_CONFIGURE_REJ && chcode[4] == PPP_REQUEST_DUMMY) 

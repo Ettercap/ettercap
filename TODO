@@ -5,9 +5,7 @@
    + lnet ptag thread safe (check it)
    !! under bsd the ip_forwarding is not repristinated !!
 
-   ?? VBUF functions for dissectors (it is needed ?) ??
-   
-   !! dissector malloc the INFO, someone have to free them... !!
+   !! dissector malloc the DISSECTOR, someone have to free them... !!
 
    + PLUGINS ENGINE
       - replace the search point form . to INSTALL_PREFIX/lib
@@ -15,6 +13,13 @@
       - use libldtdl (problems even on openbsd)
       - LTDL_SHLIB_EXT
       - make test with dlopen-test
+
+   + SESSIONS
+      - lock unlock
+      - read
+      - set
+      - get
+      - update
 
    + dissector must send associated user, pass and info (state machine required)
 
@@ -37,6 +42,7 @@
       - filter even the header of the packets
       - use bison and flex
       - scripting language
+      - etterfilter (utility)
    
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

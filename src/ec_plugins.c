@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.5 2003/03/24 15:54:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.6 2003/04/09 10:03:49 alor Exp $
 */
 
 #include <ec.h>
@@ -286,7 +286,7 @@ int plugin_is_activated(char *name)
       }
    }
    
-   return -ENOTFOUND;
+   return 0;
 }
 
 /* EOF */

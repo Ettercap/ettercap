@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.25 2003/10/29 23:34:50 alor Exp $
+    $Id: ec_ui.c,v 1.26 2003/11/09 12:12:46 alor Exp $
 */
 
 #include <ec.h>
@@ -30,10 +30,10 @@
 
 struct ui_message {
    char *message;
-   SIMPLEQ_ENTRY(ui_message) next;
+   STAILQ_ENTRY(ui_message) next;
 };
 
-static SIMPLEQ_HEAD(, ui_message) messages_queue = SIMPLEQ_HEAD_INITIALIZER(messages_queue);
+static STAILQ_HEAD(, ui_message) messages_queue = STAILQ_HEAD_INITIALIZER(messages_queue);
 
 /* global mutex on interface */
 
@@ -221,7 +221,7 @@ void ui_msg(const char *fmt, ...)
    UI_MSG_LOCK;
    
    /* add the message to the queue */
-   SIMPLEQ_INSERT_TAIL(&messages_queue, msg, next);
+   STAILQ_INSERT_TAIL(&messages_queue, msg, next);
 
    UI_MSG_UNLOCK;
    
@@ -257,12 +257,12 @@ int ui_msg_flush(int max)
    if (!GBL_UI->initialized)
       return 0;
       
-   while ( (msg = SIMPLEQ_FIRST(&messages_queue)) != NULL) {
+   while ( (msg = STAILQ_FIRST(&messages_queue)) != NULL) {
 
       /* diplay the message */
       GBL_UI->msg(msg->message);
 
-      SIMPLEQ_REMOVE_HEAD(&messages_queue, msg, next);
+      STAILQ_REMOVE_HEAD(&messages_queue, msg, next);
       /* free the message */
       SAFE_FREE(msg->message);
       SAFE_FREE(msg);
@@ -290,8 +290,8 @@ int ui_msg_purge_all(void)
    /* the queue is updated by other threads */
    UI_MSG_LOCK;
       
-   while ( (msg = SIMPLEQ_FIRST(&messages_queue)) != NULL) {
-      SIMPLEQ_REMOVE_HEAD(&messages_queue, msg, next);
+   while ( (msg = STAILQ_FIRST(&messages_queue)) != NULL) {
+      STAILQ_REMOVE_HEAD(&messages_queue, msg, next);
       /* free the message */
       SAFE_FREE(msg->message);
       SAFE_FREE(msg);

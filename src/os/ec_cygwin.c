@@ -15,12 +15,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_cygwin.c,v 1.3 2003/10/28 21:10:55 alor Exp $
+    $Id: ec_cygwin.c,v 1.4 2003/11/09 12:12:46 alor Exp $
 */
 
 #include <ec.h>
 
-#include <windowsx.h>
+#include <windows.h>
 
 static int saved_status;
 static HKEY handle;
@@ -60,7 +60,7 @@ void disable_ip_forward(void)
    Status = RegQueryValueEx(handle, TEXT("IPEnableRouter"), NULL, NULL, (LPBYTE)&value, &dim);
 #endif
 
-   DEBUG_MSG("Inet_DisableForwarding -- previous value %d", value);
+   DEBUG_MSG("Inet_DisableForwarding -- previous value %d", (int)value);
 
    if (value == 0) {
       /* if forward is already 0 */

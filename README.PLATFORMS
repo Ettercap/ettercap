@@ -25,7 +25,6 @@ LINUX
    
    Linux 2.2.x          FULL
    
-   Linux 2.0.x          FULL
 
 
 SOLARIS
@@ -52,21 +51,13 @@ MAC OS X (Darwin)
    
    Darwin 6.x           PARTIAL        (problems with plugins)
    
-   Darwin 5.x           untested
-   
-   Darwin 1.3.x 1.4.x   untested
-
 
 WINDOWS (cygwin)
 ------------------------------------------------------------------------------
-   Windows XP           untested 
+   Windows XP           todo 
    
-   Windows 2000         untested
+   Windows 2000         todo 
    
-   Windows NT 4.0       untested
-   
-   Windows 9x           untested
-
 
 WINDOWS (native/mingw)
 ------------------------------------------------------------------------------

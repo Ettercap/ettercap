@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.27 2003/10/29 22:38:19 alor Exp $
+    $Id: ec_dispatcher.c,v 1.28 2003/11/09 12:12:46 alor Exp $
 */
 
 #include <ec.h>
@@ -29,10 +29,10 @@
 /* this is the PO queue from bottom to top half */
 struct po_queue_entry {
    struct packet_object *po;
-   SIMPLEQ_ENTRY(po_queue_entry) next;
+   STAILQ_ENTRY(po_queue_entry) next;
 };
 
-static SIMPLEQ_HEAD(, po_queue_entry) po_queue = SIMPLEQ_HEAD_INITIALIZER(po_queue);
+static STAILQ_HEAD(, po_queue_entry) po_queue = STAILQ_HEAD_INITIALIZER(po_queue);
 
 /* global mutex on interface */
 
@@ -85,7 +85,7 @@ EC_THREAD_FUNC(top_half)
       PO_QUEUE_LOCK;
       
       /* get the first element */
-      e = SIMPLEQ_FIRST(&po_queue);
+      e = STAILQ_FIRST(&po_queue);
 
       /* the queue is empty, nothing to do... */
       if (e == NULL) {
@@ -99,7 +99,7 @@ EC_THREAD_FUNC(top_half)
       stats_half_start(&GBL_STATS->th);
        
       /* remove the packet form the queue */
-      SIMPLEQ_REMOVE_HEAD(&po_queue, e, next);
+      STAILQ_REMOVE_HEAD(&po_queue, e, next);
      
       /* update the queue stats */
       stats_queue_del();
@@ -159,7 +159,7 @@ void top_half_queue_add(struct packet_object *po)
    PO_QUEUE_LOCK;
    
    /* add the message to the queue */
-   SIMPLEQ_INSERT_TAIL(&po_queue, e, next);
+   STAILQ_INSERT_TAIL(&po_queue, e, next);
    
    /* update the stats */
    stats_queue_add();

@@ -1,5 +1,5 @@
 
-/* $Id: ec_plugins.h,v 1.12 2003/12/26 17:58:35 alor Exp $ */
+/* $Id: ec_plugins.h,v 1.13 2004/01/03 11:08:34 alor Exp $ */
 
 #ifndef EC_PLUGINS_H
 #define EC_PLUGINS_H
@@ -18,7 +18,7 @@ struct plugin_ops
    int (*fini)(void *);          /* deactivation function */
 };
 
-#define PLUGIN_PATTERN   "ec_*.so"
+#define PLUGIN_PATTERN   "ec_*"
 
 extern void plugin_load_all(void);
 extern int plugin_load_single(char *path, char *name);

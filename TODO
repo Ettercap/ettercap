@@ -3,10 +3,15 @@
 ==================
 
 >>> things to be fixed
-
-   + PLUGINS ENGINE
-      - replace the search point form . to INSTALL_PREFIX/lib
-      - LTDL_SHLIB_EXT
+   
+   + FIXING
+      - dissect_free_session
+      - what about truncated pcap file ?
+      - input for curses gui
+      + when libpcap 0.8.1 will be released
+         - pcap_datalink_val_to_name  
+         - pcap_lib_version
+         - pcap_stat fix (even under linux the stats are cumulative)
 
    + BSD PORTING
       - find a way for bridged sniff under OpenBSD 
@@ -27,18 +32,10 @@ this is the unofficial and floating in time roadmap:
 
    + DOCUMENTATION
       - write the requirements for each os
+      - write a man for the curses GUI
       - developer docs
          - plugins
 
-   + FIXING
-      - SAFE_STRDUP
-      - dissect_free_session
-      - what about truncated pcap file ?
-      - input for curses gui
-      + when libpcap 0.8.1 will be released
-         - pcap_datalink_val_to_name  
-         - pcap_lib_version
-      
    + PROFILES
       - dhcp infos
 
@@ -101,10 +98,6 @@ this is the unofficial and floating in time roadmap:
    + FILTERING ENGINE
       - quick filter on a connection
 
-25 Jan 2004:
-
-   + FIRST PUBLIC (pre)RELEASE
-   
 
 2004:
    

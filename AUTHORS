@@ -9,17 +9,15 @@ AUTHORS:
 
 ==============================================================================
 
-CONTRIBUTORS:
+CONTRIBUTORS (for the Next Generation serie):
+
+
+CONTRIBUTORS (for the First Generation serie):
 
    Lnz (Lorenzo Porro)        <lporro@libero.it>            some dissectors
-
    Tavi (Octavian Mihalache)  <dev_tavi@mymail.ro>          win9x porting
-
    Georg Hofstetter           <geggo@donau-ries.de>         HL-RCON dissector 
-
    Giorgio Zoppi              <zoppi@cli.di.unipi.it>       security patch
-   
    Daten (Bryan Schneiders)   <daten@dnetc.org>             the GTK interface
-
    Garph0                     <garph0@gmx.co.uk>            plugin porting for windows
    

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.84 2003/12/27 16:08:45 alor Exp $
+dnl    $Id: configure.in,v 1.85 2004/01/03 11:08:34 alor Exp $
 dnl
 
 AC_INIT
@@ -323,8 +323,6 @@ dnl -------------
 
 AM_CONDITIONAL(PLUGINS, false)
 AH_TEMPLATE(HAVE_PLUGINS, [plugins support])
-
-AH_TEMPLATE(PERMIT_PLUGINS, [can ettercap use plugins ?])
 
 check_plugins=0
 ac_ec_plugin=no

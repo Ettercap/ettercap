@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.19 2003/11/27 21:37:01 alor Exp $
+# $Id: Makefile.am,v 1.20 2004/01/03 11:08:34 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -11,11 +11,11 @@ endif
 
 
 EXTRA_DIST = AUTHORS \
-             BUGS \
              CHANGELOG \
              LICENSE \
              README \
              README.BINARIES \
+             README.BUGS \
              README.CVS \
              README.PLATFORMS \
              THANKS \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.21 2003/12/06 18:45:47 alor Exp $
+    $Id: ec_curses.c,v 1.22 2003/12/07 18:21:05 alor Exp $
 */
 
 #include <ec.h>
@@ -48,11 +48,18 @@ static void curses_progress(char *title, int value, int max);
 
 static void curses_setup(void);
 static void curses_exit(void);
+
 static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
 static void toggle_compress(void);
+
 static void curses_file_open(void);
 static void read_pcapfile(char *path, char *file);
+static void curses_file_write(void);
+static void write_pcapfile(void);
+static void curses_unified_sniff(void);
+static void curses_bridged_sniff(void);
+static void bridged_sniff(void);
 
 
 /*******************************************/
@@ -90,6 +97,13 @@ static void curses_init(void)
 
    /* init the widgets library */
    wdg_init();
+
+   /* 
+    * we have to set it because we ask user interaction
+    * during this function.
+    * we cant wait to return to set the flag...
+    */
+   GBL_UI->initialized = 1;
 
    DEBUG_MSG("curses_init: screen %dx%d colors: %d", (int)current_screen.cols, (int)current_screen.lines,
                                                      (int)(current_screen.flags & WDG_SCR_HAS_COLORS));
@@ -198,6 +212,19 @@ static void curses_fatal_error(const char *msg)
  */
 static void curses_input(const char *title, char *input, size_t n)
 {
+   wdg_t *in;
+
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, strlen(title) + n, 3);
+   wdg_input_add(in, 1, 1, title, input, n);
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+                     
 }
 
 
@@ -294,15 +321,15 @@ static void curses_setup(void)
    
    struct wdg_menu file[] = { {"File", "F", NULL},
                               {"Open...", "", curses_file_open},
-                              {"Write...", "", NULL},
+                              {"Write...", "", curses_file_write},
                               {"-", "", NULL},
                               {"Exit", "", curses_exit},
                               {NULL, NULL, NULL},
                             };
    
    struct wdg_menu live[] = { {"Sniff", "S", NULL},
-                              {"Unified sniffing...", "", NULL},
-                              {"Bridged sniffing...", "", NULL},
+                              {"Unified sniffing...", "", curses_unified_sniff},
+                              {"Bridged sniffing...", "", curses_bridged_sniff},
                               {"-", "", NULL},
                               {"Set pcap filter...", "", NULL},
                               {NULL, NULL, NULL},
@@ -409,6 +436,127 @@ static void read_pcapfile(char *path, char *file)
    GBL_OPTIONS->read = 1;
    
    /* exit the setup interface, and go to the primary one */
+   wdg_exit();
+}
+
+/*
+ * display the write file menu
+ */
+static void curses_file_write(void)
+{
+   wdg_t *in;
+   
+#define FILE_LEN  40
+   
+   DEBUG_MSG("curses_file_write");
+   
+   SAFE_CALLOC(GBL_OPTIONS->dumpfile, FILE_LEN, sizeof(char));
+
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, strlen("Output file :") + FILE_LEN, 3);
+   wdg_input_add(in, 1, 1, "Output file :", GBL_OPTIONS->dumpfile, FILE_LEN);
+   wdg_input_set_callback(in, write_pcapfile);
+   
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+}
+
+static void write_pcapfile(void)
+{
+   FILE *f;
+   
+   DEBUG_MSG("write_pcapfile");
+   
+   /* check if the file is writeable */
+   f = fopen(GBL_OPTIONS->dumpfile, "w");
+   if (f == NULL) {
+      ui_error("Cannot write %s", GBL_OPTIONS->dumpfile);
+      SAFE_FREE(GBL_OPTIONS->dumpfile);
+      return;
+   }
+ 
+   /* if ok, delete it */
+   fclose(f);
+   unlink(GBL_OPTIONS->dumpfile);
+
+   /* set the options for writing to a file */
+   GBL_OPTIONS->write = 1;
+   GBL_OPTIONS->read = 0;
+   
+   /* exit the setup interface, and go to the primary one */
+   wdg_exit();
+}
+
+/*
+ * display the interface selection dialog
+ */
+static void curses_unified_sniff(void)
+{
+   wdg_t *in;
+   char err[PCAP_ERRBUF_SIZE];
+   
+#define IFACE_LEN  10
+   
+   DEBUG_MSG("curses_unified_sniff");
+   
+   SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+   strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, strlen("Network interface :") + IFACE_LEN, 3);
+   wdg_input_add(in, 1, 1, "Network interface :", GBL_OPTIONS->iface, IFACE_LEN);
+   /* calling wdg_exit will go to the next interface :) */
+   wdg_input_set_callback(in, wdg_exit);
+   
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+}
+
+/*
+ * display the interface selection for bridged sniffing
+ */
+static void curses_bridged_sniff(void)
+{
+   wdg_t *in;
+   char err[PCAP_ERRBUF_SIZE];
+   
+   DEBUG_MSG("curses_bridged_sniff");
+   
+   SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+   strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+   
+   SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
+
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, strlen("Second network interface :") + IFACE_LEN, 5);
+   wdg_input_add(in, 1, 1, "First network interface  :", GBL_OPTIONS->iface, IFACE_LEN);
+   wdg_input_add(in, 1, 2, "Second network interface :", GBL_OPTIONS->iface_bridge, IFACE_LEN);
+   /* calling wdg_exit will go to the next interface :) */
+   wdg_input_set_callback(in, bridged_sniff);
+   
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+}
+
+static void bridged_sniff(void)
+{
+   set_bridge_sniff();
+   
    wdg_exit();
 }
 

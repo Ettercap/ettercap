@@ -42,7 +42,6 @@ this is the unofficial and floating in time roadmap:
 
    + LIBWDG
       - widgets:
-         - input (with forms ?)
          - selectable lists
 
    + INJECTION 
@@ -52,7 +51,6 @@ this is the unofficial and floating in time roadmap:
 
    + DISSECTORS
       - convert all the old dissectors:
-         - http  (with cookie enhancements)
          - https (over the ssl one)
          - ldap
          - mountd
@@ -69,7 +67,7 @@ this is the unofficial and floating in time roadmap:
       
    + PLUGINS
       port all the plugins to NG:
-         - lurker    -> find_ettercappers
+         - lurker    -> find_ettercap
          - zaratan   ->
          - troll     -> arp_responder
          - roper     -> stop_ipsec

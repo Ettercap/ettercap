@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.8 2003/12/06 18:45:50 alor Exp $
+    $Id: wdg_file.c,v 1.9 2003/12/07 18:21:05 alor Exp $
 */
 
 #include <wdg.h>
@@ -269,6 +269,7 @@ static int wdg_file_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
             return -WDG_ENOTHANDLED;
          break;
         
+      case KEY_ESC:
       case CTRL('Q'):
          wdg_destroy_object(&wo);
          wdg_redraw_all();

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.22 2003/12/06 18:45:50 alor Exp $
+    $Id: wdg.c,v 1.23 2003/12/07 18:21:05 alor Exp $
 */
 
 #include <wdg.h>
@@ -162,11 +162,11 @@ void wdg_init(void)
  */
 void wdg_cleanup(void)
 {
-   WDG_DEBUG_MSG("wdg_cleanup");
-   
    /* can only cleanup if it was initialized */
    if (!(current_screen.flags & WDG_SCR_INITIALIZED))
       return;
+   
+   WDG_DEBUG_MSG("wdg_cleanup");
    
    /* show the cursor */
    curs_set(TRUE);
@@ -177,9 +177,6 @@ void wdg_cleanup(void)
    /* do the refresh */
    refresh();
 
-   /* restore the terminal */
-   noraw();
-   
    /* end the curses interface */
    endwin();
 

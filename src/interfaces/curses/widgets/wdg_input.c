@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_input.c,v 1.1 2003/12/06 18:45:51 alor Exp $
+    $Id: wdg_input.c,v 1.2 2003/12/07 18:21:05 alor Exp $
 */
 
 #include <wdg.h>
@@ -35,6 +35,8 @@ struct wdg_input_handle {
    WINDOW *fwin;
    FIELD **fields;
    size_t nfields;
+   char **buffers;
+   void (*callback)(void);
 };
 
 /* PROTOS */
@@ -54,9 +56,11 @@ static int wdg_input_virtualize(struct wdg_object *wo, int key);
 static int wdg_input_driver(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 static void wdg_input_form_destroy(struct wdg_object *wo);
 static void wdg_input_form_create(struct wdg_object *wo);
+static void wdg_input_consolidate(struct wdg_object *wo);
 
 void wdg_input_size(wdg_t *wo, size_t x, size_t y);
-void wdg_input_add(wdg_t *wo, size_t x, size_t y, char *caption, char *buf, size_t len);
+void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len);
+void wdg_input_set_callback(wdg_t *wo, void (*callback)(void));
 
 /*******************************************/
 
@@ -101,6 +105,9 @@ static int wdg_input_destroy(struct wdg_object *wo)
 
    /* free the array */
    WDG_SAFE_FREE(ww->fields);
+
+   /* free the buffer array */
+   WDG_SAFE_FREE(ww->buffers);
    
    WDG_SAFE_FREE(wo->extend);
 
@@ -196,9 +203,6 @@ static int wdg_input_get_focus(struct wdg_object *wo)
    /* set the flag */
    wo->flags |= WDG_OBJ_FOCUSED;
 
-   /* hide the cursor */
-   curs_set(TRUE);
-   
    /* redraw the window */
    wdg_input_redraw(wo);
    
@@ -213,9 +217,6 @@ static int wdg_input_lost_focus(struct wdg_object *wo)
    /* set the flag */
    wo->flags &= ~WDG_OBJ_FOCUSED;
    
-   /* hide the cursor */
-   curs_set(FALSE);
-  
    /* redraw the window */
    wdg_input_redraw(wo);
    
@@ -241,7 +242,8 @@ static int wdg_input_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_ev
          } else 
             return -WDG_ENOTHANDLED;
          break;
-         
+      
+      case KEY_ESC:
       case CTRL('Q'):
          wdg_destroy_object(&wo);
          wdg_redraw_all();
@@ -326,13 +328,15 @@ static int wdg_input_virtualize(struct wdg_object *wo, int key)
          c =  REQ_NEXT_FIELD;
          break;
       case KEY_BACKSPACE:
+      case '\b':
+      case 127:   /* how many code does it have ?? argh !! */
          c = REQ_DEL_PREV;
          break;
       default:
          c = key;
          break;
    }
-   
+  
    /*    
     * Force the field that the user is typing into to be in reverse video,
     * while the other fields are shown underlined.
@@ -357,7 +361,14 @@ static int wdg_input_driver(struct wdg_object *wo, int key, struct wdg_mouse_eve
   
    /* one item has been selected */
    if (c == E_UNKNOWN_COMMAND) {
-      wdg_destroy_object(&wo);   
+      /* send a command to the form in order to validate the current field */
+      form_driver(ww->form, REQ_NEXT_FIELD);
+      /* 
+       * put the temp buffer in the real one 
+       * call the callback
+       * and destroy the object
+       */
+      wdg_input_consolidate(wo);
       return WDG_ESUCCESS;
    }
 
@@ -446,12 +457,17 @@ void wdg_input_size(wdg_t *wo, size_t x, size_t y)
 /* 
  * add a field to the form 
  */
-void wdg_input_add(wdg_t *wo, size_t x, size_t y, char *caption, char *buf, size_t len)
+void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len)
 {
    WDG_WO_EXT(struct wdg_input_handle, ww);
    
    ww->nfields += 2;
    WDG_SAFE_REALLOC(ww->fields, ww->nfields * sizeof(FIELD *));
+
+   /* remember the pointer to the real buffer (to be used in consolidate) */
+   WDG_SAFE_REALLOC(ww->buffers, (ww->nfields/2 + 1) * sizeof(char *));
+   ww->buffers[ww->nfields/2 - 1] = buf;
+   ww->buffers[ww->nfields/2] = NULL;
 
    /* create the caption */
    ww->fields[ww->nfields - 2] = new_field(1, strlen(caption), y, x, 0, 0);
@@ -465,13 +481,58 @@ void wdg_input_add(wdg_t *wo, size_t x, size_t y, char *caption, char *buf, size
    field_opts_off(ww->fields[ww->nfields - 1], O_WRAP);
    set_field_buffer(ww->fields[ww->nfields - 1], 0, buf);
    set_field_fore(ww->fields[ww->nfields - 1], COLOR_PAIR(wo->window_color));
-   set_field_pad(ww->fields[ww->nfields - 1], 0);
    
    /* null terminate the array */
    WDG_SAFE_REALLOC(ww->fields, (ww->nfields + 1) * sizeof(FIELD *));
    ww->fields[ww->nfields] = NULL;
 
 }
+
+/*
+ * copy the temp buffers to the real ones
+ */
+static void wdg_input_consolidate(struct wdg_object *wo)
+{
+   WDG_WO_EXT(struct wdg_input_handle, ww);
+   char *buf;
+   int i = 0, j;
+   void (*callback)(void);
+   
+   while(ww->fields[i] != NULL) {
+      /* get the buffer */
+      buf = field_buffer(ww->fields[i+1], 0);
+
+      /* trim out the trailing spaces */
+      for (j = strlen(buf) - 1; j >= 0; j--)
+         if (buf[j] == ' ')
+            buf[j] = 0;
+         else
+            break;
+      
+      /* copy the buffer in the real one */
+      strcpy(ww->buffers[i/2], buf);
+      
+      /* skip the label */
+      i += 2;
+   }
+
+   /* execute the callback */
+   callback = ww->callback;
+   wdg_destroy_object(&wo);
+   wdg_redraw_all();
+   WDG_EXECUTE(callback);
+}
+
+/*
+ * set the user callback
+ */
+void wdg_input_set_callback(wdg_t *wo, void (*callback)(void))
+{
+   WDG_WO_EXT(struct wdg_input_handle, ww);
+
+   ww->callback = callback;
+}
+
 
 /* EOF */
 

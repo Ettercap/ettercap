@@ -16,9 +16,10 @@ char *strcasestr(char *hailstack, char *needle)
    register int lhail = strlen(hailstack);
    register int i;
 
-   for (i = 0; i < lhail; i++) 
+   for (i = 0; i < lhail; i++) {
       if (!strncasecmp(hailstack + i, needle, lneed))
          return hailstack + i;
+   }
 
    return NULL;
 }

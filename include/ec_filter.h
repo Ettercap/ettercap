@@ -40,31 +40,47 @@
 
 struct filter_op {
    char opcode;
-      #define FOP_EXIT  0
-      #define FOP_TEST  1
-      #define FOP_FUNC  2
-      #define FOP_JMP   3
-      #define FOP_DROP  4
+      #define FOP_EXIT     0
+      #define FOP_TEST     1
+      #define FOP_FUNC     2
+      #define FOP_JMP      3
+      #define FOP_JTRUE    4
+      #define FOP_JFALSE   5
 
-   struct function {
-      char opcode;
-         #define FFUNC_SEARCH    0
-         #define FFUNC_REPLACE   1
-         #define FFUNC_LOG       2
-      char value[MAX_FILTER_LEN];
-      size_t value_len;
-      char value2[MAX_FILTER_LEN];
-      size_t value2_len;
-   } func;
+   union {
+      /* functions */
+      struct {
+         char opcode;
+            #define FFUNC_SEARCH    0
+            #define FFUNC_REGEX     1
+            #define FFUNC_REPLACE   2
+            #define FFUNC_LOG       3
+            #define FFUNC_DROP      4
+            #define FFUNC_MSG       5
+            #define FFUNC_EXEC      6
+         u_int8 level; 
+         u_int8 value[MAX_FILTER_LEN];
+         size_t value_len;
+         u_int8 value2[MAX_FILTER_LEN];
+         size_t value2_len;
+      } func;
+      
+      /* tests */
+      struct {
+         u_int8  level;
+         u_int8  size;
+         u_int16 offset;
+         u_int64 value;
+         char string[MAX_FILTER_LEN];
+         size_t string_len;
+      } test;
 
-   struct operation {
-      u_int16 offset;
-      u_int32 value;
+      /* jumps */
+      u_int16 jmp;
+      
    } op;
-
-   u_int16 jmp;
-   
 };
+
 
 /* exported functions */
 

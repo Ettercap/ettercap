@@ -80,6 +80,13 @@ extern int dissect_on_port(char *name, u_int16 port);
    }  
 
 
+/* return true if the packet is coming from the server */
+#define FROM_SERVER(name, pack) (dissect_on_port(name, ntohs(pack->L4.src)) == ESUCCESS)
+
+/* return true if the packet is coming from the client */
+#define FROM_CLIENT(name, pack) (dissect_on_port(name, ntohs(pack->L4.dst)) == ESUCCESS)
+
+
 #endif
 
 /* EOF */

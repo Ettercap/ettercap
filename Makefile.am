@@ -8,10 +8,13 @@ if PLUGINS
 endif
 
 
-EXTRA_DIST = LICENSE \
-             AUTHORS \
+EXTRA_DIST = AUTHORS \
              CHANGELOG \
+             LICENSE \
              PORTINGS \
+             README \
+             README.BINARIES \
+             README.WIN32 \
              THANKS \
              TODO \
              TODO.TESTING \
@@ -23,6 +26,7 @@ CLEANFILES = *.log *.out *.cache *.so ettercap etterlog etterfilter
 
 dist-hook:
 	rm -rf `find $(distdir)/doc -name CVS`
+	cat $(distdir)/Makefile.am.common | sed s/#no/no/g > $(distdir)/Makefile.am.common
 
 test: all
 	ln -fs ./src/ettercap ./

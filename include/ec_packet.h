@@ -71,8 +71,8 @@ struct packet_object {
       #define PO_FROMIFACE    ((u_int8)(1<<2))     /* this packet comes from the primary interface */
       #define PO_FROMBRIDGE   ((u_int8)(1<<3))     /* this packet comes form the bridged interface */
       
-      #define PO_MOD_CHECK    ((u_int8)(1<<4))     /* it needs checksum recalculation before forwarding */
-      #define PO_MOD_LEN      ((u_int8)(1<<5)|PO_MOD_CHECK)   /* it was modified also in its lenght */
+      #define PO_MODIFIED     ((u_int8)(1<<4))     /* it needs checksum recalculation before forwarding */
+      #define PO_DROPPED      ((u_int8)(1<<5))     /* the packet has to be dropped */
   
       #define PO_DUP          ((u_int8)(1<<6))     /* the packet is a duplicate we have to free the buffer on destroy */
       

@@ -6,8 +6,6 @@
 
    + lnet ptag thread safe (check it)
 
-   !! dissector malloc the DISSECTOR, someone have to free them... !!
-
    + PLUGINS ENGINE
       - replace the search point form . to INSTALL_PREFIX/lib
       - cygwin issue (study libltdl)
@@ -30,25 +28,24 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
-   
    + FILTERING ENGINE
-      - don't filter in unoffensive mode
-      - use regexp for filtering
       - include all the protocols in the filter rule
          - protocols table
-         - parsing engine
-            - SP (string pointer)
-            - FLAGS (flags
-      - filter even the header of the packets
       - etterfilter (utility) (used to compile the filter in bytecode)
+      - functions
+         - replace over mtu
       
 
    + MITM METHODS
       - icmp redirect
       - dhcp poisoning
       - port stealing
+      - dns poisoning
       
 Oct 2003:
+
+   + LOGGING
+      - selective log on connections
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
@@ -75,9 +72,10 @@ Nov 2003:
 Dec 2003:
 
    + INTERFACE ENGINE
-      - console
       - ncurses
+         - restyle
          - configurable colors
+         - better winch handling
       - cursed gtk
          http://zemljanka.sourceforge.net/cursed/
       - gtk
@@ -98,8 +96,7 @@ Dec 2003:
   LONG TERM TODO
 ==================
 
-   + SFTP
-   + FTP-SSL
+   + multiple interfaces on gateway
 
    + NEW DISSECTOR
       - TACACS dissector
@@ -112,17 +109,6 @@ Dec 2003:
       - handle fragmented packets
       - IPv6 support
 
-   + Ncurses interface
-      - better winch handling... (i'm too lazy to do this...)
-
    + PORTING TO 64 bit ARCH
-
-=================
-  TODO NEVER ;)    or very very very long term todo... :)
-=================
-
-   + GTK+ interface
-
-   + Kettercap (KDE interface)
 
 

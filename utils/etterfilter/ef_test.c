@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_test.c,v 1.1 2003/08/28 19:55:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_test.c,v 1.2 2003/09/06 19:14:24 alor Exp $
 */
 
 #include <ef.h>
@@ -37,40 +37,45 @@ void test_filter(void)
 {
    struct filter_op istr[6];
    struct packet_object po;
- 
-   /* if (DATA.data + 10 == 'O') { */
-   istr[0].opcode = FOP_TEST;
-   istr[0].op.offset = 10;
-   istr[0].op.value = 'O';
-   istr[0].jmp = 2;
-   
-   istr[1].opcode = FOP_JMP;
-   istr[1].jmp = 3;
 
-   /* replace(DATA.data, "SSH-1.99", "SSH-1.51"); */
+   memset(&istr, 0, sizeof(istr));
+   
+   /* if (DATA.data, search("OpenSSH")) { */
+   istr[0].opcode = FOP_FUNC;
+   istr[0].op.func.opcode = FFUNC_SEARCH;
+   istr[0].op.func.level = 0;
+   strcpy(istr[0].op.func.value, "OpenSSH");
+   istr[0].op.func.value_len = strlen(istr[0].op.func.value);
+   
+   istr[1].opcode = FOP_JFALSE;
+   istr[1].op.jmp = 5;
+
+   /* replace("SSH-1.99", "SSH-1.51"); */
    istr[2].opcode = FOP_FUNC;
-   istr[2].func.opcode = FFUNC_REPLACE;
-   strcpy(istr[2].func.value, "SSH-1.99");
-   istr[2].func.value_len = strlen("SSH-1.99");
-   strcpy(istr[2].func.value2, "SSH-1.51");
-   istr[2].func.value2_len = strlen("SSH-1.51");
-   istr[2].jmp = 2;
+   istr[2].op.func.opcode = FFUNC_REPLACE;
+   istr[0].op.func.level = 0;
+   strcpy(istr[2].op.func.value, "SSH-1.99");
+   istr[2].op.func.value_len = strlen(istr[2].op.func.value);
+   strcpy(istr[2].op.func.value2, "SSH-1.51");
+   istr[2].op.func.value2_len = strlen(istr[2].op.func.value2);
+  
+   /* msg("SSH downgraded to version 1"); */
+   istr[3].opcode = FOP_FUNC;
+   istr[3].op.func.opcode = FFUNC_MSG;
+   strcpy(istr[3].op.func.value, "SSH downgraded to version 1\n");
    
-   istr[3].opcode = FOP_JMP;
-   istr[3].jmp = 5;
+   istr[4].opcode = FOP_JMP;
+   istr[4].op.jmp = 6;
    
-   /* } else { replace(DATA.data, "3.6.1", "x.x.x") */
-   istr[4].opcode = FOP_FUNC;
-   istr[4].func.opcode = FFUNC_REPLACE;
-   strcpy(istr[4].func.value, "3.6.1");
-   istr[4].func.value_len = strlen("3.6.1");
-   strcpy(istr[4].func.value2, "x.x.x");
-   istr[4].func.value2_len = strlen("x.x.x");
-   istr[4].jmp = 5;
+   /* } else { log(DATA.data, "/tmp/etterfilter.log") */
+   istr[5].opcode = FOP_FUNC;
+   istr[5].op.func.opcode = FFUNC_LOG;
+   istr[0].op.func.level = 0;
+   strcpy(istr[5].op.func.value, "/tmp/etterfilter.log");
+   istr[5].op.func.value_len = strlen(istr[5].op.func.value);
 
    /* } */
-   istr[5].opcode = FOP_EXIT;
-   
+   istr[6].opcode = FOP_EXIT;
    
    po.DATA.data = strdup("SSH-1.99-OpenSSH_3.6.1p2");
    po.DATA.len = strlen(po.DATA.data);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.18 2003/08/04 13:59:07 alor Exp $
+    $Id: ec_pop.c,v 1.19 2003/09/06 19:14:24 alor Exp $
 */
 
 /*
@@ -65,7 +65,7 @@ FUNC_DECODER(dissector_pop)
    CREATE_SESSION_ON_SYN_ACK("pop", s);
    
    /* check if it is the first packet sent by the server */
-   if (dissect_on_port("pop", ntohs(PACKET->L4.src)) == ESUCCESS && PACKET->L4.flags & TH_PSH) {  
+   if (FROM_SERVER("pop", PACKET) && PACKET->L4.flags & TH_PSH) {  
       dissect_create_ident(&ident, PACKET);
       /* the session exist */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) != -ENOTFOUND) { 
@@ -136,6 +136,10 @@ FUNC_DECODER(dissector_pop)
       dissect_create_session(&s, PACKET);
       
       ptr += 5;
+      
+      /* if not null, free it */
+      SAFE_FREE(s->data);
+
       /* fill the session data */
       s->data = strdup(ptr);
       s->data_len = strlen(ptr);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_nntp.c,v 1.5 2003/08/04 13:59:07 alor Exp $
+    $Id: ec_nntp.c,v 1.6 2003/09/06 19:14:24 alor Exp $
 */
 
 /*
@@ -79,7 +79,7 @@ FUNC_DECODER(dissector_nntp)
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    
    /* skip messages coming from the server */
-   if (dissect_on_port("nntp", ntohs(PACKET->L4.src)) == ESUCCESS)
+   if (FROM_SERVER("nntp", PACKET))
       return NULL;
 
    /* skip empty packets (ACK packets) */
@@ -100,6 +100,9 @@ FUNC_DECODER(dissector_nntp)
       dissect_create_session(&s, PACKET);
       
       ptr += 14;
+      
+      /* if not null, free it */
+      SAFE_FREE(s->data);
 
       /* fill the session data */
       s->data = strdup(ptr);

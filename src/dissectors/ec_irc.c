@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_irc.c,v 1.2 2003/08/04 13:59:07 alor Exp $
+    $Id: ec_irc.c,v 1.3 2003/09/06 19:14:24 alor Exp $
 */
 
 #include <ec.h>
@@ -57,7 +57,7 @@ FUNC_DECODER(dissector_irc)
    (void)end;
 
    /* skip messages coming from the server */
-   if (dissect_on_port("irc", ntohs(PACKET->L4.src)) == ESUCCESS)
+   if (FROM_SERVER("irc", PACKET))
       return NULL;
 
    /* skip empty packets (ACK packets) */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.28 2003/07/18 21:36:45 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.29 2003/09/06 19:14:24 alor Exp $
 */
 
 #include <ec.h>
@@ -44,6 +44,13 @@ struct dec_entry {
    SLIST_ENTRY (dec_entry) next;
 };
 
+static SLIST_HEAD (, mtu_entry) mtu_table;
+
+struct mtu_entry {
+   u_int16 type;
+   u_int16 mtu;
+   SLIST_ENTRY (mtu_entry) next;
+};
 
 /* protos */
 
@@ -52,6 +59,8 @@ FUNC_DECODER(decode_data);
 
 void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 int set_L2_decoder(int dlt);
+void set_iface_mtu(u_int16 dlt);
+void add_iface_mtu(u_int16 type, u_int16 mtu);
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 void del_decoder(u_int8 level, u_int32 type);
 void * get_decoder(u_int8 level, u_int32 type);
@@ -128,7 +137,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* extract data and datalen from pcap packet */
    data = (u_char *)pkt;
    datalen = pkthdr->caplen;
-   
+
    /* alloc the packet object structure to be passet through decoders */
    packet_create_object(&po, data, datalen);
 
@@ -167,10 +176,8 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    /* HOOK POINT: DECODED (the po structure is filled) */ 
    hook_point(HOOK_DECODED, &po);
-  
-   /* 
-    * use the sniffing method funcion to forward the packet 
-    */
+ 
+   /* use the sniffing method funcion to forward the packet */
    if (po.flags & PO_FORWARDABLE ) {
       /* HOOK POINT: PRE_FORWARD */ 
       hook_point(HOOK_PRE_FORWARD, &po);
@@ -191,7 +198,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* free the structure */
    packet_destroy_object(&po);
    
-   /* clean the buffer */
+   /* clear the buffer */
    memset((u_char *)pkt, 0, pkthdr->caplen);
    
    /* calculate the stats */
@@ -253,14 +260,14 @@ FUNC_DECODER(decode_data)
          EXECUTE_DECODER(app_decoder);
          break;
    }
+
    /*
     * here we can filter the content of the packet.
     * the injection is done elsewhere.
     */
-   
    /* XXX -- filter ?? */
    if (po->flags & PO_FORWARDABLE) {
-   //  fiter_packet(po);
+   //  fiter_engine(po);
    
       /* HOOK POINT: FILTER */ 
       hook_point(HOOK_FILTER, po);
@@ -293,6 +300,10 @@ int set_L2_decoder(int dlt)
       if (e->level == 2 && e->type == (u_int16)dlt) {
          DEBUG_MSG("DLT = %d : decoder found !", dlt);
          l2_decoder = e->decoder;
+
+         /* set the MTU */
+         set_iface_mtu((u_int16)dlt);
+            
          DECODERS_UNLOCK;
          return ESUCCESS;
       }
@@ -304,9 +315,51 @@ int set_L2_decoder(int dlt)
 }
 
 /*
+ * set the GBL_IFACE->mtu looking in the table
+ * of registerd decoders
+ */
+void set_iface_mtu(u_int16 dlt)
+{
+   struct mtu_entry *e;
+
+   /* 
+    * a dirty hack for loopback:
+    * it is an ehternet but with larger mtu
+    */
+   if (!strcasecmp(GBL_OPTIONS->iface, "lo")) {
+      GBL_IFACE->mtu = 16436;
+      DEBUG_MSG("MTU = %d", GBL_IFACE->mtu);
+      return;
+   }
+         
+   /* search in the registerd mtu */
+   SLIST_FOREACH (e, &mtu_table, next) {
+      if (e->type == dlt) {
+         GBL_IFACE->mtu = e->mtu;
+         DEBUG_MSG("MTU = %d", GBL_IFACE->mtu);
+      }
+   }
+}
+
+/*
+ * add an mtu to the mtu table 
+ */
+void add_iface_mtu(u_int16 type, u_int16 mtu)
+{
+   struct mtu_entry *e;
+
+   e = calloc(1, sizeof(struct mtu_entry));
+   ON_ERROR(e, NULL, "can't allocate memory");
+
+   e->type = type;
+   e->mtu = mtu;
+
+   SLIST_INSERT_HEAD (&mtu_table, e, next); 
+}
+
+/*
  * add a decoder to the decoders table 
  */
-
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder))
 {
    struct dec_entry *e;

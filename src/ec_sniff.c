@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.21 2003/08/22 09:02:27 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.22 2003/09/06 19:14:24 alor Exp $
 */
 
 #include <ec.h>
@@ -171,15 +171,24 @@ void display_packet_for_us(struct packet_object *po)
     * we have to check if the packet is complying with the filter
     * specified by the users.
     *
-    * also accept the packet if the destination mac address is equal
+    * 1) also accept the packet if the destination mac address is equal
     * to the attacker mac address. this is because we need to sniff
     * during mitm attacks and in the target specification you select
     * the real mac address...
     *
-    * to sniff thru a gateway, accept also the packet if it has non local
+    * 2) to sniff thru a gateway, accept also the packet if it has non local
     * ip address.
+    *
+    * 3) reject packet with source mac address equal to attacker's one and ip
+    * different form attacker's ip.
     */
- 
+
+   /* dont sniff forwarded packets (equal mac, different ip) */
+   if ( !memcmp(GBL_IFACE->mac, po->L2.src, ETH_ADDR_LEN) &&
+        ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
+      return;
+   }
+    
    /* FROM TARGET1 TO TARGET2 */
    
    /* T1.mac == src & T1.ip = src & T1.port = src */
@@ -265,7 +274,7 @@ int compile_display_filter(void)
       FATAL_ERROR("TARGET2 contains invalid chars !");
    
    /* TARGET 1 parsing */
-   for(p=strsep(&GBL_OPTIONS->target1, "/"); p != NULL; p=strsep(&GBL_OPTIONS->target1, "/")) {
+   for (p = strsep(&GBL_OPTIONS->target1, "/"); p != NULL; p = strsep(&GBL_OPTIONS->target1, "/")) {
       tok[i++] = strdup(p);
       /* bad parsing */
       if (i > MAX_TOK) break;

@@ -85,7 +85,8 @@ struct iface_env {
    struct ip_addr ip;
    struct ip_addr network;
    struct ip_addr netmask;
-   u_char mac[ETH_ADDR_LEN];
+   u_int8 mac[ETH_ADDR_LEN];
+   u_int16 mtu;
 };
 
 /* ip list per target */

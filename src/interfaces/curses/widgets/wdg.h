@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.3 2003/10/21 16:16:03 alor Exp $ */
+/* $Id: wdg.h,v 1.4 2003/10/22 08:05:44 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -100,6 +100,7 @@ extern int wdg_destroy_object(struct wdg_object **wo);
 
 /* object modifications */
 extern int wdg_resize_object(struct wdg_object *wo, size_t x1, size_t y1, size_t x2, size_t y2);
+extern int wdg_set_colors(struct wdg_object *wo, size_t gb, size_t fg, size_t border, size_t focus, size_t title);
 
 #endif 
 

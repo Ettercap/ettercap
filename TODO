@@ -28,10 +28,6 @@ this is the unofficial and floating in time roadmap:
       - developer docs
 
    + FIXING
-      - test -ot under solaris
-      if [ x`find $older -newer $newer -print 2>/dev/null` = x ] ; then
-       action
-       fi
       
 Oct 2003:
 

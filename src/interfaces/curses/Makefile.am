@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.2 2003/10/20 14:41:50 alor Exp $
+# $Id: Makefile.am,v 1.3 2003/10/22 08:05:43 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -12,8 +12,8 @@ libec_curses_a_CFLAGS = @EC_CFLAGS@ -Iwidgets
 libec_curses_a_SOURCES = ec_curses.c
 
 # hack to include libwdg.a objects into libec_curses.a
-all-am: libec_curses.a 
-	@if test libec_curses.a -ot widgets/libwdg.a -o "`ar t libec_curses.a | grep libwdg`" == ""; then \
+all: libec_curses.a 
+	@if test "`find widgets/libwdg.a -newer libec_curses.a`" != "" -o "`ar t libec_curses.a | grep libwdg`" = ""; then \
 		$(AR) x widgets/libwdg.a;			\
 		$(AR) ru libec_curses.a *wdg*;	\
 		echo "Joining libwdg objects into libec_curses..."; \

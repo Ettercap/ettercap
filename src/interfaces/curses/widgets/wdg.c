@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.4 2003/10/21 16:56:45 alor Exp $
+    $Id: wdg.c,v 1.5 2003/10/22 08:05:43 alor Exp $
 */
 
 #include <wdg.h>
@@ -235,7 +235,6 @@ static void wdg_switch_focus(void)
 
    printw("WDG: switch focus\n"); refresh();
 
-   
    /* if there is not a focused object, create it */
    if (wdg_focused_obj == NULL) {
       CIRCLEQ_FOREACH(wl, &wdg_focus_list, next) {

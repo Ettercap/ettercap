@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.47 2004/05/06 09:43:56 alor Exp $
+    $Id: ec_capture.c,v 1.48 2004/05/06 10:54:45 alor Exp $
 */
 
 #include <ec.h>
@@ -190,7 +190,7 @@ void capture_init(void)
    /* set the right dlt type for the iface */
    GBL_PCAP->dlt = pcap_datalink(pd);
      
-   DEBUG_MSG("capture_init: %s", pcap_datalink_val_to_description(GBL_PCAP->dlt));
+   DEBUG_MSG("capture_init: %s [%d]", pcap_datalink_val_to_description(GBL_PCAP->dlt), GBL_PCAP->dlt);
    USER_MSG("(%s)\n\n", pcap_datalink_val_to_description(GBL_PCAP->dlt));
  
    /* check that the bridge type is the same as the main iface */

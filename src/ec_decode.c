@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.31 2003/09/09 14:59:29 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.32 2003/09/17 11:55:25 alor Exp $
 */
 
 #include <ec.h>
@@ -173,10 +173,15 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * after this fuction the packet is completed (all flags set)
     */
    l2_decoder(data, datalen, &len, &po);
+
+   /* XXX - BIG WARNING !!
+    *
+    * if the packet was filtered by the filtering engine
+    * the state of the packet_object is inconsistent !
+    * the fields in the structure may not reflect the real
+    * packet fields...
+    */
    
-   /* HOOK POINT: DECODED (the po structure is filled) */ 
-   hook_point(HOOK_DECODED, &po);
- 
    /* use the sniffing method funcion to forward the packet */
    if (po.flags & PO_FORWARDABLE ) {
       /* HOOK POINT: PRE_FORWARD */ 
@@ -260,6 +265,9 @@ FUNC_DECODER(decode_data)
          EXECUTE_DECODER(app_decoder);
          break;
    }
+   
+   /* HOOK POINT: DECODED (the po structure is filled) */ 
+   hook_point(HOOK_DECODED, &po);
 
    /*
     * here we can filter the content of the packet.

@@ -31,9 +31,6 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
-   + move the HOOK_DECODED point
-      - comment on inconsistency
-  
    + profiles double banner
 
    + pay attention on network order for constants

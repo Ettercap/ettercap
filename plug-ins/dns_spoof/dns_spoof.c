@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.6 2004/05/04 20:11:48 alor Exp $
+    $Id: dns_spoof.c,v 1.7 2004/06/10 16:11:14 lordnaga Exp $
 */
 
 
@@ -97,7 +97,7 @@ struct plugin_ops dns_spoof_ops = {
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Sends spoofed dns replies",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   version:          "1.1",   
    /* activation function */
    init:             &dns_spoof_init,
    /* deactivation function */                     
@@ -244,7 +244,7 @@ static void dns_spoof(struct packet_object *po)
       return;
 
    /* we are interested only in DNS query */
-   if ( dns->opcode == ns_o_query && htons(dns->num_q) == 1 && htons(dns->num_answer) == 0) {
+   if ( (!dns->qr) && dns->opcode == ns_o_query && htons(dns->num_q) == 1 && htons(dns->num_answer) == 0) {
 
       /* it is and address resolution (name to ip) */
       if (type == ns_t_a) {

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.51 2003/09/29 12:20:52 alor Exp $
+# $Id: Makefile.am,v 1.52 2003/09/29 20:31:57 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -98,6 +98,7 @@ ettercap_SOURCES += dissectors/ec_bgp.c \
 				        dissectors/ec_snmp.c \
 				        dissectors/ec_telnet.c \
 				        dissectors/ec_vnc.c \
+				        dissectors/ec_vrrp.c \
 				        dissectors/ec_x11.c 
 if OPENSSL
 #ettercap_SOURCES += dissectors/ec_https.c \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ospf.c,v 1.1 2003/09/29 10:00:41 alor Exp $
+    $Id: ec_ospf.c,v 1.2 2003/09/29 20:32:04 alor Exp $
 */
 
 /*
@@ -41,7 +41,6 @@
  
 #include <ec.h>
 #include <ec_decode.h>
-#include <ec_dissect.h>
 
 #define OSPF_AUTH_LEN   8
 #define OSPF_AUTH       1
@@ -78,6 +77,10 @@ FUNC_DECODER(dissector_ospf)
 
    /* don't complain about unused var */
    (void)end;
+
+   /* we have been disabled */
+   if (!GBL_CONF->non_standard_dissectors)
+      return NULL;
    
    /* skip empty packets */
    if (PACKET->DATA.len == 0)
@@ -105,9 +108,8 @@ FUNC_DECODER(dissector_ospf)
       
       strcpy(pass, "No Auth");
    }
-   /* switch on the version */
    
-   USER_MSG("ospf : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+   USER_MSG("OSPF : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                              ntohs(PACKET->L4.dst), 
                                              pass);
 

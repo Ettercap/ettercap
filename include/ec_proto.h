@@ -1,5 +1,5 @@
 
-/* $Id: ec_proto.h,v 1.6 2003/09/29 12:24:32 alor Exp $ */
+/* $Id: ec_proto.h,v 1.7 2003/09/29 20:32:04 alor Exp $ */
 
 #ifndef EC_PROTO_H
 #define EC_PROTO_H
@@ -31,6 +31,7 @@ enum {
    NL_TYPE_TCP   = 0x06,
    NL_TYPE_UDP   = 0x11,
    NL_TYPE_OSPF  = 0x59,
+   NL_TYPE_VRRP  = 0x70,
 };
 
 /* proto layer types */

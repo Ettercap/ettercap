@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icq.c,v 1.1 2003/09/29 12:20:57 alor Exp $
+    $Id: ec_icq.c,v 1.2 2003/09/29 20:32:04 alor Exp $
 */
 
 #include <ec.h>
@@ -28,10 +28,10 @@
 /* globals */
 
 struct tlv_hdr {
-   u_int16 type;
-      #define TLV_LOGIN 1
-      #define TLV_PASS  2
-   u_int16 len;
+   u_int8 type[2];
+      #define TLV_LOGIN "\x00\x01"
+      #define TLV_PASS  "\x00\x02"
+   u_int8 len[2];
 };
 
 struct flap_hdr {
@@ -42,6 +42,12 @@ struct flap_hdr {
    u_int16 dlen;
 };
 
+struct snac_hdr {
+   u_int16 family;
+   u_int16 subtype;
+   u_int16 flags;
+   u_char id[4];
+};
 
 /* protos */
 
@@ -89,16 +95,14 @@ FUNC_DECODER(dissector_icq)
       thdr = (struct tlv_hdr *) ptr;
       
       /* we need server HELLO (0000 0001) */
-      if (ntohs(thdr->type) != 0 || ntohs(thdr->len) != 1) 
+      if (memcmp(ptr, "\x00\x00\x00\x01", 4) ) 
          return NULL;
-
+      
       /* move the pointer */
       thdr = thdr + 1;
 
-      //DEBUG_MSG("\tdissector_icq : TLV TYPE [%d] should be [%d]", ntohs(thdr->type), TLV_LOGIN);
-
       /* catch the login */
-      if (ntohs(thdr->type) != TLV_LOGIN)
+      if (memcmp(thdr->type, TLV_LOGIN, sizeof(thdr->type)))
          return NULL;
       
       DEBUG_MSG("\tDissector_icq - LOGIN ");
@@ -107,12 +111,12 @@ FUNC_DECODER(dissector_icq)
       user = (char *)(thdr + 1);
 
       /* move the pointer */
-      thdr = (struct tlv_hdr *) ((char *)thdr + sizeof(struct tlv_hdr) + ntohs(thdr->len));
+      thdr = (struct tlv_hdr *) ((char *)thdr + sizeof(struct tlv_hdr) + thdr->len[1]);
 
-      DEBUG_MSG("\tdissector_icq : TLV TYPE [%d] should be [%d]", ntohs(thdr->type), TLV_PASS);
+      DEBUG_MSG("\tdissector_icq : TLV TYPE [%d] should be [%d]", thdr->type[1], TLV_PASS);
             
       /* catch the pass */
-      if (ntohs(thdr->type) != TLV_PASS)
+      if (memcmp(thdr->type, TLV_PASS, sizeof(thdr->type)))
          return NULL;
 
       DEBUG_MSG("\tDissector_icq - PASS");
@@ -120,7 +124,7 @@ FUNC_DECODER(dissector_icq)
       /* use a temp buff to decript the password */
       pwdtemp = strdup((char *)(thdr + 1));
 
-      SAFE_CALLOC(PACKET->DISSECTOR.pass, strlen(pwdtemp), sizeof(char));
+      SAFE_CALLOC(PACKET->DISSECTOR.pass, strlen(pwdtemp) + 1, sizeof(char));
 
       /* decode the password */
       decode_pwd(pwdtemp, PACKET->DISSECTOR.pass);
@@ -130,60 +134,16 @@ FUNC_DECODER(dissector_icq)
       SAFE_FREE(pwdtemp);
       
       /* move the pointer */
-      thdr = (struct tlv_hdr *) ((char *)thdr + sizeof(struct tlv_hdr) + ntohs(thdr->len));
+      thdr = (struct tlv_hdr *) ((char *)thdr + sizeof(struct tlv_hdr) + thdr->len[1]);
 
       PACKET->DISSECTOR.info = strdup((char *)(thdr + 1));
       
-      USER_MSG("ICQ : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      USER_MSG("ICQ : %s:%d -> USER: %s  PASS: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass);
 
-   } else {
-         
-         return 0;  /* not yet implemented */
-
-#if 0         
-         SNAC_HEADER *snac;
-         u_char *p, *end;
-         char *uin, *message;
-         
-         memcpy(collector, payload, sniff_data_to_ettercap->datasize);
-
-         end = collector + sniff_data_to_ettercap->datasize;
-         
-         flap = (FLAP_HEADER *) collector;
-         snac = (SNAC_HEADER *) (flap + 1);
-         
-         if (snac->family[1] != 4 || snac->command[1] != 6) return 0;   /* not a message */
-        
-         DEBUG_MSG("ICQ DATA -- SNAC 4 6");
-         
-         for(p = (u_char *)snac; memcmp(p, "\x00\x00\x00\x01", 4) && p < end; p++); /* find the server hello */
-         if (p == end) return 0;
-         p += 4;
-
-         DEBUG_MSG("ICQ DATA -- UIN");
-         
-         uin = strdup ( p + 1 );
-
-         for(p = (u_char *)snac; memcmp(p, "\x00\x00\xff\xff", 4) && p < end; p++); /* find the message */
-         if (p == end) return 0;
-         p += 4;
-
-         DEBUG_MSG("ICQ DATA -- message");
-         
-         message = strdup ( p );
-
-         memset(sniff_data_to_ettercap->data, 0, sizeof(sniff_data_to_ettercap->data));
-         sprintf(sniff_data_to_ettercap->data, "*** ICQ MESSAGE ***\n To: %s\n\n Message: %s\n\n", uin, message);
-         sniff_data_to_ettercap->datasize = strlen(sniff_data_to_ettercap->data);
-
-         free(uin);
-         free(message);
-#endif
-         
-   }
+   } 
 
    return NULL;
 }

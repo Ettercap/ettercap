@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.27 2003/09/19 16:47:47 alor Exp $ */
+/* $Id: ec_globals.h,v 1.28 2003/09/29 20:32:04 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -25,6 +25,7 @@ struct ec_conf {
    int sampling_rate;
    int close_on_eof;
    int aggressive_dissectors;
+   int non_standard_dissectors;
 };
 
 /* options from getopt */

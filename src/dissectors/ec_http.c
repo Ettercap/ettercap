@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.14 2004/04/23 12:55:36 alor Exp $
+    $Id: ec_http.c,v 1.15 2004/05/19 12:03:27 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -220,7 +220,7 @@ static int Check_CONNECT(u_char *ptr, struct packet_object *po)
             conn_status->c_status = PROXY_WAIT_DELIMITER;
 
          if (conn_status->c_status == PROXY_WAIT_DELIMITER && 
-	     (strstr(ptr, "\r\n\r\n") || (ptr[0]!='\r' && ptr[1]!='\n'))) {
+	     (strstr(ptr, "\r\n\r\n") || (ptr[0]=='\r' && ptr[1]=='\n'))) {
 	    dissect_wipe_session(po, DISSECT_CODE(dissector_http));
 	    conn_status = NULL;
 	    po->flags |= PO_SSLSTART;

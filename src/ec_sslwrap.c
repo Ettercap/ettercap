@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.40 2004/05/05 08:39:49 alor Exp $
+    $Id: ec_sslwrap.c,v 1.41 2004/05/19 12:02:54 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -644,7 +644,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    else       
       len = read(ae->fd[direction], po->DATA.data, 1024);
 
-   if (len < 0 && ae->status & SSL_ENABLED) {
+   if (len < 0 && (ae->status & SSL_ENABLED)) {
       ret_err = SSL_get_error(ae->ssl[direction], len);
       if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
          return -ENOTHANDLED;
@@ -701,7 +701,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       else       
          len = write(ae->fd[direction], p_data, packet_len);
 
-      if (len <= 0 && ae->status & SSL_ENABLED) {
+      if (len <= 0 && (ae->status & SSL_ENABLED)) {
          ret_err = SSL_get_error(ae->ssl[direction], len);
          if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
             not_written = 1;
@@ -957,7 +957,7 @@ EC_THREAD_FUNC(sslw_child)
             ret_val = sslw_write_data(ae, !direction, &po);
             BREAK_ON_ERROR(ret_val,ae,po);
 	    
-            if (po.flags & PO_SSLSTART) {
+            if ((po.flags & PO_SSLSTART) && !(ae->status & SSL_ENABLED)) {
                ae->status |= SSL_ENABLED; 
                ret_val = sslw_sync_ssl(ae);
                BREAK_ON_ERROR(ret_val,ae,po);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.25 2003/10/18 09:01:58 alor Exp $
+    $Id: ec_tcp.c,v 1.26 2003/10/19 09:55:49 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -150,6 +150,9 @@ FUNC_DECODER(decode_tcp)
    /* save the flags */
    PACKET->L4.flags = tcp->flags;
 
+   /* save the seq number */
+   PACKET->L4.seq = tcp->seq;
+   
    /* set up the data poiters */
    PACKET->DATA.data = opt_end;
    PACKET->DATA.len = PACKET->L3.payload_len - DECODED_LEN;

@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.21 2003/10/18 11:27:42 alor Exp $ */
+/* $Id: ec_packet.h,v 1.22 2003/10/19 09:55:45 lordnaga Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -46,6 +46,7 @@ struct packet_object {
       size_t optlen;
       u_int16 src;
       u_int16 dst;
+      u_int32 seq;
    } L4;
    
    struct data {

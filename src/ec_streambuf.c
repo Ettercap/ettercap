@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_streambuf.c,v 1.2 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_streambuf.c,v 1.3 2003/10/19 09:55:49 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -34,6 +34,7 @@
 
 void streambuf_init(struct stream_buf *sb);
 int streambuf_add(struct stream_buf *sb, struct packet_object *po);
+int streambuf_seq_add(struct stream_buf *sb, struct packet_object *po);
 int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode);
 void streambuf_wipe(struct stream_buf *sb);
 
@@ -88,6 +89,21 @@ int streambuf_add(struct stream_buf *sb, struct packet_object *po)
    return 0;
 }
 
+/* Insert data into the buffer only if it matches the correct
+ * TCP sequence. It is a simple workaround used to avoid duplicated
+ * packets in TCP streaming. If we see the same sequence twice, this
+ * is a duplicated packet.
+ */
+int streambuf_seq_add(struct stream_buf *sb, struct packet_object *po)
+{
+   /* Same seq twice? a duplicated pck */
+   if( sb->tcp_seq == po->L4.seq )
+      return 0;
+
+   sb->tcp_seq = po->L4.seq;
+      
+   return streambuf_add(sb, po);
+}
 
 /*
  * copies in the 'buf' the first 'len' bytes 

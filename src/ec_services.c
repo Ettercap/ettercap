@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_services.c,v 1.9 2003/12/27 16:08:47 alor Exp $
+    $Id: ec_services.c,v 1.10 2004/04/04 14:11:45 alor Exp $
 
 */
 
@@ -70,7 +70,7 @@ int services_init(void)
    char line[128];
    char name[32];
    char type[8];
-   u_int32 serv;
+   u_int serv;
    u_int8 proto;
    int i = 0;
 

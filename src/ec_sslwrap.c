@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.32 2004/04/02 11:33:59 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.33 2004/04/04 14:11:46 alor Exp $
 */
 
 #include <ec.h>
@@ -248,7 +248,7 @@ EC_THREAD_FUNC(sslw_start)
 {
    struct listen_entry *le;
    struct accepted_entry *ae;
-   u_int32 len = sizeof(struct sockaddr_in), i;
+   u_int len = sizeof(struct sockaddr_in), i;
    struct sockaddr_in client_sin;
    
    ec_thread_init();

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.22 2004/03/08 14:15:08 lordnaga Exp $
+    $Id: ec_session.c,v 1.23 2004/04/04 14:11:46 alor Exp $
 */
 
 #include <ec.h>
@@ -54,11 +54,6 @@ u_int32 session_hash(void *ident, size_t ilen);
 
 void session_free(struct ec_session *s);
 
-#ifdef DEBUG
-void __init session_handler(void);
-static void session_dump(int sig);
-#endif
-
 static pthread_mutex_t session_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SESSION_LOCK     do{ pthread_mutex_lock(&session_mutex); } while(0)
 #define SESSION_UNLOCK   do{ pthread_mutex_unlock(&session_mutex); } while(0)
@@ -88,7 +83,7 @@ void session_put(struct ec_session *s)
       /* sessions are unique per thread */
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, s->ident) ) {
 
-         DEBUG_MSG("session_put: [%u][%p] updated", (u_int32)sl->id, sl->s->ident);
+         DEBUG_MSG("session_put: [%lu][%p] updated", (unsigned long)sl->id, sl->s->ident);
          /* destroy the old session */
          session_free(sl->s);
          /* link the new session */
@@ -101,7 +96,7 @@ void session_put(struct ec_session *s)
       }
 
       if (sl->ts < (ti - GBL_CONF->connection_timeout) ) {
-         DEBUG_MSG("session_put: [%u][%p] timeouted", (u_int32)sl->id, sl->s->ident);
+         DEBUG_MSG("session_put: [%lu][%p] timeouted", (unsigned long)sl->id, sl->s->ident);
          session_free(sl->s);
          LIST_REMOVE(sl, next);
          SAFE_FREE(sl);
@@ -123,7 +118,7 @@ void session_put(struct ec_session *s)
    /* link the session */
    sl->s = s;
    
-   DEBUG_MSG("session_put: [%u][%p] new session", (u_int32)sl->id, sl->s->ident);
+   DEBUG_MSG("session_put: [%lu][%p] new session", (unsigned long)sl->id, sl->s->ident);
 
    /* 
     * put it in the head.
@@ -156,7 +151,7 @@ int session_get(struct ec_session **s, void *ident, size_t ident_len)
       /* No more per-thread sessions */
       if ( /*sl->id == pthread_self() &&*/ sl->s->match(sl->s->ident, ident) ) {
    
-         //DEBUG_MSG("session_get: [%d][%p]", sl->id, sl->s->ident);
+         //DEBUG_MSG("session_get: [%lu][%p]", (unsigned long)sl->id, sl->s->ident);
          /* return the session */
          *s = sl->s;
          
@@ -192,7 +187,7 @@ int session_del(void *ident, size_t ident_len)
    LIST_FOREACH(sl, &session_list_head[h], next) {
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
          
-         DEBUG_MSG("session_del: [%u][%p]", (u_int32)sl->id, sl->s->ident);
+         DEBUG_MSG("session_del: [%lu][%p]", (unsigned long)sl->id, sl->s->ident);
 
          /* free the session */
          session_free(sl->s);
@@ -231,7 +226,7 @@ int session_get_and_del(struct ec_session **s, void *ident, size_t ident_len)
    LIST_FOREACH(sl, &session_list_head[h], next) {
       if ( /*sl->id == pthread_self() && */sl->s->match(sl->s->ident, ident) ) {
          
-         DEBUG_MSG("session_get_and_del: [%u][%p]", (u_int32)sl->id, sl->s->ident);
+         DEBUG_MSG("session_get_and_del: [%lu][%p]", (unsigned long)sl->id, sl->s->ident);
          
          /* return the session */
          *s = sl->s;
@@ -287,41 +282,6 @@ u_int32 session_hash(void *ident, size_t ilen)
    /* the hash must be within the TABSIZE */
    return (u_int16)(~hash) & TABMASK;
 }
-
-
-#ifdef DEBUG
-/*
- * dump the list of all active sessions.
- * only for debugging purpose.
- * use 'killall -HUP ettercap' to dump the list.
- */
-
-void __init session_handler(void)
-{
-   signal(SIGHUP, session_dump);
-}
-
-static void session_dump(int sig)
-{
-   struct session_list *sl;
-   size_t i;
-
-   DEBUG_MSG("session_dump invoked: dumping the session list...");
-   
-   SESSION_LOCK;
-   
-   /* dump the list in the debug file */
-   for (i = 0; i < TABSIZE; i++) {
-      LIST_FOREACH(sl, &session_list_head[i], next)
-         DEBUG_MSG("session_dump: [%u][%u][%p]", (u_int32)i, (u_int32)sl->id, sl->s->ident);
-   }
-   
-   SESSION_UNLOCK;
-   
-   DEBUG_MSG("session_dump invoked: END of session list...");
-}
-
-#endif
 
 /* EOF */
 

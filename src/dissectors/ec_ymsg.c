@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ymsg.c,v 1.1 2004/02/04 13:31:02 lordnaga Exp $
+    $Id: ec_ymsg.c,v 1.2 2004/02/04 13:47:26 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -51,7 +51,7 @@ FUNC_DECODER(dissector_ymsg)
    DECLARE_DISP_PTR_END(ptr, end);
    char tmp[MAX_ASCII_ADDR_LEN];
    u_char *q;
-   u_int32 len;
+   u_int32 field_len;
    
    /* Empty or not a yahoo messenger packet */
    if (PACKET->DATA.len == 0 || memcmp(ptr, "YMSG", 4))
@@ -60,7 +60,7 @@ FUNC_DECODER(dissector_ymsg)
    DEBUG_MSG("ymsg --> TCP dissector_ymsg");
 
    /* standard ymesg separator */
-   if ( !(ptr = memmem(ptr, PACKET->DATA.len, "\xC0\x80", 2) )  
+   if ( !(ptr = memmem(ptr, PACKET->DATA.len, "\xC0\x80", 2)) )  
       return NULL;
       
    /* Login is ASCII 0 */
@@ -72,9 +72,9 @@ FUNC_DECODER(dissector_ymsg)
          return NULL;
       
       /* Calculate the user len (no int overflow) */
-      len = q - ptr;
-      SAFE_CALLOC(PACKET->DISSECTOR.user, len + 1, sizeof(char));
-      memcpy(PACKET->DISSECTOR.user, ptr, len);
+      field_len = q - ptr;
+      SAFE_CALLOC(PACKET->DISSECTOR.user, field_len + 1, sizeof(char));
+      memcpy(PACKET->DISSECTOR.user, ptr, field_len);
       
       /* Skip the separator */
       ptr = q + 2; 
@@ -92,9 +92,9 @@ FUNC_DECODER(dissector_ymsg)
       } 
 
       /* Calculate the pass len (no int overflow) */
-      len = q - ptr;
-      SAFE_CALLOC(PACKET->DISSECTOR.pass, len + 1, sizeof(char));
-      memcpy(PACKET->DISSECTOR.pass, ptr, len);
+      field_len = q - ptr;
+      SAFE_CALLOC(PACKET->DISSECTOR.pass, field_len + 1, sizeof(char));
+      memcpy(PACKET->DISSECTOR.pass, ptr, field_len);
          
       PACKET->DISSECTOR.info = strdup("The pass is in MD5 format ( _2s43d5f is the salt )");
       
@@ -105,7 +105,7 @@ FUNC_DECODER(dissector_ymsg)
 								PACKET->DISSECTOR.info);
 
    } else if (*(ptr-1) == '1')  { /* Message is ASCII 1 */
-      u_char *from=NULL, *to=NULL, *message=NULL, temp_disp_data;
+      u_char *from=NULL, *to=NULL, *message=NULL, *temp_disp_data;
 
       /* Skip the separator and reach the end*/
       ptr += 2; 
@@ -113,9 +113,9 @@ FUNC_DECODER(dissector_ymsg)
       if (q >= end) 
          return NULL;
 
-      len = q - ptr;
-      SAFE_CALLOC(from, len + 1, sizeof(char));
-      memcpy(from, ptr, len);
+      field_len = q - ptr;
+      SAFE_CALLOC(from, field_len + 1, sizeof(char));
+      memcpy(from, ptr, field_len);
 
       /* Skip the two separators and the ASCII 5 */
       ptr = q + 5; 
@@ -125,9 +125,9 @@ FUNC_DECODER(dissector_ymsg)
          return NULL;
       }
       
-      len = q - ptr;
-      SAFE_CALLOC(to, len + 1, sizeof(char));
-      memcpy(to, ptr, len);
+      field_len = q - ptr;
+      SAFE_CALLOC(to, field_len + 1, sizeof(char));
+      memcpy(to, ptr, field_len);
       
       /* Skip the two separators and the ASCII 14 */
       ptr = q + 6; 
@@ -138,9 +138,9 @@ FUNC_DECODER(dissector_ymsg)
          return NULL;
       }
 
-      len = q - ptr;
-      SAFE_CALLOC(message, len + 1, sizeof(char));
-      memcpy(message, ptr, len);
+      field_len = q - ptr;
+      SAFE_CALLOC(message, field_len + 1, sizeof(char));
+      memcpy(message, ptr, field_len);
       
       /* Update disp_data in the packet object (128 byte will be enough for ****YAHOOO.... string */
       temp_disp_data = (u_char *)realloc(PACKET->DATA.disp_data, strlen(from) + strlen(to) + strlen(message) + 128);

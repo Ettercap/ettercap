@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.6 2004/02/29 11:50:37 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.7 2004/02/29 20:06:06 alor Exp $
 */
 
 #include <ec.h>
@@ -264,6 +264,10 @@ static gboolean refresh_connections(gpointer data)
    model = GTK_TREE_MODEL(ls_conns);
 
    for (c = cl; c != NULL; c = c->next.tqe_next) {
+
+      /* initialize it */
+      flags = " ";
+
       /* we'll set status on new and old items */
       switch (c->co->status) {
          case CONN_IDLE:    status = "idle   "; break;

@@ -52,11 +52,11 @@ this is the unofficial and floating in time roadmap:
    + PLUGINS
       port all the plugins to NG:
          - lurker    -> find_ettercap
-         - golem     -> res_exhaust
          - leech     -> isolate
          - triton    -> gw_discover
 
    + BRIDGED SNIFFING
+      - keep track of source mac addresses
     
 
 ============================

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.52 2003/12/28 17:20:13 alor Exp $
+    $Id: ec_main.c,v 1.53 2004/01/21 21:05:52 alor Exp $
 */
 
 #include <ec.h>
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
     * always disable the kernel ip forwarding (except when reading from file).
     * the forwarding will be done by ettercap.
     */
-   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm)
+   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm && GBL_IFACE->configured)
       disable_ip_forward();
    
    /* 

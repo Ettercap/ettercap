@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.35 2004/01/21 20:20:06 alor Exp $
+    $Id: ec_capture.c,v 1.36 2004/01/21 21:05:52 alor Exp $
 */
 
 #include <ec.h>
@@ -277,9 +277,15 @@ void get_hw_info(void)
   
    /* get the ip address */
    ip = libnet_get_ipaddr4(GBL_LNET->lnet);
-
+   
    /* if ip is equal to -1 there was an error */
    if (ip != (u_long)~0) {
+
+      /* the interface has an ip address */
+      if (ip != 0)
+         GBL_IFACE->configured = 1;
+      
+      /* save the ip address */
       ip_addr_init(&GBL_IFACE->ip, AF_INET, (char *)&ip);
       
       if (pcap_lookupnet(GBL_OPTIONS->iface, &network, &netmask, pcap_errbuf) == -1)

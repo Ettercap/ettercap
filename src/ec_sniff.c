@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.45 2004/01/18 19:30:31 alor Exp $
+    $Id: ec_sniff.c,v 1.46 2004/01/21 21:05:52 alor Exp $
 */
 
 #include <ec.h>
@@ -91,6 +91,10 @@ void set_forwardable_flag(struct packet_object *po)
  */
 int check_forwarded(struct packet_object *po) 
 {
+   /* the interface was not configured, the packets are not forwardable */
+   if (!GBL_IFACE->configured)
+      return 0;
+   
    /* 
     * dont sniff forwarded packets (equal mac, different ip) 
     * but only if we are on live connections

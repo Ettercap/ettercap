@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.52 2004/01/20 21:46:34 alor Exp $ */
+/* $Id: ec_globals.h,v 1.53 2004/01/21 21:05:52 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -105,6 +105,7 @@ struct iface_env {
    struct ip_addr netmask;
    u_int8 mac[MEDIA_ADDR_LEN];
    u_int16 mtu;
+   char configured;
 };
 
 /* ip list per target */

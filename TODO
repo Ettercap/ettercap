@@ -7,8 +7,6 @@
    + FIXING
       - dissect_free_session
       - input for curses gui
-      - in unoffensive we get UNKNOWN for all the profiles
-      - magic number for dissector session (only retrieve my sessions)
 
    + PCAP RELATED
       + when libpcap 0.8.2 will be released

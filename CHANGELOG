@@ -10,6 +10,7 @@ NG-0.7.0    ????????
       
    + rewrite from scratch (the code is now cleaner and well commented)
    + it now requirese libpcap and libnet
+   + support for unconfigured network interfaces
    + automake and libtool are now used for the configuration process
    + etterlog utility for logfiles parsing
    + etterfilter utility to compile advanced content filters

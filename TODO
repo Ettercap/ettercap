@@ -23,20 +23,23 @@
       - bpf filter on outgoing packets
       - BIOCSSEESENT (only under freebsd)
 
->>> current developmet state 
+>>> to be developed...
 
-   + DISSECTOR
-      - rlogin
+this is the unofficial and floating in time roadmap:
+
+Jul 2003:
 
    + TOP HALF
       - connection tracking (with buffered conn)
 
+Ago 2003:
 
    + ARP POISON ENGINE
       - arp poisoner
       - multipoison
       - rearp in demon mode (clean shutdown of all thread)
-   
+
+Sep 2003:
    
    + FILTERING ENGINE
       - use regexp for filtering
@@ -65,7 +68,8 @@
                }
             }
             
-   
+Oct 2003:
+
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - binder
@@ -76,13 +80,17 @@
       - SSH has to support DES, 3DES, blowfish and zlib compression
       - WIFI decoder support for WEP (key given)
       - PPP decoder
-      
+
+Nov 2003:
+
    + PLUGINS
       - convert all the old plugins
       - check for poisoner
       - linktype
       - "active" passive fingerprint
-     
+
+Dec 2003:
+
    + INTERFACE ENGINE
       - console
       - ncurses
@@ -92,6 +100,11 @@
 
    + ETTERLOG
       - extract files from streams looking for mime content
+
+25 Jan 2004:
+
+   + FIRST PUBLIC (pre)RELEASE
+
 
 ==================
   LONG TERM TODO

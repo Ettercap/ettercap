@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.23 2003/07/08 20:59:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.24 2003/07/15 21:31:34 alor Exp $
 */
 
 #include <ec.h>
@@ -194,6 +194,8 @@ static void drop_privs(void)
 void clean_exit(int errcode)
 {
    DEBUG_MSG("clean_exit: %d", errcode);
+  
+   GBL_LOCK = 1;
    
    USER_MSG("\n\nTerminating %s...\n\n", GBL_PROGRAM);
 

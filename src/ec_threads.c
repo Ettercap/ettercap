@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.11 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.12 2003/07/15 21:31:34 alor Exp $
 */
 
 #include <ec.h>
@@ -173,6 +173,12 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
 {
    pthread_t id;
 
+   /* don't create new threads if the lock is set (clean_exit called) */
+   if (GBL_LOCK) {
+      DEBUG_MSG("ec_thread_new -- stopped by GBL_LOCK");
+      return 0;
+   }
+   
    DEBUG_MSG("ec_thread_new -- %s", name);
 
    if (pthread_create(&id, NULL, function, args) < 0)

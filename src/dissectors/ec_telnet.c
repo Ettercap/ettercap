@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.1 2003/07/10 12:49:55 alor Exp $
+    $Id: ec_telnet.c,v 1.2 2003/07/15 21:31:34 alor Exp $
 */
 
 #include <ec.h>
@@ -107,8 +107,10 @@ FUNC_DECODER(dissector_telnet)
          memset(str, 0, sizeof(str));
         
          /* this is the fake session, user and pass already collected */
-         if (*(char *)s->data == '\xff')
+         if (*(char *)s->data == '\xff') {
+            SAFE_FREE(ident);
             return NULL;
+         }
 
          /* concat the char to the previous one */
          sprintf(str, "%s%c", (char *)s->data, *ptr);
@@ -150,16 +152,17 @@ FUNC_DECODER(dissector_telnet)
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass);
             }
+            SAFE_FREE(ident);
             return NULL;
          }
       }
      
    }
    
+   SAFE_FREE(ident);
 
    /* check if it is the first readable packet sent by the server */
    IF_FIRST_PACKET_FROM_SERVER("telnet", s, ident) {
-      
       size_t i;
             
       DEBUG_MSG("\tdissector_telnet BANNER");
@@ -174,7 +177,6 @@ FUNC_DECODER(dissector_telnet)
      
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    
-
    return NULL;
 }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.24 2003/07/15 20:28:07 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.25 2003/07/15 21:31:34 alor Exp $
 */
 
 #include <el.h>
@@ -362,7 +362,7 @@ static void print_pass(struct host_profile *h)
       LIST_FOREACH(u, &(o->users_list_head), next) {
         
          /* if is set the GBL.user, check it, else print all */
-         if (!GBL.user || !strcasecmp(u->user, GBL.user) ) {
+         if (!GBL.user || !strcasestr(GBL.user, u->user) ) {
             fprintf(stdout, " %s ", ip_addr_ntoa(&h->L3_addr, tmp));
             if (strcmp(h->hostname, ""))
                fprintf(stdout, "(%s)", h->hostname);

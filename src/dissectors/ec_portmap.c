@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_portmap.c,v 1.1 2004/01/17 20:24:45 lordnaga Exp $
+    $Id: ec_portmap.c,v 1.2 2004/01/18 14:29:06 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -104,7 +104,7 @@ FUNC_DECODER(dissector_portmap)
       pe->xid   = xid;
       pe->prog  = pntol(ptr + 40);
       pe->ver   = pntol(ptr + 44);
-      pe->proto = pntol(buf + 48);
+      pe->proto = pntol(ptr + 48);
       pe->spr   = PACKET->L4.proto;
 
       /* DUMP */
@@ -136,53 +136,50 @@ FUNC_DECODER(dissector_portmap)
          if ( Available_RPC_Dissectors[i].program == pe->prog &&
               Available_RPC_Dissectors[i].version == pe->ver ) {
 
-       // XXX ------ MISMATCHING PROTOCOLS ---------------
-            if (dissect_on_port(Available_RPC_Dissectors[i].name, port) == ESUCCESS)
-	       break;
-	       
-	    if (pe->proto == IPPROTO_TCP) {
-	       dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
-               DISSECT_MSG("portmap : %s binds %s on port %d TCP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
-                                                                     Available_RPC_Dissectors[i].name, 
-								     port);
-
+            if (pe->proto == IPPROTO_TCP) {
+               if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == ESUCCESS)
+                  break;
+               dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
+               DISSECT_MSG("portmap : %s binds [%s] on port %d TCP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
+                                                                       Available_RPC_Dissectors[i].name, 
+                                                                       port);
             } else {
-	       dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
-               DISSECT_MSG("portmap : %s binds %s on port %d UDP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
-                                                                     Available_RPC_Dissectors[i].name, 
-								     port);
+               if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == ESUCCESS)
+                  break;
+               dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
+               DISSECT_MSG("portmap : %s binds [%s] on port %d UDP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
+                                                                       Available_RPC_Dissectors[i].name, 
+                                                                       port);
             }
-	    	    
             break;
          }
       }
    } else { /* DUMP Reply */
       offs = 24;
       while ( (PACKET->DATA.len - offs) >= MAP_LEN ) {
-         program = pntol(buf + offs + 4);
-         version = pntol(buf + offs + 8);
-         proto   = pntol(buf + offs + 12);
-         port    = pntol(buf + offs + 16);
+         program = pntol(ptr + offs + 4);
+         version = pntol(ptr + offs + 8);
+         proto   = pntol(ptr + offs + 12);
+         port    = pntol(ptr + offs + 16);
 
          for (i=0; Available_RPC_Dissectors[i].program != 0; i++) {
             if ( Available_RPC_Dissectors[i].program == program &&
                  Available_RPC_Dissectors[i].version == version ) {
 
-       // XXX ------ MISMATCHING PROTOCOLS ---------------
-               if (dissect_on_port(Available_RPC_Dissectors[i].name, port) == ESUCCESS)
-	          break;
-	
-	       if (proto == IPPROTO_TCP) {
-	          dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
-                  DISSECT_MSG("portmap : %s binds %s on port %d TCP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
-                                                                        Available_RPC_Dissectors[i].name, 
-								        port);
-
+               if (proto == IPPROTO_TCP) {
+                  if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == ESUCCESS)
+                     break;
+                  dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
+                  DISSECT_MSG("portmap : %s binds [%s] on port %d TCP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
+                                                                          Available_RPC_Dissectors[i].name, 
+                                                                          port);
                } else {
-	          dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
-                  DISSECT_MSG("portmap : %s binds %s on port %d UDP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
-                                                                        Available_RPC_Dissectors[i].name, 
-								        port);
+                  if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == ESUCCESS)
+                     break;
+                  dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
+                  DISSECT_MSG("portmap : %s binds [%s] on port %d UDP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
+                                                                          Available_RPC_Dissectors[i].name, 
+                                                                          port);
                }	 
                break;
             }
@@ -190,7 +187,6 @@ FUNC_DECODER(dissector_portmap)
          offs += MAP_LEN;
       }
    }
-   
    return NULL;
 }
 

@@ -84,18 +84,21 @@ this is the unofficial and floating in time roadmap:
       - kill a connection
       - type (service)
      
-   + BINDER
 
+============================
+  Not in the first release  
+============================
+   
+   + INTERFACE ENGINE
+      - gtk
+
+   + BINDER
+   
    + ETTERLOG
       - extract files from streams looking for mime content
    
    + FILTERING ENGINE
       - quick filter on a connection
-
-
-   + INTERFACE ENGINE
-      - gtk
-
 
 ==================
   LONG TERM TODO

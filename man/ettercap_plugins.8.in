@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.22 2004/01/07 13:46:15 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.23 2004/01/09 13:18:09 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -69,10 +69,12 @@ is not started yet. You have to launch it from the proper menu.
 .Sp
 This plugin intercepts DNS query and reply with a spoofed answer. You can chose
 to which address the plugin has to reply by modifying the etter.dns file. The
-plugin intercept both A and PTR request. If it was an A request, the name is
+plugin intercepts A, PTR and MX request. If it was an A request, the name is
 searched in the file and the ip address is returned (you can use wildcards in
 the name). If if was a PTR request, the ip is searched in the file and the name
-is returned (except for those name containing a wildcard). The first address
+is returned (except for those name containing a wildcard). In case of MX
+request a special reply is crafted. The host is resolved with a fake host 'mail.host'
+and the additional record contains the ip address of 'mail.host'. The first address
 or name that matches is returned, so be careful with the order.
 
 

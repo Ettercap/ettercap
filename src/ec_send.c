@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.42 2004/01/05 11:52:00 alor Exp $
+    $Id: ec_send.c,v 1.43 2004/01/09 13:18:09 alor Exp $
 */
 
 #include <ec.h>
@@ -66,7 +66,7 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
 int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip);
 int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct packet_object *po);
 int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
-int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen);
+int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr);
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SEND_LOCK     do{ pthread_mutex_lock(&send_mutex); } while(0)
@@ -687,7 +687,7 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
 /*
  * send a dns reply
  */
-int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen)
+int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr)
 {
    libnet_ptag_t t;
    int c;
@@ -705,7 +705,7 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
              1,                     /* num_q */
              1,                     /* num_anws_rr */
              0,                     /* num_auth_rr */
-             0,                     /* num_addi_rr */
+             addi_rr,               /* num_addi_rr */
              data,
              datalen,
              GBL_LNET->lnet,        /* libnet handle */

@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.3 2003/10/13 10:43:30 alor Exp $
+    $Id: finger.c,v 1.4 2003/10/14 16:54:08 alor Exp $
 */
 
 
@@ -82,7 +82,6 @@ static int finger_init(void *dummy)
    GBL_OPTIONS->quiet = 1;
    
    /* wipe the global vars */
-   memset(fingerprint, 0, sizeof(fingerprint));
    memset(&ip, 0, sizeof(struct ip_addr));
    port = 0;
 
@@ -206,6 +205,9 @@ static void do_fingerprint(void)
    char os[OS_LEN + 1];
    int fd;
    
+   /* clear the buffer */
+   memset(fingerprint, 0, sizeof(fingerprint));
+   
    /* convert the in ascii ip address */
    ip_addr_ntoa(&ip, tmp);
 
@@ -233,6 +235,10 @@ static void do_fingerprint(void)
    /* remove the hook, we have collected the finger */
    hook_del(PACKET_TCP, &get_finger);
 
+   /* no fingerprint collected */
+   if (!strcmp(fingerprint, ""))
+      return;
+   
    INSTANT_USER_MSG("\n FINGERPRINT      : %s\n", fingerprint);
 
    /* decode the finterprint */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.5 2003/10/14 14:06:09 alor Exp $
+    $Id: ec_text.c,v 1.6 2003/10/14 16:54:08 alor Exp $
 */
 
 #include <ec.h>
@@ -278,7 +278,7 @@ void text_interface(void)
        */
         
       /* if there is a pending char to be read */
-      if (ec_poll_read(fileno(stdin), 1)) {
+      if (ec_poll_in(fileno(stdin), 1)) {
          
          char ch = 0;
          ch = getchar();

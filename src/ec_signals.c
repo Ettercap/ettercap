@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.15 2003/10/13 10:43:50 alor Exp $
+    $Id: ec_signals.c,v 1.16 2003/10/14 16:54:08 alor Exp $
 */
 
 #include <ec.h>
@@ -38,9 +38,6 @@ static handler_t *signal_handle(int signo, handler_t *handler, int flags);
 static RETSIGTYPE signal_SEGV(int sig);
 static RETSIGTYPE signal_TERM(int sig);
 static RETSIGTYPE signal_CHLD(int sig);
-static RETSIGTYPE signal_ALRM(int sig);
-
-void signal_timeout(int sec);
 
 /*************************************/
 
@@ -180,32 +177,11 @@ static RETSIGTYPE signal_CHLD(int sig)
    int stat;
    
    /* 
-    * wait for the child to return and not
-    * become a zombie
+    * wait for the child to return and not become a zombie
     */
    while (waitpid (-1, &stat, WNOHANG) > 0);
 }
 
-
-/*
- * sig alarm handler 
- */
-static RETSIGTYPE signal_ALRM(int sig)
-{
-   INSTANT_USER_MSG("Connection timout...\n");
-   alarm(0);
-   signal_handle(SIGALRM, signal_ALRM, 0);
-}
-
-
-/*
- * set atime out for a connect()
- */
-void signal_timeout(int sec)
-{
-   signal_handle(SIGALRM, signal_ALRM, 0);
-   alarm(sec);
-}
 
 
 /* EOF */

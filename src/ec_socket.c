@@ -17,26 +17,49 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.3 2003/10/13 10:43:50 alor Exp $
+    $Id: ec_socket.c,v 1.4 2003/10/14 16:54:08 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_signals.h>
+#include <ec_poll.h>
 
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
+#include <fcntl.h>
 
 /* protos */
 
 int open_socket(char *host, u_int16 port);
 int close_socket(int s);
+void set_blocking(int s, int set);
 int socket_send(int s, u_char *payload, size_t size);
 int socket_recv(int s, u_char *payload, size_t size);
 
 /*******************************************/
+
+/* 
+ * set or unset blocking flag on a socket
+ */
+void set_blocking(int s, int set)
+{
+   int ret;
+
+   /* get the current flags */
+   if ((ret = fcntl(s, F_GETFL, 0)) == -1)
+      return;
+   
+   if (set) 
+      ret &= ~O_NONBLOCK;
+   else
+      ret |= O_NONBLOCK;
+   
+   /* set the flag */
+   fcntl (s, F_SETFL, ret);
+}
+
 
 /*
  * open a socket to the specified host and port
@@ -45,7 +68,7 @@ int open_socket(char *host, u_int16 port)
 {
    struct hostent *infh;
    struct sockaddr_in sa_in;
-   int sh;
+   int sh, ret;
 
    DEBUG_MSG("open_socket -- [%s]:[%d]", host, port);
 
@@ -66,16 +89,29 @@ int open_socket(char *host, u_int16 port)
    if ( (sh = socket(AF_INET, SOCK_STREAM, 0)) < 0)
       ERROR_MSG("Cannot create the socket");
  
-   /* set the timeout */
-   signal_timeout(GBL_CONF->connect_timeout);
+   /* set nonbloking socket */
+   set_blocking(sh, 0);
+  
+   do {
+      /* connect to the server */
+      ret = connect(sh, (struct sockaddr *)&sa_in, sizeof(sa_in));
+      
+      if (ret < 0 && errno == EINPROGRESS) {
+         if (ec_poll_in(sh, GBL_CONF->connect_timeout * 1000)) {
+            /* timeout */
+            DEBUG_MSG("open_socket: connect() timeout");
+            FATAL_MSG("Can't connect to %s on port %d", host, port);
+         } else {
+            /* connected */
+            DEBUG_MSG("open_socket: connect() connected");
+         }
+      }
+   } while(errno == EINPROGRESS);
+  
+   /* reset the state to blocking socket */
+   set_blocking(sh, 1);
    
-   /* connect to the server */
-   if ( connect(sh, (struct sockaddr *)&sa_in, sizeof(sa_in)) < 0)
-      FATAL_MSG("Can't connect to %s on port %d", host, port);
    
-   /* reset the timeout */
-   signal_timeout(0);
-
    DEBUG_MSG("open_socket: %d", sh);
    
    return sh;

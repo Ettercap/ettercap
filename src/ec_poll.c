@@ -1,5 +1,5 @@
 /*
-    ettercap -- poll input event (use poll or select)
+    ettercap -- poll events (use poll or select)
 
     Copyright (C) ALoR & NaGA
 
@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_poll.c,v 1.3 2003/07/03 20:12:49 alor Exp $
+    $Id: ec_poll.c,v 1.4 2003/10/14 16:54:08 alor Exp $
 */
 
 #include <ec.h>
@@ -34,11 +34,15 @@
 
 /* protos */
 
-int ec_poll_read(int fd, u_int msec);
+int ec_poll_in(int fd, u_int msec);
+int ec_poll_out(int fd, u_int msec);
 
 /************************************************/
 
-int ec_poll_read(int fd, u_int msec)
+/*
+ * looks for event on INPUT
+ */
+int ec_poll_in(int fd, u_int msec)
 {
 #ifdef HAVE_POLL
    struct pollfd poll_fd;
@@ -83,6 +87,54 @@ int ec_poll_read(int fd, u_int msec)
 #endif
 }
 
+
+/*
+ * looks for event on OUTPUT
+ */
+int ec_poll_out(int fd, u_int msec)
+{
+#ifdef HAVE_POLL
+   struct pollfd poll_fd;
+   
+   /* set the correct fd */
+   poll_fd.fd = fd;
+   poll_fd.events = POLLOUT;
+         
+   /* execute the syscall */
+   poll(&poll_fd, 1, msec);
+
+   /* the event has occurred, return 1 */
+   if (poll_fd.revents & POLLOUT)
+      return 1;
+  
+   return 0;
+   
+#elif defined(HAVE_SELECT)
+
+   fd_set msk_fd;
+   struct timeval to;
+     
+   memset(&to, 0, sizeof(struct timeval));
+   /* timeval uses microseconds */
+   to.tv_usec = msec * 1000;
+   
+   FD_ZERO(&msk_fd);
+  
+   /* set the correct fd */
+   FD_SET(fd, &msk_fd);
+
+   /* execute the syscall */
+   select(FOPEN_MAX, (fd_set *) 0, &msk_fd, (fd_set *) 0, &to);
+   
+   /* the even has occurred */
+   if (FD_ISSET(0, &msk_fd))
+      return 1;
+               
+   return 0;
+#else
+   #error "you don't have neither poll nor select"
+#endif
+}
 
 /* EOF */
 

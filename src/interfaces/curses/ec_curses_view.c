@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.5 2003/12/25 17:19:57 alor Exp $
+    $Id: ec_curses_view.c,v 1.6 2004/01/03 11:03:02 alor Exp $
 */
 
 #include <ec.h>
@@ -36,14 +36,14 @@ static void refresh_stats(void);
 static char tag_resolve[] = " ";
 static wdg_t *wdg_stats;
 
-struct wdg_menu menu_view[] = { {"View",                "V", NULL},
-                                {"Connections",          "", NULL},
-                                {"Profiles",             "", NULL},
-                                {"-",                    "", NULL},
-                                {"Resolve IP addresses", tag_resolve, toggle_resolve},
-                                {"-",                    "", NULL},
-                                {"Statistics",           "", curses_show_stats},
-                                {NULL, NULL, NULL},
+struct wdg_menu menu_view[] = { {"View",                 'V',       "",    NULL},
+                                {"Connections",          0,         "",    NULL},
+                                {"Profiles",             CTRL('O'), "C-o", NULL},
+                                {"-",                    0,         "",    NULL},
+                                {"Resolve IP addresses", 0, tag_resolve,   toggle_resolve},
+                                {"-",                    0,         "",    NULL},
+                                {"Statistics",           0,         "",    curses_show_stats},
+                                {NULL, 0, NULL, NULL},
                               };
 
 

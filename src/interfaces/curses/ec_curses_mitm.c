@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_mitm.c,v 1.2 2003/12/14 17:07:17 alor Exp $
+    $Id: ec_curses_mitm.c,v 1.3 2004/01/03 11:03:02 alor Exp $
 */
 
 #include <ec.h>
@@ -40,14 +40,14 @@ static void curses_mitm_stop(void);
 
 static char params[PARAMS_LEN];
 
-struct wdg_menu menu_mitm[] = { {"Mitm",               "M", NULL},
-                                {"Arp poisoning...",    "", curses_arp_poisoning},
-                                {"Icmp redirect...",    "", curses_icmp_redir},
-                                {"Port stealing...",    "", curses_port_stealing},
-                                {"Dhcp spoofing...",    "", curses_dhcp_spoofing},
-                                {"-",                   "", NULL},
-                                {"Stop mitm attack(s)", "", curses_mitm_stop},
-                                {NULL, NULL, NULL},
+struct wdg_menu menu_mitm[] = { {"Mitm",                'M', "", NULL},
+                                {"Arp poisoning...",    0,   "", curses_arp_poisoning},
+                                {"Icmp redirect...",    0,   "", curses_icmp_redir},
+                                {"Port stealing...",    0,   "", curses_port_stealing},
+                                {"Dhcp spoofing...",    0,   "", curses_dhcp_spoofing},
+                                {"-",                   0,   "", NULL},
+                                {"Stop mitm attack(s)", 0,   "", curses_mitm_stop},
+                                {NULL, 0, NULL, NULL},
                               };
 
 /*******************************************/

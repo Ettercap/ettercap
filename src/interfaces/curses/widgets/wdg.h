@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.27 2003/12/27 16:08:47 alor Exp $ */
+/* $Id: wdg.h,v 1.28 2004/01/03 11:03:23 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -220,6 +220,7 @@ extern void wdg_scroll_set_lines(wdg_t *wo, size_t lines);
 /* menu objects */
 struct wdg_menu {
    char *name;
+   int hotkey;
    char *shortcut;
    void (*callback)(void);
 };

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_start.c,v 1.2 2003/12/13 18:41:11 alor Exp $
+    $Id: ec_curses_start.c,v 1.3 2004/01/03 11:03:02 alor Exp $
 */
 
 #include <ec.h>
@@ -31,12 +31,12 @@ static void curses_stop_sniffing(void);
 
 /* globals */
 
-struct wdg_menu menu_start[] = { {"Start",         "S", NULL},
-                                 {"Start sniffing", "", curses_start_sniffing},
-                                 {"Stop sniffing",  "", curses_stop_sniffing},
-                                 {"-",              "", NULL},
-                                 {"Exit",          "C-x", wdg_exit},
-                                 {NULL, NULL, NULL},
+struct wdg_menu menu_start[] = { {"Start",          'S',       "",    NULL},
+                                 {"Start sniffing", CTRL('S'), "C-s", curses_start_sniffing},
+                                 {"Stop sniffing",  CTRL('A'), "C-a", curses_stop_sniffing},
+                                 {"-",              0,         "",    NULL},
+                                 {"Exit",           CTRL('X'), "C-x", wdg_exit},
+                                 {NULL, 0, NULL, NULL},
                                };
 
 /*******************************************/

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.30 2003/12/28 17:19:56 alor Exp $
+    $Id: ec_curses.c,v 1.31 2004/01/03 11:03:02 alor Exp $
 */
 
 #include <ec.h>
@@ -384,36 +384,36 @@ static void curses_setup(void)
 {
    wdg_t *menu;
    
-   struct wdg_menu file[] = { {"File",           "F", NULL},
-                              {"Open...",         "", curses_file_open},
-                              {"Dump to file...", "", curses_file_write},
-                              {"-",               "", NULL},
-                              {"Exit",            "", curses_exit},
-                              {NULL, NULL, NULL},
+   struct wdg_menu file[] = { {"File",            'F',       "",    NULL},
+                              {"Open...",         CTRL('O'), "C-o", curses_file_open},
+                              {"Dump to file...", CTRL('D'), "C-d", curses_file_write},
+                              {"-",               0,         "",    NULL},
+                              {"Exit",            CTRL('X'), "C-x", curses_exit},
+                              {NULL, 0, NULL, NULL},
                             };
    
-   struct wdg_menu live[] = { {"Sniff",              "S", NULL},
-                              {"Unified sniffing...", "", curses_unified_sniff},
-                              {"Bridged sniffing...", "", curses_bridged_sniff},
-                              {"-",                   "", NULL},
-                              {"Set pcap filter...",  "", curses_pcap_filter},
-                              {NULL, NULL, NULL},
+   struct wdg_menu live[] = { {"Sniff",               'S',       "",    NULL},
+                              {"Unified sniffing...", 'U',       "U",   curses_unified_sniff},
+                              {"Bridged sniffing...", 'B',       "B",   curses_bridged_sniff},
+                              {"-",                   0,         "",    NULL},
+                              {"Set pcap filter...",  CTRL('P'), "C-p", curses_pcap_filter},
+                              {NULL, 0, NULL, NULL},
                             };
    
-   struct wdg_menu options[] = { {"Options",      "O",         NULL},
-                                 {"Unoffensive",  tag_unoff,   toggle_unoffensive},
-                                 {"Promisc mode", tag_promisc, toggle_nopromisc},
-                                 {NULL, NULL, NULL},
+   struct wdg_menu options[] = { {"Options",      'O', "",          NULL},
+                                 {"Unoffensive",   0,  tag_unoff,   toggle_unoffensive},
+                                 {"Promisc mode",  0,  tag_promisc, toggle_nopromisc},
+                                 {NULL, 0, NULL, NULL},
                                };
    
-   struct wdg_menu logging[] = { {"Logging",                     "L", NULL},
-                                 {"Log all packets and infos...", "", curses_log_all},
-                                 {"Log only infos...",            "", curses_log_info},
-                                 {"-",                            "", NULL},
-                                 {"Log user messages...",         "", curses_log_msg},
-                                 {"-",                            "", NULL},
-                                 {"Compressed file",    tag_compress, toggle_compress},
-                                 {NULL, NULL, NULL},
+   struct wdg_menu logging[] = { {"Logging",                      'L', "",          NULL},
+                                 {"Log all packets and infos...", CTRL('L'), "C-l", curses_log_all},
+                                 {"Log only infos...",            CTRL('I'), "C-i", curses_log_info},
+                                 {"-",                            0, "",            NULL},
+                                 {"Log user messages...",         CTRL('M'), "C-m", curses_log_msg},
+                                 {"-",                            0, "",            NULL},
+                                 {"Compressed file",              0, tag_compress,  toggle_compress},
+                                 {NULL, 0, NULL, NULL},
                                };
    
    DEBUG_MSG("curses_setup");

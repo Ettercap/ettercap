@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.44 2003/11/10 22:46:24 alor Exp $ */
+/* $Id: ec_globals.h,v 1.45 2003/11/11 14:59:31 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -49,6 +49,7 @@ struct ec_options {
    char resolve:1;
    char ext_headers:1;
    char mitm:1;
+   char only_mitm:1;
    char remote:1;
    char reversed;
    char *hostsfile;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.44 2003/11/07 16:34:47 alor Exp $
+    $Id: ec_main.c,v 1.45 2003/11/11 14:59:31 alor Exp $
 */
 
 #include <ec.h>
@@ -137,6 +137,10 @@ int main(int argc, char *argv[])
 
    /* start the mitm attack */
    mitm_start();
+
+   /* we are interested only in the mitm attack */
+   if (GBL_OPTIONS->only_mitm)
+      only_mitm();
    
    /* initialize the sniffing method */
    EXECUTE(GBL_SNIFF->start);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.52 2003/10/30 21:20:31 alor Exp $
+    $Id: ec_parser.c,v 1.53 2003/11/11 14:59:31 alor Exp $
 */
 
 
@@ -58,8 +58,9 @@ void ec_usage(void)
 
    fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
    
-   fprintf(stdout, "\nSniffing options:\n");
+   fprintf(stdout, "\nSniffing and Attack options:\n");
    fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
+   fprintf(stdout, "  -o, --only-mitm             don't sniff, only perform the mitm attack\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
    fprintf(stdout, "  -u, --unoffensive           do not forward packets\n");
@@ -154,6 +155,7 @@ void parse_options(int argc, char **argv)
       { "daemon", no_argument, NULL, 'D' },
       
       { "mitm", required_argument, NULL, 'M' },
+      { "only-mitm", no_argument, NULL, 'o' },
       { "bridge", required_argument, NULL, 'B' },
       { "promisc", no_argument, NULL, 'p' },
       
@@ -173,7 +175,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:P:pQqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:oP:pQqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -181,6 +183,11 @@ void parse_options(int argc, char **argv)
                   GBL_OPTIONS->mitm = 1;
                   if (mitm_set(optarg) != ESUCCESS)
                      FATAL_ERROR("MITM method '%s' not supported...\n", optarg);
+                  break;
+                  
+         case 'o':
+                  GBL_OPTIONS->only_mitm = 1;
+                  select_text_interface();
                   break;
                   
          case 'B':
@@ -404,7 +411,11 @@ void parse_options(int argc, char **argv)
   
    if (GBL_OPTIONS->unoffensive && GBL_OPTIONS->mitm)
       FATAL_ERROR("Cannot use mitm attacks in unoffensive mode");
-      
+     
+   /* only mitm available only with text interface */
+   if (GBL_OPTIONS->only_mitm)
+      select_text_interface();
+
    /* XXX - check for incompatible options */
    
    DEBUG_MSG("parse_options: options combination looks good");

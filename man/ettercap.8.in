@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.47 2003/11/10 22:46:24 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.48 2003/11/11 14:59:31 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -166,7 +166,7 @@ export EC_UID=500) or set the correct parameter in the etter.conf file.
 Options that make sense together can generally be combined. ettercap will warn the user
 about unsupported option combinations.
 .TP
-.B SNIFFING OPTIONS
+.B SNIFFING AND ATTACK OPTIONS
 .PP
 ettercap NG has a new unified sniffing method. This implies that ip_forwarding
 in the kernel is always disabled and the forwarding is done by ettercap. Every
@@ -266,6 +266,14 @@ will redirect all the connections that pass thru that gateway.
 XXX-TODO 
 
 .RE
+
+.TP
+\fB\-o\fR, \fB\-\-only-mitm\fR
+This options disables the sniffing thread and enable only the mitm attack.
+Useful if you want to use ettercap to perform mitm attacks and another sniffer
+(such as ethereal) to sniff the traffic. Keep in mind that the packet are not
+forwarded by ettercap. The kernel will be responsible for the forwarding.
+Rebember to activate the "ip forwarding" feature in your kernel.
 
 .TP
 \fB\-B\fR, \fB\-\-bridge <IFACE>\fR

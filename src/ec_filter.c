@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.39 2003/11/10 22:46:24 alor Exp $
+    $Id: ec_filter.c,v 1.40 2003/11/11 14:59:31 alor Exp $
 */
 
 #include <ec.h>
@@ -453,7 +453,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
 
             /* don't modify if in unoffensive mode */
             if (GBL_OPTIONS->unoffensive)
-               return -EINVALID;
+               JIT_FAULT("Cannot modify packets in unoffensive mode");
              
             /* 
              * the replaced string will not be larger than

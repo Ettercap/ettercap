@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.6 2003/11/01 15:52:58 alor Exp $
+    $Id: ec_mitm.c,v 1.7 2003/11/11 14:59:31 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_mitm.h>
+#include <ec_poll.h>
 
 /* globals */
 
@@ -43,6 +44,7 @@ void mitm_add(struct mitm_method *mm);
 int mitm_set(u_char *name);
 void mitm_start(void);
 void mitm_stop(void);
+void only_mitm(void);
 
 /*******************************************/
 
@@ -138,6 +140,31 @@ void mitm_stop(void)
       }
    }
    
+}
+
+
+/*
+ * keep the process running until the user exits
+ */
+void only_mitm(void)
+{
+   char ch = 0;
+
+   INSTANT_USER_MSG("Activated the mitm attack only...\n");
+   
+   while (ch != 'q' && ch != 'Q'){
+      /* if there is a pending char to be read */
+      if (ec_poll_in(fileno(stdin), 1)) 
+         ch = getchar();
+   }
+   
+   INSTANT_USER_MSG("Exiting...\n\n");
+
+   /* stop the process */
+   mitm_stop();
+
+   /* perform a clean exit */
+   clean_exit(0);
 }
 
 /* EOF */

@@ -34,7 +34,6 @@ this is the unofficial and floating in time roadmap:
 Nov 2003:
 
    + MITM METHODS
-      - only mitm (separate instance)
       - dhcp poisoning
       - port stealing
       - dns poisoning

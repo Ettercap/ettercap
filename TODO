@@ -22,9 +22,7 @@
 ============================
    
    + ETTERLOG
-      - extract files from streams looking for mime content or protocol
-      - stream functions
-      - extractors for each protocol
+      - extractors for HTTP, POP, SMTP, FTP, TFTP
 
    + reslove ip in the message window
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_stream.c,v 1.4 2004/10/13 15:31:21 alor Exp $
+    $Id: el_stream.c,v 1.5 2004/10/14 13:53:09 alor Exp $
 */
 
 
@@ -30,7 +30,7 @@ void stream_init(struct stream_object *so);
 int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf);
 int stream_read(struct stream_object *so, u_char *buf, size_t size, int mode);
 int stream_move(struct stream_object *so, size_t offset, int whence, int mode);
-int stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode);
+struct po_list * stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode);
    
 /*******************************************/
 
@@ -233,8 +233,10 @@ int stream_move(struct stream_object *so, size_t offset, int whence, int mode)
 
 /*
  * search a pattern into the stream 
+ * returns  - NULL if not found
+ *          - the packet containing the string if found
  */
-int stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode)
+struct po_list * stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode)
 {
    struct po_list *pl;
    u_char *tmpbuf = NULL, *find;
@@ -274,14 +276,18 @@ int stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode
    /* the buffer is found in the conversation */
    if ((find = memmem(tmpbuf, len, buf, buflen))) {
       offset = find - tmpbuf;
-   }
+      
+      SAFE_FREE(tmpbuf);
+
+      /* move the stream pointers to the buffer found */
+      stream_move(so, offset, SEEK_CUR, mode);
+
+      return so->pl_curr;
+   } 
    
    SAFE_FREE(tmpbuf);
-
-   /* move the stream pointers to the buffer found */
-   stream_move(so, offset, SEEK_CUR, mode);
-
-   return offset;
+  
+   return NULL;
 }
 
 

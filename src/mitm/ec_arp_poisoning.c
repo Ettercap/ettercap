@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.25 2004/06/14 07:30:55 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.26 2004/06/14 13:28:14 alor Exp $
 */
 
 #include <ec.h>
@@ -168,9 +168,10 @@ static void arp_poisoning_stop(void)
             if (!ip_addr_cmp(&g1->ip, &g2->ip))
                continue;
 
-            /* skip even equal mac address... */
-            if (!memcmp(g1->mac, g2->mac, MEDIA_ADDR_LEN))
-               continue;
+            if (!GBL_CONF->arp_poison_equal_mac)
+               /* skip even equal mac address... */
+               if (!memcmp(g1->mac, g2->mac, MEDIA_ADDR_LEN))
+                  continue;
             
             /* the effective poisoning packets */
             if (GBL_CONF->arp_poison_reply) {
@@ -234,10 +235,11 @@ EC_THREAD_FUNC(arp_poisoner)
             /* equal ip must be skipped, you cant poison itself */
             if (!ip_addr_cmp(&g1->ip, &g2->ip))
                continue;
-            
-            /* skip even equal mac address... */
-            if (!memcmp(g1->mac, g2->mac, MEDIA_ADDR_LEN))
-               continue;
+           
+            if (!GBL_CONF->arp_poison_equal_mac)
+               /* skip even equal mac address... */
+               if (!memcmp(g1->mac, g2->mac, MEDIA_ADDR_LEN))
+                  continue;
             
             /* 
              * send the spoofed ICMP echo request 

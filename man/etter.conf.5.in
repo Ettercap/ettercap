@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.28 2004/06/10 14:55:31 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.29 2004/06/14 13:28:13 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -106,6 +106,12 @@ Use ARP replies to poison the targets. This is the classic attack.
 .B arp_poison_request
 Use ARP request to poison the targets. Useful against targets that cache even
 arp request values.
+
+.TP
+.B arp_poison_equal_mac
+Set this option to 0 if you want to skip the poisoning of two hosts with the
+same mac address. This may happen if a NIC has one or more aliases on the same
+network.
 
 .TP
 .B dhcp_lease_time

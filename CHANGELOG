@@ -6,7 +6,7 @@ Legenda:
 
 =========================================
 
-NG-0.7.0_rc1     200405
+NG-0.7.0_rc1     20040614
 
    + WEP decryption for WiFi packets
    + support for prism2 headers

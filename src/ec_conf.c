@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.36 2004/06/10 14:55:31 alor Exp $
+    $Id: ec_conf.c,v 1.37 2004/06/14 13:28:14 alor Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,7 @@ static struct conf_entry mitm[] = {
    { "arp_poison_icmp", NULL },
    { "arp_poison_reply", NULL },
    { "arp_poison_request", NULL },
+   { "arp_poison_equal_mac", NULL },
    { "dhcp_lease_time", NULL },
    { "port_steal_delay", NULL },
    { "port_steal_send_delay", NULL },
@@ -151,6 +152,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&mitm, "arp_poison_icmp", &GBL_CONF->arp_poison_icmp);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_reply", &GBL_CONF->arp_poison_reply);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_request", &GBL_CONF->arp_poison_request);
+   set_pointer((struct conf_entry *)&mitm, "arp_poison_equal_mac", &GBL_CONF->arp_poison_equal_mac);
    set_pointer((struct conf_entry *)&mitm, "dhcp_lease_time", &GBL_CONF->dhcp_lease_time);
    set_pointer((struct conf_entry *)&mitm, "port_steal_delay", &GBL_CONF->port_steal_delay);
    set_pointer((struct conf_entry *)&mitm, "port_steal_send_delay", &GBL_CONF->port_steal_send_delay);

@@ -22,6 +22,7 @@ extern int get_packet(struct log_header_packet *pck, u_char **buf);
 
 /* el_display */
 extern void display(void);
+extern void set_display_regex(char *regex);
 
 /* el_conn */
 extern void conn_table(void);

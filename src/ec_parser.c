@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.16 2003/03/31 21:46:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.17 2003/04/01 22:13:44 alor Exp $
 */
 
 
@@ -89,7 +89,7 @@ void ec_usage(void)
 
 void parse_options(int argc, char **argv)
 {
-   int c, r;
+   int c;
 
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
@@ -197,11 +197,13 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'L':
-                  set_loglevel(LOG_PACKET, optarg);
+                  if (set_loglevel(LOG_PACKET, optarg) == -EFATAL)
+                     clean_exit(-EFATAL);
                   break;
 
          case 'l':
-                  set_loglevel(LOG_INFO, optarg);
+                  if (set_loglevel(LOG_INFO, optarg) == -EFATAL)
+                     clean_exit(-EFATAL);
                   break;
                   
          case 'c':
@@ -209,8 +211,7 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'e':
-                  r = set_logregex(optarg);
-                  if (r == -EFATAL)
+                  if (set_logregex(optarg) == -EFATAL)
                      clean_exit(-EFATAL);
                   break;
                   

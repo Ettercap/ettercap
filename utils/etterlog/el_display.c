@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.4 2003/03/29 16:20:39 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.5 2003/04/01 22:13:44 alor Exp $
 */
 
 #include <el.h>
@@ -24,11 +24,15 @@
 #include <el_functions.h>
 
 #include <sys/stat.h>
+#include <regex.h>
+
+/* proto */
 
 void display(void);
 static void display_packet(void);
 static void display_info(void);
 static void display_headers(struct log_header_packet *pck);
+void set_display_regex(char *regex);
 
 /*******************************************/
 
@@ -70,13 +74,23 @@ static void display_packet(void)
          break;
 
       /* the packet should complain to the target specifications */
-      if (!is_target(&pck))
+      if (!is_target(&pck)) {
+         SAFE_FREE(buf);
          continue;
+      }
       
       /* the packet should complain to the connection specifications */
-      if (!is_conn(&pck, &versus))
+      if (!is_conn(&pck, &versus)) {
+         SAFE_FREE(buf);
          continue;
-      
+      }
+     
+      /* if the regex does not match, the packet is not interesting */
+      if (GBL.regex && regexec(GBL.regex, buf, 0, NULL, 0) != 0) {
+         SAFE_FREE(buf);
+         continue;
+      }
+                  
       /* 
        * prepare the buffer,
        * the max length is hex_fomat
@@ -187,6 +201,26 @@ static void display_headers(struct log_header_packet *pck)
    fprintf(stdout, "\n");
 }
 
+/*
+ * compile the regex
+ */
+
+void set_display_regex(char *regex)
+{
+   int err;
+   char errbuf[100];
+
+   /* allocate the new structure */
+   GBL.regex = calloc(1, sizeof(regex_t));
+   ON_ERROR(GBL.regex, NULL, "can't allocate memory");
+
+   err = regcomp(GBL.regex, regex, REG_EXTENDED | REG_NOSUB );
+
+   if (err) {
+      regerror(err, GBL.regex, errbuf, sizeof(errbuf));
+      FATAL_ERROR("%s\n", errbuf);
+   }                      
+}
 
 /* EOF */
 

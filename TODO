@@ -17,12 +17,9 @@
       - make test with dlopen-test
 
    + LOGGING ENGINE
-      - info packet
-      - user and pass infos
-      - skip packet with (port = 0, no finger, no pass)
+      - banner extracted by dissectors (state machine required)
 
    + ETTERLOG
-      - info packet
       - analysis 
          - number of hosts
          - number of pass
@@ -30,7 +27,12 @@
       - print per host, per port
       - search per user
       - search per port/service
+      - respect TARGET
+      - regex on all fields
 
+   + QUIET MODE (-q option)
+      - useful to convert from pcap to etterlog
+      - display only USER_MSG not packet
 
    + ARP SCAN
 
@@ -53,12 +55,7 @@
       - passive mapping
       - "active" passive fingerprint
       - sniffing (connection tracking)
-      - logging
       - binder
-   
-   + QUIET MODE (-q option)
-      - useful to convert from pcap to etterlog
-      - display only USER_MSG not packet
    
    + DISSECTORS
       - convert all the old dissectors
@@ -76,7 +73,6 @@
       - gtk
 
    + DEVELOPMENT DOCUMENTATION
-
 
 
 ==================

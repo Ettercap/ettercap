@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.7 2003/03/31 21:46:49 alor Exp $
+    $Id: ec_log.c,v 1.8 2003/04/01 22:13:43 alor Exp $
 */
 
 #include <ec.h>
@@ -45,7 +45,7 @@ static regex_t *log_regex;
 
 static void log_close(void);
 int set_logregex(char *regex);
-void set_loglevel(int level, char *filename);
+int set_loglevel(int level, char *filename);
 
 void log_packet(struct packet_object *po);
 
@@ -67,7 +67,7 @@ static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
  * LOG_INFO = only info
  */
 
-void set_loglevel(int level, char *filename)
+int set_loglevel(int level, char *filename)
 {
    char eci[strlen(filename)+5];
    char ecp[strlen(filename)+5];
@@ -83,10 +83,12 @@ void set_loglevel(int level, char *filename)
       case LOG_PACKET:
          if (GBL_OPTIONS->compress) {
             fd_cp = gzopen(ecp, "wb9");
-            ON_ERROR(fd_cp, NULL, "%s", gzerror(fd_cp, &zerr));
+            if (fd_cp == NULL)
+               FATAL_MSG("%s", gzerror(fd_cp, &zerr));
          } else {
             fd_p = open(ecp, O_CREAT | O_TRUNC | O_RDWR);
-            ON_ERROR(fd_p, -1, "Can't create %s", ecp);
+            if (fd_p == -1)
+               FATAL_MSG("Can't create %s", ecp);
          }
 
          /* set the permissions */
@@ -103,10 +105,12 @@ void set_loglevel(int level, char *filename)
       case LOG_INFO:
          if (GBL_OPTIONS->compress) {
             fd_ci = gzopen(eci, "wb9");
-            ON_ERROR(fd_ci, NULL, "%s", gzerror(fd_ci, &zerr));
+            if (fd_ci == NULL)
+               FATAL_MSG("%s", gzerror(fd_ci, &zerr));
          } else {
             fd_i = open(eci, O_CREAT | O_TRUNC | O_RDWR);
-            ON_ERROR(fd_i, -1, "Can't create %s", eci);
+            if (fd_i == -1)
+               FATAL_MSG("Can't create %s", eci);
          }
          
          /* set the permissions */
@@ -124,6 +128,8 @@ void set_loglevel(int level, char *filename)
    }
 
    atexit(&log_close);
+
+   return ESUCCESS;
 }
 
 /* close the log files */
@@ -139,6 +145,52 @@ void log_close(void)
    
 }
 
+/*
+ * compile the regex
+ */
+
+int set_logregex(char *regex)
+{
+   int err;
+   char errbuf[100];
+   
+   DEBUG_MSG("set_logregex: %s", regex);
+
+   /* free any previous compilation */
+   SAFE_FREE(log_regex);
+  
+   /* allocate the new structure */
+   log_regex = calloc(1, sizeof(regex_t));
+   ON_ERROR(log_regex, NULL, "can't allocate memory");
+
+   err = regcomp(log_regex, regex, REG_EXTENDED | REG_NOSUB );
+
+   if (err) {
+      regerror(err, log_regex, errbuf, sizeof(errbuf));
+      SAFE_FREE(log_regex);
+      FATAL_MSG("%s\n", errbuf);
+   }
+
+   return ESUCCESS;
+}
+
+/* 
+ * function registered to HOOK_DISPATCHER
+ * check the regex (if present) and log packets
+ */
+
+void log_packet(struct packet_object *po)
+{
+   /* the regex is set, respect it */
+   if (log_regex) {
+      if (regexec(log_regex, po->DATA.data, 0, NULL, 0) == 0)
+         log_write_packet(po);
+   } else {
+      /* if no regex is set, dump all the packets */
+      log_write_packet(po);
+   }
+   
+}
 /*
  * initialize the log file with 
  * the propre header
@@ -222,7 +274,8 @@ void log_write_packet(struct packet_object *po)
    hp.L4_proto = po->L4.proto;
    hp.L4_src = po->L4.src;
    hp.L4_dst = po->L4.dst;
-   
+ 
+   /* the length of the payload */
    hp.len = htonl(po->disp_len);
 
    LOG_LOCK;
@@ -244,52 +297,6 @@ void log_write_packet(struct packet_object *po)
    LOG_UNLOCK;
 }
 
-/*
- * compile the regex
- */
-
-int set_logregex(char *regex)
-{
-   int err;
-   char errbuf[100];
-   
-   DEBUG_MSG("set_logregex: %s", regex);
-
-   /* free any previous compilation */
-   SAFE_FREE(log_regex);
-  
-   /* allocate the new structure */
-   log_regex = calloc(1, sizeof(regex_t));
-   ON_ERROR(log_regex, NULL, "can't allocate memory");
-
-   err = regcomp(log_regex, regex, REG_EXTENDED | REG_NOSUB );
-
-   if (err) {
-      regerror(err, log_regex, errbuf, sizeof(errbuf));
-      SAFE_FREE(log_regex);
-      FATAL_MSG("%s\n", errbuf);
-   }
-
-   return ESUCCESS;
-}
-
-/* 
- * function registered to HOOK_DISPATCHER
- * check the regex (if present) and log packets
- */
-
-void log_packet(struct packet_object *po)
-{
-   /* the regex is set, respect it */
-   if (log_regex) {
-      if (regexec(log_regex, po->DATA.data, 0, NULL, 0) == 0)
-         log_write_packet(po);
-   } else {
-      /* if no regex is set, dump all the packets */
-      log_write_packet(po);
-   }
-   
-}
 
 /*
  * log passive infomations
@@ -331,20 +338,82 @@ void log_write_info(struct packet_object *po)
    /* OS identification */
    memcpy(&hi.finger, po->PASSIVE.fingerprint, FINGER_LEN);
    
-   /* service banner */
-   memcpy(&hi.banner, po->PASSIVE.banner, BANNER_LEN);
-   
    /* local, non local, gateway ecc ecc */
    hi.type = po->PASSIVE.flags;
 
+   /* set the length of the fields */
+   if (po->INFO.user)
+      hi.var.user_len = htons(strlen(po->INFO.user));
+
+   if (po->INFO.pass)
+      hi.var.pass_len = htons(strlen(po->INFO.pass));
+   
+   if (po->INFO.info)
+      hi.var.info_len = htons(strlen(po->INFO.info));
+   
+   if (po->INFO.banner)
+      hi.var.banner_len = htons(strlen(po->INFO.banner));
+   
+   /* check if the packet is interesting... else return */
+   if (hi.L4_addr == 0 && 
+       !strcmp(hi.finger, "") &&
+       hi.var.user_len == 0 &&
+       hi.var.pass_len == 0 &&
+       hi.var.info_len == 0 &&
+       hi.var.banner_len == 0
+       )
+      return;
+  
    LOG_LOCK;
    
    if (GBL_OPTIONS->compress) {
       c = gzwrite(fd_ci, &hi, sizeof(hi));
-      ON_ERROR(c, -1, "%s", gzerror(fd_cp, &zerr));
+      ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+    
+      /* and now write the variable fields */
+      if (po->INFO.user) {
+         c = gzwrite(fd_ci, po->INFO.user, strlen(po->INFO.user) );
+         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+      }
+
+      if (po->INFO.pass) {
+         c = gzwrite(fd_ci, po->INFO.pass, strlen(po->INFO.pass) );
+         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+      }
+
+      if (po->INFO.info) {
+         c = gzwrite(fd_ci, po->INFO.info, strlen(po->INFO.info) );
+         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+      }
+      
+      if (po->INFO.banner) {
+         c = gzwrite(fd_ci, po->INFO.banner, strlen(po->INFO.banner) );
+         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+      }
+      
    } else {
       c = write(fd_i, &hi, sizeof(hi));
       ON_ERROR(c, -1, "Can't write to logfile");
+      
+      if (po->INFO.user) {
+         c = write(fd_i, po->INFO.user, strlen(po->INFO.user) );
+         ON_ERROR(c, -1, "Can't write to logfile");
+      }
+
+      if (po->INFO.pass) {
+         c = write(fd_i, po->INFO.pass, strlen(po->INFO.pass) );
+         ON_ERROR(c, -1, "Can't write to logfile");
+      }
+
+      if (po->INFO.info) {
+         c = write(fd_i, po->INFO.info, strlen(po->INFO.info) );
+         ON_ERROR(c, -1, "Can't write to logfile");
+      }
+      
+      if (po->INFO.banner) {
+         c = write(fd_i, po->INFO.banner, strlen(po->INFO.banner) );
+         ON_ERROR(c, -1, "Can't write to logfile");
+      }
    }
    
    LOG_UNLOCK;

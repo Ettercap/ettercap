@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.3 2003/03/29 15:03:43 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.4 2003/04/01 22:13:43 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -71,6 +71,10 @@ the same as the ettercap's one.
 .br
 \fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. If you want you can omit any of its parts
 and this will rappresent an ANY in that part. 
+.Sp
+If the type of the log is LOG_INFO the target is used to display hosts matching
+the mac, ip and having the specified port open. For example the target //80
+will display only infos about hosts with a running web server.
 
 .TP
 \fB\-r\fR, \fB\-\-reverse\fR
@@ -130,6 +134,21 @@ NOTE: the time stamp in the header is in the form: Thu Mar 27 23:03:31 2003
 In the headers show even the mac addresses of corresponding to the ip
 addresses.
 
+.TP
+.B SEARCH OPTIONS
+
+.TP
+\fB\-e\fR, \fB\-\-regex <REGEX>\fR
+Display only packets matching the regex <REGEX>. 
+.br
+If this option is used agains a LOG_PACKET logfile the regex is executed on the
+payload of the packet. If the type il LOG_INFO, the regex is executed on all
+the field of the host's profile (OS, banners and ethernet adapter)
+
+.TP
+\fB\-u\fR, \fB\-\-user <USER>\fR
+Display information about this user. The search is performed over all the
+hosts' user and pass collected infos.
 
 
 .TP

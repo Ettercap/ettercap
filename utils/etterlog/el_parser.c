@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.6 2003/03/31 21:46:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.7 2003/04/01 22:13:44 alor Exp $
 */
 
 
@@ -59,6 +59,10 @@ void el_usage(void)
    fprintf(stdout, "  -r, --reverse               reverse the target/connection matching\n");
    fprintf(stdout, "  -n, --no-headers            skip header informations between packets\n");
    fprintf(stdout, "  -m, --show-mac              show mac addresses in the headers\n");
+   
+   fprintf(stdout, "\nSearch Options:\n");
+   fprintf(stdout, "  -e, --regex <regex>         display only packets that match the regex\n");
+   fprintf(stdout, "  -u, --user <user>           search for info about the user <user>\n");
    
    fprintf(stdout, "\nVisualization Method:\n");
    fprintf(stdout, "  -B, --binary                print packets as they are\n");
@@ -107,13 +111,16 @@ void parse_options(int argc, char **argv)
       { "reverse", no_argument, NULL, 'r' },
       { "proto", required_argument, NULL, 't' },
       
+      { "user", required_argument, NULL, 'u' },
+      { "regex", required_argument, NULL, 'e' },
+      
       { 0 , 0 , 0 , 0}
    };
 
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBcdEF:f:HhkmnrsTt:XvZ", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhkmnrsTt:u:vXZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -159,6 +166,14 @@ void parse_options(int argc, char **argv)
                   
          case 'm':
                   GBL.showmac = 1;
+                  break;
+
+         case 'u':
+                  NOT_IMPLEMENTED();
+                  break;
+
+         case 'e':
+                  set_display_regex(optarg);
                   break;
                   
          case 'B':

@@ -66,7 +66,16 @@ struct log_header_packet {
 };
 
 
-/* this is for host infos */
+/* 
+ * this is for host infos 
+ * 
+ * the format will be:
+ *
+ * [header][user][pass][info][banner][header][user][pass]....
+ *
+ * every header contains in the structur "variable" the lenght
+ * of the successive banner, user, pass and info fields.
+ */
 struct log_header_info {
    
    u_int8 L2_addr[ETH_ADDR_LEN];
@@ -77,15 +86,20 @@ struct log_header_info {
    u_int16 L4_addr;
 
    u_int8 distance;
-   u_char finger[FINGER_LEN+1];
-   u_char banner[BANNER_LEN+1];
-
-   u_char type;
+   u_int8 type;
    
+   u_char finger[FINGER_LEN+1];
+
+   struct variable {
+      u_int16 user_len;
+      u_int16 pass_len;
+      u_int16 info_len;
+      u_int16 banner_len;
+   } var;
 };
 
 
-extern void set_loglevel(int level, char *filename);
+extern int set_loglevel(int level, char *filename);
 #define LOG_PACKET   1
 #define LOG_INFO     0
 

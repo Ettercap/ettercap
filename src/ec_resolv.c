@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.6 2003/08/20 16:00:53 alor Exp $
+    $Id: ec_resolv.c,v 1.7 2003/08/23 07:37:45 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_resolv.h>
 #include <ec_hash.h>
+#include <ec_strings.h>
 
 #include <netdb.h>
 

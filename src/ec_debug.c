@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.5 2003/04/14 21:05:12 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.6 2003/08/23 07:37:45 alor Exp $
 
 */
 
 #include <ec.h>
 #include <ec_threads.h>
+#include <ec_strings.h>
 
 #include <ctype.h>
 

@@ -43,13 +43,13 @@ struct filter {
       #define FOP_FUNC  0
       #define FOP_TEST  1
       #define FOP_JMP   2
+      #define FOP_DROP  3
 
    struct function {
       char opcode;
          #define FFUNC_SEARCH    0
          #define FFUNC_REPLACE   1
          #define FFUNC_LOG       2
-         #define FFUNC_DROP      3
       char value[MAX_FILTER_LEN];
       size_t value_len;
       char value2[MAX_FILTER_LEN];

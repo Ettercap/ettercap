@@ -15,13 +15,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.6 2003/04/03 15:13:25 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.7 2003/04/03 21:17:59 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_inet.h>
 #include <ec_ui.h>
 
+#include <sys/socket.h>
 #include <libnet.h>
 #include <pcap.h>
 

@@ -54,6 +54,7 @@ struct host_profile {
    /* OS fingerprint */
    u_char finger[FINGER_LEN+1];
 
+   LIST_ENTRY(host_profile) next;
 };
 
 /* forward the declaration */

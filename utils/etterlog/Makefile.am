@@ -14,6 +14,7 @@ etterlog_SOURCES = el_main.c \
                    el_target.c \
                    el_display.c \
                    el_log.c \
+                   el_profiles.c \
                    $(top_srcdir)/src/ec_inet.c \
                    $(top_srcdir)/src/ec_format.c
 

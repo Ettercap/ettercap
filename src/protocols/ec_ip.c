@@ -15,12 +15,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.4 2003/04/02 11:56:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.5 2003/04/03 21:18:00 alor Exp $
 */
 
 #include <ec.h>
+#include <ec_inet.h>
 #include <ec_decode.h>
 #include <ec_fingerprint.h>
+
 
 /* globals */
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.12 2003/04/03 15:10:43 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.13 2003/04/03 21:17:59 alor Exp $
 */
 
 #include <ec.h>
@@ -28,6 +28,7 @@
 #include <ec_inet.h>
 
 #include <pthread.h>
+#include <sys/socket.h>
 
 /* proto */
 

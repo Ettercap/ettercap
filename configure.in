@@ -178,7 +178,7 @@ AC_CHECK_HEADERS(unistd.h stdlib.h signal.h stdarg.h sys/ioctl.h sys/types.h dir
    AC_MSG_WARN(****************************************************);
    exit 1)
 
-AC_CHECK_HEADERS(queue.h)
+AC_CHECK_HEADERS(sys/queue.h)
 AC_CHECK_HEADERS(fcntl.h ctype.h)
 AC_CHECK_HEADERS(sys/types.h stdint.h)
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
@@ -336,7 +336,7 @@ AC_ARG_WITH(libpcap,
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$PCAPLIB"
-AC_CHECK_LIB(pcap, pcap_fileno,, AC_ERROR(Incorrect pcap version))
+AC_CHECK_LIB(pcap, pcap_file,, AC_ERROR(Incorrect pcap version))
 LDFLAGS="${OLDLDFLAGS}"
 
 dnl  libnet

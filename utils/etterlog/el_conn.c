@@ -15,11 +15,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_conn.c,v 1.4 2003/04/03 15:13:25 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_conn.c,v 1.5 2003/04/03 21:18:02 alor Exp $
 */
 
 #include <el.h>
 #include <ec_log.h>
+#include <ec_inet.h>
 #include <el_functions.h>
 
 struct conn_list {

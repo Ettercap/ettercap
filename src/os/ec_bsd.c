@@ -15,11 +15,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_bsd.c,v 1.1 2003/03/14 23:46:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_bsd.c,v 1.2 2003/04/03 21:18:00 alor Exp $
 */
 
 #include <ec.h>
 
+#include <sys/socket.h>
 #include <sys/sysctl.h>
 
 static int saved_status;

@@ -21,11 +21,17 @@
 #include <strings.h>
 #include <unistd.h>
 #include <time.h>
-#include <missing/queue.h>
+#ifdef HAVE_SYS_QUEUE
+   #include <sys/queue.h>
+#else
+   #include <missing/queue.h>
+#endif
+
 #include <ec_error.h>
 #include <ec_debug.h>
 #include <ec_stdint.h>
 #include <ec_globals.h>
+
 
 #ifndef HAVE_STRLCAT
    #include <missing/strlcat.h>

@@ -20,6 +20,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_hook.c \
 				   ec_fingerprint.c \
 				   ec_passive.c \
+				   ec_profiles.c \
 				   ec_hash.c \
 				   ec_file.c \
 				   ec_log.c \

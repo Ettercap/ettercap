@@ -3,6 +3,7 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
 
 enum {
    NS_IN6ADDRSZ            = 16,

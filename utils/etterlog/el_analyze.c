@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.7 2003/04/03 15:10:46 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.8 2003/04/03 21:18:01 alor Exp $
 */
 
 #include <el.h>
@@ -131,6 +131,8 @@ void create_hosts_list(void)
       /* on error exit the loop */
       if (ret != ESUCCESS)
          break;
+     
+      profile_add_info(&inf);
       
       printf("create_hosts_list: finger %s\n\n", inf.fingerprint);
       

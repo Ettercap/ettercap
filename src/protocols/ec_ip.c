@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.12 2003/08/22 09:02:27 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.13 2003/09/13 15:22:46 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_decode.h>
 #include <ec_fingerprint.h>
 #include <ec_checksum.h>
+#include <ec_session.h>
 
 
 /* globals */
@@ -52,11 +53,30 @@ struct ip_header {
 /*The options start here. */
 };
 
+/* Session data structure */
+struct ip_status {
+   u_int16  last_id;
+   int32    id_adj;
+};
+
+/* Ident structure for ip sessions */
+struct ip_ident {
+   u_int32 magic;
+      #define IP_MAGIC  0x0300e77e
+   struct ip_addr L3_src;
+};
+
+#define IP_IDENT_LEN sizeof(struct ip_ident)
+
 
 /* protos */
 
 FUNC_DECODER(decode_ip);
 void ip_init(void);
+int ip_match(void *id_sess, void *id_curr);
+void ip_create_session(struct session **s, struct packet_object *po);
+size_t ip_create_ident(void **i, struct packet_object *po);            
+
 
 /*******************************************/
 
@@ -75,6 +95,9 @@ FUNC_DECODER(decode_ip)
 {
    FUNC_DECODER_PTR(next_decoder);
    struct ip_header *ip;
+   struct session *s = NULL;
+   void *ident = NULL;
+   struct ip_status *status;
 
    ip = (struct ip_header *)DECODE_DATA;
   
@@ -121,7 +144,7 @@ FUNC_DECODER(decode_ip)
    
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
-    * the checksum is should be 0 and not equal to ip->csum ;)
+    * the checksum should be 0 ;)
     */
    if (L3_checksum(PACKET) != 0) {
       USER_MSG("Invalid IP packet from %s : csum [%#x] (%#x)\n", int_ntoa(ip->saddr), 
@@ -155,19 +178,136 @@ FUNC_DECODER(decode_ip)
    
    /* HOOK POINT: PACKET_IP */
    hook_point(PACKET_IP, po);
-   
-   next_decoder = get_decoder(PROTO_LAYER, ip->protocol);
 
+   /* Find or create the correct session */
+   ip_create_ident(&ident, PACKET);
+   if (session_get(&s, ident, IP_IDENT_LEN) == -ENOTFOUND) {
+      
+      ip_create_session(&s, PACKET);
+      s->data = calloc(1, sizeof(struct ip_status));
+      session_put(s);
+   }
+   
+   SAFE_FREE(ident);
+   
+   /* Record last packet's ID */
+   status = (struct ip_status *)s->data;
+   status->last_id = ip->id;
+      
+   /* Jump to next Layer */
+   next_decoder = get_decoder(PROTO_LAYER, ip->protocol);
    EXECUTE_DECODER(next_decoder);
    
-   /* XXX - implement modification checks */
-#if 0
-   if (po->flags & PO_MOD_LEN)
-      
-   if (po->flags & PO_MOD_CHECK)
-#endif   
+   /* 
+    * Modification checks and adjustments.
+    * - ip->id according to number of injected/dropped packets
+    * - ip->len according to upper layer's payload modification
+    */
+   if (PACKET->flags & PO_DROPPED)
+      status->id_adj--;
+   else if ((PACKET->flags & PO_MODIFIED) || (status->id_adj != 0)) {
+      ip->id  += status->id_adj;
+      ip->tot_len += PACKET->delta;
+
+      /* 
+       * In case some upper level encapsulated 
+       * ip decoder modified it... 
+       */
+      PACKET->L3.header = (u_char *)DECODE_DATA;
+      PACKET->L3.len = DECODED_LEN;
+   
+      /* ...recalculate checksum */
+      ip->csum = 0; 
+      ip->csum = L3_checksum(PACKET);
+   }
       
    return NULL;
+}
+
+
+/*******************************************/
+
+/* Sessions' stuff for ip packets */
+
+
+/*
+ * create the ident for a session
+ */
+ 
+size_t ip_create_ident(void **i, struct packet_object *po)
+{
+   struct ip_ident *ident = *i;
+   
+   /* allocate the ident for that session */
+   ident = calloc(1, sizeof(struct ip_ident));
+   ON_ERROR(ident, NULL, "can't allocate memory");
+  
+   /* the magic */
+   ident->magic = IP_MAGIC;
+      
+   /* prepare the ident */
+   memcpy(&ident->L3_src, &po->L3.src, sizeof(struct ip_addr));
+
+   /* return the ident */
+   *i = ident;
+
+   /* return the lenght of the ident */
+   return sizeof(struct ip_ident);
+}
+
+
+/*
+ * compare two session ident
+ *
+ * return 1 if it matches
+ */
+
+int ip_match(void *id_sess, void *id_curr)
+{
+   struct ip_ident *ids = id_sess;
+   struct ip_ident *id = id_curr;
+
+   /* sanity check */
+   BUG_IF(ids == NULL);
+   BUG_IF(id == NULL);
+  
+   /* 
+    * is this ident from our level ?
+    * check the magic !
+    */
+   if (ids->magic != id->magic)
+      return 0;
+   
+   /* Check the source */
+   if ( !ip_addr_cmp(&ids->L3_src, &id->L3_src) ) 
+      return 1;
+
+   return 0;
+}
+
+/*
+ * prepare the ident and the pointer to match function
+ * for ip layer.
+ */
+
+void ip_create_session(struct session **s, struct packet_object *po)
+{
+   void *ident;
+
+   DEBUG_MSG("ip_create_session");
+   
+   /* allocate the session */
+   *s = calloc(1, sizeof(struct session));
+   ON_ERROR(*s, NULL, "can't allocate memory");
+   
+   /* create the ident */
+   (*s)->ident_len = ip_create_ident(&ident, po);
+   
+   /* link to the session */
+   (*s)->ident = ident;
+
+   /* the matching function */
+   (*s)->match = &ip_match;
 }
 
 /* EOF */

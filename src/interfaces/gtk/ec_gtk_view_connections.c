@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.27 2004/04/23 12:55:36 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.28 2004/04/25 13:37:23 alor Exp $
 */
 
 #include <ec.h>
@@ -378,6 +378,7 @@ static void gtkui_connection_detail(void)
    struct conn_tail *c = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
    char *proto = "";
+   char name[MAX_HOSTNAME_LEN];
 
    DEBUG_MSG("gtk_connection_detail");
 
@@ -393,18 +394,30 @@ static void gtkui_connection_detail(void)
 
    textbuf = gtkui_details_window("Connection Details");
 
-   snprintf(line, 200, "Source MAC address: \t%s\n", mac_addr_ntoa(c->co->L2_addr1, tmp));
+   snprintf(line, 200, "Source MAC address      :  %s\n", mac_addr_ntoa(c->co->L2_addr1, tmp));
    gtkui_details_print(textbuf, line);
 
-   snprintf(line, 200, "Destination MAC address: \t%s\n\n", mac_addr_ntoa(c->co->L2_addr2, tmp));
+   snprintf(line, 200, "Destination MAC address :  %s\n\n", mac_addr_ntoa(c->co->L2_addr2, tmp));
    gtkui_details_print(textbuf, line);
 
 
-   snprintf(line, 200, "Source IP address: \t\t%s\n", ip_addr_ntoa(&(c->co->L3_addr1), tmp));
+   snprintf(line, 200, "Source IP address      : \t%s\n", ip_addr_ntoa(&(c->co->L3_addr1), tmp));
    gtkui_details_print(textbuf, line);
+   
+   if (host_iptoa(&(c->co->L3_addr1), name) == ESUCCESS) {
+      snprintf(line, 200, "                           %s\n", name);
+      gtkui_details_print(textbuf, line);
+   }
 
-   snprintf(line, 200, "Destination IP address: \t%s\n\n", ip_addr_ntoa(&(c->co->L3_addr2), tmp));
+   snprintf(line, 200, "Destination IP address : \t%s\n", ip_addr_ntoa(&(c->co->L3_addr2), tmp));
    gtkui_details_print(textbuf, line);
+   
+   if (host_iptoa(&(c->co->L3_addr2), name) == ESUCCESS) {
+      snprintf(line, 200, "                           %s\n", name);
+      gtkui_details_print(textbuf, line);
+   }
+
+   gtkui_details_print(textbuf, "\n");
 
       /* Protocol */
    switch (c->co->L4_proto) {

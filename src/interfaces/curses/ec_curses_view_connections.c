@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.16 2004/04/23 12:55:36 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.17 2004/04/25 13:37:23 alor Exp $
 */
 
 #include <ec.h>
@@ -153,6 +153,7 @@ static void curses_connection_detail(void *conn)
    struct conn_tail *c = (struct conn_tail *)conn;
    char tmp[MAX_ASCII_ADDR_LEN];
    char *proto = "";
+   char name[MAX_HOSTNAME_LEN];
    
    DEBUG_MSG("curses_connection_detail");
 
@@ -165,7 +166,7 @@ static void curses_connection_detail(void *conn)
    wdg_create_object(&wdg_conn_detail, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
    
    wdg_set_title(wdg_conn_detail, "Connection detail:", WDG_ALIGN_LEFT);
-   wdg_set_size(wdg_conn_detail, 1, 2, 70, 21);
+   wdg_set_size(wdg_conn_detail, 1, 2, 75, 23);
    wdg_set_color(wdg_conn_detail, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(wdg_conn_detail, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(wdg_conn_detail, WDG_COLOR_BORDER, EC_COLOR_BORDER);
@@ -183,7 +184,12 @@ static void curses_connection_detail(void *conn)
    wdg_window_print(wdg_conn_detail, 1, 2, "Destination MAC address :  %s", mac_addr_ntoa(c->co->L2_addr2, tmp));
    
    wdg_window_print(wdg_conn_detail, 1, 4, "Source IP address       :  %s", ip_addr_ntoa(&(c->co->L3_addr1), tmp));
-   wdg_window_print(wdg_conn_detail, 1, 5, "Destination IP address  :  %s", ip_addr_ntoa(&(c->co->L3_addr2), tmp));
+   if (host_iptoa(&(c->co->L3_addr1), name) == ESUCCESS)
+      wdg_window_print(wdg_conn_detail, 1, 5, "                           %s", name);
+   
+   wdg_window_print(wdg_conn_detail, 1, 6, "Destination IP address  :  %s", ip_addr_ntoa(&(c->co->L3_addr2), tmp));
+   if (host_iptoa(&(c->co->L3_addr2), name) == ESUCCESS)
+      wdg_window_print(wdg_conn_detail, 1, 7, "                           %s", name);
    
    switch (c->co->L4_proto) {
       case NL_TYPE_UDP:
@@ -194,16 +200,16 @@ static void curses_connection_detail(void *conn)
          break;
    }
    
-   wdg_window_print(wdg_conn_detail, 1, 7, "Protocol                :  %s", proto);
-   wdg_window_print(wdg_conn_detail, 1, 8, "Source port             :  %-5d  %s", ntohs(c->co->L4_addr1), service_search(c->co->L4_addr1, c->co->L4_proto));
-   wdg_window_print(wdg_conn_detail, 1, 9, "Destination port        :  %-5d  %s", ntohs(c->co->L4_addr2), service_search(c->co->L4_addr2, c->co->L4_proto));
+   wdg_window_print(wdg_conn_detail, 1, 9, "Protocol                :  %s", proto);
+   wdg_window_print(wdg_conn_detail, 1, 10, "Source port             :  %-5d  %s", ntohs(c->co->L4_addr1), service_search(c->co->L4_addr1, c->co->L4_proto));
+   wdg_window_print(wdg_conn_detail, 1, 11, "Destination port        :  %-5d  %s", ntohs(c->co->L4_addr2), service_search(c->co->L4_addr2, c->co->L4_proto));
    
-   wdg_window_print(wdg_conn_detail, 1, 11, "Transferred bytes       :  %d", c->co->xferred);
+   wdg_window_print(wdg_conn_detail, 1, 13, "Transferred bytes       :  %d", c->co->xferred);
    
    if (c->co->DISSECTOR.user) {
-      wdg_window_print(wdg_conn_detail, 1, 13, "Account                 :  %s / %s", c->co->DISSECTOR.user, c->co->DISSECTOR.pass);
+      wdg_window_print(wdg_conn_detail, 1, 15, "Account                 :  %s / %s", c->co->DISSECTOR.user, c->co->DISSECTOR.pass);
       if (c->co->DISSECTOR.info)
-         wdg_window_print(wdg_conn_detail, 1, 14, "Additional Info         :  %s", c->co->DISSECTOR.info);
+         wdg_window_print(wdg_conn_detail, 1, 16, "Additional Info         :  %s", c->co->DISSECTOR.info);
    }
 }
 

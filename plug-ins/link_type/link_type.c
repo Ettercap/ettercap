@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: link_type.c,v 1.2 2003/10/27 16:01:25 lordnaga Exp $
+    $Id: link_type.c,v 1.3 2003/10/27 16:55:53 lordnaga Exp $
 */
 
 
@@ -103,10 +103,13 @@ static int link_type_init(void *dummy)
       return PLUGIN_FINISHED;
    }
 
-   /* If we have only one element in the host list.... */
+   /* 
+    * If we have only one element in the host list 
+    * use target mac address and our ip as source 
+    */
    if (counter==1) {   
       INSTANT_USER_MSG("link_type: Only one host in the list. Check will be less reliable\n\n"); 
-      memcpy(&(targets[1].ip), &(targets[0].ip), sizeof(struct ip_addr));
+      memcpy(&(targets[1].ip), &GBL_IFACE->ip, sizeof(struct ip_addr));
       memcpy(targets[1].mac, targets[0].mac, ETH_ADDR_LEN);        
    }
 
@@ -119,7 +122,7 @@ static int link_type_init(void *dummy)
    hook_add(HOOK_PACKET_ARP, &parse_arp);
 
    /* Send bogus ARP request */
-   send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, targets[1].mac, &(targets[0].ip), targets[0].mac);   
+   send_arp(ARPOP_REQUEST, &(targets[1].ip), targets[1].mac, &(targets[0].ip), targets[0].mac);   
    
    /* wait for the response */
    sleep(1);

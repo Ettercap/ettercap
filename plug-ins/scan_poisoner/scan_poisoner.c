@@ -21,7 +21,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: scan_poisoner.c,v 1.1 2003/11/09 12:33:45 lordnaga Exp $
+    $Id: scan_poisoner.c,v 1.2 2003/11/09 13:23:11 lordnaga Exp $
 */
 
 
@@ -109,7 +109,7 @@ static int scan_poisoner_init(void *dummy)
    hook_add(HOOK_PACKET_ICMP, &parse_icmp);
 
    /* Send ICMP echo request to each target */
-   SLIST_FOREACH(h1, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
       send_icmp_echo(ICMP_ECHO, &GBL_IFACE->ip, &h1->ip);   
       usleep(GBL_CONF->arp_storm_delay * 1000);
    }
@@ -146,16 +146,16 @@ static void parse_icmp(struct packet_object *po)
    sprintf(poisoner, "UNKNOWN");
    
    /* Check if the reply contains the correct ip/mac association */
-    SLIST_FOREACH(h1, &GBL_HOSTLIST, next) {
-       if (!ip_addr_cmp(&(po->L3.src), &h1->ip) && memcmp(po->L2.src, h1->mac, MEDIA_ADDR_LEN) {
-          flag_strange = 1;
-          /* Check if the mac address of the poisoner is in the hosts list */
-          SLIST_FOREACH(h2, &GBL_HOSTLIST, next) 
-             if (!memcmp(po->L2.src, h2->mac, MEDIA_ADDR_LEN)
-                ip_addr_ntoa(&h2->ip, poisoner);
+   LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
+      if (!ip_addr_cmp(&(po->L3.src), &h1->ip) && memcmp(po->L2.src, h1->mac, MEDIA_ADDR_LEN)) {
+         flag_strange = 1;
+         /* Check if the mac address of the poisoner is in the hosts list */
+         LIST_FOREACH(h2, &GBL_HOSTLIST, next) 
+            if (!memcmp(po->L2.src, h2->mac, MEDIA_ADDR_LEN))
+               ip_addr_ntoa(&h2->ip, poisoner);
 		
-          INSTANT_USER_MSG("scan_poisoner: - %s is replying for %s\n", poisoner, ip_addr_ntoa(&h1->ip, tmp)); 
-       }
+         INSTANT_USER_MSG("scan_poisoner: - %s is replying for %s\n", poisoner, ip_addr_ntoa(&h1->ip, tmp)); 
+      }
    }	  
 }
 

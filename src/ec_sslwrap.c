@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.22 2004/03/23 14:45:32 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.23 2004/03/23 15:33:47 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -258,6 +258,8 @@ static int sslw_sync_conn(struct accepted_entry *ae)
    
 static int sslw_sync_ssl(struct accepted_entry *ae) 
 {   
+   X509 *server_cert;
+   
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
    SSL_set_connect_state(ae->ssl[SSL_SERVER]);
    SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
@@ -273,7 +275,7 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    }
 
    /* XXX - NULL cypher can give no certificate */
-   if ( (ae->cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
+   if ( (server_cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
       DEBUG_MSG("Can't get peer certificate");
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);
@@ -281,6 +283,9 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
       ae->ssl[SSL_CLIENT] = NULL;
       return -EINVALID;
    }
+
+   ae->cert = X509_dup(server_cert);
+   X509_free(server_cert);
 
    if (sslw_create_selfsigned(ae->cert) != ESUCCESS) {
       SSL_free(ae->ssl[SSL_SERVER]);

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.11 2003/11/11 21:54:24 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.12 2003/11/16 15:04:13 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -56,6 +56,17 @@ is not started yet. You have to launch it from the proper menu.
 .B dummy
 .Sp
 Only a template to demonstrate how to write a plugin.
+
+.TP 
+.B find_conn
+.Sp
+Very simple plugin that listens for arp requests to see who a machine
+wants to talk to.
+.Sp
+.I example :
+.Sp
+ettercap -TQzP find_conn 
+
 
 .TP 
 .B finger

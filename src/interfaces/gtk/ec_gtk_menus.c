@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.11 2004/09/16 04:16:32 daten Exp $
+    $Id: ec_gtk_menus.c,v 1.12 2004/10/12 21:43:03 daten Exp $
 */
 
 #include <ec.h>
@@ -100,6 +100,13 @@ GtkItemFactoryEntry gmenu_plugins[] = {
    {"/Plugins/Load a plugin...",   NULL,         gtkui_plugin_load, 0, "<StockItem>", GTK_STOCK_OPEN }
 };
 
+#ifndef OS_WINDOWS
+GtkItemFactoryEntry gmenu_help[] = {
+   {"/_Help",                   NULL,         NULL,              0, "<Branch>" },
+   {"/Help/Contents", " ", gtkui_help, 0, "<StockItem>", GTK_STOCK_HELP }
+};
+#endif
+
 GtkItemFactoryEntry tab_menu[] = {
   { "/Detach page",    "<control>D", gtkui_page_detach_current, 0, "<StockItem>", GTK_STOCK_GO_UP },
   { "/Close page",     "<control>Q", gtkui_page_close_current,  0, "<StockItem>", GTK_STOCK_CLOSE },
@@ -172,6 +179,12 @@ void gtkui_create_menu(int live)
       num_items = sizeof (gmenu_plugins) / sizeof (gmenu_plugins[0]);
       gtk_item_factory_create_items (root_menu, num_items, gmenu_plugins, NULL);
    }
+#endif
+
+#ifndef OS_WINDOWS
+   /* Help Menu */
+   num_items = sizeof (gmenu_help) / sizeof (gmenu_help[0]);
+   gtk_item_factory_create_items (root_menu, num_items, gmenu_help, NULL);
 #endif
 
    if(GBL_OPTIONS->reversed) {

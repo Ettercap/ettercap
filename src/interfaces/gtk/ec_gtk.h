@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.17 2004/10/10 13:49:51 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.18 2004/10/12 21:43:03 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -114,6 +114,11 @@ extern void gtkui_conf_set(char *name, short value);
 extern short gtkui_conf_get(char *name);
 extern void gtkui_conf_read(void);
 extern void gtkui_conf_save(void);
+
+#ifndef OS_WINDOWS
+/* ec_gtk_help.c */
+extern void gtkui_help(void);
+#endif
 
 #endif
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.35 2004/10/10 15:48:32 daten Exp $
+    $Id: ec_gtk.c,v 1.36 2004/10/12 21:43:03 daten Exp $
 */
 
 #include <ec.h>
@@ -463,6 +463,10 @@ static void gtkui_setup(void)
       { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>" },
       { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" },
       { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>"}
+#ifndef OS_WINDOWS
+     ,{"/_Help",          NULL,         NULL,             0, "<Branch>" },
+      {"/Help/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
+#endif
    };
    gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);
 

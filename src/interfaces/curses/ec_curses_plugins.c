@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_plugins.c,v 1.7 2004/01/03 11:03:02 alor Exp $
+    $Id: ec_curses_plugins.c,v 1.8 2004/01/04 11:13:07 alor Exp $
 */
 
 #include <ec.h>
@@ -89,6 +89,7 @@ static void curses_load_plugin(char *path, char *file)
    switch (ret) {
       case ESUCCESS:
          curses_message("Plugin loaded successfully");
+         break;
       case -EDUPLICATE:
          ui_error("plugin %s already loaded...", file);
          break;
@@ -111,8 +112,7 @@ static void curses_plugin_mgmt(void)
    
    /* if the object already exist, set the focus to it */
    if (wdg_plugin) {
-      wdg_set_focus(wdg_plugin);
-      return;
+      wdg_destroy_object(&wdg_plugin);
    }
    
    wdg_create_object(&wdg_plugin, WDG_LIST, WDG_OBJ_WANT_FOCUS);

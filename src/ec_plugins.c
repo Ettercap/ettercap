@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.26 2004/01/03 11:08:03 alor Exp $
+    $Id: ec_plugins.c,v 1.27 2004/01/04 11:13:03 alor Exp $
 */
 
 #include <ec.h>
@@ -212,12 +212,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
       lt_dlclose(handle);
       return -EVERSION;
    }
-
-   SAFE_CALLOC(p, 1, sizeof(struct plugin_entry));
    
-   p->handle = handle;
-   p->ops = ops;
-
    /* check that this plugin was not already loaded */
    SLIST_FOREACH(pl, &plugin_head, next) {
       /* same name and same version */
@@ -226,6 +221,11 @@ int plugin_register(void *handle, struct plugin_ops *ops)
          return -EDUPLICATE;
       }
    }
+
+   SAFE_CALLOC(p, 1, sizeof(struct plugin_entry));
+   
+   p->handle = handle;
+   p->ops = ops;
 
    SLIST_INSERT_HEAD(&plugin_head, p, next);
 

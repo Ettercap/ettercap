@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_profiles.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_view_profiles.c,v 1.2 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -29,16 +29,16 @@
 
 /* proto */
 
-void gui_show_profiles(void);
-static void gui_kill_profiles(GtkWidget *widget, gpointer data);
+void gtkui_show_profiles(void);
+static void gtkui_kill_profiles(GtkWidget *widget, gpointer data);
 static gboolean refresh_profiles(gpointer data);
-static void gui_profile_detail(void);
-static void gui_profiles_local(void);
-static void gui_profiles_remote(void);
-static void gui_profiles_convert(void);
-static void gui_print_details(GtkTextBuffer *textbuf, char *data);
-extern void gui_refresh_host_list(void);
-static struct host_profile *gui_profile_selected(void);
+static void gtkui_profile_detail(void);
+static void gtkui_profiles_local(void);
+static void gtkui_profiles_remote(void);
+static void gtkui_profiles_convert(void);
+static void gtkui_print_details(GtkTextBuffer *textbuf, char *data);
+extern void gtkui_refresh_host_list(void);
+static struct host_profile *gtkui_profile_selected(void);
 
 /* globals */
 
@@ -54,7 +54,7 @@ static guint profiles_idle; /* for removing the idle call */
 /*
  * the auto-refreshing list of profiles 
  */
-void gui_show_profiles(void)
+void gtkui_show_profiles(void)
 {
    GtkWidget *scrolled, *vbox, *hbox, *button;
    GtkCellRenderer   *renderer;
@@ -75,7 +75,7 @@ void gui_show_profiles(void)
    profiles_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (profiles_window), "Collected passive profiles");
    gtk_window_set_default_size(GTK_WINDOW (profiles_window), 400, 300);
-   g_signal_connect (G_OBJECT (profiles_window), "delete_event", G_CALLBACK (gui_kill_profiles), NULL);
+   g_signal_connect (G_OBJECT (profiles_window), "delete_event", G_CALLBACK (gtkui_kill_profiles), NULL);
 
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (profiles_window), vbox);
@@ -94,7 +94,7 @@ void gui_show_profiles(void)
 
    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
    gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-   g_signal_connect (G_OBJECT (treeview), "row_activated", G_CALLBACK (gui_profile_detail), NULL);
+   g_signal_connect (G_OBJECT (treeview), "row_activated", G_CALLBACK (gtkui_profile_detail), NULL);
 
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("IP Address", renderer, "text", 0, NULL);
@@ -110,15 +110,15 @@ void gui_show_profiles(void)
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("Purge _Local");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_profiles_local), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_local), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
    button = gtk_button_new_with_mnemonic("Purge _Remote");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_profiles_remote), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_remote), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
    button = gtk_button_new_with_mnemonic("_Convert to Host List");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_profiles_convert), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_convert), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
    gtk_widget_show_all(hbox);
@@ -129,7 +129,7 @@ void gui_show_profiles(void)
    profiles_idle = gtk_timeout_add(1000, refresh_profiles, NULL);
 }
 
-static void gui_kill_profiles(GtkWidget *widget, gpointer data)
+static void gtkui_kill_profiles(GtkWidget *widget, gpointer data)
 {
    DEBUG_MSG("gtk_kill_profiles");
 
@@ -194,13 +194,13 @@ static gboolean refresh_profiles(gpointer data)
 /*
  * display details for a profile
  */
-static void gui_profile_detail(void)
+static void gtkui_profile_detail(void)
 {
    GtkWidget *window, *scrolled, *textview;
    GtkTextBuffer *textbuf;
    char line[200];
 
-   struct host_profile *h = gui_profile_selected();
+   struct host_profile *h = gtkui_profile_selected();
    struct open_port *o;
    struct active_user *u;
    char tmp[MAX_ASCII_ADDR_LEN];
@@ -230,23 +230,23 @@ static void gui_profile_detail(void)
    memset(os, 0, sizeof(os));
    
    snprintf(line, 200, " IP address   : %s \n", ip_addr_ntoa(&h->L3_addr, tmp));
-   gui_print_details(textbuf, line);
+   gtkui_print_details(textbuf, line);
 
    if (strcmp(h->hostname, ""))
       snprintf(line, 200, " Hostname     : %s \n\n", h->hostname);
    else
       snprintf(line, 200, "\n");   
-   gui_print_details(textbuf, line);
+   gtkui_print_details(textbuf, line);
       
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       snprintf(line, 200, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
-      gui_print_details(textbuf, line);
+      gtkui_print_details(textbuf, line);
       snprintf(line, 200, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
-      gui_print_details(textbuf, line);
+      gtkui_print_details(textbuf, line);
    }
 
    snprintf(line, 200, " DISTANCE     : %d   \n", h->distance);
-   gui_print_details(textbuf, line);
+   gtkui_print_details(textbuf, line);
    if (h->type & FP_GATEWAY)
       snprintf(line, 200, " TYPE         : GATEWAY\n\n");
    else if (h->type & FP_HOST_LOCAL)
@@ -257,19 +257,19 @@ static void gui_profile_detail(void)
       snprintf(line, 200, " TYPE         : REMOTE host\n\n");
    else if (h->type == FP_UNKNOWN)
       snprintf(line, 200, " TYPE         : unknown\n\n");
-   gui_print_details(textbuf, line);
+   gtkui_print_details(textbuf, line);
       
    
    snprintf(line, 200, " FINGERPRINT      : %s\n", h->fingerprint);
-   gui_print_details(textbuf, line);
+   gtkui_print_details(textbuf, line);
    if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
       snprintf(line, 200, " OPERATING SYSTEM : %s \n\n", os);
    else {
       snprintf(line, 200, " OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
-      gui_print_details(textbuf, line);
+      gtkui_print_details(textbuf, line);
       snprintf(line, 200, " NEAREST ONE IS   : %s \n\n", os);
    }
-   gui_print_details(textbuf, line);
+   gtkui_print_details(textbuf, line);
       
    
    LIST_FOREACH(o, &(h->open_ports_head), next) {
@@ -279,7 +279,7 @@ static void gui_profile_detail(void)
                   ntohs(o->L4_addr),
                   service_search(o->L4_addr, o->L4_proto), 
                   (o->banner) ? o->banner : "");
-      gui_print_details(textbuf, line);
+      gtkui_print_details(textbuf, line);
       
       LIST_FOREACH(u, &(o->users_list_head), next) {
         
@@ -287,19 +287,19 @@ static void gui_profile_detail(void)
             snprintf(line, 200, "      ACCOUNT : * %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
          else
             snprintf(line, 200, "      ACCOUNT : %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
-         gui_print_details(textbuf, line);
+         gtkui_print_details(textbuf, line);
          if (u->info)
             snprintf(line, 200, "      INFO    : %s\n\n", u->info);
          else
             snprintf(line, 200, "\n");
-         gui_print_details(textbuf, line);
+         gtkui_print_details(textbuf, line);
       }
    }
 
    gtk_widget_show(window);
 }
 
-static void gui_print_details(GtkTextBuffer *textbuf, char *data)
+static void gtkui_print_details(GtkTextBuffer *textbuf, char *data)
 {
    GtkTextIter iter;
 
@@ -307,24 +307,24 @@ static void gui_print_details(GtkTextBuffer *textbuf, char *data)
    gtk_text_buffer_insert(textbuf, &iter, data, -1);
 }
 
-static void gui_profiles_local(void)
+static void gtkui_profiles_local(void)
 {
    profile_purge_local();
 }
 
-static void gui_profiles_remote(void)
+static void gtkui_profiles_remote(void)
 {
    profile_purge_remote();
 }
 
-static void gui_profiles_convert(void)
+static void gtkui_profiles_convert(void)
 {
    profile_convert_to_hostlist();
-   gui_refresh_host_list();
-   gui_message("The hosts list was populated with local profiles");
+   gtkui_refresh_host_list();
+   gtkui_message("The hosts list was populated with local profiles");
 }
 
-static struct host_profile *gui_profile_selected(void) {
+static struct host_profile *gtkui_profile_selected(void) {
    GtkTreeIter iter;
    GtkTreeModel *model;
    struct host_profile *h = NULL;

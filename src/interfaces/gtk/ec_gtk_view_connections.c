@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.3 2004/02/27 18:31:46 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.4 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -35,25 +35,25 @@
 
 /* proto */
 
-void gui_show_connections(void);
-static gboolean gui_connection_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
-static void gui_kill_connections(void);
+void gtkui_show_connections(void);
+static gboolean gtkui_connection_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
+static void gtkui_kill_connections(void);
 static gboolean refresh_connections(gpointer data);
-static void gui_connection_detail(void);
-static void gui_connection_data(void);
-static void gui_connection_data_split(void);
-static void gui_connection_data_join(void);
-static void gui_destroy_conndata(void);
-static void gui_data_print(int buffer, char *data, int color);
+static void gtkui_connection_detail(void);
+static void gtkui_connection_data(void);
+static void gtkui_connection_data_split(void);
+static void gtkui_connection_data_join(void);
+static void gtkui_destroy_conndata(void);
+static void gtkui_data_print(int buffer, char *data, int color);
 static void split_print(u_char *text, size_t len, struct ip_addr *L3_src);
 static void split_print_po(struct packet_object *po);
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src);
 static void join_print_po(struct packet_object *po);
-static void gui_connection_kill(void *conn);
-static void gui_connection_kill_wrapper(void);
-static void gui_connection_inject(void);
+static void gtkui_connection_kill(void *conn);
+static void gtkui_connection_kill_wrapper(void);
+static void gtkui_connection_inject(void);
 static void inject_user(void);
-static void gui_connection_inject_file(void);
+static void gtkui_connection_inject_file(void);
 static void inject_file(char *filename);
 
 extern void conntrack_lock(void);
@@ -96,7 +96,7 @@ static u_char *injectbuf;
 /*
  * the auto-refreshing list of connections
  */
-void gui_show_connections(void)
+void gtkui_show_connections(void)
 {
    GtkWidget *scrolled, *vbox, *items;
    GtkCellRenderer   *renderer;
@@ -113,7 +113,7 @@ void gui_show_connections(void)
    conns_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (conns_window), "Live connections");
    gtk_window_set_default_size(GTK_WINDOW (conns_window), 500, 250);
-   g_signal_connect (G_OBJECT (conns_window), "delete_event", G_CALLBACK (gui_kill_connections), NULL);
+   g_signal_connect (G_OBJECT (conns_window), "delete_event", G_CALLBACK (gtkui_kill_connections), NULL);
 
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (conns_window), vbox);
@@ -132,7 +132,7 @@ void gui_show_connections(void)
 
    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
    gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-   g_signal_connect (G_OBJECT (treeview), "row_activated", G_CALLBACK (gui_connection_data), NULL);
+   g_signal_connect (G_OBJECT (treeview), "row_activated", G_CALLBACK (gtkui_connection_data), NULL);
 
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes (" ", renderer, "text", 0, NULL);
@@ -183,15 +183,15 @@ void gui_show_connections(void)
    
    items = gtk_menu_item_new_with_label ("View Details");
    gtk_menu_shell_append (GTK_MENU_SHELL (context_menu), items);
-   g_signal_connect (G_OBJECT (items), "activate", G_CALLBACK (gui_connection_detail), NULL);
+   g_signal_connect (G_OBJECT (items), "activate", G_CALLBACK (gtkui_connection_detail), NULL);
    gtk_widget_show (items);
 
    items = gtk_menu_item_new_with_label ("Kill Connection");
    gtk_menu_shell_append (GTK_MENU_SHELL (context_menu), items);
-   g_signal_connect (G_OBJECT (items), "activate", G_CALLBACK (gui_connection_kill), NULL);
+   g_signal_connect (G_OBJECT (items), "activate", G_CALLBACK (gtkui_connection_kill), NULL);
    gtk_widget_show (items);
 
-   g_signal_connect(G_OBJECT(treeview), "button-press-event", G_CALLBACK(gui_connection_context_menu), NULL);
+   g_signal_connect(G_OBJECT(treeview), "button-press-event", G_CALLBACK(gtkui_connection_context_menu), NULL);
 
    /* initialize the list */
    refresh_connections(NULL);
@@ -203,13 +203,13 @@ void gui_show_connections(void)
    gtk_widget_show(conns_window);
 }
 
-static gboolean gui_connection_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gboolean gtkui_connection_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     if(event->button == 3)
         gtk_menu_popup(GTK_MENU(context_menu), NULL, NULL, NULL, NULL, 3, event->time);
     return(FALSE);
 }
 
-static void gui_kill_connections(void)
+static void gtkui_kill_connections(void)
 {
    DEBUG_MSG("gtk_kill_connections");
    gtk_timeout_remove(connections_idle);
@@ -319,7 +319,7 @@ static gboolean refresh_connections(gpointer data)
 /* 
  * details for a connection
  */
-static void gui_connection_detail(void)
+static void gtkui_connection_detail(void)
 {
    GtkWidget *detail_window, *table, *label;
    GtkTreeIter iter;
@@ -368,7 +368,7 @@ static void gui_connection_detail(void)
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 1, 2);
 
-   label = gtk_label_new(mac_addr_ntoa(c->co->L2_addr1, tmp));
+   label = gtk_label_new(mac_addr_ntoa(c->co->L2_addr2, tmp));
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_table_attach_defaults(GTK_TABLE(table), label, 1, 2, 1, 2);
@@ -501,7 +501,7 @@ static void gui_connection_detail(void)
    gtk_widget_show(detail_window);
 }
 
-static void gui_connection_data(void)
+static void gtkui_connection_data(void)
 {
    GtkTreeIter iter;
    GtkTreeModel *model;
@@ -532,13 +532,13 @@ static void gui_connection_data(void)
    curr_conn = c->co;
    
    /* default is split view */
-   gui_connection_data_split();
+   gtkui_connection_data_split();
 }
 
 /*
  * show the content of the connection
  */
-static void gui_connection_data_split(void)
+static void gtkui_connection_data_split(void)
 {
    GtkWidget *vbox, *scrolled, *label, *child;
    GtkWidget *hbox_big, *hbox_small, *button;
@@ -560,7 +560,7 @@ static void gui_connection_data_split(void)
       gtk_window_set_title(GTK_WINDOW (data_window), "Connection data");
       gtk_window_set_default_size(GTK_WINDOW (data_window), 600, 400);
       gtk_container_set_border_width(GTK_CONTAINER (data_window), 5);
-      g_signal_connect (G_OBJECT (data_window), "delete_event", G_CALLBACK (gui_destroy_conndata), NULL);
+      g_signal_connect (G_OBJECT (data_window), "delete_event", G_CALLBACK (gtkui_destroy_conndata), NULL);
    }
 
    hbox_big = gtk_hbox_new(TRUE, 5);
@@ -609,12 +609,12 @@ static void gui_connection_data_split(void)
    gtk_widget_show(hbox_small);
 
    button = gtk_button_new_with_mnemonic("_Join Views");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_connection_data_join), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_data_join), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Inject Data");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_connection_inject), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_inject), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
@@ -660,12 +660,12 @@ static void gui_connection_data_split(void)
    gtk_widget_show(hbox_small);
 
    button = gtk_button_new_with_mnemonic("Inject _File"); 
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_connection_inject_file), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_inject_file), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Kill Connection");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_connection_kill_wrapper), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill_wrapper), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
@@ -678,13 +678,13 @@ static void gui_connection_data_split(void)
    gtk_widget_show(data_window);
 }
 
-static void gui_destroy_conndata(void)
+static void gtkui_destroy_conndata(void)
 {
    gtk_widget_destroy(data_window);
    data_window = NULL;
 }
 
-static void gui_data_print(int buffer, char *data, int color) 
+static void gtkui_data_print(int buffer, char *data, int color) 
 {
    GtkTextIter iter;
    GtkTextBuffer *textbuf = NULL;
@@ -736,9 +736,9 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
    dispbuf[ret] = 0;
 
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
-      gui_data_print(1, dispbuf, 0);
+      gtkui_data_print(1, dispbuf, 0);
    else
-      gui_data_print(2, dispbuf, 0);
+      gtkui_data_print(2, dispbuf, 0);
 }
 
 static void split_print_po(struct packet_object *po)
@@ -758,16 +758,16 @@ static void split_print_po(struct packet_object *po)
         
    gdk_threads_enter();
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
-      gui_data_print(1, dispbuf, 0);
+      gtkui_data_print(1, dispbuf, 0);
    else
-      gui_data_print(2, dispbuf, 0);
+      gtkui_data_print(2, dispbuf, 0);
    gdk_threads_leave();
 }
 
 /*
  * show the data in a joined window 
  */
-static void gui_connection_data_join(void)
+static void gtkui_connection_data_join(void)
 {
    GtkWidget *hbox, *vbox, *label, *scrolled, *button, *child;
    GtkTextIter iter;
@@ -790,7 +790,7 @@ static void gui_connection_data_join(void)
       gtk_window_set_title(GTK_WINDOW (data_window), "Connection data");
       gtk_window_set_default_size(GTK_WINDOW (data_window), 600, 400);
       gtk_container_set_border_width(GTK_CONTAINER (data_window), 5);
-      g_signal_connect (G_OBJECT (data_window), "delete_event", G_CALLBACK (gui_destroy_conndata), NULL);
+      g_signal_connect (G_OBJECT (data_window), "delete_event", G_CALLBACK (gtkui_destroy_conndata), NULL);
    }
    
    vbox = gtk_vbox_new(FALSE, 0);
@@ -834,12 +834,12 @@ static void gui_connection_data_join(void)
    gtk_widget_show(hbox);
 
    button = gtk_button_new_with_mnemonic("_Split View");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_connection_data_split), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_data_split), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Kill Connection");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_connection_kill_wrapper), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill_wrapper), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
@@ -864,9 +864,9 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
    dispbuf[ret] = 0;
    
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
-      gui_data_print(3, dispbuf, 1);
+      gtkui_data_print(3, dispbuf, 1);
    else
-      gui_data_print(3, dispbuf, 2);
+      gtkui_data_print(3, dispbuf, 2);
 }
 
 static void join_print_po(struct packet_object *po)
@@ -886,42 +886,42 @@ static void join_print_po(struct packet_object *po)
         
    gdk_threads_enter();
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
-      gui_data_print(3, dispbuf, 1);
+      gtkui_data_print(3, dispbuf, 1);
    else
-      gui_data_print(3, dispbuf, 2);
+      gtkui_data_print(3, dispbuf, 2);
    gdk_threads_leave();
 }
 
 /*
  * kill the selected connection connection
  */
-static void gui_connection_kill(void *conn)
+static void gtkui_connection_kill(void *conn)
 {
    struct conn_object *c = (struct conn_object *)conn;
    
    DEBUG_MSG("gtk_connection_kill");
    
    /* XXX - implement the killing function */
-   gui_message("KILL: not yet implemented");
+   gtkui_message("KILL: not yet implemented");
    return;
    /* set the status */
    c->status = CONN_KILLED;
-   gui_message("The connection was killed !!");
+   gtkui_message("The connection was killed !!");
 }
 
 /*
  * call the specialized funtion as this is a callback 
  * without the parameter
  */
-static void gui_connection_kill_wrapper(void)
+static void gtkui_connection_kill_wrapper(void)
 {
-   gui_connection_kill(curr_conn);
+   gtkui_connection_kill(curr_conn);
 }
 
 /*
  * inject interactively with the user
  */
-static void gui_connection_inject(void)
+static void gtkui_connection_inject(void)
 {
    GtkWidget *dialog, *text, *label, *vbox;
    GtkTextBuffer *buf;
@@ -987,14 +987,14 @@ static void inject_user(void)
 //      inject(injectbuf, len, curr_conn, 2);
 //   }
    
-   gui_message("INJECT: not yet implemented");
+   gtkui_message("INJECT: not yet implemented");
    return;
 }
 
 /*
  * inject form a file 
  */
-static void gui_connection_inject_file(void)
+static void gtkui_connection_inject_file(void)
 {
    GtkWidget *dialog = NULL;
    gint response = 0;
@@ -1056,7 +1056,7 @@ static void inject_file(char *filename)
    close(fd);
    munmap(buf, size);
    
-   gui_message("INJECT FILE: not yet implemented");
+   gtkui_message("INJECT FILE: not yet implemented");
    return;
    
 }

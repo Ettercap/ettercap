@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_targets.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_targets.c,v 1.2 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -26,20 +26,20 @@
 /* proto */
 
 void toggle_reverse(void);
-void gui_select_protocol(void);
+void gtkui_select_protocol(void);
 void wipe_targets(void);
-void gui_select_targets(void);
-void gui_current_targets(void);
+void gtkui_select_targets(void);
+void gtkui_current_targets(void);
 static void set_protocol(void);
 static void set_targets(void);
-static void gui_create_targets_array(void);
-static void gui_delete_target1(void *);
-static void gui_delete_target2(void *);
-static void gui_add_target1(void *);
-static void gui_add_target2(void *);
+static void gtkui_create_targets_array(void);
+static void gtkui_delete_target1(void *);
+static void gtkui_delete_target2(void *);
+static void gtkui_add_target1(void *);
+static void gtkui_add_target2(void *);
 static void add_target1(void);
 static void add_target2(void);
-static struct ip_list *gui_target_selected(int list);
+static struct ip_list *gtkui_target_selected(int list);
 
 /* globals */
 
@@ -73,13 +73,13 @@ void wipe_targets(void)
    reset_display_filter(GBL_TARGET2);
 
    /* display the message */
-   gui_message("TARGETS were reset to ANY/ANY/ANY");
+   gtkui_message("TARGETS were reset to ANY/ANY/ANY");
 }
 
 /*
  * display the protocol dialog
  */
-void gui_select_protocol(void)
+void gtkui_select_protocol(void)
 {
    DEBUG_MSG("gtk_select_protocol");
 
@@ -89,7 +89,7 @@ void gui_select_protocol(void)
       strcpy(GBL_OPTIONS->proto, "all");
    }
 
-   gui_input_call("Protocol :", GBL_OPTIONS->proto, 3, set_protocol);
+   gtkui_input_call("Protocol :", GBL_OPTIONS->proto, 3, set_protocol);
 }
 
 static void set_protocol(void)
@@ -105,7 +105,7 @@ static void set_protocol(void)
 /*
  * display the TARGET(s) dialog
  */
-void gui_select_targets(void)
+void gtkui_select_targets(void)
 {
    GtkWidget *dialog, *hbox, *label, *entry1, *entry2;  
    
@@ -181,13 +181,13 @@ static void set_targets(void)
 
    /* if the 'current targets' window is displayed, refresh it */
    if (targets_window)
-      gui_current_targets();
+      gtkui_current_targets();
 }
 
 /*
  * display the list of current targets
  */
-void gui_current_targets(void)
+void gtkui_current_targets(void)
 {
    GtkWidget *scrolled, *treeview, *vbox, *hbox, *button;
    GtkCellRenderer   *renderer;
@@ -196,7 +196,7 @@ void gui_current_targets(void)
    DEBUG_MSG("gtk_current_targets");
 
    /* prepare the liststores for the target lists */
-   gui_create_targets_array();
+   gtkui_create_targets_array();
   
    if(targets_window) {
       gtk_window_present(GTK_WINDOW (targets_window));
@@ -261,16 +261,16 @@ void gui_current_targets(void)
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("Delete");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_delete_target1), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_target1), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    button = gtk_button_new_with_mnemonic("Add");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_add_target1), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_add_target1), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    button = gtk_button_new_with_mnemonic("Delete");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_delete_target2), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_target2), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    button = gtk_button_new_with_mnemonic("Add");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_add_target2), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_add_target2), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
    gtk_widget_show_all(hbox);
@@ -282,7 +282,7 @@ void gui_current_targets(void)
  * create the array for the widget.
  * erase any previously alloc'd array 
  */
-static void gui_create_targets_array(void)
+static void gtkui_create_targets_array(void)
 {
    GtkTreeIter iter;
    struct ip_list *il;
@@ -320,13 +320,13 @@ static void gui_create_targets_array(void)
 /*
  * delete an host from the target list
  */
-static void gui_delete_target1(void *host)
+static void gtkui_delete_target1(void *host)
 {
    struct ip_list *il;
 
    DEBUG_MSG("gtk_delete_target1");
    
-   il = gui_target_selected(1);
+   il = gtkui_target_selected(1);
    if(!il)
       return;
 
@@ -334,39 +334,39 @@ static void gui_delete_target1(void *host)
    del_ip_list(&il->ip, GBL_TARGET1);
 
    /* redraw the window */
-   gui_current_targets();
+   gtkui_current_targets();
 }
 
-static void gui_delete_target2(void *host)
+static void gtkui_delete_target2(void *host)
 {
    struct ip_list *il;
 
    DEBUG_MSG("gtk_delete_target2");
    
-   il = gui_target_selected(2);
+   il = gtkui_target_selected(2);
 
    /* remove the host from the list */
    del_ip_list(&il->ip, GBL_TARGET2);
 
    /* redraw the window */
-   gui_current_targets();
+   gtkui_current_targets();
 }
 
 /*
  * display the "add host" dialog
  */
-static void gui_add_target1(void *entry)
+static void gtkui_add_target1(void *entry)
 {
    DEBUG_MSG("gtk_add_target1");
 
-   gui_input_call("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target1);
+   gtkui_input_call("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target1);
 }
 
-static void gui_add_target2(void *entry)
+static void gtkui_add_target2(void *entry)
 {
    DEBUG_MSG("gtk_add_target2");
 
-   gui_input_call("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target2);
+   gtkui_input_call("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target2);
 }
 
 static void add_target1(void)
@@ -375,7 +375,7 @@ static void add_target1(void)
    struct ip_addr host;
    
    if (inet_aton(thost, &ip) == 0) {
-      gui_message("Invalid ip address");
+      gtkui_message("Invalid ip address");
       return;
    }
    
@@ -384,7 +384,7 @@ static void add_target1(void)
    add_ip_list(&host, GBL_TARGET1);
    
    /* redraw the window */
-   gui_current_targets();
+   gtkui_current_targets();
 }
 
 static void add_target2(void)
@@ -393,7 +393,7 @@ static void add_target2(void)
    struct ip_addr host;
    
    if (inet_aton(thost, &ip) == 0) {
-      gui_message("Invalid ip address");
+      gtkui_message("Invalid ip address");
       return;
    }
    
@@ -402,10 +402,10 @@ static void add_target2(void)
    add_ip_list(&host, GBL_TARGET2);
    
    /* redraw the window */
-   gui_current_targets();
+   gtkui_current_targets();
 }
 
-static struct ip_list *gui_target_selected(int list) {
+static struct ip_list *gtkui_target_selected(int list) {
    GtkTreeIter iter;
    GtkTreeModel *model;
    struct ip_list *il = NULL;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_view.c,v 1.2 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -26,15 +26,15 @@
 
 /* proto */
 
-void gui_show_stats(void);
+void gtkui_show_stats(void);
 void toggle_resolve(void);
-void gui_vis_method(void);
+void gtkui_vis_method(void);
 
-static void gui_stop_stats(void);
+static void gtkui_stop_stats(void);
 static gboolean refresh_stats(gpointer data);
 
-extern void gui_show_profiles(void);
-extern void gui_show_connections(void);
+extern void gtkui_show_profiles(void);
+extern void gtkui_show_connections(void);
 
 /* globals */
 
@@ -61,11 +61,11 @@ void toggle_resolve(void)
 /*
  * display the statistics windows
  */
-void gui_show_stats(void)
+void gtkui_show_stats(void)
 {
    GtkWidget *table, *label;
 
-   DEBUG_MSG("gui_show_stats");
+   DEBUG_MSG("gtkui_show_stats");
 
    /* if the object already exist, set the focus to it */
    if (stats_window) {
@@ -81,7 +81,7 @@ void gui_show_stats(void)
    stats_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (stats_window), "Statistics");
    gtk_container_set_border_width(GTK_CONTAINER (stats_window), 10);
-   g_signal_connect (G_OBJECT (stats_window), "delete_event", G_CALLBACK (gui_stop_stats), NULL);
+   g_signal_connect (G_OBJECT (stats_window), "delete_event", G_CALLBACK (gtkui_stop_stats), NULL);
 
    /* alright, this is a lot of code but it'll keep everything lined up nicely */
    /* if you need to add a row, don't forget to increase the number in gtk_table_new */
@@ -208,7 +208,7 @@ void gui_show_stats(void)
    stats_idle = gtk_timeout_add(200, refresh_stats, NULL);
 }
 
-static void gui_stop_stats(void)
+static void gtkui_stop_stats(void)
 {
    DEBUG_MSG("gtk_stop_stats");
    gtk_timeout_remove(stats_idle);
@@ -265,7 +265,7 @@ static gboolean refresh_stats(gpointer data)
 /*
  * change the visualization method 
  */
-void gui_vis_method(void)
+void gtkui_vis_method(void)
 {
    GtkWidget *dialog, *button, *prev, *vbox;
    GSList *curr = NULL;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_start.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_start.c,v 1.2 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -25,13 +25,13 @@
 
 /* proto */
 
-void gui_start_sniffing(void);
-void gui_stop_sniffing(void);
+void gtkui_start_sniffing(void);
+void gtkui_stop_sniffing(void);
 
 /*******************************************/
 
 
-void gui_start_sniffing(void)
+void gtkui_start_sniffing(void)
 {
    DEBUG_MSG("gtk_start_sniffing");
    
@@ -39,7 +39,7 @@ void gui_start_sniffing(void)
    EXECUTE(GBL_SNIFF->start);
 }
 
-void gui_stop_sniffing(void)
+void gtkui_stop_sniffing(void)
 {
    DEBUG_MSG("gtk_stop_sniffing");
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_plugins.c,v 1.2 2004/02/27 18:31:46 daten Exp $
+    $Id: ec_gtk_plugins.c,v 1.3 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -28,13 +28,13 @@
 
 /* proto */
 
-void gui_plugin_mgmt(void);
-void gui_plugin_load(void);
-static void gui_load_plugin(char *full);
-static void gui_add_plugin(char active, struct plugin_ops *ops);
-static void gui_plug_destroy(void);
-static void gui_select_plugin(void);
-static void gui_create_plug_array(void);
+void gtkui_plugin_mgmt(void);
+void gtkui_plugin_load(void);
+static void gtkui_load_plugin(char *full);
+static void gtkui_add_plugin(char active, struct plugin_ops *ops);
+static void gtkui_plug_destroy(void);
+static void gtkui_select_plugin(void);
+static void gtkui_create_plug_array(void);
 
 /* globals */
 
@@ -48,7 +48,7 @@ static GtkTreeSelection *selection = NULL;
 /*
  * display the file open dialog
  */
-void gui_plugin_load(void)
+void gtkui_plugin_load(void)
 {
    GtkWidget *dialog;
    char *filename;
@@ -66,15 +66,15 @@ void gui_plugin_load(void)
       gtk_widget_hide(dialog);
       filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
       
-      gui_load_plugin(filename);
+      gtkui_load_plugin(filename);
 
       /* update the list */
-      gui_create_plug_array();
+      gtkui_create_plug_array();
    }
    gtk_widget_destroy (dialog);
 }
 
-static void gui_load_plugin(char *full)
+static void gtkui_load_plugin(char *full)
 {
    char *path, *file;
    int ret;
@@ -94,7 +94,7 @@ static void gui_load_plugin(char *full)
    /* check the return code */
    switch (ret) {
       case ESUCCESS:
-         gui_message("Plugin loaded successfully");
+         gtkui_message("Plugin loaded successfully");
          break;
       case -EDUPLICATE:
          ui_error("plugin %s already loaded...", file);
@@ -112,7 +112,7 @@ static void gui_load_plugin(char *full)
 /*
  * plugin management
  */
-void gui_plugin_mgmt(void)
+void gtkui_plugin_mgmt(void)
 {
    GtkWidget *scrolled, *vbox;
    GtkCellRenderer   *renderer;
@@ -129,7 +129,7 @@ void gui_plugin_mgmt(void)
    plugins_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (plugins_window), "Select a plugin...");
    gtk_window_set_default_size(GTK_WINDOW (plugins_window), 400, 300);
-   g_signal_connect (G_OBJECT (plugins_window), "delete_event", G_CALLBACK (gui_plug_destroy), NULL);
+   g_signal_connect (G_OBJECT (plugins_window), "delete_event", G_CALLBACK (gtkui_plug_destroy), NULL);
    
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (plugins_window), vbox);
@@ -148,7 +148,7 @@ void gui_plugin_mgmt(void)
 
    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
    gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-   g_signal_connect (G_OBJECT (treeview), "row_activated", G_CALLBACK (gui_select_plugin), NULL);
+   g_signal_connect (G_OBJECT (treeview), "row_activated", G_CALLBACK (gtkui_select_plugin), NULL);
    
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes (" ", renderer, "text", 0, NULL);
@@ -172,13 +172,13 @@ void gui_plugin_mgmt(void)
 
    /* create the array for the list widget */
    /* or refreshes it if it exists */
-   gui_create_plug_array();
+   gtkui_create_plug_array();
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_plugins));   
 
    gtk_widget_show(plugins_window);
 }
 
-static void gui_plug_destroy(void)
+static void gtkui_plug_destroy(void)
 {
    gtk_widget_hide(plugins_window);
 }
@@ -188,7 +188,7 @@ static void gui_plug_destroy(void)
  * create the array for the widget.
  * erase any previously alloc'd array 
  */
-static void gui_create_plug_array(void)
+static void gtkui_create_plug_array(void)
 {
    GtkTreeIter iter;
    int res;
@@ -201,20 +201,20 @@ static void gui_create_plug_array(void)
       ls_plugins = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
    
    /* go thru the list of plugins */
-   res = plugin_list_walk(PLP_MIN, PLP_MAX, &gui_add_plugin);
+   res = plugin_list_walk(PLP_MIN, PLP_MAX, &gtkui_add_plugin);
    if (res == -ENOTFOUND) { 
-       g_signal_handlers_block_by_func (G_OBJECT (treeview), G_CALLBACK (gui_select_plugin), NULL);
+       g_signal_handlers_block_by_func (G_OBJECT (treeview), G_CALLBACK (gtkui_select_plugin), NULL);
        gtk_list_store_append (ls_plugins, &iter);
        gtk_list_store_set (ls_plugins, &iter, 0, " ", 1, "No Plugins Loaded", -1);
    } else {
-       g_signal_handlers_unblock_by_func (G_OBJECT (treeview), G_CALLBACK (gui_select_plugin), NULL);
+       g_signal_handlers_unblock_by_func (G_OBJECT (treeview), G_CALLBACK (gtkui_select_plugin), NULL);
    }
 }
 
 /*
  * callback function for displaying the plugin list 
  */
-static void gui_add_plugin(char active, struct plugin_ops *ops)
+static void gtkui_add_plugin(char active, struct plugin_ops *ops)
 {
    GtkTreeIter iter;
    char active_str[2];
@@ -233,7 +233,7 @@ static void gui_add_plugin(char active, struct plugin_ops *ops)
 /*
  * callback function for a plugin 
  */
-static void gui_select_plugin(void)
+static void gtkui_select_plugin(void)
 {
    GtkTreeIter iter;
    GtkTreeModel *model;
@@ -268,7 +268,7 @@ static void gui_select_plugin(void)
       plugin_init(plugin);
         
    /* refresh the list to mark plugin active */
-   gui_create_plug_array();
+   gtkui_create_plug_array();
 }
 
 

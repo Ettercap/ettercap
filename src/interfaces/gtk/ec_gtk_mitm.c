@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_mitm.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_mitm.c,v 1.2 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -26,13 +26,13 @@
 
 /* proto */
 
-void gui_arp_poisoning(void);
-void gui_icmp_redir(void);
-void gui_port_stealing(void);
-void gui_dhcp_spoofing(void);
-void gui_mitm_stop(void);
+void gtkui_arp_poisoning(void);
+void gtkui_icmp_redir(void);
+void gtkui_port_stealing(void);
+void gtkui_dhcp_spoofing(void);
+void gtkui_mitm_stop(void);
 
-static void gui_start_mitm(void);
+static void gtkui_start_mitm(void);
 
 /* globals */
 
@@ -42,7 +42,7 @@ static char params[PARAMS_LEN];
 
 /*******************************************/
 
-void gui_arp_poisoning(void)
+void gtkui_arp_poisoning(void)
 {
    GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame;
    gint response = 0;
@@ -100,17 +100,17 @@ void gui_arp_poisoning(void)
          strcat(params, "oneway");
       }
 
-      gui_start_mitm();
+      gtkui_start_mitm();
    }
 
    gtk_widget_destroy(dialog);
 
    /* a simpler method:
-      gui_input_call("Parameters :", params + strlen("arp:"), PARAMS_LEN - strlen("arp:"), gui_start_mitm);
+      gtkui_input_call("Parameters :", params + strlen("arp:"), PARAMS_LEN - strlen("arp:"), gtkui_start_mitm);
     */
 }
 
-void gui_icmp_redir(void)
+void gtkui_icmp_redir(void)
 {
    GtkWidget *dialog, *table, *hbox, *image, *label, *entry1, *entry2, *frame;
    gint response = 0;
@@ -174,17 +174,17 @@ void gui_icmp_redir(void)
       strncat(params, "/", PARAMS_LEN);
       strncat(params, gtk_entry_get_text(GTK_ENTRY(entry2)), PARAMS_LEN);
 
-      gui_start_mitm();
+      gtkui_start_mitm();
    }
 
    gtk_widget_destroy(dialog);
 
    /* a simpler method:
-      gui_input_call("Parameters :", params + strlen("icmp:"), PARAMS_LEN - strlen("icmp:"), gui_start_mitm);
+      gtkui_input_call("Parameters :", params + strlen("icmp:"), PARAMS_LEN - strlen("icmp:"), gtkui_start_mitm);
     */
 }
 
-void gui_port_stealing(void)
+void gtkui_port_stealing(void)
 {
    GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame;
    gint response = 0;
@@ -242,17 +242,17 @@ void gui_port_stealing(void)
          strcat(params, "tree");
       }
    
-      gui_start_mitm();
+      gtkui_start_mitm();
    }
 
    gtk_widget_destroy(dialog);
 
    /* a simpler method: 
-      gui_input_call("Parameters :", params + strlen("port:"), PARAMS_LEN - strlen("port:"), gui_start_mitm);
+      gtkui_input_call("Parameters :", params + strlen("port:"), PARAMS_LEN - strlen("port:"), gtkui_start_mitm);
     */
 }
 
-void gui_dhcp_spoofing(void)
+void gtkui_dhcp_spoofing(void)
 {
    GtkWidget *dialog, *table, *hbox, *image, *label, *entry1, *entry2, *entry3, *frame;
    gint response = 0;
@@ -327,13 +327,13 @@ void gui_dhcp_spoofing(void)
       strncat(params, "/", PARAMS_LEN);
       strncat(params, gtk_entry_get_text(GTK_ENTRY(entry3)), PARAMS_LEN);
 
-      gui_start_mitm();
+      gtkui_start_mitm();
    }
 
    gtk_widget_destroy(dialog);
 
    /* a simpler method:
-      gui_input_call("Parameters :", params + strlen("dhcp:"), PARAMS_LEN - strlen("dhcp:"), gui_start_mitm);
+      gtkui_input_call("Parameters :", params + strlen("dhcp:"), PARAMS_LEN - strlen("dhcp:"), gtkui_start_mitm);
    */
 }
 
@@ -341,7 +341,7 @@ void gui_dhcp_spoofing(void)
 /* 
  * start the mitm attack by passing the name and parameters 
  */
-static void gui_start_mitm(void)
+static void gtkui_start_mitm(void)
 {
    DEBUG_MSG("gtk_start_mitm");
    
@@ -353,7 +353,7 @@ static void gui_start_mitm(void)
 /*
  * stop all the mitm attack(s)
  */
-void gui_mitm_stop(void)
+void gtkui_mitm_stop(void)
 {
    GtkWidget *dialog;
    
@@ -375,7 +375,7 @@ void gui_mitm_stop(void)
 
    gtk_widget_destroy(dialog);
    
-   gui_message("MITM attack(s) stopped");
+   gtkui_message("MITM attack(s) stopped");
 }
 
 /* EOF */

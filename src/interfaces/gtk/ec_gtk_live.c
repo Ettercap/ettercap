@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_live.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_live.c,v 1.2 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -27,18 +27,18 @@
 
 /* proto */
 
-void gui_sniff_live(void);
+void gtkui_sniff_live(void);
 
 /*******************************************/
 
 
 /* the interface */
 
-void gui_sniff_live(void)
+void gtkui_sniff_live(void)
 {
    DEBUG_MSG("gtk_sniff_live");
 
-   gui_create_menu(1); /* online menus */
+   gtkui_create_menu(1); /* online menus */
 }
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_hosts.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_hosts.c,v 1.2 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -26,18 +26,18 @@
 
 /* proto */
 
-void gui_scan(void);
-void gui_load_hosts(void);
-void gui_save_hosts(void);
-void gui_host_list(void);
-void gui_refresh_host_list(void);
+void gtkui_scan(void);
+void gtkui_load_hosts(void);
+void gtkui_save_hosts(void);
+void gtkui_host_list(void);
+void gtkui_refresh_host_list(void);
 
 static void load_hosts(char *file);
 static void save_hosts(void);
-static void gui_delete_host(GtkWidget *widget, gpointer data);
-static void gui_host_target1(GtkWidget *widget, gpointer data);
-static void gui_host_target2(GtkWidget *widget, gpointer data);
-static struct hosts_list *gui_host_selected(void);
+static void gtkui_delete_host(GtkWidget *widget, gpointer data);
+static void gtkui_host_target1(GtkWidget *widget, gpointer data);
+static void gtkui_host_target2(GtkWidget *widget, gpointer data);
+static struct hosts_list *gtkui_host_selected(void);
 
 /* globals */
 static GtkWidget      *hosts_window = NULL;
@@ -49,7 +49,7 @@ static GtkListStore      *liststore = NULL;
 /*
  * scan the lan for hosts 
  */
-void gui_scan(void)
+void gtkui_scan(void)
 {
    /* wipe the current list */
    del_hosts_list();
@@ -64,13 +64,13 @@ void gui_scan(void)
    /* perform a new scan */
    build_hosts_list();
 
-   gui_refresh_host_list();
+   gtkui_refresh_host_list();
 }
 
 /*
  * display the file open dialog
  */
-void gui_load_hosts(void)
+void gtkui_load_hosts(void)
 {
    GtkWidget *dialog;
    char *filename;
@@ -123,13 +123,13 @@ static void load_hosts(char *file)
    
    SAFE_FREE(tmp);
    
-   gui_host_list();
+   gtkui_host_list();
 }
 
 /*
  * display the write file menu
  */
-void gui_save_hosts(void)
+void gtkui_save_hosts(void)
 {
 #define FILE_LEN  40
    
@@ -138,7 +138,7 @@ void gui_save_hosts(void)
    SAFE_FREE(GBL_OPTIONS->hostsfile);
    SAFE_CALLOC(GBL_OPTIONS->hostsfile, FILE_LEN, sizeof(char));
    
-   gui_input_call("Output file :", GBL_OPTIONS->hostsfile, FILE_LEN, save_hosts);
+   gtkui_input_call("Output file :", GBL_OPTIONS->hostsfile, FILE_LEN, save_hosts);
 }
 
 static void save_hosts(void)
@@ -163,7 +163,7 @@ static void save_hosts(void)
 /*
  * display the host list 
  */
-void gui_host_list(void)
+void gtkui_host_list(void)
 {
    GtkWidget *scrolled, *treeview, *vbox, *hbox, *button;
    GtkCellRenderer   *renderer;
@@ -214,7 +214,7 @@ void gui_host_list(void)
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
    /* populate the list or at least allocate a spot for it */
-   gui_refresh_host_list();
+   gtkui_refresh_host_list();
   
    /* set the elements */
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (liststore));
@@ -225,17 +225,17 @@ void gui_host_list(void)
 
    button = gtk_button_new_with_mnemonic("_Delete Host");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_delete_host), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_host), NULL);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("Add to Target _1");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_host_target1), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_host_target1), NULL);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("Add to Target _2");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_host_target2), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_host_target2), NULL);
    gtk_widget_show(button);
 
    gtk_widget_show(hosts_window);
@@ -244,7 +244,7 @@ void gui_host_list(void)
 /*
  * populate the list
  */
-void gui_refresh_host_list(void)
+void gtkui_refresh_host_list(void)
 {
    GtkTreeIter   iter;
    struct hosts_list *hl;
@@ -285,7 +285,7 @@ void gui_refresh_host_list(void)
 /*
  * deletes one host from the list
  */
-static void gui_delete_host(GtkWidget *widget, gpointer data)
+static void gtkui_delete_host(GtkWidget *widget, gpointer data)
 {
    GtkTreeIter iter;
    GtkTreeModel *model;
@@ -296,7 +296,7 @@ static void gui_delete_host(GtkWidget *widget, gpointer data)
    if (!gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) 
       return; /* nothing is selected */
  
-   hl = gui_host_selected();
+   hl = gtkui_host_selected();
 
    gtk_list_store_remove(GTK_LIST_STORE (liststore), &iter);
 
@@ -309,14 +309,14 @@ static void gui_delete_host(GtkWidget *widget, gpointer data)
 /*
  * add an host to TARGET 1
  */
-static void gui_host_target1(GtkWidget *widget, gpointer data)
+static void gtkui_host_target1(GtkWidget *widget, gpointer data)
 {
    struct hosts_list *hl;
    char tmp[MAX_ASCII_ADDR_LEN];
   
    DEBUG_MSG("gtk_host_target1");
    
-   hl = gui_host_selected();
+   hl = gtkui_host_selected();
    if(!hl)
       return;
   
@@ -329,14 +329,14 @@ static void gui_host_target1(GtkWidget *widget, gpointer data)
 /*
  * add an host to TARGET 2
  */
-static void gui_host_target2(GtkWidget *widget, gpointer data)
+static void gtkui_host_target2(GtkWidget *widget, gpointer data)
 {
    struct hosts_list *hl;
    char tmp[MAX_ASCII_ADDR_LEN];
    
    DEBUG_MSG("gtk_host_target2");
    
-   hl = gui_host_selected();
+   hl = gtkui_host_selected();
    if(!hl)
       return;
   
@@ -346,7 +346,7 @@ static void gui_host_target2(GtkWidget *widget, gpointer data)
    USER_MSG("Host %s added to TARGET2\n", ip_addr_ntoa(&hl->ip, tmp));
 }
 
-static struct hosts_list *gui_host_selected(void) {
+static struct hosts_list *gtkui_host_selected(void) {
    GtkTreeIter iter;
    GtkTreeModel *model;
    struct hosts_list *hl = NULL;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.3 2004/02/27 18:31:46 daten Exp $
+    $Id: ec_gtk.c,v 1.4 2004/02/27 20:03:39 daten Exp $
 */
 
 #include <ec.h>
@@ -41,34 +41,34 @@ static GtkAccelGroup *accel_group = NULL;
 /* proto */
 
 void set_gtk_interface(void);
-void gui_start(void);
+void gtkui_start(void);
 
-void gui_message(const char *msg);
-void gui_input(const char *title, char *input, size_t n);
-void gui_input_call(const char *title, char *input, size_t n, void (*callback)(void));
+void gtkui_message(const char *msg);
+void gtkui_input(const char *title, char *input, size_t n);
+void gtkui_input_call(const char *title, char *input, size_t n, void (*callback)(void));
    
-static void gui_init(void);
-static void gui_cleanup(void);
-static void gui_msg(const char *msg);
-static void gui_error(const char *msg);
-static void gui_fatal_error(const char *msg);
-static gboolean gui_flush_msg(gpointer data);
-static void gui_progress(char *title, int value, int max);
+static void gtkui_init(void);
+static void gtkui_cleanup(void);
+static void gtkui_msg(const char *msg);
+static void gtkui_error(const char *msg);
+static void gtkui_fatal_error(const char *msg);
+static gboolean gtkui_flush_msg(gpointer data);
+static void gtkui_progress(char *title, int value, int max);
 
-static void gui_setup(void);
-static void gui_exit(void);
+static void gtkui_setup(void);
+static void gtkui_exit(void);
 
 static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
 
-static void gui_file_open(void);
+static void gtkui_file_open(void);
 static void read_pcapfile(char *file);
-static void gui_file_write(void);
+static void gtkui_file_write(void);
 static void write_pcapfile(void);
-static void gui_unified_sniff(void);
-static void gui_bridged_sniff(void);
+static void gtkui_unified_sniff(void);
+static void gtkui_bridged_sniff(void);
 static void bridged_sniff(void);
-static void gui_pcap_filter(void);
+static void gtkui_pcap_filter(void);
 
 
 /***#****************************************/
@@ -81,14 +81,14 @@ void set_gtk_interface(void)
    memset(&ops, 0, sizeof(ops));
 
    /* register the functions */
-   ops.init = &gui_init;
-   ops.start = &gui_start;
-   ops.cleanup = &gui_cleanup;
-   ops.msg = &gui_msg;
-   ops.error = &gui_error;
-   ops.fatal_error = &gui_fatal_error;
-   ops.input = &gui_input;
-   ops.progress = &gui_progress;
+   ops.init = &gtkui_init;
+   ops.start = &gtkui_start;
+   ops.cleanup = &gtkui_cleanup;
+   ops.msg = &gtkui_msg;
+   ops.error = &gtkui_error;
+   ops.fatal_error = &gtkui_fatal_error;
+   ops.input = &gtkui_input;
+   ops.progress = &gtkui_progress;
    ops.type = UI_GTK;
    
    ui_register(&ops);
@@ -99,7 +99,7 @@ void set_gtk_interface(void)
 /*
  * prepare GTK, create the menu/messages window, enter the first loop 
  */
-static void gui_init(void)
+static void gtkui_init(void)
 {
    DEBUG_MSG("gtk_init");
 
@@ -110,7 +110,7 @@ static void gui_init(void)
 	   return;
    }
 
-   gui_setup();
+   gtkui_setup();
 
    /* gui init loop, calling gtk_main_quit will cause
     * this to exit so we can proceed to the main loop
@@ -128,7 +128,7 @@ static void gui_init(void)
 /*
  * exit ettercap 
  */
-static void gui_exit(void)
+static void gtkui_exit(void)
 {
    DEBUG_MSG("gtk_exit");
 
@@ -139,7 +139,7 @@ static void gui_exit(void)
 /*
  * reset to the previous state
  */
-static void gui_cleanup(void)
+static void gtkui_cleanup(void)
 {
    DEBUG_MSG("gtk_cleanup");
 
@@ -149,11 +149,11 @@ static void gui_cleanup(void)
 /*
  * print a USER_MSG() extracting it from the queue
  */
-static void gui_msg(const char *msg)
+static void gtkui_msg(const char *msg)
 {
    GtkTextIter iter;
 
-   DEBUG_MSG("gui_msg: %s", msg);
+   DEBUG_MSG("gtkui_msg: %s", msg);
 
    gtk_text_buffer_get_end_iter(msgbuffer, &iter);
    gtk_text_buffer_insert(msgbuffer, &iter, msg, -1);
@@ -163,7 +163,7 @@ static void gui_msg(const char *msg)
 }
 
 /* flush pending messages */
-gboolean gui_flush_msg(gpointer data)
+gboolean gtkui_flush_msg(gpointer data)
 {
    ui_msg_flush(MSG_ALL);
 
@@ -173,11 +173,11 @@ gboolean gui_flush_msg(gpointer data)
 /*
  * print an error
  */
-static void gui_error(const char *msg)
+static void gtkui_error(const char *msg)
 {
    GtkWidget *dialog;
    
-   DEBUG_MSG("gui_error: %s", msg);
+   DEBUG_MSG("gtkui_error: %s", msg);
 
    dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL, 
                                    GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", msg);
@@ -194,12 +194,12 @@ static void gui_error(const char *msg)
 /*
  * handle a fatal error and exit
  */
-static void gui_fatal_error(const char *msg)
+static void gtkui_fatal_error(const char *msg)
 {
    /* if the gui is working at this point
       display the message in a dialog */
    if(window)
-      gui_error(msg);
+      gtkui_error(msg);
 
    /* also dump it to console in case ettercap was started in an xterm */
    fprintf(stderr, "FATAL ERROR: %s\n\n\n", msg);
@@ -211,7 +211,7 @@ static void gui_fatal_error(const char *msg)
 /*
  * get an input from the user blocking
  */
-void gui_input(const char *title, char *input, size_t n)
+void gtkui_input(const char *title, char *input, size_t n)
 {
    GtkWidget *dialog, *entry, *label, *hbox, *image;
 
@@ -251,7 +251,7 @@ void gui_input(const char *title, char *input, size_t n)
 /*
  * get an input from the user with a callback
  */
-void gui_input_call(const char *title, char *input, size_t n, void (*callback)(void))
+void gtkui_input_call(const char *title, char *input, size_t n, void (*callback)(void))
 {
    GtkWidget *dialog, *entry, *label, *hbox, *image;
 
@@ -294,7 +294,7 @@ void gui_input_call(const char *title, char *input, size_t n, void (*callback)(v
 /* 
  * show or update the progress bar
  */
-static void gui_progress(char *title, int value, int max)
+static void gtkui_progress(char *title, int value, int max)
 {
    static GtkWidget *dialog = NULL;
    static GtkWidget *pbar = NULL;
@@ -338,11 +338,11 @@ static void gui_progress(char *title, int value, int max)
 /*
  * print a message
  */
-void gui_message(const char *msg)
+void gtkui_message(const char *msg)
 {
    GtkWidget *dialog;
    
-   DEBUG_MSG("gui_message: %s", msg);
+   DEBUG_MSG("gtkui_message: %s", msg);
 
    dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL, 
                                    GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s", msg);
@@ -360,19 +360,19 @@ void gui_message(const char *msg)
  * Create the main interface and enter the second loop
  */
 
-void gui_start(void)
+void gtkui_start(void)
 {
    guint idle_flush;
 
    DEBUG_MSG("gtk_start");
 
-   idle_flush = gtk_timeout_add(500, gui_flush_msg, NULL);
+   idle_flush = gtk_timeout_add(500, gtkui_flush_msg, NULL);
    
    /* which interface do we have to display ? */
    if (GBL_OPTIONS->read)
-      gui_sniff_offline();
+      gtkui_sniff_offline();
    else
-      gui_sniff_live();
+      gtkui_sniff_live();
    
    /* the main gui loop, once this exits the gui will be destroyed */
    gdk_threads_enter();
@@ -404,7 +404,7 @@ static void toggle_nopromisc(void)
  * display the initial menu to setup global options
  * at startup.
  */
-static void gui_setup(void)
+static void gtkui_setup(void)
 {
    GtkTextIter iter;
    GtkWidget *item, *vbox, *scroll;
@@ -413,29 +413,29 @@ static void gui_setup(void)
 
    GtkItemFactoryEntry file_menu[] = {
       { "/_File",         "<shift>F",   NULL,           0, "<Branch>" },
-      { "/File/_Open",    "<control>O", gui_file_open,  0, "<StockItem>", GTK_STOCK_OPEN },
-      { "/File/_Save",    "<control>S", gui_file_write, 0, "<StockItem>", GTK_STOCK_SAVE },
+      { "/File/_Open",    "<control>O", gtkui_file_open,  0, "<StockItem>", GTK_STOCK_OPEN },
+      { "/File/_Save",    "<control>S", gtkui_file_write, 0, "<StockItem>", GTK_STOCK_SAVE },
       { "/File/sep1",     NULL,         NULL,           0, "<Separator>" },
-      { "/File/E_xit",    "<control>x", gui_exit,       0, "<StockItem>", GTK_STOCK_QUIT },
+      { "/File/E_xit",    "<control>x", gtkui_exit,       0, "<StockItem>", GTK_STOCK_QUIT },
       { "/_Sniff",        "<shift>S",   NULL,           0, "<Branch>" },
-      { "/Sniff/Unified sniffing...",  "<shift>U", gui_unified_sniff, 0, "<StockItem>", GTK_STOCK_DND },
-      { "/Sniff/Bridged sniffing...",  "<shift>B", gui_bridged_sniff, 0, "<StockItem>", GTK_STOCK_DND_MULTIPLE },
+      { "/Sniff/Unified sniffing...",  "<shift>U", gtkui_unified_sniff, 0, "<StockItem>", GTK_STOCK_DND },
+      { "/Sniff/Bridged sniffing...",  "<shift>B", gtkui_bridged_sniff, 0, "<StockItem>", GTK_STOCK_DND_MULTIPLE },
       { "/Sniff/sep2",    NULL,         NULL,           0, "<Separator>" },
-      { "/Sniff/Set pcap filter...",    "p",       gui_pcap_filter,   0, "<StockItem>", GTK_STOCK_PREFERENCES },
+      { "/Sniff/Set pcap filter...",    "p",       gtkui_pcap_filter,   0, "<StockItem>", GTK_STOCK_PREFERENCES },
       { "/_Options",                    "<shift>O", NULL, 0, "<Branch>" },
       { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>" },
       { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" }
    };
    gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);
    
-   DEBUG_MSG("gui_setup");
+   DEBUG_MSG("gtkui_setup");
 
    /* create menu window */
    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
    snprintf(title, 50, "%s %s", EC_PROGRAM, EC_VERSION);
    gtk_window_set_title(GTK_WINDOW (window), title);
    gtk_window_set_default_size(GTK_WINDOW (window), 450, 175);
-   g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gui_exit), NULL);
+   g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gtkui_exit), NULL);
 
    accel_group = gtk_accel_group_new ();
    item_factory = gtk_item_factory_new (GTK_TYPE_MENU_BAR, "<main>", accel_group);
@@ -482,7 +482,7 @@ static void gui_setup(void)
 /*
  * display the file open dialog
  */
-static void gui_file_open(void)
+static void gtkui_file_open(void)
 {
    GtkWidget *dialog;
    char *filename;
@@ -537,7 +537,7 @@ static void read_pcapfile(char *file)
 /*
  * display the write file menu
  */
-static void gui_file_write(void)
+static void gtkui_file_write(void)
 {
 #define FILE_LEN  40
    
@@ -545,7 +545,7 @@ static void gui_file_write(void)
    
    SAFE_CALLOC(GBL_OPTIONS->dumpfile, FILE_LEN, sizeof(char));
 
-   gui_input_call("Output file :", GBL_OPTIONS->dumpfile, FILE_LEN, write_pcapfile);
+   gtkui_input_call("Output file :", GBL_OPTIONS->dumpfile, FILE_LEN, write_pcapfile);
 }
 
 static void write_pcapfile(void)
@@ -577,7 +577,7 @@ static void write_pcapfile(void)
 /*
  * display the interface selection dialog
  */
-static void gui_unified_sniff(void)
+static void gtkui_unified_sniff(void)
 {
    char err[PCAP_ERRBUF_SIZE];
    
@@ -589,13 +589,13 @@ static void gui_unified_sniff(void)
    strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
 
    /* calling gtk_main_quit will go to the next interface :) */
-   gui_input_call("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, gtk_main_quit);
+   gtkui_input_call("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, gtk_main_quit);
 }
 
 /*
  * display the interface selection for bridged sniffing
  */
-static void gui_bridged_sniff(void)
+static void gtkui_bridged_sniff(void)
 {
    GtkWidget *dialog, *vbox, *hbox, *image;
    GtkWidget *hbox_big, *label, *entry1, *entry2;
@@ -676,7 +676,7 @@ static void bridged_sniff(void)
 /*
  * display the pcap filter dialog
  */
-static void gui_pcap_filter(void)
+static void gtkui_pcap_filter(void)
 {
 #define PCAP_FILTER_LEN  50
    
@@ -688,7 +688,7 @@ static void gui_pcap_filter(void)
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   gui_input_call("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
+   gtkui_input_call("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
 /* EOF */

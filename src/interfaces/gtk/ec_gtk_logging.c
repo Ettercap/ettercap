@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_logging.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_logging.c,v 1.2 2004/02/27 20:03:40 daten Exp $
 */
 
 #include <ec.h>
@@ -29,11 +29,11 @@
 /* proto */
 
 void toggle_compress(void);
-void gui_log_all(void);
-void gui_log_info(void);
-void gui_log_msg(void);
-void gui_stop_log(void);
-void gui_stop_msg(void);
+void gtkui_log_all(void);
+void gtkui_log_info(void);
+void gtkui_log_msg(void);
+void gtkui_stop_log(void);
+void gtkui_stop_msg(void);
 
 static void log_all(void);
 static void log_info(void);
@@ -57,7 +57,7 @@ void toggle_compress(void)
 /*
  * display the log dialog 
  */
-void gui_log_all(void)
+void gtkui_log_all(void)
 {
    DEBUG_MSG("gtk_log_all");
 
@@ -65,7 +65,7 @@ void gui_log_all(void)
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   gui_input_call("Log File :", logfile, FILE_LEN, log_all);
+   gtkui_input_call("Log File :", logfile, FILE_LEN, log_all);
 }
 
 static void log_all(void)
@@ -77,7 +77,7 @@ static void log_all(void)
 /*
  * display the log dialog 
  */
-void gui_log_info(void)
+void gtkui_log_info(void)
 {
    DEBUG_MSG("gtk_log_info");
 
@@ -85,7 +85,7 @@ void gui_log_info(void)
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   gui_input_call("Log File :", logfile, FILE_LEN, log_info);
+   gtkui_input_call("Log File :", logfile, FILE_LEN, log_info);
 }
 
 static void log_info(void)
@@ -94,16 +94,16 @@ static void log_info(void)
    SAFE_FREE(logfile);
 }
 
-void gui_stop_log(void)
+void gtkui_stop_log(void)
 {
    set_loglevel(LOG_STOP, "");
-   gui_message("Logging was stopped.");
+   gtkui_message("Logging was stopped.");
 }
 
 /*
  * display the log dialog 
  */
-void gui_log_msg(void)
+void gtkui_log_msg(void)
 {
    DEBUG_MSG("gtk_log_msg");
 
@@ -111,7 +111,7 @@ void gui_log_msg(void)
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   gui_input_call("Log File :", logfile, FILE_LEN, log_msg);
+   gtkui_input_call("Log File :", logfile, FILE_LEN, log_msg);
 }
 
 static void log_msg(void)
@@ -120,10 +120,10 @@ static void log_msg(void)
    SAFE_FREE(logfile);
 }
 
-void gui_stop_msg(void)
+void gtkui_stop_msg(void)
 {
    set_msg_loglevel(LOG_FALSE, NULL);
-   gui_message("Message logging was stopped.");
+   gtkui_message("Message logging was stopped.");
 }
 
 /* EOF */

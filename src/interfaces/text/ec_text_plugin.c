@@ -17,11 +17,10 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_plugin.c,v 1.4 2003/10/29 23:34:50 alor Exp $
+    $Id: ec_text_plugin.c,v 1.5 2003/11/14 20:17:46 alor Exp $
 */
 
 #include <ec.h>
-#include <ec_poll.h>
 #include <ec_ui.h>
 #include <ec_threads.h>
 #include <ec_plugins.h>

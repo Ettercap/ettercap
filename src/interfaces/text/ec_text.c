@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.10 2003/11/13 21:35:43 alor Exp $
+    $Id: ec_text.c,v 1.11 2003/11/14 20:17:46 alor Exp $
 */
 
 #include <ec.h>
@@ -277,16 +277,8 @@ void text_interface(void)
    
       CANCELLATION_POINT();
       
-      /* XXX --  1 millisecond is too slow 
-       * but 0 will eat up all the CPU time...
-       * 
-       * FIND A SOLUTION !!
-       * maybe an  "else usleep(1);"
-       * or increase the number of USER_MSG processed
-       */
-        
       /* if there is a pending char to be read */
-      if (ec_poll_in(fileno(stdin), 1)) {
+      if (ec_poll_in(fileno(stdin), 10)) {
          
          char ch = 0;
          ch = getchar();

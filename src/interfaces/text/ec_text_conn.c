@@ -17,12 +17,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_conn.c,v 1.1 2003/10/11 19:44:39 alor Exp $
+    $Id: ec_text_conn.c,v 1.2 2003/11/14 20:17:46 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_threads.h>
-#include <ec_poll.h>
 #include <ec_interfaces.h>
 #include <ec_conntrack.h>
 #include <ec_inet.h>

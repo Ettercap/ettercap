@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_interfaces.c,v 1.2 2004/02/22 12:00:53 alor Exp $
+    $Id: ec_interfaces.c,v 1.3 2004/02/26 09:22:10 alor Exp $
 */
 
 #include <ec.h>
@@ -66,7 +66,7 @@ void select_curses_interface(void)
 void select_gtk_interface(void)
 {
    DEBUG_MSG("select_gtk_interface");
-#ifdef HAVE_NCURSES 
+#ifdef HAVE_GTK 
    set_gtk_interface();
 #else
    FATAL_ERROR("GTK support not compiled in %s", GBL_PROGRAM);

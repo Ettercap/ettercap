@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.38 2003/12/13 18:41:11 alor Exp $
+    $Id: ec_send.c,v 1.39 2003/12/15 14:38:40 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -54,7 +54,7 @@ int send_to_L3(struct packet_object *po);
 int send_to_L2(struct packet_object *po);
 int send_to_bridge(struct packet_object *po);
 
-static void capture_only_incoming(pcap_t *p, libnet_t *l);
+void capture_only_incoming(pcap_t *p, libnet_t *l);
 
 void add_builder(u_int8 dlt, FUNC_BUILDER_PTR(builder));
 libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto);
@@ -232,7 +232,7 @@ int send_to_bridge(struct packet_object *po)
  *
  * so we have to find a solution...
  */
-static void capture_only_incoming(pcap_t *p, libnet_t *l)
+void capture_only_incoming(pcap_t *p, libnet_t *l)
 {
 #ifdef OS_LINUX   
    /*

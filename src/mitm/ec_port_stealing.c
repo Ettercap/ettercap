@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.6 2003/12/14 17:07:17 alor Exp $
+    $Id: ec_port_stealing.c,v 1.7 2003/12/15 14:38:40 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -123,6 +123,7 @@ static int port_stealing_start(char *args)
    char bogus_mac[6]="\x00\xe7\x7e\xe7\x7e\xe7";
    
    DEBUG_MSG("port_stealing_start");
+   USER_MSG("\nPort Stealing: starting...\n\n");
 
    steal_tree = 0;
 
@@ -149,7 +150,10 @@ static int port_stealing_start(char *args)
 
    if (LIST_EMPTY(&GBL_HOSTLIST)) 
       USER_MSG("Host List is empty - No host for Port Stealing\n\n"); 
-
+   else
+      /* Avoid sniffing loops. XXX - it remains even after mitm stopping */
+      capture_only_incoming(GBL_PCAP->pcap, GBL_LNET->lnet);
+      
    /* Create the port stealing list from hosts list */   
    LIST_FOREACH(h, &GBL_HOSTLIST, next) {
       /* create the element and insert it in steal lists */
@@ -336,7 +340,7 @@ static void put_queue(struct packet_object *po)
             s->wait_reply = 1;
             send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
          }
-	   
+
          SAFE_CALLOC(p, 1, sizeof(struct packet_list));
          p->po = packet_dup(po);
          TAILQ_INSERT_HEAD(&(s->packet_table), p, next);
@@ -405,7 +409,6 @@ static void send_queue(struct packet_object *po)
                   usleep(GBL_CONF->port_steal_send_delay);
                to_wait = 1;
             }
-	    
             /* Restart the stealing process for this host */
             s1->wait_reply = 0;
          }

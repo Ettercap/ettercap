@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mountd.c,v 1.1 2004/01/18 16:42:15 lordnaga Exp $
+    $Id: ec_mountd.c,v 1.2 2004/01/20 14:24:21 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -131,7 +131,7 @@ FUNC_DECODER(dissector_mountd)
       offs = 28;
    }
 
-   SAFE_CALLOC(fhandle, (flen*2) + 10, 1);
+   SAFE_CALLOC(fhandle, (flen*3) + 10, 1);
    for (i=0; i<flen; i++)
       sprintf(fhandle, "%s%.2x ", fhandle, ptr[i + offs]);
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_portmap.c,v 1.3 2004/01/18 15:08:08 lordnaga Exp $
+    $Id: ec_portmap.c,v 1.4 2004/01/20 14:24:21 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -31,9 +31,14 @@ typedef struct {
    u_int32 prog;
    u_int32 ver;
    u_int32 proto;
+   u_int32 status;
+   u_int32 next_offs;
 } portmap_session;
 #define DUMP 1
 #define MAP_LEN 20
+#define FIRST_FRAG 0
+#define MORE_FRAG 1
+#define LAST_FRAG 0x80000000
 
 typedef struct {
    u_int32 program;
@@ -81,7 +86,7 @@ FUNC_DECODER(dissector_portmap)
    (void)end;
 
    /* skip unuseful packets */
-   if (PACKET->DATA.len < 24)
+   if (PACKET->DATA.len < 24)  
       return NULL;
    
    DEBUG_MSG("portmap --> dissector_portmap");
@@ -94,11 +99,16 @@ FUNC_DECODER(dissector_portmap)
    proc = pntol(ptr + 20);
    type = pntol(ptr + 4);
 
+   dissect_create_ident(&ident, PACKET);
+
    /* CALL */
    if (FROM_CLIENT("portmap", PACKET)) {
-      if (type != 0) 
+      if (type != 0 || session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+         SAFE_FREE(ident); 
          return NULL;
-
+      }
+      
+      SAFE_FREE(ident);
       dissect_create_session(&s, PACKET);
       SAFE_CALLOC(s->data, 1, sizeof(portmap_session));
       pe = (portmap_session *)s->data;
@@ -118,7 +128,6 @@ FUNC_DECODER(dissector_portmap)
    }
 
    /* REPLY */
-   dissect_create_ident(&ident, PACKET);
    if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
       SAFE_FREE(ident);
       return NULL;
@@ -126,15 +135,18 @@ FUNC_DECODER(dissector_portmap)
 
    SAFE_FREE(ident);
    pe = (portmap_session *)s->data;
-
-   /* Unsuccess or not a reply */
-   if (!pe || pe->xid != xid || pntol(ptr + 8) != 0 || type != 1) 
+   if (!pe)
       return NULL;
-
+   
+   /* Unsuccess or not a reply */
+   if ( (pe->xid != xid || pntol(ptr + 8) != 0 || type != 1) 
+        && pe->status != MORE_FRAG) 
+      return NULL;
+      
    /* GETPORT Reply */
    if (pe->prog != DUMP) {
       port = pntol(ptr + 24);
-
+      
       for (i=0; Available_RPC_Dissectors[i].program != 0; i++ ) {
          if ( Available_RPC_Dissectors[i].program == pe->prog &&
               Available_RPC_Dissectors[i].version == pe->ver ) {
@@ -158,27 +170,35 @@ FUNC_DECODER(dissector_portmap)
          }
       }
    } else { /* DUMP Reply */
-      offs = 24;
+      /* XXX - It jumps the fragmented entry (if any) */
+      if (pe->status == MORE_FRAG)
+         offs = pe->next_offs;
+      else
+         offs = 24;
       while ( (PACKET->DATA.len - offs) >= MAP_LEN ) {
          program = pntol(ptr + offs + 4);
          version = pntol(ptr + offs + 8);
          proto   = pntol(ptr + offs + 12);
          port    = pntol(ptr + offs + 16);
-
          for (i=0; Available_RPC_Dissectors[i].program != 0; i++) {
+
             if ( Available_RPC_Dissectors[i].program == program &&
                  Available_RPC_Dissectors[i].version == version ) {
 
                if (proto == IPPROTO_TCP) {
+
                   if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == ESUCCESS)
                      break;
+
                   dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
                   DISSECT_MSG("portmap : %s binds [%s] on port %d TCP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                                                           Available_RPC_Dissectors[i].name, 
                                                                           port);
                } else {
+
                   if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == ESUCCESS)
                      break;
+
                   dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
                   DISSECT_MSG("portmap : %s binds [%s] on port %d UDP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                                                           Available_RPC_Dissectors[i].name, 
@@ -189,9 +209,19 @@ FUNC_DECODER(dissector_portmap)
          }
          offs += MAP_LEN;
       }
+      /* 
+       * Offset to the beginning of the first 
+       * valid structure in the next packet
+       */
+      pe->next_offs = MAP_LEN + 4 - PACKET->DATA.len + offs;
    }
 
-   dissect_wipe_session(PACKET);
+   /* Check if we have to wait for more reply fragments */
+   if ( PACKET->L4.proto == NL_TYPE_TCP && !(pntol(ptr - 4)&LAST_FRAG) )
+      pe->status = MORE_FRAG;
+   else
+      dissect_wipe_session(PACKET);      
+
    return NULL;
 }
 

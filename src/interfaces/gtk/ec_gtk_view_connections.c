@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.4 2004/02/27 20:03:40 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.5 2004/02/28 00:08:57 daten Exp $
 */
 
 #include <ec.h>
@@ -98,7 +98,7 @@ static u_char *injectbuf;
  */
 void gtkui_show_connections(void)
 {
-   GtkWidget *scrolled, *vbox, *items;
+   GtkWidget *scrolled, *vbox, *items, *hbox, *button;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
 
@@ -178,6 +178,20 @@ void gtkui_show_connections(void)
    gtk_tree_view_column_set_sort_column_id (column, 8);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
+   hbox = gtk_hbox_new(TRUE, 5);
+   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+   gtk_widget_show(hbox);
+
+   button = gtk_button_new_with_mnemonic("View _Details");
+   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_detail), NULL);
+   gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+   gtk_widget_show(button);
+
+   button = gtk_button_new_with_mnemonic("_Kill Connection");
+   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill), NULL);
+   gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+   gtk_widget_show(button);
+
   /* context menu */
    context_menu = gtk_menu_new ();
    
@@ -225,7 +239,7 @@ static gboolean refresh_connections(gpointer data)
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
    char *proto = "", *status = "";
-   GtkTreeIter iter, iter2, *iter3 = NULL;
+   GtkTreeIter iter;
    GtkTreeModel *model = NULL;
    gboolean gotiter = FALSE;
 
@@ -248,7 +262,6 @@ static gboolean refresh_connections(gpointer data)
 
    /* get iter for first item in list widget */
    model = GTK_TREE_MODEL(ls_conns);
-   gotiter = gtk_tree_model_get_iter_first(model, &iter);
 
    for(c = cl; c != NULL; c = c->next.tqe_next) {
       /* we'll set status on new and old items */
@@ -262,31 +275,22 @@ static gboolean refresh_connections(gpointer data)
          case CONN_KILLED:  status = "killed "; break;
       }
 
-      /* if another item exists in the list widget 
-       * compare it to the one from the connection list */
-      if(gotiter) {
+      /* see if the item is already in our list */
+      gotiter = gtk_tree_model_get_iter_first(model, &iter);
+      while(gotiter) {
          gtk_tree_model_get (model, &iter, 9, &curr, -1);
-
-         /* if the connections match, update the one in the list widget */
-         /* instead of recreating it */
          if(c == curr) {
-            gtk_list_store_set (ls_conns, &iter, 
+            gtk_list_store_set (ls_conns, &iter,
                                 0, (c->co->DISSECTOR.user) ? "X" : " ",
                                 7, status, 8, c->co->xferred, -1);
-            gotiter = gtk_tree_model_iter_next(model, &iter);
-            /* move on to next list item now */
-            continue;
-         } else {
-            /* if they don't match, insert the new one here */
-            gtk_list_store_insert_before(ls_conns, &iter2, &iter);
-            iter3 = gtk_tree_iter_copy(&iter2);
+            break;
          }
-      } else {
-         /* if the list widget doesn't have another item 
-          * to compare, append the new one from the connection
-          * list to the end */
-         gtk_list_store_append (ls_conns, &iter);
+         gotiter = gtk_tree_model_iter_next(model, &iter);
       }
+
+      /* if it is, move on to next item */
+      if(gotiter)
+         continue;
 
       /* if we got here, we're making a new list item, set all values */
       switch (c->co->L4_proto) {
@@ -298,19 +302,14 @@ static gboolean refresh_connections(gpointer data)
       ip_addr_ntoa(&c->co->L3_addr1, src);
       ip_addr_ntoa(&c->co->L3_addr2, dst);
 
-      gtk_list_store_set (ls_conns, (iter3)?iter3:&iter, 
+      gtk_list_store_append (ls_conns, &iter);
+      gtk_list_store_set (ls_conns, &iter, 
                           0, (c->co->DISSECTOR.user) ? "X" : " ",
                           1, src, 2, ntohs(c->co->L4_addr1),
                           3, "-",
                           4, dst, 5, ntohs(c->co->L4_addr2),
                           6, proto, 7, status, 8, c->co->xferred, 
                           9, c, -1);
-
-      if(iter3) {
-         gtk_tree_iter_free(iter3);
-         iter3 = NULL;
-      }
-         
    }
 
    return(TRUE);
@@ -1026,16 +1025,12 @@ static void inject_file(char *filename)
    
    DEBUG_MSG("inject_file %s", filename);
    
-   //SAFE_CALLOC(filename, strlen(filename)+1, sizeof(char));
-
    /* open the file */
    if ((fd = open(filename, O_RDONLY)) == -1) {
       ui_error("Can't load the file");
       return;
    }
       
-   //SAFE_FREE(filename);
-
    /* calculate the size of the file */
    size = lseek(fd, 0, SEEK_END);
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_profiles.c,v 1.2 2004/02/27 20:03:40 daten Exp $
+    $Id: ec_gtk_view_profiles.c,v 1.3 2004/02/28 00:08:57 daten Exp $
 */
 
 #include <ec.h>
@@ -36,13 +36,16 @@ static void gtkui_profile_detail(void);
 static void gtkui_profiles_local(void);
 static void gtkui_profiles_remote(void);
 static void gtkui_profiles_convert(void);
+static void gtkui_profiles_dump(void *dummy);
+static void dump_profiles(void);
+
 static void gtkui_print_details(GtkTextBuffer *textbuf, char *data);
 extern void gtkui_refresh_host_list(void);
 static struct host_profile *gtkui_profile_selected(void);
 
 /* globals */
 
-void *profile_list;
+static char *logfile = NULL;
 static GtkWidget  *profiles_window = NULL;
 static GtkWidget         *treeview = NULL;
 static GtkTreeSelection *selection = NULL;
@@ -97,13 +100,18 @@ void gtkui_show_profiles(void)
    g_signal_connect (G_OBJECT (treeview), "row_activated", G_CALLBACK (gtkui_profile_detail), NULL);
 
    renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("IP Address", renderer, "text", 0, NULL);
+   column = gtk_tree_view_column_new_with_attributes (" ", renderer, "text", 0, NULL);
    gtk_tree_view_column_set_sort_column_id (column, 0);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
    renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("Hostname", renderer, "text", 1, NULL);
+   column = gtk_tree_view_column_new_with_attributes ("IP Address", renderer, "text", 1, NULL);
    gtk_tree_view_column_set_sort_column_id (column, 1);
+   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+
+   renderer = gtk_cell_renderer_text_new ();
+   column = gtk_tree_view_column_new_with_attributes ("Hostname", renderer, "text", 2, NULL);
+   gtk_tree_view_column_set_sort_column_id (column, 2);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
    hbox = gtk_hbox_new(TRUE, 5);
@@ -119,6 +127,10 @@ void gtkui_show_profiles(void)
 
    button = gtk_button_new_with_mnemonic("_Convert to Host List");
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_convert), NULL);
+   gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+
+   button = gtk_button_new_with_mnemonic("_Dump to File");
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_dump), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
 
    gtk_widget_show_all(hbox);
@@ -140,14 +152,17 @@ static void gtkui_kill_profiles(GtkWidget *widget, gpointer data)
 
 static gboolean refresh_profiles(gpointer data)
 {
-   GtkTreeIter iter, newiter, *iterp = NULL;
+   GtkTreeIter iter;
    GtkTreeModel *model;
    gboolean gotiter = FALSE;
    struct host_profile *hcurr, *hitem;
+   struct open_port *o;
+   struct active_user *u;
    char tmp[MAX_ASCII_ADDR_LEN];
+   int found = 0;
 
    if(!ls_profiles) {
-      ls_profiles = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
+      ls_profiles = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
       gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_profiles));
    }
 
@@ -156,36 +171,45 @@ static gboolean refresh_profiles(gpointer data)
    gotiter = gtk_tree_model_get_iter_first(model, &iter);
 
    TAILQ_FOREACH(hcurr, &GBL_PROFILES, next) {
-      /* if another item exists in the list widget 
-       * compare it to the one from the profile list */
-      if(gotiter) {
-         gtk_tree_model_get (model, &iter, 2, &hitem, -1);
-
-         /* if the profiles match, update the one in the list widget */
-         /* instead of recreating it */
+      /* see if the item is already in our list */
+      gotiter = gtk_tree_model_get_iter_first(model, &iter);
+      while(gotiter) {
+         gtk_tree_model_get (model, &iter, 3, &hitem, -1);
          if(hcurr == hitem) {
-            /* if hostnames can be resolved sometime after the item
-               is added, uncomment this */
-            //if(hcurr->hostname)
-            //   gtk_list_store_set (ls_profiles, &iter, 1, hcurr->hostname, -1);
+            found = 0;
+            /* search at least one account */
+            LIST_FOREACH(o, &(hcurr->open_ports_head), next) {
+               LIST_FOREACH(u, &(o->users_list_head), next) {
+                  found = 1;
+               }
+            }
 
-            /* we already have this item, move on to next one */
-            gotiter = gtk_tree_model_iter_next(model, &iter);
-            continue;
-         } else {
-            /* if they don't match, insert the new one here */
-            gtk_list_store_insert_before(ls_profiles, &newiter, &iter);
-            iterp = &newiter;
+            gtk_list_store_set (ls_profiles, &iter, 0, (found)?"X":" ", -1);
+            break;
          }
-      } else {
-         gtk_list_store_append (ls_profiles, &iter);
-         iterp = &iter;
+         gotiter = gtk_tree_model_iter_next(model, &iter);
       }
 
-      gtk_list_store_set (ls_profiles, iterp, 
-                          0, ip_addr_ntoa(&hcurr->L3_addr, tmp), 
-                          1, (hcurr->hostname) ? hcurr->hostname : "",
-                          2, hcurr, -1);
+      /* if it is, move on to next item */
+      if(gotiter)
+         continue;
+
+      found = 0;
+      /* search at least one account */
+      LIST_FOREACH(o, &(hcurr->open_ports_head), next) {
+         LIST_FOREACH(u, &(o->users_list_head), next) {
+            found = 1;
+         }
+      }
+
+      /* otherwise, add the new item */
+      gtk_list_store_append (ls_profiles, &iter);
+
+      gtk_list_store_set (ls_profiles, &iter, 
+                          0, (found)?"X":" ",
+                          1, ip_addr_ntoa(&hcurr->L3_addr, tmp), 
+                          2, (hcurr->hostname) ? hcurr->hostname : "",
+                          3, hcurr, -1);
    }
 
    return TRUE;
@@ -310,11 +334,13 @@ static void gtkui_print_details(GtkTextBuffer *textbuf, char *data)
 static void gtkui_profiles_local(void)
 {
    profile_purge_local();
+   gtk_list_store_clear(GTK_LIST_STORE (ls_profiles));
 }
 
 static void gtkui_profiles_remote(void)
 {
    profile_purge_remote();
+   gtk_list_store_clear(GTK_LIST_STORE (ls_profiles));
 }
 
 static void gtkui_profiles_convert(void)
@@ -322,6 +348,25 @@ static void gtkui_profiles_convert(void)
    profile_convert_to_hostlist();
    gtkui_refresh_host_list();
    gtkui_message("The hosts list was populated with local profiles");
+}
+
+static void gtkui_profiles_dump(void *dummy)
+{
+   DEBUG_MSG("gtkui_profiles_dump");
+
+   /* make sure to free if already set */
+   SAFE_FREE(logfile);
+   SAFE_CALLOC(logfile, 50, sizeof(char));
+
+   gtkui_input_call("Log File :", logfile, 50, dump_profiles);
+
+}
+
+static void dump_profiles(void)
+{
+   /* dump the profiles */
+   if (profile_dump_to_file(logfile) == ESUCCESS)
+      gtkui_message("Profiles dumped to file");
 }
 
 static struct host_profile *gtkui_profile_selected(void) {
@@ -332,7 +377,7 @@ static struct host_profile *gtkui_profile_selected(void) {
    model = GTK_TREE_MODEL (ls_profiles);
 
    if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get (model, &iter, 2, &h, -1);
+      gtk_tree_model_get (model, &iter, 3, &h, -1);
    } else
       return(NULL); /* nothing is selected */
 

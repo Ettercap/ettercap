@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view.c,v 1.2 2004/02/27 20:03:40 daten Exp $
+    $Id: ec_gtk_view.c,v 1.3 2004/02/28 00:08:57 daten Exp $
 */
 
 #include <ec.h>
@@ -39,7 +39,7 @@ extern void gtkui_show_connections(void);
 /* globals */
 
 #define VLEN 8
-static char vmethod[VLEN];
+static char vmethod[VLEN] = "ascii";
 static guint stats_idle; /* for removing the idle call */
 /* for stats window */
 static GtkWidget *stats_window, *packets_recv, *packets_drop, *packets_forw, 
@@ -285,27 +285,36 @@ void gtkui_vis_method(void)
    button = gtk_radio_button_new_with_label(NULL, 
                "hex     Print the packets in hex format.");
    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   if(strcmp(vmethod, "hex") == 0)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
                "ascii   Print only \"printable\" characters, the others are displayed as dots '.'");
    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   if(strcmp(vmethod, "ascii") == 0)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
                "text    Print only the \"printable\" characters and skip the others.");
    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   if(strcmp(vmethod, "text") == 0)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
                "ebcdic  Convert an EBCDIC text to ASCII.");
    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   if(strcmp(vmethod, "ebcdic") == 0)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
                "html    Strip all the html tags from the text. A tag is every string between < and >.");
    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
-
+   if(strcmp(vmethod, "html") == 0)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    gtk_widget_show_all(GTK_DIALOG(dialog)->vbox);
 
    response = gtk_dialog_run(GTK_DIALOG (dialog));
@@ -322,11 +331,11 @@ void gtkui_vis_method(void)
 
       /* set vmethod string */
       switch(active) {
-         case 1: strcpy(vmethod, "hex"); break;
-         case 2: strcpy(vmethod, "ascii"); break; 
+         case 5: strcpy(vmethod, "hex"); break;
+         case 4: strcpy(vmethod, "ascii"); break; 
          case 3: strcpy(vmethod, "text"); break;
-         case 4: strcpy(vmethod, "ebcdic"); break;
-         case 5: strcpy(vmethod, "html"); break;
+         case 2: strcpy(vmethod, "ebcdic"); break;
+         case 1: strcpy(vmethod, "html"); break;
          default: strcpy(vmethod, "ascii");
       }
 

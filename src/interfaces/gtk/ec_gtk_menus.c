@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.3 2004/02/27 20:03:40 daten Exp $
+    $Id: ec_gtk_menus.c,v 1.4 2004/02/28 00:08:57 daten Exp $
 */
 
 #include <ec.h>
@@ -35,10 +35,10 @@ GtkItemFactoryEntry gmenu_start[] = {
 
 GtkItemFactoryEntry gmenu_targets[] = {
    {"/_Targets",                 NULL,          NULL,                0, "<Branch>" },
-   {"/Targets/Current _Targets", "t",           gtkui_current_targets, 0, "<Item>" },
+   {"/Targets/Current _Targets", "t",           gtkui_current_targets, 0, "<StockItem>", GTK_STOCK_FIND },
    {"/Targets/Select TARGET(s)", "<control>t",  gtkui_select_targets,  0, "<StockItem>", GTK_STOCK_ADD },
    {"/Targets/sep1",             NULL,          NULL,                0, "<Separator>" },
-   {"/Targets/_Protocol...",     "p",           gtkui_select_protocol, 0, "<Item>" },
+   {"/Targets/_Protocol...",     "p",           gtkui_select_protocol, 0, "<StockItem>", GTK_STOCK_JUMP_TO },
    {"/Targets/Reverse matching", NULL,          toggle_reverse,      0, "<ToggleItem>" },
    {"/Targets/sep2",             NULL,          NULL,                0, "<Separator>" },
    {"/Targets/_Wipe targets",    "<shift>W",    wipe_targets,        0, "<StockItem>", GTK_STOCK_CLEAR }
@@ -55,8 +55,8 @@ GtkItemFactoryEntry gmenu_hosts[] = {
 
 GtkItemFactoryEntry gmenu_view[] = {
    {"/_View",                        NULL, NULL,                 0, "<Branch>" },
-   {"/View/_Connections",      "<shift>C", gtkui_show_connections, 0, "<Item>" },
-   {"/View/Pr_ofiles",         "<shift>O", gtkui_show_profiles,    0, "<Item>" },
+   {"/View/_Connections",      "<shift>C", gtkui_show_connections, 0, "<StockItem>", GTK_STOCK_JUSTIFY_FILL },
+   {"/View/Pr_ofiles",         "<shift>O", gtkui_show_profiles,    0, "<StockItem>", GTK_STOCK_JUSTIFY_LEFT },
    {"/View/_Statistics",              "s", gtkui_show_stats,       0, "<StockItem>", GTK_STOCK_PROPERTIES },
    {"/View/sep1",                    NULL, NULL,                 0, "<Separator>" },
    {"/View/Resolve IP addresses",    NULL, toggle_resolve,       0, "<ToggleItem>" },

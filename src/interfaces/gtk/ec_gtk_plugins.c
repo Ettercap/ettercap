@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_plugins.c,v 1.3 2004/02/27 20:03:40 daten Exp $
+    $Id: ec_gtk_plugins.c,v 1.4 2004/02/28 00:08:57 daten Exp $
 */
 
 #include <ec.h>
@@ -192,6 +192,7 @@ static void gtkui_create_plug_array(void)
 {
    GtkTreeIter iter;
    int res;
+   static int blocked = 0;
    
    DEBUG_MSG("gtk_create_plug_array");
    
@@ -203,11 +204,12 @@ static void gtkui_create_plug_array(void)
    /* go thru the list of plugins */
    res = plugin_list_walk(PLP_MIN, PLP_MAX, &gtkui_add_plugin);
    if (res == -ENOTFOUND) { 
-       g_signal_handlers_block_by_func (G_OBJECT (treeview), G_CALLBACK (gtkui_select_plugin), NULL);
-       gtk_list_store_append (ls_plugins, &iter);
-       gtk_list_store_set (ls_plugins, &iter, 0, " ", 1, "No Plugins Loaded", -1);
-   } else {
-       g_signal_handlers_unblock_by_func (G_OBJECT (treeview), G_CALLBACK (gtkui_select_plugin), NULL);
+      blocked = g_signal_handlers_block_by_func (G_OBJECT (treeview), G_CALLBACK (gtkui_select_plugin), NULL);
+      gtk_list_store_append (ls_plugins, &iter);
+      gtk_list_store_set (ls_plugins, &iter, 0, " ", 1, "No Plugins Loaded", -1);
+   } else if(blocked > 0) {
+      g_signal_handlers_unblock_by_func (G_OBJECT (treeview), G_CALLBACK (gtkui_select_plugin), NULL);
+      blocked = 0;
    }
 }
 

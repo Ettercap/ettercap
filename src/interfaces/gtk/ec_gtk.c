@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.4 2004/02/27 20:03:39 daten Exp $
+    $Id: ec_gtk.c,v 1.5 2004/02/28 00:08:57 daten Exp $
 */
 
 #include <ec.h>
@@ -215,6 +215,9 @@ void gtkui_input(const char *title, char *input, size_t n)
 {
    GtkWidget *dialog, *entry, *label, *hbox, *image;
 
+   /* since plugins use this and don't initialize their string.. */
+   memset(input, 0, n);
+
    dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK, 
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
@@ -234,10 +237,7 @@ void gtkui_input(const char *title, char *input, size_t n)
    gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
          
    entry = gtk_entry_new_with_max_length(n);
-   if(input)
-      gtk_entry_set_text(GTK_ENTRY (entry), input);
    gtk_box_pack_start(GTK_BOX (hbox), entry, FALSE, FALSE, 5);
-  
    gtk_widget_show_all (hbox);
 
    if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
@@ -246,6 +246,11 @@ void gtkui_input(const char *title, char *input, size_t n)
 
    }
    gtk_widget_destroy(dialog);
+
+   /* a nasty little loop that lets gtk destroy the dialog immediately */
+   /* this helps when being called from plugins on the same thread */
+   while (gtk_events_pending ())
+      gtk_main_iteration ();
 }
 
 /*

@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.13 $                                     # 
-#  Last updated on : $Date: 2004/02/01 16:48:51 $                          #
+#  Version         : $Revision: 1.14 $                                     # 
+#  Last updated on : $Date: 2004/02/01 21:09:02 $                          #
 #  Total entries   : 1449                                                  #
 #                                                                          #
 ############################################################################
@@ -1379,7 +1379,7 @@ FD20:05A0:80:WS:1:1:1:0:S:30:Windows XP Home v2002
 FDB8:0584:FF:WS:1:1:1:0:S:30:Windows XP
 FE70:0588:80:WS:1:1:0:0:A:30:Windows 98 SE
 FE70:0588:80:WS:1:1:0:0:S:30:Windows XP Home
-FE88:05B4:FF:00:1:1:1:1:A:40:MAC OS Server.x
+FE88:05B4:FF:00:1:1:1:1:A:40:Mac OS X Server
 FE88:B405:40:00:0:1:1:1:A:3C:Mac OS X Server 10.x
 FE88:_MSS:FF:WS:0:0:1:0:A:LT:Solaris 2.6 - 2.7
 FEF4:0534:80:00:1:1:1:1:A:40:Windows 2000

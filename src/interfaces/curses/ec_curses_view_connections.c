@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.15 2004/04/11 09:39:57 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.16 2004/04/23 12:55:36 alor Exp $
 */
 
 #include <ec.h>
@@ -50,6 +50,7 @@ static void split_print_po(struct packet_object *po);
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src);
 static void join_print_po(struct packet_object *po);
 static void curses_connection_kill(void *conn);
+static void curses_connection_purge(void *conn);
 static void curses_connection_kill_wrapper(void);
 static void curses_connection_inject(void);
 static void inject_user(void);
@@ -111,6 +112,7 @@ void curses_show_connections(void)
 
    wdg_dynlist_add_callback(wdg_connections, 'd', curses_connection_detail);
    wdg_dynlist_add_callback(wdg_connections, 'k', curses_connection_kill);
+   wdg_dynlist_add_callback(wdg_connections, 'x', curses_connection_purge);
    wdg_dynlist_add_callback(wdg_connections, ' ', curses_connection_help);
 }
 
@@ -128,7 +130,8 @@ static void curses_connection_help(void *dummy)
    char help[] = "HELP: shortcut list:\n\n"
                  "  ENTER - open the data panel in real time\n"
                  "    d   - show details of the current connection\n"
-                 "    k   - kill the connection";
+                 "    k   - kill the connection\n"
+                 "    x   - purge the connection list";
 
    curses_message(help);
 }
@@ -517,6 +520,16 @@ static void curses_connection_kill(void *conn)
          break;
    }
    
+}
+
+/*
+ * delete the entire list
+ */
+static void curses_connection_purge(void *conn)
+{
+   DEBUG_MSG("curses_connection_purge");
+   
+   conntrack_purge();
 }
 
 /*

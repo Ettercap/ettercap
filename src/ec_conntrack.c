@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.21 2004/04/02 15:23:25 alor Exp $
+    $Id: ec_conntrack.c,v 1.22 2004/04/23 12:55:36 alor Exp $
 */
 
 #include <ec.h>
@@ -70,6 +70,7 @@ static void conntrack_del(struct conn_object *co);
 static int conntrack_match(struct conn_object *co, struct packet_object *po);
 EC_THREAD_FUNC(conntrack_timeouter);
 void * conntrack_print(int mode, void *list, char **desc, size_t len);
+void conntrack_purge(void);
 
 int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct packet_object *po));
 int conntrack_hook_packet_del(struct packet_object *po, void (*func)(struct packet_object *po));
@@ -328,10 +329,49 @@ static int conntrack_match(struct conn_object *co, struct packet_object *po)
  */
 static void conntrack_del(struct conn_object *co)
 {
+   struct ct_hook_list *h, *tmp;
+
+   /* remove the hooks */
+   SLIST_FOREACH_SAFE(h, &co->hook_head, next, tmp) {
+      SLIST_REMOVE(&co->hook_head, h, ct_hook_list, next);
+      SAFE_FREE(h);
+   }
+
+   /* wipe the associated buffer */
    connbuf_wipe(&co->data);
+   
    SAFE_FREE(co);
 }
 
+/*
+ * erase the whole connections list
+ */
+void conntrack_purge(void)
+{
+   struct conn_tail *cl, *tmp;
+
+   DEBUG_MSG("conntrack_purge");
+   
+   TAILQ_FOREACH_SAFE(cl, &conntrack_tail_head, next, tmp) {
+      /* don't erase the connection if it is viewed */
+      if (cl->co->flags & CONN_VIEWING)
+         continue;
+      
+      CONNTRACK_LOCK;
+      
+      /* wipe the connection */
+      conntrack_del(cl->co);
+      /* remove the element in the hash table */
+      LIST_REMOVE(cl->cs, next);
+      SAFE_FREE(cl->cs);
+      /* remove the element in the tailq */
+      TAILQ_REMOVE(&conntrack_tail_head, cl, next);
+      SAFE_FREE(cl);
+
+      CONNTRACK_UNLOCK;
+   }
+   
+}
 
 
 EC_THREAD_FUNC(conntrack_timeouter)

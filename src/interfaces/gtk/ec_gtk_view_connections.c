@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.26 2004/04/12 12:07:14 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.27 2004/04/23 12:55:36 alor Exp $
 */
 
 #include <ec.h>
@@ -54,6 +54,7 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src);
 static void split_print_po(struct packet_object *po);
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src);
 static void join_print_po(struct packet_object *po);
+static void gtkui_connection_purge(void *conn);
 static void gtkui_connection_kill(void *conn);
 static void gtkui_connection_kill_curr_conn(void);
 static void gtkui_connection_inject(void);
@@ -184,12 +185,16 @@ void gtkui_show_connections(void)
 
    button = gtk_button_new_with_mnemonic("View _Details");
    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_detail), NULL);
-   
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Kill Connection");
    g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill), NULL);
+   gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+   gtk_widget_show(button);
+   
+   button = gtk_button_new_with_mnemonic("E_xpunge Connections");
+   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_purge), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
@@ -937,6 +942,16 @@ static void join_print_po(struct packet_object *po)
    else
       gtkui_data_print(3, dispbuf, 2);
    gdk_threads_leave();
+}
+
+/*
+ * erase the connection list
+ */
+static void gtkui_connection_purge(void *conn)
+{
+   DEBUG_MSG("gtkui_connection_purge");
+
+   conntrack_purge();
 }
 
 /*

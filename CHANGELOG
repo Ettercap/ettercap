@@ -10,10 +10,11 @@ NG-0.7.0_pre2    200404??
 
    + telnet collector enhacements (catches cisco login)
    + added the find_ettercap plugin
+   + the live connections list can be purged by the user
    !! fixed the $prefix issue in the configure
    !! fixed a linking problem against openssl
    !! some fixes in the man pages
-   !! compiles against openssl 0.9.6x
+   !! compiles against old openssl 0.9.6x
    
 
 NG-0.7.0_pre1    20040415

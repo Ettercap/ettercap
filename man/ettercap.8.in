@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.64 2004/04/21 10:02:41 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.65 2004/04/23 12:55:35 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -664,7 +664,7 @@ This is the title, but the following will not be displayed.
 \fB\-d\fR, \fB\-\-dns\fR
 Resolve ip addresses into hostnames. 
 .Sp
-NOTE: this may seriously slow down ettercap while logging passive informations.
+NOTE: this may seriously slow down ettercap while logging passive information.
 Every time a new host is found, a query to the dns is performed. Ettercap keeps
 a cache for already resolved host to increase the speed, but new hosts need a
 new query and the dns may take up to 2 or 3 seconds to respond for an unknown

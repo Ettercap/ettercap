@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.32 2004/05/06 16:20:45 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.33 2004/07/06 10:56:23 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -221,6 +221,25 @@ have a valid host list before launching this plugin.
 .I example :
 .Sp
 ettercap -TP gw_discover /192.168.0.1-50/
+
+.TP 
+.B isolate
+.Sp
+The isolate plugin will isolate an host form the LAN. It will poison the
+victim's arp cache with its own mac address associated with all the host it
+tries to contact. This way the host will not be able to contact other hosts
+because the packet will never reach the wire.
+.br
+You can specify all the host or only a group. the targets
+specification work this way: the target1 is the victim and must be a single
+host, the target2 can be a range of addresses and represent the hosts that will
+be blocked to the victim.
+.Sp
+.I examples :
+.Sp
+ettercap -TzqP isolate /192.168.0.1/ //
+ettercap -TP isolate /192.168.0.1/ /192.168.0.2-30/
+
 
 .TP 
 .B link_type

@@ -6,6 +6,11 @@ Legenda:
 
 =========================================
 
+NG-0.7.1         200407
+
+   + added a new plugin: isolate
+
+
 NG-0.7.0         20040705
 
    + implemeted a thread safe strtok

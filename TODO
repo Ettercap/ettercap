@@ -24,8 +24,6 @@
 
    + multiple dissector on a single port
 
-   + isolate plugin
-
    + CURSES
       - modifiable text in widgets
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.2 2003/03/08 16:30:49 alor Exp $
 */
 
 
@@ -189,6 +189,8 @@ void parse_options(int argc, char **argv)
       }
    }
 
+   DEBUG_MSG("parse_options: options parsed");
+   
    /* TARGET1 and TARGET2 parsing */
    if (argv[optind]) {
       GBL_OPTIONS->target1 = strdup(argv[optind]);
@@ -209,6 +211,8 @@ void parse_options(int argc, char **argv)
    /* create the list form the TARGET format (MAC:IPrange:PORTrange) */
    compile_display_filter();
    
+   DEBUG_MSG("parse_options: targets parsed");
+   
    /* check for other options */
    
    if (GBL_OPTIONS->dump && GBL_OPTIONS->read)
@@ -217,21 +221,16 @@ void parse_options(int argc, char **argv)
    if (GBL_SNIFF->start == NULL)
       FATAL_MSG("Select at least one sniffing method");
 
-#define R(a,b,c) (a & b) | ((a ^ b) & c)     // returns true if more than one was selected
-//   if ( R(GBL_OPTIONS->classic_sniff, GBL_OPTIONS->arp_sniff, GBL_OPTIONS->bridged_sniff) )
-//      FATAL_MSG("Select ONLY ONE sniffing method.");
-#undef R
-  
    if (GBL_OPTIONS->read && GBL_SNIFF->type != SM_CLASSIC )
       FATAL_MSG("You can read froma a file ONLY in classic sniffing mode !");
    
    if (GBL_SNIFF->type == SM_BRIDGED && GBL_PCAP->promisc == 0)
       FATAL_MSG("During bridged sniffing the iface must be in promisc mode !");
    
-   if (GBL_OPTIONS->iface_bridge && !strcmp(GBL_OPTIONS->iface_bridge, GBL_OPTIONS->iface))
-      FATAL_MSG("Bridged iface must be different from %s !!", GBL_OPTIONS->iface);
    
    /* XXX - check for incompatible options */
+   
+   DEBUG_MSG("parse_options: options combination looks good");
    
    return;
 }

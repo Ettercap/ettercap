@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.2 2003/03/08 16:30:49 alor Exp $
 */
 
 #include <ec.h>
@@ -68,9 +68,11 @@ void capture_init(void)
    
    DEBUG_MSG("capture_init %s", GBL_OPTIONS->iface);
               
-   if (GBL_SNIFF->type == SM_BRIDGED)
+   if (GBL_SNIFF->type == SM_BRIDGED) {
+      if (!strcmp(GBL_OPTIONS->iface, GBL_OPTIONS->iface_bridge))
+         FATAL_MSG("Bridging iface must be different from %s", GBL_OPTIONS->iface);
       USER_MSG("Bridging %s and %s...\n\n", GBL_OPTIONS->iface, GBL_OPTIONS->iface_bridge);
-   else
+   } else
       USER_MSG("Listening on %s...\n\n", GBL_OPTIONS->iface);
    
    /*

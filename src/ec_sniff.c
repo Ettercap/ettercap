@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.2 2003/03/08 16:30:49 alor Exp $
 */
 
 #include <ec.h>
@@ -51,13 +51,18 @@ void free_ip_list(struct target_env *t);
 
 /* 
  * if the source mac address of the packet is
- * the same of GBL_IFACE->mac the packet is outgoin
+ * the same of GBL_IFACE->mac the packet is OUTGOING
+ * if it match the dest it is INCOMING (PCKHOST)
  */
 void set_outgoing(struct packet_object *po)
 {
    if (!memcmp(GBL_IFACE->mac, po->L2.src, ETH_ADDR_LEN) ||
        !memcmp(GBL_BRIDGE->mac, po->L2.src, ETH_ADDR_LEN) )
       po->flags |= PO_OUTGOING;
+   
+   if (!memcmp(GBL_IFACE->mac, po->L2.dst, ETH_ADDR_LEN) ||
+       !memcmp(GBL_BRIDGE->mac, po->L2.dst, ETH_ADDR_LEN) )
+      po->flags |= PO_PCKHOST;
 }
 
 

@@ -2,9 +2,6 @@
   TODO for NG
 ==================
 
-   + PO_PCKHOST
-   ? dirty trick  libnet_context.fd = pcap.fd  ;)
-  
    + PO incapsulated ?
   
    + CONFIGURE

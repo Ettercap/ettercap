@@ -12,6 +12,7 @@ NG          ????????
       + root privs dropped after initialization
       + IPv6 support
       + layer 3 routing (forwarding packets)
+      + wifi support
 
 
 

@@ -15,12 +15,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.2 2003/03/08 16:30:49 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
 
+#include <pcap.h>
 #include <libnet.h>
 
 void send_init(void);
@@ -29,6 +30,7 @@ int send_to_L3(struct packet_object *po);
 int send_to_L2(struct packet_object *po);
 int send_to_bridge(struct packet_object *po);
 
+static void hack_pcap_lnet(pcap_t *p, libnet_t *l);
 /*******************************************/
 
 /*
@@ -57,10 +59,15 @@ void send_init(void)
       lb = libnet_init(LIBNET_LINK_ADV, GBL_OPTIONS->iface_bridge, lnet_errbuf);               
       ON_ERROR(lb, NULL, "libnet_init() failed: %s", lnet_errbuf);
       GBL_LNET->lnet_bridge = lb;
+      /* use the same socket for lnet and pcap */
+      hack_pcap_lnet(GBL_PCAP->pcap_bridge, GBL_LNET->lnet_bridge);
    }
    
    GBL_LNET->lnet_L3 = l3;               
    GBL_LNET->lnet = l;               
+      
+   /* use the same socket for lnet and pcap */
+   hack_pcap_lnet(GBL_PCAP->pcap, GBL_LNET->lnet);
  
    atexit(send_close);
    
@@ -124,7 +131,10 @@ int send_to_bridge(struct packet_object *po)
 {
    static libnet_ptag_t t;
    int c;
-  
+ 
+   /* XXX -- debug purpose */
+   memcpy(po->packet, "AAAA", 4);
+   
    t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet_bridge, t);
    ON_ERROR(t, -1, "libnet_build_data");
    
@@ -132,6 +142,28 @@ int send_to_bridge(struct packet_object *po)
    ON_ERROR(c, -1, "libnet_write %d (%d)", po->len, c);
    
    return c;
+}
+
+
+/*
+ * a dirty hack to use the same socket for pcap and libnet.
+ * both the structures contains a "int fd" field representing the socket.
+ * we can close the fd opened by libnet and use the one already in use by pcap.
+ * in this way we will not sniff packets sent by us at link layer.
+ * expecially usefull in bridged sniffing.
+ */
+
+static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
+{
+   DEBUG_MSG("hack_pcap_lnet (before) pcap %d | lnet %d", pcap_fileno(p), l->fd);
+   
+   /* close the lnet socket */
+   close(l->fd);
+
+   /* use the socket opened by pcap */
+   l->fd = pcap_fileno(p);
+   
+   DEBUG_MSG("hack_pcap_lnet  (after) pcap %d | lnet %d", pcap_fileno(p), l->fd);
 }
 
 

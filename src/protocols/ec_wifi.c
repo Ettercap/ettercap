@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_wifi.c,v 1.3 2003/04/15 07:57:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_wifi.c,v 1.4 2003/05/16 19:14:12 alor Exp $
 */
 
 #include <ec.h>
@@ -27,9 +27,10 @@
 
 struct wifi_header {
    u_int16  type;
-#define WIFI_DATA       0x0802
-#define WIFI_DATA_WEP   0x0842
-#define WIFI_BACON      0x0800
+#define WIFI_DATA_ENTERING 0x0802
+#define WIFI_DATA_EXITING  0x0801
+#define WIFI_DATA_WEP      0x0842
+#define WIFI_BACON         0x0800
    u_int16  duration;
    u_int8   dha[ETH_ADDR_LEN];
    u_int8   sha[ETH_ADDR_LEN];
@@ -77,8 +78,8 @@ FUNC_DECODER(decode_wifi)
   
    /* BUCKET->L2->ESSID = ??? */
    
-   /* we are only interested in "data" (0x0802) type */
-   if (ntohs(wifi->type) == WIFI_DATA) {
+   /* we are only interested in "data" type */
+   if (ntohs(wifi->type) == WIFI_DATA_ENTERING || ntohs(wifi->type) == WIFI_DATA_EXITING) {
       wifi_ll = (struct wifi_ll_header *)(wifi + 1);
       DECODED_LEN += sizeof(struct wifi_ll_header);
       next_decoder = get_decoder(NET_LAYER, ntohs(wifi_ll->type));

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.18 2003/05/05 09:04:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.19 2003/05/16 19:14:11 alor Exp $
 */
 
 #include <ec.h>
@@ -141,8 +141,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    l2_decoder(data, datalen, &len, po);
    
    hook_point(HOOK_DECODED, po);
-   
-   
+  
    /* 
     * use the sniffing method funcion to forward the packet 
     */

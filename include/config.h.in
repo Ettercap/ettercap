@@ -21,6 +21,9 @@
 /* Define to 1 if you have the `argz_stringify' function. */
 #undef HAVE_ARGZ_STRINGIFY
 
+/* Define to 1 if you have the <assert.h> header file. */
+#undef HAVE_ASSERT_H
+
 /* Define to 1 if you have the `bcopy' function. */
 #undef HAVE_BCOPY
 
@@ -259,7 +262,7 @@
 /* Define to the system default library search path. */
 #undef LTDL_SYSSEARCHPATH
 
-/* Define if dlsym() requires a leading underscode in symbol names. */
+/* Define if dlsym() requires a leading underscore in symbol names. */
 #undef NEED_USCORE
 
 /* openssl executable path */

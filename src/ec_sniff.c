@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.28 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_sniff.c,v 1.29 2003/10/17 20:31:40 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -144,9 +144,6 @@ static void display_packet_for_us(struct packet_object *po)
    char good = 0;
    char proto = 0;
 
-   /* check if the packet has to be FORWARDED */
-   set_forwardable_flag(po);
-  
    /* 
     * first check the protocol.
     * if it is not the one specified it is 

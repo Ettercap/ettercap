@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.27 2003/10/17 10:29:27 lordnaga Exp $
+    $Id: ec_ip.c,v 1.28 2003/10/17 20:31:43 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -130,16 +130,19 @@ FUNC_DECODER(decode_ip)
    
    PACKET->L3.proto = htons(LL_TYPE_IP);
    PACKET->L3.ttl = ip->ttl;
-  
-   /* XXX - implement the handling of fragmented packet */
-   /* don't process fragmented packets */
-   if (ntohs(ip->frag_off) & IP_FRAG || ntohs(ip->frag_off) & IP_MF) {
-      /* is the packet forwardable ? */
+
+   /* First IP decoder set its header as packet to be forwarded */
+   if (PACKET->fwd_packet == NULL) {
       set_forwardable_flag(PACKET);
       PACKET->fwd_packet = (u_char *)DECODE_DATA;
-      PACKET->fwd_len = ntohs(ip->tot_len);
+      /* the len will be adjusted later...just in case of a brutal return */
+      PACKET->fwd_len = ntohs(ip->tot_len); 
+   }
+   
+   /* XXX - implement the handling of fragmented packet */
+   /* don't process fragmented packets */
+   if (ntohs(ip->frag_off) & IP_FRAG || ntohs(ip->frag_off) & IP_MF) 
       return NULL;
-    }
    
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
@@ -149,12 +152,7 @@ FUNC_DECODER(decode_ip)
     */
    if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET) != 0) {
       USER_MSG("Invalid IP packet from %s : csum [%#x] (%#x)\n", int_ntoa(ip->saddr), 
-                              L3_checksum(PACKET), ntohs(ip->csum));
-      
-      /* is the packet forwardable ? */
-      set_forwardable_flag(PACKET);
-      PACKET->fwd_packet = (u_char *)DECODE_DATA;
-      PACKET->fwd_len = ntohs(ip->tot_len);
+                              L3_checksum(PACKET), ntohs(ip->csum));      
       return NULL;
    }
    
@@ -236,16 +234,7 @@ FUNC_DECODER(decode_ip)
          ip->csum = L3_checksum(PACKET);
       }
    }
-   /*
-    * External L3 header sets itself 
-    * as the packet to be forwarded.
-    *
-    * if the packet is encapsulated, every L3 layer
-    * will set this field, and the external one will
-    * overwrite it. so only the last (correct) one
-    * will set this field.
-    */
-   PACKET->fwd_packet = (u_char *)DECODE_DATA;
+   /* Last ip decoder in cascade will set the correct fwd_len */
    PACKET->fwd_len = ntohs(ip->tot_len);
       
    return NULL;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_passive.c,v 1.9 2003/09/25 12:17:46 alor Exp $
+    $Id: ec_passive.c,v 1.10 2003/10/17 20:31:40 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -63,9 +63,6 @@ int is_open_port(u_int8 proto, u_int16 port, u_int8 flags)
 #endif
          /* SYN+ACK packet are coming from open ports */
          if ( (flags & TH_SYN) && (flags & TH_ACK) )
-            return 1;
-         /* look in the table */
-         if ( get_decoder(APP_LAYER_TCP, ntohs(port)) != NULL)
             return 1;
          break;
       case NL_TYPE_UDP:

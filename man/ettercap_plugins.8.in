@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.23 2004/01/09 13:18:09 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.24 2004/01/10 16:32:54 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -297,10 +297,25 @@ authentication. This way, obtained hashes can be easily cracked by LC4.
 You have to be in the "middle" of the connection to successfully use it.
 It hooks the smb dissector, so you have to keep it active. 
 
+.TP 
+.B stp_mangler
+.Sp
+It sends spanning tree BPDUs pretending to be a switch with the highest 
+priority. Once in the "root" of the spanning tree, ettercap can receive
+all the "unmanaged" network traffic. 
+.br
+It is useful only against a group of switches running STP.
+.br
+If there is another switch with the highest priority, try to manually
+decrease your MAC address before running it.
+.Sp
+.I example :
+.Sp
+ettercap -TP stp_mangler 
 
 .SH "SEE ALSO"
 .I "ettercap(8)"
-.I "ettercap_plugin(8)"
+.I "ettercap_curses(8)"
 .I "etterlog(8)"
 .I "etterfilter(8)"
 .I "etter.conf(5)"

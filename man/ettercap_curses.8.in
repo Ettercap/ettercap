@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.3 2004/01/06 17:44:16 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.4 2004/01/10 16:32:54 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -262,7 +262,7 @@ Asterisk-option to control whether or not the logfile should be compressed.
 
 .SH "SEE ALSO"
 .I "ettercap(8)"
-.I "ettercap_plugin(8)"
+.I "ettercap_plugins(8)"
 .I "etterlog(8)"
 .I "etterfilter(8)"
 .I "etter.conf(5)"

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.56 2004/01/04 17:02:43 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.57 2004/01/10 16:32:54 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -790,7 +790,8 @@ Marco Valleri (NaGA) <naga@antifork.org>
 
 .SH "SEE ALSO"
 .I "etter.conf(5)"
-.I "ettercap_plugin(8)"
+.I "ettercap_curses(8)"
+.I "ettercap_plugins(8)"
 .I "etterlog(8)"
 .I "etterfilter(8)"
 .LP

@@ -36,7 +36,10 @@
    + WIFI decoder & WEP 
       - support for multiple keys
       - support for passfrase generation
-
+      - support for dumping traffic to a file
+   
+   + ETTERFILTER
+      - possibility to set flags in scripts
 
 ==================
   LONG TERM TODO

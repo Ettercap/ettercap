@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.29 2004/03/27 20:38:19 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.30 2004/03/28 15:07:26 alor Exp $
 */
 
 #include <ec.h>
@@ -28,6 +28,7 @@
 #include <ec_threads.h>
 #include <ec_sslwrap.h>
 #include <ec_file.h>
+#include <ec_strings.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -333,16 +334,42 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
 {
    char asc_sport[16];
    char asc_dport[16];
-   int ret_val;
+   int ret_val, i = 0;
+   char *command, *p;
+   char **param = NULL;
+ 
+   /* the script is not defined */
+   if (GBL_CONF->redir_command_on == NULL)
+      return -EFATAL;
    
    sprintf(asc_sport, "%u", sport);
    sprintf(asc_dport, "%u", dport);
 
+   /* make the substitutions in the script */
+   command = strdup(GBL_CONF->redir_command_on);
+   str_replace(&command, "%iface", GBL_OPTIONS->iface);
+   str_replace(&command, "%port", asc_sport);
+   str_replace(&command, "%rport", asc_dport);
+   
+   DEBUG_MSG("sslw_insert_redirect: [%s]", command);
+   
+   /* split the string in the parameter array */
+   for (p = strsep(&command, " "); p != NULL; p = strsep(&command, " ")) {
+      /* allocate the array */
+      SAFE_REALLOC(param, (i + 1) * sizeof(char *));
+                        
+      /* copy the tokens in the array */
+      param[i++] = strdup(p);
+   }
+   /* NULL terminate the array */
+   SAFE_REALLOC(param, (i + 1) * sizeof(char *));
+               
+   param[i] = NULL;
+               
+   /* execute the script */ 
    switch (fork()) {
       case 0:
-   /* XXX - implement script execution */
-         execlp("iptables", "iptables", "-t", "nat", "-I", "PREROUTING", "1", "-p", "tcp", 
-	        "--dport", asc_sport, "-j", "REDIRECT", "--to-port", asc_dport, NULL);
+         execvp(param[0], param);
          exit(EINVALID);
       case -1:
          return -EINVALID;
@@ -360,7 +387,53 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
  */
 static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
 {
-   /* XXX - implement script execution */
+   char asc_sport[16];
+   char asc_dport[16];
+   int ret_val, i = 0;
+   char *command, *p;
+   char **param = NULL;
+ 
+   /* the script is not defined */
+   if (GBL_CONF->redir_command_off == NULL)
+      return -EFATAL;
+   
+   sprintf(asc_sport, "%u", sport);
+   sprintf(asc_dport, "%u", dport);
+
+   /* make the substitutions in the script */
+   command = strdup(GBL_CONF->redir_command_off);
+   str_replace(&command, "%iface", GBL_OPTIONS->iface);
+   str_replace(&command, "%port", asc_sport);
+   str_replace(&command, "%rport", asc_dport);
+   
+   DEBUG_MSG("sslw_remove_redirect: [%s]", command);
+   
+   /* split the string in the parameter array */
+   for (p = strsep(&command, " "); p != NULL; p = strsep(&command, " ")) {
+      /* allocate the array */
+      SAFE_REALLOC(param, (i + 1) * sizeof(char *));
+                        
+      /* copy the tokens in the array */
+      param[i++] = strdup(p);
+   }
+   /* NULL terminate the array */
+   SAFE_REALLOC(param, (i + 1) * sizeof(char *));
+               
+   param[i] = NULL;
+               
+   /* execute the script */ 
+   switch (fork()) {
+      case 0:
+         execvp(param[0], param);
+         exit(EINVALID);
+      case -1:
+         return -EINVALID;
+      default:
+         wait(&ret_val);
+	   if (ret_val == EINVALID)
+	      return -EINVALID;
+   }    
+   
    return ESUCCESS;
 }
 

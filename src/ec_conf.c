@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.30 2004/03/26 17:22:17 alor Exp $
+    $Id: ec_conf.c,v 1.31 2004/03/28 15:07:26 alor Exp $
 */
 
 #include <ec.h>
@@ -176,6 +176,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&curses, "color_error_bg", &GBL_CONF->colors.error_bg);
    set_pointer((struct conf_entry *)&curses, "color_error_fg", &GBL_CONF->colors.error_fg);
    set_pointer((struct conf_entry *)&curses, "color_error_border", &GBL_CONF->colors.error_border);
+   /* special case for strings */
    set_pointer((struct conf_entry *)&strings, "redir_command_on", &GBL_CONF->redir_command_on);
    set_pointer((struct conf_entry *)&strings, "redir_command_off", &GBL_CONF->redir_command_off);
 
@@ -216,7 +217,7 @@ void load_conf(void)
 {
    FILE *fc;
    char line[128];
-   char *p;
+   char *p, **tmp;
    int lineno = 0;
    struct conf_entry *curr_section = NULL;
    void *value = NULL;
@@ -305,21 +306,23 @@ void load_conf(void)
       /* search the entry name */
       if ( (value = search_entry(curr_section, line)) == NULL)
          FATAL_ERROR("Invalid entry in %s line %d", ETTER_CONF, lineno);
-    
+   
       /* strings must be handled in a different way */
       if (curr_section == (struct conf_entry *)&strings) {
          /* trim the quotes */
          if (*p == '\"')
             p++;
+         
          /* set the string value */ 
-         (char *)value = strdup(p);
-     
+         tmp = (char **)value;
+         *tmp = strdup(p);
+         
          /* trim the ending quotes */
-         p = value;
+         p = *tmp;
          do {
             if (*p == '\"')
                *p = 0;
-         } while (p++ < (char *)value + strlen(value) );
+         } while (p++ < *tmp + strlen(*tmp) );
          
          DEBUG_MSG("load_conf: \tENTRY: %s  [%s]", line, (char *)value);
       } else {

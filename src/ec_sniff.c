@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.46 2004/01/21 21:05:52 alor Exp $
+    $Id: ec_sniff.c,v 1.47 2004/03/28 15:07:26 alor Exp $
 */
 
 #include <ec.h>
@@ -300,12 +300,10 @@ int compile_display_filter(void)
       GBL_TARGET2->scan_all = 1;
 
    /* compile TARGET1 */
-   if (compile_target(GBL_OPTIONS->target1, GBL_TARGET1) != ESUCCESS)
-      clean_exit(-EFATAL);
+   compile_target(GBL_OPTIONS->target1, GBL_TARGET1);
    
    /* compile TARGET2 */
-   if (compile_target(GBL_OPTIONS->target2, GBL_TARGET2) != ESUCCESS)
-      clean_exit(-EFATAL);
+   compile_target(GBL_OPTIONS->target2, GBL_TARGET2);
 
    /* the strings were modified, we can't use them anymore */
    SAFE_FREE(GBL_OPTIONS->target1);
@@ -335,7 +333,7 @@ int compile_target(char *string, struct target_env *target)
    
    /* check for invalid char */
    if (strlen(string) != strspn(string, valid))
-      FATAL_MSG("TARGET (%s) contains invalid chars !", string);
+      SEMIFATAL_ERROR("TARGET (%s) contains invalid chars !", string);
    
    /* TARGET parsing */
    for (p = strsep(&string, "/"); p != NULL; p = strsep(&string, "/")) {
@@ -345,7 +343,7 @@ int compile_target(char *string, struct target_env *target)
    }
   
    if (i != MAX_TOK)
-      FATAL_MSG("Incorrect number of token (//) in TARGET !!");
+      SEMIFATAL_ERROR("Incorrect number of token (//) in TARGET !!");
    
    DEBUG_MSG("MAC  : [%s]", tok[0]);
    DEBUG_MSG("IP   : [%s]", tok[1]);
@@ -355,7 +353,7 @@ int compile_target(char *string, struct target_env *target)
    if (!strcmp(tok[0], ""))
       target->all_mac = 1;
    else if (mac_addr_aton(tok[0], target->mac) == 0)
-      FATAL_ERROR("Incorrect TARGET MAC parsing... (%s)", tok[0]);
+      SEMIFATAL_ERROR("Incorrect TARGET MAC parsing... (%s)", tok[0]);
 
    /* parse the IP range */
    if (!strcmp(tok[1], ""))
@@ -372,7 +370,7 @@ int compile_target(char *string, struct target_env *target)
       target->all_port = 1;
    else {
       if (expand_token(tok[2], 1<<16, &add_port, target->ports) == -EFATAL)
-         clean_exit(-EFATAL);
+         SEMIFATAL_ERROR("Invalid port range");
    }
    
    for(i = 0; i < MAX_TOK; i++)
@@ -445,7 +443,7 @@ static int expand_range_ip(char *str, void *target)
    for (i = 0; i < 4; i++) {
       p = addr[i];
       if (expand_token(addr[i], 255, &add_ip, &ADDR[i]) == -EFATAL)
-         clean_exit(-EFATAL);
+         SEMIFATAL_ERROR("Invalid port range");
    }
 
    /* count the free permutations */

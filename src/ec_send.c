@@ -17,17 +17,18 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.41 2004/01/05 11:49:36 alor Exp $
+    $Id: ec_send.c,v 1.42 2004/01/05 11:52:00 alor Exp $
 */
 
 #include <ec.h>
-#include <ec_packet.h>
-#include <ec_send.h>
 
 #if defined(OS_DARWIN) || defined(OS_BSD)
    #include <net/bpf.h>
    #include <sys/ioctl.h>
 #endif
+
+#include <ec_packet.h>
+#include <ec_send.h>
 
 #include <pthread.h>
 #include <pcap.h>

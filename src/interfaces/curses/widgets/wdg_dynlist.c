@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dynlist.c,v 1.6 2004/02/03 13:13:51 alor Exp $
+    $Id: wdg_dynlist.c,v 1.7 2004/02/08 11:41:44 alor Exp $
 */
 
 #include <wdg.h>
@@ -373,7 +373,7 @@ void wdg_dynlist_refresh(wdg_t *wo)
    WDG_WO_EXT(struct wdg_dynlist, ww);
    size_t l = wdg_get_nlines(wo) - 4;
    size_t c = wdg_get_ncols(wo) - 4;
-   size_t i = 0;
+   size_t i = 0, found = 0;
    void *list, *next;
    char *desc;
   
@@ -385,7 +385,7 @@ void wdg_dynlist_refresh(wdg_t *wo)
    werase(ww->sub);
 
    /* 
-    * update the top in two case:
+    * update the top (on the first element) in two case:
     *    top is not set
     *    bottom is not set (to update the list over the current element)
     */
@@ -404,6 +404,11 @@ void wdg_dynlist_refresh(wdg_t *wo)
    if (ww->current == NULL)
       ww->current = ww->top;
   
+   /* if the top does not exist any more, set it to the first */
+   if (ww->func(0, ww->top, NULL, 0) == NULL)
+      ww->top = ww->func(0, NULL, NULL, 0);
+  
+   /* start from the top element */
    list = ww->top;
 
    /* print all the entry until the bottom of the window */
@@ -422,6 +427,7 @@ void wdg_dynlist_refresh(wdg_t *wo)
          wprintw(ww->sub, "%s", desc);
          wattroff(ww->sub, A_REVERSE);
          wmove(ww->sub, i+1, 0);
+         found = 1;
       } else {
          wprintw(ww->sub, "%s\n", desc);
       }
@@ -430,12 +436,22 @@ void wdg_dynlist_refresh(wdg_t *wo)
       if (++i == l) {
          ww->bottom = list;
          break;
+      } else {
+         /* 
+          * set to null, to have the bottom set only if the list 
+          * is as long as the window
+          */
+         ww->bottom = NULL;
       }
       
       /* move the pointer */
       list = next;
    }
 
+   /* if the current element does not exist anymore, set it to 'top' */
+   if (!found)
+      ww->current = ww->top;
+   
    WDG_SAFE_FREE(desc);
 
    wnoutrefresh(ww->sub);

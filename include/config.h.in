@@ -33,6 +33,9 @@
 /* Define to 1 if you have the `bcopy' function. */
 #undef HAVE_BCOPY
 
+/* Define to 1 if you have the `closedir' function. */
+#undef HAVE_CLOSEDIR
+
 /* Define to 1 if you have the <ctype.h> header file. */
 #undef HAVE_CTYPE_H
 
@@ -59,6 +62,9 @@
 
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
+
+/* Define if you have the _dyld_func_lookup function. */
+#undef HAVE_DYLD
 
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
@@ -96,8 +102,14 @@
 /* Define to 1 if you have the `net' library (-lnet). */
 #undef HAVE_LIBNET
 
+/* Define to 1 if you have the `pcap' library (-lpcap). */
+#undef HAVE_LIBPCAP
+
 /* Define to 1 if you have the <ltdl.h> header file. */
 #undef HAVE_LTDL_H
+
+/* Define to 1 if you have the <mach-o/dyld.h> header file. */
+#undef HAVE_MACH_O_DYLD_H
 
 /* Define to 1 if you have the <malloc.h> header file. */
 #undef HAVE_MALLOC_H
@@ -126,6 +138,9 @@
 /* nameser NS_GET32 */
 #undef HAVE_NS_GET
 
+/* Define to 1 if you have the `opendir' function. */
+#undef HAVE_OPENDIR
+
 /* openssl executable path */
 #undef HAVE_OPENSSL
 
@@ -143,6 +158,9 @@
 
 /* Define if libtool can extract symbol lists from object files. */
 #undef HAVE_PRELOADED_SYMBOLS
+
+/* Define to 1 if you have the `readdir' function. */
+#undef HAVE_READDIR
 
 /* Define to 1 if you have the `rindex' function. */
 #undef HAVE_RINDEX
@@ -360,7 +378,7 @@
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
-/* Define to a type to use for \`error_t' if it is not otherwise available. */
+/* Define to a type to use for `error_t' if it is not otherwise available. */
 #undef error_t
 
 /* Define to `int' if <sys/types.h> does not define. */

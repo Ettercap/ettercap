@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.32 2004/02/02 22:28:29 alor Exp $
+    $Id: ec_profiles.c,v 1.33 2004/02/08 11:41:44 alor Exp $
 */
 
 #include <ec.h>
@@ -558,6 +558,7 @@ int profile_convert_to_hostlist(void)
 void * profile_print(int mode, void *list, char **desc, size_t len)
 {
    struct host_profile *h = (struct host_profile *)list;
+   struct host_profile *hl;
    char tmp[MAX_ASCII_ADDR_LEN];
 
    /* NULL is used to retrieve the first element */
@@ -590,6 +591,15 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
          break;
       case +1:
          return TAILQ_NEXT(h, next);
+         break;
+      case 0:
+         /* if exists in the list, return it */
+         TAILQ_FOREACH(hl, &GBL_PROFILES, next) {
+            if (hl == h)
+               return h;
+         }
+         /* else, return NULL */
+         return NULL;
          break;
       default:
          return list;

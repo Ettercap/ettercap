@@ -35,15 +35,15 @@ code, btw fixes and patches are welcome.
 MANDATORY:
 
    - libpcap >= 0.8.1
-   - libnet  >= 1.1.1
+   - libnet  >= 1.1.1  (1.1.2 for uncofigured interfaces)
    - libpthread
+   - zlib
 
 OPTIONAL:
 
    - libltdl (part of libtool)   (for the plugin support)
    - libpcre                     (for perl regexp in the filters)
-   - zlib                        (for compressed log files)
-   - openssl                     (for ssh and ssl support)
+   - openssl 0.9.7               (for ssh and ssl support)
    - ncurses                     (for the curses GUI)
 
 

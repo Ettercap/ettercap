@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.14 2004/02/03 13:13:51 alor Exp $
+    $Id: ec_curses_view.c,v 1.15 2004/02/08 11:41:44 alor Exp $
 */
 
 #include <ec.h>
@@ -139,8 +139,8 @@ static void refresh_stats(void)
           (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv : 0 );
    wdg_window_print(wdg_stats, 1, 3, "Forwarded packets   : %8lld  bytes: %8lld ", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
   
-   wdg_window_print(wdg_stats, 1, 5, "Current queue len   : %d/%d", GBL_STATS->queue_curr, GBL_STATS->queue_max);
-   wdg_window_print(wdg_stats, 1, 6, "Sampling rate       : %d", GBL_CONF->sampling_rate);
+   wdg_window_print(wdg_stats, 1, 5, "Current queue len   : %d/%d ", GBL_STATS->queue_curr, GBL_STATS->queue_max);
+   wdg_window_print(wdg_stats, 1, 6, "Sampling rate       : %d ", GBL_CONF->sampling_rate);
    
    wdg_window_print(wdg_stats, 1, 8, "Bottom Half received packet : pck: %8lld  bytes: %8lld", 
          GBL_STATS->bh.pck_recv, GBL_STATS->bh.pck_size);
@@ -269,7 +269,7 @@ static void curses_profile_detail(void *profile)
    wdg_set_focus(wdg_pro_detail);
 
    wdg_add_destroy_key(wdg_pro_detail, CTRL('Q'), NULL);
-   wdg_scroll_set_lines(wdg_pro_detail, 50);
+   wdg_scroll_set_lines(wdg_pro_detail, 100);
 
    memset(os, 0, sizeof(os));
    
@@ -325,7 +325,6 @@ static void curses_profile_detail(void *profile)
          else
             wdg_scroll_print(wdg_pro_detail, "\n");
       }
-      wdg_scroll_print(wdg_pro_detail, "\n");
    }
 }
 

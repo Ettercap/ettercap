@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.22 2004/01/20 21:17:10 alor Exp $
+    $Id: ec_inet.c,v 1.23 2004/02/08 11:41:44 alor Exp $
 */
 
 #include <ec.h>
@@ -57,6 +57,8 @@ int ip_addr_init(struct ip_addr *sa, int type, char *addr)
          sa->addr_size = IP6_ADDR_LEN;
          break;
       default:
+         /* wipe the struct */
+         memset(sa, 0, sizeof(struct ip_addr));
          return -EINVALID;
    }
    

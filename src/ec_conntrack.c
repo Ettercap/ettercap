@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.15 2004/02/03 13:13:51 alor Exp $
+    $Id: ec_conntrack.c,v 1.16 2004/02/08 11:41:44 alor Exp $
 */
 
 #include <ec.h>
@@ -504,6 +504,7 @@ void conntrack_hook(struct conn_object *co, struct packet_object *po)
 void * conntrack_print(int mode, void *list, char **desc, size_t len)
 {
    struct conn_tail *c = (struct conn_tail *)list;
+   struct conn_tail *cl;
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
    char proto, *status = "";
@@ -567,6 +568,14 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       case +1:
          return TAILQ_NEXT(c, next);
          break;
+      case 0:
+         /* if exists in the list, return it */
+         TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
+            if (cl == c)
+               return c;
+         }
+         /* else, return NULL */
+         return NULL;
       default:
          return list;
          break;

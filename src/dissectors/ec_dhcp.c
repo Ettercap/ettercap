@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp.c,v 1.8 2004/01/04 16:29:28 alor Exp $
+    $Id: ec_dhcp.c,v 1.9 2004/02/08 11:41:44 alor Exp $
 */
 
 /*
@@ -231,7 +231,9 @@ FUNC_DECODER(dissector_dhcp)
             
             /* add the GW and the DNS to hosts' profiles */
             dhcp_add_profile(&router, FP_GATEWAY | FP_HOST_LOCAL);
-            dhcp_add_profile(&dns, FP_UNKNOWN);
+            
+            if (!ip_addr_is_zero(&dns))
+               dhcp_add_profile(&dns, FP_UNKNOWN);
             
             break;
       }

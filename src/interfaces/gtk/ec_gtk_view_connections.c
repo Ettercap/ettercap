@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.31 2004/05/25 17:36:06 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.32 2004/05/25 23:14:03 daten Exp $
 */
 
 #include <ec.h>
@@ -79,6 +79,7 @@ extern void conntrack_unlock(void);
 /*** globals ***/
 
 /* connection list */
+static struct row_pairs *connections = NULL;
 static GtkWidget *conns_window = NULL;
 static GtkWidget     *treeview = NULL; /* the visible part of the GTK list */
 static GtkListStore  *ls_conns = NULL; /* the data part */
@@ -272,7 +273,6 @@ static void gtkui_kill_connections(void)
 /* for keeping the connection list in sync with the conntrack list */
 static gboolean refresh_connections(gpointer data)
 {
-   static struct row_pairs *connections = NULL;
    struct row_pairs *lastconn = NULL, *cache = NULL;
    GtkTreeModel *model = GTK_TREE_MODEL (ls_conns);
    void *list, *next, *listend;
@@ -1088,6 +1088,13 @@ static void join_print_po(struct packet_object *po)
 static void gtkui_connection_purge(void *conn)
 {
    DEBUG_MSG("gtkui_connection_purge");
+   struct row_pairs *row, *nextrow, *list = connections;
+
+   connections = NULL;
+   for(row = list; row; row = nextrow) {
+       nextrow = row->next;
+       free(row);
+   }
 
    conntrack_purge();
    gtk_list_store_clear(GTK_LIST_STORE (ls_conns));

@@ -48,7 +48,10 @@ NG-0.7.0    ????????
       + SNMP fixes
       + MySQL fixes
       + HalfLife and Quake3 were unified
+      + SMB
+      + SSH
       + HTTP has gained performance overhaul
+      + ...many others
    + new dissectors:
       + SMTP
       + CVS
@@ -61,6 +64,7 @@ NG-0.7.0    ????????
       + resizable under X11
       + mouse event are supported
       + customizable colors
+   + A lot of new bugs!
    !! offline sniffing actually does not bind to any NICs
 
    +++ too many other improvements to be listed here +++

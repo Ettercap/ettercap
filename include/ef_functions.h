@@ -1,5 +1,5 @@
 
-/* $Id: ef_functions.h,v 1.11 2003/09/28 21:06:53 alor Exp $ */
+/* $Id: ef_functions.h,v 1.12 2003/09/29 12:24:32 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
@@ -71,6 +71,7 @@ struct conditions {
 extern int compiler_set_root(struct block *blk);
 extern size_t compile_tree(struct filter_op **fop);
 extern struct block * compiler_add_instr(struct instruction *ins, struct block *blk);
+extern struct block * compiler_add_ifblk(struct ifblock *ifb, struct block *blk);
 extern struct instruction * compiler_create_instruction(struct filter_op *fop);
 
 #endif

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.3 2003/03/27 22:18:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.4 2003/03/28 23:13:33 alor Exp $
 */
 
 
@@ -49,11 +49,14 @@ void el_usage(void)
 
    fprintf(stdout, "\nGeneral Options:\n");
    fprintf(stdout, "  -a, --analyze               analyze a log file and return useful infos\n");
-   fprintf(stdout, "  -c, --connections           print the table of connections\n");
-   fprintf(stdout, "  -f, --filter <TARGET>       print packet only from this target\n");
-   fprintf(stdout, "  -F, --filcon <CONN>         print packet only from this connection \n");
-   fprintf(stdout, "  -n, --no-headers            print only packet without header informations\n");
-   fprintf(stdout, "  -m, --show-mac              show mac addresses in the header\n");
+   fprintf(stdout, "  -c, --connections           display the table of connections\n");
+   fprintf(stdout, "  -f, --filter <TARGET>       print packets only from this target\n");
+   fprintf(stdout, "  -F, --filcon <CONN>         print packets only from this connection \n");
+   fprintf(stdout, "  -s, --only-source           print packets only from the source\n");
+   fprintf(stdout, "  -d, --only-dest             print packets only from the destination\n");
+   fprintf(stdout, "  -n, --no-headers            skip header informations between packets\n");
+   fprintf(stdout, "  -m, --show-mac              show mac addresses in the headers\n");
+   fprintf(stdout, "  -k, --color                 show source and dest in different colors\n");
    
    fprintf(stdout, "\nVisualization Method:\n");
    fprintf(stdout, "  -B, --binary                print packets as they are\n");
@@ -93,7 +96,10 @@ void parse_options(int argc, char **argv)
       { "filter", required_argument, NULL, 'f' },
       { "filcon", required_argument, NULL, 'F' },
       { "no-headers", no_argument, NULL, 'n' },
+      { "only-source", no_argument, NULL, 's' },
+      { "only-dest", no_argument, NULL, 'd' },
       { "show-mac", no_argument, NULL, 'm' },
+      { "color", no_argument, NULL, 'k' },
       
       { 0 , 0 , 0 , 0}
    };
@@ -101,7 +107,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBcEFfHhmnTXv", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBcdEFfHhkmnsTXv", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -114,6 +120,14 @@ void parse_options(int argc, char **argv)
                   NOT_IMPLEMENTED();
                   break;
          
+         case 'f':
+         case 'F':
+         case 's':
+         case 'd':
+         case 'k':
+                  NOT_IMPLEMENTED();
+                  break;
+                     
          case 'n':
                   GBL.no_headers = 1;
                   break;
@@ -123,7 +137,7 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'B':
-                  //GBL.format = &bin_format;
+                  GBL.format = &bin_format;
                   break;
                   
          case 'X':
@@ -131,19 +145,19 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'A':
-                  //GBL.format = &ascii_format;
+                  GBL.format = &ascii_format;
                   break;
                   
          case 'T':
-                  //GBL.format = &text_format;
+                  GBL.format = &text_format;
                   break;
                   
          case 'E':
-                  //GBL.format = &ebcdic_format;
+                  GBL.format = &ebcdic_format;
                   break;
                   
          case 'H':
-                  //GBL.format = &html_format;
+                  GBL.format = &html_format;
                   break;
                   
          case 'h':

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.1 2003/03/27 22:18:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.2 2003/03/28 23:13:32 alor Exp $
 */
 
 #include <el.h>
@@ -111,6 +111,7 @@ static void display_headers(struct log_header_packet *pck)
    char tmp2[MAX_ASCII_ADDR_LEN];
    char flags[8];
    char *p = flags;
+   char proto[5];
    
    memset(flags, 0, sizeof(flags));
    
@@ -136,15 +137,23 @@ static void display_headers(struct log_header_packet *pck)
    if (pck->L4_flags & TH_RST) *p++ = 'R';
    if (pck->L4_flags & TH_ACK) *p++ = 'A';
    if (pck->L4_flags & TH_PSH) *p++ = 'P';
-   
-   memset(tmp2, 0, sizeof(tmp2));
+  
+   /* determine the proto */
+   switch(pck->L4_proto) {
+      case NL_TYPE_TCP:
+         strcpy(proto, "TCP");
+         break;
+      case NL_TYPE_UDP:
+         strcpy(proto, "UDP");
+         break;
+   }
    
    /* display the ip addresses */
    ip_addr_ntoa(&pck->L3_src, tmp1);
    ip_addr_ntoa(&pck->L3_dst, tmp2);
-   fprintf(stdout, "%s:%d --> %s:%d | %s\n", tmp1, ntohs(pck->L4_src), 
-                                             tmp2, ntohs(pck->L4_dst),
-                                             flags);
+   fprintf(stdout, "%s  %s:%d --> %s:%d | %s\n", proto, tmp1, ntohs(pck->L4_src), 
+                                                        tmp2, ntohs(pck->L4_dst),
+                                                        flags);
 
    fprintf(stdout, "\n");
 }

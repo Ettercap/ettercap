@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.15 2003/07/10 12:49:55 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.16 2003/07/11 16:50:24 alor Exp $
 
 */
 
@@ -91,6 +91,7 @@ int fingerprint_init(void)
    i = 0;
 
    f = open_data("share", TCP_FINGERPRINTS, "r");
+   ON_ERROR(f, NULL, "Cannot open %s", TCP_FINGERPRINTS);
 
    while (fgets(line, 128, f) != 0) {
       

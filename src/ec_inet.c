@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.11 2003/07/01 19:15:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.12 2003/07/11 16:50:24 alor Exp $
 */
 
 #include <ec.h>
@@ -77,6 +77,9 @@ int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
    
 }
 
+/*
+ * print an ip_add structure
+ */
 
 char * ip_addr_ntoa(struct ip_addr *sa, char *dst)
 {
@@ -264,7 +267,7 @@ int ip_addr_is_local(struct ip_addr *sa)
    
    switch (sa->type) {
       case AF_INET:
-         /* make a check on GBL_IFACE (it was initialized ?) */
+         /* make a check on GBL_IFACE (is it initialized ?) */
          if ( !memcmp(&nw->addr, "\x00\x00\x00\x00", sa->addr_size) )
             return -EINVALID;
    

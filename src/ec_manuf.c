@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.7 2003/07/10 12:49:55 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.8 2003/07/11 16:50:24 alor Exp $
 
 */
 
@@ -124,6 +124,7 @@ int manuf_init(void)
    i = 0;
 
    f = open_data("share", MAC_FINGERPRINTS, "r");
+   ON_ERROR(f, NULL, "Cannot open %s", MAC_FINGERPRINTS);
 
    while (fgets(line, 80, f) != 0) {
 

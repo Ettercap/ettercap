@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.31 2003/07/08 20:59:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.32 2003/07/11 16:50:24 alor Exp $
 */
 
 
@@ -27,6 +27,7 @@
 #include <ec_send.h>
 #include <ec_log.h>
 #include <ec_format.h>
+#include <ec_update.h>
 
 #include <ctype.h>
 
@@ -92,6 +93,7 @@ void ec_usage(void)
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
    
    fprintf(stdout, "\nStandard options:\n");
+   fprintf(stdout, "  -U, --update                updates the databases from ettercap website\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
 
@@ -108,6 +110,7 @@ void parse_options(int argc, char **argv)
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
       { "version", no_argument, NULL, 'v' },
+      { "update", no_argument, NULL, 'U' },
       
       { "iface", required_argument, NULL, 'i' },
       { "netmask", required_argument, NULL, 'n' },
@@ -161,7 +164,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDdEe:f:Ghi:j:k:L:l:Nn:OoP:pqiRr:t:V:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDdEe:f:Ghi:j:k:L:l:Nn:OoP:pqiRr:t:UV:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -288,6 +291,10 @@ void parse_options(int argc, char **argv)
                   
          case 'E':
                   GBL_OPTIONS->ext_headers = 1;
+                  break;
+         
+         case 'U':
+                  global_update();
                   break;
                   
          case 'h':

@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.4 $                        
-#  Last updated on : $Date: 2003/07/10 20:25:25 $                          #
+#  Version         : $Revision: 1.5 $                                      # 
+#  Last updated on : $Date: 2003/07/11 16:50:24 $                          #
 #  Total entries   : 2183                                                  #
 #                                                                          #
 ############################################################################
@@ -143,9 +143,9 @@ tacacs-ds         65/tcp     # TACACS-Database Service
 tacacs-ds         65/udp     # TACACS-Database Service
 sql*net           66/tcp     # Oracle SQL*NET
 sql*net           66/udp     # Oracle SQL*NET
-dhcpserver       67/tcp     # DHCP/Bootstrap Protocol Server
-dhcpserver       67/udp     # DHCP/Bootstrap Protocol Server
-dhcpclient       68/tcp     # DHCP/Bootstrap Protocol Client
+dhcpserver        67/tcp     # DHCP/Bootstrap Protocol Server
+dhcpserver        67/udp     # DHCP/Bootstrap Protocol Server
+dhcpclient        68/tcp     # DHCP/Bootstrap Protocol Client
 dhcpclient        68/udp     # DHCP/Bootstrap Protocol Client
 tftp              69/tcp     # Trivial File Transfer
 tftp              69/udp     # Trivial File Transfer
@@ -1186,7 +1186,7 @@ iad2              1031/udp   # BBN IAD
 iad3              1032/tcp   # BBN IAD
 iad3              1032/udp   # BBN IAD
 netinfo           1033/tcp   # Netinfo is apparently on many OS X boxes.
-java-or-OTGfileshare 1050/tcp # J2EE nameserver, also OTG, also called Disk/Application extender. Could also be MiniCommand backdoor OTGlicenseserv
+OTG-fileshare     1050/tcp   # J2EE nameserver, also OTG, also called Disk/Application extender. Could also be MiniCommand backdoor OTGlicenseserv
 nim               1058/tcp   # 
 nim               1058/udp   # 
 nimreg            1059/tcp   # 
@@ -2176,7 +2176,6 @@ hexen2            26900/udp  # Hexen 2 game server
 halflife          27015/udp  # Half-life game server
 subseven          27374/tcp  # Subseven Windows trojan
 Trinoo_Bcast      27444/udp  # Trinoo distributed attack tool Master
-# -> Bcast Daemon communication
 quakeworld        27500/udp  # Quake world
 Trinoo_Master     27665/tcp  # Trinoo distributed attack tool Master server control port
 quake2            27910/udp  # Quake 2 game server
@@ -2192,8 +2191,8 @@ sometimes-rpc6    32771/udp  # Sometimes an RPC port on my Solaris box (rusersd)
 sometimes-rpc7    32772/tcp  # Sometimes an RPC port on my Solaris box (status)
 sometimes-rpc8    32772/udp  # Sometimes an RPC port on my Solaris box (status)
 sometimes-rpc9    32773/tcp  # Sometimes an RPC port on my Solaris box (rquotad)
-sometimes-rpc10    32773/udp  # Sometimes an RPC port on my Solaris box (rquotad)
-sometimes-rpc11    32774/tcp  # Sometimes an RPC port on my Solaris box (rusersd)
+sometimes-rpc10   32773/udp  # Sometimes an RPC port on my Solaris box (rquotad)
+sometimes-rpc11   32774/tcp  # Sometimes an RPC port on my Solaris box (rusersd)
 sometimes-rpc12   32774/udp  # Sometimes an RPC port on my Solaris box (rusersd)
 sometimes-rpc13   32775/tcp  # Sometimes an RPC port on my Solaris box (status)
 sometimes-rpc14   32775/udp  # Sometimes an RPC port on my Solaris box (status)

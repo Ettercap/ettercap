@@ -33,6 +33,7 @@ ettercap_SOURCES = ec_capture.c \
                ec_services.c \
                ec_session.c \
                ec_signals.c \
+               ec_socket.c \
                ec_sniff.c \
                ec_sniff_arp.c \
                ec_sniff_bridge.c \
@@ -41,6 +42,7 @@ ettercap_SOURCES = ec_capture.c \
                ec_strings.c \
                ec_threads.c \
                ec_ui.c \
+               ec_update.c \
 				   interfaces/console/ec_console.c \
 				   interfaces/console/ec_console_display.c \
 				   interfaces/console/ec_console_profile.c \

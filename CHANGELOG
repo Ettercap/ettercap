@@ -14,9 +14,9 @@ NG-0.7.0    ????????
    + wifi support
    + unified sniffing (you can use external hijacker)
    + multiple target selection
-   + pcap filter
+   + pcap filter on capture
    + etterlog utility for logfiles parsing
-   + regex matching 
+   + regex packet matching 
    + hook point per packet type (TCP, UDP... )
    + quiet mode (don't print packet content)
    + enhanced passive open port discoverer 
@@ -28,6 +28,7 @@ NG-0.7.0    ????????
    + global conf file always loaded to tweak internal variables
    + etter.conf supports dissectors on multiple ports
    + possibility to sniff on loopback
+   + autoupdate from website for passive databases
    + dissector enhancements in: 
       + POP (APOP and AUTH LOGIN support)
       + X11 (banner discovery)

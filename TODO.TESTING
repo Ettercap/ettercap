@@ -13,3 +13,6 @@
 
    + DISSECTORS
       - telnet (correct login and failed logons)
+
+   + AUTOUPDATE process
+      - test if it work in all conditions

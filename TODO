@@ -31,10 +31,6 @@
    + TOP HALF
       - connection tracking (with buffered conn)
 
-   + AUTOUPDATE
-      - etter.finger.os
-      - etter.finger.mac
-      - etter.services
 
    + ARP POISON ENGINE
       - arp poisoner

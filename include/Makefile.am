@@ -33,6 +33,7 @@ noinst_HEADERS = ec.h \
                  ec_services.h \
                  ec_session.h \
                  ec_signals.h \
+                 ec_socket.h \
                  ec_sniff.h \
                  ec_sniff_arp.h \
                  ec_sniff_bridge.h \
@@ -42,6 +43,7 @@ noinst_HEADERS = ec.h \
                  ec_strings.h \
                  ec_threads.h \
                  ec_ui.h \
+                 ec_update.h \
                  ec_version.h \
                  el.h \
                  el_functions.h

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.8 2004/04/13 18:34:49 daten Exp $
+    $Id: ec_gtk_menus.c,v 1.9 2004/05/13 15:56:43 daten Exp $
 */
 
 #include <ec.h>
@@ -203,6 +203,7 @@ void gtkui_create_tab_menu(void)
    GtkItemFactory *if_tabs;
 
    accel_group = gtk_accel_group_new ();
+   gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
 
    /* context menu for notebook */
    if_tabs = gtk_item_factory_new(GTK_TYPE_MENU, "<notebook>", accel_group);

@@ -38,6 +38,7 @@ NG-0.7.0    ????????
       + TELNET (collect even failed attempts)
       + SNMP fixes
       + MySQL fixes
+      + HalfLife and Quake3 were unified
    !! offline sniffing actually does not bind to any NICs
 
 

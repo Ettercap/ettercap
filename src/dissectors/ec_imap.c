@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_imap.c,v 1.7 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_imap.c,v 1.8 2003/09/27 21:08:27 alor Exp $
 */
 
 /*
@@ -77,6 +77,9 @@ FUNC_DECODER(dissector_imap)
       /* skip the number, go to response */
       while(*ptr != ' ' && ptr != end) ptr++;
       
+      /* reached the end */
+      if (ptr == end) return NULL;
+      
       if (!strncmp(ptr, " OK ", 4)) {
          PACKET->DISSECTOR.banner = strdup(ptr + 3);
       
@@ -101,6 +104,9 @@ FUNC_DECODER(dissector_imap)
    /* skip the number, move to the command */
    while(*ptr != ' ' && ptr != end) ptr++;
   
+   /* reached the end */
+   if (ptr == end) return NULL;
+
 /*
  * LOGIN authentication:
  *

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_snmp.c,v 1.4 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_snmp.c,v 1.5 2003/09/27 21:08:27 alor Exp $
 */
 
 #include <ec.h>
@@ -66,6 +66,9 @@ FUNC_DECODER(dissector_snmp)
 
    /* get the version */
    while (*ptr++ != ASN1_INTEGER && ptr != end);
+   
+   /* reached the end */
+   if (ptr == end) return NULL;
       
    /* move to the len */
    ptr += *ptr;
@@ -81,6 +84,9 @@ FUNC_DECODER(dissector_snmp)
    
    /* move till the community name len */
    while(*ptr++ != ASN1_STRING && ptr != end);
+   
+   /* reached the end */
+   if (ptr == end) return NULL;
 
    /* get the community name lenght */
    n = *ptr;

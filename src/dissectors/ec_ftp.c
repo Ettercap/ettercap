@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ftp.c,v 1.11 2003/09/07 19:47:51 alor Exp $
+    $Id: ec_ftp.c,v 1.12 2003/09/27 21:08:27 alor Exp $
 */
 
 #include <ec.h>
@@ -83,7 +83,10 @@ FUNC_DECODER(dissector_ftp)
  
    /* skip the whitespaces at the beginning */
    while(*ptr == ' ' && ptr != end) ptr++;
-  
+ 
+   /* reached the end */
+   if (ptr == end) return NULL;
+   
    /* harvest the username */
    if ( !strncasecmp(ptr, "USER ", 5) ) {
 

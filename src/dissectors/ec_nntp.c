@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_nntp.c,v 1.6 2003/09/06 19:14:24 alor Exp $
+    $Id: ec_nntp.c,v 1.7 2003/09/27 21:08:27 alor Exp $
 */
 
 /*
@@ -91,6 +91,9 @@ FUNC_DECODER(dissector_nntp)
    /* skip the whitespaces at the beginning */
    while(*ptr == ' ' && ptr != end) ptr++;
   
+   /* reached the end */
+   if (ptr == end) return NULL;
+
    /* harvest the username */
    if ( !strncasecmp(ptr, "AUTHINFO USER ", 14) ) {
 

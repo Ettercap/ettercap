@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_bgp.c,v 1.4 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_bgp.c,v 1.5 2003/09/27 21:08:27 alor Exp $
 */
 
 /*
@@ -118,7 +118,7 @@ void __init bgp_init(void)
 
 FUNC_DECODER(dissector_bgp)
 {
-   u_char *ptr = PACKET->DATA.disp_data;
+   DECLARE_DISP_PTR_END(ptr, end);
    char tmp[MAX_ASCII_ADDR_LEN];
    u_char *parameters;
    u_char param_length;
@@ -126,6 +126,9 @@ FUNC_DECODER(dissector_bgp)
    u_char BGP_MARKER[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
                           0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
+   /* don't complain about unused var */
+   (void)end;
+   
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;

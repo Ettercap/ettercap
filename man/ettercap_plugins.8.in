@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.26 2004/01/14 11:10:10 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.27 2004/02/04 10:15:53 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -81,6 +81,24 @@ request a special reply is crafted. The host is resolved with a fake host 'mail.
 and the additional record contains the ip address of 'mail.host'. The first address
 or name that matches is returned, so be careful with the order.
 
+.TP 
+.B dos_attack
+.Sp
+This plugin runs a d.o.s. attack against a victim IP address. It first "scans"
+the victim to find open ports, then starts to flood these ports with SYN 
+packets, using a "phantom" address as source IP. Then it uses fake ARP replies
+to intercept packets for the phantom host. When it receives SYN-ACK from the 
+victim, it replies with an ACK packet creating an ESTABLISHED connection. 
+You have to use a free IP address in your subnet to create the "phantom" host
+(you can use find_ip for this purpose). 
+You can't run this plugin in unoffensive mode. 
+.br
+This plugin is based on the original Naptha DoS attack 
+(http://razor.bindview.com/publish/advisories/adv_NAPTHA.html)
+.Sp
+.I example :
+.Sp
+ettercap -TQP dos_attack
 
 .TP 
 .B dummy
@@ -117,9 +135,9 @@ You can run it either from the command line or from the proper menu.
 .Sp
 .I example :
 .Sp
-ettercap -TQP find_conn // 
+ettercap -TQP find_ip // 
 .Sp
-ettercap -TQP find_conn /192.168.0.1-254/ 
+ettercap -TQP find_ip /192.168.0.1-254/ 
 
 
 .TP 

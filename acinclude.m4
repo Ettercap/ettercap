@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.16 2004/04/29 19:56:05 alor Exp $
+dnl $Id: acinclude.m4,v 1.17 2004/05/02 11:51:46 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -21,7 +21,7 @@ AC_DEFUN(EC_CHECK_OPTION,[
 
 
 dnl
-dnl EC_CHECK_FUNC(lib, func, ldflags, action-if-found, action-if-not-found)
+dnl EC_CHECK_FUNC(lib, func, ldflags, libs, action-if-found, action-if-not-found)
 dnl
 
 AC_DEFUN(EC_CHECK_FUNC,[
@@ -29,8 +29,8 @@ AC_DEFUN(EC_CHECK_FUNC,[
    OLDLDFLAGS="${LDFLAGS}"
    OLDLIBS="${LIBS}"
    LDFLAGS="$3"
-   LIBS=""
-   AC_CHECK_LIB($1, $2, $4, $5)
+   LIBS="$4"
+   AC_CHECK_LIB($1, $2, $5, $6)
    LDFLAGS="${OLDLDFLAGS}"
    LIBS="${OLDLIBS}"
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.36 2003/09/19 16:47:51 alor Exp $
+    $Id: ec_parser.c,v 1.37 2003/09/26 12:48:57 alor Exp $
 */
 
 
@@ -30,6 +30,7 @@
 #include <ec_update.h>
 #include <ec_mitm.h>
 #include <ec_filter.h>
+#include <ec_plugins.h>
 
 #include <ctype.h>
 
@@ -214,6 +215,12 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'P':
+                  /* user has requested the list */
+                  if (!strcasecmp(optarg, "list")) {
+                     plugin_list();
+                     clean_exit(0);
+                  }
+                  /* else set the plugin */
                   GBL_OPTIONS->plugin = strdup(optarg);
                   break;
                   

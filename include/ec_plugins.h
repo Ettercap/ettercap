@@ -1,5 +1,5 @@
 
-/* $Id: ec_plugins.h,v 1.7 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_plugins.h,v 1.8 2003/09/26 12:48:57 alor Exp $ */
 
 #ifndef EC_PLUGINS_H
 #define EC_PLUGINS_H
@@ -37,6 +37,8 @@ extern int plugin_is_activated(char *name);
 /* use these to activate and deactivate a plugin */
 extern int plugin_init(char *name);
 extern int plugin_fini(char *name);
+
+extern void plugin_list(void);
 
 #endif 
 

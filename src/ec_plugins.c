@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.16 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_plugins.c,v 1.17 2003/09/26 12:48:57 alor Exp $
 */
 
 #include <ec.h>
@@ -67,6 +67,8 @@ int plugin_fini(char *name);
 int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *));
 int plugin_get_type(char *name);
 int plugin_is_activated(char *name);
+void plugin_list(void);
+static void plugin_print(char active, struct plugin_ops *ops);
 
 /*******************************************/
 
@@ -311,6 +313,39 @@ int plugin_is_activated(char *name)
    }
    
    return 0;
+}
+
+/*
+ * print the list of available plugins
+ */
+void plugin_list(void)
+{
+   int ret;
+
+   DEBUG_MSG("plugin_list");
+
+   /* load all the plugins */
+   plugin_load_all();
+      
+   /* print the list */
+   fprintf(stdout, "\nAvailable plugins :\n\n");
+   ret = plugin_list_print(PLP_MIN, PLP_MAX, &plugin_print);
+   if (ret == -ENOTFOUND) {
+      fprintf(stdout, "No plugin found !\n\n");
+      return;
+   }
+   fprintf(stdout, "\n\n");
+
+}
+
+/*
+ * callback function for displaying the plugin list 
+ */
+static void plugin_print(char active, struct plugin_ops *ops)
+{
+   fprintf(stdout, "[%d][%10s] %15s %4s  %s\n", active, 
+         (ops->type == PL_HOOK) ? "hook" : "standalone",
+         ops->name, ops->version, ops->info);  
 }
 
 /* EOF */

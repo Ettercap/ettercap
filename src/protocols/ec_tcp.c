@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.18 2003/10/07 14:51:27 alor Exp $
+    $Id: ec_tcp.c,v 1.19 2003/10/09 12:07:22 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -66,13 +66,15 @@ struct tcp_header {
 struct tcp_half_status {
    u_int32  last_seq;
    int32    seq_adj;
+   u_char   fin;
 };
 
 struct tcp_status {
    struct tcp_half_status way[2];
 };
 
-/* session identifier */
+/* Session identifier 
+ * It has to be even-lenghted for session hash matching */
 struct tcp_ident {
    u_int32 magic;
       #define TCP_MAGIC  0x0400e77e
@@ -244,9 +246,22 @@ FUNC_DECODER(decode_tcp)
    if ( tcp->flags & TH_SYN )
       status->way[direction].last_seq++;
 
+   /* Take trace of the RST flag (to block injection) */
+   if ( tcp->flags & TH_RST ) { 
+      status->way[direction].fin = 1;      
+      status->way[!direction].fin = 1;
+   }
+   
    /* get the next decoder */
    next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
    EXECUTE_DECODER(next_decoder);
+
+   /* 
+    * Take trace of the FIN flag (to block injection) 
+    * It's here to permit some strange tricks with filters.
+    */
+   if ( tcp->flags & TH_FIN )
+      status->way[direction].fin = 1;
    
    /* 
     * Modification checks and adjustments.
@@ -297,8 +312,10 @@ FUNC_INJECTOR(inject_tcp)
        
    /* Find the correct session */
    tcp_create_ident(&ident, PACKET);
-   if (session_get(&s, ident, TCP_IDENT_LEN) == -ENOTFOUND) 
+   if (session_get(&s, ident, TCP_IDENT_LEN) == -ENOTFOUND) {
+      SAFE_FREE(ident); 
       return -ENOTFOUND;
+   }
 
    /* Rember where the payload has to start */
    tcp_payload = PACKET->packet;
@@ -321,6 +338,12 @@ FUNC_INJECTOR(inject_tcp)
    /* Take the rest of the data from the sessions */
    status = (struct tcp_status *)s->data;
    direction = tcp_find_direction(s->ident, ident);
+   SAFE_FREE(ident);  
+
+   /* Is this an injectable connection? */
+   if (status->way[direction].fin || status->way[direction].last_seq==0 || status->way[!direction].last_seq==0)
+      return -ENOTHANDLED;
+         
    tcph->seq = htonl(status->way[direction].last_seq + status->way[direction].seq_adj);
    
    /* Fake ACK seq (we didn't set the flag) */
@@ -351,7 +374,7 @@ FUNC_INJECTOR(inject_tcp)
    PACKET->L4.len = sizeof(struct tcp_header);
    PACKET->DATA.len = LENGTH; 
    tcph->csum = L4_checksum(PACKET);
-      
+    
    return ESUCCESS;
 }
 

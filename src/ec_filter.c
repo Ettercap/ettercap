@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.28 2003/10/07 14:51:27 alor Exp $
+    $Id: ec_filter.c,v 1.29 2003/10/09 12:07:22 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -550,6 +550,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       if (delta != po->DATA.delta) {
          SAFE_CALLOC(po->inject, po->DATA.len + delta - max_len, sizeof(u_char));
          memcpy(po->inject, tmp + new_len, po->DATA.len + delta - max_len);
+         po->inject_len = po->DATA.len + delta - max_len;
       }
    }
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.21 2003/09/30 11:30:55 lordnaga Exp $
+    $Id: ec_ip.c,v 1.22 2003/10/09 12:07:22 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -318,14 +318,17 @@ FUNC_INJECTOR(stateless_ip)
 
    /* Find the correct IP session */
    ip_create_ident(&ident, PACKET);
-   if (session_get(&s, ident, IP_IDENT_LEN) == -ENOTFOUND) 
+   if (session_get(&s, ident, IP_IDENT_LEN) == -ENOTFOUND) {
+      SAFE_FREE(ident);
       return -ENOTFOUND;
+   }
 
    PACKET->session = s;
    
    /* Execute IP injector */
    EXECUTE_INJECTOR(CHAIN_LINKED, IP_MAGIC);
 
+   SAFE_FREE(ident);
    return ESUCCESS;
 }
 

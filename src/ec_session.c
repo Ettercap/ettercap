@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.15 2003/09/27 21:08:27 alor Exp $
+    $Id: ec_session.c,v 1.16 2003/10/09 12:07:22 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -278,8 +278,6 @@ u_int32 session_hash(void *ident, size_t ilen)
 {
    u_int32 hash = 0;
    u_int16 *buf = (u_int16 *)ident;
-
-   return 0;
    
    while(ilen > 1) {
       hash += *buf++;
@@ -293,7 +291,7 @@ u_int32 session_hash(void *ident, size_t ilen)
    hash += (hash >> 16);
   
    /* the hash must be within the TABSIZE */
-   return (u_int16)(~hash) & TABSIZE;
+   return (u_int16)(~hash) & TABMASK;
 }
 
 

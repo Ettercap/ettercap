@@ -1,5 +1,5 @@
 
-/* $Id: ec_dissect.h,v 1.11 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_dissect.h,v 1.12 2003/10/09 12:07:15 lordnaga Exp $ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H
@@ -15,9 +15,9 @@ struct dissect_ident {
       #define DISSECT_MAGIC  0x0500e77e
    struct ip_addr L3_src;
    struct ip_addr L3_dst;
-   u_int8 L4_proto;
    u_int16 L4_src;
    u_int16 L4_dst;
+   u_int8 L4_proto; /* Odd byte has to be the last for correct session hash matching */
 };
 
 #define DISSECT_IDENT_LEN sizeof(struct dissect_ident)

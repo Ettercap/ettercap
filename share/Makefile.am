@@ -1,9 +1,10 @@
 
-# $Id: Makefile.am,v 1.5 2003/09/18 22:15:02 alor Exp $
+# $Id: Makefile.am,v 1.6 2003/11/30 12:02:47 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 pkgdata_DATA = etter.dns \
+               etter.fields \
                etter.filter \
                etter.filter.examples \
                etter.filter.ssh \

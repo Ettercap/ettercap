@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.33 2003/11/26 20:39:16 alor Exp $
+    $Id: ec_send.c,v 1.34 2003/11/30 12:02:47 alor Exp $
 */
 
 #include <ec.h>
@@ -85,7 +85,7 @@ void send_init(void)
  
    /* check when to not initialize libnet */
    if (GBL_OPTIONS->read || GBL_OPTIONS->unoffensive) {
-      DEBUG_MSG("send_init: skipping... (reading offline of unoffensive)");
+      DEBUG_MSG("send_init: skipping... (reading offline or unoffensive)");
       GBL_OPTIONS->unoffensive = 1;
       return;
    }

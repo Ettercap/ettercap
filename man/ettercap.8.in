@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.52 2003/11/21 08:32:15 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.53 2003/11/30 12:02:47 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -417,7 +417,9 @@ on ifaces without IP address if you execute it in unoffensive mode (-u option).
 
 .TP
 \fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
-Use this <NETMSK> instead of the one associated with the current iface.
+Use this <NETMSK> instead of the one associated with the current iface. This
+options is usefull if you have the NIC with an asociated netmask of class B and
+you want to scan (with the arp scan) only a class C.
 
 .TP
 \fB\-R\fR, \fB\-\-reversed\fR

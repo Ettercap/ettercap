@@ -42,8 +42,6 @@ Nov 2003:
       - dhcp infos
 
    + LIBWDG
-      - fix wdg_file (use valgrind) 
-      - add debug
       - widgets:
          - input (with forms ?)
          - selectable lists

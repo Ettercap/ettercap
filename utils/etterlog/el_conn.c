@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_conn.c,v 1.1 2003/03/29 15:03:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_conn.c,v 1.2 2003/03/29 16:20:39 alor Exp $
 */
 
 #include <el.h>
@@ -41,7 +41,7 @@ static struct conn_list conn_target;
 void conn_table(void);
 static int insert_table(struct log_header_packet *pck);
 void filcon_compile(char *conn);
-int is_conn(struct log_header_packet *pck);
+int is_conn(struct log_header_packet *pck, int *versus);
 
 /*******************************************/
 
@@ -206,10 +206,17 @@ void filcon_compile(char *conn)
  * return 1 if the packet is compliant with the filter
  */
 
-int is_conn(struct log_header_packet *pck)
+int is_conn(struct log_header_packet *pck, int *versus)
 {
+   struct conn_list tmp;
    int proto = 0;
    int good = 0;
+  
+   memset(&tmp, 0, sizeof(struct conn_list));
+   
+   /* if the conn_target is not initialized, accept all */
+   if (!memcmp(&conn_target, &tmp, sizeof(struct conn_list)))
+      return 1;
    
    /* the protocol does not match */
    if (conn_target.L4_proto == pck->L4_proto)
@@ -224,15 +231,23 @@ int is_conn(struct log_header_packet *pck)
    if ( ip_addr_cmp(&pck->L3_src, &conn_target.L3_src) &&
         ip_addr_cmp(&pck->L3_dst, &conn_target.L3_dst) &&
         pck->L4_src == conn_target.L4_src &&
-        pck->L4_dst == conn_target.L4_dst )
+        pck->L4_dst == conn_target.L4_dst &&
+        /* the packet is from source, but we are interested only in dest */
+        !GBL.only_dest ) {
       good = 1;
-
+      *versus = VERSUS_SOURCE;
+   }
+   
    /* from dest to source */
    if ( ip_addr_cmp(&pck->L3_src, &conn_target.L3_dst) &&
         ip_addr_cmp(&pck->L3_dst, &conn_target.L3_src) &&
         pck->L4_src == conn_target.L4_dst &&
-        pck->L4_dst == conn_target.L4_src )
+        pck->L4_dst == conn_target.L4_src &&
+        /* the packet is from dest, but we are interested only in source */
+        !GBL.only_source ) {
       good = 1;
+      *versus = VERSUS_DEST;
+   }
    
    /* check the reverse option */
    if (GBL.reverse ^ (good && proto) ) 

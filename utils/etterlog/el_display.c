@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.3 2003/03/29 15:03:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.4 2003/03/29 16:20:39 alor Exp $
 */
 
 #include <el.h>
@@ -59,6 +59,7 @@ static void display_packet(void)
    int ret;
    u_char *buf;
    u_char *tmp;
+   int versus;
    
    /* read the logfile */
    LOOP {
@@ -73,7 +74,7 @@ static void display_packet(void)
          continue;
       
       /* the packet should complain to the connection specifications */
-      if (!is_conn(&pck))
+      if (!is_conn(&pck, &versus))
          continue;
       
       /* 
@@ -93,9 +94,29 @@ static void display_packet(void)
        * set by the user
        */
       ret = GBL.format(buf, pck.len, tmp);
+     
+      /* the ANSI escape for the color */
+      if (GBL.color) {
+         int color = 0;
+         switch (versus) {
+            case VERSUS_SOURCE:
+               color = COL_GREEN;
+               break;
+            case VERSUS_DEST:
+               color = COL_BLU;
+               break;
+         }
+         fprintf(stdout, "\033[%dm", color);
+         fflush(stdout);
+      }
       
       /* print it */
       write(fileno(stdout), tmp, ret);
+      
+      if (GBL.color) {
+         fprintf(stdout, "\033[0m");
+         fflush(stdout);
+      }
       
       SAFE_FREE(buf);
       SAFE_FREE(tmp);
@@ -123,7 +144,7 @@ static void display_headers(struct log_header_packet *pck)
    
    memset(flags, 0, sizeof(flags));
    
-   fprintf(stdout, "\n");
+   fprintf(stdout, "\n\n");
    
    /* remove the final '\n' */
    strcpy(time, ctime((time_t *)&pck->tv.tv_sec));

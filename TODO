@@ -20,16 +20,10 @@
 
    + LOGGING ENGINE
       - info packet
+      - regexp
 
    + ETTERLOG
-      - hex format
-      - ascii format
-      - ebcdic format
-      - html format
-      - joined view
-      - follow a connection
-      - connection list
-
+      - info packet
 
    + ARP SCAN
 

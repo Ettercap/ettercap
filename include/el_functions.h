@@ -26,7 +26,9 @@ extern void display(void);
 /* el_conn */
 extern void conn_table(void);
 extern void filcon_compile(char *conn);
-extern int is_conn(struct log_header_packet *pck);
+extern int is_conn(struct log_header_packet *pck, int *versus);
+#define VERSUS_SOURCE   0
+#define VERSUS_DEST     1 
 
 /* el_target */
 extern void target_compile(char *target);

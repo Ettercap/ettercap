@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.7 2004/03/03 21:43:19 alor Exp $
+    $Id: ec_inject.c,v 1.8 2004/03/03 22:09:01 alor Exp $
 */
 
 #include <ec.h>
@@ -46,6 +46,7 @@ size_t inject_protocol(struct packet_object *po);
 void inject_split_data(struct packet_object *po);
 
 void user_kill(struct conn_object *co);
+void user_inject(u_char *buf, size_t size, struct conn_object *co, int which);
 
 /*******************************************/
 
@@ -126,7 +127,6 @@ int inject_buffer(struct packet_object *po)
   
    /* we can't inject in unoffensive mode or in bridge mode */
    if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->iface_bridge) {
-      SAFE_FREE(po->DATA.inject);
       return -EINVALID;
    }
    
@@ -223,9 +223,32 @@ void user_kill(struct conn_object *co)
    SAFE_FREE(ident); 
 
    status = (struct tcp_status *)s->data;
-      
+     
+   /* send the reset. at least one should work */
    send_tcp(&po.L3.src, &po.L3.dst, po.L4.src, po.L4.dst, status->way[direction].last_ack, 0, TH_RST);
    send_tcp(&po.L3.dst, &po.L3.src, po.L4.dst, po.L4.src, status->way[!direction].last_ack, 0, TH_RST);
+}
+
+/*
+ * inject from user
+ */
+void user_inject(u_char *buf, size_t size, struct conn_object *co, int which)
+{
+   struct packet_object po;
+
+   /* prepare the fake packet object */
+   memcpy(&po.L3.src, &co->L3_addr1, sizeof(struct ip_addr));
+   memcpy(&po.L3.dst, &co->L3_addr2, sizeof(struct ip_addr));
+
+   po.L4.src = co->L4_addr1;
+   po.L4.dst = co->L4_addr2;
+   po.L4.proto = co->L4_proto;
+   
+   po.DATA.inject = buf;
+   po.DATA.inject_len = size;
+
+   /* do the dirty job */
+   inject_buffer(&po);
 }
 
 /* EOF */

@@ -1,5 +1,5 @@
 
-/* $Id: ec_inject.h,v 1.8 2004/03/03 21:43:19 alor Exp $ */
+/* $Id: ec_inject.h,v 1.9 2004/03/03 22:09:00 alor Exp $ */
 
 #ifndef EC_INJECT_H
 #define EC_INJECT_H
@@ -35,6 +35,7 @@ extern void * get_injector(u_int8 level, u_int32 type);
 extern void inject_split_data(struct packet_object *po);
 
 extern void user_kill(struct conn_object *co);
+extern void user_inject(u_char *buf, size_t size, struct conn_object *co, int which);
 
 #define CHAIN_ENTRY 1
 #define CHAIN_LINKED 2

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.7 2004/03/03 21:43:19 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.8 2004/03/03 22:09:01 alor Exp $
 */
 
 #include <ec.h>
@@ -479,13 +479,10 @@ static void inject_user(void)
    
    /* check where to inject */
    if (wdg_c1->flags & WDG_OBJ_FOCUSED) {
-      //inject(injectbuf, len, curr_conn, 1);
+      user_inject(injectbuf, len, curr_conn, 1);
    } else if (wdg_c2->flags & WDG_OBJ_FOCUSED) {
-      //inject(injectbuf, len, curr_conn, 2);
+      user_inject(injectbuf, len, curr_conn, 2);
    }
-   
-   curses_message("INJECT: not yet implemented");
-   return;
 }
 
 /*
@@ -548,16 +545,13 @@ static void inject_file(char *path, char *file)
 
    /* check where to inject */
    if (wdg_c1->flags & WDG_OBJ_FOCUSED) {
-      //inject(buf, size, curr_conn, 1);
+      user_inject(buf, size, curr_conn, 1);
    } else if (wdg_c2->flags & WDG_OBJ_FOCUSED) {
-      //inject(buf, size, curr_conn, 2);
+      user_inject(buf, size, curr_conn, 2);
    }
 
    close(fd);
    munmap(buf, size);
-   
-   curses_message("INJECT FILE: not yet implemented");
-   return;
    
 }
 

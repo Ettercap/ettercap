@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_update.c,v 1.1 2003/07/11 16:50:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_update.c,v 1.2 2003/07/13 15:22:57 alor Exp $
 */
 
 #include <ec.h>
@@ -185,14 +185,21 @@ static void update_file(char *tokens)
 
 /* 
  * get the current file revision 
- * it is stored in the cvs var $Revision: 1.1 $
+ * it is stored in the cvs var $Revision: 1.2 $
  */
 static int get_current_rev(char *file, char **curr, char *errbuf)
 {
    FILE *fd;
    char line[128];
    char *ptr;
+  
+   /* do not permit to insert ../../../ in the filename */
+   if (strchr(file, '/')) {
+      snprintf(errbuf, ERR_MAX_LEN, "invalid file");
+      return 0;
+   }
    
+   /* check if the file exists */
    fd = open_data("share", file, "r");
    if (fd == NULL) {
       snprintf(errbuf, ERR_MAX_LEN, "cannot open file");

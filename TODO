@@ -75,6 +75,7 @@
       - HTTPS without the dirty trick (can we use loopback?)
       - SSH has to support DES, 3DES, blowfish and zlib compression
       - WIFI decoder support for WEP (key given)
+      - PPP decoder
       
    + PLUGINS
       - convert all the old plugins

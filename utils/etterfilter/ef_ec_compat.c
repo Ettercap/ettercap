@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_ec_compat.c,v 1.5 2003/10/12 15:27:57 alor Exp $
+    $Id: ef_ec_compat.c,v 1.6 2004/01/21 20:25:11 alor Exp $
 */
 
 #include <ef.h>
@@ -28,6 +28,7 @@
 
 /* globals */
 FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
+struct ip_addr;
 
 /* protos */
 void debug_msg(const char *message, ...);
@@ -35,6 +36,7 @@ void ui_msg(const char *fmt, ...);
 void ui_error(const char *fmt, ...);
 void ui_fatal_error(const char *msg);
 void ui_cleanup(void);
+int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
 
 /************************************************/
  
@@ -71,8 +73,15 @@ void ui_fatal_error(const char *msg)
    exit(-1);
 }
 
-void ui_cleanup(void) { }
+void ui_cleanup(void) 
+{ 
+}
 
+/* remove ec_send.c dependency */
+int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags) 
+{ 
+   return 0;
+}
 
 /* EOF */
 

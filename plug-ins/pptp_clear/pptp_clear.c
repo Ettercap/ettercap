@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: pptp_clear.c,v 1.1 2003/12/03 14:50:00 lordnaga Exp $
+    $Id: pptp_clear.c,v 1.2 2003/12/05 15:11:55 lordnaga Exp $
 */
 
 
@@ -56,7 +56,6 @@ static void parse_ecp(struct packet_object *po);
 static void parse_ipcp(struct packet_object *po);
 static u_char *parse_option(u_char * buffer, u_char option, int16 tot_len);
 static void obfuscate_options(u_char * buffer, int16 tot_len);
-static void clear_options(u_char * buffer, short tot_len);
 
 /* plugin operations */
 struct plugin_ops pptp_clear_ops = { 
@@ -152,11 +151,8 @@ static void parse_ecp(struct packet_object *po)
 
    lcp = (struct ppp_lcp_header *)po->L4.header;
 
-   if ( lcp->code == PPP_CONFIGURE_REQUEST)
+   if (lcp->code == PPP_CONFIGURE_REQUEST || lcp->code == PPP_CONFIGURE_REJ)
       obfuscate_options((u_char *)(lcp + 1), ntohs(lcp->length)-sizeof(*lcp));
-	  
-   if ( lcp->code == PPP_CONFIGURE_REJ)
-      clear_options((u_char *)(lcp + 1), ntohs(lcp->length)-sizeof(*lcp));
 }
 
 
@@ -200,30 +196,16 @@ static u_char *parse_option(u_char * buffer, u_char option, int16 tot_len)
 }
 
 
-/* Change the requested options to something unknown */
+/* Change the requested options to something unknown
+ * and viceversa
+ */
 static void obfuscate_options(u_char * buffer, int16 tot_len)
 {
    char counter=0;
    while (tot_len>0 && counter<20) {
       if (buffer[0]>0 && buffer[0]!=0xff) 
-         buffer[0]+=PPP_OBFUSCATE;
+         buffer[0]^=PPP_OBFUSCATE;
 		
-      tot_len -= buffer[1];
-      buffer += buffer[1];
-
-      counter++;
-   }
-}
-
-
-/* Changes unknown options to their original state */
-static void clear_options(u_char * buffer, int16 tot_len)
-{
-   char counter=0;
-   while (tot_len>0 && counter<20) {	
-      if (buffer[0]>PPP_OBFUSCATE && buffer[0]!=0xff) 
-         buffer[0]-=PPP_OBFUSCATE;
-
       tot_len -= buffer[1];
       buffer += buffer[1];
 

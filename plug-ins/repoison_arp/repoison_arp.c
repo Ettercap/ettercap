@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: repoison_arp.c,v 1.1 2004/10/25 21:26:33 lordnaga Exp $
+    $Id: repoison_arp.c,v 1.2 2004/10/30 14:30:23 lordnaga Exp $
 */
 
 
@@ -130,8 +130,8 @@ static void repoison_func(struct packet_object *po)
    if (!is_mitm_active("arp"))
       return;
 
-   /* Is it a broadcast ARP packet ? */
-   if (memcmp(po->L2.dst, MEDIA_BROADCAST, MEDIA_ADDR_LEN))
+   /* Check the target address */
+   if (memcmp(po->L2.dst, ARP_BROADCAST, MEDIA_ADDR_LEN))
       return;
 
    /* search in target 2 */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dynlist.c,v 1.2 2004/02/01 16:46:53 alor Exp $
+    $Id: wdg_dynlist.c,v 1.3 2004/02/01 21:11:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -64,6 +64,7 @@ void wdg_dynlist_print_callback(wdg_t *wo, void * func(int mode, void *list, cha
 void wdg_dynlist_select_callback(wdg_t *wo, void (*callback)(void *));
 void wdg_dynlist_add_callback(wdg_t *wo, int key, void (*callback)(void *));
 static int wdg_dynlist_callback(struct wdg_object *wo, int key);
+void wdg_dynlist_reset(wdg_t *wo);
 
 /*******************************************/
 
@@ -229,8 +230,10 @@ static int wdg_dynlist_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_
       case KEY_MOUSE:
          /* is the mouse event within our edges ? */
          if (wenclose(ww->win, mouse->y, mouse->x)) {
-            wdg_set_focus(wo);
-            wdg_dynlist_mouse(wo, key, mouse);
+            if (wo->flags & WDG_OBJ_FOCUSED)
+               wdg_dynlist_mouse(wo, key, mouse);
+            else
+               wdg_set_focus(wo);
          } else 
             return -WDG_ENOTHANDLED;
          break;
@@ -538,6 +541,20 @@ static void wdg_dynlist_mouse(struct wdg_object *wo, int key, struct wdg_mouse_e
    if (mouse->event == BUTTON1_DOUBLE_CLICKED)
       WDG_EXECUTE(ww->select_callback, ww->current);
 
+   wdg_dynlist_refresh(wo);
+}
+
+/*
+ * reset the focus pointer 
+ */
+void wdg_dynlist_reset(wdg_t *wo)
+{
+   WDG_WO_EXT(struct wdg_dynlist, ww);
+
+   ww->top = NULL;
+   ww->current = NULL;
+   ww->bottom = NULL;
+   
    wdg_dynlist_refresh(wo);
 }
 

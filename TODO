@@ -42,6 +42,7 @@ this is the unofficial and floating in time roadmap:
       - connection management
       + LIBWDG
          - fix the box() under freebsd
+         - mouse events on focus
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

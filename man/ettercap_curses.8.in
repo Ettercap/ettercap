@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.6 2004/01/20 15:36:25 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.7 2004/02/01 21:11:52 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -232,7 +232,8 @@ pressing 'v'.
 Diplays the passive profile hosts list. Selecting an host will display the
 relative details (including account with user and pass for that host).
 .br
-You can convert the list of passive profile into the hosts list by pressing 'c'.
+You can convert the list of passive profile into the hosts list by pressing 'c'. 
+To purge remote hosts, press 'l'. To purge local hosts, press 'r'.
 .TP
 .B Statistics
 Displays some statistics about the sniffing process.

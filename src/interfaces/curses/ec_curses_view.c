@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.11 2004/02/01 16:48:51 alor Exp $
+    $Id: ec_curses_view.c,v 1.12 2004/02/01 21:11:52 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,8 @@
 #include <ec_curses.h>
 #include <ec_format.h>
 #include <ec_profiles.h>
+#include <ec_manuf.h>
+#include <ec_services.h>
 
 /* proto */
 
@@ -37,17 +39,21 @@ static void set_method(void);
 static void curses_show_profiles(void);
 static void curses_kill_profiles(void);
 static void refresh_profiles(void);
+static void curses_profile_detail(void *profile);
+static void curses_profiles_local(void *dummy);
+static void curses_profiles_remote(void *dummy);
+static void curses_profiles_convert(void *dummy);
 
 /* globals */
 
 static char tag_resolve[] = " ";
-static wdg_t *wdg_stats, *wdg_profiles;
+static wdg_t *wdg_stats, *wdg_profiles, *wdg_details;
 #define VLEN 8
 static char vmethod[VLEN];
 
 struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
-                                {"Connections",          'c', "c", NULL},
-                                {"Profiles",             'o', "o", curses_show_profiles},
+                                {"Connections",          'C', "C", NULL},
+                                {"Profiles",             'O', "O", curses_show_profiles},
                                 {"Statistics",           's', "s", curses_show_stats},
                                 {"-",                     0,  "",  NULL},
                                 {"Resolve IP addresses",  0, tag_resolve,   toggle_resolve},
@@ -190,12 +196,19 @@ static void curses_show_profiles(void)
 
    /* set the list print callback */
    wdg_dynlist_print_callback(wdg_profiles, profile_print);
+   
+   /* set the select callback */
+   wdg_dynlist_select_callback(wdg_profiles, curses_profile_detail);
   
    /* add the callback on idle to refresh the profile list */
    wdg_add_idle_callback(refresh_profiles);
 
    /* add the destroy callback */
    wdg_add_destroy_key(wdg_profiles, CTRL('Q'), curses_kill_profiles);
+
+   wdg_dynlist_add_callback(wdg_profiles, 'l', curses_profiles_local);
+   wdg_dynlist_add_callback(wdg_profiles, 'r', curses_profiles_remote);
+   wdg_dynlist_add_callback(wdg_profiles, 'c', curses_profiles_convert);
 }
 
 static void curses_kill_profiles(void)
@@ -214,6 +227,119 @@ static void refresh_profiles(void)
       return;
    
    wdg_dynlist_refresh(wdg_profiles);
+}
+
+/*
+ * display details for a profile
+ */
+static void curses_profile_detail(void *profile)
+{
+   struct host_profile *h = (struct host_profile *)profile;
+   struct open_port *o;
+   struct active_user *u;
+   char tmp[MAX_ASCII_ADDR_LEN];
+   char os[OS_LEN+1];
+   
+   DEBUG_MSG("curses_profile_detail");
+
+   /* if the object already exist, set the focus to it */
+   if (wdg_details) {
+      wdg_destroy_object(&wdg_details);
+      wdg_details = NULL;
+   }
+   
+   wdg_create_object(&wdg_details, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
+   
+   wdg_set_title(wdg_details, "Profile details:", WDG_ALIGN_LEFT);
+   wdg_set_size(wdg_details, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
+   wdg_set_color(wdg_details, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(wdg_details, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(wdg_details, WDG_COLOR_BORDER, EC_COLOR_BORDER);
+   wdg_set_color(wdg_details, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(wdg_details, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+   wdg_draw_object(wdg_details);
+ 
+   wdg_set_focus(wdg_details);
+
+   wdg_add_destroy_key(wdg_details, CTRL('Q'), NULL);
+   wdg_scroll_set_lines(wdg_details, 50);
+
+   memset(os, 0, sizeof(os));
+   
+   wdg_scroll_print(wdg_details, " IP address   : %s \n", ip_addr_ntoa(&h->L3_addr, tmp));
+   if (strcmp(h->hostname, ""))
+      wdg_scroll_print(wdg_details, " Hostname     : %s \n\n", h->hostname);
+   else
+      wdg_scroll_print(wdg_details, "\n");   
+      
+   if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
+      wdg_scroll_print(wdg_details, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
+      wdg_scroll_print(wdg_details, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
+   }
+
+   wdg_scroll_print(wdg_details, " DISTANCE     : %d   \n", h->distance);
+   if (h->type & FP_GATEWAY)
+      wdg_scroll_print(wdg_details, " TYPE         : GATEWAY\n\n");
+   else if (h->type & FP_HOST_LOCAL)
+      wdg_scroll_print(wdg_details, " TYPE         : LAN host\n\n");
+   else if (h->type & FP_ROUTER)
+      wdg_scroll_print(wdg_details, " TYPE         : REMOTE ROUTER\n\n");
+   else if (h->type & FP_HOST_NONLOCAL)
+      wdg_scroll_print(wdg_details, " TYPE         : REMOTE host\n\n");
+   else if (h->type == FP_UNKNOWN)
+      wdg_scroll_print(wdg_details, " TYPE         : unknown\n\n");
+      
+   
+   wdg_scroll_print(wdg_details, " FINGERPRINT      : %s\n", h->fingerprint);
+   if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
+      wdg_scroll_print(wdg_details, " OPERATING SYSTEM : %s \n\n", os);
+   else {
+      wdg_scroll_print(wdg_details, " OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
+      wdg_scroll_print(wdg_details, " NEAREST ONE IS   : %s \n\n", os);
+   }
+      
+   
+   LIST_FOREACH(o, &(h->open_ports_head), next) {
+      
+      wdg_scroll_print(wdg_details, "   PORT     : %s %d | %s \t[%s]\n", 
+                  (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , 
+                  ntohs(o->L4_addr),
+                  service_search(o->L4_addr, o->L4_proto), 
+                  (o->banner) ? o->banner : "");
+      
+      LIST_FOREACH(u, &(o->users_list_head), next) {
+        
+         if (u->failed)
+            wdg_scroll_print(wdg_details, "      ACCOUNT : * %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
+         else
+            wdg_scroll_print(wdg_details, "      ACCOUNT : %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
+         if (u->info)
+            wdg_scroll_print(wdg_details, "      INFO    : %s\n\n", u->info);
+         else
+            wdg_scroll_print(wdg_details, "\n");
+      }
+      wdg_scroll_print(wdg_details, "\n");
+   }
+}
+
+static void curses_profiles_local(void *dummy)
+{
+   profile_purge_remote();
+   wdg_dynlist_reset(wdg_profiles);
+   wdg_dynlist_refresh(wdg_profiles);
+}
+
+static void curses_profiles_remote(void *dummy)
+{
+   profile_purge_local();
+   wdg_dynlist_reset(wdg_profiles);
+   wdg_dynlist_refresh(wdg_profiles);
+}
+
+static void curses_profiles_convert(void *dummy)
+{
+   profile_convert_to_hostlist();
+   curses_message("The hosts list was populated with local profiles");
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip6.c,v 1.5 2003/06/14 09:29:35 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip6.c,v 1.6 2003/08/22 09:02:27 alor Exp $
 */
 
 #include <ec.h>
@@ -87,6 +87,9 @@ FUNC_DECODER(decode_ip6)
    ip_addr_init(&PACKET->L3.src, AF_INET6, (u_char *)&ip6->saddr);
    ip_addr_init(&PACKET->L3.dst, AF_INET6, (u_char *)&ip6->daddr);
    
+   /* this is needed at upper layer to calculate the tcp payload size */
+   PACKET->L3.payload_len = ntohs(ip6->payload_len);
+   
    /*
     * if the L3 is parsed for the first time,
     * set the fwd_packet pointer
@@ -95,15 +98,12 @@ FUNC_DECODER(decode_ip6)
     */
    if (PACKET->L3.header == NULL) {
       PACKET->fwd_packet = (u_char *)DECODE_DATA;
-      PACKET->fwd_len = PACKET->len - PACKET->L2.len;
+      PACKET->fwd_len = PACKET->L3.payload_len + DECODED_LEN;
    }
    
    /* other relevant infos */
    PACKET->L3.header = (u_char *)DECODE_DATA;
    PACKET->L3.len = DECODED_LEN;
-   
-   /* this is needed at upper layer to calculate the tcp payload size */
-   PACKET->L3.payload_len = ntohs(ip6->payload_len);
 
    /* XXX - how IPv6 options work ?? */
    PACKET->L3.options = NULL;

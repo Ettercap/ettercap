@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.11 2003/06/14 09:29:35 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.12 2003/08/22 09:02:27 alor Exp $
 */
 
 #include <ec.h>
@@ -83,6 +83,9 @@ FUNC_DECODER(decode_ip)
    /* IP addresses */
    ip_addr_init(&PACKET->L3.src, AF_INET, (char *)&ip->saddr);
    ip_addr_init(&PACKET->L3.dst, AF_INET, (char *)&ip->daddr);
+   
+   /* this is needed at upper layer to calculate the tcp payload size */
+   PACKET->L3.payload_len = ntohs(ip->tot_len) - DECODED_LEN;
 
    /*
     * if the L3 is parsed for the first time,
@@ -92,16 +95,14 @@ FUNC_DECODER(decode_ip)
     */
    if (PACKET->L3.header == NULL) {
       PACKET->fwd_packet = (u_char *)DECODE_DATA;
-      PACKET->fwd_len = PACKET->len - PACKET->L2.len;
+      PACKET->fwd_len = PACKET->L3.payload_len + DECODED_LEN;
    }
    
    /* other relevant infos */
    PACKET->L3.header = (u_char *)DECODE_DATA;
    PACKET->L3.len = DECODED_LEN;
-
-   /* this is needed at upper layer to calculate the tcp payload size */
-   PACKET->L3.payload_len = ntohs(ip->tot_len) - DECODED_LEN;
    
+   /* parse the options */
    if (ip->ihl * 4 != sizeof(struct ip_header)) {
       PACKET->L3.options = (u_char *)(DECODE_DATA) + sizeof(struct ip_header);
       PACKET->L3.optlen = (ip->ihl * 4) - sizeof(struct ip_header);

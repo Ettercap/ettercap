@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.20 2003/08/21 15:47:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.21 2003/08/22 09:02:27 alor Exp $
 */
 
 #include <ec.h>
@@ -171,24 +171,27 @@ void display_packet_for_us(struct packet_object *po)
     * we have to check if the packet is complying with the filter
     * specified by the users.
     *
-    * also accept the packet if the destination mac addre is equal
+    * also accept the packet if the destination mac address is equal
     * to the attacker mac address. this is because we need to sniff
-    * during mitm attacks even if the targets specified have different
-    * mac addresses.
+    * during mitm attacks and in the target specification you select
+    * the real mac address...
+    *
+    * to sniff thru a gateway, accept also the packet if it has non local
+    * ip address.
     */
  
    /* FROM TARGET1 TO TARGET2 */
    
    /* T1.mac == src & T1.ip = src & T1.port = src */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.src, ETH_ADDR_LEN)) &&
-        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.src, GBL_TARGET1) ) &&
+        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.src, GBL_TARGET1) || (ip_addr_is_local(&po->L3.src) != ESUCCESS) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.src))) )
       value = 1;
 
    /* T2.mac == dst & T2.ip = dst & T2.port = dst */
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, ETH_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, ETH_ADDR_LEN)) &&
-        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2)) &&
+        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2) || (ip_addr_is_local(&po->L3.dst) != ESUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
       good = 1;   
   
@@ -204,14 +207,14 @@ void display_packet_for_us(struct packet_object *po)
    
    /* T1.mac == dst & T1.ip = dst & T1.port = dst */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, ETH_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, ETH_ADDR_LEN)) &&
-        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) ) &&
+        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) || (ip_addr_is_local(&po->L3.dst) != ESUCCESS) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.dst))) )
       value = 1;
 
    /* T2.mac == src & T2.ip = src & T2.port = src */
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.src, ETH_ADDR_LEN)) &&
-        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.src, GBL_TARGET2)) &&
+        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.src, GBL_TARGET2) || (ip_addr_is_local(&po->L3.src) != ESUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.src))) ) )
       good = 1;   
    

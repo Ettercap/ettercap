@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.36 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_send.c,v 1.37 2003/12/11 13:46:43 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -96,9 +96,9 @@ void send_init(void)
       GBL_OPTIONS->unoffensive = 1;
    }
 
-   /* in wireless monitor mode or ppp we cannot send packets */
-   if (GBL_PCAP->dlt == DLT_IEEE802_11 || GBL_PCAP->dlt == DLT_PPP) {
-      DEBUG_MSG("send_init: skipping... (using wireless in monitor mode or ppp)");
+   /* in wireless monitor mode we cannot send packets */
+   if (GBL_PCAP->dlt == DLT_IEEE802_11) {
+      DEBUG_MSG("send_init: skipping... (using wireless in monitor mode)");
       GBL_OPTIONS->unoffensive = 1;
       return;
    }
@@ -368,7 +368,8 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_ARP);
-   ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
+   if (t==-1)
+      FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* send the packet */
    c = libnet_write(GBL_LNET->lnet);
@@ -495,8 +496,9 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
-   ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
-   
+   if (t==-1)
+      FATAL_ERROR("Interface not suitable for layer2 sending");
+
    /* 
     * send the packet to Layer 2
     * (sending icmp redirect is not permitted at layer 3)
@@ -578,8 +580,9 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, po->L2.src, ETHERTYPE_IP);
-   ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
-   
+   if (t==-1)
+      FATAL_ERROR("Interface not suitable for layer2 sending");
+  
    /* 
     * send the packet to Layer 2
     * (sending icmp redirect is not permitted at layer 3)
@@ -661,7 +664,8 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
-   ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
+   if (t==-1)
+      FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* 
     * send the packet to Layer 2
@@ -743,7 +747,8 @@ int send_dns_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
-   ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
+   if (t==-1)
+      FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* send the packet to Layer 2 */
    c = libnet_write(GBL_LNET->lnet);

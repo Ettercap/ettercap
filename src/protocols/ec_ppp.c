@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ppp.c,v 1.9 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_ppp.c,v 1.10 2003/12/11 13:46:43 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -85,7 +85,6 @@ void ppp_init(void);
 
 void __init ppp_init(void)
 {
-   add_decoder(LINK_LAYER, IL_TYPE_PPP, decode_ppp);
    dissect_add("ppp", NET_LAYER, LL_TYPE_PPP, decode_ppp);
 }
 
@@ -136,16 +135,6 @@ FUNC_DECODER(decode_ppp)
          proto = *((u_char *)ppph + 2);
          DECODED_LEN = 3;
       }	    
-   }
-
-   /* 
-    * the packet was passed by the interface.
-    * the decoder is running at layer 2
-    */
-   if (PACKET->L2.header == NULL) {
-      PACKET->L2.header = DECODE_DATA;
-      PACKET->L2.proto = IL_TYPE_PPP;
-      PACKET->L2.len = DECODED_LEN;
    }
 
    /* Set the L4 header to LCP for subsequent hooks */

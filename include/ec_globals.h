@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.46 2003/11/18 15:30:13 alor Exp $ */
+/* $Id: ec_globals.h,v 1.47 2003/12/11 13:46:39 lordnaga Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -32,6 +32,7 @@ struct ec_conf {
    int sampling_rate;
    int close_on_eof;
    int aggressive_dissectors;
+   int skip_forwarded;
    int store_profiles;
    struct curses_color colors;
 };

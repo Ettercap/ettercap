@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.37 2003/11/28 22:02:40 alor Exp $
+    $Id: ec_sniff.c,v 1.38 2003/12/11 13:46:43 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -94,7 +94,7 @@ int check_forwarded(struct packet_object *po)
     * dont sniff forwarded packets (equal mac, different ip) 
     * but only if we are on live connections
     */
-   if ( !GBL_OPTIONS->read &&
+   if ( GBL_CONF->skip_forwarded && !GBL_OPTIONS->read &&
         !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
         ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
       return 1;

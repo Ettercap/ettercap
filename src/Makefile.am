@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.71 2003/12/01 16:33:40 lordnaga Exp $
+# $Id: Makefile.am,v 1.72 2003/12/11 13:46:42 lordnaga Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -66,6 +66,7 @@ ettercap_SOURCES += mitm/ec_arp_poisoning.c \
 ettercap_SOURCES += protocols/ec_arp.c \
                     protocols/ec_eth.c \
                     protocols/ec_fddi.c \
+				        protocols/ec_cooked.c \
 				        protocols/ec_gre.c \
 				        protocols/ec_icmp.c \
 				        protocols/ec_ip.c \

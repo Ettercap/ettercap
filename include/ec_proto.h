@@ -1,5 +1,5 @@
 
-/* $Id: ec_proto.h,v 1.11 2003/12/09 22:32:54 alor Exp $ */
+/* $Id: ec_proto.h,v 1.12 2003/12/11 13:46:39 lordnaga Exp $ */
 
 #ifndef EC_PROTO_H
 #define EC_PROTO_H
@@ -10,9 +10,9 @@
 enum {
    IL_TYPE_ETH  = 0x01,   /* ethernet */
    IL_TYPE_TR   = 0x06,   /* token ring */
-   IL_TYPE_PPP  = 0x09,   /* point to point */
    IL_TYPE_FDDI = 0x0a,   /* fiber distributed data interface */
    IL_TYPE_WIFI = 0x69,   /* wireless */
+   IL_TYPE_COOK = 0x71,   /* linux cooked */
 };
    
 /* link layer types */

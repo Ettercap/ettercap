@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.24 2003/11/18 15:30:13 alor Exp $
+    $Id: ec_conf.c,v 1.25 2003/12/11 13:46:43 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -65,6 +65,7 @@ static struct conf_entry misc[] = {
    { "close_on_eof", NULL },
    { "store_profiles", NULL },
    { "aggressive_dissectors", NULL },
+   { "skip_forwarded_pcks", NULL },
    { NULL, NULL },
 };
 
@@ -143,6 +144,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&misc, "close_on_eof", &GBL_CONF->close_on_eof);
    set_pointer((struct conf_entry *)&misc, "store_profiles", &GBL_CONF->store_profiles);
    set_pointer((struct conf_entry *)&misc, "aggressive_dissectors", &GBL_CONF->aggressive_dissectors);
+   set_pointer((struct conf_entry *)&misc, "skip_forwarded_pcks", &GBL_CONF->skip_forwarded);
    set_pointer((struct conf_entry *)&curses, "color_bg", &GBL_CONF->colors.bg);
    set_pointer((struct conf_entry *)&curses, "color_fg", &GBL_CONF->colors.fg);
    set_pointer((struct conf_entry *)&curses, "color_border", &GBL_CONF->colors.border);

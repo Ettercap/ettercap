@@ -1,5 +1,5 @@
 
-/* $Id: ec_sslwrap.h,v 1.3 2004/03/09 22:25:31 lordnaga Exp $ */
+/* $Id: ec_sslwrap.h,v 1.4 2004/03/10 21:51:20 lordnaga Exp $ */
 
 #ifndef EC_SSLWRAP_H
 #define EC_SSLWRAP_H
@@ -11,12 +11,7 @@ extern void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder)
 extern EC_THREAD_FUNC(sslw_start);
 
 #define SSL_DISABLED	0
-#define SSL_ENABLED	((u_int16)(1)) 
-#define SSL_PEER_DONE	((u_int16)(1<<1))
-#define SSL_CONN_DONE	((u_int16)(1<<2))
-#define SSL_CTX_DONE	((u_int16)(1<<3))
-#define SSL_SERV_DONE	((u_int16)(1<<4))
-#define SSL_CLNT_DONE	((u_int16)(1<<5))
+#define SSL_ENABLED	1 
 
 #endif
 

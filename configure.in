@@ -150,6 +150,9 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_GCC_TRADITIONAL
 EC_GCC_MACRO
+AH_TEMPLATE(GCC_VERSION, [gcc version])
+gcc_ver=`$CC -dumpversion`
+AC_DEFINE_UNQUOTED(GCC_VERSION, "$gcc_ver")
 
 dnl ========================
 dnl   Bison/Flex related...
@@ -570,6 +573,9 @@ AM_CONDITIONAL(GTK, false)
 
 ac_cv_ec_gtk="NO"
 
+dnl XXX - enable gtk support
+if test "0" = "1"; then
+
 AC_MSG_CHECKING(for gtk+)
 AC_ARG_ENABLE(gtk, [  --enable-gtk            enable the gtk interface.],
 [ case "$enableval" in
@@ -602,12 +608,13 @@ AC_ARG_ENABLE(gtk, [  --enable-gtk            enable the gtk interface.],
       fi
 ])
 
+fi
 
 dnl ---------
 dnl  set up the final vars
 dnl ---------
-EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $NCURSINC"
-EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $NCURSLIB $PTHREADLIB $SOCKETLIB"
+EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $NCURSINC $GTK_CFLAGS"
+EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $NCURSLIB $GTK_LIBS $PTHREADLIB $SOCKETLIB"
 
 AC_SUBST(EC_CFLAGS)
 AC_SUBST(EC_LIBS)

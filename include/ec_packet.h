@@ -56,6 +56,8 @@ struct packet_object {
        */
       size_t disp_len;
       u_char * disp_data;
+      /* for modified packet this is the delta for the lenght */
+      int delta;  
    } DATA;
 
    size_t fwd_len;         /* lenght of the packet to be forwarded */
@@ -78,9 +80,6 @@ struct packet_object {
       
       #define PO_EOF          ((u_int8)(1<<7))     /* we are reading from a file and this is the last packet */
    
-   int delta;  /* for modified packet this is the delta for the lenght */
-   
-
    /* 
     * here are stored the user and pass collected by dissectors 
     * the "char *" are malloc(ed) by dissectors

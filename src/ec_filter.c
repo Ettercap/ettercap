@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.9 2003/09/16 12:08:41 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.10 2003/09/17 11:49:12 alor Exp $
 */
 
 #include <ec.h>
@@ -442,9 +442,9 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       /* move the ptr after the replaced string */
       ptr += rlen; 
       /* set the delta */
-      po->delta += rlen - slen;
+      po->DATA.delta += rlen - slen;
       /* adjust the new buffer end */
-      end += po->delta;
+      end += po->DATA.delta;
                                                             
       /* mark the packet as modified */
       po->flags |= PO_MODIFIED;
@@ -508,7 +508,7 @@ static int func_drop(struct packet_object *po)
    po->flags |= PO_DROPPED;
 
    /* the delta is all the payload */
-   po->delta = po->DATA.len;
+   po->DATA.delta = po->DATA.len;
    
    return ESUCCESS;
 }

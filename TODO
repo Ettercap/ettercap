@@ -31,6 +31,11 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
+   + move the HOOK_DECODED point
+      - comment on inconsistency
+  
+   + profiles double banner
+
    + pay attention on network order for constants
 
    + FILTERING ENGINE
@@ -54,6 +59,7 @@ Oct 2003:
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - don't inject in unoffensive mode
+      - don't inject after RST or FIN+ACK
       - binder
    
    + DISSECTORS

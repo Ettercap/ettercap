@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.10 2003/09/16 12:08:41 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.11 2003/09/17 11:49:12 alor Exp $
 */
 
 %{
@@ -104,9 +104,17 @@ input: /* empty line */
       ;
      
 block:   /* empty block */
-      |  if_statement block
-      |  if_else_statement block
-      |  single_instruction block
+      |  if_statement block { 
+            printf("\t\t block_add\n"); 
+         }
+
+      |  if_else_statement block { 
+            printf("\t\t block_add\n"); 
+         }
+
+      |  single_instruction block { 
+            printf("\t\t block_add\n"); 
+         }
       ;
       
 /* every instruction must be terminated with ; */      
@@ -132,51 +140,63 @@ instruction:
 /* the if statement */
 if_statement: 
          TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END 
-         { printf("\tONLY IF\n"); }
+         { printf("\t\t ONLY IF\n"); }
       ;
       
 /* if {} else {} */      
 if_else_statement: 
          TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END TOKEN_ELSE TOKEN_BLK_BEGIN block TOKEN_BLK_END
-         { printf("\tIF ELSE\n"); }
+         { printf("\t\t IF ELSE\n"); }
       ;
 
 /* conditions used by the if statement */
 conditions: 
          offset TOKEN_OP_CMP_EQ TOKEN_STRING { 
             printf("\tcondition cmp string\n"); 
+            memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
+            $$.op.test.value = $3.op.test.value;
          }
 
       |  offset TOKEN_OP_CMP_EQ TOKEN_CONST { 
             printf("\tcondition cmp eq\n");
+            memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
+            $$.op.test.value = $3.op.test.value;
          }
          
       |  offset TOKEN_OP_CMP_LT TOKEN_CONST { 
             printf("\tcondition cmp lt\n"); 
+            memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_LT;
+            $$.op.test.value = $3.op.test.value;
          }
 
       |  offset TOKEN_OP_CMP_GT TOKEN_CONST { 
             printf("\tcondition cmp gt\n");
+            memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_GT;
+            $$.op.test.value = $3.op.test.value;
          }
 
       |  offset TOKEN_OP_CMP_LEQ TOKEN_CONST { 
             printf("\tcondition cmp leq\n");
+            memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_LEQ;
+            $$.op.test.value = $3.op.test.value;
          }
 
       |  offset TOKEN_OP_CMP_GEQ TOKEN_CONST { 
             printf("\tcondition cmp geq\n"); 
+            memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_GEQ;
+            $$.op.test.value = $3.op.test.value;
          }
       
       |  TOKEN_FUNCTION { 
@@ -184,18 +204,19 @@ conditions:
             /* functions are encoded by the lexycal analyzer */
          }
 
-      |  TOKEN_OP_NOT conditions { printf("\tcondition NOT\n"); }
-      |  conditions TOKEN_OP_AND conditions { printf("\tcondition AND\n"); } 
-      |  conditions TOKEN_OP_OR conditions { printf("\tcondition OR\n"); } 
+      |  TOKEN_OP_NOT conditions { printf("\t\t NOT\n"); }
+      |  conditions TOKEN_OP_AND conditions { printf("\t\t AND\n"); } 
+      |  conditions TOKEN_OP_OR conditions { printf("\t\t OR\n"); } 
       ;
 
 /* offsets definitions */
 offset:
          TOKEN_OFFSET {
-            $$.op.test.offset = $1.op.test.offset;
+            memcpy(&$$, &$1, sizeof(struct filter_op));
          }
          
       |  offset TOKEN_OP_ADD math_expr {
+            memcpy(&$$, &$1, sizeof(struct filter_op));
             /* 
              * we are lying here, but math_expr operates
              * only on values, so we can add it to offset
@@ -204,6 +225,7 @@ offset:
          }
          
       |  offset TOKEN_OP_SUB math_expr {
+            memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.op.test.offset = $1.op.test.offset - $3.op.test.value; 
          }
       ;

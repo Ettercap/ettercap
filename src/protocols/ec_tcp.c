@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.13 2003/09/17 10:57:40 lordnaga Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.14 2003/09/17 11:49:12 alor Exp $
 */
 
 #include <ec.h>
@@ -264,9 +264,10 @@ FUNC_DECODER(decode_tcp)
       ORDER_ADD_LONG(tcp->ack, -status->way[!direction].seq_adj);
 
       /* and now save the new delta */
-      status->way[direction].seq_adj += PACKET->delta;
+      status->way[direction].seq_adj += PACKET->DATA.delta;
 
-      PACKET->DATA.len += PACKET->delta;
+      /* adjust the len */
+      PACKET->DATA.len += PACKET->DATA.delta;
             
       /* Recalculate checksum */
       tcp->csum = 0; 

@@ -20,7 +20,7 @@
 
 if (ip.proto == TCP && search(DATA.data, "ethercap") ) {
    log(DATA.data, "/tmp/mispelled_ettercap.log");
-   replace(DATA.data, "ethercap", "ettercap");
+   replace("ethercap", "ettercap");
    msg("Correctly substituted and logged.");
 }
 

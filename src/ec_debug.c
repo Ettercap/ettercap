@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.6 2003/08/23 07:37:45 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.7 2003/09/17 11:49:12 alor Exp $
 
 */
 
@@ -32,7 +32,16 @@
 #ifdef HAVE_NCURSES
    #include <ncurses.h>
 #endif
+#ifdef HAVE_GTK
+   #include <gtk/gtk.h>
+#endif
+#ifdef HAVE_OPENSSL
+   #include <openssl/opensslv.h>
+   #include <openssl/crypto.h>
+#endif
 
+extern char pcap_version[];
+#include <libnet.h>
 #include <zlib.h>
 
 #include <stdarg.h>
@@ -72,16 +81,24 @@ void debug_init(void)
       uname(&buf);
       fprintf (debug_file, "-> running on %s %s %s\n", buf.sysname, buf.release, buf.machine);
    #endif
+   #if defined (__GNUC__) && defined (__GNUC_MINOR__)
+      fprintf (debug_file, "-> compiled with gcc %d.%d (%s)\n", __GNUC__, __GNUC_MINOR__, GCC_VERSION);
+   #endif
    #if defined (__GLIBC__) && defined (__GLIBC_MINOR__)
       fprintf (debug_file, "-> glibc version %d.%d\n", __GLIBC__, __GLIBC_MINOR__);
    #endif
-   #if defined (__GNUC__) && defined (__GNUC_MINOR__)
-      fprintf (debug_file, "-> compiled with gcc %d.%d\n", __GNUC__, __GNUC_MINOR__);
-   #endif
-//   fprintf(debug_file, "-> libpcap version %s\n", pcap_version);
+   fprintf(debug_file, "-> libpcap version %s\n", pcap_version);
+   fprintf(debug_file, "-> libnet version %s\n", LIBNET_VERSION);
    fprintf(debug_file, "-> libz version %s\n", zlibVersion());
+   #ifdef HAVE_OPENSSL 
+      fprintf (debug_file, "-> lib     %s\n", SSLeay_version(SSLEAY_VERSION));
+      fprintf (debug_file, "-> headers %s\n", OPENSSL_VERSION_TEXT);
+   #endif
    #ifdef HAVE_NCURSES 
       fprintf (debug_file, "-> %s\n", curses_version());
+   #endif
+   #ifdef HAVE_GTK 
+      fprintf (debug_file, "-> gtk+ %d.%d.%d\n", gtk_major_version, gtk_minor_version, gtk_micro_version);
    #endif
    fprintf (debug_file, "\n\nDEVICE OPENED FOR %s DEBUGGING\n\n", GBL_PROGRAM);
    fflush(debug_file);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.6 2003/09/13 10:04:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.7 2003/09/17 11:49:12 alor Exp $
 */
 
 #include <ec.h>
@@ -266,7 +266,7 @@ int str_replace(char **text, const char *s, const char *d)
    size_t slen = strlen(s);
    size_t dlen = strlen(d);
    int diff = dlen - slen;
-   char *p;
+   char *p, *q = *text;
    size_t size;
 
    /* the search string does not exist */
@@ -274,20 +274,28 @@ int str_replace(char **text, const char *s, const char *d)
       return -ENOTFOUND;
    
    /* search all the occurrence of 's' */
-   while ( (p = strstr(*text, s)) != NULL ) {
+   while ( (p = strstr(q, s)) != NULL ) {
 
       /* the new size */
       if (diff > 0)
-         size = strlen(*text) + diff + 1;
+         size = strlen(q) + diff + 1;
       else 
-         size = strlen(*text);
+         size = strlen(q);
       
-      *text = realloc(*text, size);
+      q = *text = realloc(*text, size);
       ON_ERROR(*text, NULL, "Can't allocate memory");
+      
+      /* 
+       * make sure the pointer p is within the *text memory.
+       * realloc may have moved it...
+       */
+      p = strstr(q, s);
 
       /* do the actual replacement */
       memmove(p + dlen, p + slen, strlen(p + slen) + 1);
       memcpy(p, d, dlen);
+      /* avoid recursion on substituted string */
+      q = p + dlen;
    }
    
    return ESUCCESS;

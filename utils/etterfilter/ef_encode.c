@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_encode.c,v 1.5 2003/09/16 12:08:41 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_encode.c,v 1.6 2003/09/17 11:49:12 alor Exp $
 */
 
 #include <ef.h>
@@ -142,7 +142,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.value_len = strescape(fop->op.func.value, dec_args[1]);
             ret = ESUCCESS;
          }
-      }
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "regex")) {
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */
@@ -151,7 +152,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.value_len = strescape(fop->op.func.value, dec_args[1]);
             ret = ESUCCESS;
          }
-      }
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "replace")) {
       if (nargs == 2) {
          fop->op.func.op = FFUNC_REPLACE;
@@ -160,7 +162,8 @@ int encode_function(char *string, struct filter_op *fop)
          fop->op.func.value_len = strescape(fop->op.func.value, dec_args[0]);
          fop->op.func.value2_len = strescape(fop->op.func.value2, dec_args[1]);
          ret = ESUCCESS;
-      }
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "log")) {
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */
@@ -169,31 +172,36 @@ int encode_function(char *string, struct filter_op *fop)
             strncpy(fop->op.func.value, dec_args[1], MAX_FILTER_LEN);
             ret = ESUCCESS;
          }
-      }
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "drop")) {
       if (nargs == 0) {
          fop->op.func.op = FFUNC_DROP;
          ret = ESUCCESS;
-      }
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "msg")) {
       if (nargs == 1) {
          fop->op.func.op = FFUNC_MSG;
          strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
          fop->op.func.value_len = strlen(dec_args[0]);
          ret = ESUCCESS;
-      }
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "exec")) {
       if (nargs == 1) {
          fop->op.func.op = FFUNC_EXEC;
          strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
          fop->op.func.value_len = strlen(dec_args[0]);
          ret = ESUCCESS;
-      }
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "exit")) {
       if (nargs == 0) {
          fop->opcode = FOP_EXIT;
          ret = ESUCCESS;
-      }
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    }
 
    /* free the array */

@@ -3,6 +3,9 @@
 /* debug support */
 #undef DEBUG
 
+/* gcc version */
+#undef GCC_VERSION
+
 /* Define to 1 if you have the `argz_append' function. */
 #undef HAVE_ARGZ_APPEND
 

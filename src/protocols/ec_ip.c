@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.16 2003/09/17 10:57:40 lordnaga Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.17 2003/09/17 11:49:12 alor Exp $
 */
 
 #include <ec.h>
@@ -196,7 +196,7 @@ FUNC_DECODER(decode_ip)
       /* se the correct id for this packet */
       ORDER_ADD_SHORT(ip->id, status->id_adj);
       /* adjust the packet length */
-      ORDER_ADD_SHORT(ip->tot_len, PACKET->delta);
+      ORDER_ADD_SHORT(ip->tot_len, PACKET->DATA.delta);
 
       /* 
        * In case some upper level encapsulated 

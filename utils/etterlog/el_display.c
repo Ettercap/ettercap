@@ -17,10 +17,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.15 2003/04/28 08:12:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.16 2003/04/28 19:58:35 alor Exp $
 */
 
 #include <el.h>
+#include <ec_version.h>
 #include <ec_log.h>
 #include <ec_format.h>
 #include <ec_fingerprint.h>
@@ -239,8 +240,19 @@ static void display_info(void)
    /* load the manuf database */
    manuf_init();
 
-   fprintf(stdout, "\n\n");
 
+   /* write the XML prolog */
+   if (GBL.xml) {
+      time_t tt = time(NULL);
+      char time[28];
+      /* remove the final '\n' */
+      strcpy(time, ctime(&tt));
+      time[strlen(time)-1] = 0;
+      fprintf(stdout, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n\n");
+      fprintf(stdout, "<etterlog version=\"%s\" date=\"%s\">\n", EC_VERSION, time);
+   } else
+      fprintf(stdout, "\n\n");
+   
    /* parse the list */
    LIST_FOREACH(h, hosts_list_head, next) {
 
@@ -283,6 +295,10 @@ static void display_info(void)
       if (GBL.color)
          reset_color();
    }
+   
+   /* close the global tag */
+   if (GBL.xml)
+      fprintf(stdout, "</etterlog>\n");
    
    fprintf(stdout, "\n\n");
 
@@ -388,53 +404,51 @@ void print_host_xml(struct host_profile *h)
 
    memset(os, 0, sizeof(os));
    
-   fprintf(stdout, "<host>\n");
-   fprintf(stdout, "\t<ip>%s</ip>\n", ip_addr_ntoa(&h->L3_addr, tmp));
+   fprintf(stdout, "\t<host ip=\"%s\">\n", ip_addr_ntoa(&h->L3_addr, tmp));
    
    if (h->type != FP_HOST_NONLOCAL) {
-      fprintf(stdout, "\t<mac>%s</mac>\n", mac_addr_ntoa(h->L2_addr, tmp));
-      fprintf(stdout, "\t<manuf>%s</manuf>\n", manuf_search(h->L2_addr));
+      fprintf(stdout, "\t\t<mac>%s</mac>\n", mac_addr_ntoa(h->L2_addr, tmp));
+      fprintf(stdout, "\t\t<manuf>%s</manuf>\n", manuf_search(h->L2_addr));
    }
    
-   fprintf(stdout, "\t<distance>%d</distance>\n", h->distance);
+   fprintf(stdout, "\t\t<distance>%d</distance>\n", h->distance);
    if (h->type & FP_GATEWAY)
-      fprintf(stdout, "\t<type>GATEWAY</type>\n");
+      fprintf(stdout, "\t\t<type>GATEWAY</type>\n");
    else if (h->type & FP_HOST_LOCAL)
-      fprintf(stdout, "\t<type>LAN host</type>\n");
+      fprintf(stdout, "\t\t<type>LAN host</type>\n");
    else if (h->type & FP_HOST_NONLOCAL)
-      fprintf(stdout, "\t<type>REMOTE host</type>\n");
-   
-   fprintf(stdout, "\t<fingerprint>%s</fingerprint>\n", h->fingerprint);
-   if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
-      fprintf(stdout, "\t<os>%s</os>\n", os);
-   else {
-      fprintf(stdout, "\t<os>unknown fingerprint (please submit it)</os>\n");
-      fprintf(stdout, "\t<nearest>%s</nearest>\n", os);
+      fprintf(stdout, "\t\t<type>REMOTE host</type>\n");
+  
+   if (strcmp(h->fingerprint, "")) {
+      if (fingerprint_search(h->fingerprint, os) == ESUCCESS) {
+         fprintf(stdout, "\t\t<fingerprint type=\"known\">%s</fingerprint>\n", h->fingerprint);
+         fprintf(stdout, "\t\t<os type=\"exact\">%s</os>\n", os);
+      } else {
+         fprintf(stdout, "\t\t<fingerprint type=\"unknown\">%s</fingerprint>\n", h->fingerprint);
+         fprintf(stdout, "\t\t<os type=\"nearest\">%s</os>\n", os);
+      }
    }
-      
    
    LIST_FOREACH(o, &(h->open_ports_head), next) {
       
-      fprintf(stdout, "\t<port>\n");
-      fprintf(stdout, "\t\t<proto>%s</proto>\n", (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP");
-      fprintf(stdout, "\t\t<addr>%d</addr>\n", ntohs(o->L4_addr));
+      fprintf(stdout, "\t\t<port proto=\"%s\" addr=\"%d\">\n", (o->L4_proto == NL_TYPE_TCP) ? "tcp" : "udp", ntohs(o->L4_addr));
       if (o->banner)
-         fprintf(stdout, "\t\t<banner>%s</banner>\n", o->banner);
+         fprintf(stdout, "\t\t\t<banner>%s</banner>\n", o->banner);
       
       LIST_FOREACH(u, &(o->users_list_head), next) {
          
-         fprintf(stdout, "\t\t<account>\n");
-         fprintf(stdout, "\t\t\t<user>%s</user>\n", u->user);
-         fprintf(stdout, "\t\t\t<pass>%s</pass>\n", u->pass);
+         fprintf(stdout, "\t\t\t<account user=\"%s\">\n", u->user);
+         fprintf(stdout, "\t\t\t\t<user>%s</user>\n", u->user);
+         fprintf(stdout, "\t\t\t\t<pass>%s</pass>\n", u->pass);
          if (u->info)
-            fprintf(stdout, "\t\t\t<info>%s</info>\n", u->info);
+            fprintf(stdout, "\t\t\t\t<info>%s</info>\n", u->info);
          
-         fprintf(stdout, "\t\t</account>\n");
+         fprintf(stdout, "\t\t\t</account>\n");
       }
-      fprintf(stdout, "\t</port>\n");
+      fprintf(stdout, "\t\t</port>\n");
    }
    
-   fprintf(stdout, "</host>\n");
+   fprintf(stdout, "\t</host>\n");
 }
 
 /* EOF */

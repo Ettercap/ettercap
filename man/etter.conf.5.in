@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.1 2003/06/24 16:36:00 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.2 2003/06/28 08:07:56 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -27,7 +27,8 @@
 
 .SH DESCRIPTION
 .B "etter.conf"
-is the configuration file that determines the ettercap behaviour...
+is the configuration file that determines the ettercap behaviour. It is always loaded
+at startup and it configures some attributes used at runtime.
 .LP
 The file contains entries of the form:
 .RS
@@ -42,14 +43,88 @@ entry = value
 .fi
 .RE
 .LP
-Each entry defines a variable that can be customized...
+Each entry defines a variable that can be customized. Every value MUST be an
+integer. Sections are used only to group together some variables.
+.Sp
+.B NOTE: 
+if you omit a variable in the conf file, it will be initialized with the
+value 0. It is strongly discouraged to not initialize some critical variable
+such as "arp_poison_delay" or "connection_timeout".
 .LP
 The following is a list of available variables:
-.TP 17
+
+
+.TP 20
 .B [privs]
 .TP
 .B ec_uid
-This variable specifies the UID to drop the priviledges on startup.
+This variable specifies the UID to drop the priviledges on startup. After the
+socket at link layer has been opened the priviledges are dropped to a specific
+uid different from root for security reasons. etter.conf is the only file that
+is read with root privs. Be sure the uid has enough privs to read other files (etter.*)
+You can bypass this variable by setting the evironment variable EC_UID.
 
 
+.TP 20
+.B [net]
+.TP
+.B arp_storm_delay
+The value represent the millisecond to wait between to packets on the initial
+ARP scan. You can increment this value to be less aggressive on startup. The
+randomized scan plus an high delay can fool some type of ARP scan detectors.
 
+.TP
+.B arp_poison_warm_up
+When the poisoning process startup the inter packet delay is low for the first
+10 seconds (to be sure the poisoning process has been successful). After the
+first 10 seconds the delay is incremented (to keep up the poisoning). This
+variable controls the delay for the first 10 seconds. The value is in seconds.
+
+.TP
+.B arp_poison_delay
+This variable controls the poisoning delay after the first 10 seconds. The
+value is expressed in seconds. You can increase this value (to try fool the
+IDS) up to the timeout of the ARP cache (it depends on the operating system
+poisoned).
+
+
+.TP 20
+.B [connections]
+.TP
+.B connection_timeout
+Every time a new connection is discovered by ettercap, it allocate the needed
+structures. After a customizable timeout, you can free this structures to keep
+the memory usage low. This variable represent this timeout. The value is
+expressed in seconds. This timeout is applied even to the session tracking
+system (the protocol state machine for dissectors).
+
+
+.TP 20
+.B [stats]
+.TP
+.B sampling_rate
+Ettercap keeps some statistics on the processing time of the bottom half (the
+sniffer) and top half (the protocol decoder). This statistics are made on the
+everage processing time of sampling_rate packets. You can decrease this value to have
+a more accurate real-time picture of processing time or increase it to have a
+smoother picture. The total average will not change, but the worst value will
+be heavily influenced by this value.
+
+
+.TP 20
+.B [dissectors]
+.TP
+.B protocol_name
+This value represent the port on wich the protocol dissector has to be bound. A
+value of 0 will disable the dissector. The name of the variable is the same of
+the protocol name. You can specify non standard port for each dissector as well
+as multiple ports. The syntax for multiport selection is the following:
+port1,port2,port3,...
+
+
+.SH "SEE ALSO"
+.I "ettercap(8),"
+.I "ettercap_plugin(8)"
+.LP
+.I "etterlog(8)"
+.LP

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.4 2003/06/24 16:36:00 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.5 2003/06/28 08:08:00 alor Exp $
 */
 
 #include <ec.h>
@@ -197,6 +197,11 @@ int dissect_modify(int mode, char *name, u_int32 port)
 
                DEBUG_MSG("dissect_modify: %s replaced from %d to %d", name, e->type, port);
                del_decoder(e->level, e->type);
+               /* a value of 0 will disable the dissector */
+               if (port == 0)
+                  return ESUCCESS;
+              
+               /* replace with the new value */
                add_decoder(e->level, port, e->decoder);
                e->type = port;
                return ESUCCESS;

@@ -1,0 +1,59 @@
+############################################################################
+#                                                                          #
+#  ettercap -- etter.felds -- known HTTP form fields                       #
+#                                                                          #
+#  Copyright (C) 2001-2003  ALoR & NaGA                                    #
+#                                                                          #
+#  This program is free software; you can redistribute it and/or modify    #
+#  it under the terms of the GNU General Public License as published by    #
+#  the Free Software Foundation; either version 2 of the License, or       #
+#  (at your option) any later version.                                     #
+#                                                                          #
+############################################################################
+#                                                                          # 
+#  This file contains the form fields recognized as user or password by    #
+#  the HTTP dissector. You can add your own fields in the right section    #
+#                                                                          #
+############################################################################
+
+
+
+[USER]
+
+user
+email
+username
+userid
+login
+form_loginname
+loginname
+pop_login
+uid
+id
+user_id
+screenname
+uname
+ulogin
+acctname
+account
+member
+mailaddress
+membername
+login_username
+uin
+
+
+
+[PASS]
+
+pass
+password
+passwd
+form_pw
+pw
+userpassword
+pwd
+upassword
+login_password
+passwort
+passwrd

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.47 2003/11/21 08:32:15 alor Exp $
+    $Id: ec_main.c,v 1.48 2003/11/29 16:02:35 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -32,6 +32,7 @@
 #include <ec_fingerprint.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
+#include <ec_http.h>
 #include <ec_scan.h>
 #include <ec_ui.h>
 #include <ec_conf.h>
@@ -126,6 +127,9 @@ int main(int argc, char *argv[])
    
    /* load the services names */
    services_init();
+   
+   /* load http known fileds for user/pass */
+   http_fields_init();
   
    /* print all the buffered messages */
    USER_MSG("\n");

@@ -17,10 +17,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.5 2003/11/28 23:34:28 alor Exp $
+    $Id: ec_http.c,v 1.6 2003/11/29 16:02:35 lordnaga Exp $
 */
 
 #include <ec.h>
+#include <ec_file.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_session.h>
@@ -76,6 +77,13 @@ typedef struct {
     u_int32		bufIndex;
 }tSmbNtlmAuthResponse;
 
+struct http_field_entry {
+   char *name;
+   SLIST_ENTRY(http_field_entry) next;
+};
+
+static SLIST_HEAD(, http_field_entry) http_fields[2];
+
 
 /* protos */
 FUNC_DECODER(dissector_http);
@@ -88,11 +96,12 @@ static void Find_Url_Referer(u_char *to_parse, char **ret);
 static void Parse_Post_Payload(u_char *ptr, struct http_status *conn_status, struct packet_object *po);
 static void Print_Pass(struct packet_object *po);
 static void Get_Banner(u_char *ptr, struct packet_object *po);
-static u_char Parse_Form(u_char *to_parse, char **ret, char mode);
+static u_char Parse_Form(u_char *to_parse, char **ret, int mode);
 static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po);
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po);
 static char *unicodeToString(char *p, size_t len);
 static void dumpRaw(char *str, unsigned char *buf, size_t len);
+int http_fields_init(void);
 
 #define CVAL(buf,pos) (((unsigned char *)(buf))[pos])
 #define PVAL(buf,pos) ((unsigned)CVAL(buf,pos))
@@ -150,8 +159,8 @@ FUNC_DECODER(dissector_http)
          if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
             conn_status = (struct http_status *) s->data;
 	 
-	         /* Are we waiting for post termination? */
-	         if (conn_status->c_status == POST_WAIT_DELIMITER ||
+            /* Are we waiting for post termination? */
+            if (conn_status->c_status == POST_WAIT_DELIMITER ||
                 conn_status->c_status == POST_LAST_CHANCE)
                Parse_Post_Payload(ptr, conn_status, PACKET);
          }
@@ -167,7 +176,7 @@ FUNC_DECODER(dissector_http)
          dissect_wipe_session(PACKET);
 
          /* Check Proxy or WWW Auth (server challenge) */
-	 /* XXX - Is the NTLM challenge always in the same 
+         /* XXX - Is the NTLM challenge always in the same 
           * packet as HTTP header? Otherwise put these lines
           * out from the if (decrease performances, checks all pcks)
           */
@@ -199,7 +208,7 @@ static void Get_Banner(u_char *ptr, struct packet_object *po)
 	      
          if (len>0 && len<1024) {
             SAFE_CALLOC(po->DISSECTOR.banner, len+1, sizeof(char));
-	         memcpy(po->DISSECTOR.banner, start, len);
+            memcpy(po->DISSECTOR.banner, start, len);
          }
       }
    }
@@ -219,7 +228,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
     */
    /* It stands for both Proxy-Authenticate and Authorization ;) */    
    if (strstr(ptr, "Proxy-Auth") || strstr(ptr, "Proxy-auth")) {
-      if (FROM_CLIENT("proxy", po) || FROM_SERVER("proxy", po))
+      if (FROM_CLIENT("proxy", po))
          Proxy_Auth = 1;
       else
          return 0;
@@ -309,34 +318,34 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
          conn_status = (struct http_status *) s->data;
 	 
          /* Are we waiting for client response? */
-	 /* XXX- POST Continuation may conflict with NTLM Proxy auth
+         /* XXX- POST Continuation may conflict with NTLM Proxy auth
           * if the client doesn't send Proxy-Authorization in the same 
           * packet as the POST
           */  
          if (conn_status->c_status == NTLM_WAIT_RESPONSE) {
             /* Fill the user and passwords */
-	         response_struct  = (tSmbNtlmAuthResponse *) to_decode;
-	         po->DISSECTOR.user = strdup(GetUnicodeString(response_struct, uUser));
+            response_struct  = (tSmbNtlmAuthResponse *) to_decode;
+            po->DISSECTOR.user = strdup(GetUnicodeString(response_struct, uUser));
             SAFE_CALLOC(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, sizeof(char));
             sprintf(po->DISSECTOR.pass, "(NTLM) %s:\"\":\"\":", po->DISSECTOR.user);
-	         outstr = po->DISSECTOR.pass + strlen(po->DISSECTOR.pass);
+            outstr = po->DISSECTOR.pass + strlen(po->DISSECTOR.pass);
             dumpRaw(outstr,((unsigned char*)response_struct)+IVAL(&response_struct->lmResponse.offset,0), 24);	    	 
             outstr[48] = ':';
             outstr+=49;
             dumpRaw(outstr,((unsigned char*)response_struct)+IVAL(&response_struct->ntResponse.offset,0), 24);	       	    
             outstr[48] = ':';
-	         outstr += 49;
-	         strcat(po->DISSECTOR.pass, conn_status->c_data);
+            outstr += 49;
+            strcat(po->DISSECTOR.pass, conn_status->c_data);
 
             /* Are we authenticating to the proxy or to a website? */
-	         if (Proxy_Auth)
-	            po->DISSECTOR.info = strdup("Proxy Authentication");
+            if (Proxy_Auth)
+               po->DISSECTOR.info = strdup("Proxy Authentication");
             else 
                Find_Url(ptr, &(po->DISSECTOR.info));
 	    
             Print_Pass(po);
-	      }
-	      session_free(s);
+         }
+         session_free(s);
       }
       SAFE_FREE(ident);
    }
@@ -361,7 +370,7 @@ static void Parse_Post_Payload(u_char *ptr, struct http_status *conn_status, str
          po->DISSECTOR.user = user;
          po->DISSECTOR.pass = pass;
          po->DISSECTOR.info = strdup(conn_status->c_data);
-	      dissect_wipe_session(po);
+         dissect_wipe_session(po);
          Print_Pass(po);
       } else
          SAFE_FREE(user);
@@ -440,21 +449,10 @@ http_get_failure:
 
 
 /* Match users or passwords in a string */
-static u_char Parse_Form(u_char *to_parse, char **ret, char mode)
+static u_char Parse_Form(u_char *to_parse, char **ret, int mode)
 {
-   /* XXX - Move these fields into a separate file */
-   u_char *user_field[] = {"user", "email", "username", "userid", "login",
-                           "form_loginname", "loginname", "pop_login",
-                           "uid", "id", "user_id", "screenname", "uname",
-                           "ulogin", "acctname", "account", "member",
-                           "mailaddress", "membername", "login_username",
-                           "uin", ""};
-
-   u_char *pass_field[] = {"pass", "password", "passwd", "form_pw", "pw",
-                           "userpassword", "pwd", "upassword", "login_password",
-                           "passwort", "passwrd", ""};
-
-   u_char **ptr, *q, i;
+   u_char *q;
+   struct http_field_entry *d;
 
    /* Strip the '?' from a GET method */
    if (*to_parse == '?') to_parse++;    
@@ -462,31 +460,30 @@ static u_char Parse_Form(u_char *to_parse, char **ret, char mode)
       return 0;
 
    /* Search for users or passwords */   
-   if (mode == PASS)
-      ptr = pass_field;
-   else
-      ptr = user_field;
 
    /* Search matches between each parameter and 
     * recognized users and passwords 
     */      
-   for (i=0, q=to_parse; strcmp(ptr[i], ""); i++, q=to_parse) 
+
+   SLIST_FOREACH(d, &(http_fields[mode]), next) {
+      q = to_parse;  
       do {
          if (*q == '&') q++;
-         if (!strncasecmp(q, ptr[i], strlen(ptr[i])) && *(q+strlen(ptr[i])) == '=' ) {
-	    /* Return the value past the '=' */
-	    if (!(*ret = strdup(q + strlen(ptr[i]) + 1)))
+         if (!strncasecmp(q, d->name, strlen(d->name)) && *(q+strlen(d->name)) == '=' ) {
+            /* Return the value past the '=' */
+            if (!(*ret = strdup(q + strlen(d->name) + 1)))
                return 0;
 
             /* NULL terminate the value if it's not the last */
-	    if ((q = strchr(*ret, '&')))
-	       *q = 0; 
+            if ((q = strchr(*ret, '&')))
+               *q = 0; 
 
             Decode_Url((u_char *)*ret);
             return 1;
          }
       } while ( (q = strchr(q, '&')) );
-
+   }
+   
    return 0;
 }
 
@@ -601,6 +598,66 @@ static void Print_Pass(struct packet_object *po)
                                                                  po->DISSECTOR.user,
                                                                  po->DISSECTOR.pass,
                                                                  po->DISSECTOR.info);
+}
+
+
+/* Load known user/pass fields from file */
+int http_fields_init(void)
+{
+   FILE *f;
+   struct http_field_entry *d;
+   char line[128];
+   char *ptr;
+   int pass_flag = USER;
+
+   /* open the file */
+   f = open_data("share", ETTER_FIELDS, FOPEN_READ_TEXT);
+   if (f == NULL) {
+      USER_MSG("Cannot open %s", ETTER_FIELDS);
+      return -EINVALID;
+   }
+         
+   /* load it in the list */
+   while (fgets(line, 128, f)) {
+    
+      /* trim comments */
+      if ( (ptr = strchr(line, '#')) )
+         *ptr = 0;
+
+      /* trim \n */
+      if ( (ptr = strchr(line, '\n')) )
+         *ptr = 0;
+
+      /* trim ' ' */
+      if ( (ptr = strchr(line, ' ')) )
+         *ptr = 0;
+
+      /* skip empty lines */
+      if (!strlen(line))
+         continue;
+
+      /* Identify the section */
+      if(!strncmp(line, "[USER]", 6)) {
+         pass_flag = USER;
+         continue;
+      }
+
+      if(!strncmp(line, "[PASS]", 6)) {
+         pass_flag = PASS;
+         continue;
+      }
+       
+      /* create the entry */
+      SAFE_CALLOC(d, 1, sizeof(struct http_field_entry));
+      d->name = strdup(line);
+
+      /* insert in the right list */
+      SLIST_INSERT_HEAD(&(http_fields[pass_flag]), d, next);
+   }
+   
+   fclose(f);
+
+   return ESUCCESS;
 }
 
 

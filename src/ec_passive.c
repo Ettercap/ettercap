@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_passive.c,v 1.11 2003/11/10 22:46:24 alor Exp $
+    $Id: ec_passive.c,v 1.12 2003/11/29 16:02:35 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -143,7 +143,7 @@ void print_host(struct host_profile *h)
          else
             fprintf(stdout, "      ACCOUNT : %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
          if (u->info)
-            fprintf(stdout, "      INFO     : %s\n\n", u->info);
+            fprintf(stdout, "      INFO    : %s\n\n", u->info);
          else
             fprintf(stdout, "\n");
       }

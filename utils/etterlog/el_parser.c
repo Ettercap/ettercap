@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_parser.c,v 1.20 2004/03/31 13:03:08 alor Exp $
+    $Id: el_parser.c,v 1.21 2004/04/29 09:28:35 alor Exp $
 */
 
 
@@ -80,6 +80,7 @@ void el_usage(void)
    fprintf(stdout, "  -T, --text                  print packets in text mode\n");
    fprintf(stdout, "  -E, --ebcdic                print packets in ebcdic mode\n");
    fprintf(stdout, "  -H, --html                  print packets in html mode\n");
+   fprintf(stdout, "  -U, --utf8 <encoding>       print packets in uft-8 using the <encoding>\n");
    fprintf(stdout, "  -Z, --zero                  do not print packets, only headers\n");
    fprintf(stdout, "  -x, --xml                   print host infos in xml format\n");
    
@@ -107,6 +108,7 @@ void parse_options(int argc, char **argv)
       { "text", no_argument, NULL, 'T' },
       { "ebcdic", no_argument, NULL, 'E' },
       { "html", no_argument, NULL, 'H' },
+      { "utf8", required_argument, NULL, 'U' },
       { "zero", no_argument, NULL, 'Z' },
       { "xml", no_argument, NULL, 'x' },
       
@@ -138,7 +140,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBCcdEe:F:f:HhikLlmno:prsTt:u:vXxZ", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBCcdEe:F:f:HhikLlmno:prsTt:U:u:vXxZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -240,6 +242,11 @@ void parse_options(int argc, char **argv)
                   
          case 'H':
                   GBL.format = &html_format;
+                  break;
+                  
+         case 'U':
+                  set_utf8_encoding(optarg);
+                  GBL.format = &utf8_format;
                   break;
                   
          case 'Z':

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.59 2004/04/10 13:41:22 lordnaga Exp $
+    $Id: ec_main.c,v 1.60 2004/04/29 09:28:35 alor Exp $
 */
 
 #include <ec.h>
@@ -30,6 +30,7 @@
 #include <ec_dispatcher.h>
 #include <ec_send.h>
 #include <ec_plugins.h>
+#include <ec_format.h>
 #include <ec_fingerprint.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
@@ -139,6 +140,9 @@ int main(int argc, char *argv[])
    
    /* load http known fileds for user/pass */
    http_fields_init();
+
+   /* set the encoding for the UTF-8 visualization */
+   set_utf8_encoding(GBL_CONF->utf8_encoding);
   
    /* print all the buffered messages */
    if (GBL_UI->type == UI_TEXT)

@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.58 2004/04/12 15:31:51 alor Exp $ */
+/* $Id: ec_globals.h,v 1.59 2004/04/29 09:28:34 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -40,6 +40,7 @@ struct ec_conf {
    char *redir_command_on;
    char *redir_command_off;
    char *remote_browser;
+   char *utf8_encoding;
 };
 
 /* options from getopt */

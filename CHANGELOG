@@ -8,6 +8,7 @@ Legenda:
 
 NG-0.7.0_pre2    200404??
 
+   + added support for UTF-8 strings
    + telnet collector enhacements (catches cisco login)
    + added the find_ettercap plugin
    + the live connections list can be purged by the user

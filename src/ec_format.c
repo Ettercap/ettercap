@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_format.c,v 1.12 2004/01/20 15:36:25 alor Exp $
+    $Id: ec_format.c,v 1.13 2004/04/29 09:28:35 alor Exp $
 
 */
 
@@ -26,8 +26,13 @@
 #include <ec_ui.h>
 
 #include <ctype.h>
+#ifdef HAVE_ICONV_H
+   #include <iconv.h>
+#endif
 
 /* globals */
+
+static char *utf8_encoding;
 
 static u_int8 EBCDIC_to_ASCII[256] = {
    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 
@@ -76,9 +81,10 @@ int ebcdic_format(const u_char *buf, size_t len, u_char *dst);
 int html_format(const u_char *buf, size_t len, u_char *dst);
 int bin_format(const u_char *buf, size_t len, u_char *dst);
 int zero_format(const u_char *buf, size_t len, u_char *dst);
+int utf8_format(const u_char *buf, size_t len, u_char *dst);
+int set_utf8_encoding(u_char *fromcode);
 
 int set_format(char *format);
-
 
 /**********************************/
 
@@ -111,6 +117,11 @@ int set_format(char *format)
 
    if (!strcasecmp(format, "ebcdic")) {
       GBL_FORMAT = &ebcdic_format;
+      return ESUCCESS;
+   }
+
+   if (!strcasecmp(format, "utf8")) {
+      GBL_FORMAT = &utf8_format;
       return ESUCCESS;
    }
 
@@ -333,6 +344,84 @@ int zero_format(const u_char *buf, size_t len, u_char *dst)
    return 0;
 }
 
+/*
+ * convert from a specified encoding to utf8
+ */
+
+int utf8_format(const u_char *buf, size_t len, u_char *dst)
+{
+#ifndef HAVE_ICONV_H
+   /* some sanity checks */
+   if (len == 0 || buf == NULL) {
+      strcpy(dst, "");
+      return 0;
+   }
+   
+   /* copy the buffer */
+   memcpy(dst, buf, len);
+
+   return len;
+#else
+   iconv_t cd;
+   char *inbuf, *outbuf;
+   size_t inbytesleft, outbytesleft;
+
+   /* some sanity checks */
+   if (len == 0 || buf == NULL) {
+      strcpy(dst, "");
+      return 0;
+   }
+
+   if (utf8_encoding == NULL) {
+      ui_msg("You must set an encoding type before using UTF8.\n");
+      return 0;
+   }
+
+   inbuf = (char *)buf;
+   inbytesleft = len;
+   outbuf = (char *)dst;
+
+   cd = iconv_open("UTF-8", utf8_encoding);
+
+   iconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+
+   iconv_close(cd);
+
+   return len;
+#endif
+}
+
+/*
+ * set the encoding to use when converting to UTF-8
+ */
+int set_utf8_encoding(u_char *fromcode)
+{
+#ifndef HAVE_ICONV_H
+   USER_MSG("UTF-8 support not compiled in.");
+   return ESUCCESS;
+#else
+   iconv_t cd;
+
+   DEBUG_MSG("set_utf8_encoding: %s", fromcode);
+      
+   if (fromcode == NULL || strlen(fromcode) < 1)
+      return -EINVALID;
+
+   SAFE_FREE(utf8_encoding);
+
+   /* make sure encoding type is supported */
+   cd = iconv_open("UTF-8", fromcode);
+   
+   if (cd == (iconv_t)(-1))
+      SEMIFATAL_ERROR("The conversion from %s to UTF-8 is not supported.", fromcode);
+   
+   iconv_close(cd);
+
+   utf8_encoding = strdup(fromcode);
+
+   return ESUCCESS;
+#endif
+}
 
 /* EOF */
 

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.65 2004/04/23 12:55:35 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.66 2004/04/29 09:28:34 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -657,6 +657,12 @@ example:
 displayed.
 .Sp
 This is the title, but the following will not be displayed.
+
+.TP
+\fButf8\fR
+Print the packets in UTF-8 format. The encoding used while performing the 
+conversion is declared in the etter.conf(5) file. 
+
 .RE
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.33 2004/04/21 10:02:47 alor Exp $
+    $Id: ec_conf.c,v 1.34 2004/04/29 09:28:34 alor Exp $
 */
 
 #include <ec.h>
@@ -96,6 +96,7 @@ static struct conf_entry strings[] = {
    { "redir_command_on", NULL },
    { "redir_command_off", NULL },
    { "remote_browser", NULL },
+   { "utf8_encoding", NULL },
    { NULL, NULL },
 };
 
@@ -181,6 +182,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&strings, "redir_command_on", &GBL_CONF->redir_command_on);
    set_pointer((struct conf_entry *)&strings, "redir_command_off", &GBL_CONF->redir_command_off);
    set_pointer((struct conf_entry *)&strings, "remote_browser", &GBL_CONF->remote_browser);
+   set_pointer((struct conf_entry *)&strings, "utf8_encoding", &GBL_CONF->utf8_encoding);
 
    /* sanity check */
    do {

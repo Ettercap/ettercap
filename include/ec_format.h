@@ -1,5 +1,5 @@
 
-/* $Id: ec_format.h,v 1.8 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_format.h,v 1.9 2004/04/29 09:28:34 alor Exp $ */
 
 #ifndef EC_FORMAT_H
 #define EC_FORMAT_H
@@ -12,6 +12,8 @@ extern int ebcdic_format(const u_char *buf, size_t len, u_char *dst);
 extern int html_format(const u_char *buf, size_t len, u_char *dst);
 extern int bin_format(const u_char *buf, size_t len, u_char *dst);
 extern int zero_format(const u_char *buf, size_t len, u_char *dst);
+extern int utf8_format(const u_char *buf, size_t len, u_char *dst);
+extern int set_utf8_encoding(u_char *fromcode);
 
 extern int set_format(char *format);
 

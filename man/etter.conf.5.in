@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.25 2004/04/22 15:47:05 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.26 2004/04/29 09:28:34 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -246,6 +246,11 @@ Here is a list of values: 0 Black, 1 Red, 2 Green, 3 Yellow, 4 Blue, 5 Magenta,
 
 .TP 20
 .B [strings]
+.TP
+.B utf8_encoding
+specifies the encoding to be used while displaying the packets in UTF-8 format.
+Use the `iconv --list` command for a list of supported encodings.
+
 .TP
 .B remote_broswer
 This command is executed by the remote_browser plugin each time it catches a

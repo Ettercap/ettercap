@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.29 2004/04/26 08:11:44 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.30 2004/04/29 09:28:35 alor Exp $
 */
 
 #include <ec.h>
@@ -698,6 +698,7 @@ static void gtkui_data_print(int buffer, char *data, int color)
    GtkTextBuffer *textbuf = NULL;
    GtkWidget *textview = NULL;
    GtkTextMark *endmark = NULL;
+   const gchar *end;
    char *unicode = NULL;
 
    switch(buffer) {
@@ -720,8 +721,18 @@ static void gtkui_data_print(int buffer, char *data, int color)
          return;
    }
 
-   /* convert ASCII to UTF8 */
-   unicode = g_locale_to_utf8 (data, -1, NULL, NULL, NULL);
+   
+   /* make sure data is valid UTF8 */
+   unicode = data;
+   if(!g_utf8_validate (data, -1, &end)) {
+      /* if validation fails, end is set to end of valid string */
+      if(end == unicode) return;
+      /* cut off the invalid part so we don't lose the whole string */
+      /* this shouldn't happen often */
+      unicode = (char *)end;
+      *unicode = 0;
+      unicode = data;
+   }
 
    /* if interface has been destroyed or unicode conversion failed */
    if(!data_window || !textbuf || !textview || !endmark || !unicode)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view.c,v 1.7 2004/03/07 14:38:40 alor Exp $
+    $Id: ec_gtk_view.c,v 1.8 2004/04/29 09:28:35 alor Exp $
 */
 
 #include <ec.h>
@@ -296,6 +296,10 @@ void gtkui_vis_method(void)
    GSList *curr = NULL;
    gint active = 0, response = 0;
 
+   GList *lang_list = NULL;
+   GtkWidget *hbox, *lang_combo, *label;
+   char encoding[50], *local_lang, def_lang[75];
+
 
    DEBUG_MSG("gtk_vis_method");
 
@@ -340,6 +344,50 @@ void gtkui_vis_method(void)
    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "html") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
+
+/* start UTF8 */
+   button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
+               "utf8    Convert the data from the encoding specified below to UTF8 before displaying it.");
+   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   if(strcmp(vmethod, "utf8") == 0)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
+
+   hbox = gtk_hbox_new (FALSE, 6);
+   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
+
+   label = gtk_label_new ("Character encoding : ");
+   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
+
+   /* get the system's default encoding, and if it's not UTF8, add it to the list */
+   if(!g_get_charset(&local_lang)) {
+      snprintf(def_lang, 75, "%s (System Default)", local_lang);
+      lang_list = g_list_append(lang_list, def_lang);
+   }
+
+   /* some other common encodings */
+   lang_list = g_list_append(lang_list, "UTF-8");
+   lang_list = g_list_append(lang_list, "EBCDIC-US (IBM)");
+   lang_list = g_list_append(lang_list, "ISO-8859-15 (Western Europe)");
+   lang_list = g_list_append(lang_list, "ISO-8859-2 (Central Europe)");
+   lang_list = g_list_append(lang_list, "ISO-8859-7 (Greek)");
+   lang_list = g_list_append(lang_list, "ISO-8859-8 (Hebrew)");
+   lang_list = g_list_append(lang_list, "ISO-8859-9 (Turkish)");
+   lang_list = g_list_append(lang_list, "ISO-2022-JP (Japanese)");
+   lang_list = g_list_append(lang_list, "SJIS (Japanese)");
+   lang_list = g_list_append(lang_list, "CP949 (Korean)");
+   lang_list = g_list_append(lang_list, "CP1251 (Cyrillic)");
+   lang_list = g_list_append(lang_list, "CP1256 (Arabic)");
+   lang_list = g_list_append(lang_list, "GB18030 (Chinese)");
+
+   /* make a drop down box and assign the list to it */
+   lang_combo = gtk_combo_new();
+   gtk_combo_set_popdown_strings (GTK_COMBO (lang_combo), lang_list);
+   gtk_box_pack_start (GTK_BOX (hbox), lang_combo, TRUE, TRUE, 0);
+
+   /* list is stored in the widget, can safely free this copy */
+   g_list_free(lang_list);
+/* end UTF8 */
+      
    gtk_widget_show_all(GTK_DIALOG(dialog)->vbox);
 
    response = gtk_dialog_run(GTK_DIALOG (dialog));
@@ -356,11 +404,20 @@ void gtkui_vis_method(void)
 
       /* set vmethod string */
       switch(active) {
-         case 5: strcpy(vmethod, "hex"); break;
-         case 4: strcpy(vmethod, "ascii"); break; 
-         case 3: strcpy(vmethod, "text"); break;
-         case 2: strcpy(vmethod, "ebcdic"); break;
-         case 1: strcpy(vmethod, "html"); break;
+         case 6: strcpy(vmethod, "hex"); break;
+         case 5: strcpy(vmethod, "ascii"); break; 
+         case 4: strcpy(vmethod, "text"); break;
+         case 3: strcpy(vmethod, "ebcdic"); break;
+         case 2: strcpy(vmethod, "html"); break;
+         case 1: /* utf8 */
+            /* copy first word from encoding choice */
+            sscanf(gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (lang_combo)->entry)),
+                   "%[^ ]", encoding);
+            if(strlen(encoding) > 0) {
+               strcpy(vmethod, "utf8");
+               set_utf8_encoding(encoding);
+               break;
+            }
          default: strcpy(vmethod, "ascii");
       }
 

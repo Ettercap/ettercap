@@ -87,6 +87,9 @@
 /* gtk+ support */
 #undef HAVE_GTK
 
+/* Define to 1 if you have the <iconv.h> header file. */
+#undef HAVE_ICONV_H
+
 /* Define to 1 if you have the `index' function. */
 #undef HAVE_INDEX
 

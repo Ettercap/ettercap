@@ -3,6 +3,7 @@
 #define EC_PACKET_H
 
 #include <ec_proto.h>
+#include <ec_profiles.h>
 #include <ec_inet.h>
 
 struct packet_object {
@@ -42,7 +43,7 @@ struct packet_object {
    } DATA;
 
    size_t fwd_len;         /* lenght of the packet to be forwarded */
-   u_char * fwd_packet;    /* the buffer containing the packet to be forwarded*/
+   u_char * fwd_packet;    /* the pointer to the buffer to be forwarded */
    
    size_t len;             /* total lenght of the packet */
    u_char * packet;        /* the buffer containing the real packet */
@@ -60,13 +61,25 @@ struct packet_object {
   
    int delta;  /* for modified packet this is the delta for the lenght */
    
+   /* buffer containing the data to be displayed.
+    * some dissector decripts the traffic, but the packet must be forwarded as
+    * is, so the decripted data must be placed in a different buffer. 
+    * this is that bufffer.
+    */
+   size_t disp_len;
+   char * disp_data;
 
+   /* 
+    * here are stored the user and pass collected by dissectors 
+    * the "char *" are malloc(ed) by dissectors
+    */
+   struct dissector_info INFO;
+   
 };
 
-extern int packet_create_object(struct packet_object **po, u_char * buf, int len);
-
+extern int packet_create_object(struct packet_object **po, u_char * buf, size_t len);
+extern int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
 extern int packet_destroy_object(struct packet_object **po);
-
 extern int packet_duplicate(struct packet_object *po, char level, u_char **buf);
 #define LEVEL_2      0           /* 00000000 */
 #define LEVEL_3      1           /* 00000001 */ 

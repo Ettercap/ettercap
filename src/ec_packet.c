@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.2 2003/03/10 16:04:53 alor Exp $
+    $Id: ec_packet.c,v 1.3 2003/03/12 17:21:50 alor Exp $
 */
 
 #include <ec.h>
@@ -73,7 +73,16 @@ int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
 
 int packet_destroy_object(struct packet_object **po)
 {
-   /* free the disp_data pointer */
+   
+   /* XXX - dispatcher needs them */
+   SAFE_FREE((*po)->INFO.user);
+   SAFE_FREE((*po)->INFO.pass);
+   SAFE_FREE((*po)->INFO.info);
+   
+   /* 
+    * free the disp_data pointer i
+    * it was malloced by tcp or udp decoder
+    */
    SAFE_FREE((*po)->disp_data);
    /* then the po structure */
    SAFE_FREE(*po);
@@ -154,7 +163,9 @@ void packet_print(struct packet_object *po)
    USER_MSG("     dst     %d\n", ntohs(po->L4.dst) );
    USER_MSG("DATA:len     %d\n", po->DATA.len);
    USER_MSG("     data    %s\n", hex_format(po->DATA.data, po->DATA.len));
-
+   USER_MSG("INFO:user    %s\n", po->INFO.user);
+   USER_MSG("     pass    %s\n", po->INFO.pass);
+   USER_MSG("     info    %s\n", po->INFO.info);
    
 }
    

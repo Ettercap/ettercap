@@ -3,15 +3,14 @@
 ==================
 
    + PO incapsulated ?
-
-   + lnet ptag thread safe
-
+   + lnet ptag thread safe (check it)
    + speed up the visualization of user_msg (poll related)
  
+
    + DISSECTORS over decoders
       - vbuf functions
-      - add a buffer to po (it will be the visible one)
-      - middleware data_decode
+
+   !! dissector malloc the infos, someone have to free them... !!
 
    + SNIFFING ENGINE
       - arp sniff
@@ -27,14 +26,11 @@
       - INJECTION is done by the ui looking the sessions (locking them)
    
    + TOP HALF
-      - processing engine to differenziate the activity
+      - processing engine to differenziate the activity (hook point DISPATCHER)
          - passive mapping
          - sniffing
+         - logging
          
-   + DISSECTORS ENGINE
-      - after the filtering engine
-      - after the forwarding point
-   
    + PASSIVE FINGERPRINT
 
    + PLUGINS ENGINE

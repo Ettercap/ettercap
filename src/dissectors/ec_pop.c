@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.1 2003/03/10 16:05:21 alor Exp $
+    $Id: ec_pop.c,v 1.2 2003/03/12 17:21:50 alor Exp $
 */
 
 #include <ec.h>
@@ -55,16 +55,20 @@ FUNC_DECODER(dissector_pop)
    while(*ptr == ' ' && ptr != end) ptr++;
    
    if ( !strncasecmp(ptr, "USER ", 5) ) {
-      DEBUG_MSG("\tDissector_POP USER %s", ptr + strlen("USER "));
-      //strlcpy(PACKET->info.user, ptr + strlen("USER "), sizeof(PACKET->info.user));
+      ptr += 5;
+      DEBUG_MSG("\tDissector_POP USER");
+      /* the \n is already present in the packet, no need to add it */
+      PACKET->INFO.user = strdup(ptr);
    }
 
    if ( !strncasecmp(ptr, "PASS ", 5) ) {
-      DEBUG_MSG("\tDissector_POP PASS %s",  ptr + strlen("PASS "));
-      //strlcpy(PACKET->info.pass, ptr + strlen("PASS "), sizeof(PACKET->info.pass));
+      ptr += 5;
+      DEBUG_MSG("\tDissector_POP PASS");
+      /* the \n is already present in the packet, no need to add it */
+      PACKET->INFO.pass = strdup(ptr);
    }
    
-   return 0;
+   return NULL;
 }
 
 

@@ -10,6 +10,7 @@ void hook_point(int point, struct packet_object *po);
    #define HOOK_PRE_FORWARD   2     /* right before the forward (if it has to be forwarded) */
    #define HOOK_HANDLED       3     /* top of the stack but before the decision of PO_INGORE */
    #define HOOK_FILTER        4     /* the content filtering point */
+   #define HOOK_DISPATCHER    5     /* in the TOP HALF (the packet is a copy) */
 
 void hook_add(int point, void (*func)(struct packet_object *po) );
 int hook_del(int point, void (*func)(struct packet_object *po) );

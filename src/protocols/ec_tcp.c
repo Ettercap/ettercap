@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.2 2003/03/10 16:05:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.3 2003/03/12 17:21:50 alor Exp $
 */
 
 #include <ec.h>
@@ -161,7 +161,8 @@ FUNC_DECODER(decode_tcp)
                break;
             default:
                opt_start++;
-               opt_start += (*opt_start - 1);
+               if (*opt_start > 0)
+                  opt_start += (*opt_start - 1);
                break;
          }
       }

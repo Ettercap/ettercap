@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.37 2004/03/31 13:03:08 alor Exp $
+    $Id: ec_profiles.c,v 1.38 2004/04/10 13:56:17 alor Exp $
 */
 
 #include <ec.h>
@@ -99,12 +99,22 @@ void profile_parse(struct packet_object *po)
     * skip packet sent (spoofed) by us
     * else we will get duplicated hosts with our mac address
     * this is necessary because check_forwarded() is executed
-    * in ec_ip.c, but here we are getting even arp packet...
+    * in ec_ip.c, but here we are getting even arp packets...
     */
    EXECUTE(GBL_SNIFF->check_forwarded, po);
    if (po->flags & PO_FORWARDED)
       return;
 
+   /*
+    * recheck if the packet is compliant with the visualization filters.
+    * we need to redo the test, because here we are hooked to ARP and ICMP
+    * packets that are before the test in ec_decode.c
+    */
+   po->flags |= PO_IGNORE;
+   EXECUTE(GBL_SNIFF->interesting, po);
+   if ( po->flags & PO_IGNORE )
+       return;
+   
    /*
     * call the add function only if the packet
     * is interesting...

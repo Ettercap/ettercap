@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.27 2004/04/07 07:14:47 alor Exp $
+    $Id: ec_pop.c,v 1.28 2004/04/10 13:56:17 alor Exp $
 */
 
 /*
@@ -240,6 +240,14 @@ FUNC_DECODER(dissector_pop)
       /* split the string */
       if ( (ptr = strchr(PACKET->DISSECTOR.user, ' ')) != NULL )
          *ptr = '\0';
+      else {
+         /* malformed string */
+         SAFE_FREE(PACKET->DISSECTOR.user);
+         session_free(s);
+         SAFE_FREE(ident);
+         return NULL;
+      }
+         
      
       /* skip the \0 */
       ptr += 1;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_scroll.c,v 1.5 2004/02/08 19:58:41 alor Exp $
+    $Id: wdg_scroll.c,v 1.6 2004/04/10 13:56:18 alor Exp $
 */
 
 #include <wdg.h>
@@ -34,7 +34,7 @@ struct wdg_scroll {
    size_t y_max;
 };
 
-#define WDG_PAD_REFRESH(ww, c, l, x, y) pnoutrefresh(ww->sub, ww->y_scroll, 0, y + 1, x + 1, y + l - 2, x + c - 2)
+#define WDG_PAD_REFRESH(ww, c, l, x, y) pnoutrefresh(ww->sub, ww->y_scroll + 1, 0, y + 1, x + 1, y + l - 2, x + c - 2)
 
 /* PROTOS */
 
@@ -169,7 +169,7 @@ static int wdg_scroll_redraw(struct wdg_object *wo)
       touchwin(ww->sub);
 
       /* move to the bottom of the pad */
-      wmove(ww->sub, ww->y_scroll, 0);
+      wmove(ww->sub, ww->y_scroll + 1, 0);
 
       /* permit scroll in the pad */
       scrollok(ww->sub, TRUE);
@@ -388,9 +388,9 @@ void wdg_scroll_set_lines(wdg_t *wo, size_t lines)
    ww->y_max = lines;
    wdg_set_scroll(wo, ww->y_max - l + 1);
    
-   /* adjust only the first time (when is the user to request the change) */
+   /* adjust only the first time (when the user requests the change) */
    if (oldlines != lines)
-      wmove(ww->sub, ww->y_scroll, 0);
+      wmove(ww->sub, ww->y_scroll + 1, 0);
 }
 
 /*

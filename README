@@ -127,11 +127,16 @@ UNIFIED SNIFFING
  Ettercap NG uses the unified sniffing method which is the base for all the
  attacks. The kernel ip forwarding is always disabled and this task is
  accomplished by ettercap itself. Packet that needs to be forwarded are packets
- with destination mac address equal to the attacker host, but with different ip
+ with destination mac address equal to the attacker's one, but with different ip
  address. Those packets are re-sent back to the wire to the real destination.
  This way, you can plug in variuous mitm attacks at a time. You can even use
  external attacker/poisoner, they only have to redirect packets to ettercap's
  host and the game is over ;)
+
+
+BRIDGED SNIFFING
+
+ 
 
 
 ARP POISONING ATTACK

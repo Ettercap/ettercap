@@ -22,9 +22,6 @@
    + SESSION
       - dissect_free_session
 
-   + PROFILES
-      - don't collect profiles for arp packets
-
    + CURSES GUI
       - lines without \n while sniffing
    

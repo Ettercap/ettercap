@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.60 2004/03/30 09:32:09 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.61 2004/04/10 13:56:16 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -50,11 +50,22 @@ interface in promisc mode (-p option). The packet not directed to the host
 running ettercap will be forwarded automatically using layer 3 routing. So you
 can use a mitm attack launched from a different tool and let ettercap modify the
 packets and forward them for you. 
+.br
+The kernel ip_forwarding is always disabled by ettercap. This is done to
+prevent to forward a packet two times (one by ettercap and one by the kernel).
+This is an invasive behaviour on gateways. So we recommend you to use ettercap
+on the gateways ONLY with the UNOFFENSIVE MODE ENABLED. Since ettercap listens
+only on one network interface, launching it on the gateway in offensive mode
+will not allow packets to be rerouted back from the second interface.
 .PP
 \fIBRIDGED\fR, it uses two network interfaces and forward the traffic from one to the other
 while performing sniffing and content filtering. This sniffing method is
 totally stealthy since there is no way to find that someone is in the middle on
-the cable.  You can look at this method as a mitm attack at layer 1.
+the cable.  You can look at this method as a mitm attack at layer 1. You will
+be in the middle of the cable between two entities. Don't use it on gateways or
+it will transform your gateway into a bridge. HINT: you can use the content
+filtering engine to drop packets that sould not pass. this way ettercap will
+work as an inline IPS ;)
 .PP
 You can also perform man in the middle attacks while using the unified
 sniffing. You can choose the mitm attack that you prefer. The mitm
@@ -65,16 +76,23 @@ mac address and a different ip address (only these packets will be forwarded).
 .PP
 The most relevant ettercap features are:
 .PP
-.B Characters injection in an established connection :
-you can inject character to server (emulating commands) or to client (emulating replies)
-maintaining the connection alive !!
-.PP
 .B SSH1 support :
 you can sniff User and Pass, and even the data of an SSH1 connection. ettercap is the
 first software capable to sniff an SSH connection in FULL-DUPLEX
 .PP
-.B HTTPS support :
-you can sniff http SSL secured data... and even if the connection is made through a PROXY
+.B SSL support :
+you can sniff SSL secured data... a fake certificate is presented to the client and 
+the session is decripted.
+.PP
+.B Characters injection in an established connection :
+you can inject character to server (emulating commands) or to client (emulating replies)
+maintaining the connection alive !!
+.PP
+.B Packet filtering/dropping:
+You can set up a filter script that search for a particular string (even hex) in the TCP
+or UDP payload and replace it with yours or drop the entire packet. The
+filtering engine can match any field of the network protocols and modify
+whatever you want (see etterfilter(8)).
 .PP
 .B Remote traffic sniffing through GRE tunnel:
 you can sniff remote traffic through a GRE tunnel from a remote cisco router
@@ -87,10 +105,6 @@ You can create your own plugin using the ettercap's API.
 TELNET, FTP, POP, RLOGIN, SSH1, ICQ, SMB, MySQL, HTTP, NNTP, X11, NAPSTER, IRC, RIP, BGP,
 SOCKS 5, IMAP 4, VNC, LDAP, NFS, SNMP, HALF LIFE, QUAKE 3, MSN, YMSG (other protocols coming soon...)
 .PP
-.B Packet filtering/dropping:
-You can set up a filter chain that search for a particular string (even hex) in the TCP
-or UDP payload and replace it with yours or drop the entire packet.
-.PP
 .B Passive OS fingerprint:
 you scan passively the lan (without sending any packet) and gather detailed info about
 the hosts in the LAN: Operating System, running services, open ports, IP, mac address
@@ -98,10 +112,6 @@ and network adapter vendor.
 .PP
 .B Kill a connection:
 from the connections list you can kill all the connections you want
-.PP
-.B Bind sniffed data to a local port
-You can connect to that port with a client and decode unknown protocols or
-inject data to it (only in arp based mode)
 
 
 .SH TARGET SPECIFICATION
@@ -329,7 +339,7 @@ reply only to DHCP request.
 
 .TP
 \fBport\fR ([remote],[tree])
-This attack implements Port Stealing. This techinque is useful to sniff in a 
+This attack implements Port Stealing. This technique is useful to sniff in a 
 switched environment when ARP poisoning is not effective (for example where 
 static mapped ARPs are used).
 .Sp
@@ -339,7 +349,7 @@ address of each "stealing" packet is the same as the attacker's one (other NICs
 won't see these packets), the source MAC address will be one of the MACs in the 
 host list. This process "steals" the switch's port of each victim host in the
 host list. 
-Using low delays, packets destinated to "stolen" MAC addresses will be received 
+Using low delays, packets destined to "stolen" MAC addresses will be received 
 by the attacker, winning the race condition with the real port owner. 
 When the attacker receives packets for "stolen" hosts, it stops the flooding 
 process and performs an ARP request for the real destination of the packet. 
@@ -366,7 +376,7 @@ NOTE: You can NOT use this method in only-mitm mode (-o flag), because it
 hooks the sniffing engine. 
 .Sp
 NOTE: This mitm method doesn't work on Solaris and Windows because of
-the lipcap and libnet design and the lack of certains ioctl().
+the lipcap and libnet design and the lack of certain ioctl().
 (We will feature this method on these OSes if someone will request it...)  
 .Sp
 Example:
@@ -495,12 +505,12 @@ ettercap in debug mode.
 \fB\-i\fR, \fB\-\-iface <IFACE>\fR
 Use this <IFACE> instead of the default one. The interface can be unconfigured
 (requires libnet >= 1.1.2), but in this case you cannot use MITM attacks and
-ettercap runs as the unoffensive (-u) option was specified.
+you should set the unoffensive flag.
 
 .TP
 \fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
 Use this <NETMSK> instead of the one associated with the current iface. This
-options is usefull if you have the NIC with an asociated netmask of class B and
+options is usefull if you have the NIC with an associated netmask of class B and
 you want to scan (with the arp scan) only a class C.
 
 .TP
@@ -540,6 +550,12 @@ It also disable the internal creation of the sessions for each connection. It
 increases performances, but you will not be able to modify packets on the fly.
 .br
 If you want to use a mitm attack you have to use a separate instance.
+.br
+You have to use this option if the interface is unconfigured (without an ip
+address.)
+.br
+This is also useful if you want to run ettercap on the gateway. It will not
+disable the forwarding and the gateway corectly routes the packets.
 
 .TP
 \fB\-j\fR, \fB\-\-load-hosts <FILENAME>\fR

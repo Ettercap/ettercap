@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.42 2004/05/26 09:13:48 alor Exp $
+    $Id: ec_sslwrap.c,v 1.43 2004/05/26 10:39:11 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -532,7 +532,6 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 static int sslw_sync_ssl(struct accepted_entry *ae) 
 {   
    X509 *server_cert;
-   int ret;
    
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
    SSL_set_connect_state(ae->ssl[SSL_SERVER]);
@@ -541,7 +540,7 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    SSL_set_fd(ae->ssl[SSL_CLIENT], ae->fd[SSL_CLIENT]);
    
  
-   if ((ret = SSL_connect(ae->ssl[SSL_SERVER])) != 1) {
+   if (SSL_connect(ae->ssl[SSL_SERVER]) != 1) {
       return -EINVALID;
    }
 
@@ -647,8 +646,14 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    else       
       len = read(ae->fd[direction], po->DATA.data, 1024);
 
-   if (len < 0 && (ae->status & SSL_ENABLED)) {
+   /* XXX - Check when it returns 0 (it was a <)*/
+   if (len <= 0 && (ae->status & SSL_ENABLED)) {
       ret_err = SSL_get_error(ae->ssl[direction], len);
+      
+      /* XXX - Is it necessary? */
+      if (len == 0)
+         return -EINVALID;
+	       
       if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
          return -ENOTHANDLED;
       else
@@ -663,8 +668,9 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
          return -EINVALID;
    }      
 
+   /* XXX - On standard reads, close is 0 or -1? (it was -EINVALID)*/
    if (len == 0) 
-      return -EINVALID;
+      return -ENOTHANDLED;
 
    po->len = len;
    po->DATA.len = len;
@@ -962,7 +968,14 @@ EC_THREAD_FUNC(sslw_child)
 	    
             if ((po.flags & PO_SSLSTART) && !(ae->status & SSL_ENABLED)) {
                ae->status |= SSL_ENABLED; 
+               /* XXX - only a temporary workaround */
+               fcntl(ae->fd[SSL_CLIENT], F_SETFL, 0);
+               fcntl(ae->fd[SSL_SERVER], F_SETFL, 0);
+
                ret_val = sslw_sync_ssl(ae);
+               fcntl(ae->fd[SSL_CLIENT], F_SETFL, O_NONBLOCK);
+               fcntl(ae->fd[SSL_SERVER], F_SETFL, O_NONBLOCK);
+
                BREAK_ON_ERROR(ret_val,ae,po);
             }
 	    

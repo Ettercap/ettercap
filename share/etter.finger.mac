@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.5 $                                      # 
-#  Last updated on : $Date: 2004/01/09 13:17:04 $                          #
+#  Version         : $Revision: 1.6 $                                      # 
+#  Last updated on : $Date: 2004/06/15 08:15:34 $                          #
 #  Total entries   : 6311                                                  #
 #                                                                          #
 ############################################################################
@@ -3039,6 +3039,7 @@
 00:0B:F2  Chih-kan Technology Co., Ltd.
 00:0B:F3  Bae Systems
 00:0C:6E  Silicon Integrated Sys. Corp.
+00:0C:F1  Intel Pro Wireless (Centrino) 
 00:10:00  Cable Television Laboraties, Inc.
 00:10:01  Mck Communications
 00:10:02  Actia

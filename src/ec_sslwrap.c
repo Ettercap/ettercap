@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.13 2004/03/11 13:55:13 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.14 2004/03/11 16:04:12 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -44,6 +44,7 @@
 #define CERT_FILE "etter.ssl.crt"
 #define DATA_PATH "/"
 
+/* XXX - Occhio alla free di disp_data se cambio packet_dup */
 #define BREAK_ON_ERROR(x,y,z) do {\
 if (x != ESUCCESS) {\
 sslw_wipe_connection(y);\
@@ -106,6 +107,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
 static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct packet_object *po);
 static void sslw_wipe_connection(struct accepted_entry *ae);
 static void sslw_init(void);
+static void sslw_initialize_po(struct packet_object *po);
 static int sslw_match(void *id_sess, void *id_curr);
 static void sslw_create_session(struct ec_session **s, struct packet_object *po);
 static size_t sslw_create_ident(void **i, struct packet_object *po);            
@@ -423,6 +425,29 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
 }
 
 
+static void sslw_initialize_po(struct packet_object *po)
+{
+   /* 
+    * Allocate the data buffer and initialize 
+    * fake headers. Headers len is set to 0.
+    * XXX - Be sure to not modify these len.
+    */
+   memset(po, 0, sizeof(struct packet_object));
+   SAFE_CALLOC(po->DATA.data, 1, UINT16_MAX);
+   po->L2.header  = po->DATA.data; 
+   po->L3.header  = po->DATA.data;
+   po->L3.options = po->DATA.data;
+   po->L4.header  = po->DATA.data;
+   po->L4.options = po->DATA.data;
+   po->fwd_packet = po->DATA.data;
+   po->packet     = po->DATA.data;
+   
+   po->L3.proto = htons(LL_TYPE_IP);
+   po->L3.ttl = 64;
+   po->L4.proto = NL_TYPE_TCP;
+}
+
+
 /* 
  * Initialize SSL stuff 
  */
@@ -472,32 +497,14 @@ EC_THREAD_FUNC(sslw_child)
       return NULL;
    }
 
-   /* 
-    * Allocate the data buffer and initialize 
-    * fake headers. Headers len is set to 0.
-    * XXX - Be sure to not modify these len.
-    */
-   memset(&po, 0, sizeof(struct packet_object));
-   SAFE_CALLOC(po.DATA.data, 1, UINT16_MAX);
-   po.L2.header  = po.DATA.data; 
-   po.L3.header  = po.DATA.data;
-   po.L3.options = po.DATA.data;
-   po.L4.header  = po.DATA.data;
-   po.L4.options = po.DATA.data;
-   po.fwd_packet = po.DATA.data;
-   po.packet     = po.DATA.data;
-   
-   po.L3.proto = htons(LL_TYPE_IP);
-   po.L3.ttl = 64;
-   po.L4.proto = NL_TYPE_TCP;
 
    /* A fake SYN ACK for profiles */
    /* XXX - Does anyone care about packet len after this point? */
+   sslw_initialize_po(&po);
    po.len = 64;
    po.L4.flags = (TH_SYN | TH_ACK);
    packet_disp_data(&po, po.DATA.data, po.DATA.len);
    sslw_parse_packet(ae, SSL_SERVER, &po);
-   po.L4.flags = 0;
    
    LOOP {
       // XXX Posso metterlo fuori dal ciclo?
@@ -511,6 +518,8 @@ EC_THREAD_FUNC(sslw_child)
 
       for(direction=0; direction<2; direction++) 
          if (poll_fd[direction].revents & POLLIN) {
+            sslw_initialize_po(&po);
+
             ret_val = sslw_read_data(ae, direction, &po);
             BREAK_ON_ERROR(ret_val,ae,po);
 	    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.8 2003/07/17 21:13:12 alor Exp $
+    $Id: ec_conf.c,v 1.9 2003/07/20 20:56:13 alor Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,7 @@ static struct conf_entry net[] = {
 
 static struct conf_entry connections[] = {
    { "connection_timeout", NULL },
+   { "connection_buffer", NULL },
    { NULL, NULL },
 };
 
@@ -103,6 +104,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&net, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
    set_pointer((struct conf_entry *)&net, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
    set_pointer((struct conf_entry *)&connections, "connection_timeout", &GBL_CONF->connection_timeout);
+   set_pointer((struct conf_entry *)&connections, "connection_buffer", &GBL_CONF->connection_buffer);
    set_pointer((struct conf_entry *)&stats, "sampling_rate", &GBL_CONF->sampling_rate);
    set_pointer((struct conf_entry *)&various, "close_on_eof", &GBL_CONF->close_on_eof);
 

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.4 2003/07/17 21:13:12 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.5 2003/07/20 20:56:13 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -97,6 +97,17 @@ structures. After a customizable timeout, you can free this structures to keep
 the memory usage low. This variable represent this timeout. The value is
 expressed in seconds. This timeout is applied even to the session tracking
 system (the protocol state machine for dissectors).
+
+.TP
+.B connection_buffer
+This variable controls the size of the buffer linked to each connection.
+Every sniffed packet is added to the buffer and when the buffer is full the
+older packets are deleted to make room for the newer one. This buffer is useful
+to view data that went on the cable before you select to view a specific
+connection. The higher is this value, the higher is the ettercap memory occupation.
+Btw the buffer is dynamic, so if you set a buffer of 100.000 byte it is not
+allocated all together at the first packet of a connection, but it is filled as
+the packets arrive.
 
 
 .TP 20

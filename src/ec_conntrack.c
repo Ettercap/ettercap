@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.1 2003/07/18 21:36:45 alor Exp $
+    $Id: ec_conntrack.c,v 1.2 2003/07/20 20:56:13 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_threads.h>
 #include <ec_packet.h>
 #include <ec_hook.h>
+#include <ec_conntrack.h>
 
 /* protos */
 

@@ -18,6 +18,7 @@ struct ec_conf {
    int arp_poison_warm_up;
    int arp_poison_delay;
    int connection_timeout;
+   int connection_buffer;
    int sampling_rate;
    int close_on_eof;
 };

@@ -5,6 +5,7 @@ noinst_HEADERS = ec.h \
                  ec_capture.h \
                  ec_checksum.h \
                  ec_conf.h \
+                 ec_connbuf.h \
                  ec_conntrack.h \
                  ec_debug.h \
                  ec_decode.h \

@@ -6,6 +6,7 @@ bin_PROGRAMS = ettercap
 ettercap_SOURCES = ec_capture.c \
                ec_checksum.c \
                ec_conf.c \
+               ec_connbuf.c \
                ec_conntrack.c \
                ec_debug.c \
                ec_decode.c \

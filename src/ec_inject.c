@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.10 2004/03/05 10:34:16 lordnaga Exp $
+    $Id: ec_inject.c,v 1.11 2004/03/05 11:15:02 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -138,7 +138,7 @@ int inject_buffer(struct packet_object *po)
          
    /* Loop until there's data to send */
    do {
-   
+
       /* 
        * Slide to middle. First part is for header's stack'ing.
        * Second part is for packet data. 
@@ -147,7 +147,7 @@ int inject_buffer(struct packet_object *po)
 
       /* Start the injector cascade */
       injected = inject_protocol(pd);
-      
+
       if (injected == 0) {
          ret = -ENOTHANDLED;
          break;
@@ -155,7 +155,7 @@ int inject_buffer(struct packet_object *po)
       
       /* Send on the wire */ 
       send_to_L3(pd);
-      
+
       /* Ready to inject the rest */
       pd->DATA.inject_len -= injected;
       pd->DATA.inject += injected;
@@ -264,6 +264,9 @@ int user_inject(u_char *buf, size_t size, struct conn_object *co, int which)
    po.DATA.inject = buf;
    po.DATA.inject_len = size;
 
+   po.packet = NULL;
+   po.DATA.disp_data = NULL;
+      
    /* do the dirty job */
    inject_buffer(&po);
 

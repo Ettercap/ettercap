@@ -39,7 +39,7 @@ extern int dissect_on_port(char *name, u_int16 port);
 
 #define CREATE_SESSION_ON_SYN_ACK(name, session) do{        \
       if (dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS && (PACKET->L4.flags & TH_SYN) && (PACKET->L4.flags & TH_ACK)) { \
-         DEBUG_MSG("create_session_on_syn_ack %s", name);   \
+         DEBUG_MSG("%s --> create_session_on_syn_ack", name);   \
          /* create the session */                           \
          dissect_create_session(&session, PACKET);          \
          session_put(session);                              \

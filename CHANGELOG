@@ -33,6 +33,7 @@ NG-0.7.0    ????????
       + POP (APOP and AUTH LOGIN support)
       + X11 (banner discovery)
       + TELNET (collect even failed attempts)
+      + SNMP fixes
    !! offline sniffing actually does not bind to any NICs
 
 

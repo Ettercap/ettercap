@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.16 2003/07/08 21:31:18 alor Exp $
+    $Id: ec_pop.c,v 1.17 2003/07/17 21:13:12 alor Exp $
 */
 
 /*
@@ -75,6 +75,10 @@ FUNC_DECODER(dissector_pop)
             /* get the banner */
             if (!strncmp(ptr, "+OK", 3))
                PACKET->DISSECTOR.banner = strdup(ptr + 4);
+            else {
+               SAFE_FREE(ident);
+               return NULL;
+            }
 
             DEBUG_MSG("\tdissector_pop BANNER");
 
@@ -275,11 +279,20 @@ FUNC_DECODER(dissector_pop)
    
    /* search the session (if it exist) */
    dissect_create_ident(&ident, PACKET);
-   if (session_get(&s, ident) == -ENOTFOUND)
+   if (session_get(&s, ident) == -ENOTFOUND) {
+      SAFE_FREE(ident);
       return NULL;
+   }
 
    SAFE_FREE(ident);
+   
+   /* the session is invalid */
+   if (s->data == NULL) {
+      dissect_wipe_session(PACKET);
+      return NULL;
+   }
 
+/* collect the user */   
    if (!strcmp(s->data, "AUTH")) {
       char *user;
       int i;
@@ -306,6 +319,7 @@ FUNC_DECODER(dissector_pop)
       return NULL;
    }
    
+/* collect the pass */     
    if (!strncmp(s->data, "AUTH USER", 9)) {
       char *pass;
       int i;

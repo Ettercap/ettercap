@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.7 2003/07/16 20:45:30 alor Exp $
+    $Id: ec_conf.c,v 1.8 2003/07/17 21:13:12 alor Exp $
 */
 
 #include <ec.h>
@@ -53,8 +53,14 @@ static struct conf_entry stats[] = {
    { NULL, NULL },
 };
 
+static struct conf_entry various[] = {
+   { "close_on_eof", NULL },
+   { NULL, NULL },
+};
+
 /* this is fake, dissector use a different registration */
 static struct conf_entry dissectors[] = {
+   { "fake", (int *)&dissectors },
 };
 
 static struct conf_section sections[] = {
@@ -62,6 +68,7 @@ static struct conf_section sections[] = {
    { "net", (struct conf_entry *)&net},
    { "connections", (struct conf_entry *)&connections},
    { "stats", (struct conf_entry *)&stats},
+   { "various", (struct conf_entry *)&various},
    { "dissectors", (struct conf_entry *)&dissectors},
    { NULL, NULL },
 };
@@ -97,12 +104,13 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&net, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
    set_pointer((struct conf_entry *)&connections, "connection_timeout", &GBL_CONF->connection_timeout);
    set_pointer((struct conf_entry *)&stats, "sampling_rate", &GBL_CONF->sampling_rate);
+   set_pointer((struct conf_entry *)&various, "close_on_eof", &GBL_CONF->close_on_eof);
 
    /* sanity check */
    do {
       do {
          if (sections[i].entries[j].value == NULL) {
-            DEBUG_MSG("INVALID init: %s", sections[i].entries[j].name);
+            DEBUG_MSG("INVALID init: %s %s", sections[i].entries[j].name, sections[i].title);
             BUG("check the debug file...");
          }
       } while (sections[i].entries[++j].name != NULL);

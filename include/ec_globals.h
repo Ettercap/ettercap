@@ -19,6 +19,7 @@ struct ec_conf {
    int arp_poison_delay;
    int connection_timeout;
    int sampling_rate;
+   int close_on_eof;
 };
 
 /* options from getopt */

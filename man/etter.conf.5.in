@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.3 2003/07/07 10:43:19 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.4 2003/07/17 21:13:12 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -109,6 +109,17 @@ everage processing time of sampling_rate packets. You can decrease this value to
 a more accurate real-time picture of processing time or increase it to have a
 smoother picture. The total average will not change, but the worst value will
 be heavily influenced by this value.
+
+
+.TP 20
+.B [various]
+.TP
+.B close_on_eof
+When reading form a dump file and using console or daemon UI, this variable is
+used to determine what action has to be done on EOF. It is a boolean value. If
+set to 1 ettercap will close itself (useful in scripts) else the session will
+continue till the user input.
+
 
 
 .TP 20

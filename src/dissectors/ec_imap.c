@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_imap.c,v 1.2 2003/07/15 21:31:34 alor Exp $
+    $Id: ec_imap.c,v 1.3 2003/07/17 21:13:12 alor Exp $
 */
 
 /*
@@ -77,8 +77,13 @@ FUNC_DECODER(dissector_imap)
       /* skip the number, go to response */
       while(*ptr != ' ' && ptr != end) ptr++;
       
-      if (!strncmp(ptr, " OK ", 4))
+      if (!strncmp(ptr, " OK ", 4)) {
          PACKET->DISSECTOR.banner = strdup(ptr + 3);
+      
+         /* remove the \r\n */
+         if ( (ptr = strchr(PACKET->DISSECTOR.banner, '\r')) != NULL )
+            *ptr = '\0';
+      }
             
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    
@@ -163,7 +168,13 @@ FUNC_DECODER(dissector_imap)
    }
 
    SAFE_FREE(ident);
-
+   
+   /* the session is invalid */
+   if (s->data == NULL) {
+      dissect_wipe_session(PACKET);
+      return NULL;
+   }
+   
    if (!strcmp(s->data, "AUTH")) {
       char *user;
       int i;

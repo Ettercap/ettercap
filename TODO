@@ -30,13 +30,17 @@ this is the unofficial and floating in time roadmap:
 Jul 2003:
 
    + DISSECTOR
-      - telnet session removal
       - IRC
+      - ldap
+      - snmp
 
    + TOP HALF
       - connection tracking (with buffered conn)
 
 Ago 2003:
+   
+   + PLUGIN
+      - acvive-passive fingerprint 
 
    + ARP POISON ENGINE
       - arp poisoner

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.34 2004/11/04 10:29:06 alor Exp $
+    $Id: ec_threads.c,v 1.35 2004/11/05 14:12:01 alor Exp $
 */
 
 #include <ec.h>
@@ -154,7 +154,7 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    if (pthread_equal(id, EC_PTHREAD_SELF))
       id = pthread_self();
    
-   DEBUG_MSG("ec_thread_register -- [%lu] %s", (unsigned long)id, name);
+   DEBUG_MSG("ec_thread_register -- [%lu] %s", PTHREAD_ID(id), name);
 
    SAFE_CALLOC(newelem, 1, sizeof(struct thread_list));
               
@@ -204,7 +204,7 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
 
    ec_thread_register(id, name, desc);
 
-   DEBUG_MSG("ec_thread_new -- %lu created ", (unsigned long)id);
+   DEBUG_MSG("ec_thread_new -- %lu created ", PTHREAD_ID(id));
 
    /* the new thread will unlock this */
    INIT_LOCK; 
@@ -219,7 +219,9 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
  */
 void ec_thread_init(void)
 {
-   DEBUG_MSG("ec_thread_init -- %lu", (unsigned long)pthread_self());
+   pthread_t id = pthread_self(); 
+   
+   DEBUG_MSG("ec_thread_init -- %lu", PTHREAD_ID(id));
    
    /* 
     * allow a thread to be cancelled as soon as the
@@ -231,7 +233,7 @@ void ec_thread_init(void)
    /* sync with the creator */ 
    INIT_UNLOCK;
    
-   DEBUG_MSG("ec_thread_init -- (%lu) ready and syncronized", (unsigned long)pthread_self());
+   DEBUG_MSG("ec_thread_init -- (%lu) ready and syncronized",  PTHREAD_ID(id));
 }
 
 
@@ -245,7 +247,7 @@ void ec_thread_destroy(pthread_t id)
    if (pthread_equal(id, EC_PTHREAD_SELF))
       id = pthread_self();
    
-   DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", (unsigned long)id, ec_thread_getname(id));
+   DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", PTHREAD_ID(id), ec_thread_getname(id));
 
    /* send the cancel signal to the thread */
    pthread_cancel((pthread_t)id);
@@ -286,7 +288,7 @@ void ec_thread_kill_all(void)
    struct thread_list *current, *old;
    pthread_t id = pthread_self();
 
-   DEBUG_MSG("ec_thread_kill_all -- caller %lu [%s]", (unsigned long)id, ec_thread_getname(id));
+   DEBUG_MSG("ec_thread_kill_all -- caller %lu [%s]", PTHREAD_ID(id), ec_thread_getname(id));
 
    THREADS_LOCK;
 
@@ -299,7 +301,7 @@ void ec_thread_kill_all(void)
    LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {
       /* skip ourself */
       if (!pthread_equal(current->t.id, id)) {
-         DEBUG_MSG("ec_thread_kill_all -- terminating %lu [%s]", (unsigned long)current->t.id, current->t.name);
+         DEBUG_MSG("ec_thread_kill_all -- terminating %lu [%s]", PTHREAD_ID(current->t.id), current->t.name);
 
          /* send the cancel signal to the thread */
          pthread_cancel((pthread_t)current->t.id);
@@ -307,7 +309,7 @@ void ec_thread_kill_all(void)
 #ifndef BROKEN_PTHREAD_JOIN
          DEBUG_MSG("ec_thread_destroy: pthread_join");
          /* wait until it has finished */
-         pthread_join((pthread_t)current->t.id, NULL);
+         pthread_join(current->t.id, NULL);
 #endif         
 
          DEBUG_MSG("ec_thread_kill_all -- [%s] terminated", current->t.name);
@@ -330,7 +332,7 @@ void ec_thread_exit(void)
    struct thread_list *current, *old;
    pthread_t id = pthread_self();
 
-   DEBUG_MSG("ec_thread_exit -- caller %lu [%s]", (unsigned long)id, ec_thread_getname(id));
+   DEBUG_MSG("ec_thread_exit -- caller %lu [%s]", PTHREAD_ID(id), ec_thread_getname(id));
 
    THREADS_LOCK;
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.64 2004/07/29 09:46:47 alor Exp $
+    $Id: ec_main.c,v 1.65 2004/09/22 15:53:10 alor Exp $
 */
 
 #include <ec.h>
@@ -203,6 +203,11 @@ static void drop_privs(void)
    u_int uid, gid;
    char *var;
 
+#ifdef OS_WINDOWS
+   /* do not drop privs under windows */
+   return;
+#endif
+   
    /* are we root ? */
    if (getuid() != 0)
       return;

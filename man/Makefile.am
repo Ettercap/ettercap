@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.7 2004/01/04 17:02:43 alor Exp $
+# $Id: Makefile.am,v 1.8 2004/09/22 15:53:10 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -11,5 +11,17 @@ endif
 
 EXTRA_DIST = $(man_MANS)
 
-CLEANFILES = *.8 *.5
+CLEANFILES = *.8 *.5 *.ps *.pdf
+
+pdf: $(man_MANS:.8=.ps) $(man_MANS:.5=.ps)
+
+%.ps: %.8
+	groff -mandoc -Tps $< > $@;
+	ps2pdf13 $@ $(*F).pdf;
+	rm -f *.ps
+
+%.ps: %.5
+	groff -mandoc -Tps $< > $@;
+	ps2pdf13 $@ $(*F).pdf;
+	rm -f *.ps
 

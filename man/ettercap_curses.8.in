@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.17 2004/05/23 20:27:13 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.18 2004/09/22 15:53:10 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -114,7 +114,7 @@ Choosing this function you will be prompted to select the network interface to b
 used for sniffing. The first up and running interface is suggested in the input
 box.
 For an explanation of what unified sniffing is, refer to ettercap(8).
-.br.
+.br
 TIP: if you use the 'u' hotkey, this step will be skipped and the default
 interface is automatically selected.
 .TP

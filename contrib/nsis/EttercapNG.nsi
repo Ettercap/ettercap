@@ -17,7 +17,7 @@
 ;   along with this program; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;
-;   $Id: EttercapNG.nsi,v 1.6 2004/09/20 21:55:43 alor Exp $
+;   $Id: EttercapNG.nsi,v 1.7 2004/09/22 15:53:10 alor Exp $
 ;
 ; NOTE: this .NSI script is designed for NSIS v2.0+
 
@@ -41,7 +41,7 @@
    ;Name and file
    Name "Ettercap NG"
    Caption "Ettercap ${VER_DISPLAY} Setup"
-   OutFile "ettercap-0.7.1-win.exe"
+   OutFile "ettercap-NG-${VER_DISPLAY}-win32.exe"
 
    ;Default installation folder
    InstallDir "$PROGRAMFILES\EttercapNG"
@@ -212,7 +212,7 @@ Section "Documentation" SecDocs
 
    SetOutPath "$INSTDIR\doc"
 
-   ;ADD YOUR OWN FILES HERE...
+   File ..\..\doc\*.pdf
 
 SectionEnd
 
@@ -431,7 +431,7 @@ Section "Uninstall"
    Delete "$INSTDIR\*.dll"
    Delete "$INSTDIR\ettercapNG-${VER_DISPLAY}_cvs_debug.log"
 
-   RMDir "$INSTDIR\doc"
+   RMDir /r "$INSTDIR\doc"
    RMDir /r "$INSTDIR\lib"
    RMDir /r "$INSTDIR\etc"
    RMDir /r "$INSTDIR\share"

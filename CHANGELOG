@@ -8,7 +8,7 @@ Legenda:
 
 NG-0.7.2         2004
 
-   
+   !! do not drop privs under windows (useless) 
 
 
 NG-0.7.1         20040920

@@ -14,6 +14,8 @@
   In the next release(s)
 ============================
 
+   + modify the netmask from the menu
+
    + record the MSS for the packet splitting
 
    + multiple dissector on a single port

@@ -1,6 +1,6 @@
 /*
     pptp_chapms1 -- ettercap plugin -- Forces chapms-v1 from champs-v2 request 
-                                   for PPTP (easier to crack)
+                                       for PPTP (easier to crack)
 
     Copyright (C) ALoR & NaGA
     
@@ -18,7 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: pptp_chapms1.c,v 1.2 2003/12/11 15:45:20 lordnaga Exp $
+    $Id: pptp_chapms1.c,v 1.3 2004/01/10 12:07:19 lordnaga Exp $
 */
 
 

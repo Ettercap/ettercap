@@ -1,9 +1,6 @@
 /*
     rand_flood -- ettercap plugin -- Flood the LAN with random MAC addresses
 
-    it sends a spoofed icmp packets to each victim with the address 
-    of any other target and listen for "forwardable" replies.
-
     Copyright (C) ALoR & NaGA
     
     This program is free software; you can redistribute it and/or modify
@@ -20,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: rand_flood.c,v 1.2 2003/12/18 11:07:04 lordnaga Exp $
+    $Id: rand_flood.c,v 1.3 2004/01/10 12:07:26 lordnaga Exp $
 */
 
 

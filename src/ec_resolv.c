@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.2 2003/06/13 15:45:05 alor Exp $
+    $Id: ec_resolv.c,v 1.3 2003/06/14 13:35:11 alor Exp $
 */
 
 #include <ec.h>
@@ -43,8 +43,8 @@ struct resolv_entry {
 /* protos */
 
 int host_iptoa(struct ip_addr *ip, char *name);
-static int cache_search(struct ip_addr *ip, char *name);
-static void cache_insert(struct ip_addr *ip, char *name);
+static int resolv_cache_search(struct ip_addr *ip, char *name);
+void resolv_cache_insert(struct ip_addr *ip, char *name);
 
 /************************************************/
 
@@ -71,7 +71,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
     * return that entry and don't call the real
     * gethostbyaddr. we want to increase the speed...
     */
-   if (cache_search(ip, name) == ESUCCESS)
+   if (resolv_cache_search(ip, name) == ESUCCESS)
       return ESUCCESS;
 
 
@@ -106,7 +106,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
        * insert the "" in the cache so we don't search for
        * non existent hosts every new query.
        */
-      cache_insert(ip, name);
+      resolv_cache_insert(ip, name);
       return -ENOTFOUND;
    } 
  
@@ -114,7 +114,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
    strlcpy(name, host->h_name, MAX_HOSTNAME_LEN);
 
    /* insert the result in the cache for later use */
-   cache_insert(ip, name);
+   resolv_cache_insert(ip, name);
    
    return ESUCCESS;
 }
@@ -124,7 +124,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
  * resolved host
  */
 
-static int cache_search(struct ip_addr *ip, char *name)
+static int resolv_cache_search(struct ip_addr *ip, char *name)
 {
    struct resolv_entry *r;
       
@@ -149,10 +149,21 @@ static int cache_search(struct ip_addr *ip, char *name)
  * insert an entry in the cache
  */
 
-static void cache_insert(struct ip_addr *ip, char *name)
+void resolv_cache_insert(struct ip_addr *ip, char *name)
 {
    struct resolv_entry *r;
 
+   /* 
+    * search if it is already in the cache.
+    * this will pervent passive insertion to overwrite
+    * previous cached results
+    */
+   SLIST_FOREACH(r, &resolv_cache_head[fnv_32(ip->addr, ip->addr_size) & TABMASK], next) {
+      /* found in the cache skip it */
+      if (!ip_addr_cmp(&r->ip, ip))
+         return; 
+   }
+   
    r = calloc(1, sizeof(struct resolv_entry));
    ON_ERROR(r, NULL, "Can't allocate memory");
 

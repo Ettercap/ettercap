@@ -47,8 +47,9 @@ ettercap_SOURCES = ec_main.c \
 				   protocols/ec_tcp.c \
 				   protocols/ec_udp.c \
 				   protocols/ec_icmp.c \
-				   dissectors/ec_pop.c \
+				   dissectors/ec_dns.c \
 				   dissectors/ec_ftp.c \
+				   dissectors/ec_pop.c \
 				   interfaces/console/ec_console.c \
 				   interfaces/console/ec_console_display.c \
 				   interfaces/console/ec_console_plugin.c \

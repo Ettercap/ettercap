@@ -208,6 +208,7 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 EC_PTHREAD_CHECK()
 AC_SEARCH_LIBS(gethostbyname, c nsl,, AC_MSG_ERROR(libnsl not found.))
+AC_SEARCH_LIBS(dn_expand, c resolv,, AC_MSG_ERROR(resolv not found.))
 AC_SEARCH_LIBS(socket, c socket,, AC_MSG_ERROR(libsocket not found.))
 AC_SEARCH_LIBS(poll, c poll) 
 AC_SEARCH_LIBS(gzopen,c z,,AC_MSG_ERROR(zlib not found.))

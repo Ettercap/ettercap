@@ -8,6 +8,10 @@
 
 extern int host_iptoa(struct ip_addr *ip, char *name);
 
+/* used by ec_dns to insert passively sniffed dns answers */
+extern void resolv_cache_insert(struct ip_addr *ip, char *name);
+   
+
    
 #endif
 

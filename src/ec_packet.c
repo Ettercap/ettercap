@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.15 2003/06/13 15:45:04 alor Exp $
+    $Id: ec_packet.c,v 1.16 2003/06/14 13:35:11 alor Exp $
 */
 
 #include <ec.h>
@@ -176,9 +176,6 @@ void packet_print(struct packet_object *po)
    
    char tmp[MAX_ASCII_ADDR_LEN];
    u_char hex[hex_len(2000)];
-  
-   if (GBL_OPTIONS->quiet)
-      return;
   
 #undef USER_MSG
 #define USER_MSG printf

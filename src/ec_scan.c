@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.10 2003/06/09 12:03:14 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.11 2003/06/14 13:35:11 alor Exp $
 */
 
 #include <ec.h>
@@ -65,7 +65,6 @@ void build_hosts_list(void)
    pthread_t pid;
    struct hosts_list *hl;
    int nhosts = 0, i = 1;
-   //char tmp[MAX_ASCII_ADDR_LEN];
 
    DEBUG_MSG("build_hosts_list");
 
@@ -121,7 +120,7 @@ void build_hosts_list(void)
     */
    sleep(1);
 
-   /* destroy the thread and remobe the hook function */
+   /* destroy the thread and remove the hook function */
    ec_thread_destroy(pid);
    hook_del(PACKET_ARP, &get_response);
    

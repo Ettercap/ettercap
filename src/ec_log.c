@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.16 2003/06/14 09:29:35 alor Exp $
+    $Id: ec_log.c,v 1.17 2003/06/14 13:35:11 alor Exp $
 */
 
 #include <ec.h>
@@ -76,6 +76,15 @@ int set_loglevel(int level, char *filename)
    
    DEBUG_MSG("set_loglevel(%d,%s)", level, filename); 
 
+   /* all the host type will be unknown, warn the user */
+   if (GBL_OPTIONS->read) {
+      USER_MSG("******************************************************\n");
+      USER_MSG("WARINING: while reading form file we cannot determine\n");
+      USER_MSG("if an host is local or not because the ip address of\n");
+      USER_MSG("the NIC may be changed from the time of the dump.\n");
+      USER_MSG("******************************************************\n");
+   }
+   
    sprintf(eci, "%s.eci", filename);
    sprintf(ecp, "%s.ecp", filename);
    

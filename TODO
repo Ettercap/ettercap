@@ -25,10 +25,6 @@
 
 >>> current developmet state 
 
-   + PASSIVE ACTIONS
-      - passive dns resolutions
-      - passive host list filling
-
    + TOP HALF
       - passive profiling (almost done in etterlog)
       - connection tracking (with buffered conn)

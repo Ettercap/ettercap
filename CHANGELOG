@@ -39,6 +39,9 @@ NG-0.7.0    ????????
       + SNMP fixes
       + MySQL fixes
       + HalfLife and Quake3 were unified
+   + new dissectors:
+      + CVS
+      + OSPF, VRRP
    !! offline sniffing actually does not bind to any NICs
 
 

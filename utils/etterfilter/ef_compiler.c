@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_compiler.c,v 1.4 2003/09/28 21:07:49 alor Exp $
+    $Id: ef_compiler.c,v 1.5 2003/09/30 13:07:18 alor Exp $
 */
 
 #include <ef.h>
@@ -32,7 +32,10 @@ struct block *tree_root;
 int compiler_set_root(struct block *blk);
 size_t compile_tree(struct filter_op **fop);
 struct block * compiler_add_instr(struct instruction *ins, struct block *blk);
+struct block * compiler_add_ifblk(struct ifblock *ifb, struct block *blk);
+
 struct instruction * compiler_create_instruction(struct filter_op *fop);
+struct ifblock * compiler_create_ifblock(struct conditions *conds, struct block *blk);
 
 
 /*******************************************/
@@ -63,6 +66,20 @@ struct instruction * compiler_create_instruction(struct filter_op *fop)
 }
 
 /*
+ * allocate a ifblock container
+ */
+struct ifblock * compiler_create_ifblock(struct conditions *conds, struct block *blk)
+{
+   struct ifblock *ifblk;
+
+   SAFE_CALLOC(ifblk, 1, sizeof(struct ifblock));
+   
+   NOT_IMPLEMENTED();
+
+   return ifblk;
+}
+
+/*
  * add an instruction to a block
  */
 struct block * compiler_add_instr(struct instruction *ins, struct block *blk)
@@ -74,6 +91,34 @@ struct block * compiler_add_instr(struct instruction *ins, struct block *blk)
    /* copy the current instruction in the block */
    bl->type = BLK_INSTR;
    bl->un.ins = ins;
+
+   /* link it to the old block chain */
+   bl->next = blk;
+
+   /* 
+    * update the counter by adding the number
+    * of instructions in the old block
+    */
+   bl->n = 1;
+   if (blk != NULL)
+      bl->n += blk->n;
+
+   return bl;
+}
+
+
+/* 
+ * add an if block to a block
+ */
+struct block * compiler_add_ifblk(struct ifblock *ifb, struct block *blk)
+{
+   struct block *bl;
+
+   SAFE_CALLOC(bl, 1, sizeof(struct block));
+
+   /* copy the current instruction in the block */
+   bl->type = BLK_IFBLK;
+   bl->un.ifb = ifb;
 
    /* link it to the old block chain */
    bl->next = blk;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.16 2003/09/28 21:07:49 alor Exp $
+    $Id: ef_grammar.y,v 1.17 2003/09/30 13:07:18 alor Exp $
 */
 
 %{
@@ -44,6 +44,7 @@
    /* used to create the compiler tree */
    struct block *blk;
    struct instruction *ins;
+   struct ifblock *ifb;
 }
 
 /* token definitions */
@@ -86,6 +87,8 @@
 
 %type <blk> block
 %type <ins> single_instruction
+%type <ifb> if_statement
+%type <ifb> if_else_statement
 
 /* precedences */
 %left TOKEN_OP_SUB TOKEN_OP_ADD
@@ -126,16 +129,19 @@ block:   /* empty block */ {
          
       |  if_statement block { 
             ef_debug(1, "\t\t block_add if\n"); 
+            $$ = compiler_add_ifblk($1, $2);
          }
 
       |  if_else_statement block { 
             ef_debug(1, "\t\t block_add if_else\n"); 
+            $$ = compiler_add_ifblk($1, $2);
          }
       ;
       
 /* every instruction must be terminated with ; */      
 single_instruction: 
          instruction TOKEN_OP_END {
+            ef_debug(2, "\t\t INSTRUCTION\n");
             $$ = compiler_create_instruction(&$1);
          }
       ;
@@ -157,14 +163,17 @@ instruction:
 
 /* the if statement */
 if_statement: 
-         TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END 
-         { ef_debug(2, "\t\t IF\n"); }
+         TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END { 
+            ef_debug(2, "\t\t IF\n"); 
+            //$$ = compiler_create_ifblock($3, $6);
+         }
       ;
       
 /* if {} else {} */      
 if_else_statement: 
-         TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END TOKEN_ELSE TOKEN_BLK_BEGIN block TOKEN_BLK_END
-         { ef_debug(2, "\t\t IF ELSE\n"); }
+         TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END TOKEN_ELSE TOKEN_BLK_BEGIN block TOKEN_BLK_END { 
+            ef_debug(2, "\t\t IF ELSE\n"); 
+         }
       ;
 
 /* conditions used by the if statement */

@@ -48,7 +48,7 @@ Oct 2003:
       - selective log on connections
 
    + DISSECTORS
-      - telnet:
+      - TELNET:
          - empty password
          - only password (for routers)
       - convert all the old dissectors

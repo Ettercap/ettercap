@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.7 2003/03/24 15:54:35 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.8 2003/03/29 20:13:36 alor Exp $
 */
 
 #include <ec.h>
@@ -24,6 +24,7 @@
 #include <ec_ui.h>
 
 #include <sys/socket.h>
+#include <sys/stat.h>
 
 #include <pcap.h>
 #include <libnet.h>
@@ -94,6 +95,12 @@ void capture_init(void)
    
    ON_ERROR(pd, NULL, "%s", pcap_errbuf);
 
+   /* get the file size */
+   if (GBL_OPTIONS->read) {
+      struct stat st;
+      fstat(fileno(pcap_file(pd)), &st);
+      GBL_PCAP->dump_size = st.st_size;
+   }
 
    /* set the pcap filters */
    if (GBL_PCAP->filter != NULL) {

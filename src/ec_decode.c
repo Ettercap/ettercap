@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.9 2003/03/26 20:37:59 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.10 2003/03/29 20:13:36 alor Exp $
 */
 
 #include <ec.h>
@@ -78,8 +78,12 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    USER_MSG("ec_get_packets (one packet dispatched from pcap)\n");
 
    USER_MSG("CAPTURED: 0x%04x bytes form %s\n", pkthdr->caplen, param );
-   
-  
+
+
+   /* update the offset pointer */
+   if (GBL_OPTIONS->read)
+      GBL_PCAP->dump_off = ftell(pcap_file(GBL_PCAP->pcap));
+
    /* extract data and datalen from pcap packet */
    data = (u_char *)pkt;
    datalen = pkthdr->caplen;

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/interfaces/daemon/ec_daemon.c,v 1.4 2003/03/24 15:54:40 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/interfaces/daemon/ec_daemon.c,v 1.5 2003/03/29 20:13:43 alor Exp $
 */
 
 #include <ec.h>
@@ -47,6 +47,7 @@ void set_daemon_interface(void)
    ops.cleanup = &daemon_cleanup;
    ops.msg = &daemon_msg;
    ops.progress = &daemon_progress;
+   ops.type = UI_DAEMONIZE;
    
    ui_register(&ops);
    

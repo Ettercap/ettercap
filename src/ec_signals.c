@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.2 2003/03/14 23:46:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.3 2003/03/29 20:13:36 alor Exp $
 */
 
 #include <ec.h>
@@ -80,7 +80,7 @@ RETSIGTYPE signal_SEGV(int sig)
    fprintf (stderr, "  1) recompile %s in debug mode : \n"
                     "  \t\"configure --enable-debug && make clean && make\"\n\n", GBL_PROGRAM);
    fprintf (stderr, "  2) reproduce the critical situation\n\n");
-   fprintf (stderr, "  3) make a report : \"tar zcvf error.tar.gz %s_debug.log \"\n\n", GBL_PROGRAM);
+   fprintf (stderr, "  3) make a report : \"tar zcvf error.tar.gz %s%s_debug.log \"\n\n", GBL_PROGRAM, GBL_VERSION);
    fprintf (stderr, "  4) get the gdb backtrace :\n"
                     "  \t - \"gdb %s core\"\n"
                     "  \t - at the gdb prompt \"bt\"\n"
@@ -93,7 +93,7 @@ RETSIGTYPE signal_SEGV(int sig)
                    " Setting core size to RLIM_INFINITY...\n\n"
                    " Core dumping... (use the 'core' file for gdb analysis)\033[0m\n\n");
    
-   /* foce the coredump */
+   /* force the coredump */
    
    setrlimit(RLIMIT_CORE, &corelimit);
    signal(sig, SIG_DFL);
@@ -135,7 +135,7 @@ RETSIGTYPE signal_TERM(int sig)
    
    signal(sig, SIG_IGN);
 
-   exit(1);
+   clean_exit(0);
 
 }
 

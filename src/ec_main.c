@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.8 2003/03/26 22:17:39 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.9 2003/03/29 20:13:36 alor Exp $
 */
 
 #include <ec.h>
@@ -37,7 +37,8 @@
 
 /* protos */
 
-void drop_privs(void);
+static void drop_privs(void);
+void clean_exit(int errcode);
 
 /*******************************************/
 
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
     * we don't need any more root privs.
     */
    drop_privs();
-   
+
 /***** !! NO PRIVS AFTER THIS POINT !! *****/
 
    /* load all the plugins */
@@ -138,16 +139,11 @@ int main(int argc, char *argv[])
 
 /* drop root privs */
 
-void drop_privs(void)
+static void drop_privs(void)
 {
    int uid;
    char *var;
  
-#ifdef OS_CYGWIN
-   /* under windows we dont want to drop privs :) */
-   return;
-#endif
-   
    /* get the env variable for the UID to drop privs to */
    var = getenv("EC_UID");
    
@@ -171,6 +167,18 @@ void drop_privs(void)
 }
 
 
+/*
+ * cleanly exit from the program
+ */
+
+void clean_exit(int errcode)
+{
+   USER_MSG("\n\nTerminating %s...\n\n", GBL_PROGRAM);
+
+   ui_cleanup();
+
+   exit(errcode);
+}
 
 /* EOF */
 

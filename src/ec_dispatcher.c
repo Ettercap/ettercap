@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.7 2003/03/26 20:38:00 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.8 2003/03/29 20:13:36 alor Exp $
 */
 
 #include <ec.h>
@@ -76,8 +76,17 @@ EC_THREAD_FUNC(top_half)
       e = SIMPLEQ_FIRST(&po_queue);
       if (e == NULL) {
          PO_QUEUE_UNLOCK;
+      
+         /* XXX - exit if feof */
+         if (GBL_UI->type == UI_CONSOLE || GBL_UI->type == UI_DAEMONIZE) {
+            if (GBL_PCAP->dump_size == GBL_PCAP->dump_off) {
+               USER_MSG("\nEnd of dump file...\n");
+               clean_exit(0);
+            }
+         }
          continue;
       }
+   
       
       /* HOOK_POINT: DISPATCHER */
       hook_point(HOOK_DISPATCHER, e->po);

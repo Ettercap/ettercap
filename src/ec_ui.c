@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.8 2003/03/26 20:38:01 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.9 2003/03/29 20:13:36 alor Exp $
 */
 
 #include <ec.h>
@@ -70,7 +70,10 @@ void ui_start(void)
 {
    DEBUG_MSG("ui_start");
 
-   EXECUTE(GBL_UI->start);
+   if (GBL_UI->initialized)
+      EXECUTE(GBL_UI->start);
+   else
+      DEBUG_MSG("ui_start called initialized");
 }
 
 /* called to end the user interface */
@@ -79,8 +82,10 @@ void ui_cleanup(void)
 {
    if (GBL_UI->initialized) {
       DEBUG_MSG("ui_cleanup");
-      GBL_UI->initialized = 0;
       EXECUTE(GBL_UI->cleanup);
+      GBL_UI->initialized = 0;
+   } else {
+      DEBUG_MSG("ui_cleanup called before initialization");
    }
 }
 

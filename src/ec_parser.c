@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.13 2003/03/27 22:18:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.14 2003/03/29 20:13:36 alor Exp $
 */
 
 
@@ -80,7 +80,7 @@ void ec_usage(void)
 
    fprintf(stdout, "\n\n");
 
-   exit(0);
+   clean_exit(0);
 }
 
 
@@ -210,17 +210,17 @@ void parse_options(int argc, char **argv)
 
          case 'v':
                   printf("%s %s\n", GBL_PROGRAM, GBL_VERSION);
-                  exit(0);
+                  clean_exit(0);
                   break;
 
          case ':': // missing parameter
             fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
-            exit(0);
+            clean_exit(-1);
          break;
 
          case '?': // unknown option
             fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
-            exit(0);
+            clean_exit(-1);
          break;
       }
    }

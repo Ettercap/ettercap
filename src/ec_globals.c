@@ -15,13 +15,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_globals.c,v 1.3 2003/03/22 15:41:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_globals.c,v 1.4 2003/03/29 20:13:36 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_sniff.h>
 
-#define GBL_FREE(x) do{ if (x != NULL) free(x); }while(0)
+#define GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
 
 
 /* global vars */
@@ -31,7 +31,7 @@ struct globals *gbls;
 /* proto */
 
 void globals_alloc(void);
-static void globals_free(void);
+void globals_free(void);
 
 /*******************************************/
 
@@ -70,8 +70,6 @@ void globals_alloc(void)
    
    gbls->t2 = calloc(1, sizeof(struct target_env));
    ON_ERROR(gbls->t2, NULL, "can't allocate target t2");
-   
-   atexit(globals_free);
    
    return;
 }

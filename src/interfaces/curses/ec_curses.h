@@ -1,5 +1,5 @@
 
-/* $Id: ec_curses.h,v 1.3 2003/12/13 18:41:11 alor Exp $ */
+/* $Id: ec_curses.h,v 1.4 2003/12/14 14:20:40 alor Exp $ */
 
 #ifndef EC_CURSES_H
 #define EC_CURSES_H
@@ -16,8 +16,12 @@ extern void curses_sniff_offline(void);
 extern void curses_sniff_live(void);
 
 /* menus */
+extern struct wdg_menu menu_filters[]; 
+extern struct wdg_menu menu_hosts[]; 
+extern struct wdg_menu menu_mitm[]; 
+extern struct wdg_menu menu_plugins[]; 
 extern struct wdg_menu menu_start[]; 
-extern struct wdg_menu menu_target[]; 
+extern struct wdg_menu menu_targets[]; 
 extern struct wdg_menu menu_view[]; 
 
 #endif

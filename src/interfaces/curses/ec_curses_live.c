@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_live.c,v 1.4 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_curses_live.c,v 1.5 2003/12/14 14:20:40 alor Exp $
 */
 
 #include <ec.h>
@@ -39,33 +39,6 @@ void curses_sniff_live(void);
 void curses_sniff_live(void)
 {
    wdg_t *menu;
-   struct wdg_menu hosts[] = { {"Hosts",            "H", NULL},
-                               {"Host list",         "", NULL},
-                               {"-",                 "", NULL},
-                               {"Scan for hosts",    "", NULL},
-                               {"Load from file...", "", NULL},
-                               {"Save to file...",   "", NULL},
-                               {NULL, NULL, NULL},
-                             };
-   struct wdg_menu mitm[] = { {"Mitm",         "M", NULL},
-                              {"Arp poisoning", "", NULL},
-                              {"Icmp redirect", "", NULL},
-                              {"Port stealing", "", NULL},
-                              {"Dhcp spoofing", "", NULL},
-                              {NULL, NULL, NULL},
-                            };
-   struct wdg_menu filter[] = { {"Filters",         "F", NULL},
-                                {"Load a filter...", "", NULL},
-                                {"Stop filtering",   "", NULL},
-                                {NULL, NULL, NULL},
-                              };
-#ifdef HAVE_PLUGINS
-   struct wdg_menu plugin[] = { {"Plugins",       "P", NULL},
-                                {"Start a plugin", "", NULL},
-                                {"Stop a plugin",  "", NULL},
-                                {NULL, NULL, NULL},
-                              };
-#endif
    
    DEBUG_MSG("curses_sniff_live");
 
@@ -78,13 +51,13 @@ void curses_sniff_live(void)
    wdg_set_color(menu, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    /* add the menu from external files */
    wdg_menu_add(menu, menu_start);
-   wdg_menu_add(menu, menu_target);
-   wdg_menu_add(menu, hosts);
+   wdg_menu_add(menu, menu_targets);
+   wdg_menu_add(menu, menu_hosts);
    wdg_menu_add(menu, menu_view);
-   wdg_menu_add(menu, mitm);
-   wdg_menu_add(menu, filter);
+   wdg_menu_add(menu, menu_mitm);
+   wdg_menu_add(menu, menu_filters);
 #ifdef HAVE_PLUGINS
-   wdg_menu_add(menu, plugin);
+   wdg_menu_add(menu, menu_plugins);
 #endif
 
    wdg_draw_object(menu);

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.6 2003/12/09 22:32:54 alor Exp $
+# $Id: Makefile.am,v 1.7 2003/12/14 14:20:40 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -12,10 +12,14 @@ noinst_LIBRARIES = libec_curses.a
 libec_curses_a_CFLAGS = @EC_CFLAGS@ -Iwidgets
 
 libec_curses_a_SOURCES = ec_curses.c \
+                         ec_curses_filters.c \
+                         ec_curses_hosts.c \
                          ec_curses_live.c \
+                         ec_curses_mitm.c \
                          ec_curses_offline.c \
+                         ec_curses_plugins.c \
                          ec_curses_start.c \
-                         ec_curses_target.c \
+                         ec_curses_targets.c \
                          ec_curses_view.c 
 
 # hack to include libwdg.a objects into libec_curses.a

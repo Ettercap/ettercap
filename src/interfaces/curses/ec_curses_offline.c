@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_offline.c,v 1.1 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_curses_offline.c,v 1.2 2003/12/14 14:20:40 alor Exp $
 */
 
 #include <ec.h>
@@ -51,8 +51,9 @@ void curses_sniff_offline(void)
    wdg_set_color(menu, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    /* add the menu from the external files */
    wdg_menu_add(menu, menu_start);
-   wdg_menu_add(menu, menu_target);
+   wdg_menu_add(menu, menu_targets);
    wdg_menu_add(menu, menu_view);
+   wdg_menu_add(menu, menu_filters);
    wdg_draw_object(menu);
    
    /* repaint the whole screen */

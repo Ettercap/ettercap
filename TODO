@@ -26,9 +26,7 @@
 >>> current developmet state 
 
    + DISSECTOR
-      - x11 banner
       - telnet & rlogin
-      - imap
 
    + TOP HALF
       - connection tracking (with buffered conn)

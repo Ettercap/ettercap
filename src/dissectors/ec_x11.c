@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_x11.c,v 1.2 2003/07/07 19:34:55 alor Exp $
+    $Id: ec_x11.c,v 1.3 2003/07/09 08:53:53 alor Exp $
 */
 
 #include <ec.h>
@@ -62,9 +62,28 @@ void __init x11_init(void)
 
 FUNC_DECODER(dissector_x11)
 {
+   struct session *s = NULL;
+   void *ident;
    char tmp[MAX_ASCII_ADDR_LEN];
    struct x11_request *x11;
    int i;
+   
+   /* 
+    * check if it is the first packet sent by the server i
+    * after the session is created (cookie already sent)
+    */
+   IF_FIRST_PACKET_FROM_SERVER("x11", s, ident) {
+            
+      DEBUG_MSG("\tdissector_x11 BANNER");
+      /*
+       * get the banner 
+       * this parsing is very ugly, but is works (at least for me)
+       * it should be better checked in the header to find the 
+       * banner lenght etc etc...
+       */
+      PACKET->DISSECTOR.banner = strdup(PACKET->DATA.disp_data + 40);
+     
+   } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    
    /* skip messages coming from the server */
    if (dissect_on_port("x11", ntohs(PACKET->L4.src)) == ESUCCESS)
@@ -104,6 +123,15 @@ FUNC_DECODER(dissector_x11)
    for (i = 0; i < 16; i++)                                                                      
       sprintf(PACKET->DISSECTOR.pass + (i * 2), "%.2x", x11->data[i] ); 
    
+   /* 
+    * create the session to remember to check the
+    * banner on the next packet sent by server
+    * the check is made by IF_FIRST_PACKET_FROM_SERVER
+    */
+   dissect_create_session(&s, PACKET);
+   session_put(s);
+   
+   /* print the message */
    USER_MSG("X11 : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                  ntohs(PACKET->L4.dst), 
                                  PACKET->DISSECTOR.user,

@@ -55,6 +55,7 @@ ettercap_SOURCES = ec_capture.c \
 				   protocols/ec_udp.c \
 				   protocols/ec_icmp.c \
 				   dissectors/ec_ftp.c \
+				   dissectors/ec_imap.c \
 				   dissectors/ec_nntp.c \
 				   dissectors/ec_pop.c \
 				   dissectors/ec_x11.c 

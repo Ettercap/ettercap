@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.16 2004/05/14 13:17:22 alor Exp $
+    $Id: ec_wifi.c,v 1.17 2004/05/16 10:25:29 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
+#include <ec_dissect.h>
 #include <ec_capture.h>
 #include <ec_checksum.h>
 #include <ec_strings.h>
@@ -244,7 +245,7 @@ static int wep_decrypt(u_char *buf, size_t len)
    struct wep_header *wep;
    u_char tmpbuf[len];
 
-   USER_MSG("WEP: detected crypted packet\n");
+   DISSECT_MSG("WEP: detected crypted packet\n");
    
    /* get the wep header */
    wep = (struct wep_header *)buf;
@@ -253,6 +254,7 @@ static int wep_decrypt(u_char *buf, size_t len)
    /* copy the IV in the first 24 bit of the RC4 seed */
    memcpy(seed, wep->init_vector, IV_LEN);
 
+//printf("%02x%02x%02x\n", wep->init_vector[0], wep->init_vector[1], wep->init_vector[2]);   
    /* 
     * complete the seed with 40 or 104 bit from the secret key 
     * to have a 64 or 128 bit seed 
@@ -273,7 +275,7 @@ static int wep_decrypt(u_char *buf, size_t len)
          
    /* check if the decryption was successfull */
    if (CRC_checksum(tmpbuf, len + sizeof(u_int32), CRC_INIT) != CRC_RESULT) {
-      USER_MSG("WEP: invalid key, tha packet was skipped\n");
+      DISSECT_MSG("WEP: invalid key, tha packet was skipped\n");
       return -ENOTHANDLED;
    }
   

@@ -6,7 +6,7 @@ Legenda:
 
 =========================================
 
-NG-0.7.0_pre2    200405??
+NG-0.7.0_pre2    20040517
 
    + added support for UTF-8 strings
    + telnet collector enhacements (catches cisco login)

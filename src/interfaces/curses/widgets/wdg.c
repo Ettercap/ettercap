@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.24 2003/12/08 16:34:16 alor Exp $
+    $Id: wdg.c,v 1.25 2003/12/14 12:21:54 alor Exp $
 */
 
 #include <wdg.h>
@@ -71,6 +71,7 @@ void wdg_set_focus(struct wdg_object *wo);
 
 int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags);
 int wdg_destroy_object(struct wdg_object **wo);
+void wdg_add_destroy_key(struct wdg_object *wo, int key, void (*callback)(void));
 
 void wdg_set_size(struct wdg_object *wo, int x1, int y1, int x2, int y2);
 void wdg_draw_object(struct wdg_object *wo);
@@ -374,6 +375,14 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
    /* the focused object is modal ! send only to it */
    if (wdg_focused_obj && (wdg_focused_obj->wo->flags & WDG_OBJ_FOCUS_MODAL)) {
       wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse);
+
+      /* check the destroy callback */
+      if (wdg_focused_obj->wo && key == wdg_focused_obj->wo->destroy_key) {
+         struct wdg_object *wo = wdg_focused_obj->wo;
+         WDG_EXECUTE(wdg_focused_obj->wo->destroy_callback);
+         wdg_destroy_object(&wo);
+      }
+         
       /* other objects must not receive the msg */
       return;
    }
@@ -412,6 +421,13 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
          if (wdg_root_obj->get_msg(wdg_root_obj, key, mouse) == WDG_ESUCCESS)
             /* the root object handled the message */
             return;
+         
+         /* check the destroy callback */
+         if (key == wdg_root_obj->destroy_key) {
+            WDG_EXECUTE(wdg_root_obj->destroy_callback);
+            wdg_destroy_object(&wdg_root_obj);
+            return;
+         }
       }
 
       /* 
@@ -421,7 +437,15 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
       if (wdg_focused_obj != NULL) {
          if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse) == WDG_ESUCCESS)
             /* the focused object handled the message */
+            return;      
+         
+         /* check the destroy callback */
+         if (wdg_focused_obj->wo && key == wdg_focused_obj->wo->destroy_key) {
+            struct wdg_object *wo = wdg_focused_obj->wo;
+            WDG_EXECUTE(wdg_focused_obj->wo->destroy_callback);
+            wdg_destroy_object(&wo);
             return;
+         }
       }
       
       /* noone handled the message, flash an error */
@@ -620,7 +644,6 @@ int wdg_destroy_object(struct wdg_object **wo)
    
          /* free the title */
          WDG_SAFE_FREE((*wo)->title);
-         WDG_BUG_IF((*wo)->title != NULL);
          /* then free the object */
          WDG_SAFE_FREE(*wo);
          
@@ -629,6 +652,15 @@ int wdg_destroy_object(struct wdg_object **wo)
    }
 
    return -WDG_ENOTHANDLED;
+}
+
+/*
+ * set the destroy key and callback
+ */
+void wdg_add_destroy_key(struct wdg_object *wo, int key, void (*callback)(void))
+{
+   wo->destroy_key = key;
+   wo->destroy_callback = callback;
 }
 
 /*

@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.21 2003/12/07 18:21:05 alor Exp $ */
+/* $Id: wdg.h,v 1.22 2003/12/14 12:21:54 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -39,7 +39,7 @@
 #endif
 
 
-#define LIBWDG_VERSION "0.0.8"
+#define LIBWDG_VERSION "0.8.1"
    
 /********************************************/
 
@@ -130,6 +130,7 @@ struct wdg_scr {
 
 /* global scruct for current screen */
 extern struct wdg_scr current_screen;
+extern struct wdg_obj_list *wdg_focused_obj;
 
 /* struct for mouse events */
 struct wdg_mouse_event {
@@ -162,6 +163,8 @@ struct wdg_object {
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
+   int destroy_key;
+   void (*destroy_callback)(void);
    /* called to set / reset the size */
    int (*resize)(struct wdg_object *wo);
    /* called upon redrawing of the object */
@@ -255,6 +258,7 @@ extern void wdg_del_idle_callback(void (*callback)(void));
 /* object creation */
 extern int wdg_create_object(wdg_t **wo, size_t type, size_t flags);
 extern int wdg_destroy_object(wdg_t **wo);
+extern void wdg_add_destroy_key(wdg_t *wo, int key, void (*callback)(void));
 
 /* object modifications */
 extern void wdg_set_size(wdg_t *wo, int x1, int y1, int x2, int y2);

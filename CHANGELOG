@@ -9,6 +9,7 @@ Legenda:
 NG-0.7.1         200407
 
    + added a new plugin: isolate
+   !! fixed compilation of strtok_r under solaris
 
 
 NG-0.7.0         20040705

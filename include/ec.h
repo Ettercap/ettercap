@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.25 2004/06/27 12:51:01 alor Exp $ */
+/* $Id: ec.h,v 1.26 2004/07/06 15:56:01 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -18,8 +18,11 @@
    #include <windows.h>
 #endif
 
-#if !defined (__USE_GNU)  /* for memmem(), strsignal(), etc etc... */
+#if !defined (__USE_GNU)   /* for memmem(), strsignal(), etc etc... */
    #define __USE_GNU
+#endif
+#ifdef OS_SOLARIS
+   #define _REENTRANT      /* for strtok_r() */
 #endif
 #include <string.h>
 #if defined (__USE_GNU)

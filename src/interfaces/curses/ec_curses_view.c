@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.10 2004/01/20 15:36:25 alor Exp $
+    $Id: ec_curses_view.c,v 1.11 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
 #include <wdg.h>
 #include <ec_curses.h>
 #include <ec_format.h>
+#include <ec_profiles.h>
 
 /* proto */
 
@@ -33,17 +34,20 @@ static void curses_stop_stats(void);
 static void refresh_stats(void);
 static void curses_vis_method(void);
 static void set_method(void);
+static void curses_show_profiles(void);
+static void curses_kill_profiles(void);
+static void refresh_profiles(void);
 
 /* globals */
 
 static char tag_resolve[] = " ";
-static wdg_t *wdg_stats;
+static wdg_t *wdg_stats, *wdg_profiles;
 #define VLEN 8
 static char vmethod[VLEN];
 
 struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
                                 {"Connections",          'c', "c", NULL},
-                                {"Profiles",             'o', "o", NULL},
+                                {"Profiles",             'o', "o", curses_show_profiles},
                                 {"Statistics",           's', "s", curses_show_stats},
                                 {"-",                     0,  "",  NULL},
                                 {"Resolve IP addresses",  0, tag_resolve,   toggle_resolve},
@@ -156,6 +160,60 @@ static void curses_vis_method(void)
 static void set_method(void)
 {
    set_format(vmethod);
+}
+
+/*
+ * the auto-refreshing list of profiles 
+ */
+static void curses_show_profiles(void)
+{
+   DEBUG_MSG("curses_show_profiles");
+
+   /* if the object already exist, set the focus to it */
+   if (wdg_profiles) {
+      wdg_set_focus(wdg_profiles);
+      return;
+   }
+   
+   wdg_create_object(&wdg_profiles, WDG_DYNLIST, WDG_OBJ_WANT_FOCUS);
+   
+   wdg_set_title(wdg_profiles, "Collected passive profiles:", WDG_ALIGN_LEFT);
+   wdg_set_size(wdg_profiles, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
+   wdg_set_color(wdg_profiles, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(wdg_profiles, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(wdg_profiles, WDG_COLOR_BORDER, EC_COLOR_BORDER);
+   wdg_set_color(wdg_profiles, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(wdg_profiles, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+   wdg_draw_object(wdg_profiles);
+ 
+   wdg_set_focus(wdg_profiles);
+
+   /* set the list print callback */
+   wdg_dynlist_print_callback(wdg_profiles, profile_print);
+  
+   /* add the callback on idle to refresh the profile list */
+   wdg_add_idle_callback(refresh_profiles);
+
+   /* add the destroy callback */
+   wdg_add_destroy_key(wdg_profiles, CTRL('Q'), curses_kill_profiles);
+}
+
+static void curses_kill_profiles(void)
+{
+   DEBUG_MSG("curses_kill_profiles");
+   wdg_del_idle_callback(refresh_profiles);
+
+   /* the object does not exist anymore */
+   wdg_profiles = NULL;
+}
+
+static void refresh_profiles(void)
+{
+   /* if not focused don't refresh it */
+   if (!(wdg_profiles->flags & WDG_OBJ_FOCUSED))
+      return;
+   
+   wdg_dynlist_refresh(wdg_profiles);
 }
 
 /* EOF */

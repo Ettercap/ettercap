@@ -42,11 +42,6 @@ this is the unofficial and floating in time roadmap:
       - connection management
       + LIBWDG
          - fix the box() under freebsd
-         - widgets:
-            - selectable lists (auto refresh)
-
-   + ETTERLOG
-      - multiple file at once
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
@@ -70,8 +65,6 @@ this is the unofficial and floating in time roadmap:
       - automatic add of new hosts
       port all the plugins to NG:
          - lurker    -> find_ettercap
-         - dwarf     -> (will be integrated with etterlog)
-         - thief     -> (same as dwarf)
          - golem     -> res_exhaust
          - leech     -> isolate
          - triton    -> gw_discover
@@ -81,7 +74,7 @@ this is the unofficial and floating in time roadmap:
    + CONNECTION
       - kill a connection
       - type (service)
-     
+    
 
 ============================
   Not in the first release  
@@ -93,7 +86,7 @@ this is the unofficial and floating in time roadmap:
    + BINDER
    
    + ETTERLOG
-      - extract files from streams looking for mime content
+      - extract files from streams looking for mime content or protocol
    
    + FILTERING ENGINE
       - quick filter on a connection

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.27 2003/12/28 17:20:12 alor Exp $
+    $Id: ec_conf.c,v 1.28 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
@@ -371,11 +371,11 @@ static void set_dissector(char *name, char *values, int lineno)
       /* the first value replaces all the previous */
       if (p == q) {
          if (dissect_modify(MODE_REP, name, value) != ESUCCESS)
-            FATAL_ERROR("Dissector \"%s\" does not exists (%s line %d)", name, ETTER_CONF, lineno);
+            fprintf(stderr, "Dissector \"%s\" not supported (%s line %d)\n", name, ETTER_CONF, lineno);
       } else {
          /* the other values have to be added */
          if (dissect_modify(MODE_ADD, name, value) != ESUCCESS)
-            FATAL_ERROR("Dissector \"%s\" does not exists (%s line %d)", name, ETTER_CONF, lineno);
+            fprintf(stderr, "Dissector \"%s\" not supported (%s line %d)\n", name, ETTER_CONF, lineno);
       }
       
    }

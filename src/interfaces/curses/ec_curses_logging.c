@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_logging.c,v 1.1 2004/01/06 15:03:15 alor Exp $
+    $Id: ec_curses_logging.c,v 1.2 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
@@ -111,7 +111,7 @@ static void log_info(void)
 
 static void curses_stop_log(void)
 {
-   set_loglevel(LOG_STOP, NULL);
+   set_loglevel(LOG_STOP, "");
    curses_message("Logging was stopped.");
 }
 

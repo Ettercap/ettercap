@@ -1,5 +1,5 @@
 
-/* $Id: ec_profiles.h,v 1.13 2003/10/27 21:25:44 alor Exp $ */
+/* $Id: ec_profiles.h,v 1.14 2004/02/01 16:48:51 alor Exp $ */
 
 #ifndef EC_PROFILES_H
 #define EC_PROFILES_H
@@ -62,7 +62,7 @@ struct host_profile {
    /* OS fingerprint */
    u_char fingerprint[FINGER_LEN+1];
 
-   LIST_ENTRY(host_profile) next;
+   TAILQ_ENTRY(host_profile) next;
 };
 
 /* exported functions */
@@ -74,6 +74,8 @@ extern int profile_convert_to_hostlist(void);
 /* fake forward declaration (profiles include packet and viceversa) */
 struct packet_object;
 extern void profile_parse(struct packet_object *po);
+
+extern void * profile_print(int mode, void *list, char **desc, size_t len);
 
 #endif
 

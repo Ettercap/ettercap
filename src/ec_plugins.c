@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.27 2004/01/04 11:13:03 alor Exp $
+    $Id: ec_plugins.c,v 1.28 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
@@ -303,6 +303,10 @@ int plugin_list_walk(int min, int max, void (*func)(char, struct plugin_ops *))
    SLIST_FOREACH(p, &plugin_head, next) {
       if (i > max)
          return (i-1);
+      if (i < min) {
+         i++;
+         continue;
+      }
       func(p->activated, p->ops);
       i++;
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_plugins.c,v 1.10 2004/01/20 11:42:27 alor Exp $
+    $Id: ec_curses_plugins.c,v 1.11 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
@@ -138,7 +138,7 @@ static void curses_plugin_mgmt(void)
    wdg_add_destroy_key(wdg_plugin, CTRL('Q'), curses_plug_destroy);
   
    /* add the callback */
-   wdg_list_add_callback(wdg_plugin, KEY_RETURN, curses_select_plugin);
+   wdg_list_select_callback(wdg_plugin, curses_select_plugin);
    
    wdg_draw_object(wdg_plugin);
    

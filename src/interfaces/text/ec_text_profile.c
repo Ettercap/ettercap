@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_profile.c,v 1.4 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_text_profile.c,v 1.5 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
@@ -124,7 +124,7 @@ static void detail_hosts(int type)
    int at_least_one = 0;
    
    /* go thru the list and print a profile for each host */
-   LIST_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
 
       if (h->type & type) {
          
@@ -156,10 +156,8 @@ static void detail_select(void)
    int i = 0, n = -1;
    
    /* go thru the list and print a profile for each host */
-   LIST_FOREACH(h, &GBL_PROFILES, next) {
-      
-      fprintf(stdout, "%2d) %s \n", ++i, ip_addr_ntoa(&h->L3_addr, tmp));
-  
+   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+      fprintf(stdout, "%2d) %15s   %s\n", ++i, ip_addr_ntoa(&h->L3_addr, tmp), (h->hostname) ? h->hostname : "");
    }
       
    /* there aren't any profiles */
@@ -190,13 +188,13 @@ static void detail_select(void)
          break;
       case 0:
          /* print ALL the profiles */
-         LIST_FOREACH(h, &GBL_PROFILES, next)
+         TAILQ_FOREACH(h, &GBL_PROFILES, next)
             print_host(h);
          
          break;
       default:
          i = 1;
-         LIST_FOREACH(h, &GBL_PROFILES, next) {
+         TAILQ_FOREACH(h, &GBL_PROFILES, next) {
             if (i++ == n)
                print_host(h);
          }

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.91 2004/01/18 19:30:29 alor Exp $
+dnl    $Id: configure.in,v 1.92 2004/02/01 16:48:50 alor Exp $
 dnl
 
 AC_INIT
@@ -488,9 +488,7 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
      AC_MSG_RESULT(no)
      ;;
   *)
-     if test -f $withval/include/openssl/ssl.h \
-             -a -f $withval/lib/libcrypto.a \
-             -o -f $withval/libcrypto.a; then
+     if test -f $withval/include/openssl/ssl.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/include"
@@ -499,8 +497,7 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
         AM_CONDITIONAL(OPENSSL, true)
         ac_ec_libssl=$withval
         AC_MSG_RESULT($withval)
-     elif test -f $withval/ssl/include/openssl/ssl.h -a \
-               -f $withval/ssl/lib/libcrypto.a; then
+     elif test -f $withval/ssl/include/openssl/ssl.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/ssl/include"
@@ -511,7 +508,7 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
         AC_MSG_RESULT($withval)
      else
         AC_MSG_RESULT(no)
-        AC_MSG_ERROR([ssl.h or libssl.a not found in $withval])
+        AC_MSG_ERROR([ssl.h not found in $withval])
      fi
      ;;
   esac ],

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ppp.c,v 1.10 2003/12/11 13:46:43 lordnaga Exp $
+    $Id: ec_ppp.c,v 1.11 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
@@ -97,7 +97,7 @@ FUNC_DECODER(decode_ppp)
    struct ppp_chap_challenge *chapch;
    u_int16 proto;
    u_int32 i;
-   u_char *p, user[128], dummy[3], auth_len, temp[128], *pap_auth;
+   u_char user[128], dummy[3], auth_len, temp[128], *pap_auth;
    static u_char  version=0, schallenge[512];
 #ifdef HAVE_OPENSSL
    u_char digest[SHA_DIGEST_LENGTH];
@@ -202,6 +202,8 @@ FUNC_DECODER(decode_ppp)
 		  	
             } else if (version == 2) {
 #ifdef HAVE_OPENSSL 
+               u_char *p;
+
                if ((p = strchr(user, '\\')) == NULL)
                   p = user;
                else 

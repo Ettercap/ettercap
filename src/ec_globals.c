@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_globals.c,v 1.11 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_globals.c,v 1.12 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
@@ -54,6 +54,9 @@ void globals_alloc(void)
    SAFE_CALLOC(gbls->t1, 1, sizeof(struct target_env));
    SAFE_CALLOC(gbls->t2, 1, sizeof(struct target_env));
    SAFE_CALLOC(gbls->filters, 1, sizeof(struct filter_env));
+
+   /* init the struct */
+   TAILQ_INIT(&GBL_PROFILES);
    
    return;
 }

@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.53 2004/01/21 21:05:52 alor Exp $ */
+/* $Id: ec_globals.h,v 1.54 2004/02/01 16:48:51 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -149,7 +149,7 @@ struct globals {
    struct target_env *t1;
    struct target_env *t2;
    LIST_HEAD(, hosts_list) hosts_list_head;
-   LIST_HEAD(, host_profile) profiles_list_head;
+   TAILQ_HEAD(gbl_ptail, host_profile) profiles_list_head;
    struct filter_env *filters;
 };
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.29 2004/01/04 16:29:28 alor Exp $
+    $Id: ec_profiles.c,v 1.30 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
@@ -47,6 +47,8 @@ static int profile_add_user(struct packet_object *po);
 static void update_info(struct host_profile *h, struct packet_object *po);
 static void update_port_list(struct host_profile *h, struct packet_object *po);
 static void set_gateway(u_char *L2_addr);
+
+void * profile_print(int mode, void *list, char **desc, size_t len);
 
 /* global mutex on interface */
 
@@ -170,7 +172,7 @@ static int profile_add_host(struct packet_object *po)
    PROFILE_LOCK;
 
    /* search if it already exists */
-   LIST_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
       /* an host is identified by the mac and the ip address */
       /* if the mac address is null also update it since it could
        * be captured as a DNS packet specifying the GW 
@@ -213,18 +215,18 @@ static int profile_add_host(struct packet_object *po)
    update_info(h, po);
    
    /* search the right point to inser it (ordered ascending) */
-   LIST_FOREACH(c, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(c, &GBL_PROFILES, next) {
       if ( ip_addr_cmp(&c->L3_addr, &h->L3_addr) > 0 )
          break;
       last = c;
    }
    
-   if (LIST_FIRST(&GBL_PROFILES) == NULL) 
-      LIST_INSERT_HEAD(&GBL_PROFILES, h, next);
+   if (TAILQ_FIRST(&GBL_PROFILES) == NULL) 
+      TAILQ_INSERT_HEAD(&GBL_PROFILES, h, next);
    else if (c != NULL) 
-      LIST_INSERT_BEFORE(c, h, next);
+      TAILQ_INSERT_BEFORE(c, h, next);
    else 
-      LIST_INSERT_AFTER(last, h, next);
+      TAILQ_INSERT_AFTER(&GBL_PROFILES, last, h, next);
 
    PROFILE_UNLOCK;
    
@@ -284,7 +286,7 @@ static void set_gateway(u_char *L2_addr)
 
    PROFILE_LOCK;
 
-   LIST_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
       if (!memcmp(h->L2_addr, L2_addr, MEDIA_ADDR_LEN) ) {
          h->type |= FP_GATEWAY; 
          PROFILE_UNLOCK;
@@ -370,7 +372,7 @@ static int profile_add_user(struct packet_object *po)
    PROFILE_LOCK; 
    
    /* search the right port on the right host */
-   LIST_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
       
       /* right host */
       if ( !ip_addr_cmp(&h->L3_addr, &po->L3.dst) ) {
@@ -488,7 +490,7 @@ static void profile_purge(int flags)
    
    PROFILE_LOCK;
 
-   LIST_FOREACH_SAFE(h, &GBL_PROFILES, next, tmp_h) {
+   TAILQ_FOREACH_SAFE(h, &GBL_PROFILES, next, tmp_h) {
 
       /* the host matches the flags */
       if (h->type & flags) {
@@ -509,7 +511,7 @@ static void profile_purge(int flags)
             LIST_REMOVE(o, next);
             SAFE_FREE(o);
          }
-         LIST_REMOVE(h, next);
+         TAILQ_REMOVE(&GBL_PROFILES, h, next);
          SAFE_FREE(h);
       }
    }
@@ -535,7 +537,7 @@ int profile_convert_to_hostlist(void)
    /* now parse the profile list and create the hosts list */
    PROFILE_LOCK;
 
-   LIST_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
       /* add only local hosts */
       if (h->type & FP_HOST_LOCAL) {
          /* the actual add */
@@ -549,6 +551,40 @@ int profile_convert_to_hostlist(void)
    return count;
 }
 
+
+/*
+ * fill the desc 
+ */
+void * profile_print(int mode, void *list, char **desc, size_t len)
+{
+   struct host_profile *h = (struct host_profile *)list;
+   char tmp[MAX_ASCII_ADDR_LEN];
+
+   /* NULL is used to retrieve the first element */
+   if (list == NULL)
+      return TAILQ_FIRST(&GBL_PROFILES);
+
+   /* the caller wants the description */
+   if (desc != NULL) {
+      ip_addr_ntoa(&h->L3_addr, tmp);
+      snprintf(*desc, len, "%15s   %s", tmp, (h->hostname) ? h->hostname : "" );
+   }
+  
+   /* return the next/prev/current to the caller */
+   switch (mode) {
+      case -1:
+         return TAILQ_PREV(h, gbl_ptail, next);
+         break;
+      case +1:
+         return TAILQ_NEXT(h, next);
+         break;
+      default:
+         return list;
+         break;
+   }
+         
+   return NULL;
+}
 
 /* EOF */
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.1 2003/03/25 18:43:15 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.2 2003/03/26 22:17:41 alor Exp $
 */
 
 
@@ -47,11 +47,19 @@ void el_usage(void)
    fprintf(stdout, "\nUsage: %s [OPTIONS] logfile\n", GBL_PROGRAM);
 
    fprintf(stdout, "\nGeneral Options:\n");
-   fprintf(stdout, "  -a, --analyze               analyze a log file and return useful infos\n\n");
+   fprintf(stdout, "  -a, --analyze               analyze a log file and return useful infos\n");
+   fprintf(stdout, "  -c, --connections           print the table of connections\n");
+   fprintf(stdout, "  -f, --filter <TARGET>       print packet only from this target\n");
+   fprintf(stdout, "  -F, --filcon <conn #>       print packet only from connection number #\n");
    
    fprintf(stdout, "\nVisualization Method:\n");
-   fprintf(stdout, "  -x, --hex                   print the packet in hex mode\n\n");
+   fprintf(stdout, "  -X, --hex                   print packets in hex mode\n");
+   fprintf(stdout, "  -A, --ascii                 print packets in ascii mode\n");
+   fprintf(stdout, "  -T, --text                  print packets in text mode\n");
+   fprintf(stdout, "  -E, --ebcdic                print packets in ebcdic mode\n");
+   fprintf(stdout, "  -H, --html                  print packets in html mode\n");
    
+   fprintf(stdout, "\nStandard Options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
 
@@ -69,7 +77,16 @@ void parse_options(int argc, char **argv)
       { "help", no_argument, NULL, 'h' },
       { "version", no_argument, NULL, 'v' },
       
-      { "hex", no_argument, NULL, 'x' },
+      { "hex", no_argument, NULL, 'X' },
+      { "ascii", no_argument, NULL, 'A' },
+      { "text", no_argument, NULL, 'T' },
+      { "ebcdic", no_argument, NULL, 'E' },
+      { "html", no_argument, NULL, 'H' },
+      
+      { "analyze", no_argument, NULL, 'a' },
+      { "connections", no_argument, NULL, 'c' },
+      { "filter", required_argument, NULL, 'f' },
+      { "filcon", required_argument, NULL, 'F' },
       
       { 0 , 0 , 0 , 0}
    };
@@ -77,7 +94,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "ahxv", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "ahXv", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -85,6 +102,10 @@ void parse_options(int argc, char **argv)
                   GBL.analyze = 1;
                   break;
          
+         case 'X':
+                  //GBL.print = &hex_print;
+                  break;
+                  
          case 'h':
                   el_usage();
                   break;

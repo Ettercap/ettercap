@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.3 2003/03/26 20:38:00 alor Exp $
+    $Id: ec_log.c,v 1.4 2003/03/26 22:17:38 alor Exp $
 */
 
 #include <ec.h>
@@ -56,6 +56,7 @@ void set_loglevel(int level, char *filename)
 {
    char eci[strlen(filename)+5];
    char ecp[strlen(filename)+5];
+   int zerr;
    
    DEBUG_MSG("set_loglevel(%d,%s)", level, filename); 
 
@@ -66,7 +67,7 @@ void set_loglevel(int level, char *filename)
    switch(level) {
       case LOG_PACKET:
          fd_ecp = gzopen(ecp, "wb9");
-         ON_ERROR(fd_ecp, NULL, "Can't create %s", ecp);
+         ON_ERROR(fd_ecp, NULL, "%s", gzerror(fd_ecp, &zerr));
 
          /* set the permissions */
          chmod(ecp, 0600);
@@ -80,7 +81,7 @@ void set_loglevel(int level, char *filename)
          
       case LOG_INFO:
          fd_eci = gzopen(eci, "wb9");
-         ON_ERROR(fd_eci, NULL, "Can't create %s", eci);
+         ON_ERROR(fd_eci, NULL, "%s", gzerror(fd_eci, &zerr));
          
          /* set the permissions */
          chmod(eci, 0600);
@@ -101,11 +102,13 @@ void log_close(void)
 {
    DEBUG_MSG("ATEXIT: log_close");
 
-   if (fd_ecp) 
+   if (fd_ecp) {
       gzclose(fd_ecp);
+   }
    
-   if (fd_eci) 
+   if (fd_eci) {
       gzclose(fd_eci);
+   }
 }
 
 /*
@@ -116,7 +119,7 @@ void log_close(void)
 static int log_write_header(gzFile fd, int type)
 {
    struct log_global_header lh;
-   int c;
+   int c, zerr;
    
    DEBUG_MSG("log_write_header : type %d", type);
 
@@ -138,7 +141,7 @@ static int log_write_header(gzFile fd, int type)
    lh.type = htonl(type);
 
    c = gzwrite(fd, &lh, sizeof(lh));
-   ON_ERROR(c, -1, "Can't write to the logfile");
+   ON_ERROR(c, -1, "%s", gzerror(fd, &zerr));
          
    return c;
 }
@@ -150,7 +153,7 @@ static int log_write_header(gzFile fd, int type)
 void log_packet(struct packet_object *po)
 {
    struct log_header_packet hp;
-   int c;
+   int c, zerr;
 
    /* adjust the timestamp */
    memcpy(&hp.tv, &po->ts, sizeof(struct timeval));
@@ -163,6 +166,7 @@ void log_packet(struct packet_object *po)
    memcpy(&hp.L3_src, &po->L3.src, sizeof(struct ip_addr));
    memcpy(&hp.L3_dst, &po->L4.dst, sizeof(struct ip_addr));
   
+   hp.L4_flags = po->L4.flags;
    hp.L4_proto = po->L4.proto;
    hp.L4_src = po->L4.src;
    hp.L4_dst = po->L4.dst;
@@ -170,11 +174,11 @@ void log_packet(struct packet_object *po)
    hp.len = htonl(po->disp_len);
 
    c = gzwrite(fd_ecp, &hp, sizeof(hp));
-   ON_ERROR(c, -1, "Can't write to the logfile");
+   ON_ERROR(c, -1, "%s", gzerror(fd_ecp, &zerr));
 
    c = gzwrite(fd_ecp, po->disp_data, po->disp_len);
-   ON_ERROR(c, -1, "Can't write to the logfile");
-   
+   ON_ERROR(c, -1, "%s", gzerror(fd_ecp, &zerr));
+  
 }
 
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.2 2003/03/24 15:54:35 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.3 2003/03/26 22:17:38 alor Exp $
 
 */
 
@@ -29,6 +29,8 @@
 #ifdef HAVE_NCURSES
    #include <ncurses.h>
 #endif
+
+#include <zlib.h>
 
 #include <stdarg.h>
 #ifdef HAVE_SYS_UTSNAME_H
@@ -74,6 +76,7 @@ void debug_init(void)
       fprintf (debug_file, "-> compiled with gcc %d.%d\n", __GNUC__, __GNUC_MINOR__);
    #endif
 //   fprintf(debug_file, "-> libpcap version %s\n", pcap_version);
+   fprintf(debug_file, "-> libz version %s\n", zlibVersion());
    #ifdef HAVE_NCURSES 
       fprintf (debug_file, "-> %s\n", curses_version());
    #endif

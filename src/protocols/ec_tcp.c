@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.5 2003/03/26 20:38:02 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.6 2003/03/26 22:17:39 alor Exp $
 */
 
 #include <ec.h>
@@ -106,6 +106,9 @@ FUNC_DECODER(decode_tcp)
    
    /* this is TCP */
    PACKET->L4.proto = NL_TYPE_TCP;
+   
+   /* save the flags */
+   PACKET->L4.flags = tcp->flags;
 
    /* set up the data poiters */
    PACKET->DATA.data = opt_end;

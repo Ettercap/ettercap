@@ -8,16 +8,11 @@
    ?? VBUF functions for dissectors (it is needed ?) ??
    
    !! dissector malloc the INFO, someone have to free them... !!
-   !! dissector malloc the PASSIVE, someone have to free them... !!
-
-
-   !! FIX THE HEX_FORMAT FUNCTION
-
 
    + PLUGINS ENGINE
       - replace the search point form . to INSTALL_PREFIX/lib
       - cygwin issue (study libltdl)
-      - use libldtdl (problem even on openbsd)
+      - use libldtdl (problems even on openbsd)
       - LTDL_SHLIB_EXT
       - make test with dlopen-test
 

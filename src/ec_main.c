@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.7 2003/03/24 22:45:06 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.8 2003/03/26 22:17:39 alor Exp $
 */
 
 #include <ec.h>
@@ -52,9 +52,9 @@ int main(int argc, char *argv[])
   
    GBL_PROGRAM = strdup(EC_PROGRAM);
    GBL_VERSION = strdup(EC_VERSION);
-   GBL_DEBUG_FILE = calloc(1, strlen(EC_PROGRAM) + strlen("_debug.log") + 1);
+   GBL_DEBUG_FILE = calloc(1, strlen(EC_PROGRAM) + strlen(EC_VERSION) + strlen("_debug.log") + 1);
    ON_ERROR(GBL_DEBUG_FILE, NULL, "can't allocate debug filename");
-   sprintf(GBL_DEBUG_FILE, "%s_debug.log", GBL_PROGRAM);
+   sprintf(GBL_DEBUG_FILE, "%s%s_debug.log", GBL_PROGRAM, EC_VERSION);
    
    DEBUG_INIT();
    DEBUG_MSG("main -- here we go !!");

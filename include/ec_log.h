@@ -57,6 +57,7 @@ struct log_header_packet {
    struct ip_addr L3_dst;
    
    u_int8 L4_proto;
+   u_int8 L4_flags;
    u_int16 L4_src;
    u_int16 L4_dst;
    

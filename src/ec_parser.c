@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.11 2003/03/24 22:45:06 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.12 2003/03/26 22:17:39 alor Exp $
 */
 
 
@@ -74,8 +74,9 @@ void ec_usage(void)
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n\n");
    
    fprintf(stdout, "  -L, --log <logfile>         log all the traffic to this <logfile>\n");
-   fprintf(stdout, "  -l, --log-info <logfile>    log only passive infos to this <logfile>\n\n");
+   fprintf(stdout, "  -l, --log-info <logfile>    log only passive infos to this <logfile>\n");
    
+   fprintf(stdout, "\nStandard options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
 

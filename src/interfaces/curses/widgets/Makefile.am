@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.8 2003/11/17 10:58:23 alor Exp $
+# $Id: Makefile.am,v 1.9 2003/11/23 18:07:57 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -12,6 +12,7 @@ libwdg_a_CFLAGS = @EC_CFLAGS@
 libwdg_a_SOURCES = wdg.c \
                    wdg_dialog.c \
                    wdg_error.c \
+                   wdg_file.c \
                    wdg_menu.c \
                    wdg_panel.c \
                    wdg_percentage.c \

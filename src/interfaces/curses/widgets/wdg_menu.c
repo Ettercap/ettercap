@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.4 2003/11/09 12:13:17 alor Exp $
+    $Id: wdg_menu.c,v 1.5 2003/11/23 18:07:57 alor Exp $
 */
 
 #include <wdg.h>
@@ -109,8 +109,6 @@ static int wdg_menu_destroy(struct wdg_object *wo)
          free_item(mu->items[i]);
          i++;
       }
-      /* the actual menu */
-      free_menu(mu->m);
 
       TAILQ_REMOVE(&ww->menu_list, mu, next);
       WDG_SAFE_FREE(mu);
@@ -173,7 +171,7 @@ static int wdg_menu_redraw(struct wdg_object *wo)
       wbkgd(ww->menu, COLOR_PAIR(wo->window_color));
       redrawwin(ww->menu);
 
-      /* no scrolling ro menu */
+      /* no scrolling for menu */
       scrollok(ww->menu, FALSE);
 
    }
@@ -433,9 +431,9 @@ static int wdg_menu_virtualize(int key)
       case KEY_EXIT:
          return (MAX_COMMAND + 1);
       case KEY_NPAGE:
-         return (REQ_SCR_UPAGE);
-      case KEY_PPAGE:
          return (REQ_SCR_DPAGE);
+      case KEY_PPAGE:
+         return (REQ_SCR_UPAGE);
       case KEY_DOWN:
          return (REQ_NEXT_ITEM);
       case KEY_UP:
@@ -518,6 +516,7 @@ static void wdg_menu_open(struct wdg_object *wo)
 
    /* set the dimensions */
    set_menu_format(ww->focus_unit->m, ww->focus_unit->nitems, 1);
+   set_menu_spacing(ww->focus_unit->m, 2, 0, 0);
 
    /* get the geometry to make a window */
    scale_menu(ww->focus_unit->m, &mrows, &mcols);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.15 2003/11/10 16:11:19 alor Exp $
+    $Id: ec_curses.c,v 1.16 2003/11/23 18:07:52 alor Exp $
 */
 
 #include <ec.h>
@@ -39,6 +39,7 @@ static void curses_progress(char *title, int value, int max);
 
 void msg(void);
 void percent(void);
+void file_open(void);
 
 /*******************************************/
 
@@ -149,7 +150,7 @@ void curses_interface(void)
 {
    wdg_t *win1, *win2, *win3, *menu, *dlg;
    struct wdg_menu file[] = { {"File",    "F",  NULL},
-                              {"Open...", "",  NULL},
+                              {"Open...", "",  file_open},
                               {"Close",   "",  NULL},
                               {"-",       "", NULL},
                               {"Exit",    "Q", wdg_exit},
@@ -303,6 +304,24 @@ void percent(void)
    wdg_destroy_object(&per);
 
    wdg_redraw_all();
+}
+
+void file_open(void)
+{
+   wdg_t *fop;
+   
+   wdg_create_object(&fop, WDG_FILE, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   ON_ERROR(fop, NULL, "Cannot create object");
+   
+   wdg_set_title(fop, "Open a pcap file...", WDG_ALIGN_LEFT);
+   wdg_set_color(fop, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(fop, WDG_COLOR_WINDOW, EC_COLOR_MENU);
+   wdg_set_color(fop, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(fop, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+   wdg_draw_object(fop);
+   
+   wdg_set_focus(fop);
+   
 }
 
 /* EOF */

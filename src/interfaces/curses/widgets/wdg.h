@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.16 2003/11/22 13:57:11 alor Exp $ */
+/* $Id: wdg.h,v 1.17 2003/11/23 18:07:57 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -45,6 +45,15 @@ enum {
    WDG_ENOTHANDLED = 1,
    WDG_EFATAL      = 255,
 };
+
+/* min and max */
+
+#ifndef MIN
+   #define MIN(a, b)    (((a) < (b)) ? (a) : (b))
+#endif
+#ifndef MAX
+   #define MAX(a, b)    (((a) > (b)) ? (a) : (b))
+#endif
 
 extern void wdg_error_msg(char *file, char *function, int line, char *message, ...);
 #define WDG_ON_ERROR(x, y, fmt, ...) do { if (x == y) wdg_error_msg(__FILE__, __FUNCTION__, __LINE__, fmt, ## __VA_ARGS__ ); } while(0)
@@ -115,6 +124,7 @@ struct wdg_object {
       #define WDG_MENU        4
       #define WDG_DIALOG      5
       #define WDG_PERCENTAGE  6
+      #define WDG_FILE        7
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
@@ -186,6 +196,8 @@ extern void wdg_dialog_text(wdg_t *wo, size_t flags, const char *text);
 extern void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(void));
 /* percentage objects */
 extern void wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
+/* file dialog objects */
+extern void wdg_file_add_callback(wdg_t *wo, void (*callback)(char *path, char *file));
 
 
 /* EXPORTED FUNCTIONS */

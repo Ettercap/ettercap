@@ -1,9 +1,9 @@
 
-# $Id: Makefile.am,v 1.1 2003/11/22 13:57:10 alor Exp $
+# $Id: Makefile.am,v 1.2 2004/01/03 11:07:42 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
-lib_LTLIBRARIES = ec_dns_spoof.la
+pkglib_LTLIBRARIES = ec_dns_spoof.la
 
 ec_dns_spoof_la_CFLAGS = @EC_CFLAGS@
 

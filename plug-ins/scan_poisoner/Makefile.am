@@ -1,9 +1,9 @@
 
-# $Id: Makefile.am,v 1.1 2003/11/09 13:23:11 lordnaga Exp $
+# $Id: Makefile.am,v 1.2 2004/01/03 11:07:43 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
-lib_LTLIBRARIES = ec_scan_poisoner.la
+pkglib_LTLIBRARIES = ec_scan_poisoner.la
 
 ec_scan_poisoner_la_CFLAGS = @EC_CFLAGS@
 

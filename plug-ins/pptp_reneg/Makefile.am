@@ -1,9 +1,9 @@
 
-# $Id: Makefile.am,v 1.1 2003/12/04 17:25:06 lordnaga Exp $
+# $Id: Makefile.am,v 1.2 2004/01/03 11:07:43 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
-lib_LTLIBRARIES = ec_pptp_reneg.la
+pkglib_LTLIBRARIES = ec_pptp_reneg.la
 
 ec_pptp_reneg_la_CFLAGS = @PL_CFLAGS@
 

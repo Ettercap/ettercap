@@ -1,9 +1,9 @@
 
-# $Id: Makefile.am,v 1.2 2003/10/28 21:10:55 alor Exp $
+# $Id: Makefile.am,v 1.3 2004/01/03 11:07:43 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
-lib_LTLIBRARIES = ec_link_type.la
+pkglib_LTLIBRARIES = ec_link_type.la
 
 ec_link_type_la_CFLAGS = @EC_CFLAGS@
 

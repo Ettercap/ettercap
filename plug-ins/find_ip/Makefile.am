@@ -1,9 +1,9 @@
 
-# $Id: Makefile.am,v 1.1 2003/12/07 13:42:42 lordnaga Exp $
+# $Id: Makefile.am,v 1.2 2004/01/03 11:07:42 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
-lib_LTLIBRARIES = ec_find_ip.la
+pkglib_LTLIBRARIES = ec_find_ip.la
 
 ec_find_ip_la_CFLAGS = @EC_CFLAGS@
 

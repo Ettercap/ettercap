@@ -1,9 +1,9 @@
 
-# $Id: Makefile.am,v 1.1 2003/10/16 16:46:48 alor Exp $
+# $Id: Makefile.am,v 1.2 2004/01/03 11:07:43 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
-lib_LTLIBRARIES = ec_smb_clear.la
+pkglib_LTLIBRARIES = ec_smb_clear.la
 
 ec_smb_clear_la_CFLAGS = @PL_CFLAGS@
 

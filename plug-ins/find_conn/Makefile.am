@@ -1,9 +1,9 @@
 
-# $Id: Makefile.am,v 1.1 2003/11/16 15:03:42 lordnaga Exp $
+# $Id: Makefile.am,v 1.2 2004/01/03 11:07:42 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
-lib_LTLIBRARIES = ec_find_conn.la
+pkglib_LTLIBRARIES = ec_find_conn.la
 
 ec_find_conn_la_CFLAGS = @PL_CFLAGS@
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dos_attack.c,v 1.1 2004/02/02 16:44:50 lordnaga Exp $
+    $Id: dos_attack.c,v 1.2 2004/02/02 16:47:37 lordnaga Exp $
 */
 
 
@@ -79,7 +79,7 @@ static int dos_attack_init(void *dummy)
          
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
-      INSTANT_USER_MSG("gre_relay: plugin doesn't work in UNOFFENSIVE mode\n");
+      INSTANT_USER_MSG("dos_attack: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }
    
@@ -168,6 +168,7 @@ EC_THREAD_FUNC(syn_flooder)
 
       SLIST_FOREACH(p, &port_table, next)    
          send_tcp(fake_host, victim_host, sport++, p->port, seq++, 0, TH_SYN);
+	 
       usleep(500);
    }
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.25 2004/05/26 14:46:33 alor Exp $
+    $Id: ec_wifi.c,v 1.26 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -338,6 +338,13 @@ static int wep_decrypt(u_char *buf, size_t len)
     * identical to a non-WEP one.
     */
    memcpy(buf, decbuf, len);
+
+   /* 
+    * wipe out the remaining bytes at the end of the packets
+    * we have moved the data over the wep header and the crc was left
+    * at the end of the packet.
+    */
+   memset(buf + len, 0, sizeof(struct wep_header) + sizeof(u_int32));
    
    return ESUCCESS;
 #else

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.21 2004/04/07 11:30:38 lordnaga Exp $
+    $Id: ec_sniff_unified.c,v 1.22 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -105,7 +105,7 @@ void forward_unified_sniff(struct packet_object *po)
       return;
    
    /* if unoffensive is set, don't forward any packet */
-   if (GBL_OPTIONS->unoffensive)
+   if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read)
       return;
 
    /* 

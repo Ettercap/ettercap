@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.40 2004/05/13 15:15:16 alor Exp $
+    $Id: ec_ip.c,v 1.41 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -196,7 +196,7 @@ FUNC_DECODER(decode_ip)
    hook_point(HOOK_PACKET_IP, po);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive) {
+   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
    
       /* Find or create the correct session */
       ip_create_ident(&ident, PACKET);
@@ -219,7 +219,7 @@ FUNC_DECODER(decode_ip)
    EXECUTE_DECODER(next_decoder);
    
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && (PACKET->flags & PO_FORWARDABLE)) {
+   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
       /* 
        * Modification checks and adjustments.
        * - ip->id according to number of injected/dropped packets

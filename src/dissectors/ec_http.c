@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.16 2004/05/26 09:01:22 lordnaga Exp $
+    $Id: ec_http.c,v 1.17 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -208,7 +208,7 @@ static int Check_CONNECT(u_char *ptr, struct packet_object *po)
    struct http_status *conn_status = NULL;
 
    /* If we don't activate SSL wrappers we don't need to trace CONNECT */
-   if (!GBL_CONF->aggressive_dissectors || GBL_OPTIONS->unoffensive)
+   if (!GBL_CONF->aggressive_dissectors || GBL_OPTIONS->unoffensive || GBL_OPTIONS->read)
       return 0;
       
    dissect_create_ident(&ident, po, DISSECT_CODE(dissector_http));

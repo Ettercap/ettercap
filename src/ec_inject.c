@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.15 2004/03/18 15:50:10 alor Exp $
+    $Id: ec_inject.c,v 1.16 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -126,7 +126,7 @@ int inject_buffer(struct packet_object *po)
    int ret = ESUCCESS;
   
    /* we can't inject in unoffensive mode or in bridge mode */
-   if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->iface_bridge) {
+   if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read || GBL_OPTIONS->iface_bridge) {
       return -EINVALID;
    }
    

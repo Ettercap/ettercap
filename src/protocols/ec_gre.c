@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gre.c,v 1.6 2003/12/17 16:05:34 lordnaga Exp $
+    $Id: ec_gre.c,v 1.7 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -101,8 +101,8 @@ FUNC_DECODER(decode_gre)
    EXECUTE_DECODER(next_decoder);
  
    /* Adjust GRE payload len (if present) */
-   if (!GBL_OPTIONS->unoffensive && (PACKET->flags & PO_MODIFIED) 
-       && (PACKET->flags & PO_FORWARDABLE)) {
+   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && 
+         (PACKET->flags & PO_MODIFIED) && (PACKET->flags & PO_FORWARDABLE)) {
    /* XXX - Feature checksum re-calculation (if present) */
    /* XXX - Feature packet injection/dropping */
    

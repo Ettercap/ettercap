@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.37 2004/05/20 10:06:21 alor Exp $
+    $Id: ec_log.c,v 1.38 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -92,7 +92,7 @@ int set_loglevel(int level, char *filename)
    /* all the host type will be unknown, warn the user */
    if (GBL_OPTIONS->read) {
       USER_MSG("*********************************************************\n");
-      USER_MSG("WARINING: while reading form file we cannot determine    \n");
+      USER_MSG("WARNING: while reading form file we cannot determine    \n");
       USER_MSG("if an host is local or not because the ip address of     \n");
       USER_MSG("the NIC may have been changed from the time of the dump. \n");
       USER_MSG("*********************************************************\n\n");

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.38 2004/05/13 15:15:16 alor Exp $
+    $Id: ec_tcp.c,v 1.39 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -241,7 +241,7 @@ FUNC_DECODER(decode_tcp)
    hook_point(HOOK_PACKET_TCP, po);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive) {
+   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
       
       /* Find or create the correct session */
       tcp_create_ident(&ident, PACKET);
@@ -285,7 +285,7 @@ FUNC_DECODER(decode_tcp)
    EXECUTE_DECODER(next_decoder);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive) {
+   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
       
       /* 
        * Take trace of the FIN flag (to block injection) 

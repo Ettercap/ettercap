@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.61 2004/05/21 14:25:22 alor Exp $
+    $Id: ec_parser.c,v 1.62 2004/05/27 10:59:52 alor Exp $
 */
 
 
@@ -249,7 +249,6 @@ void parse_options(int argc, char **argv)
          case 'r':
                   /* we don't want to scan the lan while reading from file */
                   GBL_OPTIONS->silent = 1;
-                  GBL_OPTIONS->unoffensive = 1;
                   GBL_OPTIONS->read = 1;
                   GBL_OPTIONS->pcapfile_in = strdup(optarg);
                   break;
@@ -406,6 +405,9 @@ void parse_options(int argc, char **argv)
   
    if (GBL_OPTIONS->unoffensive && GBL_OPTIONS->mitm)
       FATAL_ERROR("Cannot use mitm attacks in unoffensive mode");
+   
+   if (GBL_OPTIONS->read && GBL_OPTIONS->mitm)
+      FATAL_ERROR("Cannot use mitm attacks while reading from file");
    
    if (GBL_UI->init == NULL)
       FATAL_ERROR("Please select an User Interface");

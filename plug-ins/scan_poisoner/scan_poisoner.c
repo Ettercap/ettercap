@@ -21,7 +21,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: scan_poisoner.c,v 1.3 2003/11/10 22:46:24 alor Exp $
+    $Id: scan_poisoner.c,v 1.4 2004/05/27 10:59:52 alor Exp $
 */
 
 
@@ -98,7 +98,7 @@ static int scan_poisoner_init(void *dummy)
    flag_strange=0;
 
    /* Can't continue in unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read) {
       INSTANT_USER_MSG("\nscan_poisoner: Can't make active test in UNOFFENSIVE mode.\n\n");
       return PLUGIN_FINISHED;
    }

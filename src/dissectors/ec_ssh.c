@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.24 2004/05/13 15:15:15 alor Exp $
+    $Id: ec_ssh.c,v 1.25 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -150,13 +150,14 @@ FUNC_DECODER(dissector_ssh)
     * off performs only banner catching.
     */
    
-   if ((!GBL_CONF->aggressive_dissectors || GBL_OPTIONS->unoffensive) || session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) { 
+   if ((!GBL_CONF->aggressive_dissectors || GBL_OPTIONS->unoffensive || GBL_OPTIONS->read) 
+         || session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) { 
       SAFE_FREE(ident);
       /* Create the session on first server's cleartext packet */
       if(!memcmp(PACKET->DATA.data,"SSH-", 4) && FROM_SERVER("ssh", PACKET)) {
 
          /* Only if we are interested on key substitution */         
-         if (GBL_CONF->aggressive_dissectors && !GBL_OPTIONS->unoffensive) {
+         if (GBL_CONF->aggressive_dissectors && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
             dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_ssh));
             SAFE_CALLOC(s->data, sizeof(ssh_session_data), 1);
             session_put(s);

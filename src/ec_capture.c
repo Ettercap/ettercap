@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.12 2003/05/05 09:04:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.13 2003/05/19 10:14:27 alor Exp $
 */
 
 #include <ec.h>
@@ -151,7 +151,6 @@ void capture_init(void)
    
    
    /* set the right decoder for L2 */
-   
    dlt = pcap_datalink(pd);
    
    /* check that the bridge type is the same as the main iface */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.21 2003/05/05 09:04:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.22 2003/05/19 10:14:27 alor Exp $
 */
 
 
@@ -309,17 +309,20 @@ void parse_options(int argc, char **argv)
    
    /* check for other options */
    
-   if (GBL_OPTIONS->write && GBL_OPTIONS->read)
-      FATAL_ERROR("You cannote dump and read at the same time...");
-
    if (GBL_SNIFF->start == NULL)
       set_unified_sniff();
-
-   if (GBL_UI->init == NULL)
-      FATAL_ERROR("Please select an User Interface");
+   
+   if (GBL_OPTIONS->write && GBL_OPTIONS->read)
+      FATAL_ERROR("You cannote dump and read at the same time...");
+   
+   if (GBL_OPTIONS->read && GBL_PCAP->filter)
+      FATAL_ERROR("Cannot read from file and set a filter on interface");
    
    if (GBL_OPTIONS->read && GBL_SNIFF->type != SM_UNIFIED )
       FATAL_ERROR("You can read from a file ONLY in unified sniffing mode !");
+
+   if (GBL_UI->init == NULL)
+      FATAL_ERROR("Please select an User Interface");
    
    if (GBL_SNIFF->type == SM_BRIDGED && GBL_PCAP->promisc == 0)
       FATAL_ERROR("During bridged sniffing the iface must be in promisc mode !");
@@ -329,7 +332,8 @@ void parse_options(int argc, char **argv)
   
    if (GBL_OPTIONS->load_hosts && GBL_OPTIONS->save_hosts)
       FATAL_ERROR("Cannot load and save at the same time the hosts list...");
-   
+  
+      
    /* XXX - check for incompatible options */
    
    DEBUG_MSG("parse_options: options combination looks good");

@@ -2,27 +2,40 @@
 Legenda:
          + new feature
          - old feature removed
-         ! bug fixed
+         !! bug fixed
 
 =========================================
 
 NG-0.7.0    ????????
       
-      + Rewrite from scratch
-      + root privs dropped after initialization
-      + layer 3 routing (forwarding packets)
-      + wifi support
-      + unified sniffing
-      + multiple target selection
-      + pcap filter
-      + etterlog utility for logfiles parsing
-      + regex matching 
-      + hook point per packet type (TCP, UDP... )
-      + quiet mode
-      + enhanced passive open port discoverer 
-      + randomized ARP scan
+   + Rewrite from scratch
+   + root privs dropped after initialization
+   + layer 3 routing (forwarding packets)
+   + wifi support
+   + unified sniffing
+   + multiple target selection
+   + pcap filter
+   + etterlog utility for logfiles parsing
+   + regex matching 
+   + hook point per packet type (TCP, UDP... )
+   + quiet mode
+   + enhanced passive open port discoverer 
+   + randomized ARP scan
+   !! offline sniffing actually does not bind to any NICs
 
 
+0.6.a       20030505
+
+   + Buffered Data Connections (only for ncurses)
+   + New Sniffing method (Port Stealing)
+   + Updated the passive OS fingerprint database (1189 records)
+   + enhanced smb dissector
+   + enhanced troll plugin against request caching
+   + NEW PLUGIN: Confusion,Hunter, SMB suite
+   + partial wifi-dump support (experimental)
+   !! Fixed demonization problem
+   !! Fixed StateMachine problem
+   !! a bouch of bug fix
 
 
 0.6.9       20030125

@@ -117,6 +117,9 @@
 /* openssl executable path */
 #undef HAVE_OPENSSL
 
+/* plugins support */
+#undef HAVE_PLUGINS
+
 /* Define to 1 if you have the `poll' function. */
 #undef HAVE_POLL
 

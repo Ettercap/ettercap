@@ -279,6 +279,7 @@ dnl -- PLUGINS --
 dnl -------------
 
 AM_CONDITIONAL(PLUGINS, false)
+AH_TEMPLATE(HAVE_PLUGINS, [plugins support])
 
 AH_TEMPLATE(PERMIT_PLUGINS, [can ettercap use plugins ?])
 
@@ -290,6 +291,7 @@ AC_ARG_ENABLE(plugins, [  --enable-plugins        enable the use of plugins in e
    yes)
       AC_MSG_RESULT(yes.)
       AM_CONDITIONAL(PLUGINS, true)
+      AC_DEFINE(HAVE_PLUGINS, 1)
       ac_cv_ec_plugin=yes
       ;;
    no)  AC_MSG_RESULT(no.)
@@ -298,6 +300,7 @@ AC_ARG_ENABLE(plugins, [  --enable-plugins        enable the use of plugins in e
 esac ],
    AC_MSG_RESULT(yes. enabled by default.)
    AM_CONDITIONAL(PLUGINS, true)
+   AC_DEFINE(HAVE_PLUGINS, 1)
    ac_cv_ec_plugin=yes
 )
 
@@ -478,7 +481,7 @@ AC_ARG_WITH(openssl,
      ;;
   *)
      AC_MSG_RESULT($withval)
-     if test -f $withval/include/openssl/ssl.h -a -f $withval/libcripto.a; then
+     if test -f $withval/include/openssl/ssl.h -a -f $withval/libcrypto.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/include"

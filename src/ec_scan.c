@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.4 2003/05/05 09:04:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.5 2003/05/19 10:14:27 alor Exp $
 */
 
 #include <ec.h>
@@ -84,6 +84,10 @@ void build_hosts_list(void)
    if (GBL_OPTIONS->silent)
       return;
       
+   /* even in offline sniffing the list should not be created */
+   if (GBL_OPTIONS->read)
+      return;
+   
    /*
     * create a simple decode thread, it will call
     * the right HOOK POINT. so we only have to hook to 

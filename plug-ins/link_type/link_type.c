@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: link_type.c,v 1.1 2003/10/27 15:34:59 lordnaga Exp $
+    $Id: link_type.c,v 1.2 2003/10/27 16:01:25 lordnaga Exp $
 */
 
 
@@ -27,21 +27,21 @@
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_packet.h>
 #include <ec_hook.h>
-
-#include <stdlib.h>
-#include <string.h>
+#include <ec_send.h>
+#include <libnet.h>
 
 
 /* globals */
 #define LINK_HUB 0
 #define LINK_SWITCH 1
 u_char linktype;
+struct hosts_list targets[2];
 
 /* protos */
 int plugin_load(void *);
 static int link_type_init(void *);
 static int link_type_fini(void *);
-
+static void parse_arp(struct packet_object *po);
 
 /* plugin operations */
 
@@ -51,7 +51,7 @@ struct plugin_ops link_type_ops = {
    /* the name of the plugin */
    name:             "link_type",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Check the link type (hub\switch)",  
+   info:             "Check the link type (hub/switch)",  
    /* the plugin version. */ 
    version:          "1.0",   
    /* activation function */
@@ -73,7 +73,7 @@ int plugin_load(void *handle)
 static int link_type_init(void *dummy) 
 {
    u_char counter = 0;
-   struct hosts_list targets[2];
+   struct hosts_list *h;
    
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
@@ -128,7 +128,7 @@ static int link_type_init(void *dummy)
    hook_del(HOOK_PACKET_ARP, &parse_arp);
 
    INSTANT_USER_MSG("link_type: You are plugged into a ");
-   if (lynktype == LINK_SWITCH)
+   if (linktype == LINK_SWITCH)
       INSTANT_USER_MSG("SWITCH\n\n");
    else
       INSTANT_USER_MSG("HUB\n\n");
@@ -147,7 +147,7 @@ static int link_type_fini(void *dummy)
 /* Check if it's the reply to our bougs request */
 static void parse_arp(struct packet_object *po)
 {
-   if (!memcmp(po->L2.dst, targets[counter].mac, ETH_ADDR_LEN))
+   if (!memcmp(po->L2.dst, targets[1].mac, ETH_ADDR_LEN))
       linktype = LINK_HUB;
 }
 

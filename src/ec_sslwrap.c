@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.27 2004/03/25 21:35:20 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.28 2004/03/26 17:22:17 alor Exp $
 */
 
 #include <ec.h>
@@ -128,7 +128,8 @@ static void sslw_create_session(struct ec_session **s, struct packet_object *po)
 static size_t sslw_create_ident(void **i, struct packet_object *po);            
 static void sslw_hook_handled(struct packet_object *po);
 static int sslw_create_selfsigned(X509 *serv_cert);
-static int firewall_insert_redirect(u_int16 sport, u_int16 dport);
+static int sslw_insert_redirect(u_int16 sport, u_int16 dport);
+static int sslw_remove_redirect(u_int16 sport, u_int16 dport);
 
 #endif /* HAVE_OPENSSL */
 
@@ -201,8 +202,14 @@ void ssl_wrap_init(void)
 
 void ssl_wrap_fini(void)
 {
-   // XXX - Lancia lo script per segare le regole di redirect
-   // Controllando l'uid
+   struct listen_entry *le;
+
+   /* no script was configured */
+   if (GBL_CONF->redir_command_off == NULL)
+      return;
+      
+   LIST_FOREACH(le, &listen_ports, next)
+      sslw_remove_redirect(le->sslw_port, le->redir_port);
 }
 
 #ifndef HAVE_OPENSSL
@@ -312,8 +319,10 @@ static void sslw_hook_handled(struct packet_object *po)
    }
 }
 
-
-static int firewall_insert_redirect(u_int16 sport, u_int16 dport)
+/*
+ * execute the script to add the redirection
+ */
+static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
 {
    char asc_sport[16];
    char asc_dport[16];
@@ -324,6 +333,7 @@ static int firewall_insert_redirect(u_int16 sport, u_int16 dport)
 
    switch (fork()) {
       case 0:
+   /* XXX - implement script execution */
          execlp("iptables", "iptables", "-t", "nat", "-I", "PREROUTING", "1", "-p", "tcp", 
 	        "--dport", asc_sport, "-j", "REDIRECT", "--to-port", asc_dport, NULL);
          exit(EINVALID);
@@ -331,10 +341,19 @@ static int firewall_insert_redirect(u_int16 sport, u_int16 dport)
          return -EINVALID;
       default:
          wait(&ret_val);
-	 if (ret_val == EINVALID)
-	    return -EINVALID;
+	   if (ret_val == EINVALID)
+	      return -EINVALID;
    }    
    
+   return ESUCCESS;
+}
+
+/*
+ * execute the script to remove the redirection
+ */
+static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
+{
+   /* XXX - implement script execution */
    return ESUCCESS;
 }
 
@@ -386,7 +405,7 @@ static void sslw_bind_wrapper(void)
 
       DEBUG_MSG("sslw - bind %d on %d", le->sslw_port, le->redir_port);
       listen(le->fd, 100);      
-      if (firewall_insert_redirect(le->sslw_port, le->redir_port) != ESUCCESS)
+      if (sslw_insert_redirect(le->sslw_port, le->redir_port) != ESUCCESS)
         FATAL_ERROR("Can't insert firewall redirects");
    }
 }

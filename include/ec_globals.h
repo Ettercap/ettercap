@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.55 2004/02/27 11:06:28 alor Exp $ */
+/* $Id: ec_globals.h,v 1.56 2004/03/26 17:22:17 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -37,6 +37,8 @@ struct ec_conf {
    int skip_forwarded;
    int store_profiles;
    struct curses_color colors;
+   char *redir_command_on;
+   char *redir_command_off;
 };
 
 /* options from getopt */

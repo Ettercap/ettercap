@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.29 2004/02/15 13:35:28 alor Exp $
+    $Id: ec_conf.c,v 1.30 2004/03/26 17:22:17 alor Exp $
 */
 
 #include <ec.h>
@@ -92,6 +92,12 @@ static struct conf_entry curses[] = {
    { NULL, NULL },
 };
 
+static struct conf_entry strings[] = {
+   { "redir_command_on", NULL },
+   { "redir_command_off", NULL },
+   { NULL, NULL },
+};
+
 /* this is fake, dissector use a different registration */
 static struct conf_entry dissectors[] = {
    { "fake", &number_of_dissectors },
@@ -105,6 +111,7 @@ static struct conf_section sections[] = {
    { "misc", (struct conf_entry *)&misc},
    { "dissectors", (struct conf_entry *)&dissectors},
    { "curses", (struct conf_entry *)&curses},
+   { "strings", (struct conf_entry *)&strings},
    { NULL, NULL },
 };
 
@@ -113,11 +120,11 @@ static struct conf_section sections[] = {
 
 void load_conf(void);
 static void init_structures(void);
-static void set_pointer(struct conf_entry *entry, char *name, int *ptr);
+static void set_pointer(struct conf_entry *entry, char *name, void *ptr);
 
 static void set_dissector(char *name, char *values, int lineno);
 static struct conf_entry * search_section(char *title);
-static int * search_entry(struct conf_entry *section, char *name);
+static void * search_entry(struct conf_entry *section, char *name);
 
 /************************************************/
 
@@ -169,6 +176,8 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&curses, "color_error_bg", &GBL_CONF->colors.error_bg);
    set_pointer((struct conf_entry *)&curses, "color_error_fg", &GBL_CONF->colors.error_fg);
    set_pointer((struct conf_entry *)&curses, "color_error_border", &GBL_CONF->colors.error_border);
+   set_pointer((struct conf_entry *)&strings, "redir_command_on", &GBL_CONF->redir_command_on);
+   set_pointer((struct conf_entry *)&strings, "redir_command_off", &GBL_CONF->redir_command_off);
 
    /* sanity check */
    do {
@@ -186,7 +195,7 @@ static void init_structures(void)
  * associate the pointer to a struct
  */
 
-static void set_pointer(struct conf_entry *entry, char *name, int *ptr)
+static void set_pointer(struct conf_entry *entry, char *name, void *ptr)
 {
    int i = 0;
 
@@ -210,7 +219,7 @@ void load_conf(void)
    char *p;
    int lineno = 0;
    struct conf_entry *curr_section = NULL;
-   int *value = NULL;
+   void *value = NULL;
 
    /* initialize the structures */
    init_structures();
@@ -277,7 +286,7 @@ void load_conf(void)
          }
       } while (p++ < line + sizeof(line) );
       
-      /* move p to the integer value */
+      /* move p to the value */
       p++;
       do {
          if (*p != ' ' && *p != '=')
@@ -296,11 +305,28 @@ void load_conf(void)
       /* search the entry name */
       if ( (value = search_entry(curr_section, line)) == NULL)
          FATAL_ERROR("Invalid entry in %s line %d", ETTER_CONF, lineno);
+    
+      /* strings must be handled in a different way */
+      if (curr_section == (struct conf_entry *)&strings) {
+         /* trim the quotes */
+         if (*p == '\"')
+            p++;
+         /* set the string value */ 
+         (char *)value = strdup(p);
      
-      /* get the value */ 
-      *value = strtol(p, (char **)NULL, 10);
-      
-      DEBUG_MSG("load_conf: \tENTRY: %s  %d", line, *value);
+         /* trim the ending quotes */
+         p = value;
+         do {
+            if (*p == '\"')
+               *p = 0;
+         } while (p++ < (char *)value + strlen(value) );
+         
+         DEBUG_MSG("load_conf: \tENTRY: %s  [%s]", line, (char *)value);
+      } else {
+         /* set the integer value */ 
+         *(int *)value = strtol(p, (char **)NULL, 10);
+         DEBUG_MSG("load_conf: \tENTRY: %s  %d", line, *(int *)value);
+      }
 
    }
   
@@ -330,7 +356,7 @@ static struct conf_entry * search_section(char *title)
  * named "name" of the sections "section"
  */
 
-static int * search_entry(struct conf_entry *section, char *name)
+static void * search_entry(struct conf_entry *section, char *name)
 {
    int i = 0;
   

@@ -29,11 +29,11 @@
 
    + DOCUMENTATION
       - how to code a plugin 
+      - write in the man how to generate a new keypair
+   
+   + target error
 
-   + DISSECTORS
-      - https (over the ssl one)
-      - SSL unified dissector for https, impas, pop3s ecc ecc
-         - write in the man how to generate a new keypair
+   + script for redirection in the conf file
    
    + BRIDGED SNIFFING
       - keep track of source mac addresses

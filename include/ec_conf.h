@@ -1,5 +1,5 @@
 
-/* $Id: ec_conf.h,v 1.3 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_conf.h,v 1.4 2004/03/26 17:22:17 alor Exp $ */
 
 #ifndef EC_CONF_H
 #define EC_CONF_H
@@ -7,7 +7,7 @@
 
 struct conf_entry {
    char *name;
-   int *value;
+   void *value;
 };
 
 struct conf_section {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gre.c,v 1.2 2003/12/03 15:44:31 lordnaga Exp $
+    $Id: ec_gre.c,v 1.3 2003/12/04 17:25:06 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -79,6 +79,12 @@ FUNC_DECODER(decode_gre)
       /* We have to deal with it if we modify the packet */
       gre_len = (u_int16 *)(DECODE_DATA + DECODED_LEN);
       DECODED_LEN += 4;
+
+      /* Use L4.len to store the whole gre packet len.
+       * It will be used by some plugins, and it will be
+       * overwritten by the real TCP/UDP decoders.
+       */
+      PACKET->L4.len = ntohs(*gre_len);
    }
    if (flags & GH_B_S)
       DECODED_LEN += 4;

@@ -1,5 +1,5 @@
 
-/* $Id: ec_decode.h,v 1.14 2003/10/28 21:10:55 alor Exp $ */
+/* $Id: ec_decode.h,v 1.15 2004/01/05 11:49:36 alor Exp $ */
 
 #ifndef EC_DECODE_H
 #define EC_DECODE_H
@@ -7,6 +7,7 @@
 #include <ec_proto.h>
 #include <ec_packet.h>
 #include <ec_hook.h>
+#include <pcap.h>
 
 /* layer canonical name */
 

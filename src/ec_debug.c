@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.16 2004/01/05 11:06:47 alor Exp $
+    $Id: ec_debug.c,v 1.17 2004/01/05 11:49:36 alor Exp $
 
 */
 
@@ -44,6 +44,7 @@
 #endif
 
 #include <libnet.h>
+#include <pcap.h>
 #include <zlib.h>
 
 #include <stdarg.h>

@@ -42,6 +42,7 @@ OPTIONAL:
 
    - libltdl (part of libtool)   (for the plugin support)
    - libpcre                     (for perl regexp in the filters)
+   - zlib                        (for compressed log files)
    - openssl                     (for ssh and ssl support)
    - ncurses                     (for the curses GUI)
 

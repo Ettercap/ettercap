@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.49 2003/12/28 14:48:24 alor Exp $ */
+/* $Id: ec_globals.h,v 1.50 2004/01/05 11:49:36 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -12,7 +12,6 @@
 #include <ec_filter.h>
 #include <ec_interfaces.h>
 
-#include <pcap.h>
 #include <regex.h>
 
 /* options form etter.conf */
@@ -80,15 +79,15 @@ struct program_env {
 
 /* pcap structure */
 struct pcap_env {
-   pcap_t            *pcap;      
-   pcap_t            *pcap_bridge;
-   pcap_dumper_t     *dump;
-   char              promisc;
-   char              *filter;       /* pcap filter */
-   u_int16           snaplen;
-   int               dlt;
-   u_int32           dump_size;     /* total dump size */
-   u_int32           dump_off;      /* current offset */
+   void     *pcap;         /* this is a pcap_t pointer */
+   void     *pcap_bridge;  /* this is a pcap_t pointer */
+   void     *dump;         /* this is a pcap_dumper_t pointer */
+   char     promisc;
+   char     *filter;       /* pcap filter */
+   u_int16  snaplen;
+   int      dlt;
+   u_int32  dump_size;     /* total dump size */
+   u_int32  dump_off;      /* current offset */
 };
 
 /* lnet structure */

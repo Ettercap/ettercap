@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.32 2004/01/03 15:14:14 alor Exp $
+    $Id: ec_curses.c,v 1.33 2004/01/05 11:49:36 alor Exp $
 */
 
 #include <ec.h>
@@ -26,6 +26,8 @@
 #include <ec_curses.h>
 #include <ec_capture.h>
 #include <ec_log.h>
+
+#include <pcap.h>
 
 /* globals */
 

@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.7 2003/06/10 10:39:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.8 2003/06/17 12:15:12 alor Exp $
 
 */
 
 #include <ec.h>
 #include <ec_format.h>
+#include <ec_ui.h>
 
 #include <ctype.h>
 
@@ -76,7 +77,7 @@ int html_format(const u_char *buf, size_t len, u_char *dst);
 int bin_format(const u_char *buf, size_t len, u_char *dst);
 int zero_format(const u_char *buf, size_t len, u_char *dst);
 
-void set_format(char *format);
+int set_format(char *format);
 
 
 /**********************************/
@@ -84,36 +85,36 @@ void set_format(char *format);
 /*
  * parses the "format" and set the right visualization method
  */
-void set_format(char *format)
+int set_format(char *format)
 {
    DEBUG_MSG("set_format: %s", format);
    
    if (!strcasecmp(format, "hex")) {
       GBL_FORMAT = &hex_format;
-      return;
+      return ESUCCESS;
    }
 
    if (!strcasecmp(format, "ascii")) {
       GBL_FORMAT = &ascii_format;
-      return;
+      return ESUCCESS;
    }
 
    if (!strcasecmp(format, "text")) {
       GBL_FORMAT = &text_format;
-      return;
+      return ESUCCESS;
    }
 
    if (!strcasecmp(format, "html")) {
       GBL_FORMAT = &html_format;
-      return;
+      return ESUCCESS;
    }
 
    if (!strcasecmp(format, "ebcdic")) {
       GBL_FORMAT = &ebcdic_format;
-      return;
+      return ESUCCESS;
    }
 
-   FATAL_ERROR("Unsupported format (%s)", format);
+   FATAL_MSG("Unsupported format (%s)", format);
 
 }
 

@@ -21,8 +21,6 @@ extern void bug(char *file, char *function, int line, char *message);
 
 #define FATAL_ERROR(x, ...) do { fprintf(stderr, "\n"x"\n\n", ## __VA_ARGS__ ); _exit(-1); } while(0)
 
-#define FATAL_MSG(x, ...) do { ui_error(x, ## __VA_ARGS__ ); return (-EFATAL); } while(0)
-
 #define ON_ERROR(x, y, fmt, ...) do { if (x == y) ERROR_MSG(fmt, ## __VA_ARGS__ ); } while(0)
 
 #define BUG_IF(x, y) do { if (x == y) bug(__FILE__, __FUNCTION__, __LINE__, #x" is equal to "#y); }while(0)

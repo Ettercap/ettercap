@@ -33,6 +33,7 @@ extern void ui_register(struct ui_ops *ops);
 
 #define USER_MSG(x, ...) ui_msg(x, ## __VA_ARGS__ )
 
+#define FATAL_MSG(x, ...) do { ui_error(x, ## __VA_ARGS__ ); return (-EFATAL); } while(0)
 
 #endif
 

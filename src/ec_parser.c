@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.26 2003/06/13 15:45:05 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.27 2003/06/17 12:15:12 alor Exp $
 */
 
 
@@ -280,8 +280,8 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'V':
-                  /* the global visualization method */
-                  set_format(optarg);
+                  if (set_format(optarg) != ESUCCESS)
+                     clean_exit(-EFATAL);
                   break;
                   
          case 'E':

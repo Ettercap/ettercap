@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_ec_compat.c,v 1.3 2003/04/15 07:57:37 alor Exp $
+    $Id: el_ec_compat.c,v 1.4 2003/06/17 12:15:12 alor Exp $
 */
 
 #include <el.h>
@@ -32,13 +32,25 @@ FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
 /* protos */
 void debug_msg(const char *message, ...);
 void ui_msg(const char *fmt, ...);
+void ui_error(const char *fmt, ...);
 
 /************************************************/
  
 /* the void implemetation */
 
 void debug_msg(const char *message, ...) { }
+
+/* fake the UI implementation */
 void ui_msg(const char *fmt, ...) 
+{ 
+   va_list ap;
+   /* print the mesasge */ 
+   va_start(ap, fmt);
+   vfprintf (stderr, fmt, ap);
+   va_end(ap);
+}
+
+void ui_error(const char *fmt, ...) 
 { 
    va_list ap;
    /* print the mesasge */ 

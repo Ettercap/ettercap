@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_hosts.c,v 1.10 2004/04/05 20:31:34 daten Exp $
+    $Id: ec_gtk_hosts.c,v 1.11 2004/05/06 00:23:03 daten Exp $
 */
 
 #include <ec.h>
@@ -198,7 +198,7 @@ void gtkui_host_list(void)
    gtk_widget_show(treeview);
 
    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
-   gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
+   gtk_tree_selection_set_mode (selection, GTK_SELECTION_MULTIPLE);
 
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("IP Address", renderer, "text", 0, NULL);
@@ -316,6 +316,7 @@ void gtkui_refresh_host_list(void)
 
 void gtkui_button_callback(GtkWidget *widget, gpointer data)
 {
+   GList *list;
    GtkTreeIter iter;
    GtkTreeModel *model;
    char tmp[MAX_ASCII_ADDR_LEN];
@@ -323,36 +324,44 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
 
    model = GTK_TREE_MODEL (liststore);
 
-   if(gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get(model, &iter, 3, &hl, -1);
+   if(gtk_tree_selection_count_selected_rows(selection) > 0) {
+      list = gtk_tree_selection_get_selected_rows (selection, &model);
+      for(list = g_list_last(list); list; list = g_list_previous(list)) {
+         gtk_tree_model_get_iter(model, &iter, list->data);
+         gtk_tree_model_get(model, &iter, 3, &hl, -1);
 
-      switch((int)data) {
-         case HOST_DELETE:
-            DEBUG_MSG("gtkui_button_callback: delete host");
-            gtk_list_store_remove(GTK_LIST_STORE (liststore), &iter);
+         switch((int)data) {
+            case HOST_DELETE:
+               DEBUG_MSG("gtkui_button_callback: delete host");
+               gtk_list_store_remove(GTK_LIST_STORE (liststore), &iter);
 
-            /* remove the host from the list */
-            LIST_REMOVE(hl, next);
-            SAFE_FREE(hl->hostname);
-            SAFE_FREE(hl);
-            break;
-         case HOST_TARGET1:
-            DEBUG_MSG("gtkui_button_callback: add target1");
-            /* add the ip to the target */
-            add_ip_list(&hl->ip, GBL_TARGET1);
-            gtkui_create_targets_array();
+               /* remove the host from the list */
+               LIST_REMOVE(hl, next);
+               SAFE_FREE(hl->hostname);
+               SAFE_FREE(hl);
+               break;
+            case HOST_TARGET1:
+               DEBUG_MSG("gtkui_button_callback: add target1");
+               /* add the ip to the target */
+               add_ip_list(&hl->ip, GBL_TARGET1);
+               gtkui_create_targets_array();
 
-            USER_MSG("Host %s added to TARGET1\n", ip_addr_ntoa(&hl->ip, tmp));
-            break;
-         case HOST_TARGET2:
-            DEBUG_MSG("gtkui_button_callback: add target2");
-            /* add the ip to the target */
-            add_ip_list(&hl->ip, GBL_TARGET2);
-            gtkui_create_targets_array();
-   
-            USER_MSG("Host %s added to TARGET2\n", ip_addr_ntoa(&hl->ip, tmp));
-            break;
+               USER_MSG("Host %s added to TARGET1\n", ip_addr_ntoa(&hl->ip, tmp));
+               break;
+            case HOST_TARGET2:
+               DEBUG_MSG("gtkui_button_callback: add target2");
+               /* add the ip to the target */
+               add_ip_list(&hl->ip, GBL_TARGET2);
+               gtkui_create_targets_array();
+
+               USER_MSG("Host %s added to TARGET2\n", ip_addr_ntoa(&hl->ip, tmp));
+               break;
+         }
       }
+
+      /* free the list of selections */
+      g_list_foreach (list,(GFunc) gtk_tree_path_free, NULL);
+      g_list_free (list);
    }
 }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_display.c,v 1.38 2004/05/19 13:17:27 alor Exp $
+    $Id: el_display.c,v 1.39 2004/05/31 14:30:54 alor Exp $
 */
 
 #include <el.h>
@@ -77,13 +77,13 @@ static void display_packet(void)
       if (ret != ESUCCESS)
          break;
 
-      /* the packet should complain to the target specifications */
+      /* the packet should be compliant to the target specifications */
       if (!is_target_pck(&pck)) {
          SAFE_FREE(buf);
          continue;
       }
       
-      /* the packet should complain to the connection specifications */
+      /* the packet should be compliant to the connection specifications */
       if (!is_conn(&pck, &versus)) {
          SAFE_FREE(buf);
          continue;

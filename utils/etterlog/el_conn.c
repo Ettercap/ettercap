@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_conn.c,v 1.8 2003/09/27 17:22:24 alor Exp $
+    $Id: el_conn.c,v 1.9 2004/05/31 14:30:54 alor Exp $
 */
 
 #include <el.h>
@@ -112,6 +112,11 @@ static int insert_table(struct log_header_packet *pck)
 {
    struct conn_list *c;
 
+   /* the packet should be compliant to the target specifications */
+   if (!is_target_pck(pck)) {
+      return 0;
+   }
+   
    /* search if the connection is alread present */
    SLIST_FOREACH(c, &conn_list_head, next) {
 

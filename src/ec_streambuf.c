@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_streambuf.c,v 1.4 2003/10/19 12:54:50 lordnaga Exp $
+    $Id: ec_streambuf.c,v 1.5 2003/10/19 16:46:19 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -37,6 +37,7 @@ int streambuf_add(struct stream_buf *sb, struct packet_object *po);
 int streambuf_seq_add(struct stream_buf *sb, struct packet_object *po);
 int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode);
 void streambuf_wipe(struct stream_buf *sb);
+int streambuf_read(struct stream_buf *sb, u_char *buf, size_t len, int mode);
 
 /************************************************/
 

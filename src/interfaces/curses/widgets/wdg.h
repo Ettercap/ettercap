@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.22 2003/12/14 12:21:54 alor Exp $ */
+/* $Id: wdg.h,v 1.23 2003/12/14 17:07:17 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -130,7 +130,6 @@ struct wdg_scr {
 
 /* global scruct for current screen */
 extern struct wdg_scr current_screen;
-extern struct wdg_obj_list *wdg_focused_obj;
 
 /* struct for mouse events */
 struct wdg_mouse_event {
@@ -226,10 +225,11 @@ struct wdg_menu {
 extern void wdg_menu_add(wdg_t *wo, struct wdg_menu *menu);
 /* dialog objects */
 extern void wdg_dialog_text(wdg_t *wo, size_t flags, const char *text);
-   #define WDG_OK       1
-   #define WDG_YES      (1<<1)
-   #define WDG_NO       (1<<2)
-   #define WDG_CANCEL   (1<<3)
+   #define WDG_NO_BUTTONS  0
+   #define WDG_OK          1
+   #define WDG_YES         (1<<1)
+   #define WDG_NO          (1<<2)
+   #define WDG_CANCEL      (1<<3)
 extern void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(void));
 /* percentage objects */
 extern void wdg_percentage_set(wdg_t *wo, size_t p, size_t max);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.5 2003/12/14 16:51:12 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.6 2003/12/14 17:07:17 alor Exp $
 */
 
 #include <ec.h>
@@ -84,7 +84,7 @@ static pthread_mutex_t steal_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void port_stealing_init(void);
 EC_THREAD_FUNC(port_stealer);
-static void port_stealing_start(char *args);
+static int port_stealing_start(char *args);
 static void port_stealing_stop(void);
 static void parse_received(struct packet_object *po);
 static void put_queue(struct packet_object *po);
@@ -113,7 +113,7 @@ void __init port_stealing_init(void)
 /*
  * init the PORT STEALING attack
  */
-static void port_stealing_start(char *args)
+static int port_stealing_start(char *args)
 {     
    struct hosts_list *h;
    struct steal_list *s;
@@ -138,14 +138,14 @@ static void port_stealing_start(char *args)
          } else if (!strcasecmp(p, "tree")) {
             steal_tree = 1; 
          } else {
-            FATAL_ERROR("Port Stealing: paramenter incorrect.\n");
+            SEMIFATAL_ERROR("Port Stealing: paramenter incorrect.\n");
          }
       }
    }
  
    /* Port Stealing works only on ethernet switches */
    if (GBL_PCAP->dlt != IL_TYPE_ETH)
-      FATAL_ERROR("Port Stealing does not support this media.\n");
+      SEMIFATAL_ERROR("Port Stealing does not support this media.\n");
 
    if (LIST_EMPTY(&GBL_HOSTLIST)) 
       USER_MSG("Host List is empty - No host for Port Stealing\n\n"); 
@@ -195,6 +195,8 @@ static void port_stealing_start(char *args)
    
    /* create the stealing thread */
    ec_thread_new("port_stealer", "Port Stealing module", &port_stealer, NULL);
+
+   return ESUCCESS;
 }
 
 

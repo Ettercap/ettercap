@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp_spoofing.c,v 1.5 2003/11/18 15:30:13 alor Exp $
+    $Id: ec_dhcp_spoofing.c,v 1.6 2003/12/14 17:07:17 alor Exp $
 */
 
 #include <ec.h>
@@ -42,7 +42,7 @@ static size_t dhcp_optlen;
 /* protos */
 
 void dhcp_spoofing_init(void);
-static void dhcp_spoofing_start(char *args);
+static int dhcp_spoofing_start(char *args);
 static void dhcp_spoofing_stop(void);
 static void dhcp_spoofing_req(struct packet_object *po);
 static void dhcp_spoofing_disc(struct packet_object *po);
@@ -75,7 +75,7 @@ void __init dhcp_spoofing_init(void)
 /*
  * init the ICMP REDIRECT attack
  */
-static void dhcp_spoofing_start(char *args)
+static int dhcp_spoofing_start(char *args)
 {
    struct in_addr ipaddr;
    char *p;
@@ -84,7 +84,7 @@ static void dhcp_spoofing_start(char *args)
    DEBUG_MSG("dhcp_spoofing_start");
 
    if (!strcmp(args, ""))
-      FATAL_ERROR("DHCP spoofing needs a parameter.\n");
+      SEMIFATAL_ERROR("DHCP spoofing needs a parameter.\n");
    
    /* check the parameter:
     *
@@ -130,14 +130,16 @@ static void dhcp_spoofing_start(char *args)
 
          /* se the pointer to the first ip pool address */
          dhcp_free_ip = SLIST_FIRST(&dhcp_ip_pool.ips);
-         return;
+         return ESUCCESS;
       }
       
       i++;
    }
 
    /* error parsing the parameter */
-   FATAL_ERROR("DHCP spoofing: parameter number %d is incorrect.\n", i);
+   SEMIFATAL_ERROR("DHCP spoofing: parameter number %d is incorrect.\n", i);
+
+   return -EFATAL;
 }
 
 

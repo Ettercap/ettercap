@@ -1,5 +1,5 @@
 
-/* $Id: ec_mitm.h,v 1.4 2003/11/11 14:59:31 alor Exp $ */
+/* $Id: ec_mitm.h,v 1.5 2003/12/14 17:07:17 alor Exp $ */
 
 #ifndef EC_MITM_H
 #define EC_MITM_H
@@ -7,7 +7,7 @@
 
 struct mitm_method {
    char *name;
-   void (*start)(char *args);
+   int (*start)(char *args);
    void (*stop)(void);
 };
 

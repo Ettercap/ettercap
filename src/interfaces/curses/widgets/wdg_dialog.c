@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dialog.c,v 1.4 2003/12/08 16:34:16 alor Exp $
+    $Id: wdg_dialog.c,v 1.5 2003/12/14 17:07:17 alor Exp $
 */
 
 #include <wdg.h>
@@ -410,9 +410,10 @@ static void wdg_dialog_get_size(struct wdg_object *wo, size_t *lines, size_t *co
    /* if there were no '\n' */
    if (*cols == 0)
       *cols = t;
-  
-   /* add the lines for the buttons */
-   *lines += 2;
+ 
+   if (ww->flags != WDG_NO_BUTTONS)
+      /* add the lines for the buttons */
+      *lines += 2;
 
 }
 
@@ -424,6 +425,10 @@ static void wdg_dialog_buttons(struct wdg_object *wo)
    WDG_WO_EXT(struct wdg_dialog, ww);
    size_t i, l, c;
 
+   /* no button to be displayed */
+   if (ww->flags == WDG_NO_BUTTONS)
+      return;
+   
    /* get the line of the message */
    wdg_dialog_get_size(wo, &l, &c);
 

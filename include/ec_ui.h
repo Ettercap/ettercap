@@ -1,5 +1,5 @@
 
-/* $Id: ec_ui.h,v 1.12 2003/10/23 19:50:57 uid42100 Exp $ */
+/* $Id: ec_ui.h,v 1.13 2003/12/14 17:07:17 alor Exp $ */
 
 #ifndef EC_UI_H
 #define EC_UI_H
@@ -42,6 +42,17 @@ extern void ui_register(struct ui_ops *ops);
 #define INSTANT_USER_MSG(x, ...) do { ui_msg(x, ## __VA_ARGS__ ); ui_msg_flush(MSG_ALL); } while(0)
 
 #define FATAL_MSG(x, ...) do { ui_error(x, ## __VA_ARGS__ ); return (-EFATAL); } while(0)
+
+/* 
+ * if we are using the text interface, exit with a fatal error,
+ * else display a message and continue with the current GUI (curses or gtk)
+ */
+#define SEMIFATAL_ERROR(x, ...) do {                              \
+   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)   \
+      FATAL_ERROR(x, ## __VA_ARGS__);                             \
+   else                                                           \
+      FATAL_MSG(x, ## __VA_ARGS__);                               \
+} while(0)
 
 #endif
 

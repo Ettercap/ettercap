@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.9 2003/11/21 08:32:15 alor Exp $
+    $Id: ec_mitm.c,v 1.10 2003/12/14 17:07:17 alor Exp $
 */
 
 #include <ec.h>
@@ -115,10 +115,17 @@ void mitm_start(void)
    
    /* start all the selected methods */
    SLIST_FOREACH(e, &mitm_table, next) {
-      if (e->selected) {
+      if (e->selected && !e->started) {
          DEBUG_MSG("mitm_start: starting %s", e->mm->name);
-         e->mm->start(mitm_args);
-         e->started = 1;
+
+         /* 
+          * if the mitm method does not start correctly,
+          * deselect it !
+          */
+         if (e->mm->start(mitm_args) == ESUCCESS)
+            e->started = 1;
+         else
+            e->selected = 0;
       }
    }
 }

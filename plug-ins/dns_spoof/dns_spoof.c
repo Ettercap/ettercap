@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.11 2004/10/18 07:53:39 alor Exp $
+    $Id: dns_spoof.c,v 1.12 2004/10/25 10:15:07 alor Exp $
 */
 
 
@@ -517,7 +517,7 @@ static int get_spoofed_mx(const char *a, struct ip_addr **ip)
 /*
  * return the ip address for the name (NetBIOS WINS records)
  */
-static int get_spoofed_wins(const const char *a, struct ip_addr **ip)
+static int get_spoofed_wins(const char *a, struct ip_addr **ip)
 {
    struct dns_spoof_entry *d;
 

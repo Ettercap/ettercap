@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.30 2004/04/15 19:39:43 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.31 2004/04/17 16:10:57 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -119,6 +119,15 @@ wants to talk to. It can also help you finding addresses in an unknown LAN.
 ettercap -TQzP find_conn 
 .Sp
 ettercap -TQu -i eth0 -P find_conn 
+
+
+.TP 
+.B find_ettercap
+.Sp
+Try to identify ettercap packets sent on the LAN. It could be useful to detect
+if someone is using ettercap. Do not rely on it 100% since the tests are only
+on particular sequence/identification numbers.
+
 
 .TP 
 .B find_ip

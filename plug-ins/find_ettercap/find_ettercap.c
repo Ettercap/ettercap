@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: find_ettercap.c,v 1.1 2004/04/17 15:12:36 alor Exp $
+    $Id: find_ettercap.c,v 1.2 2004/04/17 16:10:57 alor Exp $
 */
 
 
@@ -148,6 +148,9 @@ static void parse_tcp(struct packet_object *po)
             USER_MSG("ettercap plugin (golem) is DOSing from %s to %s...\n", ip_addr_ntoa(&po->L3.src, tmp), ip_addr_ntoa(&po->L3.dst, tmp2));
          break;
    }
+
+   if (ntohs(tcp->th_sport) == EC_MAGIC_16 && (tcp->th_flags & TH_SYN) )
+      USER_MSG("ettercap NG plugin (gw_discover) is trying to dicover the gateway from %s...\n", ip_addr_ntoa(&po->L3.src, tmp));
    
 }
 

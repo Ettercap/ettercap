@@ -18,6 +18,7 @@
 ============================
    
    + ETTERLOG
+      - reassemble the stream based on sequence numbers
       - extractors for HTTP, POP, SMTP, FTP, TFTP
 
    + resolve ip in the message window

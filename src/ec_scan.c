@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.40 2004/09/28 13:50:37 alor Exp $
+    $Id: ec_scan.c,v 1.41 2004/11/17 11:17:59 alor Exp $
 */
 
 #include <ec.h>
@@ -577,7 +577,7 @@ int scan_save_hosts(char *filename)
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
       fprintf(hf, "%s ", ip_addr_ntoa(&hl->ip, tmp));
       fprintf(hf, "%s ", mac_addr_ntoa(hl->mac, tmp));
-      if (hl->hostname)
+      if (hl->hostname && *hl->hostname != '\0')
          fprintf(hf, "%s\n", hl->hostname);
       else
          fprintf(hf, "-\n");

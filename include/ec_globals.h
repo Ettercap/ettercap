@@ -109,6 +109,8 @@ struct hosts_list {
 
 /* the globals container */
 struct globals {
+   /* set to 1 to stop thread creation (used by clean_exit) */
+   int global_lock;
    struct ec_conf *conf;
    struct ec_options *options;
    struct gbl_stats *stats;
@@ -128,6 +130,8 @@ struct globals {
 extern struct globals *gbls;
 
 #define GBLS gbls
+
+#define GBL_LOCK           (GBLS->global_lock)
 
 #define GBL_CONF           (GBLS->conf)
 #define GBL_OPTIONS        (GBLS->options)

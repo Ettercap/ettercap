@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.23 2003/07/07 10:43:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.24 2003/07/15 20:28:07 alor Exp $
 */
 
 #include <el.h>
@@ -41,6 +41,7 @@ static void display_info(void);
 static void display_headers(struct log_header_packet *pck);
 void set_display_regex(char *regex);
 static int match_regex(struct host_profile *h);
+static void print_pass(struct host_profile *h);
 
 /*******************************************/
 
@@ -234,14 +235,17 @@ static void display_info(void)
    /* create the hosts' list */
    create_hosts_list(); 
 
-   /* load the fingerprint database */
-   fingerprint_init();
+   /* don't load if the user is interested only in passwords... */
+   if (!GBL.passwords) {
+      /* load the fingerprint database */
+      fingerprint_init();
 
-   /* load the manuf database */
-   manuf_init();
+      /* load the manuf database */
+      manuf_init();
 
-   /* load the services names */
-   services_init();
+      /* load the services names */
+      services_init();
+   }
 
    /* write the XML prolog */
    if (GBL.xml) {
@@ -288,7 +292,9 @@ static void display_info(void)
       }
      
       /* print the infos */
-      if (GBL.xml)
+      if (GBL.passwords)
+         print_pass(h);  
+      else if (GBL.xml)
          print_host_xml(h);
       else
          print_host(h);
@@ -338,6 +344,42 @@ static int match_regex(struct host_profile *h)
    }
       
    return 0;
+}
+
+
+/*
+ * print the ip and the account collected 
+ */
+static void print_pass(struct host_profile *h)
+{
+   struct open_port *o;
+   struct active_user *u;
+   char tmp[MAX_ASCII_ADDR_LEN];
+   
+   /* walk the list */
+   LIST_FOREACH(o, &(h->open_ports_head), next) {
+      
+      LIST_FOREACH(u, &(o->users_list_head), next) {
+        
+         /* if is set the GBL.user, check it, else print all */
+         if (!GBL.user || !strcasecmp(u->user, GBL.user) ) {
+            fprintf(stdout, " %s ", ip_addr_ntoa(&h->L3_addr, tmp));
+            if (strcmp(h->hostname, ""))
+               fprintf(stdout, "(%s)", h->hostname);
+            
+            fprintf(stdout, "\t%s %d\tUSER: %s  PASS: %s",
+                  (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , 
+                  ntohs(o->L4_addr),
+                  u->user,
+                  u->pass);
+            if (u->info)
+               fprintf(stdout, "  INFO: %s\n", u->info);
+            else
+               fprintf(stdout, "\n");
+         }
+      }
+   }
+   
 }
 
 

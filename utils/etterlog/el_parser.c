@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.14 2003/07/08 21:31:19 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.15 2003/07/15 20:28:07 alor Exp $
 */
 
 
@@ -66,6 +66,7 @@ void el_usage(void)
    fprintf(stdout, "\nSearch Options:\n");
    fprintf(stdout, "  -e, --regex <regex>         display only packets that match the regex\n");
    fprintf(stdout, "  -u, --user <user>           search for info about the user <user>\n");
+   fprintf(stdout, "  -p, --passwords             print only accounts information\n");
    
    fprintf(stdout, "\nVisualization Method:\n");
    fprintf(stdout, "  -B, --binary                print packets as they are\n");
@@ -120,6 +121,7 @@ void parse_options(int argc, char **argv)
       
       { "user", required_argument, NULL, 'u' },
       { "regex", required_argument, NULL, 'e' },
+      { "passwords", no_argument, NULL, 'p' },
       
       { 0 , 0 , 0 , 0}
    };
@@ -127,7 +129,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhkLlmnrsTt:u:vXxZ", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhkLlmnprsTt:u:vXxZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -185,6 +187,10 @@ void parse_options(int argc, char **argv)
                   
          case 'u':
                   GBL.user = strdup(optarg);
+                  break;
+                  
+         case 'p':
+                  GBL.passwords = 1;
                   break;
 
          case 'e':

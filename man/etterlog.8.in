@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.11 2003/07/07 10:43:19 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.12 2003/07/15 20:28:00 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -162,6 +162,11 @@ NOTE: the regex is compiled with the REG_ICASE flag (case insensitive).
 \fB\-u\fR, \fB\-\-user <USER>\fR
 Display information about this user. The search is performed over all the
 hosts' user and pass collected infos.
+
+.TP
+\fB\-p\fR, \fB\-\-passwords\fR
+Print only the collected account for each hosts. This prevents the huge profile
+output. It can be used in conjunction with the -u option to filter the users.
 
 
 .TP

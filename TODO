@@ -19,9 +19,6 @@
 
    + dissector must send associated user, pass and info (state machine required)
 
-   + FINGERPRINT
-      - find the nearest if unknown 
-
    + LOGGING ENGINE
       - banner extracted by dissectors (state machine required)
       - add the ARP hook

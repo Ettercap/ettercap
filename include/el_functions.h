@@ -16,6 +16,8 @@ extern void create_hosts_list(void);
 
 /* el_main */
 extern void progress(int value, int max);
+extern void set_color(int color);
+extern void reset_color(void);
 
 /* el_log */
 extern void open_log(char *file);

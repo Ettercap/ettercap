@@ -3,7 +3,7 @@
 #define EC_FINGERPRINT_H
 
 extern int fingerprint_init(void);
-extern char * fingerprint_search(char *m);
+extern int fingerprint_search(const char *f, char *dst);
 extern void fingerprint_default(char *finger);
 extern void fingerprint_push(char *finger, int param, int value);
 extern u_char TTL_PREDICTOR(u_char x);

@@ -15,41 +15,39 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.8 2003/04/05 13:58:41 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.9 2003/04/06 10:40:10 alor Exp $
 
 */
 
 #include <ec.h>
 #include <ec_file.h>
-#include <ec_hash.h>
+#include <ec_parser.h>
 #include <ec_fingerprint.h>
-
-#define TABBIT    7 /* 2^7 bit tab entries: 128 SLISTS */
-#define TABSIZE   (1UL<<TABBIT)
-#define TABMASK   (TABSIZE-1) /* to mask fnv_1 hash algorithm */
 
 #define LOAD_ENTRY(p,h,v) do {                                 \
    (p) = malloc (sizeof (struct entry));                       \
    ON_ERROR((p), NULL, "malloc() virtual memory exhausted");   \
    memcpy((p)->finger, h, FINGER_LEN);                         \
+   (p)->finger[FINGER_LEN] = '\0';                             \
    (p)->os = strdup (v);                                       \
+   (p)->os[strlen(p->os)-1] = '\0';                            \
 } while (0)
 
 /* globals */
 
-static SLIST_HEAD(, entry) finger_head[TABSIZE];
+static SLIST_HEAD(, entry) finger_head;
 
 struct entry {
-   char finger[FINGER_LEN];
+   char finger[FINGER_LEN+1];
    char *os;
-   SLIST_ENTRY(entry) entries;
+   SLIST_ENTRY(entry) next;
 };
 
 /* protos */
 
 static void fingerprint_discard(void);
 int fingerprint_init(void);
-char * fingerprint_search(char *f);
+int fingerprint_search(const char *f, char *dst);
 
 void fingerprint_default(char *finger);
 void fingerprint_push(char *finger, int param, int value);
@@ -61,16 +59,11 @@ static void fingerprint_discard(void)
 {
    struct entry *l;
 
-   int i;
-
-   for (i = 0; i < TABSIZE; i++) {
-
-      while (SLIST_FIRST(&finger_head[i]) != NULL) {
-         l = SLIST_FIRST(&finger_head[i]);
-         SLIST_REMOVE_HEAD(&finger_head[i], entries);
-         free(l->os);
-         free(l);
-      }
+   while (SLIST_FIRST(&finger_head) != NULL) {
+      l = SLIST_FIRST(&finger_head);
+      SLIST_REMOVE_HEAD(&finger_head, next);
+      free(l->os);
+      free(l);
    }
 
    DEBUG_MSG("ATEXIT: fingerprint_discard");
@@ -82,6 +75,7 @@ static void fingerprint_discard(void)
 int fingerprint_init(void)
 {
    struct entry *p;
+   struct entry *last = NULL;
    
    int i;
 
@@ -110,8 +104,16 @@ int fingerprint_init(void)
 
       LOAD_ENTRY(p, finger, os);
 
-      SLIST_INSERT_HEAD(&(finger_head[fnv_32(finger, FINGER_LEN) & TABMASK]), p, entries);
+      /* sort the list ascending */
+      if (last == NULL)
+         SLIST_INSERT_HEAD(&finger_head, p, next);
+      else
+         SLIST_INSERT_AFTER(last, p, next);
 
+      /* set the last entry */
+      last = p;
+
+      /* count the fingerprints */
       i++;
 
    }
@@ -130,17 +132,65 @@ int fingerprint_init(void)
  * search in the database for a given fingerprint
  */
 
-char * fingerprint_search(char *f)
+int fingerprint_search(const char *f, char *dst)
 {
    struct entry *l;
 
-   SLIST_FOREACH(l, &finger_head[fnv_32(f, FINGER_LEN) & TABMASK], entries) {
-      if (!memcmp(l->finger, f, FINGER_LEN))
-         return (l->os);
+   if (!strcmp(f, "")) {
+      strcpy(dst, "UNKNOWN");
+      return ESUCCESS;
+   }
+   
+   /* if the fingerprint matches, copy it in the dst and
+    * return ESUCCESS.
+    * if it is not found, copy the next finger in dst 
+    * and return -ENOTFOUND, it is the nearest fingerprint
+    */
+   
+   SLIST_FOREACH(l, &finger_head, next) {
+   
+      /* this is exact match */
+      if ( memcmp(l->finger, f, FINGER_LEN) == 0) {
+         strcpy(dst, l->os);
+         return ESUCCESS;
+      }
+      
+      /* 
+       * if not found seach with wildcalderd MSS 
+       * but he same WINDOW size
+       */
+      if ( memcmp(l->finger, f, FINGER_LEN) > 0) {
+         
+         /* the window field is FINGER_MSS bytes */
+         char win[FINGER_MSS];
+         char pattern[FINGER_LEN+1];
+         
+         /* the is the next in the list */
+         strcpy(dst, l->os);  
+        
+         strncpy(win, f, FINGER_MSS);
+         win[FINGER_MSS-1] = '\0';
+         
+         /* pattern will be something like:
+          *
+          *  0000:*:TT:WS:0:0:0:0:F:LT
+          */
+         sprintf(pattern, "%s:*:%s", win, f + FINGER_TTL);
+
+         /* search for equal WINDOW but wildcarded MSS */
+         while (l != SLIST_END(&finger_head) && !strncmp(l->finger, win, 4)) {
+            if (match_pattern(l->finger, pattern)) {
+               /* save the nearest one (wildcarded MSS) */
+               strcpy(dst, l->os); 
+               return -ENOTFOUND;
+            }
+            l = SLIST_NEXT(l, next);
+         }
+         return -ENOTFOUND;
+      }
    }
 
-   return NULL;
-
+   return -ENOTFOUND;
 }
 
 /*

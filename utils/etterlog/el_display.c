@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.9 2003/04/05 13:58:41 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.10 2003/04/06 10:40:11 alor Exp $
 */
 
 #include <el.h>
@@ -116,7 +116,7 @@ static void display_packet(void)
                color = COL_BLUE;
                break;
          }
-         fprintf(stdout, "\033[%dm", color);
+         set_color(color);
          fflush(stdout);
       }
       
@@ -124,7 +124,7 @@ static void display_packet(void)
       write(fileno(stdout), tmp, ret);
       
       if (GBL.color) {
-         fprintf(stdout, "\033[0m");
+         reset_color();
          fflush(stdout);
       }
       
@@ -227,6 +227,7 @@ static void display_info(void)
    struct active_user *u;
    LIST_HEAD(, host_profile) *hosts_list_head = get_host_list_ptr();
    char tmp[MAX_ASCII_ADDR_LEN];
+   char os[OS_LEN+1];
    
    /* create the hosts' list */
    create_hosts_list(); 
@@ -242,16 +243,18 @@ static void display_info(void)
    /* parse the list */
    LIST_FOREACH(h, hosts_list_head, next) {
 
+      memset(os, 0, sizeof(os));
+      
       /* XXX respect the TARGET and regex */
       
       /* set the color */
       if (GBL.color) {
          if (h->type & FP_GATEWAY)
-            fprintf(stdout, "\033[%dm", COL_RED);
+            set_color(COL_RED);
          if (h->type & FP_HOST_LOCAL)
-            fprintf(stdout, "\033[%dm", COL_GREEN);
+            set_color(COL_GREEN);
          if (h->type & FP_HOST_NONLOCAL)
-            fprintf(stdout, "\033[%dm", COL_BLUE);
+            set_color(COL_BLUE);
       }
       
       fprintf(stdout, "==================================================\n");
@@ -271,7 +274,13 @@ static void display_info(void)
          fprintf(stdout, " TYPE     : REMOTE host\n\n");
       
       fprintf(stdout, " FINGERPRINT      : %s\n", h->fingerprint);
-      fprintf(stdout, " OPERATING SYSTEM : %s \n", fingerprint_search(h->fingerprint));
+      if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
+         fprintf(stdout, " OPERATING SYSTEM : %s \n\n", os);
+      else {
+         fprintf(stdout, " OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
+         fprintf(stdout, " NEAREST ONE IS   : %s \n\n", os);
+      }
+         
      
       LIST_FOREACH(o, &(h->open_ports_head), next) {
          
@@ -290,7 +299,7 @@ static void display_info(void)
       
       /* reset the color */
       if (GBL.color)
-         fprintf(stdout, "\033[0m");   
+         reset_color();
    }
    
    fprintf(stdout, "\n\n");

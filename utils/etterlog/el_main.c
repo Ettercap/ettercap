@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.6 2003/04/03 15:10:48 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.7 2003/04/06 10:40:11 alor Exp $
 */
 
 #include <el.h>
@@ -82,6 +82,21 @@ int main(int argc, char *argv[])
    return 0;
 }
 
+
+
+/* ANSI color escapes */
+
+void set_color(int color)
+{
+   fprintf(stdout, "\033[%dm", color);
+}
+
+/* reset the color to default */
+
+void reset_color(void)
+{
+   fprintf(stdout, "\033[0m");   
+}
 
 
 /* EOF */

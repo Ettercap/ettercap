@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.3 2003/12/14 12:21:52 alor Exp $
+    $Id: ec_curses_view.c,v 1.4 2003/12/17 15:56:36 alor Exp $
 */
 
 #include <ec.h>
@@ -37,8 +37,8 @@ static char tag_resolve[] = " ";
 static wdg_t *wdg_stats;
 
 struct wdg_menu menu_view[] = { {"View",                "V", NULL},
-                                {"Profiles",             "", NULL},
                                 {"Connections",          "", NULL},
+                                {"Profiles",             "", NULL},
                                 {"-",                    "", NULL},
                                 {"Resolve IP addresses", tag_resolve, toggle_resolve},
                                 {"-",                    "", NULL},

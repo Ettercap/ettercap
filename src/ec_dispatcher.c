@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.31 2003/11/30 21:31:56 alor Exp $
+    $Id: ec_dispatcher.c,v 1.32 2003/12/17 15:56:36 alor Exp $
 */
 
 #include <ec.h>
@@ -121,8 +121,10 @@ EC_THREAD_FUNC(top_half)
          USER_MSG("\nEnd of dump file...\n");
          if ((GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE) && GBL_CONF->close_on_eof)
             clean_exit(0);
-         else
+         else {
+            SAFE_FREE(e);
             continue;
+         }
       }
       
       /* HOOK_POINT: DISPATCHER */

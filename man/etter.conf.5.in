@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.18 2003/12/15 16:16:41 lordnaga Exp $
+.\"  $Id: etter.conf.5.in,v 1.19 2003/12/17 15:56:35 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -121,15 +121,18 @@ erver.
 This is the delay time (in milliseconds) between stealing packets for the 
 "port" mitm method. With low delays you will be able to intercept more
 packets, but you will generate more traffic. You have to tune this value
-depending on full/half duplex channels, network drivers and adapters,
-network general configuration and hardware, to find a good balance between
+in order to find a good balance between
 the number of intercepted packets, re-transmitted packets and lost packets.
+This value depends on full/half duplex channels, network drivers and adapters,
+network general configuration and hardware.
+
 
 .TP
 .B port_steal_send_delay
 This is the delay time (in microseconds) between packets when the 
-"port" mitm method have to re-send packets queues. As said for port_steal_delay
+"port" mitm method has to re-send packets queues. As said for port_steal_delay
 you have to tune this option to the lowest acceptable value.
+
 
 .TP 20
 .B [connections]
@@ -210,6 +213,7 @@ or by the kernel. It will generate packets duplicates in conjuction with
 arp mitm method (for example). It could be useful while running ettercap
 in unoffensive mode on a host with more than one netwrok interface
 (waiting for the multiple-interface feature...)   
+
 
 .TP 20
 .B [dissectors]

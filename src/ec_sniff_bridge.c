@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.9 2003/12/13 18:41:11 alor Exp $
+    $Id: ec_sniff_bridge.c,v 1.10 2003/12/17 15:56:36 alor Exp $
 */
 
 #include <ec.h>
@@ -37,6 +37,8 @@ void start_bridge_sniff(void)
 {
    DEBUG_MSG("start_bridge_sniff");
    
+   USER_MSG("Starting Bridged sniffing...\n\n");
+   
    /* create the timeouter thread */
    if (!GBL_OPTIONS->read)
       ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
@@ -46,8 +48,6 @@ void start_bridge_sniff(void)
    
    /* create the thread for packet capture on the bridged interface */
    ec_thread_new("bridge", "pcap handler and packet decoder", &capture_bridge, NULL);
-   
-   USER_MSG("Bridger sniffing was started...\n");
 }
 
 /*

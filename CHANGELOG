@@ -22,6 +22,7 @@ NG-0.7.0    ????????
       + advanced ARP poisoning engine (with many-to-many support)
       + ICMP redirect
       + DCHP spoofing
+      + port stealing
    + multiple target selection
    + pcap filter on capture
    + regex packet matching 

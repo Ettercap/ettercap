@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.7 2003/10/16 12:16:23 lordnaga Exp $
+    $Id: ec_smb.c,v 1.8 2003/10/16 14:45:21 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -231,6 +231,11 @@ FUNC_DECODER(dissector_smb)
                Blob = GetUser(Blob+pwlen+unilen, session_data->user, 200);
                GetUser(Blob, session_data->domain, 200);
                session_data->status = WAITING_LOGON_RESPONSE;
+            } else if (session_data->status == WAITING_CHALLENGE) {
+	    
+               /* HOOK POINT: PACKET_SMB2 */
+               hook_point(PACKET_SMB2, PACKET);
+              
             } else if (session_data->status == WAITING_RESPONSE) {
                char *Blob;
                /* Jump the Words */

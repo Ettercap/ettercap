@@ -1,5 +1,5 @@
 
-/* $Id: ec_hook.h,v 1.7 2003/10/15 14:28:20 lordnaga Exp $ */
+/* $Id: ec_hook.h,v 1.8 2003/10/16 14:45:20 lordnaga Exp $ */
 
 #ifndef EC_HOOK_H
 #define EC_HOOK_H
@@ -27,6 +27,7 @@ void hook_point(int point, struct packet_object *po);
    #define PACKET_TCP         (PACKET_BASE+9)
    #define PACKET_ICMP        (PACKET_BASE+10)
    #define PACKET_SMB         (PACKET_BASE+11)		
+   #define PACKET_SMB2        (PACKET_BASE+12)		
 
 void hook_add(int point, void (*func)(struct packet_object *po) );
 int hook_del(int point, void (*func)(struct packet_object *po) );

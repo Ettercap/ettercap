@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.36 2003/10/15 20:29:05 alor Exp $
+    $Id: ec_filter.c,v 1.37 2003/10/16 14:45:20 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -620,15 +620,15 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
       JIT_FAULT("Cannot mmap file");
  
    /* check if we are overflowing pcap buffer */
-   if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) < size)
+   if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + size)
       JIT_FAULT("injected file too long");
          
    /* copy the file into the buffer */
-   memcpy(po->DATA.data, file, size);
+   memcpy(po->DATA.data + po->DATA.len, file, size);
 
    /* Adjust packet len and delta */
-   po->DATA.delta = size - po->DATA.len;
-   po->DATA.len = size;    
+   po->DATA.delta += size;
+   po->DATA.len += size;    
 
    /* mark the packet as modified */
    po->flags |= PO_MODIFIED;

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.94 2004/02/08 11:41:12 alor Exp $
+dnl    $Id: configure.in,v 1.95 2004/02/15 13:35:23 alor Exp $
 dnl
 
 AC_INIT
@@ -387,15 +387,14 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
      AC_MSG_ERROR(["*** ettercap cannot operate without libpcap. ***"])
      ;;
   *)
-     if test -f $withval/pcap.h -a -f $withval/libpcap.a; then
+     if test -f $withval/pcap.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         PCAPINC="-I$withval"
         PCAPLIB="-L$withval -lpcap"
         ac_ec_libpcap=$withval
         AC_MSG_RESULT($withval)
-     elif test -f $withval/include/pcap.h -a \
-               -f $withval/lib/libpcap.a; then
+     elif test -f $withval/include/pcap.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         PCAPINC="-I$withval/include"
@@ -404,7 +403,7 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
         AC_MSG_RESULT($withval)
      else
         AC_MSG_RESULT(no)
-        AC_MSG_ERROR([pcap.h or libpcap.a not found in $withval])
+        AC_MSG_ERROR([pcap.h not found in $withval])
      fi
      ;;
   esac ],
@@ -441,9 +440,7 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
      AC_MSG_ERROR(["*** ettercap cannot operate without libnet. ***"])
      ;;
   *)
-     if test -f $withval/include/libnet.h \
-             -a -f $withval/src/libnet.a \
-             -o -f $withval/lib/libnet.a; then
+     if test -f $withval/include/libnet.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         LNETINC="-I$withval/include"
@@ -452,7 +449,7 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
         AC_MSG_RESULT($withval)
      else
         AC_MSG_RESULT(no)
-        AC_MSG_ERROR([libnet.h or libnet.a not found in $withval])
+        AC_MSG_ERROR([libnet.h not found in $withval])
      fi
      ;;
   esac ],
@@ -549,8 +546,7 @@ AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
      AC_MSG_RESULT(no)
      ;;
   *)
-     if test -f $withval/pcre.h \
-             -a -f $withval/libpcre.a; then
+     if test -f $withval/pcre.h; then 
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         PCREINC="-I$withval/"
@@ -559,8 +555,7 @@ AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
         AC_DEFINE(HAVE_PCRE, 1)
         ac_ec_pcre=yes
         AC_MSG_RESULT($withval)
-     elif test -f $withval/include/pcre.h \
-               -a -f $withval/lib/libpcre.a; then
+     elif test -f $withval/include/pcre.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         PCREINC="-I$withval/include"
@@ -571,7 +566,7 @@ AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
         AC_MSG_RESULT($withval)
      else
         AC_MSG_RESULT(no)
-        AC_MSG_ERROR([pcre.h or libpcre.a not found in $withval])
+        AC_MSG_ERROR([pcre.h not found in $withval])
      fi
      ;;
   esac ],
@@ -608,8 +603,7 @@ AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in D
      if test -f $withval/ncurses.h \
              -a -f $withval/panel.h \
              -a -f $withval/form.h \
-             -a -f $withval/menu.h \
-             -a -f $withval/libncurses.a; then
+             -a -f $withval/menu.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         NCURSINC="-I$withval"
@@ -621,8 +615,7 @@ AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in D
      elif test -f $withval/include/ncurses.h \
                -a -f $withval/include/panel.h \
                -a -f $withval/include/menu.h \
-               -a -f $withval/include/form.h \
-               -a -f $withval/lib/libncurses.a; then
+               -a -f $withval/include/form.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         NCURSINC="-I$withval/include"
@@ -634,8 +627,7 @@ AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in D
      elif test -f $withval/include/ncurses/ncurses.h \
                -a -f $withval/include/ncurses/panel.h \
                -a -f $withval/include/ncurses/menu.h \
-               -a -f $withval/include/ncurses/form.h \
-               -a -f $withval/lib/libncurses.a; then
+               -a -f $withval/include/ncurses/form.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         NCURSINC="-I$withval/include/ncurses"
@@ -646,7 +638,7 @@ AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in D
         AC_MSG_RESULT($withval)
      else
         AC_MSG_RESULT(no)
-        AC_MSG_ERROR([ncurses.h menu.h panel.h form.h or libncurses.a not found in $withval])
+        AC_MSG_ERROR([ncurses.h menu.h panel.h form.h not found in $withval])
      fi
      ;;
   esac ],

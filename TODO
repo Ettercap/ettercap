@@ -39,7 +39,8 @@ this is the unofficial and floating in time roadmap:
       - how to code a plugin 
 
    + CURSES GUI
-      - connection view
+      - injection panel
+      - regex on the content
       - input for curses_input
 
    + INJECTION 
@@ -49,6 +50,13 @@ this is the unofficial and floating in time roadmap:
       - pptp
       - gre
 
+   + LOGGING
+      - log current profiles
+      - selective log on connections
+   
+   + CONNECTION
+      - kill a connection
+
    + DISSECTORS
       - convert all the old dissectors:
          - https (over the ssl one)
@@ -57,9 +65,6 @@ this is the unofficial and floating in time roadmap:
       - SSL unified dissector for https, impas, pop3s ecc ecc
       - TDS
    
-   + LOGGING
-      - selective log on connections
-      
    + PLUGINS
       - automatic add of new hosts
       port all the plugins to NG:
@@ -69,9 +74,6 @@ this is the unofficial and floating in time roadmap:
          - triton    -> gw_discover
 
    + BRIDGED SNIFFING
-     
-   + CONNECTION
-      - kill a connection
     
 
 ============================

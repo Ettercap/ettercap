@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.35 2004/02/08 19:58:40 alor Exp $
+    $Id: ec_curses.c,v 1.36 2004/02/15 13:35:28 alor Exp $
 */
 
 #include <ec.h>
@@ -115,6 +115,8 @@ static void curses_init(void)
 
    /* initialize the colors */
    wdg_init_color(EC_COLOR, GBL_CONF->colors.fg, GBL_CONF->colors.bg);
+   wdg_init_color(EC_COLOR_JOIN1, GBL_CONF->colors.join1, GBL_CONF->colors.bg);
+   wdg_init_color(EC_COLOR_JOIN2, GBL_CONF->colors.join2, GBL_CONF->colors.bg);
    wdg_init_color(EC_COLOR_BORDER, GBL_CONF->colors.border, GBL_CONF->colors.bg);
    wdg_init_color(EC_COLOR_TITLE, GBL_CONF->colors.title, GBL_CONF->colors.bg);
    wdg_init_color(EC_COLOR_FOCUS, GBL_CONF->colors.focus, GBL_CONF->colors.bg);

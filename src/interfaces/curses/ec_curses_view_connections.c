@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.1 2004/02/08 19:58:40 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.2 2004/02/15 13:35:28 alor Exp $
 */
 
 #include <ec.h>
@@ -26,6 +26,7 @@
 #include <ec_conntrack.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
+#include <ec_format.h>
 
 /* proto */
 
@@ -37,15 +38,19 @@ static void curses_connection_data(void *conn);
 static void curses_connection_data_split(void);
 static void curses_connection_data_join(void);
 static void curses_destroy_conndata(void);
-static void refresh_conndata(void);
-static void data_print(u_char *text, size_t len, struct ip_addr *L3_src);
+static void split_print(u_char *text, size_t len, struct ip_addr *L3_src);
+static void split_print_po(struct packet_object *po);
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src);
+static void join_print_po(struct packet_object *po);
 
 /* globals */
 
 static wdg_t *wdg_connections, *wdg_conn_detail;
 static wdg_t *wdg_conndata, *wdg_c1, *wdg_c2, *wdg_join;
 static struct conn_object *curr_conn;
+   
+/* keep it global, so the memory region is always the same (reallocing it) */
+static u_char *dispbuf;
 
 /*******************************************/
 
@@ -180,7 +185,7 @@ static void curses_connection_data(void *conn)
    curr_conn = c->co;
    
    /* default is splitted view */
-   //curses_connection_data_split();
+   curses_connection_data_split();
 }
 
 /*
@@ -195,6 +200,8 @@ static void curses_connection_data_split(void)
 
    if (wdg_conndata) {
       wdg_destroy_object(&wdg_conndata);
+      conntrack_hook_conn_del(curr_conn, split_print_po);
+      conntrack_hook_conn_del(curr_conn, join_print_po);
    }
 
    wdg_create_object(&wdg_conndata, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);
@@ -235,41 +242,58 @@ static void curses_connection_data_split(void)
    wdg_draw_object(wdg_conndata);
    wdg_set_focus(wdg_conndata);
 
-   /* add the callback on idle to refresh the data */
-   //wdg_add_idle_callback(refresh_conndata);
-
    /* print the old data */
-   connbuf_print(&curr_conn->data, data_print);
+   connbuf_print(&curr_conn->data, split_print);
+
+   /* add the hook on the connection to receive data only from it */
+   conntrack_hook_conn_add(curr_conn, split_print_po);
 }
 
 static void curses_destroy_conndata(void)
 {
+   conntrack_hook_conn_del(curr_conn, split_print_po);
+   conntrack_hook_conn_del(curr_conn, join_print_po);
    wdg_conndata = NULL;
    curr_conn = NULL;
-   wdg_del_idle_callback(refresh_conndata);
 }
 
-static void refresh_conndata(void)
+static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
 {
+   int ret;
+
+   /* use the global to reuse the same memory region */
+   SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
+   
+   /* format the data */
+   ret = GBL_FORMAT(text, len, dispbuf);
+   dispbuf[ret] = 0;
+
+   if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
+      wdg_scroll_print(wdg_c1, EC_COLOR, "%s", dispbuf);
+   else
+      wdg_scroll_print(wdg_c2, EC_COLOR, "%s", dispbuf);
+      
+}
+
+static void split_print_po(struct packet_object *po)
+{
+   int ret;
+   
    /* if not focused don't refresh it */
    if (!(wdg_conndata->flags & WDG_OBJ_FOCUSED))
       return;
    
-
-}
-
-static void data_print(u_char *text, size_t len, struct ip_addr *L3_src)
-{
-   char buf[len+1];
-
+   /* use the global to reuse the same memory region */
+   SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
+      
    /* format the data */
-   GBL_FORMAT(text, len, buf);
-   buf[len] = 0;
-
-   if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
-      wdg_scroll_print(wdg_c1, EC_COLOR, "%s", buf);
+   ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
+   dispbuf[ret] = 0;
+        
+   if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
+      wdg_scroll_print(wdg_c1, EC_COLOR, "%s", dispbuf);
    else
-      wdg_scroll_print(wdg_c2, EC_COLOR, "%s", buf);
+      wdg_scroll_print(wdg_c2, EC_COLOR, "%s", dispbuf);
       
 }
 
@@ -286,6 +310,8 @@ static void curses_connection_data_join(void)
 
    if (wdg_conndata) {
       wdg_destroy_object(&wdg_conndata);
+      conntrack_hook_conn_del(curr_conn, split_print_po);
+      conntrack_hook_conn_del(curr_conn, join_print_po);
    }
 
    wdg_create_object(&wdg_conndata, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);
@@ -305,7 +331,7 @@ static void curses_connection_data_join(void)
    wdg_set_size(wdg_join, 2, 3, -2, SYSMSG_WIN_SIZE - 2);
    
    /* set the buffers */
-   wdg_scroll_set_lines(wdg_join, GBL_CONF->connection_buffer / current_screen.cols );
+   wdg_scroll_set_lines(wdg_join, GBL_CONF->connection_buffer / (current_screen.cols / 2) );
    
    /* link the widget together within the compound */
    wdg_compound_add(wdg_conndata, wdg_join);
@@ -318,25 +344,49 @@ static void curses_connection_data_join(void)
    wdg_draw_object(wdg_conndata);
    wdg_set_focus(wdg_conndata);
 
-   /* add the callback on idle to refresh the data */
-   //wdg_add_idle_callback(refresh_conndata);
-
    /* print the old data */
    connbuf_print(&curr_conn->data, join_print);
+
+   /* add the hook on the connection to receive data only from it */
+   conntrack_hook_conn_add(curr_conn, join_print_po);
 }
 
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
 {
-   char buf[len+1];
-
+   int ret;
+   
+   /* use the global to reuse the same memory region */
+   SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
+   
    /* format the data */
-   GBL_FORMAT(text, len, buf);
-   buf[len] = 0;
+   ret = GBL_FORMAT(text, len, dispbuf);
+   dispbuf[ret] = 0;
    
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
-      wdg_scroll_print(wdg_join, EC_COLOR, "%s", buf);
+      wdg_scroll_print(wdg_join, EC_COLOR_JOIN1, "%s", dispbuf);
    else
-      wdg_scroll_print(wdg_join, EC_COLOR_FOCUS, "%s", buf);
+      wdg_scroll_print(wdg_join, EC_COLOR_JOIN2, "%s", dispbuf);
+}
+
+static void join_print_po(struct packet_object *po)
+{
+   int ret;
+
+   /* if not focused don't refresh it */
+   if (!(wdg_conndata->flags & WDG_OBJ_FOCUSED))
+      return;
+   
+   /* use the global to reuse the same memory region */
+   SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
+      
+   /* format the data */
+   ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
+   dispbuf[ret] = 0;
+        
+   if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
+      wdg_scroll_print(wdg_join, EC_COLOR_JOIN1, "%s", dispbuf);
+   else
+      wdg_scroll_print(wdg_join, EC_COLOR_JOIN2, "%s", dispbuf);
 }
 
 

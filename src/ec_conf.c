@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.28 2004/02/01 16:48:51 alor Exp $
+    $Id: ec_conf.c,v 1.29 2004/02/15 13:35:28 alor Exp $
 */
 
 #include <ec.h>
@@ -75,6 +75,8 @@ static struct conf_entry misc[] = {
 static struct conf_entry curses[] = {
    { "color_bg", NULL },
    { "color_fg", NULL },
+   { "color_join1", NULL },
+   { "color_join2", NULL },
    { "color_border", NULL },
    { "color_title", NULL },
    { "color_focus", NULL },
@@ -153,6 +155,8 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&misc, "skip_forwarded_pcks", &GBL_CONF->skip_forwarded);
    set_pointer((struct conf_entry *)&curses, "color_bg", &GBL_CONF->colors.bg);
    set_pointer((struct conf_entry *)&curses, "color_fg", &GBL_CONF->colors.fg);
+   set_pointer((struct conf_entry *)&curses, "color_join1", &GBL_CONF->colors.join1);
+   set_pointer((struct conf_entry *)&curses, "color_join2", &GBL_CONF->colors.join2);
    set_pointer((struct conf_entry *)&curses, "color_border", &GBL_CONF->colors.border);
    set_pointer((struct conf_entry *)&curses, "color_title", &GBL_CONF->colors.title);
    set_pointer((struct conf_entry *)&curses, "color_focus", &GBL_CONF->colors.focus);

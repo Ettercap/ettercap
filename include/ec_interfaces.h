@@ -1,5 +1,5 @@
 
-/* $Id: ec_interfaces.h,v 1.13 2003/12/17 16:38:36 alor Exp $ */
+/* $Id: ec_interfaces.h,v 1.14 2004/02/15 13:35:28 alor Exp $ */
 
 #ifndef EC_INTERFACES_H
 #define EC_INTERFACES_H
@@ -8,6 +8,8 @@
 struct curses_color {
    int bg;
    int fg;
+   int join1;
+   int join2;
    int border;
    int title;
    int focus;
@@ -32,6 +34,8 @@ struct curses_color {
 #define EC_COLOR_SELECTION    7
 #define EC_COLOR_ERROR        8
 #define EC_COLOR_ERROR_BORDER 9
+#define EC_COLOR_JOIN1        10
+#define EC_COLOR_JOIN2        11
 
 /* exported functions */
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_plugins.c,v 1.11 2004/02/01 16:48:51 alor Exp $
+    $Id: ec_curses_plugins.c,v 1.12 2004/02/15 13:35:28 alor Exp $
 */
 
 #include <ec.h>
@@ -214,6 +214,10 @@ static void curses_wdg_plugin(char active, struct plugin_ops *ops)
  */
 static void curses_select_plugin(void *plugin)
 {
+   /* prevent the selection when the list is empty */
+   if (plugin == NULL)
+      return;
+        
    /* print the message */
    if (plugin_is_activated(plugin) == 0)
       INSTANT_USER_MSG("Activating %s plugin...\n", plugin);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.16 2004/02/08 11:41:44 alor Exp $
+    $Id: ec_conntrack.c,v 1.17 2004/02/15 13:35:28 alor Exp $
 */
 
 #include <ec.h>
@@ -71,8 +71,10 @@ static int conntrack_match(struct conn_object *co, struct packet_object *po);
 EC_THREAD_FUNC(conntrack_timeouter);
 void * conntrack_print(int mode, void *list, char **desc, size_t len);
 
-int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_object *po));
-int conntrack_hook_del(struct packet_object *po, void (*func)(struct packet_object *po));
+int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct packet_object *po));
+int conntrack_hook_packet_del(struct packet_object *po, void (*func)(struct packet_object *po));
+int conntrack_hook_conn_add(struct conn_object *co, void (*func)(struct packet_object *po));
+int conntrack_hook_conn_del(struct conn_object *co, void (*func)(struct packet_object *po));
 void conntrack_hook(struct conn_object *co, struct packet_object *po);
 
 /************************************************/
@@ -402,7 +404,7 @@ EC_THREAD_FUNC(conntrack_timeouter)
  * add the fucntion 'func' to the hookpoint of the
  * connection owning the packet object
  */
-int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_object *po))
+int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct packet_object *po))
 {
    struct conn_object *conn;
 
@@ -420,7 +422,7 @@ int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_obje
    /* create the fake connection */
    if (!conn) {
       
-      DEBUG_MSG("conntrack_hook_add: ephemeral connection");
+      DEBUG_MSG("conntrack_hook_packet_add: ephemeral connection");
       conntrack_add(po);
       conn = conntrack_search(po);
    }
@@ -429,7 +431,7 @@ int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_obje
    if (conn) {
       struct ct_hook_list *h;
       
-      DEBUG_MSG("conntrack_hook_add: existing connection");
+      DEBUG_MSG("conntrack_hook_packet_add: existing connection");
       
       SAFE_CALLOC(h, 1, sizeof(struct ct_hook_list));
       
@@ -451,18 +453,18 @@ int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_obje
 /* 
  * removes a hook from a connection 
  */
-int conntrack_hook_del(struct packet_object *po, void (*func)(struct packet_object *po))
+int conntrack_hook_packet_del(struct packet_object *po, void (*func)(struct packet_object *po))
 {
    struct conn_object *conn;
 
-   DEBUG_MSG("conntrack_hook_del");
+   DEBUG_MSG("conntrack_hook_packet_del");
    
    CONNTRACK_LOCK;
    
    /* search the connection already exists */
    conn = conntrack_search(po);
 
-   /* add the hook function only if the connection exists */
+   /* remove the hook function only if the connection exists */
    if (conn) {
       struct ct_hook_list *h;
       
@@ -481,6 +483,56 @@ int conntrack_hook_del(struct packet_object *po, void (*func)(struct packet_obje
    CONNTRACK_UNLOCK;
 
    return -ENOTFOUND;
+}
+
+/*
+ * add the fucntion 'func' to the hookpoint of the
+ * connection 'co' 
+ */
+int conntrack_hook_conn_add(struct conn_object *co, void (*func)(struct packet_object *po))
+{
+   struct ct_hook_list *h;
+
+   CONNTRACK_LOCK;
+   
+   /* add the hook point */
+   
+   DEBUG_MSG("conntrack_hook_conn_add");
+   
+   SAFE_CALLOC(h, 1, sizeof(struct ct_hook_list));
+   
+   /* set the hook function */
+   h->func = func;
+   
+   SLIST_INSERT_HEAD(&co->hook_head, h, next);
+      
+   CONNTRACK_UNLOCK;
+
+   return ESUCCESS;
+}
+
+
+/* 
+ * removes a hook from a connection 
+ */
+int conntrack_hook_conn_del(struct conn_object *co, void (*func)(struct packet_object *po))
+{
+   struct ct_hook_list *h;
+
+   DEBUG_MSG("conntrack_hook_conn_del");
+   
+   CONNTRACK_LOCK;
+   
+   SLIST_FOREACH(h, &co->hook_head, next) {
+      if (h->func == func) {
+         SLIST_REMOVE(&co->hook_head, h, ct_hook_list, next);
+         SAFE_FREE(h);
+         break;
+      }
+   }
+   
+   CONNTRACK_UNLOCK;
+   return ESUCCESS;
 }
 
 

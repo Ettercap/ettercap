@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_format.c,v 1.14 2004/04/29 13:08:44 alor Exp $
+    $Id: ec_format.c,v 1.15 2004/04/29 16:27:56 alor Exp $
 
 */
 
@@ -32,7 +32,9 @@
 
 /* globals */
 
-static char *utf8_encoding;
+#ifdef HAVE_ICONV
+   static char *utf8_encoding;
+#endif
 
 static u_int8 EBCDIC_to_ASCII[256] = {
    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 

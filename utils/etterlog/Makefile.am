@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.13 2003/09/24 19:28:51 alor Exp $
+# $Id: Makefile.am,v 1.14 2004/04/29 16:27:56 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -43,7 +43,8 @@ endif
 
 etterlog_CFLAGS = @EC_CFLAGS@
 
-etterlog_LDADD = -lz
+etterlog_LDADD = -lz @ICONVLIB@
+
 if INET_ATON_WANTS_RESOLV
    etterlog_LDADD += -lresolv
 endif

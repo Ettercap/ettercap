@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.13 2004/04/29 13:08:37 alor Exp $
+dnl $Id: acinclude.m4,v 1.14 2004/04/29 16:27:49 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -198,14 +198,20 @@ AH_TEMPLATE(HAVE_ICONV, [iconv funcion for UTF-8])
 
 AC_DEFUN(EC_ICONV,[
 
-   AC_CHECK_HEADERS(iconv.h)
-   AC_SEARCH_LIBS(iconv, c iconv) 
+   ICONVLIB=""
+   AC_SEARCH_LIBS(iconv, iconv c) 
+   if test "$OS" = "SOLARIS"; then
+      AC_CHECK_LIB(iconv, libiconv)
+      ICONVLIB="-liconv"
+   fi
    AC_MSG_CHECKING(for iconv)
-   AC_TRY_RUN([
-      #include <iconv.h>
+   AC_TRY_LINK([
+      #include <iconv.h>],
+      [
 
       int main()
       {
+	 iconv(0, NULL, NULL, NULL, NULL);
 
          return 0;
       }
@@ -214,7 +220,6 @@ AC_DEFUN(EC_ICONV,[
       AC_DEFINE(HAVE_ICONV,1) ],
    [  AC_MSG_RESULT(no); ]
    )
-
 ])
 
 dnl vim:ts=3:expandtab

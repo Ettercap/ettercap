@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.45 2004/04/08 11:02:53 daten Exp $
+    $Id: ec_capture.c,v 1.46 2004/04/29 16:27:56 alor Exp $
 */
 
 #include <ec.h>
@@ -42,7 +42,7 @@
 #else
    /* FREEBSD needs 1 */
    /* MACOSX  needs 1 */
-   #define PCAP_TIMEOUT 1
+   #define PCAP_TIMEOUT 10
 #endif
 
 /* globals */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.1 2003/10/11 19:44:39 alor Exp $
+    $Id: ec_text.c,v 1.2 2003/10/12 15:27:07 alor Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,7 @@
 #include <ec_hook.h>
 #include <ec_interfaces.h>
 #include <ec_format.h>
+#include <ec_plugins.h>
 
 #include <termios.h>
 
@@ -44,6 +45,8 @@ static void text_init(void);
 static void text_cleanup(void);
 static void text_msg(const char *msg);
 static void text_error(const char *msg);
+static void text_fatal_error(const char *msg);
+static void text_input(const char *title, char *input, size_t n);
 static void text_help(void);
 static void text_progress(int value, int max);
 static void text_run_plugin(void);
@@ -60,11 +63,17 @@ void set_text_interface(void)
 {
    struct ui_ops ops;
 
+   /* wipe the struct */
+   memset(&ops, 0, sizeof(ops));
+
+   /* register the functions */
    ops.init = &text_init;
    ops.start = &text_interface;
    ops.cleanup = &text_cleanup;
    ops.msg = &text_msg;
    ops.error = &text_error;
+   ops.fatal_error = &text_fatal_error;
+   ops.input = &text_input;
    ops.progress = &text_progress;
    ops.type = UI_TEXT;
    
@@ -121,7 +130,7 @@ static void text_msg(const char *msg)
 
 
 /*
- * print a FATAL_MSG()
+ * print an error
  */
 static void text_error(const char *msg)
 {
@@ -131,6 +140,47 @@ static void text_error(const char *msg)
    fflush(stdout);
 }
 
+
+/*
+ * handle a fatal error and exit
+ */
+static void text_fatal_error(const char *msg)
+{
+   /* avoid implicit format bugs */
+   fprintf(stdout, "\nFATAL: %s\n\n", msg);
+   /* allow non buffered messages */
+   fflush(stdout);
+
+   /* exit without calling atexit() */
+   _exit(-1);
+}
+
+
+/*
+ * display the 'title' and get the 'input' from the user
+ */
+static void text_input(const char *title, char *input, size_t n)
+{
+   char fmt[8];
+      
+   /* display the title */
+   fprintf(stdout, "%s", title);
+   fflush(stdout);
+
+   /* prepare the format */
+   snprintf(fmt, sizeof(fmt), "%%%ds", n);
+
+   /* repristinate the buffer input */
+   tcsetattr(0, TCSANOW, &old_tc);
+
+   /* get the user input */
+   scanf(fmt, input);
+   
+   /* disable buffered input */
+   tcsetattr(0, TCSANOW, &new_tc);
+
+   fprintf(stdout, "\n");
+}
 
 /* 
  * implement the progress bar 
@@ -191,18 +241,22 @@ void text_interface(void)
 
    /* it is difficult to be interactive while reading from file... */
    if (!GBL_OPTIONS->read) {
-      USER_MSG("\ntext Interface activated...\n");
+      USER_MSG("\nText only Interface activated...\n");
       USER_MSG("Hit 'h' for inline help\n\n");
    }
+   
+   /* flush all the messages */
+   ui_msg_flush(MSG_ALL);
   
    /* if we have to activate a plugin */
    if (GBL_OPTIONS->plugin) {
-      /* if the text returns an error it was a STANDALONE plugin, 
+      /* if it returns an error it was a STANDALONE plugin, 
        * so return and exit the program.
        * else it was an hooking plugin and we can continue with the
        * normal interface.
        */
-      if (text_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
+      if (text_plugin(GBL_OPTIONS->plugin) == PLUGIN_FINISHED)
+         /* end the interface */
          return;
    }
  
@@ -306,11 +360,11 @@ static void text_stop_cont(void)
       fprintf(stderr, "\nPacket visualization restarted...\n");
 }
 
+
 /*
  * display a list of plugin, and prompt 
  * the user for a plugin to run.
  */
-
 static void text_run_plugin(void)
 {
    char name[20];

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_plugin.c,v 1.1 2003/10/11 19:44:39 alor Exp $
+    $Id: ec_text_plugin.c,v 1.2 2003/10/12 15:27:07 alor Exp $
 */
 
 #include <ec.h>
@@ -72,20 +72,24 @@ int text_plugin(char *plugin)
       FATAL_MSG("%s plugin can not be found !", plugin);
    
    if (plugin_is_activated(plugin) == 0)
-      USER_MSG("Activating %s plugin [%s]...\n", (type == PL_HOOK) ? "hook" : "standalone" , plugin);
+      INSTANT_USER_MSG("Activating %s plugin [%s]...\n\n", (type == PL_HOOK) ? "hook" : "standalone" , plugin);
    else
-      USER_MSG("Deactivating %s plugin [%s]...\n", (type == PL_HOOK) ? "hook" : "standalone" , plugin);
+      INSTANT_USER_MSG("Deactivating %s plugin [%s]...\n\n", (type == PL_HOOK) ? "hook" : "standalone" , plugin);
   
    switch(type) {
       case PL_HOOK:
+         /* if the plugin is active, stop it */
          if (plugin_is_activated(plugin) == 1)
             plugin_fini(plugin);
          else
+            /* else activate it */
             plugin_init(plugin);
+
          USER_MSG("Done.\n\n");
-         /* return success so the text interface remains active */
-         return ESUCCESS;
+         /* return running so the text interface remains active */
+         return PLUGIN_RUNNING;
          break;
+
       case PL_STANDALONE:
          /*
           * pay attention on this !
@@ -94,8 +98,10 @@ int text_plugin(char *plugin)
           * to write plugins which spawn a thread
           * and immediately return
           */
-         plugin_init(plugin);
-         USER_MSG("Done.\n\n");
+         if (plugin_init(plugin) == PLUGIN_FINISHED) {
+            USER_MSG("Done.\n\n");
+            return PLUGIN_FINISHED;
+         }
          break;
    }
 
@@ -121,7 +127,7 @@ int text_plugin(char *plugin)
             case 'q':
                /* finalize the plugin and exit */
                plugin_fini(plugin);
-               return -EINVALID;
+               return PLUGIN_FINISHED;
                break;
          }
                                                                            
@@ -133,7 +139,6 @@ int text_plugin(char *plugin)
    }
   
    /* NOT REACHED */
-   
 }
 
 /*

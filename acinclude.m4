@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.10 2004/02/08 14:38:55 alor Exp $
+dnl $Id: acinclude.m4,v 1.11 2004/03/03 15:33:01 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -29,7 +29,7 @@ AC_DEFUN(EC_PTHREAD_CHECK,[
    
    if test "$OS" = "SOLARIS"; then
       AC_SEARCH_LIBS(_getfp, pthread,,)
-   else
+   elif test "$OS" != "MACOSX"; then
       AC_MSG_CHECKING(whether $CC accepts -pthread)
       LDFLAGS_store="$LDFLAGS"
       LDFLAGS="$LDFLAGS -pthread"
@@ -43,8 +43,7 @@ AC_DEFUN(EC_PTHREAD_CHECK,[
                return 0;
             }
          ],
-         [AC_MSG_RESULT(yes)
-          PTHREADLIB="-pthread"],
+         [AC_MSG_RESULT(yes)],
          [AC_MSG_RESULT(no)
             LDFLAGS="$LDFLAGS_store"
             AC_MSG_WARN(***************************);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.38 2004/03/31 13:03:08 alor Exp $
+    $Id: ec_ip.c,v 1.39 2004/04/06 21:08:33 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -238,8 +238,8 @@ FUNC_DECODER(decode_ip)
           * In case some upper level encapsulated 
           * ip decoder modified it... (required for checksum)
           */
-         PACKET->L3.header = (u_char *)DECODE_DATA;
-         PACKET->L3.len = DECODED_LEN;
+         PACKET->L3.header = (u_char *)ip;
+         PACKET->L3.len = (u_int32)(ip->ihl * 4);
       
          /* ...recalculate checksum */
          ip->csum = 0; 

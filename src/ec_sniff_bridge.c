@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.13 2004/03/31 13:03:08 alor Exp $
+    $Id: ec_sniff_bridge.c,v 1.14 2004/04/06 21:08:11 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -99,6 +99,13 @@ void forward_bridge_sniff(struct packet_object *po)
    /* don't forward dropped packets */
    if (po->flags & PO_DROPPED)
       return;
+
+   /*
+    * If the filters modified the packet len
+    * recalculate it (only if some L3 decoder parsed it).
+    */
+   if (po->fwd_packet)
+      po->len = po->L2.len + po->fwd_len;
          
    /* 
     * send the packet to the other interface.

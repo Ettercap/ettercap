@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_targets.c,v 1.8 2004/04/05 20:14:48 daten Exp $
+    $Id: ec_gtk_targets.c,v 1.9 2004/05/06 14:51:49 daten Exp $
 */
 
 #include <ec.h>
@@ -33,13 +33,11 @@ void gtkui_current_targets(void);
 static void set_protocol(void);
 static void set_targets(void);
 void gtkui_create_targets_array(void);
-static void gtkui_delete_target1(void *);
-static void gtkui_delete_target2(void *);
 static void gtkui_add_target1(void *);
 static void gtkui_add_target2(void *);
 static void add_target1(void);
 static void add_target2(void);
-static struct ip_list *gtkui_target_selected(int list);
+static void gtkui_delete_targets(GtkWidget *widget, gpointer data);
 static void gtkui_targets_destroy(void);
 static void gtkui_targets_detach(GtkWidget *child);
 static void gtkui_targets_attach(void);
@@ -235,7 +233,7 @@ void gtkui_current_targets(void)
    gtk_widget_show(treeview);
 
    selection1 = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
-   gtk_tree_selection_set_mode (selection1, GTK_SELECTION_SINGLE);
+   gtk_tree_selection_set_mode (selection1, GTK_SELECTION_MULTIPLE);
 
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("Target 1", renderer, "text", 0, NULL);
@@ -255,7 +253,7 @@ void gtkui_current_targets(void)
    gtk_widget_show(treeview);
 
    selection2 = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
-   gtk_tree_selection_set_mode (selection2, GTK_SELECTION_SINGLE);
+   gtk_tree_selection_set_mode (selection2, GTK_SELECTION_MULTIPLE);
 
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("Target 2", renderer, "text", 0, NULL);
@@ -267,13 +265,13 @@ void gtkui_current_targets(void)
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("Delete");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_target1), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_targets), (gpointer)1);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    button = gtk_button_new_with_mnemonic("Add");
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_add_target1), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    button = gtk_button_new_with_mnemonic("Delete");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_target2), NULL);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_targets), (gpointer)2);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    button = gtk_button_new_with_mnemonic("Add");
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_add_target2), NULL);
@@ -350,41 +348,6 @@ void gtkui_create_targets_array(void)
 }
 
 /*
- * delete an host from the target list
- */
-static void gtkui_delete_target1(void *host)
-{
-   struct ip_list *il;
-
-   DEBUG_MSG("gtk_delete_target1");
-   
-   il = gtkui_target_selected(1);
-   if(!il)
-      return;
-
-   /* remove the host from the list */
-   del_ip_list(&il->ip, GBL_TARGET1);
-
-   /* redraw the window */
-   gtkui_current_targets();
-}
-
-static void gtkui_delete_target2(void *host)
-{
-   struct ip_list *il;
-
-   DEBUG_MSG("gtk_delete_target2");
-   
-   il = gtkui_target_selected(2);
-
-   /* remove the host from the list */
-   del_ip_list(&il->ip, GBL_TARGET2);
-
-   /* redraw the window */
-   gtkui_current_targets();
-}
-
-/*
  * display the "add host" dialog
  */
 static void gtkui_add_target1(void *entry)
@@ -415,8 +378,8 @@ static void add_target1(void)
 
    add_ip_list(&host, GBL_TARGET1);
    
-   /* redraw the window */
-   gtkui_current_targets();
+   /* refresh the list */
+   gtkui_create_targets_array();
 }
 
 static void add_target2(void)
@@ -433,37 +396,58 @@ static void add_target2(void)
 
    add_ip_list(&host, GBL_TARGET2);
    
-   /* redraw the window */
-   gtkui_current_targets();
+   /* refresh the list */
+   gtkui_create_targets_array();
 }
 
-static struct ip_list *gtkui_target_selected(int list) {
+static void gtkui_delete_targets(GtkWidget *widget, gpointer data) {
+   GList *list = NULL;
    GtkTreeIter iter;
    GtkTreeModel *model;
    struct ip_list *il = NULL;
 
-   switch(list) {
+   switch((int)data) {
       case 1:
+         DEBUG_MSG("gtkui_delete_target: list 1");
          model = GTK_TREE_MODEL (liststore1);
 
-         if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection1), &model, &iter)) 
-            gtk_tree_model_get (model, &iter, 1, &il, -1);
-         else 
-            il = NULL;
+         if(gtk_tree_selection_count_selected_rows(selection1) > 0) {
+            list = gtk_tree_selection_get_selected_rows (selection1, &model);
+            for(list = g_list_last(list); list; list = g_list_previous(list)) {
+               gtk_tree_model_get_iter(model, &iter, list->data);
+               gtk_tree_model_get (model, &iter, 1, &il, -1);
+
+               /* remove the host from the list */
+               del_ip_list(&il->ip, GBL_TARGET1);
+
+               gtk_list_store_remove(GTK_LIST_STORE (liststore1), &iter);
+            }
+         }
          break;
       case 2:
+         DEBUG_MSG("gtkui_delete_target: list 2");
          model = GTK_TREE_MODEL (liststore2);
 
-         if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection2), &model, &iter)) 
-            gtk_tree_model_get (model, &iter, 1, &il, -1);
-         else  
-            il = NULL;
-         break;
-      default:
-         il = NULL;
-   }
+         if(gtk_tree_selection_count_selected_rows(selection2) > 0) {
+            list = gtk_tree_selection_get_selected_rows (selection2, &model);
+            for(list = g_list_last(list); list; list = g_list_previous(list)) {
+               gtk_tree_model_get_iter(model, &iter, list->data);
+               gtk_tree_model_get (model, &iter, 1, &il, -1);
 
-   return(il);
+               /* remove the host from the list */
+               del_ip_list(&il->ip, GBL_TARGET2);
+
+               gtk_list_store_remove(GTK_LIST_STORE (liststore2), &iter);
+            }
+         }
+         break;
+   }
+   
+   /* free the list of selections */
+   if(list) {
+      g_list_foreach (list,(GFunc) gtk_tree_path_free, NULL);
+      g_list_free (list);
+   }
 }
 
 /* EOF */

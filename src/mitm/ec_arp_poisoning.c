@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.19 2003/11/13 21:35:43 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.20 2003/11/17 11:40:33 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_send.h>
 #include <ec_threads.h>
 #include <ec_ui.h>
+#include <ec_strings.h>
 
 /* globals */
 

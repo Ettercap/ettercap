@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.17 2004/05/16 10:25:29 alor Exp $
+    $Id: ec_wifi.c,v 1.18 2004/05/17 08:43:35 alor Exp $
 */
 
 #include <ec.h>
@@ -264,17 +264,14 @@ static int wep_decrypt(u_char *buf, size_t len)
    /* initialize the RC4 key */
    RC4_set_key(&key, IV_LEN + wlen, seed);
   
-   /* at the end of the frame there is a plain CRC checksum */
-   len -= sizeof(u_int32);
-
    /* decrypt the frame */
    RC4(&key, len, (u_char *)(wep + 1), tmpbuf);
    
-   /* append the crc check at the end of the buffer */
-   memcpy(tmpbuf + len, (u_char *)(wep + 1) + len, sizeof(u_int32));
-         
-   /* check if the decryption was successfull */
-   if (CRC_checksum(tmpbuf, len + sizeof(u_int32), CRC_INIT) != CRC_RESULT) {
+   /* 
+    * check if the decryption was successfull:
+    * at the end of the packet there is a CRC check
+    */
+   if (CRC_checksum(tmpbuf, len, CRC_INIT) != CRC_RESULT) {
       DISSECT_MSG("WEP: invalid key, tha packet was skipped\n");
       return -ENOTHANDLED;
    }

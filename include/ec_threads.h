@@ -24,10 +24,11 @@ extern void ec_thread_register(pthread_t id, char *name, char *desc);
 extern pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
 extern void ec_thread_destroy(pthread_t id);
 extern void ec_thread_init(void);
-extern void ec_thread_testcancel(void);
 extern void ec_thread_kill_all(void);
 
 #define RETURN_IF_NOT_MAIN() do{ if (strcmp(ec_thread_getname(EC_SELF), GBL_PROGRAM)) return; }while(0)
+
+#define CANCELLATION_POINT()  pthread_testcancel()
 
 #endif
 

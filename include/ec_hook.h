@@ -12,6 +12,16 @@ void hook_point(int point, struct packet_object *po);
    #define HOOK_FILTER        4     /* the content filtering point */
    #define HOOK_DISPATCHER    5     /* in the TOP HALF (the packet is a copy) */
 
+   /* these are used the hook received packets */
+   #define PACKET_BASE        50
+   #define PACKET_ETH         (PACKET_BASE+1)
+   #define PACKET_WIFI        (PACKET_BASE+2)
+   #define PACKET_ARP         (PACKET_BASE+3)
+   #define PACKET_IP          (PACKET_BASE+4)
+   #define PACKET_IP6         (PACKET_BASE+5)
+   #define PACKET_UDP         (PACKET_BASE+6)
+   #define PACKET_TCP         (PACKET_BASE+7)
+
 void hook_add(int point, void (*func)(struct packet_object *po) );
 int hook_del(int point, void (*func)(struct packet_object *po) );
 

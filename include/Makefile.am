@@ -27,12 +27,14 @@ noinst_HEADERS = ec.h \
                  ec_profiles.h \
                  ec_decode.h \
                  ec_fingerprint.h \
+                 ec_passive.h \
                  ec_hash.h \
                  ec_manuf.h \
                  ec_interfaces.h \
                  ec_plugins.h \
                  ec_format.h \
-                 el.h
+                 el.h \
+                 el_functions.h
    
 EXTRA_DIST = missing/*
 

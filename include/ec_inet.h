@@ -22,8 +22,8 @@ enum {
 /* this structure is used by ettercap to handle an IP
  * disregarding the version */
 struct ip_addr {
-   int type;
-   size_t addr_size;
+   u_int8 type;
+   u_int8 addr_size;
    char addr[MAX_ADDR_LEN];
 };
 
@@ -34,6 +34,16 @@ extern char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 extern char *mac_addr_ntoa(u_char *mac, char *dst);
 extern int mac_addr_aton(char *str, u_char *mac);
 
+extern int ip_addr_is_local(struct ip_addr *sa);
+
+/*
+ * this prototype is implemented in ./os/.../
+ * each OS implement its specific function
+ */
+
+extern void disable_ip_forward(void);
+
+/********************/
 
 #ifdef WORDS_BIGENDIAN        
    #define ptohs(x) ( (u_int16)                       \
@@ -54,12 +64,6 @@ extern int mac_addr_aton(char *str, u_char *mac);
    
 #define int_ntoa(x)   inet_ntoa(*((struct in_addr *)&(x)))
 
-/*
- * these prototype are implemented in ./os/.../
- * each OS implement its specific function
- */
-
-void disable_ip_forward(void);
 
    
 #endif

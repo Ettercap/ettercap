@@ -23,7 +23,7 @@ extern void set_unified_sniff(void);
 extern void set_bridge_sniff(void);
 extern void set_arp_sniff(void);
 
-extern void compile_display_filter(void);
+extern int compile_display_filter(void);
 
 /* forwarder (the struct is in ec_globals.h) */
 struct target_env;

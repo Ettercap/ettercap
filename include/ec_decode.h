@@ -4,6 +4,7 @@
 
 #include <ec_proto.h>
 #include <ec_packet.h>
+#include <ec_hook.h>
 
 #define FUNC_DECODER(func) void * func(u_char *buf, u_int16 buflen, int *len, struct packet_object *po)
 #define FUNC_DECODER_PTR(func) void * (*func)(u_char *buf, u_int16 buflen, int *len, struct packet_object *po)

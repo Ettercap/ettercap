@@ -56,6 +56,9 @@
 #define BIT_NOT(r,b)       ( r[b>>3] ^=   1<<(b&7) )
 
 
+/* exported by ec_main */
+extern void clean_exit(int errcode);
+
 
 #endif   /*  EC_H */
 

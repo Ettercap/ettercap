@@ -47,6 +47,15 @@ enum {
    LO6_TYPE_NO  = 59,  /* No Next Header */
 };
 
+                           
+#define TH_FIN  0x01
+#define TH_SYN  0x02
+#define TH_RST  0x04
+#define TH_PSH  0x08
+#define TH_ACK  0x10
+#define TH_URG  0x20
+
+
 #endif
 
 /* EOF */

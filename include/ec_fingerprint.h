@@ -2,21 +2,11 @@
 #ifndef EC_FINGERPRINT_H
 #define EC_FINGERPRINT_H
 
-
-struct passive_info {
-   char *fingerprint;
-   char flags;
-      #define FP_LOCAL     1
-      #define FP_GATEWAY   1<<1
-      #define FP_ROUTER    1<<2
-};
-
-
 extern int fingerprint_init(void);
 extern char * fingerprint_search(char *m);
-extern char * fingerprint_alloc(void);
-extern char * fingerprint_destroy(char **finger);
+extern void fingerprint_default(char *finger);
 extern void fingerprint_push(char *finger, int param, int value);
+extern u_char TTL_PREDICTOR(u_char x);
 
 /*
  *  The fingerprint database has the following structure:                  
@@ -56,7 +46,21 @@ enum {
    FINGER_TCPFLAG    = 9,
    FINGER_LT         = 10,
 };
-   
+
+/* 
+ * the structure for passive information
+ * carried by PO
+ */
+
+struct passive_info {
+   char fingerprint[FINGER_LEN+1];
+   char flags;
+      #define FP_HOST_LOCAL      0
+      #define FP_HOST_NONLOCAL   1
+      #define FP_GATEWAY         1<<1
+};
+
+
 #endif
 
 /* EOF */

@@ -9,14 +9,21 @@ struct ui_ops {
    void (*start)(void);
    void (*cleanup)(void);
    void (*msg)(const char *msg);
+   void (*error)(const char *msg);
    void (*progress)(int value, int max);
    char initialized;
+   char type;
+      #define UI_CONSOLE   0
+      #define UI_DAEMONIZE 1
+      #define UI_NCURSES   2
+      #define UI_GTK       3
 };
 
 extern void ui_init(void);
 extern void ui_start(void);
 extern void ui_cleanup(void);
 extern void ui_msg(const char *fmt, ...);
+extern void ui_error(const char *fmt, ...);
 extern void ui_progress(int value, int max);
 extern int ui_msg_flush(int max);
 #define MSG_ALL   INT32_MAX

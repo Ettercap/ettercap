@@ -35,6 +35,7 @@ struct packet_object {
    
    struct L4 {
       u_char proto;
+      u_char flags;
       u_char * header;
       u_char * options;
       size_t len;
@@ -80,7 +81,7 @@ struct packet_object {
     * here are stored the user and pass collected by dissectors 
     * the "char *" are malloc(ed) by dissectors
     */
-   struct dissector_info INFO;
+   struct dissector_info DISSECTOR;
   
    /* the struct for passive identification */
    struct passive_info PASSIVE;

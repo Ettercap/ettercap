@@ -9,6 +9,8 @@
 struct ec_options {
    char dump:1;
    char read:1;
+   char compress:1;
+   char quiet:1;
    char reversed;
    char *plugin;
    char *proto;
@@ -33,6 +35,8 @@ struct pcap_env {
    char *filter;        /* pcap filter */
    u_int16 snaplen;
    int dlt;
+   u_int32 dump_size;   /* total dump size */
+   u_int32 dump_off;    /* current offset */
 };
 
 struct lnet_env {
@@ -99,6 +103,7 @@ extern struct globals *gbls;
 /* exported functions */
 
 extern void globals_alloc(void);
+extern void globals_free(void);
 
 #endif
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.34 2003/12/01 12:21:11 lordnaga Exp $
+    $Id: ec_ip.c,v 1.35 2003/12/01 12:55:38 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -117,7 +117,7 @@ FUNC_DECODER(decode_ip)
    t_len = (u_int32) ntohs(ip->tot_len);
    if (t_len < (u_int32)DECODED_LEN)
       return NULL;
-   PACKET->L3.payload_len = t_len - (u_int32)DECODED_LEN;
+   PACKET->L3.payload_len = t_len - DECODED_LEN;
 
    /* other relevant infos */
    PACKET->L3.header = (u_char *)DECODE_DATA;
@@ -148,7 +148,7 @@ FUNC_DECODER(decode_ip)
       /* set the pointer to the data to be forwarded at layer 3 */
       PACKET->fwd_packet = (u_char *)DECODE_DATA;
       /* the len will be adjusted later...just in case of a brutal return */
-      PACKET->fwd_len = ntohs(ip->tot_len); 
+      PACKET->fwd_len = t_len; 
    }
    
    /* XXX - implement the handling of fragmented packet */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.32 2003/12/01 12:21:11 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.33 2003/12/01 12:55:38 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -138,7 +138,7 @@ FUNC_DECODER(decode_tcp)
    PACKET->L4.len = DECODED_LEN;
    PACKET->L4.header = (u_char *)DECODE_DATA;
    
-   if (opt_start != opt_end) {
+   if (opt_start < opt_end) {
       PACKET->L4.options = opt_start;
       PACKET->L4.optlen = opt_end - opt_start;
    } else {
@@ -157,9 +157,9 @@ FUNC_DECODER(decode_tcp)
    
    /* set up the data pointers */
    PACKET->DATA.data = opt_end;
-   if ((u_int32)PACKET->L3.payload_len < (u_int32)DECODED_LEN)
+   if (PACKET->L3.payload_len < (u_int32)DECODED_LEN)
       return NULL;
-   PACKET->DATA.len = (u_int32)PACKET->L3.payload_len - (u_int32)DECODED_LEN;
+   PACKET->DATA.len = PACKET->L3.payload_len - DECODED_LEN;
 
    /* create the buffer to be displayed */
    packet_disp_data(PACKET, PACKET->DATA.data, PACKET->DATA.len);

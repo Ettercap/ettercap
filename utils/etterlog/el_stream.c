@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_stream.c,v 1.5 2004/10/14 13:53:09 alor Exp $
+    $Id: el_stream.c,v 1.6 2004/10/18 14:59:05 alor Exp $
 */
 
 
@@ -133,10 +133,7 @@ int stream_read(struct stream_object *so, u_char *buf, size_t size, int mode)
       memcpy(buf + buf_off, so->pl_curr->po.DATA.data + so->po_off, tmp_size);
       
       /* the offset is the portion of the data copied into the buffer */
-      if (tmp_size == size)
-         so->po_off += size;
-      else
-         so->po_off = tmp_size;
+      so->po_off += tmp_size;
 
       /* update the pointer into the buffer */
       buf_off += tmp_size;
@@ -199,17 +196,14 @@ int stream_move(struct stream_object *so, size_t offset, int whence, int mode)
       tmp_size = (so->pl_curr->po.DATA.len - so->po_off < offset) ? so->pl_curr->po.DATA.len - so->po_off : offset;
 
       /* update the offset */
-      if (tmp_size == offset)
-         so->po_off += offset;
-      else
-         so->po_off = tmp_size;
+      so->po_off += tmp_size;
 
       /* decrement the total offset by the packet lenght */
       offset -= tmp_size;
 
       /* update the total movement */
       move += tmp_size;
-      
+
       /* we have reached the end of the packet, go to the next one */
       if (so->po_off == so->pl_curr->po.DATA.len) {
          /* search the next packet matching the selected mode */
@@ -238,7 +232,7 @@ int stream_move(struct stream_object *so, size_t offset, int whence, int mode)
  */
 struct po_list * stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode)
 {
-   struct po_list *pl;
+   struct po_list *pl, *first = so->pl_curr;
    u_char *tmpbuf = NULL, *find;
    size_t offset = 0, len = 0;
 
@@ -248,7 +242,7 @@ struct po_list * stream_search(struct stream_object *so, u_char *buf, size_t buf
          so->pl_curr = TAILQ_NEXT(so->pl_curr, next);
          /* don't go after the end of the stream */
          if (so->pl_curr == TAILQ_END(&so->pl_head))
-            return 0;
+            return NULL;
       }
    }
 
@@ -259,7 +253,11 @@ struct po_list * stream_search(struct stream_object *so, u_char *buf, size_t buf
       if (mode != STREAM_BOTH && pl->type != mode)
          continue;
       
-      len += pl->po.DATA.len;
+      if (pl == first)
+         len += pl->po.DATA.len - so->po_off;
+      else
+         len += pl->po.DATA.len;
+         
       
       SAFE_REALLOC(tmpbuf, len);
       
@@ -267,14 +265,14 @@ struct po_list * stream_search(struct stream_object *so, u_char *buf, size_t buf
        * add the packet to the end of the buffer 
        * containing the whole conversation 
        */
-      if (pl == so->pl_curr)
-         memcpy(tmpbuf + len - pl->po.DATA.len, pl->po.DATA.data + so->po_off, pl->po.DATA.len - so->po_off);
+      if (pl == first)
+         memcpy(tmpbuf, pl->po.DATA.data + so->po_off, pl->po.DATA.len - so->po_off);
       else
          memcpy(tmpbuf + len - pl->po.DATA.len, pl->po.DATA.data, pl->po.DATA.len);
    }
 
    /* the buffer is found in the conversation */
-   if ((find = memmem(tmpbuf, len, buf, buflen))) {
+   if ((find = memmem(tmpbuf, len, buf, buflen)) != NULL) {
       offset = find - tmpbuf;
       
       SAFE_FREE(tmpbuf);

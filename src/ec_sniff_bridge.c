@@ -17,18 +17,18 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.8 2003/11/21 08:32:16 alor Exp $
+    $Id: ec_sniff_bridge.c,v 1.9 2003/12/13 18:41:11 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_capture.h>
 #include <ec_send.h>
 #include <ec_threads.h>
-#include <ec_dispatcher.h>
 #include <ec_conntrack.h>
 
 /* proto */
 void start_bridge_sniff(void);
+void stop_bridge_sniff(void);
 void forward_bridge_sniff(struct packet_object *po);
 
 /*******************************************/
@@ -37,9 +37,6 @@ void start_bridge_sniff(void)
 {
    DEBUG_MSG("start_bridge_sniff");
    
-   /* create the dispatcher thread */
-   ec_thread_new("top_half", "dispatching module", &top_half, NULL);
-
    /* create the timeouter thread */
    if (!GBL_OPTIONS->read)
       ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
@@ -49,6 +46,26 @@ void start_bridge_sniff(void)
    
    /* create the thread for packet capture on the bridged interface */
    ec_thread_new("bridge", "pcap handler and packet decoder", &capture_bridge, NULL);
+   
+   USER_MSG("Bridger sniffing was started...\n");
+}
+
+/*
+ * kill the capturing threads, but leave untouched the others
+ */
+void stop_bridge_sniff(void)
+{
+   pthread_t pid;
+   
+   DEBUG_MSG("stop_bridge_sniff");
+  
+   /* get the pid and kill it */
+   if ((pid = ec_thread_getpid("capture")) != 0)
+      ec_thread_destroy(pid);
+   
+   if ((pid = ec_thread_getpid("bridge")) != 0)
+      ec_thread_destroy(pid);
+
 }
 
 

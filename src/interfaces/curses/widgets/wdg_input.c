@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_input.c,v 1.3 2003/12/08 16:34:16 alor Exp $
+    $Id: wdg_input.c,v 1.4 2003/12/13 18:41:11 alor Exp $
 */
 
 #include <wdg.h>
@@ -219,8 +219,6 @@ static int wdg_input_get_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_input_redraw(wo);
    
-   curs_set(TRUE);
-
    return WDG_ESUCCESS;
 }
 
@@ -234,8 +232,6 @@ static int wdg_input_lost_focus(struct wdg_object *wo)
    
    /* redraw the window */
    wdg_input_redraw(wo);
-   
-   curs_set(FALSE);
    
    return WDG_ESUCCESS;
 }
@@ -341,10 +337,14 @@ static int wdg_input_virtualize(struct wdg_object *wo, int key)
       case KEY_UP:
       case KEY_LEFT:
          c =  REQ_PREV_FIELD;
+         /* we are moving... unfocus the current field */
+         set_field_back(current_field(ww->form), A_UNDERLINE);
          break;
       case KEY_DOWN:
       case KEY_RIGHT:
          c =  REQ_NEXT_FIELD;
+         /* we are moving... unfocus the current field */
+         set_field_back(current_field(ww->form), A_UNDERLINE);
          break;
       case KEY_BACKSPACE:
       case '\b':
@@ -360,10 +360,10 @@ static int wdg_input_virtualize(struct wdg_object *wo, int key)
     * Force the field that the user is typing into to be in reverse video,
     * while the other fields are shown underlined.
     */   
-   if (c <= KEY_MAX)
-      set_field_back(current_field(ww->form), A_REVERSE);
-   else if (c <= MAX_FORM_COMMAND)
-      set_field_back(current_field(ww->form), A_UNDERLINE);
+   //if (c <= KEY_MAX)
+   //   set_field_back(current_field(ww->form), A_REVERSE);
+   //else if (c <= MAX_FORM_COMMAND)
+   //  set_field_back(current_field(ww->form), A_UNDERLINE);
    
    return c;
 }
@@ -374,9 +374,12 @@ static int wdg_input_virtualize(struct wdg_object *wo, int key)
 static int wdg_input_driver(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
    WDG_WO_EXT(struct wdg_input_handle, ww);
-   int c;
-
-   c = form_driver(ww->form, wdg_input_virtualize(wo, key) );
+   int c, v;
+   
+   /* virtualize the command */
+   c = form_driver(ww->form, (v = wdg_input_virtualize(wo, key)) );
+   
+   set_field_back(current_field(ww->form), A_REVERSE);
    
    /* one item has been selected */
    if (c == E_UNKNOWN_COMMAND) {
@@ -443,6 +446,9 @@ static void wdg_input_form_create(struct wdg_object *wo)
    /* the subwin for the form */
    set_form_sub(ww->form, derwin(ww->fwin, mrows + 1, mcols, 1, 1));
 
+   /* make the active field in reverse mode */
+   set_field_back(current_field(ww->form), A_REVERSE);
+   
    /* display the form */
    post_form(ww->form);
 

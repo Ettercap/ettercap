@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.24 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_curses.c,v 1.25 2003/12/13 18:41:11 alor Exp $
 */
 
 #include <ec.h>
@@ -41,12 +41,16 @@ static char *logfile;
 void set_curses_interface(void);
 void curses_interface(void);
 void curses_flush_msg(void);
+
+void curses_message(const char *msg);
+   
 static void curses_init(void);
 static void curses_cleanup(void);
 static void curses_msg(const char *msg);
 static void curses_error(const char *msg);
 static void curses_fatal_error(const char *msg);
 static void curses_input(const char *title, char *input, size_t n);
+void curses_input_call(const char *title, char *input, size_t n, void (*callback)(void));
 static void curses_progress(char *title, int value, int max);
 
 static void curses_setup(void);
@@ -237,6 +241,26 @@ static void curses_input(const char *title, char *input, size_t n)
                      
 }
 
+/*
+ * get an input from the user
+ */
+void curses_input_call(const char *title, char *input, size_t n, void (*callback)(void))
+{
+   wdg_t *in;
+
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, strlen(title) + n, 3);
+   wdg_input_add(in, 1, 1, title, input, n);
+   wdg_input_set_callback(in, callback);
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+}
+
 
 /* 
  * implement the progress bar 
@@ -268,6 +292,30 @@ static void curses_progress(char *title, int value, int max)
     */
    if (value == max)
       per = NULL;
+}
+
+/*
+ * print a message
+ */
+void curses_message(const char *msg)
+{
+   wdg_t *dlg;
+   
+   DEBUG_MSG("curses_message: %s", msg);
+
+   /* create the dialog */
+   wdg_create_object(&dlg, WDG_DIALOG, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   
+   wdg_set_color(dlg, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(dlg, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(dlg, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(dlg, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+
+   /* set the message */
+   wdg_dialog_text(dlg, WDG_OK, msg);
+   wdg_draw_object(dlg);
+   
+   wdg_set_focus(dlg);
 }
 
 
@@ -362,7 +410,7 @@ static void curses_setup(void)
                                };
    
    DEBUG_MSG("curses_setup");
-#if 1   
+   
    wdg_create_object(&menu, WDG_MENU, WDG_OBJ_WANT_FOCUS | WDG_OBJ_ROOT_OBJECT);
    
    wdg_set_title(menu, GBL_VERSION, WDG_ALIGN_RIGHT);
@@ -375,22 +423,12 @@ static void curses_setup(void)
    wdg_menu_add(menu, options);
    wdg_menu_add(menu, logging);
    wdg_draw_object(menu);
-#else
-   (void)menu;
-   (void)file;
-   (void)live;
-   (void)options;
-   (void)logging;
 
-   curses_bridged_sniff();
-#endif
-   
-#if 1 
    /* create the bottom windows for user messages */
    wdg_create_object(&sysmsg_win, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
    
    wdg_set_title(sysmsg_win, "User messages:", WDG_ALIGN_LEFT);
-   wdg_set_size(sysmsg_win, 0, -8, 0, 0);
+   wdg_set_size(sysmsg_win, 0, SYSMSG_WIN_SIZE, 0, 0);
    wdg_set_color(sysmsg_win, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(sysmsg_win, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(sysmsg_win, WDG_COLOR_BORDER, EC_COLOR_BORDER);
@@ -401,11 +439,11 @@ static void curses_setup(void)
  
    /* give the focus to the menu */
    wdg_set_focus(menu);
-#endif  
+   
    /* give the control to the interface */
    wdg_events_handler('U');
    
-   //wdg_destroy_object(&menu);
+   wdg_destroy_object(&menu);
 }
 
 /*
@@ -464,26 +502,13 @@ static void read_pcapfile(char *path, char *file)
  */
 static void curses_file_write(void)
 {
-   wdg_t *in;
-   
 #define FILE_LEN  40
    
    DEBUG_MSG("curses_file_write");
    
    SAFE_CALLOC(GBL_OPTIONS->dumpfile, FILE_LEN, sizeof(char));
 
-   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, strlen("Output file :") + FILE_LEN, 3);
-   wdg_input_add(in, 1, 1, "Output file :", GBL_OPTIONS->dumpfile, FILE_LEN);
-   wdg_input_set_callback(in, write_pcapfile);
-   
-   wdg_draw_object(in);
-      
-   wdg_set_focus(in);
+   curses_input_call("Output file :", GBL_OPTIONS->dumpfile, FILE_LEN, write_pcapfile);
 }
 
 static void write_pcapfile(void)
@@ -517,7 +542,6 @@ static void write_pcapfile(void)
  */
 static void curses_unified_sniff(void)
 {
-   wdg_t *in;
    char err[PCAP_ERRBUF_SIZE];
    
 #define IFACE_LEN  10
@@ -527,19 +551,8 @@ static void curses_unified_sniff(void)
    SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
    strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
 
-   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, strlen("Network interface :") + IFACE_LEN, 3);
-   wdg_input_add(in, 1, 1, "Network interface :", GBL_OPTIONS->iface, IFACE_LEN);
    /* calling wdg_exit will go to the next interface :) */
-   wdg_input_set_callback(in, wdg_exit);
-   
-   wdg_draw_object(in);
-      
-   wdg_set_focus(in);
+   curses_input_call("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, wdg_exit);
 }
 
 /*
@@ -565,7 +578,6 @@ static void curses_bridged_sniff(void)
    wdg_input_size(in, strlen("Second network interface :") + IFACE_LEN, 4);
    wdg_input_add(in, 1, 1, "First network interface  :", GBL_OPTIONS->iface, IFACE_LEN);
    wdg_input_add(in, 1, 2, "Second network interface :", GBL_OPTIONS->iface_bridge, IFACE_LEN);
-   /* calling wdg_exit will go to the next interface :) */
    wdg_input_set_callback(in, bridged_sniff);
    
    wdg_draw_object(in);
@@ -585,30 +597,17 @@ static void bridged_sniff(void)
  */
 static void curses_pcap_filter(void)
 {
-   wdg_t *in;
-   
 #define PCAP_FILTER_LEN  50
    
    DEBUG_MSG("curses_pcap_filter");
    
    SAFE_CALLOC(GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
 
-   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, strlen("Pcap filter :") + PCAP_FILTER_LEN, 3);
-   wdg_input_add(in, 1, 1, "Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN);
    /* 
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   wdg_input_set_callback(in, NULL);
-   
-   wdg_draw_object(in);
-      
-   wdg_set_focus(in);
+   curses_input_call("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
 /*
@@ -616,26 +615,13 @@ static void curses_pcap_filter(void)
  */
 static void curses_log_all(void)
 {
-   wdg_t *in;
-   
    DEBUG_MSG("curses_log_all");
 
    /* make sure to free if already set */
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, strlen("Output File :") + FILE_LEN, 3);
-   wdg_input_add(in, 1, 1, "Output File :", logfile, FILE_LEN);
-   wdg_input_set_callback(in, log_all);
-   
-   wdg_draw_object(in);
-      
-   wdg_set_focus(in);
+   curses_input_call("Log File :", logfile, FILE_LEN, log_all);
 }
 
 static void log_all(void)
@@ -649,26 +635,13 @@ static void log_all(void)
  */
 static void curses_log_info(void)
 {
-   wdg_t *in;
-   
    DEBUG_MSG("curses_log_info");
 
    /* make sure to free if already set */
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, strlen("Output File :") + FILE_LEN, 3);
-   wdg_input_add(in, 1, 1, "Output File :", logfile, FILE_LEN);
-   wdg_input_set_callback(in, log_info);
-   
-   wdg_draw_object(in);
-      
-   wdg_set_focus(in);
+   curses_input_call("Log File :", logfile, FILE_LEN, log_info);
 }
 
 static void log_info(void)
@@ -682,26 +655,13 @@ static void log_info(void)
  */
 static void curses_log_msg(void)
 {
-   wdg_t *in;
-   
    DEBUG_MSG("curses_log_msg");
 
    /* make sure to free if already set */
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, strlen("Output File :") + FILE_LEN, 3);
-   wdg_input_add(in, 1, 1, "Output File :", logfile, FILE_LEN);
-   wdg_input_set_callback(in, log_msg);
-   
-   wdg_draw_object(in);
-      
-   wdg_set_focus(in);
+   curses_input_call("Log File :", logfile, FILE_LEN, log_msg);
 }
 
 static void log_msg(void)

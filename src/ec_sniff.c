@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.38 2003/12/11 13:46:43 lordnaga Exp $
+    $Id: ec_sniff.c,v 1.39 2003/12/13 18:41:11 alor Exp $
 */
 
 #include <ec.h>
@@ -121,7 +121,7 @@ void set_unified_sniff(void)
    
    sm.type = SM_UNIFIED;
    sm.start = &start_unified_sniff;
-   sm.cleanup = NULL;
+   sm.cleanup = &stop_unified_sniff;
    /* unified forwarding is done at layer 3 */
    sm.forward = &forward_unified_sniff;
    sm.interesting = &set_interesting_flag;
@@ -146,7 +146,7 @@ void set_bridge_sniff(void)
    
    sm.type = SM_BRIDGED;
    sm.start = &start_bridge_sniff;
-   sm.cleanup = NULL;
+   sm.cleanup = &stop_bridge_sniff;
    sm.forward = &forward_bridge_sniff;
    sm.interesting = &set_interesting_flag;
 
@@ -282,6 +282,17 @@ void reset_display_filter(struct target_env *t)
  */
 int compile_display_filter(void)
 {
+   /* if not specified default to // */
+   if (!GBL_OPTIONS->target1)
+      GBL_OPTIONS->target1 = strdup("//");
+   else if (!strncmp(GBL_OPTIONS->target1, "//", 2))
+      GBL_TARGET1->scan_all = 1;
+   
+   if (!GBL_OPTIONS->target2)
+      GBL_OPTIONS->target2 = strdup("//");
+   else if (!strncmp(GBL_OPTIONS->target2, "//", 2))
+      GBL_TARGET2->scan_all = 1;
+
    /* compile TARGET1 */
    if (compile_target(GBL_OPTIONS->target1, GBL_TARGET1) != ESUCCESS)
       clean_exit(-EFATAL);
@@ -289,6 +300,10 @@ int compile_display_filter(void)
    /* compile TARGET2 */
    if (compile_target(GBL_OPTIONS->target2, GBL_TARGET2) != ESUCCESS)
       clean_exit(-EFATAL);
+
+   /* the strings were modified, we can't use them anymore */
+   SAFE_FREE(GBL_OPTIONS->target1);
+   SAFE_FREE(GBL_OPTIONS->target2);
    
    return ESUCCESS;
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.37 2003/12/11 13:46:43 lordnaga Exp $
+    $Id: ec_send.c,v 1.38 2003/12/13 18:41:11 alor Exp $
 */
 
 #include <ec.h>
@@ -368,7 +368,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_ARP);
-   if (t==-1)
+   if (t == -1)
       FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* send the packet */
@@ -496,7 +496,7 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
-   if (t==-1)
+   if (t == -1)
       FATAL_ERROR("Interface not suitable for layer2 sending");
 
    /* 
@@ -580,7 +580,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, po->L2.src, ETHERTYPE_IP);
-   if (t==-1)
+   if (t == -1)
       FATAL_ERROR("Interface not suitable for layer2 sending");
   
    /* 
@@ -664,7 +664,7 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
-   if (t==-1)
+   if (t == -1)
       FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* 
@@ -747,7 +747,7 @@ int send_dns_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
-   if (t==-1)
+   if (t == -1)
       FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* send the packet to Layer 2 */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.49 2003/11/30 21:31:56 alor Exp $
+    $Id: ec_main.c,v 1.50 2003/12/13 18:41:10 alor Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,7 @@
 #include <ec_parser.h>
 #include <ec_threads.h>
 #include <ec_capture.h>
+#include <ec_dispatcher.h>
 #include <ec_send.h>
 #include <ec_plugins.h>
 #include <ec_fingerprint.h>
@@ -132,7 +133,9 @@ int main(int argc, char *argv[])
    http_fields_init();
   
    /* print all the buffered messages */
-   if (GBL_UI->type == UI_TEXT) USER_MSG("\n");
+   if (GBL_UI->type == UI_TEXT)
+      USER_MSG("\n");
+   
    ui_msg_flush(MSG_ALL);
 
 /**** INITIALIZATION PHASE TERMINATED ****/
@@ -144,6 +147,9 @@ int main(int argc, char *argv[])
    if (GBL_OPTIONS->only_mitm)
       only_mitm();
    
+   /* create the dispatcher thread */
+   ec_thread_new("top_half", "dispatching module", &top_half, NULL);
+
    /* this thread becomes the UI then displays it */
    ec_thread_register(EC_SELF, GBL_PROGRAM, "the user interface");
    ui_start();

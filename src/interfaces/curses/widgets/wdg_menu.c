@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.10 2003/12/08 16:34:16 alor Exp $
+    $Id: wdg_menu.c,v 1.11 2003/12/13 18:41:11 alor Exp $
 */
 
 #include <wdg.h>
@@ -587,7 +587,6 @@ static void wdg_menu_close(struct wdg_object *wo)
 /*
  * search in the shortcut list the key, and if found
  * open the corresponding menu.
- * if a menu is already opened, search only in its list.
  */
 static int wdg_menu_shortcut(struct wdg_object *wo, int key)
 {

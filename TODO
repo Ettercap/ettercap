@@ -42,7 +42,7 @@ this is the unofficial and floating in time roadmap:
       - dhcp infos
 
    + LIBWDG
-      - fix the display of the cursor in input widget
+      - callback on menu shortcuts
       - widgets:
          - selectable lists
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.42 2003/12/16 12:22:26 lordnaga Exp $
+    $Id: ec_sniff.c,v 1.43 2003/12/16 12:25:46 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -78,7 +78,7 @@ void set_forwardable_flag(struct packet_object *po)
     * if the mac is our, but the ip is not...
     * it has to be forwarded
     */
-   
+
    if (!memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) &&
        memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
        ip_addr_cmp(&GBL_IFACE->ip, &po->L3.dst) )

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.20 2004/01/05 17:37:19 lordnaga Exp $
+# $Id: Makefile.am,v 1.21 2004/01/10 13:27:20 lordnaga Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -22,6 +22,7 @@ SUBDIRS =   arp_cop \
             scan_poisoner \
             search_promisc \
             smb_clear \
-            smb_down 
+            smb_down \
+            stp_mangler 
 
 # vim:ts=4:noexpandtab

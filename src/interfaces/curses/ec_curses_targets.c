@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.12 2004/03/21 14:16:48 alor Exp $
+    $Id: ec_curses_targets.c,v 1.13 2004/03/31 14:30:19 alor Exp $
 */
 
 #include <ec.h>
@@ -88,6 +88,10 @@ static void wipe_targets(void)
 
    /* display the message */
    curses_message("TARGETS were reset to ANY/ANY/ANY");
+
+   /* if the 'current targets' window is displayed, refresh it */
+   if (wdg_comp)
+      curses_current_targets();
 }
 
 /*

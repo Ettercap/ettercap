@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.21 2004/03/05 10:39:31 lordnaga Exp $
+    $Id: ec_session.c,v 1.22 2004/03/08 14:15:08 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -229,7 +229,7 @@ int session_get_and_del(struct ec_session **s, void *ident, size_t ident_len)
    
    /* search if it already exist */
    LIST_FOREACH(sl, &session_list_head[h], next) {
-      if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
+      if ( /*sl->id == pthread_self() && */sl->s->match(sl->s->ident, ident) ) {
          
          DEBUG_MSG("session_get_and_del: [%u][%p]", (u_int32)sl->id, sl->s->ident);
          

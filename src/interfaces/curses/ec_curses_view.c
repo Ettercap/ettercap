@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.8 2004/01/06 17:44:16 alor Exp $
+    $Id: ec_curses_view.c,v 1.9 2004/01/20 10:04:32 alor Exp $
 */
 
 #include <ec.h>
@@ -104,8 +104,6 @@ static void curses_stop_stats(void)
 
    /* the object does not exist anymore */
    wdg_stats = NULL;
-   
-   wdg_redraw_all();
 }
 
 static void refresh_stats(void)

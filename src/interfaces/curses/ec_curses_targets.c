@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.5 2004/01/18 19:30:31 alor Exp $
+    $Id: ec_curses_targets.c,v 1.6 2004/01/20 10:04:32 alor Exp $
 */
 
 #include <ec.h>
@@ -34,13 +34,19 @@ static void curses_select_targets(void);
 static void set_targets(void);
 static void curses_current_targets(void);
 static void curses_create_targets_array(void);
-static void curses_delete_target(void *);
+static void curses_delete_target1(void *);
+static void curses_delete_target2(void *);
+static void curses_add_target1(void *);
+static void curses_add_target2(void *);
+static void add_target1(void);
+static void add_target2(void);
 
 /* globals */
 
 static wdg_t *wdg_comp;
 static wdg_t *wdg_t1, *wdg_t2;
 static struct wdg_list *wdg_t1_elm, *wdg_t2_elm;
+static char thost[MAX_ASCII_ADDR_LEN];
 static char tag_reverse[] = " ";
 
 struct wdg_menu menu_targets[] = { {"Targets",          'T',       "",    NULL},
@@ -201,10 +207,10 @@ static void curses_current_targets(void)
    wdg_list_set_elements(wdg_t2, wdg_t2_elm);
 
    /* add the callbacks */
-   wdg_list_add_callback(wdg_t1, 'd', curses_delete_target);
-   wdg_list_add_callback(wdg_t1, 'a', NULL);
-   wdg_list_add_callback(wdg_t2, 'd', curses_delete_target);
-   wdg_list_add_callback(wdg_t2, 'a', NULL);
+   wdg_list_add_callback(wdg_t1, 'd', curses_delete_target1);
+   wdg_list_add_callback(wdg_t1, 'a', curses_add_target1);
+   wdg_list_add_callback(wdg_t2, 'd', curses_delete_target2);
+   wdg_list_add_callback(wdg_t2, 'a', curses_add_target2);
          
    /* link the widget together within the compound */
    wdg_compound_add(wdg_comp, wdg_t1);
@@ -289,21 +295,93 @@ static void curses_create_targets_array(void)
 /*
  * delete an host from the target list
  */
-static void curses_delete_target(void *host)
+static void curses_delete_target1(void *host)
 {
    struct ip_list *il;
 
+   DEBUG_MSG("curses_delete_target1");
+   
    /* cast the parameter */
    il = (struct ip_list *)host;
 
    /* remove the host from the list */
-   LIST_REMOVE(il, next);
-   SAFE_FREE(il);
+   del_ip_list(&il->ip, GBL_TARGET1);
 
    /* redraw the window */
    curses_current_targets();
 }
 
+static void curses_delete_target2(void *host)
+{
+   struct ip_list *il;
+
+   DEBUG_MSG("curses_delete_target2");
+   
+   /* cast the parameter */
+   il = (struct ip_list *)host;
+
+   /* remove the host from the list */
+   del_ip_list(&il->ip, GBL_TARGET2);
+
+   /* redraw the window */
+   curses_current_targets();
+}
+
+/*
+ * display the "add host" dialog
+ */
+static void curses_add_target1(void *entry)
+{
+   DEBUG_MSG("curses_add_target1");
+
+   curses_input_call("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target1);
+}
+
+static void curses_add_target2(void *entry)
+{
+   DEBUG_MSG("curses_add_target2");
+
+   curses_input_call("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target2);
+}
+
+static void add_target1(void)
+{
+   struct in_addr ip;
+   struct ip_addr host;
+   
+   if (inet_aton(thost, &ip) == 0) {
+      curses_message("Invalid ip address");
+      return;
+   }
+   
+   ip_addr_init(&host, AF_INET, (char *)&ip);
+
+   add_ip_list(&host, GBL_TARGET1);
+   
+   /* redraw the window */
+   curses_current_targets();
+}
+
+static void add_target2(void)
+{
+   struct in_addr ip;
+   struct ip_addr host;
+   
+   if (inet_aton(thost, &ip) == 0) {
+      curses_message("Invalid ip address");
+      return;
+   }
+   
+   ip_addr_init(&host, AF_INET, (char *)&ip);
+
+   add_ip_list(&host, GBL_TARGET2);
+   
+   /* redraw the window */
+   curses_current_targets();
+   
+   /* redraw the window */
+   curses_current_targets();
+}
 
 /* EOF */
 

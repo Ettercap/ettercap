@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.43 2004/01/09 13:18:09 alor Exp $
+    $Id: ec_send.c,v 1.44 2004/01/20 10:04:29 alor Exp $
 */
 
 #include <ec.h>
@@ -501,10 +501,7 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
    if (t == -1)
       FATAL_ERROR("Interface not suitable for layer2 sending");
 
-   /* 
-    * send the packet to Layer 2
-    * (sending icmp redirect is not permitted at layer 3)
-    */
+   /* send the packet to Layer 2 */
    c = libnet_write(GBL_LNET->lnet);
    ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
  

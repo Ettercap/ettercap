@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.30 2004/04/29 09:28:35 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.31 2004/05/25 17:36:06 daten Exp $
 */
 
 #include <ec.h>
@@ -34,6 +34,15 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+/* double-linked list for fast updates to connection list */
+struct row_pairs {
+   void *conn;
+   GtkTreeIter iter;
+
+   struct row_pairs *next;
+   struct row_pairs *prev;
+};
+
 /* proto */
 
 void gtkui_show_connections(void);
@@ -41,6 +50,8 @@ static void gtkui_connections_detach(GtkWidget *child);
 static void gtkui_connections_attach(void);
 static void gtkui_kill_connections(void);
 static gboolean refresh_connections(gpointer data);
+static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct row_pairs **list);
+static void gtkui_connection_list_row(int top, struct row_pairs *pair);
 static void gtkui_connection_detail(void);
 static void gtkui_connection_data(void);
 static void gtkui_connection_data_split(void);
@@ -69,21 +80,21 @@ extern void conntrack_unlock(void);
 
 /* connection list */
 static GtkWidget *conns_window = NULL;
-static GtkWidget     *treeview = NULL; 
-static GtkListStore  *ls_conns = NULL;
+static GtkWidget     *treeview = NULL; /* the visible part of the GTK list */
+static GtkListStore  *ls_conns = NULL; /* the data part */
 static GtkTreeSelection   *selection = NULL;
 static struct conn_object *curr_conn = NULL;
 static guint connections_idle = 0;
 
-/* split data view */
+/* split and joined data views */
 static GtkWidget   *data_window = NULL;
-static GtkWidget     *textview1 = NULL;
+static GtkWidget     *textview1 = NULL; /* visible part of data output */
 static GtkWidget     *textview2 = NULL;
 static GtkWidget     *textview3 = NULL;
-static GtkTextBuffer *splitbuf1 = NULL;
+static GtkTextBuffer *splitbuf1 = NULL; /* where data is stored */
 static GtkTextBuffer *splitbuf2 = NULL;
 static GtkTextBuffer *joinedbuf = NULL;
-static GtkTextMark    *endmark1 = NULL;
+static GtkTextMark    *endmark1 = NULL; /* marks for auto-scrolling */
 static GtkTextMark    *endmark2 = NULL;
 static GtkTextMark    *endmark3 = NULL;
 
@@ -225,6 +236,7 @@ void gtkui_show_connections(void)
    gtk_widget_show(conns_window);
 }
 
+/* callback for detaching the tab */
 void gtkui_connections_detach(GtkWidget *child)
 {
    conns_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -240,12 +252,14 @@ void gtkui_connections_detach(GtkWidget *child)
    gtk_window_present(GTK_WINDOW (conns_window));
 }
 
+/* callback for attaching the tab */
 static void gtkui_connections_attach(void)
 {
    gtkui_kill_connections();
    gtkui_show_connections();
 }
 
+/* connection list closed */
 static void gtkui_kill_connections(void)
 {
    DEBUG_MSG("gtk_kill_connections");
@@ -255,115 +269,208 @@ static void gtkui_kill_connections(void)
    conns_window = NULL;
 }
 
+/* for keeping the connection list in sync with the conntrack list */
 static gboolean refresh_connections(gpointer data)
 {
-   struct conn_tail *c = NULL;
-   struct conn_tail *cl = NULL;
-   struct conn_tail *curr = NULL;
-   char src[MAX_ASCII_ADDR_LEN];
-   char dst[MAX_ASCII_ADDR_LEN];
-   char *proto = "", *status = "", *flags = " ";
-   GtkTreeIter iter, *next = NULL;
-   GtkTreeModel *model = NULL;
-   gboolean gotiter = FALSE;
-   guint now = time(NULL), check = 0;
+   static struct row_pairs *connections = NULL;
+   struct row_pairs *lastconn = NULL, *cache = NULL;
+   GtkTreeModel *model = GTK_TREE_MODEL (ls_conns);
+   void *list, *next, *listend;
+   char *desc;                  /* holds line from conntrack_print */
+   GtkTreeIter iter;            /* points to a specific row */
+   char flags[2], status[8], *xferred = NULL;
+   struct row_pairs *row = NULL, *nextrow = NULL, top, bottom;
 
+   /* null terminate strings */
+   flags[1] = 0;
+   status[7] = 0;
+
+   /* make sure the list has been created and window is visible */
    if(ls_conns) {
       if (!GTK_WIDGET_VISIBLE(conns_window))
          return(FALSE);
    } else {
-      ls_conns = gtk_list_store_new (11, 
-                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
-                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
-                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
-                    G_TYPE_POINTER, G_TYPE_UINT);
-   }
-
-   /* get first item in connection list */
-   cl = conntrack_print(0, NULL, NULL, 0);
-   if (cl == NULL)
-      return(TRUE);
-
-   /* get iter for first item in list widget */
-   model = GTK_TREE_MODEL(ls_conns);
-
-   for (c = cl; c != NULL; c = c->next.tqe_next) {
-
-      /* initialize it */
-      flags = " ";
-
-      /* we'll set status on new and old items */
-      switch (c->co->status) {
-         case CONN_IDLE:    status = "idle   "; break;
-         case CONN_OPENING: status = "opening"; break;
-         case CONN_OPEN:    status = "open   "; break;
-         case CONN_ACTIVE:  status = "active "; break;
-         case CONN_CLOSING: status = "closing"; break;
-         case CONN_CLOSED:  status = "closed "; break;
-         case CONN_KILLED:  status = "killed "; break;
-      }
-      
-      /* determine the flags */
-      if (c->co->flags & CONN_MODIFIED)
-         flags = "M";
-      if (c->co->flags & CONN_INJECTED)
-         flags = "I";
-      if (c->co->DISSECTOR.user)
-         flags = "X";
-      
-      /* see if the item is already in our list */
-      gotiter = gtk_tree_model_get_iter_first(model, &iter);
-      while (gotiter) {
-         gtk_tree_model_get (model, &iter, 9, &curr, -1);
-         if(c == curr) {
-            gtk_list_store_set (ls_conns, &iter,
-                                0, flags, 7, status, 8, c->co->xferred, 10, now, -1);
-            break;
-         }
-         gotiter = gtk_tree_model_iter_next(model, &iter);
-      }
-
-      /* if it is, move on to next item */
-      if (gotiter)
-         continue;
-
-      /* if we got here, we're making a new list item, set all values */
-      switch (c->co->L4_proto) {
-         case NL_TYPE_UDP: proto = "UDP"; break;
-         case NL_TYPE_TCP: proto = "TCP"; break;
-         default:          proto = "   "; break;
-      }
-
-      ip_addr_ntoa(&c->co->L3_addr1, src);
-      ip_addr_ntoa(&c->co->L3_addr2, dst);
-
-      gtk_list_store_append (ls_conns, &iter);
-      gtk_list_store_set (ls_conns, &iter, 
-                          0, flags, 1, src, 2, ntohs(c->co->L4_addr1),
-                          3, "-",
-                          4, dst, 5, ntohs(c->co->L4_addr2),
-                          6, proto, 7, status, 8, c->co->xferred, 
-                          9, c, 10, now, -1);
+      ls_conns = gtk_list_store_new (10, 
+                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
+                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
+                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
+                    G_TYPE_POINTER);
+      connections = NULL;
    }
 
    /* remove old connections */
-   gotiter = gtk_tree_model_get_iter_first(model, &iter);
-   while (gotiter) {
-      gtk_tree_model_get (model, &iter, 10, &check, -1);
+   for(row = connections; row; row = nextrow) {
+       nextrow = row->next;
+       if(conntrack_print(0, row->conn, NULL, 0) == NULL) {
+          /* remove row from the GTK list */
+          gtk_list_store_remove(GTK_LIST_STORE(ls_conns), &row->iter);
 
-      if(check != now)
-         next = gtk_tree_iter_copy(&iter);
+          /* remove pointers from the linked-list and free */
+          if(row->next)
+              row->next->prev = row->prev;
 
-      gotiter = gtk_tree_model_iter_next(model, &iter);
-
-      if(next) {
-         gtk_list_store_remove(GTK_LIST_STORE(ls_conns), next);
-         gtk_tree_iter_free(next);
-         next = NULL;
-      }
+          if(row->prev)
+              row->prev->next = row->next;
+          else
+              connections = row->next;
+          free(row);
+          row = NULL;
+       }
+       if(row)
+           lastconn = row;
    }
 
+   /* make sure we have a place to start searching for new rows */
+   if(!lastconn) {
+      listend = conntrack_print(0, NULL, NULL, 0);
+      if(listend == NULL)
+         return(TRUE);
+   } else {
+      listend = lastconn->conn;
+   }
+
+   /* allocate space for conntrack_print to pass connection data */
+   SAFE_CALLOC(desc, 100, sizeof(char));
+
+   /* add new connections */
+   for(list = conntrack_print(+1, listend, NULL, 0); list; list = next) {
+      next = conntrack_print(+1, list, &desc, 99);
+      cache = gtkui_connections_add(desc, list, &connections);
+      if(cache)
+         lastconn = cache;
+   }
+
+   /* find the first and last visible rows */
+   gtkui_connection_list_row(1, &top);
+   gtkui_connection_list_row(0, &bottom);
+
+   if(top.conn == NULL) 
+      return(TRUE);
+
+   iter = top.iter; /* copy iter by value */
+
+   /* update visible part of list */
+   do {
+      /* get the conntrack pointer for this row */
+      gtk_tree_model_get (model, &iter, 9, &list, -1);
+      conntrack_print(0, list, &desc, 99);
+
+      /* extract changing values from conntrack_print string */
+      flags[0] = desc[0];
+      strncpy(status, desc+50, 7);
+      xferred = desc+62;
+
+      gtk_list_store_set (ls_conns, &iter, 0, flags, 7, status, 8, xferred, -1);
+
+      /* when we reach the bottom of the visible part, stop updating */
+      if(bottom.conn == list)
+         break;
+   } while(gtk_tree_model_iter_next(model, &iter));
+   
    return(TRUE);
+}
+
+static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct row_pairs **list) {
+   GtkTreeIter iter;
+   char flags[2], src[16], src_port[6], dst[16], dst_port[6];
+   char proto[2], status[8], *xferred = NULL, *src_ptr = NULL, *dst_ptr = NULL;
+   struct row_pairs *row = NULL;
+
+   /* even if list is empty, we need a pointer to the NULL pointer */
+   /* so we can start a list */
+   if(!list)
+      return(NULL);
+
+   /* set null bytes at string ends */
+   flags[1] = 0;
+   proto[1] = 0;
+   src[15] = 0;
+   dst[15] = 0;
+   src_port[5] = 0;
+   dst_port[5] = 0;
+   status[7] = 0;
+
+   /* copy data from conntrack_print string */
+   flags[0] = desc[0];
+   strncpy(status, desc+50, 7);
+   xferred = desc+62;
+   strncpy(src, desc+2, 15);
+   strncpy(src_port, desc+18, 5);
+   strncpy(dst, desc+26, 15);
+   strncpy(dst_port, desc+42, 5);
+   proto[0] = desc[48];
+
+   /* trim off leading spaces */
+   for(src_ptr = src; *src_ptr != ' '; src_ptr++);
+   for(dst_ptr = dst; *dst_ptr != ' '; dst_ptr++);
+
+   /* add it to GTK list */
+   gtk_list_store_append (ls_conns, &iter);
+   gtk_list_store_set (ls_conns, &iter,
+                       0, flags, 1, src_ptr, 2, src_port,
+                       3, "-",   4, dst_ptr, 5, dst_port,
+                       6, proto, 7, status,  8, xferred,
+                       9, conn, -1);
+
+   /* and add it to our linked list */
+   if(!*list) {
+      row = malloc(sizeof(struct row_pairs));
+      row->prev = NULL;
+   } else {
+      for(row = *list; row && row->next; row = row->next);
+      row->next = malloc(sizeof(struct row_pairs));
+      row->next->prev = row;
+      row = row->next;
+   }
+
+   row->conn = conn;
+   row->iter = iter;
+   row->next = NULL;
+
+   /* in case this was the first list entry */
+   if(!*list)
+       *list = row;
+
+   return(row);
+}
+
+/* 
+ * get the top or bottom visible row in the connection list
+ * returns TOP row if (int top) is > 0  and list is not empty
+ * returns BOTTOM row if (int top) is 0 and visible area is full
+ */
+static void gtkui_connection_list_row(int top, struct row_pairs *pair) {
+   GtkTreeIter iter;            /* points to a specific row */
+   GtkTreePath *path = NULL;    /* for finding the first visible row */
+   GtkTreeModel *model = NULL;  /* points to the list data */
+   GdkRectangle rect;           /* holds coordinates of visible rows */
+   int wx = 0, wy = 0;          /* for converting tree view coords to widget coords */
+   void *row = NULL;
+
+   if(!ls_conns || !pair)
+      return;
+
+   /* in case we don't get a row */
+   pair->conn = NULL;
+
+   model = GTK_TREE_MODEL (ls_conns);
+   if(gtk_tree_model_get_iter_first(model, &iter)) {
+      gtk_tree_view_get_visible_rect(GTK_TREE_VIEW(treeview), &rect);
+
+      /* get the first visible row */
+      gtk_tree_view_tree_to_widget_coords(GTK_TREE_VIEW(treeview), rect.x, (top)?rect.y:rect.height, &wx, &wy);
+      path = gtk_tree_path_new();
+      if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), wx+2, (top)?wy+2:wy-2, &path, NULL, NULL, NULL)) {
+         gtk_tree_model_get_iter(model, &iter, path);
+         gtk_tree_model_get (model, &iter, 9, &row, -1);
+
+         pair->iter = iter;
+         pair->conn = row;
+      }
+      gtk_tree_path_free(path);
+   }
+
+   return;
 }
 
 /* 
@@ -642,6 +749,7 @@ static void gtkui_connection_data_split(void)
    conntrack_hook_conn_add(curr_conn, split_print_po);
 }
 
+/* detach connection data tab */
 static void gtkui_connection_data_detach(GtkWidget *child)
 {
    data_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -658,6 +766,7 @@ static void gtkui_connection_data_detach(GtkWidget *child)
    gtk_window_present(GTK_WINDOW (data_window));
 }
 
+/* attach connection data tab */
 static void gtkui_connection_data_attach(void)
 {
    if (curr_conn) {
@@ -674,6 +783,7 @@ static void gtkui_connection_data_attach(void)
    gtkui_connection_data_split();
 }
 
+/* close connection data tab */
 static void gtkui_destroy_conndata(void)
 {
    DEBUG_MSG("gtkui_destroy_conndata");
@@ -692,6 +802,10 @@ static void gtkui_destroy_conndata(void)
    data_window = NULL;
 }
 
+/* print connection data to one of the split or joined views */
+/* int buffer - 1 for left split view, 2 for right split view, 3 for joined view */
+/* char *data - string to print */
+/* int color  - 2 for blue text (used in joined view) */
 static void gtkui_data_print(int buffer, char *data, int color) 
 {
    GtkTextIter iter;
@@ -725,7 +839,7 @@ static void gtkui_data_print(int buffer, char *data, int color)
    /* make sure data is valid UTF8 */
    unicode = data;
    if(!g_utf8_validate (data, -1, &end)) {
-      /* if validation fails, end is set to end of valid string */
+      /* if "end" pointer is at begining of string, we have no valid text to print */
       if(end == unicode) return;
       /* cut off the invalid part so we don't lose the whole string */
       /* this shouldn't happen often */

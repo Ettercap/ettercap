@@ -16,8 +16,6 @@
       - LTDL_SHLIB_EXT
       - make test with dlopen-test
 
-   + NULL PACKET ON PCAP EOF
-
    + LOGGING ENGINE
       - info packet
       - regexp

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.5 2003/03/29 15:03:43 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.6 2003/03/30 00:50:26 alor Exp $
 */
 
 #include <el.h>
@@ -89,12 +89,15 @@ void analyze_packet(void)
    fprintf(stdout, "\n\n");
    fprintf(stdout, "Log file size (compressed)   : %d\n", (int)st.st_size);   
    fprintf(stdout, "Log file size (uncompressed) : %d\n", tot_size);
-   fprintf(stdout, "Compression ratio            : %.2f %%\n\n", 100 - ((float)st.st_size * 100 / (float)tot_size) );
+   if (tot_size != 0)
+      fprintf(stdout, "Compression ratio            : %.2f %%\n\n", 100 - ((float)st.st_size * 100 / (float)tot_size) );
    fprintf(stdout, "Effective payload size       : %d\n", pay_size);
-   fprintf(stdout, "Wasted percentage            : %.2f %%\n\n", 100 - ((float)pay_size * 100 / (float)tot_size) );
+   if (tot_size != 0)
+      fprintf(stdout, "Wasted percentage            : %.2f %%\n\n", 100 - ((float)pay_size * 100 / (float)tot_size) );
    
    fprintf(stdout, "Number of packets            : %d\n", count);
-   fprintf(stdout, "Average size per packet      : %d\n", pay_size / count );
+   if (count != 0)
+      fprintf(stdout, "Average size per packet      : %d\n", pay_size / count );
    fprintf(stdout, "\n");
    
    return;

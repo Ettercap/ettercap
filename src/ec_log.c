@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.5 2003/03/27 22:18:50 alor Exp $
+    $Id: ec_log.c,v 1.6 2003/03/30 00:50:26 alor Exp $
 */
 
 #include <ec.h>
@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 
 #include <zlib.h>
+#include <regex.h>
 
 /* globals */
 
@@ -36,13 +37,17 @@ static gzFile fd_ci;
 static int fd_p;
 static int fd_i;
 
+static regex_t *log_regex;
+
 /* protos */
 
+void set_logregex(char *regex);
 void set_loglevel(int level, char *filename);
 void log_packet(struct packet_object *po);
-void log_close(void);
+static void log_close(void);
 
 static int log_write_header(int type);
+static void log_write_packet(struct packet_object *po);
 
 /************************************************/
 
@@ -84,6 +89,7 @@ void set_loglevel(int level, char *filename)
          
          /* add the hook point to DISPATCHER */
          hook_add(HOOK_DISPATCHER, &log_packet);
+
          /* no break here, loglevel is incremental */
          
       case LOG_INFO:
@@ -179,7 +185,7 @@ static int log_write_header(int type)
 
 /* log all the packet to the logfile */
 
-void log_packet(struct packet_object *po)
+void log_write_packet(struct packet_object *po)
 {
    struct log_header_packet hp;
    int c, zerr;
@@ -217,6 +223,46 @@ void log_packet(struct packet_object *po)
    }
 }
 
+/*
+ * compile the regex
+ */
+
+void set_logregex(char *regex)
+{
+   int err;
+   char errbuf[100];
+   
+   DEBUG_MSG("set_logregex: %s", regex);
+
+   log_regex = calloc(1, sizeof(regex_t));
+   ON_ERROR(log_regex, NULL, "can't allocate memory");
+
+   err = regcomp(log_regex, regex, REG_EXTENDED | REG_NOSUB );
+
+   if (err) {
+      regerror(err, log_regex, errbuf, sizeof(errbuf));
+      FATAL_MSG("%s", errbuf);
+   }
+}
+
+/* 
+ * function registered to HOOK_DISPATCHER
+ * check the regex (if present) and log packets
+ */
+
+void log_packet(struct packet_object *po)
+{
+   /* the regex is set, respect it */
+   if (log_regex) {
+      if (regexec(log_regex, po->DATA.data, 0, NULL, 0) == 0)
+         log_write_packet(po);
+   } else {
+      /* if no regex is set, dump all the packets */
+      log_write_packet(po);
+   }
+      
+   
+}
 
 /* EOF */
 

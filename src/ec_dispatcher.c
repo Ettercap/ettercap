@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.8 2003/03/29 20:13:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.9 2003/03/30 00:50:26 alor Exp $
 */
 
 #include <ec.h>
@@ -79,7 +79,7 @@ EC_THREAD_FUNC(top_half)
       
          /* XXX - exit if feof */
          if (GBL_UI->type == UI_CONSOLE || GBL_UI->type == UI_DAEMONIZE) {
-            if (GBL_PCAP->dump_size == GBL_PCAP->dump_off) {
+            if (GBL_OPTIONS->read && GBL_PCAP->dump_size == GBL_PCAP->dump_off) {
                USER_MSG("\nEnd of dump file...\n");
                clean_exit(0);
             }

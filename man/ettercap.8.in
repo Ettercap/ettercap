@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.11 2003/03/27 22:18:50 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.12 2003/03/30 00:50:26 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -172,7 +172,7 @@ export EC_UID=500).
 Options that make sense together can generally be combined. ettercap will warn the user
 about unsupported option combinations.
 .TP
-.B SNIFFING METHODS
+.B SNIFFING OPTIONS
 .PP
 ettercap NG has a new unified sniffing method. This implies that ip_forwarding
 in the kernel is always disabled and the forwarding is done by ettercap. Every
@@ -245,6 +245,10 @@ application.
 .TP
 \fB\-C\fR, \fB\-\-console\fR
 .br 
+The console interface, only printf ;)
+.br
+It is quite interactive, press 'h' in every moment to get the help of what you
+can do.
 
 .TP
 \fB\-N\fR, \fB\-\-ncurses\fR
@@ -327,6 +331,10 @@ for each host. The file will be named LOGFILE.eci
 Compress the logfile with the gzip algorithm while it is dumped. etterlog(8) is
 capable of handling both compressed and uncompresse log files.
 
+.TP
+\fB\-e\fR, \fB\-\-regex <REGEX>\fR
+This option is useful in conjunction with -L. It logs only packets that match
+the posiz regex REGEX.
 
 
 

@@ -10,11 +10,13 @@ NG          ????????
       
       + Rewrite from scratch
       + root privs dropped after initialization
-      + IPv6 support
       + layer 3 routing (forwarding packets)
       + wifi support
       + unified sniffing
+      + multiple target selection
       + pcap filter
+      + etterlog utility for logfiles parsing
+      + regex matching 
 
 
 

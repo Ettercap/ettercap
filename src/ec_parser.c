@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.14 2003/03/29 20:13:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.15 2003/03/30 00:50:26 alor Exp $
 */
 
 
@@ -51,10 +51,14 @@ void ec_usage(void)
 
    fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
    
-   fprintf(stdout, "\nSniffing Method:\n");
-   fprintf(stdout, "  -A, --arp-poison            use ARP poisoning sniff\n");
+   fprintf(stdout, "\nSniffing options:\n");
+   fprintf(stdout, "  -A, --arp-poison            perform ARP poisoning while sniff\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
+   fprintf(stdout, "  -r, --read <file>           load data from <file>\n");
+   fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n");
+   fprintf(stdout, "  -R, --reversed              use reversed TARGET matching\n");
+   fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n");
    
    fprintf(stdout, "\nInterface Type:\n");
    fprintf(stdout, "  -C, --console               use console only GUI\n");
@@ -62,17 +66,16 @@ void ec_usage(void)
    fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
    fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
    
-   fprintf(stdout, "\nGeneral options:\n");
-   fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
-   fprintf(stdout, "  -d, --dump <file>           dump sniffed data to <file>\n");
-   fprintf(stdout, "  -r, --read <file>           load data from <file>\n");
-   fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n");
-   fprintf(stdout, "  -R, --reversed              use reversed TARGET matching\n");
-   fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n");
-   fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
+   fprintf(stdout, "\nLogging options:\n");
+   fprintf(stdout, "  -d, --dump <file>           dump sniffed data to pcapfile <file>\n");
    fprintf(stdout, "  -L, --log <logfile>         log all the traffic to this <logfile>\n");
    fprintf(stdout, "  -l, --log-info <logfile>    log only passive infos to this <logfile>\n");
    fprintf(stdout, "  -c, --compress              use gzip compression on log files\n");
+   fprintf(stdout, "  -e, --regex <regex>         log only packets matching this regex\n");
+   
+   fprintf(stdout, "\nGeneral options:\n");
+   fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
+   fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    
    fprintf(stdout, "\nStandard options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
@@ -105,6 +108,7 @@ void parse_options(int argc, char **argv)
       { "log", required_argument, NULL, 'L' },
       { "log-info", required_argument, NULL, 'l' },
       { "compress", no_argument, NULL, 'c' },
+      { "regex", required_argument, NULL, 'e' },
       
       { "console", no_argument, NULL, 'C' },
       { "ncurses", no_argument, NULL, 'N' },
@@ -128,7 +132,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDd:f:Ghi:L:l:NP:piRr:t:v", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDd:e:f:Ghi:L:l:NP:piRr:t:v", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -202,6 +206,10 @@ void parse_options(int argc, char **argv)
                   
          case 'c':
                   GBL_OPTIONS->compress = 1;
+                  break;
+                  
+         case 'e':
+                  set_logregex(optarg);
                   break;
                   
          case 'h':

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.22 2004/02/03 15:14:49 lordnaga Exp $
+# $Id: Makefile.am,v 1.23 2004/03/19 13:54:27 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -13,6 +13,7 @@ SUBDIRS =   arp_cop \
             finger \
             finger_submit \
             gre_relay \
+            gw_discover \
             link_type \
             pptp_chapms1 \
             pptp_clear \

@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.9 2004/02/29 17:37:21 alor Exp $
+    $Id: finger.c,v 1.10 2004/03/19 13:55:02 alor Exp $
 */
 
 
@@ -35,9 +35,9 @@
 
 /* globals */
 
-struct ip_addr ip;
-u_int16 port;
-char fingerprint[FINGER_LEN + 1];
+static struct ip_addr ip;
+static u_int16 port;
+static char fingerprint[FINGER_LEN + 1];
 
 /* protos */
 int plugin_load(void *);

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.88 2004/01/05 17:38:38 lordnaga Exp $
+dnl    $Id: configure.in,v 1.89 2004/01/06 15:03:14 alor Exp $
 dnl
 
 AC_INIT
@@ -405,7 +405,7 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$PCAPLIB"
-AC_CHECK_LIB(pcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect pcap version. pcap >= 0.8.1 required]))
+AC_CHECK_LIB(pcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
 LDFLAGS="${OLDLDFLAGS}"
 
 dnl ---------
@@ -449,7 +449,7 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$LNETLIB"
-AC_CHECK_LIB(net, libnet_autobuild_token_ring,, AC_MSG_ERROR([Incorrect lnet version. libnet >= 1.1.1 required]))
+AC_CHECK_LIB(net, libnet_autobuild_token_ring,, AC_MSG_ERROR([Incorrect libnet version. libnet >= 1.1.1 required]))
 LDFLAGS="${OLDLDFLAGS}"
 
 

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.7 2003/12/14 14:20:40 alor Exp $
+# $Id: Makefile.am,v 1.8 2004/01/06 15:03:15 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -15,6 +15,7 @@ libec_curses_a_SOURCES = ec_curses.c \
                          ec_curses_filters.c \
                          ec_curses_hosts.c \
                          ec_curses_live.c \
+                         ec_curses_logging.c \
                          ec_curses_mitm.c \
                          ec_curses_offline.c \
                          ec_curses_plugins.c \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_display.c,v 1.3 2003/11/10 22:46:24 alor Exp $
+    $Id: ec_text_display.c,v 1.4 2004/01/06 15:03:15 alor Exp $
 */
 
 #include <ec.h>
@@ -100,6 +100,7 @@ static void display_headers(struct packet_object *po)
    
    /* displat the date */
    fprintf(stdout, "%s\n", time);
+   //fprintf(stdout, "%x %x\n", (u_int)po->ts.tv_sec, (u_int)po->ts.tv_usec);
   
    if (GBL_OPTIONS->ext_headers) {
       /* display the mac addresses */

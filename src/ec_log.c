@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.29 2004/01/04 16:29:28 alor Exp $
+    $Id: ec_log.c,v 1.30 2004/01/06 15:03:14 alor Exp $
 */
 
 #include <ec.h>
@@ -76,16 +76,25 @@ int set_loglevel(int level, char *filename)
    char eci[strlen(filename)+5];
    char ecp[strlen(filename)+5];
    int zerr;
+ 
+   /* close any previously opened file */
+   log_close();
+  
+   /* if we want to stop logging, return here */
+   if (level == LOG_STOP) {
+      DEBUG_MSG("set_loglevel: stopping the log process");
+      return ESUCCESS;
+   }
    
    DEBUG_MSG("set_loglevel(%d,%s)", level, filename); 
 
    /* all the host type will be unknown, warn the user */
    if (GBL_OPTIONS->read) {
-      USER_MSG("******************************************************\n");
-      USER_MSG("WARINING: while reading form file we cannot determine\n");
-      USER_MSG("if an host is local or not because the ip address of\n");
-      USER_MSG("the NIC may be changed from the time of the dump.\n");
-      USER_MSG("******************************************************\n\n");
+      USER_MSG("*********************************************************\n");
+      USER_MSG("WARINING: while reading form file we cannot determine    \n");
+      USER_MSG("if an host is local or not because the ip address of     \n");
+      USER_MSG("the NIC may have been changed from the time of the dump. \n");
+      USER_MSG("*********************************************************\n\n");
    }
    
    sprintf(eci, "%s.eci", filename);
@@ -93,6 +102,7 @@ int set_loglevel(int level, char *filename)
    
    /* open the file(s) */
    switch(level) {
+
       case LOG_PACKET:
          if (GBL_OPTIONS->compress) {
             fd_cp = gzopen(ecp, "wb9");
@@ -154,16 +164,20 @@ int set_loglevel(int level, char *filename)
 }
 
 /* close the log files */
-void log_close(void)
+static void log_close(void)
 {
-   DEBUG_MSG("ATEXIT: log_close");
-
+   /* remove all the hooks */
+   hook_del(HOOK_DISPATCHER, &log_packet);
+   hook_del(HOOK_DISPATCHER, &log_write_info);
+   hook_del(HOOK_PACKET_ARP, &log_write_info_arp_icmp);
+   hook_del(HOOK_PACKET_ICMP, &log_write_info_arp_icmp);
+   hook_del(HOOK_PROTO_DHCP_PROFILE, &log_write_info_arp_icmp);
+   
    if (fd_cp) gzclose(fd_cp);
    if (fd_ci) gzclose(fd_ci);
 
    if (fd_p) close(fd_p);
    if (fd_i) close(fd_i);
-   
 }
 
 /* 
@@ -538,8 +552,8 @@ int set_msg_loglevel(int level, char *filename)
 {
    switch (level) {
       case LOG_TRUE:
-         /* why we are opening an already opened file ? */
-         BUG_IF(GBL_OPTIONS->msg_fd != NULL);
+         /* close the filedesc if already opened */
+         set_msg_loglevel(LOG_FALSE, filename);
 
          GBL_OPTIONS->msg_fd = fopen(filename, FOPEN_WRITE_TEXT);
          if (GBL_OPTIONS->msg_fd == NULL)

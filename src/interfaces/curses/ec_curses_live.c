@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_live.c,v 1.6 2003/12/14 20:57:28 alor Exp $
+    $Id: ec_curses_live.c,v 1.7 2004/01/06 15:03:15 alor Exp $
 */
 
 #include <ec.h>
@@ -63,6 +63,7 @@ void curses_sniff_live(void)
       wdg_menu_add(menu, menu_mitm);
    
    wdg_menu_add(menu, menu_filters);
+   wdg_menu_add(menu, menu_logging);
 
 #ifdef HAVE_PLUGINS
    wdg_menu_add(menu, menu_plugins);

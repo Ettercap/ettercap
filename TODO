@@ -35,7 +35,6 @@ this is the unofficial and floating in time roadmap:
       - how to code a plugin 
 
    + LIBWDG
-      - logging menu
       - fix the box() under freebsd
       - widgets:
          - selectable lists (auto refresh)

@@ -1,5 +1,5 @@
 
-/* $Id: ec_log.h,v 1.17 2003/10/27 21:25:44 alor Exp $ */
+/* $Id: ec_log.h,v 1.18 2004/01/06 15:03:14 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -110,8 +110,9 @@ struct log_header_info {
 
 
 extern int set_loglevel(int level, char *filename);
-#define LOG_PACKET   1
-#define LOG_INFO     0
+#define LOG_STOP     0
+#define LOG_INFO     1
+#define LOG_PACKET   2
 
 extern void log_packet(struct packet_object *po);
    

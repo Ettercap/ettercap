@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.33 2004/01/05 11:49:36 alor Exp $
+    $Id: ec_curses.c,v 1.34 2004/01/06 15:03:15 alor Exp $
 */
 
 #include <ec.h>
@@ -25,7 +25,6 @@
 
 #include <ec_curses.h>
 #include <ec_capture.h>
-#include <ec_log.h>
 
 #include <pcap.h>
 
@@ -34,9 +33,6 @@
 static wdg_t *sysmsg_win;
 static char tag_unoff[] = " ";
 static char tag_promisc[] = "*";
-static char tag_compress[] = " ";
-
-static char *logfile;
 
 /* proto */
 
@@ -60,7 +56,6 @@ static void curses_exit(void);
 
 static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
-static void toggle_compress(void);
 
 static void curses_file_open(void);
 static void read_pcapfile(char *path, char *file);
@@ -71,12 +66,6 @@ static void curses_bridged_sniff(void);
 static void bridged_sniff(void);
 static void curses_pcap_filter(void);
 
-static void curses_log_all(void);
-static void log_all(void);
-static void curses_log_info(void);
-static void log_info(void);
-static void curses_log_msg(void);
-static void log_msg(void);
 
 /*******************************************/
 
@@ -367,17 +356,6 @@ static void toggle_nopromisc(void)
    }
 }
 
-static void toggle_compress(void)
-{
-   if (GBL_OPTIONS->compress) {
-      tag_compress[0] = ' ';
-      GBL_OPTIONS->compress = 0;
-   } else {
-      tag_compress[0] = '*';
-      GBL_OPTIONS->compress = 1;
-   }
-}
-
 /*
  * display the initial menu to setup global options
  * at startup.
@@ -408,15 +386,6 @@ static void curses_setup(void)
                                  {NULL, 0, NULL, NULL},
                                };
    
-   struct wdg_menu logging[] = { {"Logging",                      'L', "",  NULL},
-                                 {"Log all packets and infos...", 'I', "I", curses_log_all},
-                                 {"Log only infos...",            'i', "i", curses_log_info},
-                                 {"-",                            0,   "",  NULL},
-                                 {"Log user messages...",         'M', "M", curses_log_msg},
-                                 {"-",                            0,   "",  NULL},
-                                 {"Compressed file",              0, tag_compress,  toggle_compress},
-                                 {NULL, 0, NULL, NULL},
-                               };
    
    DEBUG_MSG("curses_setup");
    
@@ -430,7 +399,6 @@ static void curses_setup(void)
    wdg_menu_add(menu, file);
    wdg_menu_add(menu, live);
    wdg_menu_add(menu, options);
-   wdg_menu_add(menu, logging);
    wdg_draw_object(menu);
    
    DEBUG_MSG("curses_setup: menu created");
@@ -625,65 +593,6 @@ static void curses_pcap_filter(void)
    curses_input_call("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
-/*
- * display the log dialog 
- */
-static void curses_log_all(void)
-{
-   DEBUG_MSG("curses_log_all");
-
-   /* make sure to free if already set */
-   SAFE_FREE(logfile);
-   SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
-
-   curses_input_call("Log File :", logfile, FILE_LEN, log_all);
-}
-
-static void log_all(void)
-{
-   set_loglevel(LOG_PACKET, logfile);
-   SAFE_FREE(logfile);
-}
-
-/*
- * display the log dialog 
- */
-static void curses_log_info(void)
-{
-   DEBUG_MSG("curses_log_info");
-
-   /* make sure to free if already set */
-   SAFE_FREE(logfile);
-   SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
-
-   curses_input_call("Log File :", logfile, FILE_LEN, log_info);
-}
-
-static void log_info(void)
-{
-   set_loglevel(LOG_INFO, logfile);
-   SAFE_FREE(logfile);
-}
-
-/*
- * display the log dialog 
- */
-static void curses_log_msg(void)
-{
-   DEBUG_MSG("curses_log_msg");
-
-   /* make sure to free if already set */
-   SAFE_FREE(logfile);
-   SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
-
-   curses_input_call("Log File :", logfile, FILE_LEN, log_msg);
-}
-
-static void log_msg(void)
-{
-   set_msg_loglevel(LOG_TRUE, logfile);
-   SAFE_FREE(logfile);
-}
 
 /* EOF */
 

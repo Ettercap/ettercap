@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.11 2004/03/17 22:13:32 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.12 2004/04/08 09:02:39 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -248,6 +248,7 @@ static void port_stealing_stop(void)
       TAILQ_FOREACH_SAFE(p, &s->packet_table, next, tmp_p) {
          packet_destroy_object(p->po);
          TAILQ_REMOVE(&s->packet_table, p, next);
+         SAFE_FREE(p->po);
          SAFE_FREE(p);
       }
       
@@ -398,6 +399,7 @@ static void send_queue(struct packet_object *po)
                 */
                packet_destroy_object(p->po);
                TAILQ_REMOVE(&s1->packet_table, p, next);
+               SAFE_FREE(p->po);
                SAFE_FREE(p);
 	      
                /* Sleep only if we have more than one packet to send */

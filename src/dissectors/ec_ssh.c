@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.2 2003/10/20 13:21:20 lordnaga Exp $
+    $Id: ec_ssh.c,v 1.3 2003/10/20 14:29:56 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -44,7 +44,7 @@ typedef struct {
     RSA *hostkey;
     ssh_my_key *ptrkey;
     void *key_state[2];
-    struct stream_buf *data_buffer[2];
+    struct stream_buf data_buffer[2];
 #define MAX_USER_LEN 28
     u_char user[MAX_USER_LEN+1];
     u_char status;
@@ -150,13 +150,13 @@ FUNC_DECODER(dissector_ssh)
             direction = 1;
 
          /* Add this packet to the stream */
-         streambuf_seq_add(session_data->data_buffer[direction], PACKET);
+         streambuf_seq_add(&(session_data->data_buffer[direction]), PACKET);
        
          /* We are decrypting, so we'll arrange disp_data by our own */
          PACKET->DATA.disp_len = 0;
 	 
          /* While there are packets to read from the stream */
-         while(read_packet(&crypted_packet, session_data->data_buffer[direction]) == ESUCCESS) {        
+         while(read_packet(&crypted_packet, &(session_data->data_buffer[direction])) == ESUCCESS) {        
             ssh_len = pntol(crypted_packet);
             ssh_mod = 8 - (ssh_len % 8);
 
@@ -176,7 +176,7 @@ FUNC_DECODER(dissector_ssh)
             ptr++;
 
             /* Catch data len and slide to the payload */
-            data_len = phtol(ptr);
+            data_len = pntol(ptr);
             ptr+=4;
 
             if (ssh_packet_type==4) { /* SSH_CMSG_USER */
@@ -441,8 +441,8 @@ FUNC_DECODER(dissector_ssh)
              */
 
             /* Initialize the stream buffers for decryption */
-            streambuf_init(session_data->data_buffer[0]); 
-            streambuf_init(session_data->data_buffer[1]);
+            streambuf_init(&(session_data->data_buffer[0])); 
+            streambuf_init(&(session_data->data_buffer[1]));
 	    
             PACKET->flags |= PO_MODIFIED;	 
             session_data->status = WAITING_ENCRYPTED_PCK;

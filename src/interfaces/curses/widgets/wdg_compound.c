@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_compound.c,v 1.1 2004/01/11 20:53:09 alor Exp $
+    $Id: wdg_compound.c,v 1.2 2004/01/11 21:22:01 alor Exp $
 */
 
 #include <wdg.h>
@@ -51,7 +51,7 @@ static int wdg_compound_get_msg(struct wdg_object *wo, int key, struct wdg_mouse
 
 static void wdg_compound_border(struct wdg_object *wo);
 static void wdg_compound_move(struct wdg_object *wo, int key);
-static int wdg_compound_dispatch(struct wdg_object *wo, int key);
+static int wdg_compound_dispatch(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 void wdg_compound_add(wdg_t *wo, wdg_t *widget);
 
 /*******************************************/
@@ -229,9 +229,10 @@ static int wdg_compound_get_msg(struct wdg_object *wo, int key, struct wdg_mouse
    switch (key) {
       case KEY_MOUSE:
          /* is the mouse event within our edges ? */
-         if (wenclose(ww->win, mouse->y, mouse->x))
+         if (wenclose(ww->win, mouse->y, mouse->x)) {
             /* XXX set the focus to the proper widget */
             wdg_set_focus(wo);
+         }
          else 
             return -WDG_ENOTHANDLED;
          break;
@@ -244,7 +245,7 @@ static int wdg_compound_get_msg(struct wdg_object *wo, int key, struct wdg_mouse
          
       /* dispatch the message to the focused widget */
       default:
-         return wdg_compound_dispatch(wo, key);
+         return wdg_compound_dispatch(wo, key, mouse);
          break;
    }
   
@@ -292,9 +293,12 @@ static void wdg_compound_move(struct wdg_object *wo, int key)
 /*
  * dispatch the key to the focused widget
  */
-static int wdg_compound_dispatch(struct wdg_object *wo, int key)
+static int wdg_compound_dispatch(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
-   return -WDG_ENOTHANDLED;
+   WDG_WO_EXT(struct wdg_compound, ww);
+
+   /* pass the message to the focused widget */
+   return ww->focused->wdg->get_msg(ww->focused->wdg, key, mouse);
 }
 
 

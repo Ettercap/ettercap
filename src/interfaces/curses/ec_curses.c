@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.47 2004/09/23 09:24:00 alor Exp $
+    $Id: ec_curses.c,v 1.48 2004/09/28 13:50:37 alor Exp $
 */
 
 #include <ec.h>
@@ -48,7 +48,7 @@ static void curses_msg(const char *msg);
 static void curses_error(const char *msg);
 static void curses_fatal_error(const char *msg);
 void curses_input(const char *title, char *input, size_t n, void (*callback)(void));
-static void curses_progress(char *title, int value, int max);
+static int curses_progress(char *title, int value, int max);
 
 static void curses_setup(void);
 static void curses_exit(void);
@@ -246,9 +246,10 @@ void curses_input(const char *title, char *input, size_t n, void (*callback)(voi
 /* 
  * implement the progress bar 
  */
-static void curses_progress(char *title, int value, int max)
+static int curses_progress(char *title, int value, int max)
 {
    static wdg_t *per = NULL;
+   int ret;
    
    /* the first time, create the object */
    if (per == NULL) {
@@ -267,15 +268,35 @@ static void curses_progress(char *title, int value, int max)
    } 
    
    /* the subsequent calls have to only update the object */
-   wdg_percentage_set(per, value, max);
+   ret = wdg_percentage_set(per, value, max);
    wdg_update_screen();
 
-   /* 
-    * the object is self-destructing... 
-    * so we have only to set the pointer to null
-    */
-   if (value == max)
-      per = NULL;
+   switch (ret) {
+      case WDG_PERCENTAGE_FINISHED:
+         /* 
+          * the object is self-destructing... 
+          * so we have only to set the pointer to null
+          */
+         per = NULL;
+         return UI_PROGRESS_FINISHED;
+         break;
+         
+      case WDG_PERCENTAGE_INTERRUPTED: 
+         /*
+          * the user has requested to stop the current task.
+          * the percentage was self-destructed, we have to 
+          * set the pointer to null and return the proper value
+          */
+         per = NULL;
+         return UI_PROGRESS_INTERRUPTED;
+         break;
+         
+      case WDG_PERCENTAGE_UPDATED: 
+         return UI_PROGRESS_UPDATED;
+         break;
+   }
+  
+   return UI_PROGRESS_UPDATED;
 }
 
 /*

@@ -8,7 +8,8 @@ Legenda:
 
 NG-0.7.2         200410
 
-   + the netmask can now be specified within the GUI
+   + the hosts scan can now be canceled by the user (ctrl+q)
+   + the netmask for the scan can now be specified within the GUI
    + checksum_check was renamed to checksum_warning
      and a new option to prevent the check was introduced
      (see the man page etter.conf(5) for details)

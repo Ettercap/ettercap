@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.30 2004/09/24 19:57:52 daten Exp $
+    $Id: ec_gtk.c,v 1.31 2004/09/28 13:50:38 alor Exp $
 */
 
 #include <ec.h>
@@ -61,7 +61,7 @@ static void gtkui_msg(const char *msg);
 static void gtkui_error(const char *msg);
 static void gtkui_fatal_error(const char *msg);
 static gboolean gtkui_flush_msg(gpointer data);
-static void gtkui_progress(char *title, int value, int max);
+static int gtkui_progress(char *title, int value, int max);
 
 static void gtkui_setup(void);
 
@@ -300,7 +300,7 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
 /* 
  * show or update the progress bar
  */
-static void gtkui_progress(char *title, int value, int max)
+static int gtkui_progress(char *title, int value, int max)
 {
    static GtkWidget *dialog = NULL;
    static GtkWidget *pbar = NULL;
@@ -338,8 +338,10 @@ static void gtkui_progress(char *title, int value, int max)
       gtk_widget_destroy(dialog);
       dialog = NULL;
       pbar = NULL;
+      return UI_PROGRESS_FINISHED;
    }
 
+   return UI_PROGRESS_UPDATED;
 }
 
 /*

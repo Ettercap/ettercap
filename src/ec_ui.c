@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.29 2004/06/09 19:15:32 alor Exp $
+    $Id: ec_ui.c,v 1.30 2004/09/28 13:50:37 alor Exp $
 */
 
 #include <ec.h>
@@ -50,7 +50,7 @@ void ui_msg(const char *fmt, ...);
 void ui_error(const char *fmt, ...);
 void ui_fatal_error(const char *msg);
 void ui_input(const char *title, char *input, size_t n, void (*callback)(void));
-void ui_progress(char *title, int value, int max);
+int ui_progress(char *title, int value, int max);
 int ui_msg_flush(int max);
 int ui_msg_purge_all(void);
 void ui_register(struct ui_ops *ops);
@@ -93,9 +93,12 @@ void ui_cleanup(void)
 }
 
 /* implement the progress bar */
-void ui_progress(char *title, int value, int max)
+int ui_progress(char *title, int value, int max)
 {
-   EXECUTE(GBL_UI->progress, title, value, max);
+   if (GBL_UI->progress)
+      return GBL_UI->progress(title, value, max);
+
+   return UI_PROGRESS_UPDATED;
 }
 
 

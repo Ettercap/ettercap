@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.40 2004/07/23 07:25:27 alor Exp $ */
+/* $Id: wdg.h,v 1.41 2004/09/28 13:50:37 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -43,7 +43,7 @@
 #endif
 
 
-#define LIBWDG_VERSION "0.10.2"
+#define LIBWDG_VERSION "0.10.3"
    
 /********************************************/
 
@@ -247,7 +247,10 @@ extern void wdg_dialog_text(wdg_t *wo, size_t flags, const char *text);
    #define WDG_CANCEL      (1<<3)
 extern void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(void));
 /* percentage objects */
-extern void wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
+extern int wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
+   #define WDG_PERCENTAGE_INTERRUPTED  -1
+   #define WDG_PERCENTAGE_FINISHED     0
+   #define WDG_PERCENTAGE_UPDATED      1
 /* file dialog objects */
 extern void wdg_file_set_callback(wdg_t *wo, void (*callback)(char *path, char *file));
 /* input dialog objects */

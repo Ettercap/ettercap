@@ -6,6 +6,7 @@
    
    + FIXING
       - remove GBL_OPTIONS->quiet from some plugins
+      - the host list is not refreshed after a scan
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
@@ -13,8 +14,6 @@
 ============================
   In the next release(s)
 ============================
-
-   + a way to interrupt the hosts scan
 
    + record the MSS for the packet splitting
 

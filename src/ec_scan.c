@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.39 2004/07/29 09:46:47 alor Exp $
+    $Id: ec_scan.c,v 1.40 2004/09/28 13:50:37 alor Exp $
 */
 
 #include <ec.h>
@@ -43,8 +43,8 @@ static struct ip_list **rand_array;
 void build_hosts_list(void);
 void del_hosts_list(void);
 
-static void scan_netmask(void);
-static void scan_targets(void);
+static void scan_netmask(pthread_t pid);
+static void scan_targets(pthread_t pid);
 
 int scan_load_hosts(char *filename);
 int scan_save_hosts(char *filename);
@@ -55,6 +55,7 @@ static void random_list(struct ip_list *e, int max);
 
 static void get_response(struct packet_object *po);
 static EC_THREAD_FUNC(capture_scan);
+static EC_THREAD_FUNC(scan_thread);
 static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 
 /*******************************************/
@@ -65,9 +66,8 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
 
 void build_hosts_list(void)
 {
-   pthread_t pid;
    struct hosts_list *hl;
-   int nhosts = 0, i = 1;
+   int nhosts = 0;
 
    DEBUG_MSG("build_hosts_list");
 
@@ -105,7 +105,32 @@ void build_hosts_list(void)
    
    /* delete the previous list */
    del_hosts_list();
+ 
+   /* check the type of UI we are running under... */
+   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
+      /* in text mode and demonized call the function directly */
+      scan_thread(NULL);
+   else
+      /* do the scan in a separate thread */
+      ec_thread_new("scan", "scanning thread", &scan_thread, NULL);
+}
+
+/*
+ * the thread responsible of the hosts scan
+ */
+static EC_THREAD_FUNC(scan_thread)
+{
+   pthread_t pid;
+   struct hosts_list *hl;
+   int i = 1, ret;
+   int nhosts = 0;
    
+   DEBUG_MSG("scan_thread");
+
+   /* in text mode and demonized this function is NOT a thread */
+   if (GBL_UI->type != UI_TEXT && GBL_UI->type != UI_DAEMONIZE)
+      ec_thread_init();
+
    /*
     * create a simple decode thread, it will call
     * the right HOOK POINT. so we only have to hook to 
@@ -117,15 +142,18 @@ void build_hosts_list(void)
    /* 
     * if at least one target is ANY, scan the whole netmask
     * else scan only the specified targets
+    *
+    * the pid parameter is used to kill the thread if
+    * the user request to stop the scan.
     */
    if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
-      scan_netmask();
+      scan_netmask(pid);
    else
-      scan_targets();
+      scan_targets(pid);
 
    /* 
     * free the temporary array for random computations 
-    * allocated in rando_list()
+    * allocated in random_list()
     */
    SAFE_FREE(rand_array);
    
@@ -168,7 +196,13 @@ void build_hosts_list(void)
          host_iptoa(&hl->ip, tmp);
          hl->hostname = strdup(tmp);
          
-         ui_progress(title, i++, nhosts);
+         ret = ui_progress(title, i++, nhosts);
+         
+         /* user has requested to stop the task */
+         if (ret == UI_PROGRESS_INTERRUPTED) {
+            INSTANT_USER_MSG("Interrupted by user. Partial results may have been recorded...\n");
+            ec_thread_exit();
+         }
       }
    }
    
@@ -176,6 +210,12 @@ void build_hosts_list(void)
    if (GBL_OPTIONS->save_hosts)
       scan_save_hosts(GBL_OPTIONS->hostsfile);
 
+   /* in text mode and demonized this function is NOT a thread */
+   if (GBL_UI->type != UI_TEXT && GBL_UI->type != UI_DAEMONIZE)
+      ec_thread_exit();
+
+   /* NOT REACHED */
+   return NULL;
 }
 
 
@@ -197,7 +237,6 @@ void del_hosts_list(void)
 /*
  * capture the packets and call the HOOK POINT
  */
-
 static EC_THREAD_FUNC(capture_scan)
 {
    DEBUG_MSG("capture_scan");
@@ -290,10 +329,10 @@ static void get_response(struct packet_object *po)
 /* 
  * scan the netmask to find all hosts 
  */
-static void scan_netmask(void)
+static void scan_netmask(pthread_t pid)
 {
    u_int32 netmask, current, myip;
-   int nhosts, i;
+   int nhosts, i, ret;
    struct ip_addr scanip;
    struct ip_list *e, *tmp; 
    char title[100];
@@ -334,7 +373,22 @@ static void scan_netmask(void)
       send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
 
       /* update the progress bar */
-      ui_progress(title, i++, nhosts);
+      ret = ui_progress(title, i++, nhosts);
+
+      /* user has requested to stop the task */
+      if (ret == UI_PROGRESS_INTERRUPTED) {
+         INSTANT_USER_MSG("Scan interrupted by user. Partial results may have been recorded...\n");
+         /* destroy the capture thread and remove the hook function */
+         ec_thread_destroy(pid);
+         hook_del(HOOK_PACKET_ARP, &get_response);
+         /* delete the temporary list */
+         LIST_FOREACH_SAFE(e, &ip_list_head, next, tmp) {
+            LIST_REMOVE(e, next);
+            SAFE_FREE(e);
+         }  
+         /* cancel the scan thread */
+         ec_thread_exit();
+      }
       
       /* wait for a delay */
       usleep(GBL_CONF->arp_storm_delay * 1000);
@@ -351,9 +405,9 @@ static void scan_netmask(void)
 /*
  * scan only the target hosts
  */
-static void scan_targets(void)
+static void scan_targets(pthread_t pid)
 {
-   int nhosts = 0, found, n = 1;
+   int nhosts = 0, found, n = 1, ret;
    struct ip_list *e, *i, *m, *tmp; 
    char title[100];
    
@@ -417,7 +471,22 @@ static void scan_targets(void)
       send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
 
       /* update the progress bar */
-      ui_progress(title, n++, nhosts);
+      ret = ui_progress(title, n++, nhosts);
+      
+      /* user has requested to stop the task */
+      if (ret == UI_PROGRESS_INTERRUPTED) {
+         INSTANT_USER_MSG("Scan interrupted by user. Partial results may have been recorded...\n");
+         /* destroy the capture thread and remove the hook function */
+         ec_thread_destroy(pid);
+         hook_del(HOOK_PACKET_ARP, &get_response);
+         /* delete the temporary list */
+         LIST_FOREACH_SAFE(e, &ip_list_head, next, tmp) {
+            LIST_REMOVE(e, next);
+            SAFE_FREE(e);
+         }  
+         /* cancel the scan thread */
+         ec_thread_exit();
+      }
       
       /* wait for a delay */
       usleep(GBL_CONF->arp_storm_delay * 1000);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_percentage.c,v 1.3 2003/12/27 18:49:52 alor Exp $
+    $Id: wdg_percentage.c,v 1.4 2004/09/28 13:50:37 alor Exp $
 */
 
 #include <wdg.h>
@@ -31,6 +31,7 @@ struct wdg_percentage {
    WINDOW *win;
    WINDOW *sub;
    size_t percent;
+   char interrupt;
 };
 
 /* PROTOS */
@@ -46,7 +47,7 @@ static int wdg_percentage_get_msg(struct wdg_object *wo, int key, struct wdg_mou
 
 static void wdg_percentage_border(struct wdg_object *wo);
 
-void wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
+int wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
 
 /*******************************************/
 
@@ -113,8 +114,6 @@ static int wdg_percentage_redraw(struct wdg_object *wo)
    size_t c, l, x, y;
    size_t cols;
    
-   WDG_DEBUG_MSG("wdg_percentage_redraw");
-
    /* calculate the dimension and position */
    cols = strlen(wo->title) + 2;
 
@@ -227,7 +226,7 @@ static int wdg_percentage_lost_focus(struct wdg_object *wo)
 static int wdg_percentage_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
    WDG_WO_EXT(struct wdg_percentage, ww);
-
+   
    /* handle the message */
    switch (key) {
       case KEY_MOUSE:
@@ -238,6 +237,18 @@ static int wdg_percentage_get_msg(struct wdg_object *wo, int key, struct wdg_mou
             return -WDG_ENOTHANDLED;
          break;
 
+      case KEY_ESC:
+      case CTRL('Q'):
+         WDG_DEBUG_MSG("wdg_percentage_get_msg: user interrupt");
+         /* 
+          * user has requested to stop this task.
+          * the next time the percentage will be set
+          * the object will be destroyed and a correct value
+          * will be returned.
+          */
+         ww->interrupt = 1;
+         break;
+         
       /* message not handled */
       default:
          return -WDG_ENOTHANDLED;
@@ -291,20 +302,35 @@ static void wdg_percentage_border(struct wdg_object *wo)
 /*
  * set the percentage
  */
-void wdg_percentage_set(wdg_t *wo, size_t p, size_t max)
+int wdg_percentage_set(wdg_t *wo, size_t p, size_t max)
 {
    WDG_WO_EXT(struct wdg_percentage, ww);
 
    /* set the percentage */
    ww->percent = p * 100 / max;
+   
+   WDG_DEBUG_MSG("wdg_percentage_set: %d", ww->percent);
 
    wdg_percentage_redraw(wo);
 
    /* reached the max, selfdestruct */
    if (p == max) {
+      WDG_DEBUG_MSG("wdg_percentage_set: FINISHED");
       wdg_destroy_object(&wo);
       wdg_redraw_all();
+      return WDG_PERCENTAGE_FINISHED;
    }
+
+   /* user has requested to stop the task */
+   if (ww->interrupt) {
+      WDG_DEBUG_MSG("wdg_percentage_set: INTERRUPTED");
+      ww->interrupt = 0;
+      wdg_destroy_object(&wo);
+      wdg_redraw_all();
+      return WDG_PERCENTAGE_INTERRUPTED; 
+   }
+
+   return WDG_PERCENTAGE_UPDATED;
 }
 
 /* EOF */

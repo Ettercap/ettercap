@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_file.c,v 1.9 2003/09/30 16:38:14 alor Exp $
+    $Id: ec_file.c,v 1.10 2003/10/08 20:03:18 alor Exp $
 */
 
 #include <ec.h>
@@ -26,8 +26,8 @@
 
 /* protos */
 
-static char * get_full_path(char *dir, char *file);
-static char * get_local_path(char *file);
+static char * get_full_path(const char *dir, const char *file);
+static char * get_local_path(const char *file);
 FILE * open_data(char *dir, char *file, char *mode);
 
 /*******************************************/
@@ -36,7 +36,7 @@ FILE * open_data(char *dir, char *file, char *mode);
  * add the prefix to a given filename
  */
 
-static char * get_full_path(char *dir, char *file)
+static char * get_full_path(const char *dir, const char *file)
 {
    char *filename;
    int len;
@@ -59,7 +59,7 @@ static char * get_full_path(char *dir, char *file)
  * add the local path to a given filename
  */
 
-static char * get_local_path(char *file)
+static char * get_local_path(const char *file)
 {
    char *filename;
 

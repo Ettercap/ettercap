@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_tables.c,v 1.9 2003/09/30 16:38:15 alor Exp $
+    $Id: ef_tables.c,v 1.10 2003/10/08 20:03:18 alor Exp $
 */
 
 #include <ef.h>
@@ -78,7 +78,7 @@ void load_tables(void)
    
 
    /* open the file */ 
-   fc = open_data("share", "etterfilter.tbl", "r");
+   fc = open_data("share", "etterfilter.tbl", FOPEN_READ_TEXT);
    ON_ERROR(fc, NULL, "Cannot find file etterfilter.tbl");
 
    /* read the file */
@@ -247,7 +247,7 @@ void load_constants(void)
    char *p, *q, *end;
    
    /* open the file */ 
-   fc = open_data("share", "etterfilter.cnt", "r");
+   fc = open_data("share", "etterfilter.cnt", FOPEN_READ_TEXT);
    ON_ERROR(fc, NULL, "Cannot find file etterfilter.cnt");
 
    /* read the file */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_services.c,v 1.7 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_services.c,v 1.8 2003/10/08 20:03:18 alor Exp $
 
 */
 
@@ -75,7 +75,7 @@ int services_init(void)
    int i = 0;
 
    /* errors are handled by the function */
-   f = open_data("share", SERVICES_NAMES, "r");
+   f = open_data("share", SERVICES_NAMES, FOPEN_READ_TEXT);
    ON_ERROR(f, NULL, "Cannot open %s", SERVICES_NAMES);
 
    while (fgets(line, 80, f) != 0) {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_manuf.c,v 1.11 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_manuf.c,v 1.12 2003/10/08 20:03:18 alor Exp $
 
 */
 
@@ -122,7 +122,7 @@ int manuf_init(void)
 
    i = 0;
 
-   f = open_data("share", MAC_FINGERPRINTS, "r");
+   f = open_data("share", MAC_FINGERPRINTS, FOPEN_READ_TEXT);
    ON_ERROR(f, NULL, "Cannot open %s", MAC_FINGERPRINTS);
 
    while (fgets(line, 80, f) != 0) {

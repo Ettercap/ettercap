@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_fingerprint.c,v 1.19 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_fingerprint.c,v 1.20 2003/10/08 20:03:18 alor Exp $
 
 */
 
@@ -92,7 +92,7 @@ int fingerprint_init(void)
 
    i = 0;
 
-   f = open_data("share", TCP_FINGERPRINTS, "r");
+   f = open_data("share", TCP_FINGERPRINTS, FOPEN_READ_TEXT);
    ON_ERROR(f, NULL, "Cannot open %s", TCP_FINGERPRINTS);
 
    while (fgets(line, 128, f) != 0) {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socks.c,v 1.1 2003/10/08 15:03:25 lordnaga Exp $
+    $Id: ec_socks.c,v 1.2 2003/10/08 20:03:18 alor Exp $
 */
 
 #include <ec.h>
@@ -74,7 +74,7 @@ FUNC_DECODER(dissector_socks)
       PACKET->DISSECTOR.banner = strdup("socks v5");
 
       /* If the server didn't accepted user/pass scheme */
-      if (ptr[1]!=USER_PASS || ptr[1]!=NO_AUTH) 
+      if (ptr[1] != USER_PASS || ptr[1] != NO_AUTH) 
          return NULL;
     
       dissect_create_ident(&ident, PACKET);
@@ -83,7 +83,7 @@ FUNC_DECODER(dissector_socks)
          /* create the new session */
          dissect_create_session(&s, PACKET);
 	 
-         if (ptr[1]==NO_AUTH)
+         if (ptr[1] == NO_AUTH)
             s->data = strdup("NO AUTH");
 	    
          session_put(s);
@@ -109,7 +109,7 @@ FUNC_DECODER(dissector_socks)
             d_len = *(++ptr);
 	 
             /* Save the username (take care of the null termination) */
-            SAFE_CALLOC(PACKET->DISSECTOR.user, d_len+1, sizeof(char));
+            SAFE_CALLOC(PACKET->DISSECTOR.user, d_len + 1, sizeof(char));
             memcpy(PACKET->DISSECTOR.user, ++ptr, d_len);
 	 
             /* Reach the password */
@@ -117,7 +117,7 @@ FUNC_DECODER(dissector_socks)
             d_len = *ptr;
          
             /* Save the password (take care of the null termination) */
-            SAFE_CALLOC(PACKET->DISSECTOR.pass, d_len+1, sizeof(char));
+            SAFE_CALLOC(PACKET->DISSECTOR.pass, d_len + 1, sizeof(char));
             memcpy(PACKET->DISSECTOR.pass, ++ptr, d_len);
          
             USER_MSG("socks5 : %s:%d -> USER:%s PASS:%s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),

@@ -10,6 +10,8 @@
 
    Treuf <>                                  for the unvaluable effort in the Mac OS X porting
 
+   G. Vanem <giva@bgnett.no>                 for the native win32 porting
+
    Will Jenkins <will@swproductions.co.uk>   for testing under Mac OS X
 
    Claudio Agosti <vecna@s0ftpj.org>         for the idea of DNS passive queries

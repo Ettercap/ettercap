@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.12 2003/09/25 12:17:46 alor Exp $
+    $Id: ec_signals.c,v 1.13 2003/10/08 20:03:18 alor Exp $
 */
 
 #include <ec.h>
@@ -51,7 +51,7 @@ void signal_handler(void)
 }
 
 
-handler_t *signal_handle(int signo, handler_t *handler, int flags)
+static handler_t *signal_handle(int signo, handler_t *handler, int flags)
 {
    struct sigaction act, old_act;
 
@@ -68,7 +68,7 @@ handler_t *signal_handle(int signo, handler_t *handler, int flags)
 }
 
 
-RETSIGTYPE signal_SEGV(int sig)
+static RETSIGTYPE signal_SEGV(int sig)
 {
 #ifdef DEBUG
 
@@ -127,7 +127,7 @@ RETSIGTYPE signal_SEGV(int sig)
 
 
 
-RETSIGTYPE signal_TERM(int sig)
+static RETSIGTYPE signal_TERM(int sig)
 {
    /* terminate the UI */
    ui_cleanup();

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.19 2003/09/28 21:06:50 alor Exp $
+    $Id: ec_scan.c,v 1.20 2003/10/08 20:03:18 alor Exp $
 */
 
 #include <ec.h>
@@ -26,6 +26,7 @@
 #include <ec_send.h>
 #include <ec_decode.h>
 #include <ec_resolv.h>
+#include <ec_file.h>
 
 #include <pthread.h>
 #include <pcap.h>
@@ -414,7 +415,7 @@ static void load_hosts(char *filename)
    DEBUG_MSG("load_hosts: %s", filename);
 
    /* open the file */
-   hf = fopen(filename, "r");
+   hf = fopen(filename, FOPEN_READ_TEXT);
    ON_ERROR(hf, NULL, "Cannot open %s", filename);
  
    USER_MSG("Loading hosts list from file %s\n", filename);
@@ -459,7 +460,7 @@ static void save_hosts(char *filename)
    DEBUG_MSG("save_hosts: %s", filename);
    
    /* open the file */
-   hf = fopen(filename, "w");
+   hf = fopen(filename, FOPEN_WRITE_TEXT);
    ON_ERROR(hf, NULL, "Cannot open %s for writing", filename);
  
    /* save the list */

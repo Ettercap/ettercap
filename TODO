@@ -36,7 +36,6 @@ this is the unofficial and floating in time roadmap:
          - pcap_datalink_val_to_name  
          - pcap_lib_version
       
-Nov 2003:
 
    + PROFILES
       - dhcp infos
@@ -60,12 +59,7 @@ Nov 2003:
          - pcanywhere
          - yahoo
       - SSL unified dissector for https, impas, pop3s ecc ecc
-      - PPP 
-      - GRE
       - TDS
-   
-
-Dec 2003:
    
    + MITM METHODS
       - port stealing
@@ -78,7 +72,6 @@ Dec 2003:
          - lurker    -> find_ettercappers
          - zaratan   ->
          - troll     -> arp_responder
-         - hydra     -> (with a PPP decoder) + plugins
          - roper     -> stop_ipsec
          - dwarf     -> (will be integrated with etterlog)
          - thief     -> (same as dwarf)

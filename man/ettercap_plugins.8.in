@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.16 2003/12/05 12:50:11 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.17 2003/12/06 18:46:33 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -134,16 +134,16 @@ ettercap -TQP link_type //
 .Sp
 It forces the pptp tunnel to negotiate MS-CHAPv1 authentication instead of
 MS-CHAPv2, that is usually easier to crack (for example with LC4).
-You have to be in the "middle" of the connection to successfully use it.
+You have to be in the "middle" of the connection to use it successfully.
 It hooks the ppp dissector, so you have to keep them active. 
 
 .TP 
 .B pptp_clear
 .Sp
-Forces no compression\encryption for pptp tunnels during negotiation.
+Forces no compression/encryption for pptp tunnels during negotiation.
 It could fail if client (or the server) is configured to hang off the tunnel 
 if no encryption is negotiated.
-You have to be in the "middle" of the connection to successfully use it.
+You have to be in the "middle" of the connection to use it successfully.
 It hooks the ppp dissector, so you have to keep them active. 
 
 .TP 
@@ -153,7 +153,7 @@ It forces the pptp tunnel to negotiate PAP (cleartext) authentication.
 It could fail if PAP is not supported, if pap_secret file is missing,
 or in case windows is configured with "authomatic use of domain 
 account". (It could fail for many other reasons too).
-You have to be in the "middle" of the connection to successfully use it.
+You have to be in the "middle" of the connection to use it successfully.
 It hooks the ppp dissector, so you have to keep them active. 
 
 .TP 
@@ -163,7 +163,7 @@ Forces re-negotiation on an existing pptp tunnel.
 You can force re-negotiation for grabbing passwords already sent. 
 Furthermore you can launch it to use pptp_pap, pptp_chapms1 or pptp_clear on
 existing tunnels (those plugins work only during negotiation phase).
-You have to be in the "middle" of the connection to successfully use it.
+You have to be in the "middle" of the connection to use it successfully.
 It hooks the ppp dissector, so you have to keep them active. 
 
 .TP 

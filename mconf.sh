@@ -12,6 +12,10 @@ if test ! -f ./configure; then
    ./autogen.sh
 fi
 
+if test $1 = --renew; then
+   ./autogen.sh
+fi
+
 echo "Configuring ettercap for maintainers mode..."
 echo 
 ./configure --enable-debug --enable-maintainer-mode $* || exit 

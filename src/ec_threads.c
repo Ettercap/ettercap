@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.27 2004/06/09 21:01:30 alor Exp $
+    $Id: ec_threads.c,v 1.28 2004/07/08 08:49:05 alor Exp $
 */
 
 #include <ec.h>
@@ -245,8 +245,12 @@ void ec_thread_destroy(pthread_t id)
    /* send the cancel signal to the thread */
    pthread_cancel((pthread_t)id);
 
+#ifndef OS_DARWIN
+   /* XXX - darwin is broken, pthread_join hangs up forever */
+         
    /* wait until it has finished */
    pthread_join((pthread_t)id, NULL);
+#endif         
 
    DEBUG_MSG("ec_thread_destroy -- [%s] terminated", ec_thread_getname(id));
    
@@ -285,7 +289,7 @@ void ec_thread_kill_all(void)
    LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {
       /* skip ourself */
       if (current->t.id != id) {
-         DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", (unsigned long)current->t.id, current->t.name);
+         DEBUG_MSG("ec_thread_kill_all -- terminating %lu [%s]", (unsigned long)current->t.id, current->t.name);
 
          /* send the cancel signal to the thread */
          pthread_cancel((pthread_t)current->t.id);
@@ -297,7 +301,7 @@ void ec_thread_kill_all(void)
          pthread_join((pthread_t)current->t.id, NULL);
 #endif         
 
-         DEBUG_MSG("ec_thread_destroy -- [%s] terminated", current->t.name);
+         DEBUG_MSG("ec_thread_kill_all -- [%s] terminated", current->t.name);
       
          SAFE_FREE(current->t.name);
          SAFE_FREE(current->t.description);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_file.c,v 1.7 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_file.c,v 1.8 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -43,8 +43,7 @@ static char * get_full_path(char *dir, char *file)
 
    len = strlen(INSTALL_PREFIX) + strlen(dir) + strlen(EC_PROGRAM) + strlen(file) + 4;
 
-   filename = calloc(len, sizeof(char));
-   ON_ERROR(filename, NULL, "out of memory");
+   SAFE_CALLOC(filename, len, sizeof(char));
    
    if (!strcmp(dir, "etc"))
       snprintf(filename, len, "%s/%s/%s", INSTALL_PREFIX, dir, file);
@@ -64,8 +63,7 @@ static char * get_local_path(char *file)
 {
    char *filename;
 
-   filename = calloc(strlen("./share/") + strlen(file) + 1, sizeof(char));
-   ON_ERROR(filename, NULL, "out of memory");
+   SAFE_CALLOC(filename, strlen("./share/") + strlen(file) + 1, sizeof(char));
    
    sprintf(filename, "./share/%s", file);
    

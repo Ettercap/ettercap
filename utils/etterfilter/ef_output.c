@@ -17,10 +17,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_output.c,v 1.2 2003/09/24 20:03:46 alor Exp $
+    $Id: ef_output.c,v 1.3 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <ef.h>
+#include <ef_functions.h>
 #include <ec_filter.h>
 #include <ec_version.h>
 
@@ -41,47 +42,11 @@ int write_output(void)
    struct filter_op *fop;
    struct filter_header fh;
 
-   fop = calloc(7, sizeof(struct filter_op));
-   
-   /* if (DATA.data, search("OpenSSH")) { */
-   fop[0].opcode = FOP_FUNC;
-   fop[0].op.func.op = FFUNC_SEARCH;
-   fop[0].op.func.level = 5;
-   strcpy(fop[0].op.func.value, "OpenSSH");
-   fop[0].op.func.value_len = strlen(fop[0].op.func.value);
-   
-   fop[1].opcode = FOP_JFALSE;
-   fop[1].op.jmp = 5;
+   /* conver the tree to an array of filter_op */
+   fop = compile_tree();
 
-   /* replace("SSH-1.99", "SSH-1.51"); */
-   fop[2].opcode = FOP_FUNC;
-   fop[2].op.func.op = FFUNC_REPLACE;
-   fop[2].op.func.level = 5;
-   strcpy(fop[2].op.func.value, "SSH-1.99");
-   fop[2].op.func.value_len = strlen(fop[2].op.func.value);
-   strcpy(fop[2].op.func.value2, "SSH-1.51");
-   fop[2].op.func.value2_len = strlen(fop[2].op.func.value2);
-  
-   /* msg("SSH downgraded to version 1"); */
-   fop[3].opcode = FOP_FUNC;
-   fop[3].op.func.op = FFUNC_MSG;
-   strcpy(fop[3].op.func.value, "SSH downgraded to version 1");
-   
-   fop[4].opcode = FOP_JMP;
-   fop[4].op.jmp = 6;
-   
-   /* } else { DATA.data + 3 = '+' */
-   fop[5].opcode = FOP_ASSIGN;
-   fop[5].op.assign.level = 5;
-   fop[5].op.assign.offset = 3;
-   fop[5].op.assign.size = 1;
-   fop[5].op.assign.value = '+';
-
-   /* } */
-   fop[6].opcode = FOP_EXIT;
-
-
-   NOT_IMPLEMENTED();
+   if (fop == NULL)
+      return -ENOTHANDLED;
 
    /* create the file */
    fd = open(GBL_OPTIONS.output_file, O_CREAT | O_RDWR | O_TRUNC, 0644);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_tables.c,v 1.7 2003/09/18 22:15:04 alor Exp $
+    $Id: ef_tables.c,v 1.8 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <ef.h>
@@ -177,12 +177,10 @@ static void add_virtualpointer(char *name, u_int8 level, char *offname, u_int16 
 
    /* the table was not found */
    if (!found) {
-      t = calloc(1, sizeof(struct table_entry));
-      ON_ERROR(t, NULL, "Can't allocate memory");
+      SAFE_CALLOC(t, 1, sizeof(struct table_entry));
+     
+      SAFE_CALLOC(o, 1, sizeof(struct off_entry));
       
-      o = calloc(1, sizeof(struct off_entry));
-      ON_ERROR(o, NULL, "Can't allocate memory");
-
       /* fill the structures */
       t->name = strdup(name);
       t->level = level;
@@ -194,8 +192,7 @@ static void add_virtualpointer(char *name, u_int8 level, char *offname, u_int16 
       SLIST_INSERT_HEAD(&table_head, t, next);
       
    } else {
-      o = calloc(1, sizeof(struct off_entry));
-      ON_ERROR(o, NULL, "Can't allocate memory");
+      SAFE_CALLOC(o, 1, sizeof(struct off_entry));
 
       /* fill the structures */
       o->name = strdup(offname);
@@ -281,9 +278,8 @@ void load_constants(void)
          /* trim out the space */
          if ((p = strchr(q, ' ')))
             *p = '\0';
-         
-         c = calloc(1, sizeof(struct const_entry));
-         ON_ERROR(c, NULL, "Can't allocate memory");
+        
+         SAFE_CALLOC(c, 1, sizeof(struct const_entry));
          
          /* get the name */
          c->name = strdup(q);

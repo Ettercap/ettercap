@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.22 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_dispatcher.c,v 1.23 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -141,8 +141,7 @@ void top_half_queue_add(struct packet_object *po)
 {
    struct po_queue_entry *e;
 
-   e = calloc(1, sizeof(struct po_queue_entry));
-   ON_ERROR(e, NULL, "can't allocate memory");
+   SAFE_CALLOC(e, 1, sizeof(struct po_queue_entry));
    
    e->po = packet_dup(po);
    

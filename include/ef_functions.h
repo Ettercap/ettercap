@@ -1,5 +1,5 @@
 
-/* $Id: ef_functions.h,v 1.9 2003/09/24 19:28:50 alor Exp $ */
+/* $Id: ef_functions.h,v 1.10 2003/09/27 17:22:02 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
@@ -33,6 +33,39 @@ extern int encode_const(char *string, struct filter_op *fop);
 
 extern int write_output(void);
 
+/* ef_compiler */
+
+struct block {
+   union {
+      struct instruction *ins;
+      struct ifblock *ifb;
+   } un;
+   u_int16 n;
+   u_int8 type;
+   struct block *next;
+};
+
+struct instruction {
+   struct filter_op fop;
+};
+
+struct ifblock {
+   struct conditions *conds;
+   struct block *blk;
+   struct block *elseblk;
+};
+
+struct conditions {
+   u_int16 operator;
+   u_int16 n;
+   struct filter_op fop;
+   struct conditions *next;
+};
+
+extern int compiler_set_init(struct block *blk);
+extern struct filter_op * compile_tree(void);
+extern struct block * compiler_add_block(struct instruction *ins, struct block *blk);
+extern struct instruction * compiler_create_instruction(struct filter_op *fop);
 
 #endif
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.17 2003/09/24 19:28:51 alor Exp $
+    $Id: ec_ui.c,v 1.18 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -114,8 +114,7 @@ void ui_error(const char *fmt, ...)
     * than 'size', else realloc it
     */
     
-   msg = calloc(size, sizeof(char));
-   ON_ERROR(msg, NULL, "can't allocate memory");
+   SAFE_CALLOC(msg, size, sizeof(char));
 
    while (1) {
       /* Try to print in the allocated space. */
@@ -134,7 +133,7 @@ void ui_error(const char *fmt, ...)
          size *= 2;  /* twice the old size */
       
       msg = realloc (msg, size);
-      ON_ERROR(msg, NULL, "can't allocate memory");
+      ON_ERROR(msg, NULL, "virtual memory exhausted");
    }
 
    /* dump the error in the debug file */
@@ -163,16 +162,14 @@ void ui_msg(const char *fmt, ...)
    int n;
    size_t size = 50;
 
-   msg = (struct ui_message *) calloc(1, sizeof(struct ui_message));
-   ON_ERROR(msg, NULL, "can't allocate ui_message");
+   SAFE_CALLOC(msg, 1, sizeof(struct ui_message));
 
    /* 
     * we hope the message is shorter
     * than 'size', else realloc it
     */
     
-   msg->message = calloc(size, sizeof(char));
-   ON_ERROR(msg->message, NULL, "can't allocate memory");
+   SAFE_CALLOC(msg->message, size, sizeof(char));
 
    while (1) {
       /* Try to print in the allocated space. */

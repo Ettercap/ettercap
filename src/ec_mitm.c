@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.3 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_mitm.c,v 1.4 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -52,13 +52,11 @@ void mitm_add(struct mitm_method *mm)
 {
    struct mitm_entry *e;
 
-   e = calloc(1, sizeof(struct mitm_entry));
-   ON_ERROR(e, NULL, "Can't allocate memory");
+   SAFE_CALLOC(e, 1, sizeof(struct mitm_entry));
 
    /* copy the mm struct */
-   e->mm = calloc(1, sizeof(struct mitm_method));
-   ON_ERROR(e->mm, NULL, "Can't allocate memory");
-
+   SAFE_CALLOC(e->mm, 1, sizeof(struct mitm_method));
+   
    memcpy(e->mm, mm, sizeof(struct mitm_method));
    
    SLIST_INSERT_HEAD(&mitm_table, e, next);

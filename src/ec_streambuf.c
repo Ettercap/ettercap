@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_streambuf.c,v 1.1 2003/08/22 19:23:40 alor Exp $
+    $Id: ec_streambuf.c,v 1.2 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -64,16 +64,14 @@ int streambuf_add(struct stream_buf *sb, struct packet_object *po)
 {
    struct stream_pck_list *p;
 
-   p = calloc(1, sizeof(struct stream_pck_list));
-   ON_ERROR(p, NULL, "Can't allocate memory");
-
+   SAFE_CALLOC(p, 1, sizeof(struct stream_pck_list));
+   
    /* fill the struct */
    p->size = po->DATA.len;
    p->ptr = 0;
   
    /* copy the buffer */
-   p->buf = calloc(po->DATA.len, sizeof(u_char));
-   ON_ERROR(p->buf, NULL, "Can't allocate memory");
+   SAFE_CALLOC(p->buf, po->DATA.len, sizeof(u_char));
    
    memcpy(p->buf, po->DATA.data, po->DATA.len);
 

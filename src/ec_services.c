@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_services.c,v 1.6 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_services.c,v 1.7 2003/09/27 17:22:02 alor Exp $
 
 */
 
@@ -95,9 +95,8 @@ int services_init(void)
       if (strstr(name, "#"))
          continue;
 
-      s = calloc(1, sizeof(struct entry));
-      ON_ERROR(s, NULL, "Can't allocate memory");
-
+      SAFE_CALLOC(s, 1, sizeof(struct entry));
+      
       s->name = strdup(name);
       s->serv = htons(serv);
       s->proto = proto;

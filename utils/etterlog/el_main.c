@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_main.c,v 1.11 2003/09/25 12:17:46 alor Exp $
+    $Id: el_main.c,v 1.12 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <el.h>
@@ -42,8 +42,7 @@ int main(int argc, char *argv[])
   
   
    /* allocate the global target */
-   GBL_TARGET = calloc(1, sizeof(struct target_env));
-   ON_ERROR(GBL_TARGET, NULL, "can't allocate memory");
+   SAFE_CALLOC(GBL_TARGET, 1, sizeof(struct target_env));
   
    /* initialize to all target */
    GBL_TARGET->all_mac = 1;

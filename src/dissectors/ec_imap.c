@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_imap.c,v 1.6 2003/09/07 19:47:51 alor Exp $
+    $Id: ec_imap.c,v 1.7 2003/09/27 17:22:02 alor Exp $
 */
 
 /*
@@ -181,8 +181,7 @@ FUNC_DECODER(dissector_imap)
      
       DEBUG_MSG("\tDissector_imap AUTHENTICATE LOGIN USER");
       
-      user = calloc(strlen(ptr), sizeof(char));
-      ON_ERROR(user, NULL, "cant allocate memory");
+      SAFE_CALLOC(user, strlen(ptr), sizeof(char));
      
       /* username is encoded in base64 */
       i = base64_decode(user, ptr);
@@ -190,8 +189,7 @@ FUNC_DECODER(dissector_imap)
       SAFE_FREE(s->data);
 
       /* store the username in the session */
-      s->data = calloc(strlen("AUTH USER ") + i + 1, sizeof(char) );
-      ON_ERROR(s->data, NULL, "cant allocate memory");
+      SAFE_CALLOC(s->data, strlen("AUTH USER ") + i + 1, sizeof(char) );
       
       sprintf(s->data, "AUTH USER %s", user);
       
@@ -207,8 +205,7 @@ FUNC_DECODER(dissector_imap)
      
       DEBUG_MSG("\tDissector_imap AUTHENTICATE LOGIN PASS");
       
-      pass = calloc(strlen(ptr), sizeof(char));
-      ON_ERROR(pass, NULL, "cant allocate memory");
+      SAFE_CALLOC(pass, strlen(ptr), sizeof(char));
       
       /* password is encoded in base64 */
       i = base64_decode(pass, ptr);

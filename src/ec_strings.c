@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_strings.c,v 1.8 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_strings.c,v 1.9 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -283,7 +283,7 @@ int str_replace(char **text, const char *s, const char *d)
          size = strlen(q);
       
       q = *text = realloc(*text, size);
-      ON_ERROR(*text, NULL, "Can't allocate memory");
+      ON_ERROR(*text, NULL, "virtual memory exhausted");
       
       /* 
        * make sure the pointer p is within the *text memory.

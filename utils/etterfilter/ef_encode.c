@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.8 2003/09/24 19:28:51 alor Exp $
+    $Id: ef_encode.c,v 1.9 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <ef.h>
@@ -246,14 +246,15 @@ static char ** decode_args(char *args, int *nargs)
    /* there are no arguments */
    if (!strchr(args, ',') && strlen(args) == 0)
       return NULL;
-   
-   parsed = calloc(1, sizeof(char *));
+  
+   SAFE_CALLOC(parsed, 1, sizeof(char *));
    
    /* split the arguments */
    for (p = strsep(&args, ","), i = 1; p != NULL; p = strsep(&args, ","), i++) {
       
       /* alloc the array for the arguments */
       parsed = (char **)realloc(parsed, (i+1) * sizeof(char *));
+      ON_ERROR(parsed, NULL, "virtual memory exhausted");
       
       /* trim the empty spaces */
       for (arg = p; *arg == ' '; arg++);

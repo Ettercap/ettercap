@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_conn.c,v 1.7 2003/09/18 22:15:04 alor Exp $
+    $Id: el_conn.c,v 1.8 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <el.h>
@@ -134,8 +134,7 @@ static int insert_table(struct log_header_packet *pck)
 
    /* not found in the list... add it */
    
-   c = calloc(1, sizeof(struct conn_list));
-   ON_ERROR(c, NULL, "Can't allocate memory");
+   SAFE_CALLOC(c, 1, sizeof(struct conn_list));
    
    c->L4_proto = pck->L4_proto;
    c->L4_src = pck->L4_src;

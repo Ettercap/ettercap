@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.8 2003/09/25 15:30:45 alor Exp $
+    $Id: ec_resolv.c,v 1.9 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -171,8 +171,7 @@ void resolv_cache_insert(struct ip_addr *ip, char *name)
          return; 
    }
    
-   r = calloc(1, sizeof(struct resolv_entry));
-   ON_ERROR(r, NULL, "Can't allocate memory");
+   SAFE_CALLOC(r, 1, sizeof(struct resolv_entry));
 
    memcpy(&r->ip, ip, sizeof(struct ip_addr));
    r->hostname = strdup(name);

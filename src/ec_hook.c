@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_hook.c,v 1.5 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_hook.c,v 1.6 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -93,8 +93,7 @@ void hook_add(int point, void (*func)(struct packet_object *po) )
 {
    struct hook_list *newelem;
 
-   newelem = (struct hook_list *) calloc(1, sizeof(struct hook_list));
-   ON_ERROR(newelem, NULL, "cant allocate memory");
+   SAFE_CALLOC(newelem, 1, sizeof(struct hook_list));
               
    newelem->point = point;
    newelem->func = func;

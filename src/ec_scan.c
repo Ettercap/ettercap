@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.17 2003/09/25 15:30:45 alor Exp $
+    $Id: ec_scan.c,v 1.18 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -276,13 +276,12 @@ static void scan_netmask(void)
    ui_msg_flush(1);
   
    /* scan the netmask */
-   for (i = 1; i <= nhosts; i++){
+   for (i = 1; i <= nhosts; i++) {
       /* calculate the ip */
       current = (myip & netmask) | htonl(i);
       ip_addr_init(&scanip, AF_INET, (char *)&current);
       
-      e = calloc(1, sizeof(struct ip_list));
-      ON_ERROR(e, NULL, "can't allocate memory");
+      SAFE_CALLOC(e, 1, sizeof(struct ip_list));
       
       memcpy(&e->ip, &scanip, sizeof(struct ip_addr));
       
@@ -336,8 +335,7 @@ static void scan_targets(void)
    /* first get all the target1 ips */
    SLIST_FOREACH(i, &GBL_TARGET1->ips, next) {
       
-      e = calloc(1, sizeof(struct ip_list));
-      ON_ERROR(e, NULL, "can't allocate memory");
+      SAFE_CALLOC(e, 1, sizeof(struct ip_list));
       
       memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
       
@@ -350,8 +348,7 @@ static void scan_targets(void)
    /* then merge the target2 ips */
    SLIST_FOREACH(i, &GBL_TARGET2->ips, next) {
       
-      e = calloc(1, sizeof(struct ip_list));
-      ON_ERROR(e, NULL, "can't allocate memory");
+      SAFE_CALLOC(e, 1, sizeof(struct ip_list));
       
       memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
       
@@ -494,8 +491,7 @@ void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name)
 {
    struct hosts_list *hl, *h;
 
-   h = calloc(1, sizeof(struct hosts_list));
-   ON_ERROR(h, NULL, "can't allocate memory");
+   SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
 
    /* fill the struct */
    memcpy(&h->ip, ip, sizeof(struct ip_addr));
@@ -546,7 +542,7 @@ static void random_list(struct ip_list *e, int max)
     * access method to the list 
     */
    rand_array = realloc(rand_array, (max + 1) * sizeof(struct ip_addr *));
-   ON_ERROR(rand_array, NULL, "realloc(): rand_array");
+   ON_ERROR(rand_array, NULL, "virtual memory exhausted");
    
    /* the first element */
    if (SLIST_FIRST(&ip_list_head) == SLIST_END(&ip_list_head)) {

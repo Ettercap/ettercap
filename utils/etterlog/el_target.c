@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_target.c,v 1.11 2003/09/18 22:15:05 alor Exp $
+    $Id: el_target.c,v 1.12 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <el.h>
@@ -213,8 +213,7 @@ void add_ip_list(struct ip_addr *ip, struct target_env *t)
 {
    struct ip_list *e;
 
-   e = calloc(1, sizeof(struct ip_list));
-   ON_ERROR(e, NULL, "can't allocate memory");
+   SAFE_CALLOC(e, 1, sizeof(struct ip_list));
 
    memcpy(&e->ip, ip, sizeof(struct ip_addr));
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.14 2003/09/27 09:53:33 alor Exp $
+    $Id: ef_grammar.y,v 1.15 2003/09/27 17:22:24 alor Exp $
 */
 
 %{
@@ -41,6 +41,9 @@
 %union {
    char *string;     
    struct filter_op fop;
+   /* used to create the compiler tree */
+   struct block *blk;
+   struct instruction *ins;
 }
 
 /* token definitions */
@@ -81,6 +84,9 @@
 %type <fop> offset
 %type <fop> math_expr
 
+%type <blk> block
+%type <ins> single_instruction
+
 /* precedences */
 %left TOKEN_OP_SUB TOKEN_OP_ADD
 %left TOKEN_OP_MUL TOKEN_OP_DIV
@@ -100,12 +106,19 @@
 
 /* general line, can be empty or not */ 
 input: /* empty line */
-      | input block { printf("\t\t input\n");}
+      | input block { 
+         /* 
+          * at this poit the tree is completed,
+          * we only have to link it to the entry point
+          */
+         compiler_set_init($2);
+      }
       ;
      
 block:   /* empty block */
       |  single_instruction block { 
             printf("\t\t block_add single\n"); 
+            $$ = compiler_add_block($1, $2);
          }
          
       |  if_statement block { 
@@ -119,7 +132,9 @@ block:   /* empty block */
       
 /* every instruction must be terminated with ; */      
 single_instruction: 
-         instruction TOKEN_OP_END 
+         instruction TOKEN_OP_END {
+            $$ = compiler_create_instruction(&$1);
+         }
       ;
 
 /* instructions are functions or assignment */
@@ -281,7 +296,7 @@ struct {
       { "TOKEN_OP_NOT", "'!'" },
       { "TOKEN_OP_AND", "'&&'" },
       { "TOKEN_OP_OR", "'||'" },
-      { "TOKEN_OP_EQ", "'='" },
+      { "TOKEN_OP_ASSIGN", "'='" },
       { "TOKEN_CMP_EQ", "'=='" },
       { "TOKEN_CMP_LT", "'<'" },
       { "TOKEN_CMP_GT", "'>'" },

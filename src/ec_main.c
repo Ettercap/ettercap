@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.31 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_main.c,v 1.32 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -60,8 +60,7 @@ int main(int argc, char *argv[])
   
    GBL_PROGRAM = strdup(EC_PROGRAM);
    GBL_VERSION = strdup(EC_VERSION);
-   GBL_DEBUG_FILE = calloc(1, strlen(EC_PROGRAM) + strlen(EC_VERSION) + strlen("_debug.log") + 1);
-   ON_ERROR(GBL_DEBUG_FILE, NULL, "can't allocate debug filename");
+   SAFE_CALLOC(GBL_DEBUG_FILE, strlen(EC_PROGRAM) + strlen(EC_VERSION) + strlen("_debug.log") + 1, sizeof(char));
    sprintf(GBL_DEBUG_FILE, "%s%s_debug.log", GBL_PROGRAM, EC_VERSION);
    
    DEBUG_INIT();

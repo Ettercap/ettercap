@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.17 2003/09/26 12:48:57 alor Exp $
+    $Id: ec_plugins.c,v 1.18 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -202,8 +202,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
       return -EVERSION;
    }
 
-   p = calloc(1, sizeof(struct plugin_entry));
-   ON_ERROR(p, NULL, "can't allocate memory");
+   SAFE_CALLOC(p, 1, sizeof(struct plugin_entry));
    
    p->handle = handle;
    p->ops = ops;

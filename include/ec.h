@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.14 2003/09/24 19:28:50 alor Exp $ */
+/* $Id: ec.h,v 1.15 2003/09/27 17:22:02 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -34,6 +34,11 @@
 #include <ec_stdint.h>
 #include <ec_globals.h>
 
+
+#define SAFE_CALLOC(x, n, s) do { \
+   x = calloc(n, s); \
+   ON_ERROR(x, NULL, "virtual memory exhausted"); \
+} while(0)
 
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 

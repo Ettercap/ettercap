@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.36 2003/09/27 09:53:33 alor Exp $
+    $Id: ec_decode.c,v 1.37 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -365,9 +365,8 @@ void add_iface_mtu(u_int16 type, u_int16 mtu)
 {
    struct mtu_entry *e;
 
-   e = calloc(1, sizeof(struct mtu_entry));
-   ON_ERROR(e, NULL, "can't allocate memory");
-
+   SAFE_CALLOC(e, 1, sizeof(struct mtu_entry));
+   
    e->type = type;
    e->mtu = mtu;
 
@@ -381,9 +380,8 @@ void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder))
 {
    struct dec_entry *e;
 
-   e = calloc(1, sizeof(struct dec_entry));
-   ON_ERROR(e, NULL, "can't allocate memory");
-
+   SAFE_CALLOC(e, 1, sizeof(struct dec_entry));
+   
    e->level = level;
    e->type = type;
    e->decoder = decoder;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.14 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_dissect.c,v 1.15 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -107,8 +107,7 @@ void dissect_create_session(struct session **s, struct packet_object *po)
    DEBUG_MSG("dissect_create_session");
    
    /* allocate the session */
-   *s = calloc(1, sizeof(struct session));
-   ON_ERROR(*s, NULL, "can't allocate memory");
+   SAFE_CALLOC(*s, 1, sizeof(struct session));
    
    /* create the ident */
    (*s)->ident_len = dissect_create_ident(&ident, po);
@@ -129,9 +128,8 @@ size_t dissect_create_ident(void **i, struct packet_object *po)
    struct dissect_ident *ident;
    
    /* allocate the ident for that session */
-   ident = calloc(1, sizeof(struct dissect_ident));
-   ON_ERROR(ident, NULL, "can't allocate memory");
-  
+   SAFE_CALLOC(ident, 1, sizeof(struct dissect_ident));
+   
    /* the magic */
    ident->magic = DISSECT_MAGIC;
       
@@ -186,9 +184,8 @@ void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decode
 {
    struct dissect_entry *e;
 
-   e = calloc(1, sizeof(struct dissect_entry));
-   ON_ERROR(e, NULL, "can't allocate memory");
-
+   SAFE_CALLOC(e, 1, sizeof(struct dissect_entry));
+   
    e->name = strdup(name);
    e->level = level;
    e->type = port;

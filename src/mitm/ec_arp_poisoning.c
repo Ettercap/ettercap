@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.6 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.7 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <ec.h>
@@ -226,10 +226,8 @@ static int create_silent_list(void)
    DEBUG_MSG("create_silent_list");
   
    /* allocate the struct */
-   h = calloc(1, sizeof(struct hosts_list));
-   ON_ERROR(h, NULL, "can't allocate memory");
-   g = calloc(1, sizeof(struct hosts_list));
-   ON_ERROR(h, NULL, "can't allocate memory");
+   SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
+   SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
    
    USER_MSG("\nARP poisoning victims:\n\n");
    
@@ -327,9 +325,8 @@ static int create_list(void)
             USER_MSG(" GROUP 1 : %s %s\n", ip_addr_ntoa(&h->ip, tmp), mac_addr_ntoa(h->mac, tmp2));
 
             /* create the element and insert it in the list */
-            g = calloc(1, sizeof(struct hosts_list));
-            ON_ERROR(g, NULL, "can't allocate memory");
-
+            SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
+            
             memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
             memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);
             
@@ -347,8 +344,7 @@ static int create_list(void)
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
            
          /* create the element and insert it in the list */
-         g = calloc(1, sizeof(struct hosts_list));
-         ON_ERROR(g, NULL, "can't allocate memory");
+         SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
 
          memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
          memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);
@@ -368,9 +364,8 @@ static int create_list(void)
             USER_MSG(" GROUP 2 : %s %s\n", ip_addr_ntoa(&h->ip, tmp), mac_addr_ntoa(h->mac, tmp2));
             
             /* create the element and insert it in the list */
-            g = calloc(1, sizeof(struct hosts_list));
-            ON_ERROR(g, NULL, "can't allocate memory");
-
+            SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
+            
             memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
             memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);
             
@@ -388,8 +383,7 @@ static int create_list(void)
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
            
          /* create the element and insert it in the list */
-         g = calloc(1, sizeof(struct hosts_list));
-         ON_ERROR(g, NULL, "can't allocate memory");
+         SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
 
          memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
          memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);

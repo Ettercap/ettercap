@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.6 2003/08/18 15:44:07 alor Exp $
+    $Id: ec_conntrack.c,v 1.7 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -248,12 +248,10 @@ static void conntrack_add(struct packet_object *po)
    DEBUG_MSG("conntrack_add: NEW CONNECTION");
    
    /* alloc the list element */
-   cl = calloc(1, sizeof(struct conn_tail));
-   ON_ERROR(cl, NULL, "Can't allocate memory");
+   SAFE_CALLOC(cl, 1, sizeof(struct conn_tail));
 
    /* alloc the conn object in the element */
-   cl->co = calloc(1, sizeof(struct conn_object));
-   ON_ERROR(cl->co, NULL, "Can't allocate memory");
+   SAFE_CALLOC(cl->co, 1, sizeof(struct conn_object));
 
    /* 
     * here we create the connection.
@@ -280,8 +278,7 @@ static void conntrack_add(struct packet_object *po)
    conntrack_update(cl->co, po);
 
    /* alloc the hash table element */
-   cs = calloc(1, sizeof(struct conn_hash_search));
-   ON_ERROR(cs, NULL, "Can't allocate memory");
+   SAFE_CALLOC(cs, 1, sizeof(struct conn_hash_search));
    
    /* set the pointer to the list */
    cs->cl = cl;
@@ -468,9 +465,8 @@ int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_obje
       
       DEBUG_MSG("conntrack_hook_add: existing connection");
       
-      h = calloc(1, sizeof(struct ct_hook_list));
-      ON_ERROR(h, NULL, "Can't allocate memory");
-
+      SAFE_CALLOC(h, 1, sizeof(struct ct_hook_list));
+      
       /* set the hook function */
       h->func = func;
       

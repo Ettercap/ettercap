@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_display.c,v 1.28 2003/09/24 19:28:51 alor Exp $
+    $Id: el_display.c,v 1.29 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <el.h>
@@ -100,8 +100,7 @@ static void display_packet(void)
        * the max length is hex_fomat
        * so use its length for the buffer
        */
-      tmp = calloc(hex_len(pck.len), sizeof(u_char));
-      ON_ERROR(tmp, NULL, "can't allocate memory");
+      SAFE_CALLOC(tmp, hex_len(pck.len), sizeof(u_char));
 
       /* display the headers only if necessary */
       if (!GBL.no_headers)
@@ -215,9 +214,9 @@ void set_display_regex(char *regex)
    char errbuf[100];
 
    /* allocate the new structure */
-   GBL.regex = calloc(1, sizeof(regex_t));
-   ON_ERROR(GBL.regex, NULL, "can't allocate memory");
+   SAFE_CALLOC(GBL.regex, 1, sizeof(regex_t));
 
+   /* compile the regex */
    err = regcomp(GBL.regex, regex, REG_EXTENDED | REG_NOSUB | REG_ICASE );
 
    if (err) {

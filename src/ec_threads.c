@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.14 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_threads.c,v 1.15 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -139,8 +139,7 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    
    DEBUG_MSG("ec_thread_register -- [%d] %s", id, name);
 
-   newelem = (struct thread_list *) calloc(1, sizeof(struct thread_list));
-   ON_ERROR(newelem, NULL, "cant allocate memory");
+   SAFE_CALLOC(newelem, 1, sizeof(struct thread_list));
               
    newelem->t.id = id;
    newelem->t.name = strdup(name);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.11 2003/09/10 12:41:29 alor Exp $
+    $Id: el_profiles.c,v 1.12 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <el.h>
@@ -84,10 +84,9 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
    }
   
    /* the host was not found, create a new entry */
-   
-   h = calloc(1, sizeof(struct host_profile));
-   ON_ERROR(h, NULL, "can't allocate memory");
-
+   SAFE_CALLOC(h, 1, sizeof(struct host_profile));
+  
+   /* update the host info */
    update_info(h, inf, buf);
    
    /* search the right point to inser it (ordered ascending) */
@@ -191,14 +190,10 @@ static void update_port_list(struct host_profile *h, struct log_header_info *inf
       return;
 
    /* create a new entry */
-   
-   o = calloc(1, sizeof(struct open_port));
-   ON_ERROR(o, NULL, "can't allocate memory");
+   SAFE_CALLOC(o, 1, sizeof(struct open_port)); 
 
    o->L4_proto = inf->L4_proto;
    o->L4_addr = inf->L4_addr;
-
-   
    
    /* add user and pass */
    update_user_list(o, inf, buf);
@@ -239,9 +234,8 @@ static void update_user_list(struct open_port *o, struct log_header_info *inf, s
          return;
       }
    }
-   
-   u = calloc(1, sizeof(struct active_user));
-   ON_ERROR(u, NULL, "can't allocate memory");
+  
+   SAFE_CALLOC(u, 1, sizeof(struct active_user));
 
    /* if there are infos copy it, else skip */
    if (buf->user && buf->pass) {

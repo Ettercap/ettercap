@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.9 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: el.h,v 1.10 2003/09/27 17:22:02 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -36,6 +36,11 @@
 
 #include <zlib.h>
 #include <regex.h>
+
+#define SAFE_CALLOC(x, n, s) do { \
+   x = calloc(n, s); \
+   ON_ERROR(x, NULL, "virtual memory exhausted"); \
+} while(0)
 
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.19 2003/09/18 22:15:04 alor Exp $
+    $Id: ec_ip.c,v 1.20 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <ec.h>
@@ -240,8 +240,7 @@ size_t ip_create_ident(void **i, struct packet_object *po)
    struct ip_ident *ident;
    
    /* allocate the ident for that session */
-   ident = calloc(1, sizeof(struct ip_ident));
-   ON_ERROR(ident, NULL, "can't allocate memory");
+   SAFE_CALLOC(ident, 1, sizeof(struct ip_ident));
   
    /* the magic */
    ident->magic = IP_MAGIC;
@@ -298,8 +297,7 @@ void ip_create_session(struct session **s, struct packet_object *po)
    DEBUG_MSG("ip_create_session");
    
    /* allocate the session */
-   *s = calloc(1, sizeof(struct session));
-   ON_ERROR(*s, NULL, "can't allocate memory");
+   SAFE_CALLOC(*s, 1, sizeof(struct session));
    
    /* create the ident */
    (*s)->ident_len = ip_create_ident(&ident, po);
@@ -311,7 +309,7 @@ void ip_create_session(struct session **s, struct packet_object *po)
    (*s)->match = &ip_match;
    
    /* alloc of data element */
-   (*s)->data = calloc(1, sizeof(struct ip_status));
+   SAFE_CALLOC((*s)->data, 1, sizeof(struct ip_status));
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.13 2003/09/09 15:44:51 alor Exp $
+    $Id: ec_session.c,v 1.14 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -119,9 +119,8 @@ void session_put(struct session *s)
    BUG_IF(s->match == NULL);
   
    /* create the element in the list */
-   sl = calloc(1, sizeof(struct session_list));
-   ON_ERROR(sl, NULL, "can't allocate memory");
-
+   SAFE_CALLOC(sl, 1, sizeof(struct session_list));
+   
    /* mark the session for the current thread */
    sl->id = pthread_self();
 

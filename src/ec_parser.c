@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.37 2003/09/26 12:48:57 alor Exp $
+    $Id: ec_parser.c,v 1.38 2003/09/27 17:22:02 alor Exp $
 */
 
 
@@ -478,9 +478,9 @@ int set_regex(char *regex)
    SAFE_FREE(GBL_OPTIONS->regex);
   
    /* allocate the new structure */
-   GBL_OPTIONS->regex = calloc(1, sizeof(regex_t));
-   ON_ERROR(GBL_OPTIONS->regex, NULL, "can't allocate memory");
-
+   SAFE_CALLOC(GBL_OPTIONS->regex, 1, sizeof(regex_t));
+  
+   /* compile the regex */
    err = regcomp(GBL_OPTIONS->regex, regex, REG_EXTENDED | REG_NOSUB | REG_ICASE );
 
    if (err) {

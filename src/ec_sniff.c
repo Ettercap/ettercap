@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.25 2003/09/24 19:28:51 alor Exp $
+    $Id: ec_sniff.c,v 1.26 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -483,9 +483,8 @@ void add_ip_list(struct ip_addr *ip, struct target_env *t)
    struct ip_list *e;
    struct ip_list *last;
 
-   e = calloc(1, sizeof(struct ip_list));
-   ON_ERROR(e, NULL, "can't allocate memory");
-
+   SAFE_CALLOC(e, 1, sizeof(struct ip_list));
+   
    memcpy(&e->ip, ip, sizeof(struct ip_addr));
 
    IP_LIST_LOCK;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_vnc.c,v 1.6 2003/09/10 16:50:47 alor Exp $
+    $Id: ec_vnc.c,v 1.7 2003/09/27 17:22:03 alor Exp $
 */
 
 #include <ec.h>
@@ -99,7 +99,8 @@ FUNC_DECODER(dissector_vnc)
             dissect_create_session(&s, PACKET);
        
             /* remember the state (used later) */
-            s->data = malloc(sizeof(struct vnc_status));
+            SAFE_CALLOC(s->data, 1, sizeof(struct vnc_status));
+                  
             conn_status = (struct vnc_status *) s->data;
             conn_status->status = WAIT_AUTH;
 
@@ -204,7 +205,7 @@ FUNC_DECODER(dissector_vnc)
                DEBUG_MSG("\tDissector_vnc DUMP ENCRYPTED");
 
                PACKET->DISSECTOR.user = strdup("");
-               PACKET->DISSECTOR.pass = calloc(256,1);
+               SAFE_CALLOC(PACKET->DISSECTOR.pass, 256, sizeof(char));
             
                /* Dump Challenge and Response */
                sprintf(PACKET->DISSECTOR.pass,"Challenge:");

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_manuf.c,v 1.10 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_manuf.c,v 1.11 2003/09/27 17:22:02 alor Exp $
 
 */
 
@@ -63,8 +63,7 @@
 #define TABMASK   (TABSIZE-1) /* to mask fnv_1 hash algorithm */
 
 #define LOAD_ENTRY(p,h,v) do {                                 \
-   (p) = malloc (sizeof (struct entry));                       \
-   ON_ERROR((p), NULL, "malloc() virtual memory exhausted");   \
+   SAFE_CALLOC((p), 1, sizeof (struct entry));                 \
    (p)->mac = *(int *)(h);                                     \
    (p)->vendor = strdup (v);                                   \
 } while (0)

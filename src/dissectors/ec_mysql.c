@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mysql.c,v 1.4 2003/09/13 10:04:13 alor Exp $
+    $Id: ec_mysql.c,v 1.5 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -102,8 +102,9 @@ FUNC_DECODER(dissector_mysql)
     
          /* Reach the encrypted password */
          ptr += strlen(PACKET->DISSECTOR.user) + 1;
-         if (ptr < end && strlen(ptr)!=0) {
-            PACKET->DISSECTOR.pass = malloc(strlen(s->data) + strlen(ptr) + 128);
+         if (ptr < end && strlen(ptr) != 0) {
+            SAFE_CALLOC(PACKET->DISSECTOR.pass, strlen(s->data) + strlen(ptr) + 128, sizeof(char));
+            
             sprintf(PACKET->DISSECTOR.pass, "Seed:%s Encrypted:%s", (char *)s->data, ptr);
          } else {
             PACKET->DISSECTOR.pass = strdup("No Password!!!");

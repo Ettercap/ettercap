@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.6 2003/09/26 12:05:58 alor Exp $
+    $Id: ec_telnet.c,v 1.7 2003/09/27 17:22:03 alor Exp $
 */
 
 #include <ec.h>
@@ -221,8 +221,7 @@ int match_login_regex(char *ptr)
 #define LOGIN_REGEX "\\`login.*|.*incorrect.*|.*failed.*|.*failure.*"
    
    /* allocate the new structure */
-   regex = calloc(1, sizeof(regex_t));
-   ON_ERROR(regex, NULL, "can't allocate memory");
+   SAFE_CALLOC(regex, 1, sizeof(regex_t));
 
    /* failed compilation of regex */
    if (regcomp(regex, LOGIN_REGEX, REG_EXTENDED | REG_NOSUB | REG_ICASE ) != 0) {

@@ -1,5 +1,5 @@
 
-/* $Id: ef.h,v 1.7 2003/09/19 16:47:47 alor Exp $ */
+/* $Id: ef.h,v 1.8 2003/09/27 17:22:02 alor Exp $ */
 
 #ifndef EF_H
 #define EF_H
@@ -32,6 +32,10 @@
 #include <ec_stdint.h>
 #include <ec_error.h>
 
+#define SAFE_CALLOC(x, n, s) do { \
+   x = calloc(n, s); \
+   ON_ERROR(x, NULL, "virtual memory exhausted"); \
+} while(0)
 
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.18 2003/09/27 09:53:33 alor Exp $
+    $Id: ec_filter.c,v 1.19 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -440,9 +440,8 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
    DEBUG_MSG("filter engine: func_replace : max_len %d", max_len);
 
    /* make a copy of the buffer and operate on that */
-   tmp = calloc(po->DATA.len, sizeof(u_int8));
-   ON_ERROR(tmp, NULL, "cannot allocate memory");
-
+   SAFE_CALLOC(tmp, po->DATA.len, sizeof(u_int8));
+         
    memcpy(tmp, po->DATA.data, po->DATA.len);
 
    /* take the beginning and the end of the data */
@@ -468,7 +467,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
 
       /* resize the buffer to contain the new data */
       tmp = realloc(tmp, po->DATA.len + delta);
-      ON_ERROR(tmp, NULL, "Cannot reallocate memory");
+      ON_ERROR(tmp, NULL, "virtual memory exhausted");
       
       /* move the buffer to make room for the replacement string */   
       memmove(ptr + rlen, ptr + slen, len); 
@@ -505,11 +504,12 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       
       /* copy the rest in the inject buffer */
       if (delta != po->DATA.delta) {
-         po->inject = calloc(po->DATA.len + delta - max_len, sizeof(u_char));
-         ON_ERROR(po->inject, NULL, "Cannot allocate memory");
+         SAFE_CALLOC(po->inject, po->DATA.len + delta - max_len, sizeof(u_char));
          memcpy(po->inject, tmp + new_len, po->DATA.len + delta - max_len);
       }
    }
+   
+   SAFE_FREE(tmp);
 
    return ESUCCESS;
 }
@@ -537,10 +537,8 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    if (file == MAP_FAILED)
       USER_MSG("inject(): Cannot mmap file");
  
+   SAFE_CALLOC(po->inject, size, sizeof(u_char));
    
-   po->inject = calloc(size, sizeof(u_char));
-   ON_ERROR(po->inject, NULL, "Cannot allocate memory");
-
    /* copy the file into the buffer */
    memcpy(po->inject, file, size);
 
@@ -630,12 +628,14 @@ static int func_exec(struct filter_op *fop)
       for (p = strsep(&q, " "); p != NULL; p = strsep(&q, " ")) {
          /* allocate the array */
          param = realloc(param, (i + 1) * sizeof(char *));
+         ON_ERROR(param, NULL, "virtual memory exhausted");
          /* copy the tokens in the array */
          param[i++] = strdup(p); 
       }
       
       /* NULL terminate the array */
       param = realloc(param, (i + 1) * sizeof(char *));
+      ON_ERROR(param, NULL, "virtual memory exhausted");
       param[i] = NULL;
      
       /* 

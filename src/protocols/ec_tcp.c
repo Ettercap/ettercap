@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.15 2003/09/18 22:15:04 alor Exp $
+    $Id: ec_tcp.c,v 1.16 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <ec.h>
@@ -303,8 +303,7 @@ size_t tcp_create_ident(void **i, struct packet_object *po)
    struct tcp_ident *ident;
 
    /* allocate the ident for that session */
-   ident = calloc(1, sizeof(struct tcp_ident));
-   ON_ERROR(ident, NULL, "can't allocate memory");
+   SAFE_CALLOC(ident, 1, sizeof(struct tcp_ident));
 
    /* the magic */
    ident->magic = TCP_MAGIC;
@@ -376,8 +375,7 @@ void tcp_create_session(struct session **s, struct packet_object *po)
    DEBUG_MSG("tcp_create_session");
 
    /* allocate the session */
-   *s = calloc(1, sizeof(struct session));
-   ON_ERROR(*s, NULL, "can't allocate memory");
+   SAFE_CALLOC(*s, 1, sizeof(struct session));
    
    /* create the ident */
    (*s)->ident_len = tcp_create_ident(&ident, po);
@@ -389,7 +387,7 @@ void tcp_create_session(struct session **s, struct packet_object *po)
    (*s)->match = &tcp_match;
 
    /* alloca of data elements */
-   (*s)->data = calloc(1, sizeof(struct tcp_status));
+   SAFE_CALLOC((*s)->data, 1, sizeof(struct tcp_status));
 }
 
 /* EOF */

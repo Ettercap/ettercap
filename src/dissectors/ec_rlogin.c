@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_rlogin.c,v 1.7 2003/09/26 12:05:58 alor Exp $
+    $Id: ec_rlogin.c,v 1.8 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -108,8 +108,7 @@ FUNC_DECODER(dissector_rlogin)
          SAFE_FREE(s->data);
 
          /* make room for the string */
-         s->data = calloc(strlen(localuser) + strlen(remoteuser) + 5, sizeof(char));
-         ON_ERROR(s->data, NULL, "can't allocate memory");
+         SAFE_CALLOC(s->data, strlen(localuser) + strlen(remoteuser) + 5, sizeof(char));
          
          sprintf(s->data, "%s (%s)\r", remoteuser, localuser);
 

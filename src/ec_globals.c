@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_globals.c,v 1.10 2003/09/22 17:52:50 alor Exp $
+    $Id: ec_globals.c,v 1.11 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -40,47 +40,20 @@ void globals_free(void);
 void globals_alloc(void)
 {
    
-   gbls = calloc(1, sizeof(struct globals));
-   ON_ERROR(gbls, NULL, "can't allocate globals");
-           
-   gbls->conf = calloc(1, sizeof(struct ec_conf));
-   ON_ERROR(gbls->conf, NULL, "can't allocate ec_conf");
-   
-   gbls->options = calloc(1, sizeof(struct ec_options));
-   ON_ERROR(gbls->options, NULL, "can't allocate ec_options");
-   
-   gbls->stats = calloc(1, sizeof(struct gbl_stats));
-   ON_ERROR(gbls->stats, NULL, "can't allocate gbl_stats");
-
-   gbls->ui = calloc(1, sizeof(struct ui_ops));
-   ON_ERROR(gbls->ui, NULL, "can't allocate ui_ops");
-   
-   gbls->env = calloc(1, sizeof(struct program_env));
-   ON_ERROR(gbls->env, NULL, "can't allocate program_env");
-  
-   gbls->pcap = calloc(1, sizeof(struct pcap_env));
-   ON_ERROR(gbls->pcap, NULL, "can't allocate pcap_env");
-   
-   gbls->lnet = calloc(1, sizeof(struct lnet_env));
-   ON_ERROR(gbls->lnet, NULL, "can't allocate lnet_env");
-   
-   gbls->iface = calloc(1, sizeof(struct iface_env));
-   ON_ERROR(gbls->iface, NULL, "can't allocate iface_env");
-   
-   gbls->bridge = calloc(1, sizeof(struct iface_env));
-   ON_ERROR(gbls->bridge, NULL, "can't allocate bridge_env");
-   
-   gbls->sm = calloc(1, sizeof(struct sniffing_method));
-   ON_ERROR(gbls->sm, NULL, "can't allocate sniff_method");
-   
-   gbls->t1 = calloc(1, sizeof(struct target_env));
-   ON_ERROR(gbls->t1, NULL, "can't allocate target t1");
-   
-   gbls->t2 = calloc(1, sizeof(struct target_env));
-   ON_ERROR(gbls->t2, NULL, "can't allocate target t2");
-   
-   gbls->filters = calloc(1, sizeof(struct filter_env));
-   ON_ERROR(gbls->filters, NULL, "can't allocatefilter_env");
+   SAFE_CALLOC(gbls, 1, sizeof(struct globals));
+   SAFE_CALLOC(gbls->conf, 1, sizeof(struct ec_conf)); 
+   SAFE_CALLOC(gbls->options, 1, sizeof(struct ec_options));         
+   SAFE_CALLOC(gbls->stats, 1, sizeof(struct gbl_stats));
+   SAFE_CALLOC(gbls->ui, 1, sizeof(struct ui_ops));
+   SAFE_CALLOC(gbls->env, 1, sizeof(struct program_env)); 
+   SAFE_CALLOC(gbls->pcap, 1, sizeof(struct pcap_env));
+   SAFE_CALLOC(gbls->lnet, 1, sizeof(struct lnet_env)); 
+   SAFE_CALLOC(gbls->iface, 1, sizeof(struct iface_env));
+   SAFE_CALLOC(gbls->bridge, 1, sizeof(struct iface_env));
+   SAFE_CALLOC(gbls->sm, 1, sizeof(struct sniffing_method));
+   SAFE_CALLOC(gbls->t1, 1, sizeof(struct target_env));
+   SAFE_CALLOC(gbls->t2, 1, sizeof(struct target_env));
+   SAFE_CALLOC(gbls->filters, 1, sizeof(struct filter_env));
    
    return;
 }

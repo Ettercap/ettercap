@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_fingerprint.c,v 1.18 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_fingerprint.c,v 1.19 2003/09/27 17:22:02 alor Exp $
 
 */
 
@@ -28,8 +28,7 @@
 #include <ec_fingerprint.h>
 
 #define LOAD_ENTRY(p,h,v) do {                                 \
-   (p) = malloc (sizeof (struct entry));                       \
-   ON_ERROR((p), NULL, "malloc() virtual memory exhausted");   \
+   SAFE_CALLOC((p), 1, sizeof(struct entry));                  \
    memcpy((p)->finger, h, FINGER_LEN);                         \
    (p)->finger[FINGER_LEN] = '\0';                             \
    (p)->os = strdup (v);                                       \

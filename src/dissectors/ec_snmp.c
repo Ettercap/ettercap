@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_snmp.c,v 1.3 2003/08/07 20:25:18 alor Exp $
+    $Id: ec_snmp.c,v 1.4 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -111,9 +111,7 @@ FUNC_DECODER(dissector_snmp)
    /* update the pointer */
    ptr++;
    
-
-   PACKET->DISSECTOR.user = calloc(clen + 2, sizeof(char));
-   ON_ERROR(PACKET->DISSECTOR.user, NULL, "Can't allocate memory");
+   SAFE_CALLOC(PACKET->DISSECTOR.user, clen + 2, sizeof(char));
 
    /* fill the structure */
    snprintf(PACKET->DISSECTOR.user, clen + 1, "%s", ptr);

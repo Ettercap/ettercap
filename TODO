@@ -29,6 +29,8 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
+   + SAFE_CALLOC()
+
    + pay attention on network order for constants
 
    + FILTERING ENGINE

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.23 2003/09/26 12:05:58 alor Exp $
+    $Id: ec_packet.c,v 1.24 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -66,8 +66,7 @@ inline int packet_create_object(struct packet_object *po, u_char *buf, size_t le
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
 {
    /* disp_data is always null terminated */
-   po->DATA.disp_data = calloc(len + 1, sizeof(u_char));
-   ON_ERROR(po->DATA.disp_data, NULL, "calloc: can't allocate disp_data");
+   SAFE_CALLOC(po->DATA.disp_data, len + 1, sizeof(u_char));
 
    po->DATA.disp_len = len;
    memcpy(po->DATA.disp_data, buf, len);
@@ -120,8 +119,7 @@ struct packet_object * packet_dup(struct packet_object *po)
 {
    struct packet_object *dup_po;
 
-   dup_po = calloc(1, sizeof(struct packet_object));
-   ON_ERROR(dup_po, NULL, "can't allocate memory");
+   SAFE_CALLOC(dup_po, 1, sizeof(struct packet_object));
 
    /* 
     * copy the po over the dup_po 
@@ -133,16 +131,13 @@ struct packet_object * packet_dup(struct packet_object *po)
    memcpy(dup_po, po, sizeof(struct packet_object));
   
    /* duplicate the po dispdata */
-   dup_po->DATA.disp_data = calloc(po->DATA.disp_len, sizeof(u_char));
-   ON_ERROR(dup_po->DATA.disp_data, NULL, "can't allocate memory");
+   SAFE_CALLOC(dup_po->DATA.disp_data, po->DATA.disp_len, sizeof(u_char));
   
    /* copy the buffer */
    memcpy(dup_po->DATA.disp_data, po->DATA.disp_data, po->DATA.disp_len);
 
-   
    /* duplicate the po buffer */
-   dup_po->packet = calloc(po->len, sizeof(u_char));
-   ON_ERROR(dup_po->packet, NULL, "can't allocate memory");
+   SAFE_CALLOC(dup_po->packet, po->len, sizeof(u_char));
   
    /* copy the buffer */
    memcpy(dup_po->packet, po->packet, po->len);

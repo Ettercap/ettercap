@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.17 2003/09/18 20:55:14 alor Exp $
+    $Id: ec_profiles.c,v 1.18 2003/09/27 17:22:02 alor Exp $
 */
 
 #include <ec.h>
@@ -159,9 +159,8 @@ static int profile_add_host(struct packet_object *po)
       return 0;
    
    /* create the new host */
-   h = calloc(1, sizeof(struct host_profile));
-   ON_ERROR(h, NULL, "can't allocate memory");
-
+   SAFE_CALLOC(h, 1, sizeof(struct host_profile));
+   
    PROFILE_LOCK;
    
    /* fill the structure with the collected infos */
@@ -281,10 +280,8 @@ static void update_port_list(struct host_profile *h, struct packet_object *po)
    DEBUG_MSG("update_port_list");
    
    /* create a new entry */
+   SAFE_CALLOC(o, 1, sizeof(struct open_port));
    
-   o = calloc(1, sizeof(struct open_port));
-   ON_ERROR(o, NULL, "can't allocate memory");
-
    o->L4_proto = po->L4.proto;
    o->L4_addr = po->L4.src;
    
@@ -366,9 +363,8 @@ static int profile_add_user(struct packet_object *po)
       }
    }
    
-   u = calloc(1, sizeof(struct active_user));
-   ON_ERROR(u, NULL, "can't allocate memory");
-
+   SAFE_CALLOC(u, 1, sizeof(struct active_user));
+   
    /* if there are infos copy it, else skip */
    if (po->DISSECTOR.user && po->DISSECTOR.pass) {
       u->user = strdup(po->DISSECTOR.user);

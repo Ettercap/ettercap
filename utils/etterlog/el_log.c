@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_log.c,v 1.13 2003/09/19 16:47:51 alor Exp $
+    $Id: el_log.c,v 1.14 2003/09/27 17:22:24 alor Exp $
 */
 
 #include <el.h>
@@ -104,8 +104,7 @@ int get_packet(struct log_header_packet *pck, u_char **buf)
    pck->tv.tv_usec = ntohl(pck->tv.tv_usec);
   
    /* allocate the memory for the buffer */
-   *buf = calloc(pck->len, sizeof(u_char));
-   ON_ERROR(*buf, NULL, "Can't allocate memory");
+   SAFE_CALLOC(*buf, pck->len, sizeof(u_char));
 
    /* copy the data of the packet */
    c = gzread(GBL_LOG_FD, *buf, pck->len);
@@ -146,8 +145,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
     */
 
    if (inf->var.user_len) {
-      buf->user = calloc(inf->var.user_len+1, sizeof(char));
-      ON_ERROR(buf->user, NULL, "can't allocate memory");
+      SAFE_CALLOC(buf->user, inf->var.user_len + 1, sizeof(char));
       
       c = gzread(GBL_LOG_FD, buf->user, inf->var.user_len);
       if (c != inf->var.user_len)
@@ -155,8 +153,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
    }
    
    if (inf->var.pass_len) {
-      buf->pass = calloc(inf->var.pass_len+1, sizeof(char));
-      ON_ERROR(buf->pass, NULL, "can't allocate memory");
+      SAFE_CALLOC(buf->pass, inf->var.pass_len + 1, sizeof(char));
       
       c = gzread(GBL_LOG_FD, buf->pass, inf->var.pass_len);
       if (c != inf->var.pass_len)
@@ -164,8 +161,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
    }
    
    if (inf->var.info_len) {
-      buf->info = calloc(inf->var.info_len+1, sizeof(char));
-      ON_ERROR(buf->info, NULL, "can't allocate memory");
+      SAFE_CALLOC(buf->info, inf->var.info_len + 1, sizeof(char));
       
       c = gzread(GBL_LOG_FD, buf->info, inf->var.info_len);
       if (c != inf->var.info_len)
@@ -173,8 +169,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
    }
    
    if (inf->var.banner_len) {
-      buf->banner = calloc(inf->var.banner_len+1, sizeof(char));
-      ON_ERROR(buf->banner, NULL, "can't allocate memory");
+      SAFE_CALLOC(buf->banner, inf->var.banner_len + 1, sizeof(char));
       
       c = gzread(GBL_LOG_FD, buf->banner, inf->var.banner_len);
       if (c != inf->var.banner_len)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.13 2003/10/08 20:03:18 alor Exp $
+    $Id: ec_signals.c,v 1.14 2003/10/10 21:36:22 alor Exp $
 */
 
 #include <ec.h>
@@ -26,15 +26,18 @@
 
 #include <signal.h>
 #include <sys/resource.h>
+#include <sys/wait.h>
 
 typedef void handler_t(int);
+
+/* protos */
 
 void signal_handler(void);
 
 static handler_t *signal_handle(int signo, handler_t *handler, int flags);
 static RETSIGTYPE signal_SEGV(int sig);
 static RETSIGTYPE signal_TERM(int sig);
-
+static RETSIGTYPE signal_CHLD(int sig);
 
 /*************************************/
 
@@ -46,7 +49,7 @@ void signal_handler(void)
    signal_handle(SIGBUS, signal_SEGV, 0);
    signal_handle(SIGINT, signal_TERM, 0);
    signal_handle(SIGTERM, signal_TERM, 0);
-   signal_handle(SIGCHLD, SIG_IGN, 0);
+   signal_handle(SIGCHLD, signal_CHLD, 0);
 
 }
 
@@ -56,8 +59,9 @@ static handler_t *signal_handle(int signo, handler_t *handler, int flags)
    struct sigaction act, old_act;
 
    act.sa_handler = handler;
-
-   sigfillset(&act.sa_mask); /* don't permit nested signal handling */
+   
+   /* don't permit nested signal handling */
+   sigfillset(&act.sa_mask); 
 
    act.sa_flags = flags;
 
@@ -68,6 +72,9 @@ static handler_t *signal_handle(int signo, handler_t *handler, int flags)
 }
 
 
+/*
+ * received when something goes wrong ;)
+ */
 static RETSIGTYPE signal_SEGV(int sig)
 {
 #ifdef DEBUG
@@ -127,6 +134,9 @@ static RETSIGTYPE signal_SEGV(int sig)
 
 
 
+/*
+ * received on CTRL+C or SIGTERM
+ */
 static RETSIGTYPE signal_TERM(int sig)
 {
    /* terminate the UI */
@@ -158,6 +168,20 @@ static RETSIGTYPE signal_TERM(int sig)
 
 }
 
+
+/*
+ * received when a child exits
+ */
+static RETSIGTYPE signal_CHLD(int sig)
+{
+   int stat;
+   
+   /* 
+    * wait for the child to return and not
+    * become a zombie
+    */
+   while (waitpid (-1, &stat, WNOHANG) > 0);
+}
 
 /* EOF */
 

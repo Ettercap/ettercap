@@ -1,5 +1,5 @@
 
-/* $Id: ec_log.h,v 1.16 2003/10/18 11:27:42 alor Exp $ */
+/* $Id: ec_log.h,v 1.17 2003/10/27 21:25:44 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -54,8 +54,8 @@ struct log_header_packet {
 
    struct timeval tv;
    
-   u_int8 L2_src[ETH_ADDR_LEN];
-   u_int8 L2_dst[ETH_ADDR_LEN];
+   u_int8 L2_src[MEDIA_ADDR_LEN];
+   u_int8 L2_dst[MEDIA_ADDR_LEN];
 
    struct ip_addr L3_src;
    struct ip_addr L3_dst;
@@ -81,7 +81,7 @@ struct log_header_packet {
  */
 struct log_header_info {
    
-   u_int8 L2_addr[ETH_ADDR_LEN];
+   u_int8 L2_addr[MEDIA_ADDR_LEN];
    
    struct ip_addr L3_addr;
    

@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: link_type.c,v 1.4 2003/10/27 20:54:43 alor Exp $
+    $Id: link_type.c,v 1.5 2003/10/27 21:25:44 alor Exp $
 */
 
 
@@ -92,7 +92,7 @@ static int link_type_init(void *dummy)
    /* Take (if any) first two elements form the host list */
    LIST_FOREACH(h, &GBL_HOSTLIST, next) {
       memcpy(&(targets[counter].ip), &h->ip, sizeof(struct ip_addr));
-      memcpy(targets[counter].mac, h->mac, ETH_ADDR_LEN);
+      memcpy(targets[counter].mac, h->mac, MEDIA_ADDR_LEN);
       counter++;
       if (counter == 2)
          break;
@@ -110,7 +110,7 @@ static int link_type_init(void *dummy)
    if (counter == 1) {   
       INSTANT_USER_MSG("link_type: Only one host in the list. Check will be less reliable\n\n"); 
       memcpy(&(targets[1].ip), &GBL_IFACE->ip, sizeof(struct ip_addr));
-      memcpy(targets[1].mac, targets[0].mac, ETH_ADDR_LEN);        
+      memcpy(targets[1].mac, targets[0].mac, MEDIA_ADDR_LEN);        
    }
 
    /* We assume switch by default */
@@ -150,7 +150,7 @@ static int link_type_fini(void *dummy)
 /* Check if it's the reply to our bougs request */
 static void parse_arp(struct packet_object *po)
 {
-   if (!memcmp(po->L2.dst, targets[1].mac, ETH_ADDR_LEN))
+   if (!memcmp(po->L2.dst, targets[1].mac, MEDIA_ADDR_LEN))
       linktype = LINK_HUB;
 }
 

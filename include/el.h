@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.12 2003/10/09 14:49:41 alor Exp $ */
+/* $Id: el.h,v 1.13 2003/10/27 21:25:44 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -63,7 +63,7 @@ struct target_env {
    char all_ip:1;
    char all_port:1;
    char *proto;
-   u_char mac[ETH_ADDR_LEN];
+   u_char mac[MEDIA_ADDR_LEN];
    SLIST_HEAD (, ip_list) ips;
    u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };

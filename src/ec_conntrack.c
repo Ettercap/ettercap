@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.8 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_conntrack.c,v 1.9 2003/10/27 21:25:44 alor Exp $
 */
 
 #include <ec.h>
@@ -257,8 +257,8 @@ static void conntrack_add(struct packet_object *po)
     */
 
    /* fill the addresses */
-   memcpy(&cl->co->L2_addr1, &po->L2.src, ETH_ADDR_LEN);
-   memcpy(&cl->co->L2_addr2, &po->L2.dst, ETH_ADDR_LEN);
+   memcpy(&cl->co->L2_addr1, &po->L2.src, MEDIA_ADDR_LEN);
+   memcpy(&cl->co->L2_addr2, &po->L2.dst, MEDIA_ADDR_LEN);
 
    memcpy(&cl->co->L3_addr1, &po->L3.src, sizeof(struct ip_addr));
    memcpy(&cl->co->L3_addr2, &po->L3.dst, sizeof(struct ip_addr));

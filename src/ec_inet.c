@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.16 2003/10/12 15:28:27 alor Exp $
+    $Id: ec_inet.c,v 1.17 2003/10/27 21:25:44 alor Exp $
 */
 
 #include <ec.h>
@@ -229,19 +229,19 @@ char *mac_addr_ntoa(u_char *mac, char *dst)
 int mac_addr_aton(char *str, u_char *mac)
 {
    int i;
-   u_int tmp[ETH_ADDR_LEN];
+   u_int tmp[MEDIA_ADDR_LEN];
 
    i = sscanf(str, "%02X:%02X:%02X:%02X:%02X:%02X", 
          (u_int *)&tmp[0], (u_int *)&tmp[1], (u_int *)&tmp[2], 
          (u_int *)&tmp[3], (u_int *)&tmp[4], (u_int *)&tmp[5]); 
  
    /* incorrect parsing */
-   if (i != ETH_ADDR_LEN) {
-      memset(mac, 0, ETH_ADDR_LEN);
+   if (i != MEDIA_ADDR_LEN) {
+      memset(mac, 0, MEDIA_ADDR_LEN);
       return 0;
    }
    
-   for (i = 0; i < ETH_ADDR_LEN; i++)
+   for (i = 0; i < MEDIA_ADDR_LEN; i++)
       mac[i] = (u_char)tmp[i];
       
    return i;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.21 2003/10/25 21:57:42 alor Exp $
+    $Id: ec_send.c,v 1.22 2003/10/27 21:25:44 alor Exp $
 */
 
 #include <ec.h>
@@ -29,8 +29,8 @@
 
 /* globals */
 
-u_int8 ETH_BROADCAST[ETH_ADDR_LEN] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-u_int8 ARP_BROADCAST[ETH_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+u_int8 MEDIA_BROADCAST[MEDIA_ADDR_LEN] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+u_int8 ARP_BROADCAST[MEDIA_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 /* protos */
 
@@ -280,14 +280,14 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    SEND_LOCK;
 
    /* ARP uses 00 broadcast */
-   if (type == ARPOP_REQUEST && tmac == ETH_BROADCAST)
+   if (type == ARPOP_REQUEST && tmac == MEDIA_BROADCAST)
       tmac = ARP_BROADCAST;
    
    /* create the ARP header */
    t = libnet_build_arp(
            ARPHRD_ETHER,            /* hardware addr */
            ETHERTYPE_IP,            /* protocol addr */
-           ETH_ADDR_LEN,            /* hardware addr size */
+           MEDIA_ADDR_LEN,          /* hardware addr size */
            IP_ADDR_LEN,             /* protocol addr size */
            type,                    /* operation type */
            smac,                    /* sender hardware addr */
@@ -302,7 +302,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    
    /* ETH uses ff broadcast */
    if (type == ARPOP_REQUEST && tmac == ARP_BROADCAST)
-      tmac = ETH_BROADCAST;
+      tmac = MEDIA_BROADCAST;
    
    /* add the ethernet header */
    t = libnet_autobuild_ethernet(

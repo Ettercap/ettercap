@@ -1,5 +1,5 @@
 
-/* $Id: ec_profiles.h,v 1.12 2003/10/24 20:51:17 alor Exp $ */
+/* $Id: ec_profiles.h,v 1.13 2003/10/27 21:25:44 alor Exp $ */
 
 #ifndef EC_PROFILES_H
 #define EC_PROFILES_H
@@ -45,7 +45,7 @@ struct open_port {
 
 struct host_profile {
    
-   u_int8 L2_addr[ETH_ADDR_LEN];
+   u_int8 L2_addr[MEDIA_ADDR_LEN];
 
    struct ip_addr L3_addr;
 

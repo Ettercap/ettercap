@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.13 2003/10/27 20:54:43 alor Exp $ */
+/* $Id: ec_inet.h,v 1.14 2003/10/27 21:25:44 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -19,7 +19,7 @@ enum {
    
    IP_ADDR_LEN             = 4,
    IP6_ADDR_LEN            = 16,
-   MAX_ADDR_LEN            = IP6_ADDR_LEN,
+   MAX_IP_ADDR_LEN         = IP6_ADDR_LEN,
 
    ETH_ASCII_ADDR_LEN      = sizeof("ff:ff:ff:ff:ff:ff")+1,
    IP_ASCII_ADDR_LEN       = sizeof("255.255.255.255")+1,
@@ -33,7 +33,7 @@ struct ip_addr {
    u_int16 type;
    u_int16 addr_size;
    /* this must be aligned in memory */
-   u_int8 addr[MAX_ADDR_LEN];
+   u_int8 addr[MAX_IP_ADDR_LEN];
 };
 
 extern int ip_addr_init(struct ip_addr *sa, int type, char *addr);

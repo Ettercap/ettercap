@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp.c,v 1.11 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_arp.c,v 1.12 2003/10/27 21:25:45 alor Exp $
 */
 
 #include <ec.h>
@@ -38,9 +38,9 @@ struct arp_header {
 };
 
 struct arp_eth_header {
-   u_int8   arp_sha[ETH_ADDR_LEN];     /* sender hardware address */
+   u_int8   arp_sha[MEDIA_ADDR_LEN];     /* sender hardware address */
    u_int8   arp_spa[IP_ADDR_LEN];      /* sender protocol address */
-   u_int8   arp_tha[ETH_ADDR_LEN];     /* target hardware address */
+   u_int8   arp_tha[MEDIA_ADDR_LEN];     /* target hardware address */
    u_int8   arp_tpa[IP_ADDR_LEN];      /* target protocol address */
 };
 
@@ -86,7 +86,7 @@ FUNC_DECODER(decode_arp)
    /* ARP discovered hosts are always local ;) */
    PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
    
-   if (arp->ar_hln == ETH_ADDR_LEN && arp->ar_pln == IP_ADDR_LEN) {
+   if (arp->ar_hln == MEDIA_ADDR_LEN && arp->ar_pln == IP_ADDR_LEN) {
    
       struct arp_eth_header *earp;
       earp = (struct arp_eth_header *)(arp + 1);
@@ -99,8 +99,8 @@ FUNC_DECODER(decode_arp)
        * for ARP packets we can overwrite the L2 addresses with the 
        * information within the ARP header 
        */
-      memcpy(PACKET->L2.src, (char *)&earp->arp_sha, ETH_ADDR_LEN);
-      memcpy(PACKET->L2.dst, (char *)&earp->arp_tha, ETH_ADDR_LEN);
+      memcpy(PACKET->L2.src, (char *)&earp->arp_sha, MEDIA_ADDR_LEN);
+      memcpy(PACKET->L2.dst, (char *)&earp->arp_tha, MEDIA_ADDR_LEN);
       
       /* 
        * HOOK POINT:  HOOK_PACKET_ARP 

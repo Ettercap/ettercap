@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.24 2003/10/24 20:51:23 alor Exp $
+    $Id: ec_profiles.c,v 1.25 2003/10/27 21:25:44 alor Exp $
 */
 
 #include <ec.h>
@@ -89,7 +89,7 @@ void profile_parse(struct packet_object *po)
     * skip packet sent (spoofed) by us
     * else we will get duplicated hosts with our mac address
     */
-   if (!memcmp(po->L2.src, GBL_IFACE->mac, ETH_ADDR_LEN))
+   if (!memcmp(po->L2.src, GBL_IFACE->mac, MEDIA_ADDR_LEN))
       return;
     
    /*
@@ -144,7 +144,7 @@ static int profile_add_host(struct packet_object *po)
    if (po->PASSIVE.flags & FP_HOST_NONLOCAL) {
       set_gateway(po->L2.src);
       /* the mac address of non local should not be saved */
-      memset(&po->L2.src, 0, ETH_ADDR_LEN);
+      memset(&po->L2.src, 0, MEDIA_ADDR_LEN);
    }
 
    PROFILE_LOCK;
@@ -153,7 +153,7 @@ static int profile_add_host(struct packet_object *po)
    LIST_FOREACH(h, &GBL_PROFILES, next) {
       /* search the host.
        * it is identified by the mac and the ip address */
-      if (!memcmp(h->L2_addr, po->L2.src, ETH_ADDR_LEN) &&
+      if (!memcmp(h->L2_addr, po->L2.src, MEDIA_ADDR_LEN) &&
           !ip_addr_cmp(&h->L3_addr, &po->L3.src) ) {
          update_info(h, po);
          /* the host was already in the list
@@ -220,7 +220,7 @@ static void update_info(struct host_profile *h, struct packet_object *po)
    
    /* update the mac address only if local or unknown */
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN)
-      memcpy(h->L2_addr, po->L2.src, ETH_ADDR_LEN);
+      memcpy(h->L2_addr, po->L2.src, MEDIA_ADDR_LEN);
    
    /* the ip address */
    memcpy(&h->L3_addr, &po->L3.src, sizeof(struct ip_addr));
@@ -261,7 +261,7 @@ static void set_gateway(u_char *L2_addr)
    PROFILE_LOCK;
 
    LIST_FOREACH(h, &GBL_PROFILES, next) {
-      if (!memcmp(h->L2_addr, L2_addr, ETH_ADDR_LEN) ) {
+      if (!memcmp(h->L2_addr, L2_addr, MEDIA_ADDR_LEN) ) {
          h->type |= FP_GATEWAY; 
          PROFILE_UNLOCK;
          return;

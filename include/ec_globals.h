@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.37 2003/10/25 21:57:42 alor Exp $ */
+/* $Id: ec_globals.h,v 1.38 2003/10/27 21:25:44 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -94,7 +94,7 @@ struct iface_env {
    struct ip_addr ip;
    struct ip_addr network;
    struct ip_addr netmask;
-   u_int8 mac[ETH_ADDR_LEN];
+   u_int8 mac[MEDIA_ADDR_LEN];
    u_int16 mtu;
 };
 
@@ -110,7 +110,7 @@ struct target_env {
    char all_mac:1;            /* these one bit flags are used as wildcards */
    char all_ip:1;
    char all_port:1;
-   u_char mac[ETH_ADDR_LEN];
+   u_char mac[MEDIA_ADDR_LEN];
    SLIST_HEAD (, ip_list) ips;
    u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };
@@ -118,7 +118,7 @@ struct target_env {
 /* scanned hosts list */
 struct hosts_list {
    struct ip_addr ip;
-   u_char mac[ETH_ADDR_LEN];
+   u_char mac[MEDIA_ADDR_LEN];
    char *hostname;
    LIST_ENTRY(hosts_list) next;
 };

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.31 2003/10/24 12:49:29 lordnaga Exp $
+    $Id: ec_sniff.c,v 1.32 2003/10/27 21:25:44 alor Exp $
 */
 
 #include <ec.h>
@@ -78,7 +78,7 @@ void set_forwardable_flag(struct packet_object *po)
     * it has to be forwarded
     */
    
-   if (!memcmp(GBL_IFACE->mac, po->L2.dst, ETH_ADDR_LEN) &&
+   if (!memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) &&
        ip_addr_cmp(&GBL_IFACE->ip, &po->L3.dst) )
       po->flags |= PO_FORWARDABLE;
    
@@ -91,7 +91,7 @@ int check_forwarded(struct packet_object *po)
     * but only if we are on live connections
     */
    if ( !GBL_OPTIONS->read &&
-        !memcmp(GBL_IFACE->mac, po->L2.src, ETH_ADDR_LEN) &&
+        !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
         ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
       return 1;
    }
@@ -200,14 +200,14 @@ static void display_packet_for_us(struct packet_object *po)
    /* FROM TARGET1 TO TARGET2 */
    
    /* T1.mac == src & T1.ip = src & T1.port = src */
-   if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.src, ETH_ADDR_LEN)) &&
+   if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.src, GBL_TARGET1) || (ip_addr_is_local(&po->L3.src) != ESUCCESS) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.src))) )
       value = 1;
 
    /* T2.mac == dst & T2.ip = dst & T2.port = dst */
    if ( value && (
-        (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, ETH_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, ETH_ADDR_LEN)) &&
+        (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2) || (ip_addr_is_local(&po->L3.dst) != ESUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
       good = 1;   
@@ -227,14 +227,14 @@ static void display_packet_for_us(struct packet_object *po)
    /* FROM TARGET12 TO TARGET1 */
    
    /* T1.mac == dst & T1.ip = dst & T1.port = dst */
-   if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, ETH_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, ETH_ADDR_LEN)) &&
+   if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) || (ip_addr_is_local(&po->L3.dst) != ESUCCESS) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.dst))) )
       value = 1;
 
    /* T2.mac == src & T2.ip = src & T2.port = src */
    if ( value && (
-        (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.src, ETH_ADDR_LEN)) &&
+        (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.src, GBL_TARGET2) || (ip_addr_is_local(&po->L3.src) != ESUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.src))) ) )
       good = 1;   

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.26 2003/10/25 16:19:59 alor Exp $
+    $Id: ec_scan.c,v 1.27 2003/10/27 21:25:44 alor Exp $
 */
 
 #include <ec.h>
@@ -49,7 +49,7 @@ static void scan_targets(void);
 static void load_hosts(char *filename);
 static void save_hosts(char *filename);
 
-void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name);
+void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name);
 
 static void random_list(struct ip_list *e, int max);
 
@@ -306,7 +306,7 @@ static void scan_netmask(void)
    /* send the actual ARP request */
    SLIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
-      send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, ETH_BROADCAST);
+      send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
 
       /* update the progress bar */
       ui_progress(title, i++, nhosts);
@@ -390,7 +390,7 @@ static void scan_targets(void)
    /* and now scan the LAN */
    SLIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
-      send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, ETH_BROADCAST);
+      send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
 
       /* update the progress bar */
       ui_progress(title, n++, nhosts);
@@ -418,7 +418,7 @@ static void load_hosts(char *filename)
    char ip[16], mac[18], name[128];
    struct in_addr tip;
    struct ip_addr hip;
-   u_int8 hmac[ETH_ADDR_LEN];
+   u_int8 hmac[MEDIA_ADDR_LEN];
    
    DEBUG_MSG("load_hosts: %s", filename);
 
@@ -491,7 +491,7 @@ static void save_hosts(char *filename)
  * add an host to the list 
  * order the list while inserting the elements
  */
-void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name)
+void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
 {
    struct hosts_list *hl, *h;
 
@@ -499,7 +499,7 @@ void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name)
 
    /* fill the struct */
    memcpy(&h->ip, ip, sizeof(struct ip_addr));
-   memcpy(&h->mac, mac, ETH_ADDR_LEN);
+   memcpy(&h->mac, mac, MEDIA_ADDR_LEN);
 
    if (name)
       h->hostname = strdup(name);

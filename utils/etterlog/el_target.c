@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_target.c,v 1.13 2003/10/09 14:49:45 alor Exp $
+    $Id: el_target.c,v 1.14 2003/10/27 21:25:45 alor Exp $
 */
 
 #include <el.h>
@@ -275,13 +275,13 @@ int is_target_pck(struct log_header_packet *pck)
     */
  
    /* it is in the source */
-   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_src, ETH_ADDR_LEN)) &&
+   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_src, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET->all_ip   || cmp_ip_list(&pck->L3_src, GBL_TARGET) ) &&
         (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_src))) )
       good = 1;
 
    /* it is in the dest */
-   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_dst, ETH_ADDR_LEN)) &&
+   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET->all_ip   || cmp_ip_list(&pck->L3_dst, GBL_TARGET)) &&
         (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_dst))) )
       good = 1;   
@@ -343,8 +343,8 @@ int is_target_info(struct host_profile *hst)
     */
  
    /* it is in the source */
-   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, hst->L2_addr, ETH_ADDR_LEN)) &&
-        (GBL_TARGET->all_ip   || cmp_ip_list(&hst->L3_addr, GBL_TARGET) ) )
+   if ( (GBL_TARGET->all_mac || !memcmp(GBL_TARGET->mac, hst->L2_addr, MEDIA_ADDR_LEN)) &&
+        (GBL_TARGET->all_ip  || cmp_ip_list(&hst->L3_addr, GBL_TARGET) ) )
       host = 1;
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.23 2003/10/27 20:54:13 alor Exp $
+    $Id: ec_capture.c,v 1.24 2003/10/27 21:25:44 alor Exp $
 */
 
 #include <ec.h>
@@ -289,7 +289,7 @@ void get_hw_info(void)
    ea = libnet_get_hwaddr(GBL_LNET->lnet);
 
    if (ea != NULL)
-      memcpy(GBL_IFACE->mac, ea->ether_addr_octet, ETH_ADDR_LEN);
+      memcpy(GBL_IFACE->mac, ea->ether_addr_octet, MEDIA_ADDR_LEN);
    else
       DEBUG_MSG("NO MAC for %s", GBL_OPTIONS->iface);
 
@@ -321,7 +321,7 @@ void get_hw_info(void)
    ea = libnet_get_hwaddr(GBL_LNET->lnet_bridge);
 
    if (ea != NULL)
-      memcpy(GBL_BRIDGE->mac, ea->ether_addr_octet, ETH_ADDR_LEN);
+      memcpy(GBL_BRIDGE->mac, ea->ether_addr_octet, MEDIA_ADDR_LEN);
    else
       DEBUG_MSG("NO MAC for %s", GBL_OPTIONS->iface);
    

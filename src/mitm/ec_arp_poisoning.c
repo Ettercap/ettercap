@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.9 2003/10/24 22:05:46 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.10 2003/10/27 21:25:44 alor Exp $
 */
 
 #include <ec.h>
@@ -244,7 +244,7 @@ static int create_silent_list(void)
    if ((i = SLIST_FIRST(&GBL_TARGET1->ips)) != NULL) {
       
       /* the the ip was specified, even the mac address must be specified */
-      if (!memcmp(GBL_TARGET1->mac, "\x00\x00\x00\x00\x00\x00", ETH_ADDR_LEN) ) {
+      if (!memcmp(GBL_TARGET1->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) {
          USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
          return -EFATAL;
       }
@@ -253,7 +253,7 @@ static int create_silent_list(void)
       
       /* copy the informations */
       memcpy(&h->ip, &i->ip, sizeof(struct ip_addr));
-      memcpy(&h->mac, &GBL_TARGET1->mac, ETH_ADDR_LEN);
+      memcpy(&h->mac, &GBL_TARGET1->mac, MEDIA_ADDR_LEN);
       
    } else {
       USER_MSG(" TARGET 1 : %-15s FF:FF:FF:FF:FF:FF\n", "ANY");
@@ -265,14 +265,14 @@ static int create_silent_list(void)
       *(u_int32 *)&h->ip.addr |= ~(*(u_int32 *)&GBL_IFACE->netmask.addr);
 
       /* broadcast mac address */
-      memcpy(&h->mac, ETH_BROADCAST, ETH_ADDR_LEN);
+      memcpy(&h->mac, MEDIA_BROADCAST, MEDIA_ADDR_LEN);
    }
    
 /* examine the second target */   
    if ((j = SLIST_FIRST(&GBL_TARGET2->ips)) != NULL) {
       
       /* the the ip was specified, even the mac address must be specified */
-      if (!memcmp(GBL_TARGET2->mac, "\x00\x00\x00\x00\x00\x00", ETH_ADDR_LEN) ) {
+      if (!memcmp(GBL_TARGET2->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) {
          USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
          return -EFATAL;
       }
@@ -280,7 +280,7 @@ static int create_silent_list(void)
       
       /* copy the informations */
       memcpy(&g->ip, &j->ip, sizeof(struct ip_addr));
-      memcpy(&g->mac, &GBL_TARGET2->mac, ETH_ADDR_LEN);
+      memcpy(&g->mac, &GBL_TARGET2->mac, MEDIA_ADDR_LEN);
       
    } else {
       USER_MSG(" TARGET 2 : %-15s FF:FF:FF:FF:FF:FF\n", "ANY");
@@ -292,7 +292,7 @@ static int create_silent_list(void)
       *(u_int32 *)&g->ip.addr |= ~(*(u_int32 *)&GBL_IFACE->netmask.addr);
 
       /* broadcast mac address */
-      memcpy(&g->mac, ETH_BROADCAST, ETH_ADDR_LEN);
+      memcpy(&g->mac, MEDIA_BROADCAST, MEDIA_ADDR_LEN);
    }
 
    if (i == j) {
@@ -337,7 +337,7 @@ static int create_list(void)
             SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
             
             memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
-            memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);
+            memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
             
             LIST_INSERT_HEAD(&group_one_head, g, next);
          }
@@ -356,7 +356,7 @@ static int create_list(void)
          SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
 
          memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
-         memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);
+         memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
            
          LIST_INSERT_HEAD(&group_one_head, g, next);
       }
@@ -376,7 +376,7 @@ static int create_list(void)
             SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
             
             memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
-            memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);
+            memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
             
             LIST_INSERT_HEAD(&group_two_head, g, next);
          }
@@ -395,7 +395,7 @@ static int create_list(void)
          SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
 
          memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
-         memcpy(&g->mac, &h->mac, ETH_ADDR_LEN);
+         memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
            
          LIST_INSERT_HEAD(&group_two_head, g, next);
       }

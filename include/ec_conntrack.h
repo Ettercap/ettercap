@@ -1,5 +1,5 @@
 
-/* $Id: ec_conntrack.h,v 1.6 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_conntrack.h,v 1.7 2003/10/27 21:25:44 alor Exp $ */
 
 #ifndef EC_CONNTRACK_H
 #define EC_CONNTRACK_H
@@ -20,8 +20,8 @@ struct conn_object {
    struct timeval ts;
 
    /* mac addresses */
-   u_int8 L2_addr1[ETH_ADDR_LEN];
-   u_int8 L2_addr2[ETH_ADDR_LEN];
+   u_int8 L2_addr1[MEDIA_ADDR_LEN];
+   u_int8 L2_addr2[MEDIA_ADDR_LEN];
    
    /* ip addresses */
    struct ip_addr L3_addr1;

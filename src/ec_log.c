@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.26 2003/10/18 11:27:42 alor Exp $
+    $Id: ec_log.c,v 1.27 2003/10/27 21:25:44 alor Exp $
 */
 
 #include <ec.h>
@@ -252,8 +252,8 @@ void log_write_packet(struct packet_object *po)
    hp.tv.tv_sec = htonl(hp.tv.tv_sec);
    hp.tv.tv_usec = htonl(hp.tv.tv_usec);
   
-   memcpy(&hp.L2_src, &po->L2.src, ETH_ADDR_LEN);
-   memcpy(&hp.L2_dst, &po->L2.dst, ETH_ADDR_LEN);
+   memcpy(&hp.L2_src, &po->L2.src, MEDIA_ADDR_LEN);
+   memcpy(&hp.L2_dst, &po->L2.dst, MEDIA_ADDR_LEN);
    
    memcpy(&hp.L3_src, &po->L3.src, sizeof(struct ip_addr));
    memcpy(&hp.L3_dst, &po->L3.dst, sizeof(struct ip_addr));
@@ -306,8 +306,8 @@ static void log_write_info(struct packet_object *po)
    memset(&hid, 0, sizeof(struct log_header_info));
 
    /* the mac address */
-   memcpy(&hi.L2_addr, &po->L2.src, ETH_ADDR_LEN);
-   memcpy(&hid.L2_addr, &po->L2.dst, ETH_ADDR_LEN);
+   memcpy(&hi.L2_addr, &po->L2.src, MEDIA_ADDR_LEN);
+   memcpy(&hid.L2_addr, &po->L2.dst, MEDIA_ADDR_LEN);
    
    /* the ip address */
    memcpy(&hi.L3_addr, &po->L3.src, sizeof(struct ip_addr));
@@ -487,7 +487,7 @@ static void log_write_info_arp_icmp(struct packet_object *po)
    memset(&hi, 0, sizeof(struct log_header_info));
 
    /* the mac address */
-   memcpy(&hi.L2_addr, &po->L2.src, ETH_ADDR_LEN);
+   memcpy(&hi.L2_addr, &po->L2.src, MEDIA_ADDR_LEN);
    
    /* the ip address */
    memcpy(&hi.L3_addr, &po->L3.src, sizeof(struct ip_addr));

@@ -11,9 +11,7 @@
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
 
-   + WINDOWS
-      - etterlog behaves strange
-      - scrambled log file
+   + shortcut for scan canellation in gtk
 
 ============================
   In the next release(s)

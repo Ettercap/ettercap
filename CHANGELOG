@@ -16,6 +16,7 @@ NG-0.7.2         200410
    !! do not drop privs under windows (useless) 
    !! fixed the mmap problem under windows
    !! fixed file operation under windows (O_BINARY related)
+   !! fixed the IRC password collector (\r \n related)
 
 
 NG-0.7.1         20040920

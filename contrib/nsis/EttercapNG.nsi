@@ -17,7 +17,7 @@
 ;   along with this program; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;
-;   $Id: EttercapNG.nsi,v 1.8 2004/09/23 09:24:00 alor Exp $
+;   $Id: EttercapNG.nsi,v 1.9 2004/10/04 12:31:21 alor Exp $
 ;
 ; NOTE: this .NSI script is designed for NSIS v2.0+
 
@@ -26,9 +26,9 @@
 
 !define VER_MAJOR 0
 !define VER_MINOR 7
-!define VER_REVISION 1
+!define VER_REVISION 2
 
-!define VER_DISPLAY "0.7.1"
+!define VER_DISPLAY "0.7.2"
 
 ;--------------------------------
 ;Include Modern UI

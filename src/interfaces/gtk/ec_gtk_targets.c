@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_targets.c,v 1.6 2004/03/04 12:59:10 daten Exp $
+    $Id: ec_gtk_targets.c,v 1.7 2004/03/19 17:55:53 daten Exp $
 */
 
 #include <ec.h>
@@ -32,7 +32,7 @@ void gtkui_select_targets(void);
 void gtkui_current_targets(void);
 static void set_protocol(void);
 static void set_targets(void);
-static void gtkui_create_targets_array(void);
+void gtkui_create_targets_array(void);
 static void gtkui_delete_target1(void *);
 static void gtkui_delete_target2(void *);
 static void gtkui_add_target1(void *);
@@ -311,7 +311,7 @@ static void gtkui_targets_destroy(void)
  * create the array for the widget.
  * erase any previously alloc'd array 
  */
-static void gtkui_create_targets_array(void)
+void gtkui_create_targets_array(void)
 {
    GtkTreeIter iter;
    struct ip_list *il;

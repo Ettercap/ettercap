@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.10 2004/03/07 14:38:40 alor Exp $ */
+/* $Id: ec_gtk.h,v 1.11 2004/03/19 17:55:53 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -66,6 +66,7 @@ extern void gtkui_select_protocol(void);
 extern void wipe_targets(void);
 extern void gtkui_select_targets(void);
 extern void gtkui_current_targets(void);
+extern void gtkui_create_targets_array(void);
 
 /* ec_gtk_view_profiles.c */
 extern void gtkui_show_profiles(void);

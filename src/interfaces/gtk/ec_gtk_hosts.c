@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_hosts.c,v 1.8 2004/03/18 19:44:38 daten Exp $
+    $Id: ec_gtk_hosts.c,v 1.9 2004/03/19 17:55:53 daten Exp $
 */
 
 #include <ec.h>
@@ -339,6 +339,7 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
             DEBUG_MSG("gtkui_button_callback: add target1");
             /* add the ip to the target */
             add_ip_list(&hl->ip, GBL_TARGET1);
+            gtkui_create_targets_array();
 
             USER_MSG("Host %s added to TARGET1\n", ip_addr_ntoa(&hl->ip, tmp));
             break;
@@ -346,6 +347,7 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
             DEBUG_MSG("gtkui_button_callback: add target2");
             /* add the ip to the target */
             add_ip_list(&hl->ip, GBL_TARGET2);
+            gtkui_create_targets_array();
    
             USER_MSG("Host %s added to TARGET2\n", ip_addr_ntoa(&hl->ip, tmp));
             break;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.21 2004/03/18 19:19:59 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.22 2004/03/19 17:55:53 daten Exp $
 */
 
 #include <ec.h>
@@ -48,6 +48,7 @@ static void gtkui_connection_data_join(void);
 static void gtkui_connection_data_detach(GtkWidget *child);
 static void gtkui_connection_data_attach(void);
 static void gtkui_destroy_conndata(void);
+static gboolean gtkui_connections_scroll(gpointer data);
 static void gtkui_data_print(int buffer, char *data, int color);
 static void split_print(u_char *text, size_t len, struct ip_addr *L3_src);
 static void split_print_po(struct packet_object *po);
@@ -610,6 +611,9 @@ static void gtkui_connection_data_split(void)
    else
       gtkui_page_present(data_window);
 
+   /* after widgets are drawn, scroll to bottom */
+   g_timeout_add(500, gtkui_connections_scroll, (gpointer)1);
+
    /* print the old data */
    connbuf_print(&curr_conn->data, split_print);
 
@@ -700,7 +704,7 @@ static void gtkui_data_print(int buffer, char *data, int color)
       gtk_text_buffer_insert_with_tags_by_name(textbuf, &iter, unicode, 
          -1, "monospace", NULL);
    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview), 
-      endmark, 0, FALSE, 0, 0);
+      endmark, 0, FALSE, 0, 0); 
 }
 
 static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
@@ -839,11 +843,29 @@ static void gtkui_connection_data_join(void)
    else
       gtkui_page_present(data_window);
 
+   /* after widgets are drawn, scroll to bottom */
+   g_timeout_add(500, gtkui_connections_scroll, (gpointer)2);
+
    /* print the old data */
    connbuf_print(&curr_conn->data, join_print);
 
    /* add the hook on the connection to receive data only from it */
    conntrack_hook_conn_add(curr_conn, join_print_po);
+}
+
+static gboolean gtkui_connections_scroll(gpointer data)
+{
+   if((int)data == 1) {
+      /* scroll split data views to bottom */
+      gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview1), endmark1, 0, FALSE, 0, 0);
+      gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview2), endmark2, 0, FALSE, 0, 0); 
+   } else {
+      /* scroll joined data view to bottom */
+      gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview3), endmark3, 0, FALSE, 0, 0);
+   }
+
+   /* only execute once, don't repeat */
+   return(FALSE);
 }
 
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)

@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.38 2004/02/26 14:42:26 alor Exp $
+    $Id: ec_capture.c,v 1.39 2004/02/27 11:06:28 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_threads.h>
+#include <ec_capture.h>
 #include <ec_ui.h>
 
 #include <sys/socket.h>
@@ -42,6 +43,18 @@
    #define PCAP_TIMEOUT 1
 #endif
 
+/* globals */
+
+static SLIST_HEAD (, align_entry) aligners_table;
+
+struct align_entry {
+   int dlt;
+   FUNC_ALIGNER_PTR(aligner);
+   SLIST_ENTRY (align_entry) next;
+};
+
+/* protos */
+
 void capture_init(void);
 void capture_close(void);
 EC_THREAD_FUNC(capture);
@@ -49,6 +62,10 @@ EC_THREAD_FUNC(capture_bridge);
 
 void get_hw_info(void);
 int is_pcap_file(char *file, char *errbuf);
+
+static void set_alignment(int dlt);
+void add_aligner(int dlt, int (*aligner)(void));
+
 /*******************************************/
 
 /*
@@ -118,9 +135,6 @@ void capture_init(void)
    if (!GBL_OPTIONS->read && GBL_PCAP->snaplen != UINT16_MAX) 
       FATAL_ERROR("pcap buffer not alloc'd correctly");
      
-   /* allocate the buffer for the packets */
-   SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX, sizeof(char));
-   
    /* get the file size */
    if (GBL_OPTIONS->read) {
       struct stat st;
@@ -181,7 +195,7 @@ void capture_init(void)
    GBL_PCAP->dlt = pcap_datalink(pd);
      
    DEBUG_MSG("capture_init: %s", pcap_datalink_val_to_description(GBL_PCAP->dlt));
-   
+ 
    /* check that the bridge type is the same as the main iface */
    if (GBL_SNIFF->type == SM_BRIDGED && pcap_datalink(pb) != GBL_PCAP->dlt)
       FATAL_ERROR("You can NOT bridge two different type of interfaces !");
@@ -193,6 +207,12 @@ void capture_init(void)
       else
          FATAL_ERROR("Inteface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
    }
+   
+   /* set the alignment for the buffer */
+   set_alignment(GBL_PCAP->dlt);
+   
+   /* allocate the buffer for the packets (UINT16_MAX) */
+   SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align, sizeof(char));
   
    /* set the global descriptor for both the iface and the bridge */
    GBL_PCAP->pcap = pd;               
@@ -383,6 +403,37 @@ int is_pcap_file(char *file, char *errbuf)
    return ESUCCESS;
 }
 
+/*
+ * set the alignment for the buffer 
+ */
+static void set_alignment(int dlt)
+{
+   struct align_entry *e;
+
+   SLIST_FOREACH (e, &aligners_table, next)
+      if (e->dlt == dlt) {
+         GBL_PCAP->align = e->aligner();
+         return;
+      }
+
+   /* not found */
+   BUG("Don't know how to align this media header");
+}
+
+/*
+ * add a alignment function to the table 
+ */
+void add_aligner(int dlt, FUNC_ALIGNER_PTR(aligner))
+{
+   struct align_entry *e;
+
+   SAFE_CALLOC(e, 1, sizeof(struct align_entry));
+   
+   e->dlt = dlt;
+   e->aligner = aligner;
+
+   SLIST_INSERT_HEAD(&aligners_table, e, next); 
+}
 
 /* EOF */
 

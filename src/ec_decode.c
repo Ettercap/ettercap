@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.49 2004/02/26 14:42:26 alor Exp $
+    $Id: ec_decode.c,v 1.50 2004/02/27 11:06:28 alor Exp $
 */
 
 #include <ec.h>
@@ -113,11 +113,14 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* 
     * copy the packet in a "safe" buffer 
     * we don't want other packets after the end of the packet (as in BPF)
+    *
+    * also keep the buffer aligned !
+    * the alignment is set by the media decoder.
     */
-   memcpy(GBL_PCAP->buffer, pkt, pkthdr->caplen);
+   memcpy(GBL_PCAP->buffer + GBL_PCAP->align, pkt, pkthdr->caplen);
    
    /* extract data and datalen from pcap packet */
-   data = (u_char *)GBL_PCAP->buffer;
+   data = (u_char *)GBL_PCAP->buffer + GBL_PCAP->align;
    datalen = pkthdr->caplen;
 
    /* 

@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tr.c,v 1.2 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_tr.c,v 1.3 2004/02/27 11:06:28 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_send.h>
+#include <ec_capture.h>
 
 /* globals */
 struct token_ring_header
@@ -47,6 +48,7 @@ u_int8 TR_ORG_CODE[3] = {0x00, 0x00, 0x00};
 
 FUNC_DECODER(decode_tr);
 FUNC_BUILDER(build_tr);
+FUNC_ALIGNER(align_tr);
 void tr_init(void);
 
 /*******************************************/
@@ -60,6 +62,7 @@ void __init tr_init(void)
 {
    add_decoder(LINK_LAYER, IL_TYPE_TR, decode_tr);
    add_builder(IL_TYPE_TR, build_tr);
+   add_aligner(IL_TYPE_TR, align_tr);
 }
 
 
@@ -113,6 +116,14 @@ FUNC_BUILDER(build_tr)
             proto,                        /* protocol type */
             GBL_LNET->lnet);              /* libnet handle */
    
+}
+
+/*
+ * alignment function
+ */
+FUNC_ALIGNER(align_tr)
+{
+   return (24 - sizeof(struct token_ring_header));
 }
 
 /* EOF */

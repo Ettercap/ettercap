@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_eth.c,v 1.8 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_eth.c,v 1.9 2004/02/27 11:06:28 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_send.h>
+#include <ec_capture.h>
 
 /* globals */
 
@@ -37,6 +38,7 @@ struct eth_header
 
 FUNC_DECODER(decode_eth);
 FUNC_BUILDER(build_eth);
+FUNC_ALIGNER(align_eth);
 void eth_init(void);
 
 /*******************************************/
@@ -50,6 +52,7 @@ void __init eth_init(void)
 {
    add_decoder(LINK_LAYER, IL_TYPE_ETH, decode_eth);
    add_builder(IL_TYPE_ETH, build_eth);
+   add_aligner(IL_TYPE_ETH, align_eth);
 }
 
 
@@ -95,6 +98,14 @@ FUNC_BUILDER(build_eth)
             GBL_LNET->lnet);           /* libnet handle */
 }
 
+/*
+ * alignment function
+ */
+FUNC_ALIGNER(align_eth)
+{
+   /* 16 is the nearest multiplier of 4 */
+   return (16 - sizeof(struct eth_header));
+}
 /* EOF */
 
 // vim:ts=3:expandtab

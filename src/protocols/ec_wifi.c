@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.9 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_wifi.c,v 1.10 2004/02/27 11:06:28 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
+#include <ec_capture.h>
 
 /* globals */
 
@@ -49,6 +50,7 @@ u_int8 WIFI_ORG_CODE[3] = {0x00, 0x00, 0x00};
 /* protos */
 
 FUNC_DECODER(decode_wifi);
+FUNC_ALIGNER(align_wifi);
 void wifi_init(void);
 
 /*******************************************/
@@ -61,6 +63,7 @@ void wifi_init(void);
 void __init wifi_init(void)
 {
    add_decoder(LINK_LAYER, IL_TYPE_WIFI, decode_wifi);
+   add_aligner(IL_TYPE_WIFI, align_wifi);
 }
 
 
@@ -106,6 +109,15 @@ FUNC_DECODER(decode_wifi)
    /* no modification to wifi header should be done */
    
    return NULL;
+}
+
+/*
+ * alignment function
+ */
+FUNC_ALIGNER(align_wifi)
+{
+   /* already aligned */
+   return (32 - sizeof(struct wifi_header));
 }
 
 /* EOF */

@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_fddi.c,v 1.2 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_fddi.c,v 1.3 2004/02/27 11:06:28 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_send.h>
+#include <ec_capture.h>
 
 /* globals */
 struct fddi_header
@@ -36,7 +37,7 @@ struct fddi_header
    u_int8  llc_org_code[3];
    /*
     * ARGH ! org_core is 3 and it has disaligned the struct !
-    * we can rely in libpcap aligning the buffer for us...
+    * we can rely in on the alignment of the buffer...
     */
    u_int16 proto;
 };
@@ -48,6 +49,7 @@ u_int8 FDDI_ORG_CODE[3] = {0x00, 0x00, 0x00};
 
 FUNC_DECODER(decode_fddi);
 FUNC_BUILDER(build_fddi);
+FUNC_ALIGNER(align_fddi);
 void fddi_init(void);
 
 /*******************************************/
@@ -61,6 +63,7 @@ void __init fddi_init(void)
 {
    add_decoder(LINK_LAYER, IL_TYPE_FDDI, decode_fddi);
    add_builder(IL_TYPE_FDDI, build_fddi);
+   add_aligner(IL_TYPE_FDDI, align_fddi);
 }
 
 
@@ -113,6 +116,14 @@ FUNC_BUILDER(build_fddi)
             proto,                        /* protocol type */
             GBL_LNET->lnet);              /* libnet handle */
    
+}
+
+/*
+ * alignment function
+ */
+FUNC_ALIGNER(align_fddi)
+{
+   return (24 - sizeof(struct fddi_header));
 }
 
 /* EOF */

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.96 2004/02/22 12:00:37 alor Exp $
+dnl    $Id: configure.in,v 1.97 2004/02/25 22:32:26 daten Exp $
 dnl
 
 AC_INIT
@@ -719,6 +719,7 @@ AC_ARG_ENABLE(gtk, AC_HELP_STRING(--enable-gtk,enable the gtk interface),
      AC_MSG_RESULT(no)
 ])
 
+GTK_LIBS="$GTK_LIBS -lgthread-2.0"
 
 dnl -----------------------
 dnl  set up the final vars

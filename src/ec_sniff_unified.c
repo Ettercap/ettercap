@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.22 2004/05/27 10:59:52 alor Exp $
+    $Id: ec_sniff_unified.c,v 1.23 2004/06/11 08:44:25 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -59,7 +59,7 @@ void start_unified_sniff(void)
    ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
 
    /* start ssl_wrapper thread */
-   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive)
+   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm)
       ec_thread_new("sslwrap", "wrapper for ssl connections", &sslw_start, NULL);
 
    GBL_SNIFF->active = 1;

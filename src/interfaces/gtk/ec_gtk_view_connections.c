@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.25 2004/04/11 09:40:02 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.26 2004/04/12 12:07:14 daten Exp $
 */
 
 #include <ec.h>
@@ -642,7 +642,17 @@ static void gtkui_connection_data_detach(GtkWidget *child)
 
 static void gtkui_connection_data_attach(void)
 {
-   gtkui_destroy_conndata();
+   if (curr_conn) {
+      conntrack_hook_conn_del(curr_conn, split_print_po);
+      conntrack_hook_conn_del(curr_conn, join_print_po);
+   }
+   
+   gtk_widget_destroy(data_window);
+   textview1 = NULL;
+   textview2 = NULL;
+   textview3 = NULL;
+   data_window = NULL;
+
    gtkui_connection_data_split();
 }
 

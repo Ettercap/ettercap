@@ -35,24 +35,15 @@ this is the unofficial and floating in time roadmap:
       - context sensitive help
 
    + GTK GUI
-      - CONN_VIEWING
       - split join scrolling window problem
-
-   + ARP SCAN
-      - check the double reply
 
    + DISSECTORS
       - convert all the old dissectors:
          - https (over the ssl one)
-         - pcanywhere
       - SSL unified dissector for https, impas, pop3s ecc ecc
       - TDS
       - MS-SQL (http://www.nii.co.in/vuln/sqlpass.html)
    
-   + PLUGINS
-      port all the plugins to NG:
-         - triton    -> gw_discover
-
    + BRIDGED SNIFFING
       - keep track of source mac addresses
     
@@ -67,9 +58,6 @@ this is the unofficial and floating in time roadmap:
    
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
-   
-   + FILTERING ENGINE
-      - quick filter on a connection
    
    + PLUGINS
       - automatic add of new hosts
@@ -89,8 +77,9 @@ this is the unofficial and floating in time roadmap:
       - TACACS dissector
       - Microsoft RPC
       - postgresql
+      - pcanywhere
 
-   + Inet
+   + INET
       - handle fragmented packets
       - IPv6 support
 

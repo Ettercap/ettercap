@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: arp_cop.c,v 1.1 2004/01/05 17:29:16 lordnaga Exp $
+    $Id: arp_cop.c,v 1.2 2004/01/05 17:36:52 lordnaga Exp $
 */
 
 
@@ -99,7 +99,7 @@ static void parse_arp(struct packet_object *po)
    char str1[ETH_ASCII_ADDR_LEN];
    char str2[ETH_ASCII_ADDR_LEN];
    char found = 0;
-   struct hosts_list *h1, h2;
+   struct hosts_list *h1, *h2;
 
    LIST_FOREACH(h1, &arp_cop_table, next) {
       /* The IP address is already in the list */
@@ -123,7 +123,7 @@ static void parse_arp(struct packet_object *po)
          /* A new NIC claims an existing IP address */
          USER_MSG("arp_cop: (IP-conflict) [%s] wants to be %s[%s]\n", mac_addr_ntoa(po->L2.src, str1), 
                                                                       ip_addr_ntoa(&h1->ip, tmp1),
-                                                                      mac_addr_ntoa(h1->mac, str2),);      
+                                                                      mac_addr_ntoa(h1->mac, str2));      
          return;
       } 
    }
@@ -144,7 +144,7 @@ static void parse_arp(struct packet_object *po)
    /* Insert the host in th list */
    SAFE_CALLOC(h1, 1, sizeof(struct hosts_list));
    memcpy(&h1->ip, &po->L3.src, sizeof(struct ip_addr));
-   mempcy(h1->mac, po->L2.src, MEDIA_ADDR_LEN);
+   memcpy(h1->mac, po->L2.src, MEDIA_ADDR_LEN);
    LIST_INSERT_HEAD(&arp_cop_table, h1, next);
 }
 
@@ -158,9 +158,9 @@ static void arp_init_list()
       
    /* Fill the arp_cop_table with the initial host list */
    LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
-      SAFE_CALLOC(h2, 1, sizeof(struct hosts_list))
+      SAFE_CALLOC(h2, 1, sizeof(struct hosts_list));
       memcpy(&h2->ip, &h1->ip, sizeof(struct ip_addr));
-      mempcy(h2->mac, h1->mac, MEDIA_ADDR_LEN);
+      memcpy(h2->mac, h1->mac, MEDIA_ADDR_LEN);
       LIST_INSERT_HEAD(&arp_cop_table, h2, next);
    }
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.54 2003/11/21 08:32:15 alor Exp $
+    $Id: ec_parser.c,v 1.55 2003/12/09 22:32:54 alor Exp $
 */
 
 
@@ -416,8 +416,12 @@ void parse_options(int argc, char **argv)
       FATAL_ERROR("Please select an User Interface");
      
    /* force text interface for only mitm attack */
-   if (GBL_OPTIONS->only_mitm)
-      select_text_interface();
+   if (GBL_OPTIONS->only_mitm) {
+      if (GBL_OPTIONS->mitm)
+         select_text_interface();
+      else
+         FATAL_ERROR("Only mitm requires at least one mitm method");
+   }
 
    /* XXX - check for incompatible options */
    

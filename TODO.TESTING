@@ -7,7 +7,9 @@
       - test it on various platforms
 
    + WIFI
-      - test the decoder with adapted other than cisco aironet
+      - test the decoder with adapters other than cisco aironet
 
    + PROFILES
       - convert to hosts list
+
+   + PERFORMANCE MEASUREMENT

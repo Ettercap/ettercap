@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_eth.c,v 1.7 2003/10/28 21:10:55 alor Exp $
+    $Id: ec_eth.c,v 1.8 2003/12/09 22:32:54 alor Exp $
 */
 
 #include <ec.h>
@@ -64,7 +64,7 @@ FUNC_DECODER(decode_eth)
 
    /* fill the packet object with sensitive data */
    PACKET->L2.header = (u_char *)DECODE_DATA;
-   PACKET->L2.proto = htons(IL_TYPE_ETH);
+   PACKET->L2.proto = IL_TYPE_ETH;
    PACKET->L2.len = DECODED_LEN;
    
    memcpy(PACKET->L2.src, eth->sha, ETH_ADDR_LEN);

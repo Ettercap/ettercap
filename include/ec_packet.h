@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.26 2003/10/29 20:41:06 alor Exp $ */
+/* $Id: ec_packet.h,v 1.27 2003/12/09 22:32:54 alor Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -18,7 +18,7 @@ struct packet_object {
    struct timeval ts;
    
    struct L2 {
-      u_int16 proto;
+      u_int8 proto;
       u_char * header;
       size_t len;
       u_int8 src[MEDIA_ADDR_LEN];
@@ -106,8 +106,6 @@ extern inline int packet_create_object(struct packet_object *po, u_char * buf, s
 extern inline int packet_destroy_object(struct packet_object *po);
 extern int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
 extern struct packet_object * packet_dup(struct packet_object *po);
-
-extern void packet_print(struct packet_object *po);
 
 #endif
 

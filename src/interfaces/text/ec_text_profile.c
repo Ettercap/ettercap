@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_profile.c,v 1.3 2003/11/14 20:17:46 alor Exp $
+    $Id: ec_text_profile.c,v 1.4 2003/12/09 22:32:54 alor Exp $
 */
 
 #include <ec.h>
@@ -106,13 +106,13 @@ void text_profiles(void)
  */
 static void detail_help(void)
 {
-   USER_MSG("\n\n [PROFILES] Inline help:\n\n");
-   USER_MSG("   [lL]  - detail on local hosts\n");
-   USER_MSG("   [rR]  - detail on remote hosts\n");
-   USER_MSG("   [sS]  - select a specific host\n");
-   USER_MSG("   [p]   - purge local hosts\n");
-   USER_MSG("   [P]   - purge remote hosts\n");
-   USER_MSG("   [qQ]  - return to main interface\n\n");
+   fprintf(stderr, "\n\n [PROFILES] Inline help:\n\n");
+   fprintf(stderr, "   [lL]  - detail on local hosts\n");
+   fprintf(stderr, "   [rR]  - detail on remote hosts\n");
+   fprintf(stderr, "   [sS]  - select a specific host\n");
+   fprintf(stderr, "   [p]   - purge local hosts\n");
+   fprintf(stderr, "   [P]   - purge remote hosts\n");
+   fprintf(stderr, "   [qQ]  - return to main interface\n\n");
 }
 
 /*

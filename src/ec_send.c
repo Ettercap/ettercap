@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.35 2003/12/08 16:34:36 alor Exp $
+    $Id: ec_send.c,v 1.36 2003/12/09 22:32:54 alor Exp $
 */
 
 #include <ec.h>
@@ -96,9 +96,9 @@ void send_init(void)
       GBL_OPTIONS->unoffensive = 1;
    }
 
-   /* in wireless monitor mode we cannot send packets */
-   if (GBL_PCAP->dlt == DLT_IEEE802_11) {
-      DEBUG_MSG("send_init: skipping... (using wireless in monitor mode)");
+   /* in wireless monitor mode or ppp we cannot send packets */
+   if (GBL_PCAP->dlt == DLT_IEEE802_11 || GBL_PCAP->dlt == DLT_PPP) {
+      DEBUG_MSG("send_init: skipping... (using wireless in monitor mode or ppp)");
       GBL_OPTIONS->unoffensive = 1;
       return;
    }

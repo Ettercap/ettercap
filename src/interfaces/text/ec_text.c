@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.13 2003/11/30 21:31:59 alor Exp $
+    $Id: ec_text.c,v 1.14 2003/12/09 22:32:54 alor Exp $
 */
 
 #include <ec.h>
@@ -347,15 +347,15 @@ void text_interface(void)
 
 static void text_help(void)
 {
-   USER_MSG("\nInline help:\n\n");
-   USER_MSG(" [vV]      - change the visualization mode\n");
-   USER_MSG(" [pP]      - activate a plugin\n");
-   USER_MSG(" [lL]      - print the hosts list\n");
-   USER_MSG(" [oO]      - print the profiles list\n");
-   USER_MSG(" [cC]      - print the connections list\n");
-   USER_MSG(" [sS]      - print interfaces statistics\n");
-   USER_MSG(" [<space>] - stop/cont printing packets\n");
-   USER_MSG(" [qQ]      - quit\n\n");
+   fprintf(stderr, "\nInline help:\n\n");
+   fprintf(stderr, " [vV]      - change the visualization mode\n");
+   fprintf(stderr, " [pP]      - activate a plugin\n");
+   fprintf(stderr, " [lL]      - print the hosts list\n");
+   fprintf(stderr, " [oO]      - print the profiles list\n");
+   fprintf(stderr, " [cC]      - print the connections list\n");
+   fprintf(stderr, " [sS]      - print interfaces statistics\n");
+   fprintf(stderr, " [<space>] - stop/cont printing packets\n");
+   fprintf(stderr, " [qQ]      - quit\n\n");
 }
                
 /* 
@@ -517,10 +517,14 @@ static void text_hosts_list(void)
 static void text_visualization(void)
 {
    char format[15];
+   int restore = 0;
    
-   /* stop the packet printing */
-   text_stop_cont();
-
+   /* stop the visualization while the plugin interface is running */
+   if (!GBL_OPTIONS->quiet) {
+      text_stop_cont();
+      restore = 1;
+   }
+   
    /* repristinate the buffere input */
    tcsetattr(0, TCSANOW, &old_tc);
 
@@ -536,7 +540,8 @@ static void text_visualization(void)
    set_format(format);   
    
    /* continue the packet printing */
-   text_stop_cont();
+   if (restore)
+      text_stop_cont();
 }
 
 

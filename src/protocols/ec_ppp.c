@@ -17,16 +17,16 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ppp.c,v 1.8 2003/12/04 16:32:22 lordnaga Exp $
+    $Id: ec_ppp.c,v 1.9 2003/12/09 22:32:54 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
 
-/* XXX - conditional use of openssl library */
-#include <openssl/sha.h>
-
+#ifdef HAVE_OPENSSL
+   #include <openssl/sha.h>
+#endif
 
 /* globals */
 struct ppp_header {
@@ -85,8 +85,8 @@ void ppp_init(void);
 
 void __init ppp_init(void)
 {
-   /* XXX - Add the registration for Interface Layer */
-   add_decoder(NET_LAYER, LL_TYPE_PPP, decode_ppp);
+   add_decoder(LINK_LAYER, IL_TYPE_PPP, decode_ppp);
+   dissect_add("ppp", NET_LAYER, LL_TYPE_PPP, decode_ppp);
 }
 
 
@@ -98,10 +98,12 @@ FUNC_DECODER(decode_ppp)
    struct ppp_chap_challenge *chapch;
    u_int16 proto;
    u_int32 i;
-   u_char *p, digest[SHA_DIGEST_LENGTH], user[128], 
-          dummy[3], auth_len, temp[128], *pap_auth;
-   SHA_CTX ctx;
+   u_char *p, user[128], dummy[3], auth_len, temp[128], *pap_auth;
    static u_char  version=0, schallenge[512];
+#ifdef HAVE_OPENSSL
+   u_char digest[SHA_DIGEST_LENGTH];
+   SHA_CTX ctx;
+#endif
 
 
    ppph = (struct ppp_header *)DECODE_DATA;
@@ -127,19 +129,24 @@ FUNC_DECODER(decode_ppp)
       proto = ntohs(ppph->proto);
       DECODED_LEN = sizeof(ppph);
 	    
-      if (proto != PPP_PROTO_IP && 
-          proto != PPP_PROTO_CHAP && 
-          proto != PPP_PROTO_PAP && 
-	  proto != PPP_PROTO_LCP &&
-	  proto != PPP_PROTO_ECP &&
-	  proto != PPP_PROTO_CCP &&
-	  proto != PPP_PROTO_IPCP) {   
+      if (proto != PPP_PROTO_IP && proto != PPP_PROTO_CHAP && 
+          proto != PPP_PROTO_PAP && proto != PPP_PROTO_LCP &&
+	       proto != PPP_PROTO_ECP && proto != PPP_PROTO_CCP &&
+	       proto != PPP_PROTO_IPCP) {   
          proto = *((u_char *)ppph + 2);
          DECODED_LEN = 3;
       }	    
    }
 
-   /* XXX - Add PACKET->L2 stuff if it's not set yet */
+   /* 
+    * the packet was passed by the interface.
+    * the decoder is running at layer 2
+    */
+   if (PACKET->L2.header == NULL) {
+      PACKET->L2.header = DECODE_DATA;
+      PACKET->L2.proto = IL_TYPE_PPP;
+      PACKET->L2.len = DECODED_LEN;
+   }
 
    /* Set the L4 header to LCP for subsequent hooks */
    PACKET->L4.header = (u_char *)(DECODE_DATA + DECODED_LEN);
@@ -205,7 +212,7 @@ FUNC_DECODER(decode_ppp)
                DISSECT_MSG(":%s\n\n",schallenge);
 		  	
             } else if (version == 2) {
-	       
+#ifdef HAVE_OPENSSL 
                if ((p = strchr(user, '\\')) == NULL)
                   p = user;
                else 
@@ -226,6 +233,7 @@ FUNC_DECODER(decode_ppp)
                for (i = 0; i < 8; i++) 
                   DISSECT_MSG("%02X", digest[i]);
                DISSECT_MSG("\n\n");			
+#endif
             }
             version = 0;
          break;

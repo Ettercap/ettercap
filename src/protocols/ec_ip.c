@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.35 2003/12/01 12:55:38 lordnaga Exp $
+    $Id: ec_ip.c,v 1.36 2003/12/09 22:32:54 alor Exp $
 */
 
 #include <ec.h>
@@ -182,9 +182,11 @@ FUNC_DECODER(decode_ip)
    /* calculate if the dest is local or not */
    switch (ip_addr_is_local(&PACKET->L3.src)) {
       case ESUCCESS:
+         PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
          break;
       case -ENOTFOUND:
+         PACKET->PASSIVE.flags &= ~FP_HOST_LOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
          break;
       case -EINVALID:

@@ -11,14 +11,16 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.1 $                                      # 
-#  Last updated on : $Date: 2003/09/10 21:10:37 $                          #
+#  Version         : $Revision: 1.2 $                                      # 
+#  Last updated on : $Date: 2003/12/09 22:32:54 $                          #
 #                                                                          #
 ############################################################################
 
 # Layer 3 constants
 ARP = 0x0806
 IP = 0x0800
+PPPoE = 0x880B
+PPTP = 0x880B
 
 # Layer 4 constants (IPPROTO_*)
 ICMP = 0x01
@@ -26,6 +28,9 @@ ICMP6 = 0x3a
 
 TCP = 0x06
 UDP = 0x11
+GRE = 0x2f
+OSPF = 0x59
+VRRP = 0x70
 
 # EOF
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gre.c,v 1.4 2003/12/07 14:58:30 lordnaga Exp $
+    $Id: ec_gre.c,v 1.5 2003/12/09 22:32:54 alor Exp $
 */
 
 #include <ec.h>
@@ -30,16 +30,16 @@
  * (taken from ethereal gre decoder 
  * by Brad Robel-Forrest) 
  */
-#define GH_B_C		0x8000
-#define GH_B_R		0x4000
-#define GH_B_K		0x2000
-#define GH_B_S		0x1000
-#define GH_B_s		0x0800
+#define GH_B_C		   0x8000
+#define GH_B_R		   0x4000
+#define GH_B_K		   0x2000
+#define GH_B_S		   0x1000
+#define GH_B_s		   0x0800
 #define GH_B_RECUR	0x0700
-#define GH_P_A		0x0080	
+#define GH_P_A		   0x0080	
 #define GH_P_FLAGS	0x0078	
 #define GH_R_FLAGS	0x00F8
-#define GH_B_VER	0x0007
+#define GH_B_VER	   0x0007
 
 
 /* protos */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_live.c,v 1.3 2003/12/06 18:45:47 alor Exp $
+    $Id: ec_curses_live.c,v 1.4 2003/12/09 22:32:54 alor Exp $
 */
 
 #include <ec.h>
@@ -39,24 +39,6 @@ void curses_sniff_live(void);
 void curses_sniff_live(void)
 {
    wdg_t *menu;
-   struct wdg_menu file[] = { {"Start",         "S", NULL},
-                              {"Start sniffing", "", NULL},
-                              {"Stop sniffing",  "", NULL},
-                              {"-",              "", NULL},
-                              {"Exit",          "C-x", wdg_exit},
-                              {NULL, NULL, NULL},
-                            };
-   struct wdg_menu target[] = { {"Targets",         "T", NULL},
-                                {"Current Targets",  "", NULL},
-                                {"Select TARGET1",   "", NULL},
-                                {"Select TARGET2",   "", NULL},
-                                {"-",                "", NULL},
-                                {"Protocol...",      "", NULL},
-                                {"Reverse matching", "", NULL},
-                                {"-",                "", NULL},
-                                {"Wipe targets",     "", NULL},
-                                {NULL, NULL, NULL},
-                              };
    struct wdg_menu hosts[] = { {"Hosts",            "H", NULL},
                                {"Host list",         "", NULL},
                                {"-",                 "", NULL},
@@ -65,15 +47,6 @@ void curses_sniff_live(void)
                                {"Save to file...",   "", NULL},
                                {NULL, NULL, NULL},
                              };
-   struct wdg_menu view[] = { {"View",                "V", NULL},
-                              {"Profiles",             "", NULL},
-                              {"Connections",          "", NULL},
-                              {"-",                    "", NULL},
-                              {"Resolve IP addresses", "", NULL},
-                              {"-",                    "", NULL},
-                              {"Statistics",           "", NULL},
-                              {NULL, NULL, NULL},
-                            };
    struct wdg_menu mitm[] = { {"Mitm",         "M", NULL},
                               {"Arp poisoning", "", NULL},
                               {"Icmp redirect", "", NULL},
@@ -103,19 +76,23 @@ void curses_sniff_live(void)
    wdg_set_color(menu, WDG_COLOR_WINDOW, EC_COLOR_MENU);
    wdg_set_color(menu, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(menu, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_menu_add(menu, file);
-   wdg_menu_add(menu, target);
+   /* add the menu from external files */
+   wdg_menu_add(menu, menu_start);
+   wdg_menu_add(menu, menu_target);
    wdg_menu_add(menu, hosts);
-   wdg_menu_add(menu, view);
+   wdg_menu_add(menu, menu_view);
    wdg_menu_add(menu, mitm);
    wdg_menu_add(menu, filter);
 #ifdef HAVE_PLUGINS
    wdg_menu_add(menu, plugin);
 #endif
+
    wdg_draw_object(menu);
    
    /* repaint the whole screen */
    wdg_redraw_all();
+
+   wdg_set_focus(menu);
 
    /* add the message flush callback */
    wdg_add_idle_callback(curses_flush_msg);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.1 2003/11/23 18:07:57 alor Exp $
+    $Id: wdg_file.c,v 1.2 2003/11/23 20:36:17 alor Exp $
 */
 
 #include <wdg.h>
@@ -78,7 +78,7 @@ void wdg_file_add_callback(wdg_t *wo, void (*callback)(char *path, char *file));
  */
 void wdg_create_file(struct wdg_object *wo)
 {
-   WDG_WO_EXT(struct wdg_file_handle, ww);
+   struct wdg_file_handle *ww;
    
    /* set the callbacks */
    wo->destroy = wdg_file_destroy;
@@ -94,6 +94,7 @@ void wdg_create_file(struct wdg_object *wo)
     * remember the initial path.
     * this has to be restored after the file is selected 
     */
+   ww = (struct wdg_file_handle *)wo->extend;
    getcwd(ww->initpath, PATH_MAX);
    
    /* default dimentions */

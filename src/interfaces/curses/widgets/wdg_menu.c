@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.5 2003/11/23 18:07:57 alor Exp $
+    $Id: wdg_menu.c,v 1.6 2003/11/23 20:36:17 alor Exp $
 */
 
 #include <wdg.h>
@@ -66,6 +66,7 @@ static void wdg_menu_close(struct wdg_object *wo);
 
 static int wdg_menu_virtualize(int key);
 static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
+static int wdg_menu_shortcut(struct wdg_object *wo, int key);
 
 void wdg_menu_add(struct wdg_object *wo, struct wdg_menu *menu);
 
@@ -290,7 +291,7 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
 
       /* message not handled */
       default:
-         return -WDG_ENOTHANDLED;
+         return wdg_menu_shortcut(wo, key);
          break;
    }
   
@@ -580,6 +581,19 @@ static void wdg_menu_close(struct wdg_object *wo)
    /* repaint the whole screen since a menu might have overlapped something */
    wdg_redraw_all();
 }
+
+/*
+ * search in the shortcut list the key, and if found
+ * open the corresponding menu.
+ * if a menu is already opened, search only in its list.
+ */
+static int wdg_menu_shortcut(struct wdg_object *wo, int key)
+{
+   /* XXX - TODO */
+   
+   return -WDG_ENOTHANDLED;
+}
+
 
 /* EOF */
 

@@ -11,9 +11,10 @@
       - LTDL_SHLIB_EXT
 
    + BSD PORTING
-      - hack_pcap_lnet is not usable
-      - bpf filter on outgoing packets
-      - BIOCSSEESENT (only under freebsd)
+      - find a way for bridged sniff under OpenBSD 
+
+   + SOLARIS PORTING
+      - test the bridged sniffing
 
    + WINDOWS PORTING
       - get_iface_mtu 
@@ -37,11 +38,9 @@ Nov 2003:
 
    + LIBWDG
       - widgets:
-         - menu 
-            - shortcuts
+         - menu shortcuts
          - input (with forms ?)
          - selectable lists
-         - file selection
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)

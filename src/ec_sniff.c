@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.29 2003/10/17 20:31:40 lordnaga Exp $
+    $Id: ec_sniff.c,v 1.30 2003/10/18 09:53:13 alor Exp $
 */
 
 #include <ec.h>
@@ -135,7 +135,7 @@ void set_bridge_sniff(void)
 
 /* 
  * set the PO_IGNORE based on the 
- * ip specified on command line
+ * TARGETS specified on command line
  */
 
 static void display_packet_for_us(struct packet_object *po)
@@ -152,21 +152,23 @@ static void display_packet_for_us(struct packet_object *po)
 
     if (!GBL_OPTIONS->proto || !strcasecmp(GBL_OPTIONS->proto, "all"))  
        proto = 1;
+    else {
 
-    if (GBL_OPTIONS->proto && !strcasecmp(GBL_OPTIONS->proto, "tcp") 
-          && po->L4.proto == NL_TYPE_TCP)
-       proto = 1;
-   
-    if (GBL_OPTIONS->proto && !strcasecmp(GBL_OPTIONS->proto, "udp") 
-          && po->L4.proto == NL_TYPE_UDP)
-       proto = 1;
-    
+       if (GBL_OPTIONS->proto && !strcasecmp(GBL_OPTIONS->proto, "tcp") 
+             && po->L4.proto == NL_TYPE_TCP)
+          proto = 1;
+      
+       if (GBL_OPTIONS->proto && !strcasecmp(GBL_OPTIONS->proto, "udp") 
+             && po->L4.proto == NL_TYPE_UDP)
+          proto = 1;
+    }
+
     /* the protocol does not match */
     if (!GBL_OPTIONS->reversed && proto == 0)
        return;
     
    /*
-    * we have to check if the packet is complying with the filter
+    * we have to check if the packet is complying with the TARGETS
     * specified by the users.
     *
     * 1) also accept the packet if the destination mac address is equal
@@ -206,8 +208,12 @@ static void display_packet_for_us(struct packet_object *po)
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
       good = 1;   
   
-
-   if (GBL_OPTIONS->reversed ^ (good && proto) ) {
+   /* 
+    * reverse the matching but only if it has matched !
+    * if good && proto is valse, we have to go on with
+    * tests and evaluate it later
+    */
+   if ((good && proto) && GBL_OPTIONS->reversed ^ (good && proto) ) {
       po->flags &= ~PO_IGNORE;
       return;
    }
@@ -229,7 +235,7 @@ static void display_packet_for_us(struct packet_object *po)
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.src))) ) )
       good = 1;   
    
-   
+   /* reverse the matching */ 
    if (GBL_OPTIONS->reversed ^ (good && proto) )
       po->flags &= ~PO_IGNORE;
  

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.20 2003/07/07 10:43:20 alor Exp $
+    $Id: ec_packet.c,v 1.21 2003/07/18 18:46:30 alor Exp $
 */
 
 #include <ec.h>
@@ -90,6 +90,15 @@ inline int packet_destroy_object(struct packet_object *po)
      
       SAFE_FREE(po->packet);
       
+      /* 
+       * free the dissector info 
+       * during the duplication, the pointers where
+       * passed to the dup, so we have to free them
+       * here.
+       */
+      SAFE_FREE(po->DISSECTOR.user);
+      SAFE_FREE(po->DISSECTOR.pass);
+      SAFE_FREE(po->DISSECTOR.info);
    }
       
    /* 

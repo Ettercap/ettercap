@@ -29,11 +29,6 @@ this is the unofficial and floating in time roadmap:
 
 Jul 2003:
 
-   + DISSECTOR
-      - IRC
-      - ldap
-      - snmp
-
    + TOP HALF
       - connection tracking (with buffered conn)
 

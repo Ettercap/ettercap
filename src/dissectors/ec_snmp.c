@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_snmp.c,v 1.1 2003/07/17 21:13:12 alor Exp $
+    $Id: ec_snmp.c,v 1.2 2003/07/18 18:46:30 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
+#include <ec_resolv.h>
 
 #define ASN1_INTEGER    2                                                                           
 #define ASN1_STRING     4                                                                           
@@ -72,8 +73,10 @@ FUNC_DECODER(dissector_snmp)
    /* get the version */
    version = *ptr++;
 
-   /* convert the version to real number */
-   if (version++ > 3)
+   /* convert the code to the real version */
+   if (version++ == 3)
+      version = 2;
+   else if (version > 3)
       version = 3;
    
    /* move till the community name len */
@@ -91,15 +94,15 @@ FUNC_DECODER(dissector_snmp)
             clen = *ptr;
             break;
          case 2:
-            clen = *(u_int16 *)ptr;
+            NS_GET16(clen, ptr);
             break;
          case 3:
             ptr--;
-            clen = *(u_int32 *)ptr++;
+            NS_GET32(clen, ptr);
             clen &= 0xfff;
             break;
          case 4:
-            clen = *(u_int32 *)ptr;
+            NS_GET32(clen, ptr);
             break;
       }
    } else

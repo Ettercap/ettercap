@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.12 2003/07/16 20:45:30 alor Exp $
+    $Id: ec_profiles.c,v 1.13 2003/07/18 18:46:30 alor Exp $
 */
 
 #include <ec.h>
@@ -366,8 +366,8 @@ static int profile_add_user(struct packet_object *po)
 
    /* if there are infos copy it, else skip */
    if (po->DISSECTOR.user && po->DISSECTOR.pass) {
-      u->user = po->DISSECTOR.user;
-      u->pass = po->DISSECTOR.pass;
+      u->user = strdup(po->DISSECTOR.user);
+      u->pass = strdup(po->DISSECTOR.pass);
    } else {
       SAFE_FREE(u);
       PROFILE_UNLOCK;
@@ -375,7 +375,7 @@ static int profile_add_user(struct packet_object *po)
    }
   
    if (po->DISSECTOR.info)
-      u->info = po->DISSECTOR.info;
+      u->info = strdup(po->DISSECTOR.info);
   
    /* search the right point to inser it (ordered alphabetically) */
    LIST_FOREACH(a, &(o->users_list_head), next) {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp.c,v 1.6 2003/11/12 16:59:17 alor Exp $
+    $Id: ec_dhcp.c,v 1.7 2003/11/18 15:30:13 alor Exp $
 */
 
 /*
@@ -55,6 +55,7 @@
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
+#include <ec_proto.h>
 
 /* globalse */
 
@@ -75,31 +76,15 @@ struct dhcp_hdr {
    u_int8   chaddr[16];
    u_int8   sname[64];
    u_int8   file[128];
+   u_int32  magic;
 };
-
-#define DHCP_DISCOVER      0x01
-#define DHCP_OFFER         0x02
-#define DHCP_REQUEST       0x03
-#define DHCP_ACK           0x05
-
-#define DHCP_MAGIC_COOKIE  "\x63\x82\x53\x63"
-#define OPT_NETMASK        0x01
-#define OPT_ROUTER         0x03
-#define OPT_DNS            0x06
-#define OPT_DOMAIN         0x0f
-#define OPT_RQ_ADDR        0x32
-#define OPT_LEASE_TIME     0x33
-#define OPT_MSG_TYPE       0x35
-#define OPT_SRV_ADDR       0x36
-#define OPT_RENEW_TIME     0x3a
-#define OPT_CLI_IDENT      0x3d
-#define OPT_END            0xff
 
 /* protos */
 
 FUNC_DECODER(dissector_dhcp);
 void dhcp_init(void);
-static u_int8 * get_option(u_int8 opt, u_int8 *ptr, u_int8 *end);
+u_int8 * get_dhcp_option(u_int8 opt, u_int8 *ptr, u_int8 *end);
+void put_dhcp_option(u_int8 opt, u_int8 *value, u_int8 len, u_int8 **ptr);
 
 /************************************************/
 
@@ -121,8 +106,6 @@ FUNC_DECODER(dissector_dhcp)
    struct dhcp_hdr *dhcp;
    u_int8 *options, *opt;
 
-   (void)end;
-   
    /* sanity check */
    if (PACKET->DATA.len < sizeof(struct dhcp_hdr))
       return NULL;
@@ -134,14 +117,13 @@ FUNC_DECODER(dissector_dhcp)
    options = (u_int8 *)(dhcp + 1);
 
    /* check for the magic cookie */
-   if (memcmp(options, DHCP_MAGIC_COOKIE, 4))
+   if (dhcp->magic != htonl(DHCP_MAGIC_COOKIE))
       return NULL;
 
-   /* move to the first option */
-   options += 4;
+   end = ptr + PACKET->DATA.len;
    
    /* search the "message type" option */
-   opt = get_option(OPT_MSG_TYPE, options, end);
+   opt = get_dhcp_option(DHCP_OPT_MSG_TYPE, options, end);
 
    /* option not found */
    if (opt == NULL)
@@ -160,26 +142,35 @@ FUNC_DECODER(dissector_dhcp)
             DEBUG_MSG("\tDissector_DHCP DISCOVER");
             
             DISSECT_MSG("DHCP: [%s] DISCOVER \n", mac_addr_ntoa(dhcp->chaddr, tmp)); 
+      
+            /* HOOK POINT: HOOK_PROTO_DHCP_DISCOVER */
+            hook_point(HOOK_PROTO_DHCP_DISCOVER, PACKET);
             
             break;
             
          case DHCP_REQUEST:
             DEBUG_MSG("\tDissector_DHCP REQUEST");
       
-            /* netmask */
-            if ((opt = get_option(OPT_RQ_ADDR, options, end)) != NULL)
+            /* requested ip address */
+            if ((opt = get_dhcp_option(DHCP_OPT_RQ_ADDR, options, end)) != NULL)
                ip_addr_init(&client, AF_INET, opt + 1);
-            
+            else {
+               /* search if the client already has the ip address */
+               if (dhcp->ciaddr != 0) {
+                  ip_addr_init(&client, AF_INET, (char *)&dhcp->ciaddr);
+               } else
+                  return NULL;
+            }
+
             DISSECT_MSG("DHCP: [%s] REQUEST ", mac_addr_ntoa(dhcp->chaddr, tmp)); 
             DISSECT_MSG("%s\n", ip_addr_ntoa(&client, tmp)); 
+      
+            /* HOOK POINT: HOOK_PROTO_DHCP_REQUEST */
+            hook_point(HOOK_PROTO_DHCP_REQUEST, PACKET);
       
             break;
       }
 
-      /* HOOK POINT: HOOK_PROTO_DHCP_REQ */
-      hook_point(HOOK_PROTO_DHCP_REQ, PACKET);
-      
-         
    /* server replies */ 
    } else {
       struct ip_addr netmask;
@@ -210,15 +201,15 @@ FUNC_DECODER(dissector_dhcp)
             ip_addr_init(&client, AF_INET, (char *)&dhcp->yiaddr );
             
             /* netmask */
-            if ((opt = get_option(OPT_NETMASK, options, end)) != NULL)
+            if ((opt = get_dhcp_option(DHCP_OPT_NETMASK, options, end)) != NULL)
                ip_addr_init(&netmask, AF_INET, opt + 1);
             
             /* default gateway */
-            if ((opt = get_option(OPT_ROUTER, options, end)) != NULL)
+            if ((opt = get_dhcp_option(DHCP_OPT_ROUTER, options, end)) != NULL)
                ip_addr_init(&router, AF_INET, opt + 1);
             
             /* dns server */
-            if ((opt = get_option(OPT_DNS, options, end)) != NULL)
+            if ((opt = get_dhcp_option(DHCP_OPT_DNS, options, end)) != NULL)
                ip_addr_init(&dns, AF_INET, opt + 1);
             
             DISSECT_MSG("DHCP: [%s] %s : ", ip_addr_ntoa(&PACKET->L3.src, tmp), (resp == DHCP_ACK) ? "ACK" : "OFFER"); 
@@ -228,7 +219,7 @@ FUNC_DECODER(dissector_dhcp)
             DISSECT_MSG("DNS %s ", ip_addr_ntoa(&dns, tmp)); 
             
             /* dns domain */
-            if ((opt = get_option(OPT_DOMAIN, options, end)) != NULL) {
+            if ((opt = get_dhcp_option(DHCP_OPT_DOMAIN, options, end)) != NULL) {
                   strncpy(domain, opt + 1, MIN(*opt, sizeof(domain)) );
             
                DISSECT_MSG("\"%s\"\n", domain);
@@ -237,9 +228,6 @@ FUNC_DECODER(dissector_dhcp)
             
             break;
       }
-      
-      /* HOOK POINT: HOOK_PROTO_DHCP_REP */
-      hook_point(HOOK_PROTO_DHCP_REP, PACKET);
    }
       
    return NULL;
@@ -251,7 +239,7 @@ FUNC_DECODER(dissector_dhcp)
  * or NULL if not found
  * ptr will point to the length of the option
  */
-static u_int8 * get_option(u_int8 opt, u_int8 *ptr, u_int8 *end)
+u_int8 * get_dhcp_option(u_int8 opt, u_int8 *ptr, u_int8 *end)
 {
    do {
 
@@ -266,9 +254,29 @@ static u_int8 * get_option(u_int8 opt, u_int8 *ptr, u_int8 *end)
        */
       ptr = ptr + 2 + (*(ptr + 1));
 
-   } while (*ptr != OPT_END && ptr < end);
+   } while (*ptr != DHCP_OPT_END && ptr < end);
    
    return NULL;
+}
+
+/*
+ * put an option into the buffer, the ptr will be 
+ * move after the options just inserted.
+ */
+void put_dhcp_option(u_int8 opt, u_int8 *value, u_int8 len, u_int8 **ptr)
+{
+   u_int8 *p = *ptr;
+   
+   /* the options type */
+   *p++ = opt;
+   /* the len of the option */
+   *p++ = len;
+   /* copy the value */
+   memcpy(p, value, len);
+   /* move the pointer */
+   p += len;
+
+   *ptr = p;
 }
 
 /* EOF */

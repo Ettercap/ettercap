@@ -1,5 +1,5 @@
 
-/* $Id: ec_proto.h,v 1.8 2003/10/27 20:54:43 alor Exp $ */
+/* $Id: ec_proto.h,v 1.9 2003/11/18 15:30:13 alor Exp $ */
 
 #ifndef EC_PROTO_H
 #define EC_PROTO_H
@@ -68,6 +68,27 @@ enum {
    ICMP_TIME_EXCEEDED   = 11,
    ICMP_NET_UNREACH     = 0,
    ICMP_HOST_UNREACH    = 1,
+};
+
+/* DHCP options */
+enum {
+   DHCP_MAGIC_COOKIE    = 0x63825363,
+   DHCP_DISCOVER        = 0x01,
+   DHCP_OFFER           = 0x02,
+   DHCP_REQUEST         = 0x03,
+   DHCP_ACK             = 0x05,
+   DHCP_OPT_NETMASK     = 0x01,
+   DHCP_OPT_ROUTER      = 0x03,
+   DHCP_OPT_DNS         = 0x06,
+   DHCP_OPT_DOMAIN      = 0x0f,
+   DHCP_OPT_RQ_ADDR     = 0x32,
+   DHCP_OPT_LEASE_TIME  = 0x33,
+   DHCP_OPT_MSG_TYPE    = 0x35,
+   DHCP_OPT_SRV_ADDR    = 0x36,
+   DHCP_OPT_RENEW_TIME  = 0x3a,
+   DHCP_OPT_CLI_IDENT   = 0x3d,
+   DHCP_OPT_END         = 0xff,
+   DHCP_OPT_MIN_LEN     = 0x12c,
 };
 
 #endif

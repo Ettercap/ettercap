@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.15 2003/11/10 22:46:24 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.16 2003/11/18 15:30:13 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -106,6 +106,15 @@ Use ARP replies to poison the targets. This is the classic attack.
 .B arp_poison_request
 Use ARP request to poison the targets. Useful against targets that cache even
 arp request values.
+
+.TP
+.B dhcp_lease_time
+This is the lease time (in seconds) for a dhcp assignment. You can lower this
+value to permit the victims to receive a correct dhcp reply after you have
+stopped your attack. Using higher timeout can seriously mess your network after
+the attack has finished. On the other and some clients will prefer higher lease
+time, so you have to increase it to win the race condition with the real
+server.
 
 
 

@@ -8,7 +8,7 @@ Legenda:
 
 NG-0.7.0    ????????
       
-   + Rewrite from scratch (the code is clean and well commented)
+   + Rewrite from scratch (the code is now cleaner and well commented)
    + etterlog utility for logfiles parsing
    + etterfilter utility to compile advanced content filters
    + root privs dropped after initialization
@@ -20,6 +20,7 @@ NG-0.7.0    ????????
    + new MITM methods:
       + advanced ARP poisoning engine
       + ICMP redirect
+      + DCHP spoofing
    + multiple target selection
    + pcap filter on capture
    + regex packet matching 

@@ -33,10 +33,9 @@ this is the unofficial and floating in time roadmap:
       
 Nov 2003:
 
-   + MITM METHODS
-      - dhcp spoofing
-      - port stealing
-         
+   + PROFILES
+      - dhcp infos
+
    + LIBWDG
       - widgets:
          - menu 
@@ -61,11 +60,12 @@ Nov 2003:
    
 
 Dec 2003:
+   
+   + MITM METHODS
+      - port stealing
 
    + INTERFACE ENGINE
       - gtk
-         - redesigned
-         - win32 port
 
    + LOGGING
       - selective log on connections

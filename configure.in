@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.68 2003/11/17 15:40:44 alor Exp $
+dnl    $Id: configure.in,v 1.69 2003/11/18 15:30:06 alor Exp $
 dnl
 
 AC_INIT
@@ -529,7 +529,7 @@ AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         PCREINC="-I$withval/"
-        PCRELIB="-L$withval/"
+        PCRELIB="-L$withval/ -lpcre"
         AM_CONDITIONAL(HAVE_PCRE, true) 
         AC_DEFINE(HAVE_PCRE, 1)
         ac_cv_ec_pcre=yes

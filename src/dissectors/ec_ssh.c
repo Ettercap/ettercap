@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.17 2003/12/27 16:08:47 alor Exp $
+    $Id: ec_ssh.c,v 1.18 2004/01/04 19:01:18 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -48,6 +48,10 @@
 #define SMSG_STDERR_DATA 18
 #define CMSG_REQUEST_COMPRESSION 37
 
+#define SSH_CIPHER_NONE 0
+#define SSH_CIPHER_3DES 3
+#define SSH_CIPHER_BLOWFISH 6
+
 /* My RSA keys */
 typedef struct {
     RSA *myserverkey;
@@ -63,6 +67,7 @@ typedef struct {
    RSA *hostkey;
    ssh_my_key *ptrkey;
    void *key_state[2];
+   void (*decrypt)(u_char *src, u_char *dst, int len, void *state);   
    struct stream_buf data_buffer[2];
       #define MAX_USER_LEN 64
    u_char user[MAX_USER_LEN + 1];
@@ -83,6 +88,11 @@ struct des3_state
    DES_cblock iv1, iv2, iv3;
 };
 
+struct blowfish_state 
+{
+   struct bf_key_st key;
+   u_char iv[8];
+};
 
 /* globals */
 
@@ -100,6 +110,9 @@ static void rsa_public_encrypt(BIGNUM *out, BIGNUM *in, RSA *key);
 static void rsa_private_decrypt(BIGNUM *out, BIGNUM *in, RSA *key);
 static void des3_decrypt(u_char *src, u_char *dst, int len, void *state);
 static void *des3_init(u_char *sesskey, int len);
+static void swap_bytes(const u_char *src, u_char *dst, int n);
+static void *blowfish_init(u_char *sesskey, int len);
+static void blowfish_decrypt(u_char *src, u_char *dst, int len, void *state);
 static int32 read_packet(u_char **buffer, struct stream_buf *dbuf);
 
 /************************************************/
@@ -187,7 +200,8 @@ FUNC_DECODER(dissector_ssh)
             SAFE_CALLOC(clear_packet, ssh_len + ssh_mod, 1);
 	        
             /* Decrypt the packet (jumping over pck len) using correct key */
-            des3_decrypt(crypted_packet + 4, clear_packet, ssh_len + ssh_mod, session_data->key_state[direction]);
+	    if (session_data->decrypt)
+               session_data->decrypt(crypted_packet + 4, clear_packet, ssh_len + ssh_mod, session_data->key_state[direction]);
 
             if (session_data->compression_status == COMPRESSION_ON) {
                /* XXX Handle compressed packets */ 
@@ -330,12 +344,29 @@ FUNC_DECODER(dissector_ssh)
           */	  
          if ((session_data->status == WAITING_PUBLIC_KEY || session_data->status == WAITING_SESSION_KEY) && ssh_packet_type == SMSG_PUBLIC_KEY) {
             ssh_my_key **index_ssl;
-            u_int32 server_mod, host_mod;
+            u_int32 server_mod, host_mod, cypher_mask, my_mask=0;
  
+            /* Set the mask to 3DES, blowfish or none (if supported) */
+            cypher_mask = *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 12);
+            cypher_mask = htonl(cypher_mask);
+            if (cypher_mask & (1<<SSH_CIPHER_NONE))
+               my_mask |= (1<<SSH_CIPHER_NONE);
+            if (cypher_mask & (1<<SSH_CIPHER_3DES))
+               my_mask |= (1<<SSH_CIPHER_3DES);
+            if (cypher_mask & (1<<SSH_CIPHER_BLOWFISH))
+               my_mask |= (1<<SSH_CIPHER_BLOWFISH);
+	       
+            if (!my_mask) {
+               dissect_wipe_session(PACKET);
+               return NULL;
+            }
+	    
+            *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 12) = htonl(my_mask);
+
             /* Remember where to put the key */
             ptr += 8; 
             key_to_put = ptr;
-	    
+	    	    
             /* If it's the first time we catch the public key */
             if (session_data->ptrkey == NULL) { 
                /* Initialize RSA key structures (other fileds are set to 0) */
@@ -397,8 +428,6 @@ FUNC_DECODER(dissector_ssh)
             put_bn(session_data->ptrkey->myhostkey->e, &key_to_put);
             put_bn(session_data->ptrkey->myhostkey->n, &key_to_put);
 
-            /* Set the mask to 3DES */
-            *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 12) = htonl(8);
             /* Recalculate SSH crc */
             *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 4) = htonl(CRC_checksum(PACKET->DATA.data+4, PACKET->DATA.len-8));
 	                
@@ -415,12 +444,13 @@ FUNC_DECODER(dissector_ssh)
                session_data->status = WAITING_PUBLIC_KEY;
          } else if (session_data->status == WAITING_SESSION_KEY && ssh_packet_type == CMSG_SESSION_KEY) {
             /* Ready to catch and modify SESSION_KEY */
-            u_char cookie[8], sesskey[32], session_id1[16], session_id2[16];
+            u_char cookie[8], sesskey[32], session_id1[16], session_id2[16], cypher;
             u_char *temp_session_id;
             BIGNUM *enckey, *bn;
             u_int32 i;
 
-            /* Get the cookie */
+            /* Get the cypher and the cookie */
+            cypher = *ptr;
             memcpy(cookie, ++ptr, 8);
             ptr += 8; 
             key_to_put = ptr;
@@ -456,9 +486,16 @@ FUNC_DECODER(dissector_ssh)
               sesskey[i] ^= session_id2[i];
 
             /* Save SessionKey */
-            session_data->key_state[0] = des3_init(sesskey, sizeof(sesskey));
-            session_data->key_state[1] = des3_init(sesskey, sizeof(sesskey));
-
+            if (cypher == SSH_CIPHER_3DES) {
+               session_data->key_state[0] = des3_init(sesskey, sizeof(sesskey));
+               session_data->key_state[1] = des3_init(sesskey, sizeof(sesskey));
+               session_data->decrypt = des3_decrypt;
+            } else if (cypher == SSH_CIPHER_BLOWFISH) {
+               session_data->key_state[0] = blowfish_init(sesskey, sizeof(sesskey));
+               session_data->key_state[1] = blowfish_init(sesskey, sizeof(sesskey));
+               session_data->decrypt = blowfish_decrypt;
+            }
+	    
             /* Re-encrypt SessionKey with the real RSA key */
             bn = BN_new();
             BN_set_word(bn, 0);
@@ -536,6 +573,7 @@ static int32 read_packet(u_char **buffer, struct stream_buf *dbuf)
    return ESUCCESS;
 }
 
+/* 3DES and blowfish stuff - Thanks to Dug Song ;) */
 static void *des3_init(u_char *sesskey, int len)
 {
    struct des3_state *state;
@@ -567,6 +605,39 @@ static void des3_decrypt(u_char *src, u_char *dst, int len, void *state)
    DES_ncbc_encrypt(src, dst, len, &dstate->k3, &dstate->iv3, DES_DECRYPT);
    DES_ncbc_encrypt(dst, dst, len, &dstate->k2, &dstate->iv2, DES_ENCRYPT);
    DES_ncbc_encrypt(dst, dst, len, &dstate->k1, &dstate->iv1, DES_DECRYPT);
+}
+
+static void swap_bytes(const u_char *src, u_char *dst, int n)
+{
+   char c[4];
+	
+   for (n = n / 4; n > 0; n--) {
+      c[3] = *src++; c[2] = *src++;
+      c[1] = *src++; c[0] = *src++;
+      *dst++ = c[0]; *dst++ = c[1];
+      *dst++ = c[2]; *dst++ = c[3];
+   }
+}
+
+static void *blowfish_init(u_char *sesskey, int len)
+{
+   struct blowfish_state *state;
+
+   state = malloc(sizeof(*state));
+   BF_set_key(&state->key, len, sesskey);
+   memset(state->iv, 0, 8);
+   return (state);
+}
+
+
+static void blowfish_decrypt(u_char *src, u_char *dst, int len, void *state)
+{
+   struct blowfish_state *dstate;
+
+   dstate = (struct blowfish_state *)state;
+   swap_bytes(src, dst, len);
+   BF_cbc_encrypt((void *)dst, dst, len, &dstate->key, dstate->iv, BF_DECRYPT);
+   swap_bytes(dst, dst, len);
 }
 
 static void put_bn(BIGNUM *bn, u_char **pp)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.20 2003/11/29 11:22:35 alor Exp $
+    $Id: wdg.c,v 1.21 2003/11/30 12:02:31 alor Exp $
 */
 
 #include <wdg.h>
@@ -719,7 +719,7 @@ size_t wdg_get_nlines(struct wdg_object *wo)
    else 
       a = (c + wo->y1 > 0) ? (c + wo->y1) : 0;
 
-   if (wo->y2 >= 0)
+   if (wo->y2 > 0)
       b = wo->y2;
    else
       b = (c + wo->y2 > 0) ? (c + wo->y2) : 0;
@@ -738,7 +738,7 @@ size_t wdg_get_ncols(struct wdg_object *wo)
    else 
       a = (c + wo->x1 > 0) ? (c + wo->x1) : 0;
 
-   if (wo->x2 >= 0)
+   if (wo->x2 > 0)
       b = wo->x2;
    else
       b = (c + wo->x2 > 0) ? (c + wo->x2) : 0;

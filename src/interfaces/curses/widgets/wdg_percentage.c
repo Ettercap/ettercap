@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_percentage.c,v 1.1 2003/11/10 16:11:19 alor Exp $
+    $Id: wdg_percentage.c,v 1.2 2003/11/30 12:02:31 alor Exp $
 */
 
 #include <wdg.h>
@@ -293,6 +293,12 @@ void wdg_percentage_set(wdg_t *wo, size_t p, size_t max)
    ww->percent = p * 100 / max;
 
    wdg_percentage_redraw(wo);
+
+   /* reached the max, selfdestruct */
+   if (p == max) {
+      wdg_destroy_object(&wo);
+      wdg_redraw_all();
+   }
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.5 2003/11/29 11:22:36 alor Exp $
+    $Id: wdg_file.c,v 1.6 2003/11/30 12:02:31 alor Exp $
 */
 
 #include <wdg.h>
@@ -71,7 +71,7 @@ static int wdg_file_virtualize(int key);
 static int wdg_file_driver(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 static void wdg_file_callback(struct wdg_object *wo, char *path, char *file);
 
-void wdg_file_add_callback(wdg_t *wo, void (*callback)(char *path, char *file));
+void wdg_file_set_callback(wdg_t *wo, void (*callback)(char *path, char *file));
 
 /*******************************************/
 
@@ -542,7 +542,7 @@ static void wdg_file_callback(struct wdg_object *wo, char *path, char *file)
 /*
  * the user should use it to associate a callback to the file selection
  */
-void wdg_file_add_callback(wdg_t *wo, void (*callback)(char *path, char *file))
+void wdg_file_set_callback(wdg_t *wo, void (*callback)(char *path, char *file))
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
   

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.8 2003/11/27 21:37:07 alor Exp $
+    $Id: wdg_menu.c,v 1.9 2003/11/30 12:02:31 alor Exp $
 */
 
 #include <wdg.h>
@@ -167,12 +167,12 @@ static int wdg_menu_redraw(struct wdg_object *wo)
       if ((ww->menu = newwin(1, current_screen.cols, 0, 0)) == NULL)
          return -WDG_EFATAL;
 
-      /* draw the titles */
-      wdg_menu_titles(wo);
-
       /* set the window color */
       wbkgd(ww->menu, COLOR_PAIR(wo->window_color));
       redrawwin(ww->menu);
+      
+      /* draw the titles */
+      wdg_menu_titles(wo);
 
       /* no scrolling for menu */
       scrollok(ww->menu, FALSE);

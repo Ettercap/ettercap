@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.18 2003/11/27 21:37:07 alor Exp $ */
+/* $Id: wdg.h,v 1.19 2003/11/30 12:02:31 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -228,7 +228,7 @@ extern void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(voi
 /* percentage objects */
 extern void wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
 /* file dialog objects */
-extern void wdg_file_add_callback(wdg_t *wo, void (*callback)(char *path, char *file));
+extern void wdg_file_set_callback(wdg_t *wo, void (*callback)(char *path, char *file));
 
 
 /* EXPORTED FUNCTIONS */

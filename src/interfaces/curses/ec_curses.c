@@ -17,13 +17,17 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.17 2003/11/23 22:22:54 alor Exp $
+    $Id: ec_curses.c,v 1.18 2003/11/30 12:02:19 alor Exp $
 */
 
 #include <ec.h>
 #include <wdg.h>
 
 /* globals */
+
+static wdg_t *sysmsg_win;
+static char tag_unoff[] = " ";
+static char tag_promisc[] = "*";
 
 /* proto */
 
@@ -37,9 +41,14 @@ static void curses_fatal_error(const char *msg);
 static void curses_input(const char *title, char *input, size_t n);
 static void curses_progress(char *title, int value, int max);
 
-void msg(void);
-void percent(void);
-void file_open(void);
+static void curses_setup(void);
+static void curses_exit(void);
+static void toggle_unoffensive(void);
+static void toggle_nopromisc(void);
+static void curses_flush_msg(void);
+static void file_open(void);
+static void set_pcapfile(char *path, char *file);
+
 
 /*******************************************/
 
@@ -90,8 +99,107 @@ static void curses_init(void)
    wdg_init_color(EC_COLOR_SELECTION, GBL_CONF->colors.selection_fg, GBL_CONF->colors.selection_bg);
    wdg_init_color(EC_COLOR_ERROR, GBL_CONF->colors.error_fg, GBL_CONF->colors.error_bg);
    wdg_init_color(EC_COLOR_ERROR_BORDER, GBL_CONF->colors.error_border, GBL_CONF->colors.error_bg);
+
+   /* call the setup interface */
+   curses_setup();
+
+   /* reached only after the setup interface has quit */
 }
 
+static void toggle_unoffensive(void)
+{
+   if (GBL_OPTIONS->unoffensive) {
+      tag_unoff[0] = ' ';
+      GBL_OPTIONS->unoffensive = 0;
+   } else {
+      tag_unoff[0] = '*';
+      GBL_OPTIONS->unoffensive = 1;
+   }
+}
+
+static void toggle_nopromisc(void)
+{
+   if (GBL_PCAP->promisc) {
+      tag_promisc[0] = ' ';
+      GBL_PCAP->promisc = 0;
+   } else {
+      tag_promisc[0] = '*';
+      GBL_PCAP->promisc = 1;
+   }
+}
+/*
+ * display the initial menu to setup global options
+ * at startup.
+ */
+static void curses_setup(void)
+{
+   wdg_t *menu;
+   
+   struct wdg_menu file[] = { {"File", "F", NULL},
+                              {"Open...", "", file_open},
+                              {"Write...", "", NULL},
+                              {"-", "", NULL},
+                              {"Exit", "", curses_exit},
+                              {NULL, NULL, NULL},
+                            };
+   
+   struct wdg_menu live[] = { {"Live", "L", NULL},
+                              {"Unified sniffing...", "", NULL},
+                              {"Bridged sniffing...", "", NULL},
+                              {"-", "", NULL},
+                              {"Set pcap filter...", "", NULL},
+                              {NULL, NULL, NULL},
+                            };
+   
+   struct wdg_menu options[] = { {"Options", "O", NULL},
+                                 {"Unoffensive", tag_unoff, toggle_unoffensive},
+                                 {"Promisc mode", tag_promisc, toggle_nopromisc},
+                                 {NULL, NULL, NULL},
+                               };
+   
+   wdg_create_object(&menu, WDG_MENU, WDG_OBJ_WANT_FOCUS | WDG_OBJ_ROOT_OBJECT);
+   
+   wdg_set_title(menu, GBL_VERSION, WDG_ALIGN_RIGHT);
+   wdg_set_color(menu, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(menu, WDG_COLOR_WINDOW, EC_COLOR_MENU);
+   wdg_set_color(menu, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(menu, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+   wdg_menu_add(menu, file);
+   wdg_menu_add(menu, live);
+   wdg_menu_add(menu, options);
+   wdg_draw_object(menu);
+   
+   /* create the bottom windows for user messages */
+   wdg_create_object(&sysmsg_win, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
+   
+   wdg_set_title(sysmsg_win, "User messages:", WDG_ALIGN_LEFT);
+   wdg_set_size(sysmsg_win, 0, -10, 0, 0);
+   wdg_set_color(sysmsg_win, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(sysmsg_win, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(sysmsg_win, WDG_COLOR_BORDER, EC_COLOR_BORDER);
+   wdg_set_color(sysmsg_win, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(sysmsg_win, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+   wdg_scroll_set_lines(sysmsg_win, 500);
+   wdg_draw_object(sysmsg_win);
+ 
+   /* give the focus to the menu */
+   wdg_set_focus(menu);
+   
+   /* give the control to the interface */
+   wdg_events_handler('U');
+   
+   wdg_destroy_object(&menu);
+}
+
+/*
+ * exit from the setup interface 
+ */
+static void curses_exit(void)
+{
+   DEBUG_MSG("curses_exit");
+   wdg_cleanup();
+   clean_exit(0);
+}
 
 /*
  * reset to the previous state
@@ -103,12 +211,25 @@ static void curses_cleanup(void)
    wdg_cleanup();
 }
 
+/*
+ * this function is called on idle loop in wdg
+ */
+static void curses_flush_msg(void)
+{
+   ui_msg_flush(MSG_ALL);
+}
 
 /*
- * print a USER_MSG()
+ * print a USER_MSG() extracting it from the queue
  */
 static void curses_msg(const char *msg)
 {
+
+   /* if the object does not exist yet */
+   if (sysmsg_win == NULL)
+      return;
+
+   wdg_scroll_print(sysmsg_win, (char *)msg);
 }
 
 
@@ -117,6 +238,22 @@ static void curses_msg(const char *msg)
  */
 static void curses_error(const char *msg)
 {
+   wdg_t *dlg;
+
+   /* create the dialog */
+   wdg_create_object(&dlg, WDG_DIALOG, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   
+   wdg_set_title(dlg, "ERROR:", WDG_ALIGN_LEFT);
+   wdg_set_color(dlg, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(dlg, WDG_COLOR_WINDOW, EC_COLOR_ERROR);
+   wdg_set_color(dlg, WDG_COLOR_FOCUS, EC_COLOR_ERROR_BORDER);
+   wdg_set_color(dlg, WDG_COLOR_TITLE, EC_COLOR_ERROR);
+
+   /* set the message */
+   wdg_dialog_text(dlg, WDG_OK, msg);
+   wdg_draw_object(dlg);
+   
+   wdg_set_focus(dlg);
 }
 
 
@@ -125,11 +262,17 @@ static void curses_error(const char *msg)
  */
 static void curses_fatal_error(const char *msg)
 {
+   /* cleanup the curses mode */
+   wdg_cleanup();
+
+   fprintf(stderr, "FATAL ERROR: %s\n\n\n", msg);
+
+   clean_exit(-1);
 }
 
 
 /*
- * handle a fatal error and exit
+ * get an input from the user
  */
 static void curses_input(const char *title, char *input, size_t n)
 {
@@ -141,6 +284,31 @@ static void curses_input(const char *title, char *input, size_t n)
  */
 static void curses_progress(char *title, int value, int max)
 {
+   static wdg_t *per = NULL;
+   
+   /* the first time, create the object */
+   if (per == NULL) {
+      wdg_create_object(&per, WDG_PERCENTAGE, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+      
+      wdg_set_title(per, title, WDG_ALIGN_CENTER);
+      wdg_set_color(per, WDG_COLOR_SCREEN, EC_COLOR);
+      wdg_set_color(per, WDG_COLOR_WINDOW, EC_COLOR);
+      wdg_set_color(per, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+      wdg_set_color(per, WDG_COLOR_TITLE, EC_COLOR_MENU);
+      wdg_draw_object(per);
+      
+      wdg_set_focus(per);
+   /* the subsequent calls have to only update the object */
+   } else {
+      wdg_percentage_set(per, value, max);
+      wdg_update_screen();
+   }
+
+   /* the object is self-destructing... 
+    * so we have only to set the pointer to null
+    */
+   if (value == max)
+      per = NULL;
 }
 
 
@@ -148,7 +316,7 @@ static void curses_progress(char *title, int value, int max)
 
 void curses_interface(void)
 {
-   wdg_t *win1, *win2, *win3, *menu, *dlg;
+   wdg_t *menu;
    struct wdg_menu file[] = { {"File",    "F",  NULL},
                               {"Open...", "",  file_open},
                               {"Close",   "",  NULL},
@@ -176,49 +344,6 @@ void curses_interface(void)
    
    DEBUG_MSG("curses_interface");
 
-   wdg_create_object(&win1, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
-   ON_ERROR(win1, NULL, "Cannot create object");
-   
-   wdg_set_title(win1, "Scroll Window number 1:", WDG_ALIGN_RIGHT);
-   wdg_set_size(win1, 3, 17, -3, -2);
-   wdg_set_color(win1, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(win1, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(win1, WDG_COLOR_BORDER, EC_COLOR_BORDER);
-   wdg_set_color(win1, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(win1, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_scroll_set_lines(win1, 500);
-   wdg_draw_object(win1);
-   wdg_scroll_print(win1, "this is a scrollig window...\n");
-
-   wdg_create_object(&win2, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
-   ON_ERROR(win2, NULL, "Cannot create object");
-   
-   wdg_set_title(win2, "Window number 2:", WDG_ALIGN_CENTER);
-   wdg_set_size(win2, 3, 3, -3, 10);
-   wdg_set_color(win2, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(win2, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(win2, WDG_COLOR_BORDER, EC_COLOR_BORDER);
-   wdg_set_color(win2, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(win2, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_draw_object(win2);
-   wdg_window_print(win2, 1, 1, "...test string...\n");
-   
-   wdg_create_object(&win3, WDG_PANEL, WDG_OBJ_WANT_FOCUS);
-   ON_ERROR(win3, NULL, "Cannot create object");
-   
-   wdg_set_title(win3, "Panel number 3:", WDG_ALIGN_LEFT);
-   wdg_set_size(win3, 3, 11, -3, 16);
-   wdg_set_color(win3, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(win3, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(win3, WDG_COLOR_BORDER, EC_COLOR_BORDER);
-   wdg_set_color(win3, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(win3, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_draw_object(win3);
-   wdg_panel_print(win3, 0, 1, "this is a panel, it may overlap other panels...\n");
-   
-   wdg_create_object(&menu, WDG_MENU, WDG_OBJ_WANT_FOCUS | WDG_OBJ_ROOT_OBJECT);
-   ON_ERROR(menu, NULL, "Cannot create object");
-   
    wdg_set_title(menu, "menu", WDG_ALIGN_RIGHT);
    wdg_set_color(menu, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(menu, WDG_COLOR_WINDOW, EC_COLOR_MENU);
@@ -229,23 +354,11 @@ void curses_interface(void)
    wdg_menu_add(menu, mitm);
    wdg_draw_object(menu);
    
-   wdg_create_object(&dlg, WDG_DIALOG, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   ON_ERROR(dlg, NULL, "Cannot create object");
-   
-   wdg_set_title(dlg, "dialog", WDG_ALIGN_CENTER);
-   wdg_set_color(dlg, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(dlg, WDG_COLOR_WINDOW, EC_COLOR_ERROR);
-   wdg_set_color(dlg, WDG_COLOR_FOCUS, EC_COLOR_ERROR_BORDER);
-   wdg_set_color(dlg, WDG_COLOR_TITLE, EC_COLOR_ERROR);
-   wdg_dialog_text(dlg, WDG_YES | WDG_NO | WDG_CANCEL, "Do you like the new widget interface ?\nI hope so.");
-   wdg_dialog_add_callback(dlg, WDG_YES, msg);
-   wdg_dialog_add_callback(dlg, WDG_NO, percent);
-   wdg_draw_object(dlg);
-   
-   wdg_set_focus(dlg);
-  
    /* repaint the whole screen */
    wdg_redraw_all();
+
+   /* add the message flush callback */
+   wdg_add_idle_callback(curses_flush_msg);
 
    /* 
     * give the control to the event dispatcher
@@ -253,75 +366,47 @@ void curses_interface(void)
     */
    wdg_events_handler('Q');
 
-   wdg_destroy_object(&win1);
-   wdg_destroy_object(&win2);
-   wdg_destroy_object(&win3);
    wdg_destroy_object(&menu);
-   wdg_destroy_object(&dlg);
+
+   wdg_destroy_object(&sysmsg_win);
 }
 
-void msg(void)
-{
-   wdg_t *dlg;
-   
-   wdg_create_object(&dlg, WDG_DIALOG, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   ON_ERROR(dlg, NULL, "Cannot create object");
-   
-   wdg_set_title(dlg, "dialog", WDG_ALIGN_CENTER);
-   wdg_set_color(dlg, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(dlg, WDG_COLOR_WINDOW, EC_COLOR_ERROR);
-   wdg_set_color(dlg, WDG_COLOR_FOCUS, EC_COLOR_ERROR_BORDER);
-   wdg_set_color(dlg, WDG_COLOR_TITLE, EC_COLOR_ERROR);
-   wdg_dialog_text(dlg, WDG_OK, "Wow... cool.");
-   wdg_draw_object(dlg);
-   
-   wdg_set_focus(dlg);
-}
-
-void percent(void)
-{
-   wdg_t *per;
-   int i;
-   
-   wdg_create_object(&per, WDG_PERCENTAGE, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   ON_ERROR(per, NULL, "Cannot create object");
-   
-   wdg_set_title(per, "percentage...", WDG_ALIGN_CENTER);
-   wdg_set_color(per, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(per, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(per, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(per, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_draw_object(per);
-   
-   wdg_set_focus(per);
-
-   for (i = 0; i <= 100; i++) {
-      wdg_percentage_set(per, i, 100);
-      wdg_update_screen();
-      usleep(20000);
-   }
-   
-   wdg_destroy_object(&per);
-
-   wdg_redraw_all();
-}
-
-void file_open(void)
+/*
+ * display the file open dialog
+ */
+static void file_open(void)
 {
    wdg_t *fop;
    
    wdg_create_object(&fop, WDG_FILE, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   ON_ERROR(fop, NULL, "Cannot create object");
    
-   wdg_set_title(fop, "Open a pcap file...", WDG_ALIGN_LEFT);
+   wdg_set_title(fop, "Select a pcap file...", WDG_ALIGN_LEFT);
    wdg_set_color(fop, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(fop, WDG_COLOR_WINDOW, EC_COLOR_MENU);
    wdg_set_color(fop, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(fop, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+
+   wdg_file_set_callback(fop, set_pcapfile);
+   
    wdg_draw_object(fop);
    
    wdg_set_focus(fop);
+}
+
+static void set_pcapfile(char *path, char *file)
+{
    
+   SAFE_CALLOC(GBL_OPTIONS->dumpfile, strlen(path)+strlen(file)+2, sizeof(char));
+
+   sprintf(GBL_OPTIONS->dumpfile, "%s/%s", path, file);
+
+   /* set the options for reading from file */
+   GBL_OPTIONS->silent = 1;
+   GBL_OPTIONS->unoffensive = 1;
+   GBL_OPTIONS->read = 1;
+   
+   /* exit the setup interface, and go to the primary one */
+   wdg_exit();
 }
 
 /* EOF */

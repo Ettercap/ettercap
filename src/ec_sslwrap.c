@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.10 2004/03/10 21:48:32 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.11 2004/03/10 21:50:40 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -227,8 +227,7 @@ static int sslw_sync_ssl(struct accepted_entry *ae) {
    SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
    ae->ssl[SSL_CLIENT] = SSL_new(ssl_ctx_client);
    SSL_set_fd(ae->ssl[SSL_CLIENT], ae->fd[SSL_CLIENT]);
-   ae->status |= SSL_CTX_DONE;
-
+ 
    if (SSL_connect(ae->ssl[SSL_SERVER]) != 1) {
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);

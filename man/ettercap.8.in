@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.39 2003/10/18 11:27:42 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.40 2003/10/25 15:35:37 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -139,6 +139,14 @@ e.g.
 you can reverse the matching of the TARGET by adding the -R option to the
 command line. So if you want to sniff ALL the traffic BUT the one coming or
 going to 10.0.0.1 you can specify "./ettercap -R /10.0.0.1/"
+.PP
+.B NOTE:
+.br
+TARGETs are also responsible of the initial scan of the lan. you can use them
+to restrict the scan to only a subset of the hosts in the netmask. the result
+of the merging between the two target will be scanned. remember that not
+specifing a target means "no target", but specifing "//" means "all the host in
+the subnet.
 .PP
 
 

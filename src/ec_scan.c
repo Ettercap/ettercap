@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.24 2003/10/24 21:07:00 alor Exp $
+    $Id: ec_scan.c,v 1.25 2003/10/25 15:35:33 alor Exp $
 */
 
 #include <ec.h>
@@ -105,7 +105,7 @@ void build_hosts_list(void)
     * if at least one target is ANY, scan the wole netmask
     * else scan only the specified targets
     */
-   if (GBL_TARGET1->all_ip || GBL_TARGET2->all_ip)
+   if (GBL_TARGET1->not_specified || GBL_TARGET2->not_specified)
       scan_netmask();
    else
       scan_targets();

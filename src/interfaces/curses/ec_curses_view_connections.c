@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.11 2004/03/07 14:38:40 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.12 2004/03/18 14:22:19 alor Exp $
 */
 
 #include <ec.h>
@@ -224,7 +224,10 @@ static void curses_connection_data_split(void)
    DEBUG_MSG("curses_connection_data_split");
 
    if (wdg_conndata) {
+      struct conn_object *tmp_conn = curr_conn;
       wdg_destroy_object(&wdg_conndata);
+      curses_destroy_conndata();
+      curr_conn = tmp_conn;
    }
 
    wdg_create_object(&wdg_conndata, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);
@@ -280,6 +283,9 @@ static void curses_destroy_conndata(void)
    conntrack_hook_conn_del(curr_conn, split_print_po);
    conntrack_hook_conn_del(curr_conn, join_print_po);
    wdg_conndata = NULL;
+   wdg_c1 = NULL;
+   wdg_c2 = NULL;
+   wdg_join = NULL;
    curr_conn = NULL;
 }
 
@@ -310,6 +316,10 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
 static void split_print_po(struct packet_object *po)
 {
    int ret;
+  
+   /* check if the object exists */
+   if (wdg_conndata == NULL || wdg_c1 == NULL || wdg_c2 == NULL)
+      return;
    
    /* if not focused don't refresh it */
    if (!(wdg_conndata->flags & WDG_OBJ_FOCUSED))
@@ -347,7 +357,10 @@ static void curses_connection_data_join(void)
    DEBUG_MSG("curses_connection_data_join");
 
    if (wdg_conndata) {
+      struct conn_object *tmp_conn = curr_conn;
       wdg_destroy_object(&wdg_conndata);
+      curses_destroy_conndata();
+      curr_conn = tmp_conn;
    }
 
    wdg_create_object(&wdg_conndata, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);
@@ -418,6 +431,10 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
 static void join_print_po(struct packet_object *po)
 {
    int ret;
+   
+   /* check if the object exists */
+   if (wdg_conndata == NULL || wdg_join == NULL)
+      return;
 
    /* if not focused don't refresh it */
    if (!(wdg_conndata->flags & WDG_OBJ_FOCUSED))

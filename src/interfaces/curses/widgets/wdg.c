@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.35 2004/03/07 15:22:57 alor Exp $
+    $Id: wdg.c,v 1.36 2004/03/18 14:22:19 alor Exp $
 */
 
 #include <wdg.h>
@@ -107,8 +107,9 @@ extern void wdg_create_dynlist(struct wdg_object *wo);
  */
 void wdg_init(void)
 {
-
    WDG_DEBUG_INIT();
+   
+   WDG_DEBUG_MSG("wdg_init: setting up the term...");
    
    /* initialize the curses interface */
    initscr(); 
@@ -122,7 +123,7 @@ void wdg_init(void)
    /* better compatibility with return key */
    nonl();
 
-   /* get controlling key (^C^X^Z^S^Q) uninterpreted */
+   /* set controlling key (^C^X^Z^S^Q) uninterpreted */
    raw();
 
    /* set the non-blocking timeout (10th of seconds) */

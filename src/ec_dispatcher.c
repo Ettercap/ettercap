@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.34 2004/03/17 22:13:32 lordnaga Exp $
+    $Id: ec_dispatcher.c,v 1.35 2004/03/18 14:22:19 alor Exp $
 */
 
 #include <ec.h>
@@ -132,7 +132,7 @@ EC_THREAD_FUNC(top_half)
       hook_point(HOOK_DISPATCHER, e->po);
 
       /* save the len before the free() */
-      pck_len = e->po->len;
+      pck_len = e->po->DATA.disp_len;
       
       /* destroy the duplicate packet object */
       packet_destroy_object(e->po);

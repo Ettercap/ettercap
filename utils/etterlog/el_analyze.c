@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_analyze.c,v 1.15 2004/02/01 16:49:21 alor Exp $
+    $Id: el_analyze.c,v 1.16 2004/03/18 14:22:19 alor Exp $
 */
 
 #include <el.h>
@@ -58,7 +58,7 @@ void analyze_packet(void)
    u_char *buf;
    struct stat st;
    
-   fprintf(stdout, "\nAnalyzing the log file (one dot for 100 packets)\n");
+   fprintf(stdout, "\nAnalyzing the log file (one dot every 100 packets)\n");
  
    tot_size = sizeof(struct log_global_header);
    

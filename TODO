@@ -34,6 +34,12 @@ this is the unofficial and floating in time roadmap:
    + CURSES GUI
       - context sensitive help
 
+   + CONNECTIONS
+      - don't expire flag (for the gui)
+
+   + ARP SCAN
+      - check the double reply
+
    + DISSECTORS
       - convert all the old dissectors:
          - https (over the ssl one)

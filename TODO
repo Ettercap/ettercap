@@ -8,6 +8,7 @@
       - libnet version
       
    + DISSECTORS over decoders
+      - add a buffer to po (it will be the visible one)
       - middleware data_decode
 
    + SNIFFING ENGINE

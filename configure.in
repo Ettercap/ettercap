@@ -318,6 +318,11 @@ AC_ARG_WITH(libpcap,
   AC_MSG_RESULT(yes) ]
 )
 
+OLDLDFLAGS="${LDFLAGS}"
+LDFLAGS="$PCAPLIB"
+AC_CHECK_LIB(pcap, pcap_fileno,, AC_ERROR(Incorrect pcap version))
+LDFLAGS="${OLDLDFLAGS}"
+
 dnl  libnet
 ac_cv_ec_libnet=default
 
@@ -358,6 +363,10 @@ AC_ARG_WITH(libnet,
   AC_MSG_RESULT(yes) ]
 )
 
+OLDLDFLAGS="${LDFLAGS}"
+LDFLAGS="$LNETLIB"
+AC_CHECK_LIB(net, libnet_init,, AC_ERROR(Incorrect lnet version))
+LDFLAGS="${OLDLDFLAGS}"
 
 dnl  ncurses
 AH_TEMPLATE(HAVE_NCURSES, [ncurses support])

@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.17 2003/10/07 13:16:48 lordnaga Exp $ */
+/* $Id: ec.h,v 1.18 2003/10/22 20:35:56 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -23,11 +23,9 @@
 #include <strings.h>
 #include <unistd.h>
 #include <time.h>
-#ifdef HAVE_SYS_QUEUE
-   #include <sys/queue.h>
-#else
-   #include <missing/queue.h>
-#endif
+
+/* use this file, all the other aren't good */
+#include <missing/queue.h>
 
 #include <ec_error.h>
 #include <ec_debug.h>

@@ -27,6 +27,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_manuf.c \
 				   ec_plugins.c \
 				   ec_format.c \
+				   ec_poll.c \
 				   ec_sniff.c \
 				   ec_sniff_unified.c \
 				   ec_sniff_bridge.c \

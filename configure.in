@@ -183,7 +183,7 @@ AC_CHECK_HEADERS(fcntl.h ctype.h)
 AC_CHECK_HEADERS(sys/types.h stdint.h)
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
 AC_CHECK_HEADERS(termios.h)
-AC_CHECK_HEADERS(sys/poll.h poll.h)
+AC_CHECK_HEADERS(sys/poll.h poll.h sys/select.h)
 
 
 dnl ==================================================================
@@ -202,14 +202,14 @@ dnl =====================
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 EC_PTHREAD_CHECK()
-AC_SEARCH_LIBS(gethostbyname,c nsl,,AC_MSG_ERROR(libnsl not found.))
-AC_SEARCH_LIBS(socket,c socket,,AC_MSG_ERROR(libsocket not found.))
-AC_SEARCH_LIBS(poll,c poll,,AC_MSG_ERROR(poll not found.))
+AC_SEARCH_LIBS(gethostbyname, c nsl,, AC_MSG_ERROR(libnsl not found.))
+AC_SEARCH_LIBS(socket, c socket,, AC_MSG_ERROR(libsocket not found.))
+AC_SEARCH_LIBS(poll, c poll) 
 AC_SEARCH_LIBS(gzopen,c z,,AC_MSG_ERROR(zlib not found.))
 AC_CHECK_FUNCS(getifaddrs)
 AC_CHECK_FUNCS(gettimeofday)
 AC_CHECK_FUNCS(vsnprintf)
-AC_CHECK_FUNCS(select strdup strerror strstr strsignal)
+AC_CHECK_FUNCS(select poll strdup strerror strstr strsignal)
 AC_CHECK_FUNCS(uname)
 AC_CHECK_FUNCS(daemon)
 

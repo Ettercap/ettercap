@@ -14,6 +14,8 @@
       - LTDL_SHLIB_EXT
       - make test with dlopen-test
 
+   + poll / select 
+
    + SESSIONS
       - lock unlock
       - read

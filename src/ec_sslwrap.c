@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.25 2004/03/24 09:43:17 alor Exp $
+    $Id: ec_sslwrap.c,v 1.26 2004/03/25 21:25:37 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,7 @@
 #include <ec_dissect.h>
 #include <ec_threads.h>
 #include <ec_sslwrap.h>
+#include <ec_file.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -42,12 +43,6 @@
 #define OPENSSL_NO_KRB5 1
 #include <openssl/ssl.h>
 
-
-//XXX - Only to make it compile
-#define CERT_FILE "etter.ssl.crt"
-#define DATA_PATH "/"
-
-/* XXX - Occhio alla free di disp_data se cambio packet_dup */
 #define BREAK_ON_ERROR(x,y,z) do {  \
    if (x == -EINVALID) {            \
       sslw_wipe_connection(y);      \
@@ -68,6 +63,7 @@ struct listen_entry {
    u_int16 sslw_port;   /* Port where we want to wrap SSL */
    u_int16 redir_port;  /* Port where accepts connections */
    u_char status;       /* Use directly SSL or not */
+   char *name;
    LIST_ENTRY (listen_entry) next;
 };
 
@@ -99,15 +95,20 @@ struct sslw_ident {
 #define SSLW_RETRY 5
 #define SSLW_WAIT 10000
 
-SSL_CTX   *ssl_ctx_client, *ssl_ctx_server;
-EVP_PKEY *global_pk;
+static SSL_CTX   *ssl_ctx_client, *ssl_ctx_server;
+static EVP_PKEY *global_pk;
+static u_int16 number_of_services;
+static struct pollfd *poll_fd = NULL;
 
 #endif /* HAVE_OPENSSL */
 
 /* protos */
 
 void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_char status);
+void sslw_dissect_move(char *name, u_int16 port);
 EC_THREAD_FUNC(sslw_start);
+void ssl_wrap_init(void);
+static void ssl_wrap_fini(void);
 
 #ifdef HAVE_OPENSSL
 
@@ -144,6 +145,7 @@ void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_cha
  
    le->sslw_port = port;
    le->status = status;
+   le->name = name;
 
    /* Insert it in the port list where listen for connections */ 
    LIST_INSERT_HEAD(&listen_ports, le, next);    
@@ -151,6 +153,51 @@ void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_cha
    dissect_add(name, APP_LAYER_TCP, port, decoder); 
 }
 
+
+void sslw_dissect_move(char *name, u_int16 port)
+{
+   struct listen_entry *le;
+
+   LIST_FOREACH(le, &listen_ports, next) 
+      if(!strcmp(name, le->name)) {
+         DEBUG_MSG("sslw_dissect_move: %s [%u]", name, port);
+         le->sslw_port = port;
+      }
+}
+
+
+void ssl_wrap_init(void)
+{
+   struct listen_entry *le;
+
+#ifndef HAVE_OPENSSL
+   DEBUG_MSG("ssl_wrap_init: not supported");
+   return;
+#else
+   if (!GBL_CONF->aggressive_dissectors)
+      return;
+
+   DEBUG_MSG("ssl_wrap_init");
+   sslw_init();
+   sslw_bind_wrapper();
+   
+   hook_add(HOOK_HANDLED, &sslw_hook_handled);
+
+   number_of_services = 0;
+   LIST_FOREACH(le, &listen_ports, next) 
+      number_of_services++;
+   
+   SAFE_CALLOC(poll_fd, 1, sizeof(struct pollfd) * number_of_services);
+
+   atexit(ssl_wrap_fini);
+#endif
+}
+
+void ssl_wrap_fini(void)
+{
+   // XXX - Lancia lo script per segare le regole di redirect
+   // Controllando l'uid
+}
 
 #ifndef HAVE_OPENSSL
 
@@ -172,27 +219,18 @@ EC_THREAD_FUNC(sslw_start)
  */
 EC_THREAD_FUNC(sslw_start)
 {
-   struct pollfd *poll_fd = NULL;
    struct listen_entry *le;
    struct accepted_entry *ae;
-   u_int16 number_of_services;
    u_int32 len = sizeof(struct sockaddr_in), i;
    struct sockaddr_in client_sin;
    
    ec_thread_init();
+
+   if (!GBL_CONF->aggressive_dissectors)
+      return NULL;
    
    DEBUG_MSG("sslw_start: initialized and ready");
    
-   sslw_init();
-   sslw_bind_wrapper();
-
-   hook_add(HOOK_HANDLED, &sslw_hook_handled);
-
-   number_of_services = 0;
-   LIST_FOREACH(le, &listen_ports, next) 
-      number_of_services++;
-   
-   SAFE_CALLOC(poll_fd, 1, sizeof(struct pollfd) * number_of_services);
 
    LOOP {
       /* Set the polling on all registered ssl services */
@@ -560,6 +598,13 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    FUNC_DECODER_PTR(start_decoder);
    int len;
 
+   /* 
+    * ssl childs keep the connection alive even if the sniffing thread
+    * was stopped. But don't add packets to top-half queue.
+    */
+   if (!GBL_SNIFF->active)
+      return;
+
    memcpy(&po->L3.src, &ae->ip[direction], sizeof(struct ip_addr));
    memcpy(&po->L3.dst, &ae->ip[!direction], sizeof(struct ip_addr));
    
@@ -590,7 +635,7 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    }
 
    /* Let's start from the last stage of decoder chain */
-   start_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
+   start_decoder = get_decoder(APP_LAYER, PL_DEFAULT);
    start_decoder(po->DATA.data, po->DATA.len, &len, po);
 }
 
@@ -678,11 +723,11 @@ static void sslw_init(void)
    ssl_ctx_server = SSL_CTX_new(SSLv23_client_method());
 
    /* Get our private key from our cert file */
-   if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
-      DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- %s", DATA_PATH "/" CERT_FILE);
+   if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, INSTALL_DATADIR "/" CERT_FILE, SSL_FILETYPE_PEM) == 0) {
+      DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- ./share/%s",  CERT_FILE);
 
-      if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
+      if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, "./share/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
+         FATAL_ERROR("Can't open \"./share/%s\" file !!", CERT_FILE);
    }
 
    dummy_ssl = SSL_new(ssl_ctx_client);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.9 2004/03/21 12:08:34 lordnaga Exp $
+    $Id: ec_http.c,v 1.10 2004/03/25 21:25:37 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -123,9 +123,8 @@ int http_fields_init(void);
 
 void __init http_init(void)
 {
-   /* XXX - Quoted to make CVS version compile */
-   //sslw_dissect_add("https", 443, dissector_http, SSL_ENABLED);
-   //sslw_dissect_add("proxy", 8080, dissector_http, SSL_DISABLED);
+   sslw_dissect_add("https", 443, dissector_http, SSL_ENABLED);
+   sslw_dissect_add("proxy", 8080, dissector_http, SSL_DISABLED);
    dissect_add("http", APP_LAYER_TCP, 80, dissector_http);
 }
 

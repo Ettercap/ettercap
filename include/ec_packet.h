@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.33 2004/03/22 15:56:44 lordnaga Exp $ */
+/* $Id: ec_packet.h,v 1.34 2004/03/25 21:25:27 lordnaga Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -80,7 +80,7 @@ struct packet_object {
    
    u_int16 flags;                       /* flags relative to the packet */
       #define PO_IGNORE       ((u_int16)(1))        /* this packet should not be processed (e.g. sniffing TARGETS didn't match it) */
-      #define PO_DONT_DISSECT ((u_int16)(1<<1))        /* this packet should not be processed by dissector (used during the arp scan) */
+      #define PO_DONT_DISSECT ((u_int16)(1<<1))     /* this packet should not be processed by dissector (used during the arp scan) */
       #define PO_FORWARDABLE  ((u_int16)(1<<2))     /* the packet has our MAC address, by the IP is not ours */
       
       #define PO_FROMIFACE    ((u_int16)(1<<3))     /* this packet comes from the primary interface */

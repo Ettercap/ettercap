@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.55 2004/02/29 11:50:37 alor Exp $
+    $Id: ec_main.c,v 1.56 2004/03/25 21:25:37 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -38,6 +38,7 @@
 #include <ec_ui.h>
 #include <ec_conf.h>
 #include <ec_mitm.h>
+#include <ec_sslwrap.h>
 
 /* global vars */
 
@@ -108,6 +109,10 @@ int main(int argc, char *argv[])
     */
    if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm)
       disable_ip_forward();
+      
+   /* binds ports and set redirect for ssl wrapper */
+   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && GBL_SNIFF->type == SM_UNIFIED)
+      ssl_wrap_init();
    
    /* 
     * drop root privileges 

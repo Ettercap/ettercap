@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.17 2004/01/21 21:05:52 alor Exp $
+    $Id: ec_sniff_unified.c,v 1.18 2004/03/25 21:25:37 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -26,6 +26,7 @@
 #include <ec_threads.h>
 #include <ec_inject.h>
 #include <ec_conntrack.h>
+#include <ec_sslwrap.h>
 
 /* proto */
 void start_unified_sniff(void);
@@ -55,6 +56,10 @@ void start_unified_sniff(void)
    /* create the thread for packet capture */
    ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
 
+   /* start ssl_wrapper thread */
+   if (!GBL_OPTIONS->read)
+      ec_thread_new("sslwrap", "wrapper for ssl connections", &sslw_start, NULL);
+
    GBL_SNIFF->active = 1;
 }
 
@@ -75,6 +80,10 @@ void stop_unified_sniff(void)
   
    /* get the pid and kill it */
    if ((pid = ec_thread_getpid("capture")) != 0)
+      ec_thread_destroy(pid);
+
+   /* get the pid and kill it */
+   if ((pid = ec_thread_getpid("sslwrap")) != 0)
       ec_thread_destroy(pid);
 
    USER_MSG("Unified sniffing was stopped.\n");

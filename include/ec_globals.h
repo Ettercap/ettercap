@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.47 2003/12/11 13:46:39 lordnaga Exp $ */
+/* $Id: ec_globals.h,v 1.48 2003/12/14 16:51:11 lordnaga Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -25,6 +25,8 @@ struct ec_conf {
    int arp_poison_reply;
    int arp_poison_request;
    int dhcp_lease_time;
+   int port_steal_delay;
+   int port_steal_send_delay;
    int connection_timeout;
    int connection_idle;
    int connection_buffer;

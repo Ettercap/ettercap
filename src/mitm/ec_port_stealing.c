@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.4 2003/12/14 16:15:25 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.5 2003/12/14 16:51:12 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -26,12 +26,15 @@
 #include <ec_threads.h>
 #include <ec_ui.h>
 #include <ec_strings.h>
+#include <ec_hook.h>
+
 
 /* globals */
 struct packet_list {
    struct packet_object *po;
    TAILQ_ENTRY(packet_list) next;
-}
+};
+
 
 struct steal_list {
    struct ip_addr ip;
@@ -60,7 +63,14 @@ struct arp_header {
 #define ARPOP_REQUEST   1    /* ARP request.  */
 };
 
-#define FAKE_PCK_LEN sizeof(eth_header)+sizeof(arp_header)+sizeof(arp_eth_header)
+struct arp_eth_header {
+   u_int8   arp_sha[MEDIA_ADDR_LEN];     /* sender hardware address */
+   u_int8   arp_spa[IP_ADDR_LEN];      /* sender protocol address */
+   u_int8   arp_tha[MEDIA_ADDR_LEN];     /* target hardware address */
+   u_int8   arp_tpa[IP_ADDR_LEN];      /* target protocol address */
+};
+
+#define FAKE_PCK_LEN sizeof(struct eth_header)+sizeof(struct arp_header)+sizeof(struct arp_eth_header)
 struct packet_object fake_po;
 char fake_pck[FAKE_PCK_LEN];
 
@@ -109,6 +119,7 @@ static void port_stealing_start(char *args)
    struct steal_list *s;
    struct eth_header *heth;
    struct arp_header *harp;
+   char *p;
    char bogus_mac[6]="\x00\xe7\x7e\xe7\x7e\xe7";
    
    DEBUG_MSG("port_stealing_start");
@@ -145,7 +156,7 @@ static void port_stealing_start(char *args)
       SAFE_CALLOC(s, 1, sizeof(struct steal_list));
       memcpy(&s->ip, &h->ip, sizeof(struct ip_addr));
       memcpy(s->mac, h->mac, MEDIA_ADDR_LEN);
-      TAILQ_INIT(s->packet_table);
+      TAILQ_INIT(&s->packet_table);
       LIST_INSERT_HEAD(&steal_table, s, next);
    }
 
@@ -153,7 +164,7 @@ static void port_stealing_start(char *args)
     * This is a fake ARP request. 
     */
    heth = (struct eth_header *)fake_pck;
-   harp = (struct arp_header)(heth + 1);
+   harp = (struct arp_header *)(heth + 1);
 
    /* If we use our MAC address we won't generate traffic
     * flooding on the LAN but we will reach only direct
@@ -164,9 +175,9 @@ static void port_stealing_start(char *args)
    else
       memcpy(heth->dha, GBL_IFACE->mac, ETH_ADDR_LEN);
 
-   heth->proto = htons();
-   harp->ar_hrd = htons();
-   harp->ar_pro = htons();
+   heth->proto = htons(LL_TYPE_ARP);
+   harp->ar_hrd = htons(ARPHRD_ETHER);
+   harp->ar_pro = htons(ETHERTYPE_IP);
    harp->ar_hln = 6;
    harp->ar_pln = 4;
    harp->ar_op  = htons(ARPOP_REQUEST);
@@ -343,7 +354,7 @@ static void send_queue(struct packet_object *po)
    struct steal_list *s1, *s2;
    struct packet_list *p, *tmp = NULL;
    struct eth_header *heth;
-   int to_wait = 0;
+   int in_list, to_wait = 0;
 
    /* Check if it's an arp reply for us */
    if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))

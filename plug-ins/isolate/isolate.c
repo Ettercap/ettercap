@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: isolate.c,v 1.3 2004/11/04 09:23:03 alor Exp $
+    $Id: isolate.c,v 1.4 2005/01/31 08:29:22 alor Exp $
 */
 
 
@@ -70,6 +70,12 @@ int plugin_load(void *handle)
 
 static int isolate_init(void *dummy) 
 {
+   /* sanity check */
+   if (LIST_FIRST(&GBL_TARGET1->ips) == NULL) {
+      INSTANT_USER_MSG("isolate: please specify the TARGET host\n");
+      return PLUGIN_FINISHED;
+   }
+   
    /* 
     * we'll use arp request to detect the hosts the victim
     * is trying to contact. 
@@ -181,7 +187,7 @@ EC_THREAD_FUNC(isolate)
    
    /* init the thread and wait for start up */
    ec_thread_init();
-  
+ 
    /* get the host to be isolated */
    t = LIST_FIRST(&GBL_TARGET1->ips);
    

@@ -9,6 +9,8 @@ Legenda:
 NG-0.7.3         2005
 
    + added the INC (+=) and DEC (-=) operators to the filter engine
+   !! fixed the compilation of some plugins
+   !! fixed a segfault in the isolate plugin
 
 
 NG-0.7.2         20041221

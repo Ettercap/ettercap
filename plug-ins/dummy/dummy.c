@@ -18,7 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dummy.c,v 1.7 2003/10/12 17:40:43 alor Exp $
+    $Id: dummy.c,v 1.8 2003/10/12 18:51:34 alor Exp $
 */
 
 
@@ -88,7 +88,7 @@ static int dummy_init(void *dummy)
     * plugin type to PL_HOOK.
     */
    
-   USER_MSG("DUMMY: plugin executed\n");
+   USER_MSG("DUMMY: plugin running...\n");
 
    /* return PLUGIN_FINISHED if the plugin has terminated
     * its execution.
@@ -96,7 +96,7 @@ static int dummy_init(void *dummy)
     * is hooked to an ettercap hookpoint and
     * it needs to be deactivated with the fini method.
     */
-   return PLUGIN_FINISHED;
+   return PLUGIN_RUNNING;
 }
 
 

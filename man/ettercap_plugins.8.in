@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.1 2003/03/17 19:42:25 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.2 2003/10/12 18:51:34 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -24,4 +24,59 @@
 .SH NAME
 .B ettercap-plugins @VERSION@ \- A collection of plugins for ettercap
 
+.SH DESCRIPTION
+Ettercap(8) supports loadable modules at runtime. They are called plugins and
+they come within the source tarball. They are automatically compiled if your
+system supports them or until you specify the --disable-plugins option to the
+configure script.
 
+.TP
+To have a list of plugins installed in your system do that command:
+.Sp
+.I ettercap -P list
+
+.LP
+.LP
+The following is a list of available plugins:
+
+.TP 
+.B dummy
+.Sp
+Only a template to demonstrate how to write a plugin.
+
+
+.TP 
+.B finger
+.Sp
+Uses the passive fingerprint capabilities to fingeerprint a remote host. It
+does a connect() to the remote host to force the kernel to reply
+to the SYN with a SYN+ACK packet. The reply will be collected and the
+fingerprint is displayed.
+.Sp
+.I example :
+.Sp
+ettercap -TzP finger /192.168.0.1/22
+
+
+.TP 
+.B finger_submit
+.Sp
+Use this plugin to submit a fingerprint to the ettercap website. If you found
+an unknown fingerprint, but you know for sure the operating system of the
+target, you can submit it so it will be inserted in the database in the next
+ettercap release. We need your help to increase the passive fingerprint
+database. Thank you very much.
+.Sp
+.I example :
+.Sp
+ettercap -TzP finger_submit
+
+
+
+.SH "SEE ALSO"
+.I "ettercap(8)"
+.I "ettercap_plugin(8)"
+.I "etterlog(8)"
+.I "etterfilter(8)"
+.I "etter.conf(5)"
+.LP

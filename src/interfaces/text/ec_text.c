@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.2 2003/10/12 15:27:07 alor Exp $
+    $Id: ec_text.c,v 1.3 2003/10/12 18:51:34 alor Exp $
 */
 
 #include <ec.h>
@@ -161,25 +161,27 @@ static void text_fatal_error(const char *msg)
  */
 static void text_input(const char *title, char *input, size_t n)
 {
-   char fmt[8];
-      
+   char *p;
+   
    /* display the title */
    fprintf(stdout, "%s", title);
    fflush(stdout);
 
-   /* prepare the format */
-   snprintf(fmt, sizeof(fmt), "%%%ds", n);
-
    /* repristinate the buffer input */
    tcsetattr(0, TCSANOW, &old_tc);
 
-   /* get the user input */
-   scanf(fmt, input);
+   /* flush the buffer */
+   fflush(stdin);
    
+   /* get the user input */
+   fgets(input, n, stdin);
+
+   /* trim the \n */
+   if ((p = strrchr(input, '\n')) != NULL)
+      *p = '\0';
+
    /* disable buffered input */
    tcsetattr(0, TCSANOW, &new_tc);
-
-   fprintf(stdout, "\n");
 }
 
 /* 
@@ -369,6 +371,7 @@ static void text_run_plugin(void)
 {
    char name[20];
    int restore = 0;
+   char *p;
       
    /* there are no plugins */
    if (text_plugin("list") == -ENOTFOUND)
@@ -389,7 +392,15 @@ static void text_run_plugin(void)
    fprintf(stdout, "Plugin name (0 to quit): ");
    fflush(stdout);
    
-   scanf("%20s", name);
+   /* flush the buffer */
+   fflush(stdin);
+   
+   /* get the user input */
+   fgets(name, 20, stdin);
+
+   /* trim the \n */
+   if ((p = strrchr(name, '\n')) != NULL)
+      *p = '\0';
   
    /* disable buffered input */
    tcsetattr(0, TCSANOW, &new_tc);

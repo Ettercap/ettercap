@@ -1,5 +1,5 @@
 
-/* $Id: ec_plugins.h,v 1.9 2003/10/12 15:28:27 alor Exp $ */
+/* $Id: ec_plugins.h,v 1.10 2003/10/12 18:51:34 alor Exp $ */
 
 #ifndef EC_PLUGINS_H
 #define EC_PLUGINS_H
@@ -14,11 +14,6 @@ struct plugin_ops
    char *name;                      /* the name of the plugin */
    char *info;                      /* a short description of the plugin */
    char *version;                   /* the plugin version. note: 15 will be displayed as 1.5 */
-   int type;                        /* the pluging type: standalone (executed as a thread)
-                                     *                   hook (uses hook points)
-                                     */
-#define PL_STANDALONE   0
-#define PL_HOOK         1
    int (*init)(void *);          /* activation function */
    int (*fini)(void *);          /* deactivation function */
 };
@@ -31,8 +26,8 @@ extern int plugin_list_print(int min, int max, void (*func)(char, struct plugin_
 #define PLP_MIN   1
 #define PLP_MAX   INT_MAX
 
-extern int plugin_get_type(char *name);
 extern int plugin_is_activated(char *name);
+extern int search_plugin(char *name);
 
 /* use these to activate and deactivate a plugin */
 extern int plugin_init(char *name);

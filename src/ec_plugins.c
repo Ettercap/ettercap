@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.19 2003/10/12 15:28:27 alor Exp $
+    $Id: ec_plugins.c,v 1.20 2003/10/12 18:51:34 alor Exp $
 */
 
 #include <ec.h>
@@ -65,8 +65,8 @@ int plugin_register(void *handle, struct plugin_ops *ops);
 int plugin_init(char *name);
 int plugin_fini(char *name);
 int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *));
-int plugin_get_type(char *name);
 int plugin_is_activated(char *name);
+int search_plugin(char *name);
 void plugin_list(void);
 static void plugin_print(char active, struct plugin_ops *ops);
 
@@ -157,7 +157,7 @@ void plugin_load_all(void)
       }
    }
    
-   USER_MSG("%4d ettercap plugins\n", t);
+   USER_MSG("%4d plugins\n", t);
 
    atexit(&plugin_unload_all);
 #else
@@ -247,11 +247,16 @@ int plugin_init(char *name)
 int plugin_fini(char *name)
 {
    struct plugin_entry *p;
+   int ret;
 
    SLIST_FOREACH(p, &plugin_head, next) {
       if (p->activated == 1 && !strcmp(p->ops->name, name)) {
-         p->activated = 0;
-         return p->ops->fini(NULL);
+         /* get the response from the plugin */
+         ret = p->ops->fini(NULL);
+         /* if it is still running, mark it as active */
+         if (ret == PLUGIN_FINISHED)
+            p->activated = 0;
+         return ret;
       }
    }
    
@@ -285,23 +290,6 @@ int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *))
    return (i == min) ? -ENOTFOUND : (i-1);
 }
 
-/* 
- * returns the type of the plugin 
- */
-
-int plugin_get_type(char *name)
-{
-   struct plugin_entry *p;
-
-   SLIST_FOREACH(p, &plugin_head, next) {
-      if (!strcmp(p->ops->name, name)) {
-         return p->ops->type;
-      }
-   }
-   
-   return -ENOTFOUND;
-}
-
 /*
  * returns the activation flag
  */
@@ -317,6 +305,22 @@ int plugin_is_activated(char *name)
    }
    
    return 0;
+}
+
+/*
+ * search if a plugin exists
+ */
+int search_plugin(char *name)
+{
+   struct plugin_entry *p;
+
+   SLIST_FOREACH(p, &plugin_head, next) {
+      if (!strcmp(p->ops->name, name)) {
+         return ESUCCESS;
+      }
+   }
+   
+   return -ENOTFOUND;
 }
 
 /*
@@ -347,9 +351,7 @@ void plugin_list(void)
  */
 static void plugin_print(char active, struct plugin_ops *ops)
 {
-   fprintf(stdout, "[%10s] %15s %4s  %s\n", 
-         (ops->type == PL_HOOK) ? "hook" : "standalone",
-         ops->name, ops->version, ops->info);  
+   fprintf(stdout, " %15s %4s  %s\n", ops->name, ops->version, ops->info);  
 }
 
 /* EOF */

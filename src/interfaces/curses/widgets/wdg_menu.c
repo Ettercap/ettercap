@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.2 2003/11/02 22:08:44 alor Exp $
+    $Id: wdg_menu.c,v 1.3 2003/11/03 21:19:02 alor Exp $
 */
 
 #include <wdg.h>
@@ -41,10 +41,9 @@ struct wdg_menu_unit {
    TAILQ_ENTRY(wdg_menu_unit) next;
 };
 
-struct wdg_menu_unit *focus_unit;
-
 struct wdg_menu_handle {
    WINDOW *menu;
+   struct wdg_menu_unit *focus_unit;
    TAILQ_HEAD(menu_head, wdg_menu_unit) menu_list;
 };
 
@@ -223,7 +222,7 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
                wdg_menu_open(wo);
             /* redraw the menu */
             wdg_menu_redraw(wo);
-         } else if (focus_unit->active && wenclose(focus_unit->win, mouse->y, mouse->x)) {
+         } else if (ww->focus_unit->active && wenclose(ww->focus_unit->win, mouse->y, mouse->x)) {
             wdg_menu_driver(wo, key, mouse);
          } else 
             return -WDG_ENOTHANDLED;
@@ -234,7 +233,7 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          /* move only if focused */
          if (wo->flags & WDG_OBJ_FOCUSED) {
             /* if the menu is open, move and open the neighbor */
-            if (focus_unit->active) {
+            if (ww->focus_unit->active) {
                wdg_menu_close(wo);
                wdg_menu_move(wo, key);
                wdg_menu_open(wo);
@@ -251,7 +250,7 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          /* move only if focused */
          if (wo->flags & WDG_OBJ_FOCUSED) {
             /* if the menu is open */
-            if (focus_unit->active)
+            if (ww->focus_unit->active)
                wdg_menu_driver(wo, key, mouse);
             else
                wdg_menu_open(wo);
@@ -265,7 +264,7 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          /* move only if focused */
          if (wo->flags & WDG_OBJ_FOCUSED) {
             /* if the menu is open */
-            if (focus_unit->active)
+            if (ww->focus_unit->active)
                if (wdg_menu_driver(wo, key, mouse) != WDG_ESUCCESS)
                   wdg_menu_close(wo);
             /* repaint */
@@ -308,7 +307,7 @@ static void wdg_menu_titles(struct wdg_object *wo)
    /* print the menu unit list */
    TAILQ_FOREACH(mu, &ww->menu_list, next) {
       /* the menu is focused and the unit has the control */
-      if ((wo->flags & WDG_OBJ_FOCUSED) && focus_unit == mu) {
+      if ((wo->flags & WDG_OBJ_FOCUSED) && ww->focus_unit == mu) {
          wattron(ww->menu, A_REVERSE);
          wprintw(ww->menu, "%s", mu->title);
          wattroff(ww->menu, A_REVERSE);
@@ -360,7 +359,7 @@ void wdg_menu_add(struct wdg_object *wo, struct wdg_menu *menu)
    if (TAILQ_FIRST(&ww->menu_list) == TAILQ_END(&ww->menu_list)) {
       TAILQ_INSERT_HEAD(&ww->menu_list, mu, next);
       /* set the focus on the first unit */
-      focus_unit = mu;
+      ww->focus_unit = mu;
    } else
       TAILQ_INSERT_TAIL(&ww->menu_list, mu, next);
 }
@@ -374,13 +373,13 @@ static void wdg_menu_move(struct wdg_object *wo, int key)
    
    switch(key) {
       case KEY_RIGHT:
-         if (focus_unit != TAILQ_LAST(&ww->menu_list, menu_head))
-            focus_unit = TAILQ_NEXT(focus_unit, next);
+         if (ww->focus_unit != TAILQ_LAST(&ww->menu_list, menu_head))
+            ww->focus_unit = TAILQ_NEXT(ww->focus_unit, next);
          break;
          
       case KEY_LEFT:
-         if (focus_unit != TAILQ_FIRST(&ww->menu_list))
-            focus_unit = TAILQ_PREV(focus_unit, menu_head, next);
+         if (ww->focus_unit != TAILQ_FIRST(&ww->menu_list))
+            ww->focus_unit = TAILQ_PREV(ww->focus_unit, menu_head, next);
          break;
    }
 }
@@ -397,7 +396,7 @@ static int wdg_menu_mouse_move(struct wdg_object *wo, struct wdg_mouse_event *mo
    TAILQ_FOREACH(mu, &ww->menu_list, next) {
       /* if the mouse is over a title */
       if (mouse->x >= x && mouse->x < x + strlen(mu->title) ) {
-         focus_unit = mu;
+         ww->focus_unit = mu;
          return WDG_ESUCCESS;
       }
       /* move the pointer */   
@@ -436,27 +435,25 @@ static int wdg_menu_virtualize(int key)
  */
 static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse)
 {
+   WDG_WO_EXT(struct wdg_menu_handle, ww);
    int c;
    void (*func)(void);
    
-   c = menu_driver(focus_unit->m, wdg_menu_virtualize(key) );
+   c = menu_driver(ww->focus_unit->m, wdg_menu_virtualize(key) );
    
-   move(1, 35); printw("%02d ", c);
-
    /* skip non selectable items */
-   if ( !(item_opts(current_item(focus_unit->m)) & O_SELECTABLE) )
-      c = menu_driver(focus_unit->m, wdg_menu_virtualize(key) );
+   if ( !(item_opts(current_item(ww->focus_unit->m)) & O_SELECTABLE) )
+      c = menu_driver(ww->focus_unit->m, wdg_menu_virtualize(key) );
 
+   /* one item has been selected */
    if (c == E_UNKNOWN_COMMAND) {
       /* the item is not selectable (probably selected with mouse */
-      if ( !(item_opts(current_item(focus_unit->m)) & O_SELECTABLE) )
+      if ( !(item_opts(current_item(ww->focus_unit->m)) & O_SELECTABLE) )
          return WDG_ESUCCESS;
          
-      /* XXX - handle the menu selection */
-      func = item_userptr(current_item(focus_unit->m));
+      /* retrieve the function pointer */
+      func = item_userptr(current_item(ww->focus_unit->m));
       
-      printw("%s %p", item_name(current_item(focus_unit->m)), func);
-
       /* close the menu */
       wdg_menu_close(wo);
 
@@ -469,7 +466,7 @@ static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
    if (c == E_REQUEST_DENIED)
       return -WDG_ENOTHANDLED;
 
-   wnoutrefresh(focus_unit->win);
+   wnoutrefresh(ww->focus_unit->win);
       
    return WDG_ESUCCESS;
 }
@@ -484,56 +481,56 @@ static void wdg_menu_open(struct wdg_object *wo)
    size_t x = WDG_MENU_LEFT_PAD;
    int mrows, mcols;
   
-   WDG_BUG_IF(focus_unit == NULL);
+   WDG_BUG_IF(ww->focus_unit == NULL);
    
    /* already displayed */
-   if (focus_unit->active == 1)
+   if (ww->focus_unit->active == 1)
       return;
 
    /* calculate the x placement of the menu */
    TAILQ_FOREACH(mu, &ww->menu_list, next) {
       /* search the curren focused unit */
-      if (!strcmp(mu->title, focus_unit->title))
+      if (!strcmp(mu->title, ww->focus_unit->title))
          break;
       /* move the pointer */   
       x += strlen(mu->title) + 2;
    }
    
    /* create the menu */
-   focus_unit->m = new_menu(focus_unit->items);
+   ww->focus_unit->m = new_menu(ww->focus_unit->items);
 
    /* set the dimensions */
-   set_menu_format(focus_unit->m, focus_unit->nitems, 1);
+   set_menu_format(ww->focus_unit->m, ww->focus_unit->nitems, 1);
 
    /* get the geometry to make a window */
-   scale_menu(focus_unit->m, &mrows, &mcols);
+   scale_menu(ww->focus_unit->m, &mrows, &mcols);
 
    /* create the window for the menu */
-   focus_unit->win = newwin(mrows + 2, mcols + 2, 1, x);
+   ww->focus_unit->win = newwin(mrows + 2, mcols + 2, 1, x);
    /* set the color */
-   wbkgd(focus_unit->win, COLOR_PAIR(wo->window_color));
-   keypad(focus_unit->win, TRUE);
-   box(focus_unit->win, 0, 0);
+   wbkgd(ww->focus_unit->win, COLOR_PAIR(wo->window_color));
+   keypad(ww->focus_unit->win, TRUE);
+   box(ww->focus_unit->win, 0, 0);
   
    /* associate with the menu */
-   set_menu_win(focus_unit->m, focus_unit->win);
+   set_menu_win(ww->focus_unit->m, ww->focus_unit->win);
    
    /* the subwin for the menu */
-   set_menu_sub(focus_unit->m, derwin(focus_unit->win, mrows + 1, mcols, 1, 1));
+   set_menu_sub(ww->focus_unit->m, derwin(ww->focus_unit->win, mrows + 1, mcols, 1, 1));
 
    /* menu attributes */
-   set_menu_mark(focus_unit->m, "");
-   set_menu_grey(focus_unit->m, COLOR_PAIR(wo->window_color));
-   set_menu_back(focus_unit->m, COLOR_PAIR(wo->window_color));
-   set_menu_fore(focus_unit->m, COLOR_PAIR(wo->window_color) | A_REVERSE);
+   set_menu_mark(ww->focus_unit->m, "");
+   set_menu_grey(ww->focus_unit->m, COLOR_PAIR(wo->window_color));
+   set_menu_back(ww->focus_unit->m, COLOR_PAIR(wo->window_color));
+   set_menu_fore(ww->focus_unit->m, COLOR_PAIR(wo->window_color) | A_REVERSE | A_BOLD);
    
    /* display the menu */
-   post_menu(focus_unit->m);
+   post_menu(ww->focus_unit->m);
 
    /* set the active state */
-   focus_unit->active = 1;
+   ww->focus_unit->active = 1;
 
-   wnoutrefresh(focus_unit->win);
+   wnoutrefresh(ww->focus_unit->win);
 }
 
 /*
@@ -541,26 +538,28 @@ static void wdg_menu_open(struct wdg_object *wo)
  */
 static void wdg_menu_close(struct wdg_object *wo)
 {
-   WDG_BUG_IF(focus_unit == NULL);
+   WDG_WO_EXT(struct wdg_menu_handle, ww);
+
+   WDG_BUG_IF(ww->focus_unit == NULL);
    
    /* nothing to clear */
-   if (focus_unit->active == 0)
+   if (ww->focus_unit->active == 0)
       return;
    
    /* hide the menu */
-   unpost_menu(focus_unit->m);
+   unpost_menu(ww->focus_unit->m);
    
    /* set the active state */
-   focus_unit->active = 0;
+   ww->focus_unit->active = 0;
 
    /* erase the menu */
-   wbkgd(focus_unit->win, COLOR_PAIR(wo->screen_color));
-   werase(focus_unit->win);
-   wnoutrefresh(focus_unit->win);
+   wbkgd(ww->focus_unit->win, COLOR_PAIR(wo->screen_color));
+   werase(ww->focus_unit->win);
+   wnoutrefresh(ww->focus_unit->win);
 
    /* delete the memory */
-   delwin(focus_unit->win);
-   free_menu(focus_unit->m);
+   delwin(ww->focus_unit->win);
+   free_menu(ww->focus_unit->m);
   
    /* repaint the whole screen since a menu might have overlapped something */
    wdg_redraw_all();

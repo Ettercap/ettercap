@@ -5,6 +5,7 @@
 #include <ec_sniff.h>
 #include <ec_inet.h>
 #include <ec_ui.h>
+#include <pcap.h>
 
 /* options from getopt */
 struct ec_options {
@@ -38,22 +39,23 @@ struct program_env {
 
 /* pcap structures */
 struct pcap_env {
-   void *pcap;          /* this is a pcap_t */
-   void *pcap_bridge;   /* this is a pcap_t */
-   void *dump;          /* this is a pcap_dumper_t */
-   char promisc:1;
-   char *filter;        /* pcap filter */
-   u_int16 snaplen;
-   int dlt;
-   u_int32 dump_size;   /* total dump size */
-   u_int32 dump_off;    /* current offset */
+   pcap_t            *pcap;      
+   pcap_t            *pcap_bridge;
+   pcap_dumper_t     *dump;
+   char              promisc:1;
+   char              *filter;       /* pcap filter */
+   u_int16           snaplen;
+   int               dlt;
+   u_int32           dump_size;     /* total dump size */
+   u_int32           dump_off;      /* current offset */
+   struct pcap_stat  stats;         /* interface statistics */
 };
 
 /* lnet structures */
 struct lnet_env {
-   void *lnet_L3;       /* this is a libnet_t */
-   void *lnet;          /* this is a libnet_t */
-   void *lnet_bridge;   /* this is a libnet_t */
+   void *lnet_L3;       /* this is a libnet_t pointer */
+   void *lnet;          /* this is a libnet_t pointer */ 
+   void *lnet_bridge;   /* this is a libnet_t pointer */
 };
 
 /* per interface informations */

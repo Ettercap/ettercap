@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.19 2003/05/16 19:14:11 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.20 2003/06/02 13:06:50 alor Exp $
 */
 
 #include <ec.h>
@@ -72,6 +72,7 @@ static pthread_mutex_t dump_mutex = PTHREAD_MUTEX_INITIALIZER;
 void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
 {
    struct packet_object *po;
+   struct pcap_stat ps;
    int len;
    u_char *data;
    int datalen;
@@ -86,10 +87,27 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
       USER_MSG("CAPTURED: 0x%04x bytes form %s\n", pkthdr->caplen, param );
    }
 
-   /* update the offset pointer */
    if (GBL_OPTIONS->read)
+      /* update the offset pointer */
       GBL_PCAP->dump_off = ftell(pcap_file(GBL_PCAP->pcap));
-
+   else {
+      /* update the statistics 
+       *
+       * statistics are available only in live capture
+       * no statistics are stored in savefiles
+       */
+      pcap_stats(GBL_PCAP->pcap, &ps);
+      
+      /* 
+       * add to the previous value, since every call
+       * r
+       * to pcap_stats reset the counter 
+       */
+      GBL_PCAP->stats.ps_recv += ps.ps_recv;
+      GBL_PCAP->stats.ps_drop += ps.ps_drop;
+      GBL_PCAP->stats.ps_ifdrop += ps.ps_ifdrop;
+   }
+   
    /* 
     * dump packet to file if specified on command line 
     * it dumps all the packets disregarding the filter

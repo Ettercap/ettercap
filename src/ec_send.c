@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.11 2003/05/26 20:02:14 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.12 2003/06/02 13:06:50 alor Exp $
 */
 
 #include <ec.h>
@@ -226,13 +226,17 @@ static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
    close(libnet_getfd(l));
    /* use the socket opened by pcap */
    l->fd = pcap_fileno(p);
+   
    DEBUG_MSG("hack_pcap_lnet  (after) pcap %d | lnet %d", pcap_fileno(p), l->fd);
 #endif
 
 #ifdef OS_BSD
    /*
-    * under BSD we cannot hack the fd as in linux... why not ?? grrr
-    * so we can set the BIOCSSEESENT to 1 to see only outgoing packets
+    * under BSD we cannot hack the fd as in linux... 
+    * pcap opens the /dev/bpf in O_RDONLY and lnet needs O_RDWR
+    * 
+    * so (if supported: only FreeBSD) we can set the BIOCSSEESENT to 1 to 
+    * see only outgoing packets
     * but this is unconfortable, because we will not able to sniff ourself.
     */
    // int val = 0;

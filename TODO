@@ -25,9 +25,6 @@
 
 >>> current developmet state 
 
-   + PCAP STAT
-      - stats for dropped packets
-
    + TOP HALF
       - passive profiling (almost done in etterlog)
       - connection tracking (with buffered conn)

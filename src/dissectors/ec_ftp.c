@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector POP3 -- TCP 110
+    ettercap -- dissector FTP -- TCP 21
 
     Copyright (C) ALoR & NaGA
 
@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.10 2003/04/29 16:44:42 alor Exp $
+    $Id: ec_ftp.c,v 1.1 2003/04/29 16:44:42 alor Exp $
 */
 
 #include <ec.h>
@@ -28,8 +28,8 @@
 
 /* protos */
 
-FUNC_DECODER(dissector_pop);
-void pop_init(void);
+FUNC_DECODER(dissector_ftp);
+void ftp_init(void);
 
 /************************************************/
 
@@ -38,12 +38,12 @@ void pop_init(void);
  * it adds the entry in the table of registered decoder
  */
 
-void __init pop_init(void)
+void __init ftp_init(void)
 {
-   add_decoder(APP_LAYER_TCP, 110, dissector_pop);
+   add_decoder(APP_LAYER_TCP, 21, dissector_ftp);
 }
 
-FUNC_DECODER(dissector_pop)
+FUNC_DECODER(dissector_ftp)
 {
    DECLARE_PTR_END(ptr, end);
    struct session *s = NULL;
@@ -51,24 +51,18 @@ FUNC_DECODER(dissector_pop)
    char tmp[MAX_ASCII_ADDR_LEN];
 
    /* the connection is starting... create the session */
-   CREATE_SESSION_ON_SYN_ACK(110, s);
+   CREATE_SESSION_ON_SYN_ACK(21, s);
    
    /* check if it is the first packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER(110, s, ident) {
+   IF_FIRST_PACKET_FROM_SERVER(21, s, ident) {
             
       /* get the banner */
-      if (!strncmp(ptr, "+OK", 3))
-         PACKET->DISSECTOR.banner = strdup(ptr+4);
+      PACKET->DISSECTOR.banner = strdup(ptr+4);
      
-      /* remove the trailing numbers */
-      if ( (ptr = strchr(PACKET->DISSECTOR.banner, '<')) != NULL )
-         *ptr = '\0';
-            
-   } ENDIF_FIRST_PACKET_FROM_SERVER(110, s, ident)
-
+   } ENDIF_FIRST_PACKET_FROM_SERVER(21, s, ident)
    
    /* skip messages coming from the server */
-   if (ntohs(PACKET->L4.src) == 110) 
+   if (ntohs(PACKET->L4.src) == 21) 
       return NULL;
 
    /* skip empty packets (ACK packets) */
@@ -81,7 +75,7 @@ FUNC_DECODER(dissector_pop)
    /* harvest the username */
    if ( !strncasecmp(ptr, "USER ", 5) ) {
 
-      DEBUG_MSG("\tDissector_POP USER");
+      DEBUG_MSG("\tDissector_FTP USER");
       
       /* create the session */
       dissect_create_session(&s, PACKET);
@@ -101,7 +95,7 @@ FUNC_DECODER(dissector_pop)
    /* harvest the password */
    if ( !strncasecmp(ptr, "PASS ", 5) ) {
 
-      DEBUG_MSG("\tDissector_POP PASS");
+      DEBUG_MSG("\tDissector_FTP PASS");
       
       ptr += 5;
       
@@ -119,7 +113,7 @@ FUNC_DECODER(dissector_pop)
       if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
          *ptr = '\0';
 
-      USER_MSG("POP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      USER_MSG("FTP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass);

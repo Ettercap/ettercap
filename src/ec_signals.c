@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.3 2003/03/29 20:13:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.4 2003/04/12 19:11:34 alor Exp $
 */
 
 #include <ec.h>
@@ -68,9 +68,9 @@ RETSIGTYPE signal_SEGV(int sig)
 
    struct rlimit corelimit = {RLIM_INFINITY, RLIM_INFINITY};
 
-   ui_cleanup();
-   
    DEBUG_MSG("Segmentation Fault...");
+   
+   ui_cleanup();
    
    fprintf (stderr, "\n\033[01m\033[1m Ooops !! This shouldn't happen...\n\n");
    fprintf (stderr, "Segmentation Fault...\033[0m\n\n");

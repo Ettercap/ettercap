@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_error.c,v 1.3 2003/03/29 20:13:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_error.c,v 1.4 2003/04/12 19:11:34 alor Exp $
 */
 
 #include <ec.h>
@@ -27,8 +27,13 @@
 #define ERROR_MSG_LEN 200
 
 void error_msg(char *file, char *function, int line, char *message, ...);
+void bug(char *file, char *function, int line, char *message);
 
 /*******************************************/
+
+/*
+ * raise an error
+ */
 
 void error_msg(char *file, char *function, int line, char *message, ...)
 {
@@ -50,6 +55,24 @@ void error_msg(char *file, char *function, int line, char *message, ...)
 
    exit(-errno);
 }
+
+/*
+ * used in sanity check
+ * it represent a BUG in the software
+ */
+
+void bug(char *file, char *function, int line, char *message)
+{
+   DEBUG_MSG("BUG : [%s:%s:%d] %s \n", file, function, line, message );
+   
+   /* close the interface and display the error */
+   ui_cleanup();
+  
+   fprintf(stderr, "\n\nBUG at [%s:%s:%d]\n\n %s \n\n", file, function, line, message );
+
+   exit(-666);
+}
+
 
 /* EOF */
 

@@ -6,6 +6,18 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 
+/* layer canonical name */
+
+enum {
+   IFACE_LAYER  = 1,
+   LINK_LAYER   = 2,
+   NET_LAYER    = 3,
+   PROTO_LAYER  = 4,
+   APP_LAYER    = 5,
+   APP_LAYER_TCP = 6,
+   APP_LAYER_UDP = 7,
+};
+
 #define FUNC_DECODER(func) void * func(u_char *buf, u_int16 buflen, int *len, struct packet_object *po)
 #define FUNC_DECODER_PTR(func) void * (*func)(u_char *buf, u_int16 buflen, int *len, struct packet_object *po)
 
@@ -25,23 +37,14 @@
 #define DISPLAY_DATA    po->disp_data
 #define DISPLAY_LEN     po->disp_len                             
 
+/* exported functions */
+
 extern void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 extern int set_L2_decoder(u_int16 dlt);
-void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
-void del_decoder(u_int8 level, u_int32 type);
-void * get_decoder(u_int8 level, u_int32 type);
+extern void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
+extern void del_decoder(u_int8 level, u_int32 type);
+extern void * get_decoder(u_int8 level, u_int32 type);
 
-/* layer canonical name */
-
-enum {
-   IFACE_LAYER  = 1,
-   LINK_LAYER   = 2,
-   NET_LAYER    = 3,
-   PROTO_LAYER  = 4,
-   APP_LAYER    = 5,
-   APP_LAYER_TCP = 6,
-   APP_LAYER_UDP = 7,
-};
 
 
 #endif

@@ -26,11 +26,13 @@ noinst_HEADERS = ec.h \
                  ec_log.h \
                  ec_profiles.h \
                  ec_decode.h \
+                 ec_dissect.h \
                  ec_fingerprint.h \
                  ec_passive.h \
                  ec_hash.h \
                  ec_manuf.h \
                  ec_poll.h \
+                 ec_session.h \
                  ec_interfaces.h \
                  ec_plugins.h \
                  ec_format.h \

@@ -15,6 +15,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_capture.c \
 				   ec_send.c \
 				   ec_decode.c \
+				   ec_dissect.c \
 				   ec_dispatcher.c \
 				   ec_packet.c \
 				   ec_hook.c \
@@ -28,6 +29,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_plugins.c \
 				   ec_format.c \
 				   ec_poll.c \
+				   ec_session.c \
 				   ec_sniff.c \
 				   ec_sniff_unified.c \
 				   ec_sniff_bridge.c \

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.10 2003/04/05 13:11:10 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.11 2003/04/12 19:11:35 alor Exp $
 */
 
 #include <el.h>
@@ -129,6 +129,11 @@ void create_hosts_list(void)
          break;
    
       profile_add_info(&inf, &buf);
+      
+      SAFE_FREE(buf.user);
+      SAFE_FREE(buf.pass);
+      SAFE_FREE(buf.info);
+      SAFE_FREE(buf.banner);
    }
 }
 
@@ -171,12 +176,12 @@ void analyze_info(void)
    }
    
    fprintf(stdout, "\n\n");
-   fprintf(stdout, "Number of local hosts            : %d\n", nhl);   
-   fprintf(stdout, "Number of non local hosts        : %d\n", nhnl);   
-   fprintf(stdout, "Number of gateway                : %d\n\n", ngw);   
+   fprintf(stdout, "Number of local hosts         : %d\n", nhl);   
+   fprintf(stdout, "Number of non local hosts     : %d\n", nhnl);   
+   fprintf(stdout, "Number of gateway             : %d\n\n", ngw);   
    
-   fprintf(stdout, "Number of discovered services    : %d\n", nports);   
-   fprintf(stdout, "Number of user and pass captured : %d\n\n", nusers);   
+   fprintf(stdout, "Number of discovered services : %d\n", nports);   
+   fprintf(stdout, "Number of accounts captured   : %d\n\n", nusers);   
    
    fprintf(stdout, "\n");
    

@@ -14,20 +14,6 @@
       - LTDL_SHLIB_EXT
       - make test with dlopen-test
 
-   + poll / select 
-
-   + SESSIONS
-      - lock unlock
-      - read
-      - set
-      - get
-      - update
-
-   + dissector must send associated user, pass and info (state machine required)
-
-   + LOGGING ENGINE
-      - banner extracted by dissectors (state machine required)
-
    + INET
       - checksumming functions
 

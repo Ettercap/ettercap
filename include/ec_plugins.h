@@ -27,7 +27,7 @@ extern void plugin_load_all(void);
 extern int plugin_register(void *handle, struct plugin_ops *ops);
 extern int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *));
 #define PLP_MIN   1
-#define PLP_MAX   INT32_MAX
+#define PLP_MAX   INT_MAX
 
 extern int plugin_get_type(char *name);
 extern int plugin_is_activated(char *name);

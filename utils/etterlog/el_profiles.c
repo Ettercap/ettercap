@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.4 2003/04/07 21:58:41 alor Exp $
+    $Id: el_profiles.c,v 1.5 2003/04/12 19:11:35 alor Exp $
 */
 
 #include <el.h>
@@ -171,6 +171,10 @@ static void update_port_list(struct host_profile *h, struct log_header_info *inf
    /* search for an existing port */
    LIST_FOREACH(o, &(h->open_ports_head), next) {
       if (o->L4_proto == inf->L4_proto && o->L4_addr == inf->L4_addr) {
+         /* set the banner for the port */
+         if (o->banner == NULL && buf->banner)
+            o->banner = strdup(buf->banner);
+         /* update the user info */
          update_user_list(o, inf, buf);
          return;
       }
@@ -188,7 +192,9 @@ static void update_port_list(struct host_profile *h, struct log_header_info *inf
 
    o->L4_proto = inf->L4_proto;
    o->L4_addr = inf->L4_addr;
-  
+
+   
+   
    /* add user and pass */
    update_user_list(o, inf, buf);
 
@@ -216,6 +222,10 @@ static void update_user_list(struct open_port *o, struct log_header_info *inf, s
    struct active_user *a;
    struct active_user *last = NULL;
 
+   /* no info to update */
+   if (buf->user == NULL || buf->pass == NULL)
+      return;
+   
    /* search for an existing user and pass */
    LIST_FOREACH(u, &(o->users_list_head), next) {
       if (!strcmp(u->user, buf->user) && !strcmp(u->pass, buf->pass)) {

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.3 2003/03/26 22:17:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.4 2003/04/12 19:11:34 alor Exp $
 
 */
 
@@ -93,7 +93,6 @@ void debug_close(void)
    fflush(debug_file);
    fclose (debug_file);
 }
-
 
 
 void debug_msg(const char *message, ...)

@@ -82,4 +82,39 @@ AC_DEFUN(EC_WINDOWS_KERNEL,[
    fi
 ])
 
+
+dnl
+dnl EC_GCC_MACRO()
+dnl
+dnl check if the compiler support __VA_ARGS__ in macro declarations
+dnl
+
+AC_DEFUN(EC_GCC_MACRO,[
+
+   AC_MSG_CHECKING(if your compiler supports __VA_ARGS__ in macro declarations)
+   
+   AC_TRY_RUN([
+   
+      #include <stdio.h>
+
+      #define EXECUTE(x, ...) do{ if (x != NULL) x( __VA_ARGS__ ); }while(0)
+
+      void foo() { }
+      
+      int main(int argc, char **argv)
+      {
+         EXECUTE(foo);
+         return 0;
+      } 
+   ],
+   [ AC_MSG_RESULT(yes) ],
+   [ AC_MSG_RESULT(no) 
+     AC_ERROR(please use gcc >= 3.2.x)
+   ],
+     AC_MSG_RESULT(unkown when cross-compiling)
+   )
+
+])
+
+
 dnl vim:ts=3:expandtab

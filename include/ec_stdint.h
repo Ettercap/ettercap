@@ -2,6 +2,8 @@
 #ifndef EC_STDINT_H
 #define EC_STDINT_H
 
+#include <limits.h>
+
 #if defined HAVE_STDINT_H && !defined OS_SOLARIS
 
 	#include <stdint.h>

@@ -6,8 +6,5 @@
       - dump to file 
 
 
-   + ETTERLOG
-      + user and pass analysis
-      + search per user
-      + regex on banner
-
+   + SESSIONS
+      

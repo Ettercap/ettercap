@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.10 2003/03/31 21:46:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.11 2003/04/12 19:11:34 alor Exp $
 */
 
 #include <ec.h>
@@ -268,22 +268,22 @@ int ui_msg_purge_all(void)
 void ui_register(struct ui_ops *ops)
 {
         
-   ON_ERROR(ops->init, NULL, "BUG: ui_init is equal to NULL");
+   BUG_IF(ops->init, NULL);
    GBL_UI->init = ops->init;
    
-   ON_ERROR(ops->cleanup, NULL, "BUG: ui_cleanup is equal to NULL");
+   BUG_IF(ops->cleanup, NULL);
    GBL_UI->cleanup = ops->cleanup;
    
-   ON_ERROR(ops->start, NULL, "BUG: ui_start is equal to NULL");
+   BUG_IF(ops->start, NULL);
    GBL_UI->start = ops->start;
         
-   ON_ERROR(ops->msg, NULL, "BUG: ui_msg is equal to NULL");
+   BUG_IF(ops->msg, NULL);
    GBL_UI->msg = ops->msg;
    
-   ON_ERROR(ops->error, NULL, "BUG: ui_error is equal to NULL");
+   BUG_IF(ops->error, NULL);
    GBL_UI->error = ops->error;
    
-   ON_ERROR(ops->progress, NULL, "BUG: ui_progress is equal to NULL");
+   BUG_IF(ops->progress, NULL);
    GBL_UI->progress = ops->progress;
 }
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.5 2003/04/07 21:58:42 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.6 2003/04/12 19:11:36 alor Exp $
 */
 
 #include <el.h>
@@ -369,7 +369,7 @@ int find_user(struct host_profile *hst, char *user)
    
    LIST_FOREACH(o, &(hst->open_ports_head), next) {
       LIST_FOREACH(u, &(o->users_list_head), next) {
-         if (strcasecmp(u->user, user))
+         if (!strcasecmp(u->user, user))
             return ESUCCESS;
       }
    }

@@ -8,11 +8,11 @@ extern void debug_msg(const char *message, ...);
 extern FILE *debug_file;
 
 #define DEBUG_INIT() debug_init()
-#define DEBUG_MSG(x, args...) do {                             \
+#define DEBUG_MSG(x, ...) do {                                 \
    if (debug_file == NULL)                                     \
       FATAL_ERROR("[%s::%s] DEBUG_MSG called before initialization !!", __FILE__, __FUNCTION__);  \
    else                                                        \
-      debug_msg(x, ## args);                                   \
+      debug_msg(x, ## __VA_ARGS__ );                           \
 } while(0)
 
 #endif /* EC_DEBUG_H */
@@ -23,7 +23,7 @@ extern FILE *debug_file;
 
 #ifndef DEBUG
    #define DEBUG_INIT()
-   #define DEBUG_MSG(x, args...)
+   #define DEBUG_MSG(x, ...)
 #endif
 
 /* EOF */

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.14 2003/04/07 21:57:55 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.15 2003/04/12 19:11:34 alor Exp $
 */
 
 #include <ec.h>
@@ -53,6 +53,8 @@ int set_L2_decoder(u_int16 dlt);
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 void del_decoder(u_int8 level, u_int32 type);
 void * get_decoder(u_int8 level, u_int32 type);
+
+/* mutexes */
 
 static pthread_mutex_t decoders_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define DECODERS_LOCK     do{ pthread_mutex_lock(&decoders_mutex); } while(0)
@@ -342,7 +344,6 @@ void del_decoder(u_int8 level, u_int32 type)
    DECODERS_UNLOCK;
    return;
 }
-
 
 /* EOF */
 

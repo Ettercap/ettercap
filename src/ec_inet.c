@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.7 2003/04/03 21:17:59 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.8 2003/04/12 19:11:34 alor Exp $
 */
 
 #include <ec.h>
@@ -188,7 +188,7 @@ inet_ntop6(const u_char *src, char *dst, size_t size)
   	/*
 	 * Check for overflow, copy, and we're done.
 	 */
-	if ((socklen_t)(tp - tmp) > size) {
+	if ((tp - tmp) > size) {
 		__set_errno (ENOSPC);
 		return (NULL);
 	}

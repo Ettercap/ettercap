@@ -144,6 +144,7 @@ AM_PROG_CC_STDC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_GCC_TRADITIONAL
+EC_GCC_MACRO
 
 dnl ========================
 dnl   Libtool related...

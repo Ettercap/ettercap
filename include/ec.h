@@ -50,7 +50,7 @@
 
 #define LOOP for(;;)
 
-#define EXECUTE(x, args...) do{ if(x != NULL) x( args ); }while(0)
+#define EXECUTE(x, ...) do{ if(x != NULL) x( __VA_ARGS__ ); }while(0)
 
 /* this is a default uid to drop privs to */
 #define DROP_TO_UID 65534

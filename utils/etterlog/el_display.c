@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.12 2003/04/08 08:14:33 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.13 2003/04/12 19:11:35 alor Exp $
 */
 
 #include <el.h>
@@ -302,14 +302,14 @@ static void display_info(void)
      
       LIST_FOREACH(o, &(h->open_ports_head), next) {
          
-         fprintf(stdout, "   PORT     : %s %d \n", (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , ntohs(o->L4_addr));
-         fprintf(stdout, "   BANNER   : %s\n", o->banner);
+         fprintf(stdout, "   PORT     : %s %d \t[%s]\n", (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , ntohs(o->L4_addr),
+                                                          o->banner);
          
          LIST_FOREACH(u, &(o->users_list_head), next) {
             
-            fprintf(stdout, "      USER     : %s\n", u->user);
-            fprintf(stdout, "      PASS     : %s\n", u->pass);
-            fprintf(stdout, "      INFO     : %s\n", u->info);
+            fprintf(stdout, "      ACCOUNT : %s  %s \n", u->user, u->pass);
+            if (u->info)
+               fprintf(stdout, "      INFO     : %s\n", u->info);
          }
          fprintf(stdout, "\n");
       }

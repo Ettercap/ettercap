@@ -27,7 +27,6 @@
 
    + DISSECTOR
       - nntp authinfo 
-      - pop APOP
       - x11 banner
 
    + TOP HALF

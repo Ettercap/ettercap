@@ -3,43 +3,44 @@ include $(top_srcdir)/Makefile.am.common
 
 bin_PROGRAMS = ettercap
 
-ettercap_SOURCES = ec_main.c \
-				   ec_signals.c \
-				   ec_parser.c \
-				   ec_globals.c \
-				   ec_debug.c \
-				   ec_error.c \
-				   ec_ui.c \
-				   ec_inet.c \
-				   ec_resolv.c \
-				   ec_checksum.c \
-				   ec_threads.c \
-				   ec_capture.c \
-				   ec_send.c \
-				   ec_conf.c \
-				   ec_decode.c \
-				   ec_dissect.c \
-				   ec_dispatcher.c \
-				   ec_packet.c \
-				   ec_hook.c \
-				   ec_fingerprint.c \
-				   ec_passive.c \
-				   ec_profiles.c \
-				   ec_hash.c \
-				   ec_file.c \
-				   ec_log.c \
-				   ec_manuf.c \
-				   ec_services.c \
-				   ec_plugins.c \
-				   ec_format.c \
-				   ec_poll.c \
-				   ec_stats.c \
-				   ec_scan.c \
-				   ec_session.c \
-				   ec_sniff.c \
-				   ec_sniff_unified.c \
-				   ec_sniff_bridge.c \
-				   ec_sniff_arp.c \
+ettercap_SOURCES = ec_capture.c \
+               ec_checksum.c \
+               ec_conf.c \
+               ec_debug.c \
+               ec_decode.c \
+               ec_dispatcher.c \
+               ec_dissect.c \
+               ec_error.c \
+               ec_file.c \
+               ec_fingerprint.c \
+               ec_format.c \
+               ec_globals.c \
+               ec_hash.c \
+               ec_hook.c \
+               ec_inet.c \
+               ec_log.c \
+               ec_main.c \
+               ec_manuf.c \
+               ec_packet.c \
+               ec_parser.c \
+               ec_passive.c \
+               ec_plugins.c \
+               ec_poll.c \
+               ec_profiles.c \
+               ec_resolv.c \
+               ec_scan.c \
+               ec_send.c \
+               ec_services.c \
+               ec_session.c \
+               ec_signals.c \
+               ec_sniff.c \
+               ec_sniff_arp.c \
+               ec_sniff_bridge.c \
+               ec_sniff_unified.c \
+               ec_stats.c \
+               ec_strings.c \
+               ec_threads.c \
+               ec_ui.c \
 				   interfaces/console/ec_console.c \
 				   interfaces/console/ec_console_display.c \
 				   interfaces/console/ec_console_profile.c \

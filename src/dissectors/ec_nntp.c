@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_nntp.c,v 1.1 2003/07/07 10:43:20 alor Exp $
+    $Id: ec_nntp.c,v 1.2 2003/07/08 20:59:53 alor Exp $
 */
 
 /*
@@ -104,6 +104,8 @@ FUNC_DECODER(dissector_nntp)
       
       /* save the session */
       session_put(s);
+
+      return NULL;
    }
 
    /* harvest the password */
@@ -135,14 +137,16 @@ FUNC_DECODER(dissector_nntp)
       if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
          *ptr = '\0';
 
+      /* free the session */
+      session_free(s);
+      SAFE_FREE(ident);
+      
       USER_MSG("NNTP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass);
 
-      /* free the session */
-      session_free(s);
-      SAFE_FREE(ident);
+      return NULL;
    }
    
    return NULL;

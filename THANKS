@@ -23,6 +23,11 @@
    Subterrain Security Group                 for some passive os fingerprint (from siphon)
 
    Nicola Bonelli <awgn@antifork.org>        for the TTL_PREDICTOR function
+   
+   Dug Song <dugsong@monkey.org>             for hex.c (part of dsniff source)
+                                             from which I took the hex_print function.
+
+   OpenSSH team                              for the match_pattern function
 
    Anthony C. Zboralski                      for the tunnelx technique used in zaratan plugin.
    

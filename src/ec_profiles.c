@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.10 2003/07/08 09:52:06 alor Exp $
+    $Id: ec_profiles.c,v 1.11 2003/07/08 20:59:53 alor Exp $
 */
 
 #include <ec.h>
@@ -46,8 +46,8 @@ static void set_gateway(u_char *L2_addr);
 /* global mutex on interface */
 
 static pthread_mutex_t profile_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define PROFILE_LOCK     do { DEBUG_MSG("LOCK"); pthread_mutex_lock(&profile_mutex); } while(0)
-#define PROFILE_UNLOCK   do { DEBUG_MSG("UNLOCK"); pthread_mutex_unlock(&profile_mutex); } while(0)
+#define PROFILE_LOCK     do { pthread_mutex_lock(&profile_mutex); } while(0)
+#define PROFILE_UNLOCK   do { pthread_mutex_unlock(&profile_mutex); } while(0)
 
 /************************************************/
   

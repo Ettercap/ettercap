@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.4 2003/07/03 20:12:49 alor Exp $
+    $Id: ec_conf.c,v 1.5 2003/07/08 20:59:53 alor Exp $
 */
 
 #include <ec.h>
@@ -26,7 +26,10 @@
 #include <ec_dissect.h>
 
 /* globals */
-
+   
+/* used only to keep track of how many dissector are loaded */
+int number_of_dissectors;
+   
 static struct conf_entry privs[] = {
    { "ec_uid", NULL },
    { NULL, NULL },
@@ -213,6 +216,7 @@ void load_conf(void)
        */
       if (curr_section == (struct conf_entry *)&dissectors) {
          set_dissector(line, p, lineno);
+         number_of_dissectors++;
          continue;
       }
       
@@ -296,6 +300,15 @@ static void set_dissector(char *name, char *values, int lineno)
       
    }
 
+}
+
+
+/*
+ * print the number of dissectors loaded 
+ */
+void conf_dissectors(void)
+{
+   USER_MSG("%4d protocol dissectors loaded\n", number_of_dissectors);   
 }
 
 /* EOF */

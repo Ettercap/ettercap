@@ -17,12 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.10 2003/07/08 18:50:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.11 2003/07/08 20:59:53 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_plugins.h>
-#include <ec_parser.h>
+#include <ec_strings.h>
 
 #include <dirent.h>
 

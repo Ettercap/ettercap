@@ -27,7 +27,9 @@ extern int dissect_modify(int mode, char *name, u_int32 port);
 
 extern int dissect_match(void *id_sess, void *id_curr);
 extern void dissect_create_session(struct session **s, struct packet_object *po); 
+extern void dissect_wipe_session(struct packet_object *po);
 extern void dissect_create_ident(void **i, struct packet_object *po); 
+
 extern int dissect_on_port(char *name, u_int16 port);
    
 /*
@@ -48,7 +50,7 @@ extern int dissect_on_port(char *name, u_int16 port);
 /*
  * helper macros to get the banner of a service if it is the first thing 
  * the server send to the client.
- * the must be used this way:
+ * it must be used this way:
  *
  * IF_FIRST_PACKET_FROM_SERVER(21, s, i) {
  * 
@@ -63,7 +65,7 @@ extern int dissect_on_port(char *name, u_int16 port);
       dissect_create_ident(&ident, PACKET);                                \
       /* the session exist */                                              \
       if (session_get(&session, ident) != -ENOTFOUND) {                    \
-         /* prevent to delete the session created for the user and pass */ \
+         /* prevent the deletion of session created for the user and pass */ \
          if (session->data == NULL)                                        
 
 

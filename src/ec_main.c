@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.22 2003/07/08 09:52:06 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.23 2003/07/08 20:59:53 alor Exp $
 */
 
 #include <ec.h>
@@ -110,6 +110,9 @@ int main(int argc, char *argv[])
 
    /* load all the plugins */
    plugin_load_all();
+
+   /* print how many dissectors were loaded */
+   conf_dissectors();
    
    /* load the mac-fingerprints */
    manuf_init();
@@ -124,11 +127,11 @@ int main(int argc, char *argv[])
    USER_MSG("\n");
    ui_msg_flush(MSG_ALL);
 
+/**** INITIALIZATION PHASE TERMINATED ****/
+   
    /* build the list of active hosts */
    if (GBL_SNIFF->type != SM_BRIDGED)
       build_hosts_list();
-   
-/**** INITIALIZATION PHASE TERMINATED ****/
    
    /* initialize the sniffing method */
    EXECUTE(GBL_SNIFF->start);

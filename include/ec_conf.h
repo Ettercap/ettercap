@@ -17,6 +17,7 @@ struct conf_section {
 /* exported functions */
 
 extern void load_conf(void);
+extern void conf_dissectors(void);
 
 #endif
 

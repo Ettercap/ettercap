@@ -17,21 +17,25 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.14 2003/07/07 10:43:20 alor Exp $
+    $Id: ec_pop.c,v 1.15 2003/07/08 20:59:53 alor Exp $
 */
 
 /*
  * The authentication schema can be found here:
  * 
  * ftp://ftp.rfc-editor.org/in-notes/std/std53.txt
- * 
+ *
+ * we currently support:
+ *    - USER & PASS
+ *    - APOP
+ *    - AUTH LOGIN
  */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_session.h>
-
+#include <ec_strings.h>
 
 /* protos */
 
@@ -61,18 +65,38 @@ FUNC_DECODER(dissector_pop)
    CREATE_SESSION_ON_SYN_ACK("pop", s);
    
    /* check if it is the first packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("pop", s, ident) {
+   if (dissect_on_port("pop", ntohs(PACKET->L4.src)) == ESUCCESS && PACKET->L4.flags & TH_PSH) {  
+      dissect_create_ident(&ident, PACKET);
+      /* the session exist */
+      if (session_get(&s, ident) != -ENOTFOUND) { 
+         /* prevent the deletion of session created for the user and pass */
+         if (s->data == NULL) { 
             
-      /* get the banner */
-      if (!strncmp(ptr, "+OK", 3))
-         PACKET->DISSECTOR.banner = strdup(ptr+4);
-     
-      /* remove the trailing numbers */
-      if ( (ptr = strchr(PACKET->DISSECTOR.banner, '<')) != NULL )
-         *ptr = '\0';
-            
-   } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
+            /* get the banner */
+            if (!strncmp(ptr, "+OK", 3))
+               PACKET->DISSECTOR.banner = strdup(ptr + 4);
 
+            DEBUG_MSG("\tdissector_pop BANNER");
+
+            /* remove the \r\n */
+            if ( (ptr = strchr(PACKET->DISSECTOR.banner, '\r')) != NULL )
+               *ptr = '\0';
+            
+            /* remove the trailing msg-id <...> */
+            if ( (ptr = strchr(PACKET->DISSECTOR.banner, '<')) != NULL ) {
+               /* save the msg-id for APOP authentication */
+               s->data = strdup(ptr);
+               /* save the session */
+               *(ptr - 1) = '\0';
+            } else {
+               /* fake the msgid if it does not exist */
+               s->data = strdup("");
+            }
+         } 
+      }                         
+      SAFE_FREE(ident);         
+      return NULL;              
+   }  
    
    /* skip messages coming from the server */
    if (dissect_on_port("pop", ntohs(PACKET->L4.src)) == ESUCCESS)
@@ -86,13 +110,21 @@ FUNC_DECODER(dissector_pop)
    
    /* skip the whitespaces at the beginning */
    while(*ptr == ' ' && ptr != end) ptr++;
-  
-   /* harvest the username */
+
+/*
+ * USER & PASS authentication:
+ *
+ * USER user
+ * PASS pass
+ */
    if ( !strncasecmp(ptr, "USER ", 5) ) {
 
       DEBUG_MSG("\tDissector_POP USER");
+
+      /* destroy any previous session */
+      dissect_wipe_session(PACKET);
       
-      /* create the session */
+      /* create the new session */
       dissect_create_session(&s, PACKET);
       
       ptr += 5;
@@ -105,6 +137,8 @@ FUNC_DECODER(dissector_pop)
       
       /* save the session */
       session_put(s);
+      
+      return NULL;
    }
 
    /* harvest the password */
@@ -136,14 +170,164 @@ FUNC_DECODER(dissector_pop)
       if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
          *ptr = '\0';
 
+      /* free the session */
+      session_free(s);
+      SAFE_FREE(ident);
+
+      /* print the message */
       USER_MSG("POP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass);
 
+      return NULL;
+   }
+   
+/* 
+ * APOP authentication :
+ *
+ * APOP user md5-digest
+ *
+ * MD5-diges is computed on "<msg-id>pass"
+ */
+   if ( !strncasecmp(ptr, "APOP ", 5) ) {
+     
+      DEBUG_MSG("\tDissector_POP APOP");
+      
+      /* create an ident to retrieve the session */
+      dissect_create_ident(&ident, PACKET);
+      
+      /* retrieve the session and delete it */
+      if (session_get_and_del(&s, ident) == -ENOTFOUND) {
+         SAFE_FREE(ident);
+         return NULL;
+      }
+
+      /* check that the digest was sent before APOP */
+      if (s->data == NULL) {
+         SAFE_FREE(ident);
+         return NULL;
+      }
+      
+      /* move the pointers to "user" */
+      ptr += 5;
+      PACKET->DISSECTOR.user = strdup(ptr);
+     
+      /* split the string */
+      if ( (ptr = strchr(PACKET->DISSECTOR.user, ' ')) != NULL )
+         *ptr = '\0';
+     
+      /* skip the \0 */
+      ptr += 1;
+      
+      /* save the user */
+      PACKET->DISSECTOR.pass = strdup(ptr);
+      if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
+         *ptr = '\0';
+         
+      /* set the info */
+      PACKET->DISSECTOR.info = strdup(s->data);
+
       /* free the session */
       session_free(s);
       SAFE_FREE(ident);
+
+      /* print the message */
+      USER_MSG("POP : %s:%d -> USER: %s  MD5-digest: %s  %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                    ntohs(PACKET->L4.dst), 
+                                    PACKET->DISSECTOR.user,
+                                    PACKET->DISSECTOR.pass,
+                                    PACKET->DISSECTOR.info);
+      return NULL;
+   }
+   
+/* 
+ * AUTH LOGIN
+ *
+ * digest(user)
+ * digest(pass)
+ *
+ * the digests are in base64
+ */
+   if ( !strncasecmp(ptr, "AUTH LOGIN", 10) ) {
+      
+      DEBUG_MSG("\tDissector_POP AUTH LOGIN");
+
+      /* destroy any previous session */
+      dissect_wipe_session(PACKET);
+      
+      /* create the new session */
+      dissect_create_session(&s, PACKET);
+     
+      /* remember the state (used later) */
+      s->data = strdup("AUTH");
+      
+      /* save the session */
+      session_put(s);
+
+      /* username is in the next packet */
+      return NULL;
+   }
+   
+   /* search the session (if it exist) */
+   dissect_create_ident(&ident, PACKET);
+   if (session_get(&s, ident) == -ENOTFOUND)
+      return NULL;
+
+   SAFE_FREE(ident);
+
+   if (!strcmp(s->data, "AUTH")) {
+      char *user;
+      int i;
+     
+      DEBUG_MSG("\tDissector_POP AUTH LOGIN USER");
+      
+      user = calloc(strlen(ptr), sizeof(char));
+      ON_ERROR(user, NULL, "cant allocate memory");
+     
+      /* username is encoded in base64 */
+      i = base64_decode(user, ptr);
+     
+      SAFE_FREE(s->data);
+
+      /* store the username in the session */
+      s->data = calloc(strlen("AUTH USER ") + i + 1, sizeof(char) );
+      ON_ERROR(s->data, NULL, "cant allocate memory");
+      
+      sprintf(s->data, "AUTH USER %s", user);
+      
+      SAFE_FREE(user);
+
+      /* pass is in the next packet */
+      return NULL;
+   }
+   
+   if (!strncmp(s->data, "AUTH USER", 9)) {
+      char *pass;
+      int i;
+     
+      DEBUG_MSG("\tDissector_POP AUTH LOGIN PASS");
+      
+      pass = calloc(strlen(ptr), sizeof(char));
+      ON_ERROR(pass, NULL, "cant allocate memory");
+      
+      /* password is encoded in base64 */
+      i = base64_decode(pass, ptr);
+     
+      /* fill the structure */
+      PACKET->DISSECTOR.user = strdup(s->data + strlen("AUTH USER "));
+      PACKET->DISSECTOR.pass = strdup(pass);
+      
+      SAFE_FREE(pass);
+      /* destroy the session */
+      dissect_wipe_session(PACKET);
+      
+      /* print the message */
+      USER_MSG("POP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                    ntohs(PACKET->L4.dst), 
+                                    PACKET->DISSECTOR.user,
+                                    PACKET->DISSECTOR.pass);
+      return NULL;
    }
    
    return NULL;

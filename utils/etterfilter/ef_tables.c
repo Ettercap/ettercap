@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_tables.c,v 1.4 2003/09/10 21:10:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_tables.c,v 1.5 2003/09/13 10:37:44 alor Exp $
 */
 
 #include <ef.h>
 #include <ec_file.h>
 
 #include <ctype.h>
+#include <netinet/in.h>
 
 /* globals */
 
@@ -315,7 +316,9 @@ void load_constants(void)
 
 
 /*
- * return the value of a constant 
+ * return the value of a constant
+ *
+ * the value is integer32 and save in network order
  */
 int get_constant(char *name, u_int32 *value)
 {
@@ -323,7 +326,7 @@ int get_constant(char *name, u_int32 *value)
 
    SLIST_FOREACH(c, &const_head, next) {
       if (!strcmp(name, c->name)) {
-         *value = c->value;
+         *value = htonl(c->value);
          return ESUCCESS;
       }
    }

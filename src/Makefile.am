@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.60 2003/10/14 13:13:14 alor Exp $
+# $Id: Makefile.am,v 1.61 2003/10/14 14:06:09 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -26,6 +26,7 @@ ettercap_SOURCES = ec_capture.c \
                    ec_hook.c \
                    ec_inet.c \
                    ec_inject.c \
+                   ec_interfaces.c \
                    ec_log.c \
                    ec_main.c \
                    ec_manuf.c \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.4 2003/10/13 10:43:50 alor Exp $
+    $Id: ec_text.c,v 1.5 2003/10/14 14:06:09 alor Exp $
 */
 
 #include <ec.h>
@@ -28,6 +28,7 @@
 #include <ec_interfaces.h>
 #include <ec_format.h>
 #include <ec_plugins.h>
+#include <ec_text.h>
 
 #include <termios.h>
 

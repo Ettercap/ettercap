@@ -1,5 +1,5 @@
 /*
-    ettercap -- everything start from this file... 
+    ettercap -- everything starts from this file... 
 
     Copyright (C) ALoR & NaGA
 
@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.37 2003/10/10 21:16:25 alor Exp $
+    $Id: ec_main.c,v 1.38 2003/10/14 14:06:09 alor Exp $
 */
 
 #include <ec.h>

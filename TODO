@@ -38,6 +38,7 @@
          - "active" passive fingerprint
          - sniffing (connection tracking)
          - logging
+         - binder
    
    
    + DISSECTORS

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.3 2003/03/14 23:46:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.4 2003/03/18 09:29:36 alor Exp $
 */
 
 #include <ec.h>
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     * we don't need any more root privs.
     */
    drop_privs();
-  
+ 
    /* load the mac-fingerprints */
    manuf_init();
 

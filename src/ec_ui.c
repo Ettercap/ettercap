@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.3 2003/03/17 19:42:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.4 2003/03/18 09:29:37 alor Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,7 @@ void ui_init(void);
 void ui_start(void);
 void ui_cleanup(void);
 void ui_msg(const char *fmt, ...);
+void ui_progress(int value, int max);
 int ui_msg_flush(int max);
 void ui_register(struct ui_ops *ops);
 
@@ -82,6 +83,11 @@ void ui_cleanup(void)
    }
 }
 
+/* implement the progress bar */
+void ui_progress(int value, int max)
+{
+   EXECUTE(GBL_UI->progress, value, max);
+}
 
 /*
  * this fuction enqueues the messages displayed by
@@ -204,6 +210,8 @@ void ui_register(struct ui_ops *ops)
    ON_ERROR(ops->msg, NULL, "BUG: ui_msg is equal to NULL");
    GBL_UI->msg = ops->msg;
    
+   ON_ERROR(ops->progress, NULL, "BUG: ui_progress is equal to NULL");
+   GBL_UI->progress = ops->progress;
 }
 
 

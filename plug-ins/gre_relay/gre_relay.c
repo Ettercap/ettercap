@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: gre_relay.c,v 1.2 2003/12/07 15:17:31 lordnaga Exp $
+    $Id: gre_relay.c,v 1.3 2003/12/07 15:23:37 lordnaga Exp $
 */
 
 
@@ -111,8 +111,6 @@ static int gre_relay_init(void *dummy)
    hook_add(HOOK_PACKET_GRE, &parse_gre);
    hook_add(HOOK_PACKET_ARP_RQ, &parse_arp);
 
-   /* XXX - Do we need to reset GBL_OPTIONS->quiet ??? */
-   
    return PLUGIN_RUNNING;      
 }
 

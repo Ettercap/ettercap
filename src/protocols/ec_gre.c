@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gre.c,v 1.1 2003/12/01 16:33:41 lordnaga Exp $
+    $Id: ec_gre.c,v 1.2 2003/12/03 15:44:31 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -65,6 +65,7 @@ FUNC_DECODER(decode_gre)
    FUNC_DECODER_PTR(next_decoder);
    u_int16 flags;
    u_int16 proto;
+   u_int16 *gre_len = NULL;
    
    DECODED_LEN = 4;
    
@@ -74,17 +75,32 @@ FUNC_DECODER(decode_gre)
    /* Parse the flags and see which fields are present */
    if (flags & GH_B_C || flags & GH_B_R)
       DECODED_LEN += 4;
-   if (flags & GH_B_K)
+   if (flags & GH_B_K) {
+      /* We have to deal with it if we modify the packet */
+      gre_len = (u_int16 *)(DECODE_DATA + DECODED_LEN);
       DECODED_LEN += 4;
+   }
    if (flags & GH_B_S)
       DECODED_LEN += 4;
    if (flags & GH_P_A)
       DECODED_LEN += 4;
    
+   /* XXX - Add GRE hook for redirected tunnels */
+   
    /* get the next decoder */
    next_decoder =  get_decoder(NET_LAYER, proto);
    EXECUTE_DECODER(next_decoder);
-
+ 
+   /* Adjust GRE payload len (if present) */
+   if (!GBL_OPTIONS->unoffensive && (PACKET->flags & PO_MODIFIED) 
+       && (PACKET->flags & PO_FORWARDABLE)) {
+   /* XXX - Feature checksum re-calculation (if present) */
+   /* XXX - Feature packet injection/dropping */
+   
+      if (gre_len) 
+         ORDER_ADD_SHORT(*gre_len, PACKET->DATA.delta);
+   }
+      
    return NULL;
 }
 

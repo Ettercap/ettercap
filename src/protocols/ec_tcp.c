@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.10 2003/04/15 07:57:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.11 2003/09/15 16:16:59 lordnaga Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_fingerprint.h>
 #include <ec_checksum.h>
+#include <ec_session.h>
 
 
 /* globals */
@@ -60,11 +61,37 @@ struct tcp_header {
 #define TCPOPT_SACKOK           4
 #define TCPOPT_TIMESTAMP        8
 
+/* Session data structure */
+struct tcp_half_status {
+   u_int32  last_seq;
+   int32    seq_adj;
+};
+
+struct tcp_status {
+   struct tcp_half_status way[2];
+};
+
+/* session identifier */
+struct tcp_ident {
+   u_int32 magic;
+      #define TCP_MAGIC  0x0400e77e
+   struct ip_addr L3_src;
+   struct ip_addr L3_dst;
+   u_int16 L4_src;
+   u_int16 L4_dst;
+};
+
+#define TCP_IDENT_LEN sizeof(struct tcp_ident)
+
 
 /* protos */
 
 FUNC_DECODER(decode_tcp);
 void tcp_init(void);
+int tcp_match(void *id_sess, void *id_curr);
+void tcp_create_session(struct session **s, struct packet_object *po);
+size_t tcp_create_ident(void **i, struct packet_object *po);            
+int tcp_find_direction(void *ids, void *id);
 
 /*******************************************/
 
@@ -84,6 +111,10 @@ FUNC_DECODER(decode_tcp)
    FUNC_DECODER_PTR(next_decoder);
    struct tcp_header *tcp;
    u_char *opt_start, *opt_end;
+   struct session *s = NULL;
+   void *ident = NULL;
+   struct tcp_status *status;
+   int direction;
 
    tcp = (struct tcp_header *)DECODE_DATA;
    
@@ -188,20 +219,171 @@ FUNC_DECODER(decode_tcp)
    /* HOOK POINT: PACKET_TCP */
    hook_point(PACKET_TCP, po);
 
+   /* Find or create the correct session */
+   tcp_create_ident(&ident, PACKET);
+   if (session_get(&s, ident, TCP_IDENT_LEN) == -ENOTFOUND) {
+      tcp_create_session(&s, PACKET);
+
+      s->data = calloc(1, sizeof(struct tcp_status));
+      session_put(s);
+   }
+
+   /* Select right comunication way */
+   direction = tcp_find_direction(s->ident, ident);
+   SAFE_FREE(ident);
    
+   /* Record last packet's seq */
+   status = (struct tcp_status *)s->data;
+   status->way[direction].last_seq = ntohl(tcp->seq);
+   
+   /* SYN counts as one byte */
+   if ( tcp->flags & TH_SYN )
+      status->way[direction].last_seq++;
+
    /* get the next decoder */
    next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
-
    EXECUTE_DECODER(next_decoder);
    
-   /* XXX - implement modification checks */
-#if 0
-   if (po->flags & PO_MOD_LEN)
-      
-   if (po->flags & PO_MOD_CHECK)
-#endif   
+   /* 
+    * Modification checks and adjustments.
+    * - tcp->seq and tcp->ack accoridng to injected/dropped bytes
+    * - seq_adj according to PACKET->delta for modifications 
+    *   or the whole payload for dropped packets.
+    */   
+   /* XXX [...] over TCP encapsulation not supported yet: 
+    * upper layer may modify L3 structure
+    */
+   if (PACKET->flags & PO_DROPPED)
+      status->way[direction].seq_adj -= PACKET->DATA.len;
+   else if ((PACKET->flags & PO_MODIFIED) || 
+            (status->way[direction].seq_adj != 0) || 
+            (status->way[!direction].seq_adj != 0)) {
+      ORDER_ADD_LONG(tcp->seq, status->way[direction].seq_adj);
+      ORDER_ADD_LONG(tcp->ack, -status->way[!direction].seq_adj);
+
+      status->way[direction].seq_adj += PACKET->delta;
+
+      /* XXX We assume len>=delta (required for checksum) */
+      PACKET->DATA.len += PACKET->delta;
+            
+      /* Recalculate checksum */
+      tcp->csum = 0; 
+      tcp->csum = L4_checksum(PACKET);
+   }
 
    return NULL;
+}
+
+/*
+ * Find right comunication way for session data.
+ * First array data is relative to the direction first caught.
+ */ 
+int tcp_find_direction(void *ids, void *id)
+{
+   if (memcmp(ids, id, TCP_IDENT_LEN)) 
+      return 1;
+      
+   return 0;
+} 
+
+/*******************************************/
+
+/* Sessions' stuff for tcp packets */
+
+
+/*
+ * create the ident for a session
+ */
+
+size_t tcp_create_ident(void **i, struct packet_object *po)
+{
+   struct tcp_ident *ident;
+
+   /* allocate the ident for that session */
+   ident = calloc(1, sizeof(struct tcp_ident));
+   ON_ERROR(ident, NULL, "can't allocate memory");
+
+   /* the magic */
+   ident->magic = TCP_MAGIC;
+      
+   /* prepare the ident */
+   memcpy(&ident->L3_src, &po->L3.src, sizeof(struct ip_addr));
+   memcpy(&ident->L3_dst, &po->L3.dst, sizeof(struct ip_addr));
+
+   ident->L4_src = po->L4.src;
+   ident->L4_dst = po->L4.dst;
+
+   /* return the ident */
+   *i = ident;
+
+   /* return the lenght of the ident */
+   return sizeof(struct tcp_ident);
+}
+
+
+/*
+ * compare two session ident
+ *
+ * return 1 if it matches
+ */
+
+int tcp_match(void *id_sess, void *id_curr)
+{
+   struct tcp_ident *ids = id_sess;
+   struct tcp_ident *id = id_curr;
+
+   /* sanity check */
+   BUG_IF(ids == NULL);
+   BUG_IF(id == NULL);
+  
+   /* 
+    * is this ident from our level ?
+    * check the magic !
+    */
+   if (ids->magic != id->magic)
+      return 0;
+   
+   /* from source to dest */
+   if (ids->L4_src == id->L4_src &&
+       ids->L4_dst == id->L4_dst &&
+       !ip_addr_cmp(&ids->L3_src, &id->L3_src) &&
+       !ip_addr_cmp(&ids->L3_dst, &id->L3_dst) )
+      return 1;
+   
+   /* from dest to source */
+   if (ids->L4_src == id->L4_dst &&
+       ids->L4_dst == id->L4_src &&
+       !ip_addr_cmp(&ids->L3_src, &id->L3_dst) &&
+       !ip_addr_cmp(&ids->L3_dst, &id->L3_src) )
+      return 1;
+
+   return 0;
+}
+
+
+/*
+ * prepare the ident and the pointer to match function
+ * for a dissector.
+ */
+
+void tcp_create_session(struct session **s, struct packet_object *po)
+{
+   void *ident;
+
+   DEBUG_MSG("tcp_create_session");
+
+   /* allocate the session */
+   *s = calloc(1, sizeof(struct session));
+   ON_ERROR(*s, NULL, "can't allocate memory");
+   
+   /* create the ident */
+   (*s)->ident_len = tcp_create_ident(&ident, po);
+   
+   /* link to the session */
+   (*s)->ident = ident;
+
+   /* the matching function */
+   (*s)->match = &tcp_match;
 }
 
 /* EOF */

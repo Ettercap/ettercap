@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.13 2003/09/13 15:22:46 lordnaga Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.14 2003/09/15 16:16:59 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -56,7 +56,7 @@ struct ip_header {
 /* Session data structure */
 struct ip_status {
    u_int16  last_id;
-   int32    id_adj;
+   int16    id_adj;
 };
 
 /* Ident structure for ip sessions */
@@ -206,12 +206,12 @@ FUNC_DECODER(decode_ip)
    if (PACKET->flags & PO_DROPPED)
       status->id_adj--;
    else if ((PACKET->flags & PO_MODIFIED) || (status->id_adj != 0)) {
-      ip->id  += status->id_adj;
-      ip->tot_len += PACKET->delta;
+      ORDER_ADD_SHORT(ip->id, status->id_adj);
+      ORDER_ADD_SHORT(ip->tot_len, PACKET->delta);
 
       /* 
        * In case some upper level encapsulated 
-       * ip decoder modified it... 
+       * ip decoder modified it... (required for checksum)
        */
       PACKET->L3.header = (u_char *)DECODE_DATA;
       PACKET->L3.len = DECODED_LEN;
@@ -236,7 +236,7 @@ FUNC_DECODER(decode_ip)
  
 size_t ip_create_ident(void **i, struct packet_object *po)
 {
-   struct ip_ident *ident = *i;
+   struct ip_ident *ident;
    
    /* allocate the ident for that session */
    ident = calloc(1, sizeof(struct ip_ident));

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_udp.c,v 1.4 2003/04/15 07:57:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_udp.c,v 1.5 2003/09/15 16:16:59 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -95,15 +95,17 @@ FUNC_DECODER(decode_udp)
    
    /* get the next decoder */
    next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
-
    EXECUTE_DECODER(next_decoder);
    
-   /* XXX - implement modification checks */
-#if 0
-   if (po->flags & PO_MOD_LEN)
-      
-   if (po->flags & PO_MOD_CHECK)
-#endif   
+   /* Adjustments after filters */
+   if (PACKET->flags & PO_MODIFIED) {
+      /* XXX We assume len>=delta (required for checksum) */
+      PACKET->DATA.len += PACKET->delta;
+            
+      /* Recalculate checksum */
+      udp->csum = 0; 
+      udp->csum = L4_checksum(PACKET);
+   }
 
    return NULL;
 }

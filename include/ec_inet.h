@@ -57,9 +57,17 @@ extern void disable_ip_forward(void);
                       (u_int32)*((u_int8 *)x+1)<<8|   \
                       (u_int32)*((u_int8 *)x+0)<<0    \
                     )
+
+   #define ORDER_ADD_SHORT(a, b)   a = htons(ntohs(a) + b)
+   #define ORDER_ADD_LONG(a, b)	   a = htonl(ntohl(a) + b)
+
 #else
    #define ptohs(x) *(u_int16 *)(x)
    #define ptohl(x) *(u_int32 *)(x)
+   
+   #define ORDER_ADD_SHORT(a, b)   a = a + b
+   #define ORDER_ADD_LONG(a, b)	   a = a + b
+
 #endif
       
    
@@ -68,6 +76,7 @@ extern void disable_ip_forward(void);
 
    
 #endif
+
 
 /* EOF */
 

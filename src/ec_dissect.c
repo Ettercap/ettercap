@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.12 2003/09/07 19:47:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.13 2003/09/15 16:16:59 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -126,7 +126,7 @@ void dissect_create_session(struct session **s, struct packet_object *po)
 
 size_t dissect_create_ident(void **i, struct packet_object *po)
 {
-   struct dissect_ident *ident = *i;
+   struct dissect_ident *ident;
    
    /* allocate the ident for that session */
    ident = calloc(1, sizeof(struct dissect_ident));

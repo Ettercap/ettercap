@@ -20,7 +20,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: chk_poison.c,v 1.3 2003/11/10 22:46:24 alor Exp $
+    $Id: chk_poison.c,v 1.4 2004/07/28 08:06:31 alor Exp $
 */
 
 
@@ -29,12 +29,9 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
+#include <ec_mitm.h>
 
 #include <pthread.h>
-
-/* Yeah!!! extern variables from mitm */
-extern LIST_HEAD(, hosts_list) group_one_head;
-extern LIST_HEAD(, hosts_list) group_two_head;
 
 struct poison_list {
    struct ip_addr ip[2];
@@ -96,14 +93,14 @@ static int chk_poison_init(void *dummy)
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
-   if (LIST_EMPTY(&group_one_head) || LIST_EMPTY(&group_two_head)) {
+   if (LIST_EMPTY(&arp_group_one) || LIST_EMPTY(&arp_group_two)) {
       INSTANT_USER_MSG("chk_poison: You have to run this plugin during a poisoning session.\n\n"); 
       return PLUGIN_FINISHED;
    }
    
    /* Create a list with all poisoning targets */
-   LIST_FOREACH(g1, &group_one_head, next) {
-      LIST_FOREACH(g2, &group_two_head, next) {
+   LIST_FOREACH(g1, &arp_group_one, next) {
+      LIST_FOREACH(g2, &arp_group_two, next) {
          /* equal ip must be skipped, you cant poison itself */
          if (!ip_addr_cmp(&g1->ip, &g2->ip))
             continue;

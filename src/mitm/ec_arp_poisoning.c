@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.27 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.28 2004/07/28 08:06:31 alor Exp $
 */
 
 #include <ec.h>
@@ -35,8 +35,10 @@
  * if one associtation has two equal element, it will be skipped.
  * this is done to permit overlapping groups
  */
-LIST_HEAD(, hosts_list) group_one_head;
-LIST_HEAD(, hosts_list) group_two_head;
+
+/* these are LIST_HEAD (look in ec_mitm for the declaration) */
+struct arp_groups arp_group_one;
+struct arp_groups arp_group_two;
 
 static int poison_oneway;
 
@@ -103,12 +105,12 @@ static int arp_poisoning_start(char *args)
       SEMIFATAL_ERROR("ARP poisoning does not support this media.\n");
    
    /* wipe the previous lists */
-   LIST_FOREACH_SAFE(g, &group_one_head, next, tmp) {
+   LIST_FOREACH_SAFE(g, &arp_group_one, next, tmp) {
       LIST_REMOVE(g, next);
       SAFE_FREE(g);
    }
    
-   LIST_FOREACH_SAFE(g, &group_two_head, next, tmp) {
+   LIST_FOREACH_SAFE(g, &arp_group_two, next, tmp) {
       LIST_REMOVE(g, next);
       SAFE_FREE(g);
    }
@@ -160,8 +162,8 @@ static void arp_poisoning_stop(void)
    for (i = 0; i < 3; i++) {
       
       /* walk the lists and poison the victims */
-      LIST_FOREACH(g1, &group_one_head, next) {
-         LIST_FOREACH(g2, &group_two_head, next) {
+      LIST_FOREACH(g1, &arp_group_one, next) {
+         LIST_FOREACH(g2, &arp_group_two, next) {
 
             /* equal ip must be skipped */
             if (!ip_addr_cmp(&g1->ip, &g2->ip))
@@ -195,15 +197,15 @@ static void arp_poisoning_stop(void)
    }
    
    /* delete the elements in the first list */
-   while (LIST_FIRST(&group_one_head) != NULL) {
-      h = LIST_FIRST(&group_one_head);
+   while (LIST_FIRST(&arp_group_one) != NULL) {
+      h = LIST_FIRST(&arp_group_one);
       LIST_REMOVE(h, next);
       SAFE_FREE(h);
    }
    
    /* delete the elements in the second list */
-   while (LIST_FIRST(&group_two_head) != NULL) {
-      h = LIST_FIRST(&group_two_head);
+   while (LIST_FIRST(&arp_group_two) != NULL) {
+      h = LIST_FIRST(&arp_group_two);
       LIST_REMOVE(h, next);
       SAFE_FREE(h);
    }
@@ -228,8 +230,8 @@ EC_THREAD_FUNC(arp_poisoner)
       CANCELLATION_POINT();
       
       /* walk the lists and poison the victims */
-      LIST_FOREACH(g1, &group_one_head, next) {
-         LIST_FOREACH(g2, &group_two_head, next) {
+      LIST_FOREACH(g1, &arp_group_one, next) {
+         LIST_FOREACH(g2, &arp_group_two, next) {
 
             /* equal ip must be skipped, you cant poison itself */
             if (!ip_addr_cmp(&g1->ip, &g2->ip))
@@ -370,8 +372,8 @@ static int create_silent_list(void)
    }
 
    /* add the elements in the two lists */
-   LIST_INSERT_HEAD(&group_one_head, h, next);
-   LIST_INSERT_HEAD(&group_two_head, g, next);
+   LIST_INSERT_HEAD(&arp_group_one, h, next);
+   LIST_INSERT_HEAD(&arp_group_two, g, next);
 
    return ESUCCESS;
 }
@@ -406,7 +408,7 @@ static int create_list(void)
             memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
             memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
             
-            LIST_INSERT_HEAD(&group_one_head, g, next);
+            LIST_INSERT_HEAD(&arp_group_one, g, next);
          }
       }
    }
@@ -425,7 +427,7 @@ static int create_list(void)
          memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
          memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
            
-         LIST_INSERT_HEAD(&group_one_head, g, next);
+         LIST_INSERT_HEAD(&arp_group_one, g, next);
       }
    }
 
@@ -445,7 +447,7 @@ static int create_list(void)
             memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
             memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
             
-            LIST_INSERT_HEAD(&group_two_head, g, next);
+            LIST_INSERT_HEAD(&arp_group_two, g, next);
          }
       }
    }
@@ -464,7 +466,7 @@ static int create_list(void)
          memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
          memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
            
-         LIST_INSERT_HEAD(&group_two_head, g, next);
+         LIST_INSERT_HEAD(&arp_group_two, g, next);
       }
    }
    

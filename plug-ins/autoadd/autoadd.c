@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: autoadd.c,v 1.4 2004/07/13 09:35:44 alor Exp $
+    $Id: autoadd.c,v 1.5 2004/07/28 08:06:30 alor Exp $
 */
 
 
@@ -26,12 +26,6 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_mitm.h>
-
-/* globals */
-
-/* Yeah!!! extern variables from mitm */
-extern LIST_HEAD(, hosts_list) group_one_head;
-extern LIST_HEAD(, hosts_list) group_two_head;
 
 /* protos */
 int plugin_load(void *);
@@ -108,13 +102,13 @@ static void parse_arp(struct packet_object *po)
    /* search in target 1 */
    LIST_FOREACH(t, &GBL_TARGET1->ips, next) 
       if (!ip_addr_cmp(&t->ip, &po->L3.src)) 
-         if (add_to_victims(&group_one_head, po) == ESUCCESS)
+         if (add_to_victims(&arp_group_one, po) == ESUCCESS)
             USER_MSG("autoadd: %s %s added to GROUP1\n", ip_addr_ntoa(&po->L3.src, tmp), mac_addr_ntoa(po->L2.src, tmp2));
    
    /* search in target 2 */
    LIST_FOREACH(t, &GBL_TARGET2->ips, next) 
       if (!ip_addr_cmp(&t->ip, &po->L3.src)) 
-         if (add_to_victims(&group_two_head, po) == ESUCCESS)
+         if (add_to_victims(&arp_group_two, po) == ESUCCESS)
             USER_MSG("autoadd: %s %s added to GROUP2\n", ip_addr_ntoa(&po->L3.src, tmp), mac_addr_ntoa(po->L2.src, tmp2));
 
 }

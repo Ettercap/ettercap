@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.36 2004/02/29 17:37:21 alor Exp $ */
+/* $Id: wdg.h,v 1.37 2004/03/07 15:22:57 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -39,13 +39,14 @@
 #endif
 
 
-#define LIBWDG_VERSION "0.10.0"
+#define LIBWDG_VERSION "0.10.1"
    
 /********************************************/
 
 enum {
    WDG_ESUCCESS    = 0,
    WDG_ENOTHANDLED = 1,
+   WDG_EFINISHED   = 2,
    WDG_EFATAL      = 255,
 };
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_input.c,v 1.8 2004/03/06 18:06:58 alor Exp $
+    $Id: wdg_input.c,v 1.9 2004/03/07 15:22:57 alor Exp $
 */
 
 #include <wdg.h>
@@ -250,6 +250,8 @@ static int wdg_input_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_ev
 {
    WDG_WO_EXT(struct wdg_input_handle, ww);
 
+   WDG_DEBUG_MSG("keypress get msg: %d", key);
+   
    /* handle the message */
    switch (key) {
          
@@ -268,13 +270,13 @@ static int wdg_input_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_ev
       case CTRL('Q'):
          wdg_destroy_object(&wo);
          wdg_redraw_all();
+         return WDG_EFINISHED;
          break;
 
       /* message not handled */
       default:
          if (wo->flags & WDG_OBJ_FOCUSED) {
-            if (wdg_input_driver(wo, key, mouse) != WDG_ESUCCESS)
-               wdg_input_redraw(wo);
+            return wdg_input_driver(wo, key, mouse);
          } else {
             return -WDG_ENOTHANDLED;
          }
@@ -358,6 +360,15 @@ static int wdg_input_virtualize(struct wdg_object *wo, int key)
       case 127:   /* how many code does it have ?? argh !! */
          c = REQ_DEL_PREV;
          break;
+      case KEY_DC:
+         c = REQ_DEL_CHAR;
+         break;
+      case KEY_HOME:
+         c = REQ_BEG_FIELD;
+         break;
+      case KEY_END:
+         c = REQ_END_FIELD;
+         break;
       default:
          c = key;
          break;
@@ -383,6 +394,8 @@ static int wdg_input_driver(struct wdg_object *wo, int key, struct wdg_mouse_eve
    WDG_WO_EXT(struct wdg_input_handle, ww);
    int c, v;
    
+   WDG_DEBUG_MSG("keypress driver: %d", key);
+   
    /* virtualize the command */
    c = form_driver(ww->form, (v = wdg_input_virtualize(wo, key)) );
    
@@ -398,7 +411,7 @@ static int wdg_input_driver(struct wdg_object *wo, int key, struct wdg_mouse_eve
        * and destroy the object
        */
       wdg_input_consolidate(wo);
-      return WDG_ESUCCESS;
+      return WDG_EFINISHED;
    }
 
    wnoutrefresh(ww->fwin);
@@ -572,7 +585,7 @@ void wdg_input_set_callback(wdg_t *wo, void (*callback)(void))
  */
 void wdg_input_get_input(wdg_t *wo)
 {
-   int key;
+   int key, ret;
    struct wdg_mouse_event mouse;
   
    WDG_DEBUG_MSG("wdg_input_get_input");
@@ -582,14 +595,12 @@ void wdg_input_get_input(wdg_t *wo)
 
       key = wgetch(stdscr);
      
-      WDG_DEBUG_MSG("keypress: %d", key);
-      
       switch (key) {
-         
-         /* ugly hack to prevent the unexpected behaviour of the 'end' key */
-         case KEY_END:
+
+         /* don't switch focus... */
+         case KEY_TAB:
             break;
-            
+         
          case KEY_CTRL_L:
             /* redrawing the screen is equivalent to resizing it */
          case KEY_RESIZE:
@@ -625,7 +636,7 @@ void wdg_input_get_input(wdg_t *wo)
             memset(&mouse, 0, sizeof(mouse));
 #endif
             /* dispatch the user input */
-            wdg_input_get_msg(wo, key, &mouse); 
+            ret = wdg_input_get_msg(wo, key, &mouse); 
             /* update the screen */
             doupdate();
 
@@ -633,7 +644,7 @@ void wdg_input_get_input(wdg_t *wo)
              * if the object is destroyed or the input finished, 
              * then return to the main loop
              */
-            if (key == CTRL('Q') || key == KEY_ESC || key == KEY_RETURN) {
+            if (ret == WDG_EFINISHED) {
                WDG_DEBUG_MSG("wdg_input_get_input: return to main loop");
                return;
             }

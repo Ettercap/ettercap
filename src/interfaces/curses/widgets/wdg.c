@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.34 2004/03/06 18:06:58 alor Exp $
+    $Id: wdg.c,v 1.35 2004/03/07 15:22:57 alor Exp $
 */
 
 #include <wdg.h>
@@ -263,10 +263,6 @@ int wdg_events_handler(int exit_key)
 
       switch (key) {
          
-         /* ugly hack to prevent the unexpected behaviour of the 'end' key */
-         case KEY_END:
-            break;
-            
          case KEY_TAB:
             /* switch focus between objects */
             wdg_switch_focus(SWITCH_FOREWARD);

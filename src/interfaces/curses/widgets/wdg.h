@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.4 2003/10/22 08:05:44 alor Exp $ */
+/* $Id: wdg.h,v 1.5 2003/10/22 20:36:25 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -12,18 +12,22 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#ifdef HAVE_SYS_QUEUE
-   #include <sys/queue.h>
-#else
-   #include <missing/queue.h>
-#endif
+#include <missing/queue.h>
 
-extern void error_msg(char *file, char *function, int line, char *message, ...);
-#define WDG_ON_ERROR(x, y, fmt, ...) do { if (x == y) error_msg(fmt, ## __VA_ARGS__ ); } while(0)
+/********************************************/
 
-extern void bug(char *file, char *function, int line, char *message);
-#define WDG_BUG_IF(x) do { if (x) bug(__FILE__, __FUNCTION__, __LINE__, #x); }while(0)
-#define WDG_NOT_IMPLEMENTED() do { bug(__FILE__, __FUNCTION__, __LINE__, "Not yet implemented"); } while(0)
+enum {
+   WDG_ESUCCESS    = 0,
+   WDG_ENOTHANDLED = 1,
+   WDG_EFATAL      = 255,
+};
+
+extern void wdg_error_msg(char *file, char *function, int line, char *message, ...);
+#define WDG_ON_ERROR(x, y, fmt, ...) do { if (x == y) wdg_error_msg(__FILE__, __FUNCTION__, __LINE__, fmt, ## __VA_ARGS__ ); } while(0)
+
+extern void wdg_bug(char *file, char *function, int line, char *message);
+#define WDG_BUG_IF(x) do { if (x) wdg_bug(__FILE__, __FUNCTION__, __LINE__, #x); }while(0)
+#define WDG_NOT_IMPLEMENTED() do { wdg_bug(__FILE__, __FUNCTION__, __LINE__, "Not yet implemented"); } while(0)
 
 #define WDG_SAFE_CALLOC(x, n, s) do { \
    x = calloc(n, s); \
@@ -39,18 +43,14 @@ extern void bug(char *file, char *function, int line, char *message);
 /* used by halfdelay */
 #define WDG_INPUT_TIMEOUT  1
 
-enum {
-   WDG_ESUCCESS    = 0,
-   WDG_ENOTHANDLED = 1,
-   WDG_EFATAL      = 255,
-};
 
 /* informations about the current screen */
 struct wdg_scr {
    size_t lines;
    size_t cols;
-   char colors;
-   char initialized;
+   size_t flags;
+      #define WDG_SCR_HAS_COLORS    1
+      #define WDG_SCR_INITIALIZED   (1<<1)
 };
 
 /* global scruct for current screen */
@@ -60,21 +60,27 @@ extern struct wdg_scr current_screen;
 struct wdg_object {
    /* object flags */
    size_t flags;
-      #define WDG_WANT_FOCUS     1
-      #define WDG_VISIBLE        (1<<1)
-      #define WDG_ROOT_OBJECT    (1<<7)
-
+      #define WDG_OBJ_WANT_FOCUS     1
+      #define WDG_OBJ_VISIBLE        (1<<1)
+      #define WDG_OBJ_ROOT_OBJECT    (1<<7)
+   /* object type */
+   size_t type;
+      #define WDG_WINDOW      1
+   
    /* destructor function */
-   int (*destroy)(void);
+   int (*destroy)(struct wdg_object *wo);
    /* called to set / reset the size */
-   int (*resize)(size_t x1, size_t y1, size_t x2, size_t y2);
+   int (*resize)(struct wdg_object *wo);
    /* called upon redrawing of the object */
-   int (*redraw)(void);
+   int (*redraw)(struct wdg_object *wo);
    /* get / lost focus redrawing functions */
-   int (*get_focus)(void);
-   int (*lost_focus)(void);
+   int (*get_focus)(struct wdg_object *wo);
+   int (*lost_focus)(struct wdg_object *wo);
    /* called to process an input from the user */
-   int (*get_msg)(int key);
+   int (*get_msg)(struct wdg_object *wo, int key);
+
+   /* object size */
+   int x1, y1, x2, y2;
 
    /* here is the pointer to extend a wdg object
     * it is a sort of inheritance...
@@ -82,7 +88,10 @@ struct wdg_object {
    void *extend;
 };
 
+typedef struct wdg_object wdg_t;
+
 /* WIDGETS */
+
 
 /* EXPORTED FUNCTIONS */
 
@@ -99,8 +108,10 @@ extern int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags);
 extern int wdg_destroy_object(struct wdg_object **wo);
 
 /* object modifications */
-extern int wdg_resize_object(struct wdg_object *wo, size_t x1, size_t y1, size_t x2, size_t y2);
-extern int wdg_set_colors(struct wdg_object *wo, size_t gb, size_t fg, size_t border, size_t focus, size_t title);
+extern void wdg_resize_object(struct wdg_object *wo, int x1, int y1, int x2, int y2);
+extern void wdg_set_colors(struct wdg_object *wo, int color, size_t type); 
+extern void wdg_draw_object(struct wdg_object *wo);
+extern size_t wdg_get_type(struct wdg_object *wo);
 
 #endif 
 

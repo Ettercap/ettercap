@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.5 2003/10/22 08:05:43 alor Exp $
+    $Id: wdg.c,v 1.6 2003/10/22 20:36:25 alor Exp $
 */
 
 #include <wdg.h>
@@ -40,14 +40,15 @@ struct wdg_obj_list {
    struct wdg_object *wo;
    CIRCLEQ_ENTRY(wdg_obj_list) next;
 };
-static CIRCLEQ_HEAD(, wdg_obj_list) wdg_focus_list = CIRCLEQ_HEAD_INITIALIZER(wdg_focus_list);
+static CIRCLEQ_HEAD(, wdg_obj_list) wdg_objects_list = CIRCLEQ_HEAD_INITIALIZER(wdg_objects_list);
 /* the currently focused object */
 static struct wdg_obj_list *wdg_focused_obj;
 
-/* PROTO */
+/* PROTOS */
 
 void wdg_init(void);
 void wdg_cleanup(void);
+static void wdg_resize(void);
 
 int wdg_events_handler(int exit_key);
 void wdg_set_idle_callback(void (*callback)(void));
@@ -57,7 +58,12 @@ static void wdg_switch_focus(void);
 int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags);
 int wdg_destroy_object(struct wdg_object **wo);
 
-int wdg_resize_object(struct wdg_object *wo, size_t x1, size_t y1, size_t x2, size_t y2);
+void wdg_resize_object(struct wdg_object *wo, int x1, int y1, int x2, int y2);
+void wdg_draw_object(struct wdg_object *wo);
+size_t wdg_get_type(struct wdg_object *wo);
+
+/* creation function from other widgets */
+extern void wdg_create_window(struct wdg_object *wo);
 
 /*******************************************/
 
@@ -89,7 +95,7 @@ void wdg_init(void)
   
    /* activate colors if available */
    if (has_colors()) {
-      current_screen.colors = TRUE;
+      current_screen.flags |= WDG_SCR_HAS_COLORS;
       start_color();
    }
 
@@ -101,7 +107,7 @@ void wdg_init(void)
    current_screen.cols = COLS;
 
    /* the wdg is initialized */
-   current_screen.initialized = TRUE;
+   current_screen.flags |= WDG_SCR_INITIALIZED;
 
    /* clear the screen */
    clear();
@@ -117,7 +123,7 @@ void wdg_init(void)
 void wdg_cleanup(void)
 {
    /* can only cleanup if it was initialized */
-   if (current_screen.initialized == FALSE)
+   if (!(current_screen.flags & WDG_SCR_INITIALIZED))
       return;
    
    /* show the cursor */
@@ -133,9 +139,30 @@ void wdg_cleanup(void)
    endwin();
 
    /* wdg is not initialized */
-   current_screen.initialized = FALSE;
+   current_screen.flags &= ~WDG_SCR_INITIALIZED;
 }
 
+
+/* 
+ * called upone screen resize
+ */
+static void wdg_resize(void)
+{
+   struct wdg_obj_list *wl;
+   
+   /* remember the current screen size */
+   current_screen.lines = LINES;
+   current_screen.cols = COLS;
+
+   /* call the redraw function to all the objects */
+   CIRCLEQ_FOREACH(wl, &wdg_objects_list, next) {
+      WDG_BUG_IF(wl->wo->redraw == NULL);
+      WDG_EXECUTE(wl->wo->redraw, wl->wo);
+   }
+
+   printw("WDG: size: %dx%d\n", LINES, COLS); refresh();
+   
+}
 
 /*
  * this function handles all the inputed keys 
@@ -158,7 +185,12 @@ int wdg_events_handler(int exit_key)
             /* switch focus between objects */
             wdg_switch_focus();
             break;
-            
+           
+         case KEY_RESIZE:
+            /* the screen has been resized */
+            wdg_resize();
+            break;
+              
          case ERR:
             /* 
              * non-blockin input reached the timeout:
@@ -167,8 +199,11 @@ int wdg_events_handler(int exit_key)
              */
             if (wdg_idle_callback != NULL)
                wdg_idle_callback();
-            else
+            else { 
                usleep(WDG_INPUT_TIMEOUT * 1000);
+               /* XXX - too many refresh ? */
+               refresh();
+            }
             break;
             
          default:
@@ -205,7 +240,7 @@ static void wdg_dispatch_msg(int key)
 {
    /* first dispatch to the root object */
    if (wdg_root_obj != NULL) {
-      if (wdg_root_obj->get_msg(key) == WDG_ESUCCESS)
+      if (wdg_root_obj->get_msg(wdg_root_obj, key) == WDG_ESUCCESS)
          /* the root object handled the message */
          return;
    }
@@ -215,52 +250,60 @@ static void wdg_dispatch_msg(int key)
     * dispatch to the focused one
     */
    if (wdg_focused_obj != NULL) {
-      if (wdg_focused_obj->wo->get_msg(key) == WDG_ESUCCESS)
+      if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key) == WDG_ESUCCESS)
          /* the root object handled the message */
          return;
    }
    
    /* reached if noone handle the message */
    
-   printw("NOT HANDLED: char %d (%c)\n", key, (char)key); refresh();
+   printw("WDG: NOT HANDLED: char %d (%c)\n", key, (char)key); refresh();
 }
 
 /*
  * move the focus to the next object.
- * only WDG_WANT_FOCUS could get the focus
+ * only WDG_OBJ_WANT_FOCUS could get the focus
  */
 static void wdg_switch_focus(void)
 {
    struct wdg_obj_list *wl;
 
    printw("WDG: switch focus\n"); refresh();
-
+   
    /* if there is not a focused object, create it */
    if (wdg_focused_obj == NULL) {
-      CIRCLEQ_FOREACH(wl, &wdg_focus_list, next) {
-         if (wl->wo->flags & WDG_WANT_FOCUS) {
+   
+      /* search the first "focusable" object */
+      CIRCLEQ_FOREACH(wl, &wdg_objects_list, next) {
+         if ((wl->wo->flags & WDG_OBJ_WANT_FOCUS) && (wl->wo->flags & WDG_OBJ_VISIBLE) ) {
             /* set the focused object */
             wdg_focused_obj = wl;
             /* focus current object */
-            wdg_focused_obj->wo->get_focus();
+            WDG_BUG_IF(wdg_focused_obj->wo->get_focus == NULL);
+            WDG_EXECUTE(wdg_focused_obj->wo->get_focus, wdg_focused_obj->wo);
          }
       }
       return;
    }
   
    /* unfocus the current object */
-   wdg_focused_obj->wo->lost_focus();
+   WDG_BUG_IF(wdg_focused_obj->wo->lost_focus == NULL);
+   WDG_EXECUTE(wdg_focused_obj->wo->lost_focus, wdg_focused_obj->wo);
    
    /* 
     * focus the next element in the list.
-    * only focus objects that have the WDG_WANT_FOCUS flag
+    * only focus objects that have the WDG_OBJ_WANT_FOCUS flag
     */
    do {
       wdg_focused_obj = CIRCLEQ_NEXT(wdg_focused_obj, next);
-   } while (wdg_focused_obj->wo->flags & WDG_WANT_FOCUS);
+      /* we are on the head, move to the first element */
+      if (wdg_focused_obj == CIRCLEQ_END(&wdg_objects_list))
+         wdg_focused_obj = CIRCLEQ_NEXT(wdg_focused_obj, next);
+   } while ( !(wdg_focused_obj->wo->flags & WDG_OBJ_WANT_FOCUS) || !(wdg_focused_obj->wo->flags & WDG_OBJ_VISIBLE) );
 
    /* focus current object */
-   wdg_focused_obj->wo->get_focus();
+   WDG_BUG_IF(wdg_focused_obj->wo->get_focus == NULL);
+   WDG_EXECUTE(wdg_focused_obj->wo->get_focus, wdg_focused_obj->wo);
    
 }
 
@@ -269,7 +312,40 @@ static void wdg_switch_focus(void)
  */
 int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
 {
-   WDG_NOT_IMPLEMENTED();
+   struct wdg_obj_list *wl;
+   
+   /* alloc the struct */
+   WDG_SAFE_CALLOC(*wo, 1, sizeof(struct wdg_object));
+
+   /* set the flags */
+   (*wo)->flags = flags;
+   (*wo)->type = type;
+  
+   /* call the specific function */
+   switch (type) {
+      case WDG_WINDOW:
+         wdg_create_window(*wo);
+         break;
+         
+      default:
+         WDG_SAFE_FREE(*wo);
+         return -WDG_EFATAL;
+         break;
+   }
+   
+   /* alloc the element in the object list */
+   WDG_SAFE_CALLOC(wl, 1, sizeof(struct wdg_obj_list));
+
+   /* link the object */
+   wl->wo = *wo;
+
+   /* insert it in the list */
+   CIRCLEQ_INSERT_HEAD(&wdg_objects_list, wl, next);
+   
+   /* this is the root object */
+   if (flags & WDG_OBJ_ROOT_OBJECT)
+      wdg_root_obj = *wo;
+   
    return WDG_ESUCCESS;
 }
 
@@ -278,17 +354,56 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
  */
 int wdg_destroy_object(struct wdg_object **wo)
 {
-   WDG_NOT_IMPLEMENTED();
+   /* it was the root object ? */
+   if ((*wo)->flags & WDG_OBJ_ROOT_OBJECT)
+      wdg_root_obj = NULL;
+  
+   /* it was the focused one */
+   if (wdg_focused_obj && wdg_focused_obj->wo == *wo)
+      wdg_focused_obj = NULL;
+   
+   /* call the specialized destroy function */
+   WDG_BUG_IF((*wo)->destroy == NULL);
+   WDG_EXECUTE((*wo)->destroy, *wo);
+   
+   /* then free the object */
+   WDG_SAFE_FREE(*wo);
+
    return WDG_ESUCCESS;
 }
 
 /*
  * set or reset the size of an object
  */
-int wdg_resize_object(struct wdg_object *wo, size_t x1, size_t y1, size_t x2, size_t y2)
+void wdg_resize_object(struct wdg_object *wo, int x1, int y1, int x2, int y2)
 {
-   WDG_NOT_IMPLEMENTED();
-   return WDG_ESUCCESS;
+   /* set the new object cohordinates */
+   wo->x1 = x1;
+   wo->y1 = y1;
+   wo->x2 = x2;
+   wo->y2 = y2;
+
+   /* call the specialized function */
+   WDG_BUG_IF(wo->resize == NULL);
+   WDG_EXECUTE(wo->resize, wo);
+}
+
+/*
+ * display the object by calling the redraw function
+ */
+void wdg_draw_object(struct wdg_object *wo)
+{
+   /* display the object */
+   WDG_BUG_IF(wo->redraw == NULL);
+   WDG_EXECUTE(wo->redraw, wo);
+}
+
+/*
+ * return the type of the object
+ */
+size_t wdg_get_type(struct wdg_object *wo)
+{
+   return wo->type;
 }
 
 /* EOF */

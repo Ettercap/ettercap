@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_main.c,v 1.14 2003/10/04 14:58:34 alor Exp $
+    $Id: ef_main.c,v 1.15 2003/10/12 15:27:57 alor Exp $
 */
 
 #include <ef.h>
@@ -75,6 +75,8 @@ int main(int argc, char *argv[])
    /* print the message */
    fprintf(stdout, "\n Parsing source file \'%s\' ", GBL_OPTIONS.source_file);
    fflush(stdout);
+
+   ef_debug(1, "\n");
 
    /* begin the parsing */
    if (yyparse() == 0)

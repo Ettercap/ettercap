@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.15 2003/10/11 14:11:17 alor Exp $
+    $Id: ef_encode.c,v 1.16 2003/10/12 15:27:57 alor Exp $
 */
 
 #include <ef.h>
@@ -38,6 +38,7 @@ int encode_offset(char *string, struct filter_op *fop);
 int encode_function(char *string, struct filter_op *fop);
 int encode_const(char *string, struct filter_op *fop);
 static char ** decode_args(char *args, int *nargs);
+static char * strsep_quotes(char **stringp, const char delim);
 
 /*******************************************/
 
@@ -333,7 +334,7 @@ static char ** decode_args(char *args, int *nargs)
    SAFE_CALLOC(parsed, 1, sizeof(char *));
    
    /* split the arguments */
-   for (p = strsep(&args, ","), i = 1; p != NULL; p = strsep(&args, ","), i++) {
+   for (p = strsep_quotes(&args, ','), i = 1; p != NULL; p = strsep_quotes(&args, ','), i++) {
       
       /* alloc the array for the arguments */
       SAFE_REALLOC(parsed, (i + 1) * sizeof(char *));
@@ -358,6 +359,52 @@ static char ** decode_args(char *args, int *nargs)
    *nargs = i - 1;
    
    return parsed;
+}
+
+
+
+/*
+ * split the string in tokens separated by 'delim'.
+ * ignore 'delim' if it is between two quotes "..."
+ */
+static char * strsep_quotes(char **stringp, const char delim)
+{
+	char *s;
+	int c;
+	char *tok;
+
+   /* sanity check */
+	if ((s = *stringp) == NULL)
+		return (NULL);
+
+   /* parse the string */
+	for (tok = s;;) {
+
+      /* XXX - 
+       * this does not parses correctly string in the form:
+       *
+       *  "foo, bar, "tic,tac""
+       */
+
+      /* skip string between quotes */
+      if (*s == '\"')
+         while(*(++s) != '\"' && *s != '\0');
+
+      c = *s++;
+     
+      /* search for the delimiter */
+      if ( c == delim || c == 0) {
+         if (c == 0)
+            s = NULL;
+         else
+            s[-1] = 0;
+         
+         *stringp = s;
+         
+         return (tok);
+      }
+	}
+	/* NOTREACHED */
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_tables.c,v 1.10 2003/10/08 20:03:18 alor Exp $
+    $Id: ef_tables.c,v 1.11 2003/10/12 15:27:57 alor Exp $
 */
 
 #include <ef.h>
@@ -240,7 +240,7 @@ int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset
  */
 void load_constants(void)
 {
-   struct const_entry *c;
+   struct const_entry *c = NULL;
    FILE *fc;
    char line[128];
    int lineno = 0, nconst = 0;

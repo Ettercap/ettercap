@@ -30,6 +30,7 @@ extern int plugin_list_print(int min, int max, void (*func)(char, struct plugin_
 #define PLP_MAX   INT32_MAX
 
 extern int plugin_get_type(char *name);
+extern int plugin_is_activated(char *name);
 
 /* use these to activate and deactivate a plugin */
 extern int plugin_init(char *name);

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.7 2003/03/17 22:23:47 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.8 2003/03/24 15:54:37 alor Exp $
 */
 
 #include <ec.h>
@@ -86,7 +86,10 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    /* alloc the packet object structure to be passet through decoders */
    packet_create_object(&po, data, datalen);
- 
+
+   /* set the po timestamp */
+   memcpy(&po->ts, &pkthdr->ts, sizeof(struct timeval));
+   
    /* set the interface from which the packet comes */
    if (!strcmp(param, GBL_OPTIONS->iface))
       po->flags |= PO_FROMIFACE;

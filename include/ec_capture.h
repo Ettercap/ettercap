@@ -9,6 +9,7 @@ extern void capture_close(void);
 extern EC_THREAD_FUNC(capture);
 extern EC_THREAD_FUNC(capture_bridge);
 
+extern void get_hw_info(void);
 #endif
 
 /* EOF */

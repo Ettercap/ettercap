@@ -2,25 +2,28 @@
   TODO for NG
 ==================
 
-   + PO incapsulated ?
    + lnet ptag thread safe (check it)
-   + speed up the visualization of user_msg (poll related)
    !! under bsd the ip_forwarding is not repristinated !!
 
-   ?? VBUF functions for dissectors ??
+   ?? VBUF functions for dissectors (it is needed ?) ??
    
    !! dissector malloc the INFO, someone have to free them... !!
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
    + PLUGINS ENGINE
+      - replace the search point form . to INSTALL_PREFIX/lib
       - cygwin issue (study libltdl)
       - use libldtdl (problem even on openbsd)
       - LTDL_SHLIB_EXT
-      - make testi with dlopen-test
+      - make test with dlopen-test
 
    + LOGGING ENGINE
+      - use unified external formatting functions
       - unified binary output
+      - differentiate between info, passive and packet
+      - gzip compression
       - etterlog (log analizer)
+      - integrate the lcocnvert in etterlog
 
    + ARP SCAN
 

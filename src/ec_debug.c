@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_debug.c,v 1.2 2003/03/24 15:54:35 alor Exp $
 
 */
 
@@ -47,8 +47,6 @@ FILE *debug_file = NULL;
 void debug_init(void);
 static void debug_close(void);
 void debug_msg(const char *message, ...);
-
-char * hex_format(const u_char *buffer, int buff_len);
 
 /**********************************/
 
@@ -113,61 +111,6 @@ void debug_msg(const char *message, ...)
 }
 
 #endif /* DEBUG */
-
-/* 
- * printf a binary string in a 
- * readable form
- */
-
-char * hex_format(const u_char *buffer, int buff_len)
-{
-   static char *hexdata = NULL;
-   int i, j, jm;
-   int c, dim = 0;
-   int cr = 16;
-
-   if (buff_len == 0) return "";
-   if (buffer == NULL) return "";
-
-   c = cr*4 + 11;
-   dim = c;
-
-   for (i = 0; i < buff_len; i++)   // approximately
-      if ( i % cr == 0)             // approximately
-         dim += c;                  // approximately
-
-
-   SAFE_FREE(hexdata);
-   
-   if ( (hexdata = (char *)calloc(dim, sizeof(char))) == NULL)
-      ERROR_MSG("calloc()");
-
-   sprintf(hexdata,"\n");
-   for (i = 0; i < buff_len; i += cr) {
-           sprintf(hexdata, "%s %04x: ", hexdata, i );
-           jm = buff_len - i;
-           jm = jm > cr ? cr : jm;
-
-           for (j = 0; j < jm; j++) {
-                   if ((j % 2) == 1) sprintf(hexdata, "%s%02x ", hexdata, (unsigned char) buffer[i+j]);
-                   else sprintf(hexdata, "%s%02x", hexdata, (unsigned char) buffer[i+j]);
-           }
-           for (; j < cr; j++) {
-                   if ((j % 2) == 1) strcat(hexdata, "   ");
-                   else strcat(hexdata, "  ");
-           }
-           strcat(hexdata, " ");
-
-           for (j = 0; j < jm; j++) {
-                   c = buffer[i+j];
-                   c = isprint(c) ? c : '.';
-                   sprintf(hexdata, "%s%c", hexdata, c);
-           }
-           strcat(hexdata,"\n");
-   }
-
-   return hexdata;
-}
 
 
 /* EOF */

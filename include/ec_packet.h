@@ -7,7 +7,12 @@
 #include <ec_fingerprint.h>
 #include <ec_inet.h>
 
+#include <sys/time.h>
+
 struct packet_object {
+ 
+   /* timestamp of the packet */
+   struct timeval ts;
    
    struct L2 {
       u_int16 proto;

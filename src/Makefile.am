@@ -21,8 +21,10 @@ ettercap_SOURCES = ec_main.c \
 				   ec_fingerprint.c \
 				   ec_hash.c \
 				   ec_file.c \
+				   ec_log.c \
 				   ec_manuf.c \
 				   ec_plugins.c \
+				   ec_format.c \
 				   ec_sniff.c \
 				   ec_sniff_unified.c \
 				   ec_sniff_bridge.c \

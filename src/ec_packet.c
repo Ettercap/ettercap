@@ -15,13 +15,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.5 2003/03/21 14:16:36 alor Exp $
+    $Id: ec_packet.c,v 1.6 2003/03/24 15:54:38 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
 #include <ec_inet.h>
 #include <ec_ui.h>
+#include <ec_format.h>
 
 /* protos... */
 
@@ -167,6 +168,7 @@ void packet_print(struct packet_object *po)
    /* XXX - REMOVE THIS FUNCTION */
    
    char tmp[MAX_ASCII_ADDR_LEN];
+   char hex[hex_len(1500)];
    
    USER_MSG("\n=========================================\n");
    USER_MSG("Packet len:  %d\n", po->len);
@@ -177,18 +179,23 @@ void packet_print(struct packet_object *po)
    USER_MSG("     dst     %s\n", mac_addr_ntoa(po->L2.dst, tmp));
    USER_MSG("L3 : len     %d\n", po->L3.len);
    USER_MSG("     proto   %04X\n", ntohs(po->L3.proto));
-   USER_MSG("     header  %s\n", hex_format(po->L3.header, po->L3.len));
-   USER_MSG("     options %s\n", hex_format(po->L3.options, po->L3.optlen));
+   hex_format(po->L3.header, po->L3.len, hex);
+   USER_MSG("     header  \n%s\n", hex);
+   hex_format(po->L3.options, po->L3.optlen, hex);
+   USER_MSG("     options \n%s\n", hex);
    USER_MSG("     src     %s\n", ip_addr_ntoa(&po->L3.src, tmp) );
    USER_MSG("     dst     %s\n", ip_addr_ntoa(&po->L3.dst, tmp) );
    USER_MSG("L4 : len     %d\n", po->L4.len);
    USER_MSG("     proto   %02X\n", po->L4.proto);
-   USER_MSG("     header  %s\n", hex_format(po->L4.header, po->L4.len));
-   USER_MSG("     options %s\n", hex_format(po->L4.options, po->L4.optlen));
+   hex_format(po->L4.header, po->L4.len, hex);
+   USER_MSG("     header  \n%s\n", hex);
+   hex_format(po->L4.options, po->L4.optlen, hex);
+   USER_MSG("     options \n%s\n", hex);
    USER_MSG("     src     %d\n", ntohs(po->L4.src) );
    USER_MSG("     dst     %d\n", ntohs(po->L4.dst) );
    USER_MSG("DATA:len     %d\n", po->DATA.len);
-   USER_MSG("     data    %s\n", hex_format(po->DATA.data, po->DATA.len));
+   hex_format(po->DATA.data, po->DATA.len, hex);
+   USER_MSG("     data    \n%s\n", hex);
    USER_MSG("INFO:user    %s\n", po->INFO.user);
    USER_MSG("     pass    %s\n", po->INFO.pass);
    USER_MSG("     info    %s\n", po->INFO.info);

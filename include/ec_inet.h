@@ -34,7 +34,6 @@ extern char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 extern char *mac_addr_ntoa(u_char *mac, char *dst);
 extern int mac_addr_aton(char *str, u_char *mac);
 
-extern void get_hw_info(void);
 
 #ifdef WORDS_BIGENDIAN        
    #define ptohs(x) ( (u_int16)                       \

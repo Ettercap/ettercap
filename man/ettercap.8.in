@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.8 2003/03/22 16:40:24 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.9 2003/03/24 15:54:33 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -273,6 +273,7 @@ ettercap in debug mode.
 \fB\-R\fR, \fB\-\-reverse\fR
 Reverse the matching in the TARGET selection. It means not(TARGET). All but the
 selected TARGET.
+
 .TP
 \fB\-t\fR, \fB\-\-proto <PROTO>\fR
 Sniff only PROTO packets (default is TCP + UDP).
@@ -281,6 +282,7 @@ This is useful if you want to select a port via the TARGET specification but
 you want to differentiate between tcp or udp.
 .br
 PROTO can be "tcp", "udp" or "all" for both.
+
 .TP
 \fB\-P\fR, \fB\-\-plugin <PLUGIN>\fR
 Run the selected PLUGIN. Many plugins need target specification, use TARGET as
@@ -299,6 +301,23 @@ NOTE: you can also activate plugins directly from the interfaces (always press
 More detailed info about plugins and about how to write your own are found in
 the man page ettercap_plugin(8)
 
+.TP
+\fB\-L\fR, \fB\-\-log <LOGFILE>\fR
+Log all the packet to binary files. These files can be parsed by etterlog(8) to
+extract human readable data. With this option will be logged all the packets
+that ettercap sniffs and all the passive info (host info + user & pass) it can
+collect. Given a LOGFILE, ettercap will create LOGFILE.ecp (for packets) and
+LOGFILE.eci (for the infos).
+.br
+NOTE: if you specify this option on command line you don't have to take care of
+priviledges since the log file is opened in the startup phase (with high
+privs). But if you enable the log option while ettercap is already started, you
+have to be in a directory where uid = 65535 or uid = EC_UID can write.
+
+.TP
+\fB\-l\fR, \fB\-\-log-info <LOGFILE>\fR
+Very similar to -L but it logs only passive information + users and passwords
+for each host. The file will be named LOGFILE.eci
 
 
 .SH EXAMPLES

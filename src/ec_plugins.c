@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.4 2003/03/22 15:41:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.5 2003/03/24 15:54:38 alor Exp $
 */
 
 #include <ec.h>
@@ -55,6 +55,7 @@ int plugin_init(char *name);
 int plugin_fini(char *name);
 int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *));
 int plugin_get_type(char *name);
+int plugin_is_activated(char *name);
 
 /*******************************************/
 
@@ -265,6 +266,23 @@ int plugin_get_type(char *name)
    SLIST_FOREACH(p, &plugin_head, next) {
       if (!strcmp(p->ops->name, name)) {
          return p->ops->type;
+      }
+   }
+   
+   return -ENOTFOUND;
+}
+
+/*
+ * returns the activation flag
+ */
+
+int plugin_is_activated(char *name)
+{
+   struct plugin_entry *p;
+
+   SLIST_FOREACH(p, &plugin_head, next) {
+      if (!strcmp(p->ops->name, name)) {
+         return p->activated;
       }
    }
    

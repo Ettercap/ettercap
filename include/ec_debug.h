@@ -4,7 +4,6 @@
 
 extern void debug_init(void);
 extern void debug_msg(const char *message, ...);
-extern char * hex_format(const u_char *buffer, int buff_len);
 
 extern FILE *debug_file;
 

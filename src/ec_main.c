@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.5 2003/03/20 16:25:21 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.6 2003/03/24 15:54:37 alor Exp $
 */
 
 #include <ec.h>
@@ -27,7 +27,6 @@
 #include <ec_capture.h>
 #include <ec_dispatcher.h>
 #include <ec_send.h>
-#include <ec_inet.h>
 #include <ec_plugins.h>
 #include <ec_fingerprint.h>
 #include <ec_manuf.h>
@@ -168,7 +167,7 @@ void drop_privs(void)
       FATAL_MSG("Privs weren't dropped !!");
    
    DEBUG_MSG("privs: %d %d", getuid(), geteuid() );
-   
+   USER_MSG("Priviledges dropped to UID %d...\n\n", getuid() ); 
 }
 
 

@@ -70,6 +70,7 @@ ettercap_SOURCES = ec_capture.c \
 				   dissectors/ec_rlogin.c \
 				   dissectors/ec_snmp.c \
 				   dissectors/ec_telnet.c \
+				   dissectors/ec_vnc.c \
 				   dissectors/ec_x11.c 
 
 ### Conditiaonal compilations 

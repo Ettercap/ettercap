@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/interfaces/daemon/ec_daemon.c,v 1.2 2003/03/18 22:56:59 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/interfaces/daemon/ec_daemon.c,v 1.3 2003/03/20 16:25:24 alor Exp $
 */
 
 #include <ec.h>
@@ -33,6 +33,7 @@ static void daemon_init(void);
 static void daemon_cleanup(void);
 static void daemon_msg(const char *msg);
 static void daemon_progress(int value, int max);
+static void daemonize(void);
 
 /*******************************************/
 
@@ -51,70 +52,14 @@ void set_daemon_interface(void)
    
 }
 
-/*
- * set the terminal as non blocking 
+/* 
+ * initialization
  */
 
 static void daemon_init(void)
 {
-#ifdef HAVE_DAEMON
-   int ret;
-
-   DEBUG_MSG("daemon_init");
-   
-   fprintf(stdout, "Daemonizing %s...\n\n", GBL_PROGRAM);
-   
-   /* 
-    * daemonze the process.
-    * keep the current directory
-    * close stdin, out and err
-    */
-   ret = daemon(1, 0);
-   ON_ERROR(ret, -1, "Can't demonize %s", GBL_PROGRAM);
-   
-#else
-   int fd;
-   pid_t pid;
-  
-   DEBUG_MSG("daemon_init");
-
-   fprintf(stdout, "Daemonizing %s...\n\n", GBL_PROGRAM);
-   
-   if((signal(SIGTTOU, SIG_IGN)) == SIG_ERR)
-      ERROR_MSG("signal()");
-
-   if((signal(SIGTTIN, SIG_IGN)) == SIG_ERR)
-      ERROR_MSG("signal()");
-
-   if((signal(SIGTSTP, SIG_IGN)) == SIG_ERR)
-      ERROR_MSG("signal()");
-
-   if((signal(SIGHUP, SIG_IGN)) == SIG_ERR)
-      ERROR_MSG("signal()");
-
-   pid = fork();
-   
-   if( pid < 0)
-      ERROR_MSG("fork()");
-   
-   /* kill the father and detach the son */
-   if ( pid != 0)
-      exit(0);
-
-   if(setsid() == -1)
-      ERROR_MSG("setsid(): cannot set the session id");
-
-   fd = open("/dev/null", O_RDWR);
-   ON_ERROR(fd, -1, "Can't open /dev/null");
-
-   /* redirect in, out and err to /dev/null */
-   dup2(fd, STDIN_FILENO);
-   dup2(fd, STDOUT_FILENO);
-   dup2(fd, STDERR_FILENO);
-   
-   close(fd);
-   
-#endif
+   /* daemonize ettercap */
+   daemonize();
 }
 
 
@@ -216,6 +161,71 @@ void daemon_interface(void)
    
 }
 
+/*
+ * set the terminal as non blocking 
+ */
+
+static void daemonize(void)
+{
+#ifdef HAVE_DAEMON
+   int ret;
+
+   DEBUG_MSG("daemonize: (daemon)");
+   
+   fprintf(stdout, "Daemonizing %s...\n\n", GBL_PROGRAM);
+   
+   /* 
+    * daemonze the process.
+    * keep the current directory
+    * close stdin, out and err
+    */
+   ret = daemon(1, 0);
+   ON_ERROR(ret, -1, "Can't demonize %s", GBL_PROGRAM);
+   
+#else
+   int fd;
+   pid_t pid;
+  
+   DEBUG_MSG("daemonize: (manual)");
+
+   fprintf(stdout, "Daemonizing %s...\n\n", GBL_PROGRAM);
+   
+   if((signal(SIGTTOU, SIG_IGN)) == SIG_ERR)
+      ERROR_MSG("signal()");
+
+   if((signal(SIGTTIN, SIG_IGN)) == SIG_ERR)
+      ERROR_MSG("signal()");
+
+   if((signal(SIGTSTP, SIG_IGN)) == SIG_ERR)
+      ERROR_MSG("signal()");
+
+   if((signal(SIGHUP, SIG_IGN)) == SIG_ERR)
+      ERROR_MSG("signal()");
+
+   pid = fork();
+   
+   if( pid < 0)
+      ERROR_MSG("fork()");
+   
+   /* kill the father and detach the son */
+   if ( pid != 0)
+      exit(0);
+
+   if(setsid() == -1)
+      ERROR_MSG("setsid(): cannot set the session id");
+
+   fd = open("/dev/null", O_RDWR);
+   ON_ERROR(fd, -1, "Can't open /dev/null");
+
+   /* redirect in, out and err to /dev/null */
+   dup2(fd, STDIN_FILENO);
+   dup2(fd, STDOUT_FILENO);
+   dup2(fd, STDERR_FILENO);
+   
+   close(fd);
+   
+#endif
+}
 
 /* EOF */
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.4 2003/03/18 09:29:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.5 2003/03/20 16:25:21 alor Exp $
 */
 
 #include <ec.h>
@@ -28,6 +28,7 @@
 #include <ec_dispatcher.h>
 #include <ec_send.h>
 #include <ec_inet.h>
+#include <ec_plugins.h>
 #include <ec_fingerprint.h>
 #include <ec_manuf.h>
 #include <ec_ui.h>
@@ -58,6 +59,9 @@ int main(int argc, char *argv[])
    
    DEBUG_INIT();
    DEBUG_MSG("main -- here we go !!");
+   
+   /* register the main thread as "init" */
+   ec_thread_register(EC_SELF, "init", "initialization phase");
    
    /* activate the signal handler */
    signal_handler();
@@ -92,7 +96,12 @@ int main(int argc, char *argv[])
     * we don't need any more root privs.
     */
    drop_privs();
- 
+   
+/***** !! NO PRIVS AFTER THIS POINT !! *****/
+
+   /* load all the plugins */
+   plugin_load_all();
+   
    /* load the mac-fingerprints */
    manuf_init();
 

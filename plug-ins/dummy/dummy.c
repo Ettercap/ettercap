@@ -18,76 +18,94 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dummy.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Id: dummy.c,v 1.2 2003/03/20 16:25:18 alor Exp $
 */
 
 
 #include <ec.h>                        /* required for global variables */
-#include <ec_version.h>
-#include <ec_plugins.h>                /* required for input/output and plugin ops*/
+#include <ec_plugins.h>                /* required for plugin ops */
 
 #include <stdlib.h>
 #include <string.h>
 
-// protos...
+/* prototypes is required for -Wmissing-prototypes */
 
-int Plugin_Init(void *);               /* prototypes is required for -Wmissing-prototypes */
-int Plugin_Fini(void *);
-int dummy_function(void *dummy);
+/* 
+ * this function must be present.
+ * it is the entry point of the plugin 
+ */
+int plugin_load(void *);
 
-// global variables
+/* additional functions */
+int dummy_init(void *);
+int dummy_fini(void *);
 
-char *dummy_message;
 
-// plugin operation
+/* plugin operations */
 
-struct plugin_ops dummy_ops = {
-   ettercap_version: VERSION,                            /* ettercap version MUST be the global VERSION */
-   plug_info:        "Dummy plugin. It does nothing !",  /* a short description of the plugin (max 50 chars) */
-   plug_version:     20,                                 /* the plugin version. note: 15 will be displayed as 1.5 */
-   plug_type:        PT_EXT,                             /* the pluging type: external (PT_EXT) or hooking (PT_HOOK) */
-   hook_point:       HOOK_NONE,                          /* the hook point */
-   hook_function:    &dummy_function,                    /* function to be executed */
+struct plugin_ops dummy_ops = { 
+   /* ettercap version MUST be the global EC_VERSION */
+   ettercap_version: EC_VERSION,                        
+   /* the name of the plugin */
+   name:             "dummy",  
+    /* a short description of the plugin (max 50 chars) */                    
+   info:             "Dummy plugin. It does nothing !",  
+   /* the plugin version. note: 15 will be displayed as 1.5 */                    
+   version:          30,   
+   /* the pluging type: PL_STANDALONE or PL_HOOK */                    
+   type:             PL_STANDALONE,
+   /* activation function */
+   init:             &dummy_init,
+   /* deactivation function */                     
+   fini:             &dummy_fini,
 };
 
-//==================================
+/**********************************************************/
 
-int Plugin_Init(void *params)                            /* this function is called on plugin load */
+/* this function is called on plugin load */
+int plugin_load(void *handle) 
 {
-   /*
-    *  here we can inizialize our structures or global variables
-    */
-
-   dummy_message = strdup("\nThis plugin does nothing !\n\nIt is only a template...\n\n");
-
+   DEBUG_MSG("dummy plugin load function");
    /*
     *  in this fuction we MUST call the registration procedure that will set
     *  up the plugin according to the plugin_ops structure.
-    *  the returned value MUST be the same as Plugin_Register()
-    *  the opaque pointer params MUST be passed to Plugin_Register()
+    *  the returned value MUST be the same as plugin_register()
+    *  the opaque pointer params MUST be passed to plugin_register()
     */
-   return Plugin_Register(params, &dummy_ops);
+   return plugin_register(handle, &dummy_ops);
 }
 
-int Plugin_Fini(void *params)                            /* this function is called on plugin unload */
-{
-   /*
-    *  no Input Output is admitted in this function !!
-    *  here we can free our resource...
-    */
-   free(dummy_message);
+/*********************************************************/
 
+int dummy_init(void *dummy) 
+{
+   /* the control is given to this function
+    * and ettercap is suspended until its return.
+    * 
+    * you can create a thread and return immediately
+    * and then kill it in the fini function.
+    *
+    * you can also set an hook point with
+    * hook_add(), in this case you have to set the
+    * plugin type to PL_HOOK.
+    */
+   
+   USER_MSG("DUMMY: plugin initialized\n");
    return 0;
 }
 
-// =================================
 
-int dummy_function(void *dummy)                          /* required: hooking function */
+int dummy_fini(void *dummy) 
 {
-
-   Plugin_Output("\n%s\n\n", dummy_message);
-
+   /* called to terminate a plugin.
+    * usually to kill threads created in the 
+    * init function or to remove hook added 
+    * previously.
+    */
+   USER_MSG("DUMMY: plugin terminated\n");
    return 0;
 }
+
 
 /* EOF */
+

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_error.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_error.c,v 1.2 2003/03/20 16:25:19 alor Exp $
 */
 
 #include <ec.h>
@@ -40,6 +40,9 @@ void error_msg(char *file, char *function, int line, char *message, ...)
    va_end(ap);
 
    ui_cleanup();
+   
+   DEBUG_MSG("ERROR : %d, %s\n[%s:%s:%d] %s \n",  errno, strerror(errno),
+                   file, function, line, errmsg );
    
    fprintf(stderr, "ERROR : %d, %s\n[%s:%s:%d]\n\n %s \n\n",  errno, strerror(errno),
                    file, function, line, errmsg );

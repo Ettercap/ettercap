@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.4 2003/03/18 09:29:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.5 2003/03/20 16:25:23 alor Exp $
 */
 
 #include <ec.h>
@@ -78,8 +78,8 @@ void ui_cleanup(void)
 {
    if (GBL_UI->initialized) {
       DEBUG_MSG("ui_cleanup");
-      EXECUTE(GBL_UI->cleanup);
       GBL_UI->initialized = 0;
+      EXECUTE(GBL_UI->cleanup);
    }
 }
 

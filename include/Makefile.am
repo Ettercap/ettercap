@@ -29,6 +29,7 @@ noinst_HEADERS = ec.h \
                  ec_hash.h \
                  ec_manuf.h \
                  ec_interfaces.h \
+                 ec_plugins.h \
                  el.h
    
 EXTRA_DIST = missing/*

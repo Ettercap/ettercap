@@ -20,6 +20,7 @@ enum {
    ENOTHANDLED = 2,
    EINVALID    = 3,
    ENOADDRESS  = 4,
+   EVERSION    = 5,
 };
 
 #endif

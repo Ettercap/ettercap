@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.3 2003/03/14 23:46:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.4 2003/03/20 16:25:23 alor Exp $
 */
 
 #include <ec.h>
@@ -121,6 +121,8 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    
    LIST_FOREACH(current, &thread_list_head, next) {
       if (current->t.id == id) {
+         SAFE_FREE(current->t.name);
+         SAFE_FREE(current->t.description);
          LIST_REPLACE(current, newelem, next);
          SAFE_FREE(current);
          THREADS_UNLOCK;

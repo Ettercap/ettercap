@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.2 2003/03/14 23:46:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.3 2003/03/20 16:25:21 alor Exp $
 
 */
 
@@ -69,7 +69,7 @@
 
 /* globals */
 
-SLIST_HEAD(, entry) manuf_head[TABSIZE];
+static SLIST_HEAD(, entry) manuf_head[TABSIZE];
 
 struct entry {
    unsigned int mac;
@@ -143,6 +143,7 @@ int manuf_init(void)
    }
 
    DEBUG_MSG("manuf_init -- %d fingers loaded", i);
+   USER_MSG("%4d mac fingerprint loaded\n", i);
    
    fclose(f);
 

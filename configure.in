@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.130 2004/07/13 13:40:42 alor Exp $
+dnl    $Id: configure.in,v 1.131 2004/09/14 00:18:30 daten Exp $
 dnl
 
 AC_INIT
@@ -32,7 +32,7 @@ dnl AM_INIT_AUTOMAKE(1.7.0)
 dnl Do not recompile configure Makefile et similia
 AM_MAINTAINER_MODE
 
-VERSION=`grep EC_VERSION ./include/ec_version.h | cut -f2 -d"\""`
+VERSION=`grep EC_VERSION\  ./include/ec_version.h | cut -f2 -d"\""`
 SB=`./shtool echo -n -e %B`
 EB=`./shtool echo -n -e %b`
 AC_SUBST(SB)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_snmp.c,v 1.7 2003/10/19 16:23:21 lordnaga Exp $
+    $Id: ec_snmp.c,v 1.8 2003/10/19 16:24:16 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -120,7 +120,7 @@ FUNC_DECODER(dissector_snmp)
    ptr++;
 
    /* Avoid bof */
-   if (clen > MEX_COMMUNITY_LEN)
+   if (clen > MAX_COMMUNITY_LEN)
       return NULL;
          
    SAFE_CALLOC(PACKET->DISSECTOR.user, clen + 2, sizeof(char));

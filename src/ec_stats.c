@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_stats.c,v 1.3 2003/06/09 12:03:15 alor Exp $
+    $Id: ec_stats.c,v 1.4 2003/06/21 13:58:42 alor Exp $
 */
 
 #include <ec.h>
@@ -95,16 +95,11 @@ void stats_half_end(struct half_stats *hs, u_int32 len)
    hs->pck_size += len;
    hs->tmp_size += len;
    
-   if ( (hs->pck_recv % SAMPLING_RATE) == 0 ) {
-#if 0
-      DEBUG_MSG("PACKET RATE: %f %f %f [%.2f] [%.2f] -- [%.0f] [%.0f]\n", time, ptime, ttime, 
-            SAMPLING_RATE/ptime, hs->pck_recv/ttime,
-            hs->tmp_size/ptime, hs->pck_size/ttime);
-#endif       
+   if ( (hs->pck_recv % GBL_CONF->sampling_rate) == 0 ) {
       /* save the average and the worst sampling */
       hs->rate_adv = hs->pck_recv/ttime;
-      if (hs->rate_worst > SAMPLING_RATE/ptime || hs->rate_worst == 0)
-         hs->rate_worst = SAMPLING_RATE/ptime;
+      if (hs->rate_worst > GBL_CONF->sampling_rate/ptime || hs->rate_worst == 0)
+         hs->rate_worst = GBL_CONF->sampling_rate/ptime;
       
       hs->thru_adv = hs->pck_size/ttime;
       if (hs->thru_worst > hs->tmp_size/ptime || hs->thru_worst == 0)

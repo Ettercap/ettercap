@@ -26,8 +26,7 @@
 >>> current developmet state 
 
    + ETTERCONF
-      - uid
-      - timeouts
+      - decoder_add to replace explicit hook_add for dissectors
       - dissectors enable/disable
    
    + TOP HALF
@@ -56,6 +55,7 @@
       - convert all the old dissectors
       - HTTPS without the dirty trick (can we use loopback?)
       - SSH has to support DES, 3DES, blowfish and zlib compression
+      - WIFI decoder support for WEP (key given)
       
    + PLUGINS
       - convert all the old plugins

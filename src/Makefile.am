@@ -16,6 +16,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_threads.c \
 				   ec_capture.c \
 				   ec_send.c \
+				   ec_conf.c \
 				   ec_decode.c \
 				   ec_dissect.c \
 				   ec_dispatcher.c \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_services.c,v 1.1 2003/05/31 13:30:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_services.c,v 1.2 2003/06/21 13:58:42 alor Exp $
 
 */
 
@@ -75,7 +75,7 @@ int services_init(void)
    int i = 0;
 
    /* errors are handled by the function */
-   f = open_data(SERVICES_NAMES, "r");
+   f = open_data("share", SERVICES_NAMES, "r");
 
    while (fgets(line, 80, f) != 0) {
 

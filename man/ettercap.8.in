@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.19 2003/06/13 15:45:02 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.20 2003/06/21 13:58:41 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -313,12 +313,6 @@ Do not perform the initial ARP scan of the LAN.
 NOTE: you will not have the hosts list, so you can't use the multipoison feature.
 you can only select two hosts for an ARP poisoning attack, specifying them
 through the TARGETs
-
-.TP
-\fB\-Z\fR, \fB\-\-scan-delay <MSEC>\fR
-During the ARP scan, waith <MSEC> msecs between two consecutive ARP request.
-This is useful if you don't want to be too laughty... The default delay is 1
-millisecond.
 
 .TP
 \fB\-j\fR, \fB\-\-load-hosts <FILENAME>\fR

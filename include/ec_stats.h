@@ -55,10 +55,6 @@ struct gbl_stats {
 } while (0)
 
 
-#define SAMPLING_RATE 50
-
-
-
 /* exports */
 
 extern u_int32 stats_queue_add(void);

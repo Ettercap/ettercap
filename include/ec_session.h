@@ -17,10 +17,6 @@ extern int session_get_and_del(struct session **s, void *ident);
 extern void session_free(struct session *s);
    
 
-/* timeout in seconds */
-#define SESSION_TIMEOUT 600
-
-
 #endif
 
 /* EOF */

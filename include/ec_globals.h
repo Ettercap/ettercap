@@ -9,6 +9,16 @@
 #include <pcap.h>
 #include <regex.h>
 
+/* options form etter.conf */
+struct ec_conf {
+   int ec_uid;
+   int arp_storm_delay;
+   int arp_poison_warm_up;
+   int arp_poison_delay;
+   int connection_timeout;
+   int sampling_rate;
+};
+
 /* options from getopt */
 struct ec_options {
    char write:1;
@@ -21,7 +31,6 @@ struct ec_options {
    char resolve:1;
    char ext_headers:1;
    char reversed;
-   int scan_delay;
    char *hostsfile;
    char *plugin;
    char *proto;
@@ -96,8 +105,9 @@ struct hosts_list {
 
 /* the globals container */
 struct globals {
-   struct gbl_stats *stats;
+   struct ec_conf *conf;
    struct ec_options *options;
+   struct gbl_stats *stats;
    struct ui_ops *ui;
    struct program_env *env;
    struct pcap_env *pcap;
@@ -114,8 +124,9 @@ extern struct globals *gbls;
 
 #define GBLS gbls
 
-#define GBL_STATS          (GBLS->stats)
+#define GBL_CONF           (GBLS->conf)
 #define GBL_OPTIONS        (GBLS->options)
+#define GBL_STATS          (GBLS->stats)
 #define GBL_UI             (GBLS->ui)
 #define GBL_ENV            (GBLS->env)
 #define GBL_PCAP           (GBLS->pcap)

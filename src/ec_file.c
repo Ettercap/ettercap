@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_file.c,v 1.4 2003/04/14 21:05:15 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_file.c,v 1.5 2003/06/21 13:58:42 alor Exp $
 */
 
 #include <ec.h>
@@ -26,9 +26,9 @@
 
 /* protos */
 
-static char * get_full_path(char *file);
+static char * get_full_path(char *dir, char *file);
 static char * get_local_path(char *file);
-FILE * open_data(char *file, char *mode);
+FILE * open_data(char *dir, char *file, char *mode);
 
 /*******************************************/
 
@@ -36,19 +36,22 @@ FILE * open_data(char *file, char *mode);
  * add the prefix to a given filename
  */
 
-char * get_full_path(char *file)
+static char * get_full_path(char *dir, char *file)
 {
    char *filename;
    int len;
 
-   len = strlen(INSTALL_PREFIX) + strlen("share") + strlen(EC_PROGRAM) + strlen(file) + 4;
+   len = strlen(INSTALL_PREFIX) + strlen(dir) + strlen(EC_PROGRAM) + strlen(file) + 4;
 
    filename = calloc(len, sizeof(char));
    ON_ERROR(filename, NULL, "out of memory");
    
-   snprintf(filename, len, "%s/share/%s/%s", INSTALL_PREFIX, EC_PROGRAM, file);
+   if (!strcmp(dir, "etc"))
+      snprintf(filename, len, "%s/%s/%s", INSTALL_PREFIX, dir, file);
+   else
+      snprintf(filename, len, "%s/%s/%s/%s", INSTALL_PREFIX, dir, EC_PROGRAM, file);
 
-   DEBUG_MSG("get_full_path -- %s", filename);
+   DEBUG_MSG("get_full_path -- %s %s", dir, filename);
    
    return filename;
 }
@@ -57,7 +60,7 @@ char * get_full_path(char *file)
  * add the local path to a given filename
  */
 
-char * get_local_path(char *file)
+static char * get_local_path(char *file)
 {
    char *filename;
 
@@ -77,12 +80,12 @@ char * get_local_path(char *file)
  * first look in the installation path, then locally.
  */
 
-FILE * open_data(char *file, char *mode)
+FILE * open_data(char *dir, char *file, char *mode)
 {
    FILE *fd;
    char *filename = NULL;
 
-   filename = get_full_path(file);
+   filename = get_full_path(dir, file);
   
    DEBUG_MSG("open_data (%s)", filename);
    

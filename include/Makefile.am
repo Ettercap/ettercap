@@ -13,6 +13,7 @@ noinst_HEADERS = ec.h \
                  ec_ui.h \
                  ec_version.h \
                  ec_threads.h \
+                 ec_conf.h \
                  ec_capture.h \
                  ec_dispatcher.h \
                  ec_send.h \

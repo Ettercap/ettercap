@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.19 2003/06/09 12:03:14 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.20 2003/06/21 13:58:42 alor Exp $
 */
 
 #include <ec.h>
@@ -35,6 +35,7 @@
 #include <ec_services.h>
 #include <ec_scan.h>
 #include <ec_ui.h>
+#include <ec_conf.h>
 
 /* global vars */
 
@@ -78,6 +79,9 @@ int main(int argc, char *argv[])
    /* getopt related parsing...  */
    parse_options(argc, argv);
 
+   /* load the configuration file */
+   load_conf();
+   
    /* initialize the user interface */
    ui_init();
 
@@ -167,7 +171,7 @@ return;
    if (var != NULL)
       uid = atoi(var);
    else
-      uid = DROP_TO_UID;
+      uid = GBL_CONF->ec_uid;
    
    DEBUG_MSG("drop_privs: setuid(%d)", uid);
    

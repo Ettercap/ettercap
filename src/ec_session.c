@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.3 2003/04/30 16:50:19 alor Exp $
+    $Id: ec_session.c,v 1.4 2003/06/21 13:58:42 alor Exp $
 */
 
 #include <ec.h>
@@ -90,7 +90,7 @@ void session_put(struct session *s)
       }
 
       /* delete timeouted sessions */
-      if (sl->ts < (ti - SESSION_TIMEOUT) ) {
+      if (sl->ts < (ti - GBL_CONF->connection_timeout) ) {
          DEBUG_MSG("session_put: [%d][%p] timeouted", sl->id, sl->s->ident);
          session_free(sl->s);
          LIST_REMOVE(sl, next);

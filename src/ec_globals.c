@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_globals.c,v 1.6 2003/06/02 19:41:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_globals.c,v 1.7 2003/06/21 13:58:42 alor Exp $
 */
 
 #include <ec.h>
@@ -43,11 +43,14 @@ void globals_alloc(void)
    gbls = calloc(1, sizeof(struct globals));
    ON_ERROR(gbls, NULL, "can't allocate globals");
            
-   gbls->stats = calloc(1, sizeof(struct gbl_stats));
-   ON_ERROR(gbls->stats, NULL, "can't allocate gbl_stats");
+   gbls->conf = calloc(1, sizeof(struct ec_conf));
+   ON_ERROR(gbls->conf, NULL, "can't allocate ec_conf");
    
    gbls->options = calloc(1, sizeof(struct ec_options));
    ON_ERROR(gbls->options, NULL, "can't allocate ec_options");
+   
+   gbls->stats = calloc(1, sizeof(struct gbl_stats));
+   ON_ERROR(gbls->stats, NULL, "can't allocate gbl_stats");
 
    gbls->ui = calloc(1, sizeof(struct ui_ops));
    ON_ERROR(gbls->ui, NULL, "can't allocate ui_ops");
@@ -106,8 +109,9 @@ void globals_free(void)
    GBL_FREE(gbls->options->iface_bridge);
    GBL_FREE(gbls->options->target1);
    GBL_FREE(gbls->options->target2);
-   GBL_FREE(gbls->options);
    GBL_FREE(gbls->stats);
+   GBL_FREE(gbls->options);
+   GBL_FREE(gbls->conf);
    
    GBL_FREE(gbls);
    

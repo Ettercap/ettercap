@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.27 2003/06/17 12:15:12 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.28 2003/06/21 13:58:42 alor Exp $
 */
 
 
@@ -87,7 +87,6 @@ void ec_usage(void)
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
-   fprintf(stdout, "  -Z, --scan-delay <msec>     set the scanning delay to <msec>\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
    
@@ -122,7 +121,6 @@ void parse_options(int argc, char **argv)
       
       { "quiet", no_argument, NULL, 'q' },
       { "silent", no_argument, NULL, 'z' },
-      { "scan-delay", required_argument, NULL, 'Z' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
       
@@ -160,7 +158,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDdEe:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:V:vw:Z:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDdEe:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:V:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -259,13 +257,6 @@ void parse_options(int argc, char **argv)
                   
          case 'd':
                   GBL_OPTIONS->resolve = 1;
-                  break;
-                  
-         case 'Z':
-                  GBL_OPTIONS->scan_delay = atoi(optarg);
-                  /* at least one millisecond */
-                  if (GBL_OPTIONS->scan_delay == 0)
-                     GBL_OPTIONS->scan_delay = 1;
                   break;
                   
          case 'j':

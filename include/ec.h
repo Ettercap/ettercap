@@ -55,9 +55,6 @@
 
 #define EXECUTE(x, ...) do{ if(x != NULL) x( __VA_ARGS__ ); }while(0)
 
-/* this is a default uid to drop privs to */
-#define DROP_TO_UID 65534
-
 
 #define BIT_SET(r,b)       ( r[b>>3] |=   1<<(b&7) )
 #define BIT_RESET(r,b)     ( r[b>>3] &= ~ 1<<(b&7) )

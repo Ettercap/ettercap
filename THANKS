@@ -16,7 +16,7 @@
   Copyrighted part of code or stuff...
 ---------------------------------------
 
-   Fyodor <fyodor@insecure.org>              for the os-fingerprint database
+   Fyodor <fyodor@insecure.org>              for the services database
 
    Michal Zalewski <lcamtuf@tpi.pl>          for some passive os fingerprint (form p0f)
 
@@ -28,8 +28,10 @@
                                              from which I took the hex_print function.
 
    OpenSSH team                              for the match_pattern function
+   
+   The Apache group                          for the base64_decode function
+                                             (took from ap_base64.c)
 
-   Anthony C. Zboralski                      for the tunnelx technique used in zaratan plugin.
    
 if you think you should be in the list, please mail me.
 

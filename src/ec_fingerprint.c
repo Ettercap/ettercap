@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.14 2003/07/08 20:59:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.15 2003/07/10 12:49:55 alor Exp $
 
 */
 
@@ -121,7 +121,7 @@ int fingerprint_init(void)
    }
 
    DEBUG_MSG("fingerprint_init -- %d fingers loaded", i);
-   USER_MSG("%4d tcp fingerprint loaded\n", i);
+   USER_MSG("%4d tcp OS fingerprint\n", i);
    
    fclose(f);
 

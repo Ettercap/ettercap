@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.5 2003/07/08 20:59:53 alor Exp $
+    $Id: ec_conf.c,v 1.6 2003/07/10 12:49:55 alor Exp $
 */
 
 #include <ec.h>
@@ -308,7 +308,7 @@ static void set_dissector(char *name, char *values, int lineno)
  */
 void conf_dissectors(void)
 {
-   USER_MSG("%4d protocol dissectors loaded\n", number_of_dissectors);   
+   USER_MSG("%4d protocol dissectors\n", number_of_dissectors);   
 }
 
 /* EOF */

@@ -28,6 +28,10 @@ NG-0.7.0    ????????
    + global conf file always loaded to tweak internal variables
    + etter.conf supports dissectors on multiple ports
    + possibility to sniff on loopback
+   + dissector enhancements in: 
+      + POP (APOP and AUTH LOGIN support)
+      + X11 (banner discovery)
+      + TELNET (collect even failed attempts)
    !! offline sniffing actually does not bind to any NICs
 
 

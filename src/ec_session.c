@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.6 2003/07/03 20:12:49 alor Exp $
+    $Id: ec_session.c,v 1.7 2003/07/10 12:49:55 alor Exp $
 */
 
 #include <ec.h>
@@ -141,6 +141,7 @@ void session_put(struct session *s)
 int session_get(struct session **s, void *ident)
 {
    struct session_list *sl;
+   time_t ti = time(NULL);
 
    SESSION_LOCK;
    
@@ -151,6 +152,9 @@ int session_get(struct session **s, void *ident)
          DEBUG_MSG("session_get: [%d][%p]", sl->id, sl->s->ident);
          /* return the session */
          *s = sl->s;
+         
+         /* renew the timestamp */
+         sl->ts = ti;
 
          SESSION_UNLOCK;
          return ESUCCESS;

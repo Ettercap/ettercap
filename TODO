@@ -26,7 +26,7 @@
 >>> current developmet state 
 
    + DISSECTOR
-      - telnet & rlogin
+      - rlogin
 
    + TOP HALF
       - connection tracking (with buffered conn)

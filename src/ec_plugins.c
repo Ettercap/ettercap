@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.11 2003/07/08 20:59:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.12 2003/07/10 12:49:55 alor Exp $
 */
 
 #include <ec.h>
@@ -153,7 +153,7 @@ void plugin_load_all(void)
       }
    }
    
-   USER_MSG("%4d plugins loaded\n", t);
+   USER_MSG("%4d ettercap plugins\n", t);
 
    atexit(&plugin_unload_all);
 

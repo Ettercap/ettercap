@@ -17,17 +17,28 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.1 2003/07/08 20:59:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.2 2003/07/10 12:49:55 alor Exp $
 */
 
 #include <ec.h>
 
 /* protos... */
 
+#ifndef HAVE_CTYPE_H
+   int isprint(int c);
+#endif
 int match_pattern(const char *s, const char *pattern);
 int base64_decode(char *bufplain, const char *bufcoded);
 
 /*******************************************/
+
+/* implement the function if it is not available */
+#ifndef HAVE_CTYPE_H
+int isprint(int c)
+{
+   return ( (c > 31 && c < 127) ? 1 : 0 );
+}
+#endif
 
 /* Pattern matching code from OpenSSH. */
 int match_pattern(const char *s, const char *pattern)

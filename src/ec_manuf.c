@@ -17,14 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.6 2003/07/01 19:15:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.7 2003/07/10 12:49:55 alor Exp $
 
 */
 
 /*
  * MFDBL: mac fingerprint batabase library.
  *
- * Copyright (c) 2002 Bonelli Nicola <bonelli@blackhats.it>
+ * Copyright (c) 2002 Bonelli Nicola <awgn@antifork.org>
  *
  * All rights reserved.
  *
@@ -144,7 +144,7 @@ int manuf_init(void)
    }
 
    DEBUG_MSG("manuf_init -- %d fingers loaded", i);
-   USER_MSG("%4d mac fingerprint loaded\n", i);
+   USER_MSG("%4d mac vendor fingerprint\n", i);
    
    fclose(f);
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_services.c,v 1.3 2003/07/01 19:15:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_services.c,v 1.4 2003/07/10 12:49:55 alor Exp $
 
 */
 
@@ -108,7 +108,7 @@ int services_init(void)
    }
 
    DEBUG_MSG("serv_init -- %d services loaded", i);
-   USER_MSG("%4d services loaded\n", i);
+   USER_MSG("%4d known services\n", i);
    
    fclose(f);
 

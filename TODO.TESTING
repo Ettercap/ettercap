@@ -10,3 +10,6 @@
 
    + WIFI
       - test the decoder with adapted other than cisco aironet
+
+   + DISSECTORS
+      - telnet (correct login and failed logons)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.34 2003/11/30 12:02:47 alor Exp $
+    $Id: ec_send.c,v 1.35 2003/12/08 16:34:36 alor Exp $
 */
 
 #include <ec.h>
@@ -92,9 +92,8 @@ void send_init(void)
 
    /* don't send packet on loopback */
    if (!strcasecmp(GBL_OPTIONS->iface, "lo")) {
-      DEBUG_MSG("send_init: skipping... (using loopback)");
+      DEBUG_MSG("send_init: using loopback (activating unoffensive mode)");
       GBL_OPTIONS->unoffensive = 1;
-      return;
    }
 
    /* in wireless monitor mode we cannot send packets */

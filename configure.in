@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.79 2003/12/07 15:04:09 lordnaga Exp $
+dnl    $Id: configure.in,v 1.80 2003/12/08 16:34:36 alor Exp $
 dnl
 
 AC_INIT
@@ -452,7 +452,6 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$LNETLIB"
-AC_CHECK_LIB(net, libnet_init,, AC_MSG_ERROR([Incorrect lnet version. libnet >= 1.1.1 required]))
 AC_CHECK_LIB(net, libnet_autobuild_token_ring,, AC_MSG_ERROR([Incorrect lnet version. libnet >= 1.1.1 required]))
 LDFLAGS="${OLDLDFLAGS}"
 

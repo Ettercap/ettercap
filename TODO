@@ -41,6 +41,7 @@ this is the unofficial and floating in time roadmap:
       - dhcp infos
 
    + LIBWDG
+      - fix menu cursor
       - widgets:
          - selectable lists
 
@@ -68,7 +69,6 @@ this is the unofficial and floating in time roadmap:
    + PLUGINS
       port all the plugins to NG:
          - lurker    -> find_ettercap
-         - zaratan   ->
          - troll     -> arp_responder
          - roper     -> stop_ipsec
          - dwarf     -> (will be integrated with etterlog)

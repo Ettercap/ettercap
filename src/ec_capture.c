@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.30 2003/12/07 18:21:05 alor Exp $
+    $Id: ec_capture.c,v 1.31 2003/12/08 16:34:36 alor Exp $
 */
 
 #include <ec.h>
@@ -118,7 +118,9 @@ void capture_init(void)
    }
 
    /* set the pcap filters */
-   if (GBL_PCAP->filter != NULL) {
+   if (GBL_PCAP->filter != NULL && strcmp(GBL_PCAP->filter, "")) {
+
+      DEBUG_MSG("pcap_filter: %s", GBL_PCAP->filter);
    
       if (pcap_lookupnet(GBL_OPTIONS->iface, &net, &mask, pcap_errbuf) == -1)
          ERROR_MSG("%s", pcap_errbuf);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.21 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.22 2003/07/08 09:52:06 alor Exp $
 */
 
 #include <ec.h>
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
    /* initialize the sniffing method */
    EXECUTE(GBL_SNIFF->start);
   
-   /* create the dispatched thread */
+   /* create the dispatcher thread */
    ec_thread_new("top_half", "dispatching module", &top_half, NULL);
    
    /* this thread becomes the UI then displays it */

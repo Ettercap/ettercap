@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dns.c,v 1.4 2003/07/03 20:12:49 alor Exp $
+    $Id: ec_dns.c,v 1.5 2003/07/08 09:52:06 alor Exp $
 */
 
 #include <ec.h>
@@ -114,6 +114,7 @@ FUNC_DECODER(dissector_dns)
    
    /* initialize the name */
    memset(name, 0, sizeof(name));
+   memset(alias, 0, sizeof(alias));
    
    /* extract the name from the packet */
    name_len = dn_expand((u_char *)dns, end, data, name, sizeof(name));
@@ -163,6 +164,7 @@ FUNC_DECODER(dissector_dns)
          NS_GET32(ttl, q);
          NS_GET16(a_len, q);
          
+         /* only internet class */
          if (class != ns_c_in)
             return NULL;
         
@@ -170,7 +172,6 @@ FUNC_DECODER(dissector_dns)
          if (type == ns_t_cname || type == ns_t_ptr) {
             name_len = dn_expand((u_char *)dns, end, q, alias, sizeof(alias));
             q += a_len;
-            //USER_MSG("DNS: %s ->> %s\n", name, alias);
          } 
          
          /* name to ip */

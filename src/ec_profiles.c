@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.9 2003/07/07 10:43:20 alor Exp $
+    $Id: ec_profiles.c,v 1.10 2003/07/08 09:52:06 alor Exp $
 */
 
 #include <ec.h>
@@ -46,8 +46,8 @@ static void set_gateway(u_char *L2_addr);
 /* global mutex on interface */
 
 static pthread_mutex_t profile_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define PROFILE_LOCK     pthread_mutex_lock(&profile_mutex)
-#define PROFILE_UNLOCK   pthread_mutex_unlock(&profile_mutex)
+#define PROFILE_LOCK     do { DEBUG_MSG("LOCK"); pthread_mutex_lock(&profile_mutex); } while(0)
+#define PROFILE_UNLOCK   do { DEBUG_MSG("UNLOCK"); pthread_mutex_unlock(&profile_mutex); } while(0)
 
 /************************************************/
   
@@ -160,10 +160,10 @@ static int profile_add_host(struct packet_object *po)
    h = calloc(1, sizeof(struct host_profile));
    ON_ERROR(h, NULL, "can't allocate memory");
 
+   PROFILE_LOCK;
+   
    /* fill the structure with the collected infos */
    update_info(h, po);
-
-   PROFILE_LOCK;
    
    /* search the right point to inser it (ordered ascending) */
    LIST_FOREACH(c, &GBL_PROFILES, next) {
@@ -269,10 +269,11 @@ static void update_port_list(struct host_profile *h, struct packet_object *po)
   
    /* skip this port, the packet was logged for
     * another reason, not the open port */
-   //if ( !is_open_src_port(po) && !is_open_dst_port(po))
    if ( !is_open_port(po->L4.proto, po->L4.src, po->L4.flags) )
       return;
 
+   DEBUG_MSG("update_port_list");
+   
    /* create a new entry */
    
    o = calloc(1, sizeof(struct open_port));
@@ -399,6 +400,7 @@ static int profile_add_user(struct packet_object *po)
  */
 void profile_purge_local(void)
 {
+   DEBUG_MSG("profile_purge_local");
    profile_purge(FP_HOST_LOCAL);
    return;
 }
@@ -408,6 +410,7 @@ void profile_purge_local(void)
  */
 void profile_purge_remote(void)
 {
+   DEBUG_MSG("profile_purge_remote");
    profile_purge(FP_HOST_NONLOCAL);
    return;
 }
@@ -417,6 +420,7 @@ void profile_purge_remote(void)
  */
 void profile_purge_all(void)
 {
+   DEBUG_MSG("profile_purge_all");
    profile_purge( FP_HOST_LOCAL | FP_HOST_NONLOCAL );
    return;
 }
@@ -444,6 +448,7 @@ static void profile_purge(int flags)
             
             /* free the previous entry */
             SAFE_FREE(old_o);
+            SAFE_FREE(o->banner);
             
             LIST_FOREACH(u, &(o->users_list_head), next) {
                /* free the previous entry */
@@ -454,15 +459,20 @@ static void profile_purge(int flags)
                SAFE_FREE(u->info);
                /* user has to be free'd the next loop */
                old_u = u;
+               LIST_REMOVE(u, next);
             }
+            SAFE_FREE(old_u);
+            /* port has to be free'd the next loop */
+            old_o = o;
+            LIST_REMOVE(o, next);
          }
          SAFE_FREE(old_u);
          /* host has to be free'd the next loop */
          old_h = h; 
+         LIST_REMOVE(h, next);
       }
       SAFE_FREE(old_o);
    }
-   
    SAFE_FREE(old_h);
    
    PROFILE_UNLOCK;

@@ -34,8 +34,6 @@
       - extract files from streams looking for mime content or protocol
 
    + WIFI decoder & WEP 
-      - support for multiple keys
-      - support for passfrase generation
       - support for dumping traffic to a file
    
    + ETTERFILTER

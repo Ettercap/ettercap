@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.23 2004/05/24 13:37:26 alor Exp $
+    $Id: ec_wifi.c,v 1.24 2004/05/24 14:17:20 alor Exp $
 */
 
 #include <ec.h>
@@ -347,14 +347,15 @@ static int wep_decrypt(u_char *buf, size_t len)
  * the format is:  n:string  where n is the number of bit used 
  * for the RC4 seed. you can use strings or hex values.
  * for example:
- *    64:alor1
- *    128:ettercapng070
- *    64:\x01\x02\x03\x04\x05
+ *    64:s:alor1
+ *    64:p:naga
+ *    128:s:ettercapng070
+ *    64:s:\x01\x02\x03\x04\x05
  */
 int set_wep_key(u_char *string)
 {
-   int bit = 0;
-   u_char *p;
+   int bit = 0, i;
+   u_char *p, type;
    char s[strlen(string) + 1];
    
    DEBUG_MSG("set_wep_key: %s", string);
@@ -364,7 +365,7 @@ int set_wep_key(u_char *string)
 
    p = strtok(s, ":");
    if (p == NULL)
-      SEMIFATAL_ERROR("Invalid WEP key");
+      SEMIFATAL_ERROR("Invalid parsing of the WEP key");
 
    bit = atoi(p);
 
@@ -379,21 +380,40 @@ int set_wep_key(u_char *string)
    if (wlen > sizeof(wkey))
       SEMIFATAL_ERROR("Unsupported WEP key lenght");
   
-   if (bit != 64 && bit != 128 && bit != 256)
+   if (bit != 64 && bit != 128)
       SEMIFATAL_ERROR("Unsupported WEP key lenght");
 
-   /* get the second part of the string */
+   /* get the type of the key */
    p = strtok(NULL, ":");
    if (p == NULL)
-      SEMIFATAL_ERROR("Invalid WEP key");
+      SEMIFATAL_ERROR("Invalid parsing of the WEP key");
+  
+   type = *p;
    
-   /* escape the string and check its lenght */
-   if (strescape(wkey, p) != (int)wlen)
-      SEMIFATAL_ERROR("Specified WEP key lenght does not match the given string");
+   /* get the third part of the string */
+   p = strtok(NULL, ":");
+   if (p == NULL)
+      SEMIFATAL_ERROR("Invalid parsing of the WEP key");
+   
+   if (type == 's') {
+      /* escape the string and check its lenght */
+      if (strescape(wkey, p) != (int)wlen)
+         SEMIFATAL_ERROR("Specified WEP key lenght does not match the given string");
+   } else if (type == 'p') {
+      /* create the key from the passphrase */
+      if (bit == 64)
+         make_key_64(p);
+      else if (bit == 128)
+         make_key_128(p);
+         
+   } else {
+      SEMIFATAL_ERROR("Invalid parsing of the WEP key");
+   }
  
-   /* XXX - implement it */
-   (void)make_key_64;
-   (void)make_key_128;
+   USER_MSG("Using WEP key: ");
+   for (i = 0; i < (int)wlen; i++)
+      USER_MSG("%02x", wkey[i]);
+   USER_MSG("\n");
    
    return ESUCCESS;
 }
@@ -431,7 +451,7 @@ static void make_key_128(u_char *string)
    int i, j = 0;
 
    /* repeat the string until buf is full */
-   for(i = 0; i < 64; i++) {
+   for (i = 0; i < 64; i++) {
       if(string[j] == 0)
          j = 0;
       buf[i] = string[j++];

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.3 2003/03/10 09:08:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.4 2003/03/10 10:35:36 alor Exp $
 */
 
 #include <ec.h>
@@ -217,7 +217,6 @@ void compile_display_filter(void)
    
    DEBUG_MSG("compile_display_filter TARGET1: %s", GBL_OPTIONS->target1);
 
-
    if (strlen(GBL_OPTIONS->target1) != strspn(GBL_OPTIONS->target1, valid))
       FATAL_MSG("TARGET1 contains invalid chars !");
    
@@ -262,8 +261,8 @@ void compile_display_filter(void)
       expand_token(tok[2], 1<<16, &add_port, GBL_TARGET1->ports);
    
    
-   for(i=0; i<4; i++)
-      free(tok[i]);
+   for(i=0; i<3; i++)
+      SAFE_FREE(tok[i]);
 
    DEBUG_MSG("compile_display_filter TARGET2: %s", GBL_OPTIONS->target2);
    
@@ -302,8 +301,8 @@ void compile_display_filter(void)
    else
       expand_token(tok[2], 1<<16, &add_port, GBL_TARGET2->ports);
 
-   for(i=0; i<4; i++)
-      free(tok[i]);
+   for(i=0; i<3; i++)
+      SAFE_FREE(tok[i]);
  
 }
 

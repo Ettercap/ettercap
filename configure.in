@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.82 2003/12/18 10:57:32 lordnaga Exp $
+dnl    $Id: configure.in,v 1.83 2003/12/18 14:17:14 alor Exp $
 dnl
 
 AC_INIT
@@ -722,6 +722,12 @@ EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $GTK_LIBS $PTHREADLI
 
 AC_SUBST(EC_CFLAGS)
 AC_SUBST(EC_LIBS)
+
+AC_SUBST(PCAPINC)
+AC_SUBST(LNETINC)
+AC_SUBST(SSLINC)
+AC_SUBST(PCREINC)
+AC_SUBST(NCURSINC)
 
 AC_SUBST(PCAPLIB)
 AC_SUBST(LNETLIB)

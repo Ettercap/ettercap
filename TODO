@@ -82,7 +82,6 @@ this is the unofficial and floating in time roadmap:
          - leech     -> isolate
          - ooze      -> will not be ported (never used)
          - shadow    -> will not be ported (never used) (use nmap instead)
-         - spectre   -> mac_flood
          - triton    -> gw_discover
 
    + BRIDGED SNIFFING

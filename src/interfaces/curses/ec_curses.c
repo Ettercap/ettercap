@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.46 2004/05/12 15:27:06 alor Exp $
+    $Id: ec_curses.c,v 1.47 2004/09/23 09:24:00 alor Exp $
 */
 
 #include <ec.h>
@@ -64,6 +64,7 @@ static void curses_unified_sniff(void);
 static void curses_bridged_sniff(void);
 static void bridged_sniff(void);
 static void curses_pcap_filter(void);
+static void curses_set_netmask(void);
 
 
 /*******************************************/
@@ -360,14 +361,15 @@ static void curses_setup(void)
    struct wdg_menu live[] = { {"Sniff",               'S', "",  NULL},
                               {"Unified sniffing...", 'U', "U", curses_unified_sniff},
                               {"Bridged sniffing...", 'B', "B", curses_bridged_sniff},
-                              {"-",                   0,   "",  NULL},
+                              {"-",                    0,   "",  NULL},
                               {"Set pcap filter...",  'p', "p", curses_pcap_filter},
                               {NULL, 0, NULL, NULL},
                             };
    
-   struct wdg_menu options[] = { {"Options",      'O', "",          NULL},
-                                 {"Unoffensive",   0,  tag_unoff,   toggle_unoffensive},
-                                 {"Promisc mode",  0,  tag_promisc, toggle_nopromisc},
+   struct wdg_menu options[] = { {"Options",       'O', "",          NULL},
+                                 {"Unoffensive",    0,  tag_unoff,   toggle_unoffensive},
+                                 {"Promisc mode",   0,  tag_promisc, toggle_nopromisc},
+                                 {"Set netmask",   'n', "n" , curses_set_netmask},
                                  {NULL, 0, NULL, NULL},
                                };
    
@@ -598,6 +600,33 @@ static void curses_pcap_filter(void)
    curses_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
+/*
+ * set a different netmask than the system one 
+ */
+static void curses_set_netmask(void)
+{
+   struct in_addr net;
+   
+   DEBUG_MSG("curses_set_netmask");
+  
+   if (GBL_OPTIONS->netmask == NULL)
+      SAFE_CALLOC(GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, sizeof(char));
+
+   /* 
+    * no callback, the filter is set but we have to return to
+    * the interface for other user input
+    */
+   curses_input("Netmask :", GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
+
+   /* sanity check */
+   if (strcmp(GBL_OPTIONS->netmask, "") && inet_aton(GBL_OPTIONS->netmask, &net) == 0)
+      ui_error("Invalid netmask %s", GBL_OPTIONS->netmask);
+            
+   /* if no netmask was specified, free it */
+   if (!strcmp(GBL_OPTIONS->netmask, ""))
+      SAFE_FREE(GBL_OPTIONS->netmask);
+            
+}
 
 /* EOF */
 

@@ -8,6 +8,7 @@ Legenda:
 
 NG-0.7.2         2004
 
+   + the netmask can now be specified within the GUI
    !! do not drop privs under windows (useless) 
 
 

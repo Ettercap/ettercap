@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.74 2004/09/02 13:17:58 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.75 2004/09/23 09:24:00 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -537,7 +537,7 @@ name of the interface is not so obvious as under *nix.
 
 .TP
 \fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
-Use this <NETMSK> instead of the one associated with the current iface. This
+Use this <NETMASK> instead of the one associated with the current iface. This
 option is useful if you have the NIC with an associated netmask of class B and
 you want to scan (with the arp scan) only a class C.
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.28 2004/09/16 04:16:32 daten Exp $
+    $Id: ec_gtk.c,v 1.29 2004/09/23 09:24:00 alor Exp $
 */
 
 #include <ec.h>
@@ -77,6 +77,7 @@ static void gtkui_unified_sniff_default(void);
 static void gtkui_bridged_sniff(void);
 static void bridged_sniff(void);
 static void gtkui_pcap_filter(void);
+static void gtkui_set_netmask(void);
 
 GtkTextBuffer *gtkui_details_window(char *title);
 void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
@@ -432,7 +433,8 @@ static void gtkui_setup(void)
       { "/Sniff/Set pcap filter...",    "p",       gtkui_pcap_filter,   0, "<StockItem>", GTK_STOCK_PREFERENCES },
       { "/_Options",                    "<shift>O", NULL, 0, "<Branch>" },
       { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>" },
-      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" }
+      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" },
+      { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>"}
    };
    gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);
 
@@ -873,6 +875,33 @@ static void gtkui_pcap_filter(void)
     * the interface for other user input
     */
    gtkui_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
+}
+
+/*
+ * set a different netmask than the system one 
+ */
+static void gtkui_set_netmask(void)
+{
+   struct in_addr net;
+   
+   DEBUG_MSG("gtkui_set_netmask");
+  
+   if (GBL_OPTIONS->netmask == NULL)
+      SAFE_CALLOC(GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, sizeof(char));
+
+   /* 
+    * no callback, the filter is set but we have to return to
+    * the interface for other user input
+    */
+   gtkui_input("Netmask :", GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
+
+   /* sanity check */
+   if (strcmp(GBL_OPTIONS->netmask, "") && inet_aton(GBL_OPTIONS->netmask, &net) == 0)
+      ui_error("Invalid netmask %s", GBL_OPTIONS->netmask);
+            
+   /* if no netmask was specified, free it */
+   if (!strcmp(GBL_OPTIONS->netmask, ""))
+      SAFE_FREE(GBL_OPTIONS->netmask);
 }
 
 /* used for Profile and Connection details */

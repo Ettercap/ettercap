@@ -17,7 +17,7 @@
 ;   along with this program; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;
-;   $Id: EttercapNG.nsi,v 1.7 2004/09/22 15:53:10 alor Exp $
+;   $Id: EttercapNG.nsi,v 1.8 2004/09/23 09:24:00 alor Exp $
 ;
 ; NOTE: this .NSI script is designed for NSIS v2.0+
 
@@ -65,6 +65,7 @@
    Var MUI_TEMP
    Var STARTMENU_FOLDER
    Var CHECKFAILED
+   Var DOCUMENTATION
    ; window handlers
    Var NEXTBUTTON
    Var BACKBUTTON
@@ -214,6 +215,8 @@ Section "Documentation" SecDocs
 
    File ..\..\doc\*.pdf
 
+   IntOp $DOCUMENTATION 0 + 1	; remember this for further use
+
 SectionEnd
 
 ; Hidden section for the uninstaller
@@ -252,6 +255,29 @@ Section "-Make the uninstaller"
       ;Create shortcuts
       CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
       CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\ettercap.lnk" "$INSTDIR\ettercap.exe" "-G"
+      
+      ; the command propmt to use etterfilter and etterlog
+      ReadRegStr $R1 HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows NT\CurrentVersion" "CurrentVersion"
+      StrCpy $9 $R1 1
+      StrCmp $9 '4' 0 win_2000_XP
+      ; Windows NT 4.0
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\ettercap prompt.lnk" "$SYSDIR\command.com" "" 
+         Goto end
+      win_2000_XP:
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\ettercap prompt.lnk" "$SYSDIR\cmd.exe" "" 
+      end:
+      
+      ; links to the documenation
+      IntCmp $DOCUMENTATION 1 0 no_doc
+      CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER\docs"
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-ettercap.lnk" "$INSTDIR\doc\ettercap.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-ettercap_curses.lnk" "$INSTDIR\doc\ettercap_curses.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-ettercap_plugins.lnk" "$INSTDIR\doc\ettercap_plugins.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-etterfilter.lnk" "$INSTDIR\doc\etterfilter.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-etterlog.lnk" "$INSTDIR\doc\etterlog.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-etter.conf.lnk" "$INSTDIR\doc\etter.conf.pdf" 
+      no_doc:
+      
       CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
 
    !insertmacro MUI_STARTMENU_WRITE_END
@@ -440,7 +466,10 @@ Section "Uninstall"
    !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
 
    Delete "$SMPROGRAMS\$MUI_TEMP\ettercap.lnk"
+   Delete "$SMPROGRAMS\$MUI_TEMP\ettercap prompt.lnk"
    Delete "$SMPROGRAMS\$MUI_TEMP\Uninstall.lnk"
+   Delete "$SMPROGRAMS\$MUI_TEMP\docs\*"
+   RMDir /r "$SMPROGRAMS\$MUI_TEMP\docs"
 
    ;Delete empty start menu parent diretories
    StrCpy $MUI_TEMP "$SMPROGRAMS\$MUI_TEMP"

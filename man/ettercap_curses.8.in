@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.18 2004/09/22 15:53:10 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.19 2004/09/23 09:24:00 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -142,6 +142,11 @@ enabled". Otherwise the option is not enabled.
 .B Promisc mode
 Enable/disable the promisc mode for the live capture on a network interface.
 This is an "asterisk-option" as the unoffensive one.
+.TP
+.B Set netmask
+Use the specified netmask instead of the one associated with the current iface. This
+option is useful if you have the NIC with an associated netmask of class B and
+you want to scan (with the arp scan) only a C class.
 .RE
 
 

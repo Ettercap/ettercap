@@ -19,7 +19,7 @@ extern void bug(char *file, char *function, int line, char *message);
 
 #define ERROR_MSG(x, ...) error_msg(__FILE__, __FUNCTION__, __LINE__, x, ## __VA_ARGS__ )
 
-#define FATAL_ERROR(x, ...) do { fprintf(stderr, "\n"x"\n\n", ## __VA_ARGS__ ); exit(-1); } while(0)
+#define FATAL_ERROR(x, ...) do { fprintf(stderr, "\n"x"\n\n", ## __VA_ARGS__ ); _exit(-1); } while(0)
 
 #define FATAL_MSG(x, ...) do { ui_error(x, ## __VA_ARGS__ ); return (-EFATAL); } while(0)
 

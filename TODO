@@ -16,6 +16,11 @@
    + SOLARIS PORTING
       - checksum (WORD_BIGENDIAN on intel ???)
 
+   + BSD PORTING
+      - hack_pcap_lnet is not usable
+      - bpf filter on outgoing packets
+      - BIOCSSEESENT
+
    + ETTERLOG
       - service resolution
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.9 2003/05/16 20:02:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.10 2003/05/26 20:02:14 alor Exp $
 */
 
 #include <ec.h>
@@ -98,14 +98,14 @@ pthread_t ec_thread_getpid(char *name)
   
    /* XXX - fix this inconsistency */
 
-   /* under some OSes (MacOSX) pthread_t is a pointer
+   /* under some OSes pthread_t is a pointer
     * we cannot return -ENOTFOUND.
     * NULL should be ok.
     */
-#ifdef OS_DARWIN
-   return NULL;
-#else
+#ifdef OS_LINUX
    return -ENOTFOUND;
+#else
+   return NULL;
 #endif
 }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.10 2003/05/19 10:14:27 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.11 2003/05/26 20:02:14 alor Exp $
 */
 
 #include <ec.h>
@@ -205,26 +205,42 @@ int send_to_bridge(struct packet_object *po)
    return c;
 }
 
-
 /*
- * a dirty hack to use the same socket for pcap and libnet.
- * both the structures contains a "int fd" field representing the socket.
- * we can close the fd opened by libnet and use the one already in use by pcap.
- * in this way we will not sniff packets sent by us at link layer.
+ * we MUST not sniff packets sent by us at link layer.
  * expecially usefull in bridged sniffing.
+ *
+ * so we have to find a solution...
  */
 
 static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
 {
-   DEBUG_MSG("hack_pcap_lnet (before) pcap %d | lnet %d", pcap_fileno(p), l->fd);
+#ifdef OS_LINUX   
+   /*
+    * a dirty hack to use the same socket for pcap and libnet.
+    * both the structures contains a "int fd" field representing the socket.
+    * we can close the fd opened by libnet and use the one already in use by pcap.
+   */
    
+   DEBUG_MSG("hack_pcap_lnet (before) pcap %d | lnet %d", pcap_fileno(p), l->fd);
    /* close the lnet socket */
    close(libnet_getfd(l));
-
    /* use the socket opened by pcap */
    l->fd = pcap_fileno(p);
-   
    DEBUG_MSG("hack_pcap_lnet  (after) pcap %d | lnet %d", pcap_fileno(p), l->fd);
+#endif
+
+#ifdef OS_BSD
+   /*
+    * under BSD we cannot hack the fd as in linux... why not ?? grrr
+    * so we can set the BIOCSSEESENT to 1 to see only outgoing packets
+    * but this is unconfortable, because we will not able to sniff ourself.
+    */
+   // int val = 0;
+   // ioctl(pcap_fileno(p), BIOCSSEESENT, &val);
+   DEBUG_MSG("hack_pcap_lnet: not applicable on this OS");
+   return;
+#endif
+   
 }
 
 

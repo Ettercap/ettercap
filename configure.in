@@ -157,7 +157,7 @@ AC_DISABLE_STATIC
 AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
-dnl AC_SEARCH_LIBS(dlopen,c dl,,)
+AC_SEARCH_LIBS(dlopen,c dl,,)
 AC_LIB_LTDL
 AC_SEARCH_LIBS(lt_dlopen,c dl ltdl,,)
 
@@ -373,22 +373,27 @@ AC_ARG_WITH(libnet,
      ;;
   *)
      AC_MSG_RESULT($withval)
-     if test -f $withval/include/libnet.h -a -f $withval/src/libnet.a; then
+     if test -f $withval/include/libnet.h \
+             -a -f $withval/src/libnet.a \
+             -o -f $withval/lib/libnet.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         if test -f $withval/bin/libnet-config; then
            LNETINC="`$withval/bin/libnet-config --defines`"
+           LNETLIB="`$withval/bin/libnet-config --libs`"
         elif test -f $withval/libnet-config; then
            LNETINC="`$withval/libnet-config --defines`"
+           LNETLIB="`$withval/libnet-config --libs`"
         else
            AC_PATH_PROG(LNET_CONFIG, "libnet-config")
            if test ! -n "$LNET_CONFIG"; then
               AC_ERROR(libnet-config not found)
            fi
            LNETINC="`libnet-config --defines`"
+           LNETLIB="`libnet-config --libs`"
         fi
         LNETINC="$LNETINC -I$withval/include"
-        LNETLIB="-L$withval/src `$withval/libnet-config --libs`"
+        LNETLIB="-L$withval/src $LNETLIB"
         ac_cv_ec_libnet=$withval
      else
         AC_ERROR(libnet.h or libnet.a not found in $withval)
@@ -437,8 +442,9 @@ AC_ARG_WITH(libncurses,
         AC_DEFINE(HAVE_NCURSES, 1)
         AM_CONDITIONAL(NCURSES, true)
         ac_cv_ec_libncurses=$withval
-     elif test -f $withval/include/ncurses.h -a \
-               -f $withval/lib/libncurses.a; then
+     elif test -f $withval/include/ncurses.h \
+               -o -f $withval/include/ncurses/ncurses.h \
+               -a -f $withval/lib/libncurses.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         NCURSINC="-I$withval/include"
@@ -482,7 +488,9 @@ AC_ARG_WITH(openssl,
      ;;
   *)
      AC_MSG_RESULT($withval)
-     if test -f $withval/include/openssl/ssl.h -a -f $withval/libcrypto.a; then
+     if test -f $withval/include/openssl/ssl.h \
+             -a -f $withval/lib/libcrypto.a \
+             -o -f $withval/libcrypto.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/include"

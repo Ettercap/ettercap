@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_arp.c,v 1.4 2003/04/15 07:57:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_arp.c,v 1.5 2003/05/26 20:02:14 alor Exp $
 */
 
 #include <ec.h>
@@ -100,7 +100,16 @@ FUNC_DECODER(decode_arp)
       ip_addr_init(&PACKET->L3.src, AF_INET, (char *)&earp->arp_spa);
       ip_addr_init(&PACKET->L3.dst, AF_INET, (char *)&earp->arp_tpa);
            
-      /* HOOK POINT:  PACKET_ARP */
+      /* 
+       * HOOK POINT:  PACKET_ARP 
+       * differentiate between REQUEST and REPLY
+       */
+      if (ntohs(arp->ar_op) == ARPOP_REQUEST)
+         hook_point(PACKET_ARP_RQ, po);
+      else if (ntohs(arp->ar_op) == ARPOP_REPLY)
+         hook_point(PACKET_ARP_RP, po);
+      
+      /* PACKET_ARP is for all type of arp, no distinctions */
       hook_point(PACKET_ARP, po);
    }
    

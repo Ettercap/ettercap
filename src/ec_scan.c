@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.8 2003/05/22 20:48:08 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.9 2003/05/26 20:02:14 alor Exp $
 */
 
 #include <ec.h>
@@ -97,7 +97,7 @@ void build_hosts_list(void)
     * ARP packets.
     */
 
-   hook_add(PACKET_ARP, &get_response);
+   hook_add(PACKET_ARP_RP, &get_response);
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
   
    /* 

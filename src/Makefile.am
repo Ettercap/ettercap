@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.77 2004/02/22 12:00:53 alor Exp $
+# $Id: Makefile.am,v 1.78 2004/03/24 09:43:17 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -47,6 +47,7 @@ ettercap_SOURCES = ec_capture.c \
                    ec_sniff.c \
                    ec_sniff_bridge.c \
                    ec_sniff_unified.c \
+                   ec_sslwrap.c \
                    ec_stats.c \
                    ec_streambuf.c \
                    ec_strings.c \

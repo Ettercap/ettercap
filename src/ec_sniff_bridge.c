@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.11 2004/01/03 15:13:23 alor Exp $
+    $Id: ec_sniff_bridge.c,v 1.12 2004/03/24 09:43:17 alor Exp $
 */
 
 #include <ec.h>
@@ -49,10 +49,10 @@ void start_bridge_sniff(void)
       ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
 
    /* create the thread for packet capture */
-   ec_thread_new("capture", "pcap handler and packet decoder", &capture, NULL);
+   ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
    
    /* create the thread for packet capture on the bridged interface */
-   ec_thread_new("bridge", "pcap handler and packet decoder", &capture_bridge, NULL);
+   ec_thread_new("bridge", "pcap handler and packet decoder", &capture_bridge, GBL_OPTIONS->iface_bridge);
 
    GBL_SNIFF->active = 1;
 }

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.103 2004/03/19 13:57:51 alor Exp $
+dnl    $Id: configure.in,v 1.104 2004/03/24 09:43:13 alor Exp $
 dnl
 
 AC_INIT
@@ -489,7 +489,7 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/include"
-        SSLLIB="-L$withval -lcrypto"
+        SSLLIB="-L$withval -lcrypto -lssl"
         AC_DEFINE(HAVE_OPENSSL, 1)
         AM_CONDITIONAL(OPENSSL, true)
         ac_ec_libssl=$withval
@@ -498,7 +498,7 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/ssl/include"
-        SSLLIB="-L$withval/ssl/lib -lcrypto"
+        SSLLIB="-L$withval/ssl/lib -lcrypto -lssl"
         AC_DEFINE(HAVE_OPENSSL, 1)
         AM_CONDITIONAL(OPENSSL, true)
         ac_ec_libssl=$withval
@@ -510,7 +510,7 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
      ;;
   esac ],
 [ if test -f /usr/include/openssl/ssl.h; then
-     SSLLIB="-lcrypto"
+     SSLLIB="-lcrypto -lssl"
      AC_DEFINE(HAVE_OPENSSL, 1)
      AM_CONDITIONAL(OPENSSL, true)
      AC_MSG_RESULT(yes)
@@ -519,16 +519,6 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
      AC_MSG_RESULT(no)
   fi]
 )
-
-AH_TEMPLATE(OPENSSL_PATH, [openssl executable path])
-
-AC_PATH_PROGS(OPENSSL_PATH, openssl,, $PATH:/usr/local/ssl/bin:${prefix}/bin:$withval/bin:$withval/ssl/bin)
-if test -n "$OPENSSL_PATH"; then
-  AC_DEFINE_UNQUOTED(OPENSSL_PATH, "$OPENSSL_PATH")
-  ac_ec_openssl=$OPENSSL_PATH
-else
-  AC_DEFINE_UNQUOTED(OPENSSL_PATH, "")
-fi
 
 
 dnl ---------
@@ -820,7 +810,6 @@ echo
    EC_CHECK_OPTION(" LIBPCAP ................ ",${ac_ec_libpcap})
    EC_CHECK_OPTION(" LIBNET ................. ",${ac_ec_libnet})
    EC_CHECK_OPTION(" LIBSSL ................. ",${ac_ec_libssl})
-   EC_CHECK_OPTION(" OPENSSL ................ ",${ac_ec_openssl})
    EC_CHECK_OPTION(" NCURSES ................ ",${ac_ec_libncurses})
    EC_CHECK_OPTION(" GTK+ ................... ",${ac_ec_gtk})
 echo

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_linux.c,v 1.4 2003/11/11 18:03:27 lordnaga Exp $
+    $Id: ec_linux.c,v 1.5 2004/03/24 09:43:17 alor Exp $
 */
 
 #include <ec.h>
@@ -25,12 +25,6 @@
 
 /* the old value */
 static char saved_status;
-/* 
- * we need it global, since after the privs dropping
- * we cannot open the file anymode, so we open it 
- * with high privs.
- */
-static FILE *fd;
 
 /* protos */
 
@@ -42,6 +36,8 @@ u_int16 get_iface_mtu(char *iface);
 
 void disable_ip_forward(void)
 {
+   FILE *fd;
+   
    fd = fopen("/proc/sys/net/ipv4/ip_forward", "r");
    ON_ERROR(fd, NULL, "failed to open /proc/sys/net/ipv4/ip_forward");
 
@@ -61,11 +57,31 @@ void disable_ip_forward(void)
 
 static void restore_ip_forward(void)
 {
-   DEBUG_MSG("ATEXIT: restore_ip_forward: restore to %c", saved_status);
+   FILE *fd;
+   char current_status;
+   
+   /* read the current status to know if we need to modify it */
+   fd = fopen("/proc/sys/net/ipv4/ip_forward", "r");
+   ON_ERROR(fd, NULL, "failed to open /proc/sys/net/ipv4/ip_forward");
 
-   /* fd is already opened (by disable_ip_forward) */
-   fprintf(fd, "%c", saved_status );
+   fscanf(fd, "%c", &current_status);
    fclose(fd);
+   
+   if (current_status == saved_status) {
+      DEBUG_MSG("ATEXIT: restore_ip_forward: does not need restoration");
+      return;
+   }
+   
+   fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
+   if (fd == NULL) {
+      FATAL_ERROR("ip_forwarding was disabled, but we cannot re-enable it now.\n"
+                  "remember to re-enable it manually\n");
+   }
+
+   fprintf(fd, "%c", saved_status);
+   fclose(fd);
+
+   DEBUG_MSG("ATEXIT: restore_ip_forward: restore to %c", saved_status);
 }
 
 /* 

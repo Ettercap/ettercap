@@ -298,9 +298,6 @@
 /* Define if dlsym() requires a leading underscore in symbol names. */
 #undef NEED_USCORE
 
-/* openssl executable path */
-#undef OPENSSL_PATH
-
 /* compiling under bsd */
 #undef OS_BSD
 

@@ -17,21 +17,8 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.24 2004/03/24 09:18:41 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.25 2004/03/24 09:43:17 alor Exp $
 */
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-
-// XXX - check if we have poll.h
-#include <sys/poll.h>
-
-/* don't include kerberos. RH sux !! */
-#define OPENSSL_NO_KRB5 1
-
-#include <openssl/ssl.h>
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -41,19 +28,36 @@
 #include <ec_threads.h>
 #include <ec_sslwrap.h>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+
+#ifdef HAVE_OPENSSL
+
+// XXX - check if we have poll.h
+#include <sys/poll.h>
+
+/* don't include kerberos. RH sux !! */
+#define OPENSSL_NO_KRB5 1
+#include <openssl/ssl.h>
+
+
 //XXX - Only to make it compile
 #define CERT_FILE "etter.ssl.crt"
 #define DATA_PATH "/"
 
 /* XXX - Occhio alla free di disp_data se cambio packet_dup */
-#define BREAK_ON_ERROR(x,y,z) do {\
-if (x == -EINVALID) {\
-sslw_wipe_connection(y);\
-SAFE_FREE(z.DATA.data);\
-SAFE_FREE(z.DATA.disp_data);\
-return NULL;\
-}} while(0);\
+#define BREAK_ON_ERROR(x,y,z) do {  \
+   if (x == -EINVALID) {            \
+      sslw_wipe_connection(y);      \
+      SAFE_FREE(z.DATA.data);       \
+      SAFE_FREE(z.DATA.disp_data);  \
+      return NULL;                  \
+   }                                \
+} while(0)
 
+#endif /* HAVE_OPENSSL */
 
 /* globals */
 
@@ -66,6 +70,9 @@ struct listen_entry {
    u_char status;       /* Use directly SSL or not */
    LIST_ENTRY (listen_entry) next;
 };
+
+
+#ifdef HAVE_OPENSSL
 
 struct accepted_entry {
    int32 fd[2];   /* 0->Client, 1->Server */
@@ -95,10 +102,15 @@ struct sslw_ident {
 SSL_CTX   *ssl_ctx_client, *ssl_ctx_server;
 EVP_PKEY *global_pk;
 
+#endif /* HAVE_OPENSSL */
+
 /* protos */
 
 void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_char status);
 EC_THREAD_FUNC(sslw_start);
+
+#ifdef HAVE_OPENSSL
+
 static EC_THREAD_FUNC(sslw_child);
 static int sslw_is_ssl(struct packet_object *po);
 static int sslw_connect_server(struct accepted_entry *ae);
@@ -116,6 +128,116 @@ static size_t sslw_create_ident(void **i, struct packet_object *po);
 static void sslw_hook_handled(struct packet_object *po);
 static int sslw_create_selfsigned(X509 *serv_cert);
 static int firewall_insert_redirect(u_int16 sport, u_int16 dport);
+
+#endif /* HAVE_OPENSSL */
+
+/*******************************************/
+
+/* 
+ * Register a new ssl wrapper 
+ */
+void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_char status)
+{
+   struct listen_entry *le;
+   
+   SAFE_CALLOC(le, 1, sizeof(struct listen_entry));
+ 
+   le->sslw_port = port;
+   le->status = status;
+
+   /* Insert it in the port list where listen for connections */ 
+   LIST_INSERT_HEAD(&listen_ports, le, next);    
+
+   dissect_add(name, APP_LAYER_TCP, port, decoder); 
+}
+
+
+#ifndef HAVE_OPENSSL
+
+/*
+ * implement a fake function if the user does not have
+ * openssl support.
+ * the function will return without doing nothing...
+ */
+EC_THREAD_FUNC(sslw_start)
+{
+   DEBUG_MSG("sslw_start: openssl support not compiled in");
+   return NULL;
+}
+
+#else /* HAVE_OPENSSL  compile all the functions below */
+
+/* 
+ * SSL thread main function.
+ */
+EC_THREAD_FUNC(sslw_start)
+{
+   struct pollfd *poll_fd = NULL;
+   struct listen_entry *le;
+   struct accepted_entry *ae;
+   u_int16 number_of_services;
+   u_int32 len = sizeof(struct sockaddr_in), i;
+   struct sockaddr_in client_sin;
+   
+   ec_thread_init();
+   
+   DEBUG_MSG("sslw_start: initialized and ready");
+   
+   sslw_init();
+   sslw_bind_wrapper();
+
+   hook_add(HOOK_HANDLED, &sslw_hook_handled);
+
+   number_of_services = 0;
+   LIST_FOREACH(le, &listen_ports, next) 
+      number_of_services++;
+   
+   SAFE_CALLOC(poll_fd, 1, sizeof(struct pollfd) * number_of_services);
+
+   LOOP {
+      /* Set the polling on all registered ssl services */
+      // XXX - Posso metterlo fuori dal ciclo???
+      i=0;
+      LIST_FOREACH(le, &listen_ports, next) {
+         poll_fd[i].fd = le->fd;
+         poll_fd[i++].events = POLLIN;
+      }
+
+      poll(poll_fd, number_of_services, -1);
+      
+      /* Check which port received connection */
+      for(i=0; i<number_of_services; i++) 
+         if (poll_fd[i].revents & POLLIN) {
+	 
+            LIST_FOREACH(le, &listen_ports, next) 
+               if (poll_fd[i].fd == le->fd)
+                  break;
+	    
+            DEBUG_MSG("ssl_wrapper -- got a connection on port %d [%d]", le->redir_port, le->sslw_port);
+            SAFE_CALLOC(ae, 1, sizeof(struct accepted_entry));
+	    
+            ae->fd[SSL_CLIENT] = accept(poll_fd[i].fd, (struct sockaddr *)&client_sin, &len);
+            
+            /* Error checking */
+            if (ae->fd[SSL_CLIENT] == -1) {
+               SAFE_FREE(ae);
+               continue;
+            }
+	    
+            /* Set the server original port for protocol dissection */
+            ae->port[SSL_SERVER] = htons(le->sslw_port);
+            
+            /* Check if we have to enter SSL status */
+            ae->status = le->status;
+	       
+            /* Set the peer (client) in the connection list entry */
+            ae->port[SSL_CLIENT] = client_sin.sin_port;
+            ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (char *)&(client_sin.sin_addr.s_addr));
+	    
+            ec_thread_new("sslw_child", "ssl child", &sslw_child, ae);
+         }
+   }
+}	 
 
 
 /* 
@@ -170,25 +292,6 @@ static int firewall_insert_redirect(u_int16 sport, u_int16 dport)
    }    
    
    return ESUCCESS;
-}
-
-
-/* 
- * Register a new ssl wrapper 
- */
-void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_char status)
-{
-   struct listen_entry *le;
-   
-   SAFE_CALLOC(le, 1, sizeof(struct listen_entry));
- 
-   le->sslw_port = port;
-   le->status = status;
-
-   /* Insert it in the port list where listen for connections */ 
-   LIST_INSERT_HEAD(&listen_ports, le, next);    
-
-   dissect_add(name, APP_LAYER_TCP, port, decoder); 
 }
 
 
@@ -659,77 +762,6 @@ EC_THREAD_FUNC(sslw_child)
 }
 
 
-/* 
- * SSL thread main function.
- */
-EC_THREAD_FUNC(sslw_start)
-{
-   struct pollfd *poll_fd = NULL;
-   struct listen_entry *le;
-   struct accepted_entry *ae;
-   u_int16 number_of_services;
-   u_int32 len = sizeof(struct sockaddr_in), i;
-   struct sockaddr_in client_sin;
-   
-   ec_thread_init();
-   
-   sslw_init();
-   sslw_bind_wrapper();
-
-   hook_add(HOOK_HANDLED, &sslw_hook_handled);
-
-   number_of_services = 0;
-   LIST_FOREACH(le, &listen_ports, next) 
-      number_of_services++;
-   
-   SAFE_CALLOC(poll_fd, 1, sizeof(struct pollfd) * number_of_services);
-
-   LOOP {
-      /* Set the polling on all registered ssl services */
-      // XXX - Posso metterlo fuori dal ciclo???
-      i=0;
-      LIST_FOREACH(le, &listen_ports, next) {
-         poll_fd[i].fd = le->fd;
-         poll_fd[i++].events = POLLIN;
-      }
-
-      poll(poll_fd, number_of_services, -1);
-      
-      /* Check which port received connection */
-      for(i=0; i<number_of_services; i++) 
-         if (poll_fd[i].revents & POLLIN) {
-	 
-            LIST_FOREACH(le, &listen_ports, next) 
-               if (poll_fd[i].fd == le->fd)
-                  break;
-	    
-            DEBUG_MSG("ssl_wrapper -- got a connection on port %d [%d]", le->redir_port, le->sslw_port);
-            SAFE_CALLOC(ae, 1, sizeof(struct accepted_entry));
-	    
-            ae->fd[SSL_CLIENT] = accept(poll_fd[i].fd, (struct sockaddr *)&client_sin, &len);
-            
-            /* Error checking */
-            if (ae->fd[SSL_CLIENT] == -1) {
-               SAFE_FREE(ae);
-               continue;
-            }
-	    
-            /* Set the server original port for protocol dissection */
-            ae->port[SSL_SERVER] = htons(le->sslw_port);
-            
-            /* Check if we have to enter SSL status */
-            ae->status = le->status;
-	       
-            /* Set the peer (client) in the connection list entry */
-            ae->port[SSL_CLIENT] = client_sin.sin_port;
-            ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (char *)&(client_sin.sin_addr.s_addr));
-	    
-            ec_thread_new("sslw_child", "ssl child", &sslw_child, ae);
-         }
-   }
-}	 
-
-
 /*******************************************/
 /* Sessions' stuff for ssl packets */
 
@@ -803,6 +835,8 @@ static void sslw_create_session(struct ec_session **s, struct packet_object *po)
    /* alloc of data elements */
    SAFE_CALLOC((*s)->data, 1, sizeof(struct ip_addr));
 }
+
+#endif /* HAVE_OPENSSL */
 
 /* EOF */
 

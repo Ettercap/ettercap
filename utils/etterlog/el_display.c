@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_display.c,v 1.34 2004/02/01 16:49:21 alor Exp $
+    $Id: el_display.c,v 1.35 2004/03/24 09:43:17 alor Exp $
 */
 
 #include <el.h>
@@ -361,7 +361,7 @@ static void print_pass(struct host_profile *h)
       
       LIST_FOREACH(u, &(o->users_list_head), next) {
         
-         fprintf(stdout, " %s ", ip_addr_ntoa(&h->L3_addr, tmp));
+         fprintf(stdout, " %-15s ", ip_addr_ntoa(&h->L3_addr, tmp));
          if (strcmp(h->hostname, ""))
             fprintf(stdout, "(%s)", h->hostname);
          
@@ -369,7 +369,7 @@ static void print_pass(struct host_profile *h)
             fprintf(stdout, "(%s)", ip_addr_ntoa(&u->client, tmp));
          
 
-         fprintf(stdout, "\t%s %d\t%s USER: %s \tPASS: %s ",
+         fprintf(stdout, " %s %-5d %s USER: %s \tPASS: %s ",
                (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , 
                ntohs(o->L4_addr),
                (u->failed) ? "*" : "",

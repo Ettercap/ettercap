@@ -30,8 +30,7 @@
       - how to code a plugin 
 
    + DISSECTORS
-      - convert all the old dissectors:
-         - https (over the ssl one)
+      - https (over the ssl one)
       - SSL unified dissector for https, impas, pop3s ecc ecc
    
    + BRIDGED SNIFFING

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.12 2004/03/05 13:10:20 alor Exp $
+    $Id: ec_inject.c,v 1.13 2004/03/05 13:22:04 alor Exp $
 */
 
 #include <ec.h>
@@ -269,6 +269,9 @@ int user_inject(u_char *buf, size_t size, struct conn_object *co, int which)
       
    /* do the dirty job */
    inject_buffer(&po);
+
+   /* mark the connection as injected */
+   co->flags = CONN_INJECTED;
 
    return ESUCCESS;
 }

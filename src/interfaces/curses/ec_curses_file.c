@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_file.c,v 1.1 2003/11/30 21:31:59 alor Exp $
+    $Id: ec_curses_file.c,v 1.2 2003/12/01 21:52:07 alor Exp $
 */
 
 #include <ec.h>
@@ -39,18 +39,31 @@ void curses_sniff_offline(void);
 void curses_sniff_offline(void)
 {
    wdg_t *menu;
-   struct wdg_menu file[] = { {"Main",    "M",  NULL},
-                              {"Exit",    "Q", wdg_exit},
+   struct wdg_menu file[] = { {"Start",         "S", NULL},
+                              {"Start sniffing", "", NULL},
+                              {"Stop sniffing",  "", NULL},
+                              {"-",              "", NULL},
+                              {"Exit",          "Q", wdg_exit},
                               {NULL, NULL, NULL},
                             };
-   struct wdg_menu view[] = { {"View",    "V",  NULL},
-                              {"Item1",   "", NULL},
-                              {"Item2",   "", NULL},
-                              {"Item3",   "", NULL},
-                              {"Item4",   "", NULL},
-                              {"-",       "", NULL},
-                              {"Item5",   "",  NULL},
-                              {"Item6",   "",  NULL},
+   struct wdg_menu target[] = { {"Targets",         "T", NULL},
+                                {"Current Targets",  "", NULL},
+                                {"Select TARGET1",   "", NULL},
+                                {"Select TARGET2",   "", NULL},
+                                {"-",                "", NULL},
+                                {"Protocol...",      "", NULL},
+                                {"Reverse matching", "", NULL},
+                                {"-",                "", NULL},
+                                {"Wipe targets",     "", NULL},
+                                {NULL, NULL, NULL},
+                              };
+   struct wdg_menu view[] = { {"View",                "V", NULL},
+                              {"Profiles",             "", NULL},
+                              {"Connections",          "", NULL},
+                              {"-",                    "", NULL},
+                              {"Resolve IP addresses", "", NULL},
+                              {"-",                    "", NULL},
+                              {"Statistics",           "", NULL},
                               {NULL, NULL, NULL},
                             };
    
@@ -64,6 +77,7 @@ void curses_sniff_offline(void)
    wdg_set_color(menu, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(menu, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_menu_add(menu, file);
+   wdg_menu_add(menu, target);
    wdg_menu_add(menu, view);
    wdg_draw_object(menu);
    
@@ -73,9 +87,6 @@ void curses_sniff_offline(void)
    /* add the message flush callback */
    wdg_add_idle_callback(curses_flush_msg);
 
-   /* start the sniffing method */
-   EXECUTE(GBL_SNIFF->start);
-      
    /* 
     * give the control to the event dispatcher
     * with the emergency exit key 'Q'

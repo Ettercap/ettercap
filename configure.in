@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.73 2003/11/23 18:08:42 alor Exp $
+dnl    $Id: configure.in,v 1.74 2003/12/01 21:52:03 alor Exp $
 dnl
 
 AC_INIT
@@ -457,9 +457,9 @@ AC_CHECK_LIB(net, libnet_autobuild_token_ring,, AC_MSG_ERROR([Incorrect lnet ver
 LDFLAGS="${OLDLDFLAGS}"
 
 
-dnl ---------
+dnl ------------------
 dnl Checks for openssl
-dnl ---------
+dnl ------------------
 
 AH_TEMPLATE(HAVE_OPENSSL, [openssl executable path])
 AM_CONDITIONAL(OPENSSL, false)
@@ -592,45 +592,76 @@ AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in D
      AC_MSG_RESULT(no)
      ;;
   *)
-     if test -f $withval/ncurses.h -a -f $withval/libncurses.a; then
+     if test -f $withval/ncurses.h \
+             -a -f $withval/panel.h \
+             -a -f $withval/form.h \
+             -a -f $withval/menu.h \
+             -a -f $withval/libncurses.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         NCURSINC="-I$withval"
-        NCURSLIB="-L$withval -lpanel -lmenu -lncurses"
+        NCURSLIB="-L$withval -lpanel -lmenu -lform -lncurses"
         AC_DEFINE(HAVE_NCURSES, 1)
         AM_CONDITIONAL(NCURSES, true)
         ac_ec_libncurses=$withval
         AC_MSG_RESULT($withval)
      elif test -f $withval/include/ncurses.h \
-               -o -f $withval/include/ncurses/ncurses.h \
+               -a -f $withval/include/panel.h \
+               -a -f $withval/include/menu.h \
+               -a -f $withval/include/form.h \
                -a -f $withval/lib/libncurses.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
-        NCURSINC="-I$withval/include -I$withval/include/ncurses"
-        NCURSLIB="-L$withval/lib -lpanel -lmenu -lncurses"
+        NCURSINC="-I$withval/include"
+        NCURSLIB="-L$withval/lib -lpanel -lmenu -lform -lncurses"
+        AC_DEFINE(HAVE_NCURSES, 1)
+        AM_CONDITIONAL(NCURSES, true)
+        ac_ec_libncurses=$withval
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/include/ncurses/ncurses.h \
+               -a -f $withval/include/ncurses/panel.h \
+               -a -f $withval/include/ncurses/menu.h \
+               -a -f $withval/include/ncurses/form.h \
+               -a -f $withval/lib/libncurses.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NCURSINC="-I$withval/include/ncurses"
+        NCURSLIB="-L$withval/lib -lpanel -lmenu -lform -lncurses"
         AC_DEFINE(HAVE_NCURSES, 1)
         AM_CONDITIONAL(NCURSES, true)
         ac_ec_libncurses=$withval
         AC_MSG_RESULT($withval)
      else
         AC_MSG_RESULT(no)
-        AC_MSG_ERROR([ncurses.h or libncurses.a not found in $withval])
+        AC_MSG_ERROR([ncurses.h menu.h panel.h form.h or libncurses.a not found in $withval])
      fi
      ;;
   esac ],
 [ if test -f /usr/include/ncurses/ncurses.h; then
-     NCURSINC="-I/usr/include/ncurses"
-     NCURSLIB="-lpanel -lmenu -lncurses"
-     AC_DEFINE(HAVE_NCURSES, 1)
-     AM_CONDITIONAL(NCURSES, true)
-     ac_ec_libncurses=default
-     AC_MSG_RESULT(yes)
+     if test ! -f /usr/include/ncurses/form.h \
+               -a -f /usr/include/ncurses/menu.h \
+               -a -f /usr/include/ncurses/panel.h; then
+         AC_MSG_RESULT(no)
+     else 
+         NCURSINC="-I/usr/include/ncurses"
+         NCURSLIB="-lpanel -lmenu -lform -lncurses"
+         AC_DEFINE(HAVE_NCURSES, 1)
+         AM_CONDITIONAL(NCURSES, true)
+         ac_ec_libncurses=default
+         AC_MSG_RESULT(yes)
+     fi
   elif test -f /usr/include/ncurses.h; then
-     NCURSLIB="-lpanel -lmenu -lncurses"
-     AC_DEFINE(HAVE_NCURSES, 1)
-     AM_CONDITIONAL(NCURSES, true)
-     ac_ec_libncurses=default
-     AC_MSG_RESULT(yes)
+     if test ! -f /usr/include/form.h \
+               -a -f /usr/include/menu.h \
+               -a -f /usr/include/panel.h; then
+         AC_MSG_RESULT(no)
+     else 
+         NCURSLIB="-lpanel -lmenu -lform -lncurses"
+         AC_DEFINE(HAVE_NCURSES, 1)
+         AM_CONDITIONAL(NCURSES, true)
+         ac_ec_libncurses=default
+         AC_MSG_RESULT(yes)
+     fi
   else
      AC_MSG_RESULT(no)
   fi]

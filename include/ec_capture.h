@@ -1,5 +1,5 @@
 
-/* $Id: ec_capture.h,v 1.3 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_capture.h,v 1.4 2003/12/01 21:52:07 alor Exp $ */
 
 #ifndef EC_CAPTURE_H
 #define EC_CAPTURE_H
@@ -12,6 +12,8 @@ extern EC_THREAD_FUNC(capture);
 extern EC_THREAD_FUNC(capture_bridge);
 
 extern void get_hw_info(void);
+extern int is_pcap_file(char *file, char *errbuf);
+
 #endif
 
 /* EOF */

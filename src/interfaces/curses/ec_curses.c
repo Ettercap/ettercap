@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.19 2003/11/30 21:31:59 alor Exp $
+    $Id: ec_curses.c,v 1.20 2003/12/01 21:52:07 alor Exp $
 */
 
 #include <ec.h>
 #include <wdg.h>
 
 #include <ec_curses.h>
+#include <ec_capture.h>
 
 /* globals */
 
@@ -387,6 +388,7 @@ static void curses_file_open(void)
 
 static void read_pcapfile(char *path, char *file)
 {
+   char errbuf[128];
    
    DEBUG_MSG("read_pcapfile %s/%s", path, file);
    
@@ -394,9 +396,17 @@ static void read_pcapfile(char *path, char *file)
 
    sprintf(GBL_OPTIONS->dumpfile, "%s/%s", path, file);
 
+   /* check if the file is good */
+   if (is_pcap_file(GBL_OPTIONS->dumpfile, errbuf) != ESUCCESS) {
+      ui_error("%s", errbuf);
+      SAFE_FREE(GBL_OPTIONS->dumpfile);
+      return;
+   }
+   
    /* set the options for reading from file */
    GBL_OPTIONS->silent = 1;
    GBL_OPTIONS->unoffensive = 1;
+   GBL_OPTIONS->write = 0;
    GBL_OPTIONS->read = 1;
    
    /* exit the setup interface, and go to the primary one */

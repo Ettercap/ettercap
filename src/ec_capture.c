@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.28 2003/11/27 22:27:47 alor Exp $
+    $Id: ec_capture.c,v 1.29 2003/12/01 21:52:07 alor Exp $
 */
 
 #include <ec.h>
@@ -44,6 +44,7 @@ EC_THREAD_FUNC(capture);
 EC_THREAD_FUNC(capture_bridge);
 
 void get_hw_info(void);
+int is_pcap_file(char *file, char *errbuf);
 /*******************************************/
 
 /*
@@ -100,7 +101,7 @@ void capture_init(void)
       pd = pcap_open_live(GBL_OPTIONS->iface, GBL_PCAP->snaplen, GBL_PCAP->promisc, 
                    PCAP_TIMEOUT, pcap_errbuf);
    
-   ON_ERROR(pd, NULL, "%s", pcap_errbuf);
+   ON_ERROR(pd, NULL, "pcap_open: %s", pcap_errbuf);
 
    /* 
     * update to the reap assigned snapshot.
@@ -338,6 +339,22 @@ void get_hw_info(void)
 
    if (GBL_BRIDGE->mtu != GBL_IFACE->mtu)
       FATAL_ERROR("The two interfaces must have the same MTU.");
+}
+
+/*
+ * check if the given file is a pcap file
+ */
+int is_pcap_file(char *file, char *errbuf)
+{
+   pcap_t *pd;
+   
+   pd = pcap_open_offline(GBL_OPTIONS->dumpfile, errbuf);
+   if (pd == NULL)
+      return -EINVALID;
+
+   pcap_close(pd);
+   
+   return ESUCCESS;
 }
 
 

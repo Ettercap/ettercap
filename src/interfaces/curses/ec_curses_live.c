@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_live.c,v 1.1 2003/11/30 21:31:59 alor Exp $
+    $Id: ec_curses_live.c,v 1.2 2003/12/01 21:52:07 alor Exp $
 */
 
 #include <ec.h>
@@ -39,56 +39,62 @@ void curses_sniff_live(void);
 void curses_sniff_live(void)
 {
    wdg_t *menu;
-   struct wdg_menu file[] = { {"Quit",    "Q",  NULL},
-                              {"Exit",    "Q", wdg_exit},
+   struct wdg_menu file[] = { {"Start",         "S", NULL},
+                              {"Start sniffing", "", NULL},
+                              {"Stop sniffing",  "", NULL},
+                              {"-",              "", NULL},
+                              {"Exit",          "Q", wdg_exit},
                               {NULL, NULL, NULL},
                             };
-   struct wdg_menu target[] = { {"Targets", "T",  NULL},
-                                {"Current Targets", "", NULL},
-                                {"Select TARGET1", "", NULL},
-                                {"Select TARGET2", "", NULL},
-                                {"-", "", NULL},
-                                {"Protocol...", "", NULL},
+   struct wdg_menu target[] = { {"Targets",         "T", NULL},
+                                {"Current Targets",  "", NULL},
+                                {"Select TARGET1",   "", NULL},
+                                {"Select TARGET2",   "", NULL},
+                                {"-",                "", NULL},
+                                {"Protocol...",      "", NULL},
                                 {"Reverse matching", "", NULL},
-                                {"-", "", NULL},
-                                {"Wipe targets", "", NULL},
+                                {"-",                "", NULL},
+                                {"Wipe targets",     "", NULL},
                                 {NULL, NULL, NULL},
                               };
-   struct wdg_menu hosts[] = { {"Hosts", "H",  NULL},
-                               {"Host list", "", NULL},
-                               {"-", "", NULL},
+   struct wdg_menu hosts[] = { {"Hosts",            "H", NULL},
+                               {"Host list",         "", NULL},
+                               {"-",                 "", NULL},
+                               {"Scan for hosts",    "", NULL},
                                {"Load from file...", "", NULL},
-                               {"Save to file...", "", NULL},
+                               {"Save to file...",   "", NULL},
                                {NULL, NULL, NULL},
                              };
-   struct wdg_menu view[] = { {"View",    "V",  NULL},
-                              {"Profiles",    "", NULL},
-                              {"Connections", "", NULL},
-                              {"-", "", NULL},
+   struct wdg_menu view[] = { {"View",                "V", NULL},
+                              {"Profiles",             "", NULL},
+                              {"Connections",          "", NULL},
+                              {"-",                    "", NULL},
                               {"Resolve IP addresses", "", NULL},
-                              {"-", "", NULL},
-                              {"Statistics",  "",  NULL},
+                              {"-",                    "", NULL},
+                              {"Statistics",           "", NULL},
                               {NULL, NULL, NULL},
                             };
-   struct wdg_menu mitm[] = { {"Mitm", "M", NULL},
+   struct wdg_menu mitm[] = { {"Mitm",         "M", NULL},
                               {"Arp poisoning", "", NULL},
                               {"Icmp redirect", "", NULL},
                               {"Port stealing", "", NULL},
                               {"Dhcp spoofing", "", NULL},
                               {NULL, NULL, NULL},
                             };
-   struct wdg_menu filter[] = { {"Filters", "F", NULL},
+   struct wdg_menu filter[] = { {"Filters",         "F", NULL},
                                 {"Load a filter...", "", NULL},
-                                {"Stop filtering", "", NULL},
+                                {"Stop filtering",   "", NULL},
                                 {NULL, NULL, NULL},
                               };
-   struct wdg_menu plugin[] = { {"Plugins", "P", NULL},
+#ifdef HAVE_PLUGINS
+   struct wdg_menu plugin[] = { {"Plugins",       "P", NULL},
                                 {"Start a plugin", "", NULL},
-                                {"Stop a plugin", "", NULL},
+                                {"Stop a plugin",  "", NULL},
                                 {NULL, NULL, NULL},
                               };
+#endif
    
-   DEBUG_MSG("curses_sniff_offline");
+   DEBUG_MSG("curses_sniff_live");
 
    wdg_create_object(&menu, WDG_MENU, WDG_OBJ_WANT_FOCUS | WDG_OBJ_ROOT_OBJECT);
 
@@ -103,7 +109,9 @@ void curses_sniff_live(void)
    wdg_menu_add(menu, view);
    wdg_menu_add(menu, mitm);
    wdg_menu_add(menu, filter);
+#ifdef HAVE_PLUGINS
    wdg_menu_add(menu, plugin);
+#endif
    wdg_draw_object(menu);
    
    /* repaint the whole screen */

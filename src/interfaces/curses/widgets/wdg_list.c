@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_list.c,v 1.2 2003/12/26 17:58:35 alor Exp $
+    $Id: wdg_list.c,v 1.3 2003/12/27 12:10:36 alor Exp $
 */
 
 #include <wdg.h>
@@ -92,6 +92,7 @@ void wdg_create_list(struct wdg_object *wo)
 static int wdg_list_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_list_handle, ww);
+   struct wdg_list_call *c;
    int i = 0;
 
    /* erase the window */
@@ -109,6 +110,13 @@ static int wdg_list_destroy(struct wdg_object *wo)
       free_item(ww->items[i++]);
 
    WDG_SAFE_FREE(ww->items);
+
+   /* free the callback list */
+   while (SLIST_FIRST(&ww->callbacks) != NULL) {
+      c = SLIST_FIRST(&ww->callbacks);
+      SLIST_REMOVE_HEAD(&ww->callbacks, next);
+      WDG_SAFE_FREE(c);
+   }
 
    WDG_SAFE_FREE(wo->extend);
 
@@ -320,7 +328,6 @@ void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list)
       WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
       
       ww->items[i] = new_item(list[i].desc, "");
-      WDG_DEBUG_MSG("%s", list[i].desc);
       set_item_userptr(ww->items[i], list[i].value);
       i++;
    }
@@ -385,10 +392,10 @@ static void wdg_list_menu_create(struct wdg_object *wo)
    size_t l = wdg_get_nlines(wo);
    size_t x = wdg_get_begin_x(wo);
    size_t y = wdg_get_begin_y(wo);
-   int mrows, mcols;
+   int mrows = 0, mcols = 0;
   
    /* already displayed */
-   if (ww->menu)
+   if (ww->menu || !ww->items)
       return;
 
    /* create the menu */

@@ -12,7 +12,7 @@ if test ! -f ./configure; then
    ./autogen.sh
 fi
 
-if test "$1" == "--renew"; then
+if test "$1" = "--renew"; then
    shift
    ./autogen.sh
 fi

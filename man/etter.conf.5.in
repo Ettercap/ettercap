@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.9 2003/09/30 09:05:23 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.10 2003/10/04 15:13:15 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -58,11 +58,11 @@ The following is a list of available variables:
 .B [privs]
 .TP
 .B ec_uid
-This variable specifies the UID to drop the priviledges on startup. After the
-socket at link layer has been opened the priviledges are dropped to a specific
+This variable specifies the UID to drop the privileges on startup. After the
+socket at link layer has been opened the privileges are dropped to a specific
 uid different from root for security reasons. etter.conf is the only file that
 is read with root privs. Be sure the uid has enough privs to read other files (etter.*)
-You can bypass this variable by setting the evironment variable EC_UID.
+You can bypass this variable by setting the environment variable EC_UID.
 
 
 
@@ -81,7 +81,7 @@ When the poisoning process starts, the inter-packet delay is low for the first
 first 5 poisons, the delay is incremented (to keep up the poisoning). This
 variable controls the delay for the first 5 poisons. The value is in seconds.
 .br
-The same delay is use when the victims are restored to the original associtions
+The same delay is use when the victims are restored to the original associations
 (RE-ARPing) when ettercap is closed.
 
 .TP
@@ -110,7 +110,7 @@ Every sniffed packet is added to the buffer and when the buffer is full the
 older packets are deleted to make room for the newer one. This buffer is useful
 to view data that went on the cable before you select to view a specific
 connection. The higher is this value, the higher is the ettercap memory occupation.
-Btw the buffer is dynamic, so if you set a buffer of 100.000 byte it is not
+By the way, the buffer is dynamic, so if you set a buffer of 100.000 byte it is not
 allocated all together at the first packet of a connection, but it is filled as
 the packets arrive.
 
@@ -122,7 +122,7 @@ the packets arrive.
 .B sampling_rate
 Ettercap keeps some statistics on the processing time of the bottom half (the
 sniffer) and top half (the protocol decoder). This statistics are made on the
-everage processing time of sampling_rate packets. You can decrease this value to have
+average processing time of sampling_rate packets. You can decrease this value to have
 a more accurate real-time picture of processing time or increase it to have a
 smoother picture. The total average will not change, but the worst value will
 be heavily influenced by this value.
@@ -149,7 +149,7 @@ want to disable all the "dangerous" dissector at a time, set this value to 0.
 .B [dissectors]
 .TP
 .B protocol_name
-This value represent the port on wich the protocol dissector has to be bound. A
+This value represent the port on which the protocol dissector has to be bound. A
 value of 0 will disable the dissector. The name of the variable is the same of
 the protocol name. You can specify non standard port for each dissector as well
 as multiple ports. The syntax for multiport selection is the following:

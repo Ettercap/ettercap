@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.15 2003/09/09 21:32:56 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.16 2003/10/04 15:13:15 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -70,7 +70,7 @@ Print only packet coming form or going to TARGET. The TARGET specification is
 the same as the ettercap's one.
 .br
 \fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. If you want you can omit any of its parts
-and this will rappresent an ANY in that part. 
+and this will represent an ANY in that part. 
 .Sp
 If the type of the log is LOG_INFO the target is used to display hosts matching
 the mac, ip and having the specified port open. For example the target //80
@@ -105,7 +105,7 @@ etterlog -F TCP:10.0.0.23:3318:198.182.196.56:80
 Display only packet that are sent by the source of the selected CONNECTION.
 This option make sense only in conjunction with the -F option. 
 .Sp
-TIP: if you want to save a file trasfrerred in an HTTP or FTP connection, you can
+TIP: if you want to save a file transferred in an HTTP or FTP connection, you can
 use the following command:
 .Sp
 etterlog -B -s -n -F TCP:10.0.0.1:20:10.0.0.2:35426 logfile.ecp >

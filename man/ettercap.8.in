@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.35 2003/09/27 09:53:33 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.36 2003/10/04 15:13:15 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -26,7 +26,7 @@
 \- A multipurpose sniffer/content filter for man in the middle attacks
 
 .SH ***** IMPORTANT NOTE ******
-Since ettercap NG (formerly 0.7.0) all the options have been changed. Even the target
+Since ettercap NG (formerly 0.7.0), all the options have been changed. Even the target
 specification have been changed. \fIPlease read carefully this man page.\fR
 
 .SH SYNOPSIS
@@ -48,14 +48,14 @@ It has three main sniffing options:
 \fIUNIFIED\fR, this method sniff all the packets that pass on the cable. You can choose to put or not the
 interface in promisc mode (-p option). The packet not directed to the host
 running ettercap will be forwarded automatically using layer 3 routing. So you
-can use a mitm attack lauched from a different tool and let ettercap modify the
+can use a mitm attack launched from a different tool and let ettercap modify the
 packets and forward them for you. You can also run it on a gateway.
 .PP
 \fIMITM ATTACK\fR, you can choose the mitm attack that you prefer. The mitm
-attack module is indipended from the sniffing and filtering process, so you can
-lauch several attack at the same time or use your own tool for the attack. The
+attack module is independent from the sniffing and filtering process, so you can
+launch several attack at the same time or use your own tool for the attack. The
 crucial point is that the packets have to arrive to ettercap with the correct
-mac address and a different ip address (only theese packets will be forwarded).
+mac address and a different ip address (only these packets will be forwarded).
 .PP
 \fIBRIDGED\fR, it uses two network interfaces and forward the traffic from one to the other
 while performing sniffing and content filtering. This sniffing method is
@@ -95,10 +95,6 @@ you scan passively the lan (without sending any packet) and gather detailed info
 the hosts in the LAN: Operating System, running services, open ports, IP, mac address
 and network adapter vendor.
 .PP
-.B OS fingerprint:
-you can fingerprint the OS of the victim host and even its network adapter (it uses the
-nmap (c) Fyodor database)
-.PP
 .B Kill a connection:
 from the connections list you can kill all the connections you want
 .PP
@@ -113,7 +109,7 @@ traffic coming from one to the other and viceversa (since the connection is
 bidirectional).
 .PP
 \fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. If you want you can omit any of its parts
-and this will rappresent an ANY in that part. 
+and this will represent an ANY in that part. 
 .br
 e.g.
 .br
@@ -123,7 +119,7 @@ e.g.
 .PP
 \fIMAC\fR must be unique and in the form 00:11:22:33:44:55
 .PP
-\fIIPs\fR is a range of IP in FQDN notation. You can specify range with the - (hyphen)
+\fIIPs\fR is a range of IP in dotted notation. You can specify range with the - (hyphen)
 and single ip with , (comma). You can also use ; (semicolon) to indicate
 different ip addresses.
 .br
@@ -146,8 +142,8 @@ going to 10.0.0.1 you can specify "./ettercap -R /10.0.0.1/"
 .PP
 
 
-.SH PRIVILEDGES DROPPING
-ettercap needs root priviledges to open the Link Layer sockets. After the
+.SH PRIVILEGES DROPPING
+ettercap needs root privileges to open the Link Layer sockets. After the
 initialization phase, the root privs are not needed anymore, so ettercap drop
 them to UID = 65535 (nobody). Since ettercap has to write (create) log files,
 it must be executed in a directory with the right permissions (e.g. /tmp/). If
@@ -180,7 +176,7 @@ method you want.
 MITM attack 
 .br
 This option will activate the man in the middle attack. The mimt attack is
-totally independed from the sniffing. The aim of the attack is to hijack
+totally independent from the sniffing. The aim of the attack is to hijack
 packets and redirect them to ettercap. The sniffing engine will forward them if
 necessary.
 .br
@@ -197,10 +193,10 @@ has been poisoned the victims will send all packets to the attacker which, in
 turn, can modify them and forward to the real destination.
 .Sp
 In silent mode (-z option) only the first target is selected, if you want to
-posion multiple target in silent mode use the -j option to load a list from a
+poison multiple target in silent mode use the -j option to load a list from a
 file.
 .br
-You can select empty targets and they will be expanede as 'ANY' (all the host in
+You can select empty targets and they will be expanded as 'ANY' (all the host in
 the LAN). The target list is joined with the hosts list (created by the arp
 scan) and the result is used to determine the victims of the attack.
 .Sp
@@ -236,7 +232,7 @@ XXX-TODO
 BRIDGED sniffing
 .br
 You need two network interfaces. ettercap will forward form one to the other
-all the traffic it sees. It is useful for man in the middle at the phisical
+all the traffic it sees. It is useful for man in the middle at the physical
 layer. It is totally stealthy since it is passive and there is no way for an
 user to see the attacker.
 .br
@@ -347,12 +343,12 @@ through the TARGETs
 .TP
 \fB\-u\fR, \fB\-\-unoffensive\fR
 Every time ettercap starts, it disable ip forwarding in the kernel and begin to
-forward packets it self. This options prevent to do that, so the resposibility
+forward packets it self. This options prevent to do that, so the responsibility
 of ip forwarding is left to the kernel.
 .br
-This options is useful if you want to run multiple ettercap istances. You will
-have one istance (the one without the -u option) forwarding the packets, and
-all the other istances doing their work without forwarding them. Else you will
+This options is useful if you want to run multiple ettercap instances. You will
+have one instance (the one without the -u option) forwarding the packets, and
+all the other instances doing their work without forwarding them. Else you will
 get packet duplicates.
 
 .TP
@@ -392,7 +388,7 @@ list of function you can use inside a filter script.
 .br
 NOTE: these filters are different from those set with --pcapfilter. An ettercap
 filter is a content filter and can modify the payload of a packet before
-forwarfing it. Pcap filter are used to capture only certain packets.
+forwarding it. Pcap filter are used to capture only certain packets.
 
 
 .TP
@@ -465,7 +461,7 @@ new query and the dns may take up to 2 or 3 seconds to respond for an unknown
 host.
 .Sp
 HINT: ettercap collects the dns replies it sniffs in the resolution table, so
-even if you specify to not resolve the hostames, some of them will be resolved
+even if you specify to not resolve the hostnames, some of them will be resolved
 because the reply was previously sniffed. think about it as a passive dns 
 resolution for free... ;)
 
@@ -503,7 +499,7 @@ for each host. The file will be named LOGFILE.eci
 .TP
 \fB\-c\fR, \fB\-\-compress\fR
 Compress the logfile with the gzip algorithm while it is dumped. etterlog(8) is
-capable of handling both compressed and uncompresse log files.
+capable of handling both compressed and uncompressed log files.
 
 .TP
 \fB\-o\fR, \fB\-\-only-local\fR
@@ -524,8 +520,8 @@ Stores profiles information belonging only to remote hosts.
 .B STANDARD OPTIONS
 .TP
 \fB\-U\fR, \fB\-\-update\fR
-Connects to the ettercap website (ettercap.sf.net) and retrieve the lates
-databases used by ettercap for passive profiling.
+Connects to the ettercap website (ettercap.sf.net) and retrieve the latest
+databases used by ettercap.
 .br
 If you want only to check if an update is available, prepend the -z option.
 The order does matter: ettercap -zU
@@ -560,20 +556,20 @@ will see only your traffic.
 .B ettercap -Czq
 .Sp
 Use the console interface, do not ARP scan the net and be quiet. The packet
-contento will not be displayed, but user and passwords, as well as other
+content will not be displayed, but user and passwords, as well as other
 messages, will be displayed.
 
 .TP
 .B ettercap -C -j /tmp/victims -M arp /10.0.0.1-7/ /10.0.0.10-20/
 .Sp
-Will load the hosts list from /tmp/victims and perfrom an ARP poisonin attack
-agains the the two target. The list will be joined with the target and the
+Will load the hosts list from /tmp/victims and perform an ARP poisoning attack
+against the the two target. The list will be joined with the target and the
 resulting list is used for ARP poisoning.
 
 .TP
 .B ettercap -C -M arp // //
 .Sp
-Perform the ARP poisoning attack against all the host in the LAN. BE CAREFULL
+Perform the ARP poisoning attack against all the host in the LAN. BE CAREFUL
 !!
 
 .TP
@@ -633,7 +629,7 @@ or visit http://ettercap.sourceforge.net/forum/  and post it in the BUGS section
 and attach ettercap_debug.log to the mail in which you explain the problem.
 
 
-.SH FILOLOGICAL HISTORY
+.SH PHILOLOGICAL HISTORY
 "Even if blessed with a feeble intelligence, they are cruel and smart..."
 this is the description of Ettercap, a monster of the RPG Advanced Dungeons & Dragon.
 .PP
@@ -657,7 +653,7 @@ it is easier to protect against them locally.
 Internet is not a game, we need qualified admin and programmer to make secure
 protocols and programs. It isn't our fault if the net is so insecure... but we
 can do something to harden it.
-Ettercap was developed with this idea in mind: if even a skript kiddies can do an
+Ettercap was developed with this idea in mind: if even a script kiddies can do an
 hijack of the local connections, probably someone will find a solution for that !
 
 .SH The Lord Of The (Token)Ring

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.76 2004/02/05 13:12:39 lordnaga Exp $
+# $Id: Makefile.am,v 1.77 2004/02/22 12:00:53 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -131,12 +131,13 @@ ettercap_LDADD += interfaces/curses/libec_curses.a
 endif
 
 if GTK
-#ettercap_LDADD += interfaces/gtk/libec_gtk.a
+ettercap_LDADD += interfaces/gtk/libec_gtk.a
 endif
 
 ettercap_LDFLAGS = -export-dynamic @EC_LIBS@ 
 
 CLEANFILES = *.log *.out core* missing/*.o *~
+
 
 ## MISSING FUNCTIONS
 

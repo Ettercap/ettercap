@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.95 2004/02/15 13:35:23 alor Exp $
+dnl    $Id: configure.in,v 1.96 2004/02/22 12:00:37 alor Exp $
 dnl
 
 AC_INIT
@@ -705,16 +705,16 @@ AC_ARG_ENABLE(gtk, AC_HELP_STRING(--enable-gtk,enable the gtk interface),
      ;;
   esac ],
 [ 
-dnl      AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-dnl      if test "$PKG_CONFIG" = "no" ; then
-dnl         AC_MSG_RESULT(pkg-config not found)
-dnl      else
-dnl         PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0 pango >= 1.0 atk >= 1.0,
-dnl            [ AC_DEFINE(HAVE_GTK, 1)
-dnl              AM_CONDITIONAL(GTK, true)
-dnl              ac_ec_gtk=yes ]
-dnl         )
-dnl      fi
+     AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+     if test "$PKG_CONFIG" = "no" ; then
+        AC_MSG_RESULT(pkg-config not found)
+     else
+        PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0 pango >= 1.0 atk >= 1.0,
+           [ AC_DEFINE(HAVE_GTK, 1)
+             AM_CONDITIONAL(GTK, true)
+             ac_ec_gtk=yes ]
+        )
+     fi
 
      AC_MSG_RESULT(no)
 ])
@@ -723,7 +723,7 @@ dnl      fi
 dnl -----------------------
 dnl  set up the final vars
 dnl -----------------------
-EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $PCREINC $NCURSINC $GTK_CFLAGS"
+EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $PCREINC"
 EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $GTK_LIBS $PTHREADLIB"
 
 AC_SUBST(EC_CFLAGS)
@@ -734,12 +734,14 @@ AC_SUBST(LNETINC)
 AC_SUBST(SSLINC)
 AC_SUBST(PCREINC)
 AC_SUBST(NCURSINC)
+AC_SUBST(GTK_CFLAGS)
 
 AC_SUBST(PCAPLIB)
 AC_SUBST(LNETLIB)
 AC_SUBST(SSLLIB)
 AC_SUBST(PCRELIB)
 AC_SUBST(NCURSLIB)
+AC_SUBST(GTK_LIBS)
 
 AC_SUBST(PTHREADLIB)
 
@@ -769,6 +771,7 @@ AC_CONFIG_FILES(  Makefile
                   src/interfaces/text/Makefile 
                   src/interfaces/curses/Makefile 
                   src/interfaces/curses/widgets/Makefile 
+                  src/interfaces/gtk/Makefile 
                   include/Makefile
                   utils/Makefile
                   utils/etterlog/Makefile

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.9 2004/02/08 19:58:39 alor Exp $
+# $Id: Makefile.am,v 1.10 2004/02/22 12:00:53 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -9,7 +9,7 @@ noinst_HEADERS = ec_curses.h
 
 noinst_LIBRARIES = libec_curses.a
 
-libec_curses_a_CFLAGS = @EC_CFLAGS@ -Iwidgets
+libec_curses_a_CFLAGS = @EC_CFLAGS@ @NCURSINC@ -Iwidgets
 
 libec_curses_a_SOURCES = ec_curses.c \
                          ec_curses_filters.c \

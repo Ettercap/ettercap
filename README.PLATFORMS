@@ -108,7 +108,27 @@ order to be able to generate configuration scripts:
    M A C  O S  X
 ------------------------------------------------------------------------------
 
-waiting the input from some betatester... ;)
+thanks to 'rgovostes' for this instructions.
+
+Launch FinkCommander and search for the following software. Select the
+appropriate files and press command-shift-i to begin installing them - it'll
+take a long time, don't let your machine fall asleep. There may be additional
+packages which you should install, such as ones with -dev or -shlibs
+extensions. There may be multiple versions of the software available - if in
+doubt, go with the latest copy.
+
+   autoconf >= 2.57-2
+   automake >= 1.7.6-2
+   bison >= 1.875-1
+   dlcompat >= 20030629-15
+   libnet >= 1.1.1-1
+   libpcap >= 0.8.1-1
+   libpoll >= 1.4-11
+   libtool >= 1.5-1
+   ncurses >= 5.3-20031018-2
+   openssl >= 0.9.7c-3
+   pcre >= 4.3-1
+   pkgconfig >= 0.15.0-2
 
 
 ------------------------------------------------------------------------------

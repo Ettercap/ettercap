@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.1 2003/10/14 13:32:51 alor Exp $
+# $Id: Makefile.am,v 1.2 2004/02/22 12:00:53 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -10,7 +10,7 @@ if NCURSES
 endif
 	
 if GTK
-#   SUBDIRS += gtk
+   SUBDIRS += gtk
 endif
    
 # vim:ts=4:noexpandtab

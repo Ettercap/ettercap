@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.4 2004/02/17 21:02:34 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.5 2004/02/22 12:00:54 alor Exp $
 */
 
 #include <ec.h>
@@ -50,6 +50,7 @@ static void join_print_po(struct packet_object *po);
 static void curses_connection_kill(void *conn);
 static void curses_connection_kill_wrapper(void);
 static void curses_connection_inject(void);
+static void inject_user(void);
 static void curses_connection_inject_file(void);
 static void inject_file(char *path, char *file);
 
@@ -445,7 +446,26 @@ static void curses_connection_kill_wrapper(void)
  */
 static void curses_connection_inject(void)
 {
+   wdg_t *in;
+   
    DEBUG_MSG("curses_connection_inject");
+   
+   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
+   wdg_input_size(in, 50, 4);
+   wdg_input_add(in, 1, 1, "Chars to be injected  :", NULL, 10);
+   wdg_input_set_callback(in, inject_user);
+   
+   wdg_draw_object(in);
+      
+   wdg_set_focus(in);
+}
+
+static void inject_user(void) 
+{
    
    /* check where to inject */
    if (wdg_c1->flags & WDG_OBJ_FOCUSED) {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.17 2004/01/05 11:49:36 alor Exp $
+    $Id: ec_debug.c,v 1.18 2004/02/22 12:00:53 alor Exp $
 
 */
 
@@ -30,10 +30,16 @@
 #ifdef DEBUG
 
 #ifdef HAVE_NCURSES
-   #include <ncurses.h>
+   extern char *curses_version(void);
 #endif
-#ifdef HAVE_GTK
-   #include <gtk/gtk.h>
+#ifdef HAVE_GTK 
+   /* 
+    * hack here because this file is compiled 
+    * without the include directive for gtk
+    */
+   extern int gtk_major_version;
+   extern int gtk_minor_version;
+   extern int gtk_micro_version;
 #endif
 #ifdef HAVE_OPENSSL
    #include <openssl/opensslv.h>

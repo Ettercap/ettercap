@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.16 2004/02/08 19:58:40 alor Exp $
+    $Id: ec_curses_view.c,v 1.17 2004/02/22 12:00:54 alor Exp $
 */
 
 #include <ec.h>
@@ -120,7 +120,7 @@ static void refresh_stats(void)
       return;
    
    wdg_window_print(wdg_stats, 1, 1, "Received packets    : %8lld", GBL_STATS->ps_recv);
-   wdg_window_print(wdg_stats, 1, 2, "Dropped packets     : %8lld  %.2f %%", GBL_STATS->ps_drop, 
+   wdg_window_print(wdg_stats, 1, 2, "Dropped packets     : %8lld  %.2f %% ", GBL_STATS->ps_drop, 
           (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv : 0 );
    wdg_window_print(wdg_stats, 1, 3, "Forwarded packets   : %8lld  bytes: %8lld ", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
   
@@ -131,7 +131,7 @@ static void refresh_stats(void)
          GBL_STATS->bh.pck_recv, GBL_STATS->bh.pck_size);
    wdg_window_print(wdg_stats, 1, 9, "Top Half received packet    : pck: %8lld  bytes: %8lld", 
          GBL_STATS->th.pck_recv, GBL_STATS->th.pck_size);
-   wdg_window_print(wdg_stats, 1, 10, "Interesting packets         : %.2f %%",
+   wdg_window_print(wdg_stats, 1, 10, "Interesting packets         : %.2f %% ",
          (GBL_STATS->bh.pck_recv) ? (float)GBL_STATS->th.pck_recv * 100 / GBL_STATS->bh.pck_recv : 0 );
 
    wdg_window_print(wdg_stats, 1, 12, "Bottom Half packet rate : worst: %8d  adv: %8d p/s", 

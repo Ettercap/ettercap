@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.36 2004/02/15 13:35:28 alor Exp $
+    $Id: ec_curses.c,v 1.37 2004/02/22 12:00:54 alor Exp $
 */
 
 #include <ec.h>
@@ -37,7 +37,7 @@ static char tag_promisc[] = "*";
 /* proto */
 
 void set_curses_interface(void);
-void curses_interface(void);
+static void curses_interface(void);
 void curses_flush_msg(void);
 
 void curses_message(const char *msg);

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.13 2003/11/22 13:57:11 alor Exp $
+# $Id: Makefile.am,v 1.14 2004/01/05 14:25:03 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -45,7 +45,7 @@ endif
 
 etterfilter_CFLAGS = @EC_CFLAGS@
 
-etterfilter_LDADD = 
+etterfilter_LDADD = -lpthread
 
 if HAVE_PCRE
    etterfilter_LDADD += @PCRELIB@ -lpcre

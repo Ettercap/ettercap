@@ -1,5 +1,5 @@
 
-/* $Id: ec_log.h,v 1.20 2004/02/16 20:21:55 alor Exp $ */
+/* $Id: ec_log.h,v 1.21 2004/03/11 10:50:11 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -47,7 +47,7 @@ struct log_global_header {
     */
    u_int16 first_header;
    /* ettercap version */
-   char version[10];
+   char version[16];
    /* creation time of the log */
    struct timeval tv;
    /* the type of the log (packet or info) */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.7 2003/12/15 14:38:40 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.8 2003/12/15 15:20:15 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -73,11 +73,6 @@ struct arp_eth_header {
 #define FAKE_PCK_LEN sizeof(struct eth_header)+sizeof(struct arp_header)+sizeof(struct arp_eth_header)
 struct packet_object fake_po;
 char fake_pck[FAKE_PCK_LEN];
-
-/* mutexes */
-static pthread_mutex_t steal_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define STEAL_LOCK     do{ pthread_mutex_lock(&steal_mutex); } while(0)
-#define STEAL_UNLOCK   do{ pthread_mutex_unlock(&steal_mutex); } while(0)
 
 
 /* protos */
@@ -236,7 +231,6 @@ static void port_stealing_stop(void)
   
    ui_msg_flush(2);
 
-   STEAL_LOCK;
    /* Restore Switch Tables (2 times) 
     * by sending arp requests.
     */
@@ -260,8 +254,6 @@ static void port_stealing_stop(void)
       LIST_REMOVE(s, next);
       SAFE_FREE(s);
    }
-   
-   STEAL_UNLOCK;
 }
 
 
@@ -283,10 +275,7 @@ EC_THREAD_FUNC(port_stealer)
       
       CANCELLATION_POINT();
       
-      /* Walk the list and steal the ports 
-       * We use a mutex to avoid race conditions with freeing.
-       */
-      STEAL_LOCK;
+      /* Walk the list and steal the ports */
       LIST_FOREACH(s, &steal_table, next) {
          /* Steal only ports for hosts where no packet is in queue */
          if (!s->wait_reply) {
@@ -295,7 +284,6 @@ EC_THREAD_FUNC(port_stealer)
             usleep(GBL_CONF->port_steal_delay * 1000);  
          }
       }      
-      STEAL_UNLOCK;
       usleep(GBL_CONF->port_steal_delay * 1000);
    }
    

@@ -11,11 +11,11 @@
       + when libpcap 0.8.1 will be released
          - pcap_datalink_val_to_name  
          - pcap_lib_version
+      + when libpcap 0.8.x will be released
          - pcap_stat fix (even under linux the stats are cumulative)
 
    + BSD PORTING
       - find a way for bridged sniff under OpenBSD 
-      - test the plugin engine under OpenBSD
 
    + SOLARIS PORTING
       - test the bridged sniffing
@@ -41,7 +41,6 @@ this is the unofficial and floating in time roadmap:
 
    + LIBWDG
       - fix the box() under freebsd
-      - callback on menu shortcuts
       - inline help (with callback on 'h')
       - widgets:
          - selectable lists (auto refresh)

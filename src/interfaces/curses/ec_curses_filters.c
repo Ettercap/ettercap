@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_filters.c,v 1.3 2004/01/03 11:03:02 alor Exp $
+    $Id: ec_curses_filters.c,v 1.4 2004/01/03 15:14:14 alor Exp $
 */
 
 #include <ec.h>
@@ -33,9 +33,9 @@ static void curses_stop_filter(void);
 
 /* globals */
 
-struct wdg_menu menu_filters[] = { {"Filters",          'F', "", NULL},
-                                   {"Load a filter...", 0,   "", curses_load_filter},
-                                   {"Stop filtering",   0,   "", curses_stop_filter},
+struct wdg_menu menu_filters[] = { {"Filters",          'F',       "",    NULL},
+                                   {"Load a filter...", CTRL('F'), "C-f", curses_load_filter},
+                                   {"Stop filtering",   'f',       "f",   curses_stop_filter},
                                    {NULL, 0, NULL, NULL},
                                  };
 

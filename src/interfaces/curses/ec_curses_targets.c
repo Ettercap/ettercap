@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.3 2004/01/03 11:03:02 alor Exp $
+    $Id: ec_curses_targets.c,v 1.4 2004/01/03 15:14:14 alor Exp $
 */
 
 #include <ec.h>
@@ -37,14 +37,14 @@ static void set_targets(void);
 
 static char tag_reverse[] = " ";
 
-struct wdg_menu menu_targets[] = { {"Targets",          'T', "", NULL},
-                                   {"Current Targets",  0,   "", NULL},
-                                   {"Select TARGET(s)", 0,   "", curses_select_targets},
-                                   {"-",                0,   "", NULL},
-                                   {"Protocol...",      0,   "", curses_select_protocol},
+struct wdg_menu menu_targets[] = { {"Targets",          'T',       "",    NULL},
+                                   {"Current Targets",  't',       "t",   NULL},
+                                   {"Select TARGET(s)", CTRL('T'), "C-t", curses_select_targets},
+                                   {"-",                0,         "",    NULL},
+                                   {"Protocol...",      'p',       "p",    curses_select_protocol},
                                    {"Reverse matching", 0,   tag_reverse, toggle_reverse},
-                                   {"-",                0,   "", NULL},
-                                   {"Wipe targets",     0,   "", wipe_targets},
+                                   {"-",                0,         "",    NULL},
+                                   {"Wipe targets",     'W',       "W",    wipe_targets},
                                    {NULL, 0, NULL, NULL},
                                  };
 

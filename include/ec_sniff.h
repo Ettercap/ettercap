@@ -1,5 +1,5 @@
 
-/* $Id: ec_sniff.h,v 1.8 2003/11/01 15:52:58 alor Exp $ */
+/* $Id: ec_sniff.h,v 1.9 2004/01/03 15:14:14 alor Exp $ */
 
 #ifndef EC_SNIFF_H
 #define EC_SNIFF_H
@@ -10,6 +10,7 @@ struct sniffing_method {
    char type;              /* the type of the sniffing method */
       #define SM_UNIFIED      0
       #define SM_BRIDGED      1
+   char active;            /* true if the sniff was started */
    void (*start)(void);
    void (*cleanup)(void);
    void (*forward)(struct packet_object *po);

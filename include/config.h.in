@@ -328,9 +328,6 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* can ettercap use plugins ? */
-#undef PERMIT_PLUGINS
-
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
 

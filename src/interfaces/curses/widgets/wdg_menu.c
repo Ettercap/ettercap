@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.14 2003/12/28 18:27:08 alor Exp $
+    $Id: wdg_menu.c,v 1.15 2004/01/03 15:14:14 alor Exp $
 */
 
 #include <wdg.h>
@@ -31,10 +31,15 @@
 
 #define WDG_MENU_LEFT_PAD  1
 
+struct wdg_key_callback {
+   int hotkey;
+   void (*callback)(void);
+};
+
 struct wdg_menu_unit {
-   char active;
+   int hotkey;
    char *title;
-   char shortcut;
+   char active;
    size_t nitems;
    MENU *m;
    WINDOW *win;
@@ -112,6 +117,7 @@ static int wdg_menu_destroy(struct wdg_object *wo)
 
       /* all the items */
       while (mu->items[i] != NULL) {
+         free(item_userptr(mu->items[i]));
          free_item(mu->items[i]);
          i++;
       }
@@ -347,13 +353,14 @@ void wdg_menu_add(struct wdg_object *wo, struct wdg_menu *menu)
 {
    WDG_WO_EXT(struct wdg_menu_handle, ww);
    struct wdg_menu_unit *mu;
+   struct wdg_key_callback *kcall;
    int i = 0;
 
    WDG_SAFE_CALLOC(mu, 1, sizeof(struct wdg_menu_unit));
    
    WDG_SAFE_STRDUP(mu->title, menu[i].name);
    /* set the shortcut */
-   mu->shortcut = menu[i].shortcut[0];
+   mu->hotkey = menu[i].hotkey;
    
    while (menu[++i].name != NULL) {
    
@@ -361,16 +368,20 @@ void wdg_menu_add(struct wdg_object *wo, struct wdg_menu *menu)
       mu->nitems++;
 
       WDG_SAFE_REALLOC(mu->items, mu->nitems * sizeof(ITEM *));
+      WDG_SAFE_CALLOC(kcall, 1, sizeof(struct wdg_key_callback));
       
       /* create the item */
       mu->items[mu->nitems - 1] = new_item(menu[i].name, menu[i].shortcut);
+      /* remember the hotkey and the callback */
+      kcall->hotkey = menu[i].hotkey;
+      kcall->callback = menu[i].callback;
 
       /* this is a separator */
       if (!strcmp(menu[i].name, "-"))
          item_opts_off(mu->items[mu->nitems - 1], O_SELECTABLE);
       /* set the callback */
       else
-         set_item_userptr(mu->items[mu->nitems - 1], menu[i].callback);
+         set_item_userptr(mu->items[mu->nitems - 1], kcall);
    }
    
    /* add the null termination to the array */
@@ -459,7 +470,7 @@ static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
 {
    WDG_WO_EXT(struct wdg_menu_handle, ww);
    int c;
-   void (*func)(void);
+   struct wdg_key_callback *kcall;
    
    c = menu_driver(ww->focus_unit->m, wdg_menu_virtualize(key) );
    
@@ -474,14 +485,13 @@ static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
          return WDG_ESUCCESS;
          
       /* retrieve the function pointer */
-      func = item_userptr(current_item(ww->focus_unit->m));
+      kcall = item_userptr(current_item(ww->focus_unit->m));
       
       /* close the menu */
       wdg_menu_close(wo);
 
       /* execute the callback */
-      if (func != NULL)
-         func();
+      WDG_EXECUTE(kcall->callback);
 
       return WDG_ESUCCESS;
    }
@@ -604,20 +614,36 @@ static int wdg_menu_shortcut(struct wdg_object *wo, int key)
 {
    WDG_WO_EXT(struct wdg_menu_handle, ww);
    struct wdg_menu_unit *mu;
-   
+   struct wdg_key_callback *kcall;
 
    /* search the shortcut in the menu unit list */
    TAILQ_FOREACH(mu, &ww->menu_list, next) {
-      if (mu->shortcut == key) {
+      int i = 0;
+      
+      /* first check for the menu unit */
+      if (mu->hotkey == key) {
          
-         WDG_DEBUG_MSG("wdg_menu_shortcut");
-         
+         WDG_DEBUG_MSG("wdg_menu_shortcut: menu unit");
          wdg_set_focus(wo);
          wdg_menu_close(wo);
          ww->focus_unit = mu;
          wdg_menu_open(wo);
          wdg_menu_redraw(wo);
          return WDG_ESUCCESS;
+      }
+
+      /* then search in the menu items */
+      while (mu->items[i] != NULL) {
+         kcall = item_userptr(mu->items[i]);
+         i++;
+         if (kcall == NULL)
+            continue;
+         /* execute the callback */
+         if (kcall->hotkey == key) {
+            WDG_DEBUG_MSG("wdg_menu_shortcut: item callback");
+            WDG_EXECUTE(kcall->callback);
+            return WDG_ESUCCESS;
+         }
       }
    }
    

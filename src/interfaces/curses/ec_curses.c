@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.31 2004/01/03 11:03:02 alor Exp $
+    $Id: ec_curses.c,v 1.32 2004/01/03 15:14:14 alor Exp $
 */
 
 #include <ec.h>
@@ -392,11 +392,11 @@ static void curses_setup(void)
                               {NULL, 0, NULL, NULL},
                             };
    
-   struct wdg_menu live[] = { {"Sniff",               'S',       "",    NULL},
-                              {"Unified sniffing...", 'U',       "U",   curses_unified_sniff},
-                              {"Bridged sniffing...", 'B',       "B",   curses_bridged_sniff},
-                              {"-",                   0,         "",    NULL},
-                              {"Set pcap filter...",  CTRL('P'), "C-p", curses_pcap_filter},
+   struct wdg_menu live[] = { {"Sniff",               'S', "",  NULL},
+                              {"Unified sniffing...", 'U', "U", curses_unified_sniff},
+                              {"Bridged sniffing...", 'B', "B", curses_bridged_sniff},
+                              {"-",                   0,   "",  NULL},
+                              {"Set pcap filter...",  'p', "p", curses_pcap_filter},
                               {NULL, 0, NULL, NULL},
                             };
    
@@ -406,12 +406,12 @@ static void curses_setup(void)
                                  {NULL, 0, NULL, NULL},
                                };
    
-   struct wdg_menu logging[] = { {"Logging",                      'L', "",          NULL},
-                                 {"Log all packets and infos...", CTRL('L'), "C-l", curses_log_all},
-                                 {"Log only infos...",            CTRL('I'), "C-i", curses_log_info},
-                                 {"-",                            0, "",            NULL},
-                                 {"Log user messages...",         CTRL('M'), "C-m", curses_log_msg},
-                                 {"-",                            0, "",            NULL},
+   struct wdg_menu logging[] = { {"Logging",                      'L', "",  NULL},
+                                 {"Log all packets and infos...", 'I', "I", curses_log_all},
+                                 {"Log only infos...",            'i', "i", curses_log_info},
+                                 {"-",                            0,   "",  NULL},
+                                 {"Log user messages...",         'M', "M", curses_log_msg},
+                                 {"-",                            0,   "",  NULL},
                                  {"Compressed file",              0, tag_compress,  toggle_compress},
                                  {NULL, 0, NULL, NULL},
                                };
@@ -452,7 +452,7 @@ static void curses_setup(void)
    DEBUG_MSG("curses_setup: sysmsg created");
    
    /* give the control to the interface */
-   wdg_events_handler('U');
+   wdg_events_handler('u');
    
    wdg_destroy_object(&menu);
    

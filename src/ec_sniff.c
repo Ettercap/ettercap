@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.51 2004/05/19 14:08:34 alor Exp $
+    $Id: ec_sniff.c,v 1.52 2004/06/19 15:49:02 alor Exp $
 */
 
 #include <ec.h>
@@ -30,7 +30,6 @@
 #include <ec_strings.h>
 
 #include <pthread.h>
-#include <sys/socket.h>
 
 /* proto */
 

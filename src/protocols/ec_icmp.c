@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icmp.c,v 1.8 2004/05/13 15:15:16 alor Exp $
+    $Id: ec_icmp.c,v 1.9 2004/06/19 15:49:02 alor Exp $
 */
 
 #include <ec.h>
@@ -65,6 +65,7 @@ void __init icmp_init(void)
 FUNC_DECODER(decode_icmp)
 {
    struct icmp_header *icmp;
+   u_int16 sum;
 
    icmp = (struct icmp_header *)DECODE_DATA;
   
@@ -88,10 +89,11 @@ FUNC_DECODER(decode_icmp)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET->L4.header, PACKET->L4.len) != CSUM_RESULT) {
+   if (!GBL_OPTIONS->unoffensive && (sum = L3_checksum(PACKET->L4.header, PACKET->L4.len)) != CSUM_RESULT) {
       char tmp[MAX_ASCII_ADDR_LEN];
-      USER_MSG("Invalid ICMP packet from %s : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp), 
-                              L3_checksum(PACKET->L4.header, PACKET->L4.len), ntohs(icmp->csum));      
+      if (GBL_CONF->checksum_check)
+         USER_MSG("Invalid ICMP packet from %s : csum [%#x] should be (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                              ntohs(icmp->csum), checksum_shouldbe(icmp->csum, sum));      
       return NULL;
    }
    

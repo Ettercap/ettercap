@@ -17,14 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.25 2004/05/24 13:37:26 alor Exp $
+    $Id: ec_inet.c,v 1.26 2004/06/19 15:49:02 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_inet.h>
 #include <ec_ui.h>
-
-#include <sys/socket.h>
 
 /* prototypes */
 int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr);

@@ -6,9 +6,7 @@
    
    + FIXING
       - remove the quiet from some plugins
-      - check SSL thru proxy
       - fix dying top_half under solaris
-      - incorrect csum on dns replies
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
@@ -25,6 +23,8 @@
 ============================
 
    + SAFE_STRTOK
+   
+   + multiple dissector on a single port
 
    + CURSES
       - modifiable text in widgets
@@ -40,8 +40,6 @@
  
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
-
-   + multiple dissector on a single port
 
    + ETTERFILTER
       - possibility to set flags in scripts 

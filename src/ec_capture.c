@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.49 2004/05/12 15:27:05 alor Exp $
+    $Id: ec_capture.c,v 1.50 2004/06/19 15:49:02 alor Exp $
 */
 
 #include <ec.h>
@@ -25,9 +25,7 @@
 #include <ec_threads.h>
 #include <ec_capture.h>
 #include <ec_ui.h>
-
-#include <sys/socket.h>
-#include <sys/stat.h>
+#include <ec_inet.h>
 
 #include <pcap.h>
 #include <libnet.h>

@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.21 2004/05/04 20:11:48 alor Exp $ */
+/* $Id: ec_inet.h,v 1.22 2004/06/19 15:49:02 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 
 #ifdef OS_CYGWIN
    #ifndef AF_INET6

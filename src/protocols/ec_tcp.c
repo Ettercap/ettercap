@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.29 2003/10/24 12:49:29 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.30 2003/10/24 13:00:43 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -266,8 +266,10 @@ FUNC_DECODER(decode_tcp)
       }
       
       /* Take trace if this side of connection is mitm'd */
-      if (PACKET->flags & PO_FORWARDABLE) 
+      if (PACKET->flags & PO_FORWARDABLE)  
          status->way[direction].injectable |= INJ_FWD; 
+      else if (status->way[direction].injectable & INJ_FWD)
+         status->way[direction].injectable ^= INJ_FWD;
    } 
    
    /* get the next decoder */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_window.c,v 1.5 2003/10/26 18:20:48 alor Exp $
+    $Id: wdg_window.c,v 1.6 2003/11/02 20:36:44 alor Exp $
 */
 
 #include <wdg.h>
@@ -73,10 +73,12 @@ static int wdg_window_destroy(struct wdg_object *wo)
    WDG_WO_EXT(struct wdg_window, ww);
 
    /* erase the window */
+   wbkgd(ww->win, COLOR_PAIR(wo->screen_color));
+   wbkgd(ww->sub, COLOR_PAIR(wo->screen_color));
    werase(ww->sub);
    werase(ww->win);
-   wrefresh(ww->sub);
-   wrefresh(ww->win);
+   wnoutrefresh(ww->sub);
+   wnoutrefresh(ww->win);
    
    /* dealloc the structures */
    delwin(ww->sub);
@@ -111,9 +113,10 @@ static int wdg_window_redraw(struct wdg_object *wo)
    /* the window already exist */
    if (ww->win) {
       /* erase the border */
+      wbkgd(ww->win, COLOR_PAIR(wo->screen_color));
       werase(ww->win);
       touchwin(ww->win);
-      wrefresh(ww->win);
+      wnoutrefresh(ww->win);
       
       /* resize the window and draw the new border */
       mvwin(ww->win, y, x);
@@ -125,7 +128,6 @@ static int wdg_window_redraw(struct wdg_object *wo)
       wresize(ww->sub, l - 2, c - 2);
       /* set the window color */
       wbkgd(ww->sub, COLOR_PAIR(wo->window_color));
-      touchwin(ww->sub);
 
    /* the first time we have to allocate the window */
    } else {
@@ -153,9 +155,10 @@ static int wdg_window_redraw(struct wdg_object *wo)
    }
    
    /* refresh the window */
-   touchwin(ww->sub);
-   wrefresh(ww->win);
-   wrefresh(ww->sub);
+   redrawwin(ww->sub);
+   redrawwin(ww->win);
+   wnoutrefresh(ww->win);
+   wnoutrefresh(ww->sub);
    
    wo->flags |= WDG_OBJ_VISIBLE;
 
@@ -199,9 +202,6 @@ static int wdg_window_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_e
 
    /* handle the message */
    switch (key) {
-      case 'q':
-         wdg_destroy_object(&wo);
-         break;
       case KEY_MOUSE:
          /* is the mouse event within our edges ? */
          if (wenclose(ww->win, mouse->y, mouse->x))
@@ -237,7 +237,7 @@ static void wdg_window_border(struct wdg_object *wo)
    /* draw the borders */
    box(ww->win, 0, 0);
    
-   /* set the border color */
+   /* set the title color */
    wbkgdset(ww->win, COLOR_PAIR(wo->title_color));
    
    /* there is a title: print it */
@@ -259,6 +259,7 @@ static void wdg_window_border(struct wdg_object *wo)
    /* restore the attribute */
    if (wo->flags & WDG_OBJ_FOCUSED)
       wattroff(ww->win, A_BOLD);
+
 }
 
 /*
@@ -277,7 +278,7 @@ void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...)
    vw_printw(ww->sub, fmt, ap);
    va_end(ap);
 
-   wrefresh(ww->sub);
+   wnoutrefresh(ww->sub);
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_panel.c,v 1.3 2003/10/26 18:20:48 alor Exp $
+    $Id: wdg_panel.c,v 1.4 2003/11/02 20:36:44 alor Exp $
 */
 
 #include <wdg.h>
@@ -76,6 +76,8 @@ static int wdg_panel_destroy(struct wdg_object *wo)
    WDG_WO_EXT(struct wdg_panel, ww);
 
    /* erase the window */
+   wbkgd(W(ww->sub), COLOR_PAIR(wo->screen_color));
+   wbkgd(W(ww->win), COLOR_PAIR(wo->screen_color));
    werase(W(ww->sub));
    werase(W(ww->win));
    
@@ -87,7 +89,6 @@ static int wdg_panel_destroy(struct wdg_object *wo)
 
    /* update the screen */
    update_panels();
-   doupdate();
 
    WDG_SAFE_FREE(wo->extend);
 
@@ -118,6 +119,7 @@ static int wdg_panel_redraw(struct wdg_object *wo)
    /* the window already exist */
    if (ww->win) {
       /* erase the border */
+      wbkgd(W(ww->win), COLOR_PAIR(wo->screen_color));
       werase(W(ww->win));
     
       /* XXX - try to keep the window on screen */
@@ -169,7 +171,6 @@ static int wdg_panel_redraw(struct wdg_object *wo)
    
    /* refresh the screen */   
    update_panels();
-   doupdate();
    
    wo->flags |= WDG_OBJ_VISIBLE;
 
@@ -212,9 +213,6 @@ static int wdg_panel_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_ev
    WDG_WO_EXT(struct wdg_panel, ww);
    /* handle the message */
    switch (key) {
-      case 'q':
-         wdg_destroy_object(&wo);
-         break;
       case KEY_MOUSE:
          /* is the mouse event within our edges ? */
          if (wenclose(W(ww->win), mouse->y, mouse->x))
@@ -293,7 +291,6 @@ void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...)
    va_end(ap);
 
    update_panels();
-   doupdate();
 }
 
 /* EOF */

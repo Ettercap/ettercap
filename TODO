@@ -37,12 +37,12 @@ Nov 2003:
       - dhcp poisoning
       - port stealing
       - dns poisoning
-      - icmp redirect
-         http://www.networksorcery.com/enp/protocol/icmp/msg5.htm
          
    + LIBWDG
       - widgets:
-         - menu
+         - menu 
+            - mouse events
+            - shortcuts
          - input
          - question [YES] [NO] [Cancel]
 

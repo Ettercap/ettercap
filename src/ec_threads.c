@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.21 2003/11/01 15:52:58 alor Exp $
+    $Id: ec_threads.c,v 1.22 2003/11/02 20:36:44 alor Exp $
 */
 
 #include <ec.h>
@@ -186,7 +186,7 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
     */
    INIT_LOCK; 
 
-   if (pthread_create(&id, PTHREAD_CREATE_JOINABLE, function, args) != 0)
+   if (pthread_create(&id, NULL, function, args) != 0)
       ERROR_MSG("not enough system resources to create a new thread");
 
    ec_thread_register(id, name, desc);

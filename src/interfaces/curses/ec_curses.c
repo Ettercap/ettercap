@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.10 2003/10/30 20:55:01 alor Exp $
+    $Id: ec_curses.c,v 1.11 2003/11/02 20:36:44 alor Exp $
 */
 
 #include <ec.h>
@@ -144,7 +144,31 @@ static void curses_progress(char *title, int value, int max)
 
 void curses_interface(void)
 {
-   wdg_t *win1, *win2, *win3;
+   wdg_t *win1, *win2, *win3, *menu;
+   struct wdg_menu file[] = { {"File",    "F",  NULL},
+                              {"Open...", "",  NULL},
+                              {"Close",   "",  NULL},
+                              {"-",       "", NULL},
+                              {"Exit",    "Q", NULL},
+                              {NULL, NULL, NULL},
+                            };
+   struct wdg_menu view[] = { {"View",    "V",  NULL},
+                              {"Item1",   "1", NULL},
+                              {"Item2",   "2", NULL},
+                              {"Item3",   "3", NULL},
+                              {"Item4",   "4", NULL},
+                              {"-",       "", NULL},
+                              {"Item5",   "",  NULL},
+                              {"Item6",   "",  NULL},
+                              {NULL, NULL, NULL},
+                            };
+   struct wdg_menu mitm[] = { {"Mitm", "M", NULL},
+                              {"Arp poisoning", "A", NULL},
+                              {"Icmp redirect", "I", NULL},
+                              {"Port stealing", "P", NULL},
+                              {"Dhcp spoofing", "D", NULL},
+                              {NULL, NULL, NULL},
+                            };
    
    DEBUG_MSG("curses_interface");
 
@@ -153,6 +177,7 @@ void curses_interface(void)
    
    wdg_set_title(win1, "Scroll Window number 1:", WDG_ALIGN_RIGHT);
    wdg_set_size(win1, 3, 17, -3, -2);
+   wdg_set_color(win1, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(win1, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(win1, WDG_COLOR_BORDER, EC_COLOR_BORDER);
    wdg_set_color(win1, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
@@ -166,6 +191,7 @@ void curses_interface(void)
    
    wdg_set_title(win2, "Window number 2:", WDG_ALIGN_CENTER);
    wdg_set_size(win2, 3, 3, -3, 10);
+   wdg_set_color(win2, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(win2, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(win2, WDG_COLOR_BORDER, EC_COLOR_BORDER);
    wdg_set_color(win2, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
@@ -178,6 +204,7 @@ void curses_interface(void)
    
    wdg_set_title(win3, "Panel number 3:", WDG_ALIGN_LEFT);
    wdg_set_size(win3, 3, 11, -3, 16);
+   wdg_set_color(win3, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(win3, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(win3, WDG_COLOR_BORDER, EC_COLOR_BORDER);
    wdg_set_color(win3, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
@@ -185,8 +212,24 @@ void curses_interface(void)
    wdg_draw_object(win3);
    wdg_panel_print(win3, 0, 1, "this is a panel, it may overlap other panels...\n");
    
-   wdg_set_focus(win1);
+   wdg_create_object(&menu, WDG_MENU, WDG_OBJ_WANT_FOCUS | WDG_OBJ_ROOT_OBJECT);
+   ON_ERROR(menu, NULL, "Cannot create object");
    
+   wdg_set_title(menu, "menu", WDG_ALIGN_RIGHT);
+   wdg_set_color(menu, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(menu, WDG_COLOR_WINDOW, EC_COLOR_MENU);
+   wdg_set_color(menu, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(menu, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+   wdg_menu_add(menu, file);
+   wdg_menu_add(menu, view);
+   wdg_menu_add(menu, mitm);
+   wdg_draw_object(menu);
+   
+   wdg_set_focus(menu);
+  
+   /* repaint the whole screen */
+   wdg_redraw_all();
+
    /* 
     * give the control to the event dispatcher
     * with the emergency exit key 'Q'

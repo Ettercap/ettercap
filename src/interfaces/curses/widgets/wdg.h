@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.10 2003/10/26 18:20:48 alor Exp $ */
+/* $Id: wdg.h,v 1.11 2003/11/02 20:36:44 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -35,6 +35,11 @@ extern void wdg_bug(char *file, char *function, int line, char *message);
    WDG_ON_ERROR(x, NULL, "virtual memory exhausted"); \
 } while(0)
 
+#define WDG_SAFE_REALLOC(x, s) do { \
+   x = realloc(x, s); \
+   WDG_ON_ERROR(x, NULL, "virtual memory exhausted"); \
+} while(0)
+
 #define WDG_SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 
 #define WDG_EXECUTE(x, ...) do{ if(x != NULL) x( __VA_ARGS__ ); }while(0)
@@ -44,6 +49,10 @@ extern void wdg_bug(char *file, char *function, int line, char *message);
 /* used by halfdelay */
 #define WDG_INPUT_TIMEOUT  1
 
+/* not defined in curses.h */
+#define KEY_RETURN   '\r'
+#define KEY_TAB      '\t'
+#define KEY_CTRL_L   12
 
 /* informations about the current screen */
 struct wdg_scr {
@@ -80,6 +89,7 @@ struct wdg_object {
       #define WDG_WINDOW      1
       #define WDG_PANEL       2
       #define WDG_SCROLL      3
+      #define WDG_MENU        4
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
@@ -97,6 +107,7 @@ struct wdg_object {
    int x1, y1, x2, y2;
 
    /* object colors */
+   u_char screen_color;
    u_char border_color;
    u_char focus_color;
    u_char title_color;
@@ -134,11 +145,20 @@ extern void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
 /* scroll ojbects */
 extern void wdg_scroll_print(wdg_t *wo, char *fmt, ...);
 extern void wdg_scroll_set_lines(wdg_t *wo, size_t lines);
+/* menu objects */
+struct wdg_menu {
+   char *name;
+   char *shortcut;
+   void (*callback)(void);
+};
+extern void wdg_menu_add(wdg_t *wo, struct wdg_menu *menu);
+
 
 /* EXPORTED FUNCTIONS */
 
 extern void wdg_init(void);
 extern void wdg_cleanup(void);
+extern void wdg_redraw_all(void);
 
 /* the main dispatching loop */
 extern int wdg_events_handler(int exit_key);
@@ -159,6 +179,7 @@ extern void wdg_set_focus(wdg_t *wo);
 extern void wdg_set_title(wdg_t *wo, char *title, size_t align);
 extern void wdg_init_color(u_char pair, u_char fg, u_char bg);
 extern void wdg_set_color(wdg_t *wo, size_t part, u_char pair);
+   #define WDG_COLOR_SCREEN   0
    #define WDG_COLOR_TITLE    1
    #define WDG_COLOR_BORDER   2
    #define WDG_COLOR_FOCUS    3

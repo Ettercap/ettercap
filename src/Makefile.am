@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.65 2003/11/01 15:52:58 alor Exp $
+# $Id: Makefile.am,v 1.66 2003/11/02 20:36:44 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -128,33 +128,4 @@ ettercap_LDFLAGS = -export-dynamic
 
 CLEANFILES = *.log *.out core* missing/*.o *~
 
-## MISSING FUNCTIONS
-
-missing/strlcat.o:
-	$(COMPILE) -c missing/strlcat.c -o missing/strlcat.o
-
-missing/strlcpy.o:
-	$(COMPILE) -c missing/strlcpy.c -o missing/strlcpy.o
-	
-missing/strsep.o:
-	$(COMPILE) -c missing/strsep.c -o missing/strsep.o
-	
-missing/strcasestr.o:
-	$(COMPILE) -c missing/strcasestr.c -o missing/strcasestr.o
-	
-missing/scandir.o:
-	$(COMPILE) -c missing/scandir.c -o missing/scandir.o
-	
-missing/memmem.o:
-	$(COMPILE) -c missing/memmem.c -o missing/memmem.o
-	
-missing/memcmp.o:
-	$(COMPILE) -c missing/memcmp.c -o missing/memcmp.o
-	
-missing/getopt.o:
-	$(COMPILE) -c missing/getopt.c -o missing/getopt.o
-	
-missing/getopt_long.o:
-	$(COMPILE) -c missing/getopt_long.c -o missing/getopt_long.o
-	
 # vim:ts=4:noexpandtab

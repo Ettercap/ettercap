@@ -17,16 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.13 2003/10/26 19:27:14 alor Exp $
+    $Id: wdg.c,v 1.14 2003/11/02 20:36:44 alor Exp $
 */
 
 #include <wdg.h>
 
 #include <ncurses.h>
 
-/* not defined in curses.h */
-#define KEY_TAB      '\t'
-#define KEY_CTRL_L   12
 
 /* GLOBALS */
 
@@ -57,7 +54,7 @@ static struct wdg_obj_list *wdg_focused_obj;
 
 void wdg_init(void);
 void wdg_cleanup(void);
-static void wdg_resize(void);
+void wdg_redraw_all(void);
 
 void wdg_add_idle_callback(void (*callback)(void));
 void wdg_del_idle_callback(void (*callback)(void));
@@ -85,6 +82,7 @@ size_t wdg_get_begin_y(struct wdg_object *wo);
 extern void wdg_create_window(struct wdg_object *wo);
 extern void wdg_create_panel(struct wdg_object *wo);
 extern void wdg_create_scroll(struct wdg_object *wo);
+extern void wdg_create_menu(struct wdg_object *wo);
 
 /*******************************************/
 
@@ -107,6 +105,9 @@ void wdg_init(void)
   
    /* better compatibility with return key */
    nonl();
+
+   /* get controlling key (^C^X^Z^S^Q) uninterpreted */
+   //raw();
 
    /* don't flush input on break */
    intrflush(stdscr, FALSE);
@@ -174,9 +175,9 @@ void wdg_cleanup(void)
 
 
 /* 
- * called upone screen resize
+ * called upon screen resize
  */
-static void wdg_resize(void)
+void wdg_redraw_all(void)
 {
    struct wdg_obj_list *wl;
    
@@ -212,13 +213,17 @@ int wdg_events_handler(int exit_key)
          case KEY_TAB:
             /* switch focus between objects */
             wdg_switch_focus();
+            /* update the screen */
+            doupdate();
             break;
 
          case KEY_CTRL_L:
             /* redrawing the screen is equivalent to resizing it */
          case KEY_RESIZE:
             /* the screen has been resized */
-            wdg_resize();
+            wdg_redraw_all();
+            /* update the screen */
+            doupdate();
             break;
             
          case ERR:
@@ -237,6 +242,11 @@ int wdg_events_handler(int exit_key)
                SLIST_FOREACH(cl, &wdg_callbacks_list, next)
                   cl->idle_callback();
             }
+            /* 
+             * update the screen.
+             * all the function uses wnoutrefresh() funcions 
+             */
+            doupdate();
             break;
             
          default:
@@ -250,6 +260,7 @@ int wdg_events_handler(int exit_key)
                MEVENT event;
             
                getmouse(&event);
+               mouse_trafo(&event.y, &event.x, TRUE);
                mouse.x = event.x;
                mouse.y = event.y;
                mouse.event = event.bstate;
@@ -260,6 +271,8 @@ int wdg_events_handler(int exit_key)
 #endif
             /* dispatch the user input */
             wdg_dispatch_msg(key, &mouse);
+            /* update the screen */
+            doupdate();
             break;
       }
    }
@@ -353,10 +366,6 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
       flash();
       beep();
    }
-   
-   printw("WDG: NOT HANDLED: char %d (%c)\n", key, (char)key);
-   if (key == KEY_MOUSE)
-      printw("WDG: NOT HANDLED: mouse %dx%d\n", mouse->x, mouse->y);
    
    refresh();
 }
@@ -458,6 +467,10 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
          
       case WDG_SCROLL:
          wdg_create_scroll(*wo);
+         break;
+         
+      case WDG_MENU:
+         wdg_create_menu(*wo);
          break;
          
       default:
@@ -572,6 +585,9 @@ size_t wdg_get_type(struct wdg_object *wo)
 void wdg_set_color(wdg_t *wo, size_t part, u_char pair)
 {
    switch (part) {
+      case WDG_COLOR_SCREEN:
+         wo->screen_color = pair;
+         break;
       case WDG_COLOR_TITLE:
          wo->title_color = pair;
          break;

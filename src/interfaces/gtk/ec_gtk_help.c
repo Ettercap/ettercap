@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_help.c,v 1.1 2004/10/12 21:43:03 daten Exp $
+    $Id: ec_gtk_help.c,v 1.2 2004/10/14 00:10:04 daten Exp $
 */
 
 #ifndef OS_WINDOWS
@@ -130,21 +130,28 @@ void gtkui_help(void)
 
 void gtkui_help_open(char *file) {
    const char *full = "sh -c \"man %s | col -b\"";
-   char *data = NULL, *cmd;
+   char *data = NULL, *errors = NULL, *cmd;
    gboolean ret = FALSE;
    gint len = 0;
 
    len = strlen(file) + strlen(full);
    cmd = g_malloc(sizeof(char) * len);
    snprintf(cmd, len, full, file);
-   ret = g_spawn_command_line_sync(cmd, &data, NULL, NULL, NULL);
+   ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
    g_free(cmd);
 
+   /* TODO: use local copy of manpages as backup */
+   if(ret && errors && strlen(errors) > 0) {
+      ui_error(errors);
+      g_free(errors);
+   }
+
+   /* print output of command in help window */
    if(data && ret) {
       gtk_text_buffer_set_text(textbuf, "", -1);
    
       gtkui_details_print(textbuf, data);
-      free(data);
+      g_free(data);
    }
 }
 

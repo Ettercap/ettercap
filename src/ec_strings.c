@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.3 2003/08/28 19:55:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.4 2003/09/02 21:11:09 alor Exp $
 */
 
 #include <ec.h>
@@ -33,6 +33,7 @@ int match_pattern(const char *s, const char *pattern);
 int base64_decode(char *bufplain, const char *bufcoded);
 static int hextoint(int c);
 int strescape(char *dst, char *src);
+int str_replace(char **text, const char *s, const char *d);
 
 /*******************************************/
 
@@ -254,6 +255,36 @@ strend:
    return (dst - olddst);
 }
 
+
+/*
+ * replace 's' with 'd' in the string 'text'
+ * text will be realloc'ed, so a pointer is needed
+ * and stack based array can't be used
+ */
+int str_replace(char **text, const char *s, const char *d)
+{
+   size_t slen = strlen(s);
+   size_t dlen = strlen(d);
+   int diff = MAX(slen, dlen) - MIN(dlen, dlen);
+   char *p;
+
+   /* the search string does not exist */
+   if (strstr(*text, s) == NULL)
+      return -ENOTFOUND;
+   
+   /* search all the occurrence of 's' */
+   while ( (p = strstr(*text, s)) != NULL ) {
+
+      *text = realloc(*text, strlen(*text) + diff + 1);
+      ON_ERROR(*text, NULL, "Can't allocate memory");
+
+      /* do the actual replacement */
+      memmove(p + dlen, p + slen, strlen(p + slen) + 1);
+      memcpy(p, d, dlen);
+   }
+   
+   return ESUCCESS;
+}
 
 /* EOF */
 

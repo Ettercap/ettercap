@@ -50,7 +50,9 @@ noinst_HEADERS = ec.h \
                  ec_update.h \
                  ec_version.h \
                  el.h \
-                 el_functions.h
+                 el_functions.h \
+                 ef.h \
+                 ef_functions.h
   
   
 EXTRA_DIST = missing/*

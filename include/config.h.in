@@ -275,8 +275,23 @@
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
 
-/* where can I find my conf file ? */
+/* where can I find the ettercap executable ? */
+#undef INSTALL_BINDIR
+
+/* where can I find my data file ? */
+#undef INSTALL_DATADIR
+
+/* the exec_prefix passed by configure */
+#undef INSTALL_EXECPREFIX
+
+/* where can I find my plugins ? */
+#undef INSTALL_LIBDIR
+
+/* the prefix passed by configure */
 #undef INSTALL_PREFIX
+
+/* where can I find my sysconf file ? */
+#undef INSTALL_SYSCONFDIR
 
 /* Define if the OS needs help to load dependent libraries for dlopen(). */
 #undef LTDL_DLOPEN_DEPLIBS

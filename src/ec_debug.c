@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.18 2004/02/22 12:00:53 alor Exp $
+    $Id: ec_debug.c,v 1.19 2004/03/24 11:28:01 alor Exp $
 
 */
 
@@ -87,9 +87,16 @@ void debug_init(void)
    if ((debug_file = fopen (GBL_DEBUG_FILE, "w")) == NULL)
       ERROR_MSG("Couldn't open for writing %s", GBL_DEBUG_FILE);
    
-   fprintf (debug_file, "\n==============================================================\n");
+   fprintf (debug_file, "\n==============================================================\n\n");
                    
-  	fprintf (debug_file, "\n-> %s %s\n\n", GBL_PROGRAM, GBL_VERSION);
+  	fprintf (debug_file, "-> ${prefix}        %s\n", INSTALL_PREFIX);
+  	fprintf (debug_file, "-> ${exec_prefix}   %s\n", INSTALL_EXECPREFIX);
+  	fprintf (debug_file, "-> ${bindir}        %s\n", INSTALL_BINDIR);
+  	fprintf (debug_file, "-> ${libdir}        %s\n", INSTALL_LIBDIR);
+  	fprintf (debug_file, "-> ${sysconfdir}    %s\n", INSTALL_SYSCONFDIR);
+  	fprintf (debug_file, "-> ${datadir}       %s\n\n", INSTALL_DATADIR);
+
+  	fprintf (debug_file, "-> %s %s\n\n", GBL_PROGRAM, GBL_VERSION);
    #ifdef HAVE_SYS_UTSNAME_H
       uname(&buf);
       fprintf (debug_file, "-> running on %s %s %s\n", buf.sysname, buf.release, buf.machine);

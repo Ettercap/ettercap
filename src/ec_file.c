@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_file.c,v 1.10 2003/10/08 20:03:18 alor Exp $
+    $Id: ec_file.c,v 1.11 2004/03/24 11:28:01 alor Exp $
 */
 
 #include <ec.h>
@@ -39,18 +39,16 @@ FILE * open_data(char *dir, char *file, char *mode);
 static char * get_full_path(const char *dir, const char *file)
 {
    char *filename;
-   int len;
-
-   len = strlen(INSTALL_PREFIX) + strlen(dir) + strlen(EC_PROGRAM) + strlen(file) + 4;
+   int len = 256;
 
    SAFE_CALLOC(filename, len, sizeof(char));
    
    if (!strcmp(dir, "etc"))
-      snprintf(filename, len, "%s/%s/%s", INSTALL_PREFIX, dir, file);
-   else
-      snprintf(filename, len, "%s/%s/%s/%s", INSTALL_PREFIX, dir, EC_PROGRAM, file);
+      snprintf(filename, len, "%s/%s", INSTALL_SYSCONFDIR, file);
+   else if (!strcmp(dir, "share"))
+      snprintf(filename, len, "%s/%s/%s", INSTALL_DATADIR, EC_PROGRAM, file);
 
-   DEBUG_MSG("get_full_path -- %s %s", dir, filename);
+   DEBUG_MSG("get_full_path -- [%s] %s", dir, filename);
    
    return filename;
 }

@@ -23,6 +23,7 @@
       - make the whole thing compile ;)
       - then found all the bugs....
       - dll instead of plugins (argh!)
+      - merge the patch for mingw
 
 >>> to be implemented
 
@@ -32,6 +33,7 @@
    + DISSECTORS
       - https (over the ssl one)
       - SSL unified dissector for https, impas, pop3s ecc ecc
+         - write in the man how to generate a new keypair
    
    + BRIDGED SNIFFING
       - keep track of source mac addresses
@@ -56,6 +58,8 @@
 ==================
    
    + WIFI decoder support for WEP (given the key)
+
+   + SSH2 dissection :)
 
    + SOCKS
       - decode the internal connection

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_plugins.c,v 1.7 2004/03/04 12:59:10 daten Exp $
+    $Id: ec_gtk_plugins.c,v 1.8 2004/03/24 11:28:01 alor Exp $
 */
 
 #include <ec.h>
@@ -54,7 +54,7 @@ void gtkui_plugin_load(void)
 {
    GtkWidget *dialog;
    char *filename;
-   char *path = INSTALL_PREFIX "/lib/" EC_PROGRAM "/";
+   char *path = INSTALL_LIBDIR "/" EC_PROGRAM "/";
    int response = 0;
    
    DEBUG_MSG("gtk_plugin_load");

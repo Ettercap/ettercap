@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.104 2004/03/24 09:43:13 alor Exp $
+dnl    $Id: configure.in,v 1.105 2004/03/24 11:27:44 alor Exp $
 dnl
 
 AC_INIT
@@ -156,19 +156,36 @@ esac
 
 AC_SUBST(PL_LDFLAGS)
 
-dnl ======================
-dnl   Initialize prefix.
-dnl ======================
+dnl =====================================
+dnl   Save the path passed to configure
+dnl =====================================
 
 AC_PREFIX_DEFAULT(/usr/local)
 
 if test "$prefix" = "NONE"; then
    prefix="/usr/local"
 fi
+if test "$exec_prefix" = "NONE"; then
+   exec_prefix="/usr/local"
+fi
 
-AH_TEMPLATE(INSTALL_PREFIX, [where can I find my conf file ?])
+AH_TEMPLATE(INSTALL_PREFIX, [the prefix passed by configure])
+AC_DEFINE_UNQUOTED(INSTALL_PREFIX, "`eval echo $prefix`")
 
-AC_DEFINE_UNQUOTED(INSTALL_PREFIX, "${prefix}")
+AH_TEMPLATE(INSTALL_EXECPREFIX, [the exec_prefix passed by configure])
+AC_DEFINE_UNQUOTED(INSTALL_EXECPREFIX, "`eval echo $exec_prefix`")
+
+AH_TEMPLATE(INSTALL_SYSCONFDIR, [where can I find my sysconf file ?])
+AC_DEFINE_UNQUOTED(INSTALL_SYSCONFDIR, "`eval echo $sysconfdir`")
+
+AH_TEMPLATE(INSTALL_DATADIR, [where can I find my data file ?])
+AC_DEFINE_UNQUOTED(INSTALL_DATADIR, "`eval echo $datadir`")
+
+AH_TEMPLATE(INSTALL_LIBDIR, [where can I find my plugins ?])
+AC_DEFINE_UNQUOTED(INSTALL_LIBDIR, "`eval echo $libdir`")
+
+AH_TEMPLATE(INSTALL_BINDIR, [where can I find the ettercap executable ?])
+AC_DEFINE_UNQUOTED(INSTALL_BINDIR, "`eval echo $bindir`")
 
 dnl ========================
 dnl   Check the C compiler

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_manuf.c,v 1.12 2003/10/08 20:03:18 alor Exp $
+    $Id: ec_manuf.c,v 1.13 2004/05/31 08:49:05 alor Exp $
 
 */
 
@@ -173,8 +173,7 @@ char * manuf_search(char *m)
          return (l->vendor);
    }
 
-   return NULL;
-
+   return "";
 }
 
 

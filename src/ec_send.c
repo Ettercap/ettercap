@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.58 2004/05/27 10:59:52 alor Exp $
+    $Id: ec_send.c,v 1.59 2004/05/31 08:49:05 alor Exp $
 */
 
 #include <ec.h>
@@ -422,7 +422,7 @@ int send_L3_icmp_unreach(struct packet_object *po)
    ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet_L3));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -442,7 +442,7 @@ int send_L3_icmp_unreach(struct packet_object *po)
    ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_L3));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
  
    /* send the packet to Layer 3 */
    c = libnet_write(GBL_LNET->lnet_L3);
@@ -484,7 +484,7 @@ int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip)
    ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet_L3));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -504,7 +504,7 @@ int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip)
    ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_L3));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
  
    /* send the packet to Layer 3 */
    c = libnet_write(GBL_LNET->lnet_L3);
@@ -545,7 +545,7 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
    ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -565,7 +565,7 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
    ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
@@ -634,7 +634,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
    ON_ERROR(t, -1, "libnet_build_icmpv4_redirect: %s", libnet_geterror(GBL_LNET->lnet));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -655,7 +655,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
    ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, po->L2.src, ETHERTYPE_IP);
@@ -719,7 +719,7 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
    ON_ERROR(t, -1, "libnet_build_udp: %s", libnet_geterror(GBL_LNET->lnet));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -739,7 +739,7 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
    ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
@@ -802,7 +802,7 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
    ON_ERROR(t, -1, "libnet_build_udp: %s", libnet_geterror(GBL_LNET->lnet));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -822,7 +822,7 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
    ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
@@ -871,7 +871,7 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
    ON_ERROR(t, -1, "libnet_build_tcp: %s", libnet_geterror(GBL_LNET->lnet_L3));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -891,7 +891,7 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
    ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_L3));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
  
    /* send the packet to Layer 3 */
    c = libnet_write(GBL_LNET->lnet_L3);
@@ -935,7 +935,7 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
    ON_ERROR(t, -1, "libnet_build_tcp: %s", libnet_geterror(GBL_LNET->lnet));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -955,7 +955,7 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
    ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, dmac, ETHERTYPE_IP);

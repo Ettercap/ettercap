@@ -7,6 +7,7 @@
    + FIXING
       - remove the quiet from some plugins
       - check SSL thru proxy
+      - fix dying top_half under solaris
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
@@ -26,6 +27,10 @@
       - modifiable text in widgets
       
    + NETWORK MAPPER
+      - automatic scan (all the host in the profile list)
+      - specified ip address
+      - interconnections map (linked to the profiles)
+      - based on ttl (ala traceroute)
 
    + BINDER
  
@@ -33,7 +38,12 @@
       - extract files from streams looking for mime content or protocol
 
    + ETTERFILTER
-      - possibility to set flags in scripts
+      - possibility to set flags in scripts 
+         - per packet
+         - per connection ???
+
+   + SSH - SSL
+      - decryption with given keys
 
 ==================
   LONG TERM TODO

@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ldap.c,v 1.2 2004/05/07 10:54:33 alor Exp $
+    $Id: ec_ldap.c,v 1.3 2004/05/31 08:49:05 alor Exp $
 */
 
 #include <ec.h>
@@ -75,7 +75,7 @@ FUNC_DECODER(dissector_ldap)
    if (user_len == 0) {
       PACKET->DISSECTOR.user = strdup("[Anonymous Bind]");
       PACKET->DISSECTOR.pass = strdup("");
-      DISSECT_MSG("ldap : %s:%d -> Anonymous Bind\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("LDAP : %s:%d -> Anonymous Bind\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                       ntohs(PACKET->L4.dst));
       return NULL;
    }
@@ -87,7 +87,7 @@ FUNC_DECODER(dissector_ldap)
    memcpy(PACKET->DISSECTOR.user, &ptr[12], user_len);
    memcpy(PACKET->DISSECTOR.pass, &ptr[14] + user_len, pass_len);
 
-   DISSECT_MSG("ldap : %s:%d -> USER: %s   PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+   DISSECT_MSG("LDAP : %s:%d -> USER: %s   PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                         ntohs(PACKET->L4.dst),
                                                         PACKET->DISSECTOR.user,
                                                         PACKET->DISSECTOR.pass);

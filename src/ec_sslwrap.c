@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.11 2004/03/10 21:50:40 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.12 2004/03/11 11:44:04 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -47,7 +47,8 @@
 #define BREAK_ON_ERROR(x,y,z) do {\
 if (x != ESUCCESS) {\
 sslw_wipe_connection(y);\
-SAFE_FREE(z);\
+SAFE_FREE(z.DATA.data);\
+SAFE_FREE(z.DATA.disp_data);\
 return NULL;\
 }} while(0);\
 
@@ -324,11 +325,13 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    if (len <= 0) 
       return -EINVALID;
    
+   po->len = len;
    po->DATA.len = len;
    /* NULL terminate the data buffer */
    po->DATA.data[po->DATA.len] = 0;
  
-    /* create the buffer to be displayed */
+   /* create the buffer to be displayed */
+   packet_destroy_object(po);
    packet_disp_data(po, po->DATA.data, po->DATA.len);
   
    return ESUCCESS;
@@ -471,8 +474,11 @@ EC_THREAD_FUNC(sslw_child)
    po.L4.proto = NL_TYPE_TCP;
 
    /* A fake SYN ACK for profiles */
-   //po.DATA.len = 0;
+   // XXX - Quali servono davvero?
+   //po.DATA.len = 1;
+   //po.len = 1;
    //po.L4.flags = (TH_SYN | TH_ACK);
+   //packet_disp_data(&po, po.DATA.data, po.DATA.len);
    //sslw_parse_packet(ae, SSL_SERVER, &po);
    //po.L4.flags = 0;
    
@@ -484,21 +490,21 @@ EC_THREAD_FUNC(sslw_child)
       poll_fd[SSL_SERVER].events = POLLIN;
 
       if (poll(poll_fd, 2, GBL_CONF->connection_timeout*1000) == 0)
-         BREAK_ON_ERROR(-EINVALID,ae,po.DATA.data);
+         BREAK_ON_ERROR(-EINVALID,ae,po);
 
       for(direction=0; direction<2; direction++) 
          if (poll_fd[direction].revents & POLLIN) {
-	    ret_val = sslw_read_data(ae, direction, &po);
-	    BREAK_ON_ERROR(ret_val,ae,po.DATA.data);
+            ret_val = sslw_read_data(ae, direction, &po);
+            BREAK_ON_ERROR(ret_val,ae,po);
 	    
-	    sslw_parse_packet(ae, direction, &po);
+            sslw_parse_packet(ae, direction, &po);
             if (po.flags & PO_DROPPED)
-	       continue;
+               continue;
 
-	    ret_val = sslw_write_data(ae, !direction, &po);
-	    BREAK_ON_ERROR(ret_val,ae,po.DATA.data);
+            ret_val = sslw_write_data(ae, !direction, &po);
+            BREAK_ON_ERROR(ret_val,ae,po);
          } else if (poll_fd[direction].revents & (POLLHUP | POLLERR | POLLNVAL))
-            BREAK_ON_ERROR(-EINVALID,ae,po.DATA.data);
+            BREAK_ON_ERROR(-EINVALID,ae,po);
    }
 }
 
@@ -568,7 +574,7 @@ EC_THREAD_FUNC(sslw_start)
             ae->port[SSL_CLIENT] = client_sin.sin_port;
             ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (char *)&(client_sin.sin_addr.s_addr));
 	    
-	    ec_thread_new("sslw_child", "ssl child", &sslw_child, ae);
+            ec_thread_new("sslw_child", "ssl child", &sslw_child, ae);
          }
    }
 }	 

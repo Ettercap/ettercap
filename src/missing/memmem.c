@@ -33,6 +33,9 @@
 #include <string.h>
 #endif
 
+void * memmem(const char *haystack, size_t haystacklen,
+              const char *needle, size_t needlelen);
+
 /*
  *  DESCRIPTION
  *        The memmem() function finds the start of the first occurrence

@@ -5,13 +5,12 @@
 
 .SUFFIXES: .exe .dll
 
-VERSION = NG-0.7.1_cvs
+VERSION = @VERSION@
 
 #
 # Choose your weapons
-# USE_SSL=1 currently not possible on Windows.
 #
-USE_SSL    = 0
+USE_SSL    = 1
 USE_PLUGIN = 1
 USE_GTK    = 1
 USE_CURSES = 0
@@ -21,7 +20,7 @@ USE_DEBUG  = 1
 # Root directories. Change to suite.
 #
 # These are required:
-#   PCAP_ROOT, LIBNET_ROOT, PTHREADS_ROOT, ICONV_ROOT and ZLIB_ROOT.
+#   PCAP_ROOT, LIBNET_ROOT, PTHREADS_ROOT, ICONV_ROOT, REGEX_ROOT and ZLIB_ROOT.
 #
 # These are required for GTK (and GTK is required since the Ncurses/Win32
 # port isn't finished):
@@ -33,46 +32,24 @@ USE_DEBUG  = 1
 # Missing packages should not matter unless USE_x requires them.
 #
 MINGW_ROOT    = $(subst \,/,$(MINGW32))
-PCAP_ROOT     = ../libpcap
-LIBNET_ROOT   = ../libnet-1.1.2
-OPENSSL_ROOT  = ../OpenSSL-0.9.8
-NCURSES_ROOT  = ../../ncurses-5.4
-PDCURSES_ROOT = ../../PDcurses-2.6
-PTHREADS_ROOT = ../../pthreads-2004-06-22
-ICONV_ROOT    = ../../libiconv-1.9.1
-ZLIB_ROOT     = ../../zlib-1.2.1
-GLIB_ROOT     = $(MINGW_ROOT)/include/glib-2.0
+GW32C_ROOT    = ../gw32c
+PCAP_ROOT     = ../winpcap
+LIBNET_ROOT   = ../libnet
+PTHREADS_ROOT = ../pthreads
+ICONV_ROOT    = ../libiconv
+ZLIB_ROOT     = ../zlib
+REGEX_ROOT    = ../regex
 
-#
-# And the inbelievable messy GTK layout.
-#
-GTK_ROOT   = $(MINGW_ROOT)/include/gtk-2.0
-PANGO_ROOT = $(MINGW_ROOT)/include/pango-1.0
-ATK_ROOT   = $(MINGW_ROOT)/include/atk-1.0
+OPENSSL_ROOT  = ../openssl
 
-#
-# These should be in $(MINGW32)/lib. 
-#
-GLIB_LIBS = -lglib-2.0.dll -lgmodule-2.0.dll -lgobject-2.0.dll -lgthread-2.0.dll
+NCURSES_ROOT  = ../ncurses
+PDCURSES_ROOT = ../pdcurses
+GTK_ROOT      = ../gtk
 
-#
-# These should be in $(MINGW32)/lib if you installed the package right.
-#
-GTK_LIBS = -lgdk-win32-2.0.dll -lgdk_pixbuf-2.0.dll -lgtk-win32-2.0.dll -lpango-1.0.dll
-
-#
-# My private winpcap.
-#
-ifeq ($(USER),gv)
-  LIBPCAP_LIB = $(PCAP_ROOT)/libwpcap2.dll.a
-else
-  LIBPCAP_LIB = $(PCAP_ROOT)/libwpcap.a
-endif
 
 VPATH = utils/etterfilter utils/etterlog src \
         $(addprefix src/, dissectors protocols mitm interfaces/curses \
           interfaces/curses/widgets interfaces/gtk interfaces/text missing os)
-
 
 PROGRAMS = ettercap.exe etterfilter.exe etterlog.exe
 
@@ -88,7 +65,7 @@ CC = gcc
 CFLAGS = -g -Wall -O2 -mcpu=pentium -fno-strength-reduce -DOS_MINGW -DOS_WINDOWS
 
 CFLAGS += -DWIN32 -D_WIN32 -DWIN32_LEAN_AND_MEAN -DHAVE_STRSIGNAL -DHAVE_CTYPE_H \
-          -I$(ZLIB_ROOT) -I$(ICONV_ROOT)include -DRETSIGTYPE=void -DGCC_VERSION=\"MingW\"
+          -DRETSIGTYPE=void -DGCC_VERSION=\"MingW\"
 
 CFLAGS += -DHAVE_INT8_T -DHAVE_U_INT8_T -DHAVE_INT16_T -DHAVE_U_INT16_T -DHAVE_UTF8 \
           -DHAVE_INT32_T -DHAVE_U_INT32_T -DHAVE_STDINT_H -D_BSDTYPES_DEFINED \
@@ -96,13 +73,35 @@ CFLAGS += -DHAVE_INT8_T -DHAVE_U_INT8_T -DHAVE_INT16_T -DHAVE_U_INT16_T -DHAVE_U
           -Du_int16_t='unsigned short' -Du_int=unsigned -Duint=unsigned \
           -Du_char=u_int8_t -Du_short=u_int16_t -Du_long='unsigned long'
 
-EX_LIBS = $(PTHREADS_ROOT)/libpthreadGC.a
-
 CFLAGS += -I./src -I./include -I./include/missing -I./src/interfaces/text \
-          -I./src/interfaces/curses -I./src/interfaces/curses/widgets \
-          -I$(PCAP_ROOT) -I$(PCAP_ROOT)/Win32/Include -I$(LIBNET_ROOT)/include \
-          -I$(LIBNET_ROOT)/include/win32 -I$(PTHREADS_ROOT) \
-          -DPCAP_NO_INLINES
+          -I./src/interfaces/curses -I./src/interfaces/curses/widgets
+
+EX_LIBS = -lws2_32
+
+# winpcap
+CFLAGS  += -I$(PCAP_ROOT)/Include -DPCAP_NO_INLINES
+EX_LIBS += $(PCAP_ROOT)/lib/libwpcap.a $(PCAP_ROOT)/lib/libpacket.a
+
+# libnet
+CFLAGS  += -I$(LIBNET_ROOT)/include -I$(LIBNET_ROOT)/include/win32
+EX_LIBS += $(LIBNET_ROOT)/lib/libnet.dll.a
+
+# pthreads
+CFLAGS  += -I$(PTHREADS_ROOT)/include
+EX_LIBS += $(PTHREADS_ROOT)/lib/libpthreadGC.a
+
+# zlib
+CFLAGS  += -I$(ZLIB_ROOT)/include
+EX_LIBS += -L$(ZLIB_ROOT)/lib -lz
+
+# regex
+CFLAGS  += -I$(REGEX_ROOT)/include
+EX_LIBS += $(REGEX_ROOT)/lib/libregex.a
+
+# libiconv
+CFLAGS  += -I$(ICONV_ROOT)/include
+EX_LIBS += $(ICONV_ROOT)/lib/libiconv.dll.a
+
 
 #
 # May not actually build DLLs, but we could try to find them anyway :)
@@ -110,31 +109,48 @@ CFLAGS += -I./src -I./include -I./include/missing -I./src/interfaces/text \
 CFLAGS += -DHAVE_PLUGINS
 
 ifeq ($(USE_DEBUG),1)
-  CFLAGS += -DDEBUG
+  	CFLAGS += -DDEBUG
 endif
 
 ifeq ($(USE_CURSES),1)
-  CFLAGS += -DHAVE_NCURSES -DPDC_STATIC_BUILD -I$(PDCURSES_ROOT) -I$(NCURSES_ROOT) \
-            -I$(NCURSES_ROOT)/include -I$(NCURSES_ROOT)/form -I$(NCURSES_ROOT)/menu \
-            -I$(NCURSES_ROOT)/panel
-  EX_LIBS += $(NCURSES_ROOT)/libncurses.a $(PDCURSES_ROOT)/pdcurses.a
+  	CFLAGS += -DHAVE_NCURSES -DPDC_STATIC_BUILD -I$(PDCURSES_ROOT) -I$(NCURSES_ROOT) \
+             -I$(NCURSES_ROOT)/include -I$(NCURSES_ROOT)/form -I$(NCURSES_ROOT)/menu \
+             -I$(NCURSES_ROOT)/panel
+  	EX_LIBS += $(NCURSES_ROOT)/libncurses.a $(PDCURSES_ROOT)/pdcurses.a
 endif
 
 ifeq ($(USE_GTK),1)
-  CFLAGS += -DHAVE_GTK -mms-bitfields -DG_DISABLE_CAST_CHECKS -I./src/interfaces/gtk \
-            -I$(GLIB_ROOT) -I$(GTK_ROOT) -I$(GTK_ROOT)/gdk -I$(GTK_ROOT)/gtk \
-            -I$(PANGO_ROOT) -I$(ATK_ROOT)
-  EX_LIBS += $(GLIB_LIBS) $(GTK_LIBS)
-  LDFLAGS += # -Wl,--subsystem,windows  # Don't; we want to see printf's
+
+	GLIB_INCLUDE  = $(GTK_ROOT)/include/glib-2.0
+	GDK_INCLUDE   = $(GTK_ROOT)/include/gdk
+	GTK_INCLUDE   = $(GTK_ROOT)/include/gtk-2.0
+	PANGO_INCLUDE = $(GTK_ROOT)/include/pango-1.0
+	ATK_INCLUDE   = $(GTK_ROOT)/include/atk-1.0
+
+	GLIB_LIBS = $(GTK_ROOT)/lib/libglib-2.0.dll.a \
+					$(GTK_ROOT)/lib/libgmodule-2.0.dll.a \
+					$(GTK_ROOT)/lib/libgobject-2.0.dll.a \
+					$(GTK_ROOT)/lib/libgthread-2.0.dll.a
+	GTK_LIBS =  $(GTK_ROOT)/lib/libgdk-win32-2.0.dll.a \
+					$(GTK_ROOT)/lib/libgdk_pixbuf-2.0.dll.a \
+					$(GTK_ROOT)/lib/libgtk-win32-2.0.dll.a \
+					$(GTK_ROOT)/lib/libpango-1.0.dll.a
+
+  	CFLAGS += -DHAVE_GTK -mms-bitfields -DG_DISABLE_CAST_CHECKS -I./src/interfaces/gtk \
+            -I$(GTK_ROOT)/include -I$(GTK_INCLUDE) \
+            -I$(GDK_INCLUDE) -I$(GTK_ROOT)/lib/gtk-2.0/include \
+            -I$(GLIB_INCLUDE) -I$(GTK_ROOT)/lib/glib-2.0/include \
+            -I$(PANGO_INCLUDE) -I$(ATK_INCLUDE)
+	EX_LIBS += $(GLIB_LIBS) $(GTK_LIBS)
+	LDFLAGS += # -Wl,--subsystem,windows  # Don't; we want to see printf's
 endif
 
 ifeq ($(USE_SSL),1)
-  CFLAGS  += -DHAVE_OPENSSL -DOPENSSL_NO_KRB5 -I$(OPENSSL_ROOT)/outinc
-  EX_LIBS += $(OPENSSL_ROOT)/out/libssl32.dll.a $(OPENSSL_ROOT)/out/libeay32.dll.a -lgdi32
+  	CFLAGS  += -DHAVE_OPENSSL -I$(OPENSSL_ROOT)/include
+  	EX_LIBS += $(OPENSSL_ROOT)/lib/libssl.a $(OPENSSL_ROOT)/lib/libcrypto.a -lgdi32 -lws2_32
+  	# gw32c
+	EX_LIBS += $(GW32C_ROOT)/lib/libgw32c.a -lole32 -luuid
 endif
-
-EX_LIBS += $(LIBPCAP_LIB) $(LIBNET_ROOT)/libnet.dll.a $(ICONV_ROOT)/libiconv.dll.a \
-           $(ZLIB_ROOT)/libz.a -lregex -lws2_32
 
 LDFLAGS = # -s
 
@@ -159,8 +175,8 @@ SOURCE += $(addprefix src/dissectors/,                                          
             ec_ftp.c    ec_http.c    ec_icq.c   ec_imap.c    ec_irc.c    ec_ldap.c \
             ec_mountd.c ec_msn.c     ec_mysql.c ec_napster.c ec_nntp.c   ec_ospf.c \
             ec_pop.c    ec_portmap.c ec_rcon.c  ec_rip.c     ec_rlogin.c ec_smb.c  \
-            ec_smtp.c   ec_snmp.c    ec_socks.c ec_telnet.c ec_vnc.c               \
-            ec_ymsg.c   ec_ssh.c)
+            ec_smtp.c   ec_snmp.c    ec_socks.c ec_telnet.c  ec_vnc.c  \
+            ec_ymsg.c)
 
 ifeq ($(USE_SSL),1)
   SOURCE += src/dissectors/ec_ssh.c
@@ -195,7 +211,7 @@ SOURCE += $(addprefix src/mitm/, ec_arp_poisoning.c ec_dhcp_spoofing.c \
             ec_icmp_redirect.c ec_port_stealing.c)
 
 SOURCE += $(addprefix src/missing/, getopt.c inet_aton.c memmem.c scandir.c \
-            strcasestr.c strlcat.c strlcpy.c strsep.c) src/os/ec_mingw.c
+            strcasestr.c strlcat.c strlcpy.c ) src/os/ec_mingw.c
 
 SOURCE := $(strip $(SOURCE))
 
@@ -208,13 +224,13 @@ EF_SOURCE = $(addprefix utils/etterfilter/, ef_compiler.c ef_ec_compat.c ef_enco
               ef_grammar.c ef_main.c ef_output.c ef_parser.c ef_tables.c ef_test.c \
               ef_syntax.c) \
             $(addprefix src/, ec_error.c ec_file.c ec_filter.c ec_strings.c \
-              missing/memmem.c missing/inet_aton.c missing/strsep.c)
+              missing/memmem.c missing/inet_aton.c)
 
 EL_SOURCE = $(addprefix utils/etterlog/, el_analyze.c el_conn.c el_display.c \
               el_ec_compat.c el_log.c el_main.c el_parser.c el_profiles.c el_target.c) \
             $(addprefix src/, ec_error.c ec_file.c ec_hash.c ec_inet.c ec_format.c \
               ec_services.c ec_strings.c ec_passive.c ec_fingerprint.c ec_manuf.c \
-              missing/strsep.c missing/strcasestr.c missing/inet_aton.c)
+              missing/strcasestr.c missing/inet_aton.c)
 
 EF_OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(EF_SOURCE:.c=.o)) ef_mingw.o)
 EL_OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(EL_SOURCE:.c=.o)) el_mingw.o)
@@ -226,7 +242,6 @@ $(EL_OBJECTS): CFLAGS += -I./utils/etterlog
 ifeq ($(USE_PLUGIN),1)
   #
   # The import library used for linking the plugin DLLs
-  # Note: some old plugins (from Ettercap 0.6) may be included below.
   #
   EC_IMPORT = ettercap.a
 
@@ -294,11 +309,7 @@ ifeq ($(USE_PLUGIN),1)
                   ec_smb_down.dll       \
                   ec_stp_mangler.dll)
 
-  ifeq ($(USE_SSL),1)
-    DLL_CFLAGS += $(OPENSSL_ROOT)/out/libssl32.dll.a $(OPENSSL_ROOT)/out/libeay32.dll.a -lgdi32
-  endif
-
-  DLL_CFLAGS += $(PTHREADS_ROOT)/libpthreadGC.a -lws2_32
+  	DLL_CFLAGS += $(PTHREADS_ROOT)/lib/libpthreadGC.a -lws2_32
 endif
 
 
@@ -308,8 +319,8 @@ all: $(OBJ_DIR) $(PROGRAMS) $(PLUGIN_DLLS) man_pages
 ifeq ($(USE_PLUGIN),1)
 ettercap.exe $(EC_IMPORT): $(OBJECTS)
 	$(CC) $(LDFLAGS) -Wl,--out-implib,$(EC_IMPORT) -o ettercap.exe $^ $(EX_LIBS)
-      # Should need no .def-file
-      # dlltool --output-lib $(EC_IMPORT) --dllname ettercap.exe --input-def src/ettercap.def
+		# Should need no .def-file
+		# dlltool --output-lib $(EC_IMPORT) --dllname ettercap.exe --input-def src/ettercap.def
 else
 ettercap.exe: $(OBJECTS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(EX_LIBS)
@@ -426,6 +437,10 @@ lib/ec_gw_discover.dll: plug-ins/gw_discover/gw_discover.c $(EC_IMPORT)
 	$(CC) -o $@ $< $(DLL_CFLAGS)
 	@echo
 
+lib/ec_isolate.dll: plug-ins/isolate/isolate.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
 lib/ec_link_type.dll: plug-ins/link_type/link_type.c $(EC_IMPORT)
 	$(CC) -o $@ $< $(DLL_CFLAGS)
 	@echo
@@ -475,10 +490,6 @@ lib/ec_stp_mangler.dll: plug-ins/stp_mangler/stp_mangler.c $(EC_IMPORT)
 	@echo
 
 lib/ec_remote_browser.dll: plug-ins/remote_browser/remote_browser.c $(EC_IMPORT)
-	$(CC) -o $@ $< $(DLL_CFLAGS)
-	@echo
-
-lib/ec_isolate.dll: plug-ins/isolate/isolate.c $(EC_IMPORT)
 	$(CC) -o $@ $< $(DLL_CFLAGS)
 	@echo
 

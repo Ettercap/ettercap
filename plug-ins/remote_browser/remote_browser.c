@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: remote_browser.c,v 1.5 2004/06/25 14:24:28 alor Exp $
+    $Id: remote_browser.c,v 1.6 2004/08/03 19:33:53 alor Exp $
 */
 
 
@@ -88,7 +88,7 @@ static int remote_browser_fini(void *dummy)
  */
 static void remote_browser(struct packet_object *po)
 {
-   char *tmp, *p;
+   char *tmp, *p, *q;
    char *url, *host;
    char *command;
    char **param = NULL;
@@ -130,7 +130,7 @@ static void remote_browser(struct packet_object *po)
       USER_MSG("REMOTE COMMAND: %s\n", command);
       
       /* split the string in the parameter array */
-      for (p = strsep(&command, " "); p != NULL; p = strsep(&command, " ")) {
+      for (p = ec_strtok(command, " ", &q); p != NULL; p = ec_strtok(NULL, " ", &q)) {
          /* allocate the array */
          SAFE_REALLOC(param, (i + 1) * sizeof(char *));
                         

@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.19 2004/07/13 13:40:42 alor Exp $
+dnl $Id: acinclude.m4,v 1.20 2004/08/03 19:33:44 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -238,10 +238,34 @@ dnl
 
 AC_DEFUN([EC_MINGW_SPECIAL_MAKEFILE],
 [
+   EC_MESSAGE(Checking for required libraries)
+
+directories="../winpcap/lib ../winpcap/include
+             ../libnet/lib ../libnet/include
+             ../pthreads/lib ../pthreads/include
+             ../gw32c/lib ../gw32c/include
+             ../libiconv/lib ../libiconv/include
+             ../zlib/lib ../zlib/include
+             ../regex/lib ../regex/include
+             ../openssl/lib ../openssl/include
+             ../gtk/lib ../gtk/include"
+
+   for i in `echo $directories`; do
+      echo -n "Searching for $i "
+      if ! test -d $i; then
+         echo "not found !"
+         echo
+         echo "Please read the README.PLATFORM for the instructions"
+         echo "for the installation under MingW32"
+         exit
+      fi
+      echo " ok."
+   done
+  
    EC_MESSAGE(Writing output files)
    dnl under mingw there is a special makefile
    dnl make the final adjustment
-   cp -f Makefile.mingw.in Makefile
+   sed -e "s/@VERSION@/${VERSION}/" < Makefile.mingw.in > Makefile
 ])
 
 dnl vim:ts=3:expandtab

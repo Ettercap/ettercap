@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.53 2004/07/29 09:46:47 alor Exp $
+    $Id: ec_sslwrap.c,v 1.54 2004/08/03 19:33:53 alor Exp $
 */
 
 #include <ec.h>
@@ -712,7 +712,8 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    if (ae->status & SSL_ENABLED)
       len = SSL_read(ae->ssl[direction], po->DATA.data, 1024);
    else       
-      len = socket_recv(ae->fd[direction], po->DATA.data, 1024);
+      //len = socket_recv(ae->fd[direction], po->DATA.data, 1024);
+      len = read(ae->fd[direction], po->DATA.data, 1024);
 
    /* XXX - Check when it returns 0 (it was a <)*/
    if (len <= 0 && (ae->status & SSL_ENABLED)) {
@@ -778,7 +779,8 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       if (ae->status & SSL_ENABLED)
          len = SSL_write(ae->ssl[direction], p_data, packet_len);
       else       
-         len = socket_send(ae->fd[direction], p_data, packet_len);
+         //len = socket_send(ae->fd[direction], p_data, packet_len);
+         len = write(ae->fd[direction], p_data, packet_len);
 
       if (len <= 0 && (ae->status & SSL_ENABLED)) {
          ret_err = SSL_get_error(ae->ssl[direction], len);

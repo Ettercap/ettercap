@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_main.c,v 1.14 2004/07/12 19:57:44 alor Exp $
+    $Id: el_main.c,v 1.15 2004/08/03 19:33:53 alor Exp $
 */
 
 #include <el.h>
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
    int ret;
 
    /* etterlog copyright */
-   fprintf(stderr, "\n\033[01m\033[1m%s %s\033[0m copyright %s %s\n\n",
+   fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
   
   

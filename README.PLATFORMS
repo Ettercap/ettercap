@@ -167,9 +167,7 @@ doubt, go with the latest copy.
    W I N D O W S
 ------------------------------------------------------------------------------
 
-Currently the porting to the windows platform is not completed yet.
-
- + CYGWIN
+ + CYGWIN (deprecated)
 
    1) download the wpdpack from the winpcap website
    2) download the libnet tarball from packetfactory.net
@@ -182,22 +180,30 @@ Currently the porting to the windows platform is not completed yet.
          fully working... my bad :(
    5) run the ettercap NG configure and make it      
 
- + MINGW / MSYS
+
+ + MINGW / MSYS (suggested)
    
    1) download the wpdpack from the winpcap website
    2) download the libnet tarball from packetfactory.net
    3) download pthreads from: ftp://sources.redhat.com/pub/pthreads-win32
-   3) download all the other required library from: 
+   4) download all the other required library from: 
          http://gnuwin32.sourceforge.net/packages.html
+            - openssl
+            - libgw32c
+            - libz
+            - libregex
+            - libiconv
+   5) download the gtk development and runtime packages from:
+         http://prdownloads.sourceforge.net/gtk-win/  
    4) unpak all the packages as shown in the following tree:
 
       .
       |-> ettercap_ng
       |-> winpcap
-      |   |-> Lib
-      |   |-> Include
+      |   |-> lib
+      |   |-> include
       |-> libnet
-      |   |-> src
+      |   |-> lib
       |   |-> include
       |-> other_libraries
       |   |-> lib
@@ -205,13 +211,17 @@ Currently the porting to the windows platform is not completed yet.
       .
       .
   
-      make sure each directory contains an include dir with the .h files and a
-      lib directory with the .a files.
+      make sure each directory contains an 'include' dir with the .h files and a
+      'lib' directory with the .a files.
       the name of the directory is the name of the library WITHOUT the version
       number.
   
    5) enter the ettercap_ng directory and execute the configure script
    6) make it
+
+   *) probably you'll have some difficulties compiling it. you have to modify
+   the makefile a bit to suite your environment. don't forget to install all
+   the required .dll since the .dll.a are only wrapper to the real .dll file.
 
    
    if you want precompiled packages:

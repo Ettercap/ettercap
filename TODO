@@ -20,7 +20,7 @@
 ============================
   Not in the first release  
 ============================
-   
+
    + SESSIONS
       - dissect_free_session
    
@@ -29,6 +29,7 @@
    + BINDER
    
    + ETTERLOG
+      - make the ec* files platform independet
       - extract files from streams looking for mime content or protocol
 
    + SSL MITM
@@ -40,7 +41,6 @@
    
    + PLUGINS
       - automatic add of new hosts
-      - mozilla -remote for live navigation
 
 ==================
   LONG TERM TODO

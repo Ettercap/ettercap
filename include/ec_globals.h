@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.57 2004/04/06 15:12:57 alor Exp $ */
+/* $Id: ec_globals.h,v 1.58 2004/04/12 15:31:51 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -39,6 +39,7 @@ struct ec_conf {
    struct curses_color colors;
    char *redir_command_on;
    char *redir_command_off;
+   char *remote_browser;
 };
 
 /* options from getopt */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.12 2004/04/06 19:12:49 lordnaga Exp $
+    $Id: ec_http.c,v 1.13 2004/04/12 15:31:52 alor Exp $
 */
 
 #include <ec.h>
@@ -148,6 +148,9 @@ FUNC_DECODER(dissector_http)
    if (Check_CONNECT(ptr, PACKET))
       return NULL;         
 
+   /* HOOK POINT: HOOK_PROTO_HTTP */
+   hook_point(HOOK_PROTO_HTTP, PACKET);
+   
    /* Parse client requests.
     * Check the request type first. 
     */

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.23 2004/03/19 13:54:27 alor Exp $
+# $Id: Makefile.am,v 1.24 2004/04/12 15:31:51 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -20,6 +20,7 @@ SUBDIRS =   arp_cop \
             pptp_pap \
             pptp_reneg \
             rand_flood \
+            remote_browser \
             reply_arp \
             scan_poisoner \
             search_promisc \

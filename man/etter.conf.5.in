@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.23 2004/04/06 19:54:36 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.24 2004/04/12 15:31:51 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -246,6 +246,21 @@ Here is a list of values: 0 Black, 1 Red, 2 Green, 3 Yellow, 4 Blue, 5 Magenta,
 
 .TP 20
 .B [strings]
+.TP
+.B remote_broswer
+This command is executed by the remote_browser plugin each time it catches a
+good URL request into an HTTP connection.
+The commandi should be able to get 2 parameter:
+.RS
+.TP
+.B %host
+the Host: tag in the HTTP header. Used to create the full request into the
+browser.
+.TP
+.B %url
+The page requeste into the GET request.
+.RE
+
 .TP
 .B redir_command_on
 You have to provide a valid command (or script) to enable tcp redirection at

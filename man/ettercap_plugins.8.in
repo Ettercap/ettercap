@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.28 2004/03/19 14:09:51 alor Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.29 2004/04/12 15:31:51 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -264,6 +264,15 @@ It is useful only on ethernet switches.
 .I example :
 .Sp
 ettercap -TP rand_flood
+
+
+.TP 
+.B remote_browser
+.Sp
+It sends to the browser the URLs sniffed thru HTTP sessions. So you
+are able to see the webpages in real time. The command executed is configurable
+in the etter.conf(5) file. It sends to the browser only the GET requests and
+only for webpages, ignoring single request to images or other amenities.
 
 
 .TP 

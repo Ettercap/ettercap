@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.45 2004/06/08 21:32:55 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.46 2004/06/09 09:06:36 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -104,7 +104,7 @@ struct sslw_ident {
 #define SSLW_RETRY 5
 #define SSLW_WAIT 10000
 
-#define TSLEEP (250*1000) /* 250 milliseconds */
+#define TSLEEP (50*1000) /* 50 milliseconds */
 
 static SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
 static EVP_PKEY *global_pk;
@@ -726,16 +726,16 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    }
 
    /* Only if no ssl */
-   if (len <= 0) {
+   if (len < 0) {
       if (errno == EINTR || errno == EAGAIN)
          return -ENOTHANDLED;
       else
          return -EINVALID;
    }      
 
-   /* XXX - On standard reads, close is 0 or -1? (it was -EINVALID)*/
-   //if (len == 0) 
-      //return -ENOTHANDLED;
+   /* XXX - On standard reads, close is 0? (EOF)*/
+   if (len == 0) 
+      return -EINVALID;
 
    po->len = len;
    po->DATA.len = len;
@@ -790,10 +790,14 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
             return -EINVALID;
       }      
 
-      /* XXX - does some OS use partial writes? */
-      if (len != packet_len && !not_written )
-         FATAL_ERROR("SSL-Wrapper partial writes: to be implemented...");
-
+      /* XXX - does some OS use partial writes for SSL? */
+      if (len < packet_len && !not_written ) {
+         DEBUG_MSG("SSL-Wrapper partial writes: to be implemented...");
+         packet_len -= len;
+         p_data += len;
+         not_written = 1;
+      }
+      
       /* XXX - Set a proper sleep time */
       if (not_written)
          usleep(1000);
@@ -1040,7 +1044,7 @@ EC_THREAD_FUNC(sslw_child)
 
       /* XXX - Set a proper sleep time */
       if (!data_read)
-         usleep(1000);
+         usleep(3000);
    }
 }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view.c,v 1.4 2004/03/02 20:53:01 daten Exp $
+    $Id: ec_gtk_view.c,v 1.5 2004/03/03 13:52:35 daten Exp $
 */
 
 #include <ec.h>
@@ -31,6 +31,7 @@ void toggle_resolve(void);
 void gtkui_vis_method(void);
 
 static void gtkui_stop_stats(void);
+static void gtkui_stats_detach(GtkWidget *child);
 static gboolean refresh_stats(gpointer data);
 
 extern void gtkui_show_profiles(void);
@@ -69,23 +70,15 @@ void gtkui_show_stats(void)
 
    /* if the object already exist, set the focus to it */
    if (stats_window) {
-      /* if window was hidden, we have to start the refresh callback again */
-      //if (!GTK_WIDGET_VISIBLE(stats_window))
-      //   stats_idle = gtk_timeout_add(200, refresh_stats, NULL);
-
       /* show stats window */
-      //gtk_window_present(GTK_WINDOW (stats_window));
-      gtkui_page_present(stats_window);
+      if(GTK_IS_WINDOW (stats_window))
+         gtk_window_present(GTK_WINDOW (stats_window));
+      else
+         gtkui_page_present(stats_window);
       return;
    }
    
-/*
-   stats_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (stats_window), "Statistics");
-   gtk_container_set_border_width(GTK_CONTAINER (stats_window), 10);
-   g_signal_connect (G_OBJECT (stats_window), "delete_event", G_CALLBACK (gtkui_stop_stats), NULL);
-*/
-   stats_window = gtkui_page_new("Statistics", &gtkui_stop_stats);
+   stats_window = gtkui_page_new("Statistics", &gtkui_stop_stats, &gtkui_stats_detach);
 
    /* alright, this is a lot of code but it'll keep everything lined up nicely */
    /* if you need to add a row, don't forget to increase the number in gtk_table_new */
@@ -210,6 +203,18 @@ void gtkui_show_stats(void)
    /* refresh the stats window every 200 ms */
    /* GTK has a gtk_idle_add also but it calls too much and uses 100% cpu */
    stats_idle = gtk_timeout_add(200, refresh_stats, NULL);
+}
+
+static void gtkui_stats_detach(GtkWidget *child)
+{
+   stats_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+   gtk_window_set_title(GTK_WINDOW (stats_window), "Statistics");
+   gtk_container_set_border_width(GTK_CONTAINER (stats_window), 10);
+   g_signal_connect (G_OBJECT (stats_window), "delete_event", G_CALLBACK (gtkui_stop_stats), NULL);
+   
+   gtk_container_add(GTK_CONTAINER (stats_window), child);
+
+   gtk_window_present(GTK_WINDOW (stats_window));
 }
 
 static void gtkui_stop_stats(void)

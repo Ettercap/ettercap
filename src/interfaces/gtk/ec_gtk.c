@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.11 2004/03/02 20:53:01 daten Exp $
+    $Id: ec_gtk.c,v 1.12 2004/03/03 13:52:35 daten Exp $
 */
 
 #include <ec.h>
@@ -77,13 +77,14 @@ void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
 
 /* MDI pages */
-GtkWidget *gtkui_page_new(char *title, void (*callback)(void));
+GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));
 void gtkui_page_present(GtkWidget *child);
 void gtkui_page_close(GtkWidget *widget, gpointer data);
 void gtkui_page_close_current(void);
 void gtkui_page_detach_current(void);
 void gtkui_page_right(void);
 void gtkui_page_left(void);
+static void gtkui_page_defocus_tabs(void);
 
 /***#****************************************/
 
@@ -468,6 +469,8 @@ static void gtkui_setup(void)
    gtk_container_add(GTK_CONTAINER (frame), notebook);
    gtk_widget_show(notebook);
 
+   g_signal_connect(G_OBJECT (notebook), "switch-page", G_CALLBACK(gtkui_page_defocus_tabs), NULL);
+
    /* messages */
    scroll = gtk_scrolled_window_new(NULL, NULL);
    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll),
@@ -488,7 +491,6 @@ static void gtkui_setup(void)
    gtk_text_buffer_get_end_iter(msgbuffer, &iter);
    endmark = gtk_text_buffer_create_mark(msgbuffer, "end", &iter, FALSE);
 
-   //gtk_paned_set_position(GTK_PANED(vpaned), 250);
    gtk_box_pack_end(GTK_BOX(vbox), vpaned, TRUE, TRUE, 0);
    gtk_widget_show(vpaned);
 
@@ -715,6 +717,7 @@ static void bridged_sniff(void)
 {
    set_bridge_sniff();
    
+   /* leaves setup menu, goes to main interface */
    gtk_main_quit();
 }
 
@@ -736,6 +739,7 @@ static void gtkui_pcap_filter(void)
    gtkui_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
+/* used for Profile and Connection details */
 GtkTextBuffer *gtkui_details_window(char *title)
 {
    GtkWidget *dwindow, *dscrolled, *dtextview;
@@ -780,6 +784,7 @@ GtkTextBuffer *gtkui_details_window(char *title)
    return(gtk_text_view_get_buffer(GTK_TEXT_VIEW (dtextview)));
 }
 
+/* append a string to a GtkTextBuffer */
 void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
 {
    GtkTextIter iter;
@@ -788,6 +793,7 @@ void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
    gtk_text_buffer_insert(textbuf, &iter, data, -1);
 }
 
+/* hitting "Enter" key in dialog does same as clicking OK button */
 void gtkui_dialog_enter(GtkWidget *widget, gpointer data) {
    GtkWidget *dialog;
 
@@ -795,7 +801,8 @@ void gtkui_dialog_enter(GtkWidget *widget, gpointer data) {
    gtk_dialog_response(GTK_DIALOG (dialog), GTK_RESPONSE_OK);
 }
 
-GtkWidget *gtkui_page_new(char *title, void (*callback)(void)) {
+/* create a new notebook (tab) page */
+GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *)) {
    GtkWidget *parent, *label;
    GtkWidget *hbox, *button, *image;
 
@@ -834,18 +841,48 @@ GtkWidget *gtkui_page_new(char *title, void (*callback)(void)) {
    if(callback)
       g_object_set_data(G_OBJECT (parent), "destroy", callback);
 
+   if(detacher)
+      g_object_set_data(G_OBJECT (parent), "detach", detacher);
+
    gtkui_page_present(parent);
 
    return(parent);
 }
 
+/* show and focus the page containing child */
 void gtkui_page_present(GtkWidget *child) {
    int num = 0;
 
    num = gtk_notebook_page_num(GTK_NOTEBOOK (notebook), child);
    gtk_notebook_set_current_page(GTK_NOTEBOOK (notebook), num);
+
+   gtkui_page_defocus_tabs();
 }
 
+/* defocus tab buttons in notebook (gtk bug work-around */
+static void gtkui_page_defocus_tabs(void)
+{
+   /* gtk_notebook_get_n_pages was added in GTK+ 2.2 */
+   /* so we'll leave this section out if building on GTK+ 2.0 */
+   #if GTK_MINOR_VERSION >= 2
+   GList *list = NULL, *curr = NULL;
+   GtkWidget *contents, *label;
+   int pages = 0;
+
+   /* make sure all the close buttons loose focus */
+   for(pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK (notebook)); pages > 0; pages--) {
+      contents = gtk_notebook_get_nth_page(GTK_NOTEBOOK (notebook), (pages - 1));
+      label = gtk_notebook_get_tab_label(GTK_NOTEBOOK (notebook), contents);
+
+      list = gtk_container_get_children(GTK_CONTAINER (label));
+      for(curr = list; curr != NULL; curr = curr->next)
+         if(GTK_IS_BUTTON (curr->data))
+            gtk_button_leave(GTK_BUTTON (curr->data));
+   }
+   #endif
+}
+
+/* close the page containing the child passed in "data" */
 void gtkui_page_close(GtkWidget *widget, gpointer data) {
    GtkWidget *child;
    gint num = 0;
@@ -864,6 +901,7 @@ void gtkui_page_close(GtkWidget *widget, gpointer data) {
       callback();
 }
 
+/* close the currently focused notebook page */
 void gtkui_page_close_current(void) {
    GtkWidget *child;
    gint num = 0;
@@ -874,20 +912,36 @@ void gtkui_page_close_current(void) {
    gtkui_page_close(NULL, child);
 }
 
+/* show the context menu when the notebook tabs recieve a mouse right-click */
 gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     if(event->button == 3)
         gtk_menu_popup(GTK_MENU(data), NULL, NULL, NULL, NULL, 3, event->time);
     return(FALSE);
 }
 
+/* detach the currently focused notebook page into a free window */
 void gtkui_page_detach_current(void) {
-   gtkui_message("DETACH: not yet implemented");
+   void (*detacher)(GtkWidget *);
+   GtkWidget *child;
+   gint num = 0;
+
+   num = gtk_notebook_get_current_page(GTK_NOTEBOOK (notebook));
+   child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook), num);
+   g_object_ref(G_OBJECT(child));
+
+   gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), num);
+   
+   detacher = g_object_get_data(G_OBJECT (child), "detach");
+   if(detacher)
+      detacher(child);
 }
 
+/* change view and focus to the next notebook page */
 void gtkui_page_right(void) {
    gtk_notebook_next_page(GTK_NOTEBOOK (notebook));
 }
 
+/* change view and focus to previous notebook page */
 void gtkui_page_left(void) {
    gtk_notebook_prev_page(GTK_NOTEBOOK (notebook));
 }

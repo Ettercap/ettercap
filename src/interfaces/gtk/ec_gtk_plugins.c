@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_plugins.c,v 1.5 2004/03/02 00:41:59 daten Exp $
+    $Id: ec_gtk_plugins.c,v 1.6 2004/03/03 13:52:35 daten Exp $
 */
 
 #include <ec.h>
@@ -33,6 +33,7 @@ void gtkui_plugin_load(void);
 static void gtkui_load_plugin(char *full);
 static void gtkui_add_plugin(char active, struct plugin_ops *ops);
 static void gtkui_plug_destroy(void);
+static void gtkui_plugins_detach(GtkWidget *child);
 static void gtkui_select_plugin(void);
 static void gtkui_create_plug_array(void);
 
@@ -122,19 +123,14 @@ void gtkui_plugin_mgmt(void)
    
    /* if the object already exist, set the focus to it */
    if (plugins_window) {
-      //gtk_window_present(GTK_WINDOW (plugins_window));
-      gtkui_page_present(plugins_window);
+      if(GTK_IS_WINDOW (plugins_window))
+         gtk_window_present(GTK_WINDOW (plugins_window));
+      else
+         gtkui_page_present(plugins_window);
       return;
    }
 
-/*
-   plugins_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (plugins_window), "Select a plugin...");
-   gtk_window_set_default_size(GTK_WINDOW (plugins_window), 400, 300);
-   g_signal_connect (G_OBJECT (plugins_window), "delete_event", G_CALLBACK (gtkui_plug_destroy), NULL);
-*/
-
-   plugins_window = gtkui_page_new("Plugins", &gtkui_plug_destroy);
+   plugins_window = gtkui_page_new("Plugins", &gtkui_plug_destroy, &gtkui_plugins_detach);
    
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (plugins_window), vbox);
@@ -181,6 +177,18 @@ void gtkui_plugin_mgmt(void)
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_plugins));   
 
    gtk_widget_show(plugins_window);
+}
+
+static void gtkui_plugins_detach(GtkWidget *child)
+{
+   plugins_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+   gtk_window_set_title(GTK_WINDOW (plugins_window), "Select a plugin...");
+   gtk_window_set_default_size(GTK_WINDOW (plugins_window), 400, 300);
+   g_signal_connect (G_OBJECT (plugins_window), "delete_event", G_CALLBACK (gtkui_plug_destroy), NULL);
+
+   gtk_container_add(GTK_CONTAINER (plugins_window), child);
+
+   gtk_window_present(GTK_WINDOW (plugins_window));
 }
 
 static void gtkui_plug_destroy(void)

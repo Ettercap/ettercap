@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_profiles.c,v 1.7 2004/03/02 20:53:01 daten Exp $
+    $Id: ec_gtk_view_profiles.c,v 1.8 2004/03/03 13:52:35 daten Exp $
 */
 
 #include <ec.h>
@@ -30,6 +30,7 @@
 /* proto */
 
 void gtkui_show_profiles(void);
+static void gtkui_profiles_detach(GtkWidget *child);
 static void gtkui_kill_profiles(void);
 static gboolean refresh_profiles(gpointer data);
 static void gtkui_profile_detail(void);
@@ -66,23 +67,14 @@ void gtkui_show_profiles(void)
 
    /* if the object already exist, set the focus to it */
    if(profiles_window) {
-      /* if window was hidden, we have to start the refresh callback again */
-      //if (!GTK_WIDGET_VISIBLE(profiles_window))
-      //   profiles_idle = gtk_timeout_add(1000, refresh_profiles, NULL);
-
-      //gtk_window_present(GTK_WINDOW (profiles_window));
-      gtkui_page_present(profiles_window);
+      if(GTK_IS_WINDOW (profiles_window))
+         gtk_window_present(GTK_WINDOW (profiles_window));
+      else
+         gtkui_page_present(profiles_window);
       return;
    }
    
-   /*
-   profiles_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (profiles_window), "Collected passive profiles");
-   gtk_window_set_default_size(GTK_WINDOW (profiles_window), 400, 300);
-   g_signal_connect (G_OBJECT (profiles_window), "delete_event", G_CALLBACK (gtkui_kill_profiles), NULL);
-   */
-
-   profiles_window = gtkui_page_new("Profiles", &gtkui_kill_profiles);
+   profiles_window = gtkui_page_new("Profiles", &gtkui_kill_profiles, &gtkui_profiles_detach);
 
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (profiles_window), vbox);
@@ -141,9 +133,21 @@ void gtkui_show_profiles(void)
 
    gtk_widget_show(profiles_window);
 
-   /* refresh the stats window every 200 ms */
+   /* refresh the stats window every 1000 ms */
    /* GTK has a gtk_idle_add also but it calls too much and uses 100% cpu */
    profiles_idle = gtk_timeout_add(1000, refresh_profiles, NULL);
+}
+
+static void gtkui_profiles_detach(GtkWidget *child)
+{
+   profiles_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+   gtk_window_set_title(GTK_WINDOW (profiles_window), "Collected passive profiles");
+   gtk_window_set_default_size(GTK_WINDOW (profiles_window), 400, 300);
+   g_signal_connect (G_OBJECT (profiles_window), "delete_event", G_CALLBACK (gtkui_kill_profiles), NULL);
+
+   gtk_container_add(GTK_CONTAINER (profiles_window), child);
+
+   gtk_window_present(GTK_WINDOW (profiles_window));
 }
 
 static void gtkui_kill_profiles(void)

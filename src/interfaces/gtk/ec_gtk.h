@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.7 2004/03/02 20:53:01 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.8 2004/03/03 13:52:35 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -23,7 +23,7 @@ extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 extern gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
 
 /* MDI pages */
-extern GtkWidget *gtkui_page_new(char *title, void (*callback)(void));
+GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));
 extern void gtkui_page_present(GtkWidget *child);
 extern void gtkui_page_close(GtkWidget *widget, gpointer data);
 extern void gtkui_page_close_current(void);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_hosts.c,v 1.5 2004/03/02 02:42:24 daten Exp $
+    $Id: ec_gtk_hosts.c,v 1.6 2004/03/03 13:52:35 daten Exp $
 */
 
 #include <ec.h>
@@ -39,6 +39,7 @@ static void gtkui_delete_host(GtkWidget *widget, gpointer data);
 static void gtkui_host_target1(GtkWidget *widget, gpointer data);
 static void gtkui_host_target2(GtkWidget *widget, gpointer data);
 static struct hosts_list *gtkui_host_selected(void);
+static void gtkui_hosts_detach(GtkWidget *child);
 
 /* globals */
 static GtkWidget      *hosts_window = NULL;
@@ -173,19 +174,14 @@ void gtkui_host_list(void)
    DEBUG_MSG("gtk_host_list");
 
    if(hosts_window) {
-      //gtk_window_present(GTK_WINDOW (hosts_window));
-      gtkui_page_present(hosts_window);
+      if(GTK_IS_WINDOW (hosts_window))
+         gtk_window_present(GTK_WINDOW (hosts_window));
+      else
+         gtkui_page_present(hosts_window);
       return;
    }
    
-/*
-   hosts_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (hosts_window), "Hosts list");
-   gtk_window_set_default_size(GTK_WINDOW (hosts_window), 400, 300);
-   g_signal_connect (G_OBJECT (hosts_window), "delete_event", G_CALLBACK (gtk_widget_hide), NULL);
-*/
-
-   hosts_window = gtkui_page_new("Host List", &gtkui_hosts_destroy);
+   hosts_window = gtkui_page_new("Host List", &gtkui_hosts_destroy, &gtkui_hosts_detach);
 
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER (hosts_window), vbox);
@@ -245,6 +241,18 @@ void gtkui_host_list(void)
    gtk_widget_show(button);
 
    gtk_widget_show(hosts_window);
+}
+
+static void gtkui_hosts_detach(GtkWidget *child)
+{
+   hosts_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+   gtk_window_set_title(GTK_WINDOW (hosts_window), "Hosts list");
+   gtk_window_set_default_size(GTK_WINDOW (hosts_window), 400, 300);
+   g_signal_connect (G_OBJECT (hosts_window), "delete_event", G_CALLBACK (gtk_widget_hide), NULL);
+
+   gtk_container_add(GTK_CONTAINER (hosts_window), child);
+
+   gtk_window_present(GTK_WINDOW (hosts_window));
 }
 
 void gtkui_hosts_destroy(void)

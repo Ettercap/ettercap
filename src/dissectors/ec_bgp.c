@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_bgp.c,v 1.5 2003/09/27 21:08:27 alor Exp $
+    $Id: ec_bgp.c,v 1.6 2003/09/29 10:00:40 alor Exp $
 */
 
 /*
@@ -152,7 +152,7 @@ FUNC_DECODER(dissector_bgp)
    /* skip to parameters */
    parameters = ptr + 29;
 
-   DEBUG_MSG("\tDissector_BGP");
+   DEBUG_MSG("BGP --> TCP dissector_bgp");
 
    /* move through the param list */
    for ( i = 0; i <= param_length; i += (parameters[i + 1] + 2) ) {

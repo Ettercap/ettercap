@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.9 2003/09/28 21:06:53 alor Exp $
+    $Id: ec_telnet.c,v 1.10 2003/09/29 10:00:41 alor Exp $
 */
 
 #include <ec.h>
@@ -88,15 +88,12 @@ FUNC_DECODER(dissector_telnet)
        * the collectin process is active if the session is empty
        * (as the one created on SYN+ACK)
        */
-      /* XXX regex is too slow !!! */
-#if 1      
       if (match_login_regex(ptr)) {
          dissect_create_ident(&ident, PACKET);
          //session_get(&s, ident, DISSECT_IDENT_LEN);
          //SAFE_FREE(s->data);
          session_del(ident, DISSECT_IDENT_LEN);
       }
-#endif
    } else {
       
       /* create an ident to retrieve the session */
@@ -104,6 +101,7 @@ FUNC_DECODER(dissector_telnet)
       /* retrieve the session */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
       
+         /* the characters are not printable, skip them */
          if (!isprint((int)*ptr)) {
             SAFE_FREE(ident);
             return NULL;
@@ -240,15 +238,17 @@ void skip_telnet_command(u_char **ptr, u_char *end)
  */
 int match_login_regex(char *ptr)
 {
+#if 0
+   
+   /* XXX regex is too slow !!! */
+   
    regex_t *regex;
    int ret = 0;
 
    /*
     * matches: 
     *    - login at the beginning of the buffer
-    *    - inccorect
-    *    - failed
-    *    - failure
+    *    - inccorect, failed, failure
     */
 #define LOGIN_REGEX "\\`login.*|.*incorrect.*|.*failed.*|.*failure.*"
    
@@ -267,6 +267,22 @@ int match_login_regex(char *ptr)
     
    SAFE_FREE(regex);
    return ret;
+#else
+   char *words[] = { "incorrect", "failed", "failure", NULL };
+   int i = 0;
+   
+   /* check "login" at the beginning */
+   if (!strncasecmp(ptr, "login", 5))
+      return 1;
+   
+   do {
+      if (strcasestr(ptr, words[i]))
+         return 1;
+      
+   } while (words[++i] != NULL);
+   
+   return 0;
+#endif
 }
 
 /* EOF */

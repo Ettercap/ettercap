@@ -24,7 +24,7 @@
 
 #define DISPLAY_DATA    po->disp_data
 #define DISPLAY_LEN     po->disp_len                             
-                             
+
 extern void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 extern int set_L2_decoder(u_int16 dlt);
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));

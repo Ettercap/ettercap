@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.6 2003/04/03 15:10:44 alor Exp $
+    $Id: ec_pop.c,v 1.7 2003/04/08 16:13:12 alor Exp $
 */
 
 #include <ec.h>
@@ -51,7 +51,7 @@ FUNC_DECODER(dissector_pop)
    /* skip empty packets */
    if (PACKET->DATA.len == 0)
       return NULL;
-  
+ 
    /* skip the whitespaces at the beginning */
    while(*ptr == ' ' && ptr != end) ptr++;
    

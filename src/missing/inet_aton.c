@@ -36,16 +36,15 @@
  * SUCH DAMAGE.
  */
 
-#ifdef OS_WINDOWS
-    #include <winsock2.h>
-#else
-    #include <sys/types.h>
-    #include <netinet/in.h>
-    #include <netdb.h>
-    #include <arpa/inet.h>
-#endif
+#include <ec.h>
+#include <ec_inet.h>
 
-int inet_aton(const char *cp, struct in_addr *);
+#if 0
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#endif
 
 /* Minimal implementation of inet_aton.
  * Cannot distinguish between failure and a local broadcast address. */

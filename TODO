@@ -10,9 +10,6 @@
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
 
-   + WINDOWS PORTING
-      - make the whole thing compile ;)
-
 ============================
   In the next release(s)
 ============================

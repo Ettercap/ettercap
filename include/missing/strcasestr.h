@@ -1,4 +1,7 @@
+#ifndef EC_API_EXTERN
+#error Move this header somewhere else
+#endif
 
-extern char * strcasestr(char *hailstack, char *needle);
+EC_API_EXTERN char * strcasestr(char *hailstack, char *needle);
 
 /* EOF */

@@ -4,11 +4,9 @@
  * 
  */
 
-#include <stdio.h>
-#include <string.h>
+#include <ec.h>
 
 char *strcasestr(char *hailstack, char *needle);
-
    
 char *strcasestr(char *hailstack, char *needle)
 {

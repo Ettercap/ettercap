@@ -25,11 +25,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <ec.h>
+
+#if 0
 #include <stdio.h>
 #include <sys/types.h>
 #include <string.h>
-
-void * memmem(const char *, size_t, const char *, size_t);
+#endif
 
 /*
  *  DESCRIPTION

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.13 2004/07/29 09:46:47 alor Exp $
+    $Id: ec_socket.c,v 1.14 2004/07/29 14:27:12 alor Exp $
 */
 
 #include <ec.h>
@@ -120,7 +120,11 @@ int open_socket(const char *host, u_int16 port)
       }
    } while(loops--);
  
-   err = ret < 0 ? GET_SOCK_ERRNO() : 0;
+   /* 
+    * we cannot recall get_sock_errno because under windows
+    * calling it twice would not return the same result
+    */
+   err = ret < 0 ? err : 0;
    
    /* reached the timeout */
    if (ret < 0 && (err == EINPROGRESS || err == EALREADY || err == EAGAIN)) {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.17 2003/06/14 13:35:11 alor Exp $
+    $Id: ec_log.c,v 1.18 2003/06/14 13:39:13 alor Exp $
 */
 
 #include <ec.h>
@@ -326,13 +326,15 @@ static void log_write_info(struct packet_object *po)
       hid.L4_addr = 0;
 
    /*
-    * if hostnames resolution was activated
-    * resolve the host
+    * resolves the ip address.
+    *
+    * even if the resolv option was not specified,
+    * the cache may have the dns answer passively sniffed.
     */
-   if (GBL_OPTIONS->resolve) {
-      host_iptoa(&po->L3.src, hi.hostname);
-      host_iptoa(&po->L3.dst, hid.hostname);
-   }
+   
+   host_iptoa(&po->L3.src, hi.hostname);
+   host_iptoa(&po->L3.dst, hid.hostname);
+   
    /* 
     * distance in hop :
     *

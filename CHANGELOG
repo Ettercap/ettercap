@@ -24,6 +24,7 @@ NG-0.7.0    ????????
    + cached dns resolution (increase speed)
    + enhanced statistics on ettercap performances
    + extended headers for every packet
+   + passive DNS answer caching
    !! offline sniffing actually does not bind to any NICs
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.33 2004/01/18 19:30:31 alor Exp $
+    $Id: ec_scan.c,v 1.34 2004/03/18 15:50:10 alor Exp $
 */
 
 #include <ec.h>
@@ -247,9 +247,6 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
    /* free the structure */
    packet_destroy_object(&po);
    
-   /* clean the buffer */
-   memset((u_char *)pkt, 0, pkthdr->caplen);
-   
    CANCELLATION_POINT();
 
    return;
@@ -299,7 +296,6 @@ static void scan_netmask(void)
       /* add to the list randomly */
       random_list(e, i);
       
-      //ui_progress(i, nhosts);
    }
 
    snprintf(title, sizeof(title), "Scanning the whole netmask for %d hosts...", nhosts);

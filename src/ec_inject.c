@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.14 2004/03/17 22:13:32 lordnaga Exp $
+    $Id: ec_inject.c,v 1.15 2004/03/18 15:50:10 alor Exp $
 */
 
 #include <ec.h>
@@ -117,7 +117,7 @@ int inject_buffer(struct packet_object *po)
     *    - IP source and dest
     *    - IPPROTO
     *    - (tcp/udp) port source and dest
-    * all the field have to be filled int and the buffer
+    * all the field have to be filled in and the buffer
     * has to be alloc'd
     */       
    struct packet_object *pd;

@@ -17,12 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_decode.c,v 1.3 2004/10/11 14:55:49 alor Exp $
+    $Id: el_decode.c,v 1.4 2004/11/04 10:37:16 alor Exp $
 */
 
 
 #include <el.h>
 #include <el_functions.h>
+
+#include <fcntl.h>
 
 /* globals */
 
@@ -41,6 +43,7 @@ int decode_stream(struct stream_object *so);
 
 void add_extractor(u_int8 level, u_int32 type, FUNC_EXTRACTOR_PTR(extractor));
 void * get_extractor(u_int8 level, u_int32 type);
+int decode_to_file(char *host, char *proto, char *file);
 
 /*******************************************/
 
@@ -49,12 +52,12 @@ void * get_extractor(u_int8 level, u_int32 type);
  */
 int decode_stream(struct stream_object *so)
 {
-   struct po_list *pl;
+   struct so_list *pl;
    FUNC_EXTRACTOR_PTR(app_extractor);
    int ret = 0;
 
    /* get the port used by the stream, looking at the first packet */
-   pl = TAILQ_FIRST(&so->po_head);
+   pl = TAILQ_FIRST(&so->so_head);
    
    /* 
     * we should run the extractor on both the tcp/udp ports
@@ -116,6 +119,65 @@ void * get_extractor(u_int8 level, u_int32 type)
    }
 
    return NULL;
+}
+
+/*
+ * open a file to write into.
+ * the file are saved in a subdirectories structure like this:
+ *    - host
+ *       - proto
+ *          - stealed_file
+ * e.g.:
+ *    - 192.168.0.1
+ *       - HTTP
+ *          - images
+ *             - a.gif
+ *             - b.gif
+ *          - styles
+ *             - style.css
+ *          - index.html
+ *          - foo.php
+ */
+int decode_to_file(char *host, char *proto, char *file)
+{
+#define BASE_DIR  "./decoded_files"
+   char dir[1024];
+   char *p;
+   char *path = strdup(file);
+   int fd;
+
+   /* always create the base, host and proto directory */
+   strcpy(dir, BASE_DIR);
+   mkdir(dir, 0700);
+   strlcat(dir, "/", sizeof(dir));
+   strlcat(dir, host, sizeof(dir));
+   mkdir(dir, 0700);
+   strlcat(dir, "/", sizeof(dir));
+   strlcat(dir, proto, sizeof(dir));
+   mkdir(dir, 0700);
+
+   /* now 'dir' contains "BASE_DIR/host/proto" */
+
+   /* parse the file to be created and create the required subdirectories */
+   for (p = strsep(&path, "/"); p != NULL; p = strsep(&path, "/")) {
+      strlcat(dir, "/", sizeof(dir));
+      strlcat(dir, p, sizeof(dir));
+      
+      /* the token is a directory, create it */
+      if (strcmp(p, basename(file))) {
+         mkdir(dir, 0700);
+      } else {
+         /* exit the parsing and open the file */
+         break;
+      }
+   }
+
+   /* actually open the file */
+   fd = open(dir, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, 0600);
+
+   SAFE_FREE(path);
+   
+   return fd;
 }
 
 

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.17 2004/10/05 15:33:11 alor Exp $
+# $Id: Makefile.am,v 1.18 2004/11/04 10:37:16 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -34,8 +34,14 @@ etterlog_SOURCES = el_analyze.c \
 if MISSING_STRSEP
    etterlog_SOURCES += $(top_srcdir)/src/missing/strsep.c
 endif
+if MISSING_STRLCAT
+   etterlog_SOURCES += $(top_srcdir)/src/missing/strlcat.c
+endif
 if MISSING_STRCASESTR
    etterlog_SOURCES += $(top_srcdir)/src/missing/strcasestr.c
+endif
+if MISSING_MEMMEM
+   etterlog_SOURCES += $(top_srcdir)/src/missing/memmem.c
 endif
 if MISSING_INET_ATON
    etterlog_SOURCES += $(top_srcdir)/src/missing/inet_aton.c

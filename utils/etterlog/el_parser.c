@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_parser.c,v 1.24 2004/10/05 15:33:11 alor Exp $
+    $Id: el_parser.c,v 1.25 2004/11/04 10:37:16 alor Exp $
 */
 
 
@@ -160,6 +160,7 @@ void parse_options(int argc, char **argv)
          case 'D':
                   GBL.connections = 1;
                   GBL.decode = 1;
+                  NOT_IMPLEMENTED();
                   break;
          
          case 'f':

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_conn.c,v 1.12 2004/10/11 14:55:49 alor Exp $
+    $Id: el_conn.c,v 1.13 2004/11/04 10:37:16 alor Exp $
 */
 
 #include <el.h>
@@ -329,9 +329,9 @@ void conn_decode(void)
       ret = decode_stream(&c->so);
 
       if (ret == STREAM_SKIPPED)
-         fprintf(stdout, "skipped.\n");
+         fprintf(stdout, " skipped.\n");
       else
-         fprintf(stdout, "done.\n");
+         fprintf(stdout, " done.\n");
    }
 
    fprintf(stdout, "\n");

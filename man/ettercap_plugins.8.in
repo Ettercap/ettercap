@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.34 2004/10/25 21:26:33 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.35 2004/11/04 10:37:16 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -238,6 +238,7 @@ be blocked to the victim.
 .I examples :
 .Sp
 ettercap -TzqP isolate /192.168.0.1/ //
+.br
 ettercap -TP isolate /192.168.0.1/ /192.168.0.2-30/
 
 

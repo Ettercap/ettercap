@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.9 2003/04/25 12:22:58 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.10 2003/06/05 21:10:48 alor Exp $
 */
 
 #include <ec.h>
@@ -42,6 +42,8 @@ struct ip_header {
    u_int16  id;
    u_int16  frag_off;
 #define IP_DF 0x4000
+#define IP_MF 0x2000
+#define IP_FRAG 0x1fff
    u_int8   ttl;
    u_int8   protocol;
    u_int16  csum;
@@ -111,6 +113,11 @@ FUNC_DECODER(decode_ip)
    PACKET->L3.proto = htons(LL_TYPE_IP);
    PACKET->L3.ttl = ip->ttl;
   
+   /* XXX - implement the handling of fragmented packet */
+   /* don't process fragmented packets */
+   if (ntohs(ip->frag_off) & IP_FRAG || ntohs(ip->frag_off) & IP_MF)
+      return NULL;
+   
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
     * the checksum is should be 0 and not equal to ip->csum ;)

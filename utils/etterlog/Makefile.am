@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.18 2004/11/04 10:37:16 alor Exp $
+# $Id: Makefile.am,v 1.19 2004/11/05 10:01:15 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -42,6 +42,9 @@ if MISSING_STRCASESTR
 endif
 if MISSING_MEMMEM
    etterlog_SOURCES += $(top_srcdir)/src/missing/memmem.c
+endif
+if MISSING_BASENAME
+   etterlog_SOURCES += $(top_srcdir)/src/missing/basename.c
 endif
 if MISSING_INET_ATON
    etterlog_SOURCES += $(top_srcdir)/src/missing/inet_aton.c

@@ -1,5 +1,5 @@
 
-/* $Id: ec_strings.h,v 1.11 2004/07/24 10:43:21 alor Exp $ */
+/* $Id: ec_strings.h,v 1.12 2004/11/05 10:01:14 alor Exp $ */
 
 #ifndef EC_STRINGS_H
 #define EC_STRINGS_H
@@ -24,6 +24,9 @@
 #endif
 #ifndef HAVE_MEMMEM
    #include <missing/memmem.h>
+#endif
+#ifndef HAVE_BASENAME
+   #include <missing/basename.h>
 #endif
 
 EC_API_EXTERN int match_pattern(const char *s, const char *pattern);

@@ -6,7 +6,7 @@ Legenda:
 
 =========================================
 
-NG-0.7.2         200410
+NG-0.7.2         200411
 
    + the hosts scan can now be canceled by the user (ctrl+q)
    + the netmask for the scan can now be specified within the GUI
@@ -14,7 +14,8 @@ NG-0.7.2         200410
      and a new option to prevent the check was introduced
      (see the man page etter.conf(5) for details)
    + added the help menu (inline man pages)
-   + added the wins support to dns_plugin
+   + wins support for the dns_spoof plugin
+   + new plugin: repoison_arp
    !! do not drop privs under windows (useless) 
    !! fixed the mmap problem under windows
    !! fixed file operation under windows (O_BINARY related)

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.83 2004/10/22 13:25:07 alor Exp $
+# $Id: Makefile.am,v 1.84 2004/11/05 10:01:14 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -167,6 +167,9 @@ missing/memmem.o:
                                  
 missing/memcmp.o:
 	$(COMPILE) @EC_LIBS@ -c missing/memcmp.c -o missing/memcmp.o
+
+missing/basename.o:
+	$(COMPILE) @EC_LIBS@ -c missing/basename.c -o missing/basename.o
                                        
 missing/getopt.o:
 	$(COMPILE) @EC_LIBS@ -c missing/getopt.c -o missing/getopt.o

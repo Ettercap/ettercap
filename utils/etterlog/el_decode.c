@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_decode.c,v 1.5 2004/11/04 10:48:55 alor Exp $
+    $Id: el_decode.c,v 1.6 2004/11/05 10:01:15 alor Exp $
 */
 
 
@@ -25,7 +25,9 @@
 #include <el_functions.h>
 
 #include <fcntl.h>
-#include <libgen.h>
+#ifdef HAVE_LIBGEN_H
+   #include <libgen.h>
+#endif
 
 /* globals */
 

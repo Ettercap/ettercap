@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.37 2004/10/18 23:42:34 daten Exp $
+    $Id: ec_gtk.c,v 1.38 2004/11/05 10:01:15 alor Exp $
 */
 
 #include <ec.h>
@@ -756,19 +756,11 @@ static void gtkui_unified_sniff(void)
  * start unified sniffing with default interface
  */
 static void gtkui_unified_sniff_default(void) {
-   char err[PCAP_ERRBUF_SIZE];
    
    DEBUG_MSG("gtkui_unified_sniff_default");
 
-   if (GBL_OPTIONS->iface == NULL) { 
-      char *iface;
-      
-      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-      iface = pcap_lookupdev(err);
-      ON_ERROR(iface, NULL, "pcap_lookupdev: %s", err);
-
-      strncpy(GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
-   }
+   /* the ec_capture will find the interface for us */
+   GBL_OPTIONS->iface = NULL;
 
    /* close setup interface and start sniffing */
    gtk_main_quit();

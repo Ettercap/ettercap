@@ -232,7 +232,7 @@ EL_SOURCE = $(addprefix utils/etterlog/, el_analyze.c el_conn.c el_decode.c \
               el_ec_compat.c el_log.c el_main.c el_parser.c el_profiles.c el_stream.c el_target.c) \
             $(addprefix src/, ec_error.c ec_file.c ec_hash.c ec_inet.c ec_format.c \
               ec_services.c ec_strings.c ec_passive.c ec_fingerprint.c ec_manuf.c \
-              missing/strcasestr.c missing/inet_aton.c)
+              missing/strcasestr.c missing/memmem.c missing/basename.c missing/inet_aton.c)
 
 EF_OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(EF_SOURCE:.c=.o)) ef_mingw.o)
 EL_OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(EL_SOURCE:.c=.o)) el_mingw.o)

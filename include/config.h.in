@@ -30,6 +30,9 @@
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
+/* Define to 1 if you have the `basename' function. */
+#undef HAVE_BASENAME
+
 /* Define to 1 if you have the `bcopy' function. */
 #undef HAVE_BCOPY
 
@@ -98,6 +101,9 @@
 
 /* Define if you have the libdl library or equivalent. */
 #undef HAVE_LIBDL
+
+/* Define to 1 if you have the <libgen.h> header file. */
+#undef HAVE_LIBGEN_H
 
 /* Define to 1 if you have the `iphlpapi' library (-liphlpapi). */
 #undef HAVE_LIBIPHLPAPI

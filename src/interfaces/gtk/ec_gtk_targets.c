@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_targets.c,v 1.7 2004/03/19 17:55:53 daten Exp $
+    $Id: ec_gtk_targets.c,v 1.8 2004/04/05 20:14:48 daten Exp $
 */
 
 #include <ec.h>
@@ -74,6 +74,9 @@ void wipe_targets(void)
    
    reset_display_filter(GBL_TARGET1);
    reset_display_filter(GBL_TARGET2);
+
+   /* update the GTK liststores */
+   gtkui_create_targets_array();
 
    /* display the message */
    gtkui_message("TARGETS were reset to ANY/ANY/ANY");

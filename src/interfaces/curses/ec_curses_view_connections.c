@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.8 2004/03/03 22:09:01 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.9 2004/03/04 08:58:28 alor Exp $
 */
 
 #include <ec.h>
@@ -423,16 +423,22 @@ static void join_print_po(struct packet_object *po)
  */
 static void curses_connection_kill(void *conn)
 {
-   struct conn_object *c = (struct conn_object *)conn;
+   struct conn_tail *c = (struct conn_tail *)conn;
    
    DEBUG_MSG("curses_connection_kill");
   
    /* kill it */
-   user_kill(curr_conn);
+   switch (user_kill(c->co)) {
+      case ESUCCESS:
+         /* set the status */
+         c->co->status = CONN_KILLED;
+         curses_message("The connection was killed !!");
+         break;
+      case -EFATAL:
+         curses_message("Cannot kill UDP connections !!");
+         break;
+   }
    
-   /* set the status */
-   c->status = CONN_KILLED;
-   curses_message("The connection was killed !!");
 }
 
 /*

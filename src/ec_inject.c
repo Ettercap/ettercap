@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.8 2004/03/03 22:09:01 alor Exp $
+    $Id: ec_inject.c,v 1.9 2004/03/04 08:58:28 alor Exp $
 */
 
 #include <ec.h>
@@ -45,8 +45,8 @@ void * get_injector(u_int8 level, u_int32 type);
 size_t inject_protocol(struct packet_object *po);
 void inject_split_data(struct packet_object *po);
 
-void user_kill(struct conn_object *co);
-void user_inject(u_char *buf, size_t size, struct conn_object *co, int which);
+int user_kill(struct conn_object *co);
+int user_inject(u_char *buf, size_t size, struct conn_object *co, int which);
 
 /*******************************************/
 
@@ -190,17 +190,19 @@ void inject_split_data(struct packet_object *po)
 /*
  * kill the connection on user request
  */
-void user_kill(struct conn_object *co)
+int user_kill(struct conn_object *co)
 {
    struct ec_session *s = NULL;
    void *ident;
    struct packet_object po;
    size_t ident_len, direction;
    struct tcp_status *status;
-
+   
    /* we can kill only tcp connection */
    if (co->L4_proto != NL_TYPE_TCP)
-      return;
+      return -EFATAL;
+   
+   DEBUG_MSG("user_kill");
    
    /* prepare the fake packet object */
    memcpy(&po.L3.src, &co->L3_addr1, sizeof(struct ip_addr));
@@ -208,6 +210,7 @@ void user_kill(struct conn_object *co)
 
    po.L4.src = co->L4_addr1;
    po.L4.dst = co->L4_addr2;
+   po.L4.proto = co->L4_proto;
 
    /* retrieve the ident for the session */
    ident_len = tcp_create_ident(&ident, &po);
@@ -215,8 +218,10 @@ void user_kill(struct conn_object *co)
    /* get the session */
    if (session_get(&s, ident, ident_len) == -ENOTFOUND) {
       SAFE_FREE(ident); 
-      return;
+      return -EINVALID;
    }
+   
+   DEBUG_MSG("user_kill: session found");
       
    /* Select right comunication way */
    direction = tcp_find_direction(s->ident, ident);
@@ -227,21 +232,33 @@ void user_kill(struct conn_object *co)
    /* send the reset. at least one should work */
    send_tcp(&po.L3.src, &po.L3.dst, po.L4.src, po.L4.dst, status->way[direction].last_ack, 0, TH_RST);
    send_tcp(&po.L3.dst, &po.L3.src, po.L4.dst, po.L4.src, status->way[!direction].last_ack, 0, TH_RST);
+
+   return ESUCCESS;
 }
 
 /*
  * inject from user
  */
-void user_inject(u_char *buf, size_t size, struct conn_object *co, int which)
+int user_inject(u_char *buf, size_t size, struct conn_object *co, int which)
 {
    struct packet_object po;
+   
+   DEBUG_MSG("user_inject");
 
    /* prepare the fake packet object */
-   memcpy(&po.L3.src, &co->L3_addr1, sizeof(struct ip_addr));
-   memcpy(&po.L3.dst, &co->L3_addr2, sizeof(struct ip_addr));
+   if (which == 1) {
+      memcpy(&po.L3.src, &co->L3_addr1, sizeof(struct ip_addr));
+      memcpy(&po.L3.dst, &co->L3_addr2, sizeof(struct ip_addr));
 
-   po.L4.src = co->L4_addr1;
-   po.L4.dst = co->L4_addr2;
+      po.L4.src = co->L4_addr1;
+      po.L4.dst = co->L4_addr2;
+   } else {
+      memcpy(&po.L3.dst, &co->L3_addr1, sizeof(struct ip_addr));
+      memcpy(&po.L3.src, &co->L3_addr2, sizeof(struct ip_addr));
+
+      po.L4.dst = co->L4_addr1;
+      po.L4.src = co->L4_addr2;
+   }
    po.L4.proto = co->L4_proto;
    
    po.DATA.inject = buf;
@@ -249,6 +266,8 @@ void user_inject(u_char *buf, size_t size, struct conn_object *co, int which)
 
    /* do the dirty job */
    inject_buffer(&po);
+
+   return ESUCCESS;
 }
 
 /* EOF */

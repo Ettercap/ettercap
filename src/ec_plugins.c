@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.34 2004/05/11 20:52:35 alor Exp $
+    $Id: ec_plugins.c,v 1.35 2004/05/19 12:26:11 alor Exp $
 */
 
 #include <ec.h>
@@ -149,7 +149,7 @@ static int plugin_filter(const struct dirent *d)
 void plugin_load_all(void)
 {
 #ifdef HAVE_PLUGINS
-   struct dirent **namelist;
+   struct dirent **namelist = NULL;
    int n, i, ret;
    int t = 0;
    char *where;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.56 2004/05/17 19:43:05 alor Exp $
+    $Id: ec_send.c,v 1.57 2004/05/19 12:26:11 alor Exp $
 */
 
 #include <ec.h>
@@ -165,7 +165,7 @@ int send_to_L3(struct packet_object *po)
    c = libnet_write(GBL_LNET->lnet_L3);
    //ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(GBL_LNET->lnet_L3));
    if (c == -1)
-      USER_MSG("SEND L3 ERROR: %d byte packet (%#04x:%02x) destined to %s was not forwarded (%s)\n", 
+      USER_MSG("SEND L3 ERROR: %d byte packet (%04x:%02x) destined to %s was not forwarded (%s)\n", 
             po->fwd_len, ntohs(po->L3.proto), po->L4.proto, ip_addr_ntoa(&po->L3.dst, tmp), 
             libnet_geterror(GBL_LNET->lnet_L3));
    

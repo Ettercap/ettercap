@@ -7,6 +7,7 @@
    + FIXING
       - remove the quiet from some plugins
       - fix strange behaviour on http filtering
+      - check SSL thru proxy
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
@@ -22,12 +23,17 @@
   Not in the first release  
 ============================
 
+   + CURSES
+      - modifiable text in widgets
+      - path to search for file
+      
    + NETWORK MAPPER
 
    + BINDER
  
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
+      - filter on client ip
 
    + WIFI decoder support for WEP (given the key)
       - option from command line (to decrypt multiple file in a script)

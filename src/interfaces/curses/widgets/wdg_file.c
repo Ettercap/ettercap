@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.12 2003/12/28 18:27:08 alor Exp $
+    $Id: wdg_file.c,v 1.13 2004/05/19 12:26:12 alor Exp $
 */
 
 #include <wdg.h>
@@ -42,7 +42,7 @@ struct wdg_file_handle {
    WINDOW *mwin;
    ITEM **items;
    size_t nitems;
-   size_t nlist;
+   int nlist;
    size_t x, y;
    struct dirent **namelist;
    char curpath[PATH_MAX];
@@ -414,7 +414,7 @@ static int wdg_file_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
 static void wdg_file_menu_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
-   size_t i = 0;
+   int i = 0;
    
    /* nothing to free */
    if (ww->nitems == 0)
@@ -445,7 +445,7 @@ static void wdg_file_menu_create(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
    int mrows, mcols;
-   size_t i;
+   int i;
    size_t c = wdg_get_ncols(wo);
    size_t x = wdg_get_begin_x(wo);
    size_t y = wdg_get_begin_y(wo);
@@ -454,7 +454,9 @@ static void wdg_file_menu_create(struct wdg_object *wo)
    /* the menu is already posted */
    if (ww->nitems)
       return;
-  
+ 
+   WDG_DEBUG_MSG("wdg_file_menu_create");
+   
    /* get the working directory */
    getcwd(ww->curpath, PATH_MAX);
          
@@ -462,42 +464,52 @@ static void wdg_file_menu_create(struct wdg_object *wo)
    ww->nlist = scandir(".", &ww->namelist, 0, alphasort);
 
    /* on error display the message in the box */
-   if (ww->nlist < 0) {
-      ww->nitems++;
+   if (ww->nlist <= 0) {
+      ww->nitems = 2;
       WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
+      ww->items[ww->nitems - 2] = new_item("/", "root");
       ww->items[ww->nitems - 1] = new_item("Cannot open the directory", "");
       item_opts_off(ww->items[ww->nitems - 1], O_SELECTABLE);
-   }
+   } else {
 
-   /* for each directory in the directory */
-   for (i = 0; i < ww->nlist; i++) {
-      
-      /* skip the current dir */
-      if (!strcmp(ww->namelist[i]->d_name, "."))
-         continue;
-      
-      /* get the file properties */
-      stat(ww->namelist[i]->d_name, &buf);
-      
-      if (S_ISDIR(buf.st_mode)) {
-         ww->nitems++;
-         WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
-         ww->items[ww->nitems - 1] = new_item(ww->namelist[i]->d_name, "[...]");
+      /* for each directory in the directory */
+      for (i = 0; i < ww->nlist; i++) {
+        
+         /* 
+          * transform the current dir into the root.
+          * useful to exit from a path whose parent is not readable 
+          */
+         if (!strcmp(ww->namelist[i]->d_name, ".")) {
+            strcpy(ww->namelist[i]->d_name, "/");
+            ww->nitems++;
+            WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
+            ww->items[ww->nitems - 1] = new_item(ww->namelist[i]->d_name, "root");
+            continue;
+         }
+         
+         /* get the file properties */
+         stat(ww->namelist[i]->d_name, &buf);
+         
+         if (S_ISDIR(buf.st_mode)) {
+            ww->nitems++;
+            WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
+            ww->items[ww->nitems - 1] = new_item(ww->namelist[i]->d_name, "[...]");
+         }
+         // if not readable
+         //item_opts_off(ww->items[ww->nitems - 1], O_SELECTABLE);
       }
-      // if not readable
-      //item_opts_off(ww->items[ww->nitems - 1], O_SELECTABLE);
-   }
-   
-   /* and now add the files */
-   for (i = 0; i < ww->nlist; i++) {
       
-      /* get the file properties */
-      stat(ww->namelist[i]->d_name, &buf);
-      
-      if (!S_ISDIR(buf.st_mode)) {
-         ww->nitems++;
-         WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
-         ww->items[ww->nitems - 1] = new_item(ww->namelist[i]->d_name, "");
+      /* and now add the files */
+      for (i = 0; i < ww->nlist; i++) {
+         
+         /* get the file properties */
+         stat(ww->namelist[i]->d_name, &buf);
+         
+         if (!S_ISDIR(buf.st_mode)) {
+            ww->nitems++;
+            WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
+            ww->items[ww->nitems - 1] = new_item(ww->namelist[i]->d_name, "");
+         }
       }
    }
 

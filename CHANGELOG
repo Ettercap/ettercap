@@ -8,6 +8,8 @@ Legenda:
 
 NG-0.7.0_rc1     200405
 
+   !! fixed a segfault when opening not-readable dirs from the curses GUI
+   
 
 NG-0.7.0_pre2    20040517
 

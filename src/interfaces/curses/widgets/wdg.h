@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.37 2004/03/07 15:22:57 alor Exp $ */
+/* $Id: wdg.h,v 1.38 2004/05/19 12:26:12 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -39,7 +39,7 @@
 #endif
 
 
-#define LIBWDG_VERSION "0.10.1"
+#define LIBWDG_VERSION "0.10.2"
    
 /********************************************/
 

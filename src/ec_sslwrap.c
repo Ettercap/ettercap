@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.1 2004/03/08 12:13:40 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.2 2004/03/08 12:38:01 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -88,7 +88,7 @@ SSL_CTX   *ssl_ctx_client;
 /* protos */
 
 void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_char status);
-void sslw_start(void);
+EC_THREAD_FUNC(sslw_start);
 static int sslw_is_ssl(struct packet_object *po);
 static int sslw_client_accept(struct accepted_entry *ae, struct sockaddr_in *sin);
 static int sslw_ssl_connect(void *method, struct accepted_entry *ae);
@@ -426,18 +426,18 @@ static void sslw_init(void)
       DEBUG_MSG("Grell_init -- SSL_CTX_use_PrivateKey_file -- %s", DATA_PATH "/" CERT_FILE);
 
       if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         ;//Error_msg("Can't open \"%s\" file !!", CERT_FILE);
+         FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
    }
 
    if (SSL_CTX_check_private_key(ssl_ctx_client) == 0)
-      ;//Error_msg("Bad SSL Key couple !!");
+      FATAL_ERROR("Bad SSL Key couple !!");
 }
 
 
 /* 
  * SSL thread main function.
  */
-void sslw_start()
+EC_THREAD_FUNC(sslw_start)
 {
    struct pollfd *poll_fd = NULL;
    struct listen_entry *le;
@@ -446,6 +446,8 @@ void sslw_start()
    u_int32 dummy;
    struct sockaddr_in client_sin;
    struct packet_object po;
+   
+   ec_thread_init();
    
    sslw_init();
    sslw_bind_wrapper();

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: pptp_pap.c,v 1.1 2003/12/02 13:22:21 lordnaga Exp $
+    $Id: pptp_pap.c,v 1.2 2003/12/02 13:52:41 lordnaga Exp $
 */
 
 
@@ -47,6 +47,7 @@ static int pptp_pap_init(void *);
 static int pptp_pap_fini(void *);
 
 static void parse_ppp(struct packet_object *po);
+static u_char *parse_option(u_char * buffer, u_char option, int16 tot_len);
 
 /* plugin operations */
 struct plugin_ops pptp_pap_ops = { 
@@ -102,7 +103,7 @@ static int pptp_pap_fini(void *dummy)
 /* Modify ConfigureRequest LCP packets */
 static void parse_ppp(struct packet_object *po)
 {
-   struct ppp_lcp_header *lcph;
+   struct ppp_lcp_header *lcp;
    u_int16 *option;
    char tmp[MAX_ASCII_ADDR_LEN];
    
@@ -113,7 +114,7 @@ static void parse_ppp(struct packet_object *po)
    /* PPP decoder placed lcp header in L4 structure.
     * According to the Hook Point this is an LCP packet.   
     */      
-   lcph = (struct ppp_lcp_header *)po->L4.header;
+   lcp = (struct ppp_lcp_header *)po->L4.header;
 
    /* Catch only packets that have to be modified */      
    if ( lcp->code != PPP_CONFIGURE_REQUEST && lcp->code != PPP_CONFIGURE_NAK && lcp->code != PPP_CONFIGURE_REJ) 
@@ -132,13 +133,19 @@ static void parse_ppp(struct packet_object *po)
    }
    else if (lcp->code == PPP_CONFIGURE_REQUEST)
       option[1] = htons(PPP_DUMMY_REQUEST);     
-   else if (lcp->code == PPP_CONFIGURE_NAK)
+   else if (lcp->code == PPP_CONFIGURE_NAK) {
       option[1] = htons(PPP_REQUEST_PAP);
+
+      if (!ip_addr_null(&po->L3.dst) && !ip_addr_null(&po->L3.src)) {
+         USER_MSG("pptp_pap: Forced PPP clear text auth  %s -> ", ip_addr_ntoa(&po->L3.src, tmp));
+         USER_MSG("%s\n", ip_addr_ntoa(&po->L3.dst, tmp));
+      }
+   }
 }
 
 
 /* Search an option in the packet */
-u_char *parse_option(u_char * buffer, u_char option, int16 tot_len)
+static u_char *parse_option(u_char * buffer, u_char option, int16 tot_len)
 {
    /* Avoid never-ending parsing on bogus packets ;) */
    char counter=0;

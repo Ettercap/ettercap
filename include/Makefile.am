@@ -40,6 +40,7 @@ noinst_HEADERS = ec.h \
                  ec_interfaces.h \
                  ec_plugins.h \
                  ec_format.h \
+                 ec_stats.h \
                  el.h \
                  el_functions.h
    

@@ -5,6 +5,7 @@
 #include <ec_sniff.h>
 #include <ec_inet.h>
 #include <ec_ui.h>
+#include <ec_stats.h>
 #include <pcap.h>
 
 /* options from getopt */
@@ -55,17 +56,6 @@ struct lnet_env {
    void *lnet_L3;       /* this is a libnet_t pointer */
    void *lnet;          /* this is a libnet_t pointer */ 
    void *lnet_bridge;   /* this is a libnet_t pointer */
-};
-
-/* global statistics */
-struct gbl_stats {
-   u_int32 ps_recv;     /* number of packets received */
-   u_int32 ps_drop;     /* number of packets dropped */
-   u_int32 ps_ifdrop;   /* drops by interface XXX not yet supported */
-   u_int32 queue_max;   /* maximum queue len ever reached */
-   u_int32 queue_curr;  /* current queue len */
-   u_int32 proc_pck;    /* number of packet processed */
-   u_int32 proc_size;   /* amount of data processed */
 };
 
 /* per interface informations */

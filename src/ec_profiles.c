@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.4 2003/06/04 08:46:28 alor Exp $
+    $Id: ec_profiles.c,v 1.5 2003/06/05 20:07:22 alor Exp $
 */
 
 #include <ec.h>
@@ -75,7 +75,7 @@ void profile_parse(struct packet_object *po)
  */
 int profile_add(struct packet_object *po)
 {
-
+return 0;
    printf("[%s] [%s] [%s] [%s] [%s]\n", po->PASSIVE.fingerprint,
          po->DISSECTOR.user, po->DISSECTOR.pass,
          po->DISSECTOR.info, po->DISSECTOR.banner);

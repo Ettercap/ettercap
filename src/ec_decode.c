@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.21 2003/06/02 19:41:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.22 2003/06/05 20:07:22 alor Exp $
 */
 
 #include <ec.h>
@@ -79,6 +79,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    CANCELLATION_POINT();
 
+   /* start the timer for the stats */
+   stats_half_start(&GBL_STATS->bh);
+   
    /* XXX -- remove this */
    if (!GBL_OPTIONS->quiet) {
       USER_MSG("\n***************************************************************\n");
@@ -97,10 +100,8 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
        * no statistics are stored in savefiles
        */
       pcap_stats(GBL_PCAP->pcap, &ps);
-      
       /* 
        * add to the previous value, since every call
-       * r
        * to pcap_stats reset the counter 
        */
       GBL_STATS->ps_recv += ps.ps_recv;
@@ -185,6 +186,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    /* clean the buffer */
    memset((u_char *)pkt, 0, pkthdr->caplen);
+   
+   /* calculate the stats */
+   stats_half_end(&GBL_STATS->bh, pkthdr->caplen);
    
    CANCELLATION_POINT();
 

@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.15 2003/06/04 08:46:27 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.16 2003/06/05 20:07:22 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_threads.h>
 #include <ec_hook.h>
+#include <ec_stats.h>
 
 
 /* this is the PO queue from bottom to top half */
@@ -61,16 +62,10 @@ void __init init_packet_print(void);
 EC_THREAD_FUNC(top_half)
 {
    struct po_queue_entry *e;
-   struct timeval ts;
-   struct timeval te;
-   u_int32 proc_pck = 0;
-   u_int32 proc_size = 0;
+   u_int pck_len;
    
    DEBUG_MSG("top_half activated !");
   
-   memset(&ts, 0, sizeof(struct timeval));
-   memset(&te, 0, sizeof(struct timeval));
-   
    /* initialize the thread */
    ec_thread_init();
 
@@ -91,7 +86,10 @@ EC_THREAD_FUNC(top_half)
          usleep(1);
          continue;
       }
-   
+  
+      /* start the counter for the TopHalf */
+      stats_half_start(&GBL_STATS->th);
+       
       /* check if it is the last packet of a file */
       if (GBL_UI->type == UI_CONSOLE || GBL_UI->type == UI_DAEMONIZE) {
          if (e->po->flags & PO_EOF) {
@@ -106,50 +104,18 @@ EC_THREAD_FUNC(top_half)
       /* remove the packet form the queue */
       SIMPLEQ_REMOVE_HEAD(&po_queue, e, next);
      
-      /* 
-       * calculate the packet rate:
-       * keep track of the time when the queue
-       * was filled. then calculate the time
-       * used to empty the queue.
-       */
-      if (GBL_STATS->queue_curr && ts.tv_sec == 0) {
-         gettimeofday(&ts, 0);
-         proc_pck = GBL_STATS->proc_pck;
-         proc_size = GBL_STATS->proc_size;
-      }
-         
       /* update the stats */
-      GBL_STATS->queue_curr--;
-      GBL_STATS->proc_pck++;
-      GBL_STATS->proc_size += e->po->len;
+      stats_queue_del();
 
-      /* 
-       * the queue is empty.
-       * calculate the packet rate
-       */
-      if (GBL_STATS->queue_curr == 0) {
-         struct timeval diff;
-         float time;
-         int packets = GBL_STATS->proc_pck - proc_pck;
-         int data = GBL_STATS->proc_size - proc_size;
-         
-         gettimeofday(&te, 0);
-         timersub(&te, &ts, &diff);
-         
-         /* reset the time start */
-         memset(&ts, 0, sizeof(struct timeval));
-         
-         /* calculate the rate (packet/time) */
-         time = diff.tv_sec + diff.tv_usec/1.0e6;
-       
-         /* store the packet rate only on relevant data packets > MIN_PCK_RATE */
-          if (packets >= 5 && time)
-            DEBUG_MSG("PACKET RATE: %f %d [%.2f] [%.0f]", time, packets, packets/time, data/time );
-      }
+      /* save the len before the free() */
+      pck_len = e->po->len;
       
       /* destroy the duplicate packet object */
       packet_destroy_object(&e->po);
       SAFE_FREE(e);
+      
+      /* start the counter for the TopHalf */
+      stats_half_end(&GBL_STATS->th, pck_len);
       
       PO_QUEUE_UNLOCK;
    } 
@@ -175,10 +141,7 @@ void top_half_queue_add(struct packet_object *po)
    SIMPLEQ_INSERT_TAIL(&po_queue, e, next);
    
    /* update the stats */
-   GBL_STATS->queue_curr++;
-   
-   if (GBL_STATS->queue_curr > GBL_STATS->queue_max)
-      GBL_STATS->queue_max = GBL_STATS->queue_curr;
+   stats_queue_add();
    
    PO_QUEUE_UNLOCK;
 }

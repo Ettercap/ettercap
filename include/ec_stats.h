@@ -1,0 +1,76 @@
+
+#ifndef EC_STATS_H
+#define EC_STATS_H
+
+/*
+ * this struct contains all field to collect 
+ * statistics about packet and byte rate
+ * for the bottom and top half
+ */
+
+struct half_stats {
+   u_int32 pck_recv;
+   u_int32 pck_size;
+   struct timeval ttot;
+   struct timeval tpar;
+   struct timeval ts;
+   struct timeval te;
+   u_int32 tmp_size;
+   u_int32 rate_adv;
+   u_int32 rate_worst;
+   u_int32 thru_adv;
+   u_int32 thru_worst;
+};
+
+/* 
+ * global statistics: bottom and top half + queue
+ */
+
+struct gbl_stats {
+   u_int32 ps_recv;
+   u_int32 ps_drop;
+   u_int32 ps_ifdrop;
+   struct half_stats bh;
+   struct half_stats th;
+   u_int32 queue_max;
+   u_int32 queue_curr;
+};
+
+#define timersub(a, b, result) do {                  \
+   (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;     \
+   (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;  \
+   if ((result)->tv_usec < 0) {                      \
+      --(result)->tv_sec;                            \
+      (result)->tv_usec += 1000000;                  \
+   }                                                 \
+} while (0)
+
+#define timeradd(a, b, result) do {                  \
+   (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;     \
+   (result)->tv_usec = (a)->tv_usec + (b)->tv_usec;  \
+   if ((result)->tv_usec >= 1000000) {               \
+      ++(result)->tv_sec;                            \
+      (result)->tv_usec -= 1000000;                  \
+   }                                                 \
+} while (0)
+
+
+#define SAMPLING_RATE 50
+
+
+
+/* exports */
+
+extern u_int32 stats_queue_add(void);
+extern u_int32 stats_queue_del(void);
+
+extern void stats_half_start(struct half_stats *hs);
+extern void stats_half_end(struct half_stats *hs, u_int32 len);
+
+
+#endif
+
+/* EOF */
+
+// vim:ts=3:expandtab
+

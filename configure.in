@@ -17,10 +17,11 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.66 2003/11/17 10:58:16 alor Exp $
+dnl    $Id: configure.in,v 1.67 2003/11/17 15:19:44 alor Exp $
 dnl
 
-AC_INIT(include/ec.h)
+AC_INIT
+AC_CONFIG_SRCDIR([include/ec.h])
 
 dnl Force autoconf 2.57 
 AC_PREREQ(2.57)
@@ -42,7 +43,7 @@ EC_MESSAGE(Configuring ettercap $VERSION)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(ettercap, $VERSION)
 
-AM_CONFIG_HEADER(include/config.h)
+AC_CONFIG_HEADERS([include/config.h])
 dnl AC_CONFIG_HEADERS(include/config.h)
 
 dnl ================
@@ -294,7 +295,7 @@ AH_TEMPLATE(DEBUG, [debug support])
 
 ac_cv_ec_debug=no
 AC_MSG_CHECKING([if --enable-debug option was specified])
-AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [create a file for debugging messages]),
+AC_ARG_ENABLE(debug, AS_HELP_STRING(--enable-debug,create a file for debugging messages),
 [ case "$enableval" in
    yes)
       AC_DEFINE(DEBUG, 1)
@@ -324,7 +325,7 @@ AH_TEMPLATE(PERMIT_PLUGINS, [can ettercap use plugins ?])
 check_plugins=0
 ac_cv_ec_plugin=no
 AC_MSG_CHECKING([if --enable-plugins option was specified])
-AC_ARG_ENABLE(plugins, AC_HELP_STRING([--enable-plugins], [enable the use of plugins in ettercap]),
+AC_ARG_ENABLE(plugins, AS_HELP_STRING(--enable-plugins,enable the use of plugins in ettercap),
 [ case "$enableval" in
    yes)
       AC_MSG_RESULT(yes)
@@ -353,11 +354,11 @@ dnl ---------
 ac_cv_ec_libpcap=default
 
 AC_MSG_CHECKING(for libpcap)
-AC_ARG_WITH(libpcap, AC_HELP_STRING([--with-libpcap=DIR], [use libpcap in DIR]),
+AC_ARG_WITH(libpcap, AS_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
-     AC_ERROR("*** ettercap cannot operate without libpcap. ***")
+     AC_MSG_ERROR(["*** ettercap cannot operate without libpcap. ***"])
      ;;
   *)
      AC_MSG_RESULT($withval)
@@ -376,7 +377,7 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING([--with-libpcap=DIR], [use libpcap in DIR]),
         PCAPLIB="-L$withval/lib -lpcap"
         ac_cv_ec_libpcap=$withval
      else
-        AC_ERROR(pcap.h or libpcap.a not found in $withval)
+        AC_MSG_ERROR([pcap.h or libpcap.a not found in $withval])
      fi
      ;;
   esac ],
@@ -390,14 +391,14 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING([--with-libpcap=DIR], [use libpcap in DIR]),
      PCAPLIB="-lpcap"
   else
      AC_MSG_RESULT(no)
-     AC_ERROR(libpcap not found)
+     AC_MSG_ERROR([libpcap not found])
   fi
   AC_MSG_RESULT(yes) ]
 )
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$PCAPLIB"
-AC_CHECK_LIB(pcap, pcap_file,, AC_ERROR(Incorrect pcap version. pcap >= 0.7.x required))
+AC_CHECK_LIB(pcap, pcap_file,, AC_MSG_ERROR([Incorrect pcap version. pcap >= 0.7.x required]))
 LDFLAGS="${OLDLDFLAGS}"
 
 dnl ---------
@@ -406,11 +407,11 @@ dnl ---------
 ac_cv_ec_libnet=default
 
 AC_MSG_CHECKING(for libnet)
-AC_ARG_WITH(libnet, AC_HELP_STRING([--with-libnet=DIR], [use libnet in DIR]),
+AC_ARG_WITH(libnet, AS_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
-     AC_ERROR("*** ettercap cannot operate without libnet. ***")
+     AC_MSG_ERROR(["*** ettercap cannot operate without libnet. ***"])
      ;;
   *)
      AC_MSG_RESULT($withval)
@@ -423,7 +424,7 @@ AC_ARG_WITH(libnet, AC_HELP_STRING([--with-libnet=DIR], [use libnet in DIR]),
         LNETLIB="-L$withval/lib -L$withval/src -lnet"
         ac_cv_ec_libnet=$withval
      else
-        AC_ERROR(libnet.h or libnet.a not found in $withval)
+        AC_MSG_ERROR([libnet.h or libnet.a not found in $withval])
      fi
      ;;
   esac ],
@@ -433,15 +434,15 @@ AC_ARG_WITH(libnet, AC_HELP_STRING([--with-libnet=DIR], [use libnet in DIR]),
      LNETLIB="-lnet"
   else
      AC_MSG_RESULT(no)
-     AC_ERROR(libnet >= 1.1.1 not found)
+     AC_MSG_ERROR([libnet >= 1.1.1 not found])
   fi
 ]
 )
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$LNETLIB"
-AC_CHECK_LIB(net, libnet_init,, AC_ERROR(Incorrect lnet version. libnet >= 1.1.1 required))
-AC_CHECK_LIB(net, libnet_autobuild_token_ring,, AC_ERROR(Incorrect lnet version. libnet >= 1.1.1 required))
+AC_CHECK_LIB(net, libnet_init,, AC_MSG_ERROR([Incorrect lnet version. libnet >= 1.1.1 required]))
+AC_CHECK_LIB(net, libnet_autobuild_token_ring,, AC_MSG_ERROR([Incorrect lnet version. libnet >= 1.1.1 required]))
 LDFLAGS="${OLDLDFLAGS}"
 
 
@@ -454,7 +455,7 @@ AM_CONDITIONAL(OPENSSL, false)
 ac_cv_ec_libssl="NO"
 
 AC_MSG_CHECKING(for openssl)
-AC_ARG_WITH(openssl, AC_HELP_STRING([--with-openssl=DIR], [use openssl in DIR]),
+AC_ARG_WITH(openssl, AS_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
 [ case "$withval" in
   yes|no)
      AC_MSG_RESULT(no)
@@ -481,7 +482,7 @@ AC_ARG_WITH(openssl, AC_HELP_STRING([--with-openssl=DIR], [use openssl in DIR]),
         AM_CONDITIONAL(OPENSSL, true)
         ac_cv_ec_libssl=$withval
      else
-        AC_ERROR(ssl.h or libssl.a not found in $withval)
+        AC_MSG_ERROR([ssl.h or libssl.a not found in $withval])
      fi
      ;;
   esac ],
@@ -516,7 +517,7 @@ AH_TEMPLATE(HAVE_PCRE, [perl compatible regex])
 ac_cv_ec_pcre=no
 
 AC_MSG_CHECKING(for libpcre)
-AC_ARG_WITH(libpcre, AC_HELP_STRING([--with-libpcre=DIR], [use libpcre in DIR]),
+AC_ARG_WITH(libpcre, AS_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -561,7 +562,7 @@ AM_CONDITIONAL(NCURSES, false)
 ac_cv_ec_libncurses="NO"
 
 AC_MSG_CHECKING(for libncurses)
-AC_ARG_WITH(libncurses, AC_HELP_STRING([--with-libncurses=DIR], [use libncurses in DIR]),
+AC_ARG_WITH(libncurses, AS_HELP_STRING(--with-libncurses=DIR,use libncurses in DIR),
 [ case "$withval" in
   yes|no)
      AC_MSG_RESULT(no)
@@ -587,7 +588,7 @@ AC_ARG_WITH(libncurses, AC_HELP_STRING([--with-libncurses=DIR], [use libncurses 
         AM_CONDITIONAL(NCURSES, true)
         ac_cv_ec_libncurses=$withval
      else
-        AC_ERROR(ncurses.h or libncurses.a not found in $withval)
+        AC_MSG_ERROR([ncurses.h or libncurses.a not found in $withval])
      fi
      ;;
   esac ],
@@ -619,7 +620,7 @@ AM_CONDITIONAL(GTK, false)
 ac_cv_ec_gtk="NO"
 
 AC_MSG_CHECKING(if --enable-gtk option was specified)
-AC_ARG_ENABLE(gtk, AC_HELP_STRING([--enable-gtk], [enable the gtk interface]),
+AC_ARG_ENABLE(gtk, AS_HELP_STRING(--enable-gtk,enable the gtk interface),
 [ case "$enableval" in
   no)
      AC_MSG_RESULT(no)
@@ -707,7 +708,7 @@ AC_CONFIG_FILES(  Makefile
                   plug-ins/smb_clear/Makefile
                   plug-ins/smb_down/Makefile)
 
-AC_OUTPUT()
+AC_OUTPUT
 
 dnl ===============
 dnl   THE SUMMARY

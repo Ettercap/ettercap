@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.16 2003/09/10 12:41:23 alor Exp $
+    $Id: ec_profiles.c,v 1.17 2003/09/18 20:55:14 alor Exp $
 */
 
 #include <ec.h>
@@ -266,6 +266,8 @@ static void update_port_list(struct host_profile *h, struct packet_object *po)
          /* set the banner for the port */
          if (o->banner == NULL && po->DISSECTOR.banner)
             o->banner = po->DISSECTOR.banner;
+         else if (o->banner != NULL)
+            SAFE_FREE(po->DISSECTOR.banner);
          /* already logged */
          return;
       }

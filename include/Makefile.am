@@ -20,6 +20,7 @@ noinst_HEADERS = ec.h \
                  ec_hash.h \
                  ec_hook.h \
                  ec_inet.h \
+                 ec_inject.h \
                  ec_interfaces.h \
                  ec_log.h \
                  ec_manuf.h \

@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff_unified.c,v 1.6 2003/09/13 10:04:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff_unified.c,v 1.7 2003/09/18 20:55:14 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_capture.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <ec_inject.h>
 
 /* proto */
 void start_unified_sniff(void);
@@ -59,6 +60,16 @@ void forward_unified_sniff(struct packet_object *po)
     * will route them to the correct destination (host or gw)
     */
     send_to_L3(po);
+
+    /* 
+     * if the packet was modified and it exceeded the mtu,
+     * we have to inject the exceeded data
+     */
+    if (po->inject) {
+       inject_po(po->inject);
+       /* free the inject packet chain */
+       inject_chain_free(po);
+    }
 }
 
 /* EOF */

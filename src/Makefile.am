@@ -21,6 +21,7 @@ ettercap_SOURCES = ec_capture.c \
                ec_hash.c \
                ec_hook.c \
                ec_inet.c \
+               ec_inject.c \
                ec_log.c \
                ec_main.c \
                ec_manuf.c \

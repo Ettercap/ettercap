@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.21 2003/07/18 18:46:30 alor Exp $
+    $Id: ec_packet.c,v 1.22 2003/09/18 20:55:14 alor Exp $
 */
 
 #include <ec.h>
@@ -108,7 +108,6 @@ inline int packet_destroy_object(struct packet_object *po)
    SAFE_FREE(po->DATA.disp_data);
    
    return 0;
-
 }
 
 

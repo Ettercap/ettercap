@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.17 2003/09/17 11:49:12 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.18 2003/09/18 20:55:14 alor Exp $
 */
 
 #include <ec.h>
@@ -213,6 +213,11 @@ FUNC_DECODER(decode_ip)
    /*
     * External L3 header sets itself 
     * as the packet to be forwarded.
+    *
+    * if the packet is encapsulated, evere L3 layer
+    * will set this field, and the external one will
+    * overwrite it. so only the last (correct) one
+    * will set this field.
     */
    PACKET->fwd_packet = (u_char *)DECODE_DATA;
    PACKET->fwd_len = ntohs(ip->tot_len);

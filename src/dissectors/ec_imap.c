@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_imap.c,v 1.12 2004/01/21 20:20:06 alor Exp $
+    $Id: ec_imap.c,v 1.13 2004/05/03 10:10:52 alor Exp $
 */
 
 /*
@@ -36,6 +36,7 @@
 #include <ec_dissect.h>
 #include <ec_session.h>
 #include <ec_strings.h>
+#include <ec_sslwrap.h>
 
 /* protos */
 
@@ -53,6 +54,7 @@ void __init imap_init(void)
 {
    dissect_add("imap", APP_LAYER_TCP, 143, dissector_imap);
    dissect_add("imap", APP_LAYER_TCP, 220, dissector_imap);
+   sslw_dissect_add("imaps", 993, dissector_imap, SSL_ENABLED);
 }
 
 FUNC_DECODER(dissector_imap)

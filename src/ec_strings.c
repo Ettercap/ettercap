@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_strings.c,v 1.10 2003/09/28 21:06:50 alor Exp $
+    $Id: ec_strings.c,v 1.11 2004/05/03 10:10:20 alor Exp $
 */
 
 #include <ec.h>
@@ -34,6 +34,7 @@ int base64_decode(char *bufplain, const char *bufcoded);
 static int hextoint(int c);
 int strescape(char *dst, char *src);
 int str_replace(char **text, const char *s, const char *d);
+size_t strlen_utf8(const char *s);
 
 /*******************************************/
 
@@ -300,6 +301,23 @@ int str_replace(char **text, const char *s, const char *d)
    }
    
    return ESUCCESS;
+}
+
+
+/* 
+ * Calculate the correct length of characters in an UTF-8 encoded string. 
+ */
+size_t strlen_utf8(const char *s)
+{
+   u_char c;
+   size_t len = 0;
+ 
+   while ((c = *s++)) {
+      if ((c & 0xC0) != 0x80)
+         ++len;
+   }
+
+   return len;
 }
 
 /* EOF */

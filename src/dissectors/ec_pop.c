@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.28 2004/04/10 13:56:17 alor Exp $
+    $Id: ec_pop.c,v 1.29 2004/05/03 10:10:52 alor Exp $
 */
 
 /*
@@ -36,6 +36,7 @@
 #include <ec_dissect.h>
 #include <ec_session.h>
 #include <ec_strings.h>
+#include <ec_sslwrap.h>
 
 /* protos */
 
@@ -51,7 +52,8 @@ void pop_init(void);
 
 void __init pop_init(void)
 {
-   dissect_add("pop", APP_LAYER_TCP, 110, dissector_pop);
+   dissect_add("pop3", APP_LAYER_TCP, 110, dissector_pop);
+   sslw_dissect_add("pop3s", 995, dissector_pop, SSL_ENABLED);
 }
 
 FUNC_DECODER(dissector_pop)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.37 2004/04/17 15:12:37 alor Exp $
+    $Id: ec_sslwrap.c,v 1.38 2004/05/03 10:10:20 alor Exp $
 */
 
 #include <ec.h>
@@ -893,7 +893,7 @@ static void sslw_init(void)
       DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- ./share/%s",  CERT_FILE);
 
       if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, "./share/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         FATAL_ERROR("Can't open \"./share/%s\" file !!", CERT_FILE);
+         FATAL_ERROR("Can't open \"./share/%s\" file : %s", CERT_FILE, strerror(errno));
    }
 
    dummy_ssl = SSL_new(ssl_ctx_client);

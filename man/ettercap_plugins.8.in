@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.18 2003/12/09 13:35:10 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.19 2003/12/09 16:34:52 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -94,7 +94,7 @@ no dhcp server. You can use find_conn to determine the IP addressing of the LAN,
 and then find_ip.
 You have to build host list to use this plugin so you can't use it in unoffensive
 mode. If you don't have an IP address for your interface, give it a bogus one 
-(ie: if the LAN is 192.168.0.0/24, use 10.0.0.1 to avoid conflicting IP), then 
+(e.g. if the LAN is 192.168.0.0/24, use 10.0.0.1 to avoid conflicting IP), then 
 launch this plugin specifying the subnet range.
 You can run it either from the command line or from the proper menu.
 .Sp

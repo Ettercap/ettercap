@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_streambuf.c,v 1.3 2003/10/19 09:55:49 lordnaga Exp $
+    $Id: ec_streambuf.c,v 1.4 2003/10/19 12:54:50 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -122,16 +122,13 @@ int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode)
    struct stream_pck_list *old = NULL;
    size_t size = 0, to_copy = 0;
 
-   /* always wipe the buffer */
-   memset(buf, 0, len);
-   
    /* check if we have enough data */
    if (mode == STREAM_ATOMIC && sb->size < len)
       return -EINVALID;
 
    STREAMBUF_LOCK(sb->streambuf_mutex);
    
-   /* insert the packet in the tail */
+   /* packets in the tail */
    TAILQ_FOREACH(p, &sb->streambuf_tail, next) {
 
       SAFE_FREE(old);
@@ -179,6 +176,58 @@ int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode)
    /* update the total size */
    sb->size -= size;
       
+   STREAMBUF_UNLOCK(sb->streambuf_mutex);
+
+   
+   return size;
+}
+
+/* Same as streambuf_get(), but this will not erase 
+ * read data from the buffer
+ */
+int streambuf_read(struct stream_buf *sb, u_char *buf, size_t len, int mode)
+{
+   struct stream_pck_list *p;
+   size_t size = 0, to_copy = 0;
+
+   /* check if we have enough data */
+   if (mode == STREAM_ATOMIC && sb->size < len)
+      return -EINVALID;
+
+   STREAMBUF_LOCK(sb->streambuf_mutex);
+   
+   /* packets in the tail */
+   TAILQ_FOREACH(p, &sb->streambuf_tail, next) {
+      
+      /* we have copied all the needed bytes */
+      if (size >= len)
+         break;
+     
+      /* calculate the lenght to be copied */
+      if (len - size < p->size)
+         to_copy = len - size;
+      else
+         to_copy = p->size;
+     
+      if (p->ptr + to_copy > p->size)
+         to_copy = p->size - p->ptr;
+
+      /* 
+       * copy the data in the buffer
+       * p->ptr is the pointer to last read 
+       * byte if the buffer was read partially
+       */
+      memcpy(buf + size, p->buf + p->ptr, to_copy);
+
+      /* bytes in the buffer 'buf' */
+      size += to_copy;
+      
+      /* packet not completed */
+      if (p->ptr + to_copy < p->size) {
+         break;
+      }
+   }
+
    STREAMBUF_UNLOCK(sb->streambuf_mutex);
 
    

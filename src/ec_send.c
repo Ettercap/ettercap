@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.50 2004/03/30 09:31:30 alor Exp $
+    $Id: ec_send.c,v 1.51 2004/04/06 11:11:38 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -247,6 +247,9 @@ void capture_only_incoming(pcap_t *p, libnet_t *l)
    */
    
    DEBUG_MSG("hack_pcap_lnet (before) pcap %d | lnet %d", pcap_fileno(p), l->fd);
+   if (pcap_fileno(p) == l->fd)
+      return;
+      
    /* close the lnet socket */
    close(libnet_getfd(l));
    /* use the socket opened by pcap */

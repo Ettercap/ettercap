@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.47 2004/01/23 10:12:33 lordnaga Exp $
+    $Id: ec_filter.c,v 1.48 2004/02/17 21:14:38 alor Exp $
 */
 
 #include <ec.h>
@@ -731,6 +731,7 @@ static int func_kill(struct packet_object *po)
    DEBUG_MSG("filter engine: func_kill");
 
    if (po->L4.proto == NL_TYPE_TCP) {
+      /* reset both sides */
       send_tcp(&po->L3.src, &po->L3.dst, po->L4.src, po->L4.dst, po->L4.seq, 0, TH_RST);
       send_tcp(&po->L3.dst, &po->L3.src, po->L4.dst, po->L4.src, po->L4.ack, 0, TH_RST);
    } else if (po->L4.proto == NL_TYPE_UDP) {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dynlist.c,v 1.3 2004/02/01 21:11:52 alor Exp $
+    $Id: wdg_dynlist.c,v 1.4 2004/02/01 21:28:24 alor Exp $
 */
 
 #include <wdg.h>
@@ -377,8 +377,6 @@ void wdg_dynlist_refresh(wdg_t *wo)
    void *list, *next;
    char *desc;
    
-   WDG_SAFE_CALLOC(desc, 100, sizeof(char));
-
    /* erase the window */
    werase(ww->sub);
 
@@ -395,6 +393,8 @@ void wdg_dynlist_refresh(wdg_t *wo)
    /* no elements */
    if (ww->top == NULL)
       return;
+   
+   WDG_SAFE_CALLOC(desc, 100, sizeof(char));
    
    /* no current item, set it to the first element */
    if (ww->current == NULL)
@@ -428,6 +428,8 @@ void wdg_dynlist_refresh(wdg_t *wo)
       list = next;
    }
 
+   WDG_SAFE_FREE(desc);
+   
    wnoutrefresh(ww->sub);
 }
 

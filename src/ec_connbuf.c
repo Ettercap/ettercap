@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_connbuf.c,v 1.4 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_connbuf.c,v 1.5 2003/11/06 20:09:09 alor Exp $
 */
 
 #include <ec.h>
@@ -85,7 +85,7 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
     * is too small
     */
    if (p->size > cb->max_size) {
-      DEBUG_MSG("connbuf_add: buffer too small %d %d\n", cb->max_size, p->size);      
+      DEBUG_MSG("connbuf_add: buffer too small %d %d\n", (int)cb->max_size, (int)p->size);      
       SAFE_FREE(p);
       return 0;
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gre.c,v 1.3 2003/12/04 17:25:06 lordnaga Exp $
+    $Id: ec_gre.c,v 1.4 2003/12/07 14:58:30 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -91,7 +91,8 @@ FUNC_DECODER(decode_gre)
    if (flags & GH_P_A)
       DECODED_LEN += 4;
    
-   /* XXX - Add GRE hook for redirected tunnels */
+   /* HOOK POINT: HOOK_PACKET_GRE */
+   hook_point(HOOK_PACKET_GRE, PACKET);
    
    /* get the next decoder */
    next_decoder =  get_decoder(NET_LAYER, proto);

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.8 2003/04/05 13:11:10 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.9 2003/04/05 13:58:41 alor Exp $
 */
 
 
@@ -55,10 +55,10 @@ void el_usage(void)
    fprintf(stdout, "  -F, --filcon <CONN>         print packets only from this connection \n");
    fprintf(stdout, "      -s, --only-source           print packets only from the source\n");
    fprintf(stdout, "      -d, --only-dest             print packets only from the destination\n");
-   fprintf(stdout, "      -k, --color                 show source and dest in different colors\n");
    fprintf(stdout, "  -r, --reverse               reverse the target/connection matching\n");
    fprintf(stdout, "  -n, --no-headers            skip header informations between packets\n");
    fprintf(stdout, "  -m, --show-mac              show mac addresses in the headers\n");
+   fprintf(stdout, "  -k, --color                 colorize the output\n");
    
    fprintf(stdout, "\nSearch Options:\n");
    fprintf(stdout, "  -e, --regex <regex>         display only packets that match the regex\n");

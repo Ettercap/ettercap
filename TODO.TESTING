@@ -5,6 +5,8 @@
    + BRIDGED SNIFFING
       - dump to file 
 
-   + passive analysis of the gateway
 
+   + ETTERLOG
+      + passive analysis of the gateway
+      + user and pass analysis
 

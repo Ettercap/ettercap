@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_ec_compat.c,v 1.1 2003/04/05 09:25:10 alor Exp $
+    $Id: el_ec_compat.c,v 1.2 2003/04/05 13:58:41 alor Exp $
 */
 
 #include <el.h>
@@ -41,7 +41,7 @@ void ui_msg(const char *fmt, ...)
    va_list ap;
    /* print the mesasge */ 
    va_start(ap, fmt);
-   vprintf (fmt, ap);
+   vfprintf (stderr, fmt, ap);
    va_end(ap);
 }
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.8 2003/04/05 13:11:10 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.9 2003/04/05 13:58:41 alor Exp $
 */
 
 #include <el.h>
@@ -113,7 +113,7 @@ static void display_packet(void)
                color = COL_GREEN;
                break;
             case VERSUS_DEST:
-               color = COL_BLU;
+               color = COL_BLUE;
                break;
          }
          fprintf(stdout, "\033[%dm", color);
@@ -244,15 +244,38 @@ static void display_info(void)
 
       /* XXX respect the TARGET and regex */
       
-      fprintf(stdout, "MAC: %s\n", mac_addr_ntoa(h->L2_addr, tmp));
-      fprintf(stdout, "IP : %s\n", ip_addr_ntoa(&h->L3_addr, tmp));
-      fprintf(stdout, "DISTANCE : %d\n", h->distance);
-      fprintf(stdout, "TYPE     : %d\n", h->type);
-      fprintf(stdout, "FINGER   : %s\n", h->fingerprint);
+      /* set the color */
+      if (GBL.color) {
+         if (h->type & FP_GATEWAY)
+            fprintf(stdout, "\033[%dm", COL_RED);
+         if (h->type & FP_HOST_LOCAL)
+            fprintf(stdout, "\033[%dm", COL_GREEN);
+         if (h->type & FP_HOST_NONLOCAL)
+            fprintf(stdout, "\033[%dm", COL_BLUE);
+      }
+      
+      fprintf(stdout, "==================================================\n");
+      fprintf(stdout, " IP address   : %s \n\n", ip_addr_ntoa(&h->L3_addr, tmp));
+      
+      if (h->type != FP_HOST_NONLOCAL) {
+         fprintf(stdout, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
+         fprintf(stdout, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
+      }
+      
+      fprintf(stdout, " DISTANCE : %d   \n", h->distance);
+      if (h->type & FP_GATEWAY)
+         fprintf(stdout, " TYPE     : GATEWAY\n\n");
+      else if (h->type & FP_HOST_LOCAL)
+         fprintf(stdout, " TYPE     : LAN host\n\n");
+      else if (h->type & FP_HOST_NONLOCAL)
+         fprintf(stdout, " TYPE     : REMOTE host\n\n");
+      
+      fprintf(stdout, " FINGERPRINT      : %s\n", h->fingerprint);
+      fprintf(stdout, " OPERATING SYSTEM : %s \n", fingerprint_search(h->fingerprint));
      
       LIST_FOREACH(o, &(h->open_ports_head), next) {
          
-         fprintf(stdout, "   PORT     : %d : %d \n", o->L4_proto, ntohs(o->L4_addr));
+         fprintf(stdout, "   PORT     : %s %d \n", (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , ntohs(o->L4_addr));
          fprintf(stdout, "   BANNER   : %s\n", o->banner);
          
          LIST_FOREACH(u, &(o->users_list_head), next) {
@@ -263,7 +286,11 @@ static void display_info(void)
          }
       }
       
-      fprintf(stdout, "\n\n");
+      fprintf(stdout, "\n==================================================\n\n");
+      
+      /* reset the color */
+      if (GBL.color)
+         fprintf(stdout, "\033[0m");   
    }
    
    fprintf(stdout, "\n\n");

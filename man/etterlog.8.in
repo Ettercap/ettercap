@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.4 2003/04/01 22:13:43 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.5 2003/04/05 13:58:41 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -115,10 +115,6 @@ example.tar.gz
 \fB\-d\fR, \fB\-\-only-dest\fR
 Same as --only-source but it filter on the destination host.
 
-.TP
-\fB\-k\fR, \fB\-\-color\fR
-Display the source and dest of the connection in different colors. This option
-is acviable only in conjunction with the -F option.
 
 .TP
 \fB\-n\fR, \fB\-\-no-headers\fR
@@ -133,6 +129,13 @@ NOTE: the time stamp in the header is in the form: Thu Mar 27 23:03:31 2003
 \fB\-m\fR, \fB\-\-show-mac\fR
 In the headers show even the mac addresses of corresponding to the ip
 addresses.
+
+.TP
+\fB\-k\fR, \fB\-\-color\fR
+If used in conjunction with -F it displays the source and dest of the connection
+in different colors. If used with a LOG_INFO file it prints LAN hosts in green, REMOTE
+hosts in blue and GATEWAYS in red.
+
 
 .TP
 .B SEARCH OPTIONS

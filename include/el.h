@@ -90,7 +90,7 @@ extern struct globals gbls;
 #define COL_RED      31
 #define COL_GREEN    32
 #define COL_YELLOW   33
-#define COL_BLU      34
+#define COL_BLUE     34
 #define COL_MAGENTA  35
 #define COL_CYAN     36
 

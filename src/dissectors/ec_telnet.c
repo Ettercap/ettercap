@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.14 2003/10/29 20:41:08 alor Exp $
+    $Id: ec_telnet.c,v 1.15 2003/10/30 20:55:01 alor Exp $
 */
 
 #include <ec.h>
@@ -30,8 +30,9 @@
 
 FUNC_DECODER(dissector_telnet);
 void telnet_init(void);
-void skip_telnet_command(u_char **ptr, u_char *end);
-int match_login_regex(char *ptr);
+static void skip_telnet_command(u_char **ptr, u_char *end);
+static void convert_zeros(u_char *ptr, u_char *end);
+static int match_login_regex(char *ptr);
 
 /************************************************/
 
@@ -71,14 +72,20 @@ FUNC_DECODER(dissector_telnet)
    if (PACKET->DATA.len == 0)
       return NULL;
    
-   /* move the pointer to skip commands */
+   /* skip the telnet commands, we are interested only in readable data */
    skip_telnet_command(&ptr, end);
    
    /* the packet was made only by commands, skip it */
-   if (ptr == end)
+   if (ptr >= end)
       return NULL;
 
    DEBUG_MSG("TELNET --> TCP dissector_telnet");
+
+   /* search if there are 0x00 char and covert them to spaces.
+    * some OS (BSDI) send zeroes into the packet, so we cant use
+    * string functions 
+    */
+   convert_zeros(ptr, end);
       
    /* create an ident to retrieve the session */
    dissect_create_ident(&ident, PACKET);
@@ -86,11 +93,7 @@ FUNC_DECODER(dissector_telnet)
    /* is the message from the server or the client ? */
    if (FROM_SERVER("telnet", PACKET)) {
       
-      /* the login was not successful, restart the collecting 
-       * the collectin process is active if the session is empty
-       * (as the one created on SYN+ACK)
-       */
-      /* this is not the session created on synack */
+      /* start the collecting process when a "reserved" word is seen */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
          if (match_login_regex(ptr)) {
             DEBUG_MSG("\tdissector_telnet - BEGIN");
@@ -118,7 +121,7 @@ FUNC_DECODER(dissector_telnet)
                return NULL;
             }
             
-            DEBUG_MSG("\tdissector_telnet - FIRST PACKET");
+            DEBUG_MSG("\tdissector_telnet - FIRST CHAR");
 
             /* save the first packet */
             s->data = strdup(ptr);
@@ -196,6 +199,7 @@ FUNC_DECODER(dissector_telnet)
    /* check if it is the first readable packet sent by the server */
    IF_FIRST_PACKET_FROM_SERVER("telnet", s, ident) {
       size_t i;
+      u_char *q;
    
       DEBUG_MSG("\tdissector_telnet BANNER");
       
@@ -203,16 +207,30 @@ FUNC_DECODER(dissector_telnet)
       SAFE_CALLOC(PACKET->DISSECTOR.banner, PACKET->DATA.len + 1, sizeof(char));
       memcpy(PACKET->DISSECTOR.banner, ptr, end - ptr );
 
-      ptr = PACKET->DISSECTOR.banner;
-      /* replace \r\n with spaces */ 
+      q = PACKET->DISSECTOR.banner;
       for (i = 0; i < PACKET->DATA.len; i++) {
-         if (ptr[i] == '\r' || ptr[i] == '\n' || ptr[i] == '\0')
-         ptr[i] = ' ';
+         /* replace \r\n with spaces */ 
+         if (q[i] == '\r' || q[i] == '\n')
+            q[i] = ' ';
+         /* replace command with end of string */
+         if (q[i] == 0xff)
+            q[i] = '\0';
+      }
+
+      /* XXX - ugly hack !!
+       * it is for servers that send a "\r\0\r\n" before the banner (BSDI)
+       * returning here, means that we don't erase the SYN+ACK session
+       * so the next packet will fall here again.
+       */
+      if (strlen(PACKET->DISSECTOR.banner) < 5) {
+         SAFE_FREE(PACKET->DISSECTOR.banner);
+         SAFE_FREE(ident);
+         return NULL;
       }
 
       /* 
        * some OS (e.g. windows and ipso) send the "login:" in the
-       * same packet as teh banner...
+       * same packet as the banner...
        */
       if (match_login_regex(ptr)) {
          DEBUG_MSG("\tdissector_telnet - BEGIN");
@@ -234,7 +252,7 @@ FUNC_DECODER(dissector_telnet)
 /*
  * move the pointer ptr while it is a telnet command.
  */
-void skip_telnet_command(u_char **ptr, u_char *end)
+static void skip_telnet_command(u_char **ptr, u_char *end)
 {
    while(**ptr == 0xff && *ptr < end) {
       /* sub option 0xff 0xfa ... ... 0xff 0xf0 */
@@ -254,10 +272,31 @@ void skip_telnet_command(u_char **ptr, u_char *end)
 }
 
 /* 
+ * convert 0x00 char into spaces (0x20) so we can
+ * use str*() functions on the buffer...
+ */
+static void convert_zeros(u_char *ptr, u_char *end)
+{
+   /* 
+    * walk the entire buffer, but skip the last
+    * char, if it is 0x00 it is actually the string
+    * terminator
+    */
+   while(ptr < end - 1) {
+      if (*ptr == 0x00) {
+         DEBUG_MSG("\tdissector_telnet ZERO converted");
+         /* convert the char to a space */
+         *ptr = ' ';
+      }
+      ptr++;
+   }
+}
+
+/* 
  * serach the strings which can identify failed login...
  * return 1 on succes, 0 on failure
  */
-int match_login_regex(char *ptr)
+static int match_login_regex(char *ptr)
 {
    char *words[] = {"incorrect", "failed", "failure", NULL };
    int i = 0;

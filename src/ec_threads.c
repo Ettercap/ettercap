@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.19 2003/10/29 23:34:50 alor Exp $
+    $Id: ec_threads.c,v 1.20 2003/10/30 20:54:58 alor Exp $
 */
 
 #include <ec.h>
@@ -40,8 +40,8 @@ static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define THREADS_UNLOCK   do{ pthread_mutex_unlock(&threads_mutex); } while(0)
 
 static pthread_mutex_t init_mtx = PTHREAD_MUTEX_INITIALIZER;
-#define INIT_LOCK     do{ DEBUG_MSG("init_lock"); pthread_mutex_lock(&init_mtx); } while(0)
-#define INIT_UNLOCK   do{ DEBUG_MSG("init_unlock"); pthread_mutex_unlock(&init_mtx); } while(0)
+#define INIT_LOCK     do{ DEBUG_MSG("thread_init_lock"); pthread_mutex_lock(&init_mtx); } while(0)
+#define INIT_UNLOCK   do{ DEBUG_MSG("thread_init_unlock"); pthread_mutex_unlock(&init_mtx); } while(0)
 
 /* protos... */
 

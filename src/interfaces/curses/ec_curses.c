@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.9 2003/10/26 18:20:48 alor Exp $
+    $Id: ec_curses.c,v 1.10 2003/10/30 20:55:01 alor Exp $
 */
 
 #include <ec.h>
@@ -73,7 +73,7 @@ static void curses_init(void)
    /* init the widgets library */
    wdg_init();
 
-   DEBUG_MSG("curses_init: screen %dx%d colors: %d", current_screen.cols, current_screen.lines,
+   DEBUG_MSG("curses_init: screen %ux%u colors: %u", current_screen.cols, current_screen.lines,
                                                      (current_screen.flags & WDG_SCR_HAS_COLORS));
 
    /* initialize the colors */

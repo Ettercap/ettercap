@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.56 2004/04/06 19:54:36 alor Exp $
+    $Id: ec_decode.c,v 1.57 2004/04/10 15:02:25 alor Exp $
 */
 
 #include <ec.h>
@@ -111,8 +111,10 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    }
  
    /* bad packet */
-   if (pkthdr->caplen > UINT16_MAX)
+   if (pkthdr->caplen > UINT16_MAX) {
+      USER_MSG("Bad packet detected, skipping...\n");
       return;
+   }
    
    /* 
     * copy the packet in a "safe" buffer 

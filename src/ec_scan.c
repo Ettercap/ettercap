@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.35 2004/03/19 13:56:16 alor Exp $
+    $Id: ec_scan.c,v 1.36 2004/04/10 15:02:25 alor Exp $
 */
 
 #include <ec.h>
@@ -102,6 +102,9 @@ void build_hosts_list(void)
    if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip && 
        !GBL_TARGET1->scan_all && !GBL_TARGET2->scan_all)
       return;
+   
+   /* delete the previous list */
+   del_hosts_list();
    
    /*
     * create a simple decode thread, it will call

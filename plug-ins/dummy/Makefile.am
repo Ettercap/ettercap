@@ -1,9 +1,11 @@
 
-# $Id: Makefile.am,v 1.6 2003/09/18 22:15:02 alor Exp $
+# $Id: Makefile.am,v 1.7 2003/10/12 15:26:04 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 lib_LTLIBRARIES = ec_dummy.la
+
+ec_dummy_la_CFLAGS = @PL_CFLAGS@
 
 ec_dummy_la_SOURCES = dummy.c
 

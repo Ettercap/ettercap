@@ -18,7 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dummy.c,v 1.5 2003/04/15 07:57:36 alor Exp $
+    $Id: dummy.c,v 1.6 2003/10/12 15:26:04 alor Exp $
 */
 
 
@@ -37,8 +37,8 @@
 int plugin_load(void *);
 
 /* additional functions */
-int dummy_init(void *);
-int dummy_fini(void *);
+static int dummy_init(void *);
+static int dummy_fini(void *);
 
 
 /* plugin operations */
@@ -77,7 +77,7 @@ int plugin_load(void *handle)
 
 /*********************************************************/
 
-int dummy_init(void *dummy) 
+static int dummy_init(void *dummy) 
 {
    /* the control is given to this function
     * and ettercap is suspended until its return.
@@ -90,22 +90,30 @@ int dummy_init(void *dummy)
     * plugin type to PL_HOOK.
     */
    
-   USER_MSG("DUMMY: plugin initialized\n");
-   return 0;
+   USER_MSG("DUMMY: plugin executed\n");
+
+   /* return PLUGIN_FINISHED if the plugin has terminated
+    * its execution.
+    * return PLUGIN_RUNNING if it has spawned a thread and
+    * it needs to be deactivated with the fini method.
+    */
+   return PLUGIN_FINISHED;
 }
 
 
-int dummy_fini(void *dummy) 
+static int dummy_fini(void *dummy) 
 {
    /* called to terminate a plugin.
     * usually to kill threads created in the 
     * init function or to remove hook added 
     * previously.
     */
-   USER_MSG("DUMMY: plugin terminated\n");
-   return 0;
+   USER_MSG("DUMMY: plugin finalization\n");
+   return PLUGIN_FINISHED;
 }
 
 
 /* EOF */
+
+// vim:ts=3:expandtab
 

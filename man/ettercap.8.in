@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.73 2004/07/20 09:53:52 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.74 2004/09/02 13:17:58 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -562,6 +562,12 @@ Do not perform the initial ARP scan of the LAN.
 NOTE: you will not have the hosts list, so you can't use the multipoison feature.
 you can only select two hosts for an ARP poisoning attack, specifying them
 through the TARGETs
+
+.TP
+\fB\-p\fR, \fB\-\-nopromisc\fR
+Usually, ettercap will put the interface in promisc mode to sniff all the
+traffic on the wire. If you want to sniff only your connections, use this flag
+to NOT enable the promisc mode.
 
 .TP
 \fB\-u\fR, \fB\-\-unoffensive\fR

@@ -1,12 +1,12 @@
 
-/* $Id: ec_send.h,v 1.18 2004/07/24 10:43:21 alor Exp $ */
+/* $Id: ec_send.h,v 1.19 2004/09/02 13:17:58 alor Exp $ */
 
 #ifndef EC_SEND_H
 #define EC_SEND_H
 
 #include <ec_packet.h>
-#include <libnet.h>
 #include <pcap.h>
+#include <libnet.h>
 
 EC_API_EXTERN void send_init(void);
 EC_API_EXTERN int send_to_L2(struct packet_object *po);

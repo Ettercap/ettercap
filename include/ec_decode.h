@@ -1,5 +1,5 @@
 
-/* $Id: ec_decode.h,v 1.16 2004/07/24 10:43:21 alor Exp $ */
+/* $Id: ec_decode.h,v 1.17 2004/09/02 13:17:41 alor Exp $ */
 
 #ifndef EC_DECODE_H
 #define EC_DECODE_H
@@ -16,7 +16,7 @@ enum {
    LINK_LAYER   = 2,
    NET_LAYER    = 3,
    PROTO_LAYER  = 4,
-   APP_LAYER    = 5,
+   APP_LAYER    = 5,       /* special case for the middleware decoder. don't use it */
    APP_LAYER_TCP = 51,
    APP_LAYER_UDP = 52,
 };

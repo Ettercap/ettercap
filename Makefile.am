@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.21 2004/07/14 14:59:44 alor Exp $
+# $Id: Makefile.am,v 1.22 2004/09/02 13:17:35 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -24,12 +24,14 @@ EXTRA_DIST = AUTHORS \
              Makefile.am.common \
              Makefile.mingw.in \
              shtool \
+             contrib/* \
              doc/*
 
 CLEANFILES = -R auto4te.cache *~ *.log *.out *.cache *.so ettercap etterlog etterfilter
 
 dist-hook:
 	rm -rf `find $(distdir)/doc -name CVS`
+	rm -rf `find $(distdir)/contrib -name CVS`
 	cat $(distdir)/Makefile.am.common | sed s/#no/no/g > $(distdir)/Makefile.am.common
 
 test: all

@@ -32,7 +32,6 @@
  
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
-      - filter on client ip
 
    + WIFI decoder support for WEP (given the key)
       - option from command line (to decrypt multiple file in a script)

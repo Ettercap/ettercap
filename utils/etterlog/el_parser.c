@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_parser.c,v 1.21 2004/04/29 09:28:35 alor Exp $
+    $Id: el_parser.c,v 1.22 2004/05/19 13:17:27 alor Exp $
 */
 
 
@@ -59,7 +59,6 @@ void el_usage(void)
    fprintf(stdout, "  -r, --reverse               reverse the target/connection matching\n");
    fprintf(stdout, "  -n, --no-headers            skip header informations between packets\n");
    fprintf(stdout, "  -m, --show-mac              show mac addresses in the headers\n");
-   fprintf(stdout, "  -i, --show-client           show client address in the password profiles\n");
    fprintf(stdout, "  -k, --color                 colorize the output\n");
    fprintf(stdout, "  -l, --only-local            show only local hosts parsing info files\n");
    fprintf(stdout, "  -L, --only-remote           show only remote hosts parsing info files\n");
@@ -68,6 +67,8 @@ void el_usage(void)
    fprintf(stdout, "  -e, --regex <regex>         display only packets that match the regex\n");
    fprintf(stdout, "  -u, --user <user>           search for info about the user <user>\n");
    fprintf(stdout, "  -p, --passwords             print only accounts information\n");
+   fprintf(stdout, "      -i, --show-client       show client address in the password profiles\n");
+   fprintf(stdout, "      -I, --client <ip>       search for pass from a specific client\n");
    
    fprintf(stdout, "\nEditing Options:\n");
    fprintf(stdout, "  -C, --concat                concatenate more files into one single file\n");
@@ -97,6 +98,7 @@ void el_usage(void)
 void parse_options(int argc, char **argv)
 {
    int c;
+   struct in_addr ip;
 
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
@@ -133,6 +135,7 @@ void parse_options(int argc, char **argv)
       { "user", required_argument, NULL, 'u' },
       { "regex", required_argument, NULL, 'e' },
       { "passwords", no_argument, NULL, 'p' },
+      { "client", required_argument, NULL, 'I' },
       
       { 0 , 0 , 0 , 0}
    };
@@ -140,7 +143,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBCcdEe:F:f:HhikLlmno:prsTt:U:u:vXxZ", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBCcdEe:F:f:HhiI:kLlmno:prsTt:U:u:vXxZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -190,6 +193,14 @@ void parse_options(int argc, char **argv)
                   
          case 'i':
                   GBL.showclient = 1;
+                  break;
+                  
+         case 'I':
+                  if (inet_aton(optarg, &ip) == 0) {
+                     FATAL_ERROR("Invalid client ip address");
+                     return;                    
+                  }
+                  ip_addr_init(&GBL.client, AF_INET, (char *)&ip);
                   break;
 
          case 'l':

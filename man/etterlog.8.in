@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.20 2004/04/29 09:28:34 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.21 2004/05/19 13:17:27 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -131,11 +131,6 @@ In the headers show also the mac addresses corresponding to the ip
 addresses.
 
 .TP
-\fB\-i\fR, \fB\-\-show-client\fR
-Show the client ip address when displaying the collected users and
-passwords. It may be useful when ACLs are in place.
-
-.TP
 \fB\-k\fR, \fB\-\-color\fR
 If used in conjunction with -F it displays the source and dest of the connection
 using different colors. If used with a LOG_INFO file it prints LAN hosts in green, 
@@ -174,6 +169,16 @@ Print only the collected account information for each host. This prevents
 the huge profile output. It can be used in conjunction with the -u option 
 to filter the users. An asterisk '*' used in front of an account represents
 a failed login attempt.
+
+.TP
+\fB\-i\fR, \fB\-\-show-client\fR
+Show the client ip address when displaying the collected users and
+passwords. It may be useful when ACLs are in place.
+
+.TP
+\fB\-I\fR, \fB\-\-client <IP>\fR
+Show passwords only coming from a specific <IP>. This is useful to view all the
+usernames and passwords of a client.
 
 
 

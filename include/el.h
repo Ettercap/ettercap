@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.16 2004/04/08 14:35:07 alor Exp $ */
+/* $Id: el.h,v 1.17 2004/05/19 13:17:27 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -90,6 +90,7 @@ struct globals {
    gzFile fd;
    regex_t *regex;
    struct target_env *t;
+   struct ip_addr client;
 };
 
 /* in el_main.c */

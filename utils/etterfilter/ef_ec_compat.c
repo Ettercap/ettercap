@@ -19,10 +19,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_ec_compat.c,v 1.6 2004/01/21 20:25:11 alor Exp $
+    $Id: ef_ec_compat.c,v 1.7 2004/01/23 10:19:35 lordnaga Exp $
 */
 
 #include <ef.h>
+#include <ec_packet.h>
 
 #include <stdarg.h>
 
@@ -37,6 +38,7 @@ void ui_error(const char *fmt, ...);
 void ui_fatal_error(const char *msg);
 void ui_cleanup(void);
 int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
+int send_L3_icmp_unreach(struct packet_object *po);
 
 /************************************************/
  
@@ -80,6 +82,11 @@ void ui_cleanup(void)
 /* remove ec_send.c dependency */
 int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags) 
 { 
+   return 0;
+}
+
+int send_L3_icmp_unreach(struct packet_object *po)
+{
    return 0;
 }
 

@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: arp_cop.c,v 1.2 2004/01/05 17:36:52 lordnaga Exp $
+    $Id: arp_cop.c,v 1.3 2004/01/05 18:11:47 lordnaga Exp $
 */
 
 
@@ -49,7 +49,7 @@ struct plugin_ops arp_cop_ops = {
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Report suspicious ARP activity",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   version:          "1.1",   
    /* activation function */
    init:             &arp_cop_init,
    /* deactivation function */                     
@@ -163,6 +163,12 @@ static void arp_init_list()
       memcpy(h2->mac, h1->mac, MEDIA_ADDR_LEN);
       LIST_INSERT_HEAD(&arp_cop_table, h2, next);
    }
+   
+   /* Add our IP address */
+   SAFE_CALLOC(h2, 1, sizeof(struct hosts_list));
+   memcpy(&h2->ip, &GBL_IFACE->ip, sizeof(struct ip_addr));
+   memcpy(h2->mac, GBL_IFACE->mac, MEDIA_ADDR_LEN);
+   LIST_INSERT_HEAD(&arp_cop_table, h2, next);
 }
 
 

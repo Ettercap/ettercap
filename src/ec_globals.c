@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_globals.c,v 1.9 2003/09/22 16:43:53 alor Exp $
+    $Id: ec_globals.c,v 1.10 2003/09/22 17:52:50 alor Exp $
 */
 
 #include <ec.h>
@@ -94,6 +94,7 @@ void globals_free(void)
    GBL_FREE(gbls->iface);
    GBL_FREE(gbls->bridge);
    GBL_FREE(gbls->sm);
+   GBL_FREE(gbls->filters);
 
    free_ip_list(gbls->t1);
    GBL_FREE(gbls->t1);

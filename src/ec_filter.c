@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.12 2003/09/19 16:47:51 alor Exp $
+    $Id: ec_filter.c,v 1.13 2003/09/22 17:52:50 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_filter.h>
+#include <ec_strings.h>
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -606,8 +607,9 @@ int filter_load_file(char *filename)
    if ((fd = open(filename, O_RDONLY)) == -1)
       FATAL_MSG("File not found or permission denied");
 
-   /* readh the header */
-   read(fd, &fh, sizeof(struct filter_header));
+   /* read the header */
+   if (read(fd, &fh, sizeof(struct filter_header)) != sizeof(struct filter_header))
+      FATAL_MSG("The file is corrupted");
 
    /* sanity checks */
    if (fh.magic != htons(EC_FILTER_MAGIC))
@@ -615,11 +617,15 @@ int filter_load_file(char *filename)
   
    /* which version has compiled the filter ? */
    if (strcmp(fh.version, GBL_VERSION))
-      FATAL_MSG("Filter compile for a different version");
+      FATAL_MSG("Filter compiled for a different version");
    
    /* get the size */
    size = lseek(fd, 0, SEEK_END) - sizeof(struct filter_header);
 
+   /* size must be a multiple of filter_op */
+   if ((size % sizeof(struct filter_op) != 0) || size == 0)
+      FATAL_MSG("The file contains invalid instructions");
+   
    /* 
     * load the file in memory 
     * skipping the initial header
@@ -653,6 +659,7 @@ void filter_unload(void)
 
    /* wipe the pointer */
    GBL_FILTERS->chain = NULL;
+   GBL_FILTERS->len = 0;
 }
 
 /* EOF */

@@ -1,5 +1,5 @@
 
-/* $Id: ec_strings.h,v 1.6 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: ec_strings.h,v 1.7 2003/09/22 17:52:42 alor Exp $ */
 
 #ifndef EC_STRINGS_H
 #define EC_STRINGS_H
@@ -21,6 +21,9 @@
 #endif
 #ifndef HAVE_STRCASESTR 
    #include <missing/strcasestr.h>
+#endif
+#ifndef HAVE_MEMMEM
+   #include <missing/memmem.h>
 #endif
 
 extern int match_pattern(const char *s, const char *pattern);

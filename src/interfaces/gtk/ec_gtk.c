@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.29 2004/09/23 09:24:00 alor Exp $
+    $Id: ec_gtk.c,v 1.30 2004/09/24 19:57:52 daten Exp $
 */
 
 #include <ec.h>
@@ -312,6 +312,7 @@ static void gtkui_progress(char *title, int value, int max)
       gtk_window_set_modal(GTK_WINDOW (dialog), TRUE);
       gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
       gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
+      g_signal_connect(G_OBJECT (dialog), "delete_event", G_CALLBACK (gtk_true), NULL);
     
       pbar = gtk_progress_bar_new();
       gtk_container_add(GTK_CONTAINER (dialog), pbar);

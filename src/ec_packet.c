@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.4 2003/03/13 11:01:48 alor Exp $
+    $Id: ec_packet.c,v 1.5 2003/03/21 14:16:36 alor Exp $
 */
 
 #include <ec.h>
@@ -28,8 +28,9 @@
 int packet_create_object(struct packet_object **po, u_char *buf, size_t len);
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
 int packet_destroy_object(struct packet_object **po);
-int packet_duplicate(struct packet_object *po, char level, u_char **buf);
+struct packet_object * packet_dup(struct packet_object *po);
 
+/* XXX - remove this */
 void packet_print(struct packet_object *po);
 
 /* --------------------------- */
@@ -74,19 +75,31 @@ int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
 int packet_destroy_object(struct packet_object **po)
 {
    
-   /* XXX - dispatcher needs them */
-   SAFE_FREE((*po)->INFO.user);
-   SAFE_FREE((*po)->INFO.pass);
-   SAFE_FREE((*po)->INFO.info);
-  
-   /* XXX - passive needs it */
-   fingerprint_destroy(&(*po)->PASSIVE.fingerprint);
-   
    /* 
-    * free the disp_data pointer i
-    * it was malloced by tcp or udp decoder
+    * the packet is a duplicate
+    * we have to free even the packet buffer.
+    * alse free data directed to top_half
     */
-   SAFE_FREE((*po)->disp_data);
+   if ((*po)->flags & PO_DUP) {
+      
+      SAFE_FREE((*po)->packet);
+      
+      /* XXX - dispatcher needs them */
+      SAFE_FREE((*po)->INFO.user);
+      SAFE_FREE((*po)->INFO.pass);
+      SAFE_FREE((*po)->INFO.info);
+  
+      /* XXX - passive needs it */
+      fingerprint_destroy(&(*po)->PASSIVE.fingerprint);
+   
+      /* 
+      * free the disp_data pointer
+      * it was malloced by tcp or udp decoder
+      */
+      SAFE_FREE((*po)->disp_data);
+
+   }
+   
    /* then the po structure */
    SAFE_FREE(*po);
 
@@ -95,43 +108,53 @@ int packet_destroy_object(struct packet_object **po)
 }
 
 
-int packet_duplicate(struct packet_object *po, char level, u_char **buf)
+/*
+ * duplicate a po and return
+ * the new allocated one
+ */
+struct packet_object * packet_dup(struct packet_object *po)
 {
+   struct packet_object *dup_po;
 
-   int len = 0;
-   u_char * pobuf = NULL;
+   dup_po = calloc(1, sizeof(struct packet_object));
+   ON_ERROR(dup_po, NULL, "can't allocate memory");
 
-   switch (level & LEVEL_MASK ) {
-         case LEVEL_2:
-            len = po->L2.len;
-            pobuf = po->L2.header;
-            break;
-         case LEVEL_3:
-            len = po->L3.len;
-            pobuf = po->L3.header;
-            break;
-         case LEVEL_4:
-            len = po->L4.len;
-            pobuf = po->L4.header;
-            break;
-         case LEVEL_DATA:
-            len = po->DATA.len;
-            pobuf = po->DATA.data;
-            break;
-         default:
-            ERROR_MSG("incorrect level specified");
-            break;
-   }
+   /* 
+    * copy the po over the dup_po 
+    * but this is not sufficient, we have to adjust all 
+    * the pointer to the po->packet.
+    * so allocate a new paaket, then recalculate the
+    * pointers
+    */
+   memcpy(dup_po, po, sizeof(struct packet_object));
+   
+   /* duplicate the po buffer */
+   dup_po->packet = calloc(po->len, sizeof(u_char));
+   ON_ERROR(dup_po->packet, NULL, "can't allocate memory");
+  
+   /* copy the buffer */
+   memcpy(dup_po->packet, po->packet, po->len);
+   
+   /* 
+    * adjust all the pointers as the difference
+    * between the old buffer and the pointer
+    */
+   dup_po->L2.header = dup_po->packet + (po->L2.header - po->packet);
+   
+   dup_po->L3.header = dup_po->packet + (po->L3.header - po->packet);
+   dup_po->L3.options = dup_po->packet + (po->L3.options - po->packet);
+   
+   dup_po->L4.header = dup_po->packet + (po->L4.header - po->packet);
+   dup_po->L4.options = dup_po->packet + (po->L4.options - po->packet);
+   
+   dup_po->DATA.data = dup_po->packet + (po->DATA.data - po->packet);
 
-   if (level & DUP_ALLOC) {
-      *buf = (u_char *)calloc(len, sizeof(u_char));
-      if (*buf == NULL)
-         ERROR_MSG("calloc()");
-   } 
-
-   memcpy(*buf, pobuf, len);
-
-   return len;
+   dup_po->fwd_packet = dup_po->packet + (po->fwd_packet - po->packet);
+   
+   /* this packet is a duplicate */
+   dup_po->flags |= PO_DUP;
+   
+   return dup_po;
 }
 
 /* 

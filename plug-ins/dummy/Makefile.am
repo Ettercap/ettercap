@@ -5,7 +5,7 @@ lib_LTLIBRARIES = ec_dummy.la
 
 ec_dummy_la_SOURCES = dummy.c
 
-ec_dummy_la_LDFLAGS = -module -version-info 1:0:1
+ec_dummy_la_LDFLAGS = -module -avoid-version
 
 LIBS =
 ec_dummy_la_LIBS = 

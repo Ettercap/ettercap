@@ -10,7 +10,7 @@ struct plugin_ops
    char *ettercap_version;          /* ettercap version MUST be the global EC_VERSION */
    char *name;                      /* the name of the plugin */
    char *info;                      /* a short description of the plugin */
-   char version;                    /* the plugin version. note: 15 will be displayed as 1.5 */
+   char *version;                   /* the plugin version. note: 15 will be displayed as 1.5 */
    char type;                       /* the pluging type: standalone (executed as a thread)
                                      *                   hook (uses hook points)
                                      */
@@ -24,6 +24,11 @@ struct plugin_ops
 
 extern void plugin_load_all(void);
 extern int plugin_register(void *handle, struct plugin_ops *ops);
+extern int plugin_list_print(int min, int max, void (*func)(char *, char *, char *));
+
+/* use these to activate and deactivate a plugin */
+extern int plugin_init(char *name);
+extern int plugin_fini(char *name);
 
 #endif 
 

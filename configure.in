@@ -70,7 +70,6 @@ case "$host_os" in
    AM_CONDITIONAL(LINUX, true)
    OS="LINUX"
    PTHREADLIB="-lpthread"
-   PLUGINFLAG="-export-dynamic"
    ;;
 *freebsd*)
    AC_DEFINE(OS_BSD)
@@ -78,7 +77,6 @@ case "$host_os" in
    AM_CONDITIONAL(BSD, true)
    OS="FREEBSD"
    PTHREADLIB="-pthread"
-   PLUGINFLAG="-rdynamic"
    ;;
 *openbsd*)
    AC_DEFINE(OS_BSD)
@@ -86,7 +84,6 @@ case "$host_os" in
    AM_CONDITIONAL(BSD, true)
    OS="FREEBSD"
    PTHREADLIB="-pthread"
-   PLUGINFLAG="-rdynamic"
    ;;
 *netbsd*)
    AC_DEFINE(OS_BSD)
@@ -94,14 +91,12 @@ case "$host_os" in
    AM_CONDITIONAL(BSD, true)
    OS="FREEBSD"
    PTHREADLIB="-pthread"
-   PLUGINFLAG="-rdynamic"
    ;;
 *darwin*)
    AC_DEFINE(OS_DARWIN)
    AM_CONDITIONAL(DARWIN, true)
    OS="DARWIN"
    PTHREADLIB="-lpthread"
-   PLUGINFLAG="-rdynamic"
    ;;
 *solaris*)
    AC_DEFINE(OS_SOLARIS)
@@ -109,7 +104,6 @@ case "$host_os" in
    OS="SOLARIS"
    PTHREADLIB="-lpthread"
    SOCKETLIB="-lsocket -lnsl"
-   PLUGINFLAG="-rdynamic"
    ;;
 *cygwin*)
    EC_WINDOWS_KERNEL()
@@ -117,7 +111,6 @@ case "$host_os" in
    AM_CONDITIONAL(CYGWIN, true)
    OS="CYGWIN $ac_cv_ec_windows_version"
    PTHREADLIB="-lpthread"
-   PLUGINFLAG="-rdynamic"
    ;;
 *)
    echo
@@ -158,6 +151,7 @@ dnl ========================
 AC_DISABLE_STATIC
 AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
+AC_SEARCH_LIBS(dlopen,c dl,,)
 
 dnl ======================
 dnl   Machine Endianness
@@ -201,7 +195,6 @@ dnl =====================
 dnl   Check for libs
 dnl =====================
 
-AC_FUNC_MALLOC
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 EC_PTHREAD_CHECK()

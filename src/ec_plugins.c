@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.2 2003/03/20 21:13:31 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.3 2003/03/21 14:16:36 alor Exp $
 */
 
 #include <ec.h>
@@ -56,6 +56,9 @@ static SLIST_HEAD(, plugin_entry) plugin_head;
 void plugin_load_all(void);
 int plugin_load_single(char *path, char *name);
 int plugin_register(void *handle, struct plugin_ops *ops);
+int plugin_init(char *name);
+int plugin_fini(char *name);
+int plugin_list_print(int min, int max, void (*func)(char *, char *, char *));
 
 /*******************************************/
 
@@ -136,7 +139,6 @@ void plugin_load_all(void)
    
    USER_MSG("%4d plugins loaded\n", t);
    
-   //exit(0);
 }
 
 /*
@@ -162,6 +164,68 @@ int plugin_register(void *handle, struct plugin_ops *ops)
    return ESUCCESS;
 }
 
+/* 
+ * activate a plugin.
+ * it launch the plugin init function 
+ */
+
+int plugin_init(char *name)
+{
+   struct plugin_entry *p;
+
+   SLIST_FOREACH(p, &plugin_head, next) {
+      if (!strcmp(p->ops->name, name)) {
+         return p->ops->init(NULL);
+      }
+   }
+   
+   return -ENOTFOUND;
+}
+
+/* 
+ * deactivate a plugin.
+ * it launch the plugin fini function 
+ */
+
+int plugin_fini(char *name)
+{
+   struct plugin_entry *p;
+
+   SLIST_FOREACH(p, &plugin_head, next) {
+      if (!strcmp(p->ops->name, name)) {
+         return p->ops->fini(NULL);
+      }
+   }
+   
+   return -ENOTFOUND;
+}
+
+/*
+ * it print the list of the plugins.
+ *
+ * func is the callback function to which are passed
+ *    - the plugin name
+ *    - the plugin version
+ *    - the plugin description
+ *
+ * min is the n-th plugin to start to print
+ * max it the n-th plugin to stop to print
+ */
+
+int plugin_list_print(int min, int max, void (*func)(char *, char *, char *))
+{
+   struct plugin_entry *p;
+   int i = 1;
+
+   SLIST_FOREACH(p, &plugin_head, next) {
+      if (min < i && i > max)
+         return i;
+      func(p->ops->name, p->ops->version, p->ops->info);
+      i++;
+   }
+   
+   return i;
+}
 
 /* EOF */
 

@@ -12,17 +12,14 @@
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
    + PLUGINS ENGINE
-      - plugin_[init,fini]()
-      - plugin_list(min, max, callback)
       - direct launch from console
-
-   + display filter on protocol
-      - -t option
-
+      - cygwin issue (study libltdl)
 
    + LOGGING ENGINE
       - unified binary output
       - etterlog (log analizer)
+
+   + ARP SCAN
 
    + ARP POISON ENGINE
       - arp poisoner

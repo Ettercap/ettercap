@@ -50,21 +50,23 @@ struct packet_object {
    u_char * packet;        /* the buffer containing the real packet */
 
    u_int8 flags;                       /* flags relative to the packet */
-      #define PO_IGNORE       ((u_int8)(1))      /* this packet should not be processed (e.g. sniffing filter didn't match it) */
-      #define PO_FORWARDABLE  ((u_int8)(1<<2))   /* the packet has our MAC address, by the IP is not ours */
+      #define PO_IGNORE       ((u_int8)(1))        /* this packet should not be processed (e.g. sniffing filter didn't match it) */
+      #define PO_FORWARDABLE  ((u_int8)(1<<2))     /* the packet has our MAC address, by the IP is not ours */
       
-      #define PO_FROMIFACE    ((u_int8)(1<<5))   /* this packet comes from the primary interface */
-      #define PO_FROMBRIDGE   ((u_int8)(1<<6))   /* this packet comes form the bridged interface */
+      #define PO_FROMIFACE    ((u_int8)(1<<3))     /* this packet comes from the primary interface */
+      #define PO_FROMBRIDGE   ((u_int8)(1<<4))     /* this packet comes form the bridged interface */
       
-      #define PO_MOD_CHECK    ((u_int8)(1<<7))   /* it needs checksum recalculation before forwarding */
-      #define PO_MOD_LEN      ((u_int8)(1<<8)|PO_MOD_CHECK)   /* it was modified also in its lenght */
+      #define PO_MOD_CHECK    ((u_int8)(1<<5))     /* it needs checksum recalculation before forwarding */
+      #define PO_MOD_LEN      ((u_int8)(1<<6)|PO_MOD_CHECK)   /* it was modified also in its lenght */
   
+      #define PO_DUP          ((u_int8)(1<<7))     /* the packet is a duplicate we have to free the buffer on destroy*/
+   
    int delta;  /* for modified packet this is the delta for the lenght */
    
    /* buffer containing the data to be displayed.
     * some dissector decripts the traffic, but the packet must be forwarded as
     * is, so the decripted data must be placed in a different buffer. 
-    * this is that bufffer.
+    * this is that bufffer and it is malloced by tcp or udp dissector.
     */
    size_t disp_len;
    char * disp_data;
@@ -83,14 +85,7 @@ struct packet_object {
 extern int packet_create_object(struct packet_object **po, u_char * buf, size_t len);
 extern int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
 extern int packet_destroy_object(struct packet_object **po);
-extern int packet_duplicate(struct packet_object *po, char level, u_char **buf);
-#define LEVEL_2      0           /* 00000000 */
-#define LEVEL_3      1           /* 00000001 */ 
-#define LEVEL_4      (1 << 1)    /* 00000010 */ 
-#define LEVEL_DATA   (1 << 2)    /* 00000100 */ 
-#define LEVEL_MASK   0x7         /* 00000111 */
-#define DUP_COPY     (1 << 3)    /* 00001000 */ 
-#define DUP_ALLOC    (1 << 4)    /* 00010000 */
+extern struct packet_object * packet_dup(struct packet_object *po);
 
 extern void packet_print(struct packet_object *po);
 

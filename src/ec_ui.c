@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.5 2003/03/20 16:25:23 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.6 2003/03/21 14:16:38 alor Exp $
 */
 
 #include <ec.h>
@@ -31,7 +31,7 @@ struct ui_message {
    SIMPLEQ_ENTRY(ui_message) next;
 };
 
-SIMPLEQ_HEAD(, ui_message) messages_queue = SIMPLEQ_HEAD_INITIALIZER(messages_queue);
+static SIMPLEQ_HEAD(, ui_message) messages_queue = SIMPLEQ_HEAD_INITIALIZER(messages_queue);
 
 /* global mutex on interface */
 

@@ -15,16 +15,35 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.5 2003/03/14 23:46:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.6 2003/03/21 14:16:36 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_threads.h>
+#include <ec_hook.h>
+
+
+/* this is the PO queue from bottom to top half */
+struct po_queue_entry {
+   struct packet_object *po;
+   SIMPLEQ_ENTRY(po_queue_entry) next;
+};
+
+static SIMPLEQ_HEAD(, po_queue_entry) po_queue = SIMPLEQ_HEAD_INITIALIZER(po_queue);
+
+/* global mutex on interface */
+
+static pthread_mutex_t po_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define PO_QUEUE_LOCK     do{ pthread_mutex_lock(&po_mutex); }while(0)
+#define PO_QUEUE_UNLOCK   do{ pthread_mutex_unlock(&po_mutex); }while(0)
 
 /* proto */
 
 void top_half_queue_add(struct packet_object *po);
 EC_THREAD_FUNC(top_half);
+
+/* XXX - remove me */
+void __init init_packet_print(void);
 
 /*******************************************/
 
@@ -39,26 +58,62 @@ EC_THREAD_FUNC(top_half);
 
 EC_THREAD_FUNC(top_half)
 {
+   struct po_queue_entry *e;
+   
    DEBUG_MSG("top_half activated !");
   
    ec_thread_init();
 
-   pthread_exit(0);
-   
-   /* XXX -- implement the read from list */
-   while(1) sleep(1);
- 
-   /* HOOK_POINT: DISPATCHER */
-   
+   LOOP { 
+     
+      /* XXX - this is responsible for the responsiveness */
+      usleep(1000); 
+      
+      /* the queue is updated by other threads */
+      PO_QUEUE_LOCK;
+      e = SIMPLEQ_FIRST(&po_queue);
+      if (e == NULL) {
+         PO_QUEUE_UNLOCK;
+         continue;
+      }
+      
+      /* HOOK_POINT: DISPATCHER */
+      hook_point(HOOK_DISPATCHER, e->po);
+      
+      SIMPLEQ_REMOVE_HEAD(&po_queue, e, next);
+      packet_destroy_object(&e->po);
+      SAFE_FREE(e);
+      
+      PO_QUEUE_UNLOCK;
+   } 
 }
 
+/* 
+ * add a packet to the top half queue.
+ * this fuction is called by the bottom half thread
+ */
 
 void top_half_queue_add(struct packet_object *po)
 {
-   /* XXX -- implement the list */
-   packet_print(po);
+   struct po_queue_entry *e;
+   
+   e = calloc(1, sizeof(struct po_queue_entry));
+   ON_ERROR(e, NULL, "can't allocate memory");
+   
+   e->po = packet_dup(po);
+   
+   /* add the message to the queue */
+   PO_QUEUE_LOCK;
+   SIMPLEQ_INSERT_TAIL(&po_queue, e, next);
+   PO_QUEUE_UNLOCK;
 }
 
+
+/* XXX - remove this */
+void __init init_packet_print(void)
+{
+   hook_add(HOOK_DISPATCHER, &packet_print);
+}
 
 /* EOF */
 

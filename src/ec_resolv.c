@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.12 2004/04/04 14:11:45 alor Exp $
+    $Id: ec_resolv.c,v 1.13 2004/05/04 20:11:49 alor Exp $
 */
 
 #include <ec.h>
@@ -120,7 +120,7 @@ static int resolv_cache_search(struct ip_addr *ip, char *name)
    u_int32 h;
 
    /* calculate the hash */
-   h = fnv_32(ip->addr, ip->addr_size) & TABMASK;
+   h = fnv_32(ip->addr, ntohs(ip->addr_len)) & TABMASK;
       
    SLIST_FOREACH(r, &resolv_cache_head[h], next) {
       if (!ip_addr_cmp(&r->ip, ip)) {
@@ -147,7 +147,7 @@ void resolv_cache_insert(struct ip_addr *ip, char *name)
    u_int32 h;
 
    /* calculate the hash */
-   h = fnv_32(ip->addr, ip->addr_size) & TABMASK;
+   h = fnv_32(ip->addr, ntohs(ip->addr_len)) & TABMASK;
 
    /* 
     * search if it is already in the cache.

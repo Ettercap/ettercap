@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.5 2004/01/10 14:15:08 alor Exp $
+    $Id: dns_spoof.c,v 1.6 2004/05/04 20:11:48 alor Exp $
 */
 
 
@@ -270,7 +270,7 @@ static void dns_spoof(struct packet_object *po)
          memcpy(p + 4, "\x00\x01", 2);                    /* class */
          memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
          memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
-         memcpy(p + 12, &reply->addr, reply->addr_size);  /* data */
+         ip_addr_cpy(p + 12, reply);                      /* data */
 
          /* send the fake reply */
          send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer), 0);
@@ -346,7 +346,7 @@ static void dns_spoof(struct packet_object *po)
          memcpy(p + 25, "\x00\x01", 2);                     /* class */
          memcpy(p + 27, "\x00\x00\x0e\x10", 4);             /* TTL (1 hour) */
          memcpy(p + 31, "\x00\x04", 2);                     /* datalen */
-         memcpy(p + 33, &reply->addr, reply->addr_size);    /* data */
+         ip_addr_cpy(p + 33, reply);                        /* data */
          
          /* send the fake reply */
          send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer), 1);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp_spoofing.c,v 1.7 2004/01/18 19:30:31 alor Exp $
+    $Id: ec_dhcp_spoofing.c,v 1.8 2004/05/04 20:11:49 alor Exp $
 */
 
 #include <ec.h>
@@ -219,7 +219,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
       dhcp->dhcp_sip = ip_addr_to_int32(&server.addr);
 
       /* set it in the options */
-      memcpy(dhcp_options + 5, &server.addr, server.addr_size);
+      ip_addr_cpy(dhcp_options + 5, &server);
    
       send_dhcp_reply(&server, &po->L3.src, po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
       
@@ -231,7 +231,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
       dhcp->dhcp_sip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
       
       /* set it in the options */
-      memcpy(dhcp_options + 5, &GBL_IFACE->ip.addr, GBL_IFACE->ip.addr_size);
+      ip_addr_cpy(dhcp_options + 5, &GBL_IFACE->ip);
    
       send_dhcp_reply(&GBL_IFACE->ip, &po->L3.src, po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
    }
@@ -273,7 +273,7 @@ static void dhcp_spoofing_disc(struct packet_object *po)
    dhcp->dhcp_sip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
 
    /* set it in the options */
-   memcpy(dhcp_options + 5, &GBL_IFACE->ip.addr, GBL_IFACE->ip.addr_size);
+   ip_addr_cpy(dhcp_options + 5, &GBL_IFACE->ip);
    
    /* send the packet */
    send_dhcp_reply(&GBL_IFACE->ip, &po->L3.src, po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
@@ -305,15 +305,15 @@ static void dhcp_setup_options(void)
    *p++ = DHCP_ACK;
 
    /* server identifier */
-   put_dhcp_option(DHCP_OPT_SRV_ADDR, GBL_IFACE->ip.addr, GBL_IFACE->ip.addr_size, &p);
+   put_dhcp_option(DHCP_OPT_SRV_ADDR, GBL_IFACE->ip.addr, ntohs(GBL_IFACE->ip.addr_len), &p);
    /* lease time */
    put_dhcp_option(DHCP_OPT_LEASE_TIME, (u_int8 *)&time, 4, &p);
    /* the netmask */
-   put_dhcp_option(DHCP_OPT_NETMASK, dhcp_netmask.addr, dhcp_netmask.addr_size, &p);
+   put_dhcp_option(DHCP_OPT_NETMASK, dhcp_netmask.addr, ntohs(dhcp_netmask.addr_len), &p);
    /* the gateway */
-   put_dhcp_option(DHCP_OPT_ROUTER, GBL_IFACE->ip.addr, GBL_IFACE->ip.addr_size, &p);
+   put_dhcp_option(DHCP_OPT_ROUTER, GBL_IFACE->ip.addr, ntohs(GBL_IFACE->ip.addr_len), &p);
    /* the dns */
-   put_dhcp_option(DHCP_OPT_DNS, dhcp_dns.addr, dhcp_dns.addr_size, &p);
+   put_dhcp_option(DHCP_OPT_DNS, dhcp_dns.addr, ntohs(dhcp_dns.addr_len), &p);
 
    /* end of options */
    *p++ = DHCP_OPT_END;

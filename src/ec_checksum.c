@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_checksum.c,v 1.6 2003/10/30 21:48:54 alor Exp $
+    $Id: ec_checksum.c,v 1.7 2004/05/04 20:11:48 alor Exp $
 */
 
 #include <ec.h>
@@ -80,7 +80,7 @@ u_int16 L4_checksum(struct packet_object *po)
    }
    
    /* XXX - only IPv4 supported for now... */
-   if (po->L3.src.type != AF_INET)
+   if (ntohs(po->L3.src.addr_type) != AF_INET)
       NOT_IMPLEMENTED();
    
    /* check the pseudo header */

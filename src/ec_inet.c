@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.23 2004/02/08 11:41:44 alor Exp $
+    $Id: ec_inet.c,v 1.24 2004/05/04 20:11:48 alor Exp $
 */
 
 #include <ec.h>
@@ -25,11 +25,10 @@
 #include <ec_ui.h>
 
 #include <sys/socket.h>
-#include <libnet.h>
-#include <pcap.h>
 
 /* prototypes */
-int ip_addr_init(struct ip_addr *sa, int type, char *addr);
+int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr);
+int ip_addr_cpy(u_char *addr, struct ip_addr *sa);
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 int ip_addr_null(struct ip_addr *sa);
 int ip_addr_is_zero(struct ip_addr *sa);
@@ -45,16 +44,22 @@ static const char *inet_ntop6(const u_char *src, char *dst, size_t size);
 
 /***********************************************************************/
 
-int ip_addr_init(struct ip_addr *sa, int type, char *addr)
+/*
+ * creates a structure from a buffer
+ */
+int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr)
 {
-   sa->type = type;
+   /* the version of the IP packet */
+   sa->addr_type = htons(type);
+   /* wipe the buffer */
+   memset(sa->addr, 0, MAX_IP_ADDR_LEN);
    
    switch (type) {
       case AF_INET:
-         sa->addr_size = IP_ADDR_LEN;
+         sa->addr_len = htons(IP_ADDR_LEN);
          break;
       case AF_INET6:
-         sa->addr_size = IP6_ADDR_LEN;
+         sa->addr_len = htons(IP6_ADDR_LEN);
          break;
       default:
          /* wipe the struct */
@@ -62,23 +67,20 @@ int ip_addr_init(struct ip_addr *sa, int type, char *addr)
          return -EINVALID;
    }
    
-   memcpy(&sa->addr, addr, sa->addr_size);
+   memcpy(&sa->addr, addr, ntohs(sa->addr_len));
    
    return ESUCCESS;
 };
 
-
 /*
- * returns 0 if the ip address is IPv4 or IPv6
+ * copy the address in a buffer
  */
-int ip_addr_null(struct ip_addr *sa)
+int ip_addr_cpy(u_char *addr, struct ip_addr *sa)
 {
-   if (sa->type == AF_INET || sa->type == AF_INET6) 
-      return 0;
- 
-   return 1;
-}
+   memcpy(addr, &sa->addr, ntohs(sa->addr_len));
 
+   return ESUCCESS;
+}
 
 /* 
  * compare two ip_addr structure.
@@ -86,27 +88,37 @@ int ip_addr_null(struct ip_addr *sa)
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
 {
    /* different type are incompatible */
-   if (sa->type != sb->type)
+   if (sa->addr_type != sb->addr_type)
       return -EINVALID;
 
-   return memcmp(sa->addr, sb->addr, sa->addr_size);
+   return memcmp(sa->addr, sb->addr, ntohs(sa->addr_len));
    
 }
 
+/*
+ * returns 0 if the ip address is IPv4 or IPv6
+ */
+int ip_addr_null(struct ip_addr *sa)
+{
+   if (ntohs(sa->addr_type) == AF_INET || ntohs(sa->addr_type) == AF_INET6) 
+      return 0;
+ 
+   return 1;
+}
 
 /*
  * return true if an ip address is 0.0.0.0 or invalid
  */
 int ip_addr_is_zero(struct ip_addr *sa)
 {
-   switch (sa->type) {
+   switch (ntohs(sa->addr_type)) {
       case AF_INET:
          if (memcmp(sa->addr, "\x00\x00\x00\x00", IP_ADDR_LEN))
             return 0;
          break;
       case AF_INET6:
          if (memcmp(sa->addr, "\x00\x00\x00\x00\x00\x00\x00\x00"
-                               "\x00\x00\x00\x00\x00\x00\x00\x00", IP6_ADDR_LEN))
+                              "\x00\x00\x00\x00\x00\x00\x00\x00", IP6_ADDR_LEN))
             return 0;
          break;
    };
@@ -116,13 +128,12 @@ int ip_addr_is_zero(struct ip_addr *sa)
 
 
 /*
- * print an ip_add structure
+ * convert to ascii an ip address
  */
-
 char * ip_addr_ntoa(struct ip_addr *sa, char *dst)
 {
 
-   switch (sa->type) {
+   switch (ntohs(sa->addr_type)) {
       case AF_INET:
          inet_ntop4(sa->addr, dst, IP_ASCII_ADDR_LEN);
          return dst;
@@ -133,7 +144,7 @@ char * ip_addr_ntoa(struct ip_addr *sa, char *dst)
          break;
    };
    
-   return "0.0.0.0";
+   return "invalid";
 }
 
 const char *
@@ -241,10 +252,10 @@ inet_ntop6(const u_char *src, char *dst, size_t size)
    return dst;
 }
 
-/*
- * convert a MAC address to a uman readable form
- */
 
+/*
+ * convert a MAC address to a human readable form
+ */
 char *mac_addr_ntoa(u_char *mac, char *dst)
 {
    char str[ETH_ASCII_ADDR_LEN];
@@ -294,7 +305,6 @@ int mac_addr_aton(char *str, u_char *mac)
  * if the GBL_IFACE is not filled (while reading from files)
  * returns -EINVALID.
  */
-
 int ip_addr_is_local(struct ip_addr *sa)
 {
    struct ip_addr *nm = &GBL_IFACE->netmask;
@@ -303,14 +313,14 @@ int ip_addr_is_local(struct ip_addr *sa)
    u_int32 netmask;
    u_int32 network;
    
-   switch (sa->type) {
+   switch (ntohs(sa->addr_type)) {
       case AF_INET:
          /* the address 0.0.0.0 is used by DHCP and it is local for us*/
-         if ( !memcmp(&sa->addr, "\x00\x00\x00\x00", sa->addr_size) )
+         if ( !memcmp(&sa->addr, "\x00\x00\x00\x00", ntohs(sa->addr_len)) )
             return ESUCCESS;
          
          /* make a check on GBL_IFACE (is it initialized ?) */
-         if ( !memcmp(&nw->addr, "\x00\x00\x00\x00", sa->addr_size) )
+         if ( !memcmp(&nw->addr, "\x00\x00\x00\x00", ntohs(sa->addr_len)) )
             /* return UNKNOWN */
             return -EINVALID;
    

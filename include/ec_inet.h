@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.20 2004/04/04 14:14:09 alor Exp $ */
+/* $Id: ec_inet.h,v 1.21 2004/05/04 20:11:48 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -34,16 +34,19 @@ enum {
    MAX_ASCII_ADDR_LEN      = IP6_ASCII_ADDR_LEN,                  
 };
 
-/* this structure is used by ettercap to handle an IP
- * disregarding the version */
+/* 
+ * this structure is used by ettercap to handle 
+ * an IP packet disregarding its version 
+ */
 struct ip_addr {
-   u_int16 type;
-   u_int16 addr_size;
+   u_int16 addr_type;
+   u_int16 addr_len;
    /* this must be aligned in memory */
    u_int8 addr[MAX_IP_ADDR_LEN];
 };
 
-extern int ip_addr_init(struct ip_addr *sa, int type, char *addr);
+extern int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr);
+extern int ip_addr_cpy(u_char *addr, struct ip_addr *sa);
 extern int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 extern int ip_addr_null(struct ip_addr *sa);
 extern int ip_addr_is_zero(struct ip_addr *sa);

@@ -22,6 +22,7 @@ NG-0.7.0_pre2    200404??
    !! better error handling on file creation failure
    !! fingerprint submissions works again
    !! fixed the configure checks for libpcap and libnet
+   !! ec[ip] files are now platform independent
    
 
 NG-0.7.0_pre1    20040415

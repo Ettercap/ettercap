@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_udp.c,v 1.12 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_udp.c,v 1.13 2003/10/18 09:01:58 alor Exp $
 */
 
 #include <ec.h>
@@ -91,8 +91,6 @@ FUNC_DECODER(decode_udp)
       char tmp[MAX_ASCII_ADDR_LEN];
       USER_MSG("Invalid UDP packet from %s:%d : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                     ntohs(udp->sport), L4_checksum(PACKET), ntohs(udp->csum) );
-      /* is the packet forwardable ? */
-      set_forwardable_flag(PACKET);
       return NULL;
    }
 

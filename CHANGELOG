@@ -46,7 +46,8 @@ NG-0.7.0    ????????
       + OSPF, VRRP
    + plugins were unified, no more distinctions between standalone and hooking
    + new plugins:
-      + finger (SYN+ACK fingerprinting on remote hosts) 
+      + finger (SYN+ACK fingerprinting on remote hosts)
+      + smb_clear, smb_down (attack versus the SMB protocol)
    !! offline sniffing actually does not bind to any NICs
 
 

@@ -34,7 +34,9 @@ Oct 2003:
 
    + CONNECTIONS
       - add the type to overwrite etter.services
-   
+  
+   + log the user messages
+  
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
 

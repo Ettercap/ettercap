@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.18 2004/01/10 16:32:54 lordnaga Exp $
+.\"  $Id: etterlog.8.in,v 1.19 2004/01/26 20:59:52 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -173,6 +173,27 @@ hosts' user and pass collected infos.
 Print only the collected account for each hosts. This prevents the huge profile
 output. It can be used in conjunction with the -u option to filter the users.
 User accounts with a '*' in front of, are failed login attempt.
+
+
+
+.TP
+.B EDITING OPTIONS
+
+.TP
+\fB\-C\fR, \fB\-\-concat\fR
+Use this option to concatenate two (or more) files into one single file. This
+is useful if you have collected ettercal log file from multiple sources and
+want to hava an unified report. The output file must be specified with the -o
+option and the input files are listed as normal arguments.
+.Sp
+example:
+.br 
+etterlog -C -o outfile input1 input2 input3
+
+.TP
+\fB\-o\fR, \fB\-\-outfile <FILE>\fR
+specifies the output file for a concatenation.
+
 
 
 .TP

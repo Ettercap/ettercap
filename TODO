@@ -45,6 +45,9 @@ this is the unofficial and floating in time roadmap:
          - widgets:
             - selectable lists (auto refresh)
 
+   + ETTERLOG
+      - multiple file at once
+
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - reset modified connection (on user request)
@@ -67,14 +70,10 @@ this is the unofficial and floating in time roadmap:
       - automatic add of new hosts
       port all the plugins to NG:
          - lurker    -> find_ettercap
-         - roper     -> will not be ported (use filters)
          - dwarf     -> (will be integrated with etterlog)
          - thief     -> (same as dwarf)
-         - banshee   -> will not be ported (use filters)
          - golem     -> res_exhaust
          - leech     -> isolate
-         - ooze      -> will not be ported (never used)
-         - shadow    -> will not be ported (never used) (use nmap instead)
          - triton    -> gw_discover
 
    + BRIDGED SNIFFING

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_parser.c,v 1.18 2003/10/09 14:49:45 alor Exp $
+    $Id: el_parser.c,v 1.19 2004/01/26 20:59:57 alor Exp $
 */
 
 
@@ -68,6 +68,10 @@ void el_usage(void)
    fprintf(stdout, "  -e, --regex <regex>         display only packets that match the regex\n");
    fprintf(stdout, "  -u, --user <user>           search for info about the user <user>\n");
    fprintf(stdout, "  -p, --passwords             print only accounts information\n");
+   
+   fprintf(stdout, "\nEditing Options:\n");
+   fprintf(stdout, "  -C, --concat                concatenate more files into one single file\n");
+   fprintf(stdout, "  -o, --outfile <file>        the file used as output for concatenation\n");
    
    fprintf(stdout, "\nVisualization Method:\n");
    fprintf(stdout, "  -B, --binary                print packets as they are\n");
@@ -121,6 +125,9 @@ void parse_options(int argc, char **argv)
       { "only-local", required_argument, NULL, 'l' },
       { "only-remote", required_argument, NULL, 'L' },
       
+      { "outfile", required_argument, NULL, 'o' },
+      { "concat", no_argument, NULL, 'C' },
+      
       { "user", required_argument, NULL, 'u' },
       { "regex", required_argument, NULL, 'e' },
       { "passwords", no_argument, NULL, 'p' },
@@ -131,7 +138,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBcdEe:F:f:HhikLlmnprsTt:u:vXxZ", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBCcdEe:F:f:HhikLlmno:prsTt:u:vXxZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -202,6 +209,14 @@ void parse_options(int argc, char **argv)
          case 'e':
                   set_display_regex(optarg);
                   break;
+                 
+         case 'o':
+                  GBL_LOGFILE = strdup(optarg);
+                  break;
+                  
+         case 'C':
+                  GBL.concat = 1;
+                  break;
                   
          case 'B':
                   GBL.format = &bin_format;
@@ -256,6 +271,16 @@ void parse_options(int argc, char **argv)
       }
    }
 
+   /* file concatenation */
+   if (GBL.concat) {
+      if (argv[optind] == NULL)
+         FATAL_ERROR("You MUST specify at least one logfile");
+   
+      /* this function does not return */
+      concatenate(optind, argv);
+   }
+
+   /* normal file operation */
    if (argv[optind])
       open_log(argv[optind]);
    else

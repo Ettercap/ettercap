@@ -1,5 +1,5 @@
 
-/* $Id: el_functions.h,v 1.14 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: el_functions.h,v 1.15 2004/01/26 20:59:52 alor Exp $ */
 
 #ifndef EL_FUNCTIONS_H
 #define EL_FUNCTIONS_H
@@ -25,6 +25,7 @@ extern void open_log(char *file);
 extern int get_header(struct log_global_header *hdr);
 extern int get_packet(struct log_header_packet *pck, u_char **buf);
 extern int get_info(struct log_header_info *inf, struct dissector_info *buf);
+extern void concatenate(int argc, char **argv);
 
 /* el_display */
 extern void display(void);
@@ -46,6 +47,7 @@ extern int find_user(struct host_profile *hst, char *user);
 /* el_profiles */
 extern int profile_add_info(struct log_header_info *inf, struct dissector_info *buf);
 extern void *get_host_list_ptr(void);
+
 
 #endif
 

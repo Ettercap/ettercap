@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.14 2003/11/22 13:57:10 alor Exp $ */
+/* $Id: el.h,v 1.15 2004/01/26 20:59:46 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -70,6 +70,7 @@ struct target_env {
 
 struct globals {
    struct log_global_header hdr;
+   char concat:1;
    char analyze:1;
    char no_headers:1;
    char connections:1;

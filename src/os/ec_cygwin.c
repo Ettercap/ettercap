@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_cygwin.c,v 1.4 2003/11/09 12:12:46 alor Exp $
+    $Id: ec_cygwin.c,v 1.5 2004/04/02 15:14:53 alor Exp $
 */
 
 #include <ec.h>
@@ -123,6 +123,7 @@ static void restore_ip_forward(void)
  */
 u_int16 get_iface_mtu(char *iface)
 {
+   int mtu = 1500;
    NOT_IMPLEMENTED();
    return mtu;
 }

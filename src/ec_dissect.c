@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.24 2004/03/25 21:25:37 lordnaga Exp $
+    $Id: ec_dissect.c,v 1.25 2004/04/02 15:14:21 alor Exp $
 */
 
 #include <ec.h>
@@ -232,7 +232,7 @@ int dissect_modify(int mode, char *name, u_int32 port)
       if (!strcasecmp(e->name, name)) {
          switch (mode) {
             case MODE_ADD:
-               DEBUG_MSG("dissect_modify: %s added on %d", name, port);
+               DEBUG_MSG("dissect_modify: %s added on %lu", name, port);
                /* add in the lists */
                dissect_add(e->name, e->level, port, e->decoder);
                return ESUCCESS;
@@ -252,7 +252,7 @@ int dissect_modify(int mode, char *name, u_int32 port)
                   return ESUCCESS;
                }
               
-               DEBUG_MSG("dissect_modify: %s replaced to %d", name, port);
+               DEBUG_MSG("dissect_modify: %s replaced to %lu", name, port);
                
                /* add the new value */
                dissect_add(name, level, port, decoder);

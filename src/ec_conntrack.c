@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.19 2004/03/18 15:29:12 alor Exp $
+    $Id: ec_conntrack.c,v 1.20 2004/04/02 15:14:21 alor Exp $
 */
 
 #include <ec.h>
@@ -355,7 +355,7 @@ EC_THREAD_FUNC(conntrack_timeouter)
        */
       sec = MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout);
     
-      DEBUG_MSG("conntrack_timeouter: sleeping for %u sec", (u_int32)sec);
+      DEBUG_MSG("conntrack_timeouter: sleeping for %lu sec", (u_int32)sec);
       
       /* always check if a cancel is requested */
       CANCELLATION_POINT();
@@ -630,7 +630,7 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       if (c->co->DISSECTOR.user)
          flags = '*';
       
-      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %d", flags, 
+      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %lu", flags, 
                                            src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
                                            proto, status, c->co->xferred);
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ppp.c,v 1.7 2003/12/04 16:12:00 lordnaga Exp $
+    $Id: ec_ppp.c,v 1.8 2003/12/04 16:32:22 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -129,7 +129,11 @@ FUNC_DECODER(decode_ppp)
 	    
       if (proto != PPP_PROTO_IP && 
           proto != PPP_PROTO_CHAP && 
-          proto != PPP_PROTO_PAP) {   
+          proto != PPP_PROTO_PAP && 
+	  proto != PPP_PROTO_LCP &&
+	  proto != PPP_PROTO_ECP &&
+	  proto != PPP_PROTO_CCP &&
+	  proto != PPP_PROTO_IPCP) {   
          proto = *((u_char *)ppph + 2);
          DECODED_LEN = 3;
       }	    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.23 2004/04/22 15:47:05 alor Exp $
+    $Id: ec_ssh.c,v 1.24 2004/05/13 15:15:15 alor Exp $
 */
 
 #include <ec.h>
@@ -444,7 +444,7 @@ FUNC_DECODER(dissector_ssh)
             put_bn(session_data->ptrkey->myhostkey->n, &key_to_put);
 
             /* Recalculate SSH crc */
-            *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 4) = htonl(CRC_checksum(PACKET->DATA.data+4, PACKET->DATA.len-8));
+            *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 4) = htonl(CRC_checksum(PACKET->DATA.data+4, PACKET->DATA.len-8, CRC_INIT_ZERO));
 	                
             PACKET->flags |= PO_MODIFIED;	 
             session_data->status = WAITING_SESSION_KEY;
@@ -545,7 +545,7 @@ FUNC_DECODER(dissector_ssh)
             BN_clear_free(bn);
 
             /* Re-calculate SSH crc */
-            *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 4) = htonl(CRC_checksum(PACKET->DATA.data+4, PACKET->DATA.len-8));
+            *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 4) = htonl(CRC_checksum(PACKET->DATA.data+4, PACKET->DATA.len-8, CRC_INIT_ZERO));
 
             /* XXX Here we should notify the top half that the 
              * connection is decrypted 

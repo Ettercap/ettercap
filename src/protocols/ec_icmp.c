@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icmp.c,v 1.7 2003/11/04 13:25:47 alor Exp $
+    $Id: ec_icmp.c,v 1.8 2004/05/13 15:15:16 alor Exp $
 */
 
 #include <ec.h>
@@ -88,7 +88,7 @@ FUNC_DECODER(decode_icmp)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET->L4.header, PACKET->L4.len) != 0) {
+   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET->L4.header, PACKET->L4.len) != CSUM_RESULT) {
       char tmp[MAX_ASCII_ADDR_LEN];
       USER_MSG("Invalid ICMP packet from %s : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp), 
                               L3_checksum(PACKET->L4.header, PACKET->L4.len), ntohs(icmp->csum));      

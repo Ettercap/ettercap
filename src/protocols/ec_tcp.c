@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.37 2004/05/07 12:29:17 alor Exp $
+    $Id: ec_tcp.c,v 1.38 2004/05/13 15:15:16 alor Exp $
 */
 
 #include <ec.h>
@@ -155,11 +155,11 @@ FUNC_DECODER(decode_tcp)
    
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
-    * the checksum is should be 0 and not equal to tcp->csum ;)
+    * the checksum is should be CSUM_RESULT and not equal to tcp->csum ;)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && L4_checksum(PACKET) != 0) {
+   if (!GBL_OPTIONS->unoffensive && L4_checksum(PACKET) != CSUM_RESULT) {
       char tmp[MAX_ASCII_ADDR_LEN];
 #ifdef OS_DARWIN
       /* 
@@ -321,7 +321,7 @@ FUNC_DECODER(decode_tcp)
          status->way[direction].seq_adj += PACKET->DATA.delta;
 
          /* Recalculate checksum */
-         tcp->csum = 0; 
+         tcp->csum = CSUM_INIT; 
          tcp->csum = L4_checksum(PACKET);
       }
    }
@@ -361,7 +361,7 @@ FUNC_INJECTOR(inject_tcp)
    tcph->x2    = 0;            
    tcph->off   = 5;            
    tcph->win   = htons(32120); 
-   tcph->csum  = 0;            
+   tcph->csum  = CSUM_INIT;            
    tcph->urp   = 0;            
    tcph->flags = TH_PSH;      
    

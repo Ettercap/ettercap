@@ -17,12 +17,17 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.13 2004/05/12 15:54:37 alor Exp $
+    $Id: ec_wifi.c,v 1.14 2004/05/13 15:15:16 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_capture.h>
+#include <ec_checksum.h>
+
+#ifdef HAVE_OPENSSL
+   #include <openssl/rc4.h>
+#endif
 
 /* globals */
 
@@ -76,8 +81,10 @@ struct llc_header {
    u_int16  proto;
 };
 
+#define IV_LEN 3
+
 struct wep_header {
-   u_int8   init_vector[3];
+   u_int8   init_vector[IV_LEN];
    u_int8   key;
 };
 
@@ -125,7 +132,7 @@ FUNC_DECODER(decode_wifi)
     * capture only "complete" and not retransmitted packets 
     * we don't want to deal with fragments (0x04) or retransmission (0x08) 
     */
-   switch (wifi->control) {
+   switch (wifi->control & 0x03) {
       
       case WIFI_STA_TO_STA:
          memcpy(PACKET->L2.src, wifi->ha2, ETH_ADDR_LEN);
@@ -166,7 +173,7 @@ FUNC_DECODER(decode_wifi)
       default:
          return NULL;
    }
-   
+  
    /* the frame is crypted with WEP */
    if (wifi->control & WIFI_WEP) {
       
@@ -225,8 +232,55 @@ FUNC_ALIGNER(align_wifi)
  */
 static int wep_decrypt(u_char *buf, size_t len)
 {
-   /* XXX add support for WEP */
+#ifdef HAVE_OPENSSL_NOT_YET_IMPLEMENTED
+   RC4_KEY key;
+   u_char seed[32]; /* 256 bit for the wep key */
+   struct wep_header *wep;
+   u_char tmpbuf[len];
+
+   u_char wkey[] = "12345";
+   size_t wlen = 5;
+ 
+   USER_MSG("WEP: detected crypted packet\n");
+   
+   /* get the wep header */
+   wep = (struct wep_header *)buf;
+   len -= sizeof(struct wep_header);
+
+   /* copy the IV in the first 24 bit of the RC4 seed */
+   memcpy(seed, wep->init_vector, IV_LEN);
+
+   /* 
+    * complete the seed with 40 or 104 bit from the secret key 
+    * to have a 64 or 128 bit seed 
+    */
+   memcpy(seed + IV_LEN, wkey, wlen);
+  
+   /* initialize the RC4 key */
+   RC4_set_key(&key, IV_LEN + wlen, seed);
+  
+   /* at the end of the frame there is a plain CRC checksum */
+   len -= sizeof(u_int32);
+
+   /* decrypt the frame */
+   RC4(&key, len, (u_char *)(wep + 1), tmpbuf);
+   
+   /* append the crc check at the end of the buffer */
+   memcpy(tmpbuf + len, (u_char *)(wep + 1) + len, sizeof(u_int32));
+         
+   /* check if the decryption was successfull */
+   if (CRC_checksum(tmpbuf, len + sizeof(u_int32), CRC_INIT) != CRC_RESULT) {
+      USER_MSG("WEP: invalid key, tha packet was skipped\n");
+      return -ENOTHANDLED;
+   }
+  
+   /* copy the decrypted packet over the original one */
+   memcpy((u_char *)(wep + 1), tmpbuf, len);
+   
+   return ESUCCESS;
+#else
    return -EFATAL;
+#endif
 }
 
 /* EOF */

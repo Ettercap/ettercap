@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.39 2004/04/06 21:08:33 lordnaga Exp $
+    $Id: ec_ip.c,v 1.40 2004/05/13 15:15:16 alor Exp $
 */
 
 #include <ec.h>
@@ -160,7 +160,7 @@ FUNC_DECODER(decode_ip)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET->L3.header, PACKET->L3.len) != 0) {
+   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET->L3.header, PACKET->L3.len) != CSUM_RESULT) {
       USER_MSG("Invalid IP packet from %s : csum [%#x] (%#x)\n", int_ntoa(ip->saddr), 
                               L3_checksum(PACKET->L3.header, PACKET->L3.len), ntohs(ip->csum));      
       return NULL;
@@ -242,7 +242,7 @@ FUNC_DECODER(decode_ip)
          PACKET->L3.len = (u_int32)(ip->ihl * 4);
       
          /* ...recalculate checksum */
-         ip->csum = 0; 
+         ip->csum = CSUM_INIT; 
          ip->csum = L3_checksum(PACKET->L3.header, PACKET->L3.len);
       }
    }
@@ -274,7 +274,7 @@ FUNC_INJECTOR(inject_ip)
    iph->ihl      = 5;
    iph->version  = 4;
    iph->tos      = 0;
-   iph->csum     = 0;
+   iph->csum     = CSUM_INIT;
    iph->frag_off = 0;            
    iph->ttl      = 125;   
    iph->protocol = PACKET->L4.proto; 

@@ -17,17 +17,18 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_checksum.c,v 1.7 2004/05/04 20:11:48 alor Exp $
+    $Id: ec_checksum.c,v 1.8 2004/05/13 15:15:15 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
+#include <ec_checksum.h>
 
 /* protos... */
 
 u_int16 L3_checksum(u_char *buf, size_t len);
 u_int16 L4_checksum(struct packet_object *po);
-u_int32 CRC_checksum(u_char *buf, size_t len);
+u_int32 CRC_checksum(u_char *buf, size_t len, u_int32 init);
 
 /*******************************************/
 
@@ -104,7 +105,7 @@ u_int16 L4_checksum(struct packet_object *po)
  * calculate the CRC32 of a buffer
  */
 
-u_int32 CRC_checksum(u_char *buf, size_t len)
+u_int32 CRC_checksum(u_char *buf, size_t len, u_int32 init)
 {
     static unsigned long crc_32_tab[] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
@@ -144,7 +145,7 @@ u_int32 CRC_checksum(u_char *buf, size_t len)
     u_int32 crc;
     size_t i;
 
-    crc = 0x0;
+    crc = init;
     
     for(i = 0; i < len; i++)
       crc = crc_32_tab[(crc ^ buf[i]) & 0xff] ^ (crc>>8);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_udp.c,v 1.15 2003/12/01 12:21:11 lordnaga Exp $
+    $Id: ec_udp.c,v 1.16 2004/05/13 15:15:16 alor Exp $
 */
 
 #include <ec.h>
@@ -85,11 +85,11 @@ FUNC_DECODER(decode_udp)
 
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
-    * the checksum is should be 0 and not equal to ip->csum ;)
+    * the checksum is should be CSUM_RESULT and not equal to udp->csum ;)
     *
     * don't perform the check in unoffensive mode
     */
-   if (!GBL_OPTIONS->unoffensive && L4_checksum(PACKET) != 0) {
+   if (!GBL_OPTIONS->unoffensive && L4_checksum(PACKET) != CSUM_RESULT) {
       char tmp[MAX_ASCII_ADDR_LEN];
       USER_MSG("Invalid UDP packet from %s:%d : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                     ntohs(udp->sport), L4_checksum(PACKET), ntohs(udp->csum) );
@@ -112,7 +112,7 @@ FUNC_DECODER(decode_udp)
    if ((PACKET->flags & PO_MODIFIED) && (PACKET->flags & PO_FORWARDABLE)) {
             
       /* Recalculate checksum */
-      udp->csum = 0; 
+      udp->csum = CSUM_INIT; 
       udp->csum = L4_checksum(PACKET);
    }
 
@@ -137,7 +137,7 @@ FUNC_INJECTOR(inject_udp)
 
    udph->sport = PACKET->L4.src;
    udph->dport = PACKET->L4.dst;
-   udph->csum  = 0;
+   udph->csum  = CSUM_INIT;
       
    /* 
     * Go deeper into injectors chain. 

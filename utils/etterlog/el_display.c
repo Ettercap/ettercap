@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.19 2003/06/01 10:07:30 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.20 2003/06/14 09:29:35 alor Exp $
 */
 
 #include <el.h>
@@ -360,19 +360,27 @@ void print_host(struct host_profile *h)
       fprintf(stdout, " Hostname     : %s \n\n", h->hostname);
    else
       fprintf(stdout, "\n");   
-         
-   if (h->type != FP_HOST_NONLOCAL) {
+      
+   if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       fprintf(stdout, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
       fprintf(stdout, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
    }
+
+printf("type %#x\n", h->type);
    
    fprintf(stdout, " DISTANCE     : %d   \n", h->distance);
    if (h->type & FP_GATEWAY)
       fprintf(stdout, " TYPE         : GATEWAY\n\n");
    else if (h->type & FP_HOST_LOCAL)
       fprintf(stdout, " TYPE         : LAN host\n\n");
+   else if (h->type & FP_ROUTER)
+      fprintf(stdout, " TYPE         : REMOTE ROUTER\n\n");
    else if (h->type & FP_HOST_NONLOCAL)
       fprintf(stdout, " TYPE         : REMOTE host\n\n");
+   else if (h->type == FP_UNKNOWN)
+      fprintf(stdout, " TYPE         : unknown\n\n");
+      
+      
    
    fprintf(stdout, " FINGERPRINT      : %s\n", h->fingerprint);
    if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
@@ -421,7 +429,7 @@ void print_host_xml(struct host_profile *h)
    if (strcmp(h->hostname, ""))
       fprintf(stdout, "\t\t<hostname>%s</hostname>\n", h->hostname);
    
-   if (h->type != FP_HOST_NONLOCAL) {
+   if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       fprintf(stdout, "\t\t<mac>%s</mac>\n", mac_addr_ntoa(h->L2_addr, tmp));
       fprintf(stdout, "\t\t<manuf>%s</manuf>\n", manuf_search(h->L2_addr));
    }
@@ -431,9 +439,14 @@ void print_host_xml(struct host_profile *h)
       fprintf(stdout, "\t\t<type>GATEWAY</type>\n");
    else if (h->type & FP_HOST_LOCAL)
       fprintf(stdout, "\t\t<type>LAN host</type>\n");
+   else if (h->type & FP_ROUTER)
+      fprintf(stdout, "\t\t<type>REMOTE ROUTER</type>\n");
    else if (h->type & FP_HOST_NONLOCAL)
       fprintf(stdout, "\t\t<type>REMOTE host</type>\n");
+   else if (h->type == FP_UNKNOWN)
+      fprintf(stdout, "\t\t<type>unknown</type>\n");
   
+   
    if (strcmp(h->fingerprint, "")) {
       if (fingerprint_search(h->fingerprint, os) == ESUCCESS) {
          fprintf(stdout, "\t\t<fingerprint type=\"known\">%s</fingerprint>\n", h->fingerprint);

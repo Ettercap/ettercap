@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.15 2003/06/13 15:45:03 alor Exp $
+    $Id: ec_log.c,v 1.16 2003/06/14 09:29:35 alor Exp $
 */
 
 #include <ec.h>
@@ -342,10 +342,17 @@ static void log_write_info(struct packet_object *po)
    hi.type = po->PASSIVE.flags;
 
    /* calculate if the dest is local or not */
-   if (ip_addr_is_local(&po->L3.dst))
-      hid.type |= FP_HOST_LOCAL;
-   else
-      hid.type |= FP_HOST_NONLOCAL;
+   switch (ip_addr_is_local(&po->L3.dst)) {
+      case ESUCCESS:
+         hid.type |= FP_HOST_LOCAL;
+         break;
+      case -ENOTFOUND:
+         hid.type |= FP_HOST_NONLOCAL;
+         break;
+      case -EINVALID:
+         hid.type = FP_UNKNOWN;
+         break;
+   }
    
    /* set the length of the fields */
    if (po->DISSECTOR.user)

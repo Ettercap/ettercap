@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.7 2003/05/22 20:48:08 alor Exp $
+    $Id: el_profiles.c,v 1.8 2003/06/14 09:29:35 alor Exp $
 */
 
 #include <el.h>
@@ -112,12 +112,12 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
 static void update_info(struct host_profile *h, struct log_header_info *inf, struct dissector_info *buf)
 {
    
-   /* if it is marked as the gw, don't update */
-   if (!(h->type & FP_GATEWAY))
+   /* if it is marked as the gateway or unkown, don't update */
+   if ( !(h->type & FP_GATEWAY) && !(h->type & FP_UNKNOWN) )
       h->type = inf->type;
    
-   /* update the mac address only if local */
-   if (h->type & FP_HOST_LOCAL)
+   /* update the mac address only if local or unknown */
+   if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN)
       memcpy(h->L2_addr, inf->L2_addr, ETH_ADDR_LEN);
    
    /* the ip address */

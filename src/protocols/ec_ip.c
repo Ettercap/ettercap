@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.10 2003/06/05 21:10:48 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.11 2003/06/14 09:29:35 alor Exp $
 */
 
 #include <ec.h>
@@ -139,13 +139,19 @@ FUNC_DECODER(decode_ip)
       fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_LT, ip->ihl * 4);
    }
 
-   /* calculate if the source is local or not */
-   if (ip_addr_is_local(&PACKET->L3.src))
-      PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
-   else
-      PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
+   /* calculate if the dest is local or not */
+   switch (ip_addr_is_local(&PACKET->L3.src)) {
+      case ESUCCESS:
+         PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
+         break;
+      case -ENOTFOUND:
+         PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
+         break;
+      case -EINVALID:
+         PACKET->PASSIVE.flags = FP_UNKNOWN;
+         break;
+   }
    
-
    /* HOOK POINT: PACKET_IP */
    hook_point(PACKET_IP, po);
    

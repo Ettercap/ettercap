@@ -18,12 +18,12 @@ struct packet_object {
       u_int16 proto;
       u_char * header;
       size_t len;
-      u_char src[ETH_ADDR_LEN];
-      u_char dst[ETH_ADDR_LEN];
+      u_int8 src[ETH_ADDR_LEN];
+      u_int8 dst[ETH_ADDR_LEN];
    } L2;
    
    struct L3 {
-      u_short proto;
+      u_int16 proto;
       u_char * header;
       u_char * options;
       size_t len;
@@ -35,8 +35,8 @@ struct packet_object {
    } L3;
    
    struct L4 {
-      u_char proto;
-      u_char flags;
+      u_int8 proto;
+      u_int8 flags;
       u_char * header;
       u_char * options;
       size_t len;
@@ -78,7 +78,7 @@ struct packet_object {
     * this is that bufffer and it is malloced by tcp or udp dissector.
     */
    size_t disp_len;
-   char * disp_data;
+   u_char * disp_data;
 
    /* 
     * here are stored the user and pass collected by dissectors 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.9 2003/04/14 21:05:17 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.10 2003/06/14 09:29:35 alor Exp $
 */
 
 #include <ec.h>
@@ -71,7 +71,7 @@ int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
 {
    /* different type are incompatible */
    if (sa->type != sb->type)
-      return 0;
+      return -EINVALID;
 
    return memcmp(sa->addr, sb->addr, sa->addr_size);
    
@@ -246,8 +246,12 @@ int mac_addr_aton(char *str, u_char *mac)
 
 
 /*
- * returns 1 if the ip address is local.
+ * returns ESUCCESS if the ip address is local.
+ * returns -ENOTFOUND if it is non local.
  * the choice is make reading the GBL_IFACE infos
+ *
+ * if the GBL_IFACE is not filled (while reading from files)
+ * returns an error.
  */
 
 int ip_addr_is_local(struct ip_addr *sa)
@@ -260,21 +264,25 @@ int ip_addr_is_local(struct ip_addr *sa)
    
    switch (sa->type) {
       case AF_INET:
+         /* make a check on GBL_IFACE (it was initialized ?) */
+         if ( !memcmp(&nw->addr, "\x00\x00\x00\x00", sa->addr_size) )
+            return -EINVALID;
+   
          address = *(u_int32 *)sa->addr;
          netmask = *(u_int32 *)nm->addr;
          network = *(u_int32 *)nw->addr;
          /* check if it is local */
          if ((address & netmask) == network)
-            return 1;
+            return ESUCCESS;
          break;
       case AF_INET6:
          /* XXX - implement this */
          NOT_IMPLEMENTED();
-         return 0;
+         return ESUCCESS;
          break;
    };
 
-   return 0;
+   return -ENOTFOUND;
 }
 
 

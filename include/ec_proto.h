@@ -47,14 +47,27 @@ enum {
    LO6_TYPE_NO  = 59,  /* No Next Header */
 };
 
-                           
-#define TH_FIN  0x01
-#define TH_SYN  0x02
-#define TH_RST  0x04
-#define TH_PSH  0x08
-#define TH_ACK  0x10
-#define TH_URG  0x20
 
+/* TCP flags */
+enum {
+   TH_FIN = 0x01,
+   TH_SYN = 0x02,
+   TH_RST = 0x04,
+   TH_PSH = 0x08,
+   TH_ACK = 0x10,
+   TH_URG = 0x20,
+};
+
+/* ICMP types */
+enum {
+   ICMP_ECHOREPLY = 0,
+   ICMP_DEST_UNREACH = 3,
+   ICMP_REDIRECT = 5,
+   ICMP_ECHO = 8,
+   ICMP_TIME_EXCEEDED = 11,
+   ICMP_NET_UNREACH = 0,
+   ICMP_HOST_UNREACH = 1,
+};
 
 #endif
 

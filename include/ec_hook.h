@@ -6,7 +6,7 @@
 
 void hook_point(int point, struct packet_object *po);
    #define HOOK_RECEIVED      0     /* raw packet, the L* structures are not filled */
-   #define HOOK_DECODED       1     /* all the packet after the protcol stack */
+   #define HOOK_DECODED       1     /* all the packet after the protocol stack parsing */
    #define HOOK_PRE_FORWARD   2     /* right before the forward (if it has to be forwarded) */
    #define HOOK_HANDLED       3     /* top of the stack but before the decision of PO_INGORE */
    #define HOOK_FILTER        4     /* the content filtering point */
@@ -23,6 +23,7 @@ void hook_point(int point, struct packet_object *po);
    #define PACKET_IP6         (PACKET_BASE+7)
    #define PACKET_UDP         (PACKET_BASE+8)
    #define PACKET_TCP         (PACKET_BASE+9)
+   #define PACKET_ICMP        (PACKET_BASE+10)
 
 void hook_add(int point, void (*func)(struct packet_object *po) );
 int hook_del(int point, void (*func)(struct packet_object *po) );

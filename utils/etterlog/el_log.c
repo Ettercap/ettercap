@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.8 2003/04/15 07:57:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.9 2003/06/14 09:29:35 alor Exp $
 */
 
 #include <el.h>
@@ -135,7 +135,6 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
    inf->var.pass_len = ntohs(inf->var.pass_len);
    inf->var.info_len = ntohs(inf->var.info_len);
    inf->var.banner_len = ntohs(inf->var.banner_len);
-
 
    /* 
     * get the dissectors info

@@ -6,7 +6,7 @@ extern int fingerprint_init(void);
 extern int fingerprint_search(const char *f, char *dst);
 extern void fingerprint_default(char *finger);
 extern void fingerprint_push(char *finger, int param, int value);
-extern u_char TTL_PREDICTOR(u_char x);
+extern u_int8 TTL_PREDICTOR(u_int8 x);
 
 /*
  *  The fingerprint database has the following structure:                  
@@ -55,9 +55,11 @@ enum {
 struct passive_info {
    char fingerprint[FINGER_LEN+1];
    char flags;
+      #define FP_UNKNOWN         0  /* this happen reading form a file */
       #define FP_HOST_LOCAL      1
       #define FP_HOST_NONLOCAL   1<<1
       #define FP_GATEWAY         1<<2
+      #define FP_ROUTER          1<<3
 };
 
 

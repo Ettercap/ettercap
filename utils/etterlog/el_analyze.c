@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.12 2003/04/15 07:57:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.13 2003/06/14 09:29:35 alor Exp $
 */
 
 #include <el.h>
@@ -151,7 +151,7 @@ void analyze_info(void)
    struct active_user *u;
    LIST_HEAD(, host_profile) *hosts_list_head = get_host_list_ptr();
    int nhl = 0, nhnl = 0, ngw = 0;
-   int nports = 0, nusers = 0;
+   int nports = 0, nusers = 0, nhosts = 0;
    
    /* create the hosts' list */
    create_hosts_list(); 
@@ -167,6 +167,7 @@ void analyze_info(void)
       if (h->type & FP_GATEWAY)
          ngw++;
       
+      nhosts++;
      
       LIST_FOREACH(o, &(h->open_ports_head), next) {
          nports++;
@@ -178,6 +179,7 @@ void analyze_info(void)
    }
    
    fprintf(stdout, "\n\n");
+   fprintf(stdout, "Number of hosts (total)       : %d\n\n", nhosts);   
    fprintf(stdout, "Number of local hosts         : %d\n", nhl);   
    fprintf(stdout, "Number of non local hosts     : %d\n", nhnl);   
    fprintf(stdout, "Number of gateway             : %d\n\n", ngw);   

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.14 2003/06/09 12:03:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.15 2003/06/14 09:29:35 alor Exp $
 */
 
 #include <ec.h>
@@ -242,9 +242,11 @@ void get_hw_info(void)
    bpf_u_int32 network, netmask;
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
  
-   /* do not touch the interface if reading from a file */
-   if (GBL_OPTIONS->read)
+   /* dont touch the interface reading from file */
+   if (GBL_OPTIONS->read) {
+      DEBUG_MSG("get_hw_info: skipping... (reading offline)");
       return;
+   }
    
    DEBUG_MSG("get_hw_info");
    

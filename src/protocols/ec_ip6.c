@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip6.c,v 1.4 2003/04/15 07:57:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip6.c,v 1.5 2003/06/14 09:29:35 alor Exp $
 */
 
 #include <ec.h>
@@ -112,34 +112,47 @@ FUNC_DECODER(decode_ip6)
    PACKET->L3.proto = htons(LL_TYPE_IP6);
    PACKET->L3.ttl = ip6->hop_limit;
 
+   /* calculate if the dest is local or not */
+   switch (ip_addr_is_local(&PACKET->L3.src)) {
+      case ESUCCESS:
+         PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
+         break;
+      case -ENOTFOUND:
+         PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
+         break;
+      case -EINVALID:
+         PACKET->PASSIVE.flags = FP_UNKNOWN;
+         break;
+   }
+   
    /* XXX had to implement passive fingerprint for IPv6 */
    
    /* XXX - implemet checksum check */
    
    switch (ip6->next_hdr) {
       case 0:
-	 DEBUG_MSG(" --> option  Hop-By-Hop");
-	 opt = 0;
-	 break;
+	      DEBUG_MSG(" --> option  Hop-By-Hop");
+	      opt = 0;
+	      break;
       case 43:
-	 DEBUG_MSG(" --> option  Routing");
-	 opt = 0;
-	 break;
+	      DEBUG_MSG(" --> option  Routing");
+	      opt = 0;
+	      break;
       case 44:
-	 DEBUG_MSG(" --> option  Fragment");
-	 opt = 0;
-	 break;
+	      DEBUG_MSG(" --> option  Fragment");
+	      opt = 0;
+	      break;
       case 60:
-	 DEBUG_MSG(" --> option  Destination");
-	 opt = 0;
-	 break;
+	      DEBUG_MSG(" --> option  Destination");
+	      opt = 0;
+	      break;
       case 59:
-	 DEBUG_MSG(" --> option  No-Next-Header");
-	 opt = 0;
-	 break;
+	      DEBUG_MSG(" --> option  No-Next-Header");
+	      opt = 0;
+	      break;
       default:
-	 opt = -1;
-	 break;
+	      opt = -1;
+	      break;
    }
       
    /* if (opt == 0)

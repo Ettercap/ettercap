@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.57 2004/04/06 15:12:57 alor Exp $
+    $Id: ec_main.c,v 1.58 2004/04/08 13:11:14 alor Exp $
 */
 
 #include <ec.h>
@@ -87,12 +87,12 @@ int main(int argc, char *argv[])
    /* load the configuration file */
    load_conf();
    
-   /* initialize the user interface */
-   ui_init();
-
    /* get the list of available interfaces */
    capture_getifs();
    
+   /* initialize the user interface */
+   ui_init();
+
    /* initialize libpcap */
    capture_init();
 

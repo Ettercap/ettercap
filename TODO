@@ -22,9 +22,6 @@
    + SESSION
       - dissect_free_session
 
-   + GTK GUI
-      - load twice the host list will not update the list
-
    + fix the ip_forward strangeness
 
    + CURSES GUI

@@ -29,10 +29,6 @@ this is the unofficial and floating in time roadmap:
 
 Ago 2003:
 
-   + MITM METHODS
-      - arp poisoning
-      - icmp redirect
-      - dhcp poisoning
    
    + ARP POISON ENGINE
       - arp poisoner
@@ -68,7 +64,12 @@ Sep 2003:
                   subst(ptr, "1.51", 4);
                }
             }
-            
+      
+
+   + MITM METHODS
+      - icmp redirect
+      - dhcp poisoning
+      
 Oct 2003:
 
    + INJECTION 

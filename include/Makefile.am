@@ -22,6 +22,7 @@ noinst_HEADERS = ec.h \
                  ec_interfaces.h \
                  ec_log.h \
                  ec_manuf.h \
+                 ec_mitm.h \
                  ec_packet.h \
                  ec_parser.h \
                  ec_passive.h \
@@ -37,7 +38,6 @@ noinst_HEADERS = ec.h \
                  ec_signals.h \
                  ec_socket.h \
                  ec_sniff.h \
-                 ec_sniff_arp.h \
                  ec_sniff_bridge.h \
                  ec_sniff_unified.h \
                  ec_stats.h \

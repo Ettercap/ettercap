@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.27 2003/08/18 15:44:07 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.28 2003/08/18 21:25:16 alor Exp $
 */
 
 #include <ec.h>
@@ -37,6 +37,7 @@
 #include <ec_ui.h>
 #include <ec_conf.h>
 #include <ec_conntrack.h>
+#include <ec_mitm.h>
 
 /* global vars */
 
@@ -134,6 +135,9 @@ int main(int argc, char *argv[])
    /* build the list of active hosts */
    if (GBL_SNIFF->type != SM_BRIDGED)
       build_hosts_list();
+
+   /* start the mitm attack */
+   mitm_start();
    
    /* initialize the sniffing method */
    EXECUTE(GBL_SNIFF->start);
@@ -152,6 +156,9 @@ int main(int argc, char *argv[])
  * reached only when the UI is shutted down 
  ********************************************/
 
+   /* stop the mitm attack */
+   mitm_stop();
+   
    /* terminate the sniffing engine */
    EXECUTE(GBL_SNIFF->cleanup);
    

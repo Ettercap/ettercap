@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.32 2003/07/11 16:50:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.33 2003/08/18 21:25:16 alor Exp $
 */
 
 
@@ -28,6 +28,7 @@
 #include <ec_log.h>
 #include <ec_format.h>
 #include <ec_update.h>
+#include <ec_mitm.h>
 
 #include <ctype.h>
 
@@ -55,7 +56,7 @@ void ec_usage(void)
    fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
    
    fprintf(stdout, "\nSniffing options:\n");
-   fprintf(stdout, "  -A, --arp-poison            perform ARP poisoning while sniff\n");
+   fprintf(stdout, "  -M, --mitm <METHOD>         perform a mitm attack\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
    fprintf(stdout, "  -r, --read <file>           read data from pcapfile <file>\n");
@@ -144,7 +145,7 @@ void parse_options(int argc, char **argv)
       { "gtk", no_argument, NULL, 'G' },
       { "daemon", no_argument, NULL, 'D' },
       
-      { "arp-poison", no_argument, NULL, 'A' },
+      { "mitm", required_argument, NULL, 'M' },
       { "bridge", required_argument, NULL, 'B' },
       { "promisc", no_argument, NULL, 'p' },
       
@@ -164,13 +165,13 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDdEe:f:Ghi:j:k:L:l:Nn:OoP:pqiRr:t:UV:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "B:CchDdEe:f:Ghi:j:k:L:l:M:Nn:OoP:pqiRr:t:UV:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
-         case 'A':
-                  set_arp_sniff();
-                  NOT_IMPLEMENTED();
+         case 'M':
+                  if (mitm_set(optarg) != ESUCCESS)
+                     FATAL_ERROR("MITM method '%s' not supported...\n", optarg);
                   break;
                   
          case 'B':

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.25 2003/07/20 20:56:13 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.26 2003/08/18 21:25:16 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -43,24 +43,24 @@ changed it to a powerful and flexible tool for man-in-the-middle attacks.
 It supports active and passive dissection of many protocols (even ciphered ones)
 and includes many features for network and host analysis (such as OS fingerprint).
 .PP
-It has three sniffing methods:
+It has three main sniffing options:
 .PP
-\fICLASSIC\fR, classic sniffing method. You can choose to put or not the
-interface in promisc mode (-p option). You will sniff only the network traffic
-that reach your NIC.
+\fIUNIFIED\fR, this method sniff all the packets that pass on the cable. You can choose to put or not the
+interface in promisc mode (-p option). The packet not directed to the host
+running ettercap will be forwarded automatically using layer 3 routing. So you
+can use a mitm attack lauched from a different tool and let ettercap modify the
+packets and forward them for you. You can also run it on a gateway.
 .PP
-\fIARPBASED\fR, uses arp poisoning to sniff in switched LAN between two or more
-targets. It assumes various names depending on how many hosts are involved in
-the poisoning.
-.br
-   - SIMPLE  XXX-TODO
-.br
-   - SMARTARP  XXX-TODO
+\fIMITM ATTACK\fR, you can choose the mitm attack that you prefer. The mitm
+attack module is indipended from the sniffing and filtering process, so you can
+lauch several attack at the same time or use your own tool for the attack. The
+crucial point is that the packets have to arrive to ettercap with the correct
+mac address and a different ip address (only theese packets will be forwarded).
 .PP
 \fIBRIDGED\fR, it uses two network interfaces and forward the traffic from one to the other
 while performing sniffing and content filtering. This sniffing method is
 totally stealthy since there is no way to find that someone is in the middle on
-the cable.  XXX-TODO
+the cable.  You can look at this method as a mitm attack at layer 1.
 .PP
 The most relevant ettercap features are:
 .PP
@@ -184,25 +184,38 @@ ettercap will process them. You can even use external program to hijack
 packet.
 .br
 You have full control of what ettercap should receive. You can use the internal
-ARP poisoner, set the interface in promisc mode, use plugins or use every
+mitm attacks, set the interface in promisc mode, use plugins or use every
 method you want.
 .TP
-\fB\-A\fR, \fB\-\-arp-poison\fR
-ARP BASED sniffing
+\fB\-M\fR, \fB\-\-mitm <METHOD>\fR
+MITM attack 
 .br
-This option will activate the ARP poisoner. If you want to use the man-in-the-middle
-technique you have to use it. You can use it in conjunction with other
-hijacking method. The packet are forwarded (as always) at layer 3, so the kernel is
-responsible for correct routing. 
-.br
-.B NOTE: 
-if you manage to poison a client, you have to set correct routing
+This option will activate the man in the middle attack. You can choose the mitm
+attack that you prefer. 
+.Sp
+The following mitm attack are available:
+.RS
+.TP
+\fBarp\fR 
+this method implement the ARP poisoning mitm attack. ARP
+request/reply are sent to the victims to poison their ARP cache. Once the cache
+has been poisoned the victims will send all packets to the attacker which, in
+turn, can modify them and forward to the real destination.
+.Sp
+NOTE: if you manage to poison a client, you have to set correct routing
 table in the kernel specifying the GW. If your routing table are incorrect, the
 poisoned clients will not be able to navigate the Internet.
-.br
-Filters that have as action a replacement or a drop, can be used only with ARPBASED
-sniffing because it is necessary to re-adjust the sequence number in full-duplex in order
-to maintain the connection alive.
+
+.TP
+\fBicmp\fR 
+XXX-TODO 
+
+.TP
+\fBdhcp\fR 
+XXX-TODO 
+
+.RE
+
 .TP
 \fB\-B\fR, \fB\-\-bridge <IFACE>\fR
 BRIDGED sniffing
@@ -290,9 +303,11 @@ ettercap in debug mode.
 \fB\-i\fR, \fB\-\-iface <IFACE>\fR
 Use this <IFACE> instead of the default one.
 
+.TP
 \fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
 Use this <NETMSK> instead of the one associated with the current iface.
 
+.TP
 \fB\-R\fR, \fB\-\-reverse\fR
 Reverse the matching in the TARGET selection. It means not(TARGET). All but the
 selected TARGET.
@@ -309,7 +324,7 @@ PROTO can be "tcp", "udp" or "all" for both.
 .TP
 \fB\-z\fR, \fB\-\-silent\fR
 Do not perform the initial ARP scan of the LAN.
-.br
+.Sp
 NOTE: you will not have the hosts list, so you can't use the multipoison feature.
 you can only select two hosts for an ARP poisoning attack, specifying them
 through the TARGETs
@@ -364,7 +379,10 @@ displayed.
 .Sp
 FORMAT may be one of the following:
 .Sp
-\fBhex\fR :
+
+.RS
+.TP
+\fBhex\fR
 Print the packets in hex format.
 .Sp
 example:
@@ -374,17 +392,21 @@ the string  "HTTP/1.1 304 Not Modified"  becomes:
 0000: 4854 5450 2f31 2e31 2033 3034 204e 6f74  HTTP/1.1 304 Not
 .br
 0010: 204d 6f64 6966 6965 64                    Modified
-    
-\fBascii\fR :
+   
+.TP
+\fBascii\fR
 Print only "printable" characters, the others are displayed as dots '.'
 
-\fBtext\fR :
+.TP
+\fBtext\fR
 Print only the "printable" characters and skip the others.
 
-\fBebcdic\fR :
+.TP
+\fBebcdic\fR
 Convert an EBCDIC text to ASCII.
 
-\fBhtml\fR :
+.TP
+\fBhtml\fR
 Strip all the html tags from the text. A tag is every string between < and >.
 .Sp
 example:
@@ -393,17 +415,19 @@ example:
 displayed.
 .Sp
 This is the title, but the following will not be displayed.
+.RE
+
 
 .TP
 \fB\-d\fR, \fB\-\-dns\fR
 Resolve ip addresses into hostnames. 
-.br
+.Sp
 NOTE: this may seriously slow down ettercap while logging passive informations.
 Every time a new host is found, a query to the dns is performed. Ettercap keeps
 a cache for already resolved host to increase the speed, but new hosts need a
 new query and the dns may take up to 2 or 3 seconds to respond for an unknown
 host.
-.br
+.Sp
 HINT: ettercap collects the dns replies it sniffs in the resolution table, so
 even if you specify to not resolve the hostames, some of them will be resolved
 because the reply was previously sniffed. think about it as a passive dns 
@@ -426,7 +450,7 @@ extract human readable data. With this option will be logged all the packets
 that ettercap sniffs and all the passive info (host info + user & pass) it can
 collect. Given a LOGFILE, ettercap will create LOGFILE.ecp (for packets) and
 LOGFILE.eci (for the infos).
-.br
+.Sp
 NOTE: if you specify this option on command line you don't have to take care of
 priviledges since the log file is opened in the startup phase (with high
 privs). But if you enable the log option while ettercap is already started, you
@@ -448,7 +472,7 @@ capable of handling both compressed and uncompresse log files.
 .TP
 \fB\-o\fR, \fB\-\-only-local\fR
 Stores profiles information belonging only to the LAN hosts.
-.br
+.Sp
 NOTE: this option is effective only against the profiles collected in memory.
 while logging to a file ALL the host are logged, if you want to split them, use
 the related etterlog(8) option.

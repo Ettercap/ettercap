@@ -23,6 +23,7 @@ ettercap_SOURCES = ec_capture.c \
                ec_log.c \
                ec_main.c \
                ec_manuf.c \
+               ec_mitm.c \
                ec_packet.c \
                ec_parser.c \
                ec_passive.c \
@@ -37,7 +38,6 @@ ettercap_SOURCES = ec_capture.c \
                ec_signals.c \
                ec_socket.c \
                ec_sniff.c \
-               ec_sniff_arp.c \
                ec_sniff_bridge.c \
                ec_sniff_unified.c \
                ec_stats.c \
@@ -51,6 +51,7 @@ ettercap_SOURCES = ec_capture.c \
 				   interfaces/console/ec_console_profile.c \
 				   interfaces/console/ec_console_plugin.c \
 				   interfaces/daemon/ec_daemon.c \
+               mitm/ec_arp_poisoning.c \
 				   protocols/ec_eth.c \
 				   protocols/ec_wifi.c \
 				   protocols/ec_arp.c \

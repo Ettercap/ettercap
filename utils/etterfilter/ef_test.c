@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.18 2004/01/20 22:24:38 alor Exp $
+    $Id: ef_test.c,v 1.19 2004/02/16 21:15:32 alor Exp $
 */
 
 #include <ef.h>
@@ -122,8 +122,8 @@ void print_test(struct filter_op *fop, u_int32 eip)
    switch(fop->op.test.op) {
       case FTEST_EQ:
          if (fop->op.test.size != 0)
-            fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, == %d\n", eip,
-               fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value);
+            fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, == %d [%#x]\n", eip,
+               fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value, fop->op.test.value);
          else
             fprintf(stdout, "%04d: TEST level %d, offset %d, \"%s\"\n", eip,
                fop->op.test.level, fop->op.test.offset, fop->op.test.string);
@@ -131,31 +131,31 @@ void print_test(struct filter_op *fop, u_int32 eip)
          
       case FTEST_NEQ:
          if (fop->op.test.size != 0)
-            fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, != %d\n", eip,
-               fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value);
+            fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, != %d [%#x]\n", eip,
+               fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value, fop->op.test.value);
          else
             fprintf(stdout, "%04d: TEST level %d, offset %d, not \"%s\"\n", eip,
                fop->op.test.level, fop->op.test.offset, fop->op.test.string);
          break;
 
       case FTEST_LT:
-         fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, < %d\n", eip,
-            fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value);
+         fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, < %d [%#x]\n", eip,
+            fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value, fop->op.test.value);
          break;
          
       case FTEST_GT:
-         fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, > %d\n", eip,
-            fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value);
+         fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, > %d [%#x]\n", eip,
+            fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value, fop->op.test.value);
          break;
          
       case FTEST_LEQ:
-         fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, <= %d\n", eip,
-            fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value);
+         fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, <= %d [%#x]\n", eip,
+            fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value, fop->op.test.value);
          break;
          
       case FTEST_GEQ:
-         fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, >= %d\n", eip,
-            fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value);
+         fprintf(stdout, "%04d: TEST level %d, offset %d, size %d, >= %d [%#x]\n", eip,
+            fop->op.test.level, fop->op.test.offset, fop->op.test.size, fop->op.test.value, fop->op.test.value);
          break;
 
       default:
@@ -168,8 +168,8 @@ void print_test(struct filter_op *fop, u_int32 eip)
 void print_assign(struct filter_op *fop, u_int32 eip)
 {
    if (fop->op.assign.size != 0)
-      fprintf(stdout, "%04d: ASSIGNMENT level %d, offset %d, size %d, value %d\n", eip,
-            fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size, fop->op.assign.value);
+      fprintf(stdout, "%04d: ASSIGNMENT level %d, offset %d, size %d, value %d [%#x]\n", eip,
+            fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size, fop->op.assign.value, fop->op.assign.value);
    else
       fprintf(stdout, "%04d: ASSIGNMENT level %d, offset %d, string \"%s\"\n", eip, 
             fop->op.assign.level, fop->op.assign.offset, fop->op.assign.string);

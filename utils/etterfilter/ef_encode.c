@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.17 2004/01/20 22:24:38 alor Exp $
+    $Id: ef_encode.c,v 1.18 2004/02/16 21:15:32 alor Exp $
 */
 
 #include <ef.h>
@@ -73,7 +73,6 @@ int encode_offset(char *string, struct filter_op *fop)
    return ret;
 }
 
-
 /*
  * assing the value of the const to the fop.value
  *
@@ -93,6 +92,20 @@ int encode_const(char *string, struct filter_op *fop)
    /* it is an integer value */
    } else if (isdigit((int)string[0])) {
       fop->op.test.value = strtoul(string, NULL, 10);
+      return ESUCCESS;
+      
+   /* it is an ip address */
+   } else if (string[0] == '\'' && string[strlen(string) - 1] == '\'') {
+      struct in_addr ipaddr;
+      
+      /* remove the single quote */
+      p = strchr(string + 1, '\'');
+      *p = '\0';
+
+      if (inet_aton(string + 1, &ipaddr) == 0)
+         return -EFATAL;
+      
+      fop->op.test.value = *(u_int32 *)&ipaddr;
       return ESUCCESS;
       
    /* it is a string */

@@ -7,7 +7,6 @@
    + FIXING
       - dissect_free_session
       - input for curses gui
-      - ip address in the filter
 
    + PCAP RELATED
       + reset the stats when the sniffing thread starts

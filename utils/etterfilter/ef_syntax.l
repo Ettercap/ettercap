@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_syntax.l,v 1.17 2003/10/07 14:51:28 alor Exp $
+    $Id: ef_syntax.l,v 1.18 2004/02/16 21:15:32 alor Exp $
 */
 
 %{
@@ -44,6 +44,7 @@ OFFSET         [[:alnum:]]+\.[A-Za-z]+[\.[A-Za-z]+]*
 FUNCTION       [a-z_]+\((.*\".*\"[^)]*)*\)
 CONST          [0-9]+|0x[0-9]+|[A-Z]+
 STRING         \"[[:graph:]]*\"
+IPADDR         \'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\'
 SPACES         [ \t]+
 
 %%
@@ -164,6 +165,16 @@ SPACES         [ \t]+
       SCRIPT_ERROR("Invalid string [%s]", yytext);
    
    return TOKEN_STRING;
+}
+
+{IPADDR} {
+   ef_debug(4, "IPADDR: %s\n", yytext);
+   
+   if (encode_const(yytext, &yylval.fop) != ESUCCESS)
+      SCRIPT_ERROR("Invalid ip address [%s]", yytext);
+  
+   /* ip addresses are translated into network order integer */
+   return TOKEN_CONST;
 }
 
 {SPACES}       /* eat up the blank spaces */

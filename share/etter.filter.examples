@@ -75,14 +75,19 @@ if (DATA.data + 40 == "ette") {
 }
 
 # inject a file after a specific packet
-if (ip.src == 21 && search(DATA.data, "root")) {
+if (tcp.src == 21 && search(DATA.data, "root")) {
    inject("./fake_response");
 }
 
 # replace the entire packet with another
-if (ip.src == 23 && search(DATA.data, "microsoft")) {
+if (tcp.src == 23 && search(DATA.data, "microsoft")) {
    drop();
    inject("./fake_telnet");
+}
+
+# filter only a specific ip address
+if (ip.src == '192.168.0.2') {
+   drop();
 }
 
 # eof

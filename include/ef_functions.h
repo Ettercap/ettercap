@@ -1,12 +1,12 @@
 
-/* $Id: ef_functions.h,v 1.16 2003/10/05 17:07:20 alor Exp $ */
+/* $Id: ef_functions.h,v 1.17 2004/02/16 21:15:32 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
 
 #include <ec_filter.h>
 
-#define SCRIPT_ERROR(x, ...) FATAL_ERROR("[%s:%d]: "x, GBL_OPTIONS.source_file, GBL.lineno, ## __VA_ARGS__ );
+#define SCRIPT_ERROR(x, ...) FATAL_ERROR("\n[%s:%d]: "x, GBL_OPTIONS.source_file, GBL.lineno, ## __VA_ARGS__ );
 
 #define WARNING(x) do {                   \
 if (!GBL_OPTIONS.suppress_warnings)       \

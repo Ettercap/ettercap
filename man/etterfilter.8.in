@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.18 2004/01/21 21:26:28 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.19 2004/02/16 21:15:32 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -123,7 +123,8 @@ block.
 Every instruction in a block must end with a semicolon ';'. 
 .Sp
 Comparisons are implemented with the '==' operator and can be used to compare 
-numbers and strings. You can also use the 'less than' ('<'), 'greater than'
+numbers, strings or ip addresses. An ip address MUST be enclosed within two single 
+quote (eg. '192.168.0.7'). You can also use the 'less than' ('<'), 'greater than'
 ('>'), 'less or equal' ('<=') and 'greater or equal' ('>=') operators.
 The lvalue of a comparison must be and offset (see later)
 .Sp

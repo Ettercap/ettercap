@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.21 2003/10/05 17:07:20 alor Exp $
+    $Id: ef_grammar.y,v 1.22 2004/02/16 21:15:32 alor Exp $
 */
 
 %{
@@ -362,7 +362,7 @@ struct {
    char *string;
 } errors_array[] = 
    {
-      { "TOKEN_CONST", "integer" },
+      { "TOKEN_CONST", "integer or ip address" },
       { "TOKEN_OFFSET", "offset" },
       { "TOKEN_FUNCTION", "function" },
       { "TOKEN_STRING", "string" },

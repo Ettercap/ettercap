@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: gre_relay.c,v 1.1 2003/12/07 14:59:44 lordnaga Exp $
+    $Id: gre_relay.c,v 1.2 2003/12/07 15:17:31 lordnaga Exp $
 */
 
 
@@ -25,7 +25,7 @@
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_packet.h>
 #include <ec_hook.h>
-
+#include <ec_send.h>
 
 struct ip_header {
 #ifndef WORDS_BIGENDIAN
@@ -138,15 +138,15 @@ static void parse_gre(struct packet_object *po)
    if (!(po->flags & PO_FORWARDABLE)) 
       return; 
 
-   if ( (iph = po->L3.header) == NULL)
+   if ( (iph = (struct ip_header *)po->L3.header) == NULL)
       return;
       
-   if ( iph->daddr != fake_ip->s_addr )
+   if ( iph->daddr != fake_ip.s_addr )
       return;
       
    /* Switch source and dest IP address */
    iph->daddr = iph->saddr;
-   iph->saddr = fake_ip->s_addr;
+   iph->saddr = fake_ip.s_addr;
    
    /* Increase ttl */
    iph->ttl = 128;
@@ -160,9 +160,9 @@ static void parse_arp(struct packet_object *po)
 {
    struct ip_addr sa;
    
-   ip_addr_init(&sa, AF_INET, (char *)&(fake_ip->s_addr));
+   ip_addr_init(&sa, AF_INET, (char *)&(fake_ip.s_addr));
    if (!ip_addr_cmp(&sa, &po->L3.dst))
-      send_arp(ARPOP_REPLY, &sa, GBL_IFACE->mac, &po->L3.src, &po->L2.src);
+      send_arp(ARPOP_REPLY, &sa, GBL_IFACE->mac, &po->L3.src, po->L2.src);
 }
 
 /* EOF */

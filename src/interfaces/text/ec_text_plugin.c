@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_plugin.c,v 1.7 2003/12/26 17:58:35 alor Exp $
+    $Id: ec_text_plugin.c,v 1.8 2004/01/10 14:15:26 alor Exp $
 */
 
 #include <ec.h>
@@ -39,7 +39,7 @@ int text_plugin(char *plugin)
 {
    int type;
 
-   DEBUG_MSG("text_interface");
+   DEBUG_MSG("text_plugin: %s", plugin);
    
    /*
     * if the plugin name is "list", print the 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.4 2004/01/09 13:18:09 alor Exp $
+    $Id: dns_spoof.c,v 1.5 2004/01/10 14:15:08 alor Exp $
 */
 
 
@@ -333,7 +333,7 @@ static void dns_spoof(struct packet_object *po)
          memcpy(p + 4, "\x00\x01", 2);                      /* class */
          memcpy(p + 6, "\x00\x00\x0e\x10", 4);              /* TTL (1 hour) */
          memcpy(p + 10, "\x00\x09", 2);                     /* datalen */
-         memcpy(p + 12, "\x00\x01", 2);                     /* preference (highest) */
+         memcpy(p + 12, "\x00\x0a", 2);                     /* preference (highest) */
          /* 
           * add "mail." in front of the domain and 
           * resolve it in the additional record 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_daemon.c,v 1.10 2003/11/21 08:32:16 alor Exp $
+    $Id: ec_daemon.c,v 1.11 2004/01/10 14:15:26 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_threads.h>
 #include <ec_scan.h>
 #include <ec_mitm.h>
+#include <ec_plugins.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -55,6 +56,7 @@ void set_daemon_interface(void)
    ops.cleanup = &daemon_cleanup;
    ops.msg = &daemon_msg;
    ops.error = &daemon_error;
+   ops.fatal_error = &daemon_error;
    ops.progress = &daemon_progress;
    ops.type = UI_DAEMONIZE;
    
@@ -132,6 +134,10 @@ void daemon_interface(void)
 {
    DEBUG_MSG("daemon_interface");
    
+   /* check if the plugin exists */
+   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
+      FATAL_ERROR("%s plugin can not be found !", GBL_OPTIONS->plugin);
+   
    /* build the list of active hosts */
    build_hosts_list();
 
@@ -140,6 +146,11 @@ void daemon_interface(void)
    
    /* initialize the sniffing method */
    EXECUTE(GBL_SNIFF->start);
+   
+   /* if we have to activate a plugin */
+   if (GBL_OPTIONS->plugin && plugin_init(GBL_OPTIONS->plugin) != PLUGIN_RUNNING)
+      /* end the interface */
+      return;
 
    /* discard the messages */
    LOOP {

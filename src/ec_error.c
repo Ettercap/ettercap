@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_error.c,v 1.9 2003/11/11 21:54:25 alor Exp $
+    $Id: ec_error.c,v 1.10 2004/01/10 14:15:09 alor Exp $
 */
 
 #include <ec.h>
@@ -79,7 +79,7 @@ void fatal_error(char *message, ...)
 
    /* invoke the ui method */
    ui_fatal_error(errmsg);
-   
+
    /* the ui should exits, but to be sure... */
    exit(-1);
 }

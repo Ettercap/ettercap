@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.17 2004/01/06 17:44:16 alor Exp $
+    $Id: ec_text.c,v 1.18 2004/01/10 14:15:26 alor Exp $
 */
 
 #include <ec.h>
@@ -251,6 +251,10 @@ static void text_progress(char *title, int value, int max)
 void text_interface(void)
 {
    DEBUG_MSG("text_interface");
+   
+   /* check if the specified plugin exists */
+   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
+      FATAL_ERROR("%s plugin can not be found !", GBL_OPTIONS->plugin);
 
    /* build the list of active hosts */
    build_hosts_list();

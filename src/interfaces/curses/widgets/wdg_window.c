@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_window.c,v 1.8 2003/12/27 18:49:52 alor Exp $
+    $Id: wdg_window.c,v 1.9 2004/01/10 14:15:09 alor Exp $
 */
 
 #include <wdg.h>
@@ -277,8 +277,6 @@ void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...)
    WDG_WO_EXT(struct wdg_window, ww);
    va_list ap;
    
-   WDG_DEBUG_MSG("wdg_window_print");
-
    /* move the pointer */
    wmove(ww->sub, y, x);
    

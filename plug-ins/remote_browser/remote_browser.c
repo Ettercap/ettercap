@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: remote_browser.c,v 1.2 2004/04/14 08:02:35 alor Exp $
+    $Id: remote_browser.c,v 1.3 2004/04/14 09:54:24 lordnaga Exp $
 */
 
 
@@ -48,7 +48,7 @@ struct plugin_ops remote_browser_ops = {
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Sends visited URLs to the browser",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   version:          "1.2",   
    /* activation function */
    init:             &remote_browser_init,
    /* deactivation function */                     
@@ -148,6 +148,7 @@ static void remote_browser(struct packet_object *po)
       /* execute the script */ 
       if (fork() == 0) {
          execvp(param[0], param);
+         exit(0);
       }
          
       SAFE_FREE(param);

@@ -37,7 +37,7 @@ if ( DATA.data + 20 == 0x4142 ) {
 
 
 # drop any packet containing "ettercap"
-if (search(DATA.disp_data, "ettercap")) {
+if (search(DECODED.data, "ettercap")) {
    msg("some one is talking about us...");
    drop();
 }
@@ -45,8 +45,8 @@ if (search(DATA.disp_data, "ettercap")) {
 
 # log ssh decrypted packets matching the regexp
 if (ip.proto == TCP && tcp.port == 22) {
-   if (regex(DATA.disp_data, ".*login.*")) {
-      log(DATA.disp_data, "./decrypted_log");
+   if (regex(DECODED.data, ".*login.*")) {
+      log(DECODED.data, "./decrypted_log");
    }
 }
 

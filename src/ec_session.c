@@ -17,14 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.11 2003/09/07 19:47:51 alor Exp $
+    $Id: ec_session.c,v 1.12 2003/09/09 14:59:29 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
 #include <ec_threads.h>
 #include <ec_session.h>
-#include <ec_hash.h>
 
 #include <signal.h>
 
@@ -51,6 +50,7 @@ void session_put(struct session *s);
 int session_get(struct session **s, void *ident, size_t ident_len);
 int session_del(void *ident, size_t ident_len);
 int session_get_and_del(struct session **s, void *ident, size_t ident_len);
+u_int32 session_hash(void *ident, size_t ilen);
 
 void session_free(struct session *s);
 
@@ -81,7 +81,7 @@ void session_put(struct session *s)
    SESSION_LOCK;
    
    /* calculate the hash */
-   h = fnv_32(s->ident, s->ident_len) & TABMASK;
+   h = session_hash(s->ident, s->ident_len);
    
    /* search if it already exist */
    LIST_FOREACH(sl, &session_list_head[h], next) {
@@ -157,7 +157,7 @@ int session_get(struct session **s, void *ident, size_t ident_len)
    SESSION_LOCK;
    
    /* calculate the hash */
-   h = fnv_32(ident, ident_len) & TABMASK;
+   h = session_hash(ident, ident_len);
 
    /* search if it already exist */
    LIST_FOREACH(sl, &session_list_head[h], next) {
@@ -193,7 +193,7 @@ int session_del(void *ident, size_t ident_len)
    SESSION_LOCK;
    
    /* calculate the hash */
-   h = fnv_32(ident, ident_len) & TABMASK;
+   h = session_hash(ident, ident_len);
    
    /* search if it already exist */
    LIST_FOREACH(sl, &session_list_head[h], next) {
@@ -232,7 +232,7 @@ int session_get_and_del(struct session **s, void *ident, size_t ident_len)
    SESSION_LOCK;
    
    /* calculate the hash */
-   h = fnv_32(ident, ident_len) & TABMASK;
+   h = session_hash(ident, ident_len);
    
    /* search if it already exist */
    LIST_FOREACH(sl, &session_list_head[h], next) {
@@ -267,6 +267,19 @@ void session_free(struct session *s)
    SAFE_FREE(s->data);
    SAFE_FREE(s);
 }
+
+/*
+ * calculate the hash for an ident.
+ * use a TCP like checksum so if some word will be exchanged
+ * the hash will be the same. it is useful for dissectors
+ * to find the same session if the packet is goint to the
+ * server or to the client.
+ */
+u_int32 session_hash(void *ident, size_t ilen)
+{
+   return 0;
+}
+
 
 #ifdef DEBUG
 /*

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.30 2003/09/07 19:47:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.31 2003/09/09 14:59:29 alor Exp $
 */
 
 #include <ec.h>
@@ -266,9 +266,9 @@ FUNC_DECODER(decode_data)
     * the injection is done elsewhere.
     */
    /* XXX -- filter ?? */
-   if (po->flags & PO_FORWARDABLE) {
    //  fiter_engine(po);
-   
+
+   if (po->flags & PO_FORWARDABLE) {
       /* HOOK POINT: FILTER */ 
       hook_point(HOOK_FILTER, po);
    }

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.3 2003/09/08 18:49:24 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.4 2003/09/09 14:59:29 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -123,11 +123,11 @@ syntax of etterfilter.conf file.
 .TP
 .B search(\fIwhere\fR, \fIwhat\fR)
 this function searches the string 'what' in the buffer 'where'. The buffer
-can be either DATA.data or DATA.disp_data. The former is the payload at layer
+can be either DATA.data or DECODED.data. The former is the payload at layer
 DATA (ontop TCP or UDP) as it is transmitted on the wire, the latter is the
 payload decoded/decrypted by dissectors.
 .br
-So, if you want to search in an SSH connection, it is better to use 'disp_data'
+So, if you want to search in an SSH connection, it is better to use 'DECODED.data'
 since 'data' will be encrypted.
 .br
 The string 'what' can be binary. You have to escape it.
@@ -140,21 +140,21 @@ search(DATA.data, "\\x41\\x42\\x43")
 .TP
 .B regex(\fIwhere\fR, \fIregex\fR)
 this function will return true if the 'regex' has matched the buffer 'where'.
-The considerations about 'disp_data' and 'data' mentioned for the function 'search'
+The considerations about 'DECODED.data' and 'DATA.data' mentioned for the function 'search'
 are the same for the regex function.
 .Sp
 NOTE: regex can be used only agains string buffer.
 .Sp
 example:
 .br
-regex(DATA.disp_data, ".*login.*")
+regex(DECODED.data, ".*login.*")
 
 
 .TP
 .B replace(\fIwhat\fR, \fIwith\fR)
 this function replaces the string 'what' with the string 'with'. They can be
 binary string and must be escaped. The replacement is always performed in
-DATA.data since is the only payload which get forwarded. The 'disp_data' buffer
+DATA.data since is the only payload which get forwarded. The 'DECODED.data' buffer
 is used only internally and never reach the wire.
 .Sp
 example:
@@ -173,7 +173,7 @@ The file 'where' must be writeable to the user EC_UID (see etter.conf(5)).
 .Sp
 example:
 .br
-log(DATA.disp_data, "/tmp/interesting.log")
+log(DECODED.data, "/tmp/interesting.log")
 
 
 .TP

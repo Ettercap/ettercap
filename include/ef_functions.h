@@ -14,7 +14,7 @@ extern int yylex(void);
 
 /* ef_tables */
 extern void load_tables(void);
-extern void get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size);
+extern int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size);
 
 #endif
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.5 2003/09/08 21:03:03 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.6 2003/09/09 14:59:29 alor Exp $
 */
 
 #include <ef.h>
@@ -46,9 +46,6 @@ int main(int argc, char *argv[])
    /* getopt related parsing...  */
    parse_options(argc, argv);
 
-   /* load the tables in etterfilter.conf */
-   load_tables();
-
    /* test the file */
    if (GBL_OPTIONS.test) {
       test_filter();
@@ -72,7 +69,12 @@ int main(int argc, char *argv[])
    setbuf(yyin, NULL);
    setbuf(stdout, NULL);
    setbuf(stderr, NULL);
- 
+   
+   
+   /* load the tables in etterfilter.conf */
+   load_tables();
+
+
    /* begin the parsing */
    if (yyparse() == 0)
       fprintf(stdout, "\nDone.\n\n");

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_tables.c,v 1.1 2003/09/08 21:03:03 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_tables.c,v 1.2 2003/09/09 14:59:29 alor Exp $
 */
 
 #include <ef.h>
@@ -29,7 +29,6 @@
 
 struct off_entry {
    char *name;
-   u_int8 level;
    u_int16 offset;
    u_int8 size;
    SLIST_ENTRY(off_entry) next;
@@ -37,6 +36,7 @@ struct off_entry {
 
 struct table_entry {
    char * name;
+   u_int8 level;
    SLIST_HEAD (, off_entry) offsets;
    SLIST_ENTRY(table_entry) next;
 };
@@ -47,7 +47,7 @@ static SLIST_HEAD (, table_entry) table_head;
 
 void load_tables(void);
 static void add_virtualpointer(char *name, u_int8 level, char *offname, u_int16 offset, u_int8 size);
-void get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size);
+int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size);
 
 /*******************************************/
 
@@ -142,9 +142,9 @@ void load_tables(void)
    fprintf(stdout, "\n%3d protocol tables loaded:\n", ntables);
    fprintf(stdout, "\t");
    SLIST_FOREACH(t, &table_head, next)
-      fprintf(stdout, "%s", t->name);
+      fprintf(stdout, "%s ", t->name);
    fprintf(stdout, "\n\n");
-   
+  
 }
 
 /*
@@ -152,17 +152,77 @@ void load_tables(void)
  */
 static void add_virtualpointer(char *name, u_int8 level, char *offname, u_int16 offset, u_int8 size)
 {
-   (void)table_head;
+   struct table_entry *t;
+   struct off_entry *o;
+   int found = 0;
 
-   //printf("%s %d %s %d %d\n", name, level, offname, offset, size);
+   /* search if the table already exist */
+   SLIST_FOREACH(t, &table_head, next) {
+      if (!strcmp(t->name, name)) {
+         found = 1;
+         break;
+      }
+   }
+
+   /* the table was not found */
+   if (!found) {
+      t = calloc(1, sizeof(struct table_entry));
+      ON_ERROR(t, NULL, "Can't allocate memory");
+      
+      o = calloc(1, sizeof(struct off_entry));
+      ON_ERROR(o, NULL, "Can't allocate memory");
+
+      /* fill the structures */
+      t->name = strdup(name);
+      t->level = level;
+      o->name = strdup(offname);
+      o->offset = offset;
+      o->size = size;
+
+      SLIST_INSERT_HEAD(&t->offsets, o, next);
+      SLIST_INSERT_HEAD(&table_head, t, next);
+      
+   } else {
+      o = calloc(1, sizeof(struct off_entry));
+      ON_ERROR(o, NULL, "Can't allocate memory");
+
+      /* fill the structures */
+      o->name = strdup(offname);
+      o->offset = offset;
+      o->size = size;
+
+      /* t already points to the right tables */
+      SLIST_INSERT_HEAD(&t->offsets, o, next);
+   }
+
 }
 
 /*
  * get a virtual pointer from the table
  */
-void get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size)
+int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size)
 {
-   (void)table_head;
+   struct table_entry *t;
+   struct off_entry *o;
+
+   /* search the table and the offset */
+   SLIST_FOREACH(t, &table_head, next) {
+      if (!strcmp(t->name, name)) {
+         SLIST_FOREACH(o, &t->offsets, next) {
+            if (!strcmp(o->name, offname)) {
+               /* set the return values */
+               *size = o->size;
+               *level = t->level;
+               *offset = o->offset;
+               
+               return ESUCCESS;
+            }
+         }
+         return -ENOTFOUND;
+      }
+   }
+   
+   return -ENOTFOUND;
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_plugins.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_plugins.c,v 1.2 2004/02/27 18:31:46 daten Exp $
 */
 
 #include <ec.h>
@@ -31,7 +31,7 @@
 void gui_plugin_mgmt(void);
 void gui_plugin_load(void);
 static void gui_load_plugin(char *full);
-static void gui_wdg_plugin(char active, struct plugin_ops *ops);
+static void gui_add_plugin(char active, struct plugin_ops *ops);
 static void gui_plug_destroy(void);
 static void gui_select_plugin(void);
 static void gui_create_plug_array(void);
@@ -39,6 +39,7 @@ static void gui_create_plug_array(void);
 /* globals */
 
 static GtkWidget   *plugins_window = NULL;
+static GtkWidget         *treeview = NULL;
 static GtkListStore    *ls_plugins = NULL;
 static GtkTreeSelection *selection = NULL;
 
@@ -66,6 +67,9 @@ void gui_plugin_load(void)
       filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
       
       gui_load_plugin(filename);
+
+      /* update the list */
+      gui_create_plug_array();
    }
    gtk_widget_destroy (dialog);
 }
@@ -110,15 +114,11 @@ static void gui_load_plugin(char *full)
  */
 void gui_plugin_mgmt(void)
 {
-   GtkWidget *scrolled, *treeview, *vbox;
+   GtkWidget *scrolled, *vbox;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
 
    DEBUG_MSG("gtk_plugin_mgmt");
-   
-   /* create the array for the list widget */
-   /* or refreshes it if it exists */
-   gui_create_plug_array();
    
    /* if the object already exist, set the focus to it */
    if (plugins_window) {
@@ -137,13 +137,12 @@ void gui_plugin_mgmt(void)
    
   /* list */
    scrolled = gtk_scrolled_window_new(NULL, NULL);
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scrolled), GTK_SHADOW_IN);
    gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
    gtk_widget_show(scrolled);
    
    treeview = gtk_tree_view_new();
-   gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_plugins));
    gtk_container_add(GTK_CONTAINER (scrolled), treeview);
    gtk_widget_show(treeview);
 
@@ -170,7 +169,12 @@ void gui_plugin_mgmt(void)
    column = gtk_tree_view_column_new_with_attributes ("Info", renderer, "text", 3, NULL);
    gtk_tree_view_column_set_sort_column_id (column, 3);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
-   
+
+   /* create the array for the list widget */
+   /* or refreshes it if it exists */
+   gui_create_plug_array();
+   gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_plugins));   
+
    gtk_widget_show(plugins_window);
 }
 
@@ -197,17 +201,20 @@ static void gui_create_plug_array(void)
       ls_plugins = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
    
    /* go thru the list of plugins */
-   res = plugin_list_walk(PLP_MIN, PLP_MAX, &gui_wdg_plugin);
+   res = plugin_list_walk(PLP_MIN, PLP_MAX, &gui_add_plugin);
    if (res == -ENOTFOUND) { 
+       g_signal_handlers_block_by_func (G_OBJECT (treeview), G_CALLBACK (gui_select_plugin), NULL);
        gtk_list_store_append (ls_plugins, &iter);
        gtk_list_store_set (ls_plugins, &iter, 0, " ", 1, "No Plugins Loaded", -1);
+   } else {
+       g_signal_handlers_unblock_by_func (G_OBJECT (treeview), G_CALLBACK (gui_select_plugin), NULL);
    }
 }
 
 /*
  * callback function for displaying the plugin list 
  */
-static void gui_wdg_plugin(char active, struct plugin_ops *ops)
+static void gui_add_plugin(char active, struct plugin_ops *ops)
 {
    GtkTreeIter iter;
    char active_str[2];

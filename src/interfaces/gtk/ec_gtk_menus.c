@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.1 2004/02/27 03:34:33 daten Exp $
+    $Id: ec_gtk_menus.c,v 1.2 2004/02/27 18:31:46 daten Exp $
 */
 
 #include <ec.h>
@@ -27,40 +27,40 @@
 
 GtkItemFactoryEntry gmenu_start[] = {
    {"/_Start",                NULL,          NULL,               0, "<Branch>" },
-   {"/Start/Start sniffing",  "<control>w",  gui_start_sniffing, 0, "<Item>" },
-   {"/Start/Stop sniffing",   "<control>e",  gui_stop_sniffing,  0, "<Item>" },
+   {"/Start/Start sniffing",  "<control>w",  gui_start_sniffing, 0, "<StockItem>", GTK_STOCK_YES },
+   {"/Start/Stop sniffing",   "<control>e",  gui_stop_sniffing,  0, "<StockItem>", GTK_STOCK_NO },
    {"/Start/sep1",            NULL,          NULL,               0, "<Separator>" },
-   {"/Start/E_xit",           "<control>x",  gtk_main_quit,      0, "<Item>" }
+   {"/Start/E_xit",           "<control>x",  gtk_main_quit,      0, "<StockItem>", GTK_STOCK_QUIT }
 };
 
 GtkItemFactoryEntry gmenu_targets[] = {
    {"/_Targets",                 NULL,          NULL,                0, "<Branch>" },
    {"/Targets/Current _Targets", "t",           gui_current_targets, 0, "<Item>" },
-   {"/Targets/Select TARGET(s)", "<control>t",  gui_select_targets,  0, "<Item>" },
+   {"/Targets/Select TARGET(s)", "<control>t",  gui_select_targets,  0, "<StockItem>", GTK_STOCK_ADD },
    {"/Targets/sep1",             NULL,          NULL,                0, "<Separator>" },
    {"/Targets/_Protocol...",     "p",           gui_select_protocol, 0, "<Item>" },
    {"/Targets/Reverse matching", NULL,          toggle_reverse,      0, "<ToggleItem>" },
    {"/Targets/sep2",             NULL,          NULL,                0, "<Separator>" },
-   {"/Targets/_Wipe targets",    "W",           wipe_targets,        0, "<Item>" }
+   {"/Targets/_Wipe targets",    "<shift>W",    wipe_targets,        0, "<StockItem>", GTK_STOCK_CLEAR }
 };
 
 GtkItemFactoryEntry gmenu_hosts[] = {
    {"/_Hosts",                  NULL,         NULL,           0, "<Branch>" },
-   {"/Hosts/_Hosts list",       "h",          gui_host_list,  0, "<Item>" },
+   {"/Hosts/_Hosts list",       "h",          gui_host_list,  0, "<StockItem>", GTK_STOCK_INDEX },
    {"/Hosts/sep1",              NULL,         NULL,           0, "<Separator>" },
-   {"/Hosts/_Scan for hosts",   "<control>s", gui_scan,       0, "<Item>" },
-   {"/Hosts/Load from file...", NULL,         gui_load_hosts, 0, "<Item>" },
-   {"/Hosts/Save to file...",   NULL,         gui_save_hosts, 0, "<Item>" }
+   {"/Hosts/_Scan for hosts",   "<control>s", gui_scan,       0, "<StockItem>", GTK_STOCK_FIND },
+   {"/Hosts/Load from file...", NULL,         gui_load_hosts, 0, "<StockItem>", GTK_STOCK_OPEN },
+   {"/Hosts/Save to file...",   NULL,         gui_save_hosts, 0, "<StockItem>", GTK_STOCK_SAVE }
 };
 
 GtkItemFactoryEntry gmenu_view[] = {
    {"/_View",                        NULL, NULL,                 0, "<Branch>" },
-   {"/View/_Connections",            "C", gui_show_connections, 0, "<Item>" },
-   {"/View/Pr_ofiles",               "O", gui_show_profiles,    0, "<Item>" },
-   {"/View/_Statistics",             "s", gui_show_stats,       0, "<Item>" },
+   {"/View/_Connections",      "<shift>C", gui_show_connections, 0, "<Item>" },
+   {"/View/Pr_ofiles",         "<shift>O", gui_show_profiles,    0, "<Item>" },
+   {"/View/_Statistics",              "s", gui_show_stats,       0, "<StockItem>", GTK_STOCK_PROPERTIES },
    {"/View/sep1",                    NULL, NULL,                 0, "<Separator>" },
    {"/View/Resolve IP addresses",    NULL, toggle_resolve,       0, "<ToggleItem>" },
-   {"/View/_Visualization method...","v",gui_vis_method,0, "<Item>" }
+   {"/View/_Visualization method...", "v", gui_vis_method,       0, "<StockItem>", GTK_STOCK_PREFERENCES }
 };
 
 GtkItemFactoryEntry gmenu_mitm[] = {
@@ -70,31 +70,31 @@ GtkItemFactoryEntry gmenu_mitm[] = {
    {"/Mitm/Port stealing...",    NULL, gui_port_stealing, 0, "<Item>" },
    {"/Mitm/Dhcp spoofing...",    NULL, gui_dhcp_spoofing, 0, "<Item>" },
    {"/Mitm/sep1",                NULL, NULL,              0, "<Separator>" },
-   {"/Mitm/Stop mitm attack(s)", NULL, gui_mitm_stop,     0, "<Item>" }
+   {"/Mitm/Stop mitm attack(s)", NULL, gui_mitm_stop,     0, "<StockItem>", GTK_STOCK_STOP }
 };
 
 GtkItemFactoryEntry gmenu_filters[] = {
    {"/_Filters",                 NULL,         NULL,            0, "<Branch>" },
-   {"/Filters/Load a filter...", "<control>f", gui_load_filter, 0, "<Item>" },
-   {"/Filters/Stop _filtering",  "f",          gui_stop_filter, 0, "<Item>" }
+   {"/Filters/Load a filter...", "<control>f", gui_load_filter, 0, "<StockItem>", GTK_STOCK_OPEN },
+   {"/Filters/Stop _filtering",  "f",          gui_stop_filter, 0, "<StockItem>", GTK_STOCK_STOP }
 };
 
 GtkItemFactoryEntry gmenu_logging[] = {
    {"/_Logging",                             NULL, NULL,            0, "<Branch>" },
-   {"/Logging/Log all packets and infos...", "I",  gui_log_all,     0, "<Item>" },
-   {"/Logging/Log only infos...",   "<control>i",  gui_log_info,    0, "<Item>" },
-   {"/Logging/Stop logging infos",           NULL, gui_stop_log,    0, "<Item>" },
+   {"/Logging/Log all packets and infos...", "<shift>I", gui_log_all, 0, "<StockItem>", GTK_STOCK_SAVE },
+   {"/Logging/Log only infos...",            "i",  gui_log_info,    0, "<StockItem>", GTK_STOCK_SAVE_AS },
+   {"/Logging/Stop logging infos",           NULL, gui_stop_log,    0, "<StockItem>", GTK_STOCK_STOP },
    {"/Logging/sep1",                         NULL, NULL,            0, "<Separator>" },
-   {"/Logging/Log user messages...",         "m",  gui_log_msg,     0, "<Item>" },
-   {"/Logging/Stop logging messages",        NULL, gui_stop_msg,    0, "<Item>" },
+   {"/Logging/Log user messages...",         "m",  gui_log_msg,     0, "<StockItem>", GTK_STOCK_REVERT_TO_SAVED },
+   {"/Logging/Stop logging messages",        NULL, gui_stop_msg,    0, "<StockItem>", GTK_STOCK_STOP },
    {"/Logging/sep2",                         NULL, NULL,            0, "<Separator>" },
    {"/Logging/Compressed file",              NULL, toggle_compress, 0, "<ToggleItem>" }
 };
 
 GtkItemFactoryEntry gmenu_plugins[] = {
    {"/_Plugins",                   NULL,         NULL,            0, "<Branch>" },
-   {"/Plugins/Manage the plugins", "<control>p", gui_plugin_mgmt, 0, "<Item>" },
-   {"/Plugins/Load a plugin...",   NULL,         gui_plugin_load, 0, "<Item>" }
+   {"/Plugins/Manage the plugins", "<control>p", gui_plugin_mgmt, 0, "<StockItem>", GTK_STOCK_EXECUTE },
+   {"/Plugins/Load a plugin...",   NULL,         gui_plugin_load, 0, "<StockItem>", GTK_STOCK_OPEN }
 };
 
 /* proto */

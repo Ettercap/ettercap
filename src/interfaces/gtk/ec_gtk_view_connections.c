@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.2 2004/02/27 09:00:44 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.3 2004/02/27 18:31:46 daten Exp $
 */
 
 #include <ec.h>
@@ -297,9 +297,6 @@ static gboolean refresh_connections(gpointer data)
 
       ip_addr_ntoa(&c->co->L3_addr1, src);
       ip_addr_ntoa(&c->co->L3_addr2, dst);
-
-      if(ntohs(c->co->L4_addr1) == 0)
-         fprintf(stderr, "Possible BAD LINE - %p\n", c);
 
       gtk_list_store_set (ls_conns, (iter3)?iter3:&iter, 
                           0, (c->co->DISSECTOR.user) ? "X" : " ",
@@ -617,7 +614,6 @@ static void gui_connection_data_split(void)
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Inject Data");
-   gtk_widget_set_sensitive(button, FALSE); /* XXX - remove this when injection works */
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_connection_inject), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
@@ -664,7 +660,6 @@ static void gui_connection_data_split(void)
    gtk_widget_show(hbox_small);
 
    button = gtk_button_new_with_mnemonic("Inject _File"); 
-   gtk_widget_set_sensitive(button, FALSE);  /* remove this when injection works */
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gui_connection_inject_file), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
@@ -928,26 +923,54 @@ static void gui_connection_kill_wrapper(void)
  */
 static void gui_connection_inject(void)
 {
+   GtkWidget *dialog, *text, *label, *vbox;
+   GtkTextBuffer *buf;
+   GtkTextIter start, end;
+   gint response = 0;
+
    DEBUG_MSG("gtk_connection_inject");
 
-/*
-   SAFE_REALLOC(injectbuf, 501 * sizeof(char));
-   memset(injectbuf, 0, 501);
+   dialog = gtk_dialog_new_with_buttons("Character Injection", GTK_WINDOW (window),
+                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+   gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 150);
+   gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+   gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
+   vbox = GTK_DIALOG (dialog)->vbox;
 
-   wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
-   wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
-   wdg_input_size(in, 75, 12);
-   wdg_input_add(in, 1, 1, "Chars to be injected  :", injectbuf, 50, 10);
-   wdg_input_set_callback(in, inject_user);
+   label = gtk_label_new ("Characters to be injected:");
+   gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
+   gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
+   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+   gtk_widget_show(label);
 
-   wdg_draw_object(in);
+   text = gtk_text_view_new();
+   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (text), GTK_WRAP_CHAR);
+   gtk_box_pack_start(GTK_BOX (vbox), text, TRUE, TRUE, 5);
+   gtk_widget_show(text);
+    
+   response = gtk_dialog_run(GTK_DIALOG(dialog));
+   if(response == GTK_RESPONSE_OK) {
+      gtk_widget_hide(dialog);
 
-   wdg_set_focus(in);
-*/
-   (void)inject_user;
+      SAFE_REALLOC(injectbuf, 501 * sizeof(char));
+      memset(injectbuf, 0, 501);
+
+      buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW (text));
+
+      /* initialize iters for get text */
+      gtk_text_buffer_get_start_iter(buf, &start);
+      gtk_text_buffer_get_start_iter(buf, &end);
+      /* advance end iter to end of text, 500 char max */
+      gtk_text_iter_forward_chars(&end, 500);
+      
+      strcpy(injectbuf, gtk_text_buffer_get_text(buf, &start, &end, FALSE));
+
+      inject_user();
+   }
+
+   gtk_widget_destroy(dialog);
 }
 
 static void inject_user(void)
@@ -1003,7 +1026,7 @@ static void inject_file(char *filename)
    
    DEBUG_MSG("inject_file %s", filename);
    
-   SAFE_CALLOC(filename, strlen(filename)+1, sizeof(char));
+   //SAFE_CALLOC(filename, strlen(filename)+1, sizeof(char));
 
    /* open the file */
    if ((fd = open(filename, O_RDONLY)) == -1) {
@@ -1011,7 +1034,7 @@ static void inject_file(char *filename)
       return;
    }
       
-   SAFE_FREE(filename);
+   //SAFE_FREE(filename);
 
    /* calculate the size of the file */
    size = lseek(fd, 0, SEEK_END);

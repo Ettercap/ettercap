@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.2 2004/02/27 03:33:00 daten Exp $
+    $Id: ec_gtk.c,v 1.3 2004/02/27 18:31:46 daten Exp $
 */
 
 #include <ec.h>
@@ -213,19 +213,39 @@ static void gui_fatal_error(const char *msg)
  */
 void gui_input(const char *title, char *input, size_t n)
 {
-   GtkWidget *dialog, *entry;
+   GtkWidget *dialog, *entry, *label, *hbox, *image;
 
-   dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL, 
-                                   GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK, "%s", title);
+   dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
+                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+   gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+   gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
+  
+   hbox = gtk_hbox_new (FALSE, 6);
+   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
+  
+   image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
+   gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.0);
+   gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
+   
+   label = gtk_label_new (title);
+   gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
+   gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
+         
    entry = gtk_entry_new_with_max_length(n);
-   gtk_box_pack_start(GTK_BOX (GTK_DIALOG(dialog)->vbox), entry, TRUE, TRUE, 5);
-   gtk_widget_show(entry);
+   if(input)
+      gtk_entry_set_text(GTK_ENTRY (entry), input);
+   gtk_box_pack_start(GTK_BOX (hbox), entry, FALSE, FALSE, 5);
+  
+   gtk_widget_show_all (hbox);
 
    if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
 
       strncpy(input, gtk_entry_get_text(GTK_ENTRY (entry)), n);
 
    }
+   gtk_widget_destroy(dialog);
 }
 
 /*
@@ -236,37 +256,37 @@ void gui_input_call(const char *title, char *input, size_t n, void (*callback)(v
    GtkWidget *dialog, *entry, *label, *hbox, *image;
 
    dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
-
+   
    hbox = gtk_hbox_new (FALSE, 6);
    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
-
+   
    image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
    gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.0);
    gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
-
+   
    label = gtk_label_new (title);
    gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
    gtk_label_set_selectable (GTK_LABEL (label), TRUE);
    gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
-
+   
    entry = gtk_entry_new_with_max_length(n);
    if(input)
-      gtk_entry_set_text(GTK_ENTRY (entry), input);
+      gtk_entry_set_text(GTK_ENTRY (entry), input); 
    gtk_box_pack_start(GTK_BOX (hbox), entry, FALSE, FALSE, 5);
-
+   
    gtk_widget_show_all (hbox);
 
-   gtk_dialog_run(GTK_DIALOG(dialog));
+   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
 
-   gtk_widget_hide(dialog);
-   strncpy(input, gtk_entry_get_text(GTK_ENTRY (entry)), n);
+      strncpy(input, gtk_entry_get_text(GTK_ENTRY (entry)), n);
 
-   if(callback != NULL)
-      callback();
-
+      if(callback != NULL)
+         callback();
+   }
    gtk_widget_destroy(dialog);
 }
 
@@ -282,9 +302,10 @@ static void gui_progress(char *title, int value, int max)
    /* the first time, create the object */
    if (pbar == NULL) {
       dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+      gtk_window_set_title(GTK_WINDOW (dialog), EC_PROGRAM);
       gtk_window_set_modal(GTK_WINDOW (dialog), TRUE);
       gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
-      gtk_window_set_decorated(GTK_WINDOW (dialog), FALSE);
+      gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
     
       pbar = gtk_progress_bar_new();
       gtk_container_add(GTK_CONTAINER (dialog), pbar);
@@ -391,19 +412,19 @@ static void gui_setup(void)
    char title[50];
 
    GtkItemFactoryEntry file_menu[] = {
-      { "/_File",         "F",          NULL,           0, "<Branch>" },
+      { "/_File",         "<shift>F",   NULL,           0, "<Branch>" },
       { "/File/_Open",    "<control>O", gui_file_open,  0, "<StockItem>", GTK_STOCK_OPEN },
       { "/File/_Save",    "<control>S", gui_file_write, 0, "<StockItem>", GTK_STOCK_SAVE },
       { "/File/sep1",     NULL,         NULL,           0, "<Separator>" },
       { "/File/E_xit",    "<control>x", gui_exit,       0, "<StockItem>", GTK_STOCK_QUIT },
-      { "/_Sniff",        "S",          NULL,           0, "<Branch>" },
-      { "/Sniff/Unified sniffing...", "U", gui_unified_sniff, 0, "<Item>" },
-      { "/Sniff/Bridged sniffing...", "B", gui_bridged_sniff, 0, "<Item>" },
+      { "/_Sniff",        "<shift>S",   NULL,           0, "<Branch>" },
+      { "/Sniff/Unified sniffing...",  "<shift>U", gui_unified_sniff, 0, "<StockItem>", GTK_STOCK_DND },
+      { "/Sniff/Bridged sniffing...",  "<shift>B", gui_bridged_sniff, 0, "<StockItem>", GTK_STOCK_DND_MULTIPLE },
       { "/Sniff/sep2",    NULL,         NULL,           0, "<Separator>" },
-      { "/Sniff/Set pcap filter...", "p", gui_pcap_filter, 0, "<Item>" },
-      { "/_Options",       "O",         NULL,           0, "<Branch>" },
+      { "/Sniff/Set pcap filter...",    "p",       gui_pcap_filter,   0, "<StockItem>", GTK_STOCK_PREFERENCES },
+      { "/_Options",                    "<shift>O", NULL, 0, "<Branch>" },
       { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>" },
-      { "/Options/Promisc mode", NULL, toggle_nopromisc, 0, "<ToggleItem>" }
+      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" }
    };
    gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);
    
@@ -413,7 +434,7 @@ static void gui_setup(void)
    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
    snprintf(title, 50, "%s %s", EC_PROGRAM, EC_VERSION);
    gtk_window_set_title(GTK_WINDOW (window), title);
-   gtk_window_set_default_size(GTK_WINDOW (window), 400, 100);
+   gtk_window_set_default_size(GTK_WINDOW (window), 450, 175);
    g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gui_exit), NULL);
 
    accel_group = gtk_accel_group_new ();

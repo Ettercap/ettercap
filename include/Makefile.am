@@ -34,6 +34,7 @@ noinst_HEADERS = ec.h \
                  ec_passive.h \
                  ec_hash.h \
                  ec_manuf.h \
+                 ec_services.h \
                  ec_poll.h \
                  ec_session.h \
                  ec_interfaces.h \

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.17 2003/04/30 16:50:14 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.18 2003/05/31 13:30:07 alor Exp $
 */
 
 #include <ec.h>
@@ -32,6 +32,7 @@
 #include <ec_plugins.h>
 #include <ec_fingerprint.h>
 #include <ec_manuf.h>
+#include <ec_services.h>
 #include <ec_scan.h>
 #include <ec_ui.h>
 
@@ -111,6 +112,9 @@ int main(int argc, char *argv[])
 
    /* load the tcp-fingerprints */
    fingerprint_init();
+   
+   /* load the services names */
+   services_init();
   
    /* print all the buffered messages */
    USER_MSG("\n");

@@ -21,9 +21,6 @@
       - bpf filter on outgoing packets
       - BIOCSSEESENT
 
-   + ETTERLOG
-      - service resolution
-
    + PCAP STAT
       - stats for dropped packets
 

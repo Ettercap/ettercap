@@ -6,6 +6,7 @@ extern FILE * open_data(char *file, char *mode);
 
 #define MAC_FINGERPRINTS   "etter.finger.mac"
 #define TCP_FINGERPRINTS   "etter.finger.os"
+#define SERVICES_NAMES     "etter.services"
 
 /* XXX - add the others files */
 

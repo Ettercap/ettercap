@@ -15,6 +15,7 @@
 <!ELEMENT port (banner?, account*)>
 <!ATTLIST port proto CDATA #REQUIRED>
 <!ATTLIST port addr CDATA #REQUIRED>
+<!ATTLIST port service CDATA #REQUIRED>
 <!ELEMENT banner (#PCDATA)>
 <!ELEMENT account (user, pass, info?)>
 <!ATTLIST account user CDATA #REQUIRED>

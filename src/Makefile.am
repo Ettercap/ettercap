@@ -28,6 +28,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_file.c \
 				   ec_log.c \
 				   ec_manuf.c \
+				   ec_services.c \
 				   ec_plugins.c \
 				   ec_format.c \
 				   ec_poll.c \

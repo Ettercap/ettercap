@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.17 2003/05/22 20:48:08 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.18 2003/05/31 13:30:09 alor Exp $
 */
 
 #include <el.h>
@@ -26,6 +26,7 @@
 #include <ec_format.h>
 #include <ec_fingerprint.h>
 #include <ec_manuf.h>
+#include <ec_services.h>
 #include <el_functions.h>
 
 #include <sys/stat.h>
@@ -240,6 +241,8 @@ static void display_info(void)
    /* load the manuf database */
    manuf_init();
 
+   /* load the services names */
+   services_init();
 
    /* write the XML prolog */
    if (GBL.xml) {
@@ -379,8 +382,11 @@ void print_host(struct host_profile *h)
    
    LIST_FOREACH(o, &(h->open_ports_head), next) {
       
-      fprintf(stdout, "   PORT     : %s %d \t[%s]\n", (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , ntohs(o->L4_addr),
-                                                       o->banner);
+      fprintf(stdout, "   PORT     : %s %d | %s \t[%s]\n", 
+                  (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , 
+                  ntohs(o->L4_addr),
+                  service_search(o->L4_addr, o->L4_proto), 
+                  o->banner);
       
       LIST_FOREACH(u, &(o->users_list_head), next) {
          
@@ -437,7 +443,11 @@ void print_host_xml(struct host_profile *h)
    
    LIST_FOREACH(o, &(h->open_ports_head), next) {
       
-      fprintf(stdout, "\t\t<port proto=\"%s\" addr=\"%d\">\n", (o->L4_proto == NL_TYPE_TCP) ? "tcp" : "udp", ntohs(o->L4_addr));
+      fprintf(stdout, "\t\t<port proto=\"%s\" addr=\"%d\" service=\"%s\">\n", 
+            (o->L4_proto == NL_TYPE_TCP) ? "tcp" : "udp", 
+            ntohs(o->L4_addr),
+            service_search(o->L4_addr, o->L4_proto));
+      
       if (o->banner)
          fprintf(stdout, "\t\t\t<banner>%s</banner>\n", o->banner);
       

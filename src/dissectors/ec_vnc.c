@@ -218,14 +218,19 @@ FUNC_DECODER(dissector_vnc)
                for (index = 0; index < 16; index++)
                   sprintf(str_ptr + (index * 2), "%.2x", conn_status->response[index]);
        
-               if (conn_status->status > LOGIN_OK) 
-                  PACKET->DISSECTOR.info=strdup("Login Failed");
+               if (conn_status->status > LOGIN_OK) {
+                  PACKET->DISSECTOR.failed = TRUE;
+                  USER_MSG("vnc : %s:%d -> %s (Login Failed)\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                                                 ntohs(PACKET->L4.dst), 
+                                                                 PACKET->DISSECTOR.pass);
 
-               USER_MSG("vnc : %s:%d -> %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                            ntohs(PACKET->L4.dst), 
-                                            PACKET->DISSECTOR.pass);
-
-            dissect_wipe_session(PACKET);
+               } else {
+                  USER_MSG("vnc : %s:%d -> %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                                  ntohs(PACKET->L4.dst), 
+                                                  PACKET->DISSECTOR.pass);
+               }
+            
+               dissect_wipe_session(PACKET);
          } else { /* If we are waiting for client response (don't care ACKs) */
             if (conn_status->status == WAIT_RESPONSE && PACKET->DATA.len >= 16) {
 

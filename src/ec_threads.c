@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.2 2003/03/10 09:08:13 alor Exp $
 */
 
 #include <ec.h>
@@ -33,9 +33,7 @@ struct thread_list {
 
 static LIST_HEAD(, thread_list) thread_list_head;
 
-int tl = 0;
-
-pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define THREADS_LOCK     do{ pthread_mutex_lock(&threads_mutex); } while(0)
 #define THREADS_UNLOCK   do{ pthread_mutex_unlock(&threads_mutex); } while(0)
    

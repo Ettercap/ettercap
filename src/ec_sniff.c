@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.2 2003/03/08 16:30:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.3 2003/03/10 09:08:13 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,8 @@
 #include <ec_sniff_bridge.h>
 #include <ec_packet.h>
 #include <ec_inet.h>
+
+#include <pthread.h>
 
 /* proto */
 
@@ -46,6 +48,10 @@ void del_ip_list(struct ip_addr *ip, struct target_env *t);
 int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
 void add_ip_list(struct ip_addr *ip, struct target_env *t);
 void free_ip_list(struct target_env *t);
+
+static pthread_mutex_t ip_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define IP_LIST_LOCK     do{ pthread_mutex_lock(&ip_list_mutex); } while(0)
+#define IP_LIST_UNLOCK   do{ pthread_mutex_unlock(&ip_list_mutex); } while(0)
 
 /*******************************************/
 
@@ -204,12 +210,20 @@ void reset_display_filter(struct target_env *t)
 
 void compile_display_filter(void)
 {
+   char valid[] = "1234567890/.,-;:";
    char *tok[3];
    char *p;
    int i = 0;
    
    DEBUG_MSG("compile_display_filter TARGET1: %s", GBL_OPTIONS->target1);
 
+
+   if (strlen(GBL_OPTIONS->target1) != strspn(GBL_OPTIONS->target1, valid))
+      FATAL_MSG("TARGET1 contains invalid chars !");
+   
+   if (strlen(GBL_OPTIONS->target2) != strspn(GBL_OPTIONS->target2, valid))
+      FATAL_MSG("TARGET2 contains invalid chars !");
+   
    /* TARGET 1 parsing */
    for(p=strsep(&GBL_OPTIONS->target1, "/"); p != NULL; p=strsep(&GBL_OPTIONS->target1, "/")) {
       tok[i++] = strdup(p);
@@ -291,31 +305,6 @@ void compile_display_filter(void)
    for(i=0; i<4; i++)
       free(tok[i]);
  
-/* XXX - only for debug */
-#if 0   
-   {
-      struct ip_list *e;
-      char tmp[MAX_ASCII_ADDR_LEN];
-
-      SLIST_FOREACH (e, &GBL_TARGET1->ips, next) {
-         printf("ip %s\n", ip_addr_ntoa(&e->ip, tmp) );   
-      }     
-      
-      SLIST_FOREACH (e, &GBL_TARGET2->ips, next) {
-         printf("ip %s\n", ip_addr_ntoa(&e->ip, tmp) );   
-      }     
-   }
-   {
-      struct ip_addr tmp;
-      char test[] = "10.0.0.7";
-      struct in_addr ip;
-
-      inet_aton(test, &ip);
-      ip_addr_init(&tmp, AF_INET, (char *)&ip );
-      printf("cmp %s %d\n", test, cmp_ip_list(&tmp, GBL_TARGET1));
-
-   }
-#endif   
 }
 
 static void add_port(void *ports, int n)
@@ -439,6 +428,8 @@ void add_ip_list(struct ip_addr *ip, struct target_env *t)
 
    memcpy(&e->ip, ip, sizeof(struct ip_addr));
 
+   IP_LIST_LOCK;
+   
    /* insert it at the beginning of the list */
    //SLIST_INSERT_HEAD (&t->ips, e, next); 
 
@@ -456,6 +447,8 @@ void add_ip_list(struct ip_addr *ip, struct target_env *t)
    else 
       SLIST_INSERT_HEAD(&t->ips, e, next);
    
+   IP_LIST_UNLOCK;
+   
    return;
 }
 
@@ -467,10 +460,16 @@ int cmp_ip_list(struct ip_addr *ip, struct target_env *t)
 {
    struct ip_list *e;
 
-   SLIST_FOREACH (e, &t->ips, next) {
-      if (ip_addr_cmp(&(e->ip), ip))
+   IP_LIST_LOCK;
+   
+   SLIST_FOREACH (e, &t->ips, next)
+      if (ip_addr_cmp(&(e->ip), ip)) {
+         IP_LIST_UNLOCK;
          return 1;
-   }
+      }
+
+   IP_LIST_UNLOCK;
+   
    return 0;
 }
 
@@ -482,13 +481,18 @@ void del_ip_list(struct ip_addr *ip, struct target_env *t)
 {
    struct ip_list *e;
 
+   IP_LIST_LOCK;
+   
    SLIST_FOREACH (e, &t->ips, next) {
       if (ip_addr_cmp(&(e->ip), ip)) {
          SLIST_REMOVE(&t->ips, e, ip_list, next);
          SAFE_FREE(e);
+         IP_LIST_UNLOCK;
          return;
       }
    }
+   
+   IP_LIST_UNLOCK;
    
    return;
 }
@@ -500,12 +504,16 @@ void del_ip_list(struct ip_addr *ip, struct target_env *t)
 void free_ip_list(struct target_env *t)
 {
    struct ip_list *e;
+  
+   IP_LIST_LOCK;
    
    while (SLIST_FIRST(&t->ips) != NULL) {
       e = SLIST_FIRST(&t->ips);
       SLIST_REMOVE_HEAD(&t->ips, next);
       SAFE_FREE(e);
    }
+
+   IP_LIST_UNLOCK;
 }
 
 

@@ -32,7 +32,7 @@ enum {
 /* proto layer types */
 
 enum {
-   PL_DEFAULT   = 0x0000,
+   PL_DEFAULT  = 0x0000,
 };
 
 /* IPv6 options types */

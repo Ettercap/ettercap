@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.2 2003/03/10 09:08:13 alor Exp $
 */
 
 #include <ec.h>
@@ -45,7 +45,7 @@ static struct ui_ops ui = {
 
 /* globa mutex on interface */
 
-pthread_mutex_t ui_msg_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t ui_msg_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define UI_MSG_LOCK     pthread_mutex_lock(&ui_msg_mutex)
 #define UI_MSG_UNLOCK   pthread_mutex_unlock(&ui_msg_mutex)
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.2 2003/03/08 16:30:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.3 2003/03/10 09:08:13 alor Exp $
 */
 
 #include <ec.h>
@@ -132,9 +132,6 @@ int send_to_bridge(struct packet_object *po)
    static libnet_ptag_t t;
    int c;
  
-   /* XXX -- debug purpose */
-   memcpy(po->packet, "AAAA", 4);
-   
    t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet_bridge, t);
    ON_ERROR(t, -1, "libnet_build_data");
    

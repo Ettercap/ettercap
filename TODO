@@ -3,10 +3,10 @@
 ==================
 
    + PO incapsulated ?
-  
-   + CONFIGURE
-      - libnet version
-      
+
+   + lnet ptag thread safe
+
+ 
    + DISSECTORS over decoders
       - add a buffer to po (it will be the visible one)
       - middleware data_decode

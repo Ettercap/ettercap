@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.2 2003/03/10 09:08:13 alor Exp $
 */
 
 #include <ec.h>
@@ -24,8 +24,10 @@
 #include <ec_threads.h>
 #include <ec_ui.h>
 #include <ec_packet.h>
+#include <ec_hook.h>
 
 #include <pcap.h>
+#include <pthread.h>
 
 /* globals */
 
@@ -52,6 +54,9 @@ void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 void del_decoder(u_int8 level, u_int32 type);
 void * get_decoder(u_int8 level, u_int32 type);
 
+static pthread_mutex_t decoders_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define DECODERS_LOCK     do{ pthread_mutex_lock(&decoders_mutex); } while(0)
+#define DECODERS_UNLOCK   do{ pthread_mutex_unlock(&decoders_mutex); } while(0)
 
 /*******************************************/
 
@@ -81,7 +86,8 @@ void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
    /* alloc the packet object structure to be passet through decoders */
    packet_create_object(&po, data, datalen);
   
-   /* XXX -- HOOK POINT: RECEIVED */ 
+   /* HOOK POINT: RECEIVED */ 
+   hook_point(HOOK_RECEIVED, po);
    
    /* 
     * by default the packet should not be processed by ettercap.
@@ -90,7 +96,7 @@ void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
    po->flags |= PO_IGNORE;
   
    /* 
-    * start the analisys through the decoders stack 
+    * start the analysis through the decoders stack 
     *
     * if the packet can be handled it will reach the top of the stack
     * where the decoder_data will add it to the top_half queue,
@@ -98,7 +104,8 @@ void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
     */
    l2_decoder(data, datalen, &len, po);
    
-   /* XXX -- HOOK POINT: DECODED */ 
+   /* HOOK POINT: DECODED */ 
+   hook_point(HOOK_DECODED, po);
    
    /* 
     * use the sniffing method funcion to forward the packet 
@@ -106,7 +113,8 @@ void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
     * they are forwarded packet and we MUST avoid infinite loop !
     */
    if (!(po->flags & PO_OUTGOING) ) {
-      /* XXX -- HOOK POINT: PRE_FORWARD */ 
+      /* HOOK POINT: PRE_FORWARD */ 
+      hook_point(HOOK_PRE_FORWARD, po);
       EXECUTE(GBL_SNIFF->forward, po);
    }
    
@@ -130,7 +138,8 @@ void __init data_init(void)
 FUNC_DECODER(decode_data)
 {
    
-   /* XXX -- HOOK POINT: HANDLED */ 
+   /* HOOK POINT: HANDLED */ 
+   hook_point(HOOK_HANDLED, po);
 
    /* reset the flag PO_INGNORE if the packet should be processed */
    EXECUTE(GBL_SNIFF->display, po);
@@ -147,10 +156,12 @@ FUNC_DECODER(decode_data)
     * here we can filter the content of the packet.
     * the injection is done elsewhere.
     */
-      
+   
+   /* XXX -- filter ?? */
    // fiter_packet(po);
    
-   /* XXX -- HOOK POINT: FILTER */ 
+   /* HOOK POINT: FILTER */ 
+   hook_point(HOOK_FILTER, po);
    
    /* 
     * add the packet to the queue and return.
@@ -171,14 +182,18 @@ int set_L2_decoder(u_int16 dlt)
 {
    struct dec_entry *e;
 
+   DECODERS_LOCK;
+   
    SLIST_FOREACH (e, &decoders_table, next) {
       if (e->level == 2 && e->type == dlt) {
          DEBUG_MSG("DLT = %d : decoder found !", dlt);
          l2_decoder = e->decoder;
+         DECODERS_UNLOCK;
          return ESUCCESS;
       }
    }
 
+   DECODERS_UNLOCK;
    /* error NOT FOUND */
    return -ENOTFOUND;
 }
@@ -198,8 +213,12 @@ void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder))
    e->type = type;
    e->decoder = decoder;
 
+   DECODERS_LOCK;
+   
    SLIST_INSERT_HEAD (&decoders_table, e, next); 
 
+   DECODERS_UNLOCK;
+   
    return;
 }
 
@@ -211,12 +230,16 @@ void * get_decoder(u_int8 level, u_int32 type)
 {
    struct dec_entry *e;
 
+   DECODERS_LOCK;
+   
    SLIST_FOREACH (e, &decoders_table, next) {
       if (e->level == level && e->type == type)
+         DECODERS_UNLOCK;
          return (void *)e->decoder;
    }
 
 /*   DEBUG_MSG("L%d 0x%04x not found !!", level, type); */
+   DECODERS_UNLOCK;
    return NULL;
 }
 
@@ -228,15 +251,19 @@ void del_decoder(u_int8 level, u_int32 type)
 {
    struct dec_entry *e;
 
+   DECODERS_LOCK;
+   
    SLIST_FOREACH (e, &decoders_table, next) {
       if (e->level == level && e->type == type) {
          DEBUG_MSG("L%d 0x%04x removed !!", level, type);
          SLIST_REMOVE(&decoders_table, e, dec_entry, next);
          SAFE_FREE(e);
+         DECODERS_UNLOCK;
          return;
       }
    }
    
+   DECODERS_UNLOCK;
    return;
 }
 

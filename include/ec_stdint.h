@@ -1,5 +1,5 @@
 
-/* $Id: ec_stdint.h,v 1.5 2003/12/27 16:08:47 alor Exp $ */
+/* $Id: ec_stdint.h,v 1.6 2003/12/27 18:50:10 alor Exp $ */
 
 #ifndef EC_STDINT_H
 #define EC_STDINT_H
@@ -26,7 +26,7 @@
 	typedef uint32_t  u_int32;
 	typedef uint64_t  u_int64;
 
-   #ifdef OS_OPENBSD
+   #ifdef OS_BSD_OPEN
       #define INT8_MAX     CHAR_MAX
       #define UINT8_MAX    UCHAR_MAX
       #define INT16_MAX    SHRT_MAX

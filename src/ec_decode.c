@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.44 2003/12/05 11:25:44 lordnaga Exp $
+    $Id: ec_decode.c,v 1.45 2003/12/27 18:50:10 alor Exp $
 */
 
 #include <ec.h>
@@ -102,6 +102,8 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
        * no statistics are stored in savefiles
        */
       pcap_stats(GBL_PCAP->pcap, &ps);
+      
+#ifdef OS_LINUX
       /* 
        * add to the previous value, since every call
        * to pcap_stats reset the counter 
@@ -109,6 +111,12 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
       GBL_STATS->ps_recv += ps.ps_recv;
       GBL_STATS->ps_drop += ps.ps_drop;
       GBL_STATS->ps_ifdrop += ps.ps_ifdrop;
+#else
+      /* on systems other than linux, the counter is not reset */ 
+      GBL_STATS->ps_recv = ps.ps_recv;
+      GBL_STATS->ps_drop = ps.ps_drop;
+      GBL_STATS->ps_ifdrop = ps.ps_ifdrop;
+#endif
    }
    
    /* 

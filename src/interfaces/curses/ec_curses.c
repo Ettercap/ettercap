@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.28 2003/12/26 17:58:35 alor Exp $
+    $Id: ec_curses.c,v 1.29 2003/12/27 18:50:10 alor Exp $
 */
 
 #include <ec.h>
@@ -430,6 +430,8 @@ static void curses_setup(void)
    wdg_menu_add(menu, options);
    wdg_menu_add(menu, logging);
    wdg_draw_object(menu);
+   
+   DEBUG_MSG("curses_setup: menu created");
 
    /* create the bottom windows for user messages */
    wdg_create_object(&sysmsg_win, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
@@ -447,10 +449,14 @@ static void curses_setup(void)
    /* give the focus to the menu */
    wdg_set_focus(menu);
    
+   DEBUG_MSG("curses_setup: sysmsg created");
+   
    /* give the control to the interface */
    wdg_events_handler('U');
    
    wdg_destroy_object(&menu);
+   
+   DEBUG_MSG("curses_setup: end");
 }
 
 /*

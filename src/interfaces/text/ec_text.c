@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.15 2003/12/27 16:08:47 alor Exp $
+    $Id: ec_text.c,v 1.16 2003/12/27 18:50:24 alor Exp $
 */
 
 #include <ec.h>
@@ -384,7 +384,12 @@ static void text_run_plugin(void)
    char name[20];
    int restore = 0;
    char *p;
-      
+
+#ifndef HAVE_PLUGINS
+   fprintf(stderr, "Plugin support was not compiled in...");
+   return;
+#endif
+   
    /* there are no plugins */
    if (text_plugin("list") == -ENOTFOUND)
       return;

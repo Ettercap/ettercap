@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.31 2003/12/08 16:34:36 alor Exp $
+    $Id: ec_capture.c,v 1.32 2003/12/27 18:50:10 alor Exp $
 */
 
 #include <ec.h>
@@ -31,11 +31,15 @@
 #include <pcap.h>
 #include <libnet.h>
 
-#ifdef OS_LINUX
-#define PCAP_TIMEOUT 0
+#if defined(OS_BSD_OPEN) || defined(OS_LINUX)
+   /* LINUX does not care about timeout */
+   /* OPENBSD needs 0, but it sucks up all the CPU */
+   #define PCAP_TIMEOUT 0
 #else
-/* BSD and Solaris sux */
-#define PCAP_TIMEOUT 1
+   /* SOLARIS needs 1 */
+   /* FREEBSD needs 1 */
+   /* MACOSX  needs 1 */
+   #define PCAP_TIMEOUT 1
 #endif
 
 void capture_init(void);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.19 2004/05/17 19:43:08 alor Exp $
+    $Id: ec_wifi.c,v 1.20 2004/05/21 10:35:47 alor Exp $
 */
 
 #include <ec.h>
@@ -239,19 +239,28 @@ FUNC_ALIGNER(align_wifi)
  */
 static int wep_decrypt(u_char *buf, size_t len)
 {
-#ifdef HAVE_OPENSSL_NOT_YET_IMPLEMENTED
+#ifdef HAVE_OPENSSL
    RC4_KEY key;
    u_char seed[32]; /* 256 bit for the wep key */
    struct wep_header *wep;
-   u_char tmpbuf[len];
+   u_char *encbuf;
+   u_char decbuf[len];
 
-memcpy(wkey, "\xd8\x24\x0c\x5a\x09", 5);
-wlen = 5;
+   set_wep_key("64:\xd8\x24\x0c\x5a\x09");
 
    /* get the wep header */
    wep = (struct wep_header *)buf;
    len -= sizeof(struct wep_header);
 
+   /* get the key index */
+   wep->key >>= 6;
+
+   /* only one key supported */
+   if (wep->key != 0)
+      NOT_IMPLEMENTED();
+   
+   encbuf = (u_char *)(wep + 1);
+   
    /* copy the IV in the first 24 bit of the RC4 seed */
    memcpy(seed, wep->init_vector, IV_LEN);
 
@@ -261,26 +270,23 @@ wlen = 5;
     */
    memcpy(seed + IV_LEN, wkey, wlen);
    
-printf("IV: %02x%02x%02x  ", seed[0], seed[1], seed[2]);   
-printf("KEY: %02x%02x%02x%02x%02x\n", seed[3], seed[4], seed[5], seed[6], seed[7]);
-  
    /* initialize the RC4 key */
    RC4_set_key(&key, IV_LEN + wlen, seed);
   
-   /* decrypt the frame */
-   RC4(&key, len, (u_char *)(wep + 1), tmpbuf);
+   /* decrypt the frame (len + 4 byte of crc) */
+   RC4(&key, len + 4, encbuf, decbuf);
    
    /* 
     * check if the decryption was successfull:
     * at the end of the packet there is a CRC check
     */
-   if (CRC_checksum(tmpbuf, len, CRC_INIT) != CRC_RESULT) {
+   if (CRC_checksum(decbuf, len + 4, CRC_INIT) != CRC_RESULT) {
       DISSECT_MSG("WEP: invalid key, the packet was skipped\n");
       return -ENOTHANDLED;
-   }
+   } 
   
    /* copy the decrypted packet over the original one */
-   memcpy((u_char *)(wep + 1), tmpbuf, len);
+   memcpy(encbuf, decbuf, len);
    
    return ESUCCESS;
 #else
@@ -302,12 +308,14 @@ int set_wep_key(u_char *string)
 {
    int bit = 0;
    u_char *p;
+   char s[strlen(string) + 1];
    
    DEBUG_MSG("set_wep_key: %s", string);
    
    memset(wkey, 0, sizeof(wkey));
+   strcpy(s, string);
 
-   p = strtok(string, ":");
+   p = strtok(s, ":");
    if (p == NULL)
       SEMIFATAL_ERROR("Invalid WEP key");
 
@@ -336,7 +344,6 @@ int set_wep_key(u_char *string)
    if (strescape(wkey, p) != (int)wlen)
       SEMIFATAL_ERROR("Specified WEP key lenght does not match the given string");
   
-   
    return ESUCCESS;
 }
 

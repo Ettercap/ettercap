@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.47 2004/03/28 15:07:26 alor Exp $
+    $Id: ec_sniff.c,v 1.48 2004/03/31 13:03:08 alor Exp $
 */
 
 #include <ec.h>
@@ -44,7 +44,6 @@ int compile_target(char *string, struct target_env *target);
 void reset_display_filter(struct target_env *t);
 
 void set_forwardable_flag(struct packet_object *po);
-int check_forwarded(struct packet_object *po);
 
 static void add_port(void *ports, u_int n);
 static void add_ip(void *digit, u_int n);
@@ -60,52 +59,6 @@ static pthread_mutex_t ip_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define IP_LIST_UNLOCK   do{ pthread_mutex_unlock(&ip_list_mutex); } while(0)
 
 /*******************************************/
-
-/* 
- * if the dest mac address of the packet is
- * the same of GBL_IFACE->mac but the dest ip is
- * not the same as GBL_IFACE->ip, the packet is not
- * for us and we can do mitm on it before forwarding.
- */
-void set_forwardable_flag(struct packet_object *po)
-{
-
-   /* in bridged sniffing all the packet have to be forwarded */
-   if (GBL_SNIFF->type == SM_BRIDGED)
-      po->flags |= PO_FORWARDABLE;
-   
-   /* 
-    * if the mac is our, but the ip is not...
-    * it has to be forwarded
-    */
-
-   if (!memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) &&
-       memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
-       ip_addr_cmp(&GBL_IFACE->ip, &po->L3.dst) )
-      po->flags |= PO_FORWARDABLE;
-   
-}
-
-/*
- * check if the packet has been forwarded by us
- */
-int check_forwarded(struct packet_object *po) 
-{
-   /* the interface was not configured, the packets are not forwardable */
-   if (!GBL_IFACE->configured)
-      return 0;
-   
-   /* 
-    * dont sniff forwarded packets (equal mac, different ip) 
-    * but only if we are on live connections
-    */
-   if ( GBL_CONF->skip_forwarded && !GBL_OPTIONS->read &&
-        !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
-        ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
-      return 1;
-   }
-   return 0;   
-}
 
 void set_sniffing_method(struct sniffing_method *sm)
 {
@@ -127,6 +80,8 @@ void set_unified_sniff(void)
    sm.type = SM_UNIFIED;
    sm.start = &start_unified_sniff;
    sm.cleanup = &stop_unified_sniff;
+   sm.check_forwarded = &unified_check_forwarded;
+   sm.set_forwardable = &unified_set_forwardable;
    /* unified forwarding is done at layer 3 */
    sm.forward = &forward_unified_sniff;
    sm.interesting = &set_interesting_flag;
@@ -142,7 +97,6 @@ void set_unified_sniff(void)
 
 void set_bridge_sniff(void)
 {
-#ifdef ENABLE_BRIDGED_SNIFF
    struct sniffing_method sm;
 
    DEBUG_MSG("set_bridge_sniff");
@@ -152,13 +106,12 @@ void set_bridge_sniff(void)
    sm.type = SM_BRIDGED;
    sm.start = &start_bridge_sniff;
    sm.cleanup = &stop_bridge_sniff;
+   sm.check_forwarded = &bridge_check_forwarded;
+   sm.set_forwardable = &bridge_set_forwardable;
    sm.forward = &forward_bridge_sniff;
    sm.interesting = &set_interesting_flag;
 
    set_sniffing_method(&sm);
-#else
-   FATAL_ERROR("Bridged sniffing not supported.");
-#endif
 }
 
 

@@ -5,18 +5,10 @@
 >>> things to be fixed
    
    + FIXING
-      - dissect_free_session
       - remove the quiet from some plugins
 
    + PCAP RELATED
-      + when libpcap 0.8.2 will be released
-         - pcap_stat fix (even under linux the stats are cumulative)
-
-   + BSD PORTING
-      - find a way for bridged sniff under OpenBSD 
-
-   + SOLARIS PORTING
-      - test the bridged sniffing
+      - pcap_stat fix (even under linux the stats are cumulative)
 
    + WINDOWS PORTING
       - get_iface_mtu 
@@ -27,6 +19,14 @@
 
 >>> to be implemented
 
+   + SESSION
+      - dissect_free_session
+
+   + GTK GUI
+      - load twice the host list will not update the list
+
+   + CURSES GUI
+      - lines without \n while sniffing
    
    + BRIDGED SNIFFING
       - keep track of source mac addresses
@@ -42,6 +42,10 @@
    
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
+
+   + DISSECTORS
+      - pop3s
+      - imaps
    
    + PLUGINS
       - automatic add of new hosts
@@ -67,6 +71,9 @@
       - pcanywhere
       - TDS
       - MS-SQL (http://www.nii.co.in/vuln/sqlpass.html)
+      - YMSG
+        (http://www.xi0n.com/forums/showthread.php?s=8dc997a1e1f0d3216c8956d64fcdb414&postid=2767#post2767
+         http://www.venkydude.com/articles/yahoo.htm)
 
    + INET
       - handle fragmented packets

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_parser.c,v 1.19 2004/01/26 20:59:57 alor Exp $
+    $Id: el_parser.c,v 1.20 2004/03/31 13:03:08 alor Exp $
 */
 
 
@@ -290,10 +290,6 @@ void parse_options(int argc, char **argv)
    if (GBL.format == NULL)
       GBL.format = &ascii_format;
 
-   
-   /* XXX - check for incompatible options */
-   
-   
    return;
 }
 

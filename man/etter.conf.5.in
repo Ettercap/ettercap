@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.21 2004/03/28 16:51:36 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.22 2004/03/31 13:03:08 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -207,7 +207,7 @@ packets in order to collect passwords and perform a decryption attack. If you
 want to disable all the "dangerous" dissector at a time, set this value to 0.
 
 .TP
-.B skip_forwarded_pcks
+.B skip_forwarded
 If you set this value to 0 you will sniff even packets forwarded by ettercap
 or by the kernel. It will generate packets duplicates in conjuction with
 arp mitm method (for example). It could be useful while running ettercap

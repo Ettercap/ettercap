@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.12 2004/03/24 09:43:17 alor Exp $
+    $Id: ec_sniff_bridge.c,v 1.13 2004/03/31 13:03:08 alor Exp $
 */
 
 #include <ec.h>
@@ -26,10 +26,20 @@
 #include <ec_threads.h>
 #include <ec_conntrack.h>
 
+struct origin_mac_table {
+   u_int8 mac[MEDIA_ADDR_LEN];
+   LIST_ENTRY(origin_mac_table) next;
+};
+
+static LIST_HEAD(, origin_mac_table) iface_origin_table;
+static LIST_HEAD(, origin_mac_table) bridge_origin_table;
+
 /* proto */
 void start_bridge_sniff(void);
 void stop_bridge_sniff(void);
 void forward_bridge_sniff(struct packet_object *po);
+void bridge_check_forwarded(struct packet_object *po);
+void bridge_set_forwardable(struct packet_object *po);
 
 /*******************************************/
 
@@ -102,6 +112,85 @@ void forward_bridge_sniff(struct packet_object *po)
       send_to_L2(po);
    
 }
+
+/*
+ * keep a list of source mac addresses for each interface.
+ * each list will contain mac address coming form an host connected
+ * on the iface.
+ * we can determine if a packet is forwarded or not searching it in
+ * the lists.
+ */
+void bridge_check_forwarded(struct packet_object *po)
+{
+   struct origin_mac_table *omt;
+   u_char tmp[MAX_ASCII_ADDR_LEN];
+
+   /* avoid gcc complaining for unused var */
+   (void)tmp;
+   
+   if (po->flags & PO_FROMIFACE) {
+      /* search the mac in the iface table */
+      LIST_FOREACH(omt, &iface_origin_table, next)
+         if (!memcmp(omt->mac, po->L2.src, MEDIA_ADDR_LEN))
+            return;
+
+      /* 
+       * now search it in the opposite table
+       * if it was registered there, the packet is forwarded
+       */
+      LIST_FOREACH(omt, &bridge_origin_table, next)
+         if (!memcmp(omt->mac, po->L2.src, MEDIA_ADDR_LEN)) {
+            po->flags |= PO_FORWARDED;
+            return;
+         }
+   }
+         
+   if (po->flags & PO_FROMBRIDGE) {
+      /* search the mac in the bridge table */
+      LIST_FOREACH(omt, &bridge_origin_table, next)
+         if (!memcmp(omt->mac, po->L2.src, MEDIA_ADDR_LEN))
+            return;
+      
+      /* 
+       * now search it in the opposite table
+       * if it was registered there, the packet is forwarded
+       */
+      LIST_FOREACH(omt, &iface_origin_table, next)
+         if (!memcmp(omt->mac, po->L2.src, MEDIA_ADDR_LEN)) {
+            po->flags |= PO_FORWARDED;
+            return;
+         }
+   }
+
+
+   /* allocate a new entry for the newly discovered mac address */
+   SAFE_CALLOC(omt, 1, sizeof(struct origin_mac_table));
+
+   memcpy(omt->mac, po->L2.src, MEDIA_ADDR_LEN);
+
+   /* insert the new mac address in the proper list */
+   if (po->flags & PO_FROMIFACE) {
+      DEBUG_MSG("Added the mac [%s] to IFACE table", mac_addr_ntoa(po->L2.src, tmp));
+      LIST_INSERT_HEAD(&iface_origin_table, omt, next);
+   }
+   
+   if (po->flags & PO_FROMBRIDGE) {
+      DEBUG_MSG("Added the mac [%s] to BRIDGE table", mac_addr_ntoa(po->L2.src, tmp));
+      LIST_INSERT_HEAD(&bridge_origin_table, omt, next);
+   }
+}
+
+/* 
+ * in bridged sniffing all the packet must be forwarded
+ * on the other iface
+ */
+void bridge_set_forwardable(struct packet_object *po)
+{
+   /* in bridged sniffing all the packet have to be forwarded */
+   po->flags |= PO_FORWARDABLE;
+   
+}
+
 
 
 /* EOF */

@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.34 2004/03/25 21:25:27 lordnaga Exp $ */
+/* $Id: ec_packet.h,v 1.35 2004/03/31 13:03:08 alor Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -82,20 +82,21 @@ struct packet_object {
       #define PO_IGNORE       ((u_int16)(1))        /* this packet should not be processed (e.g. sniffing TARGETS didn't match it) */
       #define PO_DONT_DISSECT ((u_int16)(1<<1))     /* this packet should not be processed by dissector (used during the arp scan) */
       #define PO_FORWARDABLE  ((u_int16)(1<<2))     /* the packet has our MAC address, by the IP is not ours */
+      #define PO_FORWARDED    ((u_int16)(1<<3))     /* the packet was forwarded by us */
       
-      #define PO_FROMIFACE    ((u_int16)(1<<3))     /* this packet comes from the primary interface */
-      #define PO_FROMBRIDGE   ((u_int16)(1<<4))     /* this packet comes form the bridged interface */
+      #define PO_FROMIFACE    ((u_int16)(1<<4))     /* this packet comes from the primary interface */
+      #define PO_FROMBRIDGE   ((u_int16)(1<<5))     /* this packet comes form the bridged interface */
       
-      #define PO_MODIFIED     ((u_int16)(1<<5))     /* it needs checksum recalculation before forwarding */
-      #define PO_DROPPED      ((u_int16)(1<<6))     /* the packet has to be dropped */
+      #define PO_MODIFIED     ((u_int16)(1<<6))     /* it needs checksum recalculation before forwarding */
+      #define PO_DROPPED      ((u_int16)(1<<7))     /* the packet has to be dropped */
   
-      #define PO_DUP          ((u_int16)(1<<7))     /* the packet is a duplicate we have to free the buffer on destroy */
+      #define PO_DUP          ((u_int16)(1<<8))     /* the packet is a duplicate we have to free the buffer on destroy */
       
-      #define PO_EOF          ((u_int16)(1<<8))     /* we are reading from a file and this is the last packet */
+      #define PO_EOF          ((u_int16)(1<<9))     /* we are reading from a file and this is the last packet */
 
-      #define PO_FROMSSL      ((u_int16)(1<<9))     /* the packet is coming from a ssl wrapper */
+      #define PO_FROMSSL      ((u_int16)(1<<10))     /* the packet is coming from a ssl wrapper */
 
-      #define PO_SSLSTART     ((u_int16)(1<<10))    /* ssl wrapper has to enter SSL state */
+      #define PO_SSLSTART     ((u_int16)(1<<11))    /* ssl wrapper has to enter SSL state */
    
    /* 
     * here are stored the user and pass collected by dissectors 

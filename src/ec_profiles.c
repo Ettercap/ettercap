@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.36 2004/03/17 21:14:08 lordnaga Exp $
+    $Id: ec_profiles.c,v 1.37 2004/03/31 13:03:08 alor Exp $
 */
 
 #include <ec.h>
@@ -101,7 +101,8 @@ void profile_parse(struct packet_object *po)
     * this is necessary because check_forwarded() is executed
     * in ec_ip.c, but here we are getting even arp packet...
     */
-   if (check_forwarded(po))
+   EXECUTE(GBL_SNIFF->check_forwarded, po);
+   if (po->flags & PO_FORWARDED)
       return;
 
    /*

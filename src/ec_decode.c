@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.54 2004/03/30 09:31:30 alor Exp $
+    $Id: ec_decode.c,v 1.55 2004/03/31 13:03:08 alor Exp $
 */
 
 #include <ec.h>
@@ -146,11 +146,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* set the po timestamp */
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
    
-   /* 
-    * set the interface from which the packet comes 
-    * 
-    * GBL_OPTIONS->iface may be null when reading from file
-    */
+   /* set the interface where the packet was captured */
    if (GBL_OPTIONS->iface && !strcmp(param, GBL_OPTIONS->iface))
       po.flags |= PO_FROMIFACE;
    else if (GBL_OPTIONS->iface_bridge && !strcmp(param, GBL_OPTIONS->iface_bridge))

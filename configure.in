@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.106 2004/03/30 09:31:27 alor Exp $
+dnl    $Id: configure.in,v 1.107 2004/03/31 13:03:04 alor Exp $
 dnl
 
 AC_INIT
@@ -52,8 +52,6 @@ dnl ================
 
 AC_CANONICAL_HOST
 
-AH_TEMPLATE(ENABLE_BRIDGED_SNIFF, [can we use bridged sniffing on this platform ?])
-
 AH_TEMPLATE(OS_LINUX, [compiling under linux])    
 
 AH_TEMPLATE(OS_BSD, [compiling under bsd])
@@ -86,43 +84,34 @@ case "$host_os" in
    AC_DEFINE(OS_LINUX)
    AM_CONDITIONAL(LINUX, true)
    OS="LINUX"
-   ac_ec_bridged=yes
-   AC_DEFINE(ENABLE_BRIDGED_SNIFF)
    ;;
 *freebsd*)
    AC_DEFINE(OS_BSD)
    AC_DEFINE(OS_BSD_FREE)
    AM_CONDITIONAL(BSD, true)
    OS="FREEBSD"
-   ac_ec_bridged=yes
-   AC_DEFINE(ENABLE_BRIDGED_SNIFF)
    ;;
 *openbsd*)
    AC_DEFINE(OS_BSD)
    AC_DEFINE(OS_BSD_OPEN)
    AM_CONDITIONAL(BSD, true)
    OS="OPENBSD"
-   ac_ec_bridged=no
    ;;
 *netbsd*)
    AC_DEFINE(OS_BSD)
    AC_DEFINE(OS_BSD_NET)
    AM_CONDITIONAL(BSD, true)
    OS="NETBSD"
-   ac_ec_bridged=no
    ;;
 *darwin*)
    AC_DEFINE(OS_DARWIN)
    AM_CONDITIONAL(DARWIN, true)
    OS="DARWIN"
-   ac_ec_bridged=yes
-   AC_DEFINE(ENABLE_BRIDGED_SNIFF)
    ;;
 *solaris*)
    AC_DEFINE(OS_SOLARIS)
    AM_CONDITIONAL(SOLARIS, true)
    OS="SOLARIS"
-   ac_ec_bridged=no
    ;;
 *cygwin*)
    EC_WINDOWS_KERNEL()
@@ -131,21 +120,18 @@ case "$host_os" in
    AM_CONDITIONAL(CYGWIN, true)
    OS="CYGWIN $ac_ec_windows_version"
    PL_LDFLAGS="-no-undefined"
-   ac_ec_bridged=no
    ;;
 *mingw*)
    AC_DEFINE(OS_WINDOWS)
    AC_DEFINE(OS_MINGW)
    AM_CONDITIONAL(MINGW, true)
    OS="MINGW"
-   ac_ec_bridged=no
    ;;
 *interix*)
    AC_DEFINE(OS_WINDOWS)
    AC_DEFINE(OS_SFU)
    AM_CONDITIONAL(SFU, true)
    OS="SFU"
-   ac_ec_bridged=no
    ;;
 *)
    echo
@@ -833,7 +819,6 @@ echo
    EC_CHECK_OPTION("Functionalities :", "")
 echo
    EC_CHECK_OPTION(" Debug mode ............. ",${ac_ec_debug})
-   EC_CHECK_OPTION(" Bridged sniffing ....... ",${ac_ec_bridged})
    EC_CHECK_OPTION(" Plugin support ......... ",${ac_ec_plugin})
    EC_CHECK_OPTION(" Passive DNS ............ ",${ac_ec_dns})
    EC_CHECK_OPTION(" Perl regex in filters .. ",${ac_ec_pcre})

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.58 2004/03/07 14:38:40 alor Exp $
+    $Id: ec_parser.c,v 1.59 2004/03/31 13:03:08 alor Exp $
 */
 
 
@@ -412,8 +412,6 @@ void parse_options(int argc, char **argv)
          FATAL_ERROR("Only mitm requires at least one mitm method");
    }
 
-   /* XXX - check for incompatible options */
-   
    DEBUG_MSG("parse_options: options combination looks good");
    
    return;

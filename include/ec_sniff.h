@@ -1,5 +1,5 @@
 
-/* $Id: ec_sniff.h,v 1.9 2004/01/03 15:14:14 alor Exp $ */
+/* $Id: ec_sniff.h,v 1.10 2004/03/31 13:03:08 alor Exp $ */
 
 #ifndef EC_SNIFF_H
 #define EC_SNIFF_H
@@ -13,8 +13,10 @@ struct sniffing_method {
    char active;            /* true if the sniff was started */
    void (*start)(void);
    void (*cleanup)(void);
+   void (*check_forwarded)(struct packet_object *po);
+   void (*set_forwardable)(struct packet_object *po);
    void (*forward)(struct packet_object *po);
-   void (*interesting)(struct packet_object *po);    /* this function set the PO_IGNORE flag */
+   void (*interesting)(struct packet_object *po);  /* this function set the PO_IGNORE flag */
 };
 
 /* exported functions */
@@ -26,12 +28,9 @@ extern void set_sniffing_method(struct sniffing_method *sm);
 
 extern void set_unified_sniff(void);
 extern void set_bridge_sniff(void);
-extern void set_arp_sniff(void);
 
 extern int compile_display_filter(void);
 extern int compile_target(char *string, struct target_env *target);
-extern void set_forwardable_flag(struct packet_object *po);
-extern int check_forwarded(struct packet_object *po);
 
 extern void reset_display_filter(struct target_env *t);
 

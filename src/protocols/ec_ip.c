@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.37 2004/03/10 08:36:05 alor Exp $
+    $Id: ec_ip.c,v 1.38 2004/03/31 13:03:08 alor Exp $
 */
 
 #include <ec.h>
@@ -138,13 +138,11 @@ FUNC_DECODER(decode_ip)
    /* First IP decoder set its header as packet to be forwarded */
    if (PACKET->fwd_packet == NULL) {
       /* Don't parse packets we have forwarded */
-      if (check_forwarded(PACKET))
+      EXECUTE(GBL_SNIFF->check_forwarded, PACKET);
+      if (PACKET->flags & PO_FORWARDED)
          return NULL;
-      /* 
-       * set PO_FORWARDABLE flag:
-       * the mac address is our but ip addres isn't
-       */
-      set_forwardable_flag(PACKET);
+      /* set PO_FORWARDABLE flag */
+      EXECUTE(GBL_SNIFF->set_forwardable, PACKET);
       /* set the pointer to the data to be forwarded at layer 3 */
       PACKET->fwd_packet = (u_char *)DECODE_DATA;
       /* the len will be adjusted later...just in case of a brutal return */

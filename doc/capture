@@ -24,6 +24,8 @@ NOTE:       when in bridget sniffing, two thread are spawned, one for each
       if (truncated) continue;
          
       creates the packet object
+
+      determine the interface where the packet was captured
    
       HOOK POINT: HOOK_RECEIVED  
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.18 2004/03/25 21:25:37 lordnaga Exp $
+    $Id: ec_sniff_unified.c,v 1.19 2004/03/31 13:03:08 alor Exp $
 */
 
 #include <ec.h>
@@ -32,6 +32,8 @@
 void start_unified_sniff(void);
 void stop_unified_sniff(void);
 void forward_unified_sniff(struct packet_object *po);
+void unified_check_forwarded(struct packet_object *po);
+void unified_set_forwardable(struct packet_object *po);
 
 /*******************************************/
 
@@ -122,6 +124,47 @@ void forward_unified_sniff(struct packet_object *po)
     if (po->DATA.inject) 
        inject_buffer(po); 
 }
+
+/*
+ * check if the packet has been forwarded by us
+ * the source mac address is our, but the ip address is different
+ */
+void unified_check_forwarded(struct packet_object *po) 
+{
+   /* the interface was not configured, the packets are not forwardable */
+   if (!GBL_IFACE->configured)
+      return;
+   
+   /* 
+    * dont sniff forwarded packets (equal mac, different ip) 
+    * but only if we are on live connections
+    */
+   if ( GBL_CONF->skip_forwarded && !GBL_OPTIONS->read &&
+        !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
+        ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
+      po->flags |= PO_FORWARDABLE;
+   }
+}
+
+/* 
+ * if the dest mac address of the packet is
+ * the same of GBL_IFACE->mac but the dest ip is
+ * not the same as GBL_IFACE->ip, the packet is not
+ * for us and we can do mitm on it before forwarding.
+ */
+void unified_set_forwardable(struct packet_object *po)
+{
+   /* 
+    * if the mac is our, but the ip is not...
+    * it has to be forwarded
+    */
+   if (!memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) &&
+       memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
+       ip_addr_cmp(&GBL_IFACE->ip, &po->L3.dst) )
+      po->flags |= PO_FORWARDABLE;
+   
+}
+
 
 /* EOF */
 

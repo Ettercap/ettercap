@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.38 2003/10/16 15:33:08 lordnaga Exp $
+    $Id: ec_filter.c,v 1.39 2003/11/10 22:46:24 alor Exp $
 */
 
 #include <ec.h>
@@ -451,6 +451,10 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
             u_char *q = fop->op.func.replace;
             size_t i, nlen = 0;
 
+            /* don't modify if in unoffensive mode */
+            if (GBL_OPTIONS->unoffensive)
+               return -EINVALID;
+             
             /* 
              * the replaced string will not be larger than
              * the matched string + replacement string

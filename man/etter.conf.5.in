@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.14 2003/10/28 21:52:20 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.15 2003/11/10 22:46:24 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -90,6 +90,22 @@ This variable controls the poisoning delay after the first 5 poisons. The
 value is expressed in seconds. You can increase this value (to try fool the
 IDS) up to the timeout of the ARP cache (it depends on the operating system
 poisoned).
+
+.TP
+.B arp_poison_icmp
+Enable the sending of a spoofed ICMP message to force the targets to make an
+arp request. This will create an arp entry in the host's cache, so ettercap
+will be able to win the race condition and poison the target. Useful against
+targets that don't accept gratuitous arp if the entry is not in the cache.
+
+.TP
+.B arp_poison_reply
+Use ARP replies to poison the targets. This is the classic attack.
+
+.TP
+.B arp_poison_request
+Use ARP request to poison the targets. Useful against targets that cache even
+arp request values.
 
 
 

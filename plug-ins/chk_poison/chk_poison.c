@@ -20,7 +20,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: chk_poison.c,v 1.2 2003/11/05 10:10:06 lordnaga Exp $
+    $Id: chk_poison.c,v 1.3 2003/11/10 22:46:24 alor Exp $
 */
 
 
@@ -125,8 +125,8 @@ static int chk_poison_init(void *dummy)
 
    /* Send spoofed ICMP echo request to each victim */
    SLIST_FOREACH(p, &poison_table, next) {
-      for (i=0; i<=1; i++) {
-         send_icmp_echo(ICMP_ECHO, &(p->ip[i]), &(p->ip[!i]));   
+      for (i = 0; i <= 1; i++) {
+         send_L3_icmp_echo(ICMP_ECHO, &(p->ip[i]), &(p->ip[!i]));   
          usleep(GBL_CONF->arp_storm_delay * 1000);
       }
    }
@@ -143,7 +143,7 @@ static int chk_poison_init(void *dummy)
    
    /* We'll parse the list twice to avoid too long results printing */
    SLIST_FOREACH(p, &poison_table, next) {
-      for (i=0; i<=1; i++)
+      for (i = 0; i <= 1; i++)
          if (p->poison_success[i])
             poison_any = 1;
          else

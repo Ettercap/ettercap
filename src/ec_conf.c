@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.22 2003/10/25 21:57:42 alor Exp $
+    $Id: ec_conf.c,v 1.23 2003/11/10 22:46:24 alor Exp $
 */
 
 #include <ec.h>
@@ -41,6 +41,9 @@ static struct conf_entry mitm[] = {
    { "arp_storm_delay", NULL },
    { "arp_poison_delay", NULL },
    { "arp_poison_warm_up", NULL },
+   { "arp_poison_icmp", NULL },
+   { "arp_poison_reply", NULL },
+   { "arp_poison_request", NULL },
    { NULL, NULL },
 };
 
@@ -127,6 +130,9 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&mitm, "arp_storm_delay", &GBL_CONF->arp_storm_delay);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
+   set_pointer((struct conf_entry *)&mitm, "arp_poison_icmp", &GBL_CONF->arp_poison_icmp);
+   set_pointer((struct conf_entry *)&mitm, "arp_poison_reply", &GBL_CONF->arp_poison_reply);
+   set_pointer((struct conf_entry *)&mitm, "arp_poison_request", &GBL_CONF->arp_poison_request);
    set_pointer((struct conf_entry *)&connections, "connection_timeout", &GBL_CONF->connection_timeout);
    set_pointer((struct conf_entry *)&connections, "connection_idle", &GBL_CONF->connection_idle);
    set_pointer((struct conf_entry *)&connections, "connection_buffer", &GBL_CONF->connection_buffer);

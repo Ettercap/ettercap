@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.46 2003/11/05 09:31:11 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.47 2003/11/10 22:46:24 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -198,7 +198,7 @@ If a mitm method requires some parameters you can specify them after the colon.
 The following mitm attack are available:
 .RS
 .TP
-\fBarp\fR ([remote])
+\fBarp\fR ([remote],[oneway])
 This method implement the ARP poisoning mitm attack. ARP
 request/reply are sent to the victims to poison their ARP cache. Once the cache
 has been poisoned the victims will send all packets to the attacker which, in
@@ -207,7 +207,7 @@ turn, can modify them and forward to the real destination.
 In silent mode (-z option) only the first target is selected, if you want to
 poison multiple target in silent mode use the -j option to load a list from a
 file.
-.br
+.Sp
 You can select empty targets and they will be expanded as 'ANY' (all the host in
 the LAN). The target list is joined with the hosts list (created by the arp
 scan) and the result is used to determine the victims of the attack.
@@ -217,6 +217,10 @@ sniff remote ip address poisoning a gateway. Indeed if you specify a victim and
 the gw in the TARGETS, ettercap will sniff only connection between them, but to
 enable ettercap to sniff connections that passes thru the gw, you have to use
 this parameter.
+.Sp
+The parameter "oneway" will force ettercap to poison only from TARGET1 to
+TARGET2. Useful if you want to poison only the client and not the router (where
+an arp watcher can be in place).
 .Sp
 Example:
 .Sp

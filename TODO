@@ -29,6 +29,7 @@ this is the unofficial and floating in time roadmap:
 
    + FIXING
       - get_iface_mtu for win32
+      - dissect_free_session
       
 Nov 2003:
 
@@ -73,7 +74,7 @@ Dec 2003:
       
    + PLUGINS
       - convert all the old plugins
-      - check for poisoner
+      - finger plugin on multiple ports
       
    + BINDER
 

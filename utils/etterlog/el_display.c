@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_display.c,v 1.32 2003/10/15 13:12:04 alor Exp $
+    $Id: el_display.c,v 1.33 2003/11/10 22:46:24 alor Exp $
 */
 
 #include <el.h>
@@ -377,9 +377,9 @@ static void print_pass(struct host_profile *h)
                u->pass);
          
          if (u->info)
-            fprintf(stdout, "  INFO: %s\n", u->info);
+            fprintf(stdout, "  INFO: %s\n\n", u->info);
          else
-            fprintf(stdout, "\n");
+            fprintf(stdout, "\n\n");
       }
    }
    

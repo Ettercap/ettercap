@@ -21,7 +21,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: scan_poisoner.c,v 1.2 2003/11/09 13:23:11 lordnaga Exp $
+    $Id: scan_poisoner.c,v 1.3 2003/11/10 22:46:24 alor Exp $
 */
 
 
@@ -110,7 +110,7 @@ static int scan_poisoner_init(void *dummy)
 
    /* Send ICMP echo request to each target */
    LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
-      send_icmp_echo(ICMP_ECHO, &GBL_IFACE->ip, &h1->ip);   
+      send_L3_icmp_echo(ICMP_ECHO, &GBL_IFACE->ip, &h1->ip);   
       usleep(GBL_CONF->arp_storm_delay * 1000);
    }
          

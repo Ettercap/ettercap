@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.26 2003/11/01 15:52:58 alor Exp $
+    $Id: ec_send.c,v 1.27 2003/11/10 22:46:24 alor Exp $
 */
 
 #include <ec.h>
@@ -55,7 +55,8 @@ void add_builder(u_int8 dlt, FUNC_BUILDER_PTR(builder));
 libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto);
 
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac);
-int send_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip);
+int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac);
+int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip);
 int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct packet_object *po);
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -358,9 +359,9 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
 
 
 /*
- * helper function to send out an ICMP ECHO packet
+ * helper function to send out an ICMP ECHO packet at layer 3
  */
-int send_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip)
+int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip)
 {
    libnet_ptag_t t;
    int c;
@@ -412,6 +413,74 @@ int send_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip)
 
    /* clear the pblock */
    libnet_clear_packet(GBL_LNET->lnet_L3);
+
+   SEND_UNLOCK;
+   
+   return c;
+}
+
+/*
+ * helper function to send out an ICMP ECHO packet at layer 2
+ */
+int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac)
+{
+   libnet_ptag_t t;
+   int c;
+ 
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet == 0);
+   
+   SEND_LOCK;
+
+   /* create the ICMP header */
+   t = libnet_build_icmpv4_echo(
+           type,                    /* type */
+           0,                       /* code */
+           0,                       /* checksum */
+           htons(EC_MAGIC_16),      /* identification number */
+           htons(EC_MAGIC_16),      /* sequence number */
+           NULL,                    /* payload */
+           0,                       /* payload size */
+           GBL_LNET->lnet,          /* libnet handle */
+           0);                      /* pblock id */
+   ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet));
+  
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+  
+   /* create the IP header */
+   t = libnet_build_ipv4(                                                                          
+           LIBNET_IPV4_H + LIBNET_ICMPV4_ECHO_H,       /* length */                                    
+           0,                                          /* TOS */                                       
+           htons(EC_MAGIC_16),                         /* IP ID */                                     
+           0,                                          /* IP Frag */                                   
+           64,                                         /* TTL */                                       
+           IPPROTO_ICMP,                               /* protocol */                                  
+           0,                                          /* checksum */                                  
+           ip_addr_to_int32(&sip->addr),               /* source IP */                                 
+           ip_addr_to_int32(&tip->addr),               /* destination IP */                            
+           NULL,                                       /* payload */                                   
+           0,                                          /* payload size */                              
+           GBL_LNET->lnet,                             /* libnet handle */                             
+           0);
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
+  
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_LNET->lnet, t, 0);
+   
+   /* add the media header */
+   t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
+   ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
+   
+   /* 
+    * send the packet to Layer 2
+    * (sending icmp redirect is not permitted at layer 3)
+    */
+   c = libnet_write(GBL_LNET->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
+ 
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet);
 
    SEND_UNLOCK;
    

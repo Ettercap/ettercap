@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_profiles.c,v 1.13 2003/10/27 21:25:45 alor Exp $
+    $Id: el_profiles.c,v 1.14 2003/11/10 22:46:24 alor Exp $
 */
 
 #include <el.h>
@@ -85,7 +85,7 @@ int profile_add_info(struct log_header_info *inf, struct dissector_info *buf)
   
    /* the host was not found, create a new entry */
    SAFE_CALLOC(h, 1, sizeof(struct host_profile));
-  
+ 
    /* update the host info */
    update_info(h, inf, buf);
    
@@ -183,7 +183,7 @@ static void update_port_list(struct host_profile *h, struct log_header_info *inf
          return;
       }
    }
-  
+   
    /* skip this port, the packet was logged for
     * another reason, not the open port */
    if (inf->L4_addr == 0)

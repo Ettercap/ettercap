@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.26 2003/10/29 22:38:19 alor Exp $
+    $Id: ec_capture.c,v 1.27 2003/11/10 22:46:24 alor Exp $
 */
 
 #include <ec.h>
@@ -88,7 +88,7 @@ void capture_init(void)
       USER_MSG("Listening on %s...\n\n", GBL_OPTIONS->iface);
    
    /* set the snaplen to maximum */
-   GBL_PCAP->snaplen = INT16_MAX;
+   GBL_PCAP->snaplen = UINT16_MAX;
    
    /* 
     * open the interface from GBL_OPTIONS (user specified)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_display.c,v 1.2 2003/10/20 14:41:52 alor Exp $
+    $Id: ec_text_display.c,v 1.3 2003/11/10 22:46:24 alor Exp $
 */
 
 #include <ec.h>
@@ -75,7 +75,8 @@ void text_print_packet(struct packet_object *po)
    
    /* print it */
    write(fileno(stdout), tmp, ret);
-   
+
+   printf("\n");
 }     
 
 

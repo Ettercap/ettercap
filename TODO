@@ -28,9 +28,13 @@ this is the unofficial and floating in time roadmap:
       - developer docs
 
    + FIXING
+      rip auth (null) dhcp_full2.pcap
       
 Oct 2003:
 
+   + no sniff option (for plugin)
+   + options for -M method:options...
+   
    + LIBWDG
       - widgets:
          - menu
@@ -46,9 +50,10 @@ Oct 2003:
       - convert all the old dissectors
       - SSL unified dissector for https, impas, pop3s ecc ecc
       - HTTP sniff cookies
-      - SSH has to support DES, 3DES, blowfish and zlib compression
       - WIFI decoder support for WEP (key given)
-      - PPP decoder
+      - TOKEN RING
+      - FDDI
+      - PPP 
       - GRE
       - TDS
    

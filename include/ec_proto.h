@@ -1,22 +1,20 @@
 
-/* $Id: ec_proto.h,v 1.7 2003/09/29 20:32:04 alor Exp $ */
+/* $Id: ec_proto.h,v 1.8 2003/10/27 20:54:43 alor Exp $ */
 
 #ifndef EC_PROTO_H
 #define EC_PROTO_H
 
-#include <pcap.h>
 #include <ec_inet.h>
 
-
 /* interface layer types */
-
 enum {
-   IL_TYPE_ETH  =    DLT_EN10MB,
-   IL_TYPE_WIFI =    DLT_IEEE802_11,
+   IL_TYPE_ETH  = 0x01,   /* ethernet */
+   IL_TYPE_TR   = 0x06,   /* token ring */
+   IL_TYPE_FDDI = 0x0a,   /* fiber distributed data interface */
+   IL_TYPE_WIFI = 0x69,   /* wireless */
 };
    
 /* link layer types */
-
 enum {
    LL_TYPE_IP   = 0x0800,
    LL_TYPE_IP6  = 0x86DD,
@@ -24,7 +22,6 @@ enum {
 };
 
 /* network layer types */
-
 enum {
    NL_TYPE_ICMP  = 0x01,
    NL_TYPE_ICMP6 = 0x3a,
@@ -35,7 +32,6 @@ enum {
 };
 
 /* proto layer types */
-
 enum {
    PL_DEFAULT  = 0x0000,
 };
@@ -65,13 +61,13 @@ enum {
 
 /* ICMP types */
 enum {
-   ICMP_ECHOREPLY = 0,
-   ICMP_DEST_UNREACH = 3,
-   ICMP_REDIRECT = 5,
-   ICMP_ECHO = 8,
-   ICMP_TIME_EXCEEDED = 11,
-   ICMP_NET_UNREACH = 0,
-   ICMP_HOST_UNREACH = 1,
+   ICMP_ECHOREPLY       = 0,
+   ICMP_DEST_UNREACH    = 3,
+   ICMP_REDIRECT        = 5,
+   ICMP_ECHO            = 8,
+   ICMP_TIME_EXCEEDED   = 11,
+   ICMP_NET_UNREACH     = 0,
+   ICMP_HOST_UNREACH    = 1,
 };
 
 #endif

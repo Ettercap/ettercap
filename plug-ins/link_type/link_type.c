@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: link_type.c,v 1.3 2003/10/27 16:55:53 lordnaga Exp $
+    $Id: link_type.c,v 1.4 2003/10/27 20:54:43 alor Exp $
 */
 
 
@@ -32,8 +32,8 @@
 
 
 /* globals */
-#define LINK_HUB 0
-#define LINK_SWITCH 1
+#define LINK_HUB     0
+#define LINK_SWITCH  1
 u_char linktype;
 struct hosts_list targets[2];
 
@@ -94,11 +94,11 @@ static int link_type_init(void *dummy)
       memcpy(&(targets[counter].ip), &h->ip, sizeof(struct ip_addr));
       memcpy(targets[counter].mac, h->mac, ETH_ADDR_LEN);
       counter++;
-      if (counter==2)
+      if (counter == 2)
          break;
    }
    
-   if (counter==0) {
+   if (counter == 0) {
       INSTANT_USER_MSG("link_type: You have to build host list to run this plugin\n\n");
       return PLUGIN_FINISHED;
    }
@@ -107,7 +107,7 @@ static int link_type_init(void *dummy)
     * If we have only one element in the host list 
     * use target mac address and our ip as source 
     */
-   if (counter==1) {   
+   if (counter == 1) {   
       INSTANT_USER_MSG("link_type: Only one host in the list. Check will be less reliable\n\n"); 
       memcpy(&(targets[1].ip), &GBL_IFACE->ip, sizeof(struct ip_addr));
       memcpy(targets[1].mac, targets[0].mac, ETH_ADDR_LEN);        

@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.12 2003/10/07 14:51:27 alor Exp $ */
+/* $Id: ec_inet.h,v 1.13 2003/10/27 20:54:43 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -13,6 +13,10 @@ enum {
    NS_INT16SZ              = 2,
 
    ETH_ADDR_LEN            = 6,
+   TR_ADDR_LEN             = 6,
+   FDDI_ADDR_LEN           = 6,
+   MEDIA_ADDR_LEN          = 6,
+   
    IP_ADDR_LEN             = 4,
    IP6_ADDR_LEN            = 16,
    MAX_ADDR_LEN            = IP6_ADDR_LEN,

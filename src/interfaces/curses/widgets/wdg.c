@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.12 2003/10/26 18:20:48 alor Exp $
+    $Id: wdg.c,v 1.13 2003/10/26 19:27:14 alor Exp $
 */
 
 #include <wdg.h>
@@ -124,8 +124,7 @@ void wdg_init(void)
    curs_set(FALSE);
 
    /* remember the current screen size */
-   current_screen.lines = LINES;
-   current_screen.cols = COLS;
+   getmaxyx(stdscr, current_screen.lines, current_screen.cols);
 
    /* the wdg is initialized */
    current_screen.flags |= WDG_SCR_INITIALIZED;
@@ -182,8 +181,7 @@ static void wdg_resize(void)
    struct wdg_obj_list *wl;
    
    /* remember the current screen size */
-   current_screen.lines = LINES;
-   current_screen.cols = COLS;
+   getmaxyx(stdscr, current_screen.lines, current_screen.cols);
 
    /* call the redraw function upon all the objects */
    TAILQ_FOREACH(wl, &wdg_objects_list, next) {

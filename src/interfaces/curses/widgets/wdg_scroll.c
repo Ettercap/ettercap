@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_scroll.c,v 1.1 2003/10/26 18:20:48 alor Exp $
+    $Id: wdg_scroll.c,v 1.2 2003/10/26 19:27:14 alor Exp $
 */
 
 #include <wdg.h>
@@ -128,8 +128,6 @@ static int wdg_scroll_redraw(struct wdg_object *wo)
       /* set the window color */
       wbkgd(ww->sub, COLOR_PAIR(wo->window_color));
       touchwin(ww->sub);
-      /* update the scroll pointer */
-      wdg_set_scroll(wo, ww->y_max - l + 1);
       /* the pad is resized only orizzontally.
        * the vertical dimension can be larger than the screen */
       wdg_scroll_set_lines(wo, ww->y_max);

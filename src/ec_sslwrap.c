@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.3 2004/03/08 15:53:10 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.4 2004/03/09 13:32:25 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -82,7 +82,7 @@ struct sslw_ident {
 #define SSLW_RETRY 5
 #define SSLW_WAIT 10000
 
-SSL_CTX   *ssl_ctx_client;
+SSL_CTX   *ssl_ctx_client, *ssl_ctx_server;
 
 
 /* protos */
@@ -91,7 +91,7 @@ void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_cha
 EC_THREAD_FUNC(sslw_start);
 static int sslw_is_ssl(struct packet_object *po);
 static int sslw_client_accept(struct accepted_entry *ae);
-static int sslw_ssl_connect(void *method, struct accepted_entry *ae);
+static int sslw_ssl_connect(struct accepted_entry *ae);
 static int sslw_connect_server(struct accepted_entry *ae);
 static void sslw_bind_wrapper(void);
 static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct packet_object *po);
@@ -224,12 +224,10 @@ static int sslw_client_accept(struct accepted_entry *ae)
 /* 
  * Helper function 
  */ 
-static int sslw_ssl_connect(void *method, struct accepted_entry *ae)
+static int sslw_ssl_connect(struct accepted_entry *ae)
 {
-   SSL_CTX *ctx_server;
    
-   ctx_server = SSL_CTX_new(method);
-   ae->ssl[SSL_SERVER] = SSL_new(ctx_server);
+   ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
    SSL_set_connect_state(ae->ssl[SSL_SERVER]);
    SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
 
@@ -296,12 +294,9 @@ static int sslw_connect_server(struct accepted_entry *ae)
    }      
 
    /* SSL-connect the server */
-   // XXX - If the first fails, do the others connect?????
    // XXX - If the peer closes connection, is it a BrokenPipe????
    if (ae->status == SSL_ENABLED) {
-      if (sslw_ssl_connect(SSLv23_client_method(), ae) != 1 &&
-          sslw_ssl_connect(SSLv2_client_method(), ae) != 1 &&
-          sslw_ssl_connect(TLSv1_client_method(), ae) != 1) {
+      if (sslw_ssl_connect(ae) != 1) {
          close(ae->fd[SSL_SERVER]);
          return -EINVALID;   
       }      
@@ -424,6 +419,7 @@ static void sslw_init(void)
    SSL_library_init();
 
    ssl_ctx_client = SSL_CTX_new(SSLv23_server_method());
+   ssl_ctx_server = SSL_CTX_new(SSLv23_client_method());
 
    if (SSL_CTX_use_certificate_file(ssl_ctx_client, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
       if (SSL_CTX_use_certificate_file(ssl_ctx_client, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)

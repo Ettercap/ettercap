@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.25 2004/01/13 14:48:34 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.26 2004/01/14 11:10:10 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -296,7 +296,7 @@ Try it against a *nix smbclient :)
 .TP 
 .B smb_down
 .Sp
-It forces the client to not to use NTLMv2 password exchange during smb 
+It forces the client to not to use NTLM2 password exchange during smb 
 authentication. This way, obtained hashes can be easily cracked by LC4.
 You have to be in the "middle" of the connection to successfully use it.
 It hooks the smb dissector, so you have to keep it active. 

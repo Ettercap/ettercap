@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.16 2004/01/05 17:42:02 alor Exp $
+    $Id: wdg_menu.c,v 1.17 2004/10/12 15:28:38 alor Exp $
 */
 
 #include <wdg.h>
@@ -593,7 +593,7 @@ static void wdg_menu_close(struct wdg_object *wo)
    /* nothing to clear */
    if (ww->focus_unit->active == 0 || ww->focus_unit->m == NULL)
       return;
-   
+  
    /* hide the menu */
    unpost_menu(ww->focus_unit->m);
    

@@ -15,13 +15,9 @@
 
    + refresh the host list after the scan
    
-   + fix the ebcdic visualization
-
 ============================
   In the next release(s)
 ============================
-   
-   + add the help from the curses gui
    
    + ETTERLOG
       - extract files from streams looking for mime content or protocol

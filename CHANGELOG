@@ -20,6 +20,7 @@ NG-0.7.2         200410
    !! fixed the IRC password collector (\r \n related)
    !! fixes the dumping of the profiles to a file (fingerprint not recorded)
    !! the remote flag is now reset when the arp poisoning is stopped
+   !! fixed the ebcdic visualization
 
 
 NG-0.7.1         20040920

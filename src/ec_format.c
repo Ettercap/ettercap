@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_format.c,v 1.17 2004/04/29 19:56:07 alor Exp $
+    $Id: ec_format.c,v 1.18 2004/10/12 15:28:38 alor Exp $
 
 */
 
@@ -280,14 +280,12 @@ int ebcdic_format(const u_char *buf, size_t len, u_char *dst)
       strcpy(dst, "");
       return 0;
    }
-      
+   
+   /* convert from ebcdic to ascii */
    for(i = 0; i < len; i++)
-      if ( isprint((int)buf[i]) || buf[i] == '\n' || buf[i] == '\t' )
-         dst[i] = (char) EBCDIC_to_ASCII[(u_int8)buf[i]];
-      else
-         dst[i] = '.';
-
-   return len;
+      dst[i] = (char) EBCDIC_to_ASCII[(u_int8)buf[i]];
+   
+   return ascii_format(dst, len, dst);
 }
 
 /*

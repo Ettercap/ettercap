@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.42 2004/12/21 11:24:02 alor Exp $
+    $Id: ec_profiles.c,v 1.43 2004/12/21 20:27:15 alor Exp $
 */
 
 #include <ec.h>
@@ -184,7 +184,7 @@ static int profile_add_host(struct packet_object *po)
    TAILQ_FOREACH(h, &GBL_PROFILES, next) {
       /* an host is identified by the mac and the ip address */
       /* if the mac address is null also update it since it could
-       * be captured as a DNS packet specifying the GW 
+       * be captured as a DHCP packet specifying the GW 
        */
       if ((!memcmp(h->L2_addr, po->L2.src, MEDIA_ADDR_LEN) ||
            !memcmp(po->L2.src, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) &&
@@ -200,7 +200,7 @@ static int profile_add_host(struct packet_object *po)
   
    PROFILE_UNLOCK;
   
-   DEBUG_MSG("profile_add_host");
+   DEBUG_MSG("profile_add_host %x", ip_addr_to_int32(&po->L3.src.addr));
    
    /* 
     * the host was not found, create a new entry 
@@ -225,9 +225,6 @@ static int profile_add_host(struct packet_object *po)
    
    /* search the right point to inser it (ordered ascending) */
    TAILQ_FOREACH(c, &GBL_PROFILES, next) {
-      if ( ip_addr_cmp(&c->L3_addr, &h->L3_addr) == 0 )
-         BUG("duplicate !");
-
       if ( ip_addr_cmp(&c->L3_addr, &h->L3_addr) > 0 )
          break;
       last = c;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.15 2004/01/03 15:14:14 alor Exp $
+    $Id: wdg_menu.c,v 1.16 2004/01/05 17:42:02 alor Exp $
 */
 
 #include <wdg.h>
@@ -541,6 +541,15 @@ static void wdg_menu_open(struct wdg_object *wo)
 
    /* get the geometry to make a window */
    scale_menu(ww->focus_unit->m, &mrows, &mcols);
+
+   /* check if the menu will go outside the screen on the right */
+   if (x + mcols + 2 > current_screen.cols) {
+      /* 
+       * okay, we are going out of the edges...
+       * let's align the menu with the edge
+       */
+      x = current_screen.cols - (mcols + 3);
+   }
 
    /* create the window for the menu */
    ww->focus_unit->win = newwin(mrows + 2, mcols + 2, 1, x);

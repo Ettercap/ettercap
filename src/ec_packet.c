@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.27 2003/12/09 22:32:54 alor Exp $
+    $Id: ec_packet.c,v 1.28 2004/03/17 21:14:08 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -99,6 +99,7 @@ inline int packet_destroy_object(struct packet_object *po)
       SAFE_FREE(po->DISSECTOR.user);
       SAFE_FREE(po->DISSECTOR.pass);
       SAFE_FREE(po->DISSECTOR.info);
+      SAFE_FREE(po->DISSECTOR.banner);
    }
       
    /* 

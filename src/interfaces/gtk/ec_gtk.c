@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.26 2004/07/14 10:37:10 alor Exp $
+    $Id: ec_gtk.c,v 1.27 2004/07/27 12:44:45 daten Exp $
 */
 
 #include <ec.h>
@@ -493,7 +493,7 @@ static void gtkui_setup(void)
    gtk_widget_show(scroll);
 
    textview = gtk_text_view_new();
-   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (textview), GTK_WRAP_WORD);
+   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (textview), GTK_WRAP_WORD_CHAR);
    gtk_text_view_set_editable(GTK_TEXT_VIEW (textview), FALSE);
    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (textview), FALSE);
    gtk_widget_set_size_request(textview, -1, 140);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smtp.c,v 1.4 2004/01/21 20:20:06 alor Exp $
+    $Id: ec_smtp.c,v 1.5 2004/05/07 10:54:33 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_dissect.h>
 #include <ec_session.h>
 #include <ec_strings.h>
+#include <ec_sslwrap.h>
 
 /* protos */
 
@@ -41,6 +42,7 @@ void smtp_init(void);
 void __init smtp_init(void)
 {
    dissect_add("smtp", APP_LAYER_TCP, 25, dissector_smtp);
+   sslw_dissect_add("ssmtp", 465, dissector_smtp, SSL_ENABLED);
 }
 
 FUNC_DECODER(dissector_smtp)
@@ -52,9 +54,10 @@ FUNC_DECODER(dissector_smtp)
    
    /* the connection is starting... create the session */
    CREATE_SESSION_ON_SYN_ACK("smtp", s, dissector_smtp);
+   CREATE_SESSION_ON_SYN_ACK("ssmtp", s, dissector_smtp);
    
    /* check if it is the first packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("smtp", s, ident, dissector_smtp) {
+   IF_FIRST_PACKET_FROM_SERVER_SSL("smtp", "ssmtp", s, ident, dissector_smtp) {
           
       DEBUG_MSG("\tdissector_smtp BANNER");
        
@@ -73,7 +76,7 @@ FUNC_DECODER(dissector_smtp)
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    
    /* skip messages coming from the server */
-   if (FROM_SERVER("smtp", PACKET))
+   if (FROM_SERVER("smtp", PACKET) || FROM_SERVER("ssmtp", PACKET))
       return NULL;
    
    /* skip empty packets (ACK packets) */

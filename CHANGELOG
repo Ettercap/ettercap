@@ -14,9 +14,14 @@ NG-0.7.0_pre2    200405??
       + find_ettercap
       + autoadd
    + the live connections list can be purged by the user
-   + new dissector for:
+   + SSL support for the following dissector:
       + imaps
+      + ircs
+      + ldaps
+      + nntps
       + pop3s
+      + ssmtp
+      + telents
    + support for vlan tagging (802.1q header)
    + support for rawip file dumps
    + multiple selections in the GTK ui for targets and hosts

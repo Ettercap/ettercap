@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.18 2004/04/16 10:15:58 alor Exp $
+    $Id: ec_telnet.c,v 1.19 2004/05/07 10:54:33 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_dissect.h>
 #include <ec_session.h>
 #include <ec_strings.h>
+#include <ec_sslwrap.h>
 
 /* protos */
 
@@ -44,6 +45,7 @@ static int match_login_regex(char *ptr);
 void __init telnet_init(void)
 {
    dissect_add("telnet", APP_LAYER_TCP, 23, dissector_telnet);
+   sslw_dissect_add("telnets", 992, dissector_telnet, SSL_ENABLED);
 }
 
 /*
@@ -67,6 +69,7 @@ FUNC_DECODER(dissector_telnet)
 
    /* the connection is starting... create the session */
    CREATE_SESSION_ON_SYN_ACK("telnet", s, dissector_telnet);
+   CREATE_SESSION_ON_SYN_ACK("telnets", s, dissector_telnet);
 
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
@@ -91,7 +94,7 @@ FUNC_DECODER(dissector_telnet)
    dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_telnet));
    
    /* is the message from the server or the client ? */
-   if (FROM_SERVER("telnet", PACKET)) {
+   if (FROM_SERVER("telnet", PACKET) || FROM_SERVER("telnets", PACKET)) {
       
       /* start the collecting process when a "reserved" word is seen */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
@@ -201,7 +204,7 @@ FUNC_DECODER(dissector_telnet)
    SAFE_FREE(ident);
 
    /* check if it is the first readable packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("telnet", s, ident, dissector_telnet) {
+   IF_FIRST_PACKET_FROM_SERVER_SSL("telnet", "telnets", s, ident, dissector_telnet) {
       size_t i;
       u_char *q;
    

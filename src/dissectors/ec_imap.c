@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_imap.c,v 1.14 2004/05/05 12:34:52 alor Exp $
+    $Id: ec_imap.c,v 1.15 2004/05/07 10:54:33 alor Exp $
 */
 
 /*
@@ -70,39 +70,28 @@ FUNC_DECODER(dissector_imap)
    CREATE_SESSION_ON_SYN_ACK("imaps", s, dissector_imap);
    
    /* check if it is the first packet sent by the server */
-   if ((FROM_SERVER("imap", PACKET) || FROM_SERVER("imaps", PACKET)) && PACKET->L4.flags & TH_PSH) {
-      dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_imap));
-      /* the session exist */
-      if (session_get(&s, ident, sizeof(struct dissect_ident)) != -ENOTFOUND) {
-         /* prevent the deletion of session created for the user and pass */
-         if (s->data == NULL) {
+   IF_FIRST_PACKET_FROM_SERVER_SSL("smtp", "ssmtp", s, ident, dissector_imap) {
           
-            DEBUG_MSG("\tdissector_imap BANNER");
-            /*
-             * get the banner 
-             * "* OK banner"
-             */
-             
-            /* skip the number, go to response */
-            while(*ptr != ' ' && ptr != end) ptr++;
-            
-            /* reached the end */
-            if (ptr == end) return NULL;
-            
-            if (!strncmp(ptr, " OK ", 4)) {
-               PACKET->DISSECTOR.banner = strdup(ptr + 3);
-            
-               /* remove the \r\n */
-               if ( (ptr = strchr(PACKET->DISSECTOR.banner, '\r')) != NULL )
-                  *ptr = '\0';
-            }
-         } 
-         if (s->data == NULL) 
-            session_del(ident, sizeof(struct dissect_ident));
+      DEBUG_MSG("\tdissector_imap BANNER");
+      /*
+       * get the banner 
+       * "* OK banner"
+       */
+       
+      /* skip the number, go to response */
+      while(*ptr != ' ' && ptr != end) ptr++;
+      
+      /* reached the end */
+      if (ptr == end) return NULL;
+      
+      if (!strncmp(ptr, " OK ", 4)) {
+         PACKET->DISSECTOR.banner = strdup(ptr + 3);
+      
+         /* remove the \r\n */
+         if ( (ptr = strchr(PACKET->DISSECTOR.banner, '\r')) != NULL )
+            *ptr = '\0';
       }
-      SAFE_FREE(ident);
-      return NULL;
-   }  
+   } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    
    /* skip messages coming from the server */
    if (FROM_SERVER("imap", PACKET) || FROM_SERVER("imaps", PACKET))

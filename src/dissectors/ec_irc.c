@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_irc.c,v 1.7 2004/01/21 20:20:06 alor Exp $
+    $Id: ec_irc.c,v 1.8 2004/05/07 10:54:33 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_dissect.h>
 #include <ec_session.h>
 #include <ec_strings.h>
+#include <ec_sslwrap.h>
 
 /* protos */
 
@@ -44,6 +45,7 @@ void __init irc_init(void)
    dissect_add("irc", APP_LAYER_TCP, 6667, dissector_irc);
    dissect_add("irc", APP_LAYER_TCP, 6668, dissector_irc);
    dissect_add("irc", APP_LAYER_TCP, 6669, dissector_irc);
+   sslw_dissect_add("ircs", 994, dissector_irc, SSL_ENABLED);
 }
 
 FUNC_DECODER(dissector_irc)
@@ -57,7 +59,7 @@ FUNC_DECODER(dissector_irc)
    (void)end;
 
    /* skip messages coming from the server */
-   if (FROM_SERVER("irc", PACKET))
+   if (FROM_SERVER("irc", PACKET) || FROM_SERVER("ircs", PACKET))
       return NULL;
 
    /* skip empty packets (ACK packets) */

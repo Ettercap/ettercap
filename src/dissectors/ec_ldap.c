@@ -19,12 +19,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ldap.c,v 1.1 2004/01/14 14:04:47 lordnaga Exp $
+    $Id: ec_ldap.c,v 1.2 2004/05/07 10:54:33 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
+#include <ec_sslwrap.h>
 
 /* protos */
 
@@ -41,6 +42,7 @@ void ldap_init(void);
 void __init ldap_init(void)
 {
    dissect_add("ldap", APP_LAYER_TCP, 389, dissector_ldap);
+   sslw_dissect_add("ldaps", 636, dissector_ldap, SSL_ENABLED);
 }
 
 FUNC_DECODER(dissector_ldap)
@@ -57,7 +59,7 @@ FUNC_DECODER(dissector_ldap)
       return NULL;
     
    /* Only packets coming from the server */
-   if (FROM_SERVER("ldap", PACKET))
+   if (FROM_SERVER("ldap", PACKET) || FROM_SERVER("ldaps", PACKET))
       return NULL;
 
    /* Message Type */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_nntp.c,v 1.10 2004/01/21 20:20:06 alor Exp $
+    $Id: ec_nntp.c,v 1.11 2004/05/07 10:54:33 alor Exp $
 */
 
 /*
@@ -31,7 +31,7 @@
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_session.h>
-
+#include <ec_sslwrap.h>
 
 /* protos */
 
@@ -48,6 +48,7 @@ void nntp_init(void);
 void __init nntp_init(void)
 {
    dissect_add("nntp", APP_LAYER_TCP, 119, dissector_nntp);
+   sslw_dissect_add("nntps", 563, dissector_nntp, SSL_ENABLED);
 }
 
 FUNC_DECODER(dissector_nntp)
@@ -59,9 +60,10 @@ FUNC_DECODER(dissector_nntp)
    
    /* the connection is starting... create the session */
    CREATE_SESSION_ON_SYN_ACK("nntp", s, dissector_nntp);
+   CREATE_SESSION_ON_SYN_ACK("nntps", s, dissector_nntp);
    
    /* check if it is the first packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("nntp", s, ident, dissector_nntp) {
+   IF_FIRST_PACKET_FROM_SERVER_SSL("nntp", "nntps", s, ident, dissector_nntp) {
           
       DEBUG_MSG("\tdissector_nntp BANNER");
       /*
@@ -79,7 +81,7 @@ FUNC_DECODER(dissector_nntp)
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    
    /* skip messages coming from the server */
-   if (FROM_SERVER("nntp", PACKET))
+   if (FROM_SERVER("nntp", PACKET) || FROM_SERVER("nntps", PACKET))
       return NULL;
 
    /* skip empty packets (ACK packets) */

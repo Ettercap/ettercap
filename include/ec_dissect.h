@@ -1,5 +1,5 @@
 
-/* $Id: ec_dissect.h,v 1.17 2004/01/21 20:19:56 alor Exp $ */
+/* $Id: ec_dissect.h,v 1.18 2004/05/07 10:54:32 alor Exp $ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H
@@ -37,7 +37,15 @@ extern size_t dissect_create_ident(void **i, struct packet_object *po, u_int32 c
 
 extern int dissect_on_port(char *name, u_int16 port);
 extern int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
-   
+
+
+/* return true if the packet is coming from the server */
+#define FROM_SERVER(name, pack) (dissect_on_port(name, ntohs(pack->L4.src)) == ESUCCESS)
+
+/* return true if the packet is coming from the client */
+#define FROM_CLIENT(name, pack) (dissect_on_port(name, ntohs(pack->L4.dst)) == ESUCCESS)
+
+
 /*
  * creates the session on the first packet sent from
  * the server (SYN+ACK)
@@ -67,7 +75,16 @@ extern int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
  */
 
 #define IF_FIRST_PACKET_FROM_SERVER(name, session, ident, func)               \
-   if (dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS && PACKET->L4.flags & TH_PSH) {  \
+   if (FROM_SERVER(name, PACKET) && PACKET->L4.flags & TH_PSH) {              \
+      dissect_create_ident(&ident, PACKET, DISSECT_CODE(func));               \
+      /* the session exist */                                                 \
+      if (session_get(&session, ident, sizeof(struct dissect_ident)) != -ENOTFOUND) { \
+         /* prevent the deletion of session created for the user and pass */  \
+         if (session->data == NULL)                                        
+         
+         
+#define IF_FIRST_PACKET_FROM_SERVER_SSL(name, names, session, ident, func)    \
+   if ((FROM_SERVER(name, PACKET) || FROM_SERVER(names, PACKET)) && PACKET->L4.flags & TH_PSH) {  \
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(func));               \
       /* the session exist */                                                 \
       if (session_get(&session, ident, sizeof(struct dissect_ident)) != -ENOTFOUND) { \
@@ -82,13 +99,6 @@ extern int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
       SAFE_FREE(ident);                                        \
       return NULL;                                             \
    }  
-
-
-/* return true if the packet is coming from the server */
-#define FROM_SERVER(name, pack) (dissect_on_port(name, ntohs(pack->L4.src)) == ESUCCESS)
-
-/* return true if the packet is coming from the client */
-#define FROM_CLIENT(name, pack) (dissect_on_port(name, ntohs(pack->L4.dst)) == ESUCCESS)
 
 
 #define DISSECT_MSG(x, ...) do {    \

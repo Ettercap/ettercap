@@ -106,12 +106,12 @@ NOTE:       the plugin system has been modified since ettercap NG 0.7.0, all
 
 
       HOOK_RECEIVED     the raw packet, the L* structures are not filled. you
-                        can modify the packet befor the protocol analysis 
+                        can modify the packet before the protocol analysis 
                         starts.
       
       HOOK_DECODED      all the packet after the protocol stack parsing and
                         after the dissectors. here you can find interesting
-                        infos such as passwords and fingerprints.
+                        informations such as passwords and fingerprints.
       
       HOOK_PRE_FORWARD  right before the forward point. the hook is executed
                         only if it has to be forwarded.
@@ -143,8 +143,8 @@ NOTE:       the plugin system has been modified since ettercap NG 0.7.0, all
                         ./src/dissectors/*.c to have a list of hooks.
       
 
-      refer to the APPENDIX A in order to have a complete view of the hooking
-      system.
+      refer to the 'capture' document in order to have a complete view of the 
+      hooking system.
 
 
  5) ETTERCAP API
@@ -164,69 +164,11 @@ NOTE:       the plugin system has been modified since ettercap NG 0.7.0, all
 
 
       Obviously a plugin can use all the ettercap function and its global
-      variables. They are not described here because it is out of the documets
+      variables. They are not described here because it is out of the document
       scope.
       
 
 feel free to write an email to the developer to have further informations.
 
-
-
-============================================================================
-                              ETTERCAP ILLUSTRATED
-============================================================================
-
-
- Here is represented in Very-High-Level-Language the capture thread behavior:
-
-
-   loop {
-      
-      receives a single packet from the pcap callback
-
-      updates the packet statistics
-
-      dump the packet to a file (if the user has requested it)
-   
-      if (truncated) continue;
-         
-      creates the packet object
-   
-      HOOK POINT: HOOK_RECEIVED  
-
-      starts the protocol decoding
-         -> the packet is decoded by decoder and the po is filled
-            -> the ip and tcp sessions are created
-
-         -> the middle layer is called (only if TCP or UDP)
-            -> if (PO_DONT_DISSECT) return;
-            -> set the PO_IGNORE according to the visualization filters
-            -> HOOK POINT: HOOK_HANDLED
-            -> if (PO_IGNORE) return;
-            -> execute the dissectors
-            -> HOOK POINT: HOOK_DECODED
-            -> execute the filtering engine
-            -> HOOK POINT: HOOK_FILTER
-            -> a copy of the packet is added to the top_half queue
-   
-      if (PO_FORWARDABLE) {
-         HOOK POINT: HOOK_PRE_FORWARD
-         forward the packet to the real host (the victim)
-      }
-     
-      destroy the packet object
-      
-   }
-
- Top_half thread behavior:
-
-   loop {
-      
-      extract a packet from the top_half queue
-
-      HOOK POINT: HOOK_DISPATCHER
-
-      destroy the packet
-   }
 
 EOF

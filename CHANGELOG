@@ -56,6 +56,7 @@ NG-0.7.0    ????????
       + HalfLife and Quake3 were unified
       + SMB
       + SSH (blowfish support)
+      + SSL (totally reworked, runs on all platforms)
       + HTTP has gained performance overhaul
       + ...many others
    + new dissectors:

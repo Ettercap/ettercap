@@ -10,6 +10,8 @@
 #  (at your option) any later version.                                     #
 #                                                                          #
 ############################################################################
+#  Version         : $Revision: 1.4 $                                      # 
+############################################################################
 #                                                                          # 
 #  This file contains the form fields recognized as user or password by    #
 #  the HTTP dissector. You can add your own fields in the right section    #

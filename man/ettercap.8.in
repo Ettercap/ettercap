@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.59 2004/02/29 18:48:02 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.60 2004/03/30 09:32:09 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -160,6 +160,24 @@ you want to drop privs to a different uid, you can export the environment
 variable EC_UID with the value of the uid you want to drop the privs to (e.g.
 export EC_UID=500) or set the correct parameter in the etter.conf file.
 
+
+.SH SSL MITM ATTACK
+While performing the SSL mitm attack, ettercap substitutes the real ssl
+certificate with its own. The fake certificate is created on the fly and all
+the field are filled according to the real cert presented by the server. Only
+the issuer is modified and signed with the private key contained in the 'etter.sll.crt'
+file. If you want to use a different private key you have to regenerate this
+file. To regenerate the cert file use the following commands:
+.Sp
+openssl genrsa -out etter.ssl.crt 1024
+.br
+openssl req -new -key etter.ssl.crt -out tmp.csr
+.br
+openssl x509 -req -days 1825 -in tmp.csr -signkey etter.ssl.crt -out tmp.new
+.br
+cat tmp.new >> etter.ssl.crt
+.br
+rm -f tmp.new tmp.csr
 
 
 .SH OPTIONS
@@ -766,6 +784,13 @@ Perform the ARP poisoning attack against all the host in the LAN. BE CAREFUL
 !!
 
 .TP
+.B ettercap -T -M arp:remote /192.168.1.1/ /192.168.1.2-10/
+.Sp
+Perform the ARP poisoning against the gateway and the host in the lan between 2
+and 10. The 'remote' option is needed to be able to sniff the remote traffic
+the hosts make through the gateway.
+
+.TP
 .B ettercap -Tzq //110
 .SP
 Sniff only the pop3 protocol from every hosts.
@@ -800,10 +825,12 @@ Marco Valleri (NaGA) <naga@antifork.org>
 .SH AVAILABILITY
 http://ettercap.sourceforge.net/download/
 
+
 .SH CVS
 cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap login
 .br
 cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap co ettercap_ng
+
 
 .SH BUGS
 Our software never has bugs.
@@ -830,25 +857,7 @@ this is the description of Ettercap, a monster of the RPG Advanced Dungeons & Dr
 The name "ettercap" was chosen because it has an assonance with "ethercap" which
 means "ethernet capture" (what ettercap actually does) and also because such
 monsters have a powerful poison... and you know, arp poisoning... ;)
-.PP
-Someone has mailed us :
-.br
-"Did you know that in Dutch "etter" means "pain in the ass" or "nasty piece
-of work". Unfortunately, I think this applies to you, as this software will
-be used by numerous script kiddies to hack all kinds of services on local
-networks. "
-.PP
-I think that this is extremely true... ettercap is a "pain in the ass" for
-admin-kiddie. There are many way to detect and to protect against ettercap....
-The first one is: DON'T GIVE ROOT ACCESS TO SCRIPT-KIDDIES ON YOUR LAN!
-Some features were limited intentionally to work only on local network, because
-it is easier to protect against them locally.
-.br
-Internet is not a game, we need qualified admin and programmer to make secure
-protocols and programs. It isn't our fault if the net is so insecure... but we
-can do something to harden it.
-Ettercap was developed with this idea in mind: if even a script kiddies can do an
-hijack of the local connections, probably someone will find a solution for that !
+
 
 .SH The Lord Of The (Token)Ring
 (the fellowship of the packet)
@@ -856,6 +865,7 @@ hijack of the local connections, probably someone will find a solution for that 
 "One Ring to link them all, One Ring to ping them,
 .br
  one Ring to bring them all and in the darkness sniff them."
+
 
 .SH Last words
 "Programming today is a race between software engineers striving to build

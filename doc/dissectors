@@ -5,7 +5,7 @@ TOPIC:      dissector
 ABSTRACT:   this file describes how to write a dissector and how to fill the
             correct structures in order to ettercap understand them
 
-NOTE:       dissectors refears to functions analyzing application protocols
+NOTE:       dissectors refers to functions analyzing application protocols
             such as FTP or POP. functions that handle the lower level of the
             TCP/IP stack are called decoder and they are stored in the
             src/protocols directory.
@@ -24,12 +24,15 @@ within the function code, some macro are provided to properly handle the structu
 
 DECODE_DATALEN    (int) is the len of the data the decoder can parse 
 
-DECODE_DATA       (u_char) is the buffer contaning the data
+DECODE_DATA       (u_char) is the buffer containing the data
 
 PACKET            (struct packet_object) the PO structure associated with data 
 
-DECLARE_PTR_END(x,y) used to declare two u_char pointer, one (x) at the beginning
-                     of the data and one (y) at the end.
+DECLARE_REAL_PTR_END(x,y) used to declare two u_char pointer, one (x) at the beginning
+                          of the data and one (y) at the end.
+
+DECLARE_DISP_PTR_END(x,y) used to declare two u_char pointer, one (x) at the beginning
+                          of the disp_data buffer and one (y) at the end.
                    
 DISPLAY_DATA      (u_char) it is the buffer it will be displayed in the
                   interface. this is made because encrypted protocols must be

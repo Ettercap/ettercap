@@ -12,9 +12,6 @@
       + when libpcap 0.8.2 will be released
          - pcap_stat fix (even under linux the stats are cumulative)
 
-   + LNET RELATED
-      + 1.1.2 has icmp_redirect creation broken !!
-
    + BSD PORTING
       - find a way for bridged sniff under OpenBSD 
 
@@ -30,9 +27,6 @@
 
 >>> to be implemented
 
-   + DOCUMENTATION
-      - how to code a plugin 
-      - write in the man how to generate a new keypair
    
    + BRIDGED SNIFFING
       - keep track of source mac addresses
@@ -51,7 +45,7 @@
    
    + PLUGINS
       - automatic add of new hosts
-      - mozilla --remote for live navigation
+      - mozilla -remote for live navigation
 
 ==================
   LONG TERM TODO

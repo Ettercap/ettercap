@@ -35,7 +35,7 @@ code, btw fixes and patches are welcome.
 MANDATORY:
 
    - libpcap >= 0.8.1
-   - libnet  >= 1.1.1  (1.1.2 for uncofigured interfaces)
+   - libnet  >= 1.1.2.1 
    - libpthread
    - zlib
 

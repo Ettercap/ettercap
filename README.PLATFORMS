@@ -93,7 +93,7 @@ After installing the following packages from http://http://www.sunfreeware.com
 
 ettercap NG configures and compiles without any issue.
 
-libnet 1.1.1 should be downloaded from http://www.packetfactory.net and
+libnet 1.1.2.1 should be downloaded from http://www.packetfactory.net and
 compiled by your own.
 
 If you want to compile from the CVS, you will need to install the autotools in
@@ -120,7 +120,7 @@ doubt, go with the latest copy.
    automake >= 1.7.6-2
    bison >= 1.875-1
    dlcompat >= 20030629-15
-   libnet >= 1.1.1-1
+   libnet >= 1.1.2.1-1
    libpcap >= 0.8.1-1
    libpoll >= 1.4-11
    libtool >= 1.5-1
@@ -140,8 +140,8 @@ doubt, go with the latest copy.
 
       - libltdl (part of libtool 1.5)
    
-   all the other libs can be installed from ports (except for libnet 1.1.1, at 
-   the moment)
+   all the other libs can be installed from ports (except for libnet 1.1.2.1, 
+   at the moment)
 
    if you encounter some linking problem compiling the tarball, it is due to
    the libtool version provided within our tarball. to solve the problem

@@ -6,7 +6,7 @@ Legenda:
 
 =========================================
 
-NG-0.7.2         200411
+NG-0.7.2         20041221
 
    + the hosts scan can now be canceled by the user (ctrl+q)
    + the netmask for the scan can now be specified within the GUI

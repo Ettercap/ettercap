@@ -23,6 +23,8 @@
 
    + resolve ip in the message window
 
+   + use different counters for RX and TX bytes in the connection table
+
    + record the MSS for the packet splitting
 
    + multiple dissector on a single port

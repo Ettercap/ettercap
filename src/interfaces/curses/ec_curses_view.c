@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.20 2004/05/21 14:25:22 alor Exp $
+    $Id: ec_curses_view.c,v 1.21 2004/12/21 11:24:02 alor Exp $
 */
 
 #include <ec.h>
@@ -62,7 +62,7 @@ struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
                                 {"-",                     0,  "",  NULL},
                                 {"Resolve IP addresses",  0, tag_resolve,   toggle_resolve},
                                 {"Visualization method...", 'v', "v", curses_vis_method},
-                                {"Visualization regex...", 'r', "r", curses_vis_regex},
+                                {"Visualization regex...", 'R', "R", curses_vis_regex},
                                 {"-",                     0,  "",  NULL},
                                 {"Set the WEP key...",   'w', "w", curses_wep_key},
                                 {NULL, 0, NULL, NULL},

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.41 2004/10/05 13:31:49 alor Exp $
+    $Id: ec_profiles.c,v 1.42 2004/12/21 11:24:02 alor Exp $
 */
 
 #include <ec.h>
@@ -225,6 +225,9 @@ static int profile_add_host(struct packet_object *po)
    
    /* search the right point to inser it (ordered ascending) */
    TAILQ_FOREACH(c, &GBL_PROFILES, next) {
+      if ( ip_addr_cmp(&c->L3_addr, &h->L3_addr) == 0 )
+         BUG("duplicate !");
+
       if ( ip_addr_cmp(&c->L3_addr, &h->L3_addr) > 0 )
          break;
       last = c;

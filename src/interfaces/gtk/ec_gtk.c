@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.38 2004/11/05 10:01:15 alor Exp $
+    $Id: ec_gtk.c,v 1.39 2004/12/21 11:24:02 alor Exp $
 */
 
 #include <ec.h>
@@ -317,13 +317,20 @@ static int gtkui_progress(char *title, int value, int max)
    static GtkWidget *progress_bar = NULL;
    static GtkWidget *hbox, *button;
 
+#ifndef OS_MINGW
+   /* FIXME: try to understand why it does not work under mingw.
+    * (look even in ec_scan.c
+    */
    gdk_threads_enter();
-
+#endif
+   
    if (progress_cancelled == TRUE) {
       progress_dialog = NULL;
       progress_bar = NULL;
       progress_cancelled = FALSE;
+#ifndef OS_MINGW
       gdk_threads_leave();
+#endif
       return UI_PROGRESS_INTERRUPTED;
    }
 
@@ -356,17 +363,24 @@ static int gtkui_progress(char *title, int value, int max)
    gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
 
+#ifndef OS_MINGW
    gdk_threads_leave();
-
+#else
+   /* a nasty little loop that lets gtk update the progress bar immediately */
+   while (gtk_events_pending ())
+      gtk_main_iteration ();
+#endif
+   
    /* 
     * when 100%, destroy it
     */
    if (value == max) {
-      gdk_threads_enter();
       gtk_widget_destroy(progress_dialog);
       progress_dialog = NULL;
       progress_bar = NULL;
+#ifndef OS_MINGW
       gdk_threads_leave();
+#endif
       return UI_PROGRESS_FINISHED;
    }
 
@@ -728,8 +742,9 @@ static void gtkui_unified_sniff(void)
       iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (iface_combo)->entry));
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
-            if (GBL_OPTIONS->iface == NULL) 
-               SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+            
+            SAFE_FREE(GBL_OPTIONS->iface);
+            SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
 
             strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
             break;
@@ -755,12 +770,22 @@ static void gtkui_unified_sniff(void)
 /* 
  * start unified sniffing with default interface
  */
-static void gtkui_unified_sniff_default(void) {
+static void gtkui_unified_sniff_default(void) 
+{
+   char err[PCAP_ERRBUF_SIZE];
    
    DEBUG_MSG("gtkui_unified_sniff_default");
 
    /* the ec_capture will find the interface for us */
-   GBL_OPTIONS->iface = NULL;
+   if (GBL_OPTIONS->iface == NULL) {
+      char *iface;
+
+      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+      iface = pcap_lookupdev(err);
+      ON_ERROR(iface, NULL, "pcap_lookupdev: %s", err);
+   
+      strncpy(GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
+   }
 
    /* close setup interface and start sniffing */
    gtk_main_quit();
@@ -848,8 +873,9 @@ static void gtkui_bridged_sniff(void)
       iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo1)->entry));
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
-            if(GBL_OPTIONS->iface == NULL)
-               SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+            
+            SAFE_FREE(GBL_OPTIONS->iface);
+            SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
 
             strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
             break;                      
@@ -867,8 +893,9 @@ static void gtkui_bridged_sniff(void)
       iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo2)->entry));
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
-            if(GBL_OPTIONS->iface_bridge == NULL)
-               SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
+               
+            SAFE_FREE(GBL_OPTIONS->iface_bridge);
+            SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
 
             strncpy(GBL_OPTIONS->iface_bridge, dev->name, IFACE_LEN);
             break;

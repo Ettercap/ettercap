@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.10 2004/10/13 12:33:24 alor Exp $
+    $Id: ec_mingw.c,v 1.11 2004/12/21 11:24:03 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -1098,7 +1098,7 @@ static void setup_console (void)
   DWORD   rc = 0;
   STARTUPINFO inf;
   const char *cmd_line = GetCommandLine();
-  BOOL  is_ec   = (cmd_line && strstr(cmd_line,"ettercap.exe"));
+  BOOL  is_ec   = (cmd_line && strstr(cmd_line,"ettercap"));
   BOOL  use_gtk = (is_ec && strstr(cmd_line,"-G") != NULL);
 
   if (!is_ec || use_gtk)  /* GTK UI shouldn't need a console */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.41 2004/11/17 11:17:59 alor Exp $
+    $Id: ec_scan.c,v 1.42 2004/12/21 11:24:02 alor Exp $
 */
 
 #include <ec.h>
@@ -124,11 +124,23 @@ static EC_THREAD_FUNC(scan_thread)
    struct hosts_list *hl;
    int i = 1, ret;
    int nhosts = 0;
+   int no_thread = 0;
    
    DEBUG_MSG("scan_thread");
 
-   /* in text mode and demonized this function is NOT a thread */
+   /* in text mode and demonized this function should NOT be a thread */
    if (GBL_UI->type != UI_TEXT && GBL_UI->type != UI_DAEMONIZE)
+      no_thread = 1;
+
+#ifdef OS_MINGW
+   /* FIXME: for some reason under windows it does not work in thread mode 
+    * to be investigated...
+    */
+   no_thread = 1;
+#endif
+   
+   /* if necessary, don't create the thread */
+   if (no_thread)
       ec_thread_init();
 
    /*
@@ -210,8 +222,8 @@ static EC_THREAD_FUNC(scan_thread)
    if (GBL_OPTIONS->save_hosts)
       scan_save_hosts(GBL_OPTIONS->hostsfile);
 
-   /* in text mode and demonized this function is NOT a thread */
-   if (GBL_UI->type != UI_TEXT && GBL_UI->type != UI_DAEMONIZE)
+   /* if necessary, don't create the thread */
+   if (no_thread)
       ec_thread_exit();
 
    /* NOT REACHED */

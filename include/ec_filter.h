@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.17 2003/10/05 20:44:41 alor Exp $ */
+/* $Id: ec_filter.h,v 1.18 2003/10/11 14:11:04 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -118,6 +118,8 @@ struct regex_opt {
    pcre_extra *preg_extra;   
 #endif
 };
+
+#define PCRE_OVEC_SIZE 100
 
 /* exported functions */
 

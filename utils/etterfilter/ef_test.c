@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.15 2003/10/06 13:14:03 alor Exp $
+    $Id: ef_test.c,v 1.16 2003/10/11 14:11:17 alor Exp $
 */
 
 #include <ef.h>
@@ -190,7 +190,11 @@ void print_function(struct filter_op *fop, u_int32 eip)
          break;
          
       case FFUNC_PCRE:
-         fprintf(stdout, "%04d: PCRE_REGEX level %d, string \"%s\"\n", eip, 
+         if (fop->op.func.replace)
+            fprintf(stdout, "%04d: PCRE_REGEX level %d, string \"%s\", replace \"%s\"\n", eip, 
+               fop->op.func.level, fop->op.func.string, fop->op.func.replace);
+         else
+            fprintf(stdout, "%04d: PCRE_REGEX level %d, string \"%s\"\n", eip, 
                fop->op.func.level, fop->op.func.string);
          break;
 

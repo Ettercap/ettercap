@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.30 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_filter.c,v 1.31 2003/10/11 14:11:17 alor Exp $
 */
 
 #include <ec.h>
@@ -431,12 +431,102 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
    JIT_FAULT("pcre_regex support not compiled in ettercap");
    return -ENOTFOUND;
 #else
+   int ovec[PCRE_OVEC_SIZE];
+   int ret;
+   
+   DEBUG_MSG("filter engine: func_pcre");
+   
+   memset(&ovec, 0, sizeof(ovec));
    
    switch (fop->op.func.level) {
       case 5:
+         
          /* search in the real packet */
-         if ( pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.data, po->DATA.len, 0, 0, NULL, 0) < 0)
+         if ( (ret = pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.data, po->DATA.len, 0, 0, ovec, sizeof(ovec) / sizeof(*ovec))) < 0)
             return -ENOTFOUND;
+
+         /* the pcre wants to modify the packet */
+         if (fop->op.func.replace) {
+            u_char *replaced;
+            u_char *q = fop->op.func.replace;
+            size_t i, nlen = 0;
+            int delta = 0;
+            size_t max_len, new_len;
+
+            /* 
+             * the replaced string will not be larger than
+             * the matched string + replacement string
+             */
+            SAFE_CALLOC(replaced, ovec[1] + strlen(q) + 1, sizeof(char));
+          
+            po->flags |= PO_MODIFIED;
+
+            /* make the replacement */
+            for (i = 0; i < fop->op.func.rlen; i++) {
+               
+               /* there is a position marker */
+               if (q[i] == '$' && q[i - 1] != '\\') {
+                  
+                  int marker = atoi(q + i + 1);
+                  int t = ovec[marker * 2];
+                  int r = ovec[marker * 2 + 1];
+                  
+                  /* skip the chars of the marker */
+                  while (q[++i + 1] != ' ' && q[i] < q[strlen(q)] );
+                  
+                  /* check if the requested marker was found in the pce */
+                  if (marker > ret - 1 || marker == 0)
+                     JIT_FAULT("Too many marker for this pcre expression");
+
+                  /* copy the sub-string in place of the marker */
+                  for ( ; t < r; t++) 
+                     replaced[nlen++] = po->DATA.data[t];
+                  
+               /* the $ is escaped, copy it */
+               } else if (q[i] == '\\' && q[i + 1] == '$') {
+                  replaced[nlen++] = q[++i];
+               /* all the other chars are copied as they are */
+               } else {
+                  replaced[nlen++] = q[i];
+               }
+            }
+
+            /* wipe the old data */
+            memset(po->DATA.data, 0, po->DATA.len);
+            
+            /* calculate the maximum lenght for the payload */
+            max_len = GBL_IFACE->mtu - (po->L4.header - (po->packet + po->L2.len) + po->L4.len);
+            
+            /* calculate the delta */
+            delta = nlen - po->DATA.len;
+            
+            /* the packet has exceeded the MTU */
+            if (nlen > max_len) {
+               po->DATA.delta = max_len - po->DATA.len;
+            } else {
+               /* the new buffer fits the packet */
+               po->DATA.delta = delta;
+            }
+
+            /* new lenght is the minimum between the max len and the modified len */ 
+            new_len = MIN(po->DATA.len + po->DATA.delta, max_len);
+            /* wipe the old buffer */
+            memset(po->DATA.data, 0, po->DATA.len);
+            /* check if we are overflowing pcap buffer */
+            BUG_IF(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) < new_len);
+            /* copy the temp buffer on the original packet */
+            memcpy(po->DATA.data, replaced, new_len);
+            
+            /* copy the rest in the inject buffer */
+            if (delta != po->DATA.delta) {
+               SAFE_CALLOC(po->inject, po->DATA.len + delta - max_len, sizeof(u_char));
+               memcpy(po->inject, replaced + new_len, po->DATA.len + delta - max_len);
+               po->inject_len = po->DATA.len + delta - max_len;
+            }
+           
+            SAFE_FREE(replaced);
+         }
+         
          break;
       case 6:
          /* search in the decoded one */

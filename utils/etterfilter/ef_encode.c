@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.14 2003/10/07 14:51:28 alor Exp $
+    $Id: ef_encode.c,v 1.15 2003/10/11 14:11:17 alor Exp $
 */
 
 #include <ef.h>
@@ -188,10 +188,11 @@ int encode_function(char *string, struct filter_op *fop)
 #ifndef HAVE_PCRE
       WARNING("The script contains pcre_regex, but you don't have support for it.");
 #else
+      pcre *pregex;
+      const char *errbuf = NULL;
+      int erroff;
+      
       if (nargs == 2) {
-         pcre *pregex;
-         const char *errbuf = NULL;
-         int erroff;
                      
          /* get the level (DATA or DECODED) */
          if (encode_offset(dec_args[0], fop) == ESUCCESS) {
@@ -203,12 +204,30 @@ int encode_function(char *string, struct filter_op *fop)
             ret = ESUCCESS;
          }
 
+         /* check if the pcre is valid */
          pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
          if (pregex == NULL)
             SCRIPT_ERROR("%s\n", errbuf);
 
          pcre_free(pregex);
-               
+      } else if (nargs == 3) {
+            
+         fop->opcode = FOP_FUNC;
+         fop->op.func.op = FFUNC_PCRE;
+         /* substitution always at layer DATA */
+         fop->op.func.level = 5;
+         fop->op.func.string = strdup(dec_args[1]);
+         fop->op.func.slen = strlen(fop->op.func.string);
+         fop->op.func.replace = strdup(dec_args[2]);
+         fop->op.func.rlen = strlen(fop->op.func.replace);
+         ret = ESUCCESS;
+         
+         /* check if the pcre is valid */
+         pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
+         if (pregex == NULL)
+            SCRIPT_ERROR("%s\n", errbuf);
+
+         pcre_free(pregex);
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
 #endif

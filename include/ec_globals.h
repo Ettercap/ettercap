@@ -9,7 +9,6 @@
 struct ec_options {
    char dump:1;
    char read:1;
-   char daemonized:1;
    char reversed;
    char *iface;
    char *iface_bridge;

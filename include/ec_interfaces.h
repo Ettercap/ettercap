@@ -5,6 +5,7 @@
 /* exported functions */
 
 extern void set_console_interface(void);
+extern void set_daemon_interface(void);
 
 #endif
 

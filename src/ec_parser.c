@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.5 2003/03/17 22:23:47 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.6 2003/03/18 14:18:16 alor Exp $
 */
 
 
@@ -141,8 +141,7 @@ void parse_options(int argc, char **argv)
                   break;
          
          case 'D':
-                  GBL_OPTIONS->daemonized = 1;
-                  NOT_IMPLEMENTED();
+                  set_daemon_interface();
                   break;
                   
          case 'R':

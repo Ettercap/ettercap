@@ -34,14 +34,15 @@ ettercap_SOURCES = ec_main.c \
 				   protocols/ec_tcp.c \
 				   protocols/ec_udp.c \
 				   dissectors/ec_pop.c \
-				   interfaces/console/ec_console.c 
+				   interfaces/console/ec_console.c \
+				   interfaces/daemon/ec_daemon.c 
                
 if LINUX
 ettercap_SOURCES += os/ec_linux.c
 endif
-#if BSD
-#ettercap_SOURCES += os/ec_bsd.c
-#endif
+if BSD
+ettercap_SOURCES += os/ec_bsd.c
+endif
 if DARWIN
 ettercap_SOURCES += os/ec_darwin.c
 endif

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.29 2003/11/17 11:43:23 alor Exp $
+    $Id: ec_dispatcher.c,v 1.30 2003/11/27 22:36:29 alor Exp $
 */
 
 #include <ec.h>
@@ -135,6 +135,7 @@ EC_THREAD_FUNC(top_half)
       
       /* destroy the duplicate packet object */
       packet_destroy_object(e->po);
+      SAFE_FREE(e->po);
       SAFE_FREE(e);
       
       /* start the counter for the TopHalf */

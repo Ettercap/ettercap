@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.7 2003/04/05 09:25:10 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.8 2003/04/05 13:11:10 alor Exp $
 */
 
 #include <el.h>
@@ -222,9 +222,14 @@ void set_display_regex(char *regex)
 
 static void display_info(void)
 {
-
-   /* create the host list */
-   create_hosts_list();
+   struct host_profile *h;
+   struct open_port *o;
+   struct active_user *u;
+   LIST_HEAD(, host_profile) *hosts_list_head = get_host_list_ptr();
+   char tmp[MAX_ASCII_ADDR_LEN];
+   
+   /* create the hosts' list */
+   create_hosts_list(); 
 
    /* load the fingerprint database */
    fingerprint_init();
@@ -232,37 +237,37 @@ static void display_info(void)
    /* load the manuf database */
    manuf_init();
 
+   fprintf(stdout, "\n\n");
 
-   NOT_IMPLEMENTED();
+   /* parse the list */
+   LIST_FOREACH(h, hosts_list_head, next) {
 
-#if 0
-   struct log_header_info pck;
-   int ret;
-   u_char *buf;
-   int versus;
-   
-   /* read the logfile */
-   LOOP {
-      ret = get_info(&pck, &buf);
-
-      /* on error exit the loop */
-      if (ret != ESUCCESS)
-         break;
-
-      /* the packet should complain to the target specifications */
-      if (!is_target_info(&pck)) {
-         SAFE_FREE(buf);
-         continue;
+      /* XXX respect the TARGET and regex */
+      
+      fprintf(stdout, "MAC: %s\n", mac_addr_ntoa(h->L2_addr, tmp));
+      fprintf(stdout, "IP : %s\n", ip_addr_ntoa(&h->L3_addr, tmp));
+      fprintf(stdout, "DISTANCE : %d\n", h->distance);
+      fprintf(stdout, "TYPE     : %d\n", h->type);
+      fprintf(stdout, "FINGER   : %s\n", h->fingerprint);
+     
+      LIST_FOREACH(o, &(h->open_ports_head), next) {
+         
+         fprintf(stdout, "   PORT     : %d : %d \n", o->L4_proto, ntohs(o->L4_addr));
+         fprintf(stdout, "   BANNER   : %s\n", o->banner);
+         
+         LIST_FOREACH(u, &(o->users_list_head), next) {
+            
+            fprintf(stdout, "      USER     : %s\n", u->user);
+            fprintf(stdout, "      PASS     : %s\n", u->pass);
+            fprintf(stdout, "      INFO     : %s\n", u->info);
+         }
       }
       
-      /* if the regex does not match, the packet is not interesting */
-      
-      SAFE_FREE(buf);
+      fprintf(stdout, "\n\n");
    }
-
+   
    fprintf(stdout, "\n\n");
-#endif
-   NOT_IMPLEMENTED();
+
 }
 
 /* EOF */

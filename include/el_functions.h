@@ -40,7 +40,7 @@ extern int is_target_pck(struct log_header_packet *pck);
 extern int is_target_info(struct log_header_info *inf);
 
 /* el_profiles */
-extern int profile_add_info(struct log_header_info *inf);
+extern int profile_add_info(struct log_header_info *inf, struct dissector_info *buf);
 extern void *get_host_list_ptr(void);
 
 #endif

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.10 2003/04/05 09:25:09 alor Exp $
+    $Id: ec_log.c,v 1.11 2003/04/05 13:11:09 alor Exp $
 */
 
 #include <ec.h>
@@ -300,30 +300,47 @@ void log_write_packet(struct packet_object *po)
 
 /*
  * log passive infomations
+ *
+ * hi is the source
+ * hid is the dest, used to log password.
+ *    since they must be associated to the 
+ *    server and not to the client.
+ *    so we create a new entry in the logfile
  */
 
 void log_write_info(struct packet_object *po)
 {
    struct log_header_info hi;
+   struct log_header_info hid;
    int c, zerr;
 
    memset(&hi, 0, sizeof(struct log_header_info));
+   memset(&hid, 0, sizeof(struct log_header_info));
 
    /* the mac address */
    memcpy(&hi.L2_addr, &po->L2.src, ETH_ADDR_LEN);
+   memcpy(&hid.L2_addr, &po->L2.dst, ETH_ADDR_LEN);
    
    /* the ip address */
    memcpy(&hi.L3_addr, &po->L3.src, sizeof(struct ip_addr));
+   memcpy(&hid.L3_addr, &po->L3.dst, sizeof(struct ip_addr));
   
+   /* the protocol */
    hi.L4_proto = po->L4.proto;
+   hid.L4_proto = po->L4.proto;
 
-   if (is_open_port(po))
-      /* the port is at high probability open, log it */
+   /* open on the source ? */
+   if (is_open_src_port(po))
       hi.L4_addr = po->L4.src;
    else
-      /* the port is not open */
       hi.L4_addr = 0;
   
+   /* open on the dest ? */
+   if (is_open_dst_port(po))
+      hid.L4_addr = po->L4.dst;
+   else
+      hid.L4_addr = 0;
+   
    /* 
     * distance in hop :
     *
@@ -341,15 +358,21 @@ void log_write_info(struct packet_object *po)
    /* local, non local ecc ecc */
    hi.type = po->PASSIVE.flags;
 
+   /* calculate if the dest is local or not */
+   if (ip_addr_is_local(&po->L3.dst))
+      hid.type |= FP_HOST_LOCAL;
+   else
+      hid.type |= FP_HOST_NONLOCAL;
+   
    /* set the length of the fields */
    if (po->DISSECTOR.user)
-      hi.var.user_len = htons(strlen(po->DISSECTOR.user));
+      hid.var.user_len = htons(strlen(po->DISSECTOR.user));
 
    if (po->DISSECTOR.pass)
-      hi.var.pass_len = htons(strlen(po->DISSECTOR.pass));
+      hid.var.pass_len = htons(strlen(po->DISSECTOR.pass));
    
    if (po->DISSECTOR.info)
-      hi.var.info_len = htons(strlen(po->DISSECTOR.info));
+      hid.var.info_len = htons(strlen(po->DISSECTOR.info));
    
    if (po->DISSECTOR.banner)
       hi.var.banner_len = htons(strlen(po->DISSECTOR.banner));
@@ -357,17 +380,49 @@ void log_write_info(struct packet_object *po)
    /* check if the packet is interesting... else return */
    if (hi.L4_addr == 0 && 
        !strcmp(hi.fingerprint, "") &&
-       hi.var.user_len == 0 &&
-       hi.var.pass_len == 0 &&
-       hi.var.info_len == 0 &&
+       hid.var.user_len == 0 &&
+       hid.var.pass_len == 0 &&
+       hid.var.info_len == 0 &&
        hi.var.banner_len == 0
        ) {
       return;
    }
+   
    LOG_LOCK;
    
    if (GBL_OPTIONS->compress) {
       c = gzwrite(fd_ci, &hi, sizeof(hi));
+      ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+    
+      /* and now write the variable fields */
+      
+      if (po->DISSECTOR.banner) {
+         c = gzwrite(fd_ci, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
+         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
+      }
+      
+   } else {
+      c = write(fd_i, &hi, sizeof(hi));
+      ON_ERROR(c, -1, "Can't write to logfile");
+      
+      if (po->DISSECTOR.banner) {
+         c = write(fd_i, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
+         ON_ERROR(c, -1, "Can't write to logfile");
+      }
+   }
+  
+   /* write hid only if there is user and pass infos */
+   if (hid.var.user_len == 0 &&
+       hid.var.pass_len == 0 &&
+       hid.var.info_len == 0 
+       ) {
+      LOG_UNLOCK;
+      return;
+   }
+
+   
+   if (GBL_OPTIONS->compress) {
+      c = gzwrite(fd_ci, &hid, sizeof(hi));
       ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
     
       /* and now write the variable fields */
@@ -386,13 +441,8 @@ void log_write_info(struct packet_object *po)
          ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
       }
       
-      if (po->DISSECTOR.banner) {
-         c = gzwrite(fd_ci, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
-         ON_ERROR(c, -1, "%s", gzerror(fd_ci, &zerr));
-      }
-      
    } else {
-      c = write(fd_i, &hi, sizeof(hi));
+      c = write(fd_i, &hid, sizeof(hi));
       ON_ERROR(c, -1, "Can't write to logfile");
       
       if (po->DISSECTOR.user) {
@@ -410,12 +460,8 @@ void log_write_info(struct packet_object *po)
          ON_ERROR(c, -1, "Can't write to logfile");
       }
       
-      if (po->DISSECTOR.banner) {
-         c = write(fd_i, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
-         ON_ERROR(c, -1, "Can't write to logfile");
-      }
    }
-   
+
    LOG_UNLOCK;
 }
 

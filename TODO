@@ -15,19 +15,15 @@
       - use libldtdl (problems even on openbsd)
       - LTDL_SHLIB_EXT
       - make test with dlopen-test
+      - conditional plugin compilation 
 
    + dissector must send associated user, pass and info (state machine required)
 
    + LOGGING ENGINE
       - banner extracted by dissectors (state machine required)
-      - passive identification of the GW
       - add the ARP hook
 
    + ETTERLOG
-      - analysis 
-         - number of hosts
-         - number of pass
-         - number of open ports
       - print per host, per port
       - search per user
       - search per port/service

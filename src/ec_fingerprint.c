@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.6 2003/04/05 09:25:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.7 2003/04/05 13:11:09 alor Exp $
 
 */
 
@@ -171,41 +171,41 @@ void fingerprint_push(char *finger, int param, int value)
    switch (param) {
       case FINGER_WINDOW:
          snprintf(tmp, sizeof(tmp), "%04X", value);
-         strncpy(finger, tmp, 4);
+         strncpy(finger + FINGER_WINDOW, tmp, 4);
          break;
       case FINGER_MSS:
          snprintf(tmp, sizeof(tmp), "%04X", value);
-         strncpy(finger + 5, tmp, 4);
+         strncpy(finger + FINGER_MSS, tmp, 4);
          break;
       case FINGER_TTL:
          snprintf(tmp, sizeof(tmp), "%02X", TTL_PREDICTOR(value));
-         strncpy(finger + 10, tmp, 2);
+         strncpy(finger + FINGER_TTL, tmp, 2);
          break;
       case FINGER_WS:
          snprintf(tmp, sizeof(tmp), "%02X", value);
-         strncpy(finger + 13, tmp, 2);
+         strncpy(finger + FINGER_WS, tmp, 2);
          break;
       case FINGER_SACK:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + 16, tmp, 1);
+         strncpy(finger + FINGER_SACK, tmp, 1);
          break;
       case FINGER_NOP:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + 18, tmp, 1);
+         strncpy(finger + FINGER_NOP, tmp, 1);
          break;
       case FINGER_DF:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + 20, tmp, 1);
+         strncpy(finger + FINGER_DF, tmp, 1);
          break;
       case FINGER_TIMESTAMP:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + 22, tmp, 1);
+         strncpy(finger + FINGER_TIMESTAMP, tmp, 1);
          break;
       case FINGER_TCPFLAG:
          if (value == 1)
-            strncpy(finger + 24, "A", 1);
+            strncpy(finger + FINGER_TCPFLAG, "A", 1);
          else
-            strncpy(finger + 24, "S", 1);
+            strncpy(finger + FINGER_TCPFLAG, "S", 1);
          break;
       case FINGER_LT:
          /*
@@ -213,9 +213,9 @@ void fingerprint_push(char *finger, int param, int value)
           * and the TCP header, we have to calculate it
           * in two steps. (decoders are unaware of other layers)
           */
-         lt_old = strtoul(finger + 26, NULL, 16);
+         lt_old = strtoul(finger + FINGER_LT, NULL, 16);
          snprintf(tmp, sizeof(tmp), "%02X", value + lt_old);
-         strncpy(finger + 26, tmp, 2);
+         strncpy(finger + FINGER_LT, tmp, 2);
          break;                                 
    }
 }

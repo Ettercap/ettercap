@@ -35,16 +35,16 @@ extern u_char TTL_PREDICTOR(u_char x);
 enum {
    FINGER_LEN = 28,
    OS_LEN     = 60,
-   FINGER_WINDOW     = 1,
-   FINGER_MSS        = 2,
-   FINGER_TTL        = 3,
-   FINGER_WS         = 4,
-   FINGER_SACK       = 5,
-   FINGER_NOP        = 6,
-   FINGER_DF         = 7,
-   FINGER_TIMESTAMP  = 8,
-   FINGER_TCPFLAG    = 9,
-   FINGER_LT         = 10,
+   FINGER_WINDOW     = 0,
+   FINGER_MSS        = 5,
+   FINGER_TTL        = 10,
+   FINGER_WS         = 13,
+   FINGER_SACK       = 16,
+   FINGER_NOP        = 18,
+   FINGER_DF         = 20,
+   FINGER_TIMESTAMP  = 22,
+   FINGER_TCPFLAG    = 24,
+   FINGER_LT         = 26,
 };
 
 /* 

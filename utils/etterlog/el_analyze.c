@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.9 2003/04/05 09:25:10 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.10 2003/04/05 13:11:10 alor Exp $
 */
 
 #include <el.h>
@@ -127,8 +127,8 @@ void create_hosts_list(void)
       /* on error exit the loop */
       if (ret != ESUCCESS)
          break;
-     
-      profile_add_info(&inf);
+   
+      profile_add_info(&inf, &buf);
    }
 }
 
@@ -140,18 +140,47 @@ void create_hosts_list(void)
 void analyze_info(void)
 {
    struct host_profile *h;
+   struct open_port *o;
+   struct active_user *u;
    LIST_HEAD(, host_profile) *hosts_list_head = get_host_list_ptr();
-   char tmp[MAX_ASCII_ADDR_LEN];
+   int nhl = 0, nhnl = 0, ngw = 0;
+   int nports = 0, nusers = 0;
    
    /* create the hosts' list */
    create_hosts_list(); 
 
 
    LIST_FOREACH(h, hosts_list_head, next) {
-      fprintf(stdout, "IP: %s\n", ip_addr_ntoa(&h->L3_addr, tmp));
+      if (h->type & FP_HOST_LOCAL)
+         nhl++;
+      
+      if (h->type & FP_HOST_NONLOCAL)
+         nhnl++;
+      
+      if (h->type & FP_GATEWAY)
+         ngw++;
+      
+     
+      LIST_FOREACH(o, &(h->open_ports_head), next) {
+         nports++;
+         
+         LIST_FOREACH(u, &(o->users_list_head), next) {
+            nusers++;
+         }
+      }
    }
    
-   NOT_IMPLEMENTED();
+   fprintf(stdout, "\n\n");
+   fprintf(stdout, "Number of local hosts            : %d\n", nhl);   
+   fprintf(stdout, "Number of non local hosts        : %d\n", nhnl);   
+   fprintf(stdout, "Number of gateway                : %d\n\n", ngw);   
+   
+   fprintf(stdout, "Number of discovered services    : %d\n", nports);   
+   fprintf(stdout, "Number of user and pass captured : %d\n\n", nusers);   
+   
+   fprintf(stdout, "\n");
+   
+   return;
 }
 
 

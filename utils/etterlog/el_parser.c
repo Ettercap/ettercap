@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.7 2003/04/01 22:13:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.8 2003/04/05 13:11:10 alor Exp $
 */
 
 
@@ -67,7 +67,7 @@ void el_usage(void)
    fprintf(stdout, "\nVisualization Method:\n");
    fprintf(stdout, "  -B, --binary                print packets as they are\n");
    fprintf(stdout, "  -X, --hex                   print packets in hex mode\n");
-   fprintf(stdout, "  -A, --ascii                 print packets in ascii mode\n");
+   fprintf(stdout, "  -A, --ascii                 print packets in ascii mode (default)\n");
    fprintf(stdout, "  -T, --text                  print packets in text mode\n");
    fprintf(stdout, "  -E, --ebcdic                print packets in ebcdic mode\n");
    fprintf(stdout, "  -H, --html                  print packets in html mode\n");
@@ -230,9 +230,9 @@ void parse_options(int argc, char **argv)
    else
       FATAL_ERROR("You MUST specify a logfile");
   
-   
-   if (GBL.format == NULL && !GBL.analyze && !GBL.connections)
-      FATAL_ERROR("You must specify a visualization method");
+   /* default to ASCII view */ 
+   if (GBL.format == NULL)
+      GBL.format = &ascii_format;
 
    
    /* XXX - check for incompatible options */

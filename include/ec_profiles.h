@@ -13,11 +13,11 @@ struct dissector_info {
 
 
 /* the list of users for each port */
-struct user {
+struct active_user {
    char *user;
    char *pass;
    char *info;
-   LIST_ENTRY(user) next;
+   LIST_ENTRY(active_user) next;
 };
 
 /* each port is indentified this way : */
@@ -29,7 +29,7 @@ struct open_port {
    char *banner;
    
    /* the list of users */
-   LIST_HEAD(, user) users_head;
+   LIST_HEAD(, active_user) users_list_head;
    
    LIST_ENTRY(open_port) next;
 };

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.20 2004/03/21 12:49:11 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.21 2004/03/22 17:47:15 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -570,7 +570,6 @@ static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
  */
 static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert)
 {
-   int serial=0xe77e;
    X509_NAME *name;
 
    if ( (*out_cert=X509_new() ) == NULL) {
@@ -580,9 +579,8 @@ static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert)
 
    /* Set version, expiration time */ 
    X509_set_version(*out_cert, 0x2);
-   ASN1_INTEGER_set(X509_get_serialNumber(*out_cert), serial);
-   X509_gmtime_adj(X509_get_notBefore(*out_cert), (long)-60*60*24*365);
-   X509_gmtime_adj(X509_get_notAfter(*out_cert), (long)60*60*24*3650);
+   X509_set_notBefore(*out_cert, X509_get_notBefore(serv_cert));
+   X509_set_notAfter(*out_cert, X509_get_notAfter(serv_cert));
    
    /* Set out public key, our issuer and real server name */
    X509_set_pubkey(*out_cert, global_pk);   
@@ -590,6 +588,9 @@ static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert)
    X509_set_subject_name(*out_cert, name);
    X509_set_issuer_name(*out_cert, global_issuer);
 
+   /* Set the serial */
+   X509_set_serialNumber(*out_cert, X509_get_serialNumber(serv_cert));
+   
    /* Self-sign our certificate */
    if (!X509_sign(*out_cert, global_pk, EVP_sha1())) {
       DEBUG_MSG("Error self-signing X509");
@@ -631,7 +632,6 @@ static void sslw_init(void)
 
    SSL_free(dummy_ssl);
    
-   // XXX - To be fixed
    /* Get the issuer from our cert file */
    dummy_ctx = SSL_CTX_new(SSLv23_server_method());
 
@@ -639,20 +639,12 @@ static void sslw_init(void)
       if (SSL_CTX_use_certificate_file(dummy_ctx, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
          FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
    }
-   if (SSL_CTX_use_PrivateKey_file(dummy_ctx, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
-      DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- %s", DATA_PATH "/" CERT_FILE);
-
-      if (SSL_CTX_use_PrivateKey_file(dummy_ctx, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
-   }
  
    dummy_ssl = SSL_new(dummy_ctx); 
    my_cert = SSL_get_certificate(dummy_ssl);
-   global_issuer = X509_get_issuer_name(my_cert);
-
-   //SSL_free(dummy_ssl);
-   //SSL_CTX_free(dummy_ctx);
-   //X509_free(my_cert);
+   global_issuer = X509_NAME_dup(X509_get_issuer_name(my_cert));
+   
+   SSL_CTX_free(dummy_ctx);
 }
 
 

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.69 2003/11/23 18:08:43 alor Exp $
+# $Id: Makefile.am,v 1.70 2003/11/28 22:02:40 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -84,6 +84,7 @@ ettercap_SOURCES += dissectors/ec_dns.c
 endif
 
 ettercap_SOURCES += dissectors/ec_ftp.c \
+				        dissectors/ec_http.c \
 				        dissectors/ec_imap.c \
 				        dissectors/ec_icq.c \
 				        dissectors/ec_irc.c \

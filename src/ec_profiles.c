@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.27 2003/11/08 14:59:44 alor Exp $
+    $Id: ec_profiles.c,v 1.28 2003/11/28 22:02:40 alor Exp $
 */
 
 #include <ec.h>
@@ -91,10 +91,12 @@ void profile_parse(struct packet_object *po)
    /* 
     * skip packet sent (spoofed) by us
     * else we will get duplicated hosts with our mac address
+    * this is necessary because check_forwarded() is executed
+    * in ec_ip.c, but here we are getting even arp packet...
     */
-   if (!memcmp(po->L2.src, GBL_IFACE->mac, MEDIA_ADDR_LEN))
+   if (check_forwarded(po))
       return;
-    
+
    /*
     * call the add function only if the packet
     * is interesting...

@@ -56,7 +56,7 @@ struct filter_op {
    union {
       /* functions */
       struct {
-         char opcode;
+         char op;
             #define FFUNC_SEARCH    0
             #define FFUNC_REGEX     1
             #define FFUNC_REPLACE   2
@@ -74,11 +74,11 @@ struct filter_op {
       /* tests */
       struct {
          u_int8   op;
-            #define TEST_EQ   0
-            #define TEST_LT   1   
-            #define TEST_GT   2
-            #define TEST_LEQ  3
-            #define TEST_GEQ  4
+            #define FTEST_EQ   0
+            #define FTEST_LT   1   
+            #define FTEST_GT   2
+            #define FTEST_LEQ  3
+            #define FTEST_GEQ  4
          u_int8   level;
          u_int8   size;
          u_int16  offset;

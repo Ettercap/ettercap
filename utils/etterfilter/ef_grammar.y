@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.9 2003/09/13 10:37:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.10 2003/09/16 12:08:41 alor Exp $
 */
 
 %{
@@ -76,9 +76,10 @@
 %token TOKEN_UNKNOWN
 
 /* non terminals */
-%type <fop> math_expr
+%type <fop> instruction
 %type <fop> conditions
 %type <fop> offset
+%type <fop> math_expr
 
 /* precedences */
 %left TOKEN_OP_SUB TOKEN_OP_ADD
@@ -115,8 +116,17 @@ single_instruction:
 
 /* instructions are functions or assignment */
 instruction: 
-         TOKEN_FUNCTION { printf("\tfunction\n"); }
-      |  offset TOKEN_OP_ASSIGN math_expr { printf("\tassignment\n"); }
+         TOKEN_FUNCTION { 
+            printf("\tfunction\n"); 
+            /* functions are encoded by the lexycal analyzer */
+         }
+
+      |  offset TOKEN_OP_ASSIGN math_expr { 
+            printf("\tassignment\n"); 
+            /* math_expr is always a value, so we can add it to an offset */
+            $$.op.assign.offset = $1.op.assign.offset + $3.op.assign.value;
+            $$.opcode = FOP_ASSIGN;
+         }
       ;
 
 /* the if statement */
@@ -133,34 +143,96 @@ if_else_statement:
 
 /* conditions used by the if statement */
 conditions: 
-         offset TOKEN_OP_CMP_EQ TOKEN_STRING { printf("\tcondition cmp string\n"); }
-      |  offset TOKEN_OP_CMP_EQ TOKEN_CONST { printf("\tcondition cmp eq\n"); }
-      |  offset TOKEN_OP_CMP_LT TOKEN_CONST { printf("\tcondition cmp lt\n"); }
-      |  offset TOKEN_OP_CMP_GT TOKEN_CONST { printf("\tcondition cmp gt\n"); }
-      |  offset TOKEN_OP_CMP_LEQ TOKEN_CONST { printf("\tcondition cmp leq\n"); }
-      |  offset TOKEN_OP_CMP_GEQ TOKEN_CONST { printf("\tcondition cmp geq\n"); }
+         offset TOKEN_OP_CMP_EQ TOKEN_STRING { 
+            printf("\tcondition cmp string\n"); 
+            $$.opcode = FOP_TEST;
+            $$.op.test.op = FTEST_EQ;
+         }
+
+      |  offset TOKEN_OP_CMP_EQ TOKEN_CONST { 
+            printf("\tcondition cmp eq\n");
+            $$.opcode = FOP_TEST;
+            $$.op.test.op = FTEST_EQ;
+         }
+         
+      |  offset TOKEN_OP_CMP_LT TOKEN_CONST { 
+            printf("\tcondition cmp lt\n"); 
+            $$.opcode = FOP_TEST;
+            $$.op.test.op = FTEST_LT;
+         }
+
+      |  offset TOKEN_OP_CMP_GT TOKEN_CONST { 
+            printf("\tcondition cmp gt\n");
+            $$.opcode = FOP_TEST;
+            $$.op.test.op = FTEST_GT;
+         }
+
+      |  offset TOKEN_OP_CMP_LEQ TOKEN_CONST { 
+            printf("\tcondition cmp leq\n");
+            $$.opcode = FOP_TEST;
+            $$.op.test.op = FTEST_LEQ;
+         }
+
+      |  offset TOKEN_OP_CMP_GEQ TOKEN_CONST { 
+            printf("\tcondition cmp geq\n"); 
+            $$.opcode = FOP_TEST;
+            $$.op.test.op = FTEST_GEQ;
+         }
+      
+      |  TOKEN_FUNCTION { 
+            printf("\tcondition func\n"); 
+            /* functions are encoded by the lexycal analyzer */
+         }
+
       |  TOKEN_OP_NOT conditions { printf("\tcondition NOT\n"); }
       |  conditions TOKEN_OP_AND conditions { printf("\tcondition AND\n"); } 
       |  conditions TOKEN_OP_OR conditions { printf("\tcondition OR\n"); } 
-      |  TOKEN_FUNCTION { printf("\tcondition func\n"); }
       ;
 
 /* offsets definitions */
 offset:
-         TOKEN_OFFSET 
-      |  TOKEN_OFFSET TOKEN_OP_ADD math_expr
-      |  TOKEN_OFFSET TOKEN_OP_SUB math_expr
+         TOKEN_OFFSET {
+            $$.op.test.offset = $1.op.test.offset;
+         }
+         
+      |  offset TOKEN_OP_ADD math_expr {
+            /* 
+             * we are lying here, but math_expr operates
+             * only on values, so we can add it to offset
+             */
+            $$.op.test.offset = $1.op.test.offset + $3.op.test.value; 
+         }
+         
+      |  offset TOKEN_OP_SUB math_expr {
+            $$.op.test.offset = $1.op.test.offset - $3.op.test.value; 
+         }
       ;
 
 /* math expression */
 math_expr: 
-         TOKEN_CONST  { /* $$ = $1; */ }
-      |  math_expr TOKEN_OP_ADD math_expr { /* $$ = $1 + $3; */ }
-      |  math_expr TOKEN_OP_SUB math_expr { /* $$ = $1 - $3; */ }
-      |  math_expr TOKEN_OP_MUL math_expr { /* $$ = $1 * $3; */ }
-      |  math_expr TOKEN_OP_DIV math_expr { /* $$ = $1 / $3; */ }
-      |  TOKEN_OP_SUB math_expr %prec TOKEN_UMINUS { /* $$ = -$2; */ }
-      |  TOKEN_PAR_OPEN math_expr TOKEN_PAR_CLOSE { /* $$ = $2; */ }
+         TOKEN_CONST  { 
+            $$.op.test.value = $1.op.test.value; 
+         }
+         
+      |  math_expr TOKEN_OP_ADD math_expr { 
+            $$.op.test.value = $1.op.test.value + $3.op.test.value;
+         }
+         
+      |  math_expr TOKEN_OP_SUB math_expr {
+            $$.op.test.value = $1.op.test.value - $3.op.test.value;
+         }
+         
+      |  math_expr TOKEN_OP_MUL math_expr {
+            $$.op.test.value = $1.op.test.value * $3.op.test.value;
+         }
+         
+      |  math_expr TOKEN_OP_DIV math_expr {
+            $$.op.test.value = $1.op.test.value / $3.op.test.value;
+         }
+         
+      |  TOKEN_OP_SUB math_expr %prec TOKEN_UMINUS {
+            $$.op.test.value = -$2.op.test.value;
+         }
       ;
 
 %%

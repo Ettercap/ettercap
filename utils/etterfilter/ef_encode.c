@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_encode.c,v 1.4 2003/09/15 16:37:40 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_encode.c,v 1.5 2003/09/16 12:08:41 alor Exp $
 */
 
 #include <ef.h>
@@ -130,12 +130,15 @@ int encode_function(char *string, struct filter_op *fop)
    /* analyze the arguments */
    dec_args = decode_args(args, &nargs);
 
+   /* this fop is a function */
+   fop->opcode = FOP_FUNC;
+
    /* check if it is a known function */
    if (!strcmp(name, "search")) {
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */
          if (encode_offset(dec_args[0], fop) == ESUCCESS) {
-            fop->op.func.opcode = FFUNC_SEARCH;
+            fop->op.func.op = FFUNC_SEARCH;
             fop->op.func.value_len = strescape(fop->op.func.value, dec_args[1]);
             ret = ESUCCESS;
          }
@@ -144,14 +147,14 @@ int encode_function(char *string, struct filter_op *fop)
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */
          if (encode_offset(dec_args[0], fop) == ESUCCESS) {
-            fop->op.func.opcode = FFUNC_REGEX;
+            fop->op.func.op = FFUNC_REGEX;
             fop->op.func.value_len = strescape(fop->op.func.value, dec_args[1]);
             ret = ESUCCESS;
          }
       }
    } else if (!strcmp(name, "replace")) {
       if (nargs == 2) {
-         fop->op.func.opcode = FFUNC_REPLACE;
+         fop->op.func.op = FFUNC_REPLACE;
          /* replace always operate at DATA level */
          fop->op.func.level = 5;
          fop->op.func.value_len = strescape(fop->op.func.value, dec_args[0]);
@@ -162,26 +165,26 @@ int encode_function(char *string, struct filter_op *fop)
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */
          if (encode_offset(dec_args[0], fop) == ESUCCESS) {
-            fop->op.func.opcode = FFUNC_LOG;
+            fop->op.func.op = FFUNC_LOG;
             strncpy(fop->op.func.value, dec_args[1], MAX_FILTER_LEN);
             ret = ESUCCESS;
          }
       }
    } else if (!strcmp(name, "drop")) {
       if (nargs == 0) {
-         fop->op.func.opcode = FFUNC_DROP;
+         fop->op.func.op = FFUNC_DROP;
          ret = ESUCCESS;
       }
    } else if (!strcmp(name, "msg")) {
       if (nargs == 1) {
-         fop->op.func.opcode = FFUNC_MSG;
+         fop->op.func.op = FFUNC_MSG;
          strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
          fop->op.func.value_len = strlen(dec_args[0]);
          ret = ESUCCESS;
       }
    } else if (!strcmp(name, "exec")) {
       if (nargs == 1) {
-         fop->op.func.opcode = FFUNC_EXEC;
+         fop->op.func.op = FFUNC_EXEC;
          strncpy(fop->op.func.value, dec_args[0], MAX_FILTER_LEN);
          fop->op.func.value_len = strlen(dec_args[0]);
          ret = ESUCCESS;

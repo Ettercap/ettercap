@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.8 2003/09/13 10:04:15 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.9 2003/09/16 12:08:41 alor Exp $
 */
 
 %{
@@ -49,12 +49,10 @@ SPACES         [ \t]+
 %%
 
 "if" {
-   printf("IF\n");
    return TOKEN_IF;
 }
 
 "else" {
-   printf("ELSE\n");
    return TOKEN_ELSE;
 }
 
@@ -120,27 +118,22 @@ SPACES         [ \t]+
 }
 
 "(" {
-   printf("(\n");
    return TOKEN_PAR_OPEN;
 }
 
 ")" {
-   printf(")\n");
    return TOKEN_PAR_CLOSE;
 }
 
 "{" {
-   printf("{\n");
    return TOKEN_BLK_BEGIN;
 }
 
 "}" {
-   printf("}\n");
    return TOKEN_BLK_END;
 }
 
 ";" {
-   printf(";\n");
    return TOKEN_OP_END;
 }
 

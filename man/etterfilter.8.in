@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.8 2003/09/13 10:04:13 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.9 2003/09/16 12:08:41 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -223,7 +223,7 @@ exec("/bin/cat /tmp/foo >> /tmp/bar")
 .TP
 .B exit()
 this function causes the filter engine to stop executing the code. it is useful
-to exit the execution on some circumstance checked by an if statement.
+to stop the execution of the script on some circumstance checked by an if statement.
 .Sp
 example:
 .br

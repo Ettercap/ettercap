@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_test.c,v 1.4 2003/09/13 10:04:15 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_test.c,v 1.5 2003/09/16 12:08:41 alor Exp $
 */
 
 #include <ef.h>
@@ -42,7 +42,7 @@ void test_filter(void)
    
    /* if (DATA.data, search("OpenSSH")) { */
    istr[0].opcode = FOP_FUNC;
-   istr[0].op.func.opcode = FFUNC_SEARCH;
+   istr[0].op.func.op = FFUNC_SEARCH;
    istr[0].op.func.level = 5;
    strcpy(istr[0].op.func.value, "OpenSSH");
    istr[0].op.func.value_len = strlen(istr[0].op.func.value);
@@ -52,7 +52,7 @@ void test_filter(void)
 
    /* replace("SSH-1.99", "SSH-1.51"); */
    istr[2].opcode = FOP_FUNC;
-   istr[2].op.func.opcode = FFUNC_REPLACE;
+   istr[2].op.func.op = FFUNC_REPLACE;
    istr[2].op.func.level = 5;
    strcpy(istr[2].op.func.value, "SSH-1.99");
    istr[2].op.func.value_len = strlen(istr[2].op.func.value);
@@ -61,7 +61,7 @@ void test_filter(void)
   
    /* msg("SSH downgraded to version 1"); */
    istr[3].opcode = FOP_FUNC;
-   istr[3].op.func.opcode = FFUNC_MSG;
+   istr[3].op.func.op = FFUNC_MSG;
    strcpy(istr[3].op.func.value, "SSH downgraded to version 1\n");
    
    istr[4].opcode = FOP_JMP;

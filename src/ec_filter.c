@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.8 2003/09/13 10:04:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.9 2003/09/16 12:08:41 alor Exp $
 */
 
 #include <ec.h>
@@ -85,7 +85,7 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
             break;
             
          case FOP_FUNC:
-            printf("%d OPCODE: FUNC %d \n", eip, fop[eip].op.func.opcode);
+            printf("%d OPCODE: FUNC %d \n", eip, fop[eip].op.func.op);
             if (execute_func(&fop[eip], po) == FLAG_TRUE)
                flags |= FLAG_TRUE;
             else
@@ -142,7 +142,7 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
  */
 static int execute_func(struct filter_op *fop, struct packet_object *po)
 {
-   switch (fop->op.func.opcode) {
+   switch (fop->op.func.op) {
       case FFUNC_SEARCH:
          /* search the string */
          if (func_search(fop, po) == ESUCCESS)
@@ -186,7 +186,7 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
          break;
          
       default:
-         JIT_FAULT("unsupported function [%d]", fop->op.func.opcode);
+         JIT_FAULT("unsupported function [%d]", fop->op.func.op);
          break;
    }
 
@@ -231,19 +231,19 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
 
    /* se the pointer to the comparison function */
    switch(fop->op.test.op) {
-      case TEST_EQ:
+      case FTEST_EQ:
          cmp_func = &cmp_eq;
          break;
-      case TEST_LT:
+      case FTEST_LT:
          cmp_func = &cmp_lt;
          break;
-      case TEST_GT:
+      case FTEST_GT:
          cmp_func = &cmp_gt;
          break;
-      case TEST_LEQ:
+      case FTEST_LEQ:
          cmp_func = &cmp_leq;
          break;
-      case TEST_GEQ:
+      case FTEST_GEQ:
          cmp_func = &cmp_geq;
          break;
       default:

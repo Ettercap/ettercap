@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_encode.c,v 1.16 2003/10/12 15:27:57 alor Exp $
+    $Id: ef_encode.c,v 1.17 2004/01/20 22:24:38 alor Exp $
 */
 
 #include <ef.h>
@@ -270,6 +270,12 @@ int encode_function(char *string, struct filter_op *fop)
    } else if (!strcmp(name, "drop")) {
       if (nargs == 0) {
          fop->op.func.op = FFUNC_DROP;
+         ret = ESUCCESS;
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
+   } else if (!strcmp(name, "kill")) {
+      if (nargs == 0) {
+         fop->op.func.op = FFUNC_KILL;
          ret = ESUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);

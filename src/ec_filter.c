@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.44 2004/01/20 21:46:42 alor Exp $
+    $Id: ec_filter.c,v 1.45 2004/01/20 22:24:22 alor Exp $
 */
 
 #include <ec.h>
@@ -61,6 +61,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po);
 static int func_inject(struct filter_op *fop, struct packet_object *po);
 static int func_log(struct filter_op *fop, struct packet_object *po);
 static int func_drop(struct packet_object *po);
+static int func_kill(struct packet_object *po);
 static int func_exec(struct filter_op *fop);
 
 static int cmp_eq(u_int32 a, u_int32 b);
@@ -200,6 +201,12 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
       case FFUNC_DROP:
          /* drop the packet */
          func_drop(po);
+         return FLAG_TRUE;
+         break;
+         
+      case FFUNC_KILL:
+         /* kill the connection */
+         func_kill(po);
          return FLAG_TRUE;
          break;
          
@@ -709,6 +716,26 @@ static int func_drop(struct packet_object *po)
    /* the delta is all the payload */
    po->DATA.delta -= po->DATA.len;
    po->DATA.len = 0;
+   
+   return ESUCCESS;
+}
+
+/*
+ * kill the connection:
+ *    TCP:  reset
+ *    UDP:  icmp port unreachable
+ */
+static int func_kill(struct packet_object *po)
+{
+   DEBUG_MSG("filter engine: func_kill");
+
+   if (po->L4.proto == NL_TYPE_TCP) {
+      /* XXX - to be implemented (what about injection ????) */
+      //send_tcp(po->L3.src, po->L3.dst, po->L4.src, po->L4.dst, po->L4.seq, po->L4.ack, );
+      //send_tcp(po->L3.dst, po->L3.src, po->L4.dst, po->L4.src, po->L4.ack, po->L4.seq, );
+   } else if (po->L4.proto == NL_TYPE_UDP) {
+      
+   }
    
    return ESUCCESS;
 }

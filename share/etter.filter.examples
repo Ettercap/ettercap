@@ -51,6 +51,7 @@ if ( DATA.data + 20 == 0x4142 ) {
 if (search(DECODED.data, "ettercap")) {
    msg("some one is talking about us...\n");
    drop();
+   kill();
 }
 
 

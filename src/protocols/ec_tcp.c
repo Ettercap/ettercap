@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.33 2003/12/01 12:55:38 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.34 2004/01/20 22:24:22 alor Exp $
 */
 
 #include <ec.h>
@@ -154,6 +154,7 @@ FUNC_DECODER(decode_tcp)
 
    /* save the seq number */
    PACKET->L4.seq = tcp->seq;
+   PACKET->L4.ack = tcp->ack;
    
    /* set up the data pointers */
    PACKET->DATA.data = opt_end;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.17 2003/11/06 20:09:21 alor Exp $
+    $Id: ef_test.c,v 1.18 2004/01/20 22:24:38 alor Exp $
 */
 
 #include <ef.h>
@@ -214,6 +214,10 @@ void print_function(struct filter_op *fop, u_int32 eip)
          
       case FFUNC_DROP:
          fprintf(stdout, "%04d: DROP\n", eip);
+         break;
+         
+      case FFUNC_KILL:
+         fprintf(stdout, "%04d: KILL\n", eip);
          break;
          
       case FFUNC_MSG:

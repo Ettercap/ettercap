@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.18 2003/10/11 14:11:04 alor Exp $ */
+/* $Id: ec_filter.h,v 1.19 2004/01/20 22:24:22 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -49,8 +49,9 @@ struct filter_op {
             #define FFUNC_INJECT    4
             #define FFUNC_LOG       5
             #define FFUNC_DROP      6
-            #define FFUNC_MSG       7
-            #define FFUNC_EXEC      8
+            #define FFUNC_KILL      7
+            #define FFUNC_MSG       8
+            #define FFUNC_EXEC      9
          u_int8 level; 
          u_int8 *string;
          size_t slen;

@@ -8,7 +8,6 @@
       - dissect_free_session
       - input for curses gui
       - in unoffensive we get UNKNOWN for all the profiles
-      - the problem of packet boundary with BPF (off by one/null terminate)
       - magic number for dissector session (only retrieve my sessions)
 
    + PCAP RELATED

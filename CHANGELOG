@@ -12,6 +12,7 @@ NG-0.7.0    ????????
    + etterlog utility for logfiles parsing
    + etterfilter utility to compile advanced content filters
    + root privs dropped after initialization
+   + big endian arch support (sparc64)
    + layer 3 routing (forwarding packets)
    + wifi support
    + token ring support

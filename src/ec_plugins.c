@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.20 2003/10/12 18:51:34 alor Exp $
+    $Id: ec_plugins.c,v 1.21 2003/11/21 08:32:15 alor Exp $
 */
 
 #include <ec.h>
@@ -30,12 +30,8 @@
    #include <missing/scandir.h>
 #endif
 
-#ifdef HAVE_LTDL_H
-   #include <ltdl.h>
-#endif
-#ifdef HAVE_DLFCN_H
-   #include <dlfcn.h>
-#endif
+#include <ltdl.h>
+#include <dlfcn.h>
 
 /* symbol prefix for some OSes */
 #ifdef NEED_USCORE
@@ -161,7 +157,7 @@ void plugin_load_all(void)
 
    atexit(&plugin_unload_all);
 #else
-   USER_MSG("Plugin support was disabled by configure...");
+   USER_MSG("   0 plugins (disabled by configure...)\n");
 #endif
 }
 

@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.7 2003/11/16 21:11:50 alor Exp $
+dnl $Id: acinclude.m4,v 1.8 2003/11/21 08:32:10 alor Exp $
 
 dnl
 dnl EC_MESSAGE(MESSAGE)
@@ -21,7 +21,7 @@ AC_DEFUN(EC_CHECK_OPTION,[
 
 dnl
 dnl EC_PTHREAD_CHECK()
-dnl ac_cv_ec_nopthread=1 (if fails)
+dnl ac_ec_nopthread=1 (if fails)
 dnl
 
 AC_DEFUN(EC_PTHREAD_CHECK,[
@@ -64,11 +64,11 @@ AC_DEFUN(EC_WINDOWS_KERNEL,[
    minor=`uname | cut -f2 -d"-" | cut -f2 -d"."`
    AC_MSG_RESULT($tech $major.$minor)
    if test "$tech" != "NT"; then
-      ac_cv_ec_windows_version="-DWIN9X"
+      ac_ec_windows_version="-DWIN9X"
    elif test "$major$minor" -lt 50; then
-      ac_cv_ec_windows_version="-DWINNT"
+      ac_ec_windows_version="-DWINNT"
    else
-      ac_cv_ec_windows_version="-DWIN2K_XP"
+      ac_ec_windows_version="-DWIN2K_XP"
    fi
 
    AC_MSG_CHECKING(Cygwin dll version)
@@ -176,9 +176,9 @@ AC_DEFUN(EC_RESOLVE_CHECK,[
             [AC_MSG_RESULT(needed)
              LIBS="$LIBS -lresolv"]
          )
-         AM_CONDITIONAL(HAVE_DN_EXPAND, true) ac_cv_ec_dns=yes 
+         AM_CONDITIONAL(HAVE_DN_EXPAND, true) ac_ec_dns=yes 
       ],
-      [AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_cv_ec_dns=no])
+      [AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_ec_dns=no])
 
 ])
 

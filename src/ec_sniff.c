@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.35 2003/11/12 16:59:17 alor Exp $
+    $Id: ec_sniff.c,v 1.36 2003/11/21 08:32:15 alor Exp $
 */
 
 #include <ec.h>
@@ -134,9 +134,12 @@ void set_unified_sniff(void)
 
 void set_bridge_sniff(void)
 {
+#ifdef ENABLE_BRIDGED_SNIFF
    struct sniffing_method sm;
 
    DEBUG_MSG("set_bridge_sniff");
+
+   NOT_IMPLEMENTED();
    
    sm.type = SM_BRIDGED;
    sm.start = &start_bridge_sniff;
@@ -145,6 +148,9 @@ void set_bridge_sniff(void)
    sm.interesting = &set_interesting_flag;
 
    set_sniffing_method(&sm);
+#else
+   FATAL_ERROR("Bridged sniffing not supported.");
+#endif
 }
 
 

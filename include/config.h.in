@@ -3,6 +3,9 @@
 /* debug support */
 #undef DEBUG
 
+/* can we use bridged sniffing on this platform ? */
+#undef ENABLE_BRIDGED_SNIFF
+
 /* gcc version */
 #undef GCC_VERSION
 

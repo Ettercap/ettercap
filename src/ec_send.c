@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.29 2003/11/18 15:30:13 alor Exp $
+    $Id: ec_send.c,v 1.30 2003/11/21 08:32:15 alor Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,13 @@
 #include <pthread.h>
 #include <pcap.h>
 #include <libnet.h>
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
+   #include <sys/types.h>
+   #include <sys/time.h>
+   #include <sys/ioctl.h>
+   #include <net/bpf.h>
+#endif
 
 /* globals */
 
@@ -49,7 +56,7 @@ int send_to_L3(struct packet_object *po);
 int send_to_L2(struct packet_object *po);
 int send_to_bridge(struct packet_object *po);
 
-static void hack_pcap_lnet(pcap_t *p, libnet_t *l);
+static void capture_only_incoming(pcap_t *p, libnet_t *l);
 
 void add_builder(u_int8 dlt, FUNC_BUILDER_PTR(builder));
 libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto);
@@ -113,16 +120,13 @@ void send_init(void)
       lb = libnet_init(LIBNET_LINK_ADV, GBL_OPTIONS->iface_bridge, lnet_errbuf);               
       ON_ERROR(lb, NULL, "libnet_init() failed: %s", lnet_errbuf);
       GBL_LNET->lnet_bridge = lb;
-      /* use the same socket for lnet and pcap */
-      hack_pcap_lnet(GBL_PCAP->pcap_bridge, GBL_LNET->lnet_bridge);
+      /* do not capture the packets we send at layer 2 */ 
+      capture_only_incoming(GBL_PCAP->pcap_bridge, GBL_LNET->lnet_bridge);
    }
    
    GBL_LNET->lnet_L3 = l3;               
    GBL_LNET->lnet = l;               
       
-   /* use the same socket for lnet and pcap */
-   hack_pcap_lnet(GBL_PCAP->pcap, GBL_LNET->lnet);
-
    atexit(send_close);
 }
 
@@ -230,8 +234,7 @@ int send_to_bridge(struct packet_object *po)
  *
  * so we have to find a solution...
  */
-
-static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
+static void capture_only_incoming(pcap_t *p, libnet_t *l)
 {
 #ifdef OS_LINUX   
    /*
@@ -254,14 +257,37 @@ static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
     * under BSD we cannot hack the fd as in linux... 
     * pcap opens the /dev/bpf in O_RDONLY and lnet needs O_RDWR
     * 
-    * so (if supported: only FreeBSD) we can set the BIOCSSEESENT to 1 to 
-    * see only outgoing packets
+    * so (if supported: only FreeBSD) we can set the BIOCSSEESENT to 0 to 
+    * see only incoming packets
     * but this is unconfortable, because we will not able to sniff ourself.
     */
-   // int val = 0;
-   // ioctl(pcap_fileno(p), BIOCSSEESENT, &val);
+   #ifdef OS_BSD_FREE
+      int val = 0;
+   
+      DEBUG_MSG("hack_pcap_lnet: setting BIOCSSEESENT on pcap handler");
+     
+      /* set it to 0 to capture only incoming traffic */
+      ioctl(pcap_fileno(p), BIOCSSEESENT, &val);
+   #else
+      DEBUG_MSG("hack_pcap_lnet: not applicable on this OS");
+   #endif
+#endif
+      
+#ifdef OS_DARWIN
+   int val = 0;
+   
+   DEBUG_MSG("hack_pcap_lnet: setting BIOCSSEESENT on pcap handler");
+   
+   /* mac os supports BIOCSSEESENT */
+   ioctl(pcap_fileno(p), BIOCSSEESENT, &val);
+#endif
+
+#ifdef OS_SOLARIS
    DEBUG_MSG("hack_pcap_lnet: not applicable on this OS");
-   return;
+#endif
+   
+#ifdef OS_CYGWIN
+   DEBUG_MSG("hack_pcap_lnet: not applicable on this OS");
 #endif
    
 }

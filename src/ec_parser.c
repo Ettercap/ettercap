@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.53 2003/11/11 14:59:31 alor Exp $
+    $Id: ec_parser.c,v 1.54 2003/11/21 08:32:15 alor Exp $
 */
 
 
@@ -396,10 +396,10 @@ void parse_options(int argc, char **argv)
    
    if (GBL_OPTIONS->read && GBL_SNIFF->type != SM_UNIFIED )
       FATAL_ERROR("You can read from a file ONLY in unified sniffing mode !");
-
-   if (GBL_UI->init == NULL)
-      FATAL_ERROR("Please select an User Interface");
    
+   if (GBL_OPTIONS->mitm && GBL_SNIFF->type != SM_UNIFIED )
+      FATAL_ERROR("You can't do mitm attacks in bridged sniffing mode !");
+
    if (GBL_SNIFF->type == SM_BRIDGED && GBL_PCAP->promisc == 0)
       FATAL_ERROR("During bridged sniffing the iface must be in promisc mode !");
    
@@ -411,8 +411,11 @@ void parse_options(int argc, char **argv)
   
    if (GBL_OPTIONS->unoffensive && GBL_OPTIONS->mitm)
       FATAL_ERROR("Cannot use mitm attacks in unoffensive mode");
+   
+   if (GBL_UI->init == NULL)
+      FATAL_ERROR("Please select an User Interface");
      
-   /* only mitm available only with text interface */
+   /* force text interface for only mitm attack */
    if (GBL_OPTIONS->only_mitm)
       select_text_interface();
 

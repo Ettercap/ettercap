@@ -17,13 +17,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.7 2003/11/12 16:59:17 alor Exp $
+    $Id: ec_sniff_bridge.c,v 1.8 2003/11/21 08:32:16 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_capture.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <ec_dispatcher.h>
+#include <ec_conntrack.h>
 
 /* proto */
 void start_bridge_sniff(void);
@@ -34,6 +36,13 @@ void forward_bridge_sniff(struct packet_object *po);
 void start_bridge_sniff(void)
 {
    DEBUG_MSG("start_bridge_sniff");
+   
+   /* create the dispatcher thread */
+   ec_thread_new("top_half", "dispatching module", &top_half, NULL);
+
+   /* create the timeouter thread */
+   if (!GBL_OPTIONS->read)
+      ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
 
    /* create the thread for packet capture */
    ec_thread_new("capture", "pcap handler and packet decoder", &capture, NULL);

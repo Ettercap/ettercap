@@ -4,13 +4,10 @@
 
    + BRIDGED SNIFFING
       - dump to file 
+      - test it on various platforms
 
    + WIFI
       - test the decoder with adapted other than cisco aironet
-
-   + CONNTRACK
-      - it should not segfault ;)
-      - the hash table is correctly cleaned ?
 
    + PROFILES
       - convert to hosts list

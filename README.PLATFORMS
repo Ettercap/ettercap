@@ -36,10 +36,12 @@ SOLARIS
 
 *BSD
 ------------------------------------------------------------------------------
-   FreeBSD 5.x          in progress...
+   FreeBSD 5.x          PARTIAL        tested on FreeBSD 5.1-RELEASE (i386)
+                                       - plugins not tested
+                                       - the BPF problem has to be addressed
    FreeBSD 4.x          untested
 
-   OpenBSD 3.x          in progress...
+   OpenBSD 3.x          untested 
    OpenBSD 2.x          untested
 
    NetBSD 1.5.x         untested
@@ -47,7 +49,7 @@ SOLARIS
 
 MAC OS X (Darwin)
 ------------------------------------------------------------------------------
-   Darwin 7.x           in progress...
+   Darwin 7.x           FULL           tested on  
    
    Darwin 6.x           untested 
    
@@ -83,9 +85,7 @@ No known issue, just be sure to have all the required components.
 
 After installing the following packages from http://http://www.sunfreeware.com
 
-   - autoconf  2.57
-   - automake  1.7.2
-   - libtool   1.5
+   - libtool   1.5      (needed for libltdl)
    - libpcap   0.7.2
    - gcc       3.3.1
    - binutils  2.11.2
@@ -96,6 +96,11 @@ ettercap NG configures and compiles without any issue.
 libnet 1.1.1 should be downloaded from http://www.packetfactory.net and
 compiled by your own.
 
+If you want to compile from the CVS, you will need to install the autotools in
+order to be able to generate configuration scripts:
+
+   - autoconf  2.57
+   - automake  1.7.2
 
 
 ------------------------------------------------------------------------------
@@ -108,6 +113,13 @@ waiting the input from some betatester... ;)
 ------------------------------------------------------------------------------
    B S D
 ------------------------------------------------------------------------------
+
+In order to have plugins support you have to install the following package:
+
+   - libltdl (part of libtool 1.5)
+   
+all the other libs can be installed from ports (except for libnet 1.1.1, at 
+the moment)
 
 
 ------------------------------------------------------------------------------

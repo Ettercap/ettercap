@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.12 2003/10/14 21:20:47 lordnaga Exp $
+    $Id: ec_sniff_unified.c,v 1.13 2003/11/21 08:32:16 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,8 @@
 #include <ec_send.h>
 #include <ec_threads.h>
 #include <ec_inject.h>
+#include <ec_dispatcher.h>
+#include <ec_conntrack.h>
 
 /* proto */
 void start_unified_sniff(void);
@@ -35,6 +37,13 @@ void forward_unified_sniff(struct packet_object *po);
 void start_unified_sniff(void)
 {
    DEBUG_MSG("start_unified_sniff");
+   
+   /* create the dispatcher thread */
+   ec_thread_new("top_half", "dispatching module", &top_half, NULL);
+
+   /* create the timeouter thread */
+   if (!GBL_OPTIONS->read)
+      ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
 
    /* create the thread for packet capture */
    ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);

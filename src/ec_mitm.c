@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.8 2003/11/11 17:17:53 alor Exp $
+    $Id: ec_mitm.c,v 1.9 2003/11/21 08:32:15 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_mitm.h>
 #include <ec_poll.h>
+#include <ec_scan.h>
 
 /* globals */
 
@@ -149,9 +150,16 @@ void mitm_stop(void)
 void only_mitm(void)
 {
    char ch = 0;
+   
+   /* build the list of active hosts */
+   build_hosts_list();
+   
+   /* start the mitm attack */
+   mitm_start();
 
    INSTANT_USER_MSG("Activated the mitm attack only... (press 'q' to exit)\n");
-   
+  
+   /* wait for user to exit */
    while (ch != 'q' && ch != 'Q'){
       /* if there is a pending char to be read */
       if (ec_poll_in(fileno(stdin), 1)) 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.29 2003/11/08 14:59:44 alor Exp $
+    $Id: ec_scan.c,v 1.30 2003/11/21 08:32:15 alor Exp $
 */
 
 #include <ec.h>
@@ -71,6 +71,10 @@ void build_hosts_list(void)
 
    DEBUG_MSG("build_hosts_list");
 
+   /* don't create the list in bridged mode */
+   if (GBL_SNIFF->type == SM_BRIDGED)
+      return;
+   
    /* 
     * load the list from the file 
     * this option automatically enable GBL_OPTIONS->silent

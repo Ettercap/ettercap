@@ -17,12 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_daemon.c,v 1.9 2003/10/23 19:50:58 uid42100 Exp $
+    $Id: ec_daemon.c,v 1.10 2003/11/21 08:32:16 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_ui.h>
 #include <ec_threads.h>
+#include <ec_scan.h>
+#include <ec_mitm.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -128,14 +130,22 @@ static void daemon_error(const char *msg)
 
 void daemon_interface(void)
 {
-  
    DEBUG_MSG("daemon_interface");
+   
+   /* build the list of active hosts */
+   build_hosts_list();
+
+   /* start the mitm attack */
+   mitm_start();
+   
+   /* initialize the sniffing method */
+   EXECUTE(GBL_SNIFF->start);
 
    /* discard the messages */
    LOOP {
       CANCELLATION_POINT();
       sleep(1); 
-      ui_msg_flush(10);
+      ui_msg_flush(MSG_ALL);
    }
    /* NOT REACHED */   
 }

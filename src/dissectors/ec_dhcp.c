@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp.c,v 1.5 2003/10/28 22:15:03 alor Exp $
+    $Id: ec_dhcp.c,v 1.6 2003/11/12 16:59:17 alor Exp $
 */
 
 /*
@@ -192,6 +192,8 @@ FUNC_DECODER(dissector_dhcp)
       /* servers only send replies */
       if (dhcp->op != BOOTREPLY)
          return NULL;
+
+      memset(domain, 0, sizeof(domain));
 
       resp = *(opt + 1);
       

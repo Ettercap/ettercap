@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.34 2003/11/05 09:31:11 alor Exp $
+    $Id: ec_sniff.c,v 1.35 2003/11/12 16:59:17 alor Exp $
 */
 
 #include <ec.h>
@@ -310,7 +310,7 @@ int compile_target(char *string, struct target_env *target)
    }
   
    if (i != MAX_TOK)
-      FATAL_MSG("Incorrect number of token (//) in TARGET (%s) !!", string);
+      FATAL_MSG("Incorrect number of token (//) in TARGET !!");
    
    DEBUG_MSG("MAC  : [%s]", tok[0]);
    DEBUG_MSG("IP   : [%s]", tok[1]);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.6 2003/11/11 17:17:53 alor Exp $
+    $Id: ec_sniff_bridge.c,v 1.7 2003/11/12 16:59:17 alor Exp $
 */
 
 #include <ec.h>
@@ -46,7 +46,7 @@ void start_bridge_sniff(void)
 void forward_bridge_sniff(struct packet_object *po)
 {
    /* don't forward dropped packets */
-   if ((po->flags & PO_DROPPED) == 0)
+   if (po->flags & PO_DROPPED)
       return;
          
    /* 

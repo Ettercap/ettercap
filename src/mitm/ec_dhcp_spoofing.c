@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp_spoofing.c,v 1.1 2003/11/11 17:17:53 alor Exp $
+    $Id: ec_dhcp_spoofing.c,v 1.2 2003/11/12 16:59:17 alor Exp $
 */
 
 #include <ec.h>
@@ -30,12 +30,16 @@
 
 /* globals */
 
+static struct target_env dhcp_ip_pool;
+static struct ip_addr dhcp_netmask;
+static struct ip_addr dhcp_dns;
 
 /* protos */
 
 void dhcp_spoofing_init(void);
 static void dhcp_spoofing_start(char *args);
 static void dhcp_spoofing_stop(void);
+static void dhcp_spoofing(struct packet_object *po);
 
 /*******************************************/
 
@@ -61,16 +65,59 @@ void __init dhcp_spoofing_init(void)
  */
 static void dhcp_spoofing_start(char *args)
 {
+   struct in_addr ipaddr;
+   char *p;
+   int i = 0;
   
    DEBUG_MSG("dhcp_spoofing_start");
 
-   /* check the parameter */
    if (!strcmp(args, "")) {
       USER_MSG("FATAL: DHCP spoofing needs a parameter.\n");
       return;
-   } else {
+   }
+   /* check the parameter:
+    *
+    * ip_pool/netmask/dns
+    */
+   for (p = strsep(&args, "/"); p != NULL; p = strsep(&args, "/")) {
+      /* first parameter (the ip_pool) */
+      if (i == 0) {
+         char tmp[strlen(p)+3];
+
+         /* add the / to be able to use the target parsing function */
+         sprintf(tmp, "/%s/", p);
+
+         if (compile_target(tmp, &dhcp_ip_pool) != ESUCCESS)
+            break;
+         
+      /* second parameter (the netmask) */
+      } else if (i == 1) {
+         /* convert from string */
+         if (inet_aton(p, &ipaddr) == 0)
+            break;
+         /* get the netmask */
+         ip_addr_init(&dhcp_netmask, AF_INET, (char *)&ipaddr);
+         
+      /* third parameter (the dns server) */
+      } else if (i == 2) {
+
+         /* convert from string */
+         if (inet_aton(p, &ipaddr) == 0)
+            break;
+         /* get the netmask */
+         ip_addr_init(&dhcp_dns, AF_INET, (char *)&ipaddr);
+         
+         /* all the parameters were parsed correctly... */
+         /* add the hookpoint */
+         hook_add(HOOK_PROTO_DHCP_REQ, dhcp_spoofing);
+         return;
+      }
+
    }
 
+   /* error parsing the parameter */
+   USER_MSG("FATAL: DHCP spoofing: parameter incorrect.\n");
+   return;
 }
 
 
@@ -83,9 +130,19 @@ static void dhcp_spoofing_stop(void)
    DEBUG_MSG("dhcp_spoofing_stop");
    
    USER_MSG("DHCP spoofing stopped.\n");
+   
+   /* remove the hookpoint */
+   hook_del(HOOK_PROTO_DHCP_REQ, dhcp_spoofing);
 
 }
 
+/*
+ * parses the request and send the spoofed reply
+ */
+static void dhcp_spoofing(struct packet_object *po)
+{
+   
+}
 
 /* EOF */
 

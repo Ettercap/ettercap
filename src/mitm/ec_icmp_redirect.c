@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icmp_redirect.c,v 1.1 2003/11/01 15:52:58 alor Exp $
+    $Id: ec_icmp_redirect.c,v 1.2 2003/11/12 16:59:17 alor Exp $
 */
 
 #include <ec.h>
@@ -73,7 +73,12 @@ static void icmp_redirect_start(char *args)
       USER_MSG("FATAL: ICMP redirect needs a parameter.\n");
       return;
    } else {
-      if (compile_target(args, &redirected_gw) != ESUCCESS)
+      char tmp[strlen(args)+2];
+
+      /* add the / to be able to use the target parsing function */
+      sprintf(tmp, "%s/", args);
+      
+      if (compile_target(tmp, &redirected_gw) != ESUCCESS)
          clean_exit(-EFATAL);
    }
 

@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.51 2003/10/16 16:46:40 alor Exp $
+dnl    $Id: configure.in,v 1.52 2003/10/21 16:56:40 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -599,7 +599,7 @@ AC_ARG_WITH(libncurses,
                -a -f $withval/lib/libncurses.a; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
-        NCURSINC="-I$withval/include"
+        NCURSINC="-I$withval/include -I$withval/include/ncurses"
         NCURSLIB="-L$withval/lib -lncurses"
         AC_DEFINE(HAVE_NCURSES, 1)
         AM_CONDITIONAL(NCURSES, true)

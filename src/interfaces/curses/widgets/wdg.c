@@ -17,12 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.3 2003/10/21 16:16:03 alor Exp $
+    $Id: wdg.c,v 1.4 2003/10/21 16:56:45 alor Exp $
 */
 
 #include <wdg.h>
 
-#include <curses.h>
+#include <ncurses.h>
 
 /* not defined in curses.h */
 #define KEY_TAB   '\t'

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.11 2003/10/21 16:16:02 alor Exp $
+    $Id: ec_debug.c,v 1.12 2003/10/21 16:56:45 alor Exp $
 
 */
 
@@ -30,7 +30,7 @@
 #ifdef DEBUG
 
 #ifdef HAVE_NCURSES
-   #include <curses.h>
+   #include <ncurses.h>
 #endif
 #ifdef HAVE_GTK
    #include <gtk/gtk.h>

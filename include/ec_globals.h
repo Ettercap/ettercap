@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.33 2003/10/18 11:27:42 alor Exp $ */
+/* $Id: ec_globals.h,v 1.34 2003/10/21 16:56:45 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -23,10 +23,11 @@ struct ec_conf {
    int connection_timeout;
    int connection_idle;
    int connection_buffer;
+   int connect_timeout;
    int sampling_rate;
    int close_on_eof;
    int aggressive_dissectors;
-   int connect_timeout;
+   int store_profiles;
 };
 
 /* options from getopt */

@@ -2,7 +2,7 @@
 #                                                                          #
 #  ettercap -- etter.finger.os -- passive OS fingerprint database          #
 #                                                                          #
-#  Copyright (C) 2001-2003  ALoR & NaGA                                    #
+#  Copyright (C) 2001-2004  ALoR & NaGA                                    #
 #                                                                          #
 #  This program is free software; you can redistribute it and/or modify    #
 #  it under the terms of the GNU General Public License as published by    #
@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.11 $                                     # 
-#  Last updated on : $Date: 2003/12/07 13:15:33 $                          #
+#  Version         : $Revision: 1.12 $                                     # 
+#  Last updated on : $Date: 2004/01/09 13:17:04 $                          #
 #  Total entries   : 1449                                                  #
 #                                                                          #
 ############################################################################

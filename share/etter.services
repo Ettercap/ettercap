@@ -2,7 +2,7 @@
 #                                                                          #
 #  ettercap -- etter.services -- services database                         #
 #                                                                          #
-#  Copyright (C) 2001-2003  ALoR & NaGA                                    #
+#  Copyright (C) ALoR & NaGA                                               #
 #                                                                          #
 #  This program is free software; you can redistribute it and/or modify    #
 #  it under the terms of the GNU General Public License as published by    #
@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.6 $                                      # 
-#  Last updated on : $Date: 2003/10/09 14:49:45 $                          #
+#  Version         : $Revision: 1.7 $                                      # 
+#  Last updated on : $Date: 2004/01/09 13:17:04 $                          #
 #  Total entries   : 2183                                                  #
 #                                                                          #
 ############################################################################

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ymsg.c,v 1.4 2004/02/08 14:38:55 alor Exp $
+    $Id: ec_ymsg.c,v 1.5 2004/05/05 08:36:14 alor Exp $
 */
 
 #include <ec.h>
@@ -99,7 +99,7 @@ FUNC_DECODER(dissector_ymsg)
          
       PACKET->DISSECTOR.info = strdup("The pass is in MD5 format ( _2s43d5f is the salt )");
       
-      DISSECT_MSG("ymsg : %s:%d -> USER: %s  HASH: %s  - %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      DISSECT_MSG("YMSG : %s:%d -> USER: %s  HASH: %s  - %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                                 ntohs(PACKET->L4.dst), 
                                                                 PACKET->DISSECTOR.user,
                                                                 PACKET->DISSECTOR.pass,

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.38 2004/05/03 10:10:20 alor Exp $
+    $Id: ec_sslwrap.c,v 1.39 2004/05/05 08:36:14 alor Exp $
 */
 
 #include <ec.h>
@@ -889,8 +889,8 @@ static void sslw_init(void)
    ssl_ctx_server = SSL_CTX_new(SSLv23_client_method());
 
    /* Get our private key from our cert file */
-   if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, INSTALL_DATADIR "/" CERT_FILE, SSL_FILETYPE_PEM) == 0) {
-      DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- ./share/%s",  CERT_FILE);
+   if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, INSTALL_DATADIR "/" EC_PROGRAM "/" CERT_FILE, SSL_FILETYPE_PEM) == 0) {
+      DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- trying ./share/%s",  CERT_FILE);
 
       if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, "./share/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
          FATAL_ERROR("Can't open \"./share/%s\" file : %s", CERT_FILE, strerror(errno));

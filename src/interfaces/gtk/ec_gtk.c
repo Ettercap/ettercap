@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.16 2004/04/09 11:48:59 daten Exp $
+    $Id: ec_gtk.c,v 1.17 2004/04/09 12:07:17 daten Exp $
 */
 
 #include <ec.h>
@@ -606,7 +606,7 @@ static void write_pcapfile(void)
 static void gtkui_unified_sniff(void)
 {
    GList *iface_list;
-   char *iface_desc = NULL;
+   char *iface_desc = NULL, err[100];
    GtkWidget *iface_combo;
    pcap_if_t *dev;
    GtkWidget *dialog, *label, *hbox, *image;
@@ -655,21 +655,27 @@ static void gtkui_unified_sniff(void)
    /* show the dialog itself and become interactive */
    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
 
-      if (GBL_OPTIONS->iface == NULL) {
-         SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-      }
-
       iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (iface_combo)->entry));
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
+            if (GBL_OPTIONS->iface == NULL) 
+               SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+
             strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
             break;
          }
       }
 
-      gtk_widget_destroy(dialog);
+      /* if no match in list */
+      if(GBL_OPTIONS->iface == NULL) {
+         snprintf(err, 100, "Invalid interface: %s", iface_desc);
+         gtkui_error(err);
+         gtk_widget_destroy(dialog);
+         return;
+      }
 
       /* exit setup iterface */
+      gtk_widget_destroy(dialog);
       gtk_main_quit();
       return;
    }
@@ -703,7 +709,7 @@ static void gtkui_bridged_sniff(void)
    GtkWidget *dialog, *vbox, *hbox, *image;
    GtkWidget *hbox_big, *label, *combo1, *combo2;
    GList *iface_list;
-   char *iface_desc = NULL;
+   char *iface_desc = NULL, err[100];
    pcap_if_t *dev;
 
    DEBUG_MSG("gtk_bridged_sniff");
@@ -774,23 +780,42 @@ static void gtkui_bridged_sniff(void)
    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
 
-      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-      SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
-
       iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo1)->entry));
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
+            if(GBL_OPTIONS->iface == NULL)
+               SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+
             strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
             break;                      
          }                              
       }
 
+      /* if no match in list */
+      if(GBL_OPTIONS->iface == NULL) {
+         snprintf(err, 100, "Invalid interface: %s", iface_desc);
+         gtkui_error(err);
+         gtk_widget_destroy(dialog);
+         return;
+      }
+
       iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo2)->entry));
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
+            if(GBL_OPTIONS->iface_bridge == NULL)
+               SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
+
             strncpy(GBL_OPTIONS->iface_bridge, dev->name, IFACE_LEN);
             break;
          }
+      }
+
+      /* if no match in list */
+      if(GBL_OPTIONS->iface_bridge == NULL) {
+         snprintf(err, 100, "Invalid interface: %s", iface_desc);
+         gtkui_error(err);
+         gtk_widget_destroy(dialog);
+         return;
       }
 
       bridged_sniff();

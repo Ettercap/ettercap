@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.27 2003/12/17 16:38:54 alor Exp $
+    $Id: ec_curses.c,v 1.28 2003/12/26 17:58:35 alor Exp $
 */
 
 #include <ec.h>
@@ -225,7 +225,7 @@ static void curses_fatal_error(const char *msg)
 
 
 /*
- * get an input from the user
+ * get an input from the user blocking
  */
 static void curses_input(const char *title, char *input, size_t n)
 {
@@ -242,10 +242,11 @@ static void curses_input(const char *title, char *input, size_t n)
       
    wdg_set_focus(in);
                      
+   NOT_IMPLEMENTED();
 }
 
 /*
- * get an input from the user
+ * get an input from the user with a callback
  */
 void curses_input_call(const char *title, char *input, size_t n, void (*callback)(void))
 {

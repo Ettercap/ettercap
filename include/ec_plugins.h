@@ -1,5 +1,5 @@
 
-/* $Id: ec_plugins.h,v 1.11 2003/12/17 22:04:15 alor Exp $ */
+/* $Id: ec_plugins.h,v 1.12 2003/12/26 17:58:35 alor Exp $ */
 
 #ifndef EC_PLUGINS_H
 #define EC_PLUGINS_H
@@ -23,7 +23,7 @@ struct plugin_ops
 extern void plugin_load_all(void);
 extern int plugin_load_single(char *path, char *name);
 extern int plugin_register(void *handle, struct plugin_ops *ops);
-extern int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *));
+extern int plugin_list_walk(int min, int max, void (*func)(char, struct plugin_ops *));
 #define PLP_MIN   1
 #define PLP_MAX   INT_MAX
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_plugin.c,v 1.6 2003/12/25 17:19:57 alor Exp $
+    $Id: ec_text_plugin.c,v 1.7 2003/12/26 17:58:35 alor Exp $
 */
 
 #include <ec.h>
@@ -50,7 +50,7 @@ int text_plugin(char *plugin)
       ui_msg_purge_all();
 
       INSTANT_USER_MSG("\nAvailable plugins :\n\n");
-      type = plugin_list_print(PLP_MIN, PLP_MAX, &text_plugin_list);
+      type = plugin_list_walk(PLP_MIN, PLP_MAX, &text_plugin_list);
       if (type == -ENOTFOUND) 
          FATAL_MSG("No plugin found !\n");
       

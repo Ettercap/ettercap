@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_plugins.c,v 1.3 2003/12/25 17:19:57 alor Exp $
+    $Id: ec_curses_plugins.c,v 1.4 2003/12/26 17:58:35 alor Exp $
 */
 
 #include <ec.h>
@@ -32,10 +32,13 @@ static void curses_plugin_load(void);
 static void curses_load_plugin(char *path, char *file);
 static void curses_wdg_plugin(char active, struct plugin_ops *ops);
 static void curses_plug_destroy(void);
+static void curses_select_plugin(void *plugin);
 
 /* globals */
 
-wdg_t *wdg_plugin;
+static wdg_t *wdg_plugin;
+static struct wdg_list *wdg_plugin_elements;
+static size_t nplug;
 
 struct wdg_menu menu_plugins[] = { {"Plugins",              "P", NULL},
                                    {"Manage the plugins...", "", curses_plugin_mgmt},
@@ -100,7 +103,7 @@ static void curses_load_plugin(char *path, char *file)
  */
 static void curses_plugin_mgmt(void)
 {
-   int res;
+   int res, i = 0;
    
    DEBUG_MSG("curses_plugin_mgmt");
    
@@ -120,13 +123,29 @@ static void curses_plugin_mgmt(void)
    wdg_set_color(wdg_plugin, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(wdg_plugin, WDG_COLOR_TITLE, EC_COLOR_TITLE);
 
+   /* free the array (if alloc'ed) */
+   while (wdg_plugin_elements && wdg_plugin_elements[i].desc != NULL) {
+      SAFE_FREE(wdg_plugin_elements[i].desc);
+      i++;
+   }
+   SAFE_FREE(wdg_plugin_elements);
+   nplug = 0;
+   
    /* go thru the list of plugins */
-   res = plugin_list_print(PLP_MIN, PLP_MAX, &curses_wdg_plugin);
-   if (res == -ENOTFOUND) 
-      wdg_list_add(wdg_plugin, "No plugin found !", NULL);
+   res = plugin_list_walk(PLP_MIN, PLP_MAX, &curses_wdg_plugin);
+   if (res == -ENOTFOUND) { 
+      SAFE_CALLOC(wdg_plugin_elements, 1, sizeof(struct wdg_list));
+      wdg_plugin_elements->desc = "No plugin found !";
+   }
+  
+   /* set the elements */
+   wdg_list_set_elements(wdg_plugin, wdg_plugin_elements);
    
    /* add the destroy callback */
    wdg_add_destroy_key(wdg_plugin, CTRL('Q'), curses_plug_destroy);
+  
+   /* add the callback */
+   wdg_list_add_callback(wdg_plugin, KEY_RETURN, curses_select_plugin);
    
    wdg_draw_object(wdg_plugin);
    
@@ -143,14 +162,49 @@ static void curses_plug_destroy(void)
  */
 static void curses_wdg_plugin(char active, struct plugin_ops *ops)
 {
-   char tmp[80];
+   /* enlarge the array */ 
+   SAFE_REALLOC(wdg_plugin_elements, (nplug + 1) * sizeof(struct wdg_list));
 
-   sprintf(tmp, "[%d] %15s %4s  %s", active, ops->name, ops->version, ops->info);  
-  
-   wdg_list_add(wdg_plugin, tmp, ops->name);
+   /* fill the element */
+   SAFE_CALLOC(wdg_plugin_elements[nplug].desc, 80, sizeof(char));
+   snprintf(wdg_plugin_elements[nplug].desc, 80, "[%d] %15s %4s  %s", active, ops->name, ops->version, ops->info);  
+   wdg_plugin_elements[nplug].value = ops->name;
    
+   nplug++;
+   
+   /* null terminate the array */ 
+   SAFE_REALLOC(wdg_plugin_elements, (nplug + 1) * sizeof(struct wdg_list));
+   wdg_plugin_elements[nplug].desc = NULL;
+   wdg_plugin_elements[nplug].value = NULL;
 }
 
+/*
+ * callback function for a plugin 
+ */
+static void curses_select_plugin(void *plugin)
+{
+   /* print the message */
+   if (plugin_is_activated(plugin) == 0)
+      INSTANT_USER_MSG("Activating %s plugin...\n", plugin);
+   else
+      INSTANT_USER_MSG("Deactivating %s plugin...\n", plugin);
+         
+   /*
+    * pay attention on this !
+    * if the plugin init does not return,
+    * we are blocked here. So it is encouraged
+    * to write plugins which spawn a thread
+    * and immediately return
+    */
+   if (plugin_is_activated(plugin) == 1)
+      plugin_fini(plugin);   
+   else
+      plugin_init(plugin);
+        
+   /* refresh the list */
+   wdg_list_refresh(wdg_plugin);
+
+}
 
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_list.c,v 1.1 2003/12/25 17:19:57 alor Exp $
+    $Id: wdg_list.c,v 1.2 2003/12/26 17:58:35 alor Exp $
 */
 
 #include <wdg.h>
@@ -29,6 +29,12 @@
 
 /* GLOBALS */
 
+struct wdg_list_call {
+   int key;
+   void (*callback)(void *);
+   SLIST_ENTRY(wdg_list_call) next;
+};
+
 struct wdg_list_handle {
    MENU *menu;
    WINDOW *mwin;
@@ -36,8 +42,7 @@ struct wdg_list_handle {
    ITEM *current;
    ITEM **items;
    size_t nitems;
-   char **elements;
-   void (*callback)(void *);
+   SLIST_HEAD(, wdg_list_call) callbacks;
 };
 
 /* PROTOS */
@@ -58,8 +63,10 @@ static int wdg_list_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
 static void wdg_list_menu_create(struct wdg_object *wo);
 static void wdg_list_menu_destroy(struct wdg_object *wo);
 
-void wdg_list_add(struct wdg_object *wo, char *description, void *value);
-void wdg_list_set_callback(wdg_t *wo, void (*callback)(void *));
+void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list);
+void wdg_list_add_callback(wdg_t *wo, int key, void (*callback)(void *));
+static int wdg_list_callback(struct wdg_object *wo, int key);
+void wdg_list_refresh(wdg_t *wo);
 
 /*******************************************/
 
@@ -98,18 +105,10 @@ static int wdg_list_destroy(struct wdg_object *wo)
    delwin(ww->win);
 
    /* all the items */
-   while (ww->items[i] != NULL)
+   while (ww->items && ww->items[i] != NULL)
       free_item(ww->items[i++]);
 
-   i = 0;
-   
-   while (ww->elements[i] != NULL) {
-      WDG_SAFE_FREE(ww->elements[i]);
-      i++;
-   }
-
    WDG_SAFE_FREE(ww->items);
-   WDG_SAFE_FREE(ww->elements);
 
    WDG_SAFE_FREE(wo->extend);
 
@@ -233,7 +232,6 @@ static int wdg_list_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
             return -WDG_ENOTHANDLED;
          break;
 
-      case KEY_RETURN:
       case KEY_DOWN:
       case KEY_UP:
       case KEY_NPAGE:
@@ -248,7 +246,7 @@ static int wdg_list_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          
       /* message not handled */
       default:
-         return -WDG_ENOTHANDLED; //wdg_list_shortcut(wo, key);
+         return wdg_list_callback(wo, key);
          break;
    }
   
@@ -299,39 +297,37 @@ static void wdg_list_borders(struct wdg_object *wo)
 }
 
 /*
- * add a menu to the handle
+ * set the elements for the list
  */
-void wdg_list_add(struct wdg_object *wo, char *description, void *value)
+void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list)
 {
    WDG_WO_EXT(struct wdg_list_handle, ww);
    size_t i = 0;
+   
+   /* free any previously alloc'd item */
+   while (ww->items && ww->items[i] != NULL)
+      free_item(ww->items[i++]);
 
-   /* count the items added */
-   ww->nitems++;
+   WDG_SAFE_FREE(ww->items);
+   i = 0;
+   ww->nitems = 0;
+   
+   /* walk thru the list and set the menu items */
+   while (list[i].desc != NULL) {
+      /* count the items added */
+      ww->nitems++;
 
-   WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
-   WDG_SAFE_REALLOC(ww->elements, ww->nitems * sizeof(char *));
+      WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
       
-   /* reassign the old elements since then may have be moved on realloc */
-   while (i < ww->nitems - 1) {
-      void *val = item_userptr(ww->items[i]);
-      free_item(ww->items[i]);
-      ww->items[i] = new_item(ww->elements[i], "");
-      set_item_userptr(ww->items[i], val);
+      ww->items[i] = new_item(list[i].desc, "");
+      WDG_DEBUG_MSG("%s", list[i].desc);
+      set_item_userptr(ww->items[i], list[i].value);
       i++;
    }
          
-   /* set the new element */
-   WDG_SAFE_STRDUP(ww->elements[ww->nitems - 1], description);
-   ww->items[ww->nitems - 1] = new_item(ww->elements[ww->nitems - 1], "");
-   set_item_userptr(ww->items[ww->nitems - 1], value);
-   
    /* add the null termination to the array */
    WDG_SAFE_REALLOC(ww->items, (ww->nitems + 1) * sizeof(ITEM *));
    ww->items[ww->nitems] = NULL;
-   
-   WDG_SAFE_REALLOC(ww->elements, (ww->nitems + 1) * sizeof(char *));
-   ww->elements[ww->nitems] = NULL;
 
 }
 
@@ -342,8 +338,6 @@ void wdg_list_add(struct wdg_object *wo, char *description, void *value)
 static int wdg_list_virtualize(int key)
 {
    switch (key) {
-      case KEY_EXIT:
-         return (MAX_COMMAND + 1);
       case KEY_NPAGE:
          return (REQ_SCR_DPAGE);
       case KEY_PPAGE:
@@ -366,25 +360,12 @@ static int wdg_list_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
 {
    WDG_WO_EXT(struct wdg_list_handle, ww);
    int c;
-   void (*func)(void);
    
    c = menu_driver(ww->menu, wdg_list_virtualize(key) );
    
    /* skip non selectable items */
    if ( !(item_opts(current_item(ww->menu)) & O_SELECTABLE) )
       c = menu_driver(ww->menu, wdg_list_virtualize(key) );
-
-   /* one item has been selected */
-   if (c == E_UNKNOWN_COMMAND) {
-      /* the item is not selectable (probably selected with mouse */
-      if ( !(item_opts(current_item(ww->menu)) & O_SELECTABLE) )
-         return WDG_ESUCCESS;
-         
-      /* retrieve the function pointer */
-      func = item_userptr(current_item(ww->menu));
-
-      return WDG_ESUCCESS;
-   }
 
    /* tring to go outside edges */
    if (c == E_REQUEST_DENIED)
@@ -476,15 +457,65 @@ static void wdg_list_menu_destroy(struct wdg_object *wo)
 }
 
 /*
- * set the user callback
+ * add the user callback(s)
  */
-void wdg_list_set_callback(wdg_t *wo, void (*callback)(void *))
+void wdg_list_add_callback(wdg_t *wo, int key, void (*callback)(void *))
+{
+   WDG_WO_EXT(struct wdg_list_handle, ww);
+   struct wdg_list_call *c;
+
+   WDG_SAFE_CALLOC(c, 1, sizeof(struct wdg_list_call));
+   
+   c->key = key;
+   c->callback = callback;
+
+   SLIST_INSERT_HEAD(&ww->callbacks, c, next);
+}
+
+/*
+ * search for a callback and execute it
+ */
+static int wdg_list_callback(struct wdg_object *wo, int key)
+{
+   WDG_WO_EXT(struct wdg_list_handle, ww);
+   struct wdg_list_call *c;
+
+   SLIST_FOREACH(c, &ww->callbacks, next) {
+      if (c->key == key) {
+         void *value;
+         /* retrieve the value from the current item */
+         value = item_userptr(current_item(ww->menu));
+
+         /* execute the callback */
+         WDG_EXECUTE(c->callback, value);
+         
+         return WDG_ESUCCESS;
+      }
+   }
+
+   return -WDG_ENOTHANDLED;
+}
+
+/*
+ * force the repaint of the menu 
+ */
+void wdg_list_refresh(wdg_t *wo)
 {
    WDG_WO_EXT(struct wdg_list_handle, ww);
 
-   ww->callback = callback;
-}
+   /* remember the position */
+   ww->current = current_item(ww->menu);
 
+   /* delete the window */
+   unpost_menu(ww->menu);
+
+   /* set the old position */
+   set_current_item(ww->menu, ww->current);
+   /* draw the menu */
+   post_menu(ww->menu);
+
+   wnoutrefresh(ww->mwin);
+}
 
 /* EOF */
 

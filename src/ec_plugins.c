@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.24 2003/12/17 22:04:15 alor Exp $
+    $Id: ec_plugins.c,v 1.25 2003/12/26 17:58:35 alor Exp $
 */
 
 #include <ec.h>
@@ -62,7 +62,7 @@ int plugin_load_single(char *path, char *name);
 int plugin_register(void *handle, struct plugin_ops *ops);
 int plugin_init(char *name);
 int plugin_fini(char *name);
-int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *));
+int plugin_list_walk(int min, int max, void (*func)(char, struct plugin_ops *));
 int plugin_is_activated(char *name);
 int search_plugin(char *name);
 void plugin_list(void);
@@ -291,7 +291,7 @@ int plugin_fini(char *name)
  * max it the n-th plugin to stop to print
  */
 
-int plugin_list_print(int min, int max, void (*func)(char, struct plugin_ops *))
+int plugin_list_walk(int min, int max, void (*func)(char, struct plugin_ops *))
 {
    struct plugin_entry *p;
    int i = min;
@@ -353,7 +353,7 @@ void plugin_list(void)
       
    /* print the list */
    fprintf(stdout, "\nAvailable plugins :\n\n");
-   ret = plugin_list_print(PLP_MIN, PLP_MAX, &plugin_print);
+   ret = plugin_list_walk(PLP_MIN, PLP_MAX, &plugin_print);
    if (ret == -ENOTFOUND) {
       fprintf(stdout, "No plugin found !\n\n");
       return;

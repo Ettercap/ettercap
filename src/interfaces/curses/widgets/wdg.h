@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.25 2003/12/25 17:19:57 alor Exp $ */
+/* $Id: wdg.h,v 1.26 2003/12/26 17:58:35 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -39,7 +39,7 @@
 #endif
 
 
-#define LIBWDG_VERSION "0.8.1"
+#define LIBWDG_VERSION "0.9.0"
    
 /********************************************/
 
@@ -241,7 +241,13 @@ extern void wdg_input_size(wdg_t *wo, size_t x, size_t y);
 extern void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len);
 extern void wdg_input_set_callback(wdg_t *wo, void (*callback)(void));
 /* list objects */
-void wdg_list_add(struct wdg_object *wo, char *description, void *value);
+struct wdg_list {
+   char *desc;
+   void *value;
+};
+void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list);
+void wdg_list_add_callback(wdg_t *wo, int key, void (*callback)(void *));
+void wdg_list_refresh(wdg_t *wo);
 
 
 /* EXPORTED FUNCTIONS */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: pptp_clear.c,v 1.2 2003/12/05 15:11:55 lordnaga Exp $
+    $Id: pptp_clear.c,v 1.3 2003/12/10 13:08:53 lordnaga Exp $
 */
 
 
@@ -116,7 +116,7 @@ static int pptp_clear_fini(void *dummy)
 static void parse_lcp(struct packet_object *po)
 {
    struct ppp_lcp_header *lcp;
-   u_int16 *option;
+   u_char *option;
    
    if (!(po->flags & PO_FORWARDABLE)) 
       return; 
@@ -124,18 +124,18 @@ static void parse_lcp(struct packet_object *po)
    lcp = (struct ppp_lcp_header *)po->L4.header;
 
    if ( lcp->code == PPP_CONFIGURE_REQUEST) {
-      if ( (option = (u_int16 *)parse_option( (char *)(lcp + 1), PPP_REQUEST_FCOMP, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_FCOMP, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_DUMMY1;      
       
-      if ( (option = (u_int16 *)parse_option( (char *)(lcp + 1), PPP_REQUEST_ACOMP, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_ACOMP, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_DUMMY2;      
    }
 
    if ( lcp->code == PPP_CONFIGURE_REJ) {
-      if ( (option = (u_int16 *)parse_option( (char *)(lcp + 1), PPP_REQUEST_DUMMY1, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_DUMMY1, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_FCOMP;      
       
-      if ( (option = (u_int16 *)parse_option( (char *)(lcp + 1), PPP_REQUEST_DUMMY2, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_DUMMY2, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_ACOMP;      
    }
 }
@@ -160,7 +160,7 @@ static void parse_ecp(struct packet_object *po)
 static void parse_ipcp(struct packet_object *po)
 {
    struct ppp_lcp_header *lcp;
-   u_int16 *option;
+   u_char *option;
    
    if (!(po->flags & PO_FORWARDABLE)) 
       return; 
@@ -168,11 +168,11 @@ static void parse_ipcp(struct packet_object *po)
    lcp = (struct ppp_lcp_header *)po->L4.header;
 
    if ( lcp->code == PPP_CONFIGURE_REQUEST) 
-      if ( (option = (u_int16 *)parse_option( (char *)(lcp + 1), PPP_REQUEST_VJC, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_VJC, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_DUMMY1;      
           
    if ( lcp->code == PPP_CONFIGURE_REJ)
-      if ( (option = (u_int16 *)parse_option( (char *)(lcp + 1), PPP_REQUEST_DUMMY1, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_DUMMY1, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_VJC;      
 }
 

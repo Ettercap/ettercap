@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.10 2003/03/29 15:03:43 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.11 2003/03/31 21:46:50 alor Exp $
 */
 
 #include <ec.h>
@@ -37,14 +37,14 @@ void set_bridge_sniff(void);
 void set_arp_sniff(void);
 
 void display_packet_for_us(struct packet_object *po);
-void compile_display_filter(void);
+int compile_display_filter(void);
 void reset_display_filter(struct target_env *t);
 
 static void set_forwardable_flag(struct packet_object *po);
 
 static void add_port(void *ports, int n);
 static void add_ip(void *digit, int n);
-static void expand_range_ip(char *str, void *target);
+static int expand_range_ip(char *str, void *target);
 
 void del_ip_list(struct ip_addr *ip, struct target_env *t);
 int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
@@ -255,7 +255,7 @@ void reset_display_filter(struct target_env *t)
  * compile the list of MAC, IPs and PORTs to be displayed
  */
 
-void compile_display_filter(void)
+int compile_display_filter(void)
 {
 #define MAX_TOK 3
    char valid[] = "1234567890/.,-;:";
@@ -266,10 +266,10 @@ void compile_display_filter(void)
    DEBUG_MSG("compile_display_filter TARGET1: %s", GBL_OPTIONS->target1);
 
    if (strlen(GBL_OPTIONS->target1) != strspn(GBL_OPTIONS->target1, valid))
-      FATAL_MSG("TARGET1 contains invalid chars !");
+      FATAL_ERROR("TARGET1 contains invalid chars !");
    
    if (strlen(GBL_OPTIONS->target2) != strspn(GBL_OPTIONS->target2, valid))
-      FATAL_MSG("TARGET2 contains invalid chars !");
+      FATAL_ERROR("TARGET2 contains invalid chars !");
    
    /* TARGET 1 parsing */
    for(p=strsep(&GBL_OPTIONS->target1, "/"); p != NULL; p=strsep(&GBL_OPTIONS->target1, "/")) {
@@ -279,7 +279,7 @@ void compile_display_filter(void)
    }
   
    if (i != MAX_TOK)
-      FATAL_MSG("Incorrect number of token (//) in TARGET1 !!");
+      FATAL_ERROR("Incorrect number of token (//) in TARGET1 !!");
    
    DEBUG_MSG("MAC  : [%s]", tok[0]);
    DEBUG_MSG("IP   : [%s]", tok[1]);
@@ -289,7 +289,7 @@ void compile_display_filter(void)
    if (!strcmp(tok[0], ""))
       GBL_TARGET1->all_mac = 1;
    else if (mac_addr_aton(tok[0], GBL_TARGET1->mac) == 0)
-      FATAL_MSG("Incorrect TARGET1 MAC parsing... (%s)", tok[0]);
+      FATAL_ERROR("Incorrect TARGET1 MAC parsing... (%s)", tok[0]);
 
   
    /* parse the IP range */
@@ -305,9 +305,10 @@ void compile_display_filter(void)
     */
    if (!strcmp(tok[2], ""))
       GBL_TARGET1->all_port = 1;
-   else
-      expand_token(tok[2], 1<<16, &add_port, GBL_TARGET1->ports);
-   
+   else {
+      if (expand_token(tok[2], 1<<16, &add_port, GBL_TARGET1->ports) == -EFATAL)
+         clean_exit(-EFATAL);
+   }
    
    for(i=0; i < MAX_TOK; i++)
       SAFE_FREE(tok[i]);
@@ -324,7 +325,7 @@ void compile_display_filter(void)
    }
   
    if (i != MAX_TOK)
-      FATAL_MSG("Incorrect number of token (//) in TARGET2 !!");
+      FATAL_ERROR("Incorrect number of token (//) in TARGET2 !!");
    
    DEBUG_MSG("MAC  : [%s]", tok[0]);
    DEBUG_MSG("IP   : [%s]", tok[1]);
@@ -334,7 +335,7 @@ void compile_display_filter(void)
    if (!strcmp(tok[0], ""))
       GBL_TARGET2->all_mac = 1;
    else if (mac_addr_aton(tok[0], GBL_TARGET2->mac) == 0)
-      FATAL_MSG("Incorrect TARGET2 MAC parsing... (%s)", tok[0]);
+      FATAL_ERROR("Incorrect TARGET2 MAC parsing... (%s)", tok[0]);
 
    /* parse the IP range */
    if (!strcmp(tok[1], ""))
@@ -346,21 +347,21 @@ void compile_display_filter(void)
    /* set the port range */
    if (!strcmp(tok[2], ""))
       GBL_TARGET2->all_port = 1;
-   else
-      expand_token(tok[2], 1<<16, &add_port, GBL_TARGET2->ports);
-
+   else {
+      if (expand_token(tok[2], 1<<16, &add_port, GBL_TARGET2->ports) == -EFATAL)
+         clean_exit(-EFATAL);
+   }
+   
    for(i=0; i < MAX_TOK; i++)
       SAFE_FREE(tok[i]);
- 
+
+   return ESUCCESS;
 }
 
 static void add_port(void *ports, int n)
 {
    u_int8 *bitmap = ports;
   
-   if (n > 1<<16)
-      FATAL_MSG("Port outside the range (65535) !!");
-   
    BIT_SET(bitmap, n);
 }
 
@@ -386,7 +387,7 @@ struct digit {
  * prepare the set of 4 digit to create an IP address
  */
 
-static void expand_range_ip(char *str, void *target)
+static int expand_range_ip(char *str, void *target)
 {
    struct digit ADDR[4];
    struct ip_addr tmp;
@@ -410,13 +411,14 @@ static void expand_range_ip(char *str, void *target)
    }
 
    if (i != 4)
-      FATAL_MSG("Invalid IP format !!");
+      FATAL_ERROR("Invalid IP format !!");
 
    DEBUG_MSG("expand_range_ip -- [%s] [%s] [%s] [%s]", addr[0], addr[1], addr[2], addr[3]);
 
    for (i = 0; i < 4; i++) {
       p = addr[i];
-      expand_token(addr[i], 255, &add_ip, &ADDR[i]);
+      if (expand_token(addr[i], 255, &add_ip, &ADDR[i]) == -EFATAL)
+         clean_exit(-EFATAL);
    }
 
    /* count the free permutations */
@@ -432,7 +434,7 @@ static void expand_range_ip(char *str, void *target)
                                          ADDR[3].values[ADDR[3].cur]);
 
       if (inet_aton(parsed_ip, &ipaddr) == 0)
-         FATAL_MSG("Invalid IP address (%s)", parsed_ip);
+         FATAL_ERROR("Invalid IP address (%s)", parsed_ip);
 
       ip_addr_init(&tmp, AF_INET,(char *)&ipaddr );
       add_ip_list(&tmp, target);
@@ -452,6 +454,7 @@ static void expand_range_ip(char *str, void *target)
    for (i = 0; i < 4; i++)
       SAFE_FREE(addr[i]);
      
+   return ESUCCESS;
 }
 
 /* fill the digit structure with data */

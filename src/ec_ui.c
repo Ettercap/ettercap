@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.9 2003/03/29 20:13:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.10 2003/03/31 21:46:50 alor Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,7 @@ void ui_init(void);
 void ui_start(void);
 void ui_cleanup(void);
 void ui_msg(const char *fmt, ...);
+void ui_error(const char *fmt, ...);
 void ui_progress(int value, int max);
 int ui_msg_flush(int max);
 int ui_msg_purge_all(void);
@@ -93,6 +94,51 @@ void ui_cleanup(void)
 void ui_progress(int value, int max)
 {
    EXECUTE(GBL_UI->progress, value, max);
+}
+
+/*
+ * the FATAL_MSG error handling function
+ */
+
+void ui_error(const char *fmt, ...)
+{
+   va_list ap;
+   int n, size = 50;
+   char *msg;
+
+   /* 
+    * we hope the message is shorter
+    * than 'size', else realloc it
+    */
+    
+   msg = calloc(size, sizeof(char));
+   ON_ERROR(msg, NULL, "can't allocate memory");
+
+   while (1) {
+      /* Try to print in the allocated space. */
+      va_start(ap, fmt);
+      n = vsnprintf (msg, size, fmt, ap);
+      va_end(ap);
+      
+      /* If that worked, we have finished. */
+      if (n > -1 && n < size)
+         break;
+   
+      /* Else try again with more space. */
+      if (n > -1)    /* glibc 2.1 */
+         size = n+1; /* precisely what is needed */
+      else           /* glibc 2.0 */
+         size *= 2;  /* twice the old size */
+      
+      msg = realloc (msg, size);
+      ON_ERROR(msg, NULL, "can't allocate memory");
+   }
+   
+   /* call the function */
+   EXECUTE(GBL_UI->error, msg);
+   
+   /* free the message */
+   SAFE_FREE(msg);
 }
 
 /*
@@ -233,6 +279,9 @@ void ui_register(struct ui_ops *ops)
         
    ON_ERROR(ops->msg, NULL, "BUG: ui_msg is equal to NULL");
    GBL_UI->msg = ops->msg;
+   
+   ON_ERROR(ops->error, NULL, "BUG: ui_error is equal to NULL");
+   GBL_UI->error = ops->error;
    
    ON_ERROR(ops->progress, NULL, "BUG: ui_progress is equal to NULL");
    GBL_UI->progress = ops->progress;

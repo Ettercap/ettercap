@@ -4,6 +4,7 @@
 
 #include <ec_inet.h>
 #include <ec_packet.h>
+#include <ec_fingerprint.h>
 
 #include <sys/time.h>
 
@@ -67,7 +68,20 @@ struct log_header_packet {
 
 /* this is for host infos */
 struct log_header_info {
-   struct ip_addr host;
+   
+   u_int8 L2_addr[ETH_ADDR_LEN];
+   
+   struct ip_addr L3_addr;
+   
+   u_int8 L4_proto;
+   u_int16 L4_addr;
+
+   u_int8 distance;
+   u_char finger[FINGER_LEN+1];
+   u_char banner[BANNER_LEN+1];
+
+   u_char type;
+   
 };
 
 
@@ -77,7 +91,7 @@ extern void set_loglevel(int level, char *filename);
 
 extern void log_packet(struct packet_object *po);
    
-void set_logregex(char *regex);
+int set_logregex(char *regex);
 
 #endif
 

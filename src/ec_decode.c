@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.10 2003/03/29 20:13:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.11 2003/03/31 21:46:48 alor Exp $
 */
 
 #include <ec.h>
@@ -71,8 +71,8 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    int len;
    u_char *data;
    int datalen;
-  
-   ec_thread_testcancel();
+   
+   CANCELLATION_POINT();
   
    USER_MSG("\n***************************************************************\n");
    USER_MSG("ec_get_packets (one packet dispatched from pcap)\n");
@@ -120,7 +120,6 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     */
    l2_decoder(data, datalen, &len, po);
    
-   /* HOOK POINT: DECODED */ 
    hook_point(HOOK_DECODED, po);
    
    /* 
@@ -152,6 +151,8 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* clean the buffer */
    memset((u_char *)pkt, 0, pkthdr->caplen);
    
+   CANCELLATION_POINT();
+
    return;
 }
 
@@ -170,6 +171,8 @@ FUNC_DECODER(decode_data)
 {
    FUNC_DECODER_PTR(app_decoder);
       
+   CANCELLATION_POINT();
+   
    /* HOOK POINT: HANDLED */ 
    hook_point(HOOK_HANDLED, po);
 
@@ -223,6 +226,8 @@ FUNC_DECODER(decode_data)
     */
    top_half_queue_add(po);     
 
+   CANCELLATION_POINT();
+  
    return NULL;
 }
       

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.4 2003/03/20 16:25:23 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.5 2003/03/31 21:46:50 alor Exp $
 */
 
 #include <ec.h>
@@ -45,7 +45,6 @@ void ec_thread_register(pthread_t id, char *name, char *desc);
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
 void ec_thread_destroy(pthread_t id);
 void ec_thread_init(void);
-void ec_thread_testcancel(void);
 void ec_thread_kill_all(void);
 
 /*******************************************/
@@ -223,15 +222,6 @@ void ec_thread_kill_all(void)
       }
    }
 
-}
-
-/*
- * set a cancellation point
- */
-
-void ec_thread_testcancel(void)
-{
-   pthread_testcancel();
 }
 
 

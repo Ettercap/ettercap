@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.5 2003/03/29 15:03:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.6 2003/03/31 21:46:51 alor Exp $
 */
 
 
@@ -213,11 +213,11 @@ void parse_options(int argc, char **argv)
    if (argv[optind])
       open_log(argv[optind]);
    else
-      FATAL_MSG("You MUST specify a logfile");
+      FATAL_ERROR("You MUST specify a logfile");
   
    
    if (GBL.format == NULL && !GBL.analyze && !GBL.connections)
-      FATAL_MSG("You must specify a visualization method");
+      FATAL_ERROR("You must specify a visualization method");
 
    
    /* XXX - check for incompatible options */
@@ -253,7 +253,7 @@ void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t )
       /* get the first digit */
       a = atoi(p);
       if (a > max) 
-         FATAL_MSG("Out of range (%d) !!", max);
+         FATAL_ERROR("Out of range (%d) !!", max);
       
       /* it is a range ? */
       if ( r == '-') {
@@ -262,13 +262,13 @@ void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t )
          while ( isdigit((int)*q) && q++ < end);
          *q = 0;
          if (*p == '\0') 
-            FATAL_MSG("Invalid range !!");
+            FATAL_ERROR("Invalid range !!");
          /* get the second digit */
          b = atoi(p);
          if (b > max) 
-            FATAL_MSG("Out of range (%d)!!", max);
+            FATAL_ERROR("Out of range (%d)!!", max);
          if (b < a)
-            FATAL_MSG("Invalid decrementing range !!");
+            FATAL_ERROR("Invalid decrementing range !!");
       } else {
          /* it is not a range */
          b = a; 

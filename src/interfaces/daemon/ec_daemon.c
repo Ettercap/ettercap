@@ -15,15 +15,18 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/interfaces/daemon/ec_daemon.c,v 1.5 2003/03/29 20:13:43 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/interfaces/daemon/ec_daemon.c,v 1.6 2003/03/31 21:46:51 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_ui.h>
+#include <ec_threads.h>
 
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+
+static int fd;
 
 /* proto */
 
@@ -32,6 +35,7 @@ void daemon_interface(void);
 static void daemon_init(void);
 static void daemon_cleanup(void);
 static void daemon_msg(const char *msg);
+static void daemon_error(const char *msg);
 static void daemon_progress(int value, int max);
 static void daemonize(void);
 
@@ -46,6 +50,7 @@ void set_daemon_interface(void)
    ops.start = &daemon_interface;
    ops.cleanup = &daemon_cleanup;
    ops.msg = &daemon_msg;
+   ops.error = &daemon_error;
    ops.progress = &daemon_progress;
    ops.type = UI_DAEMONIZE;
    
@@ -59,6 +64,9 @@ void set_daemon_interface(void)
 
 static void daemon_init(void)
 {
+   fd = open("./ettercap_demonized.log", O_CREAT|O_TRUNC|O_WRONLY, 0600);
+   ON_ERROR(fd, -1, "Can't open daemon log file");
+   
    /* daemonize ettercap */
    daemonize();
 }
@@ -73,11 +81,6 @@ static void daemon_init(void)
 
 static void daemon_cleanup(void)
 {
-   int fd;
-   
-   fd = open("/tmp/ettercap_demonized.log", O_CREAT|O_TRUNC|O_WRONLY, 0600);
-   ON_ERROR(fd, -1, "Can't open exit file");
-
    /* redirect in, out and err to fd */
    dup2(fd, STDIN_FILENO);
    dup2(fd, STDOUT_FILENO);
@@ -97,9 +100,25 @@ static void daemon_progress(int value, int max)
 }
 
 /* discard the messages */
+
 static void daemon_msg(const char *msg)
 {
-   DEBUG_MSG("%s", msg);
+   DEBUG_MSG("daemon_msg: %s", msg);
+   return;
+}
+
+
+/* print the message in the log */
+
+static void daemon_error(const char *msg)
+{
+   DEBUG_MSG("daemon_error: %s", msg);
+   
+   /* open the exit log file */
+   daemon_cleanup();
+   
+   fprintf(stdout, "%s\n", msg);
+   
    return;
 }
 
@@ -112,12 +131,11 @@ void daemon_interface(void)
 
    /* discard the messages */
    LOOP {
+      CANCELLATION_POINT();
       sleep(1); 
       ui_msg_flush(10);
    }
-  
-   /* NOT REACHED */
-   
+   /* NOT REACHED */   
 }
 
 /*

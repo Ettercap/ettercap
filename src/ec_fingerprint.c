@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.4 2003/03/26 20:38:00 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.5 2003/03/31 21:46:49 alor Exp $
 
 */
 
@@ -53,7 +53,7 @@ char * fingerprint_search(char *f);
 
 void fingerprint_default(char *finger);
 void fingerprint_push(char *finger, int param, int value);
-static u_char TTL_PREDICTOR(u_char x);
+u_char TTL_PREDICTOR(u_char x);
 /*****************************************/
 
 
@@ -224,7 +224,7 @@ void fingerprint_push(char *finger, int param, int value)
  * round the TTL to the nearest power of 2 (ceiling)
  */
 
-static u_char TTL_PREDICTOR(u_char x)
+u_char TTL_PREDICTOR(u_char x)
 {                            
    register u_char i = x;
    register u_char j = 1;

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_conn.c,v 1.2 2003/03/29 16:20:39 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_conn.c,v 1.3 2003/03/31 21:46:51 alor Exp $
 */
 
 #include <el.h>
@@ -58,7 +58,7 @@ void conn_table(void)
    char ipdst[MAX_ASCII_ADDR_LEN];
 
    if (GBL.hdr.type == LOG_INFO)
-      FATAL_MSG("LOG_INFO files don't contain connections !");
+      FATAL_ERROR("LOG_INFO files don't contain connections !");
    
    
    fprintf(stdout, "\nCreating the connection table...\n");
@@ -161,7 +161,7 @@ void filcon_compile(char *conn)
 
    /* sanity check */ 
    if (strlen(conn) != strspn(conn, valid))
-      FATAL_MSG("CONNECTION contains invalid chars !");
+      FATAL_ERROR("CONNECTION contains invalid chars !");
 
    /* CONN parsing */
    for(p=strsep(&conn, ":"); p != NULL; p=strsep(&conn, ":")) {
@@ -171,7 +171,7 @@ void filcon_compile(char *conn)
    }
 
    if (i != MAX_TOK)
-      FATAL_MSG("Incorrect number of token (PROTO:IP:PORT:IP:PORT) in CONNECTION !!");
+      FATAL_ERROR("Incorrect number of token (PROTO:IP:PORT:IP:PORT) in CONNECTION !!");
 
 
    if (!strcasecmp(tok[0], "tcp"))
@@ -187,12 +187,12 @@ void filcon_compile(char *conn)
 
    /* source and dest ip */
    if (inet_aton(tok[1], &ipaddr) == 0)
-      FATAL_MSG("Invalid IP address (%s)", tok[1]);
+      FATAL_ERROR("Invalid IP address (%s)", tok[1]);
 
    ip_addr_init(&conn_target.L3_src, AF_INET, (char *)&ipaddr );
       
    if (inet_aton(tok[3], &ipaddr) == 0)
-      FATAL_MSG("Invalid IP address (%s)", tok[3]);
+      FATAL_ERROR("Invalid IP address (%s)", tok[3]);
 
    ip_addr_init(&conn_target.L3_dst, AF_INET, (char *)&ipaddr );
      

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.15 2003/03/30 00:50:26 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.16 2003/03/31 21:46:50 alor Exp $
 */
 
 
@@ -39,7 +39,7 @@
 static void ec_usage(void);
 void parse_options(int argc, char **argv);
 
-void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t );
+int expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t );
 int match_pattern(const char *s, const char *pattern);
 
 //-----------------------------------
@@ -89,7 +89,7 @@ void ec_usage(void)
 
 void parse_options(int argc, char **argv)
 {
-   int c;
+   int c, r;
 
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
@@ -209,7 +209,9 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'e':
-                  set_logregex(optarg);
+                  r = set_logregex(optarg);
+                  if (r == -EFATAL)
+                     clean_exit(-EFATAL);
                   break;
                   
          case 'h':
@@ -260,19 +262,19 @@ void parse_options(int argc, char **argv)
    /* check for other options */
    
    if (GBL_OPTIONS->dump && GBL_OPTIONS->read)
-      FATAL_MSG("You cannote dump and read at the same time...");
+      FATAL_ERROR("You cannote dump and read at the same time...");
 
    if (GBL_SNIFF->start == NULL)
       set_unified_sniff();
 
    if (GBL_UI->init == NULL)
-      FATAL_MSG("Please select an User Interface");
+      FATAL_ERROR("Please select an User Interface");
    
    if (GBL_OPTIONS->read && GBL_SNIFF->type != SM_UNIFIED )
-      FATAL_MSG("You can read from a file ONLY in unified sniffing mode !");
+      FATAL_ERROR("You can read from a file ONLY in unified sniffing mode !");
    
    if (GBL_SNIFF->type == SM_BRIDGED && GBL_PCAP->promisc == 0)
-      FATAL_MSG("During bridged sniffing the iface must be in promisc mode !");
+      FATAL_ERROR("During bridged sniffing the iface must be in promisc mode !");
    
    
    /* XXX - check for incompatible options */
@@ -288,7 +290,7 @@ void parse_options(int argc, char **argv)
  * and fill the structure with expanded numbers.
  */
 
-void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t )
+int expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t )
 {
    char *str = strdup(s);
    char *p, *q, r;
@@ -332,7 +334,7 @@ void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t )
          b = a; 
       } 
       
-      /* process the range */
+      /* process the range and invoke the callback */
       for(; a <= b; a++) {
          func(t, a);
       }
@@ -342,6 +344,8 @@ void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t )
    }
   
    SAFE_FREE(str);
+   
+   return ESUCCESS;
 }
 
 /* Pattern matching code from OpenSSH. */

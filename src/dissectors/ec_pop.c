@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.3 2003/03/24 15:54:39 alor Exp $
+    $Id: ec_pop.c,v 1.4 2003/03/31 21:46:50 alor Exp $
 */
 
 #include <ec.h>
@@ -42,6 +42,7 @@ void __init pop_init(void)
 FUNC_DECODER(dissector_pop)
 {
    DECLARE_PTR_END(ptr, end);
+   char tmp[MAX_ASCII_ADDR_LEN];
 
    /* skip messages coming from the server */
    if (ntohs(PACKET->L4.src) == 110) 
@@ -59,6 +60,8 @@ FUNC_DECODER(dissector_pop)
       DEBUG_MSG("\tDissector_POP USER");
       /* the \n is already present in the packet, no need to add it */
       PACKET->INFO.user = strdup(ptr);
+      USER_MSG("POP : %s:%d -> USER: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                    ntohs(PACKET->L4.dst), PACKET->INFO.user);
    }
 
    if ( !strncasecmp(ptr, "PASS ", 5) ) {
@@ -66,6 +69,8 @@ FUNC_DECODER(dissector_pop)
       DEBUG_MSG("\tDissector_POP PASS");
       /* the \n is already present in the packet, no need to add it */
       PACKET->INFO.pass = strdup(ptr);
+      USER_MSG("POP : %s:%d -> PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                    ntohs(PACKET->L4.dst), PACKET->INFO.pass);
    }
    
    return NULL;

@@ -18,10 +18,19 @@
 
    + LOGGING ENGINE
       - info packet
-      - regexp
+      - user and pass infos
+      - skip packet with (port = 0, no finger, no pass)
 
    + ETTERLOG
       - info packet
+      - analysis 
+         - number of hosts
+         - number of pass
+         - number of open ports
+      - print per host, per port
+      - search per user
+      - search per port/service
+
 
    + ARP SCAN
 

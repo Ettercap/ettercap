@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.1 2003/03/29 15:03:44 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_target.c,v 1.2 2003/03/31 21:46:51 alor Exp $
 */
 
 #include <el.h>
@@ -44,7 +44,7 @@ void target_compile(char *target)
 
    /* sanity check */ 
    if (strlen(target) != strspn(target, valid))
-      FATAL_MSG("TARGET contains invalid chars !");
+      FATAL_ERROR("TARGET contains invalid chars !");
 
    /* TARGET parsing */
    for(p=strsep(&target, "/"); p != NULL; p=strsep(&target, "/")) {
@@ -54,7 +54,7 @@ void target_compile(char *target)
    }
 
    if (i != MAX_TOK)
-      FATAL_MSG("Incorrect number of token (//) in TARGET !!");
+      FATAL_ERROR("Incorrect number of token (//) in TARGET !!");
 
    /* reset the target */
    GBL_TARGET->all_mac = 0;
@@ -65,7 +65,7 @@ void target_compile(char *target)
    if (!strcmp(tok[0], ""))
       GBL_TARGET->all_mac = 1;
    else if (mac_addr_aton(tok[0], GBL_TARGET->mac) == 0)
-      FATAL_MSG("Incorrect TARGET MAC parsing... (%s)", tok[0]);
+      FATAL_ERROR("Incorrect TARGET MAC parsing... (%s)", tok[0]);
 
    /* parse the IP range */
    if (!strcmp(tok[1], ""))
@@ -94,7 +94,7 @@ static void add_port(void *ports, int n)
    u_int8 *bitmap = ports;
 
    if (n > 1<<16)
-      FATAL_MSG("Port outside the range (65535) !!");
+      FATAL_ERROR("Port outside the range (65535) !!");
 
    BIT_SET(bitmap, n);
 }
@@ -146,7 +146,7 @@ static void expand_range_ip(char *str, void *target)
    }
 
    if (i != 4)
-      FATAL_MSG("Invalid IP format !!");
+      FATAL_ERROR("Invalid IP format !!");
 
    for (i = 0; i < 4; i++) {
       p = addr[i];
@@ -166,7 +166,7 @@ static void expand_range_ip(char *str, void *target)
                                          ADDR[3].values[ADDR[3].cur]);
 
       if (inet_aton(parsed_ip, &ipaddr) == 0)
-         FATAL_MSG("Invalid IP address (%s)", parsed_ip);
+         FATAL_ERROR("Invalid IP address (%s)", parsed_ip);
 
       ip_addr_init(&tmp, AF_INET,(char *)&ipaddr );
       add_ip_list(&tmp, target);

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.27 2004/02/04 10:15:53 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.28 2004/03/19 14:09:51 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -187,6 +187,19 @@ To find an unused IP address for the "fake" host you can use find_ip plugin.
 Based on the original Tunnelx technique by Anthony C. Zboralski published
 in http://www.phrack.org/show.php?p=56&a=10 by HERT.
 
+.TP 
+.B gw_discover
+.Sp
+This plugin try to discover the gateway of the lan by sending TCP SYN packets
+to a remote host. The packet has the destination IP of a remote host and the
+destination mac address of a local host. If ettercap receives the SYN+ACK
+packet, the host which own the source mac address of the reply is the gatway.
+This operation is repeated for each host in the 'host list', so you need to
+have a valid host list before launching this plugin.
+.Sp
+.I example :
+.Sp
+ettercap -TP gw_discover /192.168.0.1-50/
 
 .TP 
 .B link_type
@@ -240,18 +253,6 @@ You have to be in the "middle" of the connection to use it successfully.
 It hooks the ppp dissector, so you have to keep them active. 
 
 .TP 
-.B reply_arp
-.Sp
-Simple arp responder. When it intercepts an arp request for a host 
-in the targets' lists, it replies with attacker's MAC address.
-.Sp
-.I example :
-.Sp
-ettercap -TQzP reply_arp /192.168.0.1/
-.br
-ettercap -TQzP reply_arp //
-
-.TP 
 .B rand_flood
 .Sp
 Floods the LAN with random MAC addresses. Some switches will fail open in 
@@ -263,6 +264,20 @@ It is useful only on ethernet switches.
 .I example :
 .Sp
 ettercap -TP rand_flood
+
+
+.TP 
+.B reply_arp
+.Sp
+Simple arp responder. When it intercepts an arp request for a host 
+in the targets' lists, it replies with attacker's MAC address.
+.Sp
+.I example :
+.Sp
+ettercap -TQzP reply_arp /192.168.0.1/
+.br
+ettercap -TQzP reply_arp //
+
 
 .TP 
 .B scan_poisoner

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.44 2003/10/14 14:06:09 alor Exp $
+    $Id: ec_parser.c,v 1.45 2003/10/15 13:12:04 alor Exp $
 */
 
 
@@ -31,6 +31,7 @@
 #include <ec_mitm.h>
 #include <ec_filter.h>
 #include <ec_plugins.h>
+#include <ec_conf.h>
 
 #include <ctype.h>
 
@@ -319,7 +320,10 @@ void parse_options(int argc, char **argv)
                   break;
          
          case 'U':
+                  /* load the conf for the connect timeout value */
+                  load_conf();
                   global_update();
+                  /* NOT REACHED */
                   break;
                   
          case 'h':

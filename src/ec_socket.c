@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.4 2003/10/14 16:54:08 alor Exp $
+    $Id: ec_socket.c,v 1.5 2003/10/15 13:12:04 alor Exp $
 */
 
 #include <ec.h>
@@ -69,6 +69,8 @@ int open_socket(char *host, u_int16 port)
    struct hostent *infh;
    struct sockaddr_in sa_in;
    int sh, ret;
+#define TSLEEP (250*1000) /* 250 milliseconds */
+   int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
 
    DEBUG_MSG("open_socket -- [%s]:[%d]", host, port);
 
@@ -96,18 +98,30 @@ int open_socket(char *host, u_int16 port)
       /* connect to the server */
       ret = connect(sh, (struct sockaddr *)&sa_in, sizeof(sa_in));
       
-      if (ret < 0 && errno == EINPROGRESS) {
-         if (ec_poll_in(sh, GBL_CONF->connect_timeout * 1000)) {
-            /* timeout */
-            DEBUG_MSG("open_socket: connect() timeout");
-            FATAL_MSG("Can't connect to %s on port %d", host, port);
-         } else {
-            /* connected */
-            DEBUG_MSG("open_socket: connect() connected");
-         }
+      /* connect is in progress... */
+      if (ret < 0 && (errno == EINPROGRESS || errno == EALREADY || errno == EAGAIN)) {
+         /* sleep a quirk of time... */
+         usleep(TSLEEP);
+      } else { 
+         /* there was an error */
+         break;
       }
-   } while(errno == EINPROGRESS);
+   } while(loops--);
   
+   /* reached the timeout */
+   if (ret < 0 && (errno == EINPROGRESS || errno == EALREADY || errno == EAGAIN)) {
+      DEBUG_MSG("open_socket: connect() timeout: %d", errno);
+      FATAL_MSG("Connect timeout to %s on port %d", host, port);
+   }
+
+   /* error while connecting */
+   if (ret < 0) {
+      DEBUG_MSG("open_socket: connect() error: %d", errno);
+      FATAL_MSG("Error connecting to %s on port %d", host, port);
+   }
+      
+   DEBUG_MSG("open_socket: connect() connected.");
+   
    /* reset the state to blocking socket */
    set_blocking(sh, 1);
    

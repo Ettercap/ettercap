@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.13 2003/07/03 20:12:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_ui.c,v 1.14 2003/08/04 13:59:07 alor Exp $
 */
 
 #include <ec.h>
@@ -38,8 +38,8 @@ static SIMPLEQ_HEAD(, ui_message) messages_queue = SIMPLEQ_HEAD_INITIALIZER(mess
 /* global mutex on interface */
 
 static pthread_mutex_t ui_msg_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define UI_MSG_LOCK     pthread_mutex_lock(&ui_msg_mutex)
-#define UI_MSG_UNLOCK   pthread_mutex_unlock(&ui_msg_mutex)
+#define UI_MSG_LOCK     do{ pthread_mutex_lock(&ui_msg_mutex); }while(0)
+#define UI_MSG_UNLOCK   do{ pthread_mutex_unlock(&ui_msg_mutex); }while(0)
 
 /* protos... */
 

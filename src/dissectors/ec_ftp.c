@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ftp.c,v 1.8 2003/07/17 21:13:12 alor Exp $
+    $Id: ec_ftp.c,v 1.9 2003/08/04 13:59:07 alor Exp $
 */
 
 #include <ec.h>
@@ -117,7 +117,7 @@ FUNC_DECODER(dissector_ftp)
       dissect_create_ident(&ident, PACKET);
       
       /* retrieve the session and delete it */
-      if (session_get_and_del(&s, ident) == -ENOTFOUND) {
+      if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
          SAFE_FREE(ident);
          return NULL;
       }

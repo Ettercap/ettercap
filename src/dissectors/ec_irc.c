@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_irc.c,v 1.1 2003/07/17 21:13:12 alor Exp $
+    $Id: ec_irc.c,v 1.2 2003/08/04 13:59:07 alor Exp $
 */
 
 #include <ec.h>
@@ -81,7 +81,7 @@ FUNC_DECODER(dissector_irc)
       dissect_create_ident(&ident, PACKET);
       
       /* get the saved nick */
-      if (session_get(&s, ident) == ESUCCESS)
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
          PACKET->DISSECTOR.user = strdup(s->data);
       else
          PACKET->DISSECTOR.user = strdup("unknown");
@@ -127,7 +127,7 @@ FUNC_DECODER(dissector_irc)
 
       PACKET->DISSECTOR.info = strdup("/MODE #channel +k password");
       
-      USER_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      USER_MSG("IRC : %s:%d -> CHANNEL: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass,
@@ -159,7 +159,7 @@ FUNC_DECODER(dissector_irc)
 
       PACKET->DISSECTOR.info = strdup("/JOIN #channel password");
       
-      USER_MSG("IRC : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+      USER_MSG("IRC : %s:%d -> CHANNEL: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 
                                     PACKET->DISSECTOR.user,
                                     PACKET->DISSECTOR.pass,
@@ -187,7 +187,7 @@ FUNC_DECODER(dissector_irc)
       dissect_create_ident(&ident, PACKET);
       
       /* get the saved nick */
-      if (session_get(&s, ident) == ESUCCESS)
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
          PACKET->DISSECTOR.user = strdup(s->data);
       else
          PACKET->DISSECTOR.user = strdup("unknown");
@@ -228,7 +228,7 @@ FUNC_DECODER(dissector_irc)
       dissect_create_ident(&ident, PACKET);
       
       /* get the saved nick */
-      if (session_get(&s, ident) == ESUCCESS)
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
          PACKET->DISSECTOR.user = strdup(s->data);
       else
          PACKET->DISSECTOR.user = strdup("unknown");
@@ -271,7 +271,7 @@ FUNC_DECODER(dissector_irc)
       dissect_create_ident(&ident, PACKET);
       
       /* get the saved nick */
-      if (session_get(&s, ident) == ESUCCESS)
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
          PACKET->DISSECTOR.user = strdup(s->data);
       else
          PACKET->DISSECTOR.user = strdup("unknown");

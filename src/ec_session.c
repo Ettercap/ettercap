@@ -17,15 +17,22 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.8 2003/07/16 20:45:30 alor Exp $
+    $Id: ec_session.c,v 1.9 2003/08/04 13:59:07 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
 #include <ec_threads.h>
 #include <ec_session.h>
+#include <ec_hash.h>
 
 #include <signal.h>
+
+#define TABBIT    10             /* 2^10 bit tab entries: 1024 LISTS */
+#define TABSIZE   (1 << TABBIT)
+#define TABMASK   (TABSIZE - 1)
+
+/* globals */
 
 struct session_list {
    pthread_t id;
@@ -36,14 +43,15 @@ struct session_list {
 
 /* global data */
 
-static LIST_HEAD(, session_list) session_list_head;
+static LIST_HEAD(, session_list) session_list_head[TABSIZE];
 
 /* protos */
 
+u_int32 session_hash(struct session *s);
 void session_put(struct session *s);
-int session_get(struct session **s, void *ident);
-int session_del(void *ident);
-int session_get_and_del(struct session **s, void *ident);
+int session_get(struct session **s, void *ident, size_t ident_len);
+int session_del(void *ident, size_t ident_len);
+int session_get_and_del(struct session **s, void *ident, size_t ident_len);
 
 void session_free(struct session *s);
 
@@ -57,6 +65,16 @@ static pthread_mutex_t session_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SESSION_UNLOCK   do{ pthread_mutex_unlock(&session_mutex); } while(0)
 
 /************************************************/
+
+/* create the hash for a session 
+ *
+ * it is used to create the hash table of the sessions
+ */
+
+u_int32 session_hash(struct session *s)
+{
+   return fnv_32(s->ident, s->ident_len) & TABMASK;
+}
 
 /*
  * create a session if it does not exits
@@ -73,7 +91,7 @@ void session_put(struct session *s)
    SESSION_LOCK;
    
    /* search if it already exist */
-   LIST_FOREACH(sl, &session_list_head, next) {
+   LIST_FOREACH(sl, &session_list_head[session_hash(s)], next) {
       /* sessions are unique per thread */
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, s->ident) ) {
 
@@ -127,7 +145,7 @@ void session_put(struct session *s)
     * put it in the head.
     * it is likely to be retrived early
     */
-   LIST_INSERT_HEAD(&session_list_head, sl, next);
+   LIST_INSERT_HEAD(&session_list_head[session_hash(s)], sl, next);
 
    SESSION_UNLOCK;
   
@@ -138,7 +156,7 @@ void session_put(struct session *s)
  * get the info contained in a session
  */
 
-int session_get(struct session **s, void *ident)
+int session_get(struct session **s, void *ident, size_t ident_len)
 {
    struct session_list *sl;
    time_t ti = time(NULL);
@@ -146,7 +164,7 @@ int session_get(struct session **s, void *ident)
    SESSION_LOCK;
    
    /* search if it already exist */
-   LIST_FOREACH(sl, &session_list_head, next) {
+   LIST_FOREACH(sl, &session_list_head[fnv_32(ident, ident_len) & TABMASK], next) {
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
    
          DEBUG_MSG("session_get: [%d][%p]", sl->id, sl->s->ident);
@@ -171,14 +189,14 @@ int session_get(struct session **s, void *ident)
  * delete a session
  */
 
-int session_del(void *ident)
+int session_del(void *ident, size_t ident_len)
 {
    struct session_list *sl;
 
    SESSION_LOCK;
    
    /* search if it already exist */
-   LIST_FOREACH(sl, &session_list_head, next) {
+   LIST_FOREACH(sl, &session_list_head[fnv_32(ident, ident_len) & TABMASK], next) {
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
          
          DEBUG_MSG("session_del: [%d][%p]", sl->id, sl->s->ident);
@@ -206,14 +224,14 @@ int session_del(void *ident)
  * atomic operations
  */
 
-int session_get_and_del(struct session **s, void *ident)
+int session_get_and_del(struct session **s, void *ident, size_t ident_len)
 {
    struct session_list *sl;
 
    SESSION_LOCK;
    
    /* search if it already exist */
-   LIST_FOREACH(sl, &session_list_head, next) {
+   LIST_FOREACH(sl, &session_list_head[fnv_32(ident, ident_len) & TABMASK], next) {
       if ( sl->id == pthread_self() && sl->s->match(sl->s->ident, ident) ) {
          
          DEBUG_MSG("session_get_and_del: [%d][%p]", sl->id, sl->s->ident);
@@ -261,14 +279,17 @@ void __init session_handler(void)
 static void session_dump(int sig)
 {
    struct session_list *sl;
+   size_t i;
 
    DEBUG_MSG("session_dump invoked: dumping the session list...");
    
    SESSION_LOCK;
    
    /* dump the list in the debug file */
-   LIST_FOREACH(sl, &session_list_head, next)
-      DEBUG_MSG("session_dump: [%d][%p]", sl->id, sl->s->ident);
+   for (i = 0; i < TABSIZE; i++) {
+      LIST_FOREACH(sl, &session_list_head[i], next)
+         DEBUG_MSG("session_dump: [%d][%d][%p]", i, sl->id, sl->s->ident);
+   }
    
    SESSION_UNLOCK;
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.14 2003/07/07 10:43:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.15 2003/08/04 13:59:07 alor Exp $
 */
 
 #include <ec.h>
@@ -67,8 +67,15 @@ void send_init(void)
       return;
    }
    
+   /* don't send packet on loopback */
    if (!strcasecmp(GBL_OPTIONS->iface, "lo")) {
       DEBUG_MSG("send_init: skipping... (using loopback)");
+      return;
+   }
+
+   /* in wireless monitor mode we cannot send packets */
+   if (GBL_PCAP->dlt == DLT_IEEE802_11) {
+      DEBUG_MSG("send_init: skipping... (using wireless)");
       return;
    }
    

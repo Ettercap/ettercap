@@ -17,12 +17,18 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_connbuf.c,v 1.1 2003/07/20 20:56:13 alor Exp $
+    $Id: ec_connbuf.c,v 1.2 2003/08/04 13:59:07 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
 #include <ec_connbuf.h>
+
+/* mutexes */
+
+#define CONNBUF_INIT_LOCK(x)  do{ pthread_mutex_init(&x, NULL); }while(0)
+#define CONNBUF_LOCK(x)       do{ pthread_mutex_lock(&x); }while(0)
+#define CONNBUF_UNLOCK(x)     do{ pthread_mutex_unlock(&x); }while(0)
 
 /* protos */
 
@@ -38,10 +44,15 @@ int connbuf_print(struct conn_buf *cb, struct ip_addr *L3_src, void (*)(u_char *
  */
 void connbuf_init(struct conn_buf *cb, size_t size)
 {
+   DEBUG_MSG("connbuf_init");
+  
+   /* init the size */
    cb->size = 0;
    cb->max_size = size;
    /* init the tail */
    TAILQ_INIT(&cb->buf_tail);
+   /* init the mutex */
+   CONNBUF_INIT_LOCK(cb->connbuf_mutex);
 }
 
 /* 
@@ -86,6 +97,8 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
    
    memcpy(p->buf, po->DATA.disp_data, po->DATA.disp_len);
 
+   CONNBUF_LOCK(cb->connbuf_mutex);
+   
    /* 
     * check the total size and make adjustment 
     * if we have to free some packets
@@ -93,7 +106,7 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
    if (cb->size + p->size > cb->max_size) {
       struct pck_list *old = NULL;
       
-      TAILQ_FOREACH_REVERSE(e, &cb->buf_tail, next, first) {
+      TAILQ_FOREACH_REVERSE(e, &cb->buf_tail, next, buf_head) {
          SAFE_FREE(old);
          
          /* we have freed enough bytes */
@@ -116,6 +129,8 @@ int connbuf_add(struct conn_buf *cb, struct packet_object *po)
    /* update the total buffer size */
    cb->size += p->size;
 
+   CONNBUF_UNLOCK(cb->connbuf_mutex);
+
    return 0;
 }
 
@@ -129,6 +144,8 @@ void connbuf_wipe(struct conn_buf *cb)
 
    DEBUG_MSG("connbuf_wipe");
    
+   CONNBUF_LOCK(cb->connbuf_mutex);
+   
    /* delete the list */
    while ((e = TAILQ_FIRST(&cb->buf_tail)) != TAILQ_END(&cb->buf_tail)) {
       TAILQ_REMOVE(&cb->buf_tail, e, next);
@@ -139,6 +156,8 @@ void connbuf_wipe(struct conn_buf *cb)
    /* reset the buffer */
    cb->size = 0;
    TAILQ_INIT(&cb->buf_tail);
+   
+   CONNBUF_UNLOCK(cb->connbuf_mutex);
 }
 
 /* 
@@ -156,8 +175,10 @@ int connbuf_print(struct conn_buf *cb, struct ip_addr *L3_src, void (*func)(u_ch
   
    DEBUG_MSG("connbuf_print");
    
+   CONNBUF_LOCK(cb->connbuf_mutex);
+   
    /* print the buffer */
-   TAILQ_FOREACH_REVERSE(e, &cb->buf_tail, next, first) {
+   TAILQ_FOREACH_REVERSE(e, &cb->buf_tail, next, buf_head) {
       /*
        * print only packet that matches the L3 filter.
        * if L3_src is NULL, print all the packets
@@ -172,6 +193,8 @@ int connbuf_print(struct conn_buf *cb, struct ip_addr *L3_src, void (*func)(u_ch
          n += e->size - sizeof(struct pck_list);
       }
    }
+   
+   CONNBUF_UNLOCK(cb->connbuf_mutex);
    
    return n;
 }

@@ -18,6 +18,8 @@ struct dissect_ident {
    u_int16 L4_dst;
 };
 
+#define DISSECT_IDENT_LEN sizeof(struct dissect_ident)
+
 /* exported functions */
 
 extern void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder));
@@ -28,7 +30,7 @@ extern int dissect_modify(int mode, char *name, u_int32 port);
 extern int dissect_match(void *id_sess, void *id_curr);
 extern void dissect_create_session(struct session **s, struct packet_object *po); 
 extern void dissect_wipe_session(struct packet_object *po);
-extern void dissect_create_ident(void **i, struct packet_object *po); 
+extern size_t dissect_create_ident(void **i, struct packet_object *po); 
 
 extern int dissect_on_port(char *name, u_int16 port);
    
@@ -64,17 +66,17 @@ extern int dissect_on_port(char *name, u_int16 port);
    if (dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS && PACKET->L4.flags & TH_PSH) {  \
       dissect_create_ident(&ident, PACKET);                                \
       /* the session exist */                                              \
-      if (session_get(&session, ident) != -ENOTFOUND) {                    \
+      if (session_get(&session, ident, sizeof(struct dissect_ident)) != -ENOTFOUND) { \
          /* prevent the deletion of session created for the user and pass */ \
          if (session->data == NULL)                                        
 
 
-#define ENDIF_FIRST_PACKET_FROM_SERVER(session, ident)   \
-         if (session->data == NULL)                      \
-            session_del(ident);                          \
-      }                                                  \
-      SAFE_FREE(ident);                                  \
-      return NULL;                                       \
+#define ENDIF_FIRST_PACKET_FROM_SERVER(session, ident)         \
+         if (session->data == NULL)                            \
+            session_del(ident, sizeof(struct dissect_ident));  \
+      }                                                        \
+      SAFE_FREE(ident);                                        \
+      return NULL;                                             \
    }  
 
 

@@ -3,14 +3,17 @@
 #define EC_CONNBUF_H
 
 #include <ec_inet.h>
+#include <ec_threads.h>
 
 struct conn_buf {
+   /* the lock */
+   pthread_mutex_t connbuf_mutex;
    /* max buffer size */
    size_t max_size;
    /* actual buffer size */
    size_t size;
    /* the real buffer made up of a tail of packets */
-   TAILQ_HEAD(first, pck_list) buf_tail;
+   TAILQ_HEAD(buf_head, pck_list) buf_tail;
 };
 
 /* an entry in the tail */

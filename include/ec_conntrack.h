@@ -5,6 +5,13 @@
 #include <ec_profiles.h>
 #include <ec_connbuf.h>
 
+/* conntrack hook definition */
+struct ct_hook_list {
+   void (*func)(struct packet_object *po);
+   SLIST_ENTRY (hook_list) next;
+};
+
+/* conntrack object */
 struct conn_object {
 
    /* last updated (for connection timeout) */
@@ -25,18 +32,28 @@ struct conn_object {
 
    /* buffered data */
    struct conn_buf data;
+
+   /* byte count since the creation */
+   u_int32 xferred;
    
    /* connection status */
    int status;
-      #define CONN_IDLE       0
-      #define CONN_OPENING    1
-      #define CONN_CLOSING    2
-      #define CONN_KILLED     3
-      #define CONN_ACTIVE     4
-      #define CONN_CLOSED     5
 
    /* username and password */
    struct dissector_info DISSECTOR;
+
+   /* hookpoint to receive only packet of this connection */
+   SLIST_HEAD(, ct_hook_list) hook_head;
+};
+
+enum {
+   CONN_IDLE      = 0,
+   CONN_OPENING   = 1,
+   CONN_OPEN      = 2,
+   CONN_ACTIVE    = 3,
+   CONN_CLOSING   = 4,
+   CONN_CLOSED    = 5,
+   CONN_KILLED    = 6,
 };
 
 

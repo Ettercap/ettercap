@@ -27,16 +27,16 @@
 
 this is the unofficial and floating in time roadmap:
 
-Jul 2003:
+Ago 2003:
 
    + TOP HALF
       - connection tracking (with buffered conn)
+         - timeouter (conn_del)
+         - hook points
+         - hash table for search
+         - conntrack_print(start_pos, end_pos, ...)
 
-Ago 2003:
    
-   + PLUGIN
-      - acvive-passive fingerprint 
-
    + ARP POISON ENGINE
       - arp poisoner
       - multipoison
@@ -67,7 +67,7 @@ Sep 2003:
 
             if (L4.tcp.src == 22) {
                if (ptr = search(DATA.data, "1.99")) {
-                  subst(ptr, "1.51");
+                  subst(ptr, "1.51", 4);
                }
             }
             
@@ -97,7 +97,10 @@ Dec 2003:
    + INTERFACE ENGINE
       - console
       - ncurses
+         - configurable colors
       - gtk
+         - redesigned
+         - win32 port
 
    + DEVELOPMENT DOCUMENTATION
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.3 2003/07/16 20:45:30 alor Exp $
+    $Id: ec_telnet.c,v 1.4 2003/08/04 13:59:07 alor Exp $
 */
 
 #include <ec.h>
@@ -87,14 +87,14 @@ FUNC_DECODER(dissector_telnet)
       /* the login was not successful, restart the collecting */
       if (match_login_regex(ptr)) {
          dissect_create_ident(&ident, PACKET);
-         session_del(ident);
+         session_del(ident, DISSECT_IDENT_LEN);
       }
    } else {
       
       /* create an ident to retrieve the session */
       dissect_create_ident(&ident, PACKET);
       /* retrieve the session */
-      if (session_get(&s, ident) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
          /* create the new session and save the first char */
          dissect_create_session(&s, PACKET);
          /* remember the state (used later) */

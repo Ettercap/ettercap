@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.17 2003/07/17 21:13:12 alor Exp $
+    $Id: ec_pop.c,v 1.18 2003/08/04 13:59:07 alor Exp $
 */
 
 /*
@@ -68,7 +68,7 @@ FUNC_DECODER(dissector_pop)
    if (dissect_on_port("pop", ntohs(PACKET->L4.src)) == ESUCCESS && PACKET->L4.flags & TH_PSH) {  
       dissect_create_ident(&ident, PACKET);
       /* the session exist */
-      if (session_get(&s, ident) != -ENOTFOUND) { 
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) != -ENOTFOUND) { 
          /* prevent the deletion of session created for the user and pass */
          if (s->data == NULL) { 
             
@@ -160,7 +160,7 @@ FUNC_DECODER(dissector_pop)
       dissect_create_ident(&ident, PACKET);
       
       /* retrieve the session and delete it */
-      if (session_get_and_del(&s, ident) == -ENOTFOUND) {
+      if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
          SAFE_FREE(ident);
          return NULL;
       }
@@ -206,7 +206,7 @@ FUNC_DECODER(dissector_pop)
       dissect_create_ident(&ident, PACKET);
       
       /* retrieve the session and delete it */
-      if (session_get_and_del(&s, ident) == -ENOTFOUND) {
+      if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
          SAFE_FREE(ident);
          return NULL;
       }
@@ -279,7 +279,7 @@ FUNC_DECODER(dissector_pop)
    
    /* search the session (if it exist) */
    dissect_create_ident(&ident, PACKET);
-   if (session_get(&s, ident) == -ENOTFOUND) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
       SAFE_FREE(ident);
       return NULL;
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_imap.c,v 1.3 2003/07/17 21:13:12 alor Exp $
+    $Id: ec_imap.c,v 1.4 2003/08/04 13:59:07 alor Exp $
 */
 
 /*
@@ -162,7 +162,7 @@ FUNC_DECODER(dissector_imap)
    
    /* search the session (if it exist) */
    dissect_create_ident(&ident, PACKET);
-   if (session_get(&s, ident) == -ENOTFOUND) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
       SAFE_FREE(ident);
       return NULL;
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.10 2003/07/08 20:59:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.11 2003/08/04 13:59:07 alor Exp $
 */
 
 #include <ec.h>
@@ -44,7 +44,7 @@ int dissect_modify(int mode, char *name, u_int32 port);
 
 int dissect_match(void *id_sess, void *id_curr);
 void dissect_create_session(struct session **s, struct packet_object *po);
-void dissect_create_ident(void **i, struct packet_object *po);            
+size_t dissect_create_ident(void **i, struct packet_object *po);            
 void dissect_wipe_session(struct packet_object *po);
 
 int dissect_on_port(char *name, u_int16 port);
@@ -106,12 +106,12 @@ void dissect_create_session(struct session **s, struct packet_object *po)
 
    DEBUG_MSG("dissect_create_session");
    
-   /* create the ident */
-   dissect_create_ident(&ident, po);
-   
    /* allocate the session */
    *s = calloc(1, sizeof(struct session));
    ON_ERROR(*s, NULL, "can't allocate memory");
+   
+   /* create the ident */
+   (*s)->ident_len = dissect_create_ident(&ident, po);
    
    /* link to the session */
    (*s)->ident = ident;
@@ -124,7 +124,7 @@ void dissect_create_session(struct session **s, struct packet_object *po)
  * create the ident for a session
  */
 
-void dissect_create_ident(void **i, struct packet_object *po)
+size_t dissect_create_ident(void **i, struct packet_object *po)
 {
    struct dissect_ident *ident = *i;
    
@@ -146,6 +146,9 @@ void dissect_create_ident(void **i, struct packet_object *po)
 
    /* return the ident */
    *i = ident;
+
+   /* return the lenght of the ident */
+   return sizeof(struct dissect_ident);
 }
 
 /*
@@ -162,7 +165,7 @@ void dissect_wipe_session(struct packet_object *po)
    dissect_create_ident(&ident, po);
 
    /* retrieve the session and delete it */
-   if (session_get_and_del(&s, ident) == -ENOTFOUND) {
+   if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
       SAFE_FREE(ident);
       return;
    }

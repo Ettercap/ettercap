@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.9 2003/07/20 20:56:13 alor Exp $
+    $Id: ec_conf.c,v 1.10 2003/08/04 13:59:07 alor Exp $
 */
 
 #include <ec.h>
@@ -61,7 +61,7 @@ static struct conf_entry various[] = {
 
 /* this is fake, dissector use a different registration */
 static struct conf_entry dissectors[] = {
-   { "fake", (int *)&dissectors },
+   { "fake", &number_of_dissectors },
 };
 
 static struct conf_section sections[] = {

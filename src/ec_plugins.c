@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.32 2004/05/10 09:59:05 alor Exp $
+    $Id: ec_plugins.c,v 1.33 2004/05/11 18:46:04 alor Exp $
 */
 
 #include <ec.h>
@@ -71,7 +71,11 @@ int plugin_is_activated(char *name);
 int search_plugin(char *name);
 void plugin_list(void);
 static void plugin_print(char active, struct plugin_ops *ops);
+#ifdef OS_BSD
+static int plugin_filter(struct dirent *d);
+#else
 static int plugin_filter(const struct dirent *d);
+#endif
 
 /*******************************************/
 
@@ -122,7 +126,11 @@ int plugin_load_single(char *path, char *name)
 /*
  * filter for the scandir function
  */
+#ifdef OS_BSD
+static int plugin_filter(struct dirent *d)
+#else
 static int plugin_filter(const struct dirent *d)
+#endif
 {
    if ( match_pattern(d->d_name, PLUGIN_PATTERN LTDL_SHLIB_EXT) )
       return 1;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.26 2004/06/09 19:15:32 alor Exp $
+    $Id: ec_threads.c,v 1.27 2004/06/09 21:01:30 alor Exp $
 */
 
 #include <ec.h>
@@ -331,10 +331,11 @@ void ec_thread_exit(void)
       }
    }
 
+   THREADS_UNLOCK;
+
    /* perform a clean exit of the thread */
    pthread_exit(0);
    
-   THREADS_UNLOCK;
 }
 
 /* EOF */

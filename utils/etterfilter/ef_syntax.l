@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_syntax.l,v 1.18 2004/02/16 21:15:32 alor Exp $
+    $Id: ef_syntax.l,v 1.19 2005/01/04 14:30:50 alor Exp $
 */
 
 %{
@@ -93,6 +93,14 @@ SPACES         [ \t]+
 
 "=" {
    return TOKEN_OP_ASSIGN;
+}
+
+"+=" {
+   return TOKEN_OP_INC;
+}
+
+"-=" {
+   return TOKEN_OP_DEC;
 }
 
 "*" {

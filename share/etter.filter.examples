@@ -90,6 +90,12 @@ if (ip.src == '192.168.0.2') {
    drop();
 }
 
+# translate the port of the tcp packet from 80 to 81
+if (tcp.dst == 80) {
+   tcp.dst -= 1;
+   tcp.dst += 2;
+}
+
 # eof
 
 # vim:ts=3:expandtab

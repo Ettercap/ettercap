@@ -6,6 +6,11 @@ Legenda:
 
 =========================================
 
+NG-0.7.3         2005
+
+   + added the INC (+=) and DEC (-=) operators to the filter engine
+
+
 NG-0.7.2         20041221
 
    + the hosts scan can now be canceled by the user (ctrl+q)

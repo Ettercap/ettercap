@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.21 2004/07/12 19:57:44 alor Exp $
+    $Id: ef_test.c,v 1.22 2005/01/04 14:30:50 alor Exp $
 */
 
 #include <ef.h>
@@ -39,6 +39,8 @@ void test_filter(char *filename);
 void print_fop(struct filter_op *fop, u_int32 eip);
 static void print_test(struct filter_op *fop, u_int32 eip);
 static void print_assign(struct filter_op *fop, u_int32 eip);
+static void print_inc(struct filter_op *fop, u_int32 eip);
+static void print_dec(struct filter_op *fop, u_int32 eip);
 static void print_function(struct filter_op *fop, u_int32 eip);
 
 /*******************************************/
@@ -91,6 +93,14 @@ void print_fop(struct filter_op *fop, u_int32 eip)
             
          case FOP_ASSIGN:
             print_assign(fop, eip);
+            break;
+            
+         case FOP_INC:
+            print_inc(fop, eip);
+            break;
+            
+         case FOP_DEC:
+            print_dec(fop, eip);
             break;
             
          case FOP_FUNC:
@@ -177,6 +187,18 @@ void print_assign(struct filter_op *fop, u_int32 eip)
       fprintf(stdout, "%04lu: ASSIGNMENT level %d, offset %d, string \"%s\"\n", (unsigned long)eip, 
             fop->op.assign.level, fop->op.assign.offset, fop->op.assign.string);
       
+}
+
+void print_inc(struct filter_op *fop, u_int32 eip)
+{
+      fprintf(stdout, "%04lu: INCREMENT level %d, offset %d, size %d, value %lu [%#x]\n", (unsigned long)eip,
+            fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size, (unsigned long)fop->op.assign.value, (unsigned int)fop->op.assign.value);
+}
+
+void print_dec(struct filter_op *fop, u_int32 eip)
+{
+      fprintf(stdout, "%04lu: DECREMENT level %d, offset %d, size %d, value %lu [%#x]\n", (unsigned long)eip,
+            fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size, (unsigned long)fop->op.assign.value, (unsigned int)fop->op.assign.value);
 }
 
 void print_function(struct filter_op *fop, u_int32 eip)

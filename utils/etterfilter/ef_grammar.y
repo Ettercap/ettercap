@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_grammar.y,v 1.23 2004/06/25 14:24:30 alor Exp $
+    $Id: ef_grammar.y,v 1.24 2005/01/04 14:30:49 alor Exp $
 */
 
 %{
@@ -62,6 +62,8 @@
 %token TOKEN_OP_OR       /*  ||  */
 
 %token TOKEN_OP_ASSIGN   /*  =   */
+%token TOKEN_OP_INC      /*  +=  */
+%token TOKEN_OP_DEC      /*  -=  */
 %token TOKEN_OP_CMP_NEQ  /*  !=  */
 %token TOKEN_OP_CMP_EQ   /*  ==  */
 %token TOKEN_OP_CMP_LT   /*  <   */
@@ -145,7 +147,7 @@ single_instruction:
          }
       ;
 
-/* instructions are functions or assignment */
+/* instructions are functions or assignments */
 instruction: 
          TOKEN_FUNCTION { 
             ef_debug(1, ".");
@@ -169,6 +171,22 @@ instruction:
             ef_debug(3, "\tassignment\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_ASSIGN;
+            $$.op.assign.value = $3.op.assign.value;
+         }
+      
+      |  offset TOKEN_OP_INC TOKEN_CONST { 
+            ef_debug(1, "+=");
+            ef_debug(3, "\tincrement\n"); 
+            memcpy(&$$, &$1, sizeof(struct filter_op));
+            $$.opcode = FOP_INC;
+            $$.op.assign.value = $3.op.assign.value;
+         }
+      
+      |  offset TOKEN_OP_DEC TOKEN_CONST { 
+            ef_debug(1, "-=");
+            ef_debug(3, "\tdecrement\n"); 
+            memcpy(&$$, &$1, sizeof(struct filter_op));
+            $$.opcode = FOP_DEC;
             $$.op.assign.value = $3.op.assign.value;
          }
       ;
@@ -370,12 +388,14 @@ struct {
       { "TOKEN_OP_AND", "'&&'" },
       { "TOKEN_OP_OR", "'||'" },
       { "TOKEN_OP_ASSIGN", "'='" },
+      { "TOKEN_OP_INC", "'+='" },
+      { "TOKEN_OP_DEC", "'-='" },
       { "TOKEN_OP_CMP_NEQ", "'!='" },
-      { "TOKEN_CMP_EQ", "'=='" },
-      { "TOKEN_CMP_LT", "'<'" },
-      { "TOKEN_CMP_GT", "'>'" },
-      { "TOKEN_CMP_LEQ", "'<='" },
-      { "TOKEN_CMP_GEQ", "'>='" },
+      { "TOKEN_OP_CMP_EQ", "'=='" },
+      { "TOKEN_OP_CMP_LT", "'<'" },
+      { "TOKEN_OP_CMP_GT", "'>'" },
+      { "TOKEN_OP_CMP_LEQ", "'<='" },
+      { "TOKEN_OP_CMP_GEQ", "'>='" },
       { "TOKEN_OP_END", "';'" },
       { "TOKEN_OP_ADD", "'+'" },
       { "TOKEN_OP_MUL", "'*'" },

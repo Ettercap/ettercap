@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.21 2004/07/24 10:43:21 alor Exp $ */
+/* $Id: ec_filter.h,v 1.22 2005/01/04 14:30:49 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -28,10 +28,12 @@ struct filter_op {
       #define FOP_EXIT     0
       #define FOP_TEST     1
       #define FOP_ASSIGN   2
-      #define FOP_FUNC     3
-      #define FOP_JMP      4
-      #define FOP_JTRUE    5
-      #define FOP_JFALSE   6
+      #define FOP_INC      3
+      #define FOP_DEC      4
+      #define FOP_FUNC     5
+      #define FOP_JMP      6
+      #define FOP_JTRUE    7
+      #define FOP_JFALSE   8
 
    /*
     * the first two field of the structs (op and level) must

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.30 2004/03/17 22:19:46 lordnaga Exp $
+    $Id: ec_packet.c,v 1.31 2004/04/07 09:51:15 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -155,6 +155,18 @@ struct packet_object * packet_dup(struct packet_object *po, u_char flag)
    } else {
       dup_po->len = 0;
       dup_po->packet = NULL;
+   }
+
+   /* 
+    * If we want to duplicate packet content we don't want 
+    * user, pass, etc. Otherwise we would free them twice
+    * (they are freed by the other duplicate into top half).
+    */      
+   if (flag & PO_DUP_PACKET) {
+      dup_po->DISSECTOR.user = NULL;
+      dup_po->DISSECTOR.pass = NULL;
+      dup_po->DISSECTOR.info = NULL;
+      dup_po->DISSECTOR.banner = NULL;
    }
    
    /* 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_snmp.c,v 1.6 2003/10/10 10:40:07 lordnaga Exp $
+    $Id: ec_snmp.c,v 1.7 2003/10/19 16:23:21 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -33,6 +33,8 @@
 #define SNMP_VERSION_2c 1
 #define SNMP_VERSION_2u 2
 #define SNMP_VERSION_3  3
+
+#define MAX_COMMUNITY_LEN 128
 
 /* protos */
 
@@ -116,7 +118,11 @@ FUNC_DECODER(dissector_snmp)
 
    /* update the pointer */
    ptr++;
-   
+
+   /* Avoid bof */
+   if (clen > MEX_COMMUNITY_LEN)
+      return NULL;
+         
    SAFE_CALLOC(PACKET->DISSECTOR.user, clen + 2, sizeof(char));
 
    /* fill the structure */

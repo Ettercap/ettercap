@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.58 2004/04/08 13:11:14 alor Exp $
+    $Id: ec_main.c,v 1.59 2004/04/10 13:41:22 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -102,10 +102,6 @@ int main(int argc, char *argv[])
    /* get hardware infos */
    get_hw_info();
  
-   /* set unoffensive for unconfigured interfaces */
-   if (!GBL_IFACE->configured)
-      GBL_OPTIONS->unoffensive = 1;
-   
    /* 
     * always disable the kernel ip forwarding (except when reading from file).
     * the forwarding will be done by ettercap.

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_bridge.c,v 1.15 2004/04/07 07:14:46 alor Exp $
+    $Id: ec_sniff_bridge.c,v 1.16 2004/04/10 13:41:22 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -192,9 +192,16 @@ void bridge_check_forwarded(struct packet_object *po)
  */
 void bridge_set_forwardable(struct packet_object *po)
 {
-   /* in bridged sniffing all the packet have to be forwarded */
+   /* If for us on the iface */
+   if ( !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) )
+      return;
+
+   /* If for us on the bridge */
+   if ( !memcmp(GBL_BRIDGE->mac, po->L2.src, MEDIA_ADDR_LEN) || !memcmp(GBL_BRIDGE->mac, po->L2.dst, MEDIA_ADDR_LEN) )
+      return;
+
+   /* in bridged sniffing all the packet have to be forwarded */      
    po->flags |= PO_FORWARDABLE;
-   
 }
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.7 2003/09/27 17:22:24 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.8 2003/10/09 20:44:25 alor Exp $
 */
 
 #include <ec.h>
@@ -74,6 +74,7 @@ void __init arp_poisoning_init(void)
 static void arp_poisoning_start(void)
 {
    int ret;
+  
    
    DEBUG_MSG("arp_poisoning_start");
 

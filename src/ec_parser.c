@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.40 2003/10/09 14:49:45 alor Exp $
+    $Id: ec_parser.c,v 1.41 2003/10/09 20:44:25 alor Exp $
 */
 
 
@@ -177,6 +177,7 @@ void parse_options(int argc, char **argv)
       switch (c) {
 
          case 'M':
+                  GBL_OPTIONS->mitm = 1;
                   if (mitm_set(optarg) != ESUCCESS)
                      FATAL_ERROR("MITM method '%s' not supported...\n", optarg);
                   break;
@@ -392,6 +393,8 @@ void parse_options(int argc, char **argv)
    if (GBL_OPTIONS->load_hosts && GBL_OPTIONS->save_hosts)
       FATAL_ERROR("Cannot load and save at the same time the hosts list...");
   
+   if (GBL_OPTIONS->unoffensive && GBL_OPTIONS->mitm)
+      FATAL_ERROR("Cannot use mitm attacks in unoffensive mode");
       
    /* XXX - check for incompatible options */
    

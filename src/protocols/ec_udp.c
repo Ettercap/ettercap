@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_udp.c,v 1.9 2003/09/30 11:30:55 lordnaga Exp $
+    $Id: ec_udp.c,v 1.10 2003/10/09 20:44:25 alor Exp $
 */
 
 #include <ec.h>
@@ -84,8 +84,10 @@ FUNC_DECODER(decode_udp)
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
     * the checksum is should be 0 and not equal to ip->csum ;)
+    *
+    * don't perform the check in unoffensive mode
     */
-   if (L4_checksum(PACKET) != 0) {
+   if (!GBL_OPTIONS->unoffensive && L4_checksum(PACKET) != 0) {
       char tmp[MAX_ASCII_ADDR_LEN];
       USER_MSG("Invalid UDP packet from %s:%d : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                     ntohs(udp->sport), L4_checksum(PACKET), ntohs(udp->csum) );
@@ -99,6 +101,11 @@ FUNC_DECODER(decode_udp)
    next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
    EXECUTE_DECODER(next_decoder);
    
+   /* in unoffensive mode the filters don't touch
+    * the packet, so we don't have to check here
+    * for unoffensive option
+    */
+
    /* Adjustments after filters */
    if (PACKET->flags & PO_MODIFIED) {
       /* adjust the len */ 

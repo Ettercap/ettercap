@@ -39,7 +39,6 @@ Oct 2003:
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
       - don't inject in unoffensive mode
-      - don't inject after RST or FIN+ACK
 
 
    + DISSECTORS
@@ -59,6 +58,7 @@ Oct 2003:
 Nov 2003:
 
    + MITM METHODS
+      - only mitm (separate instance)
       - icmp redirect
       - dhcp poisoning
       - port stealing

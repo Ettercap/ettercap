@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.22 2003/10/09 12:07:22 lordnaga Exp $
+    $Id: ec_ip.c,v 1.23 2003/10/09 20:44:25 alor Exp $
 */
 
 #include <ec.h>
@@ -102,7 +102,7 @@ FUNC_DECODER(decode_ip)
    struct ip_header *ip;
    struct session *s = NULL;
    void *ident = NULL;
-   struct ip_status *status;
+   struct ip_status *status = NULL;
 
    ip = (struct ip_header *)DECODE_DATA;
   
@@ -139,8 +139,10 @@ FUNC_DECODER(decode_ip)
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
     * the checksum should be 0 ;)
+    *
+    * don't perform the check in unoffensive mode
     */
-   if (L3_checksum(PACKET) != 0) {
+   if (!GBL_OPTIONS->unoffensive && L3_checksum(PACKET) != 0) {
       USER_MSG("Invalid IP packet from %s : csum [%#x] (%#x)\n", int_ntoa(ip->saddr), 
                               L3_checksum(PACKET), ntohs(ip->csum));
       return NULL;
@@ -173,48 +175,55 @@ FUNC_DECODER(decode_ip)
    /* HOOK POINT: PACKET_IP */
    hook_point(PACKET_IP, po);
 
-   /* Find or create the correct session */
-   ip_create_ident(&ident, PACKET);
-   if (session_get(&s, ident, IP_IDENT_LEN) == -ENOTFOUND) {
-      ip_create_session(&s, PACKET);
-      session_put(s);
-   }
-   SAFE_FREE(ident);
+   /* don't save the sessions in unoffensive mode */
+   if (!GBL_OPTIONS->unoffensive) {
    
-   /* Record last packet's ID */
-   status = (struct ip_status *)s->data;
-   status->last_id = ntohs(ip->id);
-      
+      /* Find or create the correct session */
+      ip_create_ident(&ident, PACKET);
+   
+      if (session_get(&s, ident, IP_IDENT_LEN) == -ENOTFOUND) {
+         ip_create_session(&s, PACKET);
+         session_put(s);
+      }
+      SAFE_FREE(ident);
+   
+      /* Record last packet's ID */
+      status = (struct ip_status *)s->data;
+      status->last_id = ntohs(ip->id);
+   }
+   
    /* Jump to next Layer */
    next_decoder = get_decoder(PROTO_LAYER, ip->protocol);
    EXECUTE_DECODER(next_decoder);
    
-   /* 
-    * Modification checks and adjustments.
-    * - ip->id according to number of injected/dropped packets
-    * - ip->len according to upper layer's payload modification
-    */
-   if (PACKET->flags & PO_DROPPED)
-      status->id_adj--;
-   else if ((PACKET->flags & PO_MODIFIED) || (status->id_adj != 0)) {
-      
-      /* se the correct id for this packet */
-      ORDER_ADD_SHORT(ip->id, status->id_adj);
-      /* adjust the packet length */
-      ORDER_ADD_SHORT(ip->tot_len, PACKET->DATA.delta);
-
+   /* don't save the sessions in unoffensive mode */
+   if (!GBL_OPTIONS->unoffensive) {
       /* 
-       * In case some upper level encapsulated 
-       * ip decoder modified it... (required for checksum)
+       * Modification checks and adjustments.
+       * - ip->id according to number of injected/dropped packets
+       * - ip->len according to upper layer's payload modification
        */
-      PACKET->L3.header = (u_char *)DECODE_DATA;
-      PACKET->L3.len = DECODED_LEN;
-   
-      /* ...recalculate checksum */
-      ip->csum = 0; 
-      ip->csum = L3_checksum(PACKET);
-   }
+      if (PACKET->flags & PO_DROPPED)
+         status->id_adj--;
+      else if ((PACKET->flags & PO_MODIFIED) || (status->id_adj != 0)) {
+         
+         /* se the correct id for this packet */
+         ORDER_ADD_SHORT(ip->id, status->id_adj);
+         /* adjust the packet length */
+         ORDER_ADD_SHORT(ip->tot_len, PACKET->DATA.delta);
 
+         /* 
+          * In case some upper level encapsulated 
+          * ip decoder modified it... (required for checksum)
+          */
+         PACKET->L3.header = (u_char *)DECODE_DATA;
+         PACKET->L3.len = DECODED_LEN;
+      
+         /* ...recalculate checksum */
+         ip->csum = 0; 
+         ip->csum = L3_checksum(PACKET);
+      }
+   }
    /*
     * External L3 header sets itself 
     * as the packet to be forwarded.

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.19 2003/10/09 12:07:22 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.20 2003/10/09 20:44:25 alor Exp $
 */
 
 #include <ec.h>
@@ -118,8 +118,8 @@ FUNC_DECODER(decode_tcp)
    u_char *opt_start, *opt_end;
    struct session *s = NULL;
    void *ident = NULL;
-   struct tcp_status *status;
-   int direction;
+   struct tcp_status *status = NULL;
+   int direction = 0;
 
    tcp = (struct tcp_header *)DECODE_DATA;
    
@@ -159,8 +159,10 @@ FUNC_DECODER(decode_tcp)
    /* 
     * if the checsum is wrong, don't parse it (avoid ettercap spotting) 
     * the checksum is should be 0 and not equal to ip->csum ;)
+    *
+    * don't perform the check in unoffensive mode
     */
-   if (L4_checksum(PACKET) != 0) {
+   if (!GBL_OPTIONS->unoffensive && L4_checksum(PACKET) != 0) {
       char tmp[MAX_ASCII_ADDR_LEN];
       USER_MSG("Invalid TCP packet from %s:%d : csum [%#x] (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                     ntohs(tcp->sport), L4_checksum(PACKET), ntohs(tcp->csum) );
@@ -224,77 +226,84 @@ FUNC_DECODER(decode_tcp)
    /* HOOK POINT: PACKET_TCP */
    hook_point(PACKET_TCP, po);
 
-   /* Find or create the correct session */
-   tcp_create_ident(&ident, PACKET);
-   if (session_get(&s, ident, TCP_IDENT_LEN) == -ENOTFOUND) {
-      tcp_create_session(&s, PACKET);
-      session_put(s);
-   }
+   /* don't save the sessions in unoffensive mode */
+   if (!GBL_OPTIONS->unoffensive) {
+      
+      /* Find or create the correct session */
+      tcp_create_ident(&ident, PACKET);
+      if (session_get(&s, ident, TCP_IDENT_LEN) == -ENOTFOUND) {
+         tcp_create_session(&s, PACKET);
+         session_put(s);
+      }
 
-   /* Trace the sessions for injectors */
-   SESSION_PASSTHRU(s, PACKET);
-   
-   /* Select right comunication way */
-   direction = tcp_find_direction(s->ident, ident);
-   SAFE_FREE(ident);
-   
-   /* Record last packet's seq */
-   status = (struct tcp_status *)s->data;
-   status->way[direction].last_seq = ntohl(tcp->seq) + PACKET->DATA.len;
-   
-   /* SYN counts as one byte */
-   if ( tcp->flags & TH_SYN )
-      status->way[direction].last_seq++;
+      /* Trace the sessions for injectors */
+      SESSION_PASSTHRU(s, PACKET);
+      
+      /* Select right comunication way */
+      direction = tcp_find_direction(s->ident, ident);
+      SAFE_FREE(ident);
+      
+      /* Record last packet's seq */
+      status = (struct tcp_status *)s->data;
+      status->way[direction].last_seq = ntohl(tcp->seq) + PACKET->DATA.len;
+      
+      /* SYN counts as one byte */
+      if ( tcp->flags & TH_SYN )
+         status->way[direction].last_seq++;
 
-   /* Take trace of the RST flag (to block injection) */
-   if ( tcp->flags & TH_RST ) { 
-      status->way[direction].fin = 1;      
-      status->way[!direction].fin = 1;
-   }
+      /* Take trace of the RST flag (to block injection) */
+      if ( tcp->flags & TH_RST ) { 
+         status->way[direction].fin = 1;      
+         status->way[!direction].fin = 1;
+      }
+   } 
    
    /* get the next decoder */
    next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
    EXECUTE_DECODER(next_decoder);
 
-   /* 
-    * Take trace of the FIN flag (to block injection) 
-    * It's here to permit some strange tricks with filters.
-    */
-   if ( tcp->flags & TH_FIN )
-      status->way[direction].fin = 1;
-   
-   /* 
-    * Modification checks and adjustments.
-    * - tcp->seq and tcp->ack accoridng to injected/dropped bytes
-    * - seq_adj according to PACKET->delta for modifications 
-    *   or the whole payload for dropped packets.
-    */   
-   
-   /* XXX [...] over TCP encapsulation not supported yet: 
-    * upper layer may modify L3 structure
-    */
-   
-   if (PACKET->flags & PO_DROPPED)
-      status->way[direction].seq_adj -= PACKET->DATA.len;
-   else if ((PACKET->flags & PO_MODIFIED) || 
-            (status->way[direction].seq_adj != 0) || 
-            (status->way[!direction].seq_adj != 0)) {
-     
-      /* adjust with the previously injected/dropped seq/ack */
-      ORDER_ADD_LONG(tcp->seq, status->way[direction].seq_adj);
-      ORDER_ADD_LONG(tcp->ack, -status->way[!direction].seq_adj);
+   /* don't save the sessions in unoffensive mode */
+   if (!GBL_OPTIONS->unoffensive) {
+      
+      /* 
+       * Take trace of the FIN flag (to block injection) 
+       * It's here to permit some strange tricks with filters.
+       */
+      if ( tcp->flags & TH_FIN )
+         status->way[direction].fin = 1;
+      
+      /* 
+       * Modification checks and adjustments.
+       * - tcp->seq and tcp->ack accoridng to injected/dropped bytes
+       * - seq_adj according to PACKET->delta for modifications 
+       *   or the whole payload for dropped packets.
+       */   
+      
+      /* XXX [...] over TCP encapsulation not supported yet: 
+       * upper layer may modify L3 structure
+       */
+      
+      if (PACKET->flags & PO_DROPPED)
+         status->way[direction].seq_adj -= PACKET->DATA.len;
+      else if ((PACKET->flags & PO_MODIFIED) || 
+               (status->way[direction].seq_adj != 0) || 
+               (status->way[!direction].seq_adj != 0)) {
+        
+         /* adjust with the previously injected/dropped seq/ack */
+         ORDER_ADD_LONG(tcp->seq, status->way[direction].seq_adj);
+         ORDER_ADD_LONG(tcp->ack, -status->way[!direction].seq_adj);
 
-      /* and now save the new delta */
-      status->way[direction].seq_adj += PACKET->DATA.delta;
+         /* and now save the new delta */
+         status->way[direction].seq_adj += PACKET->DATA.delta;
 
-      /* adjust the len */
-      PACKET->DATA.len += PACKET->DATA.delta;
-            
-      /* Recalculate checksum */
-      tcp->csum = 0; 
-      tcp->csum = L4_checksum(PACKET);
+         /* adjust the len */
+         PACKET->DATA.len += PACKET->DATA.delta;
+               
+         /* Recalculate checksum */
+         tcp->csum = 0; 
+         tcp->csum = L4_checksum(PACKET);
+      }
    }
-
    return NULL;
 }
 

@@ -61,46 +61,46 @@
 Fnv32_t
 fnv_32(void *buf, size_t len)
 {
-    unsigned char *bp = (unsigned char *)buf;	/* start of buffer */
-    unsigned char *be = bp + len;		/* beyond end of buffer */
-    Fnv32_t hval      = FNV1_32_INIT;
+   unsigned char *bp = (unsigned char *)buf;	/* start of buffer */
+   unsigned char *be = bp + len;		/* beyond end of buffer */
+   Fnv32_t hval      = FNV1_32_INIT;
 
-    /*
-     * FNV-1 hash each octet in the buffer
-     */
-    while (bp < be) {
+   /*
+    * FNV-1 hash each octet in the buffer
+    */
+   while (bp < be) {
 
-	/* multiply by the 32 bit FNV magic prime mod 2^64 */
-	hval *= FNV_32_PRIME;
+	   /* multiply by the 32 bit FNV magic prime mod 2^64 */
+	   hval *= FNV_32_PRIME;
 
-	/* xor the bottom with the current octet */
-	hval ^= (Fnv32_t)*bp++;
-    }
+	   /* xor the bottom with the current octet */
+	   hval ^= (Fnv32_t)*bp++;
+   }
 
-    /* return our new hash value */
-    return hval;
+   /* return our new hash value */
+   return hval;
 }
 
 Fnv64_t
 fnv_64(void *buf, size_t len)
 {
-    unsigned char *bp = (unsigned char *)buf;	/* start of buffer */
-    unsigned char *be = bp + len;		/* beyond end of buffer */
-    Fnv64_t hval      = FNV1_64_INIT;
-    /*
-     * FNV-1 hash each octet of the buffer
-     */
-    while (bp < be) {
+   unsigned char *bp = (unsigned char *)buf;	/* start of buffer */
+   unsigned char *be = bp + len;		/* beyond end of buffer */
+   Fnv64_t hval      = FNV1_64_INIT;
+   /*
+    * FNV-1 hash each octet of the buffer
+    */
+   while (bp < be) {
 
-	/* multiply by the 64 bit FNV magic prime mod 2^64 */
-	hval *= FNV_64_PRIME;
+	   /* multiply by the 64 bit FNV magic prime mod 2^64 */
+	   hval *= FNV_64_PRIME;
 
-	/* xor the bottom with the current octet */
-	hval ^= (Fnv64_t)*bp++;
-    }
+	   /* xor the bottom with the current octet */
+	   hval ^= (Fnv64_t)*bp++;
+   }
  
    /* return our new hash value */
-    return hval;
+   return hval;
 }
 
 /* EOF */

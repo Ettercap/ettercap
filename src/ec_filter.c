@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.29 2003/10/09 12:07:22 lordnaga Exp $
+    $Id: ec_filter.c,v 1.30 2003/10/09 20:44:25 alor Exp $
 */
 
 #include <ec.h>
@@ -35,7 +35,7 @@
    #include <pcre.h>
 #endif
 
-#define JIT_FAULT(x, ...) USER_MSG("JIT FILTER FAULT: " x, ## __VA_ARGS__)
+#define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x, ## __VA_ARGS__); return -EFATAL; } while(0)
 
 /* protos */
 
@@ -317,6 +317,10 @@ static int execute_assign(struct filter_op *fop, struct packet_object *po)
    /* initialize to the beginning of the packet */
    u_char *base = po->L2.header;
 
+   /* check the offensiveness */
+   if (GBL_OPTIONS->unoffensive)
+      JIT_FAULT("Cannot modify packets in unoffensive mode");
+   
    DEBUG_MSG("filter engine: execute_assign: L%d O%d S%d", fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size);
    
    /* 
@@ -463,6 +467,10 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
    int delta = 0;
    size_t max_len, new_len;
   
+   /* check the offensiveness */
+   if (GBL_OPTIONS->unoffensive)
+      JIT_FAULT("Cannot modify packets in unoffensive mode");
+   
    /* 
     * calculate the max len of data this packet can contain.
     * subtract to the MTU all the headers len
@@ -567,6 +575,11 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    int fd;
    void *file;
    size_t size;
+   
+   /* check the offensiveness */
+   if (GBL_OPTIONS->unoffensive)
+      JIT_FAULT("Cannot inject packets in unoffensive mode");
+   
 
    DEBUG_MSG("filter engine: func_inject %s", fop->op.func.string);
    

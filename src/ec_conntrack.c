@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.7 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_conntrack.c,v 1.8 2003/10/09 20:44:25 alor Exp $
 */
 
 #include <ec.h>
@@ -74,7 +74,6 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po);
 static void conntrack_add(struct packet_object *po);
 static void conntrack_del(struct conn_object *co);
 static int conntrack_match(struct conn_object *co, struct packet_object *po);
-static int conntrack_match(struct conn_object *co, struct packet_object *po);
 EC_THREAD_FUNC(conntrack_timeouter);
 int conntrack_print(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
 
@@ -119,20 +118,18 @@ static void conntrack_parse(struct packet_object *po)
  */
 static u_int32 conntrack_hash(struct packet_object *po)
 {
-   u_int32 hash_array[4];
+   u_int32 hash_array[3];
 
    /* 
     * put them in an array and then compute the hash on the array.
     * use XOR on src and dst because the hash must be equal for 
     * packets from dst to src and viceversa
     */
-   hash_array[0] = fnv_32((u_char *)&po->L2.src, ETH_ADDR_LEN) ^
-                   fnv_32((u_char *)&po->L2.dst, ETH_ADDR_LEN);
-   hash_array[1] = fnv_32((u_char *)&po->L3.src, sizeof(struct ip_addr)) ^
+   hash_array[0] = fnv_32((u_char *)&po->L3.src, sizeof(struct ip_addr)) ^
                    fnv_32((u_char *)&po->L3.dst, sizeof(struct ip_addr));
-   hash_array[2] = po->L4.src ^ po->L4.dst;
-   hash_array[3] = po->L4.proto;
-
+   hash_array[1] = po->L4.src ^ po->L4.dst;
+   hash_array[2] = po->L4.proto;
+   
    /* compute the resulting hash */
    return fnv_32((u_char *)&hash_array, sizeof(hash_array)) & TABMASK;
 }
@@ -306,18 +303,14 @@ static int conntrack_match(struct conn_object *co, struct packet_object *po)
       return -EINVALID;
 
    /* match it in one way... */
-   if (!memcmp(co->L2_addr1, po->L2.src, ETH_ADDR_LEN) &&
-       !memcmp(co->L2_addr2, po->L2.dst, ETH_ADDR_LEN) &&
-       !ip_addr_cmp(&co->L3_addr1, &po->L3.src) &&
+   if (!ip_addr_cmp(&co->L3_addr1, &po->L3.src) &&
        !ip_addr_cmp(&co->L3_addr2, &po->L3.dst) &&
        co->L4_addr1 == po->L4.src &&
        co->L4_addr2 == po->L4.dst)
       return ESUCCESS;
 
    /* ...and in the other */
-   if (!memcmp(co->L2_addr1, po->L2.dst, ETH_ADDR_LEN) &&
-       !memcmp(co->L2_addr2, po->L2.src, ETH_ADDR_LEN) &&
-       !ip_addr_cmp(&co->L3_addr1, &po->L3.dst) &&
+   if (!ip_addr_cmp(&co->L3_addr1, &po->L3.dst) &&
        !ip_addr_cmp(&co->L3_addr2, &po->L3.src) &&
        co->L4_addr1 == po->L4.dst &&
        co->L4_addr2 == po->L4.src)

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.36 2003/10/04 15:13:15 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.37 2003/10/09 20:44:25 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -350,6 +350,12 @@ This options is useful if you want to run multiple ettercap instances. You will
 have one instance (the one without the -u option) forwarding the packets, and
 all the other instances doing their work without forwarding them. Else you will
 get packet duplicates.
+.br
+It also disable the internal creation of the sessions for each connection. It
+increases performances, but you will lost the possibility to modify packets on
+the fly.
+.br
+If you want to use a mitm attack you have to use a separate instance.
 
 .TP
 \fB\-j\fR, \fB\-\-load-hosts <FILENAME>\fR

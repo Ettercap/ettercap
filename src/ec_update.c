@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_update.c,v 1.8 2003/10/08 20:03:18 alor Exp $
+    $Id: ec_update.c,v 1.9 2003/10/09 20:44:25 alor Exp $
 */
 
 #include <ec.h>
@@ -159,7 +159,7 @@ static void update_file(char *tokens)
       /* update it if the current rev is different (newer) */
       if (!strcmp(curr, rev))
          fprintf(stdout, EC_COLOR_GREEN"OK"EC_COLOR_END"\n");
-      else {
+      else if (strcmp(curr, rev) < 0) {
          if (GBL_OPTIONS->silent)
             fprintf(stdout, EC_COLOR_YELLOW"NEED UPDATE"EC_COLOR_END"\n");
          else { 
@@ -168,7 +168,9 @@ static void update_file(char *tokens)
             else
                fprintf(stdout, EC_COLOR_RED"ERROR"EC_COLOR_END"  %s\n", errbuf);
          }
-      }
+      } else
+         fprintf(stdout, EC_COLOR_RED"NEWER"EC_COLOR_END"  %s\n", errbuf);
+         
    }
    
    SAFE_FREE(curr);
@@ -179,7 +181,7 @@ static void update_file(char *tokens)
 
 /* 
  * get the current file revision 
- * it is stored in the cvs var $Revision: 1.8 $
+ * it is stored in the cvs var $Revision: 1.9 $
  */
 static int get_current_rev(char *file, char **curr, char *errbuf)
 {

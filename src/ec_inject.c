@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.4 2003/09/30 11:30:55 lordnaga Exp $
+    $Id: ec_inject.c,v 1.5 2003/10/09 20:44:25 alor Exp $
 */
 
 #include <ec.h>
@@ -120,6 +120,12 @@ int inject_buffer(struct packet_object *po)
    size_t injected;
    u_char *buf, *pck_buf;
    int ret = ESUCCESS;
+  
+   /* we can't inject in unoffensive mode or in bridge mode */
+   if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->iface_bridge) {
+      SAFE_FREE(po->inject);
+      return -EINVALID;
+   }
    
    /* Duplicate the packet to modify the payload buffer */
    pd = packet_dup(po);

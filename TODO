@@ -22,6 +22,8 @@
       - stream functions
       - extractors for each protocol
 
+   + reslove ip in the message window
+
    + record the MSS for the packet splitting
 
    + multiple dissector on a single port

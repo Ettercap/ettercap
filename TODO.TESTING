@@ -16,3 +16,7 @@
 
    + AUTOUPDATE process
       - test if it work in all conditions
+
+   + CONNTRACK
+      - it should not segfault ;)
+      - the hash table is correctly cleaned ?

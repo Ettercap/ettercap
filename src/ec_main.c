@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.26 2003/08/06 20:06:32 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.27 2003/08/18 15:44:07 alor Exp $
 */
 
 #include <ec.h>
@@ -45,7 +45,6 @@
 
 static void drop_privs(void);
 void clean_exit(int errcode);
-
 
 /*******************************************/
 

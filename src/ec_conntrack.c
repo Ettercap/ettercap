@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.5 2003/08/07 20:25:18 alor Exp $
+    $Id: ec_conntrack.c,v 1.6 2003/08/18 15:44:07 alor Exp $
 */
 
 #include <ec.h>
@@ -77,6 +77,10 @@ static int conntrack_match(struct conn_object *co, struct packet_object *po);
 static int conntrack_match(struct conn_object *co, struct packet_object *po);
 EC_THREAD_FUNC(conntrack_timeouter);
 int conntrack_print(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
+
+int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_object *po));
+int conntrack_hook_del(struct packet_object *po, void (*func)(struct packet_object *po));
+void conntrack_hook(struct conn_object *co, struct packet_object *po);
 
 /************************************************/
   
@@ -229,7 +233,7 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po)
    }
    
    /* execute the hookpoint */
-   /* XXX - HOOK_CONN */
+   conntrack_hook(co, po);
 }
 
 
@@ -274,7 +278,7 @@ static void conntrack_add(struct packet_object *po)
    
    /* update the connection entry */
    conntrack_update(cl->co, po);
-   
+
    /* alloc the hash table element */
    cs = calloc(1, sizeof(struct conn_hash_search));
    ON_ERROR(cs, NULL, "Can't allocate memory");
@@ -429,6 +433,109 @@ EC_THREAD_FUNC(conntrack_timeouter)
       SAFE_FREE(old);
    }
 }
+
+
+/*
+ * add the fucntion 'func' to the hookpoint of the
+ * connection owning the packet object
+ */
+int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_object *po))
+{
+   struct conn_object *conn;
+
+   CONNTRACK_LOCK;
+   
+   /* search the connection already exists */
+   conn = conntrack_search(po);
+
+   /* 
+    * if the connection already exist, add the hook function 
+    * else create the entry for the connection and add the hook
+    * this is usefull to add hooks for future connections
+    */
+
+   /* create the fake connection */
+   if (!conn) {
+      
+      DEBUG_MSG("conntrack_hook_add: ephemeral connection");
+      conntrack_add(po);
+      conn = conntrack_search(po);
+   }
+  
+   /* add the hook point */
+   if (conn) {
+      struct ct_hook_list *h;
+      
+      DEBUG_MSG("conntrack_hook_add: existing connection");
+      
+      h = calloc(1, sizeof(struct ct_hook_list));
+      ON_ERROR(h, NULL, "Can't allocate memory");
+
+      /* set the hook function */
+      h->func = func;
+      
+      SLIST_INSERT_HEAD(&conn->hook_head, h, next);
+      
+      CONNTRACK_UNLOCK;
+      return ESUCCESS;
+   } 
+   
+   CONNTRACK_UNLOCK;
+
+   return -ENOTFOUND;
+}
+
+
+/* 
+ * removes a hook from a connection 
+ */
+int conntrack_hook_del(struct packet_object *po, void (*func)(struct packet_object *po))
+{
+   struct conn_object *conn;
+
+   DEBUG_MSG("conntrack_hook_del");
+   
+   CONNTRACK_LOCK;
+   
+   /* search the connection already exists */
+   conn = conntrack_search(po);
+
+   /* add the hook function only if the connection exists */
+   if (conn) {
+      struct ct_hook_list *h;
+      
+      SLIST_FOREACH(h, &conn->hook_head, next) {
+         if (h->func == func) {
+            SLIST_REMOVE(&conn->hook_head, h, ct_hook_list, next);
+            SAFE_FREE(h);
+            break;
+         }
+      }
+      
+      CONNTRACK_UNLOCK;
+      return ESUCCESS;
+   }
+   
+   CONNTRACK_UNLOCK;
+
+   return -ENOTFOUND;
+}
+
+
+/*
+ * executes the hook point
+ */
+void conntrack_hook(struct conn_object *co, struct packet_object *po)
+{
+   struct ct_hook_list *h;
+
+   /* pass the po to all the hooked functions */
+   SLIST_FOREACH(h, &co->hook_head, next) {
+      h->func(po);
+   }
+   
+}
+
 
 /* EOF */
 

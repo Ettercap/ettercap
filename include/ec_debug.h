@@ -9,9 +9,9 @@ extern FILE *debug_file;
 
 #define DEBUG_INIT() debug_init()
 #define DEBUG_MSG(x, ...) do {                                 \
-   if (debug_file == NULL)                                     \
-      FATAL_ERROR("[%s::%s] DEBUG_MSG called before initialization !!", __FILE__, __FUNCTION__);  \
-   else                                                        \
+   if (debug_file == NULL) {                                   \
+      FATAL_ERROR("[%s::%s] DEBUG_MSG called before initialization !!", __FILE__, __FUNCTION__); \
+   } else                                                      \
       debug_msg(x, ## __VA_ARGS__ );                           \
 } while(0)
 

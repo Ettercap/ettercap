@@ -8,7 +8,7 @@
 /* conntrack hook definition */
 struct ct_hook_list {
    void (*func)(struct packet_object *po);
-   SLIST_ENTRY (hook_list) next;
+   SLIST_ENTRY (ct_hook_list) next;
 };
 
 /* conntrack object */
@@ -59,6 +59,9 @@ enum {
 /* exported functions */
 extern int conntrack_print(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
 extern EC_THREAD_FUNC(conntrack_timeouter); 
+
+extern int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_object *po));
+extern int conntrack_hook_del(struct packet_object *po, void (*func)(struct packet_object *po));
 
 #endif
 

@@ -29,15 +29,16 @@ this is the unofficial and floating in time roadmap:
 
 Ago 2003:
 
-   + TOP HALF
-      - connection tracking (with buffered conn)
-         - hook points
-
+   + MITM METHODS
+      - arp poisoning
+      - icmp redirect
+      - dhcp poisoning
    
    + ARP POISON ENGINE
       - arp poisoner
       - multipoison
       - rearp in demon mode (clean shutdown of all thread)
+
 
 Sep 2003:
    

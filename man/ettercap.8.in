@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.54 2003/12/15 16:16:41 lordnaga Exp $
+.\"  $Id: ettercap.8.in,v 1.55 2003/12/16 10:34:24 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -337,8 +337,8 @@ host giving back their switch ports.
 .br
 You can perform either HALF or FULL DUPLEX mitm according to target selection.
 .Sp
-NOTE: Use this mitm method carefully, it could produce performances loss
-or general havoc.
+NOTE: Use this mitm method only on ethernet switches. Use it carefully, 
+it could produce performances loss or general havoc.
 .Sp
 NOTE: You can NOT use this method in only-mitm mode (-o flag), because it
 hooks the sniffing engine. 

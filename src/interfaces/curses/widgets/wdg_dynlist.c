@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dynlist.c,v 1.4 2004/02/01 21:28:24 alor Exp $
+    $Id: wdg_dynlist.c,v 1.5 2004/02/02 22:28:29 alor Exp $
 */
 
 #include <wdg.h>
@@ -376,6 +376,10 @@ void wdg_dynlist_refresh(wdg_t *wo)
    size_t i = 0;
    void *list, *next;
    char *desc;
+  
+   /* sanity check */
+   if (ww->func == NULL)
+      return;
    
    /* erase the window */
    werase(ww->sub);
@@ -405,6 +409,10 @@ void wdg_dynlist_refresh(wdg_t *wo)
    /* print all the entry until the bottom of the window */
    while (list) {
       next = ww->func(+1, list, &desc, 99);
+      
+      /* dont print string longer than the window */
+      if (strlen(desc) > c)
+         desc[c] = 0;
 
       /* the current item is selected */
       if (ww->current == list) {

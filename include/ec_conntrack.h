@@ -1,5 +1,5 @@
 
-/* $Id: ec_conntrack.h,v 1.7 2003/10/27 21:25:44 alor Exp $ */
+/* $Id: ec_conntrack.h,v 1.8 2004/02/02 22:28:22 alor Exp $ */
 
 #ifndef EC_CONNTRACK_H
 #define EC_CONNTRACK_H
@@ -59,7 +59,8 @@ enum {
 };
 
 /* exported functions */
-extern int conntrack_print(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
+extern void * conntrack_print(int mode, void *list, char **desc, size_t len);
+extern int conntrack_print_old(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
 extern EC_THREAD_FUNC(conntrack_timeouter); 
 
 extern int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_object *po));

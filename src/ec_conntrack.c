@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.13 2003/11/08 14:59:44 alor Exp $
+    $Id: ec_conntrack.c,v 1.14 2004/02/02 22:28:29 alor Exp $
 */
 
 #include <ec.h>
@@ -75,7 +75,8 @@ static void conntrack_add(struct packet_object *po);
 static void conntrack_del(struct conn_object *co);
 static int conntrack_match(struct conn_object *co, struct packet_object *po);
 EC_THREAD_FUNC(conntrack_timeouter);
-int conntrack_print(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
+int conntrack_print_old(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
+void * conntrack_print(int mode, void *list, char **desc, size_t len);
 
 int conntrack_hook_add(struct packet_object *po, void (*func)(struct packet_object *po));
 int conntrack_hook_del(struct packet_object *po, void (*func)(struct packet_object *po));
@@ -328,37 +329,6 @@ static void conntrack_del(struct conn_object *co)
    SAFE_FREE(co);
 }
 
-/*
- * print the connection list from spos to epos.
- * you can use 0, MAX_INT to print all the connections
- */
-int conntrack_print(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co))
-{
-   struct conn_tail *cl;
-   u_int32 i = 1, count = 0;
-  
-   CONNTRACK_LOCK;
-   
-   /* search in the list */
-   TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
-      /* print within the given range */
-      if (i >= spos && i <= epos) {
-         /* update the couter */
-         count++;
-         /* callback */
-         func(count, cl->co);
-
-      } 
-      i++;
-      /* speed up the exit */
-      if (i > epos)
-         break;
-   }
-
-   CONNTRACK_UNLOCK;
-
-   return count;
-}
 
 
 EC_THREAD_FUNC(conntrack_timeouter)
@@ -535,7 +505,114 @@ void conntrack_hook(struct conn_object *co, struct packet_object *po)
    
 }
 
+/*
+ * fill the desc and return the next/prev element
+ */
+void * conntrack_print(int mode, void *list, char **desc, size_t len)
+{
+   struct conn_tail *c = (struct conn_tail *)list;
+   char src[MAX_ASCII_ADDR_LEN];
+   char dst[MAX_ASCII_ADDR_LEN];
+   char proto, *status = "";
 
+   /* NULL is used to retrieve the first element */
+   if (list == NULL)
+      return TAILQ_FIRST(&conntrack_tail_head);
+
+   /* the caller wants the description */
+   if (desc != NULL) {
+         
+      switch (c->co->L4_proto) {
+         case NL_TYPE_UDP:
+            proto = 'U';
+            break;
+         case NL_TYPE_TCP:
+            proto = 'T';
+            break;
+         default:
+            proto = ' ';
+         break;
+      }
+      
+      ip_addr_ntoa(&c->co->L3_addr1, src);
+      ip_addr_ntoa(&c->co->L3_addr2, dst);
+
+      switch (c->co->status) {
+         case CONN_IDLE:
+            status = "idle   ";
+            break;
+         case CONN_OPENING:
+            status = "opening";
+            break;
+         case CONN_OPEN:
+            status = "open   ";
+            break;
+         case CONN_ACTIVE:
+            status = "active ";
+            break;
+         case CONN_CLOSING:
+            status = "closing";
+            break;
+         case CONN_CLOSED:
+            status = "closed ";
+            break;
+         case CONN_KILLED:
+            status = "killed ";
+            break;
+      }
+      
+      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %d", (c->co->DISSECTOR.user) ? '*' : ' ', 
+                                           src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
+                                           proto, status, c->co->xferred);
+   }
+  
+   /* return the next/prev/current to the caller */
+   switch (mode) {
+      case -1:
+         return TAILQ_PREV(c, conn_head, next);
+         break;
+      case +1:
+         return TAILQ_NEXT(c, next);
+         break;
+      default:
+         return list;
+         break;
+   }
+         
+   return NULL;
+}
+
+/*
+ * print the connection list from spos to epos.
+ * you can use 0, MAX_INT to print all the connections
+ */
+int conntrack_print_old(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co))
+{
+   struct conn_tail *cl;
+   u_int32 i = 1, count = 0;
+  
+   CONNTRACK_LOCK;
+   
+   /* search in the list */
+   TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
+      /* print within the given range */
+      if (i >= spos && i <= epos) {
+         /* update the couter */
+         count++;
+         /* callback */
+         func(count, cl->co);
+
+      } 
+      i++;
+      /* speed up the exit */
+      if (i > epos)
+         break;
+   }
+
+   CONNTRACK_UNLOCK;
+
+   return count;
+}
 /* EOF */
 
 // vim:ts=3:expandtab

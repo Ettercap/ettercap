@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_conn.c,v 1.3 2003/11/29 11:22:36 alor Exp $
+    $Id: ec_text_conn.c,v 1.4 2004/02/02 22:28:29 alor Exp $
 */
 
 #include <ec.h>
@@ -41,7 +41,7 @@ void text_connections(void)
    fprintf(stdout, "\nConnections list:\n\n");
   
    /* call the callbacking function */
-   conntrack_print(1, INT_MAX, &conn_print); 
+   conntrack_print_old(1, INT_MAX, &conn_print); 
 
    fprintf(stdout, "\n");
 }

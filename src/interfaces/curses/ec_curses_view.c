@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.12 2004/02/01 21:11:52 alor Exp $
+    $Id: ec_curses_view.c,v 1.13 2004/02/02 22:28:29 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_curses.h>
 #include <ec_format.h>
 #include <ec_profiles.h>
+#include <ec_conntrack.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
 
@@ -43,16 +44,19 @@ static void curses_profile_detail(void *profile);
 static void curses_profiles_local(void *dummy);
 static void curses_profiles_remote(void *dummy);
 static void curses_profiles_convert(void *dummy);
+static void curses_show_connections(void);
+static void curses_kill_connections(void);
+static void refresh_connections(void);
 
 /* globals */
 
 static char tag_resolve[] = " ";
-static wdg_t *wdg_stats, *wdg_profiles, *wdg_details;
+static wdg_t *wdg_stats, *wdg_profiles, *wdg_details, *wdg_connections;
 #define VLEN 8
 static char vmethod[VLEN];
 
 struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
-                                {"Connections",          'C', "C", NULL},
+                                {"Connections",          'C', "C", curses_show_connections},
                                 {"Profiles",             'O', "O", curses_show_profiles},
                                 {"Statistics",           's', "s", curses_show_stats},
                                 {"-",                     0,  "",  NULL},
@@ -340,6 +344,67 @@ static void curses_profiles_convert(void *dummy)
 {
    profile_convert_to_hostlist();
    curses_message("The hosts list was populated with local profiles");
+}
+
+/*
+ * the auto-refreshing list of connections
+ */
+static void curses_show_connections(void)
+{
+   DEBUG_MSG("curses_show_connections");
+
+   /* if the object already exist, set the focus to it */
+   if (wdg_connections) {
+      wdg_set_focus(wdg_connections);
+      return;
+   }
+   
+   wdg_create_object(&wdg_connections, WDG_DYNLIST, WDG_OBJ_WANT_FOCUS);
+   
+   wdg_set_title(wdg_connections, "Live connections:", WDG_ALIGN_LEFT);
+   wdg_set_size(wdg_connections, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
+   wdg_set_color(wdg_connections, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(wdg_connections, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(wdg_connections, WDG_COLOR_BORDER, EC_COLOR_BORDER);
+   wdg_set_color(wdg_connections, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(wdg_connections, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+   wdg_draw_object(wdg_connections);
+ 
+   wdg_set_focus(wdg_connections);
+
+   /* set the list print callback */
+   wdg_dynlist_print_callback(wdg_connections, conntrack_print);
+   
+   /* set the select callback */
+   //wdg_dynlist_select_callback(wdg_connections, curses_profile_detail);
+  
+   /* add the callback on idle to refresh the profile list */
+   wdg_add_idle_callback(refresh_connections);
+
+   /* add the destroy callback */
+   wdg_add_destroy_key(wdg_connections, CTRL('Q'), curses_kill_connections);
+
+   //wdg_dynlist_add_callback(wdg_connections, 'l', curses_profiles_local);
+   //wdg_dynlist_add_callback(wdg_connections, 'r', curses_profiles_remote);
+   //wdg_dynlist_add_callback(wdg_connections, 'c', curses_profiles_convert);
+}
+
+static void curses_kill_connections(void)
+{
+   DEBUG_MSG("curses_kill_connections");
+   wdg_del_idle_callback(refresh_connections);
+
+   /* the object does not exist anymore */
+   wdg_connections = NULL;
+}
+
+static void refresh_connections(void)
+{
+   /* if not focused don't refresh it */
+   if (!(wdg_connections->flags & WDG_OBJ_FOCUSED))
+      return;
+   
+   wdg_dynlist_refresh(wdg_connections);
 }
 
 /* EOF */

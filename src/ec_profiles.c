@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.31 2004/02/02 16:54:53 alor Exp $
+    $Id: ec_profiles.c,v 1.32 2004/02/02 22:28:29 alor Exp $
 */
 
 #include <ec.h>
@@ -553,7 +553,7 @@ int profile_convert_to_hostlist(void)
 
 
 /*
- * fill the desc 
+ * fill the desc and return the next/prev element
  */
 void * profile_print(int mode, void *list, char **desc, size_t len)
 {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.1 2003/05/20 16:30:20 alor Exp $
+    $Id: ec_resolv.c,v 1.2 2003/06/13 15:45:05 alor Exp $
 */
 
 #include <ec.h>
@@ -64,9 +64,6 @@ int host_iptoa(struct ip_addr *ip, char *name)
    WSADATA wsdata;
 #endif
 
-   /* we MUST NOT resolve if the user does not want it */
-   BUG_ON(!GBL_OPTIONS->resolve);
-
    DEBUG_MSG("host_iptoa: %#x", *(u_int32 *)&ip->addr);
    
    /*
@@ -76,9 +73,21 @@ int host_iptoa(struct ip_addr *ip, char *name)
     */
    if (cache_search(ip, name) == ESUCCESS)
       return ESUCCESS;
+
+
+   /* initialize the name */
+   strcpy(name, "");
+   
+   /*
+    * the user has requested to not resolve the host,
+    * but we perform the search in the cache because
+    * the passive engine might have intercepted some
+    * request. it is resolution for free... ;)
+    */
+   if (!GBL_OPTIONS->resolve)
+      return -ENOTFOUND;
    
    /* if not found in the cache, resolve it */
-   
 #ifdef CYGWIN
    if ( WSAStartup(MAKEWORD(2, 2), &wsdata) != 0)
       ERROR_MSG("Cannot inizialize winsock WSAStartup()");
@@ -93,7 +102,6 @@ int host_iptoa(struct ip_addr *ip, char *name)
    
    /* not found or error */
    if (host == NULL) {
-      strcpy(name, "");
       /* 
        * insert the "" in the cache so we don't search for
        * non existent hosts every new query.
@@ -124,14 +132,14 @@ static int cache_search(struct ip_addr *ip, char *name)
       if (!ip_addr_cmp(&r->ip, ip)) {
          /* found in the cache */
          
-         DEBUG_MSG("cache_search: found: %s", r->hostname);
+         DEBUG_MSG("DNS cache_search: found: %s", r->hostname);
          
          strncpy(name, r->hostname, MAX_HOSTNAME_LEN);
          return ESUCCESS;
       }
    }
    
-   DEBUG_MSG("cache_search: cache missed !");
+   DEBUG_MSG("DNS cache_search: cache missed !");
 
    /* cache miss */
    return -ENOTFOUND;
@@ -153,7 +161,7 @@ static void cache_insert(struct ip_addr *ip, char *name)
    
    SLIST_INSERT_HEAD(&(resolv_cache_head[fnv_32(ip->addr, ip->addr_size) & TABMASK]), r, next);
 
-   DEBUG_MSG("cache_insert: %s", r->hostname);
+   DEBUG_MSG("DNS cache_insert: %s", r->hostname);
 }
 
 /* EOF */

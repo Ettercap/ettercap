@@ -7,6 +7,7 @@
 #include <ec_ui.h>
 #include <ec_stats.h>
 #include <pcap.h>
+#include <regex.h>
 
 /* options from getopt */
 struct ec_options {
@@ -18,6 +19,7 @@ struct ec_options {
    char load_hosts:1;
    char save_hosts:1;
    char resolve:1;
+   char ext_headers:1;
    char reversed;
    int scan_delay;
    char *hostsfile;
@@ -30,6 +32,7 @@ struct ec_options {
    char *target1;
    char *target2;
    int (*format)(const u_char *, size_t, u_char *);
+   regex_t *regex;
 };
 
 /* program name and version */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.17 2003/06/09 12:03:14 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.18 2003/06/13 15:45:03 alor Exp $
 */
 
 #include <ec.h>
@@ -150,7 +150,7 @@ void top_half_queue_add(struct packet_object *po)
 /* XXX - remove this */
 void __init init_packet_print(void)
 {
-   hook_add(HOOK_DISPATCHER, &packet_print);
+   //hook_add(HOOK_DISPATCHER, &packet_print);
 }
 
 /* EOF */

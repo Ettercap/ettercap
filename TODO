@@ -28,13 +28,15 @@
    + LOG
       - icmp hook
 
-   + CONSOLE
-      - packet display (almost done in etterlog & format)
+   + PASSIVE ACTIONS
+      - passive dns resolutions
+      - passive host list filling
 
    + TOP HALF
       - passive profiling (almost done in etterlog)
       - connection tracking (with buffered conn)
-      
+
+
    + ARP POISON ENGINE
       - arp poisoner
       - multipoison

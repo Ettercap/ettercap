@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.14 2003/05/22 20:48:08 alor Exp $
+    $Id: ec_log.c,v 1.15 2003/06/13 15:45:03 alor Exp $
 */
 
 #include <ec.h>
@@ -42,12 +42,9 @@ static gzFile fd_ci;
 static int fd_p;
 static int fd_i;
 
-static regex_t *log_regex;
-
 /* protos */
 
 static void log_close(void);
-int set_logregex(char *regex);
 int set_loglevel(int level, char *filename);
 
 void log_packet(struct packet_object *po);
@@ -152,35 +149,6 @@ void log_close(void)
    
 }
 
-/*
- * compile the regex
- */
-
-int set_logregex(char *regex)
-{
-   int err;
-   char errbuf[100];
-   
-   DEBUG_MSG("set_logregex: %s", regex);
-
-   /* free any previous compilation */
-   SAFE_FREE(log_regex);
-  
-   /* allocate the new structure */
-   log_regex = calloc(1, sizeof(regex_t));
-   ON_ERROR(log_regex, NULL, "can't allocate memory");
-
-   err = regcomp(log_regex, regex, REG_EXTENDED | REG_NOSUB );
-
-   if (err) {
-      regerror(err, log_regex, errbuf, sizeof(errbuf));
-      SAFE_FREE(log_regex);
-      FATAL_MSG("%s\n", errbuf);
-   }
-
-   return ESUCCESS;
-}
-
 /* 
  * function registered to HOOK_DISPATCHER
  * check the regex (if present) and log packets
@@ -189,8 +157,8 @@ int set_logregex(char *regex)
 void log_packet(struct packet_object *po)
 {
    /* the regex is set, respect it */
-   if (log_regex) {
-      if (regexec(log_regex, po->DATA.data, 0, NULL, 0) == 0)
+   if (GBL_OPTIONS->regex) {
+      if (regexec(GBL_OPTIONS->regex, po->disp_data, 0, NULL, 0) == 0)
          log_write_packet(po);
    } else {
       /* if no regex is set, dump all the packets */

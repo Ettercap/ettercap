@@ -109,7 +109,6 @@ extern int set_loglevel(int level, char *filename);
 
 extern void log_packet(struct packet_object *po);
    
-int set_logregex(char *regex);
 
 #endif
 

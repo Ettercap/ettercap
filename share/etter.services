@@ -1,4 +1,4 @@
-# $Id: etter.services,v 1.2 2003/05/31 13:30:06 alor Exp $
+# $Id: etter.services,v 1.3 2003/06/13 15:45:02 alor Exp $
 #
 # Network services, Internet style
 #
@@ -2139,6 +2139,12 @@ wdbrpc            17185/udp  # vxWorks WDB remote debugging ONCRPC
 kuang2            17300/tcp  # Kuang2 backdoor
 biimenu           18000/tcp  # Beckman Instruments, Inc.
 biimenu           18000/udp  # Beckman Instruments, Inc.
+opsec_cvp         18181/tcp  # Check Point OPSEC
+opsec_ufp         18182/tcp  # Check Point OPSEC
+opsec_sam         18183/tcp  # Check Point OPSEC
+opsec_lea         18184/tcp  # Check Point OPSEC
+opsec_omi         18185/tcp  # Check Point OPSEC
+opsec_ela         18187/tcp  # Check Point OPSEC
 btx               20005/tcp  # xcept4 (Interacts with German Telekom's CEPT videotext service)
 wnn6              22273/tcp  # Wnn6 (Japanese input)
 wnn6_Cn           22289/tcp  # Wnn6 (Chinese input)

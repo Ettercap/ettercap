@@ -31,9 +31,12 @@ enum {
       x(DECODE_DATA+DECODED_LEN, DECODE_DATALEN-DECODED_LEN, len, PACKET); \
 }while(0)
 
-#define DECLARE_PTR_END(x,y) u_char *x = po->DATA.data; \
-                             u_char *y = x + po->DATA.len
+#define DECLARE_REAL_PTR_END(x,y) u_char *x = po->DATA.data; \
+                                  u_char *y = x + po->DATA.len
 
+#define DECLARE_DISP_PTR_END(x,y) u_char *x = po->disp_data; \
+                                  u_char *y = x + po->disp_len
+                                  
 #define DISPLAY_DATA    po->disp_data
 #define DISPLAY_LEN     po->disp_len                             
 

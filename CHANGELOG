@@ -8,7 +8,7 @@ Legenda:
 
 NG-0.7.0    ????????
       
-   + Rewrite from scratch
+   + Rewrite from scratch (the code is clean and well commented)
    + root privs dropped after initialization
    + layer 3 routing (forwarding packets)
    + wifi support
@@ -23,6 +23,7 @@ NG-0.7.0    ????????
    + randomized ARP scan
    + cached dns resolution (increase speed)
    + enhanced statistics on ettercap performances
+   + extended headers for every packet
    !! offline sniffing actually does not bind to any NICs
 
 

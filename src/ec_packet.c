@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.14 2003/06/10 10:39:37 alor Exp $
+    $Id: ec_packet.c,v 1.15 2003/06/13 15:45:04 alor Exp $
 */
 
 #include <ec.h>
@@ -55,7 +55,12 @@ inline int packet_create_object(struct packet_object *po, u_char *buf, size_t le
 }
 
 /*
- * allocate the buffer for displayed data 
+ * allocate the buffer for disp data
+ *
+ * disp data is usefull when the protocol is
+ * encrypted and we want to forward the packet as is
+ * but display the decrypted data.
+ * decoders should decrypt data from po->DATA.data to po->disp_data
  */
 
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)

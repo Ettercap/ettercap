@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.25 2003/06/10 10:39:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.26 2003/06/13 15:45:05 alor Exp $
 */
 
 
@@ -43,6 +43,7 @@ void parse_options(int argc, char **argv);
 
 int expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t );
 int match_pattern(const char *s, const char *pattern);
+int set_regex(char *regex);
 
 //-----------------------------------
 
@@ -74,18 +75,21 @@ void ec_usage(void)
    fprintf(stdout, "  -L, --log <logfile>         log all the traffic to this <logfile>\n");
    fprintf(stdout, "  -l, --log-info <logfile>    log only passive infos to this <logfile>\n");
    fprintf(stdout, "  -c, --compress              use gzip compression on log files\n");
-   fprintf(stdout, "  -e, --regex <regex>         log only packets matching this regex\n");
+   
+   fprintf(stdout, "\nVisualization options:\n");
+   fprintf(stdout, "  -d, --dns                   resolves ip addresses into hostnames\n");
+   fprintf(stdout, "  -V, --visual <format>       set the visualization format\n");
+   fprintf(stdout, "  -e, --regex <regex>         handle only packets matching this regex\n");
+   fprintf(stdout, "  -E, --ext-headers           print extended header for every pck\n");
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
-   fprintf(stdout, "  -d, --dns                   resolves ip addresses into hostnames\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -Z, --scan-delay <msec>     set the scanning delay to <msec>\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
-   fprintf(stdout, "  -V, --visual <format>       set the visualization format\n");
    
    fprintf(stdout, "\nStandard options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
@@ -118,16 +122,18 @@ void parse_options(int argc, char **argv)
       
       { "quiet", no_argument, NULL, 'q' },
       { "silent", no_argument, NULL, 'z' },
-      { "dns", no_argument, NULL, 'd' },
       { "scan-delay", required_argument, NULL, 'Z' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
+      
+      { "dns", no_argument, NULL, 'd' },
+      { "regex", required_argument, NULL, 'e' },
       { "visual", required_argument, NULL, 'V' },
+      { "ext-headers", no_argument, NULL, 'E' },
       
       { "log", required_argument, NULL, 'L' },
       { "log-info", required_argument, NULL, 'l' },
       { "compress", no_argument, NULL, 'c' },
-      { "regex", required_argument, NULL, 'e' },
       
       { "console", no_argument, NULL, 'C' },
       { "ncurses", no_argument, NULL, 'N' },
@@ -154,7 +160,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDde:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:V:vw:Z:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDdEe:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:V:vw:Z:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -239,7 +245,7 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'e':
-                  if (set_logregex(optarg) == -EFATAL)
+                  if (set_regex(optarg) == -EFATAL)
                      clean_exit(-EFATAL);
                   break;
                   
@@ -276,6 +282,10 @@ void parse_options(int argc, char **argv)
          case 'V':
                   /* the global visualization method */
                   set_format(optarg);
+                  break;
+                  
+         case 'E':
+                  GBL_OPTIONS->ext_headers = 1;
                   break;
                   
          case 'h':
@@ -459,6 +469,35 @@ int match_pattern(const char *s, const char *pattern)
    /* NOTREACHED */
 }
 
+
+/*
+ * compile the regex
+ */
+
+int set_regex(char *regex)
+{
+   int err;
+   char errbuf[100];
+   
+   DEBUG_MSG("set_regex: %s", regex);
+
+   /* free any previous compilation */
+   SAFE_FREE(GBL_OPTIONS->regex);
+  
+   /* allocate the new structure */
+   GBL_OPTIONS->regex = calloc(1, sizeof(regex_t));
+   ON_ERROR(GBL_OPTIONS->regex, NULL, "can't allocate memory");
+
+   err = regcomp(GBL_OPTIONS->regex, regex, REG_EXTENDED | REG_NOSUB | REG_ICASE );
+
+   if (err) {
+      regerror(err, GBL_OPTIONS->regex, errbuf, sizeof(errbuf));
+      SAFE_FREE(GBL_OPTIONS->regex);
+      FATAL_MSG("%s\n", errbuf);
+   }
+
+   return ESUCCESS;
+}
 
 
 

@@ -1,5 +1,5 @@
 
-/* $Id: ec_conntrack.h,v 1.11 2004/02/29 11:50:37 alor Exp $ */
+/* $Id: ec_conntrack.h,v 1.12 2004/03/18 15:29:11 alor Exp $ */
 
 #ifndef EC_CONNTRACK_H
 #define EC_CONNTRACK_H
@@ -71,6 +71,7 @@ enum {
 enum {
    CONN_INJECTED = 1,
    CONN_MODIFIED = 2,
+   CONN_VIEWING  = 4,
 };
 
 /* exported functions */

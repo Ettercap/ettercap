@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.19 2004/03/07 14:38:40 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.20 2004/03/18 15:29:12 alor Exp $
 */
 
 #include <ec.h>
@@ -463,10 +463,13 @@ static void gtkui_connection_data(void)
    if (curr_conn) {
       conntrack_hook_conn_del(curr_conn, split_print_po);
       conntrack_hook_conn_del(curr_conn, join_print_po);
+      /* remove the viewing flag */
+      curr_conn->flags &= ~CONN_VIEWING;
    }
    
    /* set the global variable to pass the parameter to other functions */
    curr_conn = c->co;
+   curr_conn->flags |= CONN_VIEWING;
    
    /* default is split view */
    gtkui_connection_data_split();
@@ -495,6 +498,9 @@ static void gtkui_connection_data_split(void)
    } else {
       data_window = gtkui_page_new("Connection data", &gtkui_destroy_conndata, &gtkui_connection_data_detach);
    }
+   
+   /* don't timeout this connection */
+   curr_conn->flags |= CONN_VIEWING;
 
    hbox_big = gtk_hbox_new(TRUE, 5);
    gtk_container_add(GTK_CONTAINER(data_window), hbox_big);
@@ -765,6 +771,9 @@ static void gtkui_connection_data_join(void)
    } else {
       data_window = gtkui_page_new("Connection data", &gtkui_destroy_conndata, &gtkui_connection_data_detach);
    }
+
+   /* don't timeout this connection */
+   curr_conn->flags |= CONN_VIEWING;
    
    vbox = gtk_vbox_new(FALSE, 0);
    gtk_container_add(GTK_CONTAINER(data_window), vbox);

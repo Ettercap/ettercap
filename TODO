@@ -34,8 +34,9 @@ this is the unofficial and floating in time roadmap:
    + CURSES GUI
       - context sensitive help
 
-   + CONNECTIONS
-      - don't expire flag (for the gui)
+   + GTK GUI
+      - CONN_VIEWING
+      - split join scrolling window problem
 
    + ARP SCAN
       - check the double reply

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.18 2004/02/29 11:50:37 alor Exp $
+    $Id: ec_conntrack.c,v 1.19 2004/03/18 15:29:12 alor Exp $
 */
 
 #include <ec.h>
@@ -375,6 +375,10 @@ EC_THREAD_FUNC(conntrack_timeouter)
        * list even when timeouter goes thru the list
        */
       TAILQ_FOREACH_SAFE(cl, &conntrack_tail_head, next, tmp) {
+
+         /* don't erase the connection if it is viewed */
+         if (cl->co->flags & CONN_VIEWING)
+            continue;
          
          CONNTRACK_LOCK;
          

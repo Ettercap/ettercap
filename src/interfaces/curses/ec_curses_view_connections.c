@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.12 2004/03/18 14:22:19 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.13 2004/03/18 15:29:12 alor Exp $
 */
 
 #include <ec.h>
@@ -204,10 +204,13 @@ static void curses_connection_data(void *conn)
    if (curr_conn) {
       conntrack_hook_conn_del(curr_conn, split_print_po);
       conntrack_hook_conn_del(curr_conn, join_print_po);
+      /* remove the viewing flag */
+      curr_conn->flags &= ~CONN_VIEWING;
    }
    
    /* set the global variable to pass the parameter to other functions */
    curr_conn = c->co;
+   curr_conn->flags |= CONN_VIEWING;
    
    /* default is splitted view */
    curses_connection_data_split();
@@ -229,6 +232,9 @@ static void curses_connection_data_split(void)
       curses_destroy_conndata();
       curr_conn = tmp_conn;
    }
+   
+   /* don't timeout this connection */
+   curr_conn->flags |= CONN_VIEWING;
 
    wdg_create_object(&wdg_conndata, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);
    wdg_set_color(wdg_conndata, WDG_COLOR_SCREEN, EC_COLOR);
@@ -286,6 +292,7 @@ static void curses_destroy_conndata(void)
    wdg_c1 = NULL;
    wdg_c2 = NULL;
    wdg_join = NULL;
+   curr_conn->flags &= ~CONN_VIEWING;
    curr_conn = NULL;
 }
 
@@ -362,6 +369,9 @@ static void curses_connection_data_join(void)
       curses_destroy_conndata();
       curr_conn = tmp_conn;
    }
+
+   /* don't timeout this connection */
+   curr_conn->flags |= CONN_VIEWING;
 
    wdg_create_object(&wdg_conndata, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);
    wdg_set_color(wdg_conndata, WDG_COLOR_SCREEN, EC_COLOR);

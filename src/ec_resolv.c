@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.13 2004/05/04 20:11:49 alor Exp $
+    $Id: ec_resolv.c,v 1.14 2004/05/24 13:37:26 alor Exp $
 */
 
 #include <ec.h>
@@ -62,6 +62,13 @@ int host_iptoa(struct ip_addr *ip, char *name)
 {
    struct hostent *host = NULL;
    
+   /* initialize the name */
+   strcpy(name, "");
+  
+   /* sanity check */
+   if (ip_addr_is_zero(ip))
+      return -ENOTHANDLED;
+
    /*
     * if the entry is already present in the cache
     * return that entry and don't call the real
@@ -70,9 +77,6 @@ int host_iptoa(struct ip_addr *ip, char *name)
    if (resolv_cache_search(ip, name) == ESUCCESS)
       return ESUCCESS;
 
-   /* initialize the name */
-   strcpy(name, "");
-   
    /*
     * the user has requested to not resolve the host,
     * but we perform the search in the cache because

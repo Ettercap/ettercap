@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.24 2004/05/04 20:11:48 alor Exp $
+    $Id: ec_inet.c,v 1.25 2004/05/24 13:37:26 alor Exp $
 */
 
 #include <ec.h>
@@ -64,6 +64,7 @@ int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr)
       default:
          /* wipe the struct */
          memset(sa, 0, sizeof(struct ip_addr));
+         BUG("Invalid ip_addr type");
          return -EINVALID;
    }
    

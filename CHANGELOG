@@ -13,6 +13,7 @@ NG-0.7.0_rc1     200405
    !! log to file works again
    !! fixed a segfault dumping profiles to file
    !! fixed a segfault when opening not-readable dirs from the curses GUI
+   !! fixed uninitialized data that caused segfault in the dhcp dissector
    
 
 NG-0.7.0_pre2    20040517

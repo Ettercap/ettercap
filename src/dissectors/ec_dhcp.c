@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp.c,v 1.9 2004/02/08 11:41:44 alor Exp $
+    $Id: ec_dhcp.c,v 1.10 2004/05/24 13:37:26 alor Exp $
 */
 
 /*
@@ -186,6 +186,10 @@ FUNC_DECODER(dissector_dhcp)
          return NULL;
 
       memset(domain, 0, sizeof(domain));
+      memset(&netmask, 0, sizeof(struct ip_addr));
+      memset(&router, 0, sizeof(struct ip_addr));
+      memset(&client, 0, sizeof(struct ip_addr));
+      memset(&dns, 0, sizeof(struct ip_addr));
 
       resp = *(opt + 1);
       

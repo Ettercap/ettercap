@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.6 2003/10/16 16:46:48 alor Exp $
+    $Id: finger.c,v 1.7 2003/11/11 21:53:00 alor Exp $
 */
 
 
@@ -59,7 +59,7 @@ struct plugin_ops finger_ops = {
     /* a short description of the plugin (max 50 chars) */                    
    info:             "Fingerprint a remote host",  
    /* the plugin version. */ 
-   version:          "1.5",   
+   version:          "1.6",   
    /* activation function */
    init:             &finger_init,
    /* deactivation function */                     
@@ -105,8 +105,13 @@ static int finger_init(void *dummy)
           */
          memcpy(&ip, &host->ip, sizeof(struct ip_addr));
 
-         /* do the actual finterprinting */
-         do_fingerprint();
+         /* cicle thru all the specified port */
+         for (port = 0; port < 0xffff; port++) {
+            if (BIT_TEST(GBL_TARGET1->ports, port)) {
+               /* do the actual finterprinting */
+               do_fingerprint();
+            }
+         }
       }
       
    }

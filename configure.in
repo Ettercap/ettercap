@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.108 2004/04/04 14:27:30 alor Exp $
+dnl    $Id: configure.in,v 1.109 2004/04/05 12:17:59 alor Exp $
 dnl
 
 AC_INIT
@@ -492,7 +492,7 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
      LNETLIB="-lnet"
   else
      AC_MSG_RESULT(no)
-     AC_MSG_ERROR([libnet >= 1.1.1 not found])
+     AC_MSG_ERROR([libnet >= 1.1.2.1 not found])
   fi
 ]
 )

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.30 2004/03/24 11:28:01 alor Exp $
+    $Id: ec_plugins.c,v 1.31 2004/04/05 12:18:03 alor Exp $
 */
 
 #include <ec.h>
@@ -129,23 +129,29 @@ void plugin_load_all(void)
    struct dirent **namelist;
    int n, i, ret;
    int t = 0;
+   char *where;
    
    DEBUG_MSG("plugin_loadall");
 
    if (lt_dlinit() != 0)
       ERROR_MSG("lt_dlinit()");
 
+   /* default path */
+   where = INSTALL_LIBDIR "/" EC_PROGRAM;
+   
    /* first search in  INSTALL_LIBDIR/ettercap" */
-   n = scandir(INSTALL_LIBDIR "/" EC_PROGRAM, &namelist, 0, alphasort);
+   n = scandir(where, &namelist, 0, alphasort);
    /* on error fall back to the current dir */
    if (n <= 0) {
-      DEBUG_MSG("plugin_loadall: no plugin in "INSTALL_LIBDIR "/" EC_PROGRAM ". searching locally");
-      n = scandir(".", &namelist, 0, alphasort);
+      DEBUG_MSG("plugin_loadall: no plugin in %s searching locally", where);
+      /* change the path to the local one */
+      where = ".";
+      n = scandir(where, &namelist, 0, alphasort);
    }
   
    for(i = n-1; i >= 0; i--) {
       if ( match_pattern(namelist[i]->d_name, PLUGIN_PATTERN LTDL_SHLIB_EXT) ) {
-         ret = plugin_load_single(".", namelist[i]->d_name);
+         ret = plugin_load_single(where, namelist[i]->d_name);
          switch (ret) {
             case ESUCCESS:
                t++;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.1 2003/10/20 13:14:16 lordnaga Exp $
+    $Id: ec_ssh.c,v 1.2 2003/10/20 13:21:20 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -224,6 +224,7 @@ FUNC_DECODER(dissector_ssh)
             /* These are readable packets so copy it in the DISPDATA */
             if ((ssh_packet_type>=16 && ssh_packet_type<=18) ||
                  ssh_packet_type==4 || ssh_packet_type==9) {
+               u_char *temp_disp_data;
 
                /* Avoid int overflow */
                if (PACKET->DATA.disp_len + data_len + 1 < PACKET->DATA.disp_len) {
@@ -233,15 +234,17 @@ FUNC_DECODER(dissector_ssh)
                }
 		  	        
                /* Add this decrypted packet to the disp_data. 
-                * There can be more than one ssh packet in a tcp pck.                
+                * There can be more than one ssh packet in a tcp pck.
+                * We use a temp buffer to not feed top half with a null 
+                * pointer to disp_data.                
                 */
-               PACKET->DATA.disp_data = (u_char *)realloc(PACKET->DATA.disp_data, PACKET->DATA.disp_len + data_len + 1);
-               if (PACKET->DATA.disp_data == NULL) {
+               temp_disp_data = (u_char *)realloc(PACKET->DATA.disp_data, PACKET->DATA.disp_len + data_len + 1);
+               if (temp_disp_data == NULL) {
                   SAFE_FREE(clear_packet);	 
                   SAFE_FREE(crypted_packet);
                   return NULL;
                }
-	       
+               PACKET->DATA.disp_data = temp_disp_data;
                memcpy(PACKET->DATA.disp_data+PACKET->DATA.disp_len, ptr, data_len); 		  	       
                PACKET->DATA.disp_len += data_len;
             }

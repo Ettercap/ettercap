@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.6 2003/10/15 14:28:20 lordnaga Exp $
+    $Id: ec_smb.c,v 1.7 2003/10/16 12:16:23 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -223,7 +223,7 @@ FUNC_DECODER(dissector_smb)
                ptr += 2;
                unilen = phtos(ptr);       /* UNICODE password len */
          
-               if (pwlen > 0) 
+               if (pwlen > 1) 
                   memcpy(session_data->response1, Blob, sizeof(session_data->response1) - 1);
                else
                   sprintf(session_data->response1, "(empty)");

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.45 2003/12/27 18:50:10 alor Exp $
+    $Id: ec_decode.c,v 1.46 2004/01/05 16:58:48 alor Exp $
 */
 
 #include <ec.h>
@@ -84,12 +84,8 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
   
    /* XXX -- remove this */
 #if 0
-   if (!GBL_OPTIONS->quiet) {
-      USER_MSG("\n***************************************************************\n");
-      USER_MSG("ec_get_packets (one packet dispatched from pcap)\n");
-
+   if (!GBL_OPTIONS->quiet)
       USER_MSG("CAPTURED: 0x%04x bytes form %s\n", pkthdr->caplen, param );
-   }
 #endif
    
    if (GBL_OPTIONS->read)
@@ -106,7 +102,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
 #ifdef OS_LINUX
       /* 
        * add to the previous value, since every call
-       * to pcap_stats reset the counter 
+       * to pcap_stats reset the counter (hope that will be fixed soon)
        */
       GBL_STATS->ps_recv += ps.ps_recv;
       GBL_STATS->ps_drop += ps.ps_drop;
@@ -137,8 +133,15 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    data = (u_char *)pkt;
    datalen = pkthdr->caplen;
 
-   /* An interface with MTU > UINT16_MAX ???? */
-   BUG_IF(GBL_PCAP->snaplen <= datalen);
+   /* 
+    * deal with trucated packets:
+    * if someone has created a pcap file with the snaplen
+    * too small we have to skip the packet (is not interesting for us)
+    */
+   if (GBL_PCAP->snaplen <= datalen) {
+      USER_MSG("Truncated packet detected, skipping...\n");
+      return;
+   }
    
    /* alloc the packet object structure to be passet through decoders */
    packet_create_object(&po, data, datalen);

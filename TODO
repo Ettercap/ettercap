@@ -6,7 +6,6 @@
    
    + FIXING
       - dissect_free_session
-      - what about truncated pcap file ?
       - input for curses gui
       - in unoffensive we get UNKNOWN for all the profiles
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.15 2003/10/30 20:55:01 alor Exp $
+    $Id: ec_telnet.c,v 1.16 2004/01/05 16:58:48 alor Exp $
 */
 
 #include <ec.h>
@@ -112,6 +112,10 @@ FUNC_DECODER(dissector_telnet)
       /* retrieve the session */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
 
+         /* sanity check */
+         if (s->data == NULL)
+            return NULL;
+         
          /* if the collecting process has to be initiated */
          if (!strcmp(s->data, "\xe7\x7e")) {
          

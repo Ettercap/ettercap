@@ -15,3 +15,5 @@
    + PERFORMANCE MEASUREMENT
 
    + all the menu from the curses GUI
+
+   + TEST reading from truncated pcap file

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_rlogin.c,v 1.11 2003/10/29 20:41:07 alor Exp $
+    $Id: ec_rlogin.c,v 1.12 2004/01/05 16:58:48 alor Exp $
 */
 
 #include <ec.h>
@@ -88,7 +88,7 @@ FUNC_DECODER(dissector_rlogin)
    }
    
    /* the first packet after handshake */
-   if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS && s->data) {
       if (!strcmp(s->data, "HANDSHAKE")) {
          u_char *localuser;
          u_char *remoteuser;
@@ -118,7 +118,7 @@ FUNC_DECODER(dissector_rlogin)
    }
    
    /* concat the pass to the collected user */
-   if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS && s->data) {
       size_t i;
       u_char *p;
       u_char str[strlen(s->data) + PACKET->DATA.disp_len + 2];

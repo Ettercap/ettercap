@@ -10,7 +10,7 @@ NG-0.7.0_pre2    200405??
 
    + added support for UTF-8 strings
    + telnet collector enhacements (catches cisco login)
-   + added new plutins:
+   + added new plugins:
       + find_ettercap
       + autoadd
    + the live connections list can be purged by the user
@@ -21,7 +21,7 @@ NG-0.7.0_pre2    200405??
       + nntps
       + pop3s
       + ssmtp
-      + telents
+      + telnets
    + support for vlan tagging (802.1q header)
    + support for rawip file dumps
    + multiple selections in the GTK ui for targets and hosts

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.12 2004/05/12 15:27:07 alor Exp $
+    $Id: ec_wifi.c,v 1.13 2004/05/12 15:54:37 alor Exp $
 */
 
 #include <ec.h>
@@ -89,6 +89,7 @@ u_int8 WIFI_ORG_CODE[3] = {0x00, 0x00, 0x00};
 FUNC_DECODER(decode_wifi);
 FUNC_ALIGNER(align_wifi);
 void wifi_init(void);
+static int wep_decrypt(u_char *buf, size_t len);
 
 /*******************************************/
 
@@ -108,6 +109,7 @@ FUNC_DECODER(decode_wifi)
 {
    struct wifi_header *wifi;
    struct llc_header *llc;
+   struct wep_header *wep;
    FUNC_DECODER_PTR(next_decoder) = NULL;
 
    DECODED_LEN = sizeof(struct wifi_header);
@@ -119,12 +121,6 @@ FUNC_DECODER(decode_wifi)
       return NULL;
    }
 
-   /* the frame is crypted with WEP */
-   if (wifi->control & WIFI_WEP) {
-      /* XXX add support for WEP */
-      return NULL;
-   }
-   
    /* 
     * capture only "complete" and not retransmitted packets 
     * we don't want to deal with fragments (0x04) or retransmission (0x08) 
@@ -132,34 +128,28 @@ FUNC_DECODER(decode_wifi)
    switch (wifi->control) {
       
       case WIFI_STA_TO_STA:
-         /* get the logical link layer header */
-         llc = (struct llc_header *)(wifi + 1);
-         DECODED_LEN += sizeof(struct llc_header);
-   
          memcpy(PACKET->L2.src, wifi->ha2, ETH_ADDR_LEN);
          memcpy(PACKET->L2.dst, wifi->ha1, ETH_ADDR_LEN);
          break;
    
    
       case WIFI_STA_TO_AP:
-         /* get the logical link layer header */
-         llc = (struct llc_header *)(wifi + 1);
-         DECODED_LEN += sizeof(struct llc_header);
-   
          memcpy(PACKET->L2.src, wifi->ha2, ETH_ADDR_LEN);
          memcpy(PACKET->L2.dst, wifi->ha3, ETH_ADDR_LEN);
          break;
    
       case WIFI_AP_TO_STA:
-         /* get the logical link layer header */
-         llc = (struct llc_header *)(wifi + 1);
-         DECODED_LEN += sizeof(struct llc_header);
-   
          memcpy(PACKET->L2.src, wifi->ha3, ETH_ADDR_LEN);
          memcpy(PACKET->L2.dst, wifi->ha1, ETH_ADDR_LEN);
          break;
          
       case WIFI_AP_TO_AP:
+         /* 
+          * XXX - fix this or ignore this case...
+          *
+          * SHIT !! we have alignment problems here...
+          */
+#if 0         
          /* 
           * get the logical link layer header 
           * there is one more field (ha4) in this case
@@ -169,16 +159,33 @@ FUNC_DECODER(decode_wifi)
          
          memcpy(PACKET->L2.src, (char *)(wifi + 1), ETH_ADDR_LEN);
          memcpy(PACKET->L2.dst, wifi->ha3, ETH_ADDR_LEN);
-         /* 
-          * XXX - fix this or ignore this case...
-          *
-          * SHIT !! we have alignment problems here...
-          */
+#endif
          return NULL;
          break;
       
       default:
          return NULL;
+   }
+   
+   /* the frame is crypted with WEP */
+   if (wifi->control & WIFI_WEP) {
+      
+      /* get the WEP header */
+      wep = (struct wep_header *)(wifi + 1);
+      DECODED_LEN += sizeof(struct wep_header);
+
+      /* decrypt the packet */
+      if (wep_decrypt((u_char *)wep, DECODE_DATALEN - DECODED_LEN) != ESUCCESS)
+         return NULL;
+      
+      /* get the logical link layer header */
+      llc = (struct llc_header *)(wep + 1);
+      DECODED_LEN += sizeof(struct llc_header);
+   } else {
+   
+      /* get the logical link layer header */
+      llc = (struct llc_header *)(wifi + 1);
+      DECODED_LEN += sizeof(struct llc_header);
    }
    
    /* org_code != encapsulated ethernet not yet supported */
@@ -210,6 +217,16 @@ FUNC_ALIGNER(align_wifi)
 {
    /* already aligned */
    return (32 - sizeof(struct wifi_header) - sizeof(struct llc_header));
+}
+
+
+/*
+ * WEP decrypt function
+ */
+static int wep_decrypt(u_char *buf, size_t len)
+{
+   /* XXX add support for WEP */
+   return -EFATAL;
 }
 
 /* EOF */

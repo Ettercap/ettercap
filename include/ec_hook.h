@@ -1,5 +1,5 @@
 
-/* $Id: ec_hook.h,v 1.13 2003/11/22 13:57:10 alor Exp $ */
+/* $Id: ec_hook.h,v 1.14 2003/12/02 13:23:33 lordnaga Exp $ */
 
 #ifndef EC_HOOK_H
 #define EC_HOOK_H
@@ -28,6 +28,7 @@ void hook_point(int point, struct packet_object *po);
    #define HOOK_PACKET_UDP       (HOOK_PACKET_BASE + 10)
    #define HOOK_PACKET_TCP       (HOOK_PACKET_BASE + 11)
    #define HOOK_PACKET_ICMP      (HOOK_PACKET_BASE + 12)
+   #define HOOK_PACKET_LCP       (HOOK_PACKET_BASE + 13)
 
    /* high level protocol hooks */
    #define HOOK_PROTO_BASE          100

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ppp.c,v 1.2 2003/12/01 17:35:08 lordnaga Exp $
+    $Id: ec_ppp.c,v 1.3 2003/12/02 13:23:53 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -62,6 +62,7 @@ struct ppp_chap_challenge {
 #define PPP_PROTO_IP		0x0021
 #define PPP_PROTO_CHAP		0xc223
 #define PPP_PROTO_PAP		0xc023
+#define PPP_PROTO_LCP		0xc021
 
 #define PPP_CHAP_CODE_CHALLENGE	1
 #define PPP_CHAP_CODE_RESPONSE	2
@@ -242,6 +243,12 @@ FUNC_DECODER(decode_ppp)
          temp[auth_len] = 0;
          DISSECT_MSG("PPP : PAP Pass: %s\n\n", temp);   
       }
+   } else if (proto == PPP_PROTO_LCP) { 
+      /* Set the L4 header for the hook */
+      PACKET->L4.header = (u_char *)(DECODE_DATA + DECODED_LEN);
+         
+      /* HOOK POINT: HOOK_PACKET_LCP */
+      hook_point(HOOK_PACKET_LCP, PACKET);
    }
 
    return NULL;

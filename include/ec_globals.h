@@ -48,7 +48,6 @@ struct pcap_env {
    int               dlt;
    u_int32           dump_size;     /* total dump size */
    u_int32           dump_off;      /* current offset */
-   struct pcap_stat  stats;         /* interface statistics */
 };
 
 /* lnet structures */
@@ -56,6 +55,16 @@ struct lnet_env {
    void *lnet_L3;       /* this is a libnet_t pointer */
    void *lnet;          /* this is a libnet_t pointer */ 
    void *lnet_bridge;   /* this is a libnet_t pointer */
+};
+
+/* global statistics */
+struct gbl_stats {
+   u_int32 ps_recv;     /* number of packets received */
+   u_int32 ps_drop;     /* number of packets dropped */
+   u_int32 ps_ifdrop;   /* drops by interface XXX not yet supported */
+   u_int32 max_queue;   /* maximum queue len ever reached */
+   u_int32 curr_queue;  /* current queue len */
+   u_int32 processed;   /* number of packet processed */
 };
 
 /* per interface informations */
@@ -92,6 +101,7 @@ struct hosts_list {
 
 /* the globals container */
 struct globals {
+   struct gbl_stats *stats;
    struct ec_options *options;
    struct ui_ops *ui;
    struct program_env *env;
@@ -109,6 +119,7 @@ extern struct globals *gbls;
 
 #define GBLS gbls
 
+#define GBL_STATS          (GBLS->stats)
 #define GBL_OPTIONS        (GBLS->options)
 #define GBL_UI             (GBLS->ui)
 #define GBL_ENV            (GBLS->env)

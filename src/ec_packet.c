@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.11 2003/04/14 21:05:22 alor Exp $
+    $Id: ec_packet.c,v 1.12 2003/06/02 19:41:13 alor Exp $
 */
 
 #include <ec.h>
@@ -180,6 +180,9 @@ void packet_print(struct packet_object *po)
   
    if (GBL_OPTIONS->quiet)
       return;
+  
+#undef USER_MSG
+#define USER_MSG printf
    
    USER_MSG("\n========================================= \n");
    USER_MSG("Packet len:  %d\n", po->len);

@@ -17,24 +17,69 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.2 2003/04/14 21:05:24 alor Exp $
+    $Id: ec_profiles.c,v 1.3 2003/06/02 19:41:13 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_passive.h>
 #include <ec_profiles.h>
 #include <ec_packet.h>
+#include <ec_hook.h>
 
 /* globals */
 
 /* protos */
 
+void __init profiles_init(void);
+void profile_parse(struct packet_object *po);
 int profile_add(struct packet_object *po);
 
 /************************************************/
   
+/*
+ * add the hook function
+ */
+void __init profiles_init(void)
+{
+   hook_add(HOOK_DISPATCHER, &profile_parse);
+}
+
+
+/*
+ * decides if the packet has to be added
+ * to the profiles
+ */
+void profile_parse(struct packet_object *po)
+{
+   /*
+    * call the add function only if the packet
+    * is interesting...
+    * we don't want to log conversations, only
+    * open ports, user and pass... ;)
+    */
+   if ( (is_open_src_port(po) || is_open_dst_port(po)) ||   /* the port is open */
+        strcmp(po->PASSIVE.fingerprint, "") ||              /* collected fingerprint */  
+        po->DISSECTOR.user ||                               /* user */
+        po->DISSECTOR.pass ||                               /* pass */
+        po->DISSECTOR.info ||                               /* info */
+        po->DISSECTOR.banner                                /* banner */
+      )
+      profile_add(po);
+      
+   return;
+}
+
+
+/* 
+ * add the infos to the profiles tables
+ */
 int profile_add(struct packet_object *po)
 {
+   DEBUG_MSG("profile_add");
+
+   printf("[%s] [%s] [%s] [%s] [%s]\n", po->PASSIVE.fingerprint,
+         po->DISSECTOR.user, po->DISSECTOR.pass,
+         po->DISSECTOR.info, po->DISSECTOR.banner);
    return 0;   
 }
 

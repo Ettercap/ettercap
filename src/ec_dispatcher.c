@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.13 2003/04/14 21:05:14 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.14 2003/06/02 19:41:13 alor Exp $
 */
 
 #include <ec.h>
@@ -68,17 +68,19 @@ EC_THREAD_FUNC(top_half)
 
    LOOP { 
      
-      /* XXX - this is responsible for the responsiveness */
-      usleep(1); 
-      
       CANCELLATION_POINT();
       
       /* the queue is updated by other threads */
       PO_QUEUE_LOCK;
+      
+      /* get the first element */
       e = SIMPLEQ_FIRST(&po_queue);
+
+      /* the queue is empty, nothing to do... */
       if (e == NULL) {
          PO_QUEUE_UNLOCK;
-      
+         
+         usleep(1);
          continue;
       }
    
@@ -92,8 +94,15 @@ EC_THREAD_FUNC(top_half)
       
       /* HOOK_POINT: DISPATCHER */
       hook_point(HOOK_DISPATCHER, e->po);
-      
+     
+      /* remove the packet form the queue */
       SIMPLEQ_REMOVE_HEAD(&po_queue, e, next);
+      
+      /* update the stats */
+      GBL_STATS->curr_queue--;
+      GBL_STATS->processed++;
+      
+      /* destroy the duplicate packet object */
       packet_destroy_object(&e->po);
       SAFE_FREE(e);
       
@@ -115,9 +124,17 @@ void top_half_queue_add(struct packet_object *po)
    
    e->po = packet_dup(po);
    
-   /* add the message to the queue */
    PO_QUEUE_LOCK;
+   
+   /* add the message to the queue */
    SIMPLEQ_INSERT_TAIL(&po_queue, e, next);
+   
+   /* update the stats */
+   GBL_STATS->curr_queue++;
+   
+   if (GBL_STATS->curr_queue > GBL_STATS->max_queue)
+      GBL_STATS->max_queue = GBL_STATS->curr_queue;
+   
    PO_QUEUE_UNLOCK;
 }
 

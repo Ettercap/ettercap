@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.29 2004/01/11 20:53:09 alor Exp $ */
+/* $Id: wdg.h,v 1.30 2004/01/20 10:03:51 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -39,7 +39,7 @@
 #endif
 
 
-#define LIBWDG_VERSION "0.9.0"
+#define LIBWDG_VERSION "0.9.1"
    
 /********************************************/
 
@@ -213,6 +213,8 @@ typedef struct wdg_object wdg_t;
 
 /* compound ojbects */
 extern void wdg_compound_add(wdg_t *wo, wdg_t *widget);
+extern void wdg_compound_set_focus(wdg_t *wo, wdg_t *widget);
+extern wdg_t * wdg_compound_get_focused(wdg_t *wo);
 /* window ojbects */
 extern void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
 /* panel ojbects */

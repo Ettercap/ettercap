@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_window.c,v 1.9 2004/01/10 14:15:09 alor Exp $
+    $Id: wdg_window.c,v 1.10 2004/01/20 10:03:51 alor Exp $
 */
 
 #include <wdg.h>
@@ -74,7 +74,7 @@ static int wdg_window_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_window, ww);
    
-   WDG_DEBUG_MSG("wdg_window_destroy");
+   WDG_DEBUG_MSG("wdg_window_destroy (%p)", wo);
 
    /* erase the window */
    wbkgd(ww->win, COLOR_PAIR(wo->screen_color));

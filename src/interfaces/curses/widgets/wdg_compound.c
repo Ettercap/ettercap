@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_compound.c,v 1.2 2004/01/11 21:22:01 alor Exp $
+    $Id: wdg_compound.c,v 1.3 2004/01/20 10:03:51 alor Exp $
 */
 
 #include <wdg.h>
@@ -53,6 +53,8 @@ static void wdg_compound_border(struct wdg_object *wo);
 static void wdg_compound_move(struct wdg_object *wo, int key);
 static int wdg_compound_dispatch(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 void wdg_compound_add(wdg_t *wo, wdg_t *widget);
+void wdg_compound_set_focus(wdg_t *wo, wdg_t *widget);
+wdg_t * wdg_compound_get_focused(wdg_t *wo);
 
 /*******************************************/
 
@@ -362,6 +364,43 @@ void wdg_compound_add(wdg_t *wo, wdg_t *widget)
    /* set the first focused widget */
    if (ww->focused == NULL)
       ww->focused = e;
+}
+
+/*
+ * set the focus on a widget contained in the compound
+ */
+void wdg_compound_set_focus(wdg_t *wo, wdg_t *widget)
+{
+   WDG_WO_EXT(struct wdg_compound, ww);
+   struct wdg_widget_list *e;
+
+   TAILQ_FOREACH(e, &ww->widgets_list, next) {
+      
+     /* remove the focus from the current object */
+     if (e->wdg->flags & WDG_OBJ_FOCUSED)
+        ww->focused->wdg->flags &= ~WDG_OBJ_FOCUSED;
+
+     if (e->wdg == widget) {
+        /* give the focus to the new one */
+        ww->focused->wdg->flags |= WDG_OBJ_FOCUSED;
+     }
+   }
+}
+
+/*
+ * returns the current focused widget
+ */
+wdg_t * wdg_compound_get_focused(wdg_t *wo)
+{
+   WDG_WO_EXT(struct wdg_compound, ww);
+   struct wdg_widget_list *e;
+
+   /* search and return the focused one */
+   TAILQ_FOREACH(e, &ww->widgets_list, next)
+     if (e->wdg->flags & WDG_OBJ_FOCUSED)
+        return e->wdg;
+  
+   return NULL;
 }
 
 /* EOF */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.29 2004/01/11 20:53:09 alor Exp $
+    $Id: wdg.c,v 1.30 2004/01/20 10:03:51 alor Exp $
 */
 
 #include <wdg.h>
@@ -45,7 +45,7 @@ struct wdg_obj_list {
    struct wdg_object *wo;
    TAILQ_ENTRY(wdg_obj_list) next;
 };
-static TAILQ_HEAD(, wdg_obj_list) wdg_objects_list = TAILQ_HEAD_INITIALIZER(wdg_objects_list);
+static TAILQ_HEAD(wol, wdg_obj_list) wdg_objects_list = TAILQ_HEAD_INITIALIZER(wdg_objects_list);
 
 /* the currently focused object */
 static struct wdg_obj_list *wdg_focused_obj;
@@ -66,7 +66,9 @@ void wdg_del_idle_callback(void (*callback)(void));
 
 int wdg_events_handler(int exit_key);
 static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse);
-static void wdg_switch_focus(void);
+static void wdg_switch_focus(int type);
+#define SWITCH_FOREWARD 1
+#define SWITCH_BACKWARD 2
 void wdg_set_focus(struct wdg_object *wo);
 
 int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags);
@@ -262,7 +264,7 @@ int wdg_events_handler(int exit_key)
             
          case KEY_TAB:
             /* switch focus between objects */
-            wdg_switch_focus();
+            wdg_switch_focus(SWITCH_FOREWARD);
             /* update the screen */
             doupdate();
             break;
@@ -377,15 +379,22 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
 {
    /* the focused object is modal ! send only to it */
    if (wdg_focused_obj && (wdg_focused_obj->wo->flags & WDG_OBJ_FOCUS_MODAL)) {
-      wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse);
 
       /* check the destroy callback */
       if (wdg_focused_obj->wo && key == wdg_focused_obj->wo->destroy_key) {
          struct wdg_object *wo = wdg_focused_obj->wo;
+
+         WDG_DEBUG_MSG("wdg_destroy_callback (%p)", wo);
          WDG_EXECUTE(wdg_focused_obj->wo->destroy_callback);
          wdg_destroy_object(&wo);
          wdg_redraw_all();
+         
+         /* object was destroyed */
+         return;
       }
+
+      /* deliver the message normally */
+      wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse);
          
       /* other objects must not receive the msg */
       return;
@@ -464,7 +473,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
  * move the focus to the next object.
  * only WDG_OBJ_WANT_FOCUS could get the focus
  */
-static void wdg_switch_focus(void)
+static void wdg_switch_focus(int type)
 {
    struct wdg_obj_list *wl;
 
@@ -493,14 +502,25 @@ static void wdg_switch_focus(void)
    WDG_EXECUTE(wdg_focused_obj->wo->lost_focus, wdg_focused_obj->wo);
    
    /* 
-    * focus the next element in the list.
+    * focus the next/prev element in the list.
     * only focus objects that have the WDG_OBJ_WANT_FOCUS flag
     */
    do {
-      wdg_focused_obj = TAILQ_NEXT(wdg_focused_obj, next);
-      /* we are on the head, move to the first element */
-      if (wdg_focused_obj == TAILQ_END(&wdg_objects_list))
-         wdg_focused_obj = TAILQ_FIRST(&wdg_objects_list);
+      switch (type) {
+         case SWITCH_FOREWARD:
+            wdg_focused_obj = TAILQ_NEXT(wdg_focused_obj, next);
+            /* we are at the end, move to the first element */
+            if (wdg_focused_obj == TAILQ_END(&wdg_objects_list))
+               wdg_focused_obj = TAILQ_FIRST(&wdg_objects_list);
+            break;
+         case SWITCH_BACKWARD:
+            /* we are on the head, move to the last element */
+            if (wdg_focused_obj == TAILQ_FIRST(&wdg_objects_list))
+               wdg_focused_obj = TAILQ_LAST(&wdg_objects_list, wol);
+            else
+               wdg_focused_obj = TAILQ_PREV(wdg_focused_obj, wol, next);
+            break;
+      }
    } while ( !(wdg_focused_obj->wo->flags & WDG_OBJ_WANT_FOCUS) || !(wdg_focused_obj->wo->flags & WDG_OBJ_VISIBLE) );
 
    /* focus current object */
@@ -637,7 +657,7 @@ int wdg_destroy_object(struct wdg_object **wo)
          if (wdg_focused_obj && wdg_focused_obj->wo == *wo) {
             /* remove the modal flat to enable the switch */
             (*wo)->flags &= ~WDG_OBJ_FOCUS_MODAL;
-            wdg_switch_focus();
+            wdg_switch_focus(SWITCH_BACKWARD);
          }
          
          /* 

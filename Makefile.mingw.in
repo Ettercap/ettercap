@@ -199,7 +199,7 @@ ifeq ($(USE_CURSES),1)
 endif
 
 ifeq ($(USE_GTK),1)
-  SOURCE += $(addprefix src/interfaces/gtk/, ec_gtk.c ec_gtk_filters.c ec_gtk_hosts.c \
+  SOURCE += $(addprefix src/interfaces/gtk/, ec_gtk.c ec_gtk_conf.c ec_gtk_filters.c ec_gtk_hosts.c \
               ec_gtk_live.c ec_gtk_logging.c ec_gtk_menus.c ec_gtk_mitm.c ec_gtk_offline.c \
               ec_gtk_plugins.c ec_gtk_start.c ec_gtk_targets.c ec_gtk_view.c \
               ec_gtk_view_connections.c ec_gtk_view_profiles.c)

@@ -182,7 +182,7 @@ doubt, go with the latest copy.
             - libregex
             - libiconv
    5) download the gtk development and runtime packages from:
-         http://prdownloads.sourceforge.net/gtk-win/  
+         http://www.gimp.org/~tml/gimp/win32/downloads.html
    4) unpak all the packages as shown in the following tree:
 
       .
@@ -209,6 +209,7 @@ doubt, go with the latest copy.
 
    
    if you want precompiled packages:
+      http://sourceforge.net/project/showfiles.php?group_id=17435
       http://www.bgnett.no/~giva/misc/
 
 

@@ -6,7 +6,12 @@ Legenda:
 
 =========================================
 
-NG-0.7.1         200407
+NG-0.7.2         2004
+
+   
+
+
+NG-0.7.1         20040920
 
    + added the -s options to issue commands to the gui (useful in scripts)
    + added the -I options to show the list of NICs

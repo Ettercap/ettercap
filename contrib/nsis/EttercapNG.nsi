@@ -17,7 +17,7 @@
 ;   along with this program; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;
-;   $Id: EttercapNG.nsi,v 1.5 2004/09/17 19:38:38 alor Exp $
+;   $Id: EttercapNG.nsi,v 1.6 2004/09/20 21:55:43 alor Exp $
 ;
 ; NOTE: this .NSI script is designed for NSIS v2.0+
 
@@ -169,14 +169,14 @@ Section "Ettercap NG core" SecCore
    SetOutPath "$INSTDIR\etc\fonts"
    File ..\..\etc\fonts\*
 
-   SetOutPath "$INSTDIR\lib\pango\1.2.0\modules"
-   File ..\..\lib\pango\1.2.0\modules\*
+   SetOutPath "$INSTDIR\lib\pango\1.4.0\modules"
+   File ..\..\lib\pango\1.4.0\modules\*
 
-   SetOutPath "$INSTDIR\\lib\gtk-2.0\2.2.0\engines"
-   File ..\..\lib\gtk-2.0\2.2.0\engines\*
+   SetOutPath "$INSTDIR\\lib\gtk-2.0\2.4.0\engines"
+   File ..\..\lib\gtk-2.0\2.4.0\engines\*
 
-   SetOutPath "$INSTDIR\\lib\gtk-2.0\2.2.0\loaders"
-   File ..\..\lib\gtk-2.0\2.2.0\loaders\*
+   SetOutPath "$INSTDIR\\lib\gtk-2.0\2.4.0\loaders"
+   File ..\..\lib\gtk-2.0\2.4.0\loaders\*
 
 SectionEnd
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.1 2003/12/13 16:33:58 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.2 2003/12/13 20:08:30 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -56,13 +56,6 @@ struct arp_header {
 #define ARPOP_REQUEST   1    /* ARP request.  */
 };
 
-struct arp_eth_header {
-   u_int8   arp_sha[MEDIA_ADDR_LEN];     /* sender hardware address */
-   u_int8   arp_spa[IP_ADDR_LEN];      /* sender protocol address */
-   u_int8   arp_tha[MEDIA_ADDR_LEN];     /* target hardware address */
-   u_int8   arp_tpa[IP_ADDR_LEN];      /* target protocol address */
-};
-
 #define FAKE_PCK_LEN sizeof(eth_header)+sizeof(arp_header)+sizeof(arp_eth_header)
 struct packet_object fake_po;
 char fake_pck[FAKE_PCK_LEN];
@@ -73,6 +66,9 @@ void port_stealing_init(void);
 EC_THREAD_FUNC(port_stealer);
 static void port_stealing_start(char *args);
 static void port_stealing_stop(void);
+static void parse_received(struct packet_object *po);
+static void put_queue(struct packet_object *po);
+static void send_queue(struct packet_object *po);
 
 
 /*******************************************/
@@ -103,7 +99,6 @@ static void port_stealing_start(char *args)
    struct steal_list *s;
    struct eth_header *heth;
    struct arp_header *harp;
-   struct arp_eth_header *hearp;
    char bogus_mac[6]="\x00\xe7\x7e\xe7\x7e\xe7";
    
    DEBUG_MSG("port_stealing_start");
@@ -148,14 +143,29 @@ static void port_stealing_start(char *args)
     */
    heth = (struct eth_header *)fake_pck;
    harp = (struct arp_header)(heth + 1);
-   hearp = (struct arp_eth_header *)(harp + 1);
+
    if (steal_tree)
       memcpy(heth->dha, bogus_mac, ETH_ADDR_LEN);
    else
-      memcpy(heth->dha, GBL_IFACE->mac, ETH_ADDR_LEN);   
+      memcpy(heth->dha, GBL_IFACE->mac, ETH_ADDR_LEN);
+
+   heth->proto = htons();
+   harp->ar_hrd = htons();
+   harp->ar_pro = htons();
+   harp->ar_hln = 6;
+   harp->ar_pln = 4;
+   harp->ar_op  = htons(ARPOP_REQUEST);
+
    packet_create_object(&fake_po, fake_pck, FAKE_PCK_LEN);
    
-   /* XXX - ADD THE HOOKS */
+   /* Add the hooks:
+    * - handle stealed packets (send arp request, stop stealing)
+    * - put the packet in the send queue after "filtering"
+    * - send the queue on arp reply (port restored, restart stealing)
+    */
+   hook_add(HOOK_PACKET_ETH, &parse_received);
+   hook_add(HOOK_PRE_FORWARD, &put_queue);
+   hook_add(HOOK_PACKET_ARP_RP, &send_queue);
    
    /* create the stealing thread */
    ec_thread_new("port_stealer", "Port Stealing module", &port_stealer, NULL);
@@ -184,8 +194,14 @@ static void port_stealing_stop(void)
    USER_MSG("Restoring Switch tables...\n");
   
    ui_msg_flush(2);
+   
+   /* Remove the Hooks */
+   hook_del(HOOK_PACKET_ETH, &parse_received);
+   hook_del(HOOK_PRE_FORWARD, &put_queue);
+   hook_del(HOOK_PACKET_ARP_RP, &send_queue);
 
-   /* XXX - RESTORE SWITCH TABLE */
+   /* XXX - (mutex lock) Restore Switch Tables (2 times) */
+   /* XXX - Free the stealing list (mutex unlock) */
 }
 
 
@@ -220,6 +236,18 @@ EC_THREAD_FUNC(port_stealer)
    }
    
    return NULL; 
+}
+
+static void parse_received(struct packet_object *po)
+{
+}
+
+static void put_queue(struct packet_object *po)
+{
+}
+
+static void send_queue(struct packet_object *po)
+{
 }
 
 

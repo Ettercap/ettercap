@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.8 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_inet.h,v 1.9 2003/09/25 12:17:46 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -26,9 +26,9 @@ enum {
 /* this structure is used by ettercap to handle an IP
  * disregarding the version */
 struct ip_addr {
-   u_int8 type;
-   u_int8 addr_size;
-   char addr[MAX_ADDR_LEN];
+   u_int16 type;
+   u_int16 addr_size;
+   u_int8 addr[MAX_ADDR_LEN];
 };
 
 extern int ip_addr_init(struct ip_addr *sa, int type, char *addr);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_main.c,v 1.10 2003/09/18 22:15:05 alor Exp $
+    $Id: el_main.c,v 1.11 2003/09/25 12:17:46 alor Exp $
 */
 
 #include <el.h>
@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
 
    /* get the global header */
    ret = get_header(&GBL.hdr);
-   ON_ERROR(ret, -EINVALID, "Invalid log file");
+   if (ret == -EINVALID)
+      FATAL_ERROR("Invalid log file");
    
    fprintf(stderr, "Log file version    : %s\n", GBL.hdr.version);
    fprintf(stderr, "Timestamp           : %s", ctime((time_t *)&GBL.hdr.tv.tv_sec));

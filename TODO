@@ -34,6 +34,7 @@ Sep 2003:
    + pay attention on network order for constants
 
    + FILTERING ENGINE
+      - remove the ugly huge buffer for strings
       - etterfilter (utility) (used to compile the filter in bytecode)
       - functions
          - replace over mtu

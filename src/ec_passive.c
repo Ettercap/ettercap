@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_passive.c,v 1.8 2003/09/09 20:10:55 alor Exp $
+    $Id: ec_passive.c,v 1.9 2003/09/25 12:17:46 alor Exp $
 */
 
 #include <ec.h>
@@ -137,7 +137,7 @@ void print_host(struct host_profile *h)
                   (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , 
                   ntohs(o->L4_addr),
                   service_search(o->L4_addr, o->L4_proto), 
-                  o->banner);
+                  (o->banner) ? o->banner : "");
       
       LIST_FOREACH(u, &(o->users_list_head), next) {
         

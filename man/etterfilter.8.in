@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.10 2003/09/24 19:28:51 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.11 2003/09/25 12:17:46 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -80,7 +80,7 @@ OR '||', AND '&&' and NOT '!'.
 .Sp
 Example:
 .br
-if (tcp.port == 21 && search(DATA.data, "ettercap")) {
+if (tcp.src == 21 && search(DATA.data, "ettercap")) {
 .br
 }
 .Sp

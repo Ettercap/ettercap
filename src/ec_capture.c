@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.20 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_capture.c,v 1.21 2003/09/25 12:17:46 alor Exp $
 */
 
 #include <ec.h>
@@ -72,8 +72,12 @@ void capture_init(void)
       
       GBL_OPTIONS->iface = strdup(ifa);
    }
-   
-   DEBUG_MSG("capture_init %s", GBL_OPTIONS->iface);
+  
+   if (GBL_OPTIONS->iface)
+      DEBUG_MSG("capture_init %s", GBL_OPTIONS->iface);
+   else
+      DEBUG_MSG("capture_init (no interface)");
+      
               
    if (GBL_SNIFF->type == SM_BRIDGED) {
       if (!strcmp(GBL_OPTIONS->iface, GBL_OPTIONS->iface_bridge))

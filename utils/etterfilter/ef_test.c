@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.9 2003/09/24 20:03:46 alor Exp $
+    $Id: ef_test.c,v 1.10 2003/09/25 12:17:46 alor Exp $
 */
 
 #include <ef.h>
@@ -77,7 +77,7 @@ void test_filter(char *filename)
     * load the file in memory 
     * skipping the initial header
     */
-   fop = (struct filter_op *) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+   fop = (struct filter_op *) mmap(NULL, size + sizeof(struct filter_header), PROT_READ, MAP_PRIVATE, fd, 0);
    if (fop == MAP_FAILED)
       FATAL_ERROR("Cannot mmap file");
 
@@ -132,9 +132,6 @@ void test_filter(char *filename)
    }
 
    printf("\n");
-
-   /* unmap the file */
-   munmap((void *)fop, size);
 
    exit(0);
 }

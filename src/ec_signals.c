@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.11 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_signals.c,v 1.12 2003/09/25 12:17:46 alor Exp $
 */
 
 #include <ec.h>
@@ -43,6 +43,7 @@ void signal_handler(void)
    DEBUG_MSG("signal_handler activated");
 
    signal_handle(SIGSEGV, signal_SEGV, 0);
+   signal_handle(SIGBUS, signal_SEGV, 0);
    signal_handle(SIGINT, signal_TERM, 0);
    signal_handle(SIGTERM, signal_TERM, 0);
    signal_handle(SIGCHLD, SIG_IGN, 0);
@@ -73,12 +74,18 @@ RETSIGTYPE signal_SEGV(int sig)
 
    struct rlimit corelimit = {RLIM_INFINITY, RLIM_INFINITY};
 
-   DEBUG_MSG(" !!! SEGMENTATION FAULT !!!");
+   if (sig == SIGBUS)
+      DEBUG_MSG(" !!! BUS ERROR !!!");
+   else
+      DEBUG_MSG(" !!! SEGMENTATION FAULT !!!");
    
    ui_cleanup();
    
    fprintf (stderr, "\n"EC_COLOR_YELLOW"Ooops !! This shouldn't happen...\n\n"EC_COLOR_END);
-   fprintf (stderr, EC_COLOR_RED"Segmentation Fault...\n\n"EC_COLOR_END);
+   if (sig == SIGBUS)
+      fprintf (stderr, EC_COLOR_RED"Bus error...\n\n"EC_COLOR_END);
+   else
+      fprintf (stderr, EC_COLOR_RED"Segmentation Fault...\n\n"EC_COLOR_END);
 
    fprintf (stderr, "===========================================================================\n");
    fprintf (stderr, " To report this error follow these steps:\n\n");
@@ -108,7 +115,10 @@ RETSIGTYPE signal_SEGV(int sig)
    ui_cleanup();
    
    fprintf(stderr, EC_COLOR_YELLOW"Ooops ! This shouldn't happen...\n"EC_COLOR_END);
-   fprintf(stderr, EC_COLOR_RED"Segmentation fault !\n\n"EC_COLOR_END);
+   if (sig == SIGBUS)
+      fprintf (stderr, EC_COLOR_RED"Bus error...\n\n"EC_COLOR_END);
+   else
+      fprintf (stderr, EC_COLOR_RED"Segmentation Fault...\n\n"EC_COLOR_END);
    fprintf(stderr, "Please recompile in debug mode, reproduce the bug and send a bugreport\n\n");
    
    exit(666);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.15 2003/09/24 20:03:34 alor Exp $
+    $Id: ec_filter.c,v 1.16 2003/09/25 12:17:46 alor Exp $
 */
 
 #include <ec.h>
@@ -640,7 +640,7 @@ int filter_load_file(char *filename)
       FATAL_MSG("Filter compiled for a different version");
    
    /* get the size */
-   size = lseek(fd, 0, SEEK_END) - sizeof(struct filter_header);
+   size = lseek(fd, 0, SEEK_END);
 
    /* size must be a multiple of filter_op */
    if ((size % sizeof(struct filter_op) != 0) || size == 0)
@@ -659,7 +659,7 @@ int filter_load_file(char *filename)
 
    /* set the global variables */
    GBL_FILTERS->chain = (struct filter_op *) file + sizeof(struct filter_header);
-   GBL_FILTERS->len = size;
+   GBL_FILTERS->len = size - sizeof(struct filter_header);
 
    /* the mmap will remain active even if we close the fd */
    close(fd);
@@ -677,7 +677,8 @@ void filter_unload(void)
    DEBUG_MSG("filter_unload");
 
    /* unmap the memory area (from file) */
-   munmap((void *)GBL_FILTERS->chain, GBL_FILTERS->len); 
+   munmap((void *)GBL_FILTERS->chain - sizeof(struct filter_header), 
+         GBL_FILTERS->len + sizeof(struct filter_header)); 
 
    /* wipe the pointer */
    GBL_FILTERS->chain = NULL;

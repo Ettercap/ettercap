@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.39 2003/09/24 19:28:41 alor Exp $
+dnl    $Id: configure.in,v 1.40 2003/09/25 12:17:38 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -266,7 +266,7 @@ AC_CHECK_FUNCS([strcasestr], , AC_LIBOBJ(missing/strcasestr) AM_CONDITIONAL(MISS
 AC_CHECK_FUNCS([scandir], , AC_LIBOBJ(missing/scandir) AM_CONDITIONAL(MISSING_SCANDIR, true) )
 AC_CHECK_FUNCS([inet_aton], , AC_LIBOBJ(missing/inet_aton) AM_CONDITIONAL(MISSING_INET_ATON, true) )
 
-AC_CHECK_LIB(inet_aton, resolv,
+AC_CHECK_LIB(resolv, inet_aton,
    AM_CONDITIONAL(INET_ATON_WANTS_RESOLV, true), 
    AM_CONDITIONAL(INET_ATON_WANTS_RESOLV, false))
 

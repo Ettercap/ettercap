@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.11 2003/09/09 20:10:55 alor Exp $
+    $Id: el_log.c,v 1.12 2003/09/18 22:15:05 alor Exp $
 */
 
 #include <el.h>

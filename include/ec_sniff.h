@@ -1,4 +1,6 @@
 
+/* $Id: ec_sniff.h,v 1.5 2003/09/18 22:15:02 alor Exp $ */
+
 #ifndef EC_SNIFF_H
 #define EC_SNIFF_H
 

@@ -1,4 +1,6 @@
 
+/* $Id: el.h,v 1.9 2003/09/18 22:15:02 alor Exp $ */
+
 #ifndef EL_H
 #define EL_H
 

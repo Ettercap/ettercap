@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.23 2003/09/07 19:47:51 alor Exp $
+    $Id: ec_sniff.c,v 1.24 2003/09/18 22:15:03 alor Exp $
 */
 
 #include <ec.h>

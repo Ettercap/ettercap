@@ -1,4 +1,6 @@
 
+/* $Id: ec_stdint.h,v 1.3 2003/09/18 22:15:02 alor Exp $ */
+
 #ifndef EC_STDINT_H
 #define EC_STDINT_H
 

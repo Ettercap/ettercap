@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_services.c,v 1.5 2003/07/11 16:50:24 alor Exp $
+    $Id: ec_services.c,v 1.6 2003/09/18 22:15:03 alor Exp $
 
 */
 

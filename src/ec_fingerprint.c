@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.17 2003/09/01 15:39:50 alor Exp $
+    $Id: ec_fingerprint.c,v 1.18 2003/09/18 22:15:02 alor Exp $
 
 */
 

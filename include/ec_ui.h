@@ -1,4 +1,6 @@
 
+/* $Id: ec_ui.h,v 1.9 2003/09/18 22:15:02 alor Exp $ */
+
 #ifndef EC_UI_H
 #define EC_UI_H
 

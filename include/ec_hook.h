@@ -1,4 +1,6 @@
 
+/* $Id: ec_hook.h,v 1.6 2003/09/18 22:15:01 alor Exp $ */
+
 #ifndef EC_HOOK_H
 #define EC_HOOK_H
 

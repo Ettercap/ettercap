@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_compiler.c,v 1.1 2003/09/10 15:41:23 alor Exp $
+    $Id: ef_compiler.c,v 1.2 2003/09/18 22:15:04 alor Exp $
 */
 
 #include <ef.h>

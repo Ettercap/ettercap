@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_cygwin.c,v 1.1 2003/03/14 23:46:36 alor Exp $
+    $Id: ec_cygwin.c,v 1.2 2003/09/18 22:15:03 alor Exp $
 */
 
 #include <ec.h>

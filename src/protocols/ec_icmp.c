@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_icmp.c,v 1.3 2003/07/04 21:51:38 alor Exp $
+    $Id: ec_icmp.c,v 1.4 2003/09/18 22:15:04 alor Exp $
 */
 
 #include <ec.h>

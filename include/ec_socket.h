@@ -1,4 +1,6 @@
 
+/* $Id: ec_socket.h,v 1.2 2003/09/18 22:15:02 alor Exp $ */
+
 #ifndef EC_SOCKET_H
 #define EC_SOCKET_H
 

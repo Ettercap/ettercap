@@ -1,4 +1,6 @@
 
+# $Id: Makefile.am,v 1.47 2003/09/18 22:15:02 alor Exp $
+
 include $(top_srcdir)/Makefile.am.common
 
 bin_PROGRAMS = ettercap

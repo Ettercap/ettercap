@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.13 2003/08/20 16:00:53 alor Exp $
+    $Id: ec_threads.c,v 1.14 2003/09/18 22:15:03 alor Exp $
 */
 
 #include <ec.h>

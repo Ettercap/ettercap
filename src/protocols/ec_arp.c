@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_arp.c,v 1.8 2003/07/07 10:43:20 alor Exp $
+    $Id: ec_arp.c,v 1.9 2003/09/18 22:15:04 alor Exp $
 */
 
 #include <ec.h>

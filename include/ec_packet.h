@@ -1,4 +1,6 @@
 
+/* $Id: ec_packet.h,v 1.17 2003/09/18 22:15:01 alor Exp $ */
+
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
 

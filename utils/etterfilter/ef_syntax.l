@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.9 2003/09/16 12:08:41 alor Exp $
+    $Id: ef_syntax.l,v 1.10 2003/09/18 22:15:04 alor Exp $
 */
 
 %{

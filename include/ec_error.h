@@ -1,4 +1,6 @@
 
+/* $Id: ec_error.h,v 1.11 2003/09/18 22:15:01 alor Exp $ */
+
 #ifndef EC_ERROR_H
 #define EC_ERROR_H
 

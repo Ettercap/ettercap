@@ -1,4 +1,6 @@
 
+/* $Id: ec_log.h,v 1.14 2003/09/18 22:15:01 alor Exp $ */
+
 #ifndef EC_LOG_H
 #define EC_LOG_H
 

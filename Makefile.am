@@ -1,4 +1,6 @@
 
+# $Id: Makefile.am,v 1.12 2003/09/18 22:14:52 alor Exp $
+
 include $(top_srcdir)/Makefile.am.common
 
 SUBDIRS = man share include include src utils

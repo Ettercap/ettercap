@@ -1,4 +1,6 @@
 
+/* $Id: ec_plugins.h,v 1.7 2003/09/18 22:15:01 alor Exp $ */
+
 #ifndef EC_PLUGINS_H
 #define EC_PLUGINS_H
 

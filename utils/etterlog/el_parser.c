@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.16 2003/08/25 19:44:02 alor Exp $
+    $Id: el_parser.c,v 1.17 2003/09/18 22:15:05 alor Exp $
 */
 
 

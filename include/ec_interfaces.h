@@ -1,4 +1,6 @@
 
+/* $Id: ec_interfaces.h,v 1.8 2003/09/18 22:15:01 alor Exp $ */
+
 #ifndef EC_INTERFACES_H
 #define EC_INTERFACES_H
 

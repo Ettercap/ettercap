@@ -1,4 +1,6 @@
 
+# $Id: Makefile.am,v 1.8 2003/09/18 22:15:04 alor Exp $
+
 include $(top_srcdir)/Makefile.am.common
 
 # don't link ettercap libs

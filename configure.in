@@ -16,6 +16,8 @@ dnl
 dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+dnl   
+dnl    $Id: configure.in,v 1.38 2003/09/18 22:14:52 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)

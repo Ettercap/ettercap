@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.13 2003/09/15 16:16:59 lordnaga Exp $
+    $Id: ec_dissect.c,v 1.14 2003/09/18 22:15:02 alor Exp $
 */
 
 #include <ec.h>

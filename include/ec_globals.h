@@ -1,4 +1,6 @@
 
+/* $Id: ec_globals.h,v 1.26 2003/09/18 22:15:01 alor Exp $ */
+
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
 

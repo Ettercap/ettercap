@@ -1,4 +1,6 @@
 
+/* $Id: ec_streambuf.h,v 1.2 2003/09/18 22:15:02 alor Exp $ */
+
 #ifndef EC_STREAMBUF_H
 #define EC_STREAMBUF_H
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.8 2003/09/10 21:10:37 alor Exp $
+    $Id: ef_main.c,v 1.9 2003/09/18 22:15:04 alor Exp $
 */
 
 #include <ef.h>

@@ -1,4 +1,6 @@
 
+/* $Id: ec_session.h,v 1.4 2003/09/18 22:15:02 alor Exp $ */
+
 #ifndef EC_SESSION_H
 #define EC_SESSION_H
 

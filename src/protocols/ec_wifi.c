@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.18 2004/05/17 08:43:35 alor Exp $
+    $Id: ec_wifi.c,v 1.19 2004/05/17 19:43:08 alor Exp $
 */
 
 #include <ec.h>
@@ -245,8 +245,9 @@ static int wep_decrypt(u_char *buf, size_t len)
    struct wep_header *wep;
    u_char tmpbuf[len];
 
-   DISSECT_MSG("WEP: detected crypted packet\n");
-   
+memcpy(wkey, "\xd8\x24\x0c\x5a\x09", 5);
+wlen = 5;
+
    /* get the wep header */
    wep = (struct wep_header *)buf;
    len -= sizeof(struct wep_header);
@@ -254,12 +255,14 @@ static int wep_decrypt(u_char *buf, size_t len)
    /* copy the IV in the first 24 bit of the RC4 seed */
    memcpy(seed, wep->init_vector, IV_LEN);
 
-//printf("%02x%02x%02x\n", wep->init_vector[0], wep->init_vector[1], wep->init_vector[2]);   
    /* 
     * complete the seed with 40 or 104 bit from the secret key 
     * to have a 64 or 128 bit seed 
     */
    memcpy(seed + IV_LEN, wkey, wlen);
+   
+printf("IV: %02x%02x%02x  ", seed[0], seed[1], seed[2]);   
+printf("KEY: %02x%02x%02x%02x%02x\n", seed[3], seed[4], seed[5], seed[6], seed[7]);
   
    /* initialize the RC4 key */
    RC4_set_key(&key, IV_LEN + wlen, seed);
@@ -272,7 +275,7 @@ static int wep_decrypt(u_char *buf, size_t len)
     * at the end of the packet there is a CRC check
     */
    if (CRC_checksum(tmpbuf, len, CRC_INIT) != CRC_RESULT) {
-      DISSECT_MSG("WEP: invalid key, tha packet was skipped\n");
+      DISSECT_MSG("WEP: invalid key, the packet was skipped\n");
       return -ENOTHANDLED;
    }
   

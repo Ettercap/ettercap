@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.20 2003/10/14 21:20:47 lordnaga Exp $ */
+/* $Id: ec_packet.h,v 1.21 2003/10/18 11:27:42 alor Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -77,7 +77,7 @@ struct packet_object {
     
    
    u_int8 flags;                       /* flags relative to the packet */
-      #define PO_IGNORE       ((u_int8)(1))        /* this packet should not be processed (e.g. sniffing filter didn't match it) */
+      #define PO_IGNORE       ((u_int8)(1))        /* this packet should not be processed (e.g. sniffing TARGETS didn't match it) */
       #define PO_FORWARDABLE  ((u_int8)(1<<1))     /* the packet has our MAC address, by the IP is not ours */
       
       #define PO_FROMIFACE    ((u_int8)(1<<2))     /* this packet comes from the primary interface */

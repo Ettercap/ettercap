@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.32 2003/10/13 10:43:50 alor Exp $ */
+/* $Id: ec_globals.h,v 1.33 2003/10/18 11:27:42 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -54,6 +54,7 @@ struct ec_options {
    char *dumpfile;
    char *target1;
    char *target2;
+   FILE *msg_fd;
    int (*format)(const u_char *, size_t, u_char *);
    regex_t *regex;
 };

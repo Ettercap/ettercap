@@ -25,12 +25,12 @@
 # swap first two words of a udp packet
 
 if (ip.proto == UDP) {
-   pcre_regex(DATA.data, "/^([^ ]*) *([^ ]*)/$2 $1/");
+   pcre_regex(DATA.data, "^([^ ]*) *([^ ]*)", "$2 $1");
 }
 
 # matches 'foo' and the beginning of the line, then a word, then 'bar'
 
-if (pcre_regex(DECODED.data, "/^foo [^ ]+ bar/")) {
+if (pcre_regex(DECODED.data, "^foo [^ ]+ bar")) {
    msg("found");
 }
 

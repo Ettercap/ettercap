@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.45 2003/10/15 13:12:04 alor Exp $
+    $Id: ec_parser.c,v 1.46 2003/10/18 11:27:42 alor Exp $
 */
 
 
@@ -79,6 +79,7 @@ void ec_usage(void)
    fprintf(stdout, "  -w, --write <file>          write sniffed data to pcapfile <file>\n");
    fprintf(stdout, "  -L, --log <logfile>         log all the traffic to this <logfile>\n");
    fprintf(stdout, "  -l, --log-info <logfile>    log only passive infos to this <logfile>\n");
+   fprintf(stdout, "  -m, --log-msg <logfile>     log all the messages to this <logfile>\n");
    fprintf(stdout, "  -c, --compress              use gzip compression on log files\n");
    fprintf(stdout, "  -o, --only-local            store profiles only for local hosts\n");
    fprintf(stdout, "  -O, --only-remote           store profiles only for remote hosts\n");
@@ -144,6 +145,7 @@ void parse_options(int argc, char **argv)
       
       { "log", required_argument, NULL, 'L' },
       { "log-info", required_argument, NULL, 'l' },
+      { "log-msg", required_argument, NULL, 'm' },
       { "compress", no_argument, NULL, 'c' },
       { "only-local", no_argument, NULL, 'o' },
       { "only-remote", no_argument, NULL, 'O' },
@@ -173,7 +175,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:n:OoP:pqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:OoP:pqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -263,6 +265,11 @@ void parse_options(int argc, char **argv)
 
          case 'l':
                   if (set_loglevel(LOG_INFO, optarg) == -EFATAL)
+                     clean_exit(-EFATAL);
+                  break;
+
+         case 'm':
+                  if (set_msg_loglevel(LOG_TRUE, optarg) == -EFATAL)
                      clean_exit(-EFATAL);
                   break;
                   

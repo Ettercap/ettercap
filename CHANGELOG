@@ -33,6 +33,7 @@ NG-0.7.0    ????????
    + non root users can use ettercap to read from files
    + advanced ARP poisoning engine
    + unoffensive mode (doesn't forward packets)
+   + user messages can be logged
    + dissector enhancements in: 
       + POP (APOP and AUTH LOGIN support)
       + X11 (banner discovery)

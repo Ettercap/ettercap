@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.20 2003/10/12 15:28:27 alor Exp $
+    $Id: ec_ui.c,v 1.21 2003/10/18 11:27:42 alor Exp $
 */
 
 #include <ec.h>
@@ -212,11 +212,14 @@ void ui_msg(const char *fmt, ...)
       SAFE_REALLOC(msg->message, size);
    }
 
+   /* log the messages if needed */
+   if (GBL_OPTIONS->msg_fd)
+      fprintf(GBL_OPTIONS->msg_fd, "%s", msg->message);
+   
    /* 
     * MUST use the mutex.
     * this MAY be a different thread !!
     */
-   
    UI_MSG_LOCK;
    
    /* add the message to the queue */

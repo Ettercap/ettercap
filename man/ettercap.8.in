@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.38 2003/10/11 19:43:42 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.39 2003/10/18 11:27:42 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -501,6 +501,14 @@ option.
 \fB\-l\fR, \fB\-\-log-info <LOGFILE>\fR
 Very similar to -L but it logs only passive information + users and passwords
 for each host. The file will be named LOGFILE.eci
+
+.TP
+\fB\-m\fR, \fB\-\-log-msg <LOGFILE>\fR
+It stores in <LOGFILE> all the user messages printed by ettercap. This can be
+useful when you are using ettercap in daemon mode or if you want to track down
+all the messages. Indeed, some dissectors prints messages but their
+informations are not stored anywhere, so this is the only way to keep track of
+them.
 
 .TP
 \fB\-c\fR, \fB\-\-compress\fR

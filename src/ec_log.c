@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.25 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_log.c,v 1.26 2003/10/18 11:27:42 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_log.h>
+#include <ec_file.h>
 #include <ec_packet.h>
 #include <ec_passive.h>
 #include <ec_threads.h>
@@ -47,6 +48,7 @@ static int fd_i;
 
 static void log_close(void);
 int set_loglevel(int level, char *filename);
+int set_msg_loglevel(int level, char *filename);
 
 void log_packet(struct packet_object *po);
 
@@ -521,6 +523,33 @@ static void log_write_info_arp_icmp(struct packet_object *po)
 }
 
 
+/*
+ * open/close the file to store all the USER_MSG
+ */
+int set_msg_loglevel(int level, char *filename)
+{
+   switch (level) {
+      case LOG_TRUE:
+         /* why we are opening an already opened file ? */
+         BUG_IF(GBL_OPTIONS->msg_fd != NULL);
+
+         GBL_OPTIONS->msg_fd = fopen(filename, FOPEN_WRITE_TEXT);
+         if (GBL_OPTIONS->msg_fd == NULL)
+            FATAL_MSG("Cannot open \"%s\" for writing", filename);
+
+         break;
+         
+      case LOG_FALSE:
+         /* close the file and set the pointer to NULL */
+         if (GBL_OPTIONS->msg_fd) {
+            fclose(GBL_OPTIONS->msg_fd);
+            GBL_OPTIONS->msg_fd = NULL;
+         }
+         break;
+   }
+
+   return ESUCCESS;
+}
 
 /* EOF */
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.21 2003/10/12 17:56:35 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.22 2003/10/12 18:36:03 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -65,6 +65,7 @@ struct tcp_header {
 /* Session data structure */
 struct tcp_half_status {
    u_int32  last_seq;
+   u_int32  last_ack;
    int32    seq_adj;
    u_char   fin;
 };
@@ -246,6 +247,8 @@ FUNC_DECODER(decode_tcp)
       /* Record last packet's seq */
       status = (struct tcp_status *)s->data;
       status->way[direction].last_seq = ntohl(tcp->seq) + PACKET->DATA.len;
+      if ( tcp->flags & TH_ACK )
+         status->way[direction].last_ack = ntohl(tcp->ack);
       
       /* SYN counts as one byte */
       if ( tcp->flags & TH_SYN )
@@ -342,7 +345,7 @@ FUNC_INJECTOR(inject_tcp)
    tcph->win   = htons(32120); 
    tcph->csum  = 0;            
    tcph->urp   = 0;            
-   tcph->flags = TH_PSH | TH_ACK;      
+   tcph->flags = TH_PSH;      
    
    /* Take the rest of the data from the sessions */
    status = (struct tcp_status *)s->data;
@@ -354,9 +357,10 @@ FUNC_INJECTOR(inject_tcp)
       return -ENOTHANDLED;
          
    tcph->seq = htonl(status->way[direction].last_seq + status->way[direction].seq_adj);
+   tcph->ack = htonl(status->way[direction].last_ack - status->way[!direction].seq_adj);
    
-   /* Fake ACK seq (we didn't set the flag) */
-   tcph->ack = htonl(status->way[!direction].last_seq + status->way[!direction].seq_adj);
+   if (status->way[direction].last_ack!=0)
+      tcph->flags |= TH_ACK;
    
    /* Prepare data for next injector */
    PACKET->session = s->prev_session;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.40 2004/06/10 14:55:31 alor Exp $
+    $Id: ec_tcp.c,v 1.41 2004/07/29 09:46:47 alor Exp $
 */
 
 #include <ec.h>
@@ -162,7 +162,7 @@ FUNC_DECODER(decode_tcp)
     */
    if (!GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
       char tmp[MAX_ASCII_ADDR_LEN];
-#ifdef OS_DARWIN
+#if defined(OS_DARWIN) || defined (OS_WINDOWS)
       /* 
        * XXX - hugly hack here !  Mac OS X really sux
        * 
@@ -173,6 +173,9 @@ FUNC_DECODER(decode_tcp)
        * the OS doesn't bother computing the checksum and adding it to the packet
        * it leaves that up to the network interface.
        *                (taken from a bug report by Guy Harris - libpcap engineer)
+       *
+       * For Windows at least, TCP checksum off-loading can be disabled with a
+       * registry setting.
        *
        * if the source is the ettercap host, don't display the message 
        */

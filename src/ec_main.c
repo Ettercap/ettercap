@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.63 2004/07/13 16:24:52 alor Exp $
+    $Id: ec_main.c,v 1.64 2004/07/29 09:46:47 alor Exp $
 */
 
 #include <ec.h>
@@ -248,6 +248,9 @@ void clean_exit(int errcode)
    DEBUG_MSG("clean_exit: %d", errcode);
   
    INSTANT_USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
+
+   /* kill all the running threads but the current */
+   ec_thread_kill_all();
 
    /* close the UI */
    ui_cleanup();

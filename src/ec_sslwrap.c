@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.52 2004/07/23 07:25:27 alor Exp $
+    $Id: ec_sslwrap.c,v 1.53 2004/07/29 09:46:47 alor Exp $
 */
 
 #include <ec.h>
@@ -712,7 +712,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    if (ae->status & SSL_ENABLED)
       len = SSL_read(ae->ssl[direction], po->DATA.data, 1024);
    else       
-      len = read(ae->fd[direction], po->DATA.data, 1024);
+      len = socket_recv(ae->fd[direction], po->DATA.data, 1024);
 
    /* XXX - Check when it returns 0 (it was a <)*/
    if (len <= 0 && (ae->status & SSL_ENABLED)) {
@@ -778,7 +778,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       if (ae->status & SSL_ENABLED)
          len = SSL_write(ae->ssl[direction], p_data, packet_len);
       else       
-         len = write(ae->fd[direction], p_data, packet_len);
+         len = socket_send(ae->fd[direction], p_data, packet_len);
 
       if (len <= 0 && (ae->status & SSL_ENABLED)) {
          ret_err = SSL_get_error(ae->ssl[direction], len);
@@ -875,8 +875,8 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
    if (ae->ssl[SSL_SERVER]) 
       SSL_free(ae->ssl[SSL_SERVER]);
  
-   close(ae->fd[SSL_CLIENT]);
-   close(ae->fd[SSL_SERVER]);
+   close_socket(ae->fd[SSL_CLIENT]);
+   close_socket(ae->fd[SSL_SERVER]);
 
    if (ae->cert)
       X509_free(ae->cert);
@@ -1004,7 +1004,7 @@ EC_THREAD_FUNC(sslw_child)
  
    /* Contact the real server */
    if (sslw_sync_conn(ae) == -EINVALID) {
-      close(ae->fd[SSL_CLIENT]);
+      close_socket(ae->fd[SSL_CLIENT]);
       SAFE_FREE(ae);
       ec_thread_exit();
    }	    

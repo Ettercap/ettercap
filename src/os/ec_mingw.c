@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.6 2004/07/20 09:53:53 alor Exp $
+    $Id: ec_mingw.c,v 1.7 2004/07/29 09:46:47 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -169,7 +169,7 @@ int ec_win_gettimeofday (struct timeval *tv, struct timezone *tz)
   tv->tv_sec  = tb.time;
   tv->tv_usec = tb.millitm * 1000 + 500;
   if (tz) {
-    tz->tz_minuteswest = -60 * _timezone;
+    tz->tz_minuteswest = _timezone / 60;
     tz->tz_dsttime = _daylight;
   }
   return (0);
@@ -489,12 +489,21 @@ const char *ec_win_strsignal (int signo)
 }
 
 /*
- * fork() related stuff
+ * Unix process related stuff
  */
 
 int ec_win_fork(void)
 {
    USER_MSG("fork() not yet supported");
+   errno = ENOSYS;
+   return -1;
+}
+
+int ec_win_wait (int *status)
+{
+   USER_MSG("wait() not yet supported");
+   errno = ENOSYS;
+   (void) status;
    return -1;
 }
 

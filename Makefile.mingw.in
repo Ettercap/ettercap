@@ -19,12 +19,18 @@ USE_DEBUG  = 1
 
 #
 # Root directories. Change to suite.
+#
 # These are required:
-#   MINGW32, PCAP_ROOT, LIBNET_ROOT, PTHREADS_ROOT and ICONV_ROOT.
+#   PCAP_ROOT, LIBNET_ROOT, PTHREADS_ROOT, ICONV_ROOT and ZLIB_ROOT.
+#
+# These are required for GTK (and GTK is required since the Ncurses/Win32
+# port isn't finished):
+#   GTK_ROOT, PANGO_ROOT, ATK_ROOT and GLIB_ROOT.
+#
 # The rest are optional depending on what USE_x you've set above.
 #
 # If USE_CURSES=1, we need Ncurses with PD-curses at bottom.
-# Missing packages should
+# Missing packages should not matter unless USE_x requires them.
 #
 MINGW_ROOT    = $(subst \,/,$(MINGW32))
 PCAP_ROOT     = ../libpcap
@@ -154,7 +160,7 @@ SOURCE += $(addprefix src/dissectors/,                                          
             ec_mountd.c ec_msn.c     ec_mysql.c ec_napster.c ec_nntp.c   ec_ospf.c \
             ec_pop.c    ec_portmap.c ec_rcon.c  ec_rip.c     ec_rlogin.c ec_smb.c  \
             ec_smtp.c   ec_snmp.c    ec_socks.c ec_telnet.c ec_vnc.c               \
-            ec_ymsg.c)
+            ec_ymsg.c   ec_ssh.c)
 
 ifeq ($(USE_SSL),1)
   SOURCE += src/dissectors/ec_ssh.c
@@ -225,13 +231,12 @@ ifeq ($(USE_PLUGIN),1)
   EC_IMPORT = ettercap.a
 
   VPATH += $(addprefix plug-ins/, autoadd arp_cop chk_poison dns_spoof dos_attack \
-             dummy dummy_hook find_conn find_ip finger finger_submit gre_relay \
+             dummy find_conn find_ettercap find_ip finger finger_submit gre_relay \
              gw_discover isolate link_type pptp_chapms1 pptp_clear pptp_pap \
-             pptp_reneg rand_flood reply_arp scan_poisoner search_promisc \
-             smb_clear smb_down stp_mangler remote_browser)
+             pptp_reneg rand_flood reply_arp scan_poisoner search_promisc smb_clear \
+             smb_down stp_mangler remote_browser)
 
-  DLL_CFLAGS = $(CFLAGS) -shared $(EC_IMPORT) -DBUILDING_PLUGIN \
-            # -DEC_API_EXTERN=__declspec(dllimport)
+  DLL_CFLAGS = $(CFLAGS) -shared $(EC_IMPORT) -DBUILDING_PLUGIN
 
   PLUGIN_SRC = $(addprefix plug-ins/,            \
                  arp_cop/arp_cop.c               \
@@ -240,8 +245,8 @@ ifeq ($(USE_PLUGIN),1)
                  dns_spoof/dns_spoof.c           \
                  dos_attack/dos_attack.c         \
                  dummy/dummy.c                   \
-                 dummy_hook/dummy_hook.c         \
                  find_conn/find_conn.c           \
+                 find_ettercap/find_ettercap.c   \
                  find_ip/find_ip.c               \
                  finger/finger.c                 \
                  finger_submit/finger_submit.c   \
@@ -268,6 +273,7 @@ ifeq ($(USE_PLUGIN),1)
                   ec_dos_attack.dll     \
                   ec_dummy.dll          \
                   ec_find_conn.dll      \
+                  ec_find_ettercap.dll  \
                   ec_find_ip.dll        \
                   ec_finger.dll         \
                   ec_finger_submit.dll  \
@@ -288,8 +294,6 @@ ifeq ($(USE_PLUGIN),1)
                   ec_smb_down.dll       \
                   ec_stp_mangler.dll)
 
-  UNPORTABLE_DLLS = lib/ec_dummy_hook.dll
-
   ifeq ($(USE_SSL),1)
     DLL_CFLAGS += $(OPENSSL_ROOT)/out/libssl32.dll.a $(OPENSSL_ROOT)/out/libeay32.dll.a -lgdi32
   endif
@@ -300,7 +304,6 @@ endif
 
 all: $(OBJ_DIR) $(PROGRAMS) $(PLUGIN_DLLS) man_pages
 	@echo "Welcome to EtterCap NG"
-
 
 ifeq ($(USE_PLUGIN),1)
 ettercap.exe $(EC_IMPORT): $(OBJECTS)
@@ -375,10 +378,6 @@ lib/ec_dummy.dll: plug-ins/dummy/dummy.c $(EC_IMPORT)
 	$(CC) -o $@ $< $(DLL_CFLAGS)
 	@echo
 
-lib/ec_dummy_hook.dll: plug-ins/dummy_hook/dummy_hook.c $(EC_IMPORT)
-	$(CC) -o $@ $< $(DLL_CFLAGS)
-	@echo
-
 lib/ec_arp_cop.dll: plug-ins/arp_cop/arp_cop.c $(EC_IMPORT)
 	$(CC) -o $@ $< $(DLL_CFLAGS)
 	@echo
@@ -400,6 +399,10 @@ lib/ec_dos_attack.dll: plug-ins/dos_attack/dos_attack.c $(EC_IMPORT)
 	@echo
 
 lib/ec_find_conn.dll: plug-ins/find_conn/find_conn.c $(EC_IMPORT)
+	$(CC) -o $@ $< $(DLL_CFLAGS)
+	@echo
+
+lib/ec_find_ettercap.dll: plug-ins/find_ettercap/find_ettercap.c $(EC_IMPORT)
 	$(CC) -o $@ $< $(DLL_CFLAGS)
 	@echo
 

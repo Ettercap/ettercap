@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.38 2004/07/01 20:45:43 alor Exp $
+    $Id: ec_scan.c,v 1.39 2004/07/29 09:46:47 alor Exp $
 */
 
 #include <ec.h>
@@ -455,14 +455,18 @@ int scan_load_hosts(char *filename)
    /* XXX - adapt to IPv6 */
    /* read the file */
    for (nhosts = 0; !feof(hf); nhosts++) {
-      fscanf(hf,"%15s %17s %127s\n", ip, mac, name);
+      
+      if (fscanf(hf,"%15s %17s %127s\n", ip, mac, name) != 3 ||
+         *ip == '#' || *mac == '#' || *name == '#')
+         continue;
+      
       
       /* convert to network */
       mac_addr_aton(mac, hmac);
       
       if (inet_aton(ip, &tip) == 0) {
          del_hosts_list();
-         SEMIFATAL_ERROR("Bad parsing on line %d", nhosts);
+         SEMIFATAL_ERROR("Bad parsing on line %d", nhosts + 1);
       }
       
       ip_addr_init(&hip, AF_INET, (char *)&tip);
@@ -476,6 +480,8 @@ int scan_load_hosts(char *filename)
    }
 
    fclose(hf);
+
+   DEBUG_MSG("scan_load_hosts: loaded %d hosts lines", nhosts);
 
    return ESUCCESS;
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.27 2004/07/12 19:57:26 alor Exp $
+    $Id: ec_signals.c,v 1.28 2004/07/29 09:46:47 alor Exp $
 */
 
 #include <ec.h>
@@ -31,6 +31,8 @@
 #ifndef OS_WINDOWS
    #include <sys/resource.h>
    #include <sys/wait.h>
+#else
+   #undef SIGSEGV  /* Don't use this yet */
 #endif
 
 typedef void handler_t(int);

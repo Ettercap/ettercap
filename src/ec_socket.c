@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.12 2004/07/12 19:57:26 alor Exp $
+    $Id: ec_socket.c,v 1.13 2004/07/29 09:46:47 alor Exp $
 */
 
 #include <ec.h>
@@ -36,10 +36,10 @@
 
 /* protos */
 
-int open_socket(char *host, u_int16 port);
+int open_socket(const char *host, u_int16 port);
 int close_socket(int s);
 void set_blocking(int s, int set);
-int socket_send(int s, u_char *payload, size_t size);
+int socket_send(int s, const u_char *payload, size_t size);
 int socket_recv(int s, u_char *payload, size_t size);
 
 /*******************************************/
@@ -73,7 +73,7 @@ void set_blocking(int s, int set)
 /*
  * open a socket to the specified host and port
  */
-int open_socket(char *host, u_int16 port)
+int open_socket(const char *host, u_int16 port)
 {
    struct hostent *infh;
    struct sockaddr_in sa_in;
@@ -166,7 +166,7 @@ int close_socket(int s)
 /* 
  * send a buffer thru the socket 
  */
-int socket_send(int s, u_char *payload, size_t size)
+int socket_send(int s, const u_char *payload, size_t size)
 {
    /* send data to the socket */
    return send(s, payload, size, 0);

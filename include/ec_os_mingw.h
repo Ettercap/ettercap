@@ -203,13 +203,20 @@ EC_API_EXTERN const char *ec_win_get_ec_dir (void);
 #endif
 
 /*
- * fork() emulation
+ * Unix process emulation
  */
 #if !defined(HAVE_FORK)
   #define fork()  ec_win_fork()
 
   EC_API_EXTERN int ec_win_fork(void);
 #endif
+
+#if !defined(HAVE_WAIT)
+  #define wait(st)  ec_win_wait(st)
+
+  EC_API_EXTERN int ec_win_wait (int *status);
+#endif
+   
   
 /* Missing stuff for ec_resolv.h / ec_win_dnexpand()
  */

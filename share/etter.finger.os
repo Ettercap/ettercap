@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.19 $                                     # 
-#  Last updated on : $Date: 2004/07/20 14:33:43 $                          #
+#  Version         : $Revision: 1.20 $                                     # 
+#  Last updated on : $Date: 2004/07/29 09:46:47 $                          #
 #  Total entries   : 1653                                                  #
 #                                                                          #
 ############################################################################
@@ -1667,7 +1667,7 @@ FFFF:05B4:80:WS:1:1:1:0:S:LT:MacOS X
 FFFF:05B4:FF:01:0:1:1:0:A:30:Mac OS 9
 FFFF:05B4:FF:01:0:1:1:0:S:30:Mac OS 9
 FFFF:05B4:FF:WS:0:0:1:0:A:2C:FreeBSD 
-FFFF:05B4:FF:WS:1:1:1:0:S:30:Wondows 2000 
+FFFF:05B4:FF:WS:1:1:1:0:S:30:Windows 2000 
 FFFF:7805:40:01:0:1:0:1:S:3C:Mac OS X 10.3 
 FFFF:7E05:80:00:1:1:1:1:S:40:Windows 2000
 FFFF:8C05:FF:01:0:1:0:1:A:LT:MacOS X

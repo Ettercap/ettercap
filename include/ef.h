@@ -1,5 +1,5 @@
 
-/* $Id: ef.h,v 1.15 2004/07/24 10:43:21 alor Exp $ */
+/* $Id: ef.h,v 1.16 2004/07/29 09:46:47 alor Exp $ */
 
 #ifndef EF_H
 #define EF_H
@@ -24,6 +24,9 @@
 #include <unistd.h>
 #include <time.h>
 
+#define EC_API_EXTERN
+#define EF_API_EXTERN
+
 #ifndef HAVE_STRSEP
    #include <missing/strsep.h>
 #endif
@@ -31,9 +34,6 @@
 #ifdef OS_WINDOWS
    #include <windows.h>
 #endif
-
-#define EC_API_EXTERN
-#define EF_API_EXTERN
 
 #include <ec_queue.h>
 #include <ec_stdint.h>

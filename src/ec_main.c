@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.50 2003/12/13 18:41:10 alor Exp $
+    $Id: ec_main.c,v 1.51 2003/12/28 14:48:21 alor Exp $
 */
 
 #include <ec.h>
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
  */
 static void drop_privs(void)
 {
-   u_int uid;
+   u_int uid, gid;
    char *var;
 
    /* are we root ? */
@@ -192,20 +192,32 @@ static void drop_privs(void)
    /* get the env variable for the UID to drop privs to */
    var = getenv("EC_UID");
    
-   /* if the EC_UID variable is not set, default to DROP_TO_UID (nobody) */
+   /* if the EC_UID variable is not set, default to GBL_CONF->ec_uid (nobody) */
    if (var != NULL)
       uid = atoi(var);
    else
       uid = GBL_CONF->ec_uid;
    
-   DEBUG_MSG("drop_privs: setuid(%d)", uid);
+   /* get the env variable for the GID to drop privs to */
+   var = getenv("EC_GID");
+   
+   /* if the EC_UID variable is not set, default to GBL_CONF->ec_gid (nobody) */
+   if (var != NULL)
+      gid = atoi(var);
+   else
+      gid = GBL_CONF->ec_gid;
+   
+   DEBUG_MSG("drop_privs: setuid(%d) setgid(%d)", uid, gid);
    
    /* drop to a good uid ;) */
-   if ( setuid(uid) < 0)
+   if ( setgid(gid) < 0 )
+      ERROR_MSG("setgid()");
+   
+   if ( setuid(uid) < 0 )
       ERROR_MSG("setuid()");
 
-   DEBUG_MSG("privs: %d %d", (int)getuid(), (int)geteuid() );
-   USER_MSG("Priviledges dropped to UID %d...\n\n", getuid() ); 
+   DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
+   USER_MSG("Priviledges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() ); 
 }
 
 

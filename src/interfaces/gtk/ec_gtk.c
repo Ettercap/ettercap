@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.9 2004/03/02 00:41:59 daten Exp $
+    $Id: ec_gtk.c,v 1.10 2004/03/02 02:42:24 daten Exp $
 */
 
 #include <ec.h>
@@ -413,7 +413,7 @@ static void gtkui_setup(void)
    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
    snprintf(title, 50, "%s %s", EC_PROGRAM, EC_VERSION);
    gtk_window_set_title(GTK_WINDOW (window), title);
-   gtk_window_set_default_size(GTK_WINDOW (window), 540, 380);
+   gtk_window_set_default_size(GTK_WINDOW (window), 560, 400);
    g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gtkui_exit), NULL);
 
    accel_group = gtk_accel_group_new ();
@@ -453,7 +453,7 @@ static void gtkui_setup(void)
    /* notebook for MDI pages */
    frame = gtk_frame_new(NULL);
    gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_IN);
-   gtk_paned_add1(GTK_PANED(vpaned), frame);
+   gtk_paned_pack1(GTK_PANED(vpaned), frame, TRUE, TRUE);
    gtk_widget_show(frame);
 
    notebook = gtk_notebook_new();
@@ -467,13 +467,14 @@ static void gtkui_setup(void)
    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll),
                                   GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
-   gtk_paned_add2(GTK_PANED(vpaned), scroll);
+   gtk_paned_pack2(GTK_PANED (vpaned), scroll, FALSE, TRUE);
    gtk_widget_show(scroll);
 
    textview = gtk_text_view_new();
    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (textview), GTK_WRAP_WORD);
    gtk_text_view_set_editable(GTK_TEXT_VIEW (textview), FALSE);
    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (textview), FALSE);
+   gtk_widget_set_size_request(textview, -1, 140);
    gtk_container_add(GTK_CONTAINER (scroll), textview);
    gtk_widget_show(textview);
 
@@ -481,7 +482,7 @@ static void gtkui_setup(void)
    gtk_text_buffer_get_end_iter(msgbuffer, &iter);
    endmark = gtk_text_buffer_create_mark(msgbuffer, "end", &iter, FALSE);
 
-   gtk_paned_set_position(GTK_PANED(vpaned), 250);
+   //gtk_paned_set_position(GTK_PANED(vpaned), 250);
    gtk_box_pack_end(GTK_BOX(vbox), vpaned, TRUE, TRUE, 0);
    gtk_widget_show(vpaned);
 
@@ -796,6 +797,11 @@ GtkWidget *gtkui_page_new(char *title, void (*callback)(void)) {
    hbox = gtk_hbox_new(FALSE, 0);
    gtk_widget_show(hbox);
 
+   /* the label for the tab title */
+   label = gtk_label_new(title);
+   gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
+   gtk_widget_show(label);
+
    /* the close button */
    button = gtk_button_new();
    gtk_button_set_relief(GTK_BUTTON (button), GTK_RELIEF_NONE);
@@ -808,11 +814,6 @@ GtkWidget *gtkui_page_new(char *title, void (*callback)(void)) {
    gtk_container_add(GTK_CONTAINER (button), image);
    gtk_widget_show(image);
 
-   /* the label for the tab title */
-   label = gtk_label_new(title);
-   gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-   gtk_widget_show(label);
-
    /* a parent to pack the contents into */
    parent = gtk_frame_new(NULL);
    gtk_frame_set_shadow_type(GTK_FRAME(parent), GTK_SHADOW_NONE);
@@ -820,8 +821,10 @@ GtkWidget *gtkui_page_new(char *title, void (*callback)(void)) {
 
    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), parent, hbox);
 
+   /* callback to destroy the tab/page */
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK(gtkui_page_close), parent);
 
+   /* callback to do specific clean-up */
    if(callback)
       g_object_set_data(G_OBJECT (parent), "destroy", callback);
 
@@ -840,18 +843,17 @@ void gtkui_page_close(GtkWidget *widget, gpointer data) {
    gint num = 0;
    void (*callback)(void);
 
+   DEBUG_MSG("gtkui_page_close");
+
    num = gtk_notebook_page_num(GTK_NOTEBOOK(notebook), GTK_WIDGET (data));
    child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook), num);
    g_object_ref(G_OBJECT(child));
 
-   /* a callback can be assigned with g_object_set_data */
+   gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), num);
+
    callback = g_object_get_data(G_OBJECT (child), "destroy");
    if(callback)
       callback();
-
-   gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), num);
-
-   DEBUG_MSG("gtkui_page_close");
 }
 
 /* EOF */

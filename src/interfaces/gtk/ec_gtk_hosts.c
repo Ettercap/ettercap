@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_hosts.c,v 1.4 2004/03/02 00:41:59 daten Exp $
+    $Id: ec_gtk_hosts.c,v 1.5 2004/03/02 02:42:24 daten Exp $
 */
 
 #include <ec.h>
@@ -173,7 +173,8 @@ void gtkui_host_list(void)
    DEBUG_MSG("gtk_host_list");
 
    if(hosts_window) {
-      gtk_window_present(GTK_WINDOW (hosts_window));
+      //gtk_window_present(GTK_WINDOW (hosts_window));
+      gtkui_page_present(hosts_window);
       return;
    }
    

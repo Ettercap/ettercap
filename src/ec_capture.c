@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.44 2004/04/06 15:12:57 alor Exp $
+    $Id: ec_capture.c,v 1.45 2004/04/08 11:02:53 daten Exp $
 */
 
 #include <ec.h>
@@ -311,15 +311,15 @@ void capture_getifs(void)
 
       /* remove the pseudo device 'any' */
       if (!strcmp(dev->name, "any")) {
-         SAFE_FREE(dev->name);
-         SAFE_FREE(dev->description);
-         SAFE_FREE(dev);
-       
-         /* chek if it is the first in the list */
-         if (pdev == GBL_PCAP->ifs)
+         /* check if it is the first in the list */
+         if (dev == GBL_PCAP->ifs)
             GBL_PCAP->ifs = ndev;
          else
             pdev->next = ndev;
+
+         SAFE_FREE(dev->name);
+         SAFE_FREE(dev->description);
+         SAFE_FREE(dev);
 
          continue;
       }

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_signals.c,v 1.2 2003/03/14 23:46:36 alor Exp $
 */
 
 #include <ec.h>
@@ -123,12 +123,16 @@ RETSIGTYPE signal_TERM(int sig)
       DEBUG_MSG("Signal handler... (caught SIGNAL: %d)", sig);
    #endif
 
+   if (sig == SIGINT) {
+      fprintf(stderr, "\n\nUser requested a CTRL+C... (deprecated, next time use 'q')\n\n");
+   } else {
    #ifdef HAVE_STRSIGNAL
       fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d | %s)\n\n", GBL_PROGRAM, sig, strsignal(sig));
    #else
       fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d)\n\n", GBL_PROGRAM, sig);
    #endif
-
+   }
+   
    signal(sig, SIG_IGN);
 
    exit(1);

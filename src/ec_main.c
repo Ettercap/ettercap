@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.2 2003/03/13 11:01:48 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.3 2003/03/14 23:46:36 alor Exp $
 */
 
 #include <ec.h>
@@ -80,6 +80,11 @@ int main(int argc, char *argv[])
  
    /* get hardware infos */
    get_hw_info();
+  
+   /* always disable the kernel ip forwarding.
+    * it is done by ettercap.
+    */
+   disable_ip_forward();
    
    /* 
     * drop root priviledges 
@@ -103,7 +108,7 @@ int main(int argc, char *argv[])
    ec_thread_new("top_half", "dispatching module", &top_half, NULL);
    
    /* this thread becomes the UI then displays it */
-   ec_thread_register(EC_SELF, "UI", "the user interface");
+   ec_thread_register(EC_SELF, GBL_PROGRAM, "the user interface");
    ui_start();
 
 /******************************************** 
@@ -129,7 +134,12 @@ void drop_privs(void)
 {
    int uid;
    char *var;
-  
+ 
+#ifdef OS_CYGWIN
+   /* under windows we dont want to drop privs :) */
+   return;
+#endif
+   
    /* get the env variable for the UID to drop privs to */
    var = getenv("EC_UID");
    

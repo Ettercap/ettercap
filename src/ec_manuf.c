@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.1 2003/03/13 11:01:48 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_manuf.c,v 1.2 2003/03/14 23:46:36 alor Exp $
 
 */
 
@@ -86,7 +86,7 @@ char * manuf_search(char *m);
 /*****************************************/
 
 
-void discard_macdb(void)
+static void discard_macdb(void)
 {
    struct entry *l;
 
@@ -102,7 +102,7 @@ void discard_macdb(void)
       }
    }
 
-   DEBUG_MSG("discard_macdb");
+   DEBUG_MSG("ATEXIT: discard_macdb");
    
    return;
 }

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.2 2003/03/10 09:08:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.3 2003/03/14 23:46:36 alor Exp $
 */
 
 #include <ec.h>
@@ -55,14 +55,16 @@ void ec_thread_kill_all(void);
 char * ec_thread_getname(pthread_t id)
 {
    struct thread_list *current;
+   char *name;
 
    if (id == EC_SELF)
       id = pthread_self();
 
    LIST_FOREACH(current, &thread_list_head, next) {
       if (current->t.id == id) {
+         name = current->t.name;
          THREADS_UNLOCK;
-         return current->t.name;
+         return name;
       }
    }
 
@@ -76,6 +78,7 @@ char * ec_thread_getname(pthread_t id)
 char * ec_thread_getdesc(pthread_t id)
 {
    struct thread_list *current;
+   char *desc;
 
    if (id == EC_SELF)
       id = pthread_self();
@@ -84,8 +87,9 @@ char * ec_thread_getdesc(pthread_t id)
    
    LIST_FOREACH(current, &thread_list_head, next) {
       if (current->t.id == id) {
+         desc = current->t.description;
          THREADS_UNLOCK;
-         return current->t.description;
+         return desc;
       }
    }
    

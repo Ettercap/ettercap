@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.4 2003/03/10 16:04:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.5 2003/03/14 23:46:36 alor Exp $
 */
 
 #include <ec.h>
@@ -26,7 +26,7 @@
 #include <libnet.h>
 
 void send_init(void);
-void send_close(void);
+static void send_close(void);
 int send_to_L3(struct packet_object *po);
 int send_to_L2(struct packet_object *po);
 int send_to_bridge(struct packet_object *po);
@@ -75,7 +75,7 @@ void send_init(void)
 }
 
 
-void send_close(void)
+static void send_close(void)
 {
    libnet_destroy(GBL_LNET->lnet);
    libnet_destroy(GBL_LNET->lnet_L3);
@@ -83,7 +83,7 @@ void send_close(void)
    if (GBL_SNIFF->type == SM_BRIDGED) 
       libnet_destroy(GBL_LNET->lnet_bridge);
    
-   DEBUG_MSG("send_closed");
+   DEBUG_MSG("ATEXIT: send_closed");
 }
 
 /*

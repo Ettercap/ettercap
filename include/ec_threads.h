@@ -27,6 +27,8 @@ extern void ec_thread_init(void);
 extern void ec_thread_testcancel(void);
 extern void ec_thread_kill_all(void);
 
+#define RETURN_IF_NOT_MAIN() do{ if (strcmp(ec_thread_getname(EC_SELF), GBL_PROGRAM)) return; }while(0)
+
 #endif
 
 /* EOF */

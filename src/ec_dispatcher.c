@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.4 2003/03/12 17:21:50 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dispatcher.c,v 1.5 2003/03/14 23:46:36 alor Exp $
 */
 
 #include <ec.h>
@@ -43,6 +43,8 @@ EC_THREAD_FUNC(top_half)
   
    ec_thread_init();
 
+   pthread_exit(0);
+   
    /* XXX -- implement the read from list */
    while(1) sleep(1);
  

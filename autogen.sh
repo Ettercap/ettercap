@@ -4,7 +4,7 @@ echo
 echo "Suggested version:"
 echo
 echo "     autoconf 2.57"
-echo "     automake 1.6"
+echo "     automake 1.7"
 echo
 
 echo "cleaning up config files"

@@ -35,6 +35,22 @@ ettercap_SOURCES = ec_main.c \
 				   protocols/ec_udp.c \
 				   dissectors/ec_pop.c \
 				   interfaces/console/ec_console.c 
+               
+if LINUX
+ettercap_SOURCES += os/ec_linux.c
+endif
+#if BSD
+#ettercap_SOURCES += os/ec_bsd.c
+#endif
+if DARWIN
+ettercap_SOURCES += os/ec_darwin.c
+endif
+if SOLARIS
+ettercap_SOURCES += os/ec_solaris.c
+endif
+if CYGWIN
+ettercap_SOURCES += os/ec_cygwin.c
+endif
 
 if NCURSES
 #ettercap_SOURCES += interfaces/ncurses/ec_ncurses.c

@@ -11,16 +11,23 @@
    !! dissector malloc the INFO, someone have to free them... !!
    !! dissector malloc the PASSIVE, someone have to free them... !!
 
+   + UNIFIED SNIFFING
+      - PO_MODIFIABLE (remove PO_PCKHOST)
+      - set_default_sniff
+      - disable forwarding (always)
+
+   + PLUGINS ENGINE
+
+   + LOGGING ENGINE
+      - etterlog
 
    + SNIFFING ENGINE
       - arp sniff
          - arp poisoner
-         - layer 3 forwarding
          - only possible on eth
       - bridged sniffing (for now it is one-way)
          - dump on bridge
    
-   + PLUGINS ENGINE
    
    + FILTERING ENGINE
       - implement the sessions
@@ -30,6 +37,7 @@
    + TOP HALF
       - processing engine to differenziate the activity (hook point DISPATCHER)
          - passive mapping
+         - "active" passive fingerprint
          - sniffing (connection tracking)
          - logging
    

@@ -55,6 +55,13 @@ extern void get_hw_info(void);
    
 #define int_ntoa(x)   inet_ntoa(*((struct in_addr *)&(x)))
 
+/*
+ * these prototype are implemented in ./os/.../
+ * each OS implement its specific function
+ */
+
+void disable_ip_forward(void);
+
    
 #endif
 

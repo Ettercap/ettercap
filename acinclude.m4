@@ -49,4 +49,37 @@ AC_DEFUN(EC_PTHREAD_CHECK,[
 
 ])
 
+
+dnl
+dnl EC_WINDOWS_KERNEL()
+dnl
+
+AC_DEFUN(EC_WINDOWS_KERNEL,[
+
+   AC_MSG_CHECKING(Windows kernel version)
+   tech=`uname | cut -f2 -d"_" | cut -f1 -d"-"`
+   major=`uname | cut -f2 -d"-" | cut -f1 -d"."`
+   minor=`uname | cut -f2 -d"-" | cut -f2 -d"."`
+   AC_MSG_RESULT($tech $major.$minor)
+   if test "$tech" != "NT"; then
+      ac_cv_ec_windows_version="-DWIN9X"
+   elif test "$major$minor" -lt 50; then
+      ac_cv_ec_windows_version="-DWINNT"
+   else
+      ac_cv_ec_windows_version="-DWIN2K_XP"
+   fi
+
+   AC_MSG_CHECKING(Cygwin dll version)
+   uname=`uname -r | cut -f1 -d"("`
+   major=`uname -r | cut -f1 -d"(" | cut -f1 -d"."`
+   minor=`uname -r | cut -f1 -d"(" | cut -f2 -d"."`
+   AC_MSG_RESULT($uname)
+   if test "$major$minor" -lt 13; then
+      AC_MSG_WARN(****************************);
+      AC_MSG_WARN(* Cygwin 1.3.x REQUIRED !! *);
+      AC_MSG_WARN(****************************);
+      exit;
+   fi
+])
+
 dnl vim:ts=3:expandtab

@@ -177,11 +177,11 @@
 /* compiling under cygwin win32 */
 #undef OS_CYGWIN
 
+/* compiling under macosx */
+#undef OS_DARWIN
+
 /* compiling under linux */
 #undef OS_LINUX
-
-/* compiling under macosx */
-#undef OS_MACOSX
 
 /* compiling under solaris */
 #undef OS_SOLARIS

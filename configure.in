@@ -18,7 +18,7 @@ dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl
 
-AC_INIT(include/ettercap.h)
+AC_INIT(include/ec.h)
 
 dnl Force autoconf 2.57 
 AC_PREREQ(2.57)
@@ -56,50 +56,65 @@ AH_TEMPLATE(OS_BSD_FREE, [compiling under free bsd])
 AH_TEMPLATE(OS_BSD_OPEN, [compiling under open bsd])
 AH_TEMPLATE(OS_BSD_NET, [compiling under net bsd])
 
-AH_TEMPLATE(OS_MACOSX, [compiling under macosx])
+AH_TEMPLATE(OS_DARWIN, [compiling under macosx])
 
 AH_TEMPLATE(OS_SOLARIS, [compiling under solaris])
 
 AH_TEMPLATE(OS_CYGWIN, [compiling under cygwin win32])
 
+dnl initialize the conditionals
+AM_CONDITIONAL(LINUX, false)
+AM_CONDITIONAL(BSD, false)
+AM_CONDITIONAL(DARWIN, false)
+AM_CONDITIONAL(SOLARIS, false)
+AM_CONDITIONAL(CYGWIN, false)
+   
 case "$host_os" in
 *linux*)
    AC_DEFINE(OS_LINUX)
+   AM_CONDITIONAL(LINUX, true)
    OS="LINUX"
    PTHREADLIB="-lpthread"
    ;;
 *freebsd*)
    AC_DEFINE(OS_BSD)
    AC_DEFINE(OS_BSD_FREE)
+   AM_CONDITIONAL(BSD, true)
    OS="FREEBSD"
    PTHREADLIB="-pthread"
    ;;
 *openbsd*)
    AC_DEFINE(OS_BSD)
    AC_DEFINE(OS_BSD_OPEN)
+   AM_CONDITIONAL(BSD, true)
    OS="FREEBSD"
    PTHREADLIB="-pthread"
    ;;
 *netbsd*)
    AC_DEFINE(OS_BSD)
    AC_DEFINE(OS_BSD_NET)
+   AM_CONDITIONAL(BSD, true)
    OS="FREEBSD"
    PTHREADLIB="-pthread"
    ;;
 *darwin*)
-   AC_DEFINE(OS_MACOSX)
+   AC_DEFINE(OS_DARWIN)
+   AM_CONDITIONAL(DARWIN, true)
    OS="DARWIN"
    PTHREADLIB="-lpthread"
    ;;
 *solaris*)
    AC_DEFINE(OS_SOLARIS)
+   AM_CONDITIONAL(SOLARIS, true)
    OS="SOLARIS"
    PTHREADLIB="-lpthread"
    SOCKETLIB="-lsocket -lnsl"
    ;;
 *cygwin*)
+   EC_WINDOWS_KERNEL()
    AC_DEFINE(OS_CYGWIN)
-   OS="CYGWIN"
+   AM_CONDITIONAL(CYGWIN, true)
+   OS="CYGWIN $ac_cv_ec_windows_version"
    PTHREADLIB="-lpthread"
    ;;
 *)

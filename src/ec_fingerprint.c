@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.1 2003/03/13 11:01:47 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.2 2003/03/14 23:46:36 alor Exp $
 
 */
 
@@ -58,7 +58,7 @@ static u_char TTL_PREDICTOR(u_char x);
 /*****************************************/
 
 
-void fingerprint_discard(void)
+static void fingerprint_discard(void)
 {
    struct entry *l;
 
@@ -74,7 +74,7 @@ void fingerprint_discard(void)
       }
    }
 
-   DEBUG_MSG("fingerprint_discard");
+   DEBUG_MSG("ATEXIT: fingerprint_discard");
    
    return;
 }

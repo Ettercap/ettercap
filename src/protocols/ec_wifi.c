@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.15 2004/05/14 07:59:17 alor Exp $
+    $Id: ec_wifi.c,v 1.16 2004/05/14 13:17:22 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_capture.h>
 #include <ec_checksum.h>
+#include <ec_strings.h>
 
 #ifdef HAVE_OPENSSL
    #include <openssl/rc4.h>
@@ -89,10 +90,10 @@ struct wep_header {
 };
 
 /* encapsulated ethernet */
-u_int8 WIFI_ORG_CODE[3] = {0x00, 0x00, 0x00};
+static u_int8 WIFI_ORG_CODE[3] = {0x00, 0x00, 0x00};
 
-u_int8 wkey[32];  /* 256 bit */
-size_t wlen;
+static u_int8 wkey[32];  /* 256 bit */
+static size_t wlen;
  
 
 /* protos */
@@ -293,7 +294,7 @@ static int wep_decrypt(u_char *buf, size_t len)
  * for example:
  *    64:alor1
  *    128:ettercapng070
- *    64:01:02:03:04:05
+ *    64:\x01\x02\x03\x04\x05
  */
 int set_wep_key(u_char *string)
 {
@@ -310,11 +311,10 @@ int set_wep_key(u_char *string)
 
    bit = atoi(p);
 
-   /* get the second part of the string */
-   p = strtok(NULL, ":");
-   if (p == NULL)
-      SEMIFATAL_ERROR("Invalid WEP key");
-   
+   /* sanity check */
+   if (bit <= 0)
+      SEMIFATAL_ERROR("Unsupported WEP key lenght");
+
    /* the len of the secret part of the RC4 seed */
    wlen = bit / 8 - IV_LEN;
    
@@ -325,7 +325,16 @@ int set_wep_key(u_char *string)
    if (bit != 64 && bit != 128 && bit != 256)
       SEMIFATAL_ERROR("Unsupported WEP key lenght");
 
-
+   /* get the second part of the string */
+   p = strtok(NULL, ":");
+   if (p == NULL)
+      SEMIFATAL_ERROR("Invalid WEP key");
+   
+   /* escape the string and check its lenght */
+   if (strescape(wkey, p) != (int)wlen)
+      SEMIFATAL_ERROR("Specified WEP key lenght does not match the given string");
+  
+   
    return ESUCCESS;
 }
 

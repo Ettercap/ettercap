@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.34 2004/05/13 09:54:56 alor Exp $
+    $Id: ec_log.c,v 1.35 2004/05/14 13:17:10 alor Exp $
 */
 
 #include <ec.h>
@@ -101,6 +101,9 @@ int set_loglevel(int level, char *filename)
    sprintf(eci, "%s.eci", filename);
    sprintf(ecp, "%s.ecp", filename);
    
+   memset(&fdp, 0, sizeof(struct log_fd));
+   memset(&fdi, 0, sizeof(struct log_fd));
+
    /* open the file(s) */
    switch(level) {
 
@@ -180,8 +183,6 @@ static void log_stop(void)
 int log_open(struct log_fd *fd, char *filename)
 {
    int zerr;
-
-   memset(fd, 0, sizeof(struct log_fd));
 
    if (fd->type == LOG_COMPRESSED) {
       fd->cfd = gzopen(filename, "wb9");

@@ -32,13 +32,16 @@
       - specified ip address
       - interconnections map (linked to the profiles)
       - based on ttl (ala traceroute)
+      - png output (ala nagios)
 
    + BINDER
  
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
 
-   + multiple dissector on one port
+   + SAFE_STRTOK
+
+   + multiple dissector on a single port
 
    + ETTERFILTER
       - possibility to set flags in scripts 

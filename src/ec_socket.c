@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.7 2004/03/06 18:06:53 alor Exp $
+    $Id: ec_socket.c,v 1.8 2004/06/08 20:05:36 alor Exp $
 */
 
 #include <ec.h>
@@ -84,12 +84,12 @@ int open_socket(char *host, u_int16 port)
       memcpy(&sa_in.sin_addr, infh->h_addr, infh->h_length);
    else {
       if ( inet_aton(host, (struct in_addr *)&sa_in.sin_addr.s_addr) == 0 )
-         FATAL_MSG("Cannot resolve %s", host);
+         return -ENOADDRESS;
    }
 
    /* open the socket */
    if ( (sh = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-      ERROR_MSG("Cannot create the socket");
+      return -EFATAL;
  
    /* set nonbloking socket */
    set_blocking(sh, 0);
@@ -111,13 +111,15 @@ int open_socket(char *host, u_int16 port)
    /* reached the timeout */
    if (ret < 0 && (errno == EINPROGRESS || errno == EALREADY || errno == EAGAIN)) {
       DEBUG_MSG("open_socket: connect() timeout: %d", errno);
-      FATAL_MSG("Connect timeout to %s on port %d", host, port);
+      close(sh);
+      return -ETIMEOUT;
    }
 
    /* error while connecting */
    if (ret < 0 && errno != EISCONN) {
       DEBUG_MSG("open_socket: connect() error: %d", errno);
-      FATAL_MSG("Error connecting to %s on port %d", host, port);
+      close(sh);
+      return -EINVALID;
    }
       
    DEBUG_MSG("open_socket: connect() connected.");

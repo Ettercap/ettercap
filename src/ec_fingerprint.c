@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_fingerprint.c,v 1.21 2004/04/24 09:23:11 alor Exp $
+    $Id: ec_fingerprint.c,v 1.22 2004/06/08 20:05:36 alor Exp $
 
 */
 
@@ -319,6 +319,21 @@ int fingerprint_submit(char *finger, char *os)
       
    /* prepare the socket */
    sock = open_socket(host, 80);
+   
+   switch(sock) {
+      case -ENOADDRESS:
+         FATAL_MSG("Cannot resolve %s", host);
+         break;
+      case -EFATAL:
+         FATAL_MSG("Cannot create the socket");
+         break;
+      case -ETIMEOUT:
+         FATAL_MSG("Connect timeout to %s on port 80", host);
+         break;
+      case -EINVALID:
+         FATAL_MSG("Error connecting to %s on port 80", host);
+         break;
+   }
   
    os_encoded = strdup(os);
    /* sanitize the os (encode the ' ' to '+') */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_update.c,v 1.11 2003/10/21 16:16:02 alor Exp $
+    $Id: ec_update.c,v 1.12 2004/06/08 20:05:36 alor Exp $
 */
 
 #include <ec.h>
@@ -182,7 +182,7 @@ static void update_file(char *tokens)
 
 /* 
  * get the current file revision 
- * it is stored in the cvs var $Revision: 1.11 $
+ * it is stored in the cvs var $Revision: 1.12 $
  */
 static int get_current_rev(char *file, char **curr, char *errbuf)
 {
@@ -258,6 +258,22 @@ static int do_update(char *file, char *url, char *errbuf)
    }
   
    sock = open_socket(host, 80);
+   
+   switch(sock) {
+      case -ENOADDRESS:
+         FATAL_MSG("Cannot resolve %s", host);
+         break;
+      case -EFATAL:
+         FATAL_MSG("Cannot create the socket");
+         break;
+      case -ETIMEOUT:
+         FATAL_MSG("Connect timeout to %s on port 80", host);
+         break;
+      case -EINVALID:
+         FATAL_MSG("Error connecting to %s on port 80", host);
+         break;
+   }
+   
    /* prepare the HTTP request */
    snprintf(getmsg, sizeof(getmsg), "GET %s HTTP/1.0\r\n"
                                      "Host: %s\r\n"

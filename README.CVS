@@ -22,6 +22,10 @@ use empty password to login, then:
  
    # cvs -z3 -d:pserver:anonymous@cvs.sf.net:/cvsroot/ettercap co ettercap_ng
 
+if you already have checked out the cvs, you can update it with:
+
+   # cvs up -Pd
+
 Once you have downloaded your fresh copy of the cvs, you have to generate the
 autoconfiguration scripts. 
 NOTE: you will need up to date autotools.

@@ -1,5 +1,5 @@
 
-/* $Id: ec_error.h,v 1.14 2004/05/21 14:25:22 alor Exp $ */
+/* $Id: ec_error.h,v 1.15 2004/06/08 20:05:25 alor Exp $ */
 
 #ifndef EC_ERROR_H
 #define EC_ERROR_H
@@ -14,6 +14,7 @@ enum {
    EINVALID    = 4,
    ENOADDRESS  = 5,
    EDUPLICATE  = 6,
+   ETIMEOUT    = 7,
    EVERSION    = 254,
    EFATAL      = 255,
 };

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.25 2003/10/06 12:11:32 alor Exp $
+    $Id: ec_filter.c,v 1.26 2003/10/06 13:14:03 alor Exp $
 */
 
 #include <ec.h>
@@ -805,7 +805,7 @@ void filter_unload(struct filter_env *fenv)
    DEBUG_MSG("filter_unload");
 
    /* free the memory alloc'd for regex */
-   while (i < (fenv->len / sizeof(struct filter_op)) ) {
+   while (fop != NULL && i < (fenv->len / sizeof(struct filter_op)) ) {
       /* search for func regex and pcre */
       if(fop[i].opcode == FOP_FUNC) {
          switch(fop[i].op.func.op) {

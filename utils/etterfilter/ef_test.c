@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_test.c,v 1.14 2003/10/05 17:42:17 alor Exp $
+    $Id: ef_test.c,v 1.15 2003/10/06 13:14:03 alor Exp $
 */
 
 #include <ef.h>
@@ -49,6 +49,8 @@ void test_filter(char *filename)
    struct filter_env fenv;
    u_int32 eip = 0;
 
+   memset(&fenv, 0, sizeof(struct filter_env));
+   
    /* load the file */
    if (filter_load_file(filename, &fenv) != ESUCCESS) {
       exit(-1);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_hosts.c,v 1.6 2004/01/03 15:14:14 alor Exp $
+    $Id: ec_curses_hosts.c,v 1.7 2004/01/06 17:44:16 alor Exp $
 */
 
 #include <ec.h>
@@ -46,7 +46,7 @@ static struct wdg_list *wdg_hosts_elements;
 static size_t nhosts;
 
 struct wdg_menu menu_hosts[] = { {"Hosts",             'H',       "",    NULL},
-                                 {"Host list",         'h',       "h",   curses_host_list},
+                                 {"Hosts list",        'h',       "h",   curses_host_list},
                                  {"-",                 0,         "",    NULL},
                                  {"Scan for hosts",    CTRL('S'), "C-s", curses_scan},
                                  {"Load from file...", 0,         "",    curses_load_hosts},

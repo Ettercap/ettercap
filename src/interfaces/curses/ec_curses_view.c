@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.7 2004/01/03 15:14:14 alor Exp $
+    $Id: ec_curses_view.c,v 1.8 2004/01/06 17:44:16 alor Exp $
 */
 
 #include <ec.h>
@@ -77,7 +77,7 @@ static void curses_show_stats(void)
    wdg_create_object(&wdg_stats, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
    
    wdg_set_title(wdg_stats, "Statistics:", WDG_ALIGN_LEFT);
-   wdg_set_size(wdg_stats, 1, 2, 70, 22);
+   wdg_set_size(wdg_stats, 1, 2, 70, 21);
    wdg_set_color(wdg_stats, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(wdg_stats, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(wdg_stats, WDG_COLOR_BORDER, EC_COLOR_BORDER);
@@ -114,31 +114,29 @@ static void refresh_stats(void)
    if (!(wdg_stats->flags & WDG_OBJ_FOCUSED))
       return;
    
-   wdg_window_print(wdg_stats, 1, 1, "Received packets    : %lld", GBL_STATS->ps_recv);
-   wdg_window_print(wdg_stats, 1, 2, "Dropped packets     : %lld", GBL_STATS->ps_drop);
-   wdg_window_print(wdg_stats, 1, 3, "Lost percentage     : %.2f %%",
+   wdg_window_print(wdg_stats, 1, 1, "Received packets    : %8lld", GBL_STATS->ps_recv);
+   wdg_window_print(wdg_stats, 1, 2, "Dropped packets     : %8lld  %.2f %%", GBL_STATS->ps_drop, 
           (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv : 0 );
+   wdg_window_print(wdg_stats, 1, 3, "Forwarded packets   : %8lld  bytes: %8lld ", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
   
-   wdg_window_print(wdg_stats, 1, 5, "Current queue len   : %d", GBL_STATS->queue_curr);
-   wdg_window_print(wdg_stats, 1, 6, "Max queue len       : %d", GBL_STATS->queue_max);
+   wdg_window_print(wdg_stats, 1, 5, "Current queue len   : %d/%d", GBL_STATS->queue_curr, GBL_STATS->queue_max);
+   wdg_window_print(wdg_stats, 1, 6, "Sampling rate       : %d", GBL_CONF->sampling_rate);
    
-   wdg_window_print(wdg_stats, 1, 7, "Sampling rate       : %d", GBL_CONF->sampling_rate);
-   
-   wdg_window_print(wdg_stats, 1, 9, "Bottom Half received packet : pck: %8lld  byte: %8lld", 
+   wdg_window_print(wdg_stats, 1, 8, "Bottom Half received packet : pck: %8lld  bytes: %8lld", 
          GBL_STATS->bh.pck_recv, GBL_STATS->bh.pck_size);
-   wdg_window_print(wdg_stats, 1, 10, "Top Half received packet    : pck: %8lld  byte: %8lld", 
+   wdg_window_print(wdg_stats, 1, 9, "Top Half received packet    : pck: %8lld  bytes: %8lld", 
          GBL_STATS->th.pck_recv, GBL_STATS->th.pck_size);
-   wdg_window_print(wdg_stats, 1, 11, "Interesting packets         : %.2f %%",
+   wdg_window_print(wdg_stats, 1, 10, "Interesting packets         : %.2f %%",
          (GBL_STATS->bh.pck_recv) ? (float)GBL_STATS->th.pck_recv * 100 / GBL_STATS->bh.pck_recv : 0 );
 
-   wdg_window_print(wdg_stats, 1, 13, "Bottom Half packet rate : worst: %8d  adv: %8d p/s", 
+   wdg_window_print(wdg_stats, 1, 12, "Bottom Half packet rate : worst: %8d  adv: %8d p/s", 
          GBL_STATS->bh.rate_worst, GBL_STATS->bh.rate_adv);
-   wdg_window_print(wdg_stats, 1, 14, "Top Half packet rate    : worst: %8d  adv: %8d p/s", 
+   wdg_window_print(wdg_stats, 1, 13, "Top Half packet rate    : worst: %8d  adv: %8d p/s", 
          GBL_STATS->th.rate_worst, GBL_STATS->th.rate_adv);
    
-   wdg_window_print(wdg_stats, 1, 15, "Bottom Half thruoutput  : worst: %8d  adv: %8d b/s", 
+   wdg_window_print(wdg_stats, 1, 14, "Bottom Half thruoutput  : worst: %8d  adv: %8d b/s", 
          GBL_STATS->bh.thru_worst, GBL_STATS->bh.thru_adv);
-   wdg_window_print(wdg_stats, 1, 16, "Top Half thruoutput     : worst: %8d  adv: %8d b/s", 
+   wdg_window_print(wdg_stats, 1, 15, "Top Half thruoutput     : worst: %8d  adv: %8d b/s", 
          GBL_STATS->th.thru_worst, GBL_STATS->th.thru_adv);
 }
 

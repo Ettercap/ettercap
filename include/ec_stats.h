@@ -1,5 +1,5 @@
 
-/* $Id: ec_stats.h,v 1.5 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: ec_stats.h,v 1.6 2004/01/06 17:44:13 alor Exp $ */
 
 #ifndef EC_STATS_H
 #define EC_STATS_H
@@ -32,6 +32,8 @@ struct gbl_stats {
    u_int64 ps_recv;
    u_int64 ps_drop;
    u_int64 ps_ifdrop;
+   u_int64 ps_sent;
+   u_int64 bs_sent;
    struct half_stats bh;
    struct half_stats th;
    u_int32 queue_max;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.16 2003/12/27 18:50:24 alor Exp $
+    $Id: ec_text.c,v 1.17 2004/01/06 17:44:16 alor Exp $
 */
 
 #include <ec.h>
@@ -456,15 +456,12 @@ static void text_stats(void)
    DEBUG_MSG("text_stats (queue) : %d %d", GBL_STATS->queue_curr, GBL_STATS->queue_max); 
   
    
-   fprintf(stdout, "\n Received packets    : %lld\n", GBL_STATS->ps_recv);
-   fprintf(stdout,   " Dropped packets     : %lld\n", GBL_STATS->ps_drop);
-   fprintf(stdout,   " Lost percentage     : %.2f %%\n\n", 
-         (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv
-                              : 0 );
+   fprintf(stdout, "\n Received packets    : %8lld\n", GBL_STATS->ps_recv);
+   fprintf(stdout,   " Dropped packets     : %8lld  %.2f %%\n", GBL_STATS->ps_drop,
+         (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv : 0 );
+   fprintf(stdout,   " Forwarded           : %8lld  bytes: %8lld\n\n", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
    
-   fprintf(stdout,   " Current queue len   : %d\n", GBL_STATS->queue_curr);
-   fprintf(stdout,   " Max queue len       : %d\n\n", GBL_STATS->queue_max);
-   
+   fprintf(stdout,   " Current queue len   : %d/%d\n", GBL_STATS->queue_curr, GBL_STATS->queue_max);
    fprintf(stdout,   " Sampling rate       : %d\n\n", GBL_CONF->sampling_rate);
    
    fprintf(stdout,   " Bottom Half received packet : pck: %8lld  byte: %8lld\n", 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.46 2004/01/05 16:58:48 alor Exp $
+    $Id: ec_decode.c,v 1.47 2004/01/06 17:44:16 alor Exp $
 */
 
 #include <ec.h>
@@ -31,6 +31,7 @@
 #include <ec_inject.h>
 
 #include <pcap.h>
+#include <libnet.h>
 #include <pthread.h>
 
 /* globals */
@@ -73,6 +74,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
    struct pcap_stat ps;
+   struct libnet_stats ls;
    int len;
    u_char *data;
    size_t datalen;
@@ -98,6 +100,8 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
        * no statistics are stored in savefiles
        */
       pcap_stats(GBL_PCAP->pcap, &ps);
+      /* get the statistics for Layer 3 since we forward packets here */
+      libnet_stats(GBL_LNET->lnet_L3, &ls);
       
 #ifdef OS_LINUX
       /* 
@@ -113,6 +117,10 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
       GBL_STATS->ps_drop = ps.ps_drop;
       GBL_STATS->ps_ifdrop = ps.ps_ifdrop;
 #endif
+
+      /* from libnet */
+      GBL_STATS->ps_sent = ls.packets_sent;
+      GBL_STATS->bs_sent = ls.bytes_written;
    }
    
    /* 

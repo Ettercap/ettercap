@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_plugins.c,v 1.8 2004/01/04 11:13:07 alor Exp $
+    $Id: ec_curses_plugins.c,v 1.9 2004/01/06 17:44:16 alor Exp $
 */
 
 #include <ec.h>
@@ -44,9 +44,9 @@ static wdg_t *wdg_plugin;
 static struct wdg_list *wdg_plugin_elements;
 static size_t nplug;
 
-struct wdg_menu menu_plugins[] = { {"Plugins",               'P',       "",    NULL},
-                                   {"Manage the plugins...", CTRL('P'), "C-p", curses_plugin_mgmt},
-                                   {"Load a plugin...",      0,         "",    curses_plugin_load},
+struct wdg_menu menu_plugins[] = { {"Plugins",            'P',       "",    NULL},
+                                   {"Manage the plugins", CTRL('P'), "C-p", curses_plugin_mgmt},
+                                   {"Load a plugin...",   0,         "",    curses_plugin_load},
                                    {NULL, 0, NULL, NULL},
                                  };
 

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.2 2004/01/05 11:06:47 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.3 2004/01/06 17:44:16 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -137,7 +137,92 @@ enabled" else the option is not enabled.
 .TP
 .B Promisc mode
 Enable/disable the promisc mode for the live caputre forn a network interface.
-This is an "asterisc-option" as the unoffensive one.
+This is an "asterisk-option" as the unoffensive one.
+.RE
+
+
+
+.SH THE INTERESTING PART
+Once you have selected an offline sniffing or a live capture, the upper menu is
+modified and you can start to do the interesting things...
+.br
+Some of the following menu are only available in live capture. 
+
+
+.TP 
+.B Start
+.RS
+.TP
+.B Start sniffing
+.TP
+.B Stop sniffing
+.TP
+.B Exit
+.RE
+
+
+
+.TP 
+.B Targets
+.RS
+.TP
+.B Current Targets
+.TP
+.B Select TARGET(s)
+.TP
+.B Protocol...
+.TP
+.B Reverse matching
+.TP
+.B Wipe Targets
+.RE
+
+
+.TP 
+.B Hosts
+.RS
+.TP
+.B Hosts list
+.TP
+.B Scan for hosts
+.TP
+.B Load from file...
+.TP
+.B Save to file...
+.RE
+
+
+.TP 
+.B View
+.RS
+.TP
+.B Connections
+.TP
+.B Profiles
+.TP
+.B Resolve IP addresses
+.TP
+.B Statistics
+.RE
+
+
+.TP 
+.B Mitm
+.RS
+.TP
+.B [...]
+.TP
+.B Stop mitm attack(s)
+.RE
+
+
+.TP 
+.B Filters
+.RS
+.TP
+.B Load a filter...
+.TP
+.B Stop filtering
 .RE
 
 
@@ -153,15 +238,25 @@ same as the -L option.
 .B Log only infos...
 This is used only to sniff informations about hosts (same as the -l option).
 .TP
+.B Stop logging info
+Come on... it is self explanatory.
+.TP
 .B Log user messages...
 Will log all the message appearing in the bottom window (same as -m option).
 .TP
 .B Compressed file
-Asterisc-option to control whether or not the logfile should be compressed.
+Asterisk-option to control whether or not the logfile should be compressed.
 .RE
 
 
-.SH THE INTERESTING PART
+.TP 
+.B Plugins
+.RS
+.TP
+.B Manage the plugins
+.TP
+.B Load a plugin...
+.RE
 
 
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.47 2004/01/06 17:44:16 alor Exp $
+    $Id: ec_decode.c,v 1.48 2004/01/20 21:46:42 alor Exp $
 */
 
 #include <ec.h>
@@ -136,9 +136,15 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
       pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
       DUMP_UNLOCK;
    }
+  
+   /* 
+    * copy the packet in a "safe" buffer 
+    * we don't want other packets after the end of the packet (as in BPF)
+    */
+   memcpy(GBL_PCAP->buffer, pkt, pkthdr->caplen);
    
    /* extract data and datalen from pcap packet */
-   data = (u_char *)pkt;
+   data = (u_char *)GBL_PCAP->buffer;
    datalen = pkthdr->caplen;
 
    /* 

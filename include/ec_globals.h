@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.51 2004/01/18 19:30:31 alor Exp $ */
+/* $Id: ec_globals.h,v 1.52 2004/01/20 21:46:34 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -82,6 +82,7 @@ struct pcap_env {
    void     *pcap;         /* this is a pcap_t pointer */
    void     *pcap_bridge;  /* this is a pcap_t pointer */
    void     *dump;         /* this is a pcap_dumper_t pointer */
+   char     *buffer;       /* buffer to be used to handle all the packets */
    char     promisc;
    char     *filter;       /* pcap filter */
    u_int16  snaplen;

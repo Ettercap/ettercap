@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ftp.c,v 1.1 2003/04/29 16:44:42 alor Exp $
+    $Id: ec_ftp.c,v 1.2 2003/05/16 19:46:57 alor Exp $
 */
 
 #include <ec.h>
@@ -68,6 +68,8 @@ FUNC_DECODER(dissector_ftp)
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;
+   
+   DEBUG_MSG("FTP --> TCP 21  dissector_ftp");
  
    /* skip the whitespaces at the beginning */
    while(*ptr == ' ' && ptr != end) ptr++;
@@ -103,8 +105,16 @@ FUNC_DECODER(dissector_ftp)
       dissect_create_ident(&ident, PACKET);
       
       /* retrieve the session and delete it */
-      if (session_get_and_del(&s, ident) == -ENOTFOUND)
+      if (session_get_and_del(&s, ident) == -ENOTFOUND) {
+         SAFE_FREE(ident);
          return NULL;
+      }
+      
+      /* check that the user was sent before the pass */
+      if (s->data == NULL) {
+         SAFE_FREE(ident);
+         return NULL;
+      }
       
       /* fill the structure */
       PACKET->DISSECTOR.user = strdup(s->data);

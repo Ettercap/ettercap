@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.10 2003/04/29 16:44:42 alor Exp $
+    $Id: ec_pop.c,v 1.11 2003/05/16 19:46:57 alor Exp $
 */
 
 #include <ec.h>
@@ -49,7 +49,7 @@ FUNC_DECODER(dissector_pop)
    struct session *s = NULL;
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
-
+   
    /* the connection is starting... create the session */
    CREATE_SESSION_ON_SYN_ACK(110, s);
    
@@ -75,6 +75,8 @@ FUNC_DECODER(dissector_pop)
    if (PACKET->DATA.len == 0)
       return NULL;
  
+   DEBUG_MSG("POP --> TCP 110  dissector_pop");
+   
    /* skip the whitespaces at the beginning */
    while(*ptr == ' ' && ptr != end) ptr++;
   
@@ -109,8 +111,16 @@ FUNC_DECODER(dissector_pop)
       dissect_create_ident(&ident, PACKET);
       
       /* retrieve the session and delete it */
-      if (session_get_and_del(&s, ident) == -ENOTFOUND)
+      if (session_get_and_del(&s, ident) == -ENOTFOUND) {
+         SAFE_FREE(ident);
          return NULL;
+      }
+
+      /* check that the user was sent before the pass */
+      if (s->data == NULL) {
+         SAFE_FREE(ident);
+         return NULL;
+      }
       
       /* fill the structure */
       PACKET->DISSECTOR.user = strdup(s->data);

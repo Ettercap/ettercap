@@ -28,13 +28,14 @@ extern void dissect_create_ident(void **i, struct packet_object *po);
  * the server (SYN+ACK)
  */
 
-#define CREATE_SESSION_ON_SYN_ACK(port, session) do{ \
-      if (ntohs(PACKET->L4.src) == port && PACKET->L4.flags & TH_SYN && PACKET->L4.flags & TH_ACK) { \
-         /* create the session */                     \
-         dissect_create_session(&session, PACKET);    \
-         session_put(session);                        \
-         return NULL;                                 \
-      }                                               \
+#define CREATE_SESSION_ON_SYN_ACK(port, session) do{        \
+      if (ntohs(PACKET->L4.src) == port && (PACKET->L4.flags & TH_SYN) && (PACKET->L4.flags & TH_ACK)) { \
+         DEBUG_MSG("create_session_on_syn_ack %d", port);   \
+         /* create the session */                           \
+         dissect_create_session(&session, PACKET);          \
+         session_put(session);                              \
+         return NULL;                                       \
+      }                                                     \
    }while(0)
 
 /*

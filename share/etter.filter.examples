@@ -18,7 +18,7 @@ exit();
 # display a message if the tcp port is 22
 if (ip.proto == TCP) {
    if (tcp.src == 22 || tcp.dst == 22) {
-      msg("SSH packet");
+      msg("SSH packet\n");
    }
 }
 
@@ -49,7 +49,7 @@ if ( DATA.data + 20 == 0x4142 ) {
 
 # drop any packet containing "ettercap"
 if (search(DECODED.data, "ettercap")) {
-   msg("some one is talking about us...");
+   msg("some one is talking about us...\n");
    drop();
 }
 
@@ -65,7 +65,7 @@ if (ip.proto == TCP) {
 
 # dying packets
 if (ip.ttl < 5) {
-   msg("The packet will die soon");
+   msg("The packet will die soon\n");
 }
 
 # string comparison at a given offset

@@ -31,7 +31,7 @@ if (ip.proto == UDP) {
 # matches 'foo' and the beginning of the line, then a word, then 'bar'
 
 if (pcre_regex(DECODED.data, "^foo [^ ]+ bar")) {
-   msg("found");
+   msg("found\n");
 }
 
 

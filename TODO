@@ -34,9 +34,8 @@ this is the unofficial and floating in time roadmap:
 Nov 2003:
 
    + MITM METHODS
-      - dhcp poisoning
+      - dhcp spoofing
       - port stealing
-      - dns poisoning
          
    + LIBWDG
       - widgets:
@@ -73,7 +72,6 @@ Dec 2003:
       
    + PLUGINS
       - convert all the old plugins
-      - finger plugin on multiple ports
       
    + BINDER
 

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.10 2003/11/10 11:52:25 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.11 2003/11/11 21:54:24 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -66,14 +66,14 @@ to the SYN with a SYN+ACK packet. The reply will be collected and the
 fingerprint is displayed. The connect() obey to the connect_timeout parameter
 in etter.conf(5). You can specify a target on commandline or let the plugin ask
 the target host to be fingerprinted. You can also specify multiple target with
-the usual multi-target specification (see ettercap(8)), but only one port at a
-time can be used.
+the usual multi-target specification (see ettercap(8)). if you specify multiple
+ports, all the ports will be tested on all the IPs.
 .Sp
 .I example :
 .Sp
 ettercap -TzP finger /192.168.0.1/22
 .br
-ettercap -TzP finger /192.168.0.1-50/22
+ettercap -TzP finger /192.168.0.1-50/22,23,25
 
 
 .TP 

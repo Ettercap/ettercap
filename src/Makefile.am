@@ -49,6 +49,7 @@ ettercap_SOURCES = ec_main.c \
 				   dissectors/ec_pop.c \
 				   dissectors/ec_ftp.c \
 				   interfaces/console/ec_console.c \
+				   interfaces/console/ec_console_display.c \
 				   interfaces/console/ec_console_plugin.c \
 				   interfaces/daemon/ec_daemon.c 
                

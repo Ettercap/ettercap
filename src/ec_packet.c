@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.13 2003/06/09 12:03:14 alor Exp $
+    $Id: ec_packet.c,v 1.14 2003/06/10 10:39:37 alor Exp $
 */
 
 #include <ec.h>
@@ -28,9 +28,9 @@
 
 /* protos... */
 
-int packet_create_object(struct packet_object *po, u_char *buf, size_t len);
+inline int packet_create_object(struct packet_object *po, u_char *buf, size_t len);
+inline int packet_destroy_object(struct packet_object *po);
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
-int packet_destroy_object(struct packet_object *po);
 struct packet_object * packet_dup(struct packet_object *po);
 
 /* XXX - remove this */
@@ -42,9 +42,8 @@ void packet_print(struct packet_object *po);
  * associate the buffer to the packet object
  */
 
-int packet_create_object(struct packet_object *po, u_char *buf, size_t len)
+inline int packet_create_object(struct packet_object *po, u_char *buf, size_t len)
 {
-
    /* clear the memory */
    memset(po, 0, sizeof(struct packet_object));
    
@@ -74,7 +73,7 @@ int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
  * free the packet object memory
  */
 
-int packet_destroy_object(struct packet_object *po)
+inline int packet_destroy_object(struct packet_object *po)
 {
    
    /* 

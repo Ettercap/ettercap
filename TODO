@@ -25,10 +25,15 @@
 
 >>> current developmet state 
 
+   + LOG
+      - icmp hook
+
+   + CONSOLE
+      - packet display (almost done in etterlog & format)
+
    + TOP HALF
       - passive profiling (almost done in etterlog)
       - connection tracking (with buffered conn)
-      - packet display (almost done in etterlog & format)
       
    + ARP POISON ENGINE
       - arp poisoner

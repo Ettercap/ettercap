@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.17 2003/05/20 16:30:18 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.18 2003/06/10 10:39:36 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -358,6 +358,44 @@ NOTE: you can also activate plugins directly from the interfaces (always press
 More detailed info about plugins and about how to write your own are found in
 the man page ettercap_plugin(8)
 
+.TP
+\fB\-V\fR, \fB\-\-visual <FORMAT>\fR
+Use this option to set the visualization method for the packets to be
+displayed.
+.Sp
+FORMAT may be one of the following:
+.Sp
+\fBhex\fR :
+Print the packets in hex format.
+.Sp
+example:
+.Sp
+the string  "HTTP/1.1 304 Not Modified"  becomes:
+.Sp
+0000: 4854 5450 2f31 2e31 2033 3034 204e 6f74  HTTP/1.1 304 Not
+.br
+0010: 204d 6f64 6966 6965 64                    Modified
+    
+\fBascii\fR :
+Print only "printable" characters, the others are displayed as dots '.'
+
+\fBtext\fR :
+Print only the "printable" characters and skip the others.
+
+\fBebcdic\fR :
+Convert an EBCDIC text to ASCII.
+
+\fBhtml\fR :
+Strip all the html tags from the text. A tag is every string between < and >.
+.Sp
+example:
+.Sp
+<title>This is the title</title>, but the following <string> will not be
+displayed.
+.Sp
+This is the title, but the following will not be displayed.
+
+
 
 .TP
 .B LOGGING OPTIONS
@@ -424,7 +462,7 @@ OpenBSD 2.x 3.x
 .br
 NetBSD 1.5
 .br
-Mac OS X (darwin 1.3.x 1.4.x 5.x)
+Mac OS X (darwin 1.3.x 1.4.x 5.x 6.x)
 .br
 Windows NT4  2000  XP
 

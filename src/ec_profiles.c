@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.5 2003/06/05 20:07:22 alor Exp $
+    $Id: ec_profiles.c,v 1.6 2003/06/10 10:39:37 alor Exp $
 */
 
 #include <ec.h>
@@ -41,6 +41,12 @@ int profile_add(struct packet_object *po);
  */
 void __init profiles_init(void)
 {
+   /* XXX -- add other hook for ICMP and so on.. */
+         
+   /* add the hook for the ARP packets */
+   hook_add(PACKET_ARP, &profile_parse);
+         
+   /* receive all the top half packets */
    hook_add(HOOK_DISPATCHER, &profile_parse);
 }
 
@@ -57,7 +63,8 @@ void profile_parse(struct packet_object *po)
     * we don't want to log conversations, only
     * open ports, user and pass... ;)
     */
-   if ( (is_open_src_port(po) || is_open_dst_port(po)) ||   /* the port is open */
+   if ( po->L3.proto == htons(LL_TYPE_ARP) ||               /* arp packets */
+        (is_open_src_port(po) || is_open_dst_port(po)) ||   /* the port is open */
         strcmp(po->PASSIVE.fingerprint, "") ||              /* collected fingerprint */  
         po->DISSECTOR.user ||                               /* user */
         po->DISSECTOR.pass ||                               /* pass */

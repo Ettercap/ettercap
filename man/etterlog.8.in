@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.9 2003/06/01 10:07:23 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.10 2003/06/10 10:39:37 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -210,7 +210,7 @@ This is the title, but the following will not be displayed.
 
 .TP
 \fB\-Z\fR, \fB\-\-zero\fR
-Print always the void string. i.e. print olny header information and no packet
+Print always the void string. i.e. print only header information and no packet
 content will be printed.
                            
 .TP

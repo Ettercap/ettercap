@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.24 2003/05/20 20:41:21 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.25 2003/06/10 10:39:37 alor Exp $
 */
 
 
@@ -26,7 +26,7 @@
 #include <ec_sniff.h>
 #include <ec_send.h>
 #include <ec_log.h>
-
+#include <ec_format.h>
 
 #include <ctype.h>
 
@@ -85,6 +85,7 @@ void ec_usage(void)
    fprintf(stdout, "  -Z, --scan-delay <msec>     set the scanning delay to <msec>\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
+   fprintf(stdout, "  -V, --visual <format>       set the visualization format\n");
    
    fprintf(stdout, "\nStandard options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
@@ -121,6 +122,7 @@ void parse_options(int argc, char **argv)
       { "scan-delay", required_argument, NULL, 'Z' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
+      { "visual", required_argument, NULL, 'V' },
       
       { "log", required_argument, NULL, 'L' },
       { "log-info", required_argument, NULL, 'l' },
@@ -143,12 +145,16 @@ void parse_options(int argc, char **argv)
       DEBUG_MSG("parse_options -- [%d] [%s]", c, argv[c]);
 
    
-   /* OPTIONS INITIALIZATION */
+/* OPTIONS INITIALIZATION */
+   
    GBL_PCAP->promisc = 1;
+   GBL_FORMAT = &ascii_format;
+
+/* OPTIONS INITIALIZED */
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDde:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:vw:Z:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDde:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:V:vw:Z:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -265,6 +271,11 @@ void parse_options(int argc, char **argv)
          case 'k':
                   GBL_OPTIONS->save_hosts = 1;
                   GBL_OPTIONS->hostsfile = strdup(optarg);
+                  break;
+                  
+         case 'V':
+                  /* the global visualization method */
+                  set_format(optarg);
                   break;
                   
          case 'h':

@@ -29,6 +29,7 @@ struct ec_options {
    char *dumpfile;
    char *target1;
    char *target2;
+   int (*format)(const u_char *, size_t, u_char *);
 };
 
 /* program name and version */
@@ -122,6 +123,8 @@ extern struct globals *gbls;
 #define GBL_TARGET1        (GBLS->t1)
 #define GBL_TARGET2        (GBLS->t2)
 #define GBL_HOSTLIST       (GBLS->hosts_list_head)
+
+#define GBL_FORMAT         (GBL_OPTIONS->format)
 
 #define GBL_PROGRAM        (GBL_ENV->name)
 #define GBL_VERSION        (GBL_ENV->version)

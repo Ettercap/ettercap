@@ -25,6 +25,7 @@ NG-0.7.0_pre2    200405??
    + support for vlan tagging (802.1q header)
    + support for rawip file dumps
    + multiple selections in the GTK ui for targets and hosts
+   + wifi enhancements
    !! fixed the $prefix issue in the configure
    !! fixed a linking problem against openssl
    !! some fixes in the man pages

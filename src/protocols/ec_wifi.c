@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.10 2004/02/27 11:06:28 alor Exp $
+    $Id: ec_wifi.c,v 1.11 2004/05/08 10:17:10 alor Exp $
 */
 
 #include <ec.h>
@@ -27,21 +27,33 @@
 /* globals */
 
 struct wifi_header {
-   u_int16  type;
-      #define WIFI_DATA_ENTERING 0x0802
-      #define WIFI_DATA_EXITING  0x0801
-      #define WIFI_DATA_WEP      0x0842
-      #define WIFI_BACON         0x0800
+   u_int8   type;
+      #define WIFI_DATA    0x08
+      #define WIFI_BACON   0x80
+      #define WIFI_ACK     0xd4
+   u_int8   control;
+      #define WIFI_EXITING  0x01
+      #define WIFI_ENTERING 0x02
+      #define WIFI_ADHOC    0x03
+      #define WIFI_WEP      0x40
    u_int16  duration;
    u_int8   dha[ETH_ADDR_LEN];
    u_int8   sha[ETH_ADDR_LEN];
    u_int8   bssid[ETH_ADDR_LEN];
    u_int16  seq;
-   u_int8   llc_dsap;
-   u_int8   llc_ssap;
-   u_int8   llc_control;
-   u_int8   llc_org_code[3];
+};
+
+struct llc_header {
+   u_int8   dsap;
+   u_int8   ssap;
+   u_int8   control;
+   u_int8   org_code[3];
    u_int16  proto;
+};
+
+struct wep_header {
+   u_int8   init_vector[3];
+   u_int8   key;
 };
 
 /* encapsulated ethernet */
@@ -70,28 +82,50 @@ void __init wifi_init(void)
 FUNC_DECODER(decode_wifi)
 {
    struct wifi_header *wifi;
+   struct llc_header *llc;
    FUNC_DECODER_PTR(next_decoder) = NULL;
 
    DECODED_LEN = sizeof(struct wifi_header);
       
    wifi = (struct wifi_header *)DECODE_DATA;
    
-   /* org_code != encapsulated ethernet not yet supported */
-   if (memcmp(wifi->llc_org_code, WIFI_ORG_CODE, 3))
-      NOT_IMPLEMENTED();
-      
-   /* XXX - where is the ESSID ? check with ethereal */
-  
-   /* BUCKET->L2->ESSID = ??? */
-   
-   /* we are only interested in "data" type */
-   if (ntohs(wifi->type) == WIFI_DATA_ENTERING || ntohs(wifi->type) == WIFI_DATA_EXITING) {
-      next_decoder = get_decoder(NET_LAYER, ntohs(wifi->proto));
-   } else if (ntohs(wifi->type) == WIFI_BACON) {
-      /* BACON (or unsupported message) */
+   /* we are interested only in wifi data packets */
+   if (wifi->type != WIFI_DATA) {
+      return NULL;
+   }
+
+   /* the frame is crypted with WEP */
+   if (wifi->control & WIFI_WEP) {
+      /* XXX add support for WEP */
       return NULL;
    }
    
+   /* 
+    * capture only "complete" and not retransitted packets 
+    * we don't want to deal with fragments (0x04) or retransmission (0x08) 
+    */
+   if (wifi->control == WIFI_ENTERING || wifi->control == WIFI_EXITING) {
+      /* get the logica link layer header */
+      llc = (struct llc_header *)(wifi + 1);
+      DECODED_LEN += sizeof(struct llc_header);
+      
+   } else if (wifi->control == WIFI_ADHOC) {
+      /* 
+       * get the logica link layer header i
+       * there is one more field in adhoc mode
+       */
+      llc = (struct llc_header *)((u_char *)wifi + sizeof(struct wifi_header) + MEDIA_ADDR_LEN);
+      DECODED_LEN += sizeof(struct llc_header) + MEDIA_ADDR_LEN;
+      
+   } else {
+      return NULL;
+   }
+   
+   /* org_code != encapsulated ethernet not yet supported */
+   if (memcmp(llc->org_code, WIFI_ORG_CODE, 3))
+      //return NULL;
+      NOT_IMPLEMENTED();
+      
    /* fill the bucket with sensitive data */
    PACKET->L2.header = (u_char *)DECODE_DATA;
    PACKET->L2.proto = IL_TYPE_WIFI;
@@ -104,6 +138,7 @@ FUNC_DECODER(decode_wifi)
    hook_point(HOOK_PACKET_WIFI, po);
    
    /* leave the control to the next decoder */
+   next_decoder = get_decoder(NET_LAYER, ntohs(llc->proto));
    EXECUTE_DECODER(next_decoder);
   
    /* no modification to wifi header should be done */

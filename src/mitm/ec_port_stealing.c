@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_port_stealing.c,v 1.3 2003/12/14 15:25:15 lordnaga Exp $
+    $Id: ec_port_stealing.c,v 1.4 2003/12/14 16:15:25 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -274,7 +274,7 @@ EC_THREAD_FUNC(port_stealer)
          /* Steal only ports for hosts where no packet is in queue */
          if (!s->wait_reply) {
             memcpy(heth->sha, s->mac, ETH_ADDR_LEN);
-            send_L2(&fake_po); 
+            send_to_L2(&fake_po); 
             usleep(GBL_CONF->port_steal_delay * 1000);  
          }
       }      
@@ -320,16 +320,16 @@ static void put_queue(struct packet_object *po)
           * and put a duplicate in the host sending queue
           */
          if (!s->wait_reply) {
-	    s->wait_reply = 1;
-	    send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
+            s->wait_reply = 1;
+            send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
          }
 	   
-	 SAFE_CALLOC(p, 1, sizeof(struct packet_list));
-	 p->po = packet_dup(po);
+         SAFE_CALLOC(p, 1, sizeof(struct packet_list));
+         p->po = packet_dup(po);
          TAILQ_INSERT_HEAD(&(s->packet_table), p, next);
 	   
-	 /* Avoid standard forwarding method */
-	 po->flags |= PO_DROPPED;
+         /* Avoid standard forwarding method */
+         po->flags |= PO_DROPPED;
          break;
       }
    }
@@ -340,7 +340,7 @@ static void put_queue(struct packet_object *po)
  */
 static void send_queue(struct packet_object *po)
 {
-   struct steal_list *s;
+   struct steal_list *s1, *s2;
    struct packet_list *p, *tmp = NULL;
    struct eth_header *heth;
    int to_wait = 0;
@@ -349,49 +349,52 @@ static void send_queue(struct packet_object *po)
    if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))
       return;
       
-   LIST_FOREACH(s, &steal_table, next) {
-      if (!memcmp(po->L2.src, s->mac, ETH_ADDR_LEN)) {
+   LIST_FOREACH(s1, &steal_table, next) {
+      if (!memcmp(po->L2.src, s1->mac, ETH_ADDR_LEN)) {
          /* If we was waiting for the reply it means
           * that there is a queue to be sent
           */
-         if (s->wait_reply) {
+         if (s1->wait_reply) {
             /* Send the packet queue (starting from 
              * the first received packet)
              */
-            TAILQ_FOREACH_SAFE(p, &s->packet_table, next, tmp) {
-	       /* If the source of the packet to send is not in the 
+            TAILQ_FOREACH_SAFE(p, &s1->packet_table, next, tmp) {
+               /* If the source of the packet to send is not in the 
                 * stealing list, change the MAC address with ours
                 */
                in_list = 0;
-	       LIST_FOREACH(s, &steal_table, next) {
-                  if (!memcmp(p->po->L2.src, s->mac, ETH_ADDR_LEN)) {
-		     in_list = 1;
-		     break;
+               LIST_FOREACH(s2, &steal_table, next) {
+                  if (!memcmp(p->po->L2.src, s2->mac, ETH_ADDR_LEN)) {
+                     in_list = 1;
+                     break;
                   }
                }
-	       if (!in_list) {
-	          heth = (struct eth_header *)p->po->packet;
-                  memcpy(heth->sha, GBL_IFACE->mac, ETH_ADDR_LEN);
-	       }
+
+               if (!in_list) {
+                  heth = (struct eth_header *)p->po->packet;
+                  /* Paranoid test */
+                  if (p->po->len >= sizeof(struct eth_header))
+                     memcpy(heth->sha, GBL_IFACE->mac, ETH_ADDR_LEN);
+               }
 
                /* Send the packet on the wire */
-	       send_L2(p->po);
+               send_to_L2(p->po);
 
                /* Destroy the packet duplicate and remove 
                 * it from the queue
                 */
-	       packet_destroy_object(p->po);
-               TAILQ_REMOVE(&s->packet_table, p, next);
+               packet_destroy_object(p->po);
+               TAILQ_REMOVE(&s1->packet_table, p, next);
                SAFE_FREE(p);
 	      
-	       /* Sleep only if we have more than one packet to send */
-	       if (to_wait) 
-                  usleep(GBL_CONF->port_steal_sending_delay);
+               /* Sleep only if we have more than one packet to send */
+               if (to_wait) 
+                  usleep(GBL_CONF->port_steal_send_delay);
                to_wait = 1;
             }
 	    
             /* Restart the stealing process for this host */
-	    s->wait_reply = 0;
+            s1->wait_reply = 0;
          }
          break;
       }

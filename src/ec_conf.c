@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.25 2003/12/11 13:46:43 lordnaga Exp $
+    $Id: ec_conf.c,v 1.26 2003/12/14 16:15:25 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,8 @@ static struct conf_entry mitm[] = {
    { "arp_poison_reply", NULL },
    { "arp_poison_request", NULL },
    { "dhcp_lease_time", NULL },
+   { "port_steal_delay", NULL },
+   { "port_steal_send_delay", NULL },
    { NULL, NULL },
 };
 
@@ -136,6 +138,8 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&mitm, "arp_poison_reply", &GBL_CONF->arp_poison_reply);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_request", &GBL_CONF->arp_poison_request);
    set_pointer((struct conf_entry *)&mitm, "dhcp_lease_time", &GBL_CONF->dhcp_lease_time);
+   set_pointer((struct conf_entry *)&mitm, "port_steal_delay", &GBL_CONF->port_steal_delay);
+   set_pointer((struct conf_entry *)&mitm, "port_steal_send_delay", &GBL_CONF->port_steal_send_delay);
    set_pointer((struct conf_entry *)&connections, "connection_timeout", &GBL_CONF->connection_timeout);
    set_pointer((struct conf_entry *)&connections, "connection_idle", &GBL_CONF->connection_idle);
    set_pointer((struct conf_entry *)&connections, "connection_buffer", &GBL_CONF->connection_buffer);

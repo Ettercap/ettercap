@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.5 2003/10/15 10:13:36 lordnaga Exp $
+    $Id: ec_smb.c,v 1.6 2003/10/15 14:28:20 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -89,7 +89,7 @@ void __init smb_init(void)
 
 FUNC_DECODER(dissector_smb)
 {
-   DECLARE_DISP_PTR_END(ptr, end);
+   u_char *ptr;
    struct session *s = NULL;
    smb_session_data *session_data;
    void *ident = NULL;
@@ -97,8 +97,7 @@ FUNC_DECODER(dissector_smb)
    NetBIOS_header *NetBIOS;
    char tmp[MAX_ASCII_ADDR_LEN];
 
-   /* don't complain about unused var */
-   (void)end;
+   ptr = PACKET->DATA.data;
 
    /* Catch netbios and smb headers */
    NetBIOS = (NetBIOS_header *)ptr;
@@ -125,7 +124,10 @@ FUNC_DECODER(dissector_smb)
          SAFE_CALLOC(s->data, 1, sizeof(smb_session_data));
          session_put(s);
          session_data = (smb_session_data *)s->data;
-      
+
+         /* HOOK POINT: PACKET_SMB */
+         hook_point(PACKET_SMB, PACKET);
+
          /* 
           * Check the Security Mode 
           * 010 (encrypted)  000 (plaintext)

@@ -6,13 +6,14 @@ Legenda:
 
 =========================================
 
-NG-0.7.0         200406
+NG-0.7.0         20040705
 
    + implemeted a thread safe strtok
    + prepared the source for a smooth mingw porting
    !! fixed numeric sorting in gtk interface
    !! autoadd plugin does not add the local address
    !! dump profiles to file now dumps even host without any open port
+   !! fixed compilation under freebsd 4.9
 
 
 NG-0.7.0_rc1     20040614

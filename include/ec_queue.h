@@ -1,6 +1,6 @@
 
 /*      
- * $Id: ec_queue.h,v 1.1 2003/11/22 13:57:10 alor Exp $
+ * $Id: ec_queue.h,v 1.2 2004/07/05 19:26:17 alor Exp $
  *      
  *      added the _SAFE functions from:
  *      $FreeBSD: queue.h,v 1.56 2003/08/14 14:49:26 kan Exp $          
@@ -43,6 +43,9 @@
 
 #ifndef EC_QUEUE_H
 #define EC_QUEUE_H
+
+/* to avoid conflict with system includes */
+#define _SYS_QUEUE_H_
 
 /*
  * This file defines five types of data structures: singly-linked lists, 

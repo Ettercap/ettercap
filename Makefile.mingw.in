@@ -143,7 +143,7 @@ ifeq ($(USE_GTK),1)
             -I$(GLIB_INCLUDE) -I$(GTK_ROOT)/lib/glib-2.0/include \
             -I$(PANGO_INCLUDE) -I$(ATK_INCLUDE)
 	EX_LIBS += $(GLIB_LIBS) $(GTK_LIBS)
-	LDFLAGS += -Wl,--subsystem,windows
+	EC_LDFLAGS += -Wl,--subsystem,windows
 endif
 
 ifeq ($(USE_SSL),1)
@@ -320,7 +320,7 @@ all: $(OBJ_DIR) $(PROGRAMS) $(PLUGIN_DLLS) man_pages
 
 ifeq ($(USE_PLUGIN),1)
 ettercap.exe $(EC_IMPORT): $(OBJECTS)
-	$(CC) $(LDFLAGS) -Wl,--out-implib,$(EC_IMPORT) -o ettercap.exe $^ $(EX_LIBS)
+	$(CC) $(EC_LDFLAGS) $(LDFLAGS) -Wl,--out-implib,$(EC_IMPORT) -o ettercap.exe $^ $(EX_LIBS)
 		# Should need no .def-file
 		# dlltool --output-lib $(EC_IMPORT) --dllname ettercap.exe --input-def src/ettercap.def
 else
@@ -350,11 +350,11 @@ $(OBJ_DIR):
 	- mkdir $(OBJ_DIR)
 
 $(OBJ_DIR)/ef_mingw.o: src/os/ec_mingw.c
-	$(CC) -c $(CFLAGS) -UHAVE_NCURSES -o $@ -c $<
+	$(CC) -c $(CFLAGS) -DBUILDING_UTILS -o $@ -c $<
 	@echo
 
 $(OBJ_DIR)/el_mingw.o: src/os/ec_mingw.c
-	$(CC) -c $(CFLAGS) -UHAVE_NCURSES -o $@ -c $<
+	$(CC) -c $(CFLAGS) -DBUILDING_UTILS -o $@ -c $<
 	@echo
 
 $(OBJ_DIR)/%.o: %.c

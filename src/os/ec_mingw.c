@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.9 2004/09/30 14:54:14 alor Exp $
+    $Id: ec_mingw.c,v 1.10 2004/10/13 12:33:24 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -41,7 +41,7 @@
 #include <Packet32.h>
 #include <NtddNdis.h>
 
-#ifdef HAVE_NCURSES
+#if defined(HAVE_NCURSES) && !defined(BUILDING_UTILS)
     #include <missing/ncurses.h>
     #include <wdg.h>
 
@@ -61,11 +61,6 @@
 
 #ifndef ATTACH_PARENT_PROCESS
 #define ATTACH_PARENT_PROCESS  ((DWORD)-1)
-#endif
-
-#if 0
-   EC_API_EXPORTED LIST_HEAD(, hosts_list) group_one_head;
-   EC_API_EXPORTED LIST_HEAD(, hosts_list) group_two_head;
 #endif
 
 static void setup_console(void);
@@ -90,9 +85,12 @@ static void __init win_init(void)
 /*
  * Ask NDIS for the device MTU
  */
+#ifndef OID_GEN_MAXIMUM_TOTAL_SIZE
+#define OID_GEN_MAXIMUM_TOTAL_SIZE  0x00010111
+#endif
+
 static BOOL get_interface_mtu (ADAPTER *adapter, DWORD *mtu)
 {
-#ifdef OID_GEN_MAXIMUM_TOTAL_SIZE  /* Not an old <NtddNdis.h> */
   struct {
     PACKET_OID_DATA oidData;
     DWORD mtu;
@@ -106,11 +104,6 @@ static BOOL get_interface_mtu (ADAPTER *adapter, DWORD *mtu)
      return (FALSE);
   *mtu = *(DWORD*) &oid.oidData.Data;
   return (TRUE);
-#else
-  (void) adapter;
-  (void) mtu;
-  return (FALSE);
-#endif
 }
 
 u_int16 get_iface_mtu(const char *iface)
@@ -203,7 +196,7 @@ int ec_win_gettimeofday (struct timeval *tv, struct timezone *tz)
  */
 static int __inline win_kbhit (void)
 {
-#ifdef HAVE_NCURSES
+#if defined(HAVE_NCURSES) && !defined(BUILDING_UTILS)
    if ((current_screen.flags & WDG_SCR_INITIALIZED))
       return PDC_check_bios_key();
 #endif
@@ -1040,7 +1033,7 @@ char *ec_win_strerror (int err)
   return (buf);
 }
 
-#if defined(HAVE_NCURSES)
+#if defined(HAVE_NCURSES) && !defined(BUILDING_UTILS)
 int vwprintw (WINDOW *win, const char *fmt, va_list args)
 {
   char buf[1024];
@@ -1050,11 +1043,11 @@ int vwprintw (WINDOW *win, const char *fmt, va_list args)
   _vsnprintf (buf, sizeof(buf), fmt, args);
   return wprintw (win, buf);
 }
-#endif  /* HAVE_NCURSES */
+#endif  /* HAVE_NCURSES && !BUILDING_UTILS */
 
 static void pdc_ncurses_init (void)
 {
-#ifdef HAVE_NCURSES
+#if defined(HAVE_NCURSES) && !defined(BUILDING_UTILS)
   const char *env = getenv ("CURSES_TRACE");
 
   if (env && atoi(env) > 0) {
@@ -1099,20 +1092,25 @@ static BOOL is_gui_app (void)
  */
 static void setup_console (void)
 {
+#if !defined(BUILDING_UTILS)
   BOOL (WINAPI *_AttachConsole)(DWORD) = NULL;
   HMODULE mod;
   DWORD   rc = 0;
   STARTUPINFO inf;
   const char *cmd_line = GetCommandLine();
-  BOOL  use_gtk = (cmd_line && strstr(cmd_line,"-G") != NULL);
+  BOOL  is_ec   = (cmd_line && strstr(cmd_line,"ettercap.exe"));
+  BOOL  use_gtk = (is_ec && strstr(cmd_line,"-G") != NULL);
 
-  memset (&inf, 0, sizeof(inf));
-  GetStartupInfo (&inf);
+  if (!is_ec || use_gtk)  /* GTK UI shouldn't need a console */
+     return;
 
   /* Note: this is true even when started minimized
    * (nCmdShow == SW_MINIMISED), but fails if program started as
    * another user
    */
+  memset (&inf, 0, sizeof(inf));
+  GetStartupInfo (&inf);
+
   started_from_a_gui = (inf.dwFlags & STARTF_USESHOWWINDOW);
 
   /* check if correct linker option used
@@ -1124,16 +1122,17 @@ static void setup_console (void)
      exit (-1);
   }
 
-  if (use_gtk)    /* GTK UI shouldn't need a console */
-     return;
-
   mod = GetModuleHandle ("kernel32.dll");
   if (mod)
      _AttachConsole = (BOOL (WINAPI*)(DWORD)) GetProcAddress((HINSTANCE)mod, "AttachConsole");
 
   attached_to_console = FALSE;
 
-  /* If parent doesn't have a console, AttachConsole() will fail */
+  /* If parent doesn't have a console, AttachConsole() will fail and
+   * we use AllocConsole() instead.
+   * Note: AttachConsole() was introduced in Win-2000, so for Win-ME/9x,
+   *       we simply try AllocConsole().
+   */
   if (_AttachConsole) {
      if ((*_AttachConsole)(ATTACH_PARENT_PROCESS))
         attached_to_console = TRUE;
@@ -1149,6 +1148,8 @@ static void setup_console (void)
      exit (-1);
   }
 
+  /* Synchronise std-handles with the new console
+   */
   freopen ("CONIN$", "rt", stdin);
   freopen ("CONOUT$", "wt", stdout);
   freopen ("CONOUT$", "wt", stderr);
@@ -1159,10 +1160,12 @@ static void setup_console (void)
 #endif
 
   has_console = TRUE;
+#endif /* BUILDING_UTILS */
 }
 
 static void __attribute__((destructor)) exit_console (void)
 {
+#if !defined(BUILDING_UTILS)
   if (!has_console)
      return;
 
@@ -1176,10 +1179,8 @@ static void __attribute__((destructor)) exit_console (void)
      * GUI app. Get the prompt back by putting a <CR> in the console input queue.
      */
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    if (!started_from_a_gui &&
-        hStdin != INVALID_HANDLE_VALUE && hStdout != INVALID_HANDLE_VALUE) {
+    if (!started_from_a_gui && hStdin != INVALID_HANDLE_VALUE) {
       INPUT_RECORD rec;
       DWORD written;
 
@@ -1194,6 +1195,7 @@ static void __attribute__((destructor)) exit_console (void)
   }
   FreeConsole();  /* free allocated or attached console */
   has_console = FALSE;
+#endif
 }
 
 /* EOF */

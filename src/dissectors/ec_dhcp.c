@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp.c,v 1.2 2003/10/16 20:24:22 alor Exp $
+    $Id: ec_dhcp.c,v 1.3 2003/10/17 16:19:30 alor Exp $
 */
 
 /*
@@ -149,6 +149,7 @@ FUNC_DECODER(dissector_dhcp)
       
    /* client requests */ 
    if (FROM_CLIENT("dhcp", PACKET)) {
+      struct ip_addr client;
       
       /* clients only send request */
       if (dhcp->op != BOOTREQUEST)
@@ -165,7 +166,12 @@ FUNC_DECODER(dissector_dhcp)
          case DHCP_REQUEST:
             DEBUG_MSG("\tDissector_DHCP REQUEST");
       
-            USER_MSG("DHCP: [%s] REQUEST \n", mac_addr_ntoa(dhcp->chaddr, tmp)); 
+            /* netmask */
+            if ((opt = get_option(OPT_RQ_ADDR, options, end)) != NULL)
+               ip_addr_init(&client, AF_INET, opt + 1);
+            
+            USER_MSG("DHCP: [%s] REQUEST ", mac_addr_ntoa(dhcp->chaddr, tmp)); 
+            USER_MSG("%s\n", ip_addr_ntoa(&client, tmp)); 
       
             break;
       }
@@ -201,21 +207,21 @@ FUNC_DECODER(dissector_dhcp)
             if ((opt = get_option(OPT_ROUTER, options, end)) != NULL)
                ip_addr_init(&router, AF_INET, opt + 1);
             
+            /* dns server */
+            if ((opt = get_option(OPT_DNS, options, end)) != NULL)
+               ip_addr_init(&dns, AF_INET, opt + 1);
+            
             USER_MSG("DHCP: [%s] ACK : ", ip_addr_ntoa(&PACKET->L3.src, tmp)); 
             USER_MSG("%s ", ip_addr_ntoa(&client, tmp)); 
             USER_MSG("%s ", ip_addr_ntoa(&netmask, tmp)); 
             USER_MSG("GW %s ", ip_addr_ntoa(&router, tmp)); 
+            USER_MSG("DNS %s ", ip_addr_ntoa(&dns, tmp)); 
             
-            /* dns server */
-            if ((opt = get_option(OPT_DNS, options, end)) != NULL) {
-               ip_addr_init(&dns, AF_INET, opt + 1);
-            
-               /* dns domain */
-               if ((opt = get_option(OPT_DOMAIN, options, end)) != NULL)
+            /* dns domain */
+            if ((opt = get_option(OPT_DOMAIN, options, end)) != NULL) {
                   strncpy(domain, opt + 1, MIN(*opt, sizeof(domain)) );
             
-               USER_MSG("DNS %s \"%s\" \n", ip_addr_ntoa(&dns, tmp), domain); 
-
+               USER_MSG("\"%s\"\n", domain);
             } else
                USER_MSG("\n");
             

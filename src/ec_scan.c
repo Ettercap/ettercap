@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.31 2003/12/14 20:57:28 alor Exp $
+    $Id: ec_scan.c,v 1.32 2003/12/28 17:20:13 alor Exp $
 */
 
 #include <ec.h>
@@ -47,7 +47,7 @@ static void scan_netmask(void);
 static void scan_targets(void);
 
 int scan_load_hosts(char *filename);
-static void scan_save_hosts(char *filename);
+int scan_save_hosts(char *filename);
 
 void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name);
 
@@ -465,7 +465,7 @@ int scan_load_hosts(char *filename)
 /*
  * save the host list to this file 
  */
-static void scan_save_hosts(char *filename)
+int scan_save_hosts(char *filename)
 {
    FILE *hf;
    int nhosts = 0;
@@ -476,7 +476,8 @@ static void scan_save_hosts(char *filename)
    
    /* open the file */
    hf = fopen(filename, FOPEN_WRITE_TEXT);
-   ON_ERROR(hf, NULL, "Cannot open %s for writing", filename);
+   if (hf == NULL)
+      SEMIFATAL_ERROR("Cannot open %s for writing", filename);
  
    /* save the list */
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
@@ -493,6 +494,8 @@ static void scan_save_hosts(char *filename)
    fclose(hf);
    
    INSTANT_USER_MSG("%d hosts saved to file %s\n", nhosts, filename);
+
+   return ESUCCESS;
 }
 
 

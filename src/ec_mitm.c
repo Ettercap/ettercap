@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.10 2003/12/14 17:07:17 alor Exp $
+    $Id: ec_mitm.c,v 1.11 2003/12/28 17:20:13 alor Exp $
 */
 
 #include <ec.h>
@@ -145,6 +145,7 @@ void mitm_stop(void)
       if (e->started) {
          DEBUG_MSG("mitm_stop: stopping %s", e->mm->name);
          e->mm->stop();
+         e->started = 0;
       }
    }
    

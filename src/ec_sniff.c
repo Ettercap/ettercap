@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.43 2003/12/16 12:25:46 lordnaga Exp $
+    $Id: ec_sniff.c,v 1.44 2003/12/28 17:20:13 alor Exp $
 */
 
 #include <ec.h>
@@ -513,6 +513,12 @@ void add_ip_list(struct ip_addr *ip, struct target_env *t)
     * search the last element then insert the new one
     */
    SLIST_FOREACH (last, &t->ips, next) {
+      /* if already in the list, skip it */
+      if (!ip_addr_cmp(&last->ip, ip)) {
+         IP_LIST_UNLOCK;
+         return;
+      }
+      
       if (SLIST_NEXT(last, next) == SLIST_END(&t->ips))
          break;
    }
@@ -521,6 +527,9 @@ void add_ip_list(struct ip_addr *ip, struct target_env *t)
       SLIST_INSERT_AFTER(last, e, next);
    else 
       SLIST_INSERT_HEAD(&t->ips, e, next);
+   
+   /* the target has at least one ip, so remove the "all" flag */
+   t->all_ip = 0;
    
    IP_LIST_UNLOCK;
    
@@ -562,6 +571,12 @@ void del_ip_list(struct ip_addr *ip, struct target_env *t)
       if (!ip_addr_cmp(&(e->ip), ip)) {
          SLIST_REMOVE(&t->ips, e, ip_list, next);
          SAFE_FREE(e);
+         /* check if the list is empty */
+         if (SLIST_FIRST(&t->ips) == SLIST_END(&t->ips)) {
+            /* the list is empty, set the "all" flag */
+            t->all_ip = 1;
+         }
+         
          IP_LIST_UNLOCK;
          return;
       }

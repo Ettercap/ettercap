@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.27 2003/12/25 17:19:57 alor Exp $
+    $Id: wdg.c,v 1.28 2003/12/28 17:19:39 alor Exp $
 */
 
 #include <wdg.h>
@@ -383,6 +383,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
          struct wdg_object *wo = wdg_focused_obj->wo;
          WDG_EXECUTE(wdg_focused_obj->wo->destroy_callback);
          wdg_destroy_object(&wo);
+         wdg_redraw_all();
       }
          
       /* other objects must not receive the msg */
@@ -428,6 +429,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
          if (key == wdg_root_obj->destroy_key) {
             WDG_EXECUTE(wdg_root_obj->destroy_callback);
             wdg_destroy_object(&wdg_root_obj);
+            wdg_redraw_all();
             return;
          }
       }
@@ -446,6 +448,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
             struct wdg_object *wo = wdg_focused_obj->wo;
             WDG_EXECUTE(wdg_focused_obj->wo->destroy_callback);
             wdg_destroy_object(&wo);
+            wdg_redraw_all();
             return;
          }
       }

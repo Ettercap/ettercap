@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_list.c,v 1.4 2003/12/27 18:49:52 alor Exp $
+    $Id: wdg_list.c,v 1.5 2003/12/28 17:19:39 alor Exp $
 */
 
 #include <wdg.h>
@@ -400,8 +400,11 @@ static void wdg_list_menu_create(struct wdg_object *wo)
    size_t y = wdg_get_begin_y(wo);
    int mrows = 0, mcols = 0;
   
-   /* already displayed */
-   if (ww->menu || !ww->items)
+   /* skip the creation if:
+    *    - already displayed 
+    *    - no items are present
+    */
+   if (ww->menu || !ww->items || ww->nitems == 0)
       return;
 
    /* create the menu */

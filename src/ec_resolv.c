@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.10 2003/10/13 10:43:50 alor Exp $
+    $Id: ec_resolv.c,v 1.11 2003/12/28 17:20:13 alor Exp $
 */
 
 #include <ec.h>
@@ -101,7 +101,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
    } 
  
    /* the host was resolved... */
-   strlcpy(name, host->h_name, MAX_HOSTNAME_LEN);
+   strlcpy(name, host->h_name, MAX_HOSTNAME_LEN - 1);
 
    /* insert the result in the cache for later use */
    resolv_cache_insert(ip, name);
@@ -128,7 +128,7 @@ static int resolv_cache_search(struct ip_addr *ip, char *name)
          
          DEBUG_MSG("DNS cache_search: found: %s", r->hostname);
          
-         strncpy(name, r->hostname, MAX_HOSTNAME_LEN);
+         strlcpy(name, r->hostname, MAX_HOSTNAME_LEN - 1);
          return ESUCCESS;
       }
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.26 2003/12/14 16:15:25 lordnaga Exp $
+    $Id: ec_conf.c,v 1.27 2003/12/28 17:20:12 alor Exp $
 */
 
 #include <ec.h>
@@ -34,6 +34,7 @@ int number_of_ports;
    
 static struct conf_entry privs[] = {
    { "ec_uid", NULL },
+   { "ec_gid", NULL },
    { NULL, NULL },
 };
 
@@ -131,6 +132,7 @@ static void init_structures(void)
    DEBUG_MSG("init_structures");
    
    set_pointer((struct conf_entry *)&privs, "ec_uid", &GBL_CONF->ec_uid);
+   set_pointer((struct conf_entry *)&privs, "ec_gid", &GBL_CONF->ec_gid);
    set_pointer((struct conf_entry *)&mitm, "arp_storm_delay", &GBL_CONF->arp_storm_delay);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
@@ -297,7 +299,8 @@ void load_conf(void)
       DEBUG_MSG("load_conf: \tENTRY: %s  %d", line, *value);
 
    }
-   
+  
+   fclose(fc);
 }
 
 /* 

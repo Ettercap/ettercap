@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.51 2003/12/28 14:48:21 alor Exp $
+    $Id: ec_main.c,v 1.52 2003/12/28 17:20:13 alor Exp $
 */
 
 #include <ec.h>
@@ -209,7 +209,7 @@ static void drop_privs(void)
    
    DEBUG_MSG("drop_privs: setuid(%d) setgid(%d)", uid, gid);
    
-   /* drop to a good uid ;) */
+   /* drop to a good uid/gid ;) */
    if ( setgid(gid) < 0 )
       ERROR_MSG("setgid()");
    

@@ -35,7 +35,6 @@ this is the unofficial and floating in time roadmap:
       - dissect_free_session
       - what about truncated pcap file ?
       - input for curses gui
-      - box (curses) under freebsd
       + when libpcap 0.8.1 will be released
          - pcap_datalink_val_to_name  
          - pcap_lib_version
@@ -44,6 +43,7 @@ this is the unofficial and floating in time roadmap:
       - dhcp infos
 
    + LIBWDG
+      - fix the box() under freebsd
       - callback on menu shortcuts
       - inline help (with callback on 'h')
       - widgets:

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.4 2003/09/02 21:11:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.5 2003/09/07 19:47:51 alor Exp $
 */
 
 #include <ec.h>
@@ -265,8 +265,9 @@ int str_replace(char **text, const char *s, const char *d)
 {
    size_t slen = strlen(s);
    size_t dlen = strlen(d);
-   int diff = MAX(slen, dlen) - MIN(dlen, dlen);
+   int diff = dlen - slen;
    char *p;
+   size_t size;
 
    /* the search string does not exist */
    if (strstr(*text, s) == NULL)
@@ -275,7 +276,13 @@ int str_replace(char **text, const char *s, const char *d)
    /* search all the occurrence of 's' */
    while ( (p = strstr(*text, s)) != NULL ) {
 
-      *text = realloc(*text, strlen(*text) + diff + 1);
+      /* the new size */
+      if (diff > 0)
+         size = strlen(*text) + diff + 1;
+      else 
+         size = strlen(*text);
+      
+      *text = realloc(*text, size);
       ON_ERROR(*text, NULL, "Can't allocate memory");
 
       /* do the actual replacement */

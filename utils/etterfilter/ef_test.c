@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_test.c,v 1.2 2003/09/06 19:14:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_test.c,v 1.3 2003/09/07 19:47:51 alor Exp $
 */
 
 #include <ef.h>
@@ -44,7 +44,7 @@ void test_filter(void)
    istr[0].opcode = FOP_FUNC;
    istr[0].op.func.opcode = FFUNC_SEARCH;
    istr[0].op.func.level = 0;
-   strcpy(istr[0].op.func.value, "OpenSSH");
+   strcpy(istr[0].op.func.value, "OpensSSH");
    istr[0].op.func.value_len = strlen(istr[0].op.func.value);
    
    istr[1].opcode = FOP_JFALSE;
@@ -67,12 +67,12 @@ void test_filter(void)
    istr[4].opcode = FOP_JMP;
    istr[4].op.jmp = 6;
    
-   /* } else { log(DATA.data, "/tmp/etterfilter.log") */
-   istr[5].opcode = FOP_FUNC;
-   istr[5].op.func.opcode = FFUNC_LOG;
-   istr[0].op.func.level = 0;
-   strcpy(istr[5].op.func.value, "/tmp/etterfilter.log");
-   istr[5].op.func.value_len = strlen(istr[5].op.func.value);
+   /* } else { DATA.data + 3 = '+' */
+   istr[5].opcode = FOP_ASSIGN;
+   istr[5].op.assign.level = 5;
+   istr[5].op.assign.offset = 3;
+   istr[5].op.assign.size = 1;
+   istr[5].op.assign.value = '+';
 
    /* } */
    istr[6].opcode = FOP_EXIT;

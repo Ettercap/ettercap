@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.29 2003/09/06 19:14:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.30 2003/09/07 19:47:51 alor Exp $
 */
 
 #include <ec.h>
@@ -326,7 +326,7 @@ void set_iface_mtu(u_int16 dlt)
     * a dirty hack for loopback:
     * it is an ehternet but with larger mtu
     */
-   if (!strcasecmp(GBL_OPTIONS->iface, "lo")) {
+   if (GBL_OPTIONS->iface && !strcasecmp(GBL_OPTIONS->iface, "lo")) {
       GBL_IFACE->mtu = 16436;
       DEBUG_MSG("MTU = %d", GBL_IFACE->mtu);
       return;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_irc.c,v 1.3 2003/09/06 19:14:24 alor Exp $
+    $Id: ec_irc.c,v 1.4 2003/09/07 19:47:51 alor Exp $
 */
 
 #include <ec.h>
@@ -327,7 +327,6 @@ FUNC_DECODER(dissector_irc)
                                     user);
          SAFE_FREE(user);
       }
-
       /* save the session */
       session_put(s);
 

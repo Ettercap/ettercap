@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.11 2003/08/04 13:59:07 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.12 2003/09/07 19:47:51 alor Exp $
 */
 
 #include <ec.h>
@@ -97,7 +97,7 @@ int dissect_match(void *id_sess, void *id_curr)
 
 /*
  * prepare the ident and the pointer to match function
- * for a dissector
+ * for a dissector.
  */
 
 void dissect_create_session(struct session **s, struct packet_object *po)

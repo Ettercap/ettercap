@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.3 2003/09/06 19:14:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.4 2003/09/07 19:47:51 alor Exp $
 */
 
 #include <ec.h>
@@ -34,6 +34,7 @@
 
 int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
+static int execute_assign(struct filter_op *fop, struct packet_object *po);
 static int execute_func(struct filter_op *fop, struct packet_object *po);
 
 static int func_search(struct filter_op *fop, struct packet_object *po);
@@ -67,6 +68,14 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
                flags |= FLAG_TRUE;
             else
                flags &= ~(FLAG_TRUE);
+            
+            break;
+            
+         case FOP_ASSIGN:
+            printf("%d OPCODE: ASSIGN \n", eip);
+            execute_assign(&fop[eip], po);
+            /* assignment always return true */
+            flags |= FLAG_TRUE;
             
             break;
             
@@ -217,7 +226,7 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
     */
    switch (fop->op.test.size) {
       case 0:
-         /* string comparizon */
+         /* string comparison */
          if (!memcmp(base + fop->op.test.offset, fop->op.test.string, fop->op.test.string_len))
             return FLAG_TRUE;
          break;
@@ -228,17 +237,12 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          break;
       case 2:
          /* short int comparison */
-         if (*(u_int16 *)(base + fop->op.test.offset) == (fop->op.test.value & 0xffff) )
+         if (htons(*(u_int16 *)(base + fop->op.test.offset)) == (fop->op.test.value & 0xffff) )
             return FLAG_TRUE;
          break;
       case 4:
          /* int comparison */
-         if (*(u_int32 *)(base + fop->op.test.offset) == (fop->op.test.value & 0xffffffff) )
-            return FLAG_TRUE;
-         break;
-      case 8:
-         /* long long int comparison */
-         if (*(u_int64 *)(base + fop->op.test.offset) == fop->op.test.value)
+         if (htonl(*(u_int32 *)(base + fop->op.test.offset)) == (fop->op.test.value & 0xffffffff) )
             return FLAG_TRUE;
          break;
       default:
@@ -248,6 +252,64 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          
    return FLAG_FALSE;
 }
+
+/* 
+ * make an assignment.
+ */
+static int execute_assign(struct filter_op *fop, struct packet_object *po)
+{
+   /* initialize to the beginning of the packet */
+   u_char *base = po->L2.header;
+
+   DEBUG_MSG("filter engine: execute_assign: L%d O%d S%d", fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size);
+   
+   /* 
+    * point to the right base.
+    */
+   switch (fop->op.assign.level) {
+      case 2:
+         base = po->L2.header;
+         break;
+      case 3:
+         base = po->L3.header;
+         break;
+      case 4:
+         base = po->L4.header;
+         break;
+      case 5:
+         base = po->DATA.data;
+         break;
+      default:
+         JIT_FAULT("unsupported assignment level [%d]", fop->op.assign.level);
+         break;
+   }
+ 
+   /* 
+    * get the value with the proper size.
+    * 0 is a special case for strings (even binary) 
+    */
+   switch (fop->op.assign.size) {
+      case 0:
+         /* string comparizon */
+         memcpy(base + fop->op.assign.offset, fop->op.assign.string, fop->op.assign.string_len);
+         break;
+      case 1:
+         *(u_int8 *)(base + fop->op.assign.offset) = (fop->op.assign.value & 0xff);
+         break;
+      case 2:
+         *(u_int16 *)(base + fop->op.assign.offset) = ntohs(fop->op.assign.value & 0xffff); 
+         break;
+      case 4:
+         *(u_int32 *)(base + fop->op.assign.offset) = ntohl(fop->op.assign.value & 0xffffffff);
+         break;
+      default:
+         JIT_FAULT("unsupported assign size [%d]", fop->op.assign.size);
+         break;
+   }
+
+   return FLAG_TRUE;
+}
+
 
 /*
  * search a string and return TRUE if found
@@ -323,11 +385,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
    if (!memmem(po->DATA.data, po->DATA.len, fop->op.func.value, fop->op.func.value_len) )
       return -ENOTFOUND;
 
-   /* don't replace in unoffensive mode */
-   if (GBL_OPTIONS->unoffensive) {
-      USER_MSG("filter engine: cannot replace in unoffensive mode...\n");
-      return -EINVALID;
-   }
+   DEBUG_MSG("filter engine: func_replace");
    
    /* do the replacement */
    do {
@@ -374,6 +432,8 @@ static int func_log(struct filter_op *fop, struct packet_object *po)
 {
    int fd;
 
+   DEBUG_MSG("filter engine: func_log");
+   
    /* open the file */
    fd = open(fop->op.func.value, O_CREAT | O_APPEND | O_RDWR, 0600);
    if (fd == -1) {
@@ -407,6 +467,8 @@ static int func_log(struct filter_op *fop, struct packet_object *po)
  */
 static int func_drop(struct packet_object *po)
 {
+   DEBUG_MSG("filter engine: func_drop");
+   
    /* se the flag to be dropped */
    po->flags |= PO_DROPPED;
 
@@ -421,6 +483,8 @@ static int func_drop(struct packet_object *po)
  */
 static int func_exec(struct filter_op *fop)
 {
+   DEBUG_MSG("filter engine: func_exec: %s", fop->op.func.value);
+   
    /* 
     * the command must be executed by a child.
     * we are forwding packets, and we cannot wait 

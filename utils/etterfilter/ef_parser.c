@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_parser.c,v 1.1 2003/08/28 19:55:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_parser.c,v 1.2 2003/09/07 19:47:51 alor Exp $
 */
 
 
@@ -43,9 +43,10 @@ void parse_options(int argc, char **argv);
 void ef_usage(void)
 {
 
-   fprintf(stdout, "\nUsage: %s [OPTIONS] logfile\n", GBL_PROGRAM);
+   fprintf(stdout, "\nUsage: %s [OPTIONS] filterfile\n", GBL_PROGRAM);
 
    fprintf(stdout, "\nGeneral Options:\n");
+   fprintf(stdout, "  -o, --output <file>         output file (default is filter.ef)\n");
    
    fprintf(stdout, "\nStandard Options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
@@ -66,6 +67,7 @@ void parse_options(int argc, char **argv)
       { "version", no_argument, NULL, 'v' },
       
       { "test", no_argument, NULL, 't' },
+      { "output", required_argument, NULL, 'o' },
       
       { 0 , 0 , 0 , 0}
    };
@@ -73,12 +75,16 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "htv", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "ohtv", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
          case 't':
                   GBL_OPTIONS.test = 1;
+                  break;
+                  
+         case 'o':
+                  GBL_OPTIONS.output_file = strdup(optarg);
                   break;
                   
          case 'h':

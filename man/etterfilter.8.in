@@ -1,4 +1,4 @@
-.\"  etterlog -- log analyzer for ettercap log files
+.\"  etterfilter -- filter compiler for ettercap filter files
 .\"
 .\"  This program is free software; you can redistribute it and/or modify
 .\"  it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.1 2003/08/28 19:55:20 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.2 2003/09/07 19:47:50 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -22,8 +22,7 @@
 ..
 .TH ETTERFILTER "8" "" "ettercap @VERSION@"
 .SH NAME
-.B etterfilter @VERSION@ \- Filter compiler for ettercap content filtering
-engine
+.B etterfilter @VERSION@ \- Filter compiler for ettercap content filtering engine
 
 .SH SYNOPSIS
 .B etterfilter
@@ -31,10 +30,18 @@ engine
 
 
 .SH DESCRIPTION
+The etterfilter utility is used to compile source filter file into binary
+filter file that can be interpreted by the JIT interpreter in the ettercap(8)
+filter engine. You have to compile your filter scripts in order to use them in
+ettercap. All the syntax/parse errors will be checked at compile time, so you
+will be sure to produce a correct binary filter for ettercap.
 
 .TP
 .B GENERAL OPTIONS
 .TP
+\fB\-o\fR, \fB\-\-output <FILE>\fR
+you can specify the output file for a source filter file. By default the output
+is filter.ef.
                            
                            
 .TP
@@ -46,6 +53,143 @@ Print the version and exit.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 prints the help screen with a short summary of the available options.
+
+
+
+.TP
+.B SCRIPTS SYNTAX
+A script is a compound of instruction. It is executed sequentially and you can
+make branches with the 'if' statements. if and if/else statement are the only
+supported. No loops are implemented. The syntax is almost like the C code
+except that you have to put if blocks into graph parentesys '{' '}', even if it
+contains only one instruction.
+.Sp
+The conditions for an 'if' statement can be either functions or comparisons.
+Two or more conditions can be linked together with logical operator like 
+OR '||', AND '&&' and NOT '!'.
+.Sp
+Example:
+.br
+if (tcp.port == 21 && search(DATA.data, "ettercap")) {
+.br
+}
+.Sp
+Every instruction must end with a semicolon ';'. 
+.Sp
+Comparisons are implemented with the '==' operator and can be used to compare 
+numbers and strings.
+.Sp
+Example:
+.br
+if (DATA.data + 20 == "ettercap") {
+.br
+}
+.Sp
+Assignments are implemented with the '=' operator and the lvalue can be an
+expression to point to a specific offset.
+
+
+XXX - TODO
+
+
+.TP
+.B SCRIPTS FUNCTIONS
+.TP
+.B search(\fIwhere\fR, \fIwhat\fR)
+this function searches the string 'what' in the buffer 'where'. The buffer
+can be either DATA.data or DATA.disp_data. The former is the payload at layer
+DATA (ontop TCP or UDP) as it is transmitted on the wire, the latter is the
+payload decoded/decrypted by dissectors.
+.br
+So, if you want to search in an SSH connection, it is better to use 'disp_data'
+since 'data' will be encrypted.
+.br
+The string 'what' can be binary. You have to escape it.
+.Sp
+example:
+.br
+search(DATA.data, "\\x41\\x42\\x43")
+
+
+.TP
+.B regex(\fIwhere\fR, \fIregex\fR)
+this function will return true if the 'regex' has matched the buffer 'where'.
+The considerations about 'disp_data' and 'data' mentioned for the function 'search'
+are the same for the regex function.
+.Sp
+NOTE: regex can be used only agains string buffer.
+.Sp
+example:
+.br
+regex(DATA.disp_data, ".*login.*")
+
+
+.TP
+.B replace(\fIwhat\fR, \fIwith\fR)
+this function replaces the string 'what' with the string 'with'. They can be
+binary string and must be escaped. The replacement is always performed in
+DATA.data since is the only payload which get forwarded. The 'disp_data' buffer
+is used only internally and never reach the wire.
+.Sp
+example:
+.br
+replace("ethercap", "ettercap")
+
+
+.TP
+.B log(\fIwhat\fR, \fIwhere\fR)
+this function dump the the file 'where' the buffer 'what'. No information are
+stored about the packet, only the payload is dumped. So you will see the stream
+in the file. If you want to log packets in a more enhanced mode, you need to
+use the ettercap -L option and analyze it with etterlog(8).
+.br
+The file 'where' must be writeable to the user EC_UID (see etter.conf(5)).
+.Sp
+example:
+.br
+log(DATA.disp_data, "/tmp/interesting.log")
+
+
+.TP
+.B msg(\fImessage\fR)
+this function displays a message to the user in the User Messages window. It is
+useful to let the user know that a particular filter has been succesful or not.
+.Sp
+example:
+.br
+msg("Packet filtered successfully")
+
+
+.TP
+.B drop()
+this function mark the packet has "to be dropped". The packet will not be
+forwarded to the real destination. 
+.Sp
+example:
+.br
+drop()
+
+
+.TP
+.B exec(\fIcommand\fR)
+this function executes a shell command. You have to provice the full path to
+the command since it is executed without any environment. There is no way to
+determine if the command was succesfull or not. Furthermore, it is executed
+asyncronously since it is forked by the main process.
+.Sp
+example:
+.br
+exec("/bin/cat /tmp/foo >> /tmp/bar")
+
+
+.TP
+.B exit()
+this function causes the filter engine to stop executing the code. it is useful
+to exit the execution on some circumstance checked by an if statement.
+.Sp
+example:
+.br
+exit()
 
 
 
@@ -66,6 +210,8 @@ Marco Valleri (NaGA) <crwm@freemail.it>
 
 
 .SH "SEE ALSO"
+.I "etter.filter.examples"
+.br
 .I "ettercap(8)"
 .I "etterlog(8)"
 .I "etter.conf(5)"

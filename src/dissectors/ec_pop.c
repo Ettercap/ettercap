@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.19 2003/09/06 19:14:24 alor Exp $
+    $Id: ec_pop.c,v 1.20 2003/09/07 19:47:51 alor Exp $
 */
 
 /*
@@ -149,7 +149,7 @@ FUNC_DECODER(dissector_pop)
       
       /* save the session */
       session_put(s);
-      
+
       return NULL;
    }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.22 2003/09/06 19:14:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.23 2003/09/07 19:47:51 alor Exp $
 */
 
 #include <ec.h>
@@ -183,8 +183,12 @@ void display_packet_for_us(struct packet_object *po)
     * different form attacker's ip.
     */
 
-   /* dont sniff forwarded packets (equal mac, different ip) */
-   if ( !memcmp(GBL_IFACE->mac, po->L2.src, ETH_ADDR_LEN) &&
+   /* 
+    * dont sniff forwarded packets (equal mac, different ip) 
+    * but only if we are on live connections
+    */
+   if ( !GBL_OPTIONS->read &&
+        !memcmp(GBL_IFACE->mac, po->L2.src, ETH_ADDR_LEN) &&
         ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
       return;
    }

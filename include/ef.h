@@ -29,11 +29,7 @@
 
 #include <ec_stdint.h>
 #include <ec_error.h>
-#include <ec_log.h>
-#include <ec_profiles.h>
 
-#include <zlib.h>
-#include <regex.h>
 
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 
@@ -45,6 +41,7 @@
 struct globals {
    char test:1;
    char *source_file;
+   char *output_file;
 };
 
 /* in el_main.c */

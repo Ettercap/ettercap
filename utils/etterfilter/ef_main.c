@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.3 2003/09/02 21:11:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.4 2003/09/07 19:47:51 alor Exp $
 */
 
 #include <ef.h>
@@ -54,9 +54,11 @@ int main(int argc, char *argv[])
    }
    
    /* set the input for source file */
-   if (GBL_OPTIONS.source_file)
+   if (GBL_OPTIONS.source_file) {
       yyin = fopen(GBL_OPTIONS.source_file, "r");
-   else
+      if (yyin == NULL)
+         FATAL_ERROR("Input file not found !");
+   } else
       yyin = stdin;
 
    /* no buffering */

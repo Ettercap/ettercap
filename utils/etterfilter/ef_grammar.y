@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.2 2003/09/02 21:11:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.3 2003/09/07 19:47:51 alor Exp $
 */
 
 %{
@@ -55,6 +55,8 @@ u_int32 lineno = 1;
 %token TOKEN_ELSE        /*  } else {  */
 
 %token TOKEN_OP_NOT      /*  !  */
+%token TOKEN_OP_AND      /*  &&  */
+%token TOKEN_OP_OR       /*  ||  */
 
 %token TOKEN_OP_EQ       /*  =  */
 %token TOKEN_OP_CMP      /*  ==  */
@@ -77,6 +79,10 @@ u_int32 lineno = 1;
 %left TOKEN_OP_MUL TOKEN_OP_DIV
 %left TOKEN_UMINUS /* unary minus */
 
+%left TOKET_OP_AND
+%left TOKET_OP_OR
+%left TOKET_OP_NOT
+
 %%
 
 /* 
@@ -86,51 +92,68 @@ u_int32 lineno = 1;
 */
 
 /* general line, can be empty or not */ 
-input: /* empty string */
+input: /* empty line */
       | input block
       ;
      
-block: TOKEN_EOL {  }
-      | if_statement { } 
-      | if_else_statement { }
-      | single_instruction { }
+block:   /* empty block */
+      |  if_statement 
+      |  if_statement block
+      |  if_else_statement 
+      |  if_else_statement block
+      |  single_instruction 
+      |  single_instruction block
       ;
       
-if_statement: TOKEN_IF TOKEN_PAR_OPEN instruction TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END 
-      {
-         printf("\tONLY IF\n");
-      }
-      ;
-      
-if_else_statement: TOKEN_IF TOKEN_PAR_OPEN instruction TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END TOKEN_ELSE TOKEN_BLK_BEGIN block TOKEN_BLK_END
-      { 
-         printf("\tIF ELSE\n");
-      }
+/* every instruction must be terminated with ; */      
+single_instruction: 
+         instruction TOKEN_OP_END 
       ;
 
-single_instruction: instruction TOKEN_OP_END
-      { 
-      }
+/* instructions are functions or assignment */
+instruction: 
+         TOKEN_FUNCTION { printf("\tfunction\n"); }
+      |  offset TOKEN_OP_EQ math_expr { printf("\tassignment\n"); }
       ;
 
-instruction: TOKEN_FUNCTION {}
-      | TOKEN_OFFSET TOKEN_OP_CMP num {}
-      | TOKEN_OFFSET TOKEN_OP_EQ num {}
-      | TOKEN_OP_NOT instruction {}
+/* the if statement */
+if_statement: 
+         TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END 
+         { printf("\tONLY IF\n"); }
       ;
       
-num: math_expr {}
-      | TOKEN_OFFSET {}
+/* if {} else {} */      
+if_else_statement: 
+         TOKEN_IF TOKEN_PAR_OPEN conditions TOKEN_PAR_CLOSE TOKEN_BLK_BEGIN block TOKEN_BLK_END TOKEN_ELSE TOKEN_BLK_BEGIN block TOKEN_BLK_END
+         { printf("\tIF ELSE\n"); }
       ;
-      
-/* MATH EXPRESSION definition */
-math_expr: TOKEN_CONST  { $$ = $1; }
-      | math_expr TOKEN_OP_ADD math_expr { $$ = $1 + $3; }
-      | math_expr TOKEN_OP_SUB math_expr { $$ = $1 - $3; }
-      | math_expr TOKEN_OP_MUL math_expr { $$ = $1 * $3; }
-      | math_expr TOKEN_OP_DIV math_expr { $$ = $1 / $3; }
-      | TOKEN_OP_SUB math_expr %prec TOKEN_UMINUS { $$ = -$2; }
-      | TOKEN_PAR_OPEN math_expr TOKEN_PAR_CLOSE { $$ = $2; }
+
+/* conditions used by the if statement */
+conditions: 
+         offset TOKEN_OP_CMP math_expr { printf("\tcondition cmp\n"); }
+      |  TOKEN_OP_NOT conditions { printf("\tcondition NOT\n"); }
+      |  conditions TOKEN_OP_AND conditions { printf("\tcondition AND\n"); } 
+      |  conditions TOKEN_OP_OR conditions { printf("\tcondition OR\n"); } 
+      |  TOKEN_FUNCTION { printf("\tcondition func\n"); }
+      ;
+
+/* offsets definitions */
+offset:
+         TOKEN_OFFSET 
+      |  TOKEN_OFFSET TOKEN_OP_ADD math_expr
+      |  TOKEN_OFFSET TOKEN_OP_SUB math_expr
+      ;
+
+/* math expression */
+math_expr: 
+         TOKEN_CONST  { $$ = $1; }
+      |  TOKEN_OFFSET {}
+      |  math_expr TOKEN_OP_ADD math_expr { $$ = $1 + $3; }
+      |  math_expr TOKEN_OP_SUB math_expr { $$ = $1 - $3; }
+      |  math_expr TOKEN_OP_MUL math_expr { $$ = $1 * $3; }
+      |  math_expr TOKEN_OP_DIV math_expr { $$ = $1 / $3; }
+      |  TOKEN_OP_SUB math_expr %prec TOKEN_UMINUS { $$ = -$2; }
+      |  TOKEN_PAR_OPEN math_expr TOKEN_PAR_CLOSE { $$ = $2; }
       ;
 
 %%
@@ -142,26 +165,33 @@ math_expr: TOKEN_CONST  { $$ = $1; }
  */
 
 /*
- * name of the token as they should be presented to the user
+ * name of the tokens as they should be presented to the user
  */
 struct {
    char *name;
    char *string;
 } errors_array[] = 
    {
-      { "TOKEN_CONST", "an integer" },
-      { "TOKEN_OFFSET", "an offset" },
-      { "TOKEN_FUNCTION", "a function" },
+      { "TOKEN_CONST", "integer" },
+      { "TOKEN_OFFSET", "offset" },
+      { "TOKEN_FUNCTION", "function" },
       { "TOKEN_IF", "'if'" },
       { "TOKEN_ELSE", "'else'" },
       { "TOKEN_OP_NOT", "'!'" },
+      { "TOKEN_OP_AND", "'&&'" },
+      { "TOKEN_OP_OR", "'||'" },
       { "TOKEN_OP_EQ", "'='" },
       { "TOKEN_OP_CMP", "'=='" },
       { "TOKEN_OP_END", "';'" },
+      { "TOKEN_OP_ADD", "'+'" },
+      { "TOKEN_OP_MUL", "'*'" },
+      { "TOKEN_OP_DIV", "'/'" },
+      { "TOKEN_OP_SUB", "'-'" },
       { "TOKEN_PAR_OPEN", "'('" },
       { "TOKEN_PAR_CLOSE", "')'" },
       { "TOKEN_BLK_BEGIN", "'{'" },
       { "TOKEN_BLK_END", "'}'" },
+      { "$end", "end of file" },
       { NULL, NULL }
    };
 
@@ -176,7 +206,7 @@ int yyerror(char *s)
 
    /* make a copy to manipulate it */
    error = strdup(s);
-  
+
    /* subsitute the error code with frendly messages */
    do {
       str_replace(&error, errors_array[i].name, errors_array[i].string);

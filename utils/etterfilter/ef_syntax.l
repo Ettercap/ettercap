@@ -17,14 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.2 2003/09/02 21:11:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.3 2003/09/07 19:47:51 alor Exp $
 */
 
 %{
 
 #include <ef.h>
 #include <ef_functions.h>
-
 #include <ef_grammar.h>
 
 #define YY_NO_UNPUT
@@ -42,9 +41,9 @@ extern u_int32 lineno;
  
 %option  noyywrap
 
-OFFSET         [A-Za-z]+[[:alnum:]]+[\.[A-Za-z]+]*
+OFFSET         [A-Za-z]+[[:alnum:]]*[\.[A-Za-z]+]*
 FUNCTION       [A-Za-z]+\([^\)]*\)
-CONST          [0-9]+
+CONST          [0-9]+|0x[0-9]+
 SPACES         [ \t]+
 
 %%
@@ -60,8 +59,18 @@ SPACES         [ \t]+
 }
 
 "!" {
-   printf("NOT");
+   printf("NOT\n");
    return TOKEN_OP_NOT;
+}
+
+"&&" {
+   printf("AND\n");
+   return TOKEN_OP_AND;
+}
+
+"||" {
+   printf("OR\n");
+   return TOKEN_OP_OR;
 }
 
 "==" {
@@ -129,7 +138,10 @@ SPACES         [ \t]+
 
 {CONST} {
    printf("CONST: %s\n", yytext);
-   yylval.value = atoi(yytext);
+   if (!strncmp(yytext, "0x", 2))
+      yylval.value = strtoul(yytext, NULL, 16);
+   else
+      yylval.value = strtoul(yytext, NULL, 10);
    return TOKEN_CONST;
 }
 

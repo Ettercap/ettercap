@@ -2,6 +2,8 @@
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
 
+#include <ec_packet.h>
+
 /* 
  * this is the struct used by the filtering engine
  * it is the equivalent of a processor's instruction
@@ -33,7 +35,6 @@
  *
  *    drop()
  *
- *    jump(address)
  */
 
 #define MAX_FILTER_LEN  200
@@ -42,10 +43,11 @@ struct filter_op {
    char opcode;
       #define FOP_EXIT     0
       #define FOP_TEST     1
-      #define FOP_FUNC     2
-      #define FOP_JMP      3
-      #define FOP_JTRUE    4
-      #define FOP_JFALSE   5
+      #define FOP_ASSIGN   2
+      #define FOP_FUNC     3
+      #define FOP_JMP      4
+      #define FOP_JTRUE    5
+      #define FOP_JFALSE   6
 
    union {
       /* functions */
@@ -70,10 +72,10 @@ struct filter_op {
          u_int8  level;
          u_int8  size;
          u_int16 offset;
-         u_int64 value;
+         u_int32 value;
          char string[MAX_FILTER_LEN];
          size_t string_len;
-      } test;
+      } test, assign;
 
       /* jumps */
       u_int16 jmp;

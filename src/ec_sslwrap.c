@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.33 2004/04/04 14:11:46 alor Exp $
+    $Id: ec_sslwrap.c,v 1.34 2004/04/04 18:12:09 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -161,7 +161,9 @@ void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_cha
    dissect_add(name, APP_LAYER_TCP, port, decoder); 
 }
 
-
+/* 
+ * Move a ssl_wrapper on another port
+ */
 void sslw_dissect_move(char *name, u_int16 port)
 {
    struct listen_entry *le, *tmp;
@@ -171,15 +173,17 @@ void sslw_dissect_move(char *name, u_int16 port)
          DEBUG_MSG("sslw_dissect_move: %s [%u]", name, port);
          le->sslw_port = port;
 	 
-	 /* move to zero means disable */
-	 if (port == 0) {
-	    LIST_REMOVE(le, next);
-	    SAFE_FREE(le);
-         }
+      /* Move to zero means disable */
+      if (port == 0) {
+         LIST_REMOVE(le, next);
+         SAFE_FREE(le);
       }
+   }
 }
 
-
+/* 
+ * Initialize the ssl wrappers
+ */
 void ssl_wrap_init(void)
 {
    struct listen_entry *le;
@@ -205,6 +209,7 @@ void ssl_wrap_init(void)
    sslw_init();
    sslw_bind_wrapper();
    
+   /* Add the hook to block real ssl packet going to top half */
    hook_add(HOOK_HANDLED, &sslw_hook_handled);
 
    number_of_services = 0;
@@ -263,16 +268,14 @@ EC_THREAD_FUNC(sslw_start)
    
    DEBUG_MSG("sslw_start: initialized and ready");
    
+   /* Set the polling on all registered ssl services */
+   i=0;
+   LIST_FOREACH(le, &listen_ports, next) {
+      poll_fd[i].fd = le->fd;
+      poll_fd[i++].events = POLLIN;
+   }
 
    LOOP {
-      /* Set the polling on all registered ssl services */
-      // XXX - Posso metterlo fuori dal ciclo???
-      i=0;
-      LIST_FOREACH(le, &listen_ports, next) {
-         poll_fd[i].fd = le->fd;
-         poll_fd[i++].events = POLLIN;
-      }
-
       poll(poll_fd, number_of_services, -1);
       
       /* Check which port received connection */
@@ -387,8 +390,8 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
          return -EINVALID;
       default:
          wait(&ret_val);
-	   if (ret_val == EINVALID)
-	      return -EINVALID;
+         if (ret_val == EINVALID)
+            return -EINVALID;
    }    
    
    return ESUCCESS;
@@ -442,8 +445,8 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
          return -EINVALID;
       default:
          wait(&ret_val);
-	   if (ret_val == EINVALID)
-	      return -EINVALID;
+         if (ret_val == EINVALID)
+            return -EINVALID;
    }    
    
    return ESUCCESS;
@@ -486,7 +489,6 @@ static void sslw_bind_wrapper(void)
 
       memset(&sa_in, 0, sizeof(sa_in));
       sa_in.sin_family = AF_INET;
-      // XXX - posso bindare e fare il redirect su 127.0.0.1
       sa_in.sin_addr.s_addr = INADDR_ANY;
    
       do {
@@ -502,7 +504,9 @@ static void sslw_bind_wrapper(void)
    }
 }
 
-
+/* 
+ * Create TCP a connection to the real SSL server 
+ */
 static int sslw_sync_conn(struct accepted_entry *ae)
 {      
    if(sslw_get_peer(ae) != ESUCCESS)
@@ -514,7 +518,12 @@ static int sslw_sync_conn(struct accepted_entry *ae)
    return ESUCCESS;
 }
 
-   
+/* 
+ * Create an SSL connection to the real server.
+ * Grab server certificate and create a fake one
+ * for the poor client.
+ * Then accept the SSL connection from the client.
+ */   
 static int sslw_sync_ssl(struct accepted_entry *ae) 
 {   
    X509 *server_cert;
@@ -534,6 +543,7 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
       return -EINVALID;
    }
 
+   /* Create the fake certificate */
    ae->cert = sslw_create_selfsigned(server_cert);  
    X509_free(server_cert);
 
@@ -548,7 +558,10 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    return ESUCCESS;   
 }
 
-
+/* 
+ * Take the IP address of the server 
+ * that the client wants to talk to.
+ */
 static int sslw_get_peer(struct accepted_entry *ae)
 {
    struct ec_session *s = NULL;
@@ -766,7 +779,6 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
  */
 static void sslw_wipe_connection(struct accepted_entry *ae)
 {
-   // XXX - SSL_free chiude anche gli fd?
    if (ae->ssl[SSL_CLIENT]) 
       SSL_free(ae->ssl[SSL_CLIENT]);
 
@@ -782,7 +794,9 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
    SAFE_FREE(ae);
 }
 
-
+/* 
+ * Initialize a fake PO to be passed to top half
+ */
 static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
 {
    /* 
@@ -915,7 +929,6 @@ EC_THREAD_FUNC(sslw_child)
    fcntl(ae->fd[SSL_SERVER], F_SETFL, O_NONBLOCK);
 
    /* A fake SYN ACK for profiles */
-   /* XXX - Does anyone care about packet len after this point? */
    sslw_initialize_po(&po, NULL);
    po.len = 64;
    po.L4.flags = (TH_SYN | TH_ACK);
@@ -929,9 +942,9 @@ EC_THREAD_FUNC(sslw_child)
          ret_val = sslw_read_data(ae, direction, &po);
          BREAK_ON_ERROR(ret_val,ae,po);
 	 
-	 /* if we have data to read */
+         /* if we have data to read */
          if (ret_val == ESUCCESS) {
-	    data_read = 1;
+            data_read = 1;
             sslw_parse_packet(ae, direction, &po);
             if (po.flags & PO_DROPPED)
                continue;
@@ -939,15 +952,16 @@ EC_THREAD_FUNC(sslw_child)
             ret_val = sslw_write_data(ae, !direction, &po);
             BREAK_ON_ERROR(ret_val,ae,po);
 	    
-	    if (po.flags & PO_SSLSTART) {
+            if (po.flags & PO_SSLSTART) {
                ae->status |= SSL_ENABLED; 
                ret_val = sslw_sync_ssl(ae);
-	       BREAK_ON_ERROR(ret_val,ae,po);
-	    }
+               BREAK_ON_ERROR(ret_val,ae,po);
+            }
 	    
-	    sslw_initialize_po(&po, po.DATA.data);
+            sslw_initialize_po(&po, po.DATA.data);
          }  
       }
+
       /* XXX - Set a proper sleep time */
       if (!data_read)
          usleep(1000);

@@ -34,10 +34,13 @@ this is the unofficial and floating in time roadmap:
       - write the requirements for each os
       - how to code a plugin 
 
-   + LIBWDG
-      - fix the box() under freebsd
-      - widgets:
-         - selectable lists (auto refresh)
+   + CURSES GUI
+      - profile management
+      - connection management
+      + LIBWDG
+         - fix the box() under freebsd
+         - widgets:
+            - selectable lists (auto refresh)
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
@@ -50,7 +53,6 @@ this is the unofficial and floating in time roadmap:
       - convert all the old dissectors:
          - https (over the ssl one)
          - ldap
-         - mountd
          - pcanywhere
          - yahoo
       - SSL unified dissector for https, impas, pop3s ecc ecc

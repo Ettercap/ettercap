@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.5 2004/01/11 17:09:31 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.6 2004/01/20 15:36:25 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -234,6 +234,9 @@ relative details (including account with user and pass for that host).
 .br
 You can convert the list of passive profile into the hosts list by pressing 'c'.
 .TP
+.B Statistics
+Displays some statistics about the sniffing process.
+.TP
 .B Resolve IP addresses
 Enables DNS resolution for all the sniffed IP address. CAUTION: this will
 extremely slow down ettercap. By the way the passive dns resolution is always
@@ -241,8 +244,9 @@ active. It sniffs dns replies and stores it in a cache. If an ip address is
 present in that cache, it will be automatically resolved. It is dns resolution
 for free... ;)
 .TP
-.B Statistics
-Displays some statistics about the sniffing process.
+.B Visualization method
+Change the visualization method for the sniffed data. Available methods: ascii,
+hex, ebcdic, text, html. 
 .RE
 
 

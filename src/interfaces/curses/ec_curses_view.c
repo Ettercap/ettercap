@@ -17,12 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.9 2004/01/20 10:04:32 alor Exp $
+    $Id: ec_curses_view.c,v 1.10 2004/01/20 15:36:25 alor Exp $
 */
 
 #include <ec.h>
 #include <wdg.h>
 #include <ec_curses.h>
+#include <ec_format.h>
 
 /* proto */
 
@@ -30,19 +31,23 @@ static void toggle_resolve(void);
 static void curses_show_stats(void);
 static void curses_stop_stats(void);
 static void refresh_stats(void);
+static void curses_vis_method(void);
+static void set_method(void);
 
 /* globals */
 
 static char tag_resolve[] = " ";
 static wdg_t *wdg_stats;
+#define VLEN 8
+static char vmethod[VLEN];
 
 struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
                                 {"Connections",          'c', "c", NULL},
                                 {"Profiles",             'o', "o", NULL},
+                                {"Statistics",           's', "s", curses_show_stats},
                                 {"-",                     0,  "",  NULL},
                                 {"Resolve IP addresses",  0, tag_resolve,   toggle_resolve},
-                                {"-",                     0,  "",  NULL},
-                                {"Statistics",           's', "s", curses_show_stats},
+                                {"Visualization method...", 'v', "v", curses_vis_method},
                                 {NULL, 0, NULL, NULL},
                               };
 
@@ -138,6 +143,20 @@ static void refresh_stats(void)
          GBL_STATS->th.thru_worst, GBL_STATS->th.thru_adv);
 }
 
+/*
+ * change the visualization method 
+ */
+static void curses_vis_method(void)
+{
+   DEBUG_MSG("curses_vis_method");
+
+   curses_input_call("Visualization method :", vmethod, VLEN, set_method);
+}
+
+static void set_method(void)
+{
+   set_format(vmethod);
+}
 
 /* EOF */
 

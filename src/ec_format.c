@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_format.c,v 1.11 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_format.c,v 1.12 2004/01/20 15:36:25 alor Exp $
 
 */
 
@@ -115,7 +115,6 @@ int set_format(char *format)
    }
 
    FATAL_MSG("Unsupported format (%s)", format);
-
 }
 
 /* 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.4 2003/03/27 22:18:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.5 2003/03/29 15:03:44 alor Exp $
 */
 
 #include <el.h>
@@ -42,6 +42,16 @@ int main(int argc, char *argv[])
    /* etterlog copyright */
    fprintf(stderr, "\n\033[01m\033[1m%s %s\033[0m copyright %s %s\n\n",
                       GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
+  
+  
+   /* allocate the global target */
+   GBL_TARGET = calloc(1, sizeof(struct target_env));
+   ON_ERROR(GBL_TARGET, NULL, "can't allocate memory");
+  
+   /* initialize to all target */
+   GBL_TARGET->all_mac = 1;
+   GBL_TARGET->all_ip = 1;
+   GBL_TARGET->all_port = 1;
    
    /* getopt related parsing...  */
    parse_options(argc, argv);
@@ -55,13 +65,19 @@ int main(int argc, char *argv[])
    fprintf(stderr, "Type                : %s\n\n", (GBL.hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
    
    /* analyze the logfile */
-   if (GBL.analyze) {
+   if (GBL.analyze)
       analyze();
+
+   /* rewind the log file and skip the global header */
+   gzrewind(GBL_LOG_FD);
+   get_header(&GBL.hdr);
+   
+   /* display the connection table */
+   if (GBL.connections)
+      conn_table();
+
+   if (GBL.analyze || GBL.connections)
       return 0;
-   }
-  
-   /* create the connection table */
-   // create_conn_table();
    
    /* display the content of the logfile */
    display();

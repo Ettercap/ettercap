@@ -23,6 +23,15 @@ extern int get_packet(struct log_header_packet *pck, u_char **buf);
 /* el_display */
 extern void display(void);
 
+/* el_conn */
+extern void conn_table(void);
+extern void filcon_compile(char *conn);
+extern int is_conn(struct log_header_packet *pck);
+
+/* el_target */
+extern void target_compile(char *target);
+extern int is_target(struct log_header_packet *pck);
+
 #endif
 
 /* EOF */

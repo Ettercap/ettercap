@@ -11,6 +11,7 @@ extern int text_format(const u_char *buf, size_t len, u_char *dst);
 extern int ebcdic_format(const u_char *buf, size_t len, u_char *dst);
 extern int html_format(const u_char *buf, size_t len, u_char *dst);
 extern int bin_format(const u_char *buf, size_t len, u_char *dst);
+extern int zero_format(const u_char *buf, size_t len, u_char *dst);
 
 
 

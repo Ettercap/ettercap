@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.4 2003/03/28 23:13:33 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.5 2003/03/29 15:03:44 alor Exp $
 */
 
 
@@ -51,12 +51,14 @@ void el_usage(void)
    fprintf(stdout, "  -a, --analyze               analyze a log file and return useful infos\n");
    fprintf(stdout, "  -c, --connections           display the table of connections\n");
    fprintf(stdout, "  -f, --filter <TARGET>       print packets only from this target\n");
+   fprintf(stdout, "      -t, --proto <proto>         display only this proto (default is all)\n");
    fprintf(stdout, "  -F, --filcon <CONN>         print packets only from this connection \n");
-   fprintf(stdout, "  -s, --only-source           print packets only from the source\n");
-   fprintf(stdout, "  -d, --only-dest             print packets only from the destination\n");
+   fprintf(stdout, "      -s, --only-source           print packets only from the source\n");
+   fprintf(stdout, "      -d, --only-dest             print packets only from the destination\n");
+   fprintf(stdout, "      -k, --color                 show source and dest in different colors\n");
+   fprintf(stdout, "  -r, --reverse               reverse the target/connection matching\n");
    fprintf(stdout, "  -n, --no-headers            skip header informations between packets\n");
    fprintf(stdout, "  -m, --show-mac              show mac addresses in the headers\n");
-   fprintf(stdout, "  -k, --color                 show source and dest in different colors\n");
    
    fprintf(stdout, "\nVisualization Method:\n");
    fprintf(stdout, "  -B, --binary                print packets as they are\n");
@@ -65,6 +67,7 @@ void el_usage(void)
    fprintf(stdout, "  -T, --text                  print packets in text mode\n");
    fprintf(stdout, "  -E, --ebcdic                print packets in ebcdic mode\n");
    fprintf(stdout, "  -H, --html                  print packets in html mode\n");
+   fprintf(stdout, "  -Z, --zero                  do not print packets, only headers\n");
    
    fprintf(stdout, "\nStandard Options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
@@ -90,6 +93,7 @@ void parse_options(int argc, char **argv)
       { "text", no_argument, NULL, 'T' },
       { "ebcdic", no_argument, NULL, 'E' },
       { "html", no_argument, NULL, 'H' },
+      { "zero", no_argument, NULL, 'Z' },
       
       { "analyze", no_argument, NULL, 'a' },
       { "connections", no_argument, NULL, 'c' },
@@ -100,6 +104,8 @@ void parse_options(int argc, char **argv)
       { "only-dest", no_argument, NULL, 'd' },
       { "show-mac", no_argument, NULL, 'm' },
       { "color", no_argument, NULL, 'k' },
+      { "reverse", no_argument, NULL, 'r' },
+      { "proto", required_argument, NULL, 't' },
       
       { 0 , 0 , 0 , 0}
    };
@@ -107,7 +113,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AaBcdEFfHhkmnsTXv", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBcdEF:f:HhkmnrsTt:XvZ", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -117,17 +123,36 @@ void parse_options(int argc, char **argv)
                   
          case 'c':
                   GBL.connections = 1;
-                  NOT_IMPLEMENTED();
                   break;
          
          case 'f':
+                  target_compile(optarg);
+                  break;
+
          case 'F':
+                  filcon_compile(optarg);
+                  break;
+                  
          case 's':
+                  GBL.only_source = 1;
+                  break;
+                  
          case 'd':
+                  GBL.only_dest = 1;
+                  break;
+                  
          case 'k':
-                  NOT_IMPLEMENTED();
+                  GBL.color = 1;
                   break;
                      
+         case 'r':
+                  GBL.reverse = 1;
+                  break;
+                  
+         case 't':
+                  GBL_TARGET->proto = strdup(optarg);
+                  break;
+                  
          case 'n':
                   GBL.no_headers = 1;
                   break;
@@ -158,6 +183,10 @@ void parse_options(int argc, char **argv)
                   
          case 'H':
                   GBL.format = &html_format;
+                  break;
+                  
+         case 'Z':
+                  GBL.format = &zero_format;
                   break;
                   
          case 'h':

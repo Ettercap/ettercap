@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.4 2003/03/28 23:13:30 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.5 2003/03/29 15:03:43 alor Exp $
 
 */
 
@@ -72,6 +72,7 @@ int text_format(const u_char *buf, size_t len, u_char *dst);
 int ebcdic_format(const u_char *buf, size_t len, u_char *dst);
 int html_format(const u_char *buf, size_t len, u_char *dst);
 int bin_format(const u_char *buf, size_t len, u_char *dst);
+int zero_format(const u_char *buf, size_t len, u_char *dst);
 
 
 /**********************************/
@@ -270,10 +271,26 @@ int html_format(const u_char *buf, size_t len, u_char *dst)
 
 int bin_format(const u_char *buf, size_t len, u_char *dst)
 {
+   /* some sanity checks */
+   if (len == 0 || buf == NULL) {
+      strcpy(dst, "");
+      return 0;
+   }
+   
    /* copy the buffer */
    memcpy(dst, buf, len);
    
    return len;
+}
+
+/*
+ * return the void string 
+ */
+
+int zero_format(const u_char *buf, size_t len, u_char *dst)
+{
+   strcpy(dst, "");
+   return 0;
 }
 
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.2 2003/03/28 23:13:32 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.3 2003/03/29 15:03:44 alor Exp $
 */
 
 #include <el.h>
@@ -68,6 +68,14 @@ static void display_packet(void)
       if (ret != ESUCCESS)
          break;
 
+      /* the packet should complain to the target specifications */
+      if (!is_target(&pck))
+         continue;
+      
+      /* the packet should complain to the connection specifications */
+      if (!is_conn(&pck))
+         continue;
+      
       /* 
        * prepare the buffer,
        * the max length is hex_fomat

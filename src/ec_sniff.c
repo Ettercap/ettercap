@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.9 2003/03/20 21:13:31 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff.c,v 1.10 2003/03/29 15:03:43 alor Exp $
 */
 
 #include <ec.h>
@@ -179,7 +179,7 @@ void display_packet_for_us(struct packet_object *po)
        proto = 1;
     
     /* the protocol does not match */
-    if (proto == 0)
+    if (!GBL_OPTIONS->reversed && proto == 0)
        return;
     
    /*
@@ -203,7 +203,7 @@ void display_packet_for_us(struct packet_object *po)
       good = 1;   
   
 
-   if (GBL_OPTIONS->reversed ^ good ) {
+   if (GBL_OPTIONS->reversed ^ (good && proto) ) {
       po->flags &= ~PO_IGNORE;
       return;
    }
@@ -226,7 +226,7 @@ void display_packet_for_us(struct packet_object *po)
       good = 1;   
    
    
-   if (GBL_OPTIONS->reversed ^ good )
+   if (GBL_OPTIONS->reversed ^ (good && proto) )
       po->flags &= ~PO_IGNORE;
  
    return; 
@@ -357,6 +357,9 @@ void compile_display_filter(void)
 static void add_port(void *ports, int n)
 {
    u_int8 *bitmap = ports;
+  
+   if (n > 1<<16)
+      FATAL_MSG("Port outside the range (65535) !!");
    
    BIT_SET(bitmap, n);
 }
@@ -398,7 +401,7 @@ static void expand_range_ip(char *str, void *target)
 
    p = str;
 
-   /* tokenize the FQDN ip into 4 slices */
+   /* tokenize the ip into 4 slices */
    while ( (q = strtok(p, ".")) ) {
       addr[i++] = strdup(q);
       /* reset p for the next strtok */

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.2 2003/03/28 23:13:30 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.3 2003/03/29 15:03:43 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -59,6 +59,10 @@ Analyze a log file and display some interesting statistics.
 Parses the log file and prints a table of unique connection (port to port).
 This option can be used only on logfile LOG_PACKET. On LOG_INFO logfiles it is
 useless.
+.Sp
+TIP: you can search for a particular host by using the following command:
+.Sp
+etterlog -c logfile.ecp | grep 10.0.0.1
 
 .TP
 \fB\-f\fR, \fB\-\-filter <TARGET>\fR
@@ -69,6 +73,20 @@ the same as the ettercap's one.
 and this will rappresent an ANY in that part. 
 
 .TP
+\fB\-r\fR, \fB\-\-reverse\fR
+Reverse the matching in the TARGET selection. It means not(TARGET). All but the
+selected TARGET.
+
+.TP
+\fB\-t\fR, \fB\-\-proto <PROTO>\fR
+sniff only PROTO packets (default is TCP + UDP).
+This option is only useful in "simple" mode, if you start ettercap in interactive mode
+both TCP and UDP are sniffed.
+.br
+PROTO can be "tcp", "udp" or "all" for both.
+
+
+.TP
 \fB\-F\fR, \fB\-\-filcon <CONNECTION>\fR
 Print packets only belonging to this CONNECTION. 
 .br
@@ -76,7 +94,7 @@ CONNECTION is in the form PROTO:SOURCE:DEST. SOURCE and DEST are in the form IP:
 .Sp
 example:
 .Sp
-etterlog -filcon TCP:10.0.0.23:3318:198.182.196.56:80
+etterlog -F TCP:10.0.0.23:3318:198.182.196.56:80
 
 .TP
 \fB\-s\fR, \fB\-\-only-source\fR
@@ -94,6 +112,11 @@ example.tar.gz
 Same as --only-source but it filter on the destination host.
 
 .TP
+\fB\-k\fR, \fB\-\-color\fR
+Display the source and dest of the connection in different colors. This option
+is acviable only in conjunction with the -F option.
+
+.TP
 \fB\-n\fR, \fB\-\-no-headers\fR
 Do not print the header of each packet. This option is useful if you want to
 save a file in binary format (-B option). Without the headers you can redirect
@@ -107,10 +130,6 @@ NOTE: the time stamp in the header is in the form: Thu Mar 27 23:03:31 2003
 In the headers show even the mac addresses of corresponding to the ip
 addresses.
 
-.TP
-\fB\-k\fR, \fB\-\-color\fR
-Display the source and dest of the connection in different colors. This option
-is acviable only in conjunction with the -F option.
 
 
 .TP
@@ -157,7 +176,12 @@ displayed.
 .Sp
 This is the title, but the following will not be displayed.
 
-                            
+.TP
+\fB\-Z\fR, \fB\-\-zero\fR
+Print always the void string. i.e. print olny header information and no packet
+content will be printed.
+                           
+                           
 .TP
 .B STANDARD OPTIONS
 .TP

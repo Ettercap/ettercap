@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.13 2003/10/21 16:56:45 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.14 2003/10/28 21:52:20 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -155,6 +155,9 @@ Ettercap collects in memory a profile for each host it detects. Users and
 passwords are collected there. If you want to run ettercap in background
 logging all the traffic, you may want to disable the collecting in memory to
 save system memory. Set this option to 0 (zero) to disable profiles collection.
+A value of 1 will enable collection for all the hosts, 2 will collect only
+local hosts and 3 only remote hosts (an host is considered remote if it does
+not belong to the netmask).
 
 .TP
 .B aggressive_dissectors

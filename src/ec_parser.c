@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.48 2003/10/25 16:19:59 alor Exp $
+    $Id: ec_parser.c,v 1.49 2003/10/28 21:52:20 alor Exp $
 */
 
 
@@ -81,8 +81,6 @@ void ec_usage(void)
    fprintf(stdout, "  -l, --log-info <logfile>    log only passive infos to this <logfile>\n");
    fprintf(stdout, "  -m, --log-msg <logfile>     log all the messages to this <logfile>\n");
    fprintf(stdout, "  -c, --compress              use gzip compression on log files\n");
-   fprintf(stdout, "  -o, --only-local            store profiles only for local hosts\n");
-   fprintf(stdout, "  -O, --only-remote           store profiles only for remote hosts\n");
    
    fprintf(stdout, "\nVisualization options:\n");
    fprintf(stdout, "  -d, --dns                   resolves ip addresses into hostnames\n");
@@ -147,8 +145,6 @@ void parse_options(int argc, char **argv)
       { "log-info", required_argument, NULL, 'l' },
       { "log-msg", required_argument, NULL, 'm' },
       { "compress", no_argument, NULL, 'c' },
-      { "only-local", no_argument, NULL, 'o' },
-      { "only-remote", no_argument, NULL, 'O' },
       
       { "text", no_argument, NULL, 'T' },
       { "curses", no_argument, NULL, 'C' },
@@ -175,7 +171,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:OoP:pqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "B:CchDdEe:F:f:Ghi:j:k:L:l:M:m:n:P:pqiRr:Tt:UuV:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -277,14 +273,6 @@ void parse_options(int argc, char **argv)
                   GBL_OPTIONS->compress = 1;
                   break;
 
-         case 'o':
-                  GBL_OPTIONS->only_local = 1;
-                  break;
-                  
-         case 'O':
-                  GBL_OPTIONS->only_remote = 1;
-                  break;
-                  
          case 'e':
                   if (set_regex(optarg) == -EFATAL)
                      clean_exit(-EFATAL);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.25 2003/10/27 21:25:44 alor Exp $
+    $Id: ec_profiles.c,v 1.26 2003/10/28 21:52:20 alor Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,9 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_scan.h>
+
+#define ONLY_REMOTE_PROFILES  3
+#define ONLY_LOCAL_PROFILES   2
 
 /* protos */
 
@@ -173,11 +176,11 @@ static int profile_add_host(struct packet_object *po)
     */
    
    /* this is a local and we want only remote */
-   if ((po->PASSIVE.flags & FP_HOST_LOCAL) && GBL_OPTIONS->only_remote)
+   if ((po->PASSIVE.flags & FP_HOST_LOCAL) && (GBL_CONF->store_profiles == ONLY_REMOTE_PROFILES))
       return 0;
    
    /* this is remote and we want only local */
-   if ((po->PASSIVE.flags & FP_HOST_NONLOCAL) && GBL_OPTIONS->only_local)
+   if ((po->PASSIVE.flags & FP_HOST_NONLOCAL) && (GBL_CONF->store_profiles == ONLY_LOCAL_PROFILES))
       return 0;
    
    /* create the new host */

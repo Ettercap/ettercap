@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.24 2003/10/28 21:28:13 alor Exp $
+    $Id: ec_send.c,v 1.25 2003/10/28 21:52:20 alor Exp $
 */
 
 #include <ec.h>
@@ -80,7 +80,7 @@ void send_init(void)
       GBL_OPTIONS->unoffensive = 1;
       return;
    }
-   
+
    /* don't send packet on loopback */
    if (!strcasecmp(GBL_OPTIONS->iface, "lo")) {
       DEBUG_MSG("send_init: skipping... (using loopback)");
@@ -90,7 +90,7 @@ void send_init(void)
 
    /* in wireless monitor mode we cannot send packets */
    if (GBL_PCAP->dlt == DLT_IEEE802_11) {
-      DEBUG_MSG("send_init: skipping... (using wireless)");
+      DEBUG_MSG("send_init: skipping... (using wireless in monitor mode)");
       GBL_OPTIONS->unoffensive = 1;
       return;
    }
@@ -282,8 +282,6 @@ static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac)
 {
    libnet_ptag_t t = (libnet_ptag_t)pthread_self();
-   //u_int8 *packet;
-   //u_int32 packet_s;
    int c;
  
    /* if not lnet warn the developer ;) */
@@ -320,10 +318,6 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_ARP);
    ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
    
-   /* coalesce the pblocks */
-   //c = libnet_adv_cull_packet(GBL_LNET->lnet, &packet, &packet_s);
-   //ON_ERROR(c, -1, "libnet_adv_cull_packet: %s", libnet_geterror(GBL_LNET->lnet));
-  
    /* send the packet */
    c = libnet_write(GBL_LNET->lnet);
    ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
@@ -331,9 +325,6 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    /* clear the pblock */
    libnet_clear_packet(GBL_LNET->lnet);
 
-   /* free the packet */
-   //SAFE_FREE(packet);
-   
    SEND_UNLOCK;
    
    return c;

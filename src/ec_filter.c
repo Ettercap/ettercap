@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.45 2004/01/20 22:24:22 alor Exp $
+    $Id: ec_filter.c,v 1.46 2004/01/21 16:02:16 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_strings.h>
 #include <ec_version.h>
 #include <ec_threads.h>
+#include <ec_send.h>
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -730,9 +731,8 @@ static int func_kill(struct packet_object *po)
    DEBUG_MSG("filter engine: func_kill");
 
    if (po->L4.proto == NL_TYPE_TCP) {
-      /* XXX - to be implemented (what about injection ????) */
-      //send_tcp(po->L3.src, po->L3.dst, po->L4.src, po->L4.dst, po->L4.seq, po->L4.ack, );
-      //send_tcp(po->L3.dst, po->L3.src, po->L4.dst, po->L4.src, po->L4.ack, po->L4.seq, );
+      send_tcp(&po->L3.src, &po->L3.dst, po->L4.src, po->L4.dst, po->L4.seq, 0, TH_RST);
+      send_tcp(&po->L3.dst, &po->L3.src, po->L4.dst, po->L4.src, po->L4.ack, 0, TH_RST);
    } else if (po->L4.proto == NL_TYPE_UDP) {
       
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dialog.c,v 1.5 2003/12/14 17:07:17 alor Exp $
+    $Id: wdg_dialog.c,v 1.6 2003/12/17 22:04:15 alor Exp $
 */
 
 #include <wdg.h>
@@ -396,8 +396,8 @@ static void wdg_dialog_get_size(struct wdg_object *wo, size_t *lines, size_t *co
    for (p = ww->text; p < ww->text + strlen(ww->text); p++) {
       /* count the chars */
       t++;
-      /* at the newline make the calculus */
-      if (*p == '\n') {
+      /* at the newline (or end of string) make the calculus */
+      if (*p == '\n' || *(p + 1) == '\0') {
          (*lines)++;
          /* cols have to be the max line length */
          if (*cols < t)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.23 2003/11/27 22:27:47 alor Exp $
+    $Id: ec_plugins.c,v 1.24 2003/12/17 22:04:15 alor Exp $
 */
 
 #include <ec.h>
@@ -77,13 +77,13 @@ static void plugin_print(char active, struct plugin_ops *ops);
 int plugin_load_single(char *path, char *name)
 {
 #ifdef HAVE_PLUGINS
-   char file[strlen(path)+strlen(name)+1];
+   char file[strlen(path)+strlen(name)+2];
    void *handle;
    int (*plugin_load)(void *);
    
-   snprintf(file, sizeof(file), "%s%s", path, name);
+   snprintf(file, sizeof(file), "%s/%s", path, name);
   
-   DEBUG_MSG("plugin_load: %s", file);
+   DEBUG_MSG("plugin_load_single: %s", file);
    
    /* load the plugin */
    handle = lt_dlopen(file);
@@ -137,10 +137,14 @@ void plugin_load_all(void)
   
    for(i = n-1; i >= 0; i--) {
       if ( match_pattern(namelist[i]->d_name, PLUGIN_PATTERN) ) {
-         ret = plugin_load_single("./", namelist[i]->d_name);
+         ret = plugin_load_single(".", namelist[i]->d_name);
          switch (ret) {
             case ESUCCESS:
                t++;
+               break;
+            case -EDUPLICATE:
+               USER_MSG("plugin %s already loaded...\n", namelist[i]->d_name);
+               DEBUG_MSG("plugin %s already loaded...", namelist[i]->d_name);
                break;
             case -EVERSION:
                USER_MSG("plugin %s was compiled for a different ettercap version...\n", namelist[i]->d_name);
@@ -197,8 +201,9 @@ void plugin_unload_all(void)
 int plugin_register(void *handle, struct plugin_ops *ops)
 {
 #ifdef HAVE_PLUGINS
-   struct plugin_entry *p;
+   struct plugin_entry *p, *pl;
 
+   /* check for ettercap API version */
    if (strcmp(ops->ettercap_version, EC_VERSION)) {
       lt_dlclose(handle);
       return -EVERSION;
@@ -208,6 +213,15 @@ int plugin_register(void *handle, struct plugin_ops *ops)
    
    p->handle = handle;
    p->ops = ops;
+
+   /* check that this plugin was not already loaded */
+   SLIST_FOREACH(pl, &plugin_head, next) {
+      /* same name and same version */
+      if (!strcmp(ops->name, pl->ops->name) && !strcmp(ops->version, pl->ops->version)) {
+         lt_dlclose(handle);
+         return -EDUPLICATE;
+      }
+   }
 
    SLIST_INSERT_HEAD(&plugin_head, p, next);
 

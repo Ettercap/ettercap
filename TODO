@@ -28,6 +28,7 @@ this is the unofficial and floating in time roadmap:
    + DOCUMENTATION
       - write the requirements for each os
       - developer docs
+         - plugins
 
    + FIXING
       - SAFE_STRDUP
@@ -37,12 +38,12 @@ this is the unofficial and floating in time roadmap:
          - pcap_datalink_val_to_name  
          - pcap_lib_version
       
-
    + PROFILES
       - dhcp infos
 
    + LIBWDG
       - callback on menu shortcuts
+      - inline help (with callback on 'h')
       - widgets:
          - selectable lists
 
@@ -63,9 +64,6 @@ this is the unofficial and floating in time roadmap:
       - SSL unified dissector for https, impas, pop3s ecc ecc
       - TDS
    
-   + MITM METHODS
-      - port stealing
-
    + LOGGING
       - selective log on connections
       

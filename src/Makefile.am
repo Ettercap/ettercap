@@ -46,6 +46,7 @@ ettercap_SOURCES = ec_capture.c \
                ec_ui.c \
                ec_update.c \
 				   interfaces/console/ec_console.c \
+				   interfaces/console/ec_console_conn.c \
 				   interfaces/console/ec_console_display.c \
 				   interfaces/console/ec_console_profile.c \
 				   interfaces/console/ec_console_plugin.c \

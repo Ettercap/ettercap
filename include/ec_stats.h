@@ -9,13 +9,13 @@
  */
 
 struct half_stats {
-   u_int32 pck_recv;
-   u_int32 pck_size;
+   u_int64 pck_recv;
+   u_int64 pck_size;
    struct timeval ttot;
    struct timeval tpar;
    struct timeval ts;
    struct timeval te;
-   u_int32 tmp_size;
+   u_int64 tmp_size;
    u_int32 rate_adv;
    u_int32 rate_worst;
    u_int32 thru_adv;
@@ -27,9 +27,9 @@ struct half_stats {
  */
 
 struct gbl_stats {
-   u_int32 ps_recv;
-   u_int32 ps_drop;
-   u_int32 ps_ifdrop;
+   u_int64 ps_recv;
+   u_int64 ps_drop;
+   u_int64 ps_ifdrop;
    struct half_stats bh;
    struct half_stats th;
    u_int32 queue_max;

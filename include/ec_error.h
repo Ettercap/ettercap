@@ -7,10 +7,11 @@
 enum {
    ESUCCESS    = 0,
    ENOTFOUND   = 1,
-   ENOTHANDLED = 2,
-   EINVALID    = 3,
-   ENOADDRESS  = 4,
-   EVERSION    = 5,
+   ENOMATCH    = 2,
+   ENOTHANDLED = 3,
+   EINVALID    = 4,
+   ENOADDRESS  = 5,
+   EVERSION    = 254,
    EFATAL      = 255,
 };
 

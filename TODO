@@ -31,10 +31,8 @@ Ago 2003:
 
    + TOP HALF
       - connection tracking (with buffered conn)
-         - timeouter (conn_del)
          - hook points
          - hash table for search
-         - conntrack_print(start_pos, end_pos, ...)
 
    
    + ARP POISON ENGINE
@@ -80,9 +78,11 @@ Oct 2003:
    + DISSECTORS
       - convert all the old dissectors
       - HTTPS without the dirty trick (can we use loopback?)
+      - HTTP sniff cookies
       - SSH has to support DES, 3DES, blowfish and zlib compression
       - WIFI decoder support for WEP (key given)
       - PPP decoder
+      - DHCP
 
 Nov 2003:
 

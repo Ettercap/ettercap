@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.25 2003/07/18 21:36:45 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.26 2003/08/06 20:06:32 alor Exp $
 */
 
 #include <ec.h>
@@ -36,6 +36,7 @@
 #include <ec_scan.h>
 #include <ec_ui.h>
 #include <ec_conf.h>
+#include <ec_conntrack.h>
 
 /* global vars */
 
@@ -140,6 +141,9 @@ int main(int argc, char *argv[])
   
    /* create the dispatcher thread */
    ec_thread_new("top_half", "dispatching module", &top_half, NULL);
+
+   /* create the timeouter thread */
+   ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
    
    /* this thread becomes the UI then displays it */
    ec_thread_register(EC_SELF, GBL_PROGRAM, "the user interface");

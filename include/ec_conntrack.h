@@ -56,6 +56,9 @@ enum {
    CONN_KILLED    = 6,
 };
 
+/* exported functions */
+extern int conntrack_print(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
+extern EC_THREAD_FUNC(conntrack_timeouter); 
 
 #endif
 

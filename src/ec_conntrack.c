@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.3 2003/08/04 13:59:07 alor Exp $
+    $Id: ec_conntrack.c,v 1.4 2003/08/06 20:06:32 alor Exp $
 */
 
 #include <ec.h>
@@ -56,7 +56,11 @@ static void conntrack_parse(struct packet_object *po);
 static struct conn_object *conntrack_search(struct packet_object *po);
 static void conntrack_update(struct conn_object *co, struct packet_object *po);
 static void conntrack_add(struct packet_object *po);
+static void conntrack_del(struct conn_object *co);
 static int conntrack_match(struct conn_object *co, struct packet_object *po);
+static int conntrack_match(struct conn_object *co, struct packet_object *po);
+EC_THREAD_FUNC(conntrack_timeouter);
+int conntrack_print(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co));
 
 /************************************************/
   
@@ -67,6 +71,7 @@ void __init conntrack_init(void)
 {
    /* receive all the top half packets */
    hook_add(HOOK_DISPATCHER, &conntrack_parse);
+   
 }
 
 /*
@@ -76,7 +81,6 @@ static void conntrack_parse(struct packet_object *po)
 {
    struct conn_object *conn;
 
-return;
    CONNTRACK_LOCK;
    
    /* search if the connection already exists */
@@ -104,12 +108,10 @@ static struct conn_object *conntrack_search(struct packet_object *po)
    
    /* search in the list */
    TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
-      if (conntrack_match(cl->co, po)) {
-printf("found\n");         
+      if (conntrack_match(cl->co, po) == ESUCCESS) {
          return cl->co;
       }
    }
-printf("NOT found\n");         
 
    return NULL;
 }
@@ -124,7 +126,7 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po)
    /* update the timestamp */
    gettimeofday(&co->ts, 0);
   
-   /* update the status */
+   /* update the status for TCP conn */
    if (po->L4.flags & TH_SYN)
       co->status = CONN_OPENING;
    else if (po->L4.flags & TH_FIN)
@@ -147,6 +149,11 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po)
    /* update the buffer */
    connbuf_add(&co->data, po);
   
+
+   /* update the status for UDP conn */
+   if (po->L4.proto == NL_TYPE_UDP)
+      co->status = CONN_ACTIVE;
+   
    /* 
     * update the byte count 
     * use DATA.len and not DATA.disp_len to have an
@@ -154,6 +161,22 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po)
     * may be longer or shorted than DATA.data
     */
    co->xferred += po->DATA.len;
+
+   /* 
+    * update the password 
+    * always overwrite the old one, a better one may
+    * has been collected...
+    */
+   if (po->DISSECTOR.user) {
+      SAFE_FREE(co->DISSECTOR.user);
+      SAFE_FREE(co->DISSECTOR.pass);
+      SAFE_FREE(co->DISSECTOR.info);
+      co->DISSECTOR.user = strdup(po->DISSECTOR.user);
+      if (po->DISSECTOR.pass)
+         co->DISSECTOR.pass = strdup(po->DISSECTOR.pass);
+      if (po->DISSECTOR.info)
+         co->DISSECTOR.info = strdup(po->DISSECTOR.info);
+   }
    
    /* execute the hookpoint */
    /* XXX - HOOK_CONN */
@@ -211,7 +234,129 @@ static void conntrack_add(struct packet_object *po)
  */
 static int conntrack_match(struct conn_object *co, struct packet_object *po)
 {
-   return 0;
+   /* different protocol, they don't match */
+   if (co->L4_proto != po->L4.proto)
+      return -EINVALID;
+
+   /* match it in one way... */
+   if (!memcmp(co->L2_addr1, po->L2.src, ETH_ADDR_LEN) &&
+       !memcmp(co->L2_addr2, po->L2.dst, ETH_ADDR_LEN) &&
+       !ip_addr_cmp(&co->L3_addr1, &po->L3.src) &&
+       !ip_addr_cmp(&co->L3_addr2, &po->L3.dst) &&
+       co->L4_addr1 == po->L4.src &&
+       co->L4_addr2 == po->L4.dst)
+      return ESUCCESS;
+
+   /* ...and in the other */
+   if (!memcmp(co->L2_addr1, po->L2.dst, ETH_ADDR_LEN) &&
+       !memcmp(co->L2_addr2, po->L2.src, ETH_ADDR_LEN) &&
+       !ip_addr_cmp(&co->L3_addr1, &po->L3.dst) &&
+       !ip_addr_cmp(&co->L3_addr2, &po->L3.src) &&
+       co->L4_addr1 == po->L4.dst &&
+       co->L4_addr2 == po->L4.src)
+      return ESUCCESS;
+   
+   return -ENOMATCH;
+}
+
+/* 
+ * erase a connection object
+ */
+static void conntrack_del(struct conn_object *co)
+{
+   connbuf_wipe(&co->data);
+   SAFE_FREE(co);
+}
+
+/*
+ * print the connection list from spos to epos.
+ * you can use 0, MAX_INT to print all the connections
+ */
+int conntrack_print(u_int32 spos, u_int32 epos, void (*func)(int n, struct conn_object *co))
+{
+   struct conn_tail *cl;
+   u_int32 i = 1, count = 0;
+  
+   CONNTRACK_LOCK;
+   
+   /* search in the list */
+   TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
+      /* print within the given range */
+      if (i >= spos && i <= epos) {
+         /* update the couter */
+         count++;
+         /* callback */
+         func(count, cl->co);
+
+      } 
+      i++;
+      /* speed up the exit */
+      if (i > epos)
+         break;
+   }
+
+   CONNTRACK_UNLOCK;
+
+   return count;
+}
+
+
+EC_THREAD_FUNC(conntrack_timeouter)
+{
+   struct timeval ts;
+   struct timeval diff;
+   struct conn_tail *cl;
+   struct conn_tail *old = NULL;
+  
+   LOOP {
+
+      /* 
+       * sleep for the maximum time possible
+       * (determined as the minumum of the timeouts)
+       */
+      sleep(MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout));
+     
+      DEBUG_MSG("conntrack_timeouter: %d", MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout));
+      
+      /* get current time */
+      gettimeofday(&ts, NULL);
+     
+      /*
+       * the timeouter is the only thread that erase a connection
+       * so we are sure that the list will be consistent till the
+       * end.
+       * we can lock and unlock every time we handle an element of 
+       * the list to permit the conntrack functions to operate on the
+       * list even when timeouter goes thru the list
+       */
+      TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
+         
+         CONNTRACK_LOCK;
+         
+         /* calculate the difference */
+         time_sub(&ts, &cl->co->ts, &diff);
+         
+         /* delete pending request */
+         SAFE_FREE(old);
+         /* 
+          * update it only if the staus is active,
+          * all the other status must be left as they are
+          */
+         if (cl->co->status == CONN_ACTIVE && diff.tv_sec > GBL_CONF->connection_idle)
+            cl->co->status = CONN_IDLE;
+         
+         /* delete the timeouted connections */
+         if (diff.tv_sec > GBL_CONF->connection_timeout) {
+            conntrack_del(cl->co);
+            TAILQ_REMOVE(&conntrack_tail_head, cl, next);
+            old = cl;
+         }
+
+         CONNTRACK_UNLOCK;
+      }
+      /* if it was the last one */
+      SAFE_FREE(old);
+   }
 }
 
 /* EOF */

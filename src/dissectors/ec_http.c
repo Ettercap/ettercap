@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.10 2004/03/25 21:25:37 lordnaga Exp $
+    $Id: ec_http.c,v 1.11 2004/04/06 08:49:10 alor Exp $
 */
 
 #include <ec.h>
@@ -524,7 +524,9 @@ static u_char Parse_Form(u_char *to_parse, char **ret, int mode)
       q = to_parse;  
       do {
          if (*q == '&') q++;
-DEBUG_MSG("FORM: %s %s",q, d->name);
+         
+         DEBUG_MSG("FORM: %s %s",q, d->name);
+         
          if (!strncasecmp(q, d->name, strlen(d->name)) && *(q+strlen(d->name)) == '=' ) {
 
             /* Return the value past the '=' */

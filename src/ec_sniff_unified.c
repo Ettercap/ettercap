@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.19 2004/03/31 13:03:08 alor Exp $
+    $Id: ec_sniff_unified.c,v 1.20 2004/04/06 08:49:10 alor Exp $
 */
 
 #include <ec.h>
@@ -142,7 +142,7 @@ void unified_check_forwarded(struct packet_object *po)
    if ( GBL_CONF->skip_forwarded && !GBL_OPTIONS->read &&
         !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
         ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
-      po->flags |= PO_FORWARDABLE;
+      po->flags |= PO_FORWARDED;
    }
 }
 
@@ -160,8 +160,9 @@ void unified_set_forwardable(struct packet_object *po)
     */
    if (!memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) &&
        memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
-       ip_addr_cmp(&GBL_IFACE->ip, &po->L3.dst) )
+       ip_addr_cmp(&GBL_IFACE->ip, &po->L3.dst) ) {
       po->flags |= PO_FORWARDABLE;
+   }
    
 }
 

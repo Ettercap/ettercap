@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.41 2004/03/28 15:07:31 alor Exp $
+    $Id: ec_curses.c,v 1.42 2004/04/06 08:49:10 alor Exp $
 */
 
 #include <ec.h>
@@ -32,7 +32,7 @@
 
 static wdg_t *sysmsg_win;
 static char tag_unoff[] = " ";
-static char tag_promisc[] = "*";
+static char tag_promisc[] = " ";
 
 /* proto */
 
@@ -405,6 +405,18 @@ static void curses_setup(void)
    wdg_set_focus(menu);
    
    DEBUG_MSG("curses_setup: sysmsg created");
+  
+   /* initialize the options */
+   if (GBL_OPTIONS->unoffensive)
+      tag_unoff[0] = '*';
+   else
+      tag_unoff[0] = ' ';
+
+   if (GBL_PCAP->promisc)
+      tag_promisc[0] = '*';
+   else
+      tag_promisc[0] = ' ';
+  
    
    /* give the control to the interface */
    wdg_events_handler('u');

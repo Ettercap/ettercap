@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.3 2003/10/20 14:29:56 lordnaga Exp $
+    $Id: ec_ssh.c,v 1.4 2003/10/20 14:42:25 alor Exp $
 */
 
 #include <ec.h>
@@ -172,7 +172,7 @@ FUNC_DECODER(dissector_ssh)
 	    
             /* Catch packet type and slide to the data */
             ptr = clear_packet + ssh_mod;
-	    ssh_packet_type = *ptr;
+	         ssh_packet_type = *ptr;
             ptr++;
 
             /* Catch data len and slide to the payload */

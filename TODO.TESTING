@@ -2,22 +2,11 @@
   THINGS THAT NEED TO BE TESTED
 =================================
 
-   + REVERSE SELECTION
-
    + BRIDGED SNIFFING
       - dump to file 
 
-   + SESSIONS
-      - it should not segfault ;)
-
    + WIFI
       - test the decoder with adapted other than cisco aironet
-
-   + DISSECTORS
-      - telnet (correct login and failed logons)
-
-   + AUTOUPDATE process
-      - test if it work in all conditions
 
    + CONNTRACK
       - it should not segfault ;)

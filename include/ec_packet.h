@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.23 2003/10/19 17:49:12 lordnaga Exp $ */
+/* $Id: ec_packet.h,v 1.24 2003/10/20 14:42:24 alor Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -58,7 +58,7 @@ struct packet_object {
        * is, so the decripted data must be placed in a different buffer. 
        * this is that bufffer and it is malloced by tcp or udp dissector.
        */
-      u_int32 disp_len;
+      size_t disp_len;
       u_char * disp_data;
       /* for modified packet this is the delta for the lenght */
       int delta;  

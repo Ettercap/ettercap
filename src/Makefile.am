@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.62 2003/10/16 16:46:48 alor Exp $
+# $Id: Makefile.am,v 1.63 2003/10/20 14:42:25 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -94,16 +94,16 @@ ettercap_SOURCES += dissectors/ec_ftp.c \
 				        dissectors/ec_rlogin.c \
 				        dissectors/ec_smb.c \
 				        dissectors/ec_smtp.c \
-				        dissectors/ec_snmp.c \
-				        dissectors/ec_socks.c \
+				        dissectors/ec_snmp.c 
+if OPENSSL
+ettercap_SOURCES += dissectors/ec_ssh.c
+endif
+
+ettercap_SOURCES += dissectors/ec_socks.c \
 				        dissectors/ec_telnet.c \
 				        dissectors/ec_vnc.c \
 				        dissectors/ec_vrrp.c \
 				        dissectors/ec_x11.c 
-if OPENSSL
-#ettercap_SOURCES += dissectors/ec_https.c \
-#                    dissector/ec_ssh.c
-endif
 
 
 ettercap_CFLAGS = @EC_CFLAGS@

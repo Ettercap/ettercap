@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.10 2003/04/14 21:05:09 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_capture.c,v 1.11 2003/04/30 16:50:09 alor Exp $
 */
 
 #include <ec.h>
@@ -252,7 +252,17 @@ void get_hw_info(void)
          ERROR_MSG("%s", pcap_errbuf);
       
       ip_addr_init(&GBL_IFACE->network, AF_INET, (char *)&network);
-      ip_addr_init(&GBL_IFACE->netmask, AF_INET, (char *)&netmask);
+
+      /* the user has specified a different netmask, use it */
+      if (GBL_OPTIONS->netmask) {
+         struct in_addr net;
+         /* sanity check */
+         if (inet_aton(GBL_OPTIONS->netmask, &net) == 0)
+            FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
+
+         ip_addr_init(&GBL_IFACE->netmask, AF_INET, (char *)&net);
+      } else
+         ip_addr_init(&GBL_IFACE->netmask, AF_INET, (char *)&netmask);
       
    } else
       DEBUG_MSG("NO IP on %s", GBL_OPTIONS->iface);

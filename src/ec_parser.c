@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.19 2003/04/14 21:05:23 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.20 2003/04/30 16:50:15 alor Exp $
 */
 
 
@@ -62,7 +62,7 @@ void ec_usage(void)
    fprintf(stdout, "  -R, --reversed              use reversed TARGET matching\n");
    fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n");
    
-   fprintf(stdout, "\nInterface Type:\n");
+   fprintf(stdout, "\nUser Interface Type:\n");
    fprintf(stdout, "  -C, --console               use console only GUI\n");
    fprintf(stdout, "       -q, --quiet                 do not display packet contents\n");
    fprintf(stdout, "  -N, --ncurses               use ncurses GUI (default)\n");
@@ -78,7 +78,12 @@ void ec_usage(void)
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
+   fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
+   fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
+   fprintf(stdout, "  -Z, --scan-delay <msec>     set the scanning delay to <msec>\n");
+   fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
+   fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
    
    fprintf(stdout, "\nStandard options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
@@ -99,6 +104,7 @@ void parse_options(int argc, char **argv)
       { "version", no_argument, NULL, 'v' },
       
       { "iface", required_argument, NULL, 'i' },
+      { "netmask", required_argument, NULL, 'n' },
       { "dump", required_argument, NULL, 'd' },
       { "read", required_argument, NULL, 'r' },
       { "pcapfilter", required_argument, NULL, 'f' },
@@ -109,6 +115,10 @@ void parse_options(int argc, char **argv)
       { "plugin", required_argument, NULL, 'P' },
       
       { "quiet", no_argument, NULL, 'q' },
+      { "silent", no_argument, NULL, 'z' },
+      { "scan-delay", required_argument, NULL, 'Z' },
+      { "load-hosts", required_argument, NULL, 'j' },
+      { "save-hosts", required_argument, NULL, 'k' },
       
       { "log", required_argument, NULL, 'L' },
       { "log-info", required_argument, NULL, 'l' },
@@ -137,7 +147,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "AB:CchDd:e:f:Ghi:L:l:NP:pqiRr:t:v", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AB:CchDd:e:f:Ghi:j:k:L:l:Nn:P:pqiRr:t:vZ:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -186,8 +196,14 @@ void parse_options(int argc, char **argv)
          case 'i':
                   GBL_OPTIONS->iface = strdup(optarg);
                   break;
+         
+         case 'n':
+                  GBL_OPTIONS->netmask = strdup(optarg);
+                  break;
                   
          case 'r':
+                  /* we don't want to scan the lan while reading from file */
+                  GBL_OPTIONS->silent = 1;
                   GBL_OPTIONS->read = 1;
                   GBL_OPTIONS->dumpfile = strdup(optarg);
                   break;
@@ -222,6 +238,28 @@ void parse_options(int argc, char **argv)
                   
          case 'q':
                   GBL_OPTIONS->quiet = 1;
+                  break;
+                  
+         case 'z':
+                  GBL_OPTIONS->silent = 1;
+                  break;
+                  
+         case 'Z':
+                  GBL_OPTIONS->scan_delay = atoi(optarg);
+                  /* at least one millisecond */
+                  if (GBL_OPTIONS->scan_delay == 0)
+                     GBL_OPTIONS->scan_delay = 1;
+                  break;
+                  
+         case 'j':
+                  GBL_OPTIONS->silent = 1;
+                  GBL_OPTIONS->load_hosts = 1;
+                  GBL_OPTIONS->hostsfile = strdup(optarg);
+                  break;
+                  
+         case 'k':
+                  GBL_OPTIONS->save_hosts = 1;
+                  GBL_OPTIONS->hostsfile = strdup(optarg);
                   break;
                   
          case 'h':
@@ -288,6 +326,9 @@ void parse_options(int argc, char **argv)
    
    if (GBL_OPTIONS->quiet && GBL_UI->type != UI_CONSOLE)
       FATAL_ERROR("The quiet option is useful only with Console UI");
+  
+   if (GBL_OPTIONS->load_hosts && GBL_OPTIONS->save_hosts)
+      FATAL_ERROR("Cannot load and save at the same time the hosts list...");
    
    /* XXX - check for incompatible options */
    

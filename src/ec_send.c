@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.8 2003/04/14 21:05:25 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.9 2003/04/30 16:50:19 alor Exp $
 */
 
 #include <ec.h>
@@ -27,6 +27,13 @@
 #include <pcap.h>
 #include <libnet.h>
 
+/* globals */
+
+u_int8 ETH_BROADCAST[ETH_ADDR_LEN] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+u_int8 ARP_BROADCAST[ETH_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+/* protos */
+
 void send_init(void);
 static void send_close(void);
 int send_to_L3(struct packet_object *po);
@@ -34,6 +41,8 @@ int send_to_L2(struct packet_object *po);
 int send_to_bridge(struct packet_object *po);
 
 static void hack_pcap_lnet(pcap_t *p, libnet_t *l);
+
+int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac);
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SEND_LOCK     do{ pthread_mutex_lock(&send_mutex); } while(0)
@@ -110,10 +119,13 @@ int send_to_L3(struct packet_object *po)
    SEND_LOCK;
    
    t = libnet_build_data( po->fwd_packet, po->fwd_len, GBL_LNET->lnet_L3, t);
-   ON_ERROR(t, -1, "libnet_build_data");
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_L3));
    
    c = libnet_write(GBL_LNET->lnet_L3);
-   ON_ERROR(c, -1, "libnet_write %d (%d)", po->fwd_len, c);
+   ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(GBL_LNET->lnet_L3));
+   
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet_L3);
    
    SEND_UNLOCK;
    
@@ -137,10 +149,13 @@ int send_to_L2(struct packet_object *po)
    SEND_LOCK;
    
    t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet, t);
-   ON_ERROR(t, -1, "libnet_build_data");
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet));
    
    c = libnet_write(GBL_LNET->lnet);
-   ON_ERROR(c, -1, "libnet_write %d (%d)", po->len, c);
+   ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->len, c, libnet_geterror(GBL_LNET->lnet));
+   
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet);
    
    SEND_UNLOCK;
    
@@ -163,10 +178,13 @@ int send_to_bridge(struct packet_object *po)
    SEND_LOCK;
 
    t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet_bridge, t);
-   ON_ERROR(t, -1, "libnet_build_data");
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_bridge));
    
    c = libnet_write(GBL_LNET->lnet_bridge);
-   ON_ERROR(c, -1, "libnet_write %d (%d)", po->len, c);
+   ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->len, c, libnet_geterror(GBL_LNET->lnet_bridge));
+   
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet_bridge);
    
    SEND_UNLOCK;
    
@@ -195,6 +213,70 @@ static void hack_pcap_lnet(pcap_t *p, libnet_t *l)
    DEBUG_MSG("hack_pcap_lnet  (after) pcap %d | lnet %d", pcap_fileno(p), l->fd);
 }
 
+
+/*
+ * helper function to send out an ARP packet
+ */
+
+int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac)
+{
+   libnet_ptag_t t = (libnet_ptag_t)pthread_self();
+   u_char *packet;
+   u_long packet_s;
+   int c;
+ 
+   SEND_LOCK;
+
+   /* ARP uses 00 broadcast */
+   if (type == ARPOP_REQUEST && tmac == ETH_BROADCAST)
+      tmac = ARP_BROADCAST;
+   
+   /* create the ARP header */
+   t = libnet_build_arp(
+           ARPHRD_ETHER,            /* hardware addr */
+           ETHERTYPE_IP,            /* protocol addr */
+           6,                       /* hardware addr size */
+           4,                       /* protocol addr size */
+           type,                    /* operation type */
+           smac,                    /* sender hardware addr */
+           (u_char *)&(sip->addr),  /* sender protocol addr */
+           tmac,                    /* target hardware addr */
+           (u_char *)&(tip->addr),  /* target protocol addr */
+           NULL,                    /* payload */
+           0,                       /* payload size */
+           GBL_LNET->lnet,          /* libnet handle */
+           0);                      /* libnet id */
+   ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_LNET->lnet));
+   
+   /* ETC uses ff broadcast */
+   if (type == ARPOP_REQUEST && tmac == ARP_BROADCAST)
+      tmac = ETH_BROADCAST;
+   
+   /* add the ethernet header */
+   t = libnet_autobuild_ethernet(
+           tmac,                    /* ethernet destination */
+           ETHERTYPE_ARP,           /* protocol type */
+           GBL_LNET->lnet);         /* libnet handle */
+   ON_ERROR(t, -1, "libnet_autobuild_ethernet: %s", libnet_geterror(GBL_LNET->lnet));
+   
+   /* coalesce the pblocks */
+   c = libnet_adv_cull_packet(GBL_LNET->lnet, &packet, &packet_s);
+   ON_ERROR(c, -1, "libnet_adv_cull_packet: %s", libnet_geterror(GBL_LNET->lnet));
+  
+   /* send the packet */
+   c = libnet_write(GBL_LNET->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
+   
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet);
+
+   /* free the packet */
+   SAFE_FREE(packet);
+   
+   SEND_UNLOCK;
+   
+   return c;
+}
 
 /* EOF */
 

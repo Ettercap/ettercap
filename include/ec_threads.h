@@ -19,6 +19,7 @@ enum {
 #define EC_THREAD_PARAM  args
 
 extern char * ec_thread_getname(pthread_t id);
+extern pthread_t ec_thread_getpid(char *name);
 extern char * ec_thread_getdesc(pthread_t id);
 extern void ec_thread_register(pthread_t id, char *name, char *desc);
 extern pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);

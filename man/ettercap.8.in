@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.14 2003/04/07 21:57:53 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.15 2003/04/30 16:50:07 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -287,6 +287,12 @@ ettercap in debug mode.
 .TP
 .B GENERAL OPTIONS
 .TP
+\fB\-i\fR, \fB\-\-iface <IFACE>\fR
+Use this <IFACE> instead of the default one.
+
+\fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
+Use this <NETMSK> instead of the one associated with the current iface.
+
 \fB\-R\fR, \fB\-\-reverse\fR
 Reverse the matching in the TARGET selection. It means not(TARGET). All but the
 selected TARGET.
@@ -299,6 +305,30 @@ This is useful if you want to select a port via the TARGET specification but
 you want to differentiate between tcp or udp.
 .br
 PROTO can be "tcp", "udp" or "all" for both.
+
+.TP
+\fB\-z\fR, \fB\-\-silent\fR
+Do not perform the initial ARP scan of the LAN.
+.br
+NOTE: you will not have the hosts list, so you can't use the multipoison feature.
+you can only select two hosts for an ARP poisoning attack, specifying them
+through the TARGETs
+
+.TP
+\fB\-Z\fR, \fB\-\-scan-delay <MSEC>\fR
+During the ARP scan, waith <MSEC> msecs between two consecutive ARP request.
+This is useful if you don't want to be too laughty... The default delay is 1
+millisecond.
+
+.TP
+\fB\-j\fR, \fB\-\-load-hosts <FILENAME>\fR
+It can be used to load an hosts list from a file created by the -k option. (see below)
+
+.TP
+\fB\-k\fR, \fB\-\-save-hosts <FILENAME>\fR
+Saves the hosts list to a file. Useful when you have many hosts and you don't want to
+do an ARP storm at startup any time you use ettercap. Simply use this options and dump
+the list to a file, then to load the information from it use the -j <filename> option.
 
 .TP
 \fB\-P\fR, \fB\-\-plugin <PLUGIN>\fR
@@ -318,6 +348,9 @@ NOTE: you can also activate plugins directly from the interfaces (always press
 More detailed info about plugins and about how to write your own are found in
 the man page ettercap_plugin(8)
 
+
+.TP
+.B LOGGING OPTIONS
 .TP
 \fB\-L\fR, \fB\-\-log <LOGFILE>\fR
 Log all the packet to binary files. These files can be parsed by etterlog(8) to
@@ -347,7 +380,7 @@ capable of handling both compressed and uncompresse log files.
 .TP
 \fB\-e\fR, \fB\-\-regex <REGEX>\fR
 This option is useful in conjunction with -L. It logs only packets that match
-the posiz regex REGEX.
+the posix regex REGEX.
 
 
 .TP

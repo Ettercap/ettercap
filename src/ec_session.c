@@ -17,13 +17,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_session.c,v 1.2 2003/04/14 21:05:25 alor Exp $
+    $Id: ec_session.c,v 1.3 2003/04/30 16:50:19 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
 #include <ec_threads.h>
 #include <ec_session.h>
+
+#include <signal.h>
 
 struct session_list {
    pthread_t id;
@@ -45,6 +47,10 @@ int session_get_and_del(struct session **s, void *ident);
 
 void session_free(struct session *s);
 
+#ifdef DEBUG
+void __init session_handler(void);
+static void session_dump(int sig);
+#endif
 
 static pthread_mutex_t session_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SESSION_LOCK     do{ pthread_mutex_lock(&session_mutex); } while(0)
@@ -228,6 +234,38 @@ void session_free(struct session *s)
    SAFE_FREE(s->data);
    SAFE_FREE(s);
 }
+
+#ifdef DEBUG
+/*
+ * dump the list of all active sessions.
+ * only for debugging purpose.
+ * use 'killall -HUP ettercap' to dump the list.
+ */
+
+void __init session_handler(void)
+{
+   signal(SIGHUP, session_dump);
+}
+
+static void session_dump(int sig)
+{
+   struct session_list *sl;
+
+   DEBUG_MSG("session_dump invoked: dumping the session list...");
+   
+   SESSION_LOCK;
+   
+   /* dump the list in the debug file */
+   LIST_FOREACH(sl, &session_list_head, next) {
+         
+      DEBUG_MSG("session_dump: [%d][%p]", sl->id, sl->s->ident);
+         
+   }
+   
+   SESSION_UNLOCK;
+}
+
+#endif
 
 /* EOF */
 

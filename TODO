@@ -3,7 +3,6 @@
 ==================
 
    + lnet ptag thread safe (check it)
-   !! under bsd the ip_forwarding is not repristinated !!
 
    !! dissector malloc the DISSECTOR, someone have to free them... !!
 
@@ -18,6 +17,9 @@
       - checksum (WORD_BIGENDIAN on intel ???)
 
    + ARP SCAN
+      - dns resolution
+      - result handling in a list
+      - pseudo random scan
 
    + ARP POISON ENGINE
       - arp poisoner
@@ -46,6 +48,8 @@
       
    + PLUGINS
       - convert all the old plugins
+      - check for poisoner
+      - linktype
      
    + ETTERCONF
      

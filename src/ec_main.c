@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.16 2003/04/25 12:22:57 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.17 2003/04/30 16:50:14 alor Exp $
 */
 
 #include <ec.h>
@@ -112,8 +112,13 @@ int main(int argc, char *argv[])
    /* load the tcp-fingerprints */
    fingerprint_init();
   
+   /* print all the buffered messages */
+   USER_MSG("\n");
+   ui_msg_flush(MSG_ALL);
+
    /* build the list of active hosts */
-   build_hosts_list();
+   if (GBL_SNIFF->type != SM_BRIDGED)
+      build_hosts_list();
    
 /**** INITIALIZATION PHASE TERMINATED ****/
    

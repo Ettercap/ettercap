@@ -44,7 +44,7 @@ extern int set_L2_decoder(u_int16 dlt);
 extern void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 extern void del_decoder(u_int8 level, u_int32 type);
 extern void * get_decoder(u_int8 level, u_int32 type);
-
+extern FUNC_DECODER_PTR(l2_decoder);
 
 
 #endif

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.6 2003/04/14 21:05:27 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.7 2003/04/30 16:50:20 alor Exp $
 */
 
 #include <ec.h>
@@ -42,6 +42,7 @@ static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 /* protos... */
 
 char * ec_thread_getname(pthread_t id);
+pthread_t ec_thread_getpid(char *name);
 char * ec_thread_getdesc(pthread_t id);
 void ec_thread_register(pthread_t id, char *name, char *desc);
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
@@ -61,6 +62,8 @@ char * ec_thread_getname(pthread_t id)
    if (id == EC_SELF)
       id = pthread_self();
 
+   THREADS_LOCK;
+   
    LIST_FOREACH(current, &thread_list_head, next) {
       if (current->t.id == id) {
          name = current->t.name;
@@ -72,6 +75,28 @@ char * ec_thread_getname(pthread_t id)
    THREADS_UNLOCK;
 
    return "NR_THREAD";
+}
+
+/* returns the pid of a thread */
+
+pthread_t ec_thread_getpid(char *name)
+{
+   struct thread_list *current;
+   pthread_t pid;
+   
+   THREADS_LOCK;
+
+   LIST_FOREACH(current, &thread_list_head, next) {
+      if (!strcasecmp(current->t.name,name)) {
+         pid = current->t.id;
+         THREADS_UNLOCK;
+         return pid;
+      }
+   }
+
+   THREADS_UNLOCK;
+
+   return -ENOTFOUND;
 }
 
 /* returns the description of a thread */

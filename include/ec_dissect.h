@@ -8,6 +8,8 @@
 /* session identifier */
 
 struct dissect_ident {
+   u_int32 magic;
+      #define DISSECT_MAGIC  0x0500e77e
    struct ip_addr L3_src;
    struct ip_addr L3_dst;
    u_int8 L4_proto;

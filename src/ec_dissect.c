@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.2 2003/04/14 21:05:14 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_dissect.c,v 1.3 2003/04/30 16:50:12 alor Exp $
 */
 
 #include <ec.h>
@@ -49,6 +49,13 @@ int dissect_match(void *id_sess, void *id_curr)
    /* sanity check */
    BUG_IF(ids, NULL);
    BUG_IF(id, NULL);
+  
+   /* 
+    * is this ident from our level ?
+    * check the magic !
+    */
+   if (ids->magic != id->magic)
+      return 0;
    
    /* check the protocol */
    if (ids->L4_proto != id->L4_proto)
@@ -90,7 +97,7 @@ void dissect_create_session(struct session **s, struct packet_object *po)
    
    /* link to the session */
    (*s)->ident = ident;
-   
+
    /* the matching function */
    (*s)->match = &dissect_match;
 }
@@ -106,7 +113,10 @@ void dissect_create_ident(void **i, struct packet_object *po)
    /* allocate the ident for that session */
    ident = calloc(1, sizeof(struct dissect_ident));
    ON_ERROR(ident, NULL, "can't allocate memory");
-   
+  
+   /* the magic */
+   ident->magic = DISSECT_MAGIC;
+      
    /* prepare the ident */
    memcpy(&ident->L3_src, &po->L3.src, sizeof(struct ip_addr));
    memcpy(&ident->L3_dst, &po->L3.dst, sizeof(struct ip_addr));

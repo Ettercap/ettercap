@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.7 2003/04/08 08:14:33 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.8 2003/04/30 16:50:09 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -213,6 +213,12 @@ This is the title, but the following will not be displayed.
 Print always the void string. i.e. print olny header information and no packet
 content will be printed.
                            
+.TP
+\fB\-x\fR, \fB\-\-xml\fR
+Print the host infos in xml form, so you can parse it with your favourite
+program.
+.Sp
+The DTD associated with the xml output is in share/etterlog.dtd
                            
 .TP
 .B STANDARD OPTIONS

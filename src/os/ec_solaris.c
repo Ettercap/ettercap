@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_solaris.c,v 1.2 2003/04/25 12:22:58 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_solaris.c,v 1.3 2003/04/30 16:50:20 alor Exp $
 */
 
 #include <ec.h>
@@ -104,7 +104,7 @@ static void restore_ip_forward(void)
 
    /* Call IOCTL to set the status */
    if ( (ioctl(fd, I_STR, (char *)&strIo)) == -1 )
-      FATAL_ERROR("Please restore manually the ip_forwaring value to %s", saved_status);
+      FATAL_ERROR("Please restore manually the ip_forwarding value to %s", saved_status);
 
    close(fd);
                                                 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.16 2003/04/14 21:05:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.17 2003/04/30 16:50:10 alor Exp $
 */
 
 #include <ec.h>
@@ -33,7 +33,7 @@
 
 /* globals */
 
-static FUNC_DECODER_PTR(l2_decoder);
+FUNC_DECODER_PTR(l2_decoder);
 
 static SLIST_HEAD (, dec_entry) decoders_table;
 

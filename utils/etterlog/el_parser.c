@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.12 2003/04/28 08:12:39 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.13 2003/04/30 16:50:20 alor Exp $
 */
 
 
@@ -53,7 +53,7 @@ void el_usage(void)
    fprintf(stdout, "  -a, --analyze               analyze a log file and return useful infos\n");
    fprintf(stdout, "  -c, --connections           display the table of connections\n");
    fprintf(stdout, "  -f, --filter <TARGET>       print packets only from this target\n");
-   fprintf(stdout, "      -t, --proto <proto>         display only this proto (default is all)\n");
+   fprintf(stdout, "  -t, --proto <proto>         display only this proto (default is all)\n");
    fprintf(stdout, "  -F, --filcon <CONN>         print packets only from this connection \n");
    fprintf(stdout, "      -s, --only-source           print packets only from the source\n");
    fprintf(stdout, "      -d, --only-dest             print packets only from the destination\n");

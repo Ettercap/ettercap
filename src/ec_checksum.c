@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_checksum.c,v 1.4 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_checksum.c,v 1.5 2003/09/25 15:30:45 alor Exp $
 */
 
 #include <ec.h>
@@ -63,6 +63,7 @@ u_int16 L3_checksum(struct packet_object *po)
 u_int16 L4_checksum(struct packet_object *po)
 {
    u_int32 csum = 0;
+   u_int16 tmp = 0;
    u_int16 nleft = po->L4.len + po->DATA.len;
    u_int16 len = nleft;
    u_int16 *buf = (u_int16 *)po->L4.header;
@@ -73,22 +74,25 @@ u_int16 L4_checksum(struct packet_object *po)
       nleft -= sizeof(u_int16);
    }
 
+   if (nleft == 1) { 
+      *(u_int8 *)&tmp = *(u_int8 *)buf; 
+      csum += tmp;
+   }
+   
    /* XXX - only IPv4 supported for now... */
    if (po->L3.src.type != AF_INET)
       NOT_IMPLEMENTED();
    
-   csum += *(u_int32 *)&po->L3.src.addr >> 16;
-   csum += *(u_int32 *)&po->L3.src.addr & 0xffff;
-   csum += *(u_int32 *)&po->L3.dst.addr >> 16;
-   csum += *(u_int32 *)&po->L3.dst.addr & 0xffff;
+   /* check the pseudo header */
+   csum += *(u_int32 *)(&po->L3.src.addr) >> 16;
+   csum += *(u_int32 *)(&po->L3.src.addr) & 0xffff;
+   csum += *(u_int32 *)(&po->L3.dst.addr) >> 16;
+   csum += *(u_int32 *)(&po->L3.dst.addr) & 0xffff;
 
    csum += htons((u_int16)po->L4.proto);
    csum += htons(len);
 
    /* the final adjustment */
-   if (nleft != 0) 
-      csum += *(u_char *)buf;
-
    csum = (csum >> 16) + (csum & 0xffff);
    csum += (csum >> 16);
    

@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.9 2003/09/25 12:17:46 alor Exp $ */
+/* $Id: ec_inet.h,v 1.10 2003/09/25 15:30:45 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -28,6 +28,7 @@ enum {
 struct ip_addr {
    u_int16 type;
    u_int16 addr_size;
+   /* this must be aligned in memory */
    u_int8 addr[MAX_ADDR_LEN];
 };
 
@@ -49,7 +50,8 @@ extern void disable_ip_forward(void);
 
 /********************/
 
-#ifdef WORDS_BIGENDIAN        
+#ifdef WORDS_BIGENDIAN       
+   /* BIG ENDIAN */
    #define ptohs(x) ( (u_int16)                       \
                       ((u_int16)*((u_int8 *)x+1)<<8|  \
                       (u_int16)*((u_int8 *)x+0)<<0)   \
@@ -65,6 +67,7 @@ extern void disable_ip_forward(void);
    #define ORDER_ADD_LONG(a, b)	  a = htonl(ntohl(a) + b)
 
 #else
+   /* LITTLE ENDIAN */
    #define ptohs(x) *(u_int16 *)(x)
    #define ptohl(x) *(u_int32 *)(x)
    
@@ -76,7 +79,7 @@ extern void disable_ip_forward(void);
    
 #define int_ntoa(x)   inet_ntoa(*((struct in_addr *)&(x)))
 
-
+#define ip_addr_to_int32(x)  *(u_int32 *)(x)
    
 #endif
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.16 2003/09/18 22:15:03 alor Exp $
+    $Id: ec_scan.c,v 1.17 2003/09/25 15:30:45 alor Exp $
 */
 
 #include <ec.h>
@@ -264,8 +264,8 @@ static void scan_netmask(void)
    struct ip_addr scanip;
    struct ip_list *e; 
 
-   netmask = *(u_int32 *)&GBL_IFACE->netmask.addr;
-   myip = *(u_int32 *)&GBL_IFACE->ip.addr;
+   netmask = ip_addr_to_int32(&GBL_IFACE->netmask.addr);
+   myip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
    
    /* the number of hosts in this netmask */
    nhosts = ntohl(~netmask);

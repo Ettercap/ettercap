@@ -15,6 +15,7 @@
 
    + SOLARIS PORTING
       - checksum (WORD_BIGENDIAN on intel ???)
+      - fix dissectors: telnet, rsh, rlogin
 
    + BSD PORTING
       - hack_pcap_lnet is not usable
@@ -30,6 +31,8 @@ this is the unofficial and floating in time roadmap:
       - developer docs
 
 Sep 2003:
+
+   + fix plugin list
 
    + pay attention on network order for constants
 

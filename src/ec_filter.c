@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.16 2003/09/25 12:17:46 alor Exp $
+    $Id: ec_filter.c,v 1.17 2003/09/25 15:30:45 alor Exp $
 */
 
 #include <ec.h>
@@ -282,7 +282,7 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          break;
       case 4:
          /* int comparison */
-         if (cmp_func(htonl(*(u_int32 *)(base + fop->op.test.offset)),(fop->op.test.value & 0xffffffff)) )
+         if (cmp_func(htonl(*(u_int32 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffffffff)) )
             return FLAG_TRUE;
          break;
       default:

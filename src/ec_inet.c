@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.14 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_inet.c,v 1.15 2003/09/25 15:30:45 alor Exp $
 */
 
 #include <ec.h>
@@ -275,9 +275,9 @@ int ip_addr_is_local(struct ip_addr *sa)
          if ( !memcmp(&nw->addr, "\x00\x00\x00\x00", sa->addr_size) )
             return -EINVALID;
    
-         address = *(u_int32 *)sa->addr;
-         netmask = *(u_int32 *)nm->addr;
-         network = *(u_int32 *)nw->addr;
+         address = ip_addr_to_int32(sa->addr);
+         netmask = ip_addr_to_int32(nm->addr);
+         network = ip_addr_to_int32(nw->addr);
          /* check if it is local */
          if ((address & netmask) == network)
             return ESUCCESS;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.7 2003/08/23 07:37:45 alor Exp $
+    $Id: ec_resolv.c,v 1.8 2003/09/25 15:30:45 alor Exp $
 */
 
 #include <ec.h>
@@ -86,7 +86,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
       return -ENOTFOUND;
   
    /* XXX - IPv6 compatible */
-   DEBUG_MSG("host_iptoa: %#x", *(u_int32 *)&ip->addr);
+   DEBUG_MSG("host_iptoa: %#x", ip_addr_to_int32(&ip->addr));
    
    /* if not found in the cache, resolve it */
 #ifdef CYGWIN

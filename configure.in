@@ -230,17 +230,17 @@ AC_ARG_ENABLE(debug, [  --enable-debug          create a file for debugging mess
 [ case "$enableval" in
    yes)
       AC_DEFINE(DEBUG, 1)
-      CFLAGS="$CFLAGS -g -ggdb -Wmissing-prototypes -Werror -Wall"
+      DEBUG_FLAGS="$CFLAGS -g -ggdb -Wmissing-prototypes -Werror -Wall"
       AC_MSG_RESULT(yes)
       ac_cv_ec_debug=yes
       ;;
    no)  AC_MSG_RESULT(no.)
-      CFLAGS="$CFLAGS -O2 -funroll-loops -fomit-frame-pointer -Wall"
+      DEBUG_FLAGS="$CFLAGS -O2 -funroll-loops -fomit-frame-pointer -Wall"
       ac_cv_ec_debug=no
       ;;
 esac ],
    AC_MSG_RESULT(no. disabled by default.)
-   CFLAGS="$CFLAGS -O2 -funroll-loops -fomit-frame-pointer -Wall"
+   DEBUG_FLAGS="$CFLAGS -O2 -funroll-loops -fomit-frame-pointer -Wall"
    ac_cv_ec_debug=no
 )
 
@@ -481,7 +481,7 @@ fi
 
 dnl  set up the final vars
 
-EC_CFLAGS="$PCAPINC $LNETINC $SSLINC $NCURSINC"
+EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $NCURSINC"
 EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $NCURSLIB $PTHREADLIB $SOCKETLIB"
 
 AC_SUBST(EC_CFLAGS)
@@ -494,7 +494,11 @@ dnl ===============
 
 EC_MESSAGE(Writing output files)
 
-AC_OUTPUT(man/ettercap.8 Makefile man/Makefile src/Makefile include/Makefile 
+AC_OUTPUT(Makefile
+          man/ettercap.8 man/Makefile 
+          src/Makefile 
+          include/Makefile
+          utils/Makefile
           plug-ins/Makefile
           plug-ins/dummy/Makefile)
 

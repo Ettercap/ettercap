@@ -1,7 +1,7 @@
 
 include $(top_srcdir)/Makefile.am.common
 
-SUBDIRS = man src include #plug-ins 
+SUBDIRS = man src include utils #plug-ins 
 
 EXTRA_DIST = LICENSE \
              AUTHORS \

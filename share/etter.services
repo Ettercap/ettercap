@@ -1,4 +1,22 @@
-# $Id: etter.services,v 1.3 2003/06/13 15:45:02 alor Exp $
+############################################################################
+#                                                                          #
+#  ettercap -- etter.services -- services database                         #
+#                                                                          #
+#  Copyright (C) 2001-2003  ALoR & NaGA                                    #
+#                                                                          #
+#  This program is free software; you can redistribute it and/or modify    #
+#  it under the terms of the GNU General Public License as published by    #
+#  the Free Software Foundation; either version 2 of the License, or       #
+#  (at your option) any later version.                                     #
+#                                                                          #
+############################################################################
+#                                                                          #
+#  Version         : $Revision: 1.4 $                        
+#  Last updated on : $Date: 2003/07/10 20:25:25 $                          #
+#  Total entries   : 2183                                                  #
+#                                                                          #
+############################################################################
+
 #
 # Network services, Internet style
 #

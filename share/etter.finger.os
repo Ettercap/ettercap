@@ -1,6 +1,6 @@
 ############################################################################
 #                                                                          #
-#  ettercap -- etter.passive.os.fp -- passive OS fingerprint database      #
+#  ettercap -- etter.finger.os -- passive OS fingerprint database          #
 #                                                                          #
 #  Copyright (C) 2001-2003  ALoR & NaGA                                    #
 #                                                                          #
@@ -11,8 +11,9 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Last updated on : $Date: 2003/07/03 20:56:20 $                          #
-#  Total entries   : 1279                                                  #
+#  Version         : $Revision: 1.5 $                        
+#  Last updated on : $Date: 2003/07/10 20:25:25 $                          #
+#  Total entries   : 1280                                                  #
 #                                                                          #
 ############################################################################
 #                                                                          #

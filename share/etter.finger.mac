@@ -1,3 +1,22 @@
+############################################################################
+#                                                                          #
+#  ettercap -- etter.finger.mac -- passive NIC vendor database             #
+#                                                                          #
+#  Copyright (C) 2001-2003  ALoR & NaGA                                    #
+#                                                                          #
+#  This program is free software; you can redistribute it and/or modify    #
+#  it under the terms of the GNU General Public License as published by    #
+#  the Free Software Foundation; either version 2 of the License, or       #
+#  (at your option) any later version.                                     #
+#                                                                          #
+############################################################################
+#                                                                          #
+#  Version         : $Revision: 1.3 $                        
+#  Last updated on : $Date: 2003/07/10 20:25:23 $                          #
+#  Total entries   : 6311                                                  #
+#                                                                          #
+############################################################################
+
 00:00:00  Xerox Corporation
 00:00:01  Xerox Corporation
 00:00:02  Xerox Corporation

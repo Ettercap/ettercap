@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.18 2003/11/08 14:59:44 alor Exp $
+    $Id: ec_dissect.c,v 1.19 2003/12/25 17:19:57 alor Exp $
 */
 
 #include <ec.h>
@@ -176,10 +176,9 @@ void dissect_wipe_session(struct packet_object *po)
 /*
  * register a dissector in the dissectors list
  * and add it to the decoder list.
- * this list i used by dissect_modify during the parsing
+ * this list is used by dissect_modify during the parsing
  * of etter.conf to enable/disable the dissectors via their name.
  */
-
 void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder))
 {
    struct dissect_entry *e;
@@ -202,14 +201,12 @@ void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decode
 /*
  * remove all istances of a dissector in the dissectors list
  */
-
 void dissect_del(char *name)
 {
    struct dissect_entry *e, *tmp = NULL;
 
    SLIST_FOREACH_SAFE(e, &dissect_list, next, tmp) {
       if (!strcasecmp(e->name, name)) {
-         /* add the default decoder */
          del_decoder(e->level, e->type);
          SLIST_REMOVE(&dissect_list, e, dissect_entry, next);
          SAFE_FREE(e);
@@ -272,13 +269,12 @@ int dissect_modify(int mode, char *name, u_int32 port)
  * return ESUCCESS if the dissector is on
  * the specified port 
  */
-
 int dissect_on_port(char *name, u_int16 port)
 {
    struct dissect_entry *e;
 
    /* 
-    * return ESUCCESS if at leas one port is bound 
+    * return ESUCCESS if at least one port is bound 
     * to the dissector name
     */
    SLIST_FOREACH (e, &dissect_list, next) {

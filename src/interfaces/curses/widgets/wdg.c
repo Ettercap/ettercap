@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.26 2003/12/17 16:38:54 alor Exp $
+    $Id: wdg.c,v 1.27 2003/12/25 17:19:57 alor Exp $
 */
 
 #include <wdg.h>
@@ -94,6 +94,7 @@ extern void wdg_create_dialog(struct wdg_object *wo);
 extern void wdg_create_percentage(struct wdg_object *wo);
 extern void wdg_create_file(struct wdg_object *wo);
 extern void wdg_create_input(struct wdg_object *wo);
+extern void wdg_create_list(struct wdg_object *wo);
 
 /*******************************************/
 
@@ -575,6 +576,10 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
          
       case WDG_INPUT:
          wdg_create_input(*wo);
+         break;
+         
+      case WDG_LIST:
+         wdg_create_list(*wo);
          break;
          
       default:

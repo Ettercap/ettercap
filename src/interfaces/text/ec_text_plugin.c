@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_plugin.c,v 1.5 2003/11/14 20:17:46 alor Exp $
+    $Id: ec_text_plugin.c,v 1.6 2003/12/25 17:19:57 alor Exp $
 */
 
 #include <ec.h>
@@ -28,7 +28,7 @@
 /* proto */
 
 int text_plugin(char *plugin);
-void text_plugin_list(char active, struct plugin_ops *ops);
+static void text_plugin_list(char active, struct plugin_ops *ops);
 
 /*******************************************/
 
@@ -90,7 +90,7 @@ int text_plugin(char *plugin)
 /*
  * callback function for displaying the plugin list 
  */
-void text_plugin_list(char active, struct plugin_ops *ops)
+static void text_plugin_list(char active, struct plugin_ops *ops)
 {
    INSTANT_USER_MSG("[%d] %15s %4s  %s\n", active, 
          ops->name, ops->version, ops->info);  

@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.24 2003/12/17 16:38:54 alor Exp $ */
+/* $Id: wdg.h,v 1.25 2003/12/25 17:19:57 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -159,6 +159,7 @@ struct wdg_object {
       #define WDG_PERCENTAGE  6
       #define WDG_FILE        7
       #define WDG_INPUT       8
+      #define WDG_LIST        9
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
@@ -239,6 +240,8 @@ extern void wdg_file_set_callback(wdg_t *wo, void (*callback)(char *path, char *
 extern void wdg_input_size(wdg_t *wo, size_t x, size_t y);
 extern void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len);
 extern void wdg_input_set_callback(wdg_t *wo, void (*callback)(void));
+/* list objects */
+void wdg_list_add(struct wdg_object *wo, char *description, void *value);
 
 
 /* EXPORTED FUNCTIONS */

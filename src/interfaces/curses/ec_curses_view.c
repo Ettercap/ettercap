@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view.c,v 1.4 2003/12/17 15:56:36 alor Exp $
+    $Id: ec_curses_view.c,v 1.5 2003/12/25 17:19:57 alor Exp $
 */
 
 #include <ec.h>
@@ -68,10 +68,16 @@ static void curses_show_stats(void)
 {
    DEBUG_MSG("curses_show_stats");
 
+   /* if the object already exist, set the focus to it */
+   if (wdg_stats) {
+      wdg_set_focus(wdg_stats);
+      return;
+   }
+   
    wdg_create_object(&wdg_stats, WDG_WINDOW, WDG_OBJ_WANT_FOCUS);
    
    wdg_set_title(wdg_stats, "Statistics:", WDG_ALIGN_LEFT);
-   wdg_set_size(wdg_stats, 2, 2, 70, 22);
+   wdg_set_size(wdg_stats, 1, 2, 70, 22);
    wdg_set_color(wdg_stats, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(wdg_stats, WDG_COLOR_WINDOW, EC_COLOR);
    wdg_set_color(wdg_stats, WDG_COLOR_BORDER, EC_COLOR_BORDER);
@@ -95,6 +101,11 @@ static void curses_stop_stats(void)
 {
    DEBUG_MSG("curses_stop_stats");
    wdg_del_idle_callback(refresh_stats);
+
+   /* the object does not exist anymore */
+   wdg_stats = NULL;
+   
+   wdg_redraw_all();
 }
 
 static void refresh_stats(void)

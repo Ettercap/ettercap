@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_plugins.c,v 1.2 2003/12/17 22:04:15 alor Exp $
+    $Id: ec_curses_plugins.c,v 1.3 2003/12/25 17:19:57 alor Exp $
 */
 
 #include <ec.h>
@@ -30,8 +30,12 @@
 static void curses_plugin_mgmt(void);
 static void curses_plugin_load(void);
 static void curses_load_plugin(char *path, char *file);
+static void curses_wdg_plugin(char active, struct plugin_ops *ops);
+static void curses_plug_destroy(void);
 
 /* globals */
+
+wdg_t *wdg_plugin;
 
 struct wdg_menu menu_plugins[] = { {"Plugins",              "P", NULL},
                                    {"Manage the plugins...", "", curses_plugin_mgmt},
@@ -96,6 +100,55 @@ static void curses_load_plugin(char *path, char *file)
  */
 static void curses_plugin_mgmt(void)
 {
+   int res;
+   
+   DEBUG_MSG("curses_plugin_mgmt");
+   
+   /* if the object already exist, set the focus to it */
+   if (wdg_plugin) {
+      wdg_set_focus(wdg_plugin);
+      return;
+   }
+   
+   wdg_create_object(&wdg_plugin, WDG_LIST, WDG_OBJ_WANT_FOCUS);
+   
+   wdg_set_size(wdg_plugin, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
+   wdg_set_title(wdg_plugin, "Select a plugin...", WDG_ALIGN_LEFT);
+   wdg_set_color(wdg_plugin, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(wdg_plugin, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(wdg_plugin, WDG_COLOR_BORDER, EC_COLOR_BORDER);
+   wdg_set_color(wdg_plugin, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(wdg_plugin, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+
+   /* go thru the list of plugins */
+   res = plugin_list_print(PLP_MIN, PLP_MAX, &curses_wdg_plugin);
+   if (res == -ENOTFOUND) 
+      wdg_list_add(wdg_plugin, "No plugin found !", NULL);
+   
+   /* add the destroy callback */
+   wdg_add_destroy_key(wdg_plugin, CTRL('Q'), curses_plug_destroy);
+   
+   wdg_draw_object(wdg_plugin);
+   
+   wdg_set_focus(wdg_plugin);
+}
+
+static void curses_plug_destroy(void)
+{
+   wdg_plugin = NULL;
+}
+
+/*
+ * callback function for displaying the plugin list 
+ */
+static void curses_wdg_plugin(char active, struct plugin_ops *ops)
+{
+   char tmp[80];
+
+   sprintf(tmp, "[%d] %15s %4s  %s", active, ops->name, ops->version, ops->info);  
+  
+   wdg_list_add(wdg_plugin, tmp, ops->name);
+   
 }
 
 

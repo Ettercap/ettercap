@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.22 2003/11/23 22:22:54 alor Exp $
+    $Id: ec_signals.c,v 1.23 2003/12/25 17:19:57 alor Exp $
 */
 
 #include <ec.h>
@@ -150,7 +150,7 @@ static RETSIGTYPE signal_TERM(int sig)
    ui_cleanup();
 
    if (sig == SIGINT) {
-      fprintf(stderr, "\n\nUser requested a CTRL+C... (deprecated, next time use 'q')\n\n");
+      fprintf(stderr, "\n\nUser requested a CTRL+C... (deprecated, next time use proper shutdown)\n\n");
    } else {
    #ifdef HAVE_STRSIGNAL
       fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d | %s)\n\n", GBL_PROGRAM, sig, strsignal(sig));

@@ -68,6 +68,7 @@ this is the unofficial and floating in time roadmap:
       - selective log on connections
       
    + PLUGINS
+      - automatic add of new hosts
       port all the plugins to NG:
          - lurker    -> find_ettercap
          - troll     -> arp_responder

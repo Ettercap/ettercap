@@ -20,6 +20,8 @@ SYSTEM                  STATUS                NOTES
 
 LINUX
 ------------------------------------------------------------------------------
+   Linux 2.6.x          FULL           not tested ;)
+
    Linux 2.4.x          FULL           tested only on IA-32
                                        (primary development platform)
    

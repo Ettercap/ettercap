@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.15 2004/03/12 15:11:54 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.16 2004/03/14 17:26:28 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -46,7 +46,7 @@
 
 /* XXX - Occhio alla free di disp_data se cambio packet_dup */
 #define BREAK_ON_ERROR(x,y,z) do {\
-if (x != ESUCCESS) {\
+if (x == -EINVALID) {\
 sslw_wipe_connection(y);\
 SAFE_FREE(z.DATA.data);\
 SAFE_FREE(z.DATA.disp_data);\
@@ -72,6 +72,7 @@ struct accepted_entry {
    struct ip_addr ip[2];
    SSL *ssl[2];
    u_char status;
+   X509 *cert;
    #define SSL_CLIENT 0
    #define SSL_SERVER 1
 };
@@ -92,6 +93,7 @@ struct sslw_ident {
 
 SSL_CTX   *ssl_ctx_client, *ssl_ctx_server;
 EVP_PKEY *global_pk;
+X509_NAME *global_issuer;
 
 /* protos */
 
@@ -112,6 +114,7 @@ static int sslw_match(void *id_sess, void *id_curr);
 static void sslw_create_session(struct ec_session **s, struct packet_object *po);
 static size_t sslw_create_ident(void **i, struct packet_object *po);            
 static void sslw_hook_handled(struct packet_object *po);
+static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert);
 
 
 /* 
@@ -194,7 +197,6 @@ static void sslw_bind_wrapper(void)
    LIST_FOREACH(le, &listen_ports, next) { 
    
       le->fd = socket(AF_INET, SOCK_STREAM, 0);
-      fcntl(le->fd, F_SETFL, O_NONBLOCK);
 
       memset(&sa_in, 0, sizeof(sa_in));
       sa_in.sin_family = AF_INET;
@@ -241,26 +243,28 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
       return -EINVALID;
    }
 
-   // XXX - Se non da' certificato usarne uno nostro
+   /* XXX - NULL cypher can give no certificate */
    if ( (serv_cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
-      DEBUG_MSG("XXX - get_peer_certificate");
+      DEBUG_MSG("Can't get peer certificate");
+      SSL_free(ae->ssl[SSL_SERVER]);
+      SSL_free(ae->ssl[SSL_CLIENT]);
+      return -EINVALID;
+   }
+
+   if (sslw_create_selfsigned(serv_cert, &ae->cert) != ESUCCESS) {
+      SSL_free(ae->ssl[SSL_SERVER]);
+      SSL_free(ae->ssl[SSL_CLIENT]);
+      X509_free(serv_cert);   
       return -EINVALID;
    }
    
-   X509_set_pubkey(serv_cert, global_pk);         
-   if (!X509_sign(serv_cert, global_pk, EVP_sha1())) {
-      DEBUG_MSG("XXX - Can't self sign certificate");
-      return -EINVALID;
-   }
-      
-   SSL_use_certificate(ae->ssl[SSL_CLIENT], serv_cert);
-
-   if (SSL_check_private_key(ae->ssl[SSL_CLIENT]) == 0) 
-      FATAL_ERROR("Child Bad SSL Key couple !!");
+   X509_free(serv_cert);
+   SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
    
    if (SSL_accept(ae->ssl[SSL_CLIENT]) != 1) {
       SSL_free(ae->ssl[SSL_SERVER]);
       SSL_free(ae->ssl[SSL_CLIENT]);
+      X509_free(ae->cert);   
       return -EINVALID;
    }
 
@@ -338,16 +342,32 @@ static int sslw_connect_server(struct accepted_entry *ae)
  */ 
 static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct packet_object *po)
 {
-   int len;
+   int len, ret_err;
    
    if (ae->status & SSL_ENABLED)
       len = SSL_read(ae->ssl[direction], po->DATA.data, GBL_IFACE->mtu);
    else       
       len = read(ae->fd[direction], po->DATA.data, GBL_IFACE->mtu);
 
-   if (len <= 0) 
+   if (len < 0 && ae->status & SSL_ENABLED) {
+      ret_err = SSL_get_error(ae->ssl[direction], len);
+      if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
+         return -ENOTHANDLED;
+      else
+         return -EINVALID;
+   }
+
+   /* Only if no ssl */
+   if (len < 0) {
+      if (errno == EINTR || errno == EAGAIN)
+         return -ENOTHANDLED;
+      else
+         return -EINVALID;
+   }      
+
+   if (len == 0) 
       return -EINVALID;
-   
+
    po->len = len;
    po->DATA.len = len;
    /* NULL terminate the data buffer */
@@ -367,17 +387,44 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
  */ 
 static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct packet_object *po)
 {
-   int len;
-      
-   /* Write packet data */
-   if (ae->status & SSL_ENABLED)
-      len = SSL_write(ae->ssl[direction], po->DATA.data, po->DATA.len + po->DATA.inject_len);
-   else       
-      len = write(ae->fd[direction], po->DATA.data, po->DATA.len + po->DATA.inject_len);
+   int32 len, packet_len, not_written, ret_err;
+   u_char *p_data;
 
-   if (len <= 0)
-      return -ENOTHANDLED; 
-      
+   packet_len = (int32)(po->DATA.len + po->DATA.inject_len);
+   p_data = po->DATA.data;
+   
+   if (packet_len == 0)
+      return ESUCCESS;
+
+   do {
+      not_written = 0;
+      /* Write packet data */
+      if (ae->status & SSL_ENABLED)
+         len = SSL_write(ae->ssl[direction], p_data, packet_len);
+      else       
+         len = write(ae->fd[direction], p_data, packet_len);
+
+      if (len <= 0 && ae->status & SSL_ENABLED) {
+         ret_err = SSL_get_error(ae->ssl[direction], len);
+         if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
+            not_written = 1;
+         else
+            return -EINVALID;
+      }
+
+      if (len < 0 && !(ae->status & SSL_ENABLED)) {
+         if (errno == EINTR || errno == EAGAIN)
+            not_written = 1;
+         else
+            return -EINVALID;
+      }      
+
+      /* XXX - does some OS use partial writes? */
+      if (len != packet_len && !not_written )
+         FATAL_ERROR("SSL-Wrapper partial writes: to be implemented...");
+	 
+   } while (not_written);
+         
    return ESUCCESS;
 }
 
@@ -432,16 +479,19 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
  */
 static void sslw_wipe_connection(struct accepted_entry *ae)
 {
-// XXX - SSL_free chiude anche gli fd?
+   // XXX - SSL_free chiude anche gli fd?
    if (ae->ssl[SSL_CLIENT]) {
       /* They are initialized together */
       SSL_free(ae->ssl[SSL_CLIENT]);
       SSL_free(ae->ssl[SSL_SERVER]);
-   } else {
-      close(ae->fd[SSL_CLIENT]);
-      close(ae->fd[SSL_SERVER]);
-   }
+   } 
 
+   close(ae->fd[SSL_CLIENT]);
+   close(ae->fd[SSL_SERVER]);
+
+   if (ae->cert)
+      X509_free(ae->cert);
+      
    SAFE_FREE(ae);
 }
 
@@ -470,17 +520,57 @@ static void sslw_initialize_po(struct packet_object *po)
 
 
 /* 
+ * Create a self-signed certificate
+ */
+static int sslw_create_selfsigned(X509 *serv_cert, X509 **out_cert)
+{
+   int serial=0xe77e;
+   X509_NAME *name;
+
+   if ( (*out_cert=X509_new() ) == NULL) {
+      DEBUG_MSG("Can't create a new X509");
+      return -EINVALID;
+   }
+
+   /* Set version, expiration time */ 
+   X509_set_version(*out_cert, 0x2);
+   ASN1_INTEGER_set(X509_get_serialNumber(*out_cert), serial);
+   X509_gmtime_adj(X509_get_notBefore(*out_cert), (long)-60*60*24*365);
+   X509_gmtime_adj(X509_get_notAfter(*out_cert), (long)60*60*24*3650);
+   
+   /* Set out public key, our issuer and real server name */
+   X509_set_pubkey(*out_cert, global_pk);   
+   name = X509_get_subject_name(serv_cert);
+   X509_set_subject_name(*out_cert, name);
+   X509_set_issuer_name(*out_cert, global_issuer);
+
+   /* Self-sign our certificate */
+   if (!X509_sign(*out_cert, global_pk, EVP_sha1())) {
+      DEBUG_MSG("Error self-signing X509");
+      X509_free(*out_cert);
+      return -EINVALID;
+   }
+     
+   return ESUCCESS;
+}
+
+
+/* 
  * Initialize SSL stuff 
  */
 static void sslw_init(void)
 {
-   SSL *dummy_ssl;
-   
+   SSL *dummy_ssl=NULL;
+   X509 *my_cert=NULL;
+   SSL_CTX *dummy_ctx=NULL;
+
    SSL_library_init();
 
+   /* Create the two global CTX */
    ssl_ctx_client = SSL_CTX_new(SSLv23_server_method());
    ssl_ctx_server = SSL_CTX_new(SSLv23_client_method());
 
+   /* Get our private key from our cert file */
    if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
       DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- %s", DATA_PATH "/" CERT_FILE);
 
@@ -491,16 +581,41 @@ static void sslw_init(void)
    dummy_ssl = SSL_new(ssl_ctx_client);
    if ( (global_pk = SSL_get_privatekey(dummy_ssl)) == NULL ) 
       FATAL_ERROR("Can't get private key from file");
-   
-   SSL_free(dummy_ssl);
 
+   SSL_free(dummy_ssl);
+   
+   // XXX - To be fixed
+   /* Get the issuer from our cert file */
+   dummy_ctx = SSL_CTX_new(SSLv23_server_method());
+
+   if (SSL_CTX_use_certificate_file(dummy_ctx, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
+      if (SSL_CTX_use_certificate_file(dummy_ctx, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
+         FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
+   }
+   if (SSL_CTX_use_PrivateKey_file(dummy_ctx, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
+      DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- %s", DATA_PATH "/" CERT_FILE);
+
+      if (SSL_CTX_use_PrivateKey_file(dummy_ctx, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
+         FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
+   }
+ 
+   dummy_ssl = SSL_new(dummy_ctx); 
+   my_cert = SSL_get_certificate(dummy_ssl);
+   global_issuer = X509_get_issuer_name(my_cert);
+
+   //SSL_free(dummy_ssl);
+   //SSL_CTX_free(dummy_ctx);
+   //X509_free(my_cert);
 }
 
+
+/* 
+ * SSL thread child function.
+ */
 EC_THREAD_FUNC(sslw_child)
 {
-   struct pollfd poll_fd[2];
    struct packet_object po;
-   int direction, ret_val;
+   int direction, ret_val, data_read;
    struct accepted_entry *ae;
 
    ae = (struct accepted_entry *)args;
@@ -519,6 +634,8 @@ EC_THREAD_FUNC(sslw_child)
       return NULL;
    }
 
+   fcntl(ae->fd[SSL_CLIENT], F_SETFL, O_NONBLOCK);
+   fcntl(ae->fd[SSL_SERVER], F_SETFL, O_NONBLOCK);
 
    /* A fake SYN ACK for profiles */
    /* XXX - Does anyone care about packet len after this point? */
@@ -527,35 +644,31 @@ EC_THREAD_FUNC(sslw_child)
    po.L4.flags = (TH_SYN | TH_ACK);
    packet_disp_data(&po, po.DATA.data, po.DATA.len);
    sslw_parse_packet(ae, SSL_SERVER, &po);
+   sslw_initialize_po(&po);
    
    LOOP {
-      // XXX Posso metterlo fuori dal ciclo?
-      poll_fd[SSL_CLIENT].fd = ae->fd[SSL_CLIENT];
-      poll_fd[SSL_CLIENT].events = POLLIN;
-      poll_fd[SSL_SERVER].fd = ae->fd[SSL_SERVER];
-      poll_fd[SSL_SERVER].events = POLLIN;
-
-      if (poll(poll_fd, 2, GBL_CONF->connection_timeout*1000) == 0)
-         BREAK_ON_ERROR(-EINVALID,ae,po);
-
-      for(direction=0; direction<2; direction++) 
-         if (poll_fd[direction].revents & POLLIN) {
-            sslw_initialize_po(&po);
-
-            ret_val = sslw_read_data(ae, direction, &po);
-            BREAK_ON_ERROR(ret_val,ae,po);
-	    
+      data_read = 0;
+      for(direction=0; direction<2; direction++) {
+         ret_val = sslw_read_data(ae, direction, &po);
+         BREAK_ON_ERROR(ret_val,ae,po);
+	 
+	 /* if we have data to read */
+         if (ret_val == ESUCCESS) {
+	    data_read = 1;
             sslw_parse_packet(ae, direction, &po);
             if (po.flags & PO_DROPPED)
                continue;
 
             ret_val = sslw_write_data(ae, !direction, &po);
             BREAK_ON_ERROR(ret_val,ae,po);
-         } else if (poll_fd[direction].revents & (POLLHUP | POLLERR | POLLNVAL))
-            BREAK_ON_ERROR(-EINVALID,ae,po);
+	    sslw_initialize_po(&po);
+         }  
+      }
+      /* XXX - Set a proper sleep time */
+      if (!data_read)
+         usleep(1000);
    }
 }
-
 
 
 /* 
@@ -573,7 +686,11 @@ EC_THREAD_FUNC(sslw_start)
    ec_thread_init();
    
    sslw_init();
+DEBUG_MSG("AAA - pippo 1");
+
    sslw_bind_wrapper();
+DEBUG_MSG("AAA - pippo 2");
+
    hook_add(HOOK_HANDLED, &sslw_hook_handled);
 
    number_of_services = 0;

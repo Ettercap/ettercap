@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.3 2003/11/28 16:56:20 lordnaga Exp $
+    $Id: ec_http.c,v 1.4 2003/11/28 17:09:36 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -157,7 +157,7 @@ FUNC_DECODER(dissector_http)
          }
          SAFE_FREE(ident);
       } 	 
-   } else {
+   } else { /* Server Replies */
       if (!strncmp(ptr, "HTTP", 4)) {
          Get_Banner(ptr, PACKET);
 
@@ -595,11 +595,11 @@ static void Print_Pass(struct packet_object *po)
    if (!po->DISSECTOR.pass)
       po->DISSECTOR.pass = strdup("");
 
-   DISSECT_MSG("HTTP : %s:%d -> USER: %s  PASS: %s INFO: %s\n", ip_addr_ntoa(&po->L3.dst, tmp),
-                                                                ntohs(po->L4.dst), 
-                                                                po->DISSECTOR.user,
-                                                                po->DISSECTOR.pass,
-                                                                po->DISSECTOR.info);
+   DISSECT_MSG("HTTP : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&po->L3.dst, tmp),
+                                                                 ntohs(po->L4.dst), 
+                                                                 po->DISSECTOR.user,
+                                                                 po->DISSECTOR.pass,
+                                                                 po->DISSECTOR.info);
 }
 
 

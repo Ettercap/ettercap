@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.16 2003/09/27 17:22:24 alor Exp $
+    $Id: ec_tcp.c,v 1.17 2003/09/30 11:30:55 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,7 @@
 #include <ec_fingerprint.h>
 #include <ec_checksum.h>
 #include <ec_session.h>
+#include <ec_inject.h>
 
 
 /* globals */
@@ -87,6 +88,7 @@ struct tcp_ident {
 /* protos */
 
 FUNC_DECODER(decode_tcp);
+FUNC_INJECTOR(inject_tcp);
 void tcp_init(void);
 int tcp_match(void *id_sess, void *id_curr);
 void tcp_create_session(struct session **s, struct packet_object *po);
@@ -103,6 +105,7 @@ int tcp_find_direction(void *ids, void *id);
 void __init tcp_init(void)
 {
    add_decoder(PROTO_LAYER, NL_TYPE_TCP, decode_tcp);
+   add_injector(CHAIN_ENTRY, NL_TYPE_TCP, inject_tcp);
 }
 
 
@@ -226,13 +229,16 @@ FUNC_DECODER(decode_tcp)
       session_put(s);
    }
 
+   /* Trace the sessions for injectors */
+   SESSION_PASSTHRU(s, PACKET);
+   
    /* Select right comunication way */
    direction = tcp_find_direction(s->ident, ident);
    SAFE_FREE(ident);
    
    /* Record last packet's seq */
    status = (struct tcp_status *)s->data;
-   status->way[direction].last_seq = ntohl(tcp->seq);
+   status->way[direction].last_seq = ntohl(tcp->seq) + PACKET->DATA.len;
    
    /* SYN counts as one byte */
    if ( tcp->flags & TH_SYN )
@@ -277,17 +283,77 @@ FUNC_DECODER(decode_tcp)
    return NULL;
 }
 
-/*
- * Find right comunication way for session data.
- * First array data is relative to the direction first caught.
- */ 
-int tcp_find_direction(void *ids, void *id)
+/*******************************************/
+
+FUNC_INJECTOR(inject_tcp)
 {
-   if (memcmp(ids, id, TCP_IDENT_LEN)) 
-      return 1;
+   struct session *s = NULL;
+   void *ident = NULL;
+   struct tcp_status *status;
+   int direction;
+   struct tcp_header *tcph;
+   u_char *tcp_payload;
+   u_int32 magic;
+       
+   /* Find the correct session */
+   tcp_create_ident(&ident, PACKET);
+   if (session_get(&s, ident, TCP_IDENT_LEN) == -ENOTFOUND) 
+      return -ENOTFOUND;
+
+   /* Rember where the payload has to start */
+   tcp_payload = PACKET->packet;
+
+   /* Allocate stack for tcp header */
+   PACKET->packet -= sizeof(struct tcp_header);
+
+   /* Create the tcp header */
+   tcph = (struct tcp_header *)PACKET->packet;
+
+   tcph->sport = PACKET->L4.src;
+   tcph->dport = PACKET->L4.dst;
+   tcph->x2    = 0;            
+   tcph->off   = 5;            
+   tcph->win   = htons(32120); 
+   tcph->csum  = 0;            
+   tcph->urp   = 0;            
+   tcph->flags = TH_PSH;      
+   
+   /* Take the rest of the data from the sessions */
+   status = (struct tcp_status *)s->data;
+   direction = tcp_find_direction(s->ident, ident);
+   tcph->seq = htonl(status->way[direction].last_seq + status->way[direction].seq_adj);
+   
+   /* Fake ACK seq (we didn't set the flag) */
+   tcph->ack = htonl(status->way[!direction].last_seq + status->way[!direction].seq_adj);
+   
+   /* Prepare data for next injector */
+   PACKET->session = s->prev_session;
+   LENGTH += sizeof(struct tcp_header);     
+   memcpy(&magic, s->prev_session->ident, 4);
+
+   /* Go deeper into injectors chain */
+   EXECUTE_INJECTOR(CHAIN_LINKED, magic);
       
-   return 0;
-} 
+   /* 
+    * Attach the data (LENGTH was adjusted by LINKED injectors).
+    * Set LENGTH to injectable data len.
+    */
+   LENGTH = GBL_IFACE->mtu - LENGTH;
+   if (LENGTH > PACKET->inject_len)
+      LENGTH = PACKET->inject_len;
+   memcpy(tcp_payload, PACKET->inject, LENGTH);   
+   
+   /* Update inject counter into the session */
+   status->way[direction].seq_adj += LENGTH;
+   
+   /* Calculate checksum */
+   PACKET->L4.header = (u_char *)tcph;
+   PACKET->L4.len = sizeof(struct tcp_header);
+   PACKET->DATA.len = LENGTH; 
+   tcph->csum = L4_checksum(PACKET);
+      
+   return ESUCCESS;
+}
 
 /*******************************************/
 
@@ -389,6 +455,18 @@ void tcp_create_session(struct session **s, struct packet_object *po)
    /* alloca of data elements */
    SAFE_CALLOC((*s)->data, 1, sizeof(struct tcp_status));
 }
+
+/*
+ * Find right comunication way for session data.
+ * First array data is relative to the direction first caught.
+ */ 
+int tcp_find_direction(void *ids, void *id)
+{
+   if (memcmp(ids, id, TCP_IDENT_LEN)) 
+      return 1;
+      
+   return 0;
+} 
 
 /* EOF */
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_packet.c,v 1.24 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_packet.c,v 1.25 2003/09/30 11:30:55 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -129,19 +129,25 @@ struct packet_object * packet_dup(struct packet_object *po)
     * pointers
     */
    memcpy(dup_po, po, sizeof(struct packet_object));
-  
-   /* duplicate the po dispdata */
-   SAFE_CALLOC(dup_po->DATA.disp_data, po->DATA.disp_len, sizeof(u_char));
-  
-   /* copy the buffer */
-   memcpy(dup_po->DATA.disp_data, po->DATA.disp_data, po->DATA.disp_len);
 
-   /* duplicate the po buffer */
-   SAFE_CALLOC(dup_po->packet, po->len, sizeof(u_char));
+   /* copy only if the buffer exists */
+   if (po->DATA.disp_data != NULL) {  
+      /* duplicate the po dispdata */
+      SAFE_CALLOC(dup_po->DATA.disp_data, po->DATA.disp_len, sizeof(u_char));
   
-   /* copy the buffer */
-   memcpy(dup_po->packet, po->packet, po->len);
+      /* copy the buffer */
+      memcpy(dup_po->DATA.disp_data, po->DATA.disp_data, po->DATA.disp_len);
+   }
    
+   /* copy only if the buffer exists */
+   if (po->packet != NULL) {  
+      /* duplicate the po buffer */
+      SAFE_CALLOC(dup_po->packet, po->len, sizeof(u_char));
+  
+      /* copy the buffer */
+      memcpy(dup_po->packet, po->packet, po->len);
+   }
+
    /* 
     * adjust all the pointers as the difference
     * between the old buffer and the pointer

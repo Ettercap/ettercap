@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.20 2003/09/27 17:22:24 alor Exp $
+    $Id: ec_ip.c,v 1.21 2003/09/30 11:30:55 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -26,6 +26,7 @@
 #include <ec_fingerprint.h>
 #include <ec_checksum.h>
 #include <ec_session.h>
+#include <ec_inject.h>
 
 
 /* globals */
@@ -72,6 +73,8 @@ struct ip_ident {
 /* protos */
 
 FUNC_DECODER(decode_ip);
+FUNC_INJECTOR(inject_ip);
+FUNC_INJECTOR(stateless_ip);
 void ip_init(void);
 int ip_match(void *id_sess, void *id_curr);
 void ip_create_session(struct session **s, struct packet_object *po);
@@ -88,6 +91,8 @@ size_t ip_create_ident(void **i, struct packet_object *po);
 void __init ip_init(void)
 {
    add_decoder(NET_LAYER, LL_TYPE_IP, decode_ip);
+   add_injector(CHAIN_LINKED, IP_MAGIC, inject_ip);
+   add_injector(CHAIN_LINKED, STATELESS_IP_MAGIC, stateless_ip);
 }
 
 
@@ -178,7 +183,7 @@ FUNC_DECODER(decode_ip)
    
    /* Record last packet's ID */
    status = (struct ip_status *)s->data;
-   status->last_id = ip->id;
+   status->last_id = ntohs(ip->id);
       
    /* Jump to next Layer */
    next_decoder = get_decoder(PROTO_LAYER, ip->protocol);
@@ -225,6 +230,104 @@ FUNC_DECODER(decode_ip)
    return NULL;
 }
 
+/*******************************************/
+FUNC_INJECTOR(inject_ip)
+{
+   struct session *s = NULL;
+   struct ip_status *status;
+   struct ip_header *iph;
+   size_t further_len, payload_len;
+   u_int32 magic;
+   
+   /* Paranoid check */
+   if (LENGTH + sizeof(struct ip_header) > GBL_IFACE->mtu)
+      return -ENOTHANDLED;
+
+   /* Make space for ip header on packet stack... */      
+   PACKET->packet -= sizeof(struct ip_header);
+
+   /* ..and fill it */  
+   iph = (struct ip_header *)PACKET->packet;
+   
+   iph->ihl      = 5;
+   iph->version  = 4;
+   iph->tos      = 0;
+   iph->csum     = 0;
+   iph->frag_off = 0;            
+   iph->ttl      = 125;   
+   iph->protocol = PACKET->L4.proto; 
+   iph->saddr    = htonl(ip_addr_to_int32(PACKET->L3.src.addr));   
+   iph->daddr    = htonl(ip_addr_to_int32(PACKET->L3.dst.addr));   
+
+   /* Take the session and fill remaining fields */
+   s = PACKET->session;
+   status = (struct ip_status *)s->data;
+   iph->id = htons(status->last_id + status->id_adj);
+
+   /* Renew session timestamp (XXX it locks the sessions) */
+   if (session_get(&s, s->ident, IP_IDENT_LEN) == -ENOTFOUND) 
+      return -ENOTFOUND;
+   
+   /* Adjust headers length */   
+   LENGTH += sizeof(struct ip_header);
+   
+   /* Rember length of further headers */
+   further_len = LENGTH;
+   
+   if (s->prev_session != NULL)
+   {
+      /* Prepare data for next injector */
+      PACKET->session = s->prev_session;
+      memcpy(&magic, s->prev_session->ident, 4);
+      
+      /* Go deeper into injectors chain */
+      EXECUTE_INJECTOR(CHAIN_LINKED, magic);
+   }
+
+   /* Update session */
+   status->id_adj ++;
+   
+   /* Guess payload_len that will be used by ENTRY injector */
+   payload_len = GBL_IFACE->mtu - LENGTH;
+   if (payload_len > PACKET->inject_len)
+      payload_len = PACKET->inject_len;
+
+   /* Set tot_len field as further header's len + payload */
+   PACKET->L3.len = further_len + payload_len;
+   iph->tot_len = htons(PACKET->L3.len);
+   
+   /* Calculate checksum */
+   PACKET->L3.header = (u_char *)iph;
+   iph->csum = L3_checksum(PACKET);        
+
+   /* Set fields to forward the packet (only if the chain is ended) */
+   if (s->prev_session == NULL)
+   {
+      PACKET->fwd_packet = PACKET->packet;
+      PACKET->fwd_len = PACKET->L3.len;
+   }
+   
+   return ESUCCESS;
+}
+
+/* Used to link sessionless udp with correct ip session */
+FUNC_INJECTOR(stateless_ip)
+{
+   struct session *s = NULL;
+   void *ident = NULL;
+
+   /* Find the correct IP session */
+   ip_create_ident(&ident, PACKET);
+   if (session_get(&s, ident, IP_IDENT_LEN) == -ENOTFOUND) 
+      return -ENOTFOUND;
+
+   PACKET->session = s;
+   
+   /* Execute IP injector */
+   EXECUTE_INJECTOR(CHAIN_LINKED, IP_MAGIC);
+
+   return ESUCCESS;
+}
 
 /*******************************************/
 

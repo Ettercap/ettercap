@@ -17,26 +17,95 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.3 2003/09/27 09:53:33 alor Exp $
+    $Id: ec_inject.c,v 1.4 2003/09/30 11:30:55 lordnaga Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
+#include <ec_inject.h>
+#include <ec_send.h>
+
+/* globals */
+static SLIST_HEAD (, inj_entry) injectors_table;
+
+struct inj_entry {
+   u_int32 type;
+   u_int8 level;
+   FUNC_INJECTOR_PTR(injector);
+   SLIST_ENTRY (inj_entry) next;
+};
+
 
 /* proto */
 
-int inject_buffer(struct packet_object *po, u_int8 buf, size_t len);
-int inject_po(struct packet_object *po);
+int inject_buffer(struct packet_object *po);
+void add_injector(u_int8 level, u_int32 type, FUNC_INJECTOR_PTR(injector));
+void * get_injector(u_int8 level, u_int32 type);
+size_t inject_protocol(struct packet_object *po);
+
 
 /*******************************************/
 
 /*
+ * add an injector to the injector table 
+ */
+void add_injector(u_int8 level, u_int32 type, FUNC_INJECTOR_PTR(injector))
+{
+   struct inj_entry *e;
+
+   SAFE_CALLOC(e, 1, sizeof(struct inj_entry));
+
+   e->level = level;
+   e->type = type;
+   e->injector = injector;
+
+   SLIST_INSERT_HEAD (&injectors_table, e, next); 
+   
+   return;
+}
+
+/*
+ * get an injector from the injector table 
+ */
+
+void * get_injector(u_int8 level, u_int32 type)
+{
+   struct inj_entry *e;
+   
+   SLIST_FOREACH (e, &injectors_table, next) {
+      if (e->level == level && e->type == type) 
+         return (void *)e->injector;
+   }
+
+   return NULL;
+}
+
+
+size_t inject_protocol(struct packet_object *po)
+{
+   FUNC_INJECTOR_PTR(injector);
+   size_t len = 0;
+      
+   injector = get_injector(CHAIN_ENTRY, po->L4.proto);
+   
+   if (injector == NULL) 
+      return 0;
+
+   /* Start the injector chain */
+   if (injector(po, &len) == ESUCCESS)
+      return len;
+      
+   /* if there's an error */
+   return 0;              
+}
+
+
+/*
  * the idea is that the application will pass a buffer
  * and a len, and this function will split up the 
- * buffer to fit the MTU and create an inject chain.
- * then it will inject the chain.
+ * buffer to fit the MTU and inject the resulting packet(s).
  */
-int inject_buffer(struct packet_object *po, u_int8 buf, size_t len)
+int inject_buffer(struct packet_object *po)
 {
 
    /* the packet_object passed is a fake.
@@ -46,64 +115,57 @@ int inject_buffer(struct packet_object *po, u_int8 buf, size_t len)
     *    - (tcp/udp) port source and dest
     * all the field have to be filled int and the buffer
     * has to be alloc'd
-    */
+    */       
+   struct packet_object *pd;
+   size_t injected;
+   u_char *buf, *pck_buf;
+   int ret = ESUCCESS;
    
-#if 0
-   alloc the buffer for the first MTU-(L3.len+L4.len) bytes
+   /* Duplicate the packet to modify the payload buffer */
+   pd = packet_dup(po);
 
-   len -= MTU-(L3.len+L4.len);
+   /* Remember the buffer to be free'd */
+   buf = pd->inject;
+
+   /* Allocate memory for the packet (double sized)*/
+   SAFE_CALLOC(pck_buf, 1, (GBL_IFACE->mtu * 2));
+         
+   /* Loop until there's data to send */
+   do {
+   
+      /* 
+       * Slide to middle. First part is for header's stack'ing.
+       * Second part is for packet data. 
+       */
+      pd->packet = pck_buf + GBL_IFACE->mtu;
+
+      /* Start the injector cascade */
+      injected = inject_protocol(pd);
       
-   if (po->L4.proto == NL_TYPE_TCP)
-      get the session magic number from tcp
+      if (injected == 0) {
+         ret = -ENOTHANDLED;
+         break;
+      }
       
-   prepare the L3 header in the po->buffer
-
-   prepare the L4 header in the po->buffer (udp or tcp)
-
-   make a consistent packet object 
-   (the important fields are fwd_packet and fwd_len)
-
-   if (len)
-      make another packet linked with po->inject (recursion ?)
-
-   /* sent the packet 
-    *
-    * PAY ATTENTION ON THE LOCK !!!
-    * where do we have to lock ?
-    */
-   inject_po(po);
+      /* Send on the wire */ 
+      send_to_L3(pd);
+      
+      /* Ready to inject the rest */
+      pd->inject_len -= injected;
+      pd->inject += injected;
+   } while (pd->inject_len);
    
-#endif
+   SAFE_FREE(buf);
+   /* we cannot use packet_object_destroy because
+    * the packet is not yet in the queue to tophalf.
+    * so we have to free the duplicates by hand.
+    */ 
+   SAFE_FREE(pck_buf);
+   SAFE_FREE(pd->DATA.disp_data);
+   SAFE_FREE(pd);
    
-   return ESUCCESS;
+   return ret;
 }
-
-
-/*
- * inject the packet and all its packet chain
- */
-int inject_po(struct packet_object *po)
-{
-
-#if 0
-   /* get the session magic numbers */
-   get_tcp_session(...);
-   
-   adjust the sessions...
-   
-   /* send this packet */
-   send_L3(po);
-   
-   /* inject the next packet in the chain */
-   inject_po(po->inject);
-  
-   if (... errors... )
-      return -ENOTHANDLED;
-#endif
-
-   return ESUCCESS;
-}
-
 
 
 /* EOF */

@@ -17,13 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_udp.c,v 1.8 2003/09/18 22:15:04 alor Exp $
+    $Id: ec_udp.c,v 1.9 2003/09/30 11:30:55 lordnaga Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_checksum.h>
-
+#include <ec_inject.h>
 
 /* globals */
 
@@ -37,6 +37,7 @@ struct udp_header {
 /* protos */
 
 FUNC_DECODER(decode_udp);
+FUNC_INJECTOR(inject_udp);
 void udp_init(void);
 
 /*******************************************/
@@ -49,6 +50,7 @@ void udp_init(void);
 void __init udp_init(void)
 {
    add_decoder(PROTO_LAYER, NL_TYPE_UDP, decode_udp);
+   add_injector(CHAIN_ENTRY, NL_TYPE_UDP, inject_udp);
 }
 
 
@@ -108,6 +110,53 @@ FUNC_DECODER(decode_udp)
    }
 
    return NULL;
+}
+
+/*******************************************/
+
+FUNC_INJECTOR(inject_udp)
+{
+   struct udp_header *udph;
+   u_char *udp_payload;
+       
+   /* Rember where the payload has to start */
+   udp_payload = PACKET->packet;
+
+   /* Allocate stack for tcp header */
+   PACKET->packet -= sizeof(struct udp_header);
+
+   /* Create the udp header */
+   udph = (struct udp_header *)PACKET->packet;
+
+   udph->sport = PACKET->L4.src;
+   udph->dport = PACKET->L4.dst;
+   udph->csum  = 0;
+      
+   /* 
+    * Go deeper into injectors chain. 
+    * XXX We assume next layer is IP.
+    */
+   LENGTH += sizeof(struct udp_header);     
+   PACKET->session = NULL;
+   EXECUTE_INJECTOR(CHAIN_LINKED, STATELESS_IP_MAGIC);
+
+   /* 
+    * Attach the data (LENGTH was adjusted by LINKED injectors).
+    * Set LENGTH to injectable data len.
+    */
+   LENGTH = GBL_IFACE->mtu - LENGTH;
+   if (LENGTH > PACKET->inject_len)
+      LENGTH = PACKET->inject_len;
+   memcpy(udp_payload, PACKET->inject, LENGTH);   
+
+   /* Set datagram len and calculate checksum */
+   PACKET->L4.header = (u_char *)udph;
+   PACKET->L4.len = sizeof(struct udp_header);
+   PACKET->DATA.len = LENGTH; 
+   udph->ulen = htons(PACKET->DATA.len + PACKET->L4.len);
+   udph->csum = L4_checksum(PACKET);
+      
+   return ESUCCESS;
 }
 
 /* EOF */

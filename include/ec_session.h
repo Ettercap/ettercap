@@ -1,5 +1,5 @@
 
-/* $Id: ec_session.h,v 1.4 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: ec_session.h,v 1.5 2003/09/30 11:30:51 lordnaga Exp $ */
 
 #ifndef EC_SESSION_H
 #define EC_SESSION_H
@@ -10,6 +10,8 @@ struct session {
    size_t ident_len;
    void *data;
    size_t data_len;
+   /* Used to trace headers for injection */
+   struct session *prev_session;
    int (*match)(void *id_sess, void *id);
 };
 

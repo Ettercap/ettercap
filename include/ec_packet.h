@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.18 2003/09/27 09:53:33 alor Exp $ */
+/* $Id: ec_packet.h,v 1.19 2003/09/30 11:30:51 lordnaga Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -8,6 +8,7 @@
 #include <ec_profiles.h>
 #include <ec_fingerprint.h>
 #include <ec_inet.h>
+#include <ec_session.h>
 
 #include <sys/time.h>
 
@@ -68,6 +69,9 @@ struct packet_object {
    size_t len;             /* total lenght of the packet */
    u_char * packet;        /* the buffer containing the real packet */
 
+   /* Trace current session for injector chain */
+   struct session *session;  
+    
    size_t inject_len;      /* len of the injection */
    u_char *inject;         /* the fuffer used for injection */
    

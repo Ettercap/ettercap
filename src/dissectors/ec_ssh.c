@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ssh.c,v 1.4 2003/10/20 14:42:25 alor Exp $
+    $Id: ec_ssh.c,v 1.5 2003/10/20 14:48:01 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -172,7 +172,7 @@ FUNC_DECODER(dissector_ssh)
 	    
             /* Catch packet type and slide to the data */
             ptr = clear_packet + ssh_mod;
-	         ssh_packet_type = *ptr;
+            ssh_packet_type = *ptr;
             ptr++;
 
             /* Catch data len and slide to the payload */
@@ -197,28 +197,28 @@ FUNC_DECODER(dissector_ssh)
                SAFE_CALLOC(PACKET->DISSECTOR.pass, data_len+1, 1);	    
                memcpy(PACKET->DISSECTOR.pass, ptr, data_len);
                PACKET->DISSECTOR.user = strdup(session_data->user); /* Surely NULL terminated */
-               USER_MSG("SSH : %s:%d -> USER: %s  PASS: %s ", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                                              ntohs(PACKET->L4.dst),
-                                                              PACKET->DISSECTOR.user,
-                                                              PACKET->DISSECTOR.pass);
+               USER_MSG("SSH : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                                               ntohs(PACKET->L4.dst),
+                                                               PACKET->DISSECTOR.user,
+                                                               PACKET->DISSECTOR.pass);
 
             } else if (ssh_packet_type==5) {
                DEBUG_MSG("\tDissector_ssh RHOSTS");
                PACKET->DISSECTOR.user = strdup(session_data->user);
                /* XXX Do we need to catch more infos from this kind of packet? */
                PACKET->DISSECTOR.pass = strdup("RHOSTS-AUTH\n");
-               USER_MSG("SSH : %s:%d -> USER: %s  %s ", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                                        ntohs(PACKET->L4.dst),
-                                                        PACKET->DISSECTOR.user,
-                                                        PACKET->DISSECTOR.pass);
+               USER_MSG("SSH : %s:%d -> USER: %s  %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                                         ntohs(PACKET->L4.dst),
+                                                         PACKET->DISSECTOR.user,
+                                                         PACKET->DISSECTOR.pass);
             } else if (ssh_packet_type==6) {
                DEBUG_MSG("\tDissector_ssh RSA AUTH");
                PACKET->DISSECTOR.user = strdup(session_data->user);
                PACKET->DISSECTOR.pass = strdup("RSA-AUTH\n");
-               USER_MSG("SSH : %s:%d -> USER: %s  %s ", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                                        ntohs(PACKET->L4.dst),
-                                                        PACKET->DISSECTOR.user,
-                                                        PACKET->DISSECTOR.pass);
+               USER_MSG("SSH : %s:%d -> USER: %s  %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                                         ntohs(PACKET->L4.dst),
+                                                         PACKET->DISSECTOR.user,
+                                                         PACKET->DISSECTOR.pass);
             }
             
             /* These are readable packets so copy it in the DISPDATA */

@@ -11,10 +11,11 @@ EXTRA_DIST = LICENSE \
              shtool \
              share/* 
 
-CLEANFILES = *.log *.out *.cache *.so ettercap
+CLEANFILES = *.log *.out *.cache *.so ettercap etterlog
 
 test: all
 	ln -fs ./src/ettercap ./
+	ln -fs ./utils/etterlog/etterlog ./
 	find ./plug-ins -name '*.so' -exec ln -fs {} ./ \;
 	./shtool fixperm ./
 

@@ -515,6 +515,7 @@ AC_OUTPUT(Makefile
           src/Makefile 
           include/Makefile
           utils/Makefile
+          utils/etterlog/Makefile
           plug-ins/Makefile
           plug-ins/dummy/Makefile
           plug-ins/dummy_hook/Makefile)

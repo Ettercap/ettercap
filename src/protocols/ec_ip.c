@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.5 2003/04/03 21:18:00 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.6 2003/04/05 09:25:09 alor Exp $
 */
 
 #include <ec.h>
@@ -120,9 +120,9 @@ FUNC_DECODER(decode_ip)
 
    /* calculate if the source is local or not */
    if (ip_addr_is_local(&PACKET->L3.src))
-      PACKET->PASSIVE.flags = FP_HOST_LOCAL;
+      PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
    else
-      PACKET->PASSIVE.flags = FP_HOST_NONLOCAL;
+      PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
    
 
    /* HOOK POINT: PACKET_IP */

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_bsd.c,v 1.2 2003/04/03 21:18:00 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_bsd.c,v 1.3 2003/04/05 09:25:09 alor Exp $
 */
 
 #include <ec.h>
@@ -47,8 +47,9 @@ void disable_ip_forward(void)
       ERROR_MSG("sysctl() | net.inet.ip.forwarding");
 
    DEBUG_MSG("disable_ip_forward | net.inet.ip.forwarding = %d  old_value = %d\n", val, saved_status);
-                                       
-   atexit(restore_ip_forward);
+  
+   /* XXX - fix this */
+//   atexit(restore_ip_forward);
 }
 
 

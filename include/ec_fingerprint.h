@@ -55,9 +55,9 @@ enum {
 struct passive_info {
    char fingerprint[FINGER_LEN+1];
    char flags;
-      #define FP_HOST_LOCAL      0
-      #define FP_HOST_NONLOCAL   1
-      #define FP_GATEWAY         1<<1
+      #define FP_HOST_LOCAL      1
+      #define FP_HOST_NONLOCAL   1<<1
+      #define FP_GATEWAY         1<<2
 };
 
 

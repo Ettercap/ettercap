@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.12 2003/04/02 11:56:36 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_decode.c,v 1.13 2003/04/05 09:25:09 alor Exp $
 */
 
 #include <ec.h>
@@ -86,6 +86,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    if (GBL_OPTIONS->read)
       GBL_PCAP->dump_off = ftell(pcap_file(GBL_PCAP->pcap));
 
+   
    /* extract data and datalen from pcap packet */
    data = (u_char *)pkt;
    datalen = pkthdr->caplen;
@@ -145,6 +146,17 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
       /* HOOK POINT: PRE_FORWARD */ 
       hook_point(HOOK_PRE_FORWARD, po);
       EXECUTE(GBL_SNIFF->forward, po);
+   }
+   
+   /* 
+    * if it is the last packet set the flag 
+    * and send the packet to the top half.
+    * we have to do this because the last packet 
+    * might be dropped by the filter.
+    */
+   if (GBL_OPTIONS->read && GBL_PCAP->dump_size == GBL_PCAP->dump_off) {
+      po->flags |= PO_EOF;
+      top_half_queue_add(po);
    }
    
    /* free the structure */

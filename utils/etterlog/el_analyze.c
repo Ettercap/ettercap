@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.8 2003/04/03 21:18:01 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.9 2003/04/05 09:25:10 alor Exp $
 */
 
 #include <el.h>
@@ -103,16 +103,12 @@ void analyze_packet(void)
    return;
 }
 
-/* analyze an info log file */
 
-void analyze_info(void)
-{
-   /* create the hosts' list */
-   create_hosts_list(); 
-   
-   NOT_IMPLEMENTED();
-}
 
+/*
+ * extract data form the file
+ * and create the host list
+ */
 
 void create_hosts_list(void)
 {
@@ -133,16 +129,32 @@ void create_hosts_list(void)
          break;
      
       profile_add_info(&inf);
-      
-      printf("create_hosts_list: finger %s\n\n", inf.fingerprint);
-      
-      printf("create_hosts_list: user %s\n", buf.user); 
-      printf("create_hosts_list: pass %s\n", buf.pass); 
-      printf("create_hosts_list: info %s\n", buf.info); 
-      printf("create_hosts_list: banner %s\n\n", buf.banner); 
    }
-
 }
+
+
+/* 
+ * analyze an info log file 
+ */
+
+void analyze_info(void)
+{
+   struct host_profile *h;
+   LIST_HEAD(, host_profile) *hosts_list_head = get_host_list_ptr();
+   char tmp[MAX_ASCII_ADDR_LEN];
+   
+   /* create the hosts' list */
+   create_hosts_list(); 
+
+
+   LIST_FOREACH(h, hosts_list_head, next) {
+      fprintf(stdout, "IP: %s\n", ip_addr_ntoa(&h->L3_addr, tmp));
+   }
+   
+   NOT_IMPLEMENTED();
+}
+
+
 
 /* EOF */
 

@@ -15,12 +15,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.6 2003/04/02 11:56:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_display.c,v 1.7 2003/04/05 09:25:10 alor Exp $
 */
 
 #include <el.h>
 #include <ec_log.h>
 #include <ec_format.h>
+#include <ec_fingerprint.h>
+#include <ec_manuf.h>
 #include <el_functions.h>
 
 #include <sys/stat.h>
@@ -220,6 +222,19 @@ void set_display_regex(char *regex)
 
 static void display_info(void)
 {
+
+   /* create the host list */
+   create_hosts_list();
+
+   /* load the fingerprint database */
+   fingerprint_init();
+
+   /* load the manuf database */
+   manuf_init();
+
+
+   NOT_IMPLEMENTED();
+
 #if 0
    struct log_header_info pck;
    int ret;

@@ -15,11 +15,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_file.c,v 1.2 2003/03/24 22:45:05 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_file.c,v 1.3 2003/04/05 09:25:09 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_file.h>
+#include <ec_version.h>
 
 /* protos */
 
@@ -38,12 +39,12 @@ char * get_full_path(char *file)
    char *filename;
    int len;
 
-   len = strlen(INSTALL_PREFIX) + strlen("share") + strlen(GBL_PROGRAM) + strlen(file) + 4;
+   len = strlen(INSTALL_PREFIX) + strlen("share") + strlen(EC_PROGRAM) + strlen(file) + 4;
 
    filename = calloc(len, sizeof(char));
    ON_ERROR(filename, NULL, "out of memory");
    
-   snprintf(filename, len, "%s/share/%s/%s", INSTALL_PREFIX, GBL_PROGRAM, file);
+   snprintf(filename, len, "%s/share/%s/%s", INSTALL_PREFIX, EC_PROGRAM, file);
 
    DEBUG_MSG("get_full_path -- %s", filename);
    

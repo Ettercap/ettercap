@@ -21,6 +21,7 @@
    + LOGGING ENGINE
       - banner extracted by dissectors (state machine required)
       - passive identification of the GW
+      - add the ARP hook
 
    + ETTERLOG
       - analysis 

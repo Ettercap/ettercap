@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.4 2003/04/03 15:10:47 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_log.c,v 1.5 2003/04/05 09:25:10 alor Exp $
 */
 
 #include <el.h>
@@ -42,9 +42,10 @@ void open_log(char *file)
    ON_ERROR(GBL_LOG_FD, NULL, "%s", gzerror(GBL_LOG_FD, &zerr));
  
    /* if we are root, drop privs... */
-   
-   if ( getuid() == 0 && setuid(65535) < 0)
-      ERROR_MSG("Cannot drop priviledges...");
+ 
+   /* XXX - uncomment this */
+//   if ( getuid() == 0 && setuid(65535) < 0)
+//      ERROR_MSG("Cannot drop priviledges...");
 
 }
 
@@ -141,21 +142,27 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
     * we can deal only with associated user and pass,
     * so there must be present all of them
     */
-   if (inf->var.user_len && inf->var.pass_len && inf->var.info_len) {
+
+   /* XXX - FIX THIS */
+   
+   /* if (inf->var.user_len && inf->var.pass_len && inf->var.info_len) { */
+   if (inf->var.user_len) {
       buf->user = calloc(inf->var.user_len+1, sizeof(char));
       ON_ERROR(buf->user, NULL, "can't allocate memory");
       
       c = gzread(GBL_LOG_FD, buf->user, inf->var.user_len);
       if (c != inf->var.user_len)
          return -EINVALID;
-      
+   }
+   if (inf->var.user_len) {
       buf->pass = calloc(inf->var.pass_len+1, sizeof(char));
       ON_ERROR(buf->pass, NULL, "can't allocate memory");
       
       c = gzread(GBL_LOG_FD, buf->pass, inf->var.pass_len);
       if (c != inf->var.pass_len)
          return -EINVALID;
-      
+   }      
+   if (inf->var.user_len) {
       buf->info = calloc(inf->var.info_len+1, sizeof(char));
       ON_ERROR(buf->info, NULL, "can't allocate memory");
       

@@ -15,6 +15,11 @@ etterlog_SOURCES = el_main.c \
                    el_display.c \
                    el_log.c \
                    el_profiles.c \
+                   el_ec_compat.c \
+                   $(top_srcdir)/src/ec_fingerprint.c \
+                   $(top_srcdir)/src/ec_manuf.c \
+                   $(top_srcdir)/src/ec_hash.c \
+                   $(top_srcdir)/src/ec_file.c \
                    $(top_srcdir)/src/ec_inet.c \
                    $(top_srcdir)/src/ec_format.c
 

@@ -52,7 +52,7 @@ struct host_profile {
    u_int8 type;
 
    /* OS fingerprint */
-   u_char finger[FINGER_LEN+1];
+   u_char fingerprint[FINGER_LEN+1];
 
    LIST_ENTRY(host_profile) next;
 };

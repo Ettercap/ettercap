@@ -57,15 +57,17 @@ struct packet_object {
 
    u_int8 flags;                       /* flags relative to the packet */
       #define PO_IGNORE       ((u_int8)(1))        /* this packet should not be processed (e.g. sniffing filter didn't match it) */
-      #define PO_FORWARDABLE  ((u_int8)(1<<2))     /* the packet has our MAC address, by the IP is not ours */
+      #define PO_FORWARDABLE  ((u_int8)(1<<1))     /* the packet has our MAC address, by the IP is not ours */
       
-      #define PO_FROMIFACE    ((u_int8)(1<<3))     /* this packet comes from the primary interface */
-      #define PO_FROMBRIDGE   ((u_int8)(1<<4))     /* this packet comes form the bridged interface */
+      #define PO_FROMIFACE    ((u_int8)(1<<2))     /* this packet comes from the primary interface */
+      #define PO_FROMBRIDGE   ((u_int8)(1<<3))     /* this packet comes form the bridged interface */
       
-      #define PO_MOD_CHECK    ((u_int8)(1<<5))     /* it needs checksum recalculation before forwarding */
-      #define PO_MOD_LEN      ((u_int8)(1<<6)|PO_MOD_CHECK)   /* it was modified also in its lenght */
+      #define PO_MOD_CHECK    ((u_int8)(1<<4))     /* it needs checksum recalculation before forwarding */
+      #define PO_MOD_LEN      ((u_int8)(1<<5)|PO_MOD_CHECK)   /* it was modified also in its lenght */
   
-      #define PO_DUP          ((u_int8)(1<<7))     /* the packet is a duplicate we have to free the buffer on destroy*/
+      #define PO_DUP          ((u_int8)(1<<6))     /* the packet is a duplicate we have to free the buffer on destroy */
+      
+      #define PO_EOF          ((u_int8)(1<<7))     /* we are reading from a file and this is the last packet */
    
    int delta;  /* for modified packet this is the delta for the lenght */
    

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.9 2003/04/03 15:10:40 alor Exp $
+    $Id: ec_log.c,v 1.10 2003/04/05 09:25:09 alor Exp $
 */
 
 #include <ec.h>
@@ -338,7 +338,7 @@ void log_write_info(struct packet_object *po)
    /* OS identification */
    memcpy(&hi.fingerprint, po->PASSIVE.fingerprint, FINGER_LEN);
    
-   /* local, non local, gateway ecc ecc */
+   /* local, non local ecc ecc */
    hi.type = po->PASSIVE.flags;
 
    /* set the length of the fields */
@@ -353,7 +353,7 @@ void log_write_info(struct packet_object *po)
    
    if (po->DISSECTOR.banner)
       hi.var.banner_len = htons(strlen(po->DISSECTOR.banner));
-   
+  
    /* check if the packet is interesting... else return */
    if (hi.L4_addr == 0 && 
        !strcmp(hi.fingerprint, "") &&
@@ -361,9 +361,9 @@ void log_write_info(struct packet_object *po)
        hi.var.pass_len == 0 &&
        hi.var.info_len == 0 &&
        hi.var.banner_len == 0
-       )
+       ) {
       return;
-  
+   }
    LOG_LOCK;
    
    if (GBL_OPTIONS->compress) {

@@ -19,6 +19,7 @@ NG          ????????
       + regex matching 
       + hook point per packet type (TCP, UDP... )
       + quiet mode
+      + enhanced passive open port discoverer 
 
 
 

@@ -82,8 +82,8 @@ struct log_header_info {
    
    struct ip_addr L3_addr;
    
-   u_int8 L4_proto;
    u_int16 L4_addr;
+   u_int8 L4_proto;
 
    u_int8 distance;
    u_int8 type;

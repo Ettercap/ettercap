@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.5 2003/03/31 21:46:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_fingerprint.c,v 1.6 2003/04/05 09:25:09 alor Exp $
 
 */
 
@@ -105,8 +105,8 @@ int fingerprint_init(void)
       if (!strlen(line))  
          continue;
         
-      strlcpy(finger, line, FINGER_LEN);
-      strlcpy(os, line, OS_LEN);
+      strncpy(finger, line, FINGER_LEN);
+      strncpy(os, line, OS_LEN);
 
       LOAD_ENTRY(p, finger, os);
 

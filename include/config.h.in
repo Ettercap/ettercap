@@ -87,6 +87,9 @@
 /* gtk+ support */
 #undef HAVE_GTK
 
+/* iconv funcion for UTF-8 */
+#undef HAVE_ICONV
+
 /* Define to 1 if you have the <iconv.h> header file. */
 #undef HAVE_ICONV_H
 

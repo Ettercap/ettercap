@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.117 2004/04/29 09:28:26 alor Exp $
+dnl    $Id: configure.in,v 1.118 2004/04/29 13:08:37 alor Exp $
 dnl
 
 AC_INIT
@@ -238,7 +238,6 @@ AC_CHECK_HEADERS(sys/types.h stdint.h)
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
 AC_CHECK_HEADERS(termios.h)
 AC_CHECK_HEADERS(sys/poll.h poll.h sys/select.h)
-AC_CHECK_HEADERS(iconv.h)
 dnl nameser NS_GET32 and so on...
 EC_NS_GET()
 
@@ -272,12 +271,16 @@ AC_SEARCH_LIBS(gethostbyname, c nsl socket,, AC_MSG_ERROR(not found.))
 AC_SEARCH_LIBS(socket, c socket,, AC_MSG_ERROR(not found.))
 AC_SEARCH_LIBS(poll, c poll) 
 AC_SEARCH_LIBS(gzopen,c z,,AC_MSG_ERROR(not found.))
-AC_SEARCH_LIBS(iconv, c iconv) 
 
 dnl
 dnl  Do we have dn_expand ?
 dnl
 EC_RESOLVE_CHECK()
+
+dnl
+dnl  iconv functions 
+dnl
+EC_ICONV()
 
 dnl ===============================
 dnl   Check for non standard libs

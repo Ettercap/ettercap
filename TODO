@@ -25,6 +25,8 @@
 
    + BINDER
    
+   + add the iconv test in the configure (libiconv is sometimes needed)
+   
    + fix strange behaviour on http filtering
  
    + ETTERLOG

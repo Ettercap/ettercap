@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_window.c,v 1.6 2003/11/02 20:36:44 alor Exp $
+    $Id: wdg_window.c,v 1.7 2003/11/09 12:13:17 alor Exp $
 */
 
 #include <wdg.h>
@@ -145,6 +145,7 @@ static int wdg_window_redraw(struct wdg_object *wo)
       
       /* set the window color */
       wbkgd(ww->sub, COLOR_PAIR(wo->window_color));
+      werase(ww->sub);
       redrawwin(ww->sub);
 
       /* initialize the pointer */

@@ -1,5 +1,5 @@
 
-/* $Id: wdg.h,v 1.12 2003/11/02 22:08:44 alor Exp $ */
+/* $Id: wdg.h,v 1.13 2003/11/09 12:13:17 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -90,6 +90,7 @@ struct wdg_object {
       #define WDG_PANEL       2
       #define WDG_SCROLL      3
       #define WDG_MENU        4
+      #define WDG_DIALOG      5
    
    /* destructor function */
    int (*destroy)(struct wdg_object *wo);
@@ -152,6 +153,13 @@ struct wdg_menu {
    void (*callback)(void);
 };
 extern void wdg_menu_add(wdg_t *wo, struct wdg_menu *menu);
+/* dialog objects */
+extern void wdg_dialog_text(wdg_t *wo, size_t flags, const char *text);
+   #define WDG_OK       1
+   #define WDG_YES      (1<<1)
+   #define WDG_NO       (1<<2)
+   #define WDG_CANCEL   (1<<3)
+extern void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(void));
 
 
 /* EXPORTED FUNCTIONS */

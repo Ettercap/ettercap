@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.3 2003/11/03 21:19:02 alor Exp $
+    $Id: wdg_menu.c,v 1.4 2003/11/09 12:13:17 alor Exp $
 */
 
 #include <wdg.h>
@@ -93,11 +93,28 @@ void wdg_create_menu(struct wdg_object *wo)
 static int wdg_menu_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_menu_handle, ww);
+   struct wdg_menu_unit *mu, *old = NULL;
 
    /* erase the window */
    wbkgd(ww->menu, COLOR_PAIR(wo->screen_color));
    werase(ww->menu);
    wnoutrefresh(ww->menu);
+
+   /* erase all the units */
+   TAILQ_FOREACH_SAFE(mu, &ww->menu_list, next, old) {
+      int i = 0;
+
+      /* all the items */
+      while (mu->items[i] != NULL) {
+         free_item(mu->items[i]);
+         i++;
+      }
+      /* the actual menu */
+      free_menu(mu->m);
+
+      TAILQ_REMOVE(&ww->menu_list, mu, next);
+      WDG_SAFE_FREE(mu);
+   }   
    
    /* dealloc the structures */
    delwin(ww->menu);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.13 2003/11/06 20:09:21 alor Exp $
+    $Id: ec_curses.c,v 1.14 2003/11/09 12:13:17 alor Exp $
 */
 
 #include <ec.h>
@@ -36,6 +36,8 @@ static void curses_error(const char *msg);
 static void curses_fatal_error(const char *msg);
 static void curses_input(const char *title, char *input, size_t n);
 static void curses_progress(char *title, int value, int max);
+
+void msg(void);
 
 /*******************************************/
 
@@ -144,7 +146,7 @@ static void curses_progress(char *title, int value, int max)
 
 void curses_interface(void)
 {
-   wdg_t *win1, *win2, *win3, *menu;
+   wdg_t *win1, *win2, *win3, *menu, *dlg;
    struct wdg_menu file[] = { {"File",    "F",  NULL},
                               {"Open...", "",  NULL},
                               {"Close",   "",  NULL},
@@ -225,7 +227,19 @@ void curses_interface(void)
    wdg_menu_add(menu, mitm);
    wdg_draw_object(menu);
    
-   wdg_set_focus(menu);
+   wdg_create_object(&dlg, WDG_DIALOG, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   ON_ERROR(dlg, NULL, "Cannot create object");
+   
+   wdg_set_title(dlg, "dialog", WDG_ALIGN_CENTER);
+   wdg_set_color(dlg, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(dlg, WDG_COLOR_WINDOW, EC_COLOR_ERROR);
+   wdg_set_color(dlg, WDG_COLOR_FOCUS, EC_COLOR_ERROR_BORDER);
+   wdg_set_color(dlg, WDG_COLOR_TITLE, EC_COLOR_ERROR);
+   wdg_dialog_text(dlg, WDG_YES | WDG_NO | WDG_CANCEL, "Do you like the new widget interface ?\nI hope so.");
+   wdg_dialog_add_callback(dlg, WDG_YES, msg);
+   wdg_draw_object(dlg);
+   
+   wdg_set_focus(dlg);
   
    /* repaint the whole screen */
    wdg_redraw_all();
@@ -239,8 +253,27 @@ void curses_interface(void)
    wdg_destroy_object(&win1);
    wdg_destroy_object(&win2);
    wdg_destroy_object(&win3);
+   wdg_destroy_object(&menu);
+   wdg_destroy_object(&dlg);
 }
 
+void msg(void)
+{
+   wdg_t *dlg;
+   
+   wdg_create_object(&dlg, WDG_DIALOG, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
+   ON_ERROR(dlg, NULL, "Cannot create object");
+   
+   wdg_set_title(dlg, "dialog", WDG_ALIGN_CENTER);
+   wdg_set_color(dlg, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(dlg, WDG_COLOR_WINDOW, EC_COLOR_ERROR);
+   wdg_set_color(dlg, WDG_COLOR_FOCUS, EC_COLOR_ERROR_BORDER);
+   wdg_set_color(dlg, WDG_COLOR_TITLE, EC_COLOR_ERROR);
+   wdg_dialog_text(dlg, WDG_OK, "Wow... cool.");
+   wdg_draw_object(dlg);
+   
+   wdg_set_focus(dlg);
+}
 
 /* EOF */
 

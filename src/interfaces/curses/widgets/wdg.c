@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg.c,v 1.15 2003/11/02 22:08:44 alor Exp $
+    $Id: wdg.c,v 1.16 2003/11/09 12:13:17 alor Exp $
 */
 
 #include <wdg.h>
@@ -87,6 +87,7 @@ extern void wdg_create_window(struct wdg_object *wo);
 extern void wdg_create_panel(struct wdg_object *wo);
 extern void wdg_create_scroll(struct wdg_object *wo);
 extern void wdg_create_menu(struct wdg_object *wo);
+extern void wdg_create_dialog(struct wdg_object *wo);
 
 /*******************************************/
 
@@ -421,9 +422,9 @@ static void wdg_switch_focus(void)
             /* focus current object */
             WDG_BUG_IF(wdg_focused_obj->wo->get_focus == NULL);
             WDG_EXECUTE(wdg_focused_obj->wo->get_focus, wdg_focused_obj->wo);
+            return;
          }
       }
-      return;
    }
   
    /* unfocus the current object */
@@ -465,6 +466,7 @@ void wdg_set_focus(struct wdg_object *wo)
          /* focus current object */
          WDG_BUG_IF(wdg_focused_obj->wo->get_focus == NULL);
          WDG_EXECUTE(wdg_focused_obj->wo->get_focus, wdg_focused_obj->wo);
+         return;
       }
    }
 }
@@ -501,6 +503,10 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
          wdg_create_menu(*wo);
          break;
          
+      case WDG_DIALOG:
+         wdg_create_dialog(*wo);
+         break;
+         
       default:
          WDG_SAFE_FREE(*wo);
          return -WDG_EFATAL;
@@ -533,18 +539,19 @@ int wdg_destroy_object(struct wdg_object **wo)
    /* sanity check */
    if (*wo == NULL)
       return -WDG_ENOTHANDLED;
-   
-   /* was it the root object ? */
-   if ((*wo)->flags & WDG_OBJ_ROOT_OBJECT)
-      wdg_root_obj = NULL;
-  
-   /* it was the focused one */
-   if (wdg_focused_obj && wdg_focused_obj->wo == *wo)
-      wdg_switch_focus();
   
    /* delete it from the obj_list */
    TAILQ_FOREACH(wl, &wdg_objects_list, next) {
       if (wl->wo == *wo) {
+         
+         /* was it the root object ? */
+         if ((*wo)->flags & WDG_OBJ_ROOT_OBJECT)
+            wdg_root_obj = NULL;
+  
+         /* it was the focused one */
+         if (wdg_focused_obj && wdg_focused_obj->wo == *wo)
+            wdg_switch_focus();
+         
          /* 
           * check if it was the only object in the list
           * and it has gained the focus with the previous

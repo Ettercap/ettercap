@@ -1,11 +1,12 @@
 
-# $Id: Makefile.am,v 1.21 2004/01/10 13:27:20 lordnaga Exp $
+# $Id: Makefile.am,v 1.22 2004/02/03 15:14:49 lordnaga Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 SUBDIRS =   arp_cop \
             chk_poison \
             dns_spoof \
+            dos_attack \
             dummy \
             find_conn \
             find_ip \

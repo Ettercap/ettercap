@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.6 2003/11/23 20:36:17 alor Exp $
+    $Id: wdg_menu.c,v 1.7 2003/11/23 22:22:54 alor Exp $
 */
 
 #include <wdg.h>
@@ -34,6 +34,7 @@
 struct wdg_menu_unit {
    char active;
    char *title;
+   char shortcut;
    size_t nitems;
    MENU *m;
    WINDOW *win;
@@ -348,6 +349,8 @@ void wdg_menu_add(struct wdg_object *wo, struct wdg_menu *menu)
    WDG_SAFE_CALLOC(mu, 1, sizeof(struct wdg_menu_unit));
    
    mu->title = strdup(menu[i].name);
+   /* set the shortcut */
+   mu->shortcut = menu[i].shortcut[0];
    
    while (menu[++i].name != NULL) {
    
@@ -589,7 +592,20 @@ static void wdg_menu_close(struct wdg_object *wo)
  */
 static int wdg_menu_shortcut(struct wdg_object *wo, int key)
 {
-   /* XXX - TODO */
+   WDG_WO_EXT(struct wdg_menu_handle, ww);
+   struct wdg_menu_unit *mu;
+
+   /* search the shortcut in the menu unit list */
+   TAILQ_FOREACH(mu, &ww->menu_list, next) {
+      if (mu->shortcut == key) {
+         wdg_set_focus(wo);
+         wdg_menu_close(wo);
+         ww->focus_unit = mu;
+         wdg_menu_open(wo);
+         wdg_menu_redraw(wo);
+         return WDG_ESUCCESS;
+      }
+   }
    
    return -WDG_ENOTHANDLED;
 }

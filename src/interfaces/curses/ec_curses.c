@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.16 2003/11/23 18:07:52 alor Exp $
+    $Id: ec_curses.c,v 1.17 2003/11/23 22:22:54 alor Exp $
 */
 
 #include <ec.h>
@@ -157,10 +157,10 @@ void curses_interface(void)
                               {NULL, NULL, NULL},
                             };
    struct wdg_menu view[] = { {"View",    "V",  NULL},
-                              {"Item1",   "1", NULL},
-                              {"Item2",   "2", NULL},
-                              {"Item3",   "3", NULL},
-                              {"Item4",   "4", NULL},
+                              {"Item1",   "", NULL},
+                              {"Item2",   "", NULL},
+                              {"Item3",   "", NULL},
+                              {"Item4",   "", NULL},
                               {"-",       "", NULL},
                               {"Item5",   "",  NULL},
                               {"Item6",   "",  NULL},

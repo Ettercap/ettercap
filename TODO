@@ -37,8 +37,8 @@ Nov 2003:
       - dhcp infos
 
    + LIBWDG
+      - is there a heap corruption ??
       - widgets:
-         - menu shortcuts
          - input (with forms ?)
          - selectable lists
 

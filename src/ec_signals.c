@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.21 2003/11/18 16:04:04 alor Exp $
+    $Id: ec_signals.c,v 1.22 2003/11/23 22:22:54 alor Exp $
 */
 
 #include <ec.h>
@@ -110,8 +110,7 @@ static RETSIGTYPE signal_SEGV(int sig)
    fprintf (stderr, "  6) mail us the output of gdb and the error.tar.gz\n");
    fprintf (stderr, "============================================================================\n");
    
-   fprintf (stderr, EC_COLOR_CYAN"\nOverriding any 'ulimit -c 0'... (RLIMIT_CORE = RLIM_INFINITY)\n\n"EC_COLOR_END
-                    EC_COLOR_BOLD" Core dumping... (use the 'core' file for gdb analysis)\n\n"EC_COLOR_END);
+   fprintf (stderr, EC_COLOR_CYAN"\n Core dumping... (use the 'core' file for gdb analysis)\n\n"EC_COLOR_END);
    
    /* force the coredump */
    

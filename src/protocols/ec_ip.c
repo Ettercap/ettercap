@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.8 2003/04/15 07:57:37 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_ip.c,v 1.9 2003/04/25 12:22:58 alor Exp $
 */
 
 #include <ec.h>
@@ -126,7 +126,7 @@ FUNC_DECODER(decode_ip)
       /* initialize passive fingerprint */
       fingerprint_default(PACKET->PASSIVE.fingerprint);
   
-      /* collect ifos for passive fingerprint */
+      /* collect infos for passive fingerprint */
       fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_TTL, ip->ttl);
       fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_DF, ntohs(ip->frag_off) & IP_DF);
       fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_LT, ip->ihl * 4);

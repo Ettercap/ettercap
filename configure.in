@@ -97,6 +97,7 @@ case "$host_os" in
    AM_CONDITIONAL(DARWIN, true)
    OS="DARWIN"
    PTHREADLIB="-lpthread"
+   PLUG_LDFLAGS="-no-undefined"
    ;;
 *solaris*)
    AC_DEFINE(OS_SOLARIS)
@@ -111,6 +112,7 @@ case "$host_os" in
    AM_CONDITIONAL(CYGWIN, true)
    OS="CYGWIN $ac_cv_ec_windows_version"
    PTHREADLIB="-lpthread"
+   PLUG_LDFLAGS="-no-undefined"
    ;;
 *)
    echo
@@ -120,6 +122,7 @@ case "$host_os" in
    ;;
 esac
 
+AC_SUBST(PLUG_LDFLAGS)
 
 dnl ======================
 dnl   Initialize prefix.
@@ -218,15 +221,25 @@ dnl ===============================
 dnl   Check for non standard libs
 dnl ===============================
 
-AC_CHECK_FUNCS([strlcpy], , AC_LIBOBJ(missing/strlcpy) )
-AC_CHECK_FUNCS([strlcat], , AC_LIBOBJ(missing/strlcat) )
-AC_CHECK_FUNCS([strsep], , AC_LIBOBJ(missing/strsep) )
-AC_CHECK_FUNCS([memmem], , AC_LIBOBJ(missing/memmem) )
-AC_CHECK_FUNCS([memcmp], , AC_LIBOBJ(missing/memcmp) )
-AC_CHECK_FUNCS([getopt_long], , AC_LIBOBJ(missing/getopt) AC_LIBOBJ(missing/getopt_long) )
-AC_CHECK_FUNCS([strcasestr], , AC_LIBOBJ(missing/strcasestr) )
-AC_CHECK_FUNCS([inet_aton], , AC_LIBOBJ(missing/inet_aton) )
-AC_CHECK_FUNCS([scandir], , AC_LIBOBJ(missing/scandir) )
+AM_CONDITIONAL(MISSING_STRLCPY, false)
+AM_CONDITIONAL(MISSING_STRLCAT, false)
+AM_CONDITIONAL(MISSING_STRSEP, false)
+AM_CONDITIONAL(MISSING_MEMMEM, false)
+AM_CONDITIONAL(MISSING_MEMCMP, false)
+AM_CONDITIONAL(MISSING_GETOPT_LONG, false)
+AM_CONDITIONAL(MISSING_STRCASESTR, false)
+AM_CONDITIONAL(MISSING_INET_ATON, false)
+AM_CONDITIONAL(MISSING_SCANDIR, false)
+
+AC_CHECK_FUNCS([strlcpy], , AC_LIBOBJ(missing/strlcpy) AM_CONDITIONAL(MISSING_STRLCPY, true) )
+AC_CHECK_FUNCS([strlcat], , AC_LIBOBJ(missing/strlcat) AM_CONDITIONAL(MISSING_STRLCAT, true) )
+AC_CHECK_FUNCS([strsep], , AC_LIBOBJ(missing/strsep) AM_CONDITIONAL(MISSING_STRSEP, true) )
+AC_CHECK_FUNCS([memmem], , AC_LIBOBJ(missing/memmem) AM_CONDITIONAL(MISSING_MEMMEM, true) )
+AC_CHECK_FUNCS([memcmp], , AC_LIBOBJ(missing/memcmp) AM_CONDITIONAL(MISSING_MEMCMP, true) )
+AC_CHECK_FUNCS([getopt_long], , AC_LIBOBJ(missing/getopt) AM_CONDITIONAL(MISSING_GETOPT_LONG, true) )
+AC_CHECK_FUNCS([strcasestr], , AC_LIBOBJ(missing/strcasestr) AM_CONDITIONAL(MISSING_STRCASESTR, true) )
+AC_CHECK_FUNCS([inet_aton], , AC_LIBOBJ(missing/inet_aton) AM_CONDITIONAL(MISSING_INET_ATON, true) )
+AC_CHECK_FUNCS([scandir], , AC_LIBOBJ(missing/scandir) AM_CONDITIONAL(MISSING_SCANDIR, true) )
 
 
 dnl =======================================
@@ -399,6 +412,7 @@ LDFLAGS="${OLDLDFLAGS}"
 
 dnl  ncurses
 AH_TEMPLATE(HAVE_NCURSES, [ncurses support])
+AM_CONDITIONAL(NCURSES, false)
 
 ac_cv_ec_libncurses=default
 
@@ -438,19 +452,21 @@ AC_ARG_WITH(libncurses,
      NCURSLIB="-lncurses"
      AC_DEFINE(HAVE_NCURSES, 1)
      AM_CONDITIONAL(NCURSES, true)
+     AC_MSG_RESULT(yes)
   elif test -f /usr/include/ncurses.h; then
      NCURSLIB="-lncurses"
      AC_DEFINE(HAVE_NCURSES, 1)
      AM_CONDITIONAL(NCURSES, true)
+     AC_MSG_RESULT(yes)
   else
      AC_MSG_RESULT(no)
-  fi
-  AC_MSG_RESULT(yes) ]
+  fi]
 )
 
 
 dnl Checks for openssl
 
+AH_TEMPLATE(HAVE_OPENSSL, [openssl executable path])
 ac_cv_ec_libssl=default
 
 AC_MSG_CHECKING(for openssl)
@@ -467,6 +483,7 @@ AC_ARG_WITH(openssl,
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/include"
         SSLLIB="-L$withval -lcrypto"
+        AC_DEFINE(HAVE_OPENSSL, 1)
         ac_cv_ec_libssl=$withval
      elif test -f $withval/ssl/include/openssl/ssl.h -a \
                -f $withval/ssl/lib/libcrypto.a; then
@@ -474,6 +491,7 @@ AC_ARG_WITH(openssl,
         if cd $withval; then withval=`pwd`; cd $owd; fi
         SSLINC="-I$withval/ssl/include"
         SSLLIB="-L$withval/ssl/lib -lcrypto"
+        AC_DEFINE(HAVE_OPENSSL, 1)
         ac_cv_ec_libssl=$withval
      else
         AC_ERROR(ssl.h or libssl.a not found in $withval)
@@ -482,11 +500,11 @@ AC_ARG_WITH(openssl,
   esac ],
 [ if test -f /usr/include/openssl/ssl.h; then
      SSLLIB="-lcrypto"
+     AC_DEFINE(HAVE_OPENSSL, 1)
+     AC_MSG_RESULT(yes)
   else
      AC_MSG_RESULT(no)
-     AC_ERROR(openssl not found)
-  fi
-  AC_MSG_RESULT(yes) ]
+  fi]
 )
 
 AH_TEMPLATE(OPENSSL_PATH, [openssl executable path])

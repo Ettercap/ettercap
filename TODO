@@ -14,6 +14,9 @@
       - LTDL_SHLIB_EXT
       - make test with dlopen-test
 
+   + SOLARIS PORTING
+      - checksum (WORD_BIGENDIAN on intel ???)
+
    + ARP SCAN
 
    + ARP POISON ENGINE

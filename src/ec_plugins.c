@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.7 2003/04/14 21:05:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.8 2003/04/25 12:22:57 alor Exp $
 */
 
 #include <ec.h>
@@ -25,6 +25,11 @@
 #include <ec_parser.h>
 
 #include <dirent.h>
+
+#ifndef HAVE_SCANDIR
+   #include <missing/scandir.h>
+#endif
+
 //#include <ltdl.h>
 #include <dlfcn.h>
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_checksum.c,v 1.1 2003/04/14 21:05:10 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_checksum.c,v 1.2 2003/04/25 12:22:57 alor Exp $
 */
 
 #include <ec.h>
@@ -38,16 +38,16 @@ u_int32 CRC_checksum(u_char *buf, size_t len);
 u_int16 L3_checksum(struct packet_object *po)
 {
    u_int32 csum = 0;
-   int size = po->L3.len;
+   int nleft = po->L3.len;
    u_int16 *buf = (u_int16 *)po->L3.header;
 
-   while(size > 1) {
+   while(nleft > 1) {
       csum += *buf++;
-      size -= sizeof(u_int16);
+      nleft -= sizeof(u_int16);
    }
 
-   if (size != 0) 
-      csum += *(u_char *)buf;
+   if (nleft == 1) 
+      csum += htons(*(u_char *)buf<<8);
 
    csum = (csum >> 16) + (csum & 0xffff);
    csum += (csum >> 16);
@@ -63,14 +63,14 @@ u_int16 L3_checksum(struct packet_object *po)
 u_int16 L4_checksum(struct packet_object *po)
 {
    u_int32 csum = 0;
-   u_int16 size = po->L4.len + po->DATA.len;
-   u_int16 len = size;
+   u_int16 nleft = po->L4.len + po->DATA.len;
+   u_int16 len = nleft;
    u_int16 *buf = (u_int16 *)po->L4.header;
 
    /* calculate the checksum */
-   while( size > 1 ) {
+   while( nleft > 1 ) {
       csum += *buf++;
-      size -= sizeof(u_int16);
+      nleft -= sizeof(u_int16);
    }
 
    /* XXX - only IPv4 supporte for now... */
@@ -86,7 +86,7 @@ u_int16 L4_checksum(struct packet_object *po)
    csum += htons(len);
 
    /* the final adjustment */
-   if (size != 0) 
+   if (nleft != 0) 
       csum += *(u_char *)buf;
 
    csum = (csum >> 16) + (csum & 0xffff);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.15 2003/04/14 21:05:21 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.16 2003/04/25 12:22:57 alor Exp $
 */
 
 #include <ec.h>
@@ -32,6 +32,7 @@
 #include <ec_plugins.h>
 #include <ec_fingerprint.h>
 #include <ec_manuf.h>
+#include <ec_scan.h>
 #include <ec_ui.h>
 
 /* global vars */
@@ -110,6 +111,9 @@ int main(int argc, char *argv[])
 
    /* load the tcp-fingerprints */
    fingerprint_init();
+  
+   /* build the list of active hosts */
+   build_hosts_list();
    
 /**** INITIALIZATION PHASE TERMINATED ****/
    

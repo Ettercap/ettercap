@@ -39,6 +39,9 @@
 #ifndef HAVE_STRLCPY 
    #include <missing/strlcpy.h>
 #endif
+#ifndef HAVE_STRSEP 
+   #include <missing/strsep.h>
+#endif
 
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 

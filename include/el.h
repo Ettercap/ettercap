@@ -23,6 +23,10 @@
 #include <time.h>
 #include <missing/queue.h>
 
+#ifndef HAVE_STRSEP
+   #include <missing/strsep.h>
+#endif
+
 #include <ec_stdint.h>
 #include <ec_error.h>
 #include <ec_log.h>

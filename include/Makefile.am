@@ -22,6 +22,7 @@ noinst_HEADERS = ec.h \
                  ec_sniff_arp.h \
                  ec_inet.h \
                  ec_checksum.h \
+                 ec_scan.h \
                  ec_hook.h \
                  ec_file.h \
                  ec_log.h \

@@ -20,3 +20,6 @@
    + CONNTRACK
       - it should not segfault ;)
       - the hash table is correctly cleaned ?
+
+   + PROFILES
+      - convert to hosts list

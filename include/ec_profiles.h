@@ -64,6 +64,7 @@ struct host_profile {
 extern void profile_purge_local(void);
 extern void profile_purge_remote(void);
 extern void profile_purge_all(void);
+extern int profile_convert_to_hostlist(void);
 
 #endif
 

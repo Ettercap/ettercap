@@ -30,8 +30,6 @@ this is the unofficial and floating in time roadmap:
 
 Sep 2003:
 
-   - convert passive list to hostlist
-
    
    + FILTERING ENGINE
       - don't filter in unoffensive mode

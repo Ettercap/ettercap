@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.14 2003/08/20 16:00:53 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.15 2003/09/02 14:51:01 alor Exp $
 */
 
 #include <ec.h>
@@ -34,25 +34,27 @@
 /* globals */
 
 /* used to create the random list */
-SLIST_HEAD (, ip_list) ip_list_head;
-struct ip_list **rand_array;
+static SLIST_HEAD (, ip_list) ip_list_head;
+static struct ip_list **rand_array;
 
 /* protos */
 
 void build_hosts_list(void);
-void scan_netmask(void);
-void scan_targets(void);
+void del_hosts_list(void);
 
-void load_hosts(char *filename);
-void save_hosts(char *filename);
+static void scan_netmask(void);
+static void scan_targets(void);
+
+static void load_hosts(char *filename);
+static void save_hosts(char *filename);
 
 void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name);
 
-void random_list(struct ip_list *e, int max);
+static void random_list(struct ip_list *e, int max);
 
-void get_response(struct packet_object *po);
-EC_THREAD_FUNC(capture_scan);
-void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
+static void get_response(struct packet_object *po);
+static EC_THREAD_FUNC(capture_scan);
+static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 
 /*******************************************/
 
@@ -164,10 +166,28 @@ void build_hosts_list(void)
 
 
 /*
+ * delete the hosts list
+ */
+void del_hosts_list(void)
+{
+   struct hosts_list *hl, *old = NULL;
+   
+   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+      SAFE_FREE(old);
+      SAFE_FREE(hl->hostname);
+      LIST_REMOVE(hl, next);
+      old = hl;
+   }
+
+   SAFE_FREE(old);
+}
+
+
+/*
  * capture the packets and call the HOOK POINT
  */
 
-EC_THREAD_FUNC(capture_scan)
+static EC_THREAD_FUNC(capture_scan)
 {
    DEBUG_MSG("capture_scan");
 
@@ -178,11 +198,11 @@ EC_THREAD_FUNC(capture_scan)
    return NULL;
 }
 
+
 /* 
  * parses the POs and executes the HOOK POINTs
  */
-
-void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
+static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
 {
    struct packet_object po;
    int len;
@@ -224,11 +244,11 @@ void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *
    return;
 }
 
+
 /*
  * receives the ARP packets
  */
-
-void get_response(struct packet_object *po)
+static void get_response(struct packet_object *po)
 {
    add_host(&po->L3.src, po->L2.src, NULL);
 }
@@ -237,7 +257,7 @@ void get_response(struct packet_object *po)
 /* 
  * scan the netmask to find all hosts 
  */
-void scan_netmask(void)
+static void scan_netmask(void)
 {
    u_int32 netmask, current, myip;
    int nhosts, i;
@@ -297,11 +317,11 @@ void scan_netmask(void)
    }  
 }
 
+
 /*
  * scan only the target hosts
  */
-
-void scan_targets(void)
+static void scan_targets(void)
 {
    int nhosts = 0, found, n = 1;
    struct ip_list *e, *i, *m; 
@@ -385,8 +405,7 @@ void scan_targets(void)
 /*
  * load the hosts list from this file
  */
-
-void load_hosts(char *filename)
+static void load_hosts(char *filename)
 {
    FILE *hf;
    int nhosts;
@@ -429,10 +448,11 @@ void load_hosts(char *filename)
    fclose(hf);
 }
 
+
 /*
  * save the host list to this file 
  */
-void save_hosts(char *filename)
+static void save_hosts(char *filename)
 {
    FILE *hf;
    int nhosts = 0;
@@ -465,11 +485,11 @@ void save_hosts(char *filename)
    
 }
 
+
 /*
  * add an host to the list 
  * order the list while inserting the elements
  */
-
 void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name)
 {
    struct hosts_list *hl, *h;
@@ -510,8 +530,7 @@ void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name)
  * insert the element in the list randomly.
  * 'max' is the number of elements in the list
  */
-
-void random_list(struct ip_list *e, int max)
+static void random_list(struct ip_list *e, int max)
 {
    int rnd;
    

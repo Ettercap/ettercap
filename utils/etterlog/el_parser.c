@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.13 2003/04/30 16:50:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.14 2003/07/08 21:31:19 alor Exp $
 */
 
 
@@ -40,7 +40,6 @@ static void el_usage(void);
 void parse_options(int argc, char **argv);
 
 void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t );
-int match_pattern(const char *s, const char *pattern);
 
 //-----------------------------------
 
@@ -320,46 +319,6 @@ void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t )
   
    SAFE_FREE(str);
 }
-
-/* Pattern matching code from OpenSSH. */
-int match_pattern(const char *s, const char *pattern)
-{
-   for (;;) {
-      if (!*pattern) 
-         return (!*s);
-
-      if (*pattern == '*') {
-         pattern++;
-         
-         if (*pattern != '?' && *pattern != '*') {
-            
-            for (; *s; s++) {
-               if (*s == *pattern && match_pattern(s + 1, pattern + 1))
-                  return (1);
-            }
-            return (0);
-         }
-         
-         for (; *s; s++) {
-            if (match_pattern(s, pattern))
-               return (1);
-         }
-         return (0);
-      }
-      
-      if (!*s) 
-         return (0);
-      
-      if (*pattern != '?' && *pattern != *s)
-         return (0);
-      
-      s++;
-      pattern++;
-   }
-   /* NOTREACHED */
-}
-
-
 
 
 /* EOF */

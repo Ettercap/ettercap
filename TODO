@@ -26,8 +26,9 @@
 >>> current developmet state 
 
    + DISSECTOR
-      - nntp authinfo 
       - x11 banner
+      - telnet & rlogin
+      - imap
 
    + TOP HALF
       - connection tracking (with buffered conn)

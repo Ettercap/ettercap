@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ftp.c,v 1.6 2003/07/08 20:59:53 alor Exp $
+    $Id: ec_ftp.c,v 1.7 2003/07/08 21:31:18 alor Exp $
 */
 
 #include <ec.h>
@@ -56,11 +56,13 @@ FUNC_DECODER(dissector_ftp)
    /* check if it is the first packet sent by the server */
    IF_FIRST_PACKET_FROM_SERVER("ftp", s, ident) {
             
+      DEBUG_MSG("\tdissector_ftp BANNER");
       /*
        * get the banner 
-       * ptr + 4 to skip the initial 200 response
+       * ptr + 4 to skip the initial 220 response
        */
-      PACKET->DISSECTOR.banner = strdup(ptr + 4);
+      if (!strncmp(ptr, "220", 3))
+         PACKET->DISSECTOR.banner = strdup(ptr + 4);
      
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    

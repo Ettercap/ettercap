@@ -23,6 +23,7 @@ etterlog_SOURCES = el_main.c \
                    $(top_srcdir)/src/ec_file.c \
                    $(top_srcdir)/src/ec_inet.c \
                    $(top_srcdir)/src/ec_passive.c \
+                   $(top_srcdir)/src/ec_strings.c \
                    $(top_srcdir)/src/ec_format.c
                    
 if MISSING_STRSEP

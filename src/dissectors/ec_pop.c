@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.15 2003/07/08 20:59:53 alor Exp $
+    $Id: ec_pop.c,v 1.16 2003/07/08 21:31:18 alor Exp $
 */
 
 /*
@@ -28,7 +28,7 @@
  * we currently support:
  *    - USER & PASS
  *    - APOP
- *    - AUTH LOGIN
+ *    - AUTH LOGIN (SASL)
  */
 
 #include <ec.h>
@@ -92,16 +92,20 @@ FUNC_DECODER(dissector_pop)
                /* fake the msgid if it does not exist */
                s->data = strdup("");
             }
-         } 
+         } else if (!strcmp(s->data, "AUTH")) {
+            /* 
+             * the client has requested AUTH LOGIN, 
+             * check if the server support it 
+             * else delete the session
+             */
+            if (strstr(ptr, "-ERR"))
+               dissect_wipe_session(PACKET);
+         }
       }                         
       SAFE_FREE(ident);         
       return NULL;              
    }  
    
-   /* skip messages coming from the server */
-   if (dissect_on_port("pop", ntohs(PACKET->L4.src)) == ESUCCESS)
-      return NULL;
-
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;

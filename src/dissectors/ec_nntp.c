@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_nntp.c,v 1.2 2003/07/08 20:59:53 alor Exp $
+    $Id: ec_nntp.c,v 1.3 2003/07/08 21:31:18 alor Exp $
 */
 
 /*
@@ -62,12 +62,14 @@ FUNC_DECODER(dissector_nntp)
    
    /* check if it is the first packet sent by the server */
    IF_FIRST_PACKET_FROM_SERVER("nntp", s, ident) {
-            
+          
+      DEBUG_MSG("\tdissector_nntp BANNER");
       /*
        * get the banner 
        * ptr + 4 to skip the initial 200 response
        */
-      PACKET->DISSECTOR.banner = strdup(ptr + 4);
+      if (!strncmp(ptr, "200", 3))
+         PACKET->DISSECTOR.banner = strdup(ptr + 4);
             
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
    

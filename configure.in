@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.93 2004/02/03 15:16:31 lordnaga Exp $
+dnl    $Id: configure.in,v 1.94 2004/02/08 11:41:12 alor Exp $
 dnl
 
 AC_INIT
@@ -425,6 +425,7 @@ AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$PCAPLIB"
+AC_CHECK_LIB(pcap, pcap_lib_version,, AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
 LDFLAGS="${OLDLDFLAGS}"
 
 dnl ---------

@@ -35,13 +35,6 @@ this is the unofficial and floating in time roadmap:
       - regex on the content
       - context sensitive help
 
-   + INJECTION 
-      - it is done by the ui looking the sessions (locking them)
-      - reset modified connection (on user request)
-
-   + CONNECTION
-      - kill a connection
-
    + DISSECTORS
       - convert all the old dissectors:
          - https (over the ssl one)

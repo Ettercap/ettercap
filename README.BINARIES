@@ -22,7 +22,7 @@ use one of theese packages downloaded from Internet, redirect your bug report
 to /dev/null. The authors will reply to bug reports and will be happy to find 
 a solution only for hand compiled executables. Every linux distribution, but
 even *BSD or Windows is different from another. What is compiled on my machine
-may not work on your because of a different version of a system library. To
+may not work on yours because of a different version of a system library. To
 avoid this type of missed dependencies, we will not distribute any binary for
 any operating system. Most of the popular distributions (Debian, RedHat,
 FreeBSD, OpenBSD, ecc) provide the binary packages for ettercap. Use these

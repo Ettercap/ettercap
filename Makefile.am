@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.15 2003/10/10 21:16:16 alor Exp $
+# $Id: Makefile.am,v 1.16 2003/11/17 10:58:16 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -16,6 +16,7 @@ EXTRA_DIST = AUTHORS \
              LICENSE \
              README \
              README.BINARIES \
+             README.CVS \
              README.PLATFORMS \
              THANKS \
              TODO \

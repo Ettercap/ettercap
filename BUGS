@@ -32,10 +32,16 @@ informations:
 
    # cat config.log
 
-3) make a tarball with all the needed infos
+3) the entire output from 'make'
+
+   # make 1> make_output 2> make_error 
+
+4) make a tarball with all the needed infos
    
    # tar zxvf compile_error.tar.gz os.log \
-                                   config.log
+                                   config.log \
+                                   make_output \
+                                   make_error
 
 ==============================================================================
                            R U N T I M E    B U G S

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.7 2003/11/10 16:11:19 alor Exp $
+# $Id: Makefile.am,v 1.8 2003/11/17 10:58:23 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -17,6 +17,8 @@ libwdg_a_SOURCES = wdg.c \
                    wdg_percentage.c \
                    wdg_scroll.c \
                    wdg_window.c
+                   
+EXTRA_DIST = README
 
 # vim:ts=4:noexpandtab
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.31 2004/03/28 15:20:26 alor Exp $
+    $Id: ec_sslwrap.c,v 1.32 2004/04/02 11:33:59 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -647,6 +647,8 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
 
    po->len = len;
    po->DATA.len = len;
+   po->L4.flags |= TH_PSH;
+
    /* NULL terminate the data buffer */
    po->DATA.data[po->DATA.len] = 0;
  
@@ -699,7 +701,11 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       /* XXX - does some OS use partial writes? */
       if (len != packet_len && !not_written )
          FATAL_ERROR("SSL-Wrapper partial writes: to be implemented...");
-	 
+
+      /* XXX - Set a proper sleep time */
+      if (not_written)
+         usleep(1000);
+	 	 
    } while (not_written);
          
    return ESUCCESS;
@@ -727,7 +733,6 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    
    po->L4.src = ae->port[direction];
    po->L4.dst = ae->port[!direction];
-   po->L4.flags |= TH_PSH;
    
    po->flags |= PO_FROMSSL;
       

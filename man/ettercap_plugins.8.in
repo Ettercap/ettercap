@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.20 2003/12/16 17:15:07 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.21 2003/12/18 10:57:35 lordnaga Exp $
 .\"
 .de Sp
 .if n .sp
@@ -215,6 +215,19 @@ in the targets' lists, it replies with attacker's MAC address.
 ettercap -TQzP reply_arp /192.168.0.1/
 .br
 ettercap -TQzP reply_arp //
+
+.TP 
+.B rand_flood
+.Sp
+Floods the LAN with random MAC addresses. Some switches will fail open in 
+repeating mode, facilitating sniffing. The delay between each packet is
+based on the port_steal_send_delay value in etter.conf.
+.br
+It is useful only on ethernet switches.
+.Sp
+.I example :
+.Sp
+ettercap -TP rand_flood
 
 .TP 
 .B scan_poisoner

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.18 2003/12/16 17:15:07 lordnaga Exp $
+# $Id: Makefile.am,v 1.19 2003/12/18 10:57:35 lordnaga Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -16,6 +16,7 @@ SUBDIRS =   chk_poison \
             pptp_clear \
             pptp_pap \
             pptp_reneg \
+            rand_flood \
             reply_arp \
             scan_poisoner \
             search_promisc \

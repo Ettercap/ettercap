@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.52 2004/03/10 20:49:12 alor Exp $
+    $Id: ec_decode.c,v 1.53 2004/03/19 13:56:16 alor Exp $
 */
 
 #include <ec.h>
@@ -232,6 +232,10 @@ FUNC_DECODER(decode_data)
       
    CANCELLATION_POINT();
 
+   /* this packet must not be passet to dissectors */
+   if ( po->flags & PO_DONT_DISSECT)
+      return NULL;
+   
    /* reset the flag PO_IGNORE if the packet should be processed */
    EXECUTE(GBL_SNIFF->interesting, po);
 

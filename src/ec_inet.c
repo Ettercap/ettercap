@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.17 2003/10/27 21:25:44 alor Exp $
+    $Id: ec_inet.c,v 1.18 2003/12/01 16:33:40 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -31,6 +31,7 @@
 /* prototypes */
 int ip_addr_init(struct ip_addr *sa, int type, char *addr);
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
+int ip_addr_null(struct ip_addr *sa);
 
 char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 char *mac_addr_ntoa(u_char *mac, char *dst);
@@ -62,6 +63,16 @@ int ip_addr_init(struct ip_addr *sa, int type, char *addr)
    
    return ESUCCESS;
 };
+
+
+int ip_addr_null(struct ip_addr *sa)
+{
+   if (sa->type == AF_INET || sa->type == AF_INET6) 
+      return 0;
+ 
+   return 1;
+}
+
 
 /* 
  * compare two ip_addr structure.

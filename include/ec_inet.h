@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.15 2003/10/28 21:10:55 alor Exp $ */
+/* $Id: ec_inet.h,v 1.16 2003/12/01 16:33:32 lordnaga Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -38,6 +38,7 @@ struct ip_addr {
 
 extern int ip_addr_init(struct ip_addr *sa, int type, char *addr);
 extern int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
+extern int ip_addr_null(struct ip_addr *sa);
 
 extern char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 extern char *mac_addr_ntoa(u_char *mac, char *dst);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.13 2003/07/18 21:08:11 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_plugins.c,v 1.14 2003/07/18 21:12:39 alor Exp $
 */
 
 #include <ec.h>
@@ -30,7 +30,9 @@
    #include <missing/scandir.h>
 #endif
 
-#include <ltdl.h>
+#ifdef HAVE_LTDL
+   #include <ltdl.h>
+#endif
 #ifdef HAVE_DLFCN_H
    #include <dlfcn.h>
 #endif
@@ -107,6 +109,8 @@ int plugin_load_single(char *path, char *name)
     * function
     */
    return plugin_load(handle);
+#else
+   return -EINVALID;
 #endif
 }
 
@@ -205,6 +209,8 @@ int plugin_register(void *handle, struct plugin_ops *ops)
    SLIST_INSERT_HEAD(&plugin_head, p, next);
 
    return ESUCCESS;
+#else
+   return -EINVALID;
 #endif
 }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_scroll.c,v 1.3 2003/11/02 20:36:44 alor Exp $
+    $Id: wdg_scroll.c,v 1.4 2003/12/27 18:49:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -61,6 +61,8 @@ static void wdg_mouse_scroll(struct wdg_object *wo, int s);
  */
 void wdg_create_scroll(struct wdg_object *wo)
 {
+   WDG_DEBUG_MSG("wdg_create_scroll");
+   
    /* set the callbacks */
    wo->destroy = wdg_scroll_destroy;
    wo->resize = wdg_scroll_resize;
@@ -78,6 +80,8 @@ void wdg_create_scroll(struct wdg_object *wo)
 static int wdg_scroll_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_scroll, ww);
+   
+   WDG_DEBUG_MSG("wdg_scroll_destroy");
 
    /* erase the window */
    wbkgd(ww->win, COLOR_PAIR(wo->screen_color));
@@ -115,6 +119,8 @@ static int wdg_scroll_redraw(struct wdg_object *wo)
    size_t l = wdg_get_nlines(wo);
    size_t x = wdg_get_begin_x(wo);
    size_t y = wdg_get_begin_y(wo);
+   
+   WDG_DEBUG_MSG("wdg_scroll_redraw");
  
    /* the window already exist */
    if (ww->win) {
@@ -159,7 +165,7 @@ static int wdg_scroll_redraw(struct wdg_object *wo)
       
       /* set the window color */
       wbkgd(ww->sub, COLOR_PAIR(wo->window_color));
-      redrawwin(ww->sub);
+      touchwin(ww->sub);
 
       /* move to the bottom of the pad */
       wmove(ww->sub, ww->y_scroll, 0);
@@ -328,6 +334,8 @@ void wdg_scroll_print(wdg_t *wo, char *fmt, ...)
    size_t x = wdg_get_begin_x(wo);
    size_t y = wdg_get_begin_y(wo);
    va_list ap;
+   
+   WDG_DEBUG_MSG("wdg_scroll_print");
 
    /* move to the bottom of the pad */
    wdg_set_scroll(wo, ww->y_max - l + 1);
@@ -349,6 +357,8 @@ void wdg_scroll_set_lines(wdg_t *wo, size_t lines)
    size_t c = wdg_get_ncols(wo);
    size_t l = wdg_get_nlines(wo);
    size_t oldlines = ww->y_max;
+   
+   WDG_DEBUG_MSG("wdg_scroll_set_lines");
   
    /* resize the pad */
    wresize(ww->sub, lines, c - 2);
@@ -374,7 +384,7 @@ static void wdg_set_scroll(struct wdg_object *wo, int s)
    int min = 0;
    int max = ww->y_max - l + 1;
    size_t height, vpos;
-
+   
    /* don't go above max and below min */
    if (s < min) s = min;
    if (s > max) s = max;

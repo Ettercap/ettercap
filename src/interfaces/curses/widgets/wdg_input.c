@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_input.c,v 1.4 2003/12/13 18:41:11 alor Exp $
+    $Id: wdg_input.c,v 1.5 2003/12/27 18:49:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -70,6 +70,8 @@ void wdg_input_set_callback(wdg_t *wo, void (*callback)(void));
  */
 void wdg_create_input(struct wdg_object *wo)
 {
+   WDG_DEBUG_MSG("wdg_create_input");
+   
    /* set the callbacks */
    wo->destroy = wdg_input_destroy;
    wo->resize = wdg_input_resize;
@@ -88,6 +90,8 @@ static int wdg_input_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_input_handle, ww);
    size_t i = 0;
+   
+   WDG_DEBUG_MSG("wdg_input_destroy");
 
    /* erase the window */
    wbkgd(ww->win, COLOR_PAIR(wo->screen_color));
@@ -132,6 +136,8 @@ static int wdg_input_redraw(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_input_handle, ww);
    size_t c, l, x, y;
+   
+   WDG_DEBUG_MSG("wdg_input_redraw");
    
    /* center the window on the screen */
    wo->x1 = (current_screen.cols - (ww->x + 2)) / 2;
@@ -520,6 +526,8 @@ static void wdg_input_consolidate(struct wdg_object *wo)
    char *buf;
    int i = 0, j;
    void (*callback)(void);
+   
+   WDG_DEBUG_MSG("wdg_input_consolidate");
    
    while(ww->fields[i] != NULL) {
       /* get the buffer */

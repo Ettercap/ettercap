@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_list.c,v 1.3 2003/12/27 12:10:36 alor Exp $
+    $Id: wdg_list.c,v 1.4 2003/12/27 18:49:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -75,6 +75,8 @@ void wdg_list_refresh(wdg_t *wo);
  */
 void wdg_create_list(struct wdg_object *wo)
 {
+   WDG_DEBUG_MSG("wdg_create_list");
+   
    /* set the callbacks */
    wo->destroy = wdg_list_destroy;
    wo->resize = wdg_list_resize;
@@ -94,6 +96,8 @@ static int wdg_list_destroy(struct wdg_object *wo)
    WDG_WO_EXT(struct wdg_list_handle, ww);
    struct wdg_list_call *c;
    int i = 0;
+   
+   WDG_DEBUG_MSG("wdg_list_destroy");
 
    /* erase the window */
    wdg_list_menu_destroy(wo);
@@ -143,6 +147,8 @@ static int wdg_list_redraw(struct wdg_object *wo)
    size_t l = wdg_get_nlines(wo);
    size_t x = wdg_get_begin_x(wo);
    size_t y = wdg_get_begin_y(wo);
+   
+   WDG_DEBUG_MSG("wdg_list_redraw");
  
    /* the window already exist */
    if (ww->win) {
@@ -490,9 +496,12 @@ static int wdg_list_callback(struct wdg_object *wo, int key)
    SLIST_FOREACH(c, &ww->callbacks, next) {
       if (c->key == key) {
          void *value;
+         
+         WDG_DEBUG_MSG("wdg_list_callback");
+         
          /* retrieve the value from the current item */
          value = item_userptr(current_item(ww->menu));
-
+         
          /* execute the callback */
          WDG_EXECUTE(c->callback, value);
          
@@ -509,6 +518,8 @@ static int wdg_list_callback(struct wdg_object *wo, int key)
 void wdg_list_refresh(wdg_t *wo)
 {
    WDG_WO_EXT(struct wdg_list_handle, ww);
+   
+   WDG_DEBUG_MSG("wdg_list_refresh");
 
    /* remember the position */
    ww->current = current_item(ww->menu);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_percentage.c,v 1.2 2003/11/30 12:02:31 alor Exp $
+    $Id: wdg_percentage.c,v 1.3 2003/12/27 18:49:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -55,6 +55,8 @@ void wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
  */
 void wdg_create_percentage(struct wdg_object *wo)
 {
+   WDG_DEBUG_MSG("wdg_create_percentage");
+   
    /* set the callbacks */
    wo->destroy = wdg_percentage_destroy;
    wo->resize = wdg_percentage_resize;
@@ -72,6 +74,8 @@ void wdg_create_percentage(struct wdg_object *wo)
 static int wdg_percentage_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_percentage, ww);
+
+   WDG_DEBUG_MSG("wdg_percentage_destroy");
 
    /* erase the window */
    wbkgd(ww->win, COLOR_PAIR(wo->screen_color));
@@ -108,6 +112,8 @@ static int wdg_percentage_redraw(struct wdg_object *wo)
    WDG_WO_EXT(struct wdg_percentage, ww);
    size_t c, l, x, y;
    size_t cols;
+   
+   WDG_DEBUG_MSG("wdg_percentage_redraw");
 
    /* calculate the dimension and position */
    cols = strlen(wo->title) + 2;

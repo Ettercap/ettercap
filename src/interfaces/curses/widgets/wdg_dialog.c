@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dialog.c,v 1.6 2003/12/17 22:04:15 alor Exp $
+    $Id: wdg_dialog.c,v 1.7 2003/12/27 18:49:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -73,6 +73,8 @@ void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(void));
 void wdg_create_dialog(struct wdg_object *wo)
 {
    struct wdg_dialog *ww;
+
+   WDG_DEBUG_MSG("wdg_create_dialog");
    
    /* set the callbacks */
    wo->destroy = wdg_dialog_destroy;
@@ -99,6 +101,8 @@ void wdg_create_dialog(struct wdg_object *wo)
 static int wdg_dialog_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_dialog, ww);
+   
+   WDG_DEBUG_MSG("wdg_dialog_destroy");
 
    /* erase the window */
    wbkgd(ww->win, COLOR_PAIR(wo->screen_color));
@@ -139,6 +143,8 @@ static int wdg_dialog_redraw(struct wdg_object *wo)
    WDG_WO_EXT(struct wdg_dialog, ww);
    size_t c, l, x, y;
    size_t lines, cols;
+   
+   WDG_DEBUG_MSG("wdg_dialog_redraw");
  
    /* calculate the dimension and position */
    wdg_dialog_get_size(wo, &lines, &cols);
@@ -526,6 +532,8 @@ static void wdg_dialog_callback(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_dialog, ww);
    void (*callback)(void);
+   
+   WDG_DEBUG_MSG("wdg_dialog_callback");
    
    callback = ww->buttons[ww->focus_button].callback;
    wdg_destroy_object(&wo);

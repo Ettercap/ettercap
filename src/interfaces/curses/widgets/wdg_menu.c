@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_menu.c,v 1.11 2003/12/13 18:41:11 alor Exp $
+    $Id: wdg_menu.c,v 1.12 2003/12/27 18:49:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -77,7 +77,9 @@ void wdg_menu_add(struct wdg_object *wo, struct wdg_menu *menu);
  * called to create the menu
  */
 void wdg_create_menu(struct wdg_object *wo)
-{
+{            
+   WDG_DEBUG_MSG("wdg_create_menu");
+
    /* set the callbacks */
    wo->destroy = wdg_menu_destroy;
    wo->resize = wdg_menu_resize;
@@ -96,6 +98,8 @@ static int wdg_menu_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_menu_handle, ww);
    struct wdg_menu_unit *mu, *old = NULL;
+   
+   WDG_DEBUG_MSG("wdg_menu_destroy");
 
    /* erase the window */
    wbkgd(ww->menu, COLOR_PAIR(wo->screen_color));
@@ -141,6 +145,8 @@ static int wdg_menu_resize(struct wdg_object *wo)
 static int wdg_menu_redraw(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_menu_handle, ww);
+   
+   WDG_DEBUG_MSG("wdg_menu_redraw");
  
    /* the window already exist */
    if (ww->menu) {
@@ -498,6 +504,8 @@ static void wdg_menu_open(struct wdg_object *wo)
    struct wdg_menu_unit *mu;
    size_t x = WDG_MENU_LEFT_PAD;
    int mrows, mcols;
+   
+   WDG_DEBUG_MSG("wdg_menu_open");
   
    WDG_BUG_IF(ww->focus_unit == NULL);
    
@@ -558,6 +566,8 @@ static void wdg_menu_open(struct wdg_object *wo)
 static void wdg_menu_close(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_menu_handle, ww);
+   
+   WDG_DEBUG_MSG("wdg_menu_close");
 
    WDG_BUG_IF(ww->focus_unit == NULL);
    
@@ -592,10 +602,14 @@ static int wdg_menu_shortcut(struct wdg_object *wo, int key)
 {
    WDG_WO_EXT(struct wdg_menu_handle, ww);
    struct wdg_menu_unit *mu;
+   
 
    /* search the shortcut in the menu unit list */
    TAILQ_FOREACH(mu, &ww->menu_list, next) {
       if (mu->shortcut == key) {
+         
+         WDG_DEBUG_MSG("wdg_menu_shortcut");
+         
          wdg_set_focus(wo);
          wdg_menu_close(wo);
          ww->focus_unit = mu;

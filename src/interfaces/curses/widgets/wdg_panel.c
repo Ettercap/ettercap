@@ -1,5 +1,5 @@
 /*
-    WDG -- window widget
+    WDG -- panel widget
 
     Copyright (C) ALoR
 
@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_panel.c,v 1.5 2003/11/27 21:37:07 alor Exp $
+    $Id: wdg_panel.c,v 1.6 2003/12/27 18:49:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -57,6 +57,8 @@ void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
  */
 void wdg_create_panel(struct wdg_object *wo)
 {
+   WDG_DEBUG_MSG("wdg_create_panel");
+   
    /* set the callbacks */
    wo->destroy = wdg_panel_destroy;
    wo->resize = wdg_panel_resize;
@@ -75,6 +77,8 @@ static int wdg_panel_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_panel, ww);
    WINDOW *win, *sub;
+   
+   WDG_DEBUG_MSG("wdg_panel_destroy");
 
    /* erase the window */
    wbkgd(W(ww->sub), COLOR_PAIR(wo->screen_color));
@@ -118,6 +122,8 @@ static int wdg_panel_redraw(struct wdg_object *wo)
    size_t l = wdg_get_nlines(wo);
    size_t x = wdg_get_begin_x(wo);
    size_t y = wdg_get_begin_y(wo);
+   
+   WDG_DEBUG_MSG("wdg_panel_redraw");
  
    /* the window already exist */
    if (ww->win) {
@@ -284,6 +290,8 @@ void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...)
 {
    WDG_WO_EXT(struct wdg_panel, ww);
    va_list ap;
+   
+   WDG_DEBUG_MSG("wdg_panel_print");
 
    /* move the pointer */
    wmove(W(ww->sub), y, x);

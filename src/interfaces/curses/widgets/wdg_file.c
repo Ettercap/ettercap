@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_file.c,v 1.10 2003/12/08 16:34:16 alor Exp $
+    $Id: wdg_file.c,v 1.11 2003/12/27 18:49:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -80,6 +80,8 @@ void wdg_create_file(struct wdg_object *wo)
 {
    struct wdg_file_handle *ww;
    
+   WDG_DEBUG_MSG("wdg_create_file");
+   
    /* set the callbacks */
    wo->destroy = wdg_file_destroy;
    wo->resize = wdg_file_resize;
@@ -108,6 +110,8 @@ void wdg_create_file(struct wdg_object *wo)
 static int wdg_file_destroy(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
+   
+   WDG_DEBUG_MSG("wdg_file_destroy");
 
    /* erase the window */
    wbkgd(ww->win, COLOR_PAIR(wo->screen_color));
@@ -145,6 +149,8 @@ static int wdg_file_redraw(struct wdg_object *wo)
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
    size_t c, l, x, y;
+   
+   WDG_DEBUG_MSG("wdg_file_redraw");
    
    /* default dimentions */
    wo->x1 = (current_screen.cols - ww->x) / 2;
@@ -550,6 +556,8 @@ static void wdg_file_callback(struct wdg_object *wo, char *path, char *file)
    WDG_WO_EXT(struct wdg_file_handle, ww);
    void (*callback)(char *, char *);
    char *p, *f;
+   
+   WDG_DEBUG_MSG("wdg_file_callback");
   
    /* save the values before destroying the object */
    callback = ww->callback;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.39 2004/05/05 08:36:14 alor Exp $
+    $Id: ec_sslwrap.c,v 1.40 2004/05/05 08:39:49 alor Exp $
 */
 
 #include <ec.h>
@@ -29,6 +29,7 @@
 #include <ec_sslwrap.h>
 #include <ec_file.h>
 #include <ec_strings.h>
+#include <ec_version.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>

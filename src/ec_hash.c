@@ -53,6 +53,7 @@
  * Share and Enjoy!	:-)
  */
 
+#include <ec.h>
 #include <ec_hash.h>
 
 #define FNV_32_PRIME ((Fnv32_t)0x01000193)

@@ -1,5 +1,5 @@
 
-/* $Id: ec_filter.h,v 1.20 2004/03/11 09:05:26 alor Exp $ */
+/* $Id: ec_filter.h,v 1.21 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H
@@ -124,9 +124,9 @@ struct regex_opt {
 
 /* exported functions */
 
-extern int filter_engine(struct filter_op *fop, struct packet_object *po);
-extern int filter_load_file(char *filename, struct filter_env *fenv);
-extern void filter_unload(struct filter_env *fenv);
+EC_API_EXTERN int filter_engine(struct filter_op *fop, struct packet_object *po);
+EC_API_EXTERN int filter_load_file(char *filename, struct filter_env *fenv);
+EC_API_EXTERN void filter_unload(struct filter_env *fenv);
 
 #endif
 

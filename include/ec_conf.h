@@ -1,5 +1,5 @@
 
-/* $Id: ec_conf.h,v 1.4 2004/03/26 17:22:17 alor Exp $ */
+/* $Id: ec_conf.h,v 1.5 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_CONF_H
 #define EC_CONF_H
@@ -18,8 +18,8 @@ struct conf_section {
 
 /* exported functions */
 
-extern void load_conf(void);
-extern void conf_dissectors(void);
+EC_API_EXTERN void load_conf(void);
+EC_API_EXTERN void conf_dissectors(void);
 
 #endif
 

@@ -1,5 +1,5 @@
 
-/* $Id: ec_plugins.h,v 1.14 2004/07/12 19:57:26 alor Exp $ */
+/* $Id: ec_plugins.h,v 1.15 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_PLUGINS_H
 #define EC_PLUGINS_H
@@ -27,17 +27,17 @@ EC_API_EXTERN int plugin_list_walk(int min, int max, void (*func)(char, struct p
 #define PLP_MIN   1
 #define PLP_MAX   INT_MAX
 
-extern int plugin_is_activated(char *name);
-extern int search_plugin(char *name);
+EC_API_EXTERN int plugin_is_activated(char *name);
+EC_API_EXTERN int search_plugin(char *name);
 
 /* use these to activate and deactivate a plugin; these are *imported* from plugins */
-extern int plugin_init(char *name);
-extern int plugin_fini(char *name);
+EC_API_EXTERN int plugin_init(char *name);
+EC_API_EXTERN int plugin_fini(char *name);
 
 #define PLUGIN_FINISHED 0
 #define PLUGIN_RUNNING  1
 
-extern void plugin_list(void);
+EC_API_EXTERN void plugin_list(void);
 
 #endif 
 

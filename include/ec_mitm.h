@@ -1,5 +1,5 @@
 
-/* $Id: ec_mitm.h,v 1.7 2004/05/06 16:20:44 alor Exp $ */
+/* $Id: ec_mitm.h,v 1.8 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_MITM_H
 #define EC_MITM_H
@@ -14,12 +14,12 @@ struct mitm_method {
 
 /* exported functions */
 
-extern void mitm_add(struct mitm_method *mm);
-extern int mitm_set(char *name);
-extern int mitm_start(void);
-extern void mitm_stop(void);
-extern void only_mitm(void);
-extern int is_mitm_active(char *name);
+EC_API_EXTERN void mitm_add(struct mitm_method *mm);
+EC_API_EXTERN int mitm_set(char *name);
+EC_API_EXTERN int mitm_start(void);
+EC_API_EXTERN void mitm_stop(void);
+EC_API_EXTERN void only_mitm(void);
+EC_API_EXTERN int is_mitm_active(char *name);
 
 #endif
 

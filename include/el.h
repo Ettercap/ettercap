@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.20 2004/07/12 19:57:26 alor Exp $ */
+/* $Id: el.h,v 1.21 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -33,6 +33,7 @@
 #endif
 
 #define EC_API_EXTERN
+#define EL_API_EXTERN
 
 #include <ec_queue.h>
 #include <ec_stdint.h>

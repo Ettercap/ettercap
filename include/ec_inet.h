@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.25 2004/07/13 09:35:44 alor Exp $ */
+/* $Id: ec_inet.h,v 1.26 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -53,25 +53,25 @@ struct ip_addr {
    u_int8 addr[MAX_IP_ADDR_LEN];
 };
 
-extern int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr);
-extern int ip_addr_cpy(u_char *addr, struct ip_addr *sa);
-extern int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
-extern int ip_addr_null(struct ip_addr *sa);
-extern int ip_addr_is_zero(struct ip_addr *sa);
+EC_API_EXTERN int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr);
+EC_API_EXTERN int ip_addr_cpy(u_char *addr, struct ip_addr *sa);
+EC_API_EXTERN int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
+EC_API_EXTERN int ip_addr_null(struct ip_addr *sa);
+EC_API_EXTERN int ip_addr_is_zero(struct ip_addr *sa);
 
-extern char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
-extern char *mac_addr_ntoa(u_char *mac, char *dst);
-extern int mac_addr_aton(char *str, u_char *mac);
+EC_API_EXTERN char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
+EC_API_EXTERN char *mac_addr_ntoa(u_char *mac, char *dst);
+EC_API_EXTERN int mac_addr_aton(char *str, u_char *mac);
 
-extern int ip_addr_is_local(struct ip_addr *sa);
+EC_API_EXTERN int ip_addr_is_local(struct ip_addr *sa);
 
 /*
  * this prototypes are implemented in ./os/.../
  * each OS implement its specific function
  */
 
-extern void disable_ip_forward(void);
-extern u_int16 get_iface_mtu(const char *iface);
+EC_API_EXTERN void disable_ip_forward(void);
+EC_API_EXTERN u_int16 get_iface_mtu(const char *iface);
 
 /********************/
 

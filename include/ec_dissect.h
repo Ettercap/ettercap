@@ -1,5 +1,5 @@
 
-/* $Id: ec_dissect.h,v 1.18 2004/05/07 10:54:32 alor Exp $ */
+/* $Id: ec_dissect.h,v 1.19 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H
@@ -25,18 +25,18 @@ struct dissect_ident {
 
 /* exported functions */
 
-extern void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder));
-extern int dissect_modify(int mode, char *name, u_int32 port);
+EC_API_EXTERN void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder));
+EC_API_EXTERN int dissect_modify(int mode, char *name, u_int32 port);
 #define MODE_ADD  0
 #define MODE_REP  1
 
-extern int dissect_match(void *id_sess, void *id_curr);
-extern void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int32 code); 
-extern void dissect_wipe_session(struct packet_object *po, u_int32 code);
-extern size_t dissect_create_ident(void **i, struct packet_object *po, u_int32 code); 
+EC_API_EXTERN int dissect_match(void *id_sess, void *id_curr);
+EC_API_EXTERN void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int32 code); 
+EC_API_EXTERN void dissect_wipe_session(struct packet_object *po, u_int32 code);
+EC_API_EXTERN size_t dissect_create_ident(void **i, struct packet_object *po, u_int32 code); 
 
-extern int dissect_on_port(char *name, u_int16 port);
-extern int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
+EC_API_EXTERN int dissect_on_port(char *name, u_int16 port);
+EC_API_EXTERN int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
 
 
 /* return true if the packet is coming from the server */

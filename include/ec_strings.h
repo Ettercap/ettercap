@@ -1,5 +1,5 @@
 
-/* $Id: ec_strings.h,v 1.10 2004/07/20 09:53:52 alor Exp $ */
+/* $Id: ec_strings.h,v 1.11 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_STRINGS_H
 #define EC_STRINGS_H
@@ -26,13 +26,13 @@
    #include <missing/memmem.h>
 #endif
 
-extern int match_pattern(const char *s, const char *pattern);
-extern int base64_decode(char *bufplain, const char *bufcoded);
-extern int strescape(char *dst, char *src);
-extern int str_replace(char **text, const char *s, const char *d);   
-extern size_t strlen_utf8(const char *s);
-extern char * ec_strtok(char *s, const char *delim, char **ptrptr);
-extern char getchar_buffer(char **buf);
+EC_API_EXTERN int match_pattern(const char *s, const char *pattern);
+EC_API_EXTERN int base64_decode(char *bufplain, const char *bufcoded);
+EC_API_EXTERN int strescape(char *dst, char *src);
+EC_API_EXTERN int str_replace(char **text, const char *s, const char *d);   
+EC_API_EXTERN size_t strlen_utf8(const char *s);
+EC_API_EXTERN char * ec_strtok(char *s, const char *delim, char **ptrptr);
+EC_API_EXTERN char getchar_buffer(char **buf);
 
 #define strtok(x,y) DON_T_USE_STRTOK_DIRECTLY_USE__EC_STRTOK__INSTEAD
 

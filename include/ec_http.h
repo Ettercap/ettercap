@@ -1,10 +1,10 @@
 
-/* $Id: ec_http.h,v 1.1 2003/11/29 16:02:12 lordnaga Exp $ */
+/* $Id: ec_http.h,v 1.2 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_HTTP_H
 #define EC_HTTP_H
 
-extern int http_fields_init(void);
+EC_API_EXTERN int http_fields_init(void);
 
 #endif
 

@@ -1,11 +1,11 @@
 
-/* $Id: ec_services.h,v 1.2 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_services.h,v 1.3 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_SERVICES_H
 #define EC_SERVICES_H
 
-extern int services_init(void);
-extern char * service_search(u_int32 serv, u_int8 proto);
+EC_API_EXTERN int services_init(void);
+EC_API_EXTERN char * service_search(u_int32 serv, u_int8 proto);
 
 
 #endif

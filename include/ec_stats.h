@@ -1,5 +1,5 @@
 
-/* $Id: ec_stats.h,v 1.7 2004/02/26 14:42:26 alor Exp $ */
+/* $Id: ec_stats.h,v 1.8 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_STATS_H
 #define EC_STATS_H
@@ -65,14 +65,14 @@ struct gbl_stats {
 
 /* exports */
 
-extern void stats_wipe(void);
-extern void stats_update(void);
+EC_API_EXTERN void stats_wipe(void);
+EC_API_EXTERN void stats_update(void);
 
-extern u_int32 stats_queue_add(void);
-extern u_int32 stats_queue_del(void);
+EC_API_EXTERN u_int32 stats_queue_add(void);
+EC_API_EXTERN u_int32 stats_queue_del(void);
 
-extern void stats_half_start(struct half_stats *hs);
-extern void stats_half_end(struct half_stats *hs, u_int32 len);
+EC_API_EXTERN void stats_half_start(struct half_stats *hs);
+EC_API_EXTERN void stats_half_end(struct half_stats *hs, u_int32 len);
 
 
 #endif

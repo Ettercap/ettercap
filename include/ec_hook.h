@@ -1,12 +1,12 @@
 
-/* $Id: ec_hook.h,v 1.19 2004/05/06 09:43:56 alor Exp $ */
+/* $Id: ec_hook.h,v 1.20 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_HOOK_H
 #define EC_HOOK_H
 
 #include <ec_packet.h>
 
-extern void hook_point(int point, struct packet_object *po);
+EC_API_EXTERN void hook_point(int point, struct packet_object *po);
    #define HOOK_RECEIVED      0     /* raw packet, the L* structures are not filled */
    #define HOOK_DECODED       1     /* all the packet after the protocol stack parsing */
    #define HOOK_PRE_FORWARD   2     /* right before the forward (if it has to be forwarded) */
@@ -45,8 +45,8 @@ extern void hook_point(int point, struct packet_object *po);
    #define HOOK_PROTO_DNS           (HOOK_PROTO_BASE + 6)
    #define HOOK_PROTO_HTTP          (HOOK_PROTO_BASE + 7)
 
-extern void hook_add(int point, void (*func)(struct packet_object *po) );
-extern int hook_del(int point, void (*func)(struct packet_object *po) );
+EC_API_EXTERN void hook_add(int point, void (*func)(struct packet_object *po) );
+EC_API_EXTERN int hook_del(int point, void (*func)(struct packet_object *po) );
 
 #endif
 

@@ -1,5 +1,5 @@
 
-/* $Id: ef.h,v 1.14 2004/07/12 19:57:26 alor Exp $ */
+/* $Id: ef.h,v 1.15 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EF_H
 #define EF_H
@@ -33,6 +33,7 @@
 #endif
 
 #define EC_API_EXTERN
+#define EF_API_EXTERN
 
 #include <ec_queue.h>
 #include <ec_stdint.h>

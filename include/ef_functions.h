@@ -1,5 +1,5 @@
 
-/* $Id: ef_functions.h,v 1.18 2004/04/04 14:14:09 alor Exp $ */
+/* $Id: ef_functions.h,v 1.19 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
@@ -16,33 +16,33 @@ else                                      \
 } while(0)
 
 /* ef_main */
-extern void ef_debug(u_char level, const char *message, ...);
+EF_API_EXTERN void ef_debug(u_char level, const char *message, ...);
 
 /* ef_parser */
-extern void parse_options(int argc, char **argv);
+EF_API_EXTERN void parse_options(int argc, char **argv);
 
 /* ef_test */
-extern void test_filter(char *filename);
-extern void print_fop(struct filter_op *fop, u_int32 eip);
+EF_API_EXTERN void test_filter(char *filename);
+EF_API_EXTERN void print_fop(struct filter_op *fop, u_int32 eip);
 
 /* ef_syntax && ef_grammar */
-extern int yyerror(char *);                                                                         
-extern int yylex(void);
+EF_API_EXTERN int yyerror(char *);                                                                         
+EF_API_EXTERN int yylex(void);
 
 /* ef_tables */
-extern void load_tables(void);
-extern void load_constants(void);
-extern int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size);
-extern int get_constant(char *name, u_int32 *value);
+EF_API_EXTERN void load_tables(void);
+EF_API_EXTERN void load_constants(void);
+EF_API_EXTERN int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size);
+EF_API_EXTERN int get_constant(char *name, u_int32 *value);
 
 /* ef_encode */
-extern int encode_offset(char *string, struct filter_op *fop);
-extern int encode_function(char *string, struct filter_op *fop);
-extern int encode_const(char *string, struct filter_op *fop);
+EF_API_EXTERN int encode_offset(char *string, struct filter_op *fop);
+EF_API_EXTERN int encode_function(char *string, struct filter_op *fop);
+EF_API_EXTERN int encode_const(char *string, struct filter_op *fop);
 
 /* ef_output */
 
-extern int write_output(void);
+EF_API_EXTERN int write_output(void);
 
 /* ef_compiler */
 
@@ -75,15 +75,15 @@ struct condition {
       #define COND_OR  1
 };
 
-extern int compiler_set_root(struct block *blk);
-extern size_t compile_tree(struct filter_op **fop);
-extern struct block * compiler_add_instr(struct instruction *ins, struct block *blk);
-extern struct block * compiler_add_ifblk(struct ifblock *ifb, struct block *blk);
-extern struct instruction * compiler_create_instruction(struct filter_op *fop);
-extern struct condition * compiler_create_condition(struct filter_op *fop);
-extern struct condition * compiler_concat_conditions(struct condition *a, u_int16 op, struct condition *b);
-extern struct ifblock * compiler_create_ifblock(struct condition *conds, struct block *blk);
-extern struct ifblock * compiler_create_ifelseblock(struct condition *conds, struct block *blk, struct block *elseblk);
+EF_API_EXTERN int compiler_set_root(struct block *blk);
+EF_API_EXTERN size_t compile_tree(struct filter_op **fop);
+EF_API_EXTERN struct block * compiler_add_instr(struct instruction *ins, struct block *blk);
+EF_API_EXTERN struct block * compiler_add_ifblk(struct ifblock *ifb, struct block *blk);
+EF_API_EXTERN struct instruction * compiler_create_instruction(struct filter_op *fop);
+EF_API_EXTERN struct condition * compiler_create_condition(struct filter_op *fop);
+EF_API_EXTERN struct condition * compiler_concat_conditions(struct condition *a, u_int16 op, struct condition *b);
+EF_API_EXTERN struct ifblock * compiler_create_ifblock(struct condition *conds, struct block *blk);
+EF_API_EXTERN struct ifblock * compiler_create_ifelseblock(struct condition *conds, struct block *blk, struct block *elseblk);
 
 #endif
 

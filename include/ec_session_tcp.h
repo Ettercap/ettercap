@@ -1,5 +1,5 @@
 
-/* $Id: ec_session_tcp.h,v 1.1 2004/03/03 21:43:19 alor Exp $ */
+/* $Id: ec_session_tcp.h,v 1.2 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_SESSION_TCP_H
 #define EC_SESSION_TCP_H
@@ -19,8 +19,8 @@ struct tcp_status {
 };
 
 
-extern size_t tcp_create_ident(void **i, struct packet_object *po);            
-extern int tcp_find_direction(void *ids, void *id);
+EC_API_EXTERN size_t tcp_create_ident(void **i, struct packet_object *po);            
+EC_API_EXTERN int tcp_find_direction(void *ids, void *id);
 
 
 #endif

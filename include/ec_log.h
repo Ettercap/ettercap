@@ -1,5 +1,5 @@
 
-/* $Id: ec_log.h,v 1.22 2004/07/01 20:45:43 alor Exp $ */
+/* $Id: ec_log.h,v 1.23 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -120,21 +120,21 @@ struct log_header_info {
 };
 
 
-extern int set_loglevel(int level, char *filename);
+EC_API_EXTERN int set_loglevel(int level, char *filename);
 #define LOG_STOP     0
 #define LOG_INFO     1
 #define LOG_PACKET   2
 
-extern int set_msg_loglevel(int level, char *filename);
+EC_API_EXTERN int set_msg_loglevel(int level, char *filename);
 #define LOG_TRUE     1
 #define LOG_FALSE    0
 
-int log_open(struct log_fd *fd, char *filename);
-void log_close(struct log_fd *fd);
-int log_write_header(struct log_fd *fd, int type);
-void log_write_packet(struct log_fd *fd, struct packet_object *po);
-void log_write_info(struct log_fd *fd, struct packet_object *po);
-void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po);
+EC_API_EXTERN int log_open(struct log_fd *fd, char *filename);
+EC_API_EXTERN void log_close(struct log_fd *fd);
+EC_API_EXTERN int log_write_header(struct log_fd *fd, int type);
+EC_API_EXTERN void log_write_packet(struct log_fd *fd, struct packet_object *po);
+EC_API_EXTERN void log_write_info(struct log_fd *fd, struct packet_object *po);
+EC_API_EXTERN void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po);
 
 
 #endif

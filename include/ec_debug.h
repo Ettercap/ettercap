@@ -1,13 +1,13 @@
 
-/* $Id: ec_debug.h,v 1.8 2003/10/29 22:38:19 alor Exp $ */
+/* $Id: ec_debug.h,v 1.9 2004/07/24 10:43:21 alor Exp $ */
 
 #if defined (DEBUG) && !defined(EC_DEBUG_H)
 #define EC_DEBUG_H
 
-extern void debug_init(void);
-extern void debug_msg(const char *message, ...);
+EC_API_EXTERN void debug_init(void);
+EC_API_EXTERN void debug_msg(const char *message, ...);
 
-extern FILE *debug_file;
+EC_API_EXTERN FILE *debug_file;
 
 #define DEBUG_INIT() debug_init()
 #define DEBUG_MSG(x, ...) do {                                 \

@@ -1,5 +1,5 @@
 
-/* $Id: ec_conntrack.h,v 1.13 2004/04/23 12:55:35 alor Exp $ */
+/* $Id: ec_conntrack.h,v 1.14 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_CONNTRACK_H
 #define EC_CONNTRACK_H
@@ -75,14 +75,14 @@ enum {
 };
 
 /* exported functions */
-extern void * conntrack_print(int mode, void *list, char **desc, size_t len);
-extern EC_THREAD_FUNC(conntrack_timeouter); 
-extern void conntrack_purge(void);
+EC_API_EXTERN void * conntrack_print(int mode, void *list, char **desc, size_t len);
+EC_API_EXTERN EC_THREAD_FUNC(conntrack_timeouter); 
+EC_API_EXTERN void conntrack_purge(void);
 
-extern int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct packet_object *po));
-extern int conntrack_hook_packet_del(struct packet_object *po, void (*func)(struct packet_object *po));
-extern int conntrack_hook_conn_add(struct conn_object *co, void (*func)(struct packet_object *po));
-extern int conntrack_hook_conn_del(struct conn_object *co, void (*func)(struct packet_object *po));
+EC_API_EXTERN int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct packet_object *po));
+EC_API_EXTERN int conntrack_hook_packet_del(struct packet_object *po, void (*func)(struct packet_object *po));
+EC_API_EXTERN int conntrack_hook_conn_add(struct conn_object *co, void (*func)(struct packet_object *po));
+EC_API_EXTERN int conntrack_hook_conn_del(struct conn_object *co, void (*func)(struct packet_object *po));
 
 #endif
 

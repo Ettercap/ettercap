@@ -1,11 +1,11 @@
 
-/* $Id: ec_manuf.h,v 1.2 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_manuf.h,v 1.3 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_MANUF_H
 #define EC_MANUF_H
 
-extern int manuf_init(void);
-extern char * manuf_search(char *m);
+EC_API_EXTERN int manuf_init(void);
+EC_API_EXTERN char * manuf_search(char *m);
 
 #endif
 

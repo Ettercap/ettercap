@@ -1,5 +1,5 @@
 
-/* $Id: ec_profiles.h,v 1.16 2004/02/16 20:21:55 alor Exp $ */
+/* $Id: ec_profiles.h,v 1.17 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_PROFILES_H
 #define EC_PROFILES_H
@@ -66,17 +66,17 @@ struct host_profile {
 };
 
 /* exported functions */
-extern void profile_purge_local(void);
-extern void profile_purge_remote(void);
-extern void profile_purge_all(void);
-extern int profile_convert_to_hostlist(void);
-extern int profile_dump_to_file(char *filename);
+EC_API_EXTERN void profile_purge_local(void);
+EC_API_EXTERN void profile_purge_remote(void);
+EC_API_EXTERN void profile_purge_all(void);
+EC_API_EXTERN int profile_convert_to_hostlist(void);
+EC_API_EXTERN int profile_dump_to_file(char *filename);
 
 /* fake forward declaration (profiles include packet and viceversa) */
 struct packet_object;
-extern void profile_parse(struct packet_object *po);
+EC_API_EXTERN void profile_parse(struct packet_object *po);
 
-extern void * profile_print(int mode, void *list, char **desc, size_t len);
+EC_API_EXTERN void * profile_print(int mode, void *list, char **desc, size_t len);
 
 #endif
 

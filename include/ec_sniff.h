@@ -1,5 +1,5 @@
 
-/* $Id: ec_sniff.h,v 1.10 2004/03/31 13:03:08 alor Exp $ */
+/* $Id: ec_sniff.h,v 1.11 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_SNIFF_H
 #define EC_SNIFF_H
@@ -24,20 +24,20 @@ struct sniffing_method {
 /* forwarder (the struct is in ec_globals.h) */
 struct target_env;
 
-extern void set_sniffing_method(struct sniffing_method *sm);
+EC_API_EXTERN void set_sniffing_method(struct sniffing_method *sm);
 
-extern void set_unified_sniff(void);
-extern void set_bridge_sniff(void);
+EC_API_EXTERN void set_unified_sniff(void);
+EC_API_EXTERN void set_bridge_sniff(void);
 
-extern int compile_display_filter(void);
-extern int compile_target(char *string, struct target_env *target);
+EC_API_EXTERN int compile_display_filter(void);
+EC_API_EXTERN int compile_target(char *string, struct target_env *target);
 
-extern void reset_display_filter(struct target_env *t);
+EC_API_EXTERN void reset_display_filter(struct target_env *t);
 
-extern void del_ip_list(struct ip_addr *ip, struct target_env *t);
-extern int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
-extern void add_ip_list(struct ip_addr *ip, struct target_env *t);
-extern void free_ip_list(struct target_env *t);
+EC_API_EXTERN void del_ip_list(struct ip_addr *ip, struct target_env *t);
+EC_API_EXTERN int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
+EC_API_EXTERN void add_ip_list(struct ip_addr *ip, struct target_env *t);
+EC_API_EXTERN void free_ip_list(struct target_env *t);
 
 #endif
 

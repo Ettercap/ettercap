@@ -1,5 +1,5 @@
 
-/* $Id: ec_inject.h,v 1.10 2004/03/04 08:58:12 alor Exp $ */
+/* $Id: ec_inject.h,v 1.11 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_INJECT_H
 #define EC_INJECT_H
@@ -29,13 +29,13 @@
       return -ENOTHANDLED;                            \
 } while(0)
 
-extern int inject_buffer(struct packet_object *po);
-extern void add_injector(u_int8 level, u_int32 type, FUNC_INJECTOR_PTR(injector));
-extern void * get_injector(u_int8 level, u_int32 type);
-extern void inject_split_data(struct packet_object *po);
+EC_API_EXTERN int inject_buffer(struct packet_object *po);
+EC_API_EXTERN void add_injector(u_int8 level, u_int32 type, FUNC_INJECTOR_PTR(injector));
+EC_API_EXTERN void * get_injector(u_int8 level, u_int32 type);
+EC_API_EXTERN void inject_split_data(struct packet_object *po);
 
-extern int user_kill(struct conn_object *co);
-extern int user_inject(u_char *buf, size_t size, struct conn_object *co, int which);
+EC_API_EXTERN int user_kill(struct conn_object *co);
+EC_API_EXTERN int user_inject(u_char *buf, size_t size, struct conn_object *co, int which);
 
 #define CHAIN_ENTRY 1
 #define CHAIN_LINKED 2

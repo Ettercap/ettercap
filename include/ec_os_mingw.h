@@ -99,13 +99,13 @@
 #define dn_expand(m,e,c,ex,l)  ec_win_dn_expand (m, e, c, ex, l)
 #define dn_comp(e,c,l,d,ld)    ec_win_dn_comp(e,c,l,d,ld)
 
-extern int         ec_win_dn_expand (const u_char *msg, const u_char *eom_orig,
+EC_API_EXTERN int         ec_win_dn_expand (const u_char *msg, const u_char *eom_orig,
                                      const u_char *comp_dn, char *exp_dn, int length);
-extern int         ec_win_dn_comp   (const char *exp_dn, u_char *comp_dn, int length,
+EC_API_EXTERN int         ec_win_dn_comp   (const char *exp_dn, u_char *comp_dn, int length,
                                      u_char **dnptrs, u_char **lastdnptr);
 
-extern int         ec_win_gettimeofday (struct timeval *tv, struct timezone *tz);
-extern const char *ec_win_strsignal (int signo);
+EC_API_EXTERN int         ec_win_gettimeofday (struct timeval *tv, struct timezone *tz);
+EC_API_EXTERN const char *ec_win_strsignal (int signo);
 
 /* poll() emulation
  */
@@ -125,12 +125,12 @@ struct pollfd {
 #undef  HAVE_POLL
 #define HAVE_POLL 1
 
-extern int ec_win_poll (struct pollfd *p, int num, int timeout);
+EC_API_EXTERN int ec_win_poll (struct pollfd *p, int num, int timeout);
 
 /*  User/program dir
  */
-extern const char *ec_win_get_user_dir (void);
-extern const char *ec_win_get_ec_dir (void);
+EC_API_EXTERN const char *ec_win_get_user_dir (void);
+EC_API_EXTERN const char *ec_win_get_ec_dir (void);
 
 /* This is a stupid hack. How can we on compile time know the install location on a
  * on-Unix system?
@@ -174,8 +174,8 @@ extern const char *ec_win_get_ec_dir (void);
    #define mmap(xx1,size,prot,xx2,fd,xx3)  ec_win_mmap (fd,size,prot)
    #define munmap(handle,size)             ec_win_munmap ((const void*)(handle), size)
 
-   extern void *ec_win_mmap (int fd, size_t size, int prot);
-   extern int   ec_win_munmap (const void *handle, size_t size);
+   EC_API_EXTERN void *ec_win_mmap (int fd, size_t size, int prot);
+   EC_API_EXTERN int   ec_win_munmap (const void *handle, size_t size);
 #endif
 
 /* dlopen() emulation (not exported)
@@ -196,10 +196,10 @@ extern const char *ec_win_get_ec_dir (void);
    #define lt_dlinit()          (0)
    #define lt_dlexit()          (0)
 
-   extern void       *ec_win_dlopen  (const char *dll_name, int flags _U_);
-   extern void       *ec_win_dlsym   (const void *dll_handle, const char *func_name);
-   extern void        ec_win_dlclose (const void *dll_handle);
-   extern const char *ec_win_dlerror (void);
+   EC_API_EXTERN void       *ec_win_dlopen  (const char *dll_name, int flags _U_);
+   EC_API_EXTERN void       *ec_win_dlsym   (const void *dll_handle, const char *func_name);
+   EC_API_EXTERN void        ec_win_dlclose (const void *dll_handle);
+   EC_API_EXTERN const char *ec_win_dlerror (void);
 #endif
 
 /*
@@ -208,7 +208,7 @@ extern const char *ec_win_get_ec_dir (void);
 #if !defined(HAVE_FORK)
   #define fork()  ec_win_fork()
 
-  extern int ec_win_fork(void);
+  EC_API_EXTERN int ec_win_fork(void);
 #endif
   
 /* Missing stuff for ec_resolv.h / ec_win_dnexpand()

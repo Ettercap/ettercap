@@ -1,5 +1,5 @@
 
-/* $Id: ec_decode.h,v 1.15 2004/01/05 11:49:36 alor Exp $ */
+/* $Id: ec_decode.h,v 1.16 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_DECODE_H
 #define EC_DECODE_H
@@ -45,10 +45,10 @@ enum {
 
 /* exported functions */
 
-extern void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
-extern void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
-extern void del_decoder(u_int8 level, u_int32 type);
-extern void * get_decoder(u_int8 level, u_int32 type);
+EC_API_EXTERN void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
+EC_API_EXTERN void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
+EC_API_EXTERN void del_decoder(u_int8 level, u_int32 type);
+EC_API_EXTERN void * get_decoder(u_int8 level, u_int32 type);
 
 
 #endif

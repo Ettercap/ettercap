@@ -1,10 +1,10 @@
 
-/* $Id: ec_update.h,v 1.2 2003/09/18 22:15:02 alor Exp $ */
+/* $Id: ec_update.h,v 1.3 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_UPDATE_H
 #define EC_UPDATE_H
 
-extern void global_update(void);
+EC_API_EXTERN void global_update(void);
 
 #endif
 

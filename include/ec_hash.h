@@ -1,5 +1,5 @@
 
-/* $Id: ec_hash.h,v 1.2 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_hash.h,v 1.3 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef __FNV_H__
 #define __FNV_H__
@@ -12,8 +12,8 @@ typedef unsigned long Fnv32_t;
 typedef unsigned long long Fnv64_t;
 #define FNV1_64_INIT ((Fnv64_t)0xcbf29ce484222325ULL)
 
-extern Fnv32_t fnv_32(void *buf, size_t len);
-extern Fnv64_t fnv_64(void *buf, size_t len);
+EC_API_EXTERN Fnv32_t fnv_32(void *buf, size_t len);
+EC_API_EXTERN Fnv64_t fnv_64(void *buf, size_t len);
 
 #endif /* __FNV_H__ */
 

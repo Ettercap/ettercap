@@ -1,5 +1,5 @@
 
-/* $Id: ec_resolv.h,v 1.12 2004/04/04 14:27:31 alor Exp $ */
+/* $Id: ec_resolv.h,v 1.13 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_RESOLV_H
 #define EC_RESOLV_H
@@ -42,10 +42,10 @@
 
 #define MAX_HOSTNAME_LEN   64
 
-extern int host_iptoa(struct ip_addr *ip, char *name);
+EC_API_EXTERN int host_iptoa(struct ip_addr *ip, char *name);
 
 /* used by ec_dns to insert passively sniffed dns answers */
-extern void resolv_cache_insert(struct ip_addr *ip, char *name);
+EC_API_EXTERN void resolv_cache_insert(struct ip_addr *ip, char *name);
    
 
    

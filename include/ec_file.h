@@ -1,12 +1,12 @@
 
-/* $Id: ec_file.h,v 1.9 2004/06/27 12:51:01 alor Exp $ */
+/* $Id: ec_file.h,v 1.10 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_FILE_H
 #define EC_FILE_H
 
-extern FILE * open_data(char *dir, char *file, char *mode);
-extern char * get_full_path(const char *dir, const char *file);
-extern char * get_local_path(const char *file);
+EC_API_EXTERN FILE * open_data(char *dir, char *file, char *mode);
+EC_API_EXTERN char * get_full_path(const char *dir, const char *file);
+EC_API_EXTERN char * get_local_path(const char *file);
 
 #define MAC_FINGERPRINTS   "etter.finger.mac"
 #define TCP_FINGERPRINTS   "etter.finger.os"

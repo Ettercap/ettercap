@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.65 2004/07/20 09:53:52 alor Exp $ */
+/* $Id: ec_globals.h,v 1.66 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -165,7 +165,7 @@ struct globals {
    struct filter_env *filters;
 };
 
-extern struct globals *gbls;
+EC_API_EXTERN struct globals *gbls;
 
 #define GBLS gbls
 
@@ -194,8 +194,8 @@ extern struct globals *gbls;
 
 /* exported functions */
 
-extern void globals_alloc(void);
-extern void globals_free(void);
+EC_API_EXTERN void globals_alloc(void);
+EC_API_EXTERN void globals_free(void);
 
 #endif
 

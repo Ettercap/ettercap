@@ -1,5 +1,5 @@
 
-/* $Id: ec_interfaces.h,v 1.15 2004/02/22 12:00:53 alor Exp $ */
+/* $Id: ec_interfaces.h,v 1.16 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_INTERFACES_H
 #define EC_INTERFACES_H
@@ -39,10 +39,10 @@ struct curses_color {
 
 /* exported functions */
 
-extern void select_daemon_interface(void);
-extern void select_text_interface(void);
-extern void select_curses_interface(void);
-extern void select_gtk_interface(void);
+EC_API_EXTERN void select_daemon_interface(void);
+EC_API_EXTERN void select_text_interface(void);
+EC_API_EXTERN void select_curses_interface(void);
+EC_API_EXTERN void select_gtk_interface(void);
 
 #endif
 

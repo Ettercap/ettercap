@@ -1,10 +1,10 @@
 
-/* $Id: ec_signals.h,v 1.4 2003/10/14 16:54:00 alor Exp $ */
+/* $Id: ec_signals.h,v 1.5 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_SIGNAL_H
 #define EC_SIGNAL_H
 
-extern void signal_handler(void);
+EC_API_EXTERN void signal_handler(void);
 
 #endif
 

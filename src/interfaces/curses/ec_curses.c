@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.25 2003/12/13 18:41:11 alor Exp $
+    $Id: ec_curses.c,v 1.26 2003/12/14 21:33:42 alor Exp $
 */
 
 #include <ec.h>
@@ -278,16 +278,19 @@ static void curses_progress(char *title, int value, int max)
       wdg_set_color(per, WDG_COLOR_WINDOW, EC_COLOR);
       wdg_set_color(per, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
       wdg_set_color(per, WDG_COLOR_TITLE, EC_COLOR_MENU);
+      
       wdg_draw_object(per);
       
       wdg_set_focus(per);
+      
+   } 
+   
    /* the subsequent calls have to only update the object */
-   } else {
-      wdg_percentage_set(per, value, max);
-      wdg_update_screen();
-   }
+   wdg_percentage_set(per, value, max);
+   wdg_update_screen();
 
-   /* the object is self-destructing... 
+   /* 
+    * the object is self-destructing... 
     * so we have only to set the pointer to null
     */
    if (value == max)

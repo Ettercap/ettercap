@@ -78,7 +78,6 @@ this is the unofficial and floating in time roadmap:
          - thief     -> (same as dwarf)
          - arpcop    -> arpcop
          - banshee   -> killer
-         - confusion -> (mitm method)
          - golem     -> res_exhaust
          - imp       -> nbt_names
          - lamia     -> stp_root (or mitm attack?)

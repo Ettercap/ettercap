@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.40 2003/12/14 20:57:28 alor Exp $
+    $Id: ec_sniff.c,v 1.41 2003/12/14 21:33:42 alor Exp $
 */
 
 #include <ec.h>
@@ -273,7 +273,7 @@ void reset_display_filter(struct target_env *t)
    t->all_mac = 1;
    t->all_ip = 1;
    t->all_port = 1;
-   
+   t->scan_all = 0;
 }
 
 
@@ -323,6 +323,11 @@ int compile_target(char *string, struct target_env *target)
    
    DEBUG_MSG("compile_target TARGET: %s", string);
 
+   /* reset the special marker */
+   target->all_mac = 0;
+   target->all_ip = 0;
+   target->all_port = 0;
+   
    /* check for invalid char */
    if (strlen(string) != strspn(string, valid))
       FATAL_MSG("TARGET (%s) contains invalid chars !", string);

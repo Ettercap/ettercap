@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.1 2003/12/14 14:20:40 alor Exp $
+    $Id: ec_curses_targets.c,v 1.2 2003/12/14 21:33:42 alor Exp $
 */
 
 #include <ec.h>
@@ -113,9 +113,11 @@ static void curses_select_targets(void)
    
    DEBUG_MSG("curses_select_target1");
 
-   /* alloc the buffer if it does not exist */
-   SAFE_REALLOC(GBL_OPTIONS->target1, TARGET_LEN * sizeof(char));
-   SAFE_REALLOC(GBL_OPTIONS->target2, TARGET_LEN * sizeof(char));
+   SAFE_FREE(GBL_OPTIONS->target1);
+   SAFE_FREE(GBL_OPTIONS->target2);
+   
+   SAFE_CALLOC(GBL_OPTIONS->target1, TARGET_LEN, sizeof(char));
+   SAFE_CALLOC(GBL_OPTIONS->target2, TARGET_LEN, sizeof(char));
    
    wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
    wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
@@ -137,9 +139,19 @@ static void curses_select_targets(void)
  */
 static void set_targets(void)
 {
+   /* delete the previous filters */
    reset_display_filter(GBL_TARGET1);
    reset_display_filter(GBL_TARGET2);
-   /* this will reset the both the targets */
+
+   /* free empty filters */
+   if (!strcmp(GBL_OPTIONS->target1, ""))
+      SAFE_FREE(GBL_OPTIONS->target1);
+   
+   /* free empty filters */
+   if (!strcmp(GBL_OPTIONS->target2, ""))
+      SAFE_FREE(GBL_OPTIONS->target2);
+   
+   /* compile the filters */
    compile_display_filter();
 }
 

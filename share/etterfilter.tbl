@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.1 $                                      # 
-#  Last updated on : $Date: 2003/09/10 15:41:20 $                          #
+#  Version         : $Revision: 1.2 $                                      # 
+#  Last updated on : $Date: 2003/10/28 21:10:55 $                          #
 #                                                                          #
 ############################################################################
 
@@ -25,7 +25,35 @@
    src:6 = 6
    proto:2 = 8
 
+#
+# token ring is at layer 2
+#
+[tr][2]
+   ac:1 = 0
+   fc:1 = 1
+   dst:6 = 2
+   src:6 = 8
+   dsap:1 = 14
+   ssap:1 = 15
+   control:1 = 16
+   orgcode:1 = 17
+   proto:2 = 20
 
+#
+# token ring is at layer 2
+#
+[fddi][2]
+   fc:1 = 0
+   dst:6 = 1
+   src:6 = 7
+   dsap:1 = 13
+   ssap:1 = 14
+   control:1 = 15
+   orgcode:1 = 16
+# split proto because it is not aligned
+   proto1:1 = 19
+   proto2:1 = 20
+   
 #
 # wireless header at layer 1 / 2
 #

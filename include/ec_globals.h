@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.38 2003/10/27 21:25:44 alor Exp $ */
+/* $Id: ec_globals.h,v 1.39 2003/10/28 21:10:55 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -74,7 +74,7 @@ struct pcap_env {
    pcap_t            *pcap;      
    pcap_t            *pcap_bridge;
    pcap_dumper_t     *dump;
-   char              promisc:1;
+   char              promisc;
    char              *filter;       /* pcap filter */
    u_int16           snaplen;
    int               dlt;

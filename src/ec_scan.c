@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.27 2003/10/27 21:25:44 alor Exp $
+    $Id: ec_scan.c,v 1.28 2003/10/28 21:10:55 alor Exp $
 */
 
 #include <ec.h>
@@ -211,6 +211,7 @@ static EC_THREAD_FUNC(capture_scan)
  */
 static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
 {
+   FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
    int len;
    u_char *data;
@@ -238,7 +239,9 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
     * start the analysis through the decoders stack 
     * after this fuction the packet is completed (all flags set)
     */
-   l2_decoder(data, datalen, &len, &po);
+   packet_decoder = get_decoder(LINK_LAYER, GBL_PCAP->dlt);
+   BUG_IF(packet_decoder == NULL);
+   packet_decoder(data, datalen, &len, &po);
    
    /* free the structure */
    packet_destroy_object(&po);

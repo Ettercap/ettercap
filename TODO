@@ -28,6 +28,8 @@ this is the unofficial and floating in time roadmap:
       - developer docs
 
    + FIXING
+      - get_iface_mtu for win32
+      
       
 Oct 2003:
 
@@ -50,8 +52,6 @@ Oct 2003:
       - SSL unified dissector for https, impas, pop3s ecc ecc
       - HTTP sniff cookies
       - WIFI decoder support for WEP (key given)
-      - TOKEN RING
-      - FDDI
       - PPP 
       - GRE
       - TDS

@@ -1,5 +1,5 @@
 
-/* $Id: ec_decode.h,v 1.13 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_decode.h,v 1.14 2003/10/28 21:10:55 alor Exp $ */
 
 #ifndef EC_DECODE_H
 #define EC_DECODE_H
@@ -45,12 +45,9 @@ enum {
 /* exported functions */
 
 extern void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
-extern int set_L2_decoder(int dlt);
 extern void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
-extern void add_iface_mtu(u_int16 type, u_int16 mtu);
 extern void del_decoder(u_int8 level, u_int32 type);
 extern void * get_decoder(u_int8 level, u_int32 type);
-extern FUNC_DECODER_PTR(l2_decoder);
 
 
 #endif

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.24 2003/10/27 21:25:44 alor Exp $
+    $Id: ec_capture.c,v 1.25 2003/10/28 21:10:55 alor Exp $
 */
 
 #include <ec.h>
@@ -58,7 +58,6 @@ void capture_init(void)
    pcap_dumper_t *pdump;
    bpf_u_int32 net, mask;
    struct bpf_program bpf;
-   int dlt;
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
    
    /*
@@ -162,25 +161,24 @@ void capture_init(void)
       GBL_PCAP->dump = pdump;               
    }
    
-   
-   /* set the right decoder for L2 */
-   dlt = pcap_datalink(pd);
+   /* set the right dlt type for the iface */
+   GBL_PCAP->dlt = pcap_datalink(pd);
+     
+   DEBUG_MSG("capture_init: dlt %d", GBL_PCAP->dlt);
    
    /* check that the bridge type is the same as the main iface */
-   if (GBL_SNIFF->type == SM_BRIDGED && pcap_datalink(pb) != dlt)
+   if (GBL_SNIFF->type == SM_BRIDGED && pcap_datalink(pb) != GBL_PCAP->dlt)
       FATAL_ERROR("You can NOT bridge two different type of interfaces !");
    
-   if (set_L2_decoder(dlt) != ESUCCESS) {
+   /* check if we support this media */
+   if (get_decoder(LINK_LAYER, GBL_PCAP->dlt) == NULL) {
       if (GBL_OPTIONS->read)
-         FATAL_ERROR("Dump file not supported (DLT = %d)", dlt);
+         FATAL_ERROR("Dump file not supported (DLT = %d)", GBL_PCAP->dlt);
       else
-         FATAL_ERROR("Inteface \"%s\" not supported (DLT = %d)", GBL_OPTIONS->iface, dlt);
+         FATAL_ERROR("Inteface \"%s\" not supported (DLT = %d)", GBL_OPTIONS->iface, GBL_PCAP->dlt);
    }
   
-   GBL_PCAP->dlt = dlt;
-   
    /* set the global descriptor for both the iface and the bridge */
-   
    GBL_PCAP->pcap = pd;               
    if (GBL_SNIFF->type == SM_BRIDGED)
       GBL_PCAP->pcap_bridge = pb;
@@ -260,7 +258,8 @@ void get_hw_info(void)
    }
    
    DEBUG_MSG("get_hw_info");
-   
+  
+   /* get the ip address */
    ip = libnet_get_ipaddr4(GBL_LNET->lnet);
 
    /* if ip is equal to -1 there was an error */
@@ -284,15 +283,18 @@ void get_hw_info(void)
          ip_addr_init(&GBL_IFACE->netmask, AF_INET, (char *)&netmask);
       
    } else
-      DEBUG_MSG("NO IP on %s", GBL_OPTIONS->iface);
+      DEBUG_MSG("get_hw_info: NO IP on %s", GBL_OPTIONS->iface);
    
+   /* get the mac address */
    ea = libnet_get_hwaddr(GBL_LNET->lnet);
 
    if (ea != NULL)
       memcpy(GBL_IFACE->mac, ea->ether_addr_octet, MEDIA_ADDR_LEN);
    else
-      DEBUG_MSG("NO MAC for %s", GBL_OPTIONS->iface);
+      DEBUG_MSG("get_hw_info: NO MAC for %s", GBL_OPTIONS->iface);
 
+   /* get the MTU */
+   GBL_IFACE->mtu = get_iface_mtu(GBL_OPTIONS->iface);
 
    USER_MSG("%6s ->\t%s  ",  GBL_OPTIONS->iface,
             mac_addr_ntoa(GBL_IFACE->mac, pcap_errbuf));
@@ -316,20 +318,25 @@ void get_hw_info(void)
       ip_addr_init(&GBL_BRIDGE->netmask, AF_INET, (char *)&netmask);
       
    } else
-      DEBUG_MSG("NO IP on %s", GBL_OPTIONS->iface_bridge);
+      DEBUG_MSG("get_hw_info: NO IP on %s", GBL_OPTIONS->iface_bridge);
    
    ea = libnet_get_hwaddr(GBL_LNET->lnet_bridge);
 
    if (ea != NULL)
       memcpy(GBL_BRIDGE->mac, ea->ether_addr_octet, MEDIA_ADDR_LEN);
    else
-      DEBUG_MSG("NO MAC for %s", GBL_OPTIONS->iface);
+      DEBUG_MSG("get_hw_info: NO MAC for %s", GBL_OPTIONS->iface_bridge);
    
-   
+   /* get the MTU */
+   GBL_BRIDGE->mtu = get_iface_mtu(GBL_OPTIONS->iface_bridge);
+
    USER_MSG("%6s ->\t%s  ",  GBL_OPTIONS->iface_bridge,
             mac_addr_ntoa(GBL_BRIDGE->mac, pcap_errbuf));
    USER_MSG("%16s  ", ip_addr_ntoa(&GBL_BRIDGE->ip, pcap_errbuf));
    USER_MSG("%16s\n\n", ip_addr_ntoa(&GBL_BRIDGE->netmask, pcap_errbuf) );
+
+   if (GBL_BRIDGE->mtu != GBL_IFACE->mtu)
+      FATAL_ERROR("The two interfaces must have the same MTU.");
 }
 
 

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.63 2003/10/20 14:42:25 alor Exp $
+# $Id: Makefile.am,v 1.64 2003/10/28 21:10:55 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -63,10 +63,12 @@ ettercap_SOURCES += mitm/ec_arp_poisoning.c
 
 ettercap_SOURCES += protocols/ec_arp.c \
                     protocols/ec_eth.c \
+                    protocols/ec_fddi.c \
 				        protocols/ec_icmp.c \
 				        protocols/ec_ip.c \
 				        protocols/ec_ip6.c \
 				        protocols/ec_tcp.c \
+				        protocols/ec_tr.c \
 				        protocols/ec_udp.c \
 				        protocols/ec_wifi.c
                

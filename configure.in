@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.55 2003/10/27 20:54:43 alor Exp $
+dnl    $Id: configure.in,v 1.56 2003/10/28 21:10:52 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -393,7 +393,7 @@ AC_ARG_WITH(libpcap,
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$PCAPLIB"
-AC_CHECK_LIB(pcap, pcap_file,, AC_ERROR(Incorrect pcap version))
+AC_CHECK_LIB(pcap, pcap_file,, AC_ERROR(Incorrect pcap version. pcap >= 0.7.x required))
 LDFLAGS="${OLDLDFLAGS}"
 
 dnl ---------
@@ -448,14 +448,15 @@ AC_ARG_WITH(libnet,
      LNETLIB="`libnet-config --libs`"
   else
      AC_MSG_RESULT(no)
-     AC_ERROR(libnet >= 1.1.0 not found)
+     AC_ERROR(libnet >= 1.1.1 not found)
   fi
 ]
 )
 
 OLDLDFLAGS="${LDFLAGS}"
 LDFLAGS="$LNETLIB"
-AC_CHECK_LIB(net, libnet_init,, AC_ERROR(Incorrect lnet version))
+AC_CHECK_LIB(net, libnet_init,, AC_ERROR(Incorrect lnet version. libnet >= 1.1.1 required))
+AC_CHECK_LIB(net, libnet_autobuild_token_ring,, AC_ERROR(Incorrect lnet version. libnet >= 1.1.1 required))
 LDFLAGS="${OLDLDFLAGS}"
 
 
@@ -557,8 +558,8 @@ AC_ARG_WITH(libpcre,
      AM_CONDITIONAL(HAVE_PCRE, true) 
      AC_DEFINE(HAVE_PCRE, 1)
      ac_cv_ec_pcre=yes
-     LNETINC=""
-     LNETLIB="-lpcre"
+     PCREINC=""
+     PCRELIB="-lpcre"
      AC_MSG_RESULT(yes)
   else
      AC_MSG_RESULT(no)

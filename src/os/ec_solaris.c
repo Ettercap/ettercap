@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_solaris.c,v 1.5 2003/09/18 22:15:04 alor Exp $
+    $Id: ec_solaris.c,v 1.6 2003/10/28 21:10:55 alor Exp $
 */
 
 #include <ec.h>
@@ -25,12 +25,16 @@
 #include <sys/stropts.h>
 #include <inet/nd.h>
 
+#include <net/if.h>
+#include <sys/sockio.h>
+
 static char saved_status[2];
 /* open it with high privs and use it later */
 static int fd;
 
 void disable_ip_forward(void);
 static void restore_ip_forward(void);
+u_int16 get_iface_mtu(char *iface);
 
 /*******************************************/
 
@@ -114,6 +118,37 @@ static void restore_ip_forward(void)
                                                 
 }
 
+/* 
+ * get the MTU parameter from the interface 
+ */
+u_int16 get_iface_mtu(char *iface)
+{
+   int sock, mtu;
+   struct ifreq ifr;
+   
+#if !defined(ifr_mtu) && defined(ifr_metric)
+   #define ifr_mtu  ifr_metric
+#endif
+
+   /* open the socket to work on */
+   sock = socket(PF_INET, SOCK_DGRAM, 0);
+               
+   memset(&ifr, 0, sizeof(ifr));
+   strncpy(ifr.ifr_name, iface, sizeof(ifr.ifr_name));
+                        
+   /* get the MTU */
+   if ( ioctl(sock, SIOCGIFMTU, &ifr) < 0)  {
+      DEBUG_MSG("get_iface_mtu: MTU FAILED... assuming 1500");
+      mtu = 1500;
+   } else {
+      DEBUG_MSG("get_iface_mtu: %d", ifr.ifr_mtu);
+      mtu = ifr.ifr_mtu;
+   }
+   
+   close(sock);
+   
+   return mtu;
+}
 
 /* EOF */
 

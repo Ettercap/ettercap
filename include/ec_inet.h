@@ -1,5 +1,5 @@
 
-/* $Id: ec_inet.h,v 1.14 2003/10/27 21:25:44 alor Exp $ */
+/* $Id: ec_inet.h,v 1.15 2003/10/28 21:10:55 alor Exp $ */
 
 #ifndef EC_INET_H
 #define EC_INET_H
@@ -51,6 +51,7 @@ extern int ip_addr_is_local(struct ip_addr *sa);
  */
 
 extern void disable_ip_forward(void);
+extern u_int16 get_iface_mtu(char *iface);
 
 /********************/
 

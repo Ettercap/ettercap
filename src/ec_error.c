@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_error.c,v 1.7 2003/10/12 15:28:27 alor Exp $
+    $Id: ec_error.c,v 1.8 2003/10/28 21:10:55 alor Exp $
 */
 
 #include <ec.h>
@@ -71,6 +71,11 @@ void fatal_error(char *message, ...)
    vsnprintf(errmsg, ERROR_MSG_LEN, message, ap);
    va_end(ap);
 
+   /* if debug was initialized... */
+   if (debug_file != NULL)
+      DEBUG_MSG("FATAL: %s", errmsg);
+
+   /* invoke the ui method */
    ui_fatal_error(errmsg);
    
    /* the ui should exits, but to be sure... */

@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_eth.c,v 1.6 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_eth.c,v 1.7 2003/10/28 21:10:55 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_decode.h>
+#include <ec_send.h>
 
 /* globals */
 
@@ -32,10 +33,10 @@ struct eth_header
    u_int16  proto;                   /* packet type ID field */
 };
 
-
 /* protos */
 
 FUNC_DECODER(decode_eth);
+FUNC_BUILDER(build_eth);
 void eth_init(void);
 
 /*******************************************/
@@ -48,7 +49,7 @@ void eth_init(void);
 void __init eth_init(void)
 {
    add_decoder(LINK_LAYER, IL_TYPE_ETH, decode_eth);
-   add_iface_mtu(IL_TYPE_ETH, 1500);
+   add_builder(IL_TYPE_ETH, build_eth);
 }
 
 
@@ -77,9 +78,21 @@ FUNC_DECODER(decode_eth)
 
    EXECUTE_DECODER(next_decoder);
       
-   /* eth header don't care about modification of upper layer */
+   /* eth header does not care about modification of upper layer */
    
    return NULL;
+}
+
+
+/*
+ * function to create an ethernet header 
+ */
+FUNC_BUILDER(build_eth)
+{
+   return libnet_autobuild_ethernet(
+            dst,                       /* ethernet destination */
+            proto,                     /* protocol type */
+            GBL_LNET->lnet);           /* libnet handle */
 }
 
 /* EOF */

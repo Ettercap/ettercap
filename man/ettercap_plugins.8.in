@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.4 2003/10/28 11:28:22 lordnaga Exp $
+.\"  $Id: ettercap_plugins.8.in,v 1.5 2003/10/28 21:10:55 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -43,20 +43,6 @@ The following is a list of available plugins:
 .B dummy
 .Sp
 Only a template to demonstrate how to write a plugin.
-
-.TP 
-.B link_type
-.Sp
-It performs a check of the link type (hub or switch) by sending a spoofed ARP
-request and listening for replies. It needs at least one entry in the host 
-list to perform the check. With two or more hosts the test will be more 
-accurate.
-.Sp
-.I example :
-.Sp
-ettercap -TP link_type /192.168.0.1/
-.br
-ettercap -TP link_type //
 
 .TP 
 .B finger
@@ -90,6 +76,22 @@ database. Thank you very much.
 .Sp
 ettercap -TzP finger_submit
 
+
+.TP 
+.B link_type
+.Sp
+It performs a check of the link type (hub or switch) by sending a spoofed ARP
+request and listening for replies. It needs at least one entry in the host 
+list to perform the check. With two or more hosts the test will be more 
+accurate.
+.Sp
+.I example :
+.Sp
+ettercap -TP link_type /192.168.0.1/
+.br
+ettercap -TP link_type //
+
+
 .TP 
 .B smb_clear
 .Sp
@@ -107,6 +109,7 @@ It forces the client to not to use NTLMv2 password exchange during smb
 authentication. This way, obtained hashes can be easily cracked by LC4.
 You have to be in the "middle" of the connection to succesfully use it.
 It hooks the smb dissector, so you have to keep it active. 
+
 
 .SH "SEE ALSO"
 .I "ettercap(8)"

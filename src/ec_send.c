@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.22 2003/10/27 21:25:44 alor Exp $
+    $Id: ec_send.c,v 1.23 2003/10/28 21:10:55 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_packet.h>
+#include <ec_send.h>
 
 #include <pthread.h>
 #include <pcap.h>
@@ -32,6 +33,14 @@
 u_int8 MEDIA_BROADCAST[MEDIA_ADDR_LEN] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 u_int8 ARP_BROADCAST[MEDIA_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
+static SLIST_HEAD (, build_entry) builders_table;
+
+struct build_entry {
+   u_int8 dlt;
+   FUNC_BUILDER_PTR(builder);
+   SLIST_ENTRY (build_entry) next;
+};
+
 /* protos */
 
 void send_init(void);
@@ -41,6 +50,9 @@ int send_to_L2(struct packet_object *po);
 int send_to_bridge(struct packet_object *po);
 
 static void hack_pcap_lnet(pcap_t *p, libnet_t *l);
+
+void add_builder(u_int8 dlt, FUNC_BUILDER_PTR(builder));
+libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto);
 
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac);
 int send_icmp_echo(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac);
@@ -279,7 +291,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    
    SEND_LOCK;
 
-   /* ARP uses 00 broadcast */
+   /* ARP uses 00:00:00:00:00:00 broadcast */
    if (type == ARPOP_REQUEST && tmac == MEDIA_BROADCAST)
       tmac = ARP_BROADCAST;
    
@@ -300,16 +312,13 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
            0);                      /* libnet id */
    ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_LNET->lnet));
    
-   /* ETH uses ff broadcast */
+   /* MEDIA uses ff:ff:ff:ff:ff:ff broadcast */
    if (type == ARPOP_REQUEST && tmac == ARP_BROADCAST)
       tmac = MEDIA_BROADCAST;
    
-   /* add the ethernet header */
-   t = libnet_autobuild_ethernet(
-           tmac,                    /* ethernet destination */
-           ETHERTYPE_ARP,           /* protocol type */
-           GBL_LNET->lnet);         /* libnet handle */
-   ON_ERROR(t, -1, "libnet_autobuild_ethernet: %s", libnet_geterror(GBL_LNET->lnet));
+   /* add the media header */
+   t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_ARP);
+   ON_ERROR(t, -1, "ec_build_link_layer: %s", libnet_geterror(GBL_LNET->lnet));
    
    /* coalesce the pblocks */
    c = libnet_adv_cull_packet(GBL_LNET->lnet, &packet, &packet_s);
@@ -390,6 +399,43 @@ int send_icmp_echo(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_add
    SEND_UNLOCK;
    
    return c;
+}
+
+/*
+ * register a builder in the table
+ * a builder is a function to create a link layer header.
+ */
+void add_builder(u_int8 dlt, FUNC_BUILDER_PTR(builder))
+{
+   struct build_entry *e;
+
+   SAFE_CALLOC(e, 1, sizeof(struct build_entry));
+   
+   e->dlt = dlt;
+   e->builder = builder;
+
+   SLIST_INSERT_HEAD(&builders_table, e, next); 
+   
+   return;
+   
+}
+
+/*
+ * build the header calling the registered
+ * function for the current media
+ */
+libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto)
+{
+   struct build_entry *e;
+
+   SLIST_FOREACH (e, &builders_table, next) {
+      if (e->dlt == dlt) {
+         return e->builder(dst, proto);
+      }
+   }
+
+   /* on error return -1 */
+   return -1;
 }
 
 /* EOF */

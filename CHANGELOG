@@ -14,6 +14,8 @@ NG-0.7.0    ????????
    + root privs dropped after initialization
    + layer 3 routing (forwarding packets)
    + wifi support
+   + token ring support
+   + fddi support
    + unified sniffing (you can use external hijacker)
    + multiple target selection
    + pcap filter on capture

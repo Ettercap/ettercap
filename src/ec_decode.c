@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.41 2003/10/27 20:54:14 alor Exp $
+    $Id: ec_decode.c,v 1.42 2003/10/28 21:10:55 alor Exp $
 */
 
 #include <ec.h>
@@ -35,9 +35,8 @@
 
 /* globals */
 
-FUNC_DECODER_PTR(l2_decoder);
-
-static SLIST_HEAD (, dec_entry) decoders_table;
+static SLIST_HEAD (, dec_entry) dissectors_table;
+static SLIST_HEAD (, dec_entry) protocols_table;
 
 struct dec_entry {
    u_int32 type;
@@ -46,23 +45,12 @@ struct dec_entry {
    SLIST_ENTRY (dec_entry) next;
 };
 
-static SLIST_HEAD (, mtu_entry) mtu_table;
-
-struct mtu_entry {
-   u_int16 type;
-   u_int16 mtu;
-   SLIST_ENTRY (mtu_entry) next;
-};
-
 /* protos */
 
 void __init data_init(void);
 FUNC_DECODER(decode_data);
 
 void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
-int set_L2_decoder(int dlt);
-void set_iface_mtu(u_int16 dlt);
-void add_iface_mtu(u_int16 type, u_int16 mtu);
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 void del_decoder(u_int8 level, u_int32 type);
 void * get_decoder(u_int8 level, u_int32 type);
@@ -82,6 +70,7 @@ static pthread_mutex_t dump_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
 {
+   FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
    struct pcap_stat ps;
    int len;
@@ -141,7 +130,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    datalen = pkthdr->caplen;
 
    /* An interface with MTU > 65000 ???? */
-   BUG_IF(GBL_PCAP->snaplen<=datalen);
+   BUG_IF(GBL_PCAP->snaplen <= datalen);
    
    /* alloc the packet object structure to be passet through decoders */
    packet_create_object(&po, data, datalen);
@@ -180,8 +169,10 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     *
     * after this fuction the packet is completed (all flags set)
     */
-   l2_decoder(data, datalen, &len, &po);
-
+   packet_decoder = get_decoder(LINK_LAYER, GBL_PCAP->dlt);
+   BUG_IF(packet_decoder == NULL);
+   packet_decoder(data, datalen, &len, &po);
+   
    /* XXX - BIG WARNING !!
     *
     * if the packet was filtered by the filtering engine
@@ -304,77 +295,6 @@ FUNC_DECODER(decode_data)
    return NULL;
 }
       
-/*
- * set the L2 decoder and the pcap offset.
- * lookup the decoders_table to find wich decoder are
- * available
- */
-
-int set_L2_decoder(int dlt)
-{
-   struct dec_entry *e;
-
-   DECODERS_LOCK;
-   
-   SLIST_FOREACH (e, &decoders_table, next) {
-      if (e->level == 2 && e->type == (u_int16)dlt) {
-         DEBUG_MSG("DLT = %d : decoder found !", dlt);
-         l2_decoder = e->decoder;
-
-         /* set the MTU */
-         set_iface_mtu((u_int16)dlt);
-            
-         DECODERS_UNLOCK;
-         return ESUCCESS;
-      }
-   }
-
-   DECODERS_UNLOCK;
-   /* error NOT FOUND */
-   return -ENOTFOUND;
-}
-
-/*
- * set the GBL_IFACE->mtu looking in the table
- * of registerd decoders
- */
-void set_iface_mtu(u_int16 dlt)
-{
-   struct mtu_entry *e;
-
-   /* 
-    * a dirty hack for loopback:
-    * it is an ehternet but with larger mtu
-    */
-   if (GBL_OPTIONS->iface && !strcasecmp(GBL_OPTIONS->iface, "lo")) {
-      GBL_IFACE->mtu = 16436;
-      DEBUG_MSG("MTU = %d", GBL_IFACE->mtu);
-      return;
-   }
-         
-   /* search in the registerd mtu */
-   SLIST_FOREACH (e, &mtu_table, next) {
-      if (e->type == dlt) {
-         GBL_IFACE->mtu = e->mtu;
-         DEBUG_MSG("MTU = %d", GBL_IFACE->mtu);
-      }
-   }
-}
-
-/*
- * add an mtu to the mtu table 
- */
-void add_iface_mtu(u_int16 type, u_int16 mtu)
-{
-   struct mtu_entry *e;
-
-   SAFE_CALLOC(e, 1, sizeof(struct mtu_entry));
-   
-   e->type = type;
-   e->mtu = mtu;
-
-   SLIST_INSERT_HEAD (&mtu_table, e, next); 
-}
 
 /*
  * add a decoder to the decoders table 
@@ -390,8 +310,12 @@ void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder))
    e->decoder = decoder;
 
    DECODERS_LOCK;
-   
-   SLIST_INSERT_HEAD (&decoders_table, e, next); 
+  
+   /* split into two list to be faster */
+   if (level <= PROTO_LAYER)
+      SLIST_INSERT_HEAD(&protocols_table, e, next); 
+   else
+      SLIST_INSERT_HEAD(&dissectors_table, e, next); 
 
    DECODERS_UNLOCK;
    
@@ -409,11 +333,21 @@ void * get_decoder(u_int8 level, u_int32 type)
 
    DECODERS_LOCK;
    
-   SLIST_FOREACH (e, &decoders_table, next) {
-      if (e->level == level && e->type == type) {
-         ret = (void *)e->decoder;
-         DECODERS_UNLOCK;
-         return ret;
+   if (level <= PROTO_LAYER) {
+      SLIST_FOREACH (e, &protocols_table, next) {
+         if (e->level == level && e->type == type) {
+            ret = (void *)e->decoder;
+            DECODERS_UNLOCK;
+            return ret;
+         }
+      }
+   } else {
+      SLIST_FOREACH (e, &dissectors_table, next) {
+         if (e->level == level && e->type == type) {
+            ret = (void *)e->decoder;
+            DECODERS_UNLOCK;
+            return ret;
+         }
       }
    }
 
@@ -431,14 +365,23 @@ void del_decoder(u_int8 level, u_int32 type)
 
    DECODERS_LOCK;
    
-   SLIST_FOREACH (e, &decoders_table, next) {
-      
-      if (e->level == level && e->type == type) {
-         //DEBUG_MSG("L%d %d removed !!", level, type);
-         SLIST_REMOVE(&decoders_table, e, dec_entry, next);
-         SAFE_FREE(e);
-         DECODERS_UNLOCK;
-         return;
+   if (level <= PROTO_LAYER) {
+      SLIST_FOREACH (e, &protocols_table, next) {
+         if (e->level == level && e->type == type) {
+            SLIST_REMOVE(&protocols_table, e, dec_entry, next);
+            SAFE_FREE(e);
+            DECODERS_UNLOCK;
+            return;
+         }
+      }
+   } else {
+      SLIST_FOREACH (e, &dissectors_table, next) {
+         if (e->level == level && e->type == type) {
+            SLIST_REMOVE(&dissectors_table, e, dec_entry, next);
+            SAFE_FREE(e);
+            DECODERS_UNLOCK;
+            return;
+         }
       }
    }
    

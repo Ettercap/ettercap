@@ -1,5 +1,5 @@
 /*
-    ettercap -- 802.11b decoder module
+    ettercap -- 802.11b (wifi) decoder module
 
     Copyright (C) ALoR & NaGA
 
@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.7 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_wifi.c,v 1.8 2003/10/28 21:10:55 alor Exp $
 */
 
 #include <ec.h>
@@ -27,24 +27,24 @@
 
 struct wifi_header {
    u_int16  type;
-#define WIFI_DATA_ENTERING 0x0802
-#define WIFI_DATA_EXITING  0x0801
-#define WIFI_DATA_WEP      0x0842
-#define WIFI_BACON         0x0800
+      #define WIFI_DATA_ENTERING 0x0802
+      #define WIFI_DATA_EXITING  0x0801
+      #define WIFI_DATA_WEP      0x0842
+      #define WIFI_BACON         0x0800
    u_int16  duration;
    u_int8   dha[ETH_ADDR_LEN];
    u_int8   sha[ETH_ADDR_LEN];
    u_int8   bssid[ETH_ADDR_LEN];
    u_int16  seq;
+   u_int8   llc_dsap;
+   u_int8   llc_ssap;
+   u_int8   llc_control;
+   u_int8   llc_org_code[3];
+   u_int16  proto;
 };
 
-struct wifi_ll_header {
-   u_int8   dsap;
-   u_int8   ssap;
-   u_int8   control;
-   u_int8   organization[3];
-   u_int16  type;
-};
+/* encapsulated ethernet */
+u_int8 WIFI_ORG_CODE[3] = {0x00, 0x00, 0x00};
 
 /* protos */
 
@@ -61,33 +61,32 @@ void wifi_init(void);
 void __init wifi_init(void)
 {
    add_decoder(LINK_LAYER, IL_TYPE_WIFI, decode_wifi);
-   add_iface_mtu(IL_TYPE_WIFI, 1500);
 }
 
 
 FUNC_DECODER(decode_wifi)
 {
    struct wifi_header *wifi;
-   struct wifi_ll_header *wifi_ll;
    FUNC_DECODER_PTR(next_decoder) = NULL;
 
    DECODED_LEN = sizeof(struct wifi_header);
       
    wifi = (struct wifi_header *)DECODE_DATA;
-
+   
+   /* org_code != encapsulated ethernet not yet supported */
+   if (memcmp(wifi->llc_org_code, WIFI_ORG_CODE, 3))
+      NOT_IMPLEMENTED();
+      
    /* XXX - where is the ESSID ? check with ethereal */
   
    /* BUCKET->L2->ESSID = ??? */
    
    /* we are only interested in "data" type */
    if (ntohs(wifi->type) == WIFI_DATA_ENTERING || ntohs(wifi->type) == WIFI_DATA_EXITING) {
-      wifi_ll = (struct wifi_ll_header *)(wifi + 1);
-      DECODED_LEN += sizeof(struct wifi_ll_header);
-      next_decoder = get_decoder(NET_LAYER, ntohs(wifi_ll->type));
+      next_decoder = get_decoder(NET_LAYER, ntohs(wifi->proto));
    } else if (ntohs(wifi->type) == WIFI_BACON) {
       /* BACON (or unsupported message) */
-      DECODED_LEN = DECODE_DATALEN;
-      next_decoder = NULL;
+      return NULL;
    }
    
    /* fill the bucket with sensitive data */

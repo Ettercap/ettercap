@@ -70,7 +70,7 @@ NG-0.7.0    ????????
       + resizable under X11
       + mouse event are supported
       + customizable colors
-   + A lot of new bugs to be discovered ;)
+   + A lot of new bugs^H^H^H^H random features to be discovered ;)
    !! offline sniffing actually does not bind to any NICs
 
    +++ too many other improvements to be listed here +++

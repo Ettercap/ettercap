@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.30 2004/02/01 16:48:51 alor Exp $
+    $Id: ec_profiles.c,v 1.31 2004/02/02 16:54:53 alor Exp $
 */
 
 #include <ec.h>
@@ -566,8 +566,21 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
 
    /* the caller wants the description */
    if (desc != NULL) {
+      struct open_port *o;
+      struct active_user *u;
+      int found = 0;
+         
+      /* search at least one account */
+      LIST_FOREACH(o, &(h->open_ports_head), next) {
+         LIST_FOREACH(u, &(o->users_list_head), next) {
+            found = 1;
+         }
+      }
+      
       ip_addr_ntoa(&h->L3_addr, tmp);
-      snprintf(*desc, len, "%15s   %s", tmp, (h->hostname) ? h->hostname : "" );
+      snprintf(*desc, len, "%c %15s   %s", (found) ? '*' : ' ', 
+                                           tmp, 
+                                           (h->hostname) ? h->hostname : "" );
    }
   
    /* return the next/prev/current to the caller */

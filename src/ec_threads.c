@@ -17,13 +17,18 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.28 2004/07/08 08:49:05 alor Exp $
+    $Id: ec_threads.c,v 1.29 2004/07/11 11:46:57 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_threads.h>
 
 #include <pthread.h>
+
+#if defined(OS_DARWIN) || defined(OS_MINGW) || defined(OS_CYGWIN)
+   /* XXX - darwin and windows are broken, pthread_join hangs up forever */
+   #define BROKEN_PTHREAD_JOIN
+#endif
 
 struct thread_list {
    struct ec_thread t;
@@ -245,9 +250,8 @@ void ec_thread_destroy(pthread_t id)
    /* send the cancel signal to the thread */
    pthread_cancel((pthread_t)id);
 
-#ifndef OS_DARWIN
-   /* XXX - darwin is broken, pthread_join hangs up forever */
-         
+#ifndef BROKEN_PTHREAD_JOIN
+   DEBUG_MSG("ec_thread_destroy: pthread_join");
    /* wait until it has finished */
    pthread_join((pthread_t)id, NULL);
 #endif         
@@ -294,9 +298,8 @@ void ec_thread_kill_all(void)
          /* send the cancel signal to the thread */
          pthread_cancel((pthread_t)current->t.id);
          
-#ifndef OS_DARWIN
-         /* XXX - darwin is broken, pthread_join hangs up forever */
-         
+#ifndef BROKEN_PTHREAD_JOIN
+         DEBUG_MSG("ec_thread_destroy: pthread_join");
          /* wait until it has finished */
          pthread_join((pthread_t)current->t.id, NULL);
 #endif         

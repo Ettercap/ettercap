@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.54 2004/07/13 09:35:44 alor Exp $
+    $Id: ec_capture.c,v 1.55 2004/07/13 16:24:51 alor Exp $
 */
 
 #include <ec.h>
@@ -355,10 +355,13 @@ void capture_getifs(void)
    /* do we have to print the list ? */
    if (GBL_OPTIONS->iflist) {
      
-      USER_MSG("List of available Network Interfaces:\n\n");
+      /* we are before ui_init(), can use printf */
+      fprintf(stdout, "List of available Network Interfaces:\n\n");
       
       for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next)
-         USER_MSG(" %s  \t%s\n", dev->name, dev->description);
+         fprintf(stdout, " %s  \t%s\n", dev->name, dev->description);
+
+      fprintf(stdout, "\n\n");
 
       clean_exit(0);
    }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.43 2003/11/01 15:52:58 alor Exp $
+    $Id: ec_decode.c,v 1.44 2003/12/05 11:25:44 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -129,7 +129,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    data = (u_char *)pkt;
    datalen = pkthdr->caplen;
 
-   /* An interface with MTU > 65000 ???? */
+   /* An interface with MTU > UINT16_MAX ???? */
    BUG_IF(GBL_PCAP->snaplen <= datalen);
    
    /* alloc the packet object structure to be passet through decoders */

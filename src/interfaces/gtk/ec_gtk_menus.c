@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.10 2004/05/21 14:25:22 alor Exp $
+    $Id: ec_gtk_menus.c,v 1.11 2004/09/16 04:16:32 daten Exp $
 */
 
 #include <ec.h>
@@ -30,7 +30,7 @@ GtkItemFactoryEntry gmenu_start[] = {
    {"/Start/Start sniffing",  "<control>w",  gtkui_start_sniffing, 0, "<StockItem>", GTK_STOCK_YES },
    {"/Start/Stop sniffing",   "<control>e",  gtkui_stop_sniffing,  0, "<StockItem>", GTK_STOCK_NO },
    {"/Start/sep1",            NULL,          NULL,                 0, "<Separator>" },
-   {"/Start/E_xit",           "<control>x",  gtk_main_quit,        0, "<StockItem>", GTK_STOCK_QUIT }
+   {"/Start/E_xit",           "<control>x",  gtkui_exit,        0, "<StockItem>", GTK_STOCK_QUIT }
 };
 
 GtkItemFactoryEntry gmenu_targets[] = {

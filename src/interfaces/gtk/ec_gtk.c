@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.27 2004/07/27 12:44:45 daten Exp $
+    $Id: ec_gtk.c,v 1.28 2004/09/16 04:16:32 daten Exp $
 */
 
 #include <ec.h>
@@ -50,6 +50,7 @@ static GtkAccelGroup *accel_group = NULL;
 
 void set_gtk_interface(void);
 void gtkui_start(void);
+void gtkui_exit(void);
 
 void gtkui_message(const char *msg);
 void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
@@ -63,7 +64,6 @@ static gboolean gtkui_flush_msg(gpointer data);
 static void gtkui_progress(char *title, int value, int max);
 
 static void gtkui_setup(void);
-static void gtkui_exit(void);
 
 static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
@@ -137,6 +137,8 @@ static void gtkui_init(void)
 	   return;
    }
 
+   gtkui_conf_read();
+
    gtkui_setup();
 
    /* gui init loop, calling gtk_main_quit will cause
@@ -155,11 +157,20 @@ static void gtkui_init(void)
 /*
  * exit ettercap 
  */
-static void gtkui_exit(void)
+void gtkui_exit(void)
 {
-   DEBUG_MSG("gtk_exit");
+   int left, top, width, height;
+   DEBUG_MSG("gtkui_exit");
 
+   gtk_window_get_position(GTK_WINDOW (window), &left, &top);
+   gtk_window_get_size(GTK_WINDOW (window), &width, &height);
+   gtkui_conf_set("window_left", left);
+   gtkui_conf_set("window_top", top);
+   gtkui_conf_set("window_width", width);
+   gtkui_conf_set("window_height", height);
+ 
    gtk_main_quit();
+   gtkui_conf_save();
    clean_exit(0);
 }
 
@@ -405,7 +416,7 @@ static void gtkui_setup(void)
    GtkItemFactory *item_factory;
    GClosure *closure = NULL;
    GdkModifierType mods;
-   gint keyval;
+   gint keyval, width, height, left, top;
    char *path = NULL;
 
    GtkItemFactoryEntry file_menu[] = {
@@ -427,10 +438,18 @@ static void gtkui_setup(void)
 
    DEBUG_MSG("gtkui_setup");
 
+   width = gtkui_conf_get("window_width");
+   height = gtkui_conf_get("window_height");
+   left = gtkui_conf_get("window_left");
+   top = gtkui_conf_get("window_top");
+
    /* create menu window */
    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (window), EC_PROGRAM" "EC_VERSION);
-   gtk_window_set_default_size(GTK_WINDOW (window), 600, 440);
+   gtk_window_set_default_size(GTK_WINDOW (window), width, height);
+
+   if(left > 0 || top > 0)
+      gtk_window_move(GTK_WINDOW(window), left, top);
 
    g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gtkui_exit), NULL);
 

@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.13 2004/05/21 14:25:22 alor Exp $ */
+/* $Id: ec_gtk.h,v 1.14 2004/09/16 04:16:32 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -8,6 +8,12 @@
 
 #define LOGO_FILE "ettercap.png"
 
+struct gtk_conf_entry {
+   char *name;
+   unsigned short value;
+};
+
+
 /* ec_gtk.c */
 extern GtkWidget *window;  /* main window */
 extern GtkWidget *notebook;
@@ -15,6 +21,7 @@ extern GtkWidget *main_menu;
 
 extern void gtkui_message(const char *msg);
 extern void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
+extern void gtkui_exit(void);
 
 extern void gtkui_sniff_offline(void);
 extern void gtkui_sniff_live(void);
@@ -96,6 +103,12 @@ extern void gtkui_plugin_load(void);
 
 /* ec_gtk_view_connections.c */
 extern void gtkui_show_connections(void);
+
+/* ec_gtk_conf.c */
+extern void gtkui_conf_set(char *name, unsigned short value);
+extern unsigned short gtkui_conf_get(char *name);
+extern void gtkui_conf_read(void);
+extern void gtkui_conf_save(void);
 
 #endif
 

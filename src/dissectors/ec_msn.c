@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_msn.c,v 1.4 2003/10/29 20:41:07 alor Exp $
+    $Id: ec_msn.c,v 1.5 2003/11/27 16:13:25 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -51,6 +51,7 @@ FUNC_DECODER(dissector_msn)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct ec_session *s = NULL;
    void *ident = NULL;
+   char *token;
 
    /* don't complain about unused var */
    (void)end;
@@ -119,17 +120,22 @@ FUNC_DECODER(dissector_msn)
              * it contains:
              * "user challenge password"
              */
-            PACKET->DISSECTOR.user = strdup(strtok(s->data, " "));
-            PACKET->DISSECTOR.info = strdup(strtok(NULL, " "));
-            PACKET->DISSECTOR.pass = strdup(strtok(NULL, " "));
+            if ((token = strtok(s->data, " "))) {
+               PACKET->DISSECTOR.user = strdup(token);
+               if ((token = strtok(NULL, " "))) {
+                  PACKET->DISSECTOR.info = strdup(token);
+                  if ((token = strtok(NULL, " "))) {
+                     PACKET->DISSECTOR.pass = strdup(token);
 
-            /* display the message */
-            DISSECT_MSG("MSN : %s:%d -> USER: %s  MD5 PASS: %s  CHALLENGE: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                       ntohs(PACKET->L4.dst), 
-                                       PACKET->DISSECTOR.user,
-                                       PACKET->DISSECTOR.pass,
-                                       PACKET->DISSECTOR.info);
-
+                     /* display the message */
+                     DISSECT_MSG("MSN : %s:%d -> USER: %s  MD5 PASS: %s  CHALLENGE: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                                                                           ntohs(PACKET->L4.dst), 
+                                                                                           PACKET->DISSECTOR.user,
+                                                                                           PACKET->DISSECTOR.pass,
+                                                                                           PACKET->DISSECTOR.info);
+                  }
+               }									   
+            }
             /* wipe the session */
             dissect_wipe_session(PACKET);
          }

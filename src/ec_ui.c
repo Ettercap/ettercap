@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.18 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_ui.c,v 1.19 2003/09/28 21:06:50 alor Exp $
 */
 
 #include <ec.h>
@@ -132,8 +132,7 @@ void ui_error(const char *fmt, ...)
       else           /* glibc 2.0 */
          size *= 2;  /* twice the old size */
       
-      msg = realloc (msg, size);
-      ON_ERROR(msg, NULL, "virtual memory exhausted");
+      SAFE_REALLOC(msg, size);
    }
 
    /* dump the error in the debug file */
@@ -187,8 +186,7 @@ void ui_msg(const char *fmt, ...)
       else           /* glibc 2.0 */
          size *= 2;  /* twice the old size */
       
-      msg->message = realloc (msg->message, size);
-      ON_ERROR(msg->message, NULL, "can't allocate memory");
+      SAFE_REALLOC(msg->message, size);
    }
 
    /* 

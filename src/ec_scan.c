@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.18 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_scan.c,v 1.19 2003/09/28 21:06:50 alor Exp $
 */
 
 #include <ec.h>
@@ -541,8 +541,7 @@ static void random_list(struct ip_list *e, int max)
     * to the elements in the list. this array speed up the
     * access method to the list 
     */
-   rand_array = realloc(rand_array, (max + 1) * sizeof(struct ip_addr *));
-   ON_ERROR(rand_array, NULL, "virtual memory exhausted");
+   SAFE_REALLOC(rand_array, (max + 1) * sizeof(struct ip_addr *));
    
    /* the first element */
    if (SLIST_FIRST(&ip_list_head) == SLIST_END(&ip_list_head)) {

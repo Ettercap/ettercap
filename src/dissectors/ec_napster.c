@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_napster.c,v 1.1 2003/09/27 21:08:27 alor Exp $
+    $Id: ec_napster.c,v 1.2 2003/09/28 21:06:53 alor Exp $
 */
 
 #include <ec.h>
@@ -101,19 +101,19 @@ FUNC_DECODER(dissector_napster)
 
    /* get the user */
    if ((user = strtok(tbuf, " ")) == NULL)
-      return NULL;
+      goto bad;
    
    /* get the pass */
    if ((pass = strtok(NULL, " ")) == NULL)
-      return NULL;
+      goto bad;
 
    /* skip the port */
    if ((client = strtok(NULL, " ")) == NULL)
-      return NULL;
+      goto bad;
 
    /* get the client */
    if ((client = strtok(NULL, "\"")) == NULL)
-      return NULL;
+      goto bad;
    
    PACKET->DISSECTOR.user = strdup(user);
    PACKET->DISSECTOR.pass = strdup(pass);
@@ -124,7 +124,8 @@ FUNC_DECODER(dissector_napster)
                                  PACKET->DISSECTOR.user,
                                  PACKET->DISSECTOR.pass,
                                  PACKET->DISSECTOR.info);
-  
+bad:
+   
    SAFE_FREE(tbuf);
   
    return NULL;

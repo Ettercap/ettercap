@@ -1,5 +1,5 @@
 
-/* $Id: ef.h,v 1.8 2003/09/27 17:22:02 alor Exp $ */
+/* $Id: ef.h,v 1.9 2003/09/28 21:06:53 alor Exp $ */
 
 #ifndef EF_H
 #define EF_H
@@ -37,6 +37,11 @@
    ON_ERROR(x, NULL, "virtual memory exhausted"); \
 } while(0)
 
+#define SAFE_REALLOC(x, s) do { \
+   x = realloc(x, s); \
+   ON_ERROR(x, NULL, "virtual memory exhausted"); \
+} while(0)
+
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 
 #define __init __attribute__ ((constructor))
@@ -48,6 +53,7 @@ struct globals {
    char *source_file;
    char *output_file;
    u_int32 lineno;
+   u_int8 debug;
 };
 
 /* in el_main.c */

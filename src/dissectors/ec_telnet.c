@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.8 2003/09/27 21:08:27 alor Exp $
+    $Id: ec_telnet.c,v 1.9 2003/09/28 21:06:53 alor Exp $
 */
 
 #include <ec.h>
@@ -72,8 +72,6 @@ FUNC_DECODER(dissector_telnet)
    if (PACKET->DATA.len == 0)
       return NULL;
    
-   DEBUG_MSG("TELNET --> TCP dissector_telnet");
-
    /* move the pointer to skip commands */
    skip_telnet_command(&ptr, end);
    
@@ -81,21 +79,39 @@ FUNC_DECODER(dissector_telnet)
    if (ptr == end)
       return NULL;
 
+   DEBUG_MSG("TELNET --> TCP dissector_telnet");
+   
    /* is the message from the server or the client ? */
    if (FROM_SERVER("telnet", PACKET)) {
       
-      /* the login was not successful, restart the collecting */
+      /* the login was not successful, restart the collecting 
+       * the collectin process is active if the session is empty
+       * (as the one created on SYN+ACK)
+       */
+      /* XXX regex is too slow !!! */
+#if 1      
       if (match_login_regex(ptr)) {
          dissect_create_ident(&ident, PACKET);
+         //session_get(&s, ident, DISSECT_IDENT_LEN);
+         //SAFE_FREE(s->data);
          session_del(ident, DISSECT_IDENT_LEN);
       }
+#endif
    } else {
       
       /* create an ident to retrieve the session */
       dissect_create_ident(&ident, PACKET);
       /* retrieve the session */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
-         /* create the new session and save the first char */
+      
+         if (!isprint((int)*ptr)) {
+            SAFE_FREE(ident);
+            return NULL;
+         }
+         /* 
+          * create the new session and save the first char 
+          * this is done only the first time
+          */
          dissect_create_session(&s, PACKET);
          /* remember the state (used later) */
          s->data = strdup(ptr);
@@ -103,6 +119,7 @@ FUNC_DECODER(dissector_telnet)
          session_put(s);
       } else {
          char str[strlen(s->data) + PACKET->DATA.disp_len + 2];
+         u_char *p;
 
          memset(str, 0, sizeof(str));
         
@@ -117,7 +134,11 @@ FUNC_DECODER(dissector_telnet)
 
          /* save the new string */
          SAFE_FREE(s->data);
-         s->data = strdup(str);
+         p = s->data = strdup(str);
+         
+         /* terminate the string at \n */
+         if ((p = strchr(s->data, '\n')) != NULL)
+            *p = '\0';
          
          /* 
           * the user input is terminated
@@ -156,27 +177,38 @@ FUNC_DECODER(dissector_telnet)
             return NULL;
          }
       }
-     
    }
    
    SAFE_FREE(ident);
 
    /* check if it is the first readable packet sent by the server */
-   IF_FIRST_PACKET_FROM_SERVER("telnet", s, ident) {
-      size_t i;
+   if (dissect_on_port("telnet", ntohs(PACKET->L4.src)) == ESUCCESS && PACKET->L4.flags & TH_PSH) {
+      dissect_create_ident(&ident, PACKET);
+      /* the session exist */
+      if (session_get(&s, ident, sizeof(struct dissect_ident)) != -ENOTFOUND) {
+         /* prevent the deletion of session created for the user and pass */ 
+         if (s->data == NULL) {
+            size_t i;
             
-      DEBUG_MSG("\tdissector_telnet BANNER");
-      /* get the banner */
-      PACKET->DISSECTOR.banner = strdup(ptr);
-      ptr = PACKET->DISSECTOR.banner;
-      /* replace \r\n with spaces */ 
-      for (i = 0; i < strlen(ptr); i++) {
-         if (ptr[i] == '\r' || ptr[i] == '\n')
-            ptr[i] = ' ';
+            DEBUG_MSG("\tdissector_telnet BANNER");
+            /* get the banner */
+            PACKET->DISSECTOR.banner = strdup(ptr);
+            ptr = PACKET->DISSECTOR.banner;
+            /* replace \r\n with spaces */ 
+            for (i = 0; i < strlen(ptr); i++) {
+               if (ptr[i] == '\r' || ptr[i] == '\n')
+                  ptr[i] = ' ';
+            }
+           
+            /* the banner has been collected use a session to remember it */
+            //s->data = strdup("\xe7\x7e");
+            session_del(ident, sizeof(struct dissect_ident));
+         }
       }
-     
-   } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
-   
+      SAFE_FREE(ident);
+      return NULL;
+   }  
+      
    return NULL;
 }
 

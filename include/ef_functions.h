@@ -1,16 +1,22 @@
 
-/* $Id: ef_functions.h,v 1.10 2003/09/27 17:22:02 alor Exp $ */
+/* $Id: ef_functions.h,v 1.11 2003/09/28 21:06:53 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H
 
+#include <ec_filter.h>
+
 #define SCRIPT_ERROR(x, ...) FATAL_ERROR("[%s:%d]: "x, GBL_OPTIONS.source_file, GBL.lineno, ## __VA_ARGS__ );
+
+/* ef_main */
+extern void ef_debug(u_char level, const char *message, ...);
 
 /* ef_parser */
 extern void parse_options(int argc, char **argv);
 
 /* ef_test */
 extern void test_filter(char *filename);
+extern void print_fop(struct filter_op *fop, u_int32 eip);
 
 /* ef_syntax && ef_grammar */
 extern int yyerror(char *);                                                                         
@@ -21,8 +27,6 @@ extern void load_tables(void);
 extern void load_constants(void);
 extern int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset, u_int8 *size);
 extern int get_constant(char *name, u_int32 *value);
-
-#include <ec_filter.h>
 
 /* ef_encode */
 extern int encode_offset(char *string, struct filter_op *fop);
@@ -42,6 +46,8 @@ struct block {
    } un;
    u_int16 n;
    u_int8 type;
+      #define BLK_INSTR 0
+      #define BLK_IFBLK 1
    struct block *next;
 };
 
@@ -62,9 +68,9 @@ struct conditions {
    struct conditions *next;
 };
 
-extern int compiler_set_init(struct block *blk);
-extern struct filter_op * compile_tree(void);
-extern struct block * compiler_add_block(struct instruction *ins, struct block *blk);
+extern int compiler_set_root(struct block *blk);
+extern size_t compile_tree(struct filter_op **fop);
+extern struct block * compiler_add_instr(struct instruction *ins, struct block *blk);
 extern struct instruction * compiler_create_instruction(struct filter_op *fop);
 
 #endif

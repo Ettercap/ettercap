@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.10 2003/09/27 17:22:02 alor Exp $ */
+/* $Id: el.h,v 1.11 2003/09/28 21:06:53 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -39,6 +39,11 @@
 
 #define SAFE_CALLOC(x, n, s) do { \
    x = calloc(n, s); \
+   ON_ERROR(x, NULL, "virtual memory exhausted"); \
+} while(0)
+
+#define SAFE_REALLOC(x, s) do { \
+   x = realloc(x, s); \
    ON_ERROR(x, NULL, "virtual memory exhausted"); \
 } while(0)
 

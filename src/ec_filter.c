@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.19 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_filter.c,v 1.20 2003/09/28 21:06:50 alor Exp $
 */
 
 #include <ec.h>
@@ -466,8 +466,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       delta += rlen - slen;
 
       /* resize the buffer to contain the new data */
-      tmp = realloc(tmp, po->DATA.len + delta);
-      ON_ERROR(tmp, NULL, "virtual memory exhausted");
+      SAFE_REALLOC(tmp, po->DATA.len + delta);
       
       /* move the buffer to make room for the replacement string */   
       memmove(ptr + rlen, ptr + slen, len); 
@@ -627,15 +626,15 @@ static int func_exec(struct filter_op *fop)
       /* split the string */
       for (p = strsep(&q, " "); p != NULL; p = strsep(&q, " ")) {
          /* allocate the array */
-         param = realloc(param, (i + 1) * sizeof(char *));
-         ON_ERROR(param, NULL, "virtual memory exhausted");
+         SAFE_REALLOC(param, (i + 1) * sizeof(char *));
+         
          /* copy the tokens in the array */
          param[i++] = strdup(p); 
       }
       
       /* NULL terminate the array */
-      param = realloc(param, (i + 1) * sizeof(char *));
-      ON_ERROR(param, NULL, "virtual memory exhausted");
+      SAFE_REALLOC(param, (i + 1) * sizeof(char *));
+      
       param[i] = NULL;
      
       /* 

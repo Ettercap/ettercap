@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.32 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_main.c,v 1.33 2003/09/28 21:06:50 alor Exp $
 */
 
 #include <ec.h>
@@ -215,7 +215,7 @@ void clean_exit(int errcode)
   
    GBL_LOCK = 1;
    
-   USER_MSG("\n\nTerminating %s...\n\n", GBL_PROGRAM);
+   USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
 
    /* close the UI */
    ui_cleanup();

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.2 2003/11/28 15:50:40 lordnaga Exp $
+    $Id: ec_http.c,v 1.3 2003/11/28 16:56:20 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -87,6 +87,7 @@ static void Find_Url(u_char *to_parse, char **ret);
 static void Find_Url_Referer(u_char *to_parse, char **ret);
 static void Parse_Post_Payload(u_char *ptr, struct http_status *conn_status, struct packet_object *po);
 static void Print_Pass(struct packet_object *po);
+static void Get_Banner(u_char *ptr, struct packet_object *po);
 static u_char Parse_Form(u_char *to_parse, char **ret, char mode);
 static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po);
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po);
@@ -158,7 +159,7 @@ FUNC_DECODER(dissector_http)
       } 	 
    } else {
       if (!strncmp(ptr, "HTTP", 4)) {
-         /* XXX --- Dissector banner, to be implemented */
+         Get_Banner(ptr, PACKET);
 
          /* Since the server replies there's no need to
           * wait for POST termination or client response
@@ -176,12 +177,76 @@ FUNC_DECODER(dissector_http)
    }
 
    return NULL;
-}      
+}
+
+
+/* Get the server banner from the headers */       
+static void Get_Banner(u_char *ptr, struct packet_object *po)
+{
+   char *start, *end;
+   u_int32 len;
+   
+   /* This is the banner of the remote 
+    * server and not of the proxy
+    */
+   if (FROM_SERVER("proxy", po))
+      po->DISSECTOR.banner=strdup("Proxy");
+   else {
+      /* Get the server version */
+      if ((start = strstr(ptr, "Server: ")) && (end = strstr(start, "\r"))) {
+         start += strlen("Server: ");
+         len = end - start;
+	 if (len>0 && len<1024) {
+            SAFE_CALLOC(po->DISSECTOR.banner, len+1, sizeof(char));
+	    memcpy(po->DISSECTOR.banner, start, len);
+         }
+      }
+   }
+}
+
 
 /* Parse Basic Authentication for both Proxy and WWW Auth */ 
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
-   /* XXX - To be implemented */
+   int Proxy_Auth = 0;
+   char *token, *to_decode;
+
+   DEBUG_MSG("HTTP --> dissector http (Basic Auth)");
+
+   /* If it's a proxy auth and we are not interested on proxy stuff
+    * return 0, so the dissector will continue to parse GET and POST
+    */
+   /* It stands for both Proxy-Authenticate and Authorization ;) */    
+   if (strstr(ptr, "Proxy-Auth") || strstr(ptr, "Proxy-auth")) {
+      if (FROM_CLIENT("proxy", po) || FROM_SERVER("proxy", po))
+         Proxy_Auth = 1;
+      else
+         return 0;
+   }
+
+   if (!(to_decode = strdup(from_here)))
+      return 1;
+       
+   strtok(to_decode, "\r");
+   base64_decode(to_decode, to_decode);
+   
+   /* Parse the cleartext auth string */
+   if ( (token = strsep(&to_decode, ":")) != NULL) {
+      po->DISSECTOR.user = strdup(token);
+      if ( (token = strsep(&to_decode, ":")) != NULL) {
+         po->DISSECTOR.pass = strdup(token);
+      
+         /* Are we authenticating to the proxy or to a website? */
+         if (Proxy_Auth)
+            po->DISSECTOR.info = strdup("Proxy Authentication");
+         else 
+            Find_Url(ptr, &(po->DISSECTOR.info));
+	    
+         Print_Pass(po);
+      }
+   }
+
+   SAFE_FREE(to_decode);
    return 1;
 }
 
@@ -195,6 +260,8 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
    struct ec_session *s = NULL;
    struct http_status *conn_status;
        
+   DEBUG_MSG("HTTP --> dissector http (NTLM Auth)");
+   
    /* If it's a proxy auth and we are not interested on proxy stuff
     * return 0, so the dissector will continue to parse GET and POST
     */
@@ -205,11 +272,11 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
       else
          return 0;
    }
-    
+   
    if (!(to_decode = strdup(from_here)))
       return 1;
        
-   strtok(to_decode, "\r\n");
+   strtok(to_decode, "\r");
 
    base64_decode(to_decode, to_decode);
    hSmb = (tSmbStdHeader *) to_decode;
@@ -458,7 +525,7 @@ static void Find_Url_Referer(u_char *to_parse, char **ret)
    /* If the referer exists */
    if ((fromhere = strstr(to_parse, "Referer: "))) 
             if ((*ret = strdup(fromhere + strlen("Referer: "))))
-               strtok(*ret, "\r\n");
+               strtok(*ret, "\r");
    else {
       /* Get the page from the request */
       page = strdup(to_parse);
@@ -467,7 +534,7 @@ static void Find_Url_Referer(u_char *to_parse, char **ret)
       /* If the path is relative, search for the Host */
       if ((*page=='/') && (fromhere = strstr(to_parse, "Host: "))) {
          host = strdup( fromhere + strlen("Host: ") );
-         strtok(host, "\r\n");
+         strtok(host, "\r");
       } else 
          host = strdup("");
 	 
@@ -503,7 +570,7 @@ static void Find_Url(u_char *to_parse, char **ret)
    /* If the path is relative, search for the Host */
    if ((*page=='/') && (fromhere = strstr(to_parse, "Host: "))) {
       host = strdup( fromhere + strlen("Host: ") );
-      strtok(host, "\r\n");
+      strtok(host, "\r");
    } else 
       host = strdup("");
 	 
@@ -523,9 +590,9 @@ static void Print_Pass(struct packet_object *po)
    char tmp[MAX_ASCII_ADDR_LEN];
    
    if (!po->DISSECTOR.user)
-      po->DISSECTOR.pass = strdup("");
+      po->DISSECTOR.user = strdup("");
 
-   if (!po->DISSECTOR.user)
+   if (!po->DISSECTOR.pass)
       po->DISSECTOR.pass = strdup("");
 
    DISSECT_MSG("HTTP : %s:%d -> USER: %s  PASS: %s INFO: %s\n", ip_addr_ntoa(&po->L3.dst, tmp),
@@ -551,6 +618,7 @@ static char *unicodeToString(char *p, size_t len)
    u_int32 i;
    static char buf[1024];
 
+   /* A string longer than 1024 chars???...it's a bougs packet */
    for (i=0; i<len && i<1023; ++i) {
       buf[i] = *p & 0x7f;
       p += 2;

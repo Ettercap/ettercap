@@ -1,7 +1,7 @@
 
 include $(top_srcdir)/Makefile.am.common
 
-man_MANS = ettercap.8 etterlog.8 etter.conf.5
+man_MANS = ettercap.8 etterlog.8 etterfilter.8 etter.conf.5
 
 if PLUGINS
    man_MANS += ettercap_plugins.8

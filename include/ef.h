@@ -43,12 +43,14 @@
 
 
 struct globals {
+   char test:1;
+   char *source_file;
 };
 
 /* in el_main.c */
 extern struct globals gbls;
 
-#define GBL gbls
+#define GBL_OPTIONS gbls
 
 #define GBL_PROGRAM "etterfilter"
 

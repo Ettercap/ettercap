@@ -19,7 +19,7 @@ EXTRA_DIST = LICENSE \
              shtool \
              doc/*
 
-CLEANFILES = *.log *.out *.cache *.so ettercap etterlog
+CLEANFILES = *.log *.out *.cache *.so ettercap etterlog etterfilter
 
 dist-hook:
 	rm -rf `find $(distdir)/doc -name CVS`

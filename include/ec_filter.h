@@ -38,12 +38,13 @@
 
 #define MAX_FILTER_LEN  200
 
-struct filter {
+struct filter_op {
    char opcode;
-      #define FOP_FUNC  0
+      #define FOP_EXIT  0
       #define FOP_TEST  1
-      #define FOP_JMP   2
-      #define FOP_DROP  3
+      #define FOP_FUNC  2
+      #define FOP_JMP   3
+      #define FOP_DROP  4
 
    struct function {
       char opcode;
@@ -54,18 +55,20 @@ struct filter {
       size_t value_len;
       char value2[MAX_FILTER_LEN];
       size_t value2_len;
-   };
+   } func;
 
-   struct compare {
+   struct operation {
       u_int16 offset;
       u_int32 value;
-   };
+   } op;
 
-   u_int16 goto_if_true;
-   u_int16 goto_if_false;
+   u_int16 jmp;
    
 };
 
+/* exported functions */
+
+extern int filter_engine(struct filter_op *fop, struct packet_object *po);
 
 #endif
 

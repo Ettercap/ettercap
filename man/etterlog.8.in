@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.12 2003/07/15 20:28:00 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.13 2003/08/28 19:55:20 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -317,6 +317,7 @@ Marco Valleri (NaGA) <crwm@freemail.it>
 
 .SH "SEE ALSO"
 .I "ettercap(8)"
+.I "etterfilter(8)"
 .I "etter.conf(5)"
 .I "ettercap_plugin(8)"
 .LP

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.33 2003/08/18 21:25:16 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.34 2003/08/28 19:55:20 alor Exp $
 */
 
 
@@ -59,6 +59,7 @@ void ec_usage(void)
    fprintf(stdout, "  -M, --mitm <METHOD>         perform a mitm attack\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
+   fprintf(stdout, "  -u, --unoffensive           do not forward packets\n");
    fprintf(stdout, "  -r, --read <file>           read data from pcapfile <file>\n");
    fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n");
    fprintf(stdout, "  -R, --reversed              use reversed TARGET matching\n");
@@ -126,6 +127,7 @@ void parse_options(int argc, char **argv)
       
       { "quiet", no_argument, NULL, 'q' },
       { "silent", no_argument, NULL, 'z' },
+      { "unoffensive", no_argument, NULL, 'u' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
       
@@ -165,7 +167,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "B:CchDdEe:f:Ghi:j:k:L:l:M:Nn:OoP:pqiRr:t:UV:vw:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "B:CchDdEe:f:Ghi:j:k:L:l:M:Nn:OoP:pqiRr:t:UuV:vw:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -268,6 +270,10 @@ void parse_options(int argc, char **argv)
                   
          case 'z':
                   GBL_OPTIONS->silent = 1;
+                  break;
+                  
+         case 'u':
+                  GBL_OPTIONS->unoffensive = 1;
                   break;
                   
          case 'd':

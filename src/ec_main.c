@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.29 2003/08/21 14:36:02 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_main.c,v 1.30 2003/08/28 19:55:20 alor Exp $
 */
 
 #include <ec.h>
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     * always disable the kernel ip forwarding (except when reading from file).
     * the forwarding will be done by ettercap.
     */
-   if (!GBL_OPTIONS->read)
+   if (!GBL_OPTIONS->read || GBL_OPTIONS->unoffensive)
       disable_ip_forward();
    
    /* 

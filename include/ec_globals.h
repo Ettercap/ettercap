@@ -32,6 +32,7 @@ struct ec_options {
    char compress:1;
    char quiet:1;
    char silent:1;
+   char unoffensive:1;
    char load_hosts:1;
    char save_hosts:1;
    char resolve:1;

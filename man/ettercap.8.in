@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.29 2003/08/21 15:47:13 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.30 2003/08/28 19:55:20 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -323,7 +323,7 @@ Use this <IFACE> instead of the default one.
 Use this <NETMSK> instead of the one associated with the current iface.
 
 .TP
-\fB\-R\fR, \fB\-\-reverse\fR
+\fB\-R\fR, \fB\-\-reversed\fR
 Reverse the matching in the TARGET selection. It means not(TARGET). All but the
 selected TARGET.
 
@@ -343,6 +343,17 @@ Do not perform the initial ARP scan of the LAN.
 NOTE: you will not have the hosts list, so you can't use the multipoison feature.
 you can only select two hosts for an ARP poisoning attack, specifying them
 through the TARGETs
+
+.TP
+\fB\-u\fR, \fB\-\-unoffensive\fR
+Every time ettercap starts, it disable ip forwarding in the kernel and begin to
+forward packets it self. This options prevent to do that, so the resposibility
+of ip forwarding is left to the kernel.
+.br
+This options is useful if you want to run multiple ettercap istances. You will
+have one istance (the one without the -u option) forwarding the packets, and
+all the other istances doing their work without forwarding them. Else you will
+get packet duplicates.
 
 .TP
 \fB\-j\fR, \fB\-\-load-hosts <FILENAME>\fR
@@ -589,6 +600,7 @@ Marco Valleri (NaGA) <crwm@freemail.it>
 .I "etter.conf(5)"
 .I "ettercap_plugin(8)"
 .I "etterlog(8)"
+.I "etterfilter(8)"
 .LP
 
 

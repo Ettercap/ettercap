@@ -1,5 +1,5 @@
 /*
-    etterlog -- filter compiler for ettercap content filtering engine
+    etterfilter -- filter compiler for ettercap content filtering engine
 
     Copyright (C) ALoR & NaGA
 
@@ -17,13 +17,17 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.1 2003/08/22 19:23:40 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_main.c,v 1.2 2003/08/28 19:55:20 alor Exp $
 */
 
 #include <ef.h>
 #include <ef_functions.h>
 #include <ec_version.h>
 
+/* globals */
+
+extern FILE * yyin;           /* from scanner */
+extern int yyparse (void);    /* from parser */
 
 /* global options */
 struct globals gbls;
@@ -40,9 +44,36 @@ int main(int argc, char *argv[])
   
   
    /* getopt related parsing...  */
-   //parse_options(argc, argv);
+   parse_options(argc, argv);
 
+
+   /* test the file */
+   if (GBL_OPTIONS.test) {
+      test_filter();
+      exit(0);
+   }
    
+   /* set the input for source file */
+   if (GBL_OPTIONS.source_file)
+      yyin = fopen(GBL_OPTIONS.source_file, "r");
+   else
+      yyin = stdin;
+
+   /* no buffering */
+   setbuf(yyin, NULL);
+   setbuf(stdout, NULL);
+   setbuf(stderr, NULL);
+ 
+   fprintf(stdout, "Compiling...\n\n");
+
+   /* begin the parsing */
+   (void) yyparse();
+   
+   fprintf(stdout, "\nDone.\n\n");
+  
+   /* write to file */
+   // write_output();
+
    return 0;
 }
 

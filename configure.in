@@ -565,7 +565,12 @@ dnl ===============
 EC_MESSAGE(Writing output files)
 
 AC_OUTPUT(Makefile
-          man/Makefile man/ettercap.8 man/ettercap_plugins.8 man/etterlog.8 man/etter.conf.5
+          man/Makefile 
+          man/ettercap.8 
+          man/ettercap_plugins.8 
+          man/etterlog.8 
+          man/etterfilter.8 
+          man/etter.conf.5
           share/Makefile 
           src/Makefile 
           include/Makefile

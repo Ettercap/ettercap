@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.12 2003/07/11 16:50:24 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_inet.c,v 1.13 2003/08/28 19:55:20 alor Exp $
 */
 
 #include <ec.h>
@@ -267,6 +267,10 @@ int ip_addr_is_local(struct ip_addr *sa)
    
    switch (sa->type) {
       case AF_INET:
+         /* the address 0.0.0.0 is used by DHCP and it is local for us*/
+         if ( !memcmp(&sa->addr, "\x00\x00\x00\x00", sa->addr_size) )
+            return ESUCCESS;
+         
          /* make a check on GBL_IFACE (is it initialized ?) */
          if ( !memcmp(&nw->addr, "\x00\x00\x00\x00", sa->addr_size) )
             return -EINVALID;

@@ -1,7 +1,7 @@
 /*
-    etterlog -- ettercap compatibility module
-                here are stored functions needed by ec_* source
-                but not linked in etterfilter
+    etterfilter -- ettercap compatibility module
+                   here are stored functions needed by ec_* source
+                   but not linked in etterfilter
 
     Copyright (C) ALoR & NaGA
 
@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_ec_compat.c,v 1.1 2003/08/22 19:23:40 alor Exp $
+    $Id: ef_ec_compat.c,v 1.2 2003/08/28 19:55:20 alor Exp $
 */
 
 #include <el.h>

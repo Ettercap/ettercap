@@ -1,0 +1,76 @@
+.\"  etterlog -- log analyzer for ettercap log files
+.\"
+.\"  This program is free software; you can redistribute it and/or modify
+.\"  it under the terms of the GNU General Public License as published by
+.\"  the Free Software Foundation; either version 2 of the License, or
+.\"  (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+.\"
+.\"  $Id: etterfilter.8.in,v 1.1 2003/08/28 19:55:20 alor Exp $
+.\"
+.de Sp
+.if n .sp
+.if t .sp 0.4
+..
+.TH ETTERFILTER "8" "" "ettercap @VERSION@"
+.SH NAME
+.B etterfilter @VERSION@ \- Filter compiler for ettercap content filtering
+engine
+
+.SH SYNOPSIS
+.B etterfilter
+[\fIOPTIONS\fR] \fIFILE\fR
+
+
+.SH DESCRIPTION
+
+.TP
+.B GENERAL OPTIONS
+.TP
+                           
+                           
+.TP
+.B STANDARD OPTIONS
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+Print the version and exit.
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+prints the help screen with a short summary of the available options.
+
+
+
+.SH EXAMPLES
+Here are some examples of using etterfilter.
+.TP
+.B etterfilter filter.ecf -o filter.ef
+.Sp
+Compiles the source filter.ecf into a binary filter.ef
+
+
+
+.SH AUTHORS
+Alberto Ornaghi (ALoR) <alor@users.sourceforge.net>
+.br
+Marco Valleri (NaGA) <crwm@freemail.it>
+
+
+
+.SH "SEE ALSO"
+.I "ettercap(8)"
+.I "etterlog(8)"
+.I "etter.conf(5)"
+.I "ettercap_plugin(8)"
+.LP
+
+
+

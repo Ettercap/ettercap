@@ -1,13 +1,19 @@
 
 include $(top_srcdir)/Makefile.am.common
 
-# do not link ettercap libs
-LIBS = 
+# don't link ettercap libs
+LIBS =
 
 bin_PROGRAMS = etterfilter
 
+AM_YFLAGS = --defines
+
 etterfilter_SOURCES = ef_main.c \
                       ef_ec_compat.c \
+                      ef_parser.c \
+                      ef_test.c \
+                      ef_grammar.y \
+                      ef_syntax.l \
                       $(top_srcdir)/src/ec_error.c \
                       $(top_srcdir)/src/ec_hash.c \
                       $(top_srcdir)/src/ec_file.c \

@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.6 $                                      # 
-#  Last updated on : $Date: 2003/07/11 16:50:24 $                          #
+#  Version         : $Revision: 1.7 $                                      # 
+#  Last updated on : $Date: 2003/08/28 19:55:20 $                          #
 #  Total entries   : 1280                                                  #
 #                                                                          #
 ############################################################################
@@ -102,6 +102,7 @@
 0400:05B4:40:00:0:1:0:1:S:3C:Windows 44
 0400:05B4:40:WS:0:0:0:0:A:2C:FORE ES-2810 Switch
 0400:05B4:FF:WS:0:0:0:0:A:2C:3Com 812 ADSL ROUTER
+0400:05C8:20:WS:0:0:0:0:A:2C:Nortel BayStack Access Node
 0400:0901:40:10:0:1:0:1:S:3C:Mac OS X 102.4
 0400:_MSS:40:WS:0:0:0:0:S:28:Linux 2.4.18
 0400:_MSS:80:00:0:1:0:0:A:LT:Bay Networks BLN-2 Network Router or ASN Processor rev 9

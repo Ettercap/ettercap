@@ -27,11 +27,12 @@
 
 this is the unofficial and floating in time roadmap:
 
-   - escape string
+   - convert passive list to hostlist
 
 Sep 2003:
    
    + FILTERING ENGINE
+      - don't filter in unoffensive mode
       - use regexp for filtering
       - include all the protocols in the filter rule
          - protocols table
@@ -68,6 +69,7 @@ Oct 2003:
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
+      - don't inject in unoffensive mode
       - binder
    
    + DISSECTORS

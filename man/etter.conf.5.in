@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.7 2003/08/22 19:23:40 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.8 2003/08/28 19:55:20 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -161,4 +161,5 @@ port1,port2,port3,...
 .I "ettercap(8)"
 .I "ettercap_plugin(8)"
 .I "etterlog(8)"
+.I "etterfilter(8)"
 .LP

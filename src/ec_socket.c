@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_socket.c,v 1.8 2004/06/08 20:05:36 alor Exp $
+    $Id: ec_socket.c,v 1.9 2004/06/09 10:05:02 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -69,7 +69,7 @@ int open_socket(char *host, u_int16 port)
    struct hostent *infh;
    struct sockaddr_in sa_in;
    int sh, ret;
-#define TSLEEP (250*1000) /* 250 milliseconds */
+#define TSLEEP (50*1000) /* 50 milliseconds */
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
 
    DEBUG_MSG("open_socket -- [%s]:[%d]", host, port);

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.33 2003/10/15 10:01:46 lordnaga Exp $
+    $Id: ec_filter.c,v 1.34 2003/10/15 11:27:50 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -564,8 +564,8 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       
       /* set the delta */
       po->DATA.delta += rlen - slen;
-      po->DATA.len += po->DATA.delta;
-
+      po->DATA.len += rlen - slen;
+      
       /* check if we are overflowing pcap buffer */
       BUG_IF(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) < po->DATA.len);
       

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.15 2004/04/06 15:13:02 alor Exp $
+    $Id: ec_gtk.c,v 1.16 2004/04/09 11:48:59 daten Exp $
 */
 
 #include <ec.h>
@@ -605,20 +605,75 @@ static void write_pcapfile(void)
  */
 static void gtkui_unified_sniff(void)
 {
-   char err[PCAP_ERRBUF_SIZE];
-   
-#define IFACE_LEN  50
-   
+   GList *iface_list;
+   char *iface_desc = NULL;
+   GtkWidget *iface_combo;
+   pcap_if_t *dev;
+   GtkWidget *dialog, *label, *hbox, *image;
+   #define IFACE_LEN  50
+
    DEBUG_MSG("gtk_unified_sniff");
-   
-   /* if the user has not specified an interface, get the first one */
-   if (GBL_OPTIONS->iface == NULL) {
-      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-      strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+
+   dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
+                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+   gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+   gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
+  
+   hbox = gtk_hbox_new (FALSE, 6);
+   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
+  
+   image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
+   gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.0);
+   gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
+  
+   label = gtk_label_new ("Network interface : ");
+   gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
+   gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+   gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
+
+   /* make a list of network interfaces */
+   iface_list = NULL;
+   for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+      iface_list = g_list_append(iface_list, dev->description);
    }
 
-   /* calling gtk_main_quit will go to the next interface :) */
-   gtkui_input("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, gtk_main_quit);
+   /* make a drop down box and assign the list to it */
+   iface_combo = gtk_combo_new();
+   gtk_combo_set_popdown_strings (GTK_COMBO (iface_combo), iface_list);
+   gtk_box_pack_start (GTK_BOX (hbox), iface_combo, FALSE, FALSE, 0);
+
+   /* hitting Enter in the drop down box clicks OK */
+   g_object_set_data(G_OBJECT (GTK_COMBO (iface_combo)->entry), "dialog", dialog);
+   g_signal_connect(G_OBJECT (GTK_COMBO (iface_combo)->entry), "activate", G_CALLBACK (gtkui_dialog_enter), NULL);
+
+   /* list is stored in the widget, can safely free this copy */
+   g_list_free(iface_list); 
+
+   /* render the contents of the dialog */
+   gtk_widget_show_all (hbox);
+   /* show the dialog itself and become interactive */
+   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+
+      if (GBL_OPTIONS->iface == NULL) {
+         SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+      }
+
+      iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (iface_combo)->entry));
+      for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+         if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
+            strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
+            break;
+         }
+      }
+
+      gtk_widget_destroy(dialog);
+
+      /* exit setup iterface */
+      gtk_main_quit();
+      return;
+   }
+   gtk_widget_destroy(dialog);
 }
 
 /* 
@@ -646,8 +701,10 @@ static void gtkui_unified_sniff_default(void) {
 static void gtkui_bridged_sniff(void)
 {
    GtkWidget *dialog, *vbox, *hbox, *image;
-   GtkWidget *hbox_big, *label, *entry1, *entry2;
-   char err[PCAP_ERRBUF_SIZE];
+   GtkWidget *hbox_big, *label, *combo1, *combo2;
+   GList *iface_list;
+   char *iface_desc = NULL;
+   pcap_if_t *dev;
 
    DEBUG_MSG("gtk_bridged_sniff");
 
@@ -680,16 +737,17 @@ static void gtkui_bridged_sniff(void)
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
    gtk_widget_show(label);
 
-   entry1 = gtk_entry_new_with_max_length(IFACE_LEN);
-   gtk_entry_set_width_chars (GTK_ENTRY (entry1), 6);
-   
-   if (GBL_OPTIONS->iface == NULL)
-      gtk_entry_set_text (GTK_ENTRY (entry1), pcap_lookupdev(err));
-   else
-      gtk_entry_set_text (GTK_ENTRY (entry1), GBL_OPTIONS->iface);
-   
-   gtk_box_pack_start(GTK_BOX (hbox), entry1, FALSE, FALSE, 0);
-   gtk_widget_show(entry1);
+   /* make a list of network interfaces */
+   iface_list = NULL;
+   for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+      iface_list = g_list_append(iface_list, dev->description);
+   }
+
+   /* make a drop down box and assign the list to it */
+   combo1 = gtk_combo_new();
+   gtk_combo_set_popdown_strings (GTK_COMBO (combo1), iface_list);
+   gtk_box_pack_start (GTK_BOX (hbox), combo1, FALSE, FALSE, 0);
+   gtk_widget_show(combo1);
 
    hbox = gtk_hbox_new(FALSE, 0);
    gtk_box_pack_start(GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
@@ -700,10 +758,18 @@ static void gtkui_bridged_sniff(void)
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
    gtk_widget_show(label);
 
-   entry2 = gtk_entry_new_with_max_length(IFACE_LEN);
-   gtk_entry_set_width_chars (GTK_ENTRY (entry2), 6);
-   gtk_box_pack_start(GTK_BOX (hbox), entry2, FALSE, FALSE, 0);
-   gtk_widget_show(entry2);
+   /* make a drop down box and assign the list to it */
+   combo2 = gtk_combo_new();
+   gtk_combo_set_popdown_strings (GTK_COMBO (combo2), iface_list);
+   gtk_box_pack_start (GTK_BOX (hbox), combo2, FALSE, FALSE, 0);
+   gtk_widget_show(combo2);
+
+   /* pick the second interface by default, since they can't match */
+   if(iface_list && iface_list->next)
+      gtk_entry_set_text(GTK_ENTRY (GTK_COMBO (combo2)->entry), iface_list->next->data);
+
+   /* list is stored in the widget, can safely free this copy */
+   g_list_free(iface_list);
 
    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
@@ -711,8 +777,22 @@ static void gtkui_bridged_sniff(void)
       SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
       SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
 
-      strncpy(GBL_OPTIONS->iface, gtk_entry_get_text(GTK_ENTRY (entry1)), IFACE_LEN);
-      strncpy(GBL_OPTIONS->iface_bridge, gtk_entry_get_text(GTK_ENTRY (entry2)), IFACE_LEN);
+      iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo1)->entry));
+      for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+         if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
+            strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
+            break;                      
+         }                              
+      }
+
+      iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo2)->entry));
+      for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+         if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
+            strncpy(GBL_OPTIONS->iface_bridge, dev->name, IFACE_LEN);
+            break;
+         }
+      }
+
       bridged_sniff();
    }
 

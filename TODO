@@ -25,7 +25,6 @@
 
    + CURSES
       - modifiable text in widgets
-      - path to search for file
       
    + NETWORK MAPPER
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.35 2004/05/14 13:17:10 alor Exp $
+    $Id: ec_log.c,v 1.36 2004/05/19 12:52:18 alor Exp $
 */
 
 #include <ec.h>
@@ -205,12 +205,10 @@ int log_open(struct log_fd *fd, char *filename)
  */
 void log_close(struct log_fd *fd)
 {
-   if (fd->cfd) {
+   if (fd->type == LOG_COMPRESSED) {
       gzclose(fd->cfd);
       fd->cfd = NULL;
-   }
-
-   if (fd->fd) {
+   } else {
       close(fd->fd);
       fd->fd = 0;
    }

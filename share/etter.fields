@@ -20,11 +20,11 @@
 
 [USER]
 
+login
 user
 email
 username
 userid
-login
 form_loginname
 loginname
 pop_login

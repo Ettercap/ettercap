@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.33 2004/11/04 09:22:34 alor Exp $
+    $Id: ec_threads.c,v 1.34 2004/11/04 10:29:06 alor Exp $
 */
 
 #include <ec.h>
@@ -69,7 +69,7 @@ char * ec_thread_getname(pthread_t id)
    struct thread_list *current;
    char *name;
 
-   if (id == EC_SELF)
+   if (pthread_equal(id, EC_PTHREAD_SELF))
       id = pthread_self();
 
    /* don't lock here to avoid deadlock in debug messages */
@@ -78,7 +78,7 @@ char * ec_thread_getname(pthread_t id)
 #endif
    
    LIST_FOREACH(current, &thread_list_head, next) {
-      if (current->t.id == id) {
+      if (pthread_equal(current->t.id, id)) {
          name = current->t.name;
 #ifndef DEBUG
          THREADS_UNLOCK;
@@ -126,13 +126,13 @@ char * ec_thread_getdesc(pthread_t id)
    struct thread_list *current;
    char *desc;
 
-   if (id == EC_SELF)
+   if (pthread_equal(id, EC_PTHREAD_SELF))
       id = pthread_self();
   
    THREADS_LOCK;
    
    LIST_FOREACH(current, &thread_list_head, next) {
-      if (current->t.id == id) {
+      if (pthread_equal(current->t.id, id)) {
          desc = current->t.description;
          THREADS_UNLOCK;
          return desc;
@@ -151,7 +151,7 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
 {
    struct thread_list *current, *newelem;
 
-   if (id == EC_SELF)
+   if (pthread_equal(id, EC_PTHREAD_SELF))
       id = pthread_self();
    
    DEBUG_MSG("ec_thread_register -- [%lu] %s", (unsigned long)id, name);
@@ -165,7 +165,7 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    THREADS_LOCK;
    
    LIST_FOREACH(current, &thread_list_head, next) {
-      if (current->t.id == id) {
+      if (pthread_equal(current->t.id, id)) {
          SAFE_FREE(current->t.name);
          SAFE_FREE(current->t.description);
          LIST_REPLACE(current, newelem, next);
@@ -242,7 +242,7 @@ void ec_thread_destroy(pthread_t id)
 {
    struct thread_list *current;
 
-   if (id == EC_SELF)
+   if (pthread_equal(id, EC_PTHREAD_SELF))
       id = pthread_self();
    
    DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", (unsigned long)id, ec_thread_getname(id));
@@ -261,7 +261,7 @@ void ec_thread_destroy(pthread_t id)
    THREADS_LOCK;
    
    LIST_FOREACH(current, &thread_list_head, next) {
-      if (current->t.id == id) {
+      if (pthread_equal(current->t.id, id)) {
          SAFE_FREE(current->t.name);
          SAFE_FREE(current->t.description);
          LIST_REMOVE(current, next);
@@ -298,7 +298,7 @@ void ec_thread_kill_all(void)
    
    LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {
       /* skip ourself */
-      if (current->t.id != id) {
+      if (!pthread_equal(current->t.id, id)) {
          DEBUG_MSG("ec_thread_kill_all -- terminating %lu [%s]", (unsigned long)current->t.id, current->t.name);
 
          /* send the cancel signal to the thread */
@@ -336,7 +336,7 @@ void ec_thread_exit(void)
    
    LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {
       /* delete our entry */
-      if (current->t.id == id) {
+      if (pthread_equal(current->t.id, id)) {
          SAFE_FREE(current->t.name);
          SAFE_FREE(current->t.description);
          LIST_REMOVE(current, next);

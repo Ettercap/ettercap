@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.24 2004/11/04 09:22:34 alor Exp $
+    $Id: ec_sniff_unified.c,v 1.25 2004/11/04 10:29:06 alor Exp $
 */
 
 #include <ec.h>
@@ -56,7 +56,7 @@ void start_unified_sniff(void)
       pthread_t pid;
       
       pid = ec_thread_getpid("timer");
-      if (!pthread_equal(pid, EC_PTHREAD_NULL))
+      if (pthread_equal(pid, EC_PTHREAD_NULL))
          ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
    }
 

@@ -1,5 +1,5 @@
 
-/* $Id: ec_threads.h,v 1.9 2004/11/04 09:23:03 alor Exp $ */
+/* $Id: ec_threads.h,v 1.10 2004/11/04 10:28:53 alor Exp $ */
 
 #ifndef EC_THREADS_H
 #define EC_THREADS_H
@@ -13,12 +13,9 @@ struct ec_thread {
    pthread_t id;
 };
 
-enum {
-   EC_SELF = 0,
-};
-
 /* a value to be used to return errors in fuctcions using pthread_t values */
 pthread_t EC_PTHREAD_NULL;
+#define EC_PTHREAD_SELF EC_PTHREAD_NULL
 
 #define EC_THREAD_FUNC(x) void * x(void *args)
 #define EC_THREAD_PARAM  args
@@ -33,7 +30,7 @@ EC_API_EXTERN void ec_thread_init(void);
 EC_API_EXTERN void ec_thread_kill_all(void);
 EC_API_EXTERN void ec_thread_exit(void);
 
-#define RETURN_IF_NOT_MAIN() do{ if (strcmp(ec_thread_getname(EC_SELF), GBL_PROGRAM)) return; }while(0)
+#define RETURN_IF_NOT_MAIN() do{ if (strcmp(ec_thread_getname(EC_PTHREAD_SELF), GBL_PROGRAM)) return; }while(0)
 
 #define CANCELLATION_POINT()  pthread_testcancel()
 

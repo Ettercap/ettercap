@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.20 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_debug.c,v 1.21 2004/11/04 10:29:06 alor Exp $
 
 */
 
@@ -157,7 +157,7 @@ void debug_msg(const char *message, ...)
    if (debug_file == NULL)
       return;
 
-   fprintf(debug_file, "[%9s]\t", ec_thread_getname(EC_SELF));
+   fprintf(debug_file, "[%9s]\t", ec_thread_getname(EC_PTHREAD_SELF));
 
    strlcpy(debug_message, message, sizeof(debug_message));
    strlcat(debug_message, "\n", sizeof(debug_message));

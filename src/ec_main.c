@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.65 2004/09/22 15:53:10 alor Exp $
+    $Id: ec_main.c,v 1.66 2004/11/04 10:29:06 alor Exp $
 */
 
 #include <ec.h>
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
    DEBUG_MSG("main -- here we go !!");
    
    /* register the main thread as "init" */
-   ec_thread_register(EC_SELF, "init", "initialization phase");
+   ec_thread_register(EC_PTHREAD_SELF, "init", "initialization phase");
    
    /* activate the signal handler */
    signal_handler();
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
    ec_thread_new("top_half", "dispatching module", &top_half, NULL);
 
    /* this thread becomes the UI then displays it */
-   ec_thread_register(EC_SELF, GBL_PROGRAM, "the user interface");
+   ec_thread_register(EC_PTHREAD_SELF, GBL_PROGRAM, "the user interface");
    ui_start();
 
 /******************************************** 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.3 2003/03/26 22:17:41 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_main.c,v 1.4 2003/03/27 22:18:53 alor Exp $
 */
 
 #include <el.h>
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
    int ret;
 
    /* etterlog copyright */
-   fprintf(stdout, "\n\033[01m\033[1m%s %s\033[0m copyright %s %s\n\n",
+   fprintf(stderr, "\n\033[01m\033[1m%s %s\033[0m copyright %s %s\n\n",
                       GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
    
    /* getopt related parsing...  */
@@ -50,9 +50,9 @@ int main(int argc, char *argv[])
    ret = get_header(&GBL.hdr);
    ON_ERROR(ret, -EINVALID, "Invalid log file");
    
-   printf("Log file version    : %s\n", GBL.hdr.version);
-   printf("Timestamp           : %s", ctime((time_t *)&GBL.hdr.tv.tv_sec));
-   printf("Type                : %s\n\n", (GBL.hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
+   fprintf(stderr, "Log file version    : %s\n", GBL.hdr.version);
+   fprintf(stderr, "Timestamp           : %s", ctime((time_t *)&GBL.hdr.tv.tv_sec));
+   fprintf(stderr, "Type                : %s\n\n", (GBL.hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
    
    /* analyze the logfile */
    if (GBL.analyze) {
@@ -60,14 +60,11 @@ int main(int argc, char *argv[])
       return 0;
    }
   
-
    /* create the connection table */
    // create_conn_table();
    
    /* display the content of the logfile */
-   // display();
-   
-   NOT_IMPLEMENTED();
+   display();
    
    return 0;
 }

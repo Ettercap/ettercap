@@ -20,6 +20,8 @@ extern void progress(int value, int max);
 extern int get_header(struct log_global_header *hdr);
 extern int get_packet(struct log_header_packet *pck, u_char **buf);
 
+/* el_display */
+extern void display(void);
 
 #endif
 

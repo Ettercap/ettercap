@@ -15,12 +15,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.2 2003/03/26 22:17:41 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_parser.c,v 1.3 2003/03/27 22:18:53 alor Exp $
 */
 
 
 #include <el.h>
 #include <ec_version.h>
+#include <ec_format.h>
 #include <el_functions.h>
 
 #include <ctype.h>
@@ -50,9 +51,12 @@ void el_usage(void)
    fprintf(stdout, "  -a, --analyze               analyze a log file and return useful infos\n");
    fprintf(stdout, "  -c, --connections           print the table of connections\n");
    fprintf(stdout, "  -f, --filter <TARGET>       print packet only from this target\n");
-   fprintf(stdout, "  -F, --filcon <conn #>       print packet only from connection number #\n");
+   fprintf(stdout, "  -F, --filcon <CONN>         print packet only from this connection \n");
+   fprintf(stdout, "  -n, --no-headers            print only packet without header informations\n");
+   fprintf(stdout, "  -m, --show-mac              show mac addresses in the header\n");
    
    fprintf(stdout, "\nVisualization Method:\n");
+   fprintf(stdout, "  -B, --binary                print packets as they are\n");
    fprintf(stdout, "  -X, --hex                   print packets in hex mode\n");
    fprintf(stdout, "  -A, --ascii                 print packets in ascii mode\n");
    fprintf(stdout, "  -T, --text                  print packets in text mode\n");
@@ -77,6 +81,7 @@ void parse_options(int argc, char **argv)
       { "help", no_argument, NULL, 'h' },
       { "version", no_argument, NULL, 'v' },
       
+      { "binary", no_argument, NULL, 'B' },
       { "hex", no_argument, NULL, 'X' },
       { "ascii", no_argument, NULL, 'A' },
       { "text", no_argument, NULL, 'T' },
@@ -87,6 +92,8 @@ void parse_options(int argc, char **argv)
       { "connections", no_argument, NULL, 'c' },
       { "filter", required_argument, NULL, 'f' },
       { "filcon", required_argument, NULL, 'F' },
+      { "no-headers", no_argument, NULL, 'n' },
+      { "show-mac", no_argument, NULL, 'm' },
       
       { 0 , 0 , 0 , 0}
    };
@@ -94,16 +101,49 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "ahXv", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "AaBcEFfHhmnTXv", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
          case 'a':
                   GBL.analyze = 1;
                   break;
+                  
+         case 'c':
+                  GBL.connections = 1;
+                  NOT_IMPLEMENTED();
+                  break;
          
+         case 'n':
+                  GBL.no_headers = 1;
+                  break;
+                  
+         case 'm':
+                  GBL.showmac = 1;
+                  break;
+                  
+         case 'B':
+                  //GBL.format = &bin_format;
+                  break;
+                  
          case 'X':
-                  //GBL.print = &hex_print;
+                  GBL.format = &hex_format;
+                  break;
+                  
+         case 'A':
+                  //GBL.format = &ascii_format;
+                  break;
+                  
+         case 'T':
+                  //GBL.format = &text_format;
+                  break;
+                  
+         case 'E':
+                  //GBL.format = &ebcdic_format;
+                  break;
+                  
+         case 'H':
+                  //GBL.format = &html_format;
                   break;
                   
          case 'h':
@@ -131,6 +171,11 @@ void parse_options(int argc, char **argv)
       open_log(argv[optind]);
    else
       FATAL_MSG("You MUST specify a logfile");
+  
+   
+   if (GBL.format == NULL && !GBL.analyze && !GBL.connections)
+      FATAL_MSG("You must specify a visualization method");
+
    
    /* XXX - check for incompatible options */
    

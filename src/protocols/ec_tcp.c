@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.6 2003/03/26 22:17:39 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/protocols/ec_tcp.c,v 1.7 2003/03/27 22:18:51 alor Exp $
 */
 
 #include <ec.h>
@@ -41,7 +41,7 @@ struct tcp_header {
 #define TH_FIN  0x01
 #define TH_SYN  0x02
 #define TH_RST  0x04
-#define TH_PUSH 0x08
+#define TH_PSH  0x08
 #define TH_ACK  0x10
 #define TH_URG  0x20
    u_int16  win;        /* window */

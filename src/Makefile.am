@@ -64,7 +64,8 @@ endif
 
 ettercap_CFLAGS = @EC_CFLAGS@
 
-ettercap_LDADD = @LTLIBOBJS@ @EC_LIBS@ 
+#ettercap_LDADD = @LTLIBOBJS@ @EC_LIBS@ 
+ettercap_LDADD = @LIBOBJS@ @EC_LIBS@ 
 
 ettercap_LDFLAGS = -export-dynamic
 

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.2 2003/03/26 20:38:00 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_format.c,v 1.3 2003/03/27 22:18:50 alor Exp $
 
 */
 
@@ -29,8 +29,8 @@
 
 /* protos */
 
-int hex_format(const u_char *buf, int len, u_char *dst);
 int hex_len(int len);
+int hex_format(const u_char *buf, size_t len, u_char *dst);
 
 
 /**********************************/
@@ -60,7 +60,7 @@ int hex_len(int len)
  * convert a buffer to a hex form
  */
 
-int hex_format(const u_char *buf, int len, u_char *dst)
+int hex_format(const u_char *buf, size_t len, u_char *dst)
 {
    int i, j, jm, c;
    int dim = 0;

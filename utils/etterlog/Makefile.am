@@ -10,6 +10,7 @@ etterlog_SOURCES = el_main.c \
                    el_parser.c \
                    el_error.c \
                    el_analyze.c \
+                   el_display.c \
                    el_log.c \
                    $(top_srcdir)/src/ec_inet.c \
                    $(top_srcdir)/src/ec_format.c

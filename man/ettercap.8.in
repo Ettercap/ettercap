@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.10 2003/03/24 22:44:39 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.11 2003/03/27 22:18:50 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -314,13 +314,20 @@ priviledges since the log file is opened in the startup phase (with high
 privs). But if you enable the log option while ettercap is already started, you
 have to be in a directory where uid = 65535 or uid = EC_UID can write.
 .Sp
-NOTE: the logfile are compressed with the deflate algorithm, so zlib is
-required.
+NOTE: the logfiles can be compressed with the deflate algorithm using the -c
+option.
 
 .TP
 \fB\-l\fR, \fB\-\-log-info <LOGFILE>\fR
 Very similar to -L but it logs only passive information + users and passwords
 for each host. The file will be named LOGFILE.eci
+
+.TP
+\fB\-c\fR, \fB\-\-compress\fR
+Compress the logfile with the gzip algorithm while it is dumped. etterlog(8) is
+capable of handling both compressed and uncompresse log files.
+
+
 
 
 .SH EXAMPLES

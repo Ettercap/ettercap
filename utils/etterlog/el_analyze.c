@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.3 2003/03/26 22:17:40 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterlog/el_analyze.c,v 1.4 2003/03/27 22:18:52 alor Exp $
 */
 
 #include <el.h>
@@ -59,7 +59,7 @@ void analyze_packet(void)
    u_char *buf;
    struct stat st;
    
-   printf("\nAnalyzing the log file (one dot for 100 packets)\n");
+   fprintf(stdout, "\nAnalyzing the log file (one dot for 100 packets)\n");
   
    /* read the logfile */
    LOOP {
@@ -74,8 +74,8 @@ void analyze_packet(void)
       pay_size += pck.len;
     
       if (count % 100 == 0) {
-         printf(".");
-         fflush(stdout);
+         fprintf(stderr, ".");
+         fflush(stderr);
       }
       
       SAFE_FREE(buf);
@@ -84,15 +84,15 @@ void analyze_packet(void)
    /* get the file stat */
    stat(GBL.logfile, &st);
    
-   printf("\n\n");
-   printf("Log file size (compressed)   : %d\n", (int)st.st_size);   
-   printf("Log file size (uncompressed) : %d\n", tot_size);
-   printf("Effective payload size       : %d\n", pay_size);
-   printf("Wasted percentage            : %.2f %%\n\n", 100 - ((float)pay_size * 100 / (float)tot_size) );
+   fprintf(stdout, "\n\n");
+   fprintf(stdout, "Log file size (compressed)   : %d\n", (int)st.st_size);   
+   fprintf(stdout, "Log file size (uncompressed) : %d\n", tot_size);
+   fprintf(stdout, "Effective payload size       : %d\n", pay_size);
+   fprintf(stdout, "Wasted percentage            : %.2f %%\n\n", 100 - ((float)pay_size * 100 / (float)tot_size) );
    
-   printf("Number of packets            : %d\n", count);
-   printf("Average size per packet      : %d\n", pay_size / count );
-   printf("\n");
+   fprintf(stdout, "Number of packets            : %d\n", count);
+   fprintf(stdout, "Average size per packet      : %d\n", pay_size / count );
+   fprintf(stdout, "\n");
    
    return;
 }

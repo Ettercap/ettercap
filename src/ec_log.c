@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.4 2003/03/26 22:17:38 alor Exp $
+    $Id: ec_log.c,v 1.5 2003/03/27 22:18:50 alor Exp $
 */
 
 #include <ec.h>
@@ -31,8 +31,10 @@
 
 /* globals */
 
-static gzFile fd_ecp;
-static gzFile fd_eci;
+static gzFile fd_cp;
+static gzFile fd_ci;
+static int fd_p;
+static int fd_i;
 
 /* protos */
 
@@ -40,7 +42,7 @@ void set_loglevel(int level, char *filename);
 void log_packet(struct packet_object *po);
 void log_close(void);
 
-static int log_write_header(gzFile fd, int type);
+static int log_write_header(int type);
 
 /************************************************/
 
@@ -66,28 +68,38 @@ void set_loglevel(int level, char *filename)
    /* open the file(s) */
    switch(level) {
       case LOG_PACKET:
-         fd_ecp = gzopen(ecp, "wb9");
-         ON_ERROR(fd_ecp, NULL, "%s", gzerror(fd_ecp, &zerr));
+         if (GBL_OPTIONS->compress) {
+            fd_cp = gzopen(ecp, "wb9");
+            ON_ERROR(fd_cp, NULL, "%s", gzerror(fd_cp, &zerr));
+         } else {
+            fd_p = open(ecp, O_CREAT | O_TRUNC | O_RDWR);
+            ON_ERROR(fd_p, -1, "Can't create %s", ecp);
+         }
 
          /* set the permissions */
          chmod(ecp, 0600);
          
          /* initialize the log file */
-         log_write_header(fd_ecp, LOG_PACKET);
+         log_write_header(LOG_PACKET);
          
          /* add the hook point to DISPATCHER */
          hook_add(HOOK_DISPATCHER, &log_packet);
          /* no break here, loglevel is incremental */
          
       case LOG_INFO:
-         fd_eci = gzopen(eci, "wb9");
-         ON_ERROR(fd_eci, NULL, "%s", gzerror(fd_eci, &zerr));
+         if (GBL_OPTIONS->compress) {
+            fd_ci = gzopen(eci, "wb9");
+            ON_ERROR(fd_ci, NULL, "%s", gzerror(fd_ci, &zerr));
+         } else {
+            fd_i = open(eci, O_CREAT | O_TRUNC | O_RDWR);
+            ON_ERROR(fd_i, -1, "Can't create %s", eci);
+         }
          
          /* set the permissions */
          chmod(eci, 0600);
          
          /* initialize the log file */
-         log_write_header(fd_eci, LOG_INFO);
+         log_write_header(LOG_INFO);
 
          /* XXX - implement the info hook */
          
@@ -102,13 +114,12 @@ void log_close(void)
 {
    DEBUG_MSG("ATEXIT: log_close");
 
-   if (fd_ecp) {
-      gzclose(fd_ecp);
-   }
+   if (fd_cp) gzclose(fd_cp);
+   if (fd_ci) gzclose(fd_ci);
+
+   if (fd_p) close(fd_p);
+   if (fd_i) close(fd_i);
    
-   if (fd_eci) {
-      gzclose(fd_eci);
-   }
 }
 
 /*
@@ -116,8 +127,10 @@ void log_close(void)
  * the propre header
  */
 
-static int log_write_header(gzFile fd, int type)
+static int log_write_header(int type)
 {
+   gzFile fdc = 0;
+   int fd = 0;
    struct log_global_header lh;
    int c, zerr;
    
@@ -140,9 +153,25 @@ static int log_write_header(gzFile fd, int type)
       
    lh.type = htonl(type);
 
-   c = gzwrite(fd, &lh, sizeof(lh));
-   ON_ERROR(c, -1, "%s", gzerror(fd, &zerr));
-         
+   switch(type) {
+      case LOG_PACKET:
+         fdc = fd_cp;
+         fd = fd_p;
+         break;
+      case LOG_INFO:
+         fdc = fd_ci;
+         fd = fd_i;
+         break;
+   }
+
+   if (GBL_OPTIONS->compress) {
+      c = gzwrite(fdc, &lh, sizeof(lh));
+      ON_ERROR(c, -1, "%s", gzerror(fdc, &zerr));
+   } else {
+      c = write(fd, &lh, sizeof(lh));
+      ON_ERROR(c, -1, "Can't write to logfile");
+   }
+   
    return c;
 }
 
@@ -164,7 +193,7 @@ void log_packet(struct packet_object *po)
    memcpy(&hp.L2_dst, &po->L2.dst, ETH_ADDR_LEN);
    
    memcpy(&hp.L3_src, &po->L3.src, sizeof(struct ip_addr));
-   memcpy(&hp.L3_dst, &po->L4.dst, sizeof(struct ip_addr));
+   memcpy(&hp.L3_dst, &po->L3.dst, sizeof(struct ip_addr));
   
    hp.L4_flags = po->L4.flags;
    hp.L4_proto = po->L4.proto;
@@ -173,12 +202,19 @@ void log_packet(struct packet_object *po)
    
    hp.len = htonl(po->disp_len);
 
-   c = gzwrite(fd_ecp, &hp, sizeof(hp));
-   ON_ERROR(c, -1, "%s", gzerror(fd_ecp, &zerr));
+   if (GBL_OPTIONS->compress) {
+      c = gzwrite(fd_cp, &hp, sizeof(hp));
+      ON_ERROR(c, -1, "%s", gzerror(fd_cp, &zerr));
 
-   c = gzwrite(fd_ecp, po->disp_data, po->disp_len);
-   ON_ERROR(c, -1, "%s", gzerror(fd_ecp, &zerr));
-  
+      c = gzwrite(fd_cp, po->disp_data, po->disp_len);
+      ON_ERROR(c, -1, "%s", gzerror(fd_cp, &zerr));
+   } else {
+      c = write(fd_p, &hp, sizeof(hp));
+      ON_ERROR(c, -1, "Can't write to logfile");
+
+      c = write(fd_p, po->disp_data, po->disp_len);
+      ON_ERROR(c, -1, "Can't write to logfile");
+   }
 }
 
 

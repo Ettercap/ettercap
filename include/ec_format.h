@@ -3,7 +3,7 @@
 #define EC_FORMAT_H
 
 
-extern int hex_format(const u_char *buf, int len, u_char *dst);
+extern int hex_format(const u_char *buf, size_t len, u_char *dst);
 
 extern int hex_len(int len);
 

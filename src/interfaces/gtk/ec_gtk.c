@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.34 2004/10/10 15:09:41 daten Exp $
+    $Id: ec_gtk.c,v 1.35 2004/10/10 15:48:32 daten Exp $
 */
 
 #include <ec.h>
@@ -198,7 +198,7 @@ static void gtkui_msg(const char *msg)
 
    DEBUG_MSG("gtkui_msg: %s", msg);
 
-   if((unicode = gtkui_utf8_validate(msg)) == NULL)
+   if((unicode = gtkui_utf8_validate((char *)msg)) == NULL)
          return;
 
    gtk_text_buffer_get_end_iter(msgbuffer, &iter);
@@ -226,7 +226,7 @@ static void gtkui_error(const char *msg)
    
    DEBUG_MSG("gtkui_error: %s", msg);
 
-   if((unicode = gtkui_utf8_validate(msg)) == NULL)
+   if((unicode = gtkui_utf8_validate((char *)msg)) == NULL)
             return;
 
    dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL, 

@@ -7,6 +7,8 @@
    + FIXING
       - remove the quiet from some plugins
       - fix strange behaviour on http filtering
+      - what if forwarding icmp-redirect
+      - fix the "operation not permitted problem"
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)

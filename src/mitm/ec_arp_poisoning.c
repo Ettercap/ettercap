@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.11 2003/10/30 21:20:31 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.12 2003/11/01 15:52:58 alor Exp $
 */
 
 #include <ec.h>
@@ -25,8 +25,6 @@
 #include <ec_send.h>
 #include <ec_threads.h>
 #include <ec_ui.h>
-
-#include <libnet.h>
 
 /* globals */
 
@@ -43,7 +41,7 @@ static LIST_HEAD(, hosts_list) group_two_head;
 /* protos */
 
 void arp_poisoning_init(void);
-EC_THREAD_FUNC(poisoner);
+EC_THREAD_FUNC(arp_poisoner);
 static void arp_poisoning_start(char *args);
 static void arp_poisoning_stop(void);
 static int create_silent_list(void);
@@ -96,7 +94,7 @@ static void arp_poisoning_start(char *args)
    }
 
    /* create the poisoning thread */
-   ec_thread_new("poisoner", "ARP poisoning module", &poisoner, NULL);
+   ec_thread_new("arp_poisoner", "ARP poisoning module", &arp_poisoner, NULL);
 }
 
 
@@ -113,7 +111,7 @@ static void arp_poisoning_stop(void)
    DEBUG_MSG("arp_poisoning_stop");
    
    /* destroy the poisoner thread */
-   pid = ec_thread_getpid("poisoner");
+   pid = ec_thread_getpid("arp_poisoner");
    
    /* the thread is active or not ? */
    if (pid != 0)
@@ -169,7 +167,7 @@ static void arp_poisoning_stop(void)
 /*
  * the real ARP POISONER thread
  */
-EC_THREAD_FUNC(poisoner)
+EC_THREAD_FUNC(arp_poisoner)
 {
    int i = 1;
    struct hosts_list *g1, *g2;
@@ -192,8 +190,8 @@ EC_THREAD_FUNC(poisoner)
              * to force the arp entry in the cache
              */
             if (i == 1) {
-               send_icmp_echo(ICMP_ECHO, &g2->ip, GBL_IFACE->mac, &g1->ip, g1->mac);
-               send_icmp_echo(ICMP_ECHO, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac);
+               send_icmp_echo(ICMP_ECHO, &g2->ip, &g1->ip);
+               send_icmp_echo(ICMP_ECHO, &g1->ip, &g2->ip);
             }
             
             /* the effective poisoning packets */

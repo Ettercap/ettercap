@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.44 2003/10/30 21:20:31 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.45 2003/11/01 15:52:58 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -229,9 +229,27 @@ NOTE: if you manage to poison a client, you have to set correct routing
 table in the kernel specifying the GW. If your routing table are incorrect, the
 poisoned clients will not be able to navigate the Internet.
 
+
 .TP
-\fBicmp\fR 
-XXX-TODO 
+\fBicmp\fR (MAC/IP/) 
+This attack implements ICMP redirection. It sends a spoofed icmp redirect
+message to the hosts in the lan pretending to be a best route for internet. All
+the connections to internet will be redirected to the attacker which, in turn,
+will forward them to the real gateway.
+.br
+You have to pass as argument the MAC and the IP address of the real gateway for the lan.
+.br
+Obviously you have to be able to sniff all the traffic. If you are on a switch
+you have to use a different mitm attack such as arp poisoning.
+.Sp
+NOTE: to restrict the redirection to a given target, specify it as a TARGET
+.Sp
+Example:
+.Sp
+-M icmp:00:11:22:33:44:55/10.0.0.1/
+.Sp
+will redirect all the connections that pass thru that gateway.
+
 
 .TP
 \fBdhcp\fR 

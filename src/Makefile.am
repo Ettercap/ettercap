@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.64 2003/10/28 21:10:55 alor Exp $
+# $Id: Makefile.am,v 1.65 2003/11/01 15:52:58 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -59,7 +59,8 @@ ettercap_SOURCES = ec_capture.c \
 # they use __init functions
 #
 
-ettercap_SOURCES += mitm/ec_arp_poisoning.c
+ettercap_SOURCES += mitm/ec_arp_poisoning.c \
+                    mitm/ec_icmp_redirect.c
 
 ettercap_SOURCES += protocols/ec_arp.c \
                     protocols/ec_eth.c \

@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: link_type.c,v 1.5 2003/10/27 21:25:44 alor Exp $
+    $Id: link_type.c,v 1.6 2003/11/01 15:52:58 alor Exp $
 */
 
 
@@ -28,7 +28,6 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
-#include <libnet.h>
 
 
 /* globals */

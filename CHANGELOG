@@ -17,10 +17,13 @@ NG-0.7.0    ????????
    + token ring support
    + fddi support
    + unified sniffing (you can use external hijacker)
+   + new MITM methods:
+      + advanced ARP poisoning engine
+      + ICMP redirect
    + multiple target selection
    + pcap filter on capture
    + regex packet matching 
-   + hook point per packet type (TCP, UDP... )
+   + hook points per packet type (TCP, UDP... )
    + quiet mode (don't print packet content)
    + enhanced passive open port discoverer 
    + randomized ARP scan
@@ -33,7 +36,6 @@ NG-0.7.0    ????????
    + possibility to sniff on loopback
    + autoupdate from website for passive databases
    + non root users can use ettercap to read from files
-   + advanced ARP poisoning engine
    + unoffensive mode (doesn't forward packets)
    + user messages can be logged
    + dissector enhancements in: 

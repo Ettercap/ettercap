@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mitm.c,v 1.5 2003/10/30 21:20:31 alor Exp $
+    $Id: ec_mitm.c,v 1.6 2003/11/01 15:52:58 alor Exp $
 */
 
 #include <ec.h>
@@ -35,7 +35,7 @@ struct mitm_entry {
    SLIST_ENTRY (mitm_entry) next;
 };
 
-static char *mitm_args;
+static char *mitm_args = "";
 
 /* protos */
 
@@ -76,6 +76,8 @@ int mitm_set(u_char *name)
    if ((mitm_args = strchr(name, ':')) != NULL) {
       *mitm_args = '\0';
       mitm_args ++;
+   } else {
+      mitm_args = "";
    }
    
    DEBUG_MSG("mitm_set: %s (%s)", name, mitm_args);
@@ -100,6 +102,12 @@ void mitm_start(void)
 {
    struct mitm_entry *e;
 
+   /* reading from file we won't start mitm */
+   if (GBL_OPTIONS->read || GBL_OPTIONS->unoffensive) {
+      DEBUG_MSG("mitm_start: skipping");
+      return;
+   }
+   
    DEBUG_MSG("mitm_start");
    
    /* start all the selected methods */

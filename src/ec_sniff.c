@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.32 2003/10/27 21:25:44 alor Exp $
+    $Id: ec_sniff.c,v 1.33 2003/11/01 15:52:58 alor Exp $
 */
 
 #include <ec.h>
@@ -38,8 +38,9 @@ void set_sniffing_method(struct sniffing_method *sm);
 void set_unified_sniff(void);
 void set_bridge_sniff(void);
 
-static void display_packet_for_us(struct packet_object *po);
+static void set_interesting_flag(struct packet_object *po);
 int compile_display_filter(void);
+int compile_target(char *string, struct target_env *target);
 void reset_display_filter(struct target_env *t);
 
 void set_forwardable_flag(struct packet_object *po);
@@ -120,7 +121,7 @@ void set_unified_sniff(void)
    sm.cleanup = NULL;
    /* unified forwarding is done at layer 3 */
    sm.forward = &forward_unified_sniff;
-   sm.display = &display_packet_for_us;
+   sm.interesting = &set_interesting_flag;
 
    set_sniffing_method(&sm);
 }
@@ -141,7 +142,7 @@ void set_bridge_sniff(void)
    sm.start = &start_bridge_sniff;
    sm.cleanup = NULL;
    sm.forward = &forward_bridge_sniff;
-   sm.display = &display_packet_for_us;
+   sm.interesting = &set_interesting_flag;
 
    set_sniffing_method(&sm);
 }
@@ -151,8 +152,7 @@ void set_bridge_sniff(void)
  * set the PO_IGNORE based on the 
  * TARGETS specified on command line
  */
-
-static void display_packet_for_us(struct packet_object *po)
+static void set_interesting_flag(struct packet_object *po)
 {
    char value = 0;
    char good = 0;
@@ -193,22 +193,22 @@ static void display_packet_for_us(struct packet_object *po)
     * 2) to sniff thru a gateway, accept also the packet if it has non local
     * ip address.
     *
-    * 3) reject packet with source mac address equal to attacker's one and ip
-    * different form attacker's ip.
     */
     
    /* FROM TARGET1 TO TARGET2 */
    
    /* T1.mac == src & T1.ip = src & T1.port = src */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.src, GBL_TARGET1) || (ip_addr_is_local(&po->L3.src) != ESUCCESS) ) &&
+        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.src, GBL_TARGET1) || 
+            ((ip_addr_is_local(&po->L3.src) != ESUCCESS) && GBL_TARGET1->all_ip) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.src))) )
       value = 1;
 
    /* T2.mac == dst & T2.ip = dst & T2.port = dst */
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2) || (ip_addr_is_local(&po->L3.dst) != ESUCCESS) ) &&
+        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2) || 
+            (ip_addr_is_local(&po->L3.dst) != ESUCCESS && GBL_TARGET2->all_ip) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
       good = 1;   
   
@@ -228,20 +228,23 @@ static void display_packet_for_us(struct packet_object *po)
    
    /* T1.mac == dst & T1.ip = dst & T1.port = dst */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) || (ip_addr_is_local(&po->L3.dst) != ESUCCESS) ) &&
+        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) || 
+            ((ip_addr_is_local(&po->L3.dst) != ESUCCESS) && GBL_TARGET1->all_ip) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.dst))) )
       value = 1;
 
    /* T2.mac == src & T2.ip = src & T2.port = src */
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.src, GBL_TARGET2) || (ip_addr_is_local(&po->L3.src) != ESUCCESS) ) &&
+        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.src, GBL_TARGET2) || 
+            ((ip_addr_is_local(&po->L3.src) != ESUCCESS) && GBL_TARGET1->all_ip) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.src))) ) )
       good = 1;   
    
    /* reverse the matching */ 
-   if (GBL_OPTIONS->reversed ^ (good && proto) )
+   if (GBL_OPTIONS->reversed ^ (good && proto) ) {
       po->flags &= ~PO_IGNORE;
+   }
  
    return; 
 }
@@ -268,8 +271,24 @@ void reset_display_filter(struct target_env *t)
 /*
  * compile the list of MAC, IPs and PORTs to be displayed
  */
-
 int compile_display_filter(void)
+{
+   /* compile TARGET1 */
+   if (compile_target(GBL_OPTIONS->target1, GBL_TARGET1) != ESUCCESS)
+      clean_exit(-EFATAL);
+   
+   /* compile TARGET2 */
+   if (compile_target(GBL_OPTIONS->target2, GBL_TARGET2) != ESUCCESS)
+      clean_exit(-EFATAL);
+   
+   return ESUCCESS;
+}
+
+
+/*
+ * convert a string into a target env
+ */
+int compile_target(char *string, struct target_env *target)
 {
 #define MAX_TOK 3
    char valid[] = "1234567890/.,-;:ABCDEFabcdef";
@@ -277,23 +296,21 @@ int compile_display_filter(void)
    char *p;
    int i = 0;
    
-   DEBUG_MSG("compile_display_filter TARGET1: %s", GBL_OPTIONS->target1);
+   DEBUG_MSG("compile_target TARGET: %s", string);
 
-   if (strlen(GBL_OPTIONS->target1) != strspn(GBL_OPTIONS->target1, valid))
-      FATAL_ERROR("TARGET1 contains invalid chars !");
+   /* check for invalid char */
+   if (strlen(string) != strspn(string, valid))
+      FATAL_MSG("TARGET (%s) contains invalid chars !", string);
    
-   if (strlen(GBL_OPTIONS->target2) != strspn(GBL_OPTIONS->target2, valid))
-      FATAL_ERROR("TARGET2 contains invalid chars !");
-   
-   /* TARGET 1 parsing */
-   for (p = strsep(&GBL_OPTIONS->target1, "/"); p != NULL; p = strsep(&GBL_OPTIONS->target1, "/")) {
+   /* TARGET parsing */
+   for (p = strsep(&string, "/"); p != NULL; p = strsep(&string, "/")) {
       tok[i++] = strdup(p);
       /* bad parsing */
       if (i > MAX_TOK) break;
    }
   
    if (i != MAX_TOK)
-      FATAL_ERROR("Incorrect number of token (//) in TARGET1 !!");
+      FATAL_MSG("Incorrect number of token (//) in TARGET (%s) !!", string);
    
    DEBUG_MSG("MAC  : [%s]", tok[0]);
    DEBUG_MSG("IP   : [%s]", tok[1]);
@@ -301,77 +318,38 @@ int compile_display_filter(void)
   
    /* set the mac address */
    if (!strcmp(tok[0], ""))
-      GBL_TARGET1->all_mac = 1;
-   else if (mac_addr_aton(tok[0], GBL_TARGET1->mac) == 0)
-      FATAL_ERROR("Incorrect TARGET1 MAC parsing... (%s)", tok[0]);
+      target->all_mac = 1;
+   else if (mac_addr_aton(tok[0], target->mac) == 0)
+      FATAL_ERROR("Incorrect TARGET MAC parsing... (%s)", tok[0]);
 
-  
    /* parse the IP range */
    if (!strcmp(tok[1], ""))
-      GBL_TARGET1->all_ip = 1;
+      target->all_ip = 1;
    else
-     for(p=strsep(&tok[1], ";"); p != NULL; p=strsep(&tok[1], ";"))
-        expand_range_ip(p, GBL_TARGET1);
+     for(p = strsep(&tok[1], ";"); p != NULL; p = strsep(&tok[1], ";"))
+        expand_range_ip(p, target);
    
    /* 
     * expand the range into the port bitmap array
     * 1<<16 is MAX_PORTS 
     */
    if (!strcmp(tok[2], ""))
-      GBL_TARGET1->all_port = 1;
+      target->all_port = 1;
    else {
-      if (expand_token(tok[2], 1<<16, &add_port, GBL_TARGET1->ports) == -EFATAL)
+      if (expand_token(tok[2], 1<<16, &add_port, target->ports) == -EFATAL)
          clean_exit(-EFATAL);
    }
    
-   for(i=0; i < MAX_TOK; i++)
-      SAFE_FREE(tok[i]);
-
-   DEBUG_MSG("compile_display_filter TARGET2: %s", GBL_OPTIONS->target2);
-   
-   /* TARGET 2 parsing */
-   i = 0;
-   
-   for(p=strsep(&GBL_OPTIONS->target2, "/"); p != NULL; p=strsep(&GBL_OPTIONS->target2, "/")) {
-      tok[i++] = strdup(p);
-      /* bad parsing */
-      if (i > MAX_TOK) break;
-   }
-  
-   if (i != MAX_TOK)
-      FATAL_ERROR("Incorrect number of token (//) in TARGET2 !!");
-   
-   DEBUG_MSG("MAC  : [%s]", tok[0]);
-   DEBUG_MSG("IP   : [%s]", tok[1]);
-   DEBUG_MSG("PORT : [%s]", tok[2]);
-  
-   /* set the mac address */
-   if (!strcmp(tok[0], ""))
-      GBL_TARGET2->all_mac = 1;
-   else if (mac_addr_aton(tok[0], GBL_TARGET2->mac) == 0)
-      FATAL_ERROR("Incorrect TARGET2 MAC parsing... (%s)", tok[0]);
-
-   /* parse the IP range */
-   if (!strcmp(tok[1], ""))
-      GBL_TARGET2->all_ip = 1;
-   else
-     for(p=strsep(&tok[1], ";"); p != NULL; p=strsep(&tok[1], ";"))
-        expand_range_ip(p, GBL_TARGET2);
-   
-   /* set the port range */
-   if (!strcmp(tok[2], ""))
-      GBL_TARGET2->all_port = 1;
-   else {
-      if (expand_token(tok[2], 1<<16, &add_port, GBL_TARGET2->ports) == -EFATAL)
-         clean_exit(-EFATAL);
-   }
-   
-   for(i=0; i < MAX_TOK; i++)
+   for(i = 0; i < MAX_TOK; i++)
       SAFE_FREE(tok[i]);
 
    return ESUCCESS;
 }
 
+
+/*
+ * set the bit of the relative port 
+ */
 static void add_port(void *ports, u_int n)
 {
    u_int8 *bitmap = ports;

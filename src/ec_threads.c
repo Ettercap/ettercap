@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.20 2003/10/30 20:54:58 alor Exp $
+    $Id: ec_threads.c,v 1.21 2003/11/01 15:52:58 alor Exp $
 */
 
 #include <ec.h>
@@ -232,7 +232,7 @@ void ec_thread_destroy(pthread_t id)
    if (id == EC_SELF)
       id = pthread_self();
    
-   DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", id, ec_thread_getname(id));
+   DEBUG_MSG("ec_thread_destroy -- terminating %u [%s]", (u_int32)id, ec_thread_getname(id));
 
    /* send the cancel signal to the thread */
    pthread_cancel((pthread_t)id);
@@ -270,7 +270,7 @@ void ec_thread_kill_all(void)
    struct thread_list *current;
    pthread_t id = pthread_self();
 
-   DEBUG_MSG("ec_thread_kill_all -- caller %lu [%s]", id, ec_thread_getname(id));
+   DEBUG_MSG("ec_thread_kill_all -- caller %u [%s]", (u_int32)id, ec_thread_getname(id));
 
    LIST_FOREACH(current, &thread_list_head, next) {
       if (current->t.id != id) {

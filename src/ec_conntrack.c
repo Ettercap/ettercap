@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.11 2003/10/29 22:38:19 alor Exp $
+    $Id: ec_conntrack.c,v 1.12 2003/11/01 15:52:58 alor Exp $
 */
 
 #include <ec.h>
@@ -382,7 +382,7 @@ EC_THREAD_FUNC(conntrack_timeouter)
        */
       sec = MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout);
     
-      DEBUG_MSG("conntrack_timeouter: sleeping for %d sec", sec);
+      DEBUG_MSG("conntrack_timeouter: sleeping for %u sec", (u_int32)sec);
       
       /* always check if a cancel is requested */
       CANCELLATION_POINT();

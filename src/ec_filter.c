@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.35 2003/10/15 14:28:20 lordnaga Exp $
+    $Id: ec_filter.c,v 1.36 2003/10/15 20:29:05 alor Exp $
 */
 
 #include <ec.h>
@@ -539,8 +539,11 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
 
    DEBUG_MSG("filter engine: func_replace");
 
-   /* XXX Warning we are using pcap buffer. 
-    * Its maxlen is GBL_PCAP->snaplen. 
+   /* 
+    * XXX BIG WARNING:
+    * we are using the buffer alloc'd by pcap. 
+    * its maxlen is GBL_PCAP->snaplen, but we can't 
+    * rely on this forever...
     */
    
    /* take the beginning and the end of the data */

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.6 2003/10/14 16:54:08 alor Exp $
+    $Id: ec_text.c,v 1.7 2003/10/15 20:29:15 alor Exp $
 */
 
 #include <ec.h>
@@ -171,8 +171,8 @@ static void text_input(const char *title, char *input, size_t n)
    /* repristinate the buffer input */
    tcsetattr(0, TCSANOW, &old_tc);
 
-   /* flush the buffer */
-   fflush(stdin);
+   /* wipe the buffer */
+   memset(input, 0, n); 
    
    /* get the user input */
    fgets(input, n, stdin);
@@ -180,6 +180,14 @@ static void text_input(const char *title, char *input, size_t n)
    /* trim the \n */
    if ((p = strrchr(input, '\n')) != NULL)
       *p = '\0';
+   else {
+      /* 
+       * eat the input until \n 
+       * this will happen if the user has entered
+       * more chars than n
+       */
+      while(getc(stdin) != '\n');
+   }
 
    /* disable buffered input */
    tcsetattr(0, TCSANOW, &new_tc);
@@ -407,7 +415,8 @@ static void text_run_plugin(void)
    tcsetattr(0, TCSANOW, &new_tc);
    
    if (!strcmp(name, "0")) {
-      text_stop_cont();
+      if (restore)
+         text_stop_cont();
       return;
    }
 

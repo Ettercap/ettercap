@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: find_ip.c,v 1.1 2003/12/07 13:42:42 lordnaga Exp $
+    $Id: find_ip.c,v 1.2 2004/01/18 19:30:31 alor Exp $
 */
 
 
@@ -143,12 +143,12 @@ static struct ip_addr *search_targets(void)
 {
    struct ip_list *i;
   
-   SLIST_FOREACH(i, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(i, &GBL_TARGET1->ips, next) {
       if (!in_list(&i->ip))
          return(&i->ip);
    }
 
-   SLIST_FOREACH(i, &GBL_TARGET2->ips, next) {
+   LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
       if (!in_list(&i->ip))
          return(&i->ip);
    }

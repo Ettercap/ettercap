@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_hosts.c,v 1.7 2004/01/06 17:44:16 alor Exp $
+    $Id: ec_curses_hosts.c,v 1.8 2004/01/18 19:30:31 alor Exp $
 */
 
 #include <ec.h>
@@ -43,7 +43,6 @@ static void curses_host_target2(void *host);
 
 static wdg_t *wdg_hosts;
 static struct wdg_list *wdg_hosts_elements;
-static size_t nhosts;
 
 struct wdg_menu menu_hosts[] = { {"Hosts",             'H',       "",    NULL},
                                  {"Hosts list",        'h',       "h",   curses_host_list},
@@ -224,6 +223,7 @@ static void curses_create_hosts_array(void)
    char tmp[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
    char name[MAX_HOSTNAME_LEN];
+   size_t nhosts;
 
 #define MAX_DESC_LEN 70
    

@@ -1,5 +1,5 @@
 
-/* $Id: ec_globals.h,v 1.50 2004/01/05 11:49:36 alor Exp $ */
+/* $Id: ec_globals.h,v 1.51 2004/01/18 19:30:31 alor Exp $ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H
@@ -109,7 +109,7 @@ struct iface_env {
 /* ip list per target */
 struct ip_list {
    struct ip_addr ip;
-   SLIST_ENTRY(ip_list) next;
+   LIST_ENTRY(ip_list) next;
 };
 
 /* target specifications */
@@ -119,7 +119,7 @@ struct target_env {
    char all_ip:1;
    char all_port:1;
    u_char mac[MEDIA_ADDR_LEN];
-   SLIST_HEAD (, ip_list) ips;
+   LIST_HEAD (, ip_list) ips;
    u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };
 

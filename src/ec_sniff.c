@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff.c,v 1.44 2003/12/28 17:20:13 alor Exp $
+    $Id: ec_sniff.c,v 1.45 2004/01/18 19:30:31 alor Exp $
 */
 
 #include <ec.h>
@@ -512,21 +512,21 @@ void add_ip_list(struct ip_addr *ip, struct target_env *t)
     * insert it at the end of the list.
     * search the last element then insert the new one
     */
-   SLIST_FOREACH (last, &t->ips, next) {
+   LIST_FOREACH (last, &t->ips, next) {
       /* if already in the list, skip it */
       if (!ip_addr_cmp(&last->ip, ip)) {
          IP_LIST_UNLOCK;
          return;
       }
       
-      if (SLIST_NEXT(last, next) == SLIST_END(&t->ips))
+      if (LIST_NEXT(last, next) == LIST_END(&t->ips))
          break;
    }
 
    if (last)
-      SLIST_INSERT_AFTER(last, e, next);
+      LIST_INSERT_AFTER(last, e, next);
    else 
-      SLIST_INSERT_HEAD(&t->ips, e, next);
+      LIST_INSERT_HEAD(&t->ips, e, next);
    
    /* the target has at least one ip, so remove the "all" flag */
    t->all_ip = 0;
@@ -546,7 +546,7 @@ int cmp_ip_list(struct ip_addr *ip, struct target_env *t)
 
    IP_LIST_LOCK;
    
-   SLIST_FOREACH (e, &t->ips, next)
+   LIST_FOREACH (e, &t->ips, next)
       if (!ip_addr_cmp(&(e->ip), ip)) {
          IP_LIST_UNLOCK;
          return 1;
@@ -567,12 +567,12 @@ void del_ip_list(struct ip_addr *ip, struct target_env *t)
 
    IP_LIST_LOCK;
    
-   SLIST_FOREACH (e, &t->ips, next) {
+   LIST_FOREACH (e, &t->ips, next) {
       if (!ip_addr_cmp(&(e->ip), ip)) {
-         SLIST_REMOVE(&t->ips, e, ip_list, next);
+         LIST_REMOVE(e, next);
          SAFE_FREE(e);
          /* check if the list is empty */
-         if (SLIST_FIRST(&t->ips) == SLIST_END(&t->ips)) {
+         if (LIST_FIRST(&t->ips) == LIST_END(&t->ips)) {
             /* the list is empty, set the "all" flag */
             t->all_ip = 1;
          }
@@ -593,16 +593,16 @@ void del_ip_list(struct ip_addr *ip, struct target_env *t)
 
 void free_ip_list(struct target_env *t)
 {
-   struct ip_list *e;
+   struct ip_list *e, *tmp;
   
    IP_LIST_LOCK;
-   
-   while (SLIST_FIRST(&t->ips) != NULL) {
-      e = SLIST_FIRST(&t->ips);
-      SLIST_REMOVE_HEAD(&t->ips, next);
+  
+   /* delete the list */
+   LIST_FOREACH_SAFE(e, &t->ips, next, tmp) {
+      LIST_REMOVE(e, next);
       SAFE_FREE(e);
-   }
-
+   }  
+   
    IP_LIST_UNLOCK;
 }
 

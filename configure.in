@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.90 2004/01/10 13:34:50 lordnaga Exp $
+dnl    $Id: configure.in,v 1.91 2004/01/18 19:30:29 alor Exp $
 dnl
 
 AC_INIT
@@ -66,7 +66,11 @@ AH_TEMPLATE(OS_DARWIN, [compiling under macosx])
 
 AH_TEMPLATE(OS_SOLARIS, [compiling under solaris])
 
-AH_TEMPLATE(OS_CYGWIN, [compiling under cygwin win32])
+AH_TEMPLATE(OS_WINDOWS, [compiling under windows])
+dnl the subtype does matter
+AH_TEMPLATE(OS_CYGWIN, [compiling under cygwin])
+AH_TEMPLATE(OS_MINGW, [compiling under mingw])
+AH_TEMPLATE(OS_SFU, [compiling under Services For Unix interix])
 
 dnl initialize the conditionals
 AM_CONDITIONAL(LINUX, false)
@@ -74,6 +78,8 @@ AM_CONDITIONAL(BSD, false)
 AM_CONDITIONAL(DARWIN, false)
 AM_CONDITIONAL(SOLARIS, false)
 AM_CONDITIONAL(CYGWIN, false)
+AM_CONDITIONAL(MINGW, false)
+AM_CONDITIONAL(SFU, false)
    
 case "$host_os" in
 *linux*)
@@ -120,17 +126,31 @@ case "$host_os" in
    ;;
 *cygwin*)
    EC_WINDOWS_KERNEL()
+   AC_DEFINE(OS_WINDOWS)
    AC_DEFINE(OS_CYGWIN)
    AM_CONDITIONAL(CYGWIN, true)
    OS="CYGWIN $ac_ec_windows_version"
    PL_LDFLAGS="-no-undefined"
    ac_ec_bridged=no
    ;;
+*mingw*)
+   AC_DEFINE(OS_WINDOWS)
+   AC_DEFINE(OS_MINGW)
+   AM_CONDITIONAL(MINGW, true)
+   OS="MINGW"
+   ac_ec_bridged=no
+   ;;
+*interix*)
+   AC_DEFINE(OS_WINDOWS)
+   AC_DEFINE(OS_SFU)
+   AM_CONDITIONAL(SFU, true)
+   OS="SFU"
+   ac_ec_bridged=no
+   ;;
 *)
    echo
    echo "NOT A SUPPORTED SYSTEM / OR SYSTEM NOT RECOGNIZED"
    echo
-   exit 1
    ;;
 esac
 

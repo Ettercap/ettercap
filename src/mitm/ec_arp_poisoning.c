@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.21 2003/12/14 17:07:17 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.22 2004/01/18 19:30:31 alor Exp $
 */
 
 #include <ec.h>
@@ -288,7 +288,7 @@ static int create_silent_list(void)
    USER_MSG("\nARP poisoning victims:\n\n");
    
 /* examine the first target */
-   if ((i = SLIST_FIRST(&GBL_TARGET1->ips)) != NULL) {
+   if ((i = LIST_FIRST(&GBL_TARGET1->ips)) != NULL) {
       
       /* the the ip was specified, even the mac address must be specified */
       if (!memcmp(GBL_TARGET1->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) {
@@ -316,7 +316,7 @@ static int create_silent_list(void)
    }
    
 /* examine the second target */   
-   if ((j = SLIST_FIRST(&GBL_TARGET2->ips)) != NULL) {
+   if ((j = LIST_FIRST(&GBL_TARGET2->ips)) != NULL) {
       
       /* the the ip was specified, even the mac address must be specified */
       if (!memcmp(GBL_TARGET2->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) {
@@ -375,7 +375,7 @@ static int create_list(void)
    USER_MSG("\nARP poisoning victims:\n\n");
   
 /* the first group */
-   SLIST_FOREACH(i, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(i, &GBL_TARGET1->ips, next) {
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
          if (!ip_addr_cmp(&i->ip, &h->ip)) {
             USER_MSG(" GROUP 1 : %s %s\n", ip_addr_ntoa(&h->ip, tmp), mac_addr_ntoa(h->mac, tmp2));
@@ -392,7 +392,7 @@ static int create_list(void)
    }
    
    /* the target is NULL. convert to ANY (all the hosts) */
-   if (SLIST_FIRST(&GBL_TARGET1->ips) == NULL) {
+   if (LIST_FIRST(&GBL_TARGET1->ips) == NULL) {
 
       USER_MSG(" GROUP 1 : ANY (all the hosts in the list)\n");
       
@@ -414,7 +414,7 @@ static int create_list(void)
 /* the second group */
 
    /* if the target was specified */
-   SLIST_FOREACH(i, &GBL_TARGET2->ips, next) {
+   LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
          if (!ip_addr_cmp(&i->ip, &h->ip)) {
             USER_MSG(" GROUP 2 : %s %s\n", ip_addr_ntoa(&h->ip, tmp), mac_addr_ntoa(h->mac, tmp2));
@@ -431,7 +431,7 @@ static int create_list(void)
    }
    
    /* the target is NULL. convert to ANY (all the hosts) */
-   if (SLIST_FIRST(&GBL_TARGET2->ips) == NULL) {
+   if (LIST_FIRST(&GBL_TARGET2->ips) == NULL) {
 
       USER_MSG(" GROUP 2 : ANY (all the hosts in the list)\n");
       

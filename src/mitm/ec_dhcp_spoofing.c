@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp_spoofing.c,v 1.6 2003/12/14 17:07:17 alor Exp $
+    $Id: ec_dhcp_spoofing.c,v 1.7 2004/01/18 19:30:31 alor Exp $
 */
 
 #include <ec.h>
@@ -129,7 +129,7 @@ static int dhcp_spoofing_start(char *args)
          dhcp_setup_options();
 
          /* se the pointer to the first ip pool address */
-         dhcp_free_ip = SLIST_FIRST(&dhcp_ip_pool.ips);
+         dhcp_free_ip = LIST_FIRST(&dhcp_ip_pool.ips);
          return ESUCCESS;
       }
       
@@ -282,7 +282,7 @@ static void dhcp_spoofing_disc(struct packet_object *po)
    USER_MSG("offering %s \n", ip_addr_ntoa(&dhcp_free_ip->ip, tmp));
 
    /* move the pointer to the next ip */
-   dhcp_free_ip = SLIST_NEXT(dhcp_free_ip, next);
+   dhcp_free_ip = LIST_NEXT(dhcp_free_ip, next);
 }
 
 /*

@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.7 2003/11/11 21:53:00 alor Exp $
+    $Id: finger.c,v 1.8 2004/01/18 19:30:31 alor Exp $
 */
 
 
@@ -98,7 +98,7 @@ static int finger_init(void *dummy)
       struct ip_list *host;
    
       /* look over all the hosts in the TARGET */ 
-      SLIST_FOREACH(host, &GBL_TARGET1->ips, next) {
+      LIST_FOREACH(host, &GBL_TARGET1->ips, next) {
          /* 
           * copy the ip address 
           * the port was alread retrived by good_target()
@@ -147,7 +147,7 @@ static int good_target(struct ip_addr *ip, u_int16 *port)
    struct ip_list *host;
    
    /* is it possible to get it from GBL_TARGETS ? */
-   if ((host = SLIST_FIRST(&GBL_TARGET1->ips)) != NULL) {
+   if ((host = LIST_FIRST(&GBL_TARGET1->ips)) != NULL) {
       
       /* copy the ip address */
       memcpy(ip, &host->ip, sizeof(struct ip_addr));

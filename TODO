@@ -8,6 +8,7 @@
       - dissect_free_session
       - input for curses gui
       - in unoffensive we get UNKNOWN for all the profiles
+      - the problem of packet boundary with BPF (off by one/null terminate)
 
    + PCAP RELATED
       + when libpcap 0.8.2 will be released
@@ -31,14 +32,12 @@ this is the unofficial and floating in time roadmap:
 
    + DOCUMENTATION
       - write the requirements for each os
-      - write a man for the curses GUI
       - how to code a plugin 
 
    + LIBWDG
       - fix the box() under freebsd
       - widgets:
          - selectable lists (auto refresh)
-         - compound objects
 
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
@@ -64,15 +63,12 @@ this is the unofficial and floating in time roadmap:
       - automatic add of new hosts
       port all the plugins to NG:
          - lurker    -> find_ettercap
-         - troll     -> arp_responder
          - roper     -> stop_ipsec
          - dwarf     -> (will be integrated with etterlog)
          - thief     -> (same as dwarf)
-         - arpcop    -> arpcop
          - banshee   -> killer
          - golem     -> res_exhaust
          - imp       -> nbt_names
-         - lamia     -> stp_root (or mitm attack?)
          - leech     -> isolate
          - ooze      -> will not be ported (never used)
          - shadow    -> will not be ported (never used) (use nmap instead)

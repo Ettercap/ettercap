@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_icmp_redirect.c,v 1.4 2003/12/14 17:07:17 alor Exp $
+    $Id: ec_icmp_redirect.c,v 1.5 2004/01/18 19:30:31 alor Exp $
 */
 
 #include <ec.h>
@@ -85,7 +85,7 @@ static int icmp_redirect_start(char *args)
    if (redirected_gw.all_mac || redirected_gw.all_ip)
       SEMIFATAL_ERROR("You must specify both MAC and IP addresses for the GW");
 
-   i = SLIST_FIRST(&redirected_gw.ips);
+   i = LIST_FIRST(&redirected_gw.ips);
    USER_MSG("ICMP redirect: victim GW %s\n", ip_addr_ntoa(&i->ip, tmp));
 
    /* add the hook to receive all the tcp and udp packets */
@@ -125,7 +125,7 @@ static void icmp_redirect(struct packet_object *po)
    char tmp[MAX_ASCII_ADDR_LEN];
 
    /* retrieve the gw ip */
-   i = SLIST_FIRST(&redirected_gw.ips);
+   i = LIST_FIRST(&redirected_gw.ips);
    
    /* the packet must be directed to the gateway */
    if (memcmp(po->L2.dst, redirected_gw.mac, MEDIA_ADDR_LEN))

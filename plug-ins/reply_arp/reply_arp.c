@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: reply_arp.c,v 1.2 2003/12/17 16:05:34 lordnaga Exp $
+    $Id: reply_arp.c,v 1.3 2004/01/18 19:30:31 alor Exp $
 */
 
 
@@ -95,14 +95,14 @@ static void parse_arp(struct packet_object *po)
    if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
       in_list = 1;
       
-   SLIST_FOREACH(i, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(i, &GBL_TARGET1->ips, next) {
       if (!ip_addr_cmp(&i->ip, &po->L3.dst)) {
          in_list = 1;
          break;
       }
    }
 
-   SLIST_FOREACH(i, &GBL_TARGET2->ips, next) {
+   LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
       if (!ip_addr_cmp(&i->ip, &po->L3.dst)) {
          in_list = 1;
          break;

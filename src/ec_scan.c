@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.32 2003/12/28 17:20:13 alor Exp $
+    $Id: ec_scan.c,v 1.33 2004/01/18 19:30:31 alor Exp $
 */
 
 #include <ec.h>
@@ -35,7 +35,7 @@
 /* globals */
 
 /* used to create the random list */
-static SLIST_HEAD (, ip_list) ip_list_head;
+static LIST_HEAD (, ip_list) ip_list_head;
 static struct ip_list **rand_array;
 
 /* protos */
@@ -273,7 +273,7 @@ static void scan_netmask(void)
    u_int32 netmask, current, myip;
    int nhosts, i;
    struct ip_addr scanip;
-   struct ip_list *e; 
+   struct ip_list *e, *tmp; 
    char title[100];
 
    netmask = ip_addr_to_int32(&GBL_IFACE->netmask.addr);
@@ -308,7 +308,7 @@ static void scan_netmask(void)
    i = 1;
    
    /* send the actual ARP request */
-   SLIST_FOREACH(e, &ip_list_head, next) {
+   LIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
       send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
 
@@ -320,10 +320,9 @@ static void scan_netmask(void)
    }
    
    /* delete the temporary list */
-   while (SLIST_FIRST(&ip_list_head) != NULL) {                                                           
-      e = SLIST_FIRST(&ip_list_head);                                                                     
-      SLIST_REMOVE_HEAD(&ip_list_head, next);                                                             
-      SAFE_FREE(e);                                                                                 
+   LIST_FOREACH_SAFE(e, &ip_list_head, next, tmp) {
+      LIST_REMOVE(e, next);
+      SAFE_FREE(e);
    }  
 }
 
@@ -334,7 +333,7 @@ static void scan_netmask(void)
 static void scan_targets(void)
 {
    int nhosts = 0, found, n = 1;
-   struct ip_list *e, *i, *m; 
+   struct ip_list *e, *i, *m, *tmp; 
    char title[100];
    
    DEBUG_MSG("scan_targets: merging targets...");
@@ -345,7 +344,7 @@ static void scan_targets(void)
     */
    
    /* first get all the target1 ips */
-   SLIST_FOREACH(i, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(i, &GBL_TARGET1->ips, next) {
       
       SAFE_CALLOC(e, 1, sizeof(struct ip_list));
       
@@ -358,7 +357,7 @@ static void scan_targets(void)
    }
 
    /* then merge the target2 ips */
-   SLIST_FOREACH(i, &GBL_TARGET2->ips, next) {
+   LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
       
       SAFE_CALLOC(e, 1, sizeof(struct ip_list));
       
@@ -367,7 +366,7 @@ static void scan_targets(void)
       found = 0;
      
       /* search if it is already in the list */
-      SLIST_FOREACH(m, &ip_list_head, next)
+      LIST_FOREACH(m, &ip_list_head, next)
          if (!ip_addr_cmp(&m->ip, &i->ip)) {
             found = 1;
             SAFE_FREE(e);
@@ -392,7 +391,7 @@ static void scan_targets(void)
    INSTANT_USER_MSG("%s\n\n", title);
    
    /* and now scan the LAN */
-   SLIST_FOREACH(e, &ip_list_head, next) {
+   LIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
       send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
 
@@ -404,10 +403,9 @@ static void scan_targets(void)
    }
   
    /* delete the temporary list */
-   while (SLIST_FIRST(&ip_list_head) != NULL) {                                                           
-      e = SLIST_FIRST(&ip_list_head);                                                                     
-      SLIST_REMOVE_HEAD(&ip_list_head, next);                                                             
-      SAFE_FREE(e);                                                                                 
+   LIST_FOREACH_SAFE(e, &ip_list_head, next, tmp) {
+      LIST_REMOVE(e, next);
+      SAFE_FREE(e);
    }  
    
 }
@@ -564,8 +562,8 @@ static void random_list(struct ip_list *e, int max)
    SAFE_REALLOC(rand_array, (max + 1) * sizeof(struct ip_addr *));
    
    /* the first element */
-   if (SLIST_FIRST(&ip_list_head) == SLIST_END(&ip_list_head)) {
-      SLIST_INSERT_HEAD(&ip_list_head, e, next);
+   if (LIST_FIRST(&ip_list_head) == LIST_END(&ip_list_head)) {
+      LIST_INSERT_HEAD(&ip_list_head, e, next);
       rand_array[0] = e;
       return;
    }
@@ -574,7 +572,7 @@ static void random_list(struct ip_list *e, int max)
    rnd = (rnd > 1) ? rnd : 1;
    
    /* insert the element in the list */
-   SLIST_INSERT_AFTER(rand_array[rnd - 1], e, next);
+   LIST_INSERT_AFTER(rand_array[rnd - 1], e, next);
    /* and add the pointer in the array */
    rand_array[max - 1] = e;
    

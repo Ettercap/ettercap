@@ -298,7 +298,7 @@
 /* compiling under open bsd */
 #undef OS_BSD_OPEN
 
-/* compiling under cygwin win32 */
+/* compiling under cygwin */
 #undef OS_CYGWIN
 
 /* compiling under macosx */
@@ -307,8 +307,17 @@
 /* compiling under linux */
 #undef OS_LINUX
 
+/* compiling under mingw */
+#undef OS_MINGW
+
+/* compiling under Services For Unix interix */
+#undef OS_SFU
+
 /* compiling under solaris */
 #undef OS_SOLARIS
+
+/* compiling under windows */
+#undef OS_WINDOWS
 
 /* Name of package */
 #undef PACKAGE

@@ -20,9 +20,6 @@
       - dns resolution
       - service resolution
 
-   + ARP SCAN
-      - better randomization
-
    + ARP POISON ENGINE
       - arp poisoner
       - multipoison

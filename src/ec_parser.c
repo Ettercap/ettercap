@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.23 2003/05/20 16:42:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.24 2003/05/20 20:41:21 alor Exp $
 */
 
 
@@ -80,7 +80,7 @@ void ec_usage(void)
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
-   fprintf(stdout, "  -d, --dns                   resolv ip addresses into hostnames\n");
+   fprintf(stdout, "  -d, --dns                   resolves ip addresses into hostnames\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -Z, --scan-delay <msec>     set the scanning delay to <msec>\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");

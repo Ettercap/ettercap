@@ -5,6 +5,8 @@
    + BRIDGED SNIFFING
       - dump to file 
 
-
    + SESSIONS
-      
+      - it should not segfault ;)
+
+   + RANDOMIZED ARP SCAN
+      - test if all hosts are scanned

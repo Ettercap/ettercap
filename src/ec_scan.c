@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.6 2003/05/20 16:42:22 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.7 2003/05/20 20:41:21 alor Exp $
 */
 
 #include <ec.h>
@@ -33,7 +33,9 @@
 
 /* globals */
 
+/* used to create the random list */
 SLIST_HEAD (, ip_list) ip_list_head;
+struct ip_list **rand_array;
 
 /* protos */
 
@@ -97,7 +99,7 @@ void build_hosts_list(void)
 
    hook_add(PACKET_ARP, &get_response);
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
-   
+  
    /* 
     * no target were specified, we have to make a list
     * scanning the whole netmask
@@ -107,6 +109,12 @@ void build_hosts_list(void)
    else
       scan_targets();
 
+   /* 
+    * free the temporary array for random computations 
+    * allocated in rando_list()
+    */
+   SAFE_FREE(rand_array);
+   
    /* 
     * wait for some delayed packets... 
     * the other thread is listening for ARP pachets
@@ -498,28 +506,35 @@ void add_host(struct ip_addr *ip, u_int8 mac[ETH_ADDR_LEN], char *name)
 
 void random_list(struct ip_list *e, int max)
 {
-   int rnd, i = 0;
-   struct ip_list *l;
+   int rnd;
    
    srand(time(NULL));
 
    /* calculate the position in the list. */
    rnd = rand() % ((max == 1) ? max : max - 1);
-  
+
+   /* allocate the array used to keep track of the pointer
+    * to the elements in the list. this array speed up the
+    * access method to the list 
+    */
+   rand_array = realloc(rand_array, (max + 1) * sizeof(struct ip_addr *));
+   ON_ERROR(rand_array, NULL, "realloc(): rand_array");
+   
    /* the first element */
    if (SLIST_FIRST(&ip_list_head) == SLIST_END(&ip_list_head)) {
       SLIST_INSERT_HEAD(&ip_list_head, e, next);
+      rand_array[0] = e;
       return;
    }
-  
-   /* find the random position and insert the element */
-   SLIST_FOREACH(l, &ip_list_head, next) {
-      if (i++ == rnd) {
-         SLIST_INSERT_AFTER(l, e, next);
-         break;
-      }
-   }
-      
+
+   /* bound checking */
+   rnd = (rnd > 1) ? rnd : 1;
+   
+   /* insert the element in the list */
+   SLIST_INSERT_AFTER(rand_array[rnd - 1], e, next);
+   /* and add the pointer in the array */
+   rand_array[max - 1] = e;
+   
 }
 
 /* EOF */

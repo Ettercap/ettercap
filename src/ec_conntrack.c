@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.10 2003/10/28 22:54:26 alor Exp $
+    $Id: ec_conntrack.c,v 1.11 2003/10/29 22:38:19 alor Exp $
 */
 
 #include <ec.h>
@@ -368,6 +368,11 @@ EC_THREAD_FUNC(conntrack_timeouter)
    struct conn_tail *cl;
    struct conn_tail *old = NULL;
    size_t sec;
+   
+   /* initialize the thread */
+   ec_thread_init();
+   
+   DEBUG_MSG("conntrack_timeouter: activated !");
   
    LOOP {
 
@@ -380,10 +385,8 @@ EC_THREAD_FUNC(conntrack_timeouter)
       DEBUG_MSG("conntrack_timeouter: sleeping for %d sec", sec);
       
       /* always check if a cancel is requested */
-      while (sec--) {
-         CANCELLATION_POINT();
-         sleep(1);
-      }
+      CANCELLATION_POINT();
+      sleep(sec);
      
       DEBUG_MSG("conntrack_timeouter: woke up");
       

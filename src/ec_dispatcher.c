@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.26 2003/10/24 22:05:36 alor Exp $
+    $Id: ec_dispatcher.c,v 1.27 2003/10/29 22:38:19 alor Exp $
 */
 
 #include <ec.h>
@@ -61,10 +61,10 @@ EC_THREAD_FUNC(top_half)
    struct po_queue_entry *e;
    u_int pck_len;
    
-   DEBUG_MSG("top_half activated !");
-  
    /* initialize the thread */
    ec_thread_init();
+   
+   DEBUG_MSG("top_half activated !");
 
    /* 
     * we don't want profiles in memory.

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_threads.c,v 1.17 2003/10/29 20:41:07 alor Exp $
+    $Id: ec_threads.c,v 1.18 2003/10/29 22:38:19 alor Exp $
 */
 
 #include <ec.h>
@@ -38,7 +38,11 @@ static LIST_HEAD(, thread_list) thread_list_head;
 static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define THREADS_LOCK     do{ pthread_mutex_lock(&threads_mutex); } while(0)
 #define THREADS_UNLOCK   do{ pthread_mutex_unlock(&threads_mutex); } while(0)
-   
+
+static pthread_mutex_t init_mtx = PTHREAD_MUTEX_INITIALIZER;
+#define INIT_LOCK     do{ DEBUG_MSG("init_lock"); pthread_mutex_lock(&init_mtx); } while(0)
+#define INIT_UNLOCK   do{ DEBUG_MSG("init_unlock"); pthread_mutex_unlock(&init_mtx); } while(0)
+
 /* protos... */
 
 char * ec_thread_getname(pthread_t id);
@@ -180,25 +184,59 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
    
    DEBUG_MSG("ec_thread_new -- %s", name);
 
-   if (pthread_create(&id, NULL, function, args) < 0)
+   /* 
+    * lock the mutex to syncronize with the new thread.
+    * the newly created thread will perform INIT_UNLOCK
+    * so at the end of this function we are sure that the 
+    * thread had be initialized
+    */
+   INIT_LOCK; 
+
+   if (pthread_create(&id, PTHREAD_CREATE_JOINABLE, function, args) != 0)
       ERROR_MSG("not enough system resources to create a new thread");
 
    ec_thread_register(id, name, desc);
 
    DEBUG_MSG("ec_thread_new -- %d created ", (u_int32)id);
+
+   /* the new thread will unlock this */
+   INIT_LOCK; 
+   INIT_UNLOCK;
    
    return id;
 }
 
+/* 
+ * set the state of a thread 
+ * all the new thread MUST call this on startup
+ */
+void ec_thread_init(void)
+{
+   DEBUG_MSG("ec_thread_init -- %u", (u_int32)pthread_self());
+   
+   /* 
+    * allow a thread to be cancelled as soon as the
+    * cancellation  request  is received
+    */
+   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
+   /* sync with the creator */ 
+   INIT_UNLOCK;
+   
+   DEBUG_MSG("ec_thread_init -- (%u) ready and syncronized", (u_int32)pthread_self());
+}
+
+
 /*
  * destroy a thread in the list
  */
-
 void ec_thread_destroy(pthread_t id)
 {
    struct thread_list *current;
 
-   BUG_IF(id == 0);
+   if (id == EC_SELF)
+      id = pthread_self();
    
    DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", id, ec_thread_getname(id));
 
@@ -227,23 +265,6 @@ void ec_thread_destroy(pthread_t id)
 
 }
 
-/* 
- * set the state of a thread 
- * all the new thread should call this on startup
- */
-
-void ec_thread_init(void)
-{
-   DEBUG_MSG("ec_thread_init -- %u", (u_int32)pthread_self());
-   
-   /* 
-    * allow a thread to be cancelled as soon as the
-    * cancellation  request  is received
-    */
-        
-   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-
-}
 
 /*
  * kill all the registerd thread but

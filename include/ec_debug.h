@@ -1,5 +1,5 @@
 
-/* $Id: ec_debug.h,v 1.7 2003/10/29 20:41:06 alor Exp $ */
+/* $Id: ec_debug.h,v 1.8 2003/10/29 22:38:19 alor Exp $ */
 
 #if defined (DEBUG) && !defined(EC_DEBUG_H)
 #define EC_DEBUG_H
@@ -12,7 +12,7 @@ extern FILE *debug_file;
 #define DEBUG_INIT() debug_init()
 #define DEBUG_MSG(x, ...) do {                                 \
    if (debug_file == NULL) {                                   \
-      fprintf(stderr, "DEBUG: "x, ## __VA_ARGS__ );            \
+      fprintf(stderr, "DEBUG: "x"\n", ## __VA_ARGS__ );            \
    } else                                                      \
       debug_msg(x, ## __VA_ARGS__ );                           \
 } while(0)

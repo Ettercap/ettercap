@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.14 2003/10/29 20:41:06 alor Exp $
+    $Id: ec_debug.c,v 1.15 2003/10/29 22:38:19 alor Exp $
 
 */
 
@@ -59,6 +59,10 @@ extern char pcap_version[];
 
 FILE *debug_file = NULL;
 
+static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define DEBUG_LOCK     do{ pthread_mutex_lock(&debug_mutex); } while(0)
+#define DEBUG_UNLOCK   do{ pthread_mutex_unlock(&debug_mutex); } while(0)
+
 /* protos */
 
 void debug_init(void);
@@ -72,10 +76,10 @@ void debug_init(void)
 #ifdef HAVE_SYS_UTSNAME_H
    struct utsname buf;
 #endif
-
-   if ((debug_file = fopen (GBL_DEBUG_FILE, "w")) == NULL) {
+   DEBUG_LOCK;
+   
+   if ((debug_file = fopen (GBL_DEBUG_FILE, "w")) == NULL)
       ERROR_MSG("Couldn't open for writing %s", GBL_DEBUG_FILE);
-   }
    
    fprintf (debug_file, "\n==============================================================\n");
                    
@@ -108,6 +112,9 @@ void debug_init(void)
    #endif
    fprintf (debug_file, "\n\nDEVICE OPENED FOR %s DEBUGGING\n\n", GBL_PROGRAM);
    fflush(debug_file);
+   
+   DEBUG_UNLOCK;
+   
    atexit(debug_close);
 }
 
@@ -115,11 +122,15 @@ void debug_init(void)
 
 void debug_close(void)
 {
+   DEBUG_LOCK;
+   
    fprintf (debug_file, "\n\nDEVICE CLOSED FOR DEBUGGING\n\n");
    fflush(debug_file);
    fclose (debug_file);
    /* set it to null and check from other threads */
    debug_file = NULL;
+
+   DEBUG_UNLOCK;
 }
 
 
@@ -128,7 +139,13 @@ void debug_msg(const char *message, ...)
    va_list ap;
    char debug_message[strlen(message)+2];
 
-   fprintf (debug_file, "[%9s]\t", ec_thread_getname(EC_SELF));
+   DEBUG_LOCK;
+
+   /* if it was closed by another thread on exit */
+   if (debug_file == NULL)
+      return;
+
+   fprintf(debug_file, "[%9s]\t", ec_thread_getname(EC_SELF));
 
    strlcpy(debug_message, message, sizeof(debug_message));
    strlcat(debug_message, "\n", sizeof(debug_message));
@@ -138,6 +155,8 @@ void debug_msg(const char *message, ...)
    va_end(ap);
 
    fflush(debug_file);
+
+   DEBUG_UNLOCK;
 }
 
 #endif /* DEBUG */

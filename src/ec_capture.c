@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.25 2003/10/28 21:10:55 alor Exp $
+    $Id: ec_capture.c,v 1.26 2003/10/29 22:38:19 alor Exp $
 */
 
 #include <ec.h>
@@ -207,15 +207,15 @@ void capture_close(void)
 
 EC_THREAD_FUNC(capture)
 {
-   DEBUG_MSG("neverending loop (capture)");
-  
+   /* init the thread and wait for start up */
    ec_thread_init();
+   
+   DEBUG_MSG("neverending loop (capture)");
    
    /* 
     * infinite loop 
     * dispatch packets to ec_decode
     */
-
    pcap_loop(GBL_PCAP->pcap, -1, ec_decode, EC_THREAD_PARAM);
 
    return NULL;
@@ -224,15 +224,15 @@ EC_THREAD_FUNC(capture)
 
 EC_THREAD_FUNC(capture_bridge)
 {
-   DEBUG_MSG("neverending loop (capture_bridge)");
-  
+   /* init the thread and wait for start up */
    ec_thread_init();
+   
+   DEBUG_MSG("neverending loop (capture_bridge)");
    
    /* 
     * infinite loop 
     * dispatch packets to ec_decode
     */
-        
    pcap_loop(GBL_PCAP->pcap_bridge, -1, ec_decode, EC_THREAD_PARAM);
 
    return NULL;

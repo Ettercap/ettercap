@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.41 2003/10/29 20:41:06 alor Exp $
+    $Id: ec_main.c,v 1.42 2003/10/29 22:38:19 alor Exp $
 */
 
 #include <ec.h>
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
    /* create the timeouter thread */
    if (!GBL_OPTIONS->read)
       ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
-   
+  
    /* this thread becomes the UI then displays it */
    ec_thread_register(EC_SELF, GBL_PROGRAM, "the user interface");
    ui_start();
@@ -216,10 +216,7 @@ void clean_exit(int errcode)
   
    GBL_LOCK = 1;
    
-   USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
-
-   /* kill all the running threads but the current */
-   ec_thread_kill_all();
+   INSTANT_USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
 
    /* close the UI */
    ui_cleanup();

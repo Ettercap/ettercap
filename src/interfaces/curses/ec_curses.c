@@ -17,17 +17,20 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses.c,v 1.18 2003/11/30 12:02:19 alor Exp $
+    $Id: ec_curses.c,v 1.19 2003/11/30 21:31:59 alor Exp $
 */
 
 #include <ec.h>
 #include <wdg.h>
+
+#include <ec_curses.h>
 
 /* globals */
 
 static wdg_t *sysmsg_win;
 static char tag_unoff[] = " ";
 static char tag_promisc[] = "*";
+static char tag_compress[] = " ";
 
 /* proto */
 
@@ -45,9 +48,10 @@ static void curses_setup(void);
 static void curses_exit(void);
 static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
-static void curses_flush_msg(void);
-static void file_open(void);
-static void set_pcapfile(char *path, char *file);
+static void toggle_compress(void);
+void curses_flush_msg(void);
+static void curses_file_open(void);
+static void read_pcapfile(char *path, char *file);
 
 
 /*******************************************/
@@ -106,91 +110,6 @@ static void curses_init(void)
    /* reached only after the setup interface has quit */
 }
 
-static void toggle_unoffensive(void)
-{
-   if (GBL_OPTIONS->unoffensive) {
-      tag_unoff[0] = ' ';
-      GBL_OPTIONS->unoffensive = 0;
-   } else {
-      tag_unoff[0] = '*';
-      GBL_OPTIONS->unoffensive = 1;
-   }
-}
-
-static void toggle_nopromisc(void)
-{
-   if (GBL_PCAP->promisc) {
-      tag_promisc[0] = ' ';
-      GBL_PCAP->promisc = 0;
-   } else {
-      tag_promisc[0] = '*';
-      GBL_PCAP->promisc = 1;
-   }
-}
-/*
- * display the initial menu to setup global options
- * at startup.
- */
-static void curses_setup(void)
-{
-   wdg_t *menu;
-   
-   struct wdg_menu file[] = { {"File", "F", NULL},
-                              {"Open...", "", file_open},
-                              {"Write...", "", NULL},
-                              {"-", "", NULL},
-                              {"Exit", "", curses_exit},
-                              {NULL, NULL, NULL},
-                            };
-   
-   struct wdg_menu live[] = { {"Live", "L", NULL},
-                              {"Unified sniffing...", "", NULL},
-                              {"Bridged sniffing...", "", NULL},
-                              {"-", "", NULL},
-                              {"Set pcap filter...", "", NULL},
-                              {NULL, NULL, NULL},
-                            };
-   
-   struct wdg_menu options[] = { {"Options", "O", NULL},
-                                 {"Unoffensive", tag_unoff, toggle_unoffensive},
-                                 {"Promisc mode", tag_promisc, toggle_nopromisc},
-                                 {NULL, NULL, NULL},
-                               };
-   
-   wdg_create_object(&menu, WDG_MENU, WDG_OBJ_WANT_FOCUS | WDG_OBJ_ROOT_OBJECT);
-   
-   wdg_set_title(menu, GBL_VERSION, WDG_ALIGN_RIGHT);
-   wdg_set_color(menu, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(menu, WDG_COLOR_WINDOW, EC_COLOR_MENU);
-   wdg_set_color(menu, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(menu, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_menu_add(menu, file);
-   wdg_menu_add(menu, live);
-   wdg_menu_add(menu, options);
-   wdg_draw_object(menu);
-   
-   /* create the bottom windows for user messages */
-   wdg_create_object(&sysmsg_win, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
-   
-   wdg_set_title(sysmsg_win, "User messages:", WDG_ALIGN_LEFT);
-   wdg_set_size(sysmsg_win, 0, -10, 0, 0);
-   wdg_set_color(sysmsg_win, WDG_COLOR_SCREEN, EC_COLOR);
-   wdg_set_color(sysmsg_win, WDG_COLOR_WINDOW, EC_COLOR);
-   wdg_set_color(sysmsg_win, WDG_COLOR_BORDER, EC_COLOR_BORDER);
-   wdg_set_color(sysmsg_win, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_color(sysmsg_win, WDG_COLOR_TITLE, EC_COLOR_TITLE);
-   wdg_scroll_set_lines(sysmsg_win, 500);
-   wdg_draw_object(sysmsg_win);
- 
-   /* give the focus to the menu */
-   wdg_set_focus(menu);
-   
-   /* give the control to the interface */
-   wdg_events_handler('U');
-   
-   wdg_destroy_object(&menu);
-}
-
 /*
  * exit from the setup interface 
  */
@@ -214,7 +133,7 @@ static void curses_cleanup(void)
 /*
  * this function is called on idle loop in wdg
  */
-static void curses_flush_msg(void)
+void curses_flush_msg(void)
 {
    ui_msg_flush(MSG_ALL);
 }
@@ -239,6 +158,8 @@ static void curses_msg(const char *msg)
 static void curses_error(const char *msg)
 {
    wdg_t *dlg;
+   
+   DEBUG_MSG("curses_error: %s", msg);
 
    /* create the dialog */
    wdg_create_object(&dlg, WDG_DIALOG, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
@@ -316,67 +237,138 @@ static void curses_progress(char *title, int value, int max)
 
 void curses_interface(void)
 {
-   wdg_t *menu;
-   struct wdg_menu file[] = { {"File",    "F",  NULL},
-                              {"Open...", "",  file_open},
-                              {"Close",   "",  NULL},
-                              {"-",       "", NULL},
-                              {"Exit",    "Q", wdg_exit},
-                              {NULL, NULL, NULL},
-                            };
-   struct wdg_menu view[] = { {"View",    "V",  NULL},
-                              {"Item1",   "", NULL},
-                              {"Item2",   "", NULL},
-                              {"Item3",   "", NULL},
-                              {"Item4",   "", NULL},
-                              {"-",       "", NULL},
-                              {"Item5",   "",  NULL},
-                              {"Item6",   "",  NULL},
-                              {NULL, NULL, NULL},
-                            };
-   struct wdg_menu mitm[] = { {"Mitm", "M", NULL},
-                              {"Arp poisoning", "A", NULL},
-                              {"Icmp redirect", "I", NULL},
-                              {"Port stealing", "P", NULL},
-                              {"Dhcp spoofing", "D", NULL},
-                              {NULL, NULL, NULL},
-                            };
    
    DEBUG_MSG("curses_interface");
 
-   wdg_set_title(menu, "menu", WDG_ALIGN_RIGHT);
+   /* which interface do we have to display ? */
+   if (GBL_OPTIONS->read)
+      curses_sniff_offline();
+   else
+      curses_sniff_live();
+   
+
+   /* destroy the previously allocated object */
+   wdg_destroy_object(&sysmsg_win);
+}
+
+static void toggle_unoffensive(void)
+{
+   if (GBL_OPTIONS->unoffensive) {
+      tag_unoff[0] = ' ';
+      GBL_OPTIONS->unoffensive = 0;
+   } else {
+      tag_unoff[0] = '*';
+      GBL_OPTIONS->unoffensive = 1;
+   }
+}
+
+static void toggle_nopromisc(void)
+{
+   if (GBL_PCAP->promisc) {
+      tag_promisc[0] = ' ';
+      GBL_PCAP->promisc = 0;
+   } else {
+      tag_promisc[0] = '*';
+      GBL_PCAP->promisc = 1;
+   }
+}
+
+static void toggle_compress(void)
+{
+   if (GBL_OPTIONS->compress) {
+      tag_compress[0] = ' ';
+      GBL_OPTIONS->compress = 0;
+   } else {
+      tag_compress[0] = '*';
+      GBL_OPTIONS->compress = 1;
+   }
+}
+
+/*
+ * display the initial menu to setup global options
+ * at startup.
+ */
+static void curses_setup(void)
+{
+   wdg_t *menu;
+   
+   struct wdg_menu file[] = { {"File", "F", NULL},
+                              {"Open...", "", curses_file_open},
+                              {"Write...", "", NULL},
+                              {"-", "", NULL},
+                              {"Exit", "", curses_exit},
+                              {NULL, NULL, NULL},
+                            };
+   
+   struct wdg_menu live[] = { {"Sniff", "S", NULL},
+                              {"Unified sniffing...", "", NULL},
+                              {"Bridged sniffing...", "", NULL},
+                              {"-", "", NULL},
+                              {"Set pcap filter...", "", NULL},
+                              {NULL, NULL, NULL},
+                            };
+   
+   struct wdg_menu options[] = { {"Options", "O", NULL},
+                                 {"Unoffensive", tag_unoff, toggle_unoffensive},
+                                 {"Promisc mode", tag_promisc, toggle_nopromisc},
+                                 {NULL, NULL, NULL},
+                               };
+   
+   struct wdg_menu logging[] = { {"Logging", "L", NULL},
+                                 {"Log all packets and infos...", "", NULL},
+                                 {"Log only infos...", "", NULL},
+                                 {"-", "", NULL},
+                                 {"Log user messages...", "", NULL},
+                                 {"-", "", NULL},
+                                 {"Compressed file", tag_compress, toggle_compress},
+                                 {NULL, NULL, NULL},
+                               };
+   
+   DEBUG_MSG("curses_setup");
+   
+   wdg_create_object(&menu, WDG_MENU, WDG_OBJ_WANT_FOCUS | WDG_OBJ_ROOT_OBJECT);
+   
+   wdg_set_title(menu, GBL_VERSION, WDG_ALIGN_RIGHT);
    wdg_set_color(menu, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(menu, WDG_COLOR_WINDOW, EC_COLOR_MENU);
    wdg_set_color(menu, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(menu, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_menu_add(menu, file);
-   wdg_menu_add(menu, view);
-   wdg_menu_add(menu, mitm);
+   wdg_menu_add(menu, live);
+   wdg_menu_add(menu, options);
+   wdg_menu_add(menu, logging);
    wdg_draw_object(menu);
    
-   /* repaint the whole screen */
-   wdg_redraw_all();
-
-   /* add the message flush callback */
-   wdg_add_idle_callback(curses_flush_msg);
-
-   /* 
-    * give the control to the event dispatcher
-    * with the emergency exit key 'Q'
-    */
-   wdg_events_handler('Q');
-
+   /* create the bottom windows for user messages */
+   wdg_create_object(&sysmsg_win, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
+   
+   wdg_set_title(sysmsg_win, "User messages:", WDG_ALIGN_LEFT);
+   wdg_set_size(sysmsg_win, 0, -8, 0, 0);
+   wdg_set_color(sysmsg_win, WDG_COLOR_SCREEN, EC_COLOR);
+   wdg_set_color(sysmsg_win, WDG_COLOR_WINDOW, EC_COLOR);
+   wdg_set_color(sysmsg_win, WDG_COLOR_BORDER, EC_COLOR_BORDER);
+   wdg_set_color(sysmsg_win, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
+   wdg_set_color(sysmsg_win, WDG_COLOR_TITLE, EC_COLOR_TITLE);
+   wdg_scroll_set_lines(sysmsg_win, 500);
+   wdg_draw_object(sysmsg_win);
+ 
+   /* give the focus to the menu */
+   wdg_set_focus(menu);
+   
+   /* give the control to the interface */
+   wdg_events_handler('U');
+   
    wdg_destroy_object(&menu);
-
-   wdg_destroy_object(&sysmsg_win);
 }
 
 /*
  * display the file open dialog
  */
-static void file_open(void)
+static void curses_file_open(void)
 {
    wdg_t *fop;
+   
+   DEBUG_MSG("curses_file_open");
    
    wdg_create_object(&fop, WDG_FILE, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
    
@@ -386,15 +378,17 @@ static void file_open(void)
    wdg_set_color(fop, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(fop, WDG_COLOR_TITLE, EC_COLOR_TITLE);
 
-   wdg_file_set_callback(fop, set_pcapfile);
+   wdg_file_set_callback(fop, read_pcapfile);
    
    wdg_draw_object(fop);
    
    wdg_set_focus(fop);
 }
 
-static void set_pcapfile(char *path, char *file)
+static void read_pcapfile(char *path, char *file)
 {
+   
+   DEBUG_MSG("read_pcapfile %s/%s", path, file);
    
    SAFE_CALLOC(GBL_OPTIONS->dumpfile, strlen(path)+strlen(file)+2, sizeof(char));
 

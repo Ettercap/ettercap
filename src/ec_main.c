@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.48 2003/11/29 16:02:35 lordnaga Exp $
+    $Id: ec_main.c,v 1.49 2003/11/30 21:31:56 alor Exp $
 */
 
 #include <ec.h>
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
    http_fields_init();
   
    /* print all the buffered messages */
-   USER_MSG("\n");
+   if (GBL_UI->type == UI_TEXT) USER_MSG("\n");
    ui_msg_flush(MSG_ALL);
 
 /**** INITIALIZATION PHASE TERMINATED ****/

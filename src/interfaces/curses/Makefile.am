@@ -1,15 +1,19 @@
 
-# $Id: Makefile.am,v 1.4 2003/11/03 21:19:02 alor Exp $
+# $Id: Makefile.am,v 1.5 2003/11/30 21:31:59 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
 SUBDIRS = widgets
 
+noinst_HEADERS = ec_curses.h
+
 noinst_LIBRARIES = libec_curses.a
 
 libec_curses_a_CFLAGS = @EC_CFLAGS@ -Iwidgets
 
-libec_curses_a_SOURCES = ec_curses.c
+libec_curses_a_SOURCES = ec_curses.c \
+                         ec_curses_file.c \
+                         ec_curses_live.c 
 
 # hack to include libwdg.a objects into libec_curses.a
 all: libec_curses.a 

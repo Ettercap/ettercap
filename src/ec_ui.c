@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.26 2003/11/09 12:12:46 alor Exp $
+    $Id: ec_ui.c,v 1.27 2003/11/30 21:31:56 alor Exp $
 */
 
 #include <ec.h>
@@ -338,6 +338,8 @@ void ui_register(struct ui_ops *ops)
    
    BUG_IF(ops->progress == NULL);
    GBL_UI->progress = ops->progress;
+
+   GBL_UI->type = ops->type;
 }
 
 

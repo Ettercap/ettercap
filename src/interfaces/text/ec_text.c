@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text.c,v 1.12 2003/11/21 08:32:16 alor Exp $
+    $Id: ec_text.c,v 1.13 2003/11/30 21:31:59 alor Exp $
 */
 
 #include <ec.h>
@@ -258,7 +258,7 @@ void text_interface(void)
    /* start the mitm attack */
    mitm_start();
    
-   /* initialize the sniffing method */
+   /* start the sniffing method */
    EXECUTE(GBL_SNIFF->start);
   
    /* it is difficult to be interactive while reading from file... */

@@ -11,8 +11,8 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.4 $                                      # 
-#  Last updated on : $Date: 2003/12/09 22:32:54 $                          #
+#  Version         : $Revision: 1.5 $                                      # 
+#  Last updated on : $Date: 2004/04/22 15:47:05 $                          #
 #                                                                          #
 ############################################################################
 
@@ -40,7 +40,7 @@
    proto:2 = 20
 
 #
-# token ring is at layer 2
+# fddi is at layer 2
 #
 [fddi][2]
    fc:1 = 0
@@ -100,7 +100,7 @@
 
 
 #
-# we identiy icmp protocol at layer 4
+# we identify icmp protocol at layer 4
 # because it is onto a layer 3 (ip)
 # id,seq overlap gw and mtu (they are in a union)
 #
@@ -156,7 +156,7 @@
    data:1 = 0
 
 #
-# some dissector will decode/decrypt the data 
+# some dissectors will decode/decrypt the data 
 # into a special buffer displayed to the user.
 # if you want to search in this buffer, use this table.
 #

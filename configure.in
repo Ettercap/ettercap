@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.114 2004/04/21 10:01:54 alor Exp $
+dnl    $Id: configure.in,v 1.115 2004/04/22 15:46:52 alor Exp $
 dnl
 
 AC_INIT
@@ -527,10 +527,6 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
         AM_CONDITIONAL(OPENSSL, true)
         ac_ec_libssl=$withval
         AC_MSG_RESULT($withval)
-        OLDLDFLAGS="${LDFLAGS}"
-        LDFLAGS="$SSLLIB"
-        AC_CHECK_LIB(crypto, DES_set_key,, AC_MSG_ERROR([Incorrect openssl version. openssl >= 0.9.7 required]))
-        LDFLAGS="${OLDLDFLAGS}"
      elif test -f $withval/ssl/include/openssl/ssl.h; then
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
@@ -540,10 +536,6 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
         AM_CONDITIONAL(OPENSSL, true)
         ac_ec_libssl=$withval
         AC_MSG_RESULT($withval)
-        OLDLDFLAGS="${LDFLAGS}"
-        LDFLAGS="$SSLLIB"
-        AC_CHECK_LIB(crypto, DES_set_key,, AC_MSG_ERROR([Incorrect openssl version. openssl >= 0.9.7 required]))
-        LDFLAGS="${OLDLDFLAGS}"
      else
         AC_MSG_RESULT(no)
         AC_MSG_ERROR([ssl.h not found in $withval])
@@ -556,10 +548,6 @@ AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
      AM_CONDITIONAL(OPENSSL, true)
      AC_MSG_RESULT(yes)
      ac_ec_libssl=default
-     OLDLDFLAGS="${LDFLAGS}"
-     LDFLAGS="$SSLLIB"
-     AC_CHECK_LIB(crypto, DES_set_key,, AC_MSG_ERROR([Incorrect openssl version. openssl >= 0.9.7 required]))
-     LDFLAGS="${OLDLDFLAGS}"
   else
      AC_MSG_RESULT(no)
   fi]

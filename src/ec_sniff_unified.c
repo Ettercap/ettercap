@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.11 2003/10/09 12:07:22 lordnaga Exp $
+    $Id: ec_sniff_unified.c,v 1.12 2003/10/14 21:20:47 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -64,7 +64,7 @@ void forward_unified_sniff(struct packet_object *po)
      * if the packet was modified and it exceeded the mtu,
      * we have to inject the exceeded data
      */
-    if (po->inject) 
+    if (po->DATA.inject) 
        inject_buffer(po); 
 }
 

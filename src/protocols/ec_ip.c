@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.24 2003/10/12 17:50:15 lordnaga Exp $
+    $Id: ec_ip.c,v 1.25 2003/10/14 21:20:47 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -300,8 +300,8 @@ FUNC_INJECTOR(inject_ip)
    
    /* Guess payload_len that will be used by ENTRY injector */
    payload_len = GBL_IFACE->mtu - LENGTH;
-   if (payload_len > PACKET->inject_len)
-      payload_len = PACKET->inject_len;
+   if (payload_len > PACKET->DATA.inject_len)
+      payload_len = PACKET->DATA.inject_len;
 
    /* Set tot_len field as further header's len + payload */
    PACKET->L3.len = further_len + payload_len;

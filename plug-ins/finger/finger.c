@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger.c,v 1.4 2003/10/14 16:54:08 alor Exp $
+    $Id: finger.c,v 1.5 2003/10/14 21:20:47 lordnaga Exp $
 */
 
 
@@ -74,7 +74,7 @@ int plugin_load(void *handle)
    return plugin_register(handle, &finger_ops);
 }
 
-/******************* SANDARD FUNCTIONS *******************/
+/******************* STANDARD FUNCTIONS *******************/
 
 static int finger_init(void *dummy) 
 {

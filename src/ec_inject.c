@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.5 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_inject.c,v 1.6 2003/10/14 21:20:47 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -42,7 +42,7 @@ int inject_buffer(struct packet_object *po);
 void add_injector(u_int8 level, u_int32 type, FUNC_INJECTOR_PTR(injector));
 void * get_injector(u_int8 level, u_int32 type);
 size_t inject_protocol(struct packet_object *po);
-
+void inject_split_data(struct packet_object *po);
 
 /*******************************************/
 
@@ -118,20 +118,17 @@ int inject_buffer(struct packet_object *po)
     */       
    struct packet_object *pd;
    size_t injected;
-   u_char *buf, *pck_buf;
+   u_char *pck_buf;
    int ret = ESUCCESS;
   
    /* we can't inject in unoffensive mode or in bridge mode */
    if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->iface_bridge) {
-      SAFE_FREE(po->inject);
+      SAFE_FREE(po->DATA.inject);
       return -EINVALID;
    }
    
    /* Duplicate the packet to modify the payload buffer */
    pd = packet_dup(po);
-
-   /* Remember the buffer to be free'd */
-   buf = pd->inject;
 
    /* Allocate memory for the packet (double sized)*/
    SAFE_CALLOC(pck_buf, 1, (GBL_IFACE->mtu * 2));
@@ -157,11 +154,10 @@ int inject_buffer(struct packet_object *po)
       send_to_L3(pd);
       
       /* Ready to inject the rest */
-      pd->inject_len -= injected;
-      pd->inject += injected;
-   } while (pd->inject_len);
+      pd->DATA.inject_len -= injected;
+      pd->DATA.inject += injected;
+   } while (pd->DATA.inject_len);
    
-   SAFE_FREE(buf);
    /* we cannot use packet_object_destroy because
     * the packet is not yet in the queue to tophalf.
     * so we have to free the duplicates by hand.
@@ -173,6 +169,20 @@ int inject_buffer(struct packet_object *po)
    return ret;
 }
 
+void inject_split_data(struct packet_object *po) 
+{
+   size_t max_len;
+   
+   max_len = GBL_IFACE->mtu - (po->L4.header - (po->packet + po->L2.len) + po->L4.len);
+
+   /* the packet has exceeded the MTU */
+   if (po->DATA.len > max_len) {
+      po->DATA.inject = po->DATA.data + max_len;
+      po->DATA.inject_len = po->DATA.len - max_len;
+      po->DATA.delta -= po->DATA.len - max_len;
+      po->DATA.len = max_len;
+   } 
+}
 
 /* EOF */
 

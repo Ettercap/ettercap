@@ -29,9 +29,12 @@ this is the unofficial and floating in time roadmap:
 
 Oct 2003:
 
+   + FIX etterlog -u -p
+   
+   + PROFILES more hosts with your mac address while poisoning
+   
    + INJECTION 
       - it is done by the ui looking the sessions (locking them)
-      - fix the replace over mtu
 
    + DISSECTORS
       - convert all the old dissectors
@@ -40,6 +43,8 @@ Oct 2003:
       - SSH has to support DES, 3DES, blowfish and zlib compression
       - WIFI decoder support for WEP (key given)
       - PPP decoder
+      - GRE
+      - TDS
       - DHCP
    
 
@@ -95,9 +100,8 @@ Dec 2003:
 
    + NEW DISSECTOR
       - TACACS dissector
-      - new netbios
+      - Microsoft RPC
       - postgresql
-      - tds
 
    + Inet
       - handle fragmented packets

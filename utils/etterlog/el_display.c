@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_display.c,v 1.30 2003/10/09 14:49:45 alor Exp $
+    $Id: el_display.c,v 1.31 2003/10/14 21:20:48 lordnaga Exp $
 */
 
 #include <el.h>
@@ -362,7 +362,7 @@ static void print_pass(struct host_profile *h)
       LIST_FOREACH(u, &(o->users_list_head), next) {
         
          /* if is set the GBL.user, check it, else print all */
-         if (!GBL.user || !strcasestr(GBL.user, u->user) ) {
+         if (!GBL.user || !strcasestr(u->user, GBL.user) ) {
             fprintf(stdout, " %s ", ip_addr_ntoa(&h->L3_addr, tmp));
             if (strcmp(h->hostname, ""))
                fprintf(stdout, "(%s)", h->hostname);

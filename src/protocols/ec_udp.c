@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_udp.c,v 1.10 2003/10/09 20:44:25 alor Exp $
+    $Id: ec_udp.c,v 1.11 2003/10/14 21:20:48 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -108,8 +108,6 @@ FUNC_DECODER(decode_udp)
 
    /* Adjustments after filters */
    if (PACKET->flags & PO_MODIFIED) {
-      /* adjust the len */ 
-      PACKET->DATA.len += PACKET->DATA.delta;
             
       /* Recalculate checksum */
       udp->csum = 0; 
@@ -152,9 +150,9 @@ FUNC_INJECTOR(inject_udp)
     * Set LENGTH to injectable data len.
     */
    LENGTH = GBL_IFACE->mtu - LENGTH;
-   if (LENGTH > PACKET->inject_len)
-      LENGTH = PACKET->inject_len;
-   memcpy(udp_payload, PACKET->inject, LENGTH);   
+   if (LENGTH > PACKET->DATA.inject_len)
+      LENGTH = PACKET->DATA.inject_len;
+   memcpy(udp_payload, PACKET->DATA.inject, LENGTH);   
 
    /* Set datagram len and calculate checksum */
    PACKET->L4.header = (u_char *)udph;

@@ -1,5 +1,5 @@
 
-/* $Id: ec_packet.h,v 1.19 2003/09/30 11:30:51 lordnaga Exp $ */
+/* $Id: ec_packet.h,v 1.20 2003/10/14 21:20:47 lordnaga Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -61,6 +61,9 @@ struct packet_object {
       u_char * disp_data;
       /* for modified packet this is the delta for the lenght */
       int delta;  
+      size_t inject_len;      /* len of the injection */
+      u_char *inject;         /* the fuffer used for injection */
+
    } DATA;
 
    size_t fwd_len;         /* lenght of the packet to be forwarded */
@@ -72,8 +75,6 @@ struct packet_object {
    /* Trace current session for injector chain */
    struct session *session;  
     
-   size_t inject_len;      /* len of the injection */
-   u_char *inject;         /* the fuffer used for injection */
    
    u_int8 flags;                       /* flags relative to the packet */
       #define PO_IGNORE       ((u_int8)(1))        /* this packet should not be processed (e.g. sniffing filter didn't match it) */

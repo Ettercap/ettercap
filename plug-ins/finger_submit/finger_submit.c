@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: finger_submit.c,v 1.2 2003/10/13 10:43:30 alor Exp $
+    $Id: finger_submit.c,v 1.3 2003/10/14 21:20:47 lordnaga Exp $
 */
 
 
@@ -62,7 +62,7 @@ int plugin_load(void *handle)
    return plugin_register(handle, &finger_submit_ops);
 }
 
-/******************* SANDARD FUNCTIONS *******************/
+/******************* STANDARD FUNCTIONS *******************/
 
 static int finger_submit_init(void *dummy) 
 {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.22 2003/10/12 18:36:03 lordnaga Exp $
+    $Id: ec_tcp.c,v 1.23 2003/10/14 21:20:47 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -287,7 +287,7 @@ FUNC_DECODER(decode_tcp)
        */
       
       if (PACKET->flags & PO_DROPPED)
-         status->way[direction].seq_adj -= PACKET->DATA.len;
+         status->way[direction].seq_adj += PACKET->DATA.delta;
       else if ((PACKET->flags & PO_MODIFIED) || 
                (status->way[direction].seq_adj != 0) || 
                (status->way[!direction].seq_adj != 0)) {
@@ -299,9 +299,6 @@ FUNC_DECODER(decode_tcp)
          /* and now save the new delta */
          status->way[direction].seq_adj += PACKET->DATA.delta;
 
-         /* adjust the len */
-         PACKET->DATA.len += PACKET->DATA.delta;
-               
          /* Recalculate checksum */
          tcp->csum = 0; 
          tcp->csum = L4_checksum(PACKET);
@@ -375,9 +372,9 @@ FUNC_INJECTOR(inject_tcp)
     * Set LENGTH to injectable data len.
     */
    LENGTH = GBL_IFACE->mtu - LENGTH;
-   if (LENGTH > PACKET->inject_len)
-      LENGTH = PACKET->inject_len;
-   memcpy(tcp_payload, PACKET->inject, LENGTH);   
+   if (LENGTH > PACKET->DATA.inject_len)
+      LENGTH = PACKET->DATA.inject_len;
+   memcpy(tcp_payload, PACKET->DATA.inject, LENGTH);   
    
    /* Update inject counter into the session */
    status->way[direction].seq_adj += LENGTH;

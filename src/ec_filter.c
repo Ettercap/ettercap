@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.31 2003/10/11 14:11:17 alor Exp $
+    $Id: ec_filter.c,v 1.32 2003/10/14 21:20:47 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -450,8 +450,6 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
             u_char *replaced;
             u_char *q = fop->op.func.replace;
             size_t i, nlen = 0;
-            int delta = 0;
-            size_t max_len, new_len;
 
             /* 
              * the replaced string will not be larger than
@@ -490,40 +488,17 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
                   replaced[nlen++] = q[i];
                }
             }
-
-            /* wipe the old data */
-            memset(po->DATA.data, 0, po->DATA.len);
-            
-            /* calculate the maximum lenght for the payload */
-            max_len = GBL_IFACE->mtu - (po->L4.header - (po->packet + po->L2.len) + po->L4.len);
             
             /* calculate the delta */
-            delta = nlen - po->DATA.len;
-            
-            /* the packet has exceeded the MTU */
-            if (nlen > max_len) {
-               po->DATA.delta = max_len - po->DATA.len;
-            } else {
-               /* the new buffer fits the packet */
-               po->DATA.delta = delta;
-            }
-
-            /* new lenght is the minimum between the max len and the modified len */ 
-            new_len = MIN(po->DATA.len + po->DATA.delta, max_len);
-            /* wipe the old buffer */
-            memset(po->DATA.data, 0, po->DATA.len);
+            po->DATA.delta += nlen - po->DATA.len;
+            po->DATA.len = nlen;
+	    
             /* check if we are overflowing pcap buffer */
-            BUG_IF(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) < new_len);
+            BUG_IF(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) < nlen);
+
             /* copy the temp buffer on the original packet */
-            memcpy(po->DATA.data, replaced, new_len);
-            
-            /* copy the rest in the inject buffer */
-            if (delta != po->DATA.delta) {
-               SAFE_CALLOC(po->inject, po->DATA.len + delta - max_len, sizeof(u_char));
-               memcpy(po->inject, replaced + new_len, po->DATA.len + delta - max_len);
-               po->inject_len = po->DATA.len + delta - max_len;
-            }
-           
+            memcpy(po->DATA.data, replaced, nlen);
+                       
             SAFE_FREE(replaced);
          }
          
@@ -548,39 +523,29 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
  */
 static int func_replace(struct filter_op *fop, struct packet_object *po)
 {
-   u_int8 *tmp;
    u_int8 *ptr;
    u_int8 *end;
    size_t len;
    size_t slen = fop->op.func.slen;
    size_t rlen = fop->op.func.rlen;
-   int delta = 0;
-   size_t max_len, new_len;
   
    /* check the offensiveness */
    if (GBL_OPTIONS->unoffensive)
       JIT_FAULT("Cannot modify packets in unoffensive mode");
    
-   /* 
-    * calculate the max len of data this packet can contain.
-    * subtract to the MTU all the headers len
-    */
-   max_len = GBL_IFACE->mtu - (po->L4.header - (po->packet + po->L2.len) + po->L4.len);
-  
    /* check if it exist at least one */
    if (!memmem(po->DATA.data, po->DATA.len, fop->op.func.string, fop->op.func.slen) )
       return -ENOTFOUND;
 
-   DEBUG_MSG("filter engine: func_replace : max_len %d", max_len);
+   DEBUG_MSG("filter engine: func_replace");
 
-   /* make a copy of the buffer and operate on that */
-   SAFE_CALLOC(tmp, po->DATA.len, sizeof(u_int8));
-         
-   memcpy(tmp, po->DATA.data, po->DATA.len);
-
+   /* XXX Warning we are using pcap buffer. 
+    * Its maxlen is GBL_PCAP->snaplen. 
+    */
+   
    /* take the beginning and the end of the data */
-   ptr = tmp;
-   end = tmp + po->DATA.len;
+   ptr = po->DATA.data;
+   end = ptr + po->DATA.len;
    
    /* do the replacement */
    do {
@@ -598,18 +563,11 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       len = end - ptr - slen;
       
       /* set the delta */
-      delta += rlen - slen;
+      po->DATA.delta += rlen - slen;
+      po->DATA.len += po->DATA.delta;
 
-      /* Save relative offset to tmp if the buffer is moved after realloc */
-      SAVE_OFFSET(ptr, tmp);
-      SAVE_OFFSET(end, tmp);
-      
-      /* resize the buffer to contain the new data */
-      SAFE_REALLOC(tmp, po->DATA.len + delta);
-      
-      /* Restore 'relative' values */
-      RESTORE_OFFSET(ptr, tmp);
-      RESTORE_OFFSET(end, tmp);
+      /* check if we are overflowing pcap buffer */
+      BUG_IF(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) < po->DATA.len);
       
       /* move the buffer to make room for the replacement string */   
       memmove(ptr + rlen, ptr + slen, len); 
@@ -618,42 +576,13 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       /* move the ptr after the replaced string */
       ptr += rlen; 
       /* adjust the new buffer end */
-      end += delta;
+      end += rlen - slen;
                                                             
       /* mark the packet as modified */
       po->flags |= PO_MODIFIED;
 
    } while(ptr != NULL && ptr < end);
-  
-   /* if there was a modification, update the packet */
-   if (po->flags & PO_MODIFIED) {
-
-      /* the packet has exceeded the MTU */
-      if (po->DATA.len + delta > max_len) {
-         po->DATA.delta = max_len - po->DATA.len;
-      } else {
-         /* the new buffer fits the packet */
-         po->DATA.delta = delta;
-      }
-      /* new lenght is the minimum between the max len and the modified len */ 
-      new_len = MIN(po->DATA.len + po->DATA.delta, max_len);
-      /* wipe the old buffer */
-      memset(po->DATA.data, 0, po->DATA.len);
-      /* check if we are overflowing pcap buffer */
-      BUG_IF(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) < new_len);
-      /* copy the temp buffer on the original packet */
-      memcpy(po->DATA.data, tmp, new_len);
-      
-      /* copy the rest in the inject buffer */
-      if (delta != po->DATA.delta) {
-         SAFE_CALLOC(po->inject, po->DATA.len + delta - max_len, sizeof(u_char));
-         memcpy(po->inject, tmp + new_len, po->DATA.len + delta - max_len);
-         po->inject_len = po->DATA.len + delta - max_len;
-      }
-   }
    
-   SAFE_FREE(tmp);
-
    return ESUCCESS;
 }
 
@@ -684,18 +613,22 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
 
    /* load the file in memory */
    file = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-   if (file == MAP_FAILED) {
-      USER_MSG("filter engine: inject(): Cannot mmap file");
-      return -EFATAL;
-   }
+   if (file == MAP_FAILED) 
+      JIT_FAULT("Cannot mmap file");
  
-   SAFE_CALLOC(po->inject, size, sizeof(u_char));
-   
+   /* check if we are overflowing pcap buffer */
+   if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) < size)
+      JIT_FAULT("injected file too long");
+         
    /* copy the file into the buffer */
-   memcpy(po->inject, file, size);
+   memcpy(po->DATA.data, file, size);
 
-   /* set the size */
-   po->inject_len = size;
+   /* Adjust packet len and delta */
+   po->DATA.delta = size - po->DATA.len;
+   po->DATA.len = size;    
+
+   /* mark the packet as modified */
+   po->flags |= PO_MODIFIED;
    
    /* close and unmap the file */
    close(fd);
@@ -754,6 +687,7 @@ static int func_drop(struct packet_object *po)
 
    /* the delta is all the payload */
    po->DATA.delta = po->DATA.len;
+   po->DATA.len = 0;
    
    return ESUCCESS;
 }

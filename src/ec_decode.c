@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.38 2003/10/10 21:16:25 alor Exp $
+    $Id: ec_decode.c,v 1.39 2003/10/14 21:20:47 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -28,6 +28,7 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_filter.h>
+#include <ec_inject.h>
 
 #include <pcap.h>
 #include <pthread.h>
@@ -142,6 +143,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* alloc the packet object structure to be passet through decoders */
    packet_create_object(&po, data, datalen);
 
+   /* Be sure to NULL terminate our data buffer */
+   *(data + datalen + 1) = 0;
+   
    /* set the po timestamp */
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
    
@@ -203,13 +207,6 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    /* free the structure */
    packet_destroy_object(&po);
-   
-   /* clear the buffer, 
-    * so we are sure to have null terminated buffer 
-    * snapshot is chosen during the init phase and
-    * its value is 9999
-    */
-   memset((u_char *)pkt, 0, pkthdr->caplen + 1);
    
    /* calculate the stats */
    stats_half_end(&GBL_STATS->bh, pkthdr->caplen);
@@ -281,6 +278,9 @@ FUNC_DECODER(decode_data)
    if (GBL_FILTERS->chain)
       filter_engine(GBL_FILTERS->chain, po);
 
+   /* If the modified packet exceeds the MTU split it into inject buffer */
+   inject_split_data(po);
+   
    /* 
     * this hook point is executed only it the packet
     * has to be forwarded 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.15 2003/08/04 13:59:07 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_send.c,v 1.16 2003/08/20 16:00:53 alor Exp $
 */
 
 #include <ec.h>
@@ -297,7 +297,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
            0);                      /* libnet id */
    ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_LNET->lnet));
    
-   /* ETC uses ff broadcast */
+   /* ETH uses ff broadcast */
    if (type == ARPOP_REQUEST && tmac == ARP_BROADCAST)
       tmac = ETH_BROADCAST;
    

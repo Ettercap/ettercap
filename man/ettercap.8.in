@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.26 2003/08/18 21:25:16 alor Exp $
+.\"  $Id: ettercap.8.in,v 1.27 2003/08/20 16:00:53 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -201,6 +201,10 @@ this method implement the ARP poisoning mitm attack. ARP
 request/reply are sent to the victims to poison their ARP cache. Once the cache
 has been poisoned the victims will send all packets to the attacker which, in
 turn, can modify them and forward to the real destination.
+.Sp
+In silent mode (-z option) only the first target is selected, if you want to
+posion multiple target in silent mode use the -j option to load a list from a
+file.
 .Sp
 NOTE: if you manage to poison a client, you have to set correct routing
 table in the kernel specifying the GW. If your routing table are incorrect, the
@@ -524,6 +528,14 @@ Use the console interface, do not ARP scan the net and be quiet. The packet
 contento will not be displayed, but user and passwords, as well as other
 messages, will be displayed.
 
+.TP
+.B ettercap -C -j /tmp/victims -M arp /10.0.0.1-7/ /10.0.0.10-20/
+
+.TP
+.B ettercap -Czq //110
+
+.TP
+.B ettercap -Czq /10.0.0.1/21,22,23 
 
 
 .SH PLATFORMS

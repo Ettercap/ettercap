@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.12 2003/07/15 21:31:34 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_threads.c,v 1.13 2003/08/20 16:00:53 alor Exp $
 */
 
 #include <ec.h>
@@ -199,10 +199,14 @@ void ec_thread_destroy(pthread_t id)
 {
    struct thread_list *current;
 
+   BUG_IF(id == 0);
+   
    DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", id, ec_thread_getname(id));
 
+   /* send the cancel signal to the thread */
    pthread_cancel((pthread_t)id);
 
+   /* wait until it has finished */
    pthread_join((pthread_t)id, NULL);
 
    THREADS_LOCK;

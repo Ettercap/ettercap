@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.13 2003/07/07 10:43:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_scan.c,v 1.14 2003/08/20 16:00:53 alor Exp $
 */
 
 #include <ec.h>
@@ -418,6 +418,10 @@ void load_hosts(char *filename)
       
       ip_addr_init(&hip, AF_INET, (char *)&tip);
       
+      /* wipe the null hostname */
+      if (!strcmp(name, "-"))
+         name[0] = '\0';
+
       /* add to the list */
       add_host(&hip, hmac, name);
    }
@@ -444,7 +448,11 @@ void save_hosts(char *filename)
    /* save the list */
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
       fprintf(hf, "%s ", ip_addr_ntoa(&hl->ip, tmp));
-      fprintf(hf, "%s %s\n", mac_addr_ntoa(hl->mac, tmp), hl->hostname);
+      fprintf(hf, "%s ", mac_addr_ntoa(hl->mac, tmp));
+      if (hl->hostname)
+         fprintf(hf, "%s\n", hl->hostname);
+      else
+         fprintf(hf, "-\n");
       nhosts++;
    }
   

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.11 2003/08/06 20:06:32 alor Exp $
+    $Id: ec_conf.c,v 1.12 2003/08/20 16:00:53 alor Exp $
 */
 
 #include <ec.h>
@@ -36,7 +36,7 @@ static struct conf_entry privs[] = {
    { NULL, NULL },
 };
 
-static struct conf_entry net[] = {
+static struct conf_entry mitm[] = {
    { "arp_storm_delay", NULL },
    { "arp_poison_delay", NULL },
    { "arp_poison_warm_up", NULL },
@@ -67,7 +67,7 @@ static struct conf_entry dissectors[] = {
 
 static struct conf_section sections[] = {
    { "privs", (struct conf_entry *)&privs},
-   { "net", (struct conf_entry *)&net},
+   { "mitm", (struct conf_entry *)&mitm},
    { "connections", (struct conf_entry *)&connections},
    { "stats", (struct conf_entry *)&stats},
    { "various", (struct conf_entry *)&various},
@@ -101,9 +101,9 @@ static void init_structures(void)
    DEBUG_MSG("init_structures");
    
    set_pointer((struct conf_entry *)&privs, "ec_uid", &GBL_CONF->ec_uid);
-   set_pointer((struct conf_entry *)&net, "arp_storm_delay", &GBL_CONF->arp_storm_delay);
-   set_pointer((struct conf_entry *)&net, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
-   set_pointer((struct conf_entry *)&net, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
+   set_pointer((struct conf_entry *)&mitm, "arp_storm_delay", &GBL_CONF->arp_storm_delay);
+   set_pointer((struct conf_entry *)&mitm, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
+   set_pointer((struct conf_entry *)&mitm, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
    set_pointer((struct conf_entry *)&connections, "connection_timeout", &GBL_CONF->connection_timeout);
    set_pointer((struct conf_entry *)&connections, "connection_idle", &GBL_CONF->connection_idle);
    set_pointer((struct conf_entry *)&connections, "connection_buffer", &GBL_CONF->connection_buffer);

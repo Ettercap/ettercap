@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.5 2003/07/20 20:56:13 alor Exp $
+.\"  $Id: etter.conf.5.in,v 1.6 2003/08/20 16:00:53 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -66,7 +66,7 @@ You can bypass this variable by setting the evironment variable EC_UID.
 
 
 .TP 20
-.B [net]
+.B [mitm]
 .TP
 .B arp_storm_delay
 The value represent the millisecond to wait between to packets on the initial
@@ -75,14 +75,17 @@ randomized scan plus an high delay can fool some type of ARP scan detectors.
 
 .TP
 .B arp_poison_warm_up
-When the poisoning process startup the inter packet delay is low for the first
-10 seconds (to be sure the poisoning process has been successful). After the
-first 10 seconds the delay is incremented (to keep up the poisoning). This
-variable controls the delay for the first 10 seconds. The value is in seconds.
+When the poisoning process starts, the inter-packet delay is low for the first
+5 poisons (to be sure the poisoning process has been successful). After the
+first 5 poisons, the delay is incremented (to keep up the poisoning). This
+variable controls the delay for the first 5 poisons. The value is in seconds.
+.br
+The same delay is use when the victims are restored to the original associtions
+(RE-ARPing) when ettercap is closed.
 
 .TP
 .B arp_poison_delay
-This variable controls the poisoning delay after the first 10 seconds. The
+This variable controls the poisoning delay after the first 5 poisons. The
 value is expressed in seconds. You can increase this value (to try fool the
 IDS) up to the timeout of the ARP cache (it depends on the operating system
 poisoned).

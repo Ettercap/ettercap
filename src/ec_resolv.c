@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_resolv.c,v 1.5 2003/08/07 20:25:18 alor Exp $
+    $Id: ec_resolv.c,v 1.6 2003/08/20 16:00:53 alor Exp $
 */
 
 #include <ec.h>
@@ -72,7 +72,6 @@ int host_iptoa(struct ip_addr *ip, char *name)
    if (resolv_cache_search(ip, name) == ESUCCESS)
       return ESUCCESS;
 
-
    /* initialize the name */
    strcpy(name, "");
    
@@ -84,7 +83,8 @@ int host_iptoa(struct ip_addr *ip, char *name)
     */
    if (!GBL_OPTIONS->resolve)
       return -ENOTFOUND;
-   
+  
+   /* XXX - IPv6 compatible */
    DEBUG_MSG("host_iptoa: %#x", *(u_int32 *)&ip->addr);
    
    /* if not found in the cache, resolve it */

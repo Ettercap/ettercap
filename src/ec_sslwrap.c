@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.8 2004/03/10 11:14:05 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.9 2004/03/10 21:18:11 lordnaga Exp $
 */
 
 #include <sys/types.h>
@@ -44,19 +44,17 @@
 #define CERT_FILE "etter.ssl.crt"
 #define DATA_PATH "/"
 
-
-#define BREAK_ON_ERROR(x,y) if (x == -EINVALID) { \
-      sslw_wipe_connection(y); \
-      break; \
-   } \
-   if (x != ESUCCESS) \
-      continue; \
+#define BREAK_ON_ERROR(x,y,z) do {\
+if (x != ESUCCESS) {\
+sslw_wipe_connection(y);\
+SAFE_FREE(z);\
+return NULL;\
+}} while(0);\
 
 
 /* globals */
 
 static LIST_HEAD (, listen_entry) listen_ports;
-static LIST_HEAD (, accepted_entry) accepted_conn;
 
 struct listen_entry {
    int fd;
@@ -71,9 +69,7 @@ struct accepted_entry {
    u_int16 port[2];
    struct ip_addr ip[2];
    SSL *ssl[2];
-   u_int16 poll_stat[2];
    u_char status;
-   LIST_ENTRY (accepted_entry) next;
    #define SSL_CLIENT 0
    #define SSL_SERVER 1
 };
@@ -99,6 +95,7 @@ SSL_CTX   *ssl_ctx_client, *ssl_ctx_server;
 
 void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_char status);
 EC_THREAD_FUNC(sslw_start);
+static EC_THREAD_FUNC(sslw_child);
 static int sslw_is_ssl(struct packet_object *po);
 static int sslw_connect_server(struct accepted_entry *ae);
 static int sslw_sync_conn(struct accepted_entry *ae);
@@ -213,108 +210,37 @@ static void sslw_bind_wrapper(void)
 
 
 static int sslw_sync_conn(struct accepted_entry *ae)
-{   
-   int ret_val, err;
-   
-   //DEBUG_MSG("sslw - XXX Start SYNC");
-   if (! (ae->status & SSL_PEER_DONE) ) {
-      if (sslw_get_peer(ae) != ESUCCESS)
+{      
+   if(sslw_get_peer(ae) != ESUCCESS)
          return -EINVALID;
-      ae->status |= SSL_PEER_DONE;
-   }
+	 
+   if(sslw_connect_server(ae) != ESUCCESS)
+         return -EINVALID;
+	 
+   return ESUCCESS;
+}
    
-   if(! (ae->status & SSL_CONN_DONE) ) {
-      switch (sslw_connect_server(ae)) {
-         case -EINVALID:
-	    return -EINVALID;
-            break;
-         case -ENOTHANDLED:
-	    ae->poll_stat[SSL_CLIENT] = 0;
-	    ae->poll_stat[SSL_SERVER] = POLLOUT;
-	    DEBUG_MSG("SYNC CONN");
-	    return -ENOTHANDLED;
-	    break;
-	 default:
-	    ae->status |= SSL_CONN_DONE;
-	    ae->poll_stat[SSL_CLIENT] = POLLIN;
-	    ae->poll_stat[SSL_SERVER] = POLLIN;
-	    break;
-      }     
-   }
+static int sslw_sync_ssl(struct accepted_entry *ae) {
    
-   if ( ae->status & SSL_ENABLED ) {
-   
-      if (! (ae->status & SSL_CTX_DONE) ) {
-         ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
-         SSL_set_connect_state(ae->ssl[SSL_SERVER]);
-         SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
-         ae->ssl[SSL_CLIENT] = SSL_new(ssl_ctx_client);
-         SSL_set_fd(ae->ssl[SSL_CLIENT], ae->fd[SSL_CLIENT]);
-	 ae->status |= SSL_CTX_DONE;
-      }         
+   ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
+   SSL_set_connect_state(ae->ssl[SSL_SERVER]);
+   SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
+   ae->ssl[SSL_CLIENT] = SSL_new(ssl_ctx_client);
+   SSL_set_fd(ae->ssl[SSL_CLIENT], ae->fd[SSL_CLIENT]);
+   ae->status |= SSL_CTX_DONE;
 
-      if (! (ae->status & SSL_SERV_DONE) ) {
-         ret_val = SSL_connect(ae->ssl[SSL_SERVER]); 
-         switch (ret_val) {
-            case 1: 
-	       ae->status |= SSL_SERV_DONE;
-	       break;
-	    case 0: 
-	       // Do we have to close standard descriptors?
-	       // If so add here the server close
-	       // If not delete the client close in the main loop
-	       SSL_free(ae->ssl[SSL_SERVER]);
-	       SSL_free(ae->ssl[SSL_CLIENT]);
-	       return -EINVALID;
-	       break;
-	    default:
-	       ae->poll_stat[SSL_CLIENT] = 0;
-	       err = SSL_get_error(ae->ssl[SSL_SERVER], ret_val);
-	       if ( err == SSL_ERROR_WANT_READ)
-	          ae->poll_stat[SSL_SERVER] = POLLIN;
-	       else if ( err == SSL_ERROR_WANT_WRITE)
-	          ae->poll_stat[SSL_SERVER] = POLLOUT;
-	       else 
-	          return -EINVALID;
-	
-	DEBUG_MSG("SYNC SERV");	  
-	       return -ENOTHANDLED;
-	       break;
-         }
-      }      
-
-      if (! (ae->status & SSL_CLNT_DONE) ) {
-         ret_val = SSL_accept(ae->ssl[SSL_CLIENT]); 
-         switch (ret_val) {
-            case 1: 
-	       ae->status |= SSL_CLNT_DONE;
-	       ae->poll_stat[SSL_SERVER] = POLLIN;
-	       ae->poll_stat[SSL_CLIENT] = POLLIN;
-	       break;
-	    case 0: 
-	       // Do we have to close standard descriptors?
-	       // If so add here the server close
-	       // If not delete the client close in the main loop
-	       SSL_free(ae->ssl[SSL_SERVER]);
-	       SSL_free(ae->ssl[SSL_CLIENT]);
-	       return -EINVALID;
-	       break;
-	    default:
-	       ae->poll_stat[SSL_SERVER] = 0;
-	       err = SSL_get_error(ae->ssl[SSL_CLIENT], ret_val);
-	       if (err == SSL_ERROR_WANT_READ)
-	          ae->poll_stat[SSL_CLIENT] = POLLIN;
-	       else if (err == SSL_ERROR_WANT_WRITE)     
-	          ae->poll_stat[SSL_CLIENT] = POLLOUT;
-	       else
-	          return -EINVALID;
-	DEBUG_MSG("SYNC CLIENT %d", (u_int32)ae);	  
-	       return -ENOTHANDLED;
-	       break;
-         }
-      }               
+   if (SSL_connect(ae->ssl[SSL_SERVER]) != 1) {
+      SSL_free(ae->ssl[SSL_SERVER]);
+      SSL_free(ae->ssl[SSL_CLIENT]);
+      return -EINVALID;
    }
-   //DEBUG_MSG("sslw - XXX End SYNC");
+
+   if (SSL_accept(ae->ssl[SSL_CLIENT]) != 1) {
+      SSL_free(ae->ssl[SSL_SERVER]);
+      SSL_free(ae->ssl[SSL_CLIENT]);
+      return -EINVALID;
+   }
+
    return ESUCCESS;
 }
 
@@ -375,9 +301,6 @@ static int sslw_connect_server(struct accepted_entry *ae)
       return -EINVALID;
 
    if (connect(ae->fd[SSL_SERVER], (struct sockaddr *)&sin, sizeof(struct sockaddr)) == -1) {
-      if (errno == EINPROGRESS)
-         return -ENOTHANDLED;
-	
       close(ae->fd[SSL_SERVER]);
       return -EINVALID;   
    }      
@@ -392,31 +315,15 @@ static int sslw_connect_server(struct accepted_entry *ae)
  */ 
 static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct packet_object *po)
 {
-   int len, err;
+   int len;
    
-   DEBUG_MSG("xx to read xxx");
    if (ae->status & SSL_ENABLED)
       len = SSL_read(ae->ssl[direction], po->DATA.data, GBL_IFACE->mtu);
    else       
       len = read(ae->fd[direction], po->DATA.data, GBL_IFACE->mtu);
 
-   DEBUG_MSG("xx letti %d xx", len);
-   if (len < 0) {
-      if (!(ae->status & SSL_ENABLED) && errno == EAGAIN)
-         return -ENOTHANDLED; 
-      
-      if (ae->status & SSL_ENABLED) {
-         err = SSL_get_error(ae->ssl[direction], len);
-	 if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
-	    return -ENOTHANDLED;     
-      } 
+   if (len <= 0) 
       return -EINVALID;
-   }   
-
-   if (ae->status & SSL_ENABLED && len == 0) {
-      DEBUG_MSG("XXX INVALIDO");
-      return -EINVALID;
-   }
    
    po->DATA.len = len;
    /* NULL terminate the data buffer */
@@ -435,40 +342,17 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
  */ 
 static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct packet_object *po)
 {
-   int len, err;
-   
-   DEBUG_MSG("sslw - WRITING DATA %d", (u_int32)ae);
-   
+   int len;
+      
    /* Write packet data */
    if (ae->status & SSL_ENABLED)
       len = SSL_write(ae->ssl[direction], po->DATA.data, po->DATA.len + po->DATA.inject_len);
    else       
       len = write(ae->fd[direction], po->DATA.data, po->DATA.len + po->DATA.inject_len);
-   DEBUG_MSG("sslw - WRITING DATA LEN %d %d",po->DATA.len + po->DATA.inject_len, len);
-if (po->DATA.len + po->DATA.inject_len != (u_int32)len)
- DEBUG_MSG("MANNAGGIA LA PUTTANA DI EVA'''''''''''''''''''''''''''''''''''");
 
-
-   if (len < 0) {
-      if (! (ae->status & SSL_ENABLED) && errno == EAGAIN)
-         return -ENOTHANDLED; 
+   if (len <= 0)
+      return -ENOTHANDLED; 
       
-      if (ae->status & SSL_ENABLED) {
-         err = SSL_get_error(ae->ssl[direction], len);
-	 if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
-	    return -ENOTHANDLED;     
-      } 
-      return -EINVALID;
-   }   
-
-
-   // XXX Lo lascio???????????????????????/
-   if (ae->status & SSL_ENABLED && len == 0) {
-      DEBUG_MSG("XXX INVALIDO WRITE");
-      return -EINVALID;
-   }
-
-   //DEBUG_MSG("sslw - END WRITING");      
    return ESUCCESS;
 }
 
@@ -505,8 +389,7 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
  */
 static void sslw_wipe_connection(struct accepted_entry *ae)
 {
-//DEBUG_MSG("XXX -- wipe");
-   LIST_REMOVE(ae, next);
+// XXX - SSL_free chiude anche gli fd?
    if (ae->ssl[SSL_CLIENT]) {
       /* They are initialized together */
       SSL_free(ae->ssl[SSL_CLIENT]);
@@ -515,7 +398,6 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
       close(ae->fd[SSL_CLIENT]);
       close(ae->fd[SSL_SERVER]);
    }
-//DEBUG_MSG("XXX -- End wipe");
 
    SAFE_FREE(ae);
 }
@@ -537,7 +419,7 @@ static void sslw_init(void)
    }
 
    if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, CERT_FILE, SSL_FILETYPE_PEM) == 0) {
-      DEBUG_MSG("Grell_init -- SSL_CTX_use_PrivateKey_file -- %s", DATA_PATH "/" CERT_FILE);
+      DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- %s", DATA_PATH "/" CERT_FILE);
 
       if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, DATA_PATH "/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
          FATAL_ERROR("Can't open \"%s\" file !!", CERT_FILE);
@@ -547,32 +429,35 @@ static void sslw_init(void)
       FATAL_ERROR("Bad SSL Key couple !!");
 }
 
-
-/* 
- * SSL thread main function.
- */
-EC_THREAD_FUNC(sslw_start)
+EC_THREAD_FUNC(sslw_child)
 {
-   struct pollfd *poll_fd = NULL;
-   struct listen_entry *le;
-   struct accepted_entry *ae;
-   u_int16 number_of_services, number_of_connections, i, j;
-   u_int32 len = sizeof(struct sockaddr_in);
-   int ret_val;
-   struct sockaddr_in client_sin;
+   struct pollfd poll_fd[2];
    struct packet_object po;
-   
+   int direction, ret_val;
+   struct accepted_entry *ae;
+
+   ae = (struct accepted_entry *)args;
    ec_thread_init();
-   
-   sslw_init();
-   sslw_bind_wrapper();
-   hook_add(HOOK_HANDLED, &sslw_hook_handled);
+ 
+   /* Contact the real server */
+   if (sslw_sync_conn(ae) == -EINVALID) {
+      close(ae->fd[SSL_CLIENT]);
+      SAFE_FREE(ae);
+      return NULL;
+   }	    
+	    
+   if ((ae->status & SSL_ENABLED) && 
+       sslw_sync_ssl(ae) == -EINVALID) {
+      SAFE_FREE(ae);
+      return NULL;
+   }
 
    /* 
     * Allocate the data buffer and initialize 
     * fake headers. Headers len is set to 0.
     * XXX - Be sure to not modify these len.
     */
+    // XXX DISALLOCARE IL PO
    memset(&po, 0, sizeof(struct packet_object));
    SAFE_CALLOC(po.DATA.data, 1, UINT16_MAX);
    po.L2.header  = po.DATA.data; 
@@ -587,49 +472,81 @@ EC_THREAD_FUNC(sslw_start)
    po.L3.ttl = 64;
    po.L4.proto = NL_TYPE_TCP;
 
+   /* A fake SYN ACK for profiles */
+   po.DATA.len = 0;
+   po.L4.flags = (TH_SYN | TH_ACK);
+   sslw_parse_packet(ae, SSL_SERVER, &po);
+
    LOOP {
-      /* See how many services and connections we have */
-      number_of_services = 0;
-      LIST_FOREACH(le, &listen_ports, next) 
-         number_of_services++;
+      // XXX Posso metterlo fuori dal ciclo?
+      poll_fd[SSL_CLIENT].fd = ae->fd[SSL_CLIENT];
+      poll_fd[SSL_CLIENT].events = POLLIN;
+      poll_fd[SSL_SERVER].fd = ae->fd[SSL_SERVER];
+      poll_fd[SSL_SERVER].events = POLLIN;
 
-      number_of_connections = 0;
-      LIST_FOREACH(ae, &accepted_conn, next) 
-         number_of_connections++;
+      if (poll(poll_fd, 2, GBL_CONF->connection_timeout*1000) == 0)
+         BREAK_ON_ERROR(-EINVALID,ae,po.DATA.data);
 
-      SAFE_REALLOC(poll_fd, sizeof(struct pollfd) * (number_of_connections*2 + number_of_services));
+      for(direction=0; direction<2; direction++) 
+         if (poll_fd[direction].revents & POLLIN) {
+	    ret_val = sslw_read_data(ae, direction, &po);
+	    BREAK_ON_ERROR(ret_val,ae,po.DATA.data);
+	    
+	    sslw_parse_packet(ae, direction, &po);
+            if (po.flags & PO_DROPPED)
+	       continue;
 
-      i = 0;
+	    ret_val = sslw_write_data(ae, !direction, &po);
+	    BREAK_ON_ERROR(ret_val,ae,po.DATA.data);
+         } else if (poll_fd[direction].revents & (POLLHUP | POLLERR | POLLNVAL))
+            BREAK_ON_ERROR(-EINVALID,ae,po.DATA.data);
+   }
+}
+
+
+
+/* 
+ * SSL thread main function.
+ */
+EC_THREAD_FUNC(sslw_start)
+{
+   struct pollfd *poll_fd = NULL;
+   struct listen_entry *le;
+   struct accepted_entry *ae;
+   u_int16 number_of_services;
+   u_int32 len = sizeof(struct sockaddr_in), i;
+   struct sockaddr_in client_sin;
+   
+   ec_thread_init();
+   
+   sslw_init();
+   sslw_bind_wrapper();
+   hook_add(HOOK_HANDLED, &sslw_hook_handled);
+
+   number_of_services = 0;
+   LIST_FOREACH(le, &listen_ports, next) 
+      number_of_services++;
+   
+   SAFE_CALLOC(poll_fd, 1, sizeof(struct pollfd) * number_of_services);
+
+   LOOP {
       /* Set the polling on all registered ssl services */
+      // XXX - Posso metterlo fuori dal ciclo???
+      i=0;
       LIST_FOREACH(le, &listen_ports, next) {
          poll_fd[i].fd = le->fd;
          poll_fd[i++].events = POLLIN;
       }
-         
-      /* Set the polling on all connections (after the services) */
-      LIST_FOREACH(ae, &accepted_conn, next) {
-         poll_fd[i].fd = ae->fd[SSL_CLIENT];
-         poll_fd[i++].events = ae->poll_stat[SSL_CLIENT];
-         poll_fd[i].fd = ae->fd[SSL_SERVER];
-         poll_fd[i++].events = ae->poll_stat[SSL_SERVER];
-      }
 
-      CANCELLATION_POINT();
-      // XXX - CONTROLLARE ERRORI POSSIBILI DELLA POLL
-      DEBUG_MSG("---------------- NUOVA POLL --------------------");
-      poll(poll_fd, number_of_connections*2 + number_of_services, -1);
-      CANCELLATION_POINT();
+      poll(poll_fd, number_of_services, -1);
       
       /* Check which port received connection */
       for(i=0; i<number_of_services; i++) 
          if (poll_fd[i].revents & POLLIN) {
 	 
-            j = 0;
-            LIST_FOREACH(le, &listen_ports, next) {
-               if (j==i)
+            LIST_FOREACH(le, &listen_ports, next) 
+               if (poll_fd[i].fd == le->fd)
                   break;
-               j++;   
-            }        
 	    
             DEBUG_MSG("ssl_wrapper -- got a connection on port %d [%d]", le->redir_port, le->sslw_port);
             SAFE_CALLOC(ae, 1, sizeof(struct accepted_entry));
@@ -641,7 +558,6 @@ EC_THREAD_FUNC(sslw_start)
                SAFE_FREE(ae);
                continue;
             }
-            fcntl(ae->fd[SSL_CLIENT], F_SETFL, O_NONBLOCK);
 	    
             /* Set the server original port for protocol dissection */
             ae->port[SSL_SERVER] = htons(le->sslw_port);
@@ -652,67 +568,12 @@ EC_THREAD_FUNC(sslw_start)
             /* Set the peer (client) in the connection list entry */
             ae->port[SSL_CLIENT] = client_sin.sin_port;
             ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (char *)&(client_sin.sin_addr.s_addr));
-
-            /* Contact the real server */
-            if (sslw_sync_conn(ae) == -EINVALID) {
-               close(ae->fd[SSL_CLIENT]);
-               SAFE_FREE(ae);
-               continue;
-            }
 	    
-            LIST_INSERT_HEAD(&accepted_conn, ae, next);   
-         }
-	 
-
-      /* Check if we have data to read */
-      for(i=0; i<number_of_connections*2; i++) 
-         if (poll_fd[i+number_of_services].revents & (POLLIN | POLLOUT | POLLHUP | POLLERR | POLLNVAL)) {
-            u_int32 direction;//, connection;
-
-DEBUG_MSG("-- conn accpted --");	    
-            /* Check if it's server or client and which connection */
-            direction = i%2;
-            LIST_FOREACH(ae, &accepted_conn, next) {
-	       if (poll_fd[i+number_of_services].fd == ae->fd[SSL_CLIENT] ||
-	           poll_fd[i+number_of_services].fd == ae->fd[SSL_SERVER]);
-	          break;
-            }
-	    /* Error checking */
-	    if (!ae)
-	       break; 
-DEBUG_MSG("-- conn found --");	    
-
-	    if (poll_fd[i+number_of_services].revents & (POLLHUP | POLLERR | POLLNVAL)) {
-               /* if HUP remove the entry from the list */
-               sslw_wipe_connection(ae);
-	       break;
-	    }
-DEBUG_MSG("-- conn action --");	    
-
-            ret_val = sslw_sync_conn(ae);
-	    BREAK_ON_ERROR(ret_val, ae);
-DEBUG_MSG("-- conn read --");	    
-            
-	    ret_val = sslw_read_data(ae, direction, &po);
-	    BREAK_ON_ERROR(ret_val, ae);
-
-DEBUG_MSG("-- conn parse --");	    
-
-//DEBUG_MSG("YYYYYYYY %d", ret_val);	       
-            sslw_parse_packet(ae, direction, &po);
-   
-            /* Don't write dropped data */
-            if (po.flags & PO_DROPPED)
-	       continue;
-DEBUG_MSG("-- conn  write --");	    
-		  
-	    ret_val = sslw_write_data(ae, !direction, &po);
-	    BREAK_ON_ERROR(ret_val, ae);
-DEBUG_MSG("-- conn end --");	    
- 
+	    ec_thread_new("sslw_child", "ssl child", &sslw_child, ae);
          }
    }
-}
+}	 
+
 
 /*******************************************/
 /* Sessions' stuff for ssl packets */

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_solaris.c,v 1.3 2003/04/30 16:50:20 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_solaris.c,v 1.4 2003/06/02 08:37:35 alor Exp $
 */
 
 #include <ec.h>
@@ -88,6 +88,10 @@ static void restore_ip_forward(void)
    char buf[65536];
    char *cp;
 
+   /* no need to restore anything */
+   if (saved_status[0] == '0')
+      return;
+   
    cp = "ip_forwarding";
    memset(buf, '\0', sizeof(buf));
    sprintf(buf, "%s", cp);

@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_bsd.c,v 1.6 2003/05/18 09:50:06 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/os/ec_bsd.c,v 1.7 2003/06/02 08:37:34 alor Exp $
 */
 
 #include <ec.h>
@@ -62,6 +62,11 @@ static void restore_ip_forward(void)
    mib[2] = IPPROTO_IP;
    mib[3] = IPCTL_FORWARDING;
 
+   /* no need to restore anything */
+   if (saved_status == 0)
+      return;
+   
+   /* restore the old value */
    if( (sysctl(mib, 4, NULL, NULL, &saved_status, sizeof(saved_status))) == -1)
       FATAL_ERROR("Please restore manually the value of net.inet.ip.forwarding to %d", saved_status);
 

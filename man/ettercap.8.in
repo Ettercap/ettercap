@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap.8.in,v 1.57 2004/01/10 16:32:54 lordnaga Exp $
+.\"  $Id: ettercap.8.in,v 1.58 2004/01/23 08:50:51 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -475,9 +475,9 @@ ettercap in debug mode.
 .B GENERAL OPTIONS
 .TP
 \fB\-i\fR, \fB\-\-iface <IFACE>\fR
-Use this <IFACE> instead of the default one. The interface must have an ip
-address. This is a libnet limitation (for now). You can launch ettercap
-on ifaces without IP address if you execute it in unoffensive mode (-u option).
+Use this <IFACE> instead of the default one. The interface can be unconfigured
+(requires libnet >= 1.1.2), but in this case you cannot use MITM attacks and
+ettercap runs as the unoffensive (-u) option was specified.
 
 .TP
 \fB\-n\fR, \fB\-\-netmask <NETMASK>\fR

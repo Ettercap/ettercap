@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.43 2003/10/29 23:34:50 alor Exp $
+    $Id: ec_main.c,v 1.44 2003/11/07 16:34:47 alor Exp $
 */
 
 #include <ec.h>
@@ -201,7 +201,7 @@ static void drop_privs(void)
    if ( setuid(uid) < 0)
       ERROR_MSG("setuid()");
 
-   DEBUG_MSG("privs: %d %d", getuid(), geteuid() );
+   DEBUG_MSG("privs: %d %d", (int)getuid(), (int)geteuid() );
    USER_MSG("Priviledges dropped to UID %d...\n\n", getuid() ); 
 }
 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_decode.c,v 1.48 2004/01/20 21:46:42 alor Exp $
+    $Id: ec_decode.c,v 1.49 2004/02/26 14:42:26 alor Exp $
 */
 
 #include <ec.h>
@@ -73,8 +73,6 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
 {
    FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
-   struct pcap_stat ps;
-   struct libnet_stats ls;
    int len;
    u_char *data;
    size_t datalen;
@@ -94,33 +92,8 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
       /* update the offset pointer */
       GBL_PCAP->dump_off = ftell(pcap_file(GBL_PCAP->pcap));
    else {
-      /* update the statistics 
-       *
-       * statistics are available only in live capture
-       * no statistics are stored in savefiles
-       */
-      pcap_stats(GBL_PCAP->pcap, &ps);
-      /* get the statistics for Layer 3 since we forward packets here */
-      libnet_stats(GBL_LNET->lnet_L3, &ls);
-      
-#ifdef OS_LINUX
-      /* 
-       * add to the previous value, since every call
-       * to pcap_stats reset the counter (hope that will be fixed soon)
-       */
-      GBL_STATS->ps_recv += ps.ps_recv;
-      GBL_STATS->ps_drop += ps.ps_drop;
-      GBL_STATS->ps_ifdrop += ps.ps_ifdrop;
-#else
-      /* on systems other than linux, the counter is not reset */ 
-      GBL_STATS->ps_recv = ps.ps_recv;
-      GBL_STATS->ps_drop = ps.ps_drop;
-      GBL_STATS->ps_ifdrop = ps.ps_ifdrop;
-#endif
-
-      /* from libnet */
-      GBL_STATS->ps_sent = ls.packets_sent;
-      GBL_STATS->bs_sent = ls.bytes_written;
+      /* update the statistics */
+      stats_update();
    }
    
    /* 

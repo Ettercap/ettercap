@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.12 2004/02/17 21:02:28 alor Exp $
+.\"  $Id: ettercap_curses.8.in,v 1.13 2004/02/26 14:42:26 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -229,7 +229,7 @@ select it and press enter. Once the two-panel interface is displayed you can
 move the focus with the arrow keys. Press 'j' to switch between joined and
 splitted visualization. Press 'k' to kill the connection. Press 'y' to inject
 interactively and 'Y' to inject a file. Note that it is important which panel
-has the focus as it is where the injection is destinated.
+has the focus as the injected data will be sent to that address.
 .br
 HINT: connections marked with an asterisk contain account(s) informations.
 .TP

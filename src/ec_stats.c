@@ -17,12 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_stats.c,v 1.7 2004/02/03 16:33:59 alor Exp $
+    $Id: ec_stats.c,v 1.8 2004/02/26 14:42:26 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_stats.h>
 
+#include <pcap.h>
+#include <libnet.h>
 #include <sys/time.h>
 
 /* protos */
@@ -32,6 +34,9 @@ u_int32 stats_queue_del(void);
 
 void stats_half_start(struct half_stats *hs);
 void stats_half_end(struct half_stats *hs, u_int32 len);
+
+void stats_wipe(void);
+void stats_update(void);
 
 /************************************************/
 
@@ -116,6 +121,79 @@ void stats_half_end(struct half_stats *hs, u_int32 len)
       hs->tmp_size = 0;
    }
 
+}
+
+/*
+ * zero the statistics.
+ * since the stats from the kernel are not modifiable
+ * we have to keep a delta to subtract from them to have
+ * the count of the packets since the last call of stats_wipe()
+ */
+void stats_wipe(void)
+{
+   struct pcap_stat ps;
+   
+   DEBUG_MSG("stats_wipe");
+
+   /* wipe top and botto half statistics */
+   memset(&GBL_STATS->bh, 0, sizeof(struct half_stats));
+   memset(&GBL_STATS->th, 0, sizeof(struct half_stats));
+
+   /* now the global stats */
+   pcap_stats(GBL_PCAP->pcap, &ps);
+
+   /* XXX - fix this with libpcap 0.8.2 */
+#ifndef OS_LINUX
+   GBL_STATS->ps_recv_delta += ps.ps_recv;
+   GBL_STATS->ps_drop_delta += ps.ps_drop;
+   GBL_STATS->ps_sent_delta += GBL_STATS->ps_sent;
+   GBL_STATS->bs_sent_delta += GBL_STATS->bs_sent;
+#endif
+   
+   GBL_STATS->ps_recv = 0;
+   GBL_STATS->ps_drop = 0;
+   GBL_STATS->ps_ifdrop = 0;
+   GBL_STATS->ps_sent = 0;
+   GBL_STATS->bs_sent = 0;
+   GBL_STATS->queue_max = 0;
+   GBL_STATS->queue_curr = 0;
+}
+
+/*
+ * update the statistics
+ */
+void stats_update(void)
+{
+   struct pcap_stat ps;
+   struct libnet_stats ls;
+   
+   /* update the statistics 
+    *
+    * statistics are available only in live capture
+    * no statistics are stored in savefiles
+    */
+   pcap_stats(GBL_PCAP->pcap, &ps);
+   /* get the statistics for Layer 3 since we forward packets here */
+   libnet_stats(GBL_LNET->lnet_L3, &ls);
+      
+#ifdef OS_LINUX
+   /* 
+    * add to the previous value, since every call
+    * to pcap_stats reset the counter (hope that will be fixed soon)
+    * XXX - fixed in libpcap cvs
+    */
+   GBL_STATS->ps_recv += ps.ps_recv;
+   GBL_STATS->ps_drop += ps.ps_drop;
+   GBL_STATS->ps_ifdrop += ps.ps_ifdrop;
+#else
+   /* on systems other than linux, the counter is not reset */ 
+   GBL_STATS->ps_recv = ps.ps_recv - GBL_STATS->ps_recv_delta;
+   GBL_STATS->ps_drop = ps.ps_drop - GBL_STATS->ps_drop_delta;
+#endif
+
+   /* from libnet */
+   GBL_STATS->ps_sent = ls.packets_sent - GBL_STATS->ps_sent_delta;
+   GBL_STATS->bs_sent = ls.bytes_written - GBL_STATS->bs_sent_delta;
 }
 
 /* EOF */

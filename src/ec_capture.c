@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.37 2004/01/23 08:52:46 alor Exp $
+    $Id: ec_capture.c,v 1.38 2004/02/26 14:42:26 alor Exp $
 */
 
 #include <ec.h>
@@ -227,6 +227,9 @@ EC_THREAD_FUNC(capture)
    ec_thread_init();
    
    DEBUG_MSG("neverending loop (capture)");
+
+   /* wipe the stats */
+   stats_wipe();
    
    /* 
     * infinite loop 
@@ -245,6 +248,9 @@ EC_THREAD_FUNC(capture_bridge)
    
    DEBUG_MSG("neverending loop (capture_bridge)");
    
+   /* wipe the stats */
+   stats_wipe();
+
    /* 
     * infinite loop 
     * dispatch packets to ec_decode

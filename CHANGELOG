@@ -14,6 +14,7 @@ NG-0.7.2         200410
      and a new option to prevent the check was introduced
      (see the man page etter.conf(5) for details)
    !! do not drop privs under windows (useless) 
+   !! fixed the mmap problem under windows
 
 
 NG-0.7.1         20040920

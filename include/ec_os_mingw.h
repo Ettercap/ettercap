@@ -159,25 +159,6 @@ EC_API_EXTERN const char *ec_win_get_ec_dir (void);
    #define INSTALL_DATADIR   "/share"  /* this cannot be a function (sigh) */
 #endif
    
-
-/* Unix mmap() emulation
- */
-#ifndef HAVE_MMAP
-   #define PROT_READ    0x1            /* page can be read */
-   #define PROT_WRITE   0x2            /* page can be written */
-   #define PROT_EXEC    0x4            /* page can be executed (not supported) */
-   #define PROT_NONE    0x0            /* page can not be accessed (not supported) */
-   #define MAP_SHARED   0x01           /* share changes (ot supported) */
-   #define MAP_PRIVATE  0x02           /* make mapping private (not supportd) */
-   #define MAP_FAILED   NULL
-
-   #define mmap(xx1,size,prot,xx2,fd,xx3)  ec_win_mmap (fd,size,prot)
-   #define munmap(handle,size)             ec_win_munmap ((const void*)(handle), size)
-
-   EC_API_EXTERN void *ec_win_mmap (int fd, size_t size, int prot);
-   EC_API_EXTERN int   ec_win_munmap (const void *handle, size_t size);
-#endif
-
 /* dlopen() emulation (not exported)
  */
 #if !defined(HAVE_DLOPEN)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.21 2004/07/12 19:57:27 alor Exp $
+    $Id: ec_curses_view_connections.c,v 1.22 2004/09/30 14:54:14 alor Exp $
 */
 
 #include <ec.h>
@@ -29,9 +29,6 @@
 #include <ec_format.h>
 #include <ec_inject.h>
 
-#ifndef OS_WINDOWS
-   #include <sys/mman.h>
-#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -630,7 +627,7 @@ static void inject_file(char *path, char *file)
    char *filename;
    int fd;
    void *buf;
-   size_t size;
+   size_t size, ret;
    
    DEBUG_MSG("inject_file %s/%s", path, file);
    
@@ -649,10 +646,18 @@ static void inject_file(char *path, char *file)
    /* calculate the size of the file */
    size = lseek(fd, 0, SEEK_END);
    
-   /* map it to the memory */
-   buf = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-   if (buf == MAP_FAILED) {
-      ui_error("Can't mmap the file");
+   /* load the file in memory */
+   SAFE_CALLOC(buf, size, sizeof(char));
+ 
+   /* rewind the pointer */
+   lseek(fd, 0, SEEK_SET);
+   
+   ret = read(fd, buf, size);
+   
+   close(fd);
+
+   if (ret != size) {
+      ui_error("Cannot read the file into memory");
       return;
    }
 
@@ -663,8 +668,7 @@ static void inject_file(char *path, char *file)
       user_inject(buf, size, curr_conn, 2);
    }
 
-   close(fd);
-   munmap(buf, size);
+   SAFE_FREE(buf);
    
 }
 

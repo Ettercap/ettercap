@@ -11,9 +11,18 @@
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
 
+   + WINDOWS
+      - etterlog behaves strange
+      - scrambled log file
+
 ============================
   In the next release(s)
 ============================
+   
+   + ETTERLOG
+      - extract files from streams looking for mime content or protocol
+      - stream functions
+      - extractors for each protocol
 
    + record the MSS for the packet splitting
 
@@ -30,11 +39,6 @@
       - png output (ala nagios)
 
    + BINDER
- 
-   + ETTERLOG
-      - extract files from streams looking for mime content or protocol
-      - stream functions
-      - extractors for each protocol
 
    + ETTERFILTER
       - possibility to set flags in scripts 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_analyze.c,v 1.16 2004/03/18 14:22:19 alor Exp $
+    $Id: el_analyze.c,v 1.17 2004/09/30 14:54:14 alor Exp $
 */
 
 #include <el.h>
@@ -86,7 +86,8 @@ void analyze_packet(void)
    }
 
    /* get the file stat */
-   stat(GBL.logfile, &st);
+   ret = stat(GBL.logfile, &st);
+   ON_ERROR(ret, -1, "Cannot stat file");
    
    fprintf(stdout, "\n\n");
    fprintf(stdout, "Log file size (compressed)   : %d\n", (int)st.st_size);   

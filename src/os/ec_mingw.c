@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.8 2004/09/13 16:02:31 alor Exp $
+    $Id: ec_mingw.c,v 1.9 2004/09/30 14:54:14 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -528,126 +528,6 @@ int ec_win_wait (int *status)
    errno = ENOSYS;
    (void) status;
    return -1;
-}
-
-/*
- * A simple mmap() emulation.
- */
-struct mmap_list {
-       HANDLE            os_map;
-       DWORD             size;
-       const void       *file_ptr;
-       struct mmap_list *next;
-     };
-
-static struct mmap_list *mmap_list0 = NULL;
-
-static __inline struct mmap_list *
-lookup_mmap (const void *file_ptr, size_t size)
-{
-  struct mmap_list *m;
-
-  if (!file_ptr || size == 0)
-     return (NULL);
-
-  for (m = mmap_list0; m; m = m->next)
-      if (m->file_ptr == file_ptr && m->size == (DWORD)size && m->os_map)
-         return (m);
-  return (NULL);
-}
-
-static __inline struct mmap_list *
-add_mmap_node (const void *file_ptr, const HANDLE os_map, DWORD size)
-{
-  struct mmap_list *m = malloc (sizeof(*m));
-
-  if (!m)
-     return (NULL);
-
-  m->os_map   = os_map;
-  m->file_ptr = file_ptr;
-  m->size     = size;
-  m->next     = mmap_list0;
-  mmap_list0  = m;
-  return (m);
-}
-
-static __inline void unlink_mmap (struct mmap_list *This)
-{
-  struct mmap_list *m, *prev, *next;
-
-  for (m = prev = mmap_list0; m; prev = m, m = m->next) {
-    if (m != This)
-       continue;
-    if (m == mmap_list0)
-         mmap_list0 = m->next;
-    else prev->next = m->next;
-    next = m->next;
-    free (m);
-    break;
-  }
-}
-
-void *ec_win_mmap (int fd, size_t size, int prot)
-{
-   struct mmap_list *map = NULL;
-   HANDLE os_handle, os_map;
-   DWORD  os_prot;
-   void  *file_ptr;
-
-   if (fd < 0 || size == 0 || !(prot & (PROT_READ|PROT_WRITE))) {
-    SetLastError (errno = EINVAL);
-      return (MAP_FAILED);
-   }
-
-  /* todo:
-     prot 0                -> PAGE_NOACCESS
-     PROT_READ             -> PAGE_READONLY
-     PROT_READ|PROT_WRITE  -> PAGE_READWRITE
-     PROT_WRITE            -> PAGE_WRITECOPY
-  */
-
-   os_handle = (HANDLE) _get_osfhandle (fd);
-   if (!os_handle)
-      return (MAP_FAILED);
-
-   os_prot = (prot == PROT_READ) ? PAGE_READONLY : PAGE_WRITECOPY;
-   os_map = CreateFileMapping (os_handle, NULL, os_prot, 0, 0, NULL);
-   if (!os_map)
-      return (MAP_FAILED);
-
-   os_prot = (prot == PROT_READ) ? FILE_MAP_READ : FILE_MAP_WRITE;
-   file_ptr = MapViewOfFile (os_map, os_prot, 0, 0, 0);
-   if (file_ptr) {
-      map = add_mmap_node (file_ptr, os_map, size);
-      if (!map) {
-         FlushViewOfFile (file_ptr, size);
-         UnmapViewOfFile (file_ptr);
-      }
-   }
-   
-   file_ptr = (map ? (void *)map->file_ptr : NULL);
-   if (!file_ptr)
-      CloseHandle (os_map);
-  
-   DEBUG_MSG ("ec_win_mmap(): fd %d, os_map %08lX, file_ptr %08lX, size %u, prot %d\n",
-             fd, (DWORD)os_map, (DWORD)file_ptr, size, prot);
-   return (file_ptr);
-}
-
-int ec_win_munmap (const void *file_ptr, size_t size)
-{
-  struct mmap_list *m = lookup_mmap (file_ptr, size);
-
-  if (!m) {
-    SetLastError (errno = EINVAL);
-    return (-1);
-  }
-  FlushViewOfFile (m->file_ptr, m->size);
-  UnmapViewOfFile ((void*)m->file_ptr);
-  CloseHandle (m->os_map);
-  unlink_mmap (m);
-  return (0);
 }
 
 /*

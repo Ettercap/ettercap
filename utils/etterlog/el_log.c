@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_log.c,v 1.15 2004/01/26 20:59:55 alor Exp $
+    $Id: el_log.c,v 1.16 2004/09/30 14:54:14 alor Exp $
 */
 
 #include <el.h>
@@ -129,7 +129,7 @@ int get_packet(struct log_header_packet *pck, u_char **buf)
    /* adjust the timestamp */
    pck->tv.tv_sec = ntohl(pck->tv.tv_sec);
    pck->tv.tv_usec = ntohl(pck->tv.tv_usec);
-  
+ 
    /* allocate the memory for the buffer */
    SAFE_CALLOC(*buf, pck->len, sizeof(u_char));
 

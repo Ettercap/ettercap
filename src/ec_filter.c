@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.54 2004/09/17 19:38:39 alor Exp $
+    $Id: ec_filter.c,v 1.55 2004/09/30 14:54:14 alor Exp $
 */
 
 #include <ec.h>
@@ -26,13 +26,6 @@
 #include <ec_threads.h>
 #include <ec_send.h>
 
-#ifndef OS_WINDOWS
-   /* 
-    * mmap is not available under windows. it is implemented
-    * int ec_os_mingw.c
-    */
-   #include <sys/mman.h>
-#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -631,7 +624,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
 {
    int fd;
    void *file;
-   size_t size;
+   size_t size, ret;
    
    /* check the offensiveness */
    if (GBL_OPTIONS->unoffensive)
@@ -650,9 +643,17 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    size = lseek(fd, 0, SEEK_END);
 
    /* load the file in memory */
-   file = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-   if (file == MAP_FAILED) 
-      JIT_FAULT("Cannot mmap file");
+   SAFE_CALLOC(file, size, sizeof(char));
+ 
+   /* rewind the pointer */
+   lseek(fd, 0, SEEK_SET);
+   
+   ret = read(fd, file, size);
+   
+   close(fd);
+
+   if (ret != size)
+      FATAL_MSG("Cannot read the file into memory");
  
    /* check if we are overflowing pcap buffer */
    if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + size)
@@ -673,8 +674,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
       po->flags ^= PO_DROPPED;
 
    /* close and unmap the file */
-   close(fd);
-   munmap(file, size);
+   SAFE_FREE(file);
    
    return ESUCCESS;
 }
@@ -858,7 +858,7 @@ int filter_load_file(char *filename, struct filter_env *fenv)
 {
    int fd;
    void *file;
-   size_t size;
+   size_t size, ret;
    struct filter_header fh;
 
    DEBUG_MSG("filter_load_file (%s)", filename);
@@ -882,16 +882,18 @@ int filter_load_file(char *filename, struct filter_env *fenv)
    /* get the size */
    size = lseek(fd, 0, SEEK_END);
 
-   /* 
-    * load the file in memory 
-    * skipping the initial header
-    */
-   file = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-   if (file == MAP_FAILED)
-      FATAL_MSG("Cannot mmap file");
+   /* load the file in memory */
+   SAFE_CALLOC(file, size, sizeof(char));
+ 
+   /* rewind the pointer */
+   lseek(fd, 0, SEEK_SET);
    
-   /* the mmap will remain active even if we close the fd */
+   ret = read(fd, file, size);
+   
    close(fd);
+   
+   if (ret != size)
+      FATAL_MSG("Cannot read the file into memory");
 
    /* make sure we don't override a previous filter */
    filter_unload(fenv);
@@ -958,8 +960,8 @@ void filter_unload(struct filter_env *fenv)
       i++;
    }
    
-   /* unmap the memory area (from file) */
-   munmap(fenv->map, fenv->len + sizeof(struct filter_header)); 
+   /* free the memory region containing the file */
+   SAFE_FREE(fenv->map);
 
    /* wipe the pointer */
    fenv->map = NULL;

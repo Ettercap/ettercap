@@ -25,6 +25,7 @@ ettercap_SOURCES = ec_main.c \
 				   ec_sniff.c \
 				   ec_sniff_classic.c \
 				   ec_sniff_bridge.c \
+				   ec_sniff_arp.c \
 				   protocols/ec_eth.c \
 				   protocols/ec_wifi.c \
 				   protocols/ec_arp.c \

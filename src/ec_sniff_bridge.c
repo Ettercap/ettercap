@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff_bridge.c,v 1.1 2003/03/08 13:53:38 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_sniff_bridge.c,v 1.2 2003/03/13 13:22:07 alor Exp $
 */
 
 #include <ec.h>
@@ -31,7 +31,7 @@ void forward_bridge_sniff(struct packet_object *po);
 
 void start_bridge_sniff(void)
 {
-   DEBUG_MSG("start_classic_sniff");
+   DEBUG_MSG("start_bridge_sniff");
 
    /* create the thread for packet capture */
    ec_thread_new("capture", "pcap handler and packet decoder", &capture, NULL);

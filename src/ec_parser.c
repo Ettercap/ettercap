@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.2 2003/03/08 16:30:49 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_parser.c,v 1.3 2003/03/13 13:22:04 alor Exp $
 */
 
 
@@ -46,7 +46,7 @@ void ec_usage(void)
 
    fprintf(stdout, "\nUsage: %s [OPTIONS] [TARGET1] [TARGET2]\n", GBL_PROGRAM);
 
-   fprintf(stdout, "\nTARGET is in the format MAC:IP:PORT (see the man for further detail)\n");
+   fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
    
    fprintf(stdout, "\nSniffing Method:\n");
    fprintf(stdout, "  -S, --sniff                 use classical sniff\n");
@@ -120,6 +120,7 @@ void parse_options(int argc, char **argv)
          
          case 'A':
                   GBL_PCAP->promisc = 0;
+                  set_arp_sniff();
                   NOT_IMPLEMENTED();
                   break;
                   

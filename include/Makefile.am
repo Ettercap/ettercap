@@ -19,6 +19,7 @@ noinst_HEADERS = ec.h \
                  ec_sniff.h \
                  ec_sniff_classic.h \
                  ec_sniff_bridge.h \
+                 ec_sniff_arp.h \
                  ec_inet.h \
                  ec_hook.h \
                  ec_file.h \

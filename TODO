@@ -6,17 +6,11 @@
    + lnet ptag thread safe (check it)
    + speed up the visualization of user_msg (poll related)
 
-   + man page for EC_UID (drop privs)
-
-   + utils
-
-   + DISSECTORS over decoders
-      - vbuf functions
-
-   + PASSIVE FINGERPRINT
+   ?? VBUF functions for dissectors ??
    
    !! dissector malloc the INFO, someone have to free them... !!
    !! dissector malloc the PASSIVE, someone have to free them... !!
+
 
    + SNIFFING ENGINE
       - arp sniff
@@ -36,7 +30,7 @@
    + TOP HALF
       - processing engine to differenziate the activity (hook point DISPATCHER)
          - passive mapping
-         - sniffing
+         - sniffing (connection tracking)
          - logging
    
    

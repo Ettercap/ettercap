@@ -23,6 +23,8 @@ extern void set_sniffing_method(struct sniffing_method *sm);
 
 extern void set_classic_sniff(void);
 extern void set_bridge_sniff(void);
+extern void set_arp_sniff(void);
+
 extern void compile_display_filter(void);
 
 /* forwarder (the struct is in ec_globals.h) */

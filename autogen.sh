@@ -1,5 +1,12 @@
 #!/bin/sh
 
+echo
+echo "Suggested version:"
+echo
+echo "     autoconf 2.57"
+echo "     automake 1.6"
+echo
+
 echo "cleaning up config files"
 rm -f configure
 rm -f aclocal.m4

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_http.c,v 1.4 2003/11/28 17:09:36 lordnaga Exp $
+    $Id: ec_http.c,v 1.5 2003/11/28 23:34:28 alor Exp $
 */
 
 #include <ec.h>
@@ -138,9 +138,9 @@ FUNC_DECODER(dissector_http)
        * then password in the GET or POST.
        */
       if ((from_here = strstr(ptr, ": NTLM ")) && 
-          Parse_NTLM_Auth(ptr, from_here + strlen(": NTLM "), PACKET));
+         Parse_NTLM_Auth(ptr, from_here + strlen(": NTLM "), PACKET));
       else if ((from_here = strstr(ptr, ": Basic ")) &&
-               Parse_Basic_Auth(ptr, from_here  + strlen(": Basic "), PACKET));
+         Parse_Basic_Auth(ptr, from_here  + strlen(": Basic "), PACKET));
       else if (!strncmp(ptr, "GET ", 4))
          Parse_Method_Get(ptr + strlen("GET "), PACKET);
       else if (!strncmp(ptr, "POST ", 5))
@@ -150,8 +150,8 @@ FUNC_DECODER(dissector_http)
          if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
             conn_status = (struct http_status *) s->data;
 	 
-	    /* Are we waiting for post termination? */
-	    if (conn_status->c_status == POST_WAIT_DELIMITER ||
+	         /* Are we waiting for post termination? */
+	         if (conn_status->c_status == POST_WAIT_DELIMITER ||
                 conn_status->c_status == POST_LAST_CHANCE)
                Parse_Post_Payload(ptr, conn_status, PACKET);
          }
@@ -172,7 +172,7 @@ FUNC_DECODER(dissector_http)
           * out from the if (decrease performances, checks all pcks)
           */
          if ((from_here = strstr(ptr, ": NTLM "))) 
-              Parse_NTLM_Auth(ptr, from_here + strlen(": NTLM "), PACKET);
+            Parse_NTLM_Auth(ptr, from_here + strlen(": NTLM "), PACKET);
       }
    }
 
@@ -196,9 +196,10 @@ static void Get_Banner(u_char *ptr, struct packet_object *po)
       if ((start = strstr(ptr, "Server: ")) && (end = strstr(start, "\r"))) {
          start += strlen("Server: ");
          len = end - start;
-	 if (len>0 && len<1024) {
+	      
+         if (len>0 && len<1024) {
             SAFE_CALLOC(po->DISSECTOR.banner, len+1, sizeof(char));
-	    memcpy(po->DISSECTOR.banner, start, len);
+	         memcpy(po->DISSECTOR.banner, start, len);
          }
       }
    }
@@ -314,28 +315,28 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
           */  
          if (conn_status->c_status == NTLM_WAIT_RESPONSE) {
             /* Fill the user and passwords */
-	    response_struct  = (tSmbNtlmAuthResponse *) to_decode;
-	    po->DISSECTOR.user = strdup(GetUnicodeString(response_struct, uUser));
+	         response_struct  = (tSmbNtlmAuthResponse *) to_decode;
+	         po->DISSECTOR.user = strdup(GetUnicodeString(response_struct, uUser));
             SAFE_CALLOC(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, sizeof(char));
             sprintf(po->DISSECTOR.pass, "(NTLM) %s:\"\":\"\":", po->DISSECTOR.user);
-	    outstr = po->DISSECTOR.pass + strlen(po->DISSECTOR.pass);
+	         outstr = po->DISSECTOR.pass + strlen(po->DISSECTOR.pass);
             dumpRaw(outstr,((unsigned char*)response_struct)+IVAL(&response_struct->lmResponse.offset,0), 24);	    	 
             outstr[48] = ':';
             outstr+=49;
             dumpRaw(outstr,((unsigned char*)response_struct)+IVAL(&response_struct->ntResponse.offset,0), 24);	       	    
             outstr[48] = ':';
-	    outstr+=49;
-	    strcat(po->DISSECTOR.pass, conn_status->c_data);
+	         outstr += 49;
+	         strcat(po->DISSECTOR.pass, conn_status->c_data);
 
             /* Are we authenticating to the proxy or to a website? */
-	    if (Proxy_Auth)
-	       po->DISSECTOR.info = strdup("Proxy Authentication");
+	         if (Proxy_Auth)
+	            po->DISSECTOR.info = strdup("Proxy Authentication");
             else 
                Find_Url(ptr, &(po->DISSECTOR.info));
 	    
             Print_Pass(po);
-	 }
-	 session_free(s);
+	      }
+	      session_free(s);
       }
       SAFE_FREE(ident);
    }
@@ -360,7 +361,7 @@ static void Parse_Post_Payload(u_char *ptr, struct http_status *conn_status, str
          po->DISSECTOR.user = user;
          po->DISSECTOR.pass = pass;
          po->DISSECTOR.info = strdup(conn_status->c_data);
-	 dissect_wipe_session(po);
+	      dissect_wipe_session(po);
          Print_Pass(po);
       } else
          SAFE_FREE(user);

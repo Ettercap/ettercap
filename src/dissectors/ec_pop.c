@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_pop.c,v 1.24 2003/10/29 20:41:07 alor Exp $
+    $Id: ec_pop.c,v 1.25 2003/11/28 23:34:28 alor Exp $
 */
 
 /*
@@ -121,7 +121,7 @@ FUNC_DECODER(dissector_pop)
 
    /* reached the end */
    if (ptr == end) return NULL;
-   
+
 /*
  * USER & PASS authentication:
  *
@@ -351,6 +351,67 @@ FUNC_DECODER(dissector_pop)
                                     PACKET->DISSECTOR.pass);
       return NULL;
    }
+   
+/* 
+ * AUTH PLAIN
+ *
+ * digest(<NULL>user<NULL>pass)
+ *
+ * the digests are in base64
+ */
+   if ( !strncasecmp(ptr, "AUTH PLAIN", 10) ) {
+      
+      DEBUG_MSG("\tDissector_POP AUTH PLAIN");
+
+      /* destroy any previous session */
+      dissect_wipe_session(PACKET);
+      
+      /* create the new session */
+      dissect_create_session(&s, PACKET);
+     
+      /* remember the state (used later) */
+      s->data = strdup("AUTH PLAIN");
+      
+      /* save the session */
+      session_put(s);
+
+      /* username is in the next packet */
+      return NULL;
+   }
+   
+/* collect the user and pass (the session was retrived above) */   
+   if (!strcmp(s->data, "AUTH PLAIN")) {
+      char *decode;
+      int i;
+     
+      DEBUG_MSG("\tDissector_POP AUTH PLAIN USER and PASS");
+     
+      SAFE_CALLOC(decode, strlen(ptr) + 1, sizeof(char));
+     
+      /* username is encoded in base64 */
+      i = base64_decode(decode, ptr);
+      decode[i] = 0;
+     
+      SAFE_FREE(s->data);
+
+      /* store the username (skip the null)*/
+      PACKET->DISSECTOR.user = strdup(decode + 1);
+      /* store the password (skip the null)*/
+      PACKET->DISSECTOR.pass = strdup(decode + 2 + strlen(decode + 1) );
+      
+      SAFE_FREE(decode);
+      
+      dissect_wipe_session(PACKET);
+      
+      /* print the message */
+      DISSECT_MSG("POP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                    ntohs(PACKET->L4.dst), 
+                                    PACKET->DISSECTOR.user,
+                                    PACKET->DISSECTOR.pass);
+
+      return NULL;
+   }
+   
    
    return NULL;
 }

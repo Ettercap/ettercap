@@ -41,7 +41,7 @@ NG-0.7.0    ????????
    + unoffensive mode (doesn't forward packets)
    + user messages can be logged
    + dissector enhancements in: 
-      + POP (APOP and AUTH LOGIN support)
+      + POP (APOP and AUTH LOGIN/PLAIN support)
       + X11 (banner discovery)
       + TELNET (collect even failed attempts)
       + SNMP fixes

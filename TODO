@@ -41,9 +41,6 @@ Nov 2003:
    + PROFILES
       - dhcp infos
 
-   + POP
-      - AUTH PLAIN
-
    + LIBWDG
       - fix wdg_file (use valgrind) 
       - add debug

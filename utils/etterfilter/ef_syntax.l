@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.3 2003/09/07 19:47:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_syntax.l,v 1.4 2003/09/09 21:32:56 alor Exp $
 */
 
 %{
@@ -74,13 +74,33 @@ SPACES         [ \t]+
 }
 
 "==" {
-   printf("CMP\n");
-   return TOKEN_OP_CMP;
+   printf("CMP EQ\n");
+   return TOKEN_OP_CMP_EQ;
+}
+
+"<" {
+   printf("CMP LT\n");
+   return TOKEN_OP_CMP_LT;
+}
+
+">" {
+   printf("CMP GT\n");
+   return TOKEN_OP_CMP_GT;
+}
+
+"<=" {
+   printf("CMP LEQ\n");
+   return TOKEN_OP_CMP_LEQ;
+}
+
+">=" {
+   printf("CMP GEQ\n");
+   return TOKEN_OP_CMP_GEQ;
 }
 
 "=" {
-   printf("EQ\n");
-   return TOKEN_OP_EQ;
+   printf("ASSIGN\n");
+   return TOKEN_OP_ASSIGN;
 }
 
 "*" {

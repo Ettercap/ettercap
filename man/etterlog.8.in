@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterlog.8.in,v 1.14 2003/09/09 16:42:11 alor Exp $
+.\"  $Id: etterlog.8.in,v 1.15 2003/09/09 21:32:56 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -167,6 +167,7 @@ hosts' user and pass collected infos.
 \fB\-p\fR, \fB\-\-passwords\fR
 Print only the collected account for each hosts. This prevents the huge profile
 output. It can be used in conjunction with the -u option to filter the users.
+User accounts with a '*' in front of, are failed login attempt.
 
 
 .TP

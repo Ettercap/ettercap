@@ -69,12 +69,18 @@ struct filter_op {
       
       /* tests */
       struct {
-         u_int8  level;
-         u_int8  size;
-         u_int16 offset;
-         u_int32 value;
-         char string[MAX_FILTER_LEN];
-         size_t string_len;
+         u_int8   op;
+            #define TEST_EQ   0
+            #define TEST_LT   1   
+            #define TEST_GT   2
+            #define TEST_LEQ  3
+            #define TEST_GEQ  4
+         u_int8   level;
+         u_int8   size;
+         u_int16  offset;
+         u_int32  value;
+         char     string[MAX_FILTER_LEN];
+         size_t   string_len;
       } test, assign;
 
       /* jumps */

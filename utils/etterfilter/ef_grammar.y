@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.4 2003/09/08 18:49:28 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/utils/etterfilter/ef_grammar.y,v 1.5 2003/09/09 21:32:56 alor Exp $
 */
 
 %{
@@ -58,8 +58,12 @@ u_int32 lineno = 1;
 %token TOKEN_OP_AND      /*  &&  */
 %token TOKEN_OP_OR       /*  ||  */
 
-%token TOKEN_OP_EQ       /*  =  */
-%token TOKEN_OP_CMP      /*  ==  */
+%token TOKEN_OP_ASSIGN   /*  =  */
+%token TOKEN_OP_CMP_EQ   /*  ==  */
+%token TOKEN_OP_CMP_LT   /*  <  */
+%token TOKEN_OP_CMP_GT   /*  >  */
+%token TOKEN_OP_CMP_LEQ  /*  <=  */
+%token TOKEN_OP_CMP_GEQ  /*  >=  */
 
 %token TOKEN_OP_END      /*  ;  */
 
@@ -110,7 +114,7 @@ single_instruction:
 /* instructions are functions or assignment */
 instruction: 
          TOKEN_FUNCTION { printf("\tfunction\n"); }
-      |  offset TOKEN_OP_EQ math_expr { printf("\tassignment\n"); }
+      |  offset TOKEN_OP_ASSIGN math_expr { printf("\tassignment\n"); }
       ;
 
 /* the if statement */
@@ -127,7 +131,11 @@ if_else_statement:
 
 /* conditions used by the if statement */
 conditions: 
-         offset TOKEN_OP_CMP math_expr { printf("\tcondition cmp\n"); }
+         offset TOKEN_OP_CMP_EQ math_expr { printf("\tcondition cmp eq\n"); }
+      |  offset TOKEN_OP_CMP_LT math_expr { printf("\tcondition cmp lt\n"); }
+      |  offset TOKEN_OP_CMP_GT math_expr { printf("\tcondition cmp gt\n"); }
+      |  offset TOKEN_OP_CMP_LEQ math_expr { printf("\tcondition cmp leq\n"); }
+      |  offset TOKEN_OP_CMP_GEQ math_expr { printf("\tcondition cmp geq\n"); }
       |  TOKEN_OP_NOT conditions { printf("\tcondition NOT\n"); }
       |  conditions TOKEN_OP_AND conditions { printf("\tcondition AND\n"); } 
       |  conditions TOKEN_OP_OR conditions { printf("\tcondition OR\n"); } 

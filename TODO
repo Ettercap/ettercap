@@ -35,7 +35,7 @@ Sep 2003:
       - functions
          - replace over mtu
       - quick filter
-      - comparison ( '<' '>' ecc)
+      - bitwise operator
       
 
    + MITM METHODS

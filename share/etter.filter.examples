@@ -50,6 +50,11 @@ if (ip.proto == TCP && tcp.port == 22) {
    }
 }
 
+# dying packets
+if (ip.ttl < 5) {
+   msg("The packet will die soon");
+}
+
 # eof
 
 # vim:ts=3:expandtab

@@ -14,7 +14,7 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.6 2003/09/09 20:10:55 alor Exp $
+.\"  $Id: etterfilter.8.in,v 1.7 2003/09/09 21:32:56 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -77,11 +77,13 @@ if (tcp.port == 21 && search(DATA.data, "ettercap")) {
 Every instruction in a block must end with a semicolon ';'. 
 .Sp
 Comparisons are implemented with the '==' operator and can be used to compare 
-numbers and strings. The lvalue of a comparison must be and offset (see later)
+numbers and strings. You can also use the 'less than' ('<'), 'greater than'
+('>'), 'less or equal' ('<=') and 'greater or equal' ('>=') operators.
+The lvalue of a comparison must be and offset (see later)
 .Sp
 Example:
 .br
-if (DATA.data + 20 == "ettercap") {
+if (DATA.data + 20 == "ettercap" && ip.ttl > 16) {
 .br
 }
 .Sp

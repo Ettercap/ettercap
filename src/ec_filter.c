@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.4 2003/09/07 19:47:51 alor Exp $
+    $Header: /home/drizzt/dev/sources/ettercap.cvs/ettercap_ng/src/ec_filter.c,v 1.5 2003/09/09 21:32:56 alor Exp $
 */
 
 #include <ec.h>
@@ -44,6 +44,11 @@ static int func_log(struct filter_op *fop, struct packet_object *po);
 static int func_drop(struct packet_object *po);
 static int func_exec(struct filter_op *fop);
 
+static int cmp_eq(u_int32 a, u_int32 b);
+static int cmp_lt(u_int32 a, u_int32 b);
+static int cmp_gt(u_int32 a, u_int32 b);
+static int cmp_leq(u_int32 a, u_int32 b);
+static int cmp_geq(u_int32 a, u_int32 b);
 /*******************************************/
 
 /*
@@ -196,6 +201,7 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
 {
    /* initialize to the beginning of the packet */
    u_char *base = po->L2.header;
+   int (*cmp_func)(u_int32, u_int32);
 
    /* 
     * point to the right base.
@@ -219,7 +225,30 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          JIT_FAULT("unsupported test level [%d]", fop->op.test.level);
          break;
    }
- 
+
+   /* se the pointer to the comparison function */
+   switch(fop->op.test.op) {
+      case TEST_EQ:
+         cmp_func = &cmp_eq;
+         break;
+      case TEST_LT:
+         cmp_func = &cmp_lt;
+         break;
+      case TEST_GT:
+         cmp_func = &cmp_gt;
+         break;
+      case TEST_LEQ:
+         cmp_func = &cmp_leq;
+         break;
+      case TEST_GEQ:
+         cmp_func = &cmp_geq;
+         break;
+      default:
+         JIT_FAULT("unsupported test operation");
+         break;
+           
+   }
+   
    /* 
     * get the value with the proper size.
     * 0 is a special case for strings (even binary) 
@@ -232,17 +261,17 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          break;
       case 1:
          /* char comparison */
-         if (*(u_int8 *)(base + fop->op.test.offset) == (fop->op.test.value & 0xff) )
+         if (cmp_func(*(u_int8 *)(base + fop->op.test.offset), (fop->op.test.value & 0xff)) )
             return FLAG_TRUE;
          break;
       case 2:
          /* short int comparison */
-         if (htons(*(u_int16 *)(base + fop->op.test.offset)) == (fop->op.test.value & 0xffff) )
+         if (cmp_func(htons(*(u_int16 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffff)) )
             return FLAG_TRUE;
          break;
       case 4:
          /* int comparison */
-         if (htonl(*(u_int32 *)(base + fop->op.test.offset)) == (fop->op.test.value & 0xffffffff) )
+         if (cmp_func(htonl(*(u_int32 *)(base + fop->op.test.offset)),(fop->op.test.value & 0xffffffff)) )
             return FLAG_TRUE;
          break;
       default:
@@ -283,7 +312,7 @@ static int execute_assign(struct filter_op *fop, struct packet_object *po)
          JIT_FAULT("unsupported assignment level [%d]", fop->op.assign.level);
          break;
    }
- 
+
    /* 
     * get the value with the proper size.
     * 0 is a special case for strings (even binary) 
@@ -525,6 +554,34 @@ static int func_exec(struct filter_op *fop)
    }
       
    return ESUCCESS;
+}
+
+/*
+ * functions for comparisons
+ */
+static int cmp_eq(u_int32 a, u_int32 b)
+{
+   return (a == b);
+}
+
+static int cmp_lt(u_int32 a, u_int32 b)
+{
+   return (a < b);
+}
+
+static int cmp_gt(u_int32 a, u_int32 b)
+{
+   return (a > b);
+}
+
+static int cmp_leq(u_int32 a, u_int32 b)
+{
+   return (a <= b);
+}
+
+static int cmp_geq(u_int32 a, u_int32 b)
+{
+   return (a >= b);
 }
 
 

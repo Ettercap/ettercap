@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.2 2004/06/30 13:36:09 alor Exp $
+    $Id: ec_mingw.c,v 1.3 2004/07/09 08:27:19 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -44,24 +44,32 @@
 #error "You must be joking"
 #endif
 
-#undef extern
-
-extern int ettercap_main (int, char**);  /* ec_main.c */
-
-#ifdef HAVE_GTK  /* give use back the console prompt */
-int _stdcall WinMain (struct HINSTANCE__ *hInstance,
-                      struct HINSTANCE__ *hPrevInstance,
-                      char               *lpszCmdLine,
-                      int                 nCmdShow)
-{
-  return ettercap_main (__argc, __argv);
-}
+#if 0
+   EC_API_EXPORTED LIST_HEAD(, hosts_list) group_one_head;
+   EC_API_EXPORTED LIST_HEAD(, hosts_list) group_two_head;
 #endif
+
+/* current libpcap/WinPcap doesn't have this */
+char pcap_version[60] = "unknown";      
+
+static void __init win_init(void)
+{
+   const char *ver = pcap_lib_version();
+   
+   if (ver) {
+      strncpy (pcap_version, ver, sizeof(pcap_version)-1);
+      pcap_version [sizeof(pcap_version)-1] = '\0';
+   }
+   
+   /* Dr MingW JIT */
+   LoadLibrary ("exchndl.dll");   
+}
 
 u_int16 get_iface_mtu(char *iface)
 {
    (void)iface;
-   return 1514;
+   /* XXX - implement this function */
+   return (1514);
 }
 
 void disable_ip_forward (void)
@@ -96,7 +104,21 @@ int ec_win_gettimeofday (struct timeval *tv, struct timezone *tz)
 }
 
 /*
- * A poll() using select() and _kbhit()
+ * Use PDcurses' kbhit() if initialised
+ */
+static int __inline win_kbhit (void)
+{
+#ifdef HAVE_NCURSES
+   int PDC_check_bios_key (void); /* <curspriv.h> */
+
+   if ((current_screen.flags & WDG_SCR_INITIALIZED))
+      return PDC_check_bios_key();
+#endif
+   return _kbhit();
+}
+      
+/*
+ * A poll() using select() 
  */
 int ec_win_poll (struct pollfd *p, int num, int timeout)
 {
@@ -152,7 +174,7 @@ int ec_win_poll (struct pollfd *p, int num, int timeout)
        p[i].revents |= POLLERR;
   }
 
-  if ((p[STDIN_FILENO].events & POLLIN) && num >= STDIN_FILENO && _kbhit())
+  if ((p[STDIN_FILENO].events & POLLIN) && num >= STDIN_FILENO && win_kbhit())
   {
     p [STDIN_FILENO].revents = POLLIN;
     ret++;
@@ -167,13 +189,18 @@ int ec_win_poll (struct pollfd *p, int num, int timeout)
 
 /*
  * For consistent and nice looks, replace '\\' with '/'.
+ * Replace trailing '//' with '/'.
  * All (?) Windows core functions and libc handles this fine.
  */
 static char *slashify (char *path)
 {
   char *p;
+  
   for (p = strchr(path,'\\'); p && *p; p = strchr(p,'\\'))
       *p++ = '/';
+  if (p >= path+2 && *p == '\0' && p[-1] == '/' && p[-2] == '/')
+     *(--p) = '\0';
+  
   return (path);
 }
 
@@ -454,8 +481,7 @@ unlink_mmap (struct mmap_list *This)
 {
   struct mmap_list *m, *prev, *next;
 
-  for (m = prev = mmap_list0; m; prev = m, m = m->next)
-  {
+  for (m = prev = mmap_list0; m; prev = m, m = m->next) {
     if (m != This)
        continue;
     if (m == mmap_list0)
@@ -470,15 +496,15 @@ unlink_mmap (struct mmap_list *This)
 
 void *ec_win_mmap (int fd, size_t size, int prot)
 {
-  HANDLE os_handle, os_map;
-  void  *file_ptr;
+   struct mmap_list *map = NULL;
+   HANDLE os_handle, os_map;
+   DWORD  os_prot;
+   void  *file_ptr;
 
-  if (fd < 0 || size == 0 ||
-      (prot & (PROT_READ|PROT_WRITE)) == 0)
-  {
-    errno = EINVAL;
-    return (MAP_FAILED);
-  }
+   if (fd < 0 || size == 0 || !(prot & (PROT_READ|PROT_WRITE))) {
+      SetLastError(errno = EINVAL);
+      return (MAP_FAILED);
+   }
 
   /* todo:
      prot 0                -> PAGE_NOACCESS
@@ -487,38 +513,40 @@ void *ec_win_mmap (int fd, size_t size, int prot)
      PROT_WRITE            -> PAGE_WRITECOPY
   */
 
-  os_handle = (HANDLE) _get_osfhandle (fd);
-  if (!os_handle)
-     return (MAP_FAILED);
+   os_handle = (HANDLE) _get_osfhandle (fd);
+   if (!os_handle)
+      return (MAP_FAILED);
 
-  os_map = CreateFileMapping (os_handle, NULL,
-                              (prot == PROT_READ) ? PAGE_READONLY : PAGE_WRITECOPY,
-                              0, 0, NULL);
-  if (!os_map)
-     return (MAP_FAILED);
+   os_prot = (prot == PROT_READ) ? PAGE_READONLY : PAGE_WRITECOPY;
+   os_map = CreateFileMapping (os_handle, NULL, os_prot, 0, 0, NULL);
+   if (!os_map)
+      return (MAP_FAILED);
 
-  file_ptr = MapViewOfFile (os_map, (prot == PROT_READ) ? FILE_MAP_READ : FILE_MAP_WRITE,
-                            0, 0, 0);
-
-  if (file_ptr && !add_mmap_node (file_ptr, os_map, size))
-  {
-    file_ptr = NULL;
-    FlushViewOfFile (file_ptr, size);
-    UnmapViewOfFile (file_ptr);
-    CloseHandle (os_map);
-  }
-  DEBUG_MSG ("ec_win_mmap(): fd %d, os_map %08lX, file_ptr %08lX, size %u, prot %d\n",
+   os_prot = (prot == PROT_READ) ? FILE_MAP_READ : FILE_MAP_WRITE;
+   file_ptr = MapViewOfFile (os_map, os_prot, 0, 0, 0);
+   if (file_ptr) {
+      map = add_mmap_node (file_ptr, os_map, size);
+      if (!map) {
+         FlushViewOfFile (file_ptr, size);
+         UnmapViewOfFile (file_ptr);
+      }
+   }
+   
+   file_ptr = (map ? map->file_ptr : NULL);
+   if (!file_ptr)
+      CloseHandle (os_map);
+  
+   DEBUG_MSG ("ec_win_mmap(): fd %d, os_map %08lX, file_ptr %08lX, size %u, prot %d\n",
              fd, (DWORD)os_map, (DWORD)file_ptr, size, prot);
-  return (file_ptr);
+   return (file_ptr);
 }
 
 int ec_win_munmap (const void *file_ptr, size_t size)
 {
   struct mmap_list *m = lookup_mmap (file_ptr, size);
 
-  if (!m)
-  {
-    WSASetLastError (EINVAL);
+  if (!m) {
+    SetLastError (errno = EINVAL);
     return (-1);
   }
   FlushViewOfFile (m->file_ptr, m->size);
@@ -537,8 +565,12 @@ int ec_win_munmap (const void *file_ptr, size_t size)
  * 'exp_dn' is a pointer to a buffer of size 'length' for the result.
  * Return size of compressed name or -1 if there was an error.
  */
-#define INDIR_MASK  0xc0
-#define MAXLABEL    63         /* maximum length of domain label */
+#ifndef INDIR_MASK
+   #define INDIR_MASK  0xc0
+#endif
+#ifndef MAXLABEL
+   #define MAXLABEL    63         /* maximum length of domain label */
+#endif
 
 static int mklower (int ch)
 {
@@ -786,7 +818,7 @@ int dn_comp (const char *exp_dn, u_char *comp_dn, int length,
 /*
  * dlopen() emulation (not exported)
  */
-static char *last_func;
+static const char *last_func;
 static DWORD last_error;
 
 void *ec_win_dlopen (const char *dll_name, int flags _U_)
@@ -824,21 +856,230 @@ void ec_win_dlclose (const void *dll_handle)
 const char *ec_win_dlerror (void)
 {
   static char errbuf[1024];
-  char  *p = errbuf;
+
+   snprintf (errbuf, sizeof(errbuf)-1, "%s(): %s", last_func, ec_win_strerror(last_error));
+   return (errbuf);
+}
+
+/*
+ * This function handles most / all (?) Winsock errors we're able to produce.
+ */
+#if !defined(USE_GETTEXT)
+   #undef _
+   #define _(s) s
+#endif
+
+static char *get_winsock_error (int err, char *buf, size_t len)
+{
+  char *p;
+
+  switch (err)
+  {
+    case WSAEINTR:
+        p = _("Call interrupted.");
+        break;
+    case WSAEBADF:
+        p = _("Bad file");
+        break;
+    case WSAEACCES:
+        p = _("Bad access");
+        break;
+    case WSAEFAULT:
+        p = _("Bad argument");
+        break;
+    case WSAEINVAL:
+        p = _("Invalid arguments");
+        break;
+    case WSAEMFILE:
+        p = _("Out of file descriptors");
+        break;
+    case WSAEWOULDBLOCK:
+        p = _("Call would block");
+        break;
+    case WSAEINPROGRESS:
+    case WSAEALREADY:
+        p = _("Blocking call progress");
+        break;
+    case WSAENOTSOCK:
+        p = _("Descriptor is not a socket.");
+        break;
+    case WSAEDESTADDRREQ:
+        p = _("Need destination address");
+        break;
+    case WSAEMSGSIZE:
+        p = _("Bad message size");
+        break;
+    case WSAEPROTOTYPE:
+        p = _("Bad protocol");
+        break;
+    case WSAENOPROTOOPT:
+        p = _("Protocol option is unsupported");
+        break;
+    case WSAEPROTONOSUPPORT:
+        p = _("Protocol is unsupported");
+        break;
+    case WSAESOCKTNOSUPPORT:
+        p = _("Socket is unsupported");
+        break;
+    case WSAEOPNOTSUPP:
+        p = _("Operation not supported");
+        break;
+    case WSAEAFNOSUPPORT:
+        p = _("Address family not supported");
+        break;
+    case WSAEPFNOSUPPORT:
+        p = _("Protocol family not supported");
+        break;
+    case WSAEADDRINUSE:
+        p = _("Address already in use");
+        break;
+    case WSAEADDRNOTAVAIL:
+        p = _("Address not available");
+        break;
+    case WSAENETDOWN:
+        p = _("Network down");
+        break;
+    case WSAENETUNREACH:
+        p = _("Network unreachable");
+        break;
+    case WSAENETRESET:
+        p = _("Network has been reset");
+        break;
+    case WSAECONNABORTED:
+        p = _("Connection was aborted");
+        break;
+    case WSAECONNRESET:
+        p = _("Connection was reset");
+        break;
+    case WSAENOBUFS:
+        p = _("No buffer space");
+        break;
+    case WSAEISCONN:
+        p = _("Socket is already connected");
+        break;
+    case WSAENOTCONN:
+        p = _("Socket is not connected");
+        break;
+    case WSAESHUTDOWN:
+        p = _("Socket has been shut down");
+        break;
+    case WSAETOOMANYREFS:
+        p = _("Too many references");
+        break;
+    case WSAETIMEDOUT:
+        p = _("Timed out");
+        break;
+    case WSAECONNREFUSED:
+        p = _("Connection refused");
+        break;
+    case WSAELOOP:
+        p = _("Loop??");
+        break;
+    case WSAENAMETOOLONG:
+        p = _("Name too long");
+        break;
+    case WSAEHOSTDOWN:
+        p = _("Host down");
+        break;
+    case WSAEHOSTUNREACH:
+        p = _("Host unreachable");
+        break;
+    case WSAENOTEMPTY:
+        p = _("Not empty");
+        break;
+    case WSAEPROCLIM:
+        p = _("Process limit reached");
+        break;
+    case WSAEUSERS:
+        p = _("Too many users");
+        break;
+    case WSAEDQUOT:
+        p = _("Bad quota");
+        break;
+    case WSAESTALE:
+        p = _("Something is stale");
+        break;
+    case WSAEREMOTE:
+        p = _("Remote error");
+        break;
+    case WSAEDISCON:
+        p = _("Disconnected");
+        break;
+
+    /* Extended Winsock errors */
+    case WSASYSNOTREADY:
+        p = _("Winsock library is not ready");
+        break;
+    case WSANOTINITIALISED:
+        p = _("Winsock library not initalised");
+        break;
+    case WSAVERNOTSUPPORTED:
+        p = _("Winsock version not supported.");
+        break;
+
+    /* getXbyY() errors (already handled in herrmsg):
+       Authoritative Answer: Host not found */
+    case WSAHOST_NOT_FOUND:
+        p = _("Host not found");
+        break;
+
+    /* Non-Authoritative: Host not found, or SERVERFAIL */
+    case WSATRY_AGAIN:
+        p = _("Host not found, try again");
+        break;
+
+    /* Non recoverable errors, FORMERR, REFUSED, NOTIMP */
+    case WSANO_RECOVERY:
+        p = _("Unrecoverable error in call to nameserver");
+        break;
+
+    /* Valid name, no data record of requested type */
+    case WSANO_DATA:
+        p = _("No data record of requested type");
+        break;
+
+    default:
+        return NULL;
+  }
+  strncpy (buf, p, len);
+  buf [len-1] = '\0';
+  return buf;
+}
+
+
+/*
+ * A smarter strerror()
+ */
+#undef strerror
+char *ec_win_strerror (int err)
+{
+  static char buf[512];
+   
+  
   DWORD  lang  = MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT);
   DWORD  flags = FORMAT_MESSAGE_FROM_SYSTEM |
                  FORMAT_MESSAGE_IGNORE_INSERTS |
                  FORMAT_MESSAGE_MAX_WIDTH_MASK;
+  char *p;
 
-  p += snprintf (p, sizeof(errbuf)-1, "%s(): %lu: ", last_func, last_error);
-  if (!FormatMessage(flags, NULL, last_error, lang, p,
-                     sizeof(errbuf) - (p-errbuf), NULL))
-     strcat (p, "Unknown error");
+  if (err >= 0 && err < sys_nerr)
+  {
+    strncpy (buf, strerror(err), sizeof(buf)-1);
+    buf [sizeof(buf)-1] = '\0';
+  }
+  else
+  {
+    if (!get_winsock_error (err, buf, sizeof(buf)) &&
+        !FormatMessage (flags, NULL, err,
+                        lang, buf, sizeof(buf)-1, NULL))
+     sprintf (buf, "Unknown error %d (%#x)", err, err);
+  }
+            
 
   /* strip trailing '\r\n' or '\n'. */
-  if ((p = strrchr(errbuf,'\n')) != NULL && (p - errbuf) >= 2)
+  if ((p = strrchr(buf,'\n')) != NULL && (p - buf) >= 2)
      *p = '\0';
-  if ((p = strrchr(errbuf,'\r')) != NULL && (p - errbuf) >= 1)
+  if ((p = strrchr(buf,'\r')) != NULL && (p - buf) >= 1)
      *p = '\0';
-  return (errbuf);
+  return (buf);
 }

@@ -60,7 +60,15 @@
 #else
 # include <sys/types.h>
 #endif
-#include <sys/cdefs.h>
+
+#ifdef HAVE_SYS_CDEFS_H
+   #include <sys/cdefs.h>
+#else
+   #define __BEGIN_DECLS /* No sane person would use C++ to build it anyway */
+   #define __END_DECLS
+   #define __P(x)  x
+#endif
+
 
 /*
  * Revision information.  This is the release date in YYYYMMDD format.

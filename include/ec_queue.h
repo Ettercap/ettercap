@@ -1,6 +1,6 @@
 
 /*      
- * $Id: ec_queue.h,v 1.2 2004/07/05 19:26:17 alor Exp $
+ * $Id: ec_queue.h,v 1.3 2004/07/09 08:27:18 alor Exp $
  *      
  *      added the _SAFE functions from:
  *      $FreeBSD: queue.h,v 1.56 2003/08/14 14:49:26 kan Exp $          
@@ -46,6 +46,16 @@
 
 /* to avoid conflict with system includes */
 #define _SYS_QUEUE_H_
+
+
+/* Needed because SLIST_HEAD is defined in <winnt.h> too.  */
+#if defined(OS_MINGW) 
+   #if !defined(_WINNT_H)
+      #error Include <windows.h> before <ec_queue.h>
+   #endif
+   /* <winnt.h> */
+   #undef  SLIST_ENTRY
+#endif
 
 /*
  * This file defines five types of data structures: singly-linked lists, 

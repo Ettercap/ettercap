@@ -1,5 +1,5 @@
 
-/* $Id: ec.h,v 1.26 2004/07/06 15:56:01 alor Exp $ */
+/* $Id: ec.h,v 1.27 2004/07/09 08:27:18 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H
@@ -43,11 +43,6 @@
 #include <ec_globals.h>
 #include <ec_strings.h>
 
-#ifdef OS_MINGW
-   #include <ec_os_mingw.h>
-#endif
-
-
 /*  
  * On Windows (MinGw) we must export all ettercap.exe variables/function
  * used in plugins and functions in plugins must be declared as 'importable'
@@ -63,6 +58,11 @@
    #define EC_API_PUBLIC   
    #define EC_API_PRIVATE  static
 #endif
+
+#ifdef OS_MINGW
+   #include <ec_os_mingw.h>
+#endif
+
 
 /* wrappers for safe memory allocation */
 

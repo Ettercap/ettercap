@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.127 2004/07/06 10:56:08 alor Exp $
+dnl    $Id: configure.in,v 1.128 2004/07/09 08:27:14 alor Exp $
 dnl
 
 AC_INIT
@@ -238,6 +238,7 @@ AC_CHECK_HEADERS(sys/types.h stdint.h)
 AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
 AC_CHECK_HEADERS(termios.h)
 AC_CHECK_HEADERS(sys/poll.h poll.h sys/select.h)
+AC_CHECK_HEADERS(sys/cdefs.h)
 dnl nameser NS_GET32 and so on...
 EC_NS_GET()
 

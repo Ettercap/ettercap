@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.51 2004/07/06 14:14:43 alor Exp $
+    $Id: ec_capture.c,v 1.52 2004/07/09 08:27:18 alor Exp $
 */
 
 #include <ec.h>
@@ -79,7 +79,7 @@ static char *iface_name(char *s)
 #if defined(OS_MINGW) || defined(OS_CYGWIN)
    
    char *buf;
-   size_t len = wcslen ((const wchar_t*)real_name);
+   size_t len = wcslen ((const wchar_t*)s);
    
    if (!s[1]) {   /* should probly use IsTextUnicode() ... */
       SAFE_CALLOC(buf, len, sizeof(char));

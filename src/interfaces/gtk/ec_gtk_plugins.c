@@ -17,11 +17,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_plugins.c,v 1.9 2004/07/06 14:14:43 alor Exp $
+    $Id: ec_gtk_plugins.c,v 1.10 2004/07/09 08:27:19 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_gtk.h>
+#include <ec_file.h>
 #include <ec_plugins.h>
 
 #define MAX_DESC_LEN 75

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_interfaces.c,v 1.3 2004/02/26 09:22:10 alor Exp $
+    $Id: ec_interfaces.c,v 1.4 2004/07/09 08:27:19 alor Exp $
 */
 
 #include <ec.h>
@@ -56,6 +56,10 @@ void select_curses_interface(void)
 {
    DEBUG_MSG("select_curses_interface");
 #ifdef HAVE_NCURSES 
+   /* check if the stdout is available */
+   if (isatty(fileno(stdout)) <= 0)
+      FATAL_ERROR("Cannot use Curses if stdout is redirected");
+   
    set_curses_interface();
 #else
    FATAL_ERROR("Curses support not compiled in %s", GBL_PROGRAM);

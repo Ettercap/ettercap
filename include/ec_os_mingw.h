@@ -122,8 +122,29 @@ extern const char *ec_win_get_ec_dir (void);
  * on-Unix system?
  */
 #ifndef INSTALL_PREFIX
-#define INSTALL_PREFIX  ec_win_get_ec_dir()
+   #define INSTALL_PREFIX  ec_win_get_ec_dir()
 #endif
+
+#ifndef INSTALL_EXECPREFIX
+   #define INSTALL_EXECPREFIX ec_win_get_ec_dir()
+#endif
+   
+#ifndef INSTALL_SYSCONFDIR
+   #define INSTALL_SYSCONFDIR ec_win_get_ec_dir()
+#endif
+
+#ifndef INSTALL_BINDIR
+   #define INSTALL_BINDIR     ec_win_get_ec_dir()
+#endif
+
+#ifndef INSTALL_LIBDIR
+   #define INSTALL_LIBDIR    "/lib"    /* this cannot be a function (sigh) */
+#endif
+
+#ifndef INSTALL_DATADIR
+   #define INSTALL_DATADIR   "/share"  /* this cannot be a function (sigh) */
+#endif
+   
 
 /* Unix mmap() emulation
  */
@@ -146,24 +167,25 @@ extern const char *ec_win_get_ec_dir (void);
 /* dlopen() emulation (not exported)
  */
 #if !defined(HAVE_DLOPEN)
-  #define RTLD_NOW 0
+   #define RTLD_NOW 0
+   #define LTDL_SHLIB_EXT       "*.dll"
 
-  #define dlopen(dll,flg)      ec_win_dlopen (dll, flg)
-  #define lt_dlopen(dll)       ec_win_dlopen (dll, 0)
-  #define lt_dlopenext(dll)    ec_win_dlopen (dll, 0)
-  #define dlsym(hnd,func)      ec_win_dlsym (hnd, func)
-  #define lt_dlsym(hnd,func)   ec_win_dlsym (hnd, func)
-  #define dlclose(hnd)         ec_win_dlclose (hnd)
-  #define lt_dlclose(hnd)      ec_win_dlclose (hnd)
-  #define dlerror()            ec_win_dlerror()
-  #define lt_dlerror()         ec_win_dlerror()
-  #define lt_dlinit()          (0)
-  #define lt_dlexit()          (0)
+   #define dlopen(dll,flg)      ec_win_dlopen (dll, flg)
+   #define lt_dlopen(dll)       ec_win_dlopen (dll, 0)
+   #define lt_dlopenext(dll)    ec_win_dlopen (dll, 0)
+   #define dlsym(hnd,func)      ec_win_dlsym (hnd, func)
+   #define lt_dlsym(hnd,func)   ec_win_dlsym (hnd, func)
+   #define dlclose(hnd)         ec_win_dlclose (hnd)
+   #define lt_dlclose(hnd)      ec_win_dlclose (hnd)
+   #define dlerror()            ec_win_dlerror()
+   #define lt_dlerror()         ec_win_dlerror()
+   #define lt_dlinit()          (0)
+   #define lt_dlexit()          (0)
 
-  extern void       *ec_win_dlopen  (const char *dll_name, int flags _U_);
-  extern void       *ec_win_dlsym   (const void *dll_handle, const char *func_name);
-  extern void        ec_win_dlclose (const void *dll_handle);
-  extern const char *ec_win_dlerror (void);
+   extern void       *ec_win_dlopen  (const char *dll_name, int flags _U_);
+   extern void       *ec_win_dlsym   (const void *dll_handle, const char *func_name);
+   extern void        ec_win_dlclose (const void *dll_handle);
+   extern const char *ec_win_dlerror (void);
 #endif
 
 /*
@@ -223,4 +245,10 @@ extern const char *ec_win_get_ec_dir (void);
         (cp) += INT32SZ; \
       } while (0)
 
+/*
+ * Misc. stuff
+ */
+#define strerror ec_win_strerror
+EC_API_EXPORTED char *ec_win_strerror (int err);
+  
 #endif /* EC_WIN_MISC_H */

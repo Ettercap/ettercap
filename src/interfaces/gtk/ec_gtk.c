@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.23 2004/06/11 20:43:58 daten Exp $
+    $Id: ec_gtk.c,v 1.24 2004/07/09 08:27:19 alor Exp $
 */
 
 #include <ec.h>
@@ -123,8 +123,11 @@ static void gtkui_init(void)
 {
    DEBUG_MSG("gtk_init");
 
+#ifndef OS_MINGW
    g_thread_init(NULL);
    gdk_threads_init();
+#endif
+
    if(!gtk_init_check(0, NULL)) {
    	FATAL_ERROR("GTK+ failed to initialize. Is X running?");
 	   return;

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.14 2004/03/04 13:16:24 daten Exp $
+    $Id: ec_gtk_view_connections.c,v 1.15 2004/03/05 10:39:35 alor Exp $
 */
 
 #include <ec.h>
@@ -860,16 +860,21 @@ static void join_print_po(struct packet_object *po)
  */
 static void gtkui_connection_kill(void *conn)
 {
-   struct conn_object *c = (struct conn_object *)conn;
+   struct conn_tail *c = (struct conn_tail *)conn;
    
    DEBUG_MSG("gtk_connection_kill");
    
    /* kill it */
-   user_kill(curr_conn);
-
-   /* set the status */
-   c->status = CONN_KILLED;
-   gtkui_message("The connection was killed !!");
+   switch (user_kill(c->co)) {
+      case ESUCCESS:
+         /* set the status */
+         c->co->status = CONN_KILLED;
+         gtkui_message("The connection was killed !!");
+         break;
+      case -EFATAL:
+         gtkui_message("Cannot kill UDP connections !!");
+         break;
+   }
 }
 
 /*

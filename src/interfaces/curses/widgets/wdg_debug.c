@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_debug.c,v 1.1 2003/11/27 21:37:07 alor Exp $
+    $Id: wdg_debug.c,v 1.2 2003/11/27 22:27:47 alor Exp $
 
 */
 
@@ -47,8 +47,8 @@ void wdg_debug_msg(const char *message, ...);
 
 void wdg_debug_init(void)
 {
-   wdg_debug_file = fopen ("libwdg-"LIBWDG_VERSION".log", "w");
-   WDG_ON_ERROR(wdg_debug_file, NULL, "Couldn't open for writing %s", "libwdg-"LIBWDG_VERSION".log");
+   wdg_debug_file = fopen ("libwdg-"LIBWDG_VERSION"_debug.log", "w");
+   WDG_ON_ERROR(wdg_debug_file, NULL, "Couldn't open for writing %s", "libwdg-"LIBWDG_VERSION"_debug.log");
    
    fprintf (wdg_debug_file, "\n==============================================================\n");
                    

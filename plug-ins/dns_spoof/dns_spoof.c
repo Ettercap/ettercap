@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dns_spoof.c,v 1.1 2003/11/22 13:57:10 alor Exp $
+    $Id: dns_spoof.c,v 1.2 2003/11/27 22:27:47 alor Exp $
 */
 
 
@@ -105,7 +105,7 @@ struct plugin_ops dns_spoof_ops = {
 /* this function is called on plugin load */
 int plugin_load(void *handle) 
 {
-   /* load the database of soofed replies (etter.dns) 
+   /* load the database of spoofed replies (etter.dns) 
     * return an error if we could not open the file
     */
    if (load_db() != ESUCCESS)

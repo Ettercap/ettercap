@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.27 2003/11/10 22:46:24 alor Exp $
+    $Id: ec_capture.c,v 1.28 2003/11/27 22:27:47 alor Exp $
 */
 
 #include <ec.h>
@@ -158,6 +158,7 @@ void capture_init(void)
    /* open the dump file */
    if (GBL_OPTIONS->write) {
       pdump = pcap_dump_open(pd, GBL_OPTIONS->dumpfile);
+      ON_ERROR(pdump, NULL, "%s", pcap_geterr(pd));
       GBL_PCAP->dump = pdump;               
    }
    

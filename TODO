@@ -41,8 +41,11 @@ Nov 2003:
    + PROFILES
       - dhcp infos
 
+   + POP
+      - AUTH PLAIN
+
    + LIBWDG
-      - is there a heap corruption ??
+      - fix wdg_file (use valgrind) 
       - add debug
       - widgets:
          - input (with forms ?)

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.22 2003/11/23 18:08:43 alor Exp $
+    $Id: ec_plugins.c,v 1.23 2003/11/27 22:27:47 alor Exp $
 */
 
 #include <ec.h>
@@ -105,7 +105,7 @@ int plugin_load_single(char *path, char *name)
    /* 
     * return the same value of plugin_register 
     * we pass the handle to the plugin, which
-    * int turn passes it to the plugin_register 
+    * in turn passes it to the plugin_register 
     * function
     */
    return plugin_load(handle);
@@ -153,10 +153,13 @@ void plugin_load_all(void)
                break;
          }
       }
+      SAFE_FREE(namelist[i]);
    }
    
    USER_MSG("%4d plugins\n", t);
 
+   SAFE_FREE(namelist);
+   
    atexit(&plugin_unload_all);
 #else
    USER_MSG("   0 plugins (disabled by configure...)\n");
@@ -179,6 +182,7 @@ void plugin_unload_all(void)
       p = SLIST_FIRST(&plugin_head);
       lt_dlclose(p->handle);
       SLIST_REMOVE_HEAD(&plugin_head, next);
+      SAFE_FREE(p);
    }
    
    if (lt_dlexit() != 0)

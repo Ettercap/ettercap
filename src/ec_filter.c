@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.24 2003/10/05 20:44:41 alor Exp $
+    $Id: ec_filter.c,v 1.25 2003/10/06 12:11:32 alor Exp $
 */
 
 #include <ec.h>
@@ -425,7 +425,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
 {
 #ifndef HAVE_PCRE
    JIT_FAULT("pcre_regex support not compiled in ettercap");
-   return -ENOTFOUND
+   return -ENOTFOUND;
 #else
    
    switch (fop->op.func.level) {

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: pptp_pap.c,v 1.2 2003/12/02 13:52:41 lordnaga Exp $
+    $Id: pptp_pap.c,v 1.3 2003/12/02 14:05:03 lordnaga Exp $
 */
 
 
@@ -150,7 +150,7 @@ static u_char *parse_option(u_char * buffer, u_char option, int16 tot_len)
    /* Avoid never-ending parsing on bogus packets ;) */
    char counter=0;
    
-   while (tot_len>0 && *buffer!=option && counter<50) {	
+   while (tot_len>0 && *buffer!=option && counter<20) {	
       tot_len -= buffer[1];
       buffer += buffer[1];
       counter++;

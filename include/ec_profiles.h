@@ -1,5 +1,5 @@
 
-/* $Id: ec_profiles.h,v 1.11 2003/09/18 22:15:01 alor Exp $ */
+/* $Id: ec_profiles.h,v 1.12 2003/10/24 20:51:17 alor Exp $ */
 
 #ifndef EC_PROFILES_H
 #define EC_PROFILES_H
@@ -70,6 +70,10 @@ extern void profile_purge_local(void);
 extern void profile_purge_remote(void);
 extern void profile_purge_all(void);
 extern int profile_convert_to_hostlist(void);
+
+/* fake forward declaration (profiles include packet and viceversa) */
+struct packet_object;
+extern void profile_parse(struct packet_object *po);
 
 #endif
 

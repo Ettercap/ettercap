@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.22 2003/10/23 19:50:57 uid42100 Exp $
+    $Id: ec_ui.c,v 1.23 2003/10/24 20:51:23 alor Exp $
 */
 
 #include <ec.h>
@@ -89,8 +89,6 @@ void ui_cleanup(void)
       DEBUG_MSG("ui_cleanup");
       EXECUTE(GBL_UI->cleanup);
       GBL_UI->initialized = 0;
-   } else {
-      DEBUG_MSG("ui_cleanup called before initialization");
    }
 }
 
@@ -157,11 +155,11 @@ void ui_error(const char *fmt, ...)
  */
 void ui_fatal_error(const char *msg)
 {
-   /* dump the error in the debug file */
-   DEBUG_MSG("%s", msg);
-   
-   /* call the function */
-   if (GBL_UI->fatal_error)
+   /* 
+    * call the function 
+    * make sure that the globals have been alloc'd
+    */
+   if (GBLS && GBL_UI && GBL_UI->fatal_error)
       EXECUTE(GBL_UI->fatal_error, msg);
    /* the interface is not yet initialized */
    else {

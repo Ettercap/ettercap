@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_hook.c,v 1.7 2003/10/16 16:46:48 alor Exp $
+    $Id: ec_hook.c,v 1.8 2003/10/24 20:51:23 alor Exp $
 */
 
 #include <ec.h>
@@ -40,8 +40,8 @@ static LIST_HEAD(, hook_list) hook_list_head;
 static LIST_HEAD(, hook_list) hook_pck_list_head;
 
 pthread_mutex_t hook_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define HOOK_LOCK     do{ pthread_mutex_lock(&hook_mutex); } while(0)
-#define HOOK_UNLOCK   do{ pthread_mutex_unlock(&hook_mutex); } while(0)
+#define HOOK_LOCK     do{ printf("lock\n"); pthread_mutex_lock(&hook_mutex); } while(0)
+#define HOOK_UNLOCK   do{ printf("unlock\n"); pthread_mutex_unlock(&hook_mutex); } while(0)
    
 pthread_mutex_t hook_pck_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define HOOK_PCK_LOCK     do{ pthread_mutex_lock(&hook_pck_mutex); } while(0)

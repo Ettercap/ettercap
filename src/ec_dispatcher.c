@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dispatcher.c,v 1.24 2003/10/11 19:43:42 alor Exp $
+    $Id: ec_dispatcher.c,v 1.25 2003/10/24 20:51:23 alor Exp $
 */
 
 #include <ec.h>
@@ -66,6 +66,18 @@ EC_THREAD_FUNC(top_half)
    /* initialize the thread */
    ec_thread_init();
 
+   /* 
+    * we don't want profiles in memory.
+    * remove the hooks and return
+    */
+   if (!GBL_CONF->store_profiles) {
+      DEBUG_MSG("top_half: profile collection disabled");
+      hook_del(HOOK_PACKET_ARP, &profile_parse);
+      hook_del(HOOK_PACKET_ICMP, &profile_parse);
+      hook_del(HOOK_DISPATCHER, &profile_parse);
+      printf(" ---> dispatcher\n");
+   }
+   
    LOOP { 
      
       CANCELLATION_POINT();

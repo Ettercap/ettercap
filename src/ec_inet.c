@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.15 2003/09/25 15:30:45 alor Exp $
+    $Id: ec_inet.c,v 1.16 2003/10/12 15:28:27 alor Exp $
 */
 
 #include <ec.h>
@@ -95,7 +95,7 @@ char * ip_addr_ntoa(struct ip_addr *sa, char *dst)
          break;
    };
    
-   return NULL;
+   return "0.0.0.0";
 }
 
 const char *

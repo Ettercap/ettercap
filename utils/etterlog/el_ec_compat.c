@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_ec_compat.c,v 1.9 2003/10/09 14:49:45 alor Exp $
+    $Id: el_ec_compat.c,v 1.10 2003/10/12 15:28:27 alor Exp $
 */
 
 #include <el.h>
@@ -33,6 +33,7 @@ FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
 void debug_msg(const char *message, ...);
 void ui_msg(const char *fmt, ...);
 void ui_error(const char *fmt, ...);
+void ui_fatal_error(const char *fmt, ...);
 void ui_cleanup(void);
 void * get_decoder(u_int8 level, u_int32 type);
 void open_socket(char *host, u_int16 port);
@@ -64,6 +65,18 @@ void ui_error(const char *fmt, ...)
    vfprintf (stderr, fmt, ap);
    va_end(ap);
    fprintf(stderr, "\n");
+}
+
+void ui_fatal_error(const char *fmt, ...) 
+{ 
+   va_list ap;
+   /* print the mesasge */ 
+   va_start(ap, fmt);
+   vfprintf (stderr, fmt, ap);
+   va_end(ap);
+   fprintf(stderr, "\n");
+
+   exit(-1);
 }
 
 void ui_cleanup(void) { }

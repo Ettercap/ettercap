@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.42 2003/10/11 19:43:42 alor Exp $
+    $Id: ec_parser.c,v 1.43 2003/10/12 15:28:27 alor Exp $
 */
 
 
@@ -196,7 +196,7 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'C':
-                  NOT_IMPLEMENTED();
+                  set_curses_interface();
                   break;
                   
          case 'G':

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_plugins.c,v 1.18 2003/09/27 17:22:02 alor Exp $
+    $Id: ec_plugins.c,v 1.19 2003/10/12 15:28:27 alor Exp $
 */
 
 #include <ec.h>
@@ -215,30 +215,35 @@ int plugin_register(void *handle, struct plugin_ops *ops)
 #endif
 }
 
+
 /* 
  * activate a plugin.
  * it launch the plugin init function 
  */
-
 int plugin_init(char *name)
 {
    struct plugin_entry *p;
+   int ret;
 
    SLIST_FOREACH(p, &plugin_head, next) {
       if (!strcmp(p->ops->name, name)) {
-         p->activated = 1;
-         return p->ops->init(NULL);
+         /* get the response from the plugin */
+         ret = p->ops->init(NULL);
+         /* if it is still running, mark it as active */
+         if (ret == PLUGIN_RUNNING)
+            p->activated = 1;
+         return ret;
       }
    }
    
    return -ENOTFOUND;
 }
 
+
 /* 
  * deactivate a plugin.
  * it launch the plugin fini function 
  */
-
 int plugin_fini(char *name)
 {
    struct plugin_entry *p;
@@ -342,7 +347,7 @@ void plugin_list(void)
  */
 static void plugin_print(char active, struct plugin_ops *ops)
 {
-   fprintf(stdout, "[%d][%10s] %15s %4s  %s\n", active, 
+   fprintf(stdout, "[%10s] %15s %4s  %s\n", 
          (ops->type == PL_HOOK) ? "hook" : "standalone",
          ops->name, ops->version, ops->info);  
 }

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_error.c,v 1.6 2003/09/18 22:15:02 alor Exp $
+    $Id: ec_error.c,v 1.7 2003/10/12 15:28:27 alor Exp $
 */
 
 #include <ec.h>
@@ -29,6 +29,7 @@
 #define ERROR_MSG_LEN 200
 
 void error_msg(char *file, char *function, int line, char *message, ...);
+void fatal_error_msg(char *message, ...);
 void bug(char *file, char *function, int line, char *message);
 
 /*******************************************/
@@ -36,7 +37,6 @@ void bug(char *file, char *function, int line, char *message);
 /*
  * raise an error
  */
-
 void error_msg(char *file, char *function, int line, char *message, ...)
 {
    va_list ap;
@@ -56,6 +56,25 @@ void error_msg(char *file, char *function, int line, char *message, ...)
                    file, function, line, errmsg );
 
    exit(-errno);
+}
+
+
+/*
+ * raise a fatal error
+ */
+void fatal_error(char *message, ...)
+{
+   va_list ap;
+   char errmsg[ERROR_MSG_LEN + 1];    /* should be enough */
+
+   va_start(ap, message);
+   vsnprintf(errmsg, ERROR_MSG_LEN, message, ap);
+   va_end(ap);
+
+   ui_fatal_error(errmsg);
+   
+   /* the ui should exits, but to be sure... */
+   exit(-1);
 }
 
 /*

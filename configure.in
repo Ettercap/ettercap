@@ -17,7 +17,7 @@ dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl   
-dnl    $Id: configure.in,v 1.45 2003/10/11 19:43:30 alor Exp $
+dnl    $Id: configure.in,v 1.46 2003/10/12 15:28:26 alor Exp $
 dnl
 
 AC_INIT(include/ec.h)
@@ -440,13 +440,13 @@ AC_ARG_WITH(libnet,
      ;;
   esac ],
 [ if test -f /usr/include/libnet.h; then
+     AC_MSG_RESULT(yes)
      AC_PATH_PROG(LNET_CONFIG, "libnet-config")
      if test ! -n "$LNET_CONFIG"; then
         AC_ERROR(libnet-config not found)
      fi
      LNETINC="`libnet-config --defines`"
      LNETLIB="`libnet-config --libs`"
-     AC_MSG_RESULT(yes)
   else
      AC_MSG_RESULT(no)
      AC_ERROR(libnet >= 1.1.0 not found)
@@ -716,15 +716,18 @@ dnl      fi
 ])
 
 
-dnl ---------
+dnl -----------------------
 dnl  set up the final vars
-dnl ---------
+dnl -----------------------
 EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $PCREINC $NCURSINC $SLANGINC $GTK_CFLAGS"
 EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $SLANGLIB $GTK_LIBS $PTHREADLIB $SOCKETLIB"
 
 AC_SUBST(EC_CFLAGS)
 AC_SUBST(EC_LIBS)
 
+dnl  for the plugins
+PL_CFLAGS="$DEBUG_FLAGS"
+AC_SUBST(PL_CFLAGS)
 
 dnl ===============
 dnl   FINISHED !!
@@ -732,23 +735,25 @@ dnl ===============
 
 EC_MESSAGE(Writing output files)
 
-AC_OUTPUT(Makefile
-          man/Makefile 
-          man/ettercap.8 
-          man/ettercap_plugins.8 
-          man/etterlog.8 
-          man/etterfilter.8 
-          man/etter.conf.5
-          share/Makefile 
-          src/Makefile 
-          include/Makefile
-          utils/Makefile
-          utils/etterlog/Makefile
-          utils/etterfilter/Makefile
-          plug-ins/Makefile
-          plug-ins/dummy/Makefile
-          plug-ins/dummy_hook/Makefile)
+AC_CONFIG_FILES(  Makefile
+                  man/Makefile 
+                  man/ettercap.8 
+                  man/ettercap_plugins.8 
+                  man/etterlog.8 
+                  man/etterfilter.8 
+                  man/etter.conf.5
+                  share/Makefile 
+                  src/Makefile 
+                  include/Makefile
+                  utils/Makefile
+                  utils/etterlog/Makefile
+                  utils/etterfilter/Makefile
+                  plug-ins/Makefile
+                  plug-ins/dummy/Makefile
+                  plug-ins/dummy_hook/Makefile
+                  plug-ins/finger/Makefile)
 
+AC_OUTPUT()
 
 dnl ===============
 dnl   THE SUMMARY

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_debug.c,v 1.9 2003/10/05 17:07:20 alor Exp $
+    $Id: ec_debug.c,v 1.10 2003/10/12 15:28:27 alor Exp $
 
 */
 
@@ -31,6 +31,9 @@
 
 #ifdef HAVE_NCURSES
    #include <ncurses.h>
+#endif
+#ifdef HAVE_SLANG
+   #include <slang.h>
 #endif
 #ifdef HAVE_GTK
    #include <gtk/gtk.h>
@@ -99,6 +102,9 @@ void debug_init(void)
    #ifdef HAVE_OPENSSL 
       fprintf (debug_file, "-> lib     %s\n", SSLeay_version(SSLEAY_VERSION));
       fprintf (debug_file, "-> headers %s\n", OPENSSL_VERSION_TEXT);
+   #endif
+   #ifdef HAVE_SLANG
+      fprintf (debug_file, "-> slang %s\n", SLANG_VERSION_STRING);
    #endif
    #ifdef HAVE_NCURSES 
       fprintf (debug_file, "-> %s\n", curses_version());

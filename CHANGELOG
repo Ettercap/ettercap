@@ -44,6 +44,8 @@ NG-0.7.0    ????????
       + SMTP
       + CVS
       + OSPF, VRRP
+   + new plugins:
+      + finger (SYN+ACK fingerprinting on remote hosts) 
    !! offline sniffing actually does not bind to any NICs
 
 

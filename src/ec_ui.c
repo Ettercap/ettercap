@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ui.c,v 1.19 2003/09/28 21:06:50 alor Exp $
+    $Id: ec_ui.c,v 1.20 2003/10/12 15:28:27 alor Exp $
 */
 
 #include <ec.h>
@@ -48,6 +48,8 @@ void ui_start(void);
 void ui_cleanup(void);
 void ui_msg(const char *fmt, ...);
 void ui_error(const char *fmt, ...);
+void ui_fatal_error(const char *msg);
+void ui_input(const char *title, char *input, size_t n);
 void ui_progress(int value, int max);
 int ui_msg_flush(int max);
 int ui_msg_purge_all(void);
@@ -98,10 +100,10 @@ void ui_progress(int value, int max)
    EXECUTE(GBL_UI->progress, value, max);
 }
 
+
 /*
  * the FATAL_MSG error handling function
  */
-
 void ui_error(const char *fmt, ...)
 {
    va_list ap;
@@ -148,6 +150,27 @@ void ui_error(const char *fmt, ...)
    /* free the message */
    SAFE_FREE(msg);
 }
+
+
+/*
+ * the FATAL_ERROR error handling function
+ */
+void ui_fatal_error(const char *msg)
+{
+   /* dump the error in the debug file */
+   DEBUG_MSG("%s", msg);
+   
+   /* call the function */
+   if (GBL_UI->fatal_error)
+      EXECUTE(GBL_UI->fatal_error, msg);
+   /* the interface is not yet initialized */
+   else {
+      fprintf(stderr, "\n%s\n\n", msg);
+      exit(-1);
+   }
+   
+}
+
 
 /*
  * this fuction enqueues the messages displayed by
@@ -201,6 +224,19 @@ void ui_msg(const char *fmt, ...)
 
    UI_MSG_UNLOCK;
    
+}
+
+
+/*
+ * get the user input
+ */
+void ui_input(const char *title, char *input, size_t n)
+{
+   DEBUG_MSG("ui_input");
+
+   EXECUTE(GBL_UI->input, title, input, n);
+   
+   DEBUG_MSG("ui_input: user returned: %s", input);
 }
 
 /* 
@@ -288,6 +324,12 @@ void ui_register(struct ui_ops *ops)
    
    BUG_IF(ops->error == NULL);
    GBL_UI->error = ops->error;
+   
+   BUG_IF(ops->fatal_error == NULL);
+   GBL_UI->fatal_error = ops->fatal_error;
+   
+   BUG_IF(ops->input == NULL);
+   GBL_UI->input = ops->input;
    
    BUG_IF(ops->progress == NULL);
    GBL_UI->progress = ops->progress;

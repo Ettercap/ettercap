@@ -1,5 +1,5 @@
 
-/* $Id: ec_interfaces.h,v 1.9 2003/10/11 19:43:42 alor Exp $ */
+/* $Id: ec_interfaces.h,v 1.10 2003/10/12 15:28:26 alor Exp $ */
 
 #ifndef EC_INTERFACES_H
 #define EC_INTERFACES_H
@@ -15,6 +15,9 @@ extern void text_connections(void);
 
 /* daemon related */
 extern void set_daemon_interface(void);
+
+/* curses related */
+extern void set_curses_interface(void);
 
 #endif
 

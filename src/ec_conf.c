@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conf.c,v 1.18 2003/10/08 20:03:17 alor Exp $
+    $Id: ec_conf.c,v 1.19 2003/10/12 15:28:27 alor Exp $
 */
 
 #include <ec.h>
@@ -303,7 +303,7 @@ static void set_dissector(char *name, char *values, int lineno)
    for(p=strsep(&values, ","); p != NULL; p=strsep(&values, ",")) {
       /* get the value for the port */
       value = atoi(p);
-      DEBUG_MSG("load_conf: \tDISSECTOR: %s\t%d", name, value);
+      //DEBUG_MSG("load_conf: \tDISSECTOR: %s\t%d", name, value);
 
       /* count the dissectors and the port monitored */
       if (value) {

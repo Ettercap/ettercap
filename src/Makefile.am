@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.57 2003/10/11 19:43:42 alor Exp $
+# $Id: Makefile.am,v 1.58 2003/10/12 15:28:27 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -59,8 +59,8 @@ ettercap_SOURCES += interfaces/text/ec_text.c \
                     
 ettercap_SOURCES += interfaces/daemon/ec_daemon.c
 
-if NCURSES
-#ettercap_SOURCES += interfaces/ncurses/ec_ncurses.c
+if SLANG
+ettercap_SOURCES += interfaces/curses/ec_curses.c
 endif
 
 if GTK

@@ -110,6 +110,7 @@ CFLAGS += -DHAVE_PLUGINS
 
 ifeq ($(USE_DEBUG),1)
   	CFLAGS += -DDEBUG
+  	RCFLAGS += -DDEBUG
 endif
 
 ifeq ($(USE_CURSES),1)
@@ -142,7 +143,7 @@ ifeq ($(USE_GTK),1)
             -I$(GLIB_INCLUDE) -I$(GTK_ROOT)/lib/glib-2.0/include \
             -I$(PANGO_INCLUDE) -I$(ATK_INCLUDE)
 	EX_LIBS += $(GLIB_LIBS) $(GTK_LIBS)
-	LDFLAGS += # -Wl,--subsystem,windows  # Don't; we want to see printf's
+	LDFLAGS += -Wl,--subsystem,windows
 endif
 
 ifeq ($(USE_SSL),1)
@@ -152,7 +153,7 @@ ifeq ($(USE_SSL),1)
 	EX_LIBS += $(GW32C_ROOT)/lib/libgw32c.a -lole32 -luuid
 endif
 
-LDFLAGS = # -s
+LDFLAGS += # -s
 
 OBJ_DIR = MingW_obj
 
@@ -176,7 +177,7 @@ SOURCE += $(addprefix src/dissectors/,                                          
             ec_mountd.c ec_msn.c     ec_mysql.c ec_napster.c ec_nntp.c   ec_ospf.c \
             ec_pop.c    ec_portmap.c ec_rcon.c  ec_rip.c     ec_rlogin.c ec_smb.c  \
             ec_smtp.c   ec_snmp.c    ec_socks.c ec_telnet.c  ec_vnc.c  \
-            ec_ymsg.c)
+            ec_ymsg.c   ec_ssh.c)
 
 ifeq ($(USE_SSL),1)
   SOURCE += src/dissectors/ec_ssh.c
@@ -218,7 +219,7 @@ SOURCE := $(strip $(SOURCE))
 #
 # All source names are luckily unique
 #
-OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(SOURCE:.c=.o)))
+OBJECTS = $(addprefix $(OBJ_DIR)/, $(notdir $(SOURCE:.c=.o)) ettercap.res)
 
 EF_SOURCE = $(addprefix utils/etterfilter/, ef_compiler.c ef_ec_compat.c ef_encode.c \
               ef_grammar.c ef_main.c ef_output.c ef_parser.c ef_tables.c ef_test.c \
@@ -227,7 +228,7 @@ EF_SOURCE = $(addprefix utils/etterfilter/, ef_compiler.c ef_ec_compat.c ef_enco
               missing/memmem.c missing/inet_aton.c)
 
 EL_SOURCE = $(addprefix utils/etterlog/, el_analyze.c el_conn.c el_display.c \
-              el_ec_compat.c el_log.c el_main.c el_parser.c el_profiles.c el_target.c) \
+              el_ec_compat.c el_log.c el_main.c el_parser.c el_profiles.c el_stream.c el_target.c) \
             $(addprefix src/, ec_error.c ec_file.c ec_hash.c ec_inet.c ec_format.c \
               ec_services.c ec_strings.c ec_passive.c ec_fingerprint.c ec_manuf.c \
               missing/strcasestr.c missing/inet_aton.c)
@@ -375,8 +376,11 @@ utils/etterfilter/ef_grammar.c utils/etterfilter/ef_grammar.h: utils/etterfilter
 utils/etterfilter/ef_syntax.c: utils/etterfilter/ef_syntax.l
 	flex -t $^ > $@
 
+$(OBJ_DIR)/ettercap.res: src/ettercap.rc src/eNG.ico
+	windres $(RCFLAGS) -O COFF -I./src -o $@ -i src/ettercap.rc
+
 clean:
-	rm -f $(OBJ_DIR)/*.o
+	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/ettercap.res
 
 realclean vclean: clean
 	rm -f $(PROGRAMS) $(PLUGIN_DLLS) $(EC_IMPORT) $(MAN_PAGES) $(DEPEND_REQ) .depend

@@ -1,5 +1,5 @@
 
-/* $Id: el_functions.h,v 1.16 2004/07/24 10:43:21 alor Exp $ */
+/* $Id: el_functions.h,v 1.17 2004/09/13 16:02:30 alor Exp $ */
 
 #ifndef EL_FUNCTIONS_H
 #define EL_FUNCTIONS_H
@@ -48,6 +48,19 @@ EL_API_EXTERN int find_user(struct host_profile *hst, char *user);
 EL_API_EXTERN int profile_add_info(struct log_header_info *inf, struct dissector_info *buf);
 EL_API_EXTERN void *get_host_list_ptr(void);
 
+/* el_stream */
+
+struct po_list {
+   struct packet_object po;
+   int type;
+   LIST_ENTRY(po_list) next;
+};
+
+struct stream_object {
+   LIST_HEAD (,po_list) po_head;
+   struct packet_object po_curr;
+   size_t po_off;
+};
 
 #endif
 

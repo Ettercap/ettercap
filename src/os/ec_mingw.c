@@ -15,7 +15,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_mingw.c,v 1.7 2004/07/29 09:46:47 alor Exp $
+    $Id: ec_mingw.c,v 1.8 2004/09/13 16:02:31 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -59,12 +59,23 @@
 #error "You must be joking"
 #endif
 
+#ifndef ATTACH_PARENT_PROCESS
+#define ATTACH_PARENT_PROCESS  ((DWORD)-1)
+#endif
+
 #if 0
    EC_API_EXPORTED LIST_HEAD(, hosts_list) group_one_head;
    EC_API_EXPORTED LIST_HEAD(, hosts_list) group_two_head;
 #endif
 
+static void setup_console(void);
 static void pdc_ncurses_init(void);
+static void __attribute__((destructor)) exit_console (void);
+
+static BOOL has_console;
+static BOOL started_from_a_gui;
+static BOOL attached_to_console;
+
 
 /***************************************/
 
@@ -72,6 +83,7 @@ static void __init win_init(void)
 {
    /* Dr MingW JIT */
    LoadLibrary ("exchndl.dll");   
+   setup_console();
    pdc_ncurses_init();
 }
 
@@ -124,7 +136,6 @@ u_int16 get_iface_mtu(const char *iface)
    return (1514);  /* Assume ethernet */
 }
 
-
 void disable_ip_forward (void)
 {
    DEBUG_MSG ("disable_ip_forward (no-op)\n");
@@ -158,19 +169,31 @@ int ec_win_pcap_stop (const void *pcap_handle)
   return (1);
 }
 
+/*
+ * No fork() in Windows, just beep
+ */
+void set_daemon_interface (void)
+{
+  _putch ('\a');
+}
+
 int ec_win_gettimeofday (struct timeval *tv, struct timezone *tz)
 {
   struct _timeb tb;
 
-  if (!tv)
+  if (!tv && !tz) {
+    errno = EINVAL;
      return (-1);
+  }
 
   _ftime (&tb);
+  if (tv) {
   tv->tv_sec  = tb.time;
-  tv->tv_usec = tb.millitm * 1000 + 500;
+    tv->tv_usec = tb.millitm * 1000;
+  }
   if (tz) {
-    tz->tz_minuteswest = _timezone / 60;
-    tz->tz_dsttime = _daylight;
+    tz->tz_minuteswest = tb.timezone;
+    tz->tz_dsttime = tb.dstflag;
   }
   return (0);
 }
@@ -505,14 +528,6 @@ int ec_win_wait (int *status)
    errno = ENOSYS;
    (void) status;
    return -1;
-}
-
-/*
- * No fork() in Windows, just beep
- */
-void set_daemon_interface (void)
-{
-  _putch ('\a');
 }
 
 /*
@@ -1182,6 +1197,124 @@ static void pdc_ncurses_init (void)
 #endif
 }
 
+/*
+ * Check if we're linked as a GUI app.
+ */
+static BOOL is_gui_app (void)
+{
+  const IMAGE_DOS_HEADER *dos;
+  const IMAGE_NT_HEADERS *nt;
+  HMODULE mod = GetModuleHandle (NULL);
+
+  dos = (const IMAGE_DOS_HEADER*) mod;
+  nt  = (const IMAGE_NT_HEADERS*) ((const BYTE*)mod + dos->e_lfanew);
+  return (nt->OptionalHeader.Subsystem == IMAGE_SUBSYSTEM_WINDOWS_GUI);
+}
+
+/*
+ * Check that we're linked as a GUI application. Depending on how
+ * we where started, we create or attach to parent console before
+ * using printf() etc. If using GTK interface (option "-G"), don't
+ * create a console.
+ */
+static void setup_console (void)
+{
+  BOOL (WINAPI *_AttachConsole)(DWORD) = NULL;
+  HMODULE mod;
+  DWORD   rc = 0;
+  STARTUPINFO inf;
+  const char *cmd_line = GetCommandLine();
+  BOOL  use_gtk = (cmd_line && strstr(cmd_line,"-G") != NULL);
+
+  memset (&inf, 0, sizeof(inf));
+  GetStartupInfo (&inf);
+
+  /* Note: this is true even when started minimized
+   * (nCmdShow == SW_MINIMISED), but fails if program started as
+   * another user
+   */
+  started_from_a_gui = (inf.dwFlags & STARTF_USESHOWWINDOW);
+
+  /* check if correct linker option used
+   */
+  if (!is_gui_app()) {
+     MessageBox (NULL, "You must relink this application with\n"
+                 "\"-Wl,--subsystem,windows\"\n", "Error",
+                 MB_ICONEXCLAMATION | MB_SETFOREGROUND);
+     exit (-1);
+  }
+
+  if (use_gtk)    /* GTK UI shouldn't need a console */
+     return;
+
+  mod = GetModuleHandle ("kernel32.dll");
+  if (mod)
+     _AttachConsole = (BOOL (WINAPI*)(DWORD)) GetProcAddress((HINSTANCE)mod, "AttachConsole");
+
+  attached_to_console = FALSE;
+
+  /* If parent doesn't have a console, AttachConsole() will fail */
+  if (_AttachConsole) {
+     if ((*_AttachConsole)(ATTACH_PARENT_PROCESS))
+        attached_to_console = TRUE;
+     else
+        rc = GetLastError();
+  }
+
+  if (!attached_to_console && !AllocConsole()) {
+     char error[256];
+
+     sprintf (error, "AllocConsole failed; error %lu", GetLastError());
+     MessageBox (NULL, error, "Fatal", MB_ICONEXCLAMATION | MB_SETFOREGROUND);
+     exit (-1);
+  }
+
+  freopen ("CONIN$", "rt", stdin);
+  freopen ("CONOUT$", "wt", stdout);
+  freopen ("CONOUT$", "wt", stderr);
+
+#if 0
+  printf ("_AttachConsole %p, rc %lu, started_from_a_gui %d, attached_to_console %d\n",
+          _AttachConsole, rc, started_from_a_gui, attached_to_console);
+#endif
+
+  has_console = TRUE;
+}
+
+static void __attribute__((destructor)) exit_console (void)
+{
+  if (!has_console)
+     return;
+
+  if (started_from_a_gui || !attached_to_console) {
+     puts("\nPress any key to exit");
+     _getch();
+  }
+  else {
+    /*
+     * The calling shell doesn't append a <CR> to the cmd-line when we exit a
+     * GUI app. Get the prompt back by putting a <CR> in the console input queue.
+     */
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    if (!started_from_a_gui &&
+        hStdin != INVALID_HANDLE_VALUE && hStdout != INVALID_HANDLE_VALUE) {
+      INPUT_RECORD rec;
+      DWORD written;
+
+      memset (&rec, 0, sizeof(rec));
+      rec.EventType = KEY_EVENT;
+      rec.Event.KeyEvent.bKeyDown = TRUE;
+      rec.Event.KeyEvent.wRepeatCount = 1;
+      rec.Event.KeyEvent.wVirtualKeyCode = 13;
+      rec.Event.KeyEvent.uChar.AsciiChar = 13;
+      WriteConsoleInput(hStdin, &rec, 1, &written);
+    }
+  }
+  FreeConsole();  /* free allocated or attached console */
+  has_console = FALSE;
+}
 
 /* EOF */
 

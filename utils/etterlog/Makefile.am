@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.14 2004/04/29 16:27:56 alor Exp $
+# $Id: Makefile.am,v 1.15 2004/09/13 16:02:31 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -16,6 +16,7 @@ etterlog_SOURCES = el_main.c \
                    el_display.c \
                    el_log.c \
                    el_profiles.c \
+                   el_stream.c \
                    el_ec_compat.c \
                    $(top_srcdir)/src/ec_error.c \
                    $(top_srcdir)/src/ec_fingerprint.c \

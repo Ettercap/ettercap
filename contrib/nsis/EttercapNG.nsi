@@ -17,7 +17,7 @@
 ;   along with this program; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;
-;   $Id: EttercapNG.nsi.in,v 1.1 2004/09/13 15:58:18 alor Exp $
+;   $Id: EttercapNG.nsi,v 1.4 2004/09/13 16:02:30 alor Exp $
 ;
 ; NOTE: this .NSI script is designed for NSIS v2.0+
 

@@ -30,6 +30,8 @@
  
    + ETTERLOG
       - extract files from streams looking for mime content or protocol
+      - stream functions
+      - extractors for each protocol
 
    + ETTERFILTER
       - possibility to set flags in scripts 
@@ -45,6 +47,12 @@
 ==================
    
    + SSH2 dissection :) (yes, it can be done)
+
+   + IPv6
+      - NDIS mitm
+      - router discovery
+
+   + Rendevouz mitm
 
    + SOCKS
       - decode the internal connection

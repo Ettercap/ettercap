@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dissect.c,v 1.26 2004/04/02 15:23:25 alor Exp $
+    $Id: ec_dissect.c,v 1.27 2004/10/30 13:19:41 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -245,6 +245,9 @@ int dissect_modify(int mode, char *name, u_int32 port)
                
                /* remove all the previous istances */
                dissect_del(name);
+
+	       /* move the ssl wrapper (even if no wrapper) */
+               sslw_dissect_move(name, port);
                
                /* a value of 0 will disable the dissector */
                if (port == 0) {
@@ -255,10 +258,7 @@ int dissect_modify(int mode, char *name, u_int32 port)
                DEBUG_MSG("dissect_modify: %s replaced to %lu", name, (unsigned long)port);
                
                /* add the new value */
-               dissect_add(name, level, port, decoder);
-	       
-	       /* move the ssl wrapper (even if no wrapper) */
-               sslw_dissect_move(name, port);
+               dissect_add(name, level, port, decoder);	       
 	       
                return ESUCCESS;
                break;

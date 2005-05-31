@@ -6,11 +6,18 @@ Legenda:
 
 =========================================
 
-NG-0.7.3         2005
+NG-0.7.4         2005
+
+   !! fixed an inproper handling of wdg_dynlist callback
+
+
+NG-0.7.3         20050528
 
    + added the INC (+=) and DEC (-=) operators to the filter engine
    !! fixed the compilation of some plugins
    !! fixed a segfault in the isolate plugin
+   !! fixed a bug in the dhcp spoofing module
+   !! fixed a serious security bug (a format bug in the curses gui)
 
 
 NG-0.7.2         20041221

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dynlist.c,v 1.9 2004/03/21 14:16:48 alor Exp $
+    $Id: wdg_dynlist.c,v 1.10 2005/05/31 07:59:54 alor Exp $
 */
 
 #include <wdg.h>
@@ -363,8 +363,9 @@ static int wdg_dynlist_callback(struct wdg_object *wo, int key)
          
          WDG_DEBUG_MSG("wdg_dynlist_callback");
          
-         /* execute the callback */
-         WDG_EXECUTE(c->callback, ww->current);
+         /* execute the callback only if current is not NULL */
+         if (ww->current)
+            WDG_EXECUTE(c->callback, ww->current);
          
          return WDG_ESUCCESS;
       }

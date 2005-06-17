@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_display.c,v 1.4 2004/01/06 15:03:15 alor Exp $
+    $Id: ec_text_display.c,v 1.5 2005/06/17 08:26:18 alor Exp $
 */
 
 #include <ec.h>
@@ -54,7 +54,7 @@ void text_print_packet(struct packet_object *po)
     * the "ettercap" regex
     */
    if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+       regexec(GBL_OPTIONS->regex, (const  char  *)po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
                

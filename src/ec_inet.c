@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inet.c,v 1.27 2004/07/23 07:25:27 alor Exp $
+    $Id: ec_inet.c,v 1.28 2005/06/17 08:03:16 alor Exp $
 */
 
 #include <ec.h>
@@ -86,6 +86,9 @@ int ip_addr_cpy(u_char *addr, struct ip_addr *sa)
  */
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
 {
+   if (!sa || !sb)
+      return -EINVALID;
+
    /* different type are incompatible */
    if (sa->addr_type != sb->addr_type)
       return -EINVALID;

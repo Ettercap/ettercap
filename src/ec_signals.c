@@ -17,13 +17,14 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_signals.c,v 1.28 2004/07/29 09:46:47 alor Exp $
+    $Id: ec_signals.c,v 1.29 2005/06/17 08:03:16 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_version.h>
 #include <ec_ui.h>
 #include <ec_mitm.h>
+#include <ec_log.h>
 #include <ec_threads.h>
 
 #include <signal.h>
@@ -210,6 +211,9 @@ static RETSIGTYPE signal_TERM(int sig)
 
    /* stop the mitm process (if activated) */
    mitm_stop();
+
+   /* flush and close the log file */
+   log_stop();
 
    /* kill all the threads */
    ec_thread_kill_all();

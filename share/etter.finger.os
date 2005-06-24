@@ -11,9 +11,9 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-#  Version         : $Revision: 1.21 $                                     # 
-#  Last updated on : $Date: 2004/11/05 10:21:03 $                          #
-#  Total entries   : 1697                                                  #
+#  Version         : $Revision: 1.22 $                                     # 
+#  Last updated on : $Date: 2005/06/24 10:29:49 $                          #
+#  Total entries   : 1765                                                  #
 #                                                                          #
 ############################################################################
 #                                                                          #
@@ -123,6 +123,7 @@
 052A:052A:40:00:1:1:0:1:A:3C:Debian Potato (2.2), Linux 2.2.20
 0534:0534:80:WS:0:0:1:0:A:2C:Netware
 0550:0550:40:WS:0:0:0:0:A:2C:Linux 2.4
+0564:0564:40:00:1:1:1:1:A:3C:Linux kernel 2.4
 0564:0564:40:WS:0:0:0:0:A:2C:Linux
 0564:0564:40:WS:1:0:1:1:A:38:Linux 2.4 
 0564:0564:80:WS:1:1:1:0:A:LT:Windows 2000
@@ -136,6 +137,7 @@
 0584:0584:80:00:1:1:1:1:A:3C:Red Hat Linux 8.0 (Psyche)
 0584:0584:FF:00:0:1:1:1:A:3C:OpenBSD
 05AC:0218:40:WS:0:0:0:0:A:2C:AXIS Printer
+05B4:03E8:40:00:0:1:1:1:A:3C:Mac OS X 10.3.8
 05B4:052A:40:00:0:1:0:1:A:3C:NetBSD 1.6.1
 05B4:052A:40:00:1:1:0:1:A:3C:Debian Sarge, Linux 2.4.24-1
 05B4:0564:40:01:0:1:1:1:A:3C:FreeBSD 5.1-RELEASE 
@@ -161,6 +163,7 @@
 05B4:_MSS:80:WS:0:1:1:1:A:LT:Network Appliance NetCache 5.1D4
 05DC:0FD8:40:WS:0:0:0:0:A:2C:D-Link dsl604 wireless router 
 05DC:_MSS:80:WS:0:0:0:0:A:LT:Gandalf LanLine Router
+05EA:05EA:20:WS:0:0:0:0:A:2C:Pocket pc 2003 
 0600:0300:20:WS:0:0:0:0:S:2C:Chase IOLAN Terminal Server v3.3.09 - TCP 
 0600:_MSS:80:WS:0:0:0:0:A:LT:Chase IOLAN Terminal Server v3.5.02 CDi
 0640:05B4:40:WS:0:0:0:0:A:2C:APC MasterSwitch Network Power Controller
@@ -220,6 +223,8 @@
 0C00:0109:40:10:0:1:0:1:S:3C:Linux Mandrake 9.1
 0C00:052A:40:WS:0:0:0:0:A:2C:NetGear Router
 0C00:05A0:40:WS:0:0:0:0:A:2C:Trendnet TEW 431 BRP
+0C00:05B4:FF:00:0:1:0:0:A:30:OKI
+0C00:05B4:FF:WS:0:0:0:0:A:2C:OKI
 0C00:_MSS:40:WS:0:0:0:0:S:28:Slackware 8.0
 0C00:_MSS:40:WS:0:0:0:0:S:LT:Linux Slakware 8.0
 0C00:_MSS:80:WS:0:0:0:0:A:LT:Canon photocopier/fax/scanner/printer GP30F
@@ -229,6 +234,7 @@
 0C90:05B4:40:WS:1:1:1:0:S:30:Windows XP
 0C90:_MSS:80:WS:0:0:0:0:A:LT:HP JetDirect Print Server
 0E00:_MSS:80:WS:0:0:0:0:A:LT:Lantronix EPS1 Version V3.5/1(970325)
+0ED0:03C0:40:00:1:1:1:1:A:3C:linux 
 0F87:_MSS:80:00:0:0:0:0:A:LT:Novell NetWare 3.12 or 386 TCP/IP
 0F87:_MSS:80:WS:0:0:0:0:A:LT:A/UX 3.1.1 SVR2 or OpenStep 4.2
 0F87:_MSS:80:WS:0:0:1:0:A:LT:AIX 4.3
@@ -278,6 +284,7 @@
 1020:B405:FF:WS:0:0:0:0:A:2C:AIRONET1200 
 1020:_MSS:80:WS:0:0:0:0:A:LT:AS5200
 1020:_MSS:FF:WS:0:0:1:0:A:LT:Cisco IOS
+10A4:058C:FF:00:1:1:1:1:A:40:Windows Server 2003
 10C0:0218:80:WS:1:1:1:0:S:30:Windows 2000 Advanced Server SP2
 10C0:0218:FF:WS:0:0:0:0:A:2C:Cisco IOS
 10C0:0218:FF:WS:0:0:0:0:S:LT:Cisco 1600 IOS 11.2(15)P
@@ -308,6 +315,7 @@
 1540:0550:40:00:1:1:1:1:S:3C:Linux
 1540:0550:40:WS:0:0:1:0:A:2C:Linux RedHat - 2.4.18
 1540:0550:40:WS:1:1:1:0:A:30:Linux 2.4.x
+1590:0564:40:00:1:1:1:1:S:3C:Debian Woody (Kernelversion 2.4.18) 
 159F:05B4:40:00:0:1:1:0:S:3C:FreeBSD 2.2.1 - 4.1
 15B8:057A:40:00:1:1:1:1:A:3C:Linux 2.4.10
 15E0:0584:40:00:0:1:1:1:A:3C:Linux 2.4.20
@@ -343,6 +351,7 @@
 16A0:05B4:40:00:1:1:1:0:A:LT:Linux 2.4.2
 16A0:05B4:40:00:1:1:1:1:A:3C:Linux 2.4.xx
 16A0:05B4:40:01:1:1:1:1:A:LT:Linux Kernel 2.4.17 (with MOSIX patch)
+16A0:05B4:40:02:1:1:1:1:A:3C:Linux 2.6.9 - 2.6.11
 16A0:05B4:40:03:1:1:0:1:A:3C:Linux Kernel 2.4.xx
 16A0:05B4:40:07:1:1:1:1:A:3C:Linux.2.4.20-web100
 16A0:05B4:40:WS:0:1:1:1:A:38:Windows
@@ -355,7 +364,9 @@
 16A0:2A05:40:00:1:1:0:1:A:3C:Linux 2.4.22
 16A0:5C05:40:00:0:1:1:1:A:3C:Linux 2.4.19 Knoppix
 16A0:6405:40:02:0:1:1:1:A:3C:RedHat Enterprise 3.0 ES
+16A0:6405:40:02:1:1:1:1:A:3C:Linux 2.6.9-1
 16A0:7A05:40:00:0:1:1:1:A:3C:Redhat Linux
+16A0:7E05:40:00:0:1:1:1:A:3C:linux debian
 16A0:8C05:40:00:0:1:1:1:A:3C:Linux RedHat 9 
 16A0:B405:40:00:0:1:1:1:A:3C:Linux version 2.4.2-2 (Red Hat Linux 7.1)
 16A0:B405:40:00:0:1:1:1:A:LT:Linux Kernel 2.4.24 (ppc)
@@ -367,12 +378,15 @@
 16B0:0584:40:WS:1:1:1:0:A:30:Redhat 7.0 (linux 2.2.16)
 16B0:05AC:40:00:1:1:1:0:S:3C:Linux 2.4.10
 16B0:05AC:40:00:1:1:1:1:S:3C:Linux 2.4.18-6mdk
+16B0:05AC:40:02:1:1:1:1:S:3C:Linux Ubuntu 5.04 Hoary 
 16B0:05AC:40:6F:1:1:1:0:S:3C:Linux 2.4.10
 16D0:0218:80:00:1:1:1:0:S:30:Windows 95
 16D0:0218:80:WS:1:1:1:0:A:30:Windows 2000
 16D0:052A:40:00:1:1:0:1:S:3C:Linux 2.4.23
+16D0:0546:40:WS:1:1:1:0:A:30:Linux 2.4.19
 16D0:0550:80:WS:1:1:1:0:S:30:Windows XP
 16D0:055C:40:00:1:1:1:1:S:3C:Linux 2.6.7-gentoo-r7
+16D0:055C:40:WS:0:0:1:0:A:2C:Debian Sar
 16D0:0564:40:00:0:1:1:0:A:30:Phlak 0.2 
 16D0:0564:40:00:1:1:1:0:A:34:Linux 2.4.2
 16D0:0564:40:00:1:1:1:1:S:3C:Linux RedHat 
@@ -380,12 +394,15 @@
 16D0:0564:40:WS:1:1:1:0:A:30:Linux 2.4.19
 16D0:0564:40:WS:1:1:1:1:S:3C:Slackware Linux 8.1
 16D0:0584:40:00:1:1:1:1:S:3C:Linux 2.4.8
+16D0:0584:40:02:1:1:1:1:S:3C:MANDRAKE 10.1
 16D0:0584:40:WS:0:0:1:0:A:2C:Linux 2.4.18 
 16D0:0584:40:WS:1:1:1:0:A:30:Linux 2.4.17
 16D0:0584:80:WS:0:0:1:0:A:2C:RedHat Linux
 16D0:0594:40:WS:0:0:0:0:A:2C:Linux 
 16D0:0598:40:WS:0:0:1:0:A:2C:Linux
 16D0:0598:40:WS:1:1:0:0:A:30:Linux
+16D0:0598:40:WS:1:1:1:0:A:30:WindowsXP Sp2
+16D0:059C:40:00:1:1:1:1:S:3C:fedora core 
 16D0:059C:40:WS:1:1:1:0:A:30:Red Hat Linux
 16D0:05AC:40:00:1:1:1:1:S:3C:Debian - Linux 2.4.18 
 16D0:05AC:40:WS:0:0:1:0:A:2C:Linux 2.4.xx 
@@ -410,6 +427,7 @@
 16D0:05B4:40:00:1:1:1:1:S:3C:Linux 2.4.xx
 16D0:05B4:40:01:1:1:1:1:S:3C:Linux 2.4.10 - 2.4.16
 16D0:05B4:40:01:1:1:1:1:S:LT:Linux Red Hat 9 
+16D0:05B4:40:02:1:1:1:1:S:3C:Linux 2.6.9 - 2.6.10
 16D0:05B4:40:03:1:1:1:0:A:34:Windows 
 16D0:05B4:40:07:1:1:1:1:S:3C:Debian Linux 
 16D0:05B4:40:07:1:1:1:1:S:3C:Linux Fedora Core 2 2.6.8-1.521 
@@ -424,6 +442,7 @@
 16D0:05B4:40:WS:1:1:0:0:A:30:Linux
 16D0:05B4:40:WS:1:1:1:0:A:1C:Linux 2.4.22-gentoo-r5 
 16D0:05B4:40:WS:1:1:1:0:A:30:Linux 2.4.xx
+16D0:05B4:40:WS:1:1:1:0:A:30:Linux 2.6.9 - 2.6.10
 16D0:05B4:40:WS:1:1:1:0:A:30:Linux Fedora Core 1 
 16D0:05B4:40:WS:1:1:1:0:A:30:Mandrake 9.2 (Linux 2.4.xx) 
 16D0:05B4:80:00:1:1:1:1:S:3C:Linux 2.4.14 - 2.4.22
@@ -490,6 +509,7 @@
 1FFE:055C:FF:WS:0:0:0:0:A:2C:Linux Debian woody
 1FFE:0584:FF:WS:0:0:0:0:A:2C:Linux Debian 
 1FFE:0596:FF:WS:0:0:0:0:A:2C:Windows
+1FFE:05AC:FF:WS:0:0:0:0:A:2C:Linux Debian
 1FFE:05B4:FF:WS:0:0:0:0:A:2C:Linux Debian
 1FFF:_MSS:80:00:0:0:1:0:A:LT:Novell NetWare 3.12 - 5.00
 1FFF:_MSS:80:WS:0:0:1:0:A:LT:NetWare 4.11 SP7- 5 SP3A BorderManager 3.5
@@ -537,9 +557,12 @@
 2000:05B4:40:00:0:1:1:1:A:3C:FreebSD 5.0 RELEASE (x86)
 2000:05B4:40:00:1:1:1:0:S:3C:BSDI BSD/OS 3.0-3.1 (or MacOS, NetBSD)
 2000:05B4:40:00:1:1:1:0:S:40:WebTV netcache engine (BSDI)
+2000:05B4:40:00:1:1:1:1:S:40:WindowsXP
 2000:05B4:40:WS:0:0:0:0:A:2C:Linux
 2000:05B4:40:WS:0:0:0:0:S:2C:CacheFlow 500x CacheOS 2.1.08 - 2.2.1
+2000:05B4:40:WS:0:0:1:0:A:2C:Apple Airport Express v6.1 
 2000:05B4:40:WS:0:0:1:0:S:2C:AXCENT Raptor Firewall Windows NT 4.0/SP3
+2000:05B4:40:WS:1:1:1:0:S:30:Windows XP
 2000:05B4:80:00:0:0:1:0:S:2C:Windows NT 4.0
 2000:05B4:80:00:0:0:1:0:S:LT:Windows NT 4.0
 2000:05B4:80:00:1:1:1:0:S:2C:Windows 9x
@@ -599,6 +622,7 @@
 2120:_MSS:80:WS:0:0:1:0:A:LT:Gauntlet 4.0a firewall on Solaris 2.5.1
 2130:0588:80:WS:1:1:1:0:A:30:Windows 98 SE
 2142:058B:40:00:1:1:1:1:A:40:Windows NT
+2180:0218:80:00:1:1:1:1:S:40:Windows XP SP2 
 2180:0218:80:WS:1:1:1:0:A:30:Windows 98
 2180:05B0:80:WS:0:0:1:0:A:2C:Windows NT - Windows 9x
 2180:05B4:20:WS:0:0:1:0:A:2C:Windows XP
@@ -749,6 +773,8 @@
 3E64:05AC:40:00:1:1:1:0:S:3C:Windows 98
 3E64:05AC:40:00:1:1:1:1:A:4C:Linux 2.2.x 2.4.x
 3E64:05AC:40:00:1:1:1:1:S:3C:Linux Debian 3.0 (kernel 2.2)
+3E64:05AC:40:WS:1:1:1:0:A:30:Debian GNU/Linux 3.0 R4 \"Woody\"
+3E80:0584:40:WS:0:0:0:0:A:2C:HM210di Configuration Manager GUI
 3E80:05A6:80:WS:0:0:0:0:A:2C:Windows xp
 3E80:05B4:FF:WS:0:0:0:0:A:2C:CiscoATA-186
 3E80:_MSS:80:WS:0:0:0:0:A:LT:Alcatel Advanced Reflexes IP Phone, Version: E/AT400/46.8
@@ -809,7 +835,7 @@
 4000:0556:80:WS:1:1:1:0:S:30:Windows XP
 4000:0562:80:WS:1:1:1:0:S:30:Windows 2000 
 4000:0564:80:WS:1:1:0:0:S:30:Windows 2000
-4000:0564:80:WS:1:1:1:0:S:LT:Windows 2000
+4000:0564:80:WS:1:1:1:0:S:30:Windows 2000 / Windows XP Sp2
 4000:0578:40:00:0:1:0:1:A:3C:NetBSD 1.6
 4000:0578:40:00:1:1:1:1:S:40:OpenBSD 3.0
 4000:0578:80:WS:1:1:1:0:S:30:Windows 2000
@@ -967,8 +993,9 @@
 43E0:_MSS:40:WS:0:0:0:0:A:LT:OpenBSD 2.x
 43E0:_MSS:40:WS:0:0:1:0:A:LT:FreeBSD 2.2.1 - 4.0
 43F8:AA05:40:WS:0:0:1:0:A:2C:Free BSD
+4410:05AC:40:WS:0:0:1:0:A:2C:OpenBSD 3.0 
 4410:05AC:40:WS:1:1:1:0:A:30:OpenBSD 3.0 
-4410:05AC:80:00:1:1:1:1:A:LT:Windows 2000 
+4410:05AC:80:00:1:1:1:1:A:40:Windows 2003 
 4410:05AC:80:WS:1:1:1:0:A:30:Windows 2000 Workstation / Windows 98 SE
 4410:05B4:80:00:1:1:1:0:A:34:Windows 2000
 4410:05B4:80:00:1:1:1:1:A:40:Windows 2000
@@ -997,6 +1024,7 @@
 4470:05B4:80:00:1:1:0:1:A:LT:Windows 2000 Professional
 4470:05B4:80:00:1:1:1:0:A:34:Windows 2000 Server
 4470:05B4:80:00:1:1:1:1:A:40:Windows 2000 Pro / XP Pro / 2003 Server
+4470:05B4:80:00:1:1:1:1:S:40:HP Printer
 4470:05B4:80:WS:0:0:1:0:A:2C:Windows 2000
 4470:05B4:80:WS:1:1:0:0:A:30:Windows 2000 pro
 4470:05B4:80:WS:1:1:1:0:A:30:Windows 2000 Server / XP Pro / NT 4.0 server
@@ -1042,6 +1070,7 @@
 6028:B405:40:00:0:1:1:1:A:3C:Solaris 8
 6030:0564:40:00:1:1:1:1:A:40:Solaris 8 
 6030:6405:40:00:0:1:1:1:A:3C:Solaris 8
+6044:05B4:40:00:1:1:1:1:A:40:unknown
 6050:05B4:40:00:1:1:1:0:A:34:Windows
 6050:05B4:40:WS:0:0:1:0:A:2C:Solaris 9
 6050:05B4:FF:WS:0:0:0:0:A:2C:Solaris 8
@@ -1134,6 +1163,7 @@
 7C9C:05AA:40:WS:0:0:1:0:A:2C:SuSE Linux 7.0
 7C9C:AA05:40:00:0:1:1:1:A:LT:Linux RedHat 7.1
 7CC8:0584:40:00:1:1:1:0:S:3C:Linux 2.2
+7D00:04EC:80:WS:1:1:1:0:S:30:Windows XP Home
 7D00:05A0:80:00:1:1:1:0:S:34:Windows
 7D00:05A0:80:WS:1:1:1:0:S:30:OpenBSD
 7D00:05B4:80:WS:1:1:1:0:S:30:Windows XP Pro
@@ -1213,6 +1243,7 @@
 7FFF:05A0:80:WS:1:1:1:0:S:30:Windows 2000 Server 
 7FFF:05AC:80:00:0:1:1:0:A:30:Windows 2000 / XP / ME
 7FFF:05AC:80:00:1:1:1:0:S:34:Windows 2000 
+7FFF:05AC:80:WS:1:1:1:0:S:30:Microsoft Windows XP Professional 
 7FFF:05B4:40:00:0:1:0:0:A:30:Sinix 5.4x
 7FFF:05B4:40:00:0:1:1:0:A:30:Windows XP
 7FFF:05B4:40:00:1:1:1:1:S:3C:SuSe Linux
@@ -1227,6 +1258,7 @@
 7FFF:05B4:80:WS:1:1:1:0:A:30:Windows 98 SE
 7FFF:05B4:80:WS:1:1:1:0:S:30:Windows 2000 Server
 7FFF:7E05:80:00:0:1:1:0:A:30:BeOS
+7FFF:_MSS:40:WS:0:0:0:0:S:28:Linux 2.6.10
 7FFF:_MSS:80:00:0:0:1:0:A:LT:Linux 2.4.7 (X86)
 7FFF:_MSS:80:00:0:1:0:0:A:LT:ReliantUNIX-Y 5.44 B0033 RM600 1/256 R10000
 7FFF:_MSS:80:00:0:1:1:0:A:LT:Linux Kernel 2.4.xx (X86)
@@ -1243,6 +1275,7 @@
 8000:05A0:40:WS:1:1:1:0:A:30:Windows 2000
 8000:05AC:40:00:0:1:1:1:A:3C:FreeBSD 4.9 
 8000:05AC:40:00:0:1:1:1:S:LT:Mac OS X 10.1.5
+8000:05AC:40:WS:0:0:0:0:A:2C:FreeBSD
 8000:05AC:40:WS:0:0:1:0:A:2C:OS400 V5R2
 8000:05AC:FF:WS:0:0:1:0:A:2C:Mac OS X
 8000:05B4:01:WS:0:0:1:0:A:2C:HP-UX 
@@ -1266,6 +1299,8 @@
 8000:05B4:80:00:0:1:1:0:S:30:Dec V4.0 OSF1
 8000:05B4:80:00:1:1:1:0:A:34:Windows XP Pro
 8000:05B4:80:WS:0:0:1:0:S:LT:Novell NetWare 4.11
+8000:05B4:80:WS:1:1:1:0:A:30:Windows CE .NET
+8000:05B4:80:WS:1:1:1:0:S:30:Windows XP
 8000:05B4:FF:00:0:1:0:0:S:30:MAC OS 8.6
 8000:05B4:FF:00:0:1:1:0:S:30:Mac OS 9
 8000:05B4:FF:00:0:1:1:1:A:3C:Mac OS
@@ -1314,9 +1349,11 @@
 8218:05B4:40:01:1:1:1:1:A:40:Gauntlet Firewall
 8218:B405:40:00:0:1:0:1:A:3C:MAC OS X 10.3.4
 8218:B405:40:00:0:1:1:1:A:3C:Mac OS X 10.1.4
+8218:B405:40:00:0:1:1:1:A:LT:Mac OS X
 8218:B405:40:00:0:1:1:1:A:LT:MacOS X Server Release
 8235:0488:FF:WS:0:0:0:0:S:2C:Mac OS X 
 8246:AA05:40:00:0:1:0:1:A:3C:X server
+8274:05AC:40:WS:0:0:1:0:A:2C:Digital Unix 4.0b 
 8274:05B4:40:WS:0:0:0:0:A:2C:Digital Unix 4.0b 
 832C:05B4:40:00:0:1:1:0:A:30:Compaq Tru64 UNIX 5.0 / Digital UNIX V5.60
 832C:05B4:40:WS:0:0:0:0:A:2C:Digital Unix
@@ -1360,6 +1397,7 @@
 9820:05B4:40:WS:1:1:1:0:S:30:Windows 2000
 9C40:05B4:80:WS:1:1:1:0:S:30:Windows Xp
 AA3C:05B4:80:WS:1:1:1:0:S:30:Windows 2000 Pro
+ABB0:059E:80:WS:1:1:1:0:A:30:Windows XP 
 ABCD:_MSS:80:00:0:1:1:0:A:LT:Solaris 2.6 - 2.7
 ABCD:_MSS:80:00:0:1:1:1:A:LT:Solaris 2.6 - 2.7
 AC00:0550:80:WS:0:0:1:0:S:2C:Windows NT 4.0 SP6a
@@ -1376,6 +1414,7 @@ B270:05B4:80:WS:1:1:1:0:S:LT:Windows ME
 B400:05AC:20:03:1:1:1:1:S:40:windows 200
 B400:05B4:20:03:1:1:0:1:S:LT:Windows 2000 SP2
 B400:05B4:20:03:1:1:1:1:S:40:Windows 2000
+B400:05B4:40:03:1:1:1:0:S:34:Windows XP SP2 
 B400:05B4:40:03:1:1:1:1:S:40:Windows XP Pro SP1
 B400:05B4:80:03:1:1:1:1:S:40:Windows XP 
 B400:B405:20:03:1:1:1:0:S:34:Windows 2000 SP3
@@ -1408,6 +1447,7 @@ C08A:_MSS:80:00:0:1:1:0:A:LT:FreeBSD 2.2.1 - 4.1
 C08A:_MSS:80:00:0:1:1:1:A:LT:FreeBSD 2.2.1 - 4.1
 C0B7:_MSS:80:00:0:1:1:0:A:LT:FreeBSD 2.2.1 - 4.1
 C0B7:_MSS:80:00:0:1:1:1:A:LT:FreeBSD 2.2.1 - 4.1
+C0D8:05AC:40:WS:1:1:1:0:A:30:Solaris 9
 C1E8:05B4:40:WS:0:0:1:0:A:2C:Solaris 9
 C1E8:05B4:40:WS:1:1:1:0:A:30:Windows NT
 C1E8:05B4:40:WS:1:1:1:0:S:30:Solaris 9
@@ -1457,6 +1497,7 @@ EA60:05DC:40:WS:0:0:1:0:A:2C:Windows XP
 EA60:05DC:40:WS:0:0:1:0:A:LT:Cisco 667i-DIR DSL router -- cbos 2.4.2
 EA60:_MSS:80:WS:0:0:1:0:A:LT:Cisco 675 DSL router -- cbos 2.1
 EB28:0578:40:WS:1:1:1:0:A:30:IRIX 6.5.x
+EBC0:0218:80:02:1:1:0:1:S:40:Windows XP
 EBC0:05AC:40:02:0:1:0:0:S:30:Windows 2000
 EBC0:05AC:40:02:1:1:1:0:S:34:Windows XP
 EBC0:05B4:40:02:1:1:0:0:S:LT:Windows ME
@@ -1480,6 +1521,7 @@ F000:05B4:40:WS:0:0:0:0:A:2C:OSF1
 F000:05B4:40:WS:0:0:0:0:S:LT:IRIX 6.3
 F000:05B4:40:WS:1:1:0:0:S:LT:IRIX 6.5.10
 F000:05B4:80:00:0:1:0:0:A:LT:IRIX 5.3
+F000:05B4:80:00:0:1:0:0:S:30:DEC Cluster 
 F000:05B4:80:00:0:1:0:1:A:LT:IRIX 5.3
 F000:B405:40:WS:1:1:0:0:S:30:SGI Irix 6.5.17m
 F400:05B4:80:01:1:1:1:0:S:34:Windows XP
@@ -1487,6 +1529,7 @@ F424:05B4:80:04:1:1:1:0:A:34:Windows XP SP1 - english
 F5E0:05B4:80:01:1:1:1:0:S:34:Windows 2000
 F990:05B4:40:WS:1:1:1:0:S:30:Windows 2000
 F99F:0000:80:WS:0:0:0:0:S:28:Linux 2.2.x or 2.4.x
+FA00:05B4:40:01:0:1:1:1:A:3C:Windows 
 FAD8:0574:80:WS:1:1:1:0:S:30:Windows XP
 FAF0:0200:80:WS:1:1:1:0:S:30:Windows 2000 
 FAF0:04EC:80:WS:1:1:1:0:S:30:Windows XP Professional 
@@ -1509,6 +1552,7 @@ FAF0:0584:80:WS:1:1:1:0:A:30:Windows 2000 / XP
 FAF0:0584:80:WS:1:1:1:0:S:30:Windows XP
 FAF0:0586:80:WS:1:1:1:0:S:30:Windows XP pro
 FAF0:0598:80:WS:1:1:1:0:A:30:Windows XP
+FAF0:05A0:40:00:1:1:1:0:S:34:Linux 
 FAF0:05A0:80:00:1:1:1:1:A:40:Windows XP
 FAF0:05AC:40:03:1:1:1:0:A:34:Windows 2000 
 FAF0:05AC:80:00:1:1:1:1:A:40:Windows XP 
@@ -1535,13 +1579,16 @@ FAF0:05B4:80:00:1:1:1:1:S:40:Windows XP
 FAF0:05B4:80:WS:0:0:0:0:A:2C:Windows NT 4.0
 FAF0:05B4:80:WS:0:0:0:0:S:2C:Windows XP Proffesional Release
 FAF0:05B4:80:WS:0:0:1:0:A:2C:Linux Slackware 8.0
+FAF0:05B4:80:WS:0:0:1:0:S:2C:Windows XP SP2
 FAF0:05B4:80:WS:0:1:1:0:A:LT:Windows XP Professional Release
 FAF0:05B4:80:WS:0:1:1:0:S:30:Windows XP
 FAF0:05B4:80:WS:1:1:0:0:A:30:Linux
 FAF0:05B4:80:WS:1:1:0:0:S:30:Windows 2000 Pro
 FAF0:05B4:80:WS:1:1:1:0:A:30:Windows XP
+FAF0:05B4:80:WS:1:1:1:0:A:34:Windows XP Pro 
 FAF0:05B4:80:WS:1:1:1:0:S:30:Windows XP Pro, Windows 2000 Pro
 FAF0:05B4:80:WS:1:1:1:0:S:LT:Windows 98 SE / 2000 / XP Professional
+FAF0:05B4:80:WS:1:1:1:0:S:LT:Windows XP
 FAF0:05B4:FF:WS:0:0:1:0:S:2C:Linux 2.1.xx
 FAF0:05B4:FF:WS:1:1:1:0:A:LT:Windows 2000 Pro
 FAF0:05B4:FF:WS:1:1:1:0:S:30:Windows 2000 Professional SP 3
@@ -1619,6 +1666,7 @@ FFFF:0200:40:01:0:1:0:0:A:30:FreeBSD 4.8
 FFFF:0200:40:WS:0:0:0:0:A:2C:AIX
 FFFF:0200:80:WS:1:1:1:0:S:30:Windows
 FFFF:0218:80:00:1:1:1:0:S:34:Windows XP
+FFFF:024C:80:WS:1:1:1:0:S:30:Windows XP sp2 
 FFFF:04EC:40:00:1:1:1:1:S:40:Windows XP 
 FFFF:04EC:80:00:1:1:1:1:A:40:Windows 2000
 FFFF:04EC:80:WS:0:0:1:0:A:2C:Windows 2000
@@ -1629,19 +1677,25 @@ FFFF:0534:40:WS:1:1:1:0:A:30:Windows XP Pro SP1
 FFFF:0548:80:WS:1:1:0:0:S:30:Windows 2000 Server
 FFFF:0550:40:WS:1:1:1:0:A:30:Windows 2000 Server
 FFFF:0558:80:WS:0:0:1:0:S:LT:BorderManager 3.5
+FFFF:055C:80:WS:1:1:0:0:S:30:Windows XP
 FFFF:0564:40:00:0:1:1:1:A:3C:FreeBSD 
 FFFF:0564:40:01:0:1:1:1:S:3C:FreeBSD 5.1-RELEASE 
 FFFF:0564:40:WS:0:0:0:0:A:LT:AIX
 FFFF:0564:40:WS:0:0:1:0:A:2C:Linux
 FFFF:0564:40:WS:1:1:1:0:S:30:Windows 98 Second Edition
 FFFF:0564:80:00:1:1:1:1:A:40:Windows 2000 server
+FFFF:0564:80:WS:0:0:1:0:A:2C:BSD
 FFFF:0564:80:WS:1:1:1:0:A:30:Windows 2000 / NT 
 FFFF:0564:80:WS:1:1:1:0:S:30:Windows
 FFFF:0564:80:WS:1:1:1:1:A:3C:Windows 2000
 FFFF:0578:40:WS:0:0:1:0:S:2C:FreeBSD 4.5 
+FFFF:0578:80:WS:1:1:1:0:S:30:Windows XP
 FFFF:057E:80:00:1:1:1:1:S:40:Windows 2000
+FFFF:057E:80:WS:1:1:0:0:S:30:Windows 2000 Professional
+FFFF:0580:80:00:1:1:1:0:A:34:Watchguard Firebox
 FFFF:0584:40:00:1:1:1:1:A:40:Windows XP
 FFFF:0584:40:WS:0:0:0:0:A:2C:Solaris
+FFFF:0584:40:WS:0:0:1:0:A:2C:Linux 
 FFFF:0584:80:WS:1:1:1:0:A:30:Cisco-louche1 
 FFFF:0584:80:WS:1:1:1:0:S:30:Linux Debian
 FFFF:0586:40:00:0:1:1:1:A:3C:Unix
@@ -1650,16 +1704,22 @@ FFFF:0586:40:WS:1:1:1:0:S:30:Windows 98 SE
 FFFF:058C:40:00:1:1:1:1:A:40:Windows XP Pro
 FFFF:058C:40:WS:0:0:0:0:A:2C:FreeBSD 4.5
 FFFF:058C:40:WS:1:1:1:0:A:30:Windows 2000 Pro SP2
+FFFF:058C:40:WS:1:1:1:0:S:30:Windows 98
 FFFF:058C:80:00:1:1:1:1:A:40:FreeBSD
 FFFF:058C:80:WS:1:1:1:0:A:30:NetBSD
 FFFF:0598:40:WS:0:0:0:0:A:2C:FreeBSD 4.5
 FFFF:0598:40:WS:0:0:0:0:S:2C:Cisco webcache
+FFFF:0598:80:00:1:1:1:1:A:40:Windows 2000 Server Service Pack 4
 FFFF:05A0:80:WS:1:1:1:0:A:30:Windows XP
 FFFF:05A0:80:WS:1:1:1:0:S:30:Windows XP Pro
 FFFF:05A0:FF:WS:1:1:1:0:S:30:Windows 98 
+FFFF:05A4:40:WS:1:1:1:0:A:30:Windows 3.11
+FFFF:05AB:80:WS:1:1:0:0:S:30:Windows
 FFFF:05AC:40:00:1:1:1:0:S:34:MS Windows XP SP1
+FFFF:05AC:40:00:1:1:1:1:S:40:Windows XP
 FFFF:05AC:40:01:0:1:0:1:A:3C:FreeBSD 4.5-STABLE
 FFFF:05AC:40:01:0:1:1:1:S:3C:Mac OS X 10.2.x 
+FFFF:05AC:40:WS:0:0:1:0:A:2C:FreeBSD 4.3 - 4.4 
 FFFF:05AC:40:WS:1:1:1:0:S:30:Windows 98 Second Edition
 FFFF:05AC:40:WS:1:1:1:0:S:LT:Windows 98
 FFFF:05AC:80:00:0:1:0:1:S:3C:Windows XP
@@ -1680,8 +1740,11 @@ FFFF:05B4:40:01:0:1:1:1:A:3C:FreeBSD 4.3 - 4.4 - 5.1
 FFFF:05B4:40:01:0:1:1:1:A:LT:Linux 
 FFFF:05B4:40:01:0:1:1:1:S:3C:FreeBSD 4.5-STABLE
 FFFF:05B4:40:01:0:1:1:1:S:44:FreeBSD
+FFFF:05B4:40:01:1:1:1:1:A:40:FreeBSD 5.3 
+FFFF:05B4:40:01:1:1:1:1:S:40:FreeBSD 5.3RELEEASE
 FFFF:05B4:40:02:0:1:0:1:A:3C:AIX 4.3 
 FFFF:05B4:40:02:1:1:1:0:S:34:Windows 2003 
+FFFF:05B4:40:02:1:1:1:1:S:40:Windows XP
 FFFF:05B4:40:03:0:1:1:1:A:3C:FreeBSD 4.7-RELEASE 
 FFFF:05B4:40:WS:0:0:0:0:A:2C:FreeBSD 4.5
 FFFF:05B4:40:WS:0:0:0:0:A:LT:Win NT 4.0 SP4
@@ -1698,8 +1761,11 @@ FFFF:05B4:80:00:1:1:0:1:A:40:Windows 2000 Server
 FFFF:05B4:80:00:1:1:1:0:A:34:Windows 2000 Server SP4 
 FFFF:05B4:80:00:1:1:1:1:A:40:Windows 2000 Advanced Server
 FFFF:05B4:80:01:0:1:1:1:S:3C:FreeBSD 5.0 dp-1
+FFFF:05B4:80:01:1:1:1:0:S:34:Windows XP SP2
+FFFF:05B4:80:02:1:1:1:0:A:34:Windows XP Sp 2
 FFFF:05B4:80:03:1:1:1:0:S:34:Windows 2000
 FFFF:05B4:80:03:1:1:1:1:S:40:Windows 2000 SP 3
+FFFF:05B4:80:WS:0:0:0:0:A:2C:Windows XP
 FFFF:05B4:80:WS:0:0:1:0:A:2C:BSD
 FFFF:05B4:80:WS:1:1:0:0:A:30:Windows 2000 Server SP4 
 FFFF:05B4:80:WS:1:1:0:0:S:30:Windows 98 SE
@@ -1720,6 +1786,7 @@ FFFF:B405:40:00:0:1:1:1:A:3C:Mac OS X (Panther) ver. 10.3.x
 FFFF:B405:40:00:0:1:1:1:S:3C:Mac OS X 10.3 Panther
 FFFF:B405:40:00:0:1:1:1:S:LT:Darwin
 FFFF:B405:40:00:0:1:1:1:S:LT:Darwin 1.4
+FFFF:B405:40:00:0:1:1:1:S:LT:Mac OS X
 FFFF:B405:40:00:0:1:1:1:S:LT:Mac OS X 10.3.2 (ppc) 
 FFFF:B405:40:00:0:1:1:1:S:LT:Mac Os X 10.3.4
 FFFF:B405:40:01:0:1:0:1:A:3C:FreeBSD 4.4 / 4.5
@@ -1734,6 +1801,7 @@ FFFF:B405:40:WS:0:0:1:0:S:LT:Mac OS X (10.3)
 FFFF:B405:40:WS:0:0:1:0:S:LT:Mac OS X (10.3) 
 FFFF:B405:40:WS:0:0:1:0:S:LT:Mac OS X 10.3
 FFFF:B405:80:00:0:1:1:1:A:3C:Windows 2000 
+FFFF:B405:80:00:0:1:1:1:A:LT:Windows XP
 FFFF:B405:80:WS:0:0:0:0:A:2C:Windows 2000 Advanced Server
 FFFF:B405:80:WS:1:1:1:0:A:30:Windows XP
 FFFF:B405:80:WS:1:1:1:0:S:30:Windows

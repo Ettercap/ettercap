@@ -8,7 +8,10 @@ Legenda:
 
 NG-0.7.4         2005
 
-   !! fixed an inproper handling of wdg_dynlist callback
+   !! etterfilter now accepts empty blocks
+   !! the log files are closed on SIGTERM
+   !! fixed a compilation error under Mac OS X Tiger
+   !! fixed an improper handling of wdg_dynlist callback
 
 
 NG-0.7.3         20050528

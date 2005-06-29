@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.60 2004/12/03 09:10:30 alor Exp $
+    $Id: ec_send.c,v 1.61 2005/06/29 09:18:27 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -111,11 +111,16 @@ void send_init(void)
    
    /* open the socket at layer 3 */
    l3 = libnet_init(LIBNET_RAW4_ADV, GBL_OPTIONS->iface, lnet_errbuf);               
-   ON_ERROR(l3, NULL, "libnet_init(LIBNET_RAW4_ADV) failed: %s", lnet_errbuf);
+   if (l3 == NULL) {
+      DEBUG_MSG("send_init: libnet_init(LIBNET_RAW4_ADV) failed: %s", lnet_errbuf);
+      GBL_OPTIONS->unoffensive = 1;
+      return;
+   }
    
    /* open the socket at layer 2 ( GBL_OPTIONS->iface doesn't matter ) */
    l = libnet_init(LIBNET_LINK_ADV, GBL_OPTIONS->iface, lnet_errbuf);               
-   ON_ERROR(l, NULL, "libnet_init(LIBNET_LINK_ADV) failed: %s", lnet_errbuf);
+   if (l == NULL)  
+      DEBUG_MSG("send_init: libnet_init(LIBNET_LINK_ADV) failed: %s", lnet_errbuf);
    
    if (GBL_SNIFF->type == SM_BRIDGED) {
       /* open the socket on the other iface for bridging */
@@ -123,7 +128,7 @@ void send_init(void)
       ON_ERROR(lb, NULL, "libnet_init() failed: %s", lnet_errbuf);
       GBL_LNET->lnet_bridge = lb;
    }
-   
+
    GBL_LNET->lnet_L3 = l3;               
    GBL_LNET->lnet = l;               
       

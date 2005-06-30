@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.61 2005/06/29 09:18:27 lordnaga Exp $
+    $Id: ec_send.c,v 1.62 2005/06/30 08:24:16 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -119,8 +119,10 @@ void send_init(void)
    
    /* open the socket at layer 2 ( GBL_OPTIONS->iface doesn't matter ) */
    l = libnet_init(LIBNET_LINK_ADV, GBL_OPTIONS->iface, lnet_errbuf);               
-   if (l == NULL)  
+   if (l == NULL) {  
       DEBUG_MSG("send_init: libnet_init(LIBNET_LINK_ADV) failed: %s", lnet_errbuf);
+      USER_MSG("Libnet failed LINK initialization. Don't send L2 packets.\n");
+   }
    
    if (GBL_SNIFF->type == SM_BRIDGED) {
       /* open the socket on the other iface for bridging */

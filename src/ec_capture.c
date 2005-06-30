@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_capture.c,v 1.56 2005/06/29 09:18:27 lordnaga Exp $
+    $Id: ec_capture.c,v 1.57 2005/06/30 08:24:16 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -229,8 +229,8 @@ void capture_init(void)
    /* set the alignment for the buffer */
    set_alignment(GBL_PCAP->dlt);
    
-   /* allocate the buffer for the packets (UINT16_MAX) */
-   SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align, sizeof(char));
+   /* allocate the buffer for the packets (UINT16_MAX) plus some extra space */
+   SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align + 256, sizeof(char));
   
    /* set the global descriptor for both the iface and the bridge */
    GBL_PCAP->pcap = pd;               

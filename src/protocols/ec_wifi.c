@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.29 2004/06/25 14:24:30 alor Exp $
+    $Id: ec_wifi.c,v 1.30 2005/06/30 08:36:24 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -228,6 +228,8 @@ FUNC_DECODER(decode_wifi)
       DECODED_LEN += sizeof(struct wep_header);
 
       /* decrypt the packet */
+      if (DECODED_LEN > DECODE_DATALEN)
+         return NULL;
       if (wep_decrypt((u_char *)wep, DECODE_DATALEN - DECODED_LEN) != ESUCCESS)
          return NULL;
      

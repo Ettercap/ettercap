@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ip.c,v 1.43 2004/09/28 09:56:13 alor Exp $
+    $Id: ec_ip.c,v 1.44 2005/06/30 08:42:19 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -115,8 +115,10 @@ FUNC_DECODER(decode_ip)
    ip_addr_init(&PACKET->L3.dst, AF_INET, (char *)&ip->daddr);
    
    /* this is needed at upper layer to calculate the tcp payload size */
+   /* check bogus size */
    t_len = (u_int32) ntohs(ip->tot_len);
-   if (t_len < (u_int32)DECODED_LEN)
+   if (t_len < (u_int32)DECODED_LEN || 
+       (DECODE_DATA + t_len) > (PACKET->packet + PACKET->len) )
       return NULL;
    PACKET->L3.payload_len = t_len - DECODED_LEN;
 

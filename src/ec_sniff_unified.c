@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sniff_unified.c,v 1.25 2004/11/04 10:29:06 alor Exp $
+    $Id: ec_sniff_unified.c,v 1.26 2005/07/01 13:32:16 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -103,7 +103,7 @@ void stop_unified_sniff(void)
 void forward_unified_sniff(struct packet_object *po)
 {
    /* if it was not initialized, no packet are forwardable */
-   if (!GBL_LNET->lnet)
+   if (!GBL_LNET->lnet_L3)
       return;
 
    /* if the interface was not configured, no packet are forwardable */

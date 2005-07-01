@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.62 2005/06/30 08:24:16 lordnaga Exp $
+    $Id: ec_send.c,v 1.63 2005/07/01 13:25:24 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -161,7 +161,7 @@ int send_to_L3(struct packet_object *po)
    int c;
 
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet == 0);
+   BUG_IF(GBL_LNET->lnet_L3 == 0);
    
    SEND_LOCK;
    

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_telnet.c,v 1.20 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_telnet.c,v 1.21 2005/07/04 10:14:41 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -211,7 +211,8 @@ FUNC_DECODER(dissector_telnet)
       
       /* get the banner */
       SAFE_CALLOC(PACKET->DISSECTOR.banner, PACKET->DATA.len + 1, sizeof(char));
-      memcpy(PACKET->DISSECTOR.banner, ptr, end - ptr );
+      if ( end > ptr && (end - ptr) <= PACKET->DATA.len) /* Paranoid check */
+         memcpy(PACKET->DISSECTOR.banner, ptr, end - ptr );
 
       q = PACKET->DISSECTOR.banner;
       for (i = 0; i < PACKET->DATA.len; i++) {

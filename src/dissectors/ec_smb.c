@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.16 2005/07/04 13:18:09 lordnaga Exp $
+    $Id: ec_smb.c,v 1.17 2005/07/04 14:50:19 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -193,7 +193,7 @@ FUNC_DECODER(dissector_smb)
             } else {
                char ascii_hash[256];
 
-               sprintf(ascii_hash, "%s:\"\":\"\":",session_data->user);  
+               snprintf(ascii_hash, 40, "%s:\"\":\"\":", session_data->user);  
                GetBinaryE(session_data->response1, ascii_hash, 24);
                strcat(ascii_hash, ":");
                GetBinaryE(session_data->response2, ascii_hash, 24);

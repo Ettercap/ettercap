@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.56 2005/07/04 07:43:19 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.57 2005/07/04 08:03:30 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -339,16 +339,10 @@ static void sslw_hook_handled(struct packet_object *po)
    /* If it's an ssl packet don't forward */
    po->flags |= PO_DROPPED;
    
-   /* Act only on forwardable/redirected packets */
-   if ( !(po->flags & PO_FORWARDABLE) )
-      return;
-
-   /* If it's an ssl packet don't forward */
-   po->flags &= ~PO_FORWARDABLE;
-
    /* If it's a new connection */  
-   if ( (po->L4.flags & TH_SYN) &&
-       !(po->L4.flags & TH_ACK) ) {
+   if ( (po->flags & PO_FORWARDABLE) &&
+        (po->L4.flags & TH_SYN) &&
+        !(po->L4.flags & TH_ACK) ) {
 	
       sslw_create_session(&s, PACKET);
 

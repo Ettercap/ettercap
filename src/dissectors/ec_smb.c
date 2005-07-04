@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_smb.c,v 1.15 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_smb.c,v 1.16 2005/07/04 13:18:09 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -64,6 +64,7 @@ typedef struct {
 
 } smb_session_data;
 
+#define IF_IN_PCK(x,y) if( (u_int32)(x) >= (u_int32)y->packet && (u_int32)(x) < (u_int32)(y->packet + y->len) )
 
 /* protos */
 
@@ -245,9 +246,13 @@ FUNC_DECODER(dissector_smb)
                   memcpy(session_data->response1, Blob, sizeof(session_data->response1) - 1);
                else
                   sprintf(session_data->response1, "(empty)");
-		  	 
-               Blob = GetUser(Blob+pwlen+unilen, session_data->user, 200);
-               GetUser(Blob, session_data->domain, 200);
+	
+               IF_IN_PCK(Blob+pwlen+unilen, PACKET)		  	 
+                  Blob = GetUser(Blob+pwlen+unilen, session_data->user, 200);
+		  
+               IF_IN_PCK(Blob, PACKET)
+                  GetUser(Blob, session_data->domain, 200);
+	       
                session_data->status = WAITING_LOGON_RESPONSE;
             } else if (session_data->status == WAITING_CHALLENGE) {
 	    
@@ -290,14 +295,20 @@ FUNC_DECODER(dissector_smb)
                      session_data->status = WAITING_CHALLENGE;     
                      return NULL;
                   }
-		  
-                  GetUser(Blob+User_Offset, session_data->user, User_Len);
-                  GetUser(Blob+Domain_Offset, session_data->domain, Domain_Len);
+
+                  IF_IN_PCK(Blob+User_Offset, PACKET)
+                     GetUser(Blob+User_Offset, session_data->user, User_Len);
+		     
+                  IF_IN_PCK(Blob+Domain_Offset, PACKET)
+                     GetUser(Blob+Domain_Offset, session_data->domain, Domain_Len);
 		 
-                  if (LM_Len == 24) 
-                     memcpy(session_data->response1, Blob+LM_Offset, 24);
+                  if (LM_Len == 24)
+                     IF_IN_PCK(Blob+LM_Offset, PACKET)
+                        memcpy(session_data->response1, Blob+LM_Offset, 24);
  
-                  memcpy(session_data->response2, Blob+NT_Offset, 24);
+                  IF_IN_PCK(Blob+NT_Offset, PACKET)
+                     memcpy(session_data->response2, Blob+NT_Offset, 24);
+		     
                   session_data->status = WAITING_LOGON_RESPONSE;
                }
             } else if (session_data->status == WAITING_ENCRYPT) {

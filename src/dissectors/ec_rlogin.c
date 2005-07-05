@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_rlogin.c,v 1.14 2004/06/25 14:24:29 alor Exp $
+    $Id: ec_rlogin.c,v 1.15 2005/07/05 09:41:23 alor Exp $
 */
 
 #include <ec.h>
@@ -130,7 +130,9 @@ FUNC_DECODER(dissector_rlogin)
       /* parse the string for backspaces and erase as wanted */
       for (p = str, i = 0; i < strlen(str); i++) {
          if (str[i] == '\b' || str[i] == 0x7f) {
-            p--;
+            /* don't go behind str */
+            if (p > str)
+               p--;
          } else {
             *p = str[i];
             p++;  
@@ -157,6 +159,10 @@ FUNC_DECODER(dissector_rlogin)
             PACKET->DISSECTOR.user = strdup(s->data);
             if ( (ptr = strchr(PACKET->DISSECTOR.user, '\r')) != NULL )
                *ptr = '\0';
+            else {
+               SAFE_FREE(PACKET->DISSECTOR.user);
+               return NULL;
+            }
    
             PACKET->DISSECTOR.pass = strdup(ptr + 1);
             if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )

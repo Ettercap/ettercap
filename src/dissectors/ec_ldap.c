@@ -19,7 +19,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_ldap.c,v 1.3 2004/05/31 08:49:05 alor Exp $
+    $Id: ec_ldap.c,v 1.4 2005/07/05 09:41:23 alor Exp $
 */
 
 #include <ec.h>
@@ -66,7 +66,7 @@ FUNC_DECODER(dissector_ldap)
    type = (u_int16)ptr[5];
    
    if (type != 0x60 && type != 0x00) 
-      return 0;
+      return NULL;
 
    /* Quite self-explaining :) */
    user_len = (u_int16)ptr[11];

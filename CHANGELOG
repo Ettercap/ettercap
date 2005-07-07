@@ -8,6 +8,7 @@ Legenda:
 
 NG-0.7.4         2005
 
+   + added the radius dissector
    + go into unoffensive mode if libnet initialization fails
    !! etterfilter now accepts empty blocks
    !! the log files are closed on SIGTERM

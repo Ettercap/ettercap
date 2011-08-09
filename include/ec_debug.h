@@ -1,5 +1,4 @@
 
-/* $Id: ec_debug.h,v 1.9 2004/07/24 10:43:21 alor Exp $ */
 
 #if defined (DEBUG) && !defined(EC_DEBUG_H)
 #define EC_DEBUG_H

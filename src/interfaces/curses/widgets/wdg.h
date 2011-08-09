@@ -1,5 +1,4 @@
 
-/* $Id: wdg.h,v 1.41 2004/09/28 13:50:37 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H

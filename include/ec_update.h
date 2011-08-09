@@ -1,5 +1,4 @@
 
-/* $Id: ec_update.h,v 1.3 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_UPDATE_H
 #define EC_UPDATE_H

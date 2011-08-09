@@ -1,5 +1,4 @@
 
-/* $Id: ec_dissect.h,v 1.19 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H

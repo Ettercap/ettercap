@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_text_profile.c,v 1.7 2004/07/20 09:53:53 alor Exp $
 */
 
 #include <ec.h>

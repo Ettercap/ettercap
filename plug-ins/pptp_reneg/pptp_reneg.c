@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: pptp_reneg.c,v 1.1 2003/12/04 17:25:06 lordnaga Exp $
 */
 
 

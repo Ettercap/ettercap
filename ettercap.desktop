@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Ettercap
+Comment=Nework sniffer/analyser
+Exec=ettercap-gtk
+Icon=ettercap
+Terminal=false
+Type=Application
+Categories=Network;

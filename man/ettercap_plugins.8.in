@@ -21,7 +21,7 @@
 ..
 .TH ETTERCAP-PLUGINS "8" "" "ettercap @VERSION@"
 .SH NAME
-.B ettercap-plugins @VERSION@ \- A collection of plugins for ettercap
+ettercap-plugins \- A collection of plugins for ettercap
 
 .SH DESCRIPTION
 Ettercap(8) supports loadable modules at runtime. They are called plugins and

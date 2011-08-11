@@ -157,7 +157,7 @@ TARGETs are also responsible of the initial scan of the lan. You can use them
 to restrict the scan to only a subset of the hosts in the netmask. The result
 of the merging between the two targets will be scanned. remember that not
 specifying a target means "no target", but specifying "//" means "all the hosts in
-the subnet.
+the subnet".
 .PP
 
 
@@ -188,7 +188,7 @@ openssl x509 -req -days 1825 -in tmp.csr -signkey etter.ssl.crt -out tmp.new
 cat tmp.new >> etter.ssl.crt
 .br
 rm -f tmp.new tmp.csr
-.SP
+.PP
 NOTE: SSL mitm is not available (for now) in bridged mode.
 
 
@@ -894,7 +894,7 @@ the hosts make through the gateway.
 
 .TP
 .B ettercap -Tzq //110
-.SP
+.Sp
 Sniff only the pop3 protocol from every hosts.
 
 .TP

@@ -21,7 +21,7 @@
 ..
 .TH ETTERFILTER "8" "" "ettercap @VERSION@"
 .SH NAME
-.B etterfilter @VERSION@ \- Filter compiler for ettercap content filtering engine
+etterfilter \- Filter compiler for ettercap content filtering engine
 
 .SH SYNOPSIS
 .B etterfilter

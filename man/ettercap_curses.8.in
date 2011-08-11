@@ -21,7 +21,7 @@
 ..
 .TH ETTERCAP-CURSES "8" "" "ettercap @VERSION@"
 .SH NAME
-.B ettercap @VERSION@ \- Man page for the Ncurses GUI.
+ettercap \- Man page for the Ncurses GUI.
 
 .SH GENERAL DESCRIPTION
 The curses GUI is quite simple and intuitive.

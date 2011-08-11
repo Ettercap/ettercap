@@ -21,7 +21,7 @@
 ..
 .TH ETTERLOG "8" "" "ettercap @VERSION@"
 .SH NAME
-.B etterlog @VERSION@ \- Log analyzer for ettercap log files
+etterlog \- Log analyzer for ettercap log files
 
 .SH SYNOPSIS
 .B etterlog

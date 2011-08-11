@@ -277,7 +277,7 @@ static void curses_create_targets_array(void)
    /* XXX - two more loops were added to handle ipv6 targets
     *       since ipv6 targets require a separate list and it is
     *       unreasonable to put both ipv4 and ipv6 at the same list
-    *       this shit here should be completely rewritten.
+    *       this code should be completely rewritten.
     *       do it if you have time.
     *                                  the braindamaged one.
     */

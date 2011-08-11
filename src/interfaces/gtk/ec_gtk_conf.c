@@ -68,6 +68,7 @@ void gtkui_conf_read(void) {
    char line[100], name[30];
    short value;
 
+   /* If you launch ettercap using sudo, then the config file is your user config dir */
    path = g_get_user_config_dir();
    filename = g_build_filename(path, "ettercap_gtk", NULL);
 

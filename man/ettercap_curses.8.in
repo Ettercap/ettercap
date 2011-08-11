@@ -62,9 +62,9 @@ To use the ncurses GUI you have to:
 .Sp
 - compile ettercap with ncurses support (obviously)
 .br
-- run it with the -C flag 
+- run it with the \-C flag 
 .Sp
-Passing the -C flag is sufficient, but if you want you can pass other flags
+Passing the \-C flag is sufficient, but if you want you can pass other flags
 that will be automatically set for the ncurses GUI. You will be able to
 override them using the menu to change the options.
 
@@ -310,16 +310,16 @@ Unload the filter and stop filtering the connections.
 .B Log all packets and infos...
 Given a file name, it will create two files: filename.eci (for information
 about hosts) and filename.ecp (for all the interesting packets). This is the
-same as the -L option.
+same as the \-L option.
 .TP
 .B Log only infos...
-This is used only to sniff information about hosts (same as the -l option).
+This is used only to sniff information about hosts (same as the \-l option).
 .TP
 .B Stop logging info
 Come on... it is self explanatory.
 .TP
 .B Log user messages...
-Will log all the messages appearing in the bottom window (same as -m option).
+Will log all the messages appearing in the bottom window (same as \-m option).
 .TP
 .B Compressed file
 Asterisk-option to control whether or not the logfile should be compressed.

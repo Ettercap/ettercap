@@ -908,6 +908,13 @@ Sniff telnet, ftp and ssh connections to 10.0.0.1.
 Prints the list of all available plugins
 
 
+.SH FILES
+.TP
+.B ~/.config/ettercap_gtk
+.Sp
+Stores persistent information (e.g., window placement) between sessions.
+
+
 .SH AUTHORS
 Alberto Ornaghi (ALoR) <alor@users.sf.net>
 .br

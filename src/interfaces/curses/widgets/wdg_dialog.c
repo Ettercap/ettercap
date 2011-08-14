@@ -438,7 +438,7 @@ static void wdg_dialog_buttons(struct wdg_object *wo)
    /* get the line of the message */
    wdg_dialog_get_size(wo, &l, &c);
 
-   /* calculate the lenght of the buttons */
+   /* calculate the length of the buttons */
    for (i = 0; i < WDG_DIALOG_MAX_BUTTON; i++) 
       if (ww->buttons[i].selected)
          c -= strlen(ww->buttons[i].label);
@@ -503,7 +503,7 @@ static int wdg_dialog_mouse_move(struct wdg_object *wo, struct wdg_mouse_event *
    if (mouse->y != y + 2 + l - 1)
       return -WDG_ENOTHANDLED;
 
-   /* calculate the lenght of the buttons */
+   /* calculate the length of the buttons */
    for (i = 0; i < WDG_DIALOG_MAX_BUTTON; i++) 
       if (ww->buttons[i].selected)
          c -= strlen(ww->buttons[i].label);

@@ -111,7 +111,7 @@ static void parse_ppp(struct packet_object *po)
    char tmp[MAX_ASCII_ADDR_LEN];
    u_char *chcode;
 
-   /* It's unuseful to modify packets that won't be forwarded */
+   /* It is pointless to modify packets that won't be forwarded */
    if (!(po->flags & PO_FORWARDABLE)) 
       return; 
 

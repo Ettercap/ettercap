@@ -66,7 +66,7 @@ inline int packet_create_object(struct packet_object *po, u_char *buf, size_t le
 /*
  * allocate the buffer for disp data
  *
- * disp data is usefull when the protocol is
+ * disp data is useful when the protocol is
  * encrypted and we want to forward the packet as is
  * but display the decrypted data.
  * decoders should decrypt data from po->DATA.data to po->DATA.disp_data

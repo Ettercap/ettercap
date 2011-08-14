@@ -162,7 +162,7 @@ static int chk_poison_init(void *dummy)
    if (!poison_any) 
       INSTANT_USER_MSG("chk_poison: No poisoning at all :(\n");   
    else if (poison_full) 
-      INSTANT_USER_MSG("chk_poison: Poisoning process succesful!\n");
+      INSTANT_USER_MSG("chk_poison: Poisoning process successful!\n");
    else 
       SLIST_FOREACH(p, &poison_table, next) {
          for (i=0; i<=1; i++)

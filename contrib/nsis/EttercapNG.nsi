@@ -22,7 +22,7 @@
 ; NOTE: this .NSI script is designed for NSIS v2.0+
 
 ;--------------------------------
-;Version Informations
+;Version Information
 
 !define VER_MAJOR 0
 !define VER_MINOR 7

@@ -232,7 +232,7 @@ static void curses_connection_data(void *conn)
    curr_conn = c->co;
    curr_conn->flags |= CONN_VIEWING;
    
-   /* default is splitted view */
+   /* default is split view */
    curses_connection_data_split();
 }
 
@@ -240,7 +240,7 @@ static void curses_connection_data_help(void)
 {
    char help[] = "HELP: shortcut list:\n\n"
                  "  ARROWS - switch between panels\n" 
-                 "    j    - switch from splitted to joined view\n"
+                 "    j    - switch from split to joined view\n"
                  "    y    - inject characters interactively\n"
                  "    Y    - inject characters from a file\n"
                  "    k    - kill the connection";

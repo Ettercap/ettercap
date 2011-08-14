@@ -121,7 +121,7 @@ extern void wdg_bug(char *file, const char *function, int line, char *message);
 #define CTRL(x)      ((x) & 0x1f)
 #define KEY_ESC      CTRL('[')
 
-/* informations about the current screen */
+/* information about the current screen */
 struct wdg_scr {
    size_t lines;
    size_t cols;

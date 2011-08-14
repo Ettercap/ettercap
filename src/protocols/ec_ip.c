@@ -385,7 +385,7 @@ size_t ip_create_ident(void **i, struct packet_object *po)
    /* return the ident */
    *i = ident;
 
-   /* return the lenght of the ident */
+   /* return the length of the ident */
    return sizeof(struct ip_ident);
 }
 

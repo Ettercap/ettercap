@@ -65,7 +65,7 @@ struct tcp_header {
 
 
 /* Session identifier 
- * It has to be even-lenghted for session hash matching */
+ * It has to be even-lengthed for session hash matching */
 struct tcp_ident {
    u_int32 magic;
       #define TCP_MAGIC  0x0400e77e
@@ -449,7 +449,7 @@ size_t tcp_create_ident(void **i, struct packet_object *po)
    /* return the ident */
    *i = ident;
 
-   /* return the lenght of the ident */
+   /* return the length of the ident */
    return sizeof(struct tcp_ident);
 }
 

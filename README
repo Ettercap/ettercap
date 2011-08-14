@@ -108,7 +108,7 @@ OPTIONAL:
     plugins support, etc).
     make install
 
- read INSTALL for further details... and REAME.PLATFORMS for any issue
+ read INSTALL for further details... and README.PLATFORMS for any issue
  regarding your operating system.
  
 ============================================================================
@@ -236,7 +236,7 @@ ARP POISONING ATTACK
 
  these kernels use a special neighbor system to prevent unsolicited arp
  replies (what ettercap sends to the victim).
- Oh shit is ettercap not useable with that kernel ? the answer is NO !
+ Oh shit is ettercap unusable with that kernel ? the answer is NO !
  let's view why... in the same source code we find:
 
  /*

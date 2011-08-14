@@ -86,7 +86,7 @@ FUNC_DECODER(dissector_portmap)
    /* don't complain about unused var */
    (void)end;
 
-   /* skip unuseful packets */
+   /* skip packets which are not useful */
    if (PACKET->DATA.len < 24)  
       return NULL;
    

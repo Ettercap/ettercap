@@ -95,10 +95,10 @@ FUNC_EXTRACTOR(extractor_http)
 
          fprintf(stdout, "\n\tExtracting file: %s  ", header);
 
-         /* search the lenght of the file */
+         /* search the length of the file */
          ret2 = stream_search(STREAM, "Content-Length: ", 16, server);
 
-         /* we need content lenght, if not found, skip it */
+         /* we need content length, if not found, skip it */
          if (ret2 == NULL) {
             close(fd);
             continue;

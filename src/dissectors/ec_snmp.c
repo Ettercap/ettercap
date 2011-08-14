@@ -90,7 +90,7 @@ FUNC_DECODER(dissector_snmp)
    /* reached the end */
    if (ptr >= end) return NULL;
 
-   /* get the community name lenght */
+   /* get the community name length */
    n = *ptr;
    
    if (n >= 128) {

@@ -136,7 +136,7 @@ int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode)
       if (size >= len)
          break;
      
-      /* calculate the lenght to be copied */
+      /* calculate the length to be copied */
       if (len - size < p->size)
          to_copy = len - size;
       else
@@ -199,7 +199,7 @@ int streambuf_read(struct stream_buf *sb, u_char *buf, size_t len, int mode)
       if (size >= len)
          break;
      
-      /* calculate the lenght to be copied */
+      /* calculate the length to be copied */
       if (len - size < p->size)
          to_copy = len - size;
       else

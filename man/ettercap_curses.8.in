@@ -236,7 +236,7 @@ Displays the connection list. To see detailed information about a connection
 press 'd', or press 'k' to kill it. To see the traffic for a specific connection,
 select it and press enter. Once the two-panel interface is displayed you can
 move the focus with the arrow keys. Press 'j' to switch between joined and
-splitted visualization. Press 'k' to kill the connection. Press 'y' to inject
+split visualization. Press 'k' to kill the connection. Press 'y' to inject
 interactively and 'Y' to inject a file. Note that it is important which panel
 has the focus as the injected data will be sent to that address.
 .br

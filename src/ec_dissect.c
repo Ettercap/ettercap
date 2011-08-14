@@ -146,7 +146,7 @@ size_t dissect_create_ident(void **i, struct packet_object *po, u_int64 code)
    /* return the ident */
    *i = ident;
 
-   /* return the lenght of the ident */
+   /* return the length of the ident */
    return sizeof(struct dissect_ident);
 }
 

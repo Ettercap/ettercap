@@ -39,7 +39,7 @@ system which was used to dump in a single static manner).
 You will be able to dump traffic from only one connection of your choice, from 
 only one or more hosts, print data in hex, ascii, binary etc...
 .Sp
-TIP: All unuseful messages are printed to stderr, so you can save the
+TIP: All non-useful messages are printed to stderr, so you can save the
 output from etterlog with the following command:
 .TP
 \fIetterlog [options] logfile > outfile\fR

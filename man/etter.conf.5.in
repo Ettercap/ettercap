@@ -215,7 +215,7 @@ want to disable the "dangerous" dissectors all together, set this value to 0.
 .TP
 .B skip_forwarded
 If you set this value to 0 you will sniff even packets forwarded by ettercap
-or by the kernel. It will generate packets duplicates in conjuction with
+or by the kernel. It will generate duplicate packets in conjunction with the
 arp mitm method (for example). It could be useful while running ettercap
 in unoffensive mode on a host with more than one network interface
 (waiting for the multiple-interface feature...)   

@@ -382,7 +382,7 @@ void log_write_packet(struct log_fd *fd, struct packet_object *po)
 
 
 /*
- * log passive informations
+ * log passive information
  *
  * hi is the source
  * hid is the dest, used to log password.
@@ -469,7 +469,7 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
          break;
    }
    
-   /* set account informations */
+   /* set account information */
    hid.failed = po->DISSECTOR.failed;
    memcpy(&hid.client, &po->L3.src, sizeof(struct ip_addr));
    

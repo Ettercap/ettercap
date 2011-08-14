@@ -312,8 +312,8 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
 
    /*
-    * in this special parsing, the packet must be ingored by
-    * application layer, leave this un touched.
+    * in this special parsing, the packet must be ignored by
+    * application layer, leave this untouched.
     */
    po.flags |= PO_DONT_DISSECT;
 

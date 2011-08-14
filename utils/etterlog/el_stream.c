@@ -53,7 +53,7 @@ int stream_add(struct stream_object *so, struct log_header_packet *pck, char *bu
 {
    struct so_list *pl, *tmp;
 
-   /* skip ack packet or zero lenght packet */
+   /* skip ack packet or zero length packet */
    if (pck->len == 0)
       return 0;
 
@@ -232,13 +232,13 @@ int stream_move(struct stream_object *so, size_t offset, int whence, int mode)
    }
 
    while (offset) {
-      /* get the lenght to jump to in the current po */
+      /* get the length to jump to in the current po */
       tmp_size = (so_curr->po.DATA.len - po_off < offset) ? so_curr->po.DATA.len - po_off : offset;
 
       /* update the offset */
       po_off += tmp_size;
 
-      /* decrement the total offset by the packet lenght */
+      /* decrement the total offset by the packet length */
       offset -= tmp_size;
 
       /* update the total movement */

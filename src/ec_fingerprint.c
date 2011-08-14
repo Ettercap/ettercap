@@ -264,7 +264,7 @@ void fingerprint_push(char *finger, int param, int value)
          break;
       case FINGER_LT:
          /*
-          * since the LENGHT is the sum of the IP header
+          * since the LENGTH is the sum of the IP header
           * and the TCP header, we have to calculate it
           * in two steps. (decoders are unaware of other layers)
           */

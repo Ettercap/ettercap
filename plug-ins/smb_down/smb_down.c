@@ -113,7 +113,7 @@ static void parse_smb(struct packet_object *po)
    u_int32 *Flags;
    char tmp[MAX_ASCII_ADDR_LEN];
    
-   /* It's unuseful to modify packets that won't be forwarded */
+   /* It is pointless to modify packets that won't be forwarded */
    if (!(po->flags & PO_FORWARDABLE)) 
       return; 
       

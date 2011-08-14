@@ -98,7 +98,7 @@ void clean_exit(int errcode) {
 }
 
 /*
- * prints debug informations
+ * print debug information
  */
 void ef_debug(u_char level, const char *message, ...)
 { 

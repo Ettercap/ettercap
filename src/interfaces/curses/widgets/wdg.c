@@ -27,7 +27,7 @@
 
 /* GLOBALS */
 
-/* informations about the current screen */
+/* information about the current screen */
 struct wdg_scr current_screen;
 
 /* called when idle */

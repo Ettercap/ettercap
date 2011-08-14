@@ -488,7 +488,7 @@ int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct pack
    /* 
     * if the connection already exist, add the hook function 
     * else create the entry for the connection and add the hook
-    * this is usefull to add hooks for future connections
+    * this is useful to add hooks for future connections
     */
 
    /* create the fake connection */

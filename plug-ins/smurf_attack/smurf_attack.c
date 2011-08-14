@@ -2,7 +2,7 @@
  *    the smurf attack plugin for ettercap
  *
  *    XXX - attack against IPv4 hosts is fucked up by some kernel bug
- *    on some systems as the kernel ammends the source ip address
+ *    on some systems as the kernel amends the source ip address
  */
 
 #include <ec.h>

@@ -536,7 +536,7 @@ you should set the unoffensive flag.
 .TP
 \fB\-I\fR, \fB\-\-iflist\fR
 This option will print the list of all available network interfaces that can be
-used within ettercap. The option is particulary usefull under windows where the
+used within ettercap. The option is particularly useful under windows where the
 name of the interface is not so obvious as under *nix.
 
 .TP

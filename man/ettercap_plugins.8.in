@@ -340,7 +340,7 @@ legal broadcast ARP request (or reply).
 .br
 This plugin is effective only during an arp-posioning session.
 .br
-In conjuction with reply_arp plugin, repoison_arp is a good support for standard
+In conjunction with the reply_arp plugin, repoison_arp is a good support for the standard
 arp-poisoning mitm method.
 .Sp
 .I example :

@@ -365,7 +365,7 @@ static int create_silent_list(void)
       
       USER_MSG(" TARGET 1 : %-15s %17s\n", ip_addr_ntoa(&i->ip, tmp), mac_addr_ntoa(GBL_TARGET1->mac, tmp2));
       
-      /* copy the informations */
+      /* copy the information */
       memcpy(&h->ip, &i->ip, sizeof(struct ip_addr));
       memcpy(&h->mac, &GBL_TARGET1->mac, MEDIA_ADDR_LEN);
       
@@ -392,7 +392,7 @@ static int create_silent_list(void)
       }
       USER_MSG(" TARGET 2 : %-15s %17s\n", ip_addr_ntoa(&j->ip, tmp), mac_addr_ntoa(GBL_TARGET2->mac, tmp2));
       
-      /* copy the informations */
+      /* copy the information */
       memcpy(&g->ip, &j->ip, sizeof(struct ip_addr));
       memcpy(&g->mac, &GBL_TARGET2->mac, MEDIA_ADDR_LEN);
       

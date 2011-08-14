@@ -154,7 +154,7 @@ void load_tables(void)
       add_virtualpointer(name, level, oname, offset, size);
    }
 
-   /* print some nice informations */
+   /* print some nice information */
    fprintf(stdout, "\n%3d protocol tables loaded:\n", ntables);
    fprintf(stdout, "\t");
    SLIST_FOREACH(t, &table_head, next)
@@ -307,7 +307,7 @@ void load_constants(void)
       SLIST_INSERT_HEAD(&const_head, c, next);
    }
    
-   /* print some nice informations */
+   /* print some nice information */
    fprintf(stdout, "\n%3d constants loaded:\n", nconst);
    fprintf(stdout, "\t");
    SLIST_FOREACH(c, &const_head, next)

@@ -301,10 +301,11 @@ FUNC_DECODER(decode_data)
     */
    struct filter_list **l;
    for (l = GBL_FILTERS; *l != NULL; l = &(*l)->next) {
+      /* if a script drops the packet, do not present it to following scripts */
+      if ( po->flags & PO_DROPPED )
+         break;
       /* check whether the filter script is enabled */
-      if (! (*l)->enabled)
-         continue;
-      if ((*l)->env.chain)
+      if ((*l)->enabled)
          filter_engine((*l)->env.chain, po);
    }
 

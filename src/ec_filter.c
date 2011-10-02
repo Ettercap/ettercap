@@ -996,6 +996,12 @@ int filter_load_file(char *filename, struct filter_list **list)
     */
    reconstruct_strings(fenv, &fh);
 
+   /* save the name of the loaded filter */
+   (*list)->name = strdup(filename);
+
+   /* enable the filter */
+   (*list)->enabled = 1;
+
    FILTERS_UNLOCK;
 
    /* compile the regex to speed up the matching */
@@ -1051,6 +1057,8 @@ void filter_unload(struct filter_list **list)
    fenv->map = NULL;
    fenv->chain = NULL;
    fenv->len = 0;
+
+   SAFE_FREE((*list)->name);
 
    /* reclose the filter list */
    struct filter_list **ptr = list;

@@ -299,8 +299,11 @@ FUNC_DECODER(decode_data)
     * here we can filter the content of the packet.
     * the injection is done elsewhere.
     */
-   if (GBL_FILTERS->chain)
-      filter_engine(GBL_FILTERS->chain, po);
+   struct filter_list **l;
+   for (l = GBL_FILTERS; *l != NULL; l = &(*l)->next) {
+      if ((*l)->env.chain)
+         filter_engine((*l)->env.chain, po);
+   }
 
    /* If the modified packet exceeds the MTU split it into inject buffer */
    inject_split_data(po);

@@ -38,14 +38,15 @@
 
 #define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x "\n", ## __VA_ARGS__); return -EFATAL; } while(0)
 
-static pthread_mutex_t filters_mutex = PTHREAD_MUTEX_INITIALIZER;
+/* since we need a recursive mutex, we cannot initialize it here statically */
+static pthread_mutex_t filters_mutex;
 #define FILTERS_LOCK     do{ pthread_mutex_lock(&filters_mutex); }while(0)
 #define FILTERS_UNLOCK   do{ pthread_mutex_unlock(&filters_mutex); }while(0)
 
 /* protos */
 
-int filter_load_file(char *filename, struct filter_env *fenv);
-void filter_unload(struct filter_env *fenv);
+int filter_load_file(char *filename, struct filter_list **list);
+void filter_unload(struct filter_list **list);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
 static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
    
@@ -72,6 +73,15 @@ static int cmp_gt(u_int32 a, u_int32 b);
 static int cmp_leq(u_int32 a, u_int32 b);
 static int cmp_geq(u_int32 a, u_int32 b);
 /*******************************************/
+
+/* initialize the filter mutex */
+void filter_init_mutex(void) {
+   pthread_mutexattr_t at;
+   pthread_mutexattr_init(&at);
+   /* we want an recursive mutex, so we can re-aquire it in the same thread */
+   pthread_mutexattr_settype(&at, PTHREAD_MUTEX_RECURSIVE_NP);
+   pthread_mutex_init(&filters_mutex, &at);
+}
 
 /*
  * JIT interpreter for binary filters.
@@ -924,16 +934,17 @@ static int cmp_geq(u_int32 a, u_int32 b)
 /*
  * load the filter from a file 
  */
-int filter_load_file(char *filename, struct filter_env *fenv)
+int filter_load_file(char *filename, struct filter_list **list)
 {
    int fd;
    void *file;
    size_t size, ret;
+   struct filter_env *fenv;
    struct filter_header fh;
 
    DEBUG_MSG("filter_load_file (%s)", filename);
-   
-   /* open the file */
+
+  /* open the file */
    if ((fd = open(filename, O_RDONLY | O_BINARY)) == -1)
       FATAL_MSG("File not found or permission denied");
 
@@ -965,10 +976,14 @@ int filter_load_file(char *filename, struct filter_env *fenv)
    if (ret != size)
       FATAL_MSG("Cannot read the file into memory");
 
-   /* make sure we don't override a previous filter */
-   filter_unload(fenv);
-
    FILTERS_LOCK;
+
+   /* advance to the end of the filter list */
+   while (*list) list = &(*list)->next;
+
+   /* allocate memory for the list entry */
+   SAFE_CALLOC(*list, 1, sizeof(struct filter_list));
+   fenv = &(*list)->env;
    
    /* set the global variables */
    fenv->map = file;
@@ -993,21 +1008,20 @@ int filter_load_file(char *filename, struct filter_env *fenv)
 }
 
 /* 
- * unload a filter chain.
+ * unload a filter list entry
  */
-void filter_unload(struct filter_env *fenv)
+void filter_unload(struct filter_list **list)
 {
+   if (*list == NULL) return;
+
+   FILTERS_LOCK;
+
+   struct filter_env *fenv= &(*list)->env;
    size_t i = 0;
    struct filter_op *fop = fenv->chain;
    
    DEBUG_MSG("filter_unload");
 
-   /* if not loaded, return */
-   if (fenv->map == NULL || fenv->chain == NULL)
-      return;
-      
-   FILTERS_LOCK;
-   
    /* free the memory alloc'd for regex */
    while (fop != NULL && i < (fenv->len / sizeof(struct filter_op)) ) {
       /* search for func regex and pcre */
@@ -1038,6 +1052,21 @@ void filter_unload(struct filter_env *fenv)
    fenv->chain = NULL;
    fenv->len = 0;
 
+   /* reclose the filter list */
+   struct filter_list **ptr = list;
+   struct filter_list *succ = (*list)->next;
+   *ptr = succ;
+   SAFE_FREE(*list);
+
+   FILTERS_UNLOCK;
+}
+
+void filter_clear(void) {
+   FILTERS_LOCK;
+   struct filter_list **l = GBL_FILTERS;
+   while (*l) {
+      filter_unload(l);
+   }
    FILTERS_UNLOCK;
 }
 

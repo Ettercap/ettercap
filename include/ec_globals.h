@@ -164,7 +164,7 @@ struct globals {
    struct target_env *t2;
    LIST_HEAD(, hosts_list) hosts_list_head;
    TAILQ_HEAD(gbl_ptail, host_profile) profiles_list_head;
-   struct filter_env *filters;
+   struct filter_list *filters;
 };
 
 EC_API_EXTERN struct globals *gbls;
@@ -185,7 +185,7 @@ EC_API_EXTERN struct globals *gbls;
 #define GBL_TARGET2        (GBLS->t2)
 #define GBL_HOSTLIST       (GBLS->hosts_list_head)
 #define GBL_PROFILES       (GBLS->profiles_list_head)
-#define GBL_FILTERS        (GBLS->filters)
+#define GBL_FILTERS        &(GBLS->filters)
 
 #define GBL_FORMAT         (GBL_OPTIONS->format)
 

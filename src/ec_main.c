@@ -68,6 +68,9 @@ int main(int argc, char *argv[])
    
    DEBUG_INIT();
    DEBUG_MSG("main -- here we go !!");
+
+   /* initialize the filter mutex */
+   filter_init_mutex();
    
    /* register the main thread as "init" */
    ec_thread_register(EC_PTHREAD_SELF, "init", "initialization phase");

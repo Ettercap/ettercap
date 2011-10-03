@@ -50,7 +50,7 @@ void filter_unload(struct filter_list **list);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
 static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
    
-int filter_engine(struct filter_op *fop, struct packet_object *po);
+static int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
 static int execute_assign(struct filter_op *fop, struct packet_object *po);
 static int execute_incdec(struct filter_op *fop, struct packet_object *po);
@@ -88,7 +88,7 @@ void filter_init_mutex(void) {
  * it process the filter_ops and apply the instructions
  * on the given packet object
  */
-int filter_engine(struct filter_op *fop, struct packet_object *po)
+static int filter_engine(struct filter_op *fop, struct packet_object *po)
 {
    u_int32 eip = 0;
    u_int32 flags = 0;
@@ -173,6 +173,20 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
    return 0;
 }
 
+/*
+ * pass a packet through every (enabled) filter loaded
+ */
+void filter_packet(struct packet_object *po) {
+   struct filter_list **l;
+   for (l = GBL_FILTERS; *l != NULL; l = &(*l)->next) {
+      /* if a script drops the packet, do not present it to following scripts */
+      if ( po->flags & PO_DROPPED )
+         break;
+      /* check whether the filter script is enabled */
+      if ((*l)->enabled)
+         filter_engine((*l)->env.chain, po);
+   }
+}
 
 /* 
  * execute a function.

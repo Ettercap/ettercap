@@ -136,7 +136,7 @@ void filter_init_mutex(void);
 
 /* exported functions */
 
-EC_API_EXTERN int filter_engine(struct filter_op *fop, struct packet_object *po);
+EC_API_EXTERN void filter_packet(struct packet_object *po);
 EC_API_EXTERN int filter_load_file(char *filename, struct filter_list **list);
 EC_API_EXTERN void filter_unload(struct filter_list **list);
 EC_API_EXTERN void filter_clear(void);

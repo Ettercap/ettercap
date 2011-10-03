@@ -180,9 +180,11 @@ FUNC_DECODER(dissector_imap)
 /* 
  * AUTHENTICATE PLAIN
  *
- * digest(user+\0+pass)
+ * digest(authcid+\0+user+\0+pass)
  *
  * the digest is in base64
+ *
+ * we ignore the authzid (authorization identity) for now
  */
    if ( !strncasecmp(ptr, " AUTHENTICATE PLAIN", 19) ) {
       

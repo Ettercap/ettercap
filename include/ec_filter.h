@@ -140,6 +140,7 @@ EC_API_EXTERN void filter_packet(struct packet_object *po);
 EC_API_EXTERN int filter_load_file(char *filename, struct filter_list **list);
 EC_API_EXTERN void filter_unload(struct filter_list **list);
 EC_API_EXTERN void filter_clear(void);
+EC_API_EXTERN void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg);
 
 #endif
 

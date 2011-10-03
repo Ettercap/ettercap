@@ -49,6 +49,7 @@ int filter_load_file(char *filename, struct filter_list **list);
 void filter_unload(struct filter_list **list);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
 static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
+void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg);
    
 static int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
@@ -1189,6 +1190,23 @@ static int compile_regex(struct filter_env *fenv, struct filter_header *fh)
    } 
 
    return ESUCCESS;
+}
+
+/*
+ * Walk the list of loaded filters and call the callback function
+ * for every single list item along with the argument passed.
+ * The callback function can stop the list from being traversed
+ * any further by returning a false value.
+ */
+void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg) {
+   struct filter_list **l;
+   FILTERS_LOCK;
+   for (l = GBL_FILTERS; *l != NULL; l = &(*l)->next) {
+      /* do not traverse the list any further if the callback tells us so */
+      if (!cb(*l, arg))
+         break;
+   }
+   FILTERS_UNLOCK;
 }
 
 /* EOF */

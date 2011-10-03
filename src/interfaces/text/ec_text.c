@@ -466,6 +466,23 @@ static void text_run_plugin(void)
    
 }
 
+
+static int text_print_filter_cb(struct filter_list *l, void *arg) {
+   int *i = (int *)arg;
+   fprintf(stdout, "[%d (%d)]: %s\n", (*i)++, l->enabled, l->name);
+   return 1;
+}
+
+static int text_toggle_filter_cb(struct filter_list *l, void *arg) {
+   int *number = (int *)arg;
+   if (!--(*number)) {
+      /* we reached the item */
+      l->enabled = ! l->enabled;
+      return 0; /* no need to traverse the list any further */
+   }
+   return 1;
+}
+
 /*
  * display the list of loaded filters and
  * allow the user to enable or disable them
@@ -489,9 +506,7 @@ static void text_run_filter(void) {
       /* repristinate the buffer input */
       tcsetattr(0, TCSANOW, &old_tc);
 
-      for (l = GBL_FILTERS; *l; l = &(*l)->next) {
-         fprintf(stdout, "[%d (%d)]: %s\n", i++, (*l)->enabled, (*l)->name);
-      }
+      filter_walk_list( text_print_filter_cb, &i );
 
       fprintf(stdout, "\nEnter number to enable/disable filter (0 to quit): ");
       /* get the user input */
@@ -501,13 +516,7 @@ static void text_run_filter(void) {
       if (number == 0) {
          break;
       } else if (number > 0) {
-         for (l = GBL_FILTERS; *l; l = &(*l)->next) {
-            if (!--number) {
-               /* we reached the item */
-               (*l)->enabled = ! (*l)->enabled;
-               break;
-            }
-         }
+         filter_walk_list( text_toggle_filter_cb, &number );
       }
    };
 

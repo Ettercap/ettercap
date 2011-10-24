@@ -567,61 +567,99 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
          if (fop->op.func.replace) {
             u_char *replaced;
             u_char *q = fop->op.func.replace;
-            size_t i, nlen = 0;
+            size_t i, slen = 0;
 
             /* don't modify if in unoffensive mode */
             if (GBL_OPTIONS->unoffensive)
                JIT_FAULT("Cannot modify packets in unoffensive mode");
              
             /* 
-             * the replaced string will not be larger than
-             * the matched string + replacement string
+             * worst case: the resulting string will need:
+             *   (n * |input|) + |subst| bytes
+             * where
+             *   |input| is the length of the matched input string (not the regex!)
+             *   |subst| is the length of the substition string
+             *   n       is the number of replacement markers in subst
+             *
+             * therefore, we need to count the number of $ characters first
+             * to get an upper limit of the buffer space needed
              */
-            SAFE_CALLOC(replaced, ovec[1] + strlen(q) + 1, sizeof(char));
+            int markers = 0;
+            for (i=0; i < strlen(q); i++) {
+               if (q[i] == '$') markers++;
+            }
+
+            SAFE_CALLOC(replaced, markers*(ovec[1]-ovec[0]) + strlen(q) + 1, sizeof(char));
           
             po->flags |= PO_MODIFIED;
 
             /* make the replacement */
+            uint8_t escaped = 0;
             for (i = 0; i < fop->op.func.rlen; i++) {
-               
-               /* there is a position marker */
-               if (q[i] == '$' && q[i - 1] != '\\') {
-                  
-                  int marker = atoi(q + i + 1);
-                  int t = ovec[marker * 2];
-                  int r = ovec[marker * 2 + 1];
-                  
-                  /* skip the chars of the marker */
-                  while (q[++i + 1] != ' ' && q[i] < q[strlen(q)] );
-                  
+               /* we encounter an escape character (\), so the next character is to be taken literally */
+               if (!escaped && q[i] == '\\') {
+                  escaped = 1;
+               }
+               /* there is an unescaped position marker */
+               else if (!escaped && q[i] == '$') {
+                  /* a marker is succeeded by an integer, make sure it is there */
+                  if (i >= strlen(q)-1)
+                     JIT_FAULT("Incomplete marker at end of substitution string");
+
+                  /* so now we can safely move on to the next character, our digit */
+                  i++;
+                  /* we only support up to 9 markers since we only parse a single digit */
+                  if (q[i] < '0' || q[i] > '9')
+                     JIT_FAULT("Incomplete marker without integer in substitution string");
+
+                  int marker = q[i]-'0';
+
                   /* check if the requested marker was found in the pce */
                   if (marker > ret - 1 || marker == 0)
                      JIT_FAULT("Too many marker for this pcre expression");
 
+                  int t = ovec[marker * 2];
+                  int r = ovec[marker * 2 + 1];
+
                   /* copy the sub-string in place of the marker */
                   for ( ; t < r; t++) 
-                     replaced[nlen++] = po->DATA.data[t];
-                  
-               /* the $ is escaped, copy it */
-               } else if (q[i] == '\\' && q[i + 1] == '$') {
-                  replaced[nlen++] = q[++i];
-               /* all the other chars are copied as they are */
-               } else {
-                  replaced[nlen++] = q[i];
+                     replaced[slen++] = po->DATA.data[t];
+
+               }
+               /* anything else either has no special meaning or is escaped,
+                * so we just copy it
+                */
+               else {
+                  replaced[slen++] = q[i];
+                  escaped = 0;
                }
             }
             
             /* calculate the delta */
-            po->DATA.delta += nlen - po->DATA.len;
-            po->DATA.len = nlen;
-	    
+            int delta = (ovec[0]-ovec[1])+slen;
+
             /* check if we are overflowing pcap buffer */
             BUG_IF(po->DATA.data < po->packet);
-            BUG_IF((u_int16)(GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <= nlen);
+            BUG_IF((u_int16)(GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <= po->DATA.len+delta);
 
-            /* copy the temp buffer on the original packet */
-            memcpy(po->DATA.data, replaced, nlen);
-                       
+            /* if the substitution string has a different length than the
+             * matched original string, we have to move around some data
+             */
+            int size_left = po->DATA.len - ovec[0] - slen;
+            int data_left = po->DATA.len - ovec[1];
+            DEBUG_MSG("func_pcre: match from %d to %d, substitution length is %d\n", ovec[0], ovec[1], slen);
+            DEBUG_MSG("func_pcre: packet size changed by %d bytes\n", delta);
+            if (delta != 0) {
+               /* copy everything behind the matched string to the new position */
+               memcpy(po->DATA.data+ovec[0]+slen, po->DATA.data + ovec[1], size_left < data_left ? size_left : data_left);
+            }
+
+            /* copy the modified buffer on the original packet */
+            memcpy(po->DATA.data+ovec[0], replaced, slen);
+
+            po->DATA.delta += delta;
+            po->DATA.len += delta;
+
             SAFE_FREE(replaced);
          }
          

@@ -98,6 +98,7 @@ void ec_usage(void)
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
    fprintf(stdout, "  -I, --iflist                show all the network interfaces\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
+   fprintf(stdout, "      --address <address>     force this <address> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
@@ -129,6 +130,7 @@ void parse_options(int argc, char **argv)
       { "iface", required_argument, NULL, 'i' },
       { "iflist", no_argument, NULL, 'I' },
       { "netmask", required_argument, NULL, 'n' },
+      { "address", required_argument, NULL, '@' },
       { "write", required_argument, NULL, 'w' },
       { "read", required_argument, NULL, 'r' },
       { "pcapfilter", required_argument, NULL, 'f' },
@@ -186,7 +188,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:@:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -256,6 +258,10 @@ void parse_options(int argc, char **argv)
          
          case 'n':
                   GBL_OPTIONS->netmask = strdup(optarg);
+                  break;
+
+         case '@':
+                  GBL_OPTIONS->address = strdup(optarg);
                   break;
                   
          case 'r':

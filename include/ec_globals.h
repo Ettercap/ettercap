@@ -70,6 +70,7 @@ struct ec_options {
    char *plugin;
    char *proto;
    char *netmask;
+   char *address;
    char *iface;
    char *iface_bridge;
    char *pcapfile_in;

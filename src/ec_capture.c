@@ -392,8 +392,16 @@ void get_hw_info(void)
    
    DEBUG_MSG("get_hw_info");
   
-   /* get the ip address */
-   ip = libnet_get_ipaddr4(GBL_LNET->lnet_L3);
+   /* did the user specify an ip address? use it! */
+   if (GBL_OPTIONS->address) {
+      struct in_addr addr;
+      if (inet_aton(GBL_OPTIONS->address, &addr) == 0)
+         FATAL_ERROR("Invalid ip address %s", GBL_OPTIONS->address);
+      ip = addr.s_addr;
+   } else {
+      /* get the ip address */
+      ip = libnet_get_ipaddr4(GBL_LNET->lnet_L3);
+   }
    
    /* if ip is equal to -1 there was an error */
    if (ip != (u_long)~0) {

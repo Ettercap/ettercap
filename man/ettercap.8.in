@@ -536,6 +536,11 @@ used within ettercap. The option is particulary usefull under windows where the
 name of the interface is not so obvious as under *nix.
 
 .TP
+\fB\-A\fR, \fB\-\-address <ADDRESS>\fR
+Use this <ADDRESS> instead of the one autodetected for the current iface. This
+option is useful if you have an interface with multiple ip addresses.
+
+.TP
 \fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
 Use this <NETMASK> instead of the one associated with the current iface. This
 option is useful if you have the NIC with an associated netmask of class B and

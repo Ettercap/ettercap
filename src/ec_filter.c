@@ -585,11 +585,12 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
              * to get an upper limit of the buffer space needed
              */
             int markers = 0;
-            for (i=0; i < strlen(q); i++) {
+            for (i=0; q[i]; i++) {
                if (q[i] == '$') markers++;
             }
+            /* now: i = strlen(q) */
 
-            SAFE_CALLOC(replaced, markers*(ovec[1]-ovec[0]) + strlen(q) + 1, sizeof(char));
+            SAFE_CALLOC(replaced, markers*(ovec[1]-ovec[0]) + i + 1, sizeof(char));
           
             po->flags |= PO_MODIFIED;
 
@@ -603,7 +604,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
                /* there is an unescaped position marker */
                else if (!escaped && q[i] == '$') {
                   /* a marker is succeeded by an integer, make sure it is there */
-                  if (i >= strlen(q)-1)
+                  if (q[i+1] == '\0')
                      JIT_FAULT("Incomplete marker at end of substitution string");
 
                   /* so now we can safely move on to the next character, our digit */

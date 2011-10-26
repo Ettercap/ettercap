@@ -190,7 +190,7 @@ int log_open(struct log_fd *fd, char *filename)
       if (fd->cfd == NULL)
          SEMIFATAL_ERROR("%s", gzerror(fd->cfd, &zerr));
    } else {
-      fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY);
+      fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, 0777);
       if (fd->fd == -1)
          SEMIFATAL_ERROR("Can't create %s: %s", filename, strerror(errno));
    }

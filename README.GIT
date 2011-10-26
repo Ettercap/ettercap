@@ -11,20 +11,18 @@
                       Copyright 2001-2004 ALoR & NaGA
 
 ==============================================================================
-                H O W   T O   C O M P I L E   F R O M   C V S
+                H O W   T O   C O M P I L E   F R O M  G I T
 ==============================================================================
 
-First, you have to checkout the source code from the cvs server:
+First you have to clone the project from the git repository:
 
-   # cvs -d:pserver:anonymous@cvs.sf.net:/cvsroot/ettercap login
+    # git://ettercap.git.sourceforge.net/gitroot/ettercap/ettercap
 
-use empty password to login, then:
- 
-   # cvs -z3 -d:pserver:anonymous@cvs.sf.net:/cvsroot/ettercap co ettercap_ng
 
-if you already have checked out the cvs, you can update it with:
-
-   # cvs up -Pd
+If you already had the repository cloned, you will need to pull the latest changes:
+   
+    # cd ettercap
+    # git pull
 
 Once you have downloaded your fresh copy of the cvs, you have to generate the
 autoconfiguration scripts. 

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.57 2005/07/04 08:03:30 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.55 2004/09/14 07:58:17 alor Exp $
 */
 
 #include <ec.h>
@@ -59,6 +59,7 @@
       sslw_wipe_connection(y);      \
       SAFE_FREE(z.DATA.data);       \
       SAFE_FREE(z.DATA.disp_data);  \
+      SAFE_FREE(y);                 \
       ec_thread_exit();             \
    }                                \
 } while(0)
@@ -339,8 +340,8 @@ static void sslw_hook_handled(struct packet_object *po)
    /* If it's an ssl packet don't forward */
    po->flags |= PO_DROPPED;
    
-   /* If it's a new connection */  
-   if ( (po->flags & PO_FORWARDABLE) &&
+   /* If it's a new connection */
+   if ( (po->flags & PO_FORWARDABLE) && 
         (po->L4.flags & TH_SYN) &&
         !(po->L4.flags & TH_ACK) ) {
 	
@@ -841,7 +842,6 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    po->L4.dst = ae->port[!direction];
    
    po->flags |= PO_FROMSSL;
-   po->flags |= PO_IGNORE;
       
    /* get current time */
    gettimeofday(&po->ts, NULL);

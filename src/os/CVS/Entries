@@ -1,9 +1,0 @@
-/Makefile.am/1.2/Sun Jun 27 12:51:02 2004//
-/ec_bsd.c/1.10/Tue Jul 13 09:35:44 2004//
-/ec_cygwin.c/1.7/Tue Jul 13 09:35:44 2004//
-/ec_darwin.c/1.6/Tue Jul 13 09:35:44 2004//
-/ec_dummy.c/1.1/Tue Oct 14 13:13:14 2003//
-/ec_linux.c/1.8/Tue Jul 13 09:35:44 2004//
-/ec_mingw.c/1.11/Tue Dec 21 11:24:03 2004//
-/ec_solaris.c/1.7/Tue Jul 13 09:35:44 2004//
-D

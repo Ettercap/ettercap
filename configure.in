@@ -29,11 +29,6 @@ AC_PREREQ(2.57)
 dnl Force automake 1.7 or better
 dnl AM_INIT_AUTOMAKE(1.7.0)
 
-LT_CONFIG_LTDL_DIR([libltdl])
-AC_CONFIG_AUX_DIR([libltdl/config])
-AC_CONFIG_MACRO_DIR([libltdl/m4])
-
-
 dnl Do not recompile configure Makefile et similia
 AM_MAINTAINER_MODE
 
@@ -181,8 +176,9 @@ dnl ========================
 dnl   Check the C compiler
 dnl ========================
 
-AC_PROG_CC
-AM_PROG_CC_STDC
+#AC_PROG_CC
+AM_PROG_CC_C_O
+#AM_PROG_CC_STDC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_GCC_TRADITIONAL
@@ -333,7 +329,7 @@ AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug,create a file for debugging m
 [ case "$enableval" in
    yes)
       AC_DEFINE(DEBUG, 1)
-      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Werror -Wformat-security -Wsign-compare -Wall"
+      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Wformat-security -Wsign-compare -Wall"
       AC_MSG_RESULT(yes)
       ac_ec_debug=yes
       ;;

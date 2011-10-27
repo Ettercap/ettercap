@@ -274,6 +274,7 @@ dnl
 dnl  Do we have dn_expand ?
 dnl
 EC_RESOLVE_CHECK()
+EC_RESOLVE_CHECK_64()
 
 dnl ===============================
 dnl   Check for non standard libs

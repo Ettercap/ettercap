@@ -78,7 +78,7 @@ int open_socket(const char *host, u_int16 port)
 {
    struct hostent *infh;
    struct sockaddr_in sa_in;
-   struct timespec tm;
+   struct timespec tm = {0};
    int sh, ret, err = 0;
 #define TSLEEP (50*1000) /* 50 milliseconds */
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
@@ -91,9 +91,9 @@ int open_socket(const char *host, u_int16 port)
    sa_in.sin_port = htons(port);
 
    time_t seconds = (int)(TSLEEP)/1000;
-   time_t nanosecs = TSLEEP - (seconds * 1000);
-   tm.tv_sec = seconds;
-   tm.tv_nsec = nanosecs * 1000000L;
+   time_t nanosecs = (int)TSLEEP - (seconds * 1000);
+   tm.tv_sec = TSLEEP / 1000;
+   tm.tv_nsec = (TSLEEP % 1000) * (1000 * 1000);
 
    /* resolve the hostname */
    if ( (infh = gethostbyname(host)) != NULL )

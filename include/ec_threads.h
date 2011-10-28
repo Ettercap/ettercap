@@ -25,7 +25,7 @@ pthread_t EC_PTHREAD_NULL;
 EC_API_EXTERN char * ec_thread_getname(pthread_t id);
 EC_API_EXTERN pthread_t ec_thread_getpid(char *name);
 EC_API_EXTERN char * ec_thread_getdesc(pthread_t id);
-EC_API_EXTERN void ec_thread_register(pthread_t id, char *name, char *desc);
+EC_API_EXTERN void ec_thread_register(pthread_t parent, pthread_t id, char *name, char *desc);
 EC_API_EXTERN pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
 EC_API_EXTERN void ec_thread_destroy(pthread_t id);
 EC_API_EXTERN void ec_thread_init(void);

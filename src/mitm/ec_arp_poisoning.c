@@ -25,6 +25,7 @@
 #include <ec_send.h>
 #include <ec_threads.h>
 #include <ec_ui.h>
+#include <time.h>
 
 /* globals */
 
@@ -143,12 +144,16 @@ static void arp_poisoning_stop(void)
    int i;
    struct hosts_list *h;
    struct hosts_list *g1, *g2;
+   struct timespec tm;
    pthread_t pid;
    
    DEBUG_MSG("arp_poisoning_stop");
    
    /* destroy the poisoner thread */
    pid = ec_thread_getpid("arp_poisoner");
+
+   tm.tv_sec = GBL_CONF->arp_storm_delay;
+   tm.tv_nsec = 0;
    
    /* the thread is active or not ? */
    if (!pthread_equal(pid, EC_PTHREAD_NULL))
@@ -192,7 +197,7 @@ static void arp_poisoning_stop(void)
                   send_arp(ARPOP_REQUEST, &g1->ip, g1->mac, &g2->ip, g2->mac); 
             }
             
-            usleep(GBL_CONF->arp_storm_delay * 1000);
+            nanosleep(&tm, NULL);
          }
       }
       
@@ -226,6 +231,10 @@ EC_THREAD_FUNC(arp_poisoner)
 {
    int i = 1;
    struct hosts_list *g1, *g2;
+   struct timespec tm;
+
+   tm.tv_sec = GBL_CONF->arp_storm_delay;
+   tm.tv_nsec = 0;
    
    /* init the thread and wait for start up */
    ec_thread_init();
@@ -274,7 +283,7 @@ EC_THREAD_FUNC(arp_poisoner)
                   send_arp(ARPOP_REQUEST, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac); 
             }
            
-            usleep(GBL_CONF->arp_storm_delay * 1000);
+            nanosleep(&tm, NULL);
          }
       }
       

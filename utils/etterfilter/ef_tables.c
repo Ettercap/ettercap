@@ -160,6 +160,7 @@ void load_tables(void)
    SLIST_FOREACH(t, &table_head, next)
       fprintf(stdout, "%s ", t->name);
    fprintf(stdout, "\n");
+   fclose(fc);
   
 }
 
@@ -312,6 +313,7 @@ void load_constants(void)
    SLIST_FOREACH(c, &const_head, next)
       fprintf(stdout, "%s ", c->name);
    fprintf(stdout, "\n");
+   fclose(fc);
 }
 
 

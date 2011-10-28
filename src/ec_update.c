@@ -218,7 +218,8 @@ static int get_current_rev(char *file, char **curr, char *errbuf)
          break;
       }
    }
-   
+
+   fclose(fd);   
    snprintf(errbuf, ERR_MAX_LEN, "bad revision number");
    return 0;
 }

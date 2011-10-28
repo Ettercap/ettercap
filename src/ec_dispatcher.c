@@ -24,6 +24,7 @@
 #include <ec_threads.h>
 #include <ec_hook.h>
 #include <ec_stats.h>
+#include <time.h>
 
 
 /* this is the PO queue from bottom to top half */
@@ -59,8 +60,11 @@ EC_THREAD_FUNC(top_half);
 EC_THREAD_FUNC(top_half)
 {
    struct po_queue_entry *e;
+   struct timespec tm;   
    u_int pck_len;
-   
+  
+   tm.tv_sec = 1;
+   tm.tv_nsec = 0; 
    /* initialize the thread */
    ec_thread_init();
    
@@ -92,7 +96,7 @@ EC_THREAD_FUNC(top_half)
       if (e == NULL) {
          PO_QUEUE_UNLOCK;
          
-         usleep(1000);
+         nanosleep(&tm, NULL);
          continue;
       }
   

@@ -30,6 +30,7 @@
 #include <ec_send.h>
 
 #include <pthread.h>
+#include <time.h>
 
 /* globals */
 LIST_HEAD(, hosts_list) promisc_table;
@@ -78,10 +79,13 @@ static int search_promisc_init(void *dummy)
    
    char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h;
+   struct timespec tm;
    char bogus_mac[2][6]={"\xfd\xfd\x00\x00\x00\x00", "\xff\xff\x00\x00\x00\x00"};
    char messages[2][48]={"\nLess probably sniffing NICs:\n", "\nMost probably sniffing NICs:\n"};
    u_char i;
-   
+  
+   tm.tv_sec = GBL_CONF->arp_storm_delay;
+   tm.tv_nsec = 0; 
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
@@ -109,7 +113,7 @@ static int search_promisc_init(void *dummy)
        */
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
          send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &h->ip, bogus_mac[i]);   
-         usleep(GBL_CONF->arp_storm_delay * 1000);
+         nanosleep(&tm, NULL);
       }
       
       /* Wait for responses */

@@ -229,7 +229,42 @@ AC_DEFUN([EC_RESOLVE_CHECK],
          AM_CONDITIONAL(HAVE_DN_EXPAND, true) ac_ec_dns=yes 
       ],
       [AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_ec_dns=no])
+])
 
+dnl
+dnl EC_RESOLVE_CHECK_64
+dnl
+
+AC_DEFUN([EC_RESOLVE_CHECK_64],
+[
+
+   AM_COND_IF([HAVE_DN_EXPAND], [], [
+   AC_SEARCH_LIBS(__dn_expand, resolv c,
+      [
+         AC_MSG_CHECKING(for additional -lresolv needed by dn_expand)
+         AC_TRY_LINK([
+               #include <sys/types.h>
+               #include <netinet/in.h>
+               #include <arpa/nameser.h>
+               #include <resolv.h>
+            ],
+            [
+               int main(int argc, char **argv)
+               {
+                  char *q;
+                  char p[NS_MAXDNAME];
+
+                  __dn_expand(q, q, q, p, sizeof(p));
+               } 
+            ],
+            [AC_MSG_RESULT(not needed)],
+            [AC_MSG_RESULT(needed)
+             LIBS="$LIBS -lresolv"]
+         )
+         AM_CONDITIONAL(HAVE_DN_EXPAND, true) ac_ec_dns=yes 
+      ],
+      [AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_ec_dns=no])
+   ])
 ])
 
 dnl

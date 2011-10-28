@@ -27,6 +27,7 @@
 #include <ec_packet.h>
 #include <ec_send.h>                   
 #include <ec_threads.h>
+#include <time.h>
 
 /* protos */
 int plugin_load(void *);
@@ -158,7 +159,10 @@ EC_THREAD_FUNC(syn_flooder)
    u_int16 sport = 0xe77e, dport;
    u_int32 seq = 0xabadc0de;
    struct port_list *p;
+   struct timespec tm;
 
+   tm.tv_sec = 0;
+   tm.tv_nsec = 500*1000;
    /* init the thread and wait for start up */
    ec_thread_init();
  
@@ -177,7 +181,8 @@ EC_THREAD_FUNC(syn_flooder)
       SLIST_FOREACH(p, &port_table, next)    
          send_tcp(&fake_host, &victim_host, sport++, p->port, seq++, 0, TH_SYN);
 	 
-      usleep(500);
+
+      nanosleep(&tm, NULL);
    }
    
    return NULL;

@@ -27,6 +27,7 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <time.h>
 
 /* globals */
 struct eth_header
@@ -129,8 +130,12 @@ EC_THREAD_FUNC(flooder)
    struct timeval seed;
    struct eth_header *heth;
    struct arp_header *harp;
+   struct timespec tm;
    u_int32 rnd;
    u_char MACS[ETH_ADDR_LEN], MACD[ETH_ADDR_LEN];
+
+   tm.tv_sec = GBL_CONF->port_steal_send_delay;
+   tm.tv_nsec = 0;
 
    /* Get a "random" seed */ 
    gettimeofday(&seed, NULL);
@@ -173,7 +178,7 @@ EC_THREAD_FUNC(flooder)
 
       /* Send on the wire and wait */
       send_to_L2(&fake_po); 
-      usleep(GBL_CONF->port_steal_send_delay);
+      nanosleep(&tm, NULL);
    }
    
    return NULL; 

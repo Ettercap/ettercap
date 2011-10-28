@@ -30,6 +30,7 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
+#include <time.h>
 
 /* globals */
 char flag_strange;
@@ -73,7 +74,12 @@ static int scan_poisoner_init(void *dummy)
    char tmp1[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h1, *h2;
-     
+   struct timespec tm;
+   
+    
+   tm.tv_sec = GBL_CONF->arp_storm_delay;
+   tm.tv_nsec = 0; 
+
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
@@ -111,7 +117,7 @@ static int scan_poisoner_init(void *dummy)
    /* Send ICMP echo request to each target */
    LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
       send_L3_icmp_echo(ICMP_ECHO, &GBL_IFACE->ip, &h1->ip);   
-      usleep(GBL_CONF->arp_storm_delay * 1000);
+      nanosleep(&tm, NULL);
    }
          
    /* wait for the response */

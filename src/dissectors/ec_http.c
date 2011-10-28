@@ -601,7 +601,7 @@ static void Decode_Url(u_char *src)
       return;
       
    /* NULL terminate for the strtoul */
-   t[3] = 0;
+   t[2] = 0;
    
    for (i=0, j=0; src[i] != 0; i++, j++) {
       ch = (u_int32)src[i];

@@ -36,6 +36,7 @@
    #include <sys/wait.h>
 #endif
 #include <fcntl.h>
+#include <time.h>
 
 #ifdef HAVE_OPENSSL
 
@@ -104,9 +105,11 @@ struct sslw_ident {
 #define SSLW_IDENT_LEN sizeof(struct sslw_ident)
 
 #define SSLW_RETRY 5
-#define SSLW_WAIT 10000
+#define SSLW_WAIT 10 /* 10 seconds */
+
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
+#define TSLEEP_SEC (TSLEEP/1000) /* seconds */
 
 static SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
 static EVP_PKEY *global_pk;
@@ -545,6 +548,10 @@ static int sslw_ssl_connect(SSL *ssl_sk)
 { 
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    int ret, ssl_err;
+
+   struct timespec tm;
+   tm.tv_sec = TSLEEP_SEC;
+   tm.tv_nsec = 0;
    
    do {
       /* connect to the server */
@@ -558,7 +565,9 @@ static int sslw_ssl_connect(SSL *ssl_sk)
          return -EINVALID;
       
       /* sleep a quirk of time... */
-      usleep(TSLEEP);
+      /*usleep(TSLEEP);*/
+
+      nanosleep(&tm, NULL);
    } while(loops--);
 
    return -EINVALID;
@@ -573,6 +582,9 @@ static int sslw_ssl_accept(SSL *ssl_sk)
 { 
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    int ret, ssl_err;
+   struct timespec tm;
+   tm.tv_sec = TSLEEP_SEC;
+   tm.tv_nsec = 0;
    
    do {
       /* accept the ssl connection */
@@ -586,7 +598,8 @@ static int sslw_ssl_accept(SSL *ssl_sk)
          return -EINVALID;
       
       /* sleep a quirk of time... */
-      usleep(TSLEEP);
+      /*usleep(TSLEEP);*/
+      nanosleep(&tm, NULL);
    } while(loops--);
 
    return -EINVALID;
@@ -642,6 +655,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
 {
    struct ec_session *s = NULL;
    struct packet_object po;
+   struct timespec tm;
    void *ident = NULL;
    int i;
  
@@ -651,13 +665,17 @@ static int sslw_get_peer(struct accepted_entry *ae)
    po.L4.dst = ae->port[SSL_SERVER];
    
    sslw_create_ident(&ident, &po);
+
+   tm.tv_sec = SSLW_WAIT;
+   tm.tv_nsec = 0;
    
    /* 
     * A little waiting loop because the sniffing thread , 
     * which creates the session, may be slower than this
     */
    for (i=0; i<SSLW_RETRY && session_get_and_del(&s, ident, SSLW_IDENT_LEN)!=ESUCCESS; i++)
-      usleep(SSLW_WAIT);
+      /*usleep(SSLW_WAIT);*/
+      nanosleep(&tm, NULL); 
 
    if (i==SSLW_RETRY) {
       SAFE_FREE(ident);
@@ -767,9 +785,13 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
 {
    int32 len, packet_len, not_written, ret_err;
    u_char *p_data;
+   struct timespec tm;
 
    packet_len = (int32)(po->DATA.len + po->DATA.inject_len);
    p_data = po->DATA.data;
+
+   tm.tv_sec = 1;
+   tm.tv_nsec = 0;
    
    if (packet_len == 0)
       return ESUCCESS;
@@ -810,7 +832,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       
       /* XXX - Set a proper sleep time */
       if (not_written)
-         usleep(1000);
+         nanosleep(&tm, NULL);
 	 	 
    } while (not_written);
          

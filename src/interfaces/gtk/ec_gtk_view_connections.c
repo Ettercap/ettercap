@@ -367,7 +367,8 @@ static gboolean refresh_connections(gpointer data)
       if(bottom.conn == list)
          break;
    } while(gtk_tree_model_iter_next(model, &iter));
-   
+  
+   SAFE_FREE(desc); 
    return(TRUE);
 }
 

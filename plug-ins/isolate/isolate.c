@@ -27,6 +27,7 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <time.h>
 
 /* globals */
 
@@ -184,7 +185,10 @@ EC_THREAD_FUNC(isolate)
 {
    struct hosts_list *h;
    struct ip_list *t;
-   
+   struct timespec tm;
+  
+   tm.tv_sec = GBL_CONF->arp_poison_storm_delay;
+   tm.tv_nsec = 0;
    /* init the thread and wait for start up */
    ec_thread_init();
  
@@ -201,7 +205,7 @@ EC_THREAD_FUNC(isolate)
          /* send the fake arp message */
          send_arp(ARPOP_REPLY, &h->ip, h->mac, &t->ip, h->mac);
          
-         usleep(GBL_CONF->arp_storm_delay);
+         nanosleep(&tm, NULL);
       }
       
       /* sleep between two storms */

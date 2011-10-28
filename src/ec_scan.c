@@ -415,9 +415,9 @@ static void scan_netmask(pthread_t pid)
       }
 
       /* wait for a delay */
-      /*usleep(GBL_CONF->arp_storm_delay * 1000);*/
+      usleep(GBL_CONF->arp_storm_delay * 1000);
 
-      nanosleep(&tm, NULL);
+      //nanosleep(&tm, NULL);
    }
 
    /* delete the temporary list */

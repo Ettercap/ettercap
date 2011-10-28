@@ -149,7 +149,7 @@ char * ec_thread_getdesc(pthread_t id)
 /* add a thread in the thread list */
 void ec_thread_register(pthread_t id, char *name, char *desc)
 {
-   ec_thread_register_child(NULL, id, name, desc);
+   ec_thread_register_child(EC_PTHREAD_NULL, id, name, desc);
 }
 
 void ec_thread_register_child(pthread_t parent, pthread_t id, char *name, char *desc)
@@ -259,7 +259,7 @@ void ec_thread_destroy(pthread_t id)
 
    /* send the cancel signal to all children threads */
    LIST_FOREACH(current, &thread_list_head, next) {
-	if(current->t.parent != NULL && pthread_equal(current->t.parent,id)) {
+	if(current->t.parent != EC_PTHREAD_NULL && pthread_equal(current->t.parent,id)) {
           pthread_cancel((pthread_t) current->t.id); 
 	}
    }
@@ -321,7 +321,7 @@ void ec_thread_kill_all(void)
          /* send cancel signal to all children threads */
          LIST_FOREACH(children, &thread_list_head, next)  {
 		pthread_t id = current->t.id;
-                if(children->t.parent != NULL && pthread_equal(children->t.parent, id)) {
+                if(children->t.parent != EC_PTHREAD_NULL && pthread_equal(children->t.parent, id)) {
                   pthread_cancel((pthread_t)children->t.id);
                 }
          }

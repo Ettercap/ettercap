@@ -53,7 +53,7 @@ static pthread_mutex_t init_mtx = PTHREAD_MUTEX_INITIALIZER;
 char * ec_thread_getname(pthread_t id);
 pthread_t ec_thread_getpid(char *name);
 char * ec_thread_getdesc(pthread_t id);
-void ec_thread_register(pthread_t id, char *name, char *desc);
+void ec_thread_register(pthread_t parent, pthread_t id, char *name, char *desc);
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
 void ec_thread_destroy(pthread_t id);
 void ec_thread_init(void);
@@ -147,7 +147,7 @@ char * ec_thread_getdesc(pthread_t id)
 
 /* add a thread in the thread list */
 
-void ec_thread_register(pthread_t id, char *name, char *desc)
+void ec_thread_register(pthread_t parent, pthread_t id, char *name, char *desc)
 {
    struct thread_list *current, *newelem;
 
@@ -159,6 +159,7 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    SAFE_CALLOC(newelem, 1, sizeof(struct thread_list));
               
    newelem->t.id = id;
+   newelem->t.parent = parent;
    newelem->t.name = strdup(name);
    newelem->t.description = strdup(desc);
 
@@ -188,6 +189,7 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args)
 {
    pthread_t id;
+   pthread_t me = pthread_self();
 
    DEBUG_MSG("ec_thread_new -- %s", name);
 
@@ -202,7 +204,7 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
    if (pthread_create(&id, NULL, function, args) != 0)
       ERROR_MSG("not enough resources to create a new thread in this process");
 
-   ec_thread_register(id, name, desc);
+   ec_thread_register(me, id, name, desc);
 
    DEBUG_MSG("ec_thread_new -- %lu created ", PTHREAD_ID(id));
 
@@ -248,6 +250,14 @@ void ec_thread_destroy(pthread_t id)
       id = pthread_self();
    
    DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", PTHREAD_ID(id), ec_thread_getname(id));
+
+
+   /* send the cancel signal to all children threads */
+   LIST_FOREACH(current, &thread_list_head, next) {
+	if(pthread_equal(current->t.parent,id)) {
+          pthread_cancel((pthread_t) current->t.id); 
+	}
+   }
 
    /* send the cancel signal to the thread */
    pthread_cancel((pthread_t)id);

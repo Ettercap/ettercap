@@ -1024,6 +1024,10 @@ EC_THREAD_FUNC(sslw_child)
    struct packet_object po;
    int direction, ret_val, data_read;
    struct accepted_entry *ae;
+   struct timespec tm;
+
+   tm.tv_sec 3;
+   tm.tv_nsec = 0;
 
    ae = (struct accepted_entry *)args;
    ec_thread_init();
@@ -1050,8 +1054,12 @@ EC_THREAD_FUNC(sslw_child)
    sslw_initialize_po(&po, po.DATA.data);
    
    LOOP {
+      CANCELLATION_POINT();
+
       data_read = 0;
       for(direction=0; direction<2; direction++) {
+         CANCELLATION_POINT();
+
          ret_val = sslw_read_data(ae, direction, &po);
          BREAK_ON_ERROR(ret_val,ae,po);
 	 
@@ -1075,9 +1083,10 @@ EC_THREAD_FUNC(sslw_child)
          }  
       }
 
+      CANCELLATION_POINT();
       /* XXX - Set a proper sleep time */
       if (!data_read)
-         usleep(3000);
+        nanosleep(&tm, NULL);
    }
 
    return NULL;

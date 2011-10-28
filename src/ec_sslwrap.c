@@ -1026,7 +1026,7 @@ EC_THREAD_FUNC(sslw_child)
    struct accepted_entry *ae;
    struct timespec tm;
 
-   tm.tv_sec 3;
+   tm.tv_sec = 3;
    tm.tv_nsec = 0;
 
    ae = (struct accepted_entry *)args;

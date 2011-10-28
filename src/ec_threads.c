@@ -209,7 +209,7 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
    if (pthread_create(&id, NULL, function, args) != 0)
       ERROR_MSG("not enough resources to create a new thread in this process");
 
-   ec_thread_register(me, id, name, desc);
+   ec_thread_register_child(me, id, name, desc);
 
    DEBUG_MSG("ec_thread_new -- %lu created ", PTHREAD_ID(id));
 

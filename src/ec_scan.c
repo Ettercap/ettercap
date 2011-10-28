@@ -425,6 +425,8 @@ static void scan_netmask(pthread_t pid)
       LIST_REMOVE(e, next);
       SAFE_FREE(e);
    }
+
+   DEBUG_MSG("scan_netmask: Complete");
 }
 
 

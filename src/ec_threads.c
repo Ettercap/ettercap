@@ -295,7 +295,7 @@ void ec_thread_destroy(pthread_t id)
 
 void ec_thread_kill_all(void)
 {
-   struct thread_list *current, *old;
+   struct thread_list *current, *old, *children;
    pthread_t id = pthread_self();
 
    DEBUG_MSG("ec_thread_kill_all -- caller %lu [%s]", PTHREAD_ID(id), ec_thread_getname(id));
@@ -312,6 +312,14 @@ void ec_thread_kill_all(void)
       /* skip ourself */
       if (!pthread_equal(current->t.id, id)) {
          DEBUG_MSG("ec_thread_kill_all -- terminating %lu [%s]", PTHREAD_ID(current->t.id), current->t.name);
+
+         /* send cancel signal to all children threads */
+         LIST_FOREACH(children, &thread_list_head, next)  {
+		pthread_t id = current->t.id;
+                if(pthread_equal(children->t.parent, id)) {
+                  pthread_cancel((pthread_t)children->t.id);
+                }
+         }
 
          /* send the cancel signal to the thread */
          pthread_cancel((pthread_t)current->t.id);

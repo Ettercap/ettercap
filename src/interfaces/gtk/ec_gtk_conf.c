@@ -66,7 +66,7 @@ short gtkui_conf_get(char *name) {
 void gtkui_conf_read(void) {
    FILE *fd;
    char *path;
-   char line[50], name[30];
+   char line[100], name[30];
    short value;
 
 #ifdef OS_WINDOWS

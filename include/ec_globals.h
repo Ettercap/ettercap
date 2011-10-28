@@ -93,6 +93,8 @@ struct pcap_env {
    void     *ifs;          /* this is a pcap_if_t pointer */
    void     *pcap;         /* this is a pcap_t pointer */
    void     *pcap_bridge;  /* this is a pcap_t pointer */
+   void	    *pcap_send;    /* this is a pcap_t pointer for sending */
+   void     *pcap_b_send ; /* this is a pcap_t pointer for sending (bridged) */
    void     *dump;         /* this is a pcap_dumper_t pointer */
    char     *buffer;       /* buffer to be used to handle all the packets */
    u_int8   align;         /* alignment needed on sparc 4*n - sizeof(media_hdr) */

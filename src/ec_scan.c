@@ -31,6 +31,7 @@
 #include <pthread.h>
 #include <pcap.h>
 #include <libnet.h>
+#include <time.h>
 
 /* globals */
 
@@ -354,7 +355,11 @@ static void scan_netmask(pthread_t pid)
    int nhosts, i, ret;
    struct ip_addr scanip;
    struct ip_list *e, *tmp;
+   struct timespec tm;
    char title[100];
+
+   tm.tv_sec = GBL_CONF->arp_storm_delay;
+   tm.tv_nsec = 0;
 
    netmask = ip_addr_to_int32(&GBL_IFACE->netmask.addr);
    myip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
@@ -410,7 +415,9 @@ static void scan_netmask(pthread_t pid)
       }
 
       /* wait for a delay */
-      usleep(GBL_CONF->arp_storm_delay * 1000);
+      /*usleep(GBL_CONF->arp_storm_delay * 1000);*/
+
+      nanosleep(&tm, NULL);
    }
 
    /* delete the temporary list */
@@ -429,6 +436,10 @@ static void scan_targets(pthread_t pid)
    int nhosts = 0, found, n = 1, ret;
    struct ip_list *e, *i, *m, *tmp;
    char title[100];
+   struct timespec tm;
+   
+   tm.tv_sec = GBL_CONF->arp_storm_delay;
+   tm.tv_nsec = 0;
 
    DEBUG_MSG("scan_targets: merging targets...");
 
@@ -508,7 +519,7 @@ static void scan_targets(pthread_t pid)
       }
 
       /* wait for a delay */
-      usleep(GBL_CONF->arp_storm_delay * 1000);
+      nanosleep(&tm, NULL);
    }
 
    /* delete the temporary list */

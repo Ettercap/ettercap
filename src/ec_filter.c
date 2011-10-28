@@ -988,6 +988,7 @@ int filter_load_file(char *filename, struct filter_env *fenv)
       return -EFATAL;
    
    USER_MSG("Content filters loaded from %s...\n", filename);
+   SAFE_FREE(file);
    
    return ESUCCESS;
 }

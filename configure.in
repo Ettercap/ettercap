@@ -155,22 +155,22 @@ if test "$exec_prefix" = "NONE"; then
 fi
 
 AH_TEMPLATE(INSTALL_PREFIX, [the prefix passed by configure])
-AC_DEFINE_UNQUOTED(INSTALL_PREFIX, "`eval echo $prefix`")
+dnl AC_DEFINE_UNQUOTED(INSTALL_PREFIX, "`eval echo $prefix`")
 
 AH_TEMPLATE(INSTALL_EXECPREFIX, [the exec_prefix passed by configure])
-AC_DEFINE_UNQUOTED(INSTALL_EXECPREFIX, "`eval echo $exec_prefix`")
+dnl AC_DEFINE_UNQUOTED(INSTALL_EXECPREFIX, "`eval echo $exec_prefix`")
 
 AH_TEMPLATE(INSTALL_SYSCONFDIR, [where can I find my sysconf file ?])
-AC_DEFINE_UNQUOTED(INSTALL_SYSCONFDIR, "`eval echo $sysconfdir`")
+dnl AC_DEFINE_UNQUOTED(INSTALL_SYSCONFDIR, "`eval echo $sysconfdir`")
 
 AH_TEMPLATE(INSTALL_DATADIR, [where can I find my data file ?])
-AC_DEFINE_UNQUOTED(INSTALL_DATADIR, "`eval echo $datadir`")
+dnl AC_DEFINE_UNQUOTED(INSTALL_DATADIR, "`eval echo $datadir`")
 
 AH_TEMPLATE(INSTALL_LIBDIR, [where can I find my plugins ?])
-AC_DEFINE_UNQUOTED(INSTALL_LIBDIR, "`eval echo $libdir`")
+dnl AC_DEFINE_UNQUOTED(INSTALL_LIBDIR, "`eval echo $libdir`")
 
 AH_TEMPLATE(INSTALL_BINDIR, [where can I find the ettercap executable ?])
-AC_DEFINE_UNQUOTED(INSTALL_BINDIR, "`eval echo $bindir`")
+dnl AC_DEFINE_UNQUOTED(INSTALL_BINDIR, "`eval echo $bindir`")
 
 dnl ========================
 dnl   Check the C compiler
@@ -273,6 +273,7 @@ dnl
 dnl  Do we have dn_expand ?
 dnl
 EC_RESOLVE_CHECK()
+EC_RESOLVE_CHECK_64()
 
 dnl ===============================
 dnl   Check for non standard libs
@@ -280,7 +281,7 @@ dnl ===============================
 
 EC_MESSAGE(Checking for missing functions)
 
-AC_CONFIG_LIBOBJ_DIR(src/missing)
+AC_CONFIG_LIBOBJ_DIR([src/missing])
 
 AM_CONDITIONAL(MISSING_STRLCPY, false)
 AM_CONDITIONAL(MISSING_STRLCAT, false)
@@ -295,16 +296,16 @@ AM_CONDITIONAL(MISSING_SCANDIR, false)
 
 dnl AC_REPLACE_FUNCS(strlcpy)
 
-AC_CHECK_FUNCS([strlcpy], , [AC_LIBOBJ(missing/strlcpy) AM_CONDITIONAL(MISSING_STRLCPY, true)])
-AC_CHECK_FUNCS([strlcat], , [AC_LIBOBJ(missing/strlcat) AM_CONDITIONAL(MISSING_STRLCAT, true)])
-AC_CHECK_FUNCS([strsep], , [AC_LIBOBJ(missing/strsep) AM_CONDITIONAL(MISSING_STRSEP, true)])
-AC_CHECK_FUNCS([memmem], , [AC_LIBOBJ(missing/memmem) AM_CONDITIONAL(MISSING_MEMMEM, true)])
-AC_CHECK_FUNCS([memcmp], , [AC_LIBOBJ(missing/memcmp) AM_CONDITIONAL(MISSING_MEMCMP, true)])
-AC_CHECK_FUNCS([basename], , [AC_LIBOBJ(missing/basename) AM_CONDITIONAL(MISSING_BASENAME, true)])
-AC_CHECK_FUNCS([getopt_long], , [AC_LIBOBJ(missing/getopt) AM_CONDITIONAL(MISSING_GETOPT_LONG, true)])
-AC_CHECK_FUNCS([strcasestr], , [AC_LIBOBJ(missing/strcasestr) AM_CONDITIONAL(MISSING_STRCASESTR, true)])
-AC_CHECK_FUNCS([scandir], , [AC_LIBOBJ(missing/scandir) AM_CONDITIONAL(MISSING_SCANDIR, true)])
-AC_CHECK_FUNCS([inet_aton], , [AC_LIBOBJ(missing/inet_aton) AM_CONDITIONAL(MISSING_INET_ATON, true)])
+AC_CHECK_FUNCS([strlcpy], , [AC_LIBOBJ(strlcpy) AM_CONDITIONAL(MISSING_STRLCPY, true)])
+AC_CHECK_FUNCS([strlcat], , [AC_LIBOBJ(strlcat) AM_CONDITIONAL(MISSING_STRLCAT, true)])
+AC_CHECK_FUNCS([strsep], , [AC_LIBOBJ(strsep) AM_CONDITIONAL(MISSING_STRSEP, true)])
+AC_CHECK_FUNCS([memmem], , [AC_LIBOBJ(memmem) AM_CONDITIONAL(MISSING_MEMMEM, true)])
+AC_CHECK_FUNCS([memcmp], , [AC_LIBOBJ(memcmp) AM_CONDITIONAL(MISSING_MEMCMP, true)])
+AC_CHECK_FUNCS([basename], , [AC_LIBOBJ(basename) AM_CONDITIONAL(MISSING_BASENAME, true)])
+AC_CHECK_FUNCS([getopt_long], , [AC_LIBOBJ(getopt) AM_CONDITIONAL(MISSING_GETOPT_LONG, true)])
+AC_CHECK_FUNCS([strcasestr], , [AC_LIBOBJ(strcasestr) AM_CONDITIONAL(MISSING_STRCASESTR, true)])
+AC_CHECK_FUNCS([scandir], , [AC_LIBOBJ(scandir) AM_CONDITIONAL(MISSING_SCANDIR, true)])
+AC_CHECK_FUNCS([inet_aton], , [AC_LIBOBJ(inet_aton) AM_CONDITIONAL(MISSING_INET_ATON, true)])
 
 AC_CHECK_LIB(resolv, inet_aton,
    AM_CONDITIONAL(INET_ATON_WANTS_RESOLV, true), 
@@ -328,7 +329,7 @@ AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug,create a file for debugging m
 [ case "$enableval" in
    yes)
       AC_DEFINE(DEBUG, 1)
-      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Werror -Wformat-security -Wsign-compare -Wall"
+      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Wformat-security -Wsign-compare -Wall"
       AC_MSG_RESULT(yes)
       ac_ec_debug=yes
       ;;

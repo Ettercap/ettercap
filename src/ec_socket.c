@@ -33,6 +33,7 @@
 #endif
 
 #include <fcntl.h>
+#include <time.h>
 
 /* protos */
 
@@ -77,8 +78,10 @@ int open_socket(const char *host, u_int16 port)
 {
    struct hostent *infh;
    struct sockaddr_in sa_in;
+   struct timespec tm;
    int sh, ret, err = 0;
 #define TSLEEP (50*1000) /* 50 milliseconds */
+#define TSLEEP_SEC (TSLEEP/1000) /* seconds */
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
 
    DEBUG_MSG("open_socket -- [%s]:[%d]", host, port);
@@ -87,6 +90,9 @@ int open_socket(const char *host, u_int16 port)
    memset((char*)&sa_in, 0, sizeof(sa_in));
    sa_in.sin_family = AF_INET;
    sa_in.sin_port = htons(port);
+
+   tm.tv_sec = TSLEEP_SEC;
+   tm.tv_nsec = 0;
 
    /* resolve the hostname */
    if ( (infh = gethostbyname(host)) != NULL )
@@ -112,7 +118,7 @@ int open_socket(const char *host, u_int16 port)
          err = GET_SOCK_ERRNO();
          if (err == EINPROGRESS || err == EALREADY || err == EWOULDBLOCK || err == EAGAIN) {
             /* sleep a quirk of time... */
-            usleep(TSLEEP);
+            nanosleep(&tm, NULL);
          }
       } else { 
          /* there was an error or the connect was successful */

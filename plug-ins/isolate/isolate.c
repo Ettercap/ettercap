@@ -187,7 +187,7 @@ EC_THREAD_FUNC(isolate)
    struct ip_list *t;
    struct timespec tm;
   
-   tm.tv_sec = GBL_CONF->arp_poison_storm_delay;
+   tm.tv_sec = GBL_CONF->arp_storm_delay;
    tm.tv_nsec = 0;
    /* init the thread and wait for start up */
    ec_thread_init();

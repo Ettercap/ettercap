@@ -712,6 +712,7 @@ static int sslw_connect_server(struct accepted_entry *ae)
    /* Standard connection to the server */
    if (!dest_ip || (ae->fd[SSL_SERVER] = open_socket(dest_ip, ntohs(ae->port[SSL_SERVER]))) < 0) {
       SAFE_FREE(dest_ip);   
+      DEBUG_MSG("Could not open socket");
       return -EINVALID;
    }
    

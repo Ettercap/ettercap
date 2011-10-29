@@ -92,8 +92,8 @@ int open_socket(const char *host, u_int16 port)
 
    time_t seconds = (int)(TSLEEP)/1000;
    time_t nanosecs = (int)TSLEEP - (seconds * 1000);
-   tm.tv_sec = TSLEEP / 1000;
-   tm.tv_nsec = (TSLEEP % 1000) * (1000 * 1000);
+   tm.tv_sec = 0;
+   tm.tv_nsec = (TSLEEP * 1000);
 
    /* resolve the hostname */
    if ( (infh = gethostbyname(host)) != NULL )

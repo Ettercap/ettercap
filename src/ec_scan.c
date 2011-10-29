@@ -358,8 +358,8 @@ static void scan_netmask(pthread_t pid)
    struct timespec tm;
    char title[100];
 
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
+   tm.tv_sec = 0;
 
    netmask = ip_addr_to_int32(&GBL_IFACE->netmask.addr);
    myip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
@@ -415,9 +415,9 @@ static void scan_netmask(pthread_t pid)
       }
 
       /* wait for a delay */
-      usleep(GBL_CONF->arp_storm_delay * 1000);
+      /*usleep(GBL_CONF->arp_storm_delay * 1000);*/
 
-      //nanosleep(&tm, NULL);
+      nanosleep(&tm, NULL);
    }
 
    /* delete the temporary list */
@@ -440,8 +440,8 @@ static void scan_targets(pthread_t pid)
    char title[100];
    struct timespec tm;
    
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
+   tm.tv_sec = 0;
 
    DEBUG_MSG("scan_targets: merging targets...");
 

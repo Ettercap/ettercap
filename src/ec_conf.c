@@ -71,6 +71,7 @@ static struct conf_entry misc[] = {
    { "skip_forwarded_pcks", NULL },
    { "checksum_warning", NULL },
    { "checksum_check", NULL },
+   { "submit_fingerprint", NULL },
    { NULL, NULL },
 };
 
@@ -167,6 +168,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&misc, "skip_forwarded_pcks", &GBL_CONF->skip_forwarded);
    set_pointer((struct conf_entry *)&misc, "checksum_warning", &GBL_CONF->checksum_warning);
    set_pointer((struct conf_entry *)&misc, "checksum_check", &GBL_CONF->checksum_check);
+   set_pointer((struct conf_entry *)&misc, "submit_fingerprint", &GBL_CONF->submit_fingerprint);
    set_pointer((struct conf_entry *)&curses, "color_bg", &GBL_CONF->colors.bg);
    set_pointer((struct conf_entry *)&curses, "color_fg", &GBL_CONF->colors.fg);
    set_pointer((struct conf_entry *)&curses, "color_join1", &GBL_CONF->colors.join1);

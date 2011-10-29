@@ -109,7 +109,6 @@ struct sslw_ident {
 
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
-#define TSLEEP_SEC (TSLEEP/1000) /* seconds */
 
 static SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
 static EVP_PKEY *global_pk;
@@ -550,8 +549,8 @@ static int sslw_ssl_connect(SSL *ssl_sk)
    int ret, ssl_err;
 
    struct timespec tm;
-   tm.tv_sec = TSLEEP_SEC;
-   tm.tv_nsec = 0;
+   tm.tv_sec = 0;
+   tm.tv_nsec = TSLEEP * 1000;
    
    do {
       /* connect to the server */
@@ -583,8 +582,8 @@ static int sslw_ssl_accept(SSL *ssl_sk)
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    int ret, ssl_err;
    struct timespec tm;
-   tm.tv_sec = TSLEEP_SEC;
-   tm.tv_nsec = 0;
+   tm.tv_sec = 0;
+   tm.tv_nsec = TSLEEP * 1000;
    
    do {
       /* accept the ssl connection */

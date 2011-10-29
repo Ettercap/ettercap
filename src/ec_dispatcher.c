@@ -63,8 +63,8 @@ EC_THREAD_FUNC(top_half)
    struct timespec tm;   
    u_int pck_len;
   
-   tm.tv_sec = 1;
-   tm.tv_nsec = 0; 
+   tm.tv_sec = 0;
+   tm.tv_nsec = 1000; 
    /* initialize the thread */
    ec_thread_init();
    

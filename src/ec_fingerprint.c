@@ -49,7 +49,6 @@ struct entry {
 static void fingerprint_discard(void);
 int fingerprint_init(void);
 int fingerprint_search(const char *f, char *dst);
-
 void fingerprint_default(char *finger);
 void fingerprint_push(char *finger, int param, int value);
 u_int8 TTL_PREDICTOR(u_int8 x);
@@ -194,6 +193,8 @@ int fingerprint_search(const char *f, char *dst)
       }
    }
 
+   if(GBL_CONF->submit_fingerprint)
+   	fingerprint_submit(f, "Unknown");
    return -ENOTFOUND;
 }
 
@@ -341,8 +342,9 @@ int fingerprint_submit(char *finger, char *os)
          os_encoded[i] = '+';
       
    /* prepare the HTTP request */
-   snprintf(getmsg, sizeof(getmsg), "GET %s?finger=%s&os=%s HTTP/1.0\r\n"
+   snprintf(getmsg, sizeof(getmsg), "POST %s?finger=%s&os=%s HTTP/1.1\r\n"
                                      "Host: %s\r\n"
+                                     "Accept: */*\r\n"
                                      "User-Agent: %s (%s)\r\n"
                                      "\r\n", page, finger, os_encoded, host, GBL_PROGRAM, GBL_VERSION );
   
@@ -362,7 +364,6 @@ int fingerprint_submit(char *finger, char *os)
 
    return ESUCCESS;
 }
-
 
 /* EOF */
 

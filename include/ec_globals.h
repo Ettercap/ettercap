@@ -38,6 +38,7 @@ struct ec_conf {
    int aggressive_dissectors;
    int skip_forwarded;
    int checksum_check;
+   int submit_fingerprint;
    int checksum_warning;
    int store_profiles;
    struct curses_color colors;

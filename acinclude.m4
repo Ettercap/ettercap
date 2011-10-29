@@ -51,7 +51,7 @@ AC_DEFUN([EC_PTHREAD_CHECK],
    elif test "$OS" != "MACOSX" -a "$OS" != "WINDOWS"; then
       AC_MSG_CHECKING(whether $CC accepts -pthread)
       LDFLAGS_store="$LDFLAGS"
-      LDFLAGS="$LDFLAGS -pthread"
+      LDFLAGS="$LDFLAGS -pthread -fnested-functions"
       AC_TRY_LINK([
          #include <pthread.h>
          ],

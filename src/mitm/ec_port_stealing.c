@@ -211,8 +211,8 @@ static void port_stealing_stop(void)
 
    int i;
 
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
+   tm.tv_sec = 0;
       
    DEBUG_MSG("port_stealing_stop");
    
@@ -275,8 +275,8 @@ EC_THREAD_FUNC(port_stealer)
    ec_thread_init();
   
    heth = (struct eth_header *)fake_pck;
-   tm.tv_sec = GBL_CONF->port_steal_delay;
-   tm.tv_nsec = 0;
+   tm.tv_nsec = GBL_CONF->port_steal_delay * 1000;
+   tm.tv_sec = 0;
   
    /* never ending loop */
    LOOP {
@@ -367,8 +367,8 @@ static void send_queue(struct packet_object *po)
    struct timespec tm;
    int in_list, to_wait = 0;
 
-   tm.tv_sec = GBL_CONF->port_steal_send_delay;
-   tm.tv_nsec = 0;
+   tm.tv_nsec = GBL_CONF->port_steal_send_delay * 1000;
+   tm.tv_sec = 0;
 
    /* Check if it's an arp reply for us */
    if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))

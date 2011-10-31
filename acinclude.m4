@@ -48,10 +48,10 @@ AC_DEFUN([EC_PTHREAD_CHECK],
    
    if test "$OS" = "SOLARIS"; then
       AC_SEARCH_LIBS(_getfp, pthread,,)
-   elif test "$OS" != "MACOSX" -a "$OS" != "WINDOWS"; then
+   elif test "$OS" = "MACOSX"; then
       AC_MSG_CHECKING(whether $CC accepts -pthread)
       LDFLAGS_store="$LDFLAGS"
-      LDFLAGS="$LDFLAGS -pthread"
+      LDFLAGS="$LDFLAGS -pthread -fnested-functions"
       AC_TRY_LINK([
          #include <pthread.h>
          ],

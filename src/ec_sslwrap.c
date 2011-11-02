@@ -243,7 +243,7 @@ static void ssl_wrap_fini(void)
 
    DEBUG_MSG("Cleanup...");
    /* remove every redirect rule */   
-   LIST_FOREACH(le, &listen_ports, next) 
+   LIST_FOREACH(le, &listen_ports, next) {
       sslw_remove_redirect(le->sslw_port, le->redir_port);
       SAFE_FREE(le);
    }

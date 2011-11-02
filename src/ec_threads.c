@@ -60,6 +60,7 @@ void ec_thread_destroy(pthread_t id);
 void ec_thread_init(void);
 void ec_thread_kill_all(void);
 void ec_thread_exit(void);
+void ec_thread_add_cleanup_handler(void *(*function)(void *), void *arg);
 
 /*******************************************/
 
@@ -240,10 +241,10 @@ void ec_thread_init(void)
  * set the threads clean up handler
  */
 
-void ec_thread_add_cleanup_handler(void (*routine)(void *), void *arg) 
+void ec_thread_add_cleanup_handler(void *(*function)(void *), void *arg) 
 {
-    pthread_t id = pthread_self();
     pthread_cleanup_push(routine, arg);
+    pthread_cleanup_pop(1);
 }
 
 /*

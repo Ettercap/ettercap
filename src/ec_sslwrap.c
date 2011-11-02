@@ -61,18 +61,14 @@
       SAFE_FREE(z.DATA.data);       \
       SAFE_FREE(z.DATA.disp_data);  \
       SAFE_FREE(y);                 \
+      SSL_CTX_free(ssl_ctx_server); \
+      SSL_CTX_free(ssl_ctx_client); \
       ec_thread_exit();             \
    }                                \
 } while(0)
 
 #endif /* HAVE_OPENSSL */
 
-struct CRYPTO_dynlock_value
-{
-    pthread_mutex_t mutex;
-};
-
-static pthread_mutext_t *mutex_buf = NULL;
 /* globals */
 
 static LIST_HEAD (, listen_entry) listen_ports;
@@ -117,7 +113,7 @@ struct sslw_ident {
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
 
-static SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
+SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
 static EVP_PKEY *global_pk;
 static u_int16 number_of_services;
 static struct pollfd *poll_fd = NULL;
@@ -156,70 +152,6 @@ static int sslw_ssl_connect(SSL *ssl_sk);
 static int sslw_ssl_accept(SSL *ssl_sk);
 
 #endif /* HAVE_OPENSSL */
-
-/*
- * OpenSSL locking functions
- */
-static void locking_function(int mode, int n, const char *file, int line)
-{
-    if (mode & CRYPTO_LOCK) {
-       pthread_mutex_lock(&mutex_buf[n]);
-    } else {
-       pthread_mutex_unlock(&mutex_buf[n]);
-    }
-}
-
-/* 
- * OpenSSL uniq id function
- */
-static unsigned long id_function(void)
-{
-  return ((unsigned long) pthread_self());
-}
-
-/*
- * allocate and initialize dynamic crypto lock
- */
-static struct CRYPTO_dynlock_value *dyn_create_function(const char *file, int line)
-{
-    struct CRYPTO_dynlock_value *value;
-    value = (struct CRYPTO_dynlock_value *)
-            malloc(sizeof(struct CRYPTO_dynlock_value));
-     if(!value) {
-         goto err;
-     }
-   
-     pthread_mutex_init(&value->mutex, NULL);
-     return value;
-
-err:
-     return (NULL);
-
-}
-
-/*
- * OpenSL dynamic locking function
- */
-static void dyn_lock_function(int mode, struct CRYPTO_dynlock_value *l,
-                              const char *file, int line)
-{
-    if (mode & CRYPTO_LOCK) {
-       pthread_mutex_lock(&l->mutex);
-    } else {
-       pthread_mutex_unlock(&l->mutex);
-    }
-}
-
-/*
- * OpenSSL destroy dynamic crypto lock
- */
-static void dyn_destroy_function(struct CRYPTO_dynlock_value *l,
-                                 const char *file, int line)
-{
-    pthread_mutex_destroy(&l->mutex);
-    free(l);
-}
-
 
 /*******************************************/
 
@@ -315,24 +247,6 @@ static void ssl_wrap_fini(void)
    /* remove every redirect rule */   
    LIST_FOREACH(le, &listen_ports, next)
       sslw_remove_redirect(le->sslw_port, le->redir_port);
-
-   /*destroy callbacks */
-
-   if (mutex_buf != NULL) {
-      CRYPTO_set_dynlock_create_callback(NULL);
-      CRYPTO_set_dynlock_lock_callback(NULL);
-      CRYPTO_set_dynlock_destroy_callback(NULL);
-      CRYPTO_set_locking_callback(NULL);
-      CRYPTO_set_id_callback(NULL);
-  
-      int i=0;
-      for (i=0; i < CRYPTO_num_locks(); i++) {
-          pthread_mutex_destroy(&mutex_buf[i]);
-      }  
-
-      free(mutex_buf);
-      mutex_buf = NULL;
-   }
 
    SSL_CTX_free(ssl_ctx_server);
    SSL_CTX_free(ssl_ctx_client);
@@ -1000,6 +914,8 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
    if (ae->cert)
       X509_free(ae->cert);
 
+   SSL_CTX_free(ssl_ctx_server);
+   SSL_CTX_free(ssl_ctx_client);
    SAFE_FREE(ae);
 }
 
@@ -1087,28 +1003,6 @@ static void sslw_init(void)
 {
    SSL *dummy_ssl=NULL;
 
-   /* static locks area */
-   mutex_buf = malloc(CRYPTO_num_locks() * sizeof(pthread_mutex_t));
-
-   if(mutex_buf == NULL) {
-	FATAL_ERROR("Could not allocate mutex locks: %s", strerror(errno));
-   }
-
-   int i =0;
-
-   for (i=0; i < CRYPTO_num_locks(); i++){
-       pthread_mutex_init(&mutex_buf[i], NULL);
-   }
-
-   /* static locks callbacks */
-   CRYPTO_set_locking_callback(locking_function);
-   CRYPTO_set_id_callback(id_function);
- 
-   /*dynamic locks callbacks */
-   CRYPTO_set_dynlock_create_callback(dyn_create_function);
-   CRYPTO_set_dynlock_lock_callback(dyn_lock_function);
-   CRYPTO_set_dynlock_destroy_callback(dyn_destroy_function);
-
    SSL_library_init();
 
    /* Create the two global CTX */
@@ -1146,11 +1040,16 @@ EC_THREAD_FUNC(sslw_child)
 
    ae = (struct accepted_entry *)args;
    ec_thread_init();
+
+   /* Use a SSL_CTX * per thread */
+   sslw_init();
  
    /* Contact the real server */
    if (sslw_sync_conn(ae) == -EINVALID) {
       close_socket(ae->fd[SSL_CLIENT]);
       SAFE_FREE(ae);
+      SSL_CTX_free(ssl_ctx_server);
+      SSL_CTX_free(ssl_ctx_client);
       ec_thread_exit();
    }	    
 	    

@@ -67,6 +67,11 @@
 
 #endif /* HAVE_OPENSSL */
 
+static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define THREADS_LOCK     do{ pthread_mutex_lock(&threads_mutex); } while(0)
+#define THREADS_UNLOCK   do{ pthread_mutex_unlock(&threads_mutex); } while(0)
+
+
 /* globals */
 
 static LIST_HEAD (, listen_entry) listen_ports;
@@ -617,6 +622,8 @@ static int sslw_ssl_accept(SSL *ssl_sk)
  */   
 static int sslw_sync_ssl(struct accepted_entry *ae) 
 {   
+
+   THREADS_LOCK;
    X509 *server_cert;
    
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
@@ -646,6 +653,8 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != ESUCCESS) 
       return -EINVALID;
 
+
+   THREADS_UNLOCK;
    return ESUCCESS;   
 }
 

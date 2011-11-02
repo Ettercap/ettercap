@@ -171,6 +171,11 @@ void ec_thread_register_child(pthread_t parent, pthread_t id, char *name, char *
    THREADS_LOCK;
    
    LIST_FOREACH(current, &thread_list_head, next) {
+      /*turn on the parent's hasChildren flag*/
+      if(parent != EC_PTHREAD_NULL && pthread_equal(current->t.id, parent)) {
+         current->t.hasChildren = 1;
+      }
+
       if (pthread_equal(current->t.id, id)) {
          SAFE_FREE(current->t.name);
          SAFE_FREE(current->t.description);
@@ -257,10 +262,12 @@ void ec_thread_destroy(pthread_t id)
    DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", PTHREAD_ID(id), ec_thread_getname(id));
 
 
-   /* send the cancel signal to all children threads */
+   /* send the cancel signal to all children threads (if any)*/
    LIST_FOREACH(current, &thread_list_head, next) {
-	if(current->t.parent != EC_PTHREAD_NULL && pthread_equal(current->t.parent,id)) {
-          pthread_cancel((pthread_t) current->t.id); 
+	if(current->t.parent != EC_PTHREAD_NULL && pthread_equal(current->t.parent,id) &&
+          current->t.hasChildren) {
+          //pthread_cancel((pthread_t) current->t.id); 
+          ec_thread_destroy((pthread_t)current->t.id);
 	}
    }
 

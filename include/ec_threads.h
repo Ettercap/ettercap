@@ -10,7 +10,6 @@
 struct ec_thread {
    char *name;
    char *description;
-   pthread_t parent;
    pthread_t id;
    int       hasChildren; 
 };

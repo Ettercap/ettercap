@@ -111,7 +111,7 @@ struct sslw_ident {
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
 
-SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
+static SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
 static EVP_PKEY *global_pk;
 static u_int16 number_of_services;
 static struct pollfd *poll_fd = NULL;
@@ -248,6 +248,7 @@ static void ssl_wrap_fini(void)
 
    SSL_CTX_free(ssl_ctx_server);
    SSL_CTX_free(ssl_ctx_client);
+
 }
 #endif
 
@@ -1007,6 +1008,9 @@ static void sslw_init(void)
    ssl_ctx_client = SSL_CTX_new(SSLv23_server_method());
    ssl_ctx_server = SSL_CTX_new(SSLv23_client_method());
 
+   ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
+   ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");
+
    /* Get our private key from our cert file */
    if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, INSTALL_DATADIR "/" EC_PROGRAM "/" CERT_FILE, SSL_FILETYPE_PEM) == 0) {
       DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- trying ./share/%s",  CERT_FILE);
@@ -1039,9 +1043,6 @@ EC_THREAD_FUNC(sslw_child)
    ae = (struct accepted_entry *)args;
    ec_thread_init();
 
-   /* Use a SSL_CTX * per thread */
-   sslw_init();
- 
    /* Contact the real server */
    if (sslw_sync_conn(ae) == -EINVALID) {
       close_socket(ae->fd[SSL_CLIENT]);

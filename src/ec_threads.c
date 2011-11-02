@@ -54,7 +54,6 @@ char * ec_thread_getname(pthread_t id);
 pthread_t ec_thread_getpid(char *name);
 char * ec_thread_getdesc(pthread_t id);
 void ec_thread_reigster(pthread_t id, char *name, char *descs);
-void ec_thread_register_child(pthread_t parent, pthread_t id, char *name, char *desc);
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
 void ec_thread_destroy(pthread_t id);
 void ec_thread_init(void);
@@ -149,11 +148,6 @@ char * ec_thread_getdesc(pthread_t id)
 /* add a thread in the thread list */
 void ec_thread_register(pthread_t id, char *name, char *desc)
 {
-   ec_thread_register_child(EC_PTHREAD_NULL, id, name, desc);
-}
-
-void ec_thread_register_child(pthread_t parent, pthread_t id, char *name, char *desc)
-{
    struct thread_list *current, *newelem;
 
    if (pthread_equal(id, EC_PTHREAD_SELF))
@@ -164,7 +158,6 @@ void ec_thread_register_child(pthread_t parent, pthread_t id, char *name, char *
    SAFE_CALLOC(newelem, 1, sizeof(struct thread_list));
               
    newelem->t.id = id;
-   newelem->t.parent = parent;
    newelem->t.name = strdup(name);
    newelem->t.description = strdup(desc);
    newelem->t.hasChildren = 0;
@@ -172,11 +165,6 @@ void ec_thread_register_child(pthread_t parent, pthread_t id, char *name, char *
    THREADS_LOCK;
    
    LIST_FOREACH(current, &thread_list_head, next) {
-      /*turn on the parent's hasChildren flag*/
-      if(parent != EC_PTHREAD_NULL && pthread_equal(current->t.id, parent)) {
-         current->t.hasChildren = 1;
-      }
-
       if (pthread_equal(current->t.id, id)) {
          SAFE_FREE(current->t.name);
          SAFE_FREE(current->t.description);
@@ -200,7 +188,6 @@ void ec_thread_register_child(pthread_t parent, pthread_t id, char *name, char *
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args)
 {
    pthread_t id;
-   pthread_t me = pthread_self();
 
    DEBUG_MSG("ec_thread_new -- %s", name);
 
@@ -215,7 +202,7 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
    if (pthread_create(&id, NULL, function, args) != 0)
       ERROR_MSG("not enough resources to create a new thread in this process");
 
-   ec_thread_register_child(me, id, name, desc);
+   ec_thread_register(id, name, desc);
 
    DEBUG_MSG("ec_thread_new -- %lu created ", PTHREAD_ID(id));
 
@@ -262,15 +249,6 @@ void ec_thread_destroy(pthread_t id)
    
    DEBUG_MSG("ec_thread_destroy -- terminating %lu [%s]", PTHREAD_ID(id), ec_thread_getname(id));
 
-
-   /* send the cancel signal to all children threads (if any)*/
-   LIST_FOREACH(current, &thread_list_head, next) {
-	if(current->t.parent != EC_PTHREAD_NULL && pthread_equal(current->t.parent,id) &&
-          current->t.hasChildren) {
-          //pthread_cancel((pthread_t) current->t.id); 
-          ec_thread_destroy((pthread_t)current->t.id);
-	}
-   }
 
    /* send the cancel signal to the thread */
    pthread_cancel((pthread_t)id);
@@ -325,14 +303,6 @@ void ec_thread_kill_all(void)
       /* skip ourself */
       if (!pthread_equal(current->t.id, id)) {
          DEBUG_MSG("ec_thread_kill_all -- terminating %lu [%s]", PTHREAD_ID(current->t.id), current->t.name);
-
-         /* send cancel signal to all children threads */
-         LIST_FOREACH(children, &thread_list_head, next)  {
-		pthread_t id = current->t.id;
-                if(children->t.parent != EC_PTHREAD_NULL && pthread_equal(children->t.parent, id)) {
-                  pthread_cancel((pthread_t)children->t.id);
-                }
-         }
 
          /* send the cancel signal to the thread */
          pthread_cancel((pthread_t)current->t.id);

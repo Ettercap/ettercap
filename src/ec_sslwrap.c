@@ -60,7 +60,6 @@
       sslw_wipe_connection(y);      \
       SAFE_FREE(z.DATA.data);       \
       SAFE_FREE(z.DATA.disp_data);  \
-      SAFE_FREE(y);                 \
       ec_thread_exit();             \
    }                                \
 } while(0)
@@ -1037,8 +1036,8 @@ EC_THREAD_FUNC(sslw_child)
    struct accepted_entry *ae;
    struct timespec tm;
 
-   tm.tv_sec = 3;
-   tm.tv_nsec = 0;
+   tm.tv_sec = 0;
+   tm.tv_nsec = 3000*1000;
 
    ae = (struct accepted_entry *)args;
    ec_thread_init();
@@ -1067,11 +1066,9 @@ EC_THREAD_FUNC(sslw_child)
    sslw_initialize_po(&po, po.DATA.data);
    
    LOOP {
-      CANCELLATION_POINT();
 
       data_read = 0;
       for(direction=0; direction<2; direction++) {
-         CANCELLATION_POINT();
 
          ret_val = sslw_read_data(ae, direction, &po);
          BREAK_ON_ERROR(ret_val,ae,po);
@@ -1096,7 +1093,6 @@ EC_THREAD_FUNC(sslw_child)
          }  
       }
 
-      CANCELLATION_POINT();
       /* XXX - Set a proper sleep time */
       if (!data_read)
         nanosleep(&tm, NULL);

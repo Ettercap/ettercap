@@ -30,6 +30,7 @@ EC_API_EXTERN void ec_thread_destroy(pthread_t id);
 EC_API_EXTERN void ec_thread_init(void);
 EC_API_EXTERN void ec_thread_kill_all(void);
 EC_API_EXTERN void ec_thread_exit(void);
+EC_API_EXTERN void ec_thread_add_cleanup_handler(void (*routine)(void *), void *arg);
 
 #define RETURN_IF_NOT_MAIN() do{ if (strcmp(ec_thread_getname(EC_PTHREAD_SELF), GBL_PROGRAM)) return; }while(0)
 

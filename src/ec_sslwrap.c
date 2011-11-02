@@ -243,7 +243,7 @@ static void ssl_wrap_fini(void)
 
    DEBUG_MSG("Cleanup...");
    /* remove every redirect rule */   
-   LIST_FOREACH(le, &listen_ports, next) {
+   LIST_FOREACH(le, &listen_ports, next) 
       sslw_remove_redirect(le->sslw_port, le->redir_port);
       SAFE_FREE(le);
    }
@@ -915,7 +915,8 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
    if (ae->cert)
       X509_free(ae->cert);
 
-   SAFE_FREE(ae);
+   if(ae)
+     SAFE_FREE(ae);
 }
 
 /* 

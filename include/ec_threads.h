@@ -12,7 +12,7 @@ struct ec_thread {
    char *description;
    pthread_t parent;
    pthread_t id;
-   int       hasChildren = 0; 
+   int       hasChildren; 
 };
 
 /* a value to be used to return errors in fuctcions using pthread_t values */

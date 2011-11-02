@@ -167,6 +167,7 @@ void ec_thread_register_child(pthread_t parent, pthread_t id, char *name, char *
    newelem->t.parent = parent;
    newelem->t.name = strdup(name);
    newelem->t.description = strdup(desc);
+   newelem->t.hasChildren = 0;
 
    THREADS_LOCK;
    

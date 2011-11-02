@@ -24,6 +24,7 @@
 #include <ec_threads.h>
 
 #include <pthread.h>
+#include <errno.h>
 
 struct thread_list {
    struct ec_thread t;
@@ -199,7 +200,7 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
    INIT_LOCK; 
 
    if (pthread_create(&id, NULL, function, args) != 0)
-      ERROR_MSG("not enough resources to create a new thread in this process");
+      ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(errno));
 
    ec_thread_register(id, name, desc);
 

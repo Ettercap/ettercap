@@ -236,6 +236,15 @@ void ec_thread_init(void)
    DEBUG_MSG("ec_thread_init -- (%lu) ready and syncronized",  PTHREAD_ID(id));
 }
 
+/*
+ * set the threads clean up handler
+ */
+
+void ec_thread_add_cleanup_handler(void (*routine)(void *), void *arg) 
+{
+    pthread_t id = pthread_self();
+    pthread_cleanup_push(routine, arg);
+}
 
 /*
  * destroy a thread in the list

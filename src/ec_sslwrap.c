@@ -241,9 +241,12 @@ static void ssl_wrap_fini(void)
 {
    struct listen_entry *le;
 
+   DEBUG_MSG("Cleanup...");
    /* remove every redirect rule */   
-   LIST_FOREACH(le, &listen_ports, next)
+   LIST_FOREACH(le, &listen_ports, next) {
       sslw_remove_redirect(le->sslw_port, le->redir_port);
+      SAFE_FREE(le);
+   }
 
    SSL_CTX_free(ssl_ctx_server);
    SSL_CTX_free(ssl_ctx_client);
@@ -1027,6 +1030,20 @@ static void sslw_init(void)
 /* 
  * SSL thread child function.
  */
+
+/*
+ * clean up handler
+ */
+
+static void sslw_child_cleanup(void *arg)
+{
+        struct accepted_entry *ae;
+      
+        ae = (struct accepted_entry *)arg;
+  
+	sslw_wipe_connection(ae);
+}
+
 EC_THREAD_FUNC(sslw_child)
 {
    struct packet_object po;
@@ -1039,6 +1056,7 @@ EC_THREAD_FUNC(sslw_child)
 
    ae = (struct accepted_entry *)args;
    ec_thread_init();
+   ec_thread_add_cleanup_handler(sslw_child_cleanup, ae);
 
    /* Contact the real server */
    if (sslw_sync_conn(ae) == -EINVALID) {

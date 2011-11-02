@@ -245,6 +245,9 @@ static void ssl_wrap_fini(void)
    /* remove every redirect rule */   
    LIST_FOREACH(le, &listen_ports, next)
       sslw_remove_redirect(le->sslw_port, le->redir_port);
+
+   SSL_CTX_free(ssl_ctx_server);
+   SSL_CTX_free(ssl_ctx_client);
 }
 #endif
 

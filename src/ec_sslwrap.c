@@ -912,8 +912,6 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
    if (ae->cert)
       X509_free(ae->cert);
 
-   SSL_CTX_free(ssl_ctx_server);
-   SSL_CTX_free(ssl_ctx_client);
    SAFE_FREE(ae);
 }
 
@@ -1046,8 +1044,6 @@ EC_THREAD_FUNC(sslw_child)
    if (sslw_sync_conn(ae) == -EINVALID) {
       close_socket(ae->fd[SSL_CLIENT]);
       SAFE_FREE(ae);
-      SSL_CTX_free(ssl_ctx_server);
-      SSL_CTX_free(ssl_ctx_client);
       ec_thread_exit();
    }	    
 	    

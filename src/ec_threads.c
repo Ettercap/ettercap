@@ -53,7 +53,7 @@ static pthread_mutex_t init_mtx = PTHREAD_MUTEX_INITIALIZER;
 char * ec_thread_getname(pthread_t id);
 pthread_t ec_thread_getpid(char *name);
 char * ec_thread_getdesc(pthread_t id);
-void ec_thread_reigster(pthread_t id, char *name, char *descs);
+void ec_thread_reigster(pthread_t id, char *name, char *desc);
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
 void ec_thread_destroy(pthread_t id);
 void ec_thread_init(void);
@@ -160,7 +160,6 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    newelem->t.id = id;
    newelem->t.name = strdup(name);
    newelem->t.description = strdup(desc);
-   newelem->t.hasChildren = 0;
 
    THREADS_LOCK;
    
@@ -286,7 +285,7 @@ void ec_thread_destroy(pthread_t id)
 
 void ec_thread_kill_all(void)
 {
-   struct thread_list *current, *old, *children;
+   struct thread_list *current, *old;
    pthread_t id = pthread_self();
 
    DEBUG_MSG("ec_thread_kill_all -- caller %lu [%s]", PTHREAD_ID(id), ec_thread_getname(id));

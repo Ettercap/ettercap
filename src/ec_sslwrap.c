@@ -61,8 +61,6 @@
       SAFE_FREE(z.DATA.data);       \
       SAFE_FREE(z.DATA.disp_data);  \
       SAFE_FREE(y);                 \
-      SSL_CTX_free(ssl_ctx_server); \
-      SSL_CTX_free(ssl_ctx_client); \
       ec_thread_exit();             \
    }                                \
 } while(0)

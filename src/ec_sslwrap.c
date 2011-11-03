@@ -1059,9 +1059,14 @@ EC_THREAD_FUNC(sslw_child)
    ec_thread_init();
    ec_thread_add_cleanup_handler(sslw_child_cleanup, ae);
 
+   /* We don't want this to accidentally close STDIN */
+   ae->fd[SSL_CLIENT] = -1;
+   ae->fd[SSL_SERVER] = -1;
+
    /* Contact the real server */
    if (sslw_sync_conn(ae) == -EINVALID) {
-      close_socket(ae->fd[SSL_CLIENT]);
+      if (ae->fd[SSL_CLIENT] != -1)
+         close_socket(ae->fd[SSL_CLIENT]);
       SAFE_FREE(ae);
       ec_thread_exit();
    }	    

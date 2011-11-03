@@ -10,6 +10,8 @@
 struct ec_thread {
    char *name;
    char *description;
+   void *cleanup;
+   void *cleanup_arg;
    pthread_t id;
 };
 

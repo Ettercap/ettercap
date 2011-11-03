@@ -243,7 +243,7 @@ void ec_thread_init(void)
 
 void ec_thread_add_cleanup_handler(void *(*function)(void *), void *arg) 
 {
-    pthread_cleanup_push(routine, arg);
+    pthread_cleanup_push(function, arg);
     pthread_cleanup_pop(1);
 }
 

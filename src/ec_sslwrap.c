@@ -239,12 +239,13 @@ void ssl_wrap_init(void)
 #ifdef HAVE_OPENSSL
 static void ssl_wrap_fini(void)
 {
-   struct listen_entry *le;
+   struct listen_entry *le, *old;
 
    DEBUG_MSG("Cleanup...");
    /* remove every redirect rule */   
-   LIST_FOREACH(le, &listen_ports, next) {
+   LIST_FOREACH_SAFE(le, &listen_ports, next, old) {
       sslw_remove_redirect(le->sslw_port, le->redir_port);
+      LIST_REMOVE(le, next);
       SAFE_FREE(le);
    }
 

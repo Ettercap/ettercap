@@ -249,7 +249,7 @@ void ec_thread_add_cleanup_handler(void *(*function)(void *), void *arg)
     THREADS_LOCK;
 
     LIST_FOREACH(current, &thread_list_head, next) {
-       if (pthread_equal(current->td.id, id)) {
+       if (pthread_equal(current->t.id, id)) {
           current->t.cleanup = function;
           current->t.cleanup_arg = arg; 
           return;

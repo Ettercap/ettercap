@@ -60,7 +60,6 @@ void ec_thread_destroy(pthread_t id);
 void ec_thread_init(void);
 void ec_thread_kill_all(void);
 void ec_thread_exit(void);
-void ec_thread_add_cleanup_handler(void *(*function)(void *), void *arg);
 
 /*******************************************/
 
@@ -162,8 +161,6 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    newelem->t.id = id;
    newelem->t.name = strdup(name);
    newelem->t.description = strdup(desc);
-   newelem->t.cleanup = NULL;
-   newelem->t.cleanup_arg = NULL;
 
    THREADS_LOCK;
    
@@ -237,27 +234,6 @@ void ec_thread_init(void)
    INIT_UNLOCK;
    
    DEBUG_MSG("ec_thread_init -- (%lu) ready and syncronized",  PTHREAD_ID(id));
-}
-
-/*
- * set the threads clean up handler
- */
-
-void ec_thread_add_cleanup_handler(void *(*function)(void *), void *arg) 
-{
-    struct thread_list *current; 
-    pthread_t id = pthread_self();
-
-    THREADS_LOCK;
-
-    LIST_FOREACH(current, &thread_list_head, next) {
-       if (pthread_equal(current->t.id, id)) {
-          current->t.cleanup = function;
-          current->t.cleanup_arg = arg; 
-          return;
-       }
-    }
-
 }
 
 /*
@@ -355,8 +331,6 @@ void ec_thread_exit(void)
 {
    struct thread_list *current, *old;
    pthread_t id = pthread_self();
-   void *cleanup_handler = NULL;
-   void *cleanup_arg = NULL;
 
    DEBUG_MSG("ec_thread_exit -- caller %lu [%s]", PTHREAD_ID(id), ec_thread_getname(id));
 
@@ -365,8 +339,6 @@ void ec_thread_exit(void)
    LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {
       /* delete our entry */
       if (pthread_equal(current->t.id, id)) {
-         cleanup_handler = current->t.cleanup;
-         cleanup_arg = current->t.cleanup_arg;
          SAFE_FREE(current->t.name);
          SAFE_FREE(current->t.description);
          LIST_REMOVE(current, next);
@@ -377,11 +349,6 @@ void ec_thread_exit(void)
    THREADS_UNLOCK;
 
    /* perform a clean exit of the thread */
-   if (cleanup_handler != NULL) {
-      pthread_cleanup_push(cleanup_handler, cleanup_arg);
-      pthread_cleanup_pop(1);
-   }
-
    pthread_exit(0);
    
 }

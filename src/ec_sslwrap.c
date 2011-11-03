@@ -1032,18 +1032,6 @@ static void sslw_init(void)
  * SSL thread child function.
  */
 
-/*
- * clean up handler
- */
-
-static void sslw_child_cleanup(void *arg)
-{
-        struct accepted_entry *ae;
-      
-        ae = (struct accepted_entry *)arg;
-  
-	sslw_wipe_connection(ae);
-}
 
 EC_THREAD_FUNC(sslw_child)
 {
@@ -1057,7 +1045,6 @@ EC_THREAD_FUNC(sslw_child)
 
    ae = (struct accepted_entry *)args;
    ec_thread_init();
-   ec_thread_add_cleanup_handler(sslw_child_cleanup, ae);
 
    /* We don't want this to accidentally close STDIN */
    ae->fd[SSL_CLIENT] = -1;

@@ -1047,7 +1047,6 @@ EC_THREAD_FUNC(sslw_child)
    ec_thread_init();
 
    /* We don't want this to accidentally close STDIN */
-   ae->fd[SSL_CLIENT] = -1;
    ae->fd[SSL_SERVER] = -1;
 
    /* Contact the real server */

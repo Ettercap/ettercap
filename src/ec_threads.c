@@ -162,6 +162,8 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    newelem->t.id = id;
    newelem->t.name = strdup(name);
    newelem->t.description = strdup(desc);
+   newelem->t.cleanup = NULL;
+   newelem->t.cleanup_arg = NULL;
 
    THREADS_LOCK;
    
@@ -375,9 +377,11 @@ void ec_thread_exit(void)
    THREADS_UNLOCK;
 
    /* perform a clean exit of the thread */
+   if (cleanup_handler != NULL) {
+      pthread_cleanup_push(cleanup_handler, cleanup_arg);
+      pthread_cleanup_pop(1);
+   }
 
-   pthread_cleanup_push(cleanup_handler, cleanup_arg);
-   pthread_cleanup_pop(1);
    pthread_exit(0);
    
 }

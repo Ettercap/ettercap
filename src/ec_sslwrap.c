@@ -35,8 +35,10 @@
 #ifndef OS_WINDOWS
    #include <sys/wait.h>
 #endif
+
 #include <fcntl.h>
 #include <time.h>
+#include <pthread.h>
 
 #ifdef HAVE_OPENSSL
 
@@ -1033,7 +1035,6 @@ static void sslw_init(void)
  * SSL thread child function.
  */
 
-
 EC_THREAD_FUNC(sslw_child)
 {
    struct packet_object po;
@@ -1046,6 +1047,7 @@ EC_THREAD_FUNC(sslw_child)
 
    ae = (struct accepted_entry *)args;
    ec_thread_init();
+
 
    /* We don't want this to accidentally close STDIN */
    ae->fd[SSL_SERVER] = -1;
@@ -1101,6 +1103,7 @@ EC_THREAD_FUNC(sslw_child)
       }
 
       /* XXX - Set a proper sleep time */
+      /* Should we poll both fd's instead of guessing and sleeping? */
       if (!data_read)
         nanosleep(&tm, NULL);
    }

@@ -202,7 +202,6 @@ FUNC_DECODER(decode_ip)
    hook_point(HOOK_PACKET_IP, po);
 
    /* don't save the sessions in unoffensive mode */
-   /* don't save if we have no filter chain loaded either */
    if (GBL_FILTERS->chain && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
    
       /* Find or create the correct session */
@@ -226,7 +225,7 @@ FUNC_DECODER(decode_ip)
    EXECUTE_DECODER(next_decoder);
    
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
+   if (GBL_FILTERS->chain && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
       /* 
        * Modification checks and adjustments.
        * - ip->id according to number of injected/dropped packets

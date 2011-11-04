@@ -293,7 +293,7 @@ FUNC_DECODER(decode_tcp)
    EXECUTE_DECODER(next_decoder);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   if (GBL_FILTERS->chain && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
       
       /* 
        * Take trace of the FIN flag (to block injection) 

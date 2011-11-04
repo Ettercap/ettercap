@@ -209,7 +209,7 @@ pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void 
    if (detached) {
       pthread_attr_t attr = NULL;
       pthread_attr_init(&attr);
-      pthread_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+      pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
       if (pthread_create(&id, &attr, function, args) != 0)
          ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(errno));
    }else {

@@ -784,7 +784,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    /* create the buffer to be displayed */
    packet_destroy_object(po);
    packet_disp_data(po, po->DATA.data, po->DATA.len);
-  
+   
    return ESUCCESS;
 }
 
@@ -933,10 +933,12 @@ static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
     * XXX - Be sure to not modify these len.
     */
    memset(po, 0, sizeof(struct packet_object));
-   if (p_data == NULL)
+   if (p_data == NULL) {
       SAFE_CALLOC(po->DATA.data, 1, UINT16_MAX);
-   else
+   } else {
+      SAFE_FREE(po->DATA.data);
       po->DATA.data = p_data;
+   }
       
    po->L2.header  = po->DATA.data; 
    po->L3.header  = po->DATA.data;
@@ -1071,6 +1073,7 @@ EC_THREAD_FUNC(sslw_child)
    po.len = 64;
    po.L4.flags = (TH_SYN | TH_ACK);
    packet_disp_data(&po, po.DATA.data, po.DATA.len);
+
    sslw_parse_packet(ae, SSL_SERVER, &po);
    sslw_initialize_po(&po, po.DATA.data);
    

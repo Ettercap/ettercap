@@ -10,6 +10,7 @@
 struct ec_thread {
    char *name;
    char *description;
+   int  detached;
    pthread_t id;
 };
 
@@ -26,6 +27,7 @@ EC_API_EXTERN pthread_t ec_thread_getpid(char *name);
 EC_API_EXTERN char * ec_thread_getdesc(pthread_t id);
 EC_API_EXTERN void ec_thread_register(pthread_t id, char *name, char *desc);
 EC_API_EXTERN pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
+EC_API_EXTERN pthread_t ec_thread_detached(char *name, char *desc, void *(*function)(void *), void *args, int detached);
 EC_API_EXTERN void ec_thread_destroy(pthread_t id);
 EC_API_EXTERN void ec_thread_init(void);
 EC_API_EXTERN void ec_thread_kill_all(void);

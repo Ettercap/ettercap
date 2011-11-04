@@ -324,8 +324,9 @@ EC_THREAD_FUNC(sslw_start)
             /* Set the peer (client) in the connection list entry */
             ae->port[SSL_CLIENT] = client_sin.sin_port;
             ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (char *)&(client_sin.sin_addr.s_addr));
-	    
-            ec_thread_new("sslw_child", "ssl child", &sslw_child, ae);
+	   
+            /* create a detached thread */ 
+            ec_thread_new_detached("sslw_child", "ssl child", &sslw_child, ae, 1);
          }
    }
 

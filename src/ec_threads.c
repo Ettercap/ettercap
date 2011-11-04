@@ -56,6 +56,7 @@ pthread_t ec_thread_getpid(char *name);
 char * ec_thread_getdesc(pthread_t id);
 void ec_thread_reigster(pthread_t id, char *name, char *desc);
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
+pthread_t ec_thread_detached(char *name, char *desc, void *(*function)(void *), void *args, int detached);
 void ec_thread_destroy(pthread_t id);
 void ec_thread_init(void);
 void ec_thread_kill_all(void);
@@ -185,7 +186,11 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
  * creates a new thread on the given function
  */
 
-pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args)
+pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args) {
+   return ec_thread_new_detached(name, desc, function, args, 0);
+}
+
+pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void *), void *args, int detached)
 {
    pthread_t id;
 
@@ -199,8 +204,17 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
     */
    INIT_LOCK; 
 
-   if (pthread_create(&id, NULL, function, args) != 0)
-      ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(errno));
+
+   if (detached) {
+      pthread_attr_t attr = NULL;
+      pthread_attr_init(&attr);
+      pthread_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+      if (pthread_create(&id, &attr, function, args) != 0)
+         ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(errno));
+   }else {
+      if (pthread_create(&id, NULL, function, args) != 0)
+         ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(errno));
+   }
 
    ec_thread_register(id, name, desc);
 

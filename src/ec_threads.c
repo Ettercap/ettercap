@@ -195,7 +195,7 @@ pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void 
 {
    pthread_t id;
 
-   DEBUG_MSG("ec_thread_new -- %s", name);
+   DEBUG_MSG("ec_thread_new -- %s detached %d", name, detached);
 
    /* 
     * lock the mutex to syncronize with the new thread.

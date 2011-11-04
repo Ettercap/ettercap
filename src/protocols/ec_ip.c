@@ -202,7 +202,8 @@ FUNC_DECODER(decode_ip)
    hook_point(HOOK_PACKET_IP, po);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   /* don't save if we have no filter chain loaded either */
+   if (GBL_FILTERS->chain && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
    
       /* Find or create the correct session */
       ip_create_ident(&ident, PACKET);

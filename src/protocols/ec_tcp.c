@@ -248,7 +248,8 @@ FUNC_DECODER(decode_tcp)
    hook_point(HOOK_PACKET_TCP, po);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   /* don't save sessions if no filters chain are defined */
+   if (GBL_FILTERS->chain && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
       
       /* Find or create the correct session */
       tcp_create_ident(&ident, PACKET);

@@ -223,7 +223,7 @@ pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void 
          ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(errno));
    }
 
-   ec_thread_register(id, name, desc, detached);
+   ec_thread_register_detached(id, name, desc, detached);
 
    DEBUG_MSG("ec_thread_new -- %lu created ", PTHREAD_ID(id));
 

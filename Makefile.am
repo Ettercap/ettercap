@@ -43,6 +43,6 @@ test: all
 	./shtool fixperm ./
 
 install-exec-hook:
-	rm -f $(libdir)/*.la
+	rm -f $(libdir)/ettercap/*.la
 # vim:ts=4:noexpandtab
 

@@ -332,7 +332,9 @@ FUNC_INJECTOR(inject_ip)
       PACKET->fwd_packet = PACKET->packet;
       PACKET->fwd_len = PACKET->L3.len;
    }
-   
+ 
+   /* Injectors executed, no need to keep the session */ 
+   session_del(s->ident, IP_IDENT_LEN); 
    return ESUCCESS;
 }
 

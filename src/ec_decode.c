@@ -233,6 +233,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    CANCELLATION_POINT();
 
+   SAFE_FREE(pkt);
+   SAFE_FREE(pkthdr);
+
    return;
 }
 

@@ -358,6 +358,14 @@ void ec_thread_exit(void)
    LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {
       /* delete our entry */
       if (pthread_equal(current->t.id, id)) {
+
+      /* thread is attempting to shut down on its own, check and see if the thread is detached,
+         if not set is as a detached thread since when a thread calls this method, there is no thread
+         that will do the pthread_join to force it to release all of its resources */
+         if (!current->t.detached) {
+            pthread_setdetach(id);
+         }
+
          SAFE_FREE(current->t.name);
          SAFE_FREE(current->t.description);
          LIST_REMOVE(current, next);

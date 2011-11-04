@@ -369,7 +369,7 @@ void ec_thread_exit(void)
          if not set is as a detached thread since when a thread calls this method, there is no thread
          that will do the pthread_join to force it to release all of its resources */
          if (!current->t.detached) {
-            pthread_setdetach(id);
+            pthread_detach(id);
          }
 
          SAFE_FREE(current->t.name);

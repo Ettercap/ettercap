@@ -18,7 +18,7 @@ struct plugin_ops
    int (*fini)(void *);          /* deactivation function */
 };
 
-#define PLUGIN_PATTERN   "ec_*"
+#define PLUGIN_PATTERN   "ec_*.so"
 
 EC_API_EXTERN void plugin_load_all(void);
 EC_API_EXTERN int plugin_load_single(char *path, char *name);

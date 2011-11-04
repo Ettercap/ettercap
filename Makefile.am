@@ -42,5 +42,7 @@ test: all
 	find ./plug-ins -name '*.so' -exec ln -fs {} ./ \;
 	./shtool fixperm ./
 
+install-exec-hook:
+	rm -f $(libdir)/*.la
 # vim:ts=4:noexpandtab
 

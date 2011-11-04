@@ -315,7 +315,7 @@ static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object 
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
    int Proxy_Auth = 0;
-   char *token, *to_decode, *tok;
+   char *token, *to_decode, *tok, *decoded;
 
    DEBUG_MSG("HTTP --> dissector http (Basic Auth)");
 
@@ -334,12 +334,19 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
       return 1;
        
    ec_strtok(to_decode, "\r", &tok);
-   base64_decode(to_decode, to_decode);
+
+   if (!(decoded = strdup(to_decode))) {
+      SAFE_FREE(to_decode);
+      return 1;
+   }
+
+   memset(decoded, 0, strlen(decoded));
+   base64_decode(decoded, to_decode);
    
    /* Parse the cleartext auth string */
-   if ( (token = strsep(&to_decode, ":")) != NULL) {
+   if ( (token = strsep(&decoded, ":")) != NULL) {
       po->DISSECTOR.user = strdup(token);
-      if ( (token = strsep(&to_decode, ":")) != NULL) {
+      if ( (token = strsep(&decoded, ":")) != NULL) {
          po->DISSECTOR.pass = strdup(token);
       
          /* Are we authenticating to the proxy or to a website? */
@@ -352,6 +359,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
       }
    }
 
+   SAFE_FREE(decoded);
    SAFE_FREE(to_decode);
    return 1;
 }

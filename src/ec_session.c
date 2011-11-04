@@ -245,6 +245,7 @@ int session_get_and_del(struct ec_session **s, void *ident, size_t ident_len)
 
 void session_free(struct ec_session *s)
 {
+   DEBUG_MSG("session_free: [%p] deleted", s->ident);
    SAFE_FREE(s->ident);
    /* call the cleanup function to free pointers in the data portion */
    if (s->free)

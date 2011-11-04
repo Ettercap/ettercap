@@ -248,7 +248,8 @@ FUNC_DECODER(decode_tcp)
    hook_point(HOOK_PACKET_TCP, po);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   /* don't save sessions if no filters chain are defined */
+   if (GBL_FILTERS->chain && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
       
       /* Find or create the correct session */
       tcp_create_ident(&ident, PACKET);
@@ -292,7 +293,7 @@ FUNC_DECODER(decode_tcp)
    EXECUTE_DECODER(next_decoder);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   if (GBL_FILTERS->chain && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
       
       /* 
        * Take trace of the FIN flag (to block injection) 
@@ -412,7 +413,8 @@ FUNC_INJECTOR(inject_tcp)
    PACKET->L4.len = sizeof(struct tcp_header);
    PACKET->DATA.len = LENGTH; 
    tcph->csum = L4_checksum(PACKET);
-    
+  
+   session_del(s->ident, TCP_IDENT_LEN); 
    return ESUCCESS;
 }
 

@@ -63,10 +63,13 @@ inline int packet_create_object(struct packet_object *po, u_char *buf, size_t le
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
 {
    /* disp_data is always null terminated */
-   if (len + 1)
+   if (len + 1) {
+      if(po->DATA.disp_data)
+        SAFE_FREE(po->DATA.disp_data);
       SAFE_CALLOC(po->DATA.disp_data, len + 1, sizeof(u_char));
-   else
+   } else {
       ERROR_MSG("packet_disp_data() negative len");
+   }
 
    po->DATA.disp_len = len;
    memcpy(po->DATA.disp_data, buf, len);

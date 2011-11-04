@@ -54,7 +54,8 @@ static pthread_mutex_t init_mtx = PTHREAD_MUTEX_INITIALIZER;
 char * ec_thread_getname(pthread_t id);
 pthread_t ec_thread_getpid(char *name);
 char * ec_thread_getdesc(pthread_t id);
-void ec_thread_reigster(pthread_t id, char *name, char *desc, int detached);
+void ec_thread_register_detached(pthread_t id, char *name, char *desc, int detached);
+void ec_thread_register(pthread_t id, char *name, char *desc);
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
 pthread_t ec_thread_detached(char *name, char *desc, void *(*function)(void *), void *args, int detached);
 void ec_thread_destroy(pthread_t id);
@@ -148,7 +149,12 @@ char * ec_thread_getdesc(pthread_t id)
 
 
 /* add a thread in the thread list */
-void ec_thread_register(pthread_t id, char *name, char *desc, int detached)
+void ec_thread_register(pthread_t id, char *name, char *desc)
+{
+   ec_thread_register_detached(id, name, desc, 0);
+}
+
+void ec_thread_register_detached(pthread_t id, char *name, char *desc, int detached)
 {
    struct thread_list *current, *newelem;
 

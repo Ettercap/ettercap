@@ -54,7 +54,7 @@ static pthread_mutex_t init_mtx = PTHREAD_MUTEX_INITIALIZER;
 char * ec_thread_getname(pthread_t id);
 pthread_t ec_thread_getpid(char *name);
 char * ec_thread_getdesc(pthread_t id);
-void ec_thread_reigster(pthread_t id, char *name, char *desc);
+void ec_thread_reigster(pthread_t id, char *name, char *desc, int detached);
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args);
 pthread_t ec_thread_detached(char *name, char *desc, void *(*function)(void *), void *args, int detached);
 void ec_thread_destroy(pthread_t id);
@@ -148,7 +148,7 @@ char * ec_thread_getdesc(pthread_t id)
 
 
 /* add a thread in the thread list */
-void ec_thread_register(pthread_t id, char *name, char *desc)
+void ec_thread_register(pthread_t id, char *name, char *desc, int detached)
 {
    struct thread_list *current, *newelem;
 
@@ -162,6 +162,7 @@ void ec_thread_register(pthread_t id, char *name, char *desc)
    newelem->t.id = id;
    newelem->t.name = strdup(name);
    newelem->t.description = strdup(desc);
+   newelem->t.detached = detached;
 
    THREADS_LOCK;
    
@@ -216,7 +217,7 @@ pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void 
          ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(errno));
    }
 
-   ec_thread_register(id, name, desc);
+   ec_thread_register(id, name, desc, detached);
 
    DEBUG_MSG("ec_thread_new -- %lu created ", PTHREAD_ID(id));
 
@@ -266,11 +267,6 @@ void ec_thread_destroy(pthread_t id)
    /* send the cancel signal to the thread */
    pthread_cancel((pthread_t)id);
 
-#ifndef BROKEN_PTHREAD_JOIN
-   DEBUG_MSG("ec_thread_destroy: pthread_join");
-   /* wait until it has finished */
-   pthread_join((pthread_t)id, NULL);
-#endif         
 
    DEBUG_MSG("ec_thread_destroy -- [%s] terminated", ec_thread_getname(id));
    
@@ -278,6 +274,13 @@ void ec_thread_destroy(pthread_t id)
    
    LIST_FOREACH(current, &thread_list_head, next) {
       if (pthread_equal(current->t.id, id)) {
+#ifndef BROKEN_PTHREAD_JOIN
+         if (!current->t.detached) {
+            DEBUG_MSG("ec_thread_destroy: pthread_join");
+            /* wait until it has finished */
+            pthread_join((pthread_t)id, NULL);
+         }
+#endif         
          SAFE_FREE(current->t.name);
          SAFE_FREE(current->t.description);
          LIST_REMOVE(current, next);
@@ -321,9 +324,11 @@ void ec_thread_kill_all(void)
          pthread_cancel((pthread_t)current->t.id);
          
 #ifndef BROKEN_PTHREAD_JOIN
-         DEBUG_MSG("ec_thread_destroy: pthread_join");
-         /* wait until it has finished */
-         pthread_join(current->t.id, NULL);
+         if (!current->t.detached) {
+            DEBUG_MSG("ec_thread_destroy: pthread_join");
+            /* wait until it has finished */
+            pthread_join(current->t.id, NULL);
+         }
 #endif         
 
          DEBUG_MSG("ec_thread_kill_all -- [%s] terminated", current->t.name);

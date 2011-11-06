@@ -342,7 +342,8 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
 
    memset(decoded, 0, strlen(decoded));
    base64_decode(decoded, to_decode);
-   
+  
+   DEBUG_MSG("Clear text AUTH: %s", decoded); 
    /* Parse the cleartext auth string */
    if ( (token = strsep(&decoded, ":")) != NULL) {
       po->DISSECTOR.user = strdup(token);

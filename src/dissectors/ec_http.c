@@ -355,21 +355,16 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
    
    if (token != NULL) {
       DEBUG_MSG("Test user: %s Pass: %s", token, decoded);
-   }
-
-   if ( (token = strsep(&decoded, ":")) != NULL) {
       po->DISSECTOR.user = strdup(token);
-      if ( (token = strsep(&decoded, ":")) != NULL) {
-         po->DISSECTOR.pass = strdup(token);
-      
-         /* Are we authenticating to the proxy or to a website? */
-         if (Proxy_Auth)
-            po->DISSECTOR.info = strdup("Proxy Authentication");
-         else 
-            Find_Url(ptr, &(po->DISSECTOR.info));
-	    
-         Print_Pass(po);
-      }
+      po.DISSECTOR.pass = strdup(decoded);	
+ 
+      /* Are we authenticating to the proxy or to a website? */
+      if (Proxy_Auth)
+         po->DISSECTOR.info = strdup("Proxy Authentication");
+      else 
+         Find_Url(ptr, &(po->DISSECTOR.info));
+   
+      Print_Pass(po);
    }
 
    SAFE_FREE(decoded);

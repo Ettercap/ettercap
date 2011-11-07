@@ -315,7 +315,7 @@ static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object 
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
    int Proxy_Auth = 0;
-   char *to_decode;
+   char *to_decode, *tok;
    char *user, *pass;
 
    DEBUG_MSG("HTTP --> dissector http (Basic Auth)");

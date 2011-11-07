@@ -686,7 +686,7 @@ static void Find_Url(u_char *to_parse, char **ret)
       host = strdup( fromhere + strlen("Host: ") );
       ec_strtok(host, "\r", &tok);
    } else 
-      host = strdup("");
+      host = (u_char*)strdup("");
 	 
    len = strlen(page) + strlen(host) + 2;
    SAFE_CALLOC(*ret, len, sizeof(char));

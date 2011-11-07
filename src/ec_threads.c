@@ -33,6 +33,8 @@ struct thread_list {
 
 
 /* global data */
+#define DETACHED_THREAD 1
+#define JOINABLE_THREAD 0
 
 static LIST_HEAD(, thread_list) thread_list_head;
 
@@ -194,7 +196,7 @@ void ec_thread_register_detached(pthread_t id, char *name, char *desc, int detac
  */
 
 pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void *args) {
-   return ec_thread_new_detached(name, desc, function, args, 0);
+   return ec_thread_new_detached(name, desc, function, args, JOINABLE_THREAD);
 }
 
 pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void *), void *args, int detached)
@@ -212,7 +214,7 @@ pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void 
    INIT_LOCK; 
 
 
-   if (detached) {
+   if (detached == DETACHED_THREAD) {
       pthread_attr_t attr;
       pthread_attr_init(&attr);
       pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);

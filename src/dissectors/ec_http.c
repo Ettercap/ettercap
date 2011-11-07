@@ -315,7 +315,8 @@ static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object 
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
    int Proxy_Auth = 0;
-   char *token, *to_decode, *tok, *decoded;
+   char *to_decode;
+   char *user, *pass;
 
    DEBUG_MSG("HTTP --> dissector http (Basic Auth)");
 
@@ -345,12 +346,12 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
     */
    /* Parse the cleartext auth string */
   
-   decoded = &to_decode; 
-   token = strsep(decoded, ":");
-   
-   if (token != NULL) {
-      po->DISSECTOR.user = strdup(token);
-      po->DISSECTOR.pass = strdup(decoded);	
+
+   user = strtok_r(to_decode, ":", &pass); 
+
+   if (pass != NULL) {
+      po->DISSECTOR.user = strdup(user);
+      po->DISSECTOR.pass = strdup(pass);	
  
       /* Are we authenticating to the proxy or to a website? */
       if (Proxy_Auth)

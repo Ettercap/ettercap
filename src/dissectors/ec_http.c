@@ -347,7 +347,9 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
    /* Parse the cleartext auth string */
   
 
-   user = strtok_r(to_decode, ":", &pass); 
+   pass = NULL;
+
+   user = ec_strtok(to_decode, ":", &pass); 
 
    if (pass != NULL) {
       po->DISSECTOR.user = strdup(user);

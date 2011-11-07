@@ -328,13 +328,17 @@ size_t strlen_utf8(const char *s)
  */
 char * ec_strtok(char *s, const char *delim, char **ptrptr)
 {
-#ifdef HAVE_STRTOK_R
+#ifdef HAVE_STRTOK_R 
    return strtok_r(s, delim, ptrptr);
 #else
-   #warning unsafe strtok
-   /* to avoid the warning on this function (the wrapper macro) */
-   #undef strtok
-   return strtok(s, delim);
+   #ifdef OS_WINDOWS
+   return strtok_s(s, delim, ptrptr);
+   #else
+      #warning unsafe strtok
+      /* to avoid the warning on this function (the wrapper macro) */
+      #undef strtok
+      return strtok(s, delim);
+   #endif
 #endif
 }
 

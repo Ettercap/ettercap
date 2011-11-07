@@ -335,26 +335,20 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
        
    ec_strtok(to_decode, "\r", &tok);
 
-   if (!(decoded = strdup(to_decode))) {
-      SAFE_FREE(to_decode);
-      return 1;
-   }
-
-   memset(decoded, 0, strlen(decoded));
-   base64_decode(decoded, to_decode);
+   base64_decode(to_decode, to_decode);
   
-   DEBUG_MSG("Clear text AUTH: %s", decoded); 
+   DEBUG_MSG("Clear text AUTH: %s", to_decode); 
 
    /* clear text should be username:password 
     * this means that we must find the first instance of :
     * token shoul dbe username, and decoded should just be the password
     */
    /* Parse the cleartext auth string */
-   
-   token = strsep(&decoded, ":");
+  
+   decoded = &to_decode; 
+   token = strsep(decoded, ":");
    
    if (token != NULL) {
-      DEBUG_MSG("Test user: %s Pass: %s", token, decoded);
       po->DISSECTOR.user = strdup(token);
       po->DISSECTOR.pass = strdup(decoded);	
  
@@ -367,7 +361,6 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
       Print_Pass(po);
    }
 
-   SAFE_FREE(decoded);
    SAFE_FREE(to_decode);
    return 1;
 }

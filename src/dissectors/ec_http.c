@@ -351,7 +351,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
     */
    /* Parse the cleartext auth string */
    
-   token = strsep(&decoded, ":")
+   token = strsep(&decoded, ":");
    
    if (token != NULL) {
       DEBUG_MSG("Test user: %s Pass: %s", token, decoded);

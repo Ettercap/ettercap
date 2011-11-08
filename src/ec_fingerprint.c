@@ -140,7 +140,7 @@ int fingerprint_search(const char *f, char *dst)
    struct entry *l;
 
    if (!strcmp(f, "")) {
-      strcpy(dst, "UNKNOWN");
+      strncpy(dst, "UNKNOWN", 7);
       return ESUCCESS;
    }
    
@@ -154,7 +154,7 @@ int fingerprint_search(const char *f, char *dst)
    
       /* this is exact match */
       if ( memcmp(l->finger, f, FINGER_LEN) == 0) {
-         strcpy(dst, l->os);
+         strncpy(dst, l->os, OS_LEN+1);
          return ESUCCESS;
       }
       
@@ -169,7 +169,7 @@ int fingerprint_search(const char *f, char *dst)
          char pattern[FINGER_LEN+1];
          
          /* the is the next in the list */
-         strcpy(dst, l->os);  
+         strncpy(dst, l->os, OS_LEN+1);  
         
          strncpy(win, f, FINGER_MSS);
          win[FINGER_MSS-1] = '\0';
@@ -184,7 +184,7 @@ int fingerprint_search(const char *f, char *dst)
          while (l != SLIST_END(&finger_head) && !strncmp(l->finger, win, 4)) {
             if (match_pattern(l->finger, pattern)) {
                /* save the nearest one (wildcarded MSS) */
-               strcpy(dst, l->os); 
+               strncpy(dst, l->os, OS_LEN+1); 
                return -ENOTFOUND;
             }
             l = SLIST_NEXT(l, next);
@@ -209,7 +209,7 @@ void fingerprint_default(char *finger)
     *
     * WWWW:_MSS:TT:WS:S:N:D:T:F:LT
     */
-   strcpy(finger,"0000:_MSS:TT:WS:0:0:0:0:F:LT");  
+   strncpy(finger,"0000:_MSS:TT:WS:0:0:0:0:F:LT", 29);  
 }
 
 /*

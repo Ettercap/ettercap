@@ -1223,7 +1223,7 @@ static void gtkui_connection_inject(void)
       /* advance end iter to end of text, 500 char max */
       gtk_text_iter_forward_chars(&end, 500);
       
-      strcpy(injectbuf, gtk_text_buffer_get_text(buf, &start, &end, FALSE));
+      strncpy(injectbuf, gtk_text_buffer_get_text(buf, &start, &end, FALSE), 501);
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1)))
          gtkui_inject_user(1);

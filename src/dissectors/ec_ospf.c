@@ -120,7 +120,7 @@ FUNC_DECODER(dissector_ospf)
       
       DEBUG_MSG("\tDissector_ospf NO AUTH");
       
-      strcpy(pass, "No Auth");
+      strncpy(pass, "No Auth", 7);
    }
    
    DISSECT_MSG("OSPF : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),

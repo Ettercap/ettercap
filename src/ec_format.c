@@ -167,7 +167,7 @@ int hex_format(const u_char *buf, size_t len, u_char *dst)
   
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
   
@@ -217,7 +217,7 @@ int ascii_format(const u_char *buf, size_t len, u_char *dst)
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
 
@@ -242,7 +242,7 @@ int text_format(const u_char *buf, size_t len, u_char *dst)
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
 
@@ -277,7 +277,7 @@ int ebcdic_format(const u_char *buf, size_t len, u_char *dst)
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
    
@@ -298,7 +298,7 @@ int html_format(const u_char *buf, size_t len, u_char *dst)
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
 
@@ -324,7 +324,7 @@ int bin_format(const u_char *buf, size_t len, u_char *dst)
 {
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
    
@@ -340,7 +340,7 @@ int bin_format(const u_char *buf, size_t len, u_char *dst)
 
 int zero_format(const u_char *buf, size_t len, u_char *dst)
 {
-   strcpy(dst, "");
+   strncpy(dst, "", 1);
    return 0;
 }
 
@@ -353,7 +353,7 @@ int utf8_format(const u_char *buf, size_t len, u_char *dst)
 #ifndef HAVE_UTF8
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
    
@@ -374,7 +374,7 @@ int utf8_format(const u_char *buf, size_t len, u_char *dst)
 
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
 

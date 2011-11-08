@@ -499,7 +499,7 @@ const char *ec_win_strsignal (int signo)
          return ("SIGXFSZ");
 #endif
   }
-  strcpy (buf, "Unknown ");
+  strncpy (buf, "Unknown ", 9);
   itoa (signo, buf+8, 10);
   return (buf);
 }

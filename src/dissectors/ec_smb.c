@@ -328,7 +328,7 @@ FUNC_DECODER(dissector_smb)
                     memcmp(session_data->response1, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 24) ) {
                     memset(session_data->response1, 0, 24);
                     memset(session_data->response2, 0, 24);
-                    strcpy(session_data->user, "(empty)");
+                    strncpy(session_data->user, "(empty)", 7);
                     session_data->domain[0]=0;		    		    
                }
 	       

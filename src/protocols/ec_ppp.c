@@ -161,7 +161,7 @@ FUNC_DECODER(decode_ppp)
                schallenge[0]=0;
                version = 1;
                for (i=0; i<8; i++) {
-                  sprintf(dummy, "%02X", chapch->value.challenge_v1[i]);
+                  snprintf(dummy, 3, "%02X", chapch->value.challenge_v1[i]);
                   strcat(schallenge, dummy);
                }	    
             } else if (chapch->size == 16) {

@@ -56,7 +56,7 @@ static void curses_arp_poisoning(void)
 {
    DEBUG_MSG("curses_arp_poisoning");
 
-   sprintf(params, "arp:");
+   snprintf(params, 4, "arp:");
 
    curses_input("Parameters :", params + strlen("arp:"), PARAMS_LEN - strlen("arp:"), curses_start_mitm);
 }
@@ -65,7 +65,7 @@ static void curses_icmp_redir(void)
 {
    DEBUG_MSG("curses_icmp_redir");
 
-   sprintf(params, "icmp:");
+   snprintf(params, 5, "icmp:");
    
    curses_input("Parameters :", params + strlen("icmp:"), PARAMS_LEN - strlen("icmp:"), curses_start_mitm);
 }
@@ -74,7 +74,7 @@ static void curses_port_stealing(void)
 {
    DEBUG_MSG("curses_port_stealing");
 
-   sprintf(params, "port:");
+   snprintf(params, 5, "port:");
    
    curses_input("Parameters :", params + strlen("port:"), PARAMS_LEN - strlen("port:"), curses_start_mitm);
 }
@@ -83,7 +83,7 @@ static void curses_dhcp_spoofing(void)
 {
    DEBUG_MSG("curses_dhcp_spoofing");
 
-   sprintf(params, "dhcp:");
+   snprintf(params, 5, "dhcp:");
    
    curses_input("Parameters :", params + strlen("dhcp:"), PARAMS_LEN - strlen("dhcp:"), curses_start_mitm);
 }

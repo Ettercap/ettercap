@@ -109,9 +109,9 @@ static void load_hosts(char *file)
     * is not traversable with ec_uid permissions
     */
    if (!strncmp(current, file, strlen(current)))
-      sprintf(tmp, "./%s", file+strlen(current));
+      snprintf(tmp, strlen(file)+1,"./%s", file+strlen(current));
    else
-      sprintf(tmp, "%s", file);
+      snprintf(tmp, strlen(file), "%s", file);
 
    DEBUG_MSG("load_hosts path == %s", tmp);
 

@@ -152,7 +152,7 @@ FUNC_DECODER(dissector_radius)
    strncpy(pass, attr, attr_len);
    
    for (i = 0; i < 16; i++)
-      sprintf(auth + i*2, "%02X", radius->auth[i]);
+      snprintf(auth + i*2, 3, "%02X", radius->auth[i]);
 
   
    SAFE_CALLOC(PACKET->DISSECTOR.pass, attr_len * 2 + 1, sizeof(char));
@@ -161,7 +161,7 @@ FUNC_DECODER(dissector_radius)
    PACKET->DISSECTOR.user = strdup(user);
    
    for (i = 0; i < attr_len; i++)
-      sprintf(PACKET->DISSECTOR.pass + i*2, "%02X", pass[i]);
+      snprintf(PACKET->DISSECTOR.pass + i*2, 3, "%02X", pass[i]);
    
    PACKET->DISSECTOR.info = strdup(auth);
   

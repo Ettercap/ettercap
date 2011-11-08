@@ -636,7 +636,7 @@ int profile_dump_to_file(char *filename)
    DEBUG_MSG("profile_dump_to_file: %s", filename);
 
    /* append the extension */
-   sprintf(eci, "%s.eci", filename);
+   snprintf(eci, strlen(filename)+5, "%s.eci", filename);
    
    if (GBL_OPTIONS->compress)
       fd.type = LOG_COMPRESSED;

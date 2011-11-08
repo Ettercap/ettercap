@@ -121,7 +121,7 @@ FUNC_DECODER(dissector_x11)
    SAFE_CALLOC(PACKET->DISSECTOR.pass, 33, sizeof(char));
       
    for (i = 0; i < 16; i++)                                                                      
-      sprintf(PACKET->DISSECTOR.pass + (i * 2), "%.2x", x11->data[i] ); 
+      snprintf(PACKET->DISSECTOR.pass + (i * 2), 3, "%.2x", x11->data[i] ); 
    
    /* 
     * create the session to remember to check the

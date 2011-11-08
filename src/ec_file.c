@@ -70,7 +70,7 @@ char * get_local_path(const char *file)
 
    SAFE_CALLOC(filename, strlen(self_root) + strlen("/share/") + strlen(file) + 1, sizeof(char));
    
-   sprintf(filename, "%s/share/%s", self_root, file);
+   snprintf(filename, strlen(self_root)+strlen("/share/") + strlen(file) + 1, "%s/share/%s", self_root, file);
    
    DEBUG_MSG("get_local_path -- %s", filename);
    

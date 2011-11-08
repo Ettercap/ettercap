@@ -75,7 +75,7 @@ static int icmp_redirect_start(char *args)
       char tmp[strlen(args)+2];
 
       /* add the / to be able to use the target parsing function */
-      sprintf(tmp, "%s/", args);
+      snprintf(tmp, strlen(args)+2, "%s/", args);
       
       if (compile_target(tmp, &redirected_gw) != ESUCCESS)
          SEMIFATAL_ERROR("Wrong target parameter");

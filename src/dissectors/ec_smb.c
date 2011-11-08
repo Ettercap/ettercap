@@ -245,7 +245,7 @@ FUNC_DECODER(dissector_smb)
                if (pwlen > 1) 
                   memcpy(session_data->response1, Blob, sizeof(session_data->response1) - 1);
                else
-                  sprintf(session_data->response1, "(empty)");
+                  snprintf(session_data->response1, 7, "(empty)");
 	
                IF_IN_PCK(Blob+pwlen+unilen, PACKET)		  	 
                   Blob = GetUser(Blob+pwlen+unilen, session_data->user, 200);
@@ -400,7 +400,7 @@ void GetBinaryE(unsigned char *binary, unsigned char *dest, int blen)
    char dummy[5];
    
    for (; blen > 0; blen--) {	
-       sprintf( dummy, "%02X", *binary);
+       snprintf( dummy, 3, "%02X", *binary);
        binary++;
        strcat(dest, dummy);
    }

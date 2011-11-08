@@ -169,15 +169,15 @@ FUNC_DECODER(dissector_bgp)
          SAFE_CALLOC(PACKET->DISSECTOR.info, 32, sizeof(char));
 
          /* Get authentication type */
-         sprintf(PACKET->DISSECTOR.info, "AUTH TYPE [0x%02x]", parameters[i+2]);
+         snprintf(PACKET->DISSECTOR.info, 32, "AUTH TYPE [0x%02x]", parameters[i+2]);
          
          /* Get authentication data */
          if (len > 1) {
-            sprintf(PACKET->DISSECTOR.pass,"Hex(");
+            snprintf(PACKET->DISSECTOR.pass, 4, "Hex(");
             str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
             
             for (j = 0; j < (len-1); j++)
-               sprintf(str_ptr + (j * 3), " %.2x", parameters[i + 3 + j]);
+               snprintf(str_ptr + (j * 3), strlen(parameters[i+3+j])+2, " %.2x", parameters[i + 3 + j]);
          
             strcat(str_ptr, " )");
          }	 

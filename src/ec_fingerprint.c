@@ -178,7 +178,7 @@ int fingerprint_search(const char *f, char *dst)
           *
           *  0000:*:TT:WS:0:0:0:0:F:LT
           */
-         sprintf(pattern, "%s:*:%s", win, f + FINGER_TTL);
+         snprintf(pattern, FINGER_LEN+1, "%s:*:%s", win, f + FINGER_TTL);
 
          /* search for equal WINDOW but wildcarded MSS */
          while (l != SLIST_END(&finger_head) && !strncmp(l->finger, win, 4)) {

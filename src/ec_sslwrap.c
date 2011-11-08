@@ -381,8 +381,8 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    if (GBL_CONF->redir_command_on == NULL)
       return -EFATAL;
    
-   sprintf(asc_sport, "%u", sport);
-   sprintf(asc_dport, "%u", dport);
+   snprintf(asc_sport, 16, "%u", sport);
+   snprintf(asc_dport, 16, "%u", dport);
 
    /* make the substitutions in the script */
    command = strdup(GBL_CONF->redir_command_on);
@@ -438,8 +438,8 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
    if (GBL_CONF->redir_command_off == NULL)
       return -EFATAL;
    
-   sprintf(asc_sport, "%u", sport);
-   sprintf(asc_dport, "%u", dport);
+   snprintf(asc_sport, 16, "%u", sport);
+   snprintf(asc_dport, 16, "%u", dport);
 
    /* make the substitutions in the script */
    command = strdup(GBL_CONF->redir_command_off);

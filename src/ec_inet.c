@@ -155,7 +155,7 @@ inet_ntop4(const u_char *src, char *dst, size_t size)
    char str[IP_ASCII_ADDR_LEN];
    int n;
    
-	n = sprintf(str, "%u.%u.%u.%u", src[0], src[1], src[2], src[3]);
+	n = snprintf(str, IP_ASCII_ADDR_LEN, "%u.%u.%u.%u", src[0], src[1], src[2], src[3]);
    
    str[n] = '\0';
  
@@ -236,7 +236,7 @@ inet_ntop6(const u_char *src, char *dst, size_t size)
 			tp += strlen(tp);
 			break;
 		}
-		tp += sprintf(tp, "%x", words[i]);
+		tp += snprintf(tp, 2, "%x", words[i]);
 	}
 	/* Was it a trailing run of 0x00's? */
 	if (best.base != -1 && (best.base + best.len) == 
@@ -266,7 +266,7 @@ char *mac_addr_ntoa(u_char *mac, char *dst)
    char str[ETH_ASCII_ADDR_LEN];
    int n;
    
-	n = sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X", 
+	n = snprintf(str, ETH_ASCII_ADDR_LEN, "%02X:%02X:%02X:%02X:%02X:%02X", 
          mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
    
    str[n] = '\0';

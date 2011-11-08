@@ -83,7 +83,7 @@ static char *iface_name(const char *s)
    if (!s[1]) {   /* should probably use IsTextUnicode() ... */
       SAFE_CALLOC(buf, len + 1, sizeof(char));
       
-      sprintf (buf, "%S", s);
+      snprintf (buf, len+1, "%S", s);
       DEBUG_MSG("iface_name: '%S', is_unicode '%s'", s, buf);
       return buf;
    }

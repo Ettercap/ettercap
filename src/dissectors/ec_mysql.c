@@ -105,7 +105,7 @@ FUNC_DECODER(dissector_mysql)
          if (ptr < end && strlen(ptr) != 0) {
             SAFE_CALLOC(PACKET->DISSECTOR.pass, strlen(s->data) + strlen(ptr) + 128, sizeof(char));
             
-            sprintf(PACKET->DISSECTOR.pass, "Seed:%s Encrypted:%s", (char *)s->data, ptr);
+            snprintf(PACKET->DISSECTOR.pass, strlen(s->data) + strlen(ptr) + 128, "Seed:%s Encrypted:%s", (char *)s->data, ptr);
          } else {
             PACKET->DISSECTOR.pass = strdup("No Password!!!");
          }

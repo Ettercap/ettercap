@@ -110,7 +110,7 @@ FUNC_DECODER(dissector_msn)
             
             /* save the challenge after the login */
             SAFE_REALLOC(s->data, strlen(s->data) + strlen(ptr) + 2);
-            sprintf(s->data + strlen(s->data), " %s", ptr + strlen("MD5 S "));
+            snprintf(s->data + strlen(s->data), strlen(s->data) + strlen(ptr)+2, " %s", ptr + strlen("MD5 S "));
             
             /* tuncate at the \r */
             if ( (ptr = strchr(s->data,'\r')) != NULL )
@@ -161,7 +161,7 @@ FUNC_DECODER(dissector_msn)
          
          /* save the challenge after the login */
          SAFE_REALLOC(s->data, strlen(s->data) + strlen(ptr) + 2);
-         sprintf(s->data + strlen(s->data), " %s", ptr + strlen("MD5 S "));
+         snprintf(s->data + strlen(s->data), strlen(s->data)+strlen(ptr)+2, " %s", ptr + strlen("MD5 S "));
          
          /* tuncate at the \r */
          if ( (ptr = strchr(s->data,'\r')) != NULL )

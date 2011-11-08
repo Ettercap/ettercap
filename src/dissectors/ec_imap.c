@@ -203,7 +203,7 @@ FUNC_DECODER(dissector_imap)
       /* store the username in the session */
       SAFE_CALLOC(s->data, strlen("AUTH USER ") + i + 1, sizeof(char) );
       
-      sprintf(s->data, "AUTH USER %s", user);
+      snprintf(s->data, strlen("AUTH USER ") + i + 1, "AUTH USER %s", user);
       
       SAFE_FREE(user);
 

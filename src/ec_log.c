@@ -97,8 +97,8 @@ int set_loglevel(int level, char *filename)
       USER_MSG("*********************************************************\n\n");
    }
    
-   sprintf(eci, "%s.eci", filename);
-   sprintf(ecp, "%s.ecp", filename);
+   snprintf(eci, strlen(filename)+5, "%s.eci", filename);
+   snprintf(ecp, strlen(filename)+5, "%s.ecp", filename);
    
    memset(&fdp, 0, sizeof(struct log_fd));
    memset(&fdi, 0, sizeof(struct log_fd));

@@ -208,17 +208,17 @@ FUNC_DECODER(dissector_vnc)
                SAFE_CALLOC(PACKET->DISSECTOR.pass, 256, sizeof(char));
             
                /* Dump Challenge and Response */
-               sprintf(PACKET->DISSECTOR.pass,"Challenge:");
+               snprintf(PACKET->DISSECTOR.pass, 10, "Challenge:");
                str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
             
                for (index = 0; index < 16; index++)
-                  sprintf(str_ptr + (index * 2), "%.2x", conn_status->challenge[index]);
+                  snprintf(str_ptr + (index * 2), 3, "%.2x", conn_status->challenge[index]);
             
                strcat(str_ptr, " Response:");
                str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
             
                for (index = 0; index < 16; index++)
-                  sprintf(str_ptr + (index * 2), "%.2x", conn_status->response[index]);
+                  snprintf(str_ptr + (index * 2), 3, "%.2x", conn_status->response[index]);
        
                if (conn_status->status > LOGIN_OK) {
                   PACKET->DISSECTOR.failed = 1;

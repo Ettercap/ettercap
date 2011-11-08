@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
    GBL_PROGRAM = strdup(EC_PROGRAM);
    GBL_VERSION = strdup(EC_VERSION);
    SAFE_CALLOC(GBL_DEBUG_FILE, strlen(EC_PROGRAM) + strlen(EC_VERSION) + strlen("_debug.log") + 1, sizeof(char));
-   sprintf(GBL_DEBUG_FILE, "%s%s_debug.log", GBL_PROGRAM, EC_VERSION);
+   snprintf(GBL_DEBUG_FILE, strlen(EC_PROGRAM)+strlen(EC_VERSION)+strlen("_debug.log")+1, "%s%s_debug.log", GBL_PROGRAM, EC_VERSION);
    
    DEBUG_INIT();
    DEBUG_MSG("main -- here we go !!");

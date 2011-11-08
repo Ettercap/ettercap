@@ -96,7 +96,7 @@ static int dhcp_spoofing_start(char *args)
          char tmp[strlen(p)+3];
 
          /* add the / to be able to use the target parsing function */
-         sprintf(tmp, "/%s/", p);
+         snprintf(tmp, strlen(p)+3, "/%s/", p);
 
          if (compile_target(tmp, &dhcp_ip_pool) != ESUCCESS)
             break;

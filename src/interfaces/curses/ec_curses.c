@@ -482,7 +482,7 @@ static void read_pcapfile(char *path, char *file)
    
    SAFE_CALLOC(GBL_OPTIONS->pcapfile_in, strlen(path)+strlen(file)+2, sizeof(char));
 
-   sprintf(GBL_OPTIONS->pcapfile_in, "%s/%s", path, file);
+   snprintf(GBL_OPTIONS->pcapfile_in, strlen(path)+strlen(file)+2"%s/%s", path, file);
 
    /* check if the file is good */
    if (is_pcap_file(GBL_OPTIONS->pcapfile_in, errbuf) != ESUCCESS) {

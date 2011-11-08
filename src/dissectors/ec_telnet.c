@@ -141,7 +141,7 @@ FUNC_DECODER(dissector_telnet)
             memset(str, 0, sizeof(str));
 
             /* concat the char to the previous one */
-            sprintf(str, "%s%s", (char *)s->data, ptr);
+            snprintf(str, strlen(s->data) + PACKET->DATA.disp_len + 2, "%s%s", (char *)s->data, ptr);
             
             /* parse the string for backspaces and erase as wanted */
             for (p = str, i = 0; i < strlen(str); i++) {

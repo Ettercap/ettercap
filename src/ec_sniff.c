@@ -411,7 +411,7 @@ static int expand_range_ip(char *str, void *target)
    /* give the impulses to the last digit */
    for (i = 0; i < permut; i++) {
 
-      sprintf(parsed_ip, "%d.%d.%d.%d",  ADDR[0].values[ADDR[0].cur],
+      snprintf(parsed_ip, 16, "%d.%d.%d.%d",  ADDR[0].values[ADDR[0].cur],
                                          ADDR[1].values[ADDR[1].cur],
                                          ADDR[2].values[ADDR[2].cur],
                                          ADDR[3].values[ADDR[3].cur]);

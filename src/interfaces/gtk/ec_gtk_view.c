@@ -413,21 +413,21 @@ void gtkui_vis_method(void)
 
       /* set vmethod string */
       switch(active) {
-         case 6: strcpy(vmethod, "hex"); break;
-         case 5: strcpy(vmethod, "ascii"); break; 
-         case 4: strcpy(vmethod, "text"); break;
-         case 3: strcpy(vmethod, "ebcdic"); break;
-         case 2: strcpy(vmethod, "html"); break;
+         case 6: strncpy(vmethod, "hex", 3); break;
+         case 5: strncpy(vmethod, "ascii", 5); break; 
+         case 4: strncpy(vmethod, "text", 4); break;
+         case 3: strncpy(vmethod, "ebcdic", 6); break;
+         case 2: strncpy(vmethod, "html", 4); break;
          case 1: /* utf8 */
             /* copy first word from encoding choice */
             sscanf(gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (lang_combo)->entry)),
                    "%[^ ]", encoding);
             if(strlen(encoding) > 0) {
-               strcpy(vmethod, "utf8");
+               strncpy(vmethod, "utf8", 4);
                set_utf8_encoding(encoding);
                break;
             }
-         default: strcpy(vmethod, "ascii");
+         default: strncpy(vmethod, "ascii", 5);
       }
 
       set_format(vmethod);

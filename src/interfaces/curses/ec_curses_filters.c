@@ -74,7 +74,7 @@ static void load_filter(char *path, char *file)
    
    SAFE_CALLOC(tmp, strlen(path)+strlen(file)+2, sizeof(char));
 
-   snprintf(tmp, strlen(path)+strlen(file)+2"%s/%s", path, file);
+   snprintf(tmp, strlen(path)+strlen(file)+2, "%s/%s", path, file);
 
    /* 
     * load the filters chain.

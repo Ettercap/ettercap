@@ -189,6 +189,11 @@ void parse_options(int argc, char **argv)
    optind = 0;
 
    while ((c = getopt_long (argc, argv, "A:a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+      /* used for parsing arguments */
+      char *opt_end = optarg;
+      while (opt_end && *opt_end) opt_end++;
+      /* enable a loaded filter script? */
+      uint8_t f_enabled = 0;
 
       switch (c) {
 
@@ -281,7 +286,12 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'F':
-                  if (filter_load_file(optarg, GBL_FILTERS) != ESUCCESS)
+                  /* is there a :0 or :1 appended to the filename? */
+                  if ( (opt_end-optarg >=2) && *(opt_end-2) == ':' ) {
+                     *(opt_end-2) = '\0';
+                     f_enabled = !( *(opt_end-1) == '0' );
+		  }
+                  if (filter_load_file(optarg, GBL_FILTERS, f_enabled) != ESUCCESS)
                      FATAL_ERROR("Cannot load filter file \"%s\"", optarg);
                   break;
                   

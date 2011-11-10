@@ -45,7 +45,7 @@ static pthread_mutex_t filters_mutex;
 
 /* protos */
 
-int filter_load_file(char *filename, struct filter_list **list);
+int filter_load_file(char *filename, struct filter_list **list, uint8_t enabled);
 void filter_unload(struct filter_list **list);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
 static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
@@ -988,7 +988,7 @@ static int cmp_geq(u_int32 a, u_int32 b)
 /*
  * load the filter from a file 
  */
-int filter_load_file(char *filename, struct filter_list **list)
+int filter_load_file(char *filename, struct filter_list **list, uint8_t enabled)
 {
    int fd;
    void *file;
@@ -1053,8 +1053,8 @@ int filter_load_file(char *filename, struct filter_list **list)
    /* save the name of the loaded filter */
    (*list)->name = strdup(filename);
 
-   /* enable the filter */
-   (*list)->enabled = 1;
+   /* enable the filter if requested */
+   (*list)->enabled = enabled;
 
    FILTERS_UNLOCK;
 

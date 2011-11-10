@@ -153,7 +153,7 @@ static void load_filter(char *path, char *file)
     * load the filters chain.
     * errors are spawned by the function itself
     */
-   filter_load_file(tmp, GBL_FILTERS);
+   filter_load_file(tmp, GBL_FILTERS, 1);
    
    SAFE_FREE(tmp);
 }

@@ -59,7 +59,7 @@ void test_filter(char *filename)
    /*memset(fenv, 0, sizeof(struct filter_env));*/
    
    /* load the file */
-   if (filter_load_file(filename, &flist) != ESUCCESS) {
+   if (filter_load_file(filename, &flist, 1) != ESUCCESS) {
       exit(-1);
    }
    fenv = &flist->env;

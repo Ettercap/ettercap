@@ -632,6 +632,7 @@ ettercap-compliant binary filter file. Read the etterfilter(8) man page for the
 list of functions you can use inside a filter script.
 Any number of filters can be loaded by specifying the option multiple times;
 packets are passed through each filter in the order specified on the command line.
+You can also load a script without enabling it by appending :0 to the filename.
 .br
 NOTE: these filters are different from those set with --pcapfilter. An ettercap
 filter is a content filter and can modify the payload of a packet before

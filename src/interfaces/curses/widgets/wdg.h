@@ -23,7 +23,6 @@
 
 #if defined HAVE_STDINT_H && !defined OS_SOLARIS
 	#include <stdint.h>
-#elif !defined OS_SOLARIS
 	#include <sys/types.h>
 #elif defined OS_SOLARIS
 	#include <sys/inttypes.h>

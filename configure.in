@@ -481,7 +481,7 @@ AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
         owd=`pwd`
         if cd $withval; then withval=`pwd`; cd $owd; fi
         LNETINC="-I$withval/include"
-        LNETLIB="-L$withval/lib -L$withval/src -lnet"
+        LNETLIB="-L$withval/lib -lnet"
         ac_ec_libnet=$withval
         AC_MSG_RESULT($withval)
      else
@@ -652,8 +652,8 @@ AC_ARG_WITH(iconv, AC_HELP_STRING(--with-iconv=DIR,use iconv in DIR),
 )
 
 EC_CHECK_FUNC(c, iconv, $ICONVLIB,, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes])
-EC_CHECK_FUNC(iconv, iconv, $ICONVLIB,, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes ICONVLIB="-liconv"])
-EC_CHECK_FUNC(iconv, libiconv, $ICONVLIB,, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes ICONVLIB="-liconv"])
+EC_CHECK_FUNC(iconv, iconv, $ICONVLIB,, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes ICONVLIB="${ICONVLIB} -liconv"])
+EC_CHECK_FUNC(iconv, libiconv, $ICONVLIB,, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes ICONVLIB="${ICONVLIB} -liconv"])
 
 dnl ---------
 dnl  ncurses

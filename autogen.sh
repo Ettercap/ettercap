@@ -26,7 +26,7 @@ if test x`which libtoolize` = x; then
       echo "ERROR: libtoolize not found"
       exit
    else
-      USEGLIBTOOLIZE = 1
+      USEGLIBTOOLIZE=1
    fi
 fi
 if test x`which pkg-config` = x; then

@@ -254,6 +254,7 @@ AC_DEFUN([EC_RESOLVE_CHECK],
         AM_CONDITIONAL(HAVE_DN_EXPAND, true) ac_ec_dns=yes
       ],
       [AM_CONDITIONAL(HAVE_DN_EXPAND, false) ac_ec_dns=no])
+     ])
 ])
 
 dnl

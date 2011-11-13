@@ -57,6 +57,7 @@ struct ec_options {
    char superquiet:1;
    char silent:1;
    char unoffensive:1;
+   char ssl_mitm:1;
    char load_hosts:1;
    char save_hosts:1;
    char resolve:1;

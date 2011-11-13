@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
       disable_ip_forward();
       
    /* binds ports and set redirect for ssl wrapper */
-   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm && GBL_SNIFF->type == SM_UNIFIED)
+   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm && GBL_SNIFF->type == SM_UNIFIED && GBL_OPTIONS->ssl_mitm)
       ssl_wrap_init();
    
    /* 

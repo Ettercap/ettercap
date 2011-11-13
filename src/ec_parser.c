@@ -66,6 +66,7 @@ void ec_usage(void)
    fprintf(stdout, "  -o, --only-mitm             don't sniff, only perform the mitm attack\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
+   fprintf(stdout, "  -S, --nosslmitm             do not forge SSL certificates\n");
    fprintf(stdout, "  -u, --unoffensive           do not forward packets\n");
    fprintf(stdout, "  -r, --read <file>           read data from pcapfile <file>\n");
    fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n");
@@ -147,6 +148,7 @@ void parse_options(int argc, char **argv)
       { "script", required_argument, NULL, 's' },
       { "silent", no_argument, NULL, 'z' },
       { "unoffensive", no_argument, NULL, 'u' },
+      { "nosslmitm", no_argument, NULL, 'S' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
       { "wep-key", required_argument, NULL, 'W' },
@@ -183,12 +185,13 @@ void parse_options(int argc, char **argv)
    
    GBL_PCAP->promisc = 1;
    GBL_FORMAT = &ascii_format;
+   GBL_OPTIONS->ssl_mitm = 1;
 
 /* OPTIONS INITIALIZED */
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -337,7 +340,11 @@ void parse_options(int argc, char **argv)
          case 'u':
                   GBL_OPTIONS->unoffensive = 1;
                   break;
-                  
+
+	 case 'S':
+                  GBL_OPTIONS->ssl_mitm = 0;
+                  break;
+ 
          case 'd':
                   GBL_OPTIONS->resolve = 1;
                   break;

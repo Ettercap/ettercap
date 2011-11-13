@@ -575,6 +575,11 @@ traffic on the wire. If you want to sniff only your connections, use this flag
 to NOT enable the promisc mode.
 
 .TP
+\fB\-S\fR, \fB\-\-nosslmitm\fR
+Usually, ettercap forges SSL certificates in order to intercept https
+traffic.  This option disables that behavior.
+
+.TP
 \fB\-u\fR, \fB\-\-unoffensive\fR
 Every time ettercap starts, it disables ip forwarding in the kernel and begins to
 forward packets itself. This option prevent to do that, so the responsibility

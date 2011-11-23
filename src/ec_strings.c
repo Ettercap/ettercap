@@ -349,6 +349,7 @@ char * ec_strtok(char *s, const char *delim, char **ptrptr)
 char getchar_buffer(char **buf)
 {
    char ret;
+   struct timespec ts;
 
    DEBUG_MSG("getchar_buffer: %s", *buf);
    
@@ -368,13 +369,15 @@ char getchar_buffer(char **buf)
 
          /* get the number of seconds to wait */
          time = atoi(*buf + 2);
+         ts.tv_sec = time;
+         ts.tv_nsec = 0;
          
          DEBUG_MSG("getchar_buffer: sleeping %d secs", time);
 
          /* move the buffer after the s(x) */
          *buf = p + 1;
       
-         sleep(time);
+         nanosleep(&ts, NULL);
       }
    }
    

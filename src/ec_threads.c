@@ -153,7 +153,7 @@ char * ec_thread_getdesc(pthread_t id)
 /* add a thread in the thread list */
 void ec_thread_register(pthread_t id, char *name, char *desc)
 {
-   ec_thread_register_detached(id, name, desc, 0);
+   ec_thread_register_detached(id, name, desc, JOINABLE_THREAD);
 }
 
 void ec_thread_register_detached(pthread_t id, char *name, char *desc, int detached)

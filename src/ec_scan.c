@@ -130,11 +130,15 @@ static EC_THREAD_FUNC(scan_thread)
 {
    pthread_t pid;
    struct hosts_list *hl;
+   struct timespec ts;
    int i = 1, ret;
    int nhosts = 0;
    int threadize = 1;
 
    DEBUG_MSG("scan_thread");
+
+   ts.tv_sec = 1;
+   ts.tv_nsec = 0;
 
    /* in text mode and demonized this function should NOT be a thread */
    if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
@@ -181,7 +185,8 @@ static EC_THREAD_FUNC(scan_thread)
     * wait for some delayed packets...
     * the other thread is listening for ARP pachets
     */
-   sleep(1);
+   //sleep(1);
+   nanosleep(&ts, NULL);
 
    /* destroy the thread and remove the hook function */
    ec_thread_destroy(pid);

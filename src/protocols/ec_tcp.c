@@ -116,7 +116,7 @@ FUNC_DECODER(decode_tcp)
    tcp = (struct tcp_header *)DECODE_DATA;
    
    opt_start = (u_char *)(tcp + 1);
-   opt_end = (u_char *)((int)tcp + tcp->off * 4);
+   opt_end = (u_char *)((size_t)tcp + tcp->off * 4);
 
    DECODED_LEN = (u_int32)(tcp->off * 4);
 

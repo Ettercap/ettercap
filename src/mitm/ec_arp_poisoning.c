@@ -144,7 +144,7 @@ static void arp_poisoning_stop(void)
    int i;
    struct hosts_list *h;
    struct hosts_list *g1, *g2;
-   struct timespec tm;
+   struct timespec tm, ts;
    pthread_t pid;
    
    DEBUG_MSG("arp_poisoning_stop");
@@ -202,7 +202,9 @@ static void arp_poisoning_stop(void)
       }
       
       /* sleep the correct delay, same as warm_up */
-      sleep(GBL_CONF->arp_poison_warm_up);
+      ts.tv_sec = GBL_CONF->arp_poison_warm_up;
+      ts.tv_nsec = 0;
+      nanosleep(&ts, NULL);
    }
    
    /* delete the elements in the first list */
@@ -231,7 +233,7 @@ EC_THREAD_FUNC(arp_poisoner)
 {
    int i = 1;
    struct hosts_list *g1, *g2;
-   struct timespec tm;
+   struct timespec tm, ts;
 
    tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
    tm.tv_sec = 0;
@@ -293,10 +295,14 @@ EC_THREAD_FUNC(arp_poisoner)
        * then use normal delay
        */
       if (i < 5) {
-         sleep(GBL_CONF->arp_poison_warm_up);
+         ts.tv_sec = GBL_CONF->arp_poison_warm_up;
+         ts.tv_nsec = 0;
+         nanosleep(&ts, NULL);
          i++;
       } else
-         sleep(GBL_CONF->arp_poison_delay);
+         ts.tv_sec = GBL_CONF->arp_poison_delay;
+         ts.tv_nsec = 0;
+	 nanosleep(&ts, NULL);
    }
    
    return NULL; 

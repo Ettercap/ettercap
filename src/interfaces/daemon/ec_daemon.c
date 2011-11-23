@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <time.h>
 
 static int fd;
 
@@ -136,6 +137,9 @@ static void daemon_error(const char *msg)
 void daemon_interface(void)
 {
    DEBUG_MSG("daemon_interface");
+   struct timespec ts; 
+   ts.tv_sec = 1;
+   ts.tv_nsec = 0;
    
    /* check if the plugin exists */
    if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
@@ -158,7 +162,7 @@ void daemon_interface(void)
    /* discard the messages */
    LOOP {
       CANCELLATION_POINT();
-      sleep(1); 
+      nanosleep(&ts, NULL);
       ui_msg_flush(MSG_ALL);
    }
    /* NOT REACHED */   

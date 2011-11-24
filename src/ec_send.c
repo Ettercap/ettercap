@@ -197,6 +197,7 @@ int send_to_L3(struct packet_object *po)
 
 int send_to_L2(struct packet_object *po)
 {
+/*
    int c;
    char tmp[MAX_ASCII_ADDR_LEN];
 
@@ -214,6 +215,27 @@ int send_to_L2(struct packet_object *po)
   
    SEND_UNLOCK;
  
+   return c;
+*/
+   libnet_ptag_t t;
+   int c;
+   
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet == 0);
+   
+   SEND_LOCK;
+   
+   t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet, 0);
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet));
+   
+   c = libnet_write(GBL_LNET->lnet);
+   ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->len, c, libnet_geterror(GBL_LNET->lnet));
+   
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet);
+   
+   SEND_UNLOCK;
+   
    return c;
 }
 

@@ -167,13 +167,13 @@ static void send_close(void)
  * send the packet at layer 3
  * the eth header will be handled by the kernel
  */
-
+/*
 int send_to_L3(struct packet_object *po)
 {
    char tmp[MAX_ASCII_ADDR_LEN];
    int c;
 
-   /* if not lnet warn the developer ;) */
+   // if not lnet warn the developer ;) 
    BUG_IF(GBL_PCAP->pcap_send == 0);
    
    SEND_LOCK;
@@ -187,6 +187,36 @@ int send_to_L3(struct packet_object *po)
    
    SEND_UNLOCK;
    
+   return c;
+}
+*/
+
+int send_to_L3(struct packet_object *po)
+{
+   libnet_ptag_t t;
+   char tmp[MAX_ASCII_ADDR_LEN];
+   int c;
+
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_LNET->lnet_L3 == 0);
+
+   SEND_LOCK;
+
+   t = libnet_build_data(po->fwd_packet, po->fwd_len, GBL_LNET->lnet_L3, 0);
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_L3));
+
+   c = libnet_write(GBL_LNET->lnet_L3);
+   //ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(GBL_LNET->lnet_L3));
+   if (c == -1)
+      USER_MSG("SEND L3 ERROR: %d byte packet (%04x:%02x) destined to %s was not forwarded (%s)\n",
+            po->fwd_len, ntohs(po->L3.proto), po->L4.proto, ip_addr_ntoa(&po->L3.dst, tmp),
+            libnet_geterror(GBL_LNET->lnet_L3));
+
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet_L3);
+
+   SEND_UNLOCK;
+
    return c;
 }
 

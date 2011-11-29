@@ -116,9 +116,6 @@ void send_init(void)
    DEBUG_MSG("send_init %s", GBL_OPTIONS->iface);
    
    /* open the socket */
-   p = pcap_open_live(GBL_OPTIONS->iface, GBL_PCAP->snaplen, GBL_PCAP->promisc,
-                   PCAP_TIMEOUT, pcap_errbuf);
-   ON_ERROR(p, NULL, "pcap_open: %s", pcap_errbuf);
   
    /* open the socket at layer 3 */
    l3 = libnet_init(LIBNET_RAW4_ADV, GBL_OPTIONS->iface, lnet_errbuf);
@@ -130,19 +127,12 @@ void send_init(void)
  
    if (GBL_SNIFF->type == SM_BRIDGED) {
       /* open the socket on the other iface for bridging */
-      pb = pcap_open_live(GBL_OPTIONS->iface_bridge, GBL_PCAP->snaplen, GBL_PCAP->promisc,
-                   PCAP_TIMEOUT, pcap_errbuf);
-
-      ON_ERROR(pb, NULL, "%s", pcap_errbuf);
-      GBL_PCAP->pcap_b_send = pb;
-
       lb = libnet_init(LIBNET_LINK_ADV, GBL_OPTIONS->iface_bridge, lnet_errbuf);
       ON_ERROR(lb, NULL, "libnet_init() failed: %s", lnet_errbuf);
       GBL_LNET->lnet_bridge = lb;
 
    }
    
-   GBL_PCAP->pcap_send = p;
    GBL_LNET->lnet = l;
    GBL_LNET->lnet_L3 = l3;
       
@@ -152,13 +142,11 @@ void send_init(void)
 
 static void send_close(void)
 {
-   //libnet_destroy(GBL_LNET->lnet);
-   //libnet_destroy(GBL_LNET->lnet_L3);
-   pcap_close(GBL_PCAP->pcap_send);
+   libnet_destroy(GBL_LNET->lnet);
+   libnet_destroy(GBL_LNET->lnet_L3);
 
    if (GBL_SNIFF->type == SM_BRIDGED) 
-      //libnet_destroy(GBL_LNET->lnet_bridge);
-      pcap_close(GBL_PCAP->pcap_b_send);
+      libnet_destroy(GBL_LNET->lnet_bridge);
    
    DEBUG_MSG("ATEXIT: send_closed");
 }
@@ -167,30 +155,6 @@ static void send_close(void)
  * send the packet at layer 3
  * the eth header will be handled by the kernel
  */
-/*
-int send_to_L3(struct packet_object *po)
-{
-   char tmp[MAX_ASCII_ADDR_LEN];
-   int c;
-
-   // if not lnet warn the developer ;) 
-   BUG_IF(GBL_PCAP->pcap_send == 0);
-   
-   SEND_LOCK;
-   
-   
-   c = pcap_sendpacket(GBL_PCAP->pcap_send, po->fwd_packet, po->fwd_len);
-   if (c == -1)
-      USER_MSG("SEND L3 ERROR: %d byte packet (%04x:%02x) destined to %s was not forwarded (%s)\n", 
-            po->fwd_len, ntohs(po->L3.proto), po->L4.proto, ip_addr_ntoa(&po->L3.dst, tmp), 
-            pcap_geterr(GBL_PCAP->pcap_send));
-   
-   SEND_UNLOCK;
-   
-   return c;
-}
-*/
-
 int send_to_L3(struct packet_object *po)
 {
    libnet_ptag_t t;
@@ -208,7 +172,11 @@ int send_to_L3(struct packet_object *po)
    c = libnet_write(GBL_LNET->lnet_L3);
    //ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(GBL_LNET->lnet_L3));
    if (c == -1)
-      USER_MSG("SEND L3 ERROR: %d byte packet (%04x:%02x) destined to %s was not forwarded (%s)\n",
+    
+      /* When running with other tools such as sslstrip that require MASQUERADE and ip_forward, we will see EPERM errors when attempting
+         to forward packets, ignore these errors */
+      if (errno != EPERM)
+         USER_MSG("SEND L3 ERROR: %d byte packet (%04x:%02x) destined to %s was not forwarded (%s)\n",
             po->fwd_len, ntohs(po->L3.proto), po->L4.proto, ip_addr_ntoa(&po->L3.dst, tmp),
             libnet_geterror(GBL_LNET->lnet_L3));
 
@@ -227,26 +195,6 @@ int send_to_L3(struct packet_object *po)
 
 int send_to_L2(struct packet_object *po)
 {
-/*
-   int c;
-   char tmp[MAX_ASCII_ADDR_LEN];
-
-   BUG_IF(GBL_PCAP->pcap_send == 0);
-
-   SEND_LOCK;
-
-   c = pcap_sendpacket(GBL_PCAP->pcap_send, po->fwd_packet, po->fwd_len);
-
-   if (c==-1)
-      USER_MSG("SEND L2 ERROR: %d byte packet (%04x:%02x) destined to %s was not forwarded (%s)\n",
-            po->fwd_len, ntohs(po->L3.proto), po->L4.proto, ip_addr_ntoa(&po->L3.dst, tmp),
-            pcap_geterr(GBL_PCAP->pcap_send));
-
-  
-   SEND_UNLOCK;
- 
-   return c;
-*/
    libnet_ptag_t t;
    int c;
    
@@ -275,15 +223,22 @@ int send_to_L2(struct packet_object *po)
 
 int send_to_bridge(struct packet_object *po)
 {
+   libnet_ptag_t t;
    int c;
   
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_PCAP->pcap_b_send == 0);
+   BUG_IF(GBL_LNET->lnet == 0);
    
    SEND_LOCK;
 
-   c = pcap_sendpacket(GBL_PCAP->pcap_b_send, po->fwd_packet, po->fwd_len);
+   t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet_bridge, 0);
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_bridge));
    
+   c = libnet_write(GBL_LNET->lnet_bridge);
+   ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->len, c, libnet_geterror(GBL_LNET->lnet_bridge));
+   
+   /* clear the pblock */
+   libnet_clear_packet(GBL_LNET->lnet_bridge);
    
    SEND_UNLOCK;
    

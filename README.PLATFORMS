@@ -165,6 +165,14 @@ doubt, go with the latest copy.
    libpcap port from /usr/ports/net and run configure this way:
    CFLAGS="-I /usr/local/include" LDFLAGS="-L /usr/local/lib" ./configure ....
 
+   libnet-devel should be installed from source since the port installs it in /usr/local/include/libnet11
+   and /usr/local/lib/libnet11 and the configure script can only search one path for libraries and
+   includes (might update script later).
+
+   Once libnet-devel, libpcap (port), libpcre (port), libiconv (port) are installed, 
+   make sure to add the --with-libnet=/usr/local --with-libpcap=/usr/local --with-libpcre=/usr/local
+   --with-iconv=/usr/local options
+
  + OPENBSD
 
    Same recommendations as for FreeBSD, but you have to find a way to install

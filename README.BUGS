@@ -8,7 +8,7 @@
        @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
        @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     NG
 
-                      Copyright 2001-2004 ALoR & NaGA
+                      Copyright 2001-2011 ALoR & NaGA
 
 ==============================================================================
 ==============================================================================
@@ -19,8 +19,11 @@ by definition, not smart enough to debug it." - Brian W. Kernighan
 
 
 If you found a new bug please report it by sending an email to
-<alor@users.sf.net> or <naga@antifork.org>, hoping that that part was not 
-coded as cleverly as possible... ;)
+<jbrav.hax@gmail.com>
+<eescobar@gmail.com>
+<alor@users.sf.net>
+<naga@antifork.org>
+
 
 ==============================================================================
                      C O M P I L E  T I M E    B U G S

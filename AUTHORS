@@ -11,9 +11,10 @@ AUTHORS:
 
 OFFICIAL DEVELOPERS:
 
-   Daten (Bryan Schneiders)   <daten@dnetc.org>             the GTK interface
+   Emilio Escobar		<eescobar@gmail.com>	    Core Development (Lazarus)
+   Eric Milam (J0hnnyBrav0)	<jbrax.hax@gmail.com>	    Bug Hunting & Testing (Lazarus)
+   Daten (Bryan Schneiders)     <daten@dnetc.org>           the GTK interface
                                                             but not limited to...
-
 
 CONTRIBUTORS (for the Next Generation series):
 
@@ -28,4 +29,9 @@ CONTRIBUTORS (for the First Generation series):
    Georg Hofstetter           <geggo@donau-ries.de>         HL-RCON dissector 
    Giorgio Zoppi              <zoppi@cli.di.unipi.it>       security patch
    Garph0                     <garph0@gmx.co.uk>            plugin porting for windows
+
+CONTRIBUTORS (Lazarus):
+   Martin Bos (PureHate)      <purehate@backtrack.com>	    Testing (Lazarus)
+   Enrique Sanchez					    Code Review (Lazarus)
+
    

@@ -6,11 +6,11 @@
        @@        @@@     @@@   @@      @@   @@ @@      @@   @@ @@   @@
        @@@@@@    @@@     @@@   @@@@@@  @@@@@@  @@      @@@@@@@ @@@@@@
        @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
-       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     NG
+       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     
 
                    A suite for man in the middle attacks
 
-                      Copyright 2001-2004 ALoR & NaGA
+                      Copyright 2001-2011 ALoR & NaGA
 
 ==============================================================================
 ==============================================================================
@@ -86,6 +86,8 @@ OPTIONAL:
 
  The easiest way to compile ettercap is in the form:
 
+    ./autogen.sh
+
     ./configure
 
     make
@@ -113,7 +115,7 @@ OPTIONAL:
 THE HOST LIST
 
  Sending one ARP REQUEST for each ip in the lan (looking at the current ip
- and netmask), it is possible to get the ARP REPLIES and than make the
+ and netmask), it is possible to get the ARP REPLIES and then make the
  list of the hosts that are responding on the lan. With this method even
  windows hosts, reply to the call-for-reply (they don't reply on
  broadcast-ping).
@@ -129,7 +131,7 @@ UNIFIED SNIFFING
  accomplished by ettercap itself. Packet that needs to be forwarded are packets
  with destination mac address equal to the attacker's one, but with different ip
  address. Those packets are re-sent back to the wire to the real destination.
- This way, you can plug in variuous mitm attacks at a time. You can even use
+ This way, you can plug in various mitm attacks at a time. You can even use
  external attacker/poisoner, they only have to redirect packets to ettercap's
  host and the game is over ;)
 
@@ -212,9 +214,9 @@ ARP POISONING ATTACK
     devices (strip is candidate)
  */
 
- these kernels uses a special neighbor system to prevent unsolicited arp
+ these kernels use a special neighbor system to prevent unsolicited arp
  replies (what ettercap sends to the victim).
- Oh shit is ettercap unuseful with that kernel ? the answer is NO !
+ Oh shit is ettercap not useable with that kernel ? the answer is NO !
  let's view why... in the same source code we find:
 
  /*
@@ -234,7 +236,7 @@ ARP POISONING ATTACK
  *  cache.
  */
 
- so, if the kernel receive a REQUEST it will cache the host...
+ so, if the kernel receives a REQUEST it will cache the host...
  what does that mean ? if ettercap sends spoofed REQUESTS instead of
  REPLIES the kernel will cache them ? the answer is YES !!
 
@@ -247,7 +249,7 @@ ARP POISONING ATTACK
 
  Solaris will not cache a reply if it isn't already in the cache.
  The trick is simple, before poisoning, ettercap sends a spoofed ICMP
- ECHO_REQUSET to the host, it has to reply on it and it will make an arp
+ ECHO_REQUEST to the host, it has to reply on it and it will make an arp
  entry for the spoofed host. Then we can begin to poison as always, the
  entry is now in the cache...
 
@@ -273,13 +275,13 @@ DHCP SPOOFING
 
 PORT STEALING
 
- This techinque is useful to sniff in a switched environment when ARP poisoning
+ This technique is useful to sniff in a switched environment when ARP poisoning
  is not effective (for example where static mapped ARPs are used).
  It floods the LAN with ARP packets. The destination MAC address of each 
  "stealing" packet is the same as the attacker's one (other NICs won't see these 
  packets), the source MAC address will be one of the MACs of the victims.
  This process "steals" the switch's port of each victim. 
- Using low delays, packets destinated to "stolen" MAC addresses will be received 
+ Using low delays, packets destined to "stolen" MAC addresses will be received 
  by the attacker, winning the race condition with the real port owner. 
  When the attacker receives packets for "stolen" hosts, it stops the flooding 
  process and performs an ARP request for the real destination of the packet. 
@@ -349,9 +351,9 @@ PASSIVE SCANNING OF THE LAN
  This scan will let you know the hosts in the lan (it watches ARP request), the
  Operating System of the hosts (it uses passive os fingerprint... see next
  section), the open ports of an host (looking the syn+ack packet), the gateway,
- the routers or hosts atcing as a router (it watches ICMP messages).
+ the routers or hosts acting as a router (it watches ICMP messages).
  As a passive method it is useless on a switched lan (because it can make a
- topology only of the host that are conneting to you), but if you put it on a
+ topology only of the host that are connecting to you), but if you put it on a
  gateway and let it run for hours or days, it will make a complete report of
  the hosts in the lan.
 
@@ -376,7 +378,7 @@ PASSIVE OS FINGERPRINT
  The database contains different fingerprints for each type of packet
  because some OSes have different fingerprints from SYN to SYN+ACK.
  Obviously the SYN fingerprint is more reliable, because the SYN+ACK is
- influenced by the SYN (if a SYN doen't contain a SACK the SYN+ACK will not
+ influenced by the SYN (if a SYN doesn't contain a SACK the SYN+ACK will not
  have the SACK option even if the host support it). So while collecting
  information off the lan, if we receive a SYN+ACK we mark the OS of that
  host as temporary and when we receive a SYN we confirm that.
@@ -386,14 +388,14 @@ PASSIVE OS FINGERPRINT
  The SYN+ACK packets are used also to discover the open ports of an host.
  (see next section)
 
- The intersting thing is that firewalls, gateways and NAT are trasparent to
- passive OS detection. So colleting info for the LAN will let you know info
- even for remote host. Only proxies aren't trasparent because they make a
+ The interesting thing is that firewalls, gateways and NAT are transparent to
+ passive OS detection. So collecting info for the LAN will let you know info
+ even for remote host. Only proxies aren't transparent because they make a
  new connection to the target.
 
  Our fingerprint database has to be enlarged, so if you find a host with an
  unknown fingerprint and you know for sure the OS of that host, please mail
- us <alor@users.sourceforge.net> the fingerpring and the OS, we will insert
+ us <alor@users.sourceforge.net> the fingerprint and the OS, we will insert
  in the database.
 
 
@@ -406,7 +408,7 @@ OPEN PORTS
  For the udp ports the question is a little bit difficult because no syn or
  ack packet are present in the udp protocol, so ettercap assumes that a udp
  port < 1024 that sends packets is opened. We know that in this way we cannot
- discover open ports > 1024 but they can be misdetected as open when a client
+ discover open ports > 1024 but they can go undetected as open when a client
  sends packet to a server.
 
 

@@ -5,6 +5,17 @@ Legenda:
          !! bug fixed
 
 =========================================
+0.7.4-Lazarus	20111202
+   !! fixed resource depletion issue
+   !! buffer access out-of-bounds issues
+   !! fixed DNS dissector not working on 64bit systems
+   !! multiple buffer overflows
+   !! multiple memory leaks
+   !! multiple files with obsolete code
+   !! fixed SEND L3 errors experienced by some users
+   !! fixed a compilation error under Mac OS X Lion
+   !! updated build system
+   (Please see bug track for issue specifics)
 
 NG-0.7.4         2005
 

@@ -36,6 +36,8 @@ SOLARIS
 
 *BSD
 ------------------------------------------------------------------------------
+   FreeBSD 8.x          FULL           tested on FreeBSD 8.3-RELEASE (amd64)
+
    FreeBSD 5.x          FULL           tested on FreeBSD 5.1-RELEASE (i386)
    
    FreeBSD 4.x          untested
@@ -49,6 +51,8 @@ SOLARIS
 
 MAC OS X (Darwin)
 ------------------------------------------------------------------------------
+   Mac OS X            FULL            tested on OS X Lion and Snow Leopard (64-bit)
+
    Darwin 7.x           FULL           tested on darwin 7.0.0 (powerpc)
    
    Darwin 6.x           untested 
@@ -155,6 +159,11 @@ doubt, go with the latest copy.
 
    probably you will have to append the --with-iconv=/usr/local to the
    configure command line.
+
+   on some BSD configurations, even after installing the libtool and libltdl ports, 
+   lt_dlopen might not be found by the configure script. To solve this, install the 
+   libpcap port from /usr/ports/net and run configure this way:
+   CFLAGS="-I /usr/local/include" LDFLAGS="-L /usr/local/lib" ./configure ....
 
  + OPENBSD
 

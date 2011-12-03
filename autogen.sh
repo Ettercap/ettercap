@@ -1,6 +1,6 @@
 #!/bin/sh
 
-WANT_AUTOMAKE="1.11.1"
+WANT_AUTOMAKE="1.11"
 export WANT_AUTOMAKE
 
 echo

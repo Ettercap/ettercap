@@ -88,12 +88,14 @@ static int chk_poison_init(void *dummy)
    char tmp2[MAX_ASCII_ADDR_LEN];
    struct hosts_list *g1, *g2;
    struct poison_list *p;
-   struct timespec tm;
    char poison_any, poison_full;
    u_char i;
 
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
    tm.tv_sec = GBL_CONF->arp_storm_delay;
    tm.tv_nsec = 0;
+#endif
      
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
@@ -129,7 +131,11 @@ static int chk_poison_init(void *dummy)
    SLIST_FOREACH(p, &poison_table, next) {
       for (i = 0; i <= 1; i++) {
          send_L3_icmp_echo(ICMP_ECHO, &(p->ip[i]), &(p->ip[!i]));   
+#if !defined(OS_WINDOWS)
          nanosleep(&tm, NULL);
+#else
+         usleep(GBL_CONF->arp_storm_delay);
+#endif
       }
    }
          

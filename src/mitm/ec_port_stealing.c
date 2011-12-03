@@ -207,12 +207,14 @@ static void port_stealing_stop(void)
    pthread_t pid;
    struct steal_list *s, *tmp_s = NULL;
    struct packet_list *p, *tmp_p = NULL;
-   struct timespec tm;
 
    int i;
 
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
    tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
    tm.tv_sec = 0;
+#endif
       
    DEBUG_MSG("port_stealing_stop");
    
@@ -241,7 +243,11 @@ static void port_stealing_stop(void)
    for (i=0; i<2; i++) {
       LIST_FOREACH(s, &steal_table, next) {
          send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
+#if !defined(OS_WINDOWS)
          nanosleep(&tm, NULL);
+#else
+         usleep(GBL_CONF->arp_storm_delay*1000);
+#endif
       }      
    }
    
@@ -269,14 +275,17 @@ EC_THREAD_FUNC(port_stealer)
 {
    struct steal_list *s;
    struct eth_header *heth;
-   struct timespec tm;
    
    /* init the thread and wait for start up */
    ec_thread_init();
   
    heth = (struct eth_header *)fake_pck;
+
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
    tm.tv_nsec = GBL_CONF->port_steal_delay * 1000;
    tm.tv_sec = 0;
+#endif
   
    /* never ending loop */
    LOOP {
@@ -289,10 +298,19 @@ EC_THREAD_FUNC(port_stealer)
          if (!s->wait_reply) {
             memcpy(heth->sha, s->mac, ETH_ADDR_LEN);
             send_to_L2(&fake_po); 
+#if !defined(OS_WINDOWS)
             nanosleep(&tm, NULL);
+#else
+            usleep(GBL_CONF->port_steal_delay);
+#endif
          }
       }      
+
+#if !defined(OS_WINDOWS)
       nanosleep(&tm, NULL);
+#else
+      usleep(GBL_CONF->port_steal_delay);
+#endif
    }
    
    return NULL; 
@@ -364,11 +382,13 @@ static void send_queue(struct packet_object *po)
    struct steal_list *s1, *s2;
    struct packet_list *p, *tmp = NULL;
    struct eth_header *heth;
-   struct timespec tm;
    int in_list, to_wait = 0;
 
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
    tm.tv_nsec = GBL_CONF->port_steal_send_delay * 1000;
    tm.tv_sec = 0;
+#endif;
 
    /* Check if it's an arp reply for us */
    if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))
@@ -415,7 +435,11 @@ static void send_queue(struct packet_object *po)
 	      
                /* Sleep only if we have more than one packet to send */
                if (to_wait) 
+#if !defined(OS_WINDOWS)
                   nanosleep(&tm, NULL);
+#else
+                  usleep(GBL_CONF->port_steal_send_delay);
+#endif
                to_wait = 1;
             }
             /* Restart the stealing process for this host */

@@ -130,12 +130,14 @@ EC_THREAD_FUNC(flooder)
    struct timeval seed;
    struct eth_header *heth;
    struct arp_header *harp;
-   struct timespec tm;
    u_int32 rnd;
    u_char MACS[ETH_ADDR_LEN], MACD[ETH_ADDR_LEN];
 
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
    tm.tv_sec = GBL_CONF->port_steal_send_delay;
    tm.tv_nsec = 0;
+#endif
 
    /* Get a "random" seed */ 
    gettimeofday(&seed, NULL);
@@ -178,7 +180,12 @@ EC_THREAD_FUNC(flooder)
 
       /* Send on the wire and wait */
       send_to_L2(&fake_po); 
+
+#if !defined(OS_WINDOWS)
       nanosleep(&tm, NULL);
+#else
+      usleep(GBL_CONF->port_steal_send_delay*1000);
+#endif
    }
    
    return NULL; 

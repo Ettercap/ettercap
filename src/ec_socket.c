@@ -78,9 +78,8 @@ int open_socket(const char *host, u_int16 port)
 {
    struct hostent *infh;
    struct sockaddr_in sa_in;
-   struct timespec tm = {0};
    int sh, ret, err = 0;
-#define TSLEEP (50*1000) /* 50 milliseconds */
+#define TSLEEP (50*1000*1000) /* 50 microseconds */
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
 
    DEBUG_MSG("open_socket -- [%s]:[%d]", host, port);
@@ -90,10 +89,11 @@ int open_socket(const char *host, u_int16 port)
    sa_in.sin_family = AF_INET;
    sa_in.sin_port = htons(port);
 
-   time_t seconds = (int)(TSLEEP)/1000;
-   time_t nanosecs = (int)TSLEEP - (seconds * 1000);
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
    tm.tv_sec = 0;
    tm.tv_nsec = (TSLEEP * 1000);
+#endif
 
    /* resolve the hostname */
    if ( (infh = gethostbyname(host)) != NULL )
@@ -120,7 +120,11 @@ int open_socket(const char *host, u_int16 port)
          if (err == EINPROGRESS || err == EALREADY || err == EWOULDBLOCK || err == EAGAIN) {
             /* sleep a quirk of time... */
             DEBUG_MSG("open_socket: connect() retrying: %d", err);
+#if !defined(OS_WINDOWS)
             nanosleep(&tm, NULL);
+#else
+            usleep(TSLEEP);
+#endif
          }
       } else { 
          /* there was an error or the connect was successful */

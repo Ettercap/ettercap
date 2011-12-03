@@ -144,7 +144,6 @@ static void arp_poisoning_stop(void)
    int i;
    struct hosts_list *h;
    struct hosts_list *g1, *g2;
-   struct timespec tm, ts;
    pthread_t pid;
    
    DEBUG_MSG("arp_poisoning_stop");
@@ -152,8 +151,11 @@ static void arp_poisoning_stop(void)
    /* destroy the poisoner thread */
    pid = ec_thread_getpid("arp_poisoner");
 
+#if !defined(OS_WINDOWS)
+   struct timespec tm, ts;
    tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
    tm.tv_sec = 0;
+#endif
    
    /* the thread is active or not ? */
    if (!pthread_equal(pid, EC_PTHREAD_NULL))
@@ -196,15 +198,23 @@ static void arp_poisoning_stop(void)
                if (!poison_oneway)
                   send_arp(ARPOP_REQUEST, &g1->ip, g1->mac, &g2->ip, g2->mac); 
             }
-            
+           
+#if !defined(OS_WINDOWS) 
             nanosleep(&tm, NULL);
+#else
+            usleep(GBL_CONF->arp_storm_delay);
+#endif
          }
       }
       
       /* sleep the correct delay, same as warm_up */
+#if !defined(OS_WINDOWS)
       ts.tv_sec = GBL_CONF->arp_poison_warm_up;
       ts.tv_nsec = 0;
       nanosleep(&ts, NULL);
+#else
+      usleep(GBL_CONF->arp_poison_warmup*1000);
+#endif
    }
    
    /* delete the elements in the first list */
@@ -233,10 +243,12 @@ EC_THREAD_FUNC(arp_poisoner)
 {
    int i = 1;
    struct hosts_list *g1, *g2;
-   struct timespec tm, ts;
 
+#if !defined(OS_WINDOWS)
+   struct timespec tm, ts;
    tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
    tm.tv_sec = 0;
+#endif
    
    /* init the thread and wait for start up */
    ec_thread_init();
@@ -284,8 +296,12 @@ EC_THREAD_FUNC(arp_poisoner)
                if (!poison_oneway)
                   send_arp(ARPOP_REQUEST, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac); 
             }
-           
+          
+#if !defined(OS_WINDOWS) 
             nanosleep(&tm, NULL);
+#else
+            usleep(GBL_CONF->arp_storm_delay);
+#endif
          }
       }
       
@@ -295,14 +311,22 @@ EC_THREAD_FUNC(arp_poisoner)
        * then use normal delay
        */
       if (i < 5) {
+#if !defined(OS_WINDOWS)
          ts.tv_sec = GBL_CONF->arp_poison_warm_up;
          ts.tv_nsec = 0;
          nanosleep(&ts, NULL);
+#else
+         usleep(GBL_CONF->arp_poison_warm_up*1000);
+#endif
          i++;
       } else
+#if !defined(OS_WINDOWS)
          ts.tv_sec = GBL_CONF->arp_poison_delay;
          ts.tv_nsec = 0;
 	 nanosleep(&ts, NULL);
+#else
+         usleep(GBL_CONF->arp_poison_delay);
+#endif
    }
    
    return NULL; 

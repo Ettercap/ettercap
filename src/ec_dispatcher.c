@@ -60,11 +60,14 @@ EC_THREAD_FUNC(top_half);
 EC_THREAD_FUNC(top_half)
 {
    struct po_queue_entry *e;
-   struct timespec tm;   
    u_int pck_len;
-  
+ 
+#if !defined(OS_WINDOWS) 
+   struct timespec tm;   
    tm.tv_sec = 0;
    tm.tv_nsec = 1000; 
+#endif
+
    /* initialize the thread */
    ec_thread_init();
    
@@ -95,8 +98,12 @@ EC_THREAD_FUNC(top_half)
       /* the queue is empty, nothing to do... */
       if (e == NULL) {
          PO_QUEUE_UNLOCK;
-         
+
+#if !defined(OS_WINDOWS)         
          nanosleep(&tm, NULL);
+#else
+         usleep(100);
+#endif
          continue;
       }
   

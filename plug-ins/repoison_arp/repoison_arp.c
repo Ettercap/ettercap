@@ -97,16 +97,23 @@ static int repoison_arp_fini(void *dummy)
 void repoison_victims(void *group_ptr, struct packet_object *po)
 {
    struct hosts_list *t;
+
+#if !defined(OS_WINDOWS)
    struct timespec tm;
  
    tm.tv_sec = GBL_CONF->arp_storm_delay;
    tm.tv_nsec = 0;
+#endif
 
    LIST_HEAD(, hosts_list) *group_head = group_ptr;
 
    LIST_FOREACH(t, group_head, next) {
 
+#if !defined(OS_WINDOWS)
       nanosleep(&tm, NULL);
+#else
+      usleep(GBL_CONF->arp_storm_delay*1000);
+#endif
 
       /* equal ip must be skipped, you cant poison itself */
       if (!ip_addr_cmp(&t->ip, &po->L3.src))

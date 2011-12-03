@@ -185,8 +185,12 @@ static EC_THREAD_FUNC(scan_thread)
     * wait for some delayed packets...
     * the other thread is listening for ARP pachets
     */
-   //sleep(1);
+
+#if defined(OS_WINDOWS)
+   usleep(1000); //1 msec
+#else
    nanosleep(&ts, NULL);
+#endif
 
    /* destroy the thread and remove the hook function */
    ec_thread_destroy(pid);
@@ -360,11 +364,13 @@ static void scan_netmask(pthread_t pid)
    int nhosts, i, ret;
    struct ip_addr scanip;
    struct ip_list *e, *tmp;
-   struct timespec tm;
    char title[100];
 
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
    tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
    tm.tv_sec = 0;
+#endif
 
    netmask = ip_addr_to_int32(&GBL_IFACE->netmask.addr);
    myip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
@@ -420,9 +426,12 @@ static void scan_netmask(pthread_t pid)
       }
 
       /* wait for a delay */
-      /*usleep(GBL_CONF->arp_storm_delay * 1000);*/
-
+#if defined(OS_WINDOWS)
+      usleep(GBL_CONF->arp_storm_delay * 1000);
+#else
       nanosleep(&tm, NULL);
+#endif
+
    }
 
    /* delete the temporary list */
@@ -443,10 +452,12 @@ static void scan_targets(pthread_t pid)
    int nhosts = 0, found, n = 1, ret;
    struct ip_list *e, *i, *m, *tmp;
    char title[100];
+
+#if !defined(OS_WINDOWS)
    struct timespec tm;
-   
    tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
    tm.tv_sec = 0;
+#endif
 
    DEBUG_MSG("scan_targets: merging targets...");
 
@@ -526,7 +537,12 @@ static void scan_targets(pthread_t pid)
       }
 
       /* wait for a delay */
+#if defined(OS_WINDOWS)
+      usleep(GBL_CONF->arp_storm_delay * 100);
+#else
       nanosleep(&tm, NULL);
+#endif
+
    }
 
    /* delete the temporary list */

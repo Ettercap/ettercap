@@ -137,9 +137,12 @@ static void daemon_error(const char *msg)
 void daemon_interface(void)
 {
    DEBUG_MSG("daemon_interface");
+
+#if !defined(OS_WINDOWS)
    struct timespec ts; 
    ts.tv_sec = 1;
    ts.tv_nsec = 0;
+#endif
    
    /* check if the plugin exists */
    if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
@@ -162,7 +165,11 @@ void daemon_interface(void)
    /* discard the messages */
    LOOP {
       CANCELLATION_POINT();
+#if !defined(OS_WINDOWS)
       nanosleep(&ts, NULL);
+#else
+      usleep(1000);
+#endif
       ui_msg_flush(MSG_ALL);
    }
    /* NOT REACHED */   

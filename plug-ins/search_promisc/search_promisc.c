@@ -79,13 +79,15 @@ static int search_promisc_init(void *dummy)
    
    char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h;
-   struct timespec tm;
    char bogus_mac[2][6]={"\xfd\xfd\x00\x00\x00\x00", "\xff\xff\x00\x00\x00\x00"};
    char messages[2][48]={"\nLess probably sniffing NICs:\n", "\nMost probably sniffing NICs:\n"};
    u_char i;
-  
+ 
+#if !defined(OS_WINDOWS) 
+   struct timespec tm;
    tm.tv_sec = GBL_CONF->arp_storm_delay;
    tm.tv_nsec = 0; 
+#endif
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
@@ -113,7 +115,11 @@ static int search_promisc_init(void *dummy)
        */
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
          send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &h->ip, bogus_mac[i]);   
+#if !defined(OS_WINDOWS)
          nanosleep(&tm, NULL);
+#else
+         usleep(GBL_CONF->arp_storm_delay*1000);
+#endif
       }
       
       /* Wait for responses */

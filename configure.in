@@ -237,6 +237,7 @@ AC_CHECK_HEADERS(sys/poll.h poll.h sys/select.h)
 AC_CHECK_HEADERS(sys/cdefs.h)
 dnl nameser NS_GET32 and so on...
 EC_NS_GET()
+EC_CHECK_TIMEZONE()
 
 dnl ==================================================================
 dnl   Checks for typedefs, structures, and compiler characteristics.

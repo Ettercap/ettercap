@@ -186,7 +186,7 @@ AC_DEFUN([EC_CHECK_TIMEZONE],
        }
    ],
    [ AC_MSG_RESULT(yes) 
-     AC_DEFINE(HAVE_STRUCT_TIMEZONE, 1)],
+     AC_DEFINE(HAVE_STRUCT_TIMEZONE,1) ],
    [ AC_MSG_RESULT(no); ]
    )
 ])

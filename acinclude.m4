@@ -168,30 +168,6 @@ AC_DEFUN([EC_GCC_MACRO],
 ])
 
 dnl
-dnl EC_CHECK_TIMEZONE
-dnl
-dnl returns HAVE_STRUCT_TIMEZONE
-dnl
-AC_DEFUN([EC_CHECK_TIMEZONE],
-[
-   AC_MSG_CHECKING(for struct timezone)
-   AC_TRY_RUN([
-       #include <sys/time.h>
-       #include <time.h>
-  
-       int main(int argc, char **argv)
-       {
-           struct timezone tz;
-           return 0;
-       }
-   ],
-   [ AC_MSG_RESULT(yes) 
-     AC_DEFINE(HAVE_STRUCT_TIMEZONE,1) ],
-   [ AC_MSG_RESULT(no); ]
-   )
-])
-
-dnl
 dnl EC_NS_GET()
 dnl
 dnl   returns  HAVE_NS_GET

@@ -331,14 +331,10 @@ char * ec_strtok(char *s, const char *delim, char **ptrptr)
 #ifdef HAVE_STRTOK_R 
    return strtok_r(s, delim, ptrptr);
 #else
-   #ifdef OS_WINDOWS
-   return strtok_s(s, delim, ptrptr);
-   #else
-      #warning unsafe strtok
-      /* to avoid the warning on this function (the wrapper macro) */
-      #undef strtok
-      return strtok(s, delim);
-   #endif
+   #warning unsafe strtok
+   /* to avoid the warning on this function (the wrapper macro) */
+   #undef strtok
+   return strtok(s, delim);
 #endif
 }
 

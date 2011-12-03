@@ -225,10 +225,21 @@ doubt, go with the latest copy.
   
    5) enter the ettercap_ng directory and execute the configure script
    6) issue the 'make' command and have fun :)
+   7) ettercap/include/ec_os_mingw.h might need to be modified to not declare struct
+      timezone as it is already defined in sys/time.h on latest MinGW version.
 
    *) probably you'll have some difficulties compiling it. you have to modify
    the makefile a bit to suite your environment. don't forget to install all
    the required .dll since the .dll.a are only wrapper to the real .dll file.
+
+   *) if make fails because of a /man/man5 or /man/man8 directory does not exist,
+      keep running make until compilation is done
+   *) after everything is done type: 
+         a) cd ..
+         b) /usr/bin/find . -name \*.dll -exec cp {} ettercap/lib \;
+         c) cd ettercap
+         d) cp ettercap.exe lib
+         e) run ettercap from lib
 
    
    if you want precompiled packages:

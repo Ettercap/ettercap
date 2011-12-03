@@ -213,7 +213,7 @@ static void arp_poisoning_stop(void)
       ts.tv_nsec = 0;
       nanosleep(&ts, NULL);
 #else
-      usleep(GBL_CONF->arp_poison_warmup*1000);
+      usleep(GBL_CONF->arp_poison_warm_up*1000);
 #endif
    }
    

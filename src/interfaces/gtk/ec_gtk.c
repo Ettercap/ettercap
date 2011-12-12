@@ -140,13 +140,13 @@ static gboolean gtkui_error_shim(gpointer data)
 {
    gtkui_error(data);
    free(data);
-   return FALSE:
+   return FALSE;
 }
 
 static void gtkui_error_wrap(const char *msg)
 {
 
-   char *copy = strdup(data);
+   char *copy = strdup(msg);
    if (msg) {
       g_idle_add(gtkui_error_shim, copy);
    } else {
@@ -232,10 +232,10 @@ static int gtkui_progress_wrap(char *title, int value, int max) {
       FATAL_ERROR("out of memory");
    }
 
-+   return value == max
-+      ? UI_PROGRESS_FINISHED
-+      : UI_PROGRESS_UPDATED;
-+}
+   return value == max
+      ? UI_PROGRESS_FINISHED
+      : UI_PROGRESS_UPDATED;
+}
 
 
 

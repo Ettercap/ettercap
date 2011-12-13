@@ -1,0 +1,5 @@
+AUTOMAKE_OPTIONS = foreign no-dependencies subdir-objects
+AM_CPPFLAGS = -DINSTALL_DATADIR='"$(datadir)"' -DINSTALL_BINDIR='"$(bindir)"' -DINSTALL_EXECPREFIX='"$(exec_prefix)"' -DINSTALL_LIBDIR='"$(libdir)"' -DINSTALL_PREFIX='"$(prefix)"' -DINSTALL_SYSCONFDIR='"$(sysconfdir)"' @CPPFLAGS@
+
+DISTCLEANFILES = *~
+

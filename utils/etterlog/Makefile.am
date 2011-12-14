@@ -55,7 +55,7 @@ endif
 
 etterlog_CFLAGS = @EC_CFLAGS@
 
-etterlog_LDADD = -lz @ICONVLIB@ @LIBOBJS@
+etterlog_LDADD = -lz @ICONVLIB@
 
 if INET_ATON_WANTS_RESOLV
    etterlog_LDADD += -lresolv

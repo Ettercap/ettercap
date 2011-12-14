@@ -49,7 +49,7 @@ if BSD
    etterfilter_CFLAGS += -pthread
 endif
    
-etterfilter_LDADD =  @LIBOBJS@
+etterfilter_LDADD = 
 
 if INET_ATON_WANTS_RESOLV
    etterfilter_LDADD += -lresolv

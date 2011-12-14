@@ -21,7 +21,7 @@ dnl    $Id: configure.in,v 1.134 2004/11/05 10:00:57 alor Exp $
 dnl
 
 VERSION=`grep EC_VERSION\  ./include/ec_version.h | cut -f2 -d"\""`
-AC_INIT(ettercap, $VERSION)
+AC_INIT(ettercap, 0.7.4)
 AC_CONFIG_SRCDIR([include/ec.h])
 
 dnl Force autoconf 2.57 

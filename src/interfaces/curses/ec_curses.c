@@ -49,6 +49,7 @@ static void curses_error(const char *msg);
 static void curses_fatal_error(const char *msg);
 void curses_input(const char *title, char *input, size_t n, void (*callback)(void));
 static int curses_progress(char *title, int value, int max);
+static void curses_update(int target);
 
 static void curses_setup(void);
 static void curses_exit(void);
@@ -86,6 +87,7 @@ void set_curses_interface(void)
    ops.fatal_error = &curses_fatal_error;
    ops.input = &curses_input;
    ops.progress = &curses_progress;
+   ops.update = &curses_update;
    ops.type = UI_CURSES;
    
    ui_register(&ops);
@@ -297,6 +299,19 @@ static int curses_progress(char *title, int value, int max)
    }
   
    return UI_PROGRESS_UPDATED;
+}
+
+/*
+ * process an update notification
+ */
+static void curses_update(int target)
+{
+   switch(target) {
+      case UI_UPDATE_HOSTLIST:   curses_hosts_update();
+                                 break;
+
+      default:                   break;
+   }
 }
 
 /*

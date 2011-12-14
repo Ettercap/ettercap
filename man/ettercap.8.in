@@ -33,7 +33,7 @@ specification has been changed. \fIPlease read carefully this man page.\fR
 .B ettercap
 [\fIOPTIONS\fR] [\fITARGET1\fR] [\fITARGET2\fR]
 .PP
-\fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR
+\fITARGET\fR is in the form \fIMAC/IPs/IPv6/PORTs\fR
 .br
 where IPs and PORTs can be ranges (e.g. /192.168.0.1-30,40,50/20,22,25)
 .SH DESCRIPTION

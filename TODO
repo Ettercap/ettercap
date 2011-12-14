@@ -86,4 +86,8 @@
       - handle fragmented packets
       - IPv6 support
 
+==================
+     FOR NOW
+=================
 
+    * Move network interface related code to src/ec_network.c

@@ -199,19 +199,19 @@ static void curses_current_targets(void)
    wdg_set_color(wdg_comp, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(wdg_comp, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_set_title(wdg_comp, "Current targets", WDG_ALIGN_LEFT);
-   wdg_set_size(wdg_comp, 1, 2, 42, SYSMSG_WIN_SIZE - 1);
+   wdg_set_size(wdg_comp, 1, 2, 98, SYSMSG_WIN_SIZE - 1);
    
    wdg_create_object(&wdg_t1, WDG_LIST, 0);
    wdg_set_title(wdg_t1, "Target 1", WDG_ALIGN_LEFT);
    wdg_set_color(wdg_t1, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_set_color(wdg_t1, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_size(wdg_t1, 2, 3, 21, SYSMSG_WIN_SIZE - 2);
+   wdg_set_size(wdg_t1, 2, 3, 49, SYSMSG_WIN_SIZE - 2);
    
    wdg_create_object(&wdg_t2, WDG_LIST, 0);
    wdg_set_title(wdg_t2, "Target 2", WDG_ALIGN_LEFT);
    wdg_set_color(wdg_t2, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_set_color(wdg_t2, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
-   wdg_set_size(wdg_t2, 22, 3, 41, SYSMSG_WIN_SIZE - 2);
+   wdg_set_size(wdg_t2, 50, 3, 97, SYSMSG_WIN_SIZE - 2);
 
    /* link the array to the widgets */
    wdg_list_set_elements(wdg_t1, wdg_t1_elm);
@@ -277,6 +277,14 @@ static void curses_create_targets_array(void)
    SAFE_FREE(wdg_t2_elm);
    nhosts = 0;
    
+   /* XXX - two more loops were added to handle ipv6 targets
+    *       since ipv6 targets require a separate list and it is
+    *       unreasonable to put both ipv4 and ipv6 at the same list
+    *       this shit here should be completely rewritten.
+    *       do it if you have time.
+    *                                  the braindamaged one.
+    */
+
    /* walk TARGET 1 */
    LIST_FOREACH(il, &GBL_TARGET1->ips, next) {
       /* enlarge the array */ 
@@ -285,13 +293,26 @@ static void curses_create_targets_array(void)
       /* fill the element */
       SAFE_CALLOC(wdg_t1_elm[nhosts].desc, MAX_ASCII_ADDR_LEN + 1, sizeof(char));
       /* print the description in the array */
-      snprintf(wdg_t1_elm[nhosts].desc, MAX_ASCII_ADDR_LEN, "%-15s", ip_addr_ntoa(&il->ip, tmp));  
+      snprintf(wdg_t1_elm[nhosts].desc, MAX_ASCII_ADDR_LEN, "%s", ip_addr_ntoa(&il->ip, tmp));  
       
       wdg_t1_elm[nhosts].value = il;
    
       nhosts++;
    }
+   /* same for IPv6 targets */
+   LIST_FOREACH(il, &GBL_TARGET1->ip6, next) {
+      /* enlarge the array */ 
+      SAFE_REALLOC(wdg_t1_elm, (nhosts + 1) * sizeof(struct wdg_list));
+
+      /* fill the element */
+      SAFE_CALLOC(wdg_t1_elm[nhosts].desc, MAX_ASCII_ADDR_LEN + 1, sizeof(char));
+      /* print the description in the array */
+      snprintf(wdg_t1_elm[nhosts].desc, MAX_ASCII_ADDR_LEN, "%s", ip_addr_ntoa(&il->ip, tmp));  
+      
+      wdg_t1_elm[nhosts].value = il;
    
+      nhosts++;
+   }
    /* null terminate the array */ 
    SAFE_REALLOC(wdg_t1_elm, (nhosts + 1) * sizeof(struct wdg_list));
    wdg_t1_elm[nhosts].desc = NULL;
@@ -306,7 +327,21 @@ static void curses_create_targets_array(void)
       /* fill the element */
       SAFE_CALLOC(wdg_t2_elm[nhosts].desc, MAX_ASCII_ADDR_LEN + 1, sizeof(char));
       /* print the description in the array */
-      snprintf(wdg_t2_elm[nhosts].desc, MAX_ASCII_ADDR_LEN, "%-15s", ip_addr_ntoa(&il->ip, tmp));  
+      snprintf(wdg_t2_elm[nhosts].desc, MAX_ASCII_ADDR_LEN, "%s", ip_addr_ntoa(&il->ip, tmp));  
+      
+      wdg_t2_elm[nhosts].value = il;
+   
+      nhosts++;
+   }
+
+   LIST_FOREACH(il, &GBL_TARGET2->ip6, next) {
+      /* enlarge the array */ 
+      SAFE_REALLOC(wdg_t2_elm, (nhosts + 1) * sizeof(struct wdg_list));
+
+      /* fill the element */
+      SAFE_CALLOC(wdg_t2_elm[nhosts].desc, MAX_ASCII_ADDR_LEN + 1, sizeof(char));
+      /* print the description in the array */
+      snprintf(wdg_t2_elm[nhosts].desc, MAX_ASCII_ADDR_LEN, "%s", ip_addr_ntoa(&il->ip, tmp));  
       
       wdg_t2_elm[nhosts].value = il;
    
@@ -373,17 +408,19 @@ static void curses_add_target2(void *entry)
 
 static void add_target1(void)
 {
-   struct in_addr ip;
-   struct ip_addr host;
-   
-   if (inet_aton(thost, &ip) == 0) {
+   struct ip_addr ip;
+   u_int8 a[MAX_IP_ADDR_LEN];
+   u_int16 proto;
+
+   /* SUDDENLY!!!!!!11 */
+   proto = (strchr(thost, ':') == NULL) ? AF_INET : AF_INET6;
+   if(inet_pton(proto, thost, a) != 1) {
       curses_message("Invalid ip address");
       return;
    }
    
-   ip_addr_init(&host, AF_INET, (char *)&ip);
-
-   add_ip_list(&host, GBL_TARGET1);
+   ip_addr_init(&ip, proto, a);
+   add_ip_list(&ip, GBL_TARGET1);
    
    /* redraw the window */
    curses_current_targets();
@@ -391,17 +428,18 @@ static void add_target1(void)
 
 static void add_target2(void)
 {
-   struct in_addr ip;
-   struct ip_addr host;
-   
-   if (inet_aton(thost, &ip) == 0) {
+   struct ip_addr ip;
+   u_int8 a[MAX_IP_ADDR_LEN];
+   u_int16 proto;
+
+   proto = (strchr(thost, ':') == NULL) ? AF_INET : AF_INET6;
+   if(inet_pton(proto, thost, a) != 1) {
       curses_message("Invalid ip address");
       return;
    }
    
-   ip_addr_init(&host, AF_INET, (char *)&ip);
-
-   add_ip_list(&host, GBL_TARGET2);
+   ip_addr_init(&ip, proto, a);
+   add_ip_list(&ip, GBL_TARGET2);
    
    /* redraw the window */
    curses_current_targets();

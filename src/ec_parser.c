@@ -32,6 +32,7 @@
 #include <ec_filter.h>
 #include <ec_plugins.h>
 #include <ec_conf.h>
+#include <ec_strings.h>
 
 #include <ctype.h>
 
@@ -48,6 +49,7 @@ void parse_options(int argc, char **argv);
 
 int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t );
 int set_regex(char *regex);
+static char **parse_iflist(char *list);
 
 /* from the ec_wifi.c decoder */
 extern int set_wep_key(u_char *string);
@@ -59,7 +61,7 @@ void ec_usage(void)
 
    fprintf(stdout, "\nUsage: %s [OPTIONS] [TARGET1] [TARGET2]\n", GBL_PROGRAM);
 
-   fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
+   fprintf(stdout, "\nTARGET is in the format MAC/IP/IPv6/PORTs (see the man for further detail)\n");
    
    fprintf(stdout, "\nSniffing and Attack options:\n");
    fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
@@ -77,7 +79,6 @@ void ec_usage(void)
    fprintf(stdout, "       -q, --quiet                 do not display packet contents\n");
    fprintf(stdout, "       -s, --script <CMD>          issue these commands to the GUI\n");
    fprintf(stdout, "  -C, --curses                use curses GUI\n");
-   fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
    fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
    
    fprintf(stdout, "\nLogging options:\n");
@@ -96,7 +97,8 @@ void ec_usage(void)
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
-   fprintf(stdout, "  -I, --iflist                show all the network interfaces\n");
+   fprintf(stdout, "  -I, --liface                show all the network interfaces\n");
+   fprintf(stdout, "  -S, --secondary <ifaces>    list of secondary network interfaces\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
@@ -127,7 +129,8 @@ void parse_options(int argc, char **argv)
       { "update", no_argument, NULL, 'U' },
       
       { "iface", required_argument, NULL, 'i' },
-      { "iflist", no_argument, NULL, 'I' },
+      { "lifaces", no_argument, NULL, 'I' },
+      { "secondary", required_argument, NULL, 'S' },
       { "netmask", required_argument, NULL, 'n' },
       { "write", required_argument, NULL, 'w' },
       { "read", required_argument, NULL, 'r' },
@@ -162,13 +165,14 @@ void parse_options(int argc, char **argv)
       
       { "text", no_argument, NULL, 'T' },
       { "curses", no_argument, NULL, 'C' },
-      { "gtk", no_argument, NULL, 'G' },
       { "daemon", no_argument, NULL, 'D' },
       
       { "mitm", required_argument, NULL, 'M' },
       { "only-mitm", no_argument, NULL, 'o' },
       { "bridge", required_argument, NULL, 'B' },
       { "promisc", no_argument, NULL, 'p' },
+      { "gateway", no_argument, NULL, 'G' },
+
       
       { 0 , 0 , 0 , 0}
    };
@@ -186,7 +190,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:S:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
@@ -219,7 +223,6 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'G':
-                  select_gtk_interface();
                   break;
          
          case 'D':
@@ -251,7 +254,11 @@ void parse_options(int argc, char **argv)
          case 'I':
                   /* this option is only useful in the text interface */
                   select_text_interface();
-                  GBL_OPTIONS->iflist = 1;
+                  GBL_OPTIONS->lifaces = 1;
+                  break;
+
+         case 'S':
+                  GBL_OPTIONS->secondary = parse_iflist(optarg);
                   break;
          
          case 'n':
@@ -544,7 +551,20 @@ int set_regex(char *regex)
    return ESUCCESS;
 }
 
+static char **parse_iflist(char *list)
+{
+   int i, n;
+   char **r, *t, *p;
 
+   for(i = 0, n = 1; list[i] != '\0'; list[i++] == ',' ? n++ : n);
+   SAFE_CALLOC(r, n + 1, sizeof(char*));
+
+   /* its self-explaining */
+   for(r[i=0]=ec_strtok(list,",",&p);i<n&&(t=ec_strtok(NULL,",",&p))!=NULL;r[++i]=strdup(t));
+   r[n] = NULL;
+
+   return r;
+}
 
 /* EOF */
 

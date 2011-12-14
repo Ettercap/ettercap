@@ -904,7 +904,7 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    gettimeofday(&po->ts, NULL);
 
    /* calculate if the dest is local or not */
-   switch (ip_addr_is_local(&PACKET->L3.src)) {
+   switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
       case ESUCCESS:
          PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;

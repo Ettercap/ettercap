@@ -38,6 +38,11 @@ EC_API_EXTERN void ec_thread_exit(void);
 
 #define CANCELLATION_POINT()  pthread_testcancel()
 
+#if defined(OS_DARWIN) || defined(OS_WINDOWS) || defined(OS_CYGWIN)
+   /* XXX - darwin and windows are broken, pthread_join hangs up forever */
+   #define BROKEN_PTHREAD_JOIN
+#endif
+
 #endif
 
 /* EOF */

@@ -31,6 +31,7 @@ static void curses_arp_poisoning(void);
 static void curses_icmp_redir(void);
 static void curses_port_stealing(void);
 static void curses_dhcp_spoofing(void);
+static void curses_ndp_poisoning(void);
 static void curses_start_mitm(void);
 static void curses_mitm_stop(void);
 
@@ -41,10 +42,11 @@ static void curses_mitm_stop(void);
 static char params[PARAMS_LEN];
 
 struct wdg_menu menu_mitm[] = { {"Mitm",                'M', "", NULL},
-                                {"Arp poisoning...",    0,   "", curses_arp_poisoning},
-                                {"Icmp redirect...",    0,   "", curses_icmp_redir},
-                                {"Port stealing...",    0,   "", curses_port_stealing},
-                                {"Dhcp spoofing...",    0,   "", curses_dhcp_spoofing},
+                                {"ARP poisoning...",    0,   "", curses_arp_poisoning},
+                                {"ICMP redirect...",    0,   "", curses_icmp_redir},
+                                {"PORT stealing...",    0,   "", curses_port_stealing},
+                                {"DHCP spoofing...",    0,   "", curses_dhcp_spoofing},
+                                {"NDP poisoning...",    0,   "", curses_ndp_poisoning},
                                 {"-",                   0,   "", NULL},
                                 {"Stop mitm attack(s)", 0,   "", curses_mitm_stop},
                                 {NULL, 0, NULL, NULL},
@@ -88,6 +90,14 @@ static void curses_dhcp_spoofing(void)
    curses_input("Parameters :", params + strlen("dhcp:"), PARAMS_LEN - strlen("dhcp:"), curses_start_mitm);
 }
 
+static void curses_ndp_poisoning(void)
+{
+   DEBUG_MSG("curses_ndp_poisoning");
+
+   sprintf(params, "nadv:");
+
+   curses_input("Parameters :", params + strlen("nadv:"), PARAMS_LEN - strlen("nadv:"), curses_start_mitm);
+}
 
 /* 
  * start the mitm attack by passing the name and parameters 

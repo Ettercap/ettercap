@@ -130,7 +130,7 @@ static int chk_poison_init(void *dummy)
    /* Send spoofed ICMP echo request to each victim */
    SLIST_FOREACH(p, &poison_table, next) {
       for (i = 0; i <= 1; i++) {
-         send_L3_icmp_echo(ICMP_ECHO, &(p->ip[i]), &(p->ip[!i]));   
+         send_L3_icmp_echo(&(p->ip[i]), &(p->ip[!i]));   
 #if !defined(OS_WINDOWS)
          nanosleep(&tm, NULL);
 #else

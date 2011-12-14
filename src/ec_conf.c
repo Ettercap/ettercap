@@ -48,6 +48,7 @@ static struct conf_entry mitm[] = {
    { "dhcp_lease_time", NULL },
    { "port_steal_delay", NULL },
    { "port_steal_send_delay", NULL },
+   { "nadv_poison_send_delay", NULL },
    { NULL, NULL },
 };
 
@@ -157,6 +158,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&mitm, "dhcp_lease_time", &GBL_CONF->dhcp_lease_time);
    set_pointer((struct conf_entry *)&mitm, "port_steal_delay", &GBL_CONF->port_steal_delay);
    set_pointer((struct conf_entry *)&mitm, "port_steal_send_delay", &GBL_CONF->port_steal_send_delay);
+   set_pointer((struct conf_entry *)&mitm, "nadv_poison_send_delay", &GBL_CONF->nadv_poison_send_delay);
    set_pointer((struct conf_entry *)&connections, "connection_timeout", &GBL_CONF->connection_timeout);
    set_pointer((struct conf_entry *)&connections, "connection_idle", &GBL_CONF->connection_idle);
    set_pointer((struct conf_entry *)&connections, "connection_buffer", &GBL_CONF->connection_buffer);

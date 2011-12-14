@@ -91,12 +91,13 @@ struct packet_object {
       #define PO_DROPPED      ((u_int16)(1<<7))     /* the packet has to be dropped */
   
       #define PO_DUP          ((u_int16)(1<<8))     /* the packet is a duplicate we have to free the buffer on destroy */
+      #define PO_FORGED       ((u_int16)(1<<9))     /* the packet is created by ourselves */
       
-      #define PO_EOF          ((u_int16)(1<<9))     /* we are reading from a file and this is the last packet */
+      #define PO_EOF          ((u_int16)(1<<10))     /* we are reading from a file and this is the last packet */
 
-      #define PO_FROMSSL      ((u_int16)(1<<10))     /* the packet is coming from a ssl wrapper */
+      #define PO_FROMSSL      ((u_int16)(1<<11))     /* the packet is coming from a ssl wrapper */
 
-      #define PO_SSLSTART     ((u_int16)(1<<11))    /* ssl wrapper has to enter SSL state */
+      #define PO_SSLSTART     ((u_int16)(1<<12))    /* ssl wrapper has to enter SSL state */
    
    /* 
     * here are stored the user and pass collected by dissectors 
@@ -109,6 +110,7 @@ struct packet_object {
    
 };
 
+EC_API_EXTERN struct packet_object* packet_allocate_object(u_char *data, size_t len);
 EC_API_EXTERN inline int packet_create_object(struct packet_object *po, u_char * buf, size_t len);
 EC_API_EXTERN inline int packet_destroy_object(struct packet_object *po);
 EC_API_EXTERN int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);

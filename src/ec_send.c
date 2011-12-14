@@ -29,6 +29,7 @@
 
 #include <ec_packet.h>
 #include <ec_send.h>
+#include <ec_network.h>
 
 #include <pthread.h>
 #include <pcap.h>
@@ -61,6 +62,7 @@ static void send_close(void);
 int send_to_L3(struct packet_object *po);
 int send_to_L2(struct packet_object *po);
 int send_to_bridge(struct packet_object *po);
+int send_to_iface(struct packet_object *po, struct iface_env *iface);
 
 void capture_only_incoming(pcap_t *p, libnet_t *l);
 
@@ -69,13 +71,16 @@ libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto);
 
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac);
 int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac);
-int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip);
+int send_L3_icmp(u_char type, struct ip_addr *sip, struct ip_addr *tip);
+int send_L3_icmp_echo(struct ip_addr *src, struct ip_addr *tgt);
 int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct packet_object *po);
 int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
 int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr);
 int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
 int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
 int send_L3_icmp_unreach(struct packet_object *po);
+int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
+int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router);
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SEND_LOCK     do{ pthread_mutex_lock(&send_mutex); } while(0)
@@ -89,13 +94,9 @@ static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void send_init(void)
 {
-   pcap_t *p;
-   pcap_t *pb;
-   libnet_t *l;
-   libnet_t *l3;
-   libnet_t *lb;
+   libnet_t *l4;
+   libnet_t *l6;
    char lnet_errbuf[LIBNET_ERRBUF_SIZE];
-   char pcap_errbuf[PCAP_ERRBUF_SIZE];
  
    /* check when to not initialize libnet or pcap */
    if (GBL_OPTIONS->read) {
@@ -107,6 +108,7 @@ void send_init(void)
    if (!strcasecmp(GBL_OPTIONS->iface, "lo")) {
       DEBUG_MSG("send_init: using loopback (activating unoffensive mode)");
       GBL_OPTIONS->unoffensive = 1;
+      return;
    }
 
    /* in wireless monitor mode we cannot send packets */
@@ -116,28 +118,27 @@ void send_init(void)
       return;
    }
    
-   DEBUG_MSG("send_init %s", GBL_OPTIONS->iface);
+   DEBUG_MSG("send_init");
    
    /* open the socket */
   
    /* open the socket at layer 3 */
-   l3 = libnet_init(LIBNET_RAW4_ADV, GBL_OPTIONS->iface, lnet_errbuf);
-   ON_ERROR(l3, NULL, "libnet_init(LIBNET_RAW4_ADV) failed: %s", lnet_errbuf);
+   l4 = libnet_init(LIBNET_RAW4_ADV, NULL, lnet_errbuf);               
+   if (l4 == NULL) {
+      DEBUG_MSG("send_init: libnet_init(LIBNET_RAW4_ADV) failed: %s", lnet_errbuf);
+      GBL_OPTIONS->unoffensive = 1;
+      return;
+   }
 
-   /* open the socket at layer 2 ( GBL_OPTIONS->iface doesn't matter ) */
-   l = libnet_init(LIBNET_LINK_ADV, GBL_OPTIONS->iface, lnet_errbuf);
-   ON_ERROR(l, NULL, "libnet_init(LIBNET_LINK_ADV) failed: %s", lnet_errbuf);
- 
-   if (GBL_SNIFF->type == SM_BRIDGED) {
-      /* open the socket on the other iface for bridging */
-      lb = libnet_init(LIBNET_LINK_ADV, GBL_OPTIONS->iface_bridge, lnet_errbuf);
-      ON_ERROR(lb, NULL, "libnet_init() failed: %s", lnet_errbuf);
-      GBL_LNET->lnet_bridge = lb;
-
+   /* open the socket at layer 3 for IPv6 */
+   l6 = libnet_init(LIBNET_RAW6_ADV, NULL, lnet_errbuf);
+   if(l6 == NULL) {
+      DEBUG_MSG("%s: libnet_init(LIBNET_RAW6_ADV) failed: %s", __func__, lnet_errbuf);
+      USER_MSG("Libnet failed IPv6 initialization. Don't send IPv6 packets.\n");
    }
    
-   GBL_LNET->lnet = l;
-   GBL_LNET->lnet_L3 = l3;
+   GBL_LNET->lnet_IP4 = l4;               
+   GBL_LNET->lnet_IP6 = l6;
       
    atexit(send_close);
 }
@@ -145,11 +146,8 @@ void send_init(void)
 
 static void send_close(void)
 {
-   libnet_destroy(GBL_LNET->lnet);
-   libnet_destroy(GBL_LNET->lnet_L3);
-
-   if (GBL_SNIFF->type == SM_BRIDGED) 
-      libnet_destroy(GBL_LNET->lnet_bridge);
+   libnet_destroy(GBL_LNET->lnet_IP4);
+   libnet_destroy(GBL_LNET->lnet_IP6);
    
    DEBUG_MSG("ATEXIT: send_closed");
 }
@@ -161,35 +159,41 @@ static void send_close(void)
 int send_to_L3(struct packet_object *po)
 {
    libnet_ptag_t t;
+   libnet_t *l;
    char tmp[MAX_ASCII_ADDR_LEN];
    int c;
 
+   switch(ntohs(po->L3.src.addr_type)) {
+      case AF_INET:  l = GBL_LNET->lnet_IP4;
+                     break;
+      case AF_INET6: l = GBL_LNET->lnet_IP6;
+                     break;
+      default:       l = NULL;
+                     break;
+   }
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet_L3 == 0);
-
+   BUG_IF(l == NULL);
+   
    SEND_LOCK;
-
-   t = libnet_build_data(po->fwd_packet, po->fwd_len, GBL_LNET->lnet_L3, 0);
-   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_L3));
-
-   c = libnet_write(GBL_LNET->lnet_L3);
-   //ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(GBL_LNET->lnet_L3));
+   
+   t = libnet_build_data(po->fwd_packet, po->fwd_len, l, 0);
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_IP4));
+   
+   c = libnet_write(l);
+   //ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(l));
    if (c == -1)
-    
-      /* When running with other tools such as sslstrip that require MASQUERADE and ip_forward, we will see EPERM errors when attempting
-         to forward packets, ignore these errors */
-      if (errno != EPERM)
-         USER_MSG("SEND L3 ERROR: %d byte packet (%04x:%02x) destined to %s was not forwarded (%s)\n",
-            po->fwd_len, ntohs(po->L3.proto), po->L4.proto, ip_addr_ntoa(&po->L3.dst, tmp),
-            libnet_geterror(GBL_LNET->lnet_L3));
-
+      USER_MSG("SEND L3 ERROR: %d byte packet (%04x:%02x) destined to %s was not forwarded (%s)\n", 
+            po->fwd_len, ntohs(po->L3.proto), po->L4.proto, ip_addr_ntoa(&po->L3.dst, tmp), 
+            libnet_geterror(l));
+   
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet_L3);
-
+   libnet_clear_packet(l);
+   
    SEND_UNLOCK;
-
+   
    return c;
 }
+
 
 /*
  * send the packet at layer 2
@@ -198,26 +202,7 @@ int send_to_L3(struct packet_object *po)
 
 int send_to_L2(struct packet_object *po)
 {
-   libnet_ptag_t t;
-   int c;
-   
-   /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet == 0);
-   
-   SEND_LOCK;
-   
-   t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet, 0);
-   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet));
-   
-   c = libnet_write(GBL_LNET->lnet);
-   ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->len, c, libnet_geterror(GBL_LNET->lnet));
-   
-   /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet);
-   
-   SEND_UNLOCK;
-   
-   return c;
+   return send_to_iface(po, GBL_IFACE); 
 }
 
 /*
@@ -226,22 +211,27 @@ int send_to_L2(struct packet_object *po)
 
 int send_to_bridge(struct packet_object *po)
 {
+   return send_to_iface(po, GBL_BRIDGE);
+}
+
+int send_to_iface(struct packet_object *po, struct iface_env *iface)
+{
    libnet_ptag_t t;
    int c;
   
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet == 0);
+   BUG_IF(iface->lnet == NULL);
    
    SEND_LOCK;
 
-   t = libnet_build_data( po->packet, po->len, GBL_LNET->lnet_bridge, 0);
-   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_bridge));
+   t = libnet_build_data(po->packet, po->len, iface->lnet, 0);
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(iface->lnet));
    
-   c = libnet_write(GBL_LNET->lnet_bridge);
-   ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->len, c, libnet_geterror(GBL_LNET->lnet_bridge));
+   c = libnet_write(iface->lnet);
+   ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->len, c, libnet_geterror(iface->lnet));
    
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet_bridge);
+   libnet_clear_packet(iface->lnet);
    
    SEND_UNLOCK;
    
@@ -366,7 +356,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    int c;
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet == 0);
+   BUG_IF(GBL_IFACE->lnet == 0);
    
    SEND_LOCK;
 
@@ -387,9 +377,9 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
            (u_char *)&(tip->addr),  /* target protocol addr */
            NULL,                    /* payload */
            0,                       /* payload size */
-           GBL_LNET->lnet,          /* libnet handle */
+           GBL_IFACE->lnet,          /* libnet handle */
            0);                      /* pblock id */
-   ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_IFACE->lnet));
    
    /* MEDIA uses ff:ff:ff:ff:ff:ff broadcast */
    if (type == ARPOP_REQUEST && tmac == ARP_BROADCAST)
@@ -401,11 +391,11 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
       FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* send the packet */
-   c = libnet_write(GBL_LNET->lnet);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
+   c = libnet_write(GBL_IFACE->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
    
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet);
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    SEND_UNLOCK;
    
@@ -421,7 +411,7 @@ int send_L3_icmp_unreach(struct packet_object *po)
    int c;
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet_L3 == 0);
+   BUG_IF(GBL_LNET->lnet_IP4 == 0);
    
    SEND_LOCK;
 
@@ -434,12 +424,12 @@ int send_L3_icmp_unreach(struct packet_object *po)
            htons(EC_MAGIC_16),      /* sequence number */
            po->L3.header,           /* payload */
            po->L3.len + 8,          /* payload size */
-           GBL_LNET->lnet_L3,       /* libnet handle */
+           GBL_LNET->lnet_IP4,       /* libnet handle */
            0);                      /* pblock id */
-   ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet_L3));
+   ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet_IP4));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_LNET->lnet_IP4, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -454,19 +444,19 @@ int send_L3_icmp_unreach(struct packet_object *po)
            ip_addr_to_int32(&po->L3.src.addr),         /* destination IP */                            
            NULL,                                       /* payload */                                   
            0,                                          /* payload size */                              
-           GBL_LNET->lnet_L3,                          /* libnet handle */                             
+           GBL_LNET->lnet_IP4,                          /* libnet handle */                             
            0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_L3));
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_IP4));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_LNET->lnet_IP4, t, LIBNET_ON);
  
    /* send the packet to Layer 3 */
-   c = libnet_write(GBL_LNET->lnet_L3);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet_L3));
+   c = libnet_write(GBL_LNET->lnet_IP4);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet_IP4));
 
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet_L3);
+   libnet_clear_packet(GBL_LNET->lnet_IP4);
 
    SEND_UNLOCK;
    
@@ -477,13 +467,13 @@ int send_L3_icmp_unreach(struct packet_object *po)
 /*
  * helper function to send out an ICMP ECHO packet at layer 3
  */
-int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip)
+int send_L3_icmp(u_char type, struct ip_addr *sip, struct ip_addr *tip)
 {
    libnet_ptag_t t;
    int c;
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet_L3 == 0);
+   BUG_IF(GBL_LNET->lnet_IP4 == 0);
    
    SEND_LOCK;
 
@@ -496,12 +486,12 @@ int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip)
            htons(EC_MAGIC_16),      /* sequence number */
            NULL,                    /* payload */
            0,                       /* payload size */
-           GBL_LNET->lnet_L3,       /* libnet handle */
+           GBL_LNET->lnet_IP4,       /* libnet handle */
            0);                      /* pblock id */
-   ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet_L3));
+   ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet_IP4));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_LNET->lnet_IP4, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -516,23 +506,28 @@ int send_L3_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip)
            ip_addr_to_int32(&tip->addr),               /* destination IP */                            
            NULL,                                       /* payload */                                   
            0,                                          /* payload size */                              
-           GBL_LNET->lnet_L3,                          /* libnet handle */                             
+           GBL_LNET->lnet_IP4,                          /* libnet handle */                             
            0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_L3));
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_IP4));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_LNET->lnet_IP4, t, LIBNET_ON);
  
    /* send the packet to Layer 3 */
-   c = libnet_write(GBL_LNET->lnet_L3);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet_L3));
+   c = libnet_write(GBL_LNET->lnet_IP4);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet_IP4));
 
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet_L3);
+   libnet_clear_packet(GBL_LNET->lnet_IP4);
 
    SEND_UNLOCK;
    
    return c;
+}
+
+int send_L3_icmp_echo(struct ip_addr *src, struct ip_addr *tgt)
+{
+   return send_L3_icmp(ICMP_ECHO, src, tgt);
 }
 
 /*
@@ -544,7 +539,7 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
    int c;
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet == 0);
+   BUG_IF(GBL_IFACE->lnet == 0);
    
    SEND_LOCK;
 
@@ -557,12 +552,12 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
            htons(EC_MAGIC_16),      /* sequence number */
            NULL,                    /* payload */
            0,                       /* payload size */
-           GBL_LNET->lnet,          /* libnet handle */
+           GBL_IFACE->lnet,          /* libnet handle */
            0);                      /* pblock id */
-   ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_icmpv4_echo: %s", libnet_geterror(GBL_IFACE->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -577,12 +572,12 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
            ip_addr_to_int32(&tip->addr),               /* destination IP */                            
            NULL,                                       /* payload */                                   
            0,                                          /* payload size */                              
-           GBL_LNET->lnet,                             /* libnet handle */                             
+           GBL_IFACE->lnet,                             /* libnet handle */                             
            0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
@@ -590,11 +585,11 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
       FATAL_ERROR("Interface not suitable for layer2 sending");
 
    /* send the packet to Layer 2 */
-   c = libnet_write(GBL_LNET->lnet);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
+   c = libnet_write(GBL_IFACE->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
  
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet);
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    SEND_UNLOCK;
    
@@ -613,7 +608,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
    int c;
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet == 0);
+   BUG_IF(GBL_IFACE->lnet == 0);
   
    /* retrieve the old ip header */
    ip = (struct libnet_ipv4_hdr *)po->L3.header;
@@ -634,9 +629,9 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
             ip_addr_to_int32(&ip->ip_dst),       /* original dest */
             po->L4.header,                       /* the 64 bit of the original datagram */
             8,                                   /* payload size */
-            GBL_LNET->lnet,
+            GBL_IFACE->lnet,
             0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
    
    /* create the ICMP header */
    t = libnet_build_icmpv4_redirect(
@@ -646,12 +641,12 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
            ip_addr_to_int32(&gw->addr),         /* gateway ip */
            NULL,                                /* payload */
            0,                                   /* payload len */
-           GBL_LNET->lnet,                      /* libnet handle */
+           GBL_IFACE->lnet,                      /* libnet handle */
            0);                                  /* pblock id */
-   ON_ERROR(t, -1, "libnet_build_icmpv4_redirect: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_icmpv4_redirect: %s", libnet_geterror(GBL_IFACE->lnet));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -667,12 +662,12 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
            ip_addr_to_int32(&po->L3.src.addr),           /* destination IP */
            NULL,                                         /* payload */
            0,                                            /* payload size */
-           GBL_LNET->lnet,                               /* libnet handle */ 
+           GBL_IFACE->lnet,                               /* libnet handle */ 
            0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, po->L2.src, ETHERTYPE_IP);
@@ -683,14 +678,133 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
     * send the packet to Layer 2
     * (sending icmp redirect is not permitted at layer 3)
     */
-   c = libnet_write(GBL_LNET->lnet);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
+   c = libnet_write(GBL_IFACE->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
 
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet);
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    SEND_UNLOCK;
    
+   return c;
+}
+
+int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip)
+{
+   libnet_ptag_t t;
+   struct libnet_in6_addr src, dst;
+   int c;
+
+   BUG_IF(GBL_LNET->lnet_IP6 == NULL);
+
+   SEND_LOCK;
+
+   memcpy(&src, sip->addr, sizeof(src));
+   memcpy(&dst, tip->addr, sizeof(dst));
+
+   t = libnet_build_icmpv6_echo(EC_MAGIC_16,    /* id */
+                                0,              /* sequence number */
+                                NULL,           /* data */
+                                0,              /* its size */
+                                GBL_LNET->lnet_IP6,   /* handle */
+                                0);
+   ON_ERROR(t, -1, "libnet_build_icmpv6_echo: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+
+   t = libnet_build_icmpv6(ICMP6_ECHO,    /* type */
+                           0,             /* code */
+                           0,             /* checksum */
+                           NULL,          /* payload */
+                           0,             /* pl size */
+                           GBL_LNET->lnet_IP6, /* handle */
+                           0);
+   ON_ERROR(t, -1, "libnet_build_icmpv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   libnet_toggle_checksum(GBL_LNET->lnet_IP6, t, LIBNET_ON);
+
+   t = libnet_build_ipv6(0,            /* tc */
+                         0,            /* flow label */
+                         LIBNET_ICMPV6_H + LIBNET_ICMPV6_ECHO_H, /* next header size */
+                         IPPROTO_ICMPV6,  /* next header */
+                         255,          /* hop limit */
+                         src,          /* source */
+                         dst,          /* destination */
+                         NULL,         /* payload and size */
+                         0,
+                         GBL_LNET->lnet_IP6, /* handle */
+                         0);           /* ptag */
+   ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+
+   c = libnet_write(GBL_LNET->lnet_IP6);
+   ON_ERROR(c, -1, "libnet_write: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+
+   libnet_clear_packet(GBL_LNET->lnet_IP6);
+
+   SEND_UNLOCK;
+
+   return c;
+}
+
+int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router)
+{
+   libnet_ptag_t t;
+   int c, h;
+   struct libnet_in6_addr src, dst;
+   int flags;
+   
+   BUG_IF(GBL_LNET->lnet_IP6 == NULL);
+
+   SEND_LOCK;
+
+   memcpy(&src, sip->addr, sizeof(src));
+   memcpy(&dst, tip->addr, sizeof(dst));
+
+   t = libnet_build_icmpv6_ndp_lla(ICMPV6_NDPOPT_TLLA,   /* Address type */
+                                   1,                    /* Length in 8-bytes chunks */
+                                   macaddr,              /* MAC address */
+                                   MEDIA_ADDR_LEN,       /* Address length */
+                                   GBL_LNET->lnet_IP6,   /* libnet handle */
+                                   0);                   /* ptag */
+   ON_ERROR(t, -1, "libnet_build_icmpv6_ndp_lla: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+
+   flags = NDP_FL_SOLICITED|NDP_FL_OVERRIDE;
+   if(router)
+      flags |= NDP_FL_ROUTER;
+   t = libnet_build_icmpv6_nadv(flags,                               /* flags */
+                                src,                                 /* address */
+                                GBL_LNET->lnet_IP6,                  /* libnet handle */
+                                0);                                  /* ptag */
+   ON_ERROR(t, -1, "libnet_build_icmpv6_nadv: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   
+   t = libnet_build_icmpv6(ICMP6_NEIGHADV,   /* type */
+                           0,                /* code */
+                           0,                /* checksum */
+                           NULL,             /* payload */
+                           0,                /* its size */
+                           GBL_LNET->lnet_IP6, /* libnet handler */
+                           0);               /* ptag */
+   ON_ERROR(t, -1, "libnet_build_icmpv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   libnet_toggle_checksum(GBL_LNET->lnet_IP6, t, LIBNET_ON);
+   h = LIBNET_ICMPV6_H + LIBNET_ICMPV6_NDP_NSA_H + 8;
+   
+   t = libnet_build_ipv6(0,                  /* tc */
+                         0,                  /* flow label */
+                         h,                  /* length */
+                         IPPROTO_ICMP6,      /* proto */
+                         255,                /* hop limit */
+                         src,                /* source address */
+                         dst,                /* target address */
+                         NULL,               /* payload */
+                         0,                  /* its size */
+                         GBL_LNET->lnet_IP6, /* handle */
+                         0);                 /* ptag */
+   ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   
+   c = libnet_write(GBL_LNET->lnet_IP6);
+   ON_ERROR(c, -1, "libnet_write: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+
+   libnet_clear_packet(GBL_LNET->lnet_IP6);
+
+   SEND_UNLOCK;
+
    return c;
 }
 
@@ -703,7 +817,7 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
    int c;
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet == 0);
+   BUG_IF(GBL_IFACE->lnet == 0);
   
    SEND_LOCK;
    
@@ -711,17 +825,17 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
    t = libnet_build_data(
             options,                /* the options */
             optlen,                 /* options len */
-            GBL_LNET->lnet,         /* libnet handle */
+            GBL_IFACE->lnet,         /* libnet handle */
             0);                     /* libnet ptag */
-   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_IFACE->lnet));
    
    /* create the dhcp header */
    t = libnet_build_data(
             dhcp_hdr,               /* the header */
             LIBNET_DHCPV4_H,        /* dhcp len */
-            GBL_LNET->lnet,         /* libnet handle */
+            GBL_IFACE->lnet,         /* libnet handle */
             0);                     /* libnet ptag */
-   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_IFACE->lnet));
   
    /* create the udp header */
    t = libnet_build_udp(
@@ -731,12 +845,12 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
             0,                                              /* checksum */
             NULL,                                           /* payload */
             0,                                              /* payload size */
-            GBL_LNET->lnet,                                 /* libnet handle */
+            GBL_IFACE->lnet,                                 /* libnet handle */
             0);                                             /* libnet id */
-   ON_ERROR(t, -1, "libnet_build_udp: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_udp: %s", libnet_geterror(GBL_IFACE->lnet));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -751,12 +865,12 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
            ip_addr_to_int32(&tip->addr),                             /* destination IP */
            NULL,                                                     /* payload */
            0,                                                        /* payload size */
-           GBL_LNET->lnet,                                           /* libnet handle */ 
+           GBL_IFACE->lnet,                                           /* libnet handle */ 
            0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
@@ -767,11 +881,11 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
     * send the packet to Layer 2
     * (sending icmp redirect is not permitted at layer 3)
     */
-   c = libnet_write(GBL_LNET->lnet);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
+   c = libnet_write(GBL_IFACE->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
 
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet);
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    SEND_UNLOCK;
    
@@ -787,7 +901,7 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
    int c;
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet == 0);
+   BUG_IF(GBL_IFACE->lnet == 0);
   
    SEND_LOCK;
 
@@ -802,9 +916,9 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
              addi_rr,               /* num_addi_rr */
              data,
              datalen,
-             GBL_LNET->lnet,        /* libnet handle */
+             GBL_IFACE->lnet,        /* libnet handle */
              0);                    /* libnet id */
-   ON_ERROR(t, -1, "libnet_build_dns: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_dns: %s", libnet_geterror(GBL_IFACE->lnet));
   
    /* create the udp header */
    t = libnet_build_udp(
@@ -814,12 +928,12 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
             0,                                              /* checksum */
             NULL,                                           /* payload */
             0,                                              /* payload size */
-            GBL_LNET->lnet,                                 /* libnet handle */
+            GBL_IFACE->lnet,                                 /* libnet handle */
             0);                                             /* libnet id */
-   ON_ERROR(t, -1, "libnet_build_udp: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_udp: %s", libnet_geterror(GBL_IFACE->lnet));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -834,12 +948,12 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
            ip_addr_to_int32(&tip->addr),                                /* destination IP */
            NULL,                                                        /* payload */
            0,                                                           /* payload size */
-           GBL_LNET->lnet,                                              /* libnet handle */ 
+           GBL_IFACE->lnet,                                              /* libnet handle */ 
            0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
@@ -847,11 +961,11 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
       FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* send the packet to Layer 2 */
-   c = libnet_write(GBL_LNET->lnet);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
+   c = libnet_write(GBL_IFACE->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
 
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet);
+   libnet_clear_packet(GBL_IFACE->lnet);
    
    SEND_UNLOCK;
    
@@ -864,10 +978,14 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
 int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags)
 {
    libnet_ptag_t t;
+   libnet_t *l;
+   int proto;
    int c;
  
+   proto = ntohs(sip->addr_type);
+   l = (proto == AF_INET) ? GBL_LNET->lnet_IP4 : GBL_LNET->lnet_IP6;   
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet_L3 == 0);
+   BUG_IF(l == NULL);
   
    SEND_LOCK;
    
@@ -883,39 +1001,60 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
         LIBNET_TCP_H,            /* TCP packet size */
 	     NULL,                    /* payload */
         0,                       /* payload size */
-        GBL_LNET->lnet_L3,       /* libnet handle */
-        0);                                        /* libnet id */
-   ON_ERROR(t, -1, "libnet_build_tcp: %s", libnet_geterror(GBL_LNET->lnet_L3));
+        l,                       /* libnet handle */
+        0);                      /* libnet id */
+   ON_ERROR(t, -1, "libnet_build_tcp: %s", libnet_geterror(l));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
+   libnet_toggle_checksum(l, t, LIBNET_ON);
   
    /* create the IP header */
-   t = libnet_build_ipv4(                                                                          
-           LIBNET_IPV4_H + LIBNET_TCP_H,       /* length */
-           0,                                  /* TOS */
-           htons(EC_MAGIC_16),                 /* IP ID */
-           0,                                  /* IP Frag */
-           64,                                 /* TTL */
-           IPPROTO_TCP,                        /* protocol */
-           0,                                  /* checksum */
-           ip_addr_to_int32(&sip->addr),       /* source IP */
-           ip_addr_to_int32(&tip->addr),       /* destination IP */
-           NULL,                               /* payload */
-           0,                                  /* payload size */
-           GBL_LNET->lnet_L3,                  /* libnet handle */ 
-           0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet_L3));
+   switch(proto) {
+      case AF_INET: {
+         t = libnet_build_ipv4(                                                                          
+                 LIBNET_IPV4_H + LIBNET_TCP_H,       /* length */
+                 0,                                  /* TOS */
+                 htons(EC_MAGIC_16),                 /* IP ID */
+                 0,                                  /* IP Frag */
+                 64,                                 /* TTL */
+                 IPPROTO_TCP,                        /* protocol */
+                 0,                                  /* checksum */
+                 ip_addr_to_int32(&sip->addr),       /* source IP */
+                 ip_addr_to_int32(&tip->addr),       /* destination IP */
+                 NULL,                               /* payload */
+                 0,                                  /* payload size */
+                 l,                                  /* libnet handle */ 
+                 0);
+         libnet_toggle_checksum(l, t, LIBNET_ON);
+         break;
+      }
+      case AF_INET6: {
+         struct libnet_in6_addr src, dst;
+         memcpy(&src, sip->addr, sizeof(src));
+         memcpy(&dst, tip->addr, sizeof(dst));
+         t = libnet_build_ipv6(
+                  0,                                 /* tc */
+                  0,                                 /* flow label */
+                  LIBNET_TCP_H,                      /* payload length */
+                  IPPROTO_TCP,                       /* protocol */
+                  255,                               /* hop limit */
+                  src,                               /* source address */
+                  dst,                               /* destination address */
+                  NULL,                              /* payload */
+                  0,                                 /* its length */
+                  l,                                 /* handle */
+                  0);                                /* ptag */
+         break;
+      }
+   };
+   ON_ERROR(t, -1, "libnet_build_ipvX: %s", libnet_geterror(l));
   
-   /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet_L3, t, LIBNET_ON);
- 
    /* send the packet to Layer 3 */
-   c = libnet_write(GBL_LNET->lnet_L3);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet_L3));
+   c = libnet_write(l);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(l));
 
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet_L3);
+   libnet_clear_packet(l);
 
    SEND_UNLOCK;
    
@@ -931,7 +1070,7 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
    int c;
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_LNET->lnet == 0);
+   BUG_IF(GBL_IFACE->lnet == 0);
   
    SEND_LOCK;
    
@@ -947,12 +1086,12 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
         LIBNET_TCP_H,            /* TCP packet size */
 	     NULL,                    /* payload */
         0,                       /* payload size */
-        GBL_LNET->lnet,          /* libnet handle */
+        GBL_IFACE->lnet,          /* libnet handle */
         0);                                        /* libnet id */
-   ON_ERROR(t, -1, "libnet_build_tcp: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_tcp: %s", libnet_geterror(GBL_IFACE->lnet));
    
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
   
    /* create the IP header */
    t = libnet_build_ipv4(                                                                          
@@ -967,12 +1106,12 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
            ip_addr_to_int32(&tip->addr),       /* destination IP */
            NULL,                               /* payload */
            0,                                  /* payload size */
-           GBL_LNET->lnet,                     /* libnet handle */ 
+           GBL_IFACE->lnet,                     /* libnet handle */ 
            0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_LNET->lnet));
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
   
    /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_LNET->lnet, t, LIBNET_ON);
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
    
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, dmac, ETHERTYPE_IP);
@@ -980,11 +1119,11 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
       FATAL_ERROR("Interface not suitable for layer2 sending");
  
    /* send the packet to Layer 3 */
-   c = libnet_write(GBL_LNET->lnet);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_LNET->lnet));
+   c = libnet_write(GBL_IFACE->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
 
    /* clear the pblock */
-   libnet_clear_packet(GBL_LNET->lnet);
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    SEND_UNLOCK;
    

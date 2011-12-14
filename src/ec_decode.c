@@ -55,6 +55,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 void del_decoder(u_int8 level, u_int32 type);
 void * get_decoder(u_int8 level, u_int32 type);
+void **get_decoders(u_int8 level, u_int32 type);
 
 /* mutexes */
 
@@ -90,7 +91,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    if (GBL_OPTIONS->read)
       /* update the offset pointer */
-      GBL_PCAP->dump_off = ftell(pcap_file(GBL_PCAP->pcap));
+      GBL_PCAP->dump_off = ftell(pcap_file(GBL_IFACE->pcap));
    else {
       /* update the statistics */
       stats_update();
@@ -249,7 +250,8 @@ void __init data_init(void)
 
 FUNC_DECODER(decode_data)
 {
-   FUNC_DECODER_PTR(app_decoder);
+   FUNC_DECODER_PTR(*app_decoders);
+   int i;
       
    CANCELLATION_POINT();
 
@@ -278,17 +280,28 @@ FUNC_DECODER(decode_data)
     */
    switch (po->L4.proto) {
       case NL_TYPE_TCP:
-         app_decoder = get_decoder(APP_LAYER_TCP, ntohs(po->L4.src));
-         EXECUTE_DECODER(app_decoder);
-         app_decoder = get_decoder(APP_LAYER_TCP, ntohs(po->L4.dst));
-         EXECUTE_DECODER(app_decoder);
+         app_decoders = get_decoders(APP_LAYER_TCP, ntohs(po->L4.src));
+         for(i = 0; app_decoders[i] != NULL; i++)
+            EXECUTE_DECODER(app_decoders[i]);
+         SAFE_FREE(app_decoders);
+
+         app_decoders = get_decoders(APP_LAYER_TCP, ntohs(po->L4.dst));
+         for(i = 0; app_decoders[i] != NULL; i++)
+            EXECUTE_DECODER(app_decoders[i]);
+         SAFE_FREE(app_decoders);
+
          break;
          
       case NL_TYPE_UDP:
-         app_decoder = get_decoder(APP_LAYER_UDP, ntohs(po->L4.src));
-         EXECUTE_DECODER(app_decoder);
-         app_decoder = get_decoder(APP_LAYER_UDP, ntohs(po->L4.dst));
-         EXECUTE_DECODER(app_decoder);
+         app_decoders = get_decoders(APP_LAYER_UDP, ntohs(po->L4.src));
+         for(i = 0; app_decoders[i] != NULL; i++)
+            EXECUTE_DECODER(app_decoders[i]);
+         SAFE_FREE(app_decoders);
+
+         app_decoders = get_decoders(APP_LAYER_UDP, ntohs(po->L4.dst));
+         for(i = 0; app_decoders[i] != NULL; i++)
+            EXECUTE_DECODER(app_decoders[i]);
+         SAFE_FREE(app_decoders);
          break;
    }
    
@@ -380,12 +393,44 @@ void * get_decoder(u_int8 level, u_int32 type)
 }
 
 /*
- * remove a decoder from the decoders table
+ * get a null-terminated array of decoders
+ */
+
+void **get_decoders(u_int8 level, u_int32 type)
+{
+   void **decs = NULL;
+   int n = 0;
+   int i = 0;
+   struct dec_entry *e;
+
+   if(level <= PROTO_LAYER) {
+      n = 1;
+      SAFE_CALLOC(decs, n, sizeof(void*));
+      decs[0] = get_decoder(level, type);
+   } else {
+      DECODERS_LOCK;
+      SLIST_FOREACH(e, &dissectors_table, next)
+         if(e->level == level && e->type == type)
+            n++;
+      SAFE_CALLOC(decs, n+1, sizeof(void*));
+      SLIST_FOREACH(e, &dissectors_table, next) 
+         if(e->level == level && e->type == type)
+            decs[i++] = e->decoder;
+      DECODERS_UNLOCK;
+   }
+
+   decs[n] = NULL;
+   return decs;
+}
+
+
+/*
+ * remove a decoder(s) from the decoders table
  */
 
 void del_decoder(u_int8 level, u_int32 type)
 {
-   struct dec_entry *e;
+   struct dec_entry *e, *t;
 
    DECODERS_LOCK;
    
@@ -399,7 +444,7 @@ void del_decoder(u_int8 level, u_int32 type)
          }
       }
    } else {
-      SLIST_FOREACH (e, &dissectors_table, next) {
+      SLIST_FOREACH_SAFE (e, &dissectors_table, next, t) {
          if (e->level == level && e->type == type) {
             SLIST_REMOVE(&dissectors_table, e, dec_entry, next);
             SAFE_FREE(e);

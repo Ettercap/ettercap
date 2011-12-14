@@ -12,6 +12,7 @@
 #include <sys/time.h>
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #ifdef OS_WINDOWS
@@ -88,6 +89,10 @@
 
 #define EXECUTE(x, ...) do{ if(x != NULL) x( __VA_ARGS__ ); }while(0)
 
+/* couple of useful macros */
+#define offsetof(type, member) ((size_t) &((type*)0)->member)
+#define containerof(ptr, type, member) ((type*)((char*)ptr - offsetof(type,member)))
+
 /* min and max */
 
 #ifndef MIN
@@ -137,9 +142,15 @@
 
 /* magic numbers */
 
-#define EC_MAGIC_8   0xec
-#define EC_MAGIC_16  0xe77e
-#define EC_MAGIC_32  0xe77ee77e
+#ifndef RANDMAGIC
+   #define EC_MAGIC_8   0xec
+   #define EC_MAGIC_16  0xe77e
+   #define EC_MAGIC_32  0xe77ee77e
+#else
+   #define EC_MAGIC_8   ((RANDMAGIC & 0x0ff0) >> 4)
+   #define EC_MAGIC_16  (RANDMAGIC & 0xffff)
+   #define EC_MAGIC_32  (((RANDMAGIC & 0xff) << 8)|((RANDMAGIC & 0xff00) >> 8)|(RANDMAGIC & 0xffff0000))
+#endif
 
 /* exported by ec_main */
 EC_API_EXTERN void clean_exit(int errcode);

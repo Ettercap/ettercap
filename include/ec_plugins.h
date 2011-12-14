@@ -20,6 +20,12 @@ struct plugin_ops
 
 #define PLUGIN_PATTERN   "ec_*.so"
 
+#ifdef LT_MODULE_EXT
+#define PLUGIN_EXT LT_MODULE_EXT
+#else
+#define PLUGIN_EXT LTDL_SHLIB_EXT
+#endif
+
 EC_API_EXTERN void plugin_load_all(void);
 EC_API_EXTERN int plugin_load_single(char *path, char *name);
 EC_API_EXTERN int plugin_register(void *handle, struct plugin_ops *ops);

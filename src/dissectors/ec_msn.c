@@ -31,7 +31,6 @@
 
 FUNC_DECODER(dissector_msn);
 void msn_init(void);
-void decode_pwd(char *pwd, char *outpwd);
 
 /************************************************/
 

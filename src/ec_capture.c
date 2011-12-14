@@ -29,19 +29,8 @@
 
 #include <pcap.h>
 #include <libnet.h>
+#include <ifaddrs.h>
 
-#if defined(OS_BSD_OPEN) || defined(OS_LINUX)
-   /* LINUX does not care about timeout */
-   /* OPENBSD needs 0, but it sucks up all the CPU */
-   #define PCAP_TIMEOUT 0
-#elif defined(OS_SOLARIS)
-   /* SOLARIS needs > 1 */
-   #define PCAP_TIMEOUT 10
-#else
-   /* FREEBSD needs 1 */
-   /* MACOSX  needs 1 */
-   #define PCAP_TIMEOUT 10
-#endif
 
 /* globals */
 
@@ -55,16 +44,13 @@ struct align_entry {
 
 /* protos */
 
-void capture_init(void);
-void capture_close(void);
 EC_THREAD_FUNC(capture);
 EC_THREAD_FUNC(capture_bridge);
 
-void get_hw_info(void);
 void capture_getifs(void);
 int is_pcap_file(char *file, char *errbuf);
 
-static void set_alignment(int dlt);
+u_int8 get_alignment(int dlt);
 void add_aligner(int dlt, int (*aligner)(void));
 
 /*******************************************/
@@ -94,168 +80,6 @@ static char *iface_name(const char *s)
 }
 
 /*
- * set up the pcap to capture from the specified interface
- * set up even the first dissector by looking at DLT_*
- */
-
-void capture_init(void)
-{
-   pcap_t *pd;
-   pcap_t *pb = NULL; /* for the bridge */
-   pcap_dumper_t *pdump;
-   bpf_u_int32 net, mask;
-   struct bpf_program bpf;
-   char pcap_errbuf[PCAP_ERRBUF_SIZE];
-   
-   /*
-    * if the user didn't specified the interface,
-    * we have to found one...
-    */
-   if (!GBL_OPTIONS->read && GBL_OPTIONS->iface == NULL) {
-      char *ifa = pcap_lookupdev(pcap_errbuf);
-      ON_ERROR(ifa, NULL, "No suitable interface found...");
-      
-      GBL_OPTIONS->iface = iface_name(ifa);
-   }
-  
-   if (GBL_OPTIONS->iface)
-      DEBUG_MSG("capture_init %s", GBL_OPTIONS->iface);
-   else
-      DEBUG_MSG("capture_init (no interface)");
-      
-              
-   if (GBL_SNIFF->type == SM_BRIDGED) {
-      if (!strcmp(GBL_OPTIONS->iface, GBL_OPTIONS->iface_bridge))
-         FATAL_ERROR("Bridging iface must be different from %s", GBL_OPTIONS->iface);
-      USER_MSG("Bridging %s and %s...\n\n", GBL_OPTIONS->iface, GBL_OPTIONS->iface_bridge);
-   } else if (GBL_OPTIONS->read) {
-      USER_MSG("Reading from %s... ", GBL_OPTIONS->pcapfile_in);
-   } else
-      USER_MSG("Listening on %s... ", GBL_OPTIONS->iface);
-   
-   /* set the snaplen to maximum */
-   GBL_PCAP->snaplen = UINT16_MAX;
-   
-   /* open the interface from GBL_OPTIONS (user specified) */
-   if (GBL_OPTIONS->read)
-      pd = pcap_open_offline(GBL_OPTIONS->pcapfile_in, pcap_errbuf);
-   else
-      pd = pcap_open_live(GBL_OPTIONS->iface, GBL_PCAP->snaplen, GBL_PCAP->promisc, 
-                   PCAP_TIMEOUT, pcap_errbuf);
-   
-   ON_ERROR(pd, NULL, "pcap_open: %s", pcap_errbuf);
-
-   /* 
-    * update to the reap assigned snapshot.
-    * this may be different reading from files
-    */
-   DEBUG_MSG("requested snapshot: %d assigned: %d", GBL_PCAP->snaplen, pcap_snapshot(pd));
-   GBL_PCAP->snaplen = pcap_snapshot(pd);
-  
-   /* get the file size */
-   if (GBL_OPTIONS->read) {
-      struct stat st;
-      fstat(fileno(pcap_file(pd)), &st);
-      GBL_PCAP->dump_size = st.st_size;
-   }
-
-   /* set the pcap filters */
-   if (GBL_PCAP->filter != NULL && strcmp(GBL_PCAP->filter, "")) {
-
-      DEBUG_MSG("pcap_filter: %s", GBL_PCAP->filter);
-   
-      if (pcap_lookupnet(GBL_OPTIONS->iface, &net, &mask, pcap_errbuf) == -1)
-         ERROR_MSG("%s", pcap_errbuf);
-
-      if (pcap_compile(pd, &bpf, GBL_PCAP->filter, 1, mask) < 0)
-         ERROR_MSG("%s", pcap_errbuf);
-            
-      if (pcap_setfilter(pd, &bpf) == -1)
-         ERROR_MSG("pcap_setfilter");
-
-      pcap_freecode(&bpf);
-   }
-   
-   /* if in bridged sniffing, we have to open even the other iface */
-   if (GBL_SNIFF->type == SM_BRIDGED) {
-      pb = pcap_open_live(GBL_OPTIONS->iface_bridge, GBL_PCAP->snaplen, GBL_PCAP->promisc, 
-                   PCAP_TIMEOUT, pcap_errbuf);
-   
-      ON_ERROR(pb, NULL, "%s", pcap_errbuf);
-   
-      /* set the pcap filters */
-      if (GBL_PCAP->filter != NULL) {
-   
-         if (pcap_lookupnet(GBL_OPTIONS->iface_bridge, &net, &mask, pcap_errbuf) == -1)
-            ERROR_MSG("%s", pcap_errbuf);
-
-         if (pcap_compile(pb, &bpf, GBL_PCAP->filter, 1, mask) < 0)
-            ERROR_MSG("%s", pcap_errbuf);
-            
-         if (pcap_setfilter(pb, &bpf) == -1)
-            ERROR_MSG("pcap_setfilter");
-
-         pcap_freecode(&bpf);
-      }
-   }
-
-
-   /* open the dump file */
-   if (GBL_OPTIONS->write) {
-      DEBUG_MSG("pcapfile_out: %s", GBL_OPTIONS->pcapfile_out);
-      pdump = pcap_dump_open(pd, GBL_OPTIONS->pcapfile_out);
-      ON_ERROR(pdump, NULL, "%s", pcap_geterr(pd));
-      GBL_PCAP->dump = pdump;               
-   }
-   
-   /* set the right dlt type for the iface */
-   GBL_PCAP->dlt = pcap_datalink(pd);
-     
-   DEBUG_MSG("capture_init: %s [%d]", pcap_datalink_val_to_description(GBL_PCAP->dlt), GBL_PCAP->dlt);
-   USER_MSG("(%s)\n\n", pcap_datalink_val_to_description(GBL_PCAP->dlt));
- 
-   /* check that the bridge type is the same as the main iface */
-   if (GBL_SNIFF->type == SM_BRIDGED && pcap_datalink(pb) != GBL_PCAP->dlt)
-      FATAL_ERROR("You can NOT bridge two different type of interfaces !");
-   
-   /* check if we support this media */
-   if (get_decoder(LINK_LAYER, GBL_PCAP->dlt) == NULL) {
-      if (GBL_OPTIONS->read)
-         FATAL_ERROR("Dump file not supported (%s)", pcap_datalink_val_to_description(GBL_PCAP->dlt));
-      else
-         FATAL_ERROR("Inteface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
-   }
-   
-   /* set the alignment for the buffer */
-   set_alignment(GBL_PCAP->dlt);
-   
-   /* allocate the buffer for the packets (UINT16_MAX) plus some extra space */
-   SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align + 256, sizeof(char));
-  
-   /* set the global descriptor for both the iface and the bridge */
-   GBL_PCAP->pcap = pd;               
-   if (GBL_SNIFF->type == SM_BRIDGED)
-      GBL_PCAP->pcap_bridge = pb;
- 
-   /* on exit clean up the structures */
-   atexit(capture_close);
-   
-}
-
-
-void capture_close(void)
-{
-   pcap_close(GBL_PCAP->pcap);
-   if (GBL_OPTIONS->write)
-      pcap_dump_close(GBL_PCAP->dump);
-   
-   if (GBL_SNIFF->type == SM_BRIDGED)
-      pcap_close(GBL_PCAP->pcap_bridge);
-   
-   DEBUG_MSG("ATEXIT: capture_closed");
-}
-
-/*
  * start capturing packets
  */
 
@@ -275,8 +99,8 @@ EC_THREAD_FUNC(capture)
     * infinite loop 
     * dispatch packets to ec_decode
     */
-   ret = pcap_loop(GBL_PCAP->pcap, -1, ec_decode, EC_THREAD_PARAM);
-   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_PCAP->pcap));
+   ret = pcap_loop(GBL_IFACE->pcap, -1, ec_decode, EC_THREAD_PARAM);
+   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_IFACE->pcap));
    
    return NULL;
 }
@@ -284,6 +108,8 @@ EC_THREAD_FUNC(capture)
 
 EC_THREAD_FUNC(capture_bridge)
 {
+   int ret;
+
    /* init the thread and wait for start up */
    ec_thread_init();
    
@@ -296,7 +122,8 @@ EC_THREAD_FUNC(capture_bridge)
     * infinite loop 
     * dispatch packets to ec_decode
     */
-   pcap_loop(GBL_PCAP->pcap_bridge, -1, ec_decode, EC_THREAD_PARAM);
+   ret = pcap_loop(GBL_BRIDGE->pcap, -1, ec_decode, EC_THREAD_PARAM);
+   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_BRIDGE->pcap));
 
    return NULL;
 }
@@ -353,7 +180,7 @@ void capture_getifs(void)
    }
 
    /* do we have to print the list ? */
-   if (GBL_OPTIONS->iflist) {
+   if (GBL_OPTIONS->lifaces) {
      
       /* we are before ui_init(), can use printf */
       fprintf(stdout, "List of available Network Interfaces:\n\n");
@@ -366,127 +193,6 @@ void capture_getifs(void)
       clean_exit(0);
    }
                    
-}
-
-/* 
- * retrieve the IP and the MAC address of the hardware
- * used to sniff (primary iface or bridge)
- */
-
-void get_hw_info(void)
-{
-   u_long ip;
-   struct libnet_ether_addr *ea;
-   bpf_u_int32 network, netmask;
-   char pcap_errbuf[PCAP_ERRBUF_SIZE];
- 
-   /* 
-    * dont touch the interface reading from file. 
-    * ...and if lnet_L3 is NULL we are sure that 
-    * unoffensive mode is on
-    */
-   if (!GBL_LNET->lnet_L3 || GBL_OPTIONS->read) {
-      DEBUG_MSG("get_hw_info: skipping... (not initialized)");
-      return;
-   }
-   
-   DEBUG_MSG("get_hw_info");
-  
-   /* get the ip address */
-   ip = libnet_get_ipaddr4(GBL_LNET->lnet_L3);
-   
-   /* if ip is equal to -1 there was an error */
-   if (ip != (u_long)~0) {
-
-      /* the interface has an ip address */
-      if (ip != 0)
-         GBL_IFACE->configured = 1;
-      
-      /* save the ip address */
-      ip_addr_init(&GBL_IFACE->ip, AF_INET, (char *)&ip);
-      
-      if (pcap_lookupnet(GBL_OPTIONS->iface, &network, &netmask, pcap_errbuf) == -1)
-         ERROR_MSG("%s", pcap_errbuf);
-      
-      ip_addr_init(&GBL_IFACE->network, AF_INET, (char *)&network);
-
-      /* the user has specified a different netmask, use it */
-      if (GBL_OPTIONS->netmask) {
-         struct in_addr net;
-         /* sanity check */
-         if (inet_aton(GBL_OPTIONS->netmask, &net) == 0)
-            FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
-
-         ip_addr_init(&GBL_IFACE->netmask, AF_INET, (char *)&net);
-      } else
-         ip_addr_init(&GBL_IFACE->netmask, AF_INET, (char *)&netmask);
-      
-   } else
-      DEBUG_MSG("get_hw_info: NO IP on %s", GBL_OPTIONS->iface);
-   
-   /* get the mac address */
-   ea = libnet_get_hwaddr(GBL_LNET->lnet);
-
-   if (ea != NULL)
-      memcpy(GBL_IFACE->mac, ea->ether_addr_octet, MEDIA_ADDR_LEN);
-   else
-      DEBUG_MSG("get_hw_info: NO MAC for %s", GBL_OPTIONS->iface);
-
-   /* get the MTU */
-   GBL_IFACE->mtu = get_iface_mtu(GBL_OPTIONS->iface);
-   
-   /* check the mtu */
-   if (GBL_IFACE->mtu > INT16_MAX)
-      FATAL_ERROR("MTU too large");
-
-   USER_MSG("%6s ->\t%s  ",  GBL_OPTIONS->iface,
-            mac_addr_ntoa(GBL_IFACE->mac, pcap_errbuf));
-   USER_MSG("%16s  ", ip_addr_ntoa(&GBL_IFACE->ip, pcap_errbuf));
-   USER_MSG("%16s\n\n", ip_addr_ntoa(&GBL_IFACE->netmask, pcap_errbuf) );
-   
-   /* if not in bridged sniffing, return */
-   if (GBL_SNIFF->type != SM_BRIDGED)
-      return;
-   
-   ip = libnet_get_ipaddr4(GBL_LNET->lnet_bridge);
-
-   /* if ip is equal to -1 there was an error */
-   if (ip != (u_long)~0) {
-      ip_addr_init(&GBL_BRIDGE->ip, AF_INET, (char *)&ip);
-      
-      if (pcap_lookupnet(GBL_OPTIONS->iface_bridge, &network, &netmask, pcap_errbuf) == -1)
-         ERROR_MSG("%s", pcap_errbuf);
-      
-      ip_addr_init(&GBL_BRIDGE->network, AF_INET, (char *)&network);
-      ip_addr_init(&GBL_BRIDGE->netmask, AF_INET, (char *)&netmask);
-      
-   } else
-      DEBUG_MSG("get_hw_info: NO IP on %s", GBL_OPTIONS->iface_bridge);
-   
-   ea = libnet_get_hwaddr(GBL_LNET->lnet_bridge);
-
-   if (ea != NULL)
-      memcpy(GBL_BRIDGE->mac, ea->ether_addr_octet, MEDIA_ADDR_LEN);
-   else
-      DEBUG_MSG("get_hw_info: NO MAC for %s", GBL_OPTIONS->iface_bridge);
-   
-   /* get the MTU */
-   GBL_BRIDGE->mtu = get_iface_mtu(GBL_OPTIONS->iface_bridge);
-   
-   if (GBL_BRIDGE->mtu > INT16_MAX)
-      FATAL_ERROR("MTU too large");
-
-   USER_MSG("%6s ->\t%s  ",  GBL_OPTIONS->iface_bridge,
-            mac_addr_ntoa(GBL_BRIDGE->mac, pcap_errbuf));
-   USER_MSG("%16s  ", ip_addr_ntoa(&GBL_BRIDGE->ip, pcap_errbuf));
-   USER_MSG("%16s\n\n", ip_addr_ntoa(&GBL_BRIDGE->netmask, pcap_errbuf) );
-
-   /* some sanity checks */
-   if (GBL_BRIDGE->mtu != GBL_IFACE->mtu)
-      FATAL_ERROR("The two interfaces must have the same MTU.");
-
-   if (!memcmp(GBL_BRIDGE->mac, GBL_IFACE->mac, MEDIA_ADDR_LEN))
-      FATAL_ERROR("The two bridged interfaces must be phisically different");
 }
 
 /*
@@ -508,15 +214,13 @@ int is_pcap_file(char *file, char *errbuf)
 /*
  * set the alignment for the buffer 
  */
-static void set_alignment(int dlt)
+u_int8 get_alignment(int dlt)
 {
    struct align_entry *e;
 
    SLIST_FOREACH (e, &aligners_table, next)
-      if (e->dlt == dlt) {
-         GBL_PCAP->align = e->aligner();
-         return;
-      }
+      if (e->dlt == dlt) 
+         return e->aligner();
 
    /* not found */
    BUG("Don't know how to align this media header");

@@ -7,8 +7,8 @@ include $(top_srcdir)/Makefile.am.common
 LIBS =
 
 bin_PROGRAMS = etterfilter
-
-AM_YFLAGS = --defines
+BUILT_SOURCES = ef_grammar.h ef_syntax.c
+AM_YFLAGS = -d
 
 etterfilter_SOURCES = ef_compiler.c \
                       ef_main.c \
@@ -49,7 +49,7 @@ if BSD
    etterfilter_CFLAGS += -pthread
 endif
    
-etterfilter_LDADD = 
+etterfilter_LDADD =  @LIBOBJS@
 
 if INET_ATON_WANTS_RESOLV
    etterfilter_LDADD += -lresolv

@@ -20,7 +20,8 @@ dnl
 dnl    $Id: configure.in,v 1.134 2004/11/05 10:00:57 alor Exp $
 dnl
 
-AC_INIT
+VERSION=`grep EC_VERSION\  ./include/ec_version.h | cut -f2 -d"\""`
+AC_INIT(ettercap, $VERSION)
 AC_CONFIG_SRCDIR([include/ec.h])
 
 dnl Force autoconf 2.57 
@@ -32,7 +33,6 @@ dnl AM_INIT_AUTOMAKE(1.7.0)
 dnl Do not recompile configure Makefile et similia
 AM_MAINTAINER_MODE
 
-VERSION=`grep EC_VERSION\  ./include/ec_version.h | cut -f2 -d"\""`
 SB=`./shtool echo -n -e %B`
 EB=`./shtool echo -n -e %b`
 AC_SUBST(SB)
@@ -805,8 +805,8 @@ dnl  set up the final vars
 dnl -----------------------
 EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $PCREINC $ICONVINC"
 EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $GTK_LIBS $ICONVLIB"
-CFLAGS="$EC_CFLAGS"
-LDFLAGS="$EC_LIBS"
+CFLAGS="$CFLAGS $EC_CFLAGS"
+LDFLAGS="$LDFLAGS $EC_LIBS"
 
 AC_SUBST(EC_CFLAGS)
 AC_SUBST(EC_LIBS)

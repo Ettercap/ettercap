@@ -23,3 +23,16 @@ libtool
 *.a
 *.5
 *.8
+
+*.lo
+*.la
+.dirstamp
+.libs/
+
+utils/etterfilter/ef_grammar.c
+utils/etterfilter/ef_grammar.h
+utils/etterfilter/ef_syntax.c
+
+src/ettercap
+utils/etterfilter/etterfilter
+utils/etterlog/etterlog

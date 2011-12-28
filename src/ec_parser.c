@@ -66,6 +66,7 @@ void ec_usage(void)
    fprintf(stdout, "  -o, --only-mitm             don't sniff, only perform the mitm attack\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
+   fprintf(stdout, "  -S, --nosslmitm             do not forge SSL certificates\n");
    fprintf(stdout, "  -u, --unoffensive           do not forward packets\n");
    fprintf(stdout, "  -r, --read <file>           read data from pcapfile <file>\n");
    fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n");
@@ -98,6 +99,7 @@ void ec_usage(void)
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
    fprintf(stdout, "  -I, --iflist                show all the network interfaces\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
+   fprintf(stdout, "  -A, --address <address>     force this local <address> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
@@ -129,6 +131,7 @@ void parse_options(int argc, char **argv)
       { "iface", required_argument, NULL, 'i' },
       { "iflist", no_argument, NULL, 'I' },
       { "netmask", required_argument, NULL, 'n' },
+      { "address", required_argument, NULL, 'A' },
       { "write", required_argument, NULL, 'w' },
       { "read", required_argument, NULL, 'r' },
       { "pcapfilter", required_argument, NULL, 'f' },
@@ -145,6 +148,7 @@ void parse_options(int argc, char **argv)
       { "script", required_argument, NULL, 's' },
       { "silent", no_argument, NULL, 'z' },
       { "unoffensive", no_argument, NULL, 'u' },
+      { "nosslmitm", no_argument, NULL, 'S' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
       { "wep-key", required_argument, NULL, 'W' },
@@ -181,12 +185,18 @@ void parse_options(int argc, char **argv)
    
    GBL_PCAP->promisc = 1;
    GBL_FORMAT = &ascii_format;
+   GBL_OPTIONS->ssl_mitm = 1;
 
 /* OPTIONS INITIALIZED */
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+      /* used for parsing arguments */
+      char *opt_end = optarg;
+      while (opt_end && *opt_end) opt_end++;
+      /* enable a loaded filter script? */
+      uint8_t f_enabled = 0;
 
       switch (c) {
 
@@ -257,6 +267,10 @@ void parse_options(int argc, char **argv)
          case 'n':
                   GBL_OPTIONS->netmask = strdup(optarg);
                   break;
+
+         case 'A':
+                  GBL_OPTIONS->address = strdup(optarg);
+                  break;
                   
          case 'r':
                   /* we don't want to scan the lan while reading from file */
@@ -275,7 +289,12 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'F':
-                  if (filter_load_file(optarg, GBL_FILTERS) != ESUCCESS)
+                  /* is there a :0 or :1 appended to the filename? */
+                  if ( (opt_end-optarg >=2) && *(opt_end-2) == ':' ) {
+                     *(opt_end-2) = '\0';
+                     f_enabled = !( *(opt_end-1) == '0' );
+		  }
+                  if (filter_load_file(optarg, GBL_FILTERS, f_enabled) != ESUCCESS)
                      FATAL_ERROR("Cannot load filter file \"%s\"", optarg);
                   break;
                   
@@ -321,7 +340,11 @@ void parse_options(int argc, char **argv)
          case 'u':
                   GBL_OPTIONS->unoffensive = 1;
                   break;
-                  
+
+	 case 'S':
+                  GBL_OPTIONS->ssl_mitm = 0;
+                  break;
+ 
          case 'd':
                   GBL_OPTIONS->resolve = 1;
                   break;

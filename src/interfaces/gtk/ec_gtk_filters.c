@@ -63,7 +63,7 @@ void gtkui_load_filter(void)
        * load the filters chain.
        * errors are spawned by the function itself
        */
-      filter_load_file(filename, GBL_FILTERS);
+      filter_load_file(filename, GBL_FILTERS, 1);
    }
    gtk_widget_destroy (dialog);
 }

@@ -27,6 +27,7 @@
 #include <ec_version.h>
 
 #include <pcap.h>
+#include <string.h>
 
   /* \Device\NPF{...} and description are huge. There should be 2 buffers
    * for this; one for dev-name and 1 for description. Note: dev->description
@@ -46,6 +47,8 @@ static GtkTextBuffer *msgbuffer = NULL;
 static GtkTextMark   *endmark = NULL;
 static GtkAccelGroup *accel_group = NULL;
 static gboolean       progress_cancelled = FALSE;
+static GtkWidget     *progress_dialog = NULL;
+static GtkWidget     *progress_bar = NULL;
 
 /* proto */
 
@@ -64,7 +67,7 @@ static void gtkui_msg(const char *msg);
 static void gtkui_error(const char *msg);
 static void gtkui_fatal_error(const char *msg);
 static gboolean gtkui_flush_msg(gpointer data);
-static int gtkui_progress(char *title, int value, int max);
+static void gtkui_progress(char *title, int value, int max);
 
 static void gtkui_setup(void);
 
@@ -102,6 +105,142 @@ void gtkui_page_left(void);
 static void gtkui_page_defocus_tabs(void);
 #endif
 
+/* wrapper functions which inject the real function call into the main
+ * idle loop, ensugin only th emain thread performs GTK operations
+*/
+static gboolean gtkui_cleanup_shim(gpointer data)
+{
+   gtkui_cleanup();
+   return FALSE;
+}
+
+static void gtkui_cleanup_wrap(void)
+{
+   g_idle_add(gtkui_cleanup_shim, NULL);
+}
+
+static gboolean gtkui_msg_shim(gpointer data)
+{
+   gtkui_msg(data);
+   free(data);
+   return FALSE;
+}
+
+static void gtkui_msg_wrap(const char *msg)
+{
+    char *copy = strdup(msg);
+    if (msg) {
+       g_idle_add(gtkui_msg_shim, copy);
+    } else {
+       FATAL_ERROR("out of memory");
+    }
+}
+
+static gboolean gtkui_error_shim(gpointer data)
+{
+   gtkui_error(data);
+   free(data);
+   return FALSE;
+}
+
+static void gtkui_error_wrap(const char *msg)
+{
+
+   char *copy = strdup(msg);
+   if (msg) {
+      g_idle_add(gtkui_error_shim, copy);
+   } else {
+      FATAL_ERROR("out of memory");
+   }
+}
+
+static gboolean gtkui_fatal_error_shim(gpointer data) {
+   gtkui_fatal_error(data);
+   free(data);
+   return FALSE;
+}
+
+static void gtkui_fatal_error_wrap(const char *msg) {
+
+   char *copy = strdup(msg);
+   if (msg) {
+      g_idle_add(gtkui_fatal_error_shim, copy);
+   } else {
+      FATAL_ERROR("out of memory");
+   }
+}
+
+struct gtkui_input_data {
+   const char *title;
+   char *input;
+   size_t n;
+   void (*callback)(void);
+};
+
+static gboolean gtkui_input_shim(gpointer data) {
+
+   struct gtkui_input_data *gid = data;
+   gtkui_input(gid->title, gid->input, gid->n, gid->callback);
+   free(gid);
+   return FALSE;
+}
+
+static void gtkui_input_wrap(const char *title, char *input, size_t n, void (*callback)(void)) {
+
+   struct gtkui_input_data *gid = malloc(sizeof *gid);
+   if (gid) {
+      gid->title = title;
+      gid->input = input;
+      gid->n = n;
+      gid->callback = callback;
+      g_idle_add(gtkui_input_shim, gid);
+   } else {
+      FATAL_ERROR("out of memory");
+   }
+}
+
+struct gtkui_progress_data {
+   char *title;
+   int value;
+   int max;
+};
+
+static gboolean gtkui_progress_shim(gpointer data) {
+
+   struct gtkui_progress_data *gpd = data;
+   gtkui_progress(gpd->title, gpd->value, gpd->max);
+   free(gpd);
+   return FALSE;
+}
+
+static int gtkui_progress_wrap(char *title, int value, int max) {
+
+   struct gtkui_progress_data *gpd;
+
+   if (progress_cancelled == TRUE) {
+      progress_cancelled = FALSE;
+      return UI_PROGRESS_INTERRUPTED;
+   }
+
+   gpd = malloc(sizeof *gpd);
+   if (gpd) {
+      gpd->title = title;
+      gpd->value = value;
+      gpd->max = max;
+      g_idle_add(gtkui_progress_shim, gpd);
+   } else {
+      FATAL_ERROR("out of memory");
+   }
+
+   return value == max
+      ? UI_PROGRESS_FINISHED
+      : UI_PROGRESS_UPDATED;
+}
+
+
+
+
+
 /***#****************************************/
 
 void set_gtk_interface(void)
@@ -114,13 +253,14 @@ void set_gtk_interface(void)
    /* register the functions */
    ops.init = &gtkui_init;
    ops.start = &gtkui_start;
-   ops.cleanup = &gtkui_cleanup;
-   ops.msg = &gtkui_msg;
-   ops.error = &gtkui_error;
-   ops.fatal_error = &gtkui_fatal_error;
-   ops.input = &gtkui_input;
-   ops.progress = &gtkui_progress;
    ops.type = UI_GTK;
+   ops.cleanup = &gtkui_cleanup_wrap;
+   ops.msg = &gtkui_msg_wrap;
+   ops.error = &gtkui_error_wrap;
+   ops.fatal_error = &gtkui_fatal_error_wrap;
+   ops.input = &gtkui_input_wrap;
+   ops.progress = &gtkui_progress_wrap;
+
    
    ui_register(&ops);
 }
@@ -134,7 +274,6 @@ static void gtkui_init(void)
    DEBUG_MSG("gtk_init");
 
    g_thread_init(NULL);
-   gdk_threads_init();
 
    if(!gtk_init_check(0, NULL)) {
    	FATAL_ERROR("GTK+ failed to initialize. Is X running?");
@@ -148,9 +287,7 @@ static void gtkui_init(void)
    /* gui init loop, calling gtk_main_quit will cause
     * this to exit so we can proceed to the main loop
     * later. */
-   gdk_threads_enter();
    gtk_main();
-   gdk_threads_leave();
 
    /* remove the keyboard shortcuts for the setup menus */
    gtk_window_remove_accel_group(GTK_WINDOW (window), accel_group);
@@ -311,28 +448,9 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
 /* 
  * show or update the progress bar
  */
-static int gtkui_progress(char *title, int value, int max)
+static void gtkui_progress(char *title, int value, int max)
 {
-   static GtkWidget *progress_dialog = NULL;
-   static GtkWidget *progress_bar = NULL;
    static GtkWidget *hbox, *button;
-
-#ifndef OS_MINGW
-   /* FIXME: try to understand why it does not work under mingw.
-    * (look even in ec_scan.c
-    */
-   gdk_threads_enter();
-#endif
-   
-   if (progress_cancelled == TRUE) {
-      progress_dialog = NULL;
-      progress_bar = NULL;
-      progress_cancelled = FALSE;
-#ifndef OS_MINGW
-      gdk_threads_leave();
-#endif
-      return UI_PROGRESS_INTERRUPTED;
-   }
 
    /* the first time, create the object */
    if (progress_bar == NULL) {
@@ -363,13 +481,9 @@ static int gtkui_progress(char *title, int value, int max)
    gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
 
-#ifndef OS_MINGW
-   gdk_threads_leave();
-#else
    /* a nasty little loop that lets gtk update the progress bar immediately */
    while (gtk_events_pending ())
       gtk_main_iteration ();
-#endif
    
    /* 
     * when 100%, destroy it
@@ -378,22 +492,19 @@ static int gtkui_progress(char *title, int value, int max)
       gtk_widget_destroy(progress_dialog);
       progress_dialog = NULL;
       progress_bar = NULL;
-#ifndef OS_MINGW
-      gdk_threads_leave();
-#endif
-      return UI_PROGRESS_FINISHED;
    }
 
-   return UI_PROGRESS_UPDATED;
 }
 
 static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) {
    progress_cancelled = TRUE;
 
    /* the progress dialog must be manually destroyed if the cancel button is used */
-   if(data != NULL && GTK_IS_WIDGET(data))
-       gtk_widget_destroy(data);
-
+   if (data != NULL && GTK_IS_WIDGET(data)) {
+      gtk_widget_destroy(data);
+      progress_dialog = NULL;
+      progress_bar = NULL;
+   }
    return(FALSE);
 }
 
@@ -437,9 +548,7 @@ void gtkui_start(void)
       gtkui_sniff_live();
    
    /* the main gui loop, once this exits the gui will be destroyed */
-   gdk_threads_enter();
    gtk_main();
-   gdk_threads_leave();
 
    gtk_timeout_remove(idle_flush);
 }

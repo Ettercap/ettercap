@@ -22,6 +22,7 @@
 
 #include <ec.h>
 #include <ec_sniff.h>
+#include <ec_filter.h>
 
 #define GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
 
@@ -53,7 +54,8 @@ void globals_alloc(void)
    SAFE_CALLOC(gbls->sm, 1, sizeof(struct sniffing_method));
    SAFE_CALLOC(gbls->t1, 1, sizeof(struct target_env));
    SAFE_CALLOC(gbls->t2, 1, sizeof(struct target_env));
-   SAFE_CALLOC(gbls->filters, 1, sizeof(struct filter_env));
+   /* filter list entries are allocated as needed */
+   gbls->filters = NULL;
 
    /* init the struct */
    TAILQ_INIT(&GBL_PROFILES);
@@ -93,6 +95,8 @@ void globals_free(void)
    GBL_FREE(gbls->stats);
    GBL_FREE(gbls->options);
    GBL_FREE(gbls->conf);
+   /* destroy the list structure */
+   filter_clear();
    
    GBL_FREE(gbls);
    

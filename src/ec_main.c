@@ -23,6 +23,7 @@
 #include <ec.h>
 #include <ec_version.h>
 #include <ec_globals.h>
+#include <ec_network.h>
 #include <ec_signals.h>
 #include <ec_parser.h>
 #include <ec_threads.h>
@@ -63,8 +64,8 @@ int main(int argc, char *argv[])
   
    GBL_PROGRAM = strdup(EC_PROGRAM);
    GBL_VERSION = strdup(EC_VERSION);
-   SAFE_CALLOC(GBL_DEBUG_FILE, strlen(EC_PROGRAM) + strlen(EC_VERSION) + strlen("_debug.log") + 1, sizeof(char));
-   snprintf(GBL_DEBUG_FILE, strlen(EC_PROGRAM)+strlen(EC_VERSION)+strlen("_debug.log")+1, "%s%s_debug.log", GBL_PROGRAM, EC_VERSION);
+   SAFE_CALLOC(GBL_DEBUG_FILE, strlen(EC_PROGRAM) + strlen("-") + strlen(EC_VERSION) + strlen("_debug.log") + 1, sizeof(char));
+   sprintf(GBL_DEBUG_FILE, "%s-%s_debug.log", GBL_PROGRAM, EC_VERSION);
    
    DEBUG_INIT();
    DEBUG_MSG("main -- here we go !!");
@@ -100,30 +101,33 @@ int main(int argc, char *argv[])
    /* initialize the user interface */
    ui_init();
    
+   /* initialize the network subsystem */
+   network_init();
+   
    /* initialize libpcap */
-   capture_init();
+   //capture_init();
 
    /* initialize libnet (the function contain all the checks) */
-   send_init();
+   //send_init();
  
    /* get hardware infos */
-   get_hw_info();
+   //get_hw_info();
  
    /* 
     * always disable the kernel ip forwarding (except when reading from file).
     * the forwarding will be done by ettercap.
     */
-   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm)
+   if(!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm) {
       disable_ip_forward();
-      
-   /* binds ports and set redirect for ssl wrapper */
-   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm && GBL_SNIFF->type == SM_UNIFIED)
-      ssl_wrap_init();
+      /* binds ports and set redirect for ssl wrapper */
+      if(GBL_SNIFF->type == SM_UNIFIED)
+         ssl_wrap_init();
+   }
    
    /* 
     * drop root privileges 
-    * we have alread opened the sockets with high privileges
-    * we don't need any more root privs.
+    * we have already opened the sockets with high privileges
+    * we don't need anymore root privs.
     */
    drop_privs();
 

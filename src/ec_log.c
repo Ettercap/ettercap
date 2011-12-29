@@ -457,7 +457,7 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
    hi.type = po->PASSIVE.flags;
 
    /* calculate if the dest is local or not */
-   switch (ip_addr_is_local(&po->L3.dst)) {
+   switch (ip_addr_is_local(&po->L3.dst, NULL)) {
       case ESUCCESS:
          hid.type |= FP_HOST_LOCAL;
          break;

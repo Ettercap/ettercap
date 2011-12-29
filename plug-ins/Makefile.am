@@ -30,6 +30,7 @@ SUBDIRS =   arp_cop \
             search_promisc \
             smb_clear \
             smb_down \
+			smurf_attack \
             stp_mangler 
 
 # vim:ts=4:noexpandtab

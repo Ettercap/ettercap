@@ -101,6 +101,14 @@ int ui_progress(char *title, int value, int max)
    return UI_PROGRESS_UPDATED;
 }
 
+/* send an update notification */
+void ui_update(int target)
+{
+   if(GBL_UI->update) {
+      DEBUG_MSG("ui_update");
+      GBL_UI->update(target);
+   }
+}
 
 /*
  * the FATAL_MSG error handling function
@@ -341,6 +349,8 @@ void ui_register(struct ui_ops *ops)
    
    BUG_IF(ops->progress == NULL);
    GBL_UI->progress = ops->progress;
+
+   GBL_UI->update = ops->update;
 
    GBL_UI->type = ops->type;
 }

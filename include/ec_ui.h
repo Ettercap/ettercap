@@ -18,6 +18,8 @@ struct ui_ops {
       #define UI_PROGRESS_INTERRUPTED  -1
       #define UI_PROGRESS_FINISHED     0
       #define UI_PROGRESS_UPDATED      1
+   void (*update)(int);
+      #define UI_UPDATE_HOSTLIST       1
    char initialized;
    char type;
       #define UI_TEXT      0
@@ -34,6 +36,7 @@ EC_API_EXTERN void ui_error(const char *fmt, ...);
 EC_API_EXTERN void ui_fatal_error(const char *msg);
 EC_API_EXTERN void ui_input(const char *title, char *input, size_t n, void (*callback)(void));
 EC_API_EXTERN int ui_progress(char *title, int value, int max);
+EC_API_EXTERN void ui_update(int target);
 EC_API_EXTERN int ui_msg_flush(int max);
 #define MSG_ALL   INT_MAX
 

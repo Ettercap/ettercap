@@ -6,6 +6,7 @@
 
 #include <ec_sniff.h>
 #include <ec_inet.h>
+#include <ec_network.h>
 #include <ec_ui.h>
 #include <ec_stats.h>
 #include <ec_profiles.h>
@@ -29,6 +30,7 @@ struct ec_conf {
    int dhcp_lease_time;
    int port_steal_delay;
    int port_steal_send_delay;
+   int nadv_poison_send_delay;
    int connection_timeout;
    int connection_idle;
    int connection_buffer;
@@ -64,7 +66,8 @@ struct ec_options {
    char mitm:1;
    char only_mitm:1;
    char remote:1;
-   char iflist:1;
+   char gateway:1;
+   char lifaces:1;
    char reversed;
    char *hostsfile;
    char *plugin;
@@ -72,6 +75,7 @@ struct ec_options {
    char *netmask;
    char *iface;
    char *iface_bridge;
+   char **secondary;
    char *pcapfile_in;
    char *pcapfile_out;
    char *target1;
@@ -89,11 +93,11 @@ struct program_env {
    char *debug_file;
 };
 
-/* pcap structure */
+/* global pcap structure */
 struct pcap_env {
    void     *ifs;          /* this is a pcap_if_t pointer */
    void     *pcap;         /* this is a pcap_t pointer */
-   void     *pcap_bridge;  /* this is a pcap_t pointer */
+   void     *pread;        /* this is a pcap_t pointer */
    void     *dump;         /* this is a pcap_dumper_t pointer */
    char     *buffer;       /* buffer to be used to handle all the packets */
    u_int8   align;         /* alignment needed on sparc 4*n - sizeof(media_hdr) */
@@ -107,36 +111,14 @@ struct pcap_env {
 
 /* lnet structure */
 struct lnet_env {
-   void *lnet_L3;       /* this is a libnet_t pointer */
-   void *lnet;          /* this is a libnet_t pointer */ 
-   void *lnet_bridge;   /* this is a libnet_t pointer */
-};
-
-/* per interface informations */
-struct iface_env {
-   struct ip_addr ip;
-   struct ip_addr network;
-   struct ip_addr netmask;
-   u_int8 mac[MEDIA_ADDR_LEN];
-   u_int16 mtu;
-   char configured;
+   void *lnet_IP4;       /* this is a libnet_t pointer */
+   void *lnet_IP6;      /* this is a libnet_t pointer */
 };
 
 /* ip list per target */
 struct ip_list {
    struct ip_addr ip;
    LIST_ENTRY(ip_list) next;
-};
-
-/* target specifications */
-struct target_env {
-   char scan_all:1;
-   char all_mac:1;            /* these one bit flags are used as wildcards */
-   char all_ip:1;
-   char all_port:1;
-   u_char mac[MEDIA_ADDR_LEN];
-   LIST_HEAD (, ip_list) ips;
-   u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };
 
 /* scanned hosts list */
@@ -147,6 +129,18 @@ struct hosts_list {
    LIST_ENTRY(hosts_list) next;
 };
 
+/* target specifications */
+struct target_env {
+   char scan_all:1;
+   char all_mac:1;            /* these one bit flags are used as wildcards */
+   char all_ip:1;
+   char all_ip6:1;
+   char all_port:1;
+   u_char mac[MEDIA_ADDR_LEN];
+   LIST_HEAD(, ip_list) ips;
+   LIST_HEAD(, ip_list) ip6;
+   u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
+};
 
 /* the globals container */
 struct globals {
@@ -162,7 +156,7 @@ struct globals {
    struct sniffing_method *sm;
    struct target_env *t1;
    struct target_env *t2;
-   LIST_HEAD(, hosts_list) hosts_list_head;
+   LIST_HEAD(, hosts_list) hosts_list;
    TAILQ_HEAD(gbl_ptail, host_profile) profiles_list_head;
    struct filter_env *filters;
 };
@@ -183,7 +177,7 @@ EC_API_EXTERN struct globals *gbls;
 #define GBL_SNIFF          (GBLS->sm)
 #define GBL_TARGET1        (GBLS->t1)
 #define GBL_TARGET2        (GBLS->t2)
-#define GBL_HOSTLIST       (GBLS->hosts_list_head)
+#define GBL_HOSTLIST       (GBLS->hosts_list)
 #define GBL_PROFILES       (GBLS->profiles_list_head)
 #define GBL_FILTERS        (GBLS->filters)
 
@@ -192,7 +186,6 @@ EC_API_EXTERN struct globals *gbls;
 #define GBL_PROGRAM        (GBL_ENV->name)
 #define GBL_VERSION        (GBL_ENV->version)
 #define GBL_DEBUG_FILE     (GBL_ENV->debug_file)
-
 
 /* exported functions */
 

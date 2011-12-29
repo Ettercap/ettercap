@@ -184,7 +184,7 @@ FUNC_DECODER(decode_ip)
    }
 
    /* calculate if the dest is local or not */
-   switch (ip_addr_is_local(&PACKET->L3.src)) {
+   switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
       case ESUCCESS:
          PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
@@ -282,7 +282,7 @@ FUNC_INJECTOR(inject_ip)
    iph->tos      = 0;
    iph->csum     = CSUM_INIT;
    iph->frag_off = 0;            
-   iph->ttl      = 125;   
+   iph->ttl      = 64;   
    iph->protocol = PACKET->L4.proto; 
    iph->saddr    = ip_addr_to_int32(PACKET->L3.src.addr);   
    iph->daddr    = ip_addr_to_int32(PACKET->L3.dst.addr);   

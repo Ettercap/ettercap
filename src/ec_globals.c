@@ -55,8 +55,9 @@ void globals_alloc(void)
    SAFE_CALLOC(gbls->t2, 1, sizeof(struct target_env));
    SAFE_CALLOC(gbls->filters, 1, sizeof(struct filter_env));
 
-   /* init the struct */
+   /* init the structures */
    TAILQ_INIT(&GBL_PROFILES);
+   LIST_INIT(&GBL_HOSTLIST);
    
    return;
 }

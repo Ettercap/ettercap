@@ -1,3 +1,7 @@
+tags
+.clang_complete
+include/config.h
+
 Makefile.in
 Makefile
 include/config.h.in
@@ -11,7 +15,6 @@ config.guess
 config.log
 config.sub
 configure
-include/config.h.in~
 install-sh
 Makefile.mingw
 config.status

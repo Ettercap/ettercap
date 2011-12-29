@@ -91,7 +91,12 @@ static void gtkui_load_plugin(char *full)
    int ret;
 
    path = full;
+
+#ifdef OS_WINDOWS
+   file = strrchr(full, '\\');
+#else
    file = strrchr(full, '/');
+#endif
    /* remove the last /
       split path and file
       increment file pointer to point to filenam */

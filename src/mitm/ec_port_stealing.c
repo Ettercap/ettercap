@@ -147,7 +147,7 @@ static int port_stealing_start(char *args)
       SEMIFATAL_ERROR("Port stealing needs a non empty hosts list.\n");
       
    /* Avoid sniffing loops. XXX - it remains even after mitm stopping */
-   capture_only_incoming(GBL_PCAP->pcap, GBL_LNET->lnet);
+   capture_only_incoming(GBL_IFACE->pcap, GBL_IFACE->lnet);
       
    /* Create the port stealing list from hosts list */   
    LIST_FOREACH(h, &GBL_HOSTLIST, next) {

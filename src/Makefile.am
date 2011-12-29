@@ -2,7 +2,7 @@
 # $Id: Makefile.am,v 1.85 2005/07/07 10:08:56 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
-
+AUTOMAKE_OPTIONS += subdir-objects
 SUBDIRS = os interfaces
 
 bin_PROGRAMS = ettercap
@@ -33,6 +33,7 @@ ettercap_SOURCES = ec_capture.c \
                    ec_main.c \
                    ec_manuf.c \
                    ec_mitm.c \
+				   ec_network.c \
                    ec_packet.c \
                    ec_parser.c \
                    ec_passive.c \
@@ -65,7 +66,8 @@ ettercap_SOURCES = ec_capture.c \
 ettercap_SOURCES += mitm/ec_arp_poisoning.c \
                     mitm/ec_dhcp_spoofing.c \
                     mitm/ec_icmp_redirect.c \
-                    mitm/ec_port_stealing.c
+                    mitm/ec_port_stealing.c \
+					mitm/ec_ip6nd_poison.c
 
 ettercap_SOURCES += protocols/ec_arp.c \
                     protocols/ec_eth.c \
@@ -73,6 +75,7 @@ ettercap_SOURCES += protocols/ec_arp.c \
 				        protocols/ec_cooked.c \
 				        protocols/ec_gre.c \
 				        protocols/ec_icmp.c \
+						protocols/ec_icmp6.c \
 				        protocols/ec_ip.c \
 				        protocols/ec_ip6.c \
 				        protocols/ec_ppp.c \

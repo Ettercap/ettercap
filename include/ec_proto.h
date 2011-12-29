@@ -48,10 +48,10 @@ enum {
 
 enum {
    LO6_TYPE_HBH = 0,   /* Hop-By-Hop */
-   LO6_TYPE_RT  = 43,  /* Routing */
-   LO6_TYPE_FR  = 44,  /* Fragment */
-   LO6_TYPE_DST = 60,  /* Destination */
-   LO6_TYPE_NO  = 59,  /* No Next Header */
+   LO6_TYPE_RT  = 0x2b,  /* Routing */
+   LO6_TYPE_FR  = 0x2c,  /* Fragment */
+   LO6_TYPE_DST = 0x3c,  /* Destination */
+   LO6_TYPE_NO  = 0x3b,  /* No Next Header */
 };
 
 
@@ -74,6 +74,23 @@ enum {
    ICMP_TIME_EXCEEDED   = 11,
    ICMP_NET_UNREACH     = 0,
    ICMP_HOST_UNREACH    = 1,
+};
+
+/* ICMPv6 types */
+enum {
+   /* Errors */
+   ICMP6_DEST_UNREACH   = 1,
+   ICMP6_PKT_TOO_BIG    = 2,
+   ICMP6_TIME_EXCEEDED  = 3,
+   ICMP6_BAD_PARAM      = 4,
+   
+   /* Info */
+   ICMP6_ECHO           = 128,
+   ICMP6_ECHOREPLY      = 129,
+   ICMP6_ROUTER_SOL     = 133,
+   ICMP6_ROUTER_ADV     = 134,
+   ICMP6_NEIGH_SOL      = 135,
+   ICMP6_NEIGH_ADV      = 136,
 };
 
 /* DHCP options */

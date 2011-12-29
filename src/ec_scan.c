@@ -59,6 +59,9 @@ static EC_THREAD_FUNC(capture_scan);
 static EC_THREAD_FUNC(scan_thread);
 static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 
+void __init hook_init(void);
+static void hosts_list_hook(struct packet_object *po);
+
 /*******************************************/
 
 /*
@@ -96,7 +99,7 @@ void build_hosts_list(void)
       return;
 
    /* it not initialized don't make the list */
-   if (GBL_LNET->lnet == NULL)
+   if (GBL_IFACE->lnet == NULL)
       return;
 
    /* no target defined... */
@@ -117,7 +120,7 @@ void build_hosts_list(void)
    if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
       /* in text mode and demonized call the function directly */
       scan_thread(NULL);
-   else
+   else 
       /* do the scan in a separate thread */
       ec_thread_new("scan", "scanning thread", &scan_thread, NULL);
 #endif
@@ -206,6 +209,9 @@ static EC_THREAD_FUNC(scan_thread)
 
    INSTANT_USER_MSG("%d hosts added to the hosts list...\n", nhosts);
 
+   /* update host list*/
+   ui_update(UI_UPDATE_HOSTLIST);
+
    /*
     * resolve the hostnames only if we are scanning
     * the lan. when loading from file, hostnames are
@@ -272,7 +278,7 @@ static EC_THREAD_FUNC(capture_scan)
 
    ec_thread_init();
 
-   pcap_loop(GBL_PCAP->pcap, -1, scan_decode, EC_THREAD_PARAM);
+   pcap_loop(GBL_IFACE->pcap, -1, scan_decode, EC_THREAD_PARAM);
 
    return NULL;
 }
@@ -560,8 +566,11 @@ int scan_load_hosts(char *filename)
 {
    FILE *hf;
    int nhosts;
-   char ip[16], mac[18], name[128];
-   struct in_addr tip;
+   char ip[MAX_ASCII_ADDR_LEN];
+   char mac[ETH_ASCII_ADDR_LEN];
+   char name[MAX_HOSTNAME_LEN];
+   char line[MAX_ASCII_ADDR_LEN + ETH_ASCII_ADDR_LEN + MAX_ASCII_ADDR_LEN + 3];
+   u_int8 tip[MAX_IP_ADDR_LEN];
    struct ip_addr hip;
    u_int8 hmac[MEDIA_ADDR_LEN];
 
@@ -577,21 +586,22 @@ int scan_load_hosts(char *filename)
    /* XXX - adapt to IPv6 */
    /* read the file */
    for (nhosts = 0; !feof(hf); nhosts++) {
+      int proto;
 
-      if (fscanf(hf,"%15s %17s %127s\n", ip, mac, name) != 3 ||
+      if (fscanf(hf, "%s %s %s\n", ip, mac, name) != 3 ||
          *ip == '#' || *mac == '#' || *name == '#')
          continue;
-
 
       /* convert to network */
       mac_addr_aton(mac, hmac);
 
-      if (inet_aton(ip, &tip) == 0) {
+      proto = (strchr(ip, ':')) ? AF_INET6 : AF_INET;
+      if (!inet_pton(proto, ip, tip)) {
          del_hosts_list();
          SEMIFATAL_ERROR("Bad parsing on line %d", nhosts + 1);
       }
 
-      ip_addr_init(&hip, AF_INET, (char *)&tip);
+      ip_addr_init(&hip, proto, (char *)tip);
 
       /* wipe the null hostname */
       if (!strcmp(name, "-"))
@@ -726,6 +736,33 @@ static void random_list(struct ip_list *e, int max)
    /* and add the pointer in the array */
    rand_array[max - 1] = e;
 
+}
+
+void __init hook_init(void)
+{
+   hook_add(HOOK_PACKET_IP, &hosts_list_hook);
+   hook_add(HOOK_PACKET_IP6, &hosts_list_hook);
+}
+
+/*
+ * This function adds local nodes to the global hosts list.
+ * Its quite slow and I don't have any better ideas at the moment.
+ */
+static void hosts_list_hook(struct packet_object *po)
+{
+   struct hosts_list *h;
+   
+   switch(ip_addr_is_ours(&po->L3.src)) {
+      case EFOUND:
+      case EBRIDGE:
+         return;
+   }
+
+   if(ip_addr_is_local(&po->L3.src, NULL) == ESUCCESS) {
+      add_host(&po->L3.src, po->L2.src, NULL);
+   }
+
+   return;
 }
 
 /* EOF */

@@ -46,11 +46,6 @@ static pthread_mutex_t init_mtx = PTHREAD_MUTEX_INITIALIZER;
 #define INIT_LOCK     do{ DEBUG_MSG("thread_init_lock"); pthread_mutex_lock(&init_mtx); } while(0)
 #define INIT_UNLOCK   do{ DEBUG_MSG("thread_init_unlock"); pthread_mutex_unlock(&init_mtx); } while(0)
 
-#if defined(OS_DARWIN) || defined(OS_WINDOWS) || defined(OS_CYGWIN)
-   /* XXX - darwin and windows are broken, pthread_join hangs up forever */
-   #define BROKEN_PTHREAD_JOIN
-#endif
-
 /* protos... */
 
 char * ec_thread_getname(pthread_t id);

@@ -39,6 +39,7 @@ static int isolate_init(void *);
 static int isolate_fini(void *);
 
 static void parse_arp(struct packet_object *po);
+static void parse_icmp6(struct packet_object *po);
 static int add_to_victims(struct packet_object *po);
 EC_THREAD_FUNC(isolate);
 
@@ -71,8 +72,9 @@ int plugin_load(void *handle)
 
 static int isolate_init(void *dummy) 
 {
+   struct ip_list *t;
    /* sanity check */
-   if (LIST_FIRST(&GBL_TARGET1->ips) == NULL) {
+   if (LIST_EMPTY(&GBL_TARGET1->ips) && LIST_EMPTY(&GBL_TARGET1->ip6)) {
       INSTANT_USER_MSG("isolate: please specify the TARGET host\n");
       return PLUGIN_FINISHED;
    }
@@ -84,7 +86,9 @@ static int isolate_init(void *dummy)
    hook_add(HOOK_PACKET_ARP_RQ, &parse_arp);
 
    /* spawn a thread to force arp of already cached hosts */
-   ec_thread_new("isolate", "Isolate thread", &isolate, NULL);
+   LIST_FOREACH(t, &GBL_TARGET1->ips, next) {
+      ec_thread_new("isolate", "Isolate thread", &isolate, t);
+   }
    
    return PLUGIN_RUNNING;   
 }
@@ -98,11 +102,8 @@ static int isolate_fini(void *dummy)
    /* remove the hook */
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);
    
-   /* get the thread pid */
-   pid = ec_thread_getpid("isolate");
-   
-   /* the thread is active or not ? */                                                              
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+   /* get those pids and kill 'em all */ 
+   while(!pthread_equal(pid = ec_thread_getpid("isolate"), EC_PTHREAD_NULL))
       ec_thread_destroy(pid);   
    
    /* free the list */
@@ -129,28 +130,26 @@ static void parse_arp(struct packet_object *po)
     */
    char *isolate_mac = po->L2.src;
 
-   /* get the first target (to be isolated) */
-   h = LIST_FIRST(&GBL_TARGET1->ips);
-   
-   /* process only arp requests from this host */
-   if (!ip_addr_cmp(&h->ip, &po->L3.src)) { 
-
-      int good = 0;
-      
-      /* is good if it is in the target 2 list */
-      LIST_FOREACH(t, &GBL_TARGET2->ips, next) 
-         if (!ip_addr_cmp(&t->ip, &po->L3.dst)) 
-            good = 1;
-
-      /* is good even if the target 2 is any */
-      if (GBL_TARGET2->all_ip)
-         good = 1;
+   LIST_FOREACH(h, &GBL_TARGET1->ips, next) {
+      /* process only arp requests from this host */
+      if (!ip_addr_cmp(&h->ip, &po->L3.src)) { 
+         int good = 0;
          
-      /* add to the list if good */
-      if (good && add_to_victims(po) == ESUCCESS) {
-         USER_MSG("isolate: %s added to the list\n", ip_addr_ntoa(&po->L3.dst, tmp));
-         /* send the fake reply */
-         send_arp(ARPOP_REPLY, &po->L3.dst, isolate_mac, &po->L3.src, po->L2.src);
+         /* is good if target 2 is any or if it is in the target 2 list */
+         if(GBL_TARGET2->all_ip) {
+            good = 1;
+         } else {
+            LIST_FOREACH(t, &GBL_TARGET2->ips, next) 
+               if (!ip_addr_cmp(&t->ip, &po->L3.dst)) 
+                  good = 1;
+         }
+
+         /* add to the list if good */
+         if (good && add_to_victims(po) == ESUCCESS) {
+            USER_MSG("isolate: %s added to the list\n", ip_addr_ntoa(&po->L3.dst, tmp));
+            /* send the fake reply */
+            send_arp(ARPOP_REPLY, &po->L3.dst, isolate_mac, &po->L3.src, po->L2.src);
+         }
       }
    }
 }
@@ -195,7 +194,7 @@ EC_THREAD_FUNC(isolate)
    ec_thread_init();
  
    /* get the host to be isolated */
-   t = LIST_FIRST(&GBL_TARGET1->ips);
+   t = args;
    
    /* never ending loop */
    LOOP {

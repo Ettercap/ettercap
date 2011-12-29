@@ -36,7 +36,9 @@ struct conn_object {
    struct conn_buf data;
 
    /* byte count since the creation */
-   u_int32 xferred;
+   u_int32 xferred;  /* XXX: remove it some day */
+   u_int32 tx;       /* from 1 to 2 */
+   u_int32 rx;       /* from 2 to 1 */
    
    /* connection status */
    int status;

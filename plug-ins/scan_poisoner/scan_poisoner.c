@@ -117,7 +117,7 @@ static int scan_poisoner_init(void *dummy)
 
    /* Send ICMP echo request to each target */
    LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
-      send_L3_icmp_echo(ICMP_ECHO, &GBL_IFACE->ip, &h1->ip);   
+      send_L3_icmp_echo(&GBL_IFACE->ip, &h1->ip);   
 #if !defined(OS_WINDOWS)
       nanosleep(&tm, NULL);
 #else

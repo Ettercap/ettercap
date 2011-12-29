@@ -131,7 +131,7 @@ int plugin_filter(struct dirent *d)
 int plugin_filter(const struct dirent *d)
 #endif
 {
-   if ( match_pattern(d->d_name, PLUGIN_PATTERN) )
+   if ( match_pattern(d->d_name, PLUGIN_PATTERN PLUGIN_EXT) )
       return 1;
 
    return 0;

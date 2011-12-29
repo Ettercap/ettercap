@@ -36,10 +36,10 @@ fi
 
 echo "Suggested version:"
 echo
-echo "     autoconf     2.59"
-echo "     automake     1.7.x"
-echo "     libtool      1.5.x"
-echo "     pkg-config   0.15.0"
+echo "     autoconf     2.68"
+echo "     automake     1.11.x"
+echo "     libtool      2.4.x"
+echo "     pkg-config   0.25"
 echo
 echo "Actual version:"
 echo

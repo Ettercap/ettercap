@@ -116,7 +116,7 @@ FUNC_DECODER(decode_tcp)
    tcp = (struct tcp_header *)DECODE_DATA;
    
    opt_start = (u_char *)(tcp + 1);
-   opt_end = (u_char *)(((u_char *)tcp) + tcp->off * 4);
+   opt_end = (u_char*)tcp + tcp->off * 4;
 
    DECODED_LEN = (u_int32)(tcp->off * 4);
 
@@ -180,7 +180,7 @@ FUNC_DECODER(decode_tcp)
           *
           * if the source is the ettercap host, don't display the message 
           */
-         if (!ip_addr_cmp(&PACKET->L3.src, &GBL_IFACE->ip))
+         if (!ip_addr_is_ours(&PACKET->L3.src))
             return NULL;
 #endif
          if (GBL_CONF->checksum_warning)
@@ -289,7 +289,7 @@ FUNC_DECODER(decode_tcp)
    } 
    
    /* get the next decoder */
-   next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
+   next_decoder = get_decoder(APP_LAYER, PL_DEFAULT);
    EXECUTE_DECODER(next_decoder);
 
    /* don't save the sessions in unoffensive mode */

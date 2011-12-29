@@ -202,7 +202,7 @@ static void curses_connection_detail(void *conn)
    wdg_window_print(wdg_conn_detail, 1, 10, "Source port             :  %-5d  %s", ntohs(c->co->L4_addr1), service_search(c->co->L4_addr1, c->co->L4_proto));
    wdg_window_print(wdg_conn_detail, 1, 11, "Destination port        :  %-5d  %s", ntohs(c->co->L4_addr2), service_search(c->co->L4_addr2, c->co->L4_proto));
    
-   wdg_window_print(wdg_conn_detail, 1, 13, "Transferred bytes       :  %d", c->co->xferred);
+   wdg_window_print(wdg_conn_detail, 1, 13, "--> %d    <-- %d   total: %d ", c->co->tx, c->co->rx, c->co->xferred);
    
    if (c->co->DISSECTOR.user) {
       wdg_window_print(wdg_conn_detail, 1, 15, "Account                 :  %s / %s", c->co->DISSECTOR.user, c->co->DISSECTOR.pass);

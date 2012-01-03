@@ -193,6 +193,20 @@ dnl ========================
 AC_PROG_YACC
 AC_PROG_LEX
 
+dnl =======================
+dnl  If flex not found, we quit
+dnl =======================
+if test "x$LEX" != "xflex"; then
+   AC_MSG_ERROR([flex was not found, please install])
+fi
+
+dnl =========================
+dnl If bison is not found, we quit
+dnl ==============================
+if test "x$YACC" != "xbison -y"; then
+   AC_MSG_ERROR([bison was not found, please install])
+fi
+
 dnl ========================
 dnl   Libtool related...
 dnl ========================

@@ -38,18 +38,20 @@
 
 #define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x "\n", ## __VA_ARGS__); return -EFATAL; } while(0)
 
-static pthread_mutex_t filters_mutex = PTHREAD_MUTEX_INITIALIZER;
+/* since we need a recursive mutex, we cannot initialize it here statically */
+static pthread_mutex_t filters_mutex;
 #define FILTERS_LOCK     do{ pthread_mutex_lock(&filters_mutex); }while(0)
 #define FILTERS_UNLOCK   do{ pthread_mutex_unlock(&filters_mutex); }while(0)
 
 /* protos */
 
-int filter_load_file(char *filename, struct filter_env *fenv);
-void filter_unload(struct filter_env *fenv);
+int filter_load_file(char *filename, struct filter_list **list, uint8_t enabled);
+void filter_unload(struct filter_list **list);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
 static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
+void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg);
    
-int filter_engine(struct filter_op *fop, struct packet_object *po);
+static int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
 static int execute_assign(struct filter_op *fop, struct packet_object *po);
 static int execute_incdec(struct filter_op *fop, struct packet_object *po);
@@ -73,12 +75,21 @@ static int cmp_leq(u_int32 a, u_int32 b);
 static int cmp_geq(u_int32 a, u_int32 b);
 /*******************************************/
 
+/* initialize the filter mutex */
+void filter_init_mutex(void) {
+   pthread_mutexattr_t at;
+   pthread_mutexattr_init(&at);
+   /* we want an recursive mutex, so we can re-aquire it in the same thread */
+   pthread_mutexattr_settype(&at, PTHREAD_MUTEX_RECURSIVE_NP);
+   pthread_mutex_init(&filters_mutex, &at);
+}
+
 /*
  * JIT interpreter for binary filters.
  * it process the filter_ops and apply the instructions
  * on the given packet object
  */
-int filter_engine(struct filter_op *fop, struct packet_object *po)
+static int filter_engine(struct filter_op *fop, struct packet_object *po)
 {
    u_int32 eip = 0;
    u_int32 flags = 0;
@@ -163,6 +174,20 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
    return 0;
 }
 
+/*
+ * pass a packet through every (enabled) filter loaded
+ */
+void filter_packet(struct packet_object *po) {
+   struct filter_list **l;
+   for (l = GBL_FILTERS; *l != NULL; l = &(*l)->next) {
+      /* if a script drops the packet, do not present it to following scripts */
+      if ( po->flags & PO_DROPPED )
+         break;
+      /* check whether the filter script is enabled */
+      if ((*l)->enabled)
+         filter_engine((*l)->env.chain, po);
+   }
+}
 
 /* 
  * execute a function.
@@ -542,61 +567,100 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
          if (fop->op.func.replace) {
             u_char *replaced;
             u_char *q = fop->op.func.replace;
-            size_t i, nlen = 0;
+            size_t i, slen = 0;
 
             /* don't modify if in unoffensive mode */
             if (GBL_OPTIONS->unoffensive)
                JIT_FAULT("Cannot modify packets in unoffensive mode");
              
             /* 
-             * the replaced string will not be larger than
-             * the matched string + replacement string
+             * worst case: the resulting string will need:
+             *   (n * |input|) + |subst| bytes
+             * where
+             *   |input| is the length of the matched input string (not the regex!)
+             *   |subst| is the length of the substition string
+             *   n       is the number of replacement markers in subst
+             *
+             * therefore, we need to count the number of $ characters first
+             * to get an upper limit of the buffer space needed
              */
-            SAFE_CALLOC(replaced, ovec[1] + strlen(q) + 1, sizeof(char));
+            int markers = 0;
+            for (i=0; q[i]; i++) {
+               if (q[i] == '$') markers++;
+            }
+            /* now: i = strlen(q) */
+
+            SAFE_CALLOC(replaced, markers*(ovec[1]-ovec[0]) + i + 1, sizeof(char));
           
             po->flags |= PO_MODIFIED;
 
             /* make the replacement */
+            uint8_t escaped = 0;
             for (i = 0; i < fop->op.func.rlen; i++) {
-               
-               /* there is a position marker */
-               if (q[i] == '$' && q[i - 1] != '\\') {
-                  
-                  int marker = atoi(q + i + 1);
-                  int t = ovec[marker * 2];
-                  int r = ovec[marker * 2 + 1];
-                  
-                  /* skip the chars of the marker */
-                  while (q[++i + 1] != ' ' && q[i] < q[strlen(q)] );
-                  
+               /* we encounter an escape character (\), so the next character is to be taken literally */
+               if (!escaped && q[i] == '\\') {
+                  escaped = 1;
+               }
+               /* there is an unescaped position marker */
+               else if (!escaped && q[i] == '$') {
+                  /* a marker is succeeded by an integer, make sure it is there */
+                  if (q[i+1] == '\0')
+                     JIT_FAULT("Incomplete marker at end of substitution string");
+
+                  /* so now we can safely move on to the next character, our digit */
+                  i++;
+                  /* we only support up to 9 markers since we only parse a single digit */
+                  if (q[i] < '0' || q[i] > '9')
+                     JIT_FAULT("Incomplete marker without integer in substitution string");
+
+                  int marker = q[i]-'0';
+
                   /* check if the requested marker was found in the pce */
                   if (marker > ret - 1 || marker == 0)
                      JIT_FAULT("Too many marker for this pcre expression");
 
+                  int t = ovec[marker * 2];
+                  int r = ovec[marker * 2 + 1];
+
                   /* copy the sub-string in place of the marker */
                   for ( ; t < r; t++) 
-                     replaced[nlen++] = po->DATA.data[t];
-                  
-               /* the $ is escaped, copy it */
-               } else if (q[i] == '\\' && q[i + 1] == '$') {
-                  replaced[nlen++] = q[++i];
-               /* all the other chars are copied as they are */
-               } else {
-                  replaced[nlen++] = q[i];
+                     replaced[slen++] = po->DATA.data[t];
+
+               }
+               /* anything else either has no special meaning or is escaped,
+                * so we just copy it
+                */
+               else {
+                  replaced[slen++] = q[i];
+                  escaped = 0;
                }
             }
             
             /* calculate the delta */
-            po->DATA.delta += nlen - po->DATA.len;
-            po->DATA.len = nlen;
-	    
+            int delta = (ovec[0]-ovec[1])+slen;
+
             /* check if we are overflowing pcap buffer */
             BUG_IF(po->DATA.data < po->packet);
-            BUG_IF((u_int16)(GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <= nlen);
+            BUG_IF((u_int16)(GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <= po->DATA.len+delta);
 
-            /* copy the temp buffer on the original packet */
-            memcpy(po->DATA.data, replaced, nlen);
-                       
+            /* if the substitution string has a different length than the
+             * matched original string, we have to move around some data
+             */
+            int size_left = po->DATA.len - ovec[0] - slen;
+            int data_left = po->DATA.len - ovec[1];
+            DEBUG_MSG("func_pcre: match from %d to %d, substitution length is %d\n", ovec[0], ovec[1], slen);
+            DEBUG_MSG("func_pcre: packet size changed by %d bytes\n", delta);
+            if (delta != 0) {
+               /* copy everything behind the matched string to the new position */
+               memcpy(po->DATA.data+ovec[0]+slen, po->DATA.data + ovec[1], size_left < data_left ? size_left : data_left);
+            }
+
+            /* copy the modified buffer on the original packet */
+            memcpy(po->DATA.data+ovec[0], replaced, slen);
+
+            po->DATA.delta += delta;
+            po->DATA.len += delta;
+
             SAFE_FREE(replaced);
          }
          
@@ -924,16 +988,17 @@ static int cmp_geq(u_int32 a, u_int32 b)
 /*
  * load the filter from a file 
  */
-int filter_load_file(char *filename, struct filter_env *fenv)
+int filter_load_file(char *filename, struct filter_list **list, uint8_t enabled)
 {
    int fd;
    void *file;
    size_t size, ret;
+   struct filter_env *fenv;
    struct filter_header fh;
 
    DEBUG_MSG("filter_load_file (%s)", filename);
-   
-   /* open the file */
+
+  /* open the file */
    if ((fd = open(filename, O_RDONLY | O_BINARY)) == -1)
       FATAL_MSG("File not found or permission denied");
 
@@ -965,10 +1030,14 @@ int filter_load_file(char *filename, struct filter_env *fenv)
    if (ret != size)
       FATAL_MSG("Cannot read the file into memory");
 
-   /* make sure we don't override a previous filter */
-   filter_unload(fenv);
-
    FILTERS_LOCK;
+
+   /* advance to the end of the filter list */
+   while (*list) list = &(*list)->next;
+
+   /* allocate memory for the list entry */
+   SAFE_CALLOC(*list, 1, sizeof(struct filter_list));
+   fenv = &(*list)->env;
    
    /* set the global variables */
    fenv->map = file;
@@ -980,6 +1049,12 @@ int filter_load_file(char *filename, struct filter_env *fenv)
     * they must point to the data segment
     */
    reconstruct_strings(fenv, &fh);
+
+   /* save the name of the loaded filter */
+   (*list)->name = strdup(filename);
+
+   /* enable the filter if requested */
+   (*list)->enabled = enabled;
 
    FILTERS_UNLOCK;
 
@@ -993,21 +1068,20 @@ int filter_load_file(char *filename, struct filter_env *fenv)
 }
 
 /* 
- * unload a filter chain.
+ * unload a filter list entry
  */
-void filter_unload(struct filter_env *fenv)
+void filter_unload(struct filter_list **list)
 {
+   if (*list == NULL) return;
+
+   FILTERS_LOCK;
+
+   struct filter_env *fenv= &(*list)->env;
    size_t i = 0;
    struct filter_op *fop = fenv->chain;
    
    DEBUG_MSG("filter_unload");
 
-   /* if not loaded, return */
-   if (fenv->map == NULL || fenv->chain == NULL)
-      return;
-      
-   FILTERS_LOCK;
-   
    /* free the memory alloc'd for regex */
    while (fop != NULL && i < (fenv->len / sizeof(struct filter_op)) ) {
       /* search for func regex and pcre */
@@ -1038,6 +1112,23 @@ void filter_unload(struct filter_env *fenv)
    fenv->chain = NULL;
    fenv->len = 0;
 
+   SAFE_FREE((*list)->name);
+
+   /* reclose the filter list */
+   struct filter_list **ptr = list;
+   struct filter_list *succ = (*list)->next;
+   *ptr = succ;
+   SAFE_FREE(*list);
+
+   FILTERS_UNLOCK;
+}
+
+void filter_clear(void) {
+   FILTERS_LOCK;
+   struct filter_list **l = GBL_FILTERS;
+   while (*l) {
+      filter_unload(l);
+   }
    FILTERS_UNLOCK;
 }
 
@@ -1138,6 +1229,23 @@ static int compile_regex(struct filter_env *fenv, struct filter_header *fh)
    } 
 
    return ESUCCESS;
+}
+
+/*
+ * Walk the list of loaded filters and call the callback function
+ * for every single list item along with the argument passed.
+ * The callback function can stop the list from being traversed
+ * any further by returning a false value.
+ */
+void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg) {
+   struct filter_list **l;
+   FILTERS_LOCK;
+   for (l = GBL_FILTERS; *l != NULL; l = &(*l)->next) {
+      /* do not traverse the list any further if the callback tells us so */
+      if (!cb(*l, arg))
+         break;
+   }
+   FILTERS_UNLOCK;
 }
 
 /* EOF */

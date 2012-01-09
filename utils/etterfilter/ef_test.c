@@ -51,23 +51,26 @@ static void print_function(struct filter_op *fop, u_int32 eip);
 void test_filter(char *filename)
 {
    struct filter_op *fop;
-   struct filter_env fenv;
+   struct filter_env *fenv;
+   struct filter_list *flist;
+   flist = NULL;
    u_int32 eip = 0;
 
-   memset(&fenv, 0, sizeof(struct filter_env));
+   /*memset(fenv, 0, sizeof(struct filter_env));*/
    
    /* load the file */
-   if (filter_load_file(filename, &fenv) != ESUCCESS) {
+   if (filter_load_file(filename, &flist, 1) != ESUCCESS) {
       exit(-1);
    }
+   fenv = &flist->env;
 
    /* skip the header in the file */
-   fop = fenv.chain;
+   fop = fenv->chain;
    
    fprintf(stdout, "Disassebling \"%s\" content...\n\n", filename);
   
    /* loop all the instructions and print their content */
-   while (eip < (fenv.len / sizeof(struct filter_op)) ) {
+   while (eip < (fenv->len / sizeof(struct filter_op)) ) {
 
       /* print the instruction */
       print_fop(&fop[eip], eip);
@@ -76,7 +79,7 @@ void test_filter(char *filename)
       eip++;
    }
 
-   printf("\n %d instructions decoded.\n\n", (int)(fenv.len / sizeof(struct filter_op)));
+   printf("\n %d instructions decoded.\n\n", (int)(fenv->len / sizeof(struct filter_op)));
 
    exit(0);
 }

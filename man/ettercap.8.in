@@ -536,6 +536,11 @@ used within ettercap. The option is particulary usefull under windows where the
 name of the interface is not so obvious as under *nix.
 
 .TP
+\fB\-A\fR, \fB\-\-address <ADDRESS>\fR
+Use this <ADDRESS> instead of the one autodetected for the current iface. This
+option is useful if you have an interface with multiple ip addresses.
+
+.TP
 \fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
 Use this <NETMASK> instead of the one associated with the current iface. This
 option is useful if you have the NIC with an associated netmask of class B and
@@ -568,6 +573,11 @@ through the TARGETs
 Usually, ettercap will put the interface in promisc mode to sniff all the
 traffic on the wire. If you want to sniff only your connections, use this flag
 to NOT enable the promisc mode.
+
+.TP
+\fB\-S\fR, \fB\-\-nosslmitm\fR
+Usually, ettercap forges SSL certificates in order to intercept https
+traffic.  This option disables that behavior.
 
 .TP
 \fB\-u\fR, \fB\-\-unoffensive\fR
@@ -625,6 +635,9 @@ Load the filter from the file <FILE>. The filter must be compiled with
 etterfilter(8). The utility will compile the filter script and produce an
 ettercap-compliant binary filter file. Read the etterfilter(8) man page for the
 list of functions you can use inside a filter script.
+Any number of filters can be loaded by specifying the option multiple times;
+packets are passed through each filter in the order specified on the command line.
+You can also load a script without enabling it by appending :0 to the filename.
 .br
 NOTE: these filters are different from those set with --pcapfilter. An ettercap
 filter is a content filter and can modify the payload of a packet before

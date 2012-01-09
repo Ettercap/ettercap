@@ -69,6 +69,9 @@ int main(int argc, char *argv[])
    
    DEBUG_INIT();
    DEBUG_MSG("main -- here we go !!");
+
+   /* initialize the filter mutex */
+   filter_init_mutex();
    
    /* register the main thread as "init" */
    ec_thread_register(EC_PTHREAD_SELF, "init", "initialization phase");
@@ -120,7 +123,7 @@ int main(int argc, char *argv[])
    if(!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm) {
       disable_ip_forward();
       /* binds ports and set redirect for ssl wrapper */
-      if(GBL_SNIFF->type == SM_UNIFIED)
+      if(GBL_SNIFF->type == SM_UNIFIED && GBL_OPTIONS->ssl_mitm)
          ssl_wrap_init();
    }
    

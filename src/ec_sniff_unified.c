@@ -64,7 +64,7 @@ void start_unified_sniff(void)
    ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
 
    /* start ssl_wrapper thread */
-   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm)
+   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm && GBL_OPTIONS->ssl_mitm)
       ec_thread_new("sslwrap", "wrapper for ssl connections", &sslw_start, NULL);
 
    GBL_SNIFF->active = 1;

@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
    //capture_init();
 
    /* initialize libnet (the function contain all the checks) */
-   //send_init();
+   send_init();
  
    /* get hardware infos */
    //get_hw_info();

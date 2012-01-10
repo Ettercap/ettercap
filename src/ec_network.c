@@ -102,8 +102,6 @@ static void close_network()
    if(GBL_OPTIONS->write)
       pcap_dump_close(GBL_PCAP->dump);
 
-   libnet_destroy(GBL_LNET->lnet_IP4);
-   libnet_destroy(GBL_LNET->lnet_IP6);
    libnet_destroy(GBL_IFACE->lnet);
    libnet_destroy(GBL_BRIDGE->lnet);
 

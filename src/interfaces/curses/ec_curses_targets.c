@@ -409,17 +409,12 @@ static void curses_add_target2(void *entry)
 static void add_target1(void)
 {
    struct ip_addr ip;
-   u_int8 a[MAX_IP_ADDR_LEN];
-   u_int16 proto;
 
-   /* SUDDENLY!!!!!!11 */
-   proto = (strchr(thost, ':') == NULL) ? AF_INET : AF_INET6;
-   if(inet_pton(proto, thost, a) != 1) {
+   if(ip_addr_pton(thost, &ip) == -EINVALID) { 
       curses_message("Invalid ip address");
       return;
    }
    
-   ip_addr_init(&ip, proto, a);
    add_ip_list(&ip, GBL_TARGET1);
    
    /* redraw the window */
@@ -429,16 +424,12 @@ static void add_target1(void)
 static void add_target2(void)
 {
    struct ip_addr ip;
-   u_int8 a[MAX_IP_ADDR_LEN];
-   u_int16 proto;
 
-   proto = (strchr(thost, ':') == NULL) ? AF_INET : AF_INET6;
-   if(inet_pton(proto, thost, a) != 1) {
+   if(ip_addr_pton(thost, &ip) == -EINVALID) { 
       curses_message("Invalid ip address");
       return;
    }
-   
-   ip_addr_init(&ip, proto, a);
+
    add_ip_list(&ip, GBL_TARGET2);
    
    /* redraw the window */

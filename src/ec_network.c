@@ -42,6 +42,8 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 static void source_close(struct iface_env *iface);
 static int secondary_sources_init(char **sources);
 static void close_secondary_sources(void);
+static void l3_init(void);
+static void l3_close(void);
 
 struct iface_env* iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN]);
 
@@ -89,6 +91,10 @@ void network_init()
 
    if(GBL_OPTIONS->secondary) 
       secondary_sources_init(GBL_OPTIONS->secondary);
+
+   /* Layer 3 handlers initialization */
+   if(!GBL_OPTIONS->unoffensive)
+      l3_init();
       
    atexit(close_network);
 }
@@ -341,6 +347,46 @@ static void close_secondary_sources(void)
    }
 
    SOURCES_LIST_UNLOCK;
+}
+
+static void l3_init(void)
+{
+   libnet_t *l4;
+   libnet_t *l6;
+   char lnet_errbuf[LIBNET_ERRBUF_SIZE];
+
+   DEBUG_MSG("l3_init");
+
+   /* open the socket at layer 3 */
+   l4 = libnet_init(LIBNET_RAW4_ADV, NULL, lnet_errbuf);               
+   if (l4 == NULL) {
+      DEBUG_MSG("send_init: libnet_init(LIBNET_RAW4_ADV) failed: %s", lnet_errbuf);
+      GBL_OPTIONS->unoffensive = 1;
+      return;
+   }
+
+   GBL_LNET->lnet_IP4 = l4;               
+
+   /* open the socket at layer 3 for IPv6 */
+   l6 = libnet_init(LIBNET_RAW6_ADV, NULL, lnet_errbuf);
+   if(l6 == NULL) {
+      DEBUG_MSG("%s: libnet_init(LIBNET_RAW6_ADV) failed: %s", __func__, lnet_errbuf);
+      USER_MSG("Libnet failed IPv6 initialization. Don't send IPv6 packets.\n");
+   }
+   
+   GBL_LNET->lnet_IP6 = l6;
+
+   atexit(l3_close);
+}
+
+static void l3_close(void)
+{
+   if(GBL_LNET->lnet_IP4)
+      libnet_destroy(GBL_LNET->lnet_IP4);
+   if(GBL_LNET->lnet_IP6)
+      libnet_destroy(GBL_LNET->lnet_IP6);
+   
+   DEBUG_MSG("ATEXIT: send_closed");
 }
 
 struct iface_env* iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN])

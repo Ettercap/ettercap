@@ -9,7 +9,6 @@
 #include <pcap.h>
 #include <libnet.h>
 
-EC_API_EXTERN void send_init(void);
 EC_API_EXTERN int send_to_L2(struct packet_object *po);
 EC_API_EXTERN int send_to_L3(struct packet_object *po);
 EC_API_EXTERN int send_to_bridge(struct packet_object *po);

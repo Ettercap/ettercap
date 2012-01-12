@@ -107,15 +107,6 @@ int main(int argc, char *argv[])
    /* initialize the network subsystem */
    network_init();
    
-   /* initialize libpcap */
-   //capture_init();
-
-   /* initialize libnet (the function contain all the checks) */
-   send_init();
- 
-   /* get hardware infos */
-   //get_hw_info();
- 
    /* 
     * always disable the kernel ip forwarding (except when reading from file).
     * the forwarding will be done by ettercap.

@@ -81,6 +81,8 @@ void ec_usage(void)
    fprintf(stdout, "       -s, --script <CMD>          issue these commands to the GUI\n");
    fprintf(stdout, "  -C, --curses                use curses GUI\n");
    fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
+   fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
+
    
    fprintf(stdout, "\nLogging options:\n");
    fprintf(stdout, "  -w, --write <file>          write sniffed data to pcapfile <file>\n");
@@ -99,7 +101,7 @@ void ec_usage(void)
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
    fprintf(stdout, "  -I, --liface                show all the network interfaces\n");
-   fprintf(stdout, "  -G, --secondary <ifaces>    list of secondary network interfaces\n");
+   fprintf(stdout, "  -Y, --secondary <ifaces>    list of secondary network interfaces\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -A, --address <address>     force this local <address> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
@@ -170,12 +172,14 @@ void parse_options(int argc, char **argv)
       { "text", no_argument, NULL, 'T' },
       { "curses", no_argument, NULL, 'C' },
       { "daemon", no_argument, NULL, 'D' },
+      { "gtk", no_argument, NULL, 'G' },
+
       
       { "mitm", required_argument, NULL, 'M' },
       { "only-mitm", no_argument, NULL, 'o' },
       { "bridge", required_argument, NULL, 'B' },
       { "promisc", no_argument, NULL, 'p' },
-      { "gateway", no_argument, NULL, 'G' },
+      { "gateway", required_argument, NULL, 'Y' },
 
       
       { 0 , 0 , 0 , 0}
@@ -195,7 +199,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:z", long_options, (int *)0)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -231,6 +235,11 @@ void parse_options(int argc, char **argv)
          case 'C':
                   select_curses_interface();
                   break;
+
+         case 'G':
+                  select_gtk_interface();
+                  break;
+
                   
          case 'D':
                   select_daemon_interface();
@@ -264,7 +273,7 @@ void parse_options(int argc, char **argv)
                   GBL_OPTIONS->lifaces = 1;
                   break;
 
-         case 'G':
+         case 'Y':
                   GBL_OPTIONS->secondary = parse_iflist(optarg);
                   break;
          

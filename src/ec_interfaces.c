@@ -27,6 +27,7 @@
 extern void set_daemon_interface(void);
 extern void set_text_interface(void);
 extern void set_curses_interface(void);
+extern void set_gtk_interface(void);
 
 /* protos */
 
@@ -69,7 +70,12 @@ void select_curses_interface(void)
 void select_gtk_interface(void)
 {
    DEBUG_MSG("select_gtk_interface");
-   FATAL_ERROR("Sorry, GTK support is dropped.\nBe patient, drink vodka.");
+#ifdef HAVE_GTK 
+   set_gtk_interface();
+#else
+   FATAL_ERROR("GTK support not compiled in %s", GBL_PROGRAM);
+#endif
+   
 }
 
 /* EOF */

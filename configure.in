@@ -907,6 +907,7 @@ AC_CONFIG_FILES(  Makefile
                   src/interfaces/text/Makefile 
                   src/interfaces/curses/Makefile 
                   src/interfaces/curses/widgets/Makefile 
+                  src/interfaces/gtk/Makefile
                   include/Makefile
                   utils/Makefile
                   utils/etterlog/Makefile

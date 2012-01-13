@@ -549,7 +549,7 @@ int cmp_ip_list(struct ip_addr *ip, struct target_env *t)
 {
    struct ip_list *e;
    
-   switch(ip->addr_type) {
+   switch(ntohs(ip->addr_type)) {
       case AF_INET:
          IP_LIST_LOCK;
    
@@ -586,7 +586,7 @@ void del_ip_list(struct ip_addr *ip, struct target_env *t)
 {
    struct ip_list *e;
 
-   switch(ip->addr_type) {
+   switch(ntohs(ip->addr_type)) {
       case AF_INET:
          IP_LIST_LOCK;
    

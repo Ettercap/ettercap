@@ -7,6 +7,7 @@ SUBDIRS =   arp_cop \
             autoadd \
             chk_poison \
             dns_spoof \
+            nbns_spoof \
             dos_attack \
             dummy \
             find_conn \

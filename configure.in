@@ -202,6 +202,14 @@ if test "x$LEX" != xflex; then
    AC_MSG_ERROR([flex was not found, please install])
 fi
 
+dnl =========================
+dnl If bison is not found, we quit
+dnl ==============================
+if test "x$YACC" != "xbison -y"; then
+   AC_MSG_ERROR([bison was not found, please install])
+fi
+
+
 dnl ========================
 dnl   Libtool related...
 dnl ========================
@@ -918,6 +926,7 @@ AC_CONFIG_FILES(  Makefile
                   plug-ins/chk_poison/Makefile
                   plug-ins/dos_attack/Makefile
                   plug-ins/dns_spoof/Makefile
+                  plug-ins/nbns_spoof/Makefile
                   plug-ins/dummy/Makefile
                   plug-ins/find_conn/Makefile
                   plug-ins/find_ettercap/Makefile

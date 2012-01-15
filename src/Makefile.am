@@ -97,6 +97,7 @@ ettercap_SOURCES += dissectors/ec_dns.c
 endif
 
 ettercap_SOURCES += dissectors/ec_ftp.c \
+                   dissectors/ec_nbns.c \
 				        dissectors/ec_http.c \
 				        dissectors/ec_imap.c \
 				        dissectors/ec_icq.c \

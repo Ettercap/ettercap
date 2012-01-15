@@ -4,6 +4,7 @@
 include $(top_srcdir)/Makefile.am.common
 
 pkgdata_DATA = etter.dns \
+               etter.nbns \
                etter.fields \
                etter.filter \
                etter.filter.examples \

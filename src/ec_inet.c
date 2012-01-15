@@ -37,7 +37,9 @@ char *mac_addr_ntoa(u_char *mac, char *dst);
 int mac_addr_aton(char *str, u_char *mac);
 
 int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr);
+int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr);
 int ip_addr_is_ours(struct ip_addr *);
+
 int ip_addr_get_network(struct ip_addr*, struct ip_addr*, struct ip_addr*);
 int ip_addr_get_prefix(struct ip_addr* netmask);
 
@@ -320,6 +322,59 @@ int mac_addr_aton(char *str, u_char *mac)
    return i;
 }
 
+/*
+ * returns  ESUCCESS if the ip is broadcast
+ * returns -ENOTFOUND if not
+ */
+int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr)
+{
+	struct ip_addr *nw;
+	struct ip_addr *nm;
+
+	u_int32* address;
+	u_int32* netmask;
+	u_int32* network;
+	u_int32 broadcast;
+
+   static u_int8 ip6_ll_multicast[] = "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01";
+
+	int i;
+
+	switch(ntohs(sa->addr_type)) {
+		case AF_INET:
+         if(!GBL_IFACE->has_ipv4)
+            return -EINVALID;
+			nm = &GBL_IFACE->netmask;
+			nw = &GBL_IFACE->network;
+		
+         /* 255.255.255.255 is definitely broadcast */
+         if(!memcmp(sa->addr, "\xff\xff\xff\xff", IP_ADDR_LEN))
+            return ESUCCESS;
+
+			address = &ip_addr_to_int32(sa->addr);
+			netmask = &ip_addr_to_int32(nm->addr);
+			network = &ip_addr_to_int32(nw->addr);
+
+			broadcast = (*network) | ~(*netmask);
+
+			if (broadcast == *address)
+				return ESUCCESS;
+		case AF_INET6:
+			if(!GBL_IFACE->has_ipv6)
+				return -EINVALID;
+
+         /* IPv6 has no such thing as a broadcast address. The closest
+          * equivalent is the multicast address ff02::1. Packets sent to that
+          * address are delivered to all link-local nodes.
+          */
+         if(!memcpy(sa->addr, ip6_ll_multicast, IP6_ADDR_LEN))
+            return ESUCCESS;
+         
+			break;
+	}
+
+	return -ENOTFOUND;
+}
 
 /*
  * returns ESUCCESS if the ip address is local.

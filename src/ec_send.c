@@ -77,6 +77,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
 int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
 int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr);
 int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
+int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 sport, u_int16 dport, u_int8 *payload, size_t length);
 int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
 int send_L3_icmp_unreach(struct packet_object *po);
 int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
@@ -908,6 +909,105 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
    return c;
 }
 
+/*
+ * send an udp packet
+ */
+int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 sport, u_int16 dport, u_int8 *payload, size_t length)
+{
+	libnet_ptag_t t;
+	libnet_t *l;
+
+	int proto;
+	int c;
+
+	proto = ntohs(sip->addr_type);
+
+	l = (proto == AF_INET) ? GBL_LNET->lnet_IP4 : GBL_LNET->lnet_IP6;
+	
+	BUG_IF(l == NULL);
+
+	SEND_LOCK;
+/*
+ * libnet_build_udp(uint16_t sp, uint16_t dp, uint16_t len, uint16_t sum,
+const uint8_t *payload, uint32_t payload_s, libnet_t *l, libnet_ptag_t ptag)
+*/
+	t = libnet_build_udp(
+		htons(sport),
+		htons(dport),
+		LIBNET_UDP_H +  length,
+		0,
+		payload,
+		length,
+		l,
+		0);
+
+	ON_ERROR(t, -1, "libnet_build_udp: %s", libnet_geterror(l));
+
+	/* auto calculate checksum */
+	libnet_toggle_checksum(l, t, LIBNET_ON);
+
+	/* create IP header */
+	switch(proto) {
+		case AF_INET: {
+			t = libnet_build_ipv4(
+				LIBNET_IPV4_H + LIBNET_UDP_H + length, /* length */
+				0,				/* TOS */
+				htons(EC_MAGIC_16),		/* IP ID */
+				0,				/* IP FRAG */
+				64,				/* TTL */
+				IPPROTO_UDP,			/* protocol */
+				0,				/* checksum */
+				ip_addr_to_int32(&sip->addr),	/* source IP */
+				ip_addr_to_int32(&tip->addr),	/* destination IP */
+				NULL,				
+				0,				/* payload size */
+				l,
+				0);
+
+			libnet_toggle_checksum(l, t, LIBNET_ON);
+			break;
+		}	
+
+		case AF_INET6: {
+			struct libnet_in6_addr src, dst;
+			memcpy(&src, sip->addr, sizeof(src));
+			memcpy(&dst, tip->addr, sizeof(dst));
+			t = libnet_build_ipv6(
+				0,		/* tc */
+				0,		/* flow label */
+				LIBNET_UDP_H + length, /* length */
+				IPPROTO_UDP,		/* protocol */
+				255,			/* hop limit */
+				src,			/* source */
+				dst,			/* destination */
+				NULL,			/* payload */
+				0, 			/* its length */
+				l,			/* handle */
+				0);			/* ptag */
+
+			break;
+		}
+	};
+
+	ON_ERROR(t, -1, "libnet_build_ipvX: %s", libnet_geterror(l));
+
+   	/* add the media header */
+   	t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
+   	if (t == -1)
+      		FATAL_ERROR("Interface not suitable for layer2 sending");
+
+	/* send the packet to Layer 3 */
+
+	DEBUG_MSG("#### WRITING PACKET #####");
+	c = libnet_write(l);
+	ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(l));
+
+	/* clear the block */
+	libnet_clear_packet(l);
+	SEND_UNLOCK;
+
+	return c;
+}
 /*
  * send a tcp packet
  */

@@ -252,6 +252,7 @@ FUNC_DECODER(decode_data)
 {
    FUNC_DECODER_PTR(*app_decoders);
    int i;
+   int proto = 0;
       
    CANCELLATION_POINT();
 
@@ -278,33 +279,33 @@ FUNC_DECODER(decode_data)
     * we should run the decoder on both the tcp/udp ports
     * since we may be interested in both client and server traffic.
     */
-   switch (po->L4.proto) {
+   switch(po->L4.proto) {
       case NL_TYPE_TCP:
-         app_decoders = get_decoders(APP_LAYER_TCP, ntohs(po->L4.src));
-         for(i = 0; app_decoders[i] != NULL; i++)
-            EXECUTE_DECODER(app_decoders[i]);
-         SAFE_FREE(app_decoders);
-
-         app_decoders = get_decoders(APP_LAYER_TCP, ntohs(po->L4.dst));
-         for(i = 0; app_decoders[i] != NULL; i++)
-            EXECUTE_DECODER(app_decoders[i]);
-         SAFE_FREE(app_decoders);
-
+         proto = APP_LAYER_TCP;
          break;
-         
-      case NL_TYPE_UDP:
-         app_decoders = get_decoders(APP_LAYER_UDP, ntohs(po->L4.src));
-         for(i = 0; app_decoders[i] != NULL; i++)
-            EXECUTE_DECODER(app_decoders[i]);
-         SAFE_FREE(app_decoders);
 
-         app_decoders = get_decoders(APP_LAYER_UDP, ntohs(po->L4.dst));
-         for(i = 0; app_decoders[i] != NULL; i++)
-            EXECUTE_DECODER(app_decoders[i]);
-         SAFE_FREE(app_decoders);
+      case NL_TYPE_UDP:
+         proto = APP_LAYER_UDP;
          break;
    }
-   
+
+   if(proto) {
+      app_decoders = get_decoders(proto, ntohs(po->L4.src));
+      for(i = 0; app_decoders[i] != NULL; i++)
+         EXECUTE_DECODER(app_decoders[i]);
+      SAFE_FREE(app_decoders);
+
+   /*
+    * This check prevents from running decoders twice
+    */
+      if(po->L4.src != po->L4.dst) {
+         app_decoders = get_decoders(proto, ntohs(po->L4.dst));
+         for(i = 0; app_decoders[i] != NULL; i++)
+            EXECUTE_DECODER(app_decoders[i]);
+         SAFE_FREE(app_decoders);
+      }
+   }
+
    /* HOOK POINT: DECODED (the po structure is filled) */ 
    hook_point(HOOK_DECODED, po);
 

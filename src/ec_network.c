@@ -64,7 +64,7 @@ void network_init()
       source_init(GBL_OPTIONS->pcapfile_in, GBL_IFACE, true, false);
       source_print(GBL_IFACE);
    } else {
-      iface = GBL_OPTIONS->iface ? GBL_OPTIONS->iface : pcap_lookupdev(perrbuf);
+      iface = GBL_OPTIONS->iface ? GBL_OPTIONS->iface : (GBL_OPTIONS->iface = pcap_lookupdev(perrbuf));
       ON_ERROR(iface, NULL, "No suitable interface found...");
       source_init(iface, GBL_IFACE, true, true);
       source_print(GBL_IFACE);

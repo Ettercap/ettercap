@@ -298,7 +298,10 @@ static void nbns_spoof(struct packet_object *po)
 	if (get_spoofed_nbns(name, &reply) != ESUCCESS)
 		return;
 
-	u_char *response = (u_char*)malloc(NBNS_MSGLEN_QUERY_RESPONSE);
+	u_char *response;
+
+	SAFE_CALLOC(response, NBNS_MSGLEN_QUERY_RESPONSE, sizeof(u_char));
+
 	memset(response, 0, NBNS_MSGLEN_QUERY_RESPONSE);
 
 	memcpy(response, po->DATA.data, po->DATA.len);
@@ -334,6 +337,7 @@ static void nbns_spoof(struct packet_object *po)
 	/* send fake reply */
 	send_udp(&GBL_IFACE->ip, &po->L3.src, po->L2.src, po->L4.dst, po->L4.src, response, NBNS_MSGLEN_QUERY_RESPONSE);
 	USER_MSG("nbns_spoof: Query [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
+	SAFE_FREE(response);
 	
 }
 

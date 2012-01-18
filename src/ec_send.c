@@ -34,9 +34,6 @@
 #include <pthread.h>
 #include <pcap.h>
 
-#if !defined(OS_WINDOWS)
-#include <pcap/pcap.h>
-#endif
 #include <libnet.h>
 
 #define PCAP_TIMEOUT 10

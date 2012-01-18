@@ -26,7 +26,7 @@
 	typedef u_int32_t  u_int32;
 	typedef u_int64_t  u_int64;
 
-   #ifdef OS_BSD_OPEN
+   #if defined OS_BSD_OPEN && !defined HAVE_STDINT_H
       #define INT8_MAX     CHAR_MAX
       #define UINT8_MAX    UCHAR_MAX
       #define INT16_MAX    SHRT_MAX

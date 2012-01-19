@@ -20,6 +20,7 @@
 
 #cmakedefine HAVE_POLL
 #cmakedefine HAVE_SELECT
+#cmakedefine HAVE_SCANDIR
 #cmakedefine HAVE_STRLCAT
 #cmakedefine HAVE_STRLCPY
 #cmakedefine HAVE_STRSEP

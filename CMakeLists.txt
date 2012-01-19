@@ -13,7 +13,7 @@ set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation direct
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
 
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -Wall -pedantic" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -pedantic" CACHE STRING "" FORCE)
 set(CMAKE_C_FLAGS "-O2" CACHE STRING "" FORCE)
 
 include(CMakeFiles/os_test.cmake)

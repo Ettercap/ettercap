@@ -88,8 +88,12 @@
 #define EXECUTE(x, ...) do{ if(x != NULL) x( __VA_ARGS__ ); }while(0)
 
 /* couple of useful macros */
+#ifndef offsetof
 #define offsetof(type, member) ((size_t) &((type*)0)->member)
+#endif
+#ifndef containerof
 #define containerof(ptr, type, member) ((type*)((char*)ptr - offsetof(type,member)))
+#endif
 
 /* min and max */
 

@@ -231,7 +231,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
       source->is_live = 1;
    } else {
       source->is_ready = 1;
-      return;
+      return ESUCCESS;
    }
 
    if(!GBL_OPTIONS->unoffensive && !source->unoffensive) {

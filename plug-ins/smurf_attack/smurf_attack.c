@@ -136,6 +136,6 @@ static EC_THREAD_FUNC(smurfer)
       usleep(1000*1000/GBL_CONF->sampling_rate);
    }
 
-   return;
+   return NULL;
 }
 

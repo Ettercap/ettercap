@@ -104,3 +104,5 @@ endif(NOT HAVE_GETOPT_LONG)
 
 add_executable(etterlog ${EL_SRC})
 target_link_libraries(etterlog ${EL_LIBS})
+
+install(TARGETS etterfilter etterlog DESTINATION ${INSTALL_BINDIR})

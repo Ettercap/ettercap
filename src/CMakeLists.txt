@@ -145,3 +145,4 @@ add_subdirectory(interfaces)
 
 add_executable(ettercap ${EC_SRC})
 target_link_libraries(ettercap ${EC_LIBS} ec_interfaces)
+install(TARGETS ettercap DESTINATION ${INSTALL_BINDIR})

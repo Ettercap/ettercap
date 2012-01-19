@@ -7,6 +7,7 @@ set(EF_LIBS)
 set(EL_LIBS)
 
 if(ENABLE_CURSES)
+    set(CURSES_NEED_NCURSES TRUE)
     find_package(Curses)
     if(CURSES_FOUND)
         set(HAVE_NCURSES 1)

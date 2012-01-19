@@ -28,4 +28,4 @@ if(HAVE_PLUGINS)
     add_subdirectory(plug-ins)
 endif(HAVE_PLUGINS)
 add_subdirectory(utils)
-
+add_subdirectory(share)

@@ -4,9 +4,7 @@
 #ifndef EC_H
 #define EC_H
 
-#ifdef HAVE_CONFIG_H
-   #include <config.h>
-#endif
+#include <config.h>
 
 #include <sys/types.h>
 #include <sys/time.h>

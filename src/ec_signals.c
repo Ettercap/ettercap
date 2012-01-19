@@ -43,9 +43,9 @@ typedef void handler_t(int);
 void signal_handler(void);
 
 static handler_t *signal_handle(int signo, handler_t *handler, int flags);
-static RETSIGTYPE signal_SEGV(int sig);
-static RETSIGTYPE signal_TERM(int sig);
-static RETSIGTYPE signal_CHLD(int sig);
+static void signal_SEGV(int sig);
+static void signal_TERM(int sig);
+static void signal_CHLD(int sig);
 
 /*************************************/
 
@@ -116,7 +116,7 @@ static handler_t *signal_handle(int signo, handler_t *handler, int flags)
 /*
  * received when something goes wrong ;)
  */
-static RETSIGTYPE signal_SEGV(int sig)
+static void signal_SEGV(int sig)
 {
 #ifdef DEBUG
 
@@ -186,7 +186,7 @@ static RETSIGTYPE signal_SEGV(int sig)
 /*
  * received on CTRL+C or SIGTERM
  */
-static RETSIGTYPE signal_TERM(int sig)
+static void signal_TERM(int sig)
 {
    #ifdef HAVE_STRSIGNAL
       DEBUG_MSG("Signal handler... (caught SIGNAL: %d) | %s", sig, strsignal(sig));
@@ -226,7 +226,7 @@ static RETSIGTYPE signal_TERM(int sig)
 /*
  * received when a child exits
  */
-static RETSIGTYPE signal_CHLD(int sig)
+static void signal_CHLD(int sig)
 {
 #ifndef OS_WINDOWS
    int stat;

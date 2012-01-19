@@ -1,0 +1,117 @@
+## The easy part
+
+set(EC_LIBS)
+set(EC_INCLUDE)
+
+set(EF_LIBS)
+set(EL_LIBS)
+
+if(ENABLE_CURSES)
+    find_package(Curses)
+    if(CURSES_FOUND)
+        set(HAVE_NCURSES 1)
+        set(EC_LIBS ${EC_LIBS} ${CURSES_LIBRARIES} menu panel)
+        set(EC_INCLUDE ${EC_INCLUDE} ${CURSES_INCLUDE_DIR})
+    endif(CURSES_FOUND)
+endif(ENABLE_CURSES)
+
+if(ENABLE_GTK)
+    find_package(GTK2 2.10 REQUIRED gtk)
+    if(GTK2_FOUND)
+        set(HAVE_GTK 1)
+        set(EC_LIBS ${EC_LIBS} ${GTK2_LIBRARIES} gthread-2.0)
+        set(EC_INCLUDE ${EC_INCLUDE} ${GTK2_INCLUDE_DIRS})
+        include_directories(${GTK2_INCLUDE_DIRS})
+    endif(GTK2_FOUND)
+endif(ENABLE_GTK)
+
+if(ENABLE_SSL)
+    find_package(OpenSSL)
+    if(OPENSSL_FOUND)
+        set(HAVE_OPENSSL 1)
+        set(EC_LIBS ${EC_LIBS} ${OPENSSL_LIBRARIES})
+        set(EC_INCLUDE ${EC_INCLUDE} ${OPENSSL_INCLUDEDIRS})
+    endif(OPENSSL_FOUND)
+endif(ENABLE_SSL)
+
+find_package(ZLIB)
+if(ZLIB_FOUND)
+    set(EC_LIBS ${EC_LIBS} ${ZLIB_LIBRARIES})
+    set(EC_INCLUDE ${EC_INCLUDE} ${ZLIB_INCLUDE_DIRS})
+    set(EL_LIBS ${EL_LIBS} ${ZLIB_LIBRARIES})
+endif(ZLIB_FOUND)
+
+set(CMAKE_THREAD_PREFER_PTHREAD 1)
+find_package(Threads)
+if(CMAKE_USE_PTHREADS_INIT)
+    set(EC_LIBS ${EC_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+    set(EF_LIBS ${EF_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+    set(EL_LIBS ${EL_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+else(CMAKE_USE_PTHREADS_INIT)
+    message(FATAL_ERROR "pthreads found")
+endif(CMAKE_USE_PTHREADS_INIT)
+
+
+## Thats all with packages, now we are on our own :(
+
+include(CheckFunctionExists)
+include(CheckIncludeFile)
+
+# Iconv
+find_library(HAVE_ICONV iconv)
+if(HAVE_ICONV)
+    set(HAVE_UTF8 1)
+    set(EC_LIBS ${EC_LIBS} iconv)
+else(HAVE_ICONV)
+    CHECK_FUNCTION_EXISTS(iconv HAVE_UTF8)
+endif(HAVE_ICONV)
+
+# LTDL
+if(ENABLE_PLUGINS)
+    find_library(HAVE_LTDL ltdl)
+    if(HAVE_LTDL)
+        set(HAVE_PLUGINS 1)
+        set(EC_LIBS ${EC_LIBS} ltdl)
+    endif(HAVE_LTDL)
+endif(ENABLE_PLUGINS)
+
+CHECK_FUNCTION_EXISTS(poll HAVE_POLL)
+CHECK_FUNCTION_EXISTS(select HAVE_SELECT)
+
+CHECK_FUNCTION_EXISTS(strlcat HAVE_STRLCAT)
+CHECK_FUNCTION_EXISTS(strlcpy HAVE_STRLCPY)
+CHECK_FUNCTION_EXISTS(strsep HAVE_STRSEP)
+CHECK_FUNCTION_EXISTS(strcasestr HAVE_STRCASESTR)
+CHECK_FUNCTION_EXISTS(memmem HAVE_MEMMEM)
+CHECK_FUNCTION_EXISTS(basename HAVE_BASENAME)
+
+find_library(HAVE_PCAP pcap)
+if(HAVE_PCAP)
+    set(EC_LIBS ${EC_LIBS} pcap)
+else(HAVE_PCAP)
+    message(FATAL_ERROR "libpcap not found!")
+endif(HAVE_PCAP)
+
+find_library(HAVE_LIBNET net)
+if(HAVE_LIBNET)
+    set(EC_LIBS ${EC_LIBS} net)
+else(HAVE_LIBNET)
+    message(FATAL_ERROR "libnet not found!")
+endif(HAVE_LIBNET)
+
+find_library(HAVE_RESOLV resolv)
+if(HAVE_RESOLV)
+    set(EC_LIBS ${EC_LIBS} resolv)
+    set(HAVE_DN_EXPAND 1)
+else(HAVE_RESOLV)
+    CHECK_FUNCTION_EXISTS(HAVE_DN_EXPAND dn_expand)
+    if(NOT HAVE_DN_EXPAND)
+        CHECK_FUNCTION_EXISTS(HAVE_DN_EXPAND __dn_expand)
+    endif(NOT HAVE_DN_EXPAND)
+endif(HAVE_RESOLV)
+
+find_library(HAVE_PCRE pcre)
+if(HAVE_PCRE)
+    set(EC_LIBS ${EC_LIBS} pcre)
+    set(EF_LIBS ${EF_LIBS} pcre)
+endif(HAVE_PCRE)

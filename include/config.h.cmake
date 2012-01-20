@@ -8,6 +8,8 @@
 
 #cmakedefine WORDS_BIGENDIAN
 
+#cmakedefine CC_VERSION "@CC_VERSION@"
+
 #cmakedefine HAVE_SYS_SELECT_H
 #cmakedefine HAVE_SYS_POLL_H
 #cmakedefine HAVE_UTSNAME_H

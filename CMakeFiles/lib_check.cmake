@@ -90,7 +90,7 @@ CHECK_FUNCTION_EXISTS(basename HAVE_BASENAME)
 
 find_library(HAVE_PCAP pcap)
 if(HAVE_PCAP)
-    set(EC_LIBS ${EC_LIBS} pcap)
+    set(EC_LIBS ${EC_LIBS} ${HAVE_PCAP})
 else(HAVE_PCAP)
     message(FATAL_ERROR "libpcap not found!")
 endif(HAVE_PCAP)

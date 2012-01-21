@@ -15,6 +15,10 @@ set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation d
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -pedantic" CACHE STRING "" FORCE)
 set(CMAKE_C_FLAGS "-O2" CACHE STRING "" FORCE)
+if(ENABLE_PLUGINS)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -export-dynamic" CACHE STRING "" FORCE)
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -export-dynamic" CACHE STRING "" FORCE)
+endif(ENABLE_PLUGINS)
 
 include(CMakeFiles/os_test.cmake)
 include(CMakeFiles/headers_check.cmake)

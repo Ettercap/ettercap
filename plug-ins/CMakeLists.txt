@@ -120,4 +120,7 @@ install(TARGETS
             smb_down
             smurf_attack
             stp_mangler
-        LIBRARY DESTINATION ${INSTALL_LIBDIR}/ettercap/)
+        LIBRARY DESTINATION ${INSTALL_LIBDIR}/ettercap/
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_EXECUTE
+                    WORLD_READ WORLD_EXECUTE)

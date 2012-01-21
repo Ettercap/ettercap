@@ -13,12 +13,9 @@ set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation direct
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
 
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -pedantic" CACHE STRING "" FORCE)
-set(CMAKE_C_FLAGS "-O2" CACHE STRING "" FORCE)
-if(ENABLE_PLUGINS)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -export-dynamic" CACHE STRING "" FORCE)
-    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -export-dynamic" CACHE STRING "" FORCE)
-endif(ENABLE_PLUGINS)
+# CFLAGS var is set here. -rdynamic flag is needed for plugins to work properly on some systems.
+set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -rdynamic" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS "-O2 -rdynamic" CACHE STRING "" FORCE)
 
 include(CMakeFiles/os_test.cmake)
 include(CMakeFiles/headers_check.cmake)
@@ -29,7 +26,11 @@ configure_file(include/config.h.cmake ${CMAKE_SOURCE_DIR}/include/config.h)
 
 add_subdirectory(src)
 if(HAVE_PLUGINS)
-    add_subdirectory(plug-ins)
+    if(OS_MINGW)
+        message("Sorry, plugins support on Windows is currently unavailable")
+    else(OS_MINGW)
+        add_subdirectory(plug-ins)
+    endif(OS_MINGW)
 endif(HAVE_PLUGINS)
 add_subdirectory(utils)
 add_subdirectory(share)

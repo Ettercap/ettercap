@@ -94,19 +94,19 @@ int plugin_load_single(char *path, char *name)
    DEBUG_MSG("plugin_load_single: %s", file);
    
    /* load the plugin */
-   handle = lt_dlopen(file);
+   handle = dlopen(file, RTLD_LAZY|RTLD_LOCAL);
 
    if (handle == NULL) {
-      DEBUG_MSG("plugin_load_single - %s - lt_dlopen() | %s", file, lt_dlerror());
+      DEBUG_MSG("plugin_load_single - %s - dlopen() | %s", file, dlerror());
       return -EINVALID;
    }
    
    /* find the loading function */
-   plugin_load = lt_dlsym(handle, SYM_PREFIX "plugin_load");
+   plugin_load = dlsym(handle, SYM_PREFIX "plugin_load");
    
    if (plugin_load == NULL) {
-      DEBUG_MSG("plugin_load_single - %s - lt_dlsym() | %s", file, lt_dlerror());
-      lt_dlclose(handle);
+      DEBUG_MSG("plugin_load_single - %s - lt_dlsym() | %s", file, dlerror());
+      dlclose(handle);
       return -EINVALID;
    }
 
@@ -151,8 +151,6 @@ void plugin_load_all(void)
    
    DEBUG_MSG("plugin_loadall");
 
-   if (lt_dlinit() != 0)
-      ERROR_MSG("lt_dlinit()");
 #ifdef OS_WINDOWS
    /* Assume .DLLs are under "<ec_root>/lib". This should be unified for
     * all; ec_get_lib_path()?
@@ -223,12 +221,10 @@ void plugin_unload_all(void)
    
    while (SLIST_FIRST(&plugin_head) != NULL) {
       p = SLIST_FIRST(&plugin_head);
-      lt_dlclose(p->handle);
+      dlclose(p->handle);
       SLIST_REMOVE_HEAD(&plugin_head, next);
       SAFE_FREE(p);
    }
-   
-   lt_dlexit();
 #endif
 }
 
@@ -243,7 +239,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
 
    /* check for ettercap API version */
    if (strcmp(ops->ettercap_version, EC_VERSION)) {
-      lt_dlclose(handle);
+      dlclose(handle);
       return -EVERSION;
    }
    
@@ -251,7 +247,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
    SLIST_FOREACH(pl, &plugin_head, next) {
       /* same name and same version */
       if (!strcmp(ops->name, pl->ops->name) && !strcmp(ops->version, pl->ops->version)) {
-         lt_dlclose(handle);
+         dlclose(handle);
          return -EDUPLICATE;
       }
    }

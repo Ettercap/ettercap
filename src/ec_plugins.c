@@ -94,7 +94,7 @@ int plugin_load_single(char *path, char *name)
    DEBUG_MSG("plugin_load_single: %s", file);
    
    /* load the plugin */
-   handle = dlopen(file, RTLD_LAZY|RTLD_LOCAL);
+   handle = dlopen(file, RTLD_NOW|RTLD_LOCAL);
 
    if (handle == NULL) {
       DEBUG_MSG("plugin_load_single - %s - dlopen() | %s", file, dlerror());

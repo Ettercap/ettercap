@@ -163,7 +163,7 @@ FUNC_DECODER(decode_tcp)
    if (GBL_CONF->checksum_check) {
       if (!GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
          char tmp[MAX_ASCII_ADDR_LEN];
-#if defined(OS_DARWIN) || defined (OS_WINDOWS)
+#if defined(OS_DARWIN) || defined (OS_WINDOWS) || defined(OS_LINUX)
          /* 
           * XXX - hugly hack here !  Mac OS X really sux
           * 
@@ -178,9 +178,11 @@ FUNC_DECODER(decode_tcp)
           * For Windows at least, TCP checksum off-loading can be disabled with a
           * registry setting.
           *
+          * Same for Linux, but sometimes even ethtool doesnt turn this feature off.
+          *
           * if the source is the ettercap host, don't display the message 
           */
-         if (!ip_addr_is_ours(&PACKET->L3.src))
+         if (ip_addr_is_ours(&PACKET->L3.src) == EFOUND)
             return NULL;
 #endif
          if (GBL_CONF->checksum_warning)

@@ -995,7 +995,6 @@ const uint8_t *payload, uint32_t payload_s, libnet_t *l, libnet_ptag_t ptag)
 
 	/* send the packet to Layer 3 */
 
-	DEBUG_MSG("#### WRITING PACKET #####");
 	c = libnet_write(l);
 	ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(l));
 

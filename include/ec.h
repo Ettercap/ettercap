@@ -65,6 +65,11 @@
    ON_ERROR(x, NULL, "virtual memory exhausted"); \
 } while(0)
 
+#define SAFE_MALLOC(x, s) do { \
+   x = malloc(s); \
+   ON_ERROR(x, NULL, "virtual memory exhausted"); \
+} while (0)
+
 #define SAFE_REALLOC(x, s) do { \
    x = realloc(x, s); \
    ON_ERROR(x, NULL, "virtual memory exhausted"); \

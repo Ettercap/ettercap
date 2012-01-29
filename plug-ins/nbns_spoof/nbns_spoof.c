@@ -214,6 +214,8 @@ static int load_db(void)
 		if ((ptr = strchr(line, '#')))
 			*ptr = '\0';
 
+		DEBUG_MSG("LINE: %s", line);
+
 		/* skip empty lines */
 		if (!*line || *line == '\r' || *line == '\n')
 			continue;

@@ -66,6 +66,7 @@ void ec_usage(void)
    fprintf(stdout, "\nSniffing and Attack options:\n");
    fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
    fprintf(stdout, "  -o, --only-mitm             don't sniff, only perform the mitm attack\n");
+   fprintf(stdout, "  -b, --broadcast             sniff packets coming from broadcast\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
    fprintf(stdout, "  -S, --nosslmitm             do not forge SSL certificates\n");
@@ -178,6 +179,7 @@ void parse_options(int argc, char **argv)
       { "mitm", required_argument, NULL, 'M' },
       { "only-mitm", no_argument, NULL, 'o' },
       { "bridge", required_argument, NULL, 'B' },
+      { "broadcast", required_argument, NULL, 'b' },
       { "promisc", no_argument, NULL, 'p' },
       { "gateway", required_argument, NULL, 'Y' },
 
@@ -199,7 +201,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:z", long_options, (int *)0)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -218,6 +220,10 @@ void parse_options(int argc, char **argv)
                   GBL_OPTIONS->only_mitm = 1;
                   select_text_interface();
                   break;
+
+         case 'b':
+                  GBL_OPTIONS->broadcast = 1;
+		  break;
                   
          case 'B':
                   GBL_OPTIONS->iface_bridge = strdup(optarg);

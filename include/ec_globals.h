@@ -69,6 +69,7 @@ struct ec_options {
    char remote:1;
    char gateway:1;
    char lifaces:1;
+   char broadcast:1;
    char reversed;
    char *hostsfile;
    char *plugin;

@@ -193,7 +193,7 @@ static void set_interesting_flag(struct packet_object *po)
    
    value = 0;
    
-   /* FROM TARGET12 TO TARGET1 */
+   /* FROM TARGET2 TO TARGET1 */
    
    /* T1.mac == dst & T1.ip = dst & T1.port = dst */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
@@ -209,7 +209,12 @@ static void set_interesting_flag(struct packet_object *po)
             (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src, NULL) != ESUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.src))) ) )
       good = 1;   
-   
+  
+   /* if traffic is coming from broadcast and the -b option was used, allow */
+
+   if (ip_addr_is_broadcast(&po->L3.dst, &GBL_IFACE->ip) == ESUCCESS && GBL_OPTIONS->broadcast) 
+      good = 1;
+
    /* reverse the matching */ 
    if (GBL_OPTIONS->reversed ^ (good && proto) ) {
       po->flags &= ~PO_IGNORE;

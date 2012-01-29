@@ -43,9 +43,10 @@ static pthread_mutex_t filters_mutex;
 #define FILTERS_LOCK     do{ pthread_mutex_lock(&filters_mutex); }while(0)
 #define FILTERS_UNLOCK   do{ pthread_mutex_unlock(&filters_mutex); }while(0)
 
-#ifndef PTHREAD_MUTEX_RECURSIVE_NP
+#ifndef HAVE_MUTEX_RECURSIVE_NP
 #define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
 #endif
+
 
 /* protos */
 

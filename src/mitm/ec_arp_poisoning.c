@@ -96,7 +96,7 @@ static int arp_poisoning_start(char *args)
          } else if (!strcasecmp(p, "oneway")) {
             poison_oneway = 1; 
          } else {
-            SEMIFATAL_ERROR("ARP poisoning: paramenter incorrect.\n");
+            SEMIFATAL_ERROR("ARP poisoning: parameter incorrect.\n");
          }
       }
    }

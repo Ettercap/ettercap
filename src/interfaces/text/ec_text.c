@@ -268,8 +268,10 @@ void text_interface(void)
    DEBUG_MSG("text_interface");
    
    /* check if the specified plugin exists */
-   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
+   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS) {
+      tcsetattr(0, TCSANOW, &old_tc);
       FATAL_ERROR("%s plugin can not be found !", GBL_OPTIONS->plugin);
+   }
 
    /* build the list of active hosts */
    build_hosts_list();

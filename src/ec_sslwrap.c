@@ -1219,7 +1219,6 @@ static void sslw_create_session(struct ec_session **s, struct packet_object *po)
    /* alloc of data elements */
    SAFE_CALLOC((*s)->data, 1, sizeof(struct ip_addr));
 }
-
 #endif /* HAVE_OPENSSL */
 
 /* EOF */

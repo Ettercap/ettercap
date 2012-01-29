@@ -87,6 +87,7 @@ void gtkui_arp_poisoning(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
+      memset(params, '\0', PARAMS_LEN);
 
       snprintf(params, 5, "arp:");
 

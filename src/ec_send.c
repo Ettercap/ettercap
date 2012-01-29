@@ -105,13 +105,17 @@ int send_to_L3(struct packet_object *po)
       default:       l = NULL;
                      break;
    }
-   /* if not lnet warn the developer ;) */
-   BUG_IF(l == NULL);
+
+   /* Do not send the packet if corresponding
+    * libnet handler is not initialized
+    */
+   if(l == NULL)
+      return -ENOTHANDLED;
    
    SEND_LOCK;
    
    t = libnet_build_data(po->fwd_packet, po->fwd_len, l, 0);
-   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_IP4));
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(l));
    
    c = libnet_write(l);
    //ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(l));
@@ -152,7 +156,10 @@ int send_to_iface(struct packet_object *po, struct iface_env *iface)
 {
    libnet_ptag_t t;
    int c;
-  
+
+   if(iface->unoffensive)
+      return -EINVALID;
+
    /* if not lnet warn the developer ;) */
    BUG_IF(iface->lnet == NULL);
    

@@ -23,6 +23,8 @@ else()
     message(FATAL_ERROR "Operating system not supported")
 endif()
 
+set(OS_SIZEOF_P ${CMAKE_SIZEOF_VOID_P})
+
 include(TestBigEndian)
 
 TEST_BIG_ENDIAN(WORDS_BIGENDIAN)

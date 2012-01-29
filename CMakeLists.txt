@@ -14,10 +14,11 @@ set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
 
 # CFLAGS var is set here. -rdynamic flag is needed for plugins to work properly on some systems.
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -pg" CACHE STRING "" FORCE)
 set(CMAKE_C_FLAGS "-O2" CACHE STRING "" FORCE)
 
 set(CMAKE_EXE_LINKER_FLAGS "-export-dynamic" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-export-dynamic -pg" CACHE STRING "" FORCE)
 set(CMAKE_MODULE_LINKER_FLAGS "-export-dynamic" CACHE STRING "" FORCE)
 
 include(CMakeFiles/CheckVariableExists.cmake)

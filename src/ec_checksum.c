@@ -26,7 +26,7 @@
 
 /* protos... */
 
-static u_int32 sum(u_int8 *buf, size_t len);
+static u_int16 sum(u_int8 *buf, size_t len);
 u_int16 L3_checksum(u_char *buf, size_t len);
 u_int16 L4_checksum(struct packet_object *po);
 static u_int16 v4_checksum(struct packet_object *po);
@@ -37,22 +37,40 @@ u_int32 CRC_checksum(u_char *buf, size_t len, u_int32 init);
 /*******************************************/
 
 
-static u_int32 sum(u_int8 *buf, size_t len)
+static u_int16 sum(u_int8 *buf, size_t len)
 {
-   u_int32 csum = 0;
-   int nleft = len;
-   u_int16 *cbuf = (u_int16 *)buf;
-   u_int16 tmp;
+#if OS_SIZEOF_P == 8
+   register u_int64 csum = 0;
+   register u_int32 *cbuf = (u_int32 *)buf;
+#elif OS_SIZEOF_P == 4
+   register u_int32 csum = 0;
+   register u_int16 *cbuf = (u_int16 *)buf;
+#endif
+   register int nleft = len;
+   u_int16 tmp = 0;
 
-   while(nleft > 1) {
+   while(nleft > sizeof(*cbuf) - 1) {
       csum += *cbuf++;
+      nleft -= sizeof(*cbuf);
+   }
+#if OS_SIZEOF_P == 8
+   while(nleft > 1) {
+      csum += *(u_int16*)cbuf++;
       nleft -= sizeof(u_int16);
    }
-
-   if(nleft == 1) {
-      *(u_int8 *)&tmp = *(u_int8 *)cbuf;
+#endif
+   if(nleft) {
+      *(u_int8*)&tmp = *(u_int8*)cbuf;
       csum += tmp;
    }
+
+#if OS_SIZEOF_P == 8
+   while(csum >> 32)
+      csum = (csum >> 32) + (csum & 0xffffffff);
+#endif
+
+   while(csum >> 16)
+      csum = (csum >> 16) + (csum & 0xffff);
 
    return csum;
 }
@@ -63,10 +81,8 @@ static u_int32 sum(u_int8 *buf, size_t len)
 
 u_int16 L3_checksum(u_char *buf, size_t len)
 {
-   u_int32 csum;
+   u_int16 csum;
    csum = sum((u_int8 *) buf, len);
-   csum = (csum >> 16) + (csum * 0xffff);
-   csum += (csum >> 16);
 
    return (u_int16)(~csum);
 }
@@ -85,35 +101,22 @@ u_int16 L4_checksum(struct packet_object *po)
 
 static u_int16 v4_checksum(struct packet_object *po)
 {
-   u_int32 csum = 0;
-   u_int16 tmp = 0;
-   u_int16 nleft = po->L4.len + po->DATA.len;
-   u_int16 len = nleft;
-   u_int16 *buf = (u_int16 *)po->L4.header;
+   u_int32 csum;
+   int len = po->L4.len + po->DATA.len;
 
-   /* calculate the checksum */
-   while (nleft > 1) {
-      csum += *buf++;
-      nleft -= sizeof(u_int16);
-   }
+   csum = sum(po->L4.header, len);
 
-   if (nleft == 1) { 
-      *(u_int8 *)&tmp = *(u_int8 *)buf; 
-      csum += tmp;
-   }
-   
    /* check the pseudo header */
-   csum += *(u_int32 *)(&po->L3.src.addr) >> 16;
-   csum += *(u_int32 *)(&po->L3.src.addr) & 0xffff;
-   csum += *(u_int32 *)(&po->L3.dst.addr) >> 16;
-   csum += *(u_int32 *)(&po->L3.dst.addr) & 0xffff;
+   csum += ip_addr_to_int32(&po->L3.src.addr) & 0xffff;
+   csum += ip_addr_to_int32(&po->L3.src.addr) >> 16;
+   csum += ip_addr_to_int32(&po->L3.dst.addr) & 0xffff;
+   csum += ip_addr_to_int32(&po->L3.dst.addr) >> 16;
 
    csum += htons((u_int16)po->L4.proto);
    csum += htons(len);
 
-   /* the final adjustment */
-   csum = (csum >> 16) + (csum & 0xffff);
-   csum += (csum >> 16);
+   while(csum >> 16)
+      csum = (csum >> 16) + (csum & 0xffff);
    
    return (u_int16)(~csum);
 }
@@ -122,13 +125,13 @@ static u_int16 v6_checksum(struct packet_object *po)
 {
    u_int16 *buf = po->L4.header;
    u_int16 plen = po->L3.payload_len;
-   u_int32 csum = 0;
+   u_int32 csum;
 
+   csum = sum(buf, plen);
+   
    csum += sum(&po->L3.src.addr, ntohs(po->L3.src.addr_len));
    csum += sum(&po->L3.dst.addr, ntohs(po->L3.dst.addr_len));
    csum += htons(plen + po->L4.proto);
-
-   csum += sum(buf, plen);
 
    while(csum >> 16)
       csum = (csum & 0xffff) + (csum >> 16);

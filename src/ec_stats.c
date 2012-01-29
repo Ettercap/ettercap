@@ -176,20 +176,9 @@ void stats_update(void)
    /* get the statistics for Layer 3 since we forward packets here */
    libnet_stats(GBL_LNET->lnet_IP4, &ls);
       
-#ifdef OS_LINUX
-   /* 
-    * add to the previous value, since every call
-    * to pcap_stats reset the counter (hope that will be fixed soon)
-    * XXX - fixed in libpcap cvs
-    */
-   GBL_STATS->ps_recv += ps.ps_recv;
-   GBL_STATS->ps_drop += ps.ps_drop;
-   GBL_STATS->ps_ifdrop += ps.ps_ifdrop;
-#else
    /* on systems other than linux, the counter is not reset */ 
    GBL_STATS->ps_recv = ps.ps_recv - GBL_STATS->ps_recv_delta;
    GBL_STATS->ps_drop = ps.ps_drop - GBL_STATS->ps_drop_delta;
-#endif
 
    /* from libnet */
    GBL_STATS->ps_sent = ls.packets_sent - GBL_STATS->ps_sent_delta;

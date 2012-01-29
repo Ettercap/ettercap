@@ -7,6 +7,7 @@
 #cmakedefine OS_BSD_OPEN
 
 #cmakedefine WORDS_BIGENDIAN
+#cmakedefine OS_SIZEOF_P @OS_SIZEOF_P@
 
 #cmakedefine CC_VERSION "@CC_VERSION@"
 

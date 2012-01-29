@@ -152,12 +152,12 @@ int send_to_iface(struct packet_object *po, struct iface_env *iface)
 {
    libnet_ptag_t t;
    int c;
-  
-   /* if not lnet warn the developer ;) */
-   BUG_IF(iface->lnet == NULL);
 
    if(iface->unoffensive)
       return -EINVALID;
+
+   /* if not lnet warn the developer ;) */
+   BUG_IF(iface->lnet == NULL);
    
    SEND_LOCK;
 

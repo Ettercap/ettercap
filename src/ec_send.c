@@ -155,6 +155,9 @@ int send_to_iface(struct packet_object *po, struct iface_env *iface)
   
    /* if not lnet warn the developer ;) */
    BUG_IF(iface->lnet == NULL);
+
+   if(iface->unoffensive)
+      return -EINVALID;
    
    SEND_LOCK;
 

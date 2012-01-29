@@ -111,7 +111,7 @@ int send_to_L3(struct packet_object *po)
    SEND_LOCK;
    
    t = libnet_build_data(po->fwd_packet, po->fwd_len, l, 0);
-   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(GBL_LNET->lnet_IP4));
+   ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(l));
    
    c = libnet_write(l);
    //ON_ERROR(c, -1, "libnet_write %d (%d): %s", po->fwd_len, c, libnet_geterror(l));

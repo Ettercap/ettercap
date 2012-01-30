@@ -86,18 +86,19 @@ void gtkui_arp_poisoning(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
+      memset(params, '\0', PARAMS_LEN);
 
-      snprintf(params, 4, "arp:");
+      snprintf(params, 5, "arp:");
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
-         strcat(params, "remote");
+         strcat(params, "remote\0");
          remote = TRUE;
       }
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
          if(remote)
-            strcat(params, ",");
-         strcat(params, "oneway");
+            strcat(params, ",\0");
+         strcat(params, "oneway\0");
       }
 
       gtkui_start_mitm();

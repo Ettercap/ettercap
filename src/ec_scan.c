@@ -173,10 +173,12 @@ static EC_THREAD_FUNC(scan_thread)
     * the pid parameter is used to kill the thread if
     * the user request to stop the scan.
     */
-   if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
-      scan_netmask(pid);
-   else
-      scan_targets(pid);
+   if(GBL_IFACE->has_ipv4) {
+      if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
+         scan_netmask(pid);
+      else
+         scan_targets(pid);
+   }
 
    /*
     * free the temporary array for random computations

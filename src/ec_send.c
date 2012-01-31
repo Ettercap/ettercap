@@ -105,8 +105,12 @@ int send_to_L3(struct packet_object *po)
       default:       l = NULL;
                      break;
    }
-   /* if not lnet warn the developer ;) */
-   BUG_IF(l == NULL);
+
+   /* Do not send the packet if corresponding
+    * libnet handler is not initialized
+    */
+   if(l == NULL)
+      return -ENOTHANDLED;
    
    SEND_LOCK;
    

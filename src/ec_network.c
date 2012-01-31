@@ -361,8 +361,7 @@ static void l3_init(void)
    l4 = libnet_init(LIBNET_RAW4_ADV, NULL, lnet_errbuf);               
    if (l4 == NULL) {
       DEBUG_MSG("send_init: libnet_init(LIBNET_RAW4_ADV) failed: %s", lnet_errbuf);
-      GBL_OPTIONS->unoffensive = 1;
-      return;
+      USER_MSG("Libnet failed IPv4 initialization. Don't send IPv4 packets.\n");
    }
 
    GBL_LNET->lnet_IP4 = l4;               

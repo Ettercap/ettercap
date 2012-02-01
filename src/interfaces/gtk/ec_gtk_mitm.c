@@ -47,6 +47,7 @@ void gtkui_arp_poisoning(void)
    GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame;
    gint response = 0;
    gboolean remote = FALSE;
+   gboolean oneway = FALSE;
 
    DEBUG_MSG("gtk_arp_poisoning");
    memset(params, '\0', PARAMS_LEN);
@@ -92,22 +93,21 @@ void gtkui_arp_poisoning(void)
       snprintf(params, 5, "arp:");
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
-        strcat(params, "remote\0");
+        strcat(params, "remote");
         remote = TRUE;
       }
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
-         if(remote) {
-           strcat(params, ",\0");
-	}
+         if(remote)
+            strcat(params, ",");
 	
-         strcat(params, "oneway\0");
+         strcat(params, "oneway");
+         oneway = TRUE;
       } 
 
-      if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1)) &&
-         !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
-		SEMIFATAL_ERROR("You must select at least one ARP method");
-		return;
+      if(!remote && !oneway) {
+         SEMIFATAL_ERROR("You must select at least one ARP mode");
+         return;
       }
 
       gtkui_start_mitm();

@@ -30,8 +30,6 @@
 #cmakedefine HAVE_STRCASESTR
 #cmakedefine HAVE_MEMMEM
 #cmakedefine HAVE_BASENAME
-#cmakedefine HAVE_RESOLV
-#cmakedefine HAVE_MUTEX_RECURSIVE_NP
 
 #cmakedefine HAVE_NCURSES
 #cmakedefine HAVE_GTK

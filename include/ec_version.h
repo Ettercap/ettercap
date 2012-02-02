@@ -10,7 +10,7 @@
 #define EC_VERSION_REVISION   5 
 #define EC_PROGRAM            "ettercap"
 #define EC_COPYRIGHT          "2001-2011"
-#define EC_AUTHORS            "Ettercap Develpment Team"
+#define EC_AUTHORS            "Ettercap Development Team"
 
 #endif
 

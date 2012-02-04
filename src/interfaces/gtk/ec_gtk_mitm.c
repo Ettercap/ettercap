@@ -169,7 +169,7 @@ void gtkui_icmp_redir(void)
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
 
-      snprintf(params, 5, "icmp:");
+      snprintf(params, 6, "icmp:");
 
       strncat(params, gtk_entry_get_text(GTK_ENTRY(entry1)), PARAMS_LEN);
       strncat(params, "/", PARAMS_LEN);
@@ -230,7 +230,7 @@ void gtkui_port_stealing(void)
    if(response == GTK_RESPONSE_OK) {    
       gtk_widget_hide(dialog);          
 
-      snprintf(params, 5, "port:");
+      snprintf(params, 6, "port:");
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
          strcat(params, "remote");
@@ -320,7 +320,7 @@ void gtkui_dhcp_spoofing(void)
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
 
-      snprintf(params, 5, "dhcp:");
+      snprintf(params, 6, "dhcp:");
 
       strncat(params, gtk_entry_get_text(GTK_ENTRY(entry1)), PARAMS_LEN);
       strncat(params, "/", PARAMS_LEN);

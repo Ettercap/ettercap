@@ -111,7 +111,9 @@ FUNC_DECODER(dissector_ospf)
        * we use a local variable since this does 
        * not need to reach the top half
        */
-      strncpy(pass, (char *)ohdr->auth1, OSPF_AUTH_LEN);
+      char o[OSPF_AUTH_LEN];
+      snprintf(o, OSPF_AUTH_LEN, "%u", ohdr->auth1);
+      strncpy(pass, o, OSPF_AUTH_LEN);
       
    } 
 

@@ -36,9 +36,9 @@ static void gtkui_start_mitm(void);
 
 /* globals */
 
-#define PARAMS_LEN   50
+#define PARAMS_LEN   512
 
-static char params[PARAMS_LEN];
+static char params[PARAMS_LEN+1];
 
 /*******************************************/
 
@@ -50,7 +50,7 @@ void gtkui_arp_poisoning(void)
    gboolean oneway = FALSE;
 
    DEBUG_MSG("gtk_arp_poisoning");
-   memset(params, '\0', PARAMS_LEN);
+   memset(params, '\0', PARAMS_LEN+1);
 
    dialog = gtk_dialog_new_with_buttons("MITM Attack: ARP Poisoning", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK, 
@@ -88,7 +88,7 @@ void gtkui_arp_poisoning(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      memset(params, '\0', PARAMS_LEN);
+      memset(params, '\0', PARAMS_LEN+1);
 
       snprintf(params, 5, "arp:");
 
@@ -106,7 +106,7 @@ void gtkui_arp_poisoning(void)
       } 
 
       if(!remote && !oneway) {
-         SEMIFATAL_ERROR("You must select at least one ARP mode");
+         ui_error("You must select at least one ARP mode");
          return;
       }
 
@@ -268,6 +268,7 @@ void gtkui_dhcp_spoofing(void)
    gint response = 0;
    
    DEBUG_MSG("gtk_dhcp_spoofing");
+   memset(params, '\0', PARAMS_LEN+1);
    
    dialog = gtk_dialog_new_with_buttons("MITM Attack: DHCP Spoofing", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -330,6 +331,7 @@ void gtkui_dhcp_spoofing(void)
       gtk_widget_hide(dialog);
 
       snprintf(params, 6, "dhcp:");
+      
 
       strncat(params, gtk_entry_get_text(GTK_ENTRY(entry1)), PARAMS_LEN);
       strncat(params, "/", PARAMS_LEN);

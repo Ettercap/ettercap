@@ -43,7 +43,7 @@ static pthread_mutex_t filters_mutex;
 #define FILTERS_LOCK     do{ pthread_mutex_lock(&filters_mutex); }while(0)
 #define FILTERS_UNLOCK   do{ pthread_mutex_unlock(&filters_mutex); }while(0)
 
-#ifndef PTHREAD_MUTEX_RECURSIVE_NP
+#ifndef HAVE_MUTEX_RECURSIVE_NP 
 #define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
 #endif
 
@@ -1156,19 +1156,19 @@ static void reconstruct_strings(struct filter_env *fenv, struct filter_header *f
       switch(fop[i].opcode) {
          case FOP_FUNC:
             if (fop[i].op.func.slen)
-               fop[i].op.func.string = (char *)(fenv->map + fh->data + (int)fop[i].op.func.string);
+               fop[i].op.func.string = (char *)(fenv->map + fh->data + (size_t)fop[i].op.func.string);
             if (fop[i].op.func.rlen)
-               fop[i].op.func.replace = (char *)(fenv->map + fh->data + (int)fop[i].op.func.replace);
+               fop[i].op.func.replace = (char *)(fenv->map + fh->data + (size_t)fop[i].op.func.replace);
             break;
             
          case FOP_TEST:
             if (fop[i].op.test.slen)
-               fop[i].op.test.string = (char *)(fenv->map + fh->data + (int)fop[i].op.test.string);
+               fop[i].op.test.string = (char *)(fenv->map + fh->data + (size_t)fop[i].op.test.string);
             break;
          
          case FOP_ASSIGN:
             if (fop[i].op.assign.slen)
-               fop[i].op.assign.string = (char *)(fenv->map + fh->data + (int)fop[i].op.assign.string);
+               fop[i].op.assign.string = (char *)(fenv->map + fh->data + (size_t)fop[i].op.assign.string);
             break;
       }
       

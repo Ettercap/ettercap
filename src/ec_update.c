@@ -299,9 +299,9 @@ static int do_update(char *file, char *url, char *errbuf)
       /* write the data in the file */
       if (header_skipped) {
          if (ptr) {
-            write(fileno(fd), ptr + 4, len - (ptr + 4 - buffer));
+            if(write(fileno(fd), ptr + 4, len - (ptr + 4 - buffer)));
          } else {
-            write(fileno(fd), buffer, len);
+            if(write(fileno(fd), buffer, len));
          }
       }
    

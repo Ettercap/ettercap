@@ -160,7 +160,7 @@ struct plugin_ops nbns_spoof_ops = {
 	/* ettercap version must be the global EC_VERSION */
 	ettercap_version: 	EC_VERSION,
 	name:			"nbns_spoof",
-	info:			"Sends spoof NBNS replies",
+	info:			"Sends spoof NBNS replies & sends SMB challenges with custom challenge",
 	version:		"1.0",
 	init:			&nbns_spoof_init,
 	fini:			&nbns_spoof_fini,	
@@ -201,7 +201,7 @@ static int load_db(void)
 	char *ptr, *ip, *name;
 	int lines = 0;
 
-	f = open_data("etc", ETTER_NBNS, FOPEN_READ_TEXT);
+	f = open_data("share", ETTER_NBNS, FOPEN_READ_TEXT);
 
 	if (f == NULL) {
 		USER_MSG("Cannot open %s", ETTER_NBNS);
@@ -214,7 +214,6 @@ static int load_db(void)
 		if ((ptr = strchr(line, '#')))
 			*ptr = '\0';
 
-		DEBUG_MSG("LINE: %s", line);
 
 		/* skip empty lines */
 		if (!*line || *line == '\r' || *line == '\n')

@@ -101,7 +101,7 @@ static void load_hosts(char *file)
    SAFE_CALLOC(tmp, strlen(file)+1, sizeof(char));
 
    /* get the current working directory */
-   getcwd(current, PATH_MAX); 
+   if(getcwd(current, PATH_MAX));
 
    /* we are opening a file in the current dir.
     * use the relative path, so we can open files
@@ -328,7 +328,7 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
          gtk_tree_model_get_iter(model, &iter, list->data);
          gtk_tree_model_get(model, &iter, 3, &hl, -1);
 
-         switch((int)data) {
+         switch((size_t)data) {
             case HOST_DELETE:
                DEBUG_MSG("gtkui_button_callback: delete host");
                gtk_list_store_remove(GTK_LIST_STORE (liststore), &iter);

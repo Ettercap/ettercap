@@ -103,7 +103,7 @@ void set_color(int color)
    char str[8];
    
    sprintf(str, "\033[%dm", color);
-   write(fileno(stdout), str, strlen(str));
+   if(write(fileno(stdout), str, strlen(str)));
 #endif
 }
 
@@ -113,7 +113,7 @@ void reset_color(void)
 {
    /* windows does not like ansi colors... */
 #ifndef OS_WINDOWS   
-   write(fileno(stdout), EC_COLOR_END, 4);   
+   if(write(fileno(stdout), EC_COLOR_END, 4));
 #endif
 }
 

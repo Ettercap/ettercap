@@ -212,7 +212,8 @@ static void set_interesting_flag(struct packet_object *po)
   
    /* if traffic is coming from broadcast and the -b option was used, allow */
 
-   if (ip_addr_is_broadcast(&po->L3.dst, &GBL_IFACE->ip) == ESUCCESS && GBL_OPTIONS->broadcast) 
+   if (GBL_OPTIONS->broadcast && (ip_addr_is_broadcast(&po->L3.dst, &GBL_IFACE->ip) == ESUCCESS ||
+       ip_addr_is_broadcast(&po->L3.src, &GBL_IFACE->ip) == ESUCCESS)) 
       good = 1;
 
    /* reverse the matching */ 

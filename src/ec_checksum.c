@@ -123,14 +123,14 @@ static u_int16 v4_checksum(struct packet_object *po)
 
 static u_int16 v6_checksum(struct packet_object *po)
 {
-   u_int16 *buf = po->L4.header;
+   u_int8 *buf = po->L4.header;
    u_int16 plen = po->L3.payload_len;
    u_int32 csum;
 
    csum = sum(buf, plen);
    
-   csum += sum(&po->L3.src.addr, ntohs(po->L3.src.addr_len));
-   csum += sum(&po->L3.dst.addr, ntohs(po->L3.dst.addr_len));
+   csum += sum(&po->L3.src.addr[0], ntohs(po->L3.src.addr_len));
+   csum += sum(&po->L3.dst.addr[0], ntohs(po->L3.dst.addr_len));
    csum += htons(plen + po->L4.proto);
 
    while(csum >> 16)

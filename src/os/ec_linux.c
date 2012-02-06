@@ -41,7 +41,7 @@ void disable_ip_forward(void)
    fd = fopen("/proc/sys/net/ipv4/ip_forward", "r");
    ON_ERROR(fd, NULL, "failed to open /proc/sys/net/ipv4/ip_forward");
 
-   fscanf(fd, "%c", &saved_status);
+   if(fscanf(fd, "%c", &saved_status));
    fclose(fd);
 
    DEBUG_MSG("disable_ip_forward: old value = %c", saved_status);
@@ -68,7 +68,7 @@ static void restore_ip_forward(void)
    fd = fopen("/proc/sys/net/ipv4/ip_forward", "r");
    ON_ERROR(fd, NULL, "failed to open /proc/sys/net/ipv4/ip_forward");
 
-   fscanf(fd, "%c", &current_status);
+   if(fscanf(fd, "%c", &current_status));
    fclose(fd);
    
    DEBUG_MSG("ATEXIT: restore_ip_forward: curr: %c saved: %c", current_status, saved_status);

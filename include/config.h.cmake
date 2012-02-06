@@ -22,6 +22,7 @@
 #cmakedefine HAVE_CTYPE_H
 
 #cmakedefine HAVE_POLL
+#cmakedefine HAVE_STRTOK_R
 #cmakedefine HAVE_SELECT
 #cmakedefine HAVE_SCANDIR
 #cmakedefine HAVE_STRLCAT
@@ -37,6 +38,7 @@
 
 #cmakedefine HAVE_UTF8
 #cmakedefine HAVE_PLUGINS
+#cmakedefine HAVE_MUTEX_RECURSIVE_NP
 
 #cmakedefine INSTALL_PREFIX         "@INSTALL_PREFIX@"
 #cmakedefine INSTALL_SYSCONFDIR     "@INSTALL_SYSCONFDIR@"

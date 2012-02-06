@@ -1,7 +1,8 @@
-install(FILES etter.conf etter.nbns DESTINATION ${INSTALL_SYSCONFDIR})
+install(FILES etter.conf DESTINATION ${INSTALL_SYSCONFDIR})
 install(FILES
             ettercap.png
             etter.dns
+	    etter.nbns
             etter.fields
             etter.filter
             etterfilter.cnt

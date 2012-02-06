@@ -388,7 +388,7 @@ static void send_queue(struct packet_object *po)
    struct timespec tm;
    tm.tv_nsec = GBL_CONF->port_steal_send_delay * 1000;
    tm.tv_sec = 0;
-#endif;
+#endif
 
    /* Check if it's an arp reply for us */
    if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))

@@ -1009,7 +1009,7 @@ static void gtkui_connection_data_join(void)
 
 static gboolean gtkui_connections_scroll(gpointer data)
 {
-   if((int)data == 1 && textview1 && endmark1 && textview2 && endmark2) {
+   if((size_t)data == 1 && textview1 && endmark1 && textview2 && endmark2) {
       /* scroll split data views to bottom */
       gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview1), endmark1, 0, FALSE, 0, 0);
       gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview2), endmark2, 0, FALSE, 0, 0); 

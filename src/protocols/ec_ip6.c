@@ -154,7 +154,7 @@ FUNC_DECODER(decode_ip6)
       PACKET->L3.optlen = 0;
       next_decoder = get_decoder(PROTO_LAYER, ip6->next_hdr);
    } else {
-      PACKET->L3.options = &ip6[1];
+      PACKET->L3.options = (u_char *)&ip6[1];
    }
       
    /* HOOK POINT: HOOK_PACKET_IP6 */
@@ -200,7 +200,7 @@ FUNC_DECODER(decode_ip6_ext)
    FUNC_DECODER_PTR(next_decoder);
    struct ip6_ext_header *ext_hdr;
 
-   ext_hdr = DECODE_DATA;
+   ext_hdr = (struct ip6_ext_header *)DECODE_DATA;
    PACKET->L3.optlen += ext_hdr->hdr_len + 1;
    DECODED_LEN = ext_hdr->hdr_len + 1;
 
@@ -230,7 +230,7 @@ FUNC_INJECTOR(inject_ip6)
 
    /* almost copied from ec_ip.c */
    PACKET->packet -= sizeof(struct ip6_header);
-   ip6 = PACKET->packet;
+   ip6 = (struct ip6_header *)PACKET->packet;
 
    ip6->version = 6;
    ip6->next_hdr = PACKET->L4.proto;
@@ -264,7 +264,7 @@ FUNC_INJECTOR(inject_ip6)
    ip6->payload_len = htons(plen);
    
    PACKET->L3.len = flen + plen;
-   PACKET->L3.header = ip6;
+   PACKET->L3.header = (u_char *)ip6;
 
    if(s->prev_session == NULL) {
       PACKET->fwd_packet = PACKET->packet;
@@ -281,7 +281,7 @@ static size_t ip6_create_ident(void **i, struct packet_object *po)
 
    SAFE_CALLOC(ident, 1, sizeof(struct ip6_ident));
 
-   ip6 = po->L3.header;
+   ip6 = (struct ip6_header *)po->L3.header;
 
    ident->magic = IP6_MAGIC;
    memcpy(&ident->flow_lbl, ip6->flow_lbl, 3);

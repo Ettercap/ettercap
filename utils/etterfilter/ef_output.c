@@ -69,15 +69,15 @@ int write_output(void)
    data = create_data_segment(&fh, fop, ninst);
    
    /* write the header */
-   write(fd, &fh, sizeof(struct filter_header));
+   if(write(fd, &fh, sizeof(struct filter_header)));
 
    /* write the data segment */
-   write(fd, data, fh.code - fh.data);
+   if(write(fd, data, fh.code - fh.data));
    
    /* write the instructions */
    for (i = 0; i <= ninst; i++) {
       print_progress_bar(&fop[i]);
-      write(fd, &fop[i], sizeof(struct filter_op));
+      if(write(fd, &fop[i], sizeof(struct filter_op)));
    }
 
    close(fd);

@@ -415,7 +415,7 @@ static void gtkui_delete_targets(GtkWidget *widget, gpointer data) {
    GtkTreeModel *model;
    struct ip_list *il = NULL;
 
-   switch((int)data) {
+   switch((size_t)data) {
       case 1:
          DEBUG_MSG("gtkui_delete_target: list 1");
          model = GTK_TREE_MODEL (liststore1);

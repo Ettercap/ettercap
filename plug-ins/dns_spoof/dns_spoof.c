@@ -160,7 +160,7 @@ static int load_db(void)
    int lines = 0, type;
    
    /* open the file */
-   f = open_data("share", ETTER_DNS, FOPEN_READ_TEXT);
+   f = open_data("etc", ETTER_DNS, FOPEN_READ_TEXT);
    if (f == NULL) {
       USER_MSG("Cannot open %s", ETTER_DNS);
       return -EINVALID;

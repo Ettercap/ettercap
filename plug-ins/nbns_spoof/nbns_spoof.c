@@ -201,7 +201,7 @@ static int load_db(void)
 	char *ptr, *ip, *name;
 	int lines = 0;
 
-	f = open_data("share", ETTER_NBNS, FOPEN_READ_TEXT);
+	f = open_data("etc", ETTER_NBNS, FOPEN_READ_TEXT);
 
 	if (f == NULL) {
 		USER_MSG("Cannot open %s", ETTER_NBNS);

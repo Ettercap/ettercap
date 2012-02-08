@@ -24,8 +24,6 @@ set(CMAKE_MODULE_LINKER_FLAGS "-export-dynamic" CACHE STRING "" FORCE)
 include(CMakeFiles/os_test.cmake)
 include(CMakeFiles/headers_check.cmake)
 include(CMakeFiles/lib_check.cmake)
-include(CMakeFiles/CheckVariableExists.cmake)
-include(CMakeFiles/variable_check.cmake)
 
 include_directories(include)
 configure_file(include/config.h.cmake ${CMAKE_SOURCE_DIR}/include/config.h)

@@ -21,9 +21,12 @@ set(CMAKE_EXE_LINKER_FLAGS "-export-dynamic" CACHE STRING "" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-export-dynamic -pg" CACHE STRING "" FORCE)
 set(CMAKE_MODULE_LINKER_FLAGS "-export-dynamic" CACHE STRING "" FORCE)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMakeModules)
+
 include(CMakeFiles/os_test.cmake)
 include(CMakeFiles/headers_check.cmake)
 include(CMakeFiles/lib_check.cmake)
+include(CMakeFiles/variable_check.cmake)
 
 include_directories(include)
 configure_file(include/config.h.cmake ${CMAKE_SOURCE_DIR}/include/config.h)

@@ -43,6 +43,11 @@ EC_API_EXTERN void ec_thread_exit(void);
    #define BROKEN_PTHREAD_JOIN
 #endif
 
+/* Mac OS X does not have it, and some other systems define it as enum */
+#ifndef HAVE_MUTEX_RECURSIVE_NP
+#define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
+#endif
+
 #endif
 
 /* EOF */

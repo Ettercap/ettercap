@@ -111,7 +111,7 @@ static void load_hosts(char *path, char *file)
    SAFE_CALLOC(tmp, strlen(path)+strlen(file)+2, sizeof(char));
 
    /* get the current working directory */
-   if(getcwd(current, PATH_MAX));
+   getcwd(current, PATH_MAX);
 
    /* we are opening a file in the current dir.
     * use the relative path, so we can open files

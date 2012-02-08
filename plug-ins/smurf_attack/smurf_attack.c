@@ -105,8 +105,7 @@ static EC_THREAD_FUNC(smurfer)
    switch(proto) {
       case AF_INET:
          icmp_send = send_L3_icmp_echo;
-         //ips = (LIST_HEAD(, ip_list) *)&GBL_TARGET2->ips;
-	 memcpy(ips, &GBL_TARGET2->ips, sizeof(LIST_HEAD(, ip_list)));
+         ips = (LIST_HEAD(, ip_list) *)&GBL_TARGET2->ips;
          break;
       case AF_INET6:
          icmp_send = send_icmp6_echo;

@@ -160,7 +160,7 @@ static void text_fatal_error(const char *msg)
    fflush(stdout);
 
    /* restore console settings */
-    tcsetattr(0, TCSANOW, &old_tc);
+   tcsetattr(0, TCSANOW, &old_tc);
 
    /* exit without calling atexit() */
    _exit(-1);
@@ -185,7 +185,7 @@ static void text_input(const char *title, char *input, size_t n, void (*callback
    memset(input, 0, n); 
    
    /* get the user input */
-   if(fgets(input, n, stdin));
+   fgets(input, n, stdin);
 
    /* trim the \n */
    if ((p = strrchr(input, '\n')) != NULL)
@@ -447,7 +447,7 @@ static void text_run_plugin(void)
    fflush(stdin);
    
    /* get the user input */
-   if(fgets(name, 20, stdin));
+   fgets(name, 20, stdin);
 
    /* trim the \n */
    if ((p = strrchr(name, '\n')) != NULL)
@@ -515,7 +515,7 @@ static void text_run_filter(void) {
 
       fprintf(stdout, "\nEnter number to enable/disable filter (0 to quit): ");
       /* get the user input */
-      if(fgets(input, 19, stdin));
+      fgets(input, 19, stdin);
       number = -1;
       sscanf(input, "%d", &number);
       if (number == 0) {
@@ -552,17 +552,17 @@ static void text_stats(void)
    DEBUG_MSG("text_stats (queue) : %lu %lu", (unsigned long)GBL_STATS->queue_curr, (unsigned long)GBL_STATS->queue_max); 
   
    
-   fprintf(stdout, "\n Received packets    : %8lu\n", GBL_STATS->ps_recv);
-   fprintf(stdout,   " Dropped packets     : %8lu  %.2f %%\n", GBL_STATS->ps_drop,
+   fprintf(stdout, "\n Received packets    : %8lld\n", GBL_STATS->ps_recv);
+   fprintf(stdout,   " Dropped packets     : %8lld  %.2f %%\n", GBL_STATS->ps_drop,
          (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv : 0 );
-   fprintf(stdout,   " Forwarded           : %8lu  bytes: %8lu\n\n", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
+   fprintf(stdout,   " Forwarded           : %8lld  bytes: %8lld\n\n", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
    
    fprintf(stdout,   " Current queue len   : %lu/%lu\n", (unsigned long)GBL_STATS->queue_curr, (unsigned long)GBL_STATS->queue_max);
    fprintf(stdout,   " Sampling rate       : %d\n\n", GBL_CONF->sampling_rate);
    
-   fprintf(stdout,   " Bottom Half received packet : pck: %8lu  byte: %8lu\n", 
+   fprintf(stdout,   " Bottom Half received packet : pck: %8lld  byte: %8lld\n", 
          GBL_STATS->bh.pck_recv, GBL_STATS->bh.pck_size);
-   fprintf(stdout,   " Top Half received packet    : pck: %8lu  byte: %8lu\n", 
+   fprintf(stdout,   " Top Half received packet    : pck: %8lld  byte: %8lld\n", 
          GBL_STATS->th.pck_recv, GBL_STATS->th.pck_size);
    fprintf(stdout,   " Interesting packets         : %.2f %%\n\n",
          (GBL_STATS->bh.pck_recv) ? (float)GBL_STATS->th.pck_recv * 100 / GBL_STATS->bh.pck_recv : 0 );
@@ -629,7 +629,7 @@ static void text_visualization(void)
    fprintf(stdout, "\n\nVisualization format: ");
    fflush(stdout);
    
-   if(scanf("%15s", format));
+   scanf("%15s", format);
   
    /* disable buffered input */
    tcsetattr(0, TCSANOW, &new_tc);

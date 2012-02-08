@@ -126,7 +126,7 @@ static void display_packet(void)
       }
       
       /* print it */
-      if(write(fileno(stdout), tmp, ret));
+      write(fileno(stdout), tmp, ret);
       
       if (GBL.color) 
          reset_color();
@@ -136,7 +136,7 @@ static void display_packet(void)
    }
 
    if (!GBL.no_headers)
-      if(write(fileno(stdout), "\n\n", 2));
+      write(fileno(stdout), "\n\n", 2);
    
    return;
 }
@@ -158,7 +158,7 @@ static void display_headers(struct log_header_packet *pck)
    
    memset(flags, 0, sizeof(flags));
    
-   if(write(fileno(stdout), "\n\n", 2));
+   write(fileno(stdout), "\n\n", 2);
    
    /* remove the final '\n' */
    strcpy(time, ctime((time_t *)&pck->tv.tv_sec));
@@ -166,14 +166,14 @@ static void display_headers(struct log_header_packet *pck)
    
    /* displat the date */
    sprintf(str, "%s [%lu]\n", time, (unsigned long)pck->tv.tv_usec);
-   if(write(fileno(stdout), str, strlen(str)));
+   write(fileno(stdout), str, strlen(str));
   
    if (GBL.showmac) {
       /* display the mac addresses */
       mac_addr_ntoa(pck->L2_src, tmp1);
       mac_addr_ntoa(pck->L2_dst, tmp2);
       sprintf(str, "%17s --> %17s\n", tmp1, tmp2 );
-      if(write(fileno(stdout), str, strlen(str)));
+      write(fileno(stdout), str, strlen(str));
    }
   
    /* calculate the flags */
@@ -199,9 +199,9 @@ static void display_headers(struct log_header_packet *pck)
    sprintf(str, "%s  %s:%d --> %s:%d | %s\n", proto, tmp1, ntohs(pck->L4_src), 
                                                         tmp2, ntohs(pck->L4_dst),
                                                         flags);
-   if(write(fileno(stdout), str, strlen(str)));
+   write(fileno(stdout), str, strlen(str));
 
-   if(write(fileno(stdout), "\n", 1));
+   write(fileno(stdout), "\n", 1);
 }
 
 /*

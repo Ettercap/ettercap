@@ -182,7 +182,7 @@ static void detail_select(void)
    tcsetattr(0, TCSANOW, &old_tc);
 
    /* get the user input */
-   if(scanf("%d", &n));
+   scanf("%d", &n);
  
    /* disable buffered input */
    tcsetattr(0, TCSANOW, &new_tc);

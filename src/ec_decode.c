@@ -250,9 +250,7 @@ void __init data_init(void)
 
 FUNC_DECODER(decode_data)
 {
-   //FUNC_DECODER_PTR(*app_decoders);
-   FUNC_DECODER_PTR(decoder);
-   void **app_decoders;
+   FUNC_DECODER_PTR(*app_decoders);
    int i;
    int proto = 0;
       
@@ -294,8 +292,7 @@ FUNC_DECODER(decode_data)
    if(proto) {
       app_decoders = get_decoders(proto, ntohs(po->L4.src));
       for(i = 0; app_decoders[i] != NULL; i++) {
-	 decoder = app_decoders[i];
-         EXECUTE_DECODER(decoder);
+         EXECUTE_DECODER(app_decoders[i]);
       }
       SAFE_FREE(app_decoders);
 
@@ -305,8 +302,7 @@ FUNC_DECODER(decode_data)
       if(po->L4.src != po->L4.dst) {
          app_decoders = get_decoders(proto, ntohs(po->L4.dst));
          for(i = 0; app_decoders[i] != NULL; i++) {
-	    decoder = app_decoders[i];
-            EXECUTE_DECODER(decoder);
+            EXECUTE_DECODER(app_decoders[i]);
          }
          SAFE_FREE(app_decoders);
       }

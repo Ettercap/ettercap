@@ -45,8 +45,6 @@ static void close_secondary_sources(void);
 static void l3_init(void);
 static void l3_close(void);
 
-void pack32(uint32_t val, u_char *dest);
-
 struct iface_env* iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN]);
 
 /* teh code */
@@ -231,7 +229,6 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 
    if(live) {
       source->is_live = 1;
-      DEBUG_MSG("IS LIVE");
    } else {
       source->is_ready = 1;
       return ESUCCESS;
@@ -257,42 +254,25 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
          continue;
 
       if(ifaddr->ifa_addr->sa_family == AF_INET) {
-         u_char ip4[4];
-         sa4 = ((struct sockaddr_in *)ifaddr->ifa_addr);
-	 //snprintf(ip4, IP_ADDR_LEN, "%u", ntohs(sa4->sin_addr.s_addr));
-         pack32(sa4->sin_addr.s_addr, ip4);
-         ip_addr_init(&source->ip, AF_INET, &ip4[0]);
-         char dst[MAX_ASCII_ADDR_LEN];
-         ip_addr_ntoa(&source->ip, dst);
- 	 DEBUG_MSG("IP: %s", dst);
+         sa4 = ifaddr->ifa_addr;
+         ip_addr_init(&source->ip, AF_INET, &sa4->sin_addr);
          if(GBL_OPTIONS->netmask) {
-            struct in_addr net;
+            u_int32 net;
             if(inet_aton(GBL_OPTIONS->netmask, &net) == 0)
                FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
-	    memset(ip4, '\0', IP_ADDR_LEN);
-	    //snprintf(ip4, IP_ADDR_LEN, "%u", net.s_addr);
-	    pack32(net.s_addr, ip4);
-            ip_addr_init(&source->netmask, AF_INET, &ip4[0]);
-         ip_addr_ntoa(&source->ip, dst);
-         DEBUG_MSG("NETMASK: %s", dst);
-
+            ip_addr_init(&source->netmask, AF_INET, &net);
          } else {
-            sa4 = ((struct sockaddr_in *)ifaddr->ifa_netmask);
-	    memset(ip4, '\0', IP_ADDR_LEN);
-	    //snprintf(ip4, IP_ADDR_LEN, "%u", sa4->sin_addr.s_addr);
-	    pack32(sa4->sin_addr.s_addr, ip4);
-            ip_addr_init(&source->netmask, AF_INET, &ip4[0]);
-         ip_addr_ntoa(&source->netmask, dst);
-         DEBUG_MSG("NETMASK: %s", dst);
+            sa4 = ifaddr->ifa_netmask;
+            ip_addr_init(&source->netmask, AF_INET, &sa4->sin_addr);
          }
          ip_addr_get_network(&source->ip, &source->netmask, &source->network);
          source->has_ipv4 = 1;
       } else if(ifaddr->ifa_addr->sa_family == AF_INET6) {
          SAFE_CALLOC(ip6, 1, sizeof(*ip6));
-         sa6 = ((struct sockaddr_in6 *)ifaddr->ifa_addr);
-         ip_addr_init(&ip6->ip, AF_INET6, &sa6->sin6_addr.s6_addr[0]);
-         sa6 = ((struct sockaddr_in6 *)ifaddr->ifa_netmask);
-         ip_addr_init(&ip6->netmask, AF_INET6, &sa6->sin6_addr.s6_addr[0]);
+         sa6 = ifaddr->ifa_addr;
+         ip_addr_init(&ip6->ip, AF_INET6, &sa6->sin6_addr);
+         sa6 = ifaddr->ifa_netmask;
+         ip_addr_init(&ip6->netmask, AF_INET6, &sa6->sin6_addr);
          ip_addr_get_network(&ip6->ip, &ip6->netmask, &ip6->network);
          ip6->prefix = ip_addr_get_prefix(&ip6->netmask);
          LIST_INSERT_HEAD(&source->ip6_list, ip6, next);
@@ -341,11 +321,10 @@ static int secondary_sources_init(char **sources)
 
       /* secondary interfaces are always live */
       source_init(sources[n], &se->iface, true, false);
-      if(se->iface.is_ready) {
+      if(se->iface.is_ready)
          LIST_INSERT_HEAD(&sources_list, se, next);
-      } else {
+      else 
          SAFE_FREE(se);
-      }
    }
 
    SOURCES_LIST_UNLOCK;
@@ -423,14 +402,4 @@ struct iface_env* iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN])
    SOURCES_LIST_UNLOCK;
    return NULL;
 }
-
-void
-pack32(uint32_t val, u_char *dest)
-{
-        dest[3] = (val & 0xff000000) >> 24;
-        dest[2] = (val & 0x00ff0000) >> 16;
-        dest[1] = (val & 0x0000ff00) >>  8;
-        dest[0] = (val & 0x000000ff)      ;
-}
-
 

@@ -74,7 +74,7 @@ void text_print_packet(struct packet_object *po)
    display_headers(po);
    
    /* print it */
-   if(write(fileno(stdout), tmp, ret));
+   write(fileno(stdout), tmp, ret);
 
    printf("\n");
 }     

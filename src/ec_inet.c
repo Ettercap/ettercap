@@ -271,8 +271,8 @@ int ip_addr_pton(char *str, struct ip_addr *addr)
 
    proto = (strchr(str, ':')) ? AF_INET6 : AF_INET;
    
-   if(inet_pton(proto, str, &buf) == 1) {
-      ip_addr_init(addr, proto, &buf[0]);
+   if(inet_pton(proto, str, buf) == 1) {
+      ip_addr_init(addr, proto, buf);
       return ESUCCESS;
    } else {
       return -EINVALID;
@@ -472,8 +472,6 @@ int ip_addr_get_network(struct ip_addr *ip, struct ip_addr *netmask, struct ip_a
 {
    u_int32 ip4;
    u_int32 ip6[IP6_ADDR_LEN / sizeof(u_int32)];
-   u_char  ip_4[IP_ADDR_LEN];
-   u_char  ip_6[IP6_ADDR_LEN];
 
    if(ntohs(ip->addr_type) != ntohs(netmask->addr_type))
       return -EINVALID;
@@ -481,16 +479,14 @@ int ip_addr_get_network(struct ip_addr *ip, struct ip_addr *netmask, struct ip_a
    switch(ntohs(ip->addr_type)) {
       case AF_INET:
          ip4 = ip_addr_to_int32(ip->addr) & ip_addr_to_int32(netmask->addr);
-	 snprintf(ip_4, IP_ADDR_LEN, "%u", ip4);
-         ip_addr_init(network, AF_INET, &ip_4[0]);
+         ip_addr_init(network, AF_INET, (u_char*)&ip4);
          break;
       case AF_INET6:
          ip6[0] = ((u_int32*)ip->addr)[0] & ((u_int32*)netmask->addr)[0];
          ip6[1] = ((u_int32*)ip->addr)[1] & ((u_int32*)netmask->addr)[1];
          ip6[2] = ((u_int32*)ip->addr)[2] & ((u_int32*)netmask->addr)[2];
          ip6[3] = ((u_int32*)ip->addr)[3] & ((u_int32*)netmask->addr)[3];
-	 snprintf(ip_6, IP6_ADDR_LEN, "%u%u%u%u", ip6[0], ip6[1], ip6[2], ip6[3]);
-         ip_addr_init(network, AF_INET6, &ip_6[0]);
+         ip_addr_init(network, AF_INET6, (u_char*)&ip6);
          break;
       default:
          BUG("Invalid addr_type");

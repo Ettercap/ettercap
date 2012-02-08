@@ -138,7 +138,7 @@ FUNC_EXTRACTOR(extractor_http)
          SAFE_CALLOC(data, len, sizeof(u_char));
          
          stream_read(STREAM, data, len, server);
-         if(write(fd, data, len));
+         write(fd, data, len);
 
          SAFE_FREE(data);
          

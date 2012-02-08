@@ -129,8 +129,8 @@ static u_int16 v6_checksum(struct packet_object *po)
 
    csum = sum(buf, plen);
    
-   csum += sum(&po->L3.src.addr[0], ntohs(po->L3.src.addr_len));
-   csum += sum(&po->L3.dst.addr[0], ntohs(po->L3.dst.addr_len));
+   csum += sum(&po->L3.src.addr, ntohs(po->L3.src.addr_len));
+   csum += sum(&po->L3.dst.addr, ntohs(po->L3.dst.addr_len));
    csum += htons(plen + po->L4.proto);
 
    while(csum >> 16)

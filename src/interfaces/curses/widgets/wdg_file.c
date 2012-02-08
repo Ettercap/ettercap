@@ -97,7 +97,7 @@ void wdg_create_file(struct wdg_object *wo)
     * this has to be restored after the file is selected 
     */
    ww = (struct wdg_file_handle *)wo->extend;
-   if(getcwd(ww->initpath, PATH_MAX));
+   getcwd(ww->initpath, PATH_MAX);
   
    /* default geometry */
    ww->x = 50;
@@ -125,7 +125,7 @@ static int wdg_file_destroy(struct wdg_object *wo)
    delwin(ww->win);
    
    /* restore the initial workind direcory */
-   if(!chdir(ww->initpath));
+   chdir(ww->initpath);
 
    WDG_SAFE_FREE(wo->extend);
 
@@ -393,7 +393,7 @@ static int wdg_file_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
       stat(item_name(current_item(ww->m)), &buf);
       /* if it is a directory, change to it */
       if (S_ISDIR(buf.st_mode)) {
-         if(!chdir(item_name(current_item(ww->m))));
+         chdir(item_name(current_item(ww->m)));
          return -WDG_ENOTHANDLED;
       } else {
          /* invoke the callback and return */
@@ -458,7 +458,7 @@ static void wdg_file_menu_create(struct wdg_object *wo)
    WDG_DEBUG_MSG("wdg_file_menu_create");
    
    /* get the working directory */
-   if(getcwd(ww->curpath, PATH_MAX));
+   getcwd(ww->curpath, PATH_MAX);
          
    /* scan the directory */
    ww->nlist = scandir(".", &ww->namelist, 0, alphasort);

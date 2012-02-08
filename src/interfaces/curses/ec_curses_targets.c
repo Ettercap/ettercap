@@ -187,10 +187,7 @@ static void curses_current_targets(void)
   
    /* if the object already exist, recreate it */
    if (wdg_comp) {
-      /* set the new arrays */
-      wdg_list_set_elements(wdg_t1, wdg_t1_elm);
-      wdg_list_set_elements(wdg_t2, wdg_t2_elm);
-      return;
+      wdg_destroy_object(&wdg_comp);
    }
 
    wdg_create_object(&wdg_comp, WDG_COMPOUND, WDG_OBJ_WANT_FOCUS);

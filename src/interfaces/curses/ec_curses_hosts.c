@@ -68,6 +68,7 @@ static void curses_scan(void)
 
    /* no target defined...  force a full scan */
    if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip &&
+       GBL_TARGET1->all_ip6 && GBL_TARGET2->all_ip6 &&
       !GBL_TARGET1->scan_all && !GBL_TARGET2->scan_all) {
       GBL_TARGET1->scan_all = 1;
       GBL_TARGET2->scan_all = 1;

@@ -44,6 +44,12 @@ enum {
    MAX_ASCII_ADDR_LEN      = IP6_ASCII_ADDR_LEN,                  
 };
 
+/*
+ * Some predefined addresses here
+ */
+#define IP6_ALL_NODES "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+#define IP6_ALL_ROUTERS "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02"
+
 /* 
  * this structure is used by ettercap to handle 
  * an IP packet disregarding its version 

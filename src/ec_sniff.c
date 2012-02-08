@@ -516,6 +516,7 @@ void add_ip_list(struct ip_addr *ip, struct target_env *t)
    
          /* the target has at least one ip, so remove the "all" flag */
          t->all_ip = 0;
+         t->scan_all = 0;
    
          IP_LIST_UNLOCK;
          break;
@@ -537,6 +538,7 @@ void add_ip_list(struct ip_addr *ip, struct target_env *t)
             LIST_INSERT_HEAD(&t->ip6, e, next);
 
          t->all_ip6 = 0;
+         t->scan_all = 0;
          IP6_LIST_UNLOCK;
          break;
    }

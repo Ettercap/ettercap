@@ -684,6 +684,75 @@ int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip)
    return c;
 }
 
+/* 
+ * Sends neighbor solicitation request (like arp request with ipv4)
+ * macaddr parameter allows to add sender's mac address. This is an option for unicast requests.
+ * See RFC4861 for more information.
+ */
+int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *req, u_int8 *macaddr)
+{  
+   libnet_ptag_t t;
+   int c, h;
+   struct libnet_in6_addr src, dst, r;
+   int flags;
+   
+   BUG_IF(GBL_LNET->lnet_IP6 == NULL);
+
+   SEND_LOCK;
+
+   memcpy(&src, sip->addr, sizeof(src));
+   memcpy(&dst, tip->addr, sizeof(dst));
+   memcpy(&r, req->addr, sizeof(r));
+
+   if(macaddr != NULL) {
+      t = libnet_build_icmpv6_ndp_lla(ICMPV6_NDPOPT_SLLA,   /* Address type */
+                                      1,                    /* Length in 8-bytes chunks */
+                                      macaddr,              /* MAC address */
+                                      MEDIA_ADDR_LEN,       /* Address length */
+                                      GBL_LNET->lnet_IP6,   /* libnet handle */
+                                      0);                   /* ptag */
+      ON_ERROR(t, -1, "libnet_build_icmpv6_ndp_lla: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   }
+
+   t = libnet_build_icmpv6_nsol(r,                                   /* address */
+                                GBL_LNET->lnet_IP6,                  /* libnet handle */
+                                0);                                  /* ptag */
+   ON_ERROR(t, -1, "libnet_build_icmpv6_nadv: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   
+   t = libnet_build_icmpv6(ICMP6_NEIGHSOL,   /* type */
+                           0,                /* code */
+                           0,                /* checksum */
+                           NULL,             /* payload */
+                           0,                /* its size */
+                           GBL_LNET->lnet_IP6, /* libnet handler */
+                           0);               /* ptag */
+   ON_ERROR(t, -1, "libnet_build_icmpv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   libnet_toggle_checksum(GBL_LNET->lnet_IP6, t, LIBNET_ON);
+   h = LIBNET_ICMPV6_H + LIBNET_ICMPV6_NDP_NSA_H + 8;
+   
+   t = libnet_build_ipv6(0,                  /* tc */
+                         0,                  /* flow label */
+                         h,                  /* length */
+                         IPPROTO_ICMP6,      /* proto */
+                         255,                /* hop limit */
+                         src,                /* source address */
+                         dst,                /* target address */
+                         NULL,               /* payload */
+                         0,                  /* its size */
+                         GBL_LNET->lnet_IP6, /* handle */
+                         0);                 /* ptag */
+   ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   
+   c = libnet_write(GBL_LNET->lnet_IP6);
+   ON_ERROR(c, -1, "libnet_write: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+
+   libnet_clear_packet(GBL_LNET->lnet_IP6);
+
+   SEND_UNLOCK;
+
+   return c;
+}
+
 int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router)
 {
    libnet_ptag_t t;

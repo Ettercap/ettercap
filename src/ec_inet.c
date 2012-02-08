@@ -336,8 +336,6 @@ int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr)
 	u_int32* network;
 	u_int32 broadcast;
 
-   static u_int8 ip6_ll_multicast[] = "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01";
-
 	int i;
 
 	switch(ntohs(sa->addr_type)) {
@@ -367,7 +365,7 @@ int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr)
           * equivalent is the multicast address ff02::1. Packets sent to that
           * address are delivered to all link-local nodes.
           */
-         if(!memcpy(sa->addr, ip6_ll_multicast, IP6_ADDR_LEN))
+         if(!memcpy(sa->addr, IP6_ALL_NODES, IP6_ADDR_LEN))
             return ESUCCESS;
          
 			break;

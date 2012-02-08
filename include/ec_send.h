@@ -26,6 +26,7 @@ EC_API_EXTERN int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tma
 EC_API_EXTERN int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
 EC_API_EXTERN int send_L3_icmp_unreach(struct packet_object *po);
 EC_API_EXTERN int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
+EC_API_EXTERN int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr);
 EC_API_EXTERN int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router);
 
 EC_API_EXTERN void capture_only_incoming(pcap_t *p, libnet_t *l);

@@ -104,6 +104,7 @@ void build_hosts_list(void)
 
    /* no target defined... */
    if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip &&
+       GBL_TARGET1->all_ip6 && GBL_TARGET2->all_ip6 &&
        !GBL_TARGET1->scan_all && !GBL_TARGET2->scan_all)
       return;
 
@@ -164,21 +165,21 @@ static EC_THREAD_FUNC(scan_thread)
     * ARP packets.
     */
    hook_add(HOOK_PACKET_ARP_RP, &get_response);
+   hook_add(HOOK_PACKET_ICMP6_NADV, &get_response);
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
 
    /*
-    * if at least one target is ANY, scan the whole netmask
-    * else scan only the specified targets
+    * if at least one ip target is ANY, scan the whole netmask
     *
     * the pid parameter is used to kill the thread if
     * the user request to stop the scan.
+    *
+    * FIXME: ipv4 host gets scanned twice if in target list
     */
-   if(GBL_IFACE->has_ipv4) {
-      if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
-         scan_netmask(pid);
-      else
-         scan_targets(pid);
+   if(GBL_TARGET1->all_ip || GBL_TARGET2->all_ip) {
+      scan_netmask(pid);
    }
+   scan_targets(pid);
 
    /*
     * free the temporary array for random computations
@@ -200,6 +201,7 @@ static EC_THREAD_FUNC(scan_thread)
    /* destroy the thread and remove the hook function */
    ec_thread_destroy(pid);
    hook_del(HOOK_PACKET_ARP, &get_response);
+   hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
 
    /* count the hosts and print the message */
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
@@ -460,6 +462,8 @@ static void scan_targets(pthread_t pid)
    int nhosts = 0, found, n = 1, ret;
    struct ip_list *e, *i, *m, *tmp;
    char title[100];
+   struct ip_addr ip;
+   struct ip_addr bc;
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
@@ -486,13 +490,17 @@ static void scan_targets(pthread_t pid)
       /* add to the list randomly */
       random_list(e, nhosts);
    }
+   LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
+
+      SAFE_CALLOC(e, 1, sizeof(struct ip_list));
+      memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
+      nhosts++;
+
+      random_list(e, nhosts);
+   }
 
    /* then merge the target2 ips */
    LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
-
-      SAFE_CALLOC(e, 1, sizeof(struct ip_list));
-
-      memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
 
       found = 0;
 
@@ -500,17 +508,39 @@ static void scan_targets(pthread_t pid)
       LIST_FOREACH(m, &ip_list_head, next)
          if (!ip_addr_cmp(&m->ip, &i->ip)) {
             found = 1;
-            SAFE_FREE(e);
             break;
          }
 
       /* add it */
       if (!found) {
+         SAFE_CALLOC(e, 1, sizeof(struct ip_list));
+         memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
+
          nhosts++;
          /* add to the list randomly */
          random_list(e, nhosts);
       }
    }
+
+   LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
+      found = 0;
+
+      LIST_FOREACH(m, &ip_list_head, next)
+         if (!ip_addr_cmp(&m->ip, &i->ip)) {
+            found = 1;
+            break;
+         }
+
+      if (!found) {
+         SAFE_CALLOC(e, 1, sizeof(struct ip_list));
+         memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
+
+         nhosts++;
+         /* add to the list randomly */
+         random_list(e, nhosts);
+      }
+   }
+
 
    DEBUG_MSG("scan_targets: %d hosts to be scanned", nhosts);
 
@@ -524,7 +554,17 @@ static void scan_targets(pthread_t pid)
    /* and now scan the LAN */
    LIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
-      send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
+      switch(ntohs(e->ip.addr_type)) {
+         case AF_INET:
+            send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
+            break;
+
+         case AF_INET6:
+            ip_addr_is_local(&e->ip, &ip);
+            ip_addr_init(&bc, AF_INET6, IP6_ALL_NODES);
+            send_icmp6_nsol(&ip, &bc, &e->ip, GBL_IFACE->mac);
+            break;
+      }
 
       /* update the progress bar */
       ret = ui_progress(title, n++, nhosts);
@@ -535,6 +575,7 @@ static void scan_targets(pthread_t pid)
          /* destroy the capture thread and remove the hook function */
          ec_thread_destroy(pid);
          hook_del(HOOK_PACKET_ARP, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
          /* delete the temporary list */
          LIST_FOREACH_SAFE(e, &ip_list_head, next, tmp) {
             LIST_REMOVE(e, next);

@@ -47,17 +47,17 @@ EC_THREAD_FUNC(isolate);
 
 struct plugin_ops isolate_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "isolate",  
+   .name =              "isolate",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Isolate an host from the lan",  
+   .info =              "Isolate an host from the lan",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &isolate_init,
+   .init =              &isolate_init,
    /* deactivation function */                     
-   fini:             &isolate_fini,
+   .fini =              &isolate_fini,
 };
 
 /**********************************************************/

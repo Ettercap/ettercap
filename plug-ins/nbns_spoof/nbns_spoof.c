@@ -158,12 +158,12 @@ static void nbns_spoof_dump(void);
 
 struct plugin_ops nbns_spoof_ops = {
 	/* ettercap version must be the global EC_VERSION */
-	ettercap_version: 	EC_VERSION,
-	name:			"nbns_spoof",
-	info:			"Sends spoof NBNS replies & sends SMB challenges with custom challenge",
-	version:		"1.0",
-	init:			&nbns_spoof_init,
-	fini:			&nbns_spoof_fini,	
+	.ettercap_version =  	EC_VERSION,
+	.name = 			"nbns_spoof",
+	.info = 			"Sends spoof NBNS replies & sends SMB challenges with custom challenge",
+	.version = 		"1.0",
+	.init = 			&nbns_spoof_init,
+	.fini = 			&nbns_spoof_fini,	
 };
 
 int plugin_load(void *handle)

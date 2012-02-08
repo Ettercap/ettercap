@@ -52,17 +52,17 @@ SLIST_HEAD(, port_list) port_table;
 /* plugin operations */
 struct plugin_ops dos_attack_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "dos_attack",  
+   .name =              "dos_attack",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Run a d.o.s. attack against an IP address",  
+   .info =              "Run a d.o.s. attack against an IP address",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &dos_attack_init,
+   .init =              &dos_attack_init,
    /* deactivation function */                     
-   fini:             &dos_attack_fini,
+   .fini =              &dos_attack_fini,
 };
 
 /**********************************************************/

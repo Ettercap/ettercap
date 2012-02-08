@@ -49,17 +49,17 @@ static void get_replies(struct packet_object *po);
 
 struct plugin_ops gw_discover_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "gw_discover",  
+   .name =              "gw_discover",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Try to find the LAN gateway",  
+   .info =              "Try to find the LAN gateway",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &gw_discover_init,
+   .init =              &gw_discover_init,
    /* deactivation function */                     
-   fini:             &gw_discover_fini,
+   .fini =              &gw_discover_fini,
 };
 
 /**********************************************************/

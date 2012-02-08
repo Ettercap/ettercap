@@ -58,17 +58,17 @@ static void parse_icmp(struct packet_object *po);
 
 struct plugin_ops chk_poison_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "chk_poison",  
+   .name =              "chk_poison",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Check if the poisoning had success",  
+   .info =              "Check if the poisoning had success",  
    /* the plugin version. */ 
-   version:          "1.1",   
+   .version =           "1.1",   
    /* activation function */
-   init:             &chk_poison_init,
+   .init =              &chk_poison_init,
    /* deactivation function */                     
-   fini:             &chk_poison_fini,
+   .fini =              &chk_poison_fini,
 };
 
 /**********************************************************/

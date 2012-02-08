@@ -52,17 +52,17 @@ static u_char *parse_option(u_char * buffer, u_char option, int16 tot_len);
 /* plugin operations */
 struct plugin_ops pptp_pap_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "pptp_pap",  
+   .name =              "pptp_pap",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "PPTP: Forces PAP authentication",  
+   .info =              "PPTP: Forces PAP authentication",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &pptp_pap_init,
+   .init =              &pptp_pap_init,
    /* deactivation function */                     
-   fini:             &pptp_pap_fini,
+   .fini =              &pptp_pap_fini,
 };
 
 /**********************************************************/

@@ -20,12 +20,12 @@ static EC_THREAD_FUNC(smurfer);
 /* globals */
 
 struct plugin_ops smurf_attack_ops = {
-   ettercap_version:    EC_VERSION,
-   name:                "smurf_attack",
-   info:                "Run a smurf attack against specified hosts",
-   version:             "1.0",
-   init:                &smurf_attack_init,
-   fini:                &smurf_attack_fini,
+   .ettercap_version =     EC_VERSION,
+   .name =                 "smurf_attack",
+   .info =                 "Run a smurf attack against specified hosts",
+   .version =              "1.0",
+   .init =                 &smurf_attack_init,
+   .fini =                 &smurf_attack_fini,
 };
 
 /* teh c0d3 */

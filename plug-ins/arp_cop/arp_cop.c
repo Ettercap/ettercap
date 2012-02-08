@@ -43,17 +43,17 @@ LIST_HEAD(, hosts_list) arp_cop_table;
 
 struct plugin_ops arp_cop_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "arp_cop",  
+   .name =              "arp_cop",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Report suspicious ARP activity",  
+   .info =              "Report suspicious ARP activity",  
    /* the plugin version. */ 
-   version:          "1.1",   
+   .version =           "1.1",   
    /* activation function */
-   init:             &arp_cop_init,
+   .init =              &arp_cop_init,
    /* deactivation function */                     
-   fini:             &arp_cop_fini,
+   .fini =              &arp_cop_fini,
 };
 
 /**********************************************************/

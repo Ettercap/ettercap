@@ -336,8 +336,6 @@ int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr)
 	u_int32* network;
 	u_int32 broadcast;
 
-	int i;
-
 	switch(ntohs(sa->addr_type)) {
 		case AF_INET:
          if(!GBL_IFACE->has_ipv4)

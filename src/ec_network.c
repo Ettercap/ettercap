@@ -53,8 +53,6 @@ void network_init()
 {
    char *iface;
    char perrbuf[PCAP_ERRBUF_SIZE];
-   char **slist;
-   int n;
 
    DEBUG_MSG("init_network");
 
@@ -89,8 +87,10 @@ void network_init()
    GBL_PCAP->align = get_alignment(GBL_PCAP->dlt);
    SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align + 256, sizeof(char));
 
-   if(GBL_OPTIONS->secondary) 
+   if(GBL_OPTIONS->secondary) {
       secondary_sources_init(GBL_OPTIONS->secondary);
+      atexit(close_secondary_sources);
+   }
 
    /* Layer 3 handlers initialization */
    if(!GBL_OPTIONS->unoffensive)
@@ -310,7 +310,6 @@ static void source_close(struct iface_env *iface)
 
 static int secondary_sources_init(char **sources)
 {
-   char *s;
    struct source_entry *se;
    int n = 0;
 

@@ -612,7 +612,6 @@ int scan_load_hosts(char *filename)
    char ip[MAX_ASCII_ADDR_LEN];
    char mac[ETH_ASCII_ADDR_LEN];
    char name[MAX_HOSTNAME_LEN];
-   char line[MAX_ASCII_ADDR_LEN + ETH_ASCII_ADDR_LEN + MAX_ASCII_ADDR_LEN + 3];
    u_int8 tip[MAX_IP_ADDR_LEN];
    struct ip_addr hip;
    u_int8 hmac[MEDIA_ADDR_LEN];
@@ -793,8 +792,6 @@ void __init hook_init(void)
  */
 static void hosts_list_hook(struct packet_object *po)
 {
-   struct hosts_list *h;
-   
    switch(ip_addr_is_ours(&po->L3.src)) {
       case EFOUND:
       case EBRIDGE:

@@ -100,7 +100,6 @@ FUNC_DECODER(decode_ip6)
    struct ip6_header *ip6;
    struct ec_session *s;
    void *ident;
-   int opt; /* -1 means no options defined, if 0 an option is present */
 
    ip6 = (struct ip6_header *)DECODE_DATA;
   
@@ -210,6 +209,8 @@ FUNC_DECODER(decode_ip6_ext)
    }
 
    EXECUTE_DECODER(next_decoder);
+
+   return NULL;
 }
 
 FUNC_INJECTOR(inject_ip6)

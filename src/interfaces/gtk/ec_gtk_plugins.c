@@ -54,7 +54,7 @@ static GtkTreeSelection *selection = NULL;
 void gtkui_plugin_load(void)
 {
    GtkWidget *dialog;
-   char *filename;
+   const char *filename;
    int response = 0;
 #ifdef OS_WINDOWS
    char *path = get_full_path("/lib/", "");

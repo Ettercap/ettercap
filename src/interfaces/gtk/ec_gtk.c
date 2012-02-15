@@ -708,7 +708,7 @@ static void gtkui_setup(void)
 static void gtkui_file_open(void)
 {
    GtkWidget *dialog;
-   char *filename;
+   const char *filename;
    int response = 0;
 
    DEBUG_MSG("gtk_file_open");
@@ -800,7 +800,8 @@ static void write_pcapfile(void)
 static void gtkui_unified_sniff(void)
 {
    GList *iface_list;
-   char *iface_desc = NULL, err[100];
+   const char *iface_desc = NULL;
+   char err[100];
    GtkWidget *iface_combo;
    pcap_if_t *dev;
    GtkWidget *dialog, *label, *hbox, *image;
@@ -908,7 +909,8 @@ static void gtkui_bridged_sniff(void)
    GtkWidget *dialog, *vbox, *hbox, *image;
    GtkWidget *hbox_big, *label, *combo1, *combo2;
    GList *iface_list;
-   char *iface_desc = NULL, err[100];
+   const char *iface_desc = NULL;
+   char err[100];
    pcap_if_t *dev;
 
    DEBUG_MSG("gtk_bridged_sniff");
@@ -1335,7 +1337,7 @@ void gtkui_filename_browse(GtkWidget *widget, gpointer data)
 {  
    GtkWidget *dialog = NULL;
    gint response = 0;
-   char *filename = NULL;
+   const char *filename = NULL;
    
    dialog = gtk_file_selection_new ("Select a file...");
    

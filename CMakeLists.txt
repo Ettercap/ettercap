@@ -13,8 +13,8 @@ set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation direct
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
 
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -pg" CACHE STRING "" FORCE)
-set(CMAKE_C_FLAGS "-O2 -w" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_RELEASE "-O2 -w" CACHE STRING "" FORCE)
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,-export-dynamic" CACHE STRING "" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl,-export-dynamic -pg" CACHE STRING "" FORCE)

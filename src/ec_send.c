@@ -54,8 +54,6 @@ struct build_entry {
 
 /* protos */
 
-void send_init(void);
-static void send_close(void);
 int send_to_L3(struct packet_object *po);
 int send_to_L2(struct packet_object *po);
 int send_to_bridge(struct packet_object *po);
@@ -694,7 +692,6 @@ int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *re
    libnet_ptag_t t;
    int c, h;
    struct libnet_in6_addr src, dst, r;
-   int flags;
    
    BUG_IF(GBL_LNET->lnet_IP6 == NULL);
 

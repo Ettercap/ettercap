@@ -171,9 +171,7 @@ EC_THREAD_FUNC(nadv_poisoner)
 
 static int create_list(void)
 {
-   struct hosts_list *h;
    struct ip_list *i;
-   char tmp[MAX_ASCII_ADDR_LEN];
    struct ip_addr local;
 
    DEBUG_MSG("create_list");

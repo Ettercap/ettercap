@@ -72,7 +72,7 @@ void gtkui_scan(void)
 void gtkui_load_hosts(void)
 {
    GtkWidget *dialog;
-   char *filename;
+   const char *filename;
    int response = 0;
 
    DEBUG_MSG("gtk_load_hosts");

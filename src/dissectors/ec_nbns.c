@@ -142,7 +142,7 @@ FUNC_DECODER(dissector_nbns)
 		int name_len = nbns_expand(response->rr_name, name);
 
 		struct ip_addr addr;
-		ip_addr_init(&addr, AF_INET, response->rr_data.addr);
+		ip_addr_init(&addr, AF_INET, &response->rr_data.addr);
 		ip_addr_ntoa(&addr, ip);
 		
 		DEBUG_MSG("NBNS Transaction ID [0x%04x] Response: %s -> %s\n", ntohs(header->transactid), name, ip);

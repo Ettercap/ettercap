@@ -42,7 +42,7 @@ void gtkui_stop_filter(void);
 void gtkui_load_filter(void)
 {
    GtkWidget *dialog;
-   char *filename;
+   const char *filename;
    int response = 0;
    char *path = get_full_path("share", "");
 

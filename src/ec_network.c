@@ -41,6 +41,7 @@ static void source_print(struct iface_env *source);
 static int source_init(char *name, struct iface_env *source, bool primary, bool live);
 static void source_close(struct iface_env *iface);
 static int secondary_sources_init(char **sources);
+void secondary_sources_foreach(void (*)(struct iface_env*));
 static void close_secondary_sources(void);
 static void l3_init(void);
 static void l3_close(void);
@@ -329,6 +330,19 @@ static int secondary_sources_init(char **sources)
    SOURCES_LIST_UNLOCK;
 
    return n;
+}
+
+void secondary_sources_foreach(void (*callback)(struct iface_env*))
+{
+    struct source_entry *se;
+
+    SOURCES_LIST_LOCK;
+
+    LIST_FOREACH(se, &sources_list, next) {
+        callback(&se->iface);
+    }
+
+    SOURCES_LIST_UNLOCK;
 }
 
 static void close_secondary_sources(void)

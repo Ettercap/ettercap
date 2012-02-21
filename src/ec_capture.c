@@ -44,8 +44,10 @@ struct align_entry {
 
 /* protos */
 
+void capture_start(struct iface_env *);
+void capture_stop(struct iface_env *);
+
 EC_THREAD_FUNC(capture);
-EC_THREAD_FUNC(capture_bridge);
 
 void capture_getifs(void);
 int is_pcap_file(char *file, char *errbuf);
@@ -79,6 +81,25 @@ static char *iface_name(const char *s)
    return buf;
 }
 
+void capture_start(struct iface_env *iface)
+{
+   char thread_name[64];
+
+   snprintf(thread_name, sizeof(thread_name), "capture[%s]", iface->name);
+   ec_thread_new(thread_name, "pcap handler and packet decoder", &capture, iface);
+}
+
+void capture_stop(struct iface_env *iface)
+{
+   pthread_t pid;
+   char thread_name[64];
+
+   snprintf(thread_name, sizeof(thread_name), "capture[%s]", iface->name);
+   pid = ec_thread_getpid(thread_name);
+   if(!pthread_equal(pid, EC_PTHREAD_NULL))
+      ec_thread_destroy(pid);
+}
+
 /*
  * start capturing packets
  */
@@ -86,9 +107,12 @@ static char *iface_name(const char *s)
 EC_THREAD_FUNC(capture)
 {
    int ret;
+   struct iface_env *iface;
    
    /* init the thread and wait for start up */
    ec_thread_init();
+
+   iface = EC_THREAD_PARAM;
    
    DEBUG_MSG("neverending loop (capture)");
 
@@ -99,32 +123,9 @@ EC_THREAD_FUNC(capture)
     * infinite loop 
     * dispatch packets to ec_decode
     */
-   ret = pcap_loop(GBL_IFACE->pcap, -1, ec_decode, EC_THREAD_PARAM);
-   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_IFACE->pcap));
+   ret = pcap_loop(iface->pcap, -1, ec_decode, EC_THREAD_PARAM);
+   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(iface->pcap));
    
-   return NULL;
-}
-
-
-EC_THREAD_FUNC(capture_bridge)
-{
-   int ret;
-
-   /* init the thread and wait for start up */
-   ec_thread_init();
-   
-   DEBUG_MSG("neverending loop (capture_bridge)");
-   
-   /* wipe the stats */
-   stats_wipe();
-   
-   /* 
-    * infinite loop 
-    * dispatch packets to ec_decode
-    */
-   ret = pcap_loop(GBL_BRIDGE->pcap, -1, ec_decode, EC_THREAD_PARAM);
-   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_BRIDGE->pcap));
-
    return NULL;
 }
 

@@ -61,7 +61,10 @@ void start_unified_sniff(void)
    }
 
    /* create the thread for packet capture */
-   ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
+   capture_start(GBL_IFACE);
+
+   if(GBL_OPTIONS->secondary)
+      secondary_sources_foreach(capture_start);
 
    /* start ssl_wrapper thread */
    if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm && GBL_OPTIONS->ssl_mitm)
@@ -85,10 +88,11 @@ void stop_unified_sniff(void)
       return;
    }
   
-   /* get the pid and kill it */
-   pid = ec_thread_getpid("capture");
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
-      ec_thread_destroy(pid);
+   /* kill it */
+   capture_stop(GBL_IFACE);
+
+   if(GBL_OPTIONS->secondary)
+      secondary_sources_foreach(capture_stop);
    
    pid = ec_thread_getpid("sslwrap");
    if (!pthread_equal(pid, EC_PTHREAD_NULL))

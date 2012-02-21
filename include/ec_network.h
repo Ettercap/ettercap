@@ -29,6 +29,7 @@ struct iface_env {
 
 
 EC_API_EXTERN void network_init();
+EC_API_EXTERN void secondary_sources_foreach(void (*callback)(struct iface_env*));
 EC_API_EXTERN struct iface_env* iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN]);
 
 #endif

@@ -7,8 +7,10 @@
 #include <ec.h>
 #include <ec_threads.h>
 
+EC_API_EXTERN void capture_start(struct iface_env *);
+EC_API_EXTERN void capture_stop(struct iface_env *);
+
 EC_API_EXTERN EC_THREAD_FUNC(capture);
-EC_API_EXTERN EC_THREAD_FUNC(capture_bridge);
 
 EC_API_EXTERN int is_pcap_file(char *file, char *errbuf);
 EC_API_EXTERN void capture_getifs(void);

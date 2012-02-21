@@ -135,7 +135,6 @@ void parse_options(int argc, char **argv)
       
       { "iface", required_argument, NULL, 'i' },
       { "lifaces", no_argument, NULL, 'I' },
-      { "secondary", required_argument, NULL, 'S' },
       { "netmask", required_argument, NULL, 'n' },
       { "address", required_argument, NULL, 'A' },
       { "write", required_argument, NULL, 'w' },

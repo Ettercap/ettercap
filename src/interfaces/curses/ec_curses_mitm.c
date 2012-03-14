@@ -37,7 +37,7 @@ static void curses_mitm_stop(void);
 
 /* globals */
 
-#define PARAMS_LEN   50
+#define PARAMS_LEN   64
 
 static char params[PARAMS_LEN];
 

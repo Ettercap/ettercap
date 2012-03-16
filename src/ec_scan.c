@@ -558,12 +558,13 @@ static void scan_targets(pthread_t pid)
          case AF_INET:
             send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
             break;
-
+#ifdef WITH_IPV6
          case AF_INET6:
             ip_addr_is_local(&e->ip, &ip);
             ip_addr_init(&bc, AF_INET6, IP6_ALL_NODES);
             send_icmp6_nsol(&ip, &bc, &e->ip, GBL_IFACE->mac);
             break;
+#endif
       }
 
       /* update the progress bar */

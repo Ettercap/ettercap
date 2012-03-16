@@ -106,10 +106,12 @@ static EC_THREAD_FUNC(smurfer)
          icmp_send = send_L3_icmp_echo;
          ips = &GBL_TARGET2->ips;
          break;
+#ifdef WITH_IPV6
       case AF_INET6:
          icmp_send = send_icmp6_echo;
          ips = &GBL_TARGET2->ip6;
          break;
+#endif
       default:
       /* This won't ever be reached
        * if no other network layer protocol

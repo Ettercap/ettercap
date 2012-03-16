@@ -75,8 +75,11 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
 int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 sport, u_int16 dport, u_int8 *payload, size_t length);
 int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
 int send_L3_icmp_unreach(struct packet_object *po);
+
+#ifdef WITH_IPV6
 int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
 int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router);
+#endif
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SEND_LOCK     do{ pthread_mutex_lock(&send_mutex); } while(0)
@@ -628,6 +631,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
    return c;
 }
 
+#ifdef WITH_IPV6
 int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip)
 {
    libnet_ptag_t t;
@@ -814,6 +818,7 @@ int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tg
 
    return c;
 }
+#endif /* WITH_IPV6 */
 
 /*
  * send a dhcp reply to tmac/tip

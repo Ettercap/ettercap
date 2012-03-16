@@ -84,7 +84,6 @@ set(EC_SRC
         mitm/ec_arp_poisoning.c
         mitm/ec_dhcp_spoofing.c
         mitm/ec_icmp_redirect.c
-        mitm/ec_ip6nd_poison.c
         mitm/ec_port_stealing.c
 
         protocols/ec_arp.c
@@ -92,9 +91,7 @@ set(EC_SRC
         protocols/ec_eth.c
         protocols/ec_fddi.c
         protocols/ec_gre.c
-        protocols/ec_icmp6.c
         protocols/ec_icmp.c
-        protocols/ec_ip6.c
         protocols/ec_ip.c
         protocols/ec_ppp.c
         protocols/ec_prism.c
@@ -105,6 +102,10 @@ set(EC_SRC
         protocols/ec_vlan.c
         protocols/ec_wifi.c
 )
+
+if(ENABLE_IPV6)
+    set(EC_SRC ${EC_SRC} protocols/ec_icmp6.c protocols/ec_ip6.c mitm/ec_ip6nd_poison.c)
+endif(ENABLE_IPV6)
 
 if(HAVE_DN_EXPAND)
     set(EC_SRC ${EC_SRC} dissectors/ec_dns.c)

@@ -45,4 +45,6 @@ if(ENABLE_IPV6)
     set(WITH_IPV6 TRUE)
 endif(ENABLE_IPV6)
 
+# This line should ALWAYS be after all options are defined
 configure_file(include/config.h.cmake ${CMAKE_SOURCE_DIR}/include/config.h)
+

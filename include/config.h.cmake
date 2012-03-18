@@ -39,6 +39,7 @@
 
 #cmakedefine HAVE_UTF8
 #cmakedefine HAVE_PLUGINS
+#cmakedefine WITH_IPV6
 
 #cmakedefine INSTALL_PREFIX         "@INSTALL_PREFIX@"
 #cmakedefine INSTALL_SYSCONFDIR     "@INSTALL_SYSCONFDIR@"

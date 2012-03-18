@@ -29,7 +29,6 @@ include(CMakeFiles/lib_check.cmake)
 include(CMakeFiles/variable_check.cmake)
 
 include_directories(include)
-configure_file(include/config.h.cmake ${CMAKE_SOURCE_DIR}/include/config.h)
 
 add_subdirectory(src)
 if(HAVE_PLUGINS)
@@ -42,6 +41,8 @@ endif(HAVE_PLUGINS)
 add_subdirectory(utils)
 add_subdirectory(share)
 
-if (ENABLE_IPV6)
-set(WITH_IPV6 TRUE)
+if(ENABLE_IPV6)
+    set(WITH_IPV6 TRUE)
 endif(ENABLE_IPV6)
+
+configure_file(include/config.h.cmake ${CMAKE_SOURCE_DIR}/include/config.h)

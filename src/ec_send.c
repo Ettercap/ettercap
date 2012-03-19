@@ -645,29 +645,23 @@ int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip)
    memcpy(&src, sip->addr, sizeof(src));
    memcpy(&dst, tip->addr, sizeof(dst));
 
-   t = libnet_build_icmpv6_echo(EC_MAGIC_16,    /* id */
+   t = libnet_build_icmpv6_echo(ICMP6_ECHO_REQUEST,   /* type */
+                                0,              /* code */
+                                0,              /* checksum */
+                                EC_MAGIC_16,    /* id */
                                 0,              /* sequence number */
                                 NULL,           /* data */
                                 0,              /* its size */
                                 GBL_LNET->lnet_IP6,   /* handle */
                                 0);
    ON_ERROR(t, -1, "libnet_build_icmpv6_echo: %s", libnet_geterror(GBL_LNET->lnet_IP6));
-
-   t = libnet_build_icmpv6(ICMP6_ECHO,    /* type */
-                           0,             /* code */
-                           0,             /* checksum */
-                           NULL,          /* payload */
-                           0,             /* pl size */
-                           GBL_LNET->lnet_IP6, /* handle */
-                           0);
-   ON_ERROR(t, -1, "libnet_build_icmpv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
    libnet_toggle_checksum(GBL_LNET->lnet_IP6, t, LIBNET_ON);
 
    t = libnet_build_ipv6(0,            /* tc */
                          0,            /* flow label */
-                         LIBNET_ICMPV6_H + LIBNET_ICMPV6_ECHO_H, /* next header size */
+                         LIBNET_ICMPV6_H, /* next header size */
                          IPPROTO_ICMPV6,  /* next header */
-                         255,          /* hop limit */
+                         64,          /* hop limit */
                          src,          /* source */
                          dst,          /* destination */
                          NULL,         /* payload and size */
@@ -694,7 +688,7 @@ int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip)
 int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *req, u_int8 *macaddr)
 {  
    libnet_ptag_t t;
-   int c, h;
+   int c, h = 0;
    struct libnet_in6_addr src, dst, r;
    
    BUG_IF(GBL_LNET->lnet_IP6 == NULL);
@@ -706,30 +700,26 @@ int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *re
    memcpy(&r, req->addr, sizeof(r));
 
    if(macaddr != NULL) {
-      t = libnet_build_icmpv6_ndp_lla(ICMPV6_NDPOPT_SLLA,   /* Address type */
-                                      1,                    /* Length in 8-bytes chunks */
+      t = libnet_build_icmpv6_ndp_opt(ND_OPT_SOURCE_LINKADDR,   /* Address type */
                                       macaddr,              /* MAC address */
                                       MEDIA_ADDR_LEN,       /* Address length */
                                       GBL_LNET->lnet_IP6,   /* libnet handle */
                                       0);                   /* ptag */
-      ON_ERROR(t, -1, "libnet_build_icmpv6_ndp_lla: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+      ON_ERROR(t, -1, "libnet_build_icmpv6_ndp_opt: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+      h += 10;
    }
 
-   t = libnet_build_icmpv6_nsol(r,                                   /* address */
-                                GBL_LNET->lnet_IP6,                  /* libnet handle */
-                                0);                                  /* ptag */
-   ON_ERROR(t, -1, "libnet_build_icmpv6_nadv: %s", libnet_geterror(GBL_LNET->lnet_IP6));
-   
-   t = libnet_build_icmpv6(ICMP6_NEIGHSOL,   /* type */
-                           0,                /* code */
-                           0,                /* checksum */
-                           NULL,             /* payload */
-                           0,                /* its size */
-                           GBL_LNET->lnet_IP6, /* libnet handler */
-                           0);               /* ptag */
-   ON_ERROR(t, -1, "libnet_build_icmpv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   t = libnet_build_icmpv6_ndp_nsol(ND_NEIGHBOR_SOLICIT,   /* type */
+                                    0,                /* code */
+                                    0,                /* checksum */
+                                    r,
+                                    NULL,             /* payload */
+                                    0,                /* its size */
+                                    GBL_LNET->lnet_IP6, /* libnet handler */
+                                    0);               /* ptag */
+   ON_ERROR(t, -1, "libnet_build_icmpv6_ndp_nsol: %s", libnet_geterror(GBL_LNET->lnet_IP6));
    libnet_toggle_checksum(GBL_LNET->lnet_IP6, t, LIBNET_ON);
-   h = LIBNET_ICMPV6_H + LIBNET_ICMPV6_NDP_NSA_H + 8;
+   h += 20 + 4;
    
    t = libnet_build_ipv6(0,                  /* tc */
                          0,                  /* flow label */
@@ -757,7 +747,7 @@ int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *re
 int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router)
 {
    libnet_ptag_t t;
-   int c, h;
+   int c, h = 0;
    struct libnet_in6_addr src, dst;
    int flags;
    
@@ -768,33 +758,29 @@ int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tg
    memcpy(&src, sip->addr, sizeof(src));
    memcpy(&dst, tip->addr, sizeof(dst));
 
-   t = libnet_build_icmpv6_ndp_lla(ICMPV6_NDPOPT_TLLA,   /* Address type */
-                                   1,                    /* Length in 8-bytes chunks */
+   t = libnet_build_icmpv6_ndp_opt(ND_OPT_TARGET_LINKADDR,   /* Address type */
                                    macaddr,              /* MAC address */
                                    MEDIA_ADDR_LEN,       /* Address length */
                                    GBL_LNET->lnet_IP6,   /* libnet handle */
                                    0);                   /* ptag */
    ON_ERROR(t, -1, "libnet_build_icmpv6_ndp_lla: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+   h += 10;
 
-   flags = NDP_FL_SOLICITED|NDP_FL_OVERRIDE;
+   flags = ND_NA_FLAG_SOLICITED|ND_NA_FLAG_OVERRIDE;
    if(router)
-      flags |= NDP_FL_ROUTER;
-   t = libnet_build_icmpv6_nadv(flags,                               /* flags */
-                                src,                                 /* address */
-                                GBL_LNET->lnet_IP6,                  /* libnet handle */
-                                0);                                  /* ptag */
-   ON_ERROR(t, -1, "libnet_build_icmpv6_nadv: %s", libnet_geterror(GBL_LNET->lnet_IP6));
-   
-   t = libnet_build_icmpv6(ICMP6_NEIGHADV,   /* type */
-                           0,                /* code */
-                           0,                /* checksum */
-                           NULL,             /* payload */
-                           0,                /* its size */
-                           GBL_LNET->lnet_IP6, /* libnet handler */
-                           0);               /* ptag */
-   ON_ERROR(t, -1, "libnet_build_icmpv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+      flags |= ND_NA_FLAG_ROUTER;
+   t = libnet_build_icmpv6_ndp_nadv(ND_NEIGHBOR_ADVERT,  /* type */
+                                    0,                   /* code */
+                                    0,                   /* checksum */
+                                    flags,               /* flags */
+                                    src,                 /* address */
+                                    NULL,                /* payload */
+                                    0,                   /* payload size */
+                                    GBL_LNET->lnet_IP6,  /* libnet handle */
+                                    0);                  /* ptag */
+   ON_ERROR(t, -1, "libnet_build_icmpv6_ndp_nadv: %s", libnet_geterror(GBL_LNET->lnet_IP6));
    libnet_toggle_checksum(GBL_LNET->lnet_IP6, t, LIBNET_ON);
-   h = LIBNET_ICMPV6_H + LIBNET_ICMPV6_NDP_NSA_H + 8;
+   h += 20 + 4;
    
    t = libnet_build_ipv6(0,                  /* tc */
                          0,                  /* flow label */

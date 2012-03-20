@@ -141,7 +141,8 @@ if GTK
 ettercap_LDADD += interfaces/gtk/libec_gtk.a
 endif
 
-ettercap_LDFLAGS = -export-dynamic @EC_LIBS@ 
+ettercap_LDADD += @EC_LIBS@ 
+ettercap_LDFLAGS = -export-dynamic
 
 CLEANFILES = *.log *.out core* missing/*.o *~
 

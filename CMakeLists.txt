@@ -5,7 +5,7 @@ option(ENABLE_CURSES "Enable curses interface" ON)
 option(ENABLE_GTK "Enable GTK interface" ON)
 option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
-option(ENABLE_IPV6 "Enable IPv6 support" ON)
+option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 
 set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Installation prefix")
 set(INSTALL_SYSCONFDIR /etc CACHE PATH "System configuration directory")

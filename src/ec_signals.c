@@ -156,6 +156,7 @@ static void signal_SEGV(int sig)
    fprintf (stderr, "============================================================================\n");
    
    fprintf (stderr, EC_COLOR_CYAN"\n Core dumping... (use the 'core' file for gdb analysis)\n\n"EC_COLOR_END);
+   fprintf (stderr, EC_COLOR_YELLOW" Have a nice day!\n"EC_COLOR_END);
    
    /* force the coredump */
 #ifndef OS_WINDOWS
@@ -176,6 +177,8 @@ static void signal_SEGV(int sig)
 #endif
       fprintf (stderr, EC_COLOR_RED"Segmentation Fault...\n\n"EC_COLOR_END);
    fprintf(stderr, "Please recompile in debug mode, reproduce the bug and send a bugreport\n\n");
+   fprintf (stderr, EC_COLOR_YELLOW" Have a nice day!\n"EC_COLOR_END);
+
    
    _exit(666);
 #endif

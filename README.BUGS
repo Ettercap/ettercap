@@ -44,7 +44,7 @@ informations:
 
 4) make a tarball with all the needed infos
    
-   # tar zxvf compile_error.tar.gz os.log \
+   # tar cf compile_error.tar.gz os.log \
                                    CMakeCache.txt \
                                    make_output \
                                    make_error

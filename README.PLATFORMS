@@ -8,7 +8,7 @@
        @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
        @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     NG
 
-                      Copyright 2001-2004 ALoR & NaGA
+                      Copyright 2001-2012 The Ettercap Dev Team
 
 ==============================================================================
                         P O R T I N G   S T A T U S
@@ -20,6 +20,8 @@ SYSTEM                  STATUS                NOTES
 
 LINUX
 ------------------------------------------------------------------------------
+   Linux 3.x            FULL           (primary development platform) 
+
    Linux 2.6.x          FULL           (primary development platform) 
 
    Linux 2.4.x          FULL           (primary development platform)

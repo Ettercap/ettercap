@@ -10,7 +10,7 @@
 
                    A suite for man in the middle attacks
 
-                      Copyright 2001-2011 ALoR & NaGA
+                      Copyright 2001-2012 The Ettercap Dev Team
 
 ==============================================================================
 ==============================================================================
@@ -85,13 +85,11 @@ OPTIONAL:
 ============================================================================
 
  The easiest way to compile ettercap is in the form:
-
-    ./autogen.sh
-
-    ./configure
-
-    make
-
+    mkdir build
+    cd build
+    cmake ..
+    (Use ccmake . to change options such as disabling IPv6 support, add
+    plugins support, etc).
     make install
 
  read INSTALL for further details... and REAME.PLATFORMS for any issue

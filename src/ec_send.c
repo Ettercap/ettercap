@@ -295,6 +295,7 @@ libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto)
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac)
 {
    libnet_ptag_t t;
+   libnet_t *l;
    int c;
 
    proto = ntohs(sip->addr_type);

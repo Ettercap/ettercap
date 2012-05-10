@@ -47,6 +47,9 @@ set_target_properties(link_type PROPERTIES PREFIX "ec_")
 add_library(nbns_spoof MODULE nbns_spoof/nbns_spoof.c)
 set_target_properties(nbns_spoof PROPERTIES PREFIX "ec_")
 
+add_library(sslstrip MODULE sslstrip/sslstrip.c)
+set_target_properties(sslstrip PROPERTIES PREFIX "ec_")
+
 add_library(pptp_chapms1 MODULE pptp_chapms1/pptp_chapms1.c)
 set_target_properties(pptp_chapms1 PROPERTIES PREFIX "ec_")
 
@@ -106,6 +109,7 @@ install(TARGETS
             isolate
             link_type
             nbns_spoof
+	    sslstrip
             pptp_chapms1
             pptp_clear
             pptp_pap

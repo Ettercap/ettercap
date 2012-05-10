@@ -87,6 +87,13 @@ if(ENABLE_PLUGINS)
             set(EC_LIBS ${EC_LIBS} ${HAVE_DL})
         endif(HAVE_DL)
     endif(HAVE_DLOPEN)
+
+    find_library(FOUND_LIBCURL curl)
+    if (FOUND_LIBCURL)
+	set(HAVE_LIBCURL 1)
+        set(EC_LIBS ${EC_LIBS} ${FOUND_LIBCURL})
+    endif(FOUND_LIBCURL)
+	
 endif(ENABLE_PLUGINS)
 
 CHECK_FUNCTION_EXISTS(poll HAVE_POLL)

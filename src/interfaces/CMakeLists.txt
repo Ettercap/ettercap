@@ -45,6 +45,7 @@ if(ENABLE_CURSES)
     )
     include_directories(curses/widgets)
     add_library(ec_wdg STATIC ${EC_WDG_SRC})
+    target_link_libraries(ec_wdg ${EC_LIBS})
 endif(ENABLE_CURSES)
 
 if(ENABLE_GTK)
@@ -71,4 +72,4 @@ endif(ENABLE_GTK)
 
 
 add_library(ec_interfaces STATIC ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
-target_link_libraries(ec_interfaces ec_wdg)
+target_link_libraries(ec_interfaces ec_wdg ${EC_LIBS})

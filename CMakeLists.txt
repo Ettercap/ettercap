@@ -7,6 +7,11 @@ option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 
+include(CMakeFiles/os_test.cmake)
+include(CMakeFiles/headers_check.cmake)
+include(CMakeFiles/lib_check.cmake)
+include(CMakeFiles/variable_check.cmake)
+
 set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Installation prefix")
 set(INSTALL_SYSCONFDIR /etc CACHE PATH "System configuration directory")
 set(INSTALL_LIBDIR ${INSTALL_PREFIX}/lib CACHE PATH "Library installation directory")
@@ -23,10 +28,6 @@ set(CMAKE_MODULE_LINKER_FLAGS "-Wl,-export-dynamic" CACHE STRING "" FORCE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMakeModules)
 
-include(CMakeFiles/os_test.cmake)
-include(CMakeFiles/headers_check.cmake)
-include(CMakeFiles/lib_check.cmake)
-include(CMakeFiles/variable_check.cmake)
 
 include_directories(include)
 

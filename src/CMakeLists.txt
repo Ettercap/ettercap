@@ -145,5 +145,5 @@ endif(NOT HAVE_BASENAME)
 add_subdirectory(interfaces)
 
 add_executable(ettercap ${EC_SRC})
-target_link_libraries(ettercap ${EC_LIBS} ec_interfaces)
+target_link_libraries(ettercap ec_interfaces ${EC_LIBS})
 install(TARGETS ettercap DESTINATION ${INSTALL_BINDIR})

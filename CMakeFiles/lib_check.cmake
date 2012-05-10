@@ -11,8 +11,22 @@ if(ENABLE_CURSES)
     find_package(Curses)
     if(CURSES_FOUND)
         set(HAVE_NCURSES 1)
-        set(EC_LIBS ${EC_LIBS} ${CURSES_LIBRARIES} menu panel)
+        set(EC_LIBS ${EC_LIBS} ${CURSES_LIBRARIES})
+        set(EC_LIBS ${EC_LIBS} ${CURSES_NCURSES_LIBRARY})
+        set(EC_LIBS ${EC_LIBS} ${CURSES_FORM_LIBRARY})
         set(EC_INCLUDE ${EC_INCLUDE} ${CURSES_INCLUDE_DIR})
+    endif(CURSES_FOUND)
+
+    find_library(FOUND_PANEL panel)
+    find_library(FOUND_MENU menu)
+
+    if(FOUND_PANEL)
+         set(EC_LIBS ${EC_LIBS} ${FOUND_PANEL})
+    endif(FOUND_PANEL)
+
+    if(FOUND_MENU)
+         set(EC_LIBS ${EC_LIBS} ${FOUND_MENU})
+    endif(FOUND_MENU)
     endif(CURSES_FOUND)
 endif(ENABLE_CURSES)
 

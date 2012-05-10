@@ -27,7 +27,6 @@ if(ENABLE_CURSES)
     if(FOUND_MENU)
          set(EC_LIBS ${EC_LIBS} ${FOUND_MENU})
     endif(FOUND_MENU)
-    endif(CURSES_FOUND)
 endif(ENABLE_CURSES)
 
 if(ENABLE_GTK)

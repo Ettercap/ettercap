@@ -79,6 +79,7 @@ int send_L3_icmp_unreach(struct packet_object *po);
 #ifdef WITH_IPV6
 int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
 int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router);
+int send_arp6(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac);
 #endif
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -292,13 +293,65 @@ libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto)
 /*
  * helper function to send out an ARP packet
  */
+int send_arp6(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac)
+{
+   libnet_ptag_t t;
+   int c;
+
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_IFACE->lnet_IP6 == 0);
+
+   SEND_LOCK;
+
+   /* ARP uses 00:00:00:00:00:00 broadcast */
+   if (type == ARPOP_REQUEST && tmac == MEDIA_BROADCAST)
+      tmac = ARP_BROADCAST;
+
+   /* create the ARP header */
+   t = libnet_build_arp(
+           ARPHRD_ETHER,            /* hardware addr */
+           ETHERTYPE_IP,            /* protocol addr */
+           MEDIA_ADDR_LEN,          /* hardware addr size */
+           IP_ADDR_LEN,             /* protocol addr size */
+           type,                    /* operation type */
+           smac,                    /* sender hardware addr */
+           (u_char *)&(sip->addr),  /* sender protocol addr */
+           tmac,                    /* target hardware addr */
+           (u_char *)&(tip->addr),  /* target protocol addr */
+           NULL,                    /* payload */
+           0,                       /* payload size */
+           GBL_IFACE->lnet_IP6,          /* libnet handle */
+           0);                      /* pblock id */
+   ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_IFACE->lnet_IP6));
+
+   /* MEDIA uses ff:ff:ff:ff:ff:ff broadcast */
+   if (type == ARPOP_REQUEST && tmac == ARP_BROADCAST)
+      tmac = MEDIA_BROADCAST;
+
+   /* add the media header */
+   t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_ARP);
+   if (t == -1)
+      FATAL_ERROR("Interface not suitable for layer2 sending");
+
+   /* send the packet */
+   c = libnet_write(GBL_IFACE->lnet_IP6);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet_IP6));
+
+   /* clear the pblock */
+   libnet_clear_packet(GBL_IFACE->lnet_IP6);
+
+   SEND_UNLOCK;
+
+   return c;
+
+}
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac)
 {
    libnet_ptag_t t;
    int c;
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_IFACE->lnet == 0);
+   BUG_IF(GBL_IFACE->lnet_IP4 == 0);
    
    SEND_LOCK;
 
@@ -319,9 +372,9 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
            (u_char *)&(tip->addr),  /* target protocol addr */
            NULL,                    /* payload */
            0,                       /* payload size */
-           GBL_IFACE->lnet,          /* libnet handle */
+           GBL_IFACE->lnet_IP4,          /* libnet handle */
            0);                      /* pblock id */
-   ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_IFACE->lnet));
+   ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_IFACE->lnet_IP4));
    
    /* MEDIA uses ff:ff:ff:ff:ff:ff broadcast */
    if (type == ARPOP_REQUEST && tmac == ARP_BROADCAST)
@@ -333,11 +386,11 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
       FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* send the packet */
-   c = libnet_write(GBL_IFACE->lnet);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
+   c = libnet_write(GBL_IFACE->lnet_IP4);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet_IP4));
    
    /* clear the pblock */
-   libnet_clear_packet(GBL_IFACE->lnet);
+   libnet_clear_packet(GBL_IFACE->lnet_IP4);
 
    SEND_UNLOCK;
    

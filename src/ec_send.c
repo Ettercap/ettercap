@@ -297,6 +297,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    libnet_ptag_t t;
    libnet_t *l;
    int c;
+   int proto;
 
    proto = ntohs(sip->addr_type);
 

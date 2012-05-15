@@ -295,15 +295,14 @@ libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto)
 int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac)
 {
    libnet_ptag_t t;
-   libnet_t *l;
    int c;
    int proto;
 
    proto = ntohs(sip->addr_type);
 
-   l = (proto == AF_INET) ? GBL_LNET->lnet_IP4 : GBL_LNET->lnet_IP6; 
+
    /* if not lnet warn the developer ;) */
-   BUG_IF(l == NULL);
+   BUG_IF(GBL_IFACE->lnet == NULL);
    
    SEND_LOCK;
 
@@ -324,9 +323,9 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
            (u_char *)&(tip->addr),  /* target protocol addr */
            NULL,                    /* payload */
            0,                       /* payload size */
-           l,          /* libnet handle */
+           GBL_IFACE->lnet,          /* libnet handle */
            0);                      /* pblock id */
-   ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(l));
+   ON_ERROR(t, -1, "libnet_build_arp: %s", libnet_geterror(GBL_IFACE->lnet));
    
    /* MEDIA uses ff:ff:ff:ff:ff:ff broadcast */
    if (type == ARPOP_REQUEST && tmac == ARP_BROADCAST)
@@ -338,11 +337,11 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
       FATAL_ERROR("Interface not suitable for layer2 sending");
    
    /* send the packet */
-   c = libnet_write(l);
-   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(l));
+   c = libnet_write(GBL_IFACE->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
    
    /* clear the pblock */
-   libnet_clear_packet(l);
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    SEND_UNLOCK;
    

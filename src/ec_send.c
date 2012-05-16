@@ -296,10 +296,6 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
 {
    libnet_ptag_t t;
    int c;
-   int proto;
-
-   proto = ntohs(sip->addr_type);
-
 
    /* if not lnet warn the developer ;) */
    BUG_IF(GBL_IFACE->lnet == NULL);

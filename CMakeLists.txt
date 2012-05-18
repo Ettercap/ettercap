@@ -7,6 +7,7 @@ option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 
+include(CMakeModules/CheckVariableInHeaders.cmake)
 include(CMakeFiles/os_test.cmake)
 include(CMakeFiles/headers_check.cmake)
 include(CMakeFiles/lib_check.cmake)

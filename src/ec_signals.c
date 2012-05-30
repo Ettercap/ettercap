@@ -32,8 +32,6 @@
 #ifndef OS_WINDOWS
    #include <sys/resource.h>
    #include <sys/wait.h>
-#else
-   #undef SIGSEGV  /* Don't use this yet */
 #endif
 
 typedef void handler_t(int);

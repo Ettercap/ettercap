@@ -146,4 +146,5 @@ add_subdirectory(interfaces)
 
 add_executable(ettercap ${EC_SRC})
 target_link_libraries(ettercap ec_interfaces ${EC_LIBS})
+set_target_properties(ettercap PROPERTIES ENABLE_EXPORTS TRUE)
 install(TARGETS ettercap DESTINATION ${INSTALL_BINDIR})

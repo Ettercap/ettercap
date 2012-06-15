@@ -35,7 +35,9 @@
 
 #include <regex.h>
 
+#ifdef OS_LINUX
 #include <linux/netfilter_ipv4.h>
+#endif
 
 
 #ifdef HAVE_SYS_POLL_H

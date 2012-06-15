@@ -34,7 +34,10 @@ int plugin_load(void *);
 static int dos_attack_init(void *);
 static int dos_attack_fini(void *);
 static void parse_arp(struct packet_object *po);
+
+#ifdef WITH_IPV6
 static void parse_icmp6(struct packet_object *po);
+#endif
 static void parse_tcp(struct packet_object *po);
 EC_THREAD_FUNC(syn_flooder);
 
@@ -123,8 +126,10 @@ static int dos_attack_init(void *dummy)
    /* Add the hook to "create" the fake host */
    if(ntohs(fake_host.addr_type) == AF_INET)
       hook_add(HOOK_PACKET_ARP_RQ, &parse_arp);
+#ifdef WITH_IPV6
    else if(ntohs(fake_host.addr_type) == AF_INET6)
       hook_add(HOOK_PACKET_ICMP6_NSOL, &parse_icmp6);
+#endif
 
    /* Add the hook for SYN-ACK reply */
    hook_add(HOOK_PACKET_TCP, &parse_tcp);
@@ -211,6 +216,7 @@ static void parse_arp(struct packet_object *po)
       send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
 }
 
+#ifdef WITH_IPV6
 static void parse_icmp6(struct packet_object *po)
 {
    struct ip_addr ip;
@@ -218,6 +224,7 @@ static void parse_icmp6(struct packet_object *po)
    if(!ip_addr_cmp(&fake_host, &ip))
       send_icmp6_nadv(&fake_host, &po->L3.src, &fake_host, GBL_IFACE->mac, 0);
 }
+#endif
 
 /* 
  * Populate the open port list and reply to 

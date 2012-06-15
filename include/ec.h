@@ -86,8 +86,8 @@
 #define __init       __attribute__((constructor(101)))
 #define __init_last  __attribute__((constructor(200))
 #else
-#define __init 
-#define __init_last
+#define __init __attribute__((constructor))
+#define __init_last __init
 #endif
 
 #ifndef __set_errno

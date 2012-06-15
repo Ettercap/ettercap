@@ -9,9 +9,11 @@ add_library(chk_poison MODULE chk_poison/chk_poison.c)
 set_target_properties(chk_poison PROPERTIES PREFIX "ec_")
 
 add_library(dns_spoof MODULE dns_spoof/dns_spoof.c)
+target_link_libraries(dns_spoof ${HAVE_RESOLV})
 set_target_properties(dns_spoof PROPERTIES PREFIX "ec_")
 
 add_library(dos_attack MODULE dos_attack/dos_attack.c)
+target_link_libraries(dos_attack ${HAVE_LIBNET})
 set_target_properties(dos_attack PROPERTIES PREFIX "ec_")
 
 add_library(dummy MODULE dummy/dummy.c)
@@ -92,6 +94,42 @@ set_target_properties(smurf_attack PROPERTIES PREFIX "ec_")
 
 add_library(stp_mangler MODULE stp_mangler/stp_mangler.c)
 set_target_properties(stp_mangler PROPERTIES PREFIX "ec_")
+
+set(PLUGINS arp_cop
+autoadd
+chk_poison
+dns_spoof
+dos_attack
+dummy
+find_conn
+find_ettercap
+find_ip
+finger
+finger_submit
+gre_relay
+gw_discover
+isolate
+link_type
+nbns_spoof
+sslstrip
+pptp_chapms1
+pptp_clear
+pptp_pap
+pptp_reneg
+rand_flood
+remote_browser
+reply_arp
+repoison_arp
+scan_poisoner
+search_promisc
+smb_clear
+smb_down
+smurf_attack
+stp_mangler)
+
+foreach(plugin ${PLUGINS})
+	target_link_libraries(${plugin} ettercap)
+endforeach(plugin)
 
 install(TARGETS
             arp_cop

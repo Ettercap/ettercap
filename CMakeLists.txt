@@ -9,8 +9,18 @@ option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 
+set(MACPORTS_BASE_DIRECTORY "/opt/local" CACHE PATH "MacPorts installation base directory")
+
 include(CMakeModules/CheckVariableInHeaders.cmake)
 include(CMakeFiles/os_test.cmake)
+
+#Check and see if we're running Darwin, specify the CMAKE_LIBARY_PATH to do so
+if(OS_DARWIN)
+	set(CMAKE_SYSTEM_NAME Darwin)
+	set(CMAKE_LIBRARY_PATH ${MACPORTS_BASE_DIRECTORY}/lib ${CMAKE_LIBRARY_PATH})
+	set(CMAKE_INCLUDE_PATH ${MACPORTS_BASE_DIRECTORY}/include ${CMAKE_INCLUDE_PATH})
+endif(OS_DARWIN)
+
 include(CMakeFiles/headers_check.cmake)
 include(CMakeFiles/lib_check.cmake)
 include(CMakeFiles/variable_check.cmake)
@@ -26,9 +36,15 @@ set(MAN_INSTALLDIR ${INSTALL_PREFIX}/man CACHE PATH "Path for manual pages")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)
 set(CMAKE_C_FLAGS_RELEASE "-O2 -w" CACHE STRING "" FORCE)
 
+if(OS_DARWIN)
+set(CMAKE_EXE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl -pg" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
+else(OS_DARWIN)
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,-export-dynamic" CACHE STRING "" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl,-export-dynamic -pg" CACHE STRING "" FORCE)
 set(CMAKE_MODULE_LINKER_FLAGS "-Wl,-export-dynamic" CACHE STRING "" FORCE)
+endif(OS_DARWIN)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMakeModules)
 

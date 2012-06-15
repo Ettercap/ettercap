@@ -83,8 +83,8 @@
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 
 #ifdef OS_LINUX
-#define __init       __attribute__((constructor(1)))
-#define __init_last  __attribute__((constructor(100)))
+#define __init       __attribute__((constructor(101)))
+#define __init_last  __attribute__((constructor(200))
 #else
 #define __init 
 #define __init_last

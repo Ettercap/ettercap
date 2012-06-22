@@ -108,6 +108,7 @@ struct sslw_ident {
 
 #define SSLW_RETRY 5
 #define SSLW_WAIT 10 /* 10 seconds */
+#define SSLW_SET "20"
 
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
@@ -243,7 +244,7 @@ static void ssl_wrap_fini(void)
 {
    struct listen_entry *le, *old;
 
-   DEBUG_MSG("Cleanup...");
+   DEBUG_MSG("ATEXIT: ssl_wrap_fini");
    /* remove every redirect rule */   
    LIST_FOREACH_SAFE(le, &listen_ports, next, old) {
       sslw_remove_redirect(le->sslw_port, le->redir_port);
@@ -389,6 +390,7 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    str_replace(&command, "%iface", GBL_OPTIONS->iface);
    str_replace(&command, "%port", asc_sport);
    str_replace(&command, "%rport", asc_dport);
+   str_replace(&command, "%set", SSLW_SET);
    
    DEBUG_MSG("sslw_insert_redirect: [%s]", command);
    
@@ -446,6 +448,7 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
    str_replace(&command, "%iface", GBL_OPTIONS->iface);
    str_replace(&command, "%port", asc_sport);
    str_replace(&command, "%rport", asc_dport);
+   str_replace(&command, "%set", SSLW_SET);
    
    DEBUG_MSG("sslw_remove_redirect: [%s]", command);
    
@@ -675,6 +678,11 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
  */
 static int sslw_get_peer(struct accepted_entry *ae)
 {
+
+/* If on Linux, we can just get the SO_ORIGINAL_DST from getsockopt() no need for this loop
+   nonsense.
+*/
+#ifndef OS_LINUX
    struct ec_session *s = NULL;
    struct packet_object po;
    void *ident = NULL;
@@ -715,7 +723,14 @@ static int sslw_get_peer(struct accepted_entry *ae)
    SAFE_FREE(s->data);
    SAFE_FREE(s);
    SAFE_FREE(ident);
+#else
+   struct sockaddr_in sa_in;
+   socklen_t sa_in_sz = sizeof(struct sockaddr_in)
 
+   getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&sa_in, &sa_in_sz);
+
+   ip_addr_init(&ae->ip[SSL_SERVER], AF_INET, (u_char *)&sa_in.sin_addr);
+#endif
    return ESUCCESS;
 }
 

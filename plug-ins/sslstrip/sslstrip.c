@@ -53,7 +53,9 @@
  */
 
 
-#define URL_PATTERN "(https://[\w\d:#@%/;$()~_?\+-=\\\.&]*)"
+#define SSLSTRIP_SET "21"
+
+#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 
 #define REQUEST_TIMEOUT 1200 /* If a request has not been used in 1200 seconds, remove it from list */
 
@@ -69,19 +71,17 @@
 #define HTTP_MAX (1024*20) //20KB max for HTTP requests.
 
 #define BREAK_ON_ERROR(x,y,z) do {  \
-   if (x <= 0) {            \
+   if (x ==-EINVALID ) {            \
       SAFE_FREE(z.DATA.disp_data);  \
       http_initialize_po(&z, z.DATA.data, z.DATA.len); \
       z.len = 64;                   \
       z.L4.flags = TH_RST;          \
-      if (x == 0) {                 \
-      	packet_disp_data(&z, z.DATA.data, z.DATA.len); \
-      	http_parse_packet(y, HTTP_CLIENT, &z); \
-      }				    \
-      http_wipe_connection(y);      \
-      SAFE_FREE(z.DATA.data);       \
-      SAFE_FREE(z.DATA.disp_data);  \
-      ec_thread_exit();             \
+     packet_disp_data(&z, z.DATA.data, z.DATA.len); \
+     http_parse_packet(y, HTTP_CLIENT, &z); \
+     http_wipe_connection(y);      \
+     SAFE_FREE(z.DATA.data);       \
+     SAFE_FREE(z.DATA.disp_data);  \
+     ec_thread_exit();             \
    }                                \
 } while(0)
 
@@ -391,6 +391,7 @@ static int http_insert_redirect(u_int16 dport)
 	str_replace(&command, "%iface", GBL_OPTIONS->iface);
 	str_replace(&command, "%port", "80");
 	str_replace(&command, "%rport", asc_dport);
+	str_replace(&command, "%set", SSLSTRIP_SET);
 
 	DEBUG_MSG("http_insert_redirect: [%s]", command);
 
@@ -436,6 +437,7 @@ static int http_remove_redirect(u_int16 dport)
         str_replace(&command, "%iface", GBL_OPTIONS->iface);
         str_replace(&command, "%port", "80");
         str_replace(&command, "%rport", asc_dport);
+	str_replace(&command, "%set", SSLSTRIP_SET);
 
         DEBUG_MSG("http_remove_redirect: [%s]", command);
 
@@ -551,7 +553,6 @@ static int http_get_peer(struct http_connection *connection)
 	 ip_addr_init(&connection->ip[HTTP_SERVER], AF_INET, (u_char *)&sa_in.sin_addr);
 #endif
 
-	DEBUG_MSG("SSLStrip: Got peer!\n");
 	
 	return ESUCCESS;
 
@@ -593,6 +594,9 @@ static int http_read(struct http_connection *connection, struct packet_object *p
 
 
 	po->DATA.len = len;
+
+	if(len == 0)
+		return -EINVALID;
 	return len;	
 }
 
@@ -746,7 +750,6 @@ static void http_send(struct http_connection *connection, struct packet_object *
 
 
 	//Allow decoders to run on HTTP response
-	
 	packet_destroy_object(po);
 	http_initialize_po(po, connection->response.html, connection->response.len);
 
@@ -767,6 +770,7 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	}
 
 	SAFE_FREE(request.url);
+
 	SAFE_FREE(url);
 }
 
@@ -780,6 +784,7 @@ static int http_write(int fd, char *ptr, size_t total_len)
 
 		if (len <= 0) {
 			err = GET_SOCK_ERRNO();
+			DEBUG_MSG("http_write: SOCK ERR: %d", err);
 			if (err != EAGAIN && err != EINTR)
 				return -EINVALID;
 		}
@@ -963,7 +968,7 @@ static void http_remove_https(struct http_connection *connection)
 	char *buf_cpy = strndup(connection->response.html, connection->response.len);
 	char *scroll = buf_cpy;
 
-	char http[] = " http";
+	char http[] = "http";
 	size_t https_len = strlen("https");
 	char *host, *path;
 	struct https_link *l;
@@ -972,7 +977,7 @@ static void http_remove_https(struct http_connection *connection)
 		SAFE_CALLOC(find_https_re, 1, sizeof(regex_t));
 		BUG_IF(find_https_re==NULL);
 
-		if (regcomp(find_https_re, "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)", REG_EXTENDED | REG_NEWLINE | REG_ICASE))
+		if (regcomp(find_https_re, URL_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE))
 		{
 			ERROR_MSG("SSLStrip: Error compiling regular expresion\n");
 			return;
@@ -1109,7 +1114,7 @@ static int http_bind_wrapper(void)
 	} while (bind(main_fd, (struct sockaddr *)&sa_in, sizeof(sa_in)) != 0);
 
 	listen(main_fd, 100);
-	DEBUG_MSG("SSLStrip plugin: bind 80 on %d", bind_port);
+	USER_MSG("SSLStrip plugin: bind 80 on %d\n", bind_port);
 	
 	if (http_insert_redirect(bind_port) != ESUCCESS)
 		return -EFATAL;
@@ -1125,6 +1130,15 @@ static void http_wipe_connection(struct http_connection *connection)
 
 	if(connection->response.html)
 		SAFE_FREE(connection->response.html);
+
+	if(connection->response.headers)
+		curl_slist_free_all(connection->response.headers);
+
+	if(connection->request.payload)
+		SAFE_FREE(connection->request.payload);
+
+	if(connection->request.url)
+		SAFE_FREE(connection->request.url);
 
 	if (connection)
 		SAFE_FREE(connection);

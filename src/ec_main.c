@@ -174,22 +174,12 @@ int main(int argc, char *argv[])
  * reached only when the UI is shutted down 
  ********************************************/
 
-   /* flush the exit message */
-   ui_msg_flush(MSG_ALL);
-   
-   /* stop the mitm attack */
-   mitm_stop();
+   /* Call all the proper stop methods to ensure
+    * that no matter what UI was selected, everything is 
+    * turned off gracefully */
+   clean_exit(0);
 
-   /* terminate the sniffing engine */
-   EXECUTE(GBL_SNIFF->cleanup);
-   
-   /* kill all the running threads but the current */
-   ec_thread_kill_all();
-  
-   /* clean up the UI */
-   ui_cleanup();
-
-   return 0;
+   return 0; //Never reaches here
 }
 
 
@@ -252,6 +242,15 @@ void clean_exit(int errcode)
   
    INSTANT_USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
 
+   /* flush the exit message */
+   ui_msg_flush(MSG_ALL);
+
+   /* stop the mitm attack */
+   mitm_stop();
+
+   /* terminate the sniffing engine */
+   EXECUTE(GBL_SNIFF->cleanup);
+
    /* kill all the running threads but the current */
    ec_thread_kill_all();
 
@@ -260,6 +259,7 @@ void clean_exit(int errcode)
 
    /* call all the ATEXIT functions */
    exit(errcode);
+
 }
 
 

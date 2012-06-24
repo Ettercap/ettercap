@@ -53,7 +53,9 @@
  */
 
 
+#if defined(OS_DARWIN) || defined(OS_BSD)
 #define SSLSTRIP_SET "21"
+#endif
 
 #define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 
@@ -391,7 +393,9 @@ static int http_insert_redirect(u_int16 dport)
 	str_replace(&command, "%iface", GBL_OPTIONS->iface);
 	str_replace(&command, "%port", "80");
 	str_replace(&command, "%rport", asc_dport);
+#if defined(OS_DARWIN) || defined(OS_BSD)
 	str_replace(&command, "%set", SSLSTRIP_SET);
+#endif
 
 	DEBUG_MSG("http_insert_redirect: [%s]", command);
 
@@ -437,7 +441,9 @@ static int http_remove_redirect(u_int16 dport)
         str_replace(&command, "%iface", GBL_OPTIONS->iface);
         str_replace(&command, "%port", "80");
         str_replace(&command, "%rport", asc_dport);
+#if defined(OS_DARWIN) || defined(OS_BSD)
 	str_replace(&command, "%set", SSLSTRIP_SET);
+#endif
 
         DEBUG_MSG("http_remove_redirect: [%s]", command);
 

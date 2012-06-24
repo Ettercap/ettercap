@@ -108,7 +108,10 @@ struct sslw_ident {
 
 #define SSLW_RETRY 5
 #define SSLW_WAIT 10 /* 10 seconds */
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
 #define SSLW_SET "20"
+#endif
 
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
@@ -390,7 +393,10 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    str_replace(&command, "%iface", GBL_OPTIONS->iface);
    str_replace(&command, "%port", asc_sport);
    str_replace(&command, "%rport", asc_dport);
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
    str_replace(&command, "%set", SSLW_SET);
+#endif
    
    DEBUG_MSG("sslw_insert_redirect: [%s]", command);
    
@@ -448,7 +454,10 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
    str_replace(&command, "%iface", GBL_OPTIONS->iface);
    str_replace(&command, "%port", asc_sport);
    str_replace(&command, "%rport", asc_dport);
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
    str_replace(&command, "%set", SSLW_SET);
+#endif
    
    DEBUG_MSG("sslw_remove_redirect: [%s]", command);
    

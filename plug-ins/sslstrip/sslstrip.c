@@ -169,7 +169,7 @@ static void http_handle_request(struct http_connection *connection, struct packe
 static void http_send(struct http_connection *connection, struct packet_object *po, int proto);
 static void http_remove_https(struct http_connection *connection);
 static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void *userdata);
-static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream);
+//static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream);
 
 
 
@@ -856,6 +856,7 @@ static int http_write(int fd, char *ptr, size_t total_len)
 	return ESUCCESS;
 }
 
+#if 0
 static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream)
 {
 	struct packet_object *po = (struct packet_object *)stream;
@@ -870,6 +871,7 @@ static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *s
 		return po->DATA.len;
 	}
 }
+#endif
 
 
 static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void *userdata)
@@ -1185,6 +1187,7 @@ static void http_wipe_connection(struct http_connection *connection)
 		SAFE_FREE(connection);
 }
 
+#if 0
 static int http_connect_real_server(struct http_connection *connection, struct packet_object *po) {
 	int fd;
 
@@ -1257,6 +1260,7 @@ static int http_connect_real_server(struct http_connection *connection, struct p
 
 	return ESUCCESS;
 }
+#endif
 
 void http_remove_header(char *header, struct http_connection *connection) {
 	if (strstr(connection->response->html, header)) {
@@ -1272,11 +1276,16 @@ void http_remove_header(char *header, struct http_connection *connection) {
 
         	int start = b - r;
         	char *remaining = strdup(end);
+		BUG_IF(remaining==NULL);
+
         	memcpy(r+start, remaining, strlen(remaining));
 		SAFE_FREE(connection->response->html);
+
         	connection->response->html = strndup(r, len);
 		connection->response->len = len;
-        	free(r);
+	
+		SAFE_FREE(remaining);
+		SAFE_FREE(r);
         }
 }
 

@@ -65,7 +65,7 @@ void error_msg(char *file, const char *function, int line, char *message, ...)
    fprintf(stderr, "ERROR : %d, %s\n[%s:%s:%d]\n\n %s \n\n",  err_code, strerror(err_code),
                    file, function, line, errmsg );
 
-   exit(-err_code);
+   clean_exit(-err_code);
 }
 
 
@@ -91,7 +91,7 @@ void fatal_error(char *message, ...)
    ui_fatal_error(errmsg);
 
    /* the ui should exits, but to be sure... */
-   exit(-1);
+   clean_exit(-1);
 }
 
 /*
@@ -108,7 +108,7 @@ void bug(char *file, const char *function, int line, char *message)
   
    fprintf(stderr, "\n\nBUG at [%s:%s:%d]\n\n %s \n\n", file, function, line, message );
 
-   exit(-666);
+   clean_exit(-666);
 }
 
 

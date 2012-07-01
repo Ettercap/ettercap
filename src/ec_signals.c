@@ -178,7 +178,7 @@ static void signal_SEGV(int sig)
    fprintf (stderr, EC_COLOR_YELLOW" Have a nice day!\n"EC_COLOR_END);
 
    
-   _exit(666);
+   clean_exit(666);
 #endif
 }
 
@@ -210,17 +210,11 @@ static void signal_TERM(int sig)
    
    signal(sig, SIG_IGN);
 
-   /* stop the mitm process (if activated) */
-   mitm_stop();
-
    /* flush and close the log file */
    log_stop();
 
-   /* kill all the threads */
-   ec_thread_kill_all();
-  
-   /* exit discarding the atexit functions, ha are in a signal handler! */
-   _exit(0);
+	/* make sure we exit gracefully */
+   clean_exit(0);
 }
 
 

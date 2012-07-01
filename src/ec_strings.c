@@ -295,6 +295,8 @@ int str_replace(char **text, const char *s, const char *d)
        */
       p = strstr(q, s);
 
+      if (p==NULL)
+		continue;
       /* do the actual replacement */
       memmove(p + dlen, p + slen, strlen(p + slen) + 1);
       memcpy(p, d, dlen);

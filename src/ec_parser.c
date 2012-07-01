@@ -120,7 +120,8 @@ void ec_usage(void)
 
    fprintf(stdout, "\n\n");
 
-   clean_exit(0);
+   //clean_exit(0);
+   exit(0);
 }
 
 

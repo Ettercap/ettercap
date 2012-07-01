@@ -29,8 +29,6 @@
 #include <ec_threads.h>
 #include <ec_decode.h>
 
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 
 #include <regex.h>
@@ -59,7 +57,7 @@
 
 #define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 
-#define REQUEST_TIMEOUT 1200 /* If a request has not been used in 1200 seconds, remove it from list */
+#define REQUEST_TIMEOUT 120 /* If a request has not been used in 1200 seconds, remove it from list */
 
 #define HTTP_RETRY 5
 #define HTTP_WAIT 10
@@ -70,22 +68,18 @@
 #define HTTP_GET (1<<16)
 #define HTTP_POST (1<<24)
 
-#define HTTP_MAX (1024*20) //20KB max for HTTP requests.
+#define HTTP_MAX (1024*200) //200KB max for HTTP requests.
 
 #define BREAK_ON_ERROR(x,y,z) do {  \
-   if (x ==-EINVALID ) {            \
-      SAFE_FREE(z.DATA.disp_data);  \
-      http_initialize_po(&z, z.DATA.data, z.DATA.len); \
-      z.len = 64;                   \
-      z.L4.flags = TH_RST;          \
-     packet_disp_data(&z, z.DATA.data, z.DATA.len); \
-     http_parse_packet(y, HTTP_CLIENT, &z); \
+   if (x == -EINVALID ) {            \
      http_wipe_connection(y);      \
      SAFE_FREE(z.DATA.data);       \
      SAFE_FREE(z.DATA.disp_data);  \
      ec_thread_exit();             \
    }                                \
 } while(0)
+
+
 
 /* lists */
 struct http_ident {
@@ -112,8 +106,6 @@ struct http_request {
 };
 
 struct http_response {
-	int http_code;
-	struct curl_slist *headers;
 	char *html;
 	size_t len;
 };
@@ -122,15 +114,19 @@ struct http_connection {
 	int fd; 
 	u_int16 port[2];
 	struct ip_addr ip[2];
-	#define HTTP_CLIENT 0
-	#define HTTP_SERVER 2
 	CURL *handle; 
-	struct http_request request;
-	struct http_response response;
+	struct http_request *request;
+	struct http_response *response;
 	char curl_err_buffer[CURL_ERROR_SIZE];
 	LIST_HEAD(, https_link) links;
+	#define HTTP_CLIENT 0
+	#define HTTP_SERVER 1
 };
 
+LIST_HEAD(, https_link) https_links;
+static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define LIST_LOCK     do{ pthread_mutex_lock(&list_mutex); } while(0)
+#define LIST_UNLOCK   do{ pthread_mutex_unlock(&list_mutex); } while(0)
 
 /* globals */
 static int main_fd;
@@ -141,18 +137,22 @@ static regex_t *find_https_re = NULL;
 
 
 /* protos */
+void https_void(void);
 int plugin_load(void *);
 static int sslstrip_init(void *);
 static int sslstrip_fini(void *);
 static void sslstrip(struct packet_object *po);
 static int sslstrip_is_http(struct packet_object *po);
+
+#ifndef OS_LINUX
 static void sslstrip_create_session(struct ec_session **s, struct packet_object *po);
 static int sslstrip_match(void *id_sess, void *id_curr);
+static size_t http_create_ident(void **i, struct packet_object *po);
+#endif
 
 /* http stuff */
 static void Find_Url(u_char *to_parse, char **ret);
 
-static size_t http_create_ident(void **i, struct packet_object *po);
 
 static int http_sync_conn(struct http_connection *connection);
 static int http_get_peer(struct http_connection *connection);
@@ -160,6 +160,8 @@ static int http_read(struct http_connection *connection, struct packet_object *p
 static int http_write(int fd, char *ptr, size_t total_len);
 static int http_insert_redirect(u_int16 dport);
 static int http_remove_redirect(u_int16 port);
+static void http_remove_header(char *header, struct http_connection *connection);
+static void http_update_content_length(struct http_connection *connection);
 static void http_initialize_po(struct packet_object *po, u_char *p_data, size_t len);
 static void http_parse_packet(struct http_connection *connection, int direction, struct packet_object *po);
 static void http_wipe_connection(struct http_connection *connection);
@@ -169,9 +171,6 @@ static void http_remove_https(struct http_connection *connection);
 static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void *userdata);
 static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream);
 
-
-/* functions to connect to real HTTP server */
-static int http_connect_real_server(struct http_connection *connection, struct packet_object *po);
 
 
 /* thread stuff */
@@ -248,6 +247,7 @@ static int sslstrip_is_http(struct packet_object *po)
 	return 0;
 }
 
+#ifndef OS_LINUX
 static int sslstrip_match(void *id_sess, void *id_curr)
 {
 	struct  http_ident *ids = id_sess;
@@ -289,6 +289,7 @@ static void sslstrip_create_session(struct ec_session **s, struct packet_object 
 	/* alloc of data elements */
 	SAFE_CALLOC((*s)->data, 1, sizeof(struct ip_addr));
 }
+#endif
 
 /*
  * Filter HTTP related packets and create NAT sessions
@@ -296,13 +297,14 @@ static void sslstrip_create_session(struct ec_session **s, struct packet_object 
 static void sslstrip(struct packet_object *po)
 {
 
-#ifndef OS_LINUX
-	struct ec_session *s = NULL;
 	if (!sslstrip_is_http(po))
 		return;	
 
 	/* If it's an HTTP packet, don't forward */
 	po->flags |= PO_DROPPED;
+
+#ifndef OS_LINUX
+	struct ec_session *s = NULL;
 
 	if ( (po->flags & PO_FORWARDABLE) &&
 	     (po->L4.flags & TH_SYN) &&
@@ -313,6 +315,7 @@ static void sslstrip(struct packet_object *po)
 	} else {
 		po->flags |= PO_IGNORE;
 	}
+	
 #endif
 }
 
@@ -475,7 +478,7 @@ static int http_remove_redirect(u_int16 dport)
 
 static EC_THREAD_FUNC(http_accept_thread)
 {
-	struct http_connection *connection = NULL;
+	struct http_connection *connection;
 	u_int len = sizeof(struct sockaddr_in);
 	struct sockaddr_in client_sin;
 
@@ -491,18 +494,28 @@ static EC_THREAD_FUNC(http_accept_thread)
 
 		if (poll_fd.revents & POLLIN) {
 			SAFE_CALLOC(connection, 1, sizeof(struct http_connection));
+			BUG_IF(connection==NULL);
+
+			SAFE_CALLOC(connection->request, 1, sizeof(struct http_request));
+			BUG_IF(connection->request==NULL);
+
+			SAFE_CALLOC(connection->response, 1, sizeof(struct http_response));
+			BUG_IF(connection->response==NULL);
+
 			connection->fd= accept(poll_fd.fd, (struct sockaddr *)&client_sin, &len);
 
-			DEBUG_MSG("SSLStrip: Received connection\n");
+			DEBUG_MSG("SSLStrip: Received connection: %p %p\n", connection, connection->request);
 			if (connection->fd == -1) {
+				SAFE_FREE(connection->request);
+				SAFE_FREE(connection->response);
 				SAFE_FREE(connection);
 				continue;
 			}
 
-			ip_addr_init(&connection->ip[HTTP_CLIENT], AF_INET, (char *)&(client_sin.sin_addr.s_addr));
+			ip_addr_init(&(connection->ip[HTTP_CLIENT]), AF_INET, (char *)&(client_sin.sin_addr.s_addr));
 			connection->port[HTTP_CLIENT] = client_sin.sin_port;
 			connection->port[HTTP_SERVER] = htons(80);
-			//connection->request.len = 0;
+			//connection->request->len = 0;
 
 			/* create detached thread */
 			ec_thread_new_detached("http_child_thread", "http child", &http_child_thread, connection, 1);	
@@ -556,7 +569,7 @@ static int http_get_peer(struct http_connection *connection)
 	 socklen_t sa_in_sz = sizeof(struct sockaddr_in);
 	 getsockopt (connection->fd, SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&sa_in, &sa_in_sz);
 
-	 ip_addr_init(&connection->ip[HTTP_SERVER], AF_INET, (u_char *)&sa_in.sin_addr);
+	 ip_addr_init(&(connection->ip[HTTP_SERVER]), AF_INET, (char *)&(sa_in.sin_addr.s_addr));
 #endif
 
 	
@@ -565,6 +578,7 @@ static int http_get_peer(struct http_connection *connection)
 }
 
 
+#ifndef OS_LINUX
 static size_t http_create_ident(void **i, struct packet_object *po)
 {
 	struct http_ident *ident;
@@ -581,6 +595,7 @@ static size_t http_create_ident(void **i, struct packet_object *po)
 	*i = ident;
 	return sizeof(struct http_ident);
 }
+#endif
 
 static int http_sync_conn(struct http_connection *connection) 
 {
@@ -598,46 +613,35 @@ static int http_read(struct http_connection *connection, struct packet_object *p
 
 	len = read(connection->fd, po->DATA.data, HTTP_MAX);
 
-
 	po->DATA.len = len;
 
-	if(len == 0)
+	if(len <= 0)
 		return -EINVALID;
+
 	return len;	
 }
 
 static void http_handle_request(struct http_connection *connection, struct packet_object *po)
 {
 	struct https_link *link;
-	char sent = 0;
 
-	SAFE_CALLOC(connection->request.url, 1, 1024);
+	SAFE_CALLOC(connection->request->url, 1, 1024);
 
-	if (connection->request.url==NULL)
+	if (connection->request->url==NULL)
 		return;
 
-	memset(connection->request.url, '\0', 1024);
+	Find_Url(po->DATA.data, &connection->request->url);
 
-	Find_Url(po->DATA.data, &connection->request.url);
-
-	if (connection->request.url == NULL) {
-		//Means we received a request for a HTTP method other than GET or POST
-		//Open socket to server and send raw response?
-		if (http_connect_real_server(connection, po) == ESUCCESS) {
-			DEBUG_MSG("SSLStrip: Sent request straight to real server");
-		}	
-
+	if (connection->request->url == NULL) {
 		return;
 	}
 
 
 	//parse HTTP request
-	struct http_request request = connection->request;
-
-	if (strstr(po->DATA.data, "GET")) {
-		request.method = HTTP_GET;
-	} else if (strstr(po->DATA.data, "POST")) {
-		request.method = HTTP_POST;
+	if (!memcmp(po->DATA.data, "GET", 3)) {
+		connection->request->method = HTTP_GET;
+	} else if (!memcmp(po->DATA.data, "POST", 4)) {
+		connection->request->method = HTTP_POST;
 	}
 
 	char *r = po->DATA.data;
@@ -659,7 +663,7 @@ static void http_handle_request(struct http_connection *connection, struct packe
 	header = ec_strtok(h, "\r\n", &saveptr);
 
 	while(header) {
-		request.headers = curl_slist_append(request.headers, header);
+		connection->request->headers = curl_slist_append(connection->request->headers, header);
 		header = ec_strtok(NULL, "\r\n", &saveptr);
 	}
 
@@ -669,49 +673,65 @@ static void http_handle_request(struct http_connection *connection, struct packe
 
 	if (b != NULL) {
 		b += 4;
-		request.payload = strdup(b);
-		BUG_IF(request.payload == NULL);
+		connection->request->payload = strdup(b);
+		BUG_IF(connection->request->payload == NULL);
 	}
 
 	SAFE_FREE(body);
 
 
-	LIST_FOREACH(link, &connection->links, next) {
-		if (!strcmp(link->url, connection->request.url)) {
-			DEBUG_MSG("SSLStrip: Sending HTTPS request");
-			http_send(connection, po, PROTO_HTTPS);
-			sent =1;
+	int proto = PROTO_HTTP;
+
+	LIST_LOCK;
+	LIST_FOREACH(link, &https_links, next) {
+		if (!strcmp(link->url, connection->request->url)) {
+			proto = PROTO_HTTPS;
+			break;
 		}
 	}
 
+	LIST_UNLOCK;
 
-	if (!sent) {
-		DEBUG_MSG("SSLStrip: Sending HTTP request");
-		http_send(connection,po, PROTO_HTTP);
+
+	switch(proto) {
+		case PROTO_HTTP:
+			DEBUG_MSG("SSLStrip: Sending HTTP request");
+			break;
+		case PROTO_HTTPS:
+			DEBUG_MSG("SSLStrip: Sending HTTPs request");
+			break;
 	}
+
+	http_send(connection,po, proto);
 }
 
 static void http_send(struct http_connection *connection, struct packet_object *po, int proto)
 {
+
 	connection->handle = curl_easy_init();
+
+	if(!connection->handle) {
+		USER_MSG("SSLStrip: Not enough memory to allocate CURL handle");
+		return;
+	}
+
 	char *url;
-	struct http_request request = connection->request;
 
 	//Allow decoders to run for request
 	if (proto == PROTO_HTTPS) {
 		curl_easy_setopt(connection->handle, CURLOPT_SSL_VERIFYPEER, 0L);
 		curl_easy_setopt(connection->handle, CURLOPT_SSL_VERIFYHOST, 0L);
 
-		url = (char *)malloc(strlen(connection->request.url)+strlen("https://"));
-		snprintf(url, strlen(connection->request.url)+strlen("https://")+1, "https://%s", connection->request.url);
+		SAFE_CALLOC(url, 1, strlen(connection->request->url)+strlen("https://")+1);
+		snprintf(url, strlen(connection->request->url)+strlen("https://")+1, "https://%s", connection->request->url);
 	} else {
-		url = (char *)malloc(strlen(connection->request.url)+strlen("http://"));
-		snprintf(url, strlen(connection->request.url)+strlen("http://")+1, "http://%s", connection->request.url);
+		SAFE_CALLOC(url, 1, strlen(connection->request->url)+strlen("http://")+1);
+		snprintf(url, strlen(connection->request->url)+strlen("http://")+1, "http://%s", connection->request->url);
 	}
 
 
 	if (url==NULL) {
-		USER_MSG("Not enough memory to allocate for URL %s\n", connection->request.url);
+		USER_MSG("Not enough memory to allocate for URL %s\n", connection->request->url);
 		return;
 	}	
 
@@ -721,19 +741,25 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	curl_easy_setopt(connection->handle, CURLOPT_WRITEFUNCTION, http_receive_from_server);
 	curl_easy_setopt(connection->handle, CURLOPT_WRITEDATA, connection);
 	curl_easy_setopt(connection->handle, CURLOPT_ERRORBUFFER, connection->curl_err_buffer);
-	curl_easy_setopt(connection->handle, CURLOPT_READFUNCTION, http_write_to_server);
-	curl_easy_setopt(connection->handle, CURLOPT_READDATA, po->DATA.data);
-	curl_easy_setopt(connection->handle, CURLOPT_INFILESIZE_LARGE, (curl_off_t)po->DATA.len);
+	//curl_easy_setopt(connection->handle, CURLOPT_READFUNCTION, http_write_to_server);
+	//curl_easy_setopt(connection->handle, CURLOPT_READDATA, &po);
+	//curl_easy_setopt(connection->handle, CURLOPT_INFILESIZE_LARGE, (curl_off_t)po->DATA.len);
 	curl_easy_setopt(connection->handle, CURLOPT_HEADER, 1L);
-	curl_easy_setopt(connection->handle, CURLOPT_HTTPHEADER, request.headers);
+	curl_easy_setopt(connection->handle, CURLOPT_HTTPHEADER, connection->request->headers);
+	curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "gzip");
+	curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "deflate");
 	//curl_easy_setopt(connection->handle, CURLOPT_WRITEHEADER, connection);
 
 
-	if(request.method == HTTP_POST) {
+	if(connection->request->method == HTTP_POST) {
+		DEBUG_MSG("SSLStrip: Adding POST data");
+		DEBUG_MSG("SSLStrip: POST PAYLOAD %s", connection->request->payload);
 		curl_easy_setopt(connection->handle, CURLOPT_POST, 1L);
-		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDS, request.payload);
-		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDSIZE, strlen(request.payload));
+		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDS, connection->request->payload);
+		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDSIZE, strlen(connection->request->payload));
 	}	
+
+	DEBUG_MSG("SSLStrip: Performing CURL action");
 
 	if(curl_easy_perform(connection->handle) != CURLE_OK) {
 		USER_MSG("Unable to send request to HTTP server: %s\n", connection->curl_err_buffer);
@@ -742,13 +768,20 @@ static void http_send(struct http_connection *connection, struct packet_object *
 		DEBUG_MSG("SSLStrip: Sent request to server");
 	}
 
-	//Now we must look for https links and add them to the list.
-	//Also https:// needs to be changed to http://
+	DEBUG_MSG("SSLStrip: Removing HTTPS");
 	http_remove_https(connection);
 
+	if(strstr(connection->response->html, "Content-Encoding:") ||
+	   strstr(connection->response->html, "Transfer-Encoding:")) {
+		http_remove_header("Content-Encoding", connection);
+		http_remove_header("Transfer-Encoding", connection);
+		http_update_content_length(connection);
+	}
+
+
 	//Send result back to client
-	//TODO: Figure out what is happening
-	if (http_write(connection->fd, connection->response.html, connection->response.len) != ESUCCESS){
+	DEBUG_MSG("SSLStrip: Sending response back to client");
+	if (http_write(connection->fd, connection->response->html, connection->response->len) != ESUCCESS){
 		USER_MSG("Unable to send HTTP response back to client\n");
 	} else {
 		DEBUG_MSG("Sent HTTP response back to client");
@@ -757,36 +790,52 @@ static void http_send(struct http_connection *connection, struct packet_object *
 
 	//Allow decoders to run on HTTP response
 	packet_destroy_object(po);
-	http_initialize_po(po, connection->response.html, connection->response.len);
+	http_initialize_po(po, connection->response->html, connection->response->len);
 
    	po->len = po->DATA.len;
    	po->L4.flags |= TH_PSH;
 
 	packet_disp_data(po, po->DATA.data, po->DATA.len);
+
+	DEBUG_MSG("SSLStrip: Calling parser for response");
 	http_parse_packet(connection, HTTP_SERVER, po);
 
 	//Free up request
-
-	if (request.headers)
-		curl_slist_free_all(request.headers);
+	if (connection->request->headers) {
+		curl_slist_free_all(connection->request->headers);
+		connection->request->headers = NULL;
+	}
 	
 
-	if (request.method == HTTP_POST) {
-		SAFE_FREE(request.payload);
+	if (connection->request->method == HTTP_POST) {
+		SAFE_FREE(connection->request->payload);
 	}
 
-	SAFE_FREE(request.url);
+	SAFE_FREE(connection->request->url);
 
 	SAFE_FREE(url);
+
+	if(connection->handle) {
+		curl_easy_cleanup(connection->handle);
+		connection->handle = NULL;
+	}
+
+	DEBUG_MSG("SSLStrip: Done");
 }
 
 static int http_write(int fd, char *ptr, size_t total_len)
 {
 	int len, err;
 	int bytes_sent= 0;
+	int bytes_remaining = total_len;
+
+	DEBUG_MSG("SSLStrip: Total length %ld", total_len);
 
 	while (bytes_sent < total_len) {
-		len = write(fd, ptr, total_len);
+
+		if(!ptr)
+			break;
+		len = write(fd, ptr+bytes_sent, bytes_remaining);
 
 		if (len <= 0) {
 			err = GET_SOCK_ERRNO();
@@ -794,11 +843,14 @@ static int http_write(int fd, char *ptr, size_t total_len)
 			if (err != EAGAIN && err != EINTR)
 				return -EINVALID;
 		}
+
+		DEBUG_MSG("SSLStrip: Sent %d bytes", len);
 	
 		bytes_sent += len;
+		bytes_remaining -= len;
+
+		DEBUG_MSG("SSLStrip: Bytes sent %d", bytes_sent);
 	
-		if (bytes_sent < total_len)
-			ptr += bytes_sent;
 	}
 
 	return ESUCCESS;
@@ -806,8 +858,17 @@ static int http_write(int fd, char *ptr, size_t total_len)
 
 static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-	memcpy(stream, ptr, size*nmemb);
-	return size*nmemb;
+	struct packet_object *po = (struct packet_object *)stream;
+
+	DEBUG_MSG("SSLStrip: PO LEN : %ld Size: %ld", po->DATA.len, (size*nmemb));
+	DEBUG_MSG("SSLStrip: Copying %s", po->DATA.data);
+	if ((size*nmemb) < po->DATA.len) {	
+		memcpy(ptr, po->DATA.data, size*nmemb);
+		return size*nmemb;
+	} else {
+		memcpy(ptr, po->DATA.data, po->DATA.len);
+		return po->DATA.len;
+	}
 }
 
 
@@ -816,26 +877,30 @@ static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void
 	struct http_connection *connection = (struct http_connection *)userdata;
 
 
-	if (connection->response.len == 0) {
+	if (connection->response->len == 0) {
 		//Initiailize buffer
-		SAFE_CALLOC(connection->response.html, 1, size*nmemb);
-		if (connection->response.html == NULL)
+		SAFE_CALLOC(connection->response->html, 1, size*nmemb);
+		if (connection->response->html == NULL)
 			return 0;
 
-		memcpy(connection->response.html, ptr, size*nmemb);
+		memcpy(connection->response->html, ptr, size*nmemb);
 	} else {
-		//char *b = realloc(connection->buffer, connection->len+(size*nmemb));
 		char *b;
 
-		SAFE_CALLOC(b, 1, connection->response.len+(size*nmemb));
+		SAFE_CALLOC(b, 1, connection->response->len+(size*nmemb));
 		BUG_IF(b == NULL);
 	
-		memcpy(b, connection->response.html, connection->response.len);	
-		memcpy(b+connection->response.len, ptr, size*nmemb);
-		connection->response.html = b;
+		memcpy(b, connection->response->html, connection->response->len);	
+		memcpy(b+connection->response->len, ptr, size*nmemb);
+
+		SAFE_FREE(connection->response->html);
+		connection->response->html = b;
+
+		//SAFE_REALLOC(connection->response->html, connection->response->len + (size*nmemb));
 	}
 
-	connection->response.len += size*nmemb;
+	connection->response->len += (size*nmemb);
+	//connection->response->html[connection->response->len] = '\0';
 
 
 	return size*nmemb;
@@ -850,23 +915,24 @@ EC_THREAD_FUNC(http_child_thread)
 	connection = (struct http_connection *)args;
 	ec_thread_init();
 
-	DEBUG_MSG("SSLStrip: Received HTTP connection");
-
 	/* Get peer and set to non-blocking */
 	if (http_sync_conn(connection) == -EINVALID) {
 		DEBUG_MSG("SSLStrip: Could not get peer!!");
 		if (connection->fd != -1)
 			close_socket(connection->fd);
+		SAFE_FREE(connection->response);
+		SAFE_FREE(connection->request);
 		SAFE_FREE(connection);	
 		ec_thread_exit();
 	}
 
 
-	/* A fake SYN ACK */
+	/* A fake SYN ACK for profiles */
 	http_initialize_po(&po, NULL, 0);
 	po.len = 64;
 	po.L4.flags = (TH_SYN | TH_ACK);
 	packet_disp_data(&po, po.DATA.data, po.DATA.len);
+	http_parse_packet(connection, HTTP_SERVER, &po);
 	http_initialize_po(&po, po.DATA.data, po.DATA.len);
 
 	
@@ -879,6 +945,18 @@ EC_THREAD_FUNC(http_child_thread)
 		if (ret_val > 0)  {
 			/* Look in the https_links list and if the url matches, send to HTTPS server.
 			   Otherwise send to HTTP server */
+	        	po.len = po.DATA.len;
+        		po.L4.flags |= TH_PSH;
+
+			/* NULL terminate buffer */
+			po.DATA.data[po.DATA.len] = 0;
+
+			packet_destroy_object(&po);
+        		packet_disp_data(&po, po.DATA.data, po.DATA.len);
+
+        		DEBUG_MSG("SSLStrip: Calling parser for request");
+        		http_parse_packet(connection, HTTP_CLIENT, &po);
+
 			http_handle_request(connection, &po);
 		}
 		
@@ -888,96 +966,19 @@ EC_THREAD_FUNC(http_child_thread)
 	
 }
 
-#if 0
-static void http_remove_https(struct http_connection *connection)
-{
-
-       char *tmp, *end, *ptr;
-       size_t len;
-       size_t slen = strlen("https://");
-       char *pattern = "https://";
-       char *with = "http://";
-       size_t with_len = strlen(with);
-       struct https_link *l;
-
-       /* If no HTTPS links were found, return and do not add to list */
-       if (!memmem(connection->buffer, connection->len, pattern, slen)) {
-	       DEBUG_MSG("SSLStrip: Pattern not found");
-               return;
-       }
-
-       DEBUG_MSG("SSLStrip: Found https");
-
-       ptr = connection->buffer;
-       end = ptr + connection->len;
-
-       do {
-	       len = end - ptr;
-               ptr = memmem(ptr, len, pattern, slen);
-
-
-                if (!ptr) /* String not found, exit */
-    	       		break;
-
-                 /* Determine URL to add to list */
-                 //ptr is at http
-                 tmp = ptr;
-                 tmp += slen;
-
-                 char *link_end=strchr((const char*)tmp, '"');
-
-		 if (link_end == NULL) {
-			link_end = strchr(tmp, '\'');
-		 }
-
-                 link_end--;
-
-                 char *url = (char *)(link_end - tmp);
-
-                 SAFE_CALLOC(l, 1, sizeof(struct https_link));
-
-                 l->url = strdup(url);
-                 l->last_used = time(NULL);
-
-                 //Add to list
-                 LIST_INSERT_HEAD(&connection->links, l, next);
-
-                 //Continue to modify packet
-
-                 len = end - ptr - slen;
-
-                 memmove(ptr + with_len, ptr + slen, len);
-                 memcpy(ptr, with, with_len);
-                 ptr += with_len;
-
-                 end += with_len - slen;
-
-        } while (ptr != NULL && ptr < end);
-
-        /* Iterate through all http_request and remove any that have not been used lately */
-        struct https_link *link_tmp;
-        time_t now = time(NULL);
-
-        LIST_FOREACH_SAFE(l, &connection->links, next, link_tmp) {
-                if(now - l->last_used >= REQUEST_TIMEOUT) {
-                        LIST_REMOVE(l, next);
-                        SAFE_FREE(l);
-                }
-        }
-}
-
-#endif
-
 static void http_remove_https(struct http_connection *connection)
 {
 	regmatch_t match[5];
-	char *buf_cpy = strndup(connection->response.html, connection->response.len);
-	char *scroll = buf_cpy;
+	//char *buf = connection->response->html;
+	char *buf_cpy = connection->response->html;
+
+
+	BUG_IF(buf_cpy == NULL);
 
 	char http[] = "http";
 	size_t https_len = strlen("https");
 	char *host, *path;
-	struct https_link *l;
+	struct https_link *l, *link;
 
 	if (find_https_re == NULL) {
 		SAFE_CALLOC(find_https_re, 1, sizeof(regex_t));
@@ -991,43 +992,73 @@ static void http_remove_https(struct http_connection *connection)
 	}
 
 
-	while(!regexec(find_https_re, buf_cpy, 5, match, REG_NOTBOL))
+	while(buf_cpy && !regexec(find_https_re, buf_cpy, 5, match, REG_NOTBOL))
 	{
 		host = strndup(buf_cpy + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
 		/* if we have an empty path */
 		if (match[4].rm_so != -1 && match[4].rm_so != match[4].rm_eo)
 			path = strndup(buf_cpy + match[4].rm_so, match[4].rm_eo - match[4].rm_so);
 		else
-			path = strdup("/");
+			path = strndup("/", 1);
+
+		DEBUG_MSG("SSLStrip: Found HTTPS in %s/%s", host, path);
 
 		/* we don't add root url without href,src,action or url */
 		if (strcmp(path, "/") != 0 || match[1].rm_so != -1) {
-			SAFE_CALLOC(l, 1, sizeof(struct https_link *));
+			SAFE_CALLOC(l, 1, sizeof(struct https_link));
 			BUG_IF(l==NULL);
 
-			l->url = (char *)malloc(strlen(host)+strlen(path)+1);
-			memset(l->url, '\0', strlen(host)+strlen(path)+1);
-			snprintf(l->url, strlen(host)+strlen(path), "%s%s", host, path);
+			SAFE_CALLOC(l->url, 1, strlen(host)+1+strlen(path)+1);
+			BUG_IF(l->url==NULL);
+			sprintf(l->url, "%s/%s", host, path);
 			l->last_used = time(NULL);
 		
 			//Add to list	
-			LIST_INSERT_HEAD(&connection->links, l, next);
-		}
+			char found = 0;
+	
+			LIST_LOCK;
+			LIST_FOREACH(link, &https_links, next) {
+				if(!strcmp(link->url, l->url)) {
+					found=1;	
+					break;
+				}
+			}
 
-		memcpy(connection->response.html +((buf_cpy+match[2].rm_so)-scroll), http, https_len);
-		buf_cpy += match[3].rm_eo;
+			LIST_UNLOCK;
+
+			if(!found) {
+				DEBUG_MSG("SSLStrip: Inserting %s to HTTPS list", l->url);
+				LIST_INSERT_HEAD(&https_links, l, next);
+			}
+		}
+                char *remaining = strndup(buf_cpy+(match[2].rm_eo), (buf_cpy+match[2].rm_eo)-buf_cpy);
+
+                memcpy(buf_cpy+match[2].rm_so, http, https_len);
+                memcpy(buf_cpy+match[2].rm_so+strlen(http), remaining, strlen(remaining));
+
+                buf_cpy += match[4].rm_eo;
+
+                SAFE_FREE(host);
+                SAFE_FREE(path);
+                SAFE_FREE(remaining);
+
 	}
 
         /* Iterate through all http_request and remove any that have not been used lately */
         struct https_link *link_tmp;
         time_t now = time(NULL);
 
-        LIST_FOREACH_SAFE(l, &connection->links, next, link_tmp) {
+	LIST_LOCK;
+
+        LIST_FOREACH_SAFE(l, &https_links, next, link_tmp) {
                 if(now - l->last_used >= REQUEST_TIMEOUT) {
                         LIST_REMOVE(l, next);
                         SAFE_FREE(l);
                 }
         }
+	
+	LIST_UNLOCK;
+
 }
 
 static void http_parse_packet(struct http_connection *connection, int direction, struct packet_object *po)
@@ -1078,6 +1109,7 @@ static void http_initialize_po(struct packet_object *po, u_char *p_data, size_t 
       SAFE_FREE(po->DATA.data);
       SAFE_CALLOC(po->DATA.data, 1, HTTP_MAX);
       po->DATA.len = HTTP_MAX;
+      BUG_IF(po->DATA.data==NULL);
    } else {
       SAFE_FREE(po->DATA.data);
       po->DATA.data = p_data;
@@ -1131,20 +1163,23 @@ static int http_bind_wrapper(void)
 
 static void http_wipe_connection(struct http_connection *connection)
 {
+	DEBUG_MSG("SSLStrip: http_wipe_connection");
 	close_socket(connection->fd);
-	curl_easy_cleanup(connection->handle);
 
-	if(connection->response.html)
-		SAFE_FREE(connection->response.html);
+	if(connection->response->html)
+		SAFE_FREE(connection->response->html);
 
-	if(connection->response.headers)
-		curl_slist_free_all(connection->response.headers);
+	if(connection->request->payload)
+		SAFE_FREE(connection->request->payload);
 
-	if(connection->request.payload)
-		SAFE_FREE(connection->request.payload);
+	if(connection->request->url)
+		SAFE_FREE(connection->request->url);
 
-	if(connection->request.url)
-		SAFE_FREE(connection->request.url);
+	if(connection->request)
+		SAFE_FREE(connection->request);
+
+	if(connection->response)
+		SAFE_FREE(connection->response);
 
 	if (connection)
 		SAFE_FREE(connection);
@@ -1183,12 +1218,12 @@ static int http_connect_real_server(struct http_connection *connection, struct p
 	http_initialize_po(po, NULL, 0); //Reset po
 
 /*
-                SAFE_CALLOC(b, 1, connection->response.len+(size*nmemb));
+                SAFE_CALLOC(b, 1, connection->response->len+(size*nmemb));
                 BUG_IF(b == NULL);
 
-                memcpy(b, connection->response.html, connection->response.len);
-                memcpy(b+connection->response.len, ptr, size*nmemb);
-                connection->response.html = b;
+                memcpy(b, connection->response->html, connection->response->len);
+                memcpy(b+connection->response->len, ptr, size*nmemb);
+                connection->response->html = b;
 
 */
 	while(len>0) {
@@ -1223,6 +1258,44 @@ static int http_connect_real_server(struct http_connection *connection, struct p
 	return ESUCCESS;
 }
 
+void http_remove_header(char *header, struct http_connection *connection) {
+	if (strstr(connection->response->html, header)) {
+        	char *r = strdup(connection->response->html);
+        	size_t len = strlen(connection->response->html);
+
+        	char *b = strstr(r, header);
+        	char *end = strstr(b, "\r\n");
+        	end += 2;
+
+        	int header_length = end - b;
+        	len -= header_length;
+
+        	int start = b - r;
+        	char *remaining = strdup(end);
+        	memcpy(r+start, remaining, strlen(remaining));
+		SAFE_FREE(connection->response->html);
+        	connection->response->html = strndup(r, len);
+		connection->response->len = len;
+        	free(r);
+        }
+}
+
+void http_update_content_length(struct http_connection *connection) {
+	if (strstr(connection->response->html, "Content-Length: ")) {
+        	char *buf = connection->response->html;
+                char *content_length = strstr(connection->response->html, "Content-Length:");
+                content_length += strlen("Content-Length: ");
+
+                char c_length[20];
+                memset(&c_length, 20, '\0');
+                snprintf(c_length, 20, "%ld", connection->response->len);
+
+                memcpy(buf+(content_length-buf)-1, c_length, strlen(c_length));
+        }
+}
+
+void https_void (void) {
+}
 #endif /* HAVE_LIBCURL */
 
 // vim:ts=3:expandtab

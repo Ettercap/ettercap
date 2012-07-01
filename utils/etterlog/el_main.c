@@ -29,6 +29,8 @@
 /* global options */
 struct globals gbls;
 
+void clean_exit(int errcode);
+
 
 /*******************************************/
 
@@ -92,7 +94,9 @@ int main(int argc, char *argv[])
    return 0;
 }
 
-
+void clean_exit(int errcode) {
+	exit(errcode);
+}
 
 /* ANSI color escapes */
 

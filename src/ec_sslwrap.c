@@ -36,6 +36,10 @@
    #include <sys/wait.h>
 #endif
 
+#ifdef OS_LINUX
+   #include <linux/netfilter_ipv4.h>
+#endif
+
 #include <fcntl.h>
 #include <time.h>
 #include <pthread.h>
@@ -734,11 +738,11 @@ static int sslw_get_peer(struct accepted_entry *ae)
    SAFE_FREE(ident);
 #else
    struct sockaddr_in sa_in;
-   socklen_t sa_in_sz = sizeof(struct sockaddr_in)
+   socklen_t sa_in_sz = sizeof(struct sockaddr_in);
 
    getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&sa_in, &sa_in_sz);
 
-   ip_addr_init(&ae->ip[SSL_SERVER], AF_INET, (u_char *)&sa_in.sin_addr);
+   ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET, (char *)&(sa_in.sin_addr.s_addr));
 #endif
    return ESUCCESS;
 }

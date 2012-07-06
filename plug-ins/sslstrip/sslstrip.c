@@ -57,7 +57,7 @@
 
 #define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 
-#define REQUEST_TIMEOUT 120 /* If a request has not been used in 1200 seconds, remove it from list */
+#define REQUEST_TIMEOUT 120 /* If a request has not been used in 120 seconds, remove it from list */
 
 #define HTTP_RETRY 5
 #define HTTP_WAIT 10

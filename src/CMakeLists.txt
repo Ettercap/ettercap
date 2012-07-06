@@ -95,6 +95,7 @@ set(EC_SRC
         protocols/ec_ip.c
         protocols/ec_ppp.c
         protocols/ec_prism.c
+	protocols/ec_radiotap.c
         protocols/ec_rawip.c
         protocols/ec_tcp.c
         protocols/ec_tr.c

@@ -8,13 +8,14 @@
 
 /* interface layer types */
 enum {
-   IL_TYPE_ETH   = 0x01,   /* ethernet */
-   IL_TYPE_TR    = 0x06,   /* token ring */
-   IL_TYPE_FDDI  = 0x0a,   /* fiber distributed data interface */
-   IL_TYPE_RAWIP = 0x0c,   /* raw ip dump file */
-   IL_TYPE_WIFI  = 0x69,   /* wireless */
-   IL_TYPE_COOK  = 0x71,   /* linux cooked */
-   IL_TYPE_PRISM = 0x77,   /* prism2 header for wifi dumps */
+   IL_TYPE_ETH      = 0x01,  /* ethernet */
+   IL_TYPE_TR       = 0x06,  /* token ring */
+   IL_TYPE_FDDI     = 0x0a,  /* fiber distributed data interface */
+   IL_TYPE_RAWIP    = 0x0c,  /* raw ip dump file */
+   IL_TYPE_WIFI     = 0x69,  /* wireless */
+   IL_TYPE_COOK     = 0x71,  /* linux cooked */
+   IL_TYPE_PRISM    = 0x77,  /* prism2 header for wifi dumps */
+   IL_TYPE_RADIOTAP = 0x7f,  /* radiotap header for wifi dumps */
 };
    
 /* link layer types */

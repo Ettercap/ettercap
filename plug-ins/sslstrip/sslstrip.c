@@ -1074,6 +1074,9 @@ static void http_remove_https(struct http_connection *connection)
 		SAFE_FREE(connection->response->html);	
 		connection->response->html = new_html;
 		connection->response->len = new_len;	
+	} else {
+		/* Thanks but we don't need it */
+		SAFE_FREE(new_html);
 	}
 
         /* Iterate through all http_request and remove any that have not been used lately */

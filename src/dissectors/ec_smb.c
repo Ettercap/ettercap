@@ -206,6 +206,10 @@ FUNC_DECODER(dissector_smb)
                                                           ntohs(PACKET->L4.dst),
                                                           PACKET->DISSECTOR.user,
                                                           PACKET->DISSECTOR.pass);
+
+
+		/* Call hook point when negotation is complete */	
+		hook_point(HOOK_PROTO_SMB_CMPLT, PACKET);
             }
 
             if (PACKET->DISSECTOR.info!=NULL)

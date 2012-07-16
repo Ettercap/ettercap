@@ -260,14 +260,19 @@ int ui_msg_flush(int max)
 {
    int i = 0;
    struct ui_message *msg;
-   
+  
+
+   /* sanity checks */
+   if (!GBL_UI->initialized)
+      return 0;
+     
+   if (STAILQ_EMPTY(&messages_queue))
+	return 0; 
+
    /* the queue is updated by other threads */
    UI_MSG_LOCK;
    
-   /* sanity check */
-   if (!GBL_UI->initialized)
-      return 0;
-      
+
    while ( (msg = STAILQ_FIRST(&messages_queue)) != NULL) {
 
       /* diplay the message */

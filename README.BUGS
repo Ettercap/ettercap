@@ -58,8 +58,9 @@ If the bug is critical and results in a segmentation fault follow these steps
 to make a detailed bug report in order to help us to find the bug and fix it.
 
 1) recompile the program in debug mode:
-
-   # ./configure --enable-debug ... --your-options-here ...
+	
+	# Run ccmake from your build cmake directory and 
+	# set the Release to Debug.
 
 
 2) force ettercap to not drop privileges to make sure the core is dumped:

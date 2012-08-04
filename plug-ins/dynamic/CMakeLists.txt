@@ -5,10 +5,15 @@ IF(SWIG_FOUND)
 
   # Try to find all the stuff so that we can build LUA plugin.
   FIND_PACKAGE(Lua51)
+  FIND_PACKAGE(Ruby)
 
   IF(LUA51_FOUND)
     ADD_SUBDIRECTORY(lua)
   ENDIF(LUA51_FOUND)
+
+  IF(RUBY_FOUND)
+    ADD_SUBDIRECTORY(ruby)
+  ENDIF(RUBY_FOUND)
 
 ENDIF(SWIG_FOUND)
 

@@ -95,6 +95,8 @@ set_target_properties(smurf_attack PROPERTIES PREFIX "ec_")
 add_library(stp_mangler MODULE stp_mangler/stp_mangler.c)
 set_target_properties(stp_mangler PROPERTIES PREFIX "ec_")
 
+ADD_SUBDIRECTORY(dynamic)
+
 set(PLUGINS arp_cop
 autoadd
 chk_poison

@@ -48,8 +48,8 @@ endif(OS_DARWIN)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMakeModules)
 
-
-include_directories(include)
+set(EC_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/include)
+include_directories(${EC_INCLUDE_PATH})
 
 add_subdirectory(src)
 

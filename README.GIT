@@ -16,12 +16,15 @@
 
 First you have to clone the project from the git repository:
 
-    # git://github.com/Ettercap/ettercap.git
+    # git clone git://github.com/Ettercap/ettercap.git
+    # cd ettercap
 
+If you want to build the development version you have to switch to the ettercap_rc branch
+
+    # git checkout ettercap_rc
 
 If you already had the repository cloned, you will need to pull the latest changes:
    
-    # cd ettercap
     # git pull
 
 After you have successfully cloned the repository then you must initiate the build

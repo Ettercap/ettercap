@@ -59,7 +59,7 @@ to make a detailed bug report in order to help us to find the bug and fix it.
 
 1) recompile the program in debug mode:
 
-   # ./configure --enable-debug ... --your-options-here ...
+  (follow the instructions on README.GIT file in order to pull the repository and build the program in debug mode)
 
 
 2) force ettercap to not drop privileges to make sure the core is dumped:

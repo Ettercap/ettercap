@@ -120,7 +120,8 @@ static int dynamic_lua_init(void *dynamic_lua)
     }
   
     /* Now load the lua files */
-    int dofile = luaL_dofile(_lua_state, "hello.lua");
+    //int dofile = luaL_dofile(_lua_state, "hello.lua");
+    int dofile = luaL_dofile(_lua_state, "ec_helpers.lua");
 
     if (dofile == 0) {
       USER_MSG("DYNAMIC_LUA: Ran hello.lua \n");
@@ -130,10 +131,6 @@ static int dynamic_lua_init(void *dynamic_lua)
       _lua_state = NULL;
       return PLUGIN_FINISHED;
     }
-
-    hook_add(HOOK_PROTO_DNS, &dynamic_lua_handle_dns);
-    hook_add(HOOK_PROTO_HTTP, &dynamic_lua_handle_http);
-    hook_add(HOOK_PACKET_ETH, &dynamic_lua_handle_eth);
    /* return PLUGIN_FINISHED if the plugin has terminated
     * its execution.
     * return PLUGIN_RUNNING if it has spawned a thread or it
@@ -153,11 +150,11 @@ static int dynamic_lua_fini(void *dynamic_lua)
     * previously.
     */
     USER_MSG("DYNAMIC_LUA: plugin finalization\n");
-    hook_del(HOOK_PROTO_DNS, &dynamic_lua_handle_dns);
-    hook_del(HOOK_PROTO_HTTP, &dynamic_lua_handle_http);
-    hook_del(HOOK_PACKET_ETH, &dynamic_lua_handle_eth);
     /* cleanup Lua */
     if (_lua_state) {
+      lua_getglobal(_lua_state,"Ettercap");
+      lua_getfield(_lua_state, -1, "cleanup");
+      lua_call(_lua_state,0,0);
       lua_close(_lua_state);
     }
     _lua_state = NULL;
@@ -165,35 +162,9 @@ static int dynamic_lua_fini(void *dynamic_lua)
     return PLUGIN_FINISHED;
 }
 
-static void dynamic_lua_handle_dns(struct packet_object *po)
-{
-    if (_lua_state) {
-      lua_getglobal(_lua_state,"handle_dns_packet");
-
-      SWIG_NewPointerObj(_lua_state, (void *) po, _p_swigt__p_packet_object, 0);
-      lua_call(_lua_state,1,0);
-    }
+void lua_hook_add(int point, void (*func)(struct packet_object *po) ) {
 }
 
-static void dynamic_lua_handle_http(struct packet_object *po)
-{
-    if (_lua_state) {
-      lua_getglobal(_lua_state,"handle_http_packet");
-
-      SWIG_NewPointerObj(_lua_state, (void *) po, _p_swigt__p_packet_object, 0);
-      lua_call(_lua_state,1,0);
-    }
-}
-
-static void dynamic_lua_handle_eth(struct packet_object *po)
-{
-    if (_lua_state) {
-      lua_getglobal(_lua_state,"handle_eth_packet");
-
-      SWIG_NewPointerObj(_lua_state, (void *) po, _p_swigt__p_packet_object, 0);
-      lua_call(_lua_state,1,0);
-    }
-}
 
 /* EOF */
 

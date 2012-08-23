@@ -72,9 +72,7 @@ void gtkui_conf_read(void) {
 #ifdef OS_WINDOWS
    path = ec_win_get_user_dir();
 #else
-   /* TODO: get the dopped privs home dir instead of "/root" */
-   /* path = g_get_home_dir(); */
-   path = g_get_tmp_dir();
+   path = g_get_home_dir();
 #endif
 
    filename = g_build_filename(path, ".ettercap_gtk", NULL);

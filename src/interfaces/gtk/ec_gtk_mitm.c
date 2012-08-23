@@ -180,9 +180,9 @@ void gtkui_icmp_redir(void)
 
       snprintf(params, 6, "icmp:");
 
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry1)), PARAMS_LEN);
-      strncat(params, "/", PARAMS_LEN);
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry2)), PARAMS_LEN);
+      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry1)), ETH_ASCII_ADDR_LEN);
+      strncat(params, "/", 1);
+      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry2)), IP6_ASCII_ADDR_LEN);
 
       gtkui_start_mitm();
    }

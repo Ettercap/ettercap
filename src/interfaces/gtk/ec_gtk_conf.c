@@ -84,7 +84,8 @@ void gtkui_conf_read(void) {
       return;
 
    while(fgets(line, 100, fd)) {
-      sscanf(line, "%s = %hd", name, &value);
+      if(sscanf(line, "%s = %hd", name, &value) != 2)
+		ERROR_MSG("Invalid line in GTK configuration: %s\n", line);
 
       gtkui_conf_set(name, value);
    }

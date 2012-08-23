@@ -359,7 +359,8 @@ static gboolean refresh_connections(gpointer data)
       /* extract changing values from conntrack_print string */
       flags[0] = desc[0];
       strncpy(status, desc+50, 7);
-      sscanf(desc+62, "%u", &xferred);
+      int i =sscanf(desc+62, "%u", &xferred);
+      BUG_IF(i!=1);  
 
       gtk_list_store_set (ls_conns, &iter, 0, flags, 7, status, 8, xferred, -1);
 
@@ -399,9 +400,13 @@ static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct ro
    strncpy(dst, desc+26, 15);
    strncpy(status, desc+50, 7);
 
-   sscanf(desc+18, "%u", &src_port);
-   sscanf(desc+42, "%u", &dst_port);
+   int i=0;
+   i=sscanf(desc+18, "%u", &src_port);
+   BUG_IF(i!=1);
+   i=sscanf(desc+42, "%u", &dst_port);
+   BUG_IF(i!=1);
    sscanf(desc+62, "%u", &xferred);
+   BUG_IF(i!=1);
 
    /* trim off leading spaces */
    for(src_ptr = src; *src_ptr == ' '; src_ptr++);

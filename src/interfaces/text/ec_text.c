@@ -517,7 +517,8 @@ static void text_run_filter(void) {
       /* get the user input */
       fgets(input, 19, stdin);
       number = -1;
-      sscanf(input, "%d", &number);
+      int c=sscanf(input, "%d", &number);
+      BUG_IF(c!=1);
       if (number == 0) {
          break;
       } else if (number > 0) {

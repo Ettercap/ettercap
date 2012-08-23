@@ -55,6 +55,8 @@ if(ENABLE_SSL)
         set(EC_LIBS ${EC_LIBS} ${OPENSSL_LIBRARIES})
         set(EC_INCLUDE ${EC_INCLUDE} ${OPENSSL_INCLUDEDIRS})
     endif(OPENSSL_FOUND)
+else(ENABLE_SSL)
+    set(HAVE_OPENSSL 0)
 endif(ENABLE_SSL)
 
 find_package(ZLIB)

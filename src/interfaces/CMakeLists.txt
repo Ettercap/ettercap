@@ -72,4 +72,4 @@ endif(ENABLE_GTK)
 
 
 add_library(ec_interfaces STATIC ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
-target_link_libraries(ec_interfaces ec_wdg ${EC_LIBS})
+target_link_libraries(ec_interfaces ${EC_LIBS})

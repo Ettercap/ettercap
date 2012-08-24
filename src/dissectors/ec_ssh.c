@@ -20,6 +20,8 @@
     $Id: ec_ssh.c,v 1.25 2004/05/27 10:59:52 alor Exp $
 */
 
+#ifdef HAVE_OPENSSL
+
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
@@ -746,6 +748,7 @@ static void rsa_private_decrypt(BIGNUM *out, BIGNUM *in, RSA *key)
    free(inbuf);
 }
 
+#endif
 
 /* EOF */
 

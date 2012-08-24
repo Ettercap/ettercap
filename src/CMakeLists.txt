@@ -74,7 +74,6 @@ set(EC_SRC
         dissectors/ec_smtp.c
         dissectors/ec_snmp.c
         dissectors/ec_socks.c
-        dissectors/ec_ssh.c
         dissectors/ec_telnet.c
         dissectors/ec_vnc.c
         dissectors/ec_vrrp.c
@@ -111,6 +110,10 @@ endif(ENABLE_IPV6)
 if(HAVE_DN_EXPAND)
     set(EC_SRC ${EC_SRC} dissectors/ec_dns.c)
 endif(HAVE_DN_EXPAND)
+
+if(ENABLE_SSL)
+   set(EC_SRC ${EC_SRC} dissectors/ec_ssh.c)
+endif(ENABLE_SSL)
 
 if(OS_LINUX)
     set(EC_SRC ${EC_SRC} os/ec_linux.c)

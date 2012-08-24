@@ -19,6 +19,7 @@
 
 */
 
+
 #include <ec.h>
 #include <ec_stdint.h>
 #include <ec_inet.h>
@@ -44,6 +45,10 @@
 
 #ifdef HAVE_LIBCURL
 #include <curl/curl.h>
+
+#if (LIBCURL_VERSION_MAJOR < 7) || (LIBCURL_VERSION_MINOR < 26)
+#error libcurl 7.26.0 or up is needed
+#endif
 
 /*
  * This plugin will basically replace all https links sent to the user's browser with http 

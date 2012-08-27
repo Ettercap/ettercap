@@ -10,6 +10,7 @@ struct ec_session {
    size_t ident_len;
    void *data;
    size_t data_len;
+   int flag; /* misc. boolean flag */
    /* Used to trace headers for injection */
    struct ec_session *prev_session;
    int (*match)(void *id_sess, void *id);

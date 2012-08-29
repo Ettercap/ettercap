@@ -20,14 +20,15 @@
     $Id: ec_ssh.c,v 1.25 2004/05/27 10:59:52 alor Exp $
 */
 
-#ifdef HAVE_OPENSSL
-
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_session.h>
 #include <ec_streambuf.h>
 #include <ec_checksum.h>
+
+#ifdef HAVE_OPENSSL
+
 
 /* don't include kreberos. RH sux !! */
 #define OPENSSL_NO_KRB5 1

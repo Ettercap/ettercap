@@ -199,7 +199,7 @@ end
 Ettercap.cleanup = function() 
   Ettercap.log("Cleaning up lua hooks!!\n")
   for key, hook in pairs(Ettercap.ec_hooks) do
-    Ettercap.log("Cleaning something up...\n")
+    Ettercap.log("Cleaning up a lua hook...\n")
     Ettercap.ffi.C.hook_del(hook[1], hook[2])
     -- Free the callback ?
   end
@@ -284,6 +284,7 @@ function shrink_http_body(body)
   return modified_body
 end
 
+Ettercap.log("LUA: We are inside ec_helpers.lua!\n")
 
 http_injector = function(po) 
   Ettercap.log("I got the tcp!!!!!\n")
@@ -298,12 +299,12 @@ http_injector = function(po)
       if (not (start == nil)) then
         -- We've got a proper split.
         local orig_body_len = string.len(body)
-        print("Orig body length: " .. orig_body_len .. "\n")
+        Ettercap.log("LUA: Orig body length: " .. orig_body_len .. "\n")
         local modified_body = shrink_http_body(body)
         local delta = orig_body_len - string.len(modified_body)
         -- We've tweaked things, so let's update the data.
         if (delta > 0) then
-          Ettercap.log("LUA: We modified stuff!\n")
+          Ettercap.log("LUA: We modified the HTTP response!\n")
           modified_body = string.rep(' ', delta) .. modified_body
           local modified_data = header .. modified_body
           Ettercap.ffi.copy(po.DATA.data, modified_data, string.len(modified_data))
@@ -315,8 +316,9 @@ http_injector = function(po)
 end
 
 
+Ettercap.log("LUA: Defining a TCP packet hook...\n")
 Ettercap.hook_packet_tcp(http_injector)
+Ettercap.log("LUA: hooked!\n")
 
-
-
-print(Ettercap.ffi.C)
+Ettercap.log("LUA: We are at the end of ec_helpers.lua. Though the script " ..
+    "will now exit, ettercap will be able to callback into Lua through FFI!\n")

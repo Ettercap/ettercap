@@ -104,13 +104,12 @@ static int dynamic_lua_init(void *dynamic_lua)
     luaL_openlibs(_lua_state);
 
     /* Now load the lua files */
-    //int dofile = luaL_dofile(_lua_state, "hello.lua");
     int dofile = luaL_dofile(_lua_state, "ec_helpers.lua");
 
     if (dofile == 0) {
-      USER_MSG("DYNAMIC_LUA: Ran hello.lua \n");
+      USER_MSG("DYNAMIC_LUA: loaded ec_helpers.lua \n");
     } else {
-      USER_MSG("DYNAMIC_LUA: Failed to run hello.lua \n");
+      USER_MSG("DYNAMIC_LUA: Failed to load ec_helpers.lua \n");
       lua_close(_lua_state);
       _lua_state = NULL;
       return PLUGIN_FINISHED;

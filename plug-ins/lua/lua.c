@@ -1,5 +1,5 @@
 /*
-    dynamic_lua -- ettercap plugin -- it does nothig !
+    ec_lua -- ettercap plugin -- it does nothig !
                                 only demostrates how to write a plugin !
 
     Copyright (C) ALoR & NaGA
@@ -18,7 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: dynamic_lua.c,v 1.10 2004/03/19 13:55:02 alor Exp $
+    $Id: ec_lua.c,v 1.10 2004/03/19 13:55:02 alor Exp $
 */
 
 
@@ -45,26 +45,26 @@ int plugin_load(void *);
 extern int luaopen_ettercap(lua_State* L);
 
 /* additional functions */
-static int dynamic_lua_init(void *);
-static int dynamic_lua_fini(void *);
+static int ec_lua_init(void *);
+static int ec_lua_fini(void *);
 
 lua_State* _lua_state;
 
 /* plugin operations */
 
-struct plugin_ops dynamic_lua_ops = { 
+struct plugin_ops ec_lua_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
    .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   .name =              "dynamic_lua",  
+   .name =              "lua",  
     /* a short description of the plugin (max 50 chars) */                    
    .info =              "A plugin template (for developers)",  
    /* the plugin version. */ 
    .version =           "3.0",   
    /* activation function */
-   .init =              &dynamic_lua_init,
+   .init =              &ec_lua_init,
    /* deactivation function */                     
-   .fini =              &dynamic_lua_fini,
+   .fini =              &ec_lua_fini,
 };
 
 /**********************************************************/
@@ -72,19 +72,19 @@ struct plugin_ops dynamic_lua_ops = {
 /* this function is called on plugin load */
 int plugin_load(void *handle) 
 {
-   DEBUG_MSG("dynamic_lua plugin load function");
+   DEBUG_MSG("ec_lua plugin load function");
    /*
     *  in this fuction we MUST call the registration procedure that will set
     *  up the plugin according to the plugin_ops structure.
     *  the returned value MUST be the same as plugin_register()
     *  the opaque pointer params MUST be passed to plugin_register()
     */
-   return plugin_register(handle, &dynamic_lua_ops);
+   return plugin_register(handle, &ec_lua_ops);
 }
 
 /*********************************************************/
 
-static int dynamic_lua_init(void *dynamic_lua) 
+static int ec_lua_init(void *ec_lua) 
 {
    /* the control is given to this function
     * and ettercap is suspended until its return.
@@ -97,7 +97,7 @@ static int dynamic_lua_init(void *dynamic_lua)
     * plugin type to PL_HOOK.
     */
 
-    USER_MSG("DYNAMIC_LUA: plugin running...\n");
+    USER_MSG("EC_LUA: plugin running...\n");
     // Initialize lua
     _lua_state = luaL_newstate();
     /* load lua libraries */
@@ -107,9 +107,9 @@ static int dynamic_lua_init(void *dynamic_lua)
     int dofile = luaL_dofile(_lua_state, "ec_helpers.lua");
 
     if (dofile == 0) {
-      USER_MSG("DYNAMIC_LUA: loaded ec_helpers.lua \n");
+      USER_MSG("EC_LUA: loaded ec_helpers.lua \n");
     } else {
-      USER_MSG("DYNAMIC_LUA: Failed to load ec_helpers.lua \n");
+      USER_MSG("EC_LUA: Failed to load ec_helpers.lua \n");
       lua_close(_lua_state);
       _lua_state = NULL;
       return PLUGIN_FINISHED;
@@ -124,7 +124,7 @@ static int dynamic_lua_init(void *dynamic_lua)
 }
 
 
-static int dynamic_lua_fini(void *dynamic_lua) 
+static int ec_lua_fini(void *ec_lua) 
 {
    /* 
     * called to terminate a plugin.
@@ -132,7 +132,7 @@ static int dynamic_lua_fini(void *dynamic_lua)
     * init function or to remove hook added 
     * previously.
     */
-    USER_MSG("DYNAMIC_LUA: plugin finalization\n");
+    USER_MSG("EC_LUA: plugin finalization\n");
     /* cleanup Lua */
     if (_lua_state) {
       lua_getglobal(_lua_state,"Ettercap");

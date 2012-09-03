@@ -1,5 +1,5 @@
 include(ExternalProject)
-set(plugin_name dynamic_lua)
+set(plugin_name lua)
 
 SET(luajit_RELEASE 2.0.0-beta10)
 SET(luajit_name luajit-${luajit_RELEASE}-${CMAKE_BUILD_TYPE})
@@ -25,16 +25,16 @@ SET(EXPORT_CC ${CMAKE_C_COMPILER})
 # and the like.
 SET(EXPORT_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 
-IF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   SET(EXPORT_CCDEBUG "-g")
   # Explicitly disable CCOPT, as we do not want fomit-frame-pointer 
   # conflicting with debuggy stuff.
   SET(EXPORT_DISABLE_CCOPT CCOPT=)
   SET(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
-ELSEIF(${CMAKE_BUILD_TYPE} STREQUAL Release)
+ELSEIF("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
   SET(EXPORT_CCDEBUG "")
   SET(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
-ENDIF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+ENDIF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 
 SET(EXPORT_BUILDMODE static)
 SET(EXPORT_PREFIX ${luajit_prefix})

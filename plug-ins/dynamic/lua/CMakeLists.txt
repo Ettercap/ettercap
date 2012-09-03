@@ -1,37 +1,30 @@
+include(ExternalProject)
+SET(luajit_RELEASE 2.0.0-beta10)
+SET(luajit_name luajit-${luajit_RELEASE})
+SET(luajit_source ${CMAKE_CURRENT_SOURCE_DIR}/external/LuaJIT-${luajit_RELEASE}.tar.gz)
+SET(luajit_prefix ${CMAKE_CURRENT_BINARY_DIR}/${luajit_name}_prefix)
+SET(luajit_build ${CMAKE_CURRENT_BINARY_DIR}/${luajit_name}_build)
+ExternalProject_Add(
+    ${luajit_name}
+    URL ${luajit_source}
+    BUILD_IN_SOURCE 1
+    SOURCE_DIR ${luajit_build}
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND make PREFIX=${luajit_prefix}
+    INSTALL_COMMAND make install PREFIX=${luajit_prefix}
+    UPDATE_COMMAND ""
+    PATCH_COMMAND ""
+)
 
-SET(SWIG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/ettercap_lua_swig.c")
-SET(SWIG_HEADER_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/lua_swig.h")
-
-SET(SWIG_INCLUDE_ARGS)
-FOREACH(it ${EC_INCLUDE} ${EC_INCLUDE_PATH} ${CMAKE_INCLUDE_PATH})
-  SET(SWIG_INCLUDE_ARGS ${SWIG_INCLUDE_ARGS} "-I${it}")
-ENDFOREACH(it)
-
-# Generates the lua SWIG bindings.
-ADD_CUSTOM_COMMAND(
-  OUTPUT ${SWIG_OUTPUT}
-  COMMAND ${CMAKE_COMMAND} -E echo_append "Creating wrapper code for lua..."
-  COMMAND ${SWIG_EXECUTABLE} -lua -o ${SWIG_OUTPUT} ${SWIG_INCLUDE_ARGS} ${SWIG_INPUT}
-  COMMAND ${CMAKE_COMMAND} -E echo "Done."
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../*.i
-  )
-
-# Generates the lua SWIG bindings.
-ADD_CUSTOM_COMMAND(
-  OUTPUT ${SWIG_HEADER_OUTPUT}
-  COMMAND ${CMAKE_COMMAND} -E echo_append "Creating swig header code for lua..."
-  COMMAND ${SWIG_EXECUTABLE} -lua -external-runtime ${SWIG_HEADER_OUTPUT}
-  COMMAND ${CMAKE_COMMAND} -E echo "Done."
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
 
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+INCLUDE_DIRECTORIES(${luajit_prefix}/include/luajit-2.0 ${CMAKE_CURRENT_BINARY_DIR})
+SET(LUAJIT_LIBS ${luajit_prefix}/lib/libluajit-5.1.a)
 
-add_library(dynamic_lua MODULE lua.c ${SWIG_OUTPUT} ${SWIG_HEADER_OUTPUT})
-
-target_link_libraries(dynamic_lua ${LUA_LIBRARIES} ettercap)
+add_library(dynamic_lua MODULE lua.c)
+add_library( STATIC IMPORTED)
+add_dependencies(dynamic_lua ${luajit_name})
+target_link_libraries(dynamic_lua ettercap ${luajit_prefix}/lib/libluajit-5.1)
 set_target_properties(dynamic_lua PROPERTIES PREFIX "ec_")
 
 install(TARGETS

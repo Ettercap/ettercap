@@ -26,8 +26,6 @@
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_hook.h>
 
-#include "lua_swig.h"
-
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
@@ -49,12 +47,8 @@ extern int luaopen_ettercap(lua_State* L);
 /* additional functions */
 static int dynamic_lua_init(void *);
 static int dynamic_lua_fini(void *);
-static void dynamic_lua_handle_dns(struct packet_object *);
-static void dynamic_lua_handle_http(struct packet_object *);
-static void dynamic_lua_handle_eth(struct packet_object *);
 
 lua_State* _lua_state;
-swig_type_info* _p_swigt__p_packet_object;
 
 /* plugin operations */
 
@@ -108,17 +102,7 @@ static int dynamic_lua_init(void *dynamic_lua)
     _lua_state = luaL_newstate();
     /* load lua libraries */
     luaL_openlibs(_lua_state);
-    luaopen_ettercap(_lua_state);
 
-    /* get pointers to all the different types that we'll be casting from/to */
-    _p_swigt__p_packet_object = SWIG_MangledTypeQuery(_lua_state, "_p_packet_object");
-    // Create a lua-style version of the object.
-    if(_p_swigt__p_packet_object) {
-      USER_MSG("WOOO, Got the proper type.\n");
-    } else {
-      USER_MSG("No dice.\n");
-    }
-  
     /* Now load the lua files */
     //int dofile = luaL_dofile(_lua_state, "hello.lua");
     int dofile = luaL_dofile(_lua_state, "ec_helpers.lua");
@@ -158,7 +142,6 @@ static int dynamic_lua_fini(void *dynamic_lua)
       lua_close(_lua_state);
     }
     _lua_state = NULL;
-    _p_swigt__p_packet_object = NULL;
     return PLUGIN_FINISHED;
 }
 

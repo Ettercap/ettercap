@@ -286,7 +286,7 @@ end
 
 
 http_injector = function(po) 
-  -- Ettercap.log("I got the tcp!!!!!\n")
+  Ettercap.log("I got the tcp!!!!!\n")
   if (po.DATA.len > 7) then
     local buf = Ettercap.ffi.string(po.DATA.data, 7)
     if (buf == "HTTP/1.") then

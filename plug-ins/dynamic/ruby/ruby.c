@@ -24,9 +24,10 @@
 
 #include <ec.h>                        /* required for global variables */
 #include <ec_plugins.h>                /* required for plugin ops */
+#include <ec_threads.h>
 #include <ec_hook.h>
 
-#include "ruby_swig.h"
+// #include "ruby_swig.h"
 #include "ruby.h"
 
 #include <stdlib.h>
@@ -43,9 +44,7 @@ int plugin_load(void *);
 /* additional functions */
 static int dynamic_ruby_init(void *);
 static int dynamic_ruby_fini(void *);
-static void dynamic_ruby_handle_dns(struct packet_object *);
-static void dynamic_ruby_handle_http(struct packet_object *);
-static void dynamic_ruby_handle_eth(struct packet_object *);
+static EC_THREAD_FUNC(ettercap_ruby_thread);
 
 void Init_ettercap(void);
 
@@ -67,6 +66,8 @@ struct plugin_ops dynamic_ruby_ops = {
    /* deactivation function */                     
    .fini =              &dynamic_ruby_fini,
 };
+
+int running = 0;
 
 /**********************************************************/
 
@@ -99,15 +100,31 @@ static int dynamic_ruby_init(void *dynamic_ruby)
     */
 
     USER_MSG("DYNAMIC_RUBY: plugin running...\n");
-    ruby_init();
-    ruby_init_loadpath();
-    Init_ettercap();
-    rb_load_file("hello.rb");
-    ruby_exec();
 
-    hook_add(HOOK_PROTO_DNS, &dynamic_ruby_handle_dns);
-    hook_add(HOOK_PROTO_HTTP, &dynamic_ruby_handle_http);
-    hook_add(HOOK_PACKET_ETH, &dynamic_ruby_handle_eth);
+    int fake_argc = 2;
+    char *fake_argv[] = {
+      "ettercap_plugin",
+      "-e;"
+    };
+
+    RUBY_INIT_STACK;
+    ruby_init();
+    ruby_options(fake_argc, fake_argv);
+    //ruby_init_loadpath();
+    running = 1;
+    //VALUE filename = rb_str_new2("/home/mike/code/ettercap-script/plug-ins/dynamic/ruby/examples/hello2.rb");
+
+    //int state = 0;
+    //rb_load_protect(filename, 0, &state);
+    ec_thread_new("ettercap_ruby_thread", "Ettercap ruby loop thread", &ettercap_ruby_thread, NULL);
+
+    // creates a thread within the VM.
+    rb_eval_string("load '/home/mike/code/ettercap-script/plug-ins/dynamic/ruby/examples/hello2.rb'");
+    USER_MSG("DYNAMIC_RUBY: thread started...\n");
+
+    //hook_add(HOOK_PROTO_DNS, &dynamic_ruby_handle_dns);
+    //hook_add(HOOK_PROTO_HTTP, &dynamic_ruby_handle_http);
+    //hook_add(HOOK_PACKET_ETH, &dynamic_ruby_handle_eth);
    /* return PLUGIN_FINISHED if the plugin has terminated
     * its execution.
     * return PLUGIN_RUNNING if it has spawned a thread or it
@@ -126,26 +143,70 @@ static int dynamic_ruby_fini(void *dynamic_ruby)
     * init function or to remove hook added 
     * previously.
     */
-    USER_MSG("DYNAMIC_RUBY: plugin finalization\n");
-    ruby_finalize();
-    hook_del(HOOK_PROTO_DNS, &dynamic_ruby_handle_dns);
-    hook_del(HOOK_PROTO_HTTP, &dynamic_ruby_handle_http);
-    hook_del(HOOK_PACKET_ETH, &dynamic_ruby_handle_eth);
+    USER_MSG("DYNAMIC_RUBY: plugin finalization. Shutting down ruby VM\n");
+    rb_eval_string("Ettercap.sig_queue.push(1); Ettercap.thread.join(2); Ettercap.thread.kill");
+    rb_thread_schedule();
+    /*
+    int i = 0;
+    running = 0;
+    // Wait up to 2 seconds for ruby process to exit 
+    for (i = 0; i < 10; i++) {
+      if (running == -1)
+        break;
+
+      USER_MSG("DYNAMIC_RUBY: Waiting for ruby finalization...\n");
+      usleep(200000);
+    }
+    */
+
+    USER_MSG("DYNAMIC_RUBY: Killing threads...\n");
+    pthread_t pid;
+    while(!pthread_equal(EC_PTHREAD_NULL, pid = ec_thread_getpid("ettercap_ruby_thread"))) {
+      ec_thread_destroy(pid);
+    }
+    ruby_cleanup(0);
+    USER_MSG("DYNAMIC_RUBY: Done!.\n");
+    //hook_del(HOOK_PROTO_DNS, &dynamic_ruby_handle_dns);
+    //hook_del(HOOK_PROTO_HTTP, &dynamic_ruby_handle_http);
+    //hook_del(HOOK_PACKET_ETH, &dynamic_ruby_handle_eth);
     return PLUGIN_FINISHED;
 }
 
-static void dynamic_ruby_handle_dns(struct packet_object *po)
+void run_the_rubies()
 {
+    //rb_eval_string("load '/home/mike/code/ettercap-script/plug-ins/dynamic/ruby/examples/hello2.rb'");
+    //rb_eval_string("require 'rubygems'");
+    /*
+    char* options[] = {"", "/home/mike/code/ettercap-script/plug-ins/dynamic/ruby/examples/hello2.rb"};
+    void* node = ruby_options(2, options);
+    ruby_run_node(node);
+    */
+    //Init_ettercap();
+    //rb_load_file("/home/mike/code/ettercap-script/plug-ins/dynamic/ruby/examples/hello2.rb");
+
+
+    //rb_eval_string("load 'hello2.rb'");
+    while (running == 1){
+      CANCELLATION_POINT();
+      // We sleep inside of ruby so that we cn process hooks immediately.
+      rb_eval_string("sleep 1; GC.start");
+      USER_MSG("DYNAMIC_RUBY: looping...\n");
+    }
+    USER_MSG("DYNAMIC_RUBY: Thread killed. cleaning up...\n");
+    //int ret = ruby_cleanup(0);
+    //printf("ruby_cleanup(0) == %d\n", ret);
+
+    running = -1;
 }
 
-static void dynamic_ruby_handle_http(struct packet_object *po)
+static EC_THREAD_FUNC(ettercap_ruby_thread)
 {
-}
 
-static void dynamic_ruby_handle_eth(struct packet_object *po)
-{
-}
+    USER_MSG("DYNAMIC_RUBY: in thread\n");
+    run_the_rubies();
+    return NULL;
 
+}
 /* EOF */
 
 // vim:ts=3:expandtab

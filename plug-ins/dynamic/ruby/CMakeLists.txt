@@ -26,9 +26,11 @@ ADD_CUSTOM_COMMAND(
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 INCLUDE_DIRECTORIES(${RUBY_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(dynamic_ruby MODULE ruby.c ${SWIG_OUTPUT} ${SWIG_HEADER_OUTPUT})
+#add_library(dynamic_ruby MODULE ruby.c ${SWIG_OUTPUT} ${SWIG_HEADER_OUTPUT})
+add_library(dynamic_ruby MODULE ruby.c)
 
 target_link_libraries(dynamic_ruby ${RUBY_LIBRARY} ettercap)
 set_target_properties(dynamic_ruby PROPERTIES PREFIX "ec_")

@@ -95,7 +95,15 @@ set_target_properties(smurf_attack PROPERTIES PREFIX "ec_")
 add_library(stp_mangler MODULE stp_mangler/stp_mangler.c)
 set_target_properties(stp_mangler PROPERTIES PREFIX "ec_")
 
-ADD_SUBDIRECTORY(dynamic)
+option(ENABLE_LUA_PLUGIN "Enable LUA plugin support" OFF)
+IF(ENABLE_LUA_PLUGIN)
+  ADD_SUBDIRECTORY(lua)
+ENDIF(ENABLE_LUA_PLUGIN)
+
+option(ENABLE_RUBY_PLUGIN "Enable Ruby plugin support" OFF)
+IF(ENABLE_RUBY_PLUGIN)
+  ADD_SUBDIRECTORY(ruby)
+ENDIF(ENABLE_RUBY_PLUGIN)
 
 set(PLUGINS arp_cop
 autoadd

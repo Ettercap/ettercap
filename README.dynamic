@@ -9,16 +9,16 @@ Tested on Debian 6
 Building.
    mkdir ettercap-script-build
    cd ettercap-script-build/
-   cmake -DENABLE_DYNAMIC_LUA=on -DCMAKE_INSTALL_PREFIX=/opt/ettercap -DENABLE_GTK=off ../ettercap-script 
+   cmake -DENABLE_LUA_PLUGIN=on -DCMAKE_INSTALL_PREFIX=/opt/ettercap -DENABLE_GTK=off ../ettercap-script 
    make
    sudo make install
 
-   cd ../ettercap-script/plug-ins/dynamic/lua/lib/
+   cd ../ettercap-script/plug-ins/lua/lib/
    ls ec_helpers.lua # Verify that ec_helpers.lua is there
 
-    # Now we run ettercap, launching the dynamic_lua plugin 
+    # Now we run ettercap, launching the lua plugin 
 
-    sudo /opt/ettercap/bin/ettercap -i eth0 -T "/10.211.55.8//" -P dynamic_lua 
+    sudo /opt/ettercap/bin/ettercap -i eth0 -T "/10.211.55.8//" -P lua 
 
 
 Ettercap 0.7.5 copyright 2001-2012 Ettercap Development Team
@@ -51,14 +51,14 @@ Starting Unified sniffing...
 Text only Interface activated...
 Hit 'h' for inline help
 
-Activating dynamic_lua plugin...
+Activating lua plugin...
 
-DYNAMIC_LUA: plugin running...
+EC_LUA: plugin running...
 LUA: We are inside ec_helpers.lua!
 LUA: Defining a TCP packet hook...
 LUA: hooked!
 LUA: We are at the end of ec_helpers.lua. Though the script will now exit, ettercap will be able to callback into Lua through FFI!
-DYNAMIC_LUA: loaded ec_helpers.lua 
+EC_LUA: loaded ec_helpers.lua 
 I got the tcp!!!!!
 I got the tcp!!!!!
 I got the tcp!!!!!
@@ -136,7 +136,7 @@ Available plugins :
 [0]       dns_spoof  1.1  Sends spoofed dns replies
 [0]      dos_attack  1.0  Run a d.o.s. attack against an IP address
 [0]           dummy  3.0  A plugin template (for developers)
-[1]     dynamic_lua  3.0  A plugin template (for developers)
+[1]             lua  3.0  A plugin template (for developers)
 [0]       find_conn  1.0  Search connections on a switched LAN
 [0]   find_ettercap  2.0  Try to find ettercap activity
 [0]         find_ip  1.0  Search an unused IP address in the subnet
@@ -163,10 +163,10 @@ Available plugins :
 [0]     stp_mangler  1.0  Become root of a switches spanning tree
 
 
-Plugin name (0 to quit): dynamic_lua
-Deactivating dynamic_lua plugin...
+Plugin name (0 to quit): lua
+Deactivating lua plugin...
 
-DYNAMIC_LUA: plugin finalization
+EC_LUA: plugin finalization
 Cleaning up lua hooks!!
 Cleaning up a lua hook...
 q

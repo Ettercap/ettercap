@@ -49,6 +49,5 @@
 #cmakedefine INSTALL_DATADIR        "@INSTALL_DATADIR@"
 #cmakedefine INSTALL_EXECPREFIX     "@INSTALL_EXECPREFIX@"
 #cmakedefine INSTALL_BINDIR         "@INSTALL_BINDIR@"
-#cmakedefine INSTALL_LUALIB         "@INSTALL_LUALIB@"
 
 #endif

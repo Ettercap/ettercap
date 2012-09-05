@@ -16,3 +16,4 @@ install(FILES
             etter.services
             etter.ssl.crt
         DESTINATION ${INSTALL_DATADIR}/ettercap)
+add_subdirectory(lib)

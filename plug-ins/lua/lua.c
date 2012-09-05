@@ -86,6 +86,7 @@ int plugin_load(void *handle)
 
 static int ec_lua_init(void *ec_lua) 
 {
+  char filename[2048];
    /* the control is given to this function
     * and ettercap is suspended until its return.
     * 
@@ -103,8 +104,11 @@ static int ec_lua_init(void *ec_lua)
     /* load lua libraries */
     luaL_openlibs(_lua_state);
 
+    /* Temp hack, create the path to the the ec_helpers file */
+    sprintf(filename,"%s/%s/lib/%s",INSTALL_DATADIR, EC_PROGRAM,"ec_helpers.lua");
+
     /* Now load the lua files */
-    int dofile = luaL_dofile(_lua_state, "ec_helpers.lua");
+    int dofile = luaL_dofile(_lua_state, filename);
 
     if (dofile == 0) {
       USER_MSG("EC_LUA: loaded ec_helpers.lua \n");

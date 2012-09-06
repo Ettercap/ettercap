@@ -1,0 +1,187 @@
+local Ettercap = Ettercap
+module("ec_ffi",package.seeall)
+Ettercap.ffi = require("ffi")
+Ettercap.ffi.cdef[[
+typedef unsigned char u_int8_t;
+typedef unsigned char u_char;
+typedef unsigned short int u_int16_t;
+typedef unsigned int u_int32_t;
+typedef unsigned long int u_int64_t;
+
+typedef char int8_t;
+typedef short int int16_t;
+typedef int int32_t;
+typedef long int int64_t;
+
+typedef int8_t    int8;
+typedef int16_t   int16;
+typedef int32_t   int32;
+typedef int64_t   int64;
+
+typedef u_int8_t   u_int8;
+typedef u_int16_t  u_int16;
+typedef u_int32_t  u_int32;
+typedef u_int64_t  u_int64;
+
+struct ip_addr {
+   u_int16 addr_type;
+   u_int16 addr_len;
+   /* this must be aligned in memory */
+   u_int8 addr[16];
+};
+
+struct passive_info {
+   char fingerprint[29];
+   char flags;
+};
+
+struct dissector_info {
+   char *user;
+   char *pass;
+   char *info;
+   char *banner;
+   char failed;
+};
+
+struct timeval {
+  long int tv_sec;
+  long int tv_usec;
+};
+
+struct packet_object {
+ 
+   /* timestamp of the packet */
+   struct timeval ts;
+   
+   struct L2 {
+      u_int8 proto;
+      u_char * header;
+      size_t len;
+      u_int8 src[6];
+      u_int8 dst[6];
+   } L2;
+   
+   struct L3 {
+      u_int16 proto;
+      u_char * header;
+      u_char * options;
+      size_t len;
+      size_t payload_len;
+      size_t optlen;
+      struct ip_addr src;
+      struct ip_addr dst;
+      u_int8 ttl;
+   } L3;
+   
+   struct L4 {
+      u_int8 proto;
+      u_int8 flags;
+      u_char * header;
+      u_char * options;
+      size_t len;
+      size_t optlen;
+      u_int16 src;
+      u_int16 dst;
+      u_int32 seq;
+      u_int32 ack;
+   } L4;
+   
+   struct data {
+      u_char * data;
+      size_t len;
+      /* 
+       * buffer containing the data to be displayed.
+       * some dissector decripts the traffic, but the packet must be forwarded as
+       * is, so the decripted data must be placed in a different buffer. 
+       * this is that bufffer and it is malloced by tcp or udp dissector.
+       */
+      size_t disp_len;
+      u_char * disp_data;
+      /* for modified packet this is the delta for the lenght */
+      int delta;  
+      size_t inject_len;      /* len of the injection */
+      u_char *inject;         /* the fuffer used for injection */
+
+   } DATA;
+
+   size_t fwd_len;         /* lenght of the packet to be forwarded */
+   u_char * fwd_packet;    /* the pointer to the buffer to be forwarded */
+   
+   size_t len;             /* total lenght of the packet */
+   u_char * packet;        /* the buffer containing the real packet */
+
+   /* Trace current session for injector chain */
+   struct ec_session *session;  
+    
+   
+   u_int16 flags;                       /* flags relative to the packet */
+   
+   /* 
+    * here are stored the user and pass collected by dissectors 
+    * the "char *" are malloc(ed) by dissectors
+    */
+   struct dissector_info DISSECTOR;
+  
+   /* the struct for passive identification */
+   struct passive_info PASSIVE;
+   
+};
+
+enum {
+   HOOK_PACKET_BASE  = 50,
+   HOOK_PACKET_ETH,
+   HOOK_PACKET_FDDI,      
+   HOOK_PACKET_TR,
+   HOOK_PACKET_WIFI,
+   HOOK_PACKET_ARP,
+   HOOK_PACKET_ARP_RQ,
+   HOOK_PACKET_ARP_RP,
+   HOOK_PACKET_IP,
+   HOOK_PACKET_IP6,
+   HOOK_PACKET_UDP,
+   HOOK_PACKET_TCP,
+   HOOK_PACKET_ICMP,
+   HOOK_PACKET_LCP,
+   HOOK_PACKET_ECP,
+   HOOK_PACKET_IPCP,
+   HOOK_PACKET_PPP,
+   HOOK_PACKET_GRE,
+   HOOK_PACKET_VLAN,
+   HOOK_PACKET_ICMP6,
+   HOOK_PACKET_ICMP6_NSOL,
+   HOOK_PACKET_ICMP6_NADV,
+
+   /* high level protocol hooks */
+   HOOK_PROTO_BASE   = 100,
+   HOOK_PROTO_SMB,
+   HOOK_PROTO_SMB_CHL,
+   HOOK_PROTO_SMB_CMPLT,
+   HOOK_PROTO_DHCP_REQUEST,
+   HOOK_PROTO_DHCP_DISCOVER,
+   HOOK_PROTO_DHCP_PROFILE,
+   HOOK_PROTO_DNS,
+   HOOK_PROTO_NBNS,
+   HOOK_PROTO_HTTP,
+};
+
+
+static const u_int16 PO_IGNORE      = 1;        /* this packet should not be processed (e.g. sniffing TARGETS didn't match it) */
+static const u_int16 PO_DONT_DISSECT= 1<<1;     /* this packet should not be processed by dissector (used during the arp scan) */
+static const u_int16 PO_FORWARDABLE = 1<<2;     /* the packet has our MAC address, by the IP is not ours */
+static const u_int16 PO_FORWARDED   = 1<<3;     /* the packet was forwarded by us */
+static const u_int16 PO_FROMIFACE   = 1<<4;    /* this packet comes from the primary interface */
+static const u_int16 PO_FROMBRIDGE  = 1<<5;    /* this packet comes form the bridged interface */
+static const u_int16 PO_MODIFIED    = 1<<6;    /* it needs checksum recalculation before forwarding */
+static const u_int16 PO_DROPPED     = 1<<7;    /* the packet has to be dropped */
+static const u_int16 PO_DUP         = 1<<8;    /* the packet is a duplicate we have to free the buffer on destroy */
+static const u_int16 PO_FORGED      = 1<<9;    /* the packet is created by ourselves */
+static const u_int16 PO_EOF         = 1<<10;     /* we are reading from a file and this is the last packet */
+static const u_int16 PO_FROMSSL     = 1<<11;    /* the packet is coming from a ssl wrapper */
+static const u_int16 PO_SSLSTART    = 1<<12;   /* ssl wrapper has to enter SSL state */
+
+void ui_msg(const char *fmt, ...);
+typedef void (__stdcall *hook_cb_func)(struct packet_object *po);
+void hook_add(int point, hook_cb_func);
+int hook_del(int point, hook_cb_func );
+]]
+

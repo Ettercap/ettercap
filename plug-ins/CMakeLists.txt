@@ -95,11 +95,6 @@ set_target_properties(smurf_attack PROPERTIES PREFIX "ec_")
 add_library(stp_mangler MODULE stp_mangler/stp_mangler.c)
 set_target_properties(stp_mangler PROPERTIES PREFIX "ec_")
 
-option(ENABLE_LUA_PLUGIN "Enable LUA plugin support" OFF)
-IF(ENABLE_LUA_PLUGIN)
-  ADD_SUBDIRECTORY(lua)
-ENDIF(ENABLE_LUA_PLUGIN)
-
 set(PLUGINS arp_cop
 autoadd
 chk_poison

@@ -8,8 +8,17 @@ option(ENABLE_GTK "Enable GTK interface" ON)
 option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
+option(ENABLE_LUA "Enable LUA support" OFF)
 
 set(MACPORTS_BASE_DIRECTORY "/opt/local" CACHE PATH "MacPorts installation base directory")
+
+# Set the build type to Release, by default. Warn that the user should have 
+# selected a build type
+if("${CMAKE_BUILD_TYPE}" STREQUAL "") 
+  message("Warning: CMAKE_BUILD_TYPE not specified. Defaulting to 'Release'")
+  SET(CMAKE_BUILD_TYPE Release)
+endif("${CMAKE_BUILD_TYPE}" STREQUAL "") 
+
 
 include(CMakeModules/CheckVariableInHeaders.cmake)
 include(CMakeFiles/os_test.cmake)
@@ -23,6 +32,10 @@ endif(OS_DARWIN)
 
 include(CMakeFiles/headers_check.cmake)
 include(CMakeFiles/lib_check.cmake)
+if(ENABLE_LUA)
+  include(CMakeFiles/luajit.cmake)
+  set(HAVE_LUA 1)
+endif(ENABLE_LUA)
 include(CMakeFiles/variable_check.cmake)
 
 set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Installation prefix")

@@ -26,6 +26,17 @@ Ettercap.hook_add = function (point, func)
   Ettercap.log("4")
 end
 
+Ettercap.hook_received = 
+  function(func) Ettercap.hook_add(Ettercap.ffi.C.HOOK_RECEIVED, func) end
+Ettercap.hook_pre_forward = 
+  function(func) Ettercap.hook_add(Ettercap.ffi.C.HOOK_PRE_FORWARD, func) end
+Ettercap.hook_handled = 
+  function(func) Ettercap.hook_add(Ettercap.ffi.C.HOOK_HANDLED, func) end
+Ettercap.hook_filter = 
+  function(func) Ettercap.hook_add(Ettercap.ffi.C.HOOK_FILTER, func) end
+Ettercap.hook_DISPATCHER = 
+  function(func) Ettercap.hook_add(Ettercap.ffi.C.HOOK_DISPATCHER, func) end
+
 Ettercap.hook_packet_eth = 
   function(func) Ettercap.hook_add(Ettercap.ffi.C.HOOK_PACKET_ETH, func) end
 Ettercap.hook_packet_fddi = 

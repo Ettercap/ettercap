@@ -25,7 +25,7 @@
 #include <ec.h>                        /* required for global variables */
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_hook.h>
-
+#include <ec_lua.h>
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
@@ -33,58 +33,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* prototypes is required for -Wmissing-prototypes */
-
-/* 
- * this function must be present.
- * it is the entry point of the plugin 
- */
-int plugin_load(void *);
-
-// This is our lua SWIG interface into ettercap!
-extern int luaopen_ettercap(lua_State* L);
 
 /* additional functions */
-static int ec_lua_init(void *);
-static int ec_lua_fini(void *);
-
 lua_State* _lua_state;
-
-/* plugin operations */
-
-struct plugin_ops ec_lua_ops = { 
-   /* ettercap version MUST be the global EC_VERSION */
-   .ettercap_version =  EC_VERSION,                        
-   /* the name of the plugin */
-   .name =              "lua",  
-    /* a short description of the plugin (max 50 chars) */                    
-   .info =              "A plugin template (for developers)",  
-   /* the plugin version. */ 
-   .version =           "3.0",   
-   /* activation function */
-   .init =              &ec_lua_init,
-   /* deactivation function */                     
-   .fini =              &ec_lua_fini,
-};
-
-/**********************************************************/
-
-/* this function is called on plugin load */
-int plugin_load(void *handle) 
-{
-   DEBUG_MSG("ec_lua plugin load function");
-   /*
-    *  in this fuction we MUST call the registration procedure that will set
-    *  up the plugin according to the plugin_ops structure.
-    *  the returned value MUST be the same as plugin_register()
-    *  the opaque pointer params MUST be passed to plugin_register()
-    */
-   return plugin_register(handle, &ec_lua_ops);
-}
 
 /*********************************************************/
 
-static int ec_lua_init(void *ec_lua) 
+EC_API_EXTERN int ec_lua_init() 
 {
   char filename[2048];
    /* the control is given to this function
@@ -128,7 +83,7 @@ static int ec_lua_init(void *ec_lua)
 }
 
 
-static int ec_lua_fini(void *ec_lua) 
+EC_API_EXTERN int ec_lua_fini() 
 {
    /* 
     * called to terminate a plugin.
@@ -146,9 +101,6 @@ static int ec_lua_fini(void *ec_lua)
     }
     _lua_state = NULL;
     return PLUGIN_FINISHED;
-}
-
-void lua_hook_add(int point, void (*func)(struct packet_object *po) ) {
 }
 
 

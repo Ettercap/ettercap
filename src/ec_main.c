@@ -41,6 +41,9 @@
 #include <ec_conf.h>
 #include <ec_mitm.h>
 #include <ec_sslwrap.h>
+#ifdef HAVE_LUA
+#include <ec_lua.h>
+#endif
 
 /* global vars */
 
@@ -144,6 +147,11 @@ int main(int argc, char *argv[])
    
    /* load http known fileds for user/pass */
    http_fields_init();
+
+#ifdef HAVE_LUA
+   /* Initialize lua */
+   ec_lua_init();
+#endif
 
    /* set the encoding for the UTF-8 visualization */
    set_utf8_encoding(GBL_CONF->utf8_encoding);

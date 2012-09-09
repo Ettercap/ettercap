@@ -128,6 +128,13 @@ struct packet_object {
 };
 
 enum {
+   HOOK_RECEIVED     = 0,     /* raw packet, the L* structures are not filled */
+   HOOK_DECODED      = 1,     /* all the packet after the protocol stack parsing */
+   HOOK_PRE_FORWARD  = 2,     /* right before the forward (if it has to be forwarded) */
+   HOOK_HANDLED      = 3,     /* top of the stack but before the decision of PO_INGORE */
+   HOOK_FILTER       = 4,     /* the content filtering point */
+   HOOK_DISPATCHER   = 5,     /* in the TOP HALF (the packet is a copy) */
+
    HOOK_PACKET_BASE  = 50,
    HOOK_PACKET_ETH,
    HOOK_PACKET_FDDI,      

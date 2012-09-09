@@ -46,6 +46,12 @@ set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/man CACHE PATH "Path for manual pages") 
 
+set(INSTALL_LUA_ROOT ${INSTALL_DATADIR}/lua CACHE PATH "Root installation directory for LUA-ettercap")
+set(INSTALL_LUA_INIT ${INSTALL_LUA_ROOT}/init.lua CACHE FILEPATH "Initialization script for LUA-ettercap")
+set(INSTALL_LUA_CORE ${INSTALL_LUA_ROOT}/core CACHE PATH "Core LUA-ettercap implementation lib installtion directory")
+set(INSTALL_LUA_LIBS ${INSTALL_LUA_ROOT}/lib CACHE PATH "Auxillary LUA-ettercap lib installation directory")
+set(INSTALL_LUA_SCRIPTS ${INSTALL_LUA_ROOT}/scripts CACHE PATH "LUA-ettercap scripts installation directory")
+
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)
 set(CMAKE_C_FLAGS_RELEASE "-O2 -w" CACHE STRING "" FORCE)
 

@@ -1,6 +1,4 @@
-package.path = package.path .. ";/opt/ettercap/share/ettercap/lib/?.lua"
 local bit = require('bit')
-require('ec_base')
 
 
 function split_http(str)
@@ -14,7 +12,7 @@ function shrink_http_body(body)
   return modified_body
 end
 
-Ettercap.log("LUA: We are inside ec_helpers.lua!\n")
+Ettercap.log("LUA: We are inside inject_http.lua!\n")
 
 http_injector = function(po) 
   Ettercap.log("I got the tcp!!!!!\n")
@@ -50,5 +48,5 @@ Ettercap.log("LUA: Defining a TCP packet hook...\n")
 Ettercap.hook_packet_tcp(http_injector)
 Ettercap.log("LUA: hooked!\n")
 
-Ettercap.log("LUA: We are at the end of ec_helpers.lua. Though the script " ..
+Ettercap.log("LUA: We are at the end of inject_http.lua. Though the script " ..
     "will now exit, ettercap will be able to callback into Lua through FFI!\n")

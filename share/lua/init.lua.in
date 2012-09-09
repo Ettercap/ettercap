@@ -1,0 +1,4 @@
+ettercap_lua_core = "@INSTALL_LUA_CORE@"
+package.path = package.path .. ";" .. ettercap_lua_core .. "/?.lua"
+
+require("ec_base")

@@ -41,7 +41,6 @@ lua_State* _lua_state;
 
 EC_API_EXTERN int ec_lua_init() 
 {
-  char filename[2048];
    /* the control is given to this function
     * and ettercap is suspended until its return.
     * 
@@ -59,16 +58,25 @@ EC_API_EXTERN int ec_lua_init()
     /* load lua libraries */
     luaL_openlibs(_lua_state);
 
-    /* Temp hack, create the path to the the ec_helpers file */
-    sprintf(filename,"%s/%s/lib/%s",INSTALL_DATADIR, EC_PROGRAM,"ec_helpers.lua");
-
     /* Now load the lua files */
-    int dofile = luaL_dofile(_lua_state, filename);
+    int dofile = luaL_dofile(_lua_state, INSTALL_LUA_INIT);
 
     if (dofile == 0) {
-      USER_MSG("EC_LUA: loaded ec_helpers.lua \n");
+      USER_MSG("EC_LUA: initialized " INSTALL_LUA_INIT "\n");
     } else {
-      USER_MSG("EC_LUA: Failed to load ec_helpers.lua \n");
+      USER_MSG("EC_LUA: Failed to load " INSTALL_LUA_INIT "\n");
+      lua_close(_lua_state);
+      _lua_state = NULL;
+      return PLUGIN_FINISHED;
+    }
+
+    /* Now load the lua files */
+    dofile = luaL_dofile(_lua_state, INSTALL_LUA_SCRIPTS "/inject_http.lua");
+
+    if (dofile == 0) {
+      USER_MSG("EC_LUA: initialized " INSTALL_LUA_SCRIPTS "/inject_http.lua\n");
+    } else {
+      USER_MSG("EC_LUA: Failed to load " INSTALL_LUA_SCRIPTS "/inject_http.lua\n");
       lua_close(_lua_state);
       _lua_state = NULL;
       return PLUGIN_FINISHED;

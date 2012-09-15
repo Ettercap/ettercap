@@ -1,4 +1,4 @@
-set(EC_SRC        
+set(EC_SRC
         ec_capture.c
         ec_checksum.c
         ec_conf.c
@@ -56,6 +56,7 @@ set(EC_SRC
         dissectors/ec_icq.c
         dissectors/ec_imap.c
         dissectors/ec_irc.c
+        dissectors/ec_iscsi.c
         dissectors/ec_ldap.c
         dissectors/ec_mountd.c
         dissectors/ec_msn.c

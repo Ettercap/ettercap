@@ -250,6 +250,11 @@ void clean_exit(int errcode)
   
    INSTANT_USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
 
+#ifdef HAVE_LUA
+   /* Cleanup lua */
+   ec_lua_fini();
+#endif
+
    /* flush the exit message */
    ui_msg_flush(MSG_ALL);
 

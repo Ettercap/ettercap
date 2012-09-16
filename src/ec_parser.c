@@ -33,6 +33,7 @@
 #include <ec_plugins.h>
 #include <ec_conf.h>
 #include <ec_strings.h>
+#include <ec_lua.h>
 
 #include <ctype.h>
 
@@ -107,6 +108,7 @@ void ec_usage(void)
    fprintf(stdout, "  -A, --address <address>     force this local <address> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
+   fprintf(stdout, "  -Z, --lua-filter <file>     load the LUA module\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
@@ -128,7 +130,7 @@ void ec_usage(void)
 void parse_options(int argc, char **argv)
 {
    int c;
-
+   lua_scripts.clear();
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
       { "version", no_argument, NULL, 'v' },
@@ -148,6 +150,7 @@ void parse_options(int argc, char **argv)
       { "plugin", required_argument, NULL, 'P' },
       
       { "filter", required_argument, NULL, 'F' },
+      { "lua-filter", required_argument, NULL, 'Z' },
       
       { "superquiet", no_argument, NULL, 'Q' },
       { "quiet", no_argument, NULL, 'q' },
@@ -201,7 +204,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:Z:z", long_options, (int *)0)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -420,6 +423,15 @@ void parse_options(int argc, char **argv)
          case '?': // unknown option
             fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
             clean_exit(-1);
+         break;
+
+         case 'Z':
+                  /* is there a :0 or :1 appended to the filename? */
+                  if ( (opt_end-optarg >=2) && *(opt_end-2) == ':' ) {
+                     *(opt_end-2) = '\0';
+                     f_enabled = !( *(opt_end-1) == '0' );
+		              }
+                  printf("Got an option for LUA, %s\n",optarg); 
          break;
       }
    }

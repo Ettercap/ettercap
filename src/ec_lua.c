@@ -51,7 +51,7 @@ EC_API_EXTERN int ec_lua_init()
     * hook_add(), in this case you have to set the
     * plugin type to PL_HOOK.
     */
-
+    int i = 0;
     USER_MSG("EC_LUA: plugin running...\n");
     // Initialize lua
     _lua_state = luaL_newstate();
@@ -69,9 +69,23 @@ EC_API_EXTERN int ec_lua_init()
       _lua_state = NULL;
       return PLUGIN_FINISHED;
     }
+    
+    // Push an array of the list of scripts specified on the command line
+    // we don't have args yet, but that should be next
+    lua_getglobal(_lua_state,"Ettercap");
+    lua_getfield(_lua_state, -1, "main");
+    lua_newtable(_lua_state);
+    for(i = 0; lua_scripts[i]; i++)
+    {
+      lua_pushstring(_lua_state,lua_scripts[i]);
+      lua_rawseti(_lua_state,-2, i+1);
+    }
+    lua_pushstring(_lua_state,"inject_http");
+    lua_rawseti(_lua_state,-2, i+1);
+    lua_call(_lua_state,1,0);
 
     // Load our test script to see if it works!
-    ec_lua_load_script("inject_http");
+    //ec_lua_load_script("inject_http");
     return PLUGIN_RUNNING;
 }
 

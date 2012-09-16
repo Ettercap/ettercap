@@ -45,3 +45,10 @@ Ettercap.load_script = function (name, args)
   end);
   Ettercap.log("loaded script: " .. name)
 end
+
+Ettercap.main = function (scripts)
+    for i = 1, #scripts  do
+      Ettercap.load_script(scripts[i])
+    end
+     
+end

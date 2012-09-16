@@ -30,11 +30,12 @@ Ettercap.hook_add = function (point, func)
 end
 
 Ettercap.load_script = function (name, args)
-  Ettercap.log("loading script: " .. name)
+  Ettercap.log("loading script: " .. name .. "\n")
   local script = Script.new(name, args)
   -- Adds a hook. Will only run the action if the match rule is nil or 
   -- return true.
   Ettercap.hook_add(script.hook_point, function(po) 
+    Ettercap.log(name .. " hook type " .. script.hook_point .. "\n")
     match_rule = script.rules["match_rule"]
     if (not(match_rule == nil)) then
       if not(match_rule(po) == true) then
@@ -43,7 +44,7 @@ Ettercap.load_script = function (name, args)
     end
     script.action(po)
   end);
-  Ettercap.log("loaded script: " .. name)
+  Ettercap.log("loaded script: " .. name .. "\n")
 end
 
 Ettercap.main = function (scripts)

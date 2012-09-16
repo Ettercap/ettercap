@@ -33,6 +33,9 @@
 #include <ec_plugins.h>
 #include <ec_conf.h>
 #include <ec_strings.h>
+#ifdef HAVE_LUA
+#include <ec_lua.h>
+#endif
 
 #include <ctype.h>
 
@@ -107,6 +110,9 @@ void ec_usage(void)
    fprintf(stdout, "  -A, --address <address>     force this local <address> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
+#ifdef HAVE_LUA
+   fprintf(stdout, "  -Z, --lua-filter <file>     load the LUA module\n");
+#endif
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
@@ -127,7 +133,11 @@ void ec_usage(void)
 
 void parse_options(int argc, char **argv)
 {
-   int c;
+   int c,i;
+
+#ifdef HAVE_LUA
+   SAFE_CALLOC(lua_scripts,argc,sizeof(char *));
+#endif
 
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
@@ -148,6 +158,9 @@ void parse_options(int argc, char **argv)
       { "plugin", required_argument, NULL, 'P' },
       
       { "filter", required_argument, NULL, 'F' },
+#ifdef HAVE_LUA
+      { "lua-filter", required_argument, NULL, 'Z' },
+#endif
       
       { "superquiet", no_argument, NULL, 'Q' },
       { "quiet", no_argument, NULL, 'q' },
@@ -201,7 +214,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:Z:z", long_options, (int *)0)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -421,6 +434,22 @@ void parse_options(int argc, char **argv)
             fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
             clean_exit(-1);
          break;
+#ifdef HAVE_LUA
+         case 'Z':
+                  /* is there a :0 or :1 appended to the filename? */
+                  if ( (opt_end-optarg >=2) && *(opt_end-2) == ':' ) {
+                     *(opt_end-2) = '\0';
+                     f_enabled = !( *(opt_end-1) == '0' );
+		              }
+                  for(i = 0; i < argc; i++)
+                  {
+                    if (!lua_scripts[i]) {
+                      lua_scripts[i] = strdup(optarg);
+                      break;
+                    }
+                  } 
+#endif
+         break;
       }
    }
 
@@ -483,7 +512,6 @@ void parse_options(int argc, char **argv)
    }
 
    DEBUG_MSG("parse_options: options combination looks good");
-   
    return;
 }
 

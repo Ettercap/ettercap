@@ -133,7 +133,7 @@ void ec_usage(void)
 
 void parse_options(int argc, char **argv)
 {
-   int c,i;
+   int c,i, longIndex;
 
 #ifdef HAVE_LUA
    SAFE_CALLOC(lua_scripts,argc,sizeof(char *));
@@ -160,6 +160,7 @@ void parse_options(int argc, char **argv)
       { "filter", required_argument, NULL, 'F' },
 #ifdef HAVE_LUA
       { "lua-filter", required_argument, NULL, 'Z' },
+      { "lua-args", required_argument, NULL, 0 },
 #endif
       
       { "superquiet", no_argument, NULL, 'Q' },
@@ -214,7 +215,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:Z:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:Z:z", long_options, &longIndex)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -448,8 +449,15 @@ void parse_options(int argc, char **argv)
                       break;
                     }
                   } 
-#endif
          break;
+
+        case 0:
+                if (strcmp(long_options[longIndex].name,"lua-args") == 0)
+                {
+                    lua_args = strdup(optarg);
+                }
+        break;
+#endif
       }
    }
 

@@ -3,6 +3,7 @@ Ettercap.ec_hooks = {}
 Ettercap.scripts = {}
 
 local Script = require("ec_script")
+local eclib = require("eclib")
 
 -- Simple logging function that maps directly to ui_msg
 Ettercap.log = function(str) 
@@ -47,9 +48,16 @@ Ettercap.load_script = function (name, args)
   Ettercap.log("loaded script: " .. name .. "\n")
 end
 
-Ettercap.main = function (scripts)
+Ettercap.main = function (scripts,lua_args)
+    Ettercap.lua_args = {}
+    arglist = eclib.split(lua_args,",")
+    for i = 1, #arglist do 
+        temp = eclib.split(arglist[i],"=")
+        Ettercap.lua_args[temp[1]] = temp[2]
+    end 
+
     for i = 1, #scripts  do
-      Ettercap.load_script(scripts[i])
+      Ettercap.load_script(scripts[i],Ettercap.lua_args)
     end
      
 end

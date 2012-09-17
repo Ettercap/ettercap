@@ -83,8 +83,9 @@ EC_API_EXTERN int ec_lua_init()
       lua_pushstring(_lua_state,lua_scripts[i]);
       lua_rawseti(_lua_state,-2, i+1);
     }
+    lua_pushstring(_lua_state,lua_args);
     
-    int err_code = lua_pcall(_lua_state,1,0,0);
+    int err_code = lua_pcall(_lua_state,2,0,0);
 
     if (err_code != 0)
     {

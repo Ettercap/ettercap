@@ -25,6 +25,7 @@
 #include <ec_hook.h>
 #include <ec_lua.h>
 #include <ec_error.h>
+#include <ec_packet.h>
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
@@ -61,6 +62,7 @@ EC_API_EXTERN int ec_lua_init()
 
     /* load lua libraries */
     luaL_openlibs(_lua_state);
+    luaopen_ettercap(_lua_state);
 
     /* Now load the lua files */
     int dofile_err_code = luaL_dofile(_lua_state, INSTALL_LUA_INIT);
@@ -161,6 +163,52 @@ int ec_lua_panic(lua_State * state)
   const char *err_msg = lua_tostring(state, 1);
   FATAL_ERROR("EC_LUA: Unprotected error from LUA runtime: %s\n", err_msg);
   return 0;
+}
+
+
+// Passes the hooked packet into Lua, along with its hook point.
+int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po)
+{
+  // Don't have to do anything if we don't have a state.
+  if (_lua_state == NULL)
+    return 0;
+
+  // For now, we dispatch all packets into Lua. Once we implement l_hook_add,
+  // we can start filtering things down to only those packets that need 
+  // dispatching.
+  lua_getglobal(_lua_state,"Ettercap");
+  lua_getfield(_lua_state, -1, "dispatch_hook");
+  lua_pushinteger(_lua_state, point);
+  lua_pushlightuserdata(_lua_state, (void *) po);
+  int err_code = lua_pcall(_lua_state,2,0,0);
+  if (err_code != 0) {
+    // We just error out of the whole process..
+    FATAL_ERROR("EC_LUA ec_lua_dispatch_hooked_packet Failed. Error %d: %s\n", 
+        err_code, lua_tostring(_lua_state, -1));
+  }
+  return 0;
+}
+
+
+/// Lua APIs
+
+// This is called when a hook is added in lua-land. We'll use this in the 
+// near future to make our dispatching to lua much more efficient. 
+static int l_hook_add(lua_State* state)
+{
+  USER_MSG("hook_add called from lua!\n");
+  return 0;
+}
+
+static const struct luaL_reg ec_lua_lib[] = {
+  {"hook_add", l_hook_add},
+  {NULL, NULL}
+};
+
+LUALIB_API int luaopen_ettercap(lua_State *L) 
+{
+  luaL_register(L, "ettercap", ec_lua_lib);
+  return 1;
 }
 
 

@@ -15,32 +15,25 @@ function shrink_http_body(body)
   return modified_body
 end
 
-Ettercap.log("LUA: We are inside inject_http!\n")
 
 -- Here's your match rule.
 match_rule = function(po)
-  Ettercap.log("inject_http match_rule : start\n")
   if (po.DATA.len <= 7) then
-    Ettercap.log("inject_http match_rule : FALSE : not long enough\n")
     return false
   end
 
-  Ettercap.log("inject_http match_rule : getting 7 byte buffer\n")
   local buf = Ettercap.ffi.string(po.DATA.data, 7)
-  Ettercap.log("inject_http match_rule : checking buffer\n")
   local ret = (buf == "HTTP/1.")
   if (ret == true) then
-    Ettercap.log("inject_http mtch_rule : TRUE\n")
     return true
   end
-  Ettercap.log("inject_http mtch_rule : FALSE (not http)\n")
   return false
 
 end
 
 -- Here's your action.
 action = function(po) 
-  Ettercap.log("inject_http action : It's an HTTP response!!!!!!\n")
+  Ettercap.log("inject_http action : called!\n")
   -- Get the full buffer....
   local buf = Ettercap.ffi.string(po.DATA.data, po.DATA.len)
   -- Split the header/body up so we can manipulate things.

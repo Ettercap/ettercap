@@ -76,6 +76,10 @@ Ettercap.cli_split_args = function (args)
   return ret
 end
 
+-- Loads a script.
+--
+-- @param name (string) The name of the script we want to load.
+-- @param args (table) A table of key,value tuples
 Ettercap.load_script = function (name, args)
   local script = Script.new(name, args)
   -- Adds a hook. Will only run the action if the match rule is nil or 

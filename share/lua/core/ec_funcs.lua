@@ -30,6 +30,52 @@ Ettercap.dispatch_hook = function (point, po)
   end
 end
 
+-- Processes all the --lua-script arguments into a single list of script
+-- names. 
+--
+-- @param scripts An array of script cli arguments
+-- @return A table containing all the split arguments
+Ettercap.cli_split_scripts = function (scripts)
+  -- This keeps track of what script names have already been encountered. 
+  -- This prevents us from loading the same script more than once.
+  local loaded_scripts = {}
+
+  local ret = {}
+  for v = 1, #scripts do
+    local s = scripts[v]
+    local script_list = eclib.split(s, ",")
+    for i = 1, #script_list do 
+      if (loaded_scripts[script_list[i]] == nil) then
+        -- We haven't loaded this script, yet, so add it it our list.
+        table.insert(ret, script_list[i])
+        loaded_scripts[script_list[i]] = 1
+      end
+    end 
+  end
+
+  return ret
+end
+
+-- Processes all the --lua-args arguments into a single list of args
+-- names. 
+--
+-- @param args An array of args cli arguments
+-- @return A table containing all the split arguments
+Ettercap.cli_split_args = function (args)
+  local ret = {}
+  for v = 1, #args do
+    local s = args[v]
+    local arglist = eclib.split(s, ",")
+    for i = 1, #arglist do 
+      -- We haven't loaded this args, yet, so add it it our list.
+      local temp = eclib.split(arglist[i],"=")
+      ret[temp[1]] = temp[2]
+    end 
+  end
+
+  return ret
+end
+
 Ettercap.load_script = function (name, args)
   Ettercap.log("loading script: " .. name .. "\n")
   local script = Script.new(name, args)
@@ -48,16 +94,11 @@ Ettercap.load_script = function (name, args)
   Ettercap.log("loaded script: " .. name .. "\n")
 end
 
-Ettercap.main = function (scripts,lua_args)
-    Ettercap.lua_args = {}
-    arglist = eclib.split(lua_args,",")
-    for i = 1, #arglist do 
-        temp = eclib.split(arglist[i],"=")
-        Ettercap.lua_args[temp[1]] = temp[2]
-    end 
+Ettercap.main = function (lua_scripts, lua_args)
+  local scripts = Ettercap.cli_split_scripts(lua_scripts)
+  local args = Ettercap.cli_split_args(lua_args)
+  for i = 1, #scripts do
+    Ettercap.load_script(scripts[i], args)
+  end
 
-    for i = 1, #scripts  do
-      Ettercap.load_script(scripts[i],Ettercap.lua_args)
-    end
-     
 end

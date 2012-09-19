@@ -36,6 +36,10 @@
 
 /* additional functions */
 lua_State* _lua_state;
+int _lua_script_count = 0;
+char **_lua_scripts = NULL;
+int _lua_arg_count = 0;
+char **_lua_args = NULL;
 
 /*********************************************************/
 
@@ -44,7 +48,7 @@ EC_API_EXTERN int ec_lua_init()
     int i = 0;
     DEBUG_MSG("EC_LUA: ec_lua_init started...");
 
-    if (lua_scripts[0] == NULL) {
+    if (_lua_script_count == 0) {
       // We've got no scripts to load, so there's no reason to start up.
       USER_MSG("Lua: no scripts were specified, not starting up!");
       return 0;
@@ -54,7 +58,7 @@ EC_API_EXTERN int ec_lua_init()
     if ((_lua_state = luaL_newstate()) == NULL) 
     {
       // Lua failed to initialize! 
-      FATAL_ERROR("EC_LUA: Failed to initialize LUA instance!");
+      LUA_FATAL_ERROR("EC_LUA: Failed to initialize LUA instance!");
     }
 
     // Set up the 'panic' handler, which let's us control 
@@ -71,7 +75,7 @@ EC_API_EXTERN int ec_lua_init()
       DEBUG_MSG("EC_LUA: initialized %s", INSTALL_LUA_INIT);
     } else {
       // We just error out of the whole process..
-      FATAL_ERROR("EC_LUA Failed to initialize %s. Error %d: %s\n", 
+      LUA_FATAL_ERROR("EC_LUA Failed to initialize %s. Error %d: %s\n", 
           INSTALL_LUA_INIT, dofile_err_code, lua_tostring(_lua_state, -1));
     }
     
@@ -79,27 +83,55 @@ EC_API_EXTERN int ec_lua_init()
     // we don't have args yet, but that should be next
     lua_getglobal(_lua_state,"Ettercap");
     lua_getfield(_lua_state, -1, "main");
-    lua_newtable(_lua_state);
-    for(i = 0; lua_scripts[i]; i++)
+
+    lua_newtable(_lua_state); // lua_scripts
+    for(i = 0; i < _lua_script_count; i++)
     {
-      lua_pushstring(_lua_state,lua_scripts[i]);
+      lua_pushstring(_lua_state,_lua_scripts[i]);
       lua_rawseti(_lua_state,-2, i+1);
     }
-    lua_pushstring(_lua_state,lua_args);
-    
+
+    lua_newtable(_lua_state);  // lua_args
+    for(i = 0; i < _lua_arg_count; i++)
+    {
+      lua_pushstring(_lua_state, _lua_args[i]);
+      lua_rawseti(_lua_state,-2, i+1);
+    }
     int err_code = lua_pcall(_lua_state,2,0,0);
 
     if (err_code != 0)
     {
       // Flush all messages so we can see where we are.
       ui_msg_flush(MSG_ALL);
-      FATAL_ERROR("EC_LUA script load failed with error %d: \n\t%s\n", err_code,
+      LUA_FATAL_ERROR("EC_LUA script load failed with error %d: \n\t%s\n", err_code,
                 lua_tostring(_lua_state, -1));
     }
 
     USER_MSG("Lua initialized!");
-    // Load our test script to see if it works!
-    //ec_lua_load_script("inject_http");
+    return 0;
+}
+
+EC_API_EXTERN int ec_lua_cli_add_script(char * script) 
+{
+    if (_lua_script_count == 0) 
+        SAFE_CALLOC(_lua_scripts,1,sizeof(char *));
+    else
+        SAFE_REALLOC(_lua_scripts, (_lua_script_count + 1) * sizeof(char *));
+    
+    _lua_scripts[_lua_script_count] = script;
+    _lua_script_count = _lua_script_count + 1;
+    return 0;
+}
+
+EC_API_EXTERN int ec_lua_cli_add_args(char * args) 
+{
+    if (_lua_arg_count == 0) 
+        SAFE_CALLOC(_lua_args, 1, sizeof(char *));
+    else
+        SAFE_REALLOC(_lua_args, (_lua_arg_count + 1) * sizeof(char *));
+
+    _lua_args[_lua_arg_count] = args;
+    _lua_arg_count = _lua_arg_count + 1;
     return 0;
 }
 
@@ -161,7 +193,7 @@ EC_API_EXTERN int ec_lua_fini()
 int ec_lua_panic(lua_State * state)
 {
   const char *err_msg = lua_tostring(state, 1);
-  FATAL_ERROR("EC_LUA: Unprotected error from LUA runtime: %s\n", err_msg);
+  LUA_FATAL_ERROR("EC_LUA: Unprotected error from LUA runtime: %s\n", err_msg);
   return 0;
 }
 
@@ -183,7 +215,7 @@ int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po)
   int err_code = lua_pcall(_lua_state,2,0,0);
   if (err_code != 0) {
     // We just error out of the whole process..
-    FATAL_ERROR("EC_LUA ec_lua_dispatch_hooked_packet Failed. Error %d: %s\n", 
+    LUA_FATAL_ERROR("EC_LUA ec_lua_dispatch_hooked_packet Failed. Error %d: %s\n", 
         err_code, lua_tostring(_lua_state, -1));
   }
   return 0;

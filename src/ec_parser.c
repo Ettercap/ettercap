@@ -101,6 +101,12 @@ void ec_usage(void)
    fprintf(stdout, "  -e, --regex <regex>         visualize only packets matching this regex\n");
    fprintf(stdout, "  -E, --ext-headers           print extended header for every pck\n");
    fprintf(stdout, "  -Q, --superquiet            do not display user and password\n");
+
+#ifdef HAVE_LUA
+   fprintf(stdout, "\nLUA options:\n");
+   fprintf(stdout, "      --lua-script <script1>,[<script2>,...]     comma-separted list of LUA scripts\n");
+   fprintf(stdout, "      --lua-args n1=v1,[n2=v2,...]               comma-separated arguments to LUA script(s)\n");
+#endif
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
@@ -110,9 +116,6 @@ void ec_usage(void)
    fprintf(stdout, "  -A, --address <address>     force this local <address> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
-#ifdef HAVE_LUA
-   fprintf(stdout, "  -Z, --lua-filter <file>     load the LUA module\n");
-#endif
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
@@ -133,11 +136,7 @@ void ec_usage(void)
 
 void parse_options(int argc, char **argv)
 {
-   int c,i, longIndex;
-
-#ifdef HAVE_LUA
-   SAFE_CALLOC(lua_scripts,argc,sizeof(char *));
-#endif
+   int c, longIndex;
 
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
@@ -159,7 +158,7 @@ void parse_options(int argc, char **argv)
       
       { "filter", required_argument, NULL, 'F' },
 #ifdef HAVE_LUA
-      { "lua-filter", required_argument, NULL, 'Z' },
+      { "lua-script", required_argument, NULL, 0 },
       { "lua-args", required_argument, NULL, 0 },
 #endif
       
@@ -436,25 +435,14 @@ void parse_options(int argc, char **argv)
             clean_exit(-1);
          break;
 #ifdef HAVE_LUA
-         case 'Z':
-                  /* is there a :0 or :1 appended to the filename? */
-                  if ( (opt_end-optarg >=2) && *(opt_end-2) == ':' ) {
-                     *(opt_end-2) = '\0';
-                     f_enabled = !( *(opt_end-1) == '0' );
-		              }
-                  for(i = 0; i < argc; i++)
-                  {
-                    if (!lua_scripts[i]) {
-                      lua_scripts[i] = strdup(optarg);
-                      break;
-                    }
-                  } 
-         break;
-
         case 0:
                 if (strcmp(long_options[longIndex].name,"lua-args") == 0)
                 {
-                    lua_args = strdup(optarg);
+                    ec_lua_cli_add_args(strdup(optarg));
+                } 
+                else if (strcmp(long_options[longIndex].name,"lua-script") == 0)
+                {
+                    ec_lua_cli_add_script(strdup(optarg));
                 }
         break;
 #endif

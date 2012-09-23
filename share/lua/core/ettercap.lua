@@ -8,18 +8,25 @@
 -- All of our core stuff will reside in the "ettercap" namespace.
 ettercap = {}
 
----------------
--- We use luajit's FFI implementation to gain access to a few datastructures 
--- and functions that already exist within Ettercap. This provides a 
--- convenient way to prototype functionality, with the idea that we'd produce
--- a more solid C implementation for access, in the future.
---
----------------
+local ffi = require("ettercap_ffi")
+local ettercap_c = require("ettercap_c")
+local eclib = require("eclib")
 
-ettercap.ffi = require("ettercap_ffi")
+--- Log's a message using ettercap's ui_msg function.
+-- @see string.format
+-- @param fmt The format string
+-- @param ... Variable arguments to pass in
+local ettercap_log = function(fmt, ...) 
+  -- We don't want any format string "accidents" on the C side of things.. 
+  -- so, we will let lua handle it.
+  ffi.C.ui_msg("%s", string.format(fmt, ...))
+end
 
---- Table of all the hook points
-ettercap.hook_points = require("hook_points")
+require('dumper')
+local ettercap_dump = function (...)
+  ettercap_log(DataDumper(...), "\n---")
+end
+
 
 ---------------
 -- Script interface
@@ -66,21 +73,19 @@ ettercap.hook_points = require("hook_points")
 --                  before that packet_object is passed to the script's action.
 --
 ---------------
-Script = {}
-
-local coroutine = require "coroutine";
-local debug = require "debug";
-local traceback = debug.traceback;
-
-local ETTERCAP_SCRIPT_RULES = {
-  match_rule = "match_rule",
-};
-
-
+local Script = {}
 
 do
+  local coroutine = require "coroutine";
+  local debug = require "debug";
+  local traceback = debug.traceback;
+
+  local ETTERCAP_SCRIPT_RULES = {
+    match_rule = "match_rule",
+  };
+
   -- These are the components of a script that are required. 
-  local required_fields = {
+  local REQUIRED_FIELDS = {
     description = "string",
     action = "function",
 --    categories = "table",
@@ -106,13 +111,13 @@ do
     local status, e = coroutine.resume(co); -- Get the globals it loads in env
 
     if not status then
-      ettercap.log("Failed to load %s:\n%s", filename, traceback(co, e));
+      ettercap_log("Failed to load %s:\n%s", filename, traceback(co, e));
       --error("could not load script");
       return nil
     end
 
-    for required_field_name in pairs(required_fields) do
-      local required_type = required_fields[required_field_name];
+    for required_field_name in pairs(REQUIRED_FIELDS) do
+      local required_type = REQUIRED_FIELDS[required_field_name];
       local raw_field = rawget(env, required_field_name)
       local actual_type = type(raw_field);
       assert(actual_type == required_type, 
@@ -150,32 +155,17 @@ do
   end
 end
 
------------
-
-ettercap.ec_hooks = {}
-ettercap.scripts = {}
-
-local ettercap_c = require("ettercap_c")
-local eclib = require("eclib")
-
---- Log's a message using ettercap's ui_msg function.
--- @see string.format
--- @param fmt The format string
--- @param ... Variable arguments to pass in
-ettercap.log = function(fmt, ...) 
-  -- We don't want any format string "accidents" on the C side of things.. 
-  -- so, we will let lua handle it.
-  ettercap.ffi.C.ui_msg("%s", string.format(fmt, ...))
-end
+-- Stores hook mappings.
+local ettercap_hooks = {}
 
 --- Called during ettercap's shutdown
-ettercap.cleanup = function() 
+local ettercap_cleanup = function() 
 end
 
 -- Adds a hook
 local hook_add = function (point, func)
   ettercap_c.hook_add(point)
-  table.insert(ettercap.ec_hooks, {point, func})
+  table.insert(ettercap_hooks, {point, func})
 end
 
 
@@ -183,10 +173,10 @@ end
 -- @param point (integer) The hook point
 -- @param packet_object_ptr (lightuserdata) A pointer to the packet_object_ptr.
 --  This is intended to be cast as packet_object pointer using FFI.
-ettercap.dispatch_hook = function (point, packet_object_ptr)
+local ettercap_dispatch_hook = function (point, packet_object_ptr)
   -- We cast the packet into the struct that we want, and then hand it off.
-  local packet_object = ettercap.ffi.cast("struct packet_object *", packet_object_ptr);
-  for key, hook in pairs(ettercap.ec_hooks) do
+  local packet_object = ffi.cast("struct packet_object *", packet_object_ptr);
+  for key, hook in pairs(ettercap_hooks) do
     if hook[1] == point then
       hook[2](packet_object)
     end
@@ -243,7 +233,7 @@ end
 --
 -- @param name (string) The name of the script we want to load.
 -- @param args (table) A table of key,value tuples
-ettercap.load_script = function (name, args)
+local ettercap_load_script = function (name, args)
   local script = Script.new(name, args)
   -- Adds a hook. Will only run the action if the match rule is nil or 
   -- return true.
@@ -258,22 +248,26 @@ ettercap.load_script = function (name, args)
   end);
 end
 
---- Primary entry point for ettercap lua environment
+-- Primary entry point for ettercap lua environment
 -- @param lua_scripts Array of CLI script strings
 -- @param lua_args Array of CLI argument strings
-ettercap.main = function (lua_scripts, lua_args)
+local ettercap_main = function (lua_scripts, lua_args)
   local scripts = cli_split_scripts(lua_scripts)
   local args = cli_split_args(lua_args)
   for i = 1, #scripts do
-    ettercap.load_script(scripts[i], args)
+    ettercap_load_script(scripts[i], args)
   end
-
 end
 
-require('dumper')
-ettercap.dump = function (...)
-  ettercap.log(DataDumper(...), "\n---")
-end
+-- C -> LUA api functions. These should never be called from scripts!
+ettercap.main = ettercap_main
+ettercap.cleanup = ettercap_cleanup
+ettercap.dispatch_hook = ettercap_dispatch_hook
+
+-- Global functions
+
+ettercap.log = ettercap_log
+ettercap.dump = ettercap_dump
 
 -- Is this even nescessary? Nobody should be requiring this except for 
 -- init.lua... However, I'll act like this is required.

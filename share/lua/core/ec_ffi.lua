@@ -1,7 +1,7 @@
-local Ettercap = Ettercap
-module("ec_ffi",package.seeall)
-Ettercap.ffi = require("ffi")
-Ettercap.ffi.cdef[[
+-- This is our ettercap FFI interface. 
+
+local ettercap_ffi = require("ffi")
+ettercap_ffi.cdef[[
 typedef unsigned char u_int8_t;
 typedef unsigned char u_char;
 typedef unsigned short int u_int16_t;
@@ -192,3 +192,4 @@ void hook_add(int point, hook_cb_func);
 int hook_del(int point, hook_cb_func );
 ]]
 
+return ettercap_ffi

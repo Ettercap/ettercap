@@ -2,7 +2,8 @@ ETTERCAP_LUA_CORE_PATH = "@INSTALL_LUA_CORE@"
 ETTERCAP_LUA_LIB_PATH = "@INSTALL_LUA_LIBS@"
 ETTERCAP_LUA_SCRIPT_PATH = "@INSTALL_LUA_SCRIPTS@"
 
-package.path = package.path .. ";" .. ETTERCAP_LUA_CORE_PATH .. "/?.lua"
+package.path = package.path .. ";" .. ETTERCAP_LUA_CORE_PATH .. "/?.lua" ..
+                ";" .. ETTERCAP_LUA_LIB_PATH .. "/?.lua"
 
-require("ec_base")
+require("ettercap")
 

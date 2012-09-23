@@ -1,7 +1,8 @@
 install(FILES
-            ec_base.lua
-            ec_ffi.lua
-            ec_funcs.lua
-            ec_script.lua
+            dumper.lua
+            ettercap.lua
+            ettercap_ffi.lua
+            hook_points.lua
+            packet.lua
             eclib.lua
             DESTINATION ${INSTALL_LUA_CORE})

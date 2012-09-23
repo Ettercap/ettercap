@@ -66,7 +66,7 @@ EC_API_EXTERN int ec_lua_init()
 
     /* load lua libraries */
     luaL_openlibs(_lua_state);
-    luaopen_ettercap(_lua_state);
+    luaopen_ettercap_c(_lua_state);
 
     /* Now load the lua files */
     int dofile_err_code = luaL_dofile(_lua_state, INSTALL_LUA_INIT);
@@ -81,7 +81,7 @@ EC_API_EXTERN int ec_lua_init()
     
     // Push an array of the list of scripts specified on the command line
     // we don't have args yet, but that should be next
-    lua_getglobal(_lua_state,"Ettercap");
+    lua_getglobal(_lua_state,ETTERCAP_LUA_MODULE);
     lua_getfield(_lua_state, -1, "main");
 
     lua_newtable(_lua_state); // lua_scripts
@@ -137,7 +137,7 @@ EC_API_EXTERN int ec_lua_cli_add_args(char * args)
 
 EC_API_EXTERN int ec_lua_load_script(const char * name) 
 {
-    lua_getglobal(_lua_state,"Ettercap");
+    lua_getglobal(_lua_state,ETTERCAP_LUA_MODULE);
     lua_getfield(_lua_state, -1, "load_script");
     lua_pushstring(_lua_state, name);
     lua_call(_lua_state,1,0);
@@ -156,7 +156,7 @@ EC_API_EXTERN int ec_lua_fini()
     DEBUG_MSG("EC_LUA: cleanup started...");
     /* cleanup Lua */
     if (_lua_state != NULL) {
-      lua_getglobal(_lua_state,"Ettercap");
+      lua_getglobal(_lua_state,ETTERCAP_LUA_MODULE);
       lua_getfield(_lua_state, -1, "cleanup");
       int err_code = lua_pcall(_lua_state,0,0,0);
       if (err_code == 0) 
@@ -208,7 +208,7 @@ int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po)
   // For now, we dispatch all packets into Lua. Once we implement l_hook_add,
   // we can start filtering things down to only those packets that need 
   // dispatching.
-  lua_getglobal(_lua_state,"Ettercap");
+  lua_getglobal(_lua_state,ETTERCAP_LUA_MODULE);
   lua_getfield(_lua_state, -1, "dispatch_hook");
   lua_pushinteger(_lua_state, point);
   lua_pushlightuserdata(_lua_state, (void *) po);
@@ -237,9 +237,9 @@ static const struct luaL_reg ec_lua_lib[] = {
   {NULL, NULL}
 };
 
-LUALIB_API int luaopen_ettercap(lua_State *L) 
+LUALIB_API int luaopen_ettercap_c(lua_State *L) 
 {
-  luaL_register(L, "ettercap", ec_lua_lib);
+  luaL_register(L, ETTERCAP_C_API_LUA_MODULE, ec_lua_lib);
   return 1;
 }
 

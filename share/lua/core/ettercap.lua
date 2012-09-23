@@ -15,17 +15,17 @@ ettercap = {}
 -- a more solid C implementation for access, in the future.
 --
 ---------------
-ettercap.ffi = {}
-ettercap.ffi = require("ec_ffi")
+
+ettercap.ffi = require("ettercap_ffi")
 
 ---------------
 -- Script interface
 --
---  All Ettercap LUA scripts are initialized using a common interface. We've 
---  modeled this interface very closely after that of NMAP's NSE script 
---  interface. Our hope is that the community's familiarity with NSE will 
---  lower the barrier for entry for those looking to write Ettercap LUA 
---  scripts.
+-- All Ettercap LUA scripts are initialized using a common interface. We've 
+-- modeled this interface very closely after that of NMAP's NSE script 
+-- interface. Our hope is that the community's familiarity with NSE will 
+-- lower the barrier for entry for those looking to write Ettercap LUA 
+-- scripts.
 --
 --
 --  Data structures:
@@ -63,6 +63,7 @@ ettercap.ffi = require("ec_ffi")
 --                  before that packet_object is passed to the script's action.
 --
 ---------------
+Script = {}
 
 local coroutine = require "coroutine";
 local debug = require "debug";
@@ -73,7 +74,6 @@ local ETTERCAP_SCRIPT_RULES = {
 };
 
 
-Script = {}
 
 do
   -- These are the components of a script that are required. 
@@ -155,26 +155,37 @@ ettercap.scripts = {}
 local ettercap_c = require("ettercap_c")
 local eclib = require("eclib")
 
--- Simple logging function that maps directly to ui_msg
+--- Log's a message using ettercap's ui_msg function.
+-- @see string.format
+-- @param fmt The format string
+-- @param ... Variable arguments to pass in
 ettercap.log = function(fmt, ...) 
-  ettercap.ffi.C.ui_msg(string.format(fmt, ...))
+  -- We don't want any format string "accidents" on the C side of things.. 
+  -- so, we will let lua handle it.
+  ettercap.ffi.C.ui_msg("%s", string.format(fmt, ...))
 end
 
--- This is the cleanup function that gets called.
+--- Called during ettercap's shutdown
 ettercap.cleanup = function() 
 end
 
-ettercap.hook_add = function (point, func)
+-- Adds a hook
+local hook_add = function (point, func)
   ettercap_c.hook_add(point)
   table.insert(ettercap.ec_hooks, {point, func})
 end
 
-ettercap.dispatch_hook = function (point, po)
+
+--- Dispatches a packet at to those registered for the given hook_point
+-- @param point (integer) The hook point
+-- @param packet_object_ptr (lightuserdata) A pointer to the packet_object_ptr.
+--  This is intended to be cast as packet_object pointer using FFI.
+ettercap.dispatch_hook = function (point, packet_object_ptr)
   -- We cast the packet into the struct that we want, and then hand it off.
-  local s_po = ettercap.ffi.cast("struct packet_object *", po);
+  local packet_object = ettercap.ffi.cast("struct packet_object *", packet_object_ptr);
   for key, hook in pairs(ettercap.ec_hooks) do
     if hook[1] == point then
-      hook[2](s_po)
+      hook[2](packet_object)
     end
   end
 end
@@ -233,7 +244,7 @@ ettercap.load_script = function (name, args)
   local script = Script.new(name, args)
   -- Adds a hook. Will only run the action if the match rule is nil or 
   -- return true.
-  ettercap.hook_add(script.hook_point, function(po) 
+  hook_add(script.hook_point, function(po) 
     match_rule = script.rules["match_rule"]
     if (not(match_rule == nil)) then
       if not(match_rule(po) == true) then
@@ -244,6 +255,9 @@ ettercap.load_script = function (name, args)
   end);
 end
 
+--- Primary entry point for ettercap lua environment
+-- @param lua_scripts Array of CLI script strings
+-- @param lua_args Array of CLI argument strings
 ettercap.main = function (lua_scripts, lua_args)
   local scripts = cli_split_scripts(lua_scripts)
   local args = cli_split_args(lua_args)

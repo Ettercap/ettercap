@@ -18,6 +18,9 @@ ettercap = {}
 
 ettercap.ffi = require("ettercap_ffi")
 
+--- Table of all the hook points
+ettercap.hook_points = require("hook_points")
+
 ---------------
 -- Script interface
 --
@@ -265,6 +268,11 @@ ettercap.main = function (lua_scripts, lua_args)
     ettercap.load_script(scripts[i], args)
   end
 
+end
+
+require('dumper')
+ettercap.dump = function (...)
+  ettercap.log(DataDumper(...), "\n---")
 end
 
 -- Is this even nescessary? Nobody should be requiring this except for 

@@ -1,7 +1,7 @@
 description = "This is a test script that will inject HTTP stuff";
 
 -- Defines our hook point as being TCP
-hook_point = ettercap.ffi.C.HOOK_PACKET_TCP;
+hook_point = ettercap.hook_points.tcp
 
 local bit = require('bit')
 

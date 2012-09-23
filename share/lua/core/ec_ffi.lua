@@ -1,3 +1,4 @@
+---
 -- This is our ettercap FFI interface. 
 
 local ettercap_ffi = require("ffi")

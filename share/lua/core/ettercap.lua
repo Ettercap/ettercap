@@ -1,23 +1,22 @@
---
+---
 -- Note: I've put all of Ettercap's LUA core into one big script because 
 --  I'm a complete LUA newb and I have no idea what I'm doing. This is despite
 --  my instinct toward smaller, more managable files. 
 -- 
 
 
--- All of our core stuff will reside in the "Ettercap" namespace.
-Ettercap = {}
+-- All of our core stuff will reside in the "ettercap" namespace.
+ettercap = {}
 
 ---------------
--- Ettercap.ffi
---
 -- We use luajit's FFI implementation to gain access to a few datastructures 
 -- and functions that already exist within Ettercap. This provides a 
 -- convenient way to prototype functionality, with the idea that we'd produce
 -- a more solid C implementation for access, in the future.
 --
 ---------------
-Ettercap.ffi = require("ec_ffi")
+ettercap.ffi = {}
+ettercap.ffi = require("ec_ffi")
 
 ---------------
 -- Script interface
@@ -39,7 +38,7 @@ Ettercap.ffi = require("ec_ffi")
 --                    Generally, script implementations should avoid direct
 --                    modifications to packet_object, or any FFI wrapped 
 --                    structure, instead favoring modification through 
---                    defined Ettercap.* interfaces.
+--                    defined ettercap.* interfaces.
 --
 --                    NOTE: Careful consideration must be taken to when 
 --                    interacting with FFI-wrapped data-structures! Data 
@@ -66,6 +65,8 @@ Ettercap.ffi = require("ec_ffi")
 ---------------
 
 local coroutine = require "coroutine";
+local debug = require "debug";
+local traceback = debug.traceback;
 
 local ETTERCAP_SCRIPT_RULES = {
   match_rule = "match_rule",
@@ -102,7 +103,7 @@ do
     local status, e = coroutine.resume(co); -- Get the globals it loads in env
 
     if not status then
-      printf("Failed to load %s:\n%s", filename, traceback(co, e));
+      ettercap.log("Failed to load %s:\n%s", filename, traceback(co, e));
       --error("could not load script");
       return nil
     end
@@ -148,30 +149,30 @@ end
 
 -----------
 
-Ettercap.ec_hooks = {}
-Ettercap.scripts = {}
+ettercap.ec_hooks = {}
+ettercap.scripts = {}
 
-local ettercap = require("ettercap")
+local ettercap_c = require("ettercap_c")
 local eclib = require("eclib")
 
 -- Simple logging function that maps directly to ui_msg
-Ettercap.log = function(str) 
-  Ettercap.ffi.C.ui_msg(str)
+ettercap.log = function(fmt, ...) 
+  ettercap.ffi.C.ui_msg(string.format(fmt, ...))
 end
 
 -- This is the cleanup function that gets called.
-Ettercap.cleanup = function() 
+ettercap.cleanup = function() 
 end
 
-Ettercap.hook_add = function (point, func)
-  ettercap.hook_add(point)
-  table.insert(Ettercap.ec_hooks, {point, func})
+ettercap.hook_add = function (point, func)
+  ettercap_c.hook_add(point)
+  table.insert(ettercap.ec_hooks, {point, func})
 end
 
-Ettercap.dispatch_hook = function (point, po)
+ettercap.dispatch_hook = function (point, po)
   -- We cast the packet into the struct that we want, and then hand it off.
-  local s_po = Ettercap.ffi.cast("struct packet_object *", po);
-  for key, hook in pairs(Ettercap.ec_hooks) do
+  local s_po = ettercap.ffi.cast("struct packet_object *", po);
+  for key, hook in pairs(ettercap.ec_hooks) do
     if hook[1] == point then
       hook[2](s_po)
     end
@@ -228,11 +229,11 @@ end
 --
 -- @param name (string) The name of the script we want to load.
 -- @param args (table) A table of key,value tuples
-Ettercap.load_script = function (name, args)
+ettercap.load_script = function (name, args)
   local script = Script.new(name, args)
   -- Adds a hook. Will only run the action if the match rule is nil or 
   -- return true.
-  Ettercap.hook_add(script.hook_point, function(po) 
+  ettercap.hook_add(script.hook_point, function(po) 
     match_rule = script.rules["match_rule"]
     if (not(match_rule == nil)) then
       if not(match_rule(po) == true) then
@@ -243,15 +244,15 @@ Ettercap.load_script = function (name, args)
   end);
 end
 
-Ettercap.main = function (lua_scripts, lua_args)
+ettercap.main = function (lua_scripts, lua_args)
   local scripts = cli_split_scripts(lua_scripts)
   local args = cli_split_args(lua_args)
   for i = 1, #scripts do
-    Ettercap.load_script(scripts[i], args)
+    ettercap.load_script(scripts[i], args)
   end
 
 end
 
 -- Is this even nescessary? Nobody should be requiring this except for 
 -- init.lua... However, I'll act like this is required.
-return Ettercap
+return ettercap

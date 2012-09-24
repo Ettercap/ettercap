@@ -68,7 +68,7 @@ end
 --
 --  Optional:
 --
---    match_rule  - (function (packet_object)) If implemented, then this 
+--    packetrule  - (function (packet_object)) If implemented, then this 
 --                  function must return true for a given packet_object 
 --                  before that packet_object is passed to the script's action.
 --
@@ -81,7 +81,7 @@ do
   local traceback = debug.traceback;
 
   local ETTERCAP_SCRIPT_RULES = {
-    match_rule = "match_rule",
+    packetrule = "packetrule",
   };
 
   -- These are the components of a script that are required. 
@@ -164,11 +164,11 @@ local packet_object_ctype = ffi.typeof("struct packet_object *")
 local ffi_cast = ffi.cast
 
 local create_hook = function(script)
-  local match_rule = script.rules["match_rule"]
+  local packetrule = script.rules["packetrule"]
   local hook_func = function(packet_object_ptr) 
     local packet_object = ffi_cast(packet_object_ctype, packet_object_ptr);
-    if (not(match_rule == nil)) then
-      if not(match_rule(packet_object) == true) then
+    if (not(packetrule == nil)) then
+      if not(packetrule(packet_object) == true) then
         return false
       end
     end

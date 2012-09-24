@@ -17,8 +17,8 @@ function shrink_http_body(body)
 end
 
 
--- Here's your match rule.
-match_rule = function(po)
+-- Here's our packet matching rule
+packetrule = function(po)
   return(packet.read_data(po, 7) == "HTTP/1.")
 end
 

@@ -1,7 +1,5 @@
 ---
--- Note: I've put all of Ettercap's LUA core into one big script because 
---  I'm a complete LUA newb and I have no idea what I'm doing. This is despite
---  my instinct toward smaller, more managable files. 
+-- Basic ettercap functionality!
 -- 
 
 
@@ -16,19 +14,21 @@ local eclib = require("eclib")
 -- @see string.format
 -- @param fmt The format string
 -- @param ... Variable arguments to pass in
-local ettercap_log = function(fmt, ...) 
+log = function(fmt, ...) 
   -- We don't want any format string "accidents" on the C side of things.. 
   -- so, we will let lua handle it.
   ffi.C.ui_msg("%s", string.format(fmt, ...))
 end
 
 require('dumper')
-local ettercap_dump = function (...)
-  ettercap_log(DataDumper(...), "\n---")
+
+--- Dumps data structure(s) to log
+-- @param ... The data to dump!
+dump = function (...)
+  log(DataDumper(...), "\n---")
 end
 
 
----------------
 -- Script interface
 --
 -- All Ettercap LUA scripts are initialized using a common interface. We've 
@@ -72,7 +72,7 @@ end
 --                  function must return true for a given packet_object 
 --                  before that packet_object is passed to the script's action.
 --
----------------
+
 local Script = {}
 
 do
@@ -111,7 +111,7 @@ do
     local status, e = coroutine.resume(co); -- Get the globals it loads in env
 
     if not status then
-      ettercap_log("Failed to load %s:\n%s", filename, traceback(co, e));
+      log("Failed to load %s:\n%s", filename, traceback(co, e));
       --error("could not load script");
       return nil
     end
@@ -254,8 +254,8 @@ ettercap.cleanup = ettercap_cleanup
 
 -- Global functions
 
-ettercap.log = ettercap_log
-ettercap.dump = ettercap_dump
+ettercap.log = log
+ettercap.dump = dump
 
 -- Is this even nescessary? Nobody should be requiring this except for 
 -- init.lua... However, I'll act like this is required.

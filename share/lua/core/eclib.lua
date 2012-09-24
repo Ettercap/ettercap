@@ -1,7 +1,11 @@
-module(... or 'eclib',package.seeall )
+---
+-- Some helper functions
 
--- Basic Split taken from http://lua-users.org/wiki/SplitJoin
-function split(str, pat)
+--- Basic Split taken from http://lua-users.org/wiki/SplitJoin
+-- @param str 
+-- @param pat 
+-- @return table
+split = function(str, pat)
    local t = {}  -- NOTE: use {n = 0} in Lua-5.0
    local fpat = "(.-)" .. pat
    local last_end = 1
@@ -19,3 +23,9 @@ function split(str, pat)
    end
    return t
 end
+
+local eclib = {}
+
+eclib.split = split
+
+return eclib

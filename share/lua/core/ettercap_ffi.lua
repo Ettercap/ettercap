@@ -1,7 +1,8 @@
 ---
--- This is our ettercap FFI interface. 
+-- This is our ettercap FFI interface. Nothing to see, here.
 
 local ettercap_ffi = require("ffi")
+
 ettercap_ffi.cdef[[
 typedef unsigned char u_int8_t;
 typedef unsigned char u_char;
@@ -188,9 +189,6 @@ static const u_int16 PO_FROMSSL     = 1<<11;    /* the packet is coming from a s
 static const u_int16 PO_SSLSTART    = 1<<12;   /* ssl wrapper has to enter SSL state */
 
 void ui_msg(const char *fmt, ...);
-typedef void (__stdcall *hook_cb_func)(struct packet_object *po);
-void hook_add(int point, hook_cb_func);
-int hook_del(int point, hook_cb_func );
 ]]
 
 return ettercap_ffi

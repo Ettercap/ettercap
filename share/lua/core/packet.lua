@@ -8,7 +8,7 @@ local bit = require('bit')
 -- @param length If specified, will return up to that many bytes of the packet
 --  data
 -- @return string
-local read_data = function(packet_object, length)
+read_data = function(packet_object, length)
   -- Default to the length of the bytes.
   if (length == nil) then
     length = packet_object.DATA.len
@@ -22,14 +22,14 @@ end
 
 --- Flags the packet as having been modified.
 -- @param packet_object
-local set_modified = function(packet_object)
+set_modified = function(packet_object)
   packet_object.flags = bit.bor(packet_object.flags, ffi.C.PO_MODIFIED)
 end
 
 --- Sets the packet data to data, as well as flags the packet as modified.
 -- @param packet_object
 -- @param data (string) The new data
-local set_data = function(packet_object, data)
+set_data = function(packet_object, data)
   ffi.copy(packet_object.DATA.data, data, string.len(data))
   set_modified(packet_object)
 end

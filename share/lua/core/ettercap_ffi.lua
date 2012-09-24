@@ -187,8 +187,6 @@ static const u_int16 PO_FORGED      = 1<<9;    /* the packet is created by ourse
 static const u_int16 PO_EOF         = 1<<10;     /* we are reading from a file and this is the last packet */
 static const u_int16 PO_FROMSSL     = 1<<11;    /* the packet is coming from a ssl wrapper */
 static const u_int16 PO_SSLSTART    = 1<<12;   /* ssl wrapper has to enter SSL state */
-
-void ui_msg(const char *fmt, ...);
 ]]
 
 return ettercap_ffi

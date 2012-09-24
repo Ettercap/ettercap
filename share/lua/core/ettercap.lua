@@ -17,7 +17,7 @@ local eclib = require("eclib")
 log = function(fmt, ...) 
   -- We don't want any format string "accidents" on the C side of things.. 
   -- so, we will let lua handle it.
-  ffi.C.ui_msg("%s", string.format(fmt, ...))
+  ettercap_c.log(string.format(fmt, ...))
 end
 
 require('dumper')

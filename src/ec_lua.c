@@ -234,6 +234,14 @@ int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po)
 
 /// Lua APIs
 
+// This is just a simple wrapper for USER_MSG. 
+static int l_log(lua_State* state)
+{
+  const char *str = lua_tostring(state, 1);
+  USER_MSG("%s", str);
+  return 0;
+}
+
 // This is called when a hook is added in lua-land. We'll use this in the 
 // near future to make our dispatching to lua much more efficient. 
 static int l_hook_add(lua_State* state)
@@ -258,6 +266,7 @@ static int l_hook_add(lua_State* state)
 
 static const struct luaL_reg ec_lua_lib[] = {
   {"hook_add", l_hook_add},
+  {"log", l_log},
   {NULL, NULL}
 };
 

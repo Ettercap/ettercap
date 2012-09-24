@@ -24,7 +24,7 @@ end
 
 -- Here's your action.
 action = function(po) 
-  ettercap.log("inject_http action : called!\n")
+  --ettercap.log("inject_http action : called!\n")
   -- Get the full buffer....
   local buf = packet.read_data(po)
   -- Split the header/body up so we can manipulate things.

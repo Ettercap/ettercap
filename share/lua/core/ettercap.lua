@@ -156,31 +156,30 @@ do
 end
 
 -- Stores hook mappings.
-local ettercap_hooks = {}
-
 --- Called during ettercap's shutdown
 local ettercap_cleanup = function() 
 end
 
--- Adds a hook
-local hook_add = function (point, func)
-  ettercap_c.hook_add(point)
-  table.insert(ettercap_hooks, {point, func})
+local packet_object_ctype = ffi.typeof("struct packet_object *")
+local ffi_cast = ffi.cast
+
+local create_hook = function(script)
+  local match_rule = script.rules["match_rule"]
+  local hook_func = function(packet_object_ptr) 
+    local packet_object = ffi_cast(packet_object_ctype, packet_object_ptr);
+    if (not(match_rule == nil)) then
+      if not(match_rule(packet_object) == true) then
+        return false
+      end
+    end
+    script.action(packet_object)
+  end
+  return(hook_func)
 end
 
-
---- Dispatches a packet at to those registered for the given hook_point
--- @param point (integer) The hook point
--- @param packet_object_ptr (lightuserdata) A pointer to the packet_object_ptr.
---  This is intended to be cast as packet_object pointer using FFI.
-local ettercap_dispatch_hook = function (point, packet_object_ptr)
-  -- We cast the packet into the struct that we want, and then hand it off.
-  local packet_object = ffi.cast("struct packet_object *", packet_object_ptr);
-  for key, hook in pairs(ettercap_hooks) do
-    if hook[1] == point then
-      hook[2](packet_object)
-    end
-  end
+-- Adds a hook
+local hook_add = function (hook_point, func)
+  ettercap_c.hook_add(hook_point, func)
 end
 
 -- Processes all the --lua-script arguments into a single list of script
@@ -235,17 +234,7 @@ end
 -- @param args (table) A table of key,value tuples
 local ettercap_load_script = function (name, args)
   local script = Script.new(name, args)
-  -- Adds a hook. Will only run the action if the match rule is nil or 
-  -- return true.
-  hook_add(script.hook_point, function(po) 
-    match_rule = script.rules["match_rule"]
-    if (not(match_rule == nil)) then
-      if not(match_rule(po) == true) then
-        return false
-      end
-    end
-    script.action(po)
-  end);
+  hook_add(script.hook_point, create_hook(script))
 end
 
 -- Primary entry point for ettercap lua environment
@@ -262,7 +251,6 @@ end
 -- C -> LUA api functions. These should never be called from scripts!
 ettercap.main = ettercap_main
 ettercap.cleanup = ettercap_cleanup
-ettercap.dispatch_hook = ettercap_dispatch_hook
 
 -- Global functions
 

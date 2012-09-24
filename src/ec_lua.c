@@ -33,6 +33,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct lua_hook_list {
+  int hook_point;
+  int func_ref;
+  SLIST_ENTRY(lua_hook_list) next;
+};
+
+SLIST_HEAD(, lua_hook_list) lua_hook_table;
 
 /* additional functions */
 lua_State* _lua_state;
@@ -201,23 +208,26 @@ int ec_lua_panic(lua_State * state)
 // Passes the hooked packet into Lua, along with its hook point.
 int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po)
 {
+  struct lua_hook_list *lua_hook_entry;
+  int err_code;
+
   // Don't have to do anything if we don't have a state.
   if (_lua_state == NULL)
     return 0;
 
-  // For now, we dispatch all packets into Lua. Once we implement l_hook_add,
-  // we can start filtering things down to only those packets that need 
-  // dispatching.
-  lua_getglobal(_lua_state,ETTERCAP_LUA_MODULE);
-  lua_getfield(_lua_state, -1, "dispatch_hook");
-  lua_pushinteger(_lua_state, point);
-  lua_pushlightuserdata(_lua_state, (void *) po);
-  int err_code = lua_pcall(_lua_state,2,0,0);
-  if (err_code != 0) {
-    // We just error out of the whole process..
-    LUA_FATAL_ERROR("EC_LUA ec_lua_dispatch_hooked_packet Failed. Error %d: %s\n", 
-        err_code, lua_tostring(_lua_state, -1));
+
+  SLIST_FOREACH(lua_hook_entry, &lua_hook_table, next) {
+    if (point == lua_hook_entry->hook_point) {
+      lua_rawgeti(_lua_state, LUA_REGISTRYINDEX, lua_hook_entry->func_ref);
+      lua_pushlightuserdata(_lua_state, (void *) po);
+      err_code = lua_pcall(_lua_state,1,0,0);
+      if (err_code != 0) {
+        LUA_FATAL_ERROR("EC_LUA ec_lua_dispatch_hooked_packet Failed. Error %d: %s\n", 
+            err_code, lua_tostring(_lua_state, -1));
+      }
+    }
   }
+
   return 0;
 }
 
@@ -228,7 +238,21 @@ int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po)
 // near future to make our dispatching to lua much more efficient. 
 static int l_hook_add(lua_State* state)
 {
-  USER_MSG("hook_add called from lua!\n");
+  int point, r;
+  struct lua_hook_list *lua_hook_entry;
+
+  point = lua_tointeger(state, 1);
+
+  // Set the top of the stack to point to the function.
+  lua_settop(state, 2);
+  
+  // Show a reference to the function into the registry.
+  r = luaL_ref(state, LUA_REGISTRYINDEX);
+  
+  SAFE_CALLOC(lua_hook_entry, 1, sizeof(struct lua_hook_list));
+  lua_hook_entry->hook_point = point;
+  lua_hook_entry->func_ref = r;
+  SLIST_INSERT_HEAD(&lua_hook_table, lua_hook_entry, next);
   return 0;
 }
 

@@ -1,7 +1,8 @@
 description = "This is a test script that will inject HTTP stuff";
 
-packet = require("packet")
-hook_points = require("hook_points")
+local hook_points = require("hook_points")
+local shortpacket = require("shortpacket")
+local packet = require("packet")
 
 -- Defines our hook point as being TCP
 hook_point = hook_points.tcp
@@ -17,10 +18,8 @@ function shrink_http_body(body)
 end
 
 
--- Here's our packet matching rule
-packetrule = function(po)
-  return(packet.read_data(po, 7) == "HTTP/1.")
-end
+-- We only want to match packets that look like HTTP responses.
+packetrule = shortpacket.data_starts_with("HTTP/1.")
 
 -- Here's your action.
 action = function(po) 

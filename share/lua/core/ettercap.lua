@@ -9,6 +9,7 @@ ettercap = {}
 local ffi = require("ettercap_ffi")
 local ettercap_c = require("ettercap_c")
 local eclib = require("eclib")
+ettercap.reg = require("ettercap_reg")
 
 --- Log's a message using ettercap's ui_msg function.
 -- @see string.format

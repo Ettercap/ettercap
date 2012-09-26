@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Get Involved &laquo; Ettercap</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=100" /> <!-- Force IE8 Compatibility mode OFF -->
+<link rel="stylesheet" href="./style.css" type="text/css" />
+<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="./favicon.ico" />
+
+</head>
+<body>
+
+<div id="header">
+	<div id="logo">
+		<a href="#"><img src="logo.png" alt="logo" /></a>
+	</div>
+</div>
+
+<h1><a href="#">Get Involved <small>&laquo;</small> Ettercap</a></h1>
+
+<div class="container">
+
+<div id="digi-nav">
+	<ul>
+		<li><a href="index.html">Home</a></li>
+		<li><a href="about.html">About</a></li>
+		<li><a href="downloads.html">Downloads</a></li>
+		<li><a href="get-involved.html">Get Involved</a></li>
+		<li><a href="bugs.html">Bug Submission</a></li>
+		<li><a href="forums.html">Forums</a></li>
+	</ul>
+</div>
+
+
+<div id="content">
+
+		
+	<div class="post">
+<h2><a href="http://ettercap.sourceforge.net/">Get involved with the Ettercap project</a></h2>
+	<div class="entry">
+	
+	<blockquote><span><p>We are open to everyone who wants to be a part of this project and continue to make it the best MiTM tool available.</p></span></blockquote>
+	
+		
+		
+		<h3>Development Efforts</h3>
+		<p>The <a href="http://ettercap.sourceforge.net/">Ettercap source code</a> is stored on the <a href="http://ettercap.sourceforge.net/">Sourceforge</a> pages using a GIT repository. Below are the steps to you should follow to ensure you are working off the same code base as everyone else involved in the project.</p>
+		
+<pre><code>root@your_machine: ~# - git clone -b ettercap_rc git://ettercap.git.sourceforge.net/gitroot/ettercap/ettercap ettercap_rc 
+root@your_machine: ~# - git checkout ettercap_rc
+</code></pre>
+		
+		<p>Once you moved to the rc branch you can begin to review the current source code in development.<br /><small>Please note that very few individuals have the ability to commit code directly within the GIT repository.</small>	</p>
+
+<div class="box ">
+<span class="title"><h3>How to submit code you've worked on</h3></span>
+<p>1 - Once you've worked all the known bugs out of your code, you can create a
+patch file and send it to the ettercap.project gmail account</p>
+
+<p>2 - One of the core developers will review the code, make any necessary changes
+and merge the code into the proper branch.</p>
+
+<p>3 - You will receive full credit as a contributor to the project within the
+source documentation.</p>
+
+</div>
+
+
+<h3>Testing Efforts</h3>
+
+<p>Testing can occur at anytime and should be completed against the ettercap_rc branch. However, an e-mail will be sent out on the 1st of every month to everyone who requested to be part of the testing team that will include any changes made compared to the last release.</p>
+
+<p>When compiling ettercap be sure you purge all other instances and prepare for a clean installation. Do not compile with any flags other than debug in order to ensure a consistent test across the entire testing base.</p>
+
+<p>During testing, you can test however you want, but there are a few high level principles that will need to be followed:</p>
+
+	<ul class="fancy_list">
+		<li class="circle_arrow">Ensure you include as much information about your system as makes sense (uname -a may possibly be enough)
+			<ul class="fancy_list"><li>If you report a bug we need full details of what you were doing when it happened, and what you expected to happen</li>
+			<li>If an actual crash occurs provide the file that ettercap creates so we can review exactly what was happening when the crash occurred</li></ul>
+		</li>
+
+		<li class="circle_arrow">Detail, detail, detail, the more details you can provide the better chance we have to replicate the issue and fix it.<br /><br /></li>
+	</ul>
+
+
+<h3>Development &amp; Testing Schedule</h3>
+
+<p>All code needs to be submitted by the 20th of every month. If your code is not received by the 20th, then it will be put off until the following month.</p>
+
+<p>All code received by the 20th of the month will be reviewed and included where applicable.</p>
+
+<p>A call to all testers will go out via the beta testing lists and other social media sites on the first of every month.</p>
+
+<p>Official testing will close on the 10th of every month with the goal to complete a monthly release around the 15th of each month.</p>
+
+		
+		
+		<br class="clear" />
+		
+		
+	</div><!-- end entry -->
+	</div><!-- end post -->
+</div><!-- end content -->
+
+<div id="footer">
+	<div id="footer-container">
+	<span class="right"><a href="#">&copy; Ettercap Project</a> | <a href="http://www.ticktockcomputers.com" target="_blank" title="Designed by DigiP">Theme by Tick Tock Computers, LLC</a></span>
+	</div>
+</div><!-- end footer -->
+
+</div><!-- end container -->
+<div class="fixed-side">
+<img src="open-source.jpg"  alt="open-source" title="This project 100% Open-Source, for the community, and by the community." style="position:relative; right:6px;" />
+<br /><br />
+<a href="https://twitter.com/ettercapproject"><img src="Twitter-64.png" alt="" title="Follow us on Twitter" /></a>
+</div>
+</body>
+</html>

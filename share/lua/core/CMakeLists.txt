@@ -6,5 +6,6 @@ install(FILES
             hook_points.lua
             packet.lua
             shortpacket.lua
+            shortsession.lua
             eclib.lua
             DESTINATION ${INSTALL_LUA_CORE})

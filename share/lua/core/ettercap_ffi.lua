@@ -25,6 +25,23 @@ typedef u_int16_t  u_int16;
 typedef u_int32_t  u_int32;
 typedef u_int64_t  u_int64;
 
+// This is just a hack structure so we can see the first int on the ident
+// structures. 
+struct ident_magic {
+  u_int32 magic;
+};
+
+struct ec_session {
+   void *ident;
+   size_t ident_len;
+   void *data;
+   size_t data_len;
+   /* Used to trace headers for injection */
+   struct ec_session *prev_session;
+   int (*match)(void *id_sess, void *id);
+   void (*free)(void *data, size_t data_len);
+};
+
 struct ip_addr {
    u_int16 addr_type;
    u_int16 addr_len;
@@ -172,6 +189,12 @@ enum {
    HOOK_PROTO_NBNS,
    HOOK_PROTO_HTTP,
 };
+
+// These are magic constants that ettercap uses to identify the session
+// structures.
+static const u_int32 IP6_MAGIC =   0x0306e77e;
+static const u_int32 IP_MAGIC  =   0x0300e77e;
+static const u_int32 TCP_MAGIC =   0x0400e77e;
 
 
 static const u_int16 PO_IGNORE      = 1;        /* this packet should not be processed (e.g. sniffing TARGETS didn't match it) */

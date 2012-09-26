@@ -34,11 +34,26 @@ set_data = function(packet_object, data)
   set_modified(packet_object)
 end
 
+--- Inspects the packet to see if it is TCP.
+-- @param packet_object
+-- @return true or false
+is_tcp = function(packet_object)
+  if not packet_object.L3 then
+    return false
+  end
+  if not packet_object.L3.proto == 6 then
+    return false
+  end
+  return true
+end
+
+
 -- Define all the fun little methods.
 local packet = {
   read_data = read_data,
   set_modified = set_modified,
-  set_data = set_data
+  set_data = set_data,
+  is_tcp = is_tcp
 }
 
 return packet

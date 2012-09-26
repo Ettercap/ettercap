@@ -3,10 +3,12 @@ description = "This is a test script that will inject HTTP stuff";
 
 local hook_points = require("hook_points")
 local shortpacket = require("shortpacket")
+local shortsession = require("shortsession")
 local packet = require("packet")
 
--- Defines our hook point as being TCP
-hook_point = hook_points.tcp
+-- We have to hook at the filtering point so that we are certain that all the 
+-- dissectors hae run.
+hook_point = hook_points.filter
 
 function split_http(str)
   local start,finish,header,body = string.find(str, '(.-\r?\n\r?\n)(.*)')
@@ -18,17 +20,29 @@ function shrink_http_body(body)
   return modified_body
 end
 
-
+-- Cache our starts-with function...
+local sw = shortpacket.data_starts_with("HTTP/1.")
 -- We only want to match packets that look like HTTP responses.
-packetrule = shortpacket.data_starts_with("HTTP/1.")
-ettercap.reg.create_namespace('http_inject')
+packetrule = function(packet_object)
+  if packet.is_tcp(packet_object) == false then
+    return false
+  end
+  -- Check to see if it starts with the right stuff.
+  return sw(packet_object)
+end
 
+local session_key = shortsession.ip_session
 
 -- Here's your action.
 action = function(po) 
+  local session_id = session_key(po)
+  if not session_id then
+    -- If we don't have session_id, then bail.
+    return nil
+  end
   --ettercap.log("inject_http action : called!\n")
   -- Get the full buffer....
-  reg = ettercap.reg.get_namespace('http_inject')
+  reg = ettercap.reg.create_namespace(session_id)
   local buf = packet.read_data(po)
   -- Split the header/body up so we can manipulate things.
   local start,finish,header, body = split_http(buf)

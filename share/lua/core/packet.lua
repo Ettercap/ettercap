@@ -9,6 +9,10 @@ function ip_to_str(ip_addr)
   return(ffi.string(ffi.C.ip_addr_ntoa(ip_addr, addr_buffer)))
 end
 
+--ntohs = function(port)
+  --return(ffi.int(ffi.C.ntohs(port)))
+--end
+
 --- Gets the src ip, if any, from the packet.
 -- @param packet_object
 -- @return string version of IP, or nil

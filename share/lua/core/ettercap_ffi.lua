@@ -232,6 +232,7 @@ static const u_int16 PO_FROMSSL     = 1<<11;    /* the packet is coming from a s
 static const u_int16 PO_SSLSTART    = 1<<12;   /* ssl wrapper has to enter SSL state */
 
 char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
+uint16_t ntohs(uint16_t netshort);
 
 size_t tcp_create_ident(void **i, struct packet_object *po);            
 int tcp_find_direction(void *ids, void *id);

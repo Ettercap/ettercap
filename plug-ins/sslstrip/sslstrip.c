@@ -765,8 +765,8 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	curl_easy_setopt(connection->handle, CURLOPT_ERRORBUFFER, connection->curl_err_buffer);
 	curl_easy_setopt(connection->handle, CURLOPT_HEADER, 1L);
 	curl_easy_setopt(connection->handle, CURLOPT_HTTPHEADER, connection->request->headers);
-	curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "gzip");
-	curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "deflate");
+	//curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "gzip");
+	//curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "deflate");
 	curl_easy_setopt(connection->handle, CURLOPT_COOKIEFILE, ""); //Initialize cookie engine
 
 

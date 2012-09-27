@@ -31,7 +31,7 @@ packetrule = function(packet_object)
   return sw(packet_object)
 end
 
-local session_key = shortsession.ip_session
+local session_key = shortsession.ip_session("inject_http_demo")
 
 -- Here's your action.
 action = function(po) 

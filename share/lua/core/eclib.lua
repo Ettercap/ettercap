@@ -24,8 +24,37 @@ split = function(str, pat)
    return t
 end
 
+---Returns a string representation of a hex dump of a string (containing binary bytes even zero)
+hexdump = function(s)
+	local manLine="" --human readable format of the current line
+	local hexLine="" --hexadecimal representation of the current line
+	local address=0     --the address where the current line starts
+	local LINE_LENGTH=16 --how many characters per line?
+	local ADDRESS_LENGTH=4 --how many characters for the address part?
+	local ret=""
+	if not hex then
+		hex={}
+		local digit={[0]="0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"}
+		for i=0,15 do for j=0,15 do hex[i*16+j]=digit[i]..digit[j] end end
+	end
+	for i=1,s:len() do
+		local ch=s:sub(i,i)
+		if ch:find("%c") then ch="." end--if ch is a control character, assign some default value to it
+		manLine=manLine..ch
+		hexLine=hexLine..hex[s:byte(i)].." "
+		if (i % LINE_LENGTH)==0 or i==s:len() then
+			--print(string.format("%04u | %-48s | %s",address,hexLine,manLine))
+			ret=ret..string.format("%0"..ADDRESS_LENGTH.."u | %-"..3*LINE_LENGTH.."s| %s\n",address,hexLine,manLine)
+			manLine,hexLine="",""
+			address=i
+		end
+	end
+	return ret
+end
+
 local eclib = {}
 
 eclib.split = split
+eclib.hexdump = hexdump
 
 return eclib

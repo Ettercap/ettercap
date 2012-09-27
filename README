@@ -138,7 +138,13 @@ UNIFIED SNIFFING
 
 BRIDGED SNIFFING
 
+ Uses two network interfaces and forwards the traffic between them while performing
+ sniffing and content filtrating. This sniffing method is very stealthy as there
+ is no way to to detect that someone is in the middle. You can look at this as a layer
+ one attack. Don't use it on gateways or it will transform your gateway into a bridge.
  
+ HINT: You can use the content filtering engine to drop packets that should not pass.
+ This way ettercap will work as an inline IPS ;)
 
 
 ARP POISONING ATTACK

@@ -190,6 +190,22 @@ enum {
    HOOK_PROTO_HTTP,
 };
 
+enum {
+   ESUCCESS    = 0,
+   ENOTFOUND   = 1,
+   ENOMATCH    = 2,
+   ENOTHANDLED = 3,
+   EINVALID    = 4,
+   ENOADDRESS  = 5,
+   EDUPLICATE  = 6,
+   ETIMEOUT    = 7,
+   EINITFAIL   = 8,
+   EFOUND      = 128,
+   EBRIDGE     = 129,
+   EVERSION    = 254,
+   EFATAL      = 255,
+};
+
 // These are magic constants that ettercap uses to identify the session
 // structures.
 static const u_int32 IP6_MAGIC =   0x0306e77e;
@@ -216,6 +232,10 @@ static const u_int16 PO_FROMSSL     = 1<<11;    /* the packet is coming from a s
 static const u_int16 PO_SSLSTART    = 1<<12;   /* ssl wrapper has to enter SSL state */
 
 char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
+
+size_t tcp_create_ident(void **i, struct packet_object *po);            
+int tcp_find_direction(void *ids, void *id);
+int session_get(struct ec_session **s, void *ident, size_t ident_len);
 ]]
 
 return ettercap_ffi

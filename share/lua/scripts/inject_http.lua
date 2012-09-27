@@ -1,6 +1,7 @@
 description = "This is a test script that will inject HTTP stuff";
 
 
+local eclib = require('eclib')
 local hook_points = require("hook_points")
 local shortpacket = require("shortpacket")
 local shortsession = require("shortsession")
@@ -31,11 +32,11 @@ packetrule = function(packet_object)
   return sw(packet_object)
 end
 
-local session_key = shortsession.ip_session
+local session_key_func = shortsession.ip_session("inject_http")
 
 -- Here's your action.
 action = function(po) 
-  local session_id = session_key(po)
+  local session_id = session_key_func(po)
   if not session_id then
     -- If we don't have session_id, then bail.
     return nil

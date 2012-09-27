@@ -3,6 +3,42 @@
 local ffi = require("ettercap_ffi")
 local bit = require('bit')
 
+local addr_buffer_type = ffi.typeof("char[46]")
+function ip_to_str(ip_addr)
+  local addr_buffer = addr_buffer_type()
+  return(ffi.string(ffi.C.ip_addr_ntoa(ip_addr, addr_buffer)))
+end
+
+--- Gets the src ip, if any, from the packet.
+-- @param packet_object
+-- @return string version of IP, or nil
+src_ip = function(packet_object)
+  local L3 = packet_object.L3
+  if not L3 then
+    return nil
+  end
+  local src = L3.src
+  if not src then
+    return nil
+  end
+  return ip_to_str(src)
+end
+
+--- Gets the dst ip, if any, from the packet.
+-- @param packet_object
+-- @return string version of IP, or nil
+dst_ip = function(packet_object)
+  local L3 = packet_object.L3
+  if not L3 then
+    return nil
+  end
+  local dst = L3.dst
+  if not dst then
+    return nil
+  end
+  return ip_to_str(dst)
+end
+
 --- Returns up to length bytes of the decoded packet DATA section
 -- @param packet_object
 -- @param length If specified, will return up to that many bytes of the packet
@@ -53,7 +89,9 @@ local packet = {
   read_data = read_data,
   set_modified = set_modified,
   set_data = set_data,
-  is_tcp = is_tcp
+  is_tcp = is_tcp,
+  src_ip = src_ip,
+  dst_ip = dst_ip
 }
 
 return packet

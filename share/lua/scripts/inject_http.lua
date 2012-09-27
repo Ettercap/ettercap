@@ -40,7 +40,12 @@ action = function(po)
     -- If we don't have session_id, then bail.
     return nil
   end
-  --ettercap.log("inject_http action : called!\n")
+  --local src_ip = ""
+  --local dst_ip = ""
+  local src_ip = packet.src_ip(po)
+  local dst_ip = packet.dst_ip(po)
+  
+  ettercap.log("inject_http: " .. src_ip .. " -> " .. dst_ip .. "\n")
   -- Get the full buffer....
   reg = ettercap.reg.create_namespace(session_id)
   local buf = packet.read_data(po)

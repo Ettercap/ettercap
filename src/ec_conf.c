@@ -107,6 +107,7 @@ static struct conf_entry strings[] = {
 /* this is fake, dissector use a different registration */
 static struct conf_entry dissectors[] = {
    { "fake", &number_of_dissectors },
+   { NULL, NULL },
 };
 
 static struct conf_section sections[] = {

@@ -177,12 +177,10 @@ void gtkui_icmp_redir(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
+      memset(params, '\0', PARAMS_LEN);
 
-      snprintf(params, 6, "icmp:");
-
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry1)), ETH_ASCII_ADDR_LEN);
-      strncat(params, "/", 1);
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry2)), IP6_ASCII_ADDR_LEN);
+      snprintf(params, PARAMS_LEN-1, "icmp:%s/%s",  gtk_entry_get_text(GTK_ENTRY(entry1)),
+                       gtk_entry_get_text(GTK_ENTRY(entry2)));
 
       gtkui_start_mitm();
    }
@@ -329,16 +327,12 @@ void gtkui_dhcp_spoofing(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
+      memset(params, '\0', PARAMS_LEN);
 
-      snprintf(params, 6, "dhcp:");
-      
+      snprintf(params, PARAMS_LEN-1, "dhcp:%s/%s/%s", gtk_entry_get_text(GTK_ENTRY(entry1)),
+                       gtk_entry_get_text(GTK_ENTRY(entry2)), gtk_entry_get_text(GTK_ENTRY(entry3)));
 
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry1)), PARAMS_LEN);
-      strncat(params, "/", PARAMS_LEN);
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry2)), PARAMS_LEN);
-      strncat(params, "/", PARAMS_LEN);
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry3)), PARAMS_LEN);
-
+      DEBUG_MSG("ec_gtk_dhcp: DHCP MITM %s", params);
       gtkui_start_mitm();
    }
 

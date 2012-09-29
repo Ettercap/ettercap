@@ -64,6 +64,7 @@ set(EC_SRC
         dissectors/ec_napster.c
         dissectors/ec_nbns.c
         dissectors/ec_nntp.c
+        dissectors/ec_o5logon.c
         dissectors/ec_ospf.c
         dissectors/ec_pop.c
         dissectors/ec_portmap.c

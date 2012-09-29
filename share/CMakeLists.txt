@@ -16,3 +16,7 @@ install(FILES
             etter.services
             etter.ssl.crt
         DESTINATION ${INSTALL_DATADIR}/ettercap)
+
+if(ENABLE_LUA)
+  add_subdirectory(lua)
+endif(ENABLE_LUA)

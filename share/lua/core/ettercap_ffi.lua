@@ -1,5 +1,8 @@
 ---
 -- This is our ettercap FFI interface. Nothing to see, here.
+--
+-- Created by Ryan Linn and Mike Ryan
+-- Copyright (C) 2012 Trustwave Holdings, Inc.
 
 local ettercap_ffi = require("ffi")
 

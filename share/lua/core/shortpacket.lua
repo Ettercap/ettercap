@@ -1,6 +1,9 @@
 --- 
 -- Like that of shortport in the nselib, shortpacket is designed to provide a 
 -- way to easily generate packetrules.
+--
+-- Created by Ryan Linn and Mike Ryan
+-- Copyright (C) 2012 Trustwave Holdings, Inc.
 
 local packet = require("packet")
 

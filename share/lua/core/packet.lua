@@ -1,4 +1,7 @@
 --- Packet manipulation functions
+--
+-- Created by Ryan Linn and Mike Ryan
+-- Copyright (C) 2012 Trustwave Holdings, Inc.
 
 local ffi = require("ettercap_ffi")
 local bit = require('bit')

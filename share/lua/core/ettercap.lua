@@ -1,5 +1,8 @@
 ---
 -- Basic ettercap functionality!
+--
+-- Created by Ryan Linn and Mike Ryan
+-- Copyright (C) 2012 Trustwave Holdings, Inc.
 -- 
 
 

@@ -1,6 +1,9 @@
 --- 
 -- The purpose of this lib is to provide a simple way of defining the style of 
 -- session tracking that would be employed by a given script.
+--
+-- Created by Ryan Linn and Mike Ryan
+-- Copyright (C) 2012 Trustwave Holdings, Inc.
 
 local ffi = require("ettercap_ffi")
 

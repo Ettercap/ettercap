@@ -1,4 +1,8 @@
 --- This provides a very simple registry 
+--
+-- Created by Ryan Linn and Mike Ryan
+-- Copyright (C) 2012 Trustwave Holdings, Inc.
+--
 
 local ettercap_registry = {}
 

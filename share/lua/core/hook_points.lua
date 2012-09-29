@@ -3,6 +3,10 @@
 --
 -- These values are defined in include/ec_hook.h, so this module will need
 -- to be updated if that file ever changes!
+--
+-- Created by Ryan Linn and Mike Ryan
+-- Copyright (C) 2012 Trustwave Holdings, Inc.
+--
 -- @module hook_points
 
 --- @usage

@@ -1,5 +1,8 @@
 ---
 -- Some helper functions
+--
+-- Created by Ryan Linn and Mike Ryan
+-- Copyright (C) 2012 Trustwave Holdings, Inc.
 
 --- Basic Split taken from http://lua-users.org/wiki/SplitJoin
 -- @param str 

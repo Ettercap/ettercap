@@ -1,3 +1,6 @@
+-- Created by Ryan Linn and Mike Ryan
+-- Copyright (C) 2012 Trustwave Holdings, Inc.
+
 ETTERCAP_LUA_CORE_PATH = "@INSTALL_LUA_CORE@"
 ETTERCAP_LUA_LIB_PATH = "@INSTALL_LUA_LIBS@"
 ETTERCAP_LUA_SCRIPT_PATH = "@INSTALL_LUA_SCRIPTS@"

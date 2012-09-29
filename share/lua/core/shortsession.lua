@@ -22,7 +22,7 @@ function magic_session(packet_object, magic_vals)
 
   local session = packet_object.session
   while true do
-    if not session then
+    if session == nil then
       return nil
     end
     local ident = session.ident

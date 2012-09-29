@@ -12,6 +12,7 @@ EC_API_EXTERN int ec_lua_cli_add_args(char * args);
 LUALIB_API int luaopen_ettercap_c(lua_State *L);
 int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po);
 int ec_lua_panic(lua_State * state);
+void ec_lua_print_stack(FILE * io);
 
 #define LUA_FATAL_ERROR(x, ...) do { fprintf(stderr, x, ## __VA_ARGS__ ); exit(-1);} while(0)
 

@@ -190,6 +190,34 @@ int ec_lua_panic(lua_State * state)
   return 0;
 }
 
+void ec_lua_print_stack(FILE * io)
+{
+
+  lua_Debug ar;
+  int level = 0;
+  while (lua_getstack(_lua_state, level++, &ar)) 
+  {
+    lua_getinfo(_lua_state, "Snl", &ar);
+    fprintf(io, "\t%s:", ar.short_src);
+    if (ar.currentline > 0)
+      fprintf(io, "%d:", ar.currentline);
+    if (*ar.namewhat != '\0') {  /* is there a name? */
+      fprintf(io, " in function " LUA_QS, ar.name);
+    } else {
+      if (*ar.what == 'm')  /* main? */
+        fprintf(io, " in main chunk");
+      else if (*ar.what == 'C' || *ar.what == 't')
+        fprintf(io, " ?");  /* C function or tail call */
+      else
+        fprintf(io, " in function <%s:%d>",
+                        ar.short_src, ar.linedefined);
+    }
+    fprintf(io, "\n");
+  }
+  fprintf(io, "Lua stack depth: %d\n", level - 1);
+   
+}
+
 
 // Passes the hooked packet into Lua, along with its hook point.
 int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po)

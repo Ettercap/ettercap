@@ -88,20 +88,19 @@ void gtkui_arp_poisoning(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      memset(params, '\0', PARAMS_LEN+1);
+      const char *s_remote = "", *comma = "", *s_oneway = "";
 
-      snprintf(params, 5, "arp:");
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
-        strcat(params, "remote");
+	s_remote="remote";
         remote = TRUE;
       }
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
          if(remote)
-            strcat(params, ",");
-	
-         strcat(params, "oneway");
+		comma = ",";
+
+	 s_oneway = "oneway";	
          oneway = TRUE;
       } 
 
@@ -110,6 +109,7 @@ void gtkui_arp_poisoning(void)
          return;
       }
 
+      snprintf(params, PARAMS_LEN, "arp:%s%s%s", s_remote, comma, s_oneway);
       gtkui_start_mitm();
    }
 
@@ -179,7 +179,7 @@ void gtkui_icmp_redir(void)
       gtk_widget_hide(dialog);
       memset(params, '\0', PARAMS_LEN);
 
-      snprintf(params, PARAMS_LEN-1, "icmp:%s/%s",  gtk_entry_get_text(GTK_ENTRY(entry1)),
+      snprintf(params, PARAMS_LEN, "icmp:%s/%s",  gtk_entry_get_text(GTK_ENTRY(entry1)),
                        gtk_entry_get_text(GTK_ENTRY(entry2)));
 
       gtkui_start_mitm();
@@ -236,20 +236,21 @@ void gtkui_port_stealing(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {    
       gtk_widget_hide(dialog);          
+      const char *s_remote= "", *tree = "", *comma = "";
 
-      snprintf(params, 6, "port:");
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
-         strcat(params, "remote");
+         s_remote="remote";
          remote = TRUE;
       }
    
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
          if(remote)
-            strcat(params, ",");
-         strcat(params, "tree");
+              comma = ",";
+	 tree = "tree";
       }
-   
+  
+      snprintf(params, PARAMS_LEN, "port:%s%s%s", s_remote, comma, tree); 
       gtkui_start_mitm();
    }
 
@@ -329,7 +330,7 @@ void gtkui_dhcp_spoofing(void)
       gtk_widget_hide(dialog);
       memset(params, '\0', PARAMS_LEN);
 
-      snprintf(params, PARAMS_LEN-1, "dhcp:%s/%s/%s", gtk_entry_get_text(GTK_ENTRY(entry1)),
+      snprintf(params, PARAMS_LEN, "dhcp:%s/%s/%s", gtk_entry_get_text(GTK_ENTRY(entry1)),
                        gtk_entry_get_text(GTK_ENTRY(entry2)), gtk_entry_get_text(GTK_ENTRY(entry3)));
 
       DEBUG_MSG("ec_gtk_dhcp: DHCP MITM %s", params);

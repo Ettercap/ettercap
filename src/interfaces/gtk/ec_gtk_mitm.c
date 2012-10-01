@@ -88,11 +88,11 @@ void gtkui_arp_poisoning(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      const char *remote = "", *comma = "", *oneway = "";
+      const char *s_remote = "", *comma = "", *s_oneway = "";
 
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
-	remote="remote";
+	s_remote="remote";
         remote = TRUE;
       }
 
@@ -100,7 +100,7 @@ void gtkui_arp_poisoning(void)
          if(remote)
 		comma = ",";
 
-	 oneway = "oneway";	
+	 s_oneway = "oneway";	
          oneway = TRUE;
       } 
 
@@ -109,7 +109,7 @@ void gtkui_arp_poisoning(void)
          return;
       }
 
-      snprintf(params, PARAMS_LEN, "arp:%s%s%s", remote, comma, oneway);
+      snprintf(params, PARAMS_LEN, "arp:%s%s%s", s_remote, comma, s_oneway);
       gtkui_start_mitm();
    }
 
@@ -236,11 +236,11 @@ void gtkui_port_stealing(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {    
       gtk_widget_hide(dialog);          
-      const char *remote= "", *tree = "", *comma = "";
+      const char *s_remote= "", *tree = "", *comma = "";
 
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
-         remote="remote";
+         s_remote="remote";
          remote = TRUE;
       }
    
@@ -250,7 +250,7 @@ void gtkui_port_stealing(void)
 	 tree = "tree";
       }
   
-      snprintf(params, PARAMS_LEN, "port:%s%s%s", remote, comma, tree); 
+      snprintf(params, PARAMS_LEN, "port:%s%s%s", s_remote, comma, tree); 
       gtkui_start_mitm();
    }
 

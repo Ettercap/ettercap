@@ -66,6 +66,7 @@ set(EC_SRC
         dissectors/ec_nntp.c
         dissectors/ec_ospf.c
         dissectors/ec_pop.c
+        dissectors/ec_postgresql.c
         dissectors/ec_portmap.c
         dissectors/ec_radius.c
         dissectors/ec_rcon.c

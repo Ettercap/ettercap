@@ -41,17 +41,17 @@ void repoison_victims(void *group_ptr, struct packet_object *po);
 /* plugin operations */
 struct plugin_ops repoison_arp_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "repoison_arp",  
+   .name =              "repoison_arp",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Repoison after broadcast ARP",  
+   .info =              "Repoison after broadcast ARP",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &repoison_arp_init,
+   .init =              &repoison_arp_init,
    /* deactivation function */                     
-   fini:             &repoison_arp_fini,
+   .fini =              &repoison_arp_fini,
 };
 
 /**********************************************************/

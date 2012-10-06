@@ -140,7 +140,7 @@ void stats_wipe(void)
    memset(&GBL_STATS->th, 0, sizeof(struct half_stats));
 
    /* now the global stats */
-   pcap_stats(GBL_PCAP->pcap, &ps);
+   pcap_stats(GBL_IFACE->pcap, &ps);
 
    /* XXX - fix this with libpcap 0.8.2 */
 #ifndef OS_LINUX
@@ -172,24 +172,13 @@ void stats_update(void)
     * statistics are available only in live capture
     * no statistics are stored in savefiles
     */
-   pcap_stats(GBL_PCAP->pcap, &ps);
+   pcap_stats(GBL_IFACE->pcap, &ps);
    /* get the statistics for Layer 3 since we forward packets here */
-   libnet_stats(GBL_LNET->lnet_L3, &ls);
+   libnet_stats(GBL_LNET->lnet_IP4, &ls);
       
-#ifdef OS_LINUX
-   /* 
-    * add to the previous value, since every call
-    * to pcap_stats reset the counter (hope that will be fixed soon)
-    * XXX - fixed in libpcap cvs
-    */
-   GBL_STATS->ps_recv += ps.ps_recv;
-   GBL_STATS->ps_drop += ps.ps_drop;
-   GBL_STATS->ps_ifdrop += ps.ps_ifdrop;
-#else
    /* on systems other than linux, the counter is not reset */ 
    GBL_STATS->ps_recv = ps.ps_recv - GBL_STATS->ps_recv_delta;
    GBL_STATS->ps_drop = ps.ps_drop - GBL_STATS->ps_drop_delta;
-#endif
 
    /* from libnet */
    GBL_STATS->ps_sent = ls.packets_sent - GBL_STATS->ps_sent_delta;

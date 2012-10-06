@@ -44,17 +44,17 @@ static void parse_tcp(struct packet_object *po);
 
 struct plugin_ops find_ettercap_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "find_ettercap",  
+   .name =              "find_ettercap",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Try to find ettercap activity",  
+   .info =              "Try to find ettercap activity",  
    /* the plugin version. */ 
-   version:          "2.0",   
+   .version =           "2.0",   
    /* activation function */
-   init:             &find_ettercap_init,
+   .init =              &find_ettercap_init,
    /* deactivation function */                     
-   fini:             &find_ettercap_fini,
+   .fini =              &find_ettercap_fini,
 };
 
 /**********************************************************/

@@ -18,7 +18,7 @@
    y->session = x;                  \
 } while(0)
 
-#define SESSION_CLEAR(x) x->session=NULL
+#define SESSION_CLEAR(x) (x->session=NULL)
 
 #define EXECUTE_INJECTOR(x,y) do{                     \
    FUNC_INJECTOR_PTR(prev_injector);                  \

@@ -98,7 +98,6 @@ EC_THREAD_FUNC(top_half)
       /* the queue is empty, nothing to do... */
       if (e == NULL) {
          PO_QUEUE_UNLOCK;
-
 #if !defined(OS_WINDOWS)         
          nanosleep(&tm, NULL);
 #else

@@ -69,17 +69,17 @@ EC_THREAD_FUNC(flooder);
 
 struct plugin_ops rand_flood_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "rand_flood",  
+   .name =              "rand_flood",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Flood the LAN with random MAC addresses",  
+   .info =              "Flood the LAN with random MAC addresses",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &rand_flood_init,
+   .init =              &rand_flood_init,
    /* deactivation function */                     
-   fini:             &rand_flood_fini,
+   .fini =              &rand_flood_fini,
 };
 
 /**********************************************************/

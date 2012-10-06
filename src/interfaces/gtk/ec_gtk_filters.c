@@ -42,7 +42,7 @@ void gtkui_stop_filter(void);
 void gtkui_load_filter(void)
 {
    GtkWidget *dialog;
-   char *filename;
+   const char *filename;
    int response = 0;
    char *path = get_full_path("share", "");
 
@@ -63,7 +63,7 @@ void gtkui_load_filter(void)
        * load the filters chain.
        * errors are spawned by the function itself
        */
-      filter_load_file(filename, GBL_FILTERS);
+      filter_load_file(filename, GBL_FILTERS, 1);
    }
    gtk_widget_destroy (dialog);
 }

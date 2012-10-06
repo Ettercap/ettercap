@@ -36,6 +36,10 @@
    #include <sys/wait.h>
 #endif
 
+#ifdef OS_LINUX
+   #include <linux/netfilter_ipv4.h>
+#endif
+
 #include <fcntl.h>
 #include <time.h>
 #include <pthread.h>
@@ -108,6 +112,10 @@ struct sslw_ident {
 
 #define SSLW_RETRY 5
 #define SSLW_WAIT 10 /* 10 seconds */
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
+#define SSLW_SET "20"
+#endif
 
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
@@ -243,7 +251,7 @@ static void ssl_wrap_fini(void)
 {
    struct listen_entry *le, *old;
 
-   DEBUG_MSG("Cleanup...");
+   DEBUG_MSG("ATEXIT: ssl_wrap_fini");
    /* remove every redirect rule */   
    LIST_FOREACH_SAFE(le, &listen_ports, next, old) {
       sslw_remove_redirect(le->sslw_port, le->redir_port);
@@ -389,6 +397,10 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    str_replace(&command, "%iface", GBL_OPTIONS->iface);
    str_replace(&command, "%port", asc_sport);
    str_replace(&command, "%rport", asc_dport);
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
+   str_replace(&command, "%set", SSLW_SET);
+#endif
    
    DEBUG_MSG("sslw_insert_redirect: [%s]", command);
    
@@ -446,6 +458,10 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
    str_replace(&command, "%iface", GBL_OPTIONS->iface);
    str_replace(&command, "%port", asc_sport);
    str_replace(&command, "%rport", asc_dport);
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
+   str_replace(&command, "%set", SSLW_SET);
+#endif
    
    DEBUG_MSG("sslw_remove_redirect: [%s]", command);
    
@@ -675,6 +691,11 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
  */
 static int sslw_get_peer(struct accepted_entry *ae)
 {
+
+/* If on Linux, we can just get the SO_ORIGINAL_DST from getsockopt() no need for this loop
+   nonsense.
+*/
+#ifndef OS_LINUX
    struct ec_session *s = NULL;
    struct packet_object po;
    void *ident = NULL;
@@ -715,7 +736,14 @@ static int sslw_get_peer(struct accepted_entry *ae)
    SAFE_FREE(s->data);
    SAFE_FREE(s);
    SAFE_FREE(ident);
+#else
+   struct sockaddr_in sa_in;
+   socklen_t sa_in_sz = sizeof(struct sockaddr_in);
 
+   getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&sa_in, &sa_in_sz);
+
+   ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET, (char *)&(sa_in.sin_addr.s_addr));
+#endif
    return ESUCCESS;
 }
 
@@ -904,7 +932,7 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    gettimeofday(&po->ts, NULL);
 
    /* calculate if the dest is local or not */
-   switch (ip_addr_is_local(&PACKET->L3.src)) {
+   switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
       case ESUCCESS:
          PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
@@ -1219,7 +1247,6 @@ static void sslw_create_session(struct ec_session **s, struct packet_object *po)
    /* alloc of data elements */
    SAFE_CALLOC((*s)->data, 1, sizeof(struct ip_addr));
 }
-
 #endif /* HAVE_OPENSSL */
 
 /* EOF */

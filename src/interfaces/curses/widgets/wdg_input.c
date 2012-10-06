@@ -555,7 +555,7 @@ static void wdg_input_consolidate(struct wdg_object *wo)
             break;
       
       /* copy the buffer in the real one */
-      strncpy(ww->buffers[i/2], buf, (ww->nfields/2 + 1));
+      strcpy(ww->buffers[i/2], buf);
       
       /* skip the label */
       i += 2;

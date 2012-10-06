@@ -8,7 +8,7 @@
        @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
        @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     NG
 
-                      Copyright 2001-2011 ALoR & NaGA
+                      Copyright 2001-2012 The Ettercap Dev Team
 
 ==============================================================================
                 H O W   T O   C O M P I L E   F R O M  G I T
@@ -16,48 +16,31 @@
 
 First you have to clone the project from the git repository:
 
-    # git://ettercap.git.sourceforge.net/gitroot/ettercap/ettercap
+    # git clone git://github.com/Ettercap/ettercap.git
+    # cd ettercap
 
+If you want to build the development version you have to switch to the ettercap_rc branch
+
+    # git checkout ettercap_rc
 
 If you already had the repository cloned, you will need to pull the latest changes:
    
-    # cd ettercap
     # git pull
 
-Once you have downloaded your fresh copy of the cvs, you have to generate the
-autoconfiguration scripts. 
-NOTE: you will need up to date autotools.
-
-   # ./autogen.sh
-
-Then you are ready to compile the source as usual:
-
-   # ./configure --your-options-here
+After you have successfully cloned the repository then you must initiate the build
+with cmake:
+    # mkdir build
+    # cd build
+    # cmake ..
+    # (Use ccmake . to change options such as disabling IPv6 support, add
+      plugins support, setting release type to Debug, etc).
 
 
 ==============================================================================
      D E V E L O P E R S   A N D   B E T A T E S T E R S   S E C T I O N
 ==============================================================================
-
-Since the configure.in contains the AM_MAINTAINER_MODE macro, automatic 
-rebuild of configurations script is not done by default. To enable it, use the
---enable-maintainer-mode flag. It is suggested to use even the
---enable-debug flag to be able to track down ettercap bugs. 
-
-   # ./configure --enable-debug --enable-maintainer-mode --your-options-here
-
-To enable ettercap to work even if not installed into the system (i.e. to work
-form the current directory), you have to use the "special" target 'test' to
-make. This script will link the executables file in the root of the source tree
-and fix the permission to open plugins from the current directory.
-
-   # make test
-   
-A script that does the whole process is provided for lazy developers :)
-
-   # ./mconf.sh --your-options-here
-
-This file is present only in the CVS repository. It will not be distributed.
+In order for ettercap to be compiled with debugging symbols, you need to use
+ccmake to change the release type to Debug. 
 
 ==============================================================================
 

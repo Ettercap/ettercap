@@ -22,7 +22,7 @@
 */
 
 /*
- * MFDBL: mac fingerprint batabase library.
+ * MFDBL: mac fingerprint database library.
  *
  * Copyright (c) 2002 Bonelli Nicola <awgn@antifork.org>
  *
@@ -127,7 +127,7 @@ int manuf_init(void)
 
    while (fgets(line, 80, f) != 0) {
 
-      if (sscanf(line, "%02X:%02X:%02X %80[^,\n],\n", &m1, &m2, &m3, name) != 4)
+      if (sscanf(line, "%02X%02X%02X %80[^,\n],\n", &m1, &m2, &m3, name) != 4)
          continue;
 
       mac[0] = (char) (m1);

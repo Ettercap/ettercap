@@ -26,6 +26,7 @@
 #include <ec_threads.h>
 #include <ec_ui.h>
 #include <ec_packet.h>
+#include <ec_hash.h>
 #include <ec_hook.h>
 #include <ec_filter.h>
 #include <ec_inject.h>
@@ -36,14 +37,15 @@
 
 /* globals */
 
-static SLIST_HEAD (, dec_entry) dissectors_table;
-static SLIST_HEAD (, dec_entry) protocols_table;
+static struct dec_entry *protocols_table;
+static unsigned protocols_num;
+static bool table_sorted = false;
 
 struct dec_entry {
    u_int32 type;
    u_int8 level;
+   bool active;
    FUNC_DECODER_PTR(decoder);
-   SLIST_ENTRY (dec_entry) next;
 };
 
 /* protos */
@@ -53,8 +55,12 @@ FUNC_DECODER(decode_data);
 
 void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
+static void sort_decoders(void);
+static int cmp_decoders(const void *va, const void *vb);
+static struct dec_entry* find_entry(u_int8 level, u_int32 type);
 void del_decoder(u_int8 level, u_int32 type);
-void * get_decoder(u_int8 level, u_int32 type);
+void *get_decoder(u_int8 level, u_int32 type);
+void **get_decoders(u_int8 level, u_int32 type);
 
 /* mutexes */
 
@@ -90,7 +96,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    
    if (GBL_OPTIONS->read)
       /* update the offset pointer */
-      GBL_PCAP->dump_off = ftell(pcap_file(GBL_PCAP->pcap));
+      GBL_PCAP->dump_off = ftell(pcap_file(GBL_IFACE->pcap));
    else {
       /* update the statistics */
       stats_update();
@@ -249,6 +255,8 @@ void __init data_init(void)
 
 FUNC_DECODER(decode_data)
 {
+   int i;
+   int proto = 0;
    FUNC_DECODER_PTR(app_decoder);
       
    CANCELLATION_POINT();
@@ -276,22 +284,29 @@ FUNC_DECODER(decode_data)
     * we should run the decoder on both the tcp/udp ports
     * since we may be interested in both client and server traffic.
     */
-   switch (po->L4.proto) {
+   switch(po->L4.proto) {
       case NL_TYPE_TCP:
-         app_decoder = get_decoder(APP_LAYER_TCP, ntohs(po->L4.src));
-         EXECUTE_DECODER(app_decoder);
-         app_decoder = get_decoder(APP_LAYER_TCP, ntohs(po->L4.dst));
-         EXECUTE_DECODER(app_decoder);
+         proto = APP_LAYER_TCP;
          break;
-         
+
       case NL_TYPE_UDP:
-         app_decoder = get_decoder(APP_LAYER_UDP, ntohs(po->L4.src));
-         EXECUTE_DECODER(app_decoder);
-         app_decoder = get_decoder(APP_LAYER_UDP, ntohs(po->L4.dst));
-         EXECUTE_DECODER(app_decoder);
+         proto = APP_LAYER_UDP;
          break;
    }
-   
+
+   if(proto) {
+      app_decoder = get_decoder(proto, ntohs(po->L4.src));
+      EXECUTE_DECODER(app_decoder);
+
+   /*
+    * This check prevents from running a decoder twice
+    */
+      if(po->L4.src != po->L4.dst) {
+         app_decoder = get_decoder(proto, ntohs(po->L4.dst));
+         EXECUTE_DECODER(app_decoder);
+      }
+   }
+
    /* HOOK POINT: DECODED (the po structure is filled) */ 
    hook_point(HOOK_DECODED, po);
 
@@ -299,8 +314,7 @@ FUNC_DECODER(decode_data)
     * here we can filter the content of the packet.
     * the injection is done elsewhere.
     */
-   if (GBL_FILTERS->chain)
-      filter_engine(GBL_FILTERS->chain, po);
+   filter_packet(po);
 
    /* If the modified packet exceeds the MTU split it into inject buffer */
    inject_split_data(po);
@@ -326,25 +340,93 @@ FUNC_DECODER(decode_data)
 void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder))
 {
    struct dec_entry *e;
+   bool found = false;
 
-   SAFE_CALLOC(e, 1, sizeof(struct dec_entry));
-   
+   DECODERS_LOCK;
+
+   /* in case this is the first call and no tables are allocated */
+   if(protocols_table == NULL) {
+      /* the numbers are kindly provided by /usr/bin/grep and /usr/bin/wc */
+      SAFE_CALLOC(protocols_table, protocols_num = 19 + 52, sizeof(struct dec_entry));
+   }
+
+   e = &protocols_table[protocols_num];
+
+   /* searching for an empty entry */
+   while(e --> protocols_table) 
+      if(e->level == 0 && e->type == 0 && e->decoder == NULL) {
+         /* We got it! */
+         found = true;
+         break;
+      }
+   /*
+    * wc and grep are a part of The Conspiracy!
+    * but we can allocate a little bit more, cant we?
+    * and no kidding plz, its a serious code from now on
+    */
+   if(!found) {
+      SAFE_REALLOC(protocols_table, ++protocols_num * sizeof(struct dec_entry));
+      e = &protocols_table[protocols_num - 1];
+   }
+
+   /* We win, they lose, ha-ha! */
    e->level = level;
    e->type = type;
    e->decoder = decoder;
+   e->active = true;
 
-   DECODERS_LOCK;
-  
-   /* split into two list to be faster */
-   if (level <= PROTO_LAYER)
-      SLIST_INSERT_HEAD(&protocols_table, e, next); 
-   else
-      SLIST_INSERT_HEAD(&dissectors_table, e, next); 
+   table_sorted = false;
 
    DECODERS_UNLOCK;
    
    return;
 }
+
+/*
+ * this is to be called in the initialization end
+ * after all of the protocols are added
+ */
+static void sort_decoders(void)
+{
+   qsort(protocols_table, protocols_num, sizeof(struct dec_entry), cmp_decoders);
+   table_sorted = true;
+}
+
+static int cmp_decoders(const void *va, const void *vb)
+{
+   const struct dec_entry *da = va, *db = vb;
+
+   /* Here is the tricky part:
+    * the array is sorted by level, then by the port number.
+    */
+
+   return (da->level != db->level) ? da->level - db->level :
+          da->type - db->type;
+
+}
+
+static struct dec_entry* find_entry(u_int8 level, u_int32 type)
+{
+   struct dec_entry *e, fake;
+   int min = 0,
+       max = protocols_num,
+       r;
+
+   fake.level = level;
+   fake.type = type;
+
+   DECODERS_LOCK;
+
+   if(!table_sorted) 
+      sort_decoders();
+
+   e = bsearch(&fake, protocols_table, protocols_num, sizeof(struct dec_entry), cmp_decoders);
+
+   DECODERS_UNLOCK;
+   
+   return e;
+}
+
 
 /*
  * get a decoder from the decoders table 
@@ -353,63 +435,34 @@ void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder))
 void * get_decoder(u_int8 level, u_int32 type)
 {
    struct dec_entry *e;
-   void *ret;
 
-   DECODERS_LOCK;
+   if(e = find_entry(level, type))
+      if(e->active)
+         return e->decoder;
    
-   if (level <= PROTO_LAYER) {
-      SLIST_FOREACH (e, &protocols_table, next) {
-         if (e->level == level && e->type == type) {
-            ret = (void *)e->decoder;
-            DECODERS_UNLOCK;
-            return ret;
-         }
-      }
-   } else {
-      SLIST_FOREACH (e, &dissectors_table, next) {
-         if (e->level == level && e->type == type) {
-            ret = (void *)e->decoder;
-            DECODERS_UNLOCK;
-            return ret;
-         }
-      }
-   }
-
-   DECODERS_UNLOCK;
    return NULL;
 }
 
 /*
- * remove a decoder from the decoders table
+ * remove a decoder(s) from the decoders table
  */
 
 void del_decoder(u_int8 level, u_int32 type)
 {
    struct dec_entry *e;
 
-   DECODERS_LOCK;
-   
-   if (level <= PROTO_LAYER) {
-      SLIST_FOREACH (e, &protocols_table, next) {
-         if (e->level == level && e->type == type) {
-            SLIST_REMOVE(&protocols_table, e, dec_entry, next);
-            SAFE_FREE(e);
-            DECODERS_UNLOCK;
-            return;
-         }
-      }
-   } else {
-      SLIST_FOREACH (e, &dissectors_table, next) {
-         if (e->level == level && e->type == type) {
-            SLIST_REMOVE(&dissectors_table, e, dec_entry, next);
-            SAFE_FREE(e);
-            DECODERS_UNLOCK;
-            return;
-         }
-      }
+   if(e = find_entry(level, type)) {
+      DECODERS_LOCK;
+      /* Replace this entry with the last one */
+      memcpy(e, &protocols_table[protocols_num-1], sizeof(struct dec_entry));
+      /* Resize the array */
+      SAFE_REALLOC(protocols_table, --protocols_num*sizeof(struct dec_entry));
+      /* And mark as unsorted */
+      table_sorted = false;
+
+      DECODERS_UNLOCK;
    }
    
-   DECODERS_UNLOCK;
    return;
 }
 

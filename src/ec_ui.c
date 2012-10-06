@@ -101,6 +101,14 @@ int ui_progress(char *title, int value, int max)
    return UI_PROGRESS_UPDATED;
 }
 
+/* send an update notification */
+void ui_update(int target)
+{
+   if(GBL_UI->update) {
+      DEBUG_MSG("ui_update");
+      GBL_UI->update(target);
+   }
+}
 
 /*
  * the FATAL_MSG error handling function
@@ -252,14 +260,19 @@ int ui_msg_flush(int max)
 {
    int i = 0;
    struct ui_message *msg;
-   
+  
+
+   /* sanity checks */
+   if (!GBL_UI->initialized)
+      return 0;
+     
+   if (STAILQ_EMPTY(&messages_queue))
+	return 0; 
+
    /* the queue is updated by other threads */
    UI_MSG_LOCK;
    
-   /* sanity check */
-   if (!GBL_UI->initialized)
-      return 0;
-      
+
    while ( (msg = STAILQ_FIRST(&messages_queue)) != NULL) {
 
       /* diplay the message */
@@ -341,6 +354,8 @@ void ui_register(struct ui_ops *ops)
    
    BUG_IF(ops->progress == NULL);
    GBL_UI->progress = ops->progress;
+
+   GBL_UI->update = ops->update;
 
    GBL_UI->type = ops->type;
 }

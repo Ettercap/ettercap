@@ -61,10 +61,13 @@ void start_unified_sniff(void)
    }
 
    /* create the thread for packet capture */
-   ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
+   capture_start(GBL_IFACE);
+
+   if(GBL_OPTIONS->secondary)
+      secondary_sources_foreach(capture_start);
 
    /* start ssl_wrapper thread */
-   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm)
+   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm && GBL_OPTIONS->ssl_mitm)
       ec_thread_new("sslwrap", "wrapper for ssl connections", &sslw_start, NULL);
 
    GBL_SNIFF->active = 1;
@@ -85,10 +88,11 @@ void stop_unified_sniff(void)
       return;
    }
   
-   /* get the pid and kill it */
-   pid = ec_thread_getpid("capture");
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
-      ec_thread_destroy(pid);
+   /* kill it */
+   capture_stop(GBL_IFACE);
+
+   if(GBL_OPTIONS->secondary)
+      secondary_sources_foreach(capture_stop);
    
    pid = ec_thread_getpid("sslwrap");
    if (!pthread_equal(pid, EC_PTHREAD_NULL))
@@ -103,12 +107,20 @@ void stop_unified_sniff(void)
 void forward_unified_sniff(struct packet_object *po)
 {
    /* if it was not initialized, no packet are forwardable */
-   if (!GBL_LNET->lnet_L3)
-      return;
-
-   /* if the interface was not configured, no packet are forwardable */
-   if (!GBL_IFACE->configured)
-      return;
+   switch(ntohs(po->L3.proto)) {
+      case LL_TYPE_IP:
+         if(!GBL_LNET->lnet_IP4)
+            return;
+         if(!(GBL_IFACE->has_ipv4))
+            return;
+         break;
+      case LL_TYPE_IP6:
+         if(!GBL_LNET->lnet_IP6)
+            return;
+         if(!(GBL_IFACE->has_ipv6))
+            return;
+         break;
+   }
    
    /* if unoffensive is set, don't forward any packet */
    if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read)
@@ -138,16 +150,16 @@ void forward_unified_sniff(struct packet_object *po)
 void unified_check_forwarded(struct packet_object *po) 
 {
    /* the interface was not configured, the packets are not forwardable */
-   if (!GBL_IFACE->configured)
+   if (!GBL_IFACE->is_ready)
       return;
    
    /* 
     * dont sniff forwarded packets (equal mac, different ip) 
     * but only if we are on live connections
     */
-   if ( GBL_CONF->skip_forwarded && !GBL_OPTIONS->read &&
-        !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
-        ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src) ) {
+   if (GBL_CONF->skip_forwarded && !GBL_OPTIONS->read &&
+       !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
+       ip_addr_is_ours(&po->L3.src) != EFOUND) {
       po->flags |= PO_FORWARDED;
    }
 }
@@ -166,7 +178,7 @@ void unified_set_forwardable(struct packet_object *po)
     */
    if (!memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) &&
        memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
-       ip_addr_cmp(&GBL_IFACE->ip, &po->L3.dst) ) {
+       ip_addr_is_ours(&po->L3.dst) != EFOUND) {
       po->flags |= PO_FORWARDABLE;
    }
    

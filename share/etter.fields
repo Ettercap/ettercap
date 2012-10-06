@@ -23,6 +23,7 @@
 [USER]
 
 login
+unickname
 user
 email
 username
@@ -61,3 +62,4 @@ upassword
 login_password
 passwort
 passwrd
+upasswd

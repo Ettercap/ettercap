@@ -44,7 +44,7 @@ char * get_full_path(const char *dir, const char *file)
    SAFE_CALLOC(filename, len, sizeof(char));
    
    if (!strcmp(dir, "etc"))
-      snprintf(filename, len, "%s/%s", INSTALL_SYSCONFDIR, file);
+      snprintf(filename, len, "%s/%s/%s", INSTALL_SYSCONFDIR, EC_PROGRAM, file);
    else if (!strcmp(dir, "share"))
       snprintf(filename, len, "%s/%s/%s", INSTALL_DATADIR, EC_PROGRAM, file);
 

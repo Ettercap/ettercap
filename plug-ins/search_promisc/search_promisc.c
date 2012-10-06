@@ -51,17 +51,17 @@ static void parse_arp(struct packet_object *po);
 
 struct plugin_ops search_promisc_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "search_promisc",  
+   .name =              "search_promisc",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Search promisc NICs in the LAN",  
+   .info =              "Search promisc NICs in the LAN",  
    /* the plugin version. */ 
-   version:          "1.2",   
+   .version =           "1.2",   
    /* activation function */
-   init:             &search_promisc_init,
+   .init =              &search_promisc_init,
    /* deactivation function */                     
-   fini:             &search_promisc_fini,
+   .fini =              &search_promisc_fini,
 };
 
 /**********************************************************/

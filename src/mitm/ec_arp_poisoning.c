@@ -38,8 +38,8 @@
  */
 
 /* these are LIST_HEAD (look in ec_mitm for the declaration) */
-struct arp_groups arp_group_one;
-struct arp_groups arp_group_two;
+struct hosts_group arp_group_one;
+struct hosts_group arp_group_two;
 
 static int poison_oneway;
 
@@ -96,7 +96,7 @@ static int arp_poisoning_start(char *args)
          } else if (!strcasecmp(p, "oneway")) {
             poison_oneway = 1; 
          } else {
-            SEMIFATAL_ERROR("ARP poisoning: paramenter incorrect.\n");
+            SEMIFATAL_ERROR("ARP poisoning: parameter incorrect.\n");
          }
       }
    }

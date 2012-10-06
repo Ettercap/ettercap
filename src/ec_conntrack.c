@@ -209,6 +209,10 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po)
     * may be longer or shorted than DATA.data
     */
    co->xferred += po->DATA.len;
+   if(!ip_addr_cmp(&co->L3_addr1, &po->L3.src))
+      co->tx += po->DATA.len;
+   else
+      co->rx += po->DATA.len;
 
    /*
     * update the flags:
@@ -686,9 +690,9 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       if (c->co->DISSECTOR.user)
          flags = '*';
       
-      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %lu", flags, 
+      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %lu RX: %lu", flags, 
                                            src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
-                                           proto, status, (unsigned long)c->co->xferred);
+                                           proto, status, (unsigned long)c->co->tx, (unsigned long)c->co->rx);
    }
   
    /* return the next/prev/current to the caller */

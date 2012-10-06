@@ -41,17 +41,17 @@ static int good_page(char *str);
 
 struct plugin_ops remote_browser_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "remote_browser",  
+   .name =              "remote_browser",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Sends visited URLs to the browser",  
+   .info =              "Sends visited URLs to the browser",  
    /* the plugin version. */ 
-   version:          "1.2",   
+   .version =           "1.2",   
    /* activation function */
-   init:             &remote_browser_init,
+   .init =              &remote_browser_init,
    /* deactivation function */                     
-   fini:             &remote_browser_fini,
+   .fini =              &remote_browser_fini,
 };
 
 /**********************************************************/

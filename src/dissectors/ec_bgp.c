@@ -122,7 +122,7 @@ FUNC_DECODER(dissector_bgp)
    char tmp[MAX_ASCII_ADDR_LEN];
    u_char *parameters;
    u_char param_length;
-   u_int16 i;
+   u_int32 i;
    u_char BGP_MARKER[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
                           0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -159,7 +159,8 @@ FUNC_DECODER(dissector_bgp)
 
       /* the parameter is an authentication type (1) */
       if (parameters[i] == 1) {
-         u_char j, *str_ptr;
+         u_char *str_ptr;
+         u_int32 j;
          u_int32 len = parameters[i + 1];
         
          DEBUG_MSG("\tDissector_BGP 4 AUTH");
@@ -175,9 +176,13 @@ FUNC_DECODER(dissector_bgp)
          if (len > 1) {
             snprintf(PACKET->DISSECTOR.pass, 4, "Hex(");
             str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
-            
-            for (j = 0; j < (len-1); j++)
-               snprintf(str_ptr + (j * 3), strlen(parameters[i+3+j])+2, " %.2x", parameters[i + 3 + j]);
+
+            for (j = 0; j < (len-1); j++) {
+               //u_int32 k = j+3;
+               u_char *tmp = parameters + i + j + 3;
+               size_t len = strlen((char *)tmp) + 2;
+               snprintf(str_ptr + (j * 3), len, " %.2x", *tmp);
+            }
          
             strcat(str_ptr, " )");
          }	 

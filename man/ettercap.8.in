@@ -33,7 +33,7 @@ specification has been changed. \fIPlease read carefully this man page.\fR
 .B ettercap
 [\fIOPTIONS\fR] [\fITARGET1\fR] [\fITARGET2\fR]
 .PP
-\fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR
+\fITARGET\fR is in the form \fIMAC/IPs/IPv6/PORTs\fR
 .br
 where IPs and PORTs can be ranges (e.g. /192.168.0.1-30,40,50/20,22,25)
 .SH DESCRIPTION
@@ -524,6 +524,10 @@ ettercap in debug mode.
 .TP
 .B GENERAL OPTIONS
 .TP
+\fB\-b\fR, \fB\-\-broadcast\fR
+Tells Ettercap to process packets coming from Broadcast address.
+
+.TP
 \fB\-i\fR, \fB\-\-iface <IFACE>\fR
 Use this <IFACE> instead of the default one. The interface can be unconfigured
 (requires libnet >= 1.1.2), but in this case you cannot use MITM attacks and
@@ -534,6 +538,11 @@ you should set the unoffensive flag.
 This option will print the list of all available network interfaces that can be
 used within ettercap. The option is particulary usefull under windows where the
 name of the interface is not so obvious as under *nix.
+
+.TP
+\fB\-A\fR, \fB\-\-address <ADDRESS>\fR
+Use this <ADDRESS> instead of the one autodetected for the current iface. This
+option is useful if you have an interface with multiple ip addresses.
 
 .TP
 \fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
@@ -568,6 +577,11 @@ through the TARGETs
 Usually, ettercap will put the interface in promisc mode to sniff all the
 traffic on the wire. If you want to sniff only your connections, use this flag
 to NOT enable the promisc mode.
+
+.TP
+\fB\-S\fR, \fB\-\-nosslmitm\fR
+Usually, ettercap forges SSL certificates in order to intercept https
+traffic.  This option disables that behavior.
 
 .TP
 \fB\-u\fR, \fB\-\-unoffensive\fR
@@ -625,6 +639,9 @@ Load the filter from the file <FILE>. The filter must be compiled with
 etterfilter(8). The utility will compile the filter script and produce an
 ettercap-compliant binary filter file. Read the etterfilter(8) man page for the
 list of functions you can use inside a filter script.
+Any number of filters can be loaded by specifying the option multiple times;
+packets are passed through each filter in the order specified on the command line.
+You can also load a script without enabling it by appending :0 to the filename.
 .br
 NOTE: these filters are different from those set with --pcapfilter. An ettercap
 filter is a content filter and can modify the payload of a packet before

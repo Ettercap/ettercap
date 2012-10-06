@@ -59,6 +59,9 @@ static EC_THREAD_FUNC(capture_scan);
 static EC_THREAD_FUNC(scan_thread);
 static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 
+void __init hook_init(void);
+static void hosts_list_hook(struct packet_object *po);
+
 /*******************************************/
 
 /*
@@ -96,11 +99,12 @@ void build_hosts_list(void)
       return;
 
    /* it not initialized don't make the list */
-   if (GBL_LNET->lnet == NULL)
+   if (GBL_IFACE->lnet == NULL)
       return;
 
    /* no target defined... */
    if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip &&
+       GBL_TARGET1->all_ip6 && GBL_TARGET2->all_ip6 &&
        !GBL_TARGET1->scan_all && !GBL_TARGET2->scan_all)
       return;
 
@@ -117,7 +121,7 @@ void build_hosts_list(void)
    if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
       /* in text mode and demonized call the function directly */
       scan_thread(NULL);
-   else
+   else 
       /* do the scan in a separate thread */
       ec_thread_new("scan", "scanning thread", &scan_thread, NULL);
 #endif
@@ -161,19 +165,21 @@ static EC_THREAD_FUNC(scan_thread)
     * ARP packets.
     */
    hook_add(HOOK_PACKET_ARP_RP, &get_response);
+   hook_add(HOOK_PACKET_ICMP6_NADV, &get_response);
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
 
    /*
-    * if at least one target is ANY, scan the whole netmask
-    * else scan only the specified targets
+    * if at least one ip target is ANY, scan the whole netmask
     *
     * the pid parameter is used to kill the thread if
     * the user request to stop the scan.
+    *
+    * FIXME: ipv4 host gets scanned twice if in target list
     */
-   if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
+   if(GBL_TARGET1->all_ip || GBL_TARGET2->all_ip) {
       scan_netmask(pid);
-   else
-      scan_targets(pid);
+   }
+   scan_targets(pid);
 
    /*
     * free the temporary array for random computations
@@ -195,6 +201,7 @@ static EC_THREAD_FUNC(scan_thread)
    /* destroy the thread and remove the hook function */
    ec_thread_destroy(pid);
    hook_del(HOOK_PACKET_ARP, &get_response);
+   hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
 
    /* count the hosts and print the message */
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
@@ -205,6 +212,9 @@ static EC_THREAD_FUNC(scan_thread)
    }
 
    INSTANT_USER_MSG("%d hosts added to the hosts list...\n", nhosts);
+
+   /* update host list*/
+   ui_update(UI_UPDATE_HOSTLIST);
 
    /*
     * resolve the hostnames only if we are scanning
@@ -272,7 +282,7 @@ static EC_THREAD_FUNC(capture_scan)
 
    ec_thread_init();
 
-   pcap_loop(GBL_PCAP->pcap, -1, scan_decode, EC_THREAD_PARAM);
+   pcap_loop(GBL_IFACE->pcap, -1, scan_decode, EC_THREAD_PARAM);
 
    return NULL;
 }
@@ -452,6 +462,8 @@ static void scan_targets(pthread_t pid)
    int nhosts = 0, found, n = 1, ret;
    struct ip_list *e, *i, *m, *tmp;
    char title[100];
+   struct ip_addr ip;
+   struct ip_addr bc;
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
@@ -478,13 +490,17 @@ static void scan_targets(pthread_t pid)
       /* add to the list randomly */
       random_list(e, nhosts);
    }
+   LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
+
+      SAFE_CALLOC(e, 1, sizeof(struct ip_list));
+      memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
+      nhosts++;
+
+      random_list(e, nhosts);
+   }
 
    /* then merge the target2 ips */
    LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
-
-      SAFE_CALLOC(e, 1, sizeof(struct ip_list));
-
-      memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
 
       found = 0;
 
@@ -492,17 +508,39 @@ static void scan_targets(pthread_t pid)
       LIST_FOREACH(m, &ip_list_head, next)
          if (!ip_addr_cmp(&m->ip, &i->ip)) {
             found = 1;
-            SAFE_FREE(e);
             break;
          }
 
       /* add it */
       if (!found) {
+         SAFE_CALLOC(e, 1, sizeof(struct ip_list));
+         memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
+
          nhosts++;
          /* add to the list randomly */
          random_list(e, nhosts);
       }
    }
+
+   LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
+      found = 0;
+
+      LIST_FOREACH(m, &ip_list_head, next)
+         if (!ip_addr_cmp(&m->ip, &i->ip)) {
+            found = 1;
+            break;
+         }
+
+      if (!found) {
+         SAFE_CALLOC(e, 1, sizeof(struct ip_list));
+         memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
+
+         nhosts++;
+         /* add to the list randomly */
+         random_list(e, nhosts);
+      }
+   }
+
 
    DEBUG_MSG("scan_targets: %d hosts to be scanned", nhosts);
 
@@ -516,7 +554,18 @@ static void scan_targets(pthread_t pid)
    /* and now scan the LAN */
    LIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
-      send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
+      switch(ntohs(e->ip.addr_type)) {
+         case AF_INET:
+            send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
+            break;
+#ifdef WITH_IPV6
+         case AF_INET6:
+            ip_addr_is_local(&e->ip, &ip);
+            ip_addr_init(&bc, AF_INET6, IP6_ALL_NODES);
+            send_icmp6_nsol(&ip, &bc, &e->ip, GBL_IFACE->mac);
+            break;
+#endif
+      }
 
       /* update the progress bar */
       ret = ui_progress(title, n++, nhosts);
@@ -527,6 +576,7 @@ static void scan_targets(pthread_t pid)
          /* destroy the capture thread and remove the hook function */
          ec_thread_destroy(pid);
          hook_del(HOOK_PACKET_ARP, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
          /* delete the temporary list */
          LIST_FOREACH_SAFE(e, &ip_list_head, next, tmp) {
             LIST_REMOVE(e, next);
@@ -560,8 +610,10 @@ int scan_load_hosts(char *filename)
 {
    FILE *hf;
    int nhosts;
-   char ip[16], mac[18], name[128];
-   struct in_addr tip;
+   char ip[MAX_ASCII_ADDR_LEN];
+   char mac[ETH_ASCII_ADDR_LEN];
+   char name[MAX_HOSTNAME_LEN];
+   u_int8 tip[MAX_IP_ADDR_LEN];
    struct ip_addr hip;
    u_int8 hmac[MEDIA_ADDR_LEN];
 
@@ -577,21 +629,22 @@ int scan_load_hosts(char *filename)
    /* XXX - adapt to IPv6 */
    /* read the file */
    for (nhosts = 0; !feof(hf); nhosts++) {
+      int proto;
 
-      if (fscanf(hf,"%15s %17s %127s\n", ip, mac, name) != 3 ||
+      if (fscanf(hf, "%s %s %s\n", ip, mac, name) != 3 ||
          *ip == '#' || *mac == '#' || *name == '#')
          continue;
-
 
       /* convert to network */
       mac_addr_aton(mac, hmac);
 
-      if (inet_aton(ip, &tip) == 0) {
+      proto = (strchr(ip, ':')) ? AF_INET6 : AF_INET;
+      if (!inet_pton(proto, ip, tip)) {
          del_hosts_list();
          SEMIFATAL_ERROR("Bad parsing on line %d", nhosts + 1);
       }
 
-      ip_addr_init(&hip, AF_INET, (char *)&tip);
+      ip_addr_init(&hip, proto, (char *)tip);
 
       /* wipe the null hostname */
       if (!strcmp(name, "-"))
@@ -726,6 +779,31 @@ static void random_list(struct ip_list *e, int max)
    /* and add the pointer in the array */
    rand_array[max - 1] = e;
 
+}
+
+void __init hook_init(void)
+{
+   hook_add(HOOK_PACKET_IP, &hosts_list_hook);
+   hook_add(HOOK_PACKET_IP6, &hosts_list_hook);
+}
+
+/*
+ * This function adds local nodes to the global hosts list.
+ * Its quite slow and I don't have any better ideas at the moment.
+ */
+static void hosts_list_hook(struct packet_object *po)
+{
+   switch(ip_addr_is_ours(&po->L3.src)) {
+      case EFOUND:
+      case EBRIDGE:
+         return;
+   }
+
+   if(ip_addr_is_local(&po->L3.src, NULL) == ESUCCESS) {
+      add_host(&po->L3.src, po->L2.src, NULL);
+   }
+
+   return;
 }
 
 /* EOF */

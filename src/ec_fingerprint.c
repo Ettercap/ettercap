@@ -194,7 +194,7 @@ int fingerprint_search(const char *f, char *dst)
    }
 
    if(GBL_CONF->submit_fingerprint)
-   	fingerprint_submit(f, "Unknown");
+   	fingerprint_submit((char *)f, "Unknown");
    return -ENOTFOUND;
 }
 

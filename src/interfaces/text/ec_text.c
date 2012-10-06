@@ -57,6 +57,7 @@ static void text_input(const char *title, char *input, size_t n, void (*callback
 static void text_help(void);
 static int text_progress(char *title, int value, int max);
 static void text_run_plugin(void);
+static void text_run_filter(void);
 static void text_stats(void);
 static void text_stop_cont(void);
 static void text_hosts_list(void);
@@ -157,6 +158,9 @@ static void text_fatal_error(const char *msg)
    fprintf(stdout, "\n"EC_COLOR_RED"FATAL: "EC_COLOR_END"%s\n\n", msg);
    /* allow non buffered messages */
    fflush(stdout);
+
+   /* restore console settings */
+   tcsetattr(0, TCSANOW, &old_tc);
 
    /* exit without calling atexit() */
    _exit(-1);
@@ -267,8 +271,10 @@ void text_interface(void)
    DEBUG_MSG("text_interface");
    
    /* check if the specified plugin exists */
-   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
+   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS) {
+      tcsetattr(0, TCSANOW, &old_tc);
       FATAL_ERROR("%s plugin can not be found !", GBL_OPTIONS->plugin);
+   }
 
    /* build the list of active hosts */
    build_hosts_list();
@@ -325,6 +331,10 @@ void text_interface(void)
             case 'p':
                text_run_plugin();
                break;
+            case 'F':
+            case 'f':
+               text_run_filter();
+               break;
             case 'S':
             case 's':
                text_stats();
@@ -373,6 +383,7 @@ static void text_help(void)
    fprintf(stderr, "\nInline help:\n\n");
    fprintf(stderr, " [vV]      - change the visualization mode\n");
    fprintf(stderr, " [pP]      - activate a plugin\n");
+   fprintf(stderr, " [fF]      - (de)activate a filter\n");
    fprintf(stderr, " [lL]      - print the hosts list\n");
    fprintf(stderr, " [oO]      - print the profiles list\n");
    fprintf(stderr, " [cC]      - print the connections list\n");
@@ -458,6 +469,69 @@ static void text_run_plugin(void)
    if (restore)
       text_stop_cont();
    
+}
+
+
+static int text_print_filter_cb(struct filter_list *l, void *arg) {
+   int *i = (int *)arg;
+   fprintf(stdout, "[%d (%d)]: %s\n", (*i)++, l->enabled, l->name);
+   return 1;
+}
+
+static int text_toggle_filter_cb(struct filter_list *l, void *arg) {
+   int *number = (int *)arg;
+   if (!--(*number)) {
+      /* we reached the item */
+      l->enabled = ! l->enabled;
+      return 0; /* no need to traverse the list any further */
+   }
+   return 1;
+}
+
+/*
+ * display the list of loaded filters and
+ * allow the user to enable or disable them
+ */
+static void text_run_filter(void) {
+   int restore = 0;
+   /* stop the visualization while the plugin interface is running */
+   if (!GBL_OPTIONS->quiet) {
+      text_stop_cont();
+      restore = 1;
+   }
+   ui_msg_flush(MSG_ALL);
+
+   fprintf(stderr, "\nLoaded etterfilter scripts:\n\n");
+   while(1) {
+      struct filter_list **l;
+      char input[20];
+      int i = 1;
+      int number = -1;
+
+      /* repristinate the buffer input */
+      tcsetattr(0, TCSANOW, &old_tc);
+
+      filter_walk_list( text_print_filter_cb, &i );
+
+      fprintf(stdout, "\nEnter number to enable/disable filter (0 to quit): ");
+      /* get the user input */
+      fgets(input, 19, stdin);
+      number = -1;
+      int c=sscanf(input, "%d", &number);
+      BUG_IF(c!=1);
+      if (number == 0) {
+         break;
+      } else if (number > 0) {
+         filter_walk_list( text_toggle_filter_cb, &number );
+      }
+   };
+
+   /* disable buffered input */
+   tcsetattr(0, TCSANOW, &new_tc);
+
+   /* continue the visualization */
+   if (restore)
+      text_stop_cont();
 }
 
 /*

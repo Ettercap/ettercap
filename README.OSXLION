@@ -1,0 +1,29 @@
+MiTM SSL issues with OS X Lion:
+-------------------------------
+
+It is a known fact that IP Forwarding (port forwarding) does not work on OS X Lion by default.
+But there is a fix!
+
+Modify your /Library/Preferences/SystemConfiguration/com.apple.Boot.plist file and a <string></string> tag set
+with the following:
+	
+	net.inet.ip.scopedroute=0
+
+Your file (without any other special settings) should look like:
+
+------
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>Kernel Flags</key>
+        <string>net.inet.ip.scopedroute=0</string>
+</dict>
+</plist>
+-------
+
+Reboot and enjoy MiTM SSL!
+
+Hit us up on Freenode (irc.freenode.net) channel #ettercap-project with any questions!
+
+Thanks, exfil

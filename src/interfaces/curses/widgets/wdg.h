@@ -4,9 +4,7 @@
 #ifndef WDG_H
 #define WDG_H
 
-#ifdef HAVE_CONFIG_H
-   #include <config.h>
-#endif
+#include <config.h>
 
 #include <stdio.h>
 #include <unistd.h>

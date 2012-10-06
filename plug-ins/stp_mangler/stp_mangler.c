@@ -77,17 +77,17 @@ EC_THREAD_FUNC(mangler);
 
 struct plugin_ops stp_mangler_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "stp_mangler",  
+   .name =              "stp_mangler",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Become root of a switches spanning tree",  
+   .info =              "Become root of a switches spanning tree",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &stp_mangler_init,
+   .init =              &stp_mangler_init,
    /* deactivation function */                     
-   fini:             &stp_mangler_fini,
+   .fini =              &stp_mangler_fini,
 };
 
 /**********************************************************/

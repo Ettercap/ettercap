@@ -58,17 +58,17 @@ static void parse_icmp(struct packet_object *po);
 
 struct plugin_ops chk_poison_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "chk_poison",  
+   .name =              "chk_poison",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Check if the poisoning had success",  
+   .info =              "Check if the poisoning had success",  
    /* the plugin version. */ 
-   version:          "1.1",   
+   .version =           "1.1",   
    /* activation function */
-   init:             &chk_poison_init,
+   .init =              &chk_poison_init,
    /* deactivation function */                     
-   fini:             &chk_poison_fini,
+   .fini =              &chk_poison_fini,
 };
 
 /**********************************************************/
@@ -130,7 +130,7 @@ static int chk_poison_init(void *dummy)
    /* Send spoofed ICMP echo request to each victim */
    SLIST_FOREACH(p, &poison_table, next) {
       for (i = 0; i <= 1; i++) {
-         send_L3_icmp_echo(ICMP_ECHO, &(p->ip[i]), &(p->ip[!i]));   
+         send_L3_icmp_echo(&(p->ip[i]), &(p->ip[!i]));   
 #if !defined(OS_WINDOWS)
          nanosleep(&tm, NULL);
 #else

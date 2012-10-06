@@ -45,17 +45,17 @@ static int dummy_fini(void *);
 
 struct plugin_ops dummy_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "dummy",  
+   .name =              "dummy",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "A plugin template (for developers)",  
+   .info =              "A plugin template (for developers)",  
    /* the plugin version. */ 
-   version:          "3.0",   
+   .version =           "3.0",   
    /* activation function */
-   init:             &dummy_init,
+   .init =              &dummy_init,
    /* deactivation function */                     
-   fini:             &dummy_fini,
+   .fini =              &dummy_fini,
 };
 
 /**********************************************************/

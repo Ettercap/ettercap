@@ -36,9 +36,9 @@ static void gtkui_start_mitm(void);
 
 /* globals */
 
-#define PARAMS_LEN   50
+#define PARAMS_LEN   512
 
-static char params[PARAMS_LEN];
+static char params[PARAMS_LEN+1];
 
 /*******************************************/
 
@@ -47,8 +47,10 @@ void gtkui_arp_poisoning(void)
    GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame;
    gint response = 0;
    gboolean remote = FALSE;
+   gboolean oneway = FALSE;
 
    DEBUG_MSG("gtk_arp_poisoning");
+   memset(params, '\0', PARAMS_LEN+1);
 
    dialog = gtk_dialog_new_with_buttons("MITM Attack: ARP Poisoning", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK, 
@@ -86,21 +88,27 @@ void gtkui_arp_poisoning(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      memset(params, '\0', PARAMS_LEN);
-
-      snprintf(params, 5, "arp:");
+      const char *s_remote = "", *comma = "", *s_oneway = "";
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
-         strcat(params, "remote");
-         remote = TRUE;
+	s_remote="remote";
+        remote = TRUE;
       }
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
          if(remote)
-            strcat(params, ",");
-         strcat(params, "oneway");
+		comma = ",";
+
+	 s_oneway = "oneway";	
+         oneway = TRUE;
+      } 
+
+      if(!remote && !oneway) {
+         ui_error("You must select at least one ARP mode");
+         return;
       }
 
+      snprintf(params, PARAMS_LEN, "arp:%s%s%s", s_remote, comma, s_oneway);
       gtkui_start_mitm();
    }
 
@@ -168,12 +176,10 @@ void gtkui_icmp_redir(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
+      memset(params, '\0', PARAMS_LEN);
 
-      snprintf(params, 6, "icmp:");
-
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry1)), PARAMS_LEN);
-      strncat(params, "/", PARAMS_LEN);
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry2)), PARAMS_LEN);
+      snprintf(params, PARAMS_LEN, "icmp:%s/%s",  gtk_entry_get_text(GTK_ENTRY(entry1)),
+                       gtk_entry_get_text(GTK_ENTRY(entry2)));
 
       gtkui_start_mitm();
    }
@@ -229,20 +235,20 @@ void gtkui_port_stealing(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {    
       gtk_widget_hide(dialog);          
-
-      snprintf(params, 6, "port:");
+      const char *s_remote= "", *tree = "", *comma = "";
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
-         strcat(params, "remote");
+         s_remote="remote";
          remote = TRUE;
       }
    
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
          if(remote)
-            strcat(params, ",");
-         strcat(params, "tree");
+              comma = ",";
+	 tree = "tree";
       }
-   
+  
+      snprintf(params, PARAMS_LEN, "port:%s%s%s", s_remote, comma, tree); 
       gtkui_start_mitm();
    }
 
@@ -259,6 +265,7 @@ void gtkui_dhcp_spoofing(void)
    gint response = 0;
    
    DEBUG_MSG("gtk_dhcp_spoofing");
+   memset(params, '\0', PARAMS_LEN+1);
    
    dialog = gtk_dialog_new_with_buttons("MITM Attack: DHCP Spoofing", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -319,15 +326,12 @@ void gtkui_dhcp_spoofing(void)
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
+      memset(params, '\0', PARAMS_LEN);
 
-      snprintf(params, 6, "dhcp:");
+      snprintf(params, PARAMS_LEN, "dhcp:%s/%s/%s", gtk_entry_get_text(GTK_ENTRY(entry1)),
+                       gtk_entry_get_text(GTK_ENTRY(entry2)), gtk_entry_get_text(GTK_ENTRY(entry3)));
 
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry1)), PARAMS_LEN);
-      strncat(params, "/", PARAMS_LEN);
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry2)), PARAMS_LEN);
-      strncat(params, "/", PARAMS_LEN);
-      strncat(params, gtk_entry_get_text(GTK_ENTRY(entry3)), PARAMS_LEN);
-
+      DEBUG_MSG("ec_gtk_dhcp: DHCP MITM %s", params);
       gtkui_start_mitm();
    }
 

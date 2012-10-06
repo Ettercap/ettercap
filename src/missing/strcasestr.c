@@ -6,9 +6,9 @@
 
 #include <ec.h>
 
-char *strcasestr(char *hailstack, char *needle);
+char *strcasestr(const char *hailstack, const char *needle);
    
-char *strcasestr(char *hailstack, char *needle)
+char *strcasestr(const char *hailstack, const char *needle)
 {
    register int lneed = strlen(needle);
    register int lhail = strlen(hailstack);

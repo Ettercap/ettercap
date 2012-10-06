@@ -53,17 +53,17 @@ static void do_fingerprint(void);
 
 struct plugin_ops finger_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "finger",  
+   .name =              "finger",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Fingerprint a remote host",  
+   .info =              "Fingerprint a remote host",  
    /* the plugin version. */ 
-   version:          "1.6",   
+   .version =           "1.6",   
    /* activation function */
-   init:             &finger_init,
+   .init =              &finger_init,
    /* deactivation function */                     
-   fini:             &finger_fini,
+   .fini =              &finger_fini,
 };
 
 /**********************************************************/

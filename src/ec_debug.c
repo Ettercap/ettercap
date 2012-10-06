@@ -101,7 +101,7 @@ void debug_init(void)
       fprintf (debug_file, "-> running on %s %s %s\n", buf.sysname, buf.release, buf.machine);
    #endif
    #if defined (__GNUC__) && defined (__GNUC_MINOR__)
-      fprintf (debug_file, "-> compiled with gcc %d.%d (%s)\n", __GNUC__, __GNUC_MINOR__, GCC_VERSION);
+      fprintf (debug_file, "-> compiled with gcc %d.%d (%s)\n", __GNUC__, __GNUC_MINOR__, CC_VERSION);
    #endif
    #if defined (__GLIBC__) && defined (__GLIBC_MINOR__)
       fprintf (debug_file, "-> glibc version %d.%d\n", __GLIBC__, __GLIBC_MINOR__);

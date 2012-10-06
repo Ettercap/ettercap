@@ -37,17 +37,17 @@ static void parse_arp(struct packet_object *po);
 
 struct plugin_ops find_conn_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "find_conn",  
+   .name =              "find_conn",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Search connections on a switched LAN",  
+   .info =              "Search connections on a switched LAN",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &find_conn_init,
+   .init =              &find_conn_init,
    /* deactivation function */                     
-   fini:             &find_conn_fini,
+   .fini =              &find_conn_fini,
 };
 
 /**********************************************************/

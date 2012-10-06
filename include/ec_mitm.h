@@ -24,10 +24,10 @@ EC_API_EXTERN int is_mitm_active(char *name);
 
 /* an ugly hack to make accessible the arp poisoning lists to plugins */
 
-LIST_HEAD(arp_groups, hosts_list);
+LIST_HEAD(hosts_group, hosts_list);
 
-EC_API_EXTERN struct arp_groups arp_group_one;
-EC_API_EXTERN struct arp_groups arp_group_two;
+EC_API_EXTERN struct hosts_group arp_group_one;
+EC_API_EXTERN struct hosts_group arp_group_two;
 
 #endif
 

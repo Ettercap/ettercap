@@ -64,17 +64,17 @@ static void parse_arp(struct packet_object *po);
 /* plugin operations */
 struct plugin_ops gre_relay_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "gre_relay",  
+   .name =              "gre_relay",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Tunnel broker for redirected GRE tunnels",  
+   .info =              "Tunnel broker for redirected GRE tunnels",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &gre_relay_init,
+   .init =              &gre_relay_init,
    /* deactivation function */                     
-   fini:             &gre_relay_fini,
+   .fini =              &gre_relay_fini,
 };
 
 /**********************************************************/

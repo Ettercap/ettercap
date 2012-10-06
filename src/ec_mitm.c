@@ -137,7 +137,7 @@ int mitm_start(void)
          if (GBL_OPTIONS->reversed)
             SEMIFATAL_ERROR("Reverse target matching can't be used with MITM attacks");
   
-         if (!GBL_IFACE->configured)
+         if (!GBL_IFACE->is_ready)
             SEMIFATAL_ERROR("MITM attacks can't be used on unconfigured interfaces");
          
          DEBUG_MSG("mitm_start: starting %s", e->mm->name);

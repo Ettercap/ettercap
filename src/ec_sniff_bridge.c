@@ -64,10 +64,10 @@ void start_bridge_sniff(void)
    }
 
    /* create the thread for packet capture */
-   ec_thread_new("capture", "pcap handler and packet decoder", &capture, GBL_OPTIONS->iface);
+   capture_start(GBL_IFACE);
    
    /* create the thread for packet capture on the bridged interface */
-   ec_thread_new("bridge", "pcap handler and packet decoder", &capture_bridge, GBL_OPTIONS->iface_bridge);
+   capture_start(GBL_BRIDGE);
 
    GBL_SNIFF->active = 1;
 }
@@ -86,14 +86,9 @@ void stop_bridge_sniff(void)
       return;
    }
   
-   /* get the pid and kill it */
-   pid = ec_thread_getpid("capture");
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
-      ec_thread_destroy(pid);
-   
-   pid = ec_thread_getpid("bridge");
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
-      ec_thread_destroy(pid);
+   /* kill it */
+   capture_stop(GBL_IFACE);
+   capture_stop(GBL_BRIDGE);
 
    USER_MSG("Bridged sniffing was stopped.\n");
 

@@ -147,7 +147,7 @@ static int port_stealing_start(char *args)
       SEMIFATAL_ERROR("Port stealing needs a non empty hosts list.\n");
       
    /* Avoid sniffing loops. XXX - it remains even after mitm stopping */
-   capture_only_incoming(GBL_PCAP->pcap, GBL_LNET->lnet);
+   capture_only_incoming(GBL_IFACE->pcap, GBL_IFACE->lnet);
       
    /* Create the port stealing list from hosts list */   
    LIST_FOREACH(h, &GBL_HOSTLIST, next) {
@@ -388,7 +388,7 @@ static void send_queue(struct packet_object *po)
    struct timespec tm;
    tm.tv_nsec = GBL_CONF->port_steal_send_delay * 1000;
    tm.tv_sec = 0;
-#endif;
+#endif
 
    /* Check if it's an arp reply for us */
    if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))

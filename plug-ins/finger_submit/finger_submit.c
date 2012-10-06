@@ -41,17 +41,17 @@ static int finger_submit_fini(void *);
 
 struct plugin_ops finger_submit_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "finger_submit",  
+   .name =              "finger_submit",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Submit a fingerprint to ettercap's website",  
+   .info =              "Submit a fingerprint to ettercap's website",  
    /* the plugin version. */
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &finger_submit_init,
+   .init =              &finger_submit_init,
    /* deactivation function */                     
-   fini:             &finger_submit_fini,
+   .fini =              &finger_submit_fini,
 };
 
 /**********************************************************/

@@ -163,7 +163,7 @@ EC_API_EXTERN const char *ec_win_get_ec_dir (void);
  */
 #if !defined(HAVE_DLOPEN)
    #define RTLD_NOW 0
-   #define LTDL_SHLIB_EXT       "*.dll"
+   #define PLUGIN_EXT           "*.dll"
 
    #define dlopen(dll,flg)      ec_win_dlopen (dll, flg)
    #define lt_dlopen(dll)       ec_win_dlopen (dll, 0)

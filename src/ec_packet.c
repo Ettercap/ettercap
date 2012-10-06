@@ -28,12 +28,24 @@
 
 /* protos... */
 
+struct packet_object* packet_allocate_object(u_char *data, size_t len);
 inline int packet_create_object(struct packet_object *po, u_char *buf, size_t len);
 inline int packet_destroy_object(struct packet_object *po);
 int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
 struct packet_object * packet_dup(struct packet_object *po, u_char flag);
 
 /* --------------------------- */
+
+struct packet_object* packet_allocate_object(u_char *data, size_t len)
+{
+   struct packet_object *po;
+
+   SAFE_CALLOC(po, 1, sizeof(struct packet_object));
+   packet_create_object(po, data, len);
+   po->flags |= PO_FORGED;
+   
+   return po;
+}
 
 /*
  * associate the buffer to the packet object
@@ -81,7 +93,7 @@ int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
  * free the packet object memory
  */
 
-inline int packet_destroy_object(struct packet_object *po)
+int packet_destroy_object(struct packet_object *po)
 {
    
    /* 
@@ -114,6 +126,12 @@ inline int packet_destroy_object(struct packet_object *po)
     * free them.
     */
    SAFE_FREE(po->DATA.disp_data);
+
+   /* if it is alloced entirely by ourselves */
+   if(po->flags & PO_FORGED) {
+      SAFE_FREE(po->packet);
+      SAFE_FREE(po);
+   }
    
    return 0;
 }

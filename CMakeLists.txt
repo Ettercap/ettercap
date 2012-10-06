@@ -10,6 +10,7 @@ option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 
 set(MACPORTS_BASE_DIRECTORY "/opt/local" CACHE PATH "MacPorts installation base directory")
+set(SPECIAL_LIB_DIR "" CACHE PATH "Special (non-traditional) directory where libraries are installed")
 
 include(CMakeModules/CheckVariableInHeaders.cmake)
 include(CMakeFiles/os_test.cmake)
@@ -19,6 +20,8 @@ if(OS_DARWIN)
 	set(CMAKE_SYSTEM_NAME Darwin)
 	set(CMAKE_LIBRARY_PATH ${MACPORTS_BASE_DIRECTORY}/lib ${CMAKE_LIBRARY_PATH})
 	set(CMAKE_INCLUDE_PATH ${MACPORTS_BASE_DIRECTORY}/include ${CMAKE_INCLUDE_PATH})
+else(OS_DARWIN)
+	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/lib64 /usr/lib32)
 endif(OS_DARWIN)
 
 include(CMakeFiles/headers_check.cmake)

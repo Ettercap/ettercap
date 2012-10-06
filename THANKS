@@ -1,4 +1,23 @@
+------------------------------------------------
+ People who helped us developing ettercap 0.7.4+
+------------------------------------------------
 
+   Gianfranco Costamagna (LocutusOfBorg)     for bug fixes and code contributions
+
+   Eric Milam            (J0hnnyBrav0)       for modifying documentation, man pages,
+ 					     oversight, support, etc!
+
+   Mike Ryan		 (justfalter)        For the LUA integration (coming soon!)
+ 
+   Ryan Linn		 (susorr)	     For the LUA integration (coming soon!)
+
+   Dhiru Kholia		 (kholia)            For the O5Logon, ISCSI CHAP,
+					     MySQL5, VNC packet parsing dissectors
+
+Others:
+    ago and halfie			     For bug reports and testing	
+
+   
 ----------------------------------------------
   People who helped us developing ettercap NG
 ----------------------------------------------

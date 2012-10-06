@@ -3,8 +3,10 @@
 
     Copyright (C) Dhiru Kholia (dhiru at openwall.com)
 
-    Tested with Oracle 11gR1 64-bit server and Linux + Windows SQL*Plus
-    clients.
+    Tested with Oracle 11gR1 and 11gR2 64-bit server and Linux +
+    Windows SQL*Plus clients.
+
+    It does work with Nmap generated packets though the code is hacky.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +37,7 @@ struct o5logon_status {
 };
 
 #define WAIT_RESPONSE   1
+#define WAIT_RESULT   2
 
 /* protos */
 
@@ -85,13 +88,13 @@ FUNC_DECODER(dissector_o5logon)
             /* find username */
             unsigned char *last = sp - 6;
             while(last > ptr) {
-              if(*last == 0xff) {
+              if(*last == 0xff || *last == 0x01) {
                  break;
               }
               last--;
             }
             int length = *(last+1);
-            strncpy((char*)conn_status->user, last + 2, length);
+            strncpy((char*)conn_status->user, (char*)last + 2, length);
             conn_status->user[length] = 0;
 
             /* save the session */
@@ -105,20 +108,34 @@ FUNC_DECODER(dissector_o5logon)
          conn_status = (struct o5logon_status *) s->data;
          unsigned char *skp  = NULL;
          unsigned char *saltp = NULL;
-         if (PACKET->DATA.len > 13) {
+         unsigned char *res = NULL;
+         if (PACKET->DATA.len > 16) {
             skp  = memmem(ptr, PACKET->DATA.len, "AUTH_SESSKEY", 12);
             saltp = memmem(ptr, PACKET->DATA.len, "AUTH_VFR_DATA", 13);
+            res = memmem(ptr, PACKET->DATA.len, "invalid username", 16);
          }
+
 
          if (conn_status->status == WAIT_RESPONSE && skp && saltp) {
             unsigned char sk[97];
             unsigned char salt[21];
-            strncpy(sk, skp + 17, 96);
+            unsigned char *p = skp + 17;
+            if(*p == '@') {
+               /* Nmap generated packets? */
+               strncpy((char*)sk, (char*)p + 1, 64);
+               strncpy((char*)sk + 64, (char*)p + 66, 32);
+            }
+            else {
+               strncpy((char*)sk, (char*)skp + 17, 96);
+            }
             sk[96] = 0;
-            strncpy(salt, saltp + 18, 20);
+            strncpy((char*)salt, (char*)saltp + 18, 20);
             salt[20] = 0;
-            DISSECT_MSG("%s-%s-%d:$o5logon$%s*%s\n", conn_status->user, ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), sk, salt);
-
+            DISSECT_MSG("%s-%s-%d:$o5logon$%s*%s\n", conn_status->user, ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), sk, salt);
+            conn_status->status = WAIT_RESULT;
+         }
+         else if (conn_status->status == WAIT_RESULT && res) {
+            DISSECT_MSG("Login to %s-%d as %s failed!\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), conn_status->user) ;
             dissect_wipe_session(PACKET, DISSECT_CODE(dissector_o5logon));
          }
       }

@@ -173,7 +173,7 @@ FUNC_DECODER(dissector_postgresql)
             conn_status->status = WAIT_RESPONSE;
 
             conn_status->type = MD5;
-            DEBUG_MSG("\tDissector_postgresql AUTH type is MD5")
+            DEBUG_MSG("\tDissector_postgresql AUTH type is MD5");
             hex_encode(ptr + 9, 4, conn_status->salt); /* save salt */
          }
          else if (conn_status->status == WAIT_AUTH &&
@@ -181,7 +181,7 @@ FUNC_DECODER(dissector_postgresql)
                !memcmp(ptr + 5, "\x00\x00\x00\x03", 4)) {
             conn_status->status = WAIT_RESPONSE;
             conn_status->type = CT;
-            DEBUG_MSG("\tDissector_postgresql AUTH type is clear-text!")
+            DEBUG_MSG("\tDissector_postgresql AUTH type is clear-text!");
          }
       }
    }

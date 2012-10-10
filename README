@@ -38,6 +38,7 @@ MANDATORY:
    - libnet  >= 1.1.2.1 
    - libpthread
    - zlib
+   - CMake 2.8
 
 OPTIONAL:
 
@@ -77,7 +78,9 @@ OPTIONAL:
 
    Marco Valleri (NaGA) <naga@antifork.org>
 
-
+   Emilio Escobar (exfil) <eescobar@gmail.com>
+  
+   Eric Milam (J0hnnyBrav0) <brax.hax@gmail.com>
 
 ============================================================================
                                 INSTALLATION

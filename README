@@ -54,7 +54,6 @@ OPTIONAL:
       - ncurses >= 5.3
 
    For the GTK+ GUI:
-      - pkgconfig >= 0.15.0
       - Glib      >= 2.2.2
       - Gtk+      >= 2.2.2
       - Atk       >= 1.2.4

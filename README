@@ -38,6 +38,7 @@ MANDATORY:
    - libnet  >= 1.1.2.1 
    - libpthread
    - zlib
+   - CMake 2.8
 
 OPTIONAL:
 
@@ -54,7 +55,6 @@ OPTIONAL:
       - ncurses >= 5.3
 
    For the GTK+ GUI:
-      - pkgconfig >= 0.15.0
       - Glib      >= 2.2.2
       - Gtk+      >= 2.2.2
       - Atk       >= 1.2.4
@@ -78,7 +78,9 @@ OPTIONAL:
 
    Marco Valleri (NaGA) <naga@antifork.org>
 
-
+   Emilio Escobar (exfil) <eescobar@gmail.com>
+  
+   Eric Milam (J0hnnyBrav0) <brax.hax@gmail.com>
 
 ============================================================================
                                 INSTALLATION

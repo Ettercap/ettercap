@@ -42,6 +42,7 @@
 #cmakedefine HAVE_UTF8
 #cmakedefine HAVE_PLUGINS
 #cmakedefine WITH_IPV6
+#cmakedefine HAVE_LUA
 
 #cmakedefine INSTALL_PREFIX         "@INSTALL_PREFIX@"
 #cmakedefine INSTALL_SYSCONFDIR     "@INSTALL_SYSCONFDIR@"
@@ -49,5 +50,9 @@
 #cmakedefine INSTALL_DATADIR        "@INSTALL_DATADIR@"
 #cmakedefine INSTALL_EXECPREFIX     "@INSTALL_EXECPREFIX@"
 #cmakedefine INSTALL_BINDIR         "@INSTALL_BINDIR@"
+#cmakedefine INSTALL_LUA_ROOT       "@INSTALL_LUA_ROOT@"
+#cmakedefine INSTALL_LUA_INIT       "@INSTALL_LUA_INIT@"
+#cmakedefine INSTALL_LUA_CORE       "@INSTALL_LUA_CORE@"
+#cmakedefine INSTALL_LUA_SCRIPTS    "@INSTALL_LUA_SCRIPTS@"
 
 #endif

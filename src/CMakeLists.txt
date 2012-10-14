@@ -149,6 +149,11 @@ if(NOT HAVE_BASENAME)
     set(EC_SRC ${EC_SRC} missing/basename.c)
 endif(NOT HAVE_BASENAME)
 
+# Only compile lua stuff if lua is enabled!
+IF(ENABLE_LUA)
+  set(EC_SRC ${EC_SRC} ec_lua.c)
+ENDIF(ENABLE_LUA)
+
 add_subdirectory(interfaces)
 
 add_executable(ettercap ${EC_SRC})

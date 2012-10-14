@@ -1,5 +1,6 @@
 tags
 .clang_complete
 include/config.h
+*.swp
 
 build/

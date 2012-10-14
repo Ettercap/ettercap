@@ -33,6 +33,9 @@
 #include <ec_plugins.h>
 #include <ec_conf.h>
 #include <ec_strings.h>
+#ifdef HAVE_LUA
+#include <ec_lua.h>
+#endif
 
 #include <ctype.h>
 
@@ -98,6 +101,12 @@ void ec_usage(void)
    fprintf(stdout, "  -e, --regex <regex>         visualize only packets matching this regex\n");
    fprintf(stdout, "  -E, --ext-headers           print extended header for every pck\n");
    fprintf(stdout, "  -Q, --superquiet            do not display user and password\n");
+
+#ifdef HAVE_LUA
+   fprintf(stdout, "\nLUA options:\n");
+   fprintf(stdout, "      --lua-script <script1>,[<script2>,...]     comma-separted list of LUA scripts\n");
+   fprintf(stdout, "      --lua-args n1=v1,[n2=v2,...]               comma-separated arguments to LUA script(s)\n");
+#endif
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
@@ -127,7 +136,7 @@ void ec_usage(void)
 
 void parse_options(int argc, char **argv)
 {
-   int c;
+   int c, longIndex;
 
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
@@ -148,6 +157,10 @@ void parse_options(int argc, char **argv)
       { "plugin", required_argument, NULL, 'P' },
       
       { "filter", required_argument, NULL, 'F' },
+#ifdef HAVE_LUA
+      { "lua-script", required_argument, NULL, 0 },
+      { "lua-args", required_argument, NULL, 0 },
+#endif
       
       { "superquiet", no_argument, NULL, 'Q' },
       { "quiet", no_argument, NULL, 'q' },
@@ -201,7 +214,7 @@ void parse_options(int argc, char **argv)
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:Z:z", long_options, &longIndex)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -421,6 +434,18 @@ void parse_options(int argc, char **argv)
             fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
             clean_exit(-1);
          break;
+#ifdef HAVE_LUA
+        case 0:
+                if (strcmp(long_options[longIndex].name,"lua-args") == 0)
+                {
+                    ec_lua_cli_add_args(strdup(optarg));
+                } 
+                else if (strcmp(long_options[longIndex].name,"lua-script") == 0)
+                {
+                    ec_lua_cli_add_script(strdup(optarg));
+                }
+        break;
+#endif
       }
    }
 
@@ -483,7 +508,6 @@ void parse_options(int argc, char **argv)
    }
 
    DEBUG_MSG("parse_options: options combination looks good");
-   
    return;
 }
 

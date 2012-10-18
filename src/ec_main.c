@@ -268,8 +268,7 @@ static void time_check(void)
    /* 
     * a nice easter egg... 
     * just to waste some time of code reviewers... ;) 
-    *
-    * and no, you can't simply remove this code, you'll break the license...
+    * ALoR, keeping this for you buddy! :)
     *
     * trust me, it's not evil ;) only a boring afternoon, and nothing to do...
     */

@@ -202,7 +202,7 @@ static void curses_connection_detail(void *conn)
    wdg_window_print(wdg_conn_detail, 1, 10, "Source port             :  %-5d  %s", ntohs(c->co->L4_addr1), service_search(c->co->L4_addr1, c->co->L4_proto));
    wdg_window_print(wdg_conn_detail, 1, 11, "Destination port        :  %-5d  %s", ntohs(c->co->L4_addr2), service_search(c->co->L4_addr2, c->co->L4_proto));
    
-   wdg_window_print(wdg_conn_detail, 1, 13, "Transferred bytes       :  %d", c->co->xferred);
+   wdg_window_print(wdg_conn_detail, 1, 13, "--> %d    <-- %d   total: %d ", c->co->tx, c->co->rx, c->co->xferred);
    
    if (c->co->DISSECTOR.user) {
       wdg_window_print(wdg_conn_detail, 1, 15, "Account                 :  %s / %s", c->co->DISSECTOR.user, c->co->DISSECTOR.pass);
@@ -277,14 +277,14 @@ static void curses_connection_data_split(void)
    wdg_set_size(wdg_conndata, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
    
    wdg_create_object(&wdg_c1, WDG_SCROLL, 0);
-   sprintf(title, "%s:%d", ip_addr_ntoa(&curr_conn->L3_addr1, tmp), ntohs(curr_conn->L4_addr1));
+   snprintf(title, MAX_ASCII_ADDR_LEN+6, "%s:%d", ip_addr_ntoa(&curr_conn->L3_addr1, tmp), ntohs(curr_conn->L4_addr1));
    wdg_set_title(wdg_c1, title, WDG_ALIGN_LEFT);
    wdg_set_color(wdg_c1, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_set_color(wdg_c1, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_size(wdg_c1, 2, 3, current_screen.cols / 2, SYSMSG_WIN_SIZE - 2);
    
    wdg_create_object(&wdg_c2, WDG_SCROLL, 0);
-   sprintf(title, "%s:%d", ip_addr_ntoa(&curr_conn->L3_addr2, tmp), ntohs(curr_conn->L4_addr2));
+   snprintf(title, MAX_ASCII_ADDR_LEN+6, "%s:%d", ip_addr_ntoa(&curr_conn->L3_addr2, tmp), ntohs(curr_conn->L4_addr2));
    wdg_set_title(wdg_c2, title, WDG_ALIGN_LEFT);
    wdg_set_color(wdg_c2, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_set_color(wdg_c2, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
@@ -415,7 +415,7 @@ static void curses_connection_data_join(void)
    wdg_set_size(wdg_conndata, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
    
    wdg_create_object(&wdg_join, WDG_SCROLL, 0);
-   sprintf(title, "%s:%d - %s:%d", ip_addr_ntoa(&curr_conn->L3_addr1, src), ntohs(curr_conn->L4_addr1),
+   snprintf(title, 64, "%s:%d - %s:%d", ip_addr_ntoa(&curr_conn->L3_addr1, src), ntohs(curr_conn->L4_addr1),
                                  ip_addr_ntoa(&curr_conn->L3_addr2, dst), ntohs(curr_conn->L4_addr2));
    wdg_set_title(wdg_join, title, WDG_ALIGN_LEFT);
    wdg_set_color(wdg_join, WDG_COLOR_TITLE, EC_COLOR_TITLE);
@@ -633,7 +633,7 @@ static void inject_file(char *path, char *file)
    
    SAFE_CALLOC(filename, strlen(path)+strlen(file)+2, sizeof(char));
 
-   sprintf(filename, "%s/%s", path, file);
+   snprintf(filename, strlen(path)+strlen(file)+2, "%s/%s", path, file);
 
    /* open the file */
    if ((fd = open(filename, O_RDONLY | O_BINARY)) == -1) {

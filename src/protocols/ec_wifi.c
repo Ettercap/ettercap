@@ -374,7 +374,7 @@ int set_wep_key(u_char *string)
    DEBUG_MSG("set_wep_key: %s", string);
    
    memset(wkey, 0, sizeof(wkey));
-   strcpy(s, string);
+   strncpy(s, string, strlen(string)+1);
 
    p = ec_strtok(s, ":", &tok);
    if (p == NULL)

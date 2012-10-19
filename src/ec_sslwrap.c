@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.57 2005/07/04 08:03:30 lordnaga Exp $
+    $Id: ec_sslwrap.c,v 1.55 2004/09/14 07:58:17 alor Exp $
 */
 
 #include <ec.h>
@@ -35,7 +35,14 @@
 #ifndef OS_WINDOWS
    #include <sys/wait.h>
 #endif
+
+#ifdef OS_LINUX
+   #include <linux/netfilter_ipv4.h>
+#endif
+
 #include <fcntl.h>
+#include <time.h>
+#include <pthread.h>
 
 #ifdef HAVE_OPENSSL
 
@@ -104,7 +111,12 @@ struct sslw_ident {
 #define SSLW_IDENT_LEN sizeof(struct sslw_ident)
 
 #define SSLW_RETRY 5
-#define SSLW_WAIT 10000
+#define SSLW_WAIT 10 /* 10 seconds */
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
+#define SSLW_SET "20"
+#endif
+
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
 
@@ -237,11 +249,19 @@ void ssl_wrap_init(void)
 #ifdef HAVE_OPENSSL
 static void ssl_wrap_fini(void)
 {
-   struct listen_entry *le;
+   struct listen_entry *le, *old;
 
+   DEBUG_MSG("ATEXIT: ssl_wrap_fini");
    /* remove every redirect rule */   
-   LIST_FOREACH(le, &listen_ports, next)
+   LIST_FOREACH_SAFE(le, &listen_ports, next, old) {
       sslw_remove_redirect(le->sslw_port, le->redir_port);
+      LIST_REMOVE(le, next);
+      SAFE_FREE(le);
+   }
+
+   SSL_CTX_free(ssl_ctx_server);
+   SSL_CTX_free(ssl_ctx_client);
+
 }
 #endif
 
@@ -312,8 +332,9 @@ EC_THREAD_FUNC(sslw_start)
             /* Set the peer (client) in the connection list entry */
             ae->port[SSL_CLIENT] = client_sin.sin_port;
             ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (char *)&(client_sin.sin_addr.s_addr));
-	    
-            ec_thread_new("sslw_child", "ssl child", &sslw_child, ae);
+	   
+            /* create a detached thread */ 
+            ec_thread_new_detached("sslw_child", "ssl child", &sslw_child, ae, 1);
          }
    }
 
@@ -339,8 +360,8 @@ static void sslw_hook_handled(struct packet_object *po)
    /* If it's an ssl packet don't forward */
    po->flags |= PO_DROPPED;
    
-   /* If it's a new connection */  
-   if ( (po->flags & PO_FORWARDABLE) &&
+   /* If it's a new connection */
+   if ( (po->flags & PO_FORWARDABLE) && 
         (po->L4.flags & TH_SYN) &&
         !(po->L4.flags & TH_ACK) ) {
 	
@@ -368,14 +389,18 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    if (GBL_CONF->redir_command_on == NULL)
       return -EFATAL;
    
-   sprintf(asc_sport, "%u", sport);
-   sprintf(asc_dport, "%u", dport);
+   snprintf(asc_sport, 16, "%u", sport);
+   snprintf(asc_dport, 16, "%u", dport);
 
    /* make the substitutions in the script */
    command = strdup(GBL_CONF->redir_command_on);
    str_replace(&command, "%iface", GBL_OPTIONS->iface);
    str_replace(&command, "%port", asc_sport);
    str_replace(&command, "%rport", asc_dport);
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
+   str_replace(&command, "%set", SSLW_SET);
+#endif
    
    DEBUG_MSG("sslw_insert_redirect: [%s]", command);
    
@@ -425,14 +450,18 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
    if (GBL_CONF->redir_command_off == NULL)
       return -EFATAL;
    
-   sprintf(asc_sport, "%u", sport);
-   sprintf(asc_dport, "%u", dport);
+   snprintf(asc_sport, 16, "%u", sport);
+   snprintf(asc_dport, 16, "%u", dport);
 
    /* make the substitutions in the script */
    command = strdup(GBL_CONF->redir_command_off);
    str_replace(&command, "%iface", GBL_OPTIONS->iface);
    str_replace(&command, "%port", asc_sport);
    str_replace(&command, "%rport", asc_dport);
+
+#if defined(OS_DARWIN) || defined(OS_BSD)
+   str_replace(&command, "%set", SSLW_SET);
+#endif
    
    DEBUG_MSG("sslw_remove_redirect: [%s]", command);
    
@@ -545,6 +574,12 @@ static int sslw_ssl_connect(SSL *ssl_sk)
 { 
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    int ret, ssl_err;
+
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_sec = 0;
+   tm.tv_nsec = TSLEEP * 1000;
+#endif
    
    do {
       /* connect to the server */
@@ -558,7 +593,11 @@ static int sslw_ssl_connect(SSL *ssl_sk)
          return -EINVALID;
       
       /* sleep a quirk of time... */
+#if defined(OS_WINDOWS)
       usleep(TSLEEP);
+#else
+      nanosleep(&tm, NULL);
+#endif
    } while(loops--);
 
    return -EINVALID;
@@ -573,6 +612,12 @@ static int sslw_ssl_accept(SSL *ssl_sk)
 { 
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    int ret, ssl_err;
+
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_sec = 0;
+   tm.tv_nsec = TSLEEP * 1000;
+#endif
    
    do {
       /* accept the ssl connection */
@@ -586,7 +631,11 @@ static int sslw_ssl_accept(SSL *ssl_sk)
          return -EINVALID;
       
       /* sleep a quirk of time... */
+#if defined(OS_WINDOWS)
       usleep(TSLEEP);
+#else
+      nanosleep(&tm, NULL);
+#endif
    } while(loops--);
 
    return -EINVALID;
@@ -601,6 +650,7 @@ static int sslw_ssl_accept(SSL *ssl_sk)
  */   
 static int sslw_sync_ssl(struct accepted_entry *ae) 
 {   
+
    X509 *server_cert;
    
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
@@ -630,6 +680,7 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != ESUCCESS) 
       return -EINVALID;
 
+
    return ESUCCESS;   
 }
 
@@ -640,6 +691,11 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
  */
 static int sslw_get_peer(struct accepted_entry *ae)
 {
+
+/* If on Linux, we can just get the SO_ORIGINAL_DST from getsockopt() no need for this loop
+   nonsense.
+*/
+#ifndef OS_LINUX
    struct ec_session *s = NULL;
    struct packet_object po;
    void *ident = NULL;
@@ -651,13 +707,23 @@ static int sslw_get_peer(struct accepted_entry *ae)
    po.L4.dst = ae->port[SSL_SERVER];
    
    sslw_create_ident(&ident, &po);
+
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_sec = SSLW_WAIT;
+   tm.tv_nsec = 0;
+#endif
    
    /* 
     * A little waiting loop because the sniffing thread , 
     * which creates the session, may be slower than this
     */
    for (i=0; i<SSLW_RETRY && session_get_and_del(&s, ident, SSLW_IDENT_LEN)!=ESUCCESS; i++)
+#if defined(OS_WINDOWS)
       usleep(SSLW_WAIT);
+#else
+      nanosleep(&tm, NULL); 
+#endif
 
    if (i==SSLW_RETRY) {
       SAFE_FREE(ident);
@@ -670,7 +736,14 @@ static int sslw_get_peer(struct accepted_entry *ae)
    SAFE_FREE(s->data);
    SAFE_FREE(s);
    SAFE_FREE(ident);
+#else
+   struct sockaddr_in sa_in;
+   socklen_t sa_in_sz = sizeof(struct sockaddr_in);
 
+   getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&sa_in, &sa_in_sz);
+
+   ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET, (char *)&(sa_in.sin_addr.s_addr));
+#endif
    return ESUCCESS;
 }
 
@@ -694,6 +767,7 @@ static int sslw_connect_server(struct accepted_entry *ae)
    /* Standard connection to the server */
    if (!dest_ip || (ae->fd[SSL_SERVER] = open_socket(dest_ip, ntohs(ae->port[SSL_SERVER]))) < 0) {
       SAFE_FREE(dest_ip);   
+      DEBUG_MSG("Could not open socket");
       return -EINVALID;
    }
    
@@ -754,7 +828,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    /* create the buffer to be displayed */
    packet_destroy_object(po);
    packet_disp_data(po, po->DATA.data, po->DATA.len);
-  
+   
    return ESUCCESS;
 }
 
@@ -770,6 +844,14 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
 
    packet_len = (int32)(po->DATA.len + po->DATA.inject_len);
    p_data = po->DATA.data;
+
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_sec = 1;
+   tm.tv_nsec = 0;
+#else
+   int timeout = 1000;
+#endif
    
    if (packet_len == 0)
       return ESUCCESS;
@@ -810,7 +892,11 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       
       /* XXX - Set a proper sleep time */
       if (not_written)
-         usleep(1000);
+#if defined(OS_WINDOWS)
+         usleep(timeout);
+#else
+         nanosleep(&tm, NULL);
+#endif
 	 	 
    } while (not_written);
          
@@ -841,13 +927,12 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    po->L4.dst = ae->port[!direction];
    
    po->flags |= PO_FROMSSL;
-   po->flags |= PO_IGNORE;
       
    /* get current time */
    gettimeofday(&po->ts, NULL);
 
    /* calculate if the dest is local or not */
-   switch (ip_addr_is_local(&PACKET->L3.src)) {
+   switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
       case ESUCCESS:
          PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
@@ -885,7 +970,8 @@ static void sslw_wipe_connection(struct accepted_entry *ae)
    if (ae->cert)
       X509_free(ae->cert);
 
-   SAFE_FREE(ae);
+   if(ae)
+     SAFE_FREE(ae);
 }
 
 /* 
@@ -899,10 +985,12 @@ static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
     * XXX - Be sure to not modify these len.
     */
    memset(po, 0, sizeof(struct packet_object));
-   if (p_data == NULL)
+   if (p_data == NULL) {
       SAFE_CALLOC(po->DATA.data, 1, UINT16_MAX);
-   else
+   } else {
+      SAFE_FREE(po->DATA.data);
       po->DATA.data = p_data;
+   }
       
    po->L2.header  = po->DATA.data; 
    po->L3.header  = po->DATA.data;
@@ -978,6 +1066,9 @@ static void sslw_init(void)
    ssl_ctx_client = SSL_CTX_new(SSLv23_server_method());
    ssl_ctx_server = SSL_CTX_new(SSLv23_client_method());
 
+   ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
+   ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");
+
    /* Get our private key from our cert file */
    if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, INSTALL_DATADIR "/" EC_PROGRAM "/" CERT_FILE, SSL_FILETYPE_PEM) == 0) {
       DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- trying ./share/%s",  CERT_FILE);
@@ -997,18 +1088,31 @@ static void sslw_init(void)
 /* 
  * SSL thread child function.
  */
+
 EC_THREAD_FUNC(sslw_child)
 {
    struct packet_object po;
    int direction, ret_val, data_read;
    struct accepted_entry *ae;
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_sec = 0;
+   tm.tv_nsec = 3000*1000;
+#else
+   int timeout = 3000;
+#endif
 
    ae = (struct accepted_entry *)args;
    ec_thread_init();
- 
+
+
+   /* We don't want this to accidentally close STDIN */
+   ae->fd[SSL_SERVER] = -1;
+
    /* Contact the real server */
    if (sslw_sync_conn(ae) == -EINVALID) {
-      close_socket(ae->fd[SSL_CLIENT]);
+      if (ae->fd[SSL_CLIENT] != -1)
+         close_socket(ae->fd[SSL_CLIENT]);
       SAFE_FREE(ae);
       ec_thread_exit();
    }	    
@@ -1024,12 +1128,15 @@ EC_THREAD_FUNC(sslw_child)
    po.len = 64;
    po.L4.flags = (TH_SYN | TH_ACK);
    packet_disp_data(&po, po.DATA.data, po.DATA.len);
+
    sslw_parse_packet(ae, SSL_SERVER, &po);
    sslw_initialize_po(&po, po.DATA.data);
    
    LOOP {
+
       data_read = 0;
       for(direction=0; direction<2; direction++) {
+
          ret_val = sslw_read_data(ae, direction, &po);
          BREAK_ON_ERROR(ret_val,ae,po);
 	 
@@ -1054,8 +1161,13 @@ EC_THREAD_FUNC(sslw_child)
       }
 
       /* XXX - Set a proper sleep time */
+      /* Should we poll both fd's instead of guessing and sleeping? */
       if (!data_read)
-         usleep(3000);
+#if defined(OS_WINDOWS)
+        usleep(timeout);
+#else
+        nanosleep(&tm, NULL);
+#endif
    }
 
    return NULL;
@@ -1135,7 +1247,6 @@ static void sslw_create_session(struct ec_session **s, struct packet_object *po)
    /* alloc of data elements */
    SAFE_CALLOC((*s)->data, 1, sizeof(struct ip_addr));
 }
-
 #endif /* HAVE_OPENSSL */
 
 /* EOF */

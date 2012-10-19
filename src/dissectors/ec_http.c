@@ -315,7 +315,8 @@ static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object 
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
    int Proxy_Auth = 0;
-   char *token, *to_decode, *tok;
+   char *to_decode, *tok;
+   char *user, *pass;
 
    DEBUG_MSG("HTTP --> dissector http (Basic Auth)");
 
@@ -334,22 +335,33 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
       return 1;
        
    ec_strtok(to_decode, "\r", &tok);
+
    base64_decode(to_decode, to_decode);
-   
+  
+   DEBUG_MSG("Clear text AUTH: %s", to_decode); 
+
+   /* clear text should be username:password 
+    * this means that we must find the first instance of :
+    * token shoul dbe username, and decoded should just be the password
+    */
    /* Parse the cleartext auth string */
-   if ( (token = strsep(&to_decode, ":")) != NULL) {
-      po->DISSECTOR.user = strdup(token);
-      if ( (token = strsep(&to_decode, ":")) != NULL) {
-         po->DISSECTOR.pass = strdup(token);
-      
-         /* Are we authenticating to the proxy or to a website? */
-         if (Proxy_Auth)
-            po->DISSECTOR.info = strdup("Proxy Authentication");
-         else 
-            Find_Url(ptr, &(po->DISSECTOR.info));
-	    
-         Print_Pass(po);
-      }
+  
+
+   pass = NULL;
+
+   user = ec_strtok(to_decode, ":", &pass); 
+
+   if (pass != NULL) {
+      po->DISSECTOR.user = strdup(user);
+      po->DISSECTOR.pass = strdup(pass);	
+ 
+      /* Are we authenticating to the proxy or to a website? */
+      if (Proxy_Auth)
+         po->DISSECTOR.info = strdup("Proxy Authentication");
+      else 
+         Find_Url(ptr, &(po->DISSECTOR.info));
+   
+      Print_Pass(po);
    }
 
    SAFE_FREE(to_decode);
@@ -423,7 +435,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
             response_struct  = (tSmbNtlmAuthResponse *) to_decode;
             po->DISSECTOR.user = strdup(GetUnicodeString(response_struct, uUser));
             SAFE_CALLOC(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, sizeof(char));
-            sprintf(po->DISSECTOR.pass, "(NTLM) %s:\"\":\"\":", po->DISSECTOR.user);
+            snprintf(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, "(NTLM) %s:\"\":\"\":", po->DISSECTOR.user);
             outstr = po->DISSECTOR.pass + strlen(po->DISSECTOR.pass);
             dumpRaw(outstr,((unsigned char*)response_struct)+IVAL(&response_struct->lmResponse.offset,0), 24);	    	 
             outstr[48] = ':';
@@ -601,7 +613,7 @@ static void Decode_Url(u_char *src)
       return;
       
    /* NULL terminate for the strtoul */
-   t[3] = 0;
+   t[2] = 0;
    
    for (i=0, j=0; src[i] != 0; i++, j++) {
       ch = (u_int32)src[i];
@@ -641,7 +653,7 @@ static void Find_Url_Referer(u_char *to_parse, char **ret)
 	 
       len = strlen(page) + strlen(host) + 2;
       SAFE_CALLOC(*ret, len, sizeof(char));
-      sprintf(*ret, "%s%s", host, page);
+      snprintf(*ret, len, "%s%s", host, page);
 
       SAFE_FREE(page);
       SAFE_FREE(host);            
@@ -674,11 +686,11 @@ static void Find_Url(u_char *to_parse, char **ret)
       host = strdup( fromhere + strlen("Host: ") );
       ec_strtok(host, "\r", &tok);
    } else 
-      host = strdup("");
+      host = (u_char*)strdup("");
 	 
    len = strlen(page) + strlen(host) + 2;
    SAFE_CALLOC(*ret, len, sizeof(char));
-   sprintf(*ret, "%s%s", host, page);
+   snprintf(*ret, len, "%s%s", host, page);
 
    SAFE_FREE(page);
    SAFE_FREE(host);            
@@ -771,7 +783,7 @@ static void dumpRaw(char *str, unsigned char *buf, size_t len)
    u_int32 i;
 
    for (i=0; i<len; ++i, str+=2)
-      sprintf(str, "%02x", buf[i]);
+      snprintf(str, 3, "%02x", buf[i]);
 }
 
 /* A little helper function */

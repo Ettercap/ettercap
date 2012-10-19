@@ -295,6 +295,8 @@ int str_replace(char **text, const char *s, const char *d)
        */
       p = strstr(q, s);
 
+      if (p==NULL)
+		continue;
       /* do the actual replacement */
       memmove(p + dlen, p + slen, strlen(p + slen) + 1);
       memcpy(p, d, dlen);
@@ -328,7 +330,7 @@ size_t strlen_utf8(const char *s)
  */
 char * ec_strtok(char *s, const char *delim, char **ptrptr)
 {
-#ifdef HAVE_STRTOK_R
+#ifdef HAVE_STRTOK_R 
    return strtok_r(s, delim, ptrptr);
 #else
    #warning unsafe strtok
@@ -345,6 +347,10 @@ char * ec_strtok(char *s, const char *delim, char **ptrptr)
 char getchar_buffer(char **buf)
 {
    char ret;
+
+#if !defined(OS_WINDOWS)
+   struct timespec ts;
+#endif
 
    DEBUG_MSG("getchar_buffer: %s", *buf);
    
@@ -364,13 +370,21 @@ char getchar_buffer(char **buf)
 
          /* get the number of seconds to wait */
          time = atoi(*buf + 2);
+
+#if !defined(OS_WINDOWS)
+         ts.tv_sec = time;
+         ts.tv_nsec = 0;
+#endif
          
          DEBUG_MSG("getchar_buffer: sleeping %d secs", time);
 
          /* move the buffer after the s(x) */
          *buf = p + 1;
-      
-         sleep(time);
+#if !defined(OS_WINDOWS) 
+         nanosleep(&ts, NULL);
+#else
+         usleep(time*1000);
+#endif
       }
    }
    

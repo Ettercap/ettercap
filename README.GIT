@@ -1,0 +1,44 @@
+=============================================================================
+=============================================================================
+
+
+       @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@
+       @@        @@@     @@@   @@      @@   @@ @@      @@   @@ @@   @@
+       @@@@@@    @@@     @@@   @@@@@@  @@@@@@  @@      @@@@@@@ @@@@@@
+       @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
+       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     NG
+
+                      Copyright 2001-2012 The Ettercap Dev Team
+
+==============================================================================
+                H O W   T O   C O M P I L E   F R O M  G I T
+==============================================================================
+
+First you have to clone the project from the git repository:
+
+    # git clone git://github.com/Ettercap/ettercap.git
+    # cd ettercap
+
+If you already had the repository cloned, you will need to pull the latest changes:
+   
+    # git pull
+
+After you have successfully cloned the repository then you must initiate the build
+with cmake:
+    # mkdir build
+    # cd build
+    # cmake ..
+    # (Use ccmake . to change options such as disabling IPv6 support, add
+      plugins support, setting release type to Debug, etc).
+
+
+==============================================================================
+     D E V E L O P E R S   A N D   B E T A T E S T E R S   S E C T I O N
+==============================================================================
+In order for ettercap to be compiled with debugging symbols, you need to use
+ccmake to change the release type to Debug. 
+
+==============================================================================
+
+vim:ts=3:expandtab
+

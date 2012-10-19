@@ -8,7 +8,7 @@
        @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
        @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     NG
 
-                      Copyright 2001-2004 ALoR & NaGA
+                      Copyright 2001-2012 The Ettercap Dev Team
 
 ==============================================================================
                         P O R T I N G   S T A T U S
@@ -20,6 +20,8 @@ SYSTEM                  STATUS                NOTES
 
 LINUX
 ------------------------------------------------------------------------------
+   Linux 3.x            FULL           (primary development platform) 
+
    Linux 2.6.x          FULL           (primary development platform) 
 
    Linux 2.4.x          FULL           (primary development platform)
@@ -36,6 +38,8 @@ SOLARIS
 
 *BSD
 ------------------------------------------------------------------------------
+   FreeBSD 8.x          FULL           tested on FreeBSD 8.3-RELEASE (amd64)
+
    FreeBSD 5.x          FULL           tested on FreeBSD 5.1-RELEASE (i386)
    
    FreeBSD 4.x          untested
@@ -49,6 +53,8 @@ SOLARIS
 
 MAC OS X (Darwin)
 ------------------------------------------------------------------------------
+   Mac OS X            FULL            tested on OS X Lion and Snow Leopard (64-bit)
+
    Darwin 7.x           FULL           tested on darwin 7.0.0 (powerpc)
    
    Darwin 6.x           untested 
@@ -156,6 +162,19 @@ doubt, go with the latest copy.
    probably you will have to append the --with-iconv=/usr/local to the
    configure command line.
 
+   on some BSD configurations, even after installing the libtool and libltdl ports, 
+   lt_dlopen might not be found by the configure script. To solve this, install the 
+   libpcap port from /usr/ports/net and run configure this way:
+   CFLAGS="-I /usr/local/include" LDFLAGS="-L /usr/local/lib" ./configure ....
+
+   libnet-devel should be installed from source since the port installs it in /usr/local/include/libnet11
+   and /usr/local/lib/libnet11 and the configure script can only search one path for libraries and
+   includes (might update script later).
+
+   Once libnet-devel, libpcap (port), libpcre (port), libiconv (port) are installed, 
+   make sure to add the --with-libnet=/usr/local --with-libpcap=/usr/local --with-libpcre=/usr/local
+   --with-iconv=/usr/local options
+
  + OPENBSD
 
    Same recommendations as for FreeBSD, but you have to find a way to install
@@ -208,10 +227,21 @@ doubt, go with the latest copy.
   
    5) enter the ettercap_ng directory and execute the configure script
    6) issue the 'make' command and have fun :)
+   7) ettercap/include/ec_os_mingw.h might need to be modified to not declare struct
+      timezone as it is already defined in sys/time.h on latest MinGW version.
 
    *) probably you'll have some difficulties compiling it. you have to modify
    the makefile a bit to suite your environment. don't forget to install all
    the required .dll since the .dll.a are only wrapper to the real .dll file.
+
+   *) if make fails because of a /man/man5 or /man/man8 directory does not exist,
+      keep running make until compilation is done
+   *) after everything is done type: 
+         a) cd ..
+         b) /usr/bin/find . -name \*.dll -exec cp {} ettercap/lib \;
+         c) cd ettercap
+         d) cp ettercap.exe lib
+         e) run ettercap from lib
 
    
    if you want precompiled packages:

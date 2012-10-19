@@ -55,17 +55,17 @@ static u_char *parse_option(u_char * buffer, u_char option, int16 tot_len);
 /* plugin operations */
 struct plugin_ops pptp_chapms1_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "pptp_chapms1",  
+   .name =              "pptp_chapms1",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "PPTP: Forces chapms-v1 from chapms-v2",  
+   .info =              "PPTP: Forces chapms-v1 from chapms-v2",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &pptp_chapms1_init,
+   .init =              &pptp_chapms1_init,
    /* deactivation function */                     
-   fini:             &pptp_chapms1_fini,
+   .fini =              &pptp_chapms1_fini,
 };
 
 /**********************************************************/

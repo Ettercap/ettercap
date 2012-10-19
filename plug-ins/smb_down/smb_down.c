@@ -56,17 +56,17 @@ static void parse_smb(struct packet_object *po);
 
 struct plugin_ops smb_down_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "smb_down",  
+   .name =              "smb_down",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Tries to force SMB to not use NTLM2 key auth",  
+   .info =              "Tries to force SMB to not use NTLM2 key auth",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &smb_down_init,
+   .init =              &smb_down_init,
    /* deactivation function */                     
-   fini:             &smb_down_fini,
+   .fini =              &smb_down_fini,
 };
 
 /**********************************************************/

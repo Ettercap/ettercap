@@ -499,7 +499,7 @@ const char *ec_win_strsignal (int signo)
          return ("SIGXFSZ");
 #endif
   }
-  strcpy (buf, "Unknown ");
+  strncpy (buf, "Unknown ", 9);
   itoa (signo, buf+8, 10);
   return (buf);
 }
@@ -1017,7 +1017,7 @@ char *ec_win_strerror (int err)
   if (!get_winsock_error (err, buf, sizeof(buf)) &&
         !FormatMessage (flags, NULL, err,
                         lang, buf, sizeof(buf)-1, NULL))
-     sprintf (buf, "Unknown error %d (%#x)", err, err);
+     snprintf (buf, 512, "Unknown error %d (%#x)", err, err);
   }
             
 
@@ -1143,7 +1143,7 @@ static void setup_console (void)
   if (!attached_to_console && !AllocConsole()) {
      char error[256];
 
-     sprintf (error, "AllocConsole failed; error %lu", GetLastError());
+     snprintf (error, 256, "AllocConsole failed; error %lu", GetLastError());
      MessageBox (NULL, error, "Fatal", MB_ICONEXCLAMATION | MB_SETFOREGROUND);
      exit (-1);
   }

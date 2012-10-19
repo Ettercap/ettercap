@@ -54,7 +54,7 @@ static GtkTreeSelection *selection = NULL;
 void gtkui_plugin_load(void)
 {
    GtkWidget *dialog;
-   char *filename;
+   const char *filename;
    int response = 0;
 #ifdef OS_WINDOWS
    char *path = get_full_path("/lib/", "");
@@ -91,7 +91,12 @@ static void gtkui_load_plugin(char *full)
    int ret;
 
    path = full;
+
+#ifdef OS_WINDOWS
+   file = strrchr(full, '\\');
+#else
    file = strrchr(full, '/');
+#endif
    /* remove the last /
       split path and file
       increment file pointer to point to filenam */

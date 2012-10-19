@@ -9,8 +9,6 @@
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
 
-   + refresh the host list after the scan
-
    + libnet_write under windows
 
    http://ettercap.sourceforge.net/forum/viewtopic.php?p=13789#13789
@@ -59,7 +57,6 @@
    + SSH2 dissection :) (yes, it can be done)
 
    + IPv6
-      - NDIS mitm
       - router discovery
 
    + Rendevouz mitm
@@ -84,6 +81,8 @@
 
    + INET
       - handle fragmented packets
-      - IPv6 support
 
+==================
+     FOR NOW
+=================
 

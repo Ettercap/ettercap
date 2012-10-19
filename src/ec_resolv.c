@@ -64,7 +64,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
    struct hostent *host = NULL;
    
    /* initialize the name */
-   strcpy(name, "");
+   strncpy(name, "", 1);
   
    /* sanity check */
    if (ip_addr_is_zero(ip))

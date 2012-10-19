@@ -64,7 +64,7 @@ typedef struct {
 
 } smb_session_data;
 
-#define IF_IN_PCK(x,y) if( (u_int32)(x) >= (u_int32)y->packet && (u_int32)(x) < (u_int32)(y->packet + y->len) )
+#define IF_IN_PCK(x,y) if((x) >= y->packet && (x) < (y->packet + y->len) )
 
 /* protos */
 
@@ -206,6 +206,10 @@ FUNC_DECODER(dissector_smb)
                                                           ntohs(PACKET->L4.dst),
                                                           PACKET->DISSECTOR.user,
                                                           PACKET->DISSECTOR.pass);
+
+
+		/* Call hook point when negotation is complete */	
+		hook_point(HOOK_PROTO_SMB_CMPLT, PACKET);
             }
 
             if (PACKET->DISSECTOR.info!=NULL)
@@ -232,7 +236,7 @@ FUNC_DECODER(dissector_smb)
          if (smb->cmd == 0x73) { /* Session SetUp Packets */ 
             if (session_data->status == WAITING_PLAIN_TEXT) {
                u_int16 pwlen, unilen;
-               char *Blob;
+               u_char *Blob;
 	 
                Blob = ptr;
                Blob += ( (*ptr) * 2 + 3 );
@@ -245,9 +249,9 @@ FUNC_DECODER(dissector_smb)
                if (pwlen > 1) 
                   memcpy(session_data->response1, Blob, sizeof(session_data->response1) - 1);
                else
-                  sprintf(session_data->response1, "(empty)");
-	
-               IF_IN_PCK(Blob+pwlen+unilen, PACKET)		  	 
+                  snprintf(session_data->response1, 7, "(empty)");
+
+               IF_IN_PCK(Blob, PACKET)		  	 
                   Blob = GetUser(Blob+pwlen+unilen, session_data->user, 200);
 		  
                IF_IN_PCK(Blob, PACKET)
@@ -273,7 +277,7 @@ FUNC_DECODER(dissector_smb)
                ptr++;
 	 
                if (*ptr == 3) { /* Msg Type AUTH */ 
-                  int LM_Offset, LM_Len, NT_Offset, NT_Len, Domain_Offset, Domain_Len, User_Offset, User_Len;
+                  u_int LM_Offset, LM_Len, NT_Offset, NT_Len, Domain_Offset, Domain_Len, User_Offset, User_Len;
                   ptr += 4;
                   LM_Len = *(u_int16 *)ptr;
                   ptr += 4;
@@ -296,17 +300,17 @@ FUNC_DECODER(dissector_smb)
                      return NULL;
                   }
 
-                  IF_IN_PCK(Blob+User_Offset, PACKET)
+                  IF_IN_PCK((u_char*)Blob+User_Offset, PACKET)
                      GetUser(Blob+User_Offset, session_data->user, User_Len);
 		     
-                  IF_IN_PCK(Blob+Domain_Offset, PACKET)
+                  IF_IN_PCK((u_char*)Blob+Domain_Offset, PACKET)
                      GetUser(Blob+Domain_Offset, session_data->domain, Domain_Len);
 		 
                   if (LM_Len == 24)
-                     IF_IN_PCK(Blob+LM_Offset, PACKET)
+                     IF_IN_PCK((u_char*)Blob+LM_Offset, PACKET)
                         memcpy(session_data->response1, Blob+LM_Offset, 24);
  
-                  IF_IN_PCK(Blob+NT_Offset, PACKET)
+                  IF_IN_PCK((u_char*)Blob+NT_Offset, PACKET)
                      memcpy(session_data->response2, Blob+NT_Offset, 24);
 		     
                   session_data->status = WAITING_LOGON_RESPONSE;
@@ -328,7 +332,7 @@ FUNC_DECODER(dissector_smb)
                     memcmp(session_data->response1, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 24) ) {
                     memset(session_data->response1, 0, 24);
                     memset(session_data->response2, 0, 24);
-                    strcpy(session_data->user, "(empty)");
+                    strncpy(session_data->user, "(empty)", 7);
                     session_data->domain[0]=0;		    		    
                }
 	       
@@ -400,7 +404,7 @@ void GetBinaryE(unsigned char *binary, unsigned char *dest, int blen)
    char dummy[5];
    
    for (; blen > 0; blen--) {	
-       sprintf( dummy, "%02X", *binary);
+       snprintf( dummy, 3, "%02X", *binary);
        binary++;
        strcat(dest, dummy);
    }

@@ -27,6 +27,7 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <time.h>
 
 /* globals */
 struct eth_header
@@ -68,17 +69,17 @@ EC_THREAD_FUNC(flooder);
 
 struct plugin_ops rand_flood_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "rand_flood",  
+   .name =              "rand_flood",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Flood the LAN with random MAC addresses",  
+   .info =              "Flood the LAN with random MAC addresses",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &rand_flood_init,
+   .init =              &rand_flood_init,
    /* deactivation function */                     
-   fini:             &rand_flood_fini,
+   .fini =              &rand_flood_fini,
 };
 
 /**********************************************************/
@@ -132,6 +133,12 @@ EC_THREAD_FUNC(flooder)
    u_int32 rnd;
    u_char MACS[ETH_ADDR_LEN], MACD[ETH_ADDR_LEN];
 
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_sec = GBL_CONF->port_steal_send_delay;
+   tm.tv_nsec = 0;
+#endif
+
    /* Get a "random" seed */ 
    gettimeofday(&seed, NULL);
    srandom(seed.tv_sec ^ seed.tv_usec);
@@ -173,7 +180,12 @@ EC_THREAD_FUNC(flooder)
 
       /* Send on the wire and wait */
       send_to_L2(&fake_po); 
-      usleep(GBL_CONF->port_steal_send_delay);
+
+#if !defined(OS_WINDOWS)
+      nanosleep(&tm, NULL);
+#else
+      usleep(GBL_CONF->port_steal_send_delay*1000);
+#endif
    }
    
    return NULL; 

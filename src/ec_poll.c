@@ -45,7 +45,7 @@ int ec_poll_buffer(char *buf);
  */
 int ec_poll_in(int fd, u_int msec)
 {
-#ifdef HAVE_POLL
+#if defined(HAVE_POLL) && !defined(OS_DARWIN)
    struct pollfd poll_fd;
    
    /* set the correct fd */
@@ -76,8 +76,11 @@ int ec_poll_in(int fd, u_int msec)
    FD_SET(fd, &msk_fd);
 
    /* execute the syscall */
-   select(FOPEN_MAX, &msk_fd, (fd_set *) 0, (fd_set *) 0, &to);
-   
+   int fds = select(FOPEN_MAX, &msk_fd, (fd_set *) 0, (fd_set *) 0, &to);
+  
+   if (fds <= 0) {
+      return 0;
+   } 
    /* the even has occurred */
    if (FD_ISSET(0, &msk_fd))
       return 1;
@@ -94,7 +97,7 @@ int ec_poll_in(int fd, u_int msec)
  */
 int ec_poll_out(int fd, u_int msec)
 {
-#ifdef HAVE_POLL
+#if defined(HAVE_POLL) && !defined(OS_DARWIN)
    struct pollfd poll_fd;
    
    /* set the correct fd */
@@ -125,8 +128,10 @@ int ec_poll_out(int fd, u_int msec)
    FD_SET(fd, &msk_fd);
 
    /* execute the syscall */
-   select(FOPEN_MAX, (fd_set *) 0, &msk_fd, (fd_set *) 0, &to);
-   
+   int fds = select(FOPEN_MAX, (fd_set *) 0, &msk_fd, (fd_set *) 0, &to);
+    
+   if (fds <=0)
+      return 0; 
    /* the even has occurred */
    if (FD_ISSET(0, &msk_fd))
       return 1;

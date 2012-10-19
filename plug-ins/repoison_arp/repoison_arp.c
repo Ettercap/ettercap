@@ -27,6 +27,7 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_mitm.h>
+#include <time.h>
 
 
 /* protos */
@@ -40,17 +41,17 @@ void repoison_victims(void *group_ptr, struct packet_object *po);
 /* plugin operations */
 struct plugin_ops repoison_arp_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "repoison_arp",  
+   .name =              "repoison_arp",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Repoison after broadcast ARP",  
+   .info =              "Repoison after broadcast ARP",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &repoison_arp_init,
+   .init =              &repoison_arp_init,
    /* deactivation function */                     
-   fini:             &repoison_arp_fini,
+   .fini =              &repoison_arp_fini,
 };
 
 /**********************************************************/
@@ -96,11 +97,23 @@ static int repoison_arp_fini(void *dummy)
 void repoison_victims(void *group_ptr, struct packet_object *po)
 {
    struct hosts_list *t;
+
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+ 
+   tm.tv_sec = GBL_CONF->arp_storm_delay;
+   tm.tv_nsec = 0;
+#endif
+
    LIST_HEAD(, hosts_list) *group_head = group_ptr;
 
    LIST_FOREACH(t, group_head, next) {
 
-      usleep(GBL_CONF->arp_storm_delay * 1000);
+#if !defined(OS_WINDOWS)
+      nanosleep(&tm, NULL);
+#else
+      usleep(GBL_CONF->arp_storm_delay*1000);
+#endif
 
       /* equal ip must be skipped, you cant poison itself */
       if (!ip_addr_cmp(&t->ip, &po->L3.src))

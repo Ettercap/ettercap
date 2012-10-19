@@ -184,7 +184,7 @@ FUNC_DECODER(decode_ip)
    }
 
    /* calculate if the dest is local or not */
-   switch (ip_addr_is_local(&PACKET->L3.src)) {
+   switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
       case ESUCCESS:
          PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
@@ -202,7 +202,7 @@ FUNC_DECODER(decode_ip)
    hook_point(HOOK_PACKET_IP, po);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   if (GBL_FILTERS && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
    
       /* Find or create the correct session */
       ip_create_ident(&ident, PACKET);
@@ -225,7 +225,7 @@ FUNC_DECODER(decode_ip)
    EXECUTE_DECODER(next_decoder);
    
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
+   if (GBL_FILTERS && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
       /* 
        * Modification checks and adjustments.
        * - ip->id according to number of injected/dropped packets
@@ -282,7 +282,7 @@ FUNC_INJECTOR(inject_ip)
    iph->tos      = 0;
    iph->csum     = CSUM_INIT;
    iph->frag_off = 0;            
-   iph->ttl      = 125;   
+   iph->ttl      = 64;   
    iph->protocol = PACKET->L4.proto; 
    iph->saddr    = ip_addr_to_int32(PACKET->L3.src.addr);   
    iph->daddr    = ip_addr_to_int32(PACKET->L3.dst.addr);   
@@ -332,7 +332,9 @@ FUNC_INJECTOR(inject_ip)
       PACKET->fwd_packet = PACKET->packet;
       PACKET->fwd_len = PACKET->L3.len;
    }
-   
+ 
+   /* Injectors executed, no need to keep the session */ 
+   session_del(s->ident, IP_IDENT_LEN); 
    return ESUCCESS;
 }
 

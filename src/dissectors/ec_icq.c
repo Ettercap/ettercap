@@ -52,8 +52,8 @@ struct snac_hdr {
 /* protos */
 
 FUNC_DECODER(dissector_icq);
-void icq_init(void);
-void decode_pwd(char *pwd, char *outpwd);
+static void icq_init(void);
+static void decode_pwd(char *pwd, char *outpwd);
 
 /************************************************/
 
@@ -62,7 +62,7 @@ void decode_pwd(char *pwd, char *outpwd);
  * it adds the entry in the table of registered decoder
  */
 
-void __init icq_init(void)
+static void __init icq_init(void)
 {
    dissect_add("icq", APP_LAYER_TCP, 5190, dissector_icq);
 }
@@ -159,7 +159,7 @@ FUNC_DECODER(dissector_icq)
 /*
  * decode the crypted password 
  */
-void decode_pwd(char *pwd, char *outpwd)
+static void decode_pwd(char *pwd, char *outpwd)
 {
    size_t x;
    u_char pwd_key[] = {

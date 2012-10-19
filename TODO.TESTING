@@ -5,3 +5,5 @@
    + WIFI
       - test the decoder with adapters other than cisco aironet
 
+   + Core
+      - Check the checksumming code as it reports invalid checksum on some packets

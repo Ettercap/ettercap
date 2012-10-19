@@ -145,7 +145,7 @@ FUNC_DECODER(dissector_ymsg)
       temp_disp_data = (u_char *)realloc(PACKET->DATA.disp_data, strlen(from) + strlen(to) + strlen(message) + 128);
       if (temp_disp_data != NULL) {
          PACKET->DATA.disp_data = temp_disp_data;
-         sprintf(PACKET->DATA.disp_data, "*** Yahoo Message ***\n From: %s\n To: %s\n\n Message: %s\n", from, to, message); 		  	       
+         snprintf(PACKET->DATA.disp_data, strlen(from) + strlen(to) + strlen(message) + 128, "*** Yahoo Message ***\n From: %s\n To: %s\n\n Message: %s\n", from, to, message); 		  	       
          PACKET->DATA.disp_len = strlen(PACKET->DATA.disp_data);
       }
             

@@ -30,6 +30,7 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
+#include <time.h>
 
 /* globals */
 char flag_strange;
@@ -44,17 +45,17 @@ static void parse_icmp(struct packet_object *po);
 
 struct plugin_ops scan_poisoner_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "scan_poisoner",  
+   .name =              "scan_poisoner",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Actively search other poisoners",  
+   .info =              "Actively search other poisoners",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &scan_poisoner_init,
+   .init =              &scan_poisoner_init,
    /* deactivation function */                     
-   fini:             &scan_poisoner_fini,
+   .fini =              &scan_poisoner_fini,
 };
 
 /**********************************************************/
@@ -73,7 +74,13 @@ static int scan_poisoner_init(void *dummy)
    char tmp1[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h1, *h2;
-     
+   
+#if !defined(OS_WINDOWS)  
+   struct timespec tm;
+   tm.tv_sec = GBL_CONF->arp_storm_delay;
+   tm.tv_nsec = 0; 
+#endif
+
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
@@ -110,12 +117,21 @@ static int scan_poisoner_init(void *dummy)
 
    /* Send ICMP echo request to each target */
    LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
-      send_L3_icmp_echo(ICMP_ECHO, &GBL_IFACE->ip, &h1->ip);   
-      usleep(GBL_CONF->arp_storm_delay * 1000);
+      send_L3_icmp_echo(&GBL_IFACE->ip, &h1->ip);   
+#if !defined(OS_WINDOWS)
+      nanosleep(&tm, NULL);
+#else
+      usleep(GBL_CONF->arp_storm_delay);
+#endif
    }
          
    /* wait for the response */
+
+#if !defined(OS_WINDOWS)
    sleep(1);
+#else
+   usleep(1000000);
+#endif
 
    /* remove the hook */
    hook_del(HOOK_PACKET_ICMP, &parse_icmp);

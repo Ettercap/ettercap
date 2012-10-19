@@ -32,6 +32,7 @@
 #include <ec_filter.h>
 #include <ec_plugins.h>
 #include <ec_conf.h>
+#include <ec_strings.h>
 
 #include <ctype.h>
 
@@ -48,6 +49,7 @@ void parse_options(int argc, char **argv);
 
 int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t );
 int set_regex(char *regex);
+static char **parse_iflist(char *list);
 
 /* from the ec_wifi.c decoder */
 extern int set_wep_key(u_char *string);
@@ -59,13 +61,15 @@ void ec_usage(void)
 
    fprintf(stdout, "\nUsage: %s [OPTIONS] [TARGET1] [TARGET2]\n", GBL_PROGRAM);
 
-   fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
+   fprintf(stdout, "\nTARGET is in the format MAC/IP/IPv6/PORTs (see the man for further detail)\n");
    
    fprintf(stdout, "\nSniffing and Attack options:\n");
    fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
    fprintf(stdout, "  -o, --only-mitm             don't sniff, only perform the mitm attack\n");
+   fprintf(stdout, "  -b, --broadcast             sniff packets coming from broadcast\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
+   fprintf(stdout, "  -S, --nosslmitm             do not forge SSL certificates\n");
    fprintf(stdout, "  -u, --unoffensive           do not forward packets\n");
    fprintf(stdout, "  -r, --read <file>           read data from pcapfile <file>\n");
    fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n");
@@ -77,8 +81,9 @@ void ec_usage(void)
    fprintf(stdout, "       -q, --quiet                 do not display packet contents\n");
    fprintf(stdout, "       -s, --script <CMD>          issue these commands to the GUI\n");
    fprintf(stdout, "  -C, --curses                use curses GUI\n");
-   fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
    fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
+   fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
+
    
    fprintf(stdout, "\nLogging options:\n");
    fprintf(stdout, "  -w, --write <file>          write sniffed data to pcapfile <file>\n");
@@ -96,8 +101,10 @@ void ec_usage(void)
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
-   fprintf(stdout, "  -I, --iflist                show all the network interfaces\n");
+   fprintf(stdout, "  -I, --liface                show all the network interfaces\n");
+   fprintf(stdout, "  -Y, --secondary <ifaces>    list of secondary network interfaces\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
+   fprintf(stdout, "  -A, --address <address>     force this local <address> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
@@ -113,7 +120,8 @@ void ec_usage(void)
 
    fprintf(stdout, "\n\n");
 
-   clean_exit(0);
+   //clean_exit(0);
+   exit(0);
 }
 
 
@@ -127,8 +135,9 @@ void parse_options(int argc, char **argv)
       { "update", no_argument, NULL, 'U' },
       
       { "iface", required_argument, NULL, 'i' },
-      { "iflist", no_argument, NULL, 'I' },
+      { "lifaces", no_argument, NULL, 'I' },
       { "netmask", required_argument, NULL, 'n' },
+      { "address", required_argument, NULL, 'A' },
       { "write", required_argument, NULL, 'w' },
       { "read", required_argument, NULL, 'r' },
       { "pcapfilter", required_argument, NULL, 'f' },
@@ -145,6 +154,7 @@ void parse_options(int argc, char **argv)
       { "script", required_argument, NULL, 's' },
       { "silent", no_argument, NULL, 'z' },
       { "unoffensive", no_argument, NULL, 'u' },
+      { "nosslmitm", no_argument, NULL, 'S' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
       { "wep-key", required_argument, NULL, 'W' },
@@ -162,13 +172,17 @@ void parse_options(int argc, char **argv)
       
       { "text", no_argument, NULL, 'T' },
       { "curses", no_argument, NULL, 'C' },
-      { "gtk", no_argument, NULL, 'G' },
       { "daemon", no_argument, NULL, 'D' },
+      { "gtk", no_argument, NULL, 'G' },
+
       
       { "mitm", required_argument, NULL, 'M' },
       { "only-mitm", no_argument, NULL, 'o' },
       { "bridge", required_argument, NULL, 'B' },
+      { "broadcast", required_argument, NULL, 'b' },
       { "promisc", no_argument, NULL, 'p' },
+      { "gateway", required_argument, NULL, 'Y' },
+
       
       { 0 , 0 , 0 , 0}
    };
@@ -181,12 +195,18 @@ void parse_options(int argc, char **argv)
    
    GBL_PCAP->promisc = 1;
    GBL_FORMAT = &ascii_format;
+   GBL_OPTIONS->ssl_mitm = 1;
 
 /* OPTIONS INITIALIZED */
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:z", long_options, (int *)0)) != EOF) {
+      /* used for parsing arguments */
+      char *opt_end = optarg;
+      while (opt_end && *opt_end) opt_end++;
+      /* enable a loaded filter script? */
+      uint8_t f_enabled = 0;
 
       switch (c) {
 
@@ -200,6 +220,10 @@ void parse_options(int argc, char **argv)
                   GBL_OPTIONS->only_mitm = 1;
                   select_text_interface();
                   break;
+
+         case 'b':
+                  GBL_OPTIONS->broadcast = 1;
+		  break;
                   
          case 'B':
                   GBL_OPTIONS->iface_bridge = strdup(optarg);
@@ -217,11 +241,12 @@ void parse_options(int argc, char **argv)
          case 'C':
                   select_curses_interface();
                   break;
-                  
+
          case 'G':
                   select_gtk_interface();
                   break;
-         
+
+                  
          case 'D':
                   select_daemon_interface();
                   break;
@@ -251,11 +276,19 @@ void parse_options(int argc, char **argv)
          case 'I':
                   /* this option is only useful in the text interface */
                   select_text_interface();
-                  GBL_OPTIONS->iflist = 1;
+                  GBL_OPTIONS->lifaces = 1;
+                  break;
+
+         case 'Y':
+                  GBL_OPTIONS->secondary = parse_iflist(optarg);
                   break;
          
          case 'n':
                   GBL_OPTIONS->netmask = strdup(optarg);
+                  break;
+
+         case 'A':
+                  GBL_OPTIONS->address = strdup(optarg);
                   break;
                   
          case 'r':
@@ -275,7 +308,12 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'F':
-                  if (filter_load_file(optarg, GBL_FILTERS) != ESUCCESS)
+                  /* is there a :0 or :1 appended to the filename? */
+                  if ( (opt_end-optarg >=2) && *(opt_end-2) == ':' ) {
+                     *(opt_end-2) = '\0';
+                     f_enabled = !( *(opt_end-1) == '0' );
+		  }
+                  if (filter_load_file(optarg, GBL_FILTERS, f_enabled) != ESUCCESS)
                      FATAL_ERROR("Cannot load filter file \"%s\"", optarg);
                   break;
                   
@@ -321,7 +359,11 @@ void parse_options(int argc, char **argv)
          case 'u':
                   GBL_OPTIONS->unoffensive = 1;
                   break;
-                  
+
+         case 'S':
+                  GBL_OPTIONS->ssl_mitm = 0;
+                  break;
+ 
          case 'd':
                   GBL_OPTIONS->resolve = 1;
                   break;
@@ -544,7 +586,20 @@ int set_regex(char *regex)
    return ESUCCESS;
 }
 
+static char **parse_iflist(char *list)
+{
+   int i, n;
+   char **r, *t, *p;
 
+   for(i = 0, n = 1; list[i] != '\0'; list[i++] == ',' ? n++ : n);
+   SAFE_CALLOC(r, n + 1, sizeof(char*));
+
+   /* its self-explaining */
+   for(r[i=0]=ec_strtok(list,",",&p);i<n&&(t=ec_strtok(NULL,",",&p))!=NULL;r[++i]=strdup(t));
+   r[n] = NULL;
+
+   return r;
+}
 
 /* EOF */
 

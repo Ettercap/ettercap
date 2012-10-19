@@ -4,6 +4,8 @@
 #ifndef EC_INET_H
 #define EC_INET_H
 
+#include <ec_queue.h>
+
 #ifdef OS_WINDOWS
    #include <winsock2.h>
    #include <ws2tcpip.h>
@@ -42,6 +44,12 @@ enum {
    MAX_ASCII_ADDR_LEN      = IP6_ASCII_ADDR_LEN,                  
 };
 
+/*
+ * Some predefined addresses here
+ */
+#define IP6_ALL_NODES "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+#define IP6_ALL_ROUTERS "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02"
+
 /* 
  * this structure is used by ettercap to handle 
  * an IP packet disregarding its version 
@@ -53,6 +61,14 @@ struct ip_addr {
    u_int8 addr[MAX_IP_ADDR_LEN];
 };
 
+struct net_list {
+   struct ip_addr ip;
+   struct ip_addr netmask;
+   struct ip_addr network;
+   u_int8 prefix;
+   LIST_ENTRY(net_list) next;
+};
+
 EC_API_EXTERN int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr);
 EC_API_EXTERN int ip_addr_cpy(u_char *addr, struct ip_addr *sa);
 EC_API_EXTERN int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
@@ -60,10 +76,15 @@ EC_API_EXTERN int ip_addr_null(struct ip_addr *sa);
 EC_API_EXTERN int ip_addr_is_zero(struct ip_addr *sa);
 
 EC_API_EXTERN char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
+EC_API_EXTERN int ip_addr_pton(char *str, struct ip_addr *addr);
 EC_API_EXTERN char *mac_addr_ntoa(u_char *mac, char *dst);
 EC_API_EXTERN int mac_addr_aton(char *str, u_char *mac);
 
-EC_API_EXTERN int ip_addr_is_local(struct ip_addr *sa);
+EC_API_EXTERN int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr);
+EC_API_EXTERN int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr);
+EC_API_EXTERN int ip_addr_is_ours(struct ip_addr *ip);
+EC_API_EXTERN int ip_addr_get_network(struct ip_addr*, struct ip_addr*, struct ip_addr*);
+EC_API_EXTERN int ip_addr_get_prefix(struct ip_addr* netmask);
 
 /*
  * this prototypes are implemented in ./os/.../

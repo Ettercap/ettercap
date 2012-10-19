@@ -103,8 +103,13 @@ FUNC_DECODER(dissector_imap)
    DEBUG_MSG("IMAP --> TCP dissector_imap");
    
 
-   /* skip the number, move to the command */
-   while(*ptr != ' ' && ptr != end) ptr++;
+   /* skip the number, move to the command
+    * if there is no space in the line, we are
+    * probably already transferring credentials
+    */
+   if (strchr(ptr, ' ')) {
+      while(*ptr != ' ' && ptr != end) ptr++;
+   }
   
    /* reached the end */
    if (ptr == end) return NULL;
@@ -152,7 +157,7 @@ FUNC_DECODER(dissector_imap)
  *
  * the digests are in base64
  */
-   if ( !strncasecmp(ptr, "AUTHENTICATE LOGIN", 19) ) {
+   if ( !strncasecmp(ptr, " AUTHENTICATE LOGIN", 19) ) {
       
       DEBUG_MSG("\tDissector_imap AUTHENTICATE LOGIN");
 
@@ -171,6 +176,36 @@ FUNC_DECODER(dissector_imap)
       /* username is in the next packet */
       return NULL;
    }
+
+/* 
+ * AUTHENTICATE PLAIN
+ *
+ * digest(authcid+\0+user+\0+pass)
+ *
+ * the digest is in base64
+ *
+ * we ignore the authzid (authorization identity) for now
+ */
+   if ( !strncasecmp(ptr, " AUTHENTICATE PLAIN", 19) ) {
+      
+      DEBUG_MSG("\tDissector_imap AUTHENTICATE PLAIN");
+
+      /* destroy any previous session */
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_imap));
+      
+      /* create the new session */
+      dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_imap));
+     
+      /* remember the state (used later) */
+      s->data = strdup("PLAIN");
+     
+      /* save the session */
+      session_put(s);
+      
+      /* username is in the next packet */
+      return NULL;
+   }
+
    
    /* search the session (if it exist) */
    dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_imap));
@@ -203,7 +238,7 @@ FUNC_DECODER(dissector_imap)
       /* store the username in the session */
       SAFE_CALLOC(s->data, strlen("AUTH USER ") + i + 1, sizeof(char) );
       
-      sprintf(s->data, "AUTH USER %s", user);
+      snprintf(s->data, strlen("AUTH USER ") + i + 1, "AUTH USER %s", user);
       
       SAFE_FREE(user);
 
@@ -236,6 +271,43 @@ FUNC_DECODER(dissector_imap)
                                     PACKET->DISSECTOR.pass);
       return NULL;
    }
+   
+   if (!strcmp(s->data, "PLAIN")) {
+      char *cred;
+      char *cred_end;
+      char *p;
+      int i;
+     
+      DEBUG_MSG("\tDissector_imap AUTHENTICATE PLAIN USER/PASS");
+      
+      SAFE_CALLOC(cred, strlen(ptr), sizeof(char));
+      
+      /* password is encoded in base64 */
+      i = base64_decode(cred, ptr);
+      p = cred;
+      cred_end = cred+i;
+      /* move to the username right after the first \0  */
+      while(*p && p!=cred_end) p++;
+      if (p!=cred_end) p++;
+      /* fill the structure */
+      PACKET->DISSECTOR.user = strdup(p);
+      /* now find the password right after the first \0 in cred */
+      while(*p && p!=cred_end) p++;
+      if (p!=cred_end) p++;
+      PACKET->DISSECTOR.pass = strdup(p);
+      
+      SAFE_FREE(cred);
+      /* destroy the session */
+      dissect_wipe_session(PACKET, DISSECT_CODE(dissector_imap));
+      
+      /* print the message */
+      DISSECT_MSG("IMAP : %s:%d -> USER: %s  PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                                    ntohs(PACKET->L4.dst), 
+                                    PACKET->DISSECTOR.user,
+                                    PACKET->DISSECTOR.pass);
+      return NULL;
+   }
+
    
    return NULL;
 }

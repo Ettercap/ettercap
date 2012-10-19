@@ -209,6 +209,10 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po)
     * may be longer or shorted than DATA.data
     */
    co->xferred += po->DATA.len;
+   if(!ip_addr_cmp(&co->L3_addr1, &po->L3.src))
+      co->tx += po->DATA.len;
+   else
+      co->rx += po->DATA.len;
 
    /*
     * update the flags:
@@ -386,7 +390,12 @@ EC_THREAD_FUNC(conntrack_timeouter)
    ec_thread_init();
    
    DEBUG_MSG("conntrack_timeouter: activated !");
-  
+
+#if !defined(OS_WINDOWS) 
+   struct timespec timeouter_sleep;
+   timeouter_sleep.tv_nsec = 0;
+#endif
+ 
    LOOP {
 
       /* 
@@ -394,12 +403,21 @@ EC_THREAD_FUNC(conntrack_timeouter)
        * (determined as the minumum of the timeouts)
        */
       sec = MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout);
+
+#if !defined(OS_WINDOWS)
+      timeouter_sleep.tv_sec = sec;
+#endif
     
       DEBUG_MSG("conntrack_timeouter: sleeping for %lu sec", (unsigned long)sec);
       
       /* always check if a cancel is requested */
       CANCELLATION_POINT();
-      sleep(sec);
+
+#if !defined(OS_WINDOWS)
+      nanosleep(&timeouter_sleep, NULL);
+#else
+      usleep(sec*1000);
+#endif
      
       DEBUG_MSG("conntrack_timeouter: woke up");
       
@@ -672,9 +690,9 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       if (c->co->DISSECTOR.user)
          flags = '*';
       
-      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %lu", flags, 
+      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %lu RX: %lu", flags, 
                                            src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
-                                           proto, status, (unsigned long)c->co->xferred);
+                                           proto, status, (unsigned long)c->co->tx, (unsigned long)c->co->rx);
    }
   
    /* return the next/prev/current to the caller */

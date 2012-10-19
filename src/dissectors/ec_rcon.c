@@ -97,7 +97,7 @@ FUNC_DECODER(dissector_rcon)
       strlcpy(PACKET->DISSECTOR.pass, ptr, q - ptr + 1);
 
       SAFE_CALLOC(PACKET->DISSECTOR.info, strlen(q) + 1, sizeof(char));
-      sprintf(PACKET->DISSECTOR.info, "%s", q);
+      snprintf(PACKET->DISSECTOR.info, strlen(q) + 1, "%s", q);
 
       DISSECT_MSG("RCON : %s:%d -> AUTHKEY: %s  COMMAND: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 

@@ -55,17 +55,17 @@ static void parse_smb(struct packet_object *po);
 
 struct plugin_ops smb_clear_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   name:             "smb_clear",  
+   .name =              "smb_clear",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Tries to force SMB cleartext auth",  
+   .info =              "Tries to force SMB cleartext auth",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   init:             &smb_clear_init,
+   .init =              &smb_clear_init,
    /* deactivation function */                     
-   fini:             &smb_clear_fini,
+   .fini =              &smb_clear_fini,
 };
 
 /**********************************************************/

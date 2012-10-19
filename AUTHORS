@@ -2,30 +2,37 @@
 AUTHORS:
 
 
-   ALoR (Alberto Ornaghi)  <alor@antifork.org>
+   ALoR (Alberto Ornaghi)			<alor@antifork.org>
 
-   NaGA (Marco Valleri)    <naga@antifork.org>
+   NaGA (Marco Valleri)				<naga@antifork.org>
 
 
 ==============================================================================
 
 OFFICIAL DEVELOPERS:
 
-   Daten (Bryan Schneiders)   <daten@dnetc.org>             the GTK interface
-                                                            but not limited to...
-
-
+   Emilio Escobar (exfil)			<eescobar@gmail.com>		Core Development (Lazarus)
+   Eric Milam (J0hnnyBrav0)			<jbrax.hax@gmail.com>		Bug Hunting & Testing (Lazarus)
+   Daten (Bryan Schneiders)			<daten@dnetc.org>		the GTK interface
+										but not limited to...
+   Zero_Chaos					<sidhayn@gmail.com>		Lamer, buildscript kiddie fixes
+   Gianfranco Costamagna (LocutusOfBorg)	<costamagnagianfranco@yahoo.it>	Bug Hunting, Bug fixing and patch backporting (Lazarus)
 CONTRIBUTORS (for the Next Generation series):
 
-   Gisle Vanem <giva@bgnett.no>                             for the mingw porting
-   Johannes Bauer <JohannesBauer@gmx.de>                    for the prism2 decoder
+   Gisle Vanem					<giva@bgnett.no>		for the mingw porting
+   Johannes Bauer				<JohannesBauer@gmx.de>		for the prism2 decoder
 
 
 CONTRIBUTORS (for the First Generation series):
 
-   Lnz (Lorenzo Porro)        <lporro@libero.it>            some dissectors
-   Tavi (Octavian Mihalache)  <dev_tavi@mymail.ro>          win9x porting
-   Georg Hofstetter           <geggo@donau-ries.de>         HL-RCON dissector 
-   Giorgio Zoppi              <zoppi@cli.di.unipi.it>       security patch
-   Garph0                     <garph0@gmx.co.uk>            plugin porting for windows
+   Lnz (Lorenzo Porro)				<lporro@libero.it>		some dissectors
+   Tavi (Octavian Mihalache)			<dev_tavi@mymail.ro>		win9x porting
+   Georg Hofstetter				<geggo@donau-ries.de>		HL-RCON dissector 
+   Giorgio Zoppi				<zoppi@cli.di.unipi.it>		security patch
+   Garph0					<garph0@gmx.co.uk>		plugin porting for windows
+
+CONTRIBUTORS (Lazarus):
+   Martin Bos (PureHate)			<purehate@backtrack.com>	Testing (Lazarus)
+   Enrique Sanchez								Code Review (Lazarus)
+
    

@@ -15,6 +15,9 @@ enum {
    ENOADDRESS  = 5,
    EDUPLICATE  = 6,
    ETIMEOUT    = 7,
+   EINITFAIL   = 8,
+   EFOUND      = 128,
+   EBRIDGE     = 129,
    EVERSION    = 254,
    EFATAL      = 255,
 };

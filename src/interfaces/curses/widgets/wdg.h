@@ -4,9 +4,7 @@
 #ifndef WDG_H
 #define WDG_H
 
-#ifdef HAVE_CONFIG_H
-   #include <config.h>
-#endif
+#include <config.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -23,7 +21,6 @@
 
 #if defined HAVE_STDINT_H && !defined OS_SOLARIS
 	#include <stdint.h>
-#elif !defined OS_SOLARIS
 	#include <sys/types.h>
 #elif defined OS_SOLARIS
 	#include <sys/inttypes.h>

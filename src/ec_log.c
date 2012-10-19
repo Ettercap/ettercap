@@ -97,8 +97,8 @@ int set_loglevel(int level, char *filename)
       USER_MSG("*********************************************************\n\n");
    }
    
-   sprintf(eci, "%s.eci", filename);
-   sprintf(ecp, "%s.ecp", filename);
+   snprintf(eci, strlen(filename)+5, "%s.eci", filename);
+   snprintf(ecp, strlen(filename)+5, "%s.ecp", filename);
    
    memset(&fdp, 0, sizeof(struct log_fd));
    memset(&fdi, 0, sizeof(struct log_fd));
@@ -190,7 +190,7 @@ int log_open(struct log_fd *fd, char *filename)
       if (fd->cfd == NULL)
          SEMIFATAL_ERROR("%s", gzerror(fd->cfd, &zerr));
    } else {
-      fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY);
+      fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, S_IRUSR | S_IWUSR);
       if (fd->fd == -1)
          SEMIFATAL_ERROR("Can't create %s: %s", filename, strerror(errno));
    }
@@ -457,7 +457,7 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
    hi.type = po->PASSIVE.flags;
 
    /* calculate if the dest is local or not */
-   switch (ip_addr_is_local(&po->L3.dst)) {
+   switch (ip_addr_is_local(&po->L3.dst, NULL)) {
       case ESUCCESS:
          hid.type |= FP_HOST_LOCAL;
          break;

@@ -33,8 +33,8 @@
 #include <string.h>
 #endif
 
-void * memmem(const char *haystack, size_t haystacklen,
-              const char *needle, size_t needlelen);
+void * memmem(const void *haystack, size_t haystacklen,
+              const void *needle, size_t needlelen);
 
 /*
  *  DESCRIPTION
@@ -48,8 +48,8 @@ void * memmem(const char *haystack, size_t haystacklen,
  */
 
 
-void * memmem(const char *haystack, size_t haystacklen,
-              const char *needle, size_t needlelen)
+void * memmem(const void *haystack, size_t haystacklen,
+              const void *needle, size_t needlelen)
 {
 	register const char *h = haystack;
 	register const char *n = needle;

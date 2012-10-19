@@ -1,5 +1,4 @@
 [Desktop Entry]
-Encoding=UTF-8
 Name=Ettercap
 Comment=Nework sniffer/analyser
 Exec=ettercap-gtk

@@ -29,6 +29,19 @@ code, btw fixes and patches are welcome.
 
 
 ==============================================================================
+                     R E Q U I R E D   P R O G R A M S
+==============================================================================
+
+C compiler
+
+flex (or other lex-compatible parser generator) for *.l files
+
+bison (or other yacc-compatible parser generator) for *.y files
+
+cmake (build tool)
+
+
+==============================================================================
                      R E Q U I R E D   L I B R A R I E S
 ==============================================================================
 

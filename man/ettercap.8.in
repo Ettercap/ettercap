@@ -925,13 +925,10 @@ Marco Valleri (NaGA) <naga@antifork.org>
 
 
 .SH AVAILABILITY
-http://ettercap.sourceforge.net/download/
+https://github.com/Ettercap/ettercap/downloads
 
-
-.SH CVS
-cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap login
-.br
-cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap co ettercap_ng
+.SH GIT
+git git://github.com/Ettercap/ettercap.git
 
 
 .SH BUGS
@@ -945,8 +942,8 @@ It just develops random features.   ;)
 will be displayed by the sniffer. However all the fragments are correctly
 forwarded.
 .PP
-+ please send bug-report, patches or suggestions to <alor@users.sourceforge.net>
-or visit http://ettercap.sourceforge.net/forum/  and post it in the BUGS section.
++ please send bug-report, patches or suggestions to <ettercap-betatesting@lists.sourceforge.net>
+or visit https://github.com/Ettercap/ettercap/issues.
 .PP
 + to report a bug, follow the instructions in the README.BUGS file
 

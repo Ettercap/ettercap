@@ -88,7 +88,6 @@ void __init ppp_init(void)
    dissect_add("ppp", NET_LAYER, LL_TYPE_PPP, decode_ppp);
 }
 
-
 FUNC_DECODER(decode_ppp)
 {
    FUNC_DECODER_PTR(next_decoder);
@@ -170,60 +169,67 @@ FUNC_DECODER(decode_ppp)
             }
                else version = 0;
             break;
-	
+
          case PPP_CHAP_CODE_RESPONSE: 
-	    
+
             if (version != 1 && version !=2) 
                break;			
                
             i = ntohs(lcph->length) - 5 - chapch->size;
             if (i > sizeof(user)-2) 
                i = sizeof(user)-2;
-		
+
             memcpy(user, (u_char *)lcph + 5 + chapch->size, i);
             user[i] = '\0';	
-		
+
             /* Check if it's from PPP or PPTP */
             if (!ip_addr_null(&PACKET->L3.dst) && !ip_addr_null(&PACKET->L3.src)) {
                DISSECT_MSG("\n\nTunnel PPTP: %s -> ", ip_addr_ntoa(&PACKET->L3.src, temp)); 
                DISSECT_MSG("%s\n", ip_addr_ntoa(&PACKET->L3.dst, temp));
             }
-		
-            DISSECT_MSG("PPP : MS-CHAP Password:   %s:\"\":\"\":", user);
-		
+
+            DISSECT_MSG("PPP*MS-CHAP Password*%s:$MSCHAPv2$", user);
+
             if (version == 1) {        
                for (i = 0; i < 24; i++) 
                   DISSECT_MSG("%02X", chapch->value.response_v1.lanman[i]);
                DISSECT_MSG(":");
-			
                for (i = 0; i < 24; i++) 
                   DISSECT_MSG("%02X", chapch->value.response_v1.nt[i]);
                DISSECT_MSG(":%s\n\n",schallenge);
-		  	
+
             } else if (version == 2) {
-#ifdef HAVE_OPENSSL 
+#ifdef HAVE_OPENSSL
                u_char *p;
 
                if ((p = strchr(user, '\\')) == NULL)
                   p = user;
                else 
                   p++;
-			
+
                SHA1_Init(&ctx);
                SHA1_Update(&ctx, chapch->value.response_v2.peer_challenge, 16);
                SHA1_Update(&ctx, schallenge, 16);
                SHA1_Update(&ctx, p, strlen(p));
                SHA1_Final(digest, &ctx);
-			
-               DISSECT_MSG("000000000000000000000000000000000000000000000000:");
-			
-               for (i = 0; i < 24; i++) 
-                  DISSECT_MSG("%02X",chapch->value.response_v2.nt[i]);
-               DISSECT_MSG(":");
 
                for (i = 0; i < 8; i++) 
                   DISSECT_MSG("%02X", digest[i]);
-               DISSECT_MSG("\n\n");			
+               DISSECT_MSG("$");
+
+               for (i = 0; i < 24; i++)
+                  DISSECT_MSG("%02X",chapch->value.response_v2.nt[i]);
+               DISSECT_MSG("$%s\n\n", user);
+#else
+               for (i = 0; i < 16; i++)
+                  DISSECT_MSG("%02X", schallenge[i]);
+               DISSECT_MSG("$");
+               for (i = 0; i < 24; i++)
+                       DISSECT_MSG("%02X",chapch->value.response_v2.nt[i]);
+               DISSECT_MSG("$");
+               for (i = 0; i < 16; i++)
+                       DISSECT_MSG("%02X",chapch->value.response_v2.peer_challenge[i]);
+               DISSECT_MSG("$%s\n\n", user);
 #endif
             }
             version = 0;

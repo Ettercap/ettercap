@@ -1,5 +1,4 @@
 
-/* $Id: ec_log.h,v 1.24 2005/06/17 08:02:53 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -87,7 +86,7 @@ struct log_header_packet {
  *
  * [header][user][pass][info][banner][header][user][pass]....
  *
- * every header contains in the structur "variable" the lenght
+ * every header contains in the structure "variable" the length
  * of the successive banner, user, pass and info fields.
  */
 struct log_header_info {
@@ -107,7 +106,7 @@ struct log_header_info {
    
    u_char fingerprint[FINGER_LEN+1];
 
-   /* account informations */
+   /* account information */
    u_int8 failed;
    struct ip_addr client;
 

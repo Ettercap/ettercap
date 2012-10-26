@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_send.c,v 1.60 2004/12/03 09:10:30 alor Exp $
 */
 
 #include <ec.h>
@@ -182,7 +181,7 @@ int send_to_iface(struct packet_object *po, struct iface_env *iface)
 
 /*
  * we MUST not sniff packets sent by us at link layer.
- * expecially usefull in bridged sniffing.
+ * expecially useful in bridged sniffing.
  *
  * so we have to find a solution...
  */

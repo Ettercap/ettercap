@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: smb_down.c,v 1.2 2004/06/25 14:24:29 alor Exp $
 */
 
 
@@ -113,7 +112,7 @@ static void parse_smb(struct packet_object *po)
    u_int32 *Flags;
    char tmp[MAX_ASCII_ADDR_LEN];
    
-   /* It's unuseful to modify packets that won't be forwarded */
+   /* It is pointless to modify packets that won't be forwarded */
    if (!(po->flags & PO_FORWARDABLE)) 
       return; 
       

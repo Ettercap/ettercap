@@ -1012,7 +1012,7 @@ static void http_remove_https(struct http_connection *connection)
 
 		if (regcomp(find_https_re, URL_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE))
 		{
-			ERROR_MSG("SSLStrip: Error compiling regular expresion\n");
+			ERROR_MSG("SSLStrip: Error compiling regular expression\n");
 			return;
 		}
 	}

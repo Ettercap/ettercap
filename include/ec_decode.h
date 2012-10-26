@@ -1,5 +1,4 @@
 
-/* $Id: ec_decode.h,v 1.17 2004/09/02 13:17:41 alor Exp $ */
 
 #ifndef EC_DECODE_H
 #define EC_DECODE_H

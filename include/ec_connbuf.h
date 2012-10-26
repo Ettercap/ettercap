@@ -1,5 +1,4 @@
 
-/* $Id: ec_connbuf.h,v 1.6 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_CONNBUF_H
 #define EC_CONNBUF_H

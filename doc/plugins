@@ -111,7 +111,7 @@ NOTE:       the plugin system has been modified since ettercap NG 0.7.0, all
       
       HOOK_DECODED      all the packet after the protocol stack parsing and
                         after the dissectors. here you can find interesting
-                        informations such as passwords and fingerprints.
+                        information such as passwords and fingerprints.
       
       HOOK_PRE_FORWARD  right before the forward point. the hook is executed
                         only if it has to be forwarded.
@@ -168,7 +168,7 @@ NOTE:       the plugin system has been modified since ettercap NG 0.7.0, all
       scope.
       
 
-feel free to write an email to the developer to have further informations.
+feel free to write an email to the developer to have further information.
 
 
 EOF

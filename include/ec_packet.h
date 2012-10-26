@@ -1,5 +1,4 @@
 
-/* $Id: ec_packet.h,v 1.36 2004/07/24 10:43:21 alor Exp $ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H
@@ -61,17 +60,17 @@ struct packet_object {
        */
       size_t disp_len;
       u_char * disp_data;
-      /* for modified packet this is the delta for the lenght */
+      /* for modified packet this is the delta for the length */
       int delta;  
       size_t inject_len;      /* len of the injection */
       u_char *inject;         /* the fuffer used for injection */
 
    } DATA;
 
-   size_t fwd_len;         /* lenght of the packet to be forwarded */
+   size_t fwd_len;         /* length of the packet to be forwarded */
    u_char * fwd_packet;    /* the pointer to the buffer to be forwarded */
    
-   size_t len;             /* total lenght of the packet */
+   size_t len;             /* total length of the packet */
    u_char * packet;        /* the buffer containing the real packet */
 
    /* Trace current session for injector chain */

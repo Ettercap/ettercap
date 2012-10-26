@@ -72,7 +72,7 @@ NG-0.7.1         20040920
 
 NG-0.7.0         20040705
 
-   + implemeted a thread safe strtok
+   + implemented a thread safe strtok
    + prepared the source for a smooth mingw porting
    !! fixed numeric sorting in gtk interface
    !! autoadd plugin does not add the local address
@@ -99,7 +99,7 @@ NG-0.7.0_rc1     20040614
 NG-0.7.0_pre2    20040517
 
    + added support for UTF-8 strings
-   + telnet collector enhacements (catches cisco login)
+   + telnet collector enhancements (catches cisco login)
    + added new plugins:
       + find_ettercap
       + autoadd
@@ -213,7 +213,7 @@ NG-0.7.0_pre1    20040415
    + Updated the passive OS fingerprint database (1279 records)
    !! Fixed internal refreshing (for huge traffic loads)
    !! Fixed wifi-dump support
-   !! Fixed doppleganger re-arp
+   !! Fixed doppelganger re-arp
    !! Fixed a problem with signed char under mac G3
    !! Fixed some possible buffer overflows
 
@@ -262,7 +262,7 @@ NG-0.7.0_pre1    20040415
       + Sparc architecture support even for all other OSes
       + Windows 9X porting
       + Increased the speed of arp storm under windows
-      + Added the ability to bind a port on which ettercap forwards the sniffed trafic
+      + Added the ability to bind a port on which ettercap forwards the sniffed traffic
       + The -H option now supports range ip
       + NEW PLUGIN: lamia (become root of a switches spanning tree)
       + Updated the passive OS fingerprint database (825 records)
@@ -295,7 +295,7 @@ NG-0.7.0_pre1    20040415
 
 0.6.4       20020212
 
-      + You can sniff traffic from a romote cisco router
+      + You can sniff traffic from a remote cisco router
         and make mitm attacks on it using GRE tunnels.
       + Added some bits for the passive OS fingerprint database.
         Now even the length of the packet make sense.
@@ -306,7 +306,7 @@ NG-0.7.0_pre1    20040415
       + ICQ dissector now searches for passwords on all ports
       + Updated the passive OS fingerprint database (675 records)
       + Changed arg 2 of Plugin_HookPoint for PCK_RECEIVED_RAW
-      !! Under OpenBSD the pflog interface is ingored
+      !! Under OpenBSD the pflog interface is ignored
       !! Fixed the DATA_PATH issue in the phantom plugin
       !! Fixed an unsigned short in state_machine
       !! Fixed some plugins that don't recognize the 'yes' answer
@@ -339,7 +339,7 @@ NG-0.7.0_pre1    20040415
 0.6.2       20011112
 
       + Ettercap is now a multi-thread single process.
-      + The connection handling engine was enhanched and speeded up
+      + The connection handling engine was enhanced and sped up
       + Now filtered (replaced) data can exceed the MTU
       + Completely new plugin conception (hooking plugin)
       + Better handling for unknown passive fingerprints
@@ -357,7 +357,7 @@ NG-0.7.0_pre1    20040415
       !! Fixed a sigfault in the HTTP dissector
       !! Plugins are now installed in {prefix}/lib/ettercap, not in share/ettercap
       !! ettercap is now installed in the more appropriate {prefix}/sbin/
-      !! now the configure script doesn't require root privledges to run
+      !! now the configure script doesn't require root privileges to run
       !! configure now handles correctly the --datadir=DIR and --libdir=DIR directive.
 
 
@@ -365,7 +365,7 @@ NG-0.7.0_pre1    20040415
 
       + Passive scanning of the LAN
       + Plugins ported to Mac OS X (darwin)
-      + Doppleganger now uses the new REQUEST ARP POISON (see readme)
+      + Doppelganger now uses the new REQUEST ARP POISON (see readme)
       + Grell (HTTPS) now supports virtual hosts
       + The Logging engine for the simple mode was rewritten from scratch
       + Now MAC sniffing can have only one parameter
@@ -403,7 +403,7 @@ NG-0.7.0_pre1    20040415
       + Porting for NetBSD 1.5
       + Added FreeBSD 4 support for source MAC address spoofing
       + Illithid (the sniffer engine) totally rewritten and tuned up
-      + Doppleganger (the arp poisoner) totally rewritten and tuned up
+      + Doppelganger (the arp poisoner) totally rewritten and tuned up
       + New programmable filtering engine (see README for details)
       + Filter can be used in command line mode (-F option)
       + Possibility to scan only chosen IPs (-H option)
@@ -432,7 +432,7 @@ NG-0.7.0_pre1    20040415
       + Updated the OS fingerprint database (2001/06/04 09:40:50 fyodor)
       + NEW password collector for: HTTPS, PROXYHTTPS
       + ENHANCEMENT in the password collector for: SMB, HTTP, MySQL
-      + FIXED password collecor for: IRC
+      + FIXED password collector for: IRC
       + DOCUMENTATION translated in : French, Italian
       ! Fixed many many bug... but some still persist... ;)
 
@@ -447,7 +447,7 @@ NG-0.7.0_pre1    20040415
       + Plugins can be launched from connection list
       + NEW plugin : banshee
       + ENHANCEMENT in the password collector for: SOCKS 5, IMAP, VNC, SMB, MySQL
-      + FIXED password collecor for: SOCKS 5
+      + FIXED password collector for: SOCKS 5
 
 
 0.4.2       20010429
@@ -470,7 +470,7 @@ NG-0.7.0_pre1    20040415
 
       + Full duplex SSH man-in-the-middle support !!
       + new startup mode (--broadping -b).
-      + new sniffig metod (PublicARP)
+      + new sniffing method (PublicARP)
       + Injector now supports escape sequences
       + netmask switch added
       + added support for getopt_long even on *BSD
@@ -521,7 +521,7 @@ NG-0.7.0_pre1    20040415
       + Inet module totally rewritten and redesigned.
       + Downported to 2.0.x Linux Kernels (EXPERIMENTAL)
       + Added support for glibc 2.0.x  2.1.x  2.2.x
-      + Scroll back in sniffing window (*very* *very* usefull !!)
+      + Scroll back in sniffing window (*very* *very* useful !!)
       ! after injection the connections are cleanly RSTted
 
 

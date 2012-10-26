@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: pptp_reneg.c,v 1.1 2003/12/04 17:25:06 lordnaga Exp $
 */
 
 
@@ -124,7 +123,7 @@ static void parse_ppp(struct packet_object *po)
    struct ppp_header *ppp;
    char tmp[MAX_ASCII_ADDR_LEN];
    
-   /* It's unuseful to modify packets that won't be forwarded */
+   /* It is pointless to modify packets that won't be forwarded */
    if (!(po->flags & PO_FORWARDABLE)) 
       return; 
 

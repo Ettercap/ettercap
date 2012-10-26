@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_fingerprint.c,v 1.23 2004/06/25 14:24:29 alor Exp $
 
 */
 
@@ -264,7 +263,7 @@ void fingerprint_push(char *finger, int param, int value)
          break;
       case FINGER_LT:
          /*
-          * since the LENGHT is the sum of the IP header
+          * since the LENGTH is the sum of the IP header
           * and the TCP header, we have to calculate it
           * in two steps. (decoders are unaware of other layers)
           */

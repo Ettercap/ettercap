@@ -1,5 +1,4 @@
 
-/* $Id: ec_filter.h,v 1.22 2005/01/04 14:30:49 alor Exp $ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H

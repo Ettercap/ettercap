@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_conntrack.c,v 1.23 2004/07/23 07:25:27 alor Exp $
 */
 
 #include <ec.h>
@@ -488,7 +487,7 @@ int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct pack
    /* 
     * if the connection already exist, add the hook function 
     * else create the entry for the connection and add the hook
-    * this is usefull to add hooks for future connections
+    * this is useful to add hooks for future connections
     */
 
    /* create the fake connection */

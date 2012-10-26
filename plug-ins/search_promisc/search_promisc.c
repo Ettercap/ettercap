@@ -19,7 +19,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: search_promisc.c,v 1.4 2003/11/10 12:15:31 lordnaga Exp $
 */
 
 

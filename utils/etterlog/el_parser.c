@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: el_parser.c,v 1.25 2004/11/04 10:37:16 alor Exp $
 */
 
 
@@ -57,7 +56,7 @@ void el_usage(void)
    fprintf(stdout, "      -s, --only-source           print packets only from the source\n");
    fprintf(stdout, "      -d, --only-dest             print packets only from the destination\n");
    fprintf(stdout, "  -r, --reverse               reverse the target/connection matching\n");
-   fprintf(stdout, "  -n, --no-headers            skip header informations between packets\n");
+   fprintf(stdout, "  -n, --no-headers            skip header information between packets\n");
    fprintf(stdout, "  -m, --show-mac              show mac addresses in the headers\n");
    fprintf(stdout, "  -k, --color                 colorize the output\n");
    fprintf(stdout, "  -l, --only-local            show only local hosts parsing info files\n");

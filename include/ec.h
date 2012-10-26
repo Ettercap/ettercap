@@ -1,5 +1,4 @@
 
-/* $Id: ec.h,v 1.30 2004/09/30 16:01:45 alor Exp $ */
 
 #ifndef EC_H
 #define EC_H

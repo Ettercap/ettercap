@@ -928,7 +928,7 @@ Marco Valleri (NaGA) <naga@antifork.org>
 https://github.com/Ettercap/ettercap/downloads
 
 .SH GIT
-git clone -b ettercap_rc git://github.com/Ettercap/ettercap.git ettercap_rc 
+git git://github.com/Ettercap/ettercap.git
 
 
 .SH BUGS

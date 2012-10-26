@@ -40,6 +40,7 @@ bison (or other yacc-compatible parser generator) for *.y files
 
 cmake (build tool)
 
+ps2pdf13 (script accompanying ghostscript)
 
 ==============================================================================
                      R E Q U I R E D   L I B R A R I E S

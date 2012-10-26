@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.31 2004/11/04 09:23:00 alor Exp $
 */
 
 #include <ec.h>
@@ -365,7 +364,7 @@ static int create_silent_list(void)
       
       USER_MSG(" TARGET 1 : %-15s %17s\n", ip_addr_ntoa(&i->ip, tmp), mac_addr_ntoa(GBL_TARGET1->mac, tmp2));
       
-      /* copy the informations */
+      /* copy the information */
       memcpy(&h->ip, &i->ip, sizeof(struct ip_addr));
       memcpy(&h->mac, &GBL_TARGET1->mac, MEDIA_ADDR_LEN);
       
@@ -392,7 +391,7 @@ static int create_silent_list(void)
       }
       USER_MSG(" TARGET 2 : %-15s %17s\n", ip_addr_ntoa(&j->ip, tmp), mac_addr_ntoa(GBL_TARGET2->mac, tmp2));
       
-      /* copy the informations */
+      /* copy the information */
       memcpy(&g->ip, &j->ip, sizeof(struct ip_addr));
       memcpy(&g->mac, &GBL_TARGET2->mac, MEDIA_ADDR_LEN);
       

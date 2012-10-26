@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_targets.c,v 1.14 2004/05/19 14:08:54 alor Exp $
 */
 
 #include <ec.h>
@@ -277,7 +276,7 @@ static void curses_create_targets_array(void)
    /* XXX - two more loops were added to handle ipv6 targets
     *       since ipv6 targets require a separate list and it is
     *       unreasonable to put both ipv4 and ipv6 at the same list
-    *       this shit here should be completely rewritten.
+    *       this code should be completely rewritten.
     *       do it if you have time.
     *                                  the braindamaged one.
     */

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.1"
+   width="32"
+   height="32"
+   id="svg2985">
+  <defs
+     id="defs2987">
+    <linearGradient
+       id="linearGradient5535">
+      <stop
+         id="stop5537"
+         style="stop-color:#1b21ff;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop5549"
+         style="stop-color:#4146ff;stop-opacity:1"
+         offset="0.20024829" />
+      <stop
+         id="stop5547"
+         style="stop-color:#4a4b63;stop-opacity:1"
+         offset="0.37371793" />
+      <stop
+         id="stop5539"
+         style="stop-color:#4a4b64;stop-opacity:1"
+         offset="0.61856174" />
+      <stop
+         id="stop5541"
+         style="stop-color:#3341e3;stop-opacity:1"
+         offset="0.8180083" />
+      <stop
+         id="stop5543"
+         style="stop-color:#3a54ee;stop-opacity:1"
+         offset="1" />
+    </linearGradient>
+    <filter
+       color-interpolation-filters="sRGB"
+       id="filter3932">
+      <feGaussianBlur
+         stdDeviation="0.50388709"
+         id="feGaussianBlur3934" />
+    </filter>
+    <filter
+       color-interpolation-filters="sRGB"
+       id="filter3976">
+      <feGaussianBlur
+         stdDeviation="0.75583063"
+         id="feGaussianBlur3978" />
+    </filter>
+    <linearGradient
+       x1="12.940907"
+       y1="13.270698"
+       x2="17.708107"
+       y2="19.037781"
+       id="linearGradient5521"
+       xlink:href="#linearGradient5535"
+       gradientUnits="userSpaceOnUse"
+       spreadMethod="reflect" />
+  </defs>
+  <g
+     transform="translate(-7.4208417,-1.7494739)"
+     id="layer1">
+    <g
+       transform="matrix(0.73243879,0,0,0.73243879,6.2665182,7.2020425)"
+       id="g5551">
+      <text
+         x="2.926657"
+         y="28.347166"
+         transform="matrix(0.85461439,0.25271324,-0.26289571,1.0827704,8.794834,-3.2666668)"
+         id="text3788"
+         xml:space="preserve"
+         style="font-size:57.33123779px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#aaaaaa;fill-opacity:1;stroke:none;filter:url(#filter3976);font-family:Gentium Book Basic;-inkscape-font-specification:Gentium Book Basic Bold Italic"><tspan
+           x="2.926657"
+           y="28.347166"
+           id="tspan3790">e</tspan></text>
+      <text
+         x="1.1086264"
+         y="27.347006"
+         transform="matrix(0.85461439,0.25271324,-0.26289571,1.0827704,8.6195427,-2.5447068)"
+         id="text3016"
+         xml:space="preserve"
+         style="font-size:57.33123779px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#404040;fill-opacity:1;stroke:none;filter:url(#filter3932);font-family:Gentium Book Basic;-inkscape-font-specification:Gentium Book Basic Bold Italic"><tspan
+           x="1.1086264"
+           y="27.347006"
+           id="tspan3018">e</tspan></text>
+      <text
+         x="7.040379"
+         y="21.867453"
+         transform="matrix(0.85814503,0.25375727,-0.2639818,1.0872436,0,0)"
+         id="text2993"
+         xml:space="preserve"
+         style="font-size:57.09536362px;font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:url(#linearGradient5521);fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Gentium Book Basic;-inkscape-font-specification:Gentium Book Basic Bold Italic"><tspan
+           x="7.040379"
+           y="21.867453"
+           id="tspan2995"
+           style="fill:url(#linearGradient5521);fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none">e</tspan></text>
+    </g>
+  </g>
+</svg>

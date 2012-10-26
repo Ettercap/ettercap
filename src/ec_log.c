@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_log.c,v 1.42 2005/06/17 08:03:16 alor Exp $
 */
 
 #include <ec.h>
@@ -382,7 +381,7 @@ void log_write_packet(struct log_fd *fd, struct packet_object *po)
 
 
 /*
- * log passive informations
+ * log passive information
  *
  * hi is the source
  * hid is the dest, used to log password.
@@ -469,7 +468,7 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
          break;
    }
    
-   /* set account informations */
+   /* set account information */
    hid.failed = po->DISSECTOR.failed;
    memcpy(&hid.client, &po->L3.src, sizeof(struct ip_addr));
    

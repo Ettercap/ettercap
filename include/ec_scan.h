@@ -1,5 +1,4 @@
 
-/* $Id: ec_scan.h,v 1.7 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_SCAN_H
 #define EC_SCAN_H

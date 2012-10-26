@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_tcp.c,v 1.42 2004/09/28 09:56:13 alor Exp $
 */
 
 #include <ec.h>
@@ -65,7 +64,7 @@ struct tcp_header {
 
 
 /* Session identifier 
- * It has to be even-lenghted for session hash matching */
+ * It has to be even-lengthed for session hash matching */
 struct tcp_ident {
    u_int32 magic;
       #define TCP_MAGIC  0x0400e77e
@@ -449,7 +448,7 @@ size_t tcp_create_ident(void **i, struct packet_object *po)
    /* return the ident */
    *i = ident;
 
-   /* return the lenght of the ident */
+   /* return the length of the ident */
    return sizeof(struct tcp_ident);
 }
 

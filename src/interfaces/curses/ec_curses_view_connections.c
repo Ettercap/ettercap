@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_curses_view_connections.c,v 1.23 2004/09/30 16:01:45 alor Exp $
 */
 
 #include <ec.h>
@@ -232,7 +231,7 @@ static void curses_connection_data(void *conn)
    curr_conn = c->co;
    curr_conn->flags |= CONN_VIEWING;
    
-   /* default is splitted view */
+   /* default is split view */
    curses_connection_data_split();
 }
 
@@ -240,7 +239,7 @@ static void curses_connection_data_help(void)
 {
    char help[] = "HELP: shortcut list:\n\n"
                  "  ARROWS - switch between panels\n" 
-                 "    j    - switch from splitted to joined view\n"
+                 "    j    - switch from split to joined view\n"
                  "    y    - inject characters interactively\n"
                  "    Y    - inject characters from a file\n"
                  "    k    - kill the connection";

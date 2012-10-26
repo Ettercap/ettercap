@@ -1,5 +1,4 @@
 
-/* $Id: ec_profiles.h,v 1.17 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_PROFILES_H
 #define EC_PROFILES_H

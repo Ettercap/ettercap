@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_scan.c,v 1.43 2004/12/21 20:27:15 alor Exp $
 */
 
 #include <ec.h>
@@ -312,8 +311,8 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
 
    /*
-    * in this special parsing, the packet must be ingored by
-    * application layer, leave this un touched.
+    * in this special parsing, the packet must be ignored by
+    * application layer, leave this untouched.
     */
    po.flags |= PO_DONT_DISSECT;
 

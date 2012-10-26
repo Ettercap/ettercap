@@ -14,7 +14,6 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_plugins.8.in,v 1.35 2004/11/04 10:37:16 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -22,12 +21,12 @@
 ..
 .TH ETTERCAP-PLUGINS "8" "" "ettercap @VERSION@"
 .SH NAME
-.B ettercap-plugins @VERSION@ \- A collection of plugins for ettercap
+ettercap-plugins \- A collection of plugins for ettercap
 
 .SH DESCRIPTION
 Ettercap(8) supports loadable modules at runtime. They are called plugins and
 they come within the source tarball. They are automatically compiled if your
-system supports them or until you specify the --disable-plugins option to the
+system supports them or until you specify the \-\-disable\-plugins option to the
 configure script.
 .br
 Some of older ettercap plugins (roper, banshee, and so on) have not been ported 
@@ -39,7 +38,7 @@ If you use interactive mode, most plugins need to "Start Sniff" before using the
 .TP
 To have a list of plugins installed in your system do that command:
 .Sp
-.I ettercap -P list
+.I ettercap \-P list
 
 .LP
 .LP
@@ -54,7 +53,7 @@ If you build the initial host list the plugin will run more accurately.
 .Sp
 .I example :
 .Sp
-ettercap -TQP arp_cop // 
+ettercap \-TQP arp_cop // 
 
 
 .TP 
@@ -110,7 +109,7 @@ This plugin is based on the original Naptha DoS attack
 .Sp
 .I example :
 .Sp
-ettercap -TQP dos_attack
+ettercap \-TQP dos_attack
 
 .TP 
 .B dummy
@@ -126,9 +125,9 @@ wants to talk to. It can also help you finding addresses in an unknown LAN.
 .Sp
 .I example :
 .Sp
-ettercap -TQzP find_conn 
+ettercap \-TQzP find_conn 
 .Sp
-ettercap -TQu -i eth0 -P find_conn 
+ettercap \-TQu \-i eth0 \-P find_conn 
 
 
 .TP 
@@ -156,9 +155,9 @@ You can run it either from the command line or from the proper menu.
 .Sp
 .I example :
 .Sp
-ettercap -TQP find_ip // 
+ettercap \-TQP find_ip // 
 .Sp
-ettercap -TQP find_ip /192.168.0.1-254/ 
+ettercap \-TQP find_ip /192.168.0.1\-254/ 
 
 
 .TP 
@@ -175,9 +174,9 @@ ports, all the ports will be tested on all the IPs.
 .Sp
 .I example :
 .Sp
-ettercap -TzP finger /192.168.0.1/22
+ettercap \-TzP finger /192.168.0.1/22
 .br
-ettercap -TzP finger /192.168.0.1-50/22,23,25
+ettercap \-TzP finger /192.168.0.1\-50/22,23,25
 
 
 .TP 
@@ -191,7 +190,7 @@ database. Thank you very much.
 .Sp
 .I example :
 .Sp
-ettercap -TzP finger_submit
+ettercap \-TzP finger_submit
 
 .TP 
 .B gre_relay
@@ -220,7 +219,7 @@ have a valid host list before launching this plugin.
 .Sp
 .I example :
 .Sp
-ettercap -TP gw_discover /192.168.0.1-50/
+ettercap \-TP gw_discover /192.168.0.1\-50/
 
 .TP 
 .B isolate
@@ -237,9 +236,9 @@ be blocked to the victim.
 .Sp
 .I examples :
 .Sp
-ettercap -TzqP isolate /192.168.0.1/ //
+ettercap \-TzqP isolate /192.168.0.1/ //
 .br
-ettercap -TP isolate /192.168.0.1/ /192.168.0.2-30/
+ettercap \-TP isolate /192.168.0.1/ /192.168.0.2\-30/
 
 
 .TP 
@@ -252,9 +251,9 @@ accurate.
 .Sp
 .I example :
 .Sp
-ettercap -TQP link_type /192.168.0.1/
+ettercap \-TQP link_type /192.168.0.1/
 .br
-ettercap -TQP link_type //
+ettercap \-TQP link_type //
 
 .TP 
 .B pptp_chapms1
@@ -304,7 +303,7 @@ It is useful only on ethernet switches.
 .Sp
 .I example :
 .Sp
-ettercap -TP rand_flood
+ettercap \-TP rand_flood
 
 
 .TP 
@@ -325,9 +324,9 @@ in the targets' lists, it replies with attacker's MAC address.
 .Sp
 .I example :
 .Sp
-ettercap -TQzP reply_arp /192.168.0.1/
+ettercap \-TQzP reply_arp /192.168.0.1/
 .br
-ettercap -TQzP reply_arp //
+ettercap \-TQzP reply_arp //
 
 .TP
 .B repoison_arp
@@ -340,12 +339,12 @@ legal broadcast ARP request (or reply).
 .br
 This plugin is effective only during an arp-posioning session.
 .br
-In conjuction with reply_arp plugin, repoison_arp is a good support for standard
+In conjunction with the reply_arp plugin, repoison_arp is a good support for the standard
 arp-poisoning mitm method.
 .Sp
 .I example :
 .Sp
-ettercap -T -M arp:remote -P repoison_arp /192.168.0.10-20/ /192.168.0.1/
+ettercap \-T \-M arp:remote \-P repoison_arp /192.168.0.10\-20/ /192.168.0.1/
 
 .TP 
 .B scan_poisoner
@@ -364,7 +363,7 @@ You can't perform this active test in unoffensive mode.
 .Sp
 .I example :
 .Sp
-ettercap -TQP scan_poisoner //
+ettercap \-TQP scan_poisoner //
 
 .TP 
 .B search_promisc
@@ -379,9 +378,9 @@ arp request.
 .Sp
 .I example :
 .Sp
-ettercap -TQP search_promisc /192.168.0.1/
+ettercap \-TQP search_promisc /192.168.0.1/
 .br
-ettercap -TQP search_promisc //
+ettercap \-TQP search_promisc //
 
 
 .TP 
@@ -416,7 +415,7 @@ decrease your MAC address before running it.
 .Sp
 .I example :
 .Sp
-ettercap -TP stp_mangler 
+ettercap \-TP stp_mangler 
 
 .SH "SEE ALSO"
 .I "ettercap(8)"

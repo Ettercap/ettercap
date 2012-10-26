@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_wifi.c,v 1.30 2005/06/30 08:36:24 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -200,7 +199,7 @@ FUNC_DECODER(decode_wifi)
          /* 
           * XXX - fix this or ignore this case...
           *
-          * SHIT !! we have alignment problems here...
+          * Golly Gee Willikers !! we have alignment problems here...
           */
 #if 0         
          /* 
@@ -384,17 +383,17 @@ int set_wep_key(u_char *string)
 
    /* sanity check */
    if (bit <= 0)
-      SEMIFATAL_ERROR("Unsupported WEP key lenght");
+      SEMIFATAL_ERROR("Unsupported WEP key length");
 
    /* the len of the secret part of the RC4 seed */
    wlen = bit / 8 - IV_LEN;
    
    /* sanity check */
    if (wlen > sizeof(wkey))
-      SEMIFATAL_ERROR("Unsupported WEP key lenght");
+      SEMIFATAL_ERROR("Unsupported WEP key length");
   
    if (bit != 64 && bit != 128)
-      SEMIFATAL_ERROR("Unsupported WEP key lenght");
+      SEMIFATAL_ERROR("Unsupported WEP key length");
 
    /* get the type of the key */
    p = ec_strtok(NULL, ":", &tok);
@@ -409,9 +408,9 @@ int set_wep_key(u_char *string)
       SEMIFATAL_ERROR("Invalid parsing of the WEP key");
    
    if (type == 's') {
-      /* escape the string and check its lenght */
+      /* escape the string and check its length */
       if (strescape(wkey, p) != (int)wlen)
-         SEMIFATAL_ERROR("Specified WEP key lenght does not match the given string");
+         SEMIFATAL_ERROR("Specified WEP key length does not match the given string");
    } else if (type == 'p') {
       /* create the key from the passphrase */
       if (bit == 64)

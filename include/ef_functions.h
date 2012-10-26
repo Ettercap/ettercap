@@ -1,5 +1,4 @@
 
-/* $Id: ef_functions.h,v 1.19 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H

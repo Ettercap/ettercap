@@ -14,7 +14,6 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etter.conf.5.in,v 1.30 2004/09/28 09:56:11 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -22,8 +21,7 @@
 ..
 .TH ETTER.CONF 5 "" "ettercap @VERSION@"
 .SH NAME
-.B etter.conf 
-\- Ettercap configuration file
+etter.conf \- Ettercap configuration file
 
 .SH DESCRIPTION
 .B "etter.conf"
@@ -96,7 +94,7 @@ IDS) up to the timeout of the ARP cache (which depends on the poisoned operating
 Enable the sending of a spoofed ICMP message to force the targets to make an
 arp request. This will create an arp entry in the host cache, so ettercap
 will be able to win the race condition and poison the target. Useful against
-targets that don't accept gratuitous arp if the entry is not in the cache.
+targets that do not accept gratuitous arp if the entry is not in the cache.
 
 .TP
 .B arp_poison_reply
@@ -215,7 +213,7 @@ want to disable the "dangerous" dissectors all together, set this value to 0.
 .TP
 .B skip_forwarded
 If you set this value to 0 you will sniff even packets forwarded by ettercap
-or by the kernel. It will generate packets duplicates in conjuction with
+or by the kernel. It will generate duplicate packets in conjunction with the
 arp mitm method (for example). It could be useful while running ettercap
 in unoffensive mode on a host with more than one network interface
 (waiting for the multiple-interface feature...)   
@@ -223,9 +221,9 @@ in unoffensive mode on a host with more than one network interface
 .TP
 .B checksum_warning
 If you set the value to 0 the messages about incorrect checksums will not be
-displayed in the user messages windows (nor logged to a file with -m). 
+displayed in the user messages windows (nor logged to a file with \-m). 
 .br
-Note that this option won't disable the check on the packets, but only prevent
+Note that this option will not disable the check on the packets, but only prevent
 the message to be displayed (see below). 
 
 .TP
@@ -271,7 +269,7 @@ Here is a list of values: 0 Black, 1 Red, 2 Green, 3 Yellow, 4 Blue, 5 Magenta,
 .TP
 .B utf8_encoding
 specifies the encoding to be used while displaying the packets in UTF-8 format.
-Use the `iconv --list` command for a list of supported encodings.
+Use the `iconv \-\-list` command for a list of supported encodings.
 
 .TP
 .B remote_broswer
@@ -290,7 +288,7 @@ The page requested inside the GET request.
 
 .TP
 .B redir_command_on
-You have to provide a valid command (or script) to enable tcp redirection at
+You must provide a valid command (or script) to enable tcp redirection at the
 kernel level in order to be able to use SSL dissection. Your script should be
 able to get 3 parameters:
 .RS
@@ -305,7 +303,7 @@ etc).
 .B %rport
 The internally bound port to which ettercap listens for connections.
 .RE
-NOTE: this script is executed with an execve(), so you can't use pipes or
+NOTE: this script is executed with an execve(), so you cannot use pipes or
 output redirection as if you were in a shell. We suggest you to make a script if
 you need those commands.
 

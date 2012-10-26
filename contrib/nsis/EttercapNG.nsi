@@ -17,12 +17,11 @@
 ;   along with this program; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;
-;   $Id: EttercapNG.nsi,v 1.10 2005/01/04 14:30:49 alor Exp $
 ;
 ; NOTE: this .NSI script is designed for NSIS v2.0+
 
 ;--------------------------------
-;Version Informations
+;Version Information
 
 !define VER_MAJOR 0
 !define VER_MINOR 7

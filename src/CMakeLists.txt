@@ -116,6 +116,7 @@ endif(HAVE_DN_EXPAND)
 
 if(ENABLE_SSL)
    set(EC_SRC ${EC_SRC} dissectors/ec_ssh.c)
+   set(EC_SRC ${EC_SRC} dissectors/ec_gg.c)
 endif(ENABLE_SSL)
 
 if(OS_LINUX)

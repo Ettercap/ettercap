@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_compound.c,v 1.5 2004/02/08 19:58:41 alor Exp $
 */
 
 #include <wdg.h>

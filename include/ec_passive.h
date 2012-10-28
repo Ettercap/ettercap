@@ -1,5 +1,4 @@
 
-/* $Id: ec_passive.h,v 1.6 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_PASSIVE_H
 #define EC_PASSIVE_H

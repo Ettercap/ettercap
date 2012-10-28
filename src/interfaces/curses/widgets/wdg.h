@@ -1,5 +1,4 @@
 
-/* $Id: wdg.h,v 1.41 2004/09/28 13:50:37 alor Exp $ */
 
 #ifndef WDG_H
 #define WDG_H
@@ -121,7 +120,7 @@ extern void wdg_bug(char *file, const char *function, int line, char *message);
 #define CTRL(x)      ((x) & 0x1f)
 #define KEY_ESC      CTRL('[')
 
-/* informations about the current screen */
+/* information about the current screen */
 struct wdg_scr {
    size_t lines;
    size_t cols;

@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_compiler.c,v 1.8 2005/06/17 08:54:50 alor Exp $
 */
 
 #include <ef.h>

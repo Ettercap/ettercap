@@ -1,5 +1,4 @@
 
-/* $Id: ec_resolv.h,v 1.13 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_RESOLV_H
 #define EC_RESOLV_H

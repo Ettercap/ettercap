@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_plugins.c,v 1.11 2004/07/12 19:57:43 alor Exp $
 */
 
 #include <ec.h>

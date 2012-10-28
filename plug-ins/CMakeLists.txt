@@ -50,7 +50,7 @@ add_library(nbns_spoof MODULE nbns_spoof/nbns_spoof.c)
 set_target_properties(nbns_spoof PROPERTIES PREFIX "ec_")
 
 add_library(sslstrip MODULE sslstrip/sslstrip.c)
-target_link_libraries(sslstrip ${EC_LIBS})
+target_link_libraries(sslstrip ${FOUND_LIBCURL} ${HAVE_PCRE})
 set_target_properties(sslstrip PROPERTIES PREFIX "ec_")
 
 add_library(pptp_chapms1 MODULE pptp_chapms1/pptp_chapms1.c)

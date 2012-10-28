@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_sslwrap.c,v 1.55 2004/09/14 07:58:17 alor Exp $
 */
 
 #include <ec.h>
@@ -100,7 +99,7 @@ struct accepted_entry {
 };
 
 /* Session identifier 
- * It has to be even-lenghted for session hash matching */
+ * It has to be of even length for session hash matching */
 struct sslw_ident {
    u_int32 magic;
       #define SSLW_MAGIC  0x0501e77e
@@ -1196,7 +1195,7 @@ static size_t sslw_create_ident(void **i, struct packet_object *po)
    /* return the ident */
    *i = ident;
 
-   /* return the lenght of the ident */
+   /* return the length of the ident */
    return sizeof(struct sslw_ident);
 }
 

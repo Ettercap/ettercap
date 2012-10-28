@@ -1,5 +1,4 @@
 
-/* $Id: ec_version.h,v 1.20 2005/05/31 07:59:54 alor Exp $ */
 
 #ifndef EC_VERS_H
 #define EC_VERS_H

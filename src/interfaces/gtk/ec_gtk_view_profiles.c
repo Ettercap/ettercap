@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_profiles.c,v 1.10 2004/03/04 13:16:24 daten Exp $
 */
 
 #include <ec.h>

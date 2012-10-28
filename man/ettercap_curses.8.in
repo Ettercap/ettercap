@@ -14,7 +14,6 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: ettercap_curses.8.in,v 1.19 2004/09/23 09:24:00 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -22,7 +21,7 @@
 ..
 .TH ETTERCAP-CURSES "8" "" "ettercap @VERSION@"
 .SH NAME
-.B ettercap @VERSION@ \- Man page for the Ncurses GUI.
+ettercap \- Man page for the Ncurses GUI.
 
 .SH GENERAL DESCRIPTION
 The curses GUI is quite simple and intuitive.
@@ -63,9 +62,9 @@ To use the ncurses GUI you have to:
 .Sp
 - compile ettercap with ncurses support (obviously)
 .br
-- run it with the -C flag 
+- run it with the \-C flag 
 .Sp
-Passing the -C flag is sufficient, but if you want you can pass other flags
+Passing the \-C flag is sufficient, but if you want you can pass other flags
 that will be automatically set for the ncurses GUI. You will be able to
 override them using the menu to change the options.
 
@@ -236,7 +235,7 @@ Displays the connection list. To see detailed information about a connection
 press 'd', or press 'k' to kill it. To see the traffic for a specific connection,
 select it and press enter. Once the two-panel interface is displayed you can
 move the focus with the arrow keys. Press 'j' to switch between joined and
-splitted visualization. Press 'k' to kill the connection. Press 'y' to inject
+split visualization. Press 'k' to kill the connection. Press 'y' to inject
 interactively and 'Y' to inject a file. Note that it is important which panel
 has the focus as the injected data will be sent to that address.
 .br
@@ -311,16 +310,16 @@ Unload the filter and stop filtering the connections.
 .B Log all packets and infos...
 Given a file name, it will create two files: filename.eci (for information
 about hosts) and filename.ecp (for all the interesting packets). This is the
-same as the -L option.
+same as the \-L option.
 .TP
 .B Log only infos...
-This is used only to sniff information about hosts (same as the -l option).
+This is used only to sniff information about hosts (same as the \-l option).
 .TP
 .B Stop logging info
 Come on... it is self explanatory.
 .TP
 .B Log user messages...
-Will log all the messages appearing in the bottom window (same as -m option).
+Will log all the messages appearing in the bottom window (same as \-m option).
 .TP
 .B Compressed file
 Asterisk-option to control whether or not the logfile should be compressed.

@@ -17,7 +17,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: wdg_dialog.c,v 1.7 2003/12/27 18:49:52 alor Exp $
 */
 
 #include <wdg.h>
@@ -438,7 +437,7 @@ static void wdg_dialog_buttons(struct wdg_object *wo)
    /* get the line of the message */
    wdg_dialog_get_size(wo, &l, &c);
 
-   /* calculate the lenght of the buttons */
+   /* calculate the length of the buttons */
    for (i = 0; i < WDG_DIALOG_MAX_BUTTON; i++) 
       if (ww->buttons[i].selected)
          c -= strlen(ww->buttons[i].label);
@@ -503,7 +502,7 @@ static int wdg_dialog_mouse_move(struct wdg_object *wo, struct wdg_mouse_event *
    if (mouse->y != y + 2 + l - 1)
       return -WDG_ENOTHANDLED;
 
-   /* calculate the lenght of the buttons */
+   /* calculate the length of the buttons */
    for (i = 0; i < WDG_DIALOG_MAX_BUTTON; i++) 
       if (ww->buttons[i].selected)
          c -= strlen(ww->buttons[i].label);

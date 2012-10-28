@@ -19,7 +19,6 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ef_ec_compat.c,v 1.7 2004/01/23 10:19:35 lordnaga Exp $
 */
 
 #include <ef.h>

@@ -14,7 +14,6 @@
 .\"  along with this program; if not, write to the Free Software
 .\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
-.\"  $Id: etterfilter.8.in,v 1.22 2005/01/04 14:35:43 alor Exp $
 .\"
 .de Sp
 .if n .sp
@@ -22,7 +21,7 @@
 ..
 .TH ETTERFILTER "8" "" "ettercap @VERSION@"
 .SH NAME
-.B etterfilter @VERSION@ \- Filter compiler for ettercap content filtering engine
+etterfilter \- Filter compiler for ettercap content filtering engine
 
 .SH SYNOPSIS
 .B etterfilter
@@ -52,7 +51,7 @@ in a human readable form all the instructions contained in it. It is a sort of
 .TP
 \fB\-d\fR, \fB\-\-debug\fR
 prints some debug messages during the compilation. Use it more than once to
-increase the debug level ( etterfilter -ddd ... ).
+increase the debug level ( etterfilter \-ddd ... ).
                            
 .TP
 \fB\-w\fR, \fB\-\-suppress-warnings\fR
@@ -226,7 +225,7 @@ will swap the value of var1 and var2).
 NOTE: The pcre support is optional in ettercap and will be enabled only if you
 have the libpcre installed.
 The compiler will warn you if you try to compile a filter that contains
-pcre expressions but you don't have libpcre. Use the -w option to suppress the
+pcre expressions but you don't have libpcre. Use the \-w option to suppress the
 warning.
 .Sp
 example:
@@ -266,7 +265,7 @@ inject("./fake_packet")
 this function dumps in the file 'where' the buffer 'what'. No information is
 stored about the packet, only the payload is dumped. So you will see the stream
 in the file. If you want to log packets in a more enhanced mode, you need to
-use the ettercap -L option and analyze it with etterlog(8).
+use the ettercap \-L option and analyze it with etterlog(8).
 .br
 The file 'where' must be writable to the user EC_UID (see etter.conf(5)).
 .Sp
@@ -332,7 +331,7 @@ exit()
 .SH EXAMPLES
 Here are some examples of using etterfilter.
 .TP
-.B etterfilter filter.ecf -o filter.ef
+.B etterfilter filter.ecf \-o filter.ef
 .Sp
 Compiles the source filter.ecf into a binary filter.ef
 

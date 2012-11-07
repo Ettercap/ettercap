@@ -3,3 +3,4 @@ tags
 include/config.h
 
 build/
+/obj-*/

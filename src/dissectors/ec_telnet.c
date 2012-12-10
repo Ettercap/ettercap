@@ -102,7 +102,7 @@ FUNC_DECODER(dissector_telnet)
             /* create the session to begin the collection */
             dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_telnet));
             /* use this value to remember to not collect the banner again */
-            s->data = "\xe7\x7e";
+            s->data = strdup("\xe7\x7e");
             session_put(s);
 
             return NULL;

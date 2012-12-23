@@ -239,8 +239,20 @@ static int sslstrip_fini(void *dummy)
        if (!pthread_equal(pid, EC_PTHREAD_NULL))
                ec_thread_destroy(pid);
 
+	/* now destroy all http_child_thread */
+	do {
+		pid = ec_thread_getpid("http_child_thread");
+		
+		if(!pthread_equal(pid, EC_PTHREAD_NULL))
+			ec_thread_destroy(pid);
+
+	} while (!pthread_equal(pid, EC_PTHREAD_NULL));
+
 	if (find_https_re != NULL)
 		regfree(find_https_re);
+
+
+	close(main_fd);
 
 	return PLUGIN_FINISHED;
 }
@@ -804,6 +816,10 @@ static void http_send(struct http_connection *connection, struct packet_object *
 		http_update_content_length(connection);
 	}
 
+
+	if(strstr(connection->response->html, "\r\nStrict-Transport-Security:")) {
+		http_remove_header("Strict-Transport-Security", connection);
+	}
 
 	//Send result back to client
 	DEBUG_MSG("SSLStrip: Sending response back to client");

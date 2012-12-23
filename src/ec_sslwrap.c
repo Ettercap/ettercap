@@ -156,6 +156,7 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport);
 static void ssl_wrap_fini(void);
 static int sslw_ssl_connect(SSL *ssl_sk);
 static int sslw_ssl_accept(SSL *ssl_sk);
+static int remove_http_header(char *header, struct packet_object *po);
 
 #endif /* HAVE_OPENSSL */
 
@@ -602,6 +603,13 @@ static int sslw_ssl_connect(SSL *ssl_sk)
    return -EINVALID;
 }
 
+
+/*
+ * Remove the specified HTTP header from the HTTP response/request
+ */
+static int remove_http_header(char *header, struct packet_object *po)
+{
+}
 
 /* 
  * Perform a blocking SSL_accept with a

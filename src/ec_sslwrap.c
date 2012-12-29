@@ -156,7 +156,6 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport);
 static void ssl_wrap_fini(void);
 static int sslw_ssl_connect(SSL *ssl_sk);
 static int sslw_ssl_accept(SSL *ssl_sk);
-static int remove_http_header(char *header, struct packet_object *po);
 
 #endif /* HAVE_OPENSSL */
 
@@ -604,12 +603,6 @@ static int sslw_ssl_connect(SSL *ssl_sk)
 }
 
 
-/*
- * Remove the specified HTTP header from the HTTP response/request
- */
-static int remove_http_header(char *header, struct packet_object *po)
-{
-}
 
 /* 
  * Perform a blocking SSL_accept with a
@@ -730,7 +723,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
       usleep(SSLW_WAIT);
 #else
       nanosleep(&tm, NULL); 
-#endif
+#endif /* OS_WINDOWS */
 
    if (i==SSLW_RETRY) {
       SAFE_FREE(ident);
@@ -1120,6 +1113,7 @@ EC_THREAD_FUNC(sslw_child)
    if (sslw_sync_conn(ae) == -EINVALID) {
       if (ae->fd[SSL_CLIENT] != -1)
          close_socket(ae->fd[SSL_CLIENT]);
+      DEBUG_MSG("FAILED TO FIND PEER");
       SAFE_FREE(ae);
       ec_thread_exit();
    }	    

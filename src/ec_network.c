@@ -299,11 +299,13 @@ static void source_close(struct iface_env *iface)
 
    if(iface->lnet != NULL)
       libnet_destroy(iface->lnet);
-   
+  
+#if WITH_IPV6 
    LIST_FOREACH(n, &iface->ip6_list, next) {
       LIST_REMOVE(n, next);
       SAFE_FREE(n);
    }
+#endif
 
    SAFE_FREE(iface->name);
    memset(iface, 0, sizeof(*iface));
@@ -377,6 +379,7 @@ static void l3_init(void)
 
    GBL_LNET->lnet_IP4 = l4;               
 
+#ifdef WITH_IPV6
    /* open the socket at layer 3 for IPv6 */
    l6 = libnet_init(LIBNET_RAW6_ADV, NULL, lnet_errbuf);
    if(l6 == NULL) {
@@ -385,6 +388,7 @@ static void l3_init(void)
    }
    
    GBL_LNET->lnet_IP6 = l6;
+#endif
 
    atexit(l3_close);
 }
@@ -393,8 +397,10 @@ static void l3_close(void)
 {
    if(GBL_LNET->lnet_IP4)
       libnet_destroy(GBL_LNET->lnet_IP4);
+#ifdef WITH_IPV6
    if(GBL_LNET->lnet_IP6)
       libnet_destroy(GBL_LNET->lnet_IP6);
+#endif
    
    DEBUG_MSG("ATEXIT: send_closed");
 }

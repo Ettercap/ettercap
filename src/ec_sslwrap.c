@@ -283,7 +283,7 @@ EC_THREAD_FUNC(sslw_start)
    return NULL;
 #else
    
-   /* disabled if not accressive */
+   /* disabled if not aggressive */
    if (!GBL_CONF->aggressive_dissectors)
       return NULL;
    
@@ -355,7 +355,7 @@ static void sslw_hook_handled(struct packet_object *po)
    /* We have nothing to do with this packet */
    if (!sslw_is_ssl(po))
       return;
-      
+     
    /* If it's an ssl packet don't forward */
    po->flags |= PO_DROPPED;
    
@@ -366,9 +366,13 @@ static void sslw_hook_handled(struct packet_object *po)
 	
       sslw_create_session(&s, PACKET);
 
+#ifndef OS_LINUX
       /* Remember the real destination IP */
       memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
       session_put(s);
+#else
+	SAFE_FREE(s); /* Just get rid of it */
+#endif
    } else /* Pass only the SYN for conntrack */
       po->flags |= PO_IGNORE;
 }
@@ -722,7 +726,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
       usleep(SSLW_WAIT);
 #else
       nanosleep(&tm, NULL); 
-#endif
+#endif /* OS_WINDOWS */
 
    if (i==SSLW_RETRY) {
       SAFE_FREE(ident);
@@ -1112,6 +1116,7 @@ EC_THREAD_FUNC(sslw_child)
    if (sslw_sync_conn(ae) == -EINVALID) {
       if (ae->fd[SSL_CLIENT] != -1)
          close_socket(ae->fd[SSL_CLIENT]);
+      DEBUG_MSG("FAILED TO FIND PEER");
       SAFE_FREE(ae);
       ec_thread_exit();
    }	    

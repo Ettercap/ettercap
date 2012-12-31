@@ -65,7 +65,7 @@ void ec_usage(void)
    fprintf(stdout, "\nSniffing and Attack options:\n");
    fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
    fprintf(stdout, "  -o, --only-mitm             don't sniff, only perform the mitm attack\n");
-   fprintf(stdout, "  -b, --broadcast             sniff packets coming from broadcast\n");
+   fprintf(stdout, "  -b, --broadcast             sniff packets destined to broadcast\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
    fprintf(stdout, "  -S, --nosslmitm             do not forge SSL certificates\n");
@@ -195,6 +195,7 @@ void parse_options(int argc, char **argv)
    GBL_PCAP->promisc = 1;
    GBL_FORMAT = &ascii_format;
    GBL_OPTIONS->ssl_mitm = 1;
+   GBL_OPTIONS->broadcast = 0;
 
 /* OPTIONS INITIALIZED */
    

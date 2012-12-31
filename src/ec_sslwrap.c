@@ -726,7 +726,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
       usleep(SSLW_WAIT);
 #else
       nanosleep(&tm, NULL); 
-#endif
+#endif /* OS_WINDOWS */
 
    if (i==SSLW_RETRY) {
       SAFE_FREE(ident);
@@ -1116,6 +1116,7 @@ EC_THREAD_FUNC(sslw_child)
    if (sslw_sync_conn(ae) == -EINVALID) {
       if (ae->fd[SSL_CLIENT] != -1)
          close_socket(ae->fd[SSL_CLIENT]);
+      DEBUG_MSG("FAILED TO FIND PEER");
       SAFE_FREE(ae);
       ec_thread_exit();
    }	    

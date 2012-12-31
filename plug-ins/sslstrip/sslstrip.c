@@ -329,12 +329,12 @@ static void sslstrip(struct packet_object *po)
 	/* If it's an HTTP packet, don't forward it */
  	po->flags |= PO_DROPPED;
 
-	struct ec_session *s = NULL;
 
 	if ( (po->flags & PO_FORWARDABLE) &&
 	     (po->L4.flags & TH_SYN) &&
              !(po->L4.flags & TH_ACK) ) {
 #ifndef OS_LINUX
+		struct ec_session *s = NULL;
 		sslstrip_create_session(&s, PACKET);	
 		memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
 		session_put(s);
@@ -1138,7 +1138,7 @@ static void http_parse_packet(struct http_connection *connection, int direction,
 
 	/* let's start fromt he last stage of decoder chain */
 
-	DEBUG_MSG("SSLStrip: Parsing %s", po->DATA.data);
+	//DEBUG_MSG("SSLStrip: Parsing %s", po->DATA.data);
 	start_decoder = get_decoder(APP_LAYER, PL_DEFAULT);
 	start_decoder(po->DATA.data, po->DATA.len, &len, po);
 }

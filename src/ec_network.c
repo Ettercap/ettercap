@@ -300,7 +300,7 @@ static void source_close(struct iface_env *iface)
    if(iface->lnet != NULL)
       libnet_destroy(iface->lnet);
   
-#if WITH_IPV6 
+#ifdef WITH_IPV6 
    LIST_FOREACH(n, &iface->ip6_list, next) {
       LIST_REMOVE(n, next);
       SAFE_FREE(n);

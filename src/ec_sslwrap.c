@@ -156,7 +156,6 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport);
 static void ssl_wrap_fini(void);
 static int sslw_ssl_connect(SSL *ssl_sk);
 static int sslw_ssl_accept(SSL *ssl_sk);
-static int remove_http_header(char *header, struct packet_object *po);
 
 #endif /* HAVE_OPENSSL */
 
@@ -284,7 +283,7 @@ EC_THREAD_FUNC(sslw_start)
    return NULL;
 #else
    
-   /* disabled if not accressive */
+   /* disabled if not aggressive */
    if (!GBL_CONF->aggressive_dissectors)
       return NULL;
    
@@ -356,7 +355,7 @@ static void sslw_hook_handled(struct packet_object *po)
    /* We have nothing to do with this packet */
    if (!sslw_is_ssl(po))
       return;
-      
+     
    /* If it's an ssl packet don't forward */
    po->flags |= PO_DROPPED;
    
@@ -367,9 +366,13 @@ static void sslw_hook_handled(struct packet_object *po)
 	
       sslw_create_session(&s, PACKET);
 
+#ifndef OS_LINUX
       /* Remember the real destination IP */
       memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
       session_put(s);
+#else
+	SAFE_FREE(s); /* Just get rid of it */
+#endif
    } else /* Pass only the SYN for conntrack */
       po->flags |= PO_IGNORE;
 }
@@ -603,13 +606,6 @@ static int sslw_ssl_connect(SSL *ssl_sk)
    return -EINVALID;
 }
 
-
-/*
- * Remove the specified HTTP header from the HTTP response/request
- */
-static int remove_http_header(char *header, struct packet_object *po)
-{
-}
 
 /* 
  * Perform a blocking SSL_accept with a

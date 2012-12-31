@@ -137,15 +137,11 @@ struct target_env {
    char scan_all:1;
    char all_mac:1;            /* these one bit flags are used as wildcards */
    char all_ip:1;
-#ifdef WITH_IPV6
    char all_ip6:1;
-#endif
    char all_port:1;
    u_char mac[MEDIA_ADDR_LEN];
    LIST_HEAD(, ip_list) ips;
-#ifdef WITH_IPV6
    LIST_HEAD(, ip_list) ip6;
-#endif
    u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };
 

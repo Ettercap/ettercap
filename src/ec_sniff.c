@@ -179,7 +179,6 @@ static void set_interesting_flag(struct packet_object *po)
       value = 1;
 
    /* T2.mac == dst & T2.ip = dst & T2.port = dst */
-   /* if broadcast enabled, T2.dst == broadcast */
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2) || 
@@ -190,7 +189,7 @@ static void set_interesting_flag(struct packet_object *po)
   
    /* 
     * reverse the matching but only if it has matched !
-    * if good && proto is valse, we have to go on with
+    * if good && proto is false, we have to go on with
     * tests and evaluate it later
     */
    if ((good && proto) && GBL_OPTIONS->reversed ^ (good && proto) ) {
@@ -304,7 +303,13 @@ int compile_display_filter(void)
  */
 int compile_target(char *string, struct target_env *target)
 {
+
+#ifdef WITH_IPV6
 #define MAX_TOK 4
+#else
+#define MAX_TOK 3
+#endif
+
    char valid[] = "1234567890/.,-;:ABCDEFabcdef";
    char *tok[MAX_TOK];
    char *p;
@@ -608,7 +613,8 @@ int cmp_ip_list(struct ip_addr *ip, struct target_env *t)
 
          IP_LIST_UNLOCK;
          break;
-      
+     
+#ifdef WITH_IPV6 
       case AF_INET6:
          IP6_LIST_LOCK;
 
@@ -620,6 +626,7 @@ int cmp_ip_list(struct ip_addr *ip, struct target_env *t)
 
          IP6_LIST_UNLOCK;
          break;
+#endif
    }
    
    return 0;
@@ -698,6 +705,7 @@ void free_ip_list(struct target_env *t)
    
    IP_LIST_UNLOCK;
 
+#ifdef WITH_IPV6
    IP6_LIST_LOCK;
    
    LIST_FOREACH_SAFE(e, &t->ip6, next, tmp) {
@@ -706,6 +714,7 @@ void free_ip_list(struct target_env *t)
    }
 
    IP6_LIST_UNLOCK;
+#endif
 }
 
 

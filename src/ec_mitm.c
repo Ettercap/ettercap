@@ -192,6 +192,11 @@ void only_mitm(void)
    mitm_start();
 
    INSTANT_USER_MSG("Activated the mitm attack only... (press 'q' to exit)\n");
+
+   if (GBL_UI->type == UI_DAEMONIZE)
+       LOOP {
+           sleep(1);
+       }
   
    /* wait for user to exit */
    while (ch != 'q' && ch != 'Q') {

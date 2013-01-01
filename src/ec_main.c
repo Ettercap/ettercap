@@ -112,6 +112,10 @@ int main(int argc, char *argv[])
     */
    if(!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm) {
       disable_ip_forward();
+	
+#ifdef OS_LINUX
+      disable_interface_offload();
+#endif
       /* binds ports and set redirect for ssl wrapper */
       if(GBL_SNIFF->type == SM_UNIFIED && GBL_OPTIONS->ssl_mitm)
          ssl_wrap_init();

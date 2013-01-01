@@ -20,6 +20,7 @@
 #include <ec.h>
 
 #include <sys/ioctl.h>
+#include <sys/wait.h>
 #include <net/if.h>
 
 /* the old value */
@@ -30,6 +31,7 @@ static char saved_status;
 void disable_ip_forward(void);
 static void restore_ip_forward(void);
 u_int16 get_iface_mtu(const char *iface);
+void diable_interface_offload(void);
 
 /*******************************************/
 
@@ -115,6 +117,46 @@ u_int16 get_iface_mtu(const char *iface)
    close(sock);
    
    return mtu;
+}
+
+/*
+ * disable segmentation offload on interface
+ * this prevents L3 send errors (payload too large)
+ */
+void disable_interface_offload(void)
+{
+	char *command;
+	char **param = NULL;
+	char *p;
+	int ret_val, i = 0;
+
+	SAFE_CALLOC(command, 100, sizeof(char));
+
+	BUG_IF(command==NULL);
+
+	memset(command, '\0', 100);	
+	snprintf(command, 99, "ethtool -K %s tso off gso off gro off lro off", GBL_OPTIONS->iface);
+
+	DEBUG_MSG("disable_interface_offlaod: Disabling offload on %s", GBL_OPTIONS->iface);
+
+	for(p = strsep(&command, " "); p != NULL; p = strsep(&command, " ")) {
+		SAFE_REALLOC(param, (i+1) * sizeof(char *));
+		param[i++] = strdup(p);	
+	}
+
+	SAFE_REALLOC(param, (i+1) * sizeof(char *));
+	param[i] = NULL;
+
+	switch(fork()) {
+		case 0:
+			execvp(param[0], param);
+			exit(EINVALID);
+		case -1:
+			SAFE_FREE(param);
+		default:
+			SAFE_FREE(param);
+			wait(&ret_val);
+	} 	
 }
 
 /* EOF */

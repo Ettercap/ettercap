@@ -11,6 +11,7 @@
 #include <ec_profiles.h>
 #include <ec_filter.h>
 #include <ec_interfaces.h>
+#include <config.h>
 
 #include <regex.h>
 

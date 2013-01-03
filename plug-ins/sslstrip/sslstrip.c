@@ -798,6 +798,7 @@ static void http_send(struct http_connection *connection, struct packet_object *
 		DEBUG_MSG("SSLStrip: Sent request to server");
 	}
 
+	DEBUG_MSG("Before removing https: %s", connection->response->html);
 	DEBUG_MSG("SSLStrip: Removing HTTPS");
 	http_remove_https(connection);
 	http_remove_secure_from_cookie(connection);
@@ -814,6 +815,7 @@ static void http_send(struct http_connection *connection, struct packet_object *
 		http_remove_header("Strict-Transport-Security", connection);
 	}
 
+	DEBUG_MSG("SSLStrip: after removing all %s", connection->response->html);
 	//Send result back to client
 	DEBUG_MSG("SSLStrip: Sending response back to client");
 	if (http_write(connection->fd, connection->response->html, connection->response->len) != ESUCCESS){

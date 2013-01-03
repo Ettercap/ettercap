@@ -65,6 +65,7 @@ void set_blocking(int s, int set)
       ret |= O_NONBLOCK;
    
    /* set the flag */
+//   fcntl (s, F_SETFL, F_SETFD, FD_CLOEXEC, ret); //this solution BREAKS the socket (ssl mitm will not work)
    fcntl(s, F_SETFL, ret);
 
 #endif   

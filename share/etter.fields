@@ -45,6 +45,7 @@ login_username
 login_email
 uin
 sign-in
+u
 
 
 
@@ -62,3 +63,4 @@ login_password
 passwort
 passwrd
 upasswd
+p

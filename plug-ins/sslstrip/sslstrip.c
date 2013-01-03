@@ -223,6 +223,8 @@ static int sslstrip_init(void *dummy)
 
 
 	ec_thread_new_detached("http_accept_thread", "HTTP Accept thread", &http_accept_thread, NULL, 1);
+
+	USER_MSG("SSLStrip Plugin version 1.1 is still under experimental mode. Please reports any issues to the development team.\n");
 	return PLUGIN_RUNNING;
 }
 

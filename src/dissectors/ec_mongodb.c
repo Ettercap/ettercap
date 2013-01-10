@@ -99,7 +99,7 @@ FUNC_DECODER(dissector_mongodb)
               if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
                       conn_status = (struct mongodb_status *) s->data;
                       if (PACKET->DATA.len < 16)
-                              return;
+                              return NULL;
                       unsigned char *res = memmem(ptr, PACKET->DATA.len, "fails", 5);
                       unsigned char *gres = memmem(ptr, PACKET->DATA.len, "readOnly", 8);
                       if (conn_status->status == WAIT_RESULT && res) {
@@ -118,7 +118,7 @@ FUNC_DECODER(dissector_mongodb)
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
          conn_status = (struct mongodb_status *) s->data;
          if (PACKET->DATA.len < 16)
-                 return;
+                 return NULL;
 
          unsigned char *noncep  = memmem(ptr, PACKET->DATA.len, "nonce", 5);
          unsigned char *keyp  = memmem(ptr, PACKET->DATA.len, "key\x00", 4);

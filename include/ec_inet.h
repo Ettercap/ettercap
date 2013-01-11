@@ -24,24 +24,22 @@
    #endif
 #endif
 
-enum {
-   NS_IN6ADDRSZ            = 16,
-   NS_INT16SZ              = 2,
+#define	NS_IN6ADDRSZ 16
+#define 	NS_INT16SZ = 2
 
-   ETH_ADDR_LEN            = 6,
-   TR_ADDR_LEN             = 6,
-   FDDI_ADDR_LEN           = 6,
-   MEDIA_ADDR_LEN          = 6,
+#define	ETH_ADDR_LEN 6
+#define	TR_ADDR_LEN 6
+#define	FDDI_ADDR_LEN 6
+#define	MEDIA_ADDR_LEN 6
    
-   IP_ADDR_LEN             = 4,
-   IP6_ADDR_LEN            = 16,
-   MAX_IP_ADDR_LEN         = IP6_ADDR_LEN,
+#define	IP_ADDR_LEN 4
+#define	IP6_ADDR_LEN 16
+#define	MAX_IP_ADDR_LEN IP6_ADDR_LEN
 
-   ETH_ASCII_ADDR_LEN      = sizeof("ff:ff:ff:ff:ff:ff")+1,
-   IP_ASCII_ADDR_LEN       = sizeof("255.255.255.255")+1,
-   IP6_ASCII_ADDR_LEN      = sizeof("ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255")+1,
-   MAX_ASCII_ADDR_LEN      = IP6_ASCII_ADDR_LEN,                  
-};
+#define	ETH_ASCII_ADDR_LEN 19 // sizeof("ff:ff:ff:ff:ff:ff")+1
+#define	IP_ASCII_ADDR_LEN 17 // sizeof("255.255.255.255")+1
+#define	IP6_ASCII_ADDR_LEN 47 // sizeof("ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255")+1
+#define	MAX_ASCII_ADDR_LEN IP6_ASCII_ADDR_LEN
 
 /*
  * Some predefined addresses here

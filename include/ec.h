@@ -81,6 +81,11 @@
 
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
 
+
+/* convert to string */
+#define EC_STRINGIFY(in) #in
+#define EC_TOSTRING(in) EC_STRINGIFY(in)
+
 #ifdef OS_LINUX
 #define __init       __attribute__((constructor(101)))
 #define __init_last  __attribute__((constructor(200))

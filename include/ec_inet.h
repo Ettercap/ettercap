@@ -24,9 +24,6 @@
    #endif
 #endif
 
-#define	NS_IN6ADDRSZ 16
-#define 	NS_INT16SZ = 2
-
 #define	ETH_ADDR_LEN 6
 #define	TR_ADDR_LEN 6
 #define	FDDI_ADDR_LEN 6

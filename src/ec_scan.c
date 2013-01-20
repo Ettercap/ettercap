@@ -117,7 +117,7 @@ void build_hosts_list(void)
 	scan_thread(NULL);
 #else
    /* check the type of UI we are running under... */
-   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
+   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE || GBL_UI->type == UI_CURSES)
       /* in text mode and demonized call the function directly */
       scan_thread(NULL);
    else 
@@ -144,7 +144,7 @@ static EC_THREAD_FUNC(scan_thread)
    ts.tv_nsec = 0;
 
    /* in text mode and demonized this function should NOT be a thread */
-   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
+   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE || GBL_UI->type == UI_CURSES )
       threadize = 0;
 
 #ifdef OS_MINGW

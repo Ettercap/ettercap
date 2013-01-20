@@ -3,4 +3,6 @@ tags
 include/config.h
 gmon.out
 ettercap-*_debug.log
+libwdg-*_debug.log
 build/
+core

@@ -255,6 +255,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
          continue;
       if(strcmp(ifaddr->ifa_name, name))
          continue;
+
       if(ifaddr->ifa_addr->sa_family == AF_INET) {
          sa4 = ifaddr->ifa_addr;
          ip_addr_init(&source->ip, AF_INET, &sa4->sin_addr);

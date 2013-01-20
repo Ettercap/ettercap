@@ -250,7 +250,6 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    ret = getifaddrs(&ifaddrs);
    ON_ERROR(ret, -1, "getifaddrs: %s", strerror(errno));
 
-	fprintf(stderr,"Starting\n");
    for(ifaddr = ifaddrs; ifaddr; ifaddr = ifaddr->ifa_next) {
       if (ifaddr->ifa_addr == NULL)
          continue;

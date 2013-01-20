@@ -250,10 +250,13 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    ret = getifaddrs(&ifaddrs);
    ON_ERROR(ret, -1, "getifaddrs: %s", strerror(errno));
 
+	fprintf(stderr,"Starting\n");
    for(ifaddr = ifaddrs; ifaddr; ifaddr = ifaddr->ifa_next) {
+      if (ifaddr->ifa_addr == NULL)
+         continue;
       if(strcmp(ifaddr->ifa_name, name))
          continue;
-
+      fprintf(stderr,"nothing is NULL\n");
       if(ifaddr->ifa_addr->sa_family == AF_INET) {
          sa4 = ifaddr->ifa_addr;
          ip_addr_init(&source->ip, AF_INET, &sa4->sin_addr);

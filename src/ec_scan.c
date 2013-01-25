@@ -122,7 +122,7 @@ void build_hosts_list(void)
       scan_thread(NULL);
    else 
       /* do the scan in a separate thread */
-      ec_thread_new("scan", "scanning thread", &ecan_thread, NULL);
+      ec_thread_new("scan", "scanning thread", &scan_thread, NULL);
 #endif
 }
 

@@ -90,10 +90,11 @@ FUNC_DECODER(dissector_TN3270)
 
       ebcdic2ascii(ptr, PACKET->DATA.len, output);
 
-      /* find username */
+      /* scan packets to find username and password */
       for (i = 0; i < PACKET->DATA.len; i++) {
-         // Logons start with 125 193 215 17 64 90 ordinals so we check for those
-         if (ptr[i] == 125 && ptr[i+1] == 193 && ptr[i+2] == 215 && \
+         /* find username, logons start with 125 193 (215 or 213) 17 64 90 ordinals
+          * We relax the check for third byte because it is less error-prone that way */
+         if (ptr[i] == 125 && ptr[i+1] == 193 && /* (ptr[i+2] == 215 || ptr[i+2] == 213) && */
                  ptr[i+3] == 17 && ptr[i+4] == 64 && ptr[i+5] == 90) {
                  /* scan for spaces */
                  int j = i + 6;
@@ -104,6 +105,7 @@ FUNC_DECODER(dissector_TN3270)
                  username[l-2] = 0;
                  DISSECT_MSG("%s:%d <= Username : %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), username);
          }
+         /* find password */
          if (ptr[i] == 125 && ptr[i+1] == 201 && ptr[i+3] == 17 && ptr[i+4] == 201 && ptr[i+5] == 195) {
                  strncpy(password, &output[i + 6], 512);
                  int l = strlen(password);

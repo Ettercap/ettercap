@@ -5,7 +5,12 @@ Legenda:
          !! bug fixed
 
 =========================================
-0.7.5.1-Assimilation 20130102
+0.7.5.2-Assimilation 20130229
+   !! applied patch to fix CVE-2012-0722
+   !! fixed username detection in TN3270 dissector
+    + Added new private-key and certificate-file options for SSL MiTM
+
+0.7.5.1-Assimilation 20130103
    !! fixed set_blocking() method preventing SSL MiTM from working
    !! changed SSLStrip plugin to use PCRE
    !! more improvements to SSLStrip plugin

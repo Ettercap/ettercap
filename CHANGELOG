@@ -5,6 +5,10 @@ Legenda:
          !! bug fixed
 
 =========================================
+0.7.5.3-Assimilation 20130230
+   0.7.5.2 was tagged with outdated ec_version.h file and not updated changelog.
+   This release fixes both of them
+
 0.7.5.2-Assimilation 20130229
    !! applied patch to fix CVE-2012-0722
    !! fixed username detection in TN3270 dissector

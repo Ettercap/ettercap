@@ -672,14 +672,17 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
       return -EINVALID;
    }
 
-   /* Create the fake certificate */
-   ae->cert = sslw_create_selfsigned(server_cert);  
-   X509_free(server_cert);
+   if (!GBL_OPTIONS->ssl_cert) {
+   	/* Create the fake certificate */
+   	ae->cert = sslw_create_selfsigned(server_cert);  
+   	X509_free(server_cert);
 
-   if (ae->cert == NULL)
-      return -EINVALID;
-   
-   SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
+   	if (ae->cert == NULL)
+      		return -EINVALID;
+
+   	SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
+
+   }
    
    if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != ESUCCESS) 
       return -EINVALID;
@@ -1077,12 +1080,30 @@ static void sslw_init(void)
    ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
    ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");
 
-   /* Get our private key from our cert file */
-   if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, INSTALL_DATADIR "/" EC_PROGRAM "/" CERT_FILE, SSL_FILETYPE_PEM) == 0) {
-      DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- trying ./share/%s",  CERT_FILE);
+   if(GBL_OPTIONS->ssl_pkey) {
+	/* Get our private key from the file specified from cmd-line */
+	DEBUG_MSG("Using custom private key %s", GBL_OPTIONS->ssl_pkey);
+	if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, GBL_OPTIONS->ssl_pkey, SSL_FILETYPE_PEM) == 0) {
+		FATAL_ERROR("Can't open \"%s\" file : %s", GBL_OPTIONS->ssl_pkey, strerror(errno));
+	}
 
-      if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, "./share/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         FATAL_ERROR("Can't open \"./share/%s\" file : %s", CERT_FILE, strerror(errno));
+	if (GBL_OPTIONS->ssl_cert) {
+		if (SSL_CTX_use_certificate_file(ssl_ctx_client, GBL_OPTIONS->ssl_cert, SSL_FILETYPE_PEM) == 0) {
+			FATAL_ERROR("Can't open \"%s\" file : %s", GBL_OPTIONS->ssl_cert, strerror(errno));
+		}
+
+		if (!SSL_CTX_check_private_key(ssl_ctx_client)) {
+			FATAL_ERROR("Certificate \"%s\" does not match private key \"%s\"", GBL_OPTIONS->ssl_cert, GBL_OPTIONS->ssl_pkey);
+		}
+	}
+   } else {
+   	/* Get our private key from our cert file */
+   	if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, INSTALL_DATADIR "/" EC_PROGRAM "/" CERT_FILE, SSL_FILETYPE_PEM) == 0) {
+      		DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- trying ./share/%s",  CERT_FILE);
+
+      		if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, "./share/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
+         		FATAL_ERROR("Can't open \"./share/%s\" file : %s", CERT_FILE, strerror(errno));
+   	}
    }
 
    dummy_ssl = SSL_new(ssl_ctx_client);

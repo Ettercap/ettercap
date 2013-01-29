@@ -5,6 +5,29 @@ Legenda:
          !! bug fixed
 
 =========================================
+0.7.5.2-Assimilation 20130229
+   !! applied patch to fix CVE-2012-0722
+   !! fixed username detection in TN3270 dissector
+    + Added new private-key and certificate-file options for SSL MiTM
+
+0.7.5.1-Assimilation 20130103
+   !! fixed set_blocking() method preventing SSL MiTM from working
+   !! changed SSLStrip plugin to use PCRE
+   !! more improvements to SSLStrip plugin
+    + Added MySQL 5.x dissector
+    + Added O5Logon dissector
+    + Added iSCSI CHAP dissector
+    + Added TN3270 dissector
+    + Added MongoDB dissector
+
+0.7.5-Assimilation 20121015
+   !! fixed more memory leaks
+   !! improved GTK GUI
+   !! changed build system to CMake.
+    + Added IPv6 poisoning and capture.
+    + Added NBNS spoof plugin.
+    + Added SSLStrip Plugin (EXPERIMENTAL)
+
 0.7.4-Lazarus	20111202
    !! fixed resource depletion issue
    !! buffer access out-of-bounds issues

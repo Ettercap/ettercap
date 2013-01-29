@@ -9,6 +9,8 @@ Legenda:
    !! applied patch to fix CVE-2012-0722
    !! fixed username detection in TN3270 dissector
     + Added new private-key and certificate-file options for SSL MiTM
+    + Fix for crash in ncurses multiple scan for host mode
+    + Fix for crash in ppp0 connections
 
 0.7.5.1-Assimilation 20130103
    !! fixed set_blocking() method preventing SSL MiTM from working

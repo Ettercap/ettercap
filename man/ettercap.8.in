@@ -197,7 +197,7 @@ rm \-f tmp.new tmp.csr
 .PP
 NOTE: SSL mitm is not available (for now) in bridged mode.
 .PP
-NOTE: You can use the --certificate/--private-key long options if you want to specify
+NOTE: You can use the \-\-certificate/\-\-private\-key long options if you want to specify
 a different file rather than the etter.ssl.crt file.
 
 
@@ -692,7 +692,7 @@ This is useful if you have many preconfigured files for different situations.
 Tells Ettercap to use the specified certificate file for the SSL MiTM attack.
 
 .TP
-\fB\-\-private-key <FILE>\fR
+\fB\-\-private\-key <FILE>\fR
 Tells Ettercap to use the specified private key file for the SSL MiTM attack.
 
 
@@ -968,7 +968,7 @@ It just develops random features.   ;)
 will be displayed by the sniffer. However all the fragments are correctly
 forwarded.
 .PP
-+ please send bug-report, patches or suggestions to <ettercap-betatesting@lists.sourceforge.net>
++ please send bug-report, patches or suggestions to <ettercap\-betatesting@lists.sourceforge.net>
 or visit https://github.com/Ettercap/ettercap/issues.
 .PP
 + to report a bug, follow the instructions in the README.BUGS file

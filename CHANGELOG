@@ -6,8 +6,8 @@ Legenda:
 
 =========================================
 0.7.5.3-Assimilation 20130201
-   !! Fixed ncurses host scan crash
-   !! Fixed ppp connection crash
+   !! Fixed ncurses host scan crash (already fixed in 0.7.5.2)
+   !! Fixed ppp connection crash (already fixed in 0.7.5.2)
    !! Fixed only MiTM mode selecting text interface
     + Changed to version 0.7.5.3 to help distributions.
 

@@ -42,6 +42,7 @@ static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define THREADS_UNLOCK   do{ pthread_mutex_unlock(&threads_mutex); } while(0)
 
 static pthread_mutex_t init_mtx = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t init_cond = PTHREAD_COND_INITIALIZER;
 #define INIT_LOCK     do{ DEBUG_MSG("thread_init_lock"); pthread_mutex_lock(&init_mtx); } while(0)
 #define INIT_UNLOCK   do{ DEBUG_MSG("thread_init_unlock"); pthread_mutex_unlock(&init_mtx); } while(0)
 
@@ -196,35 +197,35 @@ pthread_t ec_thread_new(char *name, char *desc, void *(*function)(void *), void 
 pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void *), void *args, int detached)
 {
    pthread_t id;
+   int e;
 
    DEBUG_MSG("ec_thread_new -- %s detached %d", name, detached);
 
    /* 
     * lock the mutex to syncronize with the new thread.
-    * the newly created thread will perform INIT_UNLOCK
+    * the newly created thread will call ec_thread_init(),
     * so at the end of this function we are sure that the 
     * thread had be initialized
     */
    INIT_LOCK; 
 
-
    if (detached == DETACHED_THREAD) {
       pthread_attr_t attr;
       pthread_attr_init(&attr);
       pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-      if (pthread_create(&id, &attr, function, args) != 0)
-         ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(errno));
+      if ((e = pthread_create(&id, &attr, function, args) != 0))
+         ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(e));
    }else {
-      if (pthread_create(&id, NULL, function, args) != 0)
-         ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(errno));
+      if ((e = pthread_create(&id, NULL, function, args) != 0))
+         ERROR_MSG("not enough resources to create a new thread in this process: %s", strerror(e));
    }
 
    ec_thread_register_detached(id, name, desc, detached);
 
    DEBUG_MSG("ec_thread_new -- %lu created ", PTHREAD_ID(id));
 
-   /* the new thread will unlock this */
-   INIT_LOCK; 
+   if ((e = pthread_cond_wait(&init_cond, &init_mtx)))
+      ERROR_MSG("waiting on init_cond: %s", strerror(e));
    INIT_UNLOCK;
    
    return id;
@@ -237,8 +238,11 @@ pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void 
 void ec_thread_init(void)
 {
    pthread_t id = pthread_self(); 
+   int e;
    
    DEBUG_MSG("ec_thread_init -- %lu", PTHREAD_ID(id));
+
+   INIT_LOCK;
    
    /* 
     * allow a thread to be cancelled as soon as the
@@ -248,6 +252,8 @@ void ec_thread_init(void)
    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
    /* sync with the creator */ 
+   if ((e = pthread_cond_signal(&init_cond)))
+      ERROR_MSG("raising init_cond: %s", strerror(e));
    INIT_UNLOCK;
    
    DEBUG_MSG("ec_thread_init -- (%lu) ready and syncronized",  PTHREAD_ID(id));

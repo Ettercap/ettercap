@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector for Mainframe TN3270 protocol
+    ettercap -- dissector for Mainframe TN3270 z/OS TSO logon protocol
 
     Copyright (C) Dhiru Kholia (dhiru at openwall.com)
 
@@ -7,7 +7,7 @@
 
     Created by: Soldier of Fortran (@mainframed767)
 
-    (tested against x3270 and TN3270X)
+    (tested against x3270 and TN3270 X and TN3270 Plus)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ void __init TN3270_init(void)
    dissect_add("TN3270", APP_LAYER_TCP, 623, dissector_TN3270);
 }
 
+/* Function to convert EBCDIC to ASCII */
 static unsigned char e2a[256] = {
         0,  1,  2,  3,156,  9,134,127,151,141,142, 11, 12, 13, 14, 15,
         16, 17, 18, 19,157,133,  8,135, 24, 25,146,143, 28, 29, 30, 31,
@@ -103,14 +104,14 @@ FUNC_DECODER(dissector_TN3270)
                  strncpy(username, &output[j], 512);
                  int l = strlen(username);
                  username[l-2] = 0;
-                 DISSECT_MSG("%s:%d <= Username : %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), username);
+                 DISSECT_MSG("%s:%d <= z/OS TSO Username : %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), username);
          }
          /* find password */
          if (ptr[i] == 125 && ptr[i+1] == 201 && ptr[i+3] == 17 && ptr[i+4] == 201 && ptr[i+5] == 195) {
                  strncpy(password, &output[i + 6], 512);
                  int l = strlen(password);
                  password[l-2] = 0;
-                 DISSECT_MSG("%s:%d <= Password : %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), password);
+                 DISSECT_MSG("%s:%d <= z/OS TSO Password : %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), password);
          }
       }
    }

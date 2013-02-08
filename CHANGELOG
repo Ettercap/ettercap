@@ -6,8 +6,8 @@ Legenda:
 
 =========================================
 0.7.5.3-Assimilation 20130201
-   !! Fixed ncurses host scan crash
-   !! Fixed ppp connection crash
+   !! Fixed ncurses host scan crash (already fixed in 0.7.5.2)
+   !! Fixed ppp connection crash (already fixed in 0.7.5.2)
    !! Fixed only MiTM mode selecting text interface
     + Changed to version 0.7.5.3 to help distributions.
 
@@ -15,6 +15,8 @@ Legenda:
    !! applied patch to fix CVE-2012-0722
    !! fixed username detection in TN3270 dissector
     + Added new private-key and certificate-file options for SSL MiTM
+    + Fix for crash in ncurses multiple scan for host mode
+    + Fix for crash in ppp0 connections
 
 0.7.5.1-Assimilation 20130103
    !! fixed set_blocking() method preventing SSL MiTM from working

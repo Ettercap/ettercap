@@ -785,6 +785,10 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "deflate");
 	curl_easy_setopt(connection->handle, CURLOPT_COOKIEFILE, ""); //Initialize cookie engine
 
+	/* Only allow HTTP and HTTPS */
+	curl_easy_setopt(connection->handle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
+	curl_easy_setopt(connection->handle, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
+
 
 	if(connection->request->method == HTTP_POST) {
 		curl_easy_setopt(connection->handle, CURLOPT_POST, 1L);

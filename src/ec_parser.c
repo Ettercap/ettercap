@@ -213,7 +213,7 @@ void parse_options(int argc, char **argv)
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
       /* enable a loaded filter script? */
-      uint8_t f_enabled = 0;
+      uint8_t f_enabled = 1;
 
       switch (c) {
 

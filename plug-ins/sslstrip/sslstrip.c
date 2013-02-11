@@ -785,6 +785,12 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	curl_easy_setopt(connection->handle, CURLOPT_ACCEPT_ENCODING, "deflate");
 	curl_easy_setopt(connection->handle, CURLOPT_COOKIEFILE, ""); //Initialize cookie engine
 
+	/* Only allow HTTP and HTTPS */
+	curl_easy_setopt(connection->handle, CURLOPT_PROTOCOLS, (long) CURLPROTO_HTTP | 
+						(long)CURLPROTO_HTTPS);
+	curl_easy_setopt(connection->handle, CURLOPT_REDIR_PROTOCOLS, (long) CURLPROTO_HTTP | 
+						(long) CURLPROTO_HTTPS);
+
 
 	if(connection->request->method == HTTP_POST) {
 		curl_easy_setopt(connection->handle, CURLOPT_POST, 1L);
@@ -866,6 +872,9 @@ static int http_write(int fd, char *ptr, size_t total_len)
 	int len, err;
 	int bytes_sent= 0;
 	int bytes_remaining = total_len;
+	struct timespec tm;
+	tm.tv_sec = 0;
+	tm.tv_nsec = 100 * 1000 * 1000; //100ms
 
 	DEBUG_MSG("SSLStrip: Total length %ld", total_len);
 
@@ -888,6 +897,8 @@ static int http_write(int fd, char *ptr, size_t total_len)
 		bytes_remaining -= len;
 
 		DEBUG_MSG("SSLStrip: Bytes sent %d", bytes_sent);
+		nanosleep(&tm, NULL);
+
 	
 	}
 
@@ -1320,7 +1331,7 @@ void http_update_content_length(struct http_connection *connection) {
                 content_length += strlen("Content-Length: ");
 
                 char c_length[20];
-                memset(&c_length, 20, '\0');
+                memset(&c_length, '\0', 20);
                 snprintf(c_length, 20, "%ld", connection->response->len);
 
                 memcpy(buf+(content_length-buf)-1, c_length, strlen(c_length));

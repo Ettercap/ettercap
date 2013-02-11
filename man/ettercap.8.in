@@ -968,7 +968,7 @@ It just develops random features.   ;)
 will be displayed by the sniffer. However all the fragments are correctly
 forwarded.
 .PP
-+ please send bug-report, patches or suggestions to <ettercap\-betatesting@lists.sourceforge.net>
++ please send bug\-report, patches or suggestions to <ettercap\-betatesting@lists.sourceforge.net>
 or visit https://github.com/Ettercap/ettercap/issues.
 .PP
 + to report a bug, follow the instructions in the README.BUGS file

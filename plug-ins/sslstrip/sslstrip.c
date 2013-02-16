@@ -32,7 +32,6 @@
 
 #include <sys/wait.h>
 
-#ifdef HAVE_PCRE_H
 #include <pcre.h>
 
 #ifdef OS_LINUX
@@ -44,7 +43,6 @@
 #include <sys/poll.h>
 #endif
 
-#ifdef HAVE_LIBCURL
 #include <curl/curl.h>
 
 #if (LIBCURL_VERSION_MAJOR < 7) || (LIBCURL_VERSION_MINOR < 26)
@@ -1337,8 +1335,5 @@ void http_update_content_length(struct http_connection *connection) {
                 memcpy(buf+(content_length-buf)-1, c_length, strlen(c_length));
         }
 }
-
-#endif /* HAVE_LIBCURL */
-#endif /* HAVE_PCRE_H */
 
 // vim:ts=3:expandtab

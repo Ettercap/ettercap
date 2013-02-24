@@ -88,7 +88,7 @@ static void display_packet(void)
       }
      
       /* if the regex does not match, the packet is not interesting */
-      if (GBL.regex && regexec(GBL.regex, buf, 0, NULL, 0) != 0) {
+      if (GBL.regex && regexec(GBL.regex, (const char*)buf, 0, NULL, 0) != 0) {
          SAFE_FREE(buf);
          continue;
       }
@@ -324,11 +324,11 @@ static int match_regex(struct host_profile *h)
       return 1;
 
    /* check the manufacturer */
-   if (regexec(GBL.regex, manuf_search(h->L2_addr), 0, NULL, 0) == 0)
+   if (regexec(GBL.regex, manuf_search((const char*)h->L2_addr), 0, NULL, 0) == 0)
       return 1;
   
    /* check the OS */
-   fingerprint_search(h->fingerprint, os);
+   fingerprint_search((const char*)h->fingerprint, os);
    
    if (regexec(GBL.regex, os, 0, NULL, 0) == 0)
       return 1;

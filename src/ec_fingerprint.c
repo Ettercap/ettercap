@@ -51,7 +51,7 @@ int fingerprint_search(const char *f, char *dst);
 void fingerprint_default(char *finger);
 void fingerprint_push(char *finger, int param, int value);
 u_int8 TTL_PREDICTOR(u_int8 x);
-int fingerprint_submit(char *finger, char *os);
+int fingerprint_submit(const char *finger, char *os);
    
 /*****************************************/
 
@@ -193,7 +193,7 @@ int fingerprint_search(const char *f, char *dst)
    }
 
    if(GBL_CONF->submit_fingerprint)
-   	fingerprint_submit((char *)f, "Unknown");
+   	fingerprint_submit(f, "Unknown");
    return -ENOTFOUND;
 }
 
@@ -299,7 +299,7 @@ u_int8 TTL_PREDICTOR(u_int8 x)
 /*
  * submit a fingerprint to the ettercap website
  */
-int fingerprint_submit(char *finger, char *os)
+int fingerprint_submit(const char *finger, char *os)
 {
    int sock;
    char host[] = "ettercap.sourceforge.net";
@@ -352,7 +352,7 @@ int fingerprint_submit(char *finger, char *os)
    USER_MSG("Submitting the fingerprint to %s...\n", page);
    
    /* send the request to the server */
-   socket_send(sock, getmsg, strlen(getmsg));
+   socket_send(sock, (const u_char*)getmsg, strlen(getmsg));
 
    DEBUG_MSG("fingerprint_submit - SEND \n\n%s\n\n", getmsg);
 

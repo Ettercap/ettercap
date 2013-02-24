@@ -77,7 +77,9 @@ void ui_start(void)
    if (GBL_UI->initialized)
       EXECUTE(GBL_UI->start);
    else
+   {
       DEBUG_MSG("ui_start called initialized");
+   }
 }
 
 /* called to end the user interface */

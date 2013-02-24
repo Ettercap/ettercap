@@ -331,7 +331,7 @@ EC_THREAD_FUNC(sslw_start)
 	       
             /* Set the peer (client) in the connection list entry */
             ae->port[SSL_CLIENT] = client_sin.sin_port;
-            ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (char *)&(client_sin.sin_addr.s_addr));
+            ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (u_char *)&(client_sin.sin_addr.s_addr));
 	   
             /* create a detached thread */ 
             ec_thread_new_detached("sslw_child", "ssl child", &sslw_child, ae, 1);
@@ -749,7 +749,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
 
    getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&sa_in, &sa_in_sz);
 
-   ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET, (char *)&(sa_in.sin_addr.s_addr));
+   ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET, (u_char *)&(sa_in.sin_addr.s_addr));
 #endif
    return ESUCCESS;
 }

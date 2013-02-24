@@ -45,7 +45,7 @@ static u_int16 sum(u_int8 *buf, size_t len)
    register u_int32 csum = 0;
    register u_int16 *cbuf = (u_int16 *)buf;
 #endif
-   register int nleft = len;
+   register unsigned int nleft = len;
    u_int16 tmp = 0;
 
    while(nleft > sizeof(*cbuf) - 1) {
@@ -95,7 +95,10 @@ u_int16 L4_checksum(struct packet_object *po)
    switch(ntohs(po->L3.proto)) {
       case LL_TYPE_IP:  return v4_checksum(po);
       case LL_TYPE_IP6: return v6_checksum(po);
+      default: break;
    }
+
+   return 0;
 }
 
 static u_int16 v4_checksum(struct packet_object *po)
@@ -128,8 +131,8 @@ static u_int16 v6_checksum(struct packet_object *po)
 
    csum = sum(buf, plen);
    
-   csum += sum(&po->L3.src.addr, ntohs(po->L3.src.addr_len));
-   csum += sum(&po->L3.dst.addr, ntohs(po->L3.dst.addr_len));
+   csum += sum((uint8_t*)&po->L3.src.addr, ntohs(po->L3.src.addr_len));
+   csum += sum((uint8_t*)&po->L3.dst.addr, ntohs(po->L3.dst.addr_len));
    csum += htons(plen + po->L4.proto);
 
    while(csum >> 16)
@@ -198,7 +201,7 @@ u_int32 CRC_checksum(u_char *buf, size_t len, u_int32 init)
  * that the checksum covers (including the checksum itself), compute
  * what the checksum field *should* have been.
  */
-u_int16 checksum_shouldbe(u_int16 sum, u_int16 computed_sum)
+u_int16 checksum_shouldbe(u_int16 csum, u_int16 computed_sum)
 {
 	u_int32 shouldbe;
 
@@ -236,7 +239,7 @@ u_int16 checksum_shouldbe(u_int16 sum, u_int16 computed_sum)
 	 * host-byte-order value from the header; the adjusted checksum
 	 * will be in host byte order, which is what we'll return.
 	 */
-	shouldbe = ntohs(sum);
+	shouldbe = ntohs(csum);
 	shouldbe += ntohs(computed_sum);
 	shouldbe = (shouldbe & 0xFFFF) + (shouldbe >> 16);
 	shouldbe = (shouldbe & 0xFFFF) + (shouldbe >> 16);

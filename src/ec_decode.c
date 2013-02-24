@@ -158,9 +158,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
    
    /* set the interface where the packet was captured */
-   if (GBL_OPTIONS->iface && !strcmp(param, GBL_OPTIONS->iface))
+   if (GBL_OPTIONS->iface && !strcmp((const char*)param, GBL_OPTIONS->iface))
       po.flags |= PO_FROMIFACE;
-   else if (GBL_OPTIONS->iface_bridge && !strcmp(param, GBL_OPTIONS->iface_bridge))
+   else if (GBL_OPTIONS->iface_bridge && !strcmp((const char*)param, GBL_OPTIONS->iface_bridge))
       po.flags |= PO_FROMBRIDGE;
 
    /* HOOK POINT: RECEIVED */ 
@@ -254,7 +254,6 @@ void __init data_init(void)
 
 FUNC_DECODER(decode_data)
 {
-   int i;
    int proto = 0;
    FUNC_DECODER_PTR(app_decoder);
       
@@ -399,17 +398,17 @@ static int cmp_decoders(const void *va, const void *vb)
     * the array is sorted by level, then by the port number.
     */
 
-   return (da->level != db->level) ? da->level - db->level :
-          da->type - db->type;
+   if (da->level != db->level)
+   {
+      return da->level - db->level;
+   }
 
+   return da->type - db->type;
 }
 
 static struct dec_entry* find_entry(u_int8 level, u_int32 type)
 {
    struct dec_entry *e, fake;
-   int min = 0,
-       max = protocols_num,
-       r;
 
    fake.level = level;
    fake.type = type;
@@ -435,7 +434,7 @@ void * get_decoder(u_int8 level, u_int32 type)
 {
    struct dec_entry *e;
 
-   if(e = find_entry(level, type))
+   if((e = find_entry(level, type)))
       if(e->active)
          return e->decoder;
    
@@ -450,7 +449,7 @@ void del_decoder(u_int8 level, u_int32 type)
 {
    struct dec_entry *e;
 
-   if(e = find_entry(level, type)) {
+   if((e = find_entry(level, type))) {
       DECODERS_LOCK;
       /* Replace this entry with the last one */
       memcpy(e, &protocols_table[protocols_num-1], sizeof(struct dec_entry));

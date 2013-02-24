@@ -168,7 +168,7 @@ static void curses_profile_detail(void *profile)
       
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
-      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " MANUFACTURER : %s \n\n", manuf_search(h->L2_addr));
+      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " MANUFACTURER : %s \n\n", manuf_search((const char*)h->L2_addr));
    }
 
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " DISTANCE     : %d   \n", h->distance);
@@ -185,7 +185,7 @@ static void curses_profile_detail(void *profile)
       
    
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " FINGERPRINT      : %s\n", h->fingerprint);
-   if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
+   if (fingerprint_search((const char*)h->fingerprint, os) == ESUCCESS)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OPERATING SYSTEM : %s \n\n", os);
    else {
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OPERATING SYSTEM : unknown fingerprint (please submit it) \n");

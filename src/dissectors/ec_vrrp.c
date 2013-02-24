@@ -93,7 +93,7 @@ FUNC_DECODER(dissector_vrrp)
    DECLARE_DISP_PTR_END(ptr, end);
    char tmp[MAX_ASCII_ADDR_LEN];
    struct vrrp_hdr *vhdr;
-   char *auth;
+   u_char *auth;
 
    /* don't complain about unused var */
    (void)end;

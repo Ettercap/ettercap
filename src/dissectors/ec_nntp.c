@@ -69,11 +69,11 @@ FUNC_DECODER(dissector_nntp)
        * get the banner 
        * ptr + 4 to skip the initial 200 response
        */
-      if (!strncmp(ptr, "200", 3)) {
-         PACKET->DISSECTOR.banner = strdup(ptr + 4);
+      if (!strncmp((const char*)ptr, "200", 3)) {
+         PACKET->DISSECTOR.banner = strdup((const char*)ptr + 4);
       
          /* remove the \r\n */
-         if ( (ptr = strchr(PACKET->DISSECTOR.banner, '\r')) != NULL )
+         if ( (ptr = (u_char*)strchr(PACKET->DISSECTOR.banner, '\r')) != NULL )
             *ptr = '\0';
       }
             
@@ -96,7 +96,7 @@ FUNC_DECODER(dissector_nntp)
    if (ptr == end) return NULL;
 
    /* harvest the username */
-   if ( !strncasecmp(ptr, "AUTHINFO USER ", 14) ) {
+   if ( !strncasecmp((const char*)ptr, "AUTHINFO USER ", 14) ) {
 
       DEBUG_MSG("\tDissector_nntp USER");
       
@@ -109,11 +109,11 @@ FUNC_DECODER(dissector_nntp)
       SAFE_FREE(s->data);
 
       /* fill the session data */
-      s->data = strdup(ptr);
-      s->data_len = strlen(ptr);
+      s->data = strdup((const char*)ptr);
+      s->data_len = strlen((const char*)ptr);
       
       /* remove the \r\n */
-      if ( (ptr = strchr(s->data,'\r')) != NULL )
+      if ( (ptr = (u_char*)strchr(s->data,'\r')) != NULL )
          *ptr = '\0';
       
       /* save the session */
@@ -123,7 +123,7 @@ FUNC_DECODER(dissector_nntp)
    }
 
    /* harvest the password */
-   if ( !strncasecmp(ptr, "AUTHINFO PASS ", 14) ) {
+   if ( !strncasecmp((const char*)ptr, "AUTHINFO PASS ", 14) ) {
 
       DEBUG_MSG("\tDissector_nntp PASS");
       
@@ -147,8 +147,8 @@ FUNC_DECODER(dissector_nntp)
       /* fill the structure */
       PACKET->DISSECTOR.user = strdup(s->data);
       
-      PACKET->DISSECTOR.pass = strdup(ptr);
-      if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
+      PACKET->DISSECTOR.pass = strdup((const char*)ptr);
+      if ( (ptr = (u_char*)strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
          *ptr = '\0';
 
       /* free the session */

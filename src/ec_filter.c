@@ -522,12 +522,12 @@ static int func_regex(struct filter_op *fop, struct packet_object *po)
    switch (fop->op.func.level) {
       case 5:
          /* search in the real packet */
-         if (regexec(fop->op.func.ropt->regex, po->DATA.data, 0, NULL, 0) == 0)
+         if (regexec(fop->op.func.ropt->regex, (const char*)po->DATA.data, 0, NULL, 0) == 0)
             return ESUCCESS;
          break;
       case 6:
          /* search in the decoded/decrypted packet */
-         if (regexec(fop->op.func.ropt->regex, po->DATA.disp_data, 0, NULL, 0) == 0)
+         if (regexec(fop->op.func.ropt->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) == 0)
             return ESUCCESS;
          break;
       default:
@@ -767,7 +767,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    DEBUG_MSG("filter engine: func_inject %s", fop->op.func.string);
    
    /* open the file */
-   if ((fd = open(fop->op.func.string, O_RDONLY | O_BINARY)) == -1) {
+   if ((fd = open((const char*)fop->op.func.string, O_RDONLY | O_BINARY)) == -1) {
       USER_MSG("filter engine: inject(): File not found (%s)\n", fop->op.func.string);
       return -EFATAL;
    }
@@ -823,7 +823,7 @@ static int func_log(struct filter_op *fop, struct packet_object *po)
    DEBUG_MSG("filter engine: func_log");
    
    /* open the file */
-   fd = open(fop->op.func.string, O_CREAT | O_APPEND | O_RDWR | O_BINARY, 0600);
+   fd = open((const char*)fop->op.func.string, O_CREAT | O_APPEND | O_RDWR | O_BINARY, 0600);
    if (fd == -1) {
       USER_MSG("filter engine: Cannot open file %s\n", fop->op.func.string);
       return -EFATAL;
@@ -914,7 +914,7 @@ static int func_exec(struct filter_op *fop)
    /* differentiate between the parent and the child */
    if (!pid) {
       char **param = NULL;
-      char *q = fop->op.func.string;
+      char *q = (char*)fop->op.func.string;
       char *p;
       int i = 0;
 
@@ -1150,19 +1150,19 @@ static void reconstruct_strings(struct filter_env *fenv, struct filter_header *f
       switch(fop[i].opcode) {
          case FOP_FUNC:
             if (fop[i].op.func.slen)
-               fop[i].op.func.string = (char *)(fenv->map + fh->data + (size_t)fop[i].op.func.string);
+               fop[i].op.func.string = (fenv->map + fh->data + (size_t)fop[i].op.func.string);
             if (fop[i].op.func.rlen)
-               fop[i].op.func.replace = (char *)(fenv->map + fh->data + (size_t)fop[i].op.func.replace);
+               fop[i].op.func.replace = (fenv->map + fh->data + (size_t)fop[i].op.func.replace);
             break;
             
          case FOP_TEST:
             if (fop[i].op.test.slen)
-               fop[i].op.test.string = (char *)(fenv->map + fh->data + (size_t)fop[i].op.test.string);
+               fop[i].op.test.string = (fenv->map + fh->data + (size_t)fop[i].op.test.string);
             break;
          
          case FOP_ASSIGN:
             if (fop[i].op.assign.slen)
-               fop[i].op.assign.string = (char *)(fenv->map + fh->data + (size_t)fop[i].op.assign.string);
+               fop[i].op.assign.string = (fenv->map + fh->data + (size_t)fop[i].op.assign.string);
             break;
       }
       
@@ -1197,7 +1197,7 @@ static int compile_regex(struct filter_env *fenv, struct filter_header *fh)
                SAFE_CALLOC(fop[i].op.func.ropt->regex, 1, sizeof(regex_t));
    
                /* prepare the regex */
-               err = regcomp(fop[i].op.func.ropt->regex, fop[i].op.func.string, REG_EXTENDED | REG_NOSUB | REG_ICASE );
+               err = regcomp(fop[i].op.func.ropt->regex, (const char*)fop[i].op.func.string, REG_EXTENDED | REG_NOSUB | REG_ICASE );
                if (err) {
                   regerror(err, fop[i].op.func.ropt->regex, errbuf, sizeof(errbuf));
                   FATAL_MSG("filter engine: %s", errbuf);

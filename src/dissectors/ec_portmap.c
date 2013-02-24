@@ -152,16 +152,16 @@ FUNC_DECODER(dissector_portmap)
               Available_RPC_Dissectors[i].version == pe->ver ) {
 
             if (pe->proto == IPPROTO_TCP) {
-               if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == ESUCCESS)
+               if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == ESUCCESS)
                   break;
-               dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
+               dissect_add((char*)Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
                DISSECT_MSG("portmap : %s binds [%s] on port %d TCP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                                                        Available_RPC_Dissectors[i].name, 
                                                                        port);
             } else {
-               if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == ESUCCESS)
+               if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == ESUCCESS)
                   break;
-               dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
+               dissect_add((char*)Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
                DISSECT_MSG("portmap : %s binds [%s] on port %d UDP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                                                        Available_RPC_Dissectors[i].name, 
                                                                        port);
@@ -187,19 +187,19 @@ FUNC_DECODER(dissector_portmap)
 
                if (proto == IPPROTO_TCP) {
 
-                  if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == ESUCCESS)
+                  if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == ESUCCESS)
                      break;
 
-                  dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
+                  dissect_add((char*)Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
                   DISSECT_MSG("portmap : %s binds [%s] on port %d TCP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                                                           Available_RPC_Dissectors[i].name, 
                                                                           port);
                } else {
 
-                  if (dissect_on_port_level(Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == ESUCCESS)
+                  if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == ESUCCESS)
                      break;
 
-                  dissect_add(Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
+                  dissect_add((char*)Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
                   DISSECT_MSG("portmap : %s binds [%s] on port %d UDP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                                                           Available_RPC_Dissectors[i].name, 
                                                                           port);

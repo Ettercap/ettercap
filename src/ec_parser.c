@@ -396,7 +396,7 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'W':
-                  set_wep_key(optarg);
+                  set_wep_key((u_char*)optarg);
                   break;
                   
          case 'a':

@@ -181,7 +181,7 @@ FUNC_DECODER(dissector_dns)
             NS_GET32(addr, q);
             /* convert to network order */
             addr = htonl(addr);
-            ip_addr_init(&ip, AF_INET, (char *)&addr);
+            ip_addr_init(&ip, AF_INET, (u_char *)&addr);
            
             /* insert the answer in the resolv cache */
             resolv_cache_insert(&ip, name);

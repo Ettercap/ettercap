@@ -451,7 +451,9 @@ static void nbns_spoof_dump(void)
 	DEBUG_MSG("nbns_spoof entries:");
 	SLIST_FOREACH(n, &nbns_spoof_head, next) {
 		if(ntohs(n->ip.addr_type) == AF_INET)
+      {
 			DEBUG_MSG(" %s -> [%s]", n->name, int_ntoa(n->ip.addr));
+      }
 	}
 }
 

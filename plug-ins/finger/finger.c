@@ -142,7 +142,7 @@ static void get_finger(struct packet_object *po)
 /*
  * check if we can use GBL_TARGETS
  */
-static int good_target(struct ip_addr *ip, u_int16 *port)
+static int good_target(struct ip_addr *p_ip, u_int16 *p_port)
 {
    struct ip_list *host;
    
@@ -150,17 +150,17 @@ static int good_target(struct ip_addr *ip, u_int16 *port)
    if ((host = LIST_FIRST(&GBL_TARGET1->ips)) != NULL) {
       
       /* copy the ip address */
-      memcpy(ip, &host->ip, sizeof(struct ip_addr));
+      memcpy(p_ip, &host->ip, sizeof(struct ip_addr));
       
       /* find the port */
-      for (*port = 0; *port < 0xffff; (*port)++) {
-         if (BIT_TEST(GBL_TARGET1->ports, *port)) {
+      for (*p_port = 0; *p_port < 0xffff; (*p_port)++) {
+         if (BIT_TEST(GBL_TARGET1->ports, *p_port)) {
             break;
          }
       }
       
       /* port was found */
-      if (*port != 0xffff)
+      if (*p_port != 0xffff)
          return ESUCCESS;
    }
    
@@ -171,7 +171,7 @@ static int good_target(struct ip_addr *ip, u_int16 *port)
 /* 
  * get the target from user input 
  */
-static int get_user_target(struct ip_addr *ip, u_int16 *port)
+static int get_user_target(struct ip_addr *p_ip, u_int16 *p_port)
 {
    struct in_addr ipaddr;
    char input[24];
@@ -191,14 +191,14 @@ static int get_user_target(struct ip_addr *ip, u_int16 *port)
       if (inet_aton(p, &ipaddr) == 0)
          return -EINVALID;
 
-      ip_addr_init(ip, AF_INET, (char *)&ipaddr);
+      ip_addr_init(p_ip, AF_INET, (u_char *)&ipaddr);
 
       /* get the port */
       if ((p = ec_strtok(NULL, ":", &tok)) != NULL) {
-         *port = atoi(p);
+         *p_port = atoi(p);
 
          /* correct parsing */
-         if (*port != 0)
+         if (*p_port != 0)
             return ESUCCESS;
       }
    }

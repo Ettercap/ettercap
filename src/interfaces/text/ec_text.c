@@ -502,7 +502,6 @@ static void text_run_filter(void) {
 
    fprintf(stderr, "\nLoaded etterfilter scripts:\n\n");
    while(1) {
-      struct filter_list **l;
       char input[20];
       int i = 1;
       int number = -1;

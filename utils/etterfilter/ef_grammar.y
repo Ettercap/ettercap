@@ -159,7 +159,7 @@ instruction:
             ef_debug(3, "\tassignment string\n"); 
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_ASSIGN;
-            $$.op.assign.string = strdup($3.op.assign.string);
+            $$.op.assign.string = (u_char*)strdup((char*)$3.op.assign.string);
             $$.op.assign.slen = $3.op.assign.slen;
             /* this is a string */
             $$.op.assign.size = 0;
@@ -236,7 +236,7 @@ condition:
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
-            $$.op.test.string = strdup($3.op.test.string);
+            $$.op.test.string = (u_char*)strdup((char*)$3.op.test.string);
             $$.op.test.slen = $3.op.assign.slen;
             /* this is a string */
             $$.op.test.size = 0;
@@ -247,7 +247,7 @@ condition:
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_NEQ;
-            $$.op.test.string = strdup($3.op.test.string);
+            $$.op.test.string = (u_char*)strdup((char*)$3.op.test.string);
             $$.op.test.slen = $3.op.assign.slen;
             /* this is a string */
             $$.op.test.size = 0;

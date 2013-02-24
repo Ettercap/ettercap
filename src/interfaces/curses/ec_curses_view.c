@@ -201,7 +201,7 @@ static void curses_wep_key(void)
 
 static void curses_set_wepkey(void)
 {
-   set_wep_key(wkey);
+   set_wep_key((u_char*)wkey);
 }
 
 

@@ -4,7 +4,7 @@
 #define EC_MANUF_H
 
 EC_API_EXTERN int manuf_init(void);
-EC_API_EXTERN char * manuf_search(char *m);
+EC_API_EXTERN char * manuf_search(const char *m);
 
 #endif
 

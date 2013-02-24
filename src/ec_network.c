@@ -257,25 +257,25 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
          continue;
 
       if(ifaddr->ifa_addr->sa_family == AF_INET) {
-         sa4 = ifaddr->ifa_addr;
-         ip_addr_init(&source->ip, AF_INET, &sa4->sin_addr);
+         sa4 = (struct sockaddr_in*)ifaddr->ifa_addr;
+         ip_addr_init(&source->ip, AF_INET, (u_char*)&sa4->sin_addr);
          if(GBL_OPTIONS->netmask) {
-            u_int32 net;
+            struct in_addr net;
             if(inet_aton(GBL_OPTIONS->netmask, &net) == 0)
                FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
-            ip_addr_init(&source->netmask, AF_INET, &net);
+            ip_addr_init(&source->netmask, AF_INET, (u_char*)&net);
          } else {
-            sa4 = ifaddr->ifa_netmask;
-            ip_addr_init(&source->netmask, AF_INET, &sa4->sin_addr);
+            sa4 = (struct sockaddr_in*)ifaddr->ifa_netmask;
+            ip_addr_init(&source->netmask, AF_INET, (u_char*)&sa4->sin_addr);
          }
          ip_addr_get_network(&source->ip, &source->netmask, &source->network);
          source->has_ipv4 = 1;
       } else if(ifaddr->ifa_addr->sa_family == AF_INET6) {
          SAFE_CALLOC(ip6, 1, sizeof(*ip6));
-         sa6 = ifaddr->ifa_addr;
-         ip_addr_init(&ip6->ip, AF_INET6, &sa6->sin6_addr);
-         sa6 = ifaddr->ifa_netmask;
-         ip_addr_init(&ip6->netmask, AF_INET6, &sa6->sin6_addr);
+         sa6 = (struct sockaddr_in6*)ifaddr->ifa_addr;
+         ip_addr_init(&ip6->ip, AF_INET6, (u_char*)&sa6->sin6_addr);
+         sa6 = (struct sockaddr_in6*)ifaddr->ifa_netmask;
+         ip_addr_init(&ip6->netmask, AF_INET6, (u_char*)&sa6->sin6_addr);
          ip_addr_get_network(&ip6->ip, &ip6->netmask, &ip6->network);
          ip6->prefix = ip_addr_get_prefix(&ip6->netmask);
          LIST_INSERT_HEAD(&source->ip6_list, ip6, next);
@@ -292,7 +292,9 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 
 static void source_close(struct iface_env *iface)
 {
+#ifdef WITH_IPV6
    struct net_list *n;
+#endif
 
    iface->is_ready = 0;
 
@@ -367,7 +369,9 @@ static void close_secondary_sources(void)
 static void l3_init(void)
 {
    libnet_t *l4;
+#ifdef WITH_IPV6
    libnet_t *l6;
+#endif
    char lnet_errbuf[LIBNET_ERRBUF_SIZE];
 
    DEBUG_MSG("l3_init");

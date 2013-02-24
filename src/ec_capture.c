@@ -56,30 +56,6 @@ void add_aligner(int dlt, int (*aligner)(void));
 
 /*******************************************/
 
-/* 
- * return the name of the interface.
- * used to deal with unicode under Windows
- */
-static char *iface_name(const char *s)
-{
-   char *buf;
-   
-#if defined(OS_WINDOWS) || defined(OS_CYGWIN)
-   size_t len = wcslen ((const wchar_t*)s);
-   
-   if (!s[1]) {   /* should probably use IsTextUnicode() ... */
-      SAFE_CALLOC(buf, len + 1, sizeof(char));
-      
-      snprintf (buf, len+1, "%S", s);
-      DEBUG_MSG("iface_name: '%S', is_unicode '%s'", s, buf);
-      return buf;
-   }
-#endif
-
-   SAFE_STRDUP(buf, s);
-   return buf;
-}
-
 void capture_start(struct iface_env *iface)
 {
    char thread_name[64];
@@ -224,6 +200,7 @@ u_int8 get_alignment(int dlt)
 
    /* not found */
    BUG("Don't know how to align this media header");
+   return 1;
 }
 
 /*

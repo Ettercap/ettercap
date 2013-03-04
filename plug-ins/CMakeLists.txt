@@ -1,4 +1,3 @@
-
 add_library(arp_cop MODULE arp_cop/arp_cop.c)
 set_target_properties(arp_cop PROPERTIES PREFIX "ec_")
 
@@ -49,9 +48,18 @@ set_target_properties(link_type PROPERTIES PREFIX "ec_")
 add_library(nbns_spoof MODULE nbns_spoof/nbns_spoof.c)
 set_target_properties(nbns_spoof PROPERTIES PREFIX "ec_")
 
-add_library(sslstrip MODULE sslstrip/sslstrip.c)
-target_link_libraries(sslstrip ${FOUND_LIBCURL} ${HAVE_PCRE})
-set_target_properties(sslstrip PROPERTIES PREFIX "ec_")
+if(HAVE_PCRE)
+    if(CURL_FOUND)
+        add_library(sslstrip MODULE sslstrip/sslstrip.c)
+        target_link_libraries(sslstrip ${CURL_LIBRARY} ${HAVE_PCRE})
+        set_target_properties(sslstrip PROPERTIES PREFIX "ec_")
+        set(SSL_STRIP_PLUGIN sslstrip)
+    else(CURL_FOUND)
+        message(STATUS "Not building sslstrip plugin. Requires libcurl.")
+    endif(CURL_FOUND)
+else(HAVE_PCRE)
+    message(STATUS "Not building sslstrip plugin. Requires pcre.")
+endif(HAVE_PCRE)
 
 add_library(pptp_chapms1 MODULE pptp_chapms1/pptp_chapms1.c)
 set_target_properties(pptp_chapms1 PROPERTIES PREFIX "ec_")
@@ -111,7 +119,7 @@ gw_discover
 isolate
 link_type
 nbns_spoof
-sslstrip
+${SSL_STRIP_PLUGIN}
 pptp_chapms1
 pptp_clear
 pptp_pap
@@ -148,7 +156,7 @@ install(TARGETS
             isolate
             link_type
             nbns_spoof
-	    sslstrip
+            ${SSL_STRIP_PLUGIN}
             pptp_chapms1
             pptp_clear
             pptp_pap

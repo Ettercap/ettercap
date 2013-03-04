@@ -38,7 +38,6 @@
 #cmakedefine HAVE_NCURSES
 #cmakedefine HAVE_GTK
 #cmakedefine HAVE_OPENSSL
-#cmakedefine HAVE_LIBCURL
 
 #cmakedefine HAVE_UTF8
 #cmakedefine HAVE_PLUGINS

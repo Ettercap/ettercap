@@ -840,7 +840,6 @@ static int func_log(struct filter_op *fop, struct packet_object *po)
             USER_MSG("filter engine: Cannot write to file...\n");
          break;
       default:
-	 close(fd);
          JIT_FAULT("unsupported log level [%d]", fop->op.func.level);
          break;
    }

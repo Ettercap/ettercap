@@ -653,7 +653,7 @@ default:
 if ((version&0xf0000000)==0x40000000)
    strcat(str," + has audio");
 
-if ((version&0x0f000000)==0x040000000)
+if ((version&0x0f000000)== 0x04000000)
    strcat(str," + eraomnix");
 
 }

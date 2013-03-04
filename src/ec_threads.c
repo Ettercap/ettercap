@@ -237,9 +237,10 @@ pthread_t ec_thread_new_detached(char *name, char *desc, void *(*function)(void 
  */
 void ec_thread_init(void)
 {
+   pthread_t id = pthread_self();
    int e;
    
-   DEBUG_MSG("ec_thread_init -- %lu", PTHREAD_ID(pthread_self()));
+   DEBUG_MSG("ec_thread_init -- %lu", PTHREAD_ID(id));
 
    INIT_LOCK;
    

@@ -345,8 +345,11 @@ int compile_target(char *string, struct target_env *target)
    DEBUG_MSG("IP   : [%s]", tok[1]);
 #ifdef WITH_IPV6
    DEBUG_MSG("IPv6 : [%s]", tok[2]);
-#endif
    DEBUG_MSG("PORT : [%s]", tok[3]);
+#else
+   DEBUG_MSG("PORT: [%s]", tok[2]);
+#endif
+
   
    /* set the mac address */
    if (!strcmp(tok[0], ""))

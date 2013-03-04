@@ -186,10 +186,18 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
          return -ENOTHANDLED;
 
       struct stat st;
+      int stat_result;
+      FILE* pcap_file_h;
+
       pcap = pcap_open_offline(name, pcap_errbuf);
       ON_ERROR(pcap, NULL, "pcap_open_offline: %s", pcap_errbuf);
 
-      fstat(pcap_fileno(pcap), &st);
+      pcap_file_h = pcap_file(pcap);
+      ON_ERROR(pcap_file_h, 0, "pcap_fileno returned an invalid file handle");
+
+      stat_result = fstat(fileno(pcap_file_h), &st);
+      ON_ERROR(stat_result, -1, "fstat failed.");
+
       GBL_PCAP->dump_size = st.st_size;
    }
    source->dlt = pcap_datalink(pcap);

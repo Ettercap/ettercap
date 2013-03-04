@@ -451,8 +451,11 @@ void del_decoder(u_int8 level, u_int32 type)
 
    if((e = find_entry(level, type))) {
       DECODERS_LOCK;
-      /* Replace this entry with the last one */
-      memcpy(e, &protocols_table[protocols_num-1], sizeof(struct dec_entry));
+      if (e != &protocols_table[protocols_num-1])
+      {
+          /* Replace this entry with the last one */
+          memcpy(e, &protocols_table[protocols_num-1], sizeof(struct dec_entry));
+      }
       /* Resize the array */
       SAFE_REALLOC(protocols_table, --protocols_num*sizeof(struct dec_entry));
       /* And mark as unsorted */

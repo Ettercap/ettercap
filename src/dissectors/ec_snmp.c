@@ -71,6 +71,9 @@ FUNC_DECODER(dissector_snmp)
    /* reached the end */
    if (ptr >= end) return NULL;
       
+   // Check len + version    
+   if ((ptr + (*ptr) + 1) >= end) return NULL;
+   
    /* move to the len */
    ptr += *ptr;
 
@@ -94,6 +97,8 @@ FUNC_DECODER(dissector_snmp)
    
    if (n >= 128) {
       n &= ~128;
+
+      if ((ptr + n) > end) return NULL;
       ptr += n;
       
       switch(*ptr) {
@@ -119,7 +124,7 @@ FUNC_DECODER(dissector_snmp)
    ptr++;
 
    /* Avoid bof */
-   if (clen > MAX_COMMUNITY_LEN)
+   if (clen > MAX_COMMUNITY_LEN || ((ptr + clen) > end))
       return NULL;
          
    SAFE_CALLOC(PACKET->DISSECTOR.user, clen + 2, sizeof(char));

@@ -141,11 +141,11 @@ FUNC_DECODER(dissector_ymsg)
       memcpy(message, ptr, field_len);
       
       /* Update disp_data in the packet object (128 byte will be enough for ****YAHOOO.... string */
-      temp_disp_data = (u_char *)realloc(PACKET->DATA.disp_data, strlen(from) + strlen(to) + strlen(message) + 128);
+      temp_disp_data = (u_char *)realloc(PACKET->DATA.disp_data, strlen((const char*)from) + strlen((const char*)to) + strlen((const char*)message) + 128);
       if (temp_disp_data != NULL) {
          PACKET->DATA.disp_data = temp_disp_data;
-         snprintf(PACKET->DATA.disp_data, strlen(from) + strlen(to) + strlen(message) + 128, "*** Yahoo Message ***\n From: %s\n To: %s\n\n Message: %s\n", from, to, message); 		  	       
-         PACKET->DATA.disp_len = strlen(PACKET->DATA.disp_data);
+         snprintf((char*)PACKET->DATA.disp_data, strlen((const char*)from) + strlen((const char*)to) + strlen((const char*)message) + 128, "*** Yahoo Message ***\n From: %s\n To: %s\n\n Message: %s\n", from, to, message); 		  	       
+         PACKET->DATA.disp_len = strlen((const char*)PACKET->DATA.disp_data);
       }
             
       SAFE_FREE(from);

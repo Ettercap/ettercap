@@ -128,7 +128,7 @@ static struct ip_addr *search_netmask(void)
    for (i = 1; i <= nhosts; i++) {
       /* calculate the ip */
       current = (myip & netmask) | htonl(i);
-      ip_addr_init(&scanip, AF_INET, (char *)&current);
+      ip_addr_init(&scanip, AF_INET, (u_char *)&current);
       if (!in_list(&scanip))
          return(&scanip);
    }

@@ -76,8 +76,6 @@ void start_bridge_sniff(void)
  */
 void stop_bridge_sniff(void)
 {
-   pthread_t pid;
-   
    DEBUG_MSG("stop_bridge_sniff");
    
    if (GBL_SNIFF->active == 0) {

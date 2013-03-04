@@ -94,9 +94,9 @@ static void remote_browser(struct packet_object *po)
    int i = 0;
    
    /* the client is making a request */
-   if (po->DATA.disp_len != 0 && strstr(po->DATA.disp_data, "GET")) {
+   if (po->DATA.disp_len != 0 && strstr((const char*)po->DATA.disp_data, "GET")) {
       
-      tmp = strdup(po->DATA.disp_data);
+      tmp = strdup((const char*)po->DATA.disp_data);
 
       /* get the Host: directoive */
       host = strstr(tmp, "Host: ");

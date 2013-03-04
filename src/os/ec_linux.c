@@ -31,7 +31,7 @@ static char saved_status;
 void disable_ip_forward(void);
 static void restore_ip_forward(void);
 u_int16 get_iface_mtu(const char *iface);
-void diable_interface_offload(void);
+void disable_interface_offload(void);
 
 /*******************************************/
 

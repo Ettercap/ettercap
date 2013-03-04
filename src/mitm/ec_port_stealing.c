@@ -180,7 +180,7 @@ static int port_stealing_start(char *args)
    harp->ar_pln = 4;
    harp->ar_op  = htons(ARPOP_REQUEST);
 
-   packet_create_object(&fake_po, fake_pck, FAKE_PCK_LEN);
+   packet_create_object(&fake_po, (u_char*)fake_pck, FAKE_PCK_LEN);
    
    /* Add the hooks:
     * - handle stealed packets (mark it as forwardable)

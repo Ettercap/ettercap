@@ -99,7 +99,7 @@ static int gw_discover_fini(void *dummy)
 /* 
  * get the remote ip from user input 
  */
-static int get_remote_target(struct ip_addr *ip, u_int16 *port)
+static int get_remote_target(struct ip_addr *p_ip, u_int16 *p_port)
 {
    struct in_addr ipaddr;
    char input[24];
@@ -119,14 +119,14 @@ static int get_remote_target(struct ip_addr *ip, u_int16 *port)
       if (inet_aton(p, &ipaddr) == 0)
          return -EINVALID;
 
-      ip_addr_init(ip, AF_INET, (char *)&ipaddr);
+      ip_addr_init(p_ip, AF_INET, (u_char *)&ipaddr);
 
       /* get the port */
       if ((p = ec_strtok(NULL, ":", &tok)) != NULL) {
-         *port = atoi(p);
+         *p_port = atoi(p);
 
          /* correct parsing */
-         if (*port != 0)
+         if (*p_port != 0)
             return ESUCCESS;
       }
    }

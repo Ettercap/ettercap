@@ -73,7 +73,7 @@ FUNC_DECODER(dissector_socks)
       PACKET->DISSECTOR.banner = strdup("socks v5");
 
       /* If the server didn't accepted user/pass scheme */
-      if (ptr[1] != USER_PASS || ptr[1] != NO_AUTH) 
+      if (ptr[1] != USER_PASS && ptr[1] != NO_AUTH) 
          return NULL;
     
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_socks));

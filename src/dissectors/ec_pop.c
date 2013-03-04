@@ -75,8 +75,8 @@ FUNC_DECODER(dissector_pop)
          if (s->data == NULL) { 
             
             /* get the banner */
-            if (!strncmp(ptr, "+OK", 3))
-               PACKET->DISSECTOR.banner = strdup(ptr + 4);
+            if (!strncmp((const char*)ptr, "+OK", 3))
+               PACKET->DISSECTOR.banner = strdup((const char*)ptr + 4);
             else {
                SAFE_FREE(ident);
                return NULL;
@@ -85,13 +85,13 @@ FUNC_DECODER(dissector_pop)
             DEBUG_MSG("\tdissector_pop BANNER");
 
             /* remove the \r\n */
-            if ( (ptr = strchr(PACKET->DISSECTOR.banner, '\r')) != NULL )
+            if ( (ptr = (u_char*)strchr(PACKET->DISSECTOR.banner, '\r')) != NULL )
                *ptr = '\0';
             
             /* remove the trailing msg-id <...> */
-            if ( (ptr = strchr(PACKET->DISSECTOR.banner, '<')) != NULL ) {
+            if ( (ptr = (u_char*)strchr(PACKET->DISSECTOR.banner, '<')) != NULL ) {
                /* save the msg-id for APOP authentication */
-               s->data = strdup(ptr);
+               s->data = strdup((const char*)ptr);
                /* save the session */
                *(ptr - 1) = '\0';
             } else {
@@ -104,7 +104,7 @@ FUNC_DECODER(dissector_pop)
              * check if the server support it 
              * else delete the session
              */
-            if (strstr(ptr, "-ERR"))
+            if (strstr((const char*)ptr, "-ERR"))
                dissect_wipe_session(PACKET, DISSECT_CODE(dissector_pop));
          }
       }                         
@@ -130,7 +130,7 @@ FUNC_DECODER(dissector_pop)
  * USER user
  * PASS pass
  */
-   if ( !strncasecmp(ptr, "USER ", 5) ) {
+   if ( !strncasecmp((const char*)ptr, "USER ", 5) ) {
 
       DEBUG_MSG("\tDissector_POP USER");
 
@@ -146,10 +146,10 @@ FUNC_DECODER(dissector_pop)
       SAFE_FREE(s->data);
 
       /* fill the session data */
-      s->data = strdup(ptr);
-      s->data_len = strlen(ptr);
+      s->data = strdup((const char*)ptr);
+      s->data_len = strlen((const char*)ptr);
       
-      if ( (ptr = strchr(s->data,'\r')) != NULL )
+      if ( (ptr = (u_char*)strchr(s->data,'\r')) != NULL )
          *ptr = '\0';
       
       /* save the session */
@@ -159,7 +159,7 @@ FUNC_DECODER(dissector_pop)
    }
 
    /* harvest the password */
-   if ( !strncasecmp(ptr, "PASS ", 5) ) {
+   if ( !strncasecmp((const char*)ptr, "PASS ", 5) ) {
 
       DEBUG_MSG("\tDissector_POP PASS");
       
@@ -193,8 +193,8 @@ FUNC_DECODER(dissector_pop)
       /* fill the structure */
       PACKET->DISSECTOR.user = strdup(s->data);
       
-      PACKET->DISSECTOR.pass = strdup(ptr);
-      if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
+      PACKET->DISSECTOR.pass = strdup((const char*)ptr);
+      if ( (ptr = (u_char*)strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
          *ptr = '\0';
 
       /* free the session */
@@ -216,7 +216,7 @@ FUNC_DECODER(dissector_pop)
  *
  * MD5-diges is computed on "<msg-id>pass"
  */
-   if ( !strncasecmp(ptr, "APOP ", 5) ) {
+   if ( !strncasecmp((const char*)ptr, "APOP ", 5) ) {
      
       DEBUG_MSG("\tDissector_POP APOP");
       
@@ -237,10 +237,10 @@ FUNC_DECODER(dissector_pop)
       
       /* move the pointers to "user" */
       ptr += 5;
-      PACKET->DISSECTOR.user = strdup(ptr);
+      PACKET->DISSECTOR.user = strdup((const char*)ptr);
      
       /* split the string */
-      if ( (ptr = strchr(PACKET->DISSECTOR.user, ' ')) != NULL )
+      if ( (ptr = (u_char*)strchr(PACKET->DISSECTOR.user, ' ')) != NULL )
          *ptr = '\0';
       else {
          /* malformed string */
@@ -255,8 +255,8 @@ FUNC_DECODER(dissector_pop)
       ptr += 1;
       
       /* save the user */
-      PACKET->DISSECTOR.pass = strdup(ptr);
-      if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
+      PACKET->DISSECTOR.pass = strdup((const char*)ptr);
+      if ( (ptr = (u_char*)strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
          *ptr = '\0';
          
       /* set the info */
@@ -283,7 +283,7 @@ FUNC_DECODER(dissector_pop)
  *
  * the digests are in base64
  */
-   if ( !strncasecmp(ptr, "AUTH LOGIN", 10) ) {
+   if ( !strncasecmp((const char*)ptr, "AUTH LOGIN", 10) ) {
       
       DEBUG_MSG("\tDissector_POP AUTH LOGIN");
 
@@ -325,10 +325,10 @@ FUNC_DECODER(dissector_pop)
      
       DEBUG_MSG("\tDissector_POP AUTH LOGIN USER");
      
-      SAFE_CALLOC(user, strlen(ptr), sizeof(char));
+      SAFE_CALLOC(user, strlen((const char*)ptr), sizeof(char));
      
       /* username is encoded in base64 */
-      i = base64_decode(user, ptr);
+      i = base64_decode(user, (const char*)ptr);
      
       SAFE_FREE(s->data);
 
@@ -346,14 +346,15 @@ FUNC_DECODER(dissector_pop)
 /* collect the pass */     
    if (!strncmp(s->data, "AUTH USER", 9)) {
       char *pass;
-      int i;
-     
+      int i = 0;
+
       DEBUG_MSG("\tDissector_POP AUTH LOGIN PASS");
       
-      SAFE_CALLOC(pass, strlen(ptr), sizeof(char));
+      SAFE_CALLOC(pass, strlen((const char*)ptr) + 1, sizeof(char));
       
       /* password is encoded in base64 */
-      i = base64_decode(pass, ptr);
+      i = base64_decode(pass, (const char*)ptr);
+      pass[i] = 0;
      
       /* fill the structure */
       PACKET->DISSECTOR.user = strdup(s->data + strlen("AUTH USER "));
@@ -378,7 +379,7 @@ FUNC_DECODER(dissector_pop)
  *
  * the digests are in base64
  */
-   if ( !strncasecmp(ptr, "AUTH PLAIN", 10) ) {
+   if ( !strncasecmp((const char*)ptr, "AUTH PLAIN", 10) ) {
       
       DEBUG_MSG("\tDissector_POP AUTH PLAIN");
 
@@ -405,10 +406,10 @@ FUNC_DECODER(dissector_pop)
      
       DEBUG_MSG("\tDissector_POP AUTH PLAIN USER and PASS");
      
-      SAFE_CALLOC(decode, strlen(ptr) + 1, sizeof(char));
+      SAFE_CALLOC(decode, strlen((const char*)ptr) + 1, sizeof(char));
      
       /* username is encoded in base64 */
-      i = base64_decode(decode, ptr);
+      i = base64_decode(decode, (const char*)ptr);
       decode[i] = 0;
      
       SAFE_FREE(s->data);

@@ -81,7 +81,7 @@ struct entry {
 
 static void discard_macdb(void);
 int manuf_init(void);
-char * manuf_search(char *m);
+char * manuf_search(const char *m);
 
 /*****************************************/
 
@@ -154,7 +154,7 @@ int manuf_init(void)
 
 
 
-char * manuf_search(char *m)
+char * manuf_search(const char *m)
 {
    struct entry *l;
    char mac[4];

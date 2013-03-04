@@ -49,12 +49,9 @@ FUNC_DECODER(dissector_ldap)
    DECLARE_DISP_PTR_END(ptr, end);
    u_int16 type, user_len, pass_len;
    char tmp[MAX_ASCII_ADDR_LEN];
-   
-   /* unused variable */
-   (void)end;
 
-   /* Skip ACK packets */
-   if (PACKET->DATA.len == 0)
+   /* We need at least 15 bytes of data to be interested*/
+   if (PACKET->DATA.len < 15)
       return NULL;
     
    /* Only packets coming from the server */
@@ -69,7 +66,14 @@ FUNC_DECODER(dissector_ldap)
 
    /* Quite self-explaining :) */
    user_len = (u_int16)ptr[11];
+
+   if ((ptr + user_len + 12) > end)
+      return NULL;
+
    pass_len = (u_int16)ptr[13 + user_len];
+
+   if ((ptr + user_len + pass_len + 14) > end)
+      return NULL;
 
    if (user_len == 0) {
       PACKET->DISSECTOR.user = strdup("[Anonymous Bind]");

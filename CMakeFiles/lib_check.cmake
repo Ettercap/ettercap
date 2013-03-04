@@ -111,14 +111,15 @@ if(ENABLE_PLUGINS)
             set(EC_LIBS ${EC_LIBS} ${HAVE_DL})
         endif(HAVE_DL)
     endif(HAVE_DLOPEN)
-
-    find_library(FOUND_LIBCURL curl)
-    if (FOUND_LIBCURL)
-	set(HAVE_LIBCURL 1)
-        set(EC_LIBS ${EC_LIBS} ${FOUND_LIBCURL})
-    endif(FOUND_LIBCURL)
-	
 endif(ENABLE_PLUGINS)
+
+if(HAVE_PLUGINS)
+    # sslstrip has a requirement for libcurl >= 7.26.0
+    find_package(CURL 7.26.0)
+    if(CURL_FOUND)
+        include_directories(${CURL_INCLUDE_DIR})
+    endif(CURL_FOUND)
+endif(HAVE_PLUGINS)
 
 CHECK_FUNCTION_EXISTS(poll HAVE_POLL)
 CHECK_FUNCTION_EXISTS(strtok_r HAVE_STRTOK_R)

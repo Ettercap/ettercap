@@ -78,7 +78,6 @@ void stats_half_start(struct half_stats *hs)
 void stats_half_end(struct half_stats *hs, u_int32 len)
 {
    struct timeval diff;
-   float time; 
    float ttime;
    float ptime;
 
@@ -90,7 +89,6 @@ void stats_half_end(struct half_stats *hs, u_int32 len)
    time_add(&hs->tpar, &diff, &hs->tpar);
 
    /* calculate the rate (packet/time) */
-   time = diff.tv_sec + diff.tv_usec/1.0e6;
    ttime = hs->ttot.tv_sec + hs->ttot.tv_usec/1.0e6;
    ptime = hs->tpar.tv_sec + hs->tpar.tv_usec/1.0e6;
 

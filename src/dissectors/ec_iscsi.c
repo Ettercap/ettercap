@@ -47,7 +47,7 @@ void iscsi_init(void);
 /************************************************/
 
 /* borrowed from http://dsss.be/w/c:memmem */
-unsigned char *_memmem(unsigned char *haystack, int hlen, char *needle, int nlen)
+static unsigned char *_memmem(unsigned char *haystack, int hlen, char *needle, int nlen)
 {
    int i, j = 0;
    if (nlen > hlen)
@@ -107,6 +107,9 @@ FUNC_DECODER(dissector_iscsi)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct iscsi_status *conn_status;
 
+   //suppress unused warning
+   (void)end;
+
    /* Packets coming from the server */
    if (FROM_SERVER("iscsi", PACKET)) {
 
@@ -119,8 +122,8 @@ FUNC_DECODER(dissector_iscsi)
       /* if the session does not exist... */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
          /* search for CHAP ID and Message Challenge */
-         unsigned char *i = _memmem(ptr, PACKET->DATA.len, "CHAP_I", 6);
-         unsigned char *c = _memmem(ptr, PACKET->DATA.len, "CHAP_C", 6);
+         char *i = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_I", 6);
+         char *c = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_C", 6);
          if (i && c) {
             /* create the new session */
             dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_iscsi));
@@ -130,10 +133,10 @@ FUNC_DECODER(dissector_iscsi)
 
             conn_status = (struct iscsi_status *) s->data;
             conn_status->status = WAIT_RESPONSE;
-            conn_status->id = (char)atoi(i + 7);
+            conn_status->id = (u_char)atoi(i + 7);
 
             /* CHAP_C is always null-terminated */
-            strncpy(conn_status->challenge, c + 9, 48);
+            strncpy((char*)conn_status->challenge, c + 9, 48);
             conn_status->challenge[48] = 0;
 
             /* save the session */
@@ -146,16 +149,16 @@ FUNC_DECODER(dissector_iscsi)
       /* Only if we catched the connection from the beginning */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
          conn_status = (struct iscsi_status *) s->data;
-         unsigned char *n = NULL;
-         unsigned char *r = NULL;
+         char *n = NULL;
+         char *r = NULL;
          if (PACKET->DATA.len > 5) {
-            n = _memmem(ptr, PACKET->DATA.len, "CHAP_N", 6);
-            r = _memmem(ptr, PACKET->DATA.len, "CHAP_R", 6);
+            n = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_N", 6);
+            r = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_R", 6);
          }
 
          if (conn_status->status == WAIT_RESPONSE && n && r) {
-            unsigned char user[65];
-            unsigned char response[33];
+            char user[65];
+            char response[33];
             DEBUG_MSG("\tDissector_iscsi RESPONSE");
             /* CHAP_R and CHAP_N are always null-terminated */
             /* Even possibly wrong passwords can be useful,

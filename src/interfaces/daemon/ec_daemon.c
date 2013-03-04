@@ -196,7 +196,6 @@ static void daemonize(void)
    ON_ERROR(ret, -1, "Can't demonize %s", GBL_PROGRAM);
    
 #else
-   int fd;
    pid_t pid;
   
    DEBUG_MSG("daemonize: (manual)");

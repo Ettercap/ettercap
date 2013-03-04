@@ -38,7 +38,6 @@ static int isolate_init(void *);
 static int isolate_fini(void *);
 
 static void parse_arp(struct packet_object *po);
-static void parse_icmp6(struct packet_object *po);
 static int add_to_victims(struct packet_object *po);
 EC_THREAD_FUNC(isolate);
 
@@ -127,7 +126,7 @@ static void parse_arp(struct packet_object *po)
     * non-existent one.
     * modify at your choice.
     */
-   char *isolate_mac = po->L2.src;
+   u_char *isolate_mac = po->L2.src;
 
    LIST_FOREACH(h, &GBL_TARGET1->ips, next) {
       /* process only arp requests from this host */

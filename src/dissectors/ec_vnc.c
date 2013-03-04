@@ -96,14 +96,14 @@ FUNC_DECODER(dissector_vnc)
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
 
          /* This is the first packet from the server (protocol version) */
-         if (!strncmp(ptr, "RFB ", 4)) {
+         if (!strncmp((const char*)ptr, "RFB ", 4)) {
 
             DEBUG_MSG("\tdissector_vnc BANNER");
 
             /* Catch the banner that is like "RFB xxx.yyy" */
-            PACKET->DISSECTOR.banner = strdup(ptr);
+            PACKET->DISSECTOR.banner = strdup((const char*)ptr);
             /* remove the \n */
-            if ( (ptr = strchr(PACKET->DISSECTOR.banner, '\n')) != NULL )
+            if ( (ptr = (u_char*)strchr(PACKET->DISSECTOR.banner, '\n')) != NULL )
                *ptr = '\0';
 
             /* create the new session */
@@ -114,7 +114,7 @@ FUNC_DECODER(dissector_vnc)
 
             conn_status = (struct vnc_status *) s->data;
             conn_status->status = WAIT_AUTH;
-            strncpy(conn_status->banner, PACKET->DISSECTOR.banner, 16);
+            strncpy((char*)conn_status->banner, PACKET->DISSECTOR.banner, 16);
 
             /* save the session */
             session_put(s);
@@ -141,11 +141,11 @@ FUNC_DECODER(dissector_vnc)
                 * Free authentication will be notified on
                 * next client's packet
                 */
-               if(!strstr(conn_status->banner, "008")) { /* TightVNC hack */
+               if(!strstr((const char*)conn_status->banner, "008")) { /* TightVNC hack */
                     conn_status->status = NO_AUTH;
                }
             } else if (!memcmp(ptr, "\x00\x00\x00\x00", 4)) { /* Connection Failed */
-               if(!strstr(conn_status->banner, "008")) { /* TightVNC hack */
+               if(!strstr((const char*)conn_status->banner, "008")) { /* TightVNC hack */
                   /*...so destroy the session*/
                   dissect_wipe_session(PACKET, DISSECT_CODE(dissector_vnc));
                   SAFE_FREE(ident);
@@ -160,11 +160,11 @@ FUNC_DECODER(dissector_vnc)
                conn_status->status = WAIT_CHALLENGE;
             }
             else { /* search for challenge packet */
-               unsigned char buf[17];
+               char buffer[17];
                if(PACKET->DATA.len >= 16) {
-                  memcpy(buf, ptr, 16);
+                  memcpy(buffer, ptr, 16);
                   buf[16] = 0;
-                  if(!strstr(buf, "VNCAUTH_") && PACKET->DATA.len == 16) {
+                  if(!strstr(buffer, "VNCAUTH_") && PACKET->DATA.len == 16) {
                      /* Saves the server challenge (16byte) in the session data */
                      conn_status->status = WAIT_RESPONSE;
                      memcpy(conn_status->challenge, ptr, 16);
@@ -175,12 +175,12 @@ FUNC_DECODER(dissector_vnc)
 
          /* We are waiting for the server challenge */
          if ((conn_status->status == WAIT_CHALLENGE) && (ptr < end)) {
-            unsigned char buf[17];
+            char buffer[17];
             if(PACKET->DATA.len >= 16) {
-               memcpy(buf, ptr, 16);
+               memcpy(buffer, ptr, 16);
                buf[16] = 0;
                /* Saves the server challenge (16byte) in the session data */
-               if(!strstr(buf, "VNCAUTH_") && PACKET->DATA.len == 16) {
+               if(!strstr(buffer, "VNCAUTH_") && PACKET->DATA.len == 16) {
                   DEBUG_MSG("\tDissector_vnc CHALLENGE");
                   conn_status->status = WAIT_RESPONSE;
                   memcpy(conn_status->challenge, ptr, 16);
@@ -237,16 +237,16 @@ FUNC_DECODER(dissector_vnc)
 
                /* Dump Challenge and Response */
                snprintf(PACKET->DISSECTOR.pass, 10, "Challenge:");
-               str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
+               str_ptr = (u_char*)PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
 
                for (index = 0; index < 16; index++)
-                  snprintf(str_ptr + (index * 2), 3, "%.2x", conn_status->challenge[index]);
+                  snprintf((char*)str_ptr + (index * 2), 3, "%.2x", conn_status->challenge[index]);
 
-               strcat(str_ptr, " Response:");
-               str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
+               strcat((char*)str_ptr, " Response:");
+               str_ptr =(u_char*) PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
 
                for (index = 0; index < 16; index++)
-                  snprintf(str_ptr + (index * 2), 3, "%.2x", conn_status->response[index]);
+                  snprintf((char*)str_ptr + (index * 2), 3, "%.2x", conn_status->response[index]);
 
                if (conn_status->status > LOGIN_OK) {
                   PACKET->DISSECTOR.failed = 1;

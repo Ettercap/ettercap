@@ -64,6 +64,9 @@ FUNC_DECODER(dissector_o5logon)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct o5logon_status *conn_status;
 
+   //suppress unused warning
+   (void)end;
+
    if (FROM_CLIENT("o5logon", PACKET)) {
 
       /* Interesting packets have len >= 4 */

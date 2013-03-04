@@ -106,7 +106,7 @@ static int dhcp_spoofing_start(char *args)
          if (inet_aton(p, &ipaddr) == 0)
             break;
          /* get the netmask */
-         ip_addr_init(&dhcp_netmask, AF_INET, (char *)&ipaddr);
+         ip_addr_init(&dhcp_netmask, AF_INET, (u_char *)&ipaddr);
          
       /* third parameter (the dns server) */
       } else if (i == 3) {
@@ -116,7 +116,7 @@ static int dhcp_spoofing_start(char *args)
          if (inet_aton(p, &ipaddr) == 0)
             break;
          /* get the netmask */
-         ip_addr_init(&dhcp_dns, AF_INET, (char *)&ipaddr);
+         ip_addr_init(&dhcp_dns, AF_INET, (u_char *)&ipaddr);
          
          /* all the parameters were parsed correctly... */
          USER_MSG("DHCP spoofing: using specified ip_pool, netmask %s", ip_addr_ntoa(&dhcp_netmask, tmp));
@@ -214,7 +214,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
    else {
       /* search if the client already has the ip address */
       if (dhcp->dhcp_cip != 0) {
-         ip_addr_init(&client, AF_INET, (char *)&dhcp->dhcp_cip);
+         ip_addr_init(&client, AF_INET, (u_char *)&dhcp->dhcp_cip);
       } else
          return;
    }
@@ -237,9 +237,9 @@ static void dhcp_spoofing_req(struct packet_object *po)
       dhcp->dhcp_sip = ip_addr_to_int32(&server.addr);
 
       /* set it in the options */
-      ip_addr_cpy(dhcp_options + 5, &server);
+      ip_addr_cpy((u_char*)dhcp_options + 5, &server);
    
-      send_dhcp_reply(&server, dhcp_addr_reply(&po->L3.src), po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
+      send_dhcp_reply(&server, dhcp_addr_reply(&po->L3.src), po->L2.src, (u_char*)dhcp_hdr, (u_char*)dhcp_options, dhcp_optlen);
       
    } else {
       /* 
@@ -249,9 +249,9 @@ static void dhcp_spoofing_req(struct packet_object *po)
       dhcp->dhcp_sip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
       
       /* set it in the options */
-      ip_addr_cpy(dhcp_options + 5, &GBL_IFACE->ip);
+      ip_addr_cpy((u_char*)dhcp_options + 5, &GBL_IFACE->ip);
    
-      send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
+      send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, (u_char*)dhcp_hdr, (u_char*)dhcp_options, dhcp_optlen);
    }
 
    USER_MSG("DHCP spoofing: fake ACK [%s] ", mac_addr_ntoa(po->L2.src, tmp));
@@ -291,10 +291,10 @@ static void dhcp_spoofing_disc(struct packet_object *po)
    dhcp->dhcp_sip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
 
    /* set it in the options */
-   ip_addr_cpy(dhcp_options + 5, &GBL_IFACE->ip);
+   ip_addr_cpy((u_char*)dhcp_options + 5, &GBL_IFACE->ip);
    
    /* send the packet */
-   send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, dhcp_hdr, dhcp_options, dhcp_optlen);
+   send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, (u_char*)dhcp_hdr, (u_char*)dhcp_options, dhcp_optlen);
    
    USER_MSG("DHCP spoofing: fake OFFER [%s] ", mac_addr_ntoa(po->L2.src, tmp));
    USER_MSG("offering %s \n", ip_addr_ntoa(&dhcp_free_ip->ip, tmp));
@@ -310,7 +310,7 @@ static void dhcp_spoofing_disc(struct packet_object *po)
 static void dhcp_setup_options(void)
 {
    int time;
-   u_int8 *p = dhcp_options;
+   u_int8 *p = (u_int8*)dhcp_options;
 
    DEBUG_MSG("dhcp_setup_options");
 

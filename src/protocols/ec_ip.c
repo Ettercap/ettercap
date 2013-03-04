@@ -110,8 +110,8 @@ FUNC_DECODER(decode_ip)
    DECODED_LEN = (u_int32)(ip->ihl * 4);
 
    /* IP addresses */
-   ip_addr_init(&PACKET->L3.src, AF_INET, (char *)&ip->saddr);
-   ip_addr_init(&PACKET->L3.dst, AF_INET, (char *)&ip->daddr);
+   ip_addr_init(&PACKET->L3.src, AF_INET, (u_char *)&ip->saddr);
+   ip_addr_init(&PACKET->L3.dst, AF_INET, (u_char *)&ip->daddr);
    
    /* this is needed at upper layer to calculate the tcp payload size */
    /* check bogus size */

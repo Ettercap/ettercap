@@ -244,7 +244,7 @@ static void log_packet(struct packet_object *po)
 
    /* the regex is set, respect it */
    if (GBL_OPTIONS->regex) {
-      if (regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) == 0)
+      if (regexec(GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) == 0)
          log_write_packet(&fdp, po);
    } else {
       /* if no regex is set, dump all the packets */
@@ -487,7 +487,7 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
   
    /* check if the packet is interesting... else return */
    if (hi.L4_addr == 0 &&                 // the port is not open
-       !strcmp(hi.fingerprint, "") &&     // no fingerprint
+       !strcmp((char*)hi.fingerprint, "") &&     // no fingerprint
        hid.var.user_len == 0 &&           // no user and pass infos...
        hid.var.pass_len == 0 &&
        hid.var.info_len == 0 &&

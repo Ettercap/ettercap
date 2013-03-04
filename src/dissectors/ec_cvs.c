@@ -84,7 +84,7 @@ FUNC_DECODER(dissector_cvs)
       return NULL;
    
    /* not a login packet */
-   if ( strncmp(ptr, CVS_LOGIN, strlen(CVS_LOGIN)) )
+   if ( strncmp((const char*)ptr, CVS_LOGIN, strlen(CVS_LOGIN)) )
       return NULL;
    
    DEBUG_MSG("CVS --> TCP dissector_cvs");
@@ -96,7 +96,7 @@ FUNC_DECODER(dissector_cvs)
    while(*ptr != '\n' && ptr != end) ptr++;
    if (ptr == end) return NULL;
 
-   PACKET->DISSECTOR.user = strdup(++ptr);
+   PACKET->DISSECTOR.user = strdup((const char*)++ptr);
    
    /* cut the username on \n */
    if ( (p = strchr(PACKET->DISSECTOR.user, '\n')) != NULL )
@@ -110,7 +110,7 @@ FUNC_DECODER(dissector_cvs)
    if (*(++ptr) != 'A')
       return NULL;
    
-   PACKET->DISSECTOR.pass = strdup(ptr);
+   PACKET->DISSECTOR.pass = strdup((const char*)ptr);
    
    /* cut the username on \n */
    if ( (p = strchr(PACKET->DISSECTOR.pass, '\n')) != NULL )

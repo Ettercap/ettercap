@@ -334,7 +334,7 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
    
    /* check the regex filter */
    if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+       regexec(GBL_OPTIONS->regex, (const char*)text, 0, NULL, 0) != 0) {
       return;
    }
 
@@ -366,7 +366,7 @@ static void split_print_po(struct packet_object *po)
    
    /* check the regex filter */
    if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+       regexec(GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -454,7 +454,7 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
    
    /* check the regex filter */
    if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+       regexec(GBL_OPTIONS->regex, (const char*)text, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -485,7 +485,7 @@ static void join_print_po(struct packet_object *po)
    
    /* check the regex filter */
    if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+       regexec(GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -571,7 +571,7 @@ static void curses_connection_inject(void)
    wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
    wdg_input_size(in, 75, 12);
-   wdg_input_add(in, 1, 1, "Chars to be injected  :", injectbuf, 50, 10);
+   wdg_input_add(in, 1, 1, "Chars to be injected  :", (char*)injectbuf, 50, 10);
    wdg_input_set_callback(in, inject_user);
    
    wdg_draw_object(in);
@@ -584,7 +584,7 @@ static void inject_user(void)
    size_t len;
 
    /* escape the sequnces in the buffer */
-   len = strescape(injectbuf, injectbuf);
+   len = strescape((char*)injectbuf, (char*)injectbuf);
    
    /* check where to inject */
    if (wdg_c1->flags & WDG_OBJ_FOCUSED) {

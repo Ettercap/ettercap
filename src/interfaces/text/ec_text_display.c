@@ -90,7 +90,8 @@ static void display_headers(struct packet_object *po)
    char proto[5];
    
    memset(flags, 0, sizeof(flags));
-   
+   memset(proto, 0, sizeof(proto));   
+
    fprintf(stdout, "\n\n");
    
    /* remove the final '\n' */

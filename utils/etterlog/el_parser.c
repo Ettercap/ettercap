@@ -207,7 +207,7 @@ void parse_options(int argc, char **argv)
                      FATAL_ERROR("Invalid client ip address");
                      return;                    
                   }
-                  ip_addr_init(&GBL.client, AF_INET, (char *)&ip);
+                  ip_addr_init(&GBL.client, AF_INET, (u_char *)&ip);
                   break;
 
          case 'l':
@@ -263,7 +263,7 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'U':
-                  set_utf8_encoding(optarg);
+                  set_utf8_encoding((u_char*)optarg);
                   GBL.format = &utf8_format;
                   break;
                   

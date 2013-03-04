@@ -62,6 +62,9 @@ FUNC_DECODER(dissector_mongodb)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct mongodb_status *conn_status;
 
+   //suppress unused warning
+   (void)end;
+
    if (FROM_SERVER("mongodb", PACKET)) {
       if (PACKET->DATA.len < 13)
          return NULL;
@@ -123,8 +126,6 @@ FUNC_DECODER(dissector_mongodb)
          unsigned char *noncep  = memmem(ptr, PACKET->DATA.len, "nonce", 5);
          unsigned char *keyp  = memmem(ptr, PACKET->DATA.len, "key\x00", 4);
          unsigned char *usernamep  = memmem(ptr, PACKET->DATA.len, "user\x00", 5);
-         unsigned char *res = memmem(ptr, PACKET->DATA.len, "fails", 5);
-         unsigned char *gres = memmem(ptr, PACKET->DATA.len, "readOnly", 8);
          if (conn_status->status == WAIT_RESPONSE && noncep && keyp) {
             usernamep += (4 + 1 + 4); /* skip over "user" + '\x00; + length */
             strncpy((char*)conn_status->username, (char*)usernamep, 128);

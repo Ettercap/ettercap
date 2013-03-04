@@ -269,7 +269,7 @@ u_int8 * get_dhcp_option(u_int8 opt, u_int8 *ptr, u_int8 *end)
        */
       ptr = ptr + 2 + (*(ptr + 1));
 
-   } while (*ptr != DHCP_OPT_END && ptr < end);
+   } while (ptr < end && *ptr != DHCP_OPT_END);
    
    return NULL;
 }

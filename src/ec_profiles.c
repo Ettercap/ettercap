@@ -47,6 +47,7 @@ static int profile_add_host(struct packet_object *po);
 static int profile_add_user(struct packet_object *po);
 static void update_info(struct host_profile *h, struct packet_object *po);
 static void update_port_list(struct host_profile *h, struct packet_object *po);
+static void update_port_list_with_advertised(struct host_profile *h, uint8_t L4_proto, uint16_t L4_src);
 static void set_gateway(u_char *L2_addr);
 
 void * profile_print(int mode, void *list, char **desc, size_t len);
@@ -147,7 +148,12 @@ void profile_parse(struct packet_object *po)
         po->DISSECTOR.info                                  /* info */
       )
       profile_add_user(po);
-   
+
+   if ( po->DISSECTOR.advertised_port != 0 &&
+        po->DISSECTOR.advertised_proto != 0
+      )
+      profile_add_host(po);
+
    return;
 }
 
@@ -289,6 +295,9 @@ static void update_info(struct host_profile *h, struct packet_object *po)
 
    /* add the open port */
    update_port_list(h, po);
+
+   if (po->DISSECTOR.advertised_proto != 0 && po->DISSECTOR.advertised_port != 0)
+      update_port_list_with_advertised(h, po->DISSECTOR.advertised_proto, po->DISSECTOR.advertised_port);
 }
 
 
@@ -370,6 +379,43 @@ static void update_port_list(struct host_profile *h, struct packet_object *po)
    
 }
 
+static void update_port_list_with_advertised(struct host_profile *h, uint8_t L4_proto, uint16_t L4_src)
+{
+   struct open_port *o;
+   struct open_port *p;
+   struct open_port *last = NULL;
+
+   /* search for an existing port */
+   LIST_FOREACH(o, &(h->open_ports_head), next) {
+      if (o->L4_proto == L4_proto && o->L4_addr == L4_src) {
+          // already logged
+         return;
+      }
+   }
+
+   DEBUG_MSG("update_port_list_with_advertised");
+
+   /* create a new entry */
+   SAFE_CALLOC(o, 1, sizeof(struct open_port));
+
+   o->L4_proto = L4_proto;
+   o->L4_addr = L4_src;
+
+   /* search the right point to inser it (ordered ascending) */
+   LIST_FOREACH(p, &(h->open_ports_head), next) {
+      if ( ntohs(p->L4_addr) > ntohs(o->L4_addr) )
+         break;
+      last = p;
+   }
+
+   /* insert in the right position */
+   if (LIST_FIRST(&(h->open_ports_head)) == NULL)
+      LIST_INSERT_HEAD(&(h->open_ports_head), o, next);
+   else if (p != NULL)
+      LIST_INSERT_BEFORE(p, o, next);
+   else
+      LIST_INSERT_AFTER(last, o, next);
+}
 /* 
  * update the users list
  */

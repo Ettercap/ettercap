@@ -366,20 +366,21 @@ static int wep_decrypt(u_char *buf, size_t len)
 int set_wep_key(u_char *string)
 {
    int bit = 0, i;
-   u_char *p, type;
+   char* p;
+   u_char type;
    char *tok;
-   char s[strlen(string) + 1];
+   char s[strlen((const char*)string) + 1];
    
    DEBUG_MSG("set_wep_key: %s", string);
    
    memset(wkey, 0, sizeof(wkey));
-   strncpy(s, string, strlen(string)+1);
+   strncpy(s, (const char*)string, strlen((const char*)string)+1);
 
    p = ec_strtok(s, ":", &tok);
    if (p == NULL)
       SEMIFATAL_ERROR("Invalid parsing of the WEP key");
 
-   bit = atoi(p);
+   bit = atoi((const char*)p);
 
    /* sanity check */
    if (bit <= 0)
@@ -400,7 +401,7 @@ int set_wep_key(u_char *string)
    if (p == NULL)
       SEMIFATAL_ERROR("Invalid parsing of the WEP key");
   
-   type = *p;
+   type = p[0];
    
    /* get the third part of the string */
    p = ec_strtok(NULL, ":", &tok);
@@ -409,14 +410,14 @@ int set_wep_key(u_char *string)
    
    if (type == 's') {
       /* escape the string and check its length */
-      if (strescape(wkey, p) != (int)wlen)
+      if (strescape((char*)wkey, p) != (int)wlen)
          SEMIFATAL_ERROR("Specified WEP key length does not match the given string");
    } else if (type == 'p') {
       /* create the key from the passphrase */
       if (bit == 64)
-         make_key_64(p);
+         make_key_64((u_char*)p);
       else if (bit == 128)
-         make_key_128(p);
+         make_key_128((u_char*)p);
          
    } else {
       SEMIFATAL_ERROR("Invalid parsing of the WEP key");

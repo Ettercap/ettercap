@@ -73,7 +73,6 @@ FUNC_DECODER(dissector_mysql)
    unsigned char input[20];
    unsigned char output[41];
    int has_password = 0;
-   int length;
 
    /* Skip ACK packets */
    if (PACKET->DATA.len == 0)
@@ -109,7 +108,7 @@ FUNC_DECODER(dissector_mysql)
 
          if(old_mysql) {
             /* Search for 000 padding */
-            while( (ptr + index) < end && (ptr[index] != ptr[index - 1] != ptr[index - 2] != 0) )
+            while( (ptr + index) < end && ((ptr[index] != 0) && (ptr[index - 1] != 0) && (ptr[index - 2] != 0)) )
                index++;
          }
 
@@ -125,7 +124,6 @@ FUNC_DECODER(dissector_mysql)
          else {
             int length;
             unsigned char seed[20];
-            unsigned char output[41];
             ptr += 5; /* skip over Packet Length +  Packet Number + protocol_version*/
             length = strlen((const char*)ptr);
             ptr += (length +  1 + 4); /* skip over Version + Thread ID */
@@ -155,7 +153,7 @@ FUNC_DECODER(dissector_mysql)
                hex_encode(input, 20, output);
                output[40] = 0;
                has_password = 1;
-               length = strlen(s->data) + 256;
+               int length = strlen(s->data) + 256;
                SAFE_CALLOC(PACKET->DISSECTOR.pass, length, sizeof(char));
                snprintf(PACKET->DISSECTOR.pass, length, "Seed:%s Encrypted:%s", (char *)s->data, output);
             }
@@ -184,7 +182,7 @@ FUNC_DECODER(dissector_mysql)
             /* Reach the encrypted password */
             ptr += strlen(PACKET->DISSECTOR.user) + 1;
             if (ptr < end && strlen((const char*)ptr) != 0) {
-               length = strlen(s->data) + strlen((const char*)ptr) + 128;
+               int length = strlen(s->data) + strlen((const char*)ptr) + 128;
                SAFE_CALLOC(PACKET->DISSECTOR.pass, length, sizeof(char));
                snprintf(PACKET->DISSECTOR.pass, length, "Seed:%s Encrypted:%s", (char *)s->data, ptr);
             } else {

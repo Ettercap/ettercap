@@ -119,7 +119,6 @@ FUNC_DECODER(dissector_nbns)
 	struct nbns_query  *query;
 	struct nbns_response *response;
 
-	u_int16 type, class;
 	char name[NBNS_NAME_LEN];
 	char ip[IP_ASCII_ADDR_LEN];
 
@@ -139,16 +138,16 @@ FUNC_DECODER(dissector_nbns)
 		if (response->class != CLASS_IN) 
 			return NULL;
 	
-		int name_len = nbns_expand(response->rr_name, name);
+		nbns_expand(response->rr_name, name);
 
 		struct ip_addr addr;
-		ip_addr_init(&addr, AF_INET, &response->rr_data.addr);
+		ip_addr_init(&addr, AF_INET, (u_char*)&response->rr_data.addr);
 		ip_addr_ntoa(&addr, ip);
 		
 		DEBUG_MSG("NBNS Transaction ID [0x%04x] Response: %s -> %s\n", ntohs(header->transactid), name, ip);
 	} else {
 		query = (struct nbns_query *)po->DATA.data;
-		int name_len = nbns_expand(query->question, name);
+		nbns_expand(query->question, name);
 		
 		DEBUG_MSG("NBNS Transaction ID [0x%04x] Query: %s", ntohs(header->transactid), name);
 	}

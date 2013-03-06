@@ -78,8 +78,7 @@ int plugin_load(void *handle)
 /******************* STANDARD FUNCTIONS *******************/
 
 static int dos_attack_init(void *dummy) 
-{
-   u_int8 ipaddr[MAX_IP_ADDR_LEN];   
+{ 
    char dos_addr[MAX_ASCII_ADDR_LEN];
    char unused_addr[MAX_ASCII_ADDR_LEN];
    struct port_list *p;

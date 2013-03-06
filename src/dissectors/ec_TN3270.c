@@ -78,18 +78,22 @@ static void ebcdic2ascii(unsigned char *str, int n, unsigned char *out)
 FUNC_DECODER(dissector_TN3270)
 {
    DECLARE_DISP_PTR_END(ptr, end);
-   int i;
+   unsigned int i;
    char tmp[MAX_ASCII_ADDR_LEN];
+
+   //suppress unused warning
+   (void)end;
+
    if (FROM_CLIENT("TN3270", PACKET)) {
 
       if (PACKET->DATA.len > 200) /* is this always valid? */
          return NULL;
 
-      unsigned char output[512] = { 0 };
-      unsigned char username[512] = { 0 };
-      unsigned char password[512] = { 0 };
+      char output[512] = { 0 };
+      char username[512] = { 0 };
+      char password[512] = { 0 };
 
-      ebcdic2ascii(ptr, PACKET->DATA.len, output);
+      ebcdic2ascii(ptr, PACKET->DATA.len, (unsigned char*)output);
 
       /* scan packets to find username and password */
       for (i = 0; i < PACKET->DATA.len; i++) {
@@ -115,6 +119,8 @@ FUNC_DECODER(dissector_TN3270)
          }
       }
    }
+
+   return NULL;
 }
 
 // vim:ts=3:expandtab

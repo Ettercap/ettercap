@@ -68,7 +68,7 @@ FUNC_DECODER(dissector_rcon)
 
    ptr += 4;
    
-   if ( !strncasecmp(ptr, "rcon", 4)  ) {
+   if ( !strncasecmp((const char*)ptr, "rcon", 4)  ) {
       
       u_char *q;
       
@@ -93,10 +93,10 @@ FUNC_DECODER(dissector_rcon)
       PACKET->DISSECTOR.user = strdup("RCON");
 
       SAFE_CALLOC(PACKET->DISSECTOR.pass, q - ptr + 1, sizeof(char));
-      strlcpy(PACKET->DISSECTOR.pass, ptr, q - ptr + 1);
+      strlcpy(PACKET->DISSECTOR.pass, (const char*)ptr, q - ptr + 1);
 
-      SAFE_CALLOC(PACKET->DISSECTOR.info, strlen(q) + 1, sizeof(char));
-      snprintf(PACKET->DISSECTOR.info, strlen(q) + 1, "%s", q);
+      SAFE_CALLOC(PACKET->DISSECTOR.info, strlen((const char*)q) + 1, sizeof(char));
+      snprintf(PACKET->DISSECTOR.info, strlen((const char*)q) + 1, "%s", q);
 
       DISSECT_MSG("RCON : %s:%d -> AUTHKEY: %s  COMMAND: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                     ntohs(PACKET->L4.dst), 

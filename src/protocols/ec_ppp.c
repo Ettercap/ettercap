@@ -95,8 +95,9 @@ FUNC_DECODER(decode_ppp)
    struct ppp_chap_challenge *chapch;
    u_int16 proto;
    u_int32 i;
-   u_char user[128], dummy[3], auth_len, temp[128], *pap_auth;
-   static u_char  version=0, schallenge[512];
+   u_char auth_len;
+   char user[128], dummy[3], temp[128], *pap_auth;
+   static char version=0, schallenge[512];
 #ifdef HAVE_OPENSSL
    u_char digest[SHA_DIGEST_LENGTH];
    SHA_CTX ctx;
@@ -199,7 +200,7 @@ FUNC_DECODER(decode_ppp)
 
             } else if (version == 2) {
 #ifdef HAVE_OPENSSL
-               u_char *p;
+               char *p;
 
                if ((p = strchr(user, '\\')) == NULL)
                   p = user;

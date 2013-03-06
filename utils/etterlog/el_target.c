@@ -55,7 +55,7 @@ void target_compile(char *target)
    for(p=strsep(&target, "/"); p != NULL; p=strsep(&target, "/")) {
       tok[i++] = strdup(p);
       /* bad parsing */
-      if (i > MAX_TOK) break;
+      if (i > (MAX_TOK - 1)) break;
    }
 
    if (i != MAX_TOK)
@@ -148,7 +148,7 @@ static void expand_range_ip(char *str, void *target)
       addr[i++] = strdup(q);
       /* reset p for the next strtok */
       if (p != NULL) p = NULL;
-      if (i > 4) break;
+      if (i > 3) break;
    }
 
    if (i != 4)
@@ -174,7 +174,7 @@ static void expand_range_ip(char *str, void *target)
       if (inet_aton(parsed_ip, &ipaddr) == 0)
          FATAL_ERROR("Invalid IP address (%s)", parsed_ip);
 
-      ip_addr_init(&tmp, AF_INET,(char *)&ipaddr );
+      ip_addr_init(&tmp, AF_INET,(u_char *)&ipaddr );
       add_ip_list(&tmp, target);
       
       /* give the impulse to the last octet */ 

@@ -78,7 +78,7 @@ static int search_promisc_init(void *dummy)
    
    char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h;
-   char bogus_mac[2][6]={"\xfd\xfd\x00\x00\x00\x00", "\xff\xff\x00\x00\x00\x00"};
+   u_char bogus_mac[2][6]={"\xfd\xfd\x00\x00\x00\x00", "\xff\xff\x00\x00\x00\x00"};
    char messages[2][48]={"\nLess probably sniffing NICs:\n", "\nMost probably sniffing NICs:\n"};
    u_char i;
  

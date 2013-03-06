@@ -387,7 +387,7 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
    u_int32* address;
    u_int32* netmask;
    u_int32* network;
-   int i;
+   unsigned int i;
 
    switch (ntohs(sa->addr_type)) {
       case AF_INET:
@@ -494,7 +494,7 @@ int ip_addr_get_network(struct ip_addr *ip, struct ip_addr *netmask, struct ip_a
 int ip_addr_get_prefix(struct ip_addr* netmask)
 {
    size_t s;
-   int i;
+   unsigned int i;
    int prefix = 0;
    u_int32* mask;
    u_int32 x;
@@ -507,7 +507,7 @@ int ip_addr_get_prefix(struct ip_addr* netmask)
       x = mask[i];
       x -= (x >> 1) & 0x55555555;
       x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
-      prefix += ((x + (x >> 4) & 0xf0f0f0f) * 0x1010101) >> 24;
+      prefix += (((x + (x >> 4)) & 0xf0f0f0f) * 0x1010101) >> 24;
    }
 
    return prefix;

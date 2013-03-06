@@ -58,6 +58,7 @@ set(EC_SRC
         dissectors/ec_irc.c
         dissectors/ec_iscsi.c
         dissectors/ec_ldap.c
+        dissectors/ec_mdns.c
         dissectors/ec_mongodb.c
         dissectors/ec_mountd.c
         dissectors/ec_msn.c

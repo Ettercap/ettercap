@@ -12,6 +12,8 @@ struct dissector_info {
    char *info;
    char *banner;
    char failed;
+   u_int8 advertised_proto;
+   u_int16 advertised_port;
 };
 
 

@@ -128,8 +128,8 @@ FUNC_DECODER(dissector_bgp)
    /* don't complain about unused var */
    (void)end;
    
-   /* skip empty packets (ACK packets) */
-   if (PACKET->DATA.len == 0)
+   /* skip packets that don't have neough data' */
+   if (PACKET->DATA.len < 30)
       return NULL;
 
    /* not the right version (4) */
@@ -150,6 +150,9 @@ FUNC_DECODER(dissector_bgp)
 
    /* skip to parameters */
    parameters = ptr + 29;
+
+   if ((ptr + param_length) > end)
+      return 0;
 
    DEBUG_MSG("BGP --> TCP dissector_bgp");
 

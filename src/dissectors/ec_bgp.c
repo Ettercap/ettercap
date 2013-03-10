@@ -128,7 +128,7 @@ FUNC_DECODER(dissector_bgp)
    /* don't complain about unused var */
    (void)end;
    
-   /* skip packets that don't have neough data' */
+   /* skip packets that don't have enough data */
    if (PACKET->DATA.len < 30)
       return NULL;
 

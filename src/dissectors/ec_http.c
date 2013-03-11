@@ -350,7 +350,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
 
    user = ec_strtok(to_decode, ":", &pass); 
 
-   if (pass != NULL) {
+   if (pass != NULL && user != NULL) {
       po->DISSECTOR.user = strdup(user);
       po->DISSECTOR.pass = strdup(pass);	
  

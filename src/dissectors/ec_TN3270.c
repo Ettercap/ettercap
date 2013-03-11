@@ -105,14 +105,14 @@ FUNC_DECODER(dissector_TN3270)
                  int j = i + 6;
                  while (output[j] == 32)
                     j++;
-                 strncpy(username, &output[j], 512);
+                 strncpy(username, &output[j], 511);
                  int l = strlen(username);
                  username[l-2] = 0;
                  DISSECT_MSG("%s:%d <= z/OS TSO Username : %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), username);
          }
          /* find password */
          if (ptr[i] == 125 && ptr[i+1] == 201 && ptr[i+3] == 17 && ptr[i+4] == 201 && ptr[i+5] == 195) {
-                 strncpy(password, &output[i + 6], 512);
+                 strncpy(password, &output[i + 6], 511);
                  int l = strlen(password);
                  password[l-2] = 0;
                  DISSECT_MSG("%s:%d <= z/OS TSO Password : %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), password);

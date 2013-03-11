@@ -15,6 +15,9 @@ Legenda:
    !! Better cmake module to find curl and libnet
    !! Fixed bug in filters loading
    !! Fixes in HTTP and HTTPs protocols
+   !! Fixed UI deadlock
+   !! Fixes in tcp and http handling (infinite loop and crash)
+   !! Better reads in BGP to avoid invalid reads
 
 0.7.5.3-Assimilation 20130201
    !! Fixed ncurses host scan crash (already fixed in 0.7.5.2)

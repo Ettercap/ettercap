@@ -260,6 +260,7 @@ void ui_input(const char *title, char *input, size_t n, void (*callback)(void))
 int ui_msg_flush(int max)
 {
    int i = 0;
+   int old = 0;
    struct ui_message *msg;
   
 
@@ -269,6 +270,9 @@ int ui_msg_flush(int max)
      
    if (STAILQ_EMPTY(&messages_queue))
 	return 0; 
+
+   // don't allow the thread to cancel while holding the ui mutex
+   pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old);
 
    /* the queue is updated by other threads */
    UI_MSG_LOCK;
@@ -290,7 +294,9 @@ int ui_msg_flush(int max)
    }
    
    UI_MSG_UNLOCK;
-   
+
+   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old);
+
    /* returns the number of displayed messages */
    return i;
    

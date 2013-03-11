@@ -230,7 +230,8 @@ FUNC_DECODER(decode_tcp)
             case TCPOPT_TIMESTAMP:
                fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_TIMESTAMP, 1);
                opt_start++;
-               opt_start += (*opt_start - 1);
+               if ((*opt_start) > 0)
+                   opt_start += ((*opt_start) - 1);
                break;
             default:
                opt_start++;

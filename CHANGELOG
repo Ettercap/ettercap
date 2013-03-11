@@ -6,7 +6,7 @@ Legenda:
 
 =========================================
 0.7.5.4-Assimilation 20130315
-   !! Fix for mDNS dissector
+   !! New mDNS dissector
    !! New and updated OUI file
    !! Some memory leaks fixed
    !! Fixed some bugs in return values and fstat failures handling

@@ -34,9 +34,10 @@
 
 struct wifi_header {
    u_int8   type;
-      #define WIFI_DATA    0x08
-      #define WIFI_BACON   0x80
-      #define WIFI_ACK     0xd4
+      #define WIFI_DATA     0x08
+      #define WIFI_BACON    0x80
+      #define WIFI_QOS_DATA 0x88
+      #define WIFI_ACK      0xd4
    u_int8   control;
       #define WIFI_STA_TO_STA 0x00  /* ad hoc mode */
       #define WIFI_STA_TO_AP  0x01
@@ -169,7 +170,7 @@ FUNC_DECODER(decode_wifi)
    wifi = (struct wifi_header *)DECODE_DATA;
    
    /* we are interested only in wifi data packets */
-   if (wifi->type != WIFI_DATA) {
+   if (wifi->type != WIFI_DATA && wifi->type != WIFI_QOS_DATA) {
       return NULL;
    }
 
@@ -237,12 +238,19 @@ FUNC_DECODER(decode_wifi)
 
       /* remove the WEP bit from the header since the data are now decrypted */
       wifi->control &= ~WIFI_WEP;
-   } 
-   
+   }
+
    /* get the logical link layer header */
    llc = (struct llc_header *)(wifi + 1);
    DECODED_LEN += sizeof(struct llc_header);
-   
+
+   if (wifi->type == WIFI_QOS_DATA)
+   {
+      // QOS introduces a 2 byte header
+      DECODED_LEN += 2;
+      llc = (struct llc_header*)(((char*)llc) + 2);
+   }
+
    /* org_code != encapsulated ethernet not yet supported */
    if (memcmp(llc->org_code, WIFI_ORG_CODE, 3))
       return NULL;

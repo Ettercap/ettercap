@@ -5,8 +5,12 @@ Legenda:
          !! bug fixed
 
 =========================================
-0.7.5.4-Assimilation 20130315
-   !! New mDNS dissector
+0.7.5.4-Assimilation 201303XX
+   !! Fixed QoS packets handling (they aren't dropped anymore)
+    + Added PPI support (per packet information) for wireless captures
+   !! Fix in o5logon Heap Corruption
+    + Added support for IPv4 and IPv6 Tunnels
+    + New mDNS dissector
    !! New and updated OUI file
    !! Some memory leaks fixed
    !! Fixed some bugs in return values and fstat failures handling

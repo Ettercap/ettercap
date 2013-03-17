@@ -114,6 +114,7 @@ int packet_destroy_object(struct packet_object *po)
       SAFE_FREE(po->DISSECTOR.pass);
       SAFE_FREE(po->DISSECTOR.info);
       SAFE_FREE(po->DISSECTOR.banner);
+      SAFE_FREE(po->DISSECTOR.os);
    }
       
    /* 
@@ -187,6 +188,7 @@ struct packet_object * packet_dup(struct packet_object *po, u_char flag)
       dup_po->DISSECTOR.pass = NULL;
       dup_po->DISSECTOR.info = NULL;
       dup_po->DISSECTOR.banner = NULL;
+      dup_po->DISSECTOR.os = NULL;
    }
    
    /* 

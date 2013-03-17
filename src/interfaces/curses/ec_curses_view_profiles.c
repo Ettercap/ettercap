@@ -182,8 +182,10 @@ static void curses_profile_detail(void *profile)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " TYPE         : REMOTE host\n\n");
    else if (h->type == FP_UNKNOWN)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " TYPE         : unknown\n\n");
-      
-   
+
+   if (h->os)
+    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OBSERVED OS     : %s\n\n", h->os);
+
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " FINGERPRINT      : %s\n", h->fingerprint);
    if (fingerprint_search((const char*)h->fingerprint, os) == ESUCCESS)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OPERATING SYSTEM : %s \n\n", os);

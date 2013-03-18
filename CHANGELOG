@@ -5,7 +5,7 @@ Legenda:
          !! bug fixed
 
 =========================================
-0.7.5.4-Assimilation 20130322
+0.7.5.4-Assimilation 20130319
     + Added UA parsing to http packets
    !! Fixed check in invalid ip header
    !! Fixed QoS packets handling (they aren't dropped anymore)

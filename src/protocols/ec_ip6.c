@@ -85,6 +85,7 @@ static void ip6_create_session(struct ec_session **s, struct packet_object *po);
 void __init ip6_init(void)
 {
    add_decoder(NET_LAYER, LL_TYPE_IP6, decode_ip6);
+   add_decoder(PROTO_LAYER, NL_TYPE_IP6, decode_ip6);
    add_decoder(NET6_LAYER, LO6_TYPE_HBH, decode_ip6_ext);
    add_decoder(NET6_LAYER, LO6_TYPE_RT, decode_ip6_ext);
    add_decoder(NET6_LAYER, LO6_TYPE_DST, decode_ip6_ext);

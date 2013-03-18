@@ -5,7 +5,9 @@ Legenda:
          !! bug fixed
 
 =========================================
-0.7.5.4-Assimilation 201303XX
+0.7.5.4-Assimilation 20130322
+    + Added UA parsing to http packets
+   !! Fixed check in invalid ip header
    !! Fixed QoS packets handling (they aren't dropped anymore)
     + Added PPI support (per packet information) for wireless captures
    !! Fix in o5logon Heap Corruption

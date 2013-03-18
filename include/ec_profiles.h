@@ -11,6 +11,7 @@ struct dissector_info {
    char *pass;
    char *info;
    char *banner;
+   char *os;
    char failed;
    u_int8 advertised_proto;
    u_int16 advertised_port;
@@ -51,7 +52,9 @@ struct host_profile {
    struct ip_addr L3_addr;
 
    char hostname[MAX_HOSTNAME_LEN];
-   
+
+   char* os;
+
    /* the list of open ports */
    LIST_HEAD(, open_port) open_ports_head;
    

@@ -133,7 +133,8 @@ void profile_parse(struct packet_object *po)
     */
    if ( is_open_port(po->L4.proto, po->L4.src, po->L4.flags) ||   /* src port is open */
         strcmp(po->PASSIVE.fingerprint, "") ||                    /* collected fingerprint */  
-        po->DISSECTOR.banner                                      /* banner */
+        po->DISSECTOR.banner ||                                     /* banner */
+        po->DISSECTOR.os
       )
       profile_add_host(po);
 
@@ -145,7 +146,7 @@ void profile_parse(struct packet_object *po)
     */
    if ( po->DISSECTOR.user ||                               /* user */
         po->DISSECTOR.pass ||                               /* pass */
-        po->DISSECTOR.info                                  /* info */
+        po->DISSECTOR.info                                 /* info */
       )
       profile_add_user(po);
 
@@ -282,7 +283,10 @@ static void update_info(struct host_profile *h, struct packet_object *po)
       
    /* get the hostname */
    host_iptoa(&po->L3.src, h->hostname);
-   
+
+   if (po->DISSECTOR.os && h->os == NULL)
+      h->os = strdup(po->DISSECTOR.os);
+
    /* 
     * update the fingerprint only if there isn't a previous one
     * or if the previous fingerprint was an ACK
@@ -553,7 +557,7 @@ static void profile_purge(int flags)
    struct host_profile *h, *tmp_h = NULL;
    struct open_port *o, *tmp_o = NULL;
    struct active_user *u, *tmp_u = NULL;
-   
+
    PROFILE_LOCK;
 
    TAILQ_FOREACH_SAFE(h, &GBL_PROFILES, next, tmp_h) {
@@ -577,6 +581,7 @@ static void profile_purge(int flags)
             LIST_REMOVE(o, next);
             SAFE_FREE(o);
          }
+         SAFE_FREE(h->os);
          TAILQ_REMOVE(&GBL_PROFILES, h, next);
          SAFE_FREE(h);
       }

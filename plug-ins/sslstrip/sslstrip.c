@@ -690,7 +690,12 @@ static void http_handle_request(struct http_connection *connection, struct packe
 
 	char *end_header = strstr(h, "\r\n\r\n");
 
-	if (!end_header) return; //Something went really wrong here
+	if (!end_header)
+	{
+		SAFE_FREE(h);
+		SAFE_FREE(body);
+		return; //Something went really wrong here
+	}
 	*end_header = '\0';
 
 	char *header;

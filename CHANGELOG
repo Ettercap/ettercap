@@ -7,7 +7,7 @@ Legenda:
 =========================================
 0.7.6-Assimilation 20130319
    !! Fixed memory leak in SSL Strip plugin
-   !! Removed 'u' and 'p' fields  from etter.fields
+    - Removed 'u' and 'p' fields  from etter.fields
     + Added UA parsing to http packets
    !! Fixed check in invalid ip header
    !! Fixed QoS packets handling (they aren't dropped anymore)

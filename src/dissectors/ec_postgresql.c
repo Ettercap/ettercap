@@ -145,7 +145,7 @@ FUNC_DECODER(dissector_postgresql)
                }
                memcpy(conn_status->hash, ptr + 5 + 3, 32);
                conn_status->hash[32] = 0;
-               DISSECT_MSG("%s-%s-%d:$postgre$%s*%s*%s\n", conn_status->user, ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), conn_status->user, conn_status->salt, conn_status->hash);
+               DISSECT_MSG("%s:$postgres$%s*%s*%s:%s:%d\n", conn_status->user, conn_status->user, conn_status->salt, conn_status->hash, ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst));
                dissect_wipe_session(PACKET, DISSECT_CODE(dissector_postgresql));
             }
             else if (ptr[0] == 'p' && conn_status->type == CT) {

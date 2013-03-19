@@ -375,21 +375,21 @@ static int Parse_User_Agent(char* ptr, char* end, char *from_here, struct packet
     // find the end of the line
     const char* line_end = (const char*)memchr(from_here, '\n', end - from_here);
     if (line_end == NULL) {
-        return;
+        return 0;
     }
 
     unsigned int line_length = line_end - from_here;
     const char* comment_begin = (const char*)memchr(from_here, '(', line_length);
     if (comment_begin == NULL && ((comment_begin + 1) < end)) {
         // no comments found
-        return;
+        return 0;
     }
     ++comment_begin;
 
     const char* comment_end = (const char*)memchr(comment_begin, ')', line_end - comment_begin);
     if (comment_begin == NULL) {
         // couldn't find the close on the comment
-        return;
+        return 0;
     }
 
     const char* os = NULL;
@@ -422,6 +422,9 @@ static int Parse_User_Agent(char* ptr, char* end, char *from_here, struct packet
             po->DISSECTOR.os[comment_end - os] = 0;
         }
     }
+
+    // always return 0 so the main loop drops down to get/post
+    return 0;
 }
 
 /* Parse NTLM challenge and response for both Proxy and WWW Auth */ 
@@ -582,7 +585,7 @@ static void Parse_Method_Get(char *ptr, struct packet_object *po)
    char *user = NULL;
    char *pass = NULL;
    
-   DEBUG_MSG("HTTP --> dissector http (method GET)");
+   printf("HTTP --> dissector http (method GET)");
 
    /* Isolate the parameters and copy them into another string */
    if (!(to_parse = strstr(ptr, "?")))

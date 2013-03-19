@@ -6,7 +6,8 @@ Legenda:
 
 =========================================
 0.7.5.4-Assimilation 20130319
-   !! Fixed u and p fields handling in Parse_Method_Get
+   !! Fixed memory leak in SSL Strip plugin
+   !! Removed 'u' and 'p' fields  from etter.fields
     + Added UA parsing to http packets
    !! Fixed check in invalid ip header
    !! Fixed QoS packets handling (they aren't dropped anymore)

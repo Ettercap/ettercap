@@ -585,7 +585,7 @@ static void Parse_Method_Get(char *ptr, struct packet_object *po)
    char *user = NULL;
    char *pass = NULL;
    
-   printf("HTTP --> dissector http (method GET)");
+   DEBUG_MSG("HTTP --> dissector http (method GET)");
 
    /* Isolate the parameters and copy them into another string */
    if (!(to_parse = strstr(ptr, "?")))

@@ -8,7 +8,7 @@ Legenda:
 0.7.6-Locard 20130320
    !! Fixes to TN3270 dissector, Sslstrip and logo
    !! PostgreSQL dissector: Update output format to reflect release syntax for John the Ripper 1.7.9-Jumbo-8.
-      The old format is still supported, but deprecated. Also, change the output for more effective cracking in 'Single' mode.
+      The old format is still supported, but deprecated.
    !! Fixed memory leak in SSL Strip plugin
    !! Fixed check in invalid ip header
    !! Fixed QoS packets handling (they aren't dropped anymore)

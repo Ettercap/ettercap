@@ -76,3 +76,20 @@ endif(ENABLE_IPV6)
 # This line should ALWAYS be after all options are defined
 configure_file(include/config.h.cmake ${CMAKE_SOURCE_DIR}/include/config.h)
 
+
+# Add a target that will ensure that the build directory is properly cleaned.
+add_custom_target(clean-all
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/CMakeFiles/clean-all.cmake
+)
+
+# If we notice that this isn't the first time they've run 
+if(NOT ("${CMAKE_CACHEFILE_DIR}" STREQUAL ""))
+  message("")
+  message("HAVING TROUBLE BUILDING ETTERCAP? ")
+  message("")
+  message("  1. Install any missing dependencies")
+  message("  2. run 'make clean-all'")
+  message("  3. run 'cmake ${CMAKE_SOURCE_DIR}'")
+  message("")
+endif(NOT ("${CMAKE_CACHEFILE_DIR}" STREQUAL ""))
+

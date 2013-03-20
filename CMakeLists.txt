@@ -76,3 +76,8 @@ endif(ENABLE_IPV6)
 # This line should ALWAYS be after all options are defined
 configure_file(include/config.h.cmake ${CMAKE_SOURCE_DIR}/include/config.h)
 
+
+# Add a target that will ensure that the build directory is properly cleaned.
+add_custom_target(clean-all
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/CMakeFiles/clean-all.cmake
+)

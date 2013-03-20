@@ -5,7 +5,7 @@ Legenda:
          !! bug fixed
 
 =========================================
-0.7.6-Assimilation 20130320
+0.7.6-Locard 20130320
     + New logo
    !! Fixes to TN3270 dissector, Sslstrip and logo
    !! PostgreSQL dissector: Update output format to reflect release syntax for John the Ripper 1.7.9-Jumbo-8.

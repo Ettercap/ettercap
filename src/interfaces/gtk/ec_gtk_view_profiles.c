@@ -285,8 +285,13 @@ static void gtkui_profile_detail(void)
    else if (h->type == FP_UNKNOWN)
       snprintf(line, 200, " Type: \t\tunknown\n\n");
    gtkui_details_print(textbuf, line);
-      
-   
+
+   if (h->os)
+   {
+      snprintf(line, 200, " Observed OS:\t%s\n\n", h->os);
+      gtkui_details_print(textbuf, line);
+   }
+
    snprintf(line, 200, " Fingerprint: \t%s\n", h->fingerprint);
    gtkui_details_print(textbuf, line);
    if (fingerprint_search(h->fingerprint, os) == ESUCCESS)

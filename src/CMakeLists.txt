@@ -98,6 +98,7 @@ set(EC_SRC
         protocols/ec_gre.c
         protocols/ec_icmp.c
         protocols/ec_ip.c
+        protocols/ec_ppi.c
         protocols/ec_ppp.c
         protocols/ec_prism.c
         protocols/ec_radiotap.c

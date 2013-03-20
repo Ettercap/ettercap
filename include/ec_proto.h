@@ -15,8 +15,9 @@ enum {
    IL_TYPE_COOK     = 0x71,  /* linux cooked */
    IL_TYPE_PRISM    = 0x77,  /* prism2 header for wifi dumps */
    IL_TYPE_RADIOTAP = 0x7f,  /* radiotap header for wifi dumps */
+   IL_TYPE_PPI      = 0xc0   /* per packet information */
 };
-   
+
 /* link layer types */
 enum {
    LL_TYPE_IP   = 0x0800,
@@ -29,6 +30,8 @@ enum {
 /* network layer types */
 enum {
    NL_TYPE_ICMP  = 0x01,
+   NL_TYPE_IPIP  = 0x04,
+   NL_TYPE_IP6   = 0x29,
    NL_TYPE_ICMP6 = 0x3a,
    NL_TYPE_TCP   = 0x06,
    NL_TYPE_UDP   = 0x11,

@@ -102,6 +102,7 @@ static u_char Parse_Form(char *to_parse, char **ret, int mode);
 static int Parse_Passport_Auth(char *ptr, char *from_here, struct packet_object *po);
 static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po);
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po);
+static int Parse_User_Agent(char *ptr, char *end, char *from_here, struct packet_object *po);
 static char *unicodeToString(char *p, size_t len);
 static void dumpRaw(char *str, unsigned char *buf, size_t len);
 int http_fields_init(void);
@@ -163,6 +164,8 @@ FUNC_DECODER(dissector_http)
          Parse_NTLM_Auth((char*)ptr, from_here + strlen(": NTLM "), PACKET));
       else if ((from_here = strstr((const char*)ptr, ": Basic ")) &&
          Parse_Basic_Auth((char*)ptr, from_here  + strlen(": Basic "), PACKET));
+      else if ((from_here = strstr((const char*)ptr, "User-Agent: ")) &&
+          Parse_User_Agent((char*)ptr, end, from_here + strlen("User-Agent: "), PACKET));
       else if (!strncmp((const char*)ptr, "GET ", 4))
          Parse_Method_Get((char*)ptr + strlen("GET "), PACKET);
       else if (!strncmp((const char*)ptr, "POST ", 5))
@@ -365,6 +368,63 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
 
    SAFE_FREE(to_decode);
    return 1;
+}
+
+static int Parse_User_Agent(char* ptr, char* end, char *from_here, struct packet_object *po)
+{
+    // find the end of the line
+    const char* line_end = (const char*)memchr(from_here, '\n', end - from_here);
+    if (line_end == NULL) {
+        return 0;
+    }
+
+    unsigned int line_length = line_end - from_here;
+    const char* comment_begin = (const char*)memchr(from_here, '(', line_length);
+    if (comment_begin == NULL && ((comment_begin + 1) < end)) {
+        // no comments found
+        return 0;
+    }
+    ++comment_begin;
+
+    const char* comment_end = (const char*)memchr(comment_begin, ')', line_end - comment_begin);
+    if (comment_begin == NULL) {
+        // couldn't find the close on the comment
+        return 0;
+    }
+
+    const char* os = NULL;
+    while (os == NULL && comment_begin != NULL) {
+        unsigned int comment_length = comment_end - comment_begin;
+        if ((comment_length > 10 && strncmp(comment_begin, "Windows NT", 10) == 0) ||
+            (comment_length > 9 && strncmp(comment_begin, "Intel Mac", 9) == 0) ||
+            (comment_length > 7 && strncmp(comment_begin, "PPC Mac", 7) == 0) ||
+            (comment_length > 10 && strncmp(comment_begin, "CPU iPhone", 10) == 0) ||
+            (comment_length > 8 && strncmp(comment_begin, "Android", 7) == 0) ||
+            (comment_length > 5 && strncmp(comment_begin, "CrOS", 4) == 0) || // Chrome OS
+            (comment_length > 5 && strncmp(comment_begin, "Linux", 5) == 0)) {
+            os = comment_begin;
+        }
+
+        if (os == NULL) {
+            comment_begin = memchr(comment_begin, ';', comment_end - comment_begin);
+            if (comment_begin != NULL && ((comment_begin + 2) < comment_end)) {
+                // skip the ; and the ' '
+                comment_begin += 2;
+            }
+        } else {
+            const char* the_end = memchr(comment_begin, ';', comment_end - comment_begin);
+            if (the_end != NULL) {
+                comment_end = the_end;
+            }
+
+            SAFE_CALLOC(po->DISSECTOR.os, 1, (comment_end - os) + 1);
+            memcpy(po->DISSECTOR.os, os, comment_end - os);
+            po->DISSECTOR.os[comment_end - os] = 0;
+        }
+    }
+
+    // always return 0 so the main loop drops down to get/post
+    return 0;
 }
 
 /* Parse NTLM challenge and response for both Proxy and WWW Auth */ 

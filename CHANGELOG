@@ -6,21 +6,13 @@ Legenda:
 
 =========================================
 0.7.6-Locard 20130320
-    + New logo
    !! Fixes to TN3270 dissector, Sslstrip and logo
    !! PostgreSQL dissector: Update output format to reflect release syntax for John the Ripper 1.7.9-Jumbo-8.
       The old format is still supported, but deprecated. Also, change the output for more effective cracking in 'Single' mode.
-    + Ensure that we find required packages with cmake
-    + New clean-all cmake target
    !! Fixed memory leak in SSL Strip plugin
-    - Removed 'u' and 'p' fields  from etter.fields
-    + Added UA parsing to http packets
    !! Fixed check in invalid ip header
    !! Fixed QoS packets handling (they aren't dropped anymore)
-    + Added PPI support (per packet information) for wireless captures
    !! Fix in o5logon Heap Corruption
-    + Added support for IPv4 and IPv6 Tunnels
-    + New mDNS dissector
    !! New and updated OUI file
    !! Some memory leaks fixed
    !! Fixed some bugs in return values and fstat failures handling
@@ -32,6 +24,14 @@ Legenda:
    !! Fixed UI deadlock
    !! Fixes in tcp and http handling (infinite loop and crash)
    !! Better reads in BGP to avoid invalid reads
+    + New logo
+    + Added UA parsing to http packets
+    + Added support for IPv4 and IPv6 Tunnels
+    + New mDNS dissector
+    + Added PPI support (per packet information) for wireless captures
+    + Ensure that we find required packages with cmake
+    + New clean-all cmake target
+    - Removed 'u' and 'p' fields  from etter.fields
 
 0.7.5.3-Assimilation 20130201
    !! Fixed ncurses host scan crash (already fixed in 0.7.5.2)

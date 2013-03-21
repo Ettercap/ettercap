@@ -643,14 +643,21 @@ static int http_sync_conn(struct http_connection *connection)
 static int http_read(struct http_connection *connection, struct packet_object *po)
 {
 	int len = 0;	
+	int err = 0;
 
 	len = read(connection->fd, po->DATA.data, HTTP_MAX);
 
+
+	while (len <= 0) {
+		err = GET_SOCK_ERRNO();
+	
+		if (err != EAGAIN && err != EINTR)
+			return -EINVALID;
+
+		len = read(connection->fd, po->DATA.data, HTTP_MAX);
+	}
+
 	po->DATA.len = len;
-
-	if(len <= 0)
-		return -EINVALID;
-
 	return len;	
 }
 

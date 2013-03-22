@@ -5,8 +5,8 @@ Legenda:
          !! bug fixed
 
 =========================================
-0.7.6-Locard 20130322
-   !! Fixes to TN3270 dissector, Sslstrip and logo
+0.7.6-Locard 20130323
+   !! Fixes to TN3270 dissector and SSL Strip
    !! PostgreSQL dissector: Update output format to reflect release syntax
       for John the Ripper 1.7.9-Jumbo-8. The old format is still supported,
       but deprecated.
@@ -20,7 +20,7 @@ Legenda:
    !! Fixed a bug in some password display (didn't get null terminated)
    !! Many fixes in gcc warnings when building
    !! Better cmake module to find curl and libnet
-   !! Fixed bug in filters loading
+   !! Fixed bug in filters load
    !! Fixes in HTTP and HTTPs protocols
    !! Fixed UI deadlock
    !! Fixes in tcp and http handling (infinite loop and crash)

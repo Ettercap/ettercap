@@ -26,19 +26,6 @@
 #include <libnet.h>
 #include <sys/time.h>
 
-/* protos */
-
-u_int32 stats_queue_add(void);
-u_int32 stats_queue_del(void);
-
-void stats_half_start(struct half_stats *hs);
-void stats_half_end(struct half_stats *hs, u_int32 len);
-
-void stats_wipe(void);
-void stats_update(void);
-
-/************************************************/
-
 u_int32 stats_queue_add(void)
 {
    /* increment the counter */

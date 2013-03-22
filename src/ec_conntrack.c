@@ -67,14 +67,6 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po);
 static void conntrack_add(struct packet_object *po);
 static void conntrack_del(struct conn_object *co);
 static int conntrack_match(struct conn_object *co, struct packet_object *po);
-EC_THREAD_FUNC(conntrack_timeouter);
-void * conntrack_print(int mode, void *list, char **desc, size_t len);
-void conntrack_purge(void);
-
-int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct packet_object *po));
-int conntrack_hook_packet_del(struct packet_object *po, void (*func)(struct packet_object *po));
-int conntrack_hook_conn_add(struct conn_object *co, void (*func)(struct packet_object *po));
-int conntrack_hook_conn_del(struct conn_object *co, void (*func)(struct packet_object *po));
 void conntrack_hook(struct conn_object *co, struct packet_object *po);
 
 /************************************************/

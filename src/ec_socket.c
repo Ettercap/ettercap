@@ -34,16 +34,6 @@
 #include <fcntl.h>
 #include <time.h>
 
-/* protos */
-
-int open_socket(const char *host, u_int16 port);
-int close_socket(int s);
-void set_blocking(int s, int set);
-int socket_send(int s, const u_char *payload, size_t size);
-int socket_recv(int s, u_char *payload, size_t size);
-
-/*******************************************/
-
 /* 
  * set or unset blocking flag on a socket
  */

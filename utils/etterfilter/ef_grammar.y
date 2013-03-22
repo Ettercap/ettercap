@@ -412,7 +412,7 @@ struct {
  * This function is needed by bison. so it MUST exist.
  * It is the error handler.
  */
-int yyerror(char *s)  
+int yyerror(const char *s)  
 { 
    char *error;
    int i = 0;

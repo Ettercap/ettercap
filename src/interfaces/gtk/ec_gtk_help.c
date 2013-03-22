@@ -49,7 +49,6 @@ help_pair help_list[] = {
 };
 
 /* proto */
-void gtkui_help(void);
 void gtkui_help_open(char *file);
 void gtkui_help_selected(GtkTreeSelection *treeselection, gpointer data);
 

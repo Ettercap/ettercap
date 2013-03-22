@@ -47,10 +47,6 @@ static int wdg_scroll_lost_focus(struct wdg_object *wo);
 static int wdg_scroll_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 
 static void wdg_scroll_border(struct wdg_object *wo);
-
-void wdg_scroll_erase(wdg_t *wo);
-void wdg_scroll_print(wdg_t *wo, int color, char *fmt, ...);
-void wdg_scroll_set_lines(wdg_t *wo, size_t lines);
 static void wdg_set_scroll(struct wdg_object *wo, int s);
 static void wdg_mouse_scroll(struct wdg_object *wo, int s);
 

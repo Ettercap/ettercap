@@ -12,7 +12,7 @@ EC_API_EXTERN int html_format(const u_char *buf, size_t len, u_char *dst);
 EC_API_EXTERN int bin_format(const u_char *buf, size_t len, u_char *dst);
 EC_API_EXTERN int zero_format(const u_char *buf, size_t len, u_char *dst);
 EC_API_EXTERN int utf8_format(const u_char *buf, size_t len, u_char *dst);
-EC_API_EXTERN int set_utf8_encoding(u_char *fromcode);
+EC_API_EXTERN int set_utf8_encoding(const char *fromcode);
 
 EC_API_EXTERN int set_format(char *format);
 

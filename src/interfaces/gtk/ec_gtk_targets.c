@@ -24,14 +24,8 @@
 
 /* proto */
 
-void toggle_reverse(void);
-void gtkui_select_protocol(void);
-void wipe_targets(void);
-void gtkui_select_targets(void);
-void gtkui_current_targets(void);
 static void set_protocol(void);
 static void set_targets(void);
-void gtkui_create_targets_array(void);
 static void gtkui_add_target1(void *);
 static void gtkui_add_target2(void *);
 static void add_target1(void);
@@ -382,7 +376,7 @@ static void add_target1(void)
       return;
    }
    
-   ip_addr_init(&host, AF_INET, (char *)&ip);
+   ip_addr_init(&host, AF_INET, (u_char *)&ip);
 
    add_ip_list(&host, GBL_TARGET1);
    
@@ -400,7 +394,7 @@ static void add_target2(void)
       return;
    }
    
-   ip_addr_init(&host, AF_INET, (char *)&ip);
+   ip_addr_init(&host, AF_INET, (u_char *)&ip);
 
    add_ip_list(&host, GBL_TARGET2);
    

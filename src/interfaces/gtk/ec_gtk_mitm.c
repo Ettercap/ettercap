@@ -25,12 +25,6 @@
 
 /* proto */
 
-void gtkui_arp_poisoning(void);
-void gtkui_icmp_redir(void);
-void gtkui_port_stealing(void);
-void gtkui_dhcp_spoofing(void);
-void gtkui_mitm_stop(void);
-
 static void gtkui_start_mitm(void);
 
 /* globals */

@@ -31,14 +31,7 @@
 
 /* proto */
 
-void set_sniffing_method(struct sniffing_method *sm);
-void set_unified_sniff(void);
-void set_bridge_sniff(void);
-
 static void set_interesting_flag(struct packet_object *po);
-int compile_display_filter(void);
-int compile_target(char *string, struct target_env *target);
-void reset_display_filter(struct target_env *t);
 
 void set_forwardable_flag(struct packet_object *po);
 
@@ -49,11 +42,6 @@ static int expand_range_ip(char *str, void *target);
 #ifdef WITH_IPV6
 static int expand_ipv6(char *str, struct target_env *target);
 #endif
-
-void del_ip_list(struct ip_addr *ip, struct target_env *t);
-int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
-void add_ip_list(struct ip_addr *ip, struct target_env *t);
-void free_ip_list(struct target_env *t);
 
 static pthread_mutex_t ip_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define IP_LIST_LOCK     do{ pthread_mutex_lock(&ip_list_mutex); } while(0)

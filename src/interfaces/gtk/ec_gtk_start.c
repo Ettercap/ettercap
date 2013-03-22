@@ -22,14 +22,6 @@
 #include <ec.h>
 #include <ec_gtk.h>
 
-/* proto */
-
-void gtkui_start_sniffing(void);
-void gtkui_stop_sniffing(void);
-
-/*******************************************/
-
-
 void gtkui_start_sniffing(void)
 {
    DEBUG_MSG("gtk_start_sniffing");

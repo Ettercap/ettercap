@@ -256,7 +256,7 @@ FUNC_DECODER(dissector_imap)
       base64_decode(pass, (const char*)ptr);
      
       /* fill the structure */
-      PACKET->DISSECTOR.user = strdup(s->data + strlen("AUTH USER "));
+      PACKET->DISSECTOR.user = strdup((char*)s->data + strlen("AUTH USER "));
       PACKET->DISSECTOR.pass = strdup(pass);
       
       SAFE_FREE(pass);

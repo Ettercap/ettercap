@@ -57,13 +57,7 @@ static int wdg_dynlist_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_
 static void wdg_dynlist_border(struct wdg_object *wo);
 static void wdg_dynlist_move(struct wdg_object *wo, int key);
 static void wdg_dynlist_mouse(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
-
-void wdg_dynlist_refresh(wdg_t *wo);
-void wdg_dynlist_print_callback(wdg_t *wo, void * func(int mode, void *list, char **desc, size_t len));
-void wdg_dynlist_select_callback(wdg_t *wo, void (*callback)(void *));
-void wdg_dynlist_add_callback(wdg_t *wo, int key, void (*callback)(void *));
 static int wdg_dynlist_callback(struct wdg_object *wo, int key);
-void wdg_dynlist_reset(wdg_t *wo);
 
 /*******************************************/
 

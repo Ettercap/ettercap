@@ -357,7 +357,7 @@ FUNC_DECODER(dissector_pop)
       pass[i] = 0;
      
       /* fill the structure */
-      PACKET->DISSECTOR.user = strdup(s->data + strlen("AUTH USER "));
+      PACKET->DISSECTOR.user = strdup((char*)s->data + strlen("AUTH USER "));
       PACKET->DISSECTOR.pass = strdup(pass);
       
       SAFE_FREE(pass);

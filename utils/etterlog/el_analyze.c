@@ -26,11 +26,8 @@
 
 #include <sys/stat.h>
 
-void analyze(void);
 void analyze_packet(void);
 void analyze_info(void);
-
-void create_hosts_list(void);
 
 /*******************************************/
 

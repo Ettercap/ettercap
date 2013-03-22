@@ -31,10 +31,6 @@
 #endif
 
 /* protos */
-
-int encode_offset(char *string, struct filter_op *fop);
-int encode_function(char *string, struct filter_op *fop);
-int encode_const(char *string, struct filter_op *fop);
 static char ** decode_args(char *args, int *nargs);
 static char * strsep_quotes(char **stringp, const char delim);
 

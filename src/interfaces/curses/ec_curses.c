@@ -26,7 +26,6 @@
 #include <ec_capture.h>
 
 #include <pcap.h>
-
 /* globals */
 
 static wdg_t *sysmsg_win;
@@ -37,16 +36,11 @@ static char tag_promisc[] = " ";
 
 void set_curses_interface(void);
 static void curses_interface(void);
-void curses_flush_msg(void);
-
-void curses_message(const char *msg);
-   
 static void curses_init(void);
 static void curses_cleanup(void);
 static void curses_msg(const char *msg);
 static void curses_error(const char *msg);
 static void curses_fatal_error(const char *msg);
-void curses_input(const char *title, char *input, size_t n, void (*callback)(void));
 static int curses_progress(char *title, int value, int max);
 static void curses_update(int target);
 
@@ -63,6 +57,7 @@ static void write_pcapfile(void);
 static void curses_unified_sniff(void);
 static void curses_bridged_sniff(void);
 static void bridged_sniff(void);
+
 static void curses_pcap_filter(void);
 static void curses_set_netmask(void);
 

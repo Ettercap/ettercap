@@ -46,7 +46,6 @@
 
 /* protos */
 
-void clean_exit(int errcode);
 static void drop_privs(void);
 static void time_check(void);
 
@@ -149,7 +148,7 @@ int main(int argc, char *argv[])
    http_fields_init();
 
    /* set the encoding for the UTF-8 visualization */
-   set_utf8_encoding((u_char*)GBL_CONF->utf8_encoding);
+   set_utf8_encoding(GBL_CONF->utf8_encoding);
   
    /* print all the buffered messages */
    if (GBL_UI->type == UI_TEXT)

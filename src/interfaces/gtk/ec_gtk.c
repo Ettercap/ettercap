@@ -53,13 +53,7 @@ static GtkWidget     *progress_bar = NULL;
 
 void set_gtk_interface(void);
 void gtkui_start(void);
-void gtkui_exit(void);
 
-void gtkui_message(const char *msg);
-void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
-
-char *gtkui_utf8_validate(char *data);
-   
 static void gtkui_init(void);
 static void gtkui_cleanup(void);
 static void gtkui_msg(const char *msg);
@@ -74,7 +68,7 @@ static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
 
 static void gtkui_file_open(void);
-static void read_pcapfile(char *file);
+static void read_pcapfile(const char *file);
 static void gtkui_file_write(void);
 static void write_pcapfile(void);
 static void gtkui_unified_sniff(void);
@@ -85,21 +79,6 @@ static void gtkui_pcap_filter(void);
 static void gtkui_set_netmask(void);
 static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data);
 
-GtkTextBuffer *gtkui_details_window(char *title);
-void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
-void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
-gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
-void gtkui_filename_browse(GtkWidget *widget, gpointer data);
-
-/* MDI pages */
-GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));
-void gtkui_page_present(GtkWidget *child);
-void gtkui_page_close(GtkWidget *widget, gpointer data);
-void gtkui_page_close_current(void);
-void gtkui_page_detach_current(void);
-void gtkui_page_attach_shortcut(GtkWidget *win, void (*attacher)(void));
-void gtkui_page_right(void);
-void gtkui_page_left(void);
 #if GTK_MINOR_VERSION == 2
 static void gtkui_page_defocus_tabs(void);
 #endif
@@ -495,7 +474,7 @@ static void gtkui_progress(char *title, int value, int max)
 
 }
 
-static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) {
+static gboolean gtkui_progress_cancel(GtkWidget* p_unused, gpointer data) {
    progress_cancelled = TRUE;
 
    /* the progress dialog must be manually destroyed if the cancel button is used */
@@ -581,26 +560,26 @@ static void gtkui_setup(void)
    GtkItemFactory *item_factory;
    GClosure *closure = NULL;
    GdkModifierType mods;
-   gint keyval, width, height, left, top;
+   guint keyval, width, height, left, top;
    char *path = NULL;
 
    GtkItemFactoryEntry file_menu[] = {
-      { "/_File",         "<shift>F",   NULL,             0, "<Branch>" },
+      { "/_File",         "<shift>F",   NULL,             0, "<Branch>", 0 },
       { "/File/_Open",    "<control>O", gtkui_file_open,  0, "<StockItem>", GTK_STOCK_OPEN },
       { "/File/_Save",    "<control>S", gtkui_file_write, 0, "<StockItem>", GTK_STOCK_SAVE },
-      { "/File/sep1",     NULL,         NULL,             0, "<Separator>" },
+      { "/File/sep1",     NULL,         NULL,             0, "<Separator>", 0 },
       { "/File/E_xit",    "<control>x", gtkui_exit,       0, "<StockItem>", GTK_STOCK_QUIT },
-      { "/_Sniff",        "<shift>S",   NULL,             0, "<Branch>" },
+      { "/_Sniff",        "<shift>S",   NULL,             0, "<Branch>", 0 },
       { "/Sniff/Unified sniffing...",  "<shift>U", gtkui_unified_sniff, 0, "<StockItem>", GTK_STOCK_DND },
       { "/Sniff/Bridged sniffing...",  "<shift>B", gtkui_bridged_sniff, 0, "<StockItem>", GTK_STOCK_DND_MULTIPLE },
-      { "/Sniff/sep2",    NULL,         NULL,             0, "<Separator>" },
+      { "/Sniff/sep2",    NULL,         NULL,             0, "<Separator>", 0 },
       { "/Sniff/Set pcap filter...",    "p",       gtkui_pcap_filter,   0, "<StockItem>", GTK_STOCK_PREFERENCES },
-      { "/_Options",                    "<shift>O", NULL, 0, "<Branch>" },
-      { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>" },
-      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" },
-      { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>"}
+      { "/_Options",                    "<shift>O", NULL, 0, "<Branch>", 0 },
+      { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>", 0 },
+      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>", 0 },
+      { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>", 0}
 #ifndef OS_WINDOWS
-     ,{"/_Help",          NULL,         NULL,             0, "<Branch>" },
+     ,{"/_Help",          NULL,         NULL,             0, "<Branch>", 0 },
       {"/Help/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
 #endif
    };
@@ -730,7 +709,7 @@ static void gtkui_file_open(void)
    }
 }
 
-static void read_pcapfile(char *file)
+static void read_pcapfile(const char *file)
 {
    char errbuf[128];
    
@@ -1312,7 +1291,7 @@ void gtkui_page_attach_shortcut(GtkWidget *win, void (*attacher)(void))
    GtkAccelGroup *accel;
    GClosure *closure = NULL;
    GdkModifierType mods;
-   gint keyval;
+   guint keyval;
 
    accel = gtk_accel_group_new ();
    gtk_window_add_accel_group(GTK_WINDOW (win), accel);

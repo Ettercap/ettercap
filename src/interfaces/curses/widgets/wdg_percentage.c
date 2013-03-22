@@ -46,8 +46,6 @@ static int wdg_percentage_get_msg(struct wdg_object *wo, int key, struct wdg_mou
 
 static void wdg_percentage_border(struct wdg_object *wo);
 
-int wdg_percentage_set(wdg_t *wo, size_t p, size_t max);
-
 /*******************************************/
 
 /* 

@@ -113,6 +113,7 @@ enum {
    DHCP_OPT_SRV_ADDR    = 0x36,
    DHCP_OPT_RENEW_TIME  = 0x3a,
    DHCP_OPT_CLI_IDENT   = 0x3d,
+   DHCP_OPT_FQDN        = 0x51,
    DHCP_OPT_END         = 0xff,
    DHCP_OPT_MIN_LEN     = 0x12c,
 };

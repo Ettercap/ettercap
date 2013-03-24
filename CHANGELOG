@@ -5,7 +5,8 @@ Legenda:
          !! bug fixed
 
 =========================================
-0.7.6-Locard 20130323
+0.7.6-Locard 20130325
+   !! Fixed some parsing errors
    !! Fixes to TN3270 dissector and SSL Strip
    !! PostgreSQL dissector: Update output format to reflect release syntax
       for John the Ripper 1.7.9-Jumbo-8. The old format is still supported,
@@ -26,6 +27,7 @@ Legenda:
    !! Fixes in tcp and http handling (infinite loop and crash)
    !! Better reads in BGP to avoid invalid reads
     + New logo
+    + Added ascii FQDN support to DHCP ACK
     + Added UA parsing to http packets
     + Added support for IPv4 and IPv6 Tunnels
     + New mDNS dissector

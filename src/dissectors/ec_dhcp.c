@@ -240,11 +240,40 @@ FUNC_DECODER(dissector_dhcp)
             
             if (!ip_addr_is_zero(&dns))
                dhcp_add_profile(&dns, FP_UNKNOWN);
-            
+
+            // look for the option 81 in ack's
+            if (resp == DHCP_ACK &&
+                (opt = get_dhcp_option(DHCP_OPT_FQDN, options, end)) != NULL)
+            {
+                u_char size = opt[0];
+                if ((opt + size + 2) > end)
+                {
+                    // the +2 accounts for a-rr and ptr-rr
+                    return NULL;
+                }
+
+                // check flags for the ascii encoding
+                u_char flags = opt[1];
+                if (flags & 0x04)
+                {
+                    // TODO support wire format (aka dns style)
+                    return NULL;
+                }
+
+                // create a null terminated string to pass to resolv
+                char* name = NULL;
+                SAFE_CALLOC(name, size - 2, sizeof(char));
+                memcpy(name, opt + 4, size - 2);
+                name[size - 3] = 0;
+
+                resolv_cache_insert(&client, name);
+
+                SAFE_FREE(name);
+            }
             break;
       }
    }
-      
+
    return NULL;
 }
 

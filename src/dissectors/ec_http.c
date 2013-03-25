@@ -380,14 +380,14 @@ static int Parse_User_Agent(char* ptr, char* end, char *from_here, struct packet
 
     unsigned int line_length = line_end - from_here;
     const char* comment_begin = (const char*)memchr(from_here, '(', line_length);
-    if (comment_begin == NULL && ((comment_begin + 1) < end)) {
+    if (comment_begin == NULL || ((comment_begin + 1) >= end)) {
         // no comments found
         return 0;
     }
     ++comment_begin;
 
     const char* comment_end = (const char*)memchr(comment_begin, ')', line_end - comment_begin);
-    if (comment_begin == NULL) {
+    if (comment_end == NULL) {
         // couldn't find the close on the comment
         return 0;
     }

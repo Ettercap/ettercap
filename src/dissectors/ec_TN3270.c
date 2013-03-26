@@ -86,7 +86,7 @@ FUNC_DECODER(dissector_TN3270)
 
    if (FROM_CLIENT("TN3270", PACKET)) {
 
-      if (PACKET->DATA.len > 200) /* is this always valid? */
+      if (PACKET->DATA.len > 200 || PACKET->DATA.len < 5) /* is this always valid? */
          return NULL;
 
       char output[512] = { 0 };

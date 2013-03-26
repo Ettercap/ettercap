@@ -34,6 +34,7 @@ Legenda:
     + Added PPI support (per packet information) for wireless captures
     + Ensure that we find required packages with cmake
     + New clean-all cmake target
+    + Print a message when done reading PCAP file
     - Removed 'u' and 'p' fields  from etter.fields
 
 0.7.5.3-Assimilation 20130201

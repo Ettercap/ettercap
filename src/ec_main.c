@@ -114,7 +114,8 @@ int main(int argc, char *argv[])
       disable_ip_forward();
 	
 #ifdef OS_LINUX
-      disable_interface_offload();
+      if (!GBL_OPTIONS->read)
+      	disable_interface_offload();
 #endif
       /* binds ports and set redirect for ssl wrapper */
       if(GBL_SNIFF->type == SM_UNIFIED && GBL_OPTIONS->ssl_mitm)

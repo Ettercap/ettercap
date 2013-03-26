@@ -27,6 +27,7 @@ Legenda:
    !! Fixes in tcp and http handling (infinite loop and crash)
    !! Better reads in BGP to avoid invalid reads
     + New logo
+    + Bundled libnet used when a not suitable version is found on the system
     + Added ascii FQDN support to DHCP ACK
     + Added UA parsing to http packets
     + Added support for IPv4 and IPv6 Tunnels

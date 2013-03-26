@@ -103,7 +103,7 @@ EC_THREAD_FUNC(capture)
 
    if (GBL_OPTIONS->read) {
    	if (ret==0) {
-		USER_MSG("\n\nCapture file read completely, please exit at your convinience.\n\n");
+		USER_MSG("\n\nCapture file read completely, please exit at your convenience.\n\n");
    	}
    }
    

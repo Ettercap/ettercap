@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(ettercap C)
 
-set(VERSION "0.7.5")
+set(VERSION "0.7.6")
 
 option(ENABLE_CURSES "Enable curses interface" ON)
 option(ENABLE_GTK "Enable GTK interface" ON)

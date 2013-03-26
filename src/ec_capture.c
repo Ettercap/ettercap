@@ -100,6 +100,12 @@ EC_THREAD_FUNC(capture)
     */
    ret = pcap_loop(iface->pcap, -1, ec_decode, EC_THREAD_PARAM);
    ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(iface->pcap));
+
+   if (GBL_OPTIONS->read) {
+   	if (ret==0) {
+		USER_MSG("\n\nCapture file read completely, please exit at your convenience.\n\n");
+   	}
+   }
    
    return NULL;
 }

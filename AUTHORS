@@ -5,23 +5,36 @@ AUTHORS:
 
    NaGA (Marco Valleri)				<naga@antifork.org>
 
+Project Stewards:
+
+   Emilio Escobar			<eescobar@gmail.com>
+
+   Eric Milam				<jbrav.hax@gmail.com>
 
 ==============================================================================
 
 OFFICIAL DEVELOPERS:
 
-   Emilio Escobar (exfil)			<eescobar@gmail.com>		Core Development (Lazarus)
-   Eric Milam (J0hnnyBrav0)			<jbrax.hax@gmail.com>		Bug Hunting & Testing (Lazarus)
-   Daten (Bryan Schneiders)			<daten@dnetc.org>		the GTK interface
-										but not limited to...
-   Zero_Chaos					<sidhayn@gmail.com>		Lamer, buildscript kiddie fixes
-   Gianfranco Costamagna (LocutusOfBorg)	<costamagnagianfranco@yahoo.it>	Bug Hunting, Bug fixing and patch backporting
-   Mike Ryan (justfalter)                       <falter@gmail.com>              n00b
+   Emilio Escobar (exfil)			<eescobar@gmail.com>		Core Development
+   Mike Ryan					<justfalter@gmail.com>		Core Development and Testing
+   Ryan Linn					<sussuro@happypacket.net>	Core Development and Testing
+   Gianfranco Costamagna (LocutusOfBorg)	<costamagnagianfranco@yahoo.it>	Bug Hunting, Bug fixing and patch back-porting
+   Jacob Baines					<baines.jacob@gmail.com>	Development and Bug fixes
+
+CONTRIBUTORS:
+   Dhiru Kholia (Kohlia)			<dhiru@openwall.com>		O5Logon, MySQL 5.x dissector, TN3270 dissector
+   Mainframed									TN3270 dissector
+   Eric Milam (Brav0Hax)			<jbrav.hax@gmail.com>		User Testing
+
+CONTRIBUTORS (Lazarus):
+   Martin Bos (PureHate)			<purehate@backtrack.com>	Testing
+   Enrique Sanchez								Code Review
 
 CONTRIBUTORS (for the Next Generation series):
 
    Gisle Vanem					<giva@bgnett.no>		for the mingw porting
    Johannes Bauer				<JohannesBauer@gmx.de>		for the prism2 decoder
+   Daten (Bryan Schneiders)			<daten@dnetc.org>		the GTK interface
 
 
 CONTRIBUTORS (for the First Generation series):
@@ -31,11 +44,4 @@ CONTRIBUTORS (for the First Generation series):
    Georg Hofstetter				<geggo@donau-ries.de>		HL-RCON dissector 
    Giorgio Zoppi				<zoppi@cli.di.unipi.it>		security patch
    Garph0					<garph0@gmx.co.uk>		plugin porting for windows
-
-CONTRIBUTORS (Lazarus):
-   Martin Bos (PureHate)			<purehate@backtrack.com>	Testing (Lazarus)
-   Enrique Sanchez								Code Review (Lazarus)
-
-CONTRIBUTORS (Assimilation):
-   Jacob Baines					<baines.jacob@gmail.com>	Bug fixes
-   
+   Zero_Chaos					<sidhayn@gmail.com>		Lamer, buildscript kiddie fixes

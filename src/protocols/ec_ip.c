@@ -91,7 +91,6 @@ void __init ip_init(void)
 {
    add_decoder(NET_LAYER, LL_TYPE_IP, decode_ip);
    add_decoder(PROTO_LAYER, NL_TYPE_IPIP, decode_ip);
-   add_decoder(NET_LAYER, LL_TYPE_PPP_IP, decode_ip);
    add_injector(CHAIN_LINKED, IP_MAGIC, inject_ip);
    add_injector(CHAIN_LINKED, STATELESS_IP_MAGIC, stateless_ip);
 }

@@ -38,8 +38,8 @@
 	<div class="post">
 <h2><a href="https://github.com/Ettercap/ettercap">Download Ettercap Source Code</a></h2>
 	<div class="entry">
-	The latest Ettercap release is: 0.7.5.3-Assimilation<br />
-        <blockquote><span><p><a href="http://sourceforge.net/projects/ettercap/files/ettercap/0.7.5-Assimilation/ettercap-0.7.5.3.tar.gz/download"><img src="Download _256.png" alt="" title="Click to Download" /><br />ettercap-0.7.5.3.tar.gz</a></p></span>
+	The latest Ettercap release is: 0.7.6-Locard<br />
+        <blockquote><span><p><a href="http://sourceforge.net/projects/ettercap/files/ettercap/0.7.6-Locard/ettercap-0.7.6.tar.gz/download"><img src="Download _256.png" alt="" title="Click to Download" /><br />ettercap-0.7.6.tar.gz</a></p></span>
 	</blockquote>
 	
 		<br /><br />
@@ -50,6 +50,12 @@
 <table style="margin:0 auto; width:100%;" border="0" cellspacing="0" cellpadding="5">
   <tbody>
     <tr style="background-color:#000; "><td style="color:#fff; padding:10px;">Release Date</td><td style="color:#fff; padding:10px;">FileName</td><td style="color:#fff; padding:10px; text-align:center;">Version</td><td style="color:#fff; padding:10px; text-align:center;">Sha-1 Hash</td></tr>
+    <tr>
+		<td bgcolor="#eaeaea">Feb 01, 2013</td>
+		<td bgcolor="#eaeaea"><a href="http://sourceforge.net/projects/ettercap/files/ettercap/0.7.5-Assimilation/ettercap-0.7.5.3.tar.gz/download" class="down">ettercap-0.7.5.3.tar.gz</a></td>
+		<td bgcolor="#e5e5e5">0.7.5.3-Assimilation</td>
+		<td bgcolor="#eee">784b5cf2493246e95943179b21f70645</td>
+    </tr>
     <tr>
 		<td bgcolor="#eaeaea">Jan 29, 2013</td>
 		<td bgcolor="#eaeaea"><a href="http://sourceforge.net/projects/ettercap/files/ettercap/0.7.5-Assimilation/ettercap-0.7.5.2.tar.gz/download" class="down">ettercap-0.7.5.2.tar.gz</a></td>
@@ -101,6 +107,34 @@
 		
 <h3>History</h3>
 <div class="box">
+<span class="title"><h3>0.7.6-Locard</h3></span>
+<br /><br />
+<ul class="fancy_list"><li class="circle_arrow">Bug Fix
+	<ul>
+	   <li>!! Fixed some parsing errors</li>
+   	   <li>!! Fixes to TN3270 dissector and SSL Strip</li>
+   	   <li>!! PostgreSQL dissector: Update output format to reflect release syntax or John the Ripper 1.7.9-Jumbo-8. The old format is still supported, but deprecated.</li>
+   	   <li>!! Fixed memory leak in SSL Strip plugin</li>
+           <li>!! Fixed check in invalid ip header</li>
+   	   <li>!! Fixed QoS packets handling (they aren't dropped anymore)</li>
+   	   <li>!! Fix in o5logon Heap Corruption</li>
+   	   <li>!! New and updated OUI file</li>
+   	   <li>!! Some memory leaks fixed</li>
+   	   <li>!! Fixed some bugs in return values and fstat failures handling</li>
+   	   <li>!! Fixed a bug in some password display (didn't get null terminated)</li>
+   	   <li>!! Many fixes in gcc warnings when building</li>
+   	   <li>!! Better cmake module to find curl and libnet</li>
+   	   <li>!! Fixed bug in filters load</li>
+   	   <li>!! Fixes in HTTP and HTTPs protocols</li>
+   	   <li>!! Fixed UI deadlock</li>
+   	   <li>!! Fixes in tcp and http handling (infinite loop and crash)</li>
+   	   <li>!! Better reads in BGP to avoid invalid reads</li>
+	</ul>
+</ul>
+</div>
+
+<br /><br />
+<div class="box">
 <span class="title"><h3>0.7.5.3-Assimilation</h3></span>
 <br /><br />
 <ul class="fancy_list"><li class="circle_arrow">Bug Fix
@@ -110,6 +144,26 @@
   	<li>!! Fixed selecting text interface when running in only MiTM mode</li>
 	</ul>
 </li>
+</ul>
+
+<ul class="fancy_list"><li class="circle_arrow">New Features
+	<ul>
+	    <li>+ New logo</li>
+    	    <li>+ Added ascii FQDN support to DHCP ACK</li>
+    	    <li>+ Added UA parsing to http packets</li>
+    	    <li>+ Added support for IPv4 and IPv6 Tunnels</li>
+    	    <li>+ New mDNS dissector</li>
+    	    <li>+ Added PPI support (per packet information) for wireless captures</li>
+    	    <li>+ Ensure that we find required packages with cmake</li>
+    	    <li>+ New clean-all cmake target</li>
+    	    <li>+ Print a message when done reading PCAP file</li>
+	</ul>
+</ul>
+
+<ul class="fancy_list"><li class="circle_arrow">Removed
+	<ul>
+		<li>Removed 'u' and 'p' fields from etter.fields file</li>
+	</ul>
 </ul>
 </div>
 

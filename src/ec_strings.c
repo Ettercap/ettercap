@@ -398,6 +398,37 @@ char getchar_buffer(char **buf)
    return ret;
 }
 
+/* convert a string of hex values into an array of bytes */
+int str_hex_to_bytes(char *string, u_char *bytes)
+{
+   char value[3]; /* two for the hex and the NULL terminator */
+   unsigned int value_bin;
+   u_int i;
+
+   for (i = 0; i < strlen(string); i++) {
+      strncpy(value, string + i*2, 2);
+      if (sscanf(value, "%02X", &value_bin) != 1)
+         return -EINVALID;
+      bytes[i] = value_bin & 0x000000FF;
+   }
+
+   return 0;
+}
+
+
+/* print a binary string in hex format */
+char * str_tohex(u_char *bin, size_t len, char *dst, size_t dst_len)
+{
+   size_t i;
+
+   memset(dst, 0, dst_len);
+
+   for (i = 0; i < len; i++)
+      sprintf(dst + i*2, "%02X", bin[i]);
+
+   return dst;
+}
+
 /* EOF */
 
 // vim:ts=3:expandtab

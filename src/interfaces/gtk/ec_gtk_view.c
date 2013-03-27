@@ -23,6 +23,7 @@
 #include <ec_gtk.h>
 #include <ec_format.h>
 #include <ec_parser.h>
+#include <ec_encryption.h>
 
 /* proto */
 
@@ -41,9 +42,6 @@ static gboolean refresh_stats(gpointer data);
 
 extern void gtkui_show_profiles(void);
 extern void gtkui_show_connections(void);
-
-/* from the ec_wifi.c decoder */
-extern int set_wep_key(u_char *string);
 
 /* globals */
 
@@ -464,7 +462,7 @@ void gtkui_wep_key(void)
 
 static void gtkui_set_wepkey(void)
 {
-   set_wep_key(wkey);
+   wifi_key_prepare(wkey);
 }
 
 /* EOF */

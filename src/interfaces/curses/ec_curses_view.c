@@ -24,6 +24,7 @@
 #include <ec_curses.h>
 #include <ec_format.h>
 #include <ec_parser.h>
+#include <ec_encryption.h>
 
 /* proto */
 
@@ -39,9 +40,6 @@ static void curses_wep_key(void);
 static void curses_set_wepkey(void);
 extern void curses_show_profiles(void);
 extern void curses_show_connections(void);
-
-/* from the ec_wifi.c decoder */
-extern int set_wep_key(u_char *string);
 
 /* globals */
 
@@ -201,7 +199,7 @@ static void curses_wep_key(void)
 
 static void curses_set_wepkey(void)
 {
-   set_wep_key((u_char*)wkey);
+   wifi_key_prepare(wkey);
 }
 
 

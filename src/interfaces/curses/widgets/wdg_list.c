@@ -62,12 +62,7 @@ static int wdg_list_virtualize(int key);
 static int wdg_list_driver(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
 static void wdg_list_menu_create(struct wdg_object *wo);
 static void wdg_list_menu_destroy(struct wdg_object *wo);
-
-void wdg_list_set_elements(struct wdg_object *wo, struct wdg_list *list);
-void wdg_list_add_callback(wdg_t *wo, int key, void (*callback)(void *));
-void wdg_list_select_callback(wdg_t *wo, void (*callback)(void *));
 static int wdg_list_callback(struct wdg_object *wo, int key);
-void wdg_list_refresh(wdg_t *wo);
 
 /*******************************************/
 

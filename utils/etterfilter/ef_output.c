@@ -31,7 +31,6 @@
 
 /* protos */
 
-int write_output(void);
 static void print_progress_bar(struct filter_op *fop);
 static u_char * create_data_segment(struct filter_header *fh, struct filter_op *fop, size_t n);
 static size_t add_data_segment(u_char **data, size_t base, u_char **string, size_t slen);

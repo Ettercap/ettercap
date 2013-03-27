@@ -39,8 +39,9 @@ set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages") 
 
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)
-set(CMAKE_C_FLAGS_RELEASE "-O2 -w" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS "-Wall -Wextra -Wuninitialized -Wshadow -Wpointer-arith -Wlogical-op -Wredundant-decls -Wno-unused-parameter")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -pg" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_RELEASE "-O2 -Wdisabled-optimization" CACHE STRING "" FORCE)
 
 if(OS_DARWIN)
 set(CMAKE_EXE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)

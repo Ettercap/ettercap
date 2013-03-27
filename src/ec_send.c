@@ -53,27 +53,7 @@ struct build_entry {
 
 /* protos */
 
-int send_to_L3(struct packet_object *po);
-int send_to_L2(struct packet_object *po);
-int send_to_bridge(struct packet_object *po);
-int send_to_iface(struct packet_object *po, struct iface_env *iface);
-
-void capture_only_incoming(pcap_t *p, libnet_t *l);
-
-void add_builder(u_int8 dlt, FUNC_BUILDER_PTR(builder));
 libnet_ptag_t ec_build_link_layer(u_int8 dlt, u_int8 *dst, u_int16 proto);
-
-int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip, u_int8 *tmac);
-int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac);
-int send_L3_icmp(u_char type, struct ip_addr *sip, struct ip_addr *tip);
-int send_L3_icmp_echo(struct ip_addr *src, struct ip_addr *tgt);
-int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct packet_object *po);
-int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
-int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr);
-int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
-int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 sport, u_int16 dport, u_int8 *payload, size_t length);
-int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
-int send_L3_icmp_unreach(struct packet_object *po);
 
 #ifdef WITH_IPV6
 int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);

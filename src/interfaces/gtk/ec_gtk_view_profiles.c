@@ -28,7 +28,6 @@
 
 /* proto */
 
-void gtkui_show_profiles(void);
 static void gtkui_profiles_detach(GtkWidget *child);
 static void gtkui_profiles_attach(void);
 static void gtkui_kill_profiles(void);
@@ -264,11 +263,11 @@ static void gtkui_profile_detail(void)
    else
       snprintf(line, 200, "\n");   
    gtkui_details_print(textbuf, line);
-      
+
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       snprintf(line, 200, " MAC address:  \t%s \n", mac_addr_ntoa(h->L2_addr, tmp));
       gtkui_details_print(textbuf, line);
-      snprintf(line, 200, " Manufacturer: \t%s \n\n", manuf_search(h->L2_addr));
+      snprintf(line, 200, " Manufacturer: \t%s \n\n", manuf_search((const char*)h->L2_addr));
       gtkui_details_print(textbuf, line);
    }
 
@@ -294,7 +293,7 @@ static void gtkui_profile_detail(void)
 
    snprintf(line, 200, " Fingerprint: \t%s\n", h->fingerprint);
    gtkui_details_print(textbuf, line);
-   if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
+   if (fingerprint_search((const char*)h->fingerprint, os) == ESUCCESS)
       snprintf(line, 200, " Operating System: \t%s \n\n", os);
    else {
       snprintf(line, 200, " Operating System: \tunknown fingerprint (please submit it) \n");

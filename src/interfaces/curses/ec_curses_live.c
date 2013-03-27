@@ -23,18 +23,6 @@
 #include <wdg.h>
 #include <ec_curses.h>
 
-/* globals */
-
-/* proto */
-
-void curses_sniff_live(void);
-
-
-/*******************************************/
-
-
-/* the interface */
-
 void curses_sniff_live(void)
 {
    wdg_t *menu;

@@ -36,9 +36,6 @@
 /* protos... */
 
 static void el_usage(void);
-void parse_options(int argc, char **argv);
-
-void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t );
 
 /*******************************************/
 
@@ -263,7 +260,7 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'U':
-                  set_utf8_encoding((u_char*)optarg);
+                  set_utf8_encoding(optarg);
                   GBL.format = &utf8_format;
                   break;
                   

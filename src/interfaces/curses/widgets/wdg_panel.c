@@ -44,10 +44,7 @@ static int wdg_panel_redraw(struct wdg_object *wo);
 static int wdg_panel_get_focus(struct wdg_object *wo);
 static int wdg_panel_lost_focus(struct wdg_object *wo);
 static int wdg_panel_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
-
 static void wdg_panel_border(struct wdg_object *wo);
-
-void wdg_panel_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
 
 /*******************************************/
 

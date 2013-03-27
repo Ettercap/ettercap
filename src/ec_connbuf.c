@@ -29,13 +29,6 @@
 #define CONNBUF_LOCK(x)       do{ pthread_mutex_lock(&x); }while(0)
 #define CONNBUF_UNLOCK(x)     do{ pthread_mutex_unlock(&x); }while(0)
 
-/* protos */
-
-void connbuf_init(struct conn_buf *cb, size_t size);
-int connbuf_add(struct conn_buf *cb, struct packet_object *po);
-void connbuf_wipe(struct conn_buf *cb);
-int connbuf_print(struct conn_buf *cb, void (*)(u_char *, size_t, struct ip_addr *L3_src));
-
 /************************************************/
 
 /*

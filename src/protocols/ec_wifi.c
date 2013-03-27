@@ -140,7 +140,7 @@ FUNC_DECODER(decode_wifi);
 FUNC_ALIGNER(align_wifi);
 void wifi_init(void);
 static int wep_decrypt(u_char *buf, size_t len);
-int set_wep_key(u_char *string);
+int set_wep_key(char *string);
 static void make_key_64(u_char *string);
 static void make_key_128(u_char *string);
 
@@ -371,18 +371,18 @@ static int wep_decrypt(u_char *buf, size_t len)
  *    128:s:ettercapng070
  *    64:s:\x01\x02\x03\x04\x05
  */
-int set_wep_key(u_char *string)
+int set_wep_key(char *string)
 {
    int bit = 0, i;
    char* p;
    u_char type;
    char *tok;
-   char s[strlen((const char*)string) + 1];
+   char s[strlen(string) + 1];
    
    DEBUG_MSG("set_wep_key: %s", string);
    
    memset(wkey, 0, sizeof(wkey));
-   strncpy(s, (const char*)string, strlen((const char*)string)+1);
+   strncpy(s, string, strlen(string)+1);
 
    p = ec_strtok(s, ":", &tok);
    if (p == NULL)

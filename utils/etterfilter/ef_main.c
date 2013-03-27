@@ -34,7 +34,6 @@ extern int yyparse (void);    /* from parser */
 struct globals gbls;
 
 /* protos */
-void ef_debug(u_char level, const char *message, ...);
 void clean_exit(int errcode);
 
 /*******************************************/

@@ -28,8 +28,6 @@
 
 /* proto */
 
-void gtkui_plugin_mgmt(void);
-void gtkui_plugin_load(void);
 static void gtkui_load_plugin(char *full);
 static void gtkui_add_plugin(char active, struct plugin_ops *ops);
 static void gtkui_plug_destroy(void);
@@ -76,7 +74,7 @@ void gtkui_plugin_load(void)
       gtk_widget_hide(dialog);
       filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
       
-      gtkui_load_plugin(filename);
+      gtkui_load_plugin((char*)filename);
 
       /* update the list */
       gtkui_create_plug_array();

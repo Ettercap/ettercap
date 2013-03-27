@@ -44,12 +44,9 @@ static pthread_mutex_t filters_mutex;
 
 /* protos */
 
-int filter_load_file(char *filename, struct filter_list **list, uint8_t enabled);
-void filter_unload(struct filter_list **list);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
 static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
-void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg);
-   
+
 static int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
 static int execute_assign(struct filter_op *fop, struct packet_object *po);
@@ -987,7 +984,7 @@ static int cmp_geq(u_int32 a, u_int32 b)
 /*
  * load the filter from a file 
  */
-int filter_load_file(char *filename, struct filter_list **list, uint8_t enabled)
+int filter_load_file(const char *filename, struct filter_list **list, uint8_t enabled)
 {
    int fd;
    void *file;
@@ -1037,10 +1034,10 @@ int filter_load_file(char *filename, struct filter_list **list, uint8_t enabled)
    /* allocate memory for the list entry */
    SAFE_CALLOC(*list, 1, sizeof(struct filter_list));
    fenv = &(*list)->env;
-   
+
    /* set the global variables */
    fenv->map = file;
-   fenv->chain = (struct filter_op *)(file + fh.code);
+   fenv->chain = (struct filter_op *)((char*)file + fh.code);
    fenv->len = size - sizeof(struct filter_header) - fh.code;
 
    /* 
@@ -1150,19 +1147,19 @@ static void reconstruct_strings(struct filter_env *fenv, struct filter_header *f
       switch(fop[i].opcode) {
          case FOP_FUNC:
             if (fop[i].op.func.slen)
-               fop[i].op.func.string = (fenv->map + fh->data + (size_t)fop[i].op.func.string);
+               fop[i].op.func.string = ((u_char*)fenv->map + fh->data + (size_t)fop[i].op.func.string);
             if (fop[i].op.func.rlen)
-               fop[i].op.func.replace = (fenv->map + fh->data + (size_t)fop[i].op.func.replace);
+               fop[i].op.func.replace = ((u_char*)fenv->map + fh->data + (size_t)fop[i].op.func.replace);
             break;
             
          case FOP_TEST:
             if (fop[i].op.test.slen)
-               fop[i].op.test.string = (fenv->map + fh->data + (size_t)fop[i].op.test.string);
+               fop[i].op.test.string = ((u_char*)fenv->map + fh->data + (size_t)fop[i].op.test.string);
             break;
          
          case FOP_ASSIGN:
             if (fop[i].op.assign.slen)
-               fop[i].op.assign.string = (fenv->map + fh->data + (size_t)fop[i].op.assign.string);
+               fop[i].op.assign.string = ((u_char*)fenv->map + fh->data + (size_t)fop[i].op.assign.string);
             break;
       }
       

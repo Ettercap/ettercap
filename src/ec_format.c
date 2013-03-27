@@ -70,25 +70,6 @@ static u_int8 EBCDIC_to_ASCII[256] = {
    0x38, 0x39, 0x2E, 0x2E, 0x2E, 0x2E, 0x2E, 0x2E
 };
 
-
-
-/* protos */
-
-int hex_len(int len);
-int hex_format(const u_char *buf, size_t len, u_char *dst);
-int ascii_format(const u_char *buf, size_t len, u_char *dst);
-int text_format(const u_char *buf, size_t len, u_char *dst);
-int ebcdic_format(const u_char *buf, size_t len, u_char *dst);
-int html_format(const u_char *buf, size_t len, u_char *dst);
-int bin_format(const u_char *buf, size_t len, u_char *dst);
-int zero_format(const u_char *buf, size_t len, u_char *dst);
-int utf8_format(const u_char *buf, size_t len, u_char *dst);
-int set_utf8_encoding(u_char *fromcode);
-
-int set_format(char *format);
-
-/**********************************/
-
 /*
  * parses the "format" and set the right visualization method
  */
@@ -399,7 +380,7 @@ int utf8_format(const u_char *buf, size_t len, u_char *dst)
 /*
  * set the encoding to use when converting to UTF-8
  */
-int set_utf8_encoding(u_char *fromcode)
+int set_utf8_encoding(const char *fromcode)
 {
 #ifndef HAVE_UTF8
    USER_MSG("UTF-8 support not compiled in.");
@@ -409,20 +390,20 @@ int set_utf8_encoding(u_char *fromcode)
 
    DEBUG_MSG("set_utf8_encoding: %s", fromcode);
       
-   if (fromcode == NULL || strlen((const char*)fromcode) < 1)
+   if (fromcode == NULL || strlen(fromcode) < 1)
       return -EINVALID;
 
    SAFE_FREE(utf8_encoding);
 
    /* make sure encoding type is supported */
-   cd = iconv_open("UTF-8", (const char*)fromcode);
+   cd = iconv_open("UTF-8", fromcode);
    
    if (cd == (iconv_t)(-1))
       SEMIFATAL_ERROR("The conversion from %s to UTF-8 is not supported.", fromcode);
    
    iconv_close(cd);
 
-   utf8_encoding = strdup((const char*)fromcode);
+   utf8_encoding = strdup(fromcode);
 
    return ESUCCESS;
 #endif

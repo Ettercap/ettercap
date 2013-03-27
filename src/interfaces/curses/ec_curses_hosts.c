@@ -33,7 +33,6 @@ static void load_hosts(char *path, char *file);
 static void curses_save_hosts(void);
 static void save_hosts(void);
 static void curses_host_list(void);
-void curses_hosts_update(void);
 static void curses_hosts_destroy(void);
 static void curses_create_hosts_array(void);
 static void curses_delete_host(void *host);

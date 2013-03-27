@@ -42,7 +42,6 @@ struct row_pairs {
 
 /* proto */
 
-void gtkui_show_connections(void);
 static void gtkui_connections_detach(GtkWidget *child);
 static void gtkui_connections_attach(void);
 static void gtkui_kill_connections(void);
@@ -68,7 +67,7 @@ static void gtkui_connection_kill_curr_conn(void);
 static void gtkui_connection_inject(void);
 static void gtkui_inject_user(int side);
 static void gtkui_connection_inject_file(void);
-static void gtkui_inject_file(char *filename, int side);
+static void gtkui_inject_file(const char *filename, int side);
 
 extern void conntrack_lock(void);
 extern void conntrack_unlock(void);
@@ -867,7 +866,7 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
    
    /* check the regex filter */
    if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+       regexec(GBL_OPTIONS->regex, (const char*)text, 0, NULL, 0) != 0) {
       return;
    }
 
@@ -879,9 +878,9 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
    dispbuf[ret] = 0;
 
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
-      gtkui_data_print(1, dispbuf, 0);
+      gtkui_data_print(1, (char*)dispbuf, 0);
    else
-      gtkui_data_print(2, dispbuf, 0);
+      gtkui_data_print(2, (char*)dispbuf, 0);
 }
 
 static void split_print_po(struct packet_object *po)
@@ -894,7 +893,7 @@ static void split_print_po(struct packet_object *po)
    
    /* check the regex filter */
    if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+       regexec(GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -906,9 +905,9 @@ static void split_print_po(struct packet_object *po)
    dispbuf[ret] = 0;
         
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
-      gtkui_data_print(1, dispbuf, 0);
+      gtkui_data_print(1, (char*)dispbuf, 0);
    else
-      gtkui_data_print(2, dispbuf, 0);
+      gtkui_data_print(2, (char*)dispbuf, 0);
 }
 
 /*
@@ -1032,7 +1031,7 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
    
    /* check the regex filter */
    if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+       regexec(GBL_OPTIONS->regex, (const char*)text, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -1044,9 +1043,9 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
    dispbuf[ret] = 0;
    
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
-      gtkui_data_print(3, dispbuf, 1);
+      gtkui_data_print(3, (char*)dispbuf, 1);
    else
-      gtkui_data_print(3, dispbuf, 2);
+      gtkui_data_print(3, (char*)dispbuf, 2);
 }
 
 static void join_print_po(struct packet_object *po)
@@ -1059,7 +1058,7 @@ static void join_print_po(struct packet_object *po)
    
    /* check the regex filter */
    if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+       regexec(GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -1071,9 +1070,9 @@ static void join_print_po(struct packet_object *po)
    dispbuf[ret] = 0;
         
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
-      gtkui_data_print(3, dispbuf, 1);
+      gtkui_data_print(3, (char*)dispbuf, 1);
    else
-      gtkui_data_print(3, dispbuf, 2);
+      gtkui_data_print(3, (char*)dispbuf, 2);
 }
 
 /*
@@ -1223,7 +1222,7 @@ static void gtkui_connection_inject(void)
       /* advance end iter to end of text, 500 char max */
       gtk_text_iter_forward_chars(&end, 500);
       
-      strncpy(injectbuf, gtk_text_buffer_get_text(buf, &start, &end, FALSE), 501);
+      strncpy((char*)injectbuf, gtk_text_buffer_get_text(buf, &start, &end, FALSE), 501);
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1)))
          gtkui_inject_user(1);
@@ -1237,9 +1236,9 @@ static void gtkui_connection_inject(void)
 static void gtkui_inject_user(int side)
 {
    size_t len;
-    
+
    /* escape the sequnces in the buffer */
-   len = strescape(injectbuf, injectbuf);
+   len = strescape((char*)injectbuf, (char*)injectbuf);
 
    /* check where to inject */
    if (side == 1 || side == 2) {
@@ -1325,7 +1324,7 @@ static void gtkui_connection_inject_file(void)
 /*
  * map the file into memory and pass the buffer to the inject function
  */
-static void gtkui_inject_file(char *filename, int side)
+static void gtkui_inject_file(const char *filename, int side)
 {
    int fd;
    void *buf;

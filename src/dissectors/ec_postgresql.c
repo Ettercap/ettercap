@@ -107,7 +107,7 @@ FUNC_DECODER(dissector_postgresql)
          /* search for user and database strings, look for StartupMessage  */
          unsigned char *u = memmem(ptr, PACKET->DATA.len, "user", 4);
          unsigned char *d = memmem(ptr, PACKET->DATA.len, "database", 8);
-         if (!memcmp(ptr + 4, "\x00\x03\x00\x00", 4) && u && d) {
+         if (((ptr + 4) < end) && !memcmp(ptr + 4, "\x00\x03\x00\x00", 4) && u && d) {
             /* create the new session */
             dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_postgresql));
 

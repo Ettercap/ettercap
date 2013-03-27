@@ -25,25 +25,15 @@
 #include <ec_parser.h>
 
 /* proto */
-
-void gtkui_show_stats(void);
-void toggle_resolve(void);
-void gtkui_vis_method(void);
-void gtkui_vis_regex(void);
 static void gtkui_set_regex(void);
-void gtkui_wep_key(void);
 static void gtkui_set_wepkey(void);
-
 static void gtkui_stop_stats(void);
 static void gtkui_stats_detach(GtkWidget *child);
 static void gtkui_stats_attach(void);
 static gboolean refresh_stats(gpointer data);
 
-extern void gtkui_show_profiles(void);
-extern void gtkui_show_connections(void);
-
 /* from the ec_wifi.c decoder */
-extern int set_wep_key(u_char *string);
+extern int set_wep_key(char *string);
 
 /* globals */
 
@@ -298,13 +288,14 @@ static gboolean refresh_stats(gpointer data)
  */
 void gtkui_vis_method(void)
 {
-   GtkWidget *dialog, *button, *prev, *vbox;
+   GtkWidget *dialog, *button, *prev;
    GSList *curr = NULL;
    gint active = 0, response = 0;
 
    GList *lang_list = NULL;
    GtkWidget *hbox, *lang_combo, *label;
-   char encoding[50], *local_lang, def_lang[75];
+   char encoding[50], def_lang[75];
+   const char* local_lang;
 
 
    DEBUG_MSG("gtk_vis_method");
@@ -314,8 +305,6 @@ void gtkui_vis_method(void)
                GTK_STOCK_OK, GTK_RESPONSE_OK, 
                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
    gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
-
-   vbox = GTK_DIALOG (dialog)->vbox;
 
    button = gtk_radio_button_new_with_label(NULL, 
                "hex     Print the packets in hex format.");

@@ -46,13 +46,7 @@ struct entry {
 /* protos */
 
 static void fingerprint_discard(void);
-int fingerprint_init(void);
-int fingerprint_search(const char *f, char *dst);
-void fingerprint_default(char *finger);
-void fingerprint_push(char *finger, int param, int value);
-u_int8 TTL_PREDICTOR(u_int8 x);
-int fingerprint_submit(const char *finger, char *os);
-   
+
 /*****************************************/
 
 

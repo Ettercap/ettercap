@@ -27,13 +27,6 @@
 
 #define ERROR_MSG_LEN 200
 
-/* PROTOS */
-
-void wdg_bug(char *file, const char *function, int line, char *message);
-void wdg_error_msg(char *file, const char *function, int line, char *message, ...);
-
-/*******************************************/
-
 /*
  * raise an error
  */

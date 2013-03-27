@@ -58,11 +58,6 @@ static void wdg_input_form_destroy(struct wdg_object *wo);
 static void wdg_input_form_create(struct wdg_object *wo);
 static void wdg_input_consolidate(struct wdg_object *wo);
 
-void wdg_input_size(wdg_t *wo, size_t x, size_t y);
-void wdg_input_add(wdg_t *wo, size_t x, size_t y, const char *caption, char *buf, size_t len, size_t lines);
-void wdg_input_set_callback(wdg_t *wo, void (*callback)(void));
-void wdg_input_get_input(wdg_t *wo);
-
 /*******************************************/
 
 /* 

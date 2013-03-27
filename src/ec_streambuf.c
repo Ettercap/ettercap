@@ -29,17 +29,6 @@
 #define STREAMBUF_LOCK(x)       do{ pthread_mutex_lock(&x); }while(0)
 #define STREAMBUF_UNLOCK(x)     do{ pthread_mutex_unlock(&x); }while(0)
 
-/* protos */
-
-void streambuf_init(struct stream_buf *sb);
-int streambuf_add(struct stream_buf *sb, struct packet_object *po);
-int streambuf_seq_add(struct stream_buf *sb, struct packet_object *po);
-int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode);
-void streambuf_wipe(struct stream_buf *sb);
-int streambuf_read(struct stream_buf *sb, u_char *buf, size_t len, int mode);
-
-/************************************************/
-
 /*
  * initialize the buffer
  */

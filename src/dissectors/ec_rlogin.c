@@ -152,7 +152,7 @@ FUNC_DECODER(dissector_rlogin)
       if (strchr((const char*)ptr, '\r') || strchr((const char*)ptr, '\n')) {
          /* there is the \r and it is not the last char */
          if ( ((ptr = (u_char*)strchr(s->data, '\r')) || (ptr = (u_char*)strchr(s->data, '\n')))
-               && ptr != s->data + strlen(s->data) - 1 ) {
+               && ptr != ((u_char*)s->data + strlen(s->data) - 1) ) {
 
             /* fill the structure */
             PACKET->DISSECTOR.user = strdup(s->data);

@@ -45,16 +45,6 @@ struct dec_entry {
    SLIST_ENTRY (dec_entry) next;
 };
 
-/* protos */
-
-int decode_stream(struct stream_object *so);
-
-void add_extractor(u_int8 level, u_int32 type, FUNC_EXTRACTOR_PTR(extractor));
-void * get_extractor(u_int8 level, u_int32 type);
-int decode_to_file(char *host, char *proto, char *file);
-
-/*******************************************/
-
 /*
  * decode the stream 
  */

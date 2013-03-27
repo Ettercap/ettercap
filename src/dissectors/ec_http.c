@@ -165,7 +165,7 @@ FUNC_DECODER(dissector_http)
       else if ((from_here = strstr((const char*)ptr, ": Basic ")) &&
          Parse_Basic_Auth((char*)ptr, from_here  + strlen(": Basic "), PACKET));
       else if ((from_here = strstr((const char*)ptr, "User-Agent: ")) &&
-          Parse_User_Agent((char*)ptr, end, from_here + strlen("User-Agent: "), PACKET));
+          Parse_User_Agent((char*)ptr, (char*)end, from_here + strlen("User-Agent: "), PACKET));
       else if (!strncmp((const char*)ptr, "GET ", 4))
          Parse_Method_Get((char*)ptr + strlen("GET "), PACKET);
       else if (!strncmp((const char*)ptr, "POST ", 5))

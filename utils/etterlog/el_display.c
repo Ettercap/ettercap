@@ -34,11 +34,9 @@
 
 /* proto */
 
-void display(void);
 static void display_packet(void);
 static void display_info(void);
 static void display_headers(struct log_header_packet *pck);
-void set_display_regex(char *regex);
 static int match_regex(struct host_profile *h);
 static void print_pass(struct host_profile *h);
 

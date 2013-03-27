@@ -40,21 +40,6 @@ static pthread_mutex_t ui_msg_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define UI_MSG_LOCK     do{ pthread_mutex_lock(&ui_msg_mutex); }while(0)
 #define UI_MSG_UNLOCK   do{ pthread_mutex_unlock(&ui_msg_mutex); }while(0)
 
-/* protos... */
-
-void ui_init(void);
-void ui_start(void);
-void ui_cleanup(void);
-void ui_msg(const char *fmt, ...);
-void ui_error(const char *fmt, ...);
-void ui_fatal_error(const char *msg);
-void ui_input(const char *title, char *input, size_t n, void (*callback)(void));
-int ui_progress(char *title, int value, int max);
-int ui_msg_flush(int max);
-int ui_msg_purge_all(void);
-void ui_register(struct ui_ops *ops);
-
-
 /*******************************************/
 
 /* called to initialize the user interface */

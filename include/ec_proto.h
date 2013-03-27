@@ -7,6 +7,7 @@
 
 /* interface layer types */
 enum {
+   IL_TYPE_NULL     = 0x00,  /* bsd loopback (used by some wifi cards in monitor mode) */
    IL_TYPE_ETH      = 0x01,  /* ethernet */
    IL_TYPE_TR       = 0x06,  /* token ring */
    IL_TYPE_FDDI     = 0x0a,  /* fiber distributed data interface */
@@ -14,17 +15,23 @@ enum {
    IL_TYPE_WIFI     = 0x69,  /* wireless */
    IL_TYPE_COOK     = 0x71,  /* linux cooked */
    IL_TYPE_PRISM    = 0x77,  /* prism2 header for wifi dumps */
-   IL_TYPE_RADIOTAP = 0x7f,  /* radiotap header for wifi dumps */
-   IL_TYPE_PPI      = 0xc0   /* per packet information */
+   IL_TYPE_RADIO    = 0x7f,  /* radiotap header for wifi dumps */
+   IL_TYPE_PPI      = 0xc0,  /* per packet information */
+   IL_TYPE_ERF      = 0xc5,  /* ERF endace format */
 };
 
 /* link layer types */
 enum {
-   LL_TYPE_IP   = 0x0800,
-   LL_TYPE_IP6  = 0x86DD,
-   LL_TYPE_ARP  = 0x0806,
-   LL_TYPE_PPP  = 0x880B,
-   LL_TYPE_VLAN = 0x8100,
+   LL_TYPE_PPP_IP = 0x0021,
+   LL_TYPE_IP     = 0x0800,
+   LL_TYPE_ARP    = 0x0806,
+   LL_TYPE_VLAN   = 0x8100,
+   LL_TYPE_IP6    = 0x86DD,
+   LL_TYPE_PPP    = 0x880B,
+   LL_TYPE_PPPOE  = 0x8864,
+   LL_TYPE_PAP    = 0xc023,
+   LL_TYPE_MPLS   = 0x8847,
+   LL_TYPE_8021x  = 0x888E
 };
 
 /* network layer types */

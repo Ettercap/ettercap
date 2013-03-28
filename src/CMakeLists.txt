@@ -8,6 +8,9 @@ set(EC_SRC
         ec_decode.c
         ec_dispatcher.c
         ec_dissect.c
+        ec_encryption_ccmp.c
+        ec_encryption_tkip.c
+        ec_encryption.c
         ec_error.c
         ec_file.c
         ec_filter.c
@@ -100,14 +103,15 @@ set(EC_SRC
         protocols/ec_ip.c
         protocols/ec_ppi.c
         protocols/ec_ppp.c
-        protocols/ec_prism.c
-        protocols/ec_radiotap.c
         protocols/ec_rawip.c
         protocols/ec_tcp.c
         protocols/ec_tr.c
         protocols/ec_udp.c
         protocols/ec_vlan.c
         protocols/ec_wifi.c
+        protocols/ec_wifi_eapol.c
+        protocols/ec_wifi_prism.c
+        protocols/ec_wifi_radiotap.c
 )
 
 if(ENABLE_IPV6)

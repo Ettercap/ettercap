@@ -32,8 +32,8 @@ void toggle_resolve(void);
 void gtkui_vis_method(void);
 void gtkui_vis_regex(void);
 static void gtkui_set_regex(void);
-void gtkui_wep_key(void);
-static void gtkui_set_wepkey(void);
+void gtkui_wifi_key(void);
+static void gtkui_set_wifikey(void);
 
 static void gtkui_stop_stats(void);
 static void gtkui_stats_detach(GtkWidget *child);
@@ -451,16 +451,16 @@ static void gtkui_set_regex(void)
 }
 
 /*
- * set the WEP key
+ * set the Wifi key
  */
-void gtkui_wep_key(void)
+void gtkui_wifi_key(void)
 {
-   DEBUG_MSG("gtk_wep_key");
+   DEBUG_MSG("gtk_wifi_key");
 
-   gtkui_input("WEP key :", wkey, WLEN, gtkui_set_wepkey);
+   gtkui_input("WiFi key :", wkey, WLEN, gtkui_set_wifikey);
 }
 
-static void gtkui_set_wepkey(void)
+static void gtkui_set_wifikey(void)
 {
    wifi_key_prepare(wkey);
 }

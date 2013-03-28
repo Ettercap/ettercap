@@ -36,8 +36,8 @@ static void curses_vis_method(void);
 static void curses_set_method(void);
 static void curses_vis_regex(void);
 static void curses_set_regex(void);
-static void curses_wep_key(void);
-static void curses_set_wepkey(void);
+static void curses_wifi_key(void);
+static void curses_set_wifikey(void);
 extern void curses_show_profiles(void);
 extern void curses_show_connections(void);
 
@@ -61,7 +61,7 @@ struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
                                 {"Visualization method...", 'v', "v", curses_vis_method},
                                 {"Visualization regex...", 'R', "R", curses_vis_regex},
                                 {"-",                     0,  "",  NULL},
-                                {"Set the WEP key...",   'w', "w", curses_wep_key},
+                                {"Set the WiFi key...",   'w', "w", curses_wifi_key},
                                 {NULL, 0, NULL, NULL},
                               };
 
@@ -188,16 +188,16 @@ static void curses_set_regex(void)
 }
 
 /*
- * change the WEP key for wifi
+ * change the WiFi key for wifi
  */
-static void curses_wep_key(void)
+static void curses_wifi_key(void)
 {
-   DEBUG_MSG("curses_wep_key");
+   DEBUG_MSG("curses_wifi_key");
 
-   curses_input("WEP key :", wkey, WLEN, curses_set_wepkey);
+   curses_input("WiFi key :", wkey, WLEN, curses_set_wifikey);
 }
 
-static void curses_set_wepkey(void)
+static void curses_set_wifikey(void)
 {
    wifi_key_prepare(wkey);
 }

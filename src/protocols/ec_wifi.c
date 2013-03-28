@@ -136,7 +136,7 @@ FUNC_DECODER(decode_wifi)
 
    /* we are interested only in wifi data packets */
    if (!(wifi->type & WIFI_DATA)) {
-      DEBUG_MSG(D_EXCESSIVE, "WIFI bacon");
+      DEBUG_MSG("WIFI bacon");
       return NULL;
    }
 
@@ -168,7 +168,7 @@ FUNC_DECODER(decode_wifi)
 
          if (wifi->control & WIFI_ENCRYPTED) {
             // XXX - implement AP to AP handling in encryption_ccmp
-            DEBUG_MSG(D_EXCESSIVE, "WIFI: encrypted packets (AP to AP) not supported");
+            DEBUG_MSG("WIFI: encrypted packets (AP to AP) not supported");
             return NULL;
          }
          /* increase the end of the header accordingly */
@@ -206,7 +206,7 @@ FUNC_DECODER(decode_wifi)
     */
    if (wifi->control & WIFI_ENCRYPTED && enc_schema == WIFI_WEP && GBL_WIFI->wifi_schema == WIFI_WEP) {
 
-      DEBUG_MSG(D_EXCESSIVE, "%s: encrypted packet wep", __FUNCTION__);
+      DEBUG_MSG("%s: encrypted packet wep", __FUNCTION__);
 
       /* get the WEP header */
       wep = (struct wep_header *)wifi_end;
@@ -234,7 +234,7 @@ FUNC_DECODER(decode_wifi)
    if (wifi->control & WIFI_ENCRYPTED && enc_schema == WIFI_WPA && GBL_WIFI->wifi_schema == WIFI_WPA) {
       struct wpa_sa sa;
 
-      DEBUG_MSG(D_EXCESSIVE, "%s: encrypted packet wpa", __FUNCTION__);
+      DEBUG_MSG("%s: encrypted packet wpa", __FUNCTION__);
 
       /*
        * get the SA for this STA (search for source or dest mac address)

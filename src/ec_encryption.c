@@ -242,7 +242,7 @@ int set_wep_key(char *string)
    }
 
    /* print the final string */
-   DEBUG_MSG(D_INFO, "Using WEP key: %s", str_tohex(tmp_wkey, tmp_wkey_len, tmp, sizeof(tmp)));
+   USER_MSG("Using WEP key: %s", str_tohex(tmp_wkey, tmp_wkey_len, tmp, sizeof(tmp)));
 
    memcpy(GBL_WIFI->wkey, tmp_wkey, sizeof(GBL_WIFI->wkey));
    GBL_WIFI->wkey_len = tmp_wkey_len;
@@ -350,7 +350,7 @@ static int set_wpa_key(char *string)
    }
 
    /* print the final string */
-   DEBUG_MSG(D_INFO, "Using WPA key: %s", str_tohex(GBL_WIFI->wkey, WPA_KEY_LEN, tmp, sizeof(tmp)));
+   USER_MSG("Using WPA key: %s", str_tohex(GBL_WIFI->wkey, WPA_KEY_LEN, tmp, sizeof(tmp)));
 
    return ESUCCESS;
 }
@@ -390,7 +390,7 @@ void wpa_sess_add(u_char *sta, struct wpa_sa *sa)
             gettimeofday(&s->sa.tv, NULL);
          }
 
-         DEBUG_MSG(D_INFO, "WPA session updated for [%s]", mac_addr_ntoa(e->sta, tmp));
+         USER_MSG("WPA session updated for [%s]", mac_addr_ntoa(e->sta, tmp));
 
          pthread_mutex_unlock(&root_mutex);
          return;
@@ -400,7 +400,7 @@ void wpa_sess_add(u_char *sta, struct wpa_sa *sa)
    LIST_INSERT_HEAD(&wpa_sess_root, e, next);
    pthread_mutex_unlock(&root_mutex);
 
-   DEBUG_MSG(D_INFO, "New WPA session for [%s]", mac_addr_ntoa(e->sta, tmp));
+   USER_MSG("New WPA session for [%s]", mac_addr_ntoa(e->sta, tmp));
 }
 
 
@@ -413,7 +413,7 @@ void wpa_sess_del(u_char *sta)
    LIST_FOREACH_SAFE(e, &wpa_sess_root, next, tmp) {
       if (!memcmp(&e->sta, sta, ETH_ADDR_LEN)) {
          LIST_REMOVE(e, next);
-         DEBUG_MSG(D_INFO, "WPA session deleted for [%s]", mac_addr_ntoa(e->sta, tmac));
+         USER_MSG("WPA session deleted for [%s]", mac_addr_ntoa(e->sta, tmac));
          SAFE_FREE(e);
          break;
       }
@@ -546,9 +546,9 @@ char tmp[512];
    /* Encrypted key is in the information element field of the EAPOL key packet */
    SAFE_CALLOC(encrypted_key, key_len, sizeof(u_int8));
 
-   DEBUG_MSG(D_DEBUG, "Encrypted Broadcast key:", str_tohex(encrypted_key, key_len, tmp, sizeof(tmp)));
-   DEBUG_MSG(D_DEBUG, "KeyIV:", str_tohex(eapol_key->key_IV, 16, tmp, sizeof(tmp)));
-   DEBUG_MSG(D_DEBUG, "decryption_key:", str_tohex(sa->ptk + 16, 16, tmp, sizeof(tmp)));
+   DEBUG_MSG("Encrypted Broadcast key:", str_tohex(encrypted_key, key_len, tmp, sizeof(tmp)));
+   DEBUG_MSG("KeyIV:", str_tohex(eapol_key->key_IV, 16, tmp, sizeof(tmp)));
+   DEBUG_MSG("decryption_key:", str_tohex(sa->ptk + 16, 16, tmp, sizeof(tmp)));
 
    /*
     * XXX - implement broadcast key

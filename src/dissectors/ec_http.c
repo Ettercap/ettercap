@@ -851,7 +851,7 @@ static char *unicodeToString(char *p, size_t len)
    u_int32 i;
    static char buf[1024];
 
-   /* A string longer than 1024 chars???...it's a bougs packet */
+   /* A string longer than 1024 chars???...it's a bogus packet */
    for (i=0; i<len && i<1023; ++i) {
       buf[i] = *p & 0x7f;
       p += 2;

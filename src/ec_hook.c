@@ -22,6 +22,9 @@
 #include <ec.h>
 #include <ec_hook.h>
 #include <ec_packet.h>
+#ifdef HAVE_EC_LUA
+  #include <ec_lua.h>
+#endif
 
 #include <pthread.h>
 
@@ -81,6 +84,9 @@ void hook_point(int point, struct packet_object *po)
    
       HOOK_UNLOCK;
    }
+#ifdef HAVE_EC_LUA
+   ec_lua_dispatch_hooked_packet(point, po);
+#endif
    
    return;
 }

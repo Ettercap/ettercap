@@ -158,10 +158,17 @@ if(NOT HAVE_BASENAME)
     set(EC_SRC ${EC_SRC} missing/basename.c)
 endif(NOT HAVE_BASENAME)
 
+
 add_subdirectory(interfaces)
 
 add_executable(ettercap ${EC_SRC})
 add_dependencies(ettercap libnet)
+
+# Only compile lua stuff if lua is enabled!
+IF(ENABLE_LUA)
+  add_subdirectory(lua)
+  target_link_libraries(ettercap ec_lua)
+endif(ENABLE_LUA)
 
 target_link_libraries(ettercap ec_interfaces ${EC_LIBS})
 set_target_properties(ettercap PROPERTIES ENABLE_EXPORTS TRUE)

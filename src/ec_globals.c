@@ -53,6 +53,7 @@ void globals_alloc(void)
    SAFE_CALLOC(gbls->sm, 1, sizeof(struct sniffing_method));
    SAFE_CALLOC(gbls->t1, 1, sizeof(struct target_env));
    SAFE_CALLOC(gbls->t2, 1, sizeof(struct target_env));
+   SAFE_CALLOC(gbls->wifi, 1, sizeof(struct wifi_env));
    /* filter list entries are allocated as needed */
    gbls->filters = NULL;
 

@@ -20,11 +20,12 @@ enum {
 
 /* link layer types */
 enum {
-   LL_TYPE_IP   = 0x0800,
-   LL_TYPE_IP6  = 0x86DD,
-   LL_TYPE_ARP  = 0x0806,
-   LL_TYPE_PPP  = 0x880B,
-   LL_TYPE_VLAN = 0x8100,
+   LL_TYPE_IP    = 0x0800,
+   LL_TYPE_IP6   = 0x86DD,
+   LL_TYPE_ARP   = 0x0806,
+   LL_TYPE_PPP   = 0x880B,
+   LL_TYPE_VLAN  = 0x8100,
+   LL_TYPE_8021x = 0x888E
 };
 
 /* network layer types */

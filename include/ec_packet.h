@@ -22,6 +22,8 @@ struct packet_object {
       size_t len;
       u_int8 src[MEDIA_ADDR_LEN];
       u_int8 dst[MEDIA_ADDR_LEN];
+      u_int8 flags;
+         #define PO_L2_FCS  0x01
    } L2;
    
    struct L3 {

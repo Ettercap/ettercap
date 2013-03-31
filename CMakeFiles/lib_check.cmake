@@ -130,13 +130,42 @@ else(HAVE_PCAP)
     message(FATAL_ERROR "libpcap not found!")
 endif(HAVE_PCAP)
 
-if(ENABLE_IPV6)
-	set(LIBNET_REQUIRED_VERSION "1.1.5")
-endif(ENABLE_IPV6)
+# begin LIBNET 
 
-find_package(LIBNET ${LIBNET_REQUIRED_VERSION} REQUIRED)
+# This is a fake target that ettercap is dependant upon. If we end up using 
+# a bundled version of libnet, we make this 'libnet' target dependant on it.
+# That way, everything gets built in the proper order!
+ADD_CUSTOM_TARGET(libnet)
+
+if(SYSTEM_LIBNET)
+  if(ENABLE_IPV6)
+    message(STATUS "IPV6 support requested. Will look for libnet >= 1.1.5.")
+    find_package(LIBNET "1.1.5")
+  else(ENABLE_IPV6)
+    find_package(LIBNET)
+  endif(ENABLE_IPV6)
+
+  if(NOT LIBNET_FOUND)
+    message(STATUS "Couldn't find a suitable system-provided version of LIBNET")
+  endif(NOT LIBNET_FOUND)
+endif(SYSTEM_LIBNET)
+
+# Only go into bundled stuff if it's enabled and we haven't found it already.
+if(BUNDLED_LIBNET AND (NOT LIBNET_FOUND))
+  message(STATUS "Using bundled version of LIBNET")
+  add_subdirectory(bundled_deps/libnet EXCLUDE_FROM_ALL)
+  add_dependencies(libnet bundled_libnet)
+endif(BUNDLED_LIBNET AND (NOT LIBNET_FOUND))
+
+# Still haven't found libnet? Bail!
+if(NOT LIBNET_FOUND)
+  message(FATAL_ERROR "Could not find LIBNET!")
+endif(NOT LIBNET_FOUND)
+
 include_directories(${LIBNET_INCLUDE_DIR})
 set(EC_LIBS ${EC_LIBS} ${LIBNET_LIBRARY})
+
+# end LIBNET 
 
 find_library(HAVE_RESOLV resolv)
 if(HAVE_RESOLV)

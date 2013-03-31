@@ -1,0 +1,2 @@
+#!/bin/sh
+make PREFIX="@EXPORT_PREFIX@" CFLAGS="@EXPORT_C_FLAGS@" CC="@EXPORT_CC@"

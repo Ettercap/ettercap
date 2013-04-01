@@ -1,0 +1,40 @@
+# This file provides the 'bundled_curl' target.
+
+# This will build curl using the release that we've included with
+# our distribution of ettercap.
+include(ExternalProject)
+SET(CURL_VERSION 7.29.0)
+SET(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+SET(CURL_TARGET bundled-curl-${CURL_VERSION}-${CMAKE_BUILD_TYPE})
+SET(CURL_BUILD_ROOT ${PROJECT_BINARY_DIR}/${CURL_TARGET})
+
+SET(CURL_PREFIX ${CURL_BUILD_ROOT}/usr)
+SET(CURL_LIB_DIR ${CURL_PREFIX}/lib)
+SET(CURL_INCLUDE_DIR ${CURL_PREFIX}/include)
+set(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX})  
+
+
+#########################
+
+ExternalProject_Add(
+  ${CURL_TARGET}
+  URL ${CURL_SOURCE_DIR}/curl-${CURL_VERSION}.tar.gz
+  SOURCE_DIR ${CURL_BUILD_ROOT}/source
+  BINARY_DIR ${CURL_BUILD_ROOT}/build
+  INSTALL_DIR ${CURL_PREFIX}
+  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CURL_PREFIX} 
+    -DBUILD_CURL_EXE=Off -DBUILD_CURL_TESTS=Off 
+    -DCMAKE_C_FLAGS=-fPIC
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DHTTP_ONLY=On
+    -DCURL_STATICLIB=On
+    -DENABLE_IPV6=${ENABLE_IPV6}
+  )
+
+# Now export our variables to our parent's scope.
+set(CURL_VERSION_STRING ${CURL_VERSION} PARENT_SCOPE)
+set(CURL_LIBRARY ${CURL_LIBRARY} PARENT_SCOPE)
+set(CURL_INCLUDE_DIR ${CURL_INCLUDE_DIR} PARENT_SCOPE)
+set(CURL_FOUND TRUE PARENT_SCOPE)
+add_custom_target(bundled_curl DEPENDS ${CURL_TARGET})
+

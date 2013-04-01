@@ -9,13 +9,35 @@ option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 
+# Default to using "Release" as our build type.
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
+  "Choose the type of build, options are: Debug Release.")
+
+include(CMakeDependentOption)
+
+# If SYSTEM_LIBS is set to off, then all SYSTEM_* options will be
+# set to off.
+option(SYSTEM_LIBS "Search for a system-provided libraries. This is only used for libraries that we happen to also bundle. Disabling this implies that we would only use bundled libraries." ON)
+
+# If BUNDLED_LIBS is set to off, then all BUNDLED_* options will be
+# set to off.
+option(BUNDLED_LIBS
+  "Use bundled libraries if system provided versions are not found (or disabled)" ON)
+
+CMAKE_DEPENDENT_OPTION(SYSTEM_LIBNET 
+  "Search for a system-provided version of LIBNET" ON
+  SYSTEM_LIBS OFF)
+
+CMAKE_DEPENDENT_OPTION(BUNDLED_LIBNET 
+  "Use bundled version of LIBNET if system-provided version is not found (or disabled)" ON
+  BUNDLED_LIBS OFF)
+
 set(MACPORTS_BASE_DIRECTORY "/opt/local" CACHE PATH "MacPorts installation base directory")
 set(SPECIAL_LIB_DIR "" CACHE PATH "Special (non-traditional) directory where libraries are installed")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
 
-include(CMakeModules/CheckVariableInHeaders.cmake)
-include(CMakeModules/FindLIBNET.cmake)
+include(CheckVariableInHeaders)
 include(CMakeFiles/os_test.cmake)
 
 #Check and see if we're running Darwin, specify the CMAKE_LIBARY_PATH to do so

@@ -666,22 +666,27 @@ ettercap will not recalculate checksums, nor split packets exceeding the mtu
 (snaplen) nor anything like that.
 
 .TP
-\fB\-W\fR, \fB\-\-wep\-key <KEY>\fR
-You can specify a WEP key to decrypt WiFi packets. Only the packets decrypted
+\fB\-W\fR, \fB\-\-wifi\-key <KEY>\fR
+You can specify a key to decrypt WiFi packets (WEP or WPA). Only the packets decrypted
 successfully will be passed to the decoders stack, the others will be skipped
 with a message.
 .br
-The parameter has the following syntax: N:T:KEY. Where N is the bit length of the
-wep key (64, 128 or 256), T is the type of the string ('s' for string and 'p' for 
-passphrase). KEY can be a string or an escaped hex sequences.
+The parameter has the following syntax: type:bits:t:string. Where 'type' can be: wep, wpa-pws or wpa-psk,
+'bits' is the bit length of the key (64, 128 or 256), 't' is the type of the string ('s' for string and 'p' for 
+passphrase). 'string' can be a string or an escaped hex sequences.
 .Sp
 example:
 .br
-\-\-wep\-key 128:p:secret
+\-\-wifi\-key wep:128:p:secret
 .br
-\-\-wep\-key 128:s:ettercapwep0
+\-\-wifi\-key wep:128:s:ettercapwep0
 .br
-\-\-wep\-key '64:s:\\x01\\x02\\x03\\x04\\x05'
+\-\-wifi\-key 'wep:64:s:\\x01\\x02\\x03\\x04\\x05'
+.br
+\-\-wifi\-key wpa:pwd:ettercapwpa:ssid
+.br
+\-\-wifi\-key wpa:psk:663eb260e87cf389c6bd7331b28d82f5203b0cae4e315f9cbb7602f3236708a6
+
 
 .TP
 \fB\-a\fR, \fB\-\-config <CONFIG>\fR

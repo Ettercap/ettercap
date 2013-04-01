@@ -1,7 +1,7 @@
 /*
-    ettercap -- Prism2 header for WiFi packets 
+    ettercap -- RadioTap header for WiFi packets
 
-    Copyright (C) ALoR & NaGA
+    Copyright (C) The Ettercap Dev Team
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,13 +23,18 @@
 #include <ec_decode.h>
 #include <ec_capture.h>
 
-struct rtap_header {
-   u_int8   rtap_rev;            /* Header revision */
-   u_int8   rtap_pad;
-   u_int8   rtap_hdrlen[2];      /* Length of entire header, little endian */
-   u_int32  rtap_fields;         /* Fields present in data */
-   u_int8   rtap_data[0];
+struct radiotap_header {
+   u_int8  version;
+   u_int8  pad;
+   u_int16 len;
+   u_int32 present_flags;
+      #define RADIO_PRESENT_TSFT    0x01
+      #define RADIO_PRESENT_FLAGS   0x02
+      #define RADIO_PRESENT_RATE    0x04
+      #define RADIO_PRESENT_CHANNEL 0x08
 };
+
+#define RADIO_FLAGS_FCS  0x10
 
 /* protos */
 
@@ -54,16 +59,37 @@ void __init radiotap_init(void)
 FUNC_DECODER(decode_radiotap)
 {
    FUNC_DECODER_PTR(next_decoder);
+   struct radiotap_header *radio;
+   u_char *rh;
+   u_int8 flags = 0;
 
-   /* Determine the length of the radiotap header first and then skip the
-    * portion and pass the whole packet on to the wifi layer */
-   struct rtap_header *rtaphdr = (struct rtap_header*)DECODE_DATA;
+   /* get the header */
+   radio = (struct radiotap_header *)DECODE_DATA;
+   rh = (u_char *)(radio + 1);
 
-   /* Header length is not NBO, but little endian */
-   u_int16 hdrlen = rtaphdr->rtap_hdrlen[0] | (rtaphdr->rtap_hdrlen[1] << 8);
-   DECODED_LEN = hdrlen;
-   
-   next_decoder =  get_decoder(LINK_LAYER, IL_TYPE_WIFI);
+   /* get the length of the header */
+   DECODED_LEN = radio->len;
+
+   /*
+	* scan for the presence of the information
+	* we are lucky since the FLAGS we are searching is the second field
+	* and we don't have to scan for all of them
+	*/
+   if ((radio->present_flags & RADIO_PRESENT_TSFT)) {
+	  /* the TSFT is 1 byte */
+	  rh += 1;
+   }
+
+   if ((radio->present_flags & RADIO_PRESENT_FLAGS)) {
+	  /* read the flags (1 byte) */
+	  flags = *rh;
+   }
+
+   /* mark the packet, since we have an FCS at the end */
+   if ((flags & RADIO_FLAGS_FCS))
+	  PACKET->L2.flags |= PO_L2_FCS;
+
+   next_decoder = get_decoder(LINK_LAYER, IL_TYPE_WIFI);
    EXECUTE_DECODER(next_decoder);
 
    return NULL;

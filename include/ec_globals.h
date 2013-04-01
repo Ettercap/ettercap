@@ -12,6 +12,7 @@
 #include <ec_filter.h>
 #include <ec_interfaces.h>
 #include <config.h>
+#include <ec_encryption.h>
 
 #include <regex.h>
 
@@ -147,6 +148,17 @@ struct target_env {
    u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };
 
+/* wifi network structure */
+struct wifi_env {
+	char wireless;               /* if the send interface is wireless */
+	u_char wifi_schema;
+      #define WIFI_WEP 0x01
+      #define WIFI_WPA 0x02
+	char *wifi_key;              /* user specified wifi_key */
+	u_char wkey[MAX_WKEY_LEN];   /* encoded wifi key, large enough for all encryption schemas */
+	size_t wkey_len;
+};
+
 /* the globals container */
 struct globals {
    struct ec_conf *conf;
@@ -161,6 +173,7 @@ struct globals {
    struct sniffing_method *sm;
    struct target_env *t1;
    struct target_env *t2;
+   struct wifi_env *wifi;
    LIST_HEAD(, hosts_list) hosts_list;
    TAILQ_HEAD(gbl_ptail, host_profile) profiles_list_head;
    struct filter_list *filters;
@@ -182,6 +195,7 @@ EC_API_EXTERN struct globals *gbls;
 #define GBL_SNIFF          (GBLS->sm)
 #define GBL_TARGET1        (GBLS->t1)
 #define GBL_TARGET2        (GBLS->t2)
+#define GBL_WIFI           (GBLS->wifi)
 #define GBL_HOSTLIST       (GBLS->hosts_list)
 #define GBL_PROFILES       (GBLS->profiles_list_head)
 #define GBL_FILTERS        &(GBLS->filters)

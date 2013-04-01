@@ -32,6 +32,7 @@
 #include <ec_plugins.h>
 #include <ec_conf.h>
 #include <ec_strings.h>
+#include <ec_encryption.h>
 
 #include <ctype.h>
 
@@ -50,8 +51,6 @@ int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t );
 int set_regex(char *regex);
 static char **parse_iflist(char *list);
 
-/* from the ec_wifi.c decoder */
-extern int set_wep_key(u_char *string);
 
 /*****************************************/
 
@@ -111,7 +110,7 @@ void ec_usage(void)
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
-   fprintf(stdout, "  -W, --wep-key <wkey>        use this wep key to decrypt wifi packets\n");
+   fprintf(stdout, "  -W, --wifi-key <wkey>       use this key to decrypt wifi packets (wep or wpa)\n");
    fprintf(stdout, "  -a, --config <config>       use the alterative config file <config>\n");
    
    fprintf(stdout, "\nStandard options:\n");
@@ -158,7 +157,7 @@ void parse_options(int argc, char **argv)
       { "nosslmitm", no_argument, NULL, 'S' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
-      { "wep-key", required_argument, NULL, 'W' },
+      { "wifi-key", required_argument, NULL, 'W' },
       { "config", required_argument, NULL, 'a' },
       
       { "dns", no_argument, NULL, 'd' },
@@ -396,7 +395,7 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'W':
-                  set_wep_key((u_char*)optarg);
+                  wifi_key_prepare(optarg);
                   break;
                   
          case 'a':

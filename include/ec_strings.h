@@ -35,6 +35,8 @@ EC_API_EXTERN int str_replace(char **text, const char *s, const char *d);
 EC_API_EXTERN size_t strlen_utf8(const char *s);
 EC_API_EXTERN char * ec_strtok(char *s, const char *delim, char **ptrptr);
 EC_API_EXTERN char getchar_buffer(char **buf);
+EC_API_EXTERN int str_hex_to_bytes(char *string, u_char *bytes);
+EC_API_EXTERN char * str_tohex(u_char *bin, size_t len, char *dst, size_t dst_len);
 
 #define strtok(x,y) DON_T_USE_STRTOK_DIRECTLY_USE__EC_STRTOK__INSTEAD
 

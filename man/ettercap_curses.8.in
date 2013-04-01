@@ -270,8 +270,8 @@ hex, ebcdic, text, html.
 Set the visualization regular expression. Only packets matching this regex will
 be displayed in the connection data window.
 .TP
-.B Set the WEP key
-Set the WEP key used to decrypt WiFi encrypted packets. See ettercap(8) for the
+.B Set the WiFi key
+Set the WiFi key used to decrypt WiFi encrypted packets. See ettercap(8) for the
 format of the key.
 .RE
 

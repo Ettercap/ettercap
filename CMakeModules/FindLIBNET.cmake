@@ -14,6 +14,21 @@ FIND_LIBRARY(LIBNET_LIBRARY NAMES
 )
 MARK_AS_ADVANCED(LIBNET_LIBRARY)
 
+# Make sure we've got an include dir.
+if(NOT LIBNET_INCLUDE_DIR)
+  if(LIBNET_FIND_REQUIRED AND NOT LIBNET_FIND_QUIETLY)
+    message(FATAL_ERROR "Could not find LIBNET include directory.")
+  endif()
+  return()
+endif()
+
+if(NOT LIBNET_LIBRARY)
+  if(LIBNET_FIND_REQUIRED AND NOT LIBNET_FIND_QUIETLY)
+    message(FATAL_ERROR "Could not find LIBNET library.")
+  endif()
+  return()
+endif()
+
 #=============================================================
 # _LIBNET_GET_VERSION
 # Internal function to parse the version number in libnet.h

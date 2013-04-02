@@ -152,8 +152,13 @@ FUNC_DECODER(dissector_dhcp)
             DEBUG_MSG("\tDissector_DHCP REQUEST");
       
             /* requested ip address */
-            if ((opt = get_dhcp_option(DHCP_OPT_RQ_ADDR, options, end)) != NULL)
+            if ((opt = get_dhcp_option(DHCP_OPT_RQ_ADDR, options, end)) != NULL) {
+               if ((opt + 5) >= end) {
+                   // not enough room for an ip address
+                   return NULL;
+               }
                ip_addr_init(&client, AF_INET, opt + 1);
+            }
             else {
                /* search if the client already has the ip address */
                if (dhcp->ciaddr != 0) {

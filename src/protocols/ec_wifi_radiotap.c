@@ -51,8 +51,8 @@ void radiotap_init(void);
 
 void __init radiotap_init(void)
 {
-   add_decoder(LINK_LAYER, IL_TYPE_RADIOTAP, decode_radiotap);
-   add_aligner(IL_TYPE_RADIOTAP, align_radiotap);
+   add_decoder(LINK_LAYER, IL_TYPE_RADIO, decode_radiotap);
+   add_aligner(IL_TYPE_RADIO, align_radiotap);
 }
 
 

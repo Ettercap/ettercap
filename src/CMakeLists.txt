@@ -66,7 +66,6 @@ set(EC_SRC
         dissectors/ec_mountd.c
         dissectors/ec_msn.c
         dissectors/ec_mysql.c
-        dissectors/ec_napster.c
         dissectors/ec_nbns.c
         dissectors/ec_nntp.c
         dissectors/ec_o5logon.c

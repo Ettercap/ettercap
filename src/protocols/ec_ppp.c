@@ -21,6 +21,7 @@
 
 #include <ec.h>
 #include <ec_decode.h>
+#include <ec_capture.h>
 #include <ec_dissect.h>
 
 #ifdef HAVE_OPENSSL
@@ -73,6 +74,7 @@ struct ppp_chap_challenge {
 /* protos */
 
 FUNC_DECODER(decode_ppp);
+FUNC_ALIGNER(align_ppp);
 void ppp_init(void);
 
 /*******************************************/
@@ -84,6 +86,8 @@ void ppp_init(void);
 
 void __init ppp_init(void)
 {
+   add_decoder(LINK_LAYER, IL_TYPE_PPP, decode_ppp);
+   add_aligner(IL_TYPE_PPP, align_ppp);
    dissect_add("ppp", NET_LAYER, LL_TYPE_PPP, decode_ppp);
 }
 
@@ -282,6 +286,11 @@ FUNC_DECODER(decode_ppp)
    return NULL;
 }
 
+FUNC_ALIGNER(align_ppp)
+{
+    // should be file only. nothing to align
+    return 0;
+}
 
 /* EOF */
 

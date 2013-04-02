@@ -411,6 +411,10 @@ static int Parse_User_Agent(char* ptr, char* end, char *from_here, struct packet
                 // skip the ; and the ' '
                 comment_begin += 2;
             }
+            else
+            {
+            	comment_begin = NULL;
+            }
         } else {
             const char* the_end = memchr(comment_begin, ';', comment_end - comment_begin);
             if (the_end != NULL) {

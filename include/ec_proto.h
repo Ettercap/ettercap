@@ -1,5 +1,4 @@
 
-
 #ifndef EC_PROTO_H
 #define EC_PROTO_H
 
@@ -9,6 +8,7 @@
 enum {
    IL_TYPE_ETH      = 0x01,  /* ethernet */
    IL_TYPE_TR       = 0x06,  /* token ring */
+   IL_TYPE_PPP      = 0x09,  /* PPP */
    IL_TYPE_FDDI     = 0x0a,  /* fiber distributed data interface */
    IL_TYPE_RAWIP    = 0x0c,  /* raw ip dump file */
    IL_TYPE_WIFI     = 0x69,  /* wireless */

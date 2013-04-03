@@ -855,19 +855,6 @@ Stores profiles information belonging only to remote hosts.
 
 .TP
 .B STANDARD OPTIONS
-.\".TP
-.\"\fB\-U\fR, \fB\-\-update\fR
-.\"Connects to the ettercap website (ettercap.sf.net) and retrieve the latest
-.\"databases used by ettercap.
-.\".br
-.\"If you want only to check if an update is available, prepend the \-z option.
-.\"The order does matter: ettercap \-zU
-.\".Sp
-.\".B SECURITY NOTE: 
-.\"The updates are not signed so an attacker may poison your DNS server 
-.\"and force the updateNG.php to feed ettercap with fake databases.
-.\"This can harm to your system since it can overwrite any file containing
-.\"the string "Revision: ".
                             
 
 .TP

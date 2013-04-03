@@ -49,7 +49,7 @@ set(EC_SRC
         ec_strings.c
         ec_threads.c
         ec_ui.c
-        ec_update.c
+#        ec_update.c
 
         dissectors/ec_bgp.c
         dissectors/ec_cvs.c

@@ -181,7 +181,7 @@ int close_socket(int s)
 
 
 /* 
- * send a buffer thru the socket 
+ * send a buffer throught the socket
  */
 int socket_send(int s, const u_char *payload, size_t size)
 {

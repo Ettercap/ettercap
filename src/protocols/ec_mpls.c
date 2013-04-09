@@ -66,8 +66,8 @@ FUNC_DECODER(decode_mpls)
    /* HOOK POINT : HOOK_PACKET_mpls */
    hook_point(HOOK_PACKET_MPLS, po);
 
-   /* check the stack bit (9th bit) */
-   if (mpls->shim & 0x00000100) {
+   /* check the end of stack bit */
+   if (mpls->shim & 0x00010000) {
       /* leave the control to the IP decoder */
       next_decoder = get_decoder(NET_LAYER, LL_TYPE_IP);
    } else {

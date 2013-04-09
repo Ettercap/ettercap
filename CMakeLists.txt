@@ -24,6 +24,14 @@ option(SYSTEM_LIBS "Search for a system-provided libraries. This is only used fo
 option(BUNDLED_LIBS
   "Use bundled libraries if system provided versions are not found (or disabled)" ON)
 
+CMAKE_DEPENDENT_OPTION(SYSTEM_CURL 
+  "Search for a system-provided version of Curl" ON
+  SYSTEM_LIBS OFF)
+
+CMAKE_DEPENDENT_OPTION(BUNDLED_CURL 
+  "Use bundled version of Curl if system-provided version is not found (or disabled)" ON
+  BUNDLED_LIBS OFF)
+
 CMAKE_DEPENDENT_OPTION(SYSTEM_LIBNET 
   "Search for a system-provided version of LIBNET" ON
   SYSTEM_LIBS OFF)

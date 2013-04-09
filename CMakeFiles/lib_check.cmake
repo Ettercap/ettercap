@@ -106,9 +106,29 @@ if(ENABLE_PLUGINS)
 endif(ENABLE_PLUGINS)
 
 if(HAVE_PLUGINS)
+    # Fake target for curl
+    ADD_CUSTOM_TARGET(curl)
+
     # sslstrip has a requirement for libcurl >= 7.26.0
-    find_package(CURL 7.26.0 REQUIRED)
-    include_directories(${CURL_INCLUDE_DIR})
+    if(SYSTEM_CURL)
+      find_package(CURL 7.26.0)
+
+      if(NOT CURL_FOUND)
+        message(STATUS "Couldn't find a suitable system-provided version of Curl")
+      endif(NOT CURL_FOUND)
+    endif(SYSTEM_CURL)
+
+    if(BUNDLED_CURL AND (NOT CURL_FOUND))
+      message(STATUS "Using bundled version of Curl")
+      add_subdirectory(bundled_deps/curl EXCLUDE_FROM_ALL)
+      add_dependencies(curl bundled_curl)
+    endif(BUNDLED_CURL AND (NOT CURL_FOUND))
+
+    # Still haven't found curl? Bail!
+    if(NOT CURL_FOUND)
+      message(FATAL_ERROR "Could not find Curl!")
+    endif(NOT CURL_FOUND)
+
 endif(HAVE_PLUGINS)
 
 CHECK_FUNCTION_EXISTS(poll HAVE_POLL)

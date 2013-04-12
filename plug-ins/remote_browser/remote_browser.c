@@ -144,6 +144,8 @@ static void remote_browser(struct packet_object *po)
                
       /* execute the script */ 
       if (fork() == 0) {
+         /* chrome won't start as root, changing UID in order to prevent this and for more security in the browser context */
+         setuid(1000);
          execvp(param[0], param);
          exit(0);
       }

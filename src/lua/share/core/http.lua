@@ -6,6 +6,7 @@
 
 local packet = require("packet")
 local hook_points = require("hook_points")
+require("ec_string")
 require("base64")
 
 local ports = { 80, 443, 8080 }

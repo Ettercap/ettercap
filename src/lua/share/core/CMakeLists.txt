@@ -10,4 +10,5 @@ install(FILES
             eclib.lua
             http.lua
             base64.lua
+            ec_string.lua
             DESTINATION ${INSTALL_LUA_CORE})

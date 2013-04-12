@@ -1,6 +1,7 @@
 ############################################################################
 #                                                                          #
-#  ettercap -- etter.dns -- host file for dns_spoof plugin                 #
+#  ettercap -- etter.dns -- host file for dns_spoof and                    #
+#  							mdns_spoof plugins							   #
 #                                                                          #
 #  Copyright (C) ALoR & NaGA                                               #
 #                                                                          #
@@ -25,7 +26,12 @@
 #                                                                          #
 # or for WINS query:                                                       #
 #    workgroup WINS 127.0.0.1                                              #
-#    PC*       WINS 127.0.0.1                                              #
+#    PC*       WINS 127.0.0.1           								   #
+#                                                                          #
+# or for SRV query:														   #
+#    service._tcp|_udp.domain SRV 192.168.1.10:port                        #
+#    Example:															   #
+#    xmpp-server._tcp.google.com SRV 192.168.1.10:5269   				   #
 #                                                                          #
 # NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
 #       so if you want to reverse poison you have to specify a plain       #
@@ -54,6 +60,7 @@ www.naga.org  A 127.0.0.1
 #
 
 www.ettercap.org           A  127.0.0.1
+www.ettercap-project.org   A  127.0.0.1
 ettercap.sourceforge.net   A  216.136.171.201
 
 ###############################################

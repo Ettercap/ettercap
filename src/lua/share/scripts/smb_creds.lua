@@ -7,7 +7,6 @@ description = "Script to show SMB creds";
 
 local packet = require("packet")
 local hook_points = require("hook_points")
-local json = require("dkjson")
 
 hook_point = hook_points.ip
 

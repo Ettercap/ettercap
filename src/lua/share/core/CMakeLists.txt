@@ -8,4 +8,6 @@ install(FILES
             shortpacket.lua
             shortsession.lua
             eclib.lua
+            http.lua
+            base64.lua
             DESTINATION ${INSTALL_LUA_CORE})

@@ -6,8 +6,6 @@
 
 local packet = require("packet")
 local hook_points = require("hook_points")
-local ec_string = require("ec_string")
-local json = require("dkjson")
 require("base64")
 
 local ports = { 80, 443, 8080 }

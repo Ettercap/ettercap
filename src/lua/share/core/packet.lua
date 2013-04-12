@@ -60,6 +60,30 @@ dst_ip = function(packet_object)
   return ip_to_str(dst)
 end
 
+src_port = function(packet_object)
+  local L4 = packet_object.L4
+  if not L4 then
+    return nil
+  end
+  local src = L4.src
+  if not src then
+    return nil
+  end
+  return ffi.C.ntohs(src)
+end
+
+dst_port = function(packet_object)
+  local L4 = packet_object.L4
+  if not L4 then
+    return nil
+  end
+  local dst = L4.dst
+  if not dst then
+    return nil
+  end
+  return ffi.C.ntohs(dst)
+end
+
 --- Returns up to length bytes of the decoded packet DATA section
 -- @param packet_object
 -- @param length If specified, will return up to that many bytes of the packet
@@ -112,7 +136,9 @@ local packet = {
   set_data = set_data,
   is_tcp = is_tcp,
   src_ip = src_ip,
-  dst_ip = dst_ip
+  dst_ip = dst_ip,
+  src_port = src_port,
+  dst_port = dst_port
 }
 
 return packet

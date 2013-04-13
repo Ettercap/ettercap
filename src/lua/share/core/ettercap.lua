@@ -24,6 +24,7 @@
 ettercap = {}
 
 local ffi = require("ettercap_ffi")
+require('packet_meta')
 local ettercap_c = require("ettercap_c")
 local eclib = require("eclib")
 ettercap.reg = require("ettercap_reg")

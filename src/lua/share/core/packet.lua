@@ -26,23 +26,15 @@ function ip_to_str(ip_addr)
   return(ffi.string(ffi.C.ip_addr_ntoa(ip_addr, addr_buffer)))
 end
 
---ntohs = function(port)
-  --return(ffi.int(ffi.C.ntohs(port)))
---end
-
 --- Gets the src ip, if any, from the packet.
 -- @param packet_object
 -- @return string version of IP, or nil
 src_ip = function(packet_object)
   local L3 = packet_object.L3
-  if not L3 then
-    return nil
+  if L3 and L3.src then
+    return ip_to_str(L3.src)
   end
-  local src = L3.src
-  if not src then
-    return nil
-  end
-  return ip_to_str(src)
+  return nil
 end
 
 --- Gets the dst ip, if any, from the packet.
@@ -50,38 +42,26 @@ end
 -- @return string version of IP, or nil
 dst_ip = function(packet_object)
   local L3 = packet_object.L3
-  if not L3 then
-    return nil
+  if L3 and L3.dst then
+    return ip_to_str(L3.dst)
   end
-  local dst = L3.dst
-  if not dst then
-    return nil
-  end
-  return ip_to_str(dst)
+  return nil
 end
 
 src_port = function(packet_object)
   local L4 = packet_object.L4
-  if not L4 then
-    return nil
+  if L4 and L4.src then
+    return ffi.C.ntohs(L4.src)
   end
-  local src = L4.src
-  if not src then
-    return nil
-  end
-  return ffi.C.ntohs(src)
+  return nil
 end
 
 dst_port = function(packet_object)
   local L4 = packet_object.L4
-  if not L4 then
-    return nil
+  if L4 and L4.dst then
+    return ffi.C.ntohs(L4.dst)
   end
-  local dst = L4.dst
-  if not dst then
-    return nil
-  end
-  return ffi.C.ntohs(dst)
+  return nil
 end
 
 --- Returns up to length bytes of the decoded packet DATA section
@@ -119,15 +99,29 @@ end
 -- @param packet_object
 -- @return true or false
 is_tcp = function(packet_object)
-  if not packet_object.L3 then
-    return false
-  end
-  if not packet_object.L3.proto == 6 then
-    return false
-  end
-  return true
+  return (packet_object.L4 and packet_object.L4.proto == 6)
 end
 
+--- Inspects the packet to see if it is UDP.
+-- @param packet_object
+-- @return true or false
+is_udp = function(packet_object)
+  return (packet_object.L4 and packet_object.L4.proto == 17)
+end
+
+--- Shortcut for telling us if the packet has data (or not)
+-- @param packet_object
+-- @return true or false
+has_data = function(packet_object)
+  return (packet_object.DATA and packet_object.DATA.len)
+end
+
+--- Indicates that the packet is udp and has data :)
+-- @param packet_object
+-- @return true or false
+is_udp_with_data = function(packet_object)
+  return(is_udp(packet_object) and has_data(packet_object))
+end
 
 -- Define all the fun little methods.
 local packet = {
@@ -135,6 +129,8 @@ local packet = {
   set_modified = set_modified,
   set_data = set_data,
   is_tcp = is_tcp,
+  is_udp = is_udp,
+  has_data = has_data,
   src_ip = src_ip,
   dst_ip = dst_ip,
   src_port = src_port,

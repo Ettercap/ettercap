@@ -5,6 +5,7 @@ install(FILES
             ettercap_reg.lua
             hook_points.lua
             packet.lua
+            packet_meta.lua
             shortpacket.lua
             shortsession.lua
             eclib.lua

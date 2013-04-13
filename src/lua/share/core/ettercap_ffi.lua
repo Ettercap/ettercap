@@ -96,6 +96,7 @@ struct packet_object {
       size_t len;
       u_int8 src[6];
       u_int8 dst[6];
+      u_int8 flags;
    } L2;
    
    struct L3 {

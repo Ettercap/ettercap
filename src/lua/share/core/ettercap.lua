@@ -113,12 +113,20 @@ do
 
   function Script.new (filename, arguments)
     local script_params = arguments or {};  
-    local full_path = ETTERCAP_LUA_SCRIPT_PATH .. "/" .. filename .. ".lua";
-    local file_closure = assert(loadfile(full_path));
+    local script_path = filename 
+
+    local file_closure, err = loadfile(filename);
+
+    if not file_closure then
+      local full_path = ETTERCAP_LUA_SCRIPT_PATH .. "/" .. filename;
+
+      file_closure = assert(loadfile(full_path))
+
+      script_path = full_path
+    end
 
     local env = {
-      SCRIPT_PATH = full_path,
-      SCRIPT_NAME = filename,
+      SCRIPT_PATH = script_path,
       dependencies = {},
     };
 
@@ -142,7 +150,9 @@ do
       assert(actual_type == required_type, 
              "Incorrect of missing field: '" .. required_field_name .. "'." ..
              " Must be of type: '" .. required_type .. "'" ..
-             " got type: '" .. actual_type .. "'"
+             " got type: '" .. actual_type .. "'." ..
+             " Script: '" .. env["SCRIPT_PATH"] .. "'"
+
       );
     end
 

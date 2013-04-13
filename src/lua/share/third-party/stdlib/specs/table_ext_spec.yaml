@@ -1,0 +1,234 @@
+specify table_ext:
+- before:
+    unextended = require "table_ext"
+- "describe table.clone ()":
+  - before:
+      subject = { k1 = {"v1"}, k2 = {"v2"}, k3 = {"v3"} }
+      f       = table.clone
+  - it does not just return the subject:
+      expect (f (subject)).should_not_be (subject)
+  - it does copy the subject:
+      expect (f (subject)).should_equal (subject)
+  - it only makes a shallow copy:
+      expect (f (subject).k1).should_be (subject.k1)
+  - the original subject is not perturbed:
+      target = { k1 = subject.k1, k2 = subject.k2, k3 = subject.k3 }
+      copy   = f (subject)
+      expect (subject).should_equal (target)
+      expect (subject).should_be (subject)
+  - "it diagnoses non-table arguments":
+      expect ("table expected").should_error (f, nil)
+      expect ("table expected").should_error (f, "foo")
+
+
+- "describe table.clone_rename()":
+  - before:
+      subject = { k1 = {"v1"}, k2 = {"v2"}, k3 = {"v3"} }
+      f       = table.clone_rename
+  - it does not just return the subject:
+      expect (f ({}, subject)).should_not_be (subject)
+  - it copies the subject:
+      expect (f ({}, subject)).should_equal (subject)
+  - it only makes a shallow copy:
+      expect (f ({}, subject).k2).should_be (subject.k2)
+
+  - context when renaming some keys:
+    - before:
+        target = { newkey = subject.k1, k2 = subject.k2, k3 = subject.k3 }
+    - it renames during cloning:
+        expect (f ({k1 = "newkey"}, subject)).should_equal (target)
+    - it does not perturb the value in the renamed key field:
+        expect (f ({k1 = "newkey"}, subject).newkey).should_be (subject.k1)
+
+  - "it diagnoses non-table arguments":
+      expect ("table expected").should_error (f, {}, nil)
+      expect ("table expected").should_error (f, {}, "foo")
+
+
+- "describe table.empty ()":
+  - before:
+      f = table.empty
+  - it returns true for an empty table:
+      expect (f {}).should_be (true)
+      expect (f {nil}).should_be (true)
+  - "it returns false for a non-empty table":
+      expect (f {"stuff"}).should_be (false)
+      expect (f {{}}).should_be (false)
+      expect (f {false}).should_be (false)
+  - "it diagnoses non-table arguments":
+      expect ("table expected").should_error (f, nil)
+      expect ("table expected").should_error (f, "foo")
+
+
+- "describe table.invert ()":
+  - before:
+      subject = { k1 = 1, k2 = 2, k3 = 3 }
+      f       = table.invert
+  - it returns a new table:
+      expect (f (subject)).should_not_be (subject)
+  - it inverts keys and values in the returned table:
+      expect (f (subject)).should_equal { "k1", "k2", "k3" }
+  - it is reversible:
+      expect (f (f (subject))).should_equal (subject)
+  - "it seems to copy a list of 1..n numbers":
+      subject = { 1, 2, 3 }
+      expect (f (subject)).should_equal (subject)
+      expect (f (subject)).should_not_be (subject)
+  - "it diagnoses non-table arguments":
+      expect ("table expected").should_error (f, nil)
+      expect ("table expected").should_error (f, "foo")
+
+
+- "describe table.keys ()":
+  - before:
+      subject = { k1 = 1, k2 = 2, k3 = 3 }
+      f       = table.keys
+  - it returns an empty list when subject is empty:
+      expect (f {}).should_equal {}
+  - it makes a list of table keys:
+      cmp = function (a, b) return a < b end
+      expect (table.sort (f (subject), cmp)).should_equal {"k1", "k2", "k3"}
+  - it does not guarantee stable ordering:
+      subject = {}
+      -- is this a good test? there is a vanishingly small possibility the
+      -- returned table will have all 10000 keys in the same order...
+      for i = 10000, 1, -1 do table.insert (subject, i) end
+      expect (f (subject)).should_not_equal (subject)
+  - "it diagnoses non-table arguments":
+      expect ("table expected").should_error (f, nil)
+      expect ("table expected").should_error (f, "foo")
+
+
+- "describe table.merge ()":
+  - before: |
+      -- Additional merge keys which are moderately unusual
+      t1 = { k1 = {"v1"}, k2 = "if", k3 = {"?"} }
+      t2 = { ["if"] = true, [{"?"}] = false, _ = "underscore", k3 = t1.k1 }
+      f  = table.merge
+
+      target = {}
+      for k, v in pairs (t1) do target[k] = v end
+      for k, v in pairs (t2) do target[k] = v end
+  - it does not create a whole new table:
+      expect (f (t1, t2)).should_be (t1)
+  - it does not change t1 when t2 is empty:
+      expect (f (t1, {})).should_be (t1)
+  - it copies t2 when t1 is empty:
+      expect (f ({}, t1)).should_not_be (t1)
+      expect (f ({}, t1)).should_equal (t1)
+  - it merges keys from t2 into t1:
+      expect (f (t1, t2)).should_equal (target)
+  - it gives precedence to values from t2:
+      original = table.clone (t1)
+      m = f (t1, t2)      -- Merge is destructive, do it once only.
+      expect (m.k3).should_be (t2.k3)
+      expect (m.k3).should_not_be (original.k3)
+  - "it diagnoses non-table arguments":
+      expect ("table expected").should_error (f, nil, nil)
+      expect ("table expected").should_error (f, "foo", "bar")
+
+
+- "describe table.new ()":
+  - before:
+      f = table.new
+
+  - context when not setting a default:
+    - before: default = nil
+    - it returns a new table when nil is passed:
+        expect (f (default, nil)).should_equal {}
+    - it returns any table passed in:
+        t = { "unique table" }
+        expect (f (default, t)).should_be (t)
+
+  - context when setting a default:
+    - before:
+        default = "default"
+    - it returns a new table when nil is passed:
+        expect (f (default, nil)).should_equal {}
+    - it returns any table passed in:
+        t = { "unique table" }
+        expect (f (default, t)).should_be (t)
+
+  - it returns the stored value for existing keys:
+      t = f ("default")
+      v = { "unique value" }
+      t[1] = v
+      expect (t[1]).should_be (v)
+  - it returns the constructor default for unset keys:
+      t = f ("default")
+      expect (t[1]).should_be "default"
+  - it returns the actual default object:
+      default = { "unique object" }
+      t = f (default)
+      expect (t[1]).should_be (default)
+  - "it diagnoses non-tables/non-nil in the second argument":
+      expect ("table expected").should_error (f, nil, "foo")
+
+
+- "describe table.size ()":
+  - before: |
+      --          - 1 -  --------- 2 ----------  -- 3 --
+      subject = { "one", { { "two" }, "three" }, four = 5 }
+      f = table.size
+  - it counts the number of keys in a table:
+      expect (f (subject)).should_be (3)
+  - it counts no keys in an empty table:
+      expect (f {}).should_be (0)
+  - "it diagnoses non-table arguments":
+      expect ("table expected").should_error (f, nil)
+      expect ("table expected").should_error (f, "foo")
+
+
+- "describe table.sort ()":
+  - before:
+      subject = { 5, 2, 4, 1, 0, 3 }
+      target  = { 0, 1, 2, 3, 4, 5 }
+      cmp     = function (a, b) return a < b end
+      f       = table.sort
+  - it sorts elements in place:
+      f (subject, cmp)
+      expect (subject).should_equal (target)
+  - it returns the sorted table:
+      expect (f (subject, cmp)).should_equal (target)
+  - "it diagnoses non-table arguments":
+      expect ("table expected").should_error (f, nil)
+      expect ("table expected").should_error (f, nil)
+
+  
+- "describe table.values ()":
+  - before:
+      subject = { k1 = {1}, k2 = {2}, k3 = {3} }
+      f       = table.values
+  - it returns an empty list when subject is empty:
+      expect (f {}).should_equal {}
+  - it makes a list of table values:
+      cmp = function (a, b) return a[1] < b[1] end
+      expect (table.sort (f (subject), cmp)).should_equal {{1}, {2}, {3}}
+  - it does guarantee stable ordering:
+      subject = {}
+      -- is this a good test? or just requiring an implementation quirk?
+      for i = 10000, 1, -1 do table.insert (subject, i) end
+      expect (f (subject)).should_equal (subject)
+  - "it diagnoses non-table arguments":
+      expect ("table expected").should_error (f, nil)
+      expect ("table expected").should_error (f, "foo")
+
+
+- context when requiring the module:
+  - before:
+      extensions = { "clone", "clone_rename", "empty", "invert", "keys",
+                     "merge", "new", "size", "sort", "values" }
+  - it returns the unextended module table:
+      for _, api in ipairs (extensions) do
+        if api ~= "sort" then
+          expect (unextended[api]).should_be (nil)
+        end
+      end
+  - it injects an enhanced sort function:
+      expect (unextended.sort).should_not_be (table.sort)
+  - it does not override any other module access points:
+      for api in pairs (unextended) do
+        if api ~= "sort" then
+          expect (table[api]).should_be (unextended[api])
+        end
+      end

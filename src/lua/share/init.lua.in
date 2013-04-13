@@ -19,9 +19,11 @@
 ETTERCAP_LUA_CORE_PATH = "@INSTALL_LUA_CORE@"
 ETTERCAP_LUA_LIB_PATH = "@INSTALL_LUA_LIBS@"
 ETTERCAP_LUA_SCRIPT_PATH = "@INSTALL_LUA_SCRIPTS@"
+ETTERCAP_LUA_THIRD_PARTY_PATH = "@INSTALL_LUA_THIRD_PARTY@"
 
 package.path = package.path .. ";" .. ETTERCAP_LUA_CORE_PATH .. "/?.lua" ..
-                ";" .. ETTERCAP_LUA_LIB_PATH .. "/?.lua"
+                ";" .. ETTERCAP_LUA_LIB_PATH .. "/?.lua" ..
+                ";" .. ETTERCAP_LUA_THIRD_PARTY_PATH .. "/?.lua"
 
 require("ettercap")
 

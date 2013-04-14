@@ -126,7 +126,7 @@ end
 -- @param packet_object
 -- @return true or false
 has_data = function(packet_object)
-  return (packet_object.DATA and packet_object.DATA.len)
+  return (not (packet_object.DATA == nil) and packet_object.DATA.len > 0)
 end
 
 -- Define all the fun little methods.

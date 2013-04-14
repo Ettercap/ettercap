@@ -114,7 +114,7 @@ EC_API_EXTERN int ec_lua_init()
     {
       // Flush all messages so we can see where we are.
       ui_msg_flush(MSG_ALL);
-      LUA_FATAL_ERROR("EC_LUA script load failed with error %d: \n\t%s\n", err_code,
+      FATAL_ERROR("EC_LUA script load failed with error %d: \n\t%s\n", err_code,
                 lua_tostring(_lua_state, -1));
     }
 

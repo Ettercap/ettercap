@@ -83,14 +83,27 @@ end
 
 --- Flags the packet as having been modified.
 -- @param packet_object
-set_modified = function(packet_object)
-  packet_object.flags = bit.bor(packet_object.flags, ffi.C.PO_MODIFIED)
-end
+-- @param integer
+set_flag = function(po, flag) po.flags = bit.bor(po.flags, flag) end
+
+set_dropped = function(po) set_flag(po, ffi.C.PO_DROPPED) end
+set_modified = function(po) set_flag(po, ffi.C.PO_MODIFIED) end
+
+is_dropped =     function(po) return bit.band(po.flags, ffi.C.PO_DROPPED) end
+is_forwardable = function(po) return bit.band(po.flags, ffi.C.PO_FORWARDABLE) end
+is_forwarded =   function(po) return bit.band(po.flags, ffi.C.PO_FORWARDED) end
+is_from_ssl =    function(po) return bit.band(po.flags, ffi.C.PO_FROMSSL) end
+is_modified =    function(po) return bit.band(po.flags, ffi.C.PO_MODIFIED) end
+is_ssl_start =   function(po) return bit.band(po.flags, ffi.C.PO_SSLSTART) end
 
 --- Sets the packet data to data, as well as flags the packet as modified.
 -- @param packet_object
 -- @param data (string) The new data
 set_data = function(packet_object, data)
+  local len = string.len(data)
+  if len > packet_object.DATA.len then
+    len = packet_object.DATA.len
+  end
   ffi.copy(packet_object.DATA.data, data, string.len(data))
   set_modified(packet_object)
 end
@@ -116,20 +129,23 @@ has_data = function(packet_object)
   return (packet_object.DATA and packet_object.DATA.len)
 end
 
---- Indicates that the packet is udp and has data :)
--- @param packet_object
--- @return true or false
-is_udp_with_data = function(packet_object)
-  return(is_udp(packet_object) and has_data(packet_object))
-end
-
 -- Define all the fun little methods.
 local packet = {
   read_data = read_data,
-  set_modified = set_modified,
   set_data = set_data,
   is_tcp = is_tcp,
   is_udp = is_udp,
+
+  set_dropped = set_dropped,
+  set_modified = set_modified,
+
+  is_dropped = is_dropped,
+  is_forwardable = is_forwardable,
+  is_forwarded = is_forwarded,
+  is_from_ssl = is_from_ssl,
+  is_modified = is_modified,
+  is_ssl_start = is_ssl_start,
+
   has_data = has_data,
   src_ip = src_ip,
   dst_ip = dst_ip,

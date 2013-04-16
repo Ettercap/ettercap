@@ -891,6 +891,85 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
 }
 
 /*
+ * send a mdns reply
+ */
+ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr)
+ {
+   libnet_ptag_t t;
+   int c;
+ 
+   /* if not lnet warn the developer ;) */
+   BUG_IF(GBL_IFACE->lnet == 0);
+  
+   SEND_LOCK;
+
+   /* create the dns packet */
+    t = libnet_build_dnsv4(
+             LIBNET_UDP_DNSV4_H,    /* TCP or UDP */
+             id,                    /* id */
+             0x8400,                /* standard reply, no error */
+             1,                     /* num_q */
+             1,                     /* num_anws_rr */
+             0,                     /* num_auth_rr */
+             addi_rr,               /* num_addi_rr */
+             data,
+             datalen,
+             GBL_IFACE->lnet,        /* libnet handle */
+             0);                    /* libnet id */
+   ON_ERROR(t, -1, "libnet_build_dns: %s", libnet_geterror(GBL_IFACE->lnet));
+  
+   /* create the udp header */
+   t = libnet_build_udp(
+            5353,                                             /* source port */
+            htons(dport),                                   /* destination port */
+            LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen,    /* packet size */
+            0,                                              /* checksum */
+            NULL,                                           /* payload */
+            0,                                              /* payload size */
+            GBL_IFACE->lnet,                                 /* libnet handle */
+            0);                                             /* libnet id */
+   ON_ERROR(t, -1, "libnet_build_udp: %s", libnet_geterror(GBL_IFACE->lnet));
+   
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
+  
+   /* create the IP header */
+   t = libnet_build_ipv4(                                                                          
+           LIBNET_IPV4_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen, /* length */
+           0,                                                           /* TOS */
+           htons(EC_MAGIC_16),                                          /* IP ID */
+           0,                                                           /* IP Frag */
+           64,                                                          /* TTL */
+           IPPROTO_UDP,                                                 /* protocol */
+           0,                                                           /* checksum */
+           ip_addr_to_int32(&sip->addr),                                /* source IP */
+           ip_addr_to_int32(&tip->addr),                                /* destination IP */
+           NULL,                                                        /* payload */
+           0,                                                           /* payload size */
+           GBL_IFACE->lnet,                                              /* libnet handle */ 
+           0);
+   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
+  
+   /* auto calculate the checksum */
+   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
+   
+   /* add the media header */
+   t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
+   if (t == -1)
+      FATAL_ERROR("Interface not suitable for layer2 sending");
+   
+   /* send the packet to Layer 2 */
+   c = libnet_write(GBL_IFACE->lnet);
+   ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
+
+   /* clear the pblock */
+   libnet_clear_packet(GBL_IFACE->lnet);
+   
+   SEND_UNLOCK;
+   
+   return c;
+ }
+/*
  * send a dns reply
  */
 int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr)

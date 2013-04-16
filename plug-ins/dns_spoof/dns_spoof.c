@@ -450,7 +450,7 @@ static void dns_spoof(struct packet_object *po)
             char *a, *p = (char *)answer + (q - data);
             int rlen;
 
-            char *target;
+            char *target, *port_ptr;
             int port;
 
 
@@ -464,7 +464,14 @@ static void dns_spoof(struct packet_object *po)
              char *tok;
 
              target = ec_strtok(a, ":", &tok);
-             port = atoi(ec_strtok(NULL, ":", &tok));
+	     if (target == NULL)
+		return;
+
+	     port_ptr = ec_strtok(NULL, ":", &tok);
+             if (port_ptr == NULL)
+	        return;
+ 
+ 	     port = atoi(port_ptr);
 
 
             /* 

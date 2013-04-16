@@ -11,6 +11,10 @@ add_library(dns_spoof MODULE dns_spoof/dns_spoof.c)
 target_link_libraries(dns_spoof ${HAVE_RESOLV})
 set_target_properties(dns_spoof PROPERTIES PREFIX "ec_")
 
+add_library(mdns_spoof MODULE mdns_spoof/mdns_spoof.c)
+target_link_libraries(mdns_spoof ${HAVE_RESOLV})
+set_target_properties(mdns_spoof PROPERTIES PREFIX "ec_")
+
 add_library(dos_attack MODULE dos_attack/dos_attack.c)
 target_link_libraries(dos_attack ${HAVE_LIBNET})
 set_target_properties(dos_attack PROPERTIES PREFIX "ec_")
@@ -109,6 +113,7 @@ set(PLUGINS arp_cop
 autoadd
 chk_poison
 dns_spoof
+mdns_spoof
 dos_attack
 dummy
 find_conn
@@ -146,6 +151,7 @@ install(TARGETS
             autoadd
             chk_poison
             dns_spoof
+	    mdns_spoof
             dos_attack
             dummy
             find_conn

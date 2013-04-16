@@ -304,9 +304,15 @@ int compile_display_filter(void)
 int compile_target(char *string, struct target_env *target)
 {
 
+#define MAC_TOK 0
+#define IP_TOK 1
+
 #ifdef WITH_IPV6
+#define IPV6_TOK 2
+#define PORT_TOK 3
 #define MAX_TOK 4
 #else
+#define PORT_TOK 2
 #define MAX_TOK 3
 #endif
 
@@ -341,55 +347,45 @@ int compile_target(char *string, struct target_env *target)
       SEMIFATAL_ERROR("Incorrect number of token (//) in TARGET !!");
 #endif
    
-   DEBUG_MSG("MAC  : [%s]", tok[0]);
-   DEBUG_MSG("IP   : [%s]", tok[1]);
+   DEBUG_MSG("MAC  : [%s]", tok[MAC_TOK]);
+   DEBUG_MSG("IP   : [%s]", tok[IP_TOK]);
 #ifdef WITH_IPV6
-   DEBUG_MSG("IPv6 : [%s]", tok[2]);
+   DEBUG_MSG("IPv6 : [%s]", tok[IPV6_TOK]);
 #endif
-   DEBUG_MSG("PORT : [%s]", tok[3]);
+   DEBUG_MSG("PORT : [%s]", tok[PORT_TOK]);
   
    /* set the mac address */
-   if (!strcmp(tok[0], ""))
+   if (!strcmp(tok[MAC_TOK], ""))
       target->all_mac = 1;
-   else if (mac_addr_aton(tok[0], target->mac) == 0)
-      SEMIFATAL_ERROR("Incorrect TARGET MAC parsing... (%s)", tok[0]);
+   else if (mac_addr_aton(tok[MAC_TOK], target->mac) == 0)
+      SEMIFATAL_ERROR("Incorrect TARGET MAC parsing... (%s)", tok[MAC_TOK]);
 
    /* parse the IP range */
-   if (!strcmp(tok[1], ""))
+   if (!strcmp(tok[IP_TOK], ""))
       target->all_ip = 1;
    else
-     for(p = strsep(&tok[1], ";"); p != NULL; p = strsep(&tok[1], ";"))
+     for(p = strsep(&tok[IP_TOK], ";"); p != NULL; p = strsep(&tok[IP_TOK], ";"))
         expand_range_ip(p, target);
   
 #ifdef WITH_IPV6 
-   if(!strcmp(tok[2], ""))
+   if(!strcmp(tok[IPV6_TOK], ""))
       target->all_ip6 = 1;
    else
-      for(p = strsep(&tok[2], ";"); p != NULL; p = strsep(&tok[2], ";"))
+      for(p = strsep(&tok[IPV6_TOK], ";"); p != NULL; p = strsep(&tok[IPV6_TOK], ";"))
          expand_ipv6(p, target);
+#endif 
 
    /* 
     * expand the range into the port bitmap array
     * 1<<16 is MAX_PORTS 
     */
-   if (!strcmp(tok[3], ""))
+   if (!strcmp(tok[PORT_TOK], ""))
       target->all_port = 1;
    else {
-      if (expand_token(tok[3], 1<<16, &add_port, target->ports) == -EFATAL)
+      if (expand_token(tok[PORT_TOK], 1<<16, &add_port, target->ports) == -EFATAL)
          SEMIFATAL_ERROR("Invalid port range");
    }
-#else
-   /* 
-    * expand the range into the port bitmap array
-    * 1<<16 is MAX_PORTS 
-    */
-   if (!strcmp(tok[2], ""))
-      target->all_port = 1;
-   else {
-      if (expand_token(tok[2], 1<<16, &add_port, target->ports) == -EFATAL)
-         SEMIFATAL_ERROR("Invalid port range");
-   }
-#endif 
+
    for(i = 0; i < MAX_TOK; i++)
       SAFE_FREE(tok[i]);
 

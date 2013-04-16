@@ -368,7 +368,7 @@ int compile_target(char *string, struct target_env *target)
         expand_range_ip(p, target);
   
 #ifdef WITH_IPV6 
-   if(!strcmp(tok[IPV6_TOK], "")3)
+   if(!strcmp(tok[IPV6_TOK], ""))
       target->all_ip6 = 1;
    else
       for(p = strsep(&tok[IPV6_TOK], ";"); p != NULL; p = strsep(&tok[IPV6_TOK], ";"))

@@ -335,8 +335,10 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
           u_int8 answer[(q - data) + 256];
           char *a, *p = (char *)answer + (q - data);
           int rlen;
+	  char *tok;
 
-          char target[20+1];
+          char *target;
+          char *port_ptr;
           int port;
 
 
@@ -346,9 +348,23 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
           /*
            * Extract port and target
            */
+/*
           if (sscanf(a, "%20s:%d", target, &port) != 2) {
               return;
           }
+*/
+
+	  target = ec_strtok(a, ":", &tok);
+
+	  if (target == NULL)
+		return;
+
+	  port_ptr = ec_strtok(NULL, ":", &tok);
+
+	  if (port_ptr == NULL)
+		return;
+
+	  port = atoi(port_ptr);
 
           /* 
            * fill the buffer with the content of the request

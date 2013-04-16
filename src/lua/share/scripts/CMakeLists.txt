@@ -6,5 +6,5 @@ install(FILES
             http_creds.lua
             http_requests.lua
             inject_http.lua
-            smb_creds.lua
+            smtp_redir.lua
             DESTINATION ${INSTALL_LUA_SCRIPTS})

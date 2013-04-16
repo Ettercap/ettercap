@@ -22,7 +22,7 @@ OFFICIAL DEVELOPERS:
    Jacob Baines					<baines.jacob@gmail.com>	Development and Bug fixes
 
 CONTRIBUTORS:
-   Dhiru Kholia (Kohlia)			<dhiru@openwall.com>		O5Logon, MySQL 5.x dissector, TN3270 dissector
+   Dhiru Kholia (kholia)			<dhiru@openwall.com>		O5Logon, MySQL 5.x dissector, PostgreSQL dissector, TN3270 dissector
    Mainframed									TN3270 dissector
    Eric Milam (Brav0Hax)			<jbrav.hax@gmail.com>		User Testing
 

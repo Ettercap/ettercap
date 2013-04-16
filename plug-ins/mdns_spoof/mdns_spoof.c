@@ -241,135 +241,143 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
     char name[NS_MAXDNAME];
     int name_len;
     u_char *q, *data, *end;;
-    int16 class;
+    u_int16 class;
     u_int16 type;
+    int x;
 
     mdns = (struct mdns_header *)po->DATA.data;
     data = (u_char *)(mdns+1);
     end = (u_char *)mdns + po->DATA.len;
 
-    if (mdns->flags == 0x8400)
+    q = data;
+
+    if (mdns->flags == 0x8400 || mdns->answer_rrs > 0)
     {
         //We only want queries.
         return;
     }
 
-    name_len = dn_expand((u_char*)mdns, end, data, name, sizeof(name));
+    /* process all the questions */
+    for (x = 0; x < mdns->questions; x++) {
 
-    q = data + name_len;
+      name_len = dn_expand((u_char*)mdns, end, q, name, sizeof(name));
 
-    NS_GET16(type, q);
-    NS_GET16(class, q);
+      q = data + name_len;
 
+      if (q >= end || name_len == 0)
+        return;
 
-    if (mdns->questions > 0) {
-        if(type == ns_t_a) {
-                 struct ip_addr *reply;
-                 u_int8 answer[(q - data) + 16];
-                 u_char *p = answer + (q - data);
-                 char tmp[MAX_ASCII_ADDR_LEN];
-                 
-                 /* found the reply in the list */
-                 if (get_spoofed_a(name, &reply) != ESUCCESS)
-                    return;
-
-                 /* 
-                  * fill the buffer with the content of the request
-                  * we will append the answer just after the request 
-                  */
-                 memcpy(answer, data, q - data);
-                 
-                 /* prepare the answer */
-                 memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
-                 memcpy(p + 2, "\x00\x01", 2);                    /* type A */
-                 memcpy(p + 4, "\x00\x01", 2);                    /* class */
-                 memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
-                 memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
-                 ip_addr_cpy(p + 12, reply);                      /* data */
-
-                 /* send the fake reply */
-                // send_mdns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(mdns->id), answer, sizeof(answer), 0);
-                 
-                 USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), ip_addr_ntoa(reply, tmp));
-         }
-         else if (type == ns_t_ptr) {
-                 u_int8 answer[(q - data) + 256];
-                 char *a, *p = (char*)answer + (q - data);
-                 int rlen;
-                 
-                 /* found the reply in the list */
-                 if (get_spoofed_ptr(name, &a) != ESUCCESS)
-                    return;
-
-                 /* 
-                  * fill the buffer with the content of the request
-                  * we will append the answer just after the request 
-                  */
-                 memcpy(answer, data, q - data);
-                 
-                 /* prepare the answer */
-                 memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
-                 memcpy(p + 2, "\x00\x0c", 2);                    /* type PTR */
-                 memcpy(p + 4, "\x00\x01", 2);                    /* class */
-                 memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
-                 /* compress the string into the buffer */
-                 rlen = dn_comp(a, (u_char*)p + 12, 256, NULL, NULL);
-                 /* put the length before the dn_comp'd string */
-                 p += 10;
-                 NS_PUT16(rlen, p);
-
-                 /* send the fake reply */
-                // send_mdns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(mdns->id), answer, (q - data) + 12 + rlen, 0);
-                 
-                 USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), a);
-        }
-        else if (type == ns_t_srv) {
-            u_int8 answer[(q - data) + 256];
-            char *a, *p = (char *)answer + (q - data);
-            int rlen;
-
-            char target[20+1];
-            int port;
+      NS_GET16(type, q);
+      NS_GET16(class, q);
 
 
-            if (get_spoofed_srv(name, &a) != ESUCCESS) 
-                return;
+      if(type == ns_t_a) {
+         struct ip_addr *reply;
+         u_int8 answer[(q - data) + 16];
+         u_char *p = answer + (q - data);
+         char tmp[MAX_ASCII_ADDR_LEN];
+         
+         /* found the reply in the list */
+         if (get_spoofed_a(name, &reply) != ESUCCESS)
+            return;
 
-            /*
-             * Extract port and target
-             */
-            if (sscanf(a, "%20s:%d", target, &port) != 2) {
-                return;
-            }
+         /* 
+          * fill the buffer with the content of the request
+          * we will append the answer just after the request 
+          */
+         memcpy(answer, data, q - data);
+         
+         /* prepare the answer */
+         memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
+         memcpy(p + 2, "\x00\x01", 2);                    /* type A */
+         memcpy(p + 4, "\x00\x01", 2);                    /* class */
+         memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
+         memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
+         ip_addr_cpy(p + 12, reply);                      /* data */
 
-            /* 
-             * fill the buffer with the content of the request
-             * answer will be appended after the request */
-             memcpy(answer, data, q - data);
+         /* send the fake reply */
+        // send_mdns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(mdns->id), answer, sizeof(answer), 0);
+         
+         USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), ip_addr_ntoa(reply, tmp));
+       }
+       else if (type == ns_t_ptr) {
+         u_int8 answer[(q - data) + 256];
+         char *a, *p = (char*)answer + (q - data);
+         int rlen;
+         
+         /* found the reply in the list */
+         if (get_spoofed_ptr(name, &a) != ESUCCESS)
+            return;
 
-             /* prepare the answer */
-             memcpy(p, "\xc0\x0c", 2);              /* compressed name offset */
-             memcpy(p + 2, "\x00\x21", 2);          /* type SRV */
-             memcpy(p + 4, "\x00\x01", 2);          /* class IN */
-             memcpy(p + 6, "\x00\x00\x02\x10", 4); /* TTL (1 hour) */
+         /* 
+          * fill the buffer with the content of the request
+          * we will append the answer just after the request 
+          */
+         memcpy(answer, data, q - data);
+         
+         /* prepare the answer */
+         memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
+         memcpy(p + 2, "\x00\x0c", 2);                    /* type PTR */
+         memcpy(p + 4, "\x00\x01", 2);                    /* class */
+         memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
+         /* compress the string into the buffer */
+         rlen = dn_comp(a, (u_char*)p + 12, 256, NULL, NULL);
+         /* put the length before the dn_comp'd string */
+         p += 10;
+         NS_PUT16(rlen, p);
 
-             rlen = dn_comp(target, (u_char*)p+18, 256, NULL, NULL);
+         /* send the fake reply */
+        // send_mdns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(mdns->id), answer, (q - data) + 12 + rlen, 0);
+         
+         USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), a);
+      }
+      else if (type == ns_t_srv) {
+          u_int8 answer[(q - data) + 256];
+          char *a, *p = (char *)answer + (q - data);
+          int rlen;
 
-             p+=10;
+          char target[20+1];
+          int port;
 
-             NS_PUT16(rlen, p);
 
-             memcpy(p + 2, "\x00\x00", 2);         /* priority 0 */
-             memcpy(p + 4, "\x00\x00", 2);         /* weight */
+          if (get_spoofed_srv(name, &a) != ESUCCESS) 
+              return;
 
-             p+=6;
-             NS_PUT16(port, p);                  /* port */
+          /*
+           * Extract port and target
+           */
+          if (sscanf(a, "%20s:%d", target, &port) != 2) {
+              return;
+          }
 
-             /* send fake reply */
-             // send_mdns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(mdns->id), answer, sizeof(answer), 0);
+          /* 
+           * fill the buffer with the content of the request
+           * answer will be appended after the request */
+           memcpy(answer, data, q - data);
 
-             USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), a);
-        }
+           /* prepare the answer */
+           memcpy(p, "\xc0\x0c", 2);              /* compressed name offset */
+           memcpy(p + 2, "\x00\x21", 2);          /* type SRV */
+           memcpy(p + 4, "\x00\x01", 2);          /* class IN */
+           memcpy(p + 6, "\x00\x00\x02\x10", 4); /* TTL (1 hour) */
+
+           rlen = dn_comp(target, (u_char*)p+18, 256, NULL, NULL);
+
+           p+=10;
+
+           NS_PUT16(rlen, p);
+
+           memcpy(p + 2, "\x00\x00", 2);         /* priority 0 */
+           memcpy(p + 4, "\x00\x00", 2);         /* weight */
+
+           p+=6;
+           NS_PUT16(port, p);                  /* port */
+
+           /* send fake reply */
+           // send_mdns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(mdns->id), answer, sizeof(answer), 0);
+
+           USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), a);
+      }
     }
 
 

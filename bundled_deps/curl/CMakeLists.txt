@@ -3,7 +3,7 @@
 # This will build curl using the release that we've included with
 # our distribution of ettercap.
 include(ExternalProject)
-SET(CURL_VERSION 7.29.0)
+SET(CURL_VERSION 7.30.0)
 SET(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(CURL_TARGET bundled-curl-${CURL_VERSION}-${CMAKE_BUILD_TYPE})
 SET(CURL_BUILD_ROOT ${PROJECT_BINARY_DIR}/${CURL_TARGET})

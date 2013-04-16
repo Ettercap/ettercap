@@ -129,12 +129,23 @@ has_data = function(packet_object)
   return (not (packet_object.DATA == nil) and packet_object.DATA.len > 0)
 end
 
+-- @return string  like "1.2.3.4:1234 -> 8.8.8.8:53"
+l4_summary = function(po)
+  return string.format("%s:%s -> %s:%s",
+      packet.src_ip(po),
+      packet.src_port(po), 
+      packet.dst_ip(po), 
+      packet.dst_port(po))
+end
+
 -- Define all the fun little methods.
 local packet = {
   read_data = read_data,
   set_data = set_data,
   is_tcp = is_tcp,
   is_udp = is_udp,
+
+  l4_summary = l4_summary,
 
   set_dropped = set_dropped,
   set_modified = set_modified,

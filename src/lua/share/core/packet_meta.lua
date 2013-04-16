@@ -25,6 +25,9 @@ local po_mt = {
     has_data = function(po) return packet.has_data(po) end,
     is_tcp = function(po) return packet.is_tcp(po) end,
     is_udp = function(po) return packet.is_udp(po) end,
+
+    l4_summary = function(po) return packet.l4_summary(po) end,
+
     read_data = function(po, length) return packet.read_data(po, length) end,
     set_data = function(po, data) return packet.set_data(po, data) end,
     src_ip = function(po) return packet.src_ip(po) end,

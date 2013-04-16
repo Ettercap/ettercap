@@ -27,6 +27,11 @@
 #    workgroup WINS 127.0.0.1                                              #
 #    PC*       WINS 127.0.0.1                                              #
 #                                                                          #
+#									   #
+# or for SRV query:							   #
+#    service   SRV target:port						   #
+#    xmpp-server._tcp.blah.com SRV 1.2.3.4:5269				   # 
+#									   #
 # NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
 #       so if you want to reverse poison you have to specify a plain       #
 #       host. (look at the www.microsoft.com example)                      #

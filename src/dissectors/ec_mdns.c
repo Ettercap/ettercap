@@ -56,6 +56,9 @@ FUNC_DECODER(dissector_mdns)
 
     PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
     questions = ntohs(*((uint16_t*)ptr + 4));
+
+    hook_point(HOOK_PROTO_MDNS, PACKET);
+
     if (questions > 0)
     {
         //skip packets with questions for now. Makes parsing easier

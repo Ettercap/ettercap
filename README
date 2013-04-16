@@ -80,6 +80,10 @@ OPTIONAL:
    For the SSLStrip plugin
       - Curl      >= 7.26.0
 
+If you are running on debian, or any debian based distro you can install the required dependencies by running:
+apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses-dev libncurses5-dev libnet1-dev \
+ libpcap-dev libpcre3-dev libssl-dev libcurl4-openssl-dev ghostscript 
+
 ============================================================================
                                    LICENSE
 ============================================================================

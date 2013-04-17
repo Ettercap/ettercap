@@ -1,0 +1,67 @@
+specify getopt:
+- before:
+    getopt = require "getopt"
+
+- "describe getopt.getOpt":
+  - before: |
+      prog = {
+        name = "getopt_spec.lua",
+        options = { {{"verbose", "v"}, "verbosely list files"},
+                    {{"output", "o"}, "dump to FILE", "Opt", "FILE"},
+                    {{"name", "n"}, "only dump USER's files", "Req", "USER"},
+                  }
+      }
+
+      function test (cmdLine, stop_at_nonopt)
+        local nonOpts, opts, errors = getopt.getOpt (cmdLine, prog.options, stop_at_nonopt)
+        if #errors == 0 then
+          return { options = opts, args = nonOpts }
+        else
+          return errors
+        end
+      end
+
+      getopt.processArgs (prog)
+
+  - it recognizes a user defined option:
+      expect (test {"foo", "-v"}).should_equal (
+          { options = { verbose = {1}}, args = { "foo" } })
+  - "it treats -- as the end of the option list":
+      expect (test {"foo", "--", "-v"}).should_equal (
+          { options = {}, args = { "foo", "-v" } })
+  - it captures a list of repeated option arguments:
+      expect (test {"-o", "-V", "-name", "bar", "--name=baz"}).should_equal (
+          { options = { name = {"bar", "baz"}, version = {1}, output = {1}},
+            args = {} })
+  - it diagnoses unrecognized options:
+      expect (test {"-foo"}).should_contain "unrecognized option `-foo'"
+  - it stops option parsing at the first non-option if told to:
+      expect (test ({"foo", "-bar"}, true)).should_equal (
+          { options = {}, args = {"foo", "-bar"} })
+
+- "describe getopt.usageInfo":
+  - context when specifying options:
+    - before:
+        helppatt    = "%-h, %-%-help%s+print this help, then exit"
+        versionpatt = "%-V, %-%-version%s+print version information, then exit"
+        prog        = { name = "getopt_spec.lua", options = {} }
+        options     = { {{"help", "?"}, "display this help"},
+                        {{"version"}, "display version number"} }
+        f           = getopt.usageInfo
+
+    - it provides a default version option:
+        getopt.processArgs (prog)
+        expect (f ("", prog.options)).should_match (versionpatt)
+    - it allows the user to override the version option:
+        prog.options = options
+        getopt.processArgs (prog)
+        expect (f ("", prog.options)).should_not_match (versionpatt)
+        expect (f ("", prog.options)).should_match ("  %-%-version%s+display")
+    - it provides a default help option:
+        getopt.processArgs (prog)
+        expect (f ("", prog.options)).should_match (helppatt)
+    - it allows the user to override the help option:
+        prog.options = options
+        getopt.processArgs (prog)
+        expect (f ("", prog.options)).should_not_match (helppatt)
+        expect (f ("", prog.options)).should_match ("%-%?, %-%-help%s+display")

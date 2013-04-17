@@ -40,6 +40,9 @@
 #include <ec_conf.h>
 #include <ec_mitm.h>
 #include <ec_sslwrap.h>
+#ifdef HAVE_EC_LUA
+#include <ec_lua.h>
+#endif
 
 /* global vars */
 
@@ -149,6 +152,11 @@ int main(int argc, char *argv[])
    /* load http known fileds for user/pass */
    http_fields_init();
 
+#ifdef HAVE_EC_LUA
+   /* Initialize lua */
+   ec_lua_init();
+#endif
+
    /* set the encoding for the UTF-8 visualization */
    set_utf8_encoding((u_char*)GBL_CONF->utf8_encoding);
   
@@ -245,6 +253,11 @@ void clean_exit(int errcode)
    DEBUG_MSG("clean_exit: %d", errcode);
   
    INSTANT_USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
+
+#ifdef HAVE_EC_LUA
+   /* Cleanup lua */
+   ec_lua_fini();
+#endif
 
    /* flush the exit message */
    ui_msg_flush(MSG_ALL);

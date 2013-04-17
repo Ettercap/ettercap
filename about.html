@@ -68,11 +68,11 @@ Email Us: ettercap.project -at- gmail.com
 	<br /><br />
 	These distributions have been tested in both 32 and 64 bit flavors where possible
 	<ul class="fancy_list">
-		<li class="circle_arrow">Debian/Ubuntu (Includes derivatives such as BackTrack, Mint, etc)</li>
+		<li class="circle_arrow">Debian/Ubuntu (Includes derivatives such as Kali, BackTrack, Mint, etc)</li>
 		<li class="circle_arrow">Fedora</li>
 		<li class="circle_arrow">Gentoo</li>
 		<li class="circle_arrow">Pentoo</li>
-		<li class="circle_arrow">Mac OSX (Snow Leopard & Lion)</li>
+		<li class="circle_arrow">Mac OSX (Snow Leopard &amp; Lion)</li>
 		<li class="circle_arrow">FreeBSD</li>
 		<li class="circle_arrow">OpenBSD</li>
 		<li class="circle_arrow">NetBSD</li>
@@ -86,6 +86,7 @@ Email Us: ettercap.project -at- gmail.com
 		<li class="circle_arrow">Solaris</li>
 		<li class="circle_arrow">Windows Vista</li>
 		<li class="circle_arrow">Windows 7</li>
+		<li class="circle_arrow">Windows 8</li>
 	</ul>
 
 	</div>
@@ -95,10 +96,9 @@ Email Us: ettercap.project -at- gmail.com
 	<br /><br />
 	Ettercap source compilation requires the following dependencies
 	<ul class="fancy_list">
-		<li class="circle_arrow">Libpcap & dev libraries</li>
-		<li class="circle_arrow">Libnet1 & dev libraries</li>
-		<li class="circle_arrow">Libnet6 & dev libraries</li>
-		<li class="circle_arrow">Libpthread & dev libraries</li>
+		<li class="circle_arrow">Libpcap &amp; dev libraries</li>
+		<li class="circle_arrow">Libnet1 &amp; dev libraries</li>
+		<li class="circle_arrow">Libpthread &amp; dev libraries</li>
 		<li class="circle_arrow">Zlibc</li>
 		<li class="circle_arrow">Libtool</li>
 		<li class="circle_arrow">CMake 2.6</li>
@@ -106,19 +106,19 @@ Email Us: ettercap.project -at- gmail.com
 		<li class="circle_arrow">Bison</li>
 		<li class="circle_arrow">SSL Dissection Required Dependencies
 			<ul class="fancy_list">
-			<li>LibSSL & dev libraries</li></ul>
+			<li>LibSSL &amp; dev libraries</li></ul>
 		</li>			
 		<li class="circle_arrow">GTK Related Dependencies
 			<ul class="fancy_list">
-			<li>LibGTK & dev libraries</li></ul>
+			<li>LibGTK &amp; dev libraries</li></ul>
 		</li>
 		<li class="circle_arrow">NCurses Related Dependencies
 			<ul class="fancy_list">
-			<li>Libncurses & dev libraries</li></ul>
+			<li>Libncurses &amp; dev libraries</li></ul>
 		</li>
 		<li class="circle_arrow">Filter Related Regex Dependencies
 			<ul class="fancy_list">
-			<li>Libpcre & dev libraries</li></ul>
+			<li>Libpcre &amp; dev libraries</li></ul>
 		</li>
 	</ul>
 	</div>
@@ -126,7 +126,11 @@ Email Us: ettercap.project -at- gmail.com
 	
 <div class="box ">
 When building from source, dependencies should be found in the supported distribution repositories. Try these first before acquiring from external dependency source pages. All supported builds have been tested with dependencies installed from the distribution repository.
-
+<br />
+If you are running on debian, or any debian based distro you can install the required dependencies by running:
+<br />
+<pre><code>sudo apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses-dev libncurses5-dev\
+ libnet1-dev libpcap-dev libpcre3-dev libssl-dev libcurl4-openssl-dev ghostscript </code></pre>
 
 <br /><br />
 </div>

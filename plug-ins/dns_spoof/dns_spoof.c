@@ -71,6 +71,7 @@ struct dns_spoof_entry {
    int   type;   /* ns_t_a, ns_t_mx, ns_t_ptr, ns_t_wins */
    char *name;
    struct ip_addr ip;
+   char *target;
    SLIST_ENTRY(dns_spoof_entry) next;
 };
 
@@ -88,6 +89,7 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip);
 static int get_spoofed_ptr(const char *arpa, char **a);
 static int get_spoofed_mx(const char *a, struct ip_addr **ip);
 static int get_spoofed_wins(const char *a, struct ip_addr **ip);
+static int get_spoofed_srv(const char *name, char **target);
 char *type_str(int type);
 static void dns_spoof_dump(void);
 
@@ -184,17 +186,25 @@ static int load_db(void)
         
       /* convert the ip address */
       if (inet_aton(ip, &ipaddr) == 0) {
-         USER_MSG("%s:%d Invalid ip address\n", ETTER_DNS, lines);
-         continue;
+
+        if (type != ns_t_srv) {
+           USER_MSG("%s:%d Invalid ip address\n", ETTER_DNS, lines);
+           continue;
+         }
       }
         
       /* create the entry */
       SAFE_CALLOC(d, 1, sizeof(struct dns_spoof_entry));
-
-      /* fill the struct */
-      ip_addr_init(&d->ip, AF_INET, (u_char *)&ipaddr);
       d->name = strdup(name);
       d->type = type;
+
+      if (type != ns_t_srv) {
+        /* fill the struct */
+        ip_addr_init(&d->ip, AF_INET, (u_char *)&ipaddr);
+      } else {
+        d->target = strdup(ip);
+      }
+
 
       /* insert in the list */
       SLIST_INSERT_HEAD(&dns_spoof_head, d, next);
@@ -254,6 +264,13 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
       return (1);
    }
 
+   if (!strcasecmp(type, "SRV")) {
+       *type_p = ns_t_srv;
+       *name_p = name;
+       *ip_p = ip;
+       return (1);
+   }
+
    USER_MSG("%s:%d Unknown record type %s\n", ETTER_DNS, line, type);
    return (0);
 }
@@ -283,6 +300,7 @@ static void dns_spoof(struct packet_object *po)
    /* get the type and class */
    NS_GET16(type, q);
    NS_GET16(class, q);
+
       
    /* handle only internet class */
    if (class != ns_c_in)
@@ -427,6 +445,62 @@ static void dns_spoof(struct packet_object *po)
          send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer), 1);
 
          USER_MSG("dns_spoof: WINS [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
+      } else if (type == ns_t_srv) {
+            u_int8 answer[(q - data) + 256];
+            char *a, *p = (char *)answer + (q - data);
+            int rlen;
+
+            char *target, *port_ptr;
+            int port;
+
+
+            if (get_spoofed_srv(name, &a) != ESUCCESS) 
+                return;
+
+
+            /*
+             * Extract port and target
+             */
+             char *tok;
+
+             target = ec_strtok(a, ":", &tok);
+	     if (target == NULL)
+		return;
+
+	     port_ptr = ec_strtok(NULL, ":", &tok);
+             if (port_ptr == NULL)
+	        return;
+ 
+ 	     port = atoi(port_ptr);
+
+
+            /* 
+             * fill the buffer with the content of the request
+             * answer will be appended after the request */
+             memcpy(answer, data, q - data);
+
+             /* prepare the answer */
+             memcpy(p, "\xc0\x0c", 2);              /* compressed name offset */
+             memcpy(p + 2, "\x00\x21", 2);          /* type SRV */
+             memcpy(p + 4, "\x00\x01", 2);          /* class IN */
+             memcpy(p + 6, "\x00\x00\x02\x10", 4); /* TTL (1 hour) */
+
+             rlen = dn_comp(target, (u_char*)p+18, 256, NULL, NULL);
+
+             p+=10;
+
+             NS_PUT16(rlen, p);
+
+             memcpy(p + 2, "\x00\x00", 2);         /* priority 0 */
+             memcpy(p + 4, "\x00\x00", 2);         /* weight */
+
+             p+=6;
+             NS_PUT16(port, p);                  /* port */
+
+             /* send fake reply */
+             // send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(mdns->id), answer, sizeof(answer), 0);
+
+             USER_MSG("dns_spoof: [%s %s] spoofed to [%s:%d]\n", name, type_str(type), target, port);
       }
    }
 }
@@ -533,12 +607,31 @@ static int get_spoofed_wins(const char *a, struct ip_addr **ip)
    return -ENOTFOUND;
 }
 
+/*
+ * return the target for the SRV request
+ */
+static int get_spoofed_srv(const char *name, char **target) 
+{
+    struct dns_spoof_entry *d;
+
+    SLIST_FOREACH(d, &dns_spoof_head, next) {
+        if (d->type == ns_t_srv && match_pattern(name, d->name)) {
+            *target = d->target;
+
+            return ESUCCESS;
+        }
+    }
+
+    return -ENOTFOUND;
+}
+
 char *type_str (int type)
 {
    return (type == ns_t_a    ? "A" :
            type == ns_t_ptr  ? "PTR" :
            type == ns_t_mx   ? "MX" :
-           type == ns_t_wins ? "WINS" : "??");
+           type == ns_t_wins ? "WINS" : 
+           type == ns_t_srv ? "SRV" : "??");
 }
 
 static void dns_spoof_dump(void)

@@ -28,6 +28,10 @@
 
 #include <signal.h>
 
+#ifdef HAVE_EC_LUA
+#include <ec_lua.h>
+#endif
+
 #ifndef OS_WINDOWS
    #include <sys/resource.h>
    #include <sys/wait.h>
@@ -153,6 +157,12 @@ static void signal_SEGV(int sig)
    fprintf (stderr, "============================================================================\n");
    
    fprintf (stderr, EC_COLOR_CYAN"\n Core dumping... (use the 'core' file for gdb analysis)\n\n"EC_COLOR_END);
+#ifdef HAVE_EC_LUA
+   fprintf (stderr, EC_COLOR_CYAN" Lua stack trace: \n"EC_COLOR_END);
+   // Let's try to print the lua stack trace, maybe.
+   ec_lua_print_stack(stderr);
+   fprintf (stderr, "\n");
+#endif
    fprintf (stderr, EC_COLOR_YELLOW" Have a nice day!\n"EC_COLOR_END);
    
    /* force the coredump */

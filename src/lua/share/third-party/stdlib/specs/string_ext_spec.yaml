@@ -1,0 +1,391 @@
+specify string_ext:
+- before:
+    unextended = require "string_ext"
+    subject = "a string \n\n"
+
+- "describe .. operator":
+  - it concatenates string arguments:
+      target = "a string \n\n another string"
+      expect (subject .. " another string").should_be (target)
+  - "it stringifies non-string arguments":
+      argument = { "a table" }
+      expect (subject .. argument).should_match (string.format ("%s{1=a table}", subject))
+  - it stringifies nil arguments:
+      argument = nil
+      expect (subject .. argument).should_be (string.format ("%s%s", subject, tostring (argument)))
+  - the original subject is not perturbed:
+      original = subject
+      newstring = subject .. " concatenate something"
+      expect (subject).should_be (original)
+
+- "describe string.caps ()":
+  - before:
+      f = string.caps
+  - it capitalises words of a string:
+      target = "A String \n\n"
+      expect (f (subject)).should_be (target)
+  - it changes only the first letter of each word:
+      expect (f "a stRiNg").should_be "A StRiNg"
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject)
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+- "describe string.chomp ()":
+  - before:
+      f = string.chomp
+  - it removes a single trailing newline from a string:
+      target = "a string \n"
+      expect (f (subject)).should_be (target)
+  - it does not change a string with no trailing newline:
+      subject = "a string "
+      expect (f (subject)).should_be (subject)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject)
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+- "describe string.escape_pattern ()":
+  - before:
+      f = string.escape_pattern
+  - "it inserts a % before any non-alphanumeric in a string":
+      subject, target = "", ""
+      for c = 32, 126 do
+        s = string.char (c)
+        subject = subject .. s
+        if s:match ("%W") then target = target .. "%" end
+        target = target .. s
+      end
+      expect (f (subject)).should_be (target)
+  - legacy escapePattern call is the same function:
+      expect (string.escapePattern).should_be (f)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject)
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+- "describe string.escape_shell ()":
+  - before:
+      f = string.escape_shell
+  - "it inserts a \\ before any shell metacharacters":
+      subject, target = "", ""
+      for c = 32, 126 do
+        s = string.char (c)
+        subject = subject .. s
+        if s:match ("[][ ()\\\"']") then target = target .. "\\" end
+        target = target .. s
+      end
+      expect (f (subject)).should_be (target)
+  - legacy escapeShell call is the same function:
+      expect (string.escapeShell).should_be (f)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject)
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+- "describe string.finds ()":
+  - before:
+      subject = "abcd"
+      f = string.finds
+  - it creates a list of pattern captures:
+      target = { { 1, 2; capt = { "a", "b" } }, { 3, 4; capt = { "c", "d" } } }
+      expect ({f (subject, "(.)(.)")}).should_equal ({ target })
+  - it creates an empty list where no captures are matched:
+      target = {}
+      expect ({f (subject, "(x)")}).should_equal ({ target })
+  - it creates an empty list for a pattern without captures:
+      target = { { 1, 1; capt = {} } }
+      expect ({f (subject, "a")}).should_equal ({ target })
+  - it starts the search at a specified index into the subject:
+      target = { { 8, 9; capt = { "a", "b" } }, { 10, 11; capt = { "c", "d" } } }
+      expect ({f ("garbage" .. subject, "(.)(.)", 8)}).should_equal ({ target })
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject, "...")
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+# FIXME: This looks like a misfeature to me, let's remove it!
+- "describe string.format ()":
+  - before: |
+      subject = "string: %s, number: %d"
+      f = string.format
+  - it returns a single argument without attempting formatting:
+      expect (f (subject)).should_be (subject)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject)
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil, "arg")
+      expect ("string expected").should_error (f, { "a table" }, "arg")
+
+
+- "describe string.ltrim ()":
+  - before:
+      subject = " \t\r\n  a  short  string  \t\r\n   "
+      f = string.ltrim
+  - it removes whitespace from the start of a string:
+      target = "a  short  string  \t\r\n   "
+      expect (f (subject)).should_equal (target)
+  - it supports custom removal patterns:
+      target = "\r\n  a  short  string  \t\r\n   "
+      expect (f (subject, "[ \t\n]+")).should_equal (target)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject, "%W")
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+- "describe string.numbertosi ()":
+  - before:
+      f = string.numbertosi
+  - it returns a number using SI suffixes:
+      target = {"1e-9", "1y", "1z", "1a", "1f", "1p", "1n", "1mu", "1m", "1",
+                "1k", "1M", "1G", "1T", "1P", "1E", "1Z", "1Y", "1e9"}
+      subject = {}
+      for n = -28, 28, 3 do
+        m = 10 * (10 ^ n)
+        table.insert (subject, f (m))
+      end
+      expect (subject).should_equal (target)
+  - it coerces string arguments to a number:
+      expect (f "1000").should_be "1k"
+  - "it diagnoses non-numeric arguments":
+      expect ("attempt to perform arithmetic").should_error (f, nil)
+      expect ("number expected").should_error (f, { "a table" })
+
+
+- "describe string.ordinal_suffix ()":
+  - before:
+      f = string.ordinal_suffix
+  - it returns the English suffix for a number:
+      subject, target = {}, {}
+      for n = -120, 120 do
+        suffix = "th"
+        m = math.abs (n) % 10
+        if m == 1 and math.abs (n) % 100 ~= 11 then suffix = "st"
+        elseif m == 2 and math.abs (n) % 100 ~= 12 then suffix = "nd"
+        elseif m == 3 and math.abs (n) % 100 ~= 13 then suffix = "rd"
+        end
+        table.insert (target, n .. suffix)
+        table.insert (subject, n .. f (n))
+      end
+      expect (subject).should_equal (target)
+  - legacy ordinalSuffix call is the same function:
+      expect (string.ordinalSuffix).should_be (f)
+  - it coerces string arguments to a number:
+      expect (f "-91").should_be "st"
+  - "it diagnoses non-numeric arguments":
+      expect ("number expected").should_error (f, nil)
+      expect ("number expected").should_error (f, { "a table" })
+
+
+- "describe string.pad ()":
+  - before:
+      width = 20
+      f = string.pad
+
+  - context when string is shorter than given width:
+    - before:
+        subject = "short string"
+    - it right pads a string to the given width with spaces:
+        target = "short string        "
+        expect (f (subject, width)).should_be (target)
+    - it left pads a string to the given negative width with spaces:
+        width = -width
+        target = "        short string"
+        expect (f (subject, width)).should_be (target)
+
+  - context when string is longer than given width:
+    - before:
+        subject = "a string that's longer than twenty characters"
+    - it truncates a string to the given width:
+        target = "a string that's long"
+        expect (f (subject, width)).should_be (target)
+    - it left pads a string to given width with spaces:
+        width = -width
+        target = "an twenty characters"
+        expect (f (subject, width)).should_be (target)
+
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject, width)
+      expect (subject).should_be (original)
+  - "it coerces non-string arguments to a string":
+      expect (f ({ "a table" }, width)).should_contain "a table"
+  - "it diagnoses non-numeric width arguments":
+      expect ("number expected").should_error (f, subject, nil)
+      expect ("number expected").should_error (f, subject, { "a table" })
+
+
+- "describe string.rtrim ()":
+  - before:
+      subject = " \t\r\n  a  short  string  \t\r\n   "
+      f = string.rtrim
+  - it removes whitespace from the end of a string:
+      target = " \t\r\n  a  short  string"
+      expect (f (subject)).should_equal (target)
+  - it supports custom removal patterns:
+      target = " \t\r\n  a  short  string  \t\r"
+      expect (f (subject, "[ \t\n]+")).should_equal (target)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject, "%W")
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+- "describe string.split ()":
+  - before:
+      target = { "first", "the second one", "final entry" }
+      subject = table.concat (target, ", ")
+      f = string.split
+  - it makes a table of substrings delimitied by a separator:
+      expect (f (subject,  ", ")).should_equal (target)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject, "e")
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, "a string", nil)
+      expect ("string expected").should_error (f, nil, ",")
+      expect ("string expected").should_error (f, { "a table" }, ",")
+
+
+- "describe string.tfind ()":
+  - before:
+      subject = "abc"
+      f = string.tfind
+  - it creates a list of pattern captures:
+      target = { 1, 3, { "a", "b", "c" } }
+      expect ({f (subject, "(.)(.)(.)")}).should_equal (target)
+  - it creates an empty list where no captures are matched:
+      target = { nil, nil, {} }
+      expect ({f (subject, "(x)(y)(z)")}).should_equal (target)
+  - it creates an empty list for a pattern without captures:
+      target = { 1, 1, {} }
+      expect ({f (subject, "a")}).should_equal (target)
+  - it starts the search at a specified index into the subject:
+      target = { 8, 10, { "a", "b", "c" } }
+      expect ({f ("garbage" .. subject, "(.)(.)(.)", 8)}).should_equal (target)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject, "...")
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+- "describe string.trim ()":
+  - before:
+      subject = " \t\r\n  a  short  string  \t\r\n   "
+      f = string.trim
+  - it removes whitespace from each end of a string:
+      target = "a  short  string"
+      expect (f (subject)).should_equal (target)
+  - it supports custom removal patterns:
+      target = "\r\n  a  short  string  \t\r"
+      expect (f (subject, "[ \t\n]+")).should_equal (target)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject, "%W")
+      expect (subject).should_be (original)
+  - "it diagnoses non-string arguments":
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+- "describe string.wrap ()":
+  - before:
+      subject = "This is a collection of Lua libraries for Lua 5.1 " ..
+        "and 5.2. The libraries are copyright by their authors 2000" ..
+        "-2013 (see the AUTHORS file for details), and released und" ..
+        "er the MIT license (the same license as Lua itself). There" ..
+        " is no warranty."
+      f = string.wrap
+  - it inserts newlines to wrap a string:
+      target = "This is a collection of Lua libraries for Lua 5.1 a" ..
+        "nd 5.2. The libraries are\ncopyright by their authors 2000" ..
+        "-2013 (see the AUTHORS file for details), and\nreleased un" ..
+        "der the MIT license (the same license as Lua itself). Ther" ..
+        "e is no\nwarranty."
+      expect (f (subject)).should_be (target)
+  - it honours a column width parameter:
+      target = "This is a collection of Lua libraries for Lua 5.1 a" ..
+        "nd 5.2. The libraries\nare copyright by their authors 2000" ..
+        "-2013 (see the AUTHORS file for\ndetails), and released un" ..
+        "der the MIT license (the same license as Lua\nitself). The" ..
+        "re is no warranty."
+      expect (f (subject, 72)).should_be (target)
+  - it supports indenting by a fixed number of columns:
+      target = "        This is a collection of Lua libraries for L" ..
+        "ua 5.1 and 5.2. The\n        libraries are copyright by th" ..
+        "eir authors 2000-2013 (see the\n        AUTHORS file for d" ..
+        "etails), and released under the MIT license\n        (the " ..
+        "same license as Lua itself). There is no warranty."
+      expect (f (subject, 72, 8)).should_be (target)
+  - it can indent the first line differently:
+      target = "    This is a collection of Lua libraries for Lua 5" ..
+        ".1 and 5.2.\n  The libraries are copyright by their author" ..
+        "s 2000-2013 (see\n  the AUTHORS file for details), and rel" ..
+        "eased under the MIT\n  license (the same license as Lua it" ..
+        "self). There is no\n  warranty."
+      expect (f (subject, 64, 2, 4)).should_be (target)
+  - the original subject is not perturbed:
+      original = subject
+      newstring = f (subject, 55, 5)
+      expect (subject).should_be (original)
+  - it diagnoses indent greater than line width:
+      expect ("less than the line width").should_error (f, subject, 10, 12)
+      expect ("less than the line width").should_error (f, subject, 99, 99)
+  - it diagnoses non-string arguments:
+      expect ("string expected").should_error (f, nil)
+      expect ("string expected").should_error (f, { "a table" })
+
+
+- context when requiring the module:
+  - before:
+      extensions = { "caps", "chomp", "escape_pattern", "escape_shell",
+                     "finds", "format", "ltrim", "numbertosi",
+                     "ordinal_suffix", "pad", "rtrim", "split", "tfind",
+                     "trim", "wrap" }
+  - it returns the unextended module table:
+      for _, api in ipairs (extensions) do
+        if api ~= "format" then
+          expect (unextended[api]).should_be (nil)
+        end
+      end
+  - it injects an enhanced format function:
+      expect (unextended.format).should_not_be (table.format)
+  - it does not override any other module access points:
+      for api in pairs (unextended) do
+        if api ~= "format" then
+          expect (string[api]).should_be (unextended[api])
+        end
+      end

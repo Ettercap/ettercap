@@ -1,0 +1,51 @@
+                        Standard Lua libraries
+                        ----------------------
+
+     by the stdlib project (http://github.com/rrthomas/lua-stdlib/)
+
+
+This is a collection of Lua libraries for Lua 5.1 and 5.2. The
+libraries are copyright by their authors 2000-2013 (see the AUTHORS
+file for details), and released under the MIT license (the same
+license as Lua itself). There is no warranty.
+
+The standard subset of stdlib has no prerequisites beyond a standard
+Lua system. The following modules have extra dependencies:
+
+  fstable: Lua 5.2, lfs, luaposix
+
+
+Installation
+------------
+
+The simplest way to install stdlib is with LuaRocks
+(http://www.luarocks.org/ ):
+
+  luarocks install stdlib
+
+
+Use
+---
+
+As well as requiring individual libraries, you can load the standard
+set with
+
+  require "std"
+
+Modules not in the standard set may be removed from future versions of
+stdlib.
+
+
+Documentation
+-------------
+
+The libraries are documented in LuaDoc. Pre-built HTML files are
+included.
+
+
+Bug reports and code contributions
+----------------------------------
+
+These libraries are maintained and extended by their users. Please
+make bug report and suggestions on GitHub (see URL at top of file).
+Pull requests are especially appreciated.

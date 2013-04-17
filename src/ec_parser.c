@@ -32,6 +32,9 @@
 #include <ec_conf.h>
 #include <ec_strings.h>
 #include <ec_encryption.h>
+#ifdef HAVE_EC_LUA
+#include <ec_lua.h>
+#endif
 
 #include <ctype.h>
 
@@ -97,6 +100,12 @@ void ec_usage(void)
    fprintf(stdout, "  -e, --regex <regex>         visualize only packets matching this regex\n");
    fprintf(stdout, "  -E, --ext-headers           print extended header for every pck\n");
    fprintf(stdout, "  -Q, --superquiet            do not display user and password\n");
+
+#ifdef HAVE_EC_LUA
+   fprintf(stdout, "\nLUA options:\n");
+   fprintf(stdout, "      --lua-script <script1>,[<script2>,...]     comma-separted list of LUA scripts\n");
+   fprintf(stdout, "      --lua-args n1=v1,[n2=v2,...]               comma-separated arguments to LUA script(s)\n");
+#endif
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
@@ -145,6 +154,10 @@ void parse_options(int argc, char **argv)
       { "plugin", required_argument, NULL, 'P' },
       
       { "filter", required_argument, NULL, 'F' },
+#ifdef HAVE_EC_LUA
+      { "lua-script", required_argument, NULL, 0 },
+      { "lua-args", required_argument, NULL, 0 },
+#endif
       
       { "superquiet", no_argument, NULL, 'Q' },
       { "quiet", no_argument, NULL, 'q' },
@@ -414,6 +427,14 @@ void parse_options(int argc, char **argv)
 			GBL_OPTIONS->ssl_cert = strdup(optarg);	
 		} else if (!strcmp(long_options[option_index].name, "private-key")) {
 			GBL_OPTIONS->ssl_pkey = strdup(optarg);
+#ifdef HAVE_EC_LUA
+                } else if (!strcmp(long_options[option_index].name,"lua-args")) {
+                    ec_lua_cli_add_args(strdup(optarg));
+                } 
+                else if (!strcmp(long_options[option_index].name,"lua-script")) {
+                    ec_lua_cli_add_script(strdup(optarg));
+        break;
+#endif
 		} else {
 			fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
 			clean_exit(-1);
@@ -494,7 +515,6 @@ void parse_options(int argc, char **argv)
    } */
 
    DEBUG_MSG("parse_options: options combination looks good");
-   
    return;
 }
 

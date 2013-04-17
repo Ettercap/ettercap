@@ -8,10 +8,15 @@ option(ENABLE_GTK "Enable GTK interface" ON)
 option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
+option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
 
 # Default to using "Release" as our build type.
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
   "Choose the type of build, options are: Debug Release.")
+
+# Ensure that, when we link to stuff outside of our build path, we include the
+# library dir path in our RPATH.
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 include(CMakeDependentOption)
 
@@ -39,6 +44,14 @@ CMAKE_DEPENDENT_OPTION(SYSTEM_LIBNET
 CMAKE_DEPENDENT_OPTION(BUNDLED_LIBNET 
   "Use bundled version of LIBNET if system-provided version is not found (or disabled)" ON
   BUNDLED_LIBS OFF)
+
+CMAKE_DEPENDENT_OPTION(SYSTEM_LUAJIT
+  "Search for a system-provided version of LUAJIT" ON
+  "SYSTEM_LIBS;ENABLE_LUA" OFF)
+
+CMAKE_DEPENDENT_OPTION(BUNDLED_LUAJIT
+  "Use bundled version of LUAJIT if system-provided version is not found (or disabled)" ON
+  "BUNDLED_LIBS;ENABLE_LUA" OFF)
 
 set(MACPORTS_BASE_DIRECTORY "/opt/local" CACHE PATH "MacPorts installation base directory")
 set(SPECIAL_LIB_DIR "" CACHE PATH "Special (non-traditional) directory where libraries are installed")
@@ -82,9 +95,13 @@ set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl,-export-dynamic -pg" CACHE STRING "" FORCE
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-export-dynamic" CACHE STRING "" FORCE)
 endif(OS_DARWIN)
 
+if(ENABLE_LUA)
+  include(CMakeFiles/luajit.cmake)
+  set(HAVE_EC_LUA 1)
+endif(ENABLE_LUA)
 
-
-include_directories(include)
+set(EC_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/include)
+include_directories(${EC_INCLUDE_PATH})
 
 add_subdirectory(src)
 

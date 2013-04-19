@@ -35,6 +35,10 @@ if(NOT HAVE_GETOPT_LONG)
     set(EF_SRC ${EF_SRC} ${CMAKE_SOURCE_DIR}/src/missing/getopt.c)
 endif(NOT HAVE_GETOPT_LONG)
 
+if(NOT HAVE_STRNDUP)
+    set(EF_SRC ${EF_SRC} ${CMAKE_SOURCE_DIR}/src/missing/strndup.c)
+endif(NOT HAVE_STRNDUP)
+
 find_package(BISON)
 find_package(FLEX)
 BISON_TARGET(EF_PARSER etterfilter/ef_grammar.y ${CMAKE_CURRENT_BINARY_DIR}/ef_grammar.c)
@@ -101,6 +105,10 @@ endif(NOT HAVE_INET_ATON)
 if(NOT HAVE_GETOPT_LONG)
     set(EL_SRC ${EL_SRC} ${CMAKE_SOURCE_DIR}/src/missing/getopt.c)
 endif(NOT HAVE_GETOPT_LONG)
+
+if(NOT HAVE_STRNDUP)
+    set(EF_SRC ${EF_SRC} ${CMAKE_SOURCE_DIR}/src/missing/strndup.c)
+endif(NOT HAVE_STRNDUP)
 
 add_executable(etterlog ${EL_SRC})
 target_link_libraries(etterlog ${EL_LIBS})

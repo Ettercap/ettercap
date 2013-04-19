@@ -101,7 +101,7 @@ ymsg = 5050                # tcp    5050
 vnc = 5900,5901,5902,5903  # tcp    5900 5901 5902 5903
 x11 = 6000,6001,6002,6003  # tcp    6000 6001 6002 6003
 irc = 6666,6667,6668,6669  # tcp    6666 6667 6668 6669
-gg = 8074		           # tcp    8074
+gg = 8074	           # tcp    8074
 proxy = 8080               # tcp    8080
 rcon = 27015,27960         # udp    27015 27960
 ppp = 34827                # special case ;) this is the Net Layer code
@@ -142,7 +142,7 @@ color_error_border = 3
 utf8_encoding = "ISO-8859-1"
 
 # the command used by the remote_browser plugin
-remote_browser = "mozilla -remote openurl(http://%host%url)"
+remote_browser = "xdg-open http://%host%url"
 
 
 #####################################

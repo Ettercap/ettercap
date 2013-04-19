@@ -159,6 +159,9 @@ endif(NOT HAVE_MEMMEM)
 if(NOT HAVE_BASENAME)
     set(EC_SRC ${EC_SRC} missing/basename.c)
 endif(NOT HAVE_BASENAME)
+if(NOT HAVE_STRNDUP)
+    set(EC_SRC ${EC_SRC} missing/strndup.c)
+endif(NOT HAVE_STRNDUP)
 
 
 add_subdirectory(interfaces)

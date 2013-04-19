@@ -22,11 +22,7 @@ Boston, MA 02110-1301, USA.  */
 #include<stdlib.h>
 #include<string.h>
 
-#ifndef EC_API_EXTERN
-#error Move this header somewhere else
-#endif
-
-EC_API_EXTERN char * strndup (const char *s, size_t n);
+char * strndup (const char *s, size_t n);
 
 /* EOF */
 

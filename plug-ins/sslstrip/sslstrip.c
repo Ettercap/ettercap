@@ -34,6 +34,10 @@
 
 #include <pcre.h>
 
+#ifndef HAVE_STRNDUP
+#include <missing/strndup.h>
+#endif
+
 #ifdef OS_LINUX
 #include <linux/netfilter_ipv4.h>
 #endif

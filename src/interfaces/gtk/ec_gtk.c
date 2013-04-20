@@ -208,6 +208,7 @@ static gboolean gtkui_progress_shim(gpointer data) {
 
    struct gtkui_progress_data *gpd = data;
    gtkui_progress(gpd->title, gpd->value, gpd->max);
+   free(gpd->title);
    free(gpd);
    return FALSE;
 }
@@ -221,9 +222,13 @@ static int gtkui_progress_wrap(char *title, int value, int max) {
       return UI_PROGRESS_INTERRUPTED;
    }
 
+   if (!title) {
+    return UI_PROGRESS_UPDATED;
+   }
+
    gpd = malloc(sizeof *gpd);
    if (gpd) {
-      gpd->title = title;
+      gpd->title = strdup(title);
       gpd->value = value;
       gpd->max = max;
       g_idle_add(gtkui_progress_shim, gpd);

@@ -100,7 +100,7 @@ if(ENABLE_LUA)
   set(HAVE_EC_LUA 1)
 endif(ENABLE_LUA)
 
-set(EC_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/include)
+set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/include)
 include_directories(${EC_INCLUDE_PATH})
 
 add_subdirectory(src)
@@ -121,7 +121,7 @@ if(ENABLE_IPV6)
 endif(ENABLE_IPV6)
 
 # This line should ALWAYS be after all options are defined
-configure_file(include/config.h.cmake ${CMAKE_SOURCE_DIR}/include/config.h)
+configure_file(include/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
 
 
 # Add a target that will ensure that the build directory is properly cleaned.

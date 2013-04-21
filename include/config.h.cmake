@@ -26,6 +26,7 @@
 
 #cmakedefine HAVE_POLL
 #cmakedefine HAVE_STRTOK_R
+#cmakedefine HAVE_STRNDUP
 #cmakedefine HAVE_SELECT
 #cmakedefine HAVE_SCANDIR
 #cmakedefine HAVE_STRLCAT

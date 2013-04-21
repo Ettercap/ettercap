@@ -8,27 +8,70 @@ SET(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(CURL_TARGET bundled-curl-${CURL_VERSION}-${CMAKE_BUILD_TYPE})
 SET(CURL_BUILD_ROOT ${PROJECT_BINARY_DIR}/${CURL_TARGET})
 
+SET(CURL_CONFIGURE_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_configure_wrapper.sh)
+SET(CURL_BUILD_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_build_wrapper.sh)
+SET(CURL_INSTALL_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_install_wrapper.sh)
+
 SET(CURL_PREFIX ${CURL_BUILD_ROOT}/usr)
 SET(CURL_LIB_DIR ${CURL_PREFIX}/lib)
 SET(CURL_INCLUDE_DIR ${CURL_PREFIX}/include)
-set(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX})  
 
+if (NOT OPENSSL_LIBRARIES)
+  message(FATAL_ERROR "Cannot build bundled Curl without OpenSSL support enabled (ENABLE_SSL=On)")
+endif()
+
+if (NOT ZLIB_LIBRARIES)
+  message(FATAL_ERROR "Cannot build bundled Curl without zlib")
+endif()
+
+# Ensure that we include all the required stuff for linking to libcurl
+SET(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX}
+  ${OPENSSL_LIBRARIES}
+  ${ZLIB_LIBRARIES}
+  )  
+
+#Figure out the parent directory for our openssl installation.
+get_filename_component(OPENSSL_ROOT_PATH ${OPENSSL_INCLUDE_DIR} PATH)
+
+SET(EXPORT_CC ${CMAKE_C_COMPILER})
+
+# -fPIC is required so that we can link in our static library, properly.
+# Add the cmake env cflags and all that jazz so we can inherit architectures
+# and the like.
+SET(EXPORT_C_FLAGS ${CMAKE_C_FLAGS} -fPIC)
+
+IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+  SET(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
+ELSEIF("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+  SET(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
+ENDIF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+
+SET(EXPORT_PREFIX ${CURL_PREFIX})
+
+# Enable/Disable IPV6
+SET(EXPORT_IPV6_FLAGS --disable-ipv6)
+if(ENABLE_IPV6)
+  SET(EXPORT_IPV6_FLAGS --enable-ipv6)
+endif()
+
+CONFIGURE_FILE(${CURL_SOURCE_DIR}/curl_configure_wrapper.sh.in 
+  ${CURL_CONFIGURE_WRAPPER} @ONLY)
+CONFIGURE_FILE(${CURL_SOURCE_DIR}/curl_build_wrapper.sh.in 
+  ${CURL_BUILD_WRAPPER} @ONLY)
+CONFIGURE_FILE(${CURL_SOURCE_DIR}/curl_install_wrapper.sh.in 
+  ${CURL_INSTALL_WRAPPER} @ONLY)
 
 #########################
 
 ExternalProject_Add(
   ${CURL_TARGET}
   URL ${CURL_SOURCE_DIR}/curl-${CURL_VERSION}.tar.gz
-  SOURCE_DIR ${CURL_BUILD_ROOT}/source
-  BINARY_DIR ${CURL_BUILD_ROOT}/build
-  INSTALL_DIR ${CURL_PREFIX}
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CURL_PREFIX} 
-    -DBUILD_CURL_EXE=Off -DBUILD_CURL_TESTS=Off 
-    -DCMAKE_C_FLAGS=-fPIC
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DHTTP_ONLY=On
-    -DCURL_STATICLIB=On
-    -DENABLE_IPV6=${ENABLE_IPV6}
+  BUILD_IN_SOURCE 1
+  SOURCE_DIR ${CURL_BUILD_ROOT}/build
+  CONFIGURE_COMMAND sh ${CURL_CONFIGURE_WRAPPER}
+  BUILD_COMMAND sh ${CURL_BUILD_WRAPPER}
+  INSTALL_COMMAND sh ${CURL_INSTALL_WRAPPER}
+  UPDATE_COMMAND ""
   )
 
 # Now export our variables to our parent's scope.

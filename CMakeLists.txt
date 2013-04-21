@@ -10,9 +10,18 @@ option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
 
-# Default to using "Release" as our build type.
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
-  "Choose the type of build, options are: Debug Release.")
+SET(VALID_BUILD_TYPES Debug Release)
+
+if(NOT CMAKE_BUILD_TYPE)
+  # Default to using "Release" as our build type.
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
+    "Choose the type of build, options are: ${VALID_BUILD_TYPES}." FORCE)
+endif()
+LIST(FIND VALID_BUILD_TYPES ${CMAKE_BUILD_TYPE} contains_valid)
+if(contains_valid EQUAL -1)
+  message(FATAL_ERROR "Unknown CMAKE_BUILD_TYPE: '${CMAKE_BUILD_TYPE}'. Valid options are: ${VALID_BUILD_TYPES}") 
+endif()
+UNSET(contains_valid)
 
 # Ensure that, when we link to stuff outside of our build path, we include the
 # library dir path in our RPATH.

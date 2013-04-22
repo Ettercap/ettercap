@@ -89,6 +89,7 @@ static SLIST_HEAD(, http_field_entry) http_fields[2];
 /* protos */
 FUNC_DECODER(dissector_http);
 void http_init(void);
+static char *get_http_content(struct packet_object *po);
 static void Parse_Method_Get(char *ptr, struct packet_object *po);
 static void Parse_Method_Post(char *ptr, struct packet_object *po);
 static void Decode_Url(char *src);
@@ -524,11 +525,37 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
    return 1;
 }
 
+static char *get_http_content(struct packet_object *po) {
+
+	char *buffer= NULL, *tmp= NULL;
+	size_t tot_length= 0, content_length= 0;
+
+	//find the Content-Length info inside the packet
+	tot_length= (size_t) strlen(po->DATA.data);
+	if(tot_length > 0) {
+		tmp= strstr(po->DATA.data, "Content-Length:"); //the word Content-Length: is 15 chars
+		if(tmp != NULL)
+			sscanf(tmp, "%*s %d", &content_length); // %*s jump the string
+	}
+
+	//copy the content in the buffer
+	if((content_length > 0) && (content_length <= tot_length)) {
+		buffer= (char *) malloc(content_length + 1); //the last char is \0
+		if(buffer != NULL) {
+			memcpy(buffer, &(po->DATA.data[tot_length - content_length]), content_length);
+			buffer[content_length]= '\0';
+		}
+	}
+
+	return buffer;
+}
+
 
 /* Deal with POST continuation */
 static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struct packet_object *po)
 { 
-   char *user=NULL, *pass=NULL;
+   char *user= NULL, *pass= NULL;
+   u_char res_user, res_pass;
 
    DEBUG_MSG("HTTP - Parse First chance");
    
@@ -541,14 +568,16 @@ static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struc
    if (conn_status->c_status == POST_LAST_CHANCE) {
    DEBUG_MSG("HTTP - Parse Form");
 
-      if (Parse_Form(ptr, &user, USER) && Parse_Form(ptr, &pass, PASS)) {
+   res_user= Parse_Form(ptr, &user, USER);
+   res_pass= Parse_Form(ptr, &pass, PASS);
+   if (res_user || res_pass) {
          po->DISSECTOR.user = user;
          po->DISSECTOR.pass = pass;
+         po->DISSECTOR.content= (char *) get_http_content(po);
          po->DISSECTOR.info = strdup((const char*)conn_status->c_data);
          dissect_wipe_session(po, DISSECT_CODE(dissector_http));
          Print_Pass(po);
-      } else
-         SAFE_FREE(user);
+      }
    }
 }
 
@@ -772,11 +801,24 @@ static void Print_Pass(struct packet_object *po)
    if (!po->DISSECTOR.pass)
       po->DISSECTOR.pass = strdup("");
 
-   DISSECT_MSG("HTTP : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&po->L3.dst, tmp),
-                                                                 ntohs(po->L4.dst), 
-                                                                 po->DISSECTOR.user,
-                                                                 po->DISSECTOR.pass,
-                                                                 po->DISSECTOR.info);
+   if (!po->DISSECTOR.content) {
+
+      po->DISSECTOR.content = strdup("");
+      DISSECT_MSG("HTTP: IP %s PORT %d --> USERNAME: %s PASSWORD: %s\nURL: %s\n\n", ip_addr_ntoa(&po->L3.dst, tmp),
+   																								ntohs(po->L4.dst),
+   																								po->DISSECTOR.user,
+   																								po->DISSECTOR.pass,
+   																								po->DISSECTOR.info);
+
+   } else {
+
+   DISSECT_MSG("HTTP: IP %s PORT %d --> USERNAME: %s PASSWORD: %s\nURL: %s\nCONTENT: %s\n\n", ip_addr_ntoa(&po->L3.dst, tmp),
+																								ntohs(po->L4.dst),
+																								po->DISSECTOR.user,
+																								po->DISSECTOR.pass,
+																								po->DISSECTOR.info,
+																								po->DISSECTOR.content);
+   }
 }
 
 

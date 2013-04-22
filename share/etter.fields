@@ -22,30 +22,38 @@
 [USER]
 
 login
-unickname
+usr
+name
 user
-email
 username
+user_name
 userid
+user_id
+uname
+ulogin
+nickname
+email
+e-mail
 form_loginname
 loginname
+login_username
+login_email
+loginusername
+loginemail
 pop_login
 uid
 id
 user_id
 screenname
-uname
-ulogin
 acctname
 account
 member
 mailaddress
 membername
-login_username
-login_email
 uin
 sign-in
-
+pseudo
+wpname
 
 
 [PASS]
@@ -59,6 +67,9 @@ userpassword
 pwd
 upassword
 login_password
+loginpassword
 passwort
 passwrd
 upasswd
+mdp
+wppassword

@@ -23,6 +23,7 @@ if(BUNDLED_LUAJIT AND (NOT LUAJIT_FOUND))
   message(STATUS "Using bundled version of LUAJIT")
   add_subdirectory(bundled_deps/luajit EXCLUDE_FROM_ALL)
   add_dependencies(luajit bundled_luajit)
+  add_dependencies(bundled bundled_luajit)
 endif(BUNDLED_LUAJIT AND (NOT LUAJIT_FOUND))
 
 if(NOT LUAJIT_FOUND)

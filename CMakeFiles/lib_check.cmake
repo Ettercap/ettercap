@@ -6,6 +6,9 @@ set(EC_INCLUDE)
 set(EF_LIBS)
 set(EL_LIBS)
 
+# Generic target that will build all enabled bundled libs.
+add_custom_target(bundled)
+
 if(ENABLE_CURSES)
     set(CURSES_NEED_NCURSES TRUE)
     find_package(Curses REQUIRED)
@@ -122,6 +125,7 @@ if(HAVE_PLUGINS)
       message(STATUS "Using bundled version of Curl")
       add_subdirectory(bundled_deps/curl EXCLUDE_FROM_ALL)
       add_dependencies(curl bundled_curl)
+      add_dependencies(bundled bundled_curl)
     endif(BUNDLED_CURL AND (NOT CURL_FOUND))
 
     # Still haven't found curl? Bail!
@@ -176,6 +180,7 @@ if(BUNDLED_LIBNET AND (NOT LIBNET_FOUND))
   message(STATUS "Using bundled version of LIBNET")
   add_subdirectory(bundled_deps/libnet EXCLUDE_FROM_ALL)
   add_dependencies(libnet bundled_libnet)
+  add_dependencies(bundled bundled_libnet)
 endif(BUNDLED_LIBNET AND (NOT LIBNET_FOUND))
 
 # Still haven't found libnet? Bail!

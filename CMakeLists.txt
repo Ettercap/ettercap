@@ -13,6 +13,7 @@ option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
+option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
 
 SET(VALID_BUILD_TYPES Debug Release)
 

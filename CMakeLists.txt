@@ -3,6 +3,10 @@ project(ettercap C)
 
 set(VERSION "0.7.6")
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+include(MacroEnsureOutOfSourceBuild)
+macro_ensure_out_of_source_build("${PROJECT_NAME} requires an out of source build. Please create a separate build directory and run 'cmake /path/to/${PROJECT_NAME} [options]' there.")
+
 option(ENABLE_CURSES "Enable curses interface" ON)
 option(ENABLE_GTK "Enable GTK interface" ON)
 option(ENABLE_SSL "Enable SSL support" ON)
@@ -65,10 +69,9 @@ CMAKE_DEPENDENT_OPTION(BUNDLED_LUAJIT
 set(MACPORTS_BASE_DIRECTORY "/opt/local" CACHE PATH "MacPorts installation base directory")
 set(SPECIAL_LIB_DIR "" CACHE PATH "Special (non-traditional) directory where libraries are installed")
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
 
 include(CheckVariableInHeaders)
-include(CMakeFiles/os_test.cmake)
+include(EttercapOSTest)
 
 #Check and see if we're running Darwin, specify the CMAKE_LIBARY_PATH to do so
 if(OS_DARWIN)
@@ -79,9 +82,9 @@ else(OS_DARWIN)
 	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/lib64 /usr/lib32)
 endif(OS_DARWIN)
 
-include(CMakeFiles/headers_check.cmake)
-include(CMakeFiles/lib_check.cmake)
-include(CMakeFiles/variable_check.cmake)
+include(EttercapHeadersCheck)
+include(EttercapLibCheck)
+include(EttercapVariableCheck)
 
 set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Installation prefix")
 set(INSTALL_SYSCONFDIR /etc CACHE PATH "System configuration directory")
@@ -105,7 +108,7 @@ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-export-dynamic" CA
 endif(OS_DARWIN)
 
 if(ENABLE_LUA)
-  include(CMakeFiles/luajit.cmake)
+  include(EttercapLuajit)
   set(HAVE_EC_LUA 1)
 endif(ENABLE_LUA)
 
@@ -135,7 +138,7 @@ configure_file(include/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/config
 
 # Add a target that will ensure that the build directory is properly cleaned.
 add_custom_target(clean-all
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/CMakeFiles/clean-all.cmake
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/Scripts/clean-all.cmake
 )
 
 # If we notice that this isn't the first time they've run 

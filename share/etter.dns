@@ -1,7 +1,7 @@
 ############################################################################
 #                                                                          #
 #  ettercap -- etter.dns -- host file for dns_spoof and                    #
-#  							mdns_spoof plugins							   #
+#                           mdns_spoof plugins                             #
 #                                                                          #
 #  Copyright (C) ALoR & NaGA                                               #
 #                                                                          #
@@ -33,18 +33,18 @@
 #                                                                          #
 # or for WINS query:                                                       #
 #    workgroup WINS 127.0.0.1                                              #
-#    PC*       WINS 127.0.0.1           								   #
+#    PC*       WINS 127.0.0.1                                              #
 #                                                                          #
-# or for SRV query:														   #
+# or for SRV query:                                                        #
 #    service._tcp|_udp.domain SRV 192.168.1.10:port                        #
-#    Example:															   #
-#    xmpp-server._tcp.google.com SRV 192.168.1.10:5269   				   #
+#    Example:                                                              #
+#    xmpp-server._tcp.google.com SRV 192.168.1.10:5269                     #
 #                                                                          #
-#									   #
-# or for SRV query:							   #
-#    service   SRV target:port						   #
-#    xmpp-server._tcp.blah.com SRV 1.2.3.4:5269				   # 
-#									   #
+#                                                                          #
+# or for SRV query:                                                        #
+#    service   SRV target:port                                             #
+#    xmpp-server._tcp.blah.com SRV 1.2.3.4:5269                            #
+#                                                                          #
 # NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
 #       so if you want to reverse poison you have to specify a plain       #
 #       host. (look at the www.microsoft.com example)                      #

@@ -18,11 +18,18 @@
 #   www.myhostname.com A 168.11.22.33                                      #
 #   *.foo.com          A 168.44.55.66                                      #
 #                                                                          #
-# or for PTR query:                                                        #
-#   www.bar.com A 10.0.0.10                                                #
+# ... for a AAAA query (same hostname allowed):                            #
+#   www.myhostname.com AAAA 2001:db8::1                                    #
+#   *.foo.com          AAAA 2001:db8::2                                    #
 #                                                                          #
-# or for MX query:                                                         #
+# or for PTR query:                                                        #
+#   www.bar.com    PTR 10.0.0.10                                           #
+#   www.google.com PTR ::1                                                 #
+#                                                                          #
+# or for MX query (either IPv4 or IPv6):                                   #
 #    domain.com MX xxx.xxx.xxx.xxx                                         #
+#    domain2.com MX xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx                #
+#    domain3.com MX xxxx:xxxx::y                                           #
 #                                                                          #
 # or for WINS query:                                                       #
 #    workgroup WINS 127.0.0.1                                              #

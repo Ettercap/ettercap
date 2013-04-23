@@ -341,7 +341,8 @@ static void dns_spoof(struct packet_object *po)
          if (get_spoofed_a(name, &reply) != ESUCCESS)
             return;
 
-         po->flags |= PO_DROPPED; /* Do not forward query */
+         /* Do not forward query */
+         po->flags |= PO_DROPPED; 
 
          /* 
           * fill the buffer with the content of the request
@@ -374,7 +375,8 @@ static void dns_spoof(struct packet_object *po)
           if (get_spoofed_aaaa(name, &reply) != ESUCCESS)
               return;
 
-          po->flags |= PO_DROPPED; /* Do not forward query */
+          /* Do not forward query */
+          po->flags |= PO_DROPPED; 
 
           /*
            * fill the buffer with the content of the request
@@ -408,8 +410,9 @@ static void dns_spoof(struct packet_object *po)
          /* found the reply in the list */
          if (get_spoofed_ptr(name, &a) != ESUCCESS)
             return;
-
-         po->flags |= PO_DROPPED; /* Do not forward query */
+   
+         /* Do not forward query */
+         po->flags |= PO_DROPPED; 
 
          /* 
           * fill the buffer with the content of the request
@@ -446,7 +449,8 @@ static void dns_spoof(struct packet_object *po)
          if (get_spoofed_mx(name, &reply) != ESUCCESS)
             return;
 
-         po->flags |= PO_DROPPED; /* Do not forward query */
+         /* Do not forward query */
+         po->flags |= PO_DROPPED;
 
          /*
           * to inject the spoofed IP address in the additional section, 
@@ -517,7 +521,8 @@ static void dns_spoof(struct packet_object *po)
          if (get_spoofed_wins(name, &reply) != ESUCCESS)
             return;
 
-         po->flags |= PO_DROPPED; /* Do not forward query */
+         /* Do not forward query */
+         po->flags |= PO_DROPPED; 
 
          /*
           * fill the buffer with the content of the request
@@ -550,7 +555,8 @@ static void dns_spoof(struct packet_object *po)
                 return;
 
 
-            po->flags |= PO_DROPPED; /* Do not forward query */
+         /* Do not forward query */
+            po->flags |= PO_DROPPED;
 
             /*
              * Extract port and target

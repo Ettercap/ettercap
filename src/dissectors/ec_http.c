@@ -578,6 +578,9 @@ static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struc
          dissect_wipe_session(po, DISSECT_CODE(dissector_http));
          Print_Pass(po);
       }
+   } else {
+	   SAFE_FREE(user);
+	   SAFE_FREE(pass);
    }
 }
 

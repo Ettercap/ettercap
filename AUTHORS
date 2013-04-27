@@ -7,42 +7,42 @@ AUTHORS:
 
 Project Stewards:
 
-   Emilio Escobar				<eescobar@gmail.com>
+   Emilio Escobar					<eescobar@gmail.com>
 
-   Eric Milam					<jbrav.hax@gmail.com>
+   Eric Milam						<jbrav.hax@gmail.com>
 
 ==============================================================================
 
 OFFICIAL DEVELOPERS:
 
-   Emilio Escobar (exfil)			<eescobar@gmail.com>		Core Development
-   Mike Ryan (justfalter)			<falter@gmail.com>		Core Development and Testing
-   Ryan Linn					<sussuro@happypacket.net>	Core Development and Testing
-   Gianfranco Costamagna (LocutusOfBorg)	<costamagnagianfranco@yahoo.it>	Bug Hunting, Bug fixing and patch back-porting
-   Jacob Baines					<baines.jacob@gmail.com>	Development and Bug fixes
+   Emilio Escobar (exfil)						<eescobar@gmail.com>			Core Development
+   Mike Ryan (justfalter)						<falter@gmail.com>				Core Development and Testing
+   Ryan Linn									<sussuro@happypacket.net>		Core Development and Testing
+   Gianfranco Costamagna (LocutusOfBorg)		<costamagnagianfranco@yahoo.it>	Bug Hunting, Bug fixing and patch back-porting
+   Jacob Baines									<baines.jacob@gmail.com>		Development and Bug fixes
 
 CONTRIBUTORS:
-   Dhiru Kholia (kholia)			<dhiru@openwall.com>		O5Logon, MySQL 5.x dissector, PostgreSQL dissector, TN3270 dissector
-   Mainframed									TN3270 dissector
-   Eric Milam (Brav0Hax)			<jbrav.hax@gmail.com>		User Testing
-   Antonio Collarino (Sniper)			<anto.collarino@gmail.com>	Beta tester, bug report
+	Antonio Collarino (Sniper)					<anto.collarino@gmail.com>		Developer, beta tester, bug report
+	Dhiru Kholia (kholia)						<dhiru@openwall.com>			O5Logon, MySQL 5.x dissector, PostgreSQL dissector, TN3270 dissector Mainframed TN3270 dissector
+	Eric Milam (Brav0Hax)						<jbrav.hax@gmail.com>			User Testing
+
 
 CONTRIBUTORS (Lazarus):
-   Martin Bos (PureHate)			<purehate@backtrack.com>	Testing
-   Enrique Sanchez								Code Review
+   Martin Bos (PureHate)						<purehate@backtrack.com>	Testing
+   Enrique Sanchez															Code Review
 
 CONTRIBUTORS (for the Next Generation series):
 
-   Gisle Vanem					<giva@bgnett.no>		for the mingw porting
-   Johannes Bauer				<JohannesBauer@gmx.de>		for the prism2 decoder
-   Daten (Bryan Schneiders)			<daten@dnetc.org>		the GTK interface
+   Gisle Vanem					<giva@bgnett.no>			For the mingw porting
+   Johannes Bauer				<JohannesBauer@gmx.de>		For the prism2 decoder
+   Daten (Bryan Schneiders)		<daten@dnetc.org>			GTK interface
 
 
 CONTRIBUTORS (for the First Generation series):
 
-   Lnz (Lorenzo Porro)				<lporro@libero.it>		some dissectors
+   Lnz (Lorenzo Porro)					<lporro@libero.it>			some dissectors
    Tavi (Octavian Mihalache)			<dev_tavi@mymail.ro>		win9x porting
-   Georg Hofstetter				<geggo@donau-ries.de>		HL-RCON dissector 
-   Giorgio Zoppi				<zoppi@cli.di.unipi.it>		security patch
-   Garph0					<garph0@gmx.co.uk>		plugin porting for windows
-   Zero_Chaos					<sidhayn@gmail.com>		Lamer, buildscript kiddie fixes
+   Georg Hofstetter						<geggo@donau-ries.de>		HL-RCON dissector 
+   Giorgio Zoppi						<zoppi@cli.di.unipi.it>		security patch
+   Garph0								<garph0@gmx.co.uk>			plugin porting for windows
+   Zero_Chaos							<sidhayn@gmail.com>			Lamer, buildscript kiddie fixes

@@ -417,6 +417,49 @@ decrease your MAC address before running it.
 .Sp
 ettercap \-TP stp_mangler 
 
+
+.SH ORIGINAL AUTHORS
+Alberto Ornaghi  (ALoR)         <alor@users.sf.net>
+.br
+Marco Valleri    (NaGA)         <naga@antifork.org>
+
+
+.SH PROJECT STEWARDS
+Emilio Escobar  (exfil)         <eescobar@gmail.com>
+.br
+Eric Milam      (Brav0Hax)      <jbrav.hax@gmail.com>
+
+
+.SH OFFICIAL DEVELOPERS
+Emilio Escobar  (exfil)                  <eescobar@gmail.com>
+.br
+Eric Milam  (Brav0Hax)                   <jbrav.hax@gmail.com>
+.br
+Gianfranco Costamagna (LocutusOfBorg)    <costamagnagianfranco@yahoo.it>
+.br
+Mike Ryan  (justfalter)                  <falter@gmail.com>
+.br
+Ryan Linn                                <sussuro@happypacket.net>
+.br
+Jacob Baines                             <baines.jacob@gmail.com>
+
+
+.SH CONTRIBUTORS:
+Antonio Collarino  (Sniper)              <anto.collarino@gmail.com>
+.br
+Dhiru Kholia  (kholia)                   <dhiru@openwall.com>
+.br
+Martin Bos  (PureHate)                   <purehate@backtrack.com>
+.br
+Enrique Sanchez
+.br
+Gisle Vanem                              <giva@bgnett.no>
+.br
+Johannes Bauer                           <JohannesBauer@gmx.de>
+.br
+Daten (Bryan Schneiders)                 <daten@dnetc.org>
+
+
 .SH "SEE ALSO"
 .I "ettercap(8)"
 .I "ettercap_curses(8)"

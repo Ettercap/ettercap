@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Ettercap
-Comment=Nework sniffer/analyser
-Exec=ettercap-gtk
+Comment=Network sniffer/analyser
+Exec=su-to-root -X -c "/usr/sbin/ettercap --gtk"
 Icon=ettercap
 Terminal=false
 Type=Application

@@ -12,6 +12,7 @@ set(EC_SRC
         ec_encryption_tkip.c
         ec_encryption.c
         ec_error.c
+        ec_exit.c
         ec_file.c
         ec_filter.c
         ec_fingerprint.c

@@ -49,7 +49,6 @@
 
 /* protos */
 
-void clean_exit(int errcode);
 static void drop_privs(void);
 static void time_check(void);
 
@@ -241,42 +240,6 @@ static void drop_privs(void)
 
    DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
    USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() ); 
-}
-
-
-/*
- * cleanly exit from the program
- */
-
-void clean_exit(int errcode)
-{
-   DEBUG_MSG("clean_exit: %d", errcode);
-  
-   INSTANT_USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
-
-#ifdef HAVE_EC_LUA
-   /* Cleanup lua */
-   ec_lua_fini();
-#endif
-
-   /* flush the exit message */
-   ui_msg_flush(MSG_ALL);
-
-   /* stop the mitm attack */
-   mitm_stop();
-
-   /* terminate the sniffing engine */
-   EXECUTE(GBL_SNIFF->cleanup);
-
-   /* kill all the running threads but the current */
-   ec_thread_kill_all();
-
-   /* close the UI */
-   ui_cleanup();
-
-   /* call all the ATEXIT functions */
-   exit(errcode);
-
 }
 
 

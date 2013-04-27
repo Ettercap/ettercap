@@ -24,7 +24,6 @@ set(EC_SRC
         ec_inject.c
         ec_interfaces.c
         ec_log.c
-        ec_main.c
         ec_manuf.c
         ec_mitm.c
         ec_network.c
@@ -167,13 +166,14 @@ endif(NOT HAVE_STRNDUP)
 
 add_subdirectory(interfaces)
 
-add_executable(ettercap ${EC_SRC})
-add_dependencies(ettercap libnet)
+add_library(lib_ettercap SHARED ${EC_SRC})
+add_dependencies(lib_ettercap libnet)
+add_executable(ettercap ec_main.c)
 
 # Only compile lua stuff if lua is enabled!
 IF(ENABLE_LUA)
   add_subdirectory(lua)
-  target_link_libraries(ettercap ec_lua)
+  target_link_libraries(lib_ettercap ec_lua)
   if(OS_DARWIN AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
     # On 64-bit OSX platforms, luajit requires the following flags to be added.
     # See: http://luajit.org/install.html
@@ -186,6 +186,17 @@ IF(ENABLE_LUA)
   endif()
 endif(ENABLE_LUA)
 
-target_link_libraries(ettercap ec_interfaces ${EC_LIBS})
-set_target_properties(ettercap PROPERTIES ENABLE_EXPORTS TRUE)
+target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
+set_target_properties(lib_ettercap PROPERTIES 
+  ENABLE_EXPORTS On
+  LINK_INTERFACE_LIBRARIES ""
+  #  INSTALL_RPATH ${INSTALL_LIBDIR}
+  OUTPUT_NAME ettercap
+  )
+
+target_link_libraries(ettercap lib_ettercap)
+set_target_properties(ettercap PROPERTIES 
+  INSTALL_RPATH ${INSTALL_LIBDIR}
+  )
+install(TARGETS lib_ettercap DESTINATION ${INSTALL_LIBDIR})
 install(TARGETS ettercap DESTINATION ${INSTALL_BINDIR})

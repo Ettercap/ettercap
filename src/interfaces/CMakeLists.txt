@@ -72,4 +72,5 @@ endif(ENABLE_GTK)
 
 
 add_library(ec_interfaces STATIC ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_WDG_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
+SET_TARGET_PROPERTIES(ec_interfaces PROPERTIES COMPILE_FLAGS -fPIC)
 target_link_libraries(ec_interfaces ${EC_LIBS})

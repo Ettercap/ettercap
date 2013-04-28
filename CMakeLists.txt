@@ -14,6 +14,7 @@ option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
 option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
+option(ENABLE_TESTS "Enable Unit Tests" OFF)
 
 SET(VALID_BUILD_TYPES Debug Release)
 
@@ -136,6 +137,10 @@ endif(ENABLE_IPV6)
 # This line should ALWAYS be after all options are defined
 configure_file(include/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
 
+if(ENABLE_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif(ENABLE_TESTS)
 
 # Add a target that will ensure that the build directory is properly cleaned.
 add_custom_target(clean-all

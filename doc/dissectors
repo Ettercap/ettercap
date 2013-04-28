@@ -38,7 +38,7 @@ DISPLAY_DATA      (u_char) it is the buffer it will be displayed in the
                   interface. this is made because encrypted protocols must be
                   forwarded encrypted, but visualized as plain text.
                   if the protocols is already in plain text don't have to copy
-                  the data in the buffer, else copy the decrypted text in this
+                  the data in the buffer, otherwise copy the decrypted text in this
                   buffer
                   
 DISPLAY_LEN       (int) set it to the len of the decrypted data.          

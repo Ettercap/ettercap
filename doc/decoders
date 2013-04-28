@@ -15,7 +15,7 @@ NOTE:       decoders refers to functions analyzing protocols such as TCP or
 The decoders are organized as in a protocol stack as for the TCP/IP stack. The
 captured packet is passed to the decoder of the lowest level (link layer) which
 decodes its header, fills the struct in the packet object and pass the packet
-to the decoder of the upper level. Each decoder call the next one according to 
+to the decoder of the upper level. Each decoder calls the next one according to 
 the type of packet carried by the current header. For example the ethernet
 decoder call the next one looking at the eth->proto field (0x0800 for IP). 
 You can imagine the process as a stack of layers. The packet goes up while gets

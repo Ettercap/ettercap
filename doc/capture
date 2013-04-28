@@ -4,7 +4,7 @@ TOPIC:      capture
 
 ABSTRACT:   this file describes how the capture process works within ettercap
 
-NOTE:       when in bridget sniffing, two thread are spawned, one for each
+NOTE:       when in bridged sniffing, two threads are spawned, one for each
             network interface.
             
 ===============================================================================

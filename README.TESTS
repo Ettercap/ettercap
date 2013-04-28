@@ -1,0 +1,13 @@
+
+Ettercap now has unit-tests!
+
+- We use the "Check" unit testing framework (http://check.sourceforge.net/)
+
+- To enable tests:
+  - mkdir build 
+  - cd build
+  - cmake -DENABLE_TESTS=On ..
+  - make && make test
+    OR
+  - make && make test_verbose
+

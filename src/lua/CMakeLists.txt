@@ -12,6 +12,7 @@ configure_file(ec_lua_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/ec_lua_
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories(${LUAJIT_INCLUDE_DIR})
 add_library(ec_lua ec_lua.c)
+SET_TARGET_PROPERTIES(ec_lua PROPERTIES COMPILE_FLAGS -fPIC)
 add_dependencies(ec_lua luajit)
 target_link_libraries(ec_lua ${LUAJIT_LIBRARY})
 

@@ -143,7 +143,7 @@ smurf_attack
 stp_mangler)
 
 foreach(plugin ${PLUGINS})
-	target_link_libraries(${plugin} ettercap)
+	target_link_libraries(${plugin} lib_ettercap)
 endforeach(plugin)
 
 install(TARGETS

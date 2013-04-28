@@ -26,12 +26,12 @@ NOTE:       the plugin system has been modified since ettercap NG 0.7.0, all
  2) PLUGIN OPERATION
 
       struct plugin_ops ops = {
-         ettercap_version: EC_VERSION,
-         name:             "plugin name",
-         info:             "description of the plugin",
-         version:          "x.y",
-         init:             &init_function,
-         fini:             &fini_function,
+         .ettercap_version  = EC_VERSION,
+         .name              = "plugin name",
+         .info              = "description of the plugin",
+         .version           = "x.y",
+         .init              = &init_function,
+         .fini              = &fini_function,
       };
 
       for every plugin you have to fill this structure with the appropriate
@@ -50,7 +50,7 @@ NOTE:       the plugin system has been modified since ettercap NG 0.7.0, all
       version:          is a string with the version of the plugin
 
       init:             is a pointer to the function ettercap has to call on
-                        when the user select the plugin
+                        when the user selects the plugin
 
       fini:             is a pointer to the function to be executed to
                         deactivate the plugin
@@ -74,7 +74,7 @@ NOTE:       the plugin system has been modified since ettercap NG 0.7.0, all
       }
 
       
-      When the user activate the plugin, etteracp calls the function registered
+      When the user activate the plugin, ettercap calls the function registered
       in the plugin_ops as 'init'. If the user wants to deactivate the plugins,
       ettercap calls the registered 'fini' function.
       You can do whatever you want in this functions, the only thing to be
@@ -136,7 +136,7 @@ NOTE:       the plugin system has been modified since ettercap NG 0.7.0, all
                         want to receive only tcp packet, hook to the 
                         HOOK_PACKET_TCP, if you want ppp packet, hook to 
                         HOOK_PACKET_PPP and so on...
-                        This hooks are declared in the protocol decoder
+                        These hooks are declared in the protocol decoder
                         (./src/protocols/*.c)
 
       HOOK_PROTO_*      Some protocols declare an hookpoint. Look in

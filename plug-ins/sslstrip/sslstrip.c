@@ -1,7 +1,7 @@
 /*
     sslstrip -- ettercap plugin -- SSL Strip per Moxie (http://www.thoughtcrime.org/software/sslstrip/)
    
-    Copyright (C) Ettercap Development Team. 2012.
+    Copyright (C) Ettercap Dev. Team
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -215,7 +215,7 @@ static int sslstrip_init(void *dummy)
 	 * Add IPTables redirect for port 80
          */
 	if (http_bind_wrapper() != ESUCCESS) {
-		ERROR_MSG("SSLStrip: Could not set up HTTP redirect\n");
+		INSTANT_USER_MSG("SSLStrip: Could not set up HTTP redirect\n");
 		return PLUGIN_FINISHED;
 	}
 	
@@ -235,7 +235,7 @@ static int sslstrip_fini(void *dummy)
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
 	if (http_remove_redirect(bind_port) == -EFATAL) {
-		ERROR_MSG("Unable to remove HTTP redirect, please do so manually.");
+		INSTANT_USER_MSG("Unable to remove HTTP redirect, please do so manually.");
 	}
 
        /* stop accept wrapper */
@@ -1048,7 +1048,7 @@ static void http_remove_https(struct http_connection *connection)
 	pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
 
 	if (!pcre) {
-		ERROR_MSG("pcre_compile failed (offset: %d), %s\n", erroroffset, error);
+		INSTANT_USER_MSG("pcre_compile failed (offset: %d), %s\n", erroroffset, error);
 		return;
 	}	
 
@@ -1300,7 +1300,7 @@ void http_remove_secure_from_cookie(struct http_connection *connection) {
 
 	regex_t find_cookie_re;
 	if(regcomp(&find_cookie_re, cookie_pattern, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
-		ERROR_MSG("SSLStrip: Could not compile find_cookie regex");
+		INSTANT_USER_MSG("SSLStrip: Could not compile find_cookie regex");
 		return;
 	}
 

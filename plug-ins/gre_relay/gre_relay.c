@@ -1,7 +1,7 @@
 /*
     gre_relay -- ettercap plugin -- Tunnel broker for redirected GRE tunnels
 
-    Copyright (C) ALoR & NaGA
+    Copyright (C) Ettercap Dev. Team
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

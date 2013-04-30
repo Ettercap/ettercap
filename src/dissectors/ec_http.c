@@ -535,16 +535,14 @@ static char *get_http_content(struct packet_object *po) {
 	if(tot_length > 0) {
 		tmp= strstr(po->DATA.data, "Content-Length:"); //the word Content-Length: is 15 chars
 		if(tmp != NULL)
-			sscanf(tmp, "%*s %d", &content_length); // %*s jump the string
+			sscanf(tmp, "%*s %d", &content_length); // %*s jumps the string
 	}
 
 	//copy the content in the buffer
 	if((content_length > 0) && (content_length <= tot_length)) {
-		buffer= (char *) malloc(content_length + 1); //the last char is \0
-		if(buffer != NULL) {
-			memcpy(buffer, &(po->DATA.data[tot_length - content_length]), content_length);
-			buffer[content_length]= '\0';
-		}
+		SAFE_MALLOC(buffer, content_length + 1);  //the last char is \0
+		memcpy(buffer, &(po->DATA.data[tot_length - content_length]), content_length);
+		buffer[content_length]= '\0';
 	}
 
 	return buffer;

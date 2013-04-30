@@ -1,6 +1,8 @@
 /*
  *    the smurf attack plugin for ettercap
  *
+ *    Copyright (c) Ettercap Dev. Team
+ *
  *    XXX - attack against IPv4 hosts is broken by some kernel bug
  *    on some systems as the kernel amends the source ip address
  */

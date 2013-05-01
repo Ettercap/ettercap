@@ -22,6 +22,10 @@
 #   www.myhostname.com AAAA 2001:db8::1                                    #
 #   *.foo.com          AAAA 2001:db8::2                                    #
 #                                                                          #
+# or to skip a protocol family (useful with dual-stack):                   #
+#   www.hotmail.com    AAAA ::                                             #
+#   www.yahoo.com      A    0.0.0.0                                        #
+#                                                                          #
 # or for PTR query:                                                        #
 #   www.bar.com    PTR 10.0.0.10                                           #
 #   www.google.com PTR ::1                                                 #
@@ -67,6 +71,16 @@ www.microsoft.com  PTR 198.182.196.56      # Wildcards in PTR are not allowed
 www.alor.org  A 127.0.0.1
 www.naga.org  A 127.0.0.1
 www.naga.org  AAAA 2001:db8::2
+
+##########################################
+# dual stack enabled hosts does not make life easy
+# force them back to single stack 
+
+www.ietf.org   A    127.0.0.1
+www.ietf.org   AAAA ::
+
+www.example.org  A    0.0.0.0
+www.example.org  AAAA ::1
 
 ###############################################
 # one day we will have our ettercap.org domain

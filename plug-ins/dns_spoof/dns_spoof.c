@@ -304,6 +304,7 @@ static void dns_spoof(struct packet_object *po)
    u_char *data, *end;
    char name[NS_MAXDNAME];
    int name_len;
+   bool is_negative;
    u_char *q;
    int16 class;
    u_int16 type;
@@ -314,6 +315,9 @@ static void dns_spoof(struct packet_object *po)
    
    /* extract the name from the packet */
    name_len = dn_expand((u_char *)dns, end, data, name, sizeof(name));
+
+   /* by default we want to spoof actual data */
+   is_negative = false;
    
    q = data + name_len;
   
@@ -345,23 +349,37 @@ static void dns_spoof(struct packet_object *po)
          po->flags |= PO_DROPPED; 
 
          /* 
-          * fill the buffer with the content of the request
-          * we will append the answer just after the request 
+          * When spoofed IP address is undefined address, we stop
+          * processing of this section by spoofing a negative-cache reply
           */
-         memcpy(answer, data, q - data);
-         
-         /* prepare the answer */
-         memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
-         memcpy(p + 2, "\x00\x01", 2);                    /* type A */
-         memcpy(p + 4, "\x00\x01", 2);                    /* class */
-         memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
-         memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
-         ip_addr_cpy(p + 12, reply);                      /* data */
+         if (ip_addr_is_zero(reply)) {
+            /*
+             * we want to answer this requests with a negative-cache reply
+             * instead of spoofing a IP address
+             */
+            is_negative = true;
 
-         /* send the fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer), 0);
-         
-         USER_MSG("dns_spoof: [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
+         } else {
+            /* 
+             * fill the buffer with the content of the request
+             * we will append the answer just after the request 
+             */
+            memcpy(answer, data, q - data);
+            
+            /* prepare the answer */
+            memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
+            memcpy(p + 2, "\x00\x01", 2);                    /* type A */
+            memcpy(p + 4, "\x00\x01", 2);                    /* class */
+            memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
+            memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
+            ip_addr_cpy(p + 12, reply);                      /* data */
+
+            /* send the fake reply */
+            send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+                           ntohs(dns->id), answer, sizeof(answer), 1, 0, 0);
+            
+            USER_MSG("dns_spoof: [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
+         }
          
       /* also care about AAAA records */
       } else if (type == ns_t_aaaa) {
@@ -378,28 +396,40 @@ static void dns_spoof(struct packet_object *po)
           /* Do not forward query */
           po->flags |= PO_DROPPED; 
 
-          /*
-           * fill the buffer with the content of the request
-           * we will append the answer just after the request
-           */
-          memcpy(answer, data, q - data);
+         /* 
+          * When spoofed IP address is undefined address, we stop
+          * processing of this section by spoofing a negative-cache reply
+          */
+         if (ip_addr_is_zero(reply)) {
+            /*
+             * we want to answer this requests with a negative-cache reply
+             * instead of spoofing a IP address
+             */
+            is_negative = true;
 
-          /* prepare the answer */
-          memcpy(p,     "\xc0\x0c", 2);         /* compressed name offset */
-          memcpy(p + 2, "\x00\x1c", 2);         /* type AAAA */
-          memcpy(p + 4, "\x00\x01", 2);         /* class IN */
-          memcpy(p + 6, "\x00\x00\x0e\x10", 4); /* TTL (1 hour) */
-          memcpy(p + 10, "\x00\x10", 2);        /* datalen */
-          ip_addr_cpy(p + 12, reply);           /* data */
+         } else {
+             /*
+              * fill the buffer with the content of the request
+              * we will append the answer just after the request
+              */
+             memcpy(answer, data, q - data);
+
+             /* prepare the answer */
+             memcpy(p,     "\xc0\x0c", 2);         /* compressed name offset */
+             memcpy(p + 2, "\x00\x1c", 2);         /* type AAAA */
+             memcpy(p + 4, "\x00\x01", 2);         /* class IN */
+             memcpy(p + 6, "\x00\x00\x0e\x10", 4); /* TTL (1 hour) */
+             memcpy(p + 10, "\x00\x10", 2);        /* datalen */
+             ip_addr_cpy(p + 12, reply);           /* data */
 
 
-          /* send the fake reply */
-          send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
-                         ntohs(dns->id), answer, sizeof(answer), 0);
-          
-         USER_MSG("dns_spoof: AAAA [%s] spoofed to [%s] - original query dropped\n", 
-                  name, ip_addr_ntoa(reply, tmp));
-
+             /* send the fake reply */
+             send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+                            ntohs(dns->id), answer, sizeof(answer), 1, 0, 0);
+             
+            USER_MSG("dns_spoof: AAAA [%s] spoofed to [%s]\n", 
+                     name, ip_addr_ntoa(reply, tmp));
+         }
       /* it is a reverse query (ip to name) */
       } else if (type == ns_t_ptr) {
          
@@ -432,7 +462,8 @@ static void dns_spoof(struct packet_object *po)
          NS_PUT16(rlen, p);
 
          /* send the fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, (q - data) + 12 + rlen, 0);
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+                        ntohs(dns->id), answer, (q - data) + 12 + rlen, 1, 0, 0);
          
          USER_MSG("dns_spoof: [%s] spoofed to [%s]\n", name, a);
          
@@ -505,7 +536,8 @@ static void dns_spoof(struct packet_object *po)
          }
 
          /* send the fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer), 1);
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+                        ntohs(dns->id), answer, sizeof(answer), 1, 0, 1);
          
          USER_MSG("dns_spoof: MX [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
 
@@ -539,7 +571,8 @@ static void dns_spoof(struct packet_object *po)
          ip_addr_cpy((u_char*)p + 12, reply);                      /* data */
 
          /* send the fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(dns->id), answer, sizeof(answer), 1);
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+                        ntohs(dns->id), answer, sizeof(answer), 1, 0, 1);
 
          USER_MSG("dns_spoof: WINS [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
       } else if (type == ns_t_srv) {
@@ -598,10 +631,50 @@ static void dns_spoof(struct packet_object *po)
              NS_PUT16(port, p);                  /* port */
 
              /* send fake reply */
-             // send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(mdns->id), answer, sizeof(answer), 0);
+             // send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+             //                ntohs(mdns->id), answer, sizeof(answer), 1, 0, 0);
 
              USER_MSG("dns_spoof: [%s %s] spoofed to [%s:%d]\n", name, type_str(type), target, port);
       }
+      if (is_negative) {
+         u_int8 answer[(q - data) + 46];
+         u_char *p = answer + (q - data);
+
+         dns->aa = 0;
+         dns->rd = 1;
+         dns->ra = 1;
+         dns->num_answer = 0;
+         dns->num_auth = 1;
+         /* 
+          * fill the buffer with the content of the request
+          * we will append the answer just after the request 
+          */
+         memcpy(answer, data, q - data);
+         
+         /* prepare the answer */
+         memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
+         memcpy(p + 2, "\x00\x06", 2);                    /* type SOA */
+         memcpy(p + 4, "\x00\x01", 2);                    /* class */
+         memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
+         memcpy(p + 10, "\x00\x22", 2);                   /* datalen */
+         memcpy(p + 12, "\x03\x6e\x73\x31", 4);           /* primary server */
+         memcpy(p + 16, "\xc0\x0c", 2);                   /* compressed name offeset */   
+         memcpy(p + 18, "\x05\x61\x62\x75\x73\x65", 6);   /* mailbox */
+         memcpy(p + 24, "\xc0\x0c", 2);                   /* compressed name offset */
+         memcpy(p + 26, "\x51\x79\x57\xf5", 4);           /* serial */
+         memcpy(p + 30, "\x00\x00\x0e\x10", 4);           /* refresh interval */
+         memcpy(p + 34, "\x00\x00\x02\x58", 4);           /* retry interval */
+         memcpy(p + 38, "\x00\x09\x3a\x80", 4);           /* erpire limit */
+         memcpy(p + 42, "\x00\x00\x00\x3c", 4);           /* minimum TTL */
+
+         /* send the fake reply */
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+                        ntohs(dns->id), answer, sizeof(answer), 0, 1, 0);
+            
+         USER_MSG("dns_spoof: negative cache spoofed for [%s] type %s \n", name,
+                  (type == ns_t_a ? "A" : "AAAA"));
+      }
+
    }
 }
 

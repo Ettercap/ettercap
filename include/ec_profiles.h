@@ -10,6 +10,7 @@ struct dissector_info {
    char *user;
    char *pass;
    char *info;
+   char *content;
    char *banner;
    char *os;
    char failed;

@@ -1,7 +1,7 @@
 /*
     find_ip -- ettercap plugin -- Search an unused IP address in the subnet
 
-    Copyright (C) ALoR & NaGA
+    Copyright (C) Ettercap Dev. Team
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

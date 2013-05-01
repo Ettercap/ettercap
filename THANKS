@@ -2,23 +2,22 @@
  People who helped us developing ettercap 0.7.4+
 ------------------------------------------------
 
-   Gianfranco Costamagna (LocutusOfBorg)     for bug fixes and code contributions
+   Gianfranco Costamagna	(LocutusOfBorg)		for bug fixes and code contributions
 
-   Eric Milam            (J0hnnyBrav0)       for modifying documentation, man pages,
- 					     oversight, support, etc!
+   Eric Milam				(J0hnnyBrav0)		for modifying documentation, man pages, oversight, support, etc!
 
-   Mike Ryan		 (justfalter)        For the LUA integration (coming soon!)
+   Mike Ryan				(justfalter)        for the LUA integration (coming soon!)
  
-   Ryan Linn		 (susorr)	     For the LUA integration (coming soon!)
+   Ryan Linn				(susorr)			for the LUA integration (coming soon!)
 
-   Dhiru Kholia		 (kholia)            For the O5Logon, ISCSI CHAP,
-					     MySQL5, VNC packet parsing dissectors
+   Dhiru Kholia				(kholia)			for the O5Logon, ISCSI CHAP, MySQL5, VNC packet parsing dissectors
 
 Others:
-    ago and halfie			     For bug reports and testing	
-    Shoham Peller                            For issue bug fix #84
-    Barak A. Pearlmutter                     For the debian packaging and the TONS of pull requests of bug fix :)
-    Antonio Collarino    (Sniper)            For bug reports and testing
+    Antonio Collarino	(Sniper)			for developing, bug reporting, testing, modifying documentation, man pages.
+    ago and halfie							for bug reports and testing	
+    Shoham Peller							for issue bug fix #84
+    Barak A. Pearlmutter					for the debian packaging and the TONS of pull requests of bug fix :)
+
 
     I'm sure there are a lot of more people (unmamed), but to everyone... THANKS!
 

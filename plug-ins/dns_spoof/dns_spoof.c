@@ -666,8 +666,7 @@ static void dns_spoof(struct packet_object *po)
          send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
                         ntohs(dns->id), answer, sizeof(answer), 0, 1, 0);
             
-         USER_MSG("dns_spoof: negative cache spoofed for [%s] type %s \n", name,
-                  (type == ns_t_a ? "A" : "AAAA"));
+         USER_MSG("dns_spoof: negative cache spoofed for [%s] type %s \n", name, type_str(type));
       }
 
    }

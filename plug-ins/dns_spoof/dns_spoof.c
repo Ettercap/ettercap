@@ -640,11 +640,6 @@ static void dns_spoof(struct packet_object *po)
          u_int8 answer[(q - data) + 46];
          u_char *p = answer + (q - data);
 
-         dns->aa = 0;
-         dns->rd = 1;
-         dns->ra = 1;
-         dns->num_answer = 0;
-         dns->num_auth = 1;
          /* 
           * fill the buffer with the content of the request
           * we will append the answer just after the request 

@@ -1,7 +1,7 @@
 /*
     nbns_spoof -- ettercap plugin -- spoofs NBNS replies
 
-    Copyright (C) Ettercap team
+    Copyright (C) Ettercap Dev. Team
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

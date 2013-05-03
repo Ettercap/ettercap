@@ -28,7 +28,7 @@ SET(EXPORT_CC ${CMAKE_C_COMPILER})
 # -fPIC is required so that we can link in our static library, properly.
 # Add the cmake env cflags and all that jazz so we can inherit architectures
 # and the like.
-SET(EXPORT_C_FLAGS ${CMAKE_C_FLAGS})
+SET(EXPORT_C_FLAGS ${CMAKE_C_FLAGS} -fPIC)
 
 IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   SET(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")

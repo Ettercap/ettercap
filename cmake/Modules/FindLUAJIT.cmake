@@ -35,7 +35,8 @@ endif()
 function(_LUAJIT_GET_VERSION _OUT_version _luajit_hdr)
     file(READ ${_luajit_hdr} _contents)
     if(_contents)
-      string(REGEX REPLACE ".*#define LUAJIT_VERSION[ \t]+\"LuaJIT ([0-9.]+)\".*" "\\1" ${_OUT_version} "${_contents}")
+      # Example: #define LUAJIT_VERSION_NUM      20000  /* Version 2.0.0 = 02.00.00. */
+      string(REGEX REPLACE ".*#define LUAJIT_VERSION_NUM[ \t]+([0-9]+)([0-9][0-9])([0-9][0-9])[^0-9].*" "\\1.\\2.\\3" ${_OUT_version} "${_contents}")
         
         if(NOT ${_OUT_version} MATCHES "[0-9.]+")
             message(FATAL_ERROR "Version parsing failed for LUAJIT_VERSION!")

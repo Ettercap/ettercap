@@ -53,11 +53,13 @@ MANDATORY:
    - libpthread
    - zlib
    - CMake 2.8
-   - ghostscript
    - Curl    >= 7.26.0 to build SSLStrip plugin
    If you don't want to enable SSLStrip plugin you have to disable it. (more information about disabling a plugin in the README.GIT file)
 
 OPTIONAL:
+   To enable PDF documentation generation (enable via ENABLE_PDF_DOCS=On):
+      - ghostscript (ps2pdf13)
+      - groff
 
    To enable plugins:
       - libltdl (part of libtool)

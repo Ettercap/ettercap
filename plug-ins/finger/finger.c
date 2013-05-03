@@ -3,7 +3,7 @@
 
     it sends a syn to an open port and collect the passive ACK fingerprint.
 
-    Copyright (C) Ettercap Dev. Team
+    Copyright (C) ALoR & NaGA
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

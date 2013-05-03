@@ -1,7 +1,7 @@
 /*
     find_conn -- ettercap plugin -- Search connections on a switched LAN
 
-    Copyright (C) Ettercap Dev. Team
+    Copyright (C) ALoR & NaGA
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

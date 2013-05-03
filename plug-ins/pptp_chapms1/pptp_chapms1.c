@@ -2,7 +2,7 @@
     pptp_chapms1 -- ettercap plugin -- Forces chapms-v1 from champs-v2 request 
                                        for PPTP (easier to crack)
 
-    Copyright (C) Ettercap Dev. Team
+    Copyright (C) ALoR & NaGA
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

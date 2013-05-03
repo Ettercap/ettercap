@@ -4,7 +4,7 @@
     it sends a spoofed icmp packets to each victim with the address 
     of any other target and listen for "forwardable" replies.
 
-    Copyright (C) Ettercap Dev. Team
+    Copyright (C) ALoR & NaGA
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

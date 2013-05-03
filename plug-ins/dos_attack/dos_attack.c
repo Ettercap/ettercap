@@ -1,7 +1,7 @@
 /*
     dos_attack -- ettercap plugin -- Run a D.O.S. attack (based on Naptha)
 
-    Copyright (C) Ettercap Dev. Team
+    Copyright (C) ALoR & NaGA
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

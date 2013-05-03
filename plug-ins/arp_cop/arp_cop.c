@@ -1,7 +1,7 @@
 /*
     arp_cop -- ettercap plugin -- Report suspicious ARP activity
 
-    Copyright (C) Ettercap Dev. Team
+    Copyright (C) ALoR & NaGA
     
     Copyright (C) 2001 for the original plugin :  Paulo Madeira <acelent@hotmail.com>
     

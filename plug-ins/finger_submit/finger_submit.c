@@ -1,7 +1,7 @@
 /*
     finger_submit -- ettercap plugin -- submit a fingerprint to ettercap website
 
-    Copyright (C) Ettercap Dev. Team
+    Copyright (C) ALoR & NaGA
     
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

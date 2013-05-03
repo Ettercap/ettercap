@@ -89,7 +89,6 @@ static SLIST_HEAD(, http_field_entry) http_fields[2];
 /* protos */
 FUNC_DECODER(dissector_http);
 void http_init(void);
-static char *get_http_content(struct packet_object *po);
 static void Parse_Method_Get(char *ptr, struct packet_object *po);
 static void Parse_Method_Post(char *ptr, struct packet_object *po);
 static void Decode_Url(char *src);
@@ -525,30 +524,6 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
    return 1;
 }
 
-static char *get_http_content(struct packet_object *po) {
-
-	char *buffer= NULL, *tmp= NULL;
-	size_t tot_length= 0, content_length= 0;
-
-	//find the Content-Length info inside the packet
-	tot_length= (size_t) strlen(po->DATA.data);
-	if(tot_length > 0) {
-		tmp= strstr(po->DATA.data, "Content-Length:"); //the word Content-Length: is 15 chars
-		if(tmp != NULL)
-			sscanf(tmp, "%*s %d", &content_length); // %*s jumps the string
-	}
-
-	//copy the content in the buffer
-	if((content_length > 0) && (content_length <= tot_length)) {
-		SAFE_MALLOC(buffer, content_length + 1);  //the last char is \0
-		memcpy(buffer, &(po->DATA.data[tot_length - content_length]), content_length);
-		buffer[content_length]= '\0';
-	}
-
-	return buffer;
-}
-
-
 /* Deal with POST continuation */
 static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struct packet_object *po)
 { 
@@ -571,7 +546,7 @@ static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struc
    if (res_user || res_pass) {
          po->DISSECTOR.user = user;
          po->DISSECTOR.pass = pass;
-         po->DISSECTOR.content= (char *) get_http_content(po);
+         po->DISSECTOR.content= strdup((const char *) ptr);
          po->DISSECTOR.info = strdup((const char*)conn_status->c_data);
          dissect_wipe_session(po, DISSECT_CODE(dissector_http));
          Print_Pass(po);

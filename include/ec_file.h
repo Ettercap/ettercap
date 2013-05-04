@@ -12,7 +12,7 @@ EC_API_EXTERN char * get_local_path(const char *file);
 #define SERVICES_NAMES     "etter.services"
 #define ETTER_CONF         "etter.conf"
 #define ETTER_DNS          "etter.dns"
-#define ETTER_MDNS	   "etter.dns"
+#define ETTER_MDNS         "etter.mdns"
 #define ETTER_NBNS         "etter.nbns"
 #define ETTER_FIELDS       "etter.fields"
 #define CERT_FILE          "etter.ssl.crt"

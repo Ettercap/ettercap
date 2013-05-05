@@ -544,6 +544,7 @@ static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struc
       if (Parse_Form(ptr, &user, USER) && Parse_Form(ptr, &pass, PASS)) {
          po->DISSECTOR.user = user;
          po->DISSECTOR.pass = pass;
+         po->DISSECTOR.content = strdup((const char*) ptr);
          po->DISSECTOR.info = strdup((const char*)conn_status->c_data);
          dissect_wipe_session(po, DISSECT_CODE(dissector_http));
          Print_Pass(po);
@@ -777,6 +778,9 @@ static void Print_Pass(struct packet_object *po)
                                                                  po->DISSECTOR.user,
                                                                  po->DISSECTOR.pass,
                                                                  po->DISSECTOR.info);
+
+   if (po->DISSECTOR.content)
+    DISSECT_MSG("  CONTENT: %s\n", po->DISSECTOR.content);
 }
 
 

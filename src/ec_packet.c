@@ -112,6 +112,7 @@ int packet_destroy_object(struct packet_object *po)
        */
       SAFE_FREE(po->DISSECTOR.user);
       SAFE_FREE(po->DISSECTOR.pass);
+      SAFE_FREE(po->DISSECTOR.content);
       SAFE_FREE(po->DISSECTOR.info);
       SAFE_FREE(po->DISSECTOR.banner);
       SAFE_FREE(po->DISSECTOR.os);

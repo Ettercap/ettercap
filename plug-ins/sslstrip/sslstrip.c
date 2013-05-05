@@ -66,6 +66,7 @@
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)(\\%3A|\\%3a|:)//([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 #define URL_PATTERN "(https://[\\w\\d:#@%/;$()~_?\\+-=\\\\.&]*)"
+#define COOKIE_PATTERN "Set-Cookie: (.*?;)(.?Secure;|.?Secure)(.*?)\r\n"
 
 
 #define REQUEST_TIMEOUT 120 /* If a request has not been used in 120 seconds, remove it from list */
@@ -144,6 +145,7 @@ static u_int16 bind_port;
 static struct pollfd poll_fd;
 
 static pcre *https_url_pcre;
+static regex_t find_cookie_re;
 
 /* protos */
 int plugin_load(void *);
@@ -229,6 +231,13 @@ static int sslstrip_init(void *dummy)
 		return PLUGIN_FINISHED;
 	}	
 
+	if(regcomp(&find_cookie_re, COOKIE_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
+		INSTANT_USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex");
+                pcre_free(https_url_pcre);
+		http_remove_redirect(bind_port);
+		return PLUGIN_FINISHED;
+	}
+
 	hook_add(HOOK_HANDLED, &sslstrip);
 
 	/* start HTTP accept thread */
@@ -251,6 +260,8 @@ static int sslstrip_fini(void *dummy)
         // Free regexes.
         if (https_url_pcre)
           pcre_free(https_url_pcre);
+
+        regfree(&find_cookie_re);
 
        /* stop accept wrapper */
        pthread_t pid = ec_thread_getpid("http_accept_thread");
@@ -1296,16 +1307,9 @@ void http_remove_secure_from_cookie(struct http_connection *connection) {
 	size_t pos = 0;
 	char *buf_cpy = connection->response->html;
 	char *new_html;
-	char *cookie_pattern = "Set-Cookie: (.*?;)(.?Secure;|.?Secure)(.*?)\r\n";
 
 	SAFE_CALLOC(new_html, 1, connection->response->len);
 	char changed = 0;
-
-	regex_t find_cookie_re;
-	if(regcomp(&find_cookie_re, cookie_pattern, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
-		ERROR_MSG("SSLStrip: Could not compile find_cookie regex");
-		return;
-	}
 
 	regmatch_t match[4];
 

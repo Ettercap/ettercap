@@ -254,7 +254,7 @@ static int sslstrip_fini(void *dummy)
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
 	if (http_remove_redirect(bind_port) == -EFATAL) {
-		ERROR_MSG("Unable to remove HTTP redirect, please do so manually.");
+		INSTANT_USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.");
 	}
 
         // Free regexes.

@@ -219,20 +219,20 @@ static int sslstrip_init(void *dummy)
 	 * Add IPTables redirect for port 80
          */
 	if (http_bind_wrapper() != ESUCCESS) {
-		INSTANT_USER_MSG("SSLStrip: plugin load failed: Could not set up HTTP redirect\n");
+		USER_MSG("SSLStrip: plugin load failed: Could not set up HTTP redirect\n");
 		return PLUGIN_FINISHED;
 	}
 
 	https_url_pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
 
 	if (!https_url_pcre) {
-		INSTANT_USER_MSG("SSLStrip: plugin load failed: pcre_compile failed (offset: %d), %s\n", erroroffset, error);
+		USER_MSG("SSLStrip: plugin load failed: pcre_compile failed (offset: %d), %s\n", erroroffset, error);
 		http_remove_redirect(bind_port);
 		return PLUGIN_FINISHED;
 	}	
 
 	if(regcomp(&find_cookie_re, COOKIE_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
-		INSTANT_USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex");
+		USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex");
                 pcre_free(https_url_pcre);
 		http_remove_redirect(bind_port);
 		return PLUGIN_FINISHED;
@@ -254,7 +254,7 @@ static int sslstrip_fini(void *dummy)
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
 	if (http_remove_redirect(bind_port) != ESUCCESS) {
-		INSTANT_USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.");
+		USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.");
 	}
 
         // Free regexes.
@@ -479,7 +479,7 @@ static int http_insert_redirect(u_int16 dport)
 			SAFE_FREE(param);
 			wait(&ret_val);
 			if (WEXITSTATUS(ret_val)) {
-				INSTANT_USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+				USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
 				return -EINVALID;
                         }
 	}
@@ -530,7 +530,7 @@ static int http_remove_redirect(u_int16 dport)
                         SAFE_FREE(param);
                         wait(&ret_val);
 			if (WEXITSTATUS(ret_val)) {
-				INSTANT_USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+				USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
 				return -EINVALID;
                         }
         }

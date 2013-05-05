@@ -143,7 +143,7 @@ static int main_fd;
 static u_int16 bind_port;
 static struct pollfd poll_fd;
 
-
+static pcre *https_url_pcre;
 
 /* protos */
 int plugin_load(void *);
@@ -210,15 +210,25 @@ int plugin_load(void *handle)
 
 static int sslstrip_init(void *dummy)
 {
+	const char *error;
+	int erroroffset;
 
 	/*
 	 * Add IPTables redirect for port 80
          */
 	if (http_bind_wrapper() != ESUCCESS) {
-		INSTANT_USER_MSG("SSLStrip: Could not set up HTTP redirect\n");
+		INSTANT_USER_MSG("SSLStrip: plugin load failed: Could not set up HTTP redirect\n");
 		return PLUGIN_FINISHED;
 	}
-	
+
+	https_url_pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
+
+	if (!https_url_pcre) {
+		INSTANT_USER_MSG("SSLStrip: plugin load failed: pcre_compile failed (offset: %d), %s\n", erroroffset, error);
+		http_remove_redirect(bind_port);
+		return PLUGIN_FINISHED;
+	}	
+
 	hook_add(HOOK_HANDLED, &sslstrip);
 
 	/* start HTTP accept thread */
@@ -237,6 +247,10 @@ static int sslstrip_fini(void *dummy)
 	if (http_remove_redirect(bind_port) == -EFATAL) {
 		ERROR_MSG("Unable to remove HTTP redirect, please do so manually.");
 	}
+
+        // Free regexes.
+        if (https_url_pcre)
+          pcre_free(https_url_pcre);
 
        /* stop accept wrapper */
        pthread_t pid = ec_thread_getpid("http_accept_thread");
@@ -1026,10 +1040,7 @@ EC_THREAD_FUNC(http_child_thread)
 
 static void http_remove_https(struct http_connection *connection)
 {
-	pcre *pcre;
 	char *buf_cpy = connection->response->html;
-	const char *error;
-	int erroroffset;
 	size_t https_len = strlen("https://");
 	size_t http_len = strlen("http://");
 	struct https_link *l, *link;
@@ -1045,18 +1056,10 @@ static void http_remove_https(struct http_connection *connection)
 	if(!buf_cpy)
 		return;
 
-	pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
-
-	if (!pcre) {
-		ERROR_MSG("pcre_compile failed (offset: %d), %s\n", erroroffset, error);
-		return;
-	}	
-
-
 	SAFE_CALLOC(new_html, 1, connection->response->len);
 	BUG_IF(new_html==NULL);
 
-	while(offset < size && (rc = pcre_exec(pcre, NULL, buf_cpy, size, offset, 0, ovector, 30)) > 0) {
+	while(offset < size && (rc = pcre_exec(https_url_pcre, NULL, buf_cpy, size, offset, 0, ovector, 30)) > 0) {
 		memcpy(new_html+new_size, buf_cpy+offset, ovector[2*i]-offset);
 		new_size += ovector[2*i]-offset;
 

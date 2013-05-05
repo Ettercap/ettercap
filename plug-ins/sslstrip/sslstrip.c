@@ -215,7 +215,7 @@ static int sslstrip_init(void *dummy)
 	 * Add IPTables redirect for port 80
          */
 	if (http_bind_wrapper() != ESUCCESS) {
-		ERROR_MSG("SSLStrip: Could not set up HTTP redirect\n");
+		INSTANT_USER_MSG("SSLStrip: Could not set up HTTP redirect\n");
 		return PLUGIN_FINISHED;
 	}
 	

@@ -253,7 +253,7 @@ static int sslstrip_fini(void *dummy)
 {
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
-	if (http_remove_redirect(bind_port) == -EFATAL) {
+	if (http_remove_redirect(bind_port) != ESUCCESS) {
 		INSTANT_USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.");
 	}
 
@@ -440,7 +440,7 @@ static int http_insert_redirect(u_int16 dport)
 {
 	char asc_dport[16];
 	int ret_val, i=0;
-	char *command, *p;
+	char *command, *orig_command, *p;
 	char **param = NULL;
 
 	if (GBL_CONF->redir_command_on == NULL)
@@ -455,6 +455,7 @@ static int http_insert_redirect(u_int16 dport)
 #if defined(OS_DARWIN) || defined(OS_BSD)
 	str_replace(&command, "%set", SSLSTRIP_SET);
 #endif
+        orig_command = strdup(command);
 
 	DEBUG_MSG("http_insert_redirect: [%s]", command);
 
@@ -477,8 +478,10 @@ static int http_insert_redirect(u_int16 dport)
 		default:
 			SAFE_FREE(param);
 			wait(&ret_val);
-			if (ret_val == EINVALID)
+			if (WEXITSTATUS(ret_val)) {
+				INSTANT_USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
 				return -EINVALID;
+                        }
 	}
 
 	return ESUCCESS;
@@ -488,7 +491,7 @@ static int http_remove_redirect(u_int16 dport)
 {
         char asc_dport[16];
         int ret_val, i=0;
-        char *command, *p;
+	char *command, *orig_command, *p;
         char **param = NULL;
 
         if (GBL_CONF->redir_command_off == NULL)
@@ -503,6 +506,7 @@ static int http_remove_redirect(u_int16 dport)
 #if defined(OS_DARWIN) || defined(OS_BSD)
 	str_replace(&command, "%set", SSLSTRIP_SET);
 #endif
+        orig_command = strdup(command);
 
         DEBUG_MSG("http_remove_redirect: [%s]", command);
 
@@ -525,8 +529,10 @@ static int http_remove_redirect(u_int16 dport)
                 default:
                         SAFE_FREE(param);
                         wait(&ret_val);
-                        if (ret_val == EINVALID)
-                                return -EINVALID;
+			if (WEXITSTATUS(ret_val)) {
+				INSTANT_USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+				return -EINVALID;
+                        }
         }
 
         return ESUCCESS;

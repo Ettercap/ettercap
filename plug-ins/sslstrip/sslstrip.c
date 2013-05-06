@@ -66,6 +66,7 @@
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)(\\%3A|\\%3a|:)//([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 #define URL_PATTERN "(https://[\\w\\d:#@%/;$()~_?\\+-=\\\\.&]*)"
+#define COOKIE_PATTERN "Set-Cookie: (.*?;)(.?Secure;|.?Secure)(.*?)\r\n"
 
 
 #define REQUEST_TIMEOUT 120 /* If a request has not been used in 120 seconds, remove it from list */
@@ -143,7 +144,8 @@ static int main_fd;
 static u_int16 bind_port;
 static struct pollfd poll_fd;
 
-
+static pcre *https_url_pcre;
+static regex_t find_cookie_re;
 
 /* protos */
 int plugin_load(void *);
@@ -210,15 +212,32 @@ int plugin_load(void *handle)
 
 static int sslstrip_init(void *dummy)
 {
+	const char *error;
+	int erroroffset;
 
 	/*
 	 * Add IPTables redirect for port 80
          */
 	if (http_bind_wrapper() != ESUCCESS) {
-		ERROR_MSG("SSLStrip: Could not set up HTTP redirect\n");
+		USER_MSG("SSLStrip: plugin load failed: Could not set up HTTP redirect\n");
 		return PLUGIN_FINISHED;
 	}
-	
+
+	https_url_pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
+
+	if (!https_url_pcre) {
+		USER_MSG("SSLStrip: plugin load failed: pcre_compile failed (offset: %d), %s\n", erroroffset, error);
+		http_remove_redirect(bind_port);
+		return PLUGIN_FINISHED;
+	}	
+
+	if(regcomp(&find_cookie_re, COOKIE_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
+		USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex");
+                pcre_free(https_url_pcre);
+		http_remove_redirect(bind_port);
+		return PLUGIN_FINISHED;
+	}
+
 	hook_add(HOOK_HANDLED, &sslstrip);
 
 	/* start HTTP accept thread */
@@ -234,9 +253,15 @@ static int sslstrip_fini(void *dummy)
 {
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
-	if (http_remove_redirect(bind_port) == -EFATAL) {
-		ERROR_MSG("Unable to remove HTTP redirect, please do so manually.");
+	if (http_remove_redirect(bind_port) != ESUCCESS) {
+		USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.");
 	}
+
+        // Free regexes.
+        if (https_url_pcre)
+          pcre_free(https_url_pcre);
+
+        regfree(&find_cookie_re);
 
        /* stop accept wrapper */
        pthread_t pid = ec_thread_getpid("http_accept_thread");
@@ -415,7 +440,7 @@ static int http_insert_redirect(u_int16 dport)
 {
 	char asc_dport[16];
 	int ret_val, i=0;
-	char *command, *p;
+	char *command, *orig_command, *p;
 	char **param = NULL;
 
 	if (GBL_CONF->redir_command_on == NULL)
@@ -430,6 +455,7 @@ static int http_insert_redirect(u_int16 dport)
 #if defined(OS_DARWIN) || defined(OS_BSD)
 	str_replace(&command, "%set", SSLSTRIP_SET);
 #endif
+        orig_command = strdup(command);
 
 	DEBUG_MSG("http_insert_redirect: [%s]", command);
 
@@ -452,8 +478,10 @@ static int http_insert_redirect(u_int16 dport)
 		default:
 			SAFE_FREE(param);
 			wait(&ret_val);
-			if (ret_val == EINVALID)
+			if (WEXITSTATUS(ret_val)) {
+				USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
 				return -EINVALID;
+                        }
 	}
 
 	return ESUCCESS;
@@ -463,7 +491,7 @@ static int http_remove_redirect(u_int16 dport)
 {
         char asc_dport[16];
         int ret_val, i=0;
-        char *command, *p;
+	char *command, *orig_command, *p;
         char **param = NULL;
 
         if (GBL_CONF->redir_command_off == NULL)
@@ -478,6 +506,7 @@ static int http_remove_redirect(u_int16 dport)
 #if defined(OS_DARWIN) || defined(OS_BSD)
 	str_replace(&command, "%set", SSLSTRIP_SET);
 #endif
+        orig_command = strdup(command);
 
         DEBUG_MSG("http_remove_redirect: [%s]", command);
 
@@ -500,8 +529,10 @@ static int http_remove_redirect(u_int16 dport)
                 default:
                         SAFE_FREE(param);
                         wait(&ret_val);
-                        if (ret_val == EINVALID)
-                                return -EINVALID;
+			if (WEXITSTATUS(ret_val)) {
+				USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+				return -EINVALID;
+                        }
         }
 
         return ESUCCESS;
@@ -1026,10 +1057,7 @@ EC_THREAD_FUNC(http_child_thread)
 
 static void http_remove_https(struct http_connection *connection)
 {
-	pcre *pcre;
 	char *buf_cpy = connection->response->html;
-	const char *error;
-	int erroroffset;
 	size_t https_len = strlen("https://");
 	size_t http_len = strlen("http://");
 	struct https_link *l, *link;
@@ -1045,18 +1073,10 @@ static void http_remove_https(struct http_connection *connection)
 	if(!buf_cpy)
 		return;
 
-	pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
-
-	if (!pcre) {
-		ERROR_MSG("pcre_compile failed (offset: %d), %s\n", erroroffset, error);
-		return;
-	}	
-
-
 	SAFE_CALLOC(new_html, 1, connection->response->len);
 	BUG_IF(new_html==NULL);
 
-	while(offset < size && (rc = pcre_exec(pcre, NULL, buf_cpy, size, offset, 0, ovector, 30)) > 0) {
+	while(offset < size && (rc = pcre_exec(https_url_pcre, NULL, buf_cpy, size, offset, 0, ovector, 30)) > 0) {
 		memcpy(new_html+new_size, buf_cpy+offset, ovector[2*i]-offset);
 		new_size += ovector[2*i]-offset;
 
@@ -1293,16 +1313,9 @@ void http_remove_secure_from_cookie(struct http_connection *connection) {
 	size_t pos = 0;
 	char *buf_cpy = connection->response->html;
 	char *new_html;
-	char *cookie_pattern = "Set-Cookie: (.*?;)(.?Secure;|.?Secure)(.*?)\r\n";
 
 	SAFE_CALLOC(new_html, 1, connection->response->len);
 	char changed = 0;
-
-	regex_t find_cookie_re;
-	if(regcomp(&find_cookie_re, cookie_pattern, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
-		ERROR_MSG("SSLStrip: Could not compile find_cookie regex");
-		return;
-	}
 
 	regmatch_t match[4];
 

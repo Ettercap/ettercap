@@ -94,6 +94,7 @@ set(INSTALL_LIBDIR ${INSTALL_PREFIX}/lib${LIB_SUFFIX} CACHE PATH "Library instal
 set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation directory")
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
+set(POLKIT_DIR /usr/share/polkit-1/actions/ CACHE PATH "Binary files installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages") 
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)
@@ -134,6 +135,10 @@ if(ENABLE_IPV6)
     set(WITH_IPV6 TRUE)
 endif(ENABLE_IPV6)
 
+SET(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap.policy)
+CONFIGURE_FILE(src/org.pkexec.ettercap.policy.in
+  ${PKEXEC_INSTALL_WRAPPER} @ONLY)
+
 # This line should ALWAYS be after all options are defined
 configure_file(include/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
 
@@ -158,3 +163,4 @@ if(NOT ("${CMAKE_CACHEFILE_DIR}" STREQUAL ""))
   message("")
 endif(NOT ("${CMAKE_CACHEFILE_DIR}" STREQUAL ""))
 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.pkexec.ettercap.policy DESTINATION ${POLKIT_DIR})

@@ -168,7 +168,7 @@ add_subdirectory(interfaces)
 
 add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
-add_executable(ettercap ec_main.c)
+add_executable(ettercap.elf ec_main.c)
 
 # Only compile lua stuff if lua is enabled!
 IF(ENABLE_LUA)
@@ -177,12 +177,12 @@ IF(ENABLE_LUA)
   if(OS_DARWIN AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
     # On 64-bit OSX platforms, luajit requires the following flags to be added.
     # See: http://luajit.org/install.html
-    get_target_property(OLD_FLAGS ettercap LINK_FLAGS)
+    get_target_property(OLD_FLAGS ettercap.elf LINK_FLAGS)
     if(OLD_FLAGS STREQUAL "OLD_FLAGS-NOTFOUND")
       set(OLD_FLAGS "")
     endif()
     set(NEW_FLAGS "${OLD_FLAGS} -pagezero_size 10000 -image_base 100000000")
-    SET_TARGET_PROPERTIES(ettercap PROPERTIES LINK_FLAGS "${NEW_FLAGS}")
+    SET_TARGET_PROPERTIES(ettercap.elf PROPERTIES LINK_FLAGS "${NEW_FLAGS}")
   endif()
 endif(ENABLE_LUA)
 
@@ -194,9 +194,10 @@ set_target_properties(lib_ettercap PROPERTIES
   OUTPUT_NAME ettercap
   )
 
-target_link_libraries(ettercap lib_ettercap)
-set_target_properties(ettercap PROPERTIES 
+target_link_libraries(ettercap.elf lib_ettercap)
+set_target_properties(ettercap.elf PROPERTIES 
   INSTALL_RPATH ${INSTALL_LIBDIR}
   )
 install(TARGETS lib_ettercap DESTINATION ${INSTALL_LIBDIR})
-install(TARGETS ettercap DESTINATION ${INSTALL_BINDIR})
+install(TARGETS ettercap.elf DESTINATION ${INSTALL_BINDIR})
+install(PROGRAMS ettercap DESTINATION ${INSTALL_BINDIR})

@@ -134,7 +134,7 @@ static int load_db(void)
    /* open the file */
    f = open_data("etc", ETTER_MDNS, FOPEN_READ_TEXT);
    if (f == NULL) {
-      USER_MSG("Cannot open %s ", ETTER_MDNS);
+      USER_MSG("mdns_spoof: Cannot open %s ", ETTER_MDNS);
       return -EINVALID;
    }
          
@@ -158,7 +158,7 @@ static int load_db(void)
       /* convert the ip address */
       if (inet_aton(ip, &ipaddr) == 0) {
          if (type != ns_t_srv) {
-             USER_MSG("%s:%d Invalid ip address\n", ETTER_DNS, lines);
+             USER_MSG("mdns_spoof: %s:%d Invalid ip address\n", ETTER_MDNS, lines);
              continue;
          }
       }
@@ -194,17 +194,17 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
    static char ip[20+1];
    char type[10+1];
 
- DEBUG_MSG("%s:%d str '%s'", ETTER_MDNS, line, str); 
+ DEBUG_MSG("mdns_spoof: %s:%d str '%s'", ETTER_MDNS, line, str); 
 
    if (sscanf(str,"%100s %10s %20[^\r\n# ]", name, type, ip) != 3) {
-      USER_MSG("%s:%d Invalid entry %s\n", ETTER_MDNS, line, str);
+      USER_MSG("mdns_spoof: %s:%d Invalid entry %s\n", ETTER_MDNS, line, str);
       return (0);
    }
 
    if (!strcasecmp(type,"PTR")) {
       if (strpbrk(name,"*?[]")) {
-         USER_MSG("%s:%d Wildcards in PTR records are not allowed; %s\n",
-                  ETTER_DNS, line, str);
+         USER_MSG("mdns_spoof: %s:%d Wildcards in PTR records are not allowed; %s\n",
+                  ETTER_MDNS, line, str);
          return (0);
       }
       *type_p = ns_t_ptr;
@@ -226,7 +226,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
     *ip_p = ip;
    }
 
-   USER_MSG("%s:%d Unknown record type %s\n", ETTER_MDNS, line, type);
+   USER_MSG("mdns_spoof: %s:%d Unknown record type %s\n", ETTER_MDNS, line, type);
    return (0);
 }
 

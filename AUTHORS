@@ -26,7 +26,7 @@ CONTRIBUTORS:
    Mainframed									TN3270 dissector
    Eric Milam (Brav0Hax)			<jbrav.hax@gmail.com>		User Testing
    Antonio Collarino (Sniper)			<anto.collarino@gmail.com>	Beta tester, bug report
-   Alexander Koeppe (koeppea)       <format_c@online.de>       IPv6 support for DNS-spoof plugin
+   Alexander Koeppe (koeppea)			<format_c@online.de>	IPv6 support for DNS-spoof plugin
 
 CONTRIBUTORS (Lazarus):
    Martin Bos (PureHate)			<purehate@backtrack.com>	Testing

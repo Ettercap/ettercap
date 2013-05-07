@@ -685,7 +685,9 @@ example:
 .br
 \-\-wifi\-key wpa:pwd:ettercapwpa:ssid
 .br
-\-\-wifi\-key wpa:psk:663eb260e87cf389c6bd7331b28d82f5203b0cae4e315f9cbb7602f3236708a6
+\-\-wifi\-key wpa:psk:
+.br
+663eb260e87cf389c6bd7331b28d82f5203b0cae4e315f9cbb7602f3236708a6
 
 
 .TP

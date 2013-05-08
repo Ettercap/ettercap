@@ -474,15 +474,24 @@ static int http_insert_redirect(u_int16 dport)
 			exit(EINVALID);
 		case -1:
 			SAFE_FREE(param);
+			SAFE_FREE(command);
+			SAFE_FREE(orig_command);
 			return -EINVALID;
 		default:
 			SAFE_FREE(param);
 			wait(&ret_val);
 			if (WEXITSTATUS(ret_val)) {
 				USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+				SAFE_FREE(param);
+				SAFE_FREE(orig_command);
+				SAFE_FREE(command);
 				return -EINVALID;
                         }
 	}
+
+	SAFE_FREE(command);
+	SAFE_FREE(orig_command);
+	SAFE_FREE(param);
 
 	return ESUCCESS;
 }
@@ -525,15 +534,24 @@ static int http_remove_redirect(u_int16 dport)
                         exit(EINVALID);
                 case -1:
                         SAFE_FREE(param);
-                        return -EINVALID;
+			SAFE_FREE(command);
+			SAFE_FREE(orig_command);
+			return -EINVALID;
                 default:
                         SAFE_FREE(param);
                         wait(&ret_val);
 			if (WEXITSTATUS(ret_val)) {
 				USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+				SAFE_FREE(param);
+				SAFE_FREE(command);
+				SAFE_FREE(orig_command);
 				return -EINVALID;
                         }
         }
+
+	SAFE_FREE(param);
+	SAFE_FREE(command);
+	SAFE_FREE(orig_command);
 
         return ESUCCESS;
 }
@@ -1352,7 +1370,7 @@ void http_update_content_length(struct http_connection *connection) {
 
                 char c_length[20];
                 memset(&c_length, '\0', 20);
-                snprintf(c_length, 20, "%u", connection->response->len);
+                snprintf(c_length, 20, "%lu", connection->response->len);
 
                 memcpy(buf+(content_length-buf)-1, c_length, strlen(c_length));
         }

@@ -106,7 +106,7 @@ static EC_THREAD_FUNC(fraggler)
    port_echo= htons(UDP_PORT_7);
    port_chargen= htons(UDP_PORT_19);
    memset(payload, 0, sizeof(payload));
-   length= (size_t) 32 + sizeof(payload);
+   length= (size_t) sizeof(payload);
 
    if((proto != AF_INET) && (proto != AF_INET6))
 	   ec_thread_destroy(EC_PTHREAD_SELF);

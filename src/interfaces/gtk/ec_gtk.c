@@ -180,6 +180,7 @@ static gboolean gtkui_input_shim(gpointer data) {
 
    struct gtkui_input_data *gid = data;
    gtkui_input(gid->title, gid->input, gid->n, gid->callback);
+   free(gid->title);
    free(gid);
    return FALSE;
 }
@@ -188,7 +189,7 @@ static void gtkui_input_wrap(const char *title, char *input, size_t n, void (*ca
 
    struct gtkui_input_data *gid = malloc(sizeof *gid);
    if (gid) {
-      gid->title = title;
+      gid->title = strdup(title);
       gid->input = input;
       gid->n = n;
       gid->callback = callback;

@@ -74,7 +74,7 @@ static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
 
 static void gtkui_file_open(void);
-static void read_pcapfile(char *file);
+static void read_pcapfile(const char *file);
 static void gtkui_file_write(void);
 static void write_pcapfile(void);
 static void gtkui_unified_sniff(void);
@@ -170,33 +170,35 @@ static void gtkui_fatal_error_wrap(const char *msg) {
 }
 
 struct gtkui_input_data {
-   const char *title;
+   char *title;
    char *input;
    size_t n;
    void (*callback)(void);
 };
 
-static gboolean gtkui_input_shim(gpointer data) {
+/*static gboolean gtkui_input_shim(gpointer data) {
 
    struct gtkui_input_data *gid = data;
    gtkui_input(gid->title, gid->input, gid->n, gid->callback);
+   free(gid->title);
    free(gid);
    return FALSE;
-}
+}*/
 
-static void gtkui_input_wrap(const char *title, char *input, size_t n, void (*callback)(void)) {
+/*static void gtkui_input_wrap(const char *title, char *input, size_t n, void (*callback)(void)) {
 
    struct gtkui_input_data *gid = malloc(sizeof *gid);
    if (gid) {
-      gid->title = title;
+      gid->title = strdup(title);
       gid->input = input;
       gid->n = n;
       gid->callback = callback;
-      g_idle_add(gtkui_input_shim, gid);
+      //g_idle_add(gtkui_input_shim, gid);
+       gtkui_input_shim(gid);
    } else {
       FATAL_ERROR("out of memory");
    }
-}
+}*/
 
 struct gtkui_progress_data {
    char *title;
@@ -262,7 +264,7 @@ void set_gtk_interface(void)
    ops.msg = &gtkui_msg_wrap;
    ops.error = &gtkui_error_wrap;
    ops.fatal_error = &gtkui_fatal_error_wrap;
-   ops.input = &gtkui_input_wrap;
+   ops.input = &gtkui_input;
    ops.progress = &gtkui_progress_wrap;
 
    
@@ -427,6 +429,7 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
    entry = gtk_entry_new_with_max_length(n);
    g_object_set_data(G_OBJECT (entry), "dialog", dialog);
    g_signal_connect(G_OBJECT (entry), "activate", G_CALLBACK (gtkui_dialog_enter), NULL);
+
    
    if (input)
       gtk_entry_set_text(GTK_ENTRY (entry), input); 
@@ -735,7 +738,7 @@ static void gtkui_file_open(void)
    }
 }
 
-static void read_pcapfile(char *file)
+static void read_pcapfile(const char *file)
 {
    char errbuf[128];
    

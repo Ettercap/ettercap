@@ -64,8 +64,6 @@ static int parse_line(const char *str, int line, int *type_p, char **ip_p, char 
 static int get_spoofed_a(const char *a, struct ip_addr **ip);
 static int get_spoofed_ptr(const char *arpa, char **a);
 static int get_spoofed_srv(const char *name, char **target);
-static int get_spoofed_mx(const char *a, struct ip_addr **ip);
-static int get_spoofed_wins(const char *a, struct ip_addr **ip);
 char *type_str(int type);
 static void mdns_spoof_dump(void);
 
@@ -460,45 +458,6 @@ static int get_spoofed_ptr(const char *arpa, char **a)
    return -ENOTFOUND;
 }
 
-/*
- * return the ip address for the name (MX records)
- */
-static int get_spoofed_mx(const char *a, struct ip_addr **ip)
-{
-   struct mdns_spoof_entry *d;
-
-   SLIST_FOREACH(d, &mdns_spoof_head, next) {
-      if (d->type == ns_t_mx && match_pattern(a, d->name)) {
-
-         /* return the pointer to the struct */
-         *ip = &d->ip;
-         
-         return ESUCCESS;
-      }
-   }
-   
-   return -ENOTFOUND;
-}
-
-/*
- * return the ip address for the name (NetBIOS WINS records)
- */
-static int get_spoofed_wins(const char *a, struct ip_addr **ip)
-{
-   struct mdns_spoof_entry *d;
-
-   SLIST_FOREACH(d, &mdns_spoof_head, next) {
-      if (d->type == ns_t_wins && match_pattern(a, d->name)) {
-
-         /* return the pointer to the struct */
-         *ip = &d->ip;
-
-         return ESUCCESS;
-      }
-   }
-
-   return -ENOTFOUND;
-}
 
 static int get_spoofed_srv(const char *name, char **target) 
 {

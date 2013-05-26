@@ -433,9 +433,13 @@ If you want to use a different private key you have to regenerate this file. To 
 the following commands:
 
 openssl genrsa -out etter.ssl.crt 1024
+.br
 openssl req -new -key etter.ssl.crt -out tmp.csr
+.br
 openssl x509 -req -days 1825 -in tmp.csr -signkey etter.ssl.crt -out tmp.new
+.br
 cat tmp.new >> etter.ssl.crt
+.br
 rm -f tmp.new tmp.csr
 
 NOTE: SSL mitm is not available (for now) in bridged mode.

@@ -2061,7 +2061,6 @@ irc               6667/tcp   # Internet Relay Chat
 irc               6668/tcp   # Internet Relay Chat
 acmsoda           6969/tcp   #
 acmsoda           6969/udp   #
-napster           6699/tcp   # Napster File (MP3) sharing  software
 afs3-fileserver   7000/tcp   # file server itself, msdos
 afs3-fileserver   7000/udp   # file server itself
 afs3-callback     7001/tcp   # callbacks to cache managers

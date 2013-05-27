@@ -81,8 +81,11 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    int len;
    u_char *data;
    size_t datalen;
+   struct iface_env *iface;
    
    CANCELLATION_POINT();
+
+   iface = (struct iface_env *) param;
 
    /* start the timer for the stats */
    stats_half_start(&GBL_STATS->bh);
@@ -90,7 +93,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* XXX -- remove this */
 #if 0
    if (!GBL_OPTIONS->quiet)
-      USER_MSG("CAPTURED: 0x%04x bytes form %s\n", pkthdr->caplen, param );
+      USER_MSG("CAPTURED: 0x%04x bytes form %s\n", pkthdr->caplen, iface->name );
 #endif
    
    if (GBL_OPTIONS->read)
@@ -158,9 +161,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
    
    /* set the interface where the packet was captured */
-   if (GBL_OPTIONS->iface && !strcmp((const char*)param, GBL_OPTIONS->iface))
+   if (GBL_OPTIONS->iface && !strcmp(iface->name, GBL_OPTIONS->iface))
       po.flags |= PO_FROMIFACE;
-   else if (GBL_OPTIONS->iface_bridge && !strcmp((const char*)param, GBL_OPTIONS->iface_bridge))
+   else if (GBL_OPTIONS->iface_bridge && !strcmp(iface->name, GBL_OPTIONS->iface_bridge))
       po.flags |= PO_FROMBRIDGE;
 
    /* HOOK POINT: RECEIVED */ 

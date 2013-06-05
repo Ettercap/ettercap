@@ -602,7 +602,10 @@ static void dns_spoof(struct packet_object *po)
          char *p = (char *)answer + (q - data);
          char tmp[MAX_ASCII_ADDR_LEN];
          char srvoffset[2];
+         char tgtoffset[2];
          u_int16 port;
+         int c = 0, i = 0, bytes = 0;
+
 
          /* found the reply in the list */
          if (get_spoofed_srv(name, &reply, &port) != ESUCCESS) 
@@ -610,6 +613,21 @@ static void dns_spoof(struct packet_object *po)
 
          /* Do not forward query */
          po->flags |= PO_DROPPED;
+
+         /*
+          * to refer the target to a proper domain name, we have to set the
+          * offset to the second level domain name and prepend our fake host
+          */
+         bytes += *(data+bytes) + 1; /* first label (e.g. _ldap)*/
+         bytes += *(data+bytes) + 1; /* second label (e.g. _tcp) */
+
+         /* avoid offset overrun */
+         if (bytes + 12 > 255) {
+            bytes = 0;
+         }
+
+         tgtoffset[0] = 0xc0; /* offset byte */
+         tgtoffset[1] = 12 + bytes; /* offset to the actual domain name */
 
          /*
           * to inject the spoofed IP address in the additional section, 
@@ -637,8 +655,13 @@ static void dns_spoof(struct packet_object *po)
          p+=16; 
          NS_PUT16(port, p);                           /* port */ 
          p-=18;             
+         /* 
+          * add "srv." in front of the second level
+          * domain and resolve it in the additional 
+          * record (here `srvoffset' is pointing at)
+          */
          memcpy(p + 18, "\x03\x73\x72\x76", 4);       /* target */
-         memcpy(p + 22, "\xc0\x0c",2);                /* compressed name offset */
+         memcpy(p + 22, tgtoffset,2);                 /* compressed name offset */
      
          /* add the additional record for the spoofed IPv4 address*/
          if (ntohs(reply->addr_type) == AF_INET) {

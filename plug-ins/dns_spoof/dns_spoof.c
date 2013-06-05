@@ -615,8 +615,8 @@ static void dns_spoof(struct packet_object *po)
          po->flags |= PO_DROPPED;
 
          /*
-          * to refer the target to a proper domain name, we have to set the
-          * offset to the second level domain name and prepend our fake host
+          * to refer the target to a proper domain name, we have to strip the
+          * service and protocol label from the questioned domain name
           */
          dn_offset += *(data+dn_offset) + 1; /* first label (e.g. _ldap)*/
          dn_offset += *(data+dn_offset) + 1; /* second label (e.g. _tcp) */

@@ -604,7 +604,7 @@ static void dns_spoof(struct packet_object *po)
          char srvoffset[2];
          char tgtoffset[2];
          u_int16 port;
-         int c = 0, i = 0, bytes = 0;
+         int dn_offset = 0;
 
 
          /* found the reply in the list */
@@ -618,16 +618,16 @@ static void dns_spoof(struct packet_object *po)
           * to refer the target to a proper domain name, we have to set the
           * offset to the second level domain name and prepend our fake host
           */
-         bytes += *(data+bytes) + 1; /* first label (e.g. _ldap)*/
-         bytes += *(data+bytes) + 1; /* second label (e.g. _tcp) */
+         dn_offset += *(data+dn_offset) + 1; /* first label (e.g. _ldap)*/
+         dn_offset += *(data+dn_offset) + 1; /* second label (e.g. _tcp) */
 
          /* avoid offset overrun */
-         if (bytes + 12 > 255) {
-            bytes = 0;
+         if (dn_offset + 12 > 255) {
+            dn_offset = 0;
          }
 
          tgtoffset[0] = 0xc0; /* offset byte */
-         tgtoffset[1] = 12 + bytes; /* offset to the actual domain name */
+         tgtoffset[1] = 12 + dn_offset; /* offset to the actual domain name */
 
          /*
           * to inject the spoofed IP address in the additional section, 

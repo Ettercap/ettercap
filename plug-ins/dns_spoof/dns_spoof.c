@@ -656,8 +656,8 @@ static void dns_spoof(struct packet_object *po)
          NS_PUT16(port, p);                           /* port */ 
          p-=18;             
          /* 
-          * add "srv." in front of the second level
-          * domain and resolve it in the additional 
+          * add "srv." in front of the stripped domain
+          * name and resolve it in the additional 
           * record (here `srvoffset' is pointing at)
           */
          memcpy(p + 18, "\x03\x73\x72\x76", 4);       /* target */

@@ -71,7 +71,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
 int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
 int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr);
 int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr);
-int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
+int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags, u_int8 *payload, size_t length);
 int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 sport, u_int16 dport, u_int8 *payload, size_t length);
 int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
 int send_L3_icmp_unreach(struct packet_object *po);
@@ -1152,7 +1152,7 @@ const uint8_t *payload, uint32_t payload_s, libnet_t *l, libnet_ptag_t ptag)
 /*
  * send a tcp packet
  */
-int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags)
+int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags, u_int8 *payload, size_t length)
 {
    libnet_ptag_t t;
    libnet_t *l;
@@ -1175,9 +1175,9 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
         32767,                   /* window size */
         0,                       /* checksum */
         0,                       /* urgent pointer */
-        LIBNET_TCP_H,            /* TCP packet size */
-	     NULL,                    /* payload */
-        0,                       /* payload size */
+        LIBNET_TCP_H + length,   /* TCP packet size */
+	payload,                 /* payload */
+        length,                  /* payload size */
         l,                       /* libnet handle */
         0);                      /* libnet id */
    ON_ERROR(t, -1, "libnet_build_tcp: %s", libnet_geterror(l));

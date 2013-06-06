@@ -685,7 +685,9 @@ example:
 .br
 \-\-wifi\-key wpa:pwd:ettercapwpa:ssid
 .br
-\-\-wifi\-key wpa:psk:663eb260e87cf389c6bd7331b28d82f5203b0cae4e315f9cbb7602f3236708a6
+\-\-wifi\-key wpa:psk:
+.br
+663eb260e87cf389c6bd7331b28d82f5203b0cae4e315f9cbb7602f3236708a6
 
 
 .TP
@@ -926,11 +928,38 @@ Prints the list of all available plugins
 Stores persistent information (e.g., window placement) between sessions.
 
 
-.SH AUTHORS
+.SH ORIGINAL AUTHORS
 Alberto Ornaghi (ALoR) <alor@users.sf.net>
 .br
 Marco Valleri (NaGA) <naga@antifork.org>
-
+.SH PROJECT STEWARDS
+Emilio Escobar (exfil)  <eescobar@gmail.com>
+.br
+Eric Milam (Brav0Hax)  <jbrav.hax@gmail.com>
+.SH OFFICIAL DEVELOPERS
+Mike Ryan (justfalter)  <falter@gmail.com>
+.br
+Gianfranco Costamagna (LocutusOfBorg)  <costamagnagianfranco@yahoo.it>
+.br
+Antonio Collarino (sniper)  <anto.collarino@gmail.com>
+.br
+Ryan Linn   <sussuro@happypacket.net>
+.br
+Jacob Baines   <baines.jacob@gmail.com>
+.SH CONTRIBUTORS
+Dhiru Kholia (kholia)  <dhiru@openwall.com>
+.br
+Alexander Koeppe (koeppea)  <format_c@online.de>
+.br
+Martin Bos (PureHate)  <purehate@backtrack.com>
+.br
+Enrique Sanchez
+.br
+Gisle Vanem  <giva@bgnett.no>
+.br
+Johannes Bauer  <JohannesBauer@gmx.de>
+.br
+Daten (Bryan Schneiders)  <daten@dnetc.org>
 
 
 .SH "SEE ALSO"

@@ -529,6 +529,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
 static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struct packet_object *po)
 { 
    char *user=NULL, *pass=NULL;
+   u_char user_res, pass_res;
 
    DEBUG_MSG("HTTP - Parse First chance");
    
@@ -541,15 +542,19 @@ static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struc
    if (conn_status->c_status == POST_LAST_CHANCE) {
    DEBUG_MSG("HTTP - Parse Form");
 
-      if (Parse_Form(ptr, &user, USER) && Parse_Form(ptr, &pass, PASS)) {
+      user_res= Parse_Form(ptr, &user, USER);
+      pass_res= Parse_Form(ptr, &pass, PASS);
+      if (user_res || pass_res) {
          po->DISSECTOR.user = user;
          po->DISSECTOR.pass = pass;
          po->DISSECTOR.content = strdup((const char*) ptr);
          po->DISSECTOR.info = strdup((const char*)conn_status->c_data);
          dissect_wipe_session(po, DISSECT_CODE(dissector_http));
          Print_Pass(po);
-      } else
+      } else {
          SAFE_FREE(user);
+         SAFE_FREE(pass);
+      }
    }
 }
 
@@ -780,7 +785,7 @@ static void Print_Pass(struct packet_object *po)
                                                                  po->DISSECTOR.info);
 
    if (po->DISSECTOR.content)
-    DISSECT_MSG("  CONTENT: %s\n", po->DISSECTOR.content);
+    DISSECT_MSG("CONTENT: %s\n\n", po->DISSECTOR.content);
 }
 
 

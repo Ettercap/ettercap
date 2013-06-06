@@ -20,13 +20,13 @@ OFFICIAL DEVELOPERS:
    Ryan Linn					<sussuro@happypacket.net>	Core Development and Testing
    Gianfranco Costamagna (LocutusOfBorg)	<costamagnagianfranco@yahoo.it>	Bug Hunting, Bug fixing and patch back-porting
    Jacob Baines					<baines.jacob@gmail.com>	Development and Bug fixes
+   Antonio Collarino (sniper)			<anto.collarino@gmail.com>	Core and Plugin Development, Testing
 
 CONTRIBUTORS:
    Dhiru Kholia (kholia)			<dhiru@openwall.com>		O5Logon, MySQL 5.x dissector, PostgreSQL dissector, TN3270 dissector
    Mainframed									TN3270 dissector
    Eric Milam (Brav0Hax)			<jbrav.hax@gmail.com>		User Testing
-   Antonio Collarino (Sniper)			<anto.collarino@gmail.com>	Beta tester, bug report
-   Alexander Koeppe (koeppea)			<format_c@online.de>		IPv6 support for DNS-spoof plugin
+   Alexander Koeppe (koeppea)       <format_c@online.de>       IPv6 support for DNS-spoof plugin
 
 CONTRIBUTORS (Lazarus):
    Martin Bos (PureHate)			<purehate@backtrack.com>	Testing

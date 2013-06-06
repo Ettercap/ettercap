@@ -21,9 +21,16 @@
 
 [USER]
 
+log
 login
+wpname
+ahd_username
 unickname
+nickname
 user
+user_name
+alias
+pseudo
 email
 username
 userid
@@ -43,6 +50,8 @@ mailaddress
 membername
 login_username
 login_email
+loginusername
+loginemail
 uin
 sign-in
 
@@ -50,6 +59,7 @@ sign-in
 
 [PASS]
 
+ahd_password
 pass
 password
 passwd
@@ -61,4 +71,5 @@ upassword
 login_password
 passwort
 passwrd
+wppassword
 upasswd

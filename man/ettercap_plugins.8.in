@@ -203,6 +203,16 @@ database. Thank you very much.
 .Sp
 ettercap \-TzP finger_submit
 
+.TP
+.B fraggle_attack
+.Sp
+This plugin performs a DoS attack because it sends a large amount of UDP echo and chargen traffic to
+all hosts in target2 with a fake source ip address (victim).
+.Sp
+.I example (192.168.0.5 is the victim):
+.Sp
+ettercap \-i eth1 \-Tq /192.168.0.5/ // \-P fraggle_attack
+
 .TP 
 .B gre_relay
 .Sp
@@ -412,6 +422,42 @@ authentication. This way, obtained hashes can be easily cracked by LC4.
 You have to be in the "middle" of the connection to successfully use it.
 It hooks the smb dissector, so you have to keep it active. 
 
+.TP
+.B smurf_attack
+.Sp
+The Smurf Attack is a DoS attack in which huge numbers of ICMP packets with the intended 
+victim(s) IP(s) in target1 are sent to the hosts in target2. This causes all hosts on 
+the target2 to reply to the ICMP request, causing significant traffic to the victim's computer(s).
+.Sp
+.I example (192.168.0.5 is the victim):
+.Sp
+ettercap \-i eth1 \-Tq /192.168.0.5/ // \-P fraggle_attack
+
+.TP
+.B sslstrip
+.Sp
+While performing the SSL mitm attack, ettercap substitutes the real ssl certificate with its own. 
+The fake certificate is created on the fly and all the fields are filled according to the real cert 
+presented by the  server. Only the  issuer is modified and signed with the private key contained in 
+the 'etter.sll.crt' file. 
+If you want to use a different private key you have to regenerate this file. To regenerate the cert file use 
+the following commands:
+
+openssl genrsa -out etter.ssl.crt 1024
+.br
+openssl req -new -key etter.ssl.crt -out tmp.csr
+.br
+openssl x509 -req -days 1825 -in tmp.csr -signkey etter.ssl.crt -out tmp.new
+.br
+cat tmp.new >> etter.ssl.crt
+.br
+rm -f tmp.new tmp.csr
+
+NOTE: SSL mitm is not available (for now) in bridged mode.
+
+NOTE: You can use the --certificate/--private-key long options if you want to specify a different file rather  than the etter.ssl.crt file.
+
+
 .TP 
 .B stp_mangler
 .Sp
@@ -427,6 +473,41 @@ decrease your MAC address before running it.
 .I example :
 .Sp
 ettercap \-TP stp_mangler 
+
+
+.SH ORIGINAL AUTHORS
+Alberto Ornaghi (ALoR) <alor@users.sf.net>
+.br
+Marco Valleri (NaGA) <naga@antifork.org>
+.SH PROJECT STEWARDS
+Emilio Escobar (exfil)  <eescobar@gmail.com>
+.br
+Eric Milam (Brav0Hax)  <jbrav.hax@gmail.com>
+.SH OFFICIAL DEVELOPERS
+Mike Ryan (justfalter)  <falter@gmail.com>
+.br
+Gianfranco Costamagna (LocutusOfBorg)  <costamagnagianfranco@yahoo.it>
+.br
+Antonio Collarino (sniper)  <anto.collarino@gmail.com>
+.br
+Ryan Linn   <sussuro@happypacket.net>
+.br
+Jacob Baines   <baines.jacob@gmail.com>
+.SH CONTRIBUTORS
+Dhiru Kholia (kholia)  <dhiru@openwall.com>
+.br
+Alexander Koeppe (koeppea)  <format_c@online.de>
+.br
+Martin Bos (PureHate)  <purehate@backtrack.com>
+.br
+Enrique Sanchez
+.br
+Gisle Vanem  <giva@bgnett.no>
+.br
+Johannes Bauer  <JohannesBauer@gmx.de>
+.br
+Daten (Bryan Schneiders)  <daten@dnetc.org>
+
 
 .SH "SEE ALSO"
 .I "ettercap(8)"

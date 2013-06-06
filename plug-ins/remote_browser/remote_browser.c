@@ -91,7 +91,7 @@ static void remote_browser(struct packet_object *po)
    char *url, *host;
    char *command;
    char **param = NULL;
-   int i = 0;
+   int i = 0, k = 0;
    
    /* the client is making a request */
    if (po->DATA.disp_len != 0 && strstr((const char*)po->DATA.disp_data, "GET")) {
@@ -101,7 +101,7 @@ static void remote_browser(struct packet_object *po)
       /* get the Host: directoive */
       host = strstr(tmp, "Host: ");
       if (host != NULL) {
-         host = host + strlen("Host: ");
+         host = host + 6; // 6 is like strlen("Host: ");
          if ((p = strstr(host, "\r\n")) != NULL)
             *p = 0;
       } else
@@ -115,7 +115,7 @@ static void remote_browser(struct packet_object *po)
          goto bad;
      
       /* get the requested url */
-      url = tmp + strlen("GET ");
+     url = tmp + 4; // 4 is like strlen("GET ");
       
       /* parse only pages, not images or other amenities */
       if (!good_page(url))
@@ -148,10 +148,13 @@ static void remote_browser(struct packet_object *po)
          /* the following line has been commented since some Penetration Testing distros can run only as root */
          /*setuid(1000);*/
          execvp(param[0], param);
-         exit(0);
       }
          
+      //to free the char **param
+      for(k= 0; k < i; ++k)
+    	  SAFE_FREE(param[k]);
       SAFE_FREE(param);
+
       SAFE_FREE(command);
 bad:
       SAFE_FREE(tmp);

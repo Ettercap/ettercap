@@ -1176,7 +1176,7 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
         0,                       /* checksum */
         0,                       /* urgent pointer */
         LIBNET_TCP_H + length,   /* TCP packet size */
-	payload,                 /* payload */
+        payload,                 /* payload */
         length,                  /* payload size */
         l,                       /* libnet handle */
         0);                      /* libnet id */

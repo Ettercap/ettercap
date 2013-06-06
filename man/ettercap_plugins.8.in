@@ -86,18 +86,28 @@ This plugin intercepts DNS query and reply with a spoofed answer. You can chose
 to which address the plugin has to reply by modifying the etter.dns file. The
 plugin intercepts A, AAAA, PTR, MX, WINS and SRV request. If it was an A 
 request, the name is searched in the file and the IP address is returned 
-(you can use wildcards in the name). The same applies if it was a AAAA request. 
+(you can use wildcards in the name). 
+.br
+The same applies if it was a AAAA request. 
+.Sp
 If it was a PTR request, the IP address is searched in the file and the name is 
 returned (except for those name containing a wildcard). For PTR requests, IPv4
-or IPv6 addresses are supported. In case of MX request a special reply is 
+or IPv6 addresses are supported. 
+.Sp
+In case of MX request a special reply is 
 crafted. The host is resolved with a fake host 'mail.host' and the additional 
 record contains the IP address of 'mail.host'. The first address that matches 
 is returned, so be careful with the order. The IP address for MX requests can
-be a IPv4 or a IPv6 address. If the request was a WINS request, the name is 
-searched in the file and the IP address is returned. In case of SRV request, a 
+be a IPv4 or a IPv6 address. 
+.Sp
+If the request was a WINS request, the name is 
+searched in the file and the IP address is returned. 
+.Sp
+In case of SRV request, a 
 special reply is crafted. The host is resolved with a fake host 'srv.host' and 
 the additional record contains the IP address of 'srv.host'. The IP address for
 SRV requests can be a IPv4 or a IPv6 address.
+.Sp
 A special reply can be spoofed for A or AAAA requests, if the 'undefined 
 address' is specified as the IP address in the file. Then the client gets a
 response which stops resolution processing imediately. This way one can control

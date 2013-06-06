@@ -38,15 +38,9 @@
 #    workgroup WINS 127.0.0.1                                              #
 #    PC*       WINS 127.0.0.1                                              #
 #                                                                          #
-# or for SRV query:                                                        #
+# or for SRV query (either IPv4 or IPv6):                                  #
 #    service._tcp|_udp.domain SRV 192.168.1.10:port                        #
-#    Example:                                                              #
-#    xmpp-server._tcp.google.com SRV 192.168.1.10:5269                     #
-#                                                                          #
-#                                                                          #
-# or for SRV query:                                                        #
-#    service   SRV target:port                                             #
-#    xmpp-server._tcp.blah.com SRV 1.2.3.4:5269                            #
+#    service._tcp|_udp.domain SRV [2001:db8::3]:port                       #
 #                                                                          #
 # NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
 #       so if you want to reverse poison you have to specify a plain       #
@@ -105,5 +99,12 @@ microsoft.com MX 2001:db8::1ce:c01d:bee3
 #
 
 LAB-PC*  WINS  127.0.0.1
+
+###############################################
+# some service discovery examples
+
+xmpp-server._tcp.jabber.org SRV 192.168.1.10:5269     
+ldap._udp.mynet.com SRV [2001:db8:c001:beef::1]:389   
+
 
 # vim:ts=8:noexpandtab

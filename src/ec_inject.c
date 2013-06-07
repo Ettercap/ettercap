@@ -229,8 +229,8 @@ int user_kill(struct conn_object *co)
    status = (struct tcp_status *)s->data;
      
    /* send the reset. at least one should work */
-   send_tcp(&po.L3.src, &po.L3.dst, po.L4.src, po.L4.dst, htonl(status->way[!direction].last_ack), 0, TH_RST);
-   send_tcp(&po.L3.dst, &po.L3.src, po.L4.dst, po.L4.src, htonl(status->way[direction].last_ack), 0, TH_RST);
+   send_tcp(&po.L3.src, &po.L3.dst, po.L4.src, po.L4.dst, htonl(status->way[!direction].last_ack), 0, TH_RST, NULL, 0);
+   send_tcp(&po.L3.dst, &po.L3.src, po.L4.dst, po.L4.src, htonl(status->way[direction].last_ack), 0, TH_RST, NULL, 0);
 
    return ESUCCESS;
 }

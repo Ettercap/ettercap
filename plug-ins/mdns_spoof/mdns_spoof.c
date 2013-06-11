@@ -42,7 +42,38 @@ struct mdns_header {
     uint16_t auth_rrs;
     uint16_t additional_rrs;
 };
-
+//  
+//struct mdns_header {
+//   u_int16 id;                /* DNS packet ID */
+//#ifdef WORDS_BIGENDIAN
+//   u_char  qr: 1;             /* response flag */
+//   u_char  opcode: 4;         /* purpose of message */
+//   u_char  aa: 1;             /* authoritative answer */
+//   u_char  tc: 1;             /* truncated message */
+//   u_char  rd: 1;             /* recursion desired */
+//   u_char  ra: 1;             /* recursion available */
+//   u_char  unused: 1;         /* unused bits */
+//   u_char  ad: 1;             /* authentic data from named */
+//   u_char  cd: 1;             /* checking disabled by resolver */
+//   u_char  rcode: 4;          /* response code */
+//#else /* WORDS_LITTLEENDIAN */
+//   u_char  rd: 1;             /* recursion desired */
+//   u_char  tc: 1;             /* truncated message */
+//   u_char  aa: 1;             /* authoritative answer */
+//   u_char  opcode: 4;         /* purpose of message */
+//   u_char  qr: 1;             /* response flag */
+//   u_char  rcode: 4;          /* response code */
+//   u_char  cd: 1;             /* checking disabled by resolver */
+//   u_char  ad: 1;             /* authentic data from named */
+//   u_char  unused: 1;         /* unused bits */
+//   u_char  ra: 1;             /* recursion available */
+//#endif
+//   u_int16 num_q;             /* Number of questions */
+//   u_int16 num_answer;        /* Number of answer resource records */
+//   u_int16 num_auth;          /* Number of authority resource records */
+//   u_int16 num_res;           /* Number of additional resource records */
+//};
+//
 struct mdns_spoof_entry {
    int   type;   /* ns_t_a, ns_t_ptr, ns_t_srv */
    char *name;
@@ -270,16 +301,22 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
       NS_GET16(type, q);
       NS_GET16(class, q);
 
+      /* handle only internet class */
+      if (class != ns_c_in)
+         return;
 
       if(type == ns_t_a) {
          struct ip_addr *reply;
-         u_int8 answer[(q - data) + 16];
+         u_int8 answer[(q - data) + 12 + 4];
          u_char *p = answer + (q - data);
          char tmp[MAX_ASCII_ADDR_LEN];
          
          /* found the reply in the list */
          if (get_spoofed_a(name, &reply) != ESUCCESS)
             return;
+
+         /* Do not forward query */
+         po->flags |= PO_DROPPED; 
 
          /* 
           * fill the buffer with the content of the request
@@ -296,7 +333,8 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
          ip_addr_cpy(p + 12, reply);                      /* data */
 
          /* send the fake reply */
-        // send_mdns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, ntohs(mdns->id), answer, sizeof(answer), 0);
+        send_mdns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+                        ntohs(mdns->id), answer, sizeof(answer), 1, 0, 0);
          
          USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), ip_addr_ntoa(reply, tmp));
        }

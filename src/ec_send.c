@@ -940,7 +940,7 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
            0,                                                           /* TOS */
            htons(EC_MAGIC_16),                                          /* IP ID */
            0,                                                           /* IP Frag */
-           64,                                                          /* TTL */
+           255,                                                         /* TTL */
            IPPROTO_UDP,                                                 /* protocol */
            0,                                                           /* checksum */
            ip_addr_to_int32(&sip->addr),                                /* source IP */

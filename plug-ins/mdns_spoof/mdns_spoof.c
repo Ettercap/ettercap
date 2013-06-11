@@ -311,10 +311,12 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
          u_char *p = answer + (q - data);
          char tmp[MAX_ASCII_ADDR_LEN];
          
+         USER_MSG("received MDNS A query for %s\n", name);
          /* found the reply in the list */
          if (get_spoofed_a(name, &reply) != ESUCCESS)
             return;
 
+         USER_MSG("found spoof entry\n");
          /* Do not forward query */
          po->flags |= PO_DROPPED; 
 
@@ -336,7 +338,12 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
           * send the fake reply 
           * answer with faked IP, back to the multicast address
           */
-         send_mdns_reply(po->L4.src, &reply, &po->L3.dst, po->L2.dst, 
+         USER_MSG("destination: %s\n", ip_addr_ntoa(&po->L3.dst, tmp));
+         if (ntohs((&po->L3.dst)->addr_type) == AF_INET6) {
+             USER_MSG("destination %s is IPv6: skip!\n", ip_addr_ntoa(&po->L3.dst, tmp));
+             return;
+         }
+         send_mdns_reply(po->L4.src, reply, &po->L3.dst, po->L2.dst, 
                          ntohs(mdns->id), answer, sizeof(answer), 1, 0, 0);
          
          USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), ip_addr_ntoa(reply, tmp));

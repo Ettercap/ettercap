@@ -332,9 +332,12 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
          memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
          ip_addr_cpy(p + 12, reply);                      /* data */
 
-         /* send the fake reply */
-        send_mdns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
-                        ntohs(mdns->id), answer, sizeof(answer), 1, 0, 0);
+         /*
+          * send the fake reply 
+          * answer with faked IP, back to the multicast address
+          */
+         send_mdns_reply(po->L4.src, &reply, &po->L3.dst, po->L2.dst, 
+                         ntohs(mdns->id), answer, sizeof(answer), 1, 0, 0);
          
          USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), ip_addr_ntoa(reply, tmp));
        }

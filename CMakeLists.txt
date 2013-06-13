@@ -15,6 +15,9 @@ option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
 option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
 option(ENABLE_TESTS "Enable Unit Tests" OFF)
+option(LIBRARY_BUILD "Build for libettercap only" OFF)
+
+
 
 SET(VALID_BUILD_TYPES Debug Release)
 
@@ -83,6 +86,12 @@ if(OS_DARWIN)
 else(OS_DARWIN)
 	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/lib64 /usr/lib32)
 endif(OS_DARWIN)
+
+if (LIBRARY_BUILD)
+	set(ENABLE_GTK OFF)
+	set(ENABLE_CURSES OFF)
+	set(JUST_LIBRARY 1)
+endif(LIBRARY_BUILD)
 
 include(EttercapHeadersCheck)
 include(EttercapLibCheck)

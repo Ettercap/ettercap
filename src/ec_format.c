@@ -158,31 +158,38 @@ int hex_len(int len)
  * 0000: 4854 5450 2f31 2e31 2033 3034 204e 6f74  HTTP/1.1 304 Not
  * 0010: 204d 6f64 6966 6965 64                    Modified
  */
-
 int hex_format(const u_char *buf, size_t len, u_char *dst)
 {
    u_int i, j, jm, c;
    int dim = 0;
-  
+   char tmp[10];
+
+
+
    /* some sanity checks */
    if (len == 0 || buf == NULL) {
       strncpy((char*)dst, "", 1);
       return 0;
    }
-  
+
    /* empty the string */
    memset(dst, 0, hex_len(len));
-   
+
    for (i = 0; i < len; i += HEX_CHAR_PER_LINE) {
-           snprintf((char*)dst, strlen((char*)dst)+5, "%s %04x: ", dst, i );
+           snprintf(tmp, 7, "%04x: ", i);
+           strncat(dst, tmp, 7);
+
            jm = len - i;
            jm = jm > HEX_CHAR_PER_LINE ? HEX_CHAR_PER_LINE : jm;
 
            for (j = 0; j < jm; j++) {
                    if ((j % 2) == 1) {
-                      snprintf((char*)dst, strlen((char*)dst) + 3, "%s%02x ", dst, buf[i+j]);
+                     snprintf(tmp, 4, "%02x ", buf[i+j]);
+                     strncat(dst, tmp, 4);
                    } else {
-                      snprintf((char*)dst, strlen((char*)dst)+3, "%s%02x", dst, buf[i+j]);
+                        snprintf(tmp, 3, "%02x", buf[i+j]);
+                        strncat(dst, tmp, 3);
+
                    }
            }
            for (; j < HEX_CHAR_PER_LINE; j++) {
@@ -191,13 +198,14 @@ int hex_format(const u_char *buf, size_t len, u_char *dst)
                    } else {
                       strcat((char*)dst, "  ");
                    }
-           } 
+           }
            strcat((char*)dst, " ");
 
            for (j = 0; j < jm; j++) {
-                   c = buf[i+j];
+                  c = buf[i+j];
                    c = isprint(c) ? c : '.';
-                   dim = snprintf((char*)dst, strlen((char*)dst)+1, "%s%c", dst, c);
+                   dim = snprintf(tmp, 2, "%c" , c);
+                   strncat(dst, tmp, 2);
            }
            strcat((char*)dst, "\n");
    }

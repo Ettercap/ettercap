@@ -178,6 +178,7 @@ int hex_format(const u_char *buf, size_t len, u_char *dst)
    for (i = 0; i < len; i += HEX_CHAR_PER_LINE) {
            snprintf(tmp, 7, "%04x: ", i);
            strncat(dst, tmp, 7);
+	   dim += 4;
 
            jm = len - i;
            jm = jm > HEX_CHAR_PER_LINE ? HEX_CHAR_PER_LINE : jm;
@@ -186,28 +187,35 @@ int hex_format(const u_char *buf, size_t len, u_char *dst)
                    if ((j % 2) == 1) {
                      snprintf(tmp, 4, "%02x ", buf[i+j]);
                      strncat(dst, tmp, 4);
+	             dim += 2;
                    } else {
                         snprintf(tmp, 3, "%02x", buf[i+j]);
                         strncat(dst, tmp, 3);
+			dim += 2;
 
                    }
            }
            for (; j < HEX_CHAR_PER_LINE; j++) {
                    if ((j % 2) == 1) {
                       strcat((char*)dst, "   ");
+		      dim += 3;
                    } else {
                       strcat((char*)dst, "  ");
+		      dim++;
                    }
            }
            strcat((char*)dst, " ");
+           dim++;
 
            for (j = 0; j < jm; j++) {
                   c = buf[i+j];
                    c = isprint(c) ? c : '.';
                    dim = snprintf(tmp, 2, "%c" , c);
                    strncat(dst, tmp, 2);
+		   dim++;
            }
            strcat((char*)dst, "\n");
+ 	   dim++;
    }
 
    return dim + 1;

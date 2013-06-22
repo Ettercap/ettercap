@@ -37,6 +37,9 @@ set_target_properties(finger PROPERTIES PREFIX "ec_")
 add_library(finger_submit MODULE finger_submit/finger_submit.c)
 set_target_properties(finger_submit PROPERTIES PREFIX "ec_")
 
+add_library(fraggle_attack MODULE fraggle_attack/fraggle_attack.c)
+set_target_properties(fraggle_attack PROPERTIES PREFIX "ec_")
+
 add_library(gre_relay MODULE gre_relay/gre_relay.c)
 set_target_properties(gre_relay PROPERTIES PREFIX "ec_")
 
@@ -121,6 +124,7 @@ find_ettercap
 find_ip
 finger
 finger_submit
+fraggle_attack
 gre_relay
 gw_discover
 isolate
@@ -159,6 +163,7 @@ install(TARGETS
             find_ip
             finger
             finger_submit
+            fraggle_attack
             gre_relay
             gw_discover
             isolate

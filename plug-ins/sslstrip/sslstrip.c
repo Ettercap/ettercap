@@ -153,6 +153,7 @@ static int sslstrip_init(void *);
 static int sslstrip_fini(void *);
 static void sslstrip(struct packet_object *po);
 static int sslstrip_is_http(struct packet_object *po);
+void safe_free_http_redirect(char **param, int *param_length, char *command, char *orig_command);
 
 #ifndef OS_LINUX
 static void sslstrip_create_session(struct ec_session **s, struct packet_object *po);
@@ -435,11 +436,24 @@ static void Find_Url(u_char *to_parse, char **ret)
    Decode_Url((u_char *)*ret);
 }
 
+/* This function remove variables use by http_insert_redirect and http_remove_redirect functions */
+void safe_free_http_redirect(char **param, int *param_length, char *command, char *orig_command) {
+
+	int k;
+
+	SAFE_FREE(command);
+	SAFE_FREE(orig_command);
+
+	for(k= 0; k < (*param_length); ++k)
+		SAFE_FREE(param[k]);
+	SAFE_FREE(param);
+}
+
 /* HTTP handling functions */
 static int http_insert_redirect(u_int16 dport)
 {
 	char asc_dport[16];
-	int ret_val, i=0;
+	int ret_val, i=0, param_length= 0;
 	char *command, *orig_command, *p;
 	char **param = NULL;
 
@@ -467,22 +481,26 @@ static int http_insert_redirect(u_int16 dport)
 
 	SAFE_REALLOC(param, (i+1) * sizeof(char *));
 	param[i] = NULL;
+	param_length= i + 1; //because there is a SAFE_REALLOC after the for.
 
 	switch(fork()) {
 		case 0:
 			execvp(param[0], param);
-			exit(EINVALID);
+			break;
 		case -1:
-			SAFE_FREE(param);
+			safe_free_http_redirect(param, &param_length, command, orig_command);
 			return -EINVALID;
 		default:
-			SAFE_FREE(param);
-			wait(&ret_val);
-			if (WEXITSTATUS(ret_val)) {
-				USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
-				return -EINVALID;
-                        }
-	}
+                wait(&ret_val);
+                if (WEXITSTATUS(ret_val)) {
+                      USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+                      safe_free_http_redirect(param, &param_length, command, orig_command);
+                      return -EINVALID;
+                }
+                break;
+     }
+
+	safe_free_http_redirect(param, &param_length, command, orig_command);
 
 	return ESUCCESS;
 }
@@ -490,7 +508,7 @@ static int http_insert_redirect(u_int16 dport)
 static int http_remove_redirect(u_int16 dport)
 {
         char asc_dport[16];
-        int ret_val, i=0;
+        int ret_val, i=0, param_length= 0;
 	char *command, *orig_command, *p;
         char **param = NULL;
 
@@ -518,22 +536,26 @@ static int http_remove_redirect(u_int16 dport)
 
         SAFE_REALLOC(param, (i+1) * sizeof(char *));
         param[i] = NULL;
+        param_length= i + 1; //because there is a SAFE_REALLOC after the for.
 
         switch(fork()) {
                 case 0:
                         execvp(param[0], param);
-                        exit(EINVALID);
+                        break;
                 case -1:
-                        SAFE_FREE(param);
+                        safe_free_http_redirect(param, &param_length, command, orig_command);
                         return -EINVALID;
                 default:
-                        SAFE_FREE(param);
                         wait(&ret_val);
-			if (WEXITSTATUS(ret_val)) {
-				USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
-				return -EINVALID;
+                        if (WEXITSTATUS(ret_val)) {
+                            USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+                            safe_free_http_redirect(param, &param_length, command, orig_command);
+                            return -EINVALID;
                         }
+                        break;
         }
+
+        safe_free_http_redirect(param, &param_length, command, orig_command);
 
         return ESUCCESS;
 }
@@ -1352,7 +1374,7 @@ void http_update_content_length(struct http_connection *connection) {
 
                 char c_length[20];
                 memset(&c_length, '\0', 20);
-                snprintf(c_length, 20, "%u", connection->response->len);
+                snprintf(c_length, 20, "%lu", connection->response->len);
 
                 memcpy(buf+(content_length-buf)-1, c_length, strlen(c_length));
         }

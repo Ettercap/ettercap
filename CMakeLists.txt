@@ -16,6 +16,7 @@ option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
 option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
 option(ENABLE_TESTS "Enable Unit Tests" OFF)
 option(LIBRARY_BUILD "Build for libettercap only" OFF)
+option(INSTALL_DESKTOP "Install ettercap desktop files" ON)
 
 
 
@@ -104,6 +105,8 @@ set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation direct
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
 set(POLKIT_DIR /usr/share/polkit-1/actions/ CACHE PATH "Binary files installation directory")
+set(DESKTOP_DIR /usr/share/applications/ CACHE PATH "Binary files installation directory")
+set(ICON_DIR /usr/share/pixmaps CACHE PATH "Binary files installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages") 
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)
@@ -128,6 +131,7 @@ set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/incl
 include_directories(${EC_INCLUDE_PATH})
 
 add_subdirectory(src)
+add_subdirectory(desktop)
 
 if(HAVE_PLUGINS)
     if(OS_MINGW)
@@ -143,10 +147,6 @@ add_subdirectory(man)
 if(ENABLE_IPV6)
     set(WITH_IPV6 TRUE)
 endif(ENABLE_IPV6)
-
-SET(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap.policy)
-CONFIGURE_FILE(src/org.pkexec.ettercap.policy.in
-  ${PKEXEC_INSTALL_WRAPPER} @ONLY)
 
 # This line should ALWAYS be after all options are defined
 configure_file(include/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
@@ -172,4 +172,3 @@ if(NOT ("${CMAKE_CACHEFILE_DIR}" STREQUAL ""))
   message("")
 endif(NOT ("${CMAKE_CACHEFILE_DIR}" STREQUAL ""))
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.pkexec.ettercap.policy DESTINATION ${POLKIT_DIR})

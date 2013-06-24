@@ -671,9 +671,9 @@ You can specify a key to decrypt WiFi packets (WEP or WPA). Only the packets dec
 successfully will be passed to the decoders stack, the others will be skipped
 with a message.
 .br
-The parameter has the following syntax: type:bits:t:string. Where 'type' can be: wep, wpa-pws or wpa-psk,
-'bits' is the bit length of the key (64, 128 or 256), 't' is the type of the string ('s' for string and 'p' for 
-passphrase). 'string' can be a string or an escaped hex sequences.
+The parameter has the following syntax: type:bits:t:string. Where 'type' can be: wep, wpa-pws
+or wpa-psk, 'bits' is the bit length of the key (64, 128 or 256), 't' is the type of the string
+('s' for string and 'p' for passphrase). 'string' can be a string or an escaped hex sequences.
 .Sp
 example:
 .br
@@ -968,6 +968,7 @@ Daten (Bryan Schneiders)  <daten@dnetc.org>
 .I "ettercap_plugins(8)"
 .I "etterlog(8)"
 .I "etterfilter(8)"
+.I "ettercap-pkexec(8)"
 .LP
 
 

@@ -427,8 +427,7 @@ int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr)
           * equivalent is the multicast address ff02::1. Packets sent to that
           * address are delivered to all link-local nodes.
           */
-         /* XXX memcmp should be the right one  --- to be changed */
-         if(!memcpy(sa->addr, IP6_ALL_NODES, IP6_ADDR_LEN))
+         if(!memcmp(sa->addr, IP6_ALL_NODES, IP6_ADDR_LEN))
             return ESUCCESS;
          
 			break;

@@ -35,7 +35,6 @@
 
 #define MDNS_QU_FLAG 0x8000
 
-
 struct mdns_header {
     uint16_t id;
     uint16_t flags;
@@ -92,7 +91,6 @@ struct plugin_ops mdns_spoof_ops = {
 /* this function is called on plugin load */
 int plugin_load(void *handle) 
 {
-
    /* load the database of spoofed replies (etter.dns) 
     * return an error if we could not open the file
     */
@@ -134,7 +132,6 @@ static int load_db(void)
    char line[128];
    char *ptr, *ip, *name;
    int lines = 0, type;
-
    
    /* open the file */
    f = open_data("etc", ETTER_MDNS, FOPEN_READ_TEXT);
@@ -302,7 +299,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, char
          memcpy(p    , "\x00\x01", 2);                    /* type A */
          memcpy(p + 2, "\x00\x01", 2);                    /* class */
          memcpy(p + 4, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
-         memcpy(p + 8, "\x00\x04", 2);                   /* datalen */
+         memcpy(p + 8, "\x00\x04", 2);                    /* datalen */
          ip_addr_cpy(p + 10, reply);                      /* data */
 
          /*

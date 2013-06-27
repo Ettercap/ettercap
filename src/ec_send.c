@@ -909,7 +909,7 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
              LIBNET_UDP_DNSV4_H,    /* TCP or UDP */
              id,                    /* id */
              0x8400,                /* standard reply, no error */
-             1,                     /* num_q */
+             0,                     /* num_q */
              anws_rr,               /* num_anws_rr */
              auth_rr,               /* num_auth_rr */
              addi_rr,               /* num_addi_rr */

@@ -257,7 +257,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
        * Additional formac scan as SRV records have a different syntax
        */
       static char ip_tmp[MAX_ASCII_ADDR_LEN];
-      if (sscanf(ip, "[%40[0-9a-fA-F:.]:%d", ip_tmp, &port) == 2) {
+      if (sscanf(ip, "[%40[0-9a-fA-F:.]]:%d", ip_tmp, &port) == 2) {
          strncpy(ip, ip_tmp, strlen(ip_tmp)+1);
       }
       else if (sscanf(ip, "%20[0-9.]:%d", ip_tmp, &port) == 2) {

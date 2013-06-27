@@ -36,6 +36,10 @@ username
 userid
 form_loginname
 loginname
+login_id
+loginid
+session_key
+sessionkey
 pop_login
 uid
 id
@@ -63,6 +67,10 @@ ahd_password
 pass
 password
 passwd
+session_password
+sessionpassword
+login_password
+loginpassword
 form_pw
 pw
 userpassword

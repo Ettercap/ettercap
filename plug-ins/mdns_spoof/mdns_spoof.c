@@ -350,7 +350,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          ip_addr_cpy(p + 10, reply);                      /* data */
 
          /*
-          * depending on the MDNS question, the target address hast to be redefined;
+          * depending on the MDNS question, the target address has to be redefined;
           * we also can not use the multicast address as the source but also;
           * don't want to reveal our own IP, so the sender needs also be redefined;
           * hence the variables for the transport of the reply need to be prepared.
@@ -399,7 +399,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          ip_addr_cpy(p + 10, reply);                      /* data */
 
          /*
-          * depending on the MDNS question, the target address hast to be redefined;
+          * depending on the MDNS question, the target address has to be redefined;
           * we also can not use the multicast address as the source but also;
           * don't want to reveal our own IP, so the sender needs also be redefined;
           * hence the variables for the transport of the reply need to be prepared.
@@ -444,7 +444,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          NS_PUT16(rlen, p);
 
          /*
-          * depending on the MDNS question, the target address hast to be redefined;
+          * depending on the MDNS question, the target address has to be redefined;
           * we also can not use the multicast address as the source but also;
           * don't want to reveal our own IP, so the sender needs also be redefined;
           * hence the variables for the transport of the reply need to be prepared.
@@ -548,7 +548,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          }
 
          /*
-          * depending on the MDNS question, the target address hast to be redefined;
+          * depending on the MDNS question, the target address has to be redefined;
           * we also can not use the multicast address as the source but also;
           * don't want to reveal our own IP, so the sender needs also be redefined;
           * hence the variables for the transport of the reply need to be prepared.

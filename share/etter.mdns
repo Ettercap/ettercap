@@ -17,19 +17,17 @@
 #   www.myhostname.com A 168.11.22.33                                      #
 #   *.foo.com          A 168.44.55.66                                      #
 #                                                                          #
+# ... for a AAAA query (same hostname allowed):                            #
+#   www.myhostname.com AAAA 2001:db8::1                                    #
+#   *.foo.com          AAAA 2001:db8::2                                    #
+#                                                                          #
 # or for PTR query:                                                        #
 #   www.bar.com    PTR 10.0.0.10                                           #
 #   www.google.com PTR ::1                                                 #
 #                                                                          #
-# or for SRV query:                                                        #
+# or for SRV query (either IPv4 or IPv6):                                  #
 #    service._tcp|_udp.domain SRV 192.168.1.10:port                        #
-#    Example:                                                              #
-#    xmpp-server._tcp.google.com SRV 192.168.1.10:5269                     #
-#                                                                          #
-#                                                                          #
-# or for SRV query:                                                        #
-#    service   SRV target:port                                             #
-#    xmpp-server._tcp.blah.com SRV 1.2.3.4:5269                            #
+#    service._tcp|_udp.domain SRV [2001:db8::3]:port                       #
 #                                                                          #
 # NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
 #       so if you want to reverse poison you have to specify a plain       #
@@ -47,20 +45,20 @@ microsoft.com      A   198.182.196.56
 www.microsoft.com  PTR 198.182.196.56      # Wildcards in PTR are not allowed
 
 ##########################################
-# no one out there can have our domains...
-#
+# normally .local is dedicated use for mDNS
+# try to redirect the router admin
 
-www.alor.org  A 127.0.0.1
-www.naga.org  A 127.0.0.1
+router.local       A    192.168.0.25
+router.local       AAAA 2001:db8::25       # our router supports also IPv6
+router.local       PTR  192.168.0.25
+router.local       PTR  2001:db8::25
 
 
 ###############################################
-# one day we will have our ettercap.org domain
-#
+# some service discovery examples
 
-www.ettercap.org           A  127.0.0.1
-www.ettercap-project.org   A  127.0.0.1
-ettercap.sourceforge.net   A  216.136.171.201
+xmpp-server._tcp.jabber.org SRV 192.168.1.10:5269     
+domain._udp.local SRV [2001:db8:c001:beef::1]:53   
 
 
 

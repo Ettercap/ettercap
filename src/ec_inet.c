@@ -29,6 +29,7 @@ int ip_addr_cpy(u_char *addr, struct ip_addr *sa);
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 int ip_addr_null(struct ip_addr *sa);
 int ip_addr_is_zero(struct ip_addr *sa);
+int ip_addr_random(struct ip_addr* ip, u_int16 type);
 
 char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 int ip_addr_pton(char *str, struct ip_addr *addr);
@@ -36,6 +37,7 @@ char *mac_addr_ntoa(u_char *mac, char *dst);
 int mac_addr_aton(char *str, u_char *mac);
 
 int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr);
+int ip_addr_is_multicast(struct ip_addr *ip);
 int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr);
 int ip_addr_is_ours(struct ip_addr *);
 
@@ -133,6 +135,44 @@ int ip_addr_is_zero(struct ip_addr *sa)
    return 1;
 }
 
+/*
+ * generates a random link-local ip address
+ * returns ESUCCESS or -EINVALID if address family is unkown
+ */
+int ip_addr_random(struct ip_addr* ip, u_int16 type)
+{
+   /* generate a random 32-bit number */
+   srand(time(NULL));
+   u_int32 r = rand();
+   u_int32 h1 = r | 0x02000000;
+   u_int32 h2 = ~r;
+
+   switch (type) {
+      case AF_INET:
+         ip->addr_type = htons(type);
+         ip->addr_len  = IP_ADDR_LEN;
+         memset(ip->addr, 0, IP_ADDR_LEN);
+         memcpy(ip->addr,     "\xa9\xfe", 2); /* 169.254/16 */
+         memcpy(ip->addr + 2, (u_char*)&r, 2);
+      break;
+
+      case AF_INET6:
+         ip->addr_type = htons(type);
+         ip->addr_len  = IP6_ADDR_LEN;
+         memset(ip->addr, 0, IP6_ADDR_LEN);
+         memcpy(ip->addr,      "\xfe\x80\x00\x00", 4);
+         memcpy(ip->addr + 4,  "\x00\x00\x00\x00", 4);
+         memcpy(ip->addr + 8,  (u_char*)&h1, 4);
+         memcpy(ip->addr + 12, (u_char*)&h2, 4);
+         memcpy(ip->addr + 11, "\xff\xfe", 2);
+      break;
+
+      default:
+         return -EINVALID;
+
+   }
+   return ESUCCESS;
+}
 
 /*
  * convert to ascii an ip address
@@ -322,6 +362,31 @@ int mac_addr_aton(char *str, u_char *mac)
 }
 
 /*
+ * returns  1 if the ip is multicast
+ * returns  0 if not
+ * returns -EINVALID if address family is unknown
+ */
+int ip_addr_is_multicast(struct ip_addr *ip)
+{
+
+   switch(ntohs(ip->addr_type)) {
+      case AF_INET:
+         if ((*ip->addr & 0xf0) == 0xe0)
+            return 1;
+      break;
+
+      case AF_INET6:
+         if ((*ip->addr & 0xff) == 0xff)
+            return 1;
+      break;
+
+      default:
+         return -EINVALID;
+   }
+	return 0;
+}
+
+/*
  * returns  ESUCCESS if the ip is broadcast
  * returns -ENOTFOUND if not
  */
@@ -362,7 +427,7 @@ int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr)
           * equivalent is the multicast address ff02::1. Packets sent to that
           * address are delivered to all link-local nodes.
           */
-         if(!memcpy(sa->addr, IP6_ALL_NODES, IP6_ADDR_LEN))
+         if(!memcmp(sa->addr, IP6_ALL_NODES, IP6_ADDR_LEN))
             return ESUCCESS;
          
 			break;

@@ -70,7 +70,7 @@ int send_L3_icmp_echo(struct ip_addr *src, struct ip_addr *tgt);
 int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct packet_object *po);
 int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int8 *dhcp_hdr, u_int8 *options, size_t optlen);
 int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr);
-int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr);
+int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr);
 int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags, u_int8 *payload, size_t length);
 int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 sport, u_int16 dport, u_int8 *payload, size_t length);
 int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
@@ -894,7 +894,7 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
 /*
  * send a mdns reply
  */
-int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 addi_rr)
+int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr)
 {
    libnet_ptag_t t;
    int c;
@@ -909,9 +909,9 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
              LIBNET_UDP_DNSV4_H,    /* TCP or UDP */
              id,                    /* id */
              0x8400,                /* standard reply, no error */
-             1,                     /* num_q */
-             1,                     /* num_anws_rr */
-             0,                     /* num_auth_rr */
+             0,                     /* num_q */
+             anws_rr,               /* num_anws_rr */
+             auth_rr,               /* num_auth_rr */
              addi_rr,               /* num_addi_rr */
              data,
              datalen,
@@ -940,7 +940,7 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
            0,                                                           /* TOS */
            htons(EC_MAGIC_16),                                          /* IP ID */
            0,                                                           /* IP Frag */
-           64,                                                          /* TTL */
+           255,                                                         /* TTL */
            IPPROTO_UDP,                                                 /* protocol */
            0,                                                           /* checksum */
            ip_addr_to_int32(&sip->addr),                                /* source IP */

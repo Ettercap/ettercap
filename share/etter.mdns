@@ -25,15 +25,6 @@
 #   www.bar.com    PTR 10.0.0.10                                           #
 #   www.google.com PTR ::1                                                 #
 #                                                                          #
-# or for MX query (either IPv4 or IPv6):                                   #
-#    domain.com MX xxx.xxx.xxx.xxx                                         #
-#    domain2.com MX xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx                #
-#    domain3.com MX xxxx:xxxx::y                                           #
-#                                                                          #
-# or for WINS query:                                                       #
-#    workgroup WINS 127.0.0.1                                              #
-#    PC*       WINS 127.0.0.1                                              #
-#                                                                          #
 # or for SRV query (either IPv4 or IPv6):                                  #
 #    service._tcp|_udp.domain SRV 192.168.1.10:port                        #
 #    service._tcp|_udp.domain SRV [2001:db8::3]:port                       #
@@ -62,19 +53,6 @@ router.local       AAAA 2001:db8::25       # our router supports also IPv6
 router.local       PTR  192.168.0.25
 router.local       PTR  2001:db8::25
 
-
-##########################################
-# theoretically we can also spoof MX queries
-# 
-example.org MX 127.0.0.2
-microsoft.com MX 2001:db8::1ce:c01d:bee3
-
-###############################################
-# This messes up NetBIOS clients using DNS
-# resolutions. I.e. Windows/Samba file sharing.
-#
-
-LAB-PC*  WINS  127.0.0.1
 
 ###############################################
 # some service discovery examples

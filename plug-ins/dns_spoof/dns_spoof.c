@@ -364,6 +364,13 @@ static void dns_spoof(struct packet_object *po)
          if (get_spoofed_a(name, &reply) != ESUCCESS)
             return;
 
+         /* check if the family matches the record type */
+         if (ntohs(reply->addr_type) != AF_INET) {
+            USER_MSG("mdns_spoof: can not spoof A record for %s "
+                     "because the value is not a IPv4 address\n", name);
+            return;
+         }
+
          /* Do not forward query */
          po->flags |= PO_DROPPED; 
 
@@ -411,6 +418,13 @@ static void dns_spoof(struct packet_object *po)
           /* found the reply in the list */
           if (get_spoofed_aaaa(name, &reply) != ESUCCESS)
               return;
+
+          /* check if the family matches the record type */
+          if (ntohs(reply->addr_type) != AF_INET6) {
+             USER_MSG("mdns_spoof: can not spoof AAAA record for %s "
+                      "because the value is not a IPv6 address\n", name);
+             return;
+          }
 
           /* Do not forward query */
           po->flags |= PO_DROPPED; 

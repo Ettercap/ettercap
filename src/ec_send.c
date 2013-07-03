@@ -897,8 +897,10 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
 int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr)
 {
    libnet_ptag_t t;
-   int c;
+   int c, proto;
  
+   proto = ntohs(sip->addr_type);
+
    /* if not lnet warn the developer ;) */
    BUG_IF(GBL_IFACE->lnet == 0);
   
@@ -935,25 +937,52 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
    libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
   
    /* create the IP header */
-   t = libnet_build_ipv4(                                                                          
-           LIBNET_IPV4_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen, /* length */
-           0,                                                           /* TOS */
-           htons(EC_MAGIC_16),                                          /* IP ID */
-           0,                                                           /* IP Frag */
-           255,                                                         /* TTL */
-           IPPROTO_UDP,                                                 /* protocol */
-           0,                                                           /* checksum */
-           ip_addr_to_int32(&sip->addr),                                /* source IP */
-           ip_addr_to_int32(&tip->addr),                                /* destination IP */
-           NULL,                                                        /* payload */
-           0,                                                           /* payload size */
-           GBL_IFACE->lnet,                                              /* libnet handle */ 
-           0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
-  
-   /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
+   switch (proto) {
+      case AF_INET: {
+         t = libnet_build_ipv4(                                                                          
+                 LIBNET_IPV4_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen, /* length */
+                 0,                                                           /* TOS */
+                 htons(EC_MAGIC_16),                                          /* IP ID */
+                 0,                                                           /* IP Frag */
+                 255,                                                         /* TTL */
+                 IPPROTO_UDP,                                                 /* protocol */
+                 0,                                                           /* checksum */
+                 ip_addr_to_int32(&sip->addr),                                /* source IP */
+                 ip_addr_to_int32(&tip->addr),                                /* destination IP */
+                 NULL,                                                        /* payload */
+                 0,                                                           /* payload size */
+                 GBL_IFACE->lnet,                                              /* libnet handle */ 
+                 0);
+         ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
+
+         /* auto calculate the checksum */
+         libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
    
+         break;
+      }
+#ifdef WITH_IPV6
+      case AF_INET6: {
+			struct libnet_in6_addr src, dst;
+			memcpy(&src, sip->addr, sizeof(src));
+			memcpy(&dst, tip->addr, sizeof(dst));
+         t = libnet_build_ipv6(
+               0,                                                             /* traffic class */
+               0,                                                             /* flow label */
+               LIBNET_IPV6_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen,   /* length */
+               IPPROTO_UDP,                                                   /* next header */
+               255,                                                           /* hop limit */
+               src,                                                           /* source IP */
+               dst,                                                           /* destination IP */
+               NULL,                                                          /* payload */
+               0,                                                             /* payload size */
+               GBL_IFACE->lnet,                                               /* libnet handle */
+               0);
+         ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(GBL_IFACE->lnet));
+         break;
+      }
+#endif
+   };
+  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
    if (t == -1)
@@ -977,7 +1006,9 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
 int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr)
 {
    libnet_ptag_t t;
-   int c;
+   int c, proto;
+
+   proto = ntohs(sip->addr_type);
  
    /* if not lnet warn the developer ;) */
    BUG_IF(GBL_IFACE->lnet == 0);
@@ -1015,25 +1046,52 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
    libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
   
    /* create the IP header */
-   t = libnet_build_ipv4(                                                                          
-           LIBNET_IPV4_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen, /* length */
-           0,                                                           /* TOS */
-           htons(EC_MAGIC_16),                                          /* IP ID */
-           0,                                                           /* IP Frag */
-           64,                                                          /* TTL */
-           IPPROTO_UDP,                                                 /* protocol */
-           0,                                                           /* checksum */
-           ip_addr_to_int32(&sip->addr),                                /* source IP */
-           ip_addr_to_int32(&tip->addr),                                /* destination IP */
-           NULL,                                                        /* payload */
-           0,                                                           /* payload size */
-           GBL_IFACE->lnet,                                              /* libnet handle */ 
-           0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
-  
-   /* auto calculate the checksum */
-   libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
+   switch (proto) {
+      case AF_INET: {
+         t = libnet_build_ipv4(                                                                          
+                 LIBNET_IPV4_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen, /* length */
+                 0,                                                           /* TOS */
+                 htons(EC_MAGIC_16),                                          /* IP ID */
+                 0,                                                           /* IP Frag */
+                 64,                                                          /* TTL */
+                 IPPROTO_UDP,                                                 /* protocol */
+                 0,                                                           /* checksum */
+                 ip_addr_to_int32(&sip->addr),                                /* source IP */
+                 ip_addr_to_int32(&tip->addr),                                /* destination IP */
+                 NULL,                                                        /* payload */
+                 0,                                                           /* payload size */
+                 GBL_IFACE->lnet,                                              /* libnet handle */ 
+                 0);
+         ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(GBL_IFACE->lnet));
+
+         /* auto calculate the checksum */
+         libnet_toggle_checksum(GBL_IFACE->lnet, t, LIBNET_ON);
    
+         break;
+      }
+#ifdef WITH_IPV6
+      case AF_INET6: {
+			struct libnet_in6_addr src, dst;
+			memcpy(&src, sip->addr, sizeof(src));
+			memcpy(&dst, tip->addr, sizeof(dst));
+         t = libnet_build_ipv6(
+               0,                                                             /* traffic class */
+               0,                                                             /* flow label */
+               LIBNET_IPV6_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen,   /* length */
+               IPPROTO_UDP,                                                   /* next header */
+               255,                                                           /* hop limit */
+               src,                                                           /* source IP */
+               dst,                                                           /* destination IP */
+               NULL,                                                          /* payload */
+               0,                                                             /* payload size */
+               GBL_IFACE->lnet,                                               /* libnet handle */
+               0);
+         ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(GBL_IFACE->lnet));
+         break;
+      }
+#endif
+   };
+  
    /* add the media header */
    t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP);
    if (t == -1)

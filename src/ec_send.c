@@ -962,9 +962,9 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
       }
 #ifdef WITH_IPV6
       case AF_INET6: {
-			struct libnet_in6_addr src, dst;
-			memcpy(&src, sip->addr, sizeof(src));
-			memcpy(&dst, tip->addr, sizeof(dst));
+         struct libnet_in6_addr src, dst;
+         memcpy(&src, sip->addr, sizeof(src));
+         memcpy(&dst, tip->addr, sizeof(dst));
          t = libnet_build_ipv6(
                0,                                                             /* traffic class */
                0,                                                             /* flow label */
@@ -1071,9 +1071,9 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
       }
 #ifdef WITH_IPV6
       case AF_INET6: {
-			struct libnet_in6_addr src, dst;
-			memcpy(&src, sip->addr, sizeof(src));
-			memcpy(&dst, tip->addr, sizeof(dst));
+         struct libnet_in6_addr src, dst;
+         memcpy(&src, sip->addr, sizeof(src));
+         memcpy(&dst, tip->addr, sizeof(dst));
          t = libnet_build_ipv6(
                0,                                                             /* traffic class */
                0,                                                             /* flow label */

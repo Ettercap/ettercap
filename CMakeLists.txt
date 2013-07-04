@@ -19,7 +19,6 @@ option(LIBRARY_BUILD "Build for libettercap only" OFF)
 option(INSTALL_DESKTOP "Install ettercap desktop files" ON)
 
 
-
 SET(VALID_BUILD_TYPES Debug Release)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -105,6 +104,7 @@ set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation direct
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
 set(POLKIT_DIR /usr/share/polkit-1/actions/ CACHE PATH "Binary files installation directory")
+set(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap CACHE PATH "Name of the pkexec action file")
 set(DESKTOP_DIR /usr/share/applications/ CACHE PATH "Binary files installation directory")
 set(ICON_DIR /usr/share/pixmaps CACHE PATH "Binary files installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages") 

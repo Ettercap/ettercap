@@ -4,7 +4,7 @@
  "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
 <policyconfig>
 
-  <action id="org.pkexec.ettercap">
+  <action id="@PKEXEC_INSTALL_WRAPPER@">
     <message>Authentication is required to run Ettercap</message>
     <icon_name>ettercap</icon_name>
     <defaults>

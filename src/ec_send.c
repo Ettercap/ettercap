@@ -296,7 +296,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
 {
    libnet_ptag_t t;
    int c;
-   int max_attemps = 10;
+   int max_attempts = 10;
    int tries = 0;
 
    /* if not lnet warn the developer ;) */
@@ -356,7 +356,7 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
       usleep(GBL_CONF->arp_storm_delay);
 #endif
       tries++;
-      
+
       //Try again
       c = libnet_write(GBL_IFACE->lnet);
    }

@@ -113,6 +113,20 @@ address' is specified as the IP address in the file. Then the client gets a
 response which stops resolution processing imediately. This way one can control
 which address family is being used to access a dual-stacked host.
 
+
+.TP
+.B mdns_spoof
+.Sp
+This plugin does the same as the dns_spoof plugin described above, despite that
+it listens for mDNS (Multicast DNS) queries on UDP port 5353. 
+To choose to which address the plugin shall reply, you have to modify a diffent 
+file called etter.mdns. Due to the nature of mDNS, the plugin intercepts only A, 
+AAAA, PTR and SRV requests.
+.Sp
+The way the mdns_spoof plugin interprets the etter.mdns file and the rules that 
+apply are the same as with the dns_spoof plugin.
+
+
 .TP 
 .B dos_attack
 .Sp

@@ -387,8 +387,5 @@ Daten (Bryan Schneiders)  <daten@dnetc.org>
 .I "etter.conf(5)"
 .I "ettercap_curses(8)"
 .I "ettercap_plugins(8)"
-.I "ettercap-pkexec(8)"
+.I "ettercap\-pkexec(8)"
 .LP
-
-
-

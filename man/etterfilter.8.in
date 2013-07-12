@@ -1,4 +1,4 @@
-.\"  etterfilter -- filter compiler for ettercap filter files
+.\"  etterfilter \-\- filter compiler for ettercap filter files
 .\"
 .\"  This program is free software; you can redistribute it and/or modify
 .\"  it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
 .\"
 .\"  You should have received a copy of the GNU General Public License
 .\"  along with this program; if not, write to the Free Software
-.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+.\"  Foundation, Inc., 59 Temple Place \- Suite 330, Boston, MA 02111\-1307, USA.
 .\"
 .\"
 .de Sp
@@ -54,7 +54,7 @@ prints some debug messages during the compilation. Use it more than once to
 increase the debug level ( etterfilter \-ddd ... ).
                            
 .TP
-\fB\-w\fR, \fB\-\-suppress-warnings\fR
+\fB\-w\fR, \fB\-\-suppress\-warnings\fR
 Don't exit on warnings. With this option the compiler will compile the script
 even if it contains warnings.
                            
@@ -94,25 +94,25 @@ OR '||' and AND '&&'.
 .Sp
 Example:
 .br
-if (tcp.src == 21 && search(DATA.data, "ettercap")) {
+if (tcp.src \=\= 21 && search(DATA.data, "ettercap")) {
 .br
 }
 .Sp
 Pay attention to the operator precedence. 
 You cannot use parentheses to group conditions, so be careful with the order. An
 AND at the beginning of a conditions block will exclude all the other tests if
-it is evaluated as false. The parsing is left-to-right, when an operator is
+it is evaluated as false. The parsing is left\-to\-right, when an operator is
 found: if it is an AND and the previous condition is false, all the statement
 is evaluated as false; if it is an OR the parsing goes on even if the condition 
 is false.
 .Sp
 Example:
 .br
-if (ip.proto == UDP || ip.proto == TCP && tcp.src == 80) {
+if (ip.proto \=\= UDP || ip.proto \=\= TCP && tcp.src \=\= 80) {
 .br
 }
 .Sp
-if (ip.proto == TCP && tcp.src == 80 || ip.proto == UDP) {
+if (ip.proto \=\= TCP && tcp.src \=\= 80 || ip.proto \=\= UDP) {
 .br
 }
 .Sp
@@ -124,34 +124,34 @@ blocks.
 .Sp
 Every instruction in a block must end with a semicolon ';'. 
 .Sp
-Comparisons are implemented with the '==' operator and can be used to compare 
+Comparisons are implemented with the '\=\=' operator and can be used to compare 
 numbers, strings or ip addresses. An ip address MUST be enclosed within two single 
 quotes (eg. '192.168.0.7'). You can also use the 'less than' ('<'), 'greater than'
-('>'), 'less or equal' ('<=') and 'greater or equal' ('>=') operators.
+('>'), 'less or equal' ('<\=') and 'greater or equal' ('>\=') operators.
 The lvalue of a comparison must be an offset (see later)
 .Sp
 Example:
 .br
-if (DATA.data + 20 == "ettercap" && ip.ttl > 16) {
+if (DATA.data \+ 20 \=\= "ettercap" && ip.ttl > 16) {
 .br
 }
 .Sp
-Assignments are implemented with the '=' operator and the lvalue can be an 
+Assignments are implemented with the '\=' operator and the lvalue can be an 
 offset (see later). The rvalue can be a string, an integer or a hexadecimal
 value.
 .Sp
 Example:
 .br
-ip.ttl = 0xff;
+ip.ttl \= 0xff;
 .br
-DATA.data + 7 = "ettercap NG"; 
+DATA.data \+ 7 \= "ettercap NG"; 
 .Sp
 You can also use the 'inc' and 'dec' operations on the packet fields. The operators
-used are '+=' and '-='. The rvalue can be an integer or a hexadecimal value.
+used are '\+\=' and '\-\='. The rvalue can be an integer or a hexadecimal value.
 .Sp
 Example:
 .br
-ip.ttl += 5;
+ip.ttl \+\= 5;
 
 
 .TP
@@ -160,14 +160,14 @@ An offset is identified by a virtual pointer. In short words, an offset is a
 pointer to the packet buffer. The virtual pointer is a tuple <L, O, S>, where 
 L is the iso/osi level, O is the offset in that level and S is the size of the virtual pointer.
 You can make algebraic operations on a virtual pointer and the result is still an
-offset. Specifying 'vp + n' will result in a new virtual pointer <L, O+n, S>.
+offset. Specifying 'vp \+ n' will result in a new virtual pointer <L, O\+n, S>.
 And this is perfectly legal, we have changed the internal offset of that
 level. 
 .Sp
 Virtual pointers are in the form 'name.field.subfield'. For example 'ip.ttl' is
 the virtual pointer for the Time To Live field in the IP header of a packet. It
-will be translated as <L=3, O=9, S=1>. Indeed it is the 9th byte of level 3 and
-its size is 1 byte. 'ip.ttl + 1' is the same as 'ip.proto' since the 10th byte
+will be translated as <L\=3, O\=9, S\=1>. Indeed it is the 9th byte of level 3 and
+its size is 1 byte. 'ip.ttl \+ 1' is the same as 'ip.proto' since the 10th byte
 of the IP header is the protocol encapsulated in the IP packet.
 .Sp
 The list of all supported virtual pointers is in the file etterfilter.tbl. You
@@ -219,7 +219,7 @@ substitution. In both cases, the second parameter is the search string.
 .br
 You can use $n in the replacement string. These
 placeholders are referred to the groups created in the search string. (e.g.
-pcre_regex(DATA.data, "^var1=([:digit:]*)&var2=([:digit:]*)", "var1=$2&var2=$1")
+pcre_regex(DATA.data, "^var1\=([:digit:]*)&var2\=([:digit:]*)", "var1\=$2&var2\=$1")
 will swap the value of var1 and var2).
 .br
 NOTE: The pcre support is optional in ettercap and will be enabled only if you

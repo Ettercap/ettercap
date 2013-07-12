@@ -1,4 +1,4 @@
-.\"  ettercap_curses -- man page for the Ncurses GUI
+.\"  ettercap_curses \-\- man page for the Ncurses GUI
 .\"
 .\"  This program is free software; you can redistribute it and/or modify
 .\"  it under the terms of the GNU General Public License as published by
@@ -12,21 +12,21 @@
 .\"
 .\"  You should have received a copy of the GNU General Public License
 .\"  along with this program; if not, write to the Free Software
-.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+.\"  Foundation, Inc., 59 Temple Place \- Suite 330, Boston, MA 02111\-1307, USA.
 .\"
 .\"
 .de Sp
 .if n .sp
 .if t .sp 0.4
 ..
-.TH ETTERCAP-CURSES "8" "" "ettercap @VERSION@"
+.TH ETTERCAP\-CURSES "8" "" "ettercap @VERSION@"
 .SH NAME
 ettercap \- Man page for the Ncurses GUI.
 
 .SH GENERAL DESCRIPTION
 The curses GUI is quite simple and intuitive.
 .br
-It is menu-driven. Every flag or function can be modified/called through the
+It is menu\-driven. Every flag or function can be modified/called through the
 upper menu. All user messages are printed in the bottom window. If you want
 to see the old messages, you can scroll the window buffer by pressing the UP,
 DOWN, PPAGE, NPAGE keys. 
@@ -36,8 +36,8 @@ The menus can be opened by pressing the relative hotkey. For the menus the
 hotkey is represented by the uppercase initial letter of the title (e.g. 'S'
 for Sniffing, 'T' for Targets). The functions within a menu can be called by
 pressing the hotkey depicted near the function name on the right. Hotkeys
-prefixed with 'C-' are to be used in conjunction with the CTRL key (e.g. 'C-f'
-means CTRL+f).
+prefixed with 'C\-' are to be used in conjunction with the CTRL key (e.g. 'C\-f'
+means CTRL\+f).
 .Sp
 You can switch the focus between the objects on the screen by pressing the TAB
 key or by clicking on it with the mouse (if you are running ettercap within an
@@ -46,9 +46,9 @@ to select objects, open a menu, choose a function, scroll the elevators for the
 scrolling windows, etc etc.
 .Sp
 When you open multiple windows in the middle part, they will overlap. Use
-the TAB key to switch between them. Use CTRL+Q to close the focused window.
+the TAB key to switch between them. Use CTRL\+Q to close the focused window.
 .br
-You can also use CTRL+Q to close the input dialog if you want to cancel the
+You can also use CTRL\+Q to close the input dialog if you want to cancel the
 requested input. (i.e. you have selected the wrong function and you want to go
 back).
 .Sp
@@ -60,9 +60,9 @@ can be used. If the window does not appear, no shortcuts are available.
 .SH HOW TO SELECT IT
 To use the ncurses GUI you have to:
 .Sp
-- compile ettercap with ncurses support (obviously)
+\- compile ettercap with ncurses support (obviously)
 .br
-- run it with the \-C flag 
+\- run it with the \-C flag 
 .Sp
 Passing the \-C flag is sufficient, but if you want you can pass other flags
 that will be automatically set for the ncurses GUI. You will be able to
@@ -122,7 +122,7 @@ After selecting the two interfaces to be used, you will enter the Bridged sniffi
 mode. For an explanation of what bridged sniffing is, refer to ettercap(8).
 .TP
 .B Set pcap filter...
-Here you can insert a tcpdump-like filter for the capturing process.
+Here you can insert a tcpdump\-like filter for the capturing process.
 .br
 IMPORTANT: if you manage to use a mitm attack, remember that if ettercap does
 not see a packet, it will NOT be forwarded. So be sure of what you are doing by
@@ -140,7 +140,7 @@ enabled". Otherwise the option is not enabled.
 .TP
 .B Promisc mode
 Enable/disable the promisc mode for the live capture on a network interface.
-This is an "asterisk-option" as the unoffensive one.
+This is an "asterisk\-option" as the unoffensive one.
 .TP
 .B Set netmask
 Use the specified netmask instead of the one associated with the current iface. This
@@ -233,7 +233,7 @@ Save the current hosts list to a file.
 .B Connections
 Displays the connection list. To see detailed information about a connection
 press 'd', or press 'k' to kill it. To see the traffic for a specific connection,
-select it and press enter. Once the two-panel interface is displayed you can
+select it and press enter. Once the two\-panel interface is displayed you can
 move the focus with the arrow keys. Press 'j' to switch between joined and
 split visualization. Press 'k' to kill the connection. Press 'y' to inject
 interactively and 'Y' to inject a file. Note that it is important which panel
@@ -322,7 +322,7 @@ Come on... it is self explanatory.
 Will log all the messages appearing in the bottom window (same as \-m option).
 .TP
 .B Compressed file
-Asterisk-option to control whether or not the logfile should be compressed.
+Asterisk\-option to control whether or not the logfile should be compressed.
 .RE
 
 

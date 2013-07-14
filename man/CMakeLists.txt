@@ -12,6 +12,10 @@ if (ENABLE_PLUGINS)
         set(MAN_NAMES ${MAN_NAMES} ettercap_plugins.8)
 endif(ENABLE_PLUGINS)
 
+if (INSTALL_DESKTOP)
+        set(MAN_NAMES ${MAN_NAMES} ettercap-pkexec.8)
+endif(INSTALL_DESKTOP)
+
 if (ENABLE_CURSES)
         set(MAN_NAMES ${MAN_NAMES} ettercap_curses.8)
 endif(ENABLE_CURSES)
@@ -60,6 +64,11 @@ if (ENABLE_CURSES)
         install(FILES ${CMAKE_BINARY_DIR}/man/ettercap_curses.8 DESTINATION ${MAN_INSTALLDIR}/man8/)
 	configure_file("ettercap_curses.8.in" "ettercap_curses.8")
 endif(ENABLE_CURSES)
+
+if (INSTALL_DESKTOP)
+        install(FILES ${CMAKE_BINARY_DIR}/man/ettercap-pkexec.8 DESTINATION ${MAN_INSTALLDIR}/man8/)
+	configure_file("ettercap-pkexec.8.in" "ettercap-pkexec.8")
+endif(INSTALL_DESKTOP)
 
 install(FILES ${CMAKE_BINARY_DIR}/man/etter.conf.5 DESTINATION ${MAN_INSTALLDIR}/man5/)
 

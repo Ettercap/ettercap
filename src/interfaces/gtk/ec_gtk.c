@@ -496,7 +496,8 @@ static void gtkui_progress(char *title, int value, int max)
     * when 100%, destroy it
     */
    if (value == max) {
-      gtk_widget_destroy(progress_dialog);
+      if (progress_dialog)
+         gtk_widget_destroy(progress_dialog);
       progress_dialog = NULL;
       progress_bar = NULL;
       gtkui_refresh_host_list();

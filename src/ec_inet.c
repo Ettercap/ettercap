@@ -452,7 +452,8 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
    u_int32* address;
    u_int32* netmask;
    u_int32* network;
-   unsigned int i;
+   unsigned int i, matched = 0;
+
 
    switch (ntohs(sa->addr_type)) {
       case AF_INET:
@@ -487,14 +488,22 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
             netmask = &ip_addr_to_int32(nm->addr);
             network = &ip_addr_to_int32(nw->addr);
 
+
             for(i = 0; i < IP6_ADDR_LEN / sizeof(u_int32); i++) {
-               if((address[i] & netmask[i]) != network[i])
+               if (netmask[i] == 0) { /* no need to check further */
                   break;
-               else {
-                  if(ifaddr != NULL)
-                     memcpy(ifaddr, &ip6->ip, sizeof(*ifaddr));
-                  return ESUCCESS;
                }
+               else if((address[i] & netmask[i]) != network[i]) {
+                  matched = 0;
+                  break;
+               } else {
+                  matched = 1;
+               }
+            }
+            if(matched && ifaddr != NULL) {
+               memcpy(ifaddr, &ip6->ip, sizeof(*ifaddr));
+               return ESUCCESS;
+            } else {
             }
          }
       

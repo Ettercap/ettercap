@@ -1,0 +1,138 @@
+.\"  ettercap \-\- a multipurpose sniffer/interceptor utility
+.\"
+.\"  This program is free software; you can redistribute it and/or modify
+.\"  it under the terms of the GNU General Public License as published by
+.\"  the Free Software Foundation; either version 2 of the License, or
+.\"  (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place \- Suite 330, Boston, MA 02111\-1307, USA.
+.\"
+.de Sp
+.if n .sp
+.if t .sp 0.4
+..
+.TH ETTERCAP "8" "" "ettercap @VERSION@"
+.SH NAME
+ettercap\-pkexec \- graphical pkexec\-based launcher for ettercap
+
+.br
+This launcher depends on policykit\-1 and the menu packages, and basically wraps the
+ettercap binary command
+.br
+with a pkexec action script usually defined on @POLKIT_DIR@/org.pkexec.ettercap.policy,
+.br
+allowing users to directly call ettercap from the desktop or menu launcher with root privileges.
+.br
+The commands available are exactly the same as the ettercap man page.
+
+Please refer to man ettercap for the list of available parameters.
+.br
+(don't forget to change "ettercap" to "ettercap\-pkexec" as caller program).
+
+example:
+.Sp
+ettercap\-pkexec \-G will start ettercap with root privileges and the GTK2 interface.
+
+.SH AUTHOR
+This code was originally taken from arch distro, and refactored to work with cmake system by
+.br
+Gianfranco Costamagna (LocutusOfBorg) <costamagnagianfranco@yahoo.it>
+
+.SH ORIGINAL AUTHORS
+Alberto Ornaghi (ALoR) <alor@users.sf.net>
+.br
+Marco Valleri (NaGA) <naga@antifork.org>
+.SH PROJECT STEWARDS
+Emilio Escobar (exfil)  <eescobar@gmail.com>
+.br
+Eric Milam (Brav0Hax)  <jbrav.hax@gmail.com>
+.SH OFFICIAL DEVELOPERS
+Mike Ryan (justfalter)  <falter@gmail.com>
+.br
+Gianfranco Costamagna (LocutusOfBorg)  <costamagnagianfranco@yahoo.it>
+.br
+Antonio Collarino (sniper)  <anto.collarino@gmail.com>
+.br
+Ryan Linn   <sussuro@happypacket.net>
+.br
+Jacob Baines   <baines.jacob@gmail.com>
+.SH CONTRIBUTORS
+Dhiru Kholia (kholia)  <dhiru@openwall.com>
+.br
+Alexander Koeppe (koeppea)  <format_c@online.de>
+.br
+Martin Bos (PureHate)  <purehate@backtrack.com>
+.br
+Enrique Sanchez
+.br
+Gisle Vanem  <giva@bgnett.no>
+.br
+Johannes Bauer  <JohannesBauer@gmx.de>
+.br
+Daten (Bryan Schneiders)  <daten@dnetc.org>
+
+
+.SH "SEE ALSO"
+.I "etter.conf(5)"
+.I "ettercap_curses(8)"
+.I "ettercap_plugins(8)"
+.I "etterlog(8)"
+.I "etterfilter(8)"
+.LP
+
+
+.SH AVAILABILITY
+https://github.com/Ettercap/ettercap/downloads
+
+.SH GIT
+git clone git://github.com/Ettercap/ettercap.git
+.br
+or
+.br
+git clone https://github.com/Ettercap/ettercap.git
+
+.SH BUGS
+Our software never has bugs.
+.br
+It just develops random features.   ;)
+.PP
+.B KNOWN\-BUGS
+.PP
+\- ettercap doesn't handle fragmented packets... only the first segment
+will be displayed by the sniffer. However all the fragments are correctly
+forwarded.
+.PP
++ please send bug\-report, patches or suggestions to <ettercap\-betatesting@lists.sourceforge.net>
+or visit https://github.com/Ettercap/ettercap/issues.
+.PP
++ to report a bug, follow the instructions in the README.BUGS file
+
+
+.SH PHILOLOGICAL HISTORY
+"Even if blessed with a feeble intelligence, they are cruel and smart..."
+this is the description of Ettercap, a monster of the RPG Advanced Dungeons & Dragon.
+.PP
+The name "ettercap" was chosen because it has an assonance with "ethercap" which
+means "ethernet capture" (what ettercap actually does) and also because such
+monsters have a powerful poison... and you know, arp poisoning... ;)
+
+
+.SH The Lord Of The (Token)Ring
+(the fellowship of the packet)
+.PP
+"One Ring to link them all, One Ring to ping them,
+.br
+ one Ring to bring them all and in the darkness sniff them."
+
+
+.SH Last words
+"Programming today is a race between software engineers striving to build
+bigger and better idiot\-proof programs, and the Universe trying to produce
+bigger and better idiots. So far, the Universe is winning." \- Rich Cook

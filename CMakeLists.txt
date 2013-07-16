@@ -16,7 +16,7 @@ option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
 option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
 option(ENABLE_TESTS "Enable Unit Tests" OFF)
 option(LIBRARY_BUILD "Build for libettercap only" OFF)
-
+option(INSTALL_DESKTOP "Install ettercap desktop files" ON)
 
 
 SET(VALID_BUILD_TYPES Debug Release)
@@ -103,6 +103,10 @@ set(INSTALL_LIBDIR ${INSTALL_PREFIX}/lib${LIB_SUFFIX} CACHE PATH "Library instal
 set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation directory")
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
+set(POLKIT_DIR /usr/share/polkit-1/actions/ CACHE PATH "Binary files installation directory")
+set(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap CACHE PATH "Name of the pkexec action file")
+set(DESKTOP_DIR /usr/share/applications/ CACHE PATH "Binary files installation directory")
+set(ICON_DIR /usr/share/pixmaps CACHE PATH "Binary files installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages") 
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)
@@ -127,6 +131,7 @@ set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/incl
 include_directories(${EC_INCLUDE_PATH})
 
 add_subdirectory(src)
+add_subdirectory(desktop)
 
 if(HAVE_PLUGINS)
     if(OS_MINGW)

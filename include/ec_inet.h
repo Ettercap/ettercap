@@ -70,7 +70,7 @@ EC_API_EXTERN int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 EC_API_EXTERN int ip_addr_null(struct ip_addr *sa);
 EC_API_EXTERN int ip_addr_is_zero(struct ip_addr *sa);
 EC_API_EXTERN int ip_addr_random(struct ip_addr* ip, u_int16 type);
-EC_API_EXTERN int ip_addr_solicit(struct ip_addr* sn, struct ip_addr* ip);
+EC_API_EXTERN int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip);
 
 EC_API_EXTERN char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 EC_API_EXTERN int ip_addr_pton(char *str, struct ip_addr *addr);

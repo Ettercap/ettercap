@@ -563,7 +563,7 @@ static void scan_targets(pthread_t pid)
 #ifdef WITH_IPV6
          case AF_INET6:
             if (ip_addr_is_local(&e->ip, &ip) == ESUCCESS) {
-               ip_addr_solicit(&sn, &e->ip);
+               ip_addr_init_sol(&sn, &e->ip);
                send_icmp6_nsol(&ip, &sn, &e->ip, GBL_IFACE->mac);
             }
             break;

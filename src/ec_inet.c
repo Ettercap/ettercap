@@ -30,7 +30,7 @@ int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 int ip_addr_null(struct ip_addr *sa);
 int ip_addr_is_zero(struct ip_addr *sa);
 int ip_addr_random(struct ip_addr* ip, u_int16 type);
-int ip_addr_solicit(struct ip_addr* sn, struct ip_addr* ip);
+int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip);
 
 char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 int ip_addr_pton(char *str, struct ip_addr *addr);
@@ -176,11 +176,11 @@ int ip_addr_random(struct ip_addr* ip, u_int16 type)
 }
 
 /*
- * make a solicited-node multicast from a given ip address
+ * initialize a solicited-node address from a given ip address.
  * returns ESUCCESS on success or -EINVALID in case of a 
- * unsupported address familily (actually only IPv6 is supported
+ * unsupported address familily (actually only IPv6 is supported)
  */
-int ip_addr_solicit(struct ip_addr* sn, struct ip_addr* ip)
+int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip)
 {
    switch (ntohs(ip->addr_type)) {
       case AF_INET:

@@ -464,7 +464,7 @@ static void scan_targets(pthread_t pid)
 
 #ifdef WITH_IPV6
    struct ip_addr ip;
-   struct ip_addr bc;
+   struct ip_addr sn;
 #endif
 
 #if !defined(OS_WINDOWS)
@@ -562,9 +562,10 @@ static void scan_targets(pthread_t pid)
             break;
 #ifdef WITH_IPV6
          case AF_INET6:
-            ip_addr_is_local(&e->ip, &ip);
-            ip_addr_init(&bc, AF_INET6, (u_char*)IP6_ALL_NODES);
-            send_icmp6_nsol(&ip, &bc, &e->ip, GBL_IFACE->mac);
+            if (ip_addr_is_local(&e->ip, &ip) == ESUCCESS) {
+               ip_addr_solicit(&sn, &e->ip);
+               send_icmp6_nsol(&ip, &sn, &e->ip, GBL_IFACE->mac);
+            }
             break;
 #endif
       }

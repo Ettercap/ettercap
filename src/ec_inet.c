@@ -30,6 +30,7 @@ int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 int ip_addr_null(struct ip_addr *sa);
 int ip_addr_is_zero(struct ip_addr *sa);
 int ip_addr_random(struct ip_addr* ip, u_int16 type);
+int ip_addr_solicit(struct ip_addr* sn, struct ip_addr* ip);
 
 char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 int ip_addr_pton(char *str, struct ip_addr *addr);
@@ -173,6 +174,36 @@ int ip_addr_random(struct ip_addr* ip, u_int16 type)
    }
    return ESUCCESS;
 }
+
+/*
+ * make a solicited-node multicast from a given ip address
+ * returns ESUCCESS on success or -EINVALID in case of a 
+ * unsupported address familily (actually only IPv6 is supported
+ */
+int ip_addr_solicit(struct ip_addr* sn, struct ip_addr* ip)
+{
+   switch (ntohs(ip->addr_type)) {
+      case AF_INET:
+         /* not applicable for IPv4 */
+      break;
+#ifdef WITH_IPV6
+      case AF_INET6:
+         /* 
+          * initialize the ip_addr struct with the solicited-node
+          * multicast prefix and copy the tailing 24-bit into the
+          * address to form the complete solicited-node address
+          */
+         ip_addr_init(sn, AF_INET6, (u_char*)IP6_SOL_NODE);
+         memcpy((sn->addr + 13), (ip->addr + 13), 3);
+
+         return ESUCCESS;
+      break;
+#endif
+   }
+
+   return -EINVALID;
+}
+
 
 /*
  * convert to ascii an ip address
@@ -496,7 +527,8 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
                else if((address[i] & netmask[i]) != network[i]) {
                   matched = 0;
                   break;
-               } else {
+               } 
+               else {
                   matched = 1;
                }
             }

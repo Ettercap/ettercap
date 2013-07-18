@@ -302,6 +302,10 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    
    SEND_LOCK;
 
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_IFACE->lnet);
+
    /* ARP uses 00:00:00:00:00:00 broadcast */
    if (type == ARPOP_REQUEST && tmac == MEDIA_BROADCAST)
       tmac = ARP_BROADCAST;

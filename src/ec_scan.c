@@ -334,7 +334,7 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
 
 
 /*
- * receives the ARP packets
+ * receives the ARP and ICMPv6 ND packets 
  */
 static void get_response(struct packet_object *po)
 {
@@ -346,7 +346,7 @@ static void get_response(struct packet_object *po)
       return;
    }
 
-   /* else only add arp replies within the targets */
+   /* else only add arp and icmp6 replies within the targets */
 
    /* search in target 1 */
    LIST_FOREACH(t, &GBL_TARGET1->ips, next)
@@ -361,6 +361,22 @@ static void get_response(struct packet_object *po)
          add_host(&po->L3.src, po->L2.src, NULL);
          return;
       }
+
+   /* same for IPv6 */
+   /* search in target 1 */
+   LIST_FOREACH(t, &GBL_TARGET1->ip6, next)
+      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+         return;
+      }
+
+   /* search in target 2 */
+   LIST_FOREACH(t, &GBL_TARGET2->ip6, next)
+      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+         add_host(&po->L3.src, po->L2.src, NULL);
+         return;
+      }
+
+
 }
 
 

@@ -532,11 +532,12 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
                   matched = 1;
                }
             }
-            if(matched && ifaddr != NULL) {
+
+            if(ifaddr != NULL) 
                memcpy(ifaddr, &ip6->ip, sizeof(*ifaddr));
+            
+            if (matched)
                return ESUCCESS;
-            } else {
-            }
          }
       
          break;

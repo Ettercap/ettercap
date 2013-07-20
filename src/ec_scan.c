@@ -648,7 +648,6 @@ int scan_load_hosts(char *filename)
 
    /* read the file */
    for (nhosts = 0; !feof(hf); nhosts++) {
-      int af;
 
       if (fscanf(hf, "%"EC_TOSTRING(MAX_ASCII_ADDR_LEN)"s %"EC_TOSTRING(ETH_ASCII_ADDR_LEN)"s %"EC_TOSTRING(MAX_HOSTNAME_LEN)"s\n", ip, mac, name) != 3 ||
          *ip == '#' || *mac == '#' || *name == '#')
@@ -661,23 +660,16 @@ int scan_load_hosts(char *filename)
       }
 
       if (inet_pton(AF_INET, ip, &ipaddr) == 1) { /* is IPv4 address*/
-         af = AF_INET;
+         ip_addr_init(&hip, AF_INET, (u_char *)&ipaddr);
       }
       else if (inet_pton(AF_INET6, ip, &ip6addr) == 1) { /* is IPv6 address */
-         af = AF_INET6;
+         ip_addr_init(&hip, AF_INET6, (u_char *)&ip6addr);
       }
       else { /* neither IPv4 nor IPv6 - inform user and skip line*/
          USER_MSG("Bad IP address while parsing line %d", nhosts + 1);
          continue;
          //del_hosts_list();
          //SEMIFATAL_ERROR("Bad parsing on line %d", nhosts + 1);
-      }
-
-      /* init ip_addr struct */
-      if (af == AF_INET) {
-         ip_addr_init(&hip, af, (u_char *)&ipaddr);
-      } else if (af == AF_INET6) {
-         ip_addr_init(&hip, af, (u_char *)&ip6addr);
       }
 
       /* wipe the null hostname */

@@ -80,6 +80,7 @@ int send_L3_icmp_unreach(struct packet_object *po);
 int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
 int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *req, u_int8 *macaddr);
 int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router);
+int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8 o_type, u_int8 o_len, u_int8* o_data);
 #endif
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -806,6 +807,44 @@ int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tg
 
    return c;
 }
+
+
+
+/*
+ * send IP packet with an unknown header option
+ * RFC2460 conforming hosts, respond with a ICMPv6 parameter problem 
+ * message
+ */
+int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8 o_type, u_int8 o_len, u_int8* o_data)
+{
+    libnet_ptag_t t;
+    struct libnet_in6_addr src, dst;
+    int c;
+
+    BUG_IF(GBL_LNET->lnet_IP6 == NULL);
+
+    SEND_LOCK;
+
+    memcpy(&src, sip->addr, sizeof(src));
+    memcpy(&dst, tip->addr, sizeof(dst));
+
+    t = libnet_build_icmpv6_echo(ICMP6_ECHO_REQUEST,   /* type */
+                                 0,              /* code */
+                                 0,              /* checksum */
+                                 EC_MAGIC_16,    /* id */
+                                 0,              /* sequence number */
+                                 NULL,           /* data */
+                                 0,              /* its size */
+                                 GBL_LNET->lnet_IP6,   /* handle */
+                                 0);
+    ON_ERROR(t, -1, "libnet_build_icmpv6_echo: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+    libnet_toggle_checksum(GBL_LNET->lnet_IP6, t, LIBNET_ON);
+
+    SEND_UNLOCK;
+
+    return c;
+}
+
 #endif /* WITH_IPV6 */
 
 /*

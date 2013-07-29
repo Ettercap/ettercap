@@ -80,7 +80,7 @@ int send_L3_icmp_unreach(struct packet_object *po);
 int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
 int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *req, u_int8 *macaddr);
 int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router);
-int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8 o_type, u_int8 o_len, u_int8* o_data);
+int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8* o_data, u_int32 o_len);
 #endif
 
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -813,13 +813,13 @@ int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tg
 /*
  * send IP packet with an unknown header option
  * RFC2460 conforming hosts, respond with a ICMPv6 parameter problem 
- * message
+ * message even those not intended to respond to ICMP echos
  */
-int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8 o_type, u_int8 o_len, u_int8* o_data)
+int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8* o_data, u_int32 o_len)
 {
     libnet_ptag_t t;
     struct libnet_in6_addr src, dst;
-    int c;
+    int c, h = 0;
 
     BUG_IF(GBL_LNET->lnet_IP6 == NULL);
 
@@ -839,6 +839,34 @@ int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8 o_type,
                                  0);
     ON_ERROR(t, -1, "libnet_build_icmpv6_echo: %s", libnet_geterror(GBL_LNET->lnet_IP6));
     libnet_toggle_checksum(GBL_LNET->lnet_IP6, t, LIBNET_ON);
+
+    t = libnet_build_ipv6_destopts(IPPROTO_ICMPV6, /* next header */
+                                   LIBNET_IPV6_DESTOPTS_H / 8,              /* lenth */
+                                   o_data,              /* payload */
+                                   o_len,              /* payload length */
+                                   GBL_LNET->lnet_IP6,   /* handle */
+                                   0);
+    ON_ERROR(t, -1, "libnet_build_ipv6_destopts: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+
+    h = LIBNET_IPV6_DESTOPTS_H + LIBNET_ICMPV6_H;
+    t = libnet_build_ipv6(0,                /* tc */
+                          0,                /* flow label */
+                          h,                /* next header size */
+                          IPPROTO_DSTOPTS,  /* next header */
+                          64,               /* hop limit */
+                          src,              /* source */
+                          dst,              /* destination */
+                          NULL,             /* payload and size */
+                          0,
+                          GBL_LNET->lnet_IP6, /* handle */
+                          0);               /* ptag */
+    ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+
+    c = libnet_write(GBL_LNET->lnet_IP6);
+    ON_ERROR(c, -1, "libnet_write: %s", libnet_geterror(GBL_LNET->lnet_IP6));
+
+    libnet_clear_packet(GBL_LNET->lnet_IP6);
+
 
     SEND_UNLOCK;
 

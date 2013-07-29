@@ -38,6 +38,7 @@ char *mac_addr_ntoa(u_char *mac, char *dst);
 int mac_addr_aton(char *str, u_char *mac);
 
 int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr);
+int ip_addr_is_global(struct ip_addr *ip);
 int ip_addr_is_multicast(struct ip_addr *ip);
 int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr);
 int ip_addr_is_ours(struct ip_addr *);
@@ -390,6 +391,38 @@ int mac_addr_aton(char *str, u_char *mac)
       mac[i] = (u_char)tmp[i];
       
    return i;
+}
+
+/*
+ * returns  1 if the ip is a Global Unicast 
+ * returns  0 if not
+ * returns -EINVALID if address family is unknown
+ */
+int ip_addr_is_global(struct ip_addr *ip)
+{
+
+   switch (ntohs(ip->addr_type)) {
+      case AF_INET:
+         /* XXX one could implement here !RFC1918 address determination */
+      break;
+      case AF_INET6:
+         /* 
+          * as IANA does not appy masks > 8-bit for Global Unicast block, 
+          * only the first 8-bit are significant for this test.
+          */
+         if ((*ip->addr & 0xe0) == 0x20) {
+            /* 
+             * This may be extended in future as IANA assigns further ranges
+             * to Global Unicast
+             */ 
+            return 1;
+         } 
+      break;
+      default: 
+         return -EINVALID;
+   }
+
+   return 0;
 }
 
 /*

@@ -78,6 +78,7 @@ EC_API_EXTERN char *mac_addr_ntoa(u_char *mac, char *dst);
 EC_API_EXTERN int mac_addr_aton(char *str, u_char *mac);
 
 EC_API_EXTERN int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr);
+EC_API_EXTERN int ip_addr_is_global(struct ip_addr *ip);
 EC_API_EXTERN int ip_addr_is_multicast(struct ip_addr *ip);
 EC_API_EXTERN int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr);
 EC_API_EXTERN int ip_addr_is_ours(struct ip_addr *ip);

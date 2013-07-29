@@ -44,6 +44,7 @@ void build_hosts_list(void);
 void del_hosts_list(void);
 
 static void scan_netmask(pthread_t pid);
+static void scan_ip6_onlink(pthread_t pid);
 static void scan_targets(pthread_t pid);
 
 int scan_load_hosts(char *filename);
@@ -177,6 +178,9 @@ static EC_THREAD_FUNC(scan_thread)
     */
    if(GBL_TARGET1->all_ip || GBL_TARGET2->all_ip) {
       scan_netmask(pid);
+#ifdef WITH_IPV6
+      scan_ip6_onlink(pid);
+#endif
    }
    scan_targets(pid);
 
@@ -467,6 +471,81 @@ static void scan_netmask(pthread_t pid)
 
    DEBUG_MSG("scan_netmask: Complete");
 }
+
+
+#ifdef WITH_IPV6
+/*
+ * probe active IPv6 hosts
+ */
+static void scan_ip6_onlink(pthread_t pid)
+{
+   int ret, i = 0;
+   struct net_list *e;
+   struct ip_addr an;
+   char title[100];
+   char tmp1[MAX_ASCII_ADDR_LEN];
+   char tmp2[MAX_ASCII_ADDR_LEN];
+   u_int8 payload = 0;
+
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_nsec = 0;
+   tm.tv_sec = 1;
+#endif
+
+
+   ip_addr_init(&an, AF_INET6, (u_char *)IP6_ALL_NODES);
+
+   snprintf(title, sizeof(title)-1, "Probing %d seconds for active IPv6 nodes ...", GBL_CONF->icmp6_probe_delay);
+   INSTANT_USER_MSG("%s\n", title);
+
+   DEBUG_MSG("scan_ip6_onlink: ");
+
+   /* and now scan the LAN */
+   LIST_FOREACH(e, &GBL_IFACE->ip6_list, next) {
+      if (LIST_NEXT(e, next) != LIST_END(&GBL_IFACE->ip6_list)) {
+         USER_MSG("%s not the last address on interface ;",
+               ip_addr_ntoa(&e->ip, tmp1));
+         if (ip_addr_is_global(&e->ip)) {
+            USER_MSG("address is global - use it\n");
+            send_icmp6_echo(&e->ip, &an);
+            //send_icmp6_echo_opt(&e->ip, &an, IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN));
+            break;
+         }
+         else {
+            USER_MSG("address is not global - skip it\n");
+         }
+      }
+      else {
+         USER_MSG("%s is the last address on interface ; ",
+               ip_addr_ntoa(&e->ip, tmp2));
+         USER_MSG("then we just use it \n");
+         send_icmp6_echo(&e->ip, &an);
+         //send_icmp6_echo_opt(&e->ip, &an, IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN));
+      }
+   }
+
+   for (i=0; i<=GBL_CONF->icmp6_probe_delay; i++) {
+      /* update the progress bar */
+      ret = ui_progress(title, i, GBL_CONF->icmp6_probe_delay);
+
+      /* user has requested to stop the task */
+      if (ret == UI_PROGRESS_INTERRUPTED) {
+         ec_thread_destroy(pid);
+         //hook_del(HOOK_PACKET_ARP, &get_response);
+         /* cancel the scan thread */
+         ec_thread_exit();
+      }
+      /* wait for a delay */
+#if defined(OS_WINDOWS)
+      sleep(1);
+#else
+      nanosleep(&tm, NULL);
+#endif
+   }
+   
+}
+#endif
 
 
 /*

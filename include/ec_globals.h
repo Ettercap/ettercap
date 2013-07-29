@@ -32,6 +32,7 @@ struct ec_conf {
    int port_steal_delay;
    int port_steal_send_delay;
    int nadv_poison_send_delay;
+   int icmp6_probe_delay;
    int connection_timeout;
    int connection_idle;
    int connection_buffer;

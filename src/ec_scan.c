@@ -483,13 +483,10 @@ static void scan_ip6_onlink(pthread_t pid)
    struct net_list *e;
    struct ip_addr an;
    char title[100];
-   char tmp1[MAX_ASCII_ADDR_LEN];
-   char tmp2[MAX_ASCII_ADDR_LEN];
-   u_int8 payload = 0;
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = GBL_CONF->icmp6_probe_delay * 1000;
+   tm.tv_nsec = GBL_CONF->icmp6_probe_delay * 10000;
    tm.tv_sec = 0;
 #endif
 
@@ -501,33 +498,33 @@ static void scan_ip6_onlink(pthread_t pid)
 
    DEBUG_MSG("scan_ip6_onlink: ");
 
-   /* and now scan the LAN */
+   /* go through the list of IPv6 addresses on the selected interface */
    LIST_FOREACH(e, &GBL_IFACE->ip6_list, next) {
       if (LIST_NEXT(e, next) != LIST_END(&GBL_IFACE->ip6_list)) {
-         USER_MSG("%s not the last address on interface ;",
-               ip_addr_ntoa(&e->ip, tmp1));
+         /* 
+          * it's not the last address we have; 
+          * be picky and prefer global unicast 
+          */
          if (ip_addr_is_global(&e->ip)) {
-            USER_MSG("address is global - use it\n");
+            /* it's a global unicast, use it */
             send_icmp6_echo(&e->ip, &an);
             //send_icmp6_echo_opt(&e->ip, &an, IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN));
             break;
          }
-         else {
-            USER_MSG("address is not global - skip it\n");
-         }
       }
       else {
-         USER_MSG("%s is the last address on interface ; ",
-               ip_addr_ntoa(&e->ip, tmp2));
-         USER_MSG("then we just use it \n");
+         /* 
+          * it's the last address we have; 
+          * we can't be picky and just have to use it 
+          */
          send_icmp6_echo(&e->ip, &an);
          //send_icmp6_echo_opt(&e->ip, &an, IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN));
       }
    }
 
-   for (i=0; i<=GBL_CONF->icmp6_probe_delay * 50; i++) {
+   for (i=0; i<=GBL_CONF->icmp6_probe_delay * 500; i++) {
       /* update the progress bar */
-      ret = ui_progress(title, i, GBL_CONF->icmp6_probe_delay * 50);
+      ret = ui_progress(title, i, GBL_CONF->icmp6_probe_delay * 500);
 
       /* user has requested to stop the task */
       if (ret == UI_PROGRESS_INTERRUPTED) {
@@ -538,7 +535,7 @@ static void scan_ip6_onlink(pthread_t pid)
       }
       /* wait for a delay */
 #if defined(OS_WINDOWS)
-      usleep(GBL_CONF->icmp6_probe_delay * 1000);
+      usleep(GBL_CONF->icmp6_probe_delay * 10000);
 #else
       nanosleep(&tm, NULL);
 #endif

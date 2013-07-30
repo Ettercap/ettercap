@@ -114,6 +114,10 @@ int send_to_L3(struct packet_object *po)
       return -ENOTHANDLED;
    
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(l);
    
    t = libnet_build_data(po->fwd_packet, po->fwd_len, l, 0);
    ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(l));
@@ -165,6 +169,10 @@ int send_to_iface(struct packet_object *po, struct iface_env *iface)
    BUG_IF(iface->lnet == NULL);
    
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(iface->lnet);
 
    t = libnet_build_data(po->packet, po->len, iface->lnet, 0);
    ON_ERROR(t, -1, "libnet_build_data: %s", libnet_geterror(iface->lnet));
@@ -302,6 +310,10 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    
    SEND_LOCK;
 
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_IFACE->lnet);
+
    /* ARP uses 00:00:00:00:00:00 broadcast */
    if (type == ARPOP_REQUEST && tmac == MEDIA_BROADCAST)
       tmac = ARP_BROADCAST;
@@ -356,6 +368,10 @@ int send_L3_icmp_unreach(struct packet_object *po)
    BUG_IF(GBL_LNET->lnet_IP4 == 0);
    
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_LNET->lnet_IP4);
 
    /* create the ICMP header */
    t = libnet_build_icmpv4_echo(
@@ -418,6 +434,10 @@ int send_L3_icmp(u_char type, struct ip_addr *sip, struct ip_addr *tip)
    BUG_IF(GBL_LNET->lnet_IP4 == 0);
    
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_LNET->lnet_IP4);
 
    /* create the ICMP header */
    t = libnet_build_icmpv4_echo(
@@ -484,6 +504,10 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
    BUG_IF(GBL_IFACE->lnet == 0);
    
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    /* create the ICMP header */
    t = libnet_build_icmpv4_echo(
@@ -556,6 +580,10 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
    ip = (struct libnet_ipv4_hdr *)po->L3.header;
    
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    /* create the fake ip header for the icmp payload */
    t = libnet_build_ipv4(
@@ -642,6 +670,10 @@ int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip)
 
    SEND_LOCK;
 
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_LNET->lnet_IP6);
+
    memcpy(&src, sip->addr, sizeof(src));
    memcpy(&dst, tip->addr, sizeof(dst));
 
@@ -694,6 +726,10 @@ int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *re
    BUG_IF(GBL_LNET->lnet_IP6 == NULL);
 
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_LNET->lnet_IP6);
 
    memcpy(&src, sip->addr, sizeof(src));
    memcpy(&dst, tip->addr, sizeof(dst));
@@ -755,6 +791,10 @@ int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tg
    BUG_IF(GBL_LNET->lnet_IP6 == NULL);
 
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_LNET->lnet_IP6);
 
    memcpy(&src, sip->addr, sizeof(src));
    memcpy(&dst, tip->addr, sizeof(dst));
@@ -819,6 +859,10 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
    BUG_IF(GBL_IFACE->lnet == 0);
   
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_IFACE->lnet);
    
    /* add the dhcp options */
    t = libnet_build_data(
@@ -905,6 +949,10 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
    BUG_IF(GBL_IFACE->lnet == 0);
   
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    /* create the dns packet */
     t = libnet_build_dnsv4(
@@ -1014,6 +1062,10 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
    BUG_IF(GBL_IFACE->lnet == 0);
   
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_IFACE->lnet);
 
    /* create the dns packet */
     t = libnet_build_dnsv4(
@@ -1127,6 +1179,11 @@ int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 spo
 	BUG_IF(l == NULL);
 
 	SEND_LOCK;
+
+	// FIXME
+	// why without clearing again the packet I get issue #245?
+	libnet_clear_packet(l);
+
 /*
  * libnet_build_udp(uint16_t sp, uint16_t dp, uint16_t len, uint16_t sum,
 const uint8_t *payload, uint32_t payload_s, libnet_t *l, libnet_ptag_t ptag)
@@ -1223,6 +1280,10 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
    BUG_IF(l == NULL);
   
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(l);
    
     t = libnet_build_tcp(
         ntohs(sport),            /* source port */
@@ -1308,6 +1369,10 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
    BUG_IF(GBL_IFACE->lnet == 0);
   
    SEND_LOCK;
+
+   // FIXME
+   // why without clearing again the packet I get issue #245?
+   libnet_clear_packet(GBL_IFACE->lnet);
    
     t = libnet_build_tcp(
         ntohs(sport),            /* source port */

@@ -149,6 +149,8 @@ void disable_interface_offload(void)
 
 	switch(fork()) {
 		case 0:
+			/* if the command cannot disable some offloads don't show on console */
+			close(2);
 			execvp(param[0], param);
 			exit(EINVALID);
 		case -1:

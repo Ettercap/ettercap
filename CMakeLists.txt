@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(ettercap C)
 
-set(VERSION "0.7.6")
+set(VERSION "0.8.0")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 include(MacroEnsureOutOfSourceBuild)

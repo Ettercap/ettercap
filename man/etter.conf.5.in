@@ -1,4 +1,4 @@
-.\"  ettercap -- a multipurpose sniffer/interceptor utility
+.\"  ettercap \-\- a multipurpose sniffer/interceptor utility
 .\"
 .\"  This program is free software; you can redistribute it and/or modify
 .\"  it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
 .\"
 .\"  You should have received a copy of the GNU General Public License
 .\"  along with this program; if not, write to the Free Software
-.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+.\"  Foundation, Inc., 59 Temple Place \- Suite 330, Boston, MA 02111\-1307, USA.
 .\"
 .\"
 .de Sp
@@ -35,7 +35,7 @@ The file contains entries of the form:
 .sp
 [section]
 .ft B
-entry = value
+entry \= value
 .I "..."
 .ft R
 .fi
@@ -44,7 +44,7 @@ entry = value
 Each entry defines a variable that can be customized. Every value MUST be an
 integer. Sections are used only to group together some variables.
 .Sp
-.B NOTE: 
+.B NOTE:
 if you omit a variable in the conf file, it will be initialized with the
 value 0. It is strongly discouraged to not initialize critical variables
 such as "arp_poison_delay" or "connection_timeout".
@@ -75,13 +75,13 @@ randomized scan plus a high delay can fool some types of ARP scan detectors.
 
 .TP
 .B arp_poison_warm_up
-When the poisoning process starts, the inter-packet delay is low for the first
+When the poisoning process starts, the inter\-packet delay is low for the first
 5 poisons (to be sure the poisoning process has been successful). After the
 first 5 poisons, the delay is incremented (to keep up the poisoning). This
 variable controls the delay for the first 5 poisons. The value is in seconds.
 .br
 The same delay is used when the victims are restored to the original associations
-(RE-ARPing) when ettercap is closed.
+(RE\-ARPing) when ettercap is closed.
 
 .TP
 .B arp_poison_delay
@@ -122,19 +122,19 @@ server.
 
 .TP
 .B port_steal_delay
-This is the delay time (in milliseconds) between stealing packets for the 
+This is the delay time (in milliseconds) between stealing packets for the
 "port" mitm method. With low delays you will be able to intercept more
 packets, but you will generate more traffic. You have to tune this value
 in order to find a good balance between
-the number of intercepted packets, re-transmitted packets and lost packets.
+the number of intercepted packets, re\-transmitted packets and lost packets.
 This value depends on full/half duplex channels, network drivers and adapters,
 network general configuration and hardware.
 
 
 .TP
 .B port_steal_send_delay
-This is the delay time (in microseconds) between packets when the 
-"port" mitm method has to re-send packets queues. As said for port_steal_delay
+This is the delay time (in microseconds) between packets when the
+"port" mitm method has to re\-send packets queues. As said for port_steal_delay
 you have to tune this option to the lowest acceptable value.
 
 
@@ -179,7 +179,7 @@ other hosts (for example when fingerprinting remote host).
 Ettercap keeps some statistics on the processing time of the bottom half (the
 sniffer) and top half (the protocol decoder). These statistics are made on the
 average processing time of sampling_rate packets. You can decrease this value to have
-a more accurate real-time picture of processing time or increase it to have a
+a more accurate real\-time picture of processing time or increase it to have a
 smoother picture. The total average will not change, but the worst value will
 be heavily influenced by this value.
 
@@ -216,15 +216,15 @@ If you set this value to 0 you will sniff even packets forwarded by ettercap
 or by the kernel. It will generate duplicate packets in conjunction with the
 arp mitm method (for example). It could be useful while running ettercap
 in unoffensive mode on a host with more than one network interface
-(waiting for the multiple-interface feature...)   
+(waiting for the multiple\-interface feature...)
 
 .TP
 .B checksum_warning
 If you set the value to 0 the messages about incorrect checksums will not be
-displayed in the user messages windows (nor logged to a file with \-m). 
+displayed in the user messages windows (nor logged to a file with \-m).
 .br
 Note that this option will not disable the check on the packets, but only prevent
-the message to be displayed (see below). 
+the message to be displayed (see below).
 
 .TP
 .B checksum_check
@@ -268,7 +268,7 @@ Here is a list of values: 0 Black, 1 Red, 2 Green, 3 Yellow, 4 Blue, 5 Magenta,
 .B [strings]
 .TP
 .B utf8_encoding
-specifies the encoding to be used while displaying the packets in UTF-8 format.
+specifies the encoding to be used while displaying the packets in UTF\-8 format.
 Use the `iconv \-\-list` command for a list of supported encodings.
 
 .TP

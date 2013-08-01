@@ -1,4 +1,4 @@
-.\"  ettercap_curses -- man page for the Ncurses GUI
+.\"  ettercap_curses \-\- man page for the Ncurses GUI
 .\"
 .\"  This program is free software; you can redistribute it and/or modify
 .\"  it under the terms of the GNU General Public License as published by
@@ -12,32 +12,32 @@
 .\"
 .\"  You should have received a copy of the GNU General Public License
 .\"  along with this program; if not, write to the Free Software
-.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+.\"  Foundation, Inc., 59 Temple Place \- Suite 330, Boston, MA 02111\-1307, USA.
 .\"
 .\"
 .de Sp
 .if n .sp
 .if t .sp 0.4
 ..
-.TH ETTERCAP-CURSES "8" "" "ettercap @VERSION@"
+.TH ETTERCAP\-CURSES "8" "" "ettercap @VERSION@"
 .SH NAME
 ettercap \- Man page for the Ncurses GUI.
 
 .SH GENERAL DESCRIPTION
 The curses GUI is quite simple and intuitive.
 .br
-It is menu-driven. Every flag or function can be modified/called through the
+It is menu\-driven. Every flag or function can be modified/called through the
 upper menu. All user messages are printed in the bottom window. If you want
 to see the old messages, you can scroll the window buffer by pressing the UP,
-DOWN, PPAGE, NPAGE keys. 
+DOWN, PPAGE, NPAGE keys.
 The middle part is used to display information or dialogs for the user.
 .Sp
 The menus can be opened by pressing the relative hotkey. For the menus the
 hotkey is represented by the uppercase initial letter of the title (e.g. 'S'
 for Sniffing, 'T' for Targets). The functions within a menu can be called by
 pressing the hotkey depicted near the function name on the right. Hotkeys
-prefixed with 'C-' are to be used in conjunction with the CTRL key (e.g. 'C-f'
-means CTRL+f).
+prefixed with 'C\-' are to be used in conjunction with the CTRL key (e.g. 'C\-f'
+means CTRL\+f).
 .Sp
 You can switch the focus between the objects on the screen by pressing the TAB
 key or by clicking on it with the mouse (if you are running ettercap within an
@@ -46,9 +46,9 @@ to select objects, open a menu, choose a function, scroll the elevators for the
 scrolling windows, etc etc.
 .Sp
 When you open multiple windows in the middle part, they will overlap. Use
-the TAB key to switch between them. Use CTRL+Q to close the focused window.
+the TAB key to switch between them. Use CTRL\+Q to close the focused window.
 .br
-You can also use CTRL+Q to close the input dialog if you want to cancel the
+You can also use CTRL\+Q to close the input dialog if you want to cancel the
 requested input. (i.e. you have selected the wrong function and you want to go
 back).
 .Sp
@@ -60,9 +60,9 @@ can be used. If the window does not appear, no shortcuts are available.
 .SH HOW TO SELECT IT
 To use the ncurses GUI you have to:
 .Sp
-- compile ettercap with ncurses support (obviously)
+\- compile ettercap with ncurses support (obviously)
 .br
-- run it with the \-C flag 
+\- run it with the \-C flag
 .Sp
 Passing the \-C flag is sufficient, but if you want you can pass other flags
 that will be automatically set for the ncurses GUI. You will be able to
@@ -82,11 +82,11 @@ screen will not be reachable anymore. The only way is to restart ettercap.
 
 Let's analyze each menu in the start screen:
 
-.TP 
+.TP
 .B File
 .RS
 .TP
-.B Open...  
+.B Open...
 Open a pcap file and analyze it. All the functionalities available for live
 sniffing are in place except for those sending or forwarding packets (mitm
 attacks and so on...).
@@ -104,12 +104,12 @@ Exits from ettercap and returns to the command prompt.
 
 
 
-.TP 
+.TP
 .B Sniff
 .RS
 .TP
-.B Unified sniffing...  
-Choosing this function you will be prompted to select the network interface to be 
+.B Unified sniffing...
+Choosing this function you will be prompted to select the network interface to be
 used for sniffing. The first up and running interface is suggested in the input
 box.
 For an explanation of what unified sniffing is, refer to ettercap(8).
@@ -117,12 +117,12 @@ For an explanation of what unified sniffing is, refer to ettercap(8).
 TIP: if you use the 'u' hotkey, this step will be skipped and the default
 interface is automatically selected.
 .TP
-.B Bridged sniffing...  
+.B Bridged sniffing...
 After selecting the two interfaces to be used, you will enter the Bridged sniffing
 mode. For an explanation of what bridged sniffing is, refer to ettercap(8).
 .TP
 .B Set pcap filter...
-Here you can insert a tcpdump-like filter for the capturing process.
+Here you can insert a tcpdump\-like filter for the capturing process.
 .br
 IMPORTANT: if you manage to use a mitm attack, remember that if ettercap does
 not see a packet, it will NOT be forwarded. So be sure of what you are doing by
@@ -130,17 +130,17 @@ setting a pcap filter.
 .RE
 
 
-.TP 
+.TP
 .B Options
 .RS
 .TP
-.B Unoffensive  
+.B Unoffensive
 This enable/disable the unoffensive flag. The asterisk '*' means "the option is
 enabled". Otherwise the option is not enabled.
 .TP
 .B Promisc mode
 Enable/disable the promisc mode for the live capture on a network interface.
-This is an "asterisk-option" as the unoffensive one.
+This is an "asterisk\-option" as the unoffensive one.
 .TP
 .B Set netmask
 Use the specified netmask instead of the one associated with the current iface. This
@@ -154,10 +154,10 @@ you want to scan (with the arp scan) only a C class.
 Once you have selected an offline sniffing or a live capture, the upper menu is
 modified and you can start to do the interesting things...
 .br
-Some of the following menu are only available in live capture. 
+Some of the following menu are only available in live capture.
 
 
-.TP 
+.TP
 .B Start
 .RS
 .TP
@@ -175,7 +175,7 @@ Returns to your favourite shell ;)
 
 
 
-.TP 
+.TP
 .B Targets
 .RS
 .TP
@@ -200,7 +200,7 @@ Restores both TARGETS to ANY/ANY/ANY
 .RE
 
 
-.TP 
+.TP
 .B Hosts
 .RS
 .TP
@@ -226,14 +226,14 @@ Save the current hosts list to a file.
 .RE
 
 
-.TP 
+.TP
 .B View
 .RS
 .TP
 .B Connections
 Displays the connection list. To see detailed information about a connection
 press 'd', or press 'k' to kill it. To see the traffic for a specific connection,
-select it and press enter. Once the two-panel interface is displayed you can
+select it and press enter. Once the two\-panel interface is displayed you can
 move the focus with the arrow keys. Press 'j' to switch between joined and
 split visualization. Press 'k' to kill the connection. Press 'y' to inject
 interactively and 'Y' to inject a file. Note that it is important which panel
@@ -245,7 +245,7 @@ HINT: connections marked with an asterisk contain account(s) information.
 Diplays the passive profile hosts list. Selecting a host will display the
 relative details (including account with user and pass for that host).
 .br
-You can convert the passive profile list into the hosts list by pressing 'c'. 
+You can convert the passive profile list into the hosts list by pressing 'c'.
 To purge remote hosts, press 'l'. To purge local hosts, press 'r'. You can also
 dump the current profile to a file by pressing 'd'; the dumped file can be
 opened with etterlog(8).
@@ -264,7 +264,7 @@ for free... ;)
 .TP
 .B Visualization method
 Change the visualization method for the sniffed data. Available methods: ascii,
-hex, ebcdic, text, html. 
+hex, ebcdic, text, html.
 .TP
 .B Visualization regex
 Set the visualization regular expression. Only packets matching this regex will
@@ -276,7 +276,7 @@ format of the key.
 .RE
 
 
-.TP 
+.TP
 .B Mitm
 .RS
 .TP
@@ -290,7 +290,7 @@ Stops all the mitm attacks currently active.
 .RE
 
 
-.TP 
+.TP
 .B Filters
 .RS
 .TP
@@ -303,7 +303,7 @@ Unload the filter and stop filtering the connections.
 .RE
 
 
-.TP 
+.TP
 .B Logging
 .RS
 .TP
@@ -322,11 +322,11 @@ Come on... it is self explanatory.
 Will log all the messages appearing in the bottom window (same as \-m option).
 .TP
 .B Compressed file
-Asterisk-option to control whether or not the logfile should be compressed.
+Asterisk\-option to control whether or not the logfile should be compressed.
 .RE
 
 
-.TP 
+.TP
 .B Plugins
 .RS
 .TP

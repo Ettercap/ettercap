@@ -27,6 +27,7 @@
 
 /* proto */
 
+static void toggle_ip6scan(void);
 static void curses_scan(void);
 static void curses_load_hosts(void);
 static void load_hosts(char *path, char *file);
@@ -43,12 +44,14 @@ static void curses_hosts_help(void *dummy);
 
 /* globals */
 
+static char tag_ip6scan[] = " ";
 static wdg_t *wdg_hosts;
 static struct wdg_list *wdg_hosts_elements;
 
 struct wdg_menu menu_hosts[] = { {"Hosts",             'H',       "",    NULL},
                                  {"Hosts list",        'h',       "h",   curses_host_list},
                                  {"-",                 0,         "",    NULL},
+                                 {"Enable IPv6 scan",  0,   tag_ip6scan, toggle_ip6scan},
                                  {"Scan for hosts",    CTRL('S'), "C-s", curses_scan},
                                  {"Load from file...", 0,         "",    curses_load_hosts},
                                  {"Save to file...",   0,         "",    curses_save_hosts},
@@ -56,6 +59,18 @@ struct wdg_menu menu_hosts[] = { {"Hosts",             'H',       "",    NULL},
                                };
 
 /*******************************************/
+
+static void toggle_ip6scan(void)
+{
+   if (GBL_OPTIONS->ip6scan) {
+      tag_ip6scan[0] = ' ';
+      GBL_OPTIONS->ip6scan = 0;
+   } else {
+      tag_ip6scan[0] = '*';
+      GBL_OPTIONS->ip6scan = 1;
+   }
+}
+
 
 /*
  * scan the lan for hosts 

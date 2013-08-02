@@ -183,7 +183,8 @@ static EC_THREAD_FUNC(scan_thread)
    if(GBL_TARGET1->all_ip || GBL_TARGET2->all_ip) {
       scan_netmask(pid);
 #ifdef WITH_IPV6
-      scan_ip6_onlink(pid);
+      if (GBL_OPTIONS->ip6scan) 
+          scan_ip6_onlink(pid);
 #endif
    }
    scan_targets(pid);

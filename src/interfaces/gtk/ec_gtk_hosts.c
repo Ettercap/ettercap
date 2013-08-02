@@ -25,6 +25,7 @@
 
 /* proto */
 
+void toggle_ip6scan(void);
 void gtkui_scan(void);
 void gtkui_load_hosts(void);
 void gtkui_save_hosts(void);
@@ -45,6 +46,15 @@ static GtkListStore      *liststore = NULL;
 enum { HOST_DELETE, HOST_TARGET1, HOST_TARGET2 };
 
 /*******************************************/
+
+void toggle_ip6scan(void)
+{
+    if (GBL_OPTIONS->ip6scan) {
+        GBL_OPTIONS->ip6scan = 0;
+    } else {
+        GBL_OPTIONS->ip6scan = 1;
+    }
+}
 
 /*
  * scan the lan for hosts 

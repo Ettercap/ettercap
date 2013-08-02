@@ -63,7 +63,9 @@ extern void gtkui_load_filter(void);
 extern void gtkui_stop_filter(void);
 
 /* ec_gtk_hosts.c */
+#ifdef WITH_IPV6
 extern void toggle_ip6scan(void);
+#endif
 extern void gtkui_scan(void);
 extern void gtkui_load_hosts(void);
 extern void gtkui_save_hosts(void);

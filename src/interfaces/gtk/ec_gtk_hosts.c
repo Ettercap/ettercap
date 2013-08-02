@@ -25,7 +25,9 @@
 
 /* proto */
 
+#ifdef WITH_IPV6
 void toggle_ip6scan(void);
+#endif
 void gtkui_scan(void);
 void gtkui_load_hosts(void);
 void gtkui_save_hosts(void);
@@ -47,6 +49,7 @@ enum { HOST_DELETE, HOST_TARGET1, HOST_TARGET2 };
 
 /*******************************************/
 
+#ifdef WITH_IPV6
 void toggle_ip6scan(void)
 {
     if (GBL_OPTIONS->ip6scan) {
@@ -55,6 +58,7 @@ void toggle_ip6scan(void)
         GBL_OPTIONS->ip6scan = 1;
     }
 }
+#endif
 
 /*
  * scan the lan for hosts 

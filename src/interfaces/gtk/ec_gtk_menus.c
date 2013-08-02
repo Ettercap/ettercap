@@ -47,7 +47,9 @@ GtkItemFactoryEntry gmenu_hosts[] = {
    {"/_Hosts",                  NULL,         NULL,             0, "<Branch>" },
    {"/Hosts/_Hosts list",       "h",          gtkui_host_list,  0, "<StockItem>", GTK_STOCK_INDEX },
    {"/Hosts/sep1",              NULL,         NULL,             0, "<Separator>" },
+#ifdef WITH_IPV6
    {"/Hosts/Enable IPv6 scan",  NULL,         toggle_ip6scan,  0, "<ToggleItem>" },
+#endif
    {"/Hosts/_Scan for hosts",   "<control>s", gtkui_scan,       0, "<StockItem>", GTK_STOCK_FIND },
    {"/Hosts/Load from file...", NULL,         gtkui_load_hosts, 0, "<StockItem>", GTK_STOCK_OPEN },
    {"/Hosts/Save to file...",   NULL,         gtkui_save_hosts, 0, "<StockItem>", GTK_STOCK_SAVE }

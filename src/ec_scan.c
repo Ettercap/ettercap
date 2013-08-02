@@ -44,7 +44,9 @@ void build_hosts_list(void);
 void del_hosts_list(void);
 
 static void scan_netmask(pthread_t pid);
+#ifdef WITH_IPV6
 static void scan_ip6_onlink(pthread_t pid);
+#endif
 static void scan_targets(pthread_t pid);
 
 int scan_load_hosts(char *filename);
@@ -729,7 +731,9 @@ int scan_load_hosts(char *filename)
    char mac[ETH_ASCII_ADDR_LEN];
    char name[MAX_HOSTNAME_LEN];
    struct in_addr ipaddr;
+#ifdef WITH_IPV6
    struct in6_addr ip6addr;
+#endif
    struct ip_addr hip;
    u_int8 hmac[MEDIA_ADDR_LEN];
 

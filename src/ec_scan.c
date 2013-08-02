@@ -375,6 +375,7 @@ static void get_response(struct packet_object *po)
          return;
       }
 
+#ifdef WITH_IPV6
    /* same for IPv6 */
    /* search in target 1 */
    LIST_FOREACH(t, &GBL_TARGET1->ip6, next)
@@ -388,7 +389,7 @@ static void get_response(struct packet_object *po)
          add_host(&po->L3.src, po->L2.src, NULL);
          return;
       }
-
+#endif
 
 }
 
@@ -595,6 +596,7 @@ static void scan_targets(pthread_t pid)
       /* add to the list randomly */
       random_list(e, nhosts);
    }
+#ifdef WITH_IPV6
    LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
 
       SAFE_CALLOC(e, 1, sizeof(struct ip_list));
@@ -603,6 +605,7 @@ static void scan_targets(pthread_t pid)
 
       random_list(e, nhosts);
    }
+#endif
 
    /* then merge the target2 ips */
    LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
@@ -627,6 +630,7 @@ static void scan_targets(pthread_t pid)
       }
    }
 
+#ifdef WITH_IPV6
    LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
       found = 0;
 
@@ -645,6 +649,7 @@ static void scan_targets(pthread_t pid)
          random_list(e, nhosts);
       }
    }
+#endif
 
 
    DEBUG_MSG("scan_targets: %d hosts to be scanned", nhosts);

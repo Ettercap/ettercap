@@ -91,6 +91,12 @@ FUNC_DECODER(decode_icmp6)
       case ICMP6_NEIGH_ADV:
          hook_point(HOOK_PACKET_ICMP6_NADV, PACKET);
          break;
+      case ICMP6_ECHOREPLY:
+         hook_point(HOOK_PACKET_ICMP6_RPLY, PACKET);
+         break;
+      case ICMP6_BAD_PARAM:
+         hook_point(HOOK_PACKET_ICMP6_PARM, PACKET);
+         break;
    }
 
    return NULL;

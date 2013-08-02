@@ -165,7 +165,11 @@ static EC_THREAD_FUNC(scan_thread)
     * ARP packets.
     */
    hook_add(HOOK_PACKET_ARP_RP, &get_response);
+#ifdef WITH_IPV6
    hook_add(HOOK_PACKET_ICMP6_NADV, &get_response);
+   hook_add(HOOK_PACKET_ICMP6_RPLY, &get_response);
+   hook_add(HOOK_PACKET_ICMP6_PARM, &get_response);
+#endif
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
 
    /*
@@ -204,7 +208,11 @@ static EC_THREAD_FUNC(scan_thread)
    /* destroy the thread and remove the hook function */
    ec_thread_destroy(pid);
    hook_del(HOOK_PACKET_ARP, &get_response);
+#ifdef WITH_IPV6
    hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
+   hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
+   hook_del(HOOK_PACKET_ICMP6_PARM, &get_response);
+#endif
 
    /* count the hosts and print the message */
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
@@ -529,7 +537,9 @@ static void scan_ip6_onlink(pthread_t pid)
       /* user has requested to stop the task */
       if (ret == UI_PROGRESS_INTERRUPTED) {
          ec_thread_destroy(pid);
-         //hook_del(HOOK_PACKET_ARP, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_PARM, &get_response);
          /* cancel the scan thread */
          ec_thread_exit();
       }
@@ -671,7 +681,11 @@ static void scan_targets(pthread_t pid)
          /* destroy the capture thread and remove the hook function */
          ec_thread_destroy(pid);
          hook_del(HOOK_PACKET_ARP, &get_response);
+#ifdef WITH_IPV6
          hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_PARM, &get_response);
+#endif
          /* delete the temporary list */
          LIST_FOREACH_SAFE(e, &ip_list_head, next, tmp) {
             LIST_REMOVE(e, next);

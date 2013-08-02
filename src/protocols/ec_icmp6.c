@@ -72,6 +72,12 @@ FUNC_DECODER(decode_icmp6)
       case ICMP6_PKT_TOO_BIG:
          PACKET->PASSIVE.flags |= FP_ROUTER;
          break;
+      case ICMP6_NEIGH_ADV:
+         if ((*((u_int8*)icmp6 + 4) & 0x80) == 0x80) {
+            /* Router flag set in neighbor advertisement */
+            PACKET->PASSIVE.flags |= FP_ROUTER;
+         }
+         break;
    }
 
    hook_point(HOOK_PACKET_ICMP6, po);

@@ -94,7 +94,7 @@ FUNC_BUILDER(build_eth)
    return libnet_autobuild_ethernet(
             dst,                       /* ethernet destination */
             proto,                     /* protocol type */
-            GBL_IFACE->lnet);           /* libnet handle */
+            l);                        /* libnet handle */
 }
 
 /*

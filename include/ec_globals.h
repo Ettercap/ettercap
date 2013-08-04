@@ -117,8 +117,8 @@ struct pcap_env {
 
 /* lnet structure */
 struct lnet_env {
-   void *lnet_IP4;       /* this is a libnet_t pointer */
-   void *lnet_IP6;      /* this is a libnet_t pointer */
+   struct libnet_t *lnet_IP4;     /* this is a libnet_t pointer */
+   struct libnet_t *lnet_IP6;     /* this is a libnet_t pointer */
 };
 
 /* ip list per target */

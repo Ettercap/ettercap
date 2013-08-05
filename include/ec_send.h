@@ -37,8 +37,8 @@ EC_API_EXTERN void capture_only_incoming(pcap_t *p, libnet_t *l);
 EC_API_EXTERN u_int8 MEDIA_BROADCAST[MEDIA_ADDR_LEN];
 EC_API_EXTERN u_int8 ARP_BROADCAST[MEDIA_ADDR_LEN];
 
-#define FUNC_BUILDER(func)       libnet_ptag_t func(u_int8 *dst, u_int16 proto)
-#define FUNC_BUILDER_PTR(func)   libnet_ptag_t (*func)(u_int8 *dst, u_int16 proto)
+#define FUNC_BUILDER(func)       libnet_ptag_t func(u_int8 *dst, u_int16 proto, libnet_t* l)
+#define FUNC_BUILDER_PTR(func)   libnet_ptag_t (*func)(u_int8 *dst, u_int16 proto, libnet_t* l)
 
 EC_API_EXTERN void add_builder(u_int8 dlt, FUNC_BUILDER_PTR(builder));
 

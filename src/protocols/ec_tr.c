@@ -113,7 +113,7 @@ FUNC_BUILDER(build_tr)
             0x03,                         /* Unnumbered info/frame */
             TR_ORG_CODE,                  /* Organization Code */
             proto,                        /* protocol type */
-            GBL_IFACE->lnet);             /* libnet handle */
+            l);                           /* libnet handle */
    
 }
 

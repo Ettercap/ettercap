@@ -1133,9 +1133,8 @@ int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 spo
 
 	proto = ntohs(sip->addr_type);
 
-	l = (proto == AF_INET) ? GBL_LNET->lnet_IP4 : GBL_LNET->lnet_IP6;
-	
-	BUG_IF(l == NULL);
+	l = GBL_IFACE->lnet;
+	BUG_IF(GBL_IFACE->lnet == 0);
 
 	SEND_LOCK;
 

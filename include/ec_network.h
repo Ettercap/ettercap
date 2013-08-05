@@ -24,7 +24,7 @@ struct iface_env {
    u_int8 unoffensive:1;
 
    void* pcap;                 /* pcap_t pointer */
-   struct libnet_t* lnet;      /* libnet_t pointer */
+   struct libnet_t* lnet;
 };
 
 

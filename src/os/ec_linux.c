@@ -176,8 +176,10 @@ void disable_interface_offload(void)
 
 	switch(fork()) {
 		case 0:
-			/* if the command cannot disable some offloads don't show on console */
+#ifndef DEBUG
+			/* don't print on console if the ethtool cannot disable some offloads unless you are in debug mode */
 			close(2);
+#endif
 			execvp(param[0], param);
          safe_free_mem(param, &param_length, command);
 			exit(EINVALID);

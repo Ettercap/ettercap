@@ -1204,7 +1204,7 @@ const uint8_t *payload, uint32_t payload_s, libnet_t *l, libnet_ptag_t ptag)
 	ON_ERROR(t, -1, "libnet_build_ipvX: %s", libnet_geterror(l));
 
    	/* add the media header */
-   	t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP, l);
+//   	t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP, l);
    	if (t == -1)
       		FATAL_ERROR("Interface not suitable for layer2 sending");
 

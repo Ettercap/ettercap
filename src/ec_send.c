@@ -304,17 +304,9 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
 {
    libnet_ptag_t t;
    int c;
-   int max_attempts = 10;
-   int tries = 0;
 
    /* if not lnet warn the developer ;) */
    BUG_IF(GBL_IFACE->lnet == NULL);
-
-#if !defined(OS_WINDOWS)
-   struct timespec tm, ts;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
-   tm.tv_sec = 0;
-#endif
    
    SEND_LOCK;
 
@@ -354,25 +346,6 @@ int send_arp(u_char type, struct ip_addr *sip, u_int8 *smac, struct ip_addr *tip
    
    /* send the packet */
    c = libnet_write(GBL_IFACE->lnet);
-
-   /**
-    * Sometimes send_arp() function returns with a EMSGSIZE error
-    * this can be due to the fact that the buffer for the destination
-    * IP is full at the kernel-level. Perhaps if we try a few more times
-    * to send the ARP packet we can be successful.
-    */
-   while (c == -1 && errno == EMSGSIZE && tries < max_attempts) {
-#if !defined(OS_WINDOWS) 
-      nanosleep(&tm, NULL);
-#else
-      usleep(GBL_CONF->arp_storm_delay);
-#endif
-      tries++;
-
-      //Try again
-      c = libnet_write(GBL_IFACE->lnet);
-   }
-
    ON_ERROR(c, -1, "libnet_write (%d): %s", c, libnet_geterror(GBL_IFACE->lnet));
    
    /* clear the pblock */

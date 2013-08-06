@@ -32,6 +32,7 @@ void disable_ip_forward(void);
 static void restore_ip_forward(void);
 u_int16 get_iface_mtu(const char *iface);
 void disable_interface_offload(void);
+void safe_free_mem(char **param, int *param_length, char *command);
 
 /*******************************************/
 
@@ -47,7 +48,14 @@ void disable_ip_forward(void)
 
    DEBUG_MSG("disable_ip_forward: old value = %c", saved_status);
  
-   fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
+   /* sometimes writing just fails... retry up to 5 times */
+   int i = 0;
+   fd = NULL;
+   do {
+      fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
+      i++;
+      usleep(20000);
+   } while(fd == NULL && i <=5);
    ON_ERROR(fd, NULL, "failed to open /proc/sys/net/ipv4/ip_forward");
    
    fprintf(fd, "0");
@@ -78,8 +86,15 @@ static void restore_ip_forward(void)
       DEBUG_MSG("ATEXIT: restore_ip_forward: does not need restoration");
       return;
    }
-   
-   fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
+
+   /* sometimes writing just fails... retry up to 5 times */
+   int i = 0;
+   fd = NULL;
+   do {
+      fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
+      i++;
+      usleep(20000);
+   } while(fd == NULL && i <=5);
    if (fd == NULL) {
       FATAL_ERROR("ip_forwarding was disabled, but we cannot re-enable it now.\n"
                   "remember to re-enable it manually\n");
@@ -119,12 +134,23 @@ u_int16 get_iface_mtu(const char *iface)
    return mtu;
 }
 
+void safe_free_mem(char **param, int *param_length, char *command)
+{
+   int k;
+
+   SAFE_FREE(command);
+	for(k= 0; k < (*param_length); ++k)
+		SAFE_FREE(param[k]);
+	SAFE_FREE(param);
+}
+
 /*
  * disable segmentation offload on interface
  * this prevents L3 send errors (payload too large)
  */
 void disable_interface_offload(void)
 {
+   int param_length= 0;
 	char *command;
 	char **param = NULL;
 	char *p;
@@ -137,7 +163,7 @@ void disable_interface_offload(void)
 	memset(command, '\0', 100);	
 	snprintf(command, 99, "ethtool -K %s tso off gso off gro off lro off", GBL_OPTIONS->iface);
 
-	DEBUG_MSG("disable_interface_offlaod: Disabling offload on %s", GBL_OPTIONS->iface);
+	DEBUG_MSG("disable_interface_offload: Disabling offload on %s", GBL_OPTIONS->iface);
 
 	for(p = strsep(&command, " "); p != NULL; p = strsep(&command, " ")) {
 		SAFE_REALLOC(param, (i+1) * sizeof(char *));
@@ -146,15 +172,21 @@ void disable_interface_offload(void)
 
 	SAFE_REALLOC(param, (i+1) * sizeof(char *));
 	param[i] = NULL;
+   param_length= i + 1; //because there is a SAFE_REALLOC after the for.
 
 	switch(fork()) {
 		case 0:
+#ifndef DEBUG
+			/* don't print on console if the ethtool cannot disable some offloads unless you are in debug mode */
+			close(2);
+#endif
 			execvp(param[0], param);
+         safe_free_mem(param, &param_length, command);
 			exit(EINVALID);
 		case -1:
-			SAFE_FREE(param);
+			safe_free_mem(param, &param_length, command);
 		default:
-			SAFE_FREE(param);
+			safe_free_mem(param, &param_length, command);
 			wait(&ret_val);
 	} 	
 }

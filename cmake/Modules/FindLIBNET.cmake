@@ -38,9 +38,9 @@ endif()
 function(_LIBNET_GET_VERSION _OUT_version _libnet_hdr)
     file(READ ${_libnet_hdr} _contents)
     if(_contents)
-      string(REGEX REPLACE ".*#define LIBNET_VERSION[ \t]+\"([0-9.]+)\".*" "\\1" ${_OUT_version} "${_contents}")
+      string(REGEX REPLACE ".*#define LIBNET_VERSION[ \t]+\"([0-9.rc-]+)\".*" "\\1" ${_OUT_version} "${_contents}")
         
-        if(NOT ${_OUT_version} MATCHES "[0-9.]+")
+        if(NOT ${_OUT_version} MATCHES "[0-9.rc-]+")
             message(FATAL_ERROR "Version parsing failed for LIBNET_VERSION!")
         endif()
 

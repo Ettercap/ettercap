@@ -14,7 +14,7 @@ extern void curses_message(const char *msg);
 extern void curses_flush_msg(void);
 extern void curses_sniff_offline(void);
 extern void curses_sniff_live(void);
-
+void curses_hosts_update(void);
 /* menus */
 extern struct wdg_menu menu_filters[]; 
 extern struct wdg_menu menu_logging[]; 

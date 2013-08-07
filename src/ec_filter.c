@@ -44,7 +44,6 @@ static pthread_mutex_t filters_mutex;
 
 /* protos */
 
-int filter_load_file(char *filename, struct filter_list **list, uint8_t enabled);
 void filter_unload(struct filter_list **list);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
 static int compile_regex(struct filter_env *fenv, struct filter_header *fh);

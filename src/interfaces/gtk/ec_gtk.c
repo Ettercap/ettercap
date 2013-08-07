@@ -686,7 +686,7 @@ static void gtkui_setup(void)
    /* messages */
    scroll = gtk_scrolled_window_new(NULL, NULL);
    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll),
-                                  GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+                                  GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
    gtk_paned_pack2(GTK_PANED (vpaned), scroll, FALSE, TRUE);
    gtk_widget_show(scroll);

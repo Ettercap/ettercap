@@ -565,7 +565,8 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
          if (fop->op.func.replace) {
             u_char *replaced;
             u_char *q = fop->op.func.replace;
-            size_t i, slen = 0;
+            size_t i;
+	    int slen = 0;
 
             /* don't modify if in unoffensive mode */
             if (GBL_OPTIONS->unoffensive)
@@ -986,7 +987,7 @@ static int cmp_geq(u_int32 a, u_int32 b)
 /*
  * load the filter from a file 
  */
-int filter_load_file(char *filename, struct filter_list **list, uint8_t enabled)
+int filter_load_file(const char *filename, struct filter_list **list, uint8_t enabled)
 {
    int fd;
    void *file;

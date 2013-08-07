@@ -23,7 +23,7 @@ struct iface_env {
    u_int8 has_ipv6   :1;
    u_int8 unoffensive:1;
 
-   void* pcap;                 /* pcap_t pointer */
+   struct pcap_t*   pcap;
    struct libnet_t* lnet;
 };
 

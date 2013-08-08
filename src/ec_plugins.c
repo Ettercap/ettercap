@@ -60,7 +60,7 @@ static SLIST_HEAD(, plugin_entry) plugin_head;
 
 void plugin_load_all(void);
 void plugin_unload_all(void);
-int plugin_load_single(char *path, char *name);
+int plugin_load_single(const char *path, char *name);
 int plugin_register(void *handle, struct plugin_ops *ops);
 int plugin_init(char *name);
 int plugin_fini(char *name);
@@ -81,7 +81,7 @@ int plugin_filter(const struct dirent *d);
  * load a plugin given the full path
  */
 
-int plugin_load_single(char *path, char *name)
+int plugin_load_single(const char *path, char *name)
 {
 #ifdef HAVE_PLUGINS
    char file[strlen(path)+strlen(name)+2];

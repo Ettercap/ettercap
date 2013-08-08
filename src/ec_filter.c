@@ -987,7 +987,7 @@ static int cmp_geq(u_int32 a, u_int32 b)
 /*
  * load the filter from a file 
  */
-int filter_load_file(const char *filename, struct filter_list **list, uint8_t enabled)
+int filter_load_file(const char *filename, struct filter_list **list, u_int8 enabled)
 {
    int fd;
    void *file;

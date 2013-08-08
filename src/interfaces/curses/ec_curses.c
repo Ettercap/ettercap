@@ -57,7 +57,7 @@ static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
 
 static void curses_file_open(void);
-static void read_pcapfile(char *path, char *file);
+static void read_pcapfile(const char *path, char *file);
 static void curses_file_write(void);
 static void write_pcapfile(void);
 static void curses_unified_sniff(void);
@@ -488,7 +488,7 @@ static void curses_file_open(void)
    wdg_set_focus(fop);
 }
 
-static void read_pcapfile(char *path, char *file)
+static void read_pcapfile(const char *path, char *file)
 {
    char errbuf[128];
    

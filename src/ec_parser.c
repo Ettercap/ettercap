@@ -83,8 +83,8 @@ void set_silent(void);
 void set_unoffensive(void);
 void disable_sslmitm(void);
 void set_resolve(void);
-void load_hosts(char *file);
-void save_hosts(char *file);
+void load_hosts(const char *file);
+void save_hosts(const char *file);
 void opt_set_format(char *format);
 void set_ext_headers(void);
 void set_wifi_key(char *key);
@@ -748,7 +748,7 @@ void set_pcap_filter(char *filter)
 
 void load_filter(char *end, char *filter)
 {
-	uint8_t f_enabled = 1;
+	u_int8 f_enabled = 1;
 	if ( (end-filter >=2) && *(end-2) == ':') {
 		*(end-2) = '\0';
 		f_enabled = !( *(end-1) == '0' );
@@ -823,14 +823,14 @@ void set_resolve(void)
 	GBL_OPTIONS->resolve = 1;
 }
 
-void load_hosts(char *file)
+void load_hosts(const char *file)
 {
 	GBL_OPTIONS->silent = 1;
 	GBL_OPTIONS->load_hosts = 1;
 	GBL_OPTIONS->hostsfile = strdup(file);
 }
 
-void save_hosts(char *file)
+void save_hosts(const char *file)
 {
 	GBL_OPTIONS->save_hosts = 1;
 	GBL_OPTIONS->hostsfile = strdup(file);

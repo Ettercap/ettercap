@@ -114,7 +114,7 @@ struct filter_env {
 
 /* filter list entry */
 struct filter_list {
-	uint8_t enabled;
+	u_int8 enabled;
 	char *name;
 	struct filter_env env;
 	struct filter_list *next;
@@ -136,7 +136,7 @@ void filter_init_mutex(void);
 /* exported functions */
 
 EC_API_EXTERN void filter_packet(struct packet_object *po);
-EC_API_EXTERN int filter_load_file(const char *filename, struct filter_list **list, uint8_t enabled);
+EC_API_EXTERN int filter_load_file(const char *filename, struct filter_list **list, u_int8 enabled);
 EC_API_EXTERN void filter_unload(struct filter_list **list);
 EC_API_EXTERN void filter_clear(void);
 EC_API_EXTERN void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg);

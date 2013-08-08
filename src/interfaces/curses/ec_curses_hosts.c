@@ -29,7 +29,7 @@
 
 static void curses_scan(void);
 static void curses_load_hosts(void);
-static void load_hosts(char *path, char *file);
+static void load_hosts(const char *path, char *file);
 static void curses_save_hosts(void);
 static void save_hosts(void);
 static void curses_host_list(void);
@@ -100,7 +100,7 @@ static void curses_load_hosts(void)
    wdg_set_focus(fop);
 }
 
-static void load_hosts(char *path, char *file)
+static void load_hosts(const char *path, char *file)
 {
    char *tmp;
    char current[PATH_MAX];

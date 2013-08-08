@@ -109,7 +109,7 @@ set(DESKTOP_DIR /usr/share/applications/ CACHE PATH "Binary files installation d
 set(ICON_DIR /usr/share/pixmaps CACHE PATH "Binary files installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages") 
 
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg -Wredundant-decls" CACHE STRING "" FORCE)
 set(CMAKE_C_FLAGS_RELEASE "-O2 -w" CACHE STRING "" FORCE)
 
 if(OS_DARWIN)

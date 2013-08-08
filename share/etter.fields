@@ -33,6 +33,7 @@ alias
 pseudo
 email
 username
+_username
 userid
 form_loginname
 loginname
@@ -66,6 +67,7 @@ sign-in
 ahd_password
 pass
 password
+_password
 passwd
 session_password
 sessionpassword

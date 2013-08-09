@@ -34,19 +34,15 @@ static pthread_mutex_t sl_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SOURCES_LIST_UNLOCK   do{ pthread_mutex_unlock(&sl_mutex); }while(0)
 
 /* protos */
-void network_init();
 static void close_network();
 static void pcap_winit(pcap_t *pcap);
 static void source_print(struct iface_env *source);
 static int source_init(char *name, struct iface_env *source, bool primary, bool live);
 static void source_close(struct iface_env *iface);
 static int secondary_sources_init(char **sources);
-void secondary_sources_foreach(void (*)(struct iface_env*));
 static void close_secondary_sources(void);
 static void l3_init(void);
 static void l3_close(void);
-
-struct iface_env* iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN]);
 
 /* teh code */
 

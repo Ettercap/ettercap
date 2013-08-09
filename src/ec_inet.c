@@ -24,25 +24,6 @@
 #include <ec_ui.h>
 
 /* prototypes */
-int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr);
-int ip_addr_cpy(u_char *addr, struct ip_addr *sa);
-int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
-int ip_addr_null(struct ip_addr *sa);
-int ip_addr_is_zero(struct ip_addr *sa);
-int ip_addr_random(struct ip_addr* ip, u_int16 type);
-
-char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
-int ip_addr_pton(char *str, struct ip_addr *addr);
-char *mac_addr_ntoa(u_char *mac, char *dst);
-int mac_addr_aton(char *str, u_char *mac);
-
-int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr);
-int ip_addr_is_multicast(struct ip_addr *ip);
-int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr);
-int ip_addr_is_ours(struct ip_addr *);
-
-int ip_addr_get_network(struct ip_addr*, struct ip_addr*, struct ip_addr*);
-int ip_addr_get_prefix(struct ip_addr* netmask);
 
 static const char *inet_ntop4(const u_char *src, char *dst, size_t size);
 static const char *inet_ntop6(const u_char *src, char *dst, size_t size);

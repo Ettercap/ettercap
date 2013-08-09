@@ -38,15 +38,6 @@ struct mitm_entry {
 
 static char *mitm_args = "";
 
-/* protos */
-
-void mitm_add(struct mitm_method *mm);
-int mitm_set(char *name);
-int mitm_start(void);
-void mitm_stop(void);
-void only_mitm(void);
-int is_mitm_active(char *name);
-
 /*******************************************/
 
 /*

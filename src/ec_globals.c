@@ -32,9 +32,6 @@ struct globals *gbls;
 
 /* proto */
 
-void globals_alloc(void);
-void globals_free(void);
-
 /*******************************************/
 
 void globals_alloc(void)

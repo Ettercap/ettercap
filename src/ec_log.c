@@ -42,20 +42,9 @@ static struct log_fd fdi;
 
 /* protos */
 
-int set_loglevel(int level, char *filename);
-int set_msg_loglevel(int level, char *filename);
-
-int log_open(struct log_fd *fd, char *filename);
-void log_close(struct log_fd *fd);
-void log_stop(void);
-
-int log_write_header(struct log_fd *fd, int type);
 
 static void log_packet(struct packet_object *po);
 static void log_info(struct packet_object *po);
-void log_write_packet(struct log_fd *fd, struct packet_object *po);
-void log_write_info(struct log_fd *fd, struct packet_object *po);
-void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po);
 
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define LOG_LOCK     do{ pthread_mutex_lock(&log_mutex); } while(0)

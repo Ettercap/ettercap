@@ -53,13 +53,7 @@ static GtkWidget     *progress_bar = NULL;
 
 void set_gtk_interface(void);
 void gtkui_start(void);
-void gtkui_exit(void);
 
-void gtkui_message(const char *msg);
-void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
-
-char *gtkui_utf8_validate(char *data);
-   
 static void gtkui_init(void);
 static void gtkui_cleanup(void);
 static void gtkui_msg(const char *msg);
@@ -85,21 +79,7 @@ static void gtkui_pcap_filter(void);
 static void gtkui_set_netmask(void);
 static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data);
 
-GtkTextBuffer *gtkui_details_window(char *title);
-void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
-void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
-gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
-void gtkui_filename_browse(GtkWidget *widget, gpointer data);
 
-/* MDI pages */
-GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));
-void gtkui_page_present(GtkWidget *child);
-void gtkui_page_close(GtkWidget *widget, gpointer data);
-void gtkui_page_close_current(void);
-void gtkui_page_detach_current(void);
-void gtkui_page_attach_shortcut(GtkWidget *win, void (*attacher)(void));
-void gtkui_page_right(void);
-void gtkui_page_left(void);
 #if GTK_MINOR_VERSION == 2
 static void gtkui_page_defocus_tabs(void);
 #endif

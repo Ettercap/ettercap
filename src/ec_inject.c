@@ -38,14 +38,7 @@ struct inj_entry {
 
 /* proto */
 
-int inject_buffer(struct packet_object *po);
-void add_injector(u_int8 level, u_int32 type, FUNC_INJECTOR_PTR(injector));
-void * get_injector(u_int8 level, u_int32 type);
 size_t inject_protocol(struct packet_object *po);
-void inject_split_data(struct packet_object *po);
-
-int user_kill(struct conn_object *co);
-int user_inject(u_char *buf, size_t size, struct conn_object *co, int which);
 
 /*******************************************/
 

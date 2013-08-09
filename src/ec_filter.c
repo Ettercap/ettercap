@@ -44,10 +44,8 @@ static pthread_mutex_t filters_mutex;
 
 /* protos */
 
-void filter_unload(struct filter_list **list);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
 static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
-void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg);
    
 static int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);

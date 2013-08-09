@@ -42,7 +42,6 @@ struct row_pairs {
 
 /* proto */
 
-void gtkui_show_connections(void);
 static void gtkui_connections_detach(GtkWidget *child);
 static void gtkui_connections_attach(void);
 static void gtkui_kill_connections(void);

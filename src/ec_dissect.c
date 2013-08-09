@@ -36,19 +36,6 @@ struct dissect_entry {
    SLIST_ENTRY (dissect_entry) next;
 };
 
-/* protos */
-
-void dissect_add(char *name, u_int8 level, u_int32 port, FUNC_DECODER_PTR(decoder));
-void dissect_del(char *name);
-int dissect_modify(int mode, char *name, u_int32 port);
-
-int dissect_match(void *id_sess, void *id_curr);
-void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int64 code);
-size_t dissect_create_ident(void **i, struct packet_object *po, u_int64 code);            
-void dissect_wipe_session(struct packet_object *po, u_int64 code);
-
-int dissect_on_port(char *name, u_int16 port);
-
 /*******************************************/
 
 /*

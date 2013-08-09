@@ -25,11 +25,6 @@
 
 /* proto */
 
-void gtkui_scan(void);
-void gtkui_load_hosts(void);
-void gtkui_save_hosts(void);
-void gtkui_host_list(void);
-
 static void load_hosts(const char *file);
 static void save_hosts(void);
 static void gtkui_hosts_destroy(void);

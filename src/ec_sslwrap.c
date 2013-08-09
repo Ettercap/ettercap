@@ -126,13 +126,6 @@ static struct pollfd *poll_fd = NULL;
 
 #endif /* HAVE_OPENSSL */
 
-/* protos */
-
-void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_char status);
-void sslw_dissect_move(char *name, u_int16 port);
-EC_THREAD_FUNC(sslw_start);
-void ssl_wrap_init(void);
-
 #ifdef HAVE_OPENSSL
 
 static EC_THREAD_FUNC(sslw_child);

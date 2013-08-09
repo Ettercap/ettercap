@@ -24,17 +24,11 @@
 
 /* proto */
 
-void target_compile(char *target);
 static void add_port(void *ports, int n);
 static void add_ip(void *digit, int n);
 static void expand_range_ip(char *str, void *target);
 int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
 void add_ip_list(struct ip_addr *ip, struct target_env *t);
-
-int is_target_pck(struct log_header_packet *pck);
-int is_target_info(struct host_profile *hst);
-
-int find_user(struct host_profile *hst, char *user);
 
 /*******************************************/
 

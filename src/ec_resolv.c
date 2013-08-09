@@ -43,9 +43,7 @@ struct resolv_entry {
 
 /* protos */
 
-int host_iptoa(struct ip_addr *ip, char *name);
 static int resolv_cache_search(struct ip_addr *ip, char *name);
-void resolv_cache_insert(struct ip_addr *ip, char *name);
 
 /************************************************/
 

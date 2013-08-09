@@ -41,19 +41,6 @@ struct align_entry {
    SLIST_ENTRY (align_entry) next;
 };
 
-/* protos */
-
-void capture_start(struct iface_env *);
-void capture_stop(struct iface_env *);
-
-EC_THREAD_FUNC(capture);
-
-void capture_getifs(void);
-int is_pcap_file(char *file, char *errbuf);
-
-u_int8 get_alignment(int dlt);
-void add_aligner(int dlt, int (*aligner)(void));
-
 /*******************************************/
 
 void capture_start(struct iface_env *iface)

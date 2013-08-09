@@ -27,14 +27,6 @@
 #include <ec_manuf.h>
 #include <ec_services.h>
 
-/* globals */
-
-/* protos */
-
-int is_open_port(u_int8 proto, u_int16 port, u_int8 flags);
-void print_host(struct host_profile *h);
-void print_host_xml(struct host_profile *h);
-
 /************************************************/
   
 /*

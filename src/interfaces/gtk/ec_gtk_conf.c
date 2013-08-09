@@ -22,11 +22,6 @@
 #include <ec.h>
 #include <ec_gtk.h>
 
-void gtkui_conf_set(char *name, short value);
-short gtkui_conf_get(char *name);
-void gtkui_conf_read(void);
-void gtkui_conf_save(void);
-
 static char *filename = NULL;
 static struct gtk_conf_entry settings[] = {
    { "window_top", 0 },

@@ -44,8 +44,6 @@ static int wdg_window_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_e
 
 static void wdg_window_border(struct wdg_object *wo);
 
-void wdg_window_print(wdg_t *wo, size_t x, size_t y, char *fmt, ...);
-
 /*******************************************/
 
 /* 

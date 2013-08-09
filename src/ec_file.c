@@ -23,12 +23,6 @@
 #include <ec_file.h>
 #include <ec_version.h>
 
-/* protos */
-
-char * get_full_path(const char *dir, const char *file);
-char * get_local_path(const char *file);
-FILE * open_data(char *dir, char *file, char *mode);
-
 /*******************************************/
 
 /*

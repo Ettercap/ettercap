@@ -35,7 +35,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
+#ifndef HAVE_INET_ATON
 #include <ec.h>
 #include <ec_inet.h>
 
@@ -60,6 +60,6 @@ int inet_aton(const char *cp, struct in_addr *addr)
   addr->s_addr = inet_addr(cp);
   return (addr->s_addr == INADDR_NONE) ? 0 : 1;
 }
-
+#endif
 /* EOF */
 

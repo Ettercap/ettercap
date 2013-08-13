@@ -1,4 +1,4 @@
-.\"  ettercap_plugins -- man page for all the plugins
+.\"  ettercap_plugins \-\- man page for all the plugins
 .\"
 .\"  This program is free software; you can redistribute it and/or modify
 .\"  it under the terms of the GNU General Public License as published by
@@ -12,16 +12,16 @@
 .\"
 .\"  You should have received a copy of the GNU General Public License
 .\"  along with this program; if not, write to the Free Software
-.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+.\"  Foundation, Inc., 59 Temple Place \- Suite 330, Boston, MA 02111\-1307, USA.
 .\"
 .\"
 .de Sp
 .if n .sp
 .if t .sp 0.4
 ..
-.TH ETTERCAP-PLUGINS "8" "" "ettercap @VERSION@"
+.TH ETTERCAP\-PLUGINS "8" "" "ettercap @VERSION@"
 .SH NAME
-ettercap-plugins \- A collection of plugins for ettercap
+ettercap\-plugins \- A collection of plugins for ettercap
 
 .SH DESCRIPTION
 Ettercap(8) supports loadable modules at runtime. They are called plugins and
@@ -29,7 +29,7 @@ they come within the source tarball. They are automatically compiled if your
 system supports them or until you specify the \-\-disable\-plugins option to the
 configure script.
 .br
-Some of older ettercap plugins (roper, banshee, and so on) have not been ported 
+Some of older ettercap plugins (roper, banshee, and so on) have not been ported
 in the new version.
 By the way, you can achieve the same results by using new filtering engine.
 .br
@@ -44,19 +44,19 @@ To have a list of plugins installed in your system do that command:
 .LP
 The following is a list of available plugins:
 
-.TP 
+.TP
 .B arp_cop
 .Sp
 It reports suspicious ARP activity by passively monitoring ARP requests/replies.
-It can report ARP posioning attempts, or simple IP-conflicts or IP-changes.
+It can report ARP posioning attempts, or simple IP\-conflicts or IP\-changes.
 If you build the initial host list the plugin will run more accurately.
 .Sp
 .I example :
 .Sp
-ettercap \-TQP arp_cop // 
+ettercap \-TQP arp_cop //
 
 
-.TP 
+.TP
 .B autoadd
 .Sp
 It will automatically add new victims to the ARP poisoning mitm attack when
@@ -65,11 +65,11 @@ add the host to the victims list if it was specified in the TARGET. The host is
 added when an arp request is seen form it, since communicating hosts are alive :)
 
 
-.TP 
+.TP
 .B chk_poison
 .Sp
 It performs a check to see if the arp poisoning module of ettercap was successful.
-It sends spoofed ICMP echo packets to all the victims of the poisoning 
+It sends spoofed ICMP echo packets to all the victims of the poisoning
 pretending to be each of the other targets. If we can catch an ICMP reply with
 our MAC address as destination it means that the poisoning between those
 two targets is successful. It checks both ways of each communication.
@@ -79,80 +79,80 @@ You can't run this plugin from command line because the poisoning process
 is not started yet. You have to launch it from the proper menu.
 
 
-.TP 
+.TP
 .B dns_spoof
 .Sp
 This plugin intercepts DNS query and reply with a spoofed answer. You can chose
 to which address the plugin has to reply by modifying the etter.dns file. The
-plugin intercepts A, AAAA, PTR, MX, WINS and SRV request. If it was an A 
-request, the name is searched in the file and the IP address is returned 
-(you can use wildcards in the name). 
+plugin intercepts A, AAAA, PTR, MX, WINS and SRV request. If it was an A
+request, the name is searched in the file and the IP address is returned
+(you can use wildcards in the name).
 .br
-The same applies if it was a AAAA request. 
+The same applies if it was a AAAA request.
 .Sp
-If it was a PTR request, the IP address is searched in the file and the name is 
+If it was a PTR request, the IP address is searched in the file and the name is
 returned (except for those name containing a wildcard). For PTR requests, IPv4
-or IPv6 addresses are supported. 
+or IPv6 addresses are supported.
 .Sp
-In case of MX request a special reply is 
-crafted. The host is resolved with a fake host 'mail.host' and the additional 
-record contains the IP address of 'mail.host'. The first address that matches 
+In case of MX request a special reply is
+crafted. The host is resolved with a fake host 'mail.host' and the additional
+record contains the IP address of 'mail.host'. The first address that matches
 is returned, so be careful with the order. The IP address for MX requests can
-be a IPv4 or a IPv6 address. 
+be a IPv4 or a IPv6 address.
 .Sp
-If the request was a WINS request, the name is 
-searched in the file and the IP address is returned. 
+If the request was a WINS request, the name is
+searched in the file and the IP address is returned.
 .Sp
-In case of SRV request, a 
-special reply is crafted. The host is resolved with a fake host 'srv.host' and 
+In case of SRV request, a
+special reply is crafted. The host is resolved with a fake host 'srv.host' and
 the additional record contains the IP address of 'srv.host'. The IP address for
 SRV requests can be a IPv4 or a IPv6 address.
 .Sp
-A special reply can be spoofed for A or AAAA requests, if the 'undefined 
+A special reply can be spoofed for A or AAAA requests, if the 'undefined
 address' is specified as the IP address in the file. Then the client gets a
 response which stops resolution processing imediately. This way one can control
-which address family is being used to access a dual-stacked host.
+which address family is being used to access a dual\-stacked host.
 
 
 .TP
 .B mdns_spoof
 .Sp
 This plugin does the same as the dns_spoof plugin described above, despite that
-it listens for mDNS (Multicast DNS) queries on UDP port 5353. 
-To choose to which address the plugin shall reply, you have to modify a diffent 
-file called etter.mdns. Due to the nature of mDNS, the plugin intercepts only A, 
+it listens for mDNS (Multicast DNS) queries on UDP port 5353.
+To choose to which address the plugin shall reply, you have to modify a diffent
+file called etter.mdns. Due to the nature of mDNS, the plugin intercepts only A,
 AAAA, PTR and SRV requests.
 .Sp
-The way the mdns_spoof plugin interprets the etter.mdns file and the rules that 
+The way the mdns_spoof plugin interprets the etter.mdns file and the rules that
 apply are the same as with the dns_spoof plugin.
 
 
-.TP 
+.TP
 .B dos_attack
 .Sp
 This plugin runs a d.o.s. attack against a victim IP address. It first "scans"
-the victim to find open ports, then starts to flood these ports with SYN 
+the victim to find open ports, then starts to flood these ports with SYN
 packets, using a "phantom" address as source IP. Then it uses fake ARP replies
-to intercept packets for the phantom host. When it receives SYN-ACK from the 
-victim, it replies with an ACK packet creating an ESTABLISHED connection. 
+to intercept packets for the phantom host. When it receives SYN\-ACK from the
+victim, it replies with an ACK packet creating an ESTABLISHED connection.
 You have to use a free IP address in your subnet to create the "phantom" host
-(you can use find_ip for this purpose). 
-You can't run this plugin in unoffensive mode. 
+(you can use find_ip for this purpose).
+You can't run this plugin in unoffensive mode.
 .br
-This plugin is based on the original Naptha DoS attack 
+This plugin is based on the original Naptha DoS attack
 (http://razor.bindview.com/publish/advisories/adv_NAPTHA.html)
 .Sp
 .I example :
 .Sp
 ettercap \-TQP dos_attack
 
-.TP 
+.TP
 .B dummy
 .Sp
 Only a template to demonstrate how to write a plugin.
 
 
-.TP 
+.TP
 .B find_conn
 .Sp
 Very simple plugin that listens for ARP requests to show you all the targets an host
@@ -160,12 +160,12 @@ wants to talk to. It can also help you finding addresses in an unknown LAN.
 .Sp
 .I example :
 .Sp
-ettercap \-TQzP find_conn 
+ettercap \-TQzP find_conn
 .Sp
-ettercap \-TQu \-i eth0 \-P find_conn 
+ettercap \-TQu \-i eth0 \-P find_conn
 
 
-.TP 
+.TP
 .B find_ettercap
 .Sp
 Try to identify ettercap packets sent on the LAN. It could be useful to detect
@@ -173,38 +173,38 @@ if someone is using ettercap. Do not rely on it 100% since the tests are only
 on particular sequence/identification numbers.
 
 
-.TP 
+.TP
 .B find_ip
 .Sp
 Find the first unused IP address in the range specified by the user in the target
-list. Some other plugins (such as gre_relay) need an unused IP address of the 
-LAN to create a "fake" host.   
-It can also be useful to obtain an IP address in an unknown LAN where there is 
+list. Some other plugins (such as gre_relay) need an unused IP address of the
+LAN to create a "fake" host.
+It can also be useful to obtain an IP address in an unknown LAN where there is
 no dhcp server. You can use find_conn to determine the IP addressing of the LAN,
 and then find_ip.
 You have to build host list to use this plugin so you can't use it in unoffensive
-mode. If you don't have an IP address for your interface, give it a bogus one 
-(e.g. if the LAN is 192.168.0.0/24, use 10.0.0.1 to avoid conflicting IP), then 
+mode. If you don't have an IP address for your interface, give it a bogus one
+(e.g. if the LAN is 192.168.0.0/24, use 10.0.0.1 to avoid conflicting IP), then
 launch this plugin specifying the subnet range.
 You can run it either from the command line or from the proper menu.
 .Sp
 .I example :
 .Sp
-ettercap \-TQP find_ip // 
+ettercap \-TQP find_ip //
 .Sp
-ettercap \-TQP find_ip /192.168.0.1\-254/ 
+ettercap \-TQP find_ip /192.168.0.1\-254/
 
 
-.TP 
+.TP
 .B finger
 .Sp
 Uses the passive fingerprint capabilities to fingerprint a remote host. It
 does a connect() to the remote host to force the kernel to reply
-to the SYN with a SYN+ACK packet. The reply will be collected and the
+to the SYN with a SYN\+ACK packet. The reply will be collected and the
 fingerprint is displayed. The connect() obey to the connect_timeout parameter
-in etter.conf(5). You can specify a target on command-line or let the plugin ask
+in etter.conf(5). You can specify a target on command\-line or let the plugin ask
 the target host to be fingerprinted. You can also specify multiple target with
-the usual multi-target specification (see ettercap(8)). if you specify multiple
+the usual multi\-target specification (see ettercap(8)). if you specify multiple
 ports, all the ports will be tested on all the IPs.
 .Sp
 .I example :
@@ -214,7 +214,7 @@ ettercap \-TzP finger /192.168.0.1/22
 ettercap \-TzP finger /192.168.0.1\-50/22,23,25
 
 
-.TP 
+.TP
 .B finger_submit
 .Sp
 Use this plugin to submit a fingerprint to the ettercap website. If you found
@@ -237,27 +237,27 @@ all hosts in target2 with a fake source ip address (victim).
 .Sp
 ettercap \-i eth1 \-Tq /192.168.0.5/ // \-P fraggle_attack
 
-.TP 
+.TP
 .B gre_relay
 .Sp
-This plugin can be used to sniff GRE-redirected remote traffic.
+This plugin can be used to sniff GRE\-redirected remote traffic.
 The basic idea is to create a GRE tunnel that sends all the traffic on a router
-interface to the ettercap machine. The plugin will send back the GRE packets 
+interface to the ettercap machine. The plugin will send back the GRE packets
 to the router, after ettercap "manipulation" (you can use "active" plugins
-such as smb_down, ssh decryption, filters, etc... on redirected traffic) 
-It needs a "fake" host where the traffic has to be redirected to (to avoid 
-kernel's responses). The "fake" IP will be the tunnel endpoint. 
-Gre_relay plugin will impersonate the "fake" host. 
-To find an unused IP address for the "fake" host you can use find_ip plugin.  
+such as smb_down, ssh decryption, filters, etc... on redirected traffic)
+It needs a "fake" host where the traffic has to be redirected to (to avoid
+kernel's responses). The "fake" IP will be the tunnel endpoint.
+Gre_relay plugin will impersonate the "fake" host.
+To find an unused IP address for the "fake" host you can use find_ip plugin.
 Based on the original Tunnelx technique by Anthony C. Zboralski published
-in http://www.phrack.org/show.php?p=56&a=10 by HERT.
+in http://www.phrack.org/show.php?p\=56&a\=10 by HERT.
 
-.TP 
+.TP
 .B gw_discover
 .Sp
 This plugin try to discover the gateway of the lan by sending TCP SYN packets
 to a remote host. The packet has the destination IP of a remote host and the
-destination mac address of a local host. If ettercap receives the SYN+ACK
+destination mac address of a local host. If ettercap receives the SYN\+ACK
 packet, the host which own the source mac address of the reply is the gatway.
 This operation is repeated for each host in the 'host list', so you need to
 have a valid host list before launching this plugin.
@@ -266,7 +266,7 @@ have a valid host list before launching this plugin.
 .Sp
 ettercap \-TP gw_discover /192.168.0.1\-50/
 
-.TP 
+.TP
 .B isolate
 .Sp
 The isolate plugin will isolate an host form the LAN. It will poison the
@@ -286,12 +286,12 @@ ettercap \-TzqP isolate /192.168.0.1/ //
 ettercap \-TP isolate /192.168.0.1/ /192.168.0.2\-30/
 
 
-.TP 
+.TP
 .B link_type
 .Sp
 It performs a check of the link type (hub or switch) by sending a spoofed ARP
-request and listening for replies. It needs at least one entry in the host 
-list to perform the check. With two or more hosts the test will be more 
+request and listening for replies. It needs at least one entry in the host
+list to perform the check. With two or more hosts the test will be more
 accurate.
 .Sp
 .I example :
@@ -300,47 +300,47 @@ ettercap \-TQP link_type /192.168.0.1/
 .br
 ettercap \-TQP link_type //
 
-.TP 
+.TP
 .B pptp_chapms1
 .Sp
-It forces the pptp tunnel to negotiate MS-CHAPv1 authentication instead of
-MS-CHAPv2, that is usually easier to crack (for example with LC4).
+It forces the pptp tunnel to negotiate MS\-CHAPv1 authentication instead of
+MS\-CHAPv2, that is usually easier to crack (for example with LC4).
 You have to be in the "middle" of the connection to use it successfully.
-It hooks the ppp dissector, so you have to keep them active. 
+It hooks the ppp dissector, so you have to keep them active.
 
-.TP 
+.TP
 .B pptp_clear
 .Sp
 Forces no compression/encryption for pptp tunnels during negotiation.
-It could fail if client (or the server) is configured to hang off the tunnel 
+It could fail if client (or the server) is configured to hang off the tunnel
 if no encryption is negotiated.
 You have to be in the "middle" of the connection to use it successfully.
-It hooks the ppp dissector, so you have to keep them active. 
+It hooks the ppp dissector, so you have to keep them active.
 
-.TP 
+.TP
 .B pptp_pap
 .Sp
 It forces the pptp tunnel to negotiate PAP (cleartext) authentication.
 It could fail if PAP is not supported, if pap_secret file is missing,
-or in case windows is configured with "authomatic use of domain 
+or in case windows is configured with "authomatic use of domain
 account". (It could fail for many other reasons too).
 You have to be in the "middle" of the connection to use it successfully.
-It hooks the ppp dissector, so you have to keep them active. 
+It hooks the ppp dissector, so you have to keep them active.
 
-.TP 
+.TP
 .B pptp_reneg
 .Sp
-Forces re-negotiation on an existing pptp tunnel.
-You can force re-negotiation for grabbing passwords already sent. 
+Forces re\-negotiation on an existing pptp tunnel.
+You can force re\-negotiation for grabbing passwords already sent.
 Furthermore you can launch it to use pptp_pap, pptp_chapms1 or pptp_clear on
 existing tunnels (those plugins work only during negotiation phase).
 You have to be in the "middle" of the connection to use it successfully.
-It hooks the ppp dissector, so you have to keep them active. 
+It hooks the ppp dissector, so you have to keep them active.
 
-.TP 
+.TP
 .B rand_flood
 .Sp
-Floods the LAN with random MAC addresses. Some switches will fail open in 
+Floods the LAN with random MAC addresses. Some switches will fail open in
 repeating mode, facilitating sniffing. The delay between each packet is
 based on the port_steal_send_delay value in etter.conf.
 .br
@@ -351,7 +351,7 @@ It is useful only on ethernet switches.
 ettercap \-TP rand_flood
 
 
-.TP 
+.TP
 .B remote_browser
 .Sp
 It sends to the browser the URLs sniffed thru HTTP sessions. So you
@@ -361,10 +361,10 @@ only for webpages, ignoring single request to images or other amenities.
 Don't use it to view your own connection :)
 
 
-.TP 
+.TP
 .B reply_arp
 .Sp
-Simple arp responder. When it intercepts an arp request for a host 
+Simple arp responder. When it intercepts an arp request for a host
 in the targets' lists, it replies with attacker's MAC address.
 .Sp
 .I example :
@@ -379,25 +379,25 @@ ettercap \-TQzP reply_arp //
 It solicits poisoning packets after broadcast ARP requests (or replies) from a posioned host.
 For example: we are poisoning Group1 impersonating Host2. If Host2 makes a broadcast
 ARP request for Host3, it is possible that Group1 caches the right MAC address for Host2
-contained in the ARP packet. This plugin re-poisons Group1 cache immediately after a
+contained in the ARP packet. This plugin re\-poisons Group1 cache immediately after a
 legal broadcast ARP request (or reply).
 .br
-This plugin is effective only during an arp-posioning session.
+This plugin is effective only during an arp\-posioning session.
 .br
 In conjunction with the reply_arp plugin, repoison_arp is a good support for the standard
-arp-poisoning mitm method.
+arp\-poisoning mitm method.
 .Sp
 .I example :
 .Sp
 ettercap \-T \-M arp:remote \-P repoison_arp /192.168.0.10\-20/ /192.168.0.1/
 
-.TP 
+.TP
 .B scan_poisoner
 .Sp
 Check if someone is poisoning between some host in the list and us.
 First of all it checks if two hosts in the list have the same mac address.
 It could mean that one of those is poisoning us pretending to be the other.
-It could generate many false-positives in a proxy-arp environment.
+It could generate many false\-positives in a proxy\-arp environment.
 You have to build hosts list to perform this check.
 After that, it sends icmp echo packets to each host in the list and checks
 if the source mac address of the reply differs from the address we have
@@ -410,16 +410,16 @@ You can't perform this active test in unoffensive mode.
 .Sp
 ettercap \-TQP scan_poisoner //
 
-.TP 
+.TP
 .B search_promisc
 .Sp
 It tries to find if anyone is sniffing in promisc mode. It sends two different
 kinds of malformed arp request to each target in the host list and waits for
 replies. If a reply arrives from the target host, it's more or
-less probable that this target has the NIC in promisc mode. It could generate false-positives.
+less probable that this target has the NIC in promisc mode. It could generate false\-positives.
 You can launch it either from the command line or from the plugin menu.
 Since it listens for arp replies it is better that you don't use it while sending
-arp request. 
+arp request.
 .Sp
 .I example :
 .Sp
@@ -428,29 +428,29 @@ ettercap \-TQP search_promisc /192.168.0.1/
 ettercap \-TQP search_promisc //
 
 
-.TP 
+.TP
 .B smb_clear
 .Sp
-It forces the client to send smb password in clear-text by mangling protocol 
+It forces the client to send smb password in clear\-text by mangling protocol
 negotiation. You have to be in the "middle" of the connection to successfully
-use it. It hooks the smb dissector, so you have to keep it active. 
-If you use it against a windows client it will probably result in a failure. 
+use it. It hooks the smb dissector, so you have to keep it active.
+If you use it against a windows client it will probably result in a failure.
 Try it against a *nix smbclient :)
-   
 
-.TP 
+
+.TP
 .B smb_down
 .Sp
-It forces the client to not to use NTLM2 password exchange during smb 
+It forces the client to not to use NTLM2 password exchange during smb
 authentication. This way, obtained hashes can be easily cracked by LC4.
 You have to be in the "middle" of the connection to successfully use it.
-It hooks the smb dissector, so you have to keep it active. 
+It hooks the smb dissector, so you have to keep it active.
 
 .TP
 .B smurf_attack
 .Sp
-The Smurf Attack is a DoS attack in which huge numbers of ICMP packets with the intended 
-victim(s) IP(s) in target1 are sent to the hosts in target2. This causes all hosts on 
+The Smurf Attack is a DoS attack in which huge numbers of ICMP packets with the intended
+victim(s) IP(s) in target1 are sent to the hosts in target2. This causes all hosts on
 the target2 to reply to the ICMP request, causing significant traffic to the victim's computer(s).
 .Sp
 .I example (192.168.0.5 is the victim):
@@ -460,34 +460,34 @@ ettercap \-i eth1 \-Tq /192.168.0.5/ // \-P fraggle_attack
 .TP
 .B sslstrip
 .Sp
-While performing the SSL mitm attack, ettercap substitutes the real ssl certificate with its own. 
-The fake certificate is created on the fly and all the fields are filled according to the real cert 
-presented by the  server. Only the  issuer is modified and signed with the private key contained in 
-the 'etter.sll.crt' file. 
-If you want to use a different private key you have to regenerate this file. To regenerate the cert file use 
+While performing the SSL mitm attack, ettercap substitutes the real ssl certificate with its own.
+The fake certificate is created on the fly and all the fields are filled according to the real cert
+presented by the  server. Only the  issuer is modified and signed with the private key contained in
+the 'etter.sll.crt' file.
+If you want to use a different private key you have to regenerate this file. To regenerate the cert file use
 the following commands:
 
-openssl genrsa -out etter.ssl.crt 1024
+openssl genrsa \-out etter.ssl.crt 1024
 .br
-openssl req -new -key etter.ssl.crt -out tmp.csr
+openssl req \-new \-key etter.ssl.crt \-out tmp.csr
 .br
-openssl x509 -req -days 1825 -in tmp.csr -signkey etter.ssl.crt -out tmp.new
+openssl x509 \-req \-days 1825 \-in tmp.csr \-signkey etter.ssl.crt \-out tmp.new
 .br
 cat tmp.new >> etter.ssl.crt
 .br
-rm -f tmp.new tmp.csr
+rm \-f tmp.new tmp.csr
 
 NOTE: SSL mitm is not available (for now) in bridged mode.
 
-NOTE: You can use the --certificate/--private-key long options if you want to specify a different file rather  than the etter.ssl.crt file.
+NOTE: You can use the \-\-certificate/\-\-private\-key long options if you want to specify a different file rather  than the etter.ssl.crt file.
 
 
-.TP 
+.TP
 .B stp_mangler
 .Sp
-It sends spanning tree BPDUs pretending to be a switch with the highest 
+It sends spanning tree BPDUs pretending to be a switch with the highest
 priority. Once in the "root" of the spanning tree, ettercap can receive
-all the "unmanaged" network traffic. 
+all the "unmanaged" network traffic.
 .br
 It is useful only against a group of switches running STP.
 .br
@@ -496,7 +496,7 @@ decrease your MAC address before running it.
 .Sp
 .I example :
 .Sp
-ettercap \-TP stp_mangler 
+ettercap \-TP stp_mangler
 
 
 .SH ORIGINAL AUTHORS
@@ -539,4 +539,5 @@ Daten (Bryan Schneiders)  <daten@dnetc.org>
 .I "etterlog(8)"
 .I "etterfilter(8)"
 .I "etter.conf(5)"
+.I "ettercap\-pkexec(8)"
 .LP

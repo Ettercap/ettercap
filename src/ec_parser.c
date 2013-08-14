@@ -873,7 +873,7 @@ void set_lua_args(char *args)
 	ec_lua_cli_add_args(strdup(args));
 }
 
-void set_lua_scripts(char *script)
+void set_lua_script(char *script)
 {
 	ec_lua_cli_add_script(strdup(script));
 }

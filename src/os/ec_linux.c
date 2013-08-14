@@ -32,6 +32,7 @@ void disable_ip_forward(void);
 static void restore_ip_forward(void);
 u_int16 get_iface_mtu(const char *iface);
 void disable_interface_offload(void);
+void safe_free_mem(char **param, int *param_length, char *command);
 
 /*******************************************/
 
@@ -133,12 +134,23 @@ u_int16 get_iface_mtu(const char *iface)
    return mtu;
 }
 
+void safe_free_mem(char **param, int *param_length, char *command)
+{
+   int k;
+
+   SAFE_FREE(command);
+	for(k= 0; k < (*param_length); ++k)
+		SAFE_FREE(param[k]);
+	SAFE_FREE(param);
+}
+
 /*
  * disable segmentation offload on interface
  * this prevents L3 send errors (payload too large)
  */
 void disable_interface_offload(void)
 {
+   int param_length= 0;
 	char *command;
 	char **param = NULL;
 	char *p;
@@ -160,15 +172,21 @@ void disable_interface_offload(void)
 
 	SAFE_REALLOC(param, (i+1) * sizeof(char *));
 	param[i] = NULL;
+   param_length= i + 1; //because there is a SAFE_REALLOC after the for.
 
 	switch(fork()) {
 		case 0:
+#ifndef DEBUG
+			/* don't print on console if the ethtool cannot disable some offloads unless you are in debug mode */
+			close(2);
+#endif
 			execvp(param[0], param);
+         safe_free_mem(param, &param_length, command);
 			exit(EINVALID);
 		case -1:
-			SAFE_FREE(param);
+			safe_free_mem(param, &param_length, command);
 		default:
-			SAFE_FREE(param);
+			safe_free_mem(param, &param_length, command);
 			wait(&ret_val);
 	} 	
 }

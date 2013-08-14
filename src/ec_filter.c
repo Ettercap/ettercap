@@ -913,6 +913,7 @@ static int func_exec(struct filter_op *fop)
    
    /* differentiate between the parent and the child */
    if (!pid) {
+      int k, param_length;
       char **param = NULL;
       char *q = (char*)fop->op.func.string;
       char *p;
@@ -931,6 +932,7 @@ static int func_exec(struct filter_op *fop)
       SAFE_REALLOC(param, (i + 1) * sizeof(char *));
       
       param[i] = NULL;
+      param_length= i + 1; //because there is a SAFE_REALLOC after the for.
      
       /* 
        * close input, output and error.
@@ -945,6 +947,9 @@ static int func_exec(struct filter_op *fop)
       execve(param[0], param, NULL);
 
       /* reached on errors */
+	   for(k= 0; k < param_length; ++k)
+		   SAFE_FREE(param[k]);
+	   SAFE_FREE(param);
       exit(-1);
    }
       

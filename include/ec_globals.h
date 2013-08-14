@@ -13,7 +13,7 @@
 #include <ec_interfaces.h>
 #include <config.h>
 #include <ec_encryption.h>
-
+#include <libnet.h>
 #include <regex.h>
 
 /* options form etter.conf */
@@ -117,8 +117,8 @@ struct pcap_env {
 
 /* lnet structure */
 struct lnet_env {
-   struct libnet_t *lnet_IP4;
-   struct libnet_t *lnet_IP6;
+   libnet_t *lnet_IP4;
+   libnet_t *lnet_IP6;
 };
 
 /* ip list per target */

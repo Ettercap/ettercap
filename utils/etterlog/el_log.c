@@ -43,10 +43,9 @@ void open_log(char *file)
    int zerr;
    
    GBL_LOGFILE = strdup(file);
-
    GBL_LOG_FD = gzopen(file, "rb");
-   ON_ERROR(GBL_LOG_FD, NULL, "%s", gzerror(GBL_LOG_FD, &zerr));
- 
+   if(GBL_LOG_FD == Z_NULL)
+      FATAL_ERROR("Cannot read the log file, please ensure you have enough permissions to read %s: error %s", file, gzerror(GBL_LOG_FD, &zerr));
 }
 
 /*

@@ -761,13 +761,13 @@ void load_filter(char *end, char *filter)
 
 void set_loglevel_packet(char *arg)
 {
-	if (set_msg_loglevel(LOG_PACKET, arg) == -EFATAL)
+	if (set_loglevel(LOG_PACKET, arg) == -EFATAL)
 		clean_exit(-EFATAL);
 }
 
 void set_loglevel_info(char *arg)
 {
-	if (set_msg_loglevel(LOG_INFO, arg) == -EFATAL)
+	if (set_loglevel(LOG_INFO, arg) == -EFATAL)
 		clean_exit(-EFATAL);
 }
 

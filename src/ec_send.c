@@ -888,7 +888,7 @@ int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8* o_data
                                    0);
     ON_ERROR(t, -1, "libnet_build_ipv6_destopts: %s", libnet_geterror(GBL_LNET->lnet_IP6));
 
-    h = LIBNET_IPV6_DESTOPTS_H + LIBNET_ICMPV6_H;
+    h = LIBNET_IPV6_DESTOPTS_H + o_len + LIBNET_ICMPV6_H;
     t = libnet_build_ipv6(0,                /* tc */
                           0,                /* flow label */
                           h,                /* next header size */

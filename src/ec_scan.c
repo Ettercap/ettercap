@@ -520,7 +520,6 @@ static void scan_ip6_onlink(pthread_t pid)
          if (ip_addr_is_global(&e->ip)) {
             /* it's a global unicast, use it */
             send_icmp6_echo(&e->ip, &an);
-            //send_icmp6_echo_opt(&e->ip, &an, IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN));
             break;
          }
       }
@@ -530,7 +529,6 @@ static void scan_ip6_onlink(pthread_t pid)
           * we can't be picky and just have to use it 
           */
          send_icmp6_echo(&e->ip, &an);
-         //send_icmp6_echo_opt(&e->ip, &an, IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN));
       }
    }
 

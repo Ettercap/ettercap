@@ -582,6 +582,15 @@ you want to differentiate between tcp or udp.
 PROTO can be "tcp", "udp" or "all" for both.
 
 .TP
+\fB\-6\fR, \fB\-\-ip6scan\fR
+Send ICMPv6 probes to discover active IPv6 nodes on the link. 
+This options sends a ping request to the all-nodes address to motivate active IPv6
+hosts to respond. You should not use this option if you try to hide yourself. Therefore
+this option is optional.
+.Sp
+NOTE: This option is only available if IPv6 support has been enabled.
+
+.TP
 \fB\-z\fR, \fB\-\-silent\fR
 Do not perform the initial ARP scan of the LAN.
 .Sp

@@ -733,7 +733,6 @@ int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *re
                                     0,                          /* its size */
                                     l,                          /* libnet handler */
                                     0);                         /* ptag */
-
    ON_ERROR(t, -1, "libnet_build_icmpv6_ndp_nsol: %s", libnet_geterror(l));
    libnet_toggle_checksum(l, t, LIBNET_ON);
    h += LIBNET_ICMPV6_NDP_NSOL_H;

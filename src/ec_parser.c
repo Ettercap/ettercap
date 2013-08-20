@@ -109,7 +109,12 @@ void ec_usage(void)
 
    fprintf(stdout, "\nUsage: %s [OPTIONS] [TARGET1] [TARGET2]\n", GBL_PROGRAM);
 
+#ifdef WITH_IPV6
    fprintf(stdout, "\nTARGET is in the format MAC/IP/IPv6/PORTs (see the man for further detail)\n");
+#else
+   fprintf(stdout, "\nTARGET is in the format MAC/IP/PORTs (see the man for further detail)\n");
+#endif
+
    
    fprintf(stdout, "\nSniffing and Attack options:\n");
    fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
@@ -776,13 +781,13 @@ void load_filter(char *end, char *filter)
 
 void set_loglevel_packet(char *arg)
 {
-	if (set_msg_loglevel(LOG_PACKET, arg) == -EFATAL)
+	if (set_loglevel(LOG_PACKET, arg) == -EFATAL)
 		clean_exit(-EFATAL);
 }
 
 void set_loglevel_info(char *arg)
 {
-	if (set_msg_loglevel(LOG_INFO, arg) == -EFATAL)
+	if (set_loglevel(LOG_INFO, arg) == -EFATAL)
 		clean_exit(-EFATAL);
 }
 
@@ -895,7 +900,7 @@ void set_lua_args(char *args)
 	ec_lua_cli_add_args(strdup(args));
 }
 
-void set_lua_scripts(char *script)
+void set_lua_script(char *script)
 {
 	ec_lua_cli_add_script(strdup(script));
 }

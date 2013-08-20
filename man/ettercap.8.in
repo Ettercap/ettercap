@@ -125,8 +125,12 @@ There is no concept of SOURCE nor DEST. The two targets are intended to filter
 traffic coming from one to the other and vice\-versa (since the connection is
 bidirectional).
 .PP
-\fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. If you want you can omit any of its parts
-and this will represent an ANY in that part.
+\fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. 
+.br
+.B NOTE:
+If IPv6 is enabled, \fITARGET\fR is in the form \fIMAC/IPs/IPv6/PORTs\fR.
+.PP
+If you want you can omit any of its parts and this will represent an ANY in that part.
 .br
 e.g.
 .br

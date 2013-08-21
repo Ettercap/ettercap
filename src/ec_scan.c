@@ -278,10 +278,12 @@ void del_hosts_list(void)
 static EC_THREAD_FUNC(capture_scan)
 {
    DEBUG_MSG("capture_scan");
-
+   int ret;
+   BUG_IF(GBL_IFACE->pcap == NULL);
    ec_thread_init();
 
-   pcap_loop(GBL_IFACE->pcap, -1, scan_decode, EC_THREAD_PARAM);
+   ret = pcap_loop(GBL_IFACE->pcap, -1, scan_decode,  (unsigned char *) GBL_PCAP->dump);
+   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_IFACE->pcap));
 
    return NULL;
 }
@@ -294,9 +296,9 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
 {
    FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
-   int len;
+   bpf_u_int32 len;
    u_char *data;
-   int datalen;
+   bpf_u_int32 datalen;
 
    CANCELLATION_POINT();
 

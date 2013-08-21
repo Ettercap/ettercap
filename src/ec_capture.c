@@ -81,13 +81,14 @@ void capture_stop(struct iface_env *iface)
 
 EC_THREAD_FUNC(capture)
 {
+   BUG_IF(GBL_IFACE->pcap == NULL);
    int ret;
-   struct iface_env *iface;
+//   struct iface_env *iface;
    
    /* init the thread and wait for start up */
    ec_thread_init();
 
-   iface = EC_THREAD_PARAM;
+//   iface = EC_THREAD_PARAM;
    
    DEBUG_MSG("neverending loop (capture)");
 
@@ -98,8 +99,9 @@ EC_THREAD_FUNC(capture)
     * infinite loop 
     * dispatch packets to ec_decode
     */
-   ret = pcap_loop(iface->pcap, -1, ec_decode, EC_THREAD_PARAM);
-   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(iface->pcap));
+
+   ret = pcap_loop(GBL_IFACE->pcap, -1, ec_decode, (unsigned char *) GBL_PCAP->dump);
+   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_IFACE->pcap));
 
    if (GBL_OPTIONS->read) {
    	if (ret==0) {
@@ -182,13 +184,13 @@ void capture_getifs(void)
  */
 int is_pcap_file(char *file, char *errbuf)
 {
-   pcap_t *pd;
+   pcap_t *pcap;
    
-   pd = pcap_open_offline(file, errbuf);
-   if (pd == NULL)
+   pcap = pcap_open_offline(file, errbuf);
+   if (pcap == NULL)
       return -EINVALID;
 
-   pcap_close(pd);
+   pcap_close(pcap);
    
    return ESUCCESS;
 }

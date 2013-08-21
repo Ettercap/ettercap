@@ -13,6 +13,7 @@
 #include <ec_interfaces.h>
 #include <config.h>
 #include <ec_encryption.h>
+#include <pcap.h>
 #include <libnet.h>
 #include <regex.h>
 
@@ -101,18 +102,18 @@ struct program_env {
 
 /* global pcap structure */
 struct pcap_env {
-   void     *ifs;          /* this is a pcap_if_t pointer */
-   void     *pcap;         /* this is a pcap_t pointer */
-   void     *pread;        /* this is a pcap_t pointer */
-   void     *dump;         /* this is a pcap_dumper_t pointer */
-   char     *buffer;       /* buffer to be used to handle all the packets */
-   u_int8   align;         /* alignment needed on sparc 4*n - sizeof(media_hdr) */
-   char     promisc;
-   char     *filter;       /* pcap filter */
-   u_int16  snaplen;
-   int      dlt;
-   u_int32  dump_size;     /* total dump size */
-   u_int32  dump_off;      /* current offset */
+   pcap_if_t     *ifs;
+   pcap_t        *pcap;
+   pcap_t        *pread;
+   pcap_dumper_t *dump;
+   char          *buffer;        /* buffer to be used to handle all the packets */
+   u_int8         align;         /* alignment needed on sparc 4*n - sizeof(media_hdr) */
+   char           promisc;
+   char          *filter;        /* pcap filter */
+   u_int16        snaplen;
+   int            dlt;
+   u_int32        dump_size;     /* total dump size */
+   u_int32        dump_off;      /* current offset */
 };
 
 /* lnet structure */

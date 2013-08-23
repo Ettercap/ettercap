@@ -128,6 +128,8 @@ static void pcap_winit(pcap_t *pcap)
    GBL_PCAP->dump = pdump;
 
    //save header to file
+   //XXX: Removing this will cause regression bug. 
+   //Still trying to figure out why.
    pcap_dump_flush(GBL_PCAP->dump);
 }
 

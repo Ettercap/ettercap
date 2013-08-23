@@ -106,8 +106,11 @@ static void close_network()
    if(GBL_SNIFF->type == SM_BRIDGED)
       pcap_close(GBL_BRIDGE->pcap);
 
-   if(GBL_OPTIONS->write)
+   if(GBL_OPTIONS->write) {
+      //make sure all packets are written
+      pcap_dump_flush(GBL_PCAP->dump);
       pcap_dump_close(GBL_PCAP->dump);
+   }
 
    libnet_destroy(GBL_IFACE->lnet);
    libnet_destroy(GBL_BRIDGE->lnet);
@@ -123,6 +126,9 @@ static void pcap_winit(pcap_t *pcap)
    ON_ERROR(pdump, NULL, "pcap_dump_open: %s", pcap_geterr(pcap));
 
    GBL_PCAP->dump = pdump;
+
+   //save header to file
+   pcap_dump_flush(GBL_PCAP->dump);
 }
 
 static void source_print(struct iface_env *source)

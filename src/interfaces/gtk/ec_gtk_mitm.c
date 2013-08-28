@@ -29,6 +29,7 @@ void gtkui_arp_poisoning(void);
 void gtkui_icmp_redir(void);
 void gtkui_port_stealing(void);
 void gtkui_dhcp_spoofing(void);
+void gtkui_ndp_poisoning(void);
 void gtkui_mitm_stop(void);
 
 static void gtkui_start_mitm(void);
@@ -340,6 +341,83 @@ void gtkui_dhcp_spoofing(void)
    /* a simpler method:
       gtkui_input_call("Parameters :", params + strlen("dhcp:"), PARAMS_LEN - strlen("dhcp:"), gtkui_start_mitm);
    */
+}
+
+void gtkui_ndp_poisoning(void)
+{
+   GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame;
+   gint response = 0;
+   gboolean remote = FALSE;
+   gboolean oneway = FALSE;
+
+   DEBUG_MSG("gtk_ndp_poisoning");
+//   not needed, the \0 is already appended from snprintf
+//   memset(params, '\0', PARAMS_LEN+1);
+
+   dialog = gtk_dialog_new_with_buttons("MITM Attack: NDP Poisoning", GTK_WINDOW (window),
+                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+   gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
+   gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+
+   hbox = gtk_hbox_new (FALSE, 5);
+   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
+   gtk_widget_show(hbox);
+
+   image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
+   gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.1);
+   gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 5);
+   gtk_widget_show(image);
+
+   frame = gtk_frame_new("Optional parameters");
+   gtk_container_set_border_width(GTK_CONTAINER (frame), 5);
+   gtk_box_pack_start (GTK_BOX (hbox), frame, TRUE, TRUE, 0);
+   gtk_widget_show(frame);
+
+   vbox = gtk_vbox_new (FALSE, 2);
+   gtk_container_set_border_width(GTK_CONTAINER (vbox), 5);
+   gtk_container_add(GTK_CONTAINER (frame), vbox);
+   gtk_widget_show(vbox);
+
+   button1 = gtk_check_button_new_with_label("Sniff remote connections.");
+   gtk_box_pack_start(GTK_BOX (vbox), button1, FALSE, FALSE, 0);
+   gtk_widget_show(button1);
+
+   button2 = gtk_check_button_new_with_label("Only poison one-way.");
+   gtk_box_pack_start(GTK_BOX (vbox), button2, FALSE, FALSE, 0);
+   gtk_widget_show(button2);
+
+   response = gtk_dialog_run(GTK_DIALOG(dialog));
+   if(response == GTK_RESPONSE_OK) {
+      gtk_widget_hide(dialog);
+      const char *s_remote = "", *comma = "", *s_oneway = "";
+
+      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
+         s_remote="remote";
+         remote = TRUE;
+      }
+
+      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
+         if(remote)
+            comma = ",";
+
+         s_oneway = "oneway";
+         oneway = TRUE;
+      } 
+
+      if(!remote && !oneway) {
+         ui_error("You must select at least one NDP mode");
+         return;
+      }
+      snprintf(params, PARAMS_LEN+1, "ndp:%s%s%s", s_remote, comma, s_oneway);
+      gtkui_start_mitm();
+   }
+
+   gtk_widget_destroy(dialog);
+
+   /* a simpler method:
+      gtkui_input_call("Parameters :", params + strlen("ndp:"), PARAMS_LEN - strlen("ndp:"), gtkui_start_mitm);
+    */
 }
 
 

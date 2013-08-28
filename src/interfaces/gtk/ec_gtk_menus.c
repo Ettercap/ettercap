@@ -74,6 +74,7 @@ GtkItemFactoryEntry gmenu_mitm[] = {
    {"/Mitm/Icmp redirect...",    NULL, gtkui_icmp_redir,    0, "<Item>" },
    {"/Mitm/Port stealing...",    NULL, gtkui_port_stealing, 0, "<Item>" },
    {"/Mitm/Dhcp spoofing...",    NULL, gtkui_dhcp_spoofing, 0, "<Item>" },
+   {"/Mitm/Ndp spoofing...",     NULL, gtkui_ndp_poisoning, 0, "<Item>" },
    {"/Mitm/sep1",                NULL, NULL,                0, "<Separator>" },
    {"/Mitm/Stop mitm attack(s)", NULL, gtkui_mitm_stop,     0, "<StockItem>", GTK_STOCK_STOP }
 };

@@ -31,7 +31,7 @@ struct ec_conf {
    int dhcp_lease_time;
    int port_steal_delay;
    int port_steal_send_delay;
-   int nadv_poison_send_delay;
+   int ndp_poison_send_delay;
    int icmp6_probe_delay;
    int connection_timeout;
    int connection_idle;

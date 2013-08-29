@@ -27,7 +27,7 @@ arp_poison_equal_mac = 1      # boolean
 dhcp_lease_time = 1800        # seconds
 port_steal_delay = 10         # seconds
 port_steal_send_delay = 2000  # microseconds
-nadv_poison_send_delay = 1500 # microseconds
+ndp_poison_send_delay = 1500  # microseconds
 icmp6_probe_delay = 5         # seconds
 
 [connections]

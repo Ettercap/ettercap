@@ -42,7 +42,7 @@ void __init nadv_poison_init(void)
 {
    struct mitm_method mm;
 
-   mm.name = "nadv";
+   mm.name = "ndp";
    mm.start = &nadv_poison_start;
    mm.stop = &nadv_poison_stop;
 
@@ -157,7 +157,7 @@ EC_THREAD_FUNC(nadv_poisoner)
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&t2->ip, &t1->ip, &t2->ip, GBL_IFACE->mac, flags & ND_ROUTER);
 
-            usleep(GBL_CONF->nadv_poison_send_delay);
+            usleep(GBL_CONF->ndp_poison_send_delay);
          }
       }
 
@@ -282,7 +282,7 @@ static void nadv_antidote(void)
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&h2->ip, &h1->ip, &h2->ip, h2->mac, flags & ND_ROUTER);
 
-            usleep(GBL_CONF->nadv_poison_send_delay);
+            usleep(GBL_CONF->ndp_poison_send_delay);
          }
       }
 

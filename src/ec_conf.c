@@ -48,7 +48,7 @@ static struct conf_entry mitm[] = {
    { "port_steal_delay", NULL },
    { "port_steal_send_delay", NULL },
 #ifdef WITH_IPV6
-   { "nadv_poison_send_delay", NULL },
+   { "ndp_poison_send_delay", NULL },
    { "icmp6_probe_delay", NULL },
 #endif
    { NULL, NULL },
@@ -162,7 +162,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&mitm, "port_steal_delay", &GBL_CONF->port_steal_delay);
    set_pointer((struct conf_entry *)&mitm, "port_steal_send_delay", &GBL_CONF->port_steal_send_delay);
 #ifdef WITH_IPV6
-   set_pointer((struct conf_entry *)&mitm, "nadv_poison_send_delay", &GBL_CONF->nadv_poison_send_delay);
+   set_pointer((struct conf_entry *)&mitm, "ndp_poison_send_delay", &GBL_CONF->ndp_poison_send_delay);
    set_pointer((struct conf_entry *)&mitm, "icmp6_probe_delay", &GBL_CONF->icmp6_probe_delay);
 #endif
    set_pointer((struct conf_entry *)&connections, "connection_timeout", &GBL_CONF->connection_timeout);

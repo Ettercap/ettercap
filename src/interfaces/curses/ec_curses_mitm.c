@@ -93,9 +93,9 @@ static void curses_ndp_poisoning(void)
 {
    DEBUG_MSG("curses_ndp_poisoning");
 
-   sprintf(params, "nadv:");
+   sprintf(params, "ndp:");
 
-   curses_input("Parameters :", params + strlen("nadv:"), PARAMS_LEN - strlen("nadv:"), curses_start_mitm);
+   curses_input("Parameters :", params + strlen("ndp:"), PARAMS_LEN - strlen("ndp:"), curses_start_mitm);
 }
 
 /* 

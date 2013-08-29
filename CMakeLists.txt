@@ -71,9 +71,7 @@ CMAKE_DEPENDENT_OPTION(BUNDLED_LUAJIT
   "Use bundled version of LUAJIT if system-provided version is not found (or disabled)" ON
   "BUNDLED_LIBS;ENABLE_LUA" OFF)
 
-set(MACPORTS_BASE_DIRECTORY "/opt/local" CACHE PATH "MacPorts installation base directory")
-set(SPECIAL_LIB_DIR "" CACHE PATH "Special (non-traditional) directory where libraries are installed")
-
+set(SPECIAL_LIB_DIR "" CACHE PATH "Special (non-traditional) root directory where headers/libraries are installed")
 
 include(CheckVariableInHeaders)
 include(EttercapOSTest)
@@ -81,8 +79,8 @@ include(EttercapOSTest)
 #Check and see if we're running Darwin, specify the CMAKE_LIBARY_PATH to do so
 if(OS_DARWIN)
 	set(CMAKE_SYSTEM_NAME Darwin)
-	set(CMAKE_LIBRARY_PATH ${MACPORTS_BASE_DIRECTORY}/lib ${CMAKE_LIBRARY_PATH})
-	set(CMAKE_INCLUDE_PATH ${MACPORTS_BASE_DIRECTORY}/include ${CMAKE_INCLUDE_PATH})
+	set(CMAKE_LIBRARY_PATH ${SPECIAL_LIB_DIR}/lib ${CMAKE_LIBRARY_PATH})
+	set(CMAKE_INCLUDE_PATH ${SPECIAL_LIB_DIR}/include ${CMAKE_INCLUDE_PATH})
 else(OS_DARWIN)
 	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/lib64 /usr/lib32)
 endif(OS_DARWIN)

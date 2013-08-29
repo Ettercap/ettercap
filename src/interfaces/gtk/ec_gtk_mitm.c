@@ -345,10 +345,11 @@ void gtkui_dhcp_spoofing(void)
 
 void gtkui_ndp_poisoning(void)
 {
-   GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame;
+   GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *button3, *frame;
    gint response = 0;
    gboolean remote = FALSE;
    gboolean oneway = FALSE;
+   gboolean router = FALSE;
 
    DEBUG_MSG("gtk_ndp_poisoning");
 //   not needed, the \0 is already appended from snprintf
@@ -387,10 +388,14 @@ void gtkui_ndp_poisoning(void)
    gtk_box_pack_start(GTK_BOX (vbox), button2, FALSE, FALSE, 0);
    gtk_widget_show(button2);
 
+   button3 = gtk_check_button_new_with_label("Fake router.");
+   gtk_box_pack_start(GTK_BOX (vbox), button3, FALSE, FALSE, 0);
+   gtk_widget_show(button3);
+
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      const char *s_remote = "", *comma = "", *s_oneway = "";
+      const char *s_remote = "", *comma = "", *s_oneway = "", *s_router = "";
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
          s_remote="remote";
@@ -404,12 +409,20 @@ void gtkui_ndp_poisoning(void)
          s_oneway = "oneway";
          oneway = TRUE;
       } 
+      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button3))) {
+         if (remote)
+            comma = ",";
 
-      if(!remote && !oneway) {
+         s_router = "router";
+         router = true;
+      }
+
+      if(!remote && !(oneway || router)) {
          ui_error("You must select at least one NDP mode");
          return;
       }
-      snprintf(params, PARAMS_LEN+1, "ndp:%s%s%s", s_remote, comma, s_oneway);
+      snprintf(params, PARAMS_LEN+1, "ndp:%s%s%s", 
+            s_remote, comma, (router ? s_router : s_oneway));
       gtkui_start_mitm();
    }
 

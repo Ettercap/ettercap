@@ -101,10 +101,10 @@ set(INSTALL_LIBDIR ${INSTALL_PREFIX}/lib${LIB_SUFFIX} CACHE PATH "Library instal
 set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation directory")
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
-set(POLKIT_DIR /usr/share/polkit-1/actions/ CACHE PATH "Binary files installation directory")
+set(POLKIT_DIR ${INSTALL_PREFIX}/share/polkit-1/actions/ CACHE PATH "Binary files installation directory")
 set(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap CACHE PATH "Name of the pkexec action file")
-set(DESKTOP_DIR /usr/share/applications/ CACHE PATH "Binary files installation directory")
-set(ICON_DIR /usr/share/pixmaps CACHE PATH "Binary files installation directory")
+set(DESKTOP_DIR ${INSTALL_PREFIX}/share/applications/ CACHE PATH "Binary files installation directory")
+set(ICON_DIR ${INSTALL_PREFIX}/share/pixmaps CACHE PATH "Binary files installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages") 
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg" CACHE STRING "" FORCE)

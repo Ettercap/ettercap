@@ -68,11 +68,15 @@ static int nadv_poison_start(char *args)
          else if(!strcasecmp(p, "router"))
             flags |= ND_ROUTER;
          else
-            SEMIFATAL_ERROR("NADV poisoning: incorrect arguments.\n");
+            SEMIFATAL_ERROR("NDP poisoning: incorrect arguments.\n");
       }
    } else {
-      SEMIFATAL_ERROR("NADV poisoning: missing arguments.\n");
+      SEMIFATAL_ERROR("NDP poisoning: missing arguments.\n");
    }
+
+   ///* we need the host list */
+   //if (LIST_EMPTY(&GBL_HOSTLIST)) 
+   //   SEMIFATAL_ERROR("NDP poisoning needs a non-emtpy hosts list.\n");
 
    /* clean the lists */
    LIST_FOREACH_SAFE(h, &nadv_group_one, next, tmp) {
@@ -85,19 +89,21 @@ static int nadv_poison_start(char *args)
    }
 
    if(GBL_OPTIONS->silent) {
-      create_list_silent();
-      hook_add(HOOK_PACKET_ICMP6, &record_mac);
-   } else {
-      if((ret = create_list()) != ESUCCESS) {
-         SEMIFATAL_ERROR("NADV poisoning failed to start");
-         return EFATAL;
-      }
-      hook_add(HOOK_PACKET_ICMP6, &catch_response); 
+      ret = create_list_silent();
+      //hook_add(HOOK_PACKET_ICMP6, &record_mac);
+   } else 
+      ret = create_list();
+
+   if (ret != ESUCCESS) {
+         SEMIFATAL_ERROR("NDP poisoning failed to start");
+         //return EFATAL;
    }
+   /* necessary? - Maybe if solicitations are seen */
+   //hook_add(HOOK_PACKET_ICMP6, &catch_response); 
 
    ec_thread_new("nadv_poisoner", "NDP spoofing thread", &nadv_poisoner, NULL);
 
-   USER_MSG("NADV poisoner activated.\n");
+   USER_MSG("NDP poisoner activated.\n");
 
    return ESUCCESS;
 }
@@ -108,7 +114,7 @@ static void nadv_poison_stop(void)
 
    DEBUG_MSG("nadv_poison_stop");
    
-   hook_del(HOOK_PACKET_ICMP6, &catch_response);
+   //hook_del(HOOK_PACKET_ICMP6, &catch_response);
 
    pid = ec_thread_getpid("nadv_poisoner");
    if(!pthread_equal(pid, EC_PTHREAD_NULL))
@@ -131,7 +137,14 @@ static void nadv_poison_stop(void)
 EC_THREAD_FUNC(nadv_poisoner)
 {
    struct hosts_list *t1, *t2;
-   int ping = 1;
+   /* ping shouldn't be necessary as we can scan IPv6 and have LLA already */
+   //int ping = 1;
+
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_nsec = GBL_CONF->ndp_poison_send_delay * 1000;
+   tm.tv_sec = 0;
+#endif
 
    ec_thread_init();
    DEBUG_MSG("nadv_poisoner");
@@ -148,20 +161,24 @@ EC_THREAD_FUNC(nadv_poisoner)
             if(!ip_addr_cmp(&t1->ip, &t2->ip))
                continue;
 
-            if(ping) {
-               send_icmp6_echo(&t1->ip, &t2->ip);
-               send_icmp6_echo(&t2->ip, &t1->ip);
-            }
+            //if(ping) {
+            //   send_icmp6_echo(&t1->ip, &t2->ip);
+            //   send_icmp6_echo(&t2->ip, &t1->ip);
+            //}
 
             send_icmp6_nadv(&t1->ip, &t2->ip, &t1->ip, GBL_IFACE->mac, 0);
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&t2->ip, &t1->ip, &t2->ip, GBL_IFACE->mac, flags & ND_ROUTER);
 
+#if !defined(OS_WINDOWS)
+            nanosleep(&tm, NULL);
+#else
             usleep(GBL_CONF->ndp_poison_send_delay);
+#endif
          }
       }
 
-      ping = 0;
+      //ping = 0;
 
       sleep(1);
    }
@@ -203,22 +220,51 @@ static int create_list_silent(void)
 {
    struct hosts_list *h;
    struct ip_list *i;
+   char tmp[MAX_ASCII_ADDR_LEN];
+   char tmp2[MAX_ASCII_ADDR_LEN];
 
-   DEBUG_MSG("create_silent_list");
+   DEBUG_MSG("create_list_silent");
 
    LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
-      if(!ip_addr_is_local(&i->ip, NULL)) {
+      if(ip_addr_is_local(&i->ip, NULL) == ESUCCESS) {
+         if (!memcmp(GBL_TARGET1->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN)) {
+            USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
+            return -EFATAL;
+         }
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &i->ip, sizeof(struct ip_addr));
+         memcpy(&h->mac, &GBL_TARGET1->mac, MEDIA_ADDR_LEN);
          LIST_INSERT_HEAD(&nadv_group_one, h, next);
+
+         USER_MSG(" TARGET 1 : %-40s %17s\n", 
+               ip_addr_ntoa(&i->ip, tmp),
+               mac_addr_ntoa(GBL_TARGET1->mac, tmp2));
+      }
+      else {
+         USER_MSG("%s is not local. NDP poisoning impossible\n", 
+               ip_addr_ntoa(&i->ip, tmp));
+         return -EFATAL;
       }
    }
 
    LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
-      if(!ip_addr_is_local(&i->ip, NULL)) {
+      if(ip_addr_is_local(&i->ip, NULL) == ESUCCESS) {
+         if (!memcmp(GBL_TARGET2->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN)) {
+            USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
+            return -EFATAL;
+         }
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &i->ip, sizeof(struct ip_addr));
+         memcpy(&h->mac, &GBL_TARGET2->mac, MEDIA_ADDR_LEN);
          LIST_INSERT_HEAD(&nadv_group_two, h, next);
+
+         USER_MSG(" TARGET 2 : %-40s %17s\n", 
+               ip_addr_ntoa(&i->ip, tmp),
+               mac_addr_ntoa(GBL_TARGET2->mac, tmp2));
+      }
+      else {
+         USER_MSG("%s is not local. NDP poisoning impossible\n", 
+               ip_addr_ntoa(&i->ip, tmp));
       }
    }
 

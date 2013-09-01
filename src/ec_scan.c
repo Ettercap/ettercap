@@ -833,6 +833,10 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
 {
    struct hosts_list *hl, *h;
 
+   /* don't add to hostlist if the found IP is ours */
+   if (ip_addr_is_ours(ip) == EFOUND) 
+      return;
+
    SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
 
    /* fill the struct */

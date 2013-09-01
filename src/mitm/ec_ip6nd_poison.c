@@ -213,11 +213,8 @@ static int create_list(void)
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
 
          /* only IPv6 addresses are applicable */
-         if (ntohs(h->ip.addr_type) != AF_INET6) {
-            USER_MSG("%s is not a IPv6 address - skip\n",
-                  ip_addr_ntoa(&h->ip, tmp));
+         if (ntohs(h->ip.addr_type) != AF_INET6) 
             continue;
-         }
 
          /* create the element and insert into list */
          SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
@@ -263,11 +260,8 @@ static int create_list(void)
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
 
          /* only IPv6 addresses are applicable */
-         if (ntohs(h->ip.addr_type) != AF_INET6) {
-            USER_MSG("%s is not a IPv6 address - skip\n",
-                  ip_addr_ntoa(&h->ip, tmp));
+         if (ntohs(h->ip.addr_type) != AF_INET6) 
             continue;
-         }
 
          /* create the element and insert in the list */
          SAFE_CALLOC(g, 1, sizeof(struct hosts_list));

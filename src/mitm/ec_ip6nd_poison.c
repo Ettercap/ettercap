@@ -90,16 +90,13 @@ static int nadv_poison_start(char *args)
 
    if(GBL_OPTIONS->silent) {
       ret = create_list_silent();
-      //hook_add(HOOK_PACKET_ICMP6, &record_mac);
    } else 
       ret = create_list();
 
    if (ret != ESUCCESS) {
-         SEMIFATAL_ERROR("NDP poisoning failed to start");
-         //return EFATAL;
+      SEMIFATAL_ERROR("NDP poisoning failed to start");
    }
-   /* necessary? - Maybe if solicitations are seen */
-   //hook_add(HOOK_PACKET_ICMP6, &catch_response); 
+   /* hook necessary? - Maybe if solicitations are seen */
 
    ec_thread_new("nadv_poisoner", "NDP spoofing thread", &nadv_poisoner, NULL);
 
@@ -114,8 +111,6 @@ static void nadv_poison_stop(void)
 
    DEBUG_MSG("nadv_poison_stop");
    
-   //hook_del(HOOK_PACKET_ICMP6, &catch_response);
-
    pid = ec_thread_getpid("nadv_poisoner");
    if(!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
@@ -137,8 +132,6 @@ static void nadv_poison_stop(void)
 EC_THREAD_FUNC(nadv_poisoner)
 {
    struct hosts_list *t1, *t2;
-   /* ping shouldn't be necessary as we can scan IPv6 and have LLA already */
-   //int ping = 1;
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
@@ -161,11 +154,6 @@ EC_THREAD_FUNC(nadv_poisoner)
             if(!ip_addr_cmp(&t1->ip, &t2->ip))
                continue;
 
-            //if(ping) {
-            //   send_icmp6_echo(&t1->ip, &t2->ip);
-            //   send_icmp6_echo(&t2->ip, &t1->ip);
-            //}
-
             send_icmp6_nadv(&t1->ip, &t2->ip, &t1->ip, GBL_IFACE->mac, 0);
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&t2->ip, &t1->ip, &t2->ip, GBL_IFACE->mac, flags & ND_ROUTER);
@@ -178,7 +166,6 @@ EC_THREAD_FUNC(nadv_poisoner)
          }
       }
 
-      //ping = 0;
 
       sleep(1);
    }
@@ -189,28 +176,107 @@ EC_THREAD_FUNC(nadv_poisoner)
 static int create_list(void)
 {
    struct ip_list *i;
-   struct ip_addr local;
+   struct hosts_list *h, *g;
+   char tmp[MAX_ASCII_ADDR_LEN];
+   char tmp2[MAX_ASCII_ADDR_LEN];
 
-   DEBUG_MSG("create_list");
+   DEBUG_MSG("ndp poisoning: create_list");
 
-   /*
-    * We cannot use GBL_HOSTLIST here
-    * IPv6 networks are obviously too huge to scan
-    */
 
+   /* the first group */
    LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
-      if(!ip_addr_is_local(&i->ip, &local)) {
-         LIST_INSERT_HEAD(&ping_list_one, i, next);
-         send_icmp6_echo(&local, &i->ip);
+      /* walk through TARGET1 selected IPv6 addresses */
+      LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+         /* search matching entry in host list */
+         if (!ip_addr_cmp(&i->ip, &h->ip)) {
+            USER_MSG(" GROUP 1 : %s %s\n",
+                  ip_addr_ntoa(&h->ip, tmp),
+                  mac_addr_ntoa(h->mac, tmp2));
+
+            /* create element and insert into list */
+            SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
+
+            memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
+            memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
+
+            LIST_INSERT_HEAD(&nadv_group_one, g, next);
+         }
       }
    }
 
-   LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
-      if(!ip_addr_is_local(&i->ip, &local)) {
-         send_icmp6_echo(&local, &i->ip);
-         LIST_INSERT_HEAD(&ping_list_two, i, next);
-      }
+   /* the target is NULL - convert to ANY */
+   if (LIST_FIRST(&GBL_TARGET1->ip6) == NULL) {
 
+      USER_MSG(" GROUP 1 : ANY (all IPv6 hosts in the list)\n");
+
+      /* add all hosts in HOSTLIST */
+      LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+
+         /* only IPv6 addresses are applicable */
+         if (ntohs(h->ip.addr_type) != AF_INET6) {
+            USER_MSG("%s is not a IPv6 address - skip\n",
+                  ip_addr_ntoa(&h->ip, tmp));
+            continue;
+         }
+
+         /* create the element and insert into list */
+         SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
+
+         memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
+         memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
+
+         LIST_INSERT_HEAD(&nadv_group_one, g, next);
+      }
+   }
+
+   USER_MSG("\n");
+
+   /* the second group */
+
+   /* if the target was specified */
+   LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
+   /* walk through TARGET1 selected IPv6 addresses */
+      LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+         /* search matching entry in host list */
+         if (!ip_addr_cmp(&i->ip, &h->ip)) {
+            USER_MSG(" GROUP 2 : %s %s\n",
+                  ip_addr_ntoa(&h->ip, tmp),
+                  mac_addr_ntoa(h->mac, tmp2));
+
+            /* create the element and insert in the list */
+            SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
+
+            memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
+            memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
+
+            LIST_INSERT_HEAD(&nadv_group_two, g, next);
+         }
+      }
+   }
+
+   /* the target is NULL - convert to ANY */
+   if (LIST_FIRST(&GBL_TARGET2->ip6) == NULL) {
+
+      USER_MSG(" GROUP 2 : ANY (all hosts in the list)\n");
+
+      /* add them */
+      LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+
+         /* only IPv6 addresses are applicable */
+         if (ntohs(h->ip.addr_type) != AF_INET6) {
+            USER_MSG("%s is not a IPv6 address - skip\n",
+                  ip_addr_ntoa(&h->ip, tmp));
+            continue;
+         }
+
+         /* create the element and insert in the list */
+         SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
+
+         memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
+         memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
+
+         LIST_INSERT_HEAD(&nadv_group_two, g, next);
+      }
    }
 
    return ESUCCESS;

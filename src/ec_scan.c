@@ -512,24 +512,11 @@ static void scan_ip6_onlink(pthread_t pid)
 
    /* go through the list of IPv6 addresses on the selected interface */
    LIST_FOREACH(e, &GBL_IFACE->ip6_list, next) {
-      if (LIST_NEXT(e, next) != LIST_END(&GBL_IFACE->ip6_list)) {
-         /* 
-          * it's not the last address we have; 
-          * be picky and prefer global unicast 
-          */
-         if (ip_addr_is_global(&e->ip)) {
-            /* it's a global unicast, use it */
-            send_icmp6_echo(&e->ip, &an);
-            break;
-         }
-      }
-      else {
-         /* 
-          * it's the last address we have; 
-          * we can't be picky and just have to use it 
-          */
-         send_icmp6_echo(&e->ip, &an);
-      }
+      /*
+       * ping to all-nodes from all ip addresses to get responses from all 
+       * IPv6 networks (global, link-local, ...)
+       */
+      send_icmp6_echo(&e->ip, &an);
    }
 
    for (i=0; i<=GBL_CONF->icmp6_probe_delay * 500; i++) {

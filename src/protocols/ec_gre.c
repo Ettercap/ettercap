@@ -26,7 +26,7 @@
 /* globals */
 
 /* Flag mask - 
- * (taken from ethereal gre decoder 
+ * (taken from wireshark gre decoder
  * by Brad Robel-Forrest) 
  */
 #define GH_B_C       0x8000

@@ -801,7 +801,7 @@ int http_fields_init(void)
    /* open the file */
    f = open_data("share", ETTER_FIELDS, FOPEN_READ_TEXT);
    if (f == NULL) {
-      USER_MSG("Cannot open %s", ETTER_FIELDS);
+      USER_MSG("Cannot open %s\n", ETTER_FIELDS);
       return -EINVALID;
    }
          

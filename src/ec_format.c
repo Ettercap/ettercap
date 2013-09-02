@@ -415,7 +415,7 @@ int utf8_format(const u_char *buf, size_t len, u_char *dst)
 int set_utf8_encoding(u_char *fromcode)
 {
 #ifndef HAVE_UTF8
-   USER_MSG("UTF-8 support not compiled in.");
+   USER_MSG("UTF-8 support not compiled in.\n");
    return ESUCCESS;
 #else
    iconv_t cd;

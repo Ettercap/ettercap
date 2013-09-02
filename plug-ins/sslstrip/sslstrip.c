@@ -233,7 +233,7 @@ static int sslstrip_init(void *dummy)
 	}	
 
 	if(regcomp(&find_cookie_re, COOKIE_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
-		USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex");
+		USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex\n");
                 pcre_free(https_url_pcre);
 		http_remove_redirect(bind_port);
 		return PLUGIN_FINISHED;
@@ -255,7 +255,7 @@ static int sslstrip_fini(void *dummy)
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
 	if (http_remove_redirect(bind_port) != ESUCCESS) {
-		USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.");
+		USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.\n");
 	}
 
         // Free regexes.

@@ -61,7 +61,7 @@ EC_API_EXTERN int ec_lua_init()
 
     if (_lua_script_count == 0) {
       // We've got no scripts to load, so there's no reason to start up.
-      USER_MSG("Lua: no scripts were specified, not starting up!");
+      USER_MSG("Lua: no scripts were specified, not starting up!\n");
       return 0;
     }
 
@@ -118,7 +118,7 @@ EC_API_EXTERN int ec_lua_init()
                 lua_tostring(_lua_state, -1));
     }
 
-    USER_MSG("Lua initialized!");
+    USER_MSG("Lua initialized!\n");
     return 0;
 }
 
@@ -195,7 +195,7 @@ EC_API_EXTERN int ec_lua_fini()
     }
 
     _lua_state = NULL;
-    USER_MSG("Lua cleanup complete!");
+    USER_MSG("Lua cleanup complete!\n");
     return 0;
 }
 
@@ -270,7 +270,7 @@ int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po)
 static int l_log(lua_State* state)
 {
   const char *str = lua_tostring(state, 1);
-  USER_MSG("%s", str);
+  USER_MSG("%s\n", str);
   return 0;
 }
 

@@ -119,7 +119,7 @@ static void nadv_poison_stop(void)
       return;
    }
 
-   USER_MSG("NADV poisoner deactivated.\n");
+   USER_MSG("NDP poisoner deactivated.\n");
 
    USER_MSG("Depoisoning the victims.\n");
    nadv_antidote();
@@ -254,7 +254,7 @@ static int create_list(void)
    /* the target is NULL - convert to ANY */
    if (LIST_FIRST(&GBL_TARGET2->ip6) == NULL) {
 
-      USER_MSG(" GROUP 2 : ANY (all hosts in the list)\n");
+      USER_MSG(" GROUP 2 : ANY (all IPv6 hosts in the list)\n");
 
       /* add them */
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {

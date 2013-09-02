@@ -148,7 +148,7 @@ static void parse_tcp(struct packet_object *po)
    }
 
    if (ntohs(tcp->th_sport) == EC_MAGIC_16 && (tcp->th_flags & TH_SYN) )
-      USER_MSG("ettercap NG plugin (gw_discover) is trying to dicover the gateway from %s...\n", ip_addr_ntoa(&po->L3.src, tmp));
+      USER_MSG("ettercap NG plugin (gw_discover) is trying to discover the gateway from %s...\n", ip_addr_ntoa(&po->L3.src, tmp));
    
 }
 

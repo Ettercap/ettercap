@@ -245,7 +245,7 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
          
       case FFUNC_MSG:
          /* display the message to the user */
-         USER_MSG("%s", fop->op.func.string);
+         USER_MSG("%s\n", fop->op.func.string);
          return FLAG_TRUE;
          break;
          

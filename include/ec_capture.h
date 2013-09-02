@@ -9,7 +9,7 @@
 EC_API_EXTERN void capture_start(struct iface_env *);
 EC_API_EXTERN void capture_stop(struct iface_env *);
 
-EC_API_EXTERN EC_THREAD_FUNC(capture);
+void capture();
 
 EC_API_EXTERN int is_pcap_file(char *file, char *errbuf);
 EC_API_EXTERN void capture_getifs(void);

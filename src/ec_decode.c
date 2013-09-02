@@ -78,9 +78,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
 {
    FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
-   int len;
+   bpf_u_int32 len;
    u_char *data;
-   size_t datalen;
+   bpf_u_int32 datalen;
    struct iface_env *iface;
    
    CANCELLATION_POINT();
@@ -109,7 +109,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * it dumps all the packets disregarding the filter
     *
     * do not perform the operation if we are reading from another
-    * filedump. see below where the file is dumped when reading 
+    * filedump. See below where the file is dumped when reading
     * form other files (useful for decription).
     */
    if (GBL_OPTIONS->write && !GBL_OPTIONS->read) {
@@ -117,8 +117,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
        * we need to lock this because in SM_BRIDGED the
        * packets are dumped in the log file by two threads
        */
+      BUG_IF(GBL_PCAP->dump == NULL);
       DUMP_LOCK;
-      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
+      pcap_dump((u_char *)param, pkthdr, pkt);
       DUMP_UNLOCK;
    }
  
@@ -212,13 +213,14 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
 
    /* 
     * dump packets to a file from another file.
-    * thi is useful when decrypting packets or applying filters
+    * this is useful when decrypting packets or applying filters
     * on pcapfile and we want to save the result in a file
     */
    if (GBL_OPTIONS->write && GBL_OPTIONS->read) {
+      BUG_IF(GBL_PCAP->dump == NULL);
       DUMP_LOCK;
       /* reuse the original pcap header, but with the modified packet */
-      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, po.packet);
+      pcap_dump((u_char *)param, pkthdr, po.packet);
       DUMP_UNLOCK;
    }
    

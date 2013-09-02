@@ -27,15 +27,15 @@
 
 /* protos... */
 
-struct packet_object* packet_allocate_object(u_char *data, size_t len);
-inline int packet_create_object(struct packet_object *po, u_char *buf, size_t len);
+struct packet_object* packet_allocate_object(u_char *data, bpf_u_int32 len);
+inline int packet_create_object(struct packet_object *po, u_char *buf, bpf_u_int32 len);
 inline int packet_destroy_object(struct packet_object *po);
-int packet_disp_data(struct packet_object *po, u_char *buf, size_t len);
+int packet_disp_data(struct packet_object *po, u_char *buf, bpf_u_int32 len);
 struct packet_object * packet_dup(struct packet_object *po, u_char flag);
 
 /* --------------------------- */
 
-struct packet_object* packet_allocate_object(u_char *data, size_t len)
+struct packet_object* packet_allocate_object(u_char *data, bpf_u_int32 len)
 {
    struct packet_object *po;
 
@@ -50,7 +50,7 @@ struct packet_object* packet_allocate_object(u_char *data, size_t len)
  * associate the buffer to the packet object
  */
 
-inline int packet_create_object(struct packet_object *po, u_char *buf, size_t len)
+inline int packet_create_object(struct packet_object *po, u_char *buf, bpf_u_int32 len)
 {
    /* clear the memory */
    memset(po, 0, sizeof(struct packet_object));
@@ -71,7 +71,7 @@ inline int packet_create_object(struct packet_object *po, u_char *buf, size_t le
  * decoders should decrypt data from po->DATA.data to po->DATA.disp_data
  */
 
-int packet_disp_data(struct packet_object *po, u_char *buf, size_t len)
+int packet_disp_data(struct packet_object *po, u_char *buf, bpf_u_int32 len)
 {
    /* disp_data is always null terminated */
    if (len + 1) {

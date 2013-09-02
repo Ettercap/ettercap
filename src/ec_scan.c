@@ -54,7 +54,7 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name);
 static void random_list(struct ip_list *e, int max);
 
 static void get_response(struct packet_object *po);
-static EC_THREAD_FUNC(capture_scan);
+void capture_scan();
 static EC_THREAD_FUNC(scan_thread);
 static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 
@@ -165,7 +165,7 @@ static EC_THREAD_FUNC(scan_thread)
     */
    hook_add(HOOK_PACKET_ARP_RP, &get_response);
    hook_add(HOOK_PACKET_ICMP6_NADV, &get_response);
-   pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
+   capture_scan();
 
    /*
     * if at least one ip target is ANY, scan the whole netmask
@@ -275,15 +275,13 @@ void del_hosts_list(void)
 /*
  * capture the packets and call the HOOK POINT
  */
-static EC_THREAD_FUNC(capture_scan)
+void capture_scan()
 {
    DEBUG_MSG("capture_scan");
    int ret;
-   BUG_IF(GBL_IFACE->pcap == NULL);
-   ec_thread_init();
 
-   ret = pcap_loop(GBL_IFACE->pcap, -1, scan_decode,  (unsigned char *) GBL_PCAP->dump);
-   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_IFACE->pcap));
+   ret = pcap_loop(GBL_PCAP->pcap, -1, scan_decode,  (unsigned char *) GBL_PCAP->dump);
+   ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_PCAP->pcap));
 
    return NULL;
 }
@@ -292,7 +290,7 @@ static EC_THREAD_FUNC(capture_scan)
 /*
  * parses the POs and executes the HOOK POINTs
  */
-static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
+void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
 {
    FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
@@ -300,7 +298,6 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
    u_char *data;
    bpf_u_int32 datalen;
 
-   CANCELLATION_POINT();
 
    /* extract data and datalen from pcap packet */
    data = (u_char *)pkt;
@@ -328,8 +325,6 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
 
    /* free the structure */
    packet_destroy_object(&po);
-
-   CANCELLATION_POINT();
 
    return;
 }

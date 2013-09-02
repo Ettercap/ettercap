@@ -82,9 +82,10 @@ void network_init()
          FATAL_ERROR("Interface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
    }
    
-   if(GBL_OPTIONS->write)
-      pcap_winit(GBL_IFACE->pcap);
-   
+   if(GBL_OPTIONS->write) {
+      GBL_PCAP->pcap = GBL_IFACE->pcap;
+      pcap_winit(GBL_PCAP->pcap);
+   }
    GBL_PCAP->align = get_alignment(GBL_PCAP->dlt);
    SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align + 256, sizeof(char));
 

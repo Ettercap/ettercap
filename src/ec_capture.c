@@ -46,8 +46,6 @@ struct align_entry {
 void capture_start(struct iface_env *);
 void capture_stop(struct iface_env *);
 
-EC_THREAD_FUNC(capture);
-
 void capture_getifs(void);
 int is_pcap_file(char *file, char *errbuf);
 
@@ -61,7 +59,7 @@ void capture_start(struct iface_env *iface)
    char thread_name[64];
 
    snprintf(thread_name, sizeof(thread_name), "capture[%s]", iface->name);
-   ec_thread_new(thread_name, "pcap handler and packet decoder", &capture, iface);
+   capture();
 }
 
 void capture_stop(struct iface_env *iface)
@@ -79,16 +77,10 @@ void capture_stop(struct iface_env *iface)
  * start capturing packets
  */
 
-EC_THREAD_FUNC(capture)
+void capture()
 {
    BUG_IF(GBL_IFACE->pcap == NULL);
    int ret;
-//   struct iface_env *iface;
-   
-   /* init the thread and wait for start up */
-   ec_thread_init();
-
-//   iface = EC_THREAD_PARAM;
    
    DEBUG_MSG("neverending loop (capture)");
 
@@ -100,7 +92,7 @@ EC_THREAD_FUNC(capture)
     * dispatch packets to ec_decode
     */
 
-   ret = pcap_loop(GBL_IFACE->pcap, -1, ec_decode, (unsigned char *) GBL_PCAP->dump);
+   ret = pcap_loop(GBL_PCAP->pcap, -1, ec_decode, (unsigned char *) GBL_PCAP->dump);
    ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(GBL_IFACE->pcap));
 
    if (GBL_OPTIONS->read) {

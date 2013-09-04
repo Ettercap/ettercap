@@ -57,7 +57,7 @@ static int nadv_poison_start(char *args)
 
    DEBUG_MSG("nadv_poison_start");
 
-   flags = 0;
+   flags = ND_ROUTER;
 
    if(strcmp(args, "")) {
       for(p = strsep(&args, ","); p != NULL; p = strsep(&args, ",")) {
@@ -65,8 +65,6 @@ static int nadv_poison_start(char *args)
             GBL_OPTIONS->remote = 1;
          else if(!strcasecmp(p, "oneway"))
             flags |= ND_ONEWAY;
-         else if(!strcasecmp(p, "router"))
-            flags |= ND_ROUTER;
          else
             SEMIFATAL_ERROR("NDP poisoning: incorrect arguments.\n");
       }
@@ -154,7 +152,7 @@ EC_THREAD_FUNC(nadv_poisoner)
             if(!ip_addr_cmp(&t1->ip, &t2->ip))
                continue;
 
-            send_icmp6_nadv(&t1->ip, &t2->ip, &t1->ip, GBL_IFACE->mac, 0);
+            send_icmp6_nadv(&t1->ip, &t2->ip, &t1->ip, GBL_IFACE->mac, flags);
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&t2->ip, &t1->ip, &t2->ip, GBL_IFACE->mac, flags & ND_ROUTER);
 
@@ -384,7 +382,7 @@ static void nadv_antidote(void)
             if(!ip_addr_cmp(&h1->ip, &h2->ip))
                continue;
 
-            send_icmp6_nadv(&h1->ip, &h2->ip, &h1->ip, h1->mac, 0);
+            send_icmp6_nadv(&h1->ip, &h2->ip, &h1->ip, h1->mac, flags);
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&h2->ip, &h1->ip, &h2->ip, h2->mac, flags & ND_ROUTER);
 

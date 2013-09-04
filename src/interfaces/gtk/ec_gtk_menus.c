@@ -101,8 +101,8 @@ GtkItemFactoryEntry gmenu_plugins[] = {
 
 #ifndef OS_WINDOWS
 GtkItemFactoryEntry gmenu_help[] = {
-   {"/H_elp",                   NULL,         NULL,              0, "<Branch>" },
-   {"/Help/Contents", " ", gtkui_help, 0, "<StockItem>", GTK_STOCK_HELP }
+   {"/_?",                   NULL,         NULL,              0, "<Branch>" },
+   {"/?/Contents", " ", gtkui_help, 0, "<StockItem>", GTK_STOCK_HELP }
 };
 #endif
 

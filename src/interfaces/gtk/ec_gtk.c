@@ -610,8 +610,8 @@ static void gtkui_setup(void)
       { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" },
       { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>"}
 #ifndef OS_WINDOWS
-     ,{"/_Help",          NULL,         NULL,             0, "<Branch>" },
-      {"/Help/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
+     ,{"/_?",          NULL,         NULL,             0, "<Branch>" },
+      {"/?/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
 #endif
    };
    gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);

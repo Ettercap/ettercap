@@ -36,7 +36,7 @@ void help_etterlog(void);
 
 /* globals */
 
-struct wdg_menu menu_help[] = { {"Help",              0,       "",    NULL},
+struct wdg_menu menu_help[] = { {"?",                 0,       "",    NULL},
                                 {"ettercap"  ,        0,       "",    help_ettercap},
                                 {"curses gui"  ,      0,       "",    help_curses},
                                 {"plugins"  ,         0,       "",    help_plugins},

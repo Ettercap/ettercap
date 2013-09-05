@@ -11,7 +11,7 @@ EC_API_EXTERN FILE *debug_file;
 #define DEBUG_INIT() debug_init()
 #define DEBUG_MSG(x, ...) do {                                 \
    if (debug_file == NULL) {                                   \
-      fprintf(stderr, "DEBUG: "x"\n", ## __VA_ARGS__ );            \
+      fprintf(stderr, "DEBUG: "x"\n", ## __VA_ARGS__ );        \
    } else                                                      \
       debug_msg(x, ## __VA_ARGS__ );                           \
 } while(0)

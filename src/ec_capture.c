@@ -49,7 +49,7 @@ void capture_stop(struct iface_env *);
 EC_THREAD_FUNC(capture);
 
 void capture_getifs(void);
-int is_pcap_file(char *file, char *errbuf);
+int is_pcap_file(char *file, char *pcap_errbuf);
 
 u_int8 get_alignment(int dlt);
 void add_aligner(int dlt, int (*aligner)(void));
@@ -83,7 +83,7 @@ EC_THREAD_FUNC(capture)
 {
    int ret;
    struct iface_env *iface;
-   
+
    /* init the thread and wait for start up */
    ec_thread_init();
 
@@ -98,7 +98,7 @@ EC_THREAD_FUNC(capture)
     * infinite loop 
     * dispatch packets to ec_decode
     */
-   ret = pcap_loop(iface->pcap, -1, ec_decode, EC_THREAD_PARAM);
+   ret = pcap_loop(iface->pcap, -1, ec_decode, (unsigned char *) iface->dump);
    ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(iface->pcap));
 
    if (GBL_OPTIONS->read) {
@@ -180,15 +180,15 @@ void capture_getifs(void)
 /*
  * check if the given file is a pcap file
  */
-int is_pcap_file(char *file, char *errbuf)
+int is_pcap_file(char *file, char *pcap_errbuf)
 {
-   pcap_t *pd;
+   pcap_t *pcap;
    
-   pd = pcap_open_offline(file, errbuf);
-   if (pd == NULL)
+   pcap = pcap_open_offline(file, pcap_errbuf);
+   if (pcap == NULL)
       return -EINVALID;
 
-   pcap_close(pd);
+   pcap_close(pcap);
    
    return ESUCCESS;
 }

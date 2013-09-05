@@ -154,7 +154,7 @@ int set_loglevel(int level, char *filename)
          break;
    }
 
-   atexit(&log_stop);
+   atexit(log_stop);
 
    return ESUCCESS;
 }

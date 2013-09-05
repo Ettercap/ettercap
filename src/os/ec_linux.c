@@ -182,6 +182,7 @@ void disable_interface_offload(void)
 #endif
 			execvp(param[0], param);
 			DEBUG_MSG("cannot disable offload on %s, do you have ethtool installed?", GBL_OPTIONS->iface);
+			fprintf(stdout,"Cannot disable offload on %s, do you have ethtool installed?\n", GBL_OPTIONS->iface);
 			safe_free_mem(param, &param_length, command);
 			_exit(EINVALID);
 		case -1:

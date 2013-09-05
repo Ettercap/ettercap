@@ -182,7 +182,7 @@ void disable_interface_offload(void)
 #endif
 			execvp(param[0], param);
          safe_free_mem(param, &param_length, command);
-			exit(EINVALID);
+			_exit(EINVALID);
 		case -1:
 			safe_free_mem(param, &param_length, command);
 		default:

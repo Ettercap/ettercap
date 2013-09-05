@@ -48,7 +48,7 @@ static void l3_close(void);
 
 struct iface_env* iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN]);
 
-/* teh code */
+/* the code */
 
 void network_init()
 {
@@ -79,7 +79,7 @@ void network_init()
       if(GBL_OPTIONS->read)
          FATAL_ERROR("Dump file not supported (%s)", pcap_datalink_val_to_description(GBL_PCAP->dlt));
       else
-         FATAL_ERROR("Inteface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
+         FATAL_ERROR("Interface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
    }
    
    if(GBL_OPTIONS->write)
@@ -107,7 +107,7 @@ static void close_network()
       pcap_close(GBL_BRIDGE->pcap);
 
    if(GBL_OPTIONS->write)
-      pcap_dump_close(GBL_PCAP->dump);
+      pcap_dump_close(GBL_IFACE->dump);
 
    libnet_destroy(GBL_IFACE->lnet);
    libnet_destroy(GBL_BRIDGE->lnet);
@@ -118,11 +118,9 @@ static void close_network()
 static void pcap_winit(pcap_t *pcap)
 {
    pcap_dumper_t *pdump;
-
    pdump = pcap_dump_open(pcap, GBL_OPTIONS->pcapfile_out);
    ON_ERROR(pdump, NULL, "pcap_dump_open: %s", pcap_geterr(pcap));
-
-   GBL_PCAP->dump = pdump;
+   GBL_IFACE->dump = pdump;
 }
 
 static void source_print(struct iface_env *source)
@@ -231,7 +229,6 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    DEBUG_MSG("requested snaplen for %s: %d, assigned snaplen: %d", name, GBL_PCAP->snaplen, snaplen);
    if(primary)
       GBL_PCAP->snaplen = snaplen;
-
    source->pcap = pcap;
 
    SAFE_STRDUP(source->name, name);

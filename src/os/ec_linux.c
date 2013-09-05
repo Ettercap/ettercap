@@ -150,7 +150,7 @@ void safe_free_mem(char **param, int *param_length, char *command)
  */
 void disable_interface_offload(void)
 {
-   int param_length= 0;
+	int param_length= 0;
 	char *command;
 	char **param = NULL;
 	char *p;
@@ -181,8 +181,9 @@ void disable_interface_offload(void)
 			close(2);
 #endif
 			execvp(param[0], param);
-         safe_free_mem(param, &param_length, command);
-			exit(EINVALID);
+			DEBUG_MSG("cannot disable offload on %s, do you have ethtool installed?", GBL_OPTIONS->iface);
+			safe_free_mem(param, &param_length, command);
+			_exit(EINVALID);
 		case -1:
 			safe_free_mem(param, &param_length, command);
 		default:

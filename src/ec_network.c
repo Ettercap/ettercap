@@ -118,9 +118,19 @@ static void close_network()
 static void pcap_winit(pcap_t *pcap)
 {
    pcap_dumper_t *pdump;
+   FILE *f;
 
-   pdump = pcap_dump_open(pcap, GBL_OPTIONS->pcapfile_out);
-   ON_ERROR(pdump, NULL, "pcap_dump_open: %s", pcap_geterr(pcap));
+#ifdef OS_WINDOWS
+   f = fopen(GBL_OPTIONS->pcapfile_out, "wb");
+#else
+   f = fopen(GBL_OPTIONS->pcapfile_out, "w");
+#endif
+
+   ON_ERROR(f, NULL, "pcap_winit: [%s] %d", GBL_OPTIONS->pcapfile_out, errno);
+
+   setbuf(f, NULL);
+   pdump = pcap_dump_fopen(pcap, f);
+   ON_ERROR(pdump, NULL, "pcap_dump_fopen: %s", pcap_geterr(pcap));
 
    GBL_PCAP->dump = pdump;
 }

@@ -22,7 +22,7 @@ enum {
 };
 
 EC_API_EXTERN void error_msg(char *file, const char *function, int line, char *message, ...);
-ECI_API_EXTERN void warn_msg(char *file, const char *function, int line, char *message, ...);
+EC_API_EXTERN void warn_msg(char *file, const char *function, int line, char *message, ...);
 EC_API_EXTERN void fatal_error(char *message, ...);
 EC_API_EXTERN void bug(char *file, const char *function, int line, char *message);
 

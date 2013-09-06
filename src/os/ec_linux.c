@@ -18,7 +18,6 @@
 */
 
 #include <ec.h>
-
 #include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <net/if.h>
@@ -172,7 +171,7 @@ void disable_interface_offload(void)
 
 	SAFE_REALLOC(param, (i+1) * sizeof(char *));
 	param[i] = NULL;
-   param_length= i + 1; //because there is a SAFE_REALLOC after the for.
+	param_length= i + 1; //because there is a SAFE_REALLOC after the for.
 
 	switch(fork()) {
 		case 0:
@@ -181,8 +180,7 @@ void disable_interface_offload(void)
 			close(2);
 #endif
 			execvp(param[0], param);
-			DEBUG_MSG("cannot disable offload on %s, do you have ethtool installed?", GBL_OPTIONS->iface);
-			fprintf(stdout,"Cannot disable offload on %s, do you have ethtool installed?\n", GBL_OPTIONS->iface);
+			WARN_MSG("cannot disable offload on %s, do you have ethtool installed?", GBL_OPTIONS->iface);
 			safe_free_mem(param, &param_length, command);
 			_exit(EINVALID);
 		case -1:

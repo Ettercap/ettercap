@@ -147,6 +147,7 @@ static void remote_browser(struct packet_object *po)
          /* chrome won't start as root, changing UID in order to prevent this and for more security in the browser context */
          /* the following line has been commented since some Penetration Testing distros can run only as root */
          /*setuid(1000);*/
+         drop_privs();
          execvp(param[0], param);
       }
          

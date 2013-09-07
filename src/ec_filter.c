@@ -950,7 +950,7 @@ static int func_exec(struct filter_op *fop)
 	   for(k= 0; k < param_length; ++k)
 		   SAFE_FREE(param[k]);
 	   SAFE_FREE(param);
-      exit(-1);
+      _exit(-1);
    }
       
    return ESUCCESS;

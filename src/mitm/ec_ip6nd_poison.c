@@ -98,8 +98,6 @@ static int nadv_poison_start(char *args)
 
    ec_thread_new("nadv_poisoner", "NDP spoofing thread", &nadv_poisoner, NULL);
 
-   USER_MSG("NDP poisoner activated.\n");
-
    return ESUCCESS;
 }
 
@@ -179,6 +177,8 @@ static int create_list(void)
    char tmp2[MAX_ASCII_ADDR_LEN];
 
    DEBUG_MSG("ndp poisoning: create_list");
+
+   USER_MSG("\nNDP poisoning victims:\n\n");
 
 
    /* the first group */

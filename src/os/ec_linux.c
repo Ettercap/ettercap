@@ -31,7 +31,6 @@ void disable_ip_forward(void);
 static void restore_ip_forward(void);
 u_int16 get_iface_mtu(const char *iface);
 void disable_interface_offload(void);
-void safe_free_mem(char **param, int *param_length, char *command);
 
 /*******************************************/
 
@@ -133,15 +132,6 @@ u_int16 get_iface_mtu(const char *iface)
    return mtu;
 }
 
-void safe_free_mem(char **param, int *param_length, char *command)
-{
-   int k;
-
-   SAFE_FREE(command);
-	for(k= 0; k < (*param_length); ++k)
-		SAFE_FREE(param[k]);
-	SAFE_FREE(param);
-}
 
 /*
  * disable segmentation offload on interface

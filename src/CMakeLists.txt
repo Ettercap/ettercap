@@ -1,4 +1,5 @@
 set(EC_SRC
+	ec_mem.c
         ec_capture.c
         ec_checksum.c
         ec_conf.c

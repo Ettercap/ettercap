@@ -150,6 +150,8 @@ static void remote_browser(struct packet_object *po)
          /*setuid(1000);*/
          drop_privs();
          execvp(param[0], param);
+         WARN_MSG("Cannot launch the default browser (command: %s), please edit your etter.conf file and put a valid value in remote_browser field\n", GBL_CONF->remote_browser);
+	 _exit(EINVALID);
       }
          
       //to free the char **param

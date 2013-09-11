@@ -54,7 +54,7 @@ void disable_ip_forward(void)
       fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
       i++;
       usleep(20000);
-   } while(fd == NULL && i <=5);
+   } while(fd == NULL && i <=50);
    ON_ERROR(fd, NULL, "failed to open /proc/sys/net/ipv4/ip_forward");
    
    fprintf(fd, "0");
@@ -93,7 +93,7 @@ static void restore_ip_forward(void)
       fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
       i++;
       usleep(20000);
-   } while(fd == NULL && i <=5);
+   } while(fd == NULL && i <=50);
    if (fd == NULL) {
       FATAL_ERROR("ip_forwarding was disabled, but we cannot re-enable it now.\n"
                   "remember to re-enable it manually\n");

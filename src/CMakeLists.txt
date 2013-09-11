@@ -115,9 +115,6 @@ set(EC_SRC
         protocols/ec_wifi_radiotap.c
 )
 
-if (NOT LIBRARY_BUILD)
-	set(EC_SRC ${EC_SRC} ec_interfaces.c)
-endif(NOT LIBRARY_BUILD)
 
 if(ENABLE_IPV6)
     set(EC_SRC ${EC_SRC} protocols/ec_icmp6.c protocols/ec_ip6.c mitm/ec_ip6nd_poison.c)
@@ -173,9 +170,12 @@ endif(NOT LIBRARY_BUILD)
 
 add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
+target_link_libraries(lib_ettercap ${EC_LIBS})
 
 if (NOT LIBRARY_BUILD)
-	add_executable(ettercap ec_main.c)
+	add_executable(ettercap ec_interfaces.c ec_main.c)
+        target_link_libraries(ettercap ec_interfaces)
+else(NOT LIBRARY_BUILD)
 endif(NOT LIBRARY_BUILD)
 
 # Only compile lua stuff if lua is enabled!
@@ -194,11 +194,11 @@ IF(ENABLE_LUA)
   endif()
 endif(ENABLE_LUA)
 
-if(NOT LIBRARY_BUILD)
-	target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
-else(NOT LIBRARY_BUILD)
-	target_link_libraries(lib_ettercap ${EC_LIBS})
-endif(NOT LIBRARY_BUILD)
+#if(NOT LIBRARY_BUILD)
+	#target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
+#else(NOT LIBRARY_BUILD)
+	#target_link_libraries(lib_ettercap ${EC_LIBS})
+#endif(NOT LIBRARY_BUILD)
 
 set_target_properties(lib_ettercap PROPERTIES 
   ENABLE_EXPORTS On

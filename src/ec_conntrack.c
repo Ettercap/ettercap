@@ -655,7 +655,7 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       /* determine the flags */
       conntrack_flagstr(c->co, flags, sizeof(flags));
       
-      snprintf(*desc, len, "%s %15s:%-5d - %15s:%-5d %s %s TX: %lu RX: %lu", flags, 
+      snprintf(*desc, len, "%1s %15s:%-5d - %15s:%-5d %1s %s TX: %lu RX: %lu", flags, 
                                            src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
                                            proto, status, (unsigned long)c->co->tx, (unsigned long)c->co->rx);
    }

@@ -376,7 +376,7 @@ static gboolean refresh_connections(gpointer data)
 static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *conn, struct row_pairs **list) {
    GtkTreeIter iter;
    char flags[2], src[MAX_ASCII_ADDR_LEN], dst[MAX_ASCII_ADDR_LEN];
-   char proto[2], status[8];
+   char proto[4], status[8];
    unsigned int src_port = 0, dst_port = 0, tx = 0, rx = 0;
    struct row_pairs *row = NULL;
 

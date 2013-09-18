@@ -47,7 +47,7 @@ static void gtkui_connections_detach(GtkWidget *child);
 static void gtkui_connections_attach(void);
 static void gtkui_kill_connections(void);
 static gboolean refresh_connections(gpointer data);
-static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct row_pairs **list);
+static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *conn, struct row_pairs **list);
 static void gtkui_connection_list_row(int top, struct row_pairs *pair);
 static void gtkui_connection_detail(void);
 static void gtkui_connection_data(void);
@@ -273,15 +273,15 @@ static gboolean refresh_connections(gpointer data)
    struct row_pairs *lastconn = NULL, *cache = NULL;
    GtkTreeModel *model = GTK_TREE_MODEL (ls_conns);
    void *list, *next, *listend;
-   char *desc;                  /* holds line from conntrack_print */
+   struct conn_object *conn;    /* stores connection details */
    GtkTreeIter iter;            /* points to a specific row */
    char flags[2], status[8];
    unsigned int xferred = 0;
    struct row_pairs *row = NULL, *nextrow = NULL, top, bottom;
 
-   /* null terminate strings */
-   flags[1] = 0;
-   status[7] = 0;
+   /* init strings */
+   memset(&flags, 0, sizeof(flags));
+   memset(&status, 0, sizeof(status));
 
    /* make sure the list has been created and window is visible */
    if(ls_conns) {
@@ -301,7 +301,7 @@ static gboolean refresh_connections(gpointer data)
    /* remove old connections */
    for(row = connections; row; row = nextrow) {
        nextrow = row->next;
-       if(conntrack_print(0, row->conn, NULL, 0) == NULL) {
+       if(conntrack_get(0, row->conn, NULL) == NULL) {
           /* remove row from the GTK list */
           gtk_list_store_remove(GTK_LIST_STORE(ls_conns), &row->iter);
 
@@ -322,20 +322,17 @@ static gboolean refresh_connections(gpointer data)
 
    /* make sure we have a place to start searching for new rows */
    if(!lastconn) {
-      listend = conntrack_print(0, NULL, NULL, 0);
+      listend = conntrack_get(0, NULL, NULL);
       if(listend == NULL)
          return(TRUE);
    } else {
       listend = lastconn->conn;
    }
 
-   /* allocate space for conntrack_print to pass connection data */
-   SAFE_CALLOC(desc, 100, sizeof(char));
-
    /* add new connections */
-   for(list = conntrack_print(+1, listend, NULL, 0); list; list = next) {
-      next = conntrack_print(+1, list, &desc, 99);
-      cache = gtkui_connections_add(desc, list, &connections);
+   for(list = conntrack_get(+1, listend, NULL); list; list = next) {
+      next = conntrack_get(+1, list, &conn);
+      cache = gtkui_connections_add(conn, list, &connections);
       if(cache)
          lastconn = cache;
    }
@@ -353,13 +350,12 @@ static gboolean refresh_connections(gpointer data)
    do {
       /* get the conntrack pointer for this row */
       gtk_tree_model_get (model, &iter, 9, &list, -1);
-      conntrack_print(0, list, &desc, 99);
+      conntrack_get(0, list, &conn);
 
       /* extract changing values from conntrack_print string */
-      flags[0] = desc[0];
-      strncpy(status, desc+50, 7);
-      int i =sscanf(desc+62, "%u", &xferred);
-      BUG_IF(i!=1);  
+      conntrack_flagstr(conn, flags, sizeof(flags));
+      conntrack_statusstr(conn, status, sizeof(status));
+      xferred = conn->xferred;
 
       gtk_list_store_set (ls_conns, &iter, 0, flags, 7, status, 8, xferred, -1);
 
@@ -368,14 +364,13 @@ static gboolean refresh_connections(gpointer data)
          break;
    } while(gtk_tree_model_iter_next(model, &iter));
   
-   SAFE_FREE(desc); 
    return(TRUE);
 }
 
-static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct row_pairs **list) {
+static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *conn, struct row_pairs **list) {
    GtkTreeIter iter;
-   char flags[2], src[16], dst[16];
-   char proto[2], status[8], *src_ptr = NULL, *dst_ptr = NULL;
+   char flags[2], src[MAX_ASCII_ADDR_LEN], dst[MAX_ASCII_ADDR_LEN];
+   char proto[2], status[8];
    unsigned int src_port = 0, dst_port = 0, xferred = 0;
    struct row_pairs *row = NULL;
 
@@ -384,38 +379,31 @@ static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct ro
    if(!list)
       return(NULL);
 
-   /* set null bytes at string ends */
-   flags[1] = 0;
-   proto[1] = 0;
-   src[15] = 0;
-   dst[15] = 0;
-   status[7] = 0;
+   /* init strings */
+   memset(&flags, 0, sizeof(flags));
+   memset(&proto, 0, sizeof(proto));
+   memset(&src, 0, sizeof(src));
+   memset(&dst, 0, sizeof(dst));
+   memset(&status, 0, sizeof(status));
 
    /* copy data from conntrack_print string */
-   flags[0] = desc[0];
-   proto[0] = desc[48];
+   conntrack_flagstr(co, flags, sizeof(flags));
+   conntrack_statusstr(co, status, sizeof(status));
+   conntrack_protostr(co, proto, sizeof(proto));
 
-   strncpy(src, desc+2, 15);
-   strncpy(dst, desc+26, 15);
-   strncpy(status, desc+50, 7);
+   ip_addr_ntoa(&co->L3_addr1, src);
+   ip_addr_ntoa(&co->L3_addr2, dst);
 
-   int i=0;
-   i=sscanf(desc+18, "%u", &src_port);
-   BUG_IF(i!=1);
-   i=sscanf(desc+42, "%u", &dst_port);
-   BUG_IF(i!=1);
-   sscanf(desc+62, "%u", &xferred);
-   BUG_IF(i!=1);
+   src_port = ntohs(co->L4_addr1);
+   dst_port = ntohs(co->L4_addr2);
 
-   /* trim off leading spaces */
-   for(src_ptr = src; *src_ptr == ' '; src_ptr++);
-   for(dst_ptr = dst; *dst_ptr == ' '; dst_ptr++);
+   xferred = co->xferred;
 
    /* add it to GTK list */
    gtk_list_store_append (ls_conns, &iter);
    gtk_list_store_set (ls_conns, &iter,
-                       0, flags, 1, src_ptr, 2, src_port,
-                       3, "-",   4, dst_ptr, 5, dst_port,
+                       0, flags, 1, src,     2, src_port,
+                       3, "-",   4, dst,     5, dst_port,
                        6, proto, 7, status,  8, xferred,
                        9, conn, -1);
 

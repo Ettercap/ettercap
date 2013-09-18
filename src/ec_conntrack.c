@@ -69,6 +69,7 @@ static void conntrack_del(struct conn_object *co);
 static int conntrack_match(struct conn_object *co, struct packet_object *po);
 EC_THREAD_FUNC(conntrack_timeouter);
 void * conntrack_print(int mode, void *list, char **desc, size_t len);
+void * conntrack_get(int mode, void *list, struct conn_object **conn);
 int conntrack_protostr(struct conn_object *conn, char *pstr, int len);
 int conntrack_flagstr(struct conn_object *conn, char *pstr, int len);
 int conntrack_statusstr(struct conn_object *conn, char *pstr, int len);
@@ -683,6 +684,47 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
          
    return NULL;
 }
+
+/* 
+ * copy the connection object pointer to conn and return the next/prev element
+ */
+void * conntrack_get(int mode, void *list, struct conn_object **conn)
+{
+   struct conn_tail *c = (struct conn_tail *)list;
+   struct conn_tail *cl;
+
+   /* NULL is used to retrieve the first element */
+   if (list == NULL)
+      return TAILQ_FIRST(&conntrack_tail_head);
+
+   /* the caller wants the connection object */
+   if (conn != NULL) 
+       *conn = c->co;
+  
+   /* return the next/prev/current to the caller */
+   switch (mode) {
+      case -1:
+         return TAILQ_PREV(c, conn_head, next);
+         break;
+      case +1:
+         return TAILQ_NEXT(c, next);
+         break;
+      case 0:
+         /* if exists in the list, return it */
+         TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
+            if (cl == c)
+               return c;
+         }
+         /* else, return NULL */
+         return NULL;
+      default:
+         return list;
+         break;
+   }
+         
+   return NULL;
+}
+
 
 /*
  * copies the protocol string of a given connection object into pstr

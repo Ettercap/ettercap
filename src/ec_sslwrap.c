@@ -428,12 +428,12 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
       case 0:
          execvp(param[0], param);
          safe_free_mem(param, &param_length, command);
-         exit(EINVALID);
+         _exit(EINVALID);
       case -1:
          safe_free_mem(param, &param_length, command);
          return -EINVALID;
       default:
-        safe_free_mem(param, &param_length, command);
+         safe_free_mem(param, &param_length, command);
          wait(&ret_val);
          if (ret_val == EINVALID)
             return -EINVALID;
@@ -492,7 +492,7 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
       case 0:
          execvp(param[0], param);
          safe_free_mem(param, &param_length, command);
-         exit(EINVALID);
+         _exit(EINVALID);
       case -1:
          safe_free_mem(param, &param_length, command);
          return -EINVALID;

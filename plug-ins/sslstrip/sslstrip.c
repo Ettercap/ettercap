@@ -491,14 +491,14 @@ static int http_insert_redirect(u_int16 dport)
 			safe_free_http_redirect(param, &param_length, command, orig_command);
 			return -EINVALID;
 		default:
-                wait(&ret_val);
-                if (WEXITSTATUS(ret_val)) {
-                      USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
-                      safe_free_http_redirect(param, &param_length, command, orig_command);
-                      return -EINVALID;
-                }
-                break;
-     }
+			wait(&ret_val);
+			if (WEXITSTATUS(ret_val)) {
+			    USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+			    safe_free_http_redirect(param, &param_length, command, orig_command);
+			    return -EINVALID;
+			}
+			break;
+	}
 
 	safe_free_http_redirect(param, &param_length, command, orig_command);
 

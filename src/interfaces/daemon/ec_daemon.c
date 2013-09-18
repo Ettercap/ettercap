@@ -221,7 +221,7 @@ static void daemonize(void)
    
    /* kill the father and detach the son */
    if ( pid != 0)
-      exit(0);
+      _exit(0);
 
    if(setsid() == -1)
       ERROR_MSG("setsid(): cannot set the session id");

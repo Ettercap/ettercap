@@ -184,8 +184,13 @@ void gtkui_show_connections(void)
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
    renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("Bytes", renderer, "text", 8, NULL);
+   column = gtk_tree_view_column_new_with_attributes ("TX Bytes", renderer, "text", 8, NULL);
    gtk_tree_view_column_set_sort_column_id (column, 8);
+   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+
+   renderer = gtk_cell_renderer_text_new ();
+   column = gtk_tree_view_column_new_with_attributes ("RX Bytes", renderer, "text", 9, NULL);
+   gtk_tree_view_column_set_sort_column_id (column, 9);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
    hbox = gtk_hbox_new(TRUE, 5);
@@ -276,7 +281,7 @@ static gboolean refresh_connections(gpointer data)
    struct conn_object *conn;    /* stores connection details */
    GtkTreeIter iter;            /* points to a specific row */
    char flags[2], status[8];
-   unsigned int xferred = 0;
+   unsigned int tx = 0, rx = 0;
    struct row_pairs *row = NULL, *nextrow = NULL, top, bottom;
 
    /* init strings */
@@ -289,12 +294,12 @@ static gboolean refresh_connections(gpointer data)
          return(FALSE);
    } else {
       /* Columns:   Flags, Host, Port, "-",   Host, Port,
-                    Proto, State, Bytes, (hidden) pointer */
-      ls_conns = gtk_list_store_new (10, 
+                    Proto, State, TX Bytes, RX Bytes, (hidden) pointer */
+      ls_conns = gtk_list_store_new (11, 
                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
-                    G_TYPE_POINTER);
+                    G_TYPE_UINT, G_TYPE_POINTER);
       connections = NULL;
    }
 
@@ -349,15 +354,16 @@ static gboolean refresh_connections(gpointer data)
    /* update visible part of list */
    do {
       /* get the conntrack pointer for this row */
-      gtk_tree_model_get (model, &iter, 9, &list, -1);
+      gtk_tree_model_get (model, &iter, 10, &list, -1);
       conntrack_get(0, list, &conn);
 
       /* extract changing values from conntrack_print string */
       conntrack_flagstr(conn, flags, sizeof(flags));
       conntrack_statusstr(conn, status, sizeof(status));
-      xferred = conn->xferred;
+      tx = conn->tx;
+      rx = conn->rx;
 
-      gtk_list_store_set (ls_conns, &iter, 0, flags, 7, status, 8, xferred, -1);
+      gtk_list_store_set (ls_conns, &iter, 0, flags, 7, status, 8, tx, 9, rx, -1);
 
       /* when we reach the bottom of the visible part, stop updating */
       if(bottom.conn == list)
@@ -371,7 +377,7 @@ static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *con
    GtkTreeIter iter;
    char flags[2], src[MAX_ASCII_ADDR_LEN], dst[MAX_ASCII_ADDR_LEN];
    char proto[2], status[8];
-   unsigned int src_port = 0, dst_port = 0, xferred = 0;
+   unsigned int src_port = 0, dst_port = 0, tx = 0, rx = 0;
    struct row_pairs *row = NULL;
 
    /* even if list is empty, we need a pointer to the NULL pointer */
@@ -397,15 +403,16 @@ static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *con
    src_port = ntohs(co->L4_addr1);
    dst_port = ntohs(co->L4_addr2);
 
-   xferred = co->xferred;
+   tx = co->tx;
+   rx = co->rx;
 
    /* add it to GTK list */
    gtk_list_store_append (ls_conns, &iter);
    gtk_list_store_set (ls_conns, &iter,
                        0, flags, 1, src,     2, src_port,
                        3, "-",   4, dst,     5, dst_port,
-                       6, proto, 7, status,  8, xferred,
-                       9, conn, -1);
+                       6, proto, 7, status,  8, tx,
+                       9, rx, 10, conn, -1);
 
    /* and add it to our linked list */
    if(!*list) {
@@ -457,7 +464,7 @@ static void gtkui_connection_list_row(int top, struct row_pairs *pair) {
       path = gtk_tree_path_new();
       if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), wx+2, (top)?wy+2:wy-2, &path, NULL, NULL, NULL)) {
          gtk_tree_model_get_iter(model, &iter, path);
-         gtk_tree_model_get (model, &iter, 9, &row, -1);
+         gtk_tree_model_get (model, &iter, 10, &row, -1);
 
          pair->iter = iter;
          pair->conn = row;
@@ -488,7 +495,7 @@ static void gtkui_connection_detail(void)
    model = GTK_TREE_MODEL (ls_conns);
 
    if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get (model, &iter, 9, &c, -1);
+      gtk_tree_model_get (model, &iter, 10, &c, -1);
    } else
       return; /* nothing is selected */
 
@@ -566,7 +573,7 @@ static void gtkui_connection_data(void)
    model = GTK_TREE_MODEL (ls_conns);
 
    if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get (model, &iter, 9, &c, -1);
+      gtk_tree_model_get (model, &iter, 10, &c, -1);
    } else
       return; /* nothing is selected */
 
@@ -1097,7 +1104,7 @@ static void gtkui_connection_kill(void *conn)
    model = GTK_TREE_MODEL (ls_conns);
 
    if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get (model, &iter, 9, &c, -1);
+      gtk_tree_model_get (model, &iter, 10, &c, -1);
    } else
       return; /* nothing is selected */
 

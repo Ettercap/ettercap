@@ -24,6 +24,7 @@
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_file.h>
 #include <ec_hook.h>
+#include <ec_inet.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +36,6 @@ static int remote_browser_init(void *);
 static int remote_browser_fini(void *);
 static void remote_browser(struct packet_object *po);
 static int good_page(char *str);
-int ip_addr_is_ours(struct ip_addr *ip);
 
 /* plugin operations */
 
@@ -95,7 +95,6 @@ static void remote_browser(struct packet_object *po)
    int i = 0, k = 0;
    
    /* the client is making a request */
-   char tmp2[MAX_ASCII_ADDR_LEN];
    if (po->DATA.disp_len != 0 && strstr((const char*)po->DATA.disp_data, "GET")) {
       /* I'm the sender, opening a browser with a request coming by me will trigger a loop in this function! */
       if(ip_addr_is_ours(&po->L3.src) == EFOUND || ip_addr_is_ours(&po->L3.src) == EBRIDGE)
@@ -104,7 +103,7 @@ static void remote_browser(struct packet_object *po)
       /* I'm not the sender, I can safely open the browser, the GET triggered by it shouldn't cause bad effects */
       tmp = strdup((const char*)po->DATA.disp_data);
 
-      /* get the Host: directoive */
+      /* get the Host: directive */
       host = strstr(tmp, "Host: ");
       if (host != NULL) {
          host = host + 6; // 6 is like strlen("Host: ");
@@ -218,31 +217,6 @@ static int good_page(char *str)
    return 0;
 }
 
-int ip_addr_is_ours(struct ip_addr *ip)
-{
-   struct net_list *i;
-   switch(ntohs(ip->addr_type)) {
-      case AF_INET:
-         if(!ip_addr_cmp(ip, &GBL_IFACE->ip))
-            return EFOUND;
-         else if(!ip_addr_cmp(ip, &GBL_BRIDGE->ip))
-            return EBRIDGE;
-         else
-            return -ENOTFOUND;
-         break;
-
-      case AF_INET6:
-         LIST_FOREACH(i, &GBL_IFACE->ip6_list, next) {
-            if(!ip_addr_cmp(ip, &i->ip))
-               return EFOUND;
-         }
-         return -ENOTFOUND;
-   }
-
-   return -EINVALID;
-}
-
-   
 /* EOF */
 
 // vim:ts=3:expandtab

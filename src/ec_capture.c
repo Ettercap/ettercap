@@ -140,8 +140,8 @@ void capture_getifs(void)
       if (dev->description == NULL)
          dev->description = dev->name;
 
-      /* remove the pseudo device 'any' */
-      if (!strcmp(dev->name, "any")) {
+      /* remove the pseudo device 'any' 'nflog' and 'nfqueue' */
+      if (!strcmp(dev->name, "any") || !strcmp(dev->name, "nflog") || !strcmp(dev->name, "nfqueue")) {
          /* check if it is the first in the list */
          if (dev == GBL_PCAP->ifs)
             GBL_PCAP->ifs = ndev;

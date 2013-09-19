@@ -24,6 +24,7 @@
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_file.h>
 #include <ec_hook.h>
+#include <ec_inet.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +36,6 @@ static int remote_browser_init(void *);
 static int remote_browser_fini(void *);
 static void remote_browser(struct packet_object *po);
 static int good_page(char *str);
-static void drop_privs(void);
 
 /* plugin operations */
 
@@ -96,10 +96,14 @@ static void remote_browser(struct packet_object *po)
    
    /* the client is making a request */
    if (po->DATA.disp_len != 0 && strstr((const char*)po->DATA.disp_data, "GET")) {
-      
+      /* I'm the sender, opening a browser with a request coming by me will trigger a loop in this function! */
+      if(ip_addr_is_ours(&po->L3.src) == EFOUND || ip_addr_is_ours(&po->L3.src) == EBRIDGE)
+         return;
+
+      /* I'm not the sender, I can safely open the browser, the GET triggered by it shouldn't cause bad effects */
       tmp = strdup((const char*)po->DATA.disp_data);
 
-      /* get the Host: directoive */
+      /* get the Host: directive */
       host = strstr(tmp, "Host: ");
       if (host != NULL) {
          host = host + 6; // 6 is like strlen("Host: ");
@@ -140,18 +144,36 @@ static void remote_browser(struct packet_object *po)
    
       /* NULL terminate the array */
       SAFE_REALLOC(param, (i + 1) * sizeof(char *));
-               
       param[i] = NULL;
-               
       /* execute the script */ 
       if (fork() == 0) {
          /* chrome won't start as root, changing UID in order to prevent this and for more security in the browser context */
          /* the following line has been commented since some Penetration Testing distros can run only as root */
          /*setuid(1000);*/
-         drop_privs();
+         u_int uid, gid;
+         /* XXX should we drop privileges under windows? */
+         DEBUG_MSG("drop_privs: getuid(%d) \n", getuid());
+
+         /* are we root ? */
+         if (getuid() == 0)
+         {
+            gid = uid = 1000;
+            DEBUG_MSG("drop_privs: setuid(%d) setgid(%d)\n", uid, gid);
+
+            /* drop to a good uid/gid ;) */
+            if ( setgid(gid) < 0 )
+               DEBUG_MSG("setgid() FAILED\n");
+            if ( setuid(uid) < 0 )
+               DEBUG_MSG("setuid() FAILED\n");
+            DEBUG_MSG("privs: UID: %d %d  GID: %d %d\n", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
+            DEBUG_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() );
+         /* "nobody" cannot open a browser */
+         } else if(getuid() == 65535)
+            WARN_MSG("your ec_gid and ec_uid in etter.conf file are set to nobody (65535), you probably cannot open a new browser\n");
+
          execvp(param[0], param);
          WARN_MSG("Cannot launch the default browser (command: %s), please edit your etter.conf file and put a valid value in remote_browser field\n", GBL_CONF->remote_browser);
-	 _exit(EINVALID);
+         _exit(EINVALID);
       }
          
       //to free the char **param
@@ -195,54 +217,6 @@ static int good_page(char *str)
    return 0;
 }
 
-/* 
- * drop root privs 
- */
-static void drop_privs(void)
-{
-   u_int uid, gid;
-   char *var;
-
-#ifdef OS_WINDOWS
-   /* do not drop privs under windows */
-   return;
-#endif
-
-   /* are we root ? */
-   if (getuid() != 0)
-      return;
-
-   /* get the env variable for the UID to drop privs to */
-   var = getenv("EC_UID");
-
-   /* if the EC_UID variable is not set, default to GBL_CONF->ec_uid (nobody) */
-   if (var != NULL)
-      uid = atoi(var);
-   else
-      uid = GBL_CONF->ec_uid;
-
-   /* get the env variable for the GID to drop privs to */
-   var = getenv("EC_GID");
-
-   /* if the EC_UID variable is not set, default to GBL_CONF->ec_gid (nobody) */
-   if (var != NULL)
-      gid = atoi(var);
-   else
-      gid = GBL_CONF->ec_gid;
-   DEBUG_MSG("drop_privs: setuid(%d) setgid(%d)", uid, gid);
-
-   /* drop to a good uid/gid ;) */
-   if ( setgid(gid) < 0 )
-      ERROR_MSG("setgid()");
-
-   if ( setuid(uid) < 0 )
-      ERROR_MSG("setuid()");
-
-   DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
-   USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() );
-}
-
-   
 /* EOF */
 
 // vim:ts=3:expandtab

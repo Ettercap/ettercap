@@ -216,13 +216,12 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 
    if(GBL_PCAP->filter && strcmp(GBL_PCAP->filter, "") && live) {
       bpf_u_int32 net, mask;
-
       if(pcap_lookupnet(name, &net, &mask, pcap_errbuf) == -1)
          ERROR_MSG("%s - %s", name, pcap_errbuf);
       if(pcap_compile(pcap, &bpf, GBL_PCAP->filter, 1, mask) < 0)
-         ERROR_MSG("%s - %s", name, pcap_geterr(pcap));
+         ERROR_MSG("Wrong pcap filter: %s - %s", name, pcap_geterr(pcap));
       if(pcap_setfilter(pcap, &bpf) == 1)
-         ERROR_MSG("%s - %s", name, pcap_geterr(pcap));
+         ERROR_MSG("Cannot set pcap filter: %s - %s", name, pcap_geterr(pcap));
    }
 
    snaplen = pcap_snapshot(pcap);

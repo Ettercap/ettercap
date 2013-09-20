@@ -354,6 +354,9 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
 static void get_response(struct packet_object *po)
 {
    struct ip_list *t;
+   char tmp[MAX_ASCII_ADDR_LEN];
+
+   DEBUG_MSG("get_response from %s", ip_addr_ntoa(&po->L3.src, tmp));
 
    /* if at least one target is the whole netmask, add the entry */
    if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all) {

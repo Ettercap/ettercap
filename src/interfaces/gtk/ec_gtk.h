@@ -94,7 +94,9 @@ extern void gtkui_arp_poisoning(void);
 extern void gtkui_icmp_redir(void);
 extern void gtkui_port_stealing(void);
 extern void gtkui_dhcp_spoofing(void);
+#ifdef WITH_IPV6
 extern void gtkui_ndp_poisoning(void);
+#endif
 extern void gtkui_mitm_stop(void);
 
 /* ec_gtk_logging.c */

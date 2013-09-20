@@ -76,6 +76,7 @@ FUNC_DECODER(decode_icmp6)
          if ((*((u_int8*)icmp6 + 4) & 0x80) == 0x80) {
             /* Router flag set in neighbor advertisement */
             PACKET->PASSIVE.flags |= FP_ROUTER;
+            PACKET->PASSIVE.flags |= FP_GATEWAY;
          }
          break;
    }

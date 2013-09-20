@@ -458,8 +458,10 @@ static int http_insert_redirect(u_int16 dport)
 	char **param = NULL;
 
 	if (GBL_CONF->redir_command_on == NULL)
+	{
+		USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?");
 		return -EFATAL;
-
+	}
 	snprintf(asc_dport, 16, "%u", dport);
 
 	command = strdup(GBL_CONF->redir_command_on);
@@ -486,7 +488,9 @@ static int http_insert_redirect(u_int16 dport)
 	switch(fork()) {
 		case 0:
 			execvp(param[0], param);
-			break;
+			WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
+			safe_free_http_redirect(param, &param_length, command, orig_command);
+			_exit(EINVALID);
 		case -1:
 			safe_free_http_redirect(param, &param_length, command, orig_command);
 			return -EINVALID;
@@ -512,8 +516,12 @@ static int http_remove_redirect(u_int16 dport)
 	char *command, *orig_command, *p;
         char **param = NULL;
 
+
         if (GBL_CONF->redir_command_off == NULL)
-                return -EFATAL;
+	{
+		USER_MSG("SSLStrip: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
+		return -EFATAL;
+	}
 
         snprintf(asc_dport, 16, "%u", dport);
 
@@ -539,9 +547,11 @@ static int http_remove_redirect(u_int16 dport)
         param_length= i + 1; //because there is a SAFE_REALLOC after the for.
 
         switch(fork()) {
-                case 0:
-                        execvp(param[0], param);
-                        break;
+		case 0:
+			execvp(param[0], param);
+			WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
+			safe_free_http_redirect(param, &param_length, command, orig_command);
+			_exit(EINVALID);
                 case -1:
                         safe_free_http_redirect(param, &param_length, command, orig_command);
                         return -EINVALID;

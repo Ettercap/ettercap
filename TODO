@@ -65,9 +65,6 @@
 
    + IPv6
       - router discovery
-      - UI support for IPv6 address
-      - neighbor discovery poisoning
-      - scan method for IPv6 hosts 
       
 
    + Rendevouz mitm

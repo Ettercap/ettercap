@@ -72,9 +72,9 @@ static int nadv_poison_start(char *args)
       SEMIFATAL_ERROR("NDP poisoning: missing arguments.\n");
    }
 
-   ///* we need the host list */
-   //if (LIST_EMPTY(&GBL_HOSTLIST)) 
-   //   SEMIFATAL_ERROR("NDP poisoning needs a non-emtpy hosts list.\n");
+   /* we need the host list */
+   if (LIST_EMPTY(&GBL_HOSTLIST)) 
+      SEMIFATAL_ERROR("NDP poisoning needs a non-emtpy hosts list.\n");
 
    /* clean the lists */
    LIST_FOREACH_SAFE(h, &nadv_group_one, next, tmp) {

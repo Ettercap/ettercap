@@ -58,7 +58,7 @@ MANDATORY:
 
 OPTIONAL:
    To enable PDF documentation generation (enable via ENABLE_PDF_DOCS=On):
-      - ghostscript (ps2pdf13)
+      - ghostscript (ps2pdf)
       - groff
 
    To enable plugins:
@@ -68,7 +68,7 @@ OPTIONAL:
       - libpcre
 
    To support SSH and SSL decryption:
-      - openssl 0.9.7
+      - openssl >= 0.9.7
 
    For the cursed GUI:
       - ncurses   >= 5.3

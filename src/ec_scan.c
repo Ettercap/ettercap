@@ -114,7 +114,7 @@ void build_hosts_list(void)
    del_hosts_list();
 
 #ifdef OS_MINGW
-	/* FIXME: for some reason under windows it does not work in thread mode
+   /* FIXME: for some reason under windows it does not work in thread mode
     * to be investigated...
     */
 	scan_thread(NULL);
@@ -309,9 +309,9 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
 {
    FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
-   int len;
+   bpf_u_int32 len;
    u_char *data;
-   int datalen;
+   bpf_u_int32 datalen;
 
    CANCELLATION_POINT();
 

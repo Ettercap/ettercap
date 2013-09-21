@@ -22,9 +22,12 @@ enum {
 };
 
 EC_API_EXTERN void error_msg(char *file, const char *function, int line, char *message, ...);
+EC_API_EXTERN void warn_msg(char *file, const char *function, int line, char *message, ...);
 EC_API_EXTERN void fatal_error(char *message, ...);
 EC_API_EXTERN void bug(char *file, const char *function, int line, char *message);
 
+
+#define WARN_MSG(x, ...) warn_msg(__FILE__, __FUNCTION__, __LINE__, x, ## __VA_ARGS__ )
 #define ERROR_MSG(x, ...) error_msg(__FILE__, __FUNCTION__, __LINE__, x, ## __VA_ARGS__ )
 
 #define FATAL_ERROR(x, ...) do { fatal_error(x, ## __VA_ARGS__ ); } while(0)

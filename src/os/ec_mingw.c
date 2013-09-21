@@ -134,7 +134,7 @@ void disable_ip_forward (void)
 }
 
 /*
- * Get and set the read-event assosiated with the pcap handle. This
+ * Get and set the read-event associated with the pcap handle. This
  * causes pcap_loop() to terminate (ReadFile hopefully returns 0).
  * Note: this function is called outside the capture thread, so take
  * care not to modify the pcap_handle in any way.
@@ -509,14 +509,14 @@ const char *ec_win_strsignal (int signo)
 
 int ec_win_fork(void)
 {
-   USER_MSG("fork() not yet supported");
+   USER_MSG("fork() not yet supported\n");
    errno = ENOSYS;
    return -1;
 }
 
 int ec_win_wait (int *status)
 {
-   USER_MSG("wait() not yet supported");
+   USER_MSG("wait() not yet supported\n");
    errno = ENOSYS;
    (void) status;
    return -1;

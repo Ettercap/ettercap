@@ -1,10 +1,74 @@
 
-Legenda:
+Legend:
          + new feature
          - old feature removed
          !! bug fixed
 
 =========================================
+0.8.0-Lacassagne 20130921
+   !! Fixed some problems in fork and execve usage in case of command failure (sslstrip)
+   !! Fixed dropping privileges for remote_browser plugin ran as root
+   !! Fixed infinite loop when a http GET was issued on the attacker browser, while remote_browser was active
+   !! Fixed some "atexit" bad references
+   !! Fixed plugin load on text interface, if no number were entered
+   !! Fixed problem spotted when ethtool wasn't installed on the machine
+   !! Fixed old "ethereal" references
+   !! Fixed missing newlines in printf
+   !! Switching to ps2pdf as default (from ps2pdf13), it should point to ps2pdf14 on all distros
+   !! Fix cmake file, dropped MACPORTS_BASE_DIRECTORY
+   !! Fix problem in "stopping attacks" window not properly shown in gtk
+   !! Fix problem in wrong pcap file saving
+   !! Fix issue in send_udp function
+   !! Fix problem in libnet rc detection
+   !! Fix restore ip_forward by retrying up to 5 times
+   !! Fix socket issues
+   !! Fix for hex format display
+   !! New send_tcp function, taking payload and length
+   !! Fixed memory leak in remote browser plugin
+   !! Fixed comparison bug in ec_decode
+   !! Fixed UI input for GTK
+   !! Fixed some memory leaks
+   !! Fixed man pages and AUTHORS file
+   !! Fixes in sslstrip plugin
+   !! Many etter.dns fixes
+   !! Many documentation fixes
+   !! A ton of refactors/fixes in Cmake scripts
+   !! Fix GTK crash when scanning hosts
+   !! Fix build failure on Mac OS X 10.6
+   !! Crash fix in target selection
+   !! Disabled UID change for remote browser plugin
+   !! Fixed remote browser plugin
+   !! A ton of fixes in protocols and dissectors (dhcp, http, ppp, mpls)
+    + New ettercap logo
+    + Renamed help menu to "?", to avoid double "H" shortcut
+    + New WARN_MSG warning message
+    + Added message in DHCP spoofing when no mitm has started
+    + New horizontal scrollbar for messages in gtk view
+    + Disabled offload warning messages (only in Release mode)
+    + New ettercap-pkexec, policy and ettercap.desktop files for launching ettercap -G as a normal user with sudo privileges
+    + Automatic host list refresh in GTK GUI after scanning
+    + New fraggle plugin attack
+    + New fields in etter.fields file
+    + Cherry picked debian patches (svg icon)
+    + Added content print on http dissector
+    + Added support for negative dns replies
+    + Creation of (experimental) unit tests
+    + Creation of (experimental) libettercap
+    + Now you can build just the ettercap library (libettercap) without any GUIs
+    + Added travis-ci support
+    + DNS spoofing for IPv6 addresses
+    + PDF Docs generation is not optional
+    + Added SRV query handling to DNS spoof
+    + New mDNS spoof plugin
+    + New low level decoders
+    + New decoder for ip over pppoe
+    + Added PPP DLT to interfaces
+    + Add experimental Lua support to Ettercap
+    + New Bundle libnet and curl
+    + Full support for wifi decrypting (wep and wpa)
+    - Disabled update feature (not working anymore and not secure)
+    - Deprecated napster dissector
+
 0.7.6-Locard 20130327
    !! Fixed some parsing errors
    !! Fixes to TN3270 dissector and SSL Strip

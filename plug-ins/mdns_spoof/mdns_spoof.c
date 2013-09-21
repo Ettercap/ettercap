@@ -137,7 +137,7 @@ static int load_db(void)
    /* open the file */
    f = open_data("etc", ETTER_MDNS, FOPEN_READ_TEXT);
    if (f == NULL) {
-      USER_MSG("mdns_spoof: Cannot open %s ", ETTER_MDNS);
+      USER_MSG("mdns_spoof: Cannot open %s\n", ETTER_MDNS);
       return -EINVALID;
    }
          

@@ -42,7 +42,6 @@ void unified_set_forwardable(struct packet_object *po);
 void start_unified_sniff(void)
 {
    DEBUG_MSG("start_unified_sniff");
-   
    if (GBL_SNIFF->active == 1) {
       USER_MSG("Unified sniffing already started...\n");
       return;

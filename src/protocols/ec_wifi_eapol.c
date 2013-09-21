@@ -116,7 +116,7 @@ FUNC_DECODER(decode_eapol)
    /* handle the Group Key message */
    if (message == EAPOL_4WAY_MESSAGE_GROUP) {
 
-      USER_MSG("EAPOL: group key detected...");
+      USER_MSG("EAPOL: group key detected...\n");
 
       /*
        * the group key is encrypted and we need a valid completed sa to decrypt it
@@ -131,7 +131,7 @@ FUNC_DECODER(decode_eapol)
    }
 
 
-   USER_MSG("EAPOL packet: [%s] 4-way handshake %d [%s]", sta_address, message, (algo == WPA_KEY_TKIP) ? "TKIP (WPA)" : "CCMP (WPA2)");
+   USER_MSG("EAPOL packet: [%s] 4-way handshake %d [%s]\n", sta_address, message, (algo == WPA_KEY_TKIP) ? "TKIP (WPA)" : "CCMP (WPA2)");
 
    switch (message) {
       case EAPOL_4WAY_MESSAGE_ONE:
@@ -179,7 +179,7 @@ FUNC_DECODER(decode_eapol)
 
          /* verify the MIC (compare the MIC in the packet included in this message with a MIC calculated with the PTK) */
          if (wpa_check_MIC(eapol, eapol_key, DECODED_LEN, sa.ptk, sa.algo) != ESUCCESS) {
-            USER_MSG("WPA MIC does not match");
+            USER_MSG("WPA MIC does not match\n");
             break;
          }
 
@@ -231,7 +231,7 @@ FUNC_DECODER(decode_eapol)
          /* we are done ! just copy the decryption key from PTK */
          memcpy(sa.decryption_key, sa.ptk + 32, WPA_DEC_KEY_LEN);
 
-         USER_MSG("WPA KEY : %s", str_tohex(sa.decryption_key, WPA_DEC_KEY_LEN, tmp, sizeof(tmp)));
+         USER_MSG("WPA KEY : %s\n", str_tohex(sa.decryption_key, WPA_DEC_KEY_LEN, tmp, sizeof(tmp)));
 
          /* remember the state of the 4-way handshake */
          sa.state = EAPOL_4WAY_MESSAGE_FOUR;

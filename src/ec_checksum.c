@@ -193,7 +193,7 @@ u_int32 CRC_checksum(u_char *buf, size_t len, u_int32 init)
     return crc;
 }
 
-/* stolen from ethereal source code (in_cksum.c) */
+/* stolen from wireshark source code (in_cksum.c) */
 
 /*
  * Given the network-byte-order value of the checksum field in a packet

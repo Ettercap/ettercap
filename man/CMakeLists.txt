@@ -1,7 +1,7 @@
 # Add man page custom target
 if(ENABLE_PDF_DOCS)
   find_program(GROFF_EXECUTABLE NAMES groff)
-  find_program(PS2PDF13_EXECUTABLE NAMES ps2pdf13)
+  find_program(PS2PDF_EXECUTABLE NAMES ps2pdf)
   set(PDF_FILES)
 endif()
 
@@ -35,7 +35,7 @@ foreach (m IN LISTS MAN_NAMES)
           VERBATIM)
 
           add_custom_command(OUTPUT ${pdf}
-          COMMAND ${PS2PDF13_EXECUTABLE} ${ps} ${pdf}
+          COMMAND ${PS2PDF_EXECUTABLE} ${ps} ${pdf}
           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
           DEPENDS ${mf}.ps
           COMMENT "Creating PDF for ${ps}"

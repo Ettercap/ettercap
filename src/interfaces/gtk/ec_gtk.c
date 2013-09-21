@@ -610,8 +610,8 @@ static void gtkui_setup(void)
       { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" },
       { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>"}
 #ifndef OS_WINDOWS
-     ,{"/_Help",          NULL,         NULL,             0, "<Branch>" },
-      {"/Help/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
+     ,{"/_?",          NULL,         NULL,             0, "<Branch>" },
+      {"/?/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
 #endif
    };
    gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);
@@ -742,7 +742,7 @@ static void gtkui_file_open(void)
 
 static void read_pcapfile(const char *file)
 {
-   char errbuf[128];
+   char pcap_errbuf[PCAP_ERRBUF_SIZE];
    
    DEBUG_MSG("read_pcapfile %s", file);
    
@@ -751,8 +751,8 @@ static void read_pcapfile(const char *file)
    snprintf(GBL_OPTIONS->pcapfile_in, strlen(file)+1, "%s", file);
 
    /* check if the file is good */
-   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, errbuf) != ESUCCESS) {
-      ui_error("%s", errbuf);
+   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, pcap_errbuf) != ESUCCESS) {
+      ui_error("%s", pcap_errbuf);
       SAFE_FREE(GBL_OPTIONS->pcapfile_in);
       return;
    }

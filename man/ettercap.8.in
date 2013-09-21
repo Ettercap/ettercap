@@ -456,7 +456,7 @@ in order to set up a successfull IPv6 MITM attack using NDP poisoning.
 \fB\-o\fR, \fB\-\-only\-mitm\fR
 This options disables the sniffing thread and enables only the mitm attack.
 Useful if you want to use ettercap to perform mitm attacks and another sniffer
-(such as ethereal) to sniff the traffic. Keep in mind that the packets are not
+(such as wireshark) to sniff the traffic. Keep in mind that the packets are not
 forwarded by ettercap. The kernel will be responsible for the forwarding.
 Remember to activate the "ip forwarding" feature in your kernel.
 
@@ -492,7 +492,7 @@ OFF LINE sniffing
 With this option enabled, ettercap will sniff packets from a pcap compatible
 file instead of capturing from the wire.
 .br
-This is useful if you have a file dumped from tcpdump or ethereal and you want
+This is useful if you have a file dumped from tcpdump or wireshark and you want
 to make an analysis (search for passwords or passive fingerprint) on it.
 .br
 Obviously you cannot use "active" sniffing (arp poisoning or bridging) while
@@ -502,7 +502,7 @@ sniffing from a file.
 WRITE packet to a pcap file
 .br
 This is useful if you have to use "active" sniffing (arp poison) on a switched
-LAN but you want to analyze the packets with tcpdump or ethereal. You can use
+LAN but you want to analyze the packets with tcpdump or wireshark. You can use
 this option to dump the packets to a file and then load it into your favourite
 application.
 .Sp

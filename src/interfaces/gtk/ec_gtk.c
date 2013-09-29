@@ -209,7 +209,8 @@ struct gtkui_progress_data {
 static gboolean gtkui_progress_shim(gpointer data) {
 
    struct gtkui_progress_data *gpd = data;
-   gtkui_progress(gpd->title, gpd->value, gpd->max);
+   if (!progress_canceled)
+      gtkui_progress(gpd->title, gpd->value, gpd->max);
    free(gpd->title);
    free(gpd);
    return FALSE;
@@ -219,8 +220,11 @@ static int gtkui_progress_wrap(char *title, int value, int max) {
 
    struct gtkui_progress_data *gpd;
 
-   if (progress_canceled == TRUE) {
+   if (value <= 1) {
       progress_canceled = FALSE;
+   }
+
+   if (progress_canceled == TRUE) {
       return UI_PROGRESS_INTERRUPTED;
    }
 

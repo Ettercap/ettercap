@@ -45,7 +45,7 @@ static GtkWidget     *textview = NULL;
 static GtkTextBuffer *msgbuffer = NULL;
 static GtkTextMark   *endmark = NULL;
 static GtkAccelGroup *accel_group = NULL;
-static gboolean       progress_cancelled = FALSE;
+static gboolean       progress_canceled = FALSE;
 static GtkWidget     *progress_dialog = NULL;
 static GtkWidget     *progress_bar = NULL;
 
@@ -219,8 +219,8 @@ static int gtkui_progress_wrap(char *title, int value, int max) {
 
    struct gtkui_progress_data *gpd;
 
-   if (progress_cancelled == TRUE) {
-      progress_cancelled = FALSE;
+   if (progress_canceled == TRUE) {
+      progress_canceled = FALSE;
       return UI_PROGRESS_INTERRUPTED;
    }
 
@@ -506,7 +506,7 @@ static void gtkui_progress(char *title, int value, int max)
 }
 
 static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) {
-   progress_cancelled = TRUE;
+   progress_canceled = TRUE;
 
    /* the progress dialog must be manually destroyed if the cancel button is used */
    if (data != NULL && GTK_IS_WIDGET(data)) {

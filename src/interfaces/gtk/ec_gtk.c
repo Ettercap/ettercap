@@ -474,28 +474,23 @@ static void gtkui_progress(char *title, int value, int max)
 
       hbox = gtk_hbox_new(FALSE, 3);
       gtk_container_add(GTK_CONTAINER (progress_dialog), hbox);
-      gtk_widget_show(hbox);
     
       progress_bar = gtk_progress_bar_new();
       gtk_box_pack_start(GTK_BOX (hbox), progress_bar, TRUE, TRUE, 0);
-      gtk_widget_show(progress_bar);
 
       button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
       gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
       g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_progress_cancel), progress_dialog);
-      gtk_widget_show(button);
 
-      gtk_widget_show(progress_dialog);
    } 
    
    /* the subsequent calls have to only update the object */
    gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
 
-   /* a nasty little loop that lets gtk update the progress bar immediately */
-   while (gtk_events_pending ())
-      gtk_main_iteration ();
-   
+   /* update dialog window */
+   gtk_widget_show_all(progress_dialog);
+
    /* 
     * when 100%, destroy it
     */

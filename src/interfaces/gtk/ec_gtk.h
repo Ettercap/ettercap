@@ -67,6 +67,7 @@ extern void gtkui_scan(void);
 extern void gtkui_load_hosts(void);
 extern void gtkui_save_hosts(void);
 extern void gtkui_host_list(void);
+extern void gtkui_refresh_host_list(void);
 
 /* ec_gtk_view.c */
 extern void gtkui_show_stats(void);

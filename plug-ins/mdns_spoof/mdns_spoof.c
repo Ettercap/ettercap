@@ -561,7 +561,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          send_mdns_reply(po->L4.src, sender, target, tmac, 
                          ntohs(mdns->id), answer, sizeof(answer), 2, 0, 0);
 
-         USER_MSG("dns_spoof: SRV [%s] spoofed to [%s:%d]\n", name, ip_addr_ntoa(reply, tmp), port);
+         USER_MSG("mdns_spoof: SRV [%s] spoofed to [%s:%d]\n", name, ip_addr_ntoa(reply, tmp), port);
       }
     }
 

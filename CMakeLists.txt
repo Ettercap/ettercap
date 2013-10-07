@@ -19,7 +19,7 @@ option(LIBRARY_BUILD "Build for libettercap only" OFF)
 option(INSTALL_DESKTOP "Install ettercap desktop files" ON)
 
 
-SET(VALID_BUILD_TYPES Debug Release)
+SET(VALID_BUILD_TYPES Debug Release RelWithDebInfo)
 
 if(NOT CMAKE_BUILD_TYPE)
   # Default to using "Release" as our build type.

@@ -68,7 +68,8 @@
       - UI support for IPv6 address
       - neighbor discovery poisoning
       - scan method for IPv6 hosts 
-      
+      - make etterfilter IPv6 capable
+      - make etterlog IPv6 capable
 
    + Rendevouz mitm
 

@@ -185,7 +185,7 @@ export EC_UID\=500) or set the correct parameter in the etter.conf file.
 While performing the SSL mitm attack, ettercap substitutes the real ssl
 certificate with its own. The fake certificate is created on the fly and all
 the fields are filled according to the real cert presented by the server. Only
-the issuer is modified and signed with the private key contained in the 'etter.sll.crt'
+the issuer is modified and signed with the private key contained in the 'etter.ssl.crt'
 file. If you want to use a different private key you have to regenerate this
 file. To regenerate the cert file use the following commands:
 .Sp

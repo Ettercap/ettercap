@@ -43,6 +43,7 @@
  */
 #define IP6_ALL_NODES "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
 #define IP6_ALL_ROUTERS "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02"
+#define IP6_SOL_NODE "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\xff\x00\x00\x00"
 
 /* 
  * this structure is used by ettercap to handle 
@@ -69,6 +70,7 @@ EC_API_EXTERN int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 EC_API_EXTERN int ip_addr_null(struct ip_addr *sa);
 EC_API_EXTERN int ip_addr_is_zero(struct ip_addr *sa);
 EC_API_EXTERN int ip_addr_random(struct ip_addr* ip, u_int16 type);
+EC_API_EXTERN int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip);
 
 EC_API_EXTERN char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 EC_API_EXTERN int ip_addr_pton(char *str, struct ip_addr *addr);
@@ -76,6 +78,7 @@ EC_API_EXTERN char *mac_addr_ntoa(u_char *mac, char *dst);
 EC_API_EXTERN int mac_addr_aton(char *str, u_char *mac);
 
 EC_API_EXTERN int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr);
+EC_API_EXTERN int ip_addr_is_global(struct ip_addr *ip);
 EC_API_EXTERN int ip_addr_is_multicast(struct ip_addr *ip);
 EC_API_EXTERN int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr);
 EC_API_EXTERN int ip_addr_is_ours(struct ip_addr *ip);

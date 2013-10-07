@@ -39,7 +39,7 @@ void text_connections(void)
    void *list;
    char *desc;
    
-   SAFE_CALLOC(desc, 100, sizeof(char));
+   SAFE_CALLOC(desc, 160, sizeof(char));
 
    /* retrieve the first element */
    list = conntrack_print(0, NULL, NULL, 0);
@@ -49,7 +49,7 @@ void text_connections(void)
    /* walk the connection list */
    while(list) {
       /* get the next element */
-      list = conntrack_print(+1, list, &desc, 99);
+      list = conntrack_print(+1, list, &desc, 159);
       fprintf(stdout, "%s\n", desc);
    }
 

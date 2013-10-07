@@ -138,6 +138,32 @@ This is the delay time (in microseconds) between packets when the
 you have to tune this option to the lowest acceptable value.
 
 
+.TP
+.B ndp_poison_send_delay
+This option controls the poison delay in microseconds to control the frequency 
+between false neighbor advertisements are sent to poison the victim's neighbor
+cache. This value may be increased to hide from IDSs. But increasing the value
+increases as well the probability for failing race conditions during neighbor
+discovery and to miss some packets. 
+.br
+
+.B NOTE:
+This option is only available if ettercap has been built with IPv6 support
+
+
+.TP
+.B icmp6_probe_delay
+This option defines the time in seconds ettercap waits for active IPv6 nodes 
+to respond to the ICMP probes. Decreasing this value could lead to miss replies
+from active IPv6 nodes, hence miss them in the host list. Increasing the value
+usually has no impact; normally nodes can manage to answer during the default
+delay.
+.br
+
+.B NOTE:
+This option is only available if ettercap has been built with IPv6 support
+
+
 .TP 20
 .B [connections]
 .TP

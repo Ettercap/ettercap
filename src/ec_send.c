@@ -78,6 +78,7 @@ int send_L3_icmp_unreach(struct packet_object *po);
 
 #ifdef WITH_IPV6
 int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
+int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *req, u_int8 *macaddr);
 int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, int router);
 #endif
 
@@ -673,7 +674,7 @@ int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip)
                          0,                           /* flow label */
                          LIBNET_ICMPV6_H,             /* next header size */
                          IPPROTO_ICMPV6,              /* next header */
-                         64,                          /* hop limit */
+                         255,                         /* hop limit */
                          src,                         /* source */
                          dst,                         /* destination */
                          NULL,                        /* payload and size */
@@ -720,14 +721,14 @@ int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *re
                                       l,                        /* libnet handle */
                                       0);                       /* ptag */
       ON_ERROR(t, -1, "libnet_build_icmpv6_ndp_opt: %s", libnet_geterror(l));
-      /* base header size + address size rouded to 8 */
-      h += LIBNET_ICMPV6_NDP_OPT_H + 8;
+      /* base header size + MAC address size */
+      h += LIBNET_ICMPV6_NDP_OPT_H + 6;
    }
 
    t = libnet_build_icmpv6_ndp_nsol(ND_NEIGHBOR_SOLICIT,        /* type */
                                     0,                          /* code */
                                     0,                          /* checksum */
-                                    r,
+                                    r,                          /* target address */
                                     NULL,                       /* payload */
                                     0,                          /* its size */
                                     l,                          /* libnet handler */
@@ -740,7 +741,7 @@ int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *re
                          0,                                     /* flow label */
                          h,                                     /* length */
                          IPPROTO_ICMP6,                         /* proto */
-                         64,                                    /* hop limit */
+                         255,                                   /* hop limit */
                          src,                                   /* source address */
                          dst,                                   /* target address */
                          NULL,                                  /* payload */
@@ -803,7 +804,7 @@ int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tg
                          0,                  /* flow label */
                          h,                  /* length */
                          IPPROTO_ICMP6,      /* proto */
-                         64,                 /* hop limit */
+                         255,                /* hop limit */
                          src,                /* source address */
                          dst,                /* target address */
                          NULL,               /* payload */
@@ -821,6 +822,7 @@ int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tg
 
    return c;
 }
+
 #endif /* WITH_IPV6 */
 
 /*

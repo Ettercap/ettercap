@@ -44,6 +44,9 @@ void build_hosts_list(void);
 void del_hosts_list(void);
 
 static void scan_netmask(pthread_t pid);
+#ifdef WITH_IPV6
+static void scan_ip6_onlink(pthread_t pid);
+#endif
 static void scan_targets(pthread_t pid);
 
 int scan_load_hosts(char *filename);
@@ -164,7 +167,11 @@ static EC_THREAD_FUNC(scan_thread)
     * ARP packets.
     */
    hook_add(HOOK_PACKET_ARP_RP, &get_response);
+#ifdef WITH_IPV6
    hook_add(HOOK_PACKET_ICMP6_NADV, &get_response);
+   hook_add(HOOK_PACKET_ICMP6_RPLY, &get_response);
+   hook_add(HOOK_PACKET_ICMP6_PARM, &get_response);
+#endif
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
 
    /*
@@ -177,6 +184,10 @@ static EC_THREAD_FUNC(scan_thread)
     */
    if(GBL_TARGET1->all_ip || GBL_TARGET2->all_ip) {
       scan_netmask(pid);
+#ifdef WITH_IPV6
+      if (GBL_OPTIONS->ip6scan) 
+          scan_ip6_onlink(pid);
+#endif
    }
    scan_targets(pid);
 
@@ -200,7 +211,11 @@ static EC_THREAD_FUNC(scan_thread)
    /* destroy the thread and remove the hook function */
    ec_thread_destroy(pid);
    hook_del(HOOK_PACKET_ARP, &get_response);
+#ifdef WITH_IPV6
    hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
+   hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
+   hook_del(HOOK_PACKET_ICMP6_PARM, &get_response);
+#endif
 
    /* count the hosts and print the message */
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
@@ -334,11 +349,14 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
 
 
 /*
- * receives the ARP packets
+ * receives the ARP and ICMPv6 ND packets 
  */
 static void get_response(struct packet_object *po)
 {
    struct ip_list *t;
+   char tmp[MAX_ASCII_ADDR_LEN];
+
+   DEBUG_MSG("get_response from %s", ip_addr_ntoa(&po->L3.src, tmp));
 
    /* if at least one target is the whole netmask, add the entry */
    if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all) {
@@ -346,7 +364,7 @@ static void get_response(struct packet_object *po)
       return;
    }
 
-   /* else only add arp replies within the targets */
+   /* else only add arp and icmp6 replies within the targets */
 
    /* search in target 1 */
    LIST_FOREACH(t, &GBL_TARGET1->ips, next)
@@ -361,6 +379,23 @@ static void get_response(struct packet_object *po)
          add_host(&po->L3.src, po->L2.src, NULL);
          return;
       }
+
+#ifdef WITH_IPV6
+   /* same for IPv6 */
+   /* search in target 1 */
+   LIST_FOREACH(t, &GBL_TARGET1->ip6, next)
+      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+         return;
+      }
+
+   /* search in target 2 */
+   LIST_FOREACH(t, &GBL_TARGET2->ip6, next)
+      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+         add_host(&po->L3.src, po->L2.src, NULL);
+         return;
+      }
+#endif
+
 }
 
 
@@ -453,6 +488,65 @@ static void scan_netmask(pthread_t pid)
 }
 
 
+#ifdef WITH_IPV6
+/*
+ * probe active IPv6 hosts
+ */
+static void scan_ip6_onlink(pthread_t pid)
+{
+   int ret, i = 0;
+   struct net_list *e;
+   struct ip_addr an;
+   char title[100];
+
+#if !defined(OS_WINDOWS)
+   struct timespec tm;
+   tm.tv_nsec = 10000000;
+   tm.tv_sec = 0;
+#endif
+
+
+   ip_addr_init(&an, AF_INET6, (u_char *)IP6_ALL_NODES);
+
+   snprintf(title, sizeof(title)-1, "Probing %d seconds for active IPv6 nodes ...", GBL_CONF->icmp6_probe_delay);
+   INSTANT_USER_MSG("%s\n", title);
+
+   DEBUG_MSG("scan_ip6_onlink: ");
+
+   /* go through the list of IPv6 addresses on the selected interface */
+   LIST_FOREACH(e, &GBL_IFACE->ip6_list, next) {
+      /*
+       * ping to all-nodes from all ip addresses to get responses from all 
+       * IPv6 networks (global, link-local, ...)
+       */
+      send_icmp6_echo(&e->ip, &an);
+   }
+
+   for (i=0; i<=GBL_CONF->icmp6_probe_delay * 100; i++) {
+      /* update the progress bar */
+      ret = ui_progress(title, i, GBL_CONF->icmp6_probe_delay * 100);
+
+      /* user has requested to stop the task */
+      if (ret == UI_PROGRESS_INTERRUPTED) {
+         ec_thread_destroy(pid);
+         hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_PARM, &get_response);
+         /* cancel the scan thread */
+         ec_thread_exit();
+      }
+      /* wait for a delay */
+#if defined(OS_WINDOWS)
+      usleep(10000);
+#else
+      nanosleep(&tm, NULL);
+#endif
+   }
+   
+}
+#endif
+
+
 /*
  * scan only the target hosts
  */
@@ -464,7 +558,7 @@ static void scan_targets(pthread_t pid)
 
 #ifdef WITH_IPV6
    struct ip_addr ip;
-   struct ip_addr bc;
+   struct ip_addr sn;
 #endif
 
 #if !defined(OS_WINDOWS)
@@ -492,6 +586,7 @@ static void scan_targets(pthread_t pid)
       /* add to the list randomly */
       random_list(e, nhosts);
    }
+#ifdef WITH_IPV6
    LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
 
       SAFE_CALLOC(e, 1, sizeof(struct ip_list));
@@ -500,6 +595,7 @@ static void scan_targets(pthread_t pid)
 
       random_list(e, nhosts);
    }
+#endif
 
    /* then merge the target2 ips */
    LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
@@ -524,6 +620,7 @@ static void scan_targets(pthread_t pid)
       }
    }
 
+#ifdef WITH_IPV6
    LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
       found = 0;
 
@@ -542,6 +639,7 @@ static void scan_targets(pthread_t pid)
          random_list(e, nhosts);
       }
    }
+#endif
 
 
    DEBUG_MSG("scan_targets: %d hosts to be scanned", nhosts);
@@ -562,9 +660,10 @@ static void scan_targets(pthread_t pid)
             break;
 #ifdef WITH_IPV6
          case AF_INET6:
-            ip_addr_is_local(&e->ip, &ip);
-            ip_addr_init(&bc, AF_INET6, (u_char*)IP6_ALL_NODES);
-            send_icmp6_nsol(&ip, &bc, &e->ip, GBL_IFACE->mac);
+            if (ip_addr_is_local(&e->ip, &ip) == ESUCCESS) {
+               ip_addr_init_sol(&sn, &e->ip);
+               send_icmp6_nsol(&ip, &sn, &e->ip, GBL_IFACE->mac);
+            }
             break;
 #endif
       }
@@ -578,7 +677,11 @@ static void scan_targets(pthread_t pid)
          /* destroy the capture thread and remove the hook function */
          ec_thread_destroy(pid);
          hook_del(HOOK_PACKET_ARP, &get_response);
+#ifdef WITH_IPV6
          hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
+         hook_del(HOOK_PACKET_ICMP6_PARM, &get_response);
+#endif
          /* delete the temporary list */
          LIST_FOREACH_SAFE(e, &ip_list_head, next, tmp) {
             LIST_REMOVE(e, next);
@@ -615,7 +718,10 @@ int scan_load_hosts(char *filename)
    char ip[MAX_ASCII_ADDR_LEN];
    char mac[ETH_ASCII_ADDR_LEN];
    char name[MAX_HOSTNAME_LEN];
-   u_int8 tip[MAX_IP_ADDR_LEN];
+   struct in_addr ipaddr;
+#ifdef WITH_IPV6
+   struct in6_addr ip6addr;
+#endif
    struct ip_addr hip;
    u_int8 hmac[MEDIA_ADDR_LEN];
 
@@ -628,25 +734,33 @@ int scan_load_hosts(char *filename)
 
    INSTANT_USER_MSG("Loading hosts list from file %s\n", filename);
 
-   /* XXX - adapt to IPv6 */
    /* read the file */
    for (nhosts = 0; !feof(hf); nhosts++) {
-      int proto;
 
       if (fscanf(hf, "%"EC_TOSTRING(MAX_ASCII_ADDR_LEN)"s %"EC_TOSTRING(ETH_ASCII_ADDR_LEN)"s %"EC_TOSTRING(MAX_HOSTNAME_LEN)"s\n", ip, mac, name) != 3 ||
          *ip == '#' || *mac == '#' || *name == '#')
          continue;
 
       /* convert to network */
-      mac_addr_aton(mac, hmac);
-
-      proto = (strchr(ip, ':')) ? AF_INET6 : AF_INET;
-      if (!inet_pton(proto, ip, tip)) {
-         del_hosts_list();
-         SEMIFATAL_ERROR("Bad parsing on line %d", nhosts + 1);
+      if (!mac_addr_aton(mac, hmac)) {
+         USER_MSG("Bad MAC address while parsing line %d", nhosts + 1);
+         continue;
       }
 
-      ip_addr_init(&hip, proto, (u_char *)tip);
+      if (inet_pton(AF_INET, ip, &ipaddr) == 1) { /* is IPv4 address*/
+         ip_addr_init(&hip, AF_INET, (u_char *)&ipaddr);
+      }
+#ifdef WITH_IPV6
+      else if (inet_pton(AF_INET6, ip, &ip6addr) == 1) { /* is IPv6 address */
+         ip_addr_init(&hip, AF_INET6, (u_char *)&ip6addr);
+      }
+#endif
+      else { /* neither IPv4 nor IPv6 - inform user and skip line*/
+         USER_MSG("Bad IP address while parsing line %d", nhosts + 1);
+         continue;
+         //del_hosts_list();
+         //SEMIFATAL_ERROR("Bad parsing on line %d", nhosts + 1);
+      }
 
       /* wipe the null hostname */
       if (!strcmp(name, "-"))
@@ -708,6 +822,10 @@ int scan_save_hosts(char *filename)
 void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
 {
    struct hosts_list *hl, *h;
+
+   /* don't add to hostlist if the found IP is ours */
+   if (ip_addr_is_ours(ip) == EFOUND) 
+      return;
 
    SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
 

@@ -21,7 +21,7 @@
 [eth][2]
    dst:6 = 0
    src:6 = 6
-   proto:2 = 8
+   proto:2 = 12
 
 #
 # token ring is at layer 2

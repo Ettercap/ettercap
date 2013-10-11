@@ -38,6 +38,8 @@ void ui_fatal_error(const char *msg);
 void ui_cleanup(void);
 int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
 int send_L3_icmp_unreach(struct packet_object *po);
+char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
+char *mac_addr_ntoa(u_char *mac, char *dst);
 
 /************************************************/
  
@@ -89,6 +91,14 @@ int send_L3_icmp_unreach(struct packet_object *po)
    return 0;
 }
 
+char *ip_addr_ntoa(struct ip_addr *sa, char *dst)
+{
+   return NULL;
+}
+char *mac_addr_ntoa(u_char *mac, char *dst)
+{
+   return NULL;
+}
 /* EOF */
 
 // vim:ts=3:expandtab

@@ -24,6 +24,7 @@
 #include <ec_version.h>
 #include <ec_threads.h>
 #include <ec_send.h>
+#include <ec_inet.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -272,7 +273,10 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
    /* initialize to the beginning of the packet */
    u_char *base = po->L2.header;
    int (*cmp_func)(u_int32, u_int32) = &cmp_eq;
+   char tmp[MAX_ASCII_ADDR_LEN], tmp2[MAX_ASCII_ADDR_LEN];
 
+   DEBUG_MSG("L2: %s -> %s", mac_addr_ntoa(po->L2.src, tmp), mac_addr_ntoa(po->L2.dst, tmp2));
+   DEBUG_MSG("L3: %s -> %s ", ip_addr_ntoa(&po->L3.src, tmp), ip_addr_ntoa(&po->L3.dst, tmp2));
    /* 
     * point to the right base.
     * if the test is L3.ttl, we have to start from
@@ -281,21 +285,27 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
    switch (fop->op.test.level) {
       case 2:
          base = po->L2.header;
+         DEBUG_MSG("filter: test at layer 2");
          break;
       case 3:
          base = po->L3.header;
+         DEBUG_MSG("filter: test at layer 3");
          break;
       case 4:
          base = po->L4.header;
+         DEBUG_MSG("filter: test at layer 4");
          break;
       case 5:
          base = po->DATA.data;
+         DEBUG_MSG("filter: test at layer 5");
          break;
       case 6:
          base = po->DATA.disp_data;
+         DEBUG_MSG("filter: test at layer 6");
          break;
       default:
          JIT_FAULT("unsupported test level [%d]", fop->op.test.level);
+         DEBUG_MSG("filter: unsupported test leved [%d]", fop->op.test.level);
          break;
    }
 
@@ -303,28 +313,36 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
    switch(fop->op.test.op) {
       case FTEST_EQ:
          cmp_func = &cmp_eq;
+         DEBUG_MSG("filter: test op = cmp");
          break;
       case FTEST_NEQ:
          cmp_func = &cmp_neq;
+         DEBUG_MSG("filter: test op = neq");
          break;
       case FTEST_LT:
          cmp_func = &cmp_lt;
+         DEBUG_MSG("filter: test op = lt");
          break;
       case FTEST_GT:
          cmp_func = &cmp_gt;
+         DEBUG_MSG("filter: test op = gt");
          break;
       case FTEST_LEQ:
          cmp_func = &cmp_leq;
+         DEBUG_MSG("filter: test op leq");
          break;
       case FTEST_GEQ:
          cmp_func = &cmp_geq;
+         DEBUG_MSG("filter: test op geq");
          break;
       default:
          JIT_FAULT("unsupported test operation");
+         DEBUG_MSG("unsupported test operation");
          break;
            
    }
    
+
    /* 
     * get the value with the proper size.
     * 0 is a special case for strings (even binary) 
@@ -332,29 +350,50 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
    switch (fop->op.test.size) {
       case 0:
          /* string comparison */
+         DEBUG_MSG("string comparsion");
          if (cmp_func(memcmp(base + fop->op.test.offset, fop->op.test.string, fop->op.test.slen), 0) )
+         {
+            DEBUG_MSG("\tTRUE");
             return FLAG_TRUE;
+         }
          break;
       case 1:
+         DEBUG_MSG("char comparsion (%p + 0x%x) '%x' <=> '%x'", base, fop->op.test.offset,
+               *(u_int8 *)(base + fop->op.test.offset),
+               (fop->op.test.value & 0xff));
          /* char comparison */
          if (cmp_func(*(u_int8 *)(base + fop->op.test.offset), (fop->op.test.value & 0xff)) )
+         {
+            DEBUG_MSG("\tTRUE");
             return FLAG_TRUE;
+         }
          break;
       case 2:
+         DEBUG_MSG("short int comparsion (%p + 0x%x) '0x%04x' <=> '0x%04x'", base, fop->op.test.offset,
+               htons(*(u_int16 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffff));
          /* short int comparison */
          if (cmp_func(htons(*(u_int16 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffff)) )
+         {
+            DEBUG_MSG("\tTRUE");
             return FLAG_TRUE;
+         }
          break;
       case 4:
+         DEBUG_MSG("int comparsion");
          /* int comparison */
          if (cmp_func(htonl(*(u_int32 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffffffff)) )
+         {
+            DEBUG_MSG("\tTRUE");
             return FLAG_TRUE;
+         }
          break;
       default:
+         DEBUG_MSG("unsupported test size [%d]", fop->op.test.size);
          JIT_FAULT("unsupported test size [%d]", fop->op.test.size);
          break;
    }
          
+   DEBUG_MSG("\tFALSE");
    return FLAG_FALSE;
 }
 

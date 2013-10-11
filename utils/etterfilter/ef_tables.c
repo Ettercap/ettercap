@@ -278,6 +278,7 @@ void load_constants(void)
       /* eat the empty spaces */
       for (q = line; *q == ' ' && q < end; q++);
 
+      printf("line %d: ", lineno);
       /* get the constant */
       if (strstr(line, "=") && (q = ec_strtok(line, "=", &tok)) != NULL) {
          /* trim out the space */
@@ -288,6 +289,7 @@ void load_constants(void)
          
          /* get the name */
          c->name = strdup(q);
+         printf(" name='%s', ", c->name);
          
          if ((q = ec_strtok(NULL, "=", &tok)) == NULL)
             FATAL_ERROR("Invalid constant on line %d", lineno);
@@ -296,6 +298,7 @@ void load_constants(void)
          for (p = q; *p == ' ' && p < end; p++);
 
          c->value = strtoul(p, NULL, 16);
+         printf(" value='%s' (%d/0x%04x)\n", p, c->value, c->value);
 
          /* update the counter */
          nconst++;

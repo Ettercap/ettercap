@@ -30,6 +30,7 @@ int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb);
 int ip_addr_null(struct ip_addr *sa);
 int ip_addr_is_zero(struct ip_addr *sa);
 int ip_addr_random(struct ip_addr* ip, u_int16 type);
+int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip);
 
 char *ip_addr_ntoa(struct ip_addr *sa, char *dst);
 int ip_addr_pton(char *str, struct ip_addr *addr);
@@ -37,6 +38,7 @@ char *mac_addr_ntoa(u_char *mac, char *dst);
 int mac_addr_aton(char *str, u_char *mac);
 
 int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr);
+int ip_addr_is_global(struct ip_addr *ip);
 int ip_addr_is_multicast(struct ip_addr *ip);
 int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr);
 int ip_addr_is_ours(struct ip_addr *);
@@ -173,6 +175,36 @@ int ip_addr_random(struct ip_addr* ip, u_int16 type)
    }
    return ESUCCESS;
 }
+
+/*
+ * initialize a solicited-node address from a given ip address.
+ * returns ESUCCESS on success or -EINVALID in case of a 
+ * unsupported address familily (actually only IPv6 is supported)
+ */
+int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip)
+{
+   switch (ntohs(ip->addr_type)) {
+      case AF_INET:
+         /* not applicable for IPv4 */
+      break;
+#ifdef WITH_IPV6
+      case AF_INET6:
+         /* 
+          * initialize the ip_addr struct with the solicited-node
+          * multicast prefix and copy the tailing 24-bit into the
+          * address to form the complete solicited-node address
+          */
+         ip_addr_init(sn, AF_INET6, (u_char*)IP6_SOL_NODE);
+         memcpy((sn->addr + 13), (ip->addr + 13), 3);
+
+         return ESUCCESS;
+      break;
+#endif
+   }
+
+   return -EINVALID;
+}
+
 
 /*
  * convert to ascii an ip address
@@ -362,6 +394,38 @@ int mac_addr_aton(char *str, u_char *mac)
 }
 
 /*
+ * returns  1 if the ip is a Global Unicast 
+ * returns  0 if not
+ * returns -EINVALID if address family is unknown
+ */
+int ip_addr_is_global(struct ip_addr *ip)
+{
+
+   switch (ntohs(ip->addr_type)) {
+      case AF_INET:
+         /* XXX one could implement here !RFC1918 address determination */
+      break;
+      case AF_INET6:
+         /* 
+          * as IANA does not appy masks > 8-bit for Global Unicast block, 
+          * only the first 8-bit are significant for this test.
+          */
+         if ((*ip->addr & 0xe0) == 0x20) {
+            /* 
+             * This may be extended in future as IANA assigns further ranges
+             * to Global Unicast
+             */ 
+            return 1;
+         } 
+      break;
+      default: 
+         return -EINVALID;
+   }
+
+   return 0;
+}
+
+/*
  * returns  1 if the ip is multicast
  * returns  0 if not
  * returns -EINVALID if address family is unknown
@@ -452,7 +516,8 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
    u_int32* address;
    u_int32* netmask;
    u_int32* network;
-   unsigned int i;
+   unsigned int i, matched = 0;
+
 
    switch (ntohs(sa->addr_type)) {
       case AF_INET:
@@ -487,15 +552,25 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
             netmask = &ip_addr_to_int32(nm->addr);
             network = &ip_addr_to_int32(nw->addr);
 
+
             for(i = 0; i < IP6_ADDR_LEN / sizeof(u_int32); i++) {
-               if((address[i] & netmask[i]) != network[i])
+               if (netmask[i] == 0) { /* no need to check further */
                   break;
+               }
+               else if((address[i] & netmask[i]) != network[i]) {
+                  matched = 0;
+                  break;
+               } 
                else {
-                  if(ifaddr != NULL)
-                     memcpy(ifaddr, &ip6->ip, sizeof(*ifaddr));
-                  return ESUCCESS;
+                  matched = 1;
                }
             }
+
+            if(ifaddr != NULL) 
+               memcpy(ifaddr, &ip6->ip, sizeof(*ifaddr));
+            
+            if (matched)
+               return ESUCCESS;
          }
       
          break;

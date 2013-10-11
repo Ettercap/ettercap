@@ -26,7 +26,7 @@ CONTRIBUTORS:
    Dhiru Kholia (kholia)			<dhiru@openwall.com>		O5Logon, MySQL 5.x dissector, PostgreSQL dissector, TN3270 dissector
    Mainframed									TN3270 dissector
    Eric Milam (Brav0Hax)			<jbrav.hax@gmail.com>		User Testing
-   Alexander Koeppe (koeppea)			<format_c@online.de>		IPv6 support for DNS-spoof plugin
+   Alexander Koeppe (koeppea)			<format_c@online.de>		IPv6 for dns_spoof plugin, IPv6 host scan, IPv6 NDP poisoning
 
 CONTRIBUTORS (Lazarus):
    Martin Bos (PureHate)			<purehate@backtrack.com>	Testing

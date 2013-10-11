@@ -205,14 +205,14 @@ int set_wep_key(char *string)
 
    /* sanity check */
    if (bit <= 0)
-      SEMIFATAL_ERROR("Unsupported WEP key lenght");
+      SEMIFATAL_ERROR("Unsupported WEP key length");
 
    /* the len of the secret part of the RC4 seed */
    tmp_wkey_len = bit / 8 - WEP_IV_LEN;
 
    /* sanity check */
    if (bit != 64 && bit != 128)
-	  SEMIFATAL_ERROR("Unsupported WEP key lenght");
+	  SEMIFATAL_ERROR("Unsupported WEP key length");
 
    /* get the type of the key */
    p = ec_strtok(NULL, ":", &tok);
@@ -227,7 +227,7 @@ int set_wep_key(char *string)
 	  SEMIFATAL_ERROR("Invalid parsing of the WEP key");
 
    if (type == 's') {
-      /* escape the string and check its lenght */
+      /* escape the string and check its length */
       if (strescape((char *)tmp_wkey, p) != (int)tmp_wkey_len)
     	  SEMIFATAL_ERROR("Specified WEP key length does not match the given string");
    } else if (type == 'p') {

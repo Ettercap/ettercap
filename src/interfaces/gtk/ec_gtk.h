@@ -63,10 +63,14 @@ extern void gtkui_load_filter(void);
 extern void gtkui_stop_filter(void);
 
 /* ec_gtk_hosts.c */
+#ifdef WITH_IPV6
+extern void toggle_ip6scan(void);
+#endif
 extern void gtkui_scan(void);
 extern void gtkui_load_hosts(void);
 extern void gtkui_save_hosts(void);
 extern void gtkui_host_list(void);
+extern void gtkui_refresh_host_list(void);
 
 /* ec_gtk_view.c */
 extern void gtkui_show_stats(void);
@@ -91,6 +95,9 @@ extern void gtkui_arp_poisoning(void);
 extern void gtkui_icmp_redir(void);
 extern void gtkui_port_stealing(void);
 extern void gtkui_dhcp_spoofing(void);
+#ifdef WITH_IPV6
+extern void gtkui_ndp_poisoning(void);
+#endif
 extern void gtkui_mitm_stop(void);
 
 /* ec_gtk_logging.c */

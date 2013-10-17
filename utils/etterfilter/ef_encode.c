@@ -101,10 +101,13 @@ int encode_const(char *string, struct filter_op *fop)
       p = strchr(string + 1, '\'');
       *p = '\0';
 
-      if (inet_pton(AF_INET, string, &ipaddr) == 1) { /* try IPv4 */
+      if (inet_pton(AF_INET, string + 1, &ipaddr) == 1) { /* try IPv4 */
+         /* 4-bytes - handle as a integer */
          fop->op.test.value = ntohl(ipaddr.s_addr);
       }
-      else if (inet_pton(AF_INET6, string, &ip6addr) == 1) { /* try IPv6 */
+      else if (inet_pton(AF_INET6, string + 1, &ip6addr) == 1) { /* try IPv6 */
+         /* 16-bytes - handle as a byte pointer */
+         memcpy(&fop->op.test.string, &ip6addr.s6_addr, 16);
       }
       else {
          return -EFATAL;

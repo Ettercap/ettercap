@@ -349,8 +349,10 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
     */
    switch (fop->op.test.size) {
       case 0:
+      case 16: /* well IPv6 addresses should be handled as byte pointer */
          /* string comparison */
-         DEBUG_MSG("string comparsion");
+         DEBUG_MSG("string comparsion (%p + 0x%x) '%s' <=> '%s'", base, fop->op.test.offset,
+                 base + fop->op.test.offset, fop->op.test.string);
          if (cmp_func(memcmp(base + fop->op.test.offset, fop->op.test.string, fop->op.test.slen), 0) )
          {
             DEBUG_MSG("\tTRUE");

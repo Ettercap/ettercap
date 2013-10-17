@@ -95,15 +95,21 @@ int encode_const(char *string, struct filter_op *fop)
    /* it is an ip address */
    } else if (string[0] == '\'' && string[strlen(string) - 1] == '\'') {
       struct in_addr ipaddr;
+      struct in6_addr ip6addr;
       
       /* remove the single quote */
       p = strchr(string + 1, '\'');
       *p = '\0';
 
-      if (inet_aton(string + 1, &ipaddr) == 0)
+      if (inet_pton(AF_INET, string, &ipaddr) == 1) { /* try IPv4 */
+         fop->op.test.value = ntohl(ipaddr.s_addr);
+      }
+      else if (inet_pton(AF_INET6, string, &ip6addr) == 1) { /* try IPv6 */
+      }
+      else {
          return -EFATAL;
+      }
       
-      fop->op.test.value = ntohl(ipaddr.s_addr);
       return ESUCCESS;
       
    /* it is a string */

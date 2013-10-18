@@ -120,15 +120,39 @@ the former condition will match all udp or http traffic. The latter is wrong,
 because if the packet is not tcp, the whole condition block will be evaluated as false.
 If you want to make complex conditions, the best way is to split them into nested 'if'
 blocks.
+.Sp
+Since etterfilter support both IP address families, you should care whether you
+use 'ip.proto' which is specific for the IPv4 address family or it's IPv6 
+couterpart 'ipv6.nh'. Especially for the L4 protocol matching using 'ip.proto'
+and/or 'ipv6.nh', you should be careful if you're really acting on the right
+protocol. This should be enforced using the L3 protocol identifier 'eth.proto'.
+.Sp
+Example:
+.br
+if (eth.proto \=\= IP && ip.proto \=\= TCP && tcp.dst \=\= 80 || tcp.src \=\= 80) {
+.br
+}
+.Sp
+if (eth.proto \=\= IP6 && ipv6.nh \=\= TCP && tcp.dst \=\= 80 || tcp.src \=\= 80) {
+.br
+}
+.Sp
+if (tcp.dst \=\= 80 || tcp.src \=\= 80) {
+.br
+}
+.Sp
+The first example correctly matches http traffic only on IPv4 while the second 
+would match http traffic only on IPv6. The thrid example matches http regardless
+it's IP address familiy.
 
 .Sp
 Every instruction in a block must end with a semicolon ';'.
 .Sp
 Comparisons are implemented with the '\=\=' operator and can be used to compare
 numbers, strings or ip addresses. An ip address MUST be enclosed within two single
-quotes (eg. '192.168.0.7'). You can also use the 'less than' ('<'), 'greater than'
-('>'), 'less or equal' ('<\=') and 'greater or equal' ('>\=') operators.
-The lvalue of a comparison must be an offset (see later)
+quotes (eg. '192.168.0.7' or '2001:db8::2'). You can also use the 'less than' 
+('<'), 'greater than' ('>'), 'less or equal' ('<\=') and 'greater or equal' 
+('>\=') operators. The lvalue of a comparison must be an offset (see later)
 .Sp
 Example:
 .br
@@ -153,6 +177,7 @@ Example:
 .br
 ip.ttl \+\= 5;
 
+More examples can be found in the etter.filter.examples file.
 
 .TP
 .B OFFSET DEFINITION
@@ -169,6 +194,8 @@ the virtual pointer for the Time To Live field in the IP header of a packet. It
 will be translated as <L\=3, O\=9, S\=1>. Indeed it is the 9th byte of level 3 and
 its size is 1 byte. 'ip.ttl \+ 1' is the same as 'ip.proto' since the 10th byte
 of the IP header is the protocol encapsulated in the IP packet.
+Note that since etterfilter also supports processing of IPv6, the above mentioned
+only applies for IPv4 packets while counterpart in IPv6 would be 'ipv6.nh'.
 .Sp
 The list of all supported virtual pointers is in the file etterfilter.tbl. You
 can add your own virtual pointers by adding a new table or modifying the

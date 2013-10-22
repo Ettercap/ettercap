@@ -484,12 +484,17 @@ static void gtkui_progress(char *title, int value, int max)
 
    } 
    
-   /* the subsequent calls have to only update the object */
-   gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
-   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
+   /* 
+    * not worth rendering dialog for too few iterations
+    */
+   if (max >= 0x7ff) {
+       /* the subsequent calls have to only update the object */
+       gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
+       gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
 
-   /* update dialog window */
-   gtk_widget_show_all(progress_dialog);
+       /* update dialog window */
+       gtk_widget_show_all(progress_dialog);
+   }
 
    /* 
     * when 100%, destroy it

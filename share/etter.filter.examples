@@ -100,6 +100,16 @@ if (ipv6.src == '2001:db8::1') {
    drop();
 }
 
+# combined both IPv4 and IPv6
+if (eth.proto == IP && ip.dst == '192.168.0.2') {
+   msg("drop IPv4");
+   drop();
+}
+if (eth.proto == IP6 && ipv6.dst == '2001:db8::1') {
+   msg("drop IPv6");
+   drop();
+}
+
 # translate the port of the tcp packet from 80 to 81
 if (tcp.dst == 80) {
    tcp.dst -= 1;

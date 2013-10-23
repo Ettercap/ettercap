@@ -74,6 +74,7 @@ struct filter_op {
          u_int8   size;
          u_int16  offset;
          u_int32  value;
+         u_int8   ipaddr[16];
          u_int8   *string;
          size_t   slen;
       } test, assign;

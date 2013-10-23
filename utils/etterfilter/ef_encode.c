@@ -107,7 +107,7 @@ int encode_const(char *string, struct filter_op *fop)
       }
       else if (inet_pton(AF_INET6, string + 1, &ip6addr) == 1) { /* try IPv6 */
          /* 16-bytes - handle as a byte pointer */
-         memcpy(&fop->op.test.string, &ip6addr.s6_addr, 16);
+         memcpy(&fop->op.test.ipaddr, &ip6addr.s6_addr, 16);
       }
       else {
          return -EFATAL;

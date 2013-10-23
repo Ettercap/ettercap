@@ -50,10 +50,30 @@
  *       +---------------------------------------------------------------+
  *
  */
- 
+
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
+
+static void print_hex(unsigned char *str, int len)
+{
+   int i;
+   for (i = 0; i < len; ++i)
+      printf("%02x", str[i]);
+      printf("\n");
+}
+
+static char itoa16[16] =  "0123456789abcdef";
+
+static inline void hex_encode(unsigned char *str, int len, unsigned char *out)
+{
+   int i;
+   for (i = 0; i < len; ++i) {
+      out[0] = itoa16[str[i]>>4];
+      out[1] = itoa16[str[i]&0xF];
+      out += 2;
+   }
+}
 
 struct rip_hdr {
    u_int8   command;
@@ -62,6 +82,29 @@ struct rip_hdr {
    u_int16  family;
    u_int16  auth_type;
    u_int8   auth[16];
+};
+
+#define BUFSIZE                    2048 /* big enough for RIP v2 */
+#define RIP_HEADER_SIZE            4
+#define RIP_AUTH_MD5_SIZE          16
+#define RIP_AUTH_MD5_COMPAT_SIZE   RIP_HEADER_SIZE + RIP_AUTH_MD5_SIZE
+
+struct rip_md5_hdr
+{
+   u_int8   command;
+   u_int8   version;
+   u_int16  zero;
+   u_int16  family;
+   u_int16  auth_type;
+   u_int16  packet_len;
+   u_int8   keyid;
+   u_int8   auth_len;
+   u_int32  sequence;
+   u_int32  reserv1;
+   u_int32  reserv2;
+   u_int16  afamily;
+   u_int16  atype;
+   u_int8   adigest[16];
 };
 
 /* protos */
@@ -89,16 +132,16 @@ FUNC_DECODER(dissector_rip)
 
    /* don't complain about unused var */
    (void)end;
-   
+
    /* skip empty packets */
    if (PACKET->DATA.len == 0)
       return NULL;
 
    DEBUG_MSG("RIP --> UDP dissector_rip");
-   
+
    /* cast the struct */
    rip = (struct rip_hdr *)ptr;
-   
+
    /* switch on the version */
    switch(rip->version) {
       case 2:
@@ -107,17 +150,51 @@ FUNC_DECODER(dissector_rip)
             DEBUG_MSG("\tDissector_RIP version 2 simple AUTH");
             PACKET->DISSECTOR.user = strdup("RIPv2");
             PACKET->DISSECTOR.pass = strdup((char *)rip->auth);
-            
+
             DISSECT_MSG("RIPv2 : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                                                    ntohs(PACKET->L4.dst), 
                                                    PACKET->DISSECTOR.pass);
+         }
+
+         if ( rip->family == 0xffff && ntohs(rip->auth_type) == 0x0003 ) {
+            /* RIP v2 MD4 authentication */
+            struct rip_md5_hdr *ripm;
+            unsigned char buf1[BUFSIZE] = { 0 };
+            unsigned char buf2[BUFSIZE] = { 0 };
+            ripm = (struct rip_md5_hdr *)ptr;
+            DEBUG_MSG("\tDissector_RIP version 2 MD5 AUTH");
+
+           if (ripm->auth_len != RIP_AUTH_MD5_SIZE && \
+                ripm->auth_len != RIP_AUTH_MD5_COMPAT_SIZE) {
+                    return;
+            }
+
+            int rip_packet_len = ntohs(ripm->packet_len);
+
+            /* validate the packet */
+            if (rip_packet_len > (PACKET->DATA.len - RIP_HEADER_SIZE - \
+                RIP_AUTH_MD5_SIZE)) {
+                    return;
+            }
+            if ((rip_packet_len + RIP_HEADER_SIZE) * 2 > BUFSIZE) {
+                    return;
+            }
+
+            hex_encode(ptr, rip_packet_len + RIP_HEADER_SIZE, buf1);
+            hex_encode(ptr + rip_packet_len + RIP_HEADER_SIZE,
+                RIP_AUTH_MD5_SIZE, buf2);
+
+            DISSECT_MSG("RIPv2-%s-%d:$netmd5$%s$%s\n",
+                ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                ntohs(PACKET->L4.dst),
+                buf1, buf2);
          }
          break;
       case 4:
          /* XXX - TODO RIP v4 */
          break;
    }
-   
+
    return NULL;
 }
 

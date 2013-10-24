@@ -172,7 +172,7 @@ FUNC_DECODER(dissector_ospf)
        * not need to reach the top half
        */
       char o[OSPF_AUTH_LEN];
-      snprintf(o, OSPF_AUTH_LEN, "%u", ohdr->auth1);
+      snprintf(o, OSPF_AUTH_LEN, "%s", (char*)&(ohdr->auth1));
       strncpy(pass, o, OSPF_AUTH_LEN);
 
       DISSECT_MSG("OSPF : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),

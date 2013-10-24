@@ -55,14 +55,6 @@
 #include <ec_decode.h>
 #include <ec_dissect.h>
 
-static void print_hex(unsigned char *str, int len)
-{
-   int i;
-   for (i = 0; i < len; ++i)
-      printf("%02x", str[i]);
-      printf("\n");
-}
-
 static char itoa16[16] =  "0123456789abcdef";
 
 static inline void hex_encode(unsigned char *str, int len, unsigned char *out)

@@ -501,7 +501,7 @@ static void scan_ip6_onlink(pthread_t pid)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = 10000000;
+   tm.tv_nsec = 1000000;
    tm.tv_sec = 0;
 #endif
 
@@ -522,9 +522,9 @@ static void scan_ip6_onlink(pthread_t pid)
       send_icmp6_echo(&e->ip, &an);
    }
 
-   for (i=0; i<=GBL_CONF->icmp6_probe_delay * 100; i++) {
+   for (i=0; i<=GBL_CONF->icmp6_probe_delay * 1000; i++) {
       /* update the progress bar */
-      ret = ui_progress(title, i, GBL_CONF->icmp6_probe_delay * 100);
+      ret = ui_progress(title, i, GBL_CONF->icmp6_probe_delay * 1000);
 
       /* user has requested to stop the task */
       if (ret == UI_PROGRESS_INTERRUPTED) {
@@ -537,7 +537,7 @@ static void scan_ip6_onlink(pthread_t pid)
       }
       /* wait for a delay */
 #if defined(OS_WINDOWS)
-      usleep(10000);
+      usleep(1000);
 #else
       nanosleep(&tm, NULL);
 #endif

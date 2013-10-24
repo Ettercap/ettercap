@@ -53,9 +53,9 @@
 # redirect it to www.linux.org
 #
 
-microsoft.com      A   198.182.196.56
-*.microsoft.com    A   198.182.196.56
-www.microsoft.com  PTR 198.182.196.56      # Wildcards in PTR are not allowed
+microsoft.com      A   209.92.24.80
+*.microsoft.com    A   209.92.24.80
+www.microsoft.com  PTR 209.92.24.80      # Wildcards in PTR are not allowed
 
 ##########################################
 # no one out there can have our domains...

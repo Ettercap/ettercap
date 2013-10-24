@@ -62,6 +62,7 @@ char *gtkui_utf8_validate(char *data);
    
 static void gtkui_init(void);
 static void gtkui_cleanup(void);
+static void gtkui_update(int target);
 static void gtkui_msg(const char *msg);
 static void gtkui_error(const char *msg);
 static void gtkui_fatal_error(const char *msg);
@@ -270,6 +271,7 @@ void set_gtk_interface(void)
    ops.fatal_error = &gtkui_fatal_error_wrap;
    ops.input = &gtkui_input;
    ops.progress = &gtkui_progress_wrap;
+   ops.update = &gtkui_update;
 
    
    ui_register(&ops);
@@ -333,6 +335,19 @@ static void gtkui_cleanup(void)
    DEBUG_MSG("gtk_cleanup");
 
    
+}
+
+/*
+ * process an UI update notification
+ */
+static void gtkui_update(int target)
+{
+    switch (target) {
+        case UI_UPDATE_HOSTLIST:
+            gtkui_refresh_host_list();
+            break;
+    }
+
 }
 
 /*
@@ -484,12 +499,17 @@ static void gtkui_progress(char *title, int value, int max)
 
    } 
    
-   /* the subsequent calls have to only update the object */
-   gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
-   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
+   /* 
+    * not worth rendering dialog for too few iterations
+    */
+   if (max >= 0x7ff) {
+       /* the subsequent calls have to only update the object */
+       gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
+       gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
 
-   /* update dialog window */
-   gtk_widget_show_all(progress_dialog);
+       /* update dialog window */
+       gtk_widget_show_all(progress_dialog);
+   }
 
    /* 
     * when 100%, destroy it

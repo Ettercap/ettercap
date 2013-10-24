@@ -152,7 +152,7 @@ FUNC_DECODER(dissector_rip)
             PACKET->DISSECTOR.pass = strdup((char *)rip->auth);
 
             DISSECT_MSG("RIPv2 : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                                   ntohs(PACKET->L4.dst), 
+                                                   ntohs(PACKET->L4.dst),
                                                    PACKET->DISSECTOR.pass);
          }
 
@@ -166,7 +166,7 @@ FUNC_DECODER(dissector_rip)
 
            if (ripm->auth_len != RIP_AUTH_MD5_SIZE && \
                 ripm->auth_len != RIP_AUTH_MD5_COMPAT_SIZE) {
-                    return;
+                    return NULL;
             }
 
             int rip_packet_len = ntohs(ripm->packet_len);
@@ -174,10 +174,10 @@ FUNC_DECODER(dissector_rip)
             /* validate the packet */
             if (rip_packet_len > (PACKET->DATA.len - RIP_HEADER_SIZE - \
                 RIP_AUTH_MD5_SIZE)) {
-                    return;
+                    return NULL;
             }
             if ((rip_packet_len + RIP_HEADER_SIZE) * 2 > BUFSIZE) {
-                    return;
+                    return NULL;
             }
 
             hex_encode(ptr, rip_packet_len + RIP_HEADER_SIZE, buf1);

@@ -50,6 +50,7 @@ MANDATORY:
 
    - libpcap >= 0.8.1
    - libnet  >= 1.1.2.1 
+   - openssl >= 0.9.7
    - libpthread
    - zlib
    - CMake 2.8
@@ -66,9 +67,6 @@ OPTIONAL:
 
    To have perl regexp in the filters:
       - libpcre
-
-   To support SSH and SSL decryption:
-      - openssl >= 0.9.7
 
    For the cursed GUI:
       - ncurses   >= 5.3

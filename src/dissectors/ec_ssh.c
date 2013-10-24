@@ -26,8 +26,6 @@
 #include <ec_streambuf.h>
 #include <ec_checksum.h>
 
-#ifdef HAVE_OPENSSL
-
 
 /* don't include kreberos. RH sux !! */
 #define OPENSSL_NO_KRB5 1
@@ -747,8 +745,6 @@ static void rsa_private_decrypt(BIGNUM *out, BIGNUM *in, RSA *key)
    free(outbuf);
    free(inbuf);
 }
-
-#endif
 
 /* EOF */
 

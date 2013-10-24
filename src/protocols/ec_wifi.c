@@ -26,10 +26,8 @@
 #include <ec_checksum.h>
 #include <ec_encryption.h>
 
-#ifdef HAVE_OPENSSL
-   #include <openssl/rc4.h>
-   #include <openssl/md5.h>
-#endif
+#include <openssl/rc4.h>
+#include <openssl/md5.h>
 
 
 /* globals */

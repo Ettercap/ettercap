@@ -43,8 +43,6 @@
 #include <time.h>
 #include <pthread.h>
 
-#ifdef HAVE_OPENSSL
-
 // XXX - check if we have poll.h
 #ifdef HAVE_SYS_POLL_H
    #include <sys/poll.h>
@@ -69,8 +67,6 @@
    }                                \
 } while(0)
 
-#endif /* HAVE_OPENSSL */
-
 /* globals */
 
 static LIST_HEAD (, listen_entry) listen_ports;
@@ -83,9 +79,6 @@ struct listen_entry {
    char *name;
    LIST_ENTRY (listen_entry) next;
 };
-
-
-#ifdef HAVE_OPENSSL
 
 struct accepted_entry {
    int32 fd[2];   /* 0->Client, 1->Server */
@@ -124,16 +117,12 @@ static EVP_PKEY *global_pk;
 static u_int16 number_of_services;
 static struct pollfd *poll_fd = NULL;
 
-#endif /* HAVE_OPENSSL */
-
 /* protos */
 
 void sslw_dissect_add(char *name, u_int32 port, FUNC_DECODER_PTR(decoder), u_char status);
 void sslw_dissect_move(char *name, u_int16 port);
 EC_THREAD_FUNC(sslw_start);
 void ssl_wrap_init(void);
-
-#ifdef HAVE_OPENSSL
 
 static EC_THREAD_FUNC(sslw_child);
 static int sslw_is_ssl(struct packet_object *po);
@@ -157,8 +146,6 @@ static void ssl_wrap_fini(void);
 static int sslw_ssl_connect(SSL *ssl_sk);
 static int sslw_ssl_accept(SSL *ssl_sk);
 static int sslw_remove_sts(struct packet_object *po);
-
-#endif /* HAVE_OPENSSL */
 
 /*******************************************/
 
@@ -208,13 +195,6 @@ void ssl_wrap_init(void)
 {
    struct listen_entry *le;
 
-#ifndef HAVE_OPENSSL
-   /* avoid gcc warning about unused variable */
-   (void)le;
-   
-   DEBUG_MSG("ssl_wrap_init: not supported");
-   return;
-#else
    /* disable if the aggressive flag is not set */
    if (!GBL_CONF->aggressive_dissectors) {
       DEBUG_MSG("ssl_wrap_init: not aggressive");
@@ -242,11 +222,9 @@ void ssl_wrap_init(void)
    SAFE_CALLOC(poll_fd, 1, sizeof(struct pollfd) * number_of_services);
 
    atexit(ssl_wrap_fini);
-#endif
 }
 
 
-#ifdef HAVE_OPENSSL
 static void ssl_wrap_fini(void)
 {
    struct listen_entry *le, *old;
@@ -263,27 +241,19 @@ static void ssl_wrap_fini(void)
    SSL_CTX_free(ssl_ctx_client);
 
 }
-#endif
 
 /* 
  * SSL thread main function.
  */
 EC_THREAD_FUNC(sslw_start)
 {
-#ifdef HAVE_OPENSSL
    struct listen_entry *le;
    struct accepted_entry *ae;
    u_int len = sizeof(struct sockaddr_in), i;
    struct sockaddr_in client_sin;
-#endif
 
    ec_thread_init();
 
-#ifndef HAVE_OPENSSL
-   DEBUG_MSG("sslw_start: openssl support not compiled in");
-   return NULL;
-#else
-   
    /* disabled if not aggressive */
    if (!GBL_CONF->aggressive_dissectors)
       return NULL;
@@ -339,11 +309,8 @@ EC_THREAD_FUNC(sslw_start)
    }
 
    return NULL;
-#endif /* HAVE_OPENSSL */
    
 }	 
-
-#ifdef HAVE_OPENSSL
 
 /* 
  * Filter SSL related packets and create NAT sessions.
@@ -1346,7 +1313,6 @@ static void sslw_create_session(struct ec_session **s, struct packet_object *po)
    /* alloc of data elements */
    SAFE_CALLOC((*s)->data, 1, sizeof(struct ip_addr));
 }
-#endif /* HAVE_OPENSSL */
 
 /* EOF */
 

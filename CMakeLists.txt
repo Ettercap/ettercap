@@ -70,6 +70,16 @@ CMAKE_DEPENDENT_OPTION(BUNDLED_LUAJIT
   "Use bundled version of LUAJIT if system-provided version is not found (or disabled)" ON
   "BUNDLED_LIBS;ENABLE_LUA" OFF)
 
+if(ENABLE_TESTS)
+CMAKE_DEPENDENT_OPTION(SYSTEM_LIBCHECK
+  "Search for a system-provided version of LIBCHECK" ON
+  SYSTEM_LIBS OFF)
+
+CMAKE_DEPENDENT_OPTION(BUNDLED_LIBCHECK
+  "Use bundled version of LIBCHECK if system-provided version is not found (or disabled)" ON
+  BUNDLED_LIBS OFF)
+endif(ENABLE_TESTS)
+
 set(SPECIAL_LIB_DIR "" CACHE PATH "Special (non-traditional) root directory where headers/libraries are installed")
 
 include(CheckVariableInHeaders)
@@ -150,6 +160,9 @@ configure_file(include/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/config
 
 if(ENABLE_TESTS)
   enable_testing()
+  if(SYSTEM_LIBCHECK)
+    find_package(LIBCHECK)
+  endif(SYSTEM_LIBCHECK)
   add_subdirectory(tests)
 endif(ENABLE_TESTS)
 

@@ -41,9 +41,10 @@
 
 OFFSET         [[:alnum:]]+\.[A-Za-z]+[\.[A-Za-z]+]*
 FUNCTION       [a-z_]+\((.*\".*\"[^)]*)*\)
-CONST          [0-9]+|0x[0-9]+|[A-Z]+
+CONST          [0-9]+|0x[0-9]+|[A-Z6]+
 STRING         \"([^"\\]*(\\.[^"\\]*)*)\"
 IPADDR         \'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\'
+IP6ADDR        \'[0-9a-fA-F]{4}[0-9a-fA-F:]+:[0-9a-fA-F]{1,4}\'|\'::1\'
 SPACES         [ \t]+
 
 %%
@@ -179,6 +180,16 @@ SPACES         [ \t]+
    
    if (encode_const(yytext, &yylval.fop) != ESUCCESS)
       SCRIPT_ERROR("Invalid ip address [%s]", yytext);
+  
+   /* ip addresses are translated into network order integer */
+   return TOKEN_CONST;
+}
+
+{IP6ADDR} {
+   ef_debug(4, "IP6ADDR: %s\n", yytext);
+   
+   if (encode_const(yytext, &yylval.fop) != ESUCCESS)
+      SCRIPT_ERROR("Invalid ipv6 address [%s]", yytext);
   
    /* ip addresses are translated into network order integer */
    return TOKEN_CONST;

@@ -69,6 +69,11 @@ if (ip.ttl < 5) {
    msg("The packet will die soon\n");
 }
 
+# the same for IPv6 but make sure we really see IPv6 packets doing such trivial tests
+if (eth.proto == IP6 && ipv6.hl < 5) {
+   msg("The IPv6 packet will die soon\n");
+}
+
 # string comparison at a given offset
 if (DATA.data + 40 == "ette") {
    log(DATA.data, "./logfile");
@@ -87,6 +92,21 @@ if (tcp.src == 23 && search(DATA.data, "microsoft")) {
 
 # filter only a specific ip address
 if (ip.src == '192.168.0.2') {
+   drop();
+}
+
+# do the same for IPv6
+if (ipv6.src == '2001:db8::1') {
+   drop();
+}
+
+# combined both IPv4 and IPv6
+if (eth.proto == IP && ip.dst == '192.168.0.2') {
+   msg("drop IPv4");
+   drop();
+}
+if (eth.proto == IP6 && ipv6.dst == '2001:db8::1') {
+   msg("drop IPv6");
    drop();
 }
 

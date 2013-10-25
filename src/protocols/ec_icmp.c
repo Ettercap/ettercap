@@ -63,6 +63,7 @@ void __init icmp_init(void)
 
 FUNC_DECODER(decode_icmp)
 {
+   FUNC_DECODER_PTR(next_decoder);
    struct icmp_header *icmp;
    u_int16 sum;
 
@@ -118,6 +119,11 @@ FUNC_DECODER(decode_icmp)
 
    /* HOOK POINT:  HOOK_PACKET_ICMP */
    hook_point(HOOK_PACKET_ICMP, po);
+
+   /* get the next decoder */
+   next_decoder = get_decoder(APP_LAYER, PL_DEFAULT);
+   EXECUTE_DECODER(next_decoder);
+
    
 
    return NULL;

@@ -259,6 +259,7 @@ condition:
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
             $$.op.test.value = $3.op.test.value;
+            memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
       
       |  offset TOKEN_OP_CMP_NEQ TOKEN_CONST { 
@@ -267,6 +268,7 @@ condition:
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_NEQ;
             $$.op.test.value = $3.op.test.value;
+            memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
          
       |  offset TOKEN_OP_CMP_LT TOKEN_CONST { 
@@ -275,6 +277,7 @@ condition:
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_LT;
             $$.op.test.value = $3.op.test.value;
+            memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
 
       |  offset TOKEN_OP_CMP_GT TOKEN_CONST { 
@@ -283,6 +286,7 @@ condition:
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_GT;
             $$.op.test.value = $3.op.test.value;
+            memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
 
       |  offset TOKEN_OP_CMP_LEQ TOKEN_CONST { 
@@ -291,6 +295,7 @@ condition:
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_LEQ;
             $$.op.test.value = $3.op.test.value;
+            memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
 
       |  offset TOKEN_OP_CMP_GEQ TOKEN_CONST { 
@@ -299,6 +304,7 @@ condition:
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_GEQ;
             $$.op.test.value = $3.op.test.value;
+            memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
       
       |  TOKEN_FUNCTION { 

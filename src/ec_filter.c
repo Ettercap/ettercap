@@ -350,6 +350,10 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          if (cmp_func(htonl(*(u_int32 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffffffff)) )
             return FLAG_TRUE;
          break;
+      case 16: /* well IPv6 addresses should be handled as 16-byte pointer */
+         if (cmp_func(memcmp(base + fop->op.test.offset, fop->op.test.ipaddr, fop->op.test.size), 0) )
+            return FLAG_TRUE;
+         break;
       default:
          JIT_FAULT("unsupported test size [%d]", fop->op.test.size);
          break;

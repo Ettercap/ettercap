@@ -49,18 +49,6 @@
 #define OSPF_AUTH                1  // OSPF_AUTH_SIMPLE
 #define OSPF_AUTH_CRYPTOGRAPHIC  2
 
-static char itoa16[16] =  "0123456789abcdef";
-
-static inline void hex_encode(unsigned char *str, int len, unsigned char *out)
-{
-   int i;
-   for (i = 0; i < len; ++i) {
-      out[0] = itoa16[str[i]>>4];
-      out[1] = itoa16[str[i]&0xF];
-      out += 2;
-   }
-}
-
 /* borrowed from GNU Zebra project */
 #define BUFSIZE                  2048 /* big enough for OSPF */
 #define OSPF_HEADER_SIZE         24U
@@ -137,8 +125,7 @@ FUNC_DECODER(dissector_ospf)
 
    /* authentication */
    if ( ntohs(ohdr->auth_type) == OSPF_AUTH_CRYPTOGRAPHIC ) {
-        unsigned char buf1[BUFSIZE] = { 0 };
-        unsigned char buf2[BUFSIZE] = { 0 };
+        int i = 0;
 
         int length = ntohs(ohdr->length);
 
@@ -152,13 +139,26 @@ FUNC_DECODER(dissector_ospf)
         if (length > buflen)
                 return NULL;
 
-        hex_encode(ptr, length, buf1);
-        hex_encode(ptr + length, OSPF_AUTH_MD5_SIZE, buf2);
-
-        DISSECT_MSG("OSPF-%s-%d:$netmd5$%s$%s\n",
+        DISSECT_MSG("OSPF-%s-%d:$netmd5$",
                 ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                ntohs(PACKET->L4.dst),
-                buf1, buf2);
+                ntohs(PACKET->L4.dst));
+
+        for (i=0; i<length; i++) {
+           if (ptr+i == NULL)
+              return NULL;
+
+           DISSECT_MSG("%02x", *(ptr+i));
+        }
+        DISSECT_MSG("$");
+        for (i=length; i<length+OSPF_AUTH_MD5_SIZE; i++) {
+           if (ptr+i == NULL)
+              return NULL;
+
+           DISSECT_MSG("%02x", *(ptr+i));
+        }
+        DISSECT_MSG("\n");
+
+
    } else if ( ntohs(ohdr->auth_type) == OSPF_AUTH ) {  /* Simple Authentication */
       DEBUG_MSG("\tDissector_ospf PASS");
 

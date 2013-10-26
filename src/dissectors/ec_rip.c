@@ -55,18 +55,6 @@
 #include <ec_decode.h>
 #include <ec_dissect.h>
 
-static char itoa16[16] =  "0123456789abcdef";
-
-static inline void hex_encode(unsigned char *str, int len, unsigned char *out)
-{
-   int i;
-   for (i = 0; i < len; ++i) {
-      out[0] = itoa16[str[i]>>4];
-      out[1] = itoa16[str[i]&0xF];
-      out += 2;
-   }
-}
-
 struct rip_hdr {
    u_int8   command;
    u_int8   version;
@@ -76,12 +64,11 @@ struct rip_hdr {
    u_int8   auth[16];
 };
 
-#define BUFSIZE                    2048 /* big enough for RIP v2 */
 #define RIP_HEADER_SIZE            4
 #define RIP_AUTH_MD5_SIZE          16
 #define RIP_AUTH_MD5_COMPAT_SIZE   RIP_HEADER_SIZE + RIP_AUTH_MD5_SIZE
 
-struct rip_md5_hdr
+struct rip_md5_info
 {
    u_int8   command;
    u_int8   version;
@@ -121,6 +108,7 @@ FUNC_DECODER(dissector_rip)
    DECLARE_DISP_PTR_END(ptr, end);
    char tmp[MAX_ASCII_ADDR_LEN];
    struct rip_hdr *rip;
+   int i = 0;
 
    /* don't complain about unused var */
    (void)end;
@@ -149,14 +137,12 @@ FUNC_DECODER(dissector_rip)
          }
 
          if ( rip->family == 0xffff && ntohs(rip->auth_type) == 0x0003 ) {
-            /* RIP v2 MD4 authentication */
-            struct rip_md5_hdr *ripm;
-            unsigned char buf1[BUFSIZE] = { 0 };
-            unsigned char buf2[BUFSIZE] = { 0 };
-            ripm = (struct rip_md5_hdr *)ptr;
+            /* RIP v2 MD5 authentication */
+            struct rip_md5_info *ripm;
+            ripm = (struct rip_md5_info *)ptr;
             DEBUG_MSG("\tDissector_RIP version 2 MD5 AUTH");
 
-           if (ripm->auth_len != RIP_AUTH_MD5_SIZE && \
+            if (ripm->auth_len != RIP_AUTH_MD5_SIZE && \
                 ripm->auth_len != RIP_AUTH_MD5_COMPAT_SIZE) {
                     return NULL;
             }
@@ -168,18 +154,26 @@ FUNC_DECODER(dissector_rip)
                 RIP_AUTH_MD5_SIZE)) {
                     return NULL;
             }
-            if ((rip_packet_len + RIP_HEADER_SIZE) * 2 > BUFSIZE) {
-                    return NULL;
-            }
 
-            hex_encode(ptr, rip_packet_len + RIP_HEADER_SIZE, buf1);
-            hex_encode(ptr + rip_packet_len + RIP_HEADER_SIZE,
-                RIP_AUTH_MD5_SIZE, buf2);
-
-            DISSECT_MSG("RIPv2-%s-%d:$netmd5$%s$%s\n",
+            DISSECT_MSG("RIPv2-%s-%d:$netmd5$",
                 ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                ntohs(PACKET->L4.dst),
-                buf1, buf2);
+                ntohs(PACKET->L4.dst));
+
+           for (i = 0; i < rip_packet_len + RIP_HEADER_SIZE; i++) {
+                if (ptr + i == NULL)
+                        return NULL;
+
+                DISSECT_MSG("%02x", *(ptr+i));
+           }
+           DISSECT_MSG("$");
+           for (i = rip_packet_len + RIP_HEADER_SIZE; i < rip_packet_len + \
+                        RIP_HEADER_SIZE + RIP_AUTH_MD5_SIZE; i++) {
+                if (ptr + i == NULL)
+                        return NULL;
+
+                DISSECT_MSG("%02x", *(ptr+i));
+           }
+           DISSECT_MSG("\n");
          }
          break;
       case 4:

@@ -45,22 +45,9 @@
 #include <ec_decode.h>
 #include <ec_dissect.h>
 
-#define OSPF_AUTH_LEN            8
 #define OSPF_NO_AUTH             0
 #define OSPF_AUTH                1  // OSPF_AUTH_SIMPLE
 #define OSPF_AUTH_CRYPTOGRAPHIC  2
-
-struct ospf_hdr {
-   u_int8   ver;
-   u_int8   type;
-   u_int16  len;
-   u_int32  rid;
-   u_int32  aid;
-   u_int16  csum;
-   u_int16  auth_type;
-   u_int32  auth1;
-   u_int32  auth2;
-};
 
 static char itoa16[16] =  "0123456789abcdef";
 
@@ -84,15 +71,25 @@ struct ospf_header
 {
    u_int8 version;                       /* OSPF Version. */
    u_int8 type;                          /* Packet Type. */
-   u_int16_t length;                     /* Packet Length. */
+   u_int16 length;                       /* Packet Length. */
    struct in_addr router_id;             /* Router ID. */
    struct in_addr area_id;               /* Area ID. */
-   u_int16_t checksum;                   /* Check Sum. */
-   u_int16_t auth_type;                  /* Authentication Type. */
-   u_int16_t zero;                       /* Should be 0. */
-   u_int8 key_id;                        /* Key ID. */
-   u_int8 auth_data_len;                 /* Auth Data Length. */
-   u_int32_t crypt_seqnum;               /* Cryptographic Sequence Number. */
+   u_int16 checksum;                     /* Check Sum. */
+   u_int16 auth_type;                    /* Authentication Type. */
+   /* Authentication Data. */
+   union
+   {
+      /* Simple Authentication. */
+      u_char auth_data [OSPF_AUTH_SIMPLE_SIZE];
+      /* Cryptographic Authentication. */
+      struct
+      {
+         u_int16_t zero;                 /* Should be 0. */
+         u_char key_id;                  /* Key ID. */
+         u_char auth_data_len;           /* Auth Data Length. */
+         u_int32_t crypt_seqnum;         /* Cryptographic Sequence Number. */
+      } crypt;
+   } u;
 };
 
 /* protos */
@@ -121,7 +118,6 @@ void __init ospf_init(void)
 FUNC_DECODER(dissector_ospf)
 {
    // DECLARE_DISP_PTR_END(ptr, end);  // this is broken!
-   struct ospf_hdr *ohdr;
    u_int8 *ptr = buf;
    char tmp[MAX_ASCII_ADDR_LEN];
    char pass[12];
@@ -137,17 +133,16 @@ FUNC_DECODER(dissector_ospf)
 
    DEBUG_MSG("OSPF --> dissector_ospf");
 
-   ohdr = (struct ospf_hdr *)ptr;
+   struct ospf_header *ohdr = (struct ospf_header *)ptr;
 
    /* authentication */
    if ( ntohs(ohdr->auth_type) == OSPF_AUTH_CRYPTOGRAPHIC ) {
-        struct ospf_header *oh = (struct ospf_header *)ptr;
         unsigned char buf1[BUFSIZE] = { 0 };
         unsigned char buf2[BUFSIZE] = { 0 };
 
-        int length = ntohs(ohdr->len);
+        int length = ntohs(ohdr->length);
 
-        if (oh->auth_data_len != OSPF_AUTH_MD5_SIZE) {
+        if (ohdr->u.crypt.auth_data_len != OSPF_AUTH_MD5_SIZE) {
                 return NULL;
         }
 
@@ -164,16 +159,16 @@ FUNC_DECODER(dissector_ospf)
                 ip_addr_ntoa(&PACKET->L3.dst, tmp),
                 ntohs(PACKET->L4.dst),
                 buf1, buf2);
-   } else if ( ntohs(ohdr->auth_type) == OSPF_AUTH ) {
+   } else if ( ntohs(ohdr->auth_type) == OSPF_AUTH ) {  /* Simple Authentication */
       DEBUG_MSG("\tDissector_ospf PASS");
 
       /*
        * we use a local variable since this does
        * not need to reach the top half
        */
-      char o[OSPF_AUTH_LEN];
-      snprintf(o, OSPF_AUTH_LEN, "%s", (char*)&(ohdr->auth1));
-      strncpy(pass, o, OSPF_AUTH_LEN);
+      char o[OSPF_AUTH_SIMPLE_SIZE];
+      snprintf(o, OSPF_AUTH_SIMPLE_SIZE, "%s", ohdr->u.auth_data);
+      strncpy(pass, o, OSPF_AUTH_SIMPLE_SIZE);
 
       DISSECT_MSG("OSPF : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                 ntohs(PACKET->L4.dst),

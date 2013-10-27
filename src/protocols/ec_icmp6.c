@@ -34,6 +34,7 @@ void __init icmp6_init(void)
 
 FUNC_DECODER(decode_icmp6)
 {
+   FUNC_DECODER_PTR(next_decoder);
    struct icmp6_hdr *icmp6;
    u_int16 csum;
 
@@ -83,6 +84,10 @@ FUNC_DECODER(decode_icmp6)
 
    hook_point(HOOK_PACKET_ICMP6, po);
 
+   /* get the next decoder */
+   next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
+   EXECUTE_DECODER(next_decoder);
+   
    if(icmp6->type == ICMP6_NEIGH_SOL || icmp6->type == ICMP6_NEIGH_ADV) {
       PACKET->L4.options = (u_char*)(icmp6) + 4;
       PACKET->L4.optlen = PACKET->L4.len - sizeof(struct icmp6_hdr) - 4;

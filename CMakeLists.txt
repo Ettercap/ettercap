@@ -9,7 +9,6 @@ macro_ensure_out_of_source_build("${PROJECT_NAME} requires an out of source buil
 
 option(ENABLE_CURSES "Enable curses interface" ON)
 option(ENABLE_GTK "Enable GTK interface" ON)
-option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)

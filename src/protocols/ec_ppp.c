@@ -24,9 +24,7 @@
 #include <ec_capture.h>
 #include <ec_dissect.h>
 
-#ifdef HAVE_OPENSSL
-   #include <openssl/sha.h>
-#endif
+#include <openssl/sha.h>
 
 /* globals */
 struct ppp_header {
@@ -102,10 +100,8 @@ FUNC_DECODER(decode_ppp)
    u_char auth_len;
    char user[128], dummy[3], temp[128], *pap_auth;
    static char version=0, schallenge[512];
-#ifdef HAVE_OPENSSL
    u_char digest[SHA_DIGEST_LENGTH];
    SHA_CTX ctx;
-#endif
 
 
    ppph = (struct ppp_header *)DECODE_DATA;
@@ -203,7 +199,7 @@ FUNC_DECODER(decode_ppp)
                DISSECT_MSG(":%s\n\n",schallenge);
 
             } else if (version == 2) {
-#ifdef HAVE_OPENSSL
+/*#ifdef HAVE_OPENSSL */
                char *p;
 
                if ((p = strchr(user, '\\')) == NULL)
@@ -224,7 +220,7 @@ FUNC_DECODER(decode_ppp)
                for (i = 0; i < 24; i++)
                   DISSECT_MSG("%02X",chapch->value.response_v2.nt[i]);
                DISSECT_MSG("$%s\n\n", user);
-#else
+/*#else
                for (i = 0; i < 16; i++)
                   DISSECT_MSG("%02X", schallenge[i]);
                DISSECT_MSG("$");
@@ -234,7 +230,7 @@ FUNC_DECODER(decode_ppp)
                for (i = 0; i < 16; i++)
                        DISSECT_MSG("%02X",chapch->value.response_v2.peer_challenge[i]);
                DISSECT_MSG("$%s\n\n", user);
-#endif
+#endif*/
             }
             version = 0;
          break;

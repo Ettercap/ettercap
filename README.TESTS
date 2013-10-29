@@ -1,7 +1,8 @@
 
 Ettercap now has unit-tests!
 
-- We use the "Check" unit testing framework (http://check.sourceforge.net/)
+Requires:
+  check (will use bundled check if it isn't already installed)
 
 - To enable tests:
   - mkdir build 

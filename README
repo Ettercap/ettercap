@@ -40,8 +40,6 @@ bison (or other yacc-compatible parser generator) for *.y files
 
 cmake (build tool)
 
-ps2pdf13 (script accompanying ghostscript)
-
 ==============================================================================
                      R E Q U I R E D   L I B R A R I E S
 ==============================================================================
@@ -76,9 +74,6 @@ OPTIONAL:
       - Gtk+      >= 2.2.2
       - Atk       >= 1.2.4
       - Pango     >= 1.2.3
-
-   For the SSLStrip plugin
-      - Curl      >= 7.26.0
 
 If you are running on debian, or any debian based distro you can install the required dependencies by running:
 apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses-dev libncurses5-dev libnet1-dev \

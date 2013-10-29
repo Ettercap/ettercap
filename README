@@ -10,7 +10,7 @@
 
                    A suite for man in the middle attacks
 
-                      Copyright 2001-2013 The Ettercap Dev Team
+                 Copyright 2001-2013 The Ettercap Dev Team
 
 ==============================================================================
 ==============================================================================
@@ -83,10 +83,7 @@ apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses
                                    LICENSE
 ============================================================================
 
-   GNU GENERAL PUBLIC LICENSE.
-
-   see LICENSE for details...
-
+   see LICENSE file for details...
 
 ============================================================================
                                    AUTHORS
@@ -126,11 +123,9 @@ apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses
  Please read the man pages ettercap(8) and ettercap_curses(8) to learn how 
  to use ettercap.
 
-
 ============================================================================
                                TECHNICAL PAPER
 ============================================================================
-
 
 THE HOST LIST
 

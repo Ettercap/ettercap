@@ -111,8 +111,8 @@ int manuf_init(void)
 {
    struct entry *p;
 
-   char line[80];
-   char name[80];
+   char line[6+1+120+1]; // MAC + Blank + Description + Newline
+   char name[120+1];
    char mac[4];
 
    FILE *f;
@@ -124,9 +124,9 @@ int manuf_init(void)
    f = open_data("share", MAC_FINGERPRINTS, FOPEN_READ_TEXT);
    ON_ERROR(f, NULL, "Cannot open %s", MAC_FINGERPRINTS);
 
-   while (fgets(line, 80, f) != 0) {
+   while (fgets(line, 127, f) != 0) {
 
-      if (sscanf(line, "%02X%02X%02X %80[^,\n],\n", &m1, &m2, &m3, name) != 4)
+      if (sscanf(line, "%02X%02X%02X %120[^,\n],\n", &m1, &m2, &m3, name) != 4)
          continue;
 
       mac[0] = (char) (m1);

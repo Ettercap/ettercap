@@ -16,6 +16,10 @@
    #include <windows.h>
 #endif
 
+#ifdef OS_DARWIN
+   #include <net/bpf.h>
+#endif
+
 #if !defined (__USE_GNU)   /* for memmem(), strsignal(), etc etc... */
    #define __USE_GNU
 #endif

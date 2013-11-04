@@ -118,8 +118,8 @@ static struct ip_addr *search_netmask(void)
    int nhosts, i;
    static struct ip_addr scanip;
 
-   netmask = ip_addr_to_int32(&GBL_IFACE->netmask.addr);
-   myip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
+   netmask = *GBL_IFACE->netmask.addr32;
+   myip = *GBL_IFACE->ip.addr32;
    
    /* the number of hosts in this netmask */
    nhosts = ntohl(~netmask);

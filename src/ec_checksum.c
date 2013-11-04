@@ -109,10 +109,10 @@ static u_int16 v4_checksum(struct packet_object *po)
    csum = sum(po->L4.header, len);
 
    /* check the pseudo header */
-   csum += ip_addr_to_int32(&po->L3.src.addr) & 0xffff;
-   csum += ip_addr_to_int32(&po->L3.src.addr) >> 16;
-   csum += ip_addr_to_int32(&po->L3.dst.addr) & 0xffff;
-   csum += ip_addr_to_int32(&po->L3.dst.addr) >> 16;
+   csum += *po->L3.src.addr32 & 0xffff;
+   csum += *po->L3.src.addr32 >> 16;
+   csum += *po->L3.dst.addr32 & 0xffff;
+   csum += *po->L3.dst.addr32 >> 16;
 
    csum += htons((u_int16)po->L4.proto);
    csum += htons(len);

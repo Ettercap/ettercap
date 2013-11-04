@@ -475,9 +475,9 @@ int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr)
          if(!memcmp(sa->addr, "\xff\xff\xff\xff", IP_ADDR_LEN))
             return ESUCCESS;
 
-			address = &ip_addr_to_int32(sa->addr);
-			netmask = &ip_addr_to_int32(nm->addr);
-			network = &ip_addr_to_int32(nw->addr);
+			address = sa->addr32;
+			netmask = nm->addr32;
+			network = nw->addr32;
 
 			broadcast = (*network) | ~(*netmask);
 
@@ -532,9 +532,9 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
             /* return UNKNOWN */
             return -EINVALID;
    
-         address = &ip_addr_to_int32(sa->addr);
-         netmask = &ip_addr_to_int32(nm->addr);
-         network = &ip_addr_to_int32(nw->addr);
+         address = sa->addr32;
+         netmask = nm->addr32;
+         network = nw->addr32;
          /* check if it is local */
          if ((*address & *netmask) == *network) {
             if(ifaddr != NULL)
@@ -548,9 +548,9 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
          LIST_FOREACH(ip6, &GBL_IFACE->ip6_list, next) {
             nm = &ip6->netmask;
             nw = &ip6->network;
-            address = &ip_addr_to_int32(sa->addr);
-            netmask = &ip_addr_to_int32(nm->addr);
-            network = &ip_addr_to_int32(nw->addr);
+            address = sa->addr32;
+            netmask = nm->addr32;
+            network = nw->addr32;
 
 
             for(i = 0; i < IP6_ADDR_LEN / sizeof(u_int32); i++) {
@@ -613,14 +613,14 @@ int ip_addr_get_network(struct ip_addr *ip, struct ip_addr *netmask, struct ip_a
 
    switch(ntohs(ip->addr_type)) {
       case AF_INET:
-         ip4 = ip_addr_to_int32(ip->addr) & ip_addr_to_int32(netmask->addr);
+         ip4 = *ip->addr32 & *netmask->addr32;
          ip_addr_init(network, AF_INET, (u_char*)&ip4);
          break;
       case AF_INET6:
-         ip6[0] = ((u_int32*)ip->addr)[0] & ((u_int32*)netmask->addr)[0];
-         ip6[1] = ((u_int32*)ip->addr)[1] & ((u_int32*)netmask->addr)[1];
-         ip6[2] = ((u_int32*)ip->addr)[2] & ((u_int32*)netmask->addr)[2];
-         ip6[3] = ((u_int32*)ip->addr)[3] & ((u_int32*)netmask->addr)[3];
+         ip6[0] = ip->addr32[0] & netmask->addr32[0];
+         ip6[1] = ip->addr32[1] & netmask->addr32[1];
+         ip6[2] = ip->addr32[2] & netmask->addr32[2];
+         ip6[3] = ip->addr32[3] & netmask->addr32[3];
          ip_addr_init(network, AF_INET6, (u_char*)&ip6);
          break;
       default:
@@ -641,7 +641,7 @@ int ip_addr_get_prefix(struct ip_addr* netmask)
 
    s = ntohs(netmask->addr_len) / sizeof(u_int32);
 
-   mask = &ip_addr_to_int32(netmask->addr);
+   mask = netmask->addr32;
 
    for(i = 0; i < s; i++) {
       x = mask[i];

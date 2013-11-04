@@ -17,6 +17,7 @@
 #endif
 
 #ifdef OS_DARWIN
+   #define PCAP_DONT_INCLUDE_PCAP_BPF_H 1
    #include <net/bpf.h>
 #endif
 

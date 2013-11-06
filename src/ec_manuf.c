@@ -63,7 +63,7 @@
 
 #define LOAD_ENTRY(p,h,v) do {                                 \
    SAFE_CALLOC((p), 1, sizeof (struct entry));                 \
-   (p)->mac = *(int *)(h);                                     \
+   (p)->mac = (h);                                             \
    (p)->vendor = strdup (v);                                   \
 } while (0)
 
@@ -113,7 +113,10 @@ int manuf_init(void)
 
    char line[6+1+120+1]; // MAC + Blank + Description + Newline
    char name[120+1];
-   char mac[4];
+   union {
+      char b[4];
+      u_int32 i;
+   } mac;
 
    FILE *f;
 
@@ -129,14 +132,14 @@ int manuf_init(void)
       if (sscanf(line, "%02X%02X%02X %120[^,\n],\n", &m1, &m2, &m3, name) != 4)
          continue;
 
-      mac[0] = (char) (m1);
-      mac[1] = (char) (m2);
-      mac[2] = (char) (m3);
-      mac[3] = 0;
+      mac.b[0] = (char) (m1);
+      mac.b[1] = (char) (m2);
+      mac.b[2] = (char) (m3);
+      mac.b[3] = 0;
+      
+      LOAD_ENTRY(p, mac.i, name);
 
-      LOAD_ENTRY(p, mac, name);
-
-      SLIST_INSERT_HEAD(&(manuf_head[fnv_32(mac, 4) & TABMASK]), p, entries);
+      SLIST_INSERT_HEAD(&(manuf_head[fnv_32(mac.b, 4) & TABMASK]), p, entries);
 
       i++;
 
@@ -157,18 +160,22 @@ int manuf_init(void)
 char * manuf_search(const char *m)
 {
    struct entry *l;
-   char mac[4];
+   union {
+      char b[4];
+      u_int32 i;
+   } mac;
+
    u_int32 h;
 
-   mac[0] = *m++;
-   mac[1] = *m++;
-   mac[2] = *m;
-   mac[3] = 0;
+   mac.b[0] = *m++;
+   mac.b[1] = *m++;
+   mac.b[2] = *m;
+   mac.b[3] = 0;
 
-   h = fnv_32(mac, 4) & TABMASK;
+   h = fnv_32(mac.b, 4) & TABMASK;
    
    SLIST_FOREACH(l, &manuf_head[h], entries) {
-      if (l->mac == *(u_int *) mac)
+      if (l->mac == mac.i)
          return (l->vendor);
    }
 

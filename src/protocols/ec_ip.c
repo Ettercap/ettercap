@@ -290,8 +290,8 @@ FUNC_INJECTOR(inject_ip)
    iph->frag_off = 0;            
    iph->ttl      = 64;   
    iph->protocol = PACKET->L4.proto; 
-   iph->saddr    = ip_addr_to_int32(PACKET->L3.src.addr);   
-   iph->daddr    = ip_addr_to_int32(PACKET->L3.dst.addr);   
+   iph->saddr    = *PACKET->L3.src.addr32;
+   iph->daddr    = *PACKET->L3.dst.addr32;
 
    /* Take the session and fill remaining fields */
    s = PACKET->session;

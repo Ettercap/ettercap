@@ -416,8 +416,8 @@ static void scan_netmask(pthread_t pid)
    tm.tv_sec = 0;
 #endif
 
-   netmask = ip_addr_to_int32(&GBL_IFACE->netmask.addr);
-   myip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
+   netmask = *GBL_IFACE->netmask.addr32;
+   myip = *GBL_IFACE->ip.addr32;
 
    /* the number of hosts in this netmask */
    nhosts = ntohl(~netmask);

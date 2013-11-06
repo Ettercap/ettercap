@@ -751,7 +751,7 @@ static int sslw_connect_server(struct accepted_entry *ae)
     * strdup it to avoid race conditions.
     * Btw int_ntoa is not so used in the code.
     */
-   dest_ip = strdup(int_ntoa(ip_addr_to_int32(ae->ip[SSL_SERVER].addr)));
+   dest_ip = strdup(int_ntoa(*ae->ip[SSL_SERVER].addr32));
  
    /* Standard connection to the server */
    if (!dest_ip || (ae->fd[SSL_SERVER] = open_socket(dest_ip, ntohs(ae->port[SSL_SERVER]))) < 0) {

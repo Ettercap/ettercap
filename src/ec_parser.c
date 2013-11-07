@@ -70,7 +70,7 @@ void set_address(char *address);
 void set_read_pcap(char *pcap_file);
 void set_write_pcap(char *pcap_file);
 void set_pcap_filter(char *filter);
-void load_filter(const char *end, char *filter);
+void load_filter(char *end, const char *filter);
 void set_loglevel_packet(char *arg);
 void set_loglevel_info(char *arg);
 void set_loglevel_true(char *arg);

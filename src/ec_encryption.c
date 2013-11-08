@@ -546,9 +546,9 @@ char tmp[512];
    /* Encrypted key is in the information element field of the EAPOL key packet */
    SAFE_CALLOC(encrypted_key, key_len, sizeof(u_int8));
 
-   DEBUG_MSG("Encrypted Broadcast key:", str_tohex(encrypted_key, key_len, tmp, sizeof(tmp)));
-   DEBUG_MSG("KeyIV:", str_tohex(eapol_key->key_IV, 16, tmp, sizeof(tmp)));
-   DEBUG_MSG("decryption_key:", str_tohex(sa->ptk + 16, 16, tmp, sizeof(tmp)));
+   DEBUG_MSG("Encrypted Broadcast key: %s\n", str_tohex(encrypted_key, key_len, tmp, sizeof(tmp)));
+   DEBUG_MSG("KeyIV: %s\n", str_tohex(eapol_key->key_IV, 16, tmp, sizeof(tmp)));
+   DEBUG_MSG("decryption_key: %s\n", str_tohex(sa->ptk + 16, 16, tmp, sizeof(tmp)));
 
    /*
     * XXX - implement broadcast key

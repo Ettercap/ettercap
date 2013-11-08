@@ -27,7 +27,6 @@
 
 /* protos... */
 
-inline int packet_create_object(struct packet_object *po, u_char *buf, size_t len);
 inline int packet_destroy_object(struct packet_object *po);
 
 /* --------------------------- */

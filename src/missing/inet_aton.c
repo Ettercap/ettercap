@@ -46,8 +46,6 @@
 #include <arpa/inet.h>
 #endif
 
-int inet_aton(const char *cp, struct in_addr *addr);
-
 /* Minimal implementation of inet_aton.
  * Cannot distinguish between failure and a local broadcast address. */
 

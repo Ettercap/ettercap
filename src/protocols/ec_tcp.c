@@ -84,7 +84,6 @@ FUNC_INJECTOR(inject_tcp);
 void tcp_init(void);
 int tcp_match(void *id_sess, void *id_curr);
 void tcp_create_session(struct ec_session **s, struct packet_object *po);
-int tcp_find_direction(void *ids, void *id);
 
 /*******************************************/
 

@@ -16,8 +16,6 @@ struct gtk_conf_entry {
    short value;
 };
 
-void gtkui_refresh_host_list(void);
-
 /* ec_gtk.c */
 extern GtkWidget *window;  /* main window */
 extern GtkWidget *notebook;

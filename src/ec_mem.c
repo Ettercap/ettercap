@@ -21,9 +21,6 @@
 
 #include <ec.h>
 
-void safe_free_mem(char **param, int *param_length, char *command);
-
-
 void safe_free_mem(char **param, int *param_length, char *command)
 {
    int k;

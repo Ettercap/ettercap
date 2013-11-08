@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(ettercap C)
 
-set(VERSION "0.7.6")
+set(VERSION "0.8.0")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 include(MacroEnsureOutOfSourceBuild)
@@ -9,7 +9,6 @@ macro_ensure_out_of_source_build("${PROJECT_NAME} requires an out of source buil
 
 option(ENABLE_CURSES "Enable curses interface" ON)
 option(ENABLE_GTK "Enable GTK interface" ON)
-option(ENABLE_SSL "Enable SSL support" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
@@ -19,7 +18,7 @@ option(LIBRARY_BUILD "Build for libettercap only" OFF)
 option(INSTALL_DESKTOP "Install ettercap desktop files" ON)
 
 
-SET(VALID_BUILD_TYPES Debug Release)
+SET(VALID_BUILD_TYPES Debug Release RelWithDebInfo)
 
 if(NOT CMAKE_BUILD_TYPE)
   # Default to using "Release" as our build type.
@@ -71,9 +70,7 @@ CMAKE_DEPENDENT_OPTION(BUNDLED_LUAJIT
   "Use bundled version of LUAJIT if system-provided version is not found (or disabled)" ON
   "BUNDLED_LIBS;ENABLE_LUA" OFF)
 
-set(MACPORTS_BASE_DIRECTORY "/opt/local" CACHE PATH "MacPorts installation base directory")
-set(SPECIAL_LIB_DIR "" CACHE PATH "Special (non-traditional) directory where libraries are installed")
-
+set(SPECIAL_LIB_DIR "" CACHE PATH "Special (non-traditional) root directory where headers/libraries are installed")
 
 include(CheckVariableInHeaders)
 include(EttercapOSTest)
@@ -81,8 +78,8 @@ include(EttercapOSTest)
 #Check and see if we're running Darwin, specify the CMAKE_LIBARY_PATH to do so
 if(OS_DARWIN)
 	set(CMAKE_SYSTEM_NAME Darwin)
-	set(CMAKE_LIBRARY_PATH ${MACPORTS_BASE_DIRECTORY}/lib ${CMAKE_LIBRARY_PATH})
-	set(CMAKE_INCLUDE_PATH ${MACPORTS_BASE_DIRECTORY}/include ${CMAKE_INCLUDE_PATH})
+	set(CMAKE_LIBRARY_PATH ${SPECIAL_LIB_DIR}/lib ${CMAKE_LIBRARY_PATH})
+	set(CMAKE_INCLUDE_PATH ${SPECIAL_LIB_DIR}/include ${CMAKE_INCLUDE_PATH})
 else(OS_DARWIN)
 	set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/lib64 /usr/lib32)
 endif(OS_DARWIN)
@@ -103,23 +100,24 @@ set(INSTALL_LIBDIR ${INSTALL_PREFIX}/lib${LIB_SUFFIX} CACHE PATH "Library instal
 set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation directory")
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
-set(POLKIT_DIR /usr/share/polkit-1/actions/ CACHE PATH "Binary files installation directory")
+set(POLKIT_DIR ${INSTALL_PREFIX}/share/polkit-1/actions/ CACHE PATH "Binary files installation directory")
 set(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap CACHE PATH "Name of the pkexec action file")
-set(DESKTOP_DIR /usr/share/applications/ CACHE PATH "Binary files installation directory")
-set(ICON_DIR /usr/share/pixmaps CACHE PATH "Binary files installation directory")
+set(DESKTOP_DIR ${INSTALL_PREFIX}/share/applications/ CACHE PATH "Binary files installation directory")
+set(ICON_DIR ${INSTALL_PREFIX}/share/pixmaps CACHE PATH "Binary files installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages") 
 
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg -Wredundant-decls" CACHE STRING "" FORCE)
-set(CMAKE_C_FLAGS_RELEASE "-O2 -w" CACHE STRING "" FORCE)
+
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -Wextra -Wredundant-decls" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -w -D_FORTIFY_SOURCE=2" CACHE STRING "" FORCE)
 
 if(OS_DARWIN)
-set(CMAKE_EXE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl -pg" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -Wl -pg" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl" CACHE STRING "" FORCE)
 else(OS_DARWIN)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-export-dynamic" CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl,-export-dynamic -pg" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-export-dynamic" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -Wl,-export-dynamic -pg" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS} -Wl,-export-dynamic" CACHE STRING "" FORCE)
 endif(OS_DARWIN)
 
 if(ENABLE_LUA)

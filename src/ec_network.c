@@ -44,7 +44,7 @@ static void close_secondary_sources(void);
 static void l3_init(void);
 static void l3_close(void);
 
-/* teh code */
+/* the code */
 
 void network_init()
 {
@@ -75,7 +75,7 @@ void network_init()
       if(GBL_OPTIONS->read)
          FATAL_ERROR("Dump file not supported (%s)", pcap_datalink_val_to_description(GBL_PCAP->dlt));
       else
-         FATAL_ERROR("Inteface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
+         FATAL_ERROR("Interface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
    }
    
    if(GBL_OPTIONS->write)
@@ -103,7 +103,7 @@ static void close_network()
       pcap_close(GBL_BRIDGE->pcap);
 
    if(GBL_OPTIONS->write)
-      pcap_dump_close(GBL_PCAP->dump);
+      pcap_dump_close(GBL_IFACE->dump);
 
    libnet_destroy(GBL_IFACE->lnet);
    libnet_destroy(GBL_BRIDGE->lnet);
@@ -114,11 +114,9 @@ static void close_network()
 static void pcap_winit(pcap_t *pcap)
 {
    pcap_dumper_t *pdump;
-
    pdump = pcap_dump_open(pcap, GBL_OPTIONS->pcapfile_out);
    ON_ERROR(pdump, NULL, "pcap_dump_open: %s", pcap_geterr(pcap));
-
-   GBL_PCAP->dump = pdump;
+   GBL_IFACE->dump = pdump;
 }
 
 static void source_print(struct iface_env *source)
@@ -214,20 +212,18 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 
    if(GBL_PCAP->filter && strcmp(GBL_PCAP->filter, "") && live) {
       bpf_u_int32 net, mask;
-
       if(pcap_lookupnet(name, &net, &mask, pcap_errbuf) == -1)
          ERROR_MSG("%s - %s", name, pcap_errbuf);
       if(pcap_compile(pcap, &bpf, GBL_PCAP->filter, 1, mask) < 0)
-         ERROR_MSG("%s - %s", name, pcap_geterr(pcap));
+         ERROR_MSG("Wrong pcap filter: %s - %s", name, pcap_geterr(pcap));
       if(pcap_setfilter(pcap, &bpf) == 1)
-         ERROR_MSG("%s - %s", name, pcap_geterr(pcap));
+         ERROR_MSG("Cannot set pcap filter: %s - %s", name, pcap_geterr(pcap));
    }
 
    snaplen = pcap_snapshot(pcap);
    DEBUG_MSG("requested snaplen for %s: %d, assigned snaplen: %d", name, GBL_PCAP->snaplen, snaplen);
    if(primary)
       GBL_PCAP->snaplen = snaplen;
-
    source->pcap = pcap;
 
    SAFE_STRDUP(source->name, name);

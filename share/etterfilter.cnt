@@ -17,7 +17,8 @@
 # Layer 3 constants
 ARP = 0x0806
 IP = 0x0800
-PPPoE = 0x880B
+IP6 = 0x86DD
+PPPOE = 0x880B
 PPTP = 0x880B
 
 # Layer 4 constants (IPPROTO_*)

@@ -14,7 +14,7 @@
 #include <config.h>
 #include <ec_encryption.h>
 #include <pcap.h>
-
+#include <libnet.h>
 #include <regex.h>
 
 /* options form etter.conf */
@@ -32,7 +32,8 @@ struct ec_conf {
    int dhcp_lease_time;
    int port_steal_delay;
    int port_steal_send_delay;
-   int nadv_poison_send_delay;
+   int ndp_poison_send_delay;
+   int icmp6_probe_delay;
    int connection_timeout;
    int connection_idle;
    int connection_buffer;
@@ -60,6 +61,7 @@ struct ec_options {
    char quiet:1;
    char superquiet:1;
    char silent:1;
+   char ip6scan:1;
    char unoffensive:1;
    char ssl_mitm:1;
    char load_hosts:1;
@@ -102,24 +104,21 @@ struct program_env {
 
 /* global pcap structure */
 struct pcap_env {
-   pcap_if_t *ifs;
-   pcap_t    *pcap;
-   pcap_t    *pread;
-   void     *dump;         /* this is a pcap_dumper_t pointer */
-   char     *buffer;       /* buffer to be used to handle all the packets */
-   u_int8   align;         /* alignment needed on sparc 4*n - sizeof(media_hdr) */
-   char     promisc;
-   char     *filter;       /* pcap filter */
-   u_int16  snaplen;
-   int      dlt;
-   u_int32  dump_size;     /* total dump size */
-   u_int32  dump_off;      /* current offset */
+   pcap_if_t     *ifs;
+   char          *buffer;        /* buffer to be used to handle all the packets */
+   u_int8         align;         /* alignment needed on sparc 4*n - sizeof(media_hdr) */
+   char           promisc;
+   char          *filter;        /* pcap filter */
+   u_int16        snaplen;
+   int            dlt;
+   u_int32        dump_size;     /* total dump size */
+   u_int32        dump_off;      /* current offset */
 };
 
 /* lnet structure */
 struct lnet_env {
-   struct libnet_t *lnet_IP4;
-   struct libnet_t *lnet_IP6;
+   libnet_t *lnet_IP4;
+   libnet_t *lnet_IP6;
 };
 
 /* ip list per target */

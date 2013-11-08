@@ -335,6 +335,16 @@ void gtkui_create_targets_array(void)
       gtk_list_store_set (liststore1, &iter, 0, ip_addr_ntoa(&il->ip, tmp), 1, il, -1);
    }
 
+#ifdef WITH_IPV6
+   /* walk TARGET 1 - IPv6 */
+   LIST_FOREACH(il, &GBL_TARGET1->ip6, next) {
+      /* enlarge the array */
+      gtk_list_store_append (liststore1, &iter);
+      /* fill the element */
+      gtk_list_store_set (liststore1, &iter, 0, ip_addr_ntoa(&il->ip, tmp), 1, il, -1);
+   }
+#endif
+
    if(liststore2)
       gtk_list_store_clear(GTK_LIST_STORE (liststore2));
    else
@@ -347,6 +357,16 @@ void gtkui_create_targets_array(void)
       /* fill the element */
       gtk_list_store_set (liststore2, &iter, 0, ip_addr_ntoa(&il->ip, tmp), 1, il, -1);
    }
+   
+#ifdef WITH_IPV6
+   /* walk TARGET 2 - IPv6 */
+   LIST_FOREACH(il, &GBL_TARGET2->ip6, next) {
+      /* enlarge the array */
+      gtk_list_store_append (liststore2, &iter);
+      /* fill the element */
+      gtk_list_store_set (liststore2, &iter, 0, ip_addr_ntoa(&il->ip, tmp), 1, il, -1);
+   }
+#endif
 }
 
 /*
@@ -369,15 +389,24 @@ static void gtkui_add_target2(void *entry)
 static void add_target1(void)
 {
    struct in_addr ip;
+#ifdef WITH_IPV6
+   struct in6_addr ip6;
+#endif
    struct ip_addr host;
    
-   if (inet_aton(thost, &ip) == 0) {
+   if (inet_pton(AF_INET, thost, &ip) == 1) { /* is IPv4 */
+      ip_addr_init(&host, AF_INET, (u_char *)&ip);
+   }
+#ifdef WITH_IPV6
+   else if (inet_pton(AF_INET6, thost, &ip6) == 1) { /* is IPv6 */
+      ip_addr_init(&host, AF_INET6, (u_char *)&ip6);
+   }
+#endif
+   else { /* neither IPv4 nor IPv6 - inform user */
       gtkui_message("Invalid ip address");
       return;
    }
    
-   ip_addr_init(&host, AF_INET, (char *)&ip);
-
    add_ip_list(&host, GBL_TARGET1);
    
    /* refresh the list */
@@ -387,15 +416,24 @@ static void add_target1(void)
 static void add_target2(void)
 {
    struct in_addr ip;
+#ifdef WITH_IPV6
+   struct in6_addr ip6;
+#endif
    struct ip_addr host;
    
-   if (inet_aton(thost, &ip) == 0) {
+   if (inet_pton(AF_INET, thost, &ip) == 1) { /* is IPv4 */
+      ip_addr_init(&host, AF_INET, (u_char *)&ip);
+   }
+#ifdef WITH_IPV6
+   else if (inet_pton(AF_INET6, thost, &ip6) == 1) { /* is IPv6 */
+      ip_addr_init(&host, AF_INET6, (u_char *)&ip6);
+   }
+#endif
+   else { /* neither IPv4 nor IPv6 - inform user */
       gtkui_message("Invalid ip address");
       return;
    }
    
-   ip_addr_init(&host, AF_INET, (char *)&ip);
-
    add_ip_list(&host, GBL_TARGET2);
    
    /* refresh the list */

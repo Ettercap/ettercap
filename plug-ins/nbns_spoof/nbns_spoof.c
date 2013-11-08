@@ -232,7 +232,7 @@ static int load_db(void)
 	f = open_data("etc", ETTER_NBNS, FOPEN_READ_TEXT);
 
 	if (f == NULL) {
-		USER_MSG("Cannot open %s", ETTER_NBNS); return -EINVALID;
+		USER_MSG("Cannot open %s\n", ETTER_NBNS); return -EINVALID;
 	}
 	
 	while (fgets(line, 128, f)) {
@@ -324,7 +324,7 @@ static void nbns_set_challenge(struct packet_object *po)
 				//memcpy new challenge (8 bytes) to ptr
 				memset(ptr, (long)SMB_WEAK_CHALLENGE, 8);
 				po->flags |= PO_MODIFIED; /* calculate checksum */
-				USER_MSG("nbns_spoof: Modified SMB challenge");
+				USER_MSG("nbns_spoof: Modified SMB challenge\n");
 			}
 		}
 	}
@@ -344,7 +344,7 @@ static void nbns_print_jripper(struct packet_object *po)
 	/*
          * Thanks to the SMB dissector, po->DISSECTOR.pass contains everything we need but domain
          */
-	USER_MSG("%s%s", po->DISSECTOR.info, po->DISSECTOR.pass);
+	USER_MSG("%s%s\n", po->DISSECTOR.info, po->DISSECTOR.pass);
 }
 
 /* 
@@ -414,7 +414,7 @@ static void nbns_spoof(struct packet_object *po)
 
 	rdata->len = ntohs(2+sizeof(u_int32));
 	rdata->nbflags = ntohs(0x0000);
-	rdata->addr = ip_addr_to_int32(reply->addr);
+	rdata->addr = *reply->addr32;
 	
 	/* send fake reply */
 	send_udp(&GBL_IFACE->ip, &po->L3.src, po->L2.src, po->L4.dst, po->L4.src, response, NBNS_MSGLEN_QUERY_RESPONSE);
@@ -452,7 +452,7 @@ static void nbns_spoof_dump(void)
 	SLIST_FOREACH(n, &nbns_spoof_head, next) {
 		if(ntohs(n->ip.addr_type) == AF_INET)
       {
-			DEBUG_MSG(" %s -> [%s]", n->name, int_ntoa(n->ip.addr));
+			DEBUG_MSG(" %s -> [%s]", n->name, int_ntoa(n->ip.addr32));
       }
 	}
 }

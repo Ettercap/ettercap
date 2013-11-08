@@ -67,6 +67,18 @@ static void conntrack_update(struct conn_object *co, struct packet_object *po);
 static void conntrack_add(struct packet_object *po);
 static void conntrack_del(struct conn_object *co);
 static int conntrack_match(struct conn_object *co, struct packet_object *po);
+EC_THREAD_FUNC(conntrack_timeouter);
+void * conntrack_print(int mode, void *list, char **desc, size_t len);
+void * conntrack_get(int mode, void *list, struct conn_object **conn);
+int conntrack_protostr(struct conn_object *conn, char *pstr, int len);
+int conntrack_flagstr(struct conn_object *conn, char *pstr, int len);
+int conntrack_statusstr(struct conn_object *conn, char *pstr, int len);
+void conntrack_purge(void);
+
+int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct packet_object *po));
+int conntrack_hook_packet_del(struct packet_object *po, void (*func)(struct packet_object *po));
+int conntrack_hook_conn_add(struct conn_object *co, void (*func)(struct packet_object *po));
+int conntrack_hook_conn_del(struct conn_object *co, void (*func)(struct packet_object *po));
 void conntrack_hook(struct conn_object *co, struct packet_object *po);
 
 /************************************************/
@@ -622,7 +634,7 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
    struct conn_tail *cl;
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
-   char proto, *status = "", flags = ' ';
+   char proto[2], status[8], flags[2];
 
    /* NULL is used to retrieve the first element */
    if (list == NULL)
@@ -631,57 +643,20 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
    /* the caller wants the description */
    if (desc != NULL) {
          
-      switch (c->co->L4_proto) {
-         case NL_TYPE_UDP:
-            proto = 'U';
-            break;
-         case NL_TYPE_TCP:
-            proto = 'T';
-            break;
-         default:
-            proto = ' ';
-         break;
-      }
-      
+      /* IP address to string */
       ip_addr_ntoa(&c->co->L3_addr1, src);
       ip_addr_ntoa(&c->co->L3_addr2, dst);
 
+      /* determine the protocol */
+      conntrack_protostr(c->co, proto, sizeof(proto));
+      
       /* determine the status */
-      switch (c->co->status) {
-         case CONN_IDLE:
-            status = "idle   ";
-            break;
-         case CONN_OPENING:
-            status = "opening";
-            break;
-         case CONN_OPEN:
-            status = "open   ";
-            break;
-         case CONN_ACTIVE:
-            status = "active ";
-            break;
-         case CONN_CLOSING:
-            status = "closing";
-            break;
-         case CONN_CLOSED:
-            status = "closed ";
-            break;
-         case CONN_KILLED:
-            status = "killed ";
-            break;
-      }
+      conntrack_statusstr(c->co, status, sizeof(status));
       
-      /* determine the flags:
-       * account collection has precedence over injection/modification
-       */
-      if (c->co->flags & CONN_MODIFIED)
-         flags = 'M';
-      if (c->co->flags & CONN_INJECTED)
-         flags = 'I';
-      if (c->co->DISSECTOR.user)
-         flags = '*';
+      /* determine the flags */
+      conntrack_flagstr(c->co, flags, sizeof(flags));
       
-      snprintf(*desc, len, "%c %15s:%-5d - %15s:%-5d %c %s TX: %lu RX: %lu", flags, 
+      snprintf(*desc, len, "%1s %15s:%-5d - %15s:%-5d %1s %s TX: %lu RX: %lu", flags, 
                                            src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
                                            proto, status, (unsigned long)c->co->tx, (unsigned long)c->co->rx);
    }
@@ -709,6 +684,142 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
          
    return NULL;
 }
+
+/* 
+ * copy the connection object pointer to conn and return the next/prev element
+ */
+void * conntrack_get(int mode, void *list, struct conn_object **conn)
+{
+   struct conn_tail *c = (struct conn_tail *)list;
+   struct conn_tail *cl;
+
+   /* NULL is used to retrieve the first element */
+   if (list == NULL)
+      return TAILQ_FIRST(&conntrack_tail_head);
+
+   /* the caller wants the connection object */
+   if (conn != NULL) 
+       *conn = c->co;
+  
+   /* return the next/prev/current to the caller */
+   switch (mode) {
+      case -1:
+         return TAILQ_PREV(c, conn_head, next);
+         break;
+      case +1:
+         return TAILQ_NEXT(c, next);
+         break;
+      case 0:
+         /* if exists in the list, return it */
+         TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
+            if (cl == c)
+               return c;
+         }
+         /* else, return NULL */
+         return NULL;
+      default:
+         return list;
+         break;
+   }
+         
+   return NULL;
+}
+
+
+/*
+ * copies the protocol string of a given connection object into pstr
+ * ESUCCESS is returned on success
+ * -EINVALID is returned if parameters are not initialized
+ */
+int conntrack_protostr(struct conn_object *conn, char *pstr, int len)
+{
+    if (pstr == NULL || conn == NULL)
+        return -EINVALID;
+
+    memset(pstr, 0, len);
+
+    switch (conn->L4_proto) {
+        case NL_TYPE_UDP:
+           strncpy(pstr, "UDP", len - 1);
+           break;
+        case NL_TYPE_TCP:
+           strncpy(pstr, "TCP", len - 1);
+           break;
+        default:
+           strncpy(pstr, "   ", len - 1);
+    }
+
+    return ESUCCESS;
+}
+
+/*
+ * copies the flags string of a given connection object into pstr
+ * ESUCCESS is returned on success
+ * -EINVALID is returned if parameters are not initialized
+ */
+int conntrack_flagstr(struct conn_object *conn, char *pstr, int len)
+{
+    if (pstr == NULL || conn == NULL)
+        return -EINVALID;
+
+    memset(pstr, 0, len);
+
+    /*
+     * account collection has precedence over injection/modification
+     */
+    if (conn->flags & CONN_MODIFIED)
+        strncpy(pstr, "M", len - 1);
+
+    if (conn->flags & CONN_INJECTED)
+        strncpy(pstr, "I", len - 1);
+
+    if (conn->DISSECTOR.user)
+        strncpy(pstr, "*", len - 1);
+
+    return ESUCCESS;
+}
+
+
+/*
+ * copies the status string of a given connection object into pstr
+ * ESUCCESS is returned on success
+ * -EINVALID is returned if parameters are not initialized
+ */
+int conntrack_statusstr(struct conn_object *conn, char *pstr, int len)
+{
+    if (pstr == NULL || conn == NULL)
+        return -EINVALID;
+
+    memset(pstr, 0, len);
+
+    /* determine the status */
+    switch (conn->status) {
+        case CONN_IDLE:
+           strncpy(pstr, "idle   ", len - 1);
+           break;
+        case CONN_OPENING:
+           strncpy(pstr, "opening", len - 1);
+           break;
+        case CONN_OPEN:
+           strncpy(pstr, "open   ", len - 1);
+           break;
+        case CONN_ACTIVE:
+           strncpy(pstr, "active ", len - 1);
+           break;
+        case CONN_CLOSING:
+           strncpy(pstr, "closing", len - 1);
+           break;
+        case CONN_CLOSED:
+           strncpy(pstr, "closed ", len - 1);
+           break;
+        case CONN_KILLED:
+           strncpy(pstr, "killed ", len - 1);
+           break;
+    }
+
+    return ESUCCESS;
+}
+
 
 /* EOF */
 

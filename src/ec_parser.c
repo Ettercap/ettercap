@@ -70,7 +70,7 @@ void set_address(char *address);
 void set_read_pcap(char *pcap_file);
 void set_write_pcap(char *pcap_file);
 void set_pcap_filter(char *filter);
-void load_filter(char *end, char *filter);
+void load_filter(char *end, const char *filter);
 void set_loglevel_packet(char *arg);
 void set_loglevel_info(char *arg);
 void set_loglevel_true(char *arg);
@@ -80,6 +80,9 @@ void set_quiet(void);
 void set_superquiet(void);
 void set_script(char *script);
 void set_silent(void);
+#ifdef WITH_IPV6
+void set_ip6scan(void);
+#endif
 void set_unoffensive(void);
 void disable_sslmitm(void);
 void set_resolve(void);
@@ -106,7 +109,12 @@ void ec_usage(void)
 
    fprintf(stdout, "\nUsage: %s [OPTIONS] [TARGET1] [TARGET2]\n", GBL_PROGRAM);
 
+#ifdef WITH_IPV6
    fprintf(stdout, "\nTARGET is in the format MAC/IP/IPv6/PORTs (see the man for further detail)\n");
+#else
+   fprintf(stdout, "\nTARGET is in the format MAC/IP/PORTs (see the man for further detail)\n");
+#endif
+
    
    fprintf(stdout, "\nSniffing and Attack options:\n");
    fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
@@ -161,6 +169,9 @@ void ec_usage(void)
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
+#ifdef WITH_IPV6
+   fprintf(stdout, "  -6, --ip6scan               send ICMPv6 probes to discover IPv6 nodes on the link\n");
+#endif
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
    fprintf(stdout, "  -W, --wifi-key <wkey>       use this key to decrypt wifi packets (wep or wpa)\n");
@@ -208,6 +219,9 @@ void parse_options(int argc, char **argv)
       { "quiet", no_argument, NULL, 'q' },
       { "script", required_argument, NULL, 's' },
       { "silent", no_argument, NULL, 'z' },
+#ifdef WITH_IPV6
+      { "ip6scan", no_argument, NULL, '6' },
+#endif
       { "unoffensive", no_argument, NULL, 'u' },
       { "nosslmitm", no_argument, NULL, 'S' },
       { "load-hosts", required_argument, NULL, 'j' },
@@ -262,7 +276,7 @@ void parse_options(int argc, char **argv)
    optind = 0;
    int option_index = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:uV:vW:w:Y:z", long_options, &option_index)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:uV:vW:w:Y:z6", long_options, &option_index)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -392,6 +406,12 @@ void parse_options(int argc, char **argv)
                   set_silent();
                   break;
                   
+#ifdef WITH_IPV6
+         case '6':
+                  set_ip6scan();
+                  break;
+#endif
+
          case 'u':
                   set_unoffensive();
                   break;
@@ -746,7 +766,7 @@ void set_pcap_filter(char *filter)
 	GBL_PCAP->filter = strdup(filter);
 }
 
-void load_filter(char *end, char *filter)
+void load_filter(char *end, const char *filter)
 {
 	u_int8 f_enabled = 1;
 	if ( (end-filter >=2) && *(end-2) == ':') {
@@ -761,13 +781,13 @@ void load_filter(char *end, char *filter)
 
 void set_loglevel_packet(char *arg)
 {
-	if (set_msg_loglevel(LOG_PACKET, arg) == -EFATAL)
+	if (set_loglevel(LOG_PACKET, arg) == -EFATAL)
 		clean_exit(-EFATAL);
 }
 
 void set_loglevel_info(char *arg)
 {
-	if (set_msg_loglevel(LOG_INFO, arg) == -EFATAL)
+	if (set_loglevel(LOG_INFO, arg) == -EFATAL)
 		clean_exit(-EFATAL);
 }
 
@@ -807,6 +827,13 @@ void set_silent(void)
 {
 	GBL_OPTIONS->silent = 1;
 }
+
+#ifdef WITH_IPV6
+void set_ip6scan(void)
+{
+	GBL_OPTIONS->ip6scan = 1;
+}
+#endif
 
 void set_unoffensive(void)
 {
@@ -873,7 +900,7 @@ void set_lua_args(char *args)
 	ec_lua_cli_add_args(strdup(args));
 }
 
-void set_lua_scripts(char *script)
+void set_lua_script(char *script)
 {
 	ec_lua_cli_add_script(strdup(script));
 }

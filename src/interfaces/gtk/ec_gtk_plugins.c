@@ -88,7 +88,7 @@ static void gtkui_load_plugin(const char *full)
    char *file;
    int ret;
 
-   path = full;
+   path = strdup(full);
 
 #ifdef OS_WINDOWS
    file = strrchr(full, '\\');
@@ -104,6 +104,8 @@ static void gtkui_load_plugin(const char *full)
 
    /* load the plugin */
    ret = plugin_load_single(path, file);
+
+   SAFE_FREE(path);
 
    /* check the return code */
    switch (ret) {

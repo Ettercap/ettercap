@@ -34,6 +34,7 @@ void __init icmp6_init(void)
 
 FUNC_DECODER(decode_icmp6)
 {
+   FUNC_DECODER_PTR(next_decoder);
    struct icmp6_hdr *icmp6;
    u_int16 csum;
 
@@ -72,10 +73,21 @@ FUNC_DECODER(decode_icmp6)
       case ICMP6_PKT_TOO_BIG:
          PACKET->PASSIVE.flags |= FP_ROUTER;
          break;
+      case ICMP6_NEIGH_ADV:
+         if ((*((u_int8*)icmp6 + 4) & 0x80) == 0x80) {
+            /* Router flag set in neighbor advertisement */
+            PACKET->PASSIVE.flags |= FP_ROUTER;
+            PACKET->PASSIVE.flags |= FP_GATEWAY;
+         }
+         break;
    }
 
    hook_point(HOOK_PACKET_ICMP6, po);
 
+   /* get the next decoder */
+   next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
+   EXECUTE_DECODER(next_decoder);
+   
    if(icmp6->type == ICMP6_NEIGH_SOL || icmp6->type == ICMP6_NEIGH_ADV) {
       PACKET->L4.options = (u_char*)(icmp6) + 4;
       PACKET->L4.optlen = PACKET->L4.len - sizeof(struct icmp6_hdr) - 4;
@@ -90,6 +102,12 @@ FUNC_DECODER(decode_icmp6)
          break;
       case ICMP6_NEIGH_ADV:
          hook_point(HOOK_PACKET_ICMP6_NADV, PACKET);
+         break;
+      case ICMP6_ECHOREPLY:
+         hook_point(HOOK_PACKET_ICMP6_RPLY, PACKET);
+         break;
+      case ICMP6_BAD_PARAM:
+         hook_point(HOOK_PACKET_ICMP6_PARM, PACKET);
          break;
    }
 

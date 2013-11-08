@@ -43,8 +43,6 @@
 #include <time.h>
 #include <pthread.h>
 
-#ifdef HAVE_OPENSSL
-
 // XXX - check if we have poll.h
 #ifdef HAVE_SYS_POLL_H
    #include <sys/poll.h>
@@ -69,8 +67,6 @@
    }                                \
 } while(0)
 
-#endif /* HAVE_OPENSSL */
-
 /* globals */
 
 static LIST_HEAD (, listen_entry) listen_ports;
@@ -83,9 +79,6 @@ struct listen_entry {
    char *name;
    LIST_ENTRY (listen_entry) next;
 };
-
-
-#ifdef HAVE_OPENSSL
 
 struct accepted_entry {
    int32 fd[2];   /* 0->Client, 1->Server */
@@ -124,10 +117,6 @@ static EVP_PKEY *global_pk;
 static u_int16 number_of_services;
 static struct pollfd *poll_fd = NULL;
 
-#endif /* HAVE_OPENSSL */
-
-#ifdef HAVE_OPENSSL
-
 static EC_THREAD_FUNC(sslw_child);
 static int sslw_is_ssl(struct packet_object *po);
 static int sslw_connect_server(struct accepted_entry *ae);
@@ -150,8 +139,6 @@ static void ssl_wrap_fini(void);
 static int sslw_ssl_connect(SSL *ssl_sk);
 static int sslw_ssl_accept(SSL *ssl_sk);
 static int sslw_remove_sts(struct packet_object *po);
-
-#endif /* HAVE_OPENSSL */
 
 /*******************************************/
 
@@ -201,13 +188,6 @@ void ssl_wrap_init(void)
 {
    struct listen_entry *le;
 
-#ifndef HAVE_OPENSSL
-   /* avoid gcc warning about unused variable */
-   (void)le;
-   
-   DEBUG_MSG("ssl_wrap_init: not supported");
-   return;
-#else
    /* disable if the aggressive flag is not set */
    if (!GBL_CONF->aggressive_dissectors) {
       DEBUG_MSG("ssl_wrap_init: not aggressive");
@@ -235,11 +215,9 @@ void ssl_wrap_init(void)
    SAFE_CALLOC(poll_fd, 1, sizeof(struct pollfd) * number_of_services);
 
    atexit(ssl_wrap_fini);
-#endif
 }
 
 
-#ifdef HAVE_OPENSSL
 static void ssl_wrap_fini(void)
 {
    struct listen_entry *le, *old;
@@ -256,27 +234,19 @@ static void ssl_wrap_fini(void)
    SSL_CTX_free(ssl_ctx_client);
 
 }
-#endif
 
 /* 
  * SSL thread main function.
  */
 EC_THREAD_FUNC(sslw_start)
 {
-#ifdef HAVE_OPENSSL
    struct listen_entry *le;
    struct accepted_entry *ae;
    u_int len = sizeof(struct sockaddr_in), i;
    struct sockaddr_in client_sin;
-#endif
 
    ec_thread_init();
 
-#ifndef HAVE_OPENSSL
-   DEBUG_MSG("sslw_start: openssl support not compiled in");
-   return NULL;
-#else
-   
    /* disabled if not aggressive */
    if (!GBL_CONF->aggressive_dissectors)
       return NULL;
@@ -332,11 +302,8 @@ EC_THREAD_FUNC(sslw_start)
    }
 
    return NULL;
-#endif /* HAVE_OPENSSL */
    
 }	 
-
-#ifdef HAVE_OPENSSL
 
 /* 
  * Filter SSL related packets and create NAT sessions.
@@ -376,6 +343,7 @@ static void sslw_hook_handled(struct packet_object *po)
  */
 static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
 {
+   int param_length;
    char asc_sport[16];
    char asc_dport[16];
    int ret_val, i = 0;
@@ -384,8 +352,10 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
  
    /* the script is not defined */
    if (GBL_CONF->redir_command_on == NULL)
+   {
+      USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?");
       return -EFATAL;
-   
+   }
    snprintf(asc_sport, 16, "%u", sport);
    snprintf(asc_dport, 16, "%u", dport);
 
@@ -413,17 +383,20 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    SAFE_REALLOC(param, (i + 1) * sizeof(char *));
                
    param[i] = NULL;
+   param_length= i + 1; //because there is a SAFE_REALLOC after the for.
                
    /* execute the script */ 
    switch (fork()) {
       case 0:
          execvp(param[0], param);
-         exit(EINVALID);
+         WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
+         safe_free_mem(param, &param_length, command);
+         _exit(EINVALID);
       case -1:
-         SAFE_FREE(param);
+         safe_free_mem(param, &param_length, command);
          return -EINVALID;
       default:
-         SAFE_FREE(param);
+         safe_free_mem(param, &param_length, command);
          wait(&ret_val);
          if (ret_val == EINVALID)
             return -EINVALID;
@@ -437,6 +410,7 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
  */
 static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
 {
+   int param_length;
    char asc_sport[16];
    char asc_dport[16];
    int ret_val, i = 0;
@@ -445,8 +419,11 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
  
    /* the script is not defined */
    if (GBL_CONF->redir_command_off == NULL)
+   {
+      USER_MSG("SSLStrip: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
       return -EFATAL;
-   
+   }
+
    snprintf(asc_sport, 16, "%u", sport);
    snprintf(asc_dport, 16, "%u", dport);
 
@@ -474,15 +451,20 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
    SAFE_REALLOC(param, (i + 1) * sizeof(char *));
                
    param[i] = NULL;
+   param_length= i + 1; //because there is a SAFE_REALLOC after the for.
                
    /* execute the script */ 
    switch (fork()) {
       case 0:
          execvp(param[0], param);
-         exit(EINVALID);
+         WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
+         safe_free_mem(param, &param_length, command);
+         _exit(EINVALID);
       case -1:
+         safe_free_mem(param, &param_length, command);
          return -EINVALID;
       default:
+         safe_free_mem(param, &param_length, command);
          wait(&ret_val);
          if (ret_val == EINVALID)
             return -EINVALID;
@@ -762,7 +744,7 @@ static int sslw_connect_server(struct accepted_entry *ae)
     * strdup it to avoid race conditions.
     * Btw int_ntoa is not so used in the code.
     */
-   dest_ip = strdup(int_ntoa(ip_addr_to_int32(ae->ip[SSL_SERVER].addr)));
+   dest_ip = strdup(int_ntoa(*ae->ip[SSL_SERVER].addr32));
  
    /* Standard connection to the server */
    if (!dest_ip || (ae->fd[SSL_SERVER] = open_socket(dest_ip, ntohs(ae->port[SSL_SERVER]))) < 0) {
@@ -1324,7 +1306,6 @@ static void sslw_create_session(struct ec_session **s, struct packet_object *po)
    /* alloc of data elements */
    SAFE_CALLOC((*s)->data, 1, sizeof(struct ip_addr));
 }
-#endif /* HAVE_OPENSSL */
 
 /* EOF */
 

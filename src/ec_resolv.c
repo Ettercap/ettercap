@@ -59,6 +59,7 @@ static int resolv_cache_search(struct ip_addr *ip, char *name);
 int host_iptoa(struct ip_addr *ip, char *name)
 {
    struct hostent *host = NULL;
+   char tmp[MAX_ASCII_ADDR_LEN];
    
    /* initialize the name */
    strncpy(name, "", 1);
@@ -84,13 +85,10 @@ int host_iptoa(struct ip_addr *ip, char *name)
    if (!GBL_OPTIONS->resolve)
       return -ENOTFOUND;
   
-   /* XXX - IPv6 compatible */
-   DEBUG_MSG("host_iptoa: %#x", (unsigned int)ip_addr_to_int32(&ip->addr));
+   DEBUG_MSG("host_iptoa() for %s", ip_addr_ntoa(ip, tmp));
    
    /* if not found in the cache, resolve it */
-  
-   /* XXX - add support for IPv6 */
-   host = gethostbyaddr((char *)ip->addr, sizeof(struct in_addr), AF_INET);
+   host = gethostbyaddr(ip->addr, ntohs(ip->addr_len), ntohs(ip->addr_type));
 
    /* not found or error */
    if (host == NULL) {

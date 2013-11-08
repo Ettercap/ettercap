@@ -125,8 +125,12 @@ There is no concept of SOURCE nor DEST. The two targets are intended to filter
 traffic coming from one to the other and vice\-versa (since the connection is
 bidirectional).
 .PP
-\fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. If you want you can omit any of its parts
-and this will represent an ANY in that part.
+\fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. 
+.br
+.B NOTE:
+If IPv6 is enabled, \fITARGET\fR is in the form \fIMAC/IPs/IPv6/PORTs\fR.
+.PP
+If you want you can omit any of its parts and this will represent an ANY in that part.
 .br
 e.g.
 .br
@@ -181,7 +185,7 @@ export EC_UID\=500) or set the correct parameter in the etter.conf file.
 While performing the SSL mitm attack, ettercap substitutes the real ssl
 certificate with its own. The fake certificate is created on the fly and all
 the fields are filled according to the real cert presented by the server. Only
-the issuer is modified and signed with the private key contained in the 'etter.sll.crt'
+the issuer is modified and signed with the private key contained in the 'etter.ssl.crt'
 file. If you want to use a different private key you have to regenerate this
 file. To regenerate the cert file use the following commands:
 .Sp
@@ -406,13 +410,53 @@ You will intercept and visualize all the traffic for 10.0.0.1.
 .Sp
 
 
+.TP
+\fBndp\fR ([remote],[oneway])
+.B NOTE:
+This MITM method is only supported if IPv6 support has been enabled.
+.Sp
+This method implements the NDP poisoning attack which is used for MITM of 
+IPv6 connections. ND requests/replies are sent to the victims to poison their neighbor cache. Once the cache has been poisoned the victims will send all IPv6 packets to the attacker which, in turn, can modify and forward them to the real destination.
+.Sp
+In silent mode (\-z option) only the first target is selected, if you want to
+poison multiple target in silent mode use the \-j option to load a list from a
+file.
+.Sp
+You can select empty targets and they will be expanded as 'ANY' (all the hosts in
+the LAN). The target list is joined with the hosts list (created by the arp
+scan) and the result is used to determine the victims of the attack.
+.Sp
+The parameter "remote" is optional and you have to specify it if you want to
+sniff remote ip address poisoning a gateway. Indeed if you specify a victim and
+the gw in the TARGETS, ettercap will sniff only connection between them, but to
+enable ettercap to sniff connections that pass thru the gw, you have to use
+this parameter.
+.Sp
+The parameter "oneway" will force ettercap to poison only from TARGET1 to
+TARGET2. Useful if you want to poison only the client and not the router (where
+an arp watcher can be in place).
+.Sp
+Example:
+.Sp
+Targets are: //fe80::260d:afff:fe6e:f378/ //2001:db8::2:1/
+.br
+Ranges of IPv6 addresses are not yet supported.
+.Sp
+NOTE: if you manage to poison a client, you have to set correct routing
+table in the kernel specifying the GW. If your routing table is incorrect, the
+poisoned clients will not be able to navigate the Internet.
+.Sp
+NOTE: in IPv6 usually the link-local address of the router is being used as
+the gateway address. Therefor you need to set the link-local address of the
+router as one target and the global-unicast address of the victim as the other
+in order to set up a successfull IPv6 MITM attack using NDP poisoning.
 .RE
 
 .TP
 \fB\-o\fR, \fB\-\-only\-mitm\fR
 This options disables the sniffing thread and enables only the mitm attack.
 Useful if you want to use ettercap to perform mitm attacks and another sniffer
-(such as ethereal) to sniff the traffic. Keep in mind that the packets are not
+(such as wireshark) to sniff the traffic. Keep in mind that the packets are not
 forwarded by ettercap. The kernel will be responsible for the forwarding.
 Remember to activate the "ip forwarding" feature in your kernel.
 
@@ -448,7 +492,7 @@ OFF LINE sniffing
 With this option enabled, ettercap will sniff packets from a pcap compatible
 file instead of capturing from the wire.
 .br
-This is useful if you have a file dumped from tcpdump or ethereal and you want
+This is useful if you have a file dumped from tcpdump or wireshark and you want
 to make an analysis (search for passwords or passive fingerprint) on it.
 .br
 Obviously you cannot use "active" sniffing (arp poisoning or bridging) while
@@ -458,7 +502,7 @@ sniffing from a file.
 WRITE packet to a pcap file
 .br
 This is useful if you have to use "active" sniffing (arp poison) on a switched
-LAN but you want to analyze the packets with tcpdump or ethereal. You can use
+LAN but you want to analyze the packets with tcpdump or wireshark. You can use
 this option to dump the packets to a file and then load it into your favourite
 application.
 .Sp
@@ -576,6 +620,15 @@ This is useful if you want to select a port via the TARGET specification but
 you want to differentiate between tcp or udp.
 .br
 PROTO can be "tcp", "udp" or "all" for both.
+
+.TP
+\fB\-6\fR, \fB\-\-ip6scan\fR
+Send ICMPv6 probes to discover active IPv6 nodes on the link. 
+This options sends a ping request to the all-nodes address to motivate active IPv6
+hosts to respond. You should not use this option if you try to hide yourself. Therefore
+this option is optional.
+.Sp
+NOTE: This option is only available if IPv6 support has been enabled.
 
 .TP
 \fB\-z\fR, \fB\-\-silent\fR

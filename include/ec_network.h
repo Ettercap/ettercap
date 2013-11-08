@@ -3,6 +3,8 @@
 
 #include <ec.h>
 #include <ec_inet.h>
+#include <pcap.h>
+#include <libnet.h>
 
 /* per interface data */
 struct iface_env {
@@ -23,8 +25,9 @@ struct iface_env {
    u_int8 has_ipv6   :1;
    u_int8 unoffensive:1;
 
-   struct pcap_t*   pcap;
-   struct libnet_t* lnet;
+   pcap_t* pcap;
+   pcap_dumper_t *dump;
+   libnet_t* lnet;
 };
 
 

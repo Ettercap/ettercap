@@ -192,7 +192,7 @@ void plugin_load_all(void)
 
    SAFE_FREE(namelist);
    
-   atexit(&plugin_unload_all);
+   atexit(plugin_unload_all);
 #else
    USER_MSG("   0 plugins (disabled by configure...)\n");
 #endif

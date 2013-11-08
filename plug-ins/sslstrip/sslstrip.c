@@ -233,7 +233,7 @@ static int sslstrip_init(void *dummy)
 	}	
 
 	if(regcomp(&find_cookie_re, COOKIE_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
-		USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex");
+		USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex\n");
                 pcre_free(https_url_pcre);
 		http_remove_redirect(bind_port);
 		return PLUGIN_FINISHED;
@@ -255,7 +255,7 @@ static int sslstrip_fini(void *dummy)
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
 	if (http_remove_redirect(bind_port) != ESUCCESS) {
-		USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.");
+		USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.\n");
 	}
 
         // Free regexes.
@@ -458,8 +458,10 @@ static int http_insert_redirect(u_int16 dport)
 	char **param = NULL;
 
 	if (GBL_CONF->redir_command_on == NULL)
+	{
+		USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?");
 		return -EFATAL;
-
+	}
 	snprintf(asc_dport, 16, "%u", dport);
 
 	command = strdup(GBL_CONF->redir_command_on);
@@ -486,19 +488,21 @@ static int http_insert_redirect(u_int16 dport)
 	switch(fork()) {
 		case 0:
 			execvp(param[0], param);
-			break;
+			WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
+			safe_free_http_redirect(param, &param_length, command, orig_command);
+			_exit(EINVALID);
 		case -1:
 			safe_free_http_redirect(param, &param_length, command, orig_command);
 			return -EINVALID;
 		default:
-                wait(&ret_val);
-                if (WEXITSTATUS(ret_val)) {
-                      USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
-                      safe_free_http_redirect(param, &param_length, command, orig_command);
-                      return -EINVALID;
-                }
-                break;
-     }
+			wait(&ret_val);
+			if (WEXITSTATUS(ret_val)) {
+			    USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
+			    safe_free_http_redirect(param, &param_length, command, orig_command);
+			    return -EINVALID;
+			}
+			break;
+	}
 
 	safe_free_http_redirect(param, &param_length, command, orig_command);
 
@@ -512,8 +516,12 @@ static int http_remove_redirect(u_int16 dport)
 	char *command, *orig_command, *p;
         char **param = NULL;
 
+
         if (GBL_CONF->redir_command_off == NULL)
-                return -EFATAL;
+	{
+		USER_MSG("SSLStrip: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
+		return -EFATAL;
+	}
 
         snprintf(asc_dport, 16, "%u", dport);
 
@@ -539,9 +547,11 @@ static int http_remove_redirect(u_int16 dport)
         param_length= i + 1; //because there is a SAFE_REALLOC after the for.
 
         switch(fork()) {
-                case 0:
-                        execvp(param[0], param);
-                        break;
+		case 0:
+			execvp(param[0], param);
+			WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
+			safe_free_http_redirect(param, &param_length, command, orig_command);
+			_exit(EINVALID);
                 case -1:
                         safe_free_http_redirect(param, &param_length, command, orig_command);
                         return -EINVALID;

@@ -18,7 +18,6 @@
 */
 
 #include <ec.h>
-
 #include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <net/if.h>
@@ -51,7 +50,7 @@ void disable_ip_forward(void)
       fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
       i++;
       usleep(20000);
-   } while(fd == NULL && i <=5);
+   } while(fd == NULL && i <=50);
    ON_ERROR(fd, NULL, "failed to open /proc/sys/net/ipv4/ip_forward");
    
    fprintf(fd, "0");
@@ -90,7 +89,7 @@ static void restore_ip_forward(void)
       fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
       i++;
       usleep(20000);
-   } while(fd == NULL && i <=5);
+   } while(fd == NULL && i <=50);
    if (fd == NULL) {
       FATAL_ERROR("ip_forwarding was disabled, but we cannot re-enable it now.\n"
                   "remember to re-enable it manually\n");
@@ -130,12 +129,14 @@ u_int16 get_iface_mtu(const char *iface)
    return mtu;
 }
 
+
 /*
  * disable segmentation offload on interface
  * this prevents L3 send errors (payload too large)
  */
 void disable_interface_offload(void)
 {
+	int param_length= 0;
 	char *command;
 	char **param = NULL;
 	char *p;
@@ -157,15 +158,22 @@ void disable_interface_offload(void)
 
 	SAFE_REALLOC(param, (i+1) * sizeof(char *));
 	param[i] = NULL;
+	param_length= i + 1; //because there is a SAFE_REALLOC after the for.
 
 	switch(fork()) {
 		case 0:
+#ifndef DEBUG
+			/* don't print on console if the ethtool cannot disable some offloads unless you are in debug mode */
+			close(2);
+#endif
 			execvp(param[0], param);
-			exit(EINVALID);
+			WARN_MSG("cannot disable offload on %s, do you have ethtool installed?", GBL_OPTIONS->iface);
+			safe_free_mem(param, &param_length, command);
+			_exit(EINVALID);
 		case -1:
-			SAFE_FREE(param);
+			safe_free_mem(param, &param_length, command);
 		default:
-			SAFE_FREE(param);
+			safe_free_mem(param, &param_length, command);
 			wait(&ret_val);
 	} 	
 }

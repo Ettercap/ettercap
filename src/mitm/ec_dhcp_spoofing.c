@@ -84,6 +84,12 @@ static int dhcp_spoofing_start(char *args)
 
    if (!strcmp(args, ""))
       SEMIFATAL_ERROR("DHCP spoofing needs a parameter.\n");
+
+   /*
+    * Check to see if sniff has started
+    */
+   if (!GBL_SNIFF->active)
+      SEMIFATAL_ERROR("DHCP spoofing requires sniffing to be active.\n");
    
    /* check the parameter:
     *
@@ -220,7 +226,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
    }
   
    /* set the requested ip */
-   dhcp->dhcp_yip = ip_addr_to_int32(&client.addr);
+   dhcp->dhcp_yip = *client.addr32;
   
    /* this is a dhcp ACK */
    dhcp_options[2] = DHCP_ACK;
@@ -234,7 +240,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
       ip_addr_init(&server, AF_INET, opt + 1);
    
       /* set it in the header */
-      dhcp->dhcp_sip = ip_addr_to_int32(&server.addr);
+      dhcp->dhcp_sip = *server.addr32;
 
       /* set it in the options */
       ip_addr_cpy((u_char*)dhcp_options + 5, &server);
@@ -246,7 +252,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
        * the request does not contain an identifier,
        * use our ip address
        */
-      dhcp->dhcp_sip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
+      dhcp->dhcp_sip = *GBL_IFACE->ip.addr32;
       
       /* set it in the options */
       ip_addr_cpy((u_char*)dhcp_options + 5, &GBL_IFACE->ip);
@@ -285,10 +291,10 @@ static void dhcp_spoofing_disc(struct packet_object *po)
    dhcp_options[2] = DHCP_OFFER;
 
    /* set the free ip from the pool */
-   dhcp->dhcp_yip = ip_addr_to_int32(&dhcp_free_ip->ip.addr);
+   dhcp->dhcp_yip = *dhcp_free_ip->ip.addr32;
    
    /* set it in the header */
-   dhcp->dhcp_sip = ip_addr_to_int32(&GBL_IFACE->ip.addr);
+   dhcp->dhcp_sip = *GBL_IFACE->ip.addr32;
 
    /* set it in the options */
    ip_addr_cpy((u_char*)dhcp_options + 5, &GBL_IFACE->ip);

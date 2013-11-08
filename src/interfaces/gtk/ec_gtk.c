@@ -45,7 +45,7 @@ static GtkWidget     *textview = NULL;
 static GtkTextBuffer *msgbuffer = NULL;
 static GtkTextMark   *endmark = NULL;
 static GtkAccelGroup *accel_group = NULL;
-static gboolean       progress_cancelled = FALSE;
+static gboolean       progress_canceled = FALSE;
 static GtkWidget     *progress_dialog = NULL;
 static GtkWidget     *progress_bar = NULL;
 
@@ -56,6 +56,7 @@ void gtkui_start(void);
 
 static void gtkui_init(void);
 static void gtkui_cleanup(void);
+static void gtkui_update(int target);
 static void gtkui_msg(const char *msg);
 static void gtkui_error(const char *msg);
 static void gtkui_fatal_error(const char *msg);
@@ -189,7 +190,8 @@ struct gtkui_progress_data {
 static gboolean gtkui_progress_shim(gpointer data) {
 
    struct gtkui_progress_data *gpd = data;
-   gtkui_progress(gpd->title, gpd->value, gpd->max);
+   if (!progress_canceled)
+      gtkui_progress(gpd->title, gpd->value, gpd->max);
    free(gpd->title);
    free(gpd);
    return FALSE;
@@ -199,8 +201,11 @@ static int gtkui_progress_wrap(char *title, int value, int max) {
 
    struct gtkui_progress_data *gpd;
 
-   if (progress_cancelled == TRUE) {
-      progress_cancelled = FALSE;
+   if (value <= 1) {
+      progress_canceled = FALSE;
+   }
+
+   if (progress_canceled == TRUE) {
       return UI_PROGRESS_INTERRUPTED;
    }
 
@@ -246,6 +251,7 @@ void set_gtk_interface(void)
    ops.fatal_error = &gtkui_fatal_error_wrap;
    ops.input = &gtkui_input;
    ops.progress = &gtkui_progress_wrap;
+   ops.update = &gtkui_update;
 
    
    ui_register(&ops);
@@ -309,6 +315,19 @@ static void gtkui_cleanup(void)
    DEBUG_MSG("gtk_cleanup");
 
    
+}
+
+/*
+ * process an UI update notification
+ */
+static void gtkui_update(int target)
+{
+    switch (target) {
+        case UI_UPDATE_HOSTLIST:
+            gtkui_refresh_host_list();
+            break;
+    }
+
 }
 
 /*
@@ -450,28 +469,28 @@ static void gtkui_progress(char *title, int value, int max)
 
       hbox = gtk_hbox_new(FALSE, 3);
       gtk_container_add(GTK_CONTAINER (progress_dialog), hbox);
-      gtk_widget_show(hbox);
     
       progress_bar = gtk_progress_bar_new();
       gtk_box_pack_start(GTK_BOX (hbox), progress_bar, TRUE, TRUE, 0);
-      gtk_widget_show(progress_bar);
 
       button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
       gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
       g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_progress_cancel), progress_dialog);
-      gtk_widget_show(button);
 
-      gtk_widget_show(progress_dialog);
    } 
    
-   /* the subsequent calls have to only update the object */
-   gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
-   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
+   /* 
+    * not worth rendering dialog for too few iterations
+    */
+   if (max >= 0x7ff) {
+       /* the subsequent calls have to only update the object */
+       gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
+       gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
 
-   /* a nasty little loop that lets gtk update the progress bar immediately */
-   while (gtk_events_pending ())
-      gtk_main_iteration ();
-   
+       /* update dialog window */
+       gtk_widget_show_all(progress_dialog);
+   }
+
    /* 
     * when 100%, destroy it
     */
@@ -486,7 +505,7 @@ static void gtkui_progress(char *title, int value, int max)
 }
 
 static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) {
-   progress_cancelled = TRUE;
+   progress_canceled = TRUE;
 
    /* the progress dialog must be manually destroyed if the cancel button is used */
    if (data != NULL && GTK_IS_WIDGET(data)) {
@@ -590,8 +609,8 @@ static void gtkui_setup(void)
       { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" },
       { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>"}
 #ifndef OS_WINDOWS
-     ,{"/_Help",          NULL,         NULL,             0, "<Branch>" },
-      {"/Help/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
+     ,{"/_?",          NULL,         NULL,             0, "<Branch>" },
+      {"/?/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
 #endif
    };
    gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);
@@ -666,7 +685,7 @@ static void gtkui_setup(void)
    /* messages */
    scroll = gtk_scrolled_window_new(NULL, NULL);
    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll),
-                                  GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+                                  GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
    gtk_paned_pack2(GTK_PANED (vpaned), scroll, FALSE, TRUE);
    gtk_widget_show(scroll);
@@ -722,7 +741,7 @@ static void gtkui_file_open(void)
 
 static void read_pcapfile(const char *file)
 {
-   char errbuf[128];
+   char pcap_errbuf[PCAP_ERRBUF_SIZE];
    
    DEBUG_MSG("read_pcapfile %s", file);
    
@@ -731,8 +750,8 @@ static void read_pcapfile(const char *file)
    snprintf(GBL_OPTIONS->pcapfile_in, strlen(file)+1, "%s", file);
 
    /* check if the file is good */
-   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, errbuf) != ESUCCESS) {
-      ui_error("%s", errbuf);
+   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, pcap_errbuf) != ESUCCESS) {
+      ui_error("%s", pcap_errbuf);
       SAFE_FREE(GBL_OPTIONS->pcapfile_in);
       return;
    }

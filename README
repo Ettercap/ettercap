@@ -10,7 +10,7 @@
 
                    A suite for man in the middle attacks
 
-                      Copyright 2001-2013 The Ettercap Dev Team
+                 Copyright 2001-2013 The Ettercap Dev Team
 
 ==============================================================================
 ==============================================================================
@@ -40,8 +40,6 @@ bison (or other yacc-compatible parser generator) for *.y files
 
 cmake (build tool)
 
-ps2pdf13 (script accompanying ghostscript)
-
 ==============================================================================
                      R E Q U I R E D   L I B R A R I E S
 ==============================================================================
@@ -50,6 +48,7 @@ MANDATORY:
 
    - libpcap >= 0.8.1
    - libnet  >= 1.1.2.1 
+   - openssl >= 0.9.7
    - libpthread
    - zlib
    - CMake 2.8
@@ -58,7 +57,7 @@ MANDATORY:
 
 OPTIONAL:
    To enable PDF documentation generation (enable via ENABLE_PDF_DOCS=On):
-      - ghostscript (ps2pdf13)
+      - ghostscript (ps2pdf)
       - groff
 
    To enable plugins:
@@ -66,9 +65,6 @@ OPTIONAL:
 
    To have perl regexp in the filters:
       - libpcre
-
-   To support SSH and SSL decryption:
-      - openssl 0.9.7
 
    For the cursed GUI:
       - ncurses   >= 5.3
@@ -79,9 +75,6 @@ OPTIONAL:
       - Atk       >= 1.2.4
       - Pango     >= 1.2.3
 
-   For the SSLStrip plugin
-      - Curl      >= 7.26.0
-
 If you are running on debian, or any debian based distro you can install the required dependencies by running:
 apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses-dev libncurses5-dev libnet1-dev \
  libpcap-dev libpcre3-dev libssl-dev libcurl4-openssl-dev ghostscript 
@@ -90,10 +83,7 @@ apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses
                                    LICENSE
 ============================================================================
 
-   GNU GENERAL PUBLIC LICENSE.
-
-   see LICENSE for details...
-
+   see LICENSE file for details...
 
 ============================================================================
                                    AUTHORS
@@ -133,11 +123,9 @@ apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses
  Please read the man pages ettercap(8) and ettercap_curses(8) to learn how 
  to use ettercap.
 
-
 ============================================================================
                                TECHNICAL PAPER
 ============================================================================
-
 
 THE HOST LIST
 

@@ -24,7 +24,6 @@
 
 #include <stdarg.h>
 #include <errno.h>
-
 #define ERROR_MSG_LEN 200
 
 void fatal_error_msg(char *message, ...);
@@ -65,6 +64,25 @@ void error_msg(char *file, const char *function, int line, char *message, ...)
    clean_exit(-err_code);
 }
 
+/*
+ * print a warning message (no exit)
+ */
+void warn_msg(char *file, const char *function, int line, char *message, ...)
+{
+
+   va_list ap;
+   char warnmsg[ERROR_MSG_LEN + 1];
+
+
+   va_start(ap, message);
+   vsnprintf(warnmsg, ERROR_MSG_LEN, message, ap);
+   va_end(ap);
+
+   DEBUG_MSG("WARNING: [%s:%s:%d] %s \n", file, function, line, warnmsg);
+
+   fprintf(stdout, "WARNING: [%s:%s:%d]\n\n %s \n\n", file, function, line, warnmsg);
+
+}
 
 /*
  * raise a fatal error

@@ -39,10 +39,8 @@
    extern int gtk_minor_version;
    extern int gtk_micro_version;
 #endif
-#ifdef HAVE_OPENSSL
-   #include <openssl/opensslv.h>
-   #include <openssl/crypto.h>
-#endif
+#include <openssl/opensslv.h>
+#include <openssl/crypto.h>
 #ifdef HAVE_PCRE
    #include <pcre.h>
 #endif
@@ -109,10 +107,8 @@ void debug_init(void)
    #ifdef HAVE_PCRE
    fprintf(debug_file, "-> libpcre version %s\n", pcre_version());
    #endif
-   #ifdef HAVE_OPENSSL 
-      fprintf (debug_file, "-> lib     %s\n", SSLeay_version(SSLEAY_VERSION));
-      fprintf (debug_file, "-> headers %s\n", OPENSSL_VERSION_TEXT);
-   #endif
+   fprintf (debug_file, "-> lib     %s\n", SSLeay_version(SSLEAY_VERSION));
+   fprintf (debug_file, "-> headers %s\n", OPENSSL_VERSION_TEXT);
    #ifdef HAVE_NCURSES 
       fprintf (debug_file, "-> %s\n", curses_version());
    #endif

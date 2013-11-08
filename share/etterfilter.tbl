@@ -21,7 +21,7 @@
 [eth][2]
    dst:6 = 0
    src:6 = 6
-   proto:2 = 8
+   proto:2 = 12
 
 #
 # token ring is at layer 2
@@ -95,6 +95,18 @@
    csum:2 = 10
    src:4 = 12
    dst:4 = 16 
+
+# IPv6 is at layer 3 
+# version ,traffic class and flow label are 4 bit and 8 bit and 20 bit, but we have
+# to collate them in 4 bytes
+#
+[ipv6][3]
+   ver_tc_fl:4 = 0         # Version (4 bit), Traffic Class (8 bit), Flow Label (20 bit)
+   len:2 = 4               # Payload length
+   nh:1 = 6                # Next header (a.k.a. proto e.g. TCP, UDP)
+   hl:1 = 7                # Hop limit (a.k.a. TTL in IPv4)
+   src:16 = 8              
+   dst:16 = 24
 
 
 #

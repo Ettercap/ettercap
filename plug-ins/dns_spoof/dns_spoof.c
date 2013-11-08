@@ -166,7 +166,7 @@ static int load_db(void)
    /* open the file */
    f = open_data("etc", ETTER_DNS, FOPEN_READ_TEXT);
    if (f == NULL) {
-      USER_MSG("dns_spoof: Cannot open %s", ETTER_DNS);
+      USER_MSG("dns_spoof: Cannot open %s\n", ETTER_DNS);
       return -EINVALID;
    }
          
@@ -366,7 +366,7 @@ static void dns_spoof(struct packet_object *po)
 
          /* check if the family matches the record type */
          if (ntohs(reply->addr_type) != AF_INET) {
-            USER_MSG("mdns_spoof: can not spoof A record for %s "
+            USER_MSG("dns_spoof: can not spoof A record for %s "
                      "because the value is not a IPv4 address\n", name);
             return;
          }
@@ -421,7 +421,7 @@ static void dns_spoof(struct packet_object *po)
 
           /* check if the family matches the record type */
           if (ntohs(reply->addr_type) != AF_INET6) {
-             USER_MSG("mdns_spoof: can not spoof AAAA record for %s "
+             USER_MSG("dns_spoof: can not spoof AAAA record for %s "
                       "because the value is not a IPv6 address\n", name);
              return;
           }

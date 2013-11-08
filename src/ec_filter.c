@@ -242,7 +242,7 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
          
       case FFUNC_MSG:
          /* display the message to the user */
-         USER_MSG("%s", fop->op.func.string);
+         USER_MSG("%s\n", fop->op.func.string);
          return FLAG_TRUE;
          break;
          
@@ -345,6 +345,10 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
       case 4:
          /* int comparison */
          if (cmp_func(htonl(*(u_int32 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffffffff)) )
+            return FLAG_TRUE;
+         break;
+      case 16: /* well IPv6 addresses should be handled as 16-byte pointer */
+         if (cmp_func(memcmp(base + fop->op.test.offset, fop->op.test.ipaddr, fop->op.test.size), 0) )
             return FLAG_TRUE;
          break;
       default:
@@ -911,6 +915,7 @@ static int func_exec(struct filter_op *fop)
    
    /* differentiate between the parent and the child */
    if (!pid) {
+      int k, param_length;
       char **param = NULL;
       char *q = (char*)fop->op.func.string;
       char *p;
@@ -929,6 +934,7 @@ static int func_exec(struct filter_op *fop)
       SAFE_REALLOC(param, (i + 1) * sizeof(char *));
       
       param[i] = NULL;
+      param_length= i + 1; //because there is a SAFE_REALLOC after the for.
      
       /* 
        * close input, output and error.
@@ -943,7 +949,10 @@ static int func_exec(struct filter_op *fop)
       execve(param[0], param, NULL);
 
       /* reached on errors */
-      exit(-1);
+	   for(k= 0; k < param_length; ++k)
+		   SAFE_FREE(param[k]);
+	   SAFE_FREE(param);
+      _exit(-1);
    }
       
    return ESUCCESS;
@@ -985,7 +994,11 @@ static int cmp_geq(u_int32 a, u_int32 b)
 /*
  * load the filter from a file 
  */
+<<<<<<< HEAD
 int filter_load_file(const char *filename, struct filter_list **list, u_int8 enabled)
+=======
+int filter_load_file(const char *filename, struct filter_list **list, uint8_t enabled)
+>>>>>>> master
 {
    int fd;
    void *file;

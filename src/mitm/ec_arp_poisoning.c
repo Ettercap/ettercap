@@ -375,7 +375,7 @@ static int create_silent_list(void)
       memcpy(&h->ip, &GBL_IFACE->network, sizeof(struct ip_addr));
       /* XXX - IPv6 compatible */
       /* the broadcast is the network address | ~netmask */
-      *(u_int32 *)&h->ip.addr |= ~(*(u_int32 *)&GBL_IFACE->netmask.addr);
+      *h->ip.addr32 |= ~(*GBL_IFACE->netmask.addr32);
 
       /* broadcast mac address */
       memcpy(&h->mac, MEDIA_BROADCAST, MEDIA_ADDR_LEN);
@@ -402,7 +402,7 @@ static int create_silent_list(void)
       memcpy(&g->ip, &GBL_IFACE->network, sizeof(struct ip_addr));
       /* XXX - IPv6 compatible */
       /* the broadcast is the network address | ~netmask */
-      *(u_int32 *)&g->ip.addr |= ~(*(u_int32 *)&GBL_IFACE->netmask.addr);
+      *g->ip.addr32 |= ~(*GBL_IFACE->netmask.addr32);
 
       /* broadcast mac address */
       memcpy(&g->mac, MEDIA_BROADCAST, MEDIA_ADDR_LEN);

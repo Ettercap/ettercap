@@ -486,7 +486,7 @@ static void curses_file_open(void)
 
 static void read_pcapfile(const char *path, char *file)
 {
-   char errbuf[128];
+   char pcap_errbuf[PCAP_ERRBUF_SIZE];
    
    DEBUG_MSG("read_pcapfile %s/%s", path, file);
    
@@ -495,8 +495,8 @@ static void read_pcapfile(const char *path, char *file)
    snprintf(GBL_OPTIONS->pcapfile_in, strlen(path)+strlen(file)+2, "%s/%s", path, file);
 
    /* check if the file is good */
-   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, errbuf) != ESUCCESS) {
-      ui_error("%s", errbuf);
+   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, pcap_errbuf) != ESUCCESS) {
+      ui_error("%s", pcap_errbuf);
       SAFE_FREE(GBL_OPTIONS->pcapfile_in);
       return;
    }

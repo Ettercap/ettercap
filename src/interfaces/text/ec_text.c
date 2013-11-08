@@ -510,13 +510,16 @@ static void text_run_filter(void) {
       tcsetattr(0, TCSANOW, &old_tc);
 
       filter_walk_list( text_print_filter_cb, &i );
-
-      fprintf(stdout, "\nEnter number to enable/disable filter (0 to quit): ");
-      /* get the user input */
-      fgets(input, 19, stdin);
-      number = -1;
-      int c=sscanf(input, "%d", &number);
-      BUG_IF(c!=1);
+      int c;
+      do {
+         fprintf(stdout, "\nEnter a number to enable/disable filter (0 to quit): ");
+         /* get the user input */
+         fgets(input, 19, stdin);
+         number = -1;
+         c=sscanf(input, "%d", &number);
+         if(c!=1)
+            fprintf(stdout, "\nYou need to enter a number, please try again.");
+      } while(c!=1);
       if (number == 0) {
          break;
       } else if (number > 0) {

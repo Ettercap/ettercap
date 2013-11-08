@@ -1,7 +1,7 @@
 /*
-    ettercap -- diplay the connection list 
+    ettercap -- global variables handling module
 
-    Copyright (C) ALoR & NaGA
+    Copyright (C) Ettercap Development Team
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,43 +20,25 @@
 */
 
 #include <ec.h>
-#include <ec_threads.h>
-#include <ec_interfaces.h>
-#include <ec_conntrack.h>
-#include <ec_inet.h>
-#include <ec_proto.h>
 
-/* globals */
+void safe_free_mem(char **param, int *param_length, char *command);
 
-/* proto */
 
-void text_connections(void);
+void safe_free_mem(char **param, int *param_length, char *command)
+{
+   int k;
 
-/*******************************************/
-
-void text_connections(void)
-{   
-   void *list;
-   char *desc;
-   
-   SAFE_CALLOC(desc, 160, sizeof(char));
-
-   /* retrieve the first element */
-   list = conntrack_print(0, NULL, NULL, 0);
-   
-   fprintf(stdout, "\nConnections list:\n\n");
-  
-   /* walk the connection list */
-   while(list) {
-      /* get the next element */
-      list = conntrack_print(+1, list, &desc, 159);
-      fprintf(stdout, "%s\n", desc);
-   }
-
-   fprintf(stdout, "\n");
-
-   SAFE_FREE(desc);
+   SAFE_FREE(command);
+        for(k= 0; k < (*param_length); ++k)
+                SAFE_FREE(param[k]);
+        SAFE_FREE(param);
 }
+
+
+
+
+
+
 
 
 /* EOF */

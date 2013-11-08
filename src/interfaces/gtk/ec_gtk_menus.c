@@ -47,6 +47,9 @@ GtkItemFactoryEntry gmenu_hosts[] = {
    {"/_Hosts",                  NULL,         NULL,             0, "<Branch>" },
    {"/Hosts/_Hosts list",       "h",          gtkui_host_list,  0, "<StockItem>", GTK_STOCK_INDEX },
    {"/Hosts/sep1",              NULL,         NULL,             0, "<Separator>" },
+#ifdef WITH_IPV6
+   {"/Hosts/Enable IPv6 scan",  NULL,         toggle_ip6scan,  0, "<ToggleItem>" },
+#endif
    {"/Hosts/_Scan for hosts",   "<control>s", gtkui_scan,       0, "<StockItem>", GTK_STOCK_FIND },
    {"/Hosts/Load from file...", NULL,         gtkui_load_hosts, 0, "<StockItem>", GTK_STOCK_OPEN },
    {"/Hosts/Save to file...",   NULL,         gtkui_save_hosts, 0, "<StockItem>", GTK_STOCK_SAVE }
@@ -71,6 +74,9 @@ GtkItemFactoryEntry gmenu_mitm[] = {
    {"/Mitm/Icmp redirect...",    NULL, gtkui_icmp_redir,    0, "<Item>" },
    {"/Mitm/Port stealing...",    NULL, gtkui_port_stealing, 0, "<Item>" },
    {"/Mitm/Dhcp spoofing...",    NULL, gtkui_dhcp_spoofing, 0, "<Item>" },
+#ifdef WITH_IPV6
+   {"/Mitm/Ndp spoofing...",     NULL, gtkui_ndp_poisoning, 0, "<Item>" },
+#endif
    {"/Mitm/sep1",                NULL, NULL,                0, "<Separator>" },
    {"/Mitm/Stop mitm attack(s)", NULL, gtkui_mitm_stop,     0, "<StockItem>", GTK_STOCK_STOP }
 };
@@ -101,8 +107,8 @@ GtkItemFactoryEntry gmenu_plugins[] = {
 
 #ifndef OS_WINDOWS
 GtkItemFactoryEntry gmenu_help[] = {
-   {"/_Help",                   NULL,         NULL,              0, "<Branch>" },
-   {"/Help/Contents", " ", gtkui_help, 0, "<StockItem>", GTK_STOCK_HELP }
+   {"/_?",                   NULL,         NULL,              0, "<Branch>" },
+   {"/?/Contents", " ", gtkui_help, 0, "<StockItem>", GTK_STOCK_HELP }
 };
 #endif
 

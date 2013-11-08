@@ -117,7 +117,9 @@ extern void wdg_bug(char *file, const char *function, int line, char *message);
 #define KEY_RETURN   '\r'
 #define KEY_TAB      '\t'
 #define KEY_CTRL_L   12
+#ifndef CTRL
 #define CTRL(x)      ((x) & 0x1f)
+#endif
 #define KEY_ESC      CTRL('[')
 
 /* information about the current screen */

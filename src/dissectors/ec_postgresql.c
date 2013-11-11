@@ -90,7 +90,7 @@ void __init postgresql_init(void)
 
 FUNC_DECODER(dissector_postgresql)
 {
-   DECLARE_DISP_PTR_END(ptr, end);
+   DECLARE_DISP_PTR(ptr);
    struct ec_session *s = NULL;
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];

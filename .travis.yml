@@ -37,3 +37,9 @@ before_install:
   - sudo apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses-dev libncurses5-dev libpcap-dev libpcre3-dev libssl-dev ghostscript luajit-5.1-dev libnet1-dev libcurl4-openssl-dev
 script: 
   - mkdir build && cd build && cmake -DENABLE_TESTS=On $BUILD_ARGS .. && make && make test_verbose
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.net#ettercap-project"
+    use_notice: false
+    skip_join: true

@@ -1,10 +1,13 @@
 language: c
+
 branches:
   except:
     gh-pages
+
 compiler:
   - gcc
   - clang
+
 env:
   # Default build. Release.
   - BUILD_ARGS=""
@@ -26,17 +29,21 @@ env:
   - BUILD_ARGS="-DENABLE_LUA=On -DBUNDLED_LUAJIT=Off"
   # Lua + bundled luajit
   - BUILD_ARGS="-DENABLE_LUA=On -DSYSTEM_LUAJIT=Off"
+
 matrix:
   allow_failures:
     # We expect IPV6 + system libnet + ubuntu to fail :(
     - env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
     # We expect system-only curl + ubuntu to fail :(
     - env: BUILD_ARGS="-DBUNDLED_CURL=Off"
+
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses-dev libncurses5-dev libpcap-dev libpcre3-dev libssl-dev ghostscript luajit-5.1-dev libnet1-dev libcurl4-openssl-dev
+
 script: 
   - mkdir build && cd build && cmake -DENABLE_TESTS=On $BUILD_ARGS .. && make && make test_verbose
+
 notifications:
   irc:
     channels:

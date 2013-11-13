@@ -24,6 +24,15 @@
    #endif
 #endif
 
+/*
+ * define non-standard address family identifier 
+ * used in the Null/Loopback encapsulation origined
+ * on several BSD derivates
+ */
+#define AF_INET6_BSD 24
+#define AF_INET6_FREEBSD 28
+#define AF_INET6_DARWIN 30
+
 #define	ETH_ADDR_LEN 6
 #define	TR_ADDR_LEN 6
 #define	FDDI_ADDR_LEN 6

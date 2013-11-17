@@ -33,6 +33,12 @@
 #include <time.h>
 
 /* globals */
+static pthread_mutex_t scan_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define SCAN_LOCK     do{ if (pthread_mutex_trylock(&scan_mutex)) { \
+                             ec_thread_destroy(pid); return NULL;} \
+                      } while(0)
+#define SCAN_UNLOCK   do{ pthread_mutex_unlock(&scan_mutex); } while(0)
+
 
 /* used to create the random list */
 static LIST_HEAD (, ip_list) ip_list_head;
@@ -174,6 +180,9 @@ static EC_THREAD_FUNC(scan_thread)
 #endif
    pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
 
+   /* Only one thread is allowed to scan at a time */
+   SCAN_LOCK;
+
    /*
     * if at least one ip target is ANY, scan the whole netmask
     *
@@ -207,6 +216,9 @@ static EC_THREAD_FUNC(scan_thread)
 #else
    nanosleep(&ts, NULL);
 #endif
+
+   /* Unlock Mutex */
+   SCAN_UNLOCK;
 
    /* destroy the thread and remove the hook function */
    ec_thread_destroy(pid);

@@ -28,7 +28,6 @@ set(EC_SRC
         ec_mitm.c
         ec_network.c
         ec_packet.c
-        ec_parser.c
         ec_passive.c
         ec_plugins.c
         ec_poll.c
@@ -38,6 +37,7 @@ set(EC_SRC
         ec_send.c
         ec_services.c
         ec_session.c
+        ec_set.c
         ec_signals.c
         ec_sniff_bridge.c
         ec_sniff.c
@@ -49,6 +49,7 @@ set(EC_SRC
         ec_strings.c
         ec_threads.c
         ec_ui.c
+        ec_utils.c
 
         dissectors/ec_bgp.c
         dissectors/ec_cvs.c
@@ -201,7 +202,7 @@ set_target_properties(lib_ettercap PROPERTIES
   )
 
 if (NOT LIBRARY_BUILD)
-	add_executable(ettercap ec_interfaces.c ec_main.c)
+	add_executable(ettercap ec_parser.c ec_interfaces.c ec_main.c)
 	target_link_libraries(ettercap ec_interfaces lib_ettercap)
 	set_target_properties(ettercap PROPERTIES 
   	INSTALL_RPATH ${INSTALL_LIBDIR}

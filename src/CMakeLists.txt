@@ -104,7 +104,6 @@ set(EC_SRC
         protocols/ec_ip.c
         protocols/ec_mpls.c
         protocols/ec_null.c
-        protocols/ec_pap.c
         protocols/ec_ppi.c
         protocols/ec_ppp.c
         protocols/ec_pppoe.c

@@ -162,14 +162,14 @@ if(NOT HAVE_STRNDUP)
     set(EC_SRC ${EC_SRC} missing/strndup.c)
 endif(NOT HAVE_STRNDUP)
 
+add_library(lib_ettercap SHARED ${EC_SRC})
+add_dependencies(lib_ettercap libnet)
+target_link_libraries(lib_ettercap ${EC_LIBETTERCAP_LIBS})
 
 if(NOT LIBRARY_BUILD)
 	add_subdirectory(interfaces)
 endif(NOT LIBRARY_BUILD)
 
-add_library(lib_ettercap SHARED ${EC_SRC})
-add_dependencies(lib_ettercap libnet)
-target_link_libraries(lib_ettercap ${EC_LIBS})
 
 
 # Only compile lua stuff if lua is enabled!

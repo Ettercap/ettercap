@@ -24,6 +24,15 @@
    #endif
 #endif
 
+/*
+ * define non-standard address family identifier 
+ * used in the Null/Loopback encapsulation origined
+ * on several BSD derivates
+ */
+#define AF_INET6_BSD 24
+#define AF_INET6_FREEBSD 28
+#define AF_INET6_DARWIN 30
+
 #define	ETH_ADDR_LEN 6
 #define	TR_ADDR_LEN 6
 #define	FDDI_ADDR_LEN 6
@@ -53,7 +62,11 @@ struct ip_addr {
    u_int16 addr_type;
    u_int16 addr_len;
    /* this must be aligned in memory */
-   u_int8 addr[MAX_IP_ADDR_LEN];
+   union {
+      u_int8 addr[MAX_IP_ADDR_LEN];
+      u_int16 addr16[MAX_IP_ADDR_LEN/2];
+      u_int32 addr32[MAX_IP_ADDR_LEN/4];
+   };
 };
 
 struct net_list {
@@ -148,7 +161,6 @@ EC_API_EXTERN void disable_interface_offload(void);
    
 #define int_ntoa(x)   inet_ntoa(*((struct in_addr *)&(x)))
 
-#define ip_addr_to_int32(x)  *(u_int32 *)(x)
   
 #endif
 

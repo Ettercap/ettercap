@@ -2,7 +2,7 @@
 Ettercap now has unit-tests!
 
 Requires:
-  check (will use bundled check if it isn't already installed)
+  check (will use bundled check if it isn't already installed) available at http://check.sourceforge.net/
 
 - To enable tests:
   - mkdir build 

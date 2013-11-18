@@ -302,7 +302,8 @@ void gtkui_vis_method(void)
 
    GList *lang_list = NULL;
    GtkWidget *hbox, *lang_combo, *label;
-   char encoding[50], *local_lang, def_lang[75];
+   char encoding[50], def_lang[75];
+   const char *local_lang; 
 
 
    DEBUG_MSG("gtk_vis_method");
@@ -317,35 +318,35 @@ void gtkui_vis_method(void)
 
    button = gtk_radio_button_new_with_label(NULL, 
                "hex     Print the packets in hex format.");
-   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "hex") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
                "ascii   Print only \"printable\" characters, the others are displayed as dots '.'");
-   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "ascii") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
                "text    Print only the \"printable\" characters and skip the others.");
-   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "text") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
                "ebcdic  Convert an EBCDIC text to ASCII.");
-   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "ebcdic") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
                "html    Strip all the html tags from the text. A tag is every string between < and >.");
-   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "html") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
@@ -353,13 +354,13 @@ void gtkui_vis_method(void)
 /* start UTF8 */
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
                "utf8    Convert the data from the encoding specified below to UTF8 before displaying it.");
-   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), button, FALSE, FALSE, 0);
+   gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "utf8") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    hbox = gtk_hbox_new (FALSE, 6);
-   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
+   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
    label = gtk_label_new ("Character encoding : ");
    gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
@@ -394,7 +395,7 @@ void gtkui_vis_method(void)
    g_list_free(lang_list);
 /* end UTF8 */
       
-   gtk_widget_show_all(GTK_DIALOG(dialog)->vbox);
+   gtk_widget_show_all(vbox);
 
    response = gtk_dialog_run(GTK_DIALOG (dialog));
    if(response == GTK_RESPONSE_OK) {

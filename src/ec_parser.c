@@ -70,7 +70,7 @@ void set_address(char *address);
 void set_read_pcap(char *pcap_file);
 void set_write_pcap(char *pcap_file);
 void set_pcap_filter(char *filter);
-void load_filter(char *end, char *filter);
+void load_filter(char *end, const char *filter);
 void set_loglevel_packet(char *arg);
 void set_loglevel_info(char *arg);
 void set_loglevel_true(char *arg);
@@ -766,7 +766,7 @@ void set_pcap_filter(char *filter)
 	GBL_PCAP->filter = strdup(filter);
 }
 
-void load_filter(char *end, char *filter)
+void load_filter(char *end, const char *filter)
 {
 	uint8_t f_enabled = 1;
 	if ( (end-filter >=2) && *(end-2) == ':') {

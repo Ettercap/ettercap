@@ -389,8 +389,8 @@ int send_L3_icmp_unreach(struct packet_object *po)
            64,                                         /* TTL */                                       
            IPPROTO_ICMP,                               /* protocol */                                  
            0,                                          /* checksum */                                  
-           ip_addr_to_int32(&po->L3.dst.addr),         /* source IP */                                 
-           ip_addr_to_int32(&po->L3.src.addr),         /* destination IP */                            
+           *po->L3.dst.addr32,                         /* source IP */
+           *po->L3.src.addr32,                         /* destination IP */
            NULL,                                       /* payload */                                   
            0,                                          /* payload size */                              
            l,                                          /* libnet handle */                             
@@ -454,8 +454,8 @@ int send_L3_icmp(u_char type, struct ip_addr *sip, struct ip_addr *tip)
            64,                                         /* TTL */                                       
            IPPROTO_ICMP,                               /* protocol */                                  
            0,                                          /* checksum */                                  
-           ip_addr_to_int32(&sip->addr),               /* source IP */                                 
-           ip_addr_to_int32(&tip->addr),               /* destination IP */                            
+           *sip->addr32,                               /* source IP */
+           *tip->addr32,                               /* destination IP */
            NULL,                                       /* payload */                                   
            0,                                          /* payload size */                              
            l,                                          /* libnet handle */                             
@@ -520,8 +520,8 @@ int send_L2_icmp_echo(u_char type, struct ip_addr *sip, struct ip_addr *tip, u_i
            64,                                         /* TTL */                                       
            IPPROTO_ICMP,                               /* protocol */                                  
            0,                                          /* checksum */                                  
-           ip_addr_to_int32(&sip->addr),               /* source IP */                                 
-           ip_addr_to_int32(&tip->addr),               /* destination IP */                            
+           *sip->addr32,                               /* source IP */
+           *tip->addr32,                               /* destination IP */
            NULL,                                       /* payload */                                   
            0,                                          /* payload size */                              
            l,                                          /* libnet handle */                             
@@ -579,8 +579,8 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
             ip->ip_ttl,                          /* original ttl */
             ip->ip_p,                            /* original proto */
             ip->ip_sum,                          /* original checksum */
-            ip_addr_to_int32(&ip->ip_src),       /* original source */
-            ip_addr_to_int32(&ip->ip_dst),       /* original dest */
+            ip->ip_src.s_addr,                   /* original source */
+            ip->ip_dst.s_addr,                   /* original dest */
             po->L4.header,                       /* the 64 bit of the original datagram */
             8,                                   /* payload size */
             l,
@@ -591,7 +591,7 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
            ICMP_REDIRECT,                       /* type */
            type,                                /* code */
            0,                                   /* checksum */
-           ip_addr_to_int32(&gw->addr),         /* gateway ip */
+           *gw->addr32,                         /* gateway ip */
            NULL,                                /* payload */
            0,                                   /* payload len */
            l,                                   /* libnet handle */
@@ -610,8 +610,8 @@ int send_icmp_redir(u_char type, struct ip_addr *sip, struct ip_addr *gw, struct
            64,                                           /* TTL */
            IPPROTO_ICMP,                                 /* protocol */
            0,                                            /* checksum */
-           ip_addr_to_int32(&sip->addr),                 /* source IP */
-           ip_addr_to_int32(&po->L3.src.addr),           /* destination IP */
+           *sip->addr32,                                 /* source IP */
+           *po->L3.src.addr32,                           /* destination IP */
            NULL,                                         /* payload */
            0,                                            /* payload size */
            l,                                            /* libnet handle */ 
@@ -875,8 +875,8 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
            64,                                                       /* TTL */
            IPPROTO_UDP,                                              /* protocol */
            0,                                                        /* checksum */
-           ip_addr_to_int32(&sip->addr),                             /* source IP */
-           ip_addr_to_int32(&tip->addr),                             /* destination IP */
+           *sip->addr32,                                             /* source IP */
+           *tip->addr32,                                             /* destination IP */
            NULL,                                                     /* payload */
            0,                                                        /* payload size */
            l,                                                        /* libnet handle */ 
@@ -961,8 +961,8 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
                  255,                                                         /* TTL */
                  IPPROTO_UDP,                                                 /* protocol */
                  0,                                                           /* checksum */
-                 ip_addr_to_int32(&sip->addr),                                /* source IP */
-                 ip_addr_to_int32(&tip->addr),                                /* destination IP */
+                 *sip->addr32,                                                /* source IP */
+                 *tip->addr32,                                                /* destination IP */
                  NULL,                                                        /* payload */
                  0,                                                           /* payload size */
                  l,                                                           /* libnet handle */ 
@@ -1069,8 +1069,8 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
                  64,                                                          /* TTL */
                  IPPROTO_UDP,                                                 /* protocol */
                  0,                                                           /* checksum */
-                 ip_addr_to_int32(&sip->addr),                                /* source IP */
-                 ip_addr_to_int32(&tip->addr),                                /* destination IP */
+                 *sip->addr32,                                                /* source IP */
+                 *tip->addr32,                                                /* destination IP */
                  NULL,                                                        /* payload */
                  0,                                                           /* payload size */
                  l,                                                           /* libnet handle */ 
@@ -1169,8 +1169,8 @@ const uint8_t *payload, uint32_t payload_s, libnet_t *l, libnet_ptag_t ptag)
 				64,				/* TTL */
 				IPPROTO_UDP,			/* protocol */
 				0,				/* checksum */
-				ip_addr_to_int32(&sip->addr),	/* source IP */
-				ip_addr_to_int32(&tip->addr),	/* destination IP */
+				*sip->addr32,			/* source IP */
+				*tip->addr32,			/* destination IP */
 				NULL,				
 				0,				/* payload size */
 				l,
@@ -1267,8 +1267,8 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
                  64,                                 /* TTL */
                  IPPROTO_TCP,                        /* protocol */
                  0,                                  /* checksum */
-                 ip_addr_to_int32(&sip->addr),       /* source IP */
-                 ip_addr_to_int32(&tip->addr),       /* destination IP */
+                 *sip->addr32,                       /* source IP */
+                 *tip->addr32,                       /* destination IP */
                  NULL,                               /* payload */
                  0,                                  /* payload size */
                  l,                                  /* libnet handle */ 
@@ -1351,8 +1351,8 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
            64,                                 /* TTL */
            IPPROTO_TCP,                        /* protocol */
            0,                                  /* checksum */
-           ip_addr_to_int32(&sip->addr),       /* source IP */
-           ip_addr_to_int32(&tip->addr),       /* destination IP */
+           *sip->addr32,                       /* source IP */
+           *tip->addr32,                       /* destination IP */
            NULL,                               /* payload */
            0,                                  /* payload size */
            l,                                  /* libnet handle */ 

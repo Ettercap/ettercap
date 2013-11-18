@@ -39,6 +39,8 @@ enum {
 
 #define DECLARE_DISP_PTR_END(x,y) u_char *x = po->DATA.disp_data; \
                                   u_char *y = x + po->DATA.disp_len
+
+#define DECLARE_DISP_PTR(x)       u_char *x = po->DATA.disp_data
                                   
 #define DISPLAY_DATA    po->disp_data
 #define DISPLAY_LEN     po->disp_len                             

@@ -27,18 +27,6 @@
 
 #ifdef DEBUG
 
-#ifdef HAVE_NCURSES
-   extern char *curses_version(void);
-#endif
-#ifdef HAVE_GTK 
-   /* 
-    * hack here because this file is compiled 
-    * without the include directive for gtk
-    */
-   extern int gtk_major_version;
-   extern int gtk_minor_version;
-   extern int gtk_micro_version;
-#endif
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 #ifdef HAVE_PCRE
@@ -111,12 +99,6 @@ void debug_init(void)
    #endif
    fprintf (debug_file, "-> lib     %s\n", SSLeay_version(SSLEAY_VERSION));
    fprintf (debug_file, "-> headers %s\n", OPENSSL_VERSION_TEXT);
-   #ifdef HAVE_NCURSES 
-      fprintf (debug_file, "-> %s\n", curses_version());
-   #endif
-   #ifdef HAVE_GTK 
-      fprintf (debug_file, "-> gtk+ %d.%d.%d\n", gtk_major_version, gtk_minor_version, gtk_micro_version);
-   #endif
    fprintf (debug_file, "\n\nDEVICE OPENED FOR %s DEBUGGING\n\n", GBL_PROGRAM);
    fflush(debug_file);
    

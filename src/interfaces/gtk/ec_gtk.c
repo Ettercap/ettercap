@@ -275,6 +275,8 @@ void set_gtk_interface(void)
 
    
    ui_register(&ops);
+
+   DEBUG_MSG("GTK -> gtk+ %d.%d.%d\n", gtk_major_version, gtk_minor_version, gtk_micro_version);
 }
 
 

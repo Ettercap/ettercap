@@ -1,5 +1,5 @@
 /*
-    ettercap -- parsing utilities
+    ettercap -- Ettercap utilities
 
     Copyright (C) ALoR & NaGA
 

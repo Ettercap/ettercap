@@ -42,6 +42,7 @@ void __init mysql_init(void)
 }
 
 #ifdef DEBUG
+/* XXX - not used???
 static void print_hex(unsigned char *str, int len)
 {
    int i;
@@ -49,6 +50,7 @@ static void print_hex(unsigned char *str, int len)
       printf("%02x", str[i]);
       printf("\n");
 }
+*/
 #endif
 
 static char itoa16[16] =  "0123456789abcdef";

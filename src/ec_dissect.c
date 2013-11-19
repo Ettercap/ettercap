@@ -43,9 +43,9 @@ void dissect_del(char *name);
 int dissect_modify(int mode, char *name, u_int32 port);
 
 int dissect_match(void *id_sess, void *id_curr);
-void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int64 code);
-size_t dissect_create_ident(void **i, struct packet_object *po, u_int64 code);            
-void dissect_wipe_session(struct packet_object *po, u_int64 code);
+void dissect_create_session(struct ec_session **s, struct packet_object *po, void *code);
+size_t dissect_create_ident(void **i, struct packet_object *po, void *code);            
+void dissect_wipe_session(struct packet_object *po, void *code);
 
 int dissect_on_port(char *name, u_int16 port);
 
@@ -100,7 +100,7 @@ int dissect_match(void *id_sess, void *id_curr)
  * for a dissector.
  */
 
-void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int64 code)
+void dissect_create_session(struct ec_session **s, struct packet_object *po, void *code)
 {
    void *ident;
 
@@ -123,7 +123,7 @@ void dissect_create_session(struct ec_session **s, struct packet_object *po, u_i
  * create the ident for a session
  */
 
-size_t dissect_create_ident(void **i, struct packet_object *po, u_int64 code)
+size_t dissect_create_ident(void **i, struct packet_object *po, void *code)
 {
    struct dissect_ident *ident;
    
@@ -131,7 +131,7 @@ size_t dissect_create_ident(void **i, struct packet_object *po, u_int64 code)
    SAFE_CALLOC(ident, 1, sizeof(struct dissect_ident));
    
    /* the magic number (usually the pointer for the function) */
-   ident->magic = code;
+   ident->fptr = code;
       
    /* prepare the ident */
    memcpy(&ident->L3_src, &po->L3.src, sizeof(struct ip_addr));
@@ -152,7 +152,7 @@ size_t dissect_create_ident(void **i, struct packet_object *po, u_int64 code)
 /*
  * totally destroy the session bound to this connection
  */
-void dissect_wipe_session(struct packet_object *po, u_int64 code)
+void dissect_wipe_session(struct packet_object *po, void *code)
 {
    void *ident;
    struct ec_session *s;   

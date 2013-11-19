@@ -103,7 +103,7 @@ set(EC_SRC
         protocols/ec_icmp.c
         protocols/ec_ip.c
         protocols/ec_mpls.c
-        protocols/ec_pap.c
+        protocols/ec_null.c
         protocols/ec_ppi.c
         protocols/ec_ppp.c
         protocols/ec_pppoe.c
@@ -118,9 +118,6 @@ set(EC_SRC
         protocols/ec_wifi_radiotap.c
 )
 
-if (NOT LIBRARY_BUILD)
-	set(EC_SRC ${EC_SRC} ec_interfaces.c)
-endif(NOT LIBRARY_BUILD)
 
 if(ENABLE_IPV6)
     set(EC_SRC ${EC_SRC} protocols/ec_icmp6.c protocols/ec_ip6.c mitm/ec_ip6nd_poison.c)
@@ -164,17 +161,15 @@ if(NOT HAVE_STRNDUP)
     set(EC_SRC ${EC_SRC} missing/strndup.c)
 endif(NOT HAVE_STRNDUP)
 
+add_library(lib_ettercap SHARED ${EC_SRC})
+add_dependencies(lib_ettercap libnet)
+target_link_libraries(lib_ettercap ${EC_LIBETTERCAP_LIBS})
 
 if(NOT LIBRARY_BUILD)
 	add_subdirectory(interfaces)
 endif(NOT LIBRARY_BUILD)
 
-add_library(lib_ettercap SHARED ${EC_SRC})
-add_dependencies(lib_ettercap libnet)
 
-if (NOT LIBRARY_BUILD)
-	add_executable(ettercap ec_main.c)
-endif(NOT LIBRARY_BUILD)
 
 # Only compile lua stuff if lua is enabled!
 IF(ENABLE_LUA)
@@ -192,11 +187,11 @@ IF(ENABLE_LUA)
   endif()
 endif(ENABLE_LUA)
 
-if(NOT LIBRARY_BUILD)
-	target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
-else(NOT LIBRARY_BUILD)
-	target_link_libraries(lib_ettercap ${EC_LIBS})
-endif(NOT LIBRARY_BUILD)
+#if(NOT LIBRARY_BUILD)
+	#target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
+#else(NOT LIBRARY_BUILD)
+	#target_link_libraries(lib_ettercap ${EC_LIBS})
+#endif(NOT LIBRARY_BUILD)
 
 set_target_properties(lib_ettercap PROPERTIES 
   ENABLE_EXPORTS On
@@ -206,12 +201,13 @@ set_target_properties(lib_ettercap PROPERTIES
   )
 
 if (NOT LIBRARY_BUILD)
-	target_link_libraries(ettercap lib_ettercap)
+	add_executable(ettercap ec_interfaces.c ec_main.c)
+	target_link_libraries(ettercap ec_interfaces lib_ettercap)
 	set_target_properties(ettercap PROPERTIES 
   	INSTALL_RPATH ${INSTALL_LIBDIR}
   	)
 endif(NOT LIBRARY_BUILD)
 install(TARGETS lib_ettercap DESTINATION ${INSTALL_LIBDIR})
 if(NOT LIBRARY_BUILD)
-	install(TARGETS ettercap DESTINATION ${INSTALL_BINDIR})
+	install(TARGETS ettercap DESTINATION ${INSTALL_EXEDIR})
 endif(NOT LIBRARY_BUILD)

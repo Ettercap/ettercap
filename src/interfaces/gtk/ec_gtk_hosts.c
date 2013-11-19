@@ -34,7 +34,7 @@ void gtkui_save_hosts(void);
 void gtkui_host_list(void);
 void gtkui_refresh_host_list(void);
 
-static void load_hosts(char *file);
+static void load_hosts(const char *file);
 static void save_hosts(void);
 static void gtkui_hosts_destroy(void);
 static void gtkui_button_callback(GtkWidget *widget, gpointer data);
@@ -104,7 +104,7 @@ void gtkui_load_hosts(void)
    gtk_widget_destroy (dialog);
 }
 
-static void load_hosts(char *file)
+static void load_hosts(const char *file)
 {
    char *tmp;
    char current[PATH_MAX];

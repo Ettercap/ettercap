@@ -68,7 +68,7 @@ static void gtkui_connection_kill_curr_conn(void);
 static void gtkui_connection_inject(void);
 static void gtkui_inject_user(int side);
 static void gtkui_connection_inject_file(void);
-static void gtkui_inject_file(char *filename, int side);
+static void gtkui_inject_file(const char *filename, int side);
 
 extern void conntrack_lock(void);
 extern void conntrack_unlock(void);
@@ -1320,7 +1320,7 @@ static void gtkui_connection_inject_file(void)
 /*
  * map the file into memory and pass the buffer to the inject function
  */
-static void gtkui_inject_file(char *filename, int side)
+static void gtkui_inject_file(const char *filename, int side)
 {
    int fd;
    void *buf;

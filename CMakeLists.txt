@@ -161,9 +161,6 @@ configure_file(include/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/config
 
 if(ENABLE_TESTS)
   enable_testing()
-  if(SYSTEM_LIBCHECK)
-    find_package(LIBCHECK)
-  endif(SYSTEM_LIBCHECK)
   add_subdirectory(tests)
 endif(ENABLE_TESTS)
 

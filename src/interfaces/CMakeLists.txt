@@ -71,6 +71,13 @@ if(ENABLE_GTK)
 endif(ENABLE_GTK)
 
 
-add_library(ec_interfaces STATIC ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_WDG_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
+add_library(ec_interfaces STATIC ../ec_interfaces.c ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_WDG_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
 SET_TARGET_PROPERTIES(ec_interfaces PROPERTIES COMPILE_FLAGS -fPIC)
 target_link_libraries(ec_interfaces ${EC_LIBS})
+set_target_properties(ec_interfaces PROPERTIES 
+  ENABLE_EXPORTS On
+  LINK_INTERFACE_LIBRARIES ""
+  #  INSTALL_RPATH ${INSTALL_LIBDIR}
+  OUTPUT_NAME ec_interfaces 
+  )
+

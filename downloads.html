@@ -38,11 +38,10 @@
 	<div class="post">
 <h2><a href="https://github.com/Ettercap/ettercap">Download Ettercap Source Code</a></h2>
 	<div class="entry">
-	The latest Ettercap release is: 0.8.0-Lacassagne<br />
-	Release date: Sep 21, 2013<br />
-	<a href="announcement.html">Important Announcement</a><br />
-        <blockquote><span><p><a href="https://github.com/Ettercap/ettercap/archive/v0.8.0.tar.gz"><img src="Download _256.png" alt="" title="Click to Download" /><br />ettercap-0.8.0.tar.gz</a><br />
-	Sha1: 008fca94bbd67b578699300eb321766cd41fbfff</p></span></blockquote>
+	The latest Ettercap release is: 0.8.1-Lacassagne<br />
+	Release date: November 30, 2013<br />
+        <blockquote><span><p><a href="https://github.com/Ettercap/ettercap/archive/v0.8.1.tar.gz"><img src="Download _256.png" alt="" title="Click to Download" /><br />ettercap-0.8.1.tar.gz</a><br />
+	Sha1: FILL</p></span></blockquote>
 	<br /><br /> 	
 		<h3>Previous Versions</h3>
 		
@@ -50,6 +49,12 @@
 <table style="margin:0 auto; width:100%;" border="0" cellspacing="0" cellpadding="5">
   <tbody>
     <tr style="background-color:#000; "><td style="color:#fff; padding:10px;">Release Date</td><td style="color:#fff; padding:10px;">FileName</td><td style="color:#fff; padding:10px; text-align:center;">Version</td><td style="color:#fff; padding:10px; text-align:center;">Sha-1 Hash</td></tr>
+<tr>
+		<td bgcolor="#eaeaea">Sep 21, 2013</td>
+		<td bgcolor="#eaeaea"><a href="https://github.com/Ettercap/ettercap/archive/v0.8.0.tar.gz" class="down">ettercap-0.8.0.tar.gz</a></td>
+		<td bgcolor="#e5e5e5">0.8.0-Lacassagne</td>
+		<td bgcolor="#eee">008fca94bbd67b578699300eb321766cd41fbfff</td>
+    </tr>
 <tr>
 		<td bgcolor="#eaeaea">Mar 26, 2013</td>
 		<td bgcolor="#eaeaea"><a href="https://github.com/Ettercap/ettercap/archive/v0.7.6.tar.gz" class="down">ettercap-0.7.6.tar.gz</a></td>
@@ -114,6 +119,61 @@
 
 
 <h3>History</h3>
+<div class="box">
+<span class="title"><h3>0.8.1-Lombroso</h3></span>
+<br /><br />
+<ul class="fancy_list"><li class="circle_arrow">Bug Fix
+</li>
+</ul>
+	<ul>
+   <li>!! Moved check framework in bundled_libs directory</li>
+   <li>!! Fixed crash on scan for hosts, by adding a mutex</li>
+   <li>!! Fixed libettercap.so linking, by removing curses and gtk stuff</li>
+   <li>!! Fixed ip_add_to_int32 macro</li>
+   <li>!! Fixed a ton of warnings in gtk, curses and core</li>
+   <li>!! Fixed some documentation</li>
+   <li>!! Fixed tests with eglibc &gt;= 2.17</li>
+   <li>!! Fixed check framework find, with fallback in the bundled one if not available</li>
+   <li>!! Fixed some OSPF stuff</li>
+   <li>!! Fixed bug in etter.finger.mac parsing</li>
+   <li>!! Fixed ssl checks on cmake, now it is mandatory</li>
+   <li>!! Fixed scan for hosts progress bar</li>
+   <li>!! Fixed linux.org ip address on etter.dns conf file</li>
+   <li>!! Fixed some memory leakages</li>
+   <li>!! Fixed missing RelWithDebInfo on Cmake</li>
+   <li>!! Fixed typos</li>
+   <li>!! Fixed some performance issues in scan for hosts function</li>
+   <li>!! Fixed race condition when scan progress was canceled</li>
+   <li>!! Fixed cmake flags passing</li>
+   <li>!! Fixed IPv6 build</li>
+   <li>!! Fixed debug messages</li>
+	</ul>
+</ul>
+<ul class="fancy_list"><li class="circle_arrow">New Features
+        <ul>
+   <li>+ New INSTALL_EXEDIR cmake option, now you can have "ettercap" and the other binaries in two different directories!</li>
+   <li>+ New Null/Loopback decoder!</li>
+   <li>+ Added automatic irc notifications!</li>
+   <li>+ Added some debug and fortify-source flags</li>
+   <li>+ Added some travis builds!</li>
+   <li>+ Updated etter.finger.mac</li>
+   <li>+ Added support for parsing RIPv2 MD5 authentication packets</li>
+   <li>+ Updated curl and check bundled libraries</li>
+   <li>+ updated etter.filter.examples file</li>
+   <li>+ updated TODO list</li>
+   <li>+ etterfilter now is IPv6 ready!</li>
+   <li>+ Documentation updated</li>
+   <li>+ Man pages updated</li>
+   <li>+ New nd-poisoning!</li>
+   <li>+ Increased IPv6 probe delay from 2 seconds to 3</li>
+<ul class="fancy_list"><li class="circle_arrow">Removed
+        <ul>
+   <li>- Removed hex_encode stuff</li>
+   <li>- Removed ec_pap.c since it was already implemented in ec_ppp.c</li>
+        </ul>
+</ul>
+
+</div>
 <div class="box">
 <span class="title"><h3>0.8.0-Lacassagne</h3></span>
 <br /><br />

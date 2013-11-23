@@ -3,7 +3,7 @@
 # This will build check using the release that we've included with
 # our distribution of ettercap.
 include(ExternalProject)
-SET(CHECK_VERSION 0.9.10)
+SET(CHECK_VERSION 0.9.11)
 SET(CHECK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(CHECK_TARGET bundled-check-${CHECK_VERSION}-${CMAKE_BUILD_TYPE})
 SET(CHECK_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${CHECK_TARGET})
@@ -61,9 +61,9 @@ ExternalProject_Add(
   )
 
 # Now export our variables to our parent's scope.
-set(CHECK_VERSION ${CHECK_VERSION} PARENT_SCOPE)
-set(CHECK_LIBRARY ${CHECK_LIBRARY} PARENT_SCOPE)
-set(CHECK_INCLUDE_DIR ${CHECK_INCLUDE_DIR} PARENT_SCOPE)
-set(CHECK_FOUND TRUE PARENT_SCOPE)
+set(LIBCHECK_VERSION ${CHECK_VERSION} PARENT_SCOPE)
+set(LIBCHECK_LIBRARIES ${CHECK_LIBRARY} PARENT_SCOPE)
+set(LIBCHECK_INCLUDE_DIRS ${CHECK_INCLUDE_DIR} PARENT_SCOPE)
+set(LIBCHECK_FOUND TRUE PARENT_SCOPE)
 add_custom_target(bundled_check)
 add_dependencies(bundled_check ${CHECK_TARGET})

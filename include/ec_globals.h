@@ -7,12 +7,14 @@
 #include <ec_inet.h>
 #include <ec_network.h>
 #include <ec_ui.h>
+#include <ec_set.h>
 #include <ec_stats.h>
 #include <ec_profiles.h>
 #include <ec_filter.h>
 #include <ec_interfaces.h>
 #include <config.h>
 #include <ec_encryption.h>
+#include <ec_utils.h>
 #include <pcap.h>
 #include <libnet.h>
 #include <regex.h>

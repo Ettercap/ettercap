@@ -33,6 +33,9 @@ static wdg_t *sysmsg_win;
 static char tag_unoff[] = " ";
 static char tag_promisc[] = " ";
 
+/* version */
+extern char *curses_version(void);
+
 /* proto */
 
 void set_curses_interface(void);
@@ -86,6 +89,8 @@ void set_curses_interface(void)
    ops.type = UI_CURSES;
    
    ui_register(&ops);
+
+   DEBUG_MSG("Curses -> %s\n", curses_version());
    
 }
 

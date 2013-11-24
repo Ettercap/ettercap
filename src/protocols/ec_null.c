@@ -73,7 +73,6 @@ FUNC_DECODER(decode_null)
          break;
       case AF_INET6_BSD:     /* IPv6 on NetBSD,OpenBSD,BSD/OS */
       case AF_INET6_FREEBSD: /* IPv6 on FreeBSD,DragonFlyBSD */
-      case AF_INET6_DARWIN:  /* IPv6 on Darwin/Mac OS X */
       case AF_INET6:         /* IPv6 on Linux and others */
          lltype = LL_TYPE_IP6; 
          break;

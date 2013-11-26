@@ -827,6 +827,10 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
    if (ip_addr_is_ours(ip) == EFOUND) 
       return;
 
+   /* don't add undefined address */
+   if (ip_addr_is_zero(ip))
+      return;
+
    SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
 
    /* fill the struct */

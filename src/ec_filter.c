@@ -568,7 +568,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
             u_char *replaced;
             u_char *q = fop->op.func.replace;
             size_t i;
-	    int slen = 0;
+            int slen = 0;
 
             /* don't modify if in unoffensive mode */
             if (GBL_OPTIONS->unoffensive)

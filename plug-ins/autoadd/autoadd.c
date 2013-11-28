@@ -97,6 +97,10 @@ static void parse_arp(struct packet_object *po)
       return;
    if (!memcmp(&GBL_IFACE->mac, &po->L2.src, MEDIA_ADDR_LEN))
       return;
+
+   /* don't add undefined address */
+   if (ip_addr_is_zero(&po->L3.src))
+      return;
    
    /* search in target 1 */
    if (GBL_TARGET1->all_ip) {

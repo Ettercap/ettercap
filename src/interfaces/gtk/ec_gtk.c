@@ -267,7 +267,9 @@ static void gtkui_init(void)
 {
    DEBUG_MSG("gtk_init");
 // g_thread_init has been deprecated since version 2.32 and should not be used in newly-written code. This function is no longer necessary. The GLib threading system is automatically initialized at the start of your program.
-//   g_thread_init(NULL);
+#if GLIB_CHECK_VERSION(2,32,0)
+   g_thread_init(NULL);
+#endif
 
    if(!gtk_init_check(0, NULL)) {
    	FATAL_ERROR("GTK+ failed to initialize. Is X running?");

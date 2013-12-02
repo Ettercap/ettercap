@@ -42,7 +42,6 @@ struct row_pairs {
 
 /* proto */
 
-void gtkui_show_connections(void);
 static void gtkui_connections_detach(GtkWidget *child);
 static void gtkui_connections_attach(void);
 static void gtkui_kill_connections(void);
@@ -1251,7 +1250,7 @@ static void gtkui_connection_inject_file(void)
    GtkWidget *dialog, *label, *vbox, *hbox;
    GtkWidget *button1, *button2, *button, *entry;
    char tmp[MAX_ASCII_ADDR_LEN];
-   const char *filename = NULL;
+   char *filename = NULL;
    gint response = 0;
    
    DEBUG_MSG("gtk_connection_inject_file");

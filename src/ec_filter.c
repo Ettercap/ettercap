@@ -44,11 +44,8 @@ static pthread_mutex_t filters_mutex;
 
 /* protos */
 
-int filter_load_file(const char *filename, struct filter_list **list, uint8_t enabled);
-void filter_unload(struct filter_list **list);
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
 static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
-void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg);
    
 static int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
@@ -570,7 +567,8 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
          if (fop->op.func.replace) {
             u_char *replaced;
             u_char *q = fop->op.func.replace;
-            size_t i, slen = 0;
+            size_t i;
+            int slen = 0;
 
             /* don't modify if in unoffensive mode */
             if (GBL_OPTIONS->unoffensive)

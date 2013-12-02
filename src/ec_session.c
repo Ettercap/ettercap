@@ -44,13 +44,7 @@ static LIST_HEAD(, session_list) session_list_head[TABSIZE];
 
 /* protos */
 
-void session_put(struct ec_session *s);
-int session_get(struct ec_session **s, void *ident, size_t ident_len);
-int session_del(void *ident, size_t ident_len);
-int session_get_and_del(struct ec_session **s, void *ident, size_t ident_len);
 u_int32 session_hash(void *ident, size_t ilen);
-
-void session_free(struct ec_session *s);
 
 static pthread_mutex_t session_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SESSION_LOCK     do{ pthread_mutex_lock(&session_mutex); } while(0)

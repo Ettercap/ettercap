@@ -25,15 +25,6 @@
 
 /* proto */
 
-#ifdef WITH_IPV6
-void toggle_ip6scan(void);
-#endif
-void gtkui_scan(void);
-void gtkui_load_hosts(void);
-void gtkui_save_hosts(void);
-void gtkui_host_list(void);
-void gtkui_refresh_host_list(void);
-
 static void load_hosts(const char *file);
 static void save_hosts(void);
 static void gtkui_hosts_destroy(void);

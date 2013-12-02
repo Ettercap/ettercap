@@ -27,21 +27,13 @@
 
 /* proto */
 
-void gtkui_show_stats(void);
-void toggle_resolve(void);
-void gtkui_vis_method(void);
-void gtkui_vis_regex(void);
 static void gtkui_set_regex(void);
-void gtkui_wifi_key(void);
 static void gtkui_set_wifikey(void);
 
 static void gtkui_stop_stats(void);
 static void gtkui_stats_detach(GtkWidget *child);
 static void gtkui_stats_attach(void);
 static gboolean refresh_stats(gpointer data);
-
-extern void gtkui_show_profiles(void);
-extern void gtkui_show_connections(void);
 
 /* globals */
 
@@ -303,8 +295,7 @@ void gtkui_vis_method(void)
    GList *lang_list = NULL;
    GtkWidget *hbox, *lang_combo, *label;
    char encoding[50], def_lang[75];
-   const char *local_lang; 
-
+   G_CONST_RETURN char *local_lang;
 
    DEBUG_MSG("gtk_vis_method");
 

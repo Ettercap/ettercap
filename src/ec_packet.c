@@ -27,11 +27,7 @@
 
 /* protos... */
 
-struct packet_object* packet_allocate_object(u_char *data, bpf_u_int32 len);
-inline int packet_create_object(struct packet_object *po, u_char *buf, bpf_u_int32 len);
 inline int packet_destroy_object(struct packet_object *po);
-int packet_disp_data(struct packet_object *po, u_char *buf, bpf_u_int32 len);
-struct packet_object * packet_dup(struct packet_object *po, u_char flag);
 
 /* --------------------------- */
 

@@ -127,7 +127,6 @@ static struct conf_section sections[] = {
 
 /* protos */
 
-void load_conf(void);
 static void init_structures(void);
 static void set_pointer(struct conf_entry *entry, char *name, void *ptr);
 

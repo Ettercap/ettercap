@@ -36,12 +36,6 @@
 
 FILE *wdg_debug_file = NULL;
 
-/* protos */
-
-void wdg_debug_init(void);
-void wdg_debug_close(void);
-void wdg_debug_msg(const char *message, ...);
-
 /**********************************/
 
 void wdg_debug_init(void)

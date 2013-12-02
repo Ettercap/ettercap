@@ -55,9 +55,7 @@ static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* protos */
 
-void debug_init(void);
 static void debug_close(void);
-void debug_msg(const char *message, ...);
 
 /**********************************/
 

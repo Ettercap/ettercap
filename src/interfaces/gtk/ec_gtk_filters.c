@@ -25,13 +25,6 @@
 #include <ec_version.h>
 #include <ec_gtk.h>
 
-/* proto */
-
-void gtkui_load_filter(void);
-void gtkui_stop_filter(void);
-
-/* globals */
-
 /*******************************************/
 
 

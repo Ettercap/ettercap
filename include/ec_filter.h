@@ -115,7 +115,7 @@ struct filter_env {
 
 /* filter list entry */
 struct filter_list {
-	uint8_t enabled;
+	u_int8 enabled;
 	char *name;
 	struct filter_env env;
 	struct filter_list *next;

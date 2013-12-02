@@ -21,20 +21,6 @@
 
 #include <ec.h>
 
-/* extern from various interfaces */
-
-extern void set_daemon_interface(void);
-extern void set_text_interface(void);
-extern void set_curses_interface(void);
-extern void set_gtk_interface(void);
-
-/* protos */
-
-void select_daemon_interface(void);
-void select_text_interface(void);
-void select_curses_interface(void);
-void select_gtk_interface(void);
-
 /*******************************************/
 
 void select_daemon_interface(void)

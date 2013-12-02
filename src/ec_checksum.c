@@ -26,12 +26,8 @@
 /* protos... */
 
 static u_int16 sum(u_int8 *buf, size_t len);
-u_int16 L3_checksum(u_char *buf, size_t len);
-u_int16 L4_checksum(struct packet_object *po);
 static u_int16 v4_checksum(struct packet_object *po);
 static u_int16 v6_checksum(struct packet_object *po);
-u_int16 checksum_shouldbe(u_int16 sum, u_int16 computed_sum);
-u_int32 CRC_checksum(u_char *buf, size_t len, u_int32 init);
 
 /*******************************************/
 

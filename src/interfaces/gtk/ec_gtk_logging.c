@@ -27,13 +27,6 @@
 
 /* proto */
 
-void toggle_compress(void);
-void gtkui_log_all(void);
-void gtkui_log_info(void);
-void gtkui_log_msg(void);
-void gtkui_stop_log(void);
-void gtkui_stop_msg(void);
-
 static void log_all(void);
 static void log_info(void);
 static void log_msg(void);

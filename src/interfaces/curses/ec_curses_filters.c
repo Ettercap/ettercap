@@ -31,7 +31,7 @@
 static void curses_manage_filters(void);
 static void curses_select_filter(void *filter);
 static void curses_load_filter(void);
-static void load_filter(char *path, char *file);
+static void load_filter(const char *path, char *file);
 static void curses_stop_filter(void);
 
 /* globals */
@@ -138,7 +138,7 @@ static void curses_load_filter(void)
    wdg_set_focus(fop);
 }
 
-static void load_filter(char *path, char *file)
+static void load_filter(const char *path, char *file)
 {
    char *tmp;
    

@@ -52,7 +52,7 @@ static void curses_connection_kill_wrapper(void);
 static void curses_connection_inject(void);
 static void inject_user(void);
 static void curses_connection_inject_file(void);
-static void inject_file(char *path, char *file);
+static void inject_file(const char *path, char *file);
 static void curses_connection_help(void *dummy);
 static void curses_connection_data_help(void);
 
@@ -621,7 +621,7 @@ static void curses_connection_inject_file(void)
 /*
  * map the file into memory and pass the buffer to the inject function
  */
-static void inject_file(char *path, char *file)
+static void inject_file(const char *path, char *file)
 {
    char *filename;
    int fd;

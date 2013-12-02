@@ -61,9 +61,6 @@ static void wdg_dialog_move(struct wdg_object *wo, int key);
 static int wdg_dialog_mouse_move(struct wdg_object *wo, struct wdg_mouse_event *mouse);
 static void wdg_dialog_callback(struct wdg_object *wo);
 
-void wdg_dialog_text(wdg_t *wo, size_t flags, const char *text);
-void wdg_dialog_add_callback(wdg_t *wo, size_t flag, void (*callback)(void));
-
 /*******************************************/
 
 /* 

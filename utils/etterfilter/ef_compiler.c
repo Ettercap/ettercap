@@ -84,24 +84,10 @@ static u_int32 vlabel = 1;
 
 /* protos */
 
-int compiler_set_root(struct block *blk);
-
-size_t compile_tree(struct filter_op **fop);
 static void unfold_blk(struct block **blk);
 static void unfold_ifblk(struct block **blk);
 static void unfold_conds(struct condition *cnd, u_int32 a, u_int32 b);
 static void labels_to_offsets(void);
-
-struct block * compiler_add_instr(struct instruction *ins, struct block *blk);
-struct block * compiler_add_ifblk(struct ifblock *ifb, struct block *blk);
-
-struct instruction * compiler_create_instruction(struct filter_op *fop);
-struct condition * compiler_create_condition(struct filter_op *fop);
-struct condition * compiler_concat_conditions(struct condition *a, u_int16 op, struct condition *b);
-
-struct ifblock * compiler_create_ifblock(struct condition *conds, struct block *blk);
-struct ifblock * compiler_create_ifelseblock(struct condition *conds, struct block *blk, struct block *elseblk);
-
 
 /*******************************************/
 

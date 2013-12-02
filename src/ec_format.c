@@ -70,23 +70,6 @@ static u_int8 EBCDIC_to_ASCII[256] = {
    0x38, 0x39, 0x2E, 0x2E, 0x2E, 0x2E, 0x2E, 0x2E
 };
 
-
-
-/* protos */
-
-int hex_len(int len);
-int hex_format(const u_char *buf, size_t len, u_char *dst);
-int ascii_format(const u_char *buf, size_t len, u_char *dst);
-int text_format(const u_char *buf, size_t len, u_char *dst);
-int ebcdic_format(const u_char *buf, size_t len, u_char *dst);
-int html_format(const u_char *buf, size_t len, u_char *dst);
-int bin_format(const u_char *buf, size_t len, u_char *dst);
-int zero_format(const u_char *buf, size_t len, u_char *dst);
-int utf8_format(const u_char *buf, size_t len, u_char *dst);
-int set_utf8_encoding(u_char *fromcode);
-
-int set_format(char *format);
-
 /**********************************/
 
 /*

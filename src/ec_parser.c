@@ -49,7 +49,6 @@
 static void ec_usage(void);
 void parse_options(int argc, char **argv);
 
-
 /*****************************************/
 
 void ec_usage(void)

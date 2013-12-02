@@ -28,8 +28,6 @@
 
 /* proto */
 
-void gtkui_plugin_mgmt(void);
-void gtkui_plugin_load(void);
 static void gtkui_load_plugin(const char *full);
 static void gtkui_add_plugin(char active, struct plugin_ops *ops);
 static void gtkui_plug_destroy(void);
@@ -86,7 +84,8 @@ void gtkui_plugin_load(void)
 
 static void gtkui_load_plugin(const char *full)
 {
-   char *path, *file;
+   const char *path;
+   char *file;
    int ret;
 
    path = strdup(full);

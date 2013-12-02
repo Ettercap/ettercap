@@ -30,7 +30,7 @@
 
 static void curses_plugin_mgmt(void);
 static void curses_plugin_load(void);
-static void curses_load_plugin(char *path, char *file);
+static void curses_load_plugin(const char *path, char *file);
 static void curses_wdg_plugin(char active, struct plugin_ops *ops);
 static void curses_refresh_plug_array(char active, struct plugin_ops *ops);
 static void curses_plug_destroy(void);
@@ -76,7 +76,7 @@ static void curses_plugin_load(void)
    wdg_set_focus(fop);
 }
 
-static void curses_load_plugin(char *path, char *file)
+static void curses_load_plugin(const char *path, char *file)
 {
    int ret;
 

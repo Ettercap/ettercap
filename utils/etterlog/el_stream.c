@@ -23,14 +23,6 @@
 #include <el.h>
 #include <el_functions.h>
 
-/* protos... */
-
-void stream_init(struct stream_object *so);
-int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf);
-int stream_read(struct stream_object *so, u_char *buf, size_t size, int mode);
-int stream_move(struct stream_object *so, size_t offset, int whence, int mode);
-struct so_list * stream_search(struct stream_object *so, const char *buf, size_t buflen, int mode);
-   
 /*******************************************/
 
 /*

@@ -36,9 +36,6 @@
 /* protos... */
 
 static void el_usage(void);
-void parse_options(int argc, char **argv);
-
-void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t );
 
 /*******************************************/
 

@@ -27,8 +27,6 @@
 #include <ec_lua.h>
 #endif
 
-void clean_exit(int errcode);
-
 /*
  * cleanly exit from the program
  */

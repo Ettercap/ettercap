@@ -16,7 +16,6 @@ struct gtk_conf_entry {
    short value;
 };
 
-
 /* ec_gtk.c */
 extern GtkWidget *window;  /* main window */
 extern GtkWidget *notebook;

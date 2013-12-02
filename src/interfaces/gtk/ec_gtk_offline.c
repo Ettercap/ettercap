@@ -22,13 +22,6 @@
 #include <ec.h>
 #include <ec_gtk.h>
 
-/* globals */
-
-/* proto */
-
-void gtkui_sniff_offline(void);
-
-
 /*******************************************/
 
 

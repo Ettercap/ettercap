@@ -27,10 +27,7 @@ static char saved_status;
 
 /* protos */
 
-void disable_ip_forward(void);
 static void restore_ip_forward(void);
-u_int16 get_iface_mtu(const char *iface);
-void disable_interface_offload(void);
 
 /*******************************************/
 

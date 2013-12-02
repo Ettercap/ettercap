@@ -20,7 +20,7 @@ struct plugin_ops
 #define PLUGIN_PATTERN   "ec_*.so"
 
 EC_API_EXTERN void plugin_load_all(void);
-EC_API_EXTERN int plugin_load_single(char *path, char *name);
+EC_API_EXTERN int plugin_load_single(const char *path, char *name);
 EC_API_EXTERN int plugin_register(void *handle, struct plugin_ops *ops);
 EC_API_EXTERN int plugin_list_walk(int min, int max, void (*func)(char, struct plugin_ops *));
 #define PLP_MIN   1

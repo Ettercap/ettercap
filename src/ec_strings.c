@@ -28,14 +28,7 @@
 #ifndef HAVE_CTYPE_H
    int isprint(int c);
 #endif
-int match_pattern(const char *s, const char *pattern);
-int base64_decode(char *bufplain, const char *bufcoded);
 static int hextoint(int c);
-int strescape(char *dst, char *src);
-int str_replace(char **text, const char *s, const char *d);
-size_t strlen_utf8(const char *s);
-char * ec_strtok(char *s, const char *delim, char **ptrptr);
-char getchar_buffer(char **buf);
 
 /*******************************************/
 

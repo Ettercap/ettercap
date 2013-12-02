@@ -120,13 +120,7 @@ GtkItemFactoryEntry tab_menu[] = {
   { "/Previous page",  "<control>9", gtkui_page_left,     0, "<StockItem>", GTK_STOCK_GO_BACK }
 };
 
-/* proto */
-
-void gtkui_create_menu(int live);
-
-
 /*******************************************/
-
 
 void gtkui_create_menu(int live)
 {

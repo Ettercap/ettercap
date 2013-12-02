@@ -52,13 +52,9 @@ struct dec_entry {
 void __init data_init(void);
 FUNC_DECODER(decode_data);
 
-void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
-void add_decoder(u_int8 level, u_int32 type, FUNC_DECODER_PTR(decoder));
 static void sort_decoders(void);
 static int cmp_decoders(const void *va, const void *vb);
 static struct dec_entry* find_entry(u_int8 level, u_int32 type);
-void del_decoder(u_int8 level, u_int32 type);
-void *get_decoder(u_int8 level, u_int32 type);
 void **get_decoders(u_int8 level, u_int32 type);
 
 /* mutexes */

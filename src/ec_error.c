@@ -26,10 +26,7 @@
 #include <errno.h>
 #define ERROR_MSG_LEN 200
 
-void warn_msg(char *file, const char *function, int line, char *message, ...);
-void error_msg(char *file, const char *function, int line, char *message, ...);
 void fatal_error_msg(char *message, ...);
-void bug(char *file, const char *function, int line, char *message);
 
 /*******************************************/
 

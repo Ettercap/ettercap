@@ -28,7 +28,6 @@
 
 /* proto */
 
-void gtkui_show_profiles(void);
 static void gtkui_profiles_detach(GtkWidget *child);
 static void gtkui_profiles_attach(void);
 static void gtkui_kill_profiles(void);
@@ -40,7 +39,6 @@ static void gtkui_profiles_convert(void);
 static void gtkui_profiles_dump(void *dummy);
 static void dump_profiles(void);
 
-extern void gtkui_refresh_host_list(void);
 static struct host_profile *gtkui_profile_selected(void);
 
 /* globals */

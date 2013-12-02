@@ -132,7 +132,7 @@ struct ip_list {
 /* scanned hosts list */
 struct hosts_list {
    struct ip_addr ip;
-   u_char mac[MEDIA_ADDR_LEN];
+   u_int8 mac[MEDIA_ADDR_LEN];
    char *hostname;
    LIST_ENTRY(hosts_list) next;
 };

@@ -41,12 +41,7 @@ static struct conn_list conn_target;
 
 /* proto */
 
-void conn_table_create(void);
-void conn_table_display(void);
-void conn_decode(void);
 static int insert_table(struct log_header_packet *pck, char *buf);
-void filcon_compile(char *conn);
-int is_conn(struct log_header_packet *pck, int *versus);
 
 /*******************************************/
 

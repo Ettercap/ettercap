@@ -58,10 +58,6 @@ static int wdg_compound_get_msg(struct wdg_object *wo, int key, struct wdg_mouse
 static void wdg_compound_border(struct wdg_object *wo);
 static void wdg_compound_move(struct wdg_object *wo, int key);
 static int wdg_compound_dispatch(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
-void wdg_compound_add(wdg_t *wo, wdg_t *widget);
-void wdg_compound_set_focus(wdg_t *wo, wdg_t *widget);
-wdg_t * wdg_compound_get_focused(wdg_t *wo);
-void wdg_compound_add_callback(wdg_t *wo, int key, void (*callback)(void));
 
 /*******************************************/
 

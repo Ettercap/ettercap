@@ -49,12 +49,6 @@ pthread_mutex_t hook_pck_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define HOOK_PCK_LOCK     do{ pthread_mutex_lock(&hook_pck_mutex); } while(0)
 #define HOOK_PCK_UNLOCK   do{ pthread_mutex_unlock(&hook_pck_mutex); } while(0)
 
-/* protos... */
-
-void hook_point(int point, struct packet_object *po);
-void hook_add(int point, void (*func)(struct packet_object *po) );
-int hook_del(int point, void (*func)(struct packet_object *po) );
-
 /*******************************************/
 
 /* execute the functions registered in that hook point */

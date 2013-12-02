@@ -58,16 +58,7 @@ static SLIST_HEAD(, plugin_entry) plugin_head;
 
 /* protos... */
 
-void plugin_load_all(void);
 void plugin_unload_all(void);
-int plugin_load_single(char *path, char *name);
-int plugin_register(void *handle, struct plugin_ops *ops);
-int plugin_init(char *name);
-int plugin_fini(char *name);
-int plugin_list_walk(int min, int max, void (*func)(char, struct plugin_ops *));
-int plugin_is_activated(char *name);
-int search_plugin(char *name);
-void plugin_list(void);
 static void plugin_print(char active, struct plugin_ops *ops);
 #if defined(OS_BSD) || defined (OS_DARWIN)
 int plugin_filter(struct dirent *d);
@@ -81,7 +72,7 @@ int plugin_filter(const struct dirent *d);
  * load a plugin given the full path
  */
 
-int plugin_load_single(char *path, char *name)
+int plugin_load_single(const char *path, char *name)
 {
 #ifdef HAVE_PLUGINS
    char file[strlen(path)+strlen(name)+2];

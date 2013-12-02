@@ -34,8 +34,6 @@
 /* protos... */
 
 static void ef_usage(void);
-void parse_options(int argc, char **argv);
-
 
 /*********************************************/
 

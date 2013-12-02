@@ -40,16 +40,12 @@ extern char *curses_version(void);
 
 void set_curses_interface(void);
 static void curses_interface(void);
-void curses_flush_msg(void);
-
-void curses_message(const char *msg);
    
 static void curses_init(void);
 static void curses_cleanup(void);
 static void curses_msg(const char *msg);
 static void curses_error(const char *msg);
 static void curses_fatal_error(const char *msg);
-void curses_input(const char *title, char *input, size_t n, void (*callback)(void));
 static int curses_progress(char *title, int value, int max);
 static void curses_update(int target);
 
@@ -60,7 +56,7 @@ static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
 
 static void curses_file_open(void);
-static void read_pcapfile(char *path, char *file);
+static void read_pcapfile(const char *path, char *file);
 static void curses_file_write(void);
 static void write_pcapfile(void);
 static void curses_unified_sniff(void);
@@ -493,7 +489,7 @@ static void curses_file_open(void)
    wdg_set_focus(fop);
 }
 
-static void read_pcapfile(char *path, char *file)
+static void read_pcapfile(const char *path, char *file)
 {
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
    

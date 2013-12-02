@@ -17,7 +17,7 @@ SET(CURL_LIB_DIR ${CURL_PREFIX}/lib)
 SET(CURL_INCLUDE_DIR ${CURL_PREFIX}/include)
 
 if (NOT OPENSSL_LIBRARIES)
-  message(FATAL_ERROR "Cannot build bundled Curl without OpenSSL support enabled (ENABLE_SSL=On)")
+  message(FATAL_ERROR "Cannot build bundled Curl without OpenSSL support enabled")
 endif()
 
 if (NOT ZLIB_LIBRARIES)

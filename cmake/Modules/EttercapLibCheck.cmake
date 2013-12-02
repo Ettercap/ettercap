@@ -117,6 +117,7 @@ if(HAVE_PLUGINS)
 
     # sslstrip has a requirement for libcurl >= 7.26.0
     if(SYSTEM_CURL)
+      message(STATUS "CURL support requested. Will look for curl >= 7.26.0")
       find_package(CURL 7.26.0)
 
       if(NOT CURL_FOUND)
@@ -168,7 +169,7 @@ ADD_CUSTOM_TARGET(libnet)
 
 if(SYSTEM_LIBNET)
   if(ENABLE_IPV6)
-    message(STATUS "IPV6 support requested. Will look for libnet >= 1.1.5.")
+    message(STATUS "IPV6 support requested. Will look for libnet >= 1.1.5")
     find_package(LIBNET "1.1.5")
   else(ENABLE_IPV6)
     find_package(LIBNET)

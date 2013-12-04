@@ -1,9 +1,9 @@
-install(FILES etter.conf etter.dns etter.mdns etter.nbns DESTINATION ${INSTALL_SYSCONFDIR}/ettercap)
+install(FILES etter.dns etter.mdns etter.nbns DESTINATION ${INSTALL_SYSCONFDIR}/ettercap)
 
 if(ENABLE_IPV6)
 	install(FILES etter.conf.v6 DESTINATION ${INSTALL_SYSCONFDIR}/ettercap RENAME etter.conf)
 else(ENABLE_IPV6)
-	install(FILES etter.conf DESTINATION ${INSTALL_SYSCONFDIR}/ettercap)
+	install(FILES etter.conf.v4 DESTINATION ${INSTALL_SYSCONFDIR}/ettercap RENAME etter.conf)
 endif(ENABLE_IPV6)
 
 install(FILES

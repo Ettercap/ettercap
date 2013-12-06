@@ -32,9 +32,9 @@ foreach (f IN LISTS EC_DATAFILES EC_CONFFILES)
 	configure_file(${f} ${f} COPYONLY)
 endforeach()
 install(FILES
-        ${EC_CONFFILES}
-        etter.conf
+        ${CMAKE_CURRENT_BINARY_DIR}/${EC_CONFFILES}
+        ${CMAKE_CURRENT_BINARY_DIR}/etter.conf
         DESTINATION ${INSTALL_SYSCONFDIR}/ettercap)
 install(FILES
-        ${EC_DATAFILES}
+        ${CMAKE_CURRENT_BINARY_DIR}/${EC_DATAFILES}
         DESTINATION ${INSTALL_DATADIR}/ettercap)

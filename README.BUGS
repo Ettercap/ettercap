@@ -83,7 +83,7 @@ to make a detailed bug report in order to help us to find the bug and fix it.
 5) dump to a file the traffic that causes the crash (we need it to reproduce
     the situation)
 
-   # ./ettercap -w offending_packets.pcap ... --your-options-here ...
+   # ./src/ettercap -w offending_packets.pcap ... --your-options-here ...
 
 
 6) analyze the core with gdb and send us the backtrace:

@@ -160,7 +160,7 @@ void plugin_load_all(void)
    if (n <= 0) {
       DEBUG_MSG("plugin_loadall: no plugin in %s searching locally...", where);
       /* change the path to the local one */
-      where = ".";
+      where = "plug-ins";
       n = scandir(where, &namelist, plugin_filter, alphasort);
       DEBUG_MSG("plugin_loadall: %d found", n);
    }

@@ -91,12 +91,10 @@
 #define EC_STRINGIFY(in) #in
 #define EC_TOSTRING(in) EC_STRINGIFY(in)
 
-#ifdef OS_LINUX
+#if __GNUC_PREREQ(4,3)
 #define __init       __attribute__((constructor(101)))
-#define __init_last  __attribute__((constructor(200))
 #else
 #define __init __attribute__((constructor))
-#define __init_last __init
 #endif
 
 #ifndef __set_errno

@@ -247,24 +247,24 @@ int compile_display_filter(void)
    if (!GBL_OPTIONS->target1)
       GBL_OPTIONS->target1 = strdup("///");
    /* if /// was specified, select all */
-   else if (!strncmp(GBL_OPTIONS->target1, "///", 3))
+   if (!strncmp(GBL_OPTIONS->target1, "///", 3))
       GBL_TARGET1->scan_all = 1;
    
    if (!GBL_OPTIONS->target2)
       GBL_OPTIONS->target2 = strdup("///");
-   else if (!strncmp(GBL_OPTIONS->target2, "///", 3))
+   if (!strncmp(GBL_OPTIONS->target2, "///", 3))
       GBL_TARGET2->scan_all = 1;
 #else
    /* if not specified default to // */
    if (!GBL_OPTIONS->target1)
       GBL_OPTIONS->target1 = strdup("//");
    /* if // was specified, select all */
-   else if (!strncmp(GBL_OPTIONS->target1, "//", 2) && strlen(GBL_OPTIONS->target1) == 2)
+   if (!strncmp(GBL_OPTIONS->target1, "//", 2) && strlen(GBL_OPTIONS->target1) == 2)
       GBL_TARGET1->scan_all = 1;
   
    if (!GBL_OPTIONS->target2)
       GBL_OPTIONS->target2 = strdup("//");
-   else if (!strncmp(GBL_OPTIONS->target2, "//", 2) && strlen(GBL_OPTIONS->target2) == 2)
+   if (!strncmp(GBL_OPTIONS->target2, "//", 2) && strlen(GBL_OPTIONS->target2) == 2)
       GBL_TARGET2->scan_all = 1;
 #endif
 

@@ -44,7 +44,10 @@ void close_socket(int s);
  
 /* the void implemetation */
 
-void debug_msg(const char *message, ...) { }
+void debug_msg(const char *message, ...) 
+{
+   (void) message;
+}
 
 /* fake the UI implementation */
 void ui_msg(const char *fmt, ...) 
@@ -83,14 +86,36 @@ void ui_cleanup(void) { }
 /* for ec_passive is_open_port */
 void * get_decoder(u_int8 level, u_int32 type)
 {
+   (void) level;
+   (void) type;
+
    return NULL;
 }
 
 /* fake socket connections */
-void open_socket(char *host, u_int16 port) { }
-void socket_send(int s, u_char *payload, size_t size) { }
-void socket_recv(int s, u_char *payload, size_t size) { }
-void close_socket(int s) { }
+void open_socket(char *host, u_int16 port) 
+{
+   (void) host;
+   (void) port;
+}
+
+void socket_send(int s, u_char *payload, size_t size) 
+{
+   (void) s;
+   (void) payload;
+   (void) size;
+}
+
+void socket_recv(int s, u_char *payload, size_t size) 
+{
+   (void) s;
+   (void) payload;
+   (void) size;
+}
+void close_socket(int s) 
+{
+   (void) s;
+}
 
 /* EOF */
 

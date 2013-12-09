@@ -61,6 +61,9 @@ EC_THREAD_FUNC(top_half)
    struct po_queue_entry *e;
    u_int pck_len;
  
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
 #if !defined(OS_WINDOWS) 
    struct timespec tm;   
    tm.tv_sec = 0;

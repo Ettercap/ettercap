@@ -110,6 +110,11 @@ FUNC_DECODER(dissector_radius)
    char auth[0xff];
    size_t i;
    
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    DEBUG_MSG("RADIUS --> UDP dissector_radius");
 
    /* parse the packet as a radius header */

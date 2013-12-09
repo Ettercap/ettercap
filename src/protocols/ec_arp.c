@@ -65,6 +65,9 @@ FUNC_DECODER(decode_arp)
 {
    struct arp_header *arp;
 
+   /* don't complain about unused var */
+   (void) DECODE_DATALEN;
+   
    arp = (struct arp_header *)DECODE_DATA;
 
    /*

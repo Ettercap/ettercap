@@ -45,7 +45,7 @@ static pthread_mutex_t filters_mutex;
 /* protos */
 
 static void reconstruct_strings(struct filter_env *fenv, struct filter_header *fh);
-static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
+static int compile_regex(struct filter_env *fenv);
    
 static int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
@@ -1065,7 +1065,7 @@ int filter_load_file(const char *filename, struct filter_list **list, uint8_t en
    FILTERS_UNLOCK;
 
    /* compile the regex to speed up the matching */
-   if (compile_regex(fenv, &fh) != ESUCCESS)
+   if (compile_regex(fenv) != ESUCCESS)
       return -EFATAL;
    
    USER_MSG("Content filters loaded from %s...\n", filename);
@@ -1181,7 +1181,7 @@ static void reconstruct_strings(struct filter_env *fenv, struct filter_header *f
 /*
  * compile the regex of a filter_op
  */
-static int compile_regex(struct filter_env *fenv, struct filter_header *fh)
+static int compile_regex(struct filter_env *fenv)
 {
    size_t i = 0;
    struct filter_op *fop = fenv->chain;

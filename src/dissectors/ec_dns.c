@@ -105,6 +105,11 @@ FUNC_DECODER(dissector_dns)
    int16 class, type, a_len;
    int32 ttl;
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    DEBUG_MSG("DNS --> UDP 53  dissector_dns");
    
    dns = (struct dns_header *)po->DATA.data;

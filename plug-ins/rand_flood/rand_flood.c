@@ -93,6 +93,9 @@ int plugin_load(void *handle)
 
 static int rand_flood_init(void *dummy) 
 {     
+   /* variable not used */
+   (void) dummy;
+
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("rand_flood: plugin doesn't work in UNOFFENSIVE mode\n");
@@ -111,6 +114,9 @@ static int rand_flood_init(void *dummy)
 static int rand_flood_fini(void *dummy) 
 {
    pthread_t pid;
+
+   /* variable not used */
+   (void) dummy;
 
    pid = ec_thread_getpid("flooder");
 
@@ -137,6 +143,9 @@ EC_THREAD_FUNC(flooder)
    tm.tv_sec = GBL_CONF->port_steal_send_delay;
    tm.tv_nsec = 0;
 #endif
+
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
 
    /* Get a "random" seed */ 
    gettimeofday(&seed, NULL);

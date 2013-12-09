@@ -102,6 +102,9 @@ static void daemon_cleanup(void)
 
 static int daemon_progress(char *title, int value, int max)
 {
+   /* variable not used */
+   (void) title;
+
    if (value == max)
       return UI_PROGRESS_FINISHED;
    else

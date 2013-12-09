@@ -67,6 +67,11 @@ FUNC_DECODER(dissector_x11)
    struct x11_request *x11;
    int i;
    
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* 
     * check if it is the first packet sent by the server i
     * after the session is created (cookie already sent)

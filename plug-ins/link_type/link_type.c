@@ -73,6 +73,9 @@ static int link_type_init(void *dummy)
    u_char counter = 0;
    struct hosts_list *h;
    
+   /* variable not used */
+   (void) dummy;
+
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
 
@@ -146,6 +149,9 @@ static int link_type_init(void *dummy)
 
 static int link_type_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    return PLUGIN_FINISHED;
 }
 

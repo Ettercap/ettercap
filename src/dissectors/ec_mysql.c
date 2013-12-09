@@ -76,6 +76,11 @@ FUNC_DECODER(dissector_mysql)
    unsigned char output[41];
    int has_password = 0;
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* Skip ACK packets */
    if (PACKET->DATA.len == 0)
       return NULL;

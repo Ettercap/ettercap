@@ -433,7 +433,7 @@ int ip_addr_is_multicast(struct ip_addr *ip)
  * returns  ESUCCESS if the ip is broadcast
  * returns -ENOTFOUND if not
  */
-int ip_addr_is_broadcast(struct ip_addr *sa, struct ip_addr *ifaddr)
+int ip_addr_is_broadcast(struct ip_addr *sa)
 {
 	struct ip_addr *nw;
 	struct ip_addr *nm;

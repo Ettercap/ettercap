@@ -147,6 +147,9 @@ static EC_THREAD_FUNC(scan_thread)
    int nhosts = 0;
    int threadize = 1;
 
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
    DEBUG_MSG("scan_thread");
 
    ts.tv_sec = 1;
@@ -324,6 +327,9 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
    bpf_u_int32 len;
    u_char *data;
    bpf_u_int32 datalen;
+
+   /* variable not used */
+   (void) param;
 
    CANCELLATION_POINT();
 

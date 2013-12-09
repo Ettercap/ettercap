@@ -68,6 +68,9 @@ static int finger_submit_init(void *dummy)
    char finger[FINGER_LEN + 1];
    char os[OS_LEN + 1];
    
+   /* variable not used */
+   (void) dummy;
+
    /* don't display messages while operating */
    GBL_OPTIONS->quiet = 1;
  
@@ -101,6 +104,9 @@ static int finger_submit_init(void *dummy)
 
 static int finger_submit_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    return PLUGIN_FINISHED;
 }
 

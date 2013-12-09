@@ -53,6 +53,9 @@ FUNC_DECODER(dissector_socks)
 
    /* don't complain about unused var */
    (void)end;
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
 
    /* Skip ACK packets */
    if (PACKET->DATA.len == 0)

@@ -245,6 +245,9 @@ EC_THREAD_FUNC(sslw_start)
    u_int len = sizeof(struct sockaddr_in), i;
    struct sockaddr_in client_sin;
 
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
    ec_thread_init();
 
    /* disabled if not aggressive */

@@ -80,6 +80,9 @@ int plugin_load(void *handle)
 
 static int smb_down_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("smb_down: plugin doesn't work in UNOFFENSIVE mode\n");
@@ -95,6 +98,9 @@ static int smb_down_init(void *dummy)
 
 static int smb_down_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("smb_down: plugin terminated...\n");
 
    hook_del(HOOK_PROTO_SMB_CHL, &parse_smb);

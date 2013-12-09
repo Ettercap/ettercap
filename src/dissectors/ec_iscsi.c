@@ -109,6 +109,9 @@ FUNC_DECODER(dissector_iscsi)
 
    //suppress unused warning
    (void)end;
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
 
    /* Packets coming from the server */
    if (FROM_SERVER("iscsi", PACKET)) {

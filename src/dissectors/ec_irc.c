@@ -55,6 +55,9 @@ FUNC_DECODER(dissector_irc)
 
    /* unused variable */
    (void)end;
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
 
    /* skip messages coming from the server */
    if (FROM_SERVER("irc", PACKET) || FROM_SERVER("ircs", PACKET))

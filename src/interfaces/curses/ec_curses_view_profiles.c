@@ -104,6 +104,9 @@ static void curses_kill_profiles(void)
 
 static void curses_profiles_help(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
    char help[] = "HELP: shortcut list:\n\n"
                  "  ENTER - show the infos about the host\n"
                  "    l   - remove the remote hosts from the list\n"
@@ -219,6 +222,9 @@ static void curses_profile_detail(void *profile)
 
 static void curses_profiles_local(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
    profile_purge_remote();
    wdg_dynlist_reset(wdg_profiles);
    wdg_dynlist_refresh(wdg_profiles);
@@ -226,6 +232,9 @@ static void curses_profiles_local(void *dummy)
 
 static void curses_profiles_remote(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
    profile_purge_local();
    wdg_dynlist_reset(wdg_profiles);
    wdg_dynlist_refresh(wdg_profiles);
@@ -233,12 +242,18 @@ static void curses_profiles_remote(void *dummy)
 
 static void curses_profiles_convert(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
    profile_convert_to_hostlist();
    curses_message("The hosts list was populated with local profiles");
 }
 
 static void curses_profiles_dump(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
    DEBUG_MSG("curses_profiles_dump");
 
    /* make sure to free if already set */

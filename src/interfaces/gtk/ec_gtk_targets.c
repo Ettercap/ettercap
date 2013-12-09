@@ -374,6 +374,9 @@ void gtkui_create_targets_array(void)
  */
 static void gtkui_add_target1(void *entry)
 {
+   /* variable not used */
+   (void) entry;
+
    DEBUG_MSG("gtk_add_target1");
 
    gtkui_input("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target1);
@@ -381,6 +384,9 @@ static void gtkui_add_target1(void *entry)
 
 static void gtkui_add_target2(void *entry)
 {
+   /* variable not used */
+   (void) entry;
+
    DEBUG_MSG("gtk_add_target2");
 
    gtkui_input("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target2);
@@ -445,6 +451,9 @@ static void gtkui_delete_targets(GtkWidget *widget, gpointer data) {
    GtkTreeIter iter;
    GtkTreeModel *model;
    struct ip_list *il = NULL;
+
+   /* variable not used */
+   (void) widget;
 
    switch((int)data) {
       case 1:

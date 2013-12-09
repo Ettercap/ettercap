@@ -96,6 +96,11 @@ FUNC_DECODER(dissector_smb)
    NetBIOS_header *NetBIOS;
    char tmp[MAX_ASCII_ADDR_LEN];
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    ptr = PACKET->DATA.data;
 
    /* Catch netbios and smb headers */

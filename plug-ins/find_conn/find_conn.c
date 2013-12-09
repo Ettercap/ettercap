@@ -61,6 +61,9 @@ int plugin_load(void *handle)
 
 static int find_conn_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("find_conn: plugin running...\n");
    
    hook_add(HOOK_PACKET_ARP_RQ, &parse_arp);
@@ -70,6 +73,9 @@ static int find_conn_init(void *dummy)
 
 static int find_conn_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("find_conn: plugin terminated...\n");
 
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);

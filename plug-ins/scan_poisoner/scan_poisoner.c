@@ -80,6 +80,9 @@ static int scan_poisoner_init(void *dummy)
    tm.tv_nsec = 0; 
 #endif
 
+   /* variable not used */
+   (void) dummy;
+
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
@@ -145,6 +148,9 @@ static int scan_poisoner_init(void *dummy)
 
 static int scan_poisoner_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    return PLUGIN_FINISHED;
 }
 

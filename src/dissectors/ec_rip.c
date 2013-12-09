@@ -112,6 +112,9 @@ FUNC_DECODER(dissector_rip)
 
    /* don't complain about unused var */
    (void)end;
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
 
    /* skip empty packets */
    if (PACKET->DATA.len == 0)

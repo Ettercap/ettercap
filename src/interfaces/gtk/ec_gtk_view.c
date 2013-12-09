@@ -241,6 +241,9 @@ static gboolean refresh_stats(gpointer data)
 {
    char line[50];
 
+   /* variable not used */
+   (void) data;
+
    /* if not focused don't refresh it */
    /* this also removes the idle call, but should 
       only occur if the window isn't visible */

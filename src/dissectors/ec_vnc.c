@@ -83,6 +83,10 @@ FUNC_DECODER(dissector_vnc)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct vnc_status *conn_status;
 
+   /* don't complain about unused var */
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* Packets coming from the server */
    if (FROM_SERVER("vnc", PACKET)) {
 

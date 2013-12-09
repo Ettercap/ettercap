@@ -83,6 +83,9 @@ int plugin_load(void *handle)
 
 static int pptp_reneg_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("pptp_reneg: plugin doesn't work in UNOFFENSIVE mode\n");
@@ -99,6 +102,9 @@ static int pptp_reneg_init(void *dummy)
 static int pptp_reneg_fini(void *dummy) 
 {
    struct call_list *p;
+
+   /* variable not used */
+   (void) dummy;
 
    USER_MSG("pptp_reneg: plugin terminated...\n");
 

@@ -324,6 +324,9 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *hl = NULL;
 
+   /* variable not used */
+   (void) widget;
+
    model = GTK_TREE_MODEL (liststore);
 
    if(gtk_tree_selection_count_selected_rows(selection) > 0) {

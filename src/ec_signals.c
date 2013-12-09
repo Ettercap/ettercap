@@ -232,6 +232,8 @@ static void signal_TERM(int sig)
  */
 static void signal_CHLD(int sig)
 {
+   /* variable not used */
+   (void) sig;
 #ifndef OS_WINDOWS
    int stat;
    

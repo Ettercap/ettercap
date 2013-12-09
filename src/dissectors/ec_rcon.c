@@ -46,6 +46,11 @@ FUNC_DECODER(dissector_rcon)
    DECLARE_DISP_PTR_END(ptr, end);
    char tmp[MAX_ASCII_ADDR_LEN];
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* skip messages coming from the server */
    if (FROM_SERVER("rcon", PACKET))
       return NULL;

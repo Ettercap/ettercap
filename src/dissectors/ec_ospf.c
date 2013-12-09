@@ -111,6 +111,7 @@ FUNC_DECODER(dissector_ospf)
    char pass[12];
 
    /* don't complain about unused var */
+   (void) DECODED_LEN;
    // (void)end;
 
    /* skip empty packets */

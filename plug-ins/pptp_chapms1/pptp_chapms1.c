@@ -79,6 +79,9 @@ int plugin_load(void *handle)
 
 static int pptp_chapms1_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("pptp_chapms1: plugin doesn't work in UNOFFENSIVE mode\n");
@@ -94,6 +97,9 @@ static int pptp_chapms1_init(void *dummy)
 
 static int pptp_chapms1_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("pptp_chapms1: plugin terminated...\n");
 
    hook_del(HOOK_PACKET_LCP, &parse_ppp);

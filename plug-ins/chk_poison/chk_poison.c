@@ -96,6 +96,9 @@ static int chk_poison_init(void *dummy)
    tm.tv_nsec = 0;
 #endif
      
+   /* variable not used */
+   (void) dummy;
+
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
@@ -184,6 +187,9 @@ static int chk_poison_init(void *dummy)
 
 static int chk_poison_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    return PLUGIN_FINISHED;
 }
 

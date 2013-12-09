@@ -153,6 +153,9 @@ static void curses_plug_destroy(void)
 
 static void curses_plugin_help(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
    char help[] = "HELP: shortcut list:\n\n"
                  "  ENTER - activate/deactivate a plugin";
 

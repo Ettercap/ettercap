@@ -90,6 +90,9 @@ static int gre_relay_init(void *dummy)
 {
    char tmp[MAX_ASCII_ADDR_LEN];
 
+   /* variable not used */
+   (void) dummy;
+
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("gre_relay: plugin doesn't work in UNOFFENSIVE mode\n");
@@ -118,6 +121,9 @@ static int gre_relay_init(void *dummy)
 
 static int gre_relay_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("gre_relay: plugin terminated...\n");
 
    hook_del(HOOK_PACKET_GRE, &parse_gre);

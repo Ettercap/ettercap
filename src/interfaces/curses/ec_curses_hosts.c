@@ -245,6 +245,9 @@ void curses_hosts_update()
 
 static void curses_hosts_help(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
    char help[] = "HELP: shortcut list:\n\n"
                  "  d - to delete an host from the list\n"
                  "  1 - to add the host to TARGET1\n"

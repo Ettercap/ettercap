@@ -65,6 +65,9 @@ static int find_ip_init(void *dummy)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct ip_addr *e;
    
+   /* variable not used */
+   (void) dummy;
+
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
@@ -92,6 +95,9 @@ static int find_ip_init(void *dummy)
 
 static int find_ip_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    return PLUGIN_FINISHED;
 }
 

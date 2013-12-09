@@ -203,6 +203,9 @@ int plugin_load(void *handle)
 
 static int nbns_spoof_init(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
 	/*
 	 * add the hook in the dissector
 	 * this will pass only valid NBNS packets
@@ -215,6 +218,9 @@ static int nbns_spoof_init(void *dummy)
 
 static int nbns_spoof_fini(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
 	hook_del(HOOK_PROTO_NBNS, &nbns_spoof);
 	return PLUGIN_FINISHED;
 }

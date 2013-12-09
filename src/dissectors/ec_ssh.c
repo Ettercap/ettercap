@@ -139,6 +139,11 @@ FUNC_DECODER(dissector_ssh)
    u_int32 ssh_len, ssh_mod;
    u_char ssh_packet_type, *ptr, *key_to_put;
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;

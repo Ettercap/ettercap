@@ -387,6 +387,9 @@ static int wdg_input_driver(struct wdg_object *wo, int key, struct wdg_mouse_eve
 {
    WDG_WO_EXT(struct wdg_input_handle, ww);
    int c, v;
+
+   /* variable currently not used */
+   (void) mouse;
    
    WDG_DEBUG_MSG("keypress driver: %d", key);
    

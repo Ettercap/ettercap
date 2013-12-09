@@ -135,6 +135,9 @@ EC_THREAD_FUNC(nadv_poisoner)
    tm.tv_sec = 0;
 #endif
 
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
    ec_thread_init();
    DEBUG_MSG("nadv_poisoner");
 
@@ -150,9 +153,9 @@ EC_THREAD_FUNC(nadv_poisoner)
             if(!ip_addr_cmp(&t1->ip, &t2->ip))
                continue;
 
-            send_icmp6_nadv(&t1->ip, &t2->ip, &t1->ip, GBL_IFACE->mac, flags);
+            send_icmp6_nadv(&t1->ip, &t2->ip, GBL_IFACE->mac, flags);
             if(!(flags & ND_ONEWAY))
-               send_icmp6_nadv(&t2->ip, &t1->ip, &t2->ip, GBL_IFACE->mac, flags & ND_ROUTER);
+               send_icmp6_nadv(&t2->ip, &t1->ip, GBL_IFACE->mac, flags & ND_ROUTER);
 
 #if !defined(OS_WINDOWS)
             nanosleep(&tm, NULL);
@@ -382,9 +385,9 @@ static void nadv_antidote(void)
             if(!ip_addr_cmp(&h1->ip, &h2->ip))
                continue;
 
-            send_icmp6_nadv(&h1->ip, &h2->ip, &h1->ip, h1->mac, flags);
+            send_icmp6_nadv(&h1->ip, &h2->ip, h1->mac, flags);
             if(!(flags & ND_ONEWAY))
-               send_icmp6_nadv(&h2->ip, &h1->ip, &h2->ip, h2->mac, flags & ND_ROUTER);
+               send_icmp6_nadv(&h2->ip, &h1->ip, h2->mac, flags & ND_ROUTER);
 
             usleep(GBL_CONF->ndp_poison_send_delay);
          }

@@ -42,6 +42,9 @@ static int fraggle_attack_init(void *dummy)
 {
    struct ip_list *i;
 
+   /* variable not used */
+   (void) dummy;
+
    DEBUG_MSG("fraggle_attack_init");
 
    if(GBL_OPTIONS->unoffensive) {
@@ -78,6 +81,9 @@ static int fraggle_attack_init(void *dummy)
 static int fraggle_attack_fini(void *dummy)
 {
    pthread_t pid;
+
+   /* variable not used */
+   (void) dummy;
 
    DEBUG_MSG("fraggle_attack_fini");
 

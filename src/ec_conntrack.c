@@ -377,6 +377,9 @@ EC_THREAD_FUNC(conntrack_timeouter)
    struct conn_tail *tmp = NULL;
    size_t sec;
    
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
    /* initialize the thread */
    ec_thread_init();
    

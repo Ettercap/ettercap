@@ -61,6 +61,9 @@ int plugin_load(void *handle)
 
 static int reply_arp_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("reply_arp: plugin doesn't work in UNOFFENSIVE mode\n");
@@ -75,6 +78,9 @@ static int reply_arp_init(void *dummy)
 
 static int reply_arp_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("reply_arp: plugin terminated...\n");
 
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);

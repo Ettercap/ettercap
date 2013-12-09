@@ -216,6 +216,9 @@ static int text_progress(char *title, int value, int max)
 {
    float percent;
    int i;
+   
+   /* variable not used */
+   (void) title;
   
    /* calculate the percent */
    percent = (float)(value)*100/(max);

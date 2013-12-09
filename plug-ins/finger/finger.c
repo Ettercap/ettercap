@@ -77,6 +77,9 @@ int plugin_load(void *handle)
 
 static int finger_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
    
@@ -122,6 +125,9 @@ static int finger_init(void *dummy)
 
 static int finger_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    return PLUGIN_FINISHED;
 }
 

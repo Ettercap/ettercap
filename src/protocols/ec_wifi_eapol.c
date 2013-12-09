@@ -64,6 +64,9 @@ FUNC_DECODER(decode_eapol)
    struct wpa_sa sa;
    char tmp[512];
 
+   /* don't complain about unused var */
+   (void) DECODE_DATALEN;
+   
    /* analyze these only if we have a wpa key */
    if (GBL_WIFI->wifi_schema != WIFI_WPA)
       return NULL;

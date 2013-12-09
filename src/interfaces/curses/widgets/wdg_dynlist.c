@@ -552,6 +552,9 @@ static void wdg_dynlist_mouse(struct wdg_object *wo, int key, struct wdg_mouse_e
    size_t y = wdg_get_begin_y(wo) + 2;
    size_t line, i = 0;
    void *next;
+
+   /* variable currently not used */
+   (void) key;
    
    /* calculate which line was selected */
    line = mouse->y - y;

@@ -65,6 +65,11 @@ FUNC_DECODER(dissector_telnet)
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* the connection is starting... create the session */
    CREATE_SESSION_ON_SYN_ACK("telnet", s, dissector_telnet);
    CREATE_SESSION_ON_SYN_ACK("telnets", s, dissector_telnet);

@@ -381,6 +381,9 @@ static int wdg_list_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
 {
    WDG_WO_EXT(struct wdg_list_handle, ww);
    int c;
+
+   /* variable currently not used */
+   (void) mouse;
    
    c = menu_driver(ww->menu, wdg_list_virtualize(key) );
    

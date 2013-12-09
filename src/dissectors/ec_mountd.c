@@ -59,6 +59,9 @@ FUNC_DECODER(dissector_mountd)
 
    /* don't complain about unused var */
    (void)end;
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
 
    /* skip packets which are not useful */
    if (PACKET->DATA.len < 24)

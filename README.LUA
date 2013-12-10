@@ -6,7 +6,6 @@ Requires:
 Building.
    mkdir build
    cd build/
-   cmake -DENABLE_LUA=On ../ettercap
+   cmake -DENABLE_LUA=On ..
    make
    sudo make install
-

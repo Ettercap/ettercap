@@ -1,5 +1,5 @@
 if(INSTALL_DESKTOP AND ENABLE_GTK)
-  CONFIGURE_FILE(org.pkexec.ettercap.policy.in
+  configure_file(org.pkexec.ettercap.policy.in
     ${PKEXEC_INSTALL_WRAPPER}.policy @ONLY)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PKEXEC_INSTALL_WRAPPER}.policy DESTINATION ${POLKIT_DIR})
   install(FILES ettercap.svg DESTINATION ${ICON_DIR})

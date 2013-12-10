@@ -1,12 +1,17 @@
-install(FILES etter.conf etter.dns etter.mdns etter.nbns DESTINATION ${INSTALL_SYSCONFDIR}/ettercap)
 
 if(ENABLE_IPV6)
-	install(FILES etter.conf.v6 DESTINATION ${INSTALL_SYSCONFDIR}/ettercap RENAME etter.conf)
+	configure_file(etter.conf.v6 etter.conf COPYONLY)
 else(ENABLE_IPV6)
-	install(FILES etter.conf DESTINATION ${INSTALL_SYSCONFDIR}/ettercap)
+	configure_file(etter.conf.v4 etter.conf COPYONLY)
 endif(ENABLE_IPV6)
 
-install(FILES
+set(EC_CONFFILES
+            etter.dns
+            etter.mdns
+            etter.nbns
+)
+
+set(EC_DATAFILES
             ettercap.png
             etter.fields
             etter.filter
@@ -22,4 +27,14 @@ install(FILES
             etter.mime
             etter.services
             etter.ssl.crt
+)
+foreach (f IN LISTS EC_DATAFILES EC_CONFFILES)
+	configure_file(${f} ${f} COPYONLY)
+endforeach()
+install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/${EC_CONFFILES}
+        ${CMAKE_CURRENT_BINARY_DIR}/etter.conf
+        DESTINATION ${INSTALL_SYSCONFDIR}/ettercap)
+install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/${EC_DATAFILES}
         DESTINATION ${INSTALL_DATADIR}/ettercap)

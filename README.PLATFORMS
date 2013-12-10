@@ -22,9 +22,9 @@ LINUX
 ------------------------------------------------------------------------------
    Linux 3.x            FULL           (primary development platform) 
 
-   Linux 2.6.x          FULL           (primary development platform) 
+   Linux 2.6.x          FULL
 
-   Linux 2.4.x          FULL           (primary development platform)
+   Linux 2.4.x          FULL
    
    Linux 2.2.x          FULL
    
@@ -53,7 +53,7 @@ SOLARIS
 
 MAC OS X (Darwin)
 ------------------------------------------------------------------------------
-   Mac OS X            FULL            tested on OS X Lion and Snow Leopard (64-bit)
+   Mac OS X             FULL           tested on OS X Lion and Snow Leopard (64-bit)
 
    Darwin 7.x           FULL           tested on darwin 7.0.0 (powerpc)
    
@@ -64,16 +64,16 @@ WINDOWS (native/mingw)                 thanks to G. Vanem <giva@bgnett.no>
 ------------------------------------------------------------------------------
    Windows 2000         untested
    
-   Windows XP           FULL
+   Windows XP           untested
    
-   Windows 2003         FULL
+   Windows 2003         untested
 
 
 WINDOWS (cygwin)
 ------------------------------------------------------------------------------
-   Windows 2000         in progress...
+   Windows 2000         untested
    
-   Windows XP           in progress...
+   Windows XP           untested
 
 
 
@@ -102,17 +102,10 @@ After installing the following packages from http://http://www.sunfreeware.com
    - binutils  2.11.2
    - make      3.80
 
-ettercap NG configures and compiles without any issue.
+ettercap should configure and compile without any issue.
 
 libnet 1.1.2.1 should be downloaded from http://www.packetfactory.net and
 compiled by your own.
-
-If you want to compile from the CVS, you will need to install the autotools in
-order to be able to generate configuration scripts:
-
-   - autoconf  2.57
-   - automake  1.7.2
-
 
 ------------------------------------------------------------------------------
    M A C  O S  X

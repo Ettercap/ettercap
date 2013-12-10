@@ -128,7 +128,8 @@ void capture_getifs(void)
          dev->description = dev->name;
 
       /* remove the pseudo device 'any' 'nflog' and 'nfqueue' */
-      if (!strcmp(dev->name, "any") || !strcmp(dev->name, "nflog") || !strcmp(dev->name, "nfqueue")) {
+      /* remove the pseudo device 'dbus-system' and 'dbus-session' shown on mac when ran without sudo*/
+      if (!strcmp(dev->name, "any") || !strcmp(dev->name, "nflog") || !strcmp(dev->name, "nfqueue")  || !strcmp(dev->name, "dbus-system") || !strcmp(dev->name, "dbus-session")) {
          /* check if it is the first in the list */
          if (dev == GBL_PCAP->ifs)
             GBL_PCAP->ifs = ndev;

@@ -76,8 +76,9 @@ OPTIONAL:
       - Pango     >= 1.2.3
 
 If you are running on debian, or any debian based distro you can install the required dependencies by running:
-apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses-dev libncurses5-dev libnet1-dev \
- libpcap-dev libpcre3-dev libssl-dev libcurl4-openssl-dev ghostscript 
+
+apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses-dev libncurses5-dev libpcap-dev \
+ libpcre3-dev libssl-dev ghostscript luajit-5.1-dev libnet1-dev libcurl4-openssl-dev check
 
 ============================================================================
                                    LICENSE

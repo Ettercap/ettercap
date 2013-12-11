@@ -328,7 +328,7 @@ static void gtkui_update(int target)
 {
     switch (target) {
         case UI_UPDATE_HOSTLIST:
-            gtkui_refresh_host_list();
+            gtk_idle_add(gtkui_refresh_host_list,NULL);
             break;
     }
 

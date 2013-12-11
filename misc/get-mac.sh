@@ -5,3 +5,6 @@ sed 's/\ \ //g' -i oui #remove initial stuff
 sed '/^[0-9A-F]*$/d' -i oui #remove some private lines
 mv oui etter.finger.mac
 rm oui.txt
+echo "the maximum line SHOULD be less than 120 bytes (ec_manuf.c manuf_init function)"
+echo "maximum line of the newly generated file"
+wc -L etter.finger.mac

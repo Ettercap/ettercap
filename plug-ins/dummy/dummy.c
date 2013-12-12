@@ -87,6 +87,9 @@ static int dummy_init(void *dummy)
     * plugin type to PL_HOOK.
     */
    
+   /* variable not used - avoid extended warning */
+   (void) dummy;
+
    USER_MSG("DUMMY: plugin running...\n");
 
    /* return PLUGIN_FINISHED if the plugin has terminated
@@ -101,6 +104,9 @@ static int dummy_init(void *dummy)
 
 static int dummy_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* 
     * called to terminate a plugin.
     * usually to kill threads created in the 

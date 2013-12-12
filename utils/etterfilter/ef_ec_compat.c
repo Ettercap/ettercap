@@ -43,7 +43,10 @@ int send_L3_icmp_unreach(struct packet_object *po);
  
 /* the void implemetation */
 
-void debug_msg(const char *message, ...) { }
+void debug_msg(const char *message, ...) 
+{
+   (void) message;
+}
 
 
 /* fake the UI implementation */
@@ -81,11 +84,21 @@ void ui_cleanup(void)
 /* remove ec_send.c dependency */
 int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags) 
 { 
+   (void) sip;
+   (void) tip;
+   (void) sport;
+   (void) dport;
+   (void) seq;
+   (void) ack;
+   (void) flags;
+
    return 0;
 }
 
 int send_L3_icmp_unreach(struct packet_object *po)
 {
+   (void) po;
+
    return 0;
 }
 

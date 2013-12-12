@@ -335,6 +335,10 @@ int bin_format(const u_char *buf, size_t len, u_char *dst)
 
 int zero_format(const u_char *buf, size_t len, u_char *dst)
 {
+   /* variable not used */
+   (void) buf;
+   (void) len;
+
    strncpy((char*)dst, "", 1);
    return 0;
 }

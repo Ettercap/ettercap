@@ -170,7 +170,7 @@ static void set_interesting_flag(struct packet_object *po)
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2) || 
-            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst, &GBL_IFACE->ip) == ESUCCESS) ||
+            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == ESUCCESS) ||
             (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != ESUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
       good = 1;   
@@ -193,7 +193,7 @@ static void set_interesting_flag(struct packet_object *po)
    /* if broadcast then T2 -> broadcast */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) || 
-            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst, &GBL_IFACE->ip) == ESUCCESS) ||
+            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == ESUCCESS) ||
             (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != ESUCCESS) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.dst))) )
       value = 1;

@@ -106,6 +106,11 @@ FUNC_DECODER(dissector_dhcp)
    struct dhcp_hdr *dhcp;
    u_int8 *options, *opt;
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* sanity check */
    if (PACKET->DATA.len < sizeof(struct dhcp_hdr))
       return NULL;

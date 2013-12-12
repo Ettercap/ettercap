@@ -374,6 +374,9 @@ static int wdg_file_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
    WDG_WO_EXT(struct wdg_file_handle, ww);
    int c;
    struct stat buf;
+
+   /* variable currently not used */
+   (void) mouse;
    
    c = menu_driver(ww->m, wdg_file_virtualize(key) );
    

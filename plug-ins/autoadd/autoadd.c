@@ -63,6 +63,9 @@ int plugin_load(void *handle)
 
 static int autoadd_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* 
     * we'll use arp request to detect active hosts.
     * if an host sends arp rq, it want to communicate,
@@ -75,6 +78,9 @@ static int autoadd_init(void *dummy)
 
 static int autoadd_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);
    return PLUGIN_FINISHED;
 }

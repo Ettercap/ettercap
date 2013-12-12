@@ -90,6 +90,9 @@ static void gtkui_page_defocus_tabs(void);
 */
 static gboolean gtkui_cleanup_shim(gpointer data)
 {
+   /* variable not used */
+   (void) data;
+
    gtkui_cleanup();
    return FALSE;
 }
@@ -357,6 +360,9 @@ static void gtkui_msg(const char *msg)
 /* flush pending messages */
 gboolean gtkui_flush_msg(gpointer data)
 {
+   /* variable not used */
+   (void) data;
+
    ui_msg_flush(MSG_ALL);
 
    return(TRUE);
@@ -508,7 +514,11 @@ static void gtkui_progress(char *title, int value, int max)
 
 }
 
-static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) {
+static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) 
+{
+   /* variable not used */
+   (void) window;
+
    progress_canceled = TRUE;
 
    /* the progress dialog must be manually destroyed if the cancel button is used */
@@ -1160,6 +1170,9 @@ void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
 void gtkui_dialog_enter(GtkWidget *widget, gpointer data) {
    GtkWidget *dialog;
 
+   /* variable not used */
+   (void) data;
+
    dialog = g_object_get_data(G_OBJECT(widget), "dialog");
    gtk_dialog_response(GTK_DIALOG (dialog), GTK_RESPONSE_OK);
 }
@@ -1270,6 +1283,10 @@ void gtkui_page_close(GtkWidget *widget, gpointer data) {
    gint num = 0;
    void (*callback)(void);
 
+   /* variable not used */
+   (void) widget;
+   (void) data;
+
    DEBUG_MSG("gtkui_page_close");
 
    num = gtk_notebook_page_num(GTK_NOTEBOOK(notebook), GTK_WIDGET (data));
@@ -1296,6 +1313,9 @@ void gtkui_page_close_current(void) {
 
 /* show the context menu when the notebook tabs recieve a mouse right-click */
 gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+   /* variable not used */
+   (void) widget;
+
     if(event->button == 3)
         gtk_menu_popup(GTK_MENU(data), NULL, NULL, NULL, NULL, 3, event->time);
     return(FALSE);
@@ -1351,6 +1371,9 @@ void gtkui_filename_browse(GtkWidget *widget, gpointer data)
    gint response = 0;
    const char *filename = NULL;
    
+   /* variable not used */
+   (void) widget;
+
    dialog = gtk_file_selection_new ("Select a file...");
    
    response = gtk_dialog_run (GTK_DIALOG (dialog));

@@ -52,6 +52,11 @@ FUNC_DECODER(dissector_ymsg)
    u_char *q;
    u_int32 field_len;
    
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* Empty or not a yahoo messenger packet */
    if (PACKET->DATA.len == 0 || memcmp(ptr, "YMSG", 4))
       return NULL;

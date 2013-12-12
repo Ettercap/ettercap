@@ -64,6 +64,9 @@ FUNC_DECODER(dissector_mongodb)
 
    //suppress unused warning
    (void)end;
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
 
    if (FROM_SERVER("mongodb", PACKET)) {
       if (PACKET->DATA.len < 13)

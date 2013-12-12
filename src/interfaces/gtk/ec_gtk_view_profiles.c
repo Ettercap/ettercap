@@ -181,6 +181,9 @@ static gboolean refresh_profiles(gpointer data)
    char tmp[MAX_ASCII_ADDR_LEN];
    int found = 0;
 
+   /* variable not used */
+   (void) data;
+
    if(!ls_profiles) {
       ls_profiles = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
    }
@@ -348,6 +351,9 @@ static void gtkui_profiles_convert(void)
 
 static void gtkui_profiles_dump(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
    DEBUG_MSG("gtkui_profiles_dump");
 
    /* make sure to free if already set */

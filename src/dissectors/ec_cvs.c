@@ -74,6 +74,10 @@ FUNC_DECODER(dissector_cvs)
 
    /* don't complain about unused var */
    (void)end;
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
 
    /* skip messages coming from the server */
    if (FROM_SERVER("cvs", PACKET))

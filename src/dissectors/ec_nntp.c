@@ -57,6 +57,11 @@ FUNC_DECODER(dissector_nntp)
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
    
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* the connection is starting... create the session */
    CREATE_SESSION_ON_SYN_ACK("nntp", s, dissector_nntp);
    CREATE_SESSION_ON_SYN_ACK("nntps", s, dissector_nntp);

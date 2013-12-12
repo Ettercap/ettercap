@@ -50,6 +50,11 @@ FUNC_DECODER(dissector_ldap)
    u_int16 type, user_len, pass_len;
    char tmp[MAX_ASCII_ADDR_LEN];
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* We need at least 15 bytes of data to be interested*/
    if (PACKET->DATA.len < 15)
       return NULL;

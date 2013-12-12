@@ -66,6 +66,9 @@ int plugin_load(void *handle)
 
 static int remote_browser_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* 
     * add the hook in the dissector.
     */
@@ -77,6 +80,9 @@ static int remote_browser_init(void *dummy)
 
 static int remote_browser_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* remove the hook */
    hook_del(HOOK_PROTO_HTTP, &remote_browser);
 

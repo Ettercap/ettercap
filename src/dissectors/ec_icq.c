@@ -76,6 +76,9 @@ FUNC_DECODER(dissector_icq)
 
    /* don't complain about unused var */
    (void)end;
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
 
    /* parse only version 7/8 */
    if (ptr[0] != 0x2a || ptr[1] > 4) 

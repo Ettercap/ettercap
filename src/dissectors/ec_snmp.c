@@ -59,6 +59,11 @@ FUNC_DECODER(dissector_snmp)
    char tmp[MAX_ASCII_ADDR_LEN];
    u_int32 version, n;
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;

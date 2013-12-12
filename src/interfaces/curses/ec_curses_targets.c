@@ -390,6 +390,9 @@ static void curses_delete_target2(void *host)
  */
 static void curses_add_target1(void *entry)
 {
+   /* variable not used */
+   (void) entry;
+
    DEBUG_MSG("curses_add_target1");
 
    curses_input("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target1);
@@ -397,6 +400,9 @@ static void curses_add_target1(void *entry)
 
 static void curses_add_target2(void *entry)
 {
+   /* variable not used */
+   (void) entry;
+
    DEBUG_MSG("curses_add_target2");
 
    curses_input("IP address :", thost, MAX_ASCII_ADDR_LEN, add_target2);

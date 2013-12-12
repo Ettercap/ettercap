@@ -519,7 +519,10 @@ int wpa_decrypt_broadcast_key(struct eapol_key_header *eapol_key, struct rsn_ie_
    u_int16 key_len = 0;
    //static AIRPDCAP_KEY_ITEM dummy_key; /* needed in case AirPDcapRsnaMng() wants the key structure */
 
-char tmp[512];
+   char tmp[512];
+
+   /* variable not used */
+   (void) rsn_ie;
 
    /* Preparation for decrypting the group key - determine group key data length */
    /* depending on whether it's a TKIP or AES encryption key */

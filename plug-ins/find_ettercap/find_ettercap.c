@@ -68,6 +68,9 @@ int plugin_load(void *handle)
 
 static int find_ettercap_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* add the hook in the dissector.  */
    hook_add(HOOK_PACKET_IP, &parse_ip);
    hook_add(HOOK_PACKET_ICMP, &parse_icmp);
@@ -79,6 +82,9 @@ static int find_ettercap_init(void *dummy)
 
 static int find_ettercap_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* remove the hook */
    hook_del(HOOK_PACKET_IP, &parse_ip);
    hook_del(HOOK_PACKET_ICMP, &parse_icmp);

@@ -216,6 +216,9 @@ static int sslstrip_init(void *dummy)
 	const char *error;
 	int erroroffset;
 
+   /* variable not used */
+   (void) dummy;
+
 	/*
 	 * Add IPTables redirect for port 80
          */
@@ -252,6 +255,9 @@ static int sslstrip_init(void *dummy)
 
 static int sslstrip_fini(void *dummy)
 {
+
+   /* variable not used */
+   (void) dummy;
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
 	if (http_remove_redirect(bind_port) != ESUCCESS) {
@@ -577,6 +583,9 @@ static EC_THREAD_FUNC(http_accept_thread)
 	struct sockaddr_in client_sin;
 	int optval = 1;
 	socklen_t optlen = sizeof(optval);
+
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
 
 	ec_thread_init();
 

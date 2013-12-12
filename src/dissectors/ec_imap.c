@@ -62,6 +62,11 @@ FUNC_DECODER(dissector_imap)
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
    
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    /* the connection is starting... create the session */
    CREATE_SESSION_ON_SYN_ACK("imap", s, dissector_imap);
    /* create the session even if we are into an ssl tunnel */

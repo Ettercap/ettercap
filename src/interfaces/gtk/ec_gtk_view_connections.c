@@ -283,6 +283,9 @@ static gboolean refresh_connections(gpointer data)
    unsigned int tx = 0, rx = 0;
    struct row_pairs *row = NULL, *nextrow = NULL, top, bottom;
 
+   /* variable not used */
+   (void) data;
+
    /* init strings */
    memset(&flags, 0, sizeof(flags));
    memset(&status, 0, sizeof(status));
@@ -1077,6 +1080,9 @@ static void gtkui_connection_purge(void *conn)
 {
    struct row_pairs *row, *nextrow, *list = connections;
 
+   /* variable not used */
+   (void) conn;
+
    DEBUG_MSG("gtkui_connection_purge");
 
    connections = NULL;
@@ -1097,6 +1103,9 @@ static void gtkui_connection_kill(void *conn)
    GtkTreeIter iter;
    GtkTreeModel *model;
    struct conn_tail *c = NULL;
+
+   /* variable not used */
+   (void) conn;
 
    DEBUG_MSG("gtkui_connection_kill");
 

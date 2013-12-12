@@ -71,6 +71,10 @@ int plugin_load(void *handle)
 static int isolate_init(void *dummy) 
 {
    struct ip_list *t;
+
+   /* variable not used */
+   (void) dummy;
+
    /* sanity check */
    if (LIST_EMPTY(&GBL_TARGET1->ips) && LIST_EMPTY(&GBL_TARGET1->ip6)) {
       INSTANT_USER_MSG("isolate: please specify the TARGET host\n");
@@ -97,6 +101,9 @@ static int isolate_fini(void *dummy)
    pthread_t pid;
    struct hosts_list *h, *tmp;
   
+   /* variable not used */
+   (void) dummy;
+
    /* remove the hook */
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);
    

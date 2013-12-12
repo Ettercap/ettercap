@@ -67,6 +67,9 @@ int plugin_load(void *handle)
 
 static int arp_cop_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("arp_cop: plugin running...\n");
 
    arp_init_list();
@@ -79,6 +82,9 @@ static int arp_cop_init(void *dummy)
 
 static int arp_cop_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("arp_cop: plugin terminated...\n");
 
    /* We don't free the global list for further reuse */

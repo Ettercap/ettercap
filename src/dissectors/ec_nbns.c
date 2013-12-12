@@ -122,6 +122,11 @@ FUNC_DECODER(dissector_nbns)
 	char name[NBNS_NAME_LEN];
 	char ip[IP_ASCII_ADDR_LEN];
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
 	memset(name, 0, NBNS_NAME_LEN);
 
 	header = (struct nbns_header *)po->DATA.data;

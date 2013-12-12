@@ -158,6 +158,9 @@ void gtkui_help_selected(GtkTreeSelection *treeselection, gpointer data) {
    GtkTreeModel *model;
    gchar *file;
 
+   /* variable not used */
+   (void) data;
+
    if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (treeselection), &model, &iter)) {
       gtk_tree_model_get (model, &iter, 1, &file, -1);
       if(!file) return;

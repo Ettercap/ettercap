@@ -248,7 +248,10 @@ EC_THREAD_FUNC(arp_poisoner)
    tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
    tm.tv_sec = 0;
 #endif
-   
+
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
    /* init the thread and wait for start up */
    ec_thread_init();
   

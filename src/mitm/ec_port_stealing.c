@@ -275,6 +275,9 @@ EC_THREAD_FUNC(port_stealer)
    struct steal_list *s;
    struct eth_header *heth;
    
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
    /* init the thread and wait for start up */
    ec_thread_init();
   

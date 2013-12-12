@@ -124,6 +124,9 @@ static void curses_kill_connections(void)
 
 static void curses_connection_help(void *dummy)
 {
+   /* variable not used */
+   (void) dummy;
+
    char help[] = "HELP: shortcut list:\n\n"
                  "  ENTER - open the data panel in real time\n"
                  "    d   - show details of the current connection\n"
@@ -530,6 +533,9 @@ static void curses_connection_kill(void *conn)
  */
 static void curses_connection_purge(void *conn)
 {
+   /* variable not used */
+   (void) conn;
+
    DEBUG_MSG("curses_connection_purge");
    
    conntrack_purge();

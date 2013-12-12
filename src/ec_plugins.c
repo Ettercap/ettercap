@@ -59,7 +59,7 @@ static SLIST_HEAD(, plugin_entry) plugin_head;
 /* protos... */
 
 void plugin_unload_all(void);
-static void plugin_print(char active, struct plugin_ops *ops);
+static void plugin_print(struct plugin_ops *ops);
 #if defined(OS_BSD) || defined (OS_DARWIN)
 int plugin_filter(struct dirent *d);
 #else
@@ -395,7 +395,7 @@ void plugin_list(void)
 /*
  * callback function for displaying the plugin list 
  */
-static void plugin_print(char active, struct plugin_ops *ops)
+static void plugin_print(struct plugin_ops *ops)
 {
    fprintf(stdout, " %15s %4s  %s\n", ops->name, ops->version, ops->info);  
 }

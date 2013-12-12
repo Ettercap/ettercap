@@ -102,6 +102,9 @@ int plugin_load(void *handle)
 
 static int mdns_spoof_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* 
     * add the hook in the dissector.
     * this will pass only valid dns packets
@@ -114,6 +117,9 @@ static int mdns_spoof_init(void *dummy)
 
 static int mdns_spoof_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* remove the hook */
    hook_del(HOOK_PROTO_MDNS, &mdns_spoof);
 

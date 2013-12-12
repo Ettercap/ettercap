@@ -96,6 +96,11 @@ FUNC_DECODER(dissector_postgresql)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct postgresql_status *conn_status;
 
+   /* don't complain about unused var */
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
+   
    if (FROM_CLIENT("postgresql", PACKET)) {
       if (PACKET->DATA.len < 4)
          return NULL;

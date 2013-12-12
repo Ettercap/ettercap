@@ -76,6 +76,9 @@ int plugin_load(void *handle)
 
 static int pptp_pap_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("pptp_pap: plugin doesn't work in UNOFFENSIVE mode\n");
@@ -91,6 +94,9 @@ static int pptp_pap_init(void *dummy)
 
 static int pptp_pap_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("pptp_pap: plugin terminated...\n");
 
    hook_del(HOOK_PACKET_LCP, &parse_ppp);

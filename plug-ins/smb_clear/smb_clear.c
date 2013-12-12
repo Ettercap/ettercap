@@ -79,6 +79,9 @@ int plugin_load(void *handle)
 
 static int smb_clear_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("smb_clear: plugin doesn't work in UNOFFENSIVE mode\n");
@@ -94,6 +97,9 @@ static int smb_clear_init(void *dummy)
 
 static int smb_clear_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    USER_MSG("smb_clear: plugin terminated...\n");
 
    hook_del(HOOK_PROTO_SMB, &parse_smb);

@@ -39,6 +39,9 @@ static int smurf_attack_init(void *dummy)
 {
    struct ip_list *i;
 
+   /* variable not used */
+   (void) dummy;
+
    DEBUG_MSG("smurf_attack_init");
 
    if(GBL_OPTIONS->unoffensive) {
@@ -75,6 +78,9 @@ static int smurf_attack_init(void *dummy)
 static int smurf_attack_fini(void *dummy)
 {
    pthread_t pid;
+
+   /* variable not used */
+   (void) dummy;
 
    DEBUG_MSG("smurf_attack_fini");
 

@@ -83,6 +83,9 @@ static int dos_attack_init(void *dummy)
    char unused_addr[MAX_ASCII_ADDR_LEN];
    struct port_list *p;
          
+   /* variable not used */
+   (void) dummy;
+
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("dos_attack: plugin doesn't work in UNOFFENSIVE mode\n");
@@ -143,6 +146,9 @@ static int dos_attack_fini(void *dummy)
 {
    pthread_t pid;
 
+   /* variable not used */
+   (void) dummy;
+
    /* Remove the hooks */
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);
    hook_del(HOOK_PACKET_TCP, &parse_tcp);
@@ -175,6 +181,10 @@ EC_THREAD_FUNC(syn_flooder)
    tm.tv_sec = 0;
    tm.tv_nsec = 1000*1000;
 #endif
+
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
    /* init the thread and wait for start up */
    ec_thread_init();
  
@@ -220,7 +230,7 @@ static void parse_icmp6(struct packet_object *po)
    struct ip_addr ip;
    ip_addr_init(&ip, AF_INET6, po->L4.options);
    if(!ip_addr_cmp(&fake_host, &ip))
-      send_icmp6_nadv(&fake_host, &po->L3.src, &fake_host, GBL_IFACE->mac, 0);
+      send_icmp6_nadv(&fake_host, &po->L3.src, GBL_IFACE->mac, 0);
 }
 #endif
 

@@ -126,7 +126,10 @@ FUNC_DECODER(dissector_bgp)
                           0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
    /* don't complain about unused var */
-   (void)end;
+   (void)end; 
+   (void) DECODE_DATA; 
+   (void) DECODE_DATALEN;
+   (void) DECODED_LEN;
    
    /* skip packets that don't have enough data */
    if (PACKET->DATA.len < 30)

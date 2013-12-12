@@ -87,6 +87,10 @@ static int search_promisc_init(void *dummy)
    tm.tv_sec = GBL_CONF->arp_storm_delay;
    tm.tv_nsec = 0; 
 #endif
+
+   /* variable not used */
+   (void) dummy;
+
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
@@ -161,6 +165,9 @@ static int search_promisc_init(void *dummy)
 
 static int search_promisc_fini(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
    return PLUGIN_FINISHED;
 }
 

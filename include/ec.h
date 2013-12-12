@@ -91,11 +91,14 @@
 #define EC_STRINGIFY(in) #in
 #define EC_TOSTRING(in) EC_STRINGIFY(in)
 
+// No need to have a priority in the constructor at this moment
+/*
 #if __GNUC_PREREQ(4,3)
-#define __init       __attribute__((constructor(101)))
+#define __init __attribute__ ((constructor(101)))
 #else
-#define __init __attribute__((constructor))
-#endif
+*/
+#define __init __attribute__ ((constructor))
+//#endif
 
 #ifndef __set_errno
 #define __set_errno(e) (errno = (e))

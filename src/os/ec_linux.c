@@ -43,14 +43,7 @@ void disable_ip_forward(void)
 
    DEBUG_MSG("disable_ip_forward: old value = %c", saved_status);
  
-   /* sometimes writing just fails... retry up to 5 times */
-   int i = 0;
-   fd = NULL;
-   do {
-      fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
-      i++;
-      usleep(20000);
-   } while(fd == NULL && i <=50);
+   fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
    ON_ERROR(fd, NULL, "failed to open /proc/sys/net/ipv4/ip_forward");
    
    fprintf(fd, "0");
@@ -68,7 +61,13 @@ static void restore_ip_forward(void)
    if (saved_status == '0')
       return;
    
-   /* read the current status to know if we need to modify it */
+   if (getuid()) {
+      DEBUG_MSG("ATEXIT: restore_ip_forward: cannot restore ip_forward "
+                 "since the privileges have been dropped to non root\n");
+      FATAL_ERROR("ip_forwarding was disabled, but we cannot re-enable it now.\n"
+                  "remember to re-enable it manually\n");
+      return;
+   }
    fd = fopen("/proc/sys/net/ipv4/ip_forward", "r");
    ON_ERROR(fd, NULL, "failed to open /proc/sys/net/ipv4/ip_forward");
 
@@ -82,17 +81,11 @@ static void restore_ip_forward(void)
       return;
    }
 
-   /* sometimes writing just fails... retry up to 5 times */
-   int i = 0;
-   fd = NULL;
-   do {
-      fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
-      i++;
-      usleep(20000);
-   } while(fd == NULL && i <=50);
+   fd = fopen("/proc/sys/net/ipv4/ip_forward", "w");
    if (fd == NULL) {
       FATAL_ERROR("ip_forwarding was disabled, but we cannot re-enable it now.\n"
                   "remember to re-enable it manually\n");
+      return;
    }
 
    fprintf(fd, "%c", saved_status);

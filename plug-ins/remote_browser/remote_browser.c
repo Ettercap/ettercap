@@ -157,7 +157,6 @@ static void remote_browser(struct packet_object *po)
          /* the following line has been commented since some Penetration Testing distros can run only as root */
          /*setuid(1000);*/
          u_int uid, gid;
-         /* XXX should we drop privileges under windows? */
          DEBUG_MSG("drop_privs: getuid(%d) \n", getuid());
 
          /* are we root ? */

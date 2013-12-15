@@ -39,6 +39,7 @@
 GtkWidget *window = NULL;   /* main window */
 GtkWidget *notebook = NULL;
 GtkWidget *main_menu = NULL;
+GTimer *progress_timer = NULL;
 
 static GtkWidget     *notebook_frame = NULL;
 static GtkWidget     *textview = NULL;
@@ -193,7 +194,14 @@ struct gtkui_progress_data {
 static gboolean gtkui_progress_shim(gpointer data) {
 
    struct gtkui_progress_data *gpd = data;
-   if (!progress_canceled)
+   gdouble delay; 
+   gulong usec;
+
+   delay = g_timer_elapsed(progress_timer, &usec);
+   delay += usec / 1000000;
+
+   /* render progress bar if not canceled or lasting longer than 750 ms */
+   if (!progress_canceled && delay >= 0.75)
       gtkui_progress(gpd->title, gpd->value, gpd->max);
    free(gpd->title);
    free(gpd);
@@ -205,6 +213,7 @@ static int gtkui_progress_wrap(char *title, int value, int max) {
    struct gtkui_progress_data *gpd;
 
    if (value <= 1) {
+      g_timer_start(progress_timer);
       progress_canceled = FALSE;
    }
 
@@ -283,6 +292,9 @@ static void gtkui_init(void)
 
    gtkui_setup();
 
+   /* initialize timer */
+   progress_timer = g_timer_new();
+
    /* gui init loop, calling gtk_main_quit will cause
     * this to exit so we can proceed to the main loop
     * later. */
@@ -301,6 +313,8 @@ void gtkui_exit(void)
 {
    int left, top, width, height;
    DEBUG_MSG("gtkui_exit");
+
+   g_timer_destroy(progress_timer);
 
    gtk_window_get_position(GTK_WINDOW (window), &left, &top);
    gtk_window_get_size(GTK_WINDOW (window), &width, &height);
@@ -489,17 +503,12 @@ static void gtkui_progress(char *title, int value, int max)
 
    } 
    
-   /* 
-    * not worth rendering dialog for too few iterations
-    */
-   if (max >= 0x7ff) {
-       /* the subsequent calls have to only update the object */
-       gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
-       gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
+   /* the subsequent calls have to only update the object */
+   gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
+   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
 
-       /* update dialog window */
-       gtk_widget_show_all(progress_dialog);
-   }
+   /* update dialog window */
+   gtk_widget_show_all(progress_dialog);
 
    /* 
     * when 100%, destroy it

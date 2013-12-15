@@ -62,3 +62,21 @@ void clean_exit(int errcode)
 
 }
 
+/*
+ * regain root privs
+ */
+void regain_privs(void)
+{
+   u_int uid, gid;
+   char *var;
+   DEBUG_MSG("ATEXIT: regain_privs");
+
+#ifdef OS_WINDOWS
+   return;
+#endif
+   if(seteuid(0) < 0)
+      ERROR_MSG("seteuid()");
+
+   USER_MSG("Regained root privileges: %d %d", getuid(), geteuid());
+}
+

@@ -26,6 +26,7 @@
 
 #include <ec.h>                        /* required for global variables */
 #include <ec_plugins.h>                /* required for plugin ops */
+#include <ec_threads.h>
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
@@ -33,11 +34,26 @@
 
 /* globals */
 char flag_strange;
+static pthread_mutex_t scan_poisoner_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define PLUGIN_LOCK(x)                                \
+   do{                                                \
+       if (pthread_mutex_trylock(&x)) {               \
+          ec_thread_exit();                           \
+          return NULL;                                \
+       }                                              \
+   } while(0)
+#define PLUGIN_UNLOCK(x)                              \
+   do{                                                \
+       pthread_mutex_unlock(&x);                      \
+   } while(0)
+
+
 
 /* protos */
 int plugin_load(void *);
 static int scan_poisoner_init(void *);
 static int scan_poisoner_fini(void *);
+static EC_THREAD_FUNC(scan_poisoner_thread);
 static void parse_icmp(struct packet_object *po);
 
 /* plugin operations */
@@ -69,6 +85,21 @@ int plugin_load(void *handle)
 
 static int scan_poisoner_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
+   /* the actual work is done in a dedicated thread */
+   ec_thread_new("scan_poisoner", "plugin scan_poisoner", 
+         &scan_poisoner_thread, NULL);
+
+   /* it's a one-shot plugin so return as it would be finished */
+   return PLUGIN_FINISHED;
+}
+
+static EC_THREAD_FUNC(scan_poisoner_thread) 
+{
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
    
    char tmp1[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
@@ -80,14 +111,17 @@ static int scan_poisoner_init(void *dummy)
    tm.tv_nsec = 0; 
 #endif
 
-   /* variable not used */
-   (void) dummy;
+   ec_thread_init();
+
+   PLUGIN_LOCK(scan_poisoner_mutex);
 
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
    if (LIST_EMPTY(&GBL_HOSTLIST)) {
       INSTANT_USER_MSG("scan_poisoner: You have to build host-list to run this plugin.\n\n"); 
+      PLUGIN_UNLOCK(scan_poisoner_mutex);
+      ec_thread_exit();
       return PLUGIN_FINISHED;
    }
 
@@ -109,6 +143,8 @@ static int scan_poisoner_init(void *dummy)
    /* Can't continue in unoffensive */
    if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read) {
       INSTANT_USER_MSG("\nscan_poisoner: Can't make active test in UNOFFENSIVE mode.\n\n");
+      PLUGIN_UNLOCK(scan_poisoner_mutex);
+      ec_thread_exit();
       return PLUGIN_FINISHED;
    }
 
@@ -142,6 +178,8 @@ static int scan_poisoner_init(void *dummy)
    if (!flag_strange)
       INSTANT_USER_MSG("scan_poisoner: - Nothing strange\n");
      
+   PLUGIN_UNLOCK(scan_poisoner_mutex);
+   ec_thread_exit();
    return PLUGIN_FINISHED;
 }
 

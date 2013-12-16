@@ -235,8 +235,8 @@ static void drop_privs(void)
    if ( setgid(gid) < 0 )
       ERROR_MSG("setgid()");
    
-   if ( setuid(uid) < 0 )
-      ERROR_MSG("setuid()");
+   if ( seteuid(uid) < 0 )
+      ERROR_MSG("seteuid()");
 
    DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
    USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() ); 

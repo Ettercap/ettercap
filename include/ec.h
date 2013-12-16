@@ -177,6 +177,7 @@
 
 /* exported by ec_main */
 EC_API_EXTERN void clean_exit(int errcode);
+EC_API_EXTERN void regain_privs(void);
 
 /* exported by ec_mem */
 EC_API_EXTERN void safe_free_mem(char **param, int *param_length, char *command);

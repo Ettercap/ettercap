@@ -50,6 +50,7 @@ void disable_ip_forward(void)
    fclose(fd);
    
    atexit(restore_ip_forward);
+   atexit(regain_privs);
 }
 
 static void restore_ip_forward(void)

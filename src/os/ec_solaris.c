@@ -83,6 +83,7 @@ void disable_ip_forward(void)
    DEBUG_MSG("Inet_DisableForwarding -- NEW value = 0");
 
    atexit(restore_ip_forward);
+   atexit(regain_privs);
 }
 
 static void restore_ip_forward(void)

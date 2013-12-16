@@ -50,6 +50,7 @@
 /* protos */
 
 static void drop_privs(void);
+static void regain_privs(void);
 static void time_check(void);
 
 /*******************************************/
@@ -185,6 +186,8 @@ int main(int argc, char *argv[])
  * reached only when the UI is shutted down 
  ********************************************/
 
+   /* Regain root privs */
+   regain_privs();
    /* Call all the proper stop methods to ensure
     * that no matter what UI was selected, everything is 
     * turned off gracefully */
@@ -193,6 +196,24 @@ int main(int argc, char *argv[])
    return 0; //Never reaches here
 }
 
+
+/*
+ * regain root privs
+ */
+static void regain_privs(void)
+{
+   u_int uid, gid;
+   char *var;
+
+#ifdef OS_WINDOWS
+   return;
+#endif
+
+   if(seteuid(0) < 0)
+      ERROR_MSG("seteuid()");
+
+   USER_MSG("Regained root privileges: %d %d", getuid(), geteuid());  
+}
 
 /* 
  * drop root privs 

@@ -96,9 +96,12 @@ static int chk_poison_init(void *dummy)
    /* variable not used */
    (void) dummy;
 
-   /* the actual work is done in a dedicated thread */
-   ec_thread_new("chk_poison", "plugin chk_poison", 
-         &chk_poison_thread, NULL);
+   if (GBL_UI->type == UI_GTK) 
+       /* the actual work is done in a dedicated thread */
+       ec_thread_new("chk_poison", "plugin chk_poison", 
+             &chk_poison_thread, NULL);
+   else
+       chk_poison_thread(NULL);
 
    /* it's a one-shot plugin so return as it would be finished */
    return PLUGIN_FINISHED;
@@ -109,7 +112,7 @@ static EC_THREAD_FUNC(chk_poison_thread)
 {
    /* variable not used */
    (void) EC_THREAD_PARAM;
-   
+
    char tmp1[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
    struct hosts_list *g1, *g2;
@@ -122,8 +125,10 @@ static EC_THREAD_FUNC(chk_poison_thread)
    tm.tv_sec = GBL_CONF->arp_storm_delay;
    tm.tv_nsec = 0;
 #endif
+
      
-   ec_thread_init();
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_init();
 
    PLUGIN_LOCK(chk_poison_mutex);
 
@@ -133,7 +138,8 @@ static EC_THREAD_FUNC(chk_poison_thread)
    if (LIST_EMPTY(&arp_group_one) || LIST_EMPTY(&arp_group_two)) {
       INSTANT_USER_MSG("chk_poison: You have to run this plugin during a poisoning session.\n\n"); 
       PLUGIN_UNLOCK(chk_poison_mutex);
-      ec_thread_exit();
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
    
@@ -210,7 +216,8 @@ static EC_THREAD_FUNC(chk_poison_thread)
    }
          
    PLUGIN_UNLOCK(chk_poison_mutex);
-   ec_thread_exit();
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_exit();
    return PLUGIN_FINISHED;
 }
 

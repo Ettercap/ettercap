@@ -89,9 +89,12 @@ static int search_promisc_init(void *dummy)
    /* variable not used */
    (void) dummy;
 
-   /* the actual work is done in a dedicated thread */
-   ec_thread_new("search_promisc", "plugin search_promisc", 
-         &search_promisc_thread, NULL);
+   if (GBL_UI->type == UI_GTK)
+       /* the actual work is done in a dedicated thread */
+       ec_thread_new("search_promisc", "plugin search_promisc", 
+             &search_promisc_thread, NULL);
+   else
+       search_promisc_thread(NULL);
 
    /* it's a one-shot plugin so return as it would be finished */
    return PLUGIN_FINISHED;
@@ -101,7 +104,7 @@ static EC_THREAD_FUNC(search_promisc_thread)
 {
    /* variable not used */
    (void) EC_THREAD_PARAM;
-   
+
    char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h;
    u_char bogus_mac[2][6]={"\xfd\xfd\x00\x00\x00\x00", "\xff\xff\x00\x00\x00\x00"};
@@ -114,7 +117,8 @@ static EC_THREAD_FUNC(search_promisc_thread)
    tm.tv_nsec = 0; 
 #endif
 
-   ec_thread_init();
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_init();
 
    PLUGIN_LOCK(promisc_mutex);
 
@@ -125,14 +129,16 @@ static EC_THREAD_FUNC(search_promisc_thread)
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("search_promisc: plugin doesn't work in UNOFFENSIVE mode.\n\n");
       PLUGIN_UNLOCK(promisc_mutex);
-      ec_thread_exit();
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
 
    if (LIST_EMPTY(&GBL_HOSTLIST)) {
       INSTANT_USER_MSG("search_promisc: You have to build host-list to run this plugin.\n\n"); 
       PLUGIN_UNLOCK(promisc_mutex);
-      ec_thread_exit();
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
 
@@ -187,7 +193,8 @@ static EC_THREAD_FUNC(search_promisc_thread)
    }
      
    PLUGIN_UNLOCK(promisc_mutex);
-   ec_thread_exit();
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_exit();
    return PLUGIN_FINISHED;
 }
 

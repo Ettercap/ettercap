@@ -88,9 +88,12 @@ static int scan_poisoner_init(void *dummy)
    /* variable not used */
    (void) dummy;
 
-   /* the actual work is done in a dedicated thread */
-   ec_thread_new("scan_poisoner", "plugin scan_poisoner", 
-         &scan_poisoner_thread, NULL);
+   if (GBL_UI->type == UI_GTK)
+       /* the actual work is done in a dedicated thread */
+       ec_thread_new("scan_poisoner", "plugin scan_poisoner", 
+             &scan_poisoner_thread, NULL);
+   else 
+       scan_poisoner_thread(NULL);
 
    /* it's a one-shot plugin so return as it would be finished */
    return PLUGIN_FINISHED;
@@ -111,7 +114,8 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    tm.tv_nsec = 0; 
 #endif
 
-   ec_thread_init();
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_init();
 
    PLUGIN_LOCK(scan_poisoner_mutex);
 
@@ -121,7 +125,8 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    if (LIST_EMPTY(&GBL_HOSTLIST)) {
       INSTANT_USER_MSG("scan_poisoner: You have to build host-list to run this plugin.\n\n"); 
       PLUGIN_UNLOCK(scan_poisoner_mutex);
-      ec_thread_exit();
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
 
@@ -144,7 +149,8 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read) {
       INSTANT_USER_MSG("\nscan_poisoner: Can't make active test in UNOFFENSIVE mode.\n\n");
       PLUGIN_UNLOCK(scan_poisoner_mutex);
-      ec_thread_exit();
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
 
@@ -179,7 +185,8 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
       INSTANT_USER_MSG("scan_poisoner: - Nothing strange\n");
      
    PLUGIN_UNLOCK(scan_poisoner_mutex);
-   ec_thread_exit();
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_exit();
    return PLUGIN_FINISHED;
 }
 

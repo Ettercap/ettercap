@@ -29,8 +29,8 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_mitm.h>
+#include <ec_threads.h>
 
-#include <pthread.h>
 #include <time.h>
 
 struct poison_list {
@@ -43,13 +43,24 @@ struct poison_list {
 SLIST_HEAD(, poison_list) poison_table;
 
 /* mutexes */
-static pthread_mutex_t poison_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define POISON_LOCK     do{ pthread_mutex_lock(&poison_mutex); } while(0)
-#define POISON_UNLOCK   do{ pthread_mutex_unlock(&poison_mutex); } while(0)
+static pthread_mutex_t chk_poison_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define PLUGIN_LOCK(x)                                \
+   do{                                                \
+       if (pthread_mutex_trylock(&x)) {               \
+          ec_thread_exit();                           \
+          return NULL;                                \
+       }                                              \
+   } while(0)
+#define PLUGIN_UNLOCK(x)                              \
+   do{                                                \
+       pthread_mutex_unlock(&x);                      \
+   } while(0)
+
 
 /* protos */
 int plugin_load(void *);
 static int chk_poison_init(void *);
+static EC_THREAD_FUNC(chk_poison_thread);
 static int chk_poison_fini(void *);
 static void parse_icmp(struct packet_object *po);
 
@@ -82,7 +93,26 @@ int plugin_load(void *handle)
 
 static int chk_poison_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
+   if (GBL_UI->type == UI_GTK) 
+       /* the actual work is done in a dedicated thread */
+       ec_thread_new("chk_poison", "plugin chk_poison", 
+             &chk_poison_thread, NULL);
+   else
+       chk_poison_thread(NULL);
+
+   /* it's a one-shot plugin so return as it would be finished */
+   return PLUGIN_FINISHED;
    
+}
+
+static EC_THREAD_FUNC(chk_poison_thread)
+{
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
    char tmp1[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
    struct hosts_list *g1, *g2;
@@ -95,15 +125,21 @@ static int chk_poison_init(void *dummy)
    tm.tv_sec = GBL_CONF->arp_storm_delay;
    tm.tv_nsec = 0;
 #endif
+
      
-   /* variable not used */
-   (void) dummy;
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_init();
+
+   PLUGIN_LOCK(chk_poison_mutex);
 
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
       
    if (LIST_EMPTY(&arp_group_one) || LIST_EMPTY(&arp_group_two)) {
       INSTANT_USER_MSG("chk_poison: You have to run this plugin during a poisoning session.\n\n"); 
+      PLUGIN_UNLOCK(chk_poison_mutex);
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
    
@@ -172,15 +208,16 @@ static int chk_poison_init(void *dummy)
                INSTANT_USER_MSG("chk_poison: No poisoning between %s -> %s\n", ip_addr_ntoa(&(p->ip[i]), tmp1), ip_addr_ntoa(&(p->ip[!i]), tmp2) );
       }
    
-   POISON_LOCK;          
    /* delete the poisoning list */
    while (!SLIST_EMPTY(&poison_table)) {
       p = SLIST_FIRST(&poison_table);
       SLIST_REMOVE_HEAD(&poison_table, next);
       SAFE_FREE(p);
    }
-   POISON_UNLOCK;
          
+   PLUGIN_UNLOCK(chk_poison_mutex);
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_exit();
    return PLUGIN_FINISHED;
 }
 
@@ -209,7 +246,6 @@ static void parse_icmp(struct packet_object *po)
    /* Check if it's in the poisoning list. If so this poisoning 
     * is successfull.
     */
-    POISON_LOCK;
     SLIST_FOREACH(p, &poison_table, next) {
        if (!ip_addr_cmp(&(po->L3.src), &(p->ip[0])) && !ip_addr_cmp(&(po->L3.dst), &(p->ip[1])))
           p->poison_success[0] = 1;
@@ -217,7 +253,6 @@ static void parse_icmp(struct packet_object *po)
        if (!ip_addr_cmp(&(po->L3.src), &(p->ip[1])) && !ip_addr_cmp(&(po->L3.dst), &(p->ip[0])))
           p->poison_success[1] = 1;
    }	  
-   POISON_UNLOCK;
 }
 
 

@@ -27,6 +27,21 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
+#include <ec_threads.h>
+
+/* mutexes */
+static pthread_mutex_t link_type_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define PLUGIN_LOCK(x)                                \
+   do{                                                \
+       if (pthread_mutex_trylock(&x)) {               \
+          ec_thread_exit();                           \
+          return NULL;                                \
+       }                                              \
+   } while(0)
+#define PLUGIN_UNLOCK(x)                              \
+   do{                                                \
+       pthread_mutex_unlock(&x);                      \
+   } while(0)
 
 
 /* globals */
@@ -38,6 +53,7 @@ struct hosts_list targets[2];
 /* protos */
 int plugin_load(void *);
 static int link_type_init(void *);
+static EC_THREAD_FUNC(link_type_thread);
 static int link_type_fini(void *);
 static void parse_arp(struct packet_object *po);
 
@@ -70,29 +86,59 @@ int plugin_load(void *handle)
 
 static int link_type_init(void *dummy) 
 {
-   u_char counter = 0;
-   struct hosts_list *h;
-   
    /* variable not used */
    (void) dummy;
 
+   if (GBL_UI->type == UI_GTK) 
+       /* the actual work is done in a dedicated thread */
+       ec_thread_new("link_type", "plugin link_type", 
+             &link_type_thread, NULL);
+   else
+       link_type_thread(NULL);
+
+   /* it's a one-shot plugin so return as it would be finished */
+   return PLUGIN_FINISHED;
+}
+
+static EC_THREAD_FUNC(link_type_thread)
+{
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
+   u_char counter = 0;
+   struct hosts_list *h;
+   
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
+
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_init();
+   
+   PLUGIN_LOCK(link_type_mutex);
 
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("link_type: plugin doesn't work in UNOFFENSIVE mode\n");
+      PLUGIN_UNLOCK(link_type_mutex);
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
 
   /* Performs some checks */
    if (GBL_PCAP->dlt != IL_TYPE_ETH) {
       INSTANT_USER_MSG("link_type: This plugin works only on ethernet networks\n\n");
+      PLUGIN_UNLOCK(link_type_mutex);
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
 
    if (!GBL_PCAP->promisc) {
       INSTANT_USER_MSG("link_type: You have to enable promisc mode to run this plugin\n\n");
+      PLUGIN_UNLOCK(link_type_mutex);
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
    
@@ -107,6 +153,9 @@ static int link_type_init(void *dummy)
    
    if (counter == 0) {
       INSTANT_USER_MSG("link_type: You have to build host list to run this plugin\n\n");
+      PLUGIN_UNLOCK(link_type_mutex);
+      if (GBL_UI->type == UI_GTK)
+          ec_thread_exit();
       return PLUGIN_FINISHED;
    }
 
@@ -143,6 +192,9 @@ static int link_type_init(void *dummy)
    else
       INSTANT_USER_MSG("HUB\n\n");
       
+   PLUGIN_UNLOCK(link_type_mutex);
+   if (GBL_UI->type == UI_GTK)
+       ec_thread_exit();
    return PLUGIN_FINISHED;
 }
 

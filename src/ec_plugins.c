@@ -55,6 +55,9 @@ struct plugin_entry {
 };
 
 static SLIST_HEAD(, plugin_entry) plugin_head;
+static pthread_mutex_t kill_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define KILL_LOCK do { pthread_mutex_lock(&kill_mutex); } while (0)
+#define KILL_UNLOCK do { pthread_mutex_unlock(&kill_mutex); } while (0)
 
 /* protos... */
 
@@ -301,6 +304,54 @@ int plugin_fini(char *name)
          return ret;
       }
    }
+   
+   return -ENOTFOUND;
+}
+
+/* 
+ * self-destruct a plugin.
+ * it resets the activity state and 
+ * destructs itself by calling the plugin fini function 
+ */
+int plugin_kill(char *name, char *thread)
+{
+   struct plugin_entry *p;
+   int ret;
+   pthread_t pid;
+
+   pid = ec_thread_getpid(thread); 
+
+   /* do not execute if not being a thread */
+   if (pthread_equal(pid, EC_PTHREAD_NULL))
+      return -EINVALID;
+
+   /* the thread can only kill itself */
+   if (!pthread_equal(pid, pthread_self()))
+      return -EINVALID;
+
+   DEBUG_MSG("plugin_kill");
+
+   KILL_LOCK;
+   SLIST_FOREACH(p, &plugin_head, next) {
+      if (p->activated == 1 && !strcmp(p->ops->name, name)) {
+         /* flag plugin as inactive */
+         p->activated = 0;
+         /* release the lock */
+         KILL_UNLOCK;
+         /* call plugin's destruction routine */
+         ret = p->ops->fini(NULL);
+         /*
+          * normally the thread should not return from the call - 
+          * just in case the thread wasn't destroyed in the fini callback
+          * destroy it here 
+          */
+         ec_thread_destroy(pid);
+
+         /* should never be reached */
+         return ret;
+      }
+   }
+   KILL_UNLOCK;
    
    return -ENOTFOUND;
 }

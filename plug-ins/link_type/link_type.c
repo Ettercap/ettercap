@@ -27,6 +27,7 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
+#include <ec_threads.h>
 
 
 /* globals */
@@ -35,9 +36,13 @@
 u_char linktype;
 struct hosts_list targets[2];
 
+/* mutexes */
+static pthread_mutex_t link_type_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 /* protos */
 int plugin_load(void *);
 static int link_type_init(void *);
+static EC_THREAD_FUNC(link_type_thread);
 static int link_type_fini(void *);
 static void parse_arp(struct packet_object *po);
 
@@ -70,29 +75,49 @@ int plugin_load(void *handle)
 
 static int link_type_init(void *dummy) 
 {
-   u_char counter = 0;
-   struct hosts_list *h;
-   
    /* variable not used */
    (void) dummy;
 
+   ec_thread_new("link_type", "plugin link_type", 
+         &link_type_thread, NULL);
+
+   return PLUGIN_RUNNING;
+}
+
+static EC_THREAD_FUNC(link_type_thread)
+{
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
+   u_char counter = 0;
+   struct hosts_list *h;
+   
+   ec_thread_init();
+   PLUGIN_LOCK(link_type_mutex);
+   
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
 
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("link_type: plugin doesn't work in UNOFFENSIVE mode\n");
+      PLUGIN_UNLOCK(link_type_mutex);
+      plugin_kill("link_type", "link_type");
       return PLUGIN_FINISHED;
    }
 
   /* Performs some checks */
    if (GBL_PCAP->dlt != IL_TYPE_ETH) {
       INSTANT_USER_MSG("link_type: This plugin works only on ethernet networks\n\n");
+      PLUGIN_UNLOCK(link_type_mutex);
+      plugin_kill("link_type", "link_type");
       return PLUGIN_FINISHED;
    }
 
    if (!GBL_PCAP->promisc) {
       INSTANT_USER_MSG("link_type: You have to enable promisc mode to run this plugin\n\n");
+      PLUGIN_UNLOCK(link_type_mutex);
+      plugin_kill("link_type", "link_type");
       return PLUGIN_FINISHED;
    }
    
@@ -107,6 +132,8 @@ static int link_type_init(void *dummy)
    
    if (counter == 0) {
       INSTANT_USER_MSG("link_type: You have to build host list to run this plugin\n\n");
+      PLUGIN_UNLOCK(link_type_mutex);
+      plugin_kill("link_type", "link_type");
       return PLUGIN_FINISHED;
    }
 
@@ -143,6 +170,8 @@ static int link_type_init(void *dummy)
    else
       INSTANT_USER_MSG("HUB\n\n");
       
+   PLUGIN_UNLOCK(link_type_mutex);
+   plugin_kill("link_type", "link_type");
    return PLUGIN_FINISHED;
 }
 
@@ -151,6 +180,15 @@ static int link_type_fini(void *dummy)
 {
    /* variable not used */
    (void) dummy;
+
+   pthread_t pid;
+
+   pid = ec_thread_getpid("link_type");
+
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+         ec_thread_destroy(pid);
+
+   INSTANT_USER_MSG("link_type: plugin terminated...\n");
 
    return PLUGIN_FINISHED;
 }

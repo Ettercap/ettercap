@@ -336,6 +336,8 @@ int plugin_kill(char *name, char *thread)
       if (p->activated == 1 && !strcmp(p->ops->name, name)) {
          /* flag plugin as inactive */
          p->activated = 0;
+         /* update the UI */
+         ui_update(UI_UPDATE_PLUGINLIST);
          /* release the lock */
          KILL_UNLOCK;
          /* call plugin's destruction routine */

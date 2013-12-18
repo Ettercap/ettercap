@@ -311,6 +311,11 @@ static void gtkui_select_plugin(void)
    gtkui_create_plug_array();
 }
 
+void gtkui_refresh_plugin_list(void)
+{
+   /* refresh the list to mark plugin active */
+   gtkui_create_plug_array();
+}
 
 /* EOF */
 

@@ -55,6 +55,8 @@ struct plugin_entry {
 };
 
 static SLIST_HEAD(, plugin_entry) plugin_head;
+
+/* mutexes */
 static pthread_mutex_t kill_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define KILL_LOCK do { pthread_mutex_lock(&kill_mutex); } while (0)
 #define KILL_UNLOCK do { pthread_mutex_unlock(&kill_mutex); } while (0)
@@ -62,7 +64,7 @@ static pthread_mutex_t kill_mutex = PTHREAD_MUTEX_INITIALIZER;
 /* protos... */
 
 void plugin_unload_all(void);
-static void plugin_print(struct plugin_ops *ops);
+static void plugin_print(char active, struct plugin_ops *ops);
 #if defined(OS_BSD) || defined (OS_DARWIN)
 int plugin_filter(struct dirent *d);
 #else
@@ -448,8 +450,11 @@ void plugin_list(void)
 /*
  * callback function for displaying the plugin list 
  */
-static void plugin_print(struct plugin_ops *ops)
+static void plugin_print(char active, struct plugin_ops *ops)
 {
+   /* variable not used */
+   (void) active;
+
    fprintf(stdout, " %15s %4s  %s\n", ops->name, ops->version, ops->info);  
 }
 

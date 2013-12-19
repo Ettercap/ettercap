@@ -8,8 +8,6 @@
 #include <ec_ui.h>
 #include <ec_threads.h>
 
-#include <pthread.h>
-
 struct plugin_ops
 {
    char *ettercap_version;          /* ettercap version MUST be the global EC_VERSION */

@@ -23,6 +23,7 @@
 #include <wdg.h>
 #include <ec_curses.h>
 #include <ec_plugins.h>
+#include <ec_threads.h>
 
 #define MAX_DESC_LEN 75
 
@@ -49,6 +50,9 @@ struct wdg_menu menu_plugins[] = { {"Plugins",            'P',       "",    NULL
                                    {"Load a plugin...",   0,         "",    curses_plugin_load},
                                    {NULL, 0, NULL, NULL},
                                  };
+
+/* mutexes */
+static pthread_mutex_t pluginlist_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*******************************************/
 
@@ -249,11 +253,23 @@ static void curses_select_plugin(void *plugin)
       plugin_init(plugin);
         
    /* refres the array for the list widget */
+   curses_plugins_update();
+}
+
+void curses_plugins_update(void)
+{
+   DEBUG_MSG("curses_plugins_update");
+
+   CURSES_LOCK(pluginlist_mutex);
+
+   /* refres the array for the list widget */
    nplug = 0;
    plugin_list_walk(PLP_MIN, PLP_MAX, &curses_refresh_plug_array);
    
    /* refresh the list */
    wdg_list_refresh(wdg_plugin);
+
+   CURSES_UNLOCK(pluginlist_mutex);
 }
 
 

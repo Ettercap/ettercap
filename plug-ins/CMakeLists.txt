@@ -60,7 +60,9 @@ if(HAVE_PCRE)
         add_library(sslstrip MODULE sslstrip/sslstrip.c)
         include_directories(${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
         add_dependencies(sslstrip curl)
-        target_link_libraries(sslstrip ${CURL_LIBRARY} ${PCRE_LIBRARY})
+        # Order MATTERS! CURL_LIBRARY (if embedded) needs RTMP and IDN, so the link should be after curl, not before
+        # otherwise gcc will strip it because unused
+        target_link_libraries(sslstrip ${CURL_LIBRARY} ${PCRE_LIBRARY} ${EC_SSLSTRIP_LIBS})
         set_target_properties(sslstrip PROPERTIES PREFIX "ec_")
         set(SSL_STRIP_PLUGIN sslstrip)
     else(CURL_FOUND)

@@ -2,6 +2,7 @@
 
 set(EC_LIBS)
 set(EC_LIBETTERCAP_LIBS)
+set(EC_SSLSTRIP_LIBS)
 set(EC_INCLUDE)
 
 set(EF_LIBS)
@@ -130,6 +131,19 @@ if(HAVE_PLUGINS)
       add_subdirectory(bundled_deps/curl) # EXCLUDE_FROM_ALL)
       add_dependencies(curl bundled_curl)
       add_dependencies(bundled bundled_curl)
+      find_package(LibIDN)
+      if (NOT LIBIDN_FOUND)
+          message(FATAL_ERROR "You are trying to use the embedded provided curl library for sslstrip plugin, but you don't have LibIDN, needed to link curl")
+      else (NOT LIBIDN_FOUND)
+          set(EC_SSLSTRIP_LIBS ${EC_SSLSTRIP_LIBS} ${LIBIDN_LIBRARIES})
+      endif (NOT LIBIDN_FOUND)
+      FIND_PACKAGE(LibRTMP)
+      if (NOT RTMP_FOUND)
+          message(FATAL_ERROR "You are trying to use the embedded provided curl library for sslstrip plugin, but you don't have LibRTMP, needed to link curl")
+      else (NOT RTMP_FOUND)
+          set(EC_SSLSTRIP_LIBS ${EC_SSLSTRIP_LIBS} ${RTMP_LIBRARIES})
+      endif (NOT RTMP_FOUND)
+
     endif(BUNDLED_CURL AND (NOT CURL_FOUND))
 
     # Still haven't found curl? Bail!

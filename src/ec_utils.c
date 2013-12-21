@@ -151,6 +151,72 @@ char **parse_iflist(char *list)
    return r;
 }
 
+/*
+ * regain root privs
+ */
+void regain_privs(void)
+{
+   u_int uid, gid;
+   char *var;
+   DEBUG_MSG("ATEXIT: regain_privs");
+
+#ifdef OS_WINDOWS
+   return;
+#endif
+   if(seteuid(0) < 0)
+      ERROR_MSG("seteuid()");
+
+   USER_MSG("Regained root privileges: %d %d", getuid(), geteuid());
+}
+
+/* 
+ * drop root privs 
+ */
+void drop_privs(void)
+{
+   u_int uid, gid;
+   char *var;
+
+#ifdef OS_WINDOWS
+   /* do not drop privs under windows */
+   return;
+#endif
+
+   /* are we root ? */
+   if (getuid() != 0)
+      return;
+
+   /* get the env variable for the UID to drop privs to */
+   var = getenv("EC_UID");
+
+   /* if the EC_UID variable is not set, default to GBL_CONF->ec_uid (nobody) */
+   if (var != NULL)
+      uid = atoi(var);
+   else
+      uid = GBL_CONF->ec_uid;
+
+   /* get the env variable for the GID to drop privs to */
+   var = getenv("EC_GID");
+
+   /* if the EC_UID variable is not set, default to GBL_CONF->ec_gid (nobody) */
+   if (var != NULL)
+      gid = atoi(var);
+   else
+      gid = GBL_CONF->ec_gid;
+
+   DEBUG_MSG("drop_privs: setuid(%d) setgid(%d)", uid, gid);
+
+   /* drop to a good uid/gid ;) */
+   if ( setgid(gid) < 0 )
+      ERROR_MSG("setgid()");
+
+   if ( seteuid(uid) < 0 )
+      ERROR_MSG("seteuid()");
+
+   DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
+   USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() );
+}
+
 /* EOF */
 
 

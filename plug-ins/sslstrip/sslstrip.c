@@ -29,6 +29,7 @@
 #include <ec_socket.h>
 #include <ec_threads.h>
 #include <ec_decode.h>
+#include <ec_utils.h>
 
 #include <sys/wait.h>
 
@@ -493,7 +494,9 @@ static int http_insert_redirect(u_int16 dport)
 
 	switch(fork()) {
 		case 0:
+			regain_privs();
 			execvp(param[0], param);
+			drop_privs();
 			WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
 			safe_free_http_redirect(param, &param_length, command, orig_command);
 			_exit(EINVALID);
@@ -554,7 +557,9 @@ static int http_remove_redirect(u_int16 dport)
 
         switch(fork()) {
 		case 0:
+			regain_privs();
 			execvp(param[0], param);
+			drop_privs();
 			WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
 			safe_free_http_redirect(param, &param_length, command, orig_command);
 			_exit(EINVALID);

@@ -6,8 +6,6 @@
 
 EC_API_EXTERN void parse_options(int argc, char **argv);
 
-EC_API_EXTERN int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t );
-EC_API_EXTERN int set_regex(char *regex);
 
 
 #endif

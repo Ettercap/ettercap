@@ -24,10 +24,22 @@ if (NOT ZLIB_LIBRARIES)
   message(FATAL_ERROR "Cannot build bundled Curl without zlib")
 endif()
 
+find_package(LibIDN)
+if (NOT LIBIDN_FOUND)
+   message(FATAL_ERROR "Cannot build bundled Curl without idn")
+endif (NOT LIBIDN_FOUND)
+
+find_package(LibRTMP)
+if (NOT RTMP_FOUND)
+   message(FATAL_ERROR "Cannot build bundled Curl without rtmp")
+endif (NOT RTMP_FOUND)
+
 # Ensure that we include all the required stuff for linking to libcurl
 SET(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX}
   ${OPENSSL_LIBRARIES}
   ${ZLIB_LIBRARIES}
+  ${LIBIDN_LIBRARIES}
+  ${RTMP_LIBRARIES}
   )  
 
 #Figure out the parent directory for our openssl installation.

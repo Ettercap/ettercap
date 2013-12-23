@@ -347,6 +347,9 @@ static void gtkui_update(int target)
         case UI_UPDATE_HOSTLIST:
             gtk_idle_add(gtkui_refresh_host_list,NULL);
             break;
+        case UI_UPDATE_PLUGINLIST:
+            gtk_idle_add(gtkui_refresh_plugin_list, NULL);
+            break;
     }
 
 }

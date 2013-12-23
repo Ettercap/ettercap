@@ -309,7 +309,8 @@ static void curses_update(int target)
    switch(target) {
       case UI_UPDATE_HOSTLIST:   curses_hosts_update();
                                  break;
-
+      case UI_UPDATE_PLUGINLIST:
+                                 curses_plugins_update();
       default:                   break;
    }
 }

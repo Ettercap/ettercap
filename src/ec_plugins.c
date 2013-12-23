@@ -56,10 +56,15 @@ struct plugin_entry {
 
 static SLIST_HEAD(, plugin_entry) plugin_head;
 
+/* mutexes */
+static pthread_mutex_t kill_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define KILL_LOCK do { pthread_mutex_lock(&kill_mutex); } while (0)
+#define KILL_UNLOCK do { pthread_mutex_unlock(&kill_mutex); } while (0)
+
 /* protos... */
 
 void plugin_unload_all(void);
-static void plugin_print(struct plugin_ops *ops);
+static void plugin_print(char active, struct plugin_ops *ops);
 #if defined(OS_BSD) || defined (OS_DARWIN)
 int plugin_filter(struct dirent *d);
 #else
@@ -305,6 +310,57 @@ int plugin_fini(char *name)
    return -ENOTFOUND;
 }
 
+/* 
+ * self-destruct a plugin thread.
+ * it resets the activity state and destructs itself by calling the plugin fini function.
+ * it does not replace the <plugin>_fini standard function rather than it depends on it.
+ * this function does not do anything if not executed by a thread.
+ */
+int plugin_kill_thread(char *name, char *thread)
+{
+   struct plugin_entry *p;
+   int ret;
+   pthread_t pid;
+
+   pid = ec_thread_getpid(thread); 
+
+   /* do not execute if not being a thread */
+   if (pthread_equal(pid, EC_PTHREAD_NULL))
+      return -EINVALID;
+
+   /* the thread can only kill itself */
+   if (!pthread_equal(pid, pthread_self()))
+      return -EINVALID;
+
+   DEBUG_MSG("plugin_kill_thread");
+
+   KILL_LOCK;
+   SLIST_FOREACH(p, &plugin_head, next) {
+      if (p->activated == 1 && !strcmp(p->ops->name, name)) {
+         /* flag plugin as inactive */
+         p->activated = 0;
+         /* update the UI */
+         ui_update(UI_UPDATE_PLUGINLIST);
+         /* release the lock */
+         KILL_UNLOCK;
+         /* call plugin's destruction routine */
+         ret = p->ops->fini(NULL);
+         /*
+          * normally the thread should not return from the call - 
+          * just in case the thread wasn't destroyed in the fini callback
+          * destroy it here 
+          */
+         ec_thread_destroy(pid);
+
+         /* should never be reached */
+         return ret;
+      }
+   }
+   KILL_UNLOCK;
+   
+   return -ENOTFOUND;
+}
+
 /*
  * it print the list of the plugins.
  *
@@ -395,8 +451,11 @@ void plugin_list(void)
 /*
  * callback function for displaying the plugin list 
  */
-static void plugin_print(struct plugin_ops *ops)
+static void plugin_print(char active, struct plugin_ops *ops)
 {
+   /* variable not used */
+   (void) active;
+
    fprintf(stdout, " %15s %4s  %s\n", ops->name, ops->version, ops->info);  
 }
 

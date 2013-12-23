@@ -6,6 +6,7 @@
 #include <ec_stdint.h>
 #include <ec_version.h>
 #include <ec_ui.h>
+#include <ec_threads.h>
 
 struct plugin_ops
 {
@@ -32,11 +33,25 @@ EC_API_EXTERN int search_plugin(char *name);
 /* use these to activate and deactivate a plugin; these are *imported* from plugins */
 EC_API_EXTERN int plugin_init(char *name);
 EC_API_EXTERN int plugin_fini(char *name);
+EC_API_EXTERN int plugin_kill_thread(char *name, char *thread);
 
 #define PLUGIN_FINISHED 0
 #define PLUGIN_RUNNING  1
 
 EC_API_EXTERN void plugin_list(void);
+
+#define PLUGIN_LOCK(x)                                \
+   do{                                                \
+       if (pthread_mutex_trylock(&x)) {               \
+          ec_thread_exit();                           \
+          return NULL;                                \
+       }                                              \
+   } while(0)
+
+#define PLUGIN_UNLOCK(x)                              \
+   do{                                                \
+       pthread_mutex_unlock(&x);                      \
+   } while(0)
 
 #endif 
 

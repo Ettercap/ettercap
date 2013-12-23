@@ -111,6 +111,7 @@ extern void gtkui_stop_msg(void);
 /* ec_gtk_plugins.c */
 extern void gtkui_plugin_mgmt(void);
 extern void gtkui_plugin_load(void);
+extern void gtkui_refresh_plugin_list(void);
 
 /* ec_gtk_view_connections.c */
 extern void gtkui_show_connections(void);

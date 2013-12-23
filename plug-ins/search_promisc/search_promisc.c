@@ -27,8 +27,8 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
+#include <ec_threads.h>
 
-#include <pthread.h>
 #include <time.h>
 
 /* globals */
@@ -36,13 +36,12 @@ LIST_HEAD(, hosts_list) promisc_table;
 LIST_HEAD(, hosts_list) collected_table;
 
 /* mutexes */
-static pthread_mutex_t promisc_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define PROMISC_LOCK     do{ pthread_mutex_lock(&promisc_mutex); } while(0)
-#define PROMISC_UNLOCK   do{ pthread_mutex_unlock(&promisc_mutex); } while(0)
+static pthread_mutex_t search_promisc_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* protos */
 int plugin_load(void *);
 static int search_promisc_init(void *);
+static EC_THREAD_FUNC(search_promisc_thread);
 static int search_promisc_fini(void *);
 static void parse_arp(struct packet_object *po);
 
@@ -75,6 +74,20 @@ int plugin_load(void *handle)
 
 static int search_promisc_init(void *dummy) 
 {
+   /* variable not used */
+   (void) dummy;
+
+   ec_thread_new("search_promisc", "plugin search_promisc", 
+         &search_promisc_thread, NULL);
+
+   return PLUGIN_RUNNING;
+}
+
+static EC_THREAD_FUNC(search_promisc_thread)
+{
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
    
    char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h;
@@ -88,8 +101,8 @@ static int search_promisc_init(void *dummy)
    tm.tv_nsec = 0; 
 #endif
 
-   /* variable not used */
-   (void) dummy;
+   ec_thread_init();
+   PLUGIN_LOCK(search_promisc_mutex);
 
    /* don't show packets while operating */
    GBL_OPTIONS->quiet = 1;
@@ -97,11 +110,15 @@ static int search_promisc_init(void *dummy)
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("search_promisc: plugin doesn't work in UNOFFENSIVE mode.\n\n");
+      PLUGIN_UNLOCK(search_promisc_mutex);
+      plugin_kill_thread("search_promisc", "search_promisc");
       return PLUGIN_FINISHED;
    }
 
    if (LIST_EMPTY(&GBL_HOSTLIST)) {
       INSTANT_USER_MSG("search_promisc: You have to build host-list to run this plugin.\n\n"); 
+      PLUGIN_UNLOCK(search_promisc_mutex);
+      plugin_kill_thread("search_promisc", "search_promisc");
       return PLUGIN_FINISHED;
    }
 
@@ -140,25 +157,23 @@ static int search_promisc_init(void *dummy)
             INSTANT_USER_MSG("- %s\n",ip_addr_ntoa(&h->ip, tmp));
          
 
-      PROMISC_LOCK;          
       /* Delete the list */
       while (!LIST_EMPTY(&promisc_table)) {
          h = LIST_FIRST(&promisc_table);
          LIST_REMOVE(h, next);
          SAFE_FREE(h);
       }
-      PROMISC_UNLOCK;
    }
 
-   PROMISC_LOCK;          
    /* Delete the list */
    while (!LIST_EMPTY(&collected_table)) {
       h = LIST_FIRST(&collected_table);
       LIST_REMOVE(h, next);
       SAFE_FREE(h);
    }
-   PROMISC_UNLOCK;
      
+   PLUGIN_UNLOCK(search_promisc_mutex);
+   plugin_kill_thread("search_promisc", "search_promisc");
    return PLUGIN_FINISHED;
 }
 
@@ -167,6 +182,15 @@ static int search_promisc_fini(void *dummy)
 {
    /* variable not used */
    (void) dummy;
+
+   pthread_t pid;
+
+   pid = ec_thread_getpid("search_promisc");
+
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+         ec_thread_destroy(pid);
+
+   INSTANT_USER_MSG("search_promisc: plugin terminated...\n");
 
    return PLUGIN_FINISHED;
 }
@@ -182,11 +206,9 @@ static void parse_arp(struct packet_object *po)
    if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))
       return;
    
-   PROMISC_LOCK;
    /* Check if it's already in the list */
    LIST_FOREACH(h, &collected_table, next) 
       if (!ip_addr_cmp(&(po->L3.src), &h->ip)) {
-         PROMISC_UNLOCK;
          return;
       }
        
@@ -199,7 +221,6 @@ static void parse_arp(struct packet_object *po)
    memcpy(&h->ip, &(po->L3.src), sizeof(struct ip_addr));
    LIST_INSERT_HEAD(&collected_table, h, next);
 
-   PROMISC_UNLOCK;
 }
 
 

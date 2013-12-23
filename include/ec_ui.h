@@ -19,6 +19,7 @@ struct ui_ops {
       #define UI_PROGRESS_UPDATED      1
    void (*update)(int);
       #define UI_UPDATE_HOSTLIST       1
+      #define UI_UPDATE_PLUGINLIST     2
    char initialized;
    char type;
       #define UI_TEXT      0

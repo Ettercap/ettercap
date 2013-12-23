@@ -111,14 +111,14 @@ static EC_THREAD_FUNC(search_promisc_thread)
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("search_promisc: plugin doesn't work in UNOFFENSIVE mode.\n\n");
       PLUGIN_UNLOCK(search_promisc_mutex);
-      plugin_kill("search_promisc", "search_promisc");
+      plugin_kill_thread("search_promisc", "search_promisc");
       return PLUGIN_FINISHED;
    }
 
    if (LIST_EMPTY(&GBL_HOSTLIST)) {
       INSTANT_USER_MSG("search_promisc: You have to build host-list to run this plugin.\n\n"); 
       PLUGIN_UNLOCK(search_promisc_mutex);
-      plugin_kill("search_promisc", "search_promisc");
+      plugin_kill_thread("search_promisc", "search_promisc");
       return PLUGIN_FINISHED;
    }
 
@@ -173,7 +173,7 @@ static EC_THREAD_FUNC(search_promisc_thread)
    }
      
    PLUGIN_UNLOCK(search_promisc_mutex);
-   plugin_kill("search_promisc", "search_promisc");
+   plugin_kill_thread("search_promisc", "search_promisc");
    return PLUGIN_FINISHED;
 }
 

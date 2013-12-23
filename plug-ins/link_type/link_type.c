@@ -102,7 +102,7 @@ static EC_THREAD_FUNC(link_type_thread)
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("link_type: plugin doesn't work in UNOFFENSIVE mode\n");
       PLUGIN_UNLOCK(link_type_mutex);
-      plugin_kill("link_type", "link_type");
+      plugin_kill_thread("link_type", "link_type");
       return PLUGIN_FINISHED;
    }
 
@@ -110,14 +110,14 @@ static EC_THREAD_FUNC(link_type_thread)
    if (GBL_PCAP->dlt != IL_TYPE_ETH) {
       INSTANT_USER_MSG("link_type: This plugin works only on ethernet networks\n\n");
       PLUGIN_UNLOCK(link_type_mutex);
-      plugin_kill("link_type", "link_type");
+      plugin_kill_thread("link_type", "link_type");
       return PLUGIN_FINISHED;
    }
 
    if (!GBL_PCAP->promisc) {
       INSTANT_USER_MSG("link_type: You have to enable promisc mode to run this plugin\n\n");
       PLUGIN_UNLOCK(link_type_mutex);
-      plugin_kill("link_type", "link_type");
+      plugin_kill_thread("link_type", "link_type");
       return PLUGIN_FINISHED;
    }
    
@@ -133,7 +133,7 @@ static EC_THREAD_FUNC(link_type_thread)
    if (counter == 0) {
       INSTANT_USER_MSG("link_type: You have to build host list to run this plugin\n\n");
       PLUGIN_UNLOCK(link_type_mutex);
-      plugin_kill("link_type", "link_type");
+      plugin_kill_thread("link_type", "link_type");
       return PLUGIN_FINISHED;
    }
 
@@ -171,7 +171,7 @@ static EC_THREAD_FUNC(link_type_thread)
       INSTANT_USER_MSG("HUB\n\n");
       
    PLUGIN_UNLOCK(link_type_mutex);
-   plugin_kill("link_type", "link_type");
+   plugin_kill_thread("link_type", "link_type");
    return PLUGIN_FINISHED;
 }
 

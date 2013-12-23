@@ -33,7 +33,7 @@ EC_API_EXTERN int search_plugin(char *name);
 /* use these to activate and deactivate a plugin; these are *imported* from plugins */
 EC_API_EXTERN int plugin_init(char *name);
 EC_API_EXTERN int plugin_fini(char *name);
-EC_API_EXTERN int plugin_kill(char *name, char *thread);
+EC_API_EXTERN int plugin_kill_thread(char *name, char *thread);
 
 #define PLUGIN_FINISHED 0
 #define PLUGIN_RUNNING  1

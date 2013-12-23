@@ -311,11 +311,12 @@ int plugin_fini(char *name)
 }
 
 /* 
- * self-destruct a plugin.
- * it resets the activity state and 
- * destructs itself by calling the plugin fini function 
+ * self-destruct a plugin thread.
+ * it resets the activity state and destructs itself by calling the plugin fini function.
+ * it does not replace the <plugin>_fini standard function rather than it depends on it.
+ * this function does not do anything if not executed by a thread.
  */
-int plugin_kill(char *name, char *thread)
+int plugin_kill_thread(char *name, char *thread)
 {
    struct plugin_entry *p;
    int ret;
@@ -331,7 +332,7 @@ int plugin_kill(char *name, char *thread)
    if (!pthread_equal(pid, pthread_self()))
       return -EINVALID;
 
-   DEBUG_MSG("plugin_kill");
+   DEBUG_MSG("plugin_kill_thread");
 
    KILL_LOCK;
    SLIST_FOREACH(p, &plugin_head, next) {

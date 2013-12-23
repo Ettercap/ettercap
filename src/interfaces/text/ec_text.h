@@ -3,6 +3,7 @@
 #ifndef EC_TEXT_H
 #define EC_TEXT_H
 
+extern void set_text_interface(void);
 extern int text_plugin(char *plugin);
 extern void text_print_packet(struct packet_object *po);
 extern void text_profiles(void);

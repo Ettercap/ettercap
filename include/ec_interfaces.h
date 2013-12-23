@@ -38,11 +38,6 @@ struct curses_color {
 
 /* exported functions */
 
-EC_API_EXTERN void select_daemon_interface(void);
-EC_API_EXTERN void select_text_interface(void);
-EC_API_EXTERN void select_curses_interface(void);
-EC_API_EXTERN void select_gtk_interface(void);
-
 #endif
 
 /* EOF */

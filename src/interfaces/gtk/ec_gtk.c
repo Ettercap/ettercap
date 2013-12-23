@@ -52,7 +52,6 @@ static GtkWidget     *progress_bar = NULL;
 
 /* proto */
 
-void set_gtk_interface(void);
 void gtkui_start(void);
 
 static void gtkui_init(void);

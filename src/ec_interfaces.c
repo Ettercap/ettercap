@@ -20,6 +20,10 @@
 */
 
 #include <ec.h>
+#include <ec_curses.h>
+#include <ec_daemon.h>
+#include <ec_gtk.h>
+#include <ec_text.h>
 
 /*******************************************/
 

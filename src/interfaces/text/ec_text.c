@@ -45,7 +45,6 @@ struct termios new_tc;
 
 /* proto */
 
-void set_text_interface(void);
 void text_interface(void);
 static void text_init(void);
 static void text_cleanup(void);

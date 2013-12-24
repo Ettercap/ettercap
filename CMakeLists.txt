@@ -113,10 +113,10 @@ set(INSTALL_BINDIR  ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation 
 set(INSTALL_EXEDIR ${INSTALL_PREFIX}/bin CACHE PATH "Ettercap binary installation directory")
 if(OS_DARWIN OR OS_WINDOWS)
    set(POLKIT_DIR ${INSTALL_PREFIX}/share/polkit-1/actions/ CACHE PATH "Polkit installation directory")
-else(OS_DARWIN)
+else(OS_DARWIN OR OS_WINDOWS)
 #at least on ubuntu, polkit dir couldn't be /usr/local/share, but should be /usr/share
    set(POLKIT_DIR /usr/share/polkit-1/actions/ CACHE PATH "Polkit installation directory")
-endif(OS_DARWIN)
+endif(OS_DARWIN OR OS_WINDOWS)
 set(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap CACHE PATH "Name of the pkexec action file")
 set(DESKTOP_DIR ${INSTALL_PREFIX}/share/applications/ CACHE PATH "Desktop file installation directory")
 set(ICON_DIR ${INSTALL_PREFIX}/share/pixmaps CACHE PATH "Icon file installation directory")

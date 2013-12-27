@@ -40,8 +40,8 @@
  *      @(#)queue.h     8.5 (Berkeley) 8/20/94
  */
 
-#ifndef EC_QUEUE_H
-#define EC_QUEUE_H
+#ifndef ETTERCAP_QUEUE_H_D8D8C9DF87D84FA580A142211CE477A2
+#define ETTERCAP_QUEUE_H_D8D8C9DF87D84FA580A142211CE477A2
 
 /* to avoid conflict with system includes */
 #define _SYS_QUEUE_H_

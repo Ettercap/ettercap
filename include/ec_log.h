@@ -1,7 +1,5 @@
-
-
-#ifndef EC_LOG_H
-#define EC_LOG_H
+#ifndef ETTERCAP_LOG_H_2FE688DBEDA947E3A538CFF0B56CCDCA
+#define ETTERCAP_LOG_H_2FE688DBEDA947E3A538CFF0B56CCDCA
 
 #include <ec_inet.h>
 #include <ec_packet.h>

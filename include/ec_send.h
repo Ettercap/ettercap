@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SEND_H
-#define EC_SEND_H
+#ifndef ETTERCAP_SEND_H_697A9B48D125427C9FF9E264721D7A0D
+#define ETTERCAP_SEND_H_697A9B48D125427C9FF9E264721D7A0D
 
 #include <ec_packet.h>
 #include <ec_network.h>

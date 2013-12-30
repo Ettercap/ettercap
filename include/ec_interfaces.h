@@ -37,6 +37,10 @@ struct curses_color {
 #define EC_COLOR_JOIN2        11
 
 /* exported functions */
+EC_API_EXTERN void select_daemon_interface(void);
+EC_API_EXTERN void select_text_interface(void);
+EC_API_EXTERN void select_curses_interface(void);
+EC_API_EXTERN void select_gtk_interface(void);
 
 #endif
 

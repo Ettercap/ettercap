@@ -126,9 +126,9 @@ FUNC_DECODER(dissector_ospf)
 
    /* authentication */
    if ( ntohs(ohdr->auth_type) == OSPF_AUTH_CRYPTOGRAPHIC ) {
-        int i = 0;
+        unsigned int i = 0;
 
-        int length = ntohs(ohdr->length);
+        unsigned int length = ntohs(ohdr->length);
 
         if (ohdr->u.crypt.auth_data_len != OSPF_AUTH_MD5_SIZE) {
                 return NULL;

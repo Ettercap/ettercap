@@ -84,11 +84,8 @@ void gtkui_plugin_load(void)
 
 static void gtkui_load_plugin(const char *full)
 {
-   const char *path;
    char *file;
    int ret;
-
-   path = strdup(full);
 
 #ifdef OS_WINDOWS
    file = strrchr(full, '\\');
@@ -97,15 +94,14 @@ static void gtkui_load_plugin(const char *full)
 #endif
    /* remove the last /
       split path and file
-      increment file pointer to point to filenam */
+      increment file pointer to point to filename */
    *file++ = 0;
 
-   DEBUG_MSG("gtk_load_plugin %s/%s", path, file);
+   DEBUG_MSG("gtk_load_plugin %s/%s", full, file);
 
    /* load the plugin */
-   ret = plugin_load_single(path, file);
+   ret = plugin_load_single(full, file);
 
-   SAFE_FREE(path);
 
    /* check the return code */
    switch (ret) {

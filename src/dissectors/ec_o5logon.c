@@ -99,7 +99,7 @@ FUNC_DECODER(dissector_o5logon)
               }
               last--;
             }
-            int length = *(last+1);
+            unsigned int length = *(last+1);
             if (length < sizeof(conn_status->user))
             {
                strncpy((char*)conn_status->user, (char*)last + 2, length);

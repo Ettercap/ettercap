@@ -22,7 +22,7 @@
 #include <ec.h>
 #include <ec_gtk.h>
 #include <ec_format.h>
-#include <ec_parser.h>
+#include <ec_utils.h>
 #include <ec_encryption.h>
 
 /* proto */

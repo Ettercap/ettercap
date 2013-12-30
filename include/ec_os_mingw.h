@@ -1,5 +1,5 @@
-#ifndef EC_OS_MINGW_H
-#define EC_OS_MINGW_H
+#ifndef ETTERCAP_OS_MINGW_H_AE69F8372F034AD09C83FD3F3D9EE748
+#define ETTERCAP_OS_MINGW_H_AE69F8372F034AD09C83FD3F3D9EE748
 
 /* This file is *not* MingW specific, but Ettercap requires gcc.
  * So that leaves other Win32 compilers out.

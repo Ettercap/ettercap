@@ -1,7 +1,5 @@
-
-
-#ifndef EC_INJECT_H
-#define EC_INJECT_H
+#ifndef ETTERCAP_INJECT_H_6A0E178860834278BF8E7881D2CD7C43
+#define ETTERCAP_INJECT_H_6A0E178860834278BF8E7881D2CD7C43
 
 #include <ec_packet.h>
 #include <ec_conntrack.h>

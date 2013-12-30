@@ -76,6 +76,7 @@ endif(CMAKE_USE_PTHREADS_INIT)
 ## Thats all with packages, now we are on our own :(
 
 include(CheckFunctionExists)
+include(CheckLibraryExists)
 include(CheckIncludeFile)
 
 # Iconv
@@ -98,7 +99,7 @@ if(ENABLE_PLUGINS)
 #        set(HAVE_PLUGINS 1)
 #        set(EC_LIBS ${EC_LIBS} ${HAVE_LTDL})
 #    endif(HAVE_LTDL)
-    CHECK_FUNCTION_EXISTS(dlopen HAVE_DLOPEN)
+    CHECK_LIBRARY_EXISTS(dl dlopen "dlfcn.h" HAVE_DLOPEN)
     if(HAVE_DLOPEN)
         set(HAVE_PLUGINS 1)
     else(HAVE_DLOPEN)
@@ -144,8 +145,8 @@ CHECK_FUNCTION_EXISTS(strtok_r HAVE_STRTOK_R)
 CHECK_FUNCTION_EXISTS(select HAVE_SELECT)
 CHECK_FUNCTION_EXISTS(scandir HAVE_SCANDIR)
 
-CHECK_FUNCTION_EXISTS(strlcat HAVE_STRLCAT)
-CHECK_FUNCTION_EXISTS(strlcpy HAVE_STRLCPY)
+CHECK_LIBRARY_EXISTS(bsd strlcat "bsd/string.h" HAVE_STRLCAT)
+CHECK_LIBRARY_EXISTS(bsd strlcpy "bsd/string.h" HAVE_STRLCPY)
 CHECK_FUNCTION_EXISTS(strsep HAVE_STRSEP)
 CHECK_FUNCTION_EXISTS(strcasestr HAVE_STRCASESTR)
 CHECK_FUNCTION_EXISTS(memmem HAVE_MEMMEM)

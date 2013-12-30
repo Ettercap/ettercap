@@ -1,5 +1,5 @@
-#ifndef EC_STATS_H
-#define EC_STATS_H
+#ifndef ETTERCAP_STATS_H
+#define ETTERCAP_STATS_H
 
 #include <pcap.h>
 

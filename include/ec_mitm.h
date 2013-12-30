@@ -1,8 +1,5 @@
-
-
-#ifndef EC_MITM_H
-#define EC_MITM_H
-
+#ifndef ETTERCAP_MITM_H
+#define ETTERCAP_MITM_H
 
 struct mitm_method {
    char *name;

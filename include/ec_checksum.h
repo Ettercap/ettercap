@@ -1,7 +1,5 @@
-
-
-#ifndef EC_CHECKSUM_H
-#define EC_CHECKSUM_H
+#ifndef ETTERCAP_CHECKSUM_H
+#define ETTERCAP_CHECKSUM_H
 
 #include <ec_packet.h>
 

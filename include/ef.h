@@ -1,7 +1,5 @@
-
-
-#ifndef EF_H
-#define EF_H
+#ifndef ETTERFILTER_H
+#define ETTERFILTER_H
 
 #include <config.h>
 

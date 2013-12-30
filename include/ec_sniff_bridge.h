@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SNIFF_BRIDGE_H
-#define EC_SNIFF_BRIDGE_H
+#ifndef ETTERCAP_SNIFF_BRIDGE_H
+#define ETTERCAP_SNIFF_BRIDGE_H
 
 #include <ec_packet.h>
 

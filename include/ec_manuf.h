@@ -1,7 +1,5 @@
-
-
-#ifndef EC_MANUF_H
-#define EC_MANUF_H
+#ifndef ETTERCAP_MANUF_H
+#define ETTERCAP_MANUF_H
 
 EC_API_EXTERN int manuf_init(void);
 EC_API_EXTERN char * manuf_search(const char *m);

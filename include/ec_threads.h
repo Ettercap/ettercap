@@ -1,7 +1,5 @@
-
-
-#ifndef EC_THREADS_H
-#define EC_THREADS_H
+#ifndef ETTERCAP_THREADS_H
+#define ETTERCAP_THREADS_H
 
 #include <ec_stdint.h>
 #include <pthread.h>

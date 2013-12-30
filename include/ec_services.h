@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SERVICES_H
-#define EC_SERVICES_H
+#ifndef ETTERCAP_SERVICES_H
+#define ETTERCAP_SERVICES_H
 
 EC_API_EXTERN int services_init(void);
 EC_API_EXTERN char * service_search(u_int32 serv, u_int8 proto);

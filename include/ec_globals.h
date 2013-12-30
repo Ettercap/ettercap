@@ -1,7 +1,5 @@
-
-
-#ifndef EC_GLOBALS_H
-#define EC_GLOBALS_H
+#ifndef ETTERCAP_GLOBALS_H
+#define ETTERCAP_GLOBALS_H
 
 #include <ec_sniff.h>
 #include <ec_inet.h>

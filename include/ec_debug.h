@@ -1,7 +1,5 @@
-
-
-#if defined (DEBUG) && !defined(EC_DEBUG_H)
-#define EC_DEBUG_H
+#if defined(DEBUG) && !defined(ETTERCAP_DEBUG_H)
+#define ETTERCAP_DEBUG_H
 
 EC_API_EXTERN void debug_init(void);
 EC_API_EXTERN void debug_msg(const char *message, ...);

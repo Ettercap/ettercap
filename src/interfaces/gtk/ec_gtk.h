@@ -1,7 +1,5 @@
-
-
-#ifndef EC_GTK_H
-#define EC_GTK_H
+#ifndef ETTERCAP_GTK_H
+#define ETTERCAP_GTK_H
 #define G_DISABLE_CONST_RETURNS
 #include <gtk/gtk.h>
 

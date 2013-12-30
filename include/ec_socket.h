@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SOCKET_H
-#define EC_SOCKET_H
+#ifndef ETTERCAP_SOCKET_H
+#define ETTERCAP_SOCKET_H
 
 /* The never ending errno problems... */
 #if defined(OS_WINDOWS) && !defined(OS_CYGWIN)

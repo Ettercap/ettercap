@@ -1,7 +1,5 @@
-
-
-#ifndef EC_INTERFACES_H
-#define EC_INTERFACES_H
+#ifndef ETTERCAP_INTERFACES_H
+#define ETTERCAP_INTERFACES_H
 
 /* colors for curses interface */
 struct curses_color {

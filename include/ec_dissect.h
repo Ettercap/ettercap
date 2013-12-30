@@ -1,7 +1,5 @@
-
-
-#ifndef EC_DISSECT_H
-#define EC_DISSECT_H
+#ifndef ETTERCAP_DISSECT_H
+#define ETTERCAP_DISSECT_H
 
 #include <ec_packet.h>
 #include <ec_session.h>

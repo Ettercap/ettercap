@@ -1,6 +1,5 @@
-
-#ifndef EC_PROTO_H
-#define EC_PROTO_H
+#ifndef ETTERCAP_PROTO_H
+#define ETTERCAP_PROTO_H
 
 #include <ec_inet.h>
 

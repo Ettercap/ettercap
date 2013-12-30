@@ -1,7 +1,5 @@
-
-
-#ifndef EC_INJECT_H
-#define EC_INJECT_H
+#ifndef ETTERCAP_INJECT_H
+#define ETTERCAP_INJECT_H
 
 #include <ec_packet.h>
 #include <ec_conntrack.h>

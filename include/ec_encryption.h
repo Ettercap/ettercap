@@ -1,7 +1,5 @@
-
-
-#ifndef EC_ENCRYPTION_H
-#define EC_ENCRYPTION_H
+#ifndef ETTERCAP_ENCRYPTION_H
+#define ETTERCAP_ENCRYPTION_H
 
 #include <ec_inet.h>
 

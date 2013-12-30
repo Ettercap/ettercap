@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SSLWRAP_H
-#define EC_SSLWRAP_H
+#ifndef ETTERCAP_SSLWRAP_H
+#define ETTERCAP_SSLWRAP_H
 
 #include <ec_decode.h>
 #include <ec_threads.h>

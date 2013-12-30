@@ -1,7 +1,5 @@
-
-
-#ifndef EL_H
-#define EL_H
+#ifndef ETTERLOG_H
+#define ETTERLOG_H
 
 #include <config.h>
 

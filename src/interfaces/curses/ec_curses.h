@@ -1,7 +1,5 @@
-
-
-#ifndef EC_CURSES_H
-#define EC_CURSES_H
+#ifndef ETTERCAP_CURSES_H
+#define ETTERCAP_CURSES_H
 
 #include <wdg.h>
 

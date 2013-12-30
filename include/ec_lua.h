@@ -1,5 +1,5 @@
-#ifndef EC_LUA_H
-#define EC_LUA_H
+#ifndef ETTERCAP_LUA_H
+#define ETTERCAP_LUA_H
 #include <ec_packet.h>
 #define ETTERCAP_LUA_MODULE "ettercap"
 #define ETTERCAP_C_API_LUA_MODULE "ettercap_c"

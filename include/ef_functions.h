@@ -1,7 +1,5 @@
-
-
-#ifndef EF_FUNCTIONS_H
-#define EF_FUNCTIONS_H
+#ifndef ETTERFILTER_FUNCTIONS_H
+#define ETTERFILTER_FUNCTIONS_H
 
 #include <ec_filter.h>
 

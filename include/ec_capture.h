@@ -1,7 +1,5 @@
-
-
-#ifndef EC_CAPTURE_H
-#define EC_CAPTURE_H
+#ifndef ETTERCAP_CAPTURE_H
+#define ETTERCAP_CAPTURE_H
 
 #include <ec.h>
 #include <ec_threads.h>

@@ -18,8 +18,10 @@
 struct hosts_group nadv_group_one;
 struct hosts_group nadv_group_two;
 
+#if 0
 static LIST_HEAD(,ip_list) ping_list_one;
 static LIST_HEAD(,ip_list) ping_list_two;
+#endif
 
 u_int8 flags;
 #define ND_ONEWAY    ((u_int8)(1<<0))
@@ -32,9 +34,12 @@ static void nadv_poison_stop(void);
 EC_THREAD_FUNC(nadv_poisoner);
 static int create_list(void);
 static int create_list_silent(void);
-static void catch_response(struct packet_object *po);
 static void nadv_antidote(void);
+
+#if 0
+static void catch_response(struct packet_object *po);
 static void record_mac(struct packet_object *po);
+#endif
 
 /* c0d3 */
 
@@ -332,6 +337,38 @@ static int create_list_silent(void)
    return ESUCCESS;
 }
 
+static void nadv_antidote(void)
+{
+   struct hosts_list *h1, *h2;
+   int i;
+
+   DEBUG_MSG("nadv_antidote");
+
+   /* do it twice */
+   for(i = 0; i < 2; i++) {
+      LIST_FOREACH(h1, &nadv_group_one, next) {
+         LIST_FOREACH(h2, &nadv_group_two, next) {
+            if(!ip_addr_cmp(&h1->ip, &h2->ip))
+               continue;
+
+            send_icmp6_nadv(&h1->ip, &h2->ip, h1->mac, flags);
+            if(!(flags & ND_ONEWAY))
+               send_icmp6_nadv(&h2->ip, &h1->ip, h2->mac, flags & ND_ROUTER);
+
+            usleep(GBL_CONF->ndp_poison_send_delay);
+         }
+      }
+
+      sleep(1);
+   }
+}
+
+/* 
+ * This function has been written by the initial author but 
+ * doesn't seem to be necessary as ND poisoning has been brought
+ * to a working state - keeping the code just in case - 2013-12-31
+ */
+#if 0
 static void catch_response(struct packet_object *po)
 {
    struct hosts_list *h;
@@ -370,33 +407,14 @@ static void catch_response(struct packet_object *po)
 
    return;
 }
+#endif
 
-static void nadv_antidote(void)
-{
-   struct hosts_list *h1, *h2;
-   int i;
-
-   DEBUG_MSG("nadv_antidote");
-
-   /* do it twice */
-   for(i = 0; i < 2; i++) {
-      LIST_FOREACH(h1, &nadv_group_one, next) {
-         LIST_FOREACH(h2, &nadv_group_two, next) {
-            if(!ip_addr_cmp(&h1->ip, &h2->ip))
-               continue;
-
-            send_icmp6_nadv(&h1->ip, &h2->ip, h1->mac, flags);
-            if(!(flags & ND_ONEWAY))
-               send_icmp6_nadv(&h2->ip, &h1->ip, h2->mac, flags & ND_ROUTER);
-
-            usleep(GBL_CONF->ndp_poison_send_delay);
-         }
-      }
-
-      sleep(1);
-   }
-}
-
+/* 
+ * This function has been written by the initial author but 
+ * doesn't seem to be necessary as ND poisoning has been brought
+ * to a working state - keeping the code just in case - 2013-12-31
+ */
+#if 0
 static void record_mac(struct packet_object *po)
 {
    struct ip_addr *ip;
@@ -427,4 +445,4 @@ static void record_mac(struct packet_object *po)
       }
    }
 }
-
+#endif

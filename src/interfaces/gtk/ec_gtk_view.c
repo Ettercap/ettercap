@@ -298,7 +298,7 @@ void gtkui_vis_method(void)
    GList *lang_list = NULL;
    GtkWidget *hbox, *lang_combo, *label;
    char encoding[50], def_lang[75];
-   G_CONST_RETURN char *local_lang;
+   const char *local_lang;
 
    DEBUG_MSG("gtk_vis_method");
 

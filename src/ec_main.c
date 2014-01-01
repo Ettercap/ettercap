@@ -40,6 +40,7 @@
 #include <ec_conf.h>
 #include <ec_mitm.h>
 #include <ec_sslwrap.h>
+#include <ec_utils.h>
 #ifdef HAVE_EC_LUA
 #include <ec_lua.h>
 #endif
@@ -49,7 +50,6 @@
 
 /* protos */
 
-static void drop_privs(void);
 static void time_check(void);
 
 /*******************************************/
@@ -192,56 +192,6 @@ int main(int argc, char *argv[])
 
    return 0; //Never reaches here
 }
-
-
-/* 
- * drop root privs 
- */
-static void drop_privs(void)
-{
-   u_int uid, gid;
-   char *var;
-
-#ifdef OS_WINDOWS
-   /* do not drop privs under windows */
-   return;
-#endif
-   
-   /* are we root ? */
-   if (getuid() != 0)
-      return;
-
-   /* get the env variable for the UID to drop privs to */
-   var = getenv("EC_UID");
-   
-   /* if the EC_UID variable is not set, default to GBL_CONF->ec_uid (nobody) */
-   if (var != NULL)
-      uid = atoi(var);
-   else
-      uid = GBL_CONF->ec_uid;
-   
-   /* get the env variable for the GID to drop privs to */
-   var = getenv("EC_GID");
-   
-   /* if the EC_UID variable is not set, default to GBL_CONF->ec_gid (nobody) */
-   if (var != NULL)
-      gid = atoi(var);
-   else
-      gid = GBL_CONF->ec_gid;
-   
-   DEBUG_MSG("drop_privs: setuid(%d) setgid(%d)", uid, gid);
-   
-   /* drop to a good uid/gid ;) */
-   if ( setgid(gid) < 0 )
-      ERROR_MSG("setgid()");
-   
-   if ( seteuid(uid) < 0 )
-      ERROR_MSG("seteuid()");
-
-   DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
-   USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() ); 
-}
-
 
 static void time_check(void)
 {

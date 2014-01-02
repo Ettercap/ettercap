@@ -156,8 +156,6 @@ char **parse_iflist(char *list)
  */
 void regain_privs(void)
 {
-   u_int uid, gid;
-   char *var;
    DEBUG_MSG("ATEXIT: regain_privs");
 
 #ifdef OS_WINDOWS

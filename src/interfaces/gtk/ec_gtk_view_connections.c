@@ -612,6 +612,7 @@ static void gtkui_connection_data_split(void)
    GtkTextIter iter;
    char tmp[MAX_ASCII_ADDR_LEN];
    char title[MAX_ASCII_ADDR_LEN+6];
+   gint scroll_split = 1;
 
    DEBUG_MSG("gtk_connection_data_split");
 
@@ -745,7 +746,7 @@ static void gtkui_connection_data_split(void)
       gtkui_page_present(data_window);
 
    /* after widgets are drawn, scroll to bottom */
-   g_timeout_add(500, gtkui_connections_scroll, (gpointer)1);
+   g_timeout_add(500, gtkui_connections_scroll, (gpointer)&scroll_split);
 
    /* print the old data */
    connbuf_print(&curr_conn->data, split_print);
@@ -919,6 +920,7 @@ static void gtkui_connection_data_join(void)
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
    char title[TITLE_LEN];
+   gint scroll_join = 2;
 
    DEBUG_MSG("gtk_connection_data_join");
 
@@ -999,7 +1001,7 @@ static void gtkui_connection_data_join(void)
       gtkui_page_present(data_window);
 
    /* after widgets are drawn, scroll to bottom */
-   g_timeout_add(500, gtkui_connections_scroll, (gpointer)2);
+   g_timeout_add(500, gtkui_connections_scroll, (gpointer)&scroll_join);
 
    /* print the old data */
    connbuf_print(&curr_conn->data, join_print);
@@ -1010,7 +1012,12 @@ static void gtkui_connection_data_join(void)
 
 static gboolean gtkui_connections_scroll(gpointer data)
 {
-   if((int)data == 1 && textview1 && endmark1 && textview2 && endmark2) {
+   gint *type = data;
+
+   if (type == NULL)
+       return FALSE;
+
+   if(*type == 1 && textview1 && endmark1 && textview2 && endmark2) {
       /* scroll split data views to bottom */
       gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview1), endmark1, 0, FALSE, 0, 0);
       gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview2), endmark2, 0, FALSE, 0, 0); 

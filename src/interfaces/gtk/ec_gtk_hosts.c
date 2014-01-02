@@ -173,6 +173,9 @@ void gtkui_host_list(void)
    GtkWidget *scrolled, *treeview, *vbox, *hbox, *button;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
+   gint host_delete = HOST_DELETE;
+   gint host_target1 = HOST_TARGET1;
+   gint host_target2 = HOST_TARGET2;
 
    DEBUG_MSG("gtk_host_list");
 
@@ -230,17 +233,17 @@ void gtkui_host_list(void)
 
    button = gtk_button_new_with_mnemonic("_Delete Host");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)HOST_DELETE);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)&host_delete);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("Add to Target _1");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)HOST_TARGET1);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)&host_target1);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("Add to Target _2");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)HOST_TARGET2);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)&host_target2);
    gtk_widget_show(button);
 
    gtk_widget_show(hosts_window);
@@ -324,9 +327,13 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
    GtkTreeModel *model;
    char tmp[MAX_ASCII_ADDR_LEN];
    struct hosts_list *hl = NULL;
+   gint *type = data;
 
    /* variable not used */
    (void) widget;
+
+   if (type == NULL)
+       return;
 
    model = GTK_TREE_MODEL (liststore);
 
@@ -336,7 +343,7 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
          gtk_tree_model_get_iter(model, &iter, list->data);
          gtk_tree_model_get(model, &iter, 3, &hl, -1);
 
-         switch((int)data) {
+         switch(*type) {
             case HOST_DELETE:
                DEBUG_MSG("gtkui_button_callback: delete host");
                gtk_list_store_remove(GTK_LIST_STORE (liststore), &iter);

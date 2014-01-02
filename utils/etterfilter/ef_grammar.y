@@ -27,6 +27,9 @@
 
 #define YYERROR_VERBOSE
 
+/* declare yylex here as it's only missing in bison */
+int yylex(void);
+
 %}
  
 /* 

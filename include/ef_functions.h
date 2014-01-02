@@ -26,7 +26,6 @@ EF_API_EXTERN void print_fop(struct filter_op *fop, u_int32 eip);
 
 /* ef_syntax && ef_grammar */
 EF_API_EXTERN int yyerror(const char *);
-EF_API_EXTERN int yylex(void);
 
 /* ef_tables */
 EF_API_EXTERN void load_tables(void);

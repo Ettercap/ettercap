@@ -96,7 +96,7 @@ static EC_THREAD_FUNC(smurfer)
    struct ip_addr *ip;
    struct ip_list *i, *itmp;
    struct hosts_list *h, *htmp;
-   LIST_HEAD(ip_list_t, ip_list) *ips;
+   LIST_HEAD(ip_list_t, ip_list) *ips = NULL;
 
    u_int16 proto;
    int (*icmp_send)(struct ip_addr*, struct ip_addr*);

@@ -546,40 +546,40 @@ static void text_stats(void)
                                                 GBL_STATS->ps_drop,
                                                 GBL_STATS->ps_ifdrop);
    DEBUG_MSG("text_stats (BH) : [%lu][%lu] p/s -- [%lu][%lu] b/s", 
-         (unsigned long)GBL_STATS->bh.rate_adv, (unsigned long)GBL_STATS->bh.rate_worst, 
-         (unsigned long)GBL_STATS->bh.thru_adv, (unsigned long)GBL_STATS->bh.thru_worst); 
+         GBL_STATS->bh.rate_adv, GBL_STATS->bh.rate_worst, 
+         GBL_STATS->bh.thru_adv, GBL_STATS->bh.thru_worst); 
    
    DEBUG_MSG("text_stats (TH) : [%lu][%lu] p/s -- [%lu][%lu] b/s", 
-         (unsigned long)GBL_STATS->th.rate_adv, (unsigned long)GBL_STATS->th.rate_worst, 
-         (unsigned long)GBL_STATS->th.thru_adv, (unsigned long)GBL_STATS->th.thru_worst); 
+         GBL_STATS->th.rate_adv, GBL_STATS->th.rate_worst, 
+         GBL_STATS->th.thru_adv, GBL_STATS->th.thru_worst); 
    
-   DEBUG_MSG("text_stats (queue) : %lu %lu", (unsigned long)GBL_STATS->queue_curr, (unsigned long)GBL_STATS->queue_max); 
+   DEBUG_MSG("text_stats (queue) : %lu %lu", GBL_STATS->queue_curr, GBL_STATS->queue_max); 
   
    
-   fprintf(stdout, "\n Received packets    : %8lld\n", GBL_STATS->ps_recv);
-   fprintf(stdout,   " Dropped packets     : %8lld  %.2f %%\n", GBL_STATS->ps_drop,
+   fprintf(stdout, "\n Received packets    : %8llu\n", GBL_STATS->ps_recv);
+   fprintf(stdout,   " Dropped packets     : %8llu  %.2f %%\n", GBL_STATS->ps_drop,
          (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv : 0 );
-   fprintf(stdout,   " Forwarded           : %8lld  bytes: %8lld\n\n", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
+   fprintf(stdout,   " Forwarded           : %8llu  bytes: %8llu\n\n", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
    
-   fprintf(stdout,   " Current queue len   : %lu/%lu\n", (unsigned long)GBL_STATS->queue_curr, (unsigned long)GBL_STATS->queue_max);
+   fprintf(stdout,   " Current queue len   : %lu/%lu\n", GBL_STATS->queue_curr, GBL_STATS->queue_max);
    fprintf(stdout,   " Sampling rate       : %d\n\n", GBL_CONF->sampling_rate);
    
-   fprintf(stdout,   " Bottom Half received packet : pck: %8lld  byte: %8lld\n", 
+   fprintf(stdout,   " Bottom Half received packet : pck: %8llu  byte: %8llu\n", 
          GBL_STATS->bh.pck_recv, GBL_STATS->bh.pck_size);
-   fprintf(stdout,   " Top Half received packet    : pck: %8lld  byte: %8lld\n", 
+   fprintf(stdout,   " Top Half received packet    : pck: %8llu  byte: %8llu\n", 
          GBL_STATS->th.pck_recv, GBL_STATS->th.pck_size);
    fprintf(stdout,   " Interesting packets         : %.2f %%\n\n",
          (GBL_STATS->bh.pck_recv) ? (float)GBL_STATS->th.pck_recv * 100 / GBL_STATS->bh.pck_recv : 0 );
 
    fprintf(stdout,   " Bottom Half packet rate : worst: %8lu  adv: %8lu p/s\n", 
-         (unsigned long)GBL_STATS->bh.rate_worst, (unsigned long)GBL_STATS->bh.rate_adv);
+         GBL_STATS->bh.rate_worst, GBL_STATS->bh.rate_adv);
    fprintf(stdout,   " Top Half packet rate    : worst: %8lu  adv: %8lu p/s\n\n", 
-         (unsigned long)GBL_STATS->th.rate_worst, (unsigned long)GBL_STATS->th.rate_adv);
+         GBL_STATS->th.rate_worst, GBL_STATS->th.rate_adv);
    
    fprintf(stdout,   " Bottom Half thruoutput  : worst: %8lu  adv: %8lu b/s\n", 
-         (unsigned long)GBL_STATS->bh.thru_worst, (unsigned long)GBL_STATS->bh.thru_adv);
+         GBL_STATS->bh.thru_worst, GBL_STATS->bh.thru_adv);
    fprintf(stdout,   " Top Half thruoutput     : worst: %8lu  adv: %8lu b/s\n\n", 
-         (unsigned long)GBL_STATS->th.thru_worst, (unsigned long)GBL_STATS->th.thru_adv);
+         GBL_STATS->th.thru_worst, GBL_STATS->th.thru_adv);
 }
 
 /*

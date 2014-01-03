@@ -199,12 +199,12 @@ static EC_THREAD_FUNC(http_accept_thread);
 #define PO_FROMSSLSTRIP ((u_int16)(1<<13))
 
 struct plugin_ops sslstrip_ops = {
-	ettercap_version:	EC_VERSION, /* must match global EC_VERSION */
-	name:			"sslstrip",
-	info:			"SSLStrip plugin",
-	version:		"1.1",
-	init:			&sslstrip_init,
-	fini:			&sslstrip_fini,
+	.ettercap_version =	EC_VERSION, /* must match global EC_VERSION */
+	.name =			"sslstrip",
+	.info =			"SSLStrip plugin",
+	.version =		"1.1",
+	.init =			&sslstrip_init,
+	.fini =			&sslstrip_fini,
 };
 
 int plugin_load(void *handle)

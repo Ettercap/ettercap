@@ -52,7 +52,6 @@ static GtkWidget     *progress_bar = NULL;
 
 /* proto */
 
-void set_gtk_interface(void);
 void gtkui_start(void);
 
 static void gtkui_init(void);
@@ -345,10 +344,10 @@ static void gtkui_update(int target)
 {
     switch (target) {
         case UI_UPDATE_HOSTLIST:
-            gtk_idle_add(gtkui_refresh_host_list,NULL);
+            gtk_idle_add((GtkFunction)gtkui_refresh_host_list,NULL);
             break;
         case UI_UPDATE_PLUGINLIST:
-            gtk_idle_add(gtkui_refresh_plugin_list, NULL);
+            gtk_idle_add((GtkFunction)gtkui_refresh_plugin_list, NULL);
             break;
     }
 
@@ -620,22 +619,22 @@ static void gtkui_setup(void)
    char *path = NULL;
 
    GtkItemFactoryEntry file_menu[] = {
-      { "/_File",         "<shift>F",   NULL,             0, "<Branch>" },
+      { "/_File",         "<shift>F",   NULL,             0, "<Branch>", NULL },
       { "/File/_Open",    "<control>O", gtkui_file_open,  0, "<StockItem>", GTK_STOCK_OPEN },
       { "/File/_Save",    "<control>S", gtkui_file_write, 0, "<StockItem>", GTK_STOCK_SAVE },
-      { "/File/sep1",     NULL,         NULL,             0, "<Separator>" },
+      { "/File/sep1",     NULL,         NULL,             0, "<Separator>", NULL },
       { "/File/E_xit",    "<control>x", gtkui_exit,       0, "<StockItem>", GTK_STOCK_QUIT },
-      { "/_Sniff",        "<shift>S",   NULL,             0, "<Branch>" },
+      { "/_Sniff",        "<shift>S",   NULL,             0, "<Branch>", NULL },
       { "/Sniff/Unified sniffing...",  "<shift>U", gtkui_unified_sniff, 0, "<StockItem>", GTK_STOCK_DND },
       { "/Sniff/Bridged sniffing...",  "<shift>B", gtkui_bridged_sniff, 0, "<StockItem>", GTK_STOCK_DND_MULTIPLE },
-      { "/Sniff/sep2",    NULL,         NULL,             0, "<Separator>" },
+      { "/Sniff/sep2",    NULL,         NULL,             0, "<Separator>", NULL },
       { "/Sniff/Set pcap filter...",    "p",       gtkui_pcap_filter,   0, "<StockItem>", GTK_STOCK_PREFERENCES },
-      { "/_Options",                    "<shift>O", NULL, 0, "<Branch>" },
-      { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>" },
-      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" },
-      { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>"}
+      { "/_Options",                    "<shift>O", NULL, 0, "<Branch>", NULL },
+      { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>", NULL },
+      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>", NULL },
+      { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>", NULL}
 #ifndef OS_WINDOWS
-     ,{"/_?",          NULL,         NULL,             0, "<Branch>" },
+     ,{"/_?",          NULL,         NULL,             0, "<Branch>", NULL },
       {"/?/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
 #endif
    };

@@ -23,7 +23,7 @@
 #include <wdg.h>
 #include <ec_curses.h>
 #include <ec_format.h>
-#include <ec_parser.h>
+#include <ec_utils.h>
 #include <ec_encryption.h>
 
 /* proto */

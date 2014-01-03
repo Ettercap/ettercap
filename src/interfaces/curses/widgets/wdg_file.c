@@ -46,7 +46,7 @@ struct wdg_file_handle {
    struct dirent **namelist;
    char curpath[PATH_MAX];
    char initpath[PATH_MAX];
-   void (*callback)(char *path, char *file);
+   void (*callback)(const char *path, char *file);
 };
 
 /* PROTOS */
@@ -66,7 +66,7 @@ static void wdg_file_menu_create(struct wdg_object *wo);
 
 static int wdg_file_virtualize(int key);
 static int wdg_file_driver(struct wdg_object *wo, int key, struct wdg_mouse_event *mouse);
-static void wdg_file_callback(struct wdg_object *wo, char *path, char *file);
+static void wdg_file_callback(struct wdg_object *wo, const char *path, char *file);
 
 /*******************************************/
 
@@ -565,10 +565,10 @@ static void wdg_file_menu_create(struct wdg_object *wo)
  * destroy the dialog and
  * call the function associated to the file open dialog
  */
-static void wdg_file_callback(struct wdg_object *wo, char *path, char *file)
+static void wdg_file_callback(struct wdg_object *wo, const char *path, char *file)
 {
    WDG_WO_EXT(struct wdg_file_handle, ww);
-   void (*callback)(char *, char *);
+   void (*callback)(const char *, char *);
    char *p, *f;
    
    WDG_DEBUG_MSG("wdg_file_callback");

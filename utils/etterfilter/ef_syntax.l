@@ -27,7 +27,6 @@
 /* from bison */
 #include <ef_grammar.h>
 
-#define YY_NO_UNPUT
 
 %}
 
@@ -38,6 +37,8 @@
  */
  
 %option  noyywrap
+%option  nounput
+%option  noinput
 
 OFFSET         [[:alnum:]]+\.[A-Za-z]+[\.[A-Za-z]+]*
 FUNCTION       [a-z_]+\((.*\".*\"[^)]*)*\)

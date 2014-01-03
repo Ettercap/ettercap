@@ -21,6 +21,7 @@
 
 
 #include <ec.h>
+#include <ec_parser.h>
 #include <ec_interfaces.h>
 #include <ec_sniff.h>
 #include <ec_send.h>
@@ -47,7 +48,6 @@
 /* protos... */
 
 static void ec_usage(void);
-void parse_options(int argc, char **argv);
 
 /*****************************************/
 
@@ -283,13 +283,13 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'i':
-		  set_iface(optarg);
+  set_iface(optarg);
                   break;
                   
          case 'I':
                   /* this option is only useful in the text interface */
-	          set_lifaces();
-		  select_text_interface();
+          set_lifaces();
+  select_text_interface();
                   break;
 
          case 'Y':

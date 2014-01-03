@@ -203,6 +203,13 @@ set_target_properties(lib_ettercap PROPERTIES
 
 if (NOT LIBRARY_BUILD)
 	add_executable(ettercap ec_parser.c ec_interfaces.c ec_main.c)
+   include_directories( interfaces/daemon interfaces/text )
+   if (ENABLE_CURSES)
+      include_directories( interfaces/curses interfaces/curses/widgets )
+   endif (ENABLE_CURSES)
+   if (ENABLE_GTK)
+      include_directories( interfaces/gtk )
+   endif(ENABLE_GTK)
 	target_link_libraries(ettercap ec_interfaces lib_ettercap)
 	set_target_properties(ettercap PROPERTIES 
   	INSTALL_RPATH ${INSTALL_LIBDIR}

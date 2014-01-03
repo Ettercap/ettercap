@@ -25,17 +25,17 @@
 #include <ec_scan.h>
 #include <ec_mitm.h>
 #include <ec_plugins.h>
+#include <ec_daemon.h>
 
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <time.h>
 
+/* globals */
 static int fd;
 
 /* proto */
-
-void set_daemon_interface(void);
 void daemon_interface(void);
 static void daemon_init(void);
 static void daemon_cleanup(void);

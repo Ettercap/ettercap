@@ -22,6 +22,7 @@ extern GtkWidget *notebook;
 extern GtkWidget *main_menu;
 extern GTimer *progress_timer;
 
+extern void set_gtk_interface(void);
 extern void gtkui_message(const char *msg);
 extern void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
 extern void gtkui_exit(void);

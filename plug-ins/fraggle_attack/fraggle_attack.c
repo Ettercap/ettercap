@@ -122,8 +122,8 @@ static EC_THREAD_FUNC(fraggler)
 
       LIST_FOREACH_SAFE(h, &GBL_HOSTLIST, next, htmp)
       	  if(ntohs(h->ip.addr_type) == proto) {
-            	send_udp(ip, &h->ip, &h->mac, port_echo, port_echo, payload, length);
-            	send_udp(ip, &h->ip, &h->mac, port_chargen, port_chargen, payload, length);
+            	send_udp(ip, &h->ip, h->mac, port_echo, port_echo, payload, length);
+            	send_udp(ip, &h->ip, h->mac, port_chargen, port_chargen, payload, length);
             }
 
       usleep(1000*1000/GBL_CONF->sampling_rate);

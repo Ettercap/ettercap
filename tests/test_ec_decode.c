@@ -46,7 +46,7 @@ Suite* ts_test_decode (void) {
   return suite;
 }
 
-int main (int argc, char *argv[]) {
+int main () {
   int number_failed;
   Suite *suite = ts_test_decode();
   SRunner *runner = srunner_create(suite);

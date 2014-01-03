@@ -20,7 +20,7 @@
 */
 
 #include <ec.h>
-#include <ec_parser.h>
+#include <ec_utils.h>
 #include <ec_sniff.h>
 #include <ec_sniff_unified.h>
 #include <ec_sniff_bridge.h>

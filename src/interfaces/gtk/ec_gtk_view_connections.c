@@ -1259,7 +1259,7 @@ static void gtkui_connection_inject_file(void)
    GtkWidget *dialog, *label, *vbox, *hbox;
    GtkWidget *button1, *button2, *button, *entry;
    char tmp[MAX_ASCII_ADDR_LEN];
-   char *filename = NULL;
+   const char *filename = NULL;
    gint response = 0;
    
    DEBUG_MSG("gtk_connection_inject_file");

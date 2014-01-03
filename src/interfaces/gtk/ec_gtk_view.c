@@ -22,7 +22,7 @@
 #include <ec.h>
 #include <ec_gtk.h>
 #include <ec_format.h>
-#include <ec_parser.h>
+#include <ec_utils.h>
 #include <ec_encryption.h>
 
 /* proto */
@@ -298,7 +298,7 @@ void gtkui_vis_method(void)
    GList *lang_list = NULL;
    GtkWidget *hbox, *lang_combo, *label;
    char encoding[50], def_lang[75];
-   G_CONST_RETURN char *local_lang;
+   const char *local_lang;
 
    DEBUG_MSG("gtk_vis_method");
 

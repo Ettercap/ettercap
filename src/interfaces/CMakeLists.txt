@@ -8,6 +8,7 @@ set(EC_TEXT_SRC
 include_directories(text)
 
 set(EC_DAEMON_SRC daemon/ec_daemon.c)
+include_directories(daemon)
 
 if(ENABLE_CURSES)
     set(EC_CURSES_SRC 

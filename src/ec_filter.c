@@ -791,7 +791,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
       FATAL_MSG("Cannot read the file into memory");
  
    /* check if we are overflowing pcap buffer */
-   if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + size)
+   if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + (unsigned)size)
       JIT_FAULT("injected file too long");
          
    /* copy the file into the buffer */

@@ -109,6 +109,7 @@ FUNC_DECODER(dissector_dns)
    (void) DECODE_DATA; 
    (void) DECODE_DATALEN;
    (void) DECODED_LEN;
+   (void) ttl;
    
    DEBUG_MSG("DNS --> UDP 53  dissector_dns");
    

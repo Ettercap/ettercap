@@ -10,6 +10,7 @@
 #define CURSES_LOCK(x) do { pthread_mutex_lock(&x); } while (0)
 #define CURSES_UNLOCK(x) do { pthread_mutex_unlock(&x); } while (0)
 
+extern void set_curses_interface(void);
 extern void curses_input(const char *title, char *input, size_t n, void (*callback)(void));
 extern void curses_message(const char *msg);
 

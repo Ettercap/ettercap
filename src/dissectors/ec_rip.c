@@ -150,7 +150,7 @@ FUNC_DECODER(dissector_rip)
                     return NULL;
             }
 
-            int rip_packet_len = ntohs(ripm->packet_len);
+            uint16_t rip_packet_len = ntohs(ripm->packet_len);
 
             /* validate the packet */
             if (rip_packet_len > (PACKET->DATA.len - RIP_HEADER_SIZE - \

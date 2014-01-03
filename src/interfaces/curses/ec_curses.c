@@ -38,7 +38,6 @@ extern char *curses_version(void);
 
 /* proto */
 
-void set_curses_interface(void);
 static void curses_interface(void);
    
 static void curses_init(void);

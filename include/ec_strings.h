@@ -11,9 +11,13 @@
 
 #ifndef HAVE_STRLCAT
    #include <missing/strlcat.h>
+#else
+   #include <bsd/string.h>
 #endif
 #ifndef HAVE_STRLCPY 
    #include <missing/strlcpy.h>
+#else
+   #include <bsd/string.h>
 #endif
 #ifndef HAVE_STRSEP 
    #include <missing/strsep.h>

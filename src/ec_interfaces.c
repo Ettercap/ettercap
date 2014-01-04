@@ -20,9 +20,14 @@
 */
 
 #include <ec.h>
-#include <ec_curses.h>
+#ifdef HAVE_NCURSES
+   #include <ec_curses.h>
+#endif
 #include <ec_daemon.h>
-#include <ec_gtk.h>
+#ifdef HAVE_GTK
+   #include <ec_gtk.h>
+#endif
+
 #include <ec_text.h>
 
 /*******************************************/

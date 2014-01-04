@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SET_H
-#define EC_SET_H
+#ifndef ETTERCAP_SET_H_205ECBEC29244142BB36057508C71680
+#define ETTERCAP_SET_H_205ECBEC29244142BB36057508C71680
 
 EC_API_EXTERN void set_mitm(char *mitm);
 EC_API_EXTERN void set_onlymitm(void);

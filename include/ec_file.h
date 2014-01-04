@@ -1,7 +1,5 @@
-
-
-#ifndef EC_FILE_H
-#define EC_FILE_H
+#ifndef ETTERCAP_FILE_H_3CBFBCACDEA144E186D83FB7DA37647B
+#define ETTERCAP_FILE_H_3CBFBCACDEA144E186D83FB7DA37647B
 
 EC_API_EXTERN FILE * open_data(char *dir, char *file, char *mode);
 EC_API_EXTERN char * get_full_path(const char *dir, const char *file);

@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SCAN_H
-#define EC_SCAN_H
+#ifndef ETTERCAP_SCAN_H_3E82F02ED569476CAE3D05C37B2C8404
+#define ETTERCAP_SCAN_H_3E82F02ED569476CAE3D05C37B2C8404
 
 EC_API_EXTERN void build_hosts_list(void);
 EC_API_EXTERN void del_hosts_list(void);

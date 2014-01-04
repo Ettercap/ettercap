@@ -1,7 +1,5 @@
-
-
-#ifndef EC_STATS_H
-#define EC_STATS_H
+#ifndef ETTERCAP_STATS_H_44CDCAFDEC4B469E9D8180C804F13808
+#define ETTERCAP_STATS_H_44CDCAFDEC4B469E9D8180C804F13808
 
 /*
  * this struct contains all field to collect 

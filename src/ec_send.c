@@ -664,6 +664,72 @@ int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip)
    return c;
 }
 
+/*
+ * send IP packet with an unknown header option
+ * RFC2460 conforming hosts, respond with a ICMPv6 parameter problem 
+ * message even those not intended to respond to ICMP echos
+ */
+int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8* o_data, u_int32 o_len)
+{
+    libnet_ptag_t t;
+    struct libnet_in6_addr src, dst;
+    int c, h = 0;
+    libnet_t *l;
+
+    BUG_IF(GBL_LNET->lnet_IP6 == NULL);
+
+    l = GBL_LNET->lnet_IP6;
+
+    SEND_LOCK;
+
+    memcpy(&src, sip->addr, sizeof(src));
+    memcpy(&dst, tip->addr, sizeof(dst));
+
+    t = libnet_build_icmpv6_echo(ICMP6_ECHO_REQUEST,   /* type */
+                                 0,                    /* code */
+                                 0,                    /* checksum */
+                                 EC_MAGIC_16,          /* id */
+                                 0,                    /* sequence number */
+                                 NULL,                 /* data */
+                                 0,                    /* its size */
+                                 l,                    /* handle */
+                                 0);
+    ON_ERROR(t, -1, "libnet_build_icmpv6_echo: %s", libnet_geterror(l));
+    libnet_toggle_checksum(l, t, LIBNET_ON);
+
+    t = libnet_build_ipv6_destopts(IPPROTO_ICMPV6,             /* next header */
+                                   LIBNET_IPV6_DESTOPTS_H / 8, /* lenth */
+                                   o_data,                     /* payload */
+                                   o_len,                      /* payload length */
+                                   l,                          /* handle */
+                                   0);
+    ON_ERROR(t, -1, "libnet_build_ipv6_destopts: %s", libnet_geterror(l));
+
+    h = LIBNET_IPV6_DESTOPTS_H + o_len + LIBNET_ICMPV6_H;
+    t = libnet_build_ipv6(0,                /* tc */
+                          0,                /* flow label */
+                          h,                /* next header size */
+                          IPPROTO_DSTOPTS,  /* next header */
+                          64,               /* hop limit */
+                          src,              /* source */
+                          dst,              /* destination */
+                          NULL,             /* payload and size */
+                          0,
+                          l,                /* handle */
+                          0);               /* ptag */
+    ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(l));
+
+    c = libnet_write(l);
+    ON_ERROR(c, -1, "libnet_write: %s", libnet_geterror(l));
+
+    libnet_clear_packet(l);
+
+
+    SEND_UNLOCK;
+
+    return c;
+}
+
 /* 
  * Sends neighbor solicitation request (like arp request with ipv4)
  * macaddr parameter allows to add sender's mac address. This is an option for unicast requests.

@@ -538,6 +538,7 @@ static void scan_ip6_onlink(pthread_t pid)
        * IPv6 networks (global, link-local, ...)
        */
       send_icmp6_echo(&e->ip, &an);
+      send_icmp6_echo_opt(&e->ip, &an, IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN));
    }
 
    for (i=0; i<=GBL_CONF->icmp6_probe_delay * 1000; i++) {

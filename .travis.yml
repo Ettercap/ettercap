@@ -50,6 +50,8 @@ script:
 notifications:
   irc:
     channels:
-      - "irc.freenode.net#ettercap-project"
-    use_notice: false
-    skip_join: true
+      - "chat.freenode.net#ettercap-project"
+    template:
+      - "ettercap-build #%{build_number} (%{commit} by %{author}): %{message}"
+      - "See details at %{build_url}"
+  email: false

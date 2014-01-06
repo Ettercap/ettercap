@@ -120,7 +120,7 @@ struct http_request {
 
 struct http_response {
 	char *html;
-	size_t len;
+	unsigned long int len;
 };
 
 struct http_connection {
@@ -169,7 +169,7 @@ static void Find_Url(u_char *to_parse, char **ret);
 static int http_sync_conn(struct http_connection *connection);
 static int http_get_peer(struct http_connection *connection);
 static int http_read(struct http_connection *connection, struct packet_object *po);
-static int http_write(int fd, char *ptr, size_t total_len);
+static int http_write(int fd, char *ptr, unsigned long int total_len);
 static int http_insert_redirect(u_int16 dport);
 static int http_remove_redirect(u_int16 port);
 static void http_remove_header(char *header, struct http_connection *connection);
@@ -951,7 +951,7 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	DEBUG_MSG("SSLStrip: Done");
 }
 
-static int http_write(int fd, char *ptr, size_t total_len)
+static int http_write(int fd, char *ptr, unsigned long int total_len)
 {
 	int len, err;
 	unsigned int bytes_sent = 0;
@@ -960,7 +960,7 @@ static int http_write(int fd, char *ptr, size_t total_len)
 	tm.tv_sec = 0;
 	tm.tv_nsec = 100 * 1000 * 1000; //100ms
 
-	DEBUG_MSG("SSLStrip: Total length %ld", total_len);
+	DEBUG_MSG("SSLStrip: Total length %lu", total_len);
 
 	while (bytes_sent < total_len) {
 

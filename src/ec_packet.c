@@ -25,10 +25,6 @@
 #include <ec_ui.h>
 #include <ec_format.h>
 
-/* protos... */
-
-inline int packet_destroy_object(struct packet_object *po);
-
 /* --------------------------- */
 
 struct packet_object* packet_allocate_object(u_char *data, bpf_u_int32 len)
@@ -88,7 +84,7 @@ int packet_disp_data(struct packet_object *po, u_char *buf, bpf_u_int32 len)
  * free the packet object memory
  */
 
-int packet_destroy_object(struct packet_object *po)
+inline int packet_destroy_object(struct packet_object *po)
 {
    
    /* 

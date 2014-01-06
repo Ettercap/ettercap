@@ -1,7 +1,7 @@
-
-
 #ifndef EC_STATS_H
 #define EC_STATS_H
+
+#include <pcap.h>
 
 /*
  * this struct contains all field to collect 
@@ -10,17 +10,17 @@
  */
 
 struct half_stats {
-   u_int64 pck_recv;
-   u_int64 pck_size;
+   unsigned long long int pck_recv;
+   unsigned long long int pck_size;
    struct timeval ttot;
    struct timeval tpar;
    struct timeval ts;
    struct timeval te;
-   u_int64 tmp_size;
-   u_int32 rate_adv;
-   u_int32 rate_worst;
-   u_int32 thru_adv;
-   u_int32 thru_worst;
+   unsigned long long int tmp_size;
+   unsigned long rate_adv;
+   unsigned long rate_worst;
+   unsigned long thru_adv;
+   unsigned long thru_worst;
 };
 
 /* 
@@ -28,19 +28,19 @@ struct half_stats {
  */
 
 struct gbl_stats {
-   u_int64 ps_recv;
-   u_int64 ps_recv_delta;
-   u_int64 ps_drop;
-   u_int64 ps_drop_delta;
-   u_int64 ps_ifdrop;
-   u_int64 ps_sent;
-   u_int64 ps_sent_delta;
-   u_int64 bs_sent;
-   u_int64 bs_sent_delta;
+   unsigned long long int ps_recv;
+   unsigned long long int ps_recv_delta;
+   unsigned long long int ps_drop;
+   unsigned long long int ps_drop_delta;
+   unsigned long long int ps_ifdrop;
+   unsigned long long int ps_sent;
+   unsigned long long int ps_sent_delta;
+   unsigned long long int bs_sent;
+   unsigned long long int bs_sent_delta;
    struct half_stats bh;
    struct half_stats th;
-   u_int32 queue_max;
-   u_int32 queue_curr;
+   unsigned long queue_max;
+   unsigned long queue_curr;
 };
 
 #define time_sub(a, b, result) do {                  \
@@ -67,11 +67,11 @@ struct gbl_stats {
 EC_API_EXTERN void stats_wipe(void);
 EC_API_EXTERN void stats_update(void);
 
-EC_API_EXTERN u_int32 stats_queue_add(void);
-EC_API_EXTERN u_int32 stats_queue_del(void);
+EC_API_EXTERN unsigned long stats_queue_add(void);
+EC_API_EXTERN unsigned long stats_queue_del(void);
 
 EC_API_EXTERN void stats_half_start(struct half_stats *hs);
-EC_API_EXTERN void stats_half_end(struct half_stats *hs, u_int32 len);
+EC_API_EXTERN void stats_half_end(struct half_stats *hs, bpf_u_int32 len);
 
 
 #endif

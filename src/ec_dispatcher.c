@@ -59,7 +59,7 @@ EC_THREAD_FUNC(top_half);
 EC_THREAD_FUNC(top_half)
 {
    struct po_queue_entry *e;
-   u_int pck_len;
+   bpf_u_int32 pck_len;
  
    /* variable not used */
    (void) EC_THREAD_PARAM;

@@ -30,6 +30,12 @@ env:
   - BUILD_ARGS="-DENABLE_LUA=On -DBUNDLED_LUAJIT=Off"
   # Lua + bundled luajit
   - BUILD_ARGS="-DENABLE_LUA=On -DSYSTEM_LUAJIT=Off"
+  # Disable Gtk
+  - BUILD_ARGS="-DENABLE_GTK=Off"
+  # Disable Curses
+  - BUILD_ARGS="-DENABLE_CURSES=Off"
+  # Disable Curses and Gtk
+  - BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
 matrix:
   allow_failures:
     # We expect IPV6 + system libnet + ubuntu to fail :(

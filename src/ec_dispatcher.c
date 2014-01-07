@@ -25,6 +25,8 @@
 #include <ec_stats.h>
 #include <ec_sleep.h>
 
+/* globals */
+static int count = 0;
 
 /* this is the PO queue from bottom to top half */
 struct po_queue_entry {
@@ -97,10 +99,14 @@ EC_THREAD_FUNC(top_half)
          ec_usleep(1); // 1µs
          continue;
       }
-  
-      /* start the counter for the TopHalf */
-      stats_half_start(&EC_GBL_STATS->th);
-       
+
+      count++;
+      if(count == 1)
+      {
+         /* start the counter for the TopHalf */
+         stats_half_start(&EC_GBL_STATS->th);
+      }
+
       /* remove the packet form the queue */
       STAILQ_REMOVE_HEAD(&po_queue, e, next);
      
@@ -140,9 +146,13 @@ EC_THREAD_FUNC(top_half)
       packet_destroy_object(e->po);
       SAFE_FREE(e->po);
       SAFE_FREE(e);
-      
-      /* start the counter for the TopHalf */
-      stats_half_end(&EC_GBL_STATS->th, pck_len);
+
+      if(count == EC_GBL_CONF->packet_update_count)
+      {
+         /* start the counter for the TopHalf */
+         stats_half_end(&EC_GBL_STATS->th, pck_len);
+         count = 0;
+      }
    } 
 
    return NULL;

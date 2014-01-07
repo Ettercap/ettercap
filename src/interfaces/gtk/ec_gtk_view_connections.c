@@ -612,7 +612,7 @@ static void gtkui_connection_data_split(void)
    GtkTextIter iter;
    char tmp[MAX_ASCII_ADDR_LEN];
    char title[MAX_ASCII_ADDR_LEN+6];
-   gint scroll_split = 1;
+   static gint scroll_split = 1;
 
    DEBUG_MSG("gtk_connection_data_split");
 
@@ -746,7 +746,7 @@ static void gtkui_connection_data_split(void)
       gtkui_page_present(data_window);
 
    /* after widgets are drawn, scroll to bottom */
-   g_timeout_add(500, gtkui_connections_scroll, (gpointer)&scroll_split);
+   g_timeout_add(500, gtkui_connections_scroll, &scroll_split);
 
    /* print the old data */
    connbuf_print(&curr_conn->data, split_print);
@@ -920,7 +920,7 @@ static void gtkui_connection_data_join(void)
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
    char title[TITLE_LEN];
-   gint scroll_join = 2;
+   static gint scroll_join = 2;
 
    DEBUG_MSG("gtk_connection_data_join");
 
@@ -1001,7 +1001,7 @@ static void gtkui_connection_data_join(void)
       gtkui_page_present(data_window);
 
    /* after widgets are drawn, scroll to bottom */
-   g_timeout_add(500, gtkui_connections_scroll, (gpointer)&scroll_join);
+   g_timeout_add(500, gtkui_connections_scroll, &scroll_join);
 
    /* print the old data */
    connbuf_print(&curr_conn->data, join_print);

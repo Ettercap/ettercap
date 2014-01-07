@@ -198,8 +198,8 @@ void gtkui_current_targets(void)
    GtkWidget *scrolled, *treeview, *vbox, *hbox, *button;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
-   gint delete_targets1 = 1;
-   gint delete_targets2 = 2;
+   static gint delete_targets1 = 1;
+   static gint delete_targets2 = 2;
 
    DEBUG_MSG("gtk_current_targets");
 
@@ -269,13 +269,13 @@ void gtkui_current_targets(void)
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("Delete");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_targets), (gpointer)&delete_targets1);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_targets), &delete_targets1);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    button = gtk_button_new_with_mnemonic("Add");
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_add_target1), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    button = gtk_button_new_with_mnemonic("Delete");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_targets), (gpointer)&delete_targets2);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_delete_targets), &delete_targets2);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    button = gtk_button_new_with_mnemonic("Add");
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_add_target2), NULL);

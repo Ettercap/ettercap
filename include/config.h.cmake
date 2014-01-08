@@ -54,4 +54,8 @@
 #cmakedefine INSTALL_BINDIR         "@INSTALL_BINDIR@"
 
 #cmakedefine JUST_LIBRARY
+
+#cmakedefine LIBNET_VERSION         "@LIBNET_VERSION@"
+#cmakedefine LIBNET_VERSION_MAJOR   @LIBNET_VERSION_MAJOR@
+#cmakedefine LIBNET_VERSION_MINOR   @LIBNET_VERSION_MINOR@
 #endif

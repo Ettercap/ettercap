@@ -39,6 +39,10 @@ static pthread_mutex_t scan_mutex = PTHREAD_MUTEX_INITIALIZER;
                       } while(0)
 #define SCAN_UNLOCK   do{ pthread_mutex_unlock(&scan_mutex); } while(0)
 
+#define EC_CHECK_LIBNET_VERSION(major,minor)   \
+   (LIBNET_VERSION_MAJOR > (major) ||          \
+    (LIBNET_VERSION_MAJOR == (major) && LIBNET_VERSION_MINOR >= (minor)))
+
 
 /* used to create the random list */
 static LIST_HEAD (, ip_list) ip_list_head;
@@ -538,7 +542,16 @@ static void scan_ip6_onlink(pthread_t pid)
        * IPv6 networks (global, link-local, ...)
        */
       send_icmp6_echo(&e->ip, &an);
+
+#if EC_CHECK_LIBNET_VERSION(1,2)
+      /*
+       * sending this special icmp probe motivates hosts to respond with a icmp 
+       * error message even if they are configured not to respond to icmp requests.
+       * since libnet < 1.2 has a bug when sending IPv6 option headers
+       * we can only use this type of probe if we have at least libnet 1.2 or above
+       */
       send_icmp6_echo_opt(&e->ip, &an, IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN));
+#endif
    }
 
    for (i=0; i<=GBL_CONF->icmp6_probe_delay * 1000; i++) {

@@ -173,9 +173,9 @@ void gtkui_host_list(void)
    GtkWidget *scrolled, *treeview, *vbox, *hbox, *button;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
-   gint host_delete = HOST_DELETE;
-   gint host_target1 = HOST_TARGET1;
-   gint host_target2 = HOST_TARGET2;
+   static gint host_delete = HOST_DELETE;
+   static gint host_target1 = HOST_TARGET1;
+   static gint host_target2 = HOST_TARGET2;
 
    DEBUG_MSG("gtk_host_list");
 
@@ -233,17 +233,17 @@ void gtkui_host_list(void)
 
    button = gtk_button_new_with_mnemonic("_Delete Host");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)&host_delete);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), &host_delete);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("Add to Target _1");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)&host_target1);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), &host_target1);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("Add to Target _2");
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), (gpointer)&host_target2);
+   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), &host_target2);
    gtk_widget_show(button);
 
    gtk_widget_show(hosts_window);

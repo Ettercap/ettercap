@@ -172,6 +172,52 @@ void disable_interface_offload(void)
 	} 	
 }
 
+#ifdef WITH_IPV6
+/* 
+ * if privacy extension for IPv6 is enabled, under certain
+ * circumstances, an IPv6 socket can not be written exiting with
+ * code -1 bytes written (Cannot assign requested address).
+ * this usually happens after returning from hibernation
+ * therefor we should warn users.
+ */
+void check_tempaddr(const char *iface)
+{
+   FILE *fd;
+   int mode_global, mode_iface;
+   char fpath_global[] = "/proc/sys/net/ipv6/conf/all/use_tempaddr";
+   char fpath_iface[64];
+
+   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/use_tempaddr", iface);
+   
+   fd = fopen(fpath_global, "r");
+   ON_ERROR(fd, NULL, "failed to open %s", fpath_global);
+
+   mode_global = fgetc(fd);
+   ON_ERROR(mode_global, EOF, "failed to read value from %s", fpath_global);
+
+   fclose(fd);
+
+   DEBUG_MSG("check_tempaddr: %s = %c", fpath_global, mode_global);
+ 
+   fd = fopen(fpath_iface, "r");
+   ON_ERROR(fd, NULL, "failed to open %s", fpath_iface);
+
+   mode_iface = fgetc(fd);
+   ON_ERROR(mode_iface, EOF, "failed to read value from %s", fpath_iface);
+   
+   fclose(fd);
+   
+   DEBUG_MSG("check_tempaddr: %s = %c", fpath_iface, mode_iface);
+
+   if (mode_global != '0')
+      USER_MSG("Ettercap might not work correctly. %s is not set to 0.\n", fpath_global);
+ 
+   if (mode_iface != '0')
+      USER_MSG("Ettercap might not work correctly. %s is not set to 0.\n", fpath_iface);
+
+}
+#endif
+
 /* EOF */
 
 // vim:ts=3:expandtab

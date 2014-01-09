@@ -140,7 +140,7 @@ if(ENABLE_LUA)
   set(HAVE_EC_LUA 1)
 endif(ENABLE_LUA)
 
-set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/include)
+set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/include ${EC_INCLUDE})
 include_directories(${EC_INCLUDE_PATH})
 
 add_subdirectory(src)

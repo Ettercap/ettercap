@@ -499,7 +499,7 @@ static int http_insert_redirect(u_int16 dport)
 			drop_privs();
 			WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
 			safe_free_http_redirect(param, &param_length, command, orig_command);
-			_exit(EINVALID);
+			_exit(-EINVALID);
 		case -1:
 			safe_free_http_redirect(param, &param_length, command, orig_command);
 			return -EINVALID;
@@ -562,7 +562,7 @@ static int http_remove_redirect(u_int16 dport)
 			drop_privs();
 			WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
 			safe_free_http_redirect(param, &param_length, command, orig_command);
-			_exit(EINVALID);
+			_exit(-EINVALID);
                 case -1:
                         safe_free_http_redirect(param, &param_length, command, orig_command);
                         return -EINVALID;

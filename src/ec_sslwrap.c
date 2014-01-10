@@ -397,14 +397,14 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
          drop_privs();
          WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
          safe_free_mem(param, &param_length, command);
-         _exit(EINVALID);
+         _exit(-EINVALID);
       case -1:
          safe_free_mem(param, &param_length, command);
          return -EINVALID;
       default:
          safe_free_mem(param, &param_length, command);
          wait(&ret_val);
-         if (ret_val == EINVALID)
+         if (ret_val == -EINVALID)
             return -EINVALID;
    }    
    
@@ -467,14 +467,14 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
          drop_privs();
          WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
          safe_free_mem(param, &param_length, command);
-         _exit(EINVALID);
+         _exit(-EINVALID);
       case -1:
          safe_free_mem(param, &param_length, command);
          return -EINVALID;
       default:
          safe_free_mem(param, &param_length, command);
          wait(&ret_val);
-         if (ret_val == EINVALID)
+         if (ret_val == -EINVALID)
             return -EINVALID;
    }    
    

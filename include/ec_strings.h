@@ -10,12 +10,20 @@
 #endif
 
 #ifndef HAVE_STRLCAT
-   #include <missing/strlcat.h>
+   #ifndef OS_DARWIN
+      #include <missing/strlcat.h>
+   #else
+      #include <string.h>
+   #endif
 #else
    #include <bsd/string.h>
 #endif
 #ifndef HAVE_STRLCPY 
-   #include <missing/strlcpy.h>
+   #ifndef OS_DARWIN
+      #include <missing/strlcpy.h>
+   #else
+      #include <string.h>
+   #endif
 #else
    #include <bsd/string.h>
 #endif

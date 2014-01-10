@@ -177,8 +177,13 @@ void disable_interface_offload(void)
  * if privacy extension for IPv6 is enabled, under certain
  * circumstances, an IPv6 socket can not be written exiting with
  * code -1 bytes written (Cannot assign requested address).
+ * see pull request #245.(https://github.com/Ettercap/ettercap/pull/245) 
+ * 
  * this usually happens after returning from hibernation
- * therefor we should warn users.
+ * therefore we should warn users.
+ * 
+ * however investigation of the root cause continues but as long as 
+ * it isn't identified and fixed, this function is being kept.
  */
 void check_tempaddr(const char *iface)
 {
@@ -210,10 +215,12 @@ void check_tempaddr(const char *iface)
    DEBUG_MSG("check_tempaddr: %s = %c", fpath_iface, mode_iface);
 
    if (mode_global != '0')
-      USER_MSG("Ettercap might not work correctly. %s is not set to 0.\n", fpath_global);
+      USER_MSG("Ettercap might not work correctly. %s is not set to 0.\n", 
+            fpath_global);
  
    if (mode_iface != '0')
-      USER_MSG("Ettercap might not work correctly. %s is not set to 0.\n", fpath_iface);
+      USER_MSG("Ettercap might not work correctly. %s is not set to 0.\n", 
+            fpath_iface);
 
 }
 #endif

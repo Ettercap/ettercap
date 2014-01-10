@@ -67,7 +67,8 @@
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)(\\%3A|\\%3a|:)//([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 #define URL_PATTERN "(https://[\\w\\d:#@%/;$()~_?\\+-=\\\\.&]*)"
-#define COOKIE_PATTERN "Set-Cookie: (.*?;)(.?Secure;|.?Secure)(.*?)\r\n"
+//#define COOKIE_PATTERN "Set-Cookie: (.*?;)(.?Secure;|.?Secure)(.*?)\r\n"
+#define COOKIE_PATTERN "Set-Cookie: ([ \w\d:#@%/;$()~_?\+-=\\\.&]+); ?Secure"
 
 
 #define REQUEST_TIMEOUT 120 /* If a request has not been used in 120 seconds, remove it from list */
@@ -236,8 +237,9 @@ static int sslstrip_init(void *dummy)
 		return PLUGIN_FINISHED;
 	}	
 
-	if(regcomp(&find_cookie_re, COOKIE_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE)) {
-		USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex\n");
+	int val = regcomp(&find_cookie_re, COOKIE_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE);
+	if (val) {
+		USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex: %d\n", val);
                 pcre_free(https_url_pcre);
 		http_remove_redirect(bind_port);
 		return PLUGIN_FINISHED;

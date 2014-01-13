@@ -15,9 +15,9 @@ set(EF_SRC
             ${CMAKE_SOURCE_DIR}/src/ec_strings.c
 )
 
-if(NOT HAVE_STRLCPY)
+if(NOT HAVE_STRLCPY AND NOT OS_DARWIN)
     set(EF_SRC ${EF_SRC} ${CMAKE_SOURCE_DIR}/src/missing/strlcpy.c)
-endif(NOT HAVE_STRLCPY)
+endif(NOT HAVE_STRLCPY AND NOT OS_DARWIN)
 
 if(NOT HAVE_STRSEP)
     set(EF_SRC ${EF_SRC} ${CMAKE_SOURCE_DIR}/src/missing/strsep.c)
@@ -86,9 +86,9 @@ if(NOT HAVE_STRCASESTR)
     set(EL_SRC ${EL_SRC} ${CMAKE_SOURCE_DIR}/src/missing/strcasestr.c)
 endif(NOT HAVE_STRCASESTR)
 
-if(NOT HAVE_STRLCAT)
+if(NOT HAVE_STRLCAT AND NOT OS_DARWIN)
     set(EL_SRC ${EL_SRC} ${CMAKE_SOURCE_DIR}/src/missing/strlcat.c)
-endif(NOT HAVE_STRLCAT)
+endif(NOT HAVE_STRLCAT AND NOT OS_DARWIN)
 
 if(NOT HAVE_STRSEP)
     set(EL_SRC ${EL_SRC} ${CMAKE_SOURCE_DIR}/src/missing/strsep.c)

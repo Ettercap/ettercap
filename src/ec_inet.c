@@ -164,6 +164,7 @@ int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip)
 {
    switch (ntohs(ip->addr_type)) {
       case AF_INET:
+         (void) sn;
          /* not applicable for IPv4 */
       break;
 #ifdef WITH_IPV6

@@ -110,6 +110,10 @@ EC_API_EXTERN u_int16 get_iface_mtu(const char *iface);
 EC_API_EXTERN void disable_interface_offload(void);
 #endif
 
+#if defined OS_LINUX && defined WITH_IPV6
+EC_API_EXTERN void check_tempaddr(const char *iface);
+#endif
+
 /********************/
 
 #ifdef WORDS_BIGENDIAN       

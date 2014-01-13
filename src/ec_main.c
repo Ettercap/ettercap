@@ -122,6 +122,11 @@ int main(int argc, char *argv[])
       /* binds ports and set redirect for ssl wrapper */
       if(GBL_SNIFF->type == SM_UNIFIED && GBL_OPTIONS->ssl_mitm)
          ssl_wrap_init();
+
+#if defined OS_LINUX && defined WITH_IPV6
+      /* check if privacy extensions are enabled */
+      check_tempaddr(GBL_OPTIONS->iface);
+#endif
    }
    
    /* 

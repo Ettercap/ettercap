@@ -166,12 +166,6 @@ add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
 target_link_libraries(lib_ettercap ${EC_LIBETTERCAP_LIBS})
 
-if(NOT LIBRARY_BUILD)
-	add_subdirectory(interfaces)
-endif(NOT LIBRARY_BUILD)
-
-
-
 # Only compile lua stuff if lua is enabled!
 IF(ENABLE_LUA)
   add_subdirectory(lua)
@@ -202,20 +196,21 @@ set_target_properties(lib_ettercap PROPERTIES
   )
 
 if (NOT LIBRARY_BUILD)
-	add_executable(ettercap ec_parser.c ec_interfaces.c ec_main.c)
-   include_directories( interfaces/daemon interfaces/text )
-   if (ENABLE_CURSES)
-      include_directories( interfaces/curses interfaces/curses/widgets )
-   endif (ENABLE_CURSES)
-   if (ENABLE_GTK)
-      include_directories( interfaces/gtk )
-   endif(ENABLE_GTK)
-	target_link_libraries(ettercap ec_interfaces lib_ettercap)
-	set_target_properties(ettercap PROPERTIES 
-  	INSTALL_RPATH ${INSTALL_LIBDIR}
-  	)
+  add_subdirectory(interfaces)
+  include_directories( interfaces/daemon interfaces/text )
+  if (ENABLE_CURSES)
+    include_directories( interfaces/curses interfaces/curses/widgets )
+  endif (ENABLE_CURSES)
+  if (ENABLE_GTK)
+    include_directories( interfaces/gtk )
+  endif(ENABLE_GTK)
+  add_executable(ettercap ec_parser.c ec_interfaces.c ec_main.c)
+  target_link_libraries(ettercap ec_interfaces lib_ettercap)
+  set_target_properties(ettercap PROPERTIES 
+  INSTALL_RPATH ${INSTALL_LIBDIR})
 endif(NOT LIBRARY_BUILD)
+
 install(TARGETS lib_ettercap DESTINATION ${INSTALL_LIBDIR})
 if(NOT LIBRARY_BUILD)
-	install(TARGETS ettercap DESTINATION ${INSTALL_EXEDIR})
+  install(TARGETS ettercap DESTINATION ${INSTALL_EXEDIR})
 endif(NOT LIBRARY_BUILD)

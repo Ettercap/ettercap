@@ -171,6 +171,7 @@ endif(ENABLE_TESTS)
 
 # Add a target that will ensure that the build directory is properly cleaned.
 add_custom_target(clean-all
+  COMMAND ${CMAKE_BUILD_TOOL} clean
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/Scripts/clean-all.cmake
 )
 

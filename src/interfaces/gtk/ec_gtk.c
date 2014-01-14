@@ -344,10 +344,12 @@ static void gtkui_update(int target)
 {
     switch (target) {
         case UI_UPDATE_HOSTLIST:
-            gtk_idle_add((GtkFunction)gtkui_refresh_host_list,NULL);
+	    gtkui_refresh_host_list();
+            //gtk_idle_add((GtkFunction)gtkui_refresh_host_list,NULL);
             break;
         case UI_UPDATE_PLUGINLIST:
-            gtk_idle_add((GtkFunction)gtkui_refresh_plugin_list, NULL);
+	    gtkui_refresh_plugin_list();
+            //gtk_idle_add((GtkFunction)gtkui_refresh_plugin_list, NULL);
             break;
     }
 
@@ -520,7 +522,6 @@ static void gtkui_progress(char *title, int value, int max)
          gtk_widget_destroy(progress_dialog);
       progress_dialog = NULL;
       progress_bar = NULL;
-      gtkui_refresh_host_list();
    }
 
 }

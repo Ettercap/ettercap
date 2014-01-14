@@ -52,7 +52,6 @@ FUNC_DECODER(dissector_mountd)
    DECLARE_DISP_PTR_END(ptr, end);
    u_int32 type, xid, proc, program, version, flen, cred, offs, i;
    mountd_session *pe;
-   char *fhandle;
    struct ec_session *s = NULL;
    void *ident = NULL;
    char tmp[MAX_ASCII_ADDR_LEN];
@@ -133,16 +132,18 @@ FUNC_DECODER(dissector_mountd)
       offs = 28;
    }
 
-   SAFE_CALLOC(fhandle, (flen*3) + 10, 1);
-   for (i=0; i<flen; i++)
-      snprintf(fhandle, (flen*3) + 10, "%s%.2x ", fhandle, ptr[i + offs]);
+   DISSECT_MSG("mountd : Server:%s Handle %s: [ ",
+         ip_addr_ntoa(&PACKET->L3.src, tmp), pe->rem_dir);
+
+   for (i=0; i<flen; i++) {
+      if ((i*3)+1 > (flen*3)+10)
+         break;
+      DISSECT_MSG("%02x ", ptr[i + offs]);
+   }
    
-   DISSECT_MSG("mountd : Server:%s Handle %s: [%s]\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
-                                                       pe->rem_dir, 
-                                                       fhandle);
+   DISSECT_MSG("]\n");
 
    SAFE_FREE(pe->rem_dir);
-   SAFE_FREE(fhandle);
    dissect_wipe_session(PACKET, DISSECT_CODE(dissector_mountd));
    return NULL;
 }

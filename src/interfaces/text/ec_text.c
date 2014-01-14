@@ -453,9 +453,6 @@ static void text_run_plugin(void)
    fprintf(stdout, "Plugin name (0 to quit): ");
    fflush(stdout);
    
-   /* flush the buffer */
-   fflush(stdin);
-   
    /* get the user input */
    fgets(name, 20, stdin);
 

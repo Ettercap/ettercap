@@ -10,7 +10,7 @@
 #endif
 
 #ifndef HAVE_STRLCAT
-   #ifndef OS_DARWIN
+   #ifndef HAVE_STRLCAT_FUNCTION
       #include <missing/strlcat.h>
    #else
       #include <string.h>
@@ -19,7 +19,7 @@
    #include <bsd/string.h>
 #endif
 #ifndef HAVE_STRLCPY 
-   #ifndef OS_DARWIN
+   #ifndef HAVE_STRLCPY_FUNCTION
       #include <missing/strlcpy.h>
    #else
       #include <string.h>

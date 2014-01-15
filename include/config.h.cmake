@@ -30,7 +30,9 @@
 #cmakedefine HAVE_SELECT
 #cmakedefine HAVE_SCANDIR
 #cmakedefine HAVE_STRLCAT
+#cmakedefine HAVE_STRLCAT_FUNCTION
 #cmakedefine HAVE_STRLCPY
+#cmakedefine HAVE_STRLCPY_FUNCTION
 #cmakedefine HAVE_STRSEP
 #cmakedefine HAVE_STRCASESTR
 #cmakedefine HAVE_MEMMEM

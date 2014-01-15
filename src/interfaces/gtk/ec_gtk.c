@@ -80,6 +80,8 @@ static void gtkui_pcap_filter(void);
 static void gtkui_set_netmask(void);
 static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data);
 
+static gboolean gtkui_call_refresh(gpointer function);
+
 
 #if GTK_MINOR_VERSION == 2
 static void gtkui_page_defocus_tabs(void);
@@ -338,18 +340,29 @@ static void gtkui_cleanup(void)
 }
 
 /*
+ * call refresh function 
+ * function that returns false so gtk_idle_add() can call it
+ */
+
+static gboolean gtkui_call_refresh(gpointer function) {
+	void (*func)(void) = function;
+	(*func)();
+	return 0;
+}
+
+/*
  * process an UI update notification
  */
 static void gtkui_update(int target)
 {
     switch (target) {
         case UI_UPDATE_HOSTLIST:
-	    gtkui_refresh_host_list();
-            //gtk_idle_add((GtkFunction)gtkui_refresh_host_list,NULL);
+	    //gtkui_refresh_host_list();
+            gtk_idle_add((GtkFunction)gtkui_call_refresh, &gtkui_refresh_host_list);
             break;
         case UI_UPDATE_PLUGINLIST:
-	    gtkui_refresh_plugin_list();
-            //gtk_idle_add((GtkFunction)gtkui_refresh_plugin_list, NULL);
+	    //gtkui_refresh_plugin_list();
+            gtk_idle_add((GtkFunction)gtkui_call_refresh, &gtkui_refresh_plugin_list);
             break;
     }
 

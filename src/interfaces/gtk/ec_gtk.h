@@ -30,6 +30,7 @@ extern void gtkui_exit(void);
 extern void gtkui_sniff_offline(void);
 extern void gtkui_sniff_live(void);
 
+
 extern GtkTextBuffer *gtkui_details_window(char *title);
 extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
 extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);

@@ -358,11 +358,11 @@ static void gtkui_update(int target)
     switch (target) {
         case UI_UPDATE_HOSTLIST:
 	    //gtkui_refresh_host_list();
-            gtk_idle_add((GtkFunction)gtkui_call_refresh, &gtkui_refresh_host_list);
+            g_idle_add((GtkFunction)gtkui_call_refresh, &gtkui_refresh_host_list);
             break;
         case UI_UPDATE_PLUGINLIST:
 	    //gtkui_refresh_plugin_list();
-            gtk_idle_add((GtkFunction)gtkui_call_refresh, &gtkui_refresh_plugin_list);
+            g_idle_add((GtkFunction)gtkui_call_refresh, &gtkui_refresh_plugin_list);
             break;
     }
 

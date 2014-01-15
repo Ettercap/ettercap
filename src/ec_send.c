@@ -710,7 +710,7 @@ int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8* o_data
                           0,                /* flow label */
                           h,                /* next header size */
                           IPPROTO_DSTOPTS,  /* next header */
-                          64,               /* hop limit */
+                          255,              /* hop limit */
                           src,              /* source */
                           dst,              /* destination */
                           NULL,             /* payload and size */

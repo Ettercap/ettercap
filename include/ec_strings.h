@@ -9,23 +9,23 @@
    extern int isprint(int c);
 #endif
 
-#ifndef HAVE_STRLCAT
-   #ifndef HAVE_STRLCAT_FUNCTION
+#ifndef HAVE_STRLCAT_FUNCTION
+   #ifndef HAVE_STRLCAT
       #include <missing/strlcat.h>
    #else
-      #include <string.h>
+      #include <bsd/string.h>
    #endif
 #else
-   #include <bsd/string.h>
+   #include <string.h>
 #endif
-#ifndef HAVE_STRLCPY 
-   #ifndef HAVE_STRLCPY_FUNCTION
+#ifndef HAVE_STRLCPY_FUNCTION
+   #ifndef HAVE_STRLCPY
       #include <missing/strlcpy.h>
    #else
-      #include <string.h>
+      #include <bsd/string.h>
    #endif
 #else
-   #include <bsd/string.h>
+   #include <string.h>
 #endif
 #ifndef HAVE_STRSEP 
    #include <missing/strsep.h>

@@ -152,6 +152,15 @@ char **parse_iflist(char *list)
 }
 
 /*
+ * regain root privs inside an atexit call
+ */
+void regain_privs_atexit(void)
+{
+   DEBUG_MSG("ATEXIT: regain_privs");
+   regain_privs();
+}
+
+/*
  * regain root privs
  */
 void regain_privs(void)

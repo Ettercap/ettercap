@@ -6,5 +6,6 @@ EC_API_EXTERN int set_regex(char *regex);
 EC_API_EXTERN char **parse_iflist(char *list);
 EC_API_EXTERN void drop_privs(void);
 EC_API_EXTERN void regain_privs(void);
+EC_API_EXTERN void regain_privs_atexit(void);
 
 #endif

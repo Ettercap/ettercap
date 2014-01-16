@@ -54,7 +54,7 @@ void disable_ip_forward(void)
    DEBUG_MSG("disable_ip_forward | net.inet.ip.forwarding = %d  old_value = %d\n", val, saved_status);
   
    atexit(restore_ip_forward);
-   atexit(regain_privs);
+   atexit(regain_privs_atexit);
 }
 
 

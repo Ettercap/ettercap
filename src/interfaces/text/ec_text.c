@@ -270,11 +270,23 @@ static int text_progress(char *title, int value, int max)
 void text_interface(void)
 {
    DEBUG_MSG("text_interface");
-   
+ 
    /* check if the specified plugin exists */
-   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS) {
-      tcsetattr(0, TCSANOW, &old_tc);
-      FATAL_ERROR("%s plugin can not be found !", GBL_OPTIONS->plugin);
+   if (GBL_OPTIONS->plugin) {
+      char *p = strdup(GBL_OPTIONS->plugin);
+      char *tok;
+      char *s = ec_strtok(p, ",", &tok);
+      while (s != NULL) {
+        DEBUG_MSG("searching for %s", s);
+        if (search_plugin(s) != ESUCCESS) {
+           tcsetattr(0, TCSANOW, &old_tc);
+           FATAL_ERROR("%s plugin can not be found !", s);
+	}
+       
+        s = ec_strtok(NULL, ",", &tok);
+      }
+   
+      SAFE_FREE(p);
    }
 
    /* build the list of active hosts */
@@ -302,9 +314,21 @@ void text_interface(void)
        * the plugin was not found or it has completed
        * its execution
        */
-      if (text_plugin(GBL_OPTIONS->plugin) != PLUGIN_RUNNING)
-         /* end the interface */
-         return;
+      char *p = strdup(GBL_OPTIONS->plugin);
+      char *tok;
+      char *s = ec_strtok(p, ",", &tok);
+      while (s != NULL) {
+  	 DEBUG_MSG("STarting %s", s);
+         if (text_plugin(s) != PLUGIN_RUNNING) {
+            /* end the interface */
+            return;
+	 }
+
+         s = ec_strtok(NULL, ",", &tok);
+ 	 DEBUG_MSG("GOT %s", s);
+      }
+
+      SAFE_FREE(p);
    }
 
    /* neverending loop for user input */

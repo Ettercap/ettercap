@@ -91,7 +91,7 @@ void gtkui_load_hosts(void)
       filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
 
       load_hosts(filename);
-      gtkui_refresh_host_list();
+      gtkui_refresh_host_list(NULL);
    }
    gtk_widget_destroy (dialog);
 }
@@ -222,7 +222,7 @@ void gtkui_host_list(void)
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
    /* populate the list or at least allocate a spot for it */
-   gtkui_refresh_host_list();
+   gtkui_refresh_host_list(NULL);
   
    /* set the elements */
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (liststore));
@@ -282,7 +282,7 @@ void gtkui_hosts_destroy(void)
 /*
  * populate the list
  */
-void gtkui_refresh_host_list(void)
+gboolean gtkui_refresh_host_list(gpointer data)
 {
    GtkTreeIter   iter;
    struct hosts_list *hl;
@@ -290,6 +290,8 @@ void gtkui_refresh_host_list(void)
    char tmp2[MAX_ASCII_ADDR_LEN];
    char name[MAX_HOSTNAME_LEN];
 
+   /* avoid warning */
+   (void)data;
    DEBUG_MSG("gtk_refresh_host_list");
 
    /* The list store contains a 4th column that is NOT displayed 
@@ -318,6 +320,9 @@ void gtkui_refresh_host_list(void)
          gtk_list_store_set (liststore, &iter, 2, name, -1);
       }
    }
+
+   /* return FALSE so that g_idle_add() only calls it once */
+   return FALSE;
 }
 
 void gtkui_button_callback(GtkWidget *widget, gpointer data)

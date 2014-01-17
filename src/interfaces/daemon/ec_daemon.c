@@ -147,8 +147,21 @@ void daemon_interface(void)
 #endif
    
    /* check if the plugin exists */
-   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
-      FATAL_ERROR("%s plugin can not be found !", GBL_OPTIONS->plugin);
+   if (GBL_OPTIONS->plugin) {
+      
+      char *tok;
+      char *p = strdup(GBL_OPTIONS->plugin);
+      char *s = ec_strtok(p, ",", &tok);
+     
+      while (s != NULL) {
+         if (search_plugin(s) != ESUCCESS)
+      	    FATAL_ERROR("%s plugin can not be found !", GBL_OPTIONS->plugin);
+         
+	 s = ec_strtok(NULL, ",", &tok);
+      }
+
+      SAFE_FREE(p);
+   }
    
    /* build the list of active hosts */
    build_hosts_list();
@@ -160,9 +173,22 @@ void daemon_interface(void)
    EXECUTE(GBL_SNIFF->start);
    
    /* if we have to activate a plugin */
-   if (GBL_OPTIONS->plugin && plugin_init(GBL_OPTIONS->plugin) != PLUGIN_RUNNING)
-      /* end the interface */
-      return;
+   if (GBL_OPTIONS->plugin) { 
+      char *tok, *p;
+      p = strdup(GBL_OPTIONS->plugin);
+      char *s = ec_strtok(p, ",", &tok);
+ 
+      while (s != NULL) {
+          
+         if(plugin_init(s) != PLUGIN_RUNNING)
+		/* end the interface */
+	   return;
+
+         s = ec_strtok(NULL, ",", &tok);
+      }
+
+      SAFE_FREE(p);
+   }
 
    /* discard the messages */
    LOOP {

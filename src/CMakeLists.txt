@@ -169,7 +169,7 @@ target_link_libraries(lib_ettercap ${EC_LIBETTERCAP_LIBS})
 # Only compile lua stuff if lua is enabled!
 IF(ENABLE_LUA)
   add_subdirectory(lua)
-  target_link_libraries(lib_ettercap ec_lua)
+  target_link_libraries(lib_ettercap ec_lua ${LUAJIT_LIBRARY})
   if(OS_DARWIN AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
     # On 64-bit OSX platforms, luajit requires the following flags to be added.
     # See: http://luajit.org/install.html

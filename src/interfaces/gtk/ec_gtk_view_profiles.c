@@ -345,7 +345,7 @@ static void gtkui_profiles_remote(void)
 static void gtkui_profiles_convert(void)
 {
    profile_convert_to_hostlist();
-   gtkui_refresh_host_list();
+   gtkui_refresh_host_list(NULL);
    gtkui_message("The hosts list was populated with local profiles");
 }
 

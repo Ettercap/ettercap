@@ -307,10 +307,18 @@ static void gtkui_select_plugin(void)
    gtkui_create_plug_array();
 }
 
-void gtkui_refresh_plugin_list(void)
+gboolean gtkui_refresh_plugin_list(gpointer data)
 {
+
+   /* avoid warning */
+   (void)data;
+
+   DEBUG_MSG("gtk_refresh_plugin_list");
    /* refresh the list to mark plugin active */
    gtkui_create_plug_array();
+
+   /* return FALSE so g_idle_add() only calls it once */
+   return FALSE;
 }
 
 /* EOF */

@@ -81,6 +81,7 @@ static void gtkui_set_netmask(void);
 static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data);
 
 
+
 #if GTK_MINOR_VERSION == 2
 static void gtkui_page_defocus_tabs(void);
 #endif
@@ -337,6 +338,7 @@ static void gtkui_cleanup(void)
    
 }
 
+
 /*
  * process an UI update notification
  */
@@ -344,10 +346,10 @@ static void gtkui_update(int target)
 {
     switch (target) {
         case UI_UPDATE_HOSTLIST:
-            gtk_idle_add((GtkFunction)gtkui_refresh_host_list,NULL);
+            g_idle_add((GtkFunction)gtkui_refresh_host_list, NULL);
             break;
         case UI_UPDATE_PLUGINLIST:
-            gtk_idle_add((GtkFunction)gtkui_refresh_plugin_list, NULL);
+            g_idle_add((GtkFunction)gtkui_refresh_plugin_list, NULL);
             break;
     }
 
@@ -520,7 +522,6 @@ static void gtkui_progress(char *title, int value, int max)
          gtk_widget_destroy(progress_dialog);
       progress_dialog = NULL;
       progress_bar = NULL;
-      gtkui_refresh_host_list();
    }
 
 }

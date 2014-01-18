@@ -4,6 +4,8 @@ project(ettercap C)
 set(VERSION "0.8.0")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
+
 include(MacroEnsureOutOfSourceBuild)
 macro_ensure_out_of_source_build("${PROJECT_NAME} requires an out of source build. Please create a separate build directory and run 'cmake /path/to/${PROJECT_NAME} [options]' there.")
 
@@ -169,10 +171,19 @@ if(ENABLE_TESTS)
   add_subdirectory(tests)
 endif(ENABLE_TESTS)
 
+# uninstall target
+configure_file(
+    "${CMAKE_SCRIPT_PATH}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
 # Add a target that will ensure that the build directory is properly cleaned.
 add_custom_target(clean-all
   COMMAND ${CMAKE_BUILD_TOOL} clean
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/Scripts/clean-all.cmake
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SCRIPT_PATH}/clean-all.cmake
 )
 
 # If we notice that this isn't the first time they've run 

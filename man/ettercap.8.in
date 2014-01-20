@@ -684,7 +684,7 @@ the list to a file, then to load the information from it use the \-j <filename> 
 .TP
 \fB\-P\fR, \fB\-\-plugin <PLUGIN>\fR
 Run the selected PLUGIN. Many plugins need target specification, use TARGET as
-always.
+always. Use multiple occurances of this parameter to select multiple plugins.
 .br
 In console mode (\-C option), standalone plugins are executed and then the
 application exits. Hook plugins are activated and the normal sniffing is

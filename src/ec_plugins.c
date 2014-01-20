@@ -61,6 +61,12 @@ static pthread_mutex_t kill_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define KILL_LOCK do { pthread_mutex_lock(&kill_mutex); } while (0)
 #define KILL_UNLOCK do { pthread_mutex_unlock(&kill_mutex); } while (0)
 
+static pthread_mutex_t plugin_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define PLUGIN_LIST_LOCK do { pthread_mutex_lock(&plugin_list_mutex); } \
+                         while (0)
+#define PLUGIN_LIST_UNLOCK do { pthread_mutex_unlock(&plugin_list_mutex); } \
+                           while (0)
+
 /* protos... */
 
 void plugin_unload_all(void);
@@ -446,6 +452,24 @@ void plugin_list(void)
    }
    fprintf(stdout, "\n\n");
 
+}
+
+/*
+ * walk through the list of plugin names and free
+ */
+void free_plugin_list(struct plugin_list_t plugins)
+{
+   struct plugin_list *plugin, *tmp;
+
+   PLUGIN_LIST_LOCK;
+
+   LIST_FOREACH_SAFE(plugin, &plugins, next, tmp) {
+      LIST_REMOVE(plugin, next);
+      SAFE_FREE(plugin->name);
+      SAFE_FREE(plugin);
+   }
+
+   PLUGIN_LIST_UNLOCK;
 }
 
 /*

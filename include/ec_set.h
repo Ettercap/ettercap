@@ -10,7 +10,7 @@ EC_API_EXTERN void set_iface_bridge(char *iface);
 EC_API_EXTERN void set_promisc(void);
 EC_API_EXTERN void set_reversed(void);
 EC_API_EXTERN void set_proto(char *arg);
-EC_API_EXTERN void set_plugin(char *plugin);
+EC_API_EXTERN void set_plugin(char *name);
 EC_API_EXTERN void set_iface(char *iface);
 EC_API_EXTERN void set_lifaces(void);
 EC_API_EXTERN void set_secondary(char *iface);

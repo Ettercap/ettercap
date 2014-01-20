@@ -78,7 +78,7 @@ struct ec_options {
    char broadcast:1;
    char reversed;
    char *hostsfile;
-   char *plugin;
+   LIST_HEAD(plugin_list_t, plugin_list) plugins;
    char *proto;
    char *netmask;
    char *address;

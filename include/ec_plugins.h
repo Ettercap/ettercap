@@ -18,6 +18,12 @@ struct plugin_ops
    int (*fini)(void *);          /* deactivation function */
 };
 
+struct plugin_list
+{
+   char *name;
+   LIST_ENTRY(plugin_list) next;
+};
+
 #define PLUGIN_PATTERN   "ec_*.so"
 
 EC_API_EXTERN void plugin_load_all(void);
@@ -39,6 +45,7 @@ EC_API_EXTERN int plugin_kill_thread(char *name, char *thread);
 #define PLUGIN_RUNNING  1
 
 EC_API_EXTERN void plugin_list(void);
+EC_API_EXTERN void free_plugin_list(struct plugin_list_t plugins);
 
 #define PLUGIN_LOCK(x)                                \
    do{                                                \

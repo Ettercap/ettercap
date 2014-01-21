@@ -45,8 +45,8 @@ if(ENABLE_CURSES)
                 curses/widgets/wdg_window.c
     )
     include_directories(curses/widgets)
-    add_library(ec_wdg STATIC ${EC_WDG_SRC})
-    target_link_libraries(ec_wdg ${EC_LIBS})
+#    add_library(ec_wdg STATIC ${EC_WDG_SRC})
+#    target_link_libraries(ec_wdg ${EC_LIBS})
 endif(ENABLE_CURSES)
 
 if(ENABLE_GTK)
@@ -74,11 +74,9 @@ endif(ENABLE_GTK)
 
 add_library(ec_interfaces STATIC ../ec_interfaces.c ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_WDG_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
 SET_TARGET_PROPERTIES(ec_interfaces PROPERTIES COMPILE_FLAGS -fPIC)
-target_link_libraries(ec_interfaces ${EC_LIBS})
 set_target_properties(ec_interfaces PROPERTIES 
   ENABLE_EXPORTS On
-  LINK_INTERFACE_LIBRARIES ""
+  #  LINK_INTERFACE_LIBRARIES ""
   #  INSTALL_RPATH ${INSTALL_LIBDIR}
   OUTPUT_NAME ec_interfaces 
   )
-

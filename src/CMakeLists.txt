@@ -169,7 +169,7 @@ target_link_libraries(lib_ettercap ${EC_LIBETTERCAP_LIBS})
 # Only compile lua stuff if lua is enabled!
 IF(ENABLE_LUA)
   add_subdirectory(lua)
-  target_link_libraries(lib_ettercap ec_lua)
+  target_link_libraries(lib_ettercap ec_lua ${LUAJIT_LIBRARY})
   if(OS_DARWIN AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
     # On 64-bit OSX platforms, luajit requires the following flags to be added.
     # See: http://luajit.org/install.html
@@ -190,7 +190,7 @@ endif(ENABLE_LUA)
 
 set_target_properties(lib_ettercap PROPERTIES 
   ENABLE_EXPORTS On
-  LINK_INTERFACE_LIBRARIES ""
+  #  LINK_INTERFACE_LIBRARIES ""
   #  INSTALL_RPATH ${INSTALL_LIBDIR}
   OUTPUT_NAME ettercap
   )
@@ -204,8 +204,8 @@ if (NOT LIBRARY_BUILD)
   if (ENABLE_GTK)
     include_directories( interfaces/gtk )
   endif(ENABLE_GTK)
-  add_executable(ettercap ec_parser.c ec_interfaces.c ec_main.c)
-  target_link_libraries(ettercap ec_interfaces lib_ettercap)
+  add_executable(ettercap ec_parser.c ec_main.c)
+  target_link_libraries(ettercap ec_interfaces lib_ettercap ${EC_LIBS})
   set_target_properties(ettercap PROPERTIES 
   INSTALL_RPATH ${INSTALL_LIBDIR})
 endif(NOT LIBRARY_BUILD)

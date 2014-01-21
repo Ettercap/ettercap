@@ -95,12 +95,6 @@ static EC_THREAD_FUNC(search_promisc_thread)
    char messages[2][48]={"\nLess probably sniffing NICs:\n", "\nMost probably sniffing NICs:\n"};
    u_char i;
  
-#if !defined(OS_WINDOWS) 
-   struct timespec tm;
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0; 
-#endif
-
    ec_thread_init();
    PLUGIN_LOCK(search_promisc_mutex);
 
@@ -135,11 +129,7 @@ static EC_THREAD_FUNC(search_promisc_thread)
        */
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
          send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &h->ip, bogus_mac[i]);   
-#if !defined(OS_WINDOWS)
-         nanosleep(&tm, NULL);
-#else
-         usleep(GBL_CONF->arp_storm_delay*1000);
-#endif
+         sleep(GBL_CONF->arp_storm_delay);
       }
       
       /* Wait for responses */

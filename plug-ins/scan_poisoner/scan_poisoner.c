@@ -91,12 +91,6 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    char tmp1[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h1, *h2;
-   
-#if !defined(OS_WINDOWS)  
-   struct timespec tm;
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0; 
-#endif
 
    ec_thread_init();
    PLUGIN_LOCK(scan_poisoner_mutex);
@@ -142,20 +136,11 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    /* Send ICMP echo request to each target */
    LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
       send_L3_icmp_echo(&GBL_IFACE->ip, &h1->ip);   
-#if !defined(OS_WINDOWS)
-      nanosleep(&tm, NULL);
-#else
-      usleep(GBL_CONF->arp_storm_delay);
-#endif
+      sleep(GBL_CONF->arp_storm_delay);
    }
          
    /* wait for the response */
-
-#if !defined(OS_WINDOWS)
    sleep(1);
-#else
-   usleep(1000000);
-#endif
 
    /* remove the hook */
    hook_del(HOOK_PACKET_ICMP, &parse_icmp);

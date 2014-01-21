@@ -142,7 +142,6 @@ static EC_THREAD_FUNC(scan_thread)
 {
    pthread_t pid;
    struct hosts_list *hl;
-   struct timespec ts;
    int i = 1, ret;
    int nhosts = 0;
    int threadize = 1;
@@ -151,9 +150,6 @@ static EC_THREAD_FUNC(scan_thread)
    (void) EC_THREAD_PARAM;
 
    DEBUG_MSG("scan_thread");
-
-   ts.tv_sec = 1;
-   ts.tv_nsec = 0;
 
    /* in text mode and demonized this function should NOT be a thread */
    if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE || GBL_UI->type == UI_CURSES)
@@ -214,11 +210,7 @@ static EC_THREAD_FUNC(scan_thread)
     * the other thread is listening for ARP pachets
     */
 
-#if defined(OS_WINDOWS)
    usleep(1000); //1 msec
-#else
-   nanosleep(&ts, NULL);
-#endif
 
    /* Unlock Mutex */
    SCAN_UNLOCK;
@@ -428,12 +420,6 @@ static void scan_netmask(pthread_t pid)
    struct ip_list *e, *tmp;
    char title[100];
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
-   tm.tv_sec = 0;
-#endif
-
    netmask = *GBL_IFACE->netmask.addr32;
    myip = *GBL_IFACE->ip.addr32;
 
@@ -488,11 +474,7 @@ static void scan_netmask(pthread_t pid)
       }
 
       /* wait for a delay */
-#if defined(OS_WINDOWS)
-      usleep(GBL_CONF->arp_storm_delay * 1000);
-#else
-      nanosleep(&tm, NULL);
-#endif
+      sleep(GBL_CONF->arp_storm_delay);
 
    }
 
@@ -579,11 +561,6 @@ static void scan_targets(pthread_t pid)
    struct ip_addr sn;
 #endif
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
-   tm.tv_sec = 0;
-#endif
 
    DEBUG_MSG("scan_targets: merging targets...");
 
@@ -710,11 +687,7 @@ static void scan_targets(pthread_t pid)
       }
 
       /* wait for a delay */
-#if defined(OS_WINDOWS)
-      usleep(GBL_CONF->arp_storm_delay * 100);
-#else
-      nanosleep(&tm, NULL);
-#endif
+      sleep(GBL_CONF->arp_storm_delay);
 
    }
 

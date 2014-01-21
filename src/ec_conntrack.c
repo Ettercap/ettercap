@@ -385,11 +385,6 @@ EC_THREAD_FUNC(conntrack_timeouter)
    
    DEBUG_MSG("conntrack_timeouter: activated !");
 
-#if !defined(OS_WINDOWS) 
-   struct timespec timeouter_sleep;
-   timeouter_sleep.tv_nsec = 0;
-#endif
- 
    LOOP {
 
       /* 
@@ -398,20 +393,12 @@ EC_THREAD_FUNC(conntrack_timeouter)
        */
       sec = MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout);
 
-#if !defined(OS_WINDOWS)
-      timeouter_sleep.tv_sec = sec;
-#endif
-    
       DEBUG_MSG("conntrack_timeouter: sleeping for %lu sec", (unsigned long)sec);
       
       /* always check if a cancel is requested */
       CANCELLATION_POINT();
 
-#if !defined(OS_WINDOWS)
-      nanosleep(&timeouter_sleep, NULL);
-#else
-      usleep(sec*1000);
-#endif
+      sleep(sec);
      
       DEBUG_MSG("conntrack_timeouter: woke up");
       

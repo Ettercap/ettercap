@@ -340,10 +340,6 @@ char getchar_buffer(char **buf)
 {
    char ret;
 
-#if !defined(OS_WINDOWS)
-   struct timespec ts;
-#endif
-
    DEBUG_MSG("getchar_buffer: %s", *buf);
    
    /* the buffer is empty, do nothing */
@@ -363,20 +359,11 @@ char getchar_buffer(char **buf)
          /* get the number of seconds to wait */
          time = atoi(*buf + 2);
 
-#if !defined(OS_WINDOWS)
-         ts.tv_sec = time;
-         ts.tv_nsec = 0;
-#endif
-         
          DEBUG_MSG("getchar_buffer: sleeping %d secs", time);
 
          /* move the buffer after the s(x) */
          *buf = p + 1;
-#if !defined(OS_WINDOWS) 
-         nanosleep(&ts, NULL);
-#else
          usleep(time*1000);
-#endif
       }
    }
    

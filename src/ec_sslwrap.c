@@ -564,12 +564,6 @@ static int sslw_ssl_connect(SSL *ssl_sk)
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    int ret, ssl_err;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_sec = 0;
-   tm.tv_nsec = TSLEEP * 1000;
-#endif
-   
    do {
       /* connect to the server */
       if ( (ret = SSL_connect(ssl_sk)) == 1)
@@ -582,11 +576,7 @@ static int sslw_ssl_connect(SSL *ssl_sk)
          return -EINVALID;
       
       /* sleep a quirk of time... */
-#if defined(OS_WINDOWS)
       usleep(TSLEEP);
-#else
-      nanosleep(&tm, NULL);
-#endif
    } while(loops--);
 
    return -EINVALID;
@@ -602,12 +592,6 @@ static int sslw_ssl_accept(SSL *ssl_sk)
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    int ret, ssl_err;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_sec = 0;
-   tm.tv_nsec = TSLEEP * 1000;
-#endif
-   
    do {
       /* accept the ssl connection */
       if ( (ret = SSL_accept(ssl_sk)) == 1)
@@ -619,12 +603,7 @@ static int sslw_ssl_accept(SSL *ssl_sk)
       if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE) 
          return -EINVALID;
       
-      /* sleep a quirk of time... */
-#if defined(OS_WINDOWS)
       usleep(TSLEEP);
-#else
-      nanosleep(&tm, NULL);
-#endif
    } while(loops--);
 
    return -EINVALID;
@@ -700,22 +679,12 @@ static int sslw_get_peer(struct accepted_entry *ae)
    
    sslw_create_ident(&ident, &po);
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_sec = SSLW_WAIT;
-   tm.tv_nsec = 0;
-#endif
-   
    /* 
     * A little waiting loop because the sniffing thread , 
     * which creates the session, may be slower than this
     */
    for (i=0; i<SSLW_RETRY && session_get_and_del(&s, ident, SSLW_IDENT_LEN)!=ESUCCESS; i++)
-#if defined(OS_WINDOWS)
       usleep(SSLW_WAIT);
-#else
-      nanosleep(&tm, NULL); 
-#endif /* OS_WINDOWS */
 
    if (i==SSLW_RETRY) {
       SAFE_FREE(ident);
@@ -837,18 +806,10 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
 {
    int32 len, packet_len, not_written, ret_err;
    u_char *p_data;
-
+   int timeout = 1000;
    packet_len = (int32)(po->DATA.len + po->DATA.inject_len);
    p_data = po->DATA.data;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_sec = 1;
-   tm.tv_nsec = 0;
-#else
-   int timeout = 1000;
-#endif
-   
    if (packet_len == 0)
       return ESUCCESS;
 
@@ -888,11 +849,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       
       /* XXX - Set a proper sleep time */
       if (not_written)
-#if defined(OS_WINDOWS)
          usleep(timeout);
-#else
-         nanosleep(&tm, NULL);
-#endif
 	 	 
    } while (not_written);
          
@@ -1108,13 +1065,7 @@ EC_THREAD_FUNC(sslw_child)
    struct packet_object po;
    int direction, ret_val, data_read;
    struct accepted_entry *ae;
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_sec = 0;
-   tm.tv_nsec = 3000*1000;
-#else
    int timeout = 3000;
-#endif
 
    ae = (struct accepted_entry *)args;
    ec_thread_init();
@@ -1181,11 +1132,7 @@ EC_THREAD_FUNC(sslw_child)
       /* XXX - Set a proper sleep time */
       /* Should we poll both fd's instead of guessing and sleeping? */
       if (!data_read)
-#if defined(OS_WINDOWS)
         usleep(timeout);
-#else
-        nanosleep(&tm, NULL);
-#endif
    }
 
    return NULL;

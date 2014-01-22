@@ -81,9 +81,32 @@ void set_plugin(char *name)
         clean_exit(0);
     }
 
-    SAFE_CALLOC(plugin, 1, sizeof(struct plugin_list));
-    plugin->name = strdup(name);
-    LIST_INSERT_HEAD(&GBL_OPTIONS->plugins, plugin, next);
+    if (strstr(name, ",")) { 
+       /* multiple plugin names given */
+       char *p, *s, *tok;
+       p = strdup(name);
+       s = ec_strtok(p, ",", &tok);
+
+       while (s != NULL) {
+          if (!strcasecmp(s, "list")) {
+             plugin_list();
+             clean_exit(0);
+          }
+
+          SAFE_CALLOC(plugin, 1, sizeof(struct plugin_list));
+          plugin->name = strdup(s);
+          LIST_INSERT_HEAD(&GBL_OPTIONS->plugins, plugin, next);
+          
+          s = ec_strtok(NULL, ",", &tok);
+       }
+
+       SAFE_FREE(p);
+    } else { 
+       /* only one plugin name given */
+       SAFE_CALLOC(plugin, 1, sizeof(struct plugin_list));
+       plugin->name = strdup(name);
+       LIST_INSERT_HEAD(&GBL_OPTIONS->plugins, plugin, next);
+    }
 
 }
 

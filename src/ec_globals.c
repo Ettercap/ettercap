@@ -22,6 +22,7 @@
 #include <ec.h>
 #include <ec_sniff.h>
 #include <ec_filter.h>
+#include <ec_plugins.h>
 
 #define GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
 
@@ -82,7 +83,7 @@ void globals_free(void)
    GBL_FREE(gbls->env->debug_file);
    GBL_FREE(gbls->env);
    
-   GBL_FREE(gbls->options->plugin);
+   free_plugin_list(gbls->options->plugins);
    GBL_FREE(gbls->options->proto);
    GBL_FREE(gbls->options->pcapfile_in);
    GBL_FREE(gbls->options->pcapfile_out);

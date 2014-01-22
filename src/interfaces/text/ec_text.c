@@ -269,12 +269,17 @@ static int text_progress(char *title, int value, int max)
 
 void text_interface(void)
 {
+   struct plugin_list *plugin, *tmp;
+
    DEBUG_MSG("text_interface");
    
-   /* check if the specified plugin exists */
-   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS) {
-      tcsetattr(0, TCSANOW, &old_tc);
-      FATAL_ERROR("%s plugin can not be found !", GBL_OPTIONS->plugin);
+   LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
+      /* check if the specified plugin exists */
+      if (search_plugin(plugin->name) != ESUCCESS) {
+         tcsetattr(0, TCSANOW, &old_tc);
+         FATAL_ERROR("%s plugin can not be found !", plugin->name);
+      }
+
    }
 
    /* build the list of active hosts */
@@ -296,15 +301,17 @@ void text_interface(void)
    ui_msg_flush(MSG_ALL);
   
    /* if we have to activate a plugin */
-   if (GBL_OPTIONS->plugin) {
+   if (!LIST_EMPTY(&GBL_OPTIONS->plugins)) {
       /* 
        * execute the plugin and close the interface if 
        * the plugin was not found or it has completed
        * its execution
        */
-      if (text_plugin(GBL_OPTIONS->plugin) != PLUGIN_RUNNING)
-         /* end the interface */
-         return;
+      LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
+          if (text_plugin(plugin->name) != PLUGIN_RUNNING)
+             /* end the interface */
+             return;
+      }
    }
 
    /* neverending loop for user input */

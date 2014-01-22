@@ -140,15 +140,19 @@ void daemon_interface(void)
 {
    DEBUG_MSG("daemon_interface");
 
+   struct plugin_list *plugin, *tmp;
+
 #if !defined(OS_WINDOWS)
    struct timespec ts; 
    ts.tv_sec = 1;
    ts.tv_nsec = 0;
 #endif
    
-   /* check if the plugin exists */
-   if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
-      FATAL_ERROR("%s plugin can not be found !", GBL_OPTIONS->plugin);
+   LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
+      /* check if the plugin exists */
+      if (search_plugin(plugin->name) != ESUCCESS)
+         FATAL_ERROR("%s plugin can not be found !", plugin->name);
+   }
    
    /* build the list of active hosts */
    build_hosts_list();
@@ -160,9 +164,11 @@ void daemon_interface(void)
    EXECUTE(GBL_SNIFF->start);
    
    /* if we have to activate a plugin */
-   if (GBL_OPTIONS->plugin && plugin_init(GBL_OPTIONS->plugin) != PLUGIN_RUNNING)
-      /* end the interface */
-      return;
+   LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
+      if (plugin_init(plugin->name) != PLUGIN_RUNNING)
+         /* end the interface */
+         return;
+   }
 
    /* discard the messages */
    LOOP {

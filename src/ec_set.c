@@ -72,14 +72,19 @@ void set_reversed(void)
 	GBL_OPTIONS->reversed = 1;
 }
 
-void set_plugin(char *plugin)
+void set_plugin(char *name)
 {
-	if(!strcasecmp(plugin, "list")) {
-		plugin_list();
-		clean_exit(0);
-	}
+    struct plugin_list *plugin;
 
-	GBL_OPTIONS->plugin = strdup(plugin);
+    if(!strcasecmp(name, "list")) {
+        plugin_list();
+        clean_exit(0);
+    }
+
+    SAFE_CALLOC(plugin, 1, sizeof(struct plugin_list));
+    plugin->name = strdup(name);
+    LIST_INSERT_HEAD(&GBL_OPTIONS->plugins, plugin, next);
+
 }
 
 void set_proto(char *proto)

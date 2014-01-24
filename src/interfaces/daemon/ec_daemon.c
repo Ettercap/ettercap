@@ -151,7 +151,9 @@ void daemon_interface(void)
    LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
       /* check if the plugin exists */
       if (search_plugin(plugin->name) != ESUCCESS)
-         FATAL_ERROR("%s plugin can not be found !", plugin->name);
+         plugin->exists = false;
+         USER_MSG("Sorry, plugin '%s' can not be found - skipping!\n\n", 
+               plugin->name);
    }
    
    /* build the list of active hosts */
@@ -165,9 +167,9 @@ void daemon_interface(void)
    
    /* if we have to activate a plugin */
    LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
-      if (plugin_init(plugin->name) != PLUGIN_RUNNING)
-         /* end the interface */
-         return;
+      if (plugin->exists && plugin_init(plugin->name) != PLUGIN_RUNNING)
+         /* skip plugin */
+         USER_MSG("Plugin '%s' can not be started - skipping!\n\n", plugin->name);
    }
 
    /* discard the messages */

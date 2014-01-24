@@ -83,6 +83,7 @@ void set_plugin(char *name)
 
     SAFE_CALLOC(plugin, 1, sizeof(struct plugin_list));
     plugin->name = strdup(name);
+    plugin->exists = true;
     LIST_INSERT_HEAD(&GBL_OPTIONS->plugins, plugin, next);
 
 }

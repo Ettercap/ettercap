@@ -276,8 +276,9 @@ void text_interface(void)
    LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
       /* check if the specified plugin exists */
       if (search_plugin(plugin->name) != ESUCCESS) {
-         tcsetattr(0, TCSANOW, &old_tc);
-         FATAL_ERROR("%s plugin can not be found !", plugin->name);
+         plugin->exists = false;
+         USER_MSG("Sorry, plugin '%s' can not be found - skipping!\n\n", 
+               plugin->name);
       }
 
    }
@@ -308,9 +309,10 @@ void text_interface(void)
        * its execution
        */
       LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
-          if (text_plugin(plugin->name) != PLUGIN_RUNNING)
-             /* end the interface */
-             return;
+          if (plugin->exists && text_plugin(plugin->name) != PLUGIN_RUNNING)
+             /* skip plugin */
+             USER_MSG("Plugin '%s' can not be started - skipping!\n\n", 
+                   plugin->name);
       }
    }
 

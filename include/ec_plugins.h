@@ -21,6 +21,7 @@ struct plugin_ops
 struct plugin_list
 {
    char *name;
+   bool exists;
    LIST_ENTRY(plugin_list) next;
 };
 

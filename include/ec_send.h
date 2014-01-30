@@ -28,6 +28,7 @@ EC_API_EXTERN int send_L3_icmp_unreach(struct packet_object *po);
 
 #ifdef WITH_IPV6
 EC_API_EXTERN int send_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
+EC_API_EXTERN int send_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8* o_data, u_int32 o_len);
 EC_API_EXTERN int send_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr);
 EC_API_EXTERN int send_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, u_int8 *macaddr, int router);
 #endif

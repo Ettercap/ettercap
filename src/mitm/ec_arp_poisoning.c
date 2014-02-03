@@ -411,8 +411,10 @@ static int create_silent_list(void)
       memcpy(&g->mac, MEDIA_BROADCAST, MEDIA_ADDR_LEN);
    }
 
-   if (i == j) {
-      USER_MSG("\nERROR: Cannot poison theese targets...\n");
+   if (i == j || 
+       ntohs(i->ip.addr_type) != AF_INET || 
+       ntohs(j->ip.addr_type) != AF_INET) {
+      USER_MSG("\nERROR: Cannot ARP poison theese targets...\n");
       SAFE_FREE(h);
       SAFE_FREE(g);
       return -EFATAL;
@@ -467,6 +469,9 @@ static int create_list(void)
       
       /* add them */ 
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+         /* only IPv4 */
+         if (ntohs(h->ip.addr_type) != AF_INET)
+            continue;
            
          /* create the element and insert it in the list */
          SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
@@ -506,6 +511,9 @@ static int create_list(void)
       
       /* add them */ 
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+         /* only IPv4 */
+         if (ntohs(h->ip.addr_type) != AF_INET)
+            continue;
            
          /* create the element and insert it in the list */
          SAFE_CALLOC(g, 1, sizeof(struct hosts_list));

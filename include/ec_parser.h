@@ -1,8 +1,5 @@
-
-
-#ifndef EC_PARSER_H
-#define EC_PARSER_H
-
+#ifndef ETTERCAP_PARSER_H
+#define ETTERCAP_PARSER_H
 
 EC_API_EXTERN void parse_options(int argc, char **argv);
 

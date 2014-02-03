@@ -1,7 +1,5 @@
-
-
-#ifndef EC_TEXT_H
-#define EC_TEXT_H
+#ifndef ETTERCAP_TEXT_H
+#define ETTERCAP_TEXT_H
 
 extern void set_text_interface(void);
 extern int text_plugin(char *plugin);

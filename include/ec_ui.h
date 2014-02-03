@@ -1,7 +1,5 @@
-
-
-#ifndef EC_UI_H
-#define EC_UI_H
+#ifndef ETTERCAP_UI_H
+#define ETTERCAP_UI_H
 
 #include <stdarg.h>
 

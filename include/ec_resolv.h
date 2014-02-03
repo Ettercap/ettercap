@@ -1,7 +1,5 @@
-
-
-#ifndef EC_RESOLV_H
-#define EC_RESOLV_H
+#ifndef ETTERCAP_RESOLV_H
+#define ETTERCAP_RESOLV_H
 
 #include <ec_inet.h>
 

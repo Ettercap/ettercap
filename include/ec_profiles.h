@@ -1,7 +1,5 @@
-
-
-#ifndef EC_PROFILES_H
-#define EC_PROFILES_H
+#ifndef ETTERCAP_PROFILES_H
+#define ETTERCAP_PROFILES_H
 
 #include <ec_fingerprint.h>
 #include <ec_resolv.h>

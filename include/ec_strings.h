@@ -1,7 +1,5 @@
-
-
-#ifndef EC_STRINGS_H
-#define EC_STRINGS_H
+#ifndef ETTERCAP_STRINGS_H
+#define ETTERCAP_STRINGS_H
 
 #ifdef HAVE_CTYPE_H
    #include <ctype.h>

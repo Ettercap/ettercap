@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SESSION_TCP_H
-#define EC_SESSION_TCP_H
+#ifndef ETTERCAP_SESSION_TCP_H
+#define ETTERCAP_SESSION_TCP_H
 
 /* Session data structure */
 struct tcp_half_status {

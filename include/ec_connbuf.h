@@ -1,7 +1,5 @@
-
-
-#ifndef EC_CONNBUF_H
-#define EC_CONNBUF_H
+#ifndef ETTERCAP_CONNBUF_H
+#define ETTERCAP_CONNBUF_H
 
 #include <ec_inet.h>
 #include <ec_threads.h>

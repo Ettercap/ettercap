@@ -1,7 +1,5 @@
-
-
-#ifndef EL_FUNCTIONS_H
-#define EL_FUNCTIONS_H
+#ifndef ETTERLOG_FUNCTIONS_H
+#define ETTERLOG_FUNCTIONS_H
 
 #include <ec_log.h>
 #include <ec_profiles.h>

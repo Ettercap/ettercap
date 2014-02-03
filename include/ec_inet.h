@@ -1,7 +1,5 @@
-
-
-#ifndef EC_INET_H
-#define EC_INET_H
+#ifndef ETTERCAP_INET_H
+#define ETTERCAP_INET_H
 
 #include <ec_queue.h>
 

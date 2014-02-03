@@ -1,7 +1,5 @@
-
-
-#ifndef EC_ERROR_H
-#define EC_ERROR_H
+#ifndef ETTERCAP_ERROR_H
+#define ETTERCAP_ERROR_H
 
 #include <errno.h>
 

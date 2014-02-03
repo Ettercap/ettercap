@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SNIFF_UNIFIED_H
-#define EC_SNIFF_UNIFIED_H
+#ifndef ETTERCAP_SNIFF_UNIFIED_H
+#define ETTERCAP_SNIFF_UNIFIED_H
 
 /* exported functions */
 

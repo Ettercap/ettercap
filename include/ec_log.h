@@ -1,7 +1,5 @@
-
-
-#ifndef EC_LOG_H
-#define EC_LOG_H
+#ifndef ETTERCAP_LOG_H
+#define ETTERCAP_LOG_H
 
 #include <ec_inet.h>
 #include <ec_packet.h>

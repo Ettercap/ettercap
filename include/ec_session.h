@@ -1,8 +1,5 @@
-
-
-#ifndef EC_SESSION_H
-#define EC_SESSION_H
-
+#ifndef ETTERCAP_SESSION_H
+#define ETTERCAP_SESSION_H
 
 struct ec_session {
    void *ident;

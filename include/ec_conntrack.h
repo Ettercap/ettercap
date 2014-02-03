@@ -1,7 +1,5 @@
-
-
-#ifndef EC_CONNTRACK_H
-#define EC_CONNTRACK_H
+#ifndef ETTERCAP_CONNTRACK_H
+#define ETTERCAP_CONNTRACK_H
 
 #include <ec_profiles.h>
 #include <ec_connbuf.h>

@@ -1,7 +1,5 @@
-
-
-#ifndef EC_HOOK_H
-#define EC_HOOK_H
+#ifndef ETTERCAP_HOOK_H
+#define ETTERCAP_HOOK_H
 
 #include <ec_packet.h>
 

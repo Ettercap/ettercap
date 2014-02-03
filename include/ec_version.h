@@ -1,7 +1,5 @@
-
-
-#ifndef EC_VERS_H
-#define EC_VERS_H
+#ifndef ETTERCAP_VERS_H
+#define ETTERCAP_VERS_H
 
 #define EC_VERSION            "0.8.0"
 #define EC_VERSION_MAJOR      0

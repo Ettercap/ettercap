@@ -1,7 +1,5 @@
-
-
-#if !defined(EC_PACKET_H)
-#define EC_PACKET_H
+#ifndef ETTERCAP_PACKET_H
+#define ETTERCAP_PACKET_H
 
 #include <ec_proto.h>
 #include <ec_profiles.h>

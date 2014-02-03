@@ -1,7 +1,5 @@
-
-
-#ifndef EC_STREAMBUF_H
-#define EC_STREAMBUF_H
+#ifndef ETTERCAP_STREAMBUF_H
+#define ETTERCAP_STREAMBUF_H
 
 #include <ec_threads.h>
 

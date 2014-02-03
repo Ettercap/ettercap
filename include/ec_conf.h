@@ -1,8 +1,5 @@
-
-
-#ifndef EC_CONF_H
-#define EC_CONF_H
-
+#ifndef ETTERCAP_CONF_H
+#define ETTERCAP_CONF_H
 
 struct conf_entry {
    char *name;

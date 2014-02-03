@@ -1,7 +1,5 @@
-
-
-#ifndef EC_FORMAT_H
-#define EC_FORMAT_H
+#ifndef ETTERCAP_FORMAT_H
+#define ETTERCAP_FORMAT_H
 
 EC_API_EXTERN int hex_len(int len);
 EC_API_EXTERN int hex_format(const u_char *buf, size_t len, u_char *dst);

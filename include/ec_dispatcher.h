@@ -1,7 +1,5 @@
-
-
-#ifndef EC_DISPATCHER_H
-#define EC_DISPATCHER_H
+#ifndef ETTERCAP_DISPATCHER_H
+#define ETTERCAP_DISPATCHER_H
 
 #include <ec_threads.h>
 #include <ec_packet.h>

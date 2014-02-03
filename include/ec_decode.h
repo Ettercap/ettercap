@@ -1,7 +1,5 @@
-
-
-#ifndef EC_DECODE_H
-#define EC_DECODE_H
+#ifndef ETTERCAP_DECODE_H
+#define ETTERCAP_DECODE_H
 
 #include <ec_proto.h>
 #include <ec_packet.h>

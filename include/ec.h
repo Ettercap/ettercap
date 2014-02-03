@@ -1,7 +1,5 @@
-
-
-#ifndef EC_H
-#define EC_H
+#ifndef ETTERCAP_H
+#define ETTERCAP_H
 
 #include <config.h>
 

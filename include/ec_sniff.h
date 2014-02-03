@@ -1,7 +1,5 @@
-
-
-#ifndef EC_SNIFF_H
-#define EC_SNIFF_H
+#ifndef ETTERCAP_SNIFF_H
+#define ETTERCAP_SNIFF_H
 
 #include <ec_packet.h>
 

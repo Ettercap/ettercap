@@ -1,7 +1,5 @@
-
-
-#ifndef EC_FINGERPRINT_H
-#define EC_FINGERPRINT_H
+#ifndef ETTERCAP_FINGERPRINT_H
+#define ETTERCAP_FINGERPRINT_H
 
 EC_API_EXTERN int fingerprint_init(void);
 EC_API_EXTERN int fingerprint_search(const char *f, char *dst);

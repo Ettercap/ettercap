@@ -1,7 +1,5 @@
-
-
-#ifndef EC_PLUGINS_H
-#define EC_PLUGINS_H
+#ifndef ETTERCAP_PLUGINS_H
+#define ETTERCAP_PLUGINS_H
 
 #include <ec_stdint.h>
 #include <ec_version.h>

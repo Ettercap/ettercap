@@ -1,7 +1,5 @@
-
-
-#ifndef EC_FILTER_H
-#define EC_FILTER_H
+#ifndef ETTERCAP_FILTER_H
+#define ETTERCAP_FILTER_H
 
 #include <ec_packet.h>
 

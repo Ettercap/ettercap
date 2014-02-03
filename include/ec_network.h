@@ -1,5 +1,5 @@
-#ifndef EC_INIT_H
-#define EC_INIT_H
+#ifndef ETTERCAP_INIT_H
+#define ETTERCAP_INIT_H
 
 #include <ec.h>
 #include <ec_inet.h>

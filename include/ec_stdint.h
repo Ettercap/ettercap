@@ -1,7 +1,5 @@
-
-
-#ifndef EC_STDINT_H
-#define EC_STDINT_H
+#ifndef ETTERCAP_STDINT_H
+#define ETTERCAP_STDINT_H
 
 #include <limits.h>
 

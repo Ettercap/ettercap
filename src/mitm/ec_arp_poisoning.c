@@ -414,7 +414,7 @@ static int create_silent_list(void)
    if (i == j || 
        ntohs(i->ip.addr_type) != AF_INET || 
        ntohs(j->ip.addr_type) != AF_INET) {
-      USER_MSG("\nERROR: Cannot ARP poison theese targets...\n");
+      USER_MSG("\nERROR: Cannot ARP poison these targets...\n");
       SAFE_FREE(h);
       SAFE_FREE(g);
       return -EFATAL;

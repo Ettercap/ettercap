@@ -51,6 +51,7 @@ struct filter_op {
             #define FFUNC_KILL      7
             #define FFUNC_MSG       8
             #define FFUNC_EXEC      9
+            #define FFUNC_EXECINJECT 10
          u_int8 level; 
          u_int8 *string;
          size_t slen;

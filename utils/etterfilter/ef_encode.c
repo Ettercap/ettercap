@@ -272,6 +272,16 @@ int encode_function(char *string, struct filter_op *fop)
          ret = ESUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
+   } else if (!strcmp(name, "execinject")) {
+      if (nargs == 1) {
+         fop->op.func.op = FFUNC_EXECINJECT;
+         /* execinject always operate at DATA level */
+         fop->op.func.level = 5;
+         fop->op.func.string = (u_char*)strdup(dec_args[0]);
+         fop->op.func.slen = strlen((const char*)fop->op.func.string);
+         ret = ESUCCESS;
+      } else
+         SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "log")) {
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */

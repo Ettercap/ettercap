@@ -344,6 +344,21 @@ example:
 exec("/bin/cat /tmp/foo >> /tmp/bar")
 
 
+   
+.TP
+.B execinject(\fIcommand\fR)
+this function operates similar to the \fBinject\fR function except that it uses the output of a shell command to inject data rather than the contents of a file. 
+It always injects in DATA.data. You can use it to replace the entire packet with a 
+fake one using the drop() function right before the execinject() command.
+In that case the filtering engine will drop the current packet and inject the
+fake one.
+
+.Sp
+example:
+.br
+execinject("/bin/cat /tmp/foo")
+
+
 .TP
 .B exit()
 this function causes the filter engine to stop executing the code. It is useful

@@ -58,6 +58,7 @@ static int func_regex(struct filter_op *fop, struct packet_object *po);
 static int func_pcre(struct filter_op *fop, struct packet_object *po);
 static int func_replace(struct filter_op *fop, struct packet_object *po);
 static int func_inject(struct filter_op *fop, struct packet_object *po);
+static int func_execinject(struct filter_op *fop, struct packet_object *po);
 static int func_log(struct filter_op *fop, struct packet_object *po);
 static int func_drop(struct packet_object *po);
 static int func_kill(struct packet_object *po);
@@ -219,6 +220,12 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
       case FFUNC_INJECT:
          /* replace the string */
          if (func_inject(fop, po) == ESUCCESS)
+            return FLAG_TRUE;
+         break;
+
+      case FFUNC_EXECINJECT:
+         /* replace the string through output of a executable */
+         if (func_execinject(fop, po) == ESUCCESS)
             return FLAG_TRUE;
          break;
          
@@ -810,6 +817,68 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
 
    /* close and unmap the file */
    SAFE_FREE(file);
+   
+   return ESUCCESS;
+}
+
+/*
+ * inject output of a executable into the communication
+ */
+static int func_execinject(struct filter_op *fop, struct packet_object *po)
+{
+   FILE *pstream = NULL;
+   unsigned char *output = NULL;
+   size_t n = 0, offset = 0, size = 128;
+   unsigned char buf[size];
+   
+   /* check the offensiveness */
+   if (GBL_OPTIONS->unoffensive)
+      JIT_FAULT("Cannot inject packets in unoffensive mode");
+   
+
+   DEBUG_MSG("filter engine: func_execinject %s", fop->op.func.string);
+   
+   /* open the pipe */
+   if ((pstream = popen((const char*)fop->op.func.string, "r")) == NULL) {
+      USER_MSG("filter engine: execinject(): Command not found (%s)\n", fop->op.func.string);
+      return -EFATAL;
+   }
+   
+   while ((n = read(fileno(pstream), buf, size)) != 0) {
+      if (output == NULL) {
+         SAFE_CALLOC(output, offset+n, sizeof(unsigned char));
+      }
+      else {
+         SAFE_REALLOC(output, sizeof(unsigned char)*(offset+n));
+      }
+
+      memcpy(output+offset, buf, n);
+      offset += n;
+   }
+   
+   /* close pipe stream */
+   pclose(pstream);
+
+   /* check if we are overflowing pcap buffer */
+   if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + (unsigned)offset)
+      JIT_FAULT("injected output too long");
+         
+   /* copy the output into the buffer */
+   memcpy(po->DATA.data + po->DATA.len, output, offset);
+
+   /* Adjust packet len and delta */
+   po->DATA.delta += offset;
+   po->DATA.len += offset;    
+
+   /* mark the packet as modified */
+   po->flags |= PO_MODIFIED;
+   
+   /* unset the flag to be dropped */
+   if (po->flags & PO_DROPPED)
+      po->flags ^= PO_DROPPED;
+
+   /* free memory */
+   SAFE_FREE(output);
    
    return ESUCCESS;
 }

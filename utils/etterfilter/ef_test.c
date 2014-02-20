@@ -235,6 +235,11 @@ void print_function(struct filter_op *fop, u_int32 eip)
                fop->op.func.string);
          break;
          
+      case FFUNC_EXECINJECT:
+         fprintf(stdout, "%04lu: EXECINJECT \"%s\"\n", (unsigned long)eip, 
+               fop->op.func.string);
+         break;
+         
       case FFUNC_LOG:
          fprintf(stdout, "%04lu: LOG to \"%s\"\n", (unsigned long)eip, fop->op.func.string);
          break;

@@ -289,6 +289,10 @@ EC_THREAD_FUNC(arp_poisoner)
          }
       }
       
+      /* if smart poisoning is enabled only poison inital and then only on request */
+      if (GBL_CONF->arp_poison_smart && i < 3)
+          return NULL;
+
       /* 
        * wait the correct delay:
        * for the first 5 time use the warm_up

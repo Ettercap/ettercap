@@ -121,7 +121,7 @@ static int wdg_file_destroy(struct wdg_object *wo)
    /* dealloc the structures */
    delwin(ww->win);
    
-   /* restore the initial workind direcory */
+   /* restore the initial working directory */
    chdir(ww->initpath);
 
    WDG_SAFE_FREE(wo->extend);

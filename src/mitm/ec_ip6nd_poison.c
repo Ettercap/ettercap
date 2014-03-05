@@ -109,6 +109,7 @@ static int ndp_poison_start(char *args)
 
 static void ndp_poison_stop(void)
 {
+   struct hosts_list *h;
    pthread_t pid;
 
    DEBUG_MSG("ndp_poison_stop");
@@ -128,11 +129,29 @@ static void ndp_poison_stop(void)
 
    ui_msg_flush(2);
 
+   /* delete the elements in the first list */
+   while(LIST_FIRST(&ndp_group_one) != NULL) {
+      h = LIST_FIRST(&ndp_group_one);
+      LIST_REMOVE(h, next);
+      SAFE_FREE(h);
+   }
+
+   /* delete the elements in the second list */
+   while(LIST_FIRST(&ndp_group_two) != NULL) {
+      h = LIST_FIRST(&ndp_group_two);
+      LIST_REMOVE(h, next);
+      SAFE_FREE(h);
+   }
+
+   /* reset the remote flag */
+   GBL_OPTIONS->remote = 0;
+
    return;
 }
 
 EC_THREAD_FUNC(ndp_poisoner)
 {
+   int i = 1;
    struct hosts_list *t1, *t2;
 
    /* variable not used */
@@ -161,8 +180,12 @@ EC_THREAD_FUNC(ndp_poisoner)
          }
       }
 
+      /* first warm up then release poison frequency */
+      if (i < 5) 
+         ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_warp_up));
+      else 
+         ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_delay));
 
-      ec_usleep(SEC2MICRO(1));
    }
 
    return NULL;
@@ -328,6 +351,7 @@ static int create_list_silent(void)
    return ESUCCESS;
 }
 
+/* restore neighbor cache of victims */
 static void ndp_antidote(void)
 {
    struct hosts_list *h1, *h2;
@@ -339,9 +363,17 @@ static void ndp_antidote(void)
    for(i = 0; i < 2; i++) {
       LIST_FOREACH(h1, &ndp_group_one, next) {
          LIST_FOREACH(h2, &ndp_group_two, next) {
+            
+            /* skip equal ip */
             if(!ip_addr_cmp(&h1->ip, &h2->ip))
                continue;
 
+            if (!GBL_CONF->ndp_poison_equal_mac)
+               /* skip equal mac addresses ... */
+               if (!memcmp(h1->mac, h2->mac, MEDIA_ADDR_LEN))
+                  continue;
+
+            /* send neighbor advertisements with the correct information */
             send_icmp6_nadv(&h1->ip, &h2->ip, h1->mac, flags);
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&h2->ip, &h1->ip, h2->mac, flags & ND_ROUTER);
@@ -350,7 +382,7 @@ static void ndp_antidote(void)
          }
       }
 
-      ec_usleep(SEC2MICRO(1));
+      ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_warm_up));
    }
 }
 

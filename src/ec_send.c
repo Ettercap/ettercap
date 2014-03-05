@@ -19,11 +19,24 @@
 
 */
 
-#include <ec.h>
-
 #if defined(OS_DARWIN) || defined(OS_BSD)
+   #define PCAP_DONT_INCLUDE_PCAP_BPF_H 1
+   #include <net/bpf.h>
    #include <sys/ioctl.h>
 #endif
+// Order MATTERS. ec.h includes pcap.h in ec_packet, hence the double inclusion of bpf.h file
+/*
+/usr/include/net/bpf.h:65:8: error: redefinition of 'struct bpf_program'
+ struct bpf_program {
+        ^
+In file included from /usr/include/pcap/pcap.h:51:0,
+                 from /usr/include/pcap.h:45,
+                 from /«PKGBUILDDIR»/include/ec_packet.h:11,
+                 from /«PKGBUILDDIR»/include/ec_sniff.h:6,
+                 from /«PKGBUILDDIR»/include/ec_globals.h:6,
+                 from /«PKGBUILDDIR»/include/ec.h:52,
+*/
+#include <ec.h>
 
 #include <ec_packet.h>
 #include <ec_send.h>

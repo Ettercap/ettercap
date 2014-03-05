@@ -97,8 +97,8 @@ static EC_THREAD_FUNC(search_promisc_thread)
  
 #if !defined(OS_WINDOWS) 
    struct timespec tm;
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0; 
+   tm.tv_sec = 0;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000; 
 #endif
 
    ec_thread_init();

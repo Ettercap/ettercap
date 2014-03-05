@@ -211,7 +211,7 @@ static void port_stealing_stop(void)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
    tm.tv_sec = 0;
 #endif
       

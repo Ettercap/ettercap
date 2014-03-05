@@ -106,8 +106,8 @@ void repoison_victims(void *group_ptr, struct packet_object *po)
 #if !defined(OS_WINDOWS)
    struct timespec tm;
  
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0;
+   tm.tv_sec = 0;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
 #endif
 
    LIST_HEAD(, hosts_list) *group_head = group_ptr;

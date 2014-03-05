@@ -434,7 +434,7 @@ static void scan_netmask(pthread_t pid)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
    tm.tv_sec = 0;
 #endif
 
@@ -595,7 +595,7 @@ static void scan_targets(pthread_t pid)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
+   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
    tm.tv_sec = 0;
 #endif
 
@@ -725,7 +725,7 @@ static void scan_targets(pthread_t pid)
 
       /* wait for a delay */
 #if defined(OS_WINDOWS)
-      usleep(GBL_CONF->arp_storm_delay * 100);
+      usleep(GBL_CONF->arp_storm_delay * 1000);
 #else
       nanosleep(&tm, NULL);
 #endif

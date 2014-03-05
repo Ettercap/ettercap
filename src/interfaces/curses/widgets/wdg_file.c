@@ -18,6 +18,7 @@
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 */
+#include <ec.h>
 
 #include <wdg.h>
 
@@ -121,7 +122,7 @@ static int wdg_file_destroy(struct wdg_object *wo)
    /* dealloc the structures */
    delwin(ww->win);
    
-   /* restore the initial workind direcory */
+   /* restore the initial working directory */
    chdir(ww->initpath);
 
    WDG_SAFE_FREE(wo->extend);

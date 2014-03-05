@@ -193,6 +193,8 @@ set_target_properties(lib_ettercap PROPERTIES
   #  LINK_INTERFACE_LIBRARIES ""
   #  INSTALL_RPATH ${INSTALL_LIBDIR}
   OUTPUT_NAME ettercap
+  VERSION 0.0.0
+  SOVERSION 0
   )
 
 if (NOT LIBRARY_BUILD)

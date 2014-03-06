@@ -24,6 +24,9 @@
 
 /* the old value */
 static char saved_status;
+#ifdef WITH_IPV6
+static char saved_status_v6_global, saved_status_v6_iface;
+#endif
 
 /* protos */
 
@@ -91,7 +94,122 @@ void restore_ip_forward(void)
    fclose(fd);
 
    DEBUG_MSG("ATEXIT: restore_ip_forward: restore to %c", saved_status);
+
 }
+
+#ifdef WITH_IPV6
+void disable_ipv6_forward(void)
+{
+   FILE *fd;
+   char fpath_global[] = "/proc/sys/net/ipv6/conf/all/forwarding";
+   char fpath_iface[64];
+   
+   /* global configuration */
+   fd = fopen(fpath_global, "r");
+   ON_ERROR(fd, NULL, "failed to open %s", fpath_global);
+   
+   fscanf(fd, "%c", &saved_status_v6_global);
+   fclose(fd);
+
+   /* interface specific configuration */
+   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", GBL_OPTIONS->iface);
+
+   fd = fopen(fpath_iface, "r");
+   ON_ERROR(fd, NULL, "failed to open %s", fpath_iface);
+   
+   fscanf(fd, "%c", &saved_status_v6_iface);
+   fclose(fd);
+
+   fd = fopen(fpath_global, "w");
+   ON_ERROR(fd, NULL, "failed to open %s", fpath_global);
+
+   fprintf(fd, "0");
+   fclose(fd);
+
+   fd = fopen(fpath_iface, "w");
+   ON_ERROR(fd, NULL, "failed to open %s", fpath_iface);
+
+   fprintf(fd, "0");
+   fclose(fd);
+
+   DEBUG_MSG("disable_ipv6_forward: old value = %c/%c (global/interface %s)", 
+         saved_status_v6_global, saved_status_v6_iface, GBL_OPTIONS->iface);
+ 
+   
+   atexit(restore_ipv6_forward);
+}
+
+void restore_ipv6_forward(void)
+{
+   FILE *fd;
+   char current_status_global, current_status_iface;
+   char fpath_global[] = "/proc/sys/net/ipv6/conf/all/forwarding";
+   char fpath_iface[64];
+   
+   /* no modification needed */
+   if (saved_status_v6_global == '0' && saved_status_v6_iface == '0')
+      return;
+   
+   if (getuid()) {
+      DEBUG_MSG("ATEXIT: restore_ipv6_forward: cannot restore ipv6_forward "
+                 "since the privileges have been dropped to non root\n");
+      FATAL_ERROR("ipv6_forwarding was disabled, but we cannot re-enable it now.\n"
+                  "remember to re-enable it manually\n");
+      return;
+   }
+   
+   /* global configuration */
+   fd = fopen(fpath_global, "r");
+   ON_ERROR(fd, NULL, "failed to open %s", fpath_global);
+
+   fscanf(fd, "%c", &current_status_global);
+   fclose(fd);
+   
+   /* interface specific configuration */
+   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", GBL_OPTIONS->iface);
+
+   fd = fopen(fpath_iface, "r");
+   ON_ERROR(fd, NULL, "failed to open %s", fpath_iface);
+
+   fscanf(fd, "%c", &current_status_iface);
+   fclose(fd);
+   
+   DEBUG_MSG("ATEXIT: restore_ipv6_forward: curr: %c/%c saved: %c/%c (global/interface %s)", 
+         current_status_global, current_status_iface, 
+         saved_status_v6_global, saved_status_v6_iface, GBL_OPTIONS->iface);
+
+   if (current_status_global == saved_status_v6_global && 
+         current_status_iface == saved_status_v6_iface) {
+      DEBUG_MSG("ATEXIT: restore_ipv6_forward: does not need restoration");
+      return;
+   }
+
+   /* write back global configuration */
+   if ((fd = fopen(fpath_global, "w")) != NULL) {
+      fprintf(fd, "%c", saved_status_v6_global);
+      fclose(fd);
+
+      DEBUG_MSG("ATEXIT: restore_ipv6_forward: restore global to %c", saved_status_v6_global);
+   } else {
+      FATAL_ERROR("global ipv6_forwarding was disabled, but we cannot re-enable it now.\n"
+                  "remember to re-enable it manually\n");
+   }
+
+
+   /* write back interface specific configuration */
+   if ((fd = fopen(fpath_iface, "w")) != NULL) {
+      fprintf(fd, "%c", saved_status_v6_iface);
+      fclose(fd);
+
+      DEBUG_MSG("ATEXIT: restore_ipv6_forward: restore %s to %c", 
+            GBL_OPTIONS->iface, saved_status_v6_iface);
+   } else {
+      FATAL_ERROR("interface ipv6_forwarding was disabled, but we cannot re-enable it now.\n"
+                  "remember to re-enable it manually\n");
+   }
+
+}
+#endif
 
 /* 
  * get the MTU parameter from the interface 

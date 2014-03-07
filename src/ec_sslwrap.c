@@ -567,7 +567,7 @@ static int sslw_ssl_connect(SSL *ssl_sk)
 #if !defined(OS_WINDOWS)
    struct timespec tm;
    tm.tv_sec = 0;
-   tm.tv_nsec = TSLEEP * 1000;
+   tm.tv_nsec = MICRO2NANO(TSLEEP);
 #endif
    
    do {
@@ -605,7 +605,7 @@ static int sslw_ssl_accept(SSL *ssl_sk)
 #if !defined(OS_WINDOWS)
    struct timespec tm;
    tm.tv_sec = 0;
-   tm.tv_nsec = TSLEEP * 1000;
+   tm.tv_nsec = MICRO2NANO(TSLEEP);
 #endif
    
    do {
@@ -712,7 +712,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
     */
    for (i=0; i<SSLW_RETRY && session_get_and_del(&s, ident, SSLW_IDENT_LEN)!=ESUCCESS; i++)
 #if defined(OS_WINDOWS)
-      usleep(SSLW_WAIT);
+      usleep(SEC2MICRO(SSLW_WAIT));
 #else
       nanosleep(&tm, NULL); 
 #endif /* OS_WINDOWS */
@@ -889,7 +889,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       /* XXX - Set a proper sleep time */
       if (not_written)
 #if defined(OS_WINDOWS)
-         usleep(timeout);
+         usleep(MILLI2MICRO(timeout));
 #else
          nanosleep(&tm, NULL);
 #endif
@@ -1111,7 +1111,7 @@ EC_THREAD_FUNC(sslw_child)
 #if !defined(OS_WINDOWS)
    struct timespec tm;
    tm.tv_sec = 0;
-   tm.tv_nsec = 3000*1000;
+   tm.tv_nsec = MICRO2NANO(3000);
 #else
    int timeout = 3000;
 #endif
@@ -1182,7 +1182,7 @@ EC_THREAD_FUNC(sslw_child)
       /* Should we poll both fd's instead of guessing and sleeping? */
       if (!data_read)
 #if defined(OS_WINDOWS)
-        usleep(timeout);
+        usleep(MILLI2MICRO(timeout));
 #else
         nanosleep(&tm, NULL);
 #endif

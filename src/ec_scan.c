@@ -219,7 +219,7 @@ static EC_THREAD_FUNC(scan_thread)
     */
 
 #if defined(OS_WINDOWS)
-   usleep(1000); //1 msec
+   usleep(MILLI2MICRO(1)); //1 msec
 #else
    nanosleep(&ts, NULL);
 #endif
@@ -434,7 +434,7 @@ static void scan_netmask(pthread_t pid)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
+   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay);
    tm.tv_sec = 0;
 #endif
 
@@ -493,7 +493,7 @@ static void scan_netmask(pthread_t pid)
 
       /* wait for a delay */
 #if defined(OS_WINDOWS)
-      usleep(GBL_CONF->arp_storm_delay * 1000);
+      usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 #else
       nanosleep(&tm, NULL);
 #endif
@@ -523,7 +523,7 @@ static void scan_ip6_onlink(pthread_t pid)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = 1000000;
+   tm.tv_nsec = MILLI2NANO(1);
    tm.tv_sec = 0;
 #endif
 
@@ -569,7 +569,7 @@ static void scan_ip6_onlink(pthread_t pid)
       }
       /* wait for a delay */
 #if defined(OS_WINDOWS)
-      usleep(1000);
+      usleep(MILLI2MICRO(1));
 #else
       nanosleep(&tm, NULL);
 #endif
@@ -595,7 +595,7 @@ static void scan_targets(pthread_t pid)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
+   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay);
    tm.tv_sec = 0;
 #endif
 
@@ -725,7 +725,7 @@ static void scan_targets(pthread_t pid)
 
       /* wait for a delay */
 #if defined(OS_WINDOWS)
-      usleep(GBL_CONF->arp_storm_delay * 1000);
+      usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 #else
       nanosleep(&tm, NULL);
 #endif

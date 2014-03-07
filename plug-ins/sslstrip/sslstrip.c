@@ -963,7 +963,7 @@ static int http_write(int fd, char *ptr, unsigned long int total_len)
 	int bytes_remaining = total_len;
 	struct timespec tm;
 	tm.tv_sec = 0;
-	tm.tv_nsec = 100 * 1000 * 1000; //100ms
+	tm.tv_nsec = MILLI2NANO(100); //100ms
 
 	DEBUG_MSG("SSLStrip: Total length %lu", total_len);
 

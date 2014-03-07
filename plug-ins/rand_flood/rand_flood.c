@@ -140,8 +140,8 @@ EC_THREAD_FUNC(flooder)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_sec = GBL_CONF->port_steal_send_delay;
-   tm.tv_nsec = 0;
+   tm.tv_sec = 0;
+   tm.tv_nsec = MICRO2NANO(GBL_CONF->port_steal_send_delay);
 #endif
 
    /* variable not used */
@@ -192,7 +192,7 @@ EC_THREAD_FUNC(flooder)
 #if !defined(OS_WINDOWS)
       nanosleep(&tm, NULL);
 #else
-      usleep(GBL_CONF->port_steal_send_delay*1000);
+      usleep(GBL_CONF->port_steal_send_delay);
 #endif
    }
    

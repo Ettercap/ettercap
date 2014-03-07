@@ -178,7 +178,7 @@ void daemon_interface(void)
 #if !defined(OS_WINDOWS)
       nanosleep(&ts, NULL);
 #else
-      usleep(1000);
+      usleep(SEC2MICRO(1));
 #endif
       ui_msg_flush(MSG_ALL);
    }

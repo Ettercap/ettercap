@@ -211,7 +211,7 @@ static void port_stealing_stop(void)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
+   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay);
    tm.tv_sec = 0;
 #endif
       
@@ -245,7 +245,7 @@ static void port_stealing_stop(void)
 #if !defined(OS_WINDOWS)
          nanosleep(&tm, NULL);
 #else
-         usleep(GBL_CONF->arp_storm_delay*1000);
+         usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 #endif
       }      
    }
@@ -285,7 +285,7 @@ EC_THREAD_FUNC(port_stealer)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = GBL_CONF->port_steal_delay * 1000;
+   tm.tv_nsec = MICRO2NANO(GBL_CONF->port_steal_delay);
    tm.tv_sec = 0;
 #endif
   

@@ -152,7 +152,7 @@ static void arp_poisoning_stop(void)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm, ts;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
+   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay);
    tm.tv_sec = 0;
 #endif
    
@@ -201,7 +201,7 @@ static void arp_poisoning_stop(void)
 #if !defined(OS_WINDOWS) 
             nanosleep(&tm, NULL);
 #else
-            usleep(GBL_CONF->arp_storm_delay * 1000);
+            usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 #endif
          }
       }
@@ -212,7 +212,7 @@ static void arp_poisoning_stop(void)
       ts.tv_nsec = 0;
       nanosleep(&ts, NULL);
 #else
-      usleep(GBL_CONF->arp_poison_warm_up*1000000);
+      usleep(SEC2MICRO(GBL_CONF->arp_poison_warm_up));
 #endif
    }
    
@@ -245,7 +245,7 @@ EC_THREAD_FUNC(arp_poisoner)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm, ts;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
+   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay);
    tm.tv_sec = 0;
 #endif
 
@@ -302,7 +302,7 @@ EC_THREAD_FUNC(arp_poisoner)
 #if !defined(OS_WINDOWS) 
             nanosleep(&tm, NULL);
 #else
-            usleep(GBL_CONF->arp_storm_delay * 1000);
+            usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 #endif
          }
       }
@@ -318,7 +318,7 @@ EC_THREAD_FUNC(arp_poisoner)
          ts.tv_nsec = 0;
          nanosleep(&ts, NULL);
 #else
-         usleep(GBL_CONF->arp_poison_warm_up*1000000);
+         usleep(SEC2MICRO(GBL_CONF->arp_poison_warm_up));
 #endif
          i++;
       } else {
@@ -327,7 +327,7 @@ EC_THREAD_FUNC(arp_poisoner)
          ts.tv_nsec = 0;
          nanosleep(&ts, NULL);
 #else
-         usleep(GBL_CONF->arp_poison_delay * 1000000);
+         usleep(SEC2MICRO(GBL_CONF->arp_poison_delay));
 #endif
       }
    }

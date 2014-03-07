@@ -181,7 +181,7 @@ int ec_win_gettimeofday (struct timeval *tv, struct timezone *tz)
   _ftime (&tb);
   if (tv) {
   tv->tv_sec  = tb.time;
-    tv->tv_usec = tb.millitm * 1000;
+    tv->tv_usec = MILLI2MICRO(tb.millitm);
   }
   if (tz) {
     tz->tz_minuteswest = tb.timezone;
@@ -241,8 +241,8 @@ int ec_win_poll (struct pollfd *p, int num, int timeout)
   if (timeout < 0)
      ret = select (n+1, &read[0], &write[0], &excpt[0], NULL);
   else {
-    tv.tv_sec  = timeout / 1000;
-    tv.tv_usec = 1000 * (timeout % 1000);
+    tv.tv_sec  = MILLI2SEC(timeout);
+    tv.tv_usec = MILLI2MICRO((timeout % 1000));
     ret = select (n+1, &read[0], &write[0], &excpt[0], &tv);
   }
 

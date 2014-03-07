@@ -136,7 +136,7 @@ EC_THREAD_FUNC(nadv_poisoner)
 
 #if !defined(OS_WINDOWS)
    struct timespec tm;
-   tm.tv_nsec = GBL_CONF->ndp_poison_send_delay * 1000;
+   tm.tv_nsec = MICRO2NANO(GBL_CONF->ndp_poison_send_delay);
    tm.tv_sec = 0;
 #endif
 

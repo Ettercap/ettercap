@@ -127,6 +127,16 @@
    #define MAX(a, b)    (((a) > (b)) ? (a) : (b))
 #endif
 
+/* timeunit conversions */
+#define SEC2NANO(x)     x * 1000000000
+#define MILLI2NANO(x)   x *    1000000
+#define MICRO2NANO(x)   x *       1000
+#define SEC2MICRO(x)    x *    1000000
+#define MILLI2MICRO(x)  x *       1000
+#define MILLI2SEC(x)    x /       1000
+#define MICRO2SEC(x)    x /    1000000
+#define NANO2SEC(x)     x / 1000000000
+
 /* file operations */ 
 #ifndef OS_WINDOWS
    #define O_BINARY  0

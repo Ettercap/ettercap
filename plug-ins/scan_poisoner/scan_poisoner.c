@@ -95,7 +95,7 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
 #if !defined(OS_WINDOWS)  
    struct timespec tm;
    tm.tv_sec = 0;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000; 
+   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay); 
 #endif
 
    ec_thread_init();
@@ -145,7 +145,7 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
 #if !defined(OS_WINDOWS)
       nanosleep(&tm, NULL);
 #else
-      usleep(GBL_CONF->arp_storm_delay * 1000);
+      usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 #endif
    }
          
@@ -154,7 +154,7 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
 #if !defined(OS_WINDOWS)
    sleep(1);
 #else
-   usleep(1000000);
+   usleep(SEC2MICRO(1));
 #endif
 
    /* remove the hook */

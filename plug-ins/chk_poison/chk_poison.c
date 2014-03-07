@@ -93,7 +93,7 @@ static int chk_poison_init(void *dummy)
 #if !defined(OS_WINDOWS)
    struct timespec tm;
    tm.tv_sec = 0;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000000;
+   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay);
 #endif
      
    /* variable not used */
@@ -136,7 +136,7 @@ static int chk_poison_init(void *dummy)
 #if !defined(OS_WINDOWS)
          nanosleep(&tm, NULL);
 #else
-         usleep(GBL_CONF->arp_storm_delay * 1000);
+         usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 #endif
       }
    }

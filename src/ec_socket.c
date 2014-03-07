@@ -85,7 +85,7 @@ int open_socket(const char *host, u_int16 port)
 #if !defined(OS_WINDOWS)
    struct timespec tm;
    tm.tv_sec = 0;
-   tm.tv_nsec = (TSLEEP * 1000);
+   tm.tv_nsec = MICRO2NANO(TSLEEP);
 #endif
 
    /* resolve the hostname */

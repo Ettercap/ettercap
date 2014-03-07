@@ -17,7 +17,7 @@ ec_uid = 65534                # nobody is the default
 ec_gid = 65534                # nobody is the default
 
 [mitm]
-arp_storm_delay = 10          # seconds
+arp_storm_delay = 10          # milliseconds
 arp_poison_warm_up = 1        # seconds
 arp_poison_delay = 10         # seconds
 arp_poison_icmp = 1           # boolean

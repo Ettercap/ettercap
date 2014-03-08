@@ -138,6 +138,8 @@ elseif(OS_MINGW)
     set(EC_SRC ${EC_SRC} os/ec_mingw.c)
 elseif(OS_SOLARIS)
     set(EC_SRC ${EC_SRC} os/ec_solaris.c)
+elseif(OS_GNU)
+    set(EC_SRC ${EC_SRC} os/ec_gnu.c)
 endif()
 
 if(NOT HAVE_STRLCAT AND NOT HAVE_STRLCAT_FUNCTION)
@@ -193,6 +195,8 @@ set_target_properties(lib_ettercap PROPERTIES
   #  LINK_INTERFACE_LIBRARIES ""
   #  INSTALL_RPATH ${INSTALL_LIBDIR}
   OUTPUT_NAME ettercap
+  VERSION 0.0.0
+  SOVERSION 0
   )
 
 if (NOT LIBRARY_BUILD)

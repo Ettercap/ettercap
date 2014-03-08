@@ -80,6 +80,9 @@ int main(int argc, char *argv[])
    /* activate the signal handler */
    signal_handler();
    
+#ifdef OS_GNU
+  fprintf(stdout," %s is still not fully supported in this OS because of missing live capture support.");
+#endif
    /* ettercap copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
          GBL_PROGRAM, GBL_VERSION, EC_COPYRIGHT, EC_AUTHORS);

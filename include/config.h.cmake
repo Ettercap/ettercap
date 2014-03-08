@@ -6,6 +6,7 @@
 #cmakedefine OS_BSD_NET
 #cmakedefine OS_BSD_OPEN
 #cmakedefine OS_DARWIN
+#cmakedefine OS_GNU
 
 #cmakedefine WORDS_BIGENDIAN
 #cmakedefine OS_SIZEOF_P @OS_SIZEOF_P@

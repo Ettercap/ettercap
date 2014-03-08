@@ -112,7 +112,6 @@ set(INSTALL_LIBDIR ${INSTALL_PREFIX}/lib${LIB_SUFFIX} CACHE PATH "Library instal
 set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation directory")
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR  ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
-set(INSTALL_EXEDIR ${INSTALL_PREFIX}/bin CACHE PATH "Ettercap binary installation directory")
 if(OS_DARWIN OR OS_WINDOWS)
    set(POLKIT_DIR ${INSTALL_PREFIX}/share/polkit-1/actions/ CACHE PATH "Polkit installation directory")
 else(OS_DARWIN OR OS_WINDOWS)

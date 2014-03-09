@@ -71,9 +71,19 @@ FUNC_DECODER(decode_null)
       case AF_INET:          /* IPv4 on any system */
          lltype = LL_TYPE_IP;
          break;
+#if AF_INET6 != AF_INET6_BSD
       case AF_INET6_BSD:     /* IPv6 on NetBSD,OpenBSD,BSD/OS */
+#endif
+#if AF_INET6 != AF_INET6_FREEBSD
       case AF_INET6_FREEBSD: /* IPv6 on FreeBSD,DragonFlyBSD */
-      case AF_INET6:         /* IPv6 on Linux and others */
+#endif
+#if AF_INET6 != AF_INET6_DARWIN
+      case AF_INET6_DARWIN:  /* IPv6 on Darwin/Mac OS X */
+#endif
+#if AF_INET6 != AF_INET6_LINUX
+      case AF_INET6_LINUX:   /* IPv6 on Linux */
+#endif
+      case AF_INET6:         /* IPv6 on the compiling system */
          lltype = LL_TYPE_IP6; 
          break;
       default:               /* upper protocol not supported by ettercap */

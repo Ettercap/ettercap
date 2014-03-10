@@ -43,9 +43,9 @@
 
 int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa);
 static inline void get_PN(u_char *PN, u_char *data);
-static inline void get_B0(u_char *B0, u_char *mac, u_char *PN, size_t len);
-static inline void get_AAD(u_char *AAD, u_char *mac, u_char *B0);
-static int ccmp_decrypt(u_char *enc, u_char *B0, u_char *B, u_char *A, u_char *mic, size_t len, AES_KEY *ctx);
+static inline void get_BZERO(u_char *BZERO, u_char *mac, u_char *PN, size_t len);
+static inline void get_AAD(u_char *AAD, u_char *mac, u_char *BZERO);
+static int ccmp_decrypt(u_char *enc, u_char *BZERO, u_char *B, u_char *A, u_char *mic, size_t len, AES_KEY *ctx);
 
 /*******************************************/
 
@@ -58,7 +58,7 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    u_char PN[6]; /* 48 bit Packet Number */
    size_t data_len = len - sizeof(struct wpa_header);
    u_char AAD[AES_BLOCK_SIZE*2];
-   u_char B0[AES_BLOCK_SIZE], A[AES_BLOCK_SIZE], B[AES_BLOCK_SIZE];
+   u_char BZERO[AES_BLOCK_SIZE], A[AES_BLOCK_SIZE], B[AES_BLOCK_SIZE];
    u_char decbuf[len];
    AES_KEY aes_ctx;
 
@@ -72,24 +72,24 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    /* get the Packet Number */
    get_PN(PN, data);
 
-   /* get the B0 */
-   memset(B0, 0, sizeof(B0));
-   get_B0(B0, mac, PN, data_len);
+   /* get the BZERO */
+   memset(BZERO, 0, sizeof(BZERO));
+   get_BZERO(BZERO, mac, PN, data_len);
 
    /* get the Additional Authentication Data */
    memset(AAD, 0, sizeof(AAD));
-   get_AAD(AAD, mac, B0);
+   get_AAD(AAD, mac, BZERO);
 
    /* Start with the first block and AAD */
-   AES_encrypt(B0, A, &aes_ctx);
+   AES_encrypt(BZERO, A, &aes_ctx);
    XOR_BLOCK(A, AAD, AES_BLOCK_SIZE);
    AES_encrypt(A, A, &aes_ctx);
    XOR_BLOCK(A, AAD + AES_BLOCK_SIZE, AES_BLOCK_SIZE);
    AES_encrypt(A, A, &aes_ctx);
 
-   B0[0] &= 0x07;
-   B0[14] = B0[15] = 0;
-   AES_encrypt(B0, B, &aes_ctx);
+   BZERO[0] &= 0x07;
+   BZERO[14] = BZERO[15] = 0;
+   AES_encrypt(BZERO, B, &aes_ctx);
 
    /* get the MIC trailer. it is after the end of our packet */
    memcpy(mic, data + len, WPA_CCMP_TRAILER);
@@ -100,7 +100,7 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    memcpy(decbuf, data + sizeof(struct wpa_header), len);
 
    /* decrypt the packet */
-   if (ccmp_decrypt(decbuf, B0, B, A, mic, len, &aes_ctx) != 0) {
+   if (ccmp_decrypt(decbuf, BZERO, B, A, mic, len, &aes_ctx) != 0) {
       //DEBUG_MSG(D_VERBOSE, "WPA (CCMP) decryption failed, packet was skipped");
       return -ENOTHANDLED;
    }
@@ -142,25 +142,25 @@ static inline void get_PN(u_char *PN, u_char *data)
 }
 
 
-static inline void get_B0(u_char *B0, u_char *mac, u_char *PN, size_t len)
+static inline void get_BZERO(u_char *BZERO, u_char *mac, u_char *PN, size_t len)
 {
-   B0[0] = 0x59;
-   B0[1] = 0; /* this will be set later by the callee */
+   BZERO[0] = 0x59;
+   BZERO[1] = 0; /* this will be set later by the callee */
 
-   memcpy(B0 + 2, mac + 10, ETH_ADDR_LEN);
+   memcpy(BZERO + 2, mac + 10, ETH_ADDR_LEN);
 
-   B0[8]  = PN[5];
-   B0[9]  = PN[4];
-   B0[10] = PN[3];
-   B0[11] = PN[2];
-   B0[12] = PN[1];
-   B0[13] = PN[0];
+   BZERO[8]  = PN[5];
+   BZERO[9]  = PN[4];
+   BZERO[10] = PN[3];
+   BZERO[11] = PN[2];
+   BZERO[12] = PN[1];
+   BZERO[13] = PN[0];
 
-   B0[14] = ( len >> 8 ) & 0xFF;
-   B0[15] = ( len & 0xFF );
+   BZERO[14] = ( len >> 8 ) & 0xFF;
+   BZERO[15] = ( len & 0xFF );
 }
 
-static inline void get_AAD(u_char *AAD, u_char *mac, u_char *B0)
+static inline void get_AAD(u_char *AAD, u_char *mac, u_char *BZERO)
 {
    AAD[0] = 0; /* AAD length >> 8 */
    AAD[1] = 0; /* this will be set below */
@@ -177,17 +177,17 @@ static inline void get_AAD(u_char *AAD, u_char *mac, u_char *B0)
    if ( (mac[0] & (0x80 | 0x08)) == 0x88 ) {
       AAD[24] = mac[24] & 0x0f; /* just priority bits */
       AAD[25] = 0;
-      B0[1] = AAD[24];
+      BZERO[1] = AAD[24];
       AAD[1] = 22 + 2;
    } else {
       memset(&AAD[24], 0, 2);
-      B0[1] = 0;
+      BZERO[1] = 0;
       AAD[1] = 22;
    }
 }
 
 
-static int ccmp_decrypt(u_char *enc, u_char *B0, u_char *B, u_char *A, u_char *mic, size_t len, AES_KEY *ctx)
+static int ccmp_decrypt(u_char *enc, u_char *BZERO, u_char *B, u_char *A, u_char *mic, size_t len, AES_KEY *ctx)
 {
    int i = 1;
 
@@ -195,7 +195,7 @@ static int ccmp_decrypt(u_char *enc, u_char *B0, u_char *B, u_char *A, u_char *m
    len -= WPA_CCMP_TRAILER;
 
    while (len >= AES_BLOCK_SIZE) {
-      CCMP_DECRYPT(i, B, B0, enc, A, AES_BLOCK_SIZE, ctx);
+      CCMP_DECRYPT(i, B, BZERO, enc, A, AES_BLOCK_SIZE, ctx);
 
       enc += AES_BLOCK_SIZE;
       len -= AES_BLOCK_SIZE;
@@ -204,7 +204,7 @@ static int ccmp_decrypt(u_char *enc, u_char *B0, u_char *B, u_char *A, u_char *m
 
    /* last block */
    if (len != 0) {
-      CCMP_DECRYPT(i, B, B0, enc, A, len, ctx);
+      CCMP_DECRYPT(i, B, BZERO, enc, A, len, ctx);
    }
 
    return memcmp(mic, A, WPA_CCMP_TRAILER);

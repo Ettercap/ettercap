@@ -27,6 +27,7 @@
  * used in the Null/Loopback encapsulation origined
  * on several BSD derivates
  */
+#define AF_INET6_LINUX 10
 #define AF_INET6_BSD 24
 #define AF_INET6_FREEBSD 28
 #define AF_INET6_DARWIN 30

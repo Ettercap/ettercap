@@ -13,7 +13,7 @@
 #endif
 
 #if !defined(HAVE_USLEEP)
-   #define usleep(usec)  Sleep (usec)
+   #define usleep(usec)  Sleep ((usec)/1000)
 #endif
 
 #if !defined(HAVE_GETUID)

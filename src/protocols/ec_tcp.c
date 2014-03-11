@@ -191,7 +191,7 @@ FUNC_DECODER(decode_tcp)
      
    /* 
     * complete the passive fingerprint (started at IP layer)
-    * we are intereste only in SYN or SYN+ACK packets 
+    * we are interested only in SYN or SYN+ACK packets
     * else we can destroy the fingerprint
     */
    if ( tcp->flags & TH_SYN ) {

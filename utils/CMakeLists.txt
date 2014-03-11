@@ -13,6 +13,7 @@ set(EF_SRC
             ${CMAKE_SOURCE_DIR}/src/ec_file.c
             ${CMAKE_SOURCE_DIR}/src/ec_filter.c
             ${CMAKE_SOURCE_DIR}/src/ec_strings.c
+            ${CMAKE_SOURCE_DIR}/src/ec_sleep.c
 )
 
 if(NOT HAVE_STRLCPY AND NOT HAVE_STRLCPY_FUNCTION)
@@ -76,6 +77,7 @@ set(EL_SRC
             ${CMAKE_SOURCE_DIR}/src/ec_passive.c 
             ${CMAKE_SOURCE_DIR}/src/ec_strings.c 
             ${CMAKE_SOURCE_DIR}/src/ec_format.c
+            ${CMAKE_SOURCE_DIR}/src/ec_sleep.c
 )
 
 if(NOT HAVE_BASENAME)

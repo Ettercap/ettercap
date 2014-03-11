@@ -26,7 +26,7 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_mitm.h>
-#include <time.h>
+#include <ec_sleep.h>
 
 
 /* protos */
@@ -103,22 +103,11 @@ void repoison_victims(void *group_ptr, struct packet_object *po)
 {
    struct hosts_list *t;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
- 
-   tm.tv_sec = 0;
-   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay);
-#endif
-
    LIST_HEAD(, hosts_list) *group_head = group_ptr;
 
    LIST_FOREACH(t, group_head, next) {
 
-#if !defined(OS_WINDOWS)
-      nanosleep(&tm, NULL);
-#else
-      usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
-#endif
+      ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 
       /* equal ip must be skipped, you cant poison itself */
       if (!ip_addr_cmp(&t->ip, &po->L3.src))

@@ -10,6 +10,7 @@
 #include <ec_plugins.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <ec_sleep.h>
 
 /* protos */
 int plugin_load(void *);
@@ -141,7 +142,7 @@ static EC_THREAD_FUNC(smurfer)
             if(ntohs(h->ip.addr_type) == proto)
                icmp_send(ip, &h->ip);
 
-      usleep(1000*1000/GBL_CONF->sampling_rate);
+      ec_usleep(1000*1000/GBL_CONF->sampling_rate);
    }
 
    return NULL;

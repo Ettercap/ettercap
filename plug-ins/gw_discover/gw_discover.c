@@ -28,6 +28,7 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
+#include <ec_sleep.h>
 
 
 /* globals */
@@ -167,7 +168,7 @@ static void do_discover(void)
    }
   
    /* wait some time for slower replies */
-   sleep(3);
+   ec_usleep(SEC2MICRO(3));
    
    INSTANT_USER_MSG("\n");
 

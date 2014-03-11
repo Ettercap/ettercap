@@ -13,6 +13,7 @@
 #include <ec_threads.h>
 #include <ec_send.h>
 #include <ec_hook.h>
+#include <ec_sleep.h>
 
 /* globals */
 struct hosts_group nadv_group_one;
@@ -134,12 +135,6 @@ EC_THREAD_FUNC(nadv_poisoner)
 {
    struct hosts_list *t1, *t2;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_nsec = MICRO2NANO(GBL_CONF->ndp_poison_send_delay);
-   tm.tv_sec = 0;
-#endif
-
    /* variable not used */
    (void) EC_THREAD_PARAM;
 
@@ -162,16 +157,12 @@ EC_THREAD_FUNC(nadv_poisoner)
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&t2->ip, &t1->ip, GBL_IFACE->mac, flags & ND_ROUTER);
 
-#if !defined(OS_WINDOWS)
-            nanosleep(&tm, NULL);
-#else
-            usleep(GBL_CONF->ndp_poison_send_delay);
-#endif
+            ec_usleep(GBL_CONF->ndp_poison_send_delay);
          }
       }
 
 
-      sleep(1);
+      ec_usleep(SEC2MICRO(1));
    }
 
    return NULL;
@@ -355,11 +346,11 @@ static void nadv_antidote(void)
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&h2->ip, &h1->ip, h2->mac, flags & ND_ROUTER);
 
-            usleep(GBL_CONF->ndp_poison_send_delay);
+            ec_usleep(GBL_CONF->ndp_poison_send_delay);
          }
       }
 
-      sleep(1);
+      ec_usleep(SEC2MICRO(1));
    }
 }
 

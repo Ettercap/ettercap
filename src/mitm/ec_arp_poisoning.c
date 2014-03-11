@@ -24,7 +24,7 @@
 #include <ec_send.h>
 #include <ec_threads.h>
 #include <ec_ui.h>
-#include <time.h>
+#include <ec_sleep.h>
 
 /* globals */
 
@@ -150,12 +150,6 @@ static void arp_poisoning_stop(void)
    /* destroy the poisoner thread */
    pid = ec_thread_getpid("arp_poisoner");
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm, ts;
-   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay);
-   tm.tv_sec = 0;
-#endif
-   
    /* the thread is active or not ? */
    if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
@@ -198,22 +192,12 @@ static void arp_poisoning_stop(void)
                   send_arp(ARPOP_REQUEST, &g1->ip, g1->mac, &g2->ip, g2->mac); 
             }
            
-#if !defined(OS_WINDOWS) 
-            nanosleep(&tm, NULL);
-#else
-            usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
-#endif
+            ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
          }
       }
       
       /* sleep the correct delay, same as warm_up */
-#if !defined(OS_WINDOWS)
-      ts.tv_sec = GBL_CONF->arp_poison_warm_up;
-      ts.tv_nsec = 0;
-      nanosleep(&ts, NULL);
-#else
-      usleep(SEC2MICRO(GBL_CONF->arp_poison_warm_up));
-#endif
+      ec_usleep(SEC2MICRO(GBL_CONF->arp_poison_warm_up));
    }
    
    /* delete the elements in the first list */
@@ -242,12 +226,6 @@ EC_THREAD_FUNC(arp_poisoner)
 {
    int i = 1;
    struct hosts_list *g1, *g2;
-
-#if !defined(OS_WINDOWS)
-   struct timespec tm, ts;
-   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay);
-   tm.tv_sec = 0;
-#endif
 
    /* variable not used */
    (void) EC_THREAD_PARAM;
@@ -299,11 +277,7 @@ EC_THREAD_FUNC(arp_poisoner)
                   send_arp(ARPOP_REQUEST, &g1->ip, GBL_IFACE->mac, &g2->ip, g2->mac); 
             }
           
-#if !defined(OS_WINDOWS) 
-            nanosleep(&tm, NULL);
-#else
-            usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
-#endif
+            ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
          }
       }
       
@@ -313,22 +287,10 @@ EC_THREAD_FUNC(arp_poisoner)
        * then use normal delay
        */
       if (i < 5) {
-#if !defined(OS_WINDOWS)
-         ts.tv_sec = GBL_CONF->arp_poison_warm_up;
-         ts.tv_nsec = 0;
-         nanosleep(&ts, NULL);
-#else
-         usleep(SEC2MICRO(GBL_CONF->arp_poison_warm_up));
-#endif
+         ec_usleep(SEC2MICRO(GBL_CONF->arp_poison_warm_up));
          i++;
       } else {
-#if !defined(OS_WINDOWS)
-         ts.tv_sec = GBL_CONF->arp_poison_delay;
-         ts.tv_nsec = 0;
-         nanosleep(&ts, NULL);
-#else
-         usleep(SEC2MICRO(GBL_CONF->arp_poison_delay));
-#endif
+         ec_usleep(SEC2MICRO(GBL_CONF->arp_poison_delay));
       }
    }
    

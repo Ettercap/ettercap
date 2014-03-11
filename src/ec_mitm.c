@@ -23,6 +23,7 @@
 #include <ec_mitm.h>
 #include <ec_poll.h>
 #include <ec_scan.h>
+#include <ec_sleep.h>
 
 /* globals */
 
@@ -186,7 +187,7 @@ void only_mitm(void)
 
    if (GBL_UI->type == UI_DAEMONIZE)
        LOOP {
-           sleep(1);
+           ec_usleep(SEC2MICRO(1));
        }
   
    /* wait for user to exit */

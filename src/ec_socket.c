@@ -23,6 +23,7 @@
 #include <ec_signals.h>
 #include <ec_poll.h>
 #include <ec_socket.h>
+#include <ec_sleep.h>
 
 #ifndef OS_WINDOWS
    #include <netdb.h>
@@ -32,7 +33,6 @@
 #endif
 
 #include <fcntl.h>
-#include <time.h>
 
 /*******************************************/
 
@@ -82,12 +82,6 @@ int open_socket(const char *host, u_int16 port)
    sa_in.sin_family = AF_INET;
    sa_in.sin_port = htons(port);
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_sec = 0;
-   tm.tv_nsec = MICRO2NANO(TSLEEP);
-#endif
-
    /* resolve the hostname */
    if ( (infh = gethostbyname(host)) != NULL )
       memcpy(&sa_in.sin_addr, infh->h_addr, infh->h_length);
@@ -113,11 +107,7 @@ int open_socket(const char *host, u_int16 port)
          if (err == EINPROGRESS || err == EALREADY || err == EWOULDBLOCK || err == EAGAIN) {
             /* sleep a quirk of time... */
             DEBUG_MSG("open_socket: connect() retrying: %d", err);
-#if !defined(OS_WINDOWS)
-            nanosleep(&tm, NULL);
-#else
-            usleep(TSLEEP);
-#endif
+            ec_usleep(TSLEEP); /* 50000 microseconds */
          }
       } else { 
          /* there was an error or the connect was successful */

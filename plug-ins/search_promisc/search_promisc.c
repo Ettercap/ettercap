@@ -28,8 +28,7 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_threads.h>
-
-#include <time.h>
+#include <ec_sleep.h>
 
 /* globals */
 LIST_HEAD(, hosts_list) promisc_table;
@@ -95,12 +94,6 @@ static EC_THREAD_FUNC(search_promisc_thread)
    char messages[2][48]={"\nLess probably sniffing NICs:\n", "\nMost probably sniffing NICs:\n"};
    u_char i;
  
-#if !defined(OS_WINDOWS) 
-   struct timespec tm;
-   tm.tv_sec = 0;
-   tm.tv_nsec = MILLI2NANO(GBL_CONF->arp_storm_delay); 
-#endif
-
    ec_thread_init();
    PLUGIN_LOCK(search_promisc_mutex);
 
@@ -135,15 +128,11 @@ static EC_THREAD_FUNC(search_promisc_thread)
        */
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
          send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &h->ip, bogus_mac[i]);   
-#if !defined(OS_WINDOWS)
-         nanosleep(&tm, NULL);
-#else
-         usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
-#endif
+         ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
       }
       
       /* Wait for responses */
-      sleep(1);
+      ec_usleep(SEC2MICRO(1));
       
       /* Remove the hook */
       hook_del(HOOK_PACKET_ARP_RP, &parse_arp);

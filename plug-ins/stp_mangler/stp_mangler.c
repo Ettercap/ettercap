@@ -26,6 +26,7 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <ec_sleep.h>
 
 /* globals */
 struct eth_header
@@ -181,7 +182,7 @@ EC_THREAD_FUNC(mangler)
 
       /* Send on the wire and wait */
       send_to_L2(&fake_po); 
-      sleep(1);
+      ec_usleep(SEC2MICRO(1));
    }
    
    return NULL; 

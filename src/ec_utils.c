@@ -268,12 +268,12 @@ int base64decode(const char *decode_me, char** buffer) {
 	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
 	len = BIO_read(bio, *buffer, strlen(decode_me));
 	if (len != decodeLen)
-		return -ENOTFOUND;
+		return 0;
 	(*buffer)[len] = '\0';
 	BIO_free_all(bio);
 	fclose(stream);
 
-	return ESUCCESS;
+	return decodeLen;
 }
 
 

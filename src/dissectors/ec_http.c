@@ -342,8 +342,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
    ec_strtok(to_decode, "\r", &tok);
 
    char *decoded;
-   int i;
-   i = base64decode(to_decode, &decoded);
+   base64decode(to_decode, &decoded);
   
    DEBUG_MSG("Clear text AUTH: %s", decoded); 
 

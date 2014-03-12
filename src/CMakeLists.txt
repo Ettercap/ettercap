@@ -164,7 +164,7 @@ endif(NOT HAVE_STRNDUP)
 
 add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
-target_link_libraries(lib_ettercap ${EC_LIBETTERCAP_LIBS} ${M_LIB})
+target_link_libraries(lib_ettercap ${EC_LIBETTERCAP_LIBS})
 
 # Only compile lua stuff if lua is enabled!
 IF(ENABLE_LUA)

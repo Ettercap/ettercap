@@ -229,6 +229,7 @@ endif(PCRE_LIBRARY)
 
 # libmath
 find_library(M_LIB m)
+set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${M_LIB})
 
 if(ENABLE_TESTS)
   if(SYSTEM_LIBCHECK)

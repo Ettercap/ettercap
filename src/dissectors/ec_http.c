@@ -465,8 +465,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
    ec_strtok(to_decode, "\r", &tok);
 
    char *decoded;
-   int i;
-   i = base64decode(to_decode, &decoded);
+   base64decode(to_decode, &decoded);
    hSmb = (tSmbStdHeader *) decoded;
    msgType = IVAL(&hSmb->msgType, 0);
 

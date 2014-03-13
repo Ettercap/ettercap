@@ -9,10 +9,6 @@ set(EF_SRC
             etterfilter/ef_parser.c
             etterfilter/ef_tables.c
             etterfilter/ef_test.c
-            ${CMAKE_SOURCE_DIR}/src/ec_error.c
-            ${CMAKE_SOURCE_DIR}/src/ec_file.c
-            ${CMAKE_SOURCE_DIR}/src/ec_filter.c
-            ${CMAKE_SOURCE_DIR}/src/ec_strings.c
 )
 
 if(NOT HAVE_STRLCPY AND NOT HAVE_STRLCPY_FUNCTION)
@@ -49,7 +45,7 @@ ADD_FLEX_BISON_DEPENDENCY(EF_SCANNER EF_PARSER)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(etterfilter ${EF_SRC} ${FLEX_EF_SCANNER_OUTPUTS} ${BISON_EF_PARSER_OUTPUTS})
-target_link_libraries(etterfilter ${EF_LIBS})
+target_link_libraries(etterfilter lib_ettercap ${EF_LIBS})
 
 ## Etterlog
 
@@ -66,16 +62,6 @@ set(EL_SRC
             etterlog/el_profiles.c
             etterlog/el_stream.c
             etterlog/el_target.c
-            ${CMAKE_SOURCE_DIR}/src/ec_error.c 
-            ${CMAKE_SOURCE_DIR}/src/ec_fingerprint.c 
-            ${CMAKE_SOURCE_DIR}/src/ec_manuf.c 
-            ${CMAKE_SOURCE_DIR}/src/ec_services.c 
-            ${CMAKE_SOURCE_DIR}/src/ec_hash.c 
-            ${CMAKE_SOURCE_DIR}/src/ec_file.c 
-            ${CMAKE_SOURCE_DIR}/src/ec_inet.c 
-            ${CMAKE_SOURCE_DIR}/src/ec_passive.c 
-            ${CMAKE_SOURCE_DIR}/src/ec_strings.c 
-            ${CMAKE_SOURCE_DIR}/src/ec_format.c
 )
 
 if(NOT HAVE_BASENAME)
@@ -111,6 +97,6 @@ if(NOT HAVE_STRNDUP)
 endif(NOT HAVE_STRNDUP)
 
 add_executable(etterlog ${EL_SRC})
-target_link_libraries(etterlog ${EL_LIBS})
+target_link_libraries(etterlog lib_ettercap ${EL_LIBS})
 
 install(TARGETS etterfilter etterlog DESTINATION ${INSTALL_BINDIR})

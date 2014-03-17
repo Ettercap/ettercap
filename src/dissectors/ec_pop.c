@@ -351,14 +351,13 @@ FUNC_DECODER(dissector_pop)
 /* collect the pass */     
    if (!strncmp(s->data, "AUTH USER", 9)) {
       char *pass;
-      int i = 0;
 
       DEBUG_MSG("\tDissector_POP AUTH LOGIN PASS");
       
       SAFE_CALLOC(pass, strlen((const char*)ptr) + 1, sizeof(char));
       
       /* password is encoded in base64 */
-      i = base64decode((const char*)ptr, &pass);
+      base64decode((const char*)ptr, &pass);
      
       /* fill the structure */
       PACKET->DISSECTOR.user = strdup(s->data + strlen("AUTH USER "));
@@ -406,14 +405,13 @@ FUNC_DECODER(dissector_pop)
 /* collect the user and pass (the session was retrived above) */   
    if (!strcmp(s->data, "AUTH PLAIN")) {
       char *decode;
-      int i;
      
       DEBUG_MSG("\tDissector_POP AUTH PLAIN USER and PASS");
      
       SAFE_CALLOC(decode, strlen((const char*)ptr) + 1, sizeof(char));
      
       /* username is encoded in base64 */
-      i = base64decode((const char*)ptr, &decode);
+      base64decode((const char*)ptr, &decode);
      
       SAFE_FREE(s->data);
 

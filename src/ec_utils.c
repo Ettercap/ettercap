@@ -237,7 +237,7 @@ int base64encode(const char *b64_encode_me, char** buffer) {
 	bio = BIO_push(b64, bio);
 	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
 	BIO_write(bio, b64_encode_me, strlen(b64_encode_me));
-	BIO_flush(bio);
+	(void)BIO_flush(bio);
 	BIO_free_all(bio);
 	fclose(stream);
 
@@ -260,7 +260,8 @@ int base64decode(const char *decode_me, char** buffer) {
 	int decodeLen = get_decode_len(decode_me), len = 0;
 
 	*buffer = (char *)malloc(decodeLen+1);
-	FILE* stream = fmemopen(decode_me, strlen(decode_me), "r");
+	memset(*buffer, '\0', decodeLen+1);
+	FILE* stream = fmemopen((void*)decode_me, strlen(decode_me), "r");
 
 	b64 = BIO_new(BIO_f_base64());
 	bio = BIO_new_fp(stream, BIO_NOCLOSE);

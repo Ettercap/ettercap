@@ -31,10 +31,6 @@ static char saved_status[2];
 /* open it with high privs and use it later */
 static int fd;
 
-void disable_ip_forward(void);
-static void restore_ip_forward(void);
-u_int16 get_iface_mtu(const char *iface);
-
 /*******************************************/
 
 void disable_ip_forward(void)
@@ -86,7 +82,7 @@ void disable_ip_forward(void)
    atexit(regain_privs_atexit);
 }
 
-static void restore_ip_forward(void)
+void restore_ip_forward(void)
 {
    struct strioctl strIo;
    char buf[65536];

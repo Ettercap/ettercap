@@ -27,8 +27,6 @@ static char saved_status;
 
 /* protos */
 
-static void restore_ip_forward(void);
-
 /*******************************************/
 
 void disable_ip_forward(void)
@@ -53,7 +51,7 @@ void disable_ip_forward(void)
    atexit(regain_privs_atexit);
 }
 
-static void restore_ip_forward(void)
+void restore_ip_forward(void)
 {
    FILE *fd;
    char current_status;

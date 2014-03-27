@@ -23,9 +23,6 @@
    patches are welcome!
 */
 #include <ec.h>
-void disable_ip_forward(void);
-static void restore_ip_forward(void);
-u_int16 get_iface_mtu(const char *iface);
 void disable_interface_offload(void);
 
 /*******************************************/
@@ -34,7 +31,7 @@ void disable_ip_forward(void)
 {
 }
 
-static void restore_ip_forward(void)
+void restore_ip_forward(void)
 {
 }
 

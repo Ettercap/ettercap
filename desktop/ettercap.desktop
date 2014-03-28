@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Ettercap
-Comment=Nework sniffer/analyser
+Comment=Network sniffer/analyser
 Exec=ettercap-pkexec -G
 Icon=ettercap
 Terminal=false

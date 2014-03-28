@@ -227,6 +227,10 @@ if(PCRE_LIBRARY)
     set(EF_LIBS ${EF_LIBS} ${PCRE_LIBRARY})
 endif(PCRE_LIBRARY)
 
+# libmath
+find_library(M_LIB m)
+set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${M_LIB})
+
 if(ENABLE_TESTS)
   if(SYSTEM_LIBCHECK)
     find_package(LIBCHECK)

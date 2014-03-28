@@ -341,9 +341,10 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
        
    ec_strtok(to_decode, "\r", &tok);
 
-   base64_decode(to_decode, to_decode);
+   char *decoded;
+   base64decode(to_decode, &decoded);
   
-   DEBUG_MSG("Clear text AUTH: %s", to_decode); 
+   DEBUG_MSG("Clear text AUTH: %s", decoded); 
 
    /* clear text should be username:password 
     * this means that we must find the first instance of :
@@ -354,7 +355,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
 
    pass = NULL;
 
-   user = ec_strtok(to_decode, ":", &pass); 
+   user = ec_strtok(decoded, ":", &pass); 
 
    if (pass != NULL && user != NULL) {
       po->DISSECTOR.user = strdup(user);
@@ -369,6 +370,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
       Print_Pass(po);
    }
 
+   SAFE_FREE(decoded);
    SAFE_FREE(to_decode);
    return 1;
 }
@@ -462,8 +464,9 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
        
    ec_strtok(to_decode, "\r", &tok);
 
-   base64_decode(to_decode, to_decode);
-   hSmb = (tSmbStdHeader *) to_decode;
+   char *decoded;
+   base64decode(to_decode, &decoded);
+   hSmb = (tSmbStdHeader *) decoded;
    msgType = IVAL(&hSmb->msgType, 0);
 
    /* msgType 2 -> Server challenge
@@ -472,7 +475,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
    if (msgType==2) {
       tSmbNtlmAuthChallenge *challenge_struct;
 
-      challenge_struct = (tSmbNtlmAuthChallenge *) to_decode;
+      challenge_struct = (tSmbNtlmAuthChallenge *) decoded;
       
       /* Create a session to remember the server challenge */
       dissect_create_session(&s, po, DISSECT_CODE(dissector_http));
@@ -524,6 +527,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
       SAFE_FREE(ident);
    }
    SAFE_FREE(to_decode);
+   SAFE_FREE(decoded);
    return 1;
 }
 

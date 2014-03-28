@@ -223,6 +223,61 @@ void drop_privs(void)
    USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() );
 }
 
+#include <openssl/pem.h>
+#include <math.h>
+
+int base64encode(const char *b64_encode_me, char** buffer) {
+	BIO *bio, *b64;
+	FILE* stream;
+	int encodedSize = 4*ceil((double)strlen(b64_encode_me)/3);
+	*buffer = (char *)malloc(encodedSize+1);
+	stream = fmemopen(*buffer, encodedSize+1, "w");
+	b64 = BIO_new(BIO_f_base64());
+	bio = BIO_new_fp(stream, BIO_NOCLOSE);
+	bio = BIO_push(b64, bio);
+	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+	BIO_write(bio, b64_encode_me, strlen(b64_encode_me));
+	(void)BIO_flush(bio);
+	BIO_free_all(bio);
+	fclose(stream);
+
+	return ESUCCESS;
+	
+}
+
+int get_decode_len(const char *b64_str) {
+	int len = strlen(b64_str);
+	int padding = 0;
+	if (b64_str[len-1] == '=' && b64_str[len-2] == '=')
+		padding = 2;
+	else if (b64_str[len-1] == '=')
+		padding = 1;
+	return (int)len*0.75 - padding;
+}
+
+int base64decode(const char *decode_me, char** buffer) {
+	BIO *bio, *b64;
+	int decodeLen = get_decode_len(decode_me), len = 0;
+
+	*buffer = (char *)malloc(decodeLen+1);
+	memset(*buffer, '\0', decodeLen+1);
+	FILE* stream = fmemopen((void*)decode_me, strlen(decode_me), "r");
+
+	b64 = BIO_new(BIO_f_base64());
+	bio = BIO_new_fp(stream, BIO_NOCLOSE);
+	bio = BIO_push(b64, bio);
+	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+	len = BIO_read(bio, *buffer, strlen(decode_me));
+	if (len != decodeLen)
+		return 0;
+	(*buffer)[len] = '\0';
+	BIO_free_all(bio);
+	fclose(stream);
+
+	return decodeLen;
+}
+
+
 /* EOF */
 
 

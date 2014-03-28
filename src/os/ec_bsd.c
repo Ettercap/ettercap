@@ -29,10 +29,6 @@
 
 static int saved_status;
 
-void disable_ip_forward(void);
-static void restore_ip_forward(void);
-u_int16 get_iface_mtu(const char *iface);
-
 /*******************************************/
 
 void disable_ip_forward(void)
@@ -58,7 +54,7 @@ void disable_ip_forward(void)
 }
 
 
-static void restore_ip_forward(void)
+void restore_ip_forward(void)
 {
    int mib[4];
 

@@ -105,6 +105,7 @@ EC_API_EXTERN int ip_addr_get_prefix(struct ip_addr* netmask);
  */
 
 EC_API_EXTERN void disable_ip_forward(void);
+EC_API_EXTERN void restore_ip_forward(void);
 EC_API_EXTERN u_int16 get_iface_mtu(const char *iface);
 
 #ifdef OS_LINUX

@@ -29,9 +29,9 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_mitm.h>
+#include <ec_sleep.h>
 
 #include <pthread.h>
-#include <time.h>
 
 struct poison_list {
    struct ip_addr ip[2];
@@ -90,12 +90,6 @@ static int chk_poison_init(void *dummy)
    char poison_any, poison_full;
    u_char i;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0;
-#endif
-     
    /* variable not used */
    (void) dummy;
 
@@ -133,16 +127,12 @@ static int chk_poison_init(void *dummy)
    SLIST_FOREACH(p, &poison_table, next) {
       for (i = 0; i <= 1; i++) {
          send_L3_icmp_echo(&(p->ip[i]), &(p->ip[!i]));   
-#if !defined(OS_WINDOWS)
-         nanosleep(&tm, NULL);
-#else
-         usleep(GBL_CONF->arp_storm_delay);
-#endif
+         ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
       }
    }
          
    /* wait for the response */
-   sleep(1);
+   ec_usleep(SEC2MICRO(1));
 
    /* remove the hook */
    hook_del(HOOK_PACKET_ICMP, &parse_icmp);

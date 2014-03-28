@@ -29,7 +29,7 @@
 #include <ec_packet.h>
 #include <ec_hook.h>
 #include <ec_send.h>
-#include <time.h>
+#include <ec_sleep.h>
 
 /* globals */
 char flag_strange;
@@ -92,12 +92,6 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    char tmp2[MAX_ASCII_ADDR_LEN];
    struct hosts_list *h1, *h2;
    
-#if !defined(OS_WINDOWS)  
-   struct timespec tm;
-   tm.tv_sec = GBL_CONF->arp_storm_delay;
-   tm.tv_nsec = 0; 
-#endif
-
    ec_thread_init();
    PLUGIN_LOCK(scan_poisoner_mutex);
 
@@ -142,20 +136,11 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    /* Send ICMP echo request to each target */
    LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
       send_L3_icmp_echo(&GBL_IFACE->ip, &h1->ip);   
-#if !defined(OS_WINDOWS)
-      nanosleep(&tm, NULL);
-#else
-      usleep(GBL_CONF->arp_storm_delay);
-#endif
+      ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
    }
          
    /* wait for the response */
-
-#if !defined(OS_WINDOWS)
-   sleep(1);
-#else
-   usleep(1000000);
-#endif
+   ec_usleep(SEC2MICRO(1));
 
    /* remove the hook */
    hook_del(HOOK_PACKET_ICMP, &parse_icmp);

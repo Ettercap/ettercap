@@ -26,11 +26,11 @@
 #include <ec_decode.h>
 #include <ec_resolv.h>
 #include <ec_file.h>
+#include <ec_sleep.h>
 
 #include <pthread.h>
 #include <pcap.h>
 #include <libnet.h>
-#include <time.h>
 
 /* globals */
 static pthread_mutex_t scan_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -146,7 +146,6 @@ static EC_THREAD_FUNC(scan_thread)
 {
    pthread_t pid;
    struct hosts_list *hl;
-   struct timespec ts;
    int i = 1, ret;
    int nhosts = 0;
    int threadize = 1;
@@ -155,9 +154,6 @@ static EC_THREAD_FUNC(scan_thread)
    (void) EC_THREAD_PARAM;
 
    DEBUG_MSG("scan_thread");
-
-   ts.tv_sec = 1;
-   ts.tv_nsec = 0;
 
    /* in text mode and demonized this function should NOT be a thread */
    if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE || GBL_UI->type == UI_CURSES)
@@ -214,15 +210,10 @@ static EC_THREAD_FUNC(scan_thread)
    SAFE_FREE(rand_array);
 
    /*
-    * wait for some delayed packets...
+    * wait a second for some delayed packets...
     * the other thread is listening for ARP pachets
     */
-
-#if defined(OS_WINDOWS)
-   usleep(1000); //1 msec
-#else
-   nanosleep(&ts, NULL);
-#endif
+   ec_usleep(SEC2MICRO(1));
 
    /* Unlock Mutex */
    SCAN_UNLOCK;
@@ -432,12 +423,6 @@ static void scan_netmask(pthread_t pid)
    struct ip_list *e, *tmp;
    char title[100];
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
-   tm.tv_sec = 0;
-#endif
-
    netmask = *GBL_IFACE->netmask.addr32;
    myip = *GBL_IFACE->ip.addr32;
 
@@ -492,11 +477,7 @@ static void scan_netmask(pthread_t pid)
       }
 
       /* wait for a delay */
-#if defined(OS_WINDOWS)
-      usleep(GBL_CONF->arp_storm_delay * 1000);
-#else
-      nanosleep(&tm, NULL);
-#endif
+      ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 
    }
 
@@ -520,13 +501,6 @@ static void scan_ip6_onlink(pthread_t pid)
    struct net_list *e;
    struct ip_addr an;
    char title[100];
-
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_nsec = 1000000;
-   tm.tv_sec = 0;
-#endif
-
 
    ip_addr_init(&an, AF_INET6, (u_char *)IP6_ALL_NODES);
 
@@ -568,11 +542,7 @@ static void scan_ip6_onlink(pthread_t pid)
          ec_thread_exit();
       }
       /* wait for a delay */
-#if defined(OS_WINDOWS)
-      usleep(1000);
-#else
-      nanosleep(&tm, NULL);
-#endif
+      ec_usleep(MILLI2MICRO(1)); // 1ms
    }
    
 }
@@ -591,12 +561,6 @@ static void scan_targets(pthread_t pid)
 #ifdef WITH_IPV6
    struct ip_addr ip;
    struct ip_addr sn;
-#endif
-
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
-   tm.tv_sec = 0;
 #endif
 
    DEBUG_MSG("scan_targets: merging targets...");
@@ -724,11 +688,7 @@ static void scan_targets(pthread_t pid)
       }
 
       /* wait for a delay */
-#if defined(OS_WINDOWS)
-      usleep(GBL_CONF->arp_storm_delay * 100);
-#else
-      nanosleep(&tm, NULL);
-#endif
+      ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
 
    }
 

@@ -68,7 +68,7 @@ int ec_poll_in(int fd, u_int msec)
      
    memset(&to, 0, sizeof(struct timeval));
    /* timeval uses microseconds */
-   to.tv_usec = msec * 1000;
+   to.tv_usec = MILLI2MICRO(msec);
    
    FD_ZERO(&msk_fd);
   
@@ -120,7 +120,7 @@ int ec_poll_out(int fd, u_int msec)
      
    memset(&to, 0, sizeof(struct timeval));
    /* timeval uses microseconds */
-   to.tv_usec = msec * 1000;
+   to.tv_usec = MILLI2MICRO(msec);
    
    FD_ZERO(&msk_fd);
   

@@ -30,6 +30,7 @@
 #include <ec_threads.h>
 #include <ec_decode.h>
 #include <ec_utils.h>
+#include <ec_sleep.h>
 
 #include <sys/wait.h>
 
@@ -659,19 +660,9 @@ static int http_get_peer(struct http_connection *connection)
 
 	http_create_ident(&ident, &po);
 
-#ifndef OS_WINDOWS
-	struct timespec tm;
-	tm.tv_sec = HTTP_WAIT;
-	tm.tv_nsec = 0;
-#endif
-
 	/* Wait for sniffing thread */
 	for (i=0; i<HTTP_RETRY && session_get_and_del(&s, ident, HTTP_IDENT_LEN)!=ESUCCESS; i++)
-#ifndef OS_WINDOWS
-	nanosleep(&tm, NULL);
-#else	
-	usleep(HTTP_WAIT);
-#endif
+	ec_usleep(SEC2MICRO(HTTP_WAIT));
 
 	if (i==HTTP_RETRY) {
 		SAFE_FREE(ident);
@@ -961,9 +952,6 @@ static int http_write(int fd, char *ptr, unsigned long int total_len)
 	int len, err;
 	unsigned int bytes_sent = 0;
 	int bytes_remaining = total_len;
-	struct timespec tm;
-	tm.tv_sec = 0;
-	tm.tv_nsec = 100 * 1000 * 1000; //100ms
 
 	DEBUG_MSG("SSLStrip: Total length %lu", total_len);
 
@@ -986,7 +974,7 @@ static int http_write(int fd, char *ptr, unsigned long int total_len)
 		bytes_remaining -= len;
 
 		DEBUG_MSG("SSLStrip: Bytes sent %d", bytes_sent);
-		nanosleep(&tm, NULL);
+      ec_usleep(MILLI2MICRO(100)); // 100ms
 
 	
 	}

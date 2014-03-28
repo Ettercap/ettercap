@@ -25,7 +25,7 @@
 #include <ec_threads.h>
 #include <ec_ui.h>
 #include <ec_hook.h>
-#include <time.h>
+#include <ec_sleep.h>
 
 
 /* globals */
@@ -209,12 +209,6 @@ static void port_stealing_stop(void)
 
    int i;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_nsec = GBL_CONF->arp_storm_delay * 1000;
-   tm.tv_sec = 0;
-#endif
-      
    DEBUG_MSG("port_stealing_stop");
    
    /* destroy the poisoner thread */
@@ -242,11 +236,7 @@ static void port_stealing_stop(void)
    for (i=0; i<2; i++) {
       LIST_FOREACH(s, &steal_table, next) {
          send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
-#if !defined(OS_WINDOWS)
-         nanosleep(&tm, NULL);
-#else
-         usleep(GBL_CONF->arp_storm_delay*1000);
-#endif
+         ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
       }      
    }
    
@@ -283,12 +273,6 @@ EC_THREAD_FUNC(port_stealer)
   
    heth = (struct eth_header *)fake_pck;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_nsec = GBL_CONF->port_steal_delay * 1000;
-   tm.tv_sec = 0;
-#endif
-  
    /* never ending loop */
    LOOP {
       
@@ -300,19 +284,12 @@ EC_THREAD_FUNC(port_stealer)
          if (!s->wait_reply) {
             memcpy(heth->sha, s->mac, ETH_ADDR_LEN);
             send_to_L2(&fake_po); 
-#if !defined(OS_WINDOWS)
-            nanosleep(&tm, NULL);
-#else
-            usleep(GBL_CONF->port_steal_delay);
-#endif
+            /* FIXME: port_steal_delay is defined as seconds; not microseconds... */
+            ec_usleep(GBL_CONF->port_steal_delay);
          }
       }      
-
-#if !defined(OS_WINDOWS)
-      nanosleep(&tm, NULL);
-#else
-      usleep(GBL_CONF->port_steal_delay);
-#endif
+      /* FIXME: port_steal_delay is defined as seconds; not microseconds... */
+      ec_usleep(GBL_CONF->port_steal_delay);
    }
    
    return NULL; 
@@ -386,12 +363,6 @@ static void send_queue(struct packet_object *po)
    struct eth_header *heth;
    int in_list, to_wait = 0;
 
-#if !defined(OS_WINDOWS)
-   struct timespec tm;
-   tm.tv_nsec = GBL_CONF->port_steal_send_delay * 1000;
-   tm.tv_sec = 0;
-#endif
-
    /* Check if it's an arp reply for us */
    if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))
       return;
@@ -437,11 +408,7 @@ static void send_queue(struct packet_object *po)
 	      
                /* Sleep only if we have more than one packet to send */
                if (to_wait) 
-#if !defined(OS_WINDOWS)
-                  nanosleep(&tm, NULL);
-#else
-                  usleep(GBL_CONF->port_steal_send_delay);
-#endif
+                  ec_usleep(GBL_CONF->port_steal_send_delay);
                to_wait = 1;
             }
             /* Restart the stealing process for this host */

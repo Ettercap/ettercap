@@ -39,6 +39,7 @@ set(EC_SRC
         ec_session.c
         ec_set.c
         ec_signals.c
+        ec_sleep.c
         ec_sniff_bridge.c
         ec_sniff.c
         ec_sniff_unified.c

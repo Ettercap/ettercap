@@ -28,6 +28,7 @@
 #include <ec_hook.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <ec_sleep.h>
 
 
 /* globals */
@@ -159,7 +160,7 @@ static EC_THREAD_FUNC(link_type_thread)
    send_arp(ARPOP_REQUEST, &(targets[1].ip), targets[1].mac, &(targets[0].ip), targets[0].mac);   
    
    /* wait for the response */
-   sleep(1);
+   ec_usleep(SEC2MICRO(1));
 
    /* remove the hook */
    hook_del(HOOK_PACKET_ARP, &parse_arp);

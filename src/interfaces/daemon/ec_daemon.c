@@ -26,11 +26,10 @@
 #include <ec_mitm.h>
 #include <ec_plugins.h>
 #include <ec_daemon.h>
+#include <ec_sleep.h>
 
-#include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <time.h>
 
 /* globals */
 static int fd;
@@ -142,12 +141,6 @@ void daemon_interface(void)
 
    struct plugin_list *plugin, *tmp;
 
-#if !defined(OS_WINDOWS)
-   struct timespec ts; 
-   ts.tv_sec = 1;
-   ts.tv_nsec = 0;
-#endif
-   
    LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
       /* check if the plugin exists */
       if (search_plugin(plugin->name) != ESUCCESS)
@@ -175,11 +168,7 @@ void daemon_interface(void)
    /* discard the messages */
    LOOP {
       CANCELLATION_POINT();
-#if !defined(OS_WINDOWS)
-      nanosleep(&ts, NULL);
-#else
-      usleep(1000);
-#endif
+      ec_usleep(SEC2MICRO(1));
       ui_msg_flush(MSG_ALL);
    }
    /* NOT REACHED */   

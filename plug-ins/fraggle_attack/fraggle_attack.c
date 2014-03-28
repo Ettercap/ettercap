@@ -12,6 +12,7 @@
 #include <ec_plugins.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <ec_sleep.h>
 
 #define UDP_PORT_7  7    //udp echo
 #define UDP_PORT_19 19   //udp chargen
@@ -126,7 +127,7 @@ static EC_THREAD_FUNC(fraggler)
             	send_udp(ip, &h->ip, h->mac, port_chargen, port_chargen, payload, length);
             }
 
-      usleep(1000*1000/GBL_CONF->sampling_rate);
+      ec_usleep(1000*1000/GBL_CONF->sampling_rate);
    }
 
    return NULL;

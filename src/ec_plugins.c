@@ -71,7 +71,7 @@ static pthread_mutex_t plugin_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void plugin_unload_all(void);
 static void plugin_print(char active, struct plugin_ops *ops);
-#if defined(OS_BSD) || defined (OS_DARWIN)
+#if defined (OS_DARWIN)
 int plugin_filter(struct dirent *d);
 #else
 int plugin_filter(const struct dirent *d);
@@ -126,7 +126,7 @@ int plugin_load_single(const char *path, char *name)
 /*
  * filter for the scandir function
  */
-#if defined(OS_BSD) || defined (OS_DARWIN)
+#if defined (OS_DARWIN)
 int plugin_filter(struct dirent *d)
 #else
 int plugin_filter(const struct dirent *d)

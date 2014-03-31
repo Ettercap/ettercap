@@ -228,7 +228,7 @@ endif(PCRE_LIBRARY)
 # libmath
 find_library(LIB_M m)
 if(NOT LIB_M)
-    message(FATAL_ERROR "Could not find libm, which is required for linking tests.")
+    message(FATAL_ERROR "Could not find libm!")
 endif(NOT LIB_M)
 set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${LIB_M})
 

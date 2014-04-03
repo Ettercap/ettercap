@@ -164,6 +164,8 @@ int send_to_iface(struct packet_object *po, struct iface_env *iface)
  */
 void capture_only_incoming(pcap_t *p, libnet_t *l)
 {
+   (void)p;
+   (void)l;
 #ifdef OS_LINUX   
    /*
     * a dirty hack to use the same socket for pcap and libnet.

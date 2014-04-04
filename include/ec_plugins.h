@@ -23,7 +23,11 @@ struct plugin_list
    LIST_ENTRY(plugin_list) next;
 };
 
-#define PLUGIN_PATTERN   "ec_*.so"
+#ifdef OS_WINDOWS
+  #define PLUGIN_PATTERN  "ec_*.dll"
+#else
+  #define PLUGIN_PATTERN  "ec_*.so"
+#endif
 
 EC_API_EXTERN void plugin_load_all(void);
 EC_API_EXTERN int plugin_load_single(const char *path, char *name);

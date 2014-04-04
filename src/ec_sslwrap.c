@@ -357,7 +357,7 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    /* the script is not defined */
    if (GBL_CONF->redir_command_on == NULL)
    {
-      USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?");
+      USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
       return -EFATAL;
    }
    snprintf(asc_sport, 16, "%u", sport);

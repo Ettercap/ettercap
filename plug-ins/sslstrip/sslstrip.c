@@ -472,7 +472,7 @@ static int http_insert_redirect(u_int16 dport)
 
 	if (GBL_CONF->redir_command_on == NULL)
 	{
-		USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?");
+		USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
 		return -EFATAL;
 	}
 	snprintf(asc_dport, 16, "%u", dport);

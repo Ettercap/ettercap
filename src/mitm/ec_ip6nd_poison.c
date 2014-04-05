@@ -172,6 +172,22 @@ EC_THREAD_FUNC(ndp_poisoner)
             if(!ip_addr_cmp(&t1->ip, &t2->ip))
                continue;
 
+            if (!GBL_CONF->ndp_poison_equal_mac)
+               /* skip equal mac addresses ... */
+               if (!memcmp(t1->mac, t2->mac, MEDIA_ADDR_LEN))
+                  continue;
+
+            /* 
+             * send spoofed ICMP packet to trigger a neighbor cache
+             * entry in the victims cache
+             */
+           if (i == 1 && GBL_CONF->ndp_poison_icmp) {
+              send_icmp6_echo(&t2->ip, &t1->ip);
+              /* from T2 to T1 */
+              if (!(flags & ND_ONEWAY)) 
+                 send_icmp6_echo(&t1->ip, &t2->ip);
+           } 
+
             send_icmp6_nadv(&t1->ip, &t2->ip, GBL_IFACE->mac, flags);
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&t2->ip, &t1->ip, GBL_IFACE->mac, flags & ND_ROUTER);
@@ -182,7 +198,7 @@ EC_THREAD_FUNC(ndp_poisoner)
 
       /* first warm up then release poison frequency */
       if (i < 5) 
-         ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_warp_up));
+         ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_warm_up));
       else 
          ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_delay));
 

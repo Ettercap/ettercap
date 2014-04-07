@@ -11,6 +11,10 @@
 	#include <sys/inttypes.h>
 #endif
 
+#if defined HAVE_INTTYPES_H
+	#include <inttypes.h>
+#endif
+
 #ifndef TYPES_DEFINED
 #define TYPES_DEFINED
 	typedef int8_t    int8;

@@ -419,10 +419,18 @@ static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *con
    /* and add it to our linked list */
    if(!*list) {
       row = malloc(sizeof(struct row_pairs));
+      if(row == NULL) {
+         USER_MSG("Failed create new connection row\n");
+         DEBUG_MSG("gktui_connections_add: failed to allocate memory for a new row");
+      }
       row->prev = NULL;
    } else {
       for(row = *list; row && row->next; row = row->next);
       row->next = malloc(sizeof(struct row_pairs));
+      if(row->next == NULL) {
+         USER_MSG("Failed create new connection row\n");
+         DEBUG_MSG("gktui_connections_add: failed to allocate memory for a new row");
+      }
       row->next->prev = row;
       row = row->next;
    }

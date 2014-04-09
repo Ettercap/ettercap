@@ -286,13 +286,19 @@ int base64decode(const char *src, char **outptr)
 
 #else
    int i, v;
-   uint8_t *dst = *outptr;
    int decodeLen = get_decode_len(src);
+   char *dst;
+
+   *outptr = (char *)malloc(decodeLen);
+   memset(*outptr, '\0', decodeLen);
+
+   dst = *outptr;
+   unsigned int sizeof_array = (sizeof(map2) / sizeof(map2[0]));
   
    v = 0;
    for (i=0; src[i] && src[i] != '='; i++) {
       unsigned int index = src[i] - 43;
-      if (index>=SIZEOF_ARRAY(map2) || map2[index] == 0xff)
+      if (index >= sizeof_array || map2[index] == 0xff)
          return -1;
       v = (v << 6) + map2[index];
       if (i & 3) {
@@ -330,11 +336,9 @@ int base64encode(const char *inputbuff, char **outptr)
    char *ret, *dst;
    unsigned i_bits = 0;
    int i_shift = 0;
-   int bytes_remaining = strlen(intputbuff);
-   
-   if (in_size >= UINT_MAX / 4)
-       return 0;
- 
+   int bytes_remaining = strlen(inputbuff);
+   *outptr = (char *)malloc(bytes_remaining*4/3+4);
+   memset(*outptr, '\0', bytes_remaining*4/3+4); 
 
    ret = dst = *outptr;
    while(bytes_remaining) {
@@ -351,8 +355,8 @@ int base64encode(const char *inputbuff, char **outptr)
    while((dst - ret) & 3)
       *dst++ = '=';
    *dst = '\0';
-      
-   return strlen(dst);
+     
+   return strlen(*outptr);
 #endif /* OS_LINUX */
    
 }

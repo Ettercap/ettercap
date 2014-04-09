@@ -128,10 +128,27 @@ u_int16 get_iface_mtu(const char *iface)
    return (1514);  /* Assume ethernet */
 }
 
-void disable_ip_forward (void)
+void disable_ip_forward(void)
 {
    DEBUG_MSG ("disable_ip_forward (no-op)\n");
 }
+
+void restore_ip_forward(void)
+{
+   DEBUG_MSG ("restore_ip_forward (no-op)\n");
+}
+
+#ifdef WITH_IPV6
+void disable_ipv6_forward(void)
+{
+   DEBUG_MSG ("disable_ipv6_forward (no-op)\n");
+}
+
+void restore_ipv6_forward(void)
+{
+   DEBUG_MSG ("restore_ipv6_forward (no-op)\n");
+}
+#endif
 
 /*
  * Get and set the read-event associated with the pcap handle. This

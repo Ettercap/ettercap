@@ -16,8 +16,8 @@
 #include <ec_sleep.h>
 
 /* globals */
-struct hosts_group nadv_group_one;
-struct hosts_group nadv_group_two;
+struct hosts_group ndp_group_one;
+struct hosts_group ndp_group_two;
 
 #if 0
 static LIST_HEAD(,ip_list) ping_list_one;
@@ -29,13 +29,13 @@ u_int8 flags;
 #define ND_ROUTER    ((u_int8)(1<<2))
 
 /* protos */
-void nadv_poison_init(void);
-static int nadv_poison_start(char *args);
-static void nadv_poison_stop(void);
-EC_THREAD_FUNC(nadv_poisoner);
+void ndp_poison_init(void);
+static int ndp_poison_start(char *args);
+static void ndp_poison_stop(void);
+EC_THREAD_FUNC(ndp_poisoner);
 static int create_list(void);
 static int create_list_silent(void);
-static void nadv_antidote(void);
+static void ndp_antidote(void);
 
 #if 0
 static void catch_response(struct packet_object *po);
@@ -44,24 +44,24 @@ static void record_mac(struct packet_object *po);
 
 /* c0d3 */
 
-void __init nadv_poison_init(void)
+void __init ndp_poison_init(void)
 {
    struct mitm_method mm;
 
    mm.name = "ndp";
-   mm.start = &nadv_poison_start;
-   mm.stop = &nadv_poison_stop;
+   mm.start = &ndp_poison_start;
+   mm.stop = &ndp_poison_stop;
 
    mitm_add(&mm);
 }
 
-static int nadv_poison_start(char *args)
+static int ndp_poison_start(char *args)
 {
    struct hosts_list *h, *tmp;
    int ret;
    char *p;
 
-   DEBUG_MSG("nadv_poison_start");
+   DEBUG_MSG("ndp_poison_start");
 
    flags = ND_ROUTER;
 
@@ -83,11 +83,11 @@ static int nadv_poison_start(char *args)
       SEMIFATAL_ERROR("NDP poisoning needs a non-emtpy hosts list.\n");
 
    /* clean the lists */
-   LIST_FOREACH_SAFE(h, &nadv_group_one, next, tmp) {
+   LIST_FOREACH_SAFE(h, &ndp_group_one, next, tmp) {
       LIST_REMOVE(h, next);
       SAFE_FREE(h);
    }
-   LIST_FOREACH_SAFE(h, &nadv_group_two, next, tmp) {
+   LIST_FOREACH_SAFE(h, &ndp_group_two, next, tmp) {
       LIST_REMOVE(h, next);
       SAFE_FREE(h);
    }
@@ -102,18 +102,19 @@ static int nadv_poison_start(char *args)
    }
    /* hook necessary? - Maybe if solicitations are seen */
 
-   ec_thread_new("nadv_poisoner", "NDP spoofing thread", &nadv_poisoner, NULL);
+   ec_thread_new("ndp_poisoner", "NDP spoofing thread", &ndp_poisoner, NULL);
 
    return ESUCCESS;
 }
 
-static void nadv_poison_stop(void)
+static void ndp_poison_stop(void)
 {
+   struct hosts_list *h;
    pthread_t pid;
 
-   DEBUG_MSG("nadv_poison_stop");
+   DEBUG_MSG("ndp_poison_stop");
    
-   pid = ec_thread_getpid("nadv_poisoner");
+   pid = ec_thread_getpid("ndp_poisoner");
    if(!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
    else {
@@ -124,22 +125,40 @@ static void nadv_poison_stop(void)
    USER_MSG("NDP poisoner deactivated.\n");
 
    USER_MSG("Depoisoning the victims.\n");
-   nadv_antidote();
+   ndp_antidote();
 
    ui_msg_flush(2);
+
+   /* delete the elements in the first list */
+   while(LIST_FIRST(&ndp_group_one) != NULL) {
+      h = LIST_FIRST(&ndp_group_one);
+      LIST_REMOVE(h, next);
+      SAFE_FREE(h);
+   }
+
+   /* delete the elements in the second list */
+   while(LIST_FIRST(&ndp_group_two) != NULL) {
+      h = LIST_FIRST(&ndp_group_two);
+      LIST_REMOVE(h, next);
+      SAFE_FREE(h);
+   }
+
+   /* reset the remote flag */
+   GBL_OPTIONS->remote = 0;
 
    return;
 }
 
-EC_THREAD_FUNC(nadv_poisoner)
+EC_THREAD_FUNC(ndp_poisoner)
 {
+   int i = 1;
    struct hosts_list *t1, *t2;
 
    /* variable not used */
    (void) EC_THREAD_PARAM;
 
    ec_thread_init();
-   DEBUG_MSG("nadv_poisoner");
+   DEBUG_MSG("ndp_poisoner");
 
    /* it's a loop */
    LOOP {
@@ -147,11 +166,27 @@ EC_THREAD_FUNC(nadv_poisoner)
       CANCELLATION_POINT();
 
       /* Here we go! */
-      LIST_FOREACH(t1, &nadv_group_one, next) {
-         LIST_FOREACH(t2, &nadv_group_two, next) {
+      LIST_FOREACH(t1, &ndp_group_one, next) {
+         LIST_FOREACH(t2, &ndp_group_two, next) {
 
             if(!ip_addr_cmp(&t1->ip, &t2->ip))
                continue;
+
+            if (!GBL_CONF->ndp_poison_equal_mac)
+               /* skip equal mac addresses ... */
+               if (!memcmp(t1->mac, t2->mac, MEDIA_ADDR_LEN))
+                  continue;
+
+            /* 
+             * send spoofed ICMP packet to trigger a neighbor cache
+             * entry in the victims cache
+             */
+           if (i == 1 && GBL_CONF->ndp_poison_icmp) {
+              send_icmp6_echo(&t2->ip, &t1->ip);
+              /* from T2 to T1 */
+              if (!(flags & ND_ONEWAY)) 
+                 send_icmp6_echo(&t1->ip, &t2->ip);
+           } 
 
             send_icmp6_nadv(&t1->ip, &t2->ip, GBL_IFACE->mac, flags);
             if(!(flags & ND_ONEWAY))
@@ -161,8 +196,12 @@ EC_THREAD_FUNC(nadv_poisoner)
          }
       }
 
+      /* first warm up then release poison frequency */
+      if (i < 5) 
+         ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_warm_up));
+      else 
+         ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_delay));
 
-      ec_usleep(SEC2MICRO(1));
    }
 
    return NULL;
@@ -196,7 +235,7 @@ static int create_list(void)
             memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
             memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
 
-            LIST_INSERT_HEAD(&nadv_group_one, g, next);
+            LIST_INSERT_HEAD(&ndp_group_one, g, next);
          }
       }
    }
@@ -219,7 +258,7 @@ static int create_list(void)
          memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
          memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
 
-         LIST_INSERT_HEAD(&nadv_group_one, g, next);
+         LIST_INSERT_HEAD(&ndp_group_one, g, next);
       }
    }
 
@@ -243,7 +282,7 @@ static int create_list(void)
             memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
             memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
 
-            LIST_INSERT_HEAD(&nadv_group_two, g, next);
+            LIST_INSERT_HEAD(&ndp_group_two, g, next);
          }
       }
    }
@@ -266,7 +305,7 @@ static int create_list(void)
          memcpy(&g->ip, &h->ip, sizeof(struct ip_addr));
          memcpy(&g->mac, &h->mac, MEDIA_ADDR_LEN);
 
-         LIST_INSERT_HEAD(&nadv_group_two, g, next);
+         LIST_INSERT_HEAD(&ndp_group_two, g, next);
       }
    }
 
@@ -291,7 +330,7 @@ static int create_list_silent(void)
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &i->ip, sizeof(struct ip_addr));
          memcpy(&h->mac, &GBL_TARGET1->mac, MEDIA_ADDR_LEN);
-         LIST_INSERT_HEAD(&nadv_group_one, h, next);
+         LIST_INSERT_HEAD(&ndp_group_one, h, next);
 
          USER_MSG(" TARGET 1 : %-40s %17s\n", 
                ip_addr_ntoa(&i->ip, tmp),
@@ -313,7 +352,7 @@ static int create_list_silent(void)
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &i->ip, sizeof(struct ip_addr));
          memcpy(&h->mac, &GBL_TARGET2->mac, MEDIA_ADDR_LEN);
-         LIST_INSERT_HEAD(&nadv_group_two, h, next);
+         LIST_INSERT_HEAD(&ndp_group_two, h, next);
 
          USER_MSG(" TARGET 2 : %-40s %17s\n", 
                ip_addr_ntoa(&i->ip, tmp),
@@ -328,20 +367,29 @@ static int create_list_silent(void)
    return ESUCCESS;
 }
 
-static void nadv_antidote(void)
+/* restore neighbor cache of victims */
+static void ndp_antidote(void)
 {
    struct hosts_list *h1, *h2;
    int i;
 
-   DEBUG_MSG("nadv_antidote");
+   DEBUG_MSG("ndp_antidote");
 
    /* do it twice */
    for(i = 0; i < 2; i++) {
-      LIST_FOREACH(h1, &nadv_group_one, next) {
-         LIST_FOREACH(h2, &nadv_group_two, next) {
+      LIST_FOREACH(h1, &ndp_group_one, next) {
+         LIST_FOREACH(h2, &ndp_group_two, next) {
+            
+            /* skip equal ip */
             if(!ip_addr_cmp(&h1->ip, &h2->ip))
                continue;
 
+            if (!GBL_CONF->ndp_poison_equal_mac)
+               /* skip equal mac addresses ... */
+               if (!memcmp(h1->mac, h2->mac, MEDIA_ADDR_LEN))
+                  continue;
+
+            /* send neighbor advertisements with the correct information */
             send_icmp6_nadv(&h1->ip, &h2->ip, h1->mac, flags);
             if(!(flags & ND_ONEWAY))
                send_icmp6_nadv(&h2->ip, &h1->ip, h2->mac, flags & ND_ROUTER);
@@ -350,7 +398,7 @@ static void nadv_antidote(void)
          }
       }
 
-      ec_usleep(SEC2MICRO(1));
+      ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_warm_up));
    }
 }
 
@@ -380,7 +428,7 @@ static void catch_response(struct packet_object *po)
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &po->L3.src, sizeof(struct ip_addr));
          memcpy(&h->mac, &po->L2.src, MEDIA_ADDR_LEN);
-         LIST_INSERT_HEAD(&nadv_group_one, h, next);
+         LIST_INSERT_HEAD(&ndp_group_one, h, next);
          break;
       }
    }
@@ -391,7 +439,7 @@ static void catch_response(struct packet_object *po)
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &po->L3.src, sizeof(struct ip_addr));
          memcpy(&h->mac, &po->L2.src, MEDIA_ADDR_LEN);
-         LIST_INSERT_HEAD(&nadv_group_two, h, next);
+         LIST_INSERT_HEAD(&ndp_group_two, h, next);
          break;
       }
    }
@@ -422,14 +470,14 @@ static void record_mac(struct packet_object *po)
       return;
    }
 
-   LIST_FOREACH(h, &nadv_group_one, next) {
+   LIST_FOREACH(h, &ndp_group_one, next) {
       if(!ip_addr_cmp(&h->ip, ip)) {
          memcpy(&h->mac, mac, MEDIA_ADDR_LEN);
          return;
       }
    }
 
-   LIST_FOREACH(h, &nadv_group_two, next) {
+   LIST_FOREACH(h, &ndp_group_two, next) {
       if(!ip_addr_cmp(&h->ip, ip)) {
          memcpy(&h->mac, mac, MEDIA_ADDR_LEN);
          return;

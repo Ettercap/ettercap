@@ -114,6 +114,22 @@ void restore_ip_forward(void)
 
 }
 
+#ifdef WITH_IPV6
+/* 
+ * empty wrapper functions until IPv6 support for Windows
+ */
+void disable_ipv6_forward(void)
+{
+   DEBUG_MSG ("disable_ipv6_forward (no-op)\n");
+}
+
+void restore_ipv6_forward(void)
+{
+   DEBUG_MSG ("restore_ipv6_forward (no-op)\n");
+}
+#endif
+
+
 /* 
  * get the MTU parameter from the interface 
  */

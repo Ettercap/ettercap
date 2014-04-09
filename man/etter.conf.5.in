@@ -139,17 +139,50 @@ you have to tune this option to the lowest acceptable value.
 
 
 .TP
+.B ndp_poison_warm_up
+This option operates similar to the arp_poison_warm_up option. 
+When the poisoning process starts, this option controls the NDP poison delay 
+for the first 5 poisons (to be sure the poisoning process has been successful). 
+After the first 5 poisons, the delay is incremented (to keep up the poisoning). 
+This variable controls the delay for the first 5 poisons. The value should be 
+lower than the \fBndp_poison_delay\fR. The value is in seconds.
+.br
+The same delay is used when the victims are restored to the original associations
+ when ettercap is closed.
+.br
+
+.TP
+.B ndp_poison_delay
+This option is similar to the arp_poison_delay option.
+It controls the delay in seconds for sending out the poisoned NDP packets to 
+poison victim's neighbor cache. This value may be increased to hide from IDSs. 
+But increasing the value increases as well the probability for failing race 
+conditions during neighbor discovery and to miss some packets. 
+.br
+
+.TP
 .B ndp_poison_send_delay
-This option controls the poison delay in microseconds to control the frequency 
-between false neighbor advertisements are sent to poison the victim's neighbor
-cache. This value may be increased to hide from IDSs. But increasing the value
-increases as well the probability for failing race conditions during neighbor
+This option controls the delay in microseconds between poisoned NDP packets are 
+sent. This value may be increased to hide from IDSs. But increasing the value 
+increases as well the probability for failing race conditions during neighbor 
 discovery and to miss some packets. 
 .br
 
-.B NOTE:
-This option is only available if ettercap has been built with IPv6 support
+.TP
+.B ndp_poison_icmp
+Enable the sending of a spoofed ICMPv6 message to motivate the targets to 
+perform neighbor discovery. This will create an entry in the host neighbor 
+cache, so ettercap will be able to win the race condition and poison the 
+target. Useful against targets that do not accept neighbor advertisements 
+if the entry is not in the cache.
+.br
 
+.TP
+.B ndp_poison_equal_mac
+Set this option to 0 if you want to skip the NDP poisoning of two hosts with the
+same mac address. This may happen if a NIC has one or more aliases on the same
+network.
+.br
 
 .TP
 .B icmp6_probe_delay
@@ -161,7 +194,7 @@ delay.
 .br
 
 .B NOTE:
-This option is only available if ettercap has been built with IPv6 support
+The ndp and icmp6 options are only available if ettercap has been built with IPv6 support
 
 
 .TP 20

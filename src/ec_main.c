@@ -116,6 +116,16 @@ int main(int argc, char *argv[])
     * the forwarding will be done by ettercap.
     */
    if(!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm) {
+#ifdef WITH_IPV6
+      /*
+       * disable_ipv6_forward() registers the restore function with atexit() 
+       * which relies on the regain_privs_atexit() registered in 
+       * disable_ip_forward() below. 
+       * So the call of disable_ipv6_forward() must NOT be after the call of 
+       * disable_ip_forward().
+       */
+      disable_ipv6_forward();
+#endif
       disable_ip_forward();
 	
 #ifdef OS_LINUX

@@ -36,10 +36,6 @@
 #include <ec_lua.h>
 #endif
 
-#ifdef HAVE_CURL
-#include <curl/curl.h>
-#endif
-
 #include <ctype.h>
 
 #ifndef OS_LINUX

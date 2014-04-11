@@ -74,6 +74,14 @@ ARP scan. You can increment this value to be less aggressive at startup. The
 randomized scan plus a high delay can fool some types of ARP scan detectors.
 
 .TP
+.B arp_poison_smart
+With this variable set, only 3 inital poisoned ARP messages are sent to the 
+victims. This poisoned status is kept up by ettercap with responding to ARP 
+requests from victims that want to refresh their ARP cache. This makes the 
+ARP poisoning very stealthy but may be unreliable on shared media such as
+WiFi.
+
+.TP
 .B arp_poison_warm_up
 When the poisoning process starts, the inter\-packet delay is low for the first
 5 poisons (to be sure the poisoning process has been successful). After the

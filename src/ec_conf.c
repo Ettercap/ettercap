@@ -39,6 +39,7 @@ static struct conf_entry privs[] = {
 static struct conf_entry mitm[] = {
    { "arp_storm_delay", NULL },
    { "arp_poison_delay", NULL },
+   { "arp_poison_smart", NULL },
    { "arp_poison_warm_up", NULL },
    { "arp_poison_icmp", NULL },
    { "arp_poison_reply", NULL },
@@ -155,6 +156,7 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&privs, "ec_uid", &GBL_CONF->ec_uid);
    set_pointer((struct conf_entry *)&privs, "ec_gid", &GBL_CONF->ec_gid);
    set_pointer((struct conf_entry *)&mitm, "arp_storm_delay", &GBL_CONF->arp_storm_delay);
+   set_pointer((struct conf_entry *)&mitm, "arp_poison_smart", &GBL_CONF->arp_poison_smart);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
    set_pointer((struct conf_entry *)&mitm, "arp_poison_icmp", &GBL_CONF->arp_poison_icmp);

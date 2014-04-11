@@ -23,6 +23,7 @@ struct ec_conf {
    int ec_uid;
    int ec_gid;
    int arp_storm_delay;
+   int arp_poison_smart;
    int arp_poison_warm_up;
    int arp_poison_delay;
    int arp_poison_icmp;

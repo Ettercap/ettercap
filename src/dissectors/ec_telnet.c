@@ -138,7 +138,7 @@ FUNC_DECODER(dissector_telnet)
          
          /* collect the subsequent packets */
          } else {
-            size_t i;
+            size_t i, stringlen;
             u_char *p;
             u_char str[strlen(s->data) + PACKET->DATA.disp_len + 2];
 
@@ -148,7 +148,8 @@ FUNC_DECODER(dissector_telnet)
             snprintf((char*)str, strlen(s->data) + PACKET->DATA.disp_len + 2, "%s%s", (char *)s->data, ptr);
             
             /* parse the string for backspaces and erase as wanted */
-            for (p = str, i = 0; i < strlen((const char*)str); i++) {
+            stringlen = strlen((const char*)str);
+            for (p = str, i = 0; i < stringlen; i++) {
                if (str[i] == '\b' || str[i] == 0x7f) {
                   p--;
                } else {

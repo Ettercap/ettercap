@@ -245,6 +245,7 @@ void load_conf(void)
    char line[128];
    char *p, *q, **tmp;
    int lineno = 0;
+   size_t tmplen;
    struct conf_entry *curr_section = NULL;
    void *value = NULL;
 
@@ -359,10 +360,11 @@ void load_conf(void)
          
          /* trim the ending quotes */
          p = *tmp;
+         tmplen = strlen(*tmp);
          do {
             if (*p == '\"')
                *p = 0;
-         } while (p++ < *tmp + strlen(*tmp) );
+         } while (p++ < *tmp + tmplen );
          
          DEBUG_MSG("load_conf: \tENTRY: %s  [%s]", q, *tmp);
       } else {

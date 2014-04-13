@@ -163,13 +163,14 @@ FUNC_DECODER(dissector_icq)
  */
 static void decode_pwd(char *pwd, char *outpwd)
 {
-   size_t x;
+   size_t x, pwdlen;
    u_char pwd_key[] = {
       0xF3, 0x26, 0x81, 0xC4, 0x39, 0x86, 0xDB, 0x92,
       0x71, 0xA3, 0xB9, 0xE6, 0x53, 0x7A, 0x95, 0x7C
    };
    
-   for( x = 0; x < strlen(pwd); x++)
+   pwdlen = strlen(pwd);
+   for( x = 0; x < pwdlen; x++)
       *(outpwd + x) = pwd[x] ^ pwd_key[x];
    
    return;

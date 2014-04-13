@@ -536,6 +536,7 @@ static void wdg_input_consolidate(struct wdg_object *wo)
    WDG_WO_EXT(struct wdg_input_handle, ww);
    char *buf;
    int i = 0, j;
+   size_t buflen;
    void (*callback)(void);
    
    WDG_DEBUG_MSG("wdg_input_consolidate");
@@ -543,9 +544,10 @@ static void wdg_input_consolidate(struct wdg_object *wo)
    while(ww->fields[i] != NULL) {
       /* get the buffer */
       buf = field_buffer(ww->fields[i+1], 0);
+      buflen = strlen(buf);
 
       /* trim out the trailing spaces */
-      for (j = strlen(buf) - 1; j >= 0; j--)
+      for (j = buflen - 1; j >= 0; j--)
          if (buf[j] == ' ')
             buf[j] = 0;
          else

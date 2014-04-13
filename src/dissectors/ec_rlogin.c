@@ -122,7 +122,7 @@ FUNC_DECODER(dissector_rlogin)
    
    /* concat the pass to the collected user */
    if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS && s->data) {
-      size_t i;
+      size_t i, stringlen;
       char *p;
       char str[strlen(s->data) + PACKET->DATA.disp_len + 2];
 
@@ -132,7 +132,8 @@ FUNC_DECODER(dissector_rlogin)
       snprintf(str, strlen(s->data) + PACKET->DATA.disp_len + 2, "%s%s", (char *)s->data, ptr);
       
       /* parse the string for backspaces and erase as wanted */
-      for (p = str, i = 0; i < strlen(str); i++) {
+      stringlen = strlen(str);
+      for (p = str, i = 0; i < stringlen; i++) {
          if (str[i] == '\b' || str[i] == 0x7f) {
             /* don't go behind str */
             if (p > str)

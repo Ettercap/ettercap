@@ -1,5 +1,7 @@
 /*
-    ettercap -- dissector RLOGIN -- TCP 512 513
+    ettercap -- dissector RLOGIN -- TCP 512 513 514, UDP 513
+
+    These ports are the well known Unix R-Services (rexec, rlogin, rshell, rwho)
 
     Copyright (C) ALoR & NaGA
 
@@ -41,6 +43,8 @@ void __init rlogin_init(void)
 {
    dissect_add("rlogin", APP_LAYER_TCP, 512, dissector_rlogin);
    dissect_add("rlogin", APP_LAYER_TCP, 513, dissector_rlogin);
+   dissect_add("rlogin", APP_LAYER_UDP, 513, dissector_rlogin);
+   dissect_add("rlogin", APP_LAYER_TCP, 514, dissector_rlogin);
 }
 
 /*

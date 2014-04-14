@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector icq -- TCP 5190
+    ettercap -- dissector icq -- TCP 5190 5191 5192 5193
 
     Copyright (C) ALoR & NaGA
 
@@ -64,6 +64,9 @@ static void decode_pwd(char *pwd, char *outpwd);
 static void __init icq_init(void)
 {
    dissect_add("icq", APP_LAYER_TCP, 5190, dissector_icq);
+   dissect_add("icq", APP_LAYER_TCP, 5191, dissector_icq);
+   dissect_add("icq", APP_LAYER_TCP, 5192, dissector_icq);
+   dissect_add("icq", APP_LAYER_TCP, 5193, dissector_icq);
 }
 
 FUNC_DECODER(dissector_icq)

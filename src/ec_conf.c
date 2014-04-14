@@ -351,7 +351,7 @@ void load_conf(void)
       /* strings must be handled in a different way */
       if (curr_section == (struct conf_entry *)&strings) {
          /* trim the quotes */
-         if (*p == '\"')
+         if (*p == '"')
             p++;
          
          /* set the string value */ 
@@ -362,8 +362,10 @@ void load_conf(void)
          p = *tmp;
          tmplen = strlen(*tmp);
          do {
-            if (*p == '\"')
+            if (*p == '"') {
                *p = 0;
+               break;
+            }
          } while (p++ < *tmp + tmplen );
          
          DEBUG_MSG("load_conf: \tENTRY: %s  [%s]", q, *tmp);

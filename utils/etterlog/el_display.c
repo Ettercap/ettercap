@@ -144,26 +144,26 @@ static void display_packet(void)
 
 static void display_headers(struct log_header_packet *pck)
 {
-   /* it is at least 26... rounding up */
-   char time[28];
    char tmp1[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
    char flags[8];
    char *p = flags;
    char proto[5];
    char str[128];
-   
+   const char *ts_str;
+   time_t time;
    memset(flags, 0, sizeof(flags));
    
    write(fileno(stdout), "\n\n", 2);
    
-   /* remove the final '\n' */
-   strcpy(time, ctime((time_t *)&pck->tv.tv_sec));
-   time[strlen(time)-1] = 0;
-   
-   /* displat the date */
-   sprintf(str, "%s [%lu]\n", time, (unsigned long)pck->tv.tv_usec);
-   write(fileno(stdout), str, strlen(str));
+   time = (time_t) pck->tv.tv_sec;
+   ts_str = ctime(&time);
+
+   /* display the date. ctime() has a newline at end. */
+   if (ts_str)
+      fprintf(stdout, "\n\n%s [%lu]\n", ts_str, (unsigned long) pck->tv.tv_usec);
+   else
+      fprintf(stdout, "\n\n%lu.%06lu [%lu]\n", pck->tv.tv_sec, pck->tv.tv_usec, (unsigned long) pck->tv.tv_usec);
   
    if (GBL.showmac) {
       /* display the mac addresses */

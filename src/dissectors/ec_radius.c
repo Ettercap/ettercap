@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector RADIUS -- TCP/UDP 1645 1646 1812
+    ettercap -- dissector RADIUS -- TCP/UDP 1645 1646 1812 1813
 
     Copyright (C) ALoR & NaGA
 
@@ -97,6 +97,8 @@ void __init radius_init(void)
    dissect_add("radius", APP_LAYER_UDP, 1646, dissector_radius);
    dissect_add("radius", APP_LAYER_TCP, 1812, dissector_radius);
    dissect_add("radius", APP_LAYER_UDP, 1812, dissector_radius);
+   dissect_add("radius", APP_LAYER_TCP, 1813, dissector_radius);
+   dissect_add("radius", APP_LAYER_UDP, 1813, dissector_radius);
 }
 
 FUNC_DECODER(dissector_radius)

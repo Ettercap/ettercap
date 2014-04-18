@@ -300,7 +300,7 @@ int fingerprint_submit(const char *finger, char *os)
    char page[] = "/fingerprint.php";
    char getmsg[1024];
    char *os_encoded;
-   size_t i;
+   size_t i, os_enclen;
  
    memset(getmsg, 0, sizeof(getmsg));
   
@@ -330,7 +330,8 @@ int fingerprint_submit(const char *finger, char *os)
   
    os_encoded = strdup(os);
    /* sanitize the os (encode the ' ' to '+') */
-   for (i = 0; i < strlen(os_encoded); i++)
+   os_enclen = strlen(os_encoded);
+   for (i = 0; i < os_enclen; i++)
       if (os_encoded[i] == ' ') 
          os_encoded[i] = '+';
       

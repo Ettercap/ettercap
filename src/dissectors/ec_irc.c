@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector irc -- TCP 6666 6667 6668 6669
+    ettercap -- dissector irc -- TCP 6665 6666 6667 6668 6669
 
     Copyright (C) ALoR & NaGA
 
@@ -39,6 +39,7 @@ void irc_init(void);
 
 void __init irc_init(void)
 {
+   dissect_add("irc", APP_LAYER_TCP, 6665, dissector_irc);
    dissect_add("irc", APP_LAYER_TCP, 6666, dissector_irc);
    dissect_add("irc", APP_LAYER_TCP, 6667, dissector_irc);
    dissect_add("irc", APP_LAYER_TCP, 6668, dissector_irc);

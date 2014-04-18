@@ -136,7 +136,8 @@ u_int16 get_iface_mtu(const char *iface)
 
    /* open the socket to work on */
    sock = socket(PF_INET, SOCK_DGRAM, 0);
-               
+   if (sock = -1)
+      FATAL_ERROR("Unable to open socket on interface for MTU query\n");               
    memset(&ifr, 0, sizeof(ifr));
    strncpy(ifr.ifr_name, iface, sizeof(ifr.ifr_name));
                         

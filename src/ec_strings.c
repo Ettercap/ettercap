@@ -386,8 +386,10 @@ int str_hex_to_bytes(char *string, u_char *bytes)
    char value[3]; /* two for the hex and the NULL terminator */
    unsigned int value_bin;
    u_int i;
+   size_t slen;
 
-   for (i = 0; i < strlen(string); i++) {
+   slen = strlen(string);
+   for (i = 0; i < slen; i++) {
       strncpy(value, string + i*2, 2);
       if (sscanf(value, "%02X", &value_bin) != 1)
          return -EINVALID;

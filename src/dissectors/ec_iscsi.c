@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector for iSCSI CHAP authentication -- TCP 3260
+    ettercap -- dissector for iSCSI CHAP authentication -- TCP 860 3260
 
     Copyright (C) Dhiru Kholia (dhiru at openwall.com)
 
@@ -96,6 +96,7 @@ static unsigned char *_memmem(unsigned char *haystack, int hlen, char *needle, i
 
 void __init iscsi_init(void)
 {
+   dissect_add("iscsi", APP_LAYER_TCP, 860, dissector_iscsi);
    dissect_add("iscsi", APP_LAYER_TCP, 3260, dissector_iscsi);
 }
 

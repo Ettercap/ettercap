@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector mountd - RPC
+    ettercap -- dissector mountd -- TCP 2049
 
     Copyright (C) ALoR & NaGA
 
@@ -45,6 +45,7 @@ void mountd_init(void);
 void __init mountd_init(void)
 {
    /* This is inserted into the dissectors' chain by the portmap dissector */
+   dissect_add("mountd", APP_LAYER_TCP, 2049, dissector_mountd);
 }
 
 FUNC_DECODER(dissector_mountd)

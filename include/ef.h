@@ -78,7 +78,6 @@ extern struct globals gbls;
 #define BIT_TEST(r,b)      ( r[b>>3]  &   1<<(b&7) )
 #define BIT_NOT(r,b)       ( r[b>>3] ^=   1<<(b&7) )
 
-
 /* ANSI colors */
 #ifndef OS_WINDOWS
    #define EC_COLOR_END    "\033[0m"

@@ -87,22 +87,12 @@ static void display_headers(struct packet_object *po)
    char flags[8];
    char *p = flags;
    char proto[5];
-   const char *ts_str;
-   time_t time;
    
    memset(flags, 0, sizeof(flags));
    memset(proto, 0, sizeof(proto));   
 
-   fprintf(stdout, "\n\n");
-   
-   time = (time_t) po->ts.tv_sec;
-   ts_str = ctime(&time);
-
    /* display the date. ctime() has a newline at end. */
-   if (ts_str)
-      fprintf(stdout, "%s", ts_str);
-   else
-      fprintf(stdout, "%lu.%06lu\n", po->ts.tv_sec, po->ts.tv_usec); 
+   fprintf(stdout, "\n\n%s [%lu]\n", ec_ctime(&po->ts), po->ts.tv_usec);
 
    if (GBL_OPTIONS->ext_headers) {
       /* display the mac addresses */

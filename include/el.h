@@ -36,7 +36,7 @@
 #include <ec_log.h>
 #include <ec_profiles.h>
 #include <ec_strings.h>
-
+#include <ec_utils.h>
 #include <zlib.h>
 #include <regex.h>
 
@@ -107,11 +107,11 @@ extern struct globals gbls;
 
 #define GBL gbls
 
-#define GBL_PROGRAM "etterlog"
+
 #define GBL_LOGFILE GBL.logfile
 #define GBL_LOG_FD  GBL.fd
 #define GBL_TARGET (GBL.t)
-
+#define GBL_PROGRAM "etterlog"
 
 
 #define BIT_SET(r,b)       ( r[b>>3] |=   1<<(b&7) )

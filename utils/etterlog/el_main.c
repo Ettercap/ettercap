@@ -36,8 +36,6 @@ void clean_exit(int errcode);
 int main(int argc, char *argv[])
 {
    int ret;
-   const char *ts_str;
-   time_t time;
    /* etterlog copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
@@ -58,14 +56,9 @@ int main(int argc, char *argv[])
    ret = get_header(&GBL.hdr);
    if (ret == -EINVALID)
       FATAL_ERROR("Invalid log file");
-   time = (time_t) &GBL.hdr.tv.tv_sec;
-   ts_str = ctime(&time);
    fprintf(stderr, "Log file version    : %s\n", GBL.hdr.version);
    /* display the date. ctime() has a newline at end. */
-   if (ts_str)
-      fprintf(stderr, "Timestamp           : %s", ts_str);
-   else
-      fprintf(stderr, "Timestamp           :%lu.%06lu\n", &GBL.hdr.tv.tv_sec, &GBL.hdr.tv.tv_usec);
+   fprintf(stderr, "Timestamp           : %s [%lu]\n", ec_ctime(&GBL.hdr.tv), GBL.hdr.tv.tv_usec);
    fprintf(stderr, "Type                : %s\n\n", (GBL.hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
   
    

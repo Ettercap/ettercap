@@ -37,6 +37,7 @@
 #include <ec_profiles.h>
 #include <ec_strings.h>
 #include <ec_utils.h>
+#include <ec_sniff.h>
 #include <zlib.h>
 #include <regex.h>
 

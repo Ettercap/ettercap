@@ -1,6 +1,6 @@
 # Copyright 2013 Ettercap Development Team.
 #
-# Distributed under GPL licnse.
+# Distributed under GPL license.
 #
 
 # Look for the header file

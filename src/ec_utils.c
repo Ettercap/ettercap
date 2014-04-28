@@ -38,7 +38,6 @@
 
 #include <ctype.h>
 
-#ifndef OS_LINUX
 #define BASE64_SIZE(x) (((x)+2) / 3 * 4 + 1)
 static const uint8_t map2[] =
 {
@@ -53,7 +52,6 @@ static const uint8_t map2[] =
     0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b,
     0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33
 };
-#endif
 
 /*
  * This function parses the input in the form [1-3,17,5-11]
@@ -252,35 +250,9 @@ int get_decode_len(const char *b64_str) {
    return (int)len*0.75 - padding;
 }
 
-#ifdef OS_LINUX
-#include <openssl/pem.h>
-#include <math.h>
-#endif 
 
 int base64decode(const char *src, char **outptr)
 {
-#ifdef OS_LINUX
-   BIO *bio, *b64;
-   int decodeLen = get_decode_len(src), len = 0;
-
-   *outptr = (char *)malloc(decodeLen+1);
-   memset(*outptr, '\0', decodeLen+1);
-   FILE* stream = fmemopen((void*)src, strlen(src), "r");
-
-   b64 = BIO_new(BIO_f_base64());
-   bio = BIO_new_fp(stream, BIO_NOCLOSE);
-   bio = BIO_push(b64, bio);
-   BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-   len = BIO_read(bio, *outptr, strlen(src));
-
-   if (len != decodeLen)
-      return 0;
-
-   (*outptr)[len] = '\0';
-   BIO_free_all(bio);
-   fclose(stream);
-
-#else
    int i, v;
    int decodeLen = get_decode_len(src);
    char *dst;
@@ -304,28 +276,10 @@ int base64decode(const char *src, char **outptr)
       }    
    }
 
-#endif
    return decodeLen;
 }
 int base64encode(const char *inputbuff, char **outptr)
 {
-#ifdef OS_LINUX
-   BIO *bio, *b64;
-   FILE* stream;
-   int encodedSize = 4*ceil((double)strlen(inputbuff)/3);
-   *outptr = (char *)malloc(encodedSize+1);
-   stream = fmemopen(*outptr, encodedSize+1, "w");
-   b64 = BIO_new(BIO_f_base64());
-   bio = BIO_new_fp(stream, BIO_NOCLOSE);
-   bio = BIO_push(b64, bio);
-   BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-   BIO_write(bio, inputbuff, strlen(inputbuff));
-   (void)BIO_flush(bio);
-   BIO_free_all(bio);
-   fclose(stream);
-
-   return encodedSize;
-#else
    static const char b64[] = 
           "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -353,8 +307,6 @@ int base64encode(const char *inputbuff, char **outptr)
    *dst = '\0';
      
    return strlen(*outptr);
-#endif /* OS_LINUX */
-   
 }
 
 /* EOF */

@@ -72,16 +72,22 @@ include(CheckLibraryExists)
 include(CheckIncludeFile)
 
 # Iconv
+FIND_LIBRARY(HAVE_ICONV iconv)
 CHECK_FUNCTION_EXISTS(iconv HAVE_UTF8)
-if(NOT HAVE_UTF8)
-    find_library(HAVE_ICONV iconv)
-    if(HAVE_ICONV)
-        set(HAVE_UTF8 1)
-        set(EC_LIBS ${EC_LIBS} ${HAVE_ICONV})
-# Not needed the next one?
-        set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_ICONV})
-    endif(HAVE_ICONV)
-endif(NOT HAVE_UTF8)
+if(HAVE_ICONV)
+    # Seem that we have a dedicated iconv library not built in libc (e.g. FreeBSD)
+    set(HAVE_UTF8 1)
+    set(EC_LIBS ${EC_LIBS} ${HAVE_ICONV})
+    set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_ICONV})
+else(HAVE_ICONV)
+    if(HAVE_UTF8)
+       # iconv built in libc
+    else(HAVE_UTF8)
+       message(FATAL_ERROR "iconv not found")
+    endif(HAVE_UTF8)
+endif(HAVE_ICONV)
+
+
 
 # LTDL
 if(ENABLE_PLUGINS)

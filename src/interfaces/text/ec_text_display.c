@@ -81,8 +81,7 @@ void text_print_packet(struct packet_object *po)
 
 static void display_headers(struct packet_object *po)
 {
-   /* it is at least 26... rounding up */
-   char time[28];
+
    char tmp1[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
    char flags[8];
@@ -92,16 +91,9 @@ static void display_headers(struct packet_object *po)
    memset(flags, 0, sizeof(flags));
    memset(proto, 0, sizeof(proto));   
 
-   fprintf(stdout, "\n\n");
-   
-   /* remove the final '\n' */
-   strncpy(time, ctime((time_t *)&po->ts.tv_sec), 28);
-   time[strlen(time)-1] = 0;
-   
-   /* displat the date */
-   fprintf(stdout, "%s\n", time);
-   //fprintf(stdout, "%x %x\n", (u_int)po->ts.tv_sec, (u_int)po->ts.tv_usec);
-  
+   /* display the date. ctime() has a newline at end. */
+   fprintf(stdout, "\n\n%s [%lu]\n", ec_ctime(&po->ts), po->ts.tv_usec);
+
    if (GBL_OPTIONS->ext_headers) {
       /* display the mac addresses */
       mac_addr_ntoa(po->L2.src, tmp1);

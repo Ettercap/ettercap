@@ -24,8 +24,8 @@
 
 /* proto */
 
-static void add_port(void *ports, int n);
-static void add_ip(void *digit, int n);
+static void add_port(void *ports, u_int n);
+static void add_ip(void *digit, u_int n);
 static void expand_range_ip(char *str, void *target);
 int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
 void add_ip_list(struct ip_addr *ip, struct target_env *t);
@@ -88,7 +88,7 @@ void target_compile(char *target)
                         
 }
 
-static void add_port(void *ports, int n)
+static void add_port(void *ports, u_int n)
 {
    u_int8 *bitmap = ports;
 
@@ -189,7 +189,7 @@ static void expand_range_ip(char *str, void *target)
 }
 
 /* fill the digit structure with data */
-static void add_ip(void *digit, int n)
+static void add_ip(void *digit, u_int n)
 {
    struct digit *buf = digit;
    

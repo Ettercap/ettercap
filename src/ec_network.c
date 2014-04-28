@@ -7,7 +7,9 @@
 
 #include <pcap.h>
 #include <libnet.h>
+#if !defined(OS_WINDOWS)
 #include <ifaddrs.h>
+#endif
 
 #if defined(OS_BSD_OPEN) || defined(OS_LINUX)
    /* LINUX does not care about timeout */
@@ -151,7 +153,6 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    pcap_t *pcap = NULL;
    libnet_t *lnet = NULL;
    struct bpf_program bpf;
-   struct ifaddrs *ifaddrs, *ifaddr;
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
    char lnet_errbuf[LIBNET_ERRBUF_SIZE];
    u_int16 snaplen;
@@ -160,6 +161,10 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    struct sockaddr_in *sa4;
    struct sockaddr_in6 *sa6;
    struct net_list *ip6;
+
+#if !defined(OS_WINDOWS)
+  struct ifaddrs *ifaddrs, *ifaddr;
+#endif
 
    DEBUG_MSG("source_init %s", name);
 
@@ -246,7 +251,45 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    source->lnet = lnet;
 
    source->mtu = get_iface_mtu(name);
+#if defined(OS_WINDOWS)
+  pcap_if_t *dev;
 
+  for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev; dev = dev->next) {
+      if(strcmp(dev->name, name))
+        continue;
+
+      if(dev->addresses->addr->sa_family == AF_INET) {
+        sa4 = (struct sockaddr_in*) dev->addresses->addr;
+
+        ip_addr_init(&source->ip, AF_INET, (u_char*)&sa4->sin_addr);
+        if(GBL_OPTIONS->netmask) {
+            struct in_addr net;
+
+            if(inet_aton(GBL_OPTIONS->netmask, &net) == 0)
+              FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
+            ip_addr_init(&source->netmask, AF_INET, (u_char*)&net.s_addr);
+        } else {
+            sa4 = (struct sockaddr_in*) dev->addresses->netmask;
+            ip_addr_init(&source->netmask, AF_INET, (u_char*)&sa4->sin_addr);
+        }
+        ip_addr_get_network(&source->ip, &source->netmask, &source->network);
+        source->has_ipv4 = 1;
+      }
+      else if(dev->addresses->addr->sa_family == AF_INET6) {
+        SAFE_CALLOC(ip6, 1, sizeof(*ip6));
+        sa6 = (struct sockaddr_in6*) dev->addresses->addr;
+        ip_addr_init(&ip6->ip, AF_INET6, (u_char*)&sa6->sin6_addr);
+
+        sa6 = (struct sockaddr_in6*) dev->addresses->netmask;
+        ip_addr_init(&ip6->netmask, AF_INET6, (u_char*)&sa6->sin6_addr);
+        ip_addr_get_network(&ip6->ip, &ip6->netmask, &ip6->network);
+        ip6->prefix = ip_addr_get_prefix(&ip6->netmask);
+        LIST_INSERT_HEAD(&source->ip6_list, ip6, next);
+        source->has_ipv6 = 1;
+      }
+  }
+
+#else
    ret = getifaddrs(&ifaddrs);
    ON_ERROR(ret, -1, "getifaddrs: %s", strerror(errno));
 
@@ -284,6 +327,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    }
 
    freeifaddrs(ifaddrs);
+#endif  /* OS_WINDOWS */
 
    source->is_ready = 1;
 
@@ -372,12 +416,19 @@ static void l3_init(void)
 #ifdef WITH_IPV6
    libnet_t *l6;
 #endif
+#ifdef OS_WINDOWS
+   const char *name = GBL_OPTIONS->iface;
+#else
+   const char *name = NULL;
+#endif
+
+
    char lnet_errbuf[LIBNET_ERRBUF_SIZE];
 
    DEBUG_MSG("l3_init");
 
    /* open the socket at layer 3 */
-   l4 = libnet_init(LIBNET_RAW4_ADV, NULL, lnet_errbuf);               
+   l4 = libnet_init(LIBNET_RAW4_ADV, name, lnet_errbuf);               
    if (l4 == NULL) {
       DEBUG_MSG("send_init: libnet_init(LIBNET_RAW4_ADV) failed: %s", lnet_errbuf);
       USER_MSG("Libnet failed IPv4 initialization. Don't send IPv4 packets.\n");
@@ -387,7 +438,7 @@ static void l3_init(void)
 
 #ifdef WITH_IPV6
    /* open the socket at layer 3 for IPv6 */
-   l6 = libnet_init(LIBNET_RAW6_ADV, NULL, lnet_errbuf);
+   l6 = libnet_init(LIBNET_RAW6_ADV, name, lnet_errbuf);
    if(l6 == NULL) {
       DEBUG_MSG("%s: libnet_init(LIBNET_RAW6_ADV) failed: %s", __func__, lnet_errbuf);
       USER_MSG("Libnet failed IPv6 initialization. Don't send IPv6 packets.\n");

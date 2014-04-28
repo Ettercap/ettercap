@@ -28,7 +28,9 @@
 
 #include <pcap.h>
 #include <libnet.h>
+#if !defined(OS_WINDOWS)
 #include <ifaddrs.h>
+#endif
 
 
 /* globals */

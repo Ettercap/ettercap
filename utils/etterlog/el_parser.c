@@ -316,66 +316,6 @@ void parse_options(int argc, char **argv)
 }
 
 
-/*
- * This function parses the input in the form [1-3,17,5-11]
- * and fill the structure with expanded numbers.
- */
-
-void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t )
-{
-   char *str = strdup(s);
-   char *p, *q, r;
-   char *end;
-   u_int a = 0, b = 0;
-   
-   p = str;
-   end = p + strlen(p);
-   
-   while (p < end) {
-      q = p;
-      
-      /* find the end of the first digit */
-      while ( isdigit((int)*q) && q++ < end);
-      
-      r = *q;   
-      *q = 0;
-      /* get the first digit */
-      a = atoi(p);
-      if (a > max) 
-         FATAL_ERROR("Out of range (%d) !!", max);
-      
-      /* it is a range ? */
-      if ( r == '-') {
-         p = ++q;
-         /* find the end of the range */
-         while ( isdigit((int)*q) && q++ < end);
-         *q = 0;
-         if (*p == '\0') 
-            FATAL_ERROR("Invalid range !!");
-         /* get the second digit */
-         b = atoi(p);
-         if (b > max) 
-            FATAL_ERROR("Out of range (%d)!!", max);
-         if (b < a)
-            FATAL_ERROR("Invalid decrementing range !!");
-      } else {
-         /* it is not a range */
-         b = a; 
-      } 
-      
-      /* process the range */
-      for(; a <= b; a++) {
-         func(t, a);
-      }
-      
-      if (q == end) break;
-      else  p = q + 1;      
-   }
-  
-   SAFE_FREE(str);
-}
-
-
 /* EOF */
 
 

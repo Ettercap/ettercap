@@ -34,38 +34,51 @@ static u_int16 v6_checksum(struct packet_object *po);
 
 static u_int16 sum(u_int8 *buf, size_t len)
 {
+   union u_pun {
+      u_int8 b[4];
+      u_int16 w;
+      u_int32 dw;
+   };
+   register u_int8 *cbuf = buf;
 #if OS_SIZEOF_P == 8
    register u_int64 csum = 0;
-   register u_int32 *cbuf = (u_int32 *)buf;
 #elif OS_SIZEOF_P == 4
    register u_int32 csum = 0;
-   register u_int16 *cbuf = (u_int16 *)buf;
 #endif
    register unsigned int nleft = len;
-   u_int16 tmp = 0;
 
-   while(nleft > sizeof(*cbuf) - 1) {
-      csum += *cbuf++;
-      nleft -= sizeof(*cbuf);
-   }
+
 #if OS_SIZEOF_P == 8
-   while(nleft > 1) {
-      csum += *(u_int16*)cbuf++;
+   while(nleft >= sizeof(u_int32)) {
+      union u_pun u = { .b[0] = cbuf[0], .b[1] = cbuf[1],
+                         .b[2] = cbuf[2], .b[3] = cbuf[3] };
+      csum += u.dw;
+      cbuf += sizeof(u_int32);
+      nleft -= sizeof(u_int32);
+   }
+#endif
+
+   while(nleft >= sizeof(u_int16)) {
+      union u_pun u = { .b[0] = cbuf[0], .b[1] = cbuf[1] };
+      csum += u.w;
+      cbuf += sizeof(u_int16);
       nleft -= sizeof(u_int16);
    }
-#endif
+
    if(nleft) {
-      *(u_int8*)&tmp = *(u_int8*)cbuf;
-      csum += tmp;
+      union u_pun u = { .b[0] = cbuf[0], .b[1] = 0 };
+      csum += u.w;
+      cbuf++;
+      nleft--;
    }
 
 #if OS_SIZEOF_P == 8
-   while(csum >> 32)
-      csum = (csum >> 32) + (csum & 0xffffffff);
+   csum = (csum >> 32) + (csum & 0xffffffff);
+   csum = (csum >> 32) + (csum & 0xffffffff);
 #endif
 
-   while(csum >> 16)
-      csum = (csum >> 16) + (csum & 0xffff);
+   csum = (csum >> 16) + (csum & 0xffff);
+   csum += (csum >> 16);
 
    return csum;
 }
@@ -105,16 +118,16 @@ static u_int16 v4_checksum(struct packet_object *po)
    csum = sum(po->L4.header, len);
 
    /* check the pseudo header */
-   csum += *po->L3.src.addr32 & 0xffff;
-   csum += *po->L3.src.addr32 >> 16;
-   csum += *po->L3.dst.addr32 & 0xffff;
-   csum += *po->L3.dst.addr32 >> 16;
+   csum += *po->L3.src.addr16[0];
+   csum += *po->L3.src.addr16[1];
+   csum += *po->L3.dst.addr16[0];
+   csum += *po->L3.dst.addr16[1];
 
    csum += htons((u_int16)po->L4.proto);
    csum += htons(len);
 
-   while(csum >> 16)
-      csum = (csum >> 16) + (csum & 0xffff);
+   csum = (csum >> 16) + (csum & 0xffff);
+   csum += (csum >> 16);
    
    return (u_int16)(~csum);
 }
@@ -131,8 +144,8 @@ static u_int16 v6_checksum(struct packet_object *po)
    csum += sum((uint8_t*)&po->L3.dst.addr, ntohs(po->L3.dst.addr_len));
    csum += htons(plen + po->L4.proto);
 
-   while(csum >> 16)
-      csum = (csum & 0xffff) + (csum >> 16);
+   csum = (csum & 0xffff) + (csum >> 16);
+   csum += (csum >> 16);
 
    return (u_int16)(~csum);
 }

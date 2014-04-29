@@ -74,9 +74,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
 {
    FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
-   bpf_u_int32 len;
+   u_int len;
    u_char *data;
-   bpf_u_int32 datalen;
+   u_int datalen;
 
    CANCELLATION_POINT();
 

@@ -1,8 +1,6 @@
 #ifndef ETTERCAP_STATS_H
 #define ETTERCAP_STATS_H
 
-#include <pcap.h>
-
 /*
  * this struct contains all field to collect 
  * statistics about packet and byte rate
@@ -71,7 +69,7 @@ EC_API_EXTERN unsigned long stats_queue_add(void);
 EC_API_EXTERN unsigned long stats_queue_del(void);
 
 EC_API_EXTERN void stats_half_start(struct half_stats *hs);
-EC_API_EXTERN void stats_half_end(struct half_stats *hs, bpf_u_int32 len);
+EC_API_EXTERN void stats_half_end(struct half_stats *hs, u_int len);
 
 
 #endif

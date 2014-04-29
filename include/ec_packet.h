@@ -6,7 +6,6 @@
 #include <ec_fingerprint.h>
 #include <ec_inet.h>
 #include <ec_session.h>
-#include <pcap.h>
 #include <sys/time.h>
 
 struct packet_object {
@@ -17,7 +16,7 @@ struct packet_object {
    struct L2 {
       u_int8 proto;
       u_char * header;
-      bpf_u_int32 len;
+      u_int len;
       u_int8 src[MEDIA_ADDR_LEN];
       u_int8 dst[MEDIA_ADDR_LEN];
       u_int8 flags;
@@ -28,7 +27,7 @@ struct packet_object {
       u_int16 proto;
       u_char * header;
       u_char * options;
-      bpf_u_int32 len;
+      u_int len;
       size_t payload_len;
       size_t optlen;
       struct ip_addr src;
@@ -41,7 +40,7 @@ struct packet_object {
       u_int8 flags;
       u_char * header;
       u_char * options;
-      bpf_u_int32 len;
+      u_int len;
       size_t optlen;
       u_int16 src;
       u_int16 dst;
@@ -51,7 +50,7 @@ struct packet_object {
    
    struct data {
       u_char * data;
-      bpf_u_int32 len;
+      u_int len;
       /* 
        * buffer containing the data to be displayed.
        * some dissector decripts the traffic, but the packet must be forwarded as
@@ -67,10 +66,10 @@ struct packet_object {
 
    } DATA;
 
-   bpf_u_int32 fwd_len;    /* length of the packet to be forwarded */
+   u_int fwd_len;    /* length of the packet to be forwarded */
    u_char * fwd_packet;    /* the pointer to the buffer to be forwarded */
    
-   bpf_u_int32 len;        /* total length of the packet */
+   u_int len;        /* total length of the packet */
    u_char * packet;        /* the buffer containing the real packet */
 
    /* Trace current session for injector chain */
@@ -109,10 +108,10 @@ struct packet_object {
    
 };
 
-EC_API_EXTERN struct packet_object* packet_allocate_object(u_char *data, bpf_u_int32 len);
-EC_API_EXTERN inline int packet_create_object(struct packet_object *po, u_char * buf, bpf_u_int32 len);
+EC_API_EXTERN struct packet_object* packet_allocate_object(u_char *data, u_int len);
+EC_API_EXTERN inline int packet_create_object(struct packet_object *po, u_char * buf, u_int len);
 EC_API_EXTERN inline int packet_destroy_object(struct packet_object *po);
-EC_API_EXTERN int packet_disp_data(struct packet_object *po, u_char *buf, bpf_u_int32 len);
+EC_API_EXTERN int packet_disp_data(struct packet_object *po, u_char *buf, u_int len);
 EC_API_EXTERN struct packet_object * packet_dup(struct packet_object *po, u_char flag);
 
 /* Do we want to duplicate data? */

@@ -203,6 +203,21 @@ remote_browser = "xdg-open http://%host%url"
  #   fi
  # ----- cut here -------
 
+#---------------
+#   FreeBSD
+#---------------
+
+# Before OF can be used, make sure the kernel module has been loaded by
+# `kldstat | grep pf.ko`. If the rusult is empty, you can load it by
+# `kldload pf.ko` or add 'pf_enable="YES"' to the /etc/rc.conf and reboot.
+
+# Check if the PF status is enabled by 
+# `pfctl -si | grep Status | awk '{print $2;}'`. If "Disabled", enable it with
+# `pfctl -e`.
+
+   #redir_command_on = "(pfctl -a sslsniff -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport') | pfctl -a sslsniff -f - 2> /dev/null"
+   #redir_command_off = "pfctl -a sslsniff -Fn 2> /dev/null"
+
 
 #---------------
 #   Open BSD

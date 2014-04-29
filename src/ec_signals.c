@@ -54,6 +54,10 @@ void signal_handler(void)
 {
    DEBUG_MSG("signal_handler activated");
 
+// fixing windows warnings
+   (void) signal_SEGV;
+   (void) signal_CHLD;
+
 #ifdef SIGSEGV
    signal_handle(SIGSEGV, signal_SEGV, 0);
 #endif

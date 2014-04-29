@@ -553,6 +553,8 @@ static int func_regex(struct filter_op *fop, struct packet_object *po)
 static int func_pcre(struct filter_op *fop, struct packet_object *po)
 {
 #ifndef HAVE_PCRE
+   (void) fop;
+   (void) po;
    JIT_FAULT("pcre_regex support not compiled in ettercap");
    return -ENOTFOUND;
 #else

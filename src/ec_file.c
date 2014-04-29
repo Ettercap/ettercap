@@ -56,7 +56,7 @@ char * get_local_path(const char *file)
 
 #ifdef OS_WINDOWS
    /* get the path in wich ettercap is running */
-   char *self_root = ec_win_get_ec_dir();
+   const char *self_root = ec_win_get_ec_dir();
 #else
    char *self_root = ".";
 #endif

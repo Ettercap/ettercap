@@ -357,7 +357,7 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    /* the script is not defined */
    if (GBL_CONF->redir_command_on == NULL)
    {
-      USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?");
+      USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
       return -EFATAL;
    }
    snprintf(asc_sport, 16, "%u", sport);
@@ -518,7 +518,8 @@ static void sslw_bind_wrapper(void)
    LIST_FOREACH(le, &listen_ports, next) { 
    
       le->fd = socket(AF_INET, SOCK_STREAM, 0);
-
+      if (le->fd == -1)
+        FATAL_ERROR("Unable to create socket in sslw_bind_wrapper()");
       memset(&sa_in, 0, sizeof(sa_in));
       sa_in.sin_family = AF_INET;
       sa_in.sin_addr.s_addr = INADDR_ANY;
@@ -530,7 +531,8 @@ static void sslw_bind_wrapper(void)
       } while ( bind(le->fd, (struct sockaddr *)&sa_in, sizeof(sa_in)) != 0);
 
       DEBUG_MSG("sslw - bind %d on %d", le->sslw_port, le->redir_port);
-      listen(le->fd, 100);      
+      if(listen(le->fd, 100) == -1)
+        FATAL_ERROR("Unable to accept connections for socket");      
       if (sslw_insert_redirect(le->sslw_port, le->redir_port) != ESUCCESS)
         FATAL_ERROR("Can't insert firewall redirects");
    }

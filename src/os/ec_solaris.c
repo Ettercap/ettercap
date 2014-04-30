@@ -28,6 +28,9 @@
 #include <sys/sockio.h>
 
 static char saved_status[2];
+#ifdef WITH_IPv6
+static char saved_status_v6[2];
+#endif
 /* open it with high privs and use it later */
 static int fd;
 
@@ -114,6 +117,88 @@ void restore_ip_forward(void)
                                                 
 }
 
+#ifdef WITH_IPV6
+void disable_ipv6_forward(void)
+{
+   struct strioctl strIo;
+   char buf[65536];
+   char *cp;
+
+   cp = "ip6_forwarding";
+   memset(buf, '\0', sizeof(buf));
+   snprintf(buf, 14, "%s", cp);
+
+   if ((fd = open("/dev/ip", O_RDWR)) < 0)
+      ERROR_MSG("open failed for /dev/ip");
+
+   strIo.ic_cmd = ND_GET;
+   strIo.ic_timout = 0;
+   strIo.ic_len = sizeof(buf);
+   strIo.ic_dp = buf;
+
+   /* Call IOCTL to return status */
+
+   if ( (ioctl(fd, I_STR, (char *)&strIo)) == -1 )
+      ERROR_MSG("ioctl(I_STR)");
+ 
+
+   if (strIo.ic_cmd == ND_GET) {
+      strncpy(saved_status_v6, buf, 2);
+                                                      }
+   DEBUG_MSG("disable_ipv6_forward -- previous value = %s", saved_status_v6);
+
+   memset(buf, '\0', sizeof(buf));
+   snprintf(buf, 14, "%s", cp);
+
+   /* the format is "element"\0"value"\0 */
+   buf[strlen(buf) + 1] = '0';  
+
+   strIo.ic_cmd = ND_SET;
+   strIo.ic_timout = 0;
+   strIo.ic_len = sizeof(buf);
+   strIo.ic_dp = buf;
+
+   if ( (ioctl(fd, I_STR, (char *)&strIo)) == -1 )
+      ERROR_MSG("ioctl(I_STR)");
+
+   DEBUG_MSG("Inet6_DisableForwarding -- NEW value = 0");
+
+   atexit(restore_ipv6_forward);
+}
+
+void restore_ipv6_forward(void)
+{
+   struct strioctl strIo;
+   char buf[65536];
+   char *cp;
+
+   /* no need to restore anything */
+   if (saved_status_v6[0] == '0')
+      return;
+   
+   cp = "ip6_forwarding";
+   memset(buf, '\0', sizeof(buf));
+   snprintf(buf, 14, "%s", cp);
+
+   /* the format is "element"\0"value"\0 */
+   snprintf(buf + strlen(buf)+1, 2, "%s", saved_status_v6);   
+
+   DEBUG_MSG("ATEXIT: restore_ipv6_forward -- restoring to value = %s", saved_status_v6);
+
+   strIo.ic_cmd = ND_SET;
+   strIo.ic_timout = 0;
+   strIo.ic_len = sizeof(buf);
+   strIo.ic_dp = buf;
+
+   /* Call IOCTL to set the status */
+   if ( (ioctl(fd, I_STR, (char *)&strIo)) == -1 )
+      FATAL_ERROR("Please restore manually the ip6_forwarding value to %s", saved_status_v6);
+
+   close(fd);
+                                                
+}
+#endif
+
 /* 
  * get the MTU parameter from the interface 
  */
@@ -128,7 +213,8 @@ u_int16 get_iface_mtu(const char *iface)
 
    /* open the socket to work on */
    sock = socket(PF_INET, SOCK_DGRAM, 0);
-               
+   if (sock == -1)
+      FATAL_ERROR("Unable to open socket on interface for MTU query\n");
    memset(&ifr, 0, sizeof(ifr));
    strncpy(ifr.ifr_name, iface, sizeof(ifr.ifr_name));
                         

@@ -18,6 +18,7 @@ ec_gid = 65534                # nobody is the default
 
 [mitm]
 arp_storm_delay = 10          # milliseconds
+arp_poison_smart = 0          # boolean
 arp_poison_warm_up = 1        # seconds
 arp_poison_delay = 10         # seconds
 arp_poison_icmp = 1           # boolean
@@ -27,7 +28,11 @@ arp_poison_equal_mac = 1      # boolean
 dhcp_lease_time = 1800        # seconds
 port_steal_delay = 10         # seconds
 port_steal_send_delay = 2000  # microseconds
+ndp_poison_warm_up = 1        # seconds
+ndp_poison_delay = 5          # seconds
 ndp_poison_send_delay = 1500  # microseconds
+ndp_poison_icmp = 1           # boolean
+ndp_poison_equal_mac = 1      # boolean
 icmp6_probe_delay = 3         # seconds
 
 [connections]

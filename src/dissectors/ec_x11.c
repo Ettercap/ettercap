@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector X11 -- TCP 6000, 6001, ...
+    ettercap -- dissector X11 -- TCP 6000, 6001, ..., 6063
 
     Copyright (C) ALoR & NaGA
 
@@ -57,6 +57,66 @@ void __init x11_init(void)
    dissect_add("x11", APP_LAYER_TCP, 6001, dissector_x11);
    dissect_add("x11", APP_LAYER_TCP, 6002, dissector_x11);
    dissect_add("x11", APP_LAYER_TCP, 6003, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6004, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6005, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6006, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6007, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6008, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6009, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6010, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6011, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6012, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6013, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6014, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6015, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6016, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6017, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6018, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6019, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6020, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6021, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6022, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6023, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6024, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6025, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6026, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6027, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6028, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6029, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6030, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6031, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6032, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6033, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6034, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6035, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6036, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6037, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6038, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6039, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6040, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6041, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6042, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6043, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6044, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6045, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6046, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6047, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6048, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6049, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6050, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6051, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6052, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6053, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6054, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6055, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6056, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6057, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6058, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6059, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6060, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6061, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6062, dissector_x11);
+   dissect_add("x11", APP_LAYER_TCP, 6063, dissector_x11);
 }
 
 FUNC_DECODER(dissector_x11)

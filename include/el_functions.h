@@ -6,7 +6,6 @@
 
 /* el_parser */
 EL_API_EXTERN void parse_options(int argc, char **argv);
-EL_API_EXTERN void expand_token(char *s, u_int max, void (*func)(void *t, int n), void *t );
 
 /* el_analyze */
 EL_API_EXTERN void analyze(void);

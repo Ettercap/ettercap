@@ -59,48 +59,63 @@ struct wdg_menu menu_mitm[] = { {"Mitm",                'M', "", NULL},
 
 static void curses_arp_poisoning(void)
 {
+   char *method = "arp:";
+   size_t len = strlen(method);
+   
    DEBUG_MSG("curses_arp_poisoning");
 
-   snprintf(params, 4, "arp:");
+   strncpy(params, method, len);
 
-   curses_input("Parameters :", params + strlen("arp:"), PARAMS_LEN - strlen("arp:"), curses_start_mitm);
+   curses_input("Parameters :", params + len, PARAMS_LEN - len - 1, curses_start_mitm);
 }
 
 static void curses_icmp_redir(void)
 {
+   char *method = "icmp:";
+   size_t len = strlen(method);
+
    DEBUG_MSG("curses_icmp_redir");
 
-   snprintf(params, 5, "icmp:");
+   strncpy(params, method, len);
    
-   curses_input("Parameters :", params + strlen("icmp:"), PARAMS_LEN - strlen("icmp:"), curses_start_mitm);
+   curses_input("Parameters :", params + len, PARAMS_LEN - len - 1, curses_start_mitm);
 }
 
 static void curses_port_stealing(void)
 {
+   char *method = "port:";
+   size_t len = strlen(method);
+
    DEBUG_MSG("curses_port_stealing");
 
-   snprintf(params, 5, "port:");
+   strncpy(params, method, len);
    
-   curses_input("Parameters :", params + strlen("port:"), PARAMS_LEN - strlen("port:"), curses_start_mitm);
+   curses_input("Parameters :", params + len, PARAMS_LEN - len - 1, curses_start_mitm);
 }
 
 static void curses_dhcp_spoofing(void)
 {
+   char *method = "dhcp:";
+   size_t len = strlen(method);
+
    DEBUG_MSG("curses_dhcp_spoofing");
 
-   snprintf(params, 5, "dhcp:");
+   strncpy(params, method, len);
    
-   curses_input("Parameters :", params + strlen("dhcp:"), PARAMS_LEN - strlen("dhcp:"), curses_start_mitm);
+   curses_input("Parameters :", params + len, PARAMS_LEN - len - 1, curses_start_mitm);
 }
 
 #ifdef WITH_IPV6
 static void curses_ndp_poisoning(void)
 {
+   char *method = "ndp:";
+   size_t len = strlen(method);
+
    DEBUG_MSG("curses_ndp_poisoning");
 
-   sprintf(params, "ndp:");
+   strncpy(params, method, len);
 
-   curses_input("Parameters :", params + strlen("ndp:"), PARAMS_LEN - strlen("ndp:"), curses_start_mitm);
+   curses_input("Parameters :", params + len, PARAMS_LEN - len - 1, curses_start_mitm);
 }
 #endif
 

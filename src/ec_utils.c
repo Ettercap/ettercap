@@ -309,6 +309,37 @@ int base64encode(const char *inputbuff, char **outptr)
    return strlen(*outptr);
 }
 
+/*
+ * Return a 'ctime()' time-string from either:
+ *   a 'struct timeval *tv'
+ * or if 'tv == NULL',
+ *   returns a time-value for current time.
+ *
+ * NOT threadsafe (returns a static buffer), but there should hopefully
+ * be no problem (?).
+ */
+const char *ec_ctime(const struct timeval *tv)
+{
+   const char *ts_str;
+   static char result[30];
+   time_t t;
+
+   if (!tv)
+      t = time(NULL);
+   else
+      t = (time_t) tv->tv_sec;
+
+   ts_str = ctime(&t);
+
+   /* ctime() has a newline at position 24. Get rid of it.  */
+   if (ts_str)
+      sprintf(result, "%.24s", ts_str);
+   else
+      snprintf(result, sizeof(result), "%lu.%06lu", tv->tv_sec, tv->tv_usec);
+
+  return (result);
+}
+
 /* EOF */
 
 

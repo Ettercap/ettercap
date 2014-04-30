@@ -472,7 +472,7 @@ static int http_insert_redirect(u_int16 dport)
 
 	if (GBL_CONF->redir_command_on == NULL)
 	{
-		USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?");
+		USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
 		return -EFATAL;
 	}
 	snprintf(asc_dport, 16, "%u", dport);
@@ -1272,6 +1272,10 @@ static int http_bind_wrapper(void)
 	DEBUG_MSG("http_listen_thread: initialized and ready");
 	
 	main_fd = socket(AF_INET, SOCK_STREAM, 0);
+        if (main_fd == -1) { /* oops, unable to create socket */
+            DEBUG_MSG("Unable to create socket() for HTTP...");
+            return -EFATAL;
+        }
 	memset(&sa_in, 0, sizeof(sa_in));
 	sa_in.sin_family = AF_INET;
 	sa_in.sin_addr.s_addr = INADDR_ANY;
@@ -1281,7 +1285,10 @@ static int http_bind_wrapper(void)
 		sa_in.sin_port = htons(bind_port);	
 	} while (bind(main_fd, (struct sockaddr *)&sa_in, sizeof(sa_in)) != 0);
 
-	listen(main_fd, 100);
+	if(listen(main_fd, 100) == -1) {
+            DEBUG_MSG("SSLStrip plugin: unable to listen() on socket");
+            return -EFATAL;
+        }
 	USER_MSG("SSLStrip plugin: bind 80 on %d\n", bind_port);
 	
 	if (http_insert_redirect(bind_port) != ESUCCESS)

@@ -23,6 +23,7 @@ struct ec_conf {
    int ec_uid;
    int ec_gid;
    int arp_storm_delay;
+   int arp_poison_smart;
    int arp_poison_warm_up;
    int arp_poison_delay;
    int arp_poison_icmp;
@@ -32,8 +33,14 @@ struct ec_conf {
    int dhcp_lease_time;
    int port_steal_delay;
    int port_steal_send_delay;
+#ifdef WITH_IPV6
+   int ndp_poison_warm_up;
+   int ndp_poison_delay;
    int ndp_poison_send_delay;
+   int ndp_poison_icmp;
+   int ndp_poison_equal_mac;
    int icmp6_probe_delay;
+#endif
    int connection_timeout;
    int connection_idle;
    int connection_buffer;

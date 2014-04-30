@@ -4,9 +4,6 @@ set(EC_LIBS)
 set(EC_LIBETTERCAP_LIBS)
 set(EC_INCLUDE)
 
-set(EF_LIBS)
-set(EL_LIBS)
-
 # Generic target that will build all enabled bundled libs.
 add_custom_target(bundled)
 
@@ -57,15 +54,12 @@ find_package(ZLIB REQUIRED)
 set(EC_LIBS ${EC_LIBS} ${ZLIB_LIBRARIES})
 set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${ZLIB_LIBRARIES})
 set(EC_INCLUDE ${EC_INCLUDE} ${ZLIB_INCLUDE_DIRS})
-set(EL_LIBS ${EL_LIBS} ${ZLIB_LIBRARIES})
 
 set(CMAKE_THREAD_PREFER_PTHREAD 1)
 find_package(Threads REQUIRED)
 if(CMAKE_USE_PTHREADS_INIT)
     set(EC_LIBS ${EC_LIBS} ${CMAKE_THREAD_LIBS_INIT})
     set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${CMAKE_THREAD_LIBS_INIT})
-    set(EF_LIBS ${EF_LIBS} ${CMAKE_THREAD_LIBS_INIT})
-    set(EL_LIBS ${EL_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 else(CMAKE_USE_PTHREADS_INIT)
     message(FATAL_ERROR "pthreads not found")
 endif(CMAKE_USE_PTHREADS_INIT)
@@ -78,17 +72,22 @@ include(CheckLibraryExists)
 include(CheckIncludeFile)
 
 # Iconv
+FIND_LIBRARY(HAVE_ICONV iconv)
 CHECK_FUNCTION_EXISTS(iconv HAVE_UTF8)
-if(NOT HAVE_UTF8)
-    find_library(HAVE_ICONV iconv)
-    if(HAVE_ICONV)
-        set(HAVE_UTF8 1)
-        set(EC_LIBS ${EC_LIBS} ${HAVE_ICONV})
-# Not needed the next one?
-        set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_ICONV})
-        set(EL_LIBS ${EL_LIBS} ${HAVE_ICONV})
-    endif(HAVE_ICONV)
-endif(NOT HAVE_UTF8)
+if(HAVE_ICONV)
+    # Seem that we have a dedicated iconv library not built in libc (e.g. FreeBSD)
+    set(HAVE_UTF8 1)
+    set(EC_LIBS ${EC_LIBS} ${HAVE_ICONV})
+    set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_ICONV})
+else(HAVE_ICONV)
+    if(HAVE_UTF8)
+       # iconv built in libc
+    else(HAVE_UTF8)
+       message(FATAL_ERROR "iconv not found")
+    endif(HAVE_UTF8)
+endif(HAVE_ICONV)
+
+
 
 # LTDL
 if(ENABLE_PLUGINS)
@@ -152,7 +151,6 @@ if(NOT HAVE_STRLCAT_FUNCTION OR NOT HAVE_STRLCPY_FUNCTION)
   if(HAVE_STRLCAT OR HAVE_STRLCPY)
       set(EC_LIBS ${EC_LIBS} bsd)
       set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} bsd)
-      set(EL_LIBS ${EL_LIBS} bsd)
   endif(HAVE_STRLCAT OR HAVE_STRLCPY)
 endif(NOT HAVE_STRLCAT_FUNCTION OR NOT HAVE_STRLCPY_FUNCTION)
 
@@ -222,7 +220,6 @@ if(PCRE_LIBRARY)
     include_directories(${PCRE_INCLUDE_DIR})
     set(EC_LIBS ${EC_LIBS} ${PCRE_LIBRARY})
     set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${PCRE_LIBRARY})
-    set(EF_LIBS ${EF_LIBS} ${PCRE_LIBRARY})
 endif(PCRE_LIBRARY)
 
 if(ENABLE_TESTS)

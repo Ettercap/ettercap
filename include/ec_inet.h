@@ -108,6 +108,11 @@ EC_API_EXTERN void disable_ip_forward(void);
 EC_API_EXTERN void restore_ip_forward(void);
 EC_API_EXTERN u_int16 get_iface_mtu(const char *iface);
 
+#ifdef WITH_IPV6
+EC_API_EXTERN void disable_ipv6_forward(void);
+EC_API_EXTERN void restore_ipv6_forward(void);
+#endif
+
 #ifdef OS_LINUX
 EC_API_EXTERN void disable_interface_offload(void);
 #endif

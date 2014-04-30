@@ -723,9 +723,10 @@ static void rsa_public_encrypt(BIGNUM *out, BIGNUM *in, RSA *key)
 
    ilen = BN_num_bytes(in);
    inbuf = malloc(ilen);
-   if (inbuf == NULL) /* oops, couldn't allocate memory */
-      free(outbuf);
+   if (inbuf == NULL) { /* oops, couldn't allocate memory */
+      SAFE_FREE(outbuf);
       return;
+   }
 
    BN_bn2bin(in, inbuf);
 
@@ -750,9 +751,10 @@ static void rsa_private_decrypt(BIGNUM *out, BIGNUM *in, RSA *key)
 
    ilen = BN_num_bytes(in);
    inbuf = malloc(ilen);
-   if (inbuf == NULL) /* oops, couldn't allocate memory */
-      free(outbuf);
+   if (inbuf == NULL) { /* oops, couldn't allocate memory */
+      SAFE_FREE(outbuf);
       return;
+   }
 
    BN_bn2bin(in, inbuf);
 

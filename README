@@ -77,8 +77,8 @@ OPTIONAL:
 
 If you are running on debian, or any debian based distro you can install the required dependencies by running:
 
-apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl-dev libncurses5-dev libpcap-dev \
- libpcre3-dev libssl-dev ghostscript libluajit-5.1-dev libnet1-dev libcurl4-openssl-dev check libbsd-dev
+apt-get install debhelper bison check cmake flex ghostscript libbsd-dev libcurl4-openssl-dev libgtk2.0-dev \
+ libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev
 
 ============================================================================
                                    LICENSE

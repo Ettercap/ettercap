@@ -44,7 +44,7 @@ matrix:
     - env: BUILD_ARGS="-DBUNDLED_CURL=Off"
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl3-dev libncurses-dev libncurses5-dev libpcap-dev libpcre3-dev libssl-dev ghostscript luajit-5.1-dev libnet1-dev libcurl4-openssl-dev check libbsd-dev
+  - sudo apt-get install debhelper cmake bison flex libgtk2.0-dev libltdl-dev libncurses5-dev libncurses5-dev libpcap-dev libpcre3-dev libssl-dev ghostscript libluajit-5.1-dev libnet1-dev libcurl4-openssl-dev check libbsd-dev
 script: 
   - mkdir build && cd build && cmake -DENABLE_TESTS=On $BUILD_ARGS .. && make && make test_verbose
 notifications:

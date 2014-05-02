@@ -21,6 +21,10 @@
 */
 
 #include <ec.h>
+#ifdef HAVE_EC_LUA
+#include <ec_lua.h>
+#endif
+
 #include <ec_threads.h>
 
 #include <ctype.h>
@@ -78,6 +82,10 @@ void debug_init(void)
   	fprintf (debug_file, "-> ${sysconfdir}    %s\n", INSTALL_SYSCONFDIR);
   	fprintf (debug_file, "-> ${datadir}       %s\n\n", INSTALL_DATADIR);
 
+   #ifdef HAVE_EC_LUA
+	ec_lua_print_info(debug_file);
+   #endif
+
   	fprintf (debug_file, "-> %s %s\n\n", GBL_PROGRAM, GBL_VERSION);
    #ifdef HAVE_SYS_UTSNAME_H
       uname(&buf);
@@ -94,6 +102,9 @@ void debug_init(void)
    fprintf(debug_file, "-> libz version %s\n", zlibVersion());
    #ifdef HAVE_PCRE
    fprintf(debug_file, "-> libpcre version %s\n", pcre_version());
+   #endif
+   #ifdef HAVE_EC_LUA
+	ec_lua_print_version(debug_file);
    #endif
    fprintf (debug_file, "-> lib     %s\n", SSLeay_version(SSLEAY_VERSION));
    fprintf (debug_file, "-> headers %s\n", OPENSSL_VERSION_TEXT);

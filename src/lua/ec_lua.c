@@ -308,6 +308,18 @@ LUALIB_API int luaopen_ettercap_c(lua_State *L)
   return 1;
 }
 
+EC_API_EXTERN void ec_lua_print_info(FILE* debug_file)
+{
+    fprintf (debug_file, "-> ${INSTALL_LUA_ROOT}    %s\n", INSTALL_LUA_ROOT);
+    fprintf (debug_file, "-> ${INSTALL_LUA_INIT}    %s\n", INSTALL_LUA_INIT);
+    fprintf (debug_file, "-> ${INSTALL_LUA_CORE}    %s\n", INSTALL_LUA_CORE);
+    fprintf (debug_file, "-> ${INSTALL_LUA_SCRIPTS} %s\n", INSTALL_LUA_SCRIPTS);
+}
+EC_API_EXTERN void ec_lua_print_version(FILE* debug_file)
+{
+    fprintf(debug_file, "-> lua version %s\n", LUA_VERSION);
+}
+
 
 /* EOF */
 

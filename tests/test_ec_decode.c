@@ -6,32 +6,28 @@
 #include <ec_proto.h>
 
 // Yes, this is hack-ish. We can change it later.
-FUNC_DECODER(decode_data);
-FUNC_DECODER(decode_ip);
-FUNC_DECODER(decode_tcp);
-FUNC_DECODER(decode_udp);
 
 START_TEST (test_get_decoder_default)
 {
-  fail_if(get_decoder(APP_LAYER, PL_DEFAULT) != (void*) decode_data, "Could not find default decoder.");
+  fail_if(get_decoder(APP_LAYER, PL_DEFAULT) == NULL, "Could not find default decoder.");
 }
 END_TEST
 
 START_TEST (test_get_decoder_ip)
 {
-  fail_if(get_decoder(NET_LAYER, LL_TYPE_IP) != (void*) decode_ip, "Could not find IP decoder.");
+  fail_if(get_decoder(NET_LAYER, LL_TYPE_IP) == NULL, "Could not find IP decoder.");
 }
 END_TEST
 
 START_TEST (test_get_decoder_tcp)
 {
-  fail_if(get_decoder(PROTO_LAYER, NL_TYPE_TCP) != (void*) decode_tcp, "Could not find TCP decoder.");
+  fail_if(get_decoder(PROTO_LAYER, NL_TYPE_TCP) == NULL, "Could not find TCP decoder.");
 }
 END_TEST
 
 START_TEST (test_get_decoder_udp)
 {
-  fail_if(get_decoder(PROTO_LAYER, NL_TYPE_UDP) != (void*) decode_udp, "Could not find UDP decoder.");
+  fail_if(get_decoder(PROTO_LAYER, NL_TYPE_UDP) == NULL, "Could not find UDP decoder.");
 }
 END_TEST
 

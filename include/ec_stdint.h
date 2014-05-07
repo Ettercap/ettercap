@@ -11,6 +11,19 @@
 	#include <sys/inttypes.h>
 #endif
 
+#if defined HAVE_INTTYPES_H
+	#include <inttypes.h>
+#else /* HAVE_INTTYPES_H */
+	#if __WORDSIZE == 64
+		#define __PRI64_PREFIX "l"
+	#else
+		#define __PRI64_PREFIX "ll"
+	#endif
+
+	#define PRId64 __PRI64_PREFIX "d"
+	#define PRIu64 __PRI64_PREFIX "u"
+#endif /* HAVE_INTTYPES_H */
+
 #ifndef TYPES_DEFINED
 #define TYPES_DEFINED
 	typedef int8_t    int8;

@@ -22,6 +22,7 @@
 #cmakedefine HAVE_LTDL_H
 #cmakedefine HAVE_DLFCN_H
 #cmakedefine HAVE_CTYPE_H
+#cmakedefine HAVE_INTTYPES_H
 #cmakedefine HAVE_MUTEX_RECURSIVE_NP
 
 #cmakedefine HAVE_PCRE

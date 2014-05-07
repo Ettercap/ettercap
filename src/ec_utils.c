@@ -38,6 +38,21 @@
 
 #include <ctype.h>
 
+#define BASE64_SIZE(x) (((x)+2) / 3 * 4 + 1)
+static const uint8_t map2[] =
+{
+    0x3e, 0xff, 0xff, 0xff, 0x3f, 0x34, 0x35, 0x36,
+    0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0xff,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x01,
+    0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+    0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11,
+    0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x1a, 0x1b,
+    0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23,
+    0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b,
+    0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33
+};
+
 /*
  * This function parses the input in the form [1-3,17,5-11]
  * and fill the structure with expanded numbers.
@@ -223,58 +238,75 @@ void drop_privs(void)
    USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() );
 }
 
-#include <openssl/pem.h>
-#include <math.h>
-
-int base64encode(const char *b64_encode_me, char** buffer) {
-	BIO *bio, *b64;
-	FILE* stream;
-	int encodedSize = 4*ceil((double)strlen(b64_encode_me)/3);
-	*buffer = (char *)malloc(encodedSize+1);
-	stream = fmemopen(*buffer, encodedSize+1, "w");
-	b64 = BIO_new(BIO_f_base64());
-	bio = BIO_new_fp(stream, BIO_NOCLOSE);
-	bio = BIO_push(b64, bio);
-	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-	BIO_write(bio, b64_encode_me, strlen(b64_encode_me));
-	(void)BIO_flush(bio);
-	BIO_free_all(bio);
-	fclose(stream);
-
-	return ESUCCESS;
-	
-}
+/* base64 stuff */
 
 int get_decode_len(const char *b64_str) {
-	int len = strlen(b64_str);
-	int padding = 0;
-	if (b64_str[len-1] == '=' && b64_str[len-2] == '=')
-		padding = 2;
-	else if (b64_str[len-1] == '=')
-		padding = 1;
-	return (int)len*0.75 - padding;
+   int len = strlen(b64_str);
+   int padding = 0;
+   if (b64_str[len-1] == '=' && b64_str[len-2] == '=')
+      padding = 2;
+   else if (b64_str[len-1] == '=')
+      padding = 1;
+   return (int)len*0.75 - padding;
 }
 
-int base64decode(const char *decode_me, char** buffer) {
-	BIO *bio, *b64;
-	int decodeLen = get_decode_len(decode_me), len = 0;
 
-	*buffer = (char *)malloc(decodeLen+1);
-	memset(*buffer, '\0', decodeLen+1);
-	FILE* stream = fmemopen((void*)decode_me, strlen(decode_me), "r");
+int base64decode(const char *src, char **outptr)
+{
+   int i, v;
+   int decodeLen = get_decode_len(src);
+   char *dst;
 
-	b64 = BIO_new(BIO_f_base64());
-	bio = BIO_new_fp(stream, BIO_NOCLOSE);
-	bio = BIO_push(b64, bio);
-	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-	len = BIO_read(bio, *buffer, strlen(decode_me));
-	if (len != decodeLen)
-		return 0;
-	(*buffer)[len] = '\0';
-	BIO_free_all(bio);
-	fclose(stream);
+   *outptr = (char *)malloc(decodeLen);
+   memset(*outptr, '\0', decodeLen);
 
-	return decodeLen;
+   dst = *outptr;
+   unsigned int sizeof_array = (sizeof(map2) / sizeof(map2[0]));
+  
+   v = 0;
+   for (i=0; src[i] && src[i] != '='; i++) {
+      unsigned int index = src[i] - 43;
+      if (index >= sizeof_array || map2[index] == 0xff)
+         return -1;
+      v = (v << 6) + map2[index];
+      if (i & 3) {
+         if (dst - *outptr < decodeLen) {
+            *dst++ = v >> (6 - 2 * (i & 3)); 
+         }
+      }    
+   }
+
+   return decodeLen;
+}
+int base64encode(const char *inputbuff, char **outptr)
+{
+   static const char b64[] = 
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+   char *ret, *dst;
+   unsigned i_bits = 0;
+   int i_shift = 0;
+   int bytes_remaining = strlen(inputbuff);
+   *outptr = (char *)malloc(bytes_remaining*4/3+4);
+   memset(*outptr, '\0', bytes_remaining*4/3+4); 
+
+   ret = dst = *outptr;
+   while(bytes_remaining) {
+      i_bits = (i_bits << 8) + *inputbuff++;
+      bytes_remaining--;
+      i_shift += 8;
+
+      do {
+         *dst++ = b64[(i_bits << 6 >> i_shift) & 0x3f];
+         i_shift -= 6;
+      } while(i_shift > 6 || (bytes_remaining == 0 && i_shift > 0));
+   }
+
+   while((dst - ret) & 3)
+      *dst++ = '=';
+   *dst = '\0';
+     
+   return strlen(*outptr);
 }
 
 /*

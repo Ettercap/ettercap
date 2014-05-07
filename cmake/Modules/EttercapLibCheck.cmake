@@ -222,13 +222,6 @@ if(PCRE_LIBRARY)
     set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${PCRE_LIBRARY})
 endif(PCRE_LIBRARY)
 
-# libmath
-find_library(LIB_M m)
-if(NOT LIB_M)
-    message(FATAL_ERROR "Could not find libm!")
-endif(NOT LIB_M)
-set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${LIB_M})
-
 if(ENABLE_TESTS)
   if(SYSTEM_LIBCHECK)
     find_package(LIBCHECK)

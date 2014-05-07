@@ -7,8 +7,8 @@ EC_API_EXTERN char **parse_iflist(char *list);
 EC_API_EXTERN void drop_privs(void);
 EC_API_EXTERN void regain_privs(void);
 EC_API_EXTERN void regain_privs_atexit(void);
-EC_API_EXTERN int base64encode(const char *b64_encode_me, char **buffer);
-EC_API_EXTERN int base64decode(const char *b64, char **buffer);
+EC_API_EXTERN int base64encode(const char *inputbuf, char **outptr);
+EC_API_EXTERN int base64decode(const char *src, char **outptr);
 EC_API_EXTERN const char *ec_ctime(const struct timeval *tv);
 
 #endif

@@ -52,6 +52,7 @@ struct ec_conf {
    int checksum_check;
    int submit_fingerprint;
    int checksum_warning;
+   int sniffing_at_startup;
    int store_profiles;
    struct curses_color colors;
    char *redir_command_on;

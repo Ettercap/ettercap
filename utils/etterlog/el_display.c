@@ -152,7 +152,7 @@ static void display_headers(struct log_header_packet *pck)
    char str[128];
    memset(flags, 0, sizeof(flags));
    
-   /* display the date. ctime() has a newline at end. */
+   /* display the date. ec_ctime() has no newline at end. */
    fprintf(stdout, "\n\n%s [%lu]\n", ec_ctime(&pck->tv), pck->tv.tv_usec);
   
    if (GBL.showmac) {

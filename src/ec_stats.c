@@ -64,7 +64,7 @@ void stats_half_start(struct half_stats *hs)
  * and get the time diff to calculate the 
  * rate
  */
-void stats_half_end(struct half_stats *hs, bpf_u_int32 len)
+void stats_half_end(struct half_stats *hs, u_int len)
 {
    struct timeval diff;
    float ttime;

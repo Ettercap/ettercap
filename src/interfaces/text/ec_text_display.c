@@ -91,7 +91,7 @@ static void display_headers(struct packet_object *po)
    memset(flags, 0, sizeof(flags));
    memset(proto, 0, sizeof(proto));   
 
-   /* display the date. ctime() has a newline at end. */
+   /* display the date. ec_ctime() has a newline at end. */
    fprintf(stdout, "\n\n%s [%lu]\n", ec_ctime(&po->ts), po->ts.tv_usec);
 
    if (GBL_OPTIONS->ext_headers) {

@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
    if (ret == -EINVALID)
       FATAL_ERROR("Invalid log file");
    fprintf(stderr, "Log file version    : %s\n", GBL.hdr.version);
-   /* display the date. ctime() has a newline at end. */
+   /* display the date. ec_ctime() has no newline at end. */
    fprintf(stderr, "Timestamp           : %s [%lu]\n", ec_ctime(&GBL.hdr.tv), GBL.hdr.tv.tv_usec);
    fprintf(stderr, "Type                : %s\n\n", (GBL.hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
   

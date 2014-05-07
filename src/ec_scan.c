@@ -319,9 +319,9 @@ static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u
 {
    FUNC_DECODER_PTR(packet_decoder);
    struct packet_object po;
-   bpf_u_int32 len;
+   u_int len;
    u_char *data;
-   bpf_u_int32 datalen;
+   u_int datalen;
 
    /* variable not used */
    (void) param;

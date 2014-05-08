@@ -3,6 +3,8 @@
 ==========================
 
 >>> things to be fixed
+
+   + Threadize the (deprecated) gethostbyaddr function (issue #238)
    
    + remove GBL_OPTIONS->quiet from some plugins
 
@@ -16,6 +18,10 @@
 ============================
   In the next release(s)
 ============================
+
+   + Host impersonation (issue #31)
+
+   + RDP MITM feature (issue #32)
    
    + ETTERLOG
       - reassemble the stream based on sequence numbers

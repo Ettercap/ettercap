@@ -74,12 +74,6 @@ static BOOL has_console;
 static BOOL started_from_a_gui;
 static BOOL attached_to_console;
 
-FILE *fmemopen (void *buf, size_t size, const char *mode)
-{
-  return (NULL);
-}
-
-
 /***************************************/
 
 static void __init win_init(void)

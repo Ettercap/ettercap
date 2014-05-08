@@ -197,6 +197,13 @@ int main(int argc, char *argv[])
 
    /* this thread becomes the UI then displays it */
    ec_thread_register(EC_PTHREAD_SELF, GBL_PROGRAM, "the user interface");
+
+   /* start unified sniffing for curses and GTK at startup */
+   if ((GBL_UI->type == UI_CURSES || GBL_UI->type == UI_GTK) &&
+         GBL_CONF->sniffing_at_startup)
+      EXECUTE(GBL_SNIFF->start);
+
+   /* start the actual user interface */
    ui_start();
 
 /******************************************** 

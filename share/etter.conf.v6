@@ -52,6 +52,7 @@ skip_forwarded_pcks = 1       # boolean value
 checksum_check = 0            # boolean value
 submit_fingerprint = 0        # boolean valid (set if you want ettercap to submit unknown finger prints)
 checksum_warning = 0          # boolean value (valid only if checksum_check is 1)
+sniffing_at_startup = 1       # boolean value
 
 ############################################################################
 #

@@ -25,11 +25,10 @@
 
 #include <fcntl.h>
 
+#define GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
+
 /* global options */
-struct globals gbls;
-
-void clean_exit(int errcode);
-
+struct globals *gbls;
 
 /*******************************************/
 
@@ -37,6 +36,7 @@ int main(int argc, char *argv[])
 {
    int ret;
    /* etterlog copyright */
+   globals_alloc();
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
   
@@ -53,47 +53,46 @@ int main(int argc, char *argv[])
    parse_options(argc, argv);
 
    /* get the global header */
-   ret = get_header(&GBL.hdr);
+   ret = get_header(&GBL->hdr);
    if (ret == -EINVALID)
       FATAL_ERROR("Invalid log file");
-   fprintf(stderr, "Log file version    : %s\n", GBL.hdr.version);
+   
+   fprintf(stderr, "Log file version    : %s\n", GBL->hdr.version);
    /* display the date. ec_ctime() has no newline at end. */
-   fprintf(stderr, "Timestamp           : %s [%lu]\n", ec_ctime(&GBL.hdr.tv), GBL.hdr.tv.tv_usec);
-   fprintf(stderr, "Type                : %s\n\n", (GBL.hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
+   fprintf(stderr, "Timestamp           : %s [%lu]\n", ec_ctime(&GBL->hdr.tv), GBL->hdr.tv.tv_usec);
+   fprintf(stderr, "Type                : %s\n\n", (GBL->hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
   
    
    /* analyze the logfile */
-   if (GBL.analyze)
+   if (GBL->analyze)
       analyze();
 
    /* rewind the log file and skip the global header */
    gzrewind(GBL_LOG_FD);
-   get_header(&GBL.hdr);
+   get_header(&GBL->hdr);
    
    /* create the connection table (respecting the filters) */
-   if (GBL.connections)
+   if (GBL->connections)
       conn_table_create();
 
    /* display the connection table */
-   if (GBL.connections && !GBL.decode)
+   if (GBL->connections && !GBL->decode)
       conn_table_display();
 
    /* extract files from the connections */
-   if (GBL.decode)
+   if (GBL->decode)
       conn_decode();
    
    /* not interested in the content... only analysis */
-   if (GBL.analyze || GBL.connections)
+   if (GBL->analyze || GBL->connections)
       return 0;
    
    /* display the content of the logfile */
    display();
    
-   return 0;
-}
+   globals_free();
 
-void clean_exit(int errcode) {
-	exit(errcode);
+   return 0;
 }
 
 /* ANSI color escapes */
@@ -119,8 +118,29 @@ void reset_color(void)
 #endif
 }
 
+void globals_alloc(void)
+{
 
-/* EOF */
+   SAFE_CALLOC(gbls, 1, sizeof(struct globals));
+   SAFE_CALLOC(gbls->regex, 1, sizeof(regex_t));
+   SAFE_CALLOC(gbls->t, 1, sizeof(struct target_env));
+
+   return;
+}
+
+void globals_free(void)
+{
+   SAFE_FREE(gbls->user);
+   SAFE_FREE(gbls->logfile);
+   SAFE_FREE(gbls->regex);
+   SAFE_FREE(gbls->t);
+   
+   SAFE_FREE(gbls);
+
+   return;
+
+}
+  
 
 // vim:ts=3:expandtab
 

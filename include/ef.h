@@ -65,7 +65,7 @@ struct globals {
 };
 
 /* in el_main.c */
-extern struct globals gbls;
+extern struct globals *gbls;
 
 #define GBL_OPTIONS  gbls
 #define GBL          gbls
@@ -99,6 +99,9 @@ extern struct globals gbls;
    #define EC_COLOR_BLUE
    #define EC_COLOR_CYAN
 #endif
+
+EC_API_EXTERN void globals_alloc(void);
+EC_API_EXTERN void globals_free(void);
 
 #endif   /*  EL_H */
 

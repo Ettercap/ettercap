@@ -259,7 +259,7 @@ int is_target_pck(struct log_header_packet *pck)
        proto = 1;
     
     /* the protocol does not match */
-    if (!GBL.reverse && proto == 0)
+    if (!GBL->reverse && proto == 0)
        return 0;
     
    /*
@@ -280,7 +280,7 @@ int is_target_pck(struct log_header_packet *pck)
       good = 1;   
   
    /* check the reverse option */
-   if (GBL.reverse ^ (good && proto) ) 
+   if (GBL->reverse ^ (good && proto) ) 
       return 1;
       
    
@@ -341,7 +341,7 @@ int is_target_info(struct host_profile *hst)
 
 
    /* check the reverse option */
-   if (GBL.reverse ^ (host && port) ) 
+   if (GBL->reverse ^ (host && port) ) 
       return 1;
    else
       return 0;

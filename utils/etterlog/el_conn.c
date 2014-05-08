@@ -54,7 +54,7 @@ void conn_table_create(void)
    int ret, count = 0;
    u_char *buf;
 
-   if (GBL.hdr.type == LOG_INFO)
+   if (GBL->hdr.type == LOG_INFO)
       FATAL_ERROR("LOG_INFO files don't contain connections !");
    
    
@@ -134,7 +134,7 @@ static int insert_table(struct log_header_packet *pck, char *buf)
           !ip_addr_cmp(&c->L3_dst, &pck->L3_dst)) {
 
          /* add to the stream (if necessary) */
-         if (GBL.decode)
+         if (GBL->decode)
             stream_add(&c->so, pck, buf);
          
          return 0;
@@ -148,7 +148,7 @@ static int insert_table(struct log_header_packet *pck, char *buf)
           !ip_addr_cmp(&c->L3_dst, &pck->L3_src)) {
          
          /* add to the stream (if necessary) */
-         if (GBL.decode)
+         if (GBL->decode)
             stream_add(&c->so, pck, buf);
          
          return 0;
@@ -170,7 +170,7 @@ static int insert_table(struct log_header_packet *pck, char *buf)
    stream_init(&c->so);
    
    /* add to the stream (if necessary) */
-   if (GBL.decode)
+   if (GBL->decode)
       stream_add(&c->so, pck, buf);
    
    SLIST_INSERT_HEAD(&conn_list_head, c, next);
@@ -265,7 +265,7 @@ int is_conn(struct log_header_packet *pck, int *versus)
         pck->L4_src == conn_target.L4_src &&
         pck->L4_dst == conn_target.L4_dst &&
         /* the packet is from source, but we are interested only in dest */
-        !GBL.only_dest ) {
+        !GBL->only_dest ) {
       good = 1;
       *versus = VERSUS_SOURCE;
    }
@@ -276,13 +276,13 @@ int is_conn(struct log_header_packet *pck, int *versus)
         pck->L4_src == conn_target.L4_dst &&
         pck->L4_dst == conn_target.L4_src &&
         /* the packet is from dest, but we are interested only in source */
-        !GBL.only_source ) {
+        !GBL->only_source ) {
       good = 1;
       *versus = VERSUS_DEST;
    }
    
    /* check the reverse option */
-   if (GBL.reverse ^ (good && proto) ) 
+   if (GBL->reverse ^ (good && proto) ) 
       return 1;
    else
       return 0;

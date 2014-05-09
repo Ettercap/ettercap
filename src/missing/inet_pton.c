@@ -22,9 +22,9 @@
 #include <ec.h>
 #include <ec_inet.h>
 
-#ifndef HAVE_INET_PTON
+#ifndef HAVE_INET_PTON  /* Rest of file */
 
-#ifdef OS_WINDOWS
+#if defined(OS_WINDOWS) && !defined(OS_CYGWIN)
   #define SET_EAFNOSUPPORT() WSASetLastError (errno = WSAEAFNOSUPPORT)
 #else
   #define SET_EAFNOSUPPORT() errno = EAFNOSUPPORT

@@ -107,7 +107,7 @@ EC_API_EXTERN int inet_pton (int family, const char *addr, void *result);
 #endif
 
 #ifndef HAVE_INET_NTOP
-EC_API_EXTERN const char *inet_ntop (int af, const void *src, char *buf, size_t size);
+EC_API_EXTERN const char *inet_ntop (int af, const void *src, char *buf, socklen_t size);
 #endif
 
 /*

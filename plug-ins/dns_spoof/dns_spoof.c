@@ -1,8 +1,8 @@
 /*
-    dns_spoof -- ettercap plugin -- spoofs dns reply 
+    dns_spoof -- ettercap plugin -- spoofs dns reply
 
     Copyright (C) ALoR & NaGA
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -84,7 +84,7 @@ static int dns_spoof_init(void *);
 static int dns_spoof_fini(void *);
 static int load_db(void);
 static void dns_spoof(struct packet_object *po);
-static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p);
+static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p, bool *is_ip6);
 static int get_spoofed_a(const char *a, struct ip_addr **ip);
 static int get_spoofed_aaaa(const char *a, struct ip_addr **ip);
 static int get_spoofed_ptr(const char *arpa, char **a);
@@ -96,54 +96,54 @@ static void dns_spoof_dump(void);
 
 /* plugin operations */
 
-struct plugin_ops dns_spoof_ops = { 
+struct plugin_ops dns_spoof_ops = {
    /* ettercap version MUST be the global EC_VERSION */
-   .ettercap_version =  EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,
    /* the name of the plugin */
-   .name =              "dns_spoof",  
-    /* a short description of the plugin (max 50 chars) */                    
-   .info =              "Sends spoofed dns replies",  
-   /* the plugin version. */ 
-   .version =           "1.1",   
+   .name =              "dns_spoof",
+    /* a short description of the plugin (max 50 chars) */
+   .info =              "Sends spoofed dns replies",
+   /* the plugin version. */
+   .version =           "1.1",
    /* activation function */
    .init =              &dns_spoof_init,
-   /* deactivation function */                     
+   /* deactivation function */
    .fini =              &dns_spoof_fini,
 };
 
 /**********************************************************/
 
 /* this function is called on plugin load */
-int plugin_load(void *handle) 
+int plugin_load(void *handle)
 {
-   /* load the database of spoofed replies (etter.dns) 
+   /* load the database of spoofed replies (etter.dns)
     * return an error if we could not open the file
     */
    if (load_db() != ESUCCESS)
       return -EINVALID;
-   
+
    dns_spoof_dump();
    return plugin_register(handle, &dns_spoof_ops);
 }
 
 /*********************************************************/
 
-static int dns_spoof_init(void *dummy) 
+static int dns_spoof_init(void *dummy)
 {
    /* variable not used */
    (void) dummy;
 
-   /* 
+   /*
     * add the hook in the dissector.
     * this will pass only valid dns packets
     */
    hook_add(HOOK_PROTO_DNS, &dns_spoof);
-   
+
    return PLUGIN_RUNNING;
 }
 
 
-static int dns_spoof_fini(void *dummy) 
+static int dns_spoof_fini(void *dummy)
 {
    /* variable not used */
    (void) dummy;
@@ -156,28 +156,32 @@ static int dns_spoof_fini(void *dummy)
 
 
 /*
- * load the database in the list 
+ * load the database in the list
  */
 static int load_db(void)
 {
    struct dns_spoof_entry *d;
-   struct in_addr ipaddr;
-   struct in6_addr ip6addr;
    FILE *f;
    char line[128];
-   char *ptr, *ip, *name;
-   int lines = 0, type, af = AF_INET;
+   char *ptr, *ip, *name, *end;
+   int lines = 0, type, af;
    u_int16 port = 0;
-   
+   union {
+     struct in_addr  v4;
+     struct in6_addr v6;
+   } ip_addr;
+
    /* open the file */
    f = open_data("etc", ETTER_DNS, FOPEN_READ_TEXT);
    if (f == NULL) {
       USER_MSG("dns_spoof: Cannot open %s\n", ETTER_DNS);
       return -EINVALID;
    }
-         
+
    /* load it in the list */
-   while (fgets(line, 128, f)) {
+   while (fgets(line, sizeof(line), f)) {
+      bool okay, ipv6;
+
       /* count the lines */
       lines++;
 
@@ -188,23 +192,43 @@ static int load_db(void)
       /* skip empty lines */
       if (!*line || *line == '\r' || *line == '\n')
          continue;
-      
+
+      /* drop 1st newline */
+      end = strchr(line,'\0');
+      if (end > line && (end[-1] == '\r' || end[-1]  == '\n'))
+         end[-1] = '\0';
+
       /* strip apart the line */
-      if (!parse_line(line, lines, &type, &ip, &port,  &name))
+      if (!parse_line(line, lines, &type, &ip, &port, &name, &ipv6))
          continue;
-        
-      /* convert the ip address */
-      if (inet_pton(AF_INET, ip, &ipaddr) == 1) { /* try IPv4 */
-          af = AF_INET;
-      }
-      else if (inet_pton(AF_INET6, ip, &ip6addr) == 1) { /* try IPv6 */
-          af = AF_INET6;
-      }
+
+      if (type == ns_t_a || type == ns_t_ptr || type == ns_t_mx ||
+          type == ns_t_wins || (type == ns_t_srv && !ipv6))
+         af = AF_INET;
+
+      else if (type == ns_t_aaaa || (type == ns_t_srv && ipv6))
+         af = AF_INET6;
+
       else { /* neither IPv4 nor IPv6 - throw a message and skip line */
-          USER_MSG("dns_spoof: %s:%d Invalid IPv4 or IPv6 address\n", ETTER_DNS, lines);
+          USER_MSG("dns_spoof: %s:%d Unknown type: %d in line \"%s\"\n",
+                   ETTER_DNS, lines, type, line);
           continue;
       }
-        
+
+      /* convert the ip4/6 address based on result in parse_line() */
+      if (af == AF_INET && inet_pton(af, ip, &ip_addr.v4) == 1) {       /* try IPv4 */
+          okay = true;
+      }
+      else if (af == AF_INET6 && inet_pton(af, ip, &ip_addr.v6) == 1) { /* try IPv6 */
+          okay = true;
+      }
+
+      if (!okay) {
+          USER_MSG("dns_spoof: %s:%d Invalid IPv4 or IPv6 address: \"%s\", type: %s\n",
+                   ETTER_DNS, lines, line, type_str(type));
+          continue;
+      }
+
       /* create the entry */
       SAFE_CALLOC(d, 1, sizeof(struct dns_spoof_entry));
       d->name = strdup(name);
@@ -212,18 +236,12 @@ static int load_db(void)
       d->port = port;
 
       /* fill the struct */
-      if (af == AF_INET) {
-          ip_addr_init(&d->ip, AF_INET, (u_char *)&ipaddr);
-      }
-      else if (af == AF_INET6) {
-          ip_addr_init(&d->ip, AF_INET6, (u_char *)&ip6addr);
-      }
-
+      ip_addr_init(&d->ip, af, (u_char *)&ip_addr);
 
       /* insert in the list */
       SLIST_INSERT_HEAD(&dns_spoof_head, d, next);
    }
-   
+
    fclose(f);
 
    return ESUCCESS;
@@ -232,14 +250,16 @@ static int load_db(void)
 /*
  * Parse line on format "<name> <type> <IP-addr>".
  */
-static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p)
+static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p, bool *is_ip6)
 {
    static char name[100+1];
    static char ip[MAX_ASCII_ADDR_LEN];
    static int port;
    char type[10+1];
 
- DEBUG_MSG("%s:%d str '%s'", ETTER_DNS, line, str); 
+   DEBUG_MSG("%s:%d str '%s'", ETTER_DNS, line, str);
+
+   *is_ip6 = 0;
 
    if (sscanf(str,"%100s %10s %40[^\r\n# ]", name, type, ip) != 3) {
       USER_MSG("dns_spoof: %s:%d Invalid entry %s\n", ETTER_DNS, line, str);
@@ -269,6 +289,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
       *type_p = ns_t_aaaa;
       *name_p = name;
       *ip_p = ip;
+      *is_ip6 = 1;
       return (1);
    }
 
@@ -287,12 +308,14 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
    }
 
    if (!strcasecmp(type, "SRV")) {
-      /* 
+      /*
        * Additional format scan as SRV records has a different syntax
        */
-      static char ip_tmp[MAX_ASCII_ADDR_LEN];
+      char ip_tmp[MAX_ASCII_ADDR_LEN];
+
       if (sscanf(ip, "[%40[0-9a-fA-F:.]]:%d", ip_tmp, &port) == 2) {
          strncpy(ip, ip_tmp, strlen(ip_tmp)+1);
+         *is_ip6 = 1;
       }
       else if (sscanf(ip, "%20[0-9.]:%d", ip_tmp, &port) == 2) {
          strncpy(ip, ip_tmp, strlen(ip_tmp)+1);
@@ -304,7 +327,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
       }
 
       if (port > 0xffff || port <= 0) {
-         USER_MSG("dns_spoof: %s:%d Invalid value for port: %d\n", 
+         USER_MSG("dns_spoof: %s:%d Invalid value for port: %d\n",
                   ETTER_DNS, line, port);
          return (0);
       }
@@ -337,20 +360,20 @@ static void dns_spoof(struct packet_object *po)
    dns = (struct dns_header *)po->DATA.data;
    data = (u_char *)(dns + 1);
    end = (u_char *)dns + po->DATA.len;
-   
+
    /* extract the name from the packet */
    name_len = dn_expand((u_char *)dns, end, data, name, sizeof(name));
 
    /* by default we want to spoof actual data */
    is_negative = false;
-   
+
    q = data + name_len;
-  
+
    /* get the type and class */
    NS_GET16(type, q);
    NS_GET16(class, q);
 
-      
+
    /* handle only internet class */
    if (class != ns_c_in)
       return;
@@ -360,12 +383,12 @@ static void dns_spoof(struct packet_object *po)
 
       /* it is and address resolution (name to ip) */
       if (type == ns_t_a) {
-         
+
          struct ip_addr *reply;
          u_int8 answer[(q - data) + 12 + IP_ADDR_LEN];
          u_char *p = answer + (q - data);
          char tmp[MAX_ASCII_ADDR_LEN];
-         
+
          /* found the reply in the list */
          if (get_spoofed_a(name, &reply) != ESUCCESS)
             return;
@@ -378,9 +401,9 @@ static void dns_spoof(struct packet_object *po)
          }
 
          /* Do not forward query */
-         po->flags |= PO_DROPPED; 
+         po->flags |= PO_DROPPED;
 
-         /* 
+         /*
           * When spoofed IP address is undefined address, we stop
           * processing of this section by spoofing a negative-cache reply
           */
@@ -392,12 +415,12 @@ static void dns_spoof(struct packet_object *po)
             is_negative = true;
 
          } else {
-            /* 
+            /*
              * fill the buffer with the content of the request
-             * we will append the answer just after the request 
+             * we will append the answer just after the request
              */
             memcpy(answer, data, q - data);
-            
+
             /* prepare the answer */
             memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
             memcpy(p + 2, "\x00\x01", 2);                    /* type A */
@@ -407,12 +430,12 @@ static void dns_spoof(struct packet_object *po)
             ip_addr_cpy(p + 12, reply);                      /* data */
 
             /* send the fake reply */
-            send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+            send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
                            ntohs(dns->id), answer, sizeof(answer), 1, 0, 0);
-            
+
             USER_MSG("dns_spoof: [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
          }
-         
+
       /* also care about AAAA records */
       } else if (type == ns_t_aaaa) {
 
@@ -433,9 +456,9 @@ static void dns_spoof(struct packet_object *po)
           }
 
           /* Do not forward query */
-          po->flags |= PO_DROPPED; 
+          po->flags |= PO_DROPPED;
 
-         /* 
+         /*
           * When spoofed IP address is undefined address, we stop
           * processing of this section by spoofing a negative-cache reply
           */
@@ -463,32 +486,32 @@ static void dns_spoof(struct packet_object *po)
 
 
              /* send the fake reply */
-             send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+             send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
                             ntohs(dns->id), answer, sizeof(answer), 1, 0, 0);
-             
-            USER_MSG("dns_spoof: AAAA [%s] spoofed to [%s]\n", 
+
+            USER_MSG("dns_spoof: AAAA [%s] spoofed to [%s]\n",
                      name, ip_addr_ntoa(reply, tmp));
          }
       /* it is a reverse query (ip to name) */
       } else if (type == ns_t_ptr) {
-         
+
          u_int8 answer[(q - data) + 256];
          char *a, *p = (char*)answer + (q - data);
          int rlen;
-         
+
          /* found the reply in the list */
          if (get_spoofed_ptr(name, &a) != ESUCCESS)
             return;
-   
-         /* Do not forward query */
-         po->flags |= PO_DROPPED; 
 
-         /* 
+         /* Do not forward query */
+         po->flags |= PO_DROPPED;
+
+         /*
           * fill the buffer with the content of the request
-          * we will append the answer just after the request 
+          * we will append the answer just after the request
           */
          memcpy(answer, data, q - data);
-         
+
          /* prepare the answer */
          memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
          memcpy(p + 2, "\x00\x0c", 2);                    /* type PTR */
@@ -501,20 +524,20 @@ static void dns_spoof(struct packet_object *po)
          NS_PUT16(rlen, p);
 
          /* send the fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
                         ntohs(dns->id), answer, (q - data) + 12 + rlen, 1, 0, 0);
-         
+
          USER_MSG("dns_spoof: [%s] spoofed to [%s]\n", name, a);
-         
+
       /* it is an MX query (mail to ip) */
       } else if (type == ns_t_mx) {
-         
+
          struct ip_addr *reply;
          u_int8 answer[(q - data) + 21 + 12 + 16];
          char *p = (char*)answer + (q - data);
          char tmp[MAX_ASCII_ADDR_LEN];
          char mxoffset[2];
-         
+
          /* found the reply in the list */
          if (get_spoofed_mx(name, &reply) != ESUCCESS)
             return;
@@ -523,20 +546,20 @@ static void dns_spoof(struct packet_object *po)
          po->flags |= PO_DROPPED;
 
          /*
-          * to inject the spoofed IP address in the additional section, 
-          * we have set the offset pointing to the spoofed domain name set 
-          * below (in turn, after the domain name [variable length] in the 
+          * to inject the spoofed IP address in the additional section,
+          * we have set the offset pointing to the spoofed domain name set
+          * below (in turn, after the domain name [variable length] in the
           * question section)
           */
          mxoffset[0] = 0xc0; /* offset byte */
          mxoffset[1] = 12 + name_len + 4 + 14; /* offset to the answer */
 
-         /* 
+         /*
           * fill the buffer with the content of the request
-          * we will append the answer just after the request 
+          * we will append the answer just after the request
           */
          memcpy(answer, data, q - data);
-         
+
          /* prepare the answer */
          memcpy(p, "\xc0\x0c", 2);                          /* compressed name offset */
          memcpy(p + 2, "\x00\x0f", 2);                      /* type MX */
@@ -544,9 +567,9 @@ static void dns_spoof(struct packet_object *po)
          memcpy(p + 6, "\x00\x00\x0e\x10", 4);              /* TTL (1 hour) */
          memcpy(p + 10, "\x00\x09", 2);                     /* datalen */
          memcpy(p + 12, "\x00\x0a", 2);                     /* preference (highest) */
-         /* 
-          * add "mail." in front of the domain and 
-          * resolve it in the additional record 
+         /*
+          * add "mail." in front of the domain and
+          * resolve it in the additional record
           * (here `mxoffset' is pointing at)
           */
          memcpy(p + 14, "\x04\x6d\x61\x69\x6c\xc0\x0c", 7); /* mx record */
@@ -575,9 +598,9 @@ static void dns_spoof(struct packet_object *po)
          }
 
          /* send the fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
                         ntohs(dns->id), answer, sizeof(answer), 1, 0, 1);
-         
+
          USER_MSG("dns_spoof: MX [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
 
       /* it is an WINS query (NetBIOS-name to ip) */
@@ -593,7 +616,7 @@ static void dns_spoof(struct packet_object *po)
             return;
 
          /* Do not forward query */
-         po->flags |= PO_DROPPED; 
+         po->flags |= PO_DROPPED;
 
          /*
           * fill the buffer with the content of the request
@@ -610,7 +633,7 @@ static void dns_spoof(struct packet_object *po)
          ip_addr_cpy((u_char*)p + 12, reply);                      /* data */
 
          /* send the fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
                         ntohs(dns->id), answer, sizeof(answer), 1, 0, 1);
 
          USER_MSG("dns_spoof: WINS [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
@@ -628,7 +651,7 @@ static void dns_spoof(struct packet_object *po)
 
 
          /* found the reply in the list */
-         if (get_spoofed_srv(name, &reply, &port) != ESUCCESS) 
+         if (get_spoofed_srv(name, &reply, &port) != ESUCCESS)
             return;
 
          /* Do not forward query */
@@ -650,17 +673,17 @@ static void dns_spoof(struct packet_object *po)
          tgtoffset[1] = 12 + dn_offset; /* offset to the actual domain name */
 
          /*
-          * to inject the spoofed IP address in the additional section, 
-          * we have set the offset pointing to the spoofed domain name set 
-          * below (in turn, after the domain name [variable length] in the 
+          * to inject the spoofed IP address in the additional section,
+          * we have set the offset pointing to the spoofed domain name set
+          * below (in turn, after the domain name [variable length] in the
           * question section)
           */
          srvoffset[0] = 0xc0; /* offset byte */
          srvoffset[1] = 12 + name_len + 4 + 18; /* offset to the answer */
 
-         /* 
+         /*
          * fill the buffer with the content of the request
-         * answer will be appended after the request 
+         * answer will be appended after the request
          */
          memcpy(answer, data, q - data);
 
@@ -672,17 +695,17 @@ static void dns_spoof(struct packet_object *po)
          memcpy(p + 10, "\x00\x0c", 2);               /* data length */
          memcpy(p + 12, "\x00\x00", 2);               /* priority */
          memcpy(p + 14, "\x00\x00", 2);               /* weight */
-         p+=16; 
-         NS_PUT16(port, p);                           /* port */ 
-         p-=18;             
-         /* 
+         p+=16;
+         NS_PUT16(port, p);                           /* port */
+         p-=18;
+         /*
           * add "srv." in front of the stripped domain
-          * name and resolve it in the additional 
+          * name and resolve it in the additional
           * record (here `srvoffset' is pointing at)
           */
          memcpy(p + 18, "\x03\x73\x72\x76", 4);       /* target */
          memcpy(p + 22, tgtoffset,2);                 /* compressed name offset */
-     
+
          /* add the additional record for the spoofed IPv4 address*/
          if (ntohs(reply->addr_type) == AF_INET) {
              memcpy(p + 24, srvoffset, 2);            /* compressed name offset */
@@ -709,7 +732,7 @@ static void dns_spoof(struct packet_object *po)
 
 
          /* send fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
                         ntohs(dns->id), answer, sizeof(answer), 1, 0, 1);
 
          USER_MSG("dns_spoof: SRV [%s] spoofed to [%s:%d]\n", name, ip_addr_ntoa(reply, tmp), port);
@@ -718,12 +741,12 @@ static void dns_spoof(struct packet_object *po)
          u_int8 answer[(q - data) + 46];
          u_char *p = answer + (q - data);
 
-         /* 
+         /*
           * fill the buffer with the content of the request
-          * we will append the answer just after the request 
+          * we will append the answer just after the request
           */
          memcpy(answer, data, q - data);
-         
+
          /* prepare the answer */
          memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
          memcpy(p + 2, "\x00\x06", 2);                    /* type SOA */
@@ -731,7 +754,7 @@ static void dns_spoof(struct packet_object *po)
          memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
          memcpy(p + 10, "\x00\x22", 2);                   /* datalen */
          memcpy(p + 12, "\x03\x6e\x73\x31", 4);           /* primary server */
-         memcpy(p + 16, "\xc0\x0c", 2);                   /* compressed name offeset */   
+         memcpy(p + 16, "\xc0\x0c", 2);                   /* compressed name offeset */
          memcpy(p + 18, "\x05\x61\x62\x75\x73\x65", 6);   /* mailbox */
          memcpy(p + 24, "\xc0\x0c", 2);                   /* compressed name offset */
          memcpy(p + 26, "\x51\x79\x57\xf5", 4);           /* serial */
@@ -741,9 +764,9 @@ static void dns_spoof(struct packet_object *po)
          memcpy(p + 42, "\x00\x00\x00\x3c", 4);           /* minimum TTL */
 
          /* send the fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src, 
+         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
                         ntohs(dns->id), answer, sizeof(answer), 0, 1, 0);
-            
+
          USER_MSG("dns_spoof: negative cache spoofed for [%s] type %s \n", name, type_str(type));
       }
 
@@ -763,11 +786,11 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip)
 
          /* return the pointer to the struct */
          *ip = &d->ip;
-         
+
          return ESUCCESS;
       }
    }
-   
+
    return -ENOTFOUND;
 }
 
@@ -777,7 +800,7 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip)
 static int get_spoofed_aaaa(const char *a, struct ip_addr **ip)
 {
     struct dns_spoof_entry *d;
-    
+
     SLIST_FOREACH(d, &dns_spoof_head, next) {
         if (d->type == ns_t_aaaa && match_pattern(a, d->name)) {
             /* return the pointer to the struct */
@@ -791,8 +814,8 @@ static int get_spoofed_aaaa(const char *a, struct ip_addr **ip)
 }
 
 
-/* 
- * return the name for the ip address 
+/*
+ * return the name for the ip address
  */
 static int get_spoofed_ptr(const char *arpa, char **a)
 {
@@ -813,7 +836,7 @@ static int get_spoofed_ptr(const char *arpa, char **a)
    if (strncmp(arpa + len - v4len, v4tld, v4len) == 0) {
 
        /* parses the arpa format */
-       if (sscanf(arpa, "%d.%d.%d.%d.in-addr.arpa", 
+       if (sscanf(arpa, "%d.%d.%d.%d.in-addr.arpa",
                    &oct[3], &oct[2], &oct[1], &oct[0]) != 4)
           return -EINVALID;
 
@@ -834,7 +857,7 @@ static int get_spoofed_ptr(const char *arpa, char **a)
        if (sscanf(arpa, "%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x."
                         "%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x."
                         "%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x."
-                        "%1x.%1x.%1x.%1x.%1x.ip6.arpa", 
+                        "%1x.%1x.%1x.%1x.%1x.ip6.arpa",
                         &oct[31], &oct[30], &oct[29], &oct[28],
                         &oct[27], &oct[26], &oct[25], &oct[24],
                         &oct[23], &oct[22], &oct[21], &oct[20],
@@ -868,23 +891,23 @@ static int get_spoofed_ptr(const char *arpa, char **a)
        ip_addr_init(&ptr, AF_INET6, ipv6);
 
    }
-           
+
 
    /* search in the list */
    SLIST_FOREACH(d, &dns_spoof_head, next) {
-      /* 
-       * we cannot return whildcards in the reply, 
+      /*
+       * we cannot return whildcards in the reply,
        * so skip the entry if the name contains a '*'
        */
       if (d->type == ns_t_ptr && !ip_addr_cmp(&ptr, &d->ip)) {
 
          /* return the pointer to the name */
          *a = d->name;
-         
+
          return ESUCCESS;
       }
    }
-   
+
    return -ENOTFOUND;
 }
 
@@ -900,11 +923,11 @@ static int get_spoofed_mx(const char *a, struct ip_addr **ip)
 
          /* return the pointer to the struct */
          *ip = &d->ip;
-         
+
          return ESUCCESS;
       }
    }
-   
+
    return -ENOTFOUND;
 }
 
@@ -931,7 +954,7 @@ static int get_spoofed_wins(const char *a, struct ip_addr **ip)
 /*
  * return the target for the SRV request
  */
-static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port) 
+static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port)
 {
     struct dns_spoof_entry *d;
 
@@ -954,8 +977,8 @@ char *type_str (int type)
            type == ns_t_aaaa ? "AAAA" :
            type == ns_t_ptr  ? "PTR" :
            type == ns_t_mx   ? "MX" :
-           type == ns_t_wins ? "WINS" : 
-           type == ns_t_srv ? "SRV" : "??");
+           type == ns_t_wins ? "WINS" :
+           type == ns_t_srv  ? "SRV" : "??");
 }
 
 static void dns_spoof_dump(void)
@@ -968,32 +991,32 @@ static void dns_spoof_dump(void)
       if (ntohs(d->ip.addr_type) == AF_INET)
       {
          if (d->type == ns_t_srv) {
-            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv4", 
+            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv4",
                       d->name, ip_addr_ntoa(&d->ip, tmp), d->port, type_str(d->type));
-         } 
+         }
          else {
-            DEBUG_MSG("  %s -> [%s], type %s, family IPv4", 
+            DEBUG_MSG("  %s -> [%s], type %s, family IPv4",
                       d->name, ip_addr_ntoa(&d->ip, tmp), type_str(d->type));
          }
       }
       else if (ntohs(d->ip.addr_type) == AF_INET6)
       {
          if (d->type == ns_t_srv) {
-            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv6", 
+            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv6",
                       d->name, ip_addr_ntoa(&d->ip, tmp), d->port, type_str(d->type));
          }
          else {
-            DEBUG_MSG("  %s -> [%s], type %s, family IPv6", 
+            DEBUG_MSG("  %s -> [%s], type %s, family IPv6",
                       d->name, ip_addr_ntoa(&d->ip, tmp), type_str(d->type));
          }
       }
       else
       {
-         DEBUG_MSG("  %s -> ??", d->name);   
+         DEBUG_MSG("  %s -> ??", d->name);
       }
    }
 }
-   
+
 /* EOF */
 
 // vim:ts=3:expandtab

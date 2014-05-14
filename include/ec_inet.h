@@ -100,6 +100,17 @@ EC_API_EXTERN int ip_addr_get_network(struct ip_addr*, struct ip_addr*, struct i
 EC_API_EXTERN int ip_addr_get_prefix(struct ip_addr* netmask);
 
 /*
+ * this prototypes are implemented in ./src/missing/inet_*.c.
+ */
+#ifndef HAVE_INET_PTON
+EC_API_EXTERN int inet_pton (int family, const char *addr, void *result);
+#endif
+
+#ifndef HAVE_INET_NTOP
+EC_API_EXTERN const char *inet_ntop (int af, const void *src, char *buf, socklen_t size);
+#endif
+
+/*
  * this prototypes are implemented in ./os/.../
  * each OS implement its specific function
  */

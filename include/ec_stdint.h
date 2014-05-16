@@ -19,9 +19,12 @@
 	#else
 		#define __PRI64_PREFIX "ll"
 	#endif
-
+#ifndef PRId64
 	#define PRId64 __PRI64_PREFIX "d"
+#endif
+#ifndef PRIu64
 	#define PRIu64 __PRI64_PREFIX "u"
+#endif
 #endif /* HAVE_INTTYPES_H */
 
 #ifndef TYPES_DEFINED

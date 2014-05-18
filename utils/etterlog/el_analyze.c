@@ -50,8 +50,7 @@ void analyze_packet(void)
 {
    struct log_header_packet pck;
    int ret, count = 0;
-   int pay_size = 0;
-   size_t tot_size;
+   int tot_size = 0, pay_size = 0;
    u_char *buf;
    struct stat st;
    
@@ -89,10 +88,10 @@ void analyze_packet(void)
    fprintf(stdout, "\n\n");
    fprintf(stdout, "Log file size (compressed)   : %d\n", (int)st.st_size);   
    fprintf(stdout, "Log file size (uncompressed) : %d\n", tot_size);
-   if (tot_size > sizeof(struct log_global_header))
+   if (tot_size != 0)
       fprintf(stdout, "Compression ratio            : %.2f %%\n\n", 100 - ((float)st.st_size * 100 / (float)tot_size) );
    fprintf(stdout, "Effective payload size       : %d\n", pay_size);
-   if (tot_size > sizeof(struct log_global_header))
+   if (tot_size != 0)
       fprintf(stdout, "Wasted percentage            : %.2f %%\n\n", 100 - ((float)pay_size * 100 / (float)tot_size) );
    
    fprintf(stdout, "Number of packets            : %d\n", count);

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Gianfranco Costamagna <costamagnagianfranco@yahoo.it> -->
+<application>
+ <id type="desktop">ettercap.desktop</id>
+ <metadata_license>CC0-1.0</metadata_license>
+ <project_license>GPL-2.0</project_license>
+ <name>Ettercap</name>
+ <summary>Multipurpose Network sniffer/analyser/interceptor/logger</summary>
+ <description>
+  <p>
+ Ettercap supports active and passive dissection of many protocols
+ (even encrypted ones) and includes many feature for network and host
+ analysis.
+ Data injection in an established connection and filtering (substitute
+ or drop a packet) on the fly is also possible, keeping the connection
+ synchronized.
+  </p>
+  <p>
+ Many sniffing modes are implemented, for a powerful and complete
+ sniffing suite. It is possible to sniff in four modes: IP Based, MAC Based,
+ ARP Based (full-duplex) and PublicARP Based (half-duplex).
+ Ettercap also has the ability to detect a switched LAN, and to use OS
+ fingerprints (active or passive) to find the geometry of the LAN.
+  </p>
+ </description>
+ <screenshots>
+  <screenshot type="default" width="800" height="600">http://ettercap.github.io/ettercap/screenshots/Screenshot-1.png</screenshot>
+  <screenshot width="800" height="600">http://ettercap.github.io/ettercap/screenshots/Screenshot-2.png</screenshot>
+ </screenshots>
+ <url type="homepage">http://ettercap.github.io/ettercap/</url>
+ <updatecontact>ettercap.project@gmail.com</updatecontact>
+</application>

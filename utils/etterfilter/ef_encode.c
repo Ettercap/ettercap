@@ -173,7 +173,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
             fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
             ret = ESUCCESS;
-         }
+         } else
+            SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "regex")) {
@@ -222,7 +223,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.string = strdup(dec_args[1]);
             fop->op.func.slen = strlen(fop->op.func.string);
             ret = ESUCCESS;
-         }
+         } else
+            SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
 
          /* check if the pcre is valid */
          pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
@@ -293,7 +295,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
             fop->op.func.slen = strlen((const char*)fop->op.func.string);
             ret = ESUCCESS;
-         }
+         } else
+            SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "drop")) {

@@ -60,6 +60,14 @@ int encode_offset(char *string, struct filter_op *fop)
    p = ec_strtok(str, ".", &tok);
    q = ec_strtok(NULL, ".", &tok);
 
+   /*
+    * the assumption above is not always true, e.g.:
+    * log(DATA,d "x.log"); 
+    * results in q == NULL.
+    */
+   if (q == NULL)
+      return -ENOTFOUND;
+
    /* the the virtual pointer from the table */
    ret = get_virtualpointer(p, q, &fop->op.test.level, &fop->op.test.offset, &fop->op.test.size);
 

@@ -190,7 +190,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
             fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
             ret = ESUCCESS;
-         }
+         } else
+            SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
 
          /* check if the regex is valid */
          err = regcomp(&regex, (const char*)fop->op.func.string, REG_EXTENDED | REG_NOSUB | REG_ICASE );

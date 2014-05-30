@@ -103,14 +103,14 @@ struct globals {
 };
 
 /* in el_main.c */
-extern struct globals gbls;
+extern struct globals *gbls;
 
 #define GBL gbls
 
 
-#define GBL_LOGFILE GBL.logfile
-#define GBL_LOG_FD  GBL.fd
-#define GBL_TARGET (GBL.t)
+#define GBL_LOGFILE GBL->logfile
+#define GBL_LOG_FD  GBL->fd
+#define GBL_TARGET (GBL->t)
 #define GBL_PROGRAM "etterlog"
 
 
@@ -147,6 +147,9 @@ extern struct globals gbls;
 #define COL_BLUE     34
 #define COL_MAGENTA  35
 #define COL_CYAN     36
+
+EC_API_EXTERN void globals_alloc(void);
+EC_API_EXTERN void globals_free(void);
 
 
 #endif   /*  EL_H */

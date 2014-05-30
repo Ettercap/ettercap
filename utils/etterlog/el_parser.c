@@ -146,16 +146,16 @@ void parse_options(int argc, char **argv)
       switch (c) {
 
          case 'a':
-                  GBL.analyze = 1;
+                  GBL->analyze = 1;
                   break;
                   
          case 'c':
-                  GBL.connections = 1;
+                  GBL->connections = 1;
                   break;
                   
          case 'D':
-                  GBL.connections = 1;
-                  GBL.decode = 1;
+                  GBL->connections = 1;
+                  GBL->decode = 1;
                   NOT_IMPLEMENTED();
                   break;
          
@@ -168,19 +168,19 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 's':
-                  GBL.only_source = 1;
+                  GBL->only_source = 1;
                   break;
                   
          case 'd':
-                  GBL.only_dest = 1;
+                  GBL->only_dest = 1;
                   break;
                   
          case 'k':
-                  GBL.color = 1;
+                  GBL->color = 1;
                   break;
                      
          case 'r':
-                  GBL.reverse = 1;
+                  GBL->reverse = 1;
                   break;
                   
          case 't':
@@ -188,15 +188,15 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'n':
-                  GBL.no_headers = 1;
+                  GBL->no_headers = 1;
                   break;
                   
          case 'm':
-                  GBL.showmac = 1;
+                  GBL->showmac = 1;
                   break;
                   
          case 'i':
-                  GBL.showclient = 1;
+                  GBL->showclient = 1;
                   break;
                   
          case 'I':
@@ -204,23 +204,23 @@ void parse_options(int argc, char **argv)
                      FATAL_ERROR("Invalid client ip address");
                      return;                    
                   }
-                  ip_addr_init(&GBL.client, AF_INET, (u_char *)&ip);
+                  ip_addr_init(&GBL->client, AF_INET, (u_char *)&ip);
                   break;
 
          case 'l':
-                  GBL.only_local = 1;
+                  GBL->only_local = 1;
                   break;
          
          case 'L':
-                  GBL.only_remote = 1;
+                  GBL->only_remote = 1;
                   break;
                   
          case 'u':
-                  GBL.user = strdup(optarg);
+                  GBL->user = strdup(optarg);
                   break;
                   
          case 'p':
-                  GBL.passwords = 1;
+                  GBL->passwords = 1;
                   break;
 
          case 'e':
@@ -232,44 +232,44 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'C':
-                  GBL.concat = 1;
+                  GBL->concat = 1;
                   break;
                   
          case 'B':
-                  GBL.format = &bin_format;
+                  GBL->format = &bin_format;
                   break;
                   
          case 'X':
-                  GBL.format = &hex_format;
+                  GBL->format = &hex_format;
                   break;
                   
          case 'A':
-                  GBL.format = &ascii_format;
+                  GBL->format = &ascii_format;
                   break;
                   
          case 'T':
-                  GBL.format = &text_format;
+                  GBL->format = &text_format;
                   break;
                   
          case 'E':
-                  GBL.format = &ebcdic_format;
+                  GBL->format = &ebcdic_format;
                   break;
                   
          case 'H':
-                  GBL.format = &html_format;
+                  GBL->format = &html_format;
                   break;
                   
          case 'U':
                   set_utf8_encoding((u_char*)optarg);
-                  GBL.format = &utf8_format;
+                  GBL->format = &utf8_format;
                   break;
                   
          case 'Z':
-                  GBL.format = &zero_format;
+                  GBL->format = &zero_format;
                   break;
                   
          case 'x':
-                  GBL.xml = 1;
+                  GBL->xml = 1;
                   break;
                   
          case 'h':
@@ -294,7 +294,7 @@ void parse_options(int argc, char **argv)
    }
 
    /* file concatenation */
-   if (GBL.concat) {
+   if (GBL->concat) {
       if (argv[optind] == NULL)
          FATAL_ERROR("You MUST specify at least one logfile");
    
@@ -309,8 +309,8 @@ void parse_options(int argc, char **argv)
       FATAL_ERROR("You MUST specify a logfile\n");
   
    /* default to ASCII view */ 
-   if (GBL.format == NULL)
-      GBL.format = &ascii_format;
+   if (GBL->format == NULL)
+      GBL->format = &ascii_format;
 
    return;
 }

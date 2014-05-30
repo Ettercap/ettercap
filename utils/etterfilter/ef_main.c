@@ -25,35 +25,35 @@
 
 #include <stdarg.h>
 
+#define GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
+
 /* globals */
 
 extern FILE * yyin;           /* from scanner */
 extern int yyparse (void);    /* from parser */
 
 /* global options */
-struct globals gbls;
-
-/* protos */
-void clean_exit(int errcode);
+struct globals *gbls;
 
 /*******************************************/
 
 int main(int argc, char *argv[])
 {
 
+   globals_alloc();
    /* etterfilter copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
  
    /* initialize the line number */
-   GBL.lineno = 1;
+   GBL->lineno = 1;
   
    /* getopt related parsing...  */
    parse_options(argc, argv);
 
    /* set the input for source file */
-   if (GBL_OPTIONS.source_file) {
-      yyin = fopen(GBL_OPTIONS.source_file, "r");
+   if (GBL_OPTIONS->source_file) {
+      yyin = fopen(GBL_OPTIONS->source_file, "r");
       if (yyin == NULL)
          FATAL_ERROR("Input file not found !");
    } else {
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
    load_constants();
 
    /* print the message */
-   fprintf(stdout, "\n Parsing source file \'%s\' ", GBL_OPTIONS.source_file);
+   fprintf(stdout, "\n Parsing source file \'%s\' ", GBL_OPTIONS->source_file);
    fflush(stdout);
 
    ef_debug(1, "\n");
@@ -85,15 +85,11 @@ int main(int argc, char *argv[])
   
    /* write to file */
    if (write_output() != ESUCCESS)
-      FATAL_ERROR("Cannot write output file (%s)", GBL_OPTIONS.output_file);
-
+      FATAL_ERROR("Cannot write output file (%s)", GBL_OPTIONS->output_file);
+   globals_free();
    return 0;
 }
 
-
-void clean_exit(int errcode) {
-	exit(errcode);
-}
 
 /*
  * print debug information
@@ -103,7 +99,7 @@ void ef_debug(u_char level, const char *message, ...)
    va_list ap;
    
    /* if not in debug don't print anything */
-   if (GBL_OPTIONS.debug < level)
+   if (GBL_OPTIONS->debug < level)
       return;
 
    /* print the mesasge */ 
@@ -112,6 +108,24 @@ void ef_debug(u_char level, const char *message, ...)
    fflush(stderr);
    va_end(ap);
    
+}
+
+void globals_alloc(void)
+{
+
+   SAFE_CALLOC(gbls, 1, sizeof(struct globals));
+
+   return;
+}
+
+void globals_free(void)
+{
+   SAFE_FREE(gbls->source_file);
+   SAFE_FREE(gbls->output_file);
+   SAFE_FREE(gbls);
+
+   return;
+
 }
 
 /* EOF */

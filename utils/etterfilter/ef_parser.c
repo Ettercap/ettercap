@@ -86,16 +86,16 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'o':
-                  GBL_OPTIONS.output_file = strdup(optarg);
+                  GBL_OPTIONS->output_file = strdup(optarg);
                   break;
                   
          case 'd':
                   /* use many times to encrease debug level */
-                  GBL_OPTIONS.debug++;
+                  GBL_OPTIONS->debug++;
                   break;
                   
          case 'w':
-                  GBL_OPTIONS.suppress_warnings = 1;
+                  GBL_OPTIONS->suppress_warnings = 1;
                   break;
                   
          case 'h':
@@ -121,12 +121,12 @@ void parse_options(int argc, char **argv)
 
    /* the source file to be compiled */
    if (argv[optind]) {
-      GBL_OPTIONS.source_file = strdup(argv[optind]);
+      GBL_OPTIONS->source_file = strdup(argv[optind]);
    }
    
    /* make the default name */
-   if (GBL_OPTIONS.output_file == NULL)
-      GBL_OPTIONS.output_file = strdup("filter.ef");
+   if (GBL_OPTIONS->output_file == NULL)
+      GBL_OPTIONS->output_file = strdup("filter.ef");
    
    return;
 }

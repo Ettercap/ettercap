@@ -86,9 +86,9 @@ static int dhcp_spoofing_start(char *args)
       SEMIFATAL_ERROR("DHCP spoofing needs a parameter.\n");
 
    /*
-    * Check to see if sniff has started
+    * Check to see if sniff has started - started automatically in text UI
     */
-   if (!GBL_SNIFF->active)
+   if (GBL_UI->type != UI_TEXT && !GBL_SNIFF->active)
       SEMIFATAL_ERROR("DHCP spoofing requires sniffing to be active.\n");
    
    /* check the parameter:

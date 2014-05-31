@@ -50,8 +50,8 @@ void el_usage(void)
    fprintf(stdout, "  -f, --filter <TARGET>       print packets only from this target\n");
    fprintf(stdout, "  -t, --proto <proto>         display only this proto (default is all)\n");
    fprintf(stdout, "  -F, --filcon <CONN>         print packets only from this connection \n");
-   fprintf(stdout, "      -s, --only-source           print packets only from the source\n");
-   fprintf(stdout, "      -d, --only-dest             print packets only from the destination\n");
+   fprintf(stdout, "  -s, --only-source           print packets only from the source\n");
+   fprintf(stdout, "  -d, --only-dest             print packets only from the destination\n");
    fprintf(stdout, "  -r, --reverse               reverse the target/connection matching\n");
    fprintf(stdout, "  -n, --no-headers            skip header information between packets\n");
    fprintf(stdout, "  -m, --show-mac              show mac addresses in the headers\n");
@@ -63,8 +63,8 @@ void el_usage(void)
    fprintf(stdout, "  -e, --regex <regex>         display only packets that match the regex\n");
    fprintf(stdout, "  -u, --user <user>           search for info about the user <user>\n");
    fprintf(stdout, "  -p, --passwords             print only accounts information\n");
-   fprintf(stdout, "      -i, --show-client       show client address in the password profiles\n");
-   fprintf(stdout, "      -I, --client <ip>       search for pass from a specific client\n");
+   fprintf(stdout, "  -i, --show-client           show client address in the password profiles\n");
+   fprintf(stdout, "  -I, --client <ip>           search for pass from a specific client\n");
    
    fprintf(stdout, "\nEditing Options:\n");
    fprintf(stdout, "  -C, --concat                concatenate more files into one single file\n");

@@ -68,8 +68,12 @@ etterlog \-c logfile.ecp | grep 10.0.0.1
 Print only packets coming from or going to TARGET. The TARGET specification is
 the same as in ettercap.
 .br
-\fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. Omitting one or more of its
-parts will be equivalent to set them to ANY.
+\fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. With IPv6 support enabled, 
+\fITARGET\fR is in the form \fIMAC/IPs/IPv6/PORTs\fR. Omitting one or more of its
+parts will be equivalent to set them to ANY. IPs and IPv6 will be treated as one
+part so that it's only set to ANY if both IPs and IPv6 is omitted. This concludes 
+in a result most users would expect.
+
 .Sp
 If the log type is LOG_INFO the target is used to display hosts matching
 the mac, ip and having the specified port(s) open. For example the target //80

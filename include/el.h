@@ -68,12 +68,15 @@ struct ip_list {
 };
 
 struct target_env {
+   char scan_all:1;
    char all_mac:1;            /* these one bit flags are used as wildcards */
    char all_ip:1;
+   char all_ip6:1;
    char all_port:1;
    char *proto;
    u_char mac[MEDIA_ADDR_LEN];
-   SLIST_HEAD (, ip_list) ips;
+   LIST_HEAD(, ip_list) ips;
+   LIST_HEAD(, ip_list) ip6;
    u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };
 
@@ -157,6 +160,12 @@ extern struct globals *gbls;
 
 EC_API_EXTERN void globals_alloc(void);
 EC_API_EXTERN void globals_free(void);
+
+void debug_msg(const char *message, ...);
+void ui_msg(const char *fmt, ...);
+void ui_error(const char *fmt, ...);
+void ui_fatal_error(const char *msg);
+void ui_cleanup(void);
 
 
 #endif   /*  EL_H */

@@ -160,7 +160,17 @@ void parse_options(int argc, char **argv)
                   break;
          
          case 'f':
-                  target_compile(optarg);
+#ifdef WITH_IPV6
+                  if (!strncmp(optarg, "///", 3) &&
+                        strlen(optarg) == 3)
+                     GBL_TARGET->scan_all = 1;
+#else
+                  if (!strncmp(optarg, "//", 2) &&
+                        strlen(optarg) == 2)
+                     GBL_TARGET->scan_all = 1;
+#endif
+                  compile_target(optarg, GBL_TARGET);
+
                   break;
 
          case 'F':

@@ -27,13 +27,6 @@
 /* globals */
 FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
 
-/* protos */
-void debug_msg(const char *message, ...);
-void ui_msg(const char *fmt, ...);
-void ui_error(const char *fmt, ...);
-void ui_fatal_error(const char *msg);
-void ui_cleanup(void);
-
 /************************************************/
  
 /* the void implementation */

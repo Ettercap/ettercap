@@ -37,7 +37,6 @@ EL_API_EXTERN int is_conn(struct log_header_packet *pck, int *versus);
 #define VERSUS_DEST     1 
 
 /* el_target */
-EL_API_EXTERN void target_compile(char *target);
 EL_API_EXTERN int is_target_pck(struct log_header_packet *pck);
 EL_API_EXTERN int is_target_info(struct host_profile *hst);
 EL_API_EXTERN int find_user(struct host_profile *hst, char *user);

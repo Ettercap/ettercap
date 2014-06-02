@@ -47,6 +47,9 @@ int main(int argc, char *argv[])
    /* initialize to all target */
    GBL_TARGET->all_mac = 1;
    GBL_TARGET->all_ip = 1;
+#ifdef WITH_IPV6
+   GBL_TARGET->all_ip6 = 1;
+#endif
    GBL_TARGET->all_port = 1;
    
    /* getopt related parsing...  */

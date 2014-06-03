@@ -149,7 +149,7 @@ static void display_headers(struct log_header_packet *pck)
    char flags[8];
    char *p = flags;
    char proto[5];
-   char str[128];
+
    memset(flags, 0, sizeof(flags));
    
    /* display the date. ec_ctime() has no newline at end. */
@@ -159,8 +159,7 @@ static void display_headers(struct log_header_packet *pck)
       /* display the mac addresses */
       mac_addr_ntoa(pck->L2_src, tmp1);
       mac_addr_ntoa(pck->L2_dst, tmp2);
-      sprintf(str, "%17s --> %17s\n", tmp1, tmp2 );
-      write(fileno(stdout), str, strlen(str));
+      fprintf(stdout, "%17s --> %17s\n", tmp1, tmp2);
    }
   
    /* calculate the flags */
@@ -183,12 +182,9 @@ static void display_headers(struct log_header_packet *pck)
    /* display the ip addresses */
    ip_addr_ntoa(&pck->L3_src, tmp1);
    ip_addr_ntoa(&pck->L3_dst, tmp2);
-   sprintf(str, "%s  %s:%d --> %s:%d | %s\n", proto, tmp1, ntohs(pck->L4_src), 
+   fprintf(stdout, "%s  %s:%d --> %s:%d | %s\n\n", proto, tmp1, ntohs(pck->L4_src),
                                                         tmp2, ntohs(pck->L4_dst),
                                                         flags);
-   write(fileno(stdout), str, strlen(str));
-
-   write(fileno(stdout), "\n", 1);
 }
 
 /*

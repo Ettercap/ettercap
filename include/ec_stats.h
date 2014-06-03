@@ -8,13 +8,13 @@
  */
 
 struct half_stats {
-   unsigned long long int pck_recv;
-   unsigned long long int pck_size;
+   uint64_t pck_recv;
+   uint64_t pck_size;
    struct timeval ttot;
    struct timeval tpar;
    struct timeval ts;
    struct timeval te;
-   unsigned long long int tmp_size;
+   uint64_t tmp_size;
    unsigned long rate_adv;
    unsigned long rate_worst;
    unsigned long thru_adv;
@@ -26,15 +26,15 @@ struct half_stats {
  */
 
 struct gbl_stats {
-   unsigned long long int ps_recv;
-   unsigned long long int ps_recv_delta;
-   unsigned long long int ps_drop;
-   unsigned long long int ps_drop_delta;
-   unsigned long long int ps_ifdrop;
-   unsigned long long int ps_sent;
-   unsigned long long int ps_sent_delta;
-   unsigned long long int bs_sent;
-   unsigned long long int bs_sent_delta;
+   uint64_t ps_recv;
+   uint64_t ps_recv_delta;
+   uint64_t ps_drop;
+   uint64_t ps_drop_delta;
+   uint64_t ps_ifdrop;
+   uint64_t ps_sent;
+   uint64_t ps_sent_delta;
+   uint64_t bs_sent;
+   uint64_t bs_sent_delta;
    struct half_stats bh;
    struct half_stats th;
    unsigned long queue_max;

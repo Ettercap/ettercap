@@ -250,21 +250,21 @@ static gboolean refresh_stats(gpointer data)
    if (!GTK_WIDGET_VISIBLE(stats_window))
       return FALSE;
 
-   snprintf(line, 50, "%8llu", GBL_STATS->ps_recv);
+   snprintf(line, 50, "%8"PRIu64, GBL_STATS->ps_recv);
    gtk_label_set_text(GTK_LABEL (packets_recv), line);
-   snprintf(line, 50, "%8llu  %.2f %%", GBL_STATS->ps_drop, 
+   snprintf(line, 50, "%8"PRIu64"  %.2f %%", GBL_STATS->ps_drop, 
          (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv : 0 );
    gtk_label_set_text(GTK_LABEL (packets_drop), line);
-   snprintf(line, 50, "%8llu  bytes: %8llu ", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
+   snprintf(line, 50, "%8"PRIu64"  bytes: %8"PRIu64" ", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
    gtk_label_set_text(GTK_LABEL (packets_forw), line);
    snprintf(line, 50, "%lu/%lu ", GBL_STATS->queue_curr, GBL_STATS->queue_max);
    gtk_label_set_text(GTK_LABEL (queue_len), line);
    snprintf(line, 50, "%d ", GBL_CONF->sampling_rate);
    gtk_label_set_text(GTK_LABEL (sample_rate), line);
-   snprintf(line, 50, "pck: %8llu  bytes: %8llu", 
+   snprintf(line, 50, "pck: %8"PRIu64"  bytes: %8"PRIu64, 
          GBL_STATS->bh.pck_recv, GBL_STATS->bh.pck_size);
    gtk_label_set_text(GTK_LABEL (recv_bottom), line);
-   snprintf(line, 50, "pck: %8llu  bytes: %8llu", 
+   snprintf(line, 50, "pck: %8"PRIu64"  bytes: %8"PRIu64, 
          GBL_STATS->th.pck_recv, GBL_STATS->th.pck_size);
    gtk_label_set_text(GTK_LABEL (recv_top), line);
    snprintf(line, 50, "%.2f %%",

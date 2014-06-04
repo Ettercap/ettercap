@@ -196,9 +196,6 @@ void set_display_regex(char *regex)
    int err;
    char errbuf[100];
 
-   /* allocate the new structure */
-   SAFE_CALLOC(GBL->regex, 1, sizeof(regex_t));
-
    /* compile the regex */
    err = regcomp(GBL->regex, regex, REG_EXTENDED | REG_NOSUB | REG_ICASE );
 

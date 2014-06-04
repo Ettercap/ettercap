@@ -232,13 +232,8 @@ static void display_info(void)
 
    /* write the XML prolog */
    if (GBL->xml) {
-      time_t tt = time(NULL);
-      char time[28];
-      /* remove the final '\n' */
-      strcpy(time, ctime(&tt));
-      time[strlen(time)-1] = 0;
       fprintf(stdout, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n\n");
-      fprintf(stdout, "<etterlog version=\"%s\" date=\"%s\">\n", EC_VERSION, time);
+      fprintf(stdout, "<etterlog version=\"%s\" date=\"%s\">\n", EC_VERSION, ec_ctime(NULL));
    } else
       fprintf(stdout, "\n\n");
    

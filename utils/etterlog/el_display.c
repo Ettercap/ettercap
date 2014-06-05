@@ -99,7 +99,7 @@ static void display_packet(void)
       SAFE_CALLOC(tmp, hex_len(pck.len), sizeof(u_char));
 
       /* display the headers only if necessary */
-      if (!GBL->no_headers)
+      if (!GBL_OPTIONS->no_headers)
          display_headers(&pck);
       
       /* 
@@ -109,7 +109,7 @@ static void display_packet(void)
       ret = GBL->format(buf, pck.len, tmp);
      
       /* the ANSI escape for the color */
-      if (GBL->color) {
+      if (GBL_OPTIONS->color) {
          int color = 0;
          switch (versus) {
             case VERSUS_SOURCE:
@@ -125,14 +125,14 @@ static void display_packet(void)
       /* print it */
       write(fileno(stdout), tmp, ret);
       
-      if (GBL->color) 
+      if (GBL_OPTIONS->color) 
          reset_color();
       
       SAFE_FREE(buf);
       SAFE_FREE(tmp);
    }
 
-   if (!GBL->no_headers)
+   if (!GBL_OPTIONS->no_headers)
       write(fileno(stdout), "\n\n", 2);
    
    return;
@@ -155,7 +155,7 @@ static void display_headers(struct log_header_packet *pck)
    /* display the date. ec_ctime() has no newline at end. */
    fprintf(stdout, "\n\n%s [%lu]\n", ec_ctime(&pck->tv), pck->tv.tv_usec);
   
-   if (GBL->showmac) {
+   if (GBL_OPTIONS->showmac) {
       /* display the mac addresses */
       mac_addr_ntoa(pck->L2_src, tmp1);
       mac_addr_ntoa(pck->L2_dst, tmp2);
@@ -216,7 +216,7 @@ static void display_info(void)
    create_hosts_list(); 
 
    /* don't load if the user is interested only in passwords... */
-   if (!GBL->passwords) {
+   if (!GBL_OPTIONS->passwords) {
       /* load the fingerprint database */
       fingerprint_init();
 
@@ -228,7 +228,7 @@ static void display_info(void)
    }
 
    /* write the XML prolog */
-   if (GBL->xml) {
+   if (GBL_OPTIONS->xml) {
       fprintf(stdout, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n\n");
       fprintf(stdout, "<etterlog version=\"%s\" date=\"%s\">\n", EC_VERSION, ec_ctime(NULL));
    } else
@@ -250,14 +250,14 @@ static void display_info(void)
          continue;
       
       /* skip the host respecting the options */
-      if (GBL->only_local && (h->type & FP_HOST_NONLOCAL))
+      if (GBL_OPTIONS->only_local && (h->type & FP_HOST_NONLOCAL))
          continue;
       
-      if (GBL->only_remote && (h->type & FP_HOST_LOCAL))
+      if (GBL_OPTIONS->only_remote && (h->type & FP_HOST_LOCAL))
          continue;
       
       /* set the color */
-      if (GBL->color) {
+      if (GBL_OPTIONS->color) {
          if (h->type & FP_GATEWAY)
             set_color(COL_RED);
          else if (h->type & FP_HOST_LOCAL)
@@ -267,20 +267,20 @@ static void display_info(void)
       }
      
       /* print the infos */
-      if (GBL->passwords)
+      if (GBL_OPTIONS->passwords)
          print_pass(h);  
-      else if (GBL->xml)
+      else if (GBL_OPTIONS->xml)
          print_host_xml(h);
       else
          print_host(h);
       
       /* reset the color */
-      if (GBL->color)
+      if (GBL_OPTIONS->color)
          reset_color();
    }
    
    /* close the global tag */
-   if (GBL->xml)
+   if (GBL_OPTIONS->xml)
       fprintf(stdout, "</etterlog>\n");
    
    fprintf(stdout, "\n\n");
@@ -345,7 +345,7 @@ static void print_pass(struct host_profile *h)
             fprintf(stdout, "(%s)", h->hostname);
         
          /* print the client if requested */
-         if (GBL->showclient)
+         if (GBL_OPTIONS->showclient)
             fprintf(stdout, "(%s)", ip_addr_ntoa(&u->client, tmp));
 
          fprintf(stdout, " %s %-5d %s USER: %s \tPASS: %s ",

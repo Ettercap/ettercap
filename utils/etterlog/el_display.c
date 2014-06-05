@@ -86,7 +86,8 @@ static void display_packet(void)
       }
      
       /* if the regex does not match, the packet is not interesting */
-      if (GBL->regex && regexec(GBL->regex, (const char*)buf, 0, NULL, 0) != 0) {
+      if (GBL_OPTIONS->regex && GBL->regex && 
+            regexec(GBL->regex, (const char*)buf, 0, NULL, 0) != 0) {
          SAFE_FREE(buf);
          continue;
       }
@@ -296,7 +297,7 @@ static int match_regex(struct host_profile *h)
    struct open_port *o;
    char os[OS_LEN+1];
 
-   if (!GBL->regex)
+   if (!GBL_OPTIONS->regex || !GBL->regex)
       return 1;
 
    /* check the manufacturer */

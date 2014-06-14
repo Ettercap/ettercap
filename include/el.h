@@ -164,7 +164,7 @@ EC_API_EXTERN void globals_free(void);
 void debug_msg(const char *message, ...);
 void ui_msg(const char *fmt, ...);
 void ui_error(const char *fmt, ...);
-void ui_fatal_error(const char *msg);
+void ui_fatal_error(const char *fmt, ...);
 void ui_cleanup(void);
 
 

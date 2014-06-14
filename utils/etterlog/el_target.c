@@ -70,7 +70,7 @@ int compile_target(char *string, struct target_env *target)
    target->all_port = 0;
    /* check for invalid char */
    if (strlen(string) != strspn(string, valid))
-      ui_error("TARGET (%s) contains invalid chars !", string);
+      ui_fatal_error("TARGET (%s) contains invalid chars !", string);
 
    /* TARGET parsing */
    for (p = strsep(&string, "/"); p != NULL; p = strsep(&string, "/")) {
@@ -81,9 +81,9 @@ int compile_target(char *string, struct target_env *target)
 
    if (i != MAX_TOK)
 #ifdef WITH_IPV6
-      ui_error("Incorrect number of token (///) in TARGET !!");
+      ui_fatal_error("Incorrect number of token (///) in TARGET !!");
 #else
-      ui_error("Incorrect number of token (//) in TARGET !!");
+      ui_fatal_error("Incorrect number of token (//) in TARGET !!");
 #endif
 
 //   DEBUG_MSG("MAC  : [%s]", tok[MAC_TOK]);
@@ -97,7 +97,7 @@ int compile_target(char *string, struct target_env *target)
    if (!strcmp(tok[MAC_TOK], ""))
       target->all_mac = 1;
    else if (mac_addr_aton(tok[MAC_TOK], target->mac) == 0)
-      ui_error("Incorrect TARGET MAC parsing... (%s)", tok[MAC_TOK]);
+      ui_fatal_error("Incorrect TARGET MAC parsing... (%s)", tok[MAC_TOK]);
 
    /* parse the IP range */
    if (!strcmp(tok[IP_TOK], ""))
@@ -133,7 +133,7 @@ int compile_target(char *string, struct target_env *target)
       target->all_port = 1;
    else {
       if (expand_token(tok[PORT_TOK], 1<<16, &add_port, target->ports) == -EFATAL)
-         ui_error("Invalid port range");
+         ui_fatal_error("Invalid port range");
    }
 
    for(i = 0; i < MAX_TOK; i++)

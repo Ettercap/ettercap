@@ -135,6 +135,7 @@ static struct conf_section sections[] = {
 
 static void init_structures(void);
 static void set_pointer(struct conf_entry *entry, char *name, void *ptr);
+static void sanity_checks(void);
 
 static void set_dissector(char *name, char *values, int lineno);
 static struct conf_entry * search_section(char *title);
@@ -237,6 +238,13 @@ static void set_pointer(struct conf_entry *entry, char *name, void *ptr)
          entry[i].value = ptr;
       
    } while (entry[++i].name != NULL);
+}
+
+static void sanity_checks()
+{
+   // sampling_rate cannot be equal to 0, since we divide by it
+   if (GBL_CONF->sampling_rate == 0)
+      GBL_CONF->sampling_rate = 50;
 }
 
 /*
@@ -379,7 +387,8 @@ void load_conf(void)
          DEBUG_MSG("load_conf: \tENTRY: %s  %d", q, *(int *)value);
       }
    }
-  
+
+   sanity_checks();
    fclose(fc);
 }
 

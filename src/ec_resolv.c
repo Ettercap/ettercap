@@ -49,17 +49,20 @@ static int resolv_cache_search(struct ip_addr *ip, char *name);
 
 /*
  * resolves an ip address into an hostname.
- * before doing the real gethostbyaddr it search in
+ * before doing the real getnameinfo it search in
  * a cache of previously resolved hosts to increase
  * speed.
- * after each gethostbyaddr the result is inserted 
+ * after each getnameinfo the result is inserted 
  * in the cache.
  */
 
 int host_iptoa(struct ip_addr *ip, char *name)
 {
-   struct hostent *host = NULL;
+   struct sockaddr_storage ss;
+   struct sockaddr_in *sa4;
+   struct sockaddr_in6 *sa6;
    char tmp[MAX_ASCII_ADDR_LEN];
+   char host[MAX_HOSTNAME_LEN];
    
    /* initialize the name */
    strncpy(name, "", 1);
@@ -71,7 +74,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
    /*
     * if the entry is already present in the cache
     * return that entry and don't call the real
-    * gethostbyaddr. we want to increase the speed...
+    * getnameinfo. we want to increase the speed...
     */
    if (resolv_cache_search(ip, name) == ESUCCESS)
       return ESUCCESS;
@@ -87,11 +90,23 @@ int host_iptoa(struct ip_addr *ip, char *name)
   
    DEBUG_MSG("host_iptoa() for %s", ip_addr_ntoa(ip, tmp));
    
-   /* if not found in the cache, resolve it */
-   host = gethostbyaddr(ip->addr, ntohs(ip->addr_len), ntohs(ip->addr_type));
+   /* if not found in the cache, prepare struct and resolve it */
+   switch (ntohs(ip->addr_type)) {
+      case AF_INET:
+         sa4 = (struct sockaddr_in *)&ss;
+         sa4->sin_family = AF_INET;
+         ip_addr_cpy((u_char*)&sa4->sin_addr.s_addr, ip);
+      break;
+      case AF_INET6:
+         sa6 = (struct sockaddr_in6 *)&ss;
+         sa6->sin6_family = AF_INET6;
+         ip_addr_cpy((u_char*)&sa6->sin6_addr.s6_addr, ip);
+      break;
+   }
 
    /* not found or error */
-   if (host == NULL) {
+   if (getnameinfo((struct sockaddr *)&ss, sizeof(ss), 
+            host, MAX_HOSTNAME_LEN, NULL, 0, NI_NAMEREQD)) {
       /* 
        * insert the "" in the cache so we don't search for
        * non existent hosts every new query.
@@ -101,11 +116,11 @@ int host_iptoa(struct ip_addr *ip, char *name)
    } 
  
    /* the host was resolved... */
-   strlcpy(name, host->h_name, MAX_HOSTNAME_LEN - 1);
+   strlcpy(name, host, MAX_HOSTNAME_LEN - 1);
 
    /* insert the result in the cache for later use */
-   resolv_cache_insert(ip, name);
-   
+   resolv_cache_insert(ip, host);
+
    return ESUCCESS;
 }
 

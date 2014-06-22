@@ -190,7 +190,7 @@ FUNC_DECODER(dissector_dns)
             ip_addr_init(&ip, AF_INET, (u_char *)&addr);
            
             /* insert the answer in the resolv cache */
-            resolv_cache_insert(&ip, name);
+            resolv_cache_insert_passive(&ip, name);
 
             /* display the user message */
             ip_addr_ntoa(&ip, aip);

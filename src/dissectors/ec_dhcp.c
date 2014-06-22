@@ -276,7 +276,7 @@ FUNC_DECODER(dissector_dhcp)
                 memcpy(name, opt + 4, size - 2);
                 name[size - 3] = 0;
 
-                resolv_cache_insert(&client, name);
+                resolv_cache_insert_passive(&client, name);
 
                 SAFE_FREE(name);
             }

@@ -140,7 +140,7 @@ static void handle_ipv4_record(char* name, char* ptr)
     ip_addr_init(&ip, AF_INET, (u_char *)&addr);
 
     /* insert the answer in the resolv cache */
-    resolv_cache_insert(&ip, name);
+    resolv_cache_insert_passive(&ip, name);
 }
 
 static void handle_srv_record(char* name, char* port_ptr, struct packet_object *po)

@@ -52,12 +52,33 @@ static GtkWidget *stats_window, *packets_recv, *packets_drop, *packets_forw,
 /*******************************************/
 
 
+/* 
+ * If this option is being activated,
+ * it runs through the current hosts list and triggeres 
+ * name resolution in the background. 
+ * That way subsequent actions benefits from the filled cache
+ */
 void toggle_resolve(void)
 {
+   char name[MAX_HOSTNAME_LEN];
+   struct hosts_list *hl;
+
+   /* resolution already set */
    if (GBL_OPTIONS->resolve) {
       GBL_OPTIONS->resolve = 0;
-   } else {
-      GBL_OPTIONS->resolve = 1;
+      return;
+   } 
+
+   DEBUG_MSG("toggle_resolve: activate name resolution");
+
+   /* set the option */
+   GBL_OPTIONS->resolve = 1;
+
+   /* run through the current hosts list and trigger resolution */
+   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+      if (hl->hostname)
+         continue;
+      host_iptoa(&hl->ip, name);
    }
 }
 

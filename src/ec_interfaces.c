@@ -64,7 +64,7 @@ void select_curses_interface(void)
 void select_gtk_interface(void)
 {
    DEBUG_MSG("select_gtk_interface");
-#ifdef HAVE_GTK
+#if defined HAVE_GTK || defined HAVE_GTK3
    set_gtk_interface();
 #else
    FATAL_ERROR("GTK support is not compiled in %s", GBL_PROGRAM);

@@ -198,6 +198,31 @@ FUNC_DECODER(dissector_dns)
             //DISSECT_MSG("DNS: %s ->> %s ->> %s\n", name, alias, aip);
             DEBUG_MSG("DNS: %s ->> %s ->> %s\n", name, alias, aip);
          }
+         else if (type == ns_t_aaaa) {
+            u_int16 addr[8];
+            struct ip_addr ip;
+            char aip[MAX_ASCII_ADDR_LEN];
+            int i = 0;
+
+            /* IPv6 address - get the bytes in reverse order*/
+            for (i=0; i<8; i++) {
+               NS_GET16(addr[i], q);
+               addr[i] = htons(addr[i]);
+            }
+
+            ip_addr_init(&ip, AF_INET6, (u_char*)&addr);
+
+            /* insert the answer in the resolv cache */
+            resolv_cache_insert_passive(&ip, name);
+
+            /* prepare ip address for user message */
+            ip_addr_ntoa(&ip, aip);
+
+            /* display the user message */
+            //DISSECT_MSG("DNS: %s ->> %s ->> %s\n", name, alias, aip);
+            DEBUG_MSG("DNS: %s ->> %s ->> %s\n", name, alias, aip);
+
+         }
       }
    }
       

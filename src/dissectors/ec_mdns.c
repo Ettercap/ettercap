@@ -25,6 +25,7 @@ FUNC_DECODER(dissector_mdns);
 void mdns_init(void);
 
 static void handle_ipv4_record(char* name, char* ptr);
+static void handle_ipv6_record(char* name, char* ptr);
 static void handle_srv_record(char* name, char* port_ptr, struct packet_object *po);
 
 static const char local_tcp[] = "._tcp.local";
@@ -110,13 +111,13 @@ FUNC_DECODER(dissector_mdns)
 
         switch (type)
         {
-            case 1: // A host IPv4
+            case ns_t_a: // A host IPv4
                 handle_ipv4_record(name, (char*)ptr);
                 break;
-            case 28: // AAA (Host IPv6 Address)
-                //TODO the resolve cache doesn't handle ipv6
+            case ns_t_aaaa: // AAAA (Host IPv6 Address)
+                handle_ipv6_record(name, (char*)ptr);
                 break;
-            case 33: // Service
+            case ns_t_srv: // Service
                 handle_srv_record(name, (char*)ptr + 4, PACKET);
                 break;
             default:
@@ -138,6 +139,23 @@ static void handle_ipv4_record(char* name, char* ptr)
     NS_GET32(addr, ptr);
     addr = htonl(addr);
     ip_addr_init(&ip, AF_INET, (u_char *)&addr);
+
+    /* insert the answer in the resolv cache */
+    resolv_cache_insert_passive(&ip, name);
+}
+
+static void handle_ipv6_record(char* name, char* ptr)
+{
+    uint16_t addr[8];
+    struct ip_addr ip;
+    int i = 0;
+
+    for (i=0; i<8; i++) {
+       NS_GET16(addr[i], ptr);
+       addr[i] = htons(addr[i]);
+    }
+
+    ip_addr_init(&ip, AF_INET6, (u_char *)&addr);
 
     /* insert the answer in the resolv cache */
     resolv_cache_insert_passive(&ip, name);

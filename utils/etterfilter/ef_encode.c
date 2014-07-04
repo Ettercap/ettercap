@@ -60,6 +60,14 @@ int encode_offset(char *string, struct filter_op *fop)
    p = ec_strtok(str, ".", &tok);
    q = ec_strtok(NULL, ".", &tok);
 
+   /*
+    * the assumption above is not always true, e.g.:
+    * log(DATA,d "x.log"); 
+    * results in q == NULL.
+    */
+   if (q == NULL)
+      return -ENOTFOUND;
+
    /* the the virtual pointer from the table */
    ret = get_virtualpointer(p, q, &fop->op.test.level, &fop->op.test.offset, &fop->op.test.size);
 
@@ -173,7 +181,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
             fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
             ret = ESUCCESS;
-         }
+         } else
+            SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "regex")) {
@@ -190,7 +199,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
             fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
             ret = ESUCCESS;
-         }
+         } else
+            SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
 
          /* check if the regex is valid */
          err = regcomp(&regex, (const char*)fop->op.func.string, REG_EXTENDED | REG_NOSUB | REG_ICASE );
@@ -221,7 +231,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.string = strdup(dec_args[1]);
             fop->op.func.slen = strlen(fop->op.func.string);
             ret = ESUCCESS;
-         }
+         } else
+            SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
 
          /* check if the pcre is valid */
          pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
@@ -292,7 +303,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
             fop->op.func.slen = strlen((const char*)fop->op.func.string);
             ret = ESUCCESS;
-         }
+         } else
+            SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "drop")) {

@@ -51,7 +51,7 @@ static GtkTreeSelection *selection = NULL;
 void gtkui_plugin_load(void)
 {
    GtkWidget *dialog;
-   const char *filename;
+   gchar *filename;
    int response = 0;
 #ifdef OS_WINDOWS
    char *path = get_full_path("/lib/", "");
@@ -61,8 +61,12 @@ void gtkui_plugin_load(void)
    
    DEBUG_MSG("gtk_plugin_load");
    
-   dialog = gtk_file_selection_new ("Select a plugin...");
-   gtk_file_selection_set_filename(GTK_FILE_SELECTION(dialog), path);   
+   dialog = gtk_file_chooser_dialog_new("Select a plugin...",
+         GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
+         GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+         NULL);
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), path);
 
 #ifdef OS_WINDOWS
    SAFE_FREE(path);
@@ -72,12 +76,13 @@ void gtkui_plugin_load(void)
    
    if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
       
       gtkui_load_plugin(filename);
 
       /* update the list */
       gtkui_create_plug_array();
+      g_free(filename);
    }
    gtk_widget_destroy (dialog);
 }
@@ -143,7 +148,11 @@ void gtkui_plugin_mgmt(void)
 
    plugins_window = gtkui_page_new("Plugins", &gtkui_plug_destroy, &gtkui_plugins_detach);
    
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
    vbox = gtk_vbox_new(FALSE, 0);
+#endif
    gtk_container_add(GTK_CONTAINER (plugins_window), vbox);
    gtk_widget_show(vbox);
    

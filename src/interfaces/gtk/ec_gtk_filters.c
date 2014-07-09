@@ -34,14 +34,18 @@
 void gtkui_load_filter(void)
 {
    GtkWidget *dialog;
-   const char *filename;
+   gchar *filename;
    int response = 0;
    char *path = get_full_path("share", "");
 
    DEBUG_MSG("gtk_load_filter");
 
-   dialog = gtk_file_selection_new ("Select a precompiled filter file...");
-   gtk_file_selection_set_filename(GTK_FILE_SELECTION(dialog), path);
+   dialog = gtk_file_chooser_dialog_new("Select a precompiled filter file...",
+            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
+            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+            NULL);
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), path);
 
    SAFE_FREE(path);
 
@@ -49,13 +53,15 @@ void gtkui_load_filter(void)
 
    if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 
       /* 
        * load the filters chain.
        * errors are spawned by the function itself
        */
       filter_load_file(filename, GBL_FILTERS, 1);
+
+      g_free(filename);
    }
    gtk_widget_destroy (dialog);
 }

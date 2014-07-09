@@ -24,7 +24,7 @@
    #include <ec_curses.h>
 #endif
 #include <ec_daemon.h>
-#ifdef HAVE_GTK
+#if defined HAVE_GTK || defined HAVE_GTK3
    #include <ec_gtk.h>
 #endif
 

@@ -51,13 +51,31 @@ void toggle_compress(void)
  */
 void gtkui_log_all(void)
 {
+   GtkWidget *dialog;
+   gchar *filename;
    DEBUG_MSG("gtk_log_all");
 
    /* make sure to free if already set */
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   gtkui_input("Log File :", logfile, FILE_LEN, log_all);
+   dialog = gtk_file_chooser_dialog_new("Save all to logfile...",
+           GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
+           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
+           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+           NULL);
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");
+
+   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+       gtk_widget_hide(dialog);
+       filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+       gtk_widget_destroy(dialog);
+       memcpy(logfile, filename, FILE_LEN);
+       g_free(filename);
+       log_all();
+   } else {
+       gtk_widget_destroy(dialog);
+   }
 }
 
 static void log_all(void)
@@ -77,13 +95,32 @@ static void log_all(void)
  */
 void gtkui_log_info(void)
 {
+   GtkWidget *dialog;
+   gchar *filename;
+
    DEBUG_MSG("gtk_log_info");
 
    /* make sure to free if already set */
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   gtkui_input("Log File :", logfile, FILE_LEN, log_info);
+   dialog = gtk_file_chooser_dialog_new("Save infos to logfile...",
+           GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
+           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
+           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+           NULL);
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");
+
+   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+       gtk_widget_hide(dialog);
+       filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+       gtk_widget_destroy(dialog);
+       memcpy(logfile, filename, FILE_LEN);
+       g_free(filename);
+       log_info();
+   } else {
+       gtk_widget_destroy(dialog);
+   }
 }
 
 static void log_info(void)
@@ -109,13 +146,33 @@ void gtkui_stop_log(void)
  */
 void gtkui_log_msg(void)
 {
+   GtkWidget *dialog;
+   gchar *filename;
+   
    DEBUG_MSG("gtk_log_msg");
 
    /* make sure to free if already set */
    SAFE_FREE(logfile);
    SAFE_CALLOC(logfile, FILE_LEN, sizeof(char));
 
-   gtkui_input("Log File :", logfile, FILE_LEN, log_msg);
+   dialog = gtk_file_chooser_dialog_new("Safe Log Messages in file...",
+           GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
+           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
+           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+           NULL);
+
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");
+
+   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+       gtk_widget_hide(dialog);
+       filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+       gtk_widget_destroy(dialog);
+       memcpy(logfile, filename, FILE_LEN);
+       g_free(filename);
+       log_msg();
+   } else {
+       gtk_widget_destroy(dialog);
+   }
 }
 
 static void log_msg(void)

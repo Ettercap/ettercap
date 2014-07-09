@@ -58,6 +58,10 @@
   LONG TERM TODO
 ==================
    
+   + GTK
+      - Rework GTK3 UI using the latest API (GtkBuilder)
+      - Phase out GTK2
+
    + SSH2 dissection :) (yes, it can be done)
 
    + IPv6

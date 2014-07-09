@@ -104,7 +104,7 @@ static void set_protocol(void)
  */
 void gtkui_select_targets(void)
 {
-   GtkWidget *dialog, *hbox, *label, *entry1, *entry2;  
+   GtkWidget *dialog, *hbox, *label, *entry1, *entry2, *content_area;  
    
 #define TARGET_LEN 50
    
@@ -113,15 +113,21 @@ void gtkui_select_targets(void)
    dialog = gtk_dialog_new_with_buttons("Enter Targets", GTK_WINDOW(window),
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, NULL);
-   gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox), 20);
+   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   gtk_container_set_border_width(GTK_CONTAINER(content_area), 20);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
    hbox = gtk_hbox_new(FALSE, 0);
+#endif
    label = gtk_label_new ("Target 1: ");
    
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
    gtk_widget_show(label);
 
-   entry1 = gtk_entry_new_with_max_length(TARGET_LEN);
+   entry1 = gtk_entry_new();
+   gtk_entry_set_max_length(GTK_ENTRY(entry1), TARGET_LEN);
    gtk_entry_set_width_chars (GTK_ENTRY (entry1), TARGET_LEN);
    
    if (GBL_OPTIONS->target1)
@@ -129,15 +135,20 @@ void gtkui_select_targets(void)
    
    gtk_box_pack_start(GTK_BOX (hbox), entry1, FALSE, FALSE, 0);
    gtk_widget_show(entry1);
-   gtk_box_pack_start(GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, TRUE, TRUE, 5);
+   gtk_box_pack_start(GTK_BOX(content_area), hbox, TRUE, TRUE, 5);
    gtk_widget_show(hbox);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
    hbox = gtk_hbox_new(FALSE, 0);
+#endif
    label = gtk_label_new ("Target 2: ");
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
    gtk_widget_show(label);
 
-   entry2 = gtk_entry_new_with_max_length(TARGET_LEN);
+   entry2 = gtk_entry_new();
+   gtk_entry_set_max_length(GTK_ENTRY(entry2), TARGET_LEN);
    gtk_entry_set_width_chars (GTK_ENTRY (entry2), TARGET_LEN);
    
    if (GBL_OPTIONS->target2)
@@ -145,7 +156,7 @@ void gtkui_select_targets(void)
    
    gtk_box_pack_start(GTK_BOX (hbox), entry2, FALSE, FALSE, 0);
    gtk_widget_show(entry2);
-   gtk_box_pack_start(GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, TRUE, TRUE, 5);
+   gtk_box_pack_start(GTK_BOX(content_area), hbox, TRUE, TRUE, 5);
    gtk_widget_show(hbox);
 
    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
@@ -216,11 +227,19 @@ void gtkui_current_targets(void)
 
    targets_window = gtkui_page_new("Targets", &gtkui_targets_destroy, &gtkui_targets_detach);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
    vbox = gtk_vbox_new(FALSE, 0);
+#endif
    gtk_container_add(GTK_CONTAINER (targets_window), vbox);
    gtk_widget_show(vbox);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox = gtk_hbox_new(TRUE, 5);
+#endif
    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
    gtk_widget_show(hbox);
 
@@ -265,7 +284,11 @@ void gtkui_current_targets(void)
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
    /* buttons */
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox = gtk_hbox_new(TRUE, 5);
+#endif
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("Delete");

@@ -4,8 +4,6 @@
 
 >>> things to be fixed
 
-   + Threadize the (deprecated) gethostbyaddr function (issue #238)
-   
    + remove GBL_OPTIONS->quiet from some plugins
 
    + PCAP RELATED

@@ -42,7 +42,7 @@
 EC_API_EXTERN int host_iptoa(struct ip_addr *ip, char *name);
 
 /* used by ec_dns to insert passively sniffed dns answers */
-EC_API_EXTERN void resolv_cache_insert(struct ip_addr *ip, char *name);
+EC_API_EXTERN void resolv_cache_insert_passive(struct ip_addr *ip, char *name);
    
 
    

@@ -69,14 +69,35 @@ struct wdg_menu menu_view[] = { {"View",                 'V', "",  NULL},
 /*******************************************/
 
 
+/* 
+ * If this option is being activated,
+ * it runs through the current hosts list and triggeres 
+ * name resolution in the background. 
+ * That way subsequent actions benefits from the filled cache
+ */
 static void toggle_resolve(void)
 {
+   char name[MAX_HOSTNAME_LEN];
+   struct hosts_list *hl;
+
+   /* resolution already set */
    if (GBL_OPTIONS->resolve) {
       tag_resolve[0] = ' ';
       GBL_OPTIONS->resolve = 0;
-   } else {
-      tag_resolve[0] = '*';
-      GBL_OPTIONS->resolve = 1;
+      return;
+   } 
+   
+   DEBUG_MSG("toggle_resolve: activate name resolution");
+
+   /* set the option */
+   tag_resolve[0] = '*';
+   GBL_OPTIONS->resolve = 1;
+   
+   /* run through the current hosts list and trigger resolution */
+   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+      if (hl->hostname)
+         continue;
+      host_iptoa(&hl->ip, name);
    }
 }
 

@@ -87,7 +87,7 @@ EC_THREAD_FUNC(capture)
     * infinite loop 
     * dispatch packets to ec_decode
     */
-   ret = pcap_loop(iface->pcap, -1, ec_decode, (unsigned char *) iface->dump);
+   ret = pcap_loop(iface->pcap, -1, ec_decode, EC_THREAD_PARAM);
    ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(iface->pcap));
 
    if (GBL_OPTIONS->read) {

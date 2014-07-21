@@ -34,12 +34,18 @@ if (NOT RTMP_FOUND)
    message(FATAL_ERROR "Cannot build bundled Curl without rtmp")
 endif (NOT RTMP_FOUND)
 
+find_library(HAVE_LIBSSH2 ssh2)
+if (NOT HAVE_LIBSSH2)
+   message(FATAL_ERROR "Cannot build bundled Curl without libssh2")
+endif (NOT HAVE_LIBSSH2)
+
 # Ensure that we include all the required stuff for linking to libcurl
 SET(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX}
   ${OPENSSL_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${LIBIDN_LIBRARIES}
   ${RTMP_LIBRARIES}
+  ${HAVE_LIBSSH2}
   )  
 
 #Figure out the parent directory for our openssl installation.

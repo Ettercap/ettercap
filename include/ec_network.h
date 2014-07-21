@@ -26,6 +26,7 @@ struct iface_env {
    u_int8 unoffensive:1;
 
    pcap_t* pcap;
+   pcap_dumper_t *dump;
    libnet_t* lnet;
 };
 

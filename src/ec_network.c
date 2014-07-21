@@ -105,7 +105,7 @@ static void close_network()
       pcap_close(GBL_BRIDGE->pcap);
 
    if(GBL_OPTIONS->write)
-      pcap_dump_close(GBL_PCAP->dump);
+      pcap_dump_close(GBL_IFACE->dump);
 
    libnet_destroy(GBL_IFACE->lnet);
    libnet_destroy(GBL_BRIDGE->lnet);
@@ -118,7 +118,7 @@ static void pcap_winit(pcap_t *pcap)
    pcap_dumper_t *pdump;
    pdump = pcap_dump_open(pcap, GBL_OPTIONS->pcapfile_out);
    ON_ERROR(pdump, NULL, "pcap_dump_open: %s", pcap_geterr(pcap));
-   GBL_PCAP->dump = pdump;
+   GBL_IFACE->dump = pdump;
 }
 
 static void source_print(struct iface_env *source)

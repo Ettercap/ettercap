@@ -8,6 +8,8 @@ EC_API_EXTERN int ec_lua_init();
 EC_API_EXTERN int ec_lua_fini();
 EC_API_EXTERN int ec_lua_cli_add_script(char * script);
 EC_API_EXTERN int ec_lua_cli_add_args(char * args);
+EC_API_EXTERN void ec_lua_print_info(FILE* debug_file);
+EC_API_EXTERN void ec_lua_print_version(FILE* debug_file);
 int ec_lua_dispatch_hooked_packet(int point, struct packet_object * po);
 void ec_lua_print_stack(FILE * io);
 

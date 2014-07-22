@@ -44,6 +44,7 @@ enum {
    NL_TYPE_GRE   = 0x2f,
    NL_TYPE_OSPF  = 0x59,
    NL_TYPE_VRRP  = 0x70,
+   NL_TYPE_ESP   = 0x32,
 };
 
 /* proto layer types */

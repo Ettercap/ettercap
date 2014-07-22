@@ -144,6 +144,10 @@ hook_points.ipcp          = ffi.C.HOOK_PACKET_IPCP
 -- <br/>Defined in include/ec_hook.h as HOOK_PACKET_PPP
 hook_points.ppp           = ffi.C.HOOK_PACKET_PPP
 
+--- Any ESP packet.
+-- <br/>Defined in include/ec_hook.h as HOOK_PROTO_ESP
+hook_points.esp          = ffi.C.HOOK_PACKET_ESP
+
 --- Any SMB packet.
 -- <br/>Defined in include/ec_hook.h as HOOK_PROTO_SMB
 hook_points.smb           = ffi.C.HOOK_PROTO_SMB

@@ -26,8 +26,8 @@
 /* globals */
 
 struct esp_header {
-   u_int32  spi;           /* Security Parameters Index */
-   u_int32  seq;           /* Sequence Number */
+   uint32_t  spi;           /* Security Parameters Index */
+   uint32_t  seq;           /* Sequence Number */
 };
 
 

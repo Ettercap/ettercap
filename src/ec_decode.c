@@ -77,6 +77,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    u_int len;
    u_char *data;
    u_int datalen;
+   struct iface_env *iface;
+
+   iface = (struct iface_env *)param;
 
    CANCELLATION_POINT();
 
@@ -111,7 +114,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
        * packets are dumped in the log file by two threads
        */
       DUMP_LOCK;
-      pcap_dump((u_char *)param, pkthdr, pkt);
+      pcap_dump((u_char *)iface->dump, pkthdr, pkt);
       DUMP_UNLOCK;
    }
  
@@ -153,9 +156,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* set the po timestamp */
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
    /* set the interface where the packet was captured */
-   if (GBL_OPTIONS->iface && !strcmp(GBL_IFACE->name, GBL_OPTIONS->iface))
+   if (GBL_OPTIONS->iface && !strcmp(iface->name, GBL_OPTIONS->iface))
       po.flags |= PO_FROMIFACE;
-   else if (GBL_OPTIONS->iface_bridge && !strcmp(GBL_IFACE->name, GBL_OPTIONS->iface_bridge))
+   else if (GBL_OPTIONS->iface_bridge && !strcmp(iface->name, GBL_OPTIONS->iface_bridge))
       po.flags |= PO_FROMBRIDGE;
 
    /* HOOK POINT: RECEIVED */ 
@@ -210,7 +213,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    if (GBL_OPTIONS->write && GBL_OPTIONS->read) {
       DUMP_LOCK;
       /* reuse the original pcap header, but with the modified packet */
-      pcap_dump((u_char *)param, pkthdr, po.packet);
+      pcap_dump((u_char *)iface->dump, pkthdr, po.packet);
       DUMP_UNLOCK;
    }
    

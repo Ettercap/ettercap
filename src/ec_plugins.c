@@ -119,6 +119,8 @@ int plugin_load_single(const char *path, char *name)
     */
    return plugin_load(handle);
 #else
+   (void) path;
+   (void) name;
    return -EINVALID;
 #endif
 }
@@ -264,6 +266,8 @@ int plugin_register(void *handle, struct plugin_ops *ops)
 
    return ESUCCESS;
 #else
+   (void) handle;
+   (void) ops;
    return -EINVALID;
 #endif
 }

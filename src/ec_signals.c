@@ -151,7 +151,7 @@ static void signal_SEGV(int sig)
    fprintf (stderr, "  1) set ec_uid to 0 (so the core will be dumped)\n\n");
    fprintf (stderr, "  2) execute ettercap with \"-w debug_dump.pcap\"\n\n");
    fprintf (stderr, "  3) reproduce the critical situation\n\n");
-   fprintf (stderr, "  4) make a report : \n\t\"tar zcvf error.tar.gz %s%s_debug.log debug_dump.pcap\"\n\n", EC_PROGRAM, EC_VERSION);
+   fprintf (stderr, "  4) make a report : \n\t\"tar zcvf error.tar.gz %s-%s_debug.log debug_dump.pcap\"\n\n", EC_PROGRAM, EC_VERSION);
    fprintf (stderr, "  5) get the gdb backtrace :\n"
                     "  \t - \"gdb %s core\"\n"
                     "  \t - at the gdb prompt \"bt\"\n"

@@ -114,7 +114,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
        * packets are dumped in the log file by two threads
        */
       DUMP_LOCK;
-      pcap_dump((u_char *)iface->dump, pkthdr, pkt);
+      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
       DUMP_UNLOCK;
    }
  
@@ -213,7 +213,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    if (GBL_OPTIONS->write && GBL_OPTIONS->read) {
       DUMP_LOCK;
       /* reuse the original pcap header, but with the modified packet */
-      pcap_dump((u_char *)iface->dump, pkthdr, po.packet);
+      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, po.packet);
       DUMP_UNLOCK;
    }
    

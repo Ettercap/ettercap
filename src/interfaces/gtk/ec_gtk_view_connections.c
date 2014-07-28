@@ -124,7 +124,11 @@ void gtkui_show_connections(void)
 
    conns_window = gtkui_page_new("Connections", &gtkui_kill_connections, &gtkui_connections_detach);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
    vbox = gtk_vbox_new(FALSE, 0);
+#endif
    gtk_container_add(GTK_CONTAINER (conns_window), vbox);
    gtk_widget_show(vbox);
 
@@ -192,7 +196,11 @@ void gtkui_show_connections(void)
    gtk_tree_view_column_set_sort_column_id (column, 9);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox = gtk_hbox_new(TRUE, 5);
+#endif
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 
@@ -233,7 +241,7 @@ void gtkui_show_connections(void)
 
    /* refresh the list every 1000 ms */
    /* gtk_idle_add refreshes too fast, uses all cpu */
-   connections_idle = gtk_timeout_add(1000, refresh_connections, NULL);
+   connections_idle = g_timeout_add(1000, refresh_connections, NULL);
 
    gtk_widget_show(conns_window);
 }
@@ -265,7 +273,7 @@ static void gtkui_connections_attach(void)
 static void gtkui_kill_connections(void)
 {
    DEBUG_MSG("gtk_kill_connections");
-   gtk_timeout_remove(connections_idle);
+   g_source_remove(connections_idle);
 
    gtk_widget_destroy(conns_window);
    conns_window = NULL;
@@ -292,7 +300,7 @@ static gboolean refresh_connections(gpointer data)
 
    /* make sure the list has been created and window is visible */
    if(ls_conns) {
-      if (!GTK_WIDGET_VISIBLE(conns_window))
+      if (!gtk_widget_get_visible(conns_window))
          return(FALSE);
    } else {
       /* Columns:   Flags, Host, Port, "-",   Host, Port,
@@ -470,7 +478,8 @@ static void gtkui_connection_list_row(int top, struct row_pairs *pair) {
       gtk_tree_view_get_visible_rect(GTK_TREE_VIEW(treeview), &rect);
 
       /* get the first visible row */
-      gtk_tree_view_tree_to_widget_coords(GTK_TREE_VIEW(treeview), rect.x, (top)?rect.y:rect.height, &wx, &wy);
+      gtk_tree_view_convert_bin_window_to_widget_coords(GTK_TREE_VIEW(treeview), 
+            rect.x, (top)?rect.y:rect.height, &wx, &wy);
       path = gtk_tree_path_new();
       if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), wx+2, (top)?wy+2:wy-2, &path, NULL, NULL, NULL)) {
          gtk_tree_model_get_iter(model, &iter, path);
@@ -640,12 +649,20 @@ static void gtkui_connection_data_split(void)
    /* don't timeout this connection */
    curr_conn->flags |= CONN_VIEWING;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox_big = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox_big = gtk_hbox_new(TRUE, 5);
+#endif
    gtk_container_add(GTK_CONTAINER(data_window), hbox_big);
    gtk_widget_show(hbox_big);
 
   /*** left side ***/
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
    vbox = gtk_vbox_new(FALSE, 0);
+#endif
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, TRUE, TRUE, 0);
    gtk_widget_show(vbox);
 
@@ -681,7 +698,11 @@ static void gtkui_connection_data_split(void)
    endmark1 = gtk_text_buffer_create_mark(splitbuf1, "end", &iter, FALSE);
 
   /* first two buttons */
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox_small = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox_small = gtk_hbox_new(TRUE, 5);
+#endif
    gtk_box_pack_start(GTK_BOX(vbox), hbox_small, FALSE, FALSE, 0);
    gtk_widget_show(hbox_small);
 
@@ -696,7 +717,11 @@ static void gtkui_connection_data_split(void)
    gtk_widget_show(button);
 
   /*** right side ***/
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
    vbox = gtk_vbox_new(FALSE, 0);
+#endif
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, TRUE, TRUE, 0);
    gtk_widget_show(vbox);
 
@@ -732,7 +757,11 @@ static void gtkui_connection_data_split(void)
    endmark2 = gtk_text_buffer_create_mark(splitbuf2, "end", &iter, FALSE);
 
   /* second two buttons */
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox_small = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox_small = gtk_hbox_new(TRUE, 5);
+#endif
    gtk_box_pack_start(GTK_BOX(vbox), hbox_small, FALSE, FALSE, 0);
    gtk_widget_show(hbox_small);
 
@@ -951,7 +980,11 @@ static void gtkui_connection_data_join(void)
    /* don't timeout this connection */
    curr_conn->flags |= CONN_VIEWING;
    
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
    vbox = gtk_vbox_new(FALSE, 0);
+#endif
    gtk_container_add(GTK_CONTAINER(data_window), vbox);
    gtk_widget_show(vbox);
    
@@ -987,7 +1020,11 @@ static void gtkui_connection_data_join(void)
    gtk_text_buffer_get_end_iter(joinedbuf, &iter);
    endmark3 = gtk_text_buffer_create_mark(joinedbuf, "end", &iter, FALSE);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox = gtk_hbox_new(TRUE, 5);
+#endif
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 
@@ -1173,7 +1210,7 @@ static void gtkui_connection_kill_curr_conn(void)
  */
 static void gtkui_connection_inject(void)
 {
-   GtkWidget *dialog, *text, *label, *vbox, *frame;
+   GtkWidget *dialog, *text, *label, *vbox, *frame, *content_area;
    GtkWidget *button1, *button2, *hbox;
    GtkTextBuffer *buf;
    GtkTextIter start, end;
@@ -1189,17 +1226,30 @@ static void gtkui_connection_inject(void)
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
    gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 200);
+#if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+#endif
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
-   vbox = GTK_DIALOG (dialog)->vbox;
+   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
+   vbox = gtk_vbox_new(FALSE, 0);
+#endif
+   gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
    label = gtk_label_new ("Packet destination:");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
    gtk_widget_show(label);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox = gtk_hbox_new(FALSE, 5);
-   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+#endif
+   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 
    button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
@@ -1271,7 +1321,7 @@ static void gtkui_inject_user(int side)
 static void gtkui_connection_inject_file(void)
 {
 /* START */
-   GtkWidget *dialog, *label, *vbox, *hbox;
+   GtkWidget *dialog, *label, *vbox, *hbox, *content_area;
    GtkWidget *button1, *button2, *button, *entry;
    char tmp[MAX_ASCII_ADDR_LEN];
    const char *filename = NULL;
@@ -1286,16 +1336,29 @@ static void gtkui_connection_inject_file(void)
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
    gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 150);
+#if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+#endif
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
-   vbox = GTK_DIALOG (dialog)->vbox;
+   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
+   vbox = gtk_vbox_new(FALSE, 0);
+#endif
+   gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
    label = gtk_label_new ("Packet destination:");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
    gtk_widget_show(label);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox = gtk_hbox_new(FALSE, 5);
+#endif
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
       
@@ -1313,7 +1376,11 @@ static void gtkui_connection_inject_file(void)
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
    gtk_widget_show(label);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox = gtk_hbox_new(FALSE, 5);
+#endif
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 

@@ -77,21 +77,28 @@ void gtkui_scan(void)
 void gtkui_load_hosts(void)
 {
    GtkWidget *dialog;
-   const char *filename;
+   gchar *filename;
    int response = 0;
 
    DEBUG_MSG("gtk_load_hosts");
 
-   dialog = gtk_file_selection_new ("Select a hosts file...");
+   dialog = gtk_file_chooser_dialog_new("Select a hosts file...",
+            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
+            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+            NULL);
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), "");
 
    response = gtk_dialog_run (GTK_DIALOG (dialog));
    
    if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 
       load_hosts(filename);
       gtkui_refresh_host_list(NULL);
+
+      g_free(filename);
    }
    gtk_widget_destroy (dialog);
 }
@@ -137,13 +144,32 @@ static void load_hosts(const char *file)
 void gtkui_save_hosts(void)
 {
 #define FILE_LEN  40
+   GtkWidget *dialog;
+   gchar *filename;
    
    DEBUG_MSG("gtk_save_hosts");
 
    SAFE_FREE(GBL_OPTIONS->hostsfile);
    SAFE_CALLOC(GBL_OPTIONS->hostsfile, FILE_LEN, sizeof(char));
+
+   dialog = gtk_file_chooser_dialog_new("Save hosts to file...",
+           GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
+           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
+           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+           NULL);
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");
+
+   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+       gtk_widget_hide(dialog);
+       filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+       gtk_widget_destroy(dialog);
+       memcpy(GBL_OPTIONS->hostsfile, filename, FILE_LEN);
+       g_free(filename);
+       save_hosts();
+   } else {
+       gtk_widget_destroy(dialog);
+   }
    
-   gtkui_input("Output file :", GBL_OPTIONS->hostsfile, FILE_LEN, save_hosts);
 }
 
 static void save_hosts(void)
@@ -189,7 +215,11 @@ void gtkui_host_list(void)
    
    hosts_window = gtkui_page_new("Host List", &gtkui_hosts_destroy, &gtkui_hosts_detach);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
    vbox = gtk_vbox_new(FALSE, 0);
+#endif
    gtk_container_add(GTK_CONTAINER (hosts_window), vbox);
    gtk_widget_show(vbox);
 
@@ -227,7 +257,11 @@ void gtkui_host_list(void)
    /* set the elements */
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (liststore));
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
    hbox = gtk_hbox_new(TRUE, 0);
+#endif
    gtk_box_pack_start(GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 

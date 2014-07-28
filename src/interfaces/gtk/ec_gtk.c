@@ -39,6 +39,8 @@
 GtkWidget *window = NULL;   /* main window */
 GtkWidget *notebook = NULL;
 GtkWidget *main_menu = NULL;
+GtkUIManager *menu_manager = NULL;
+guint merge_id;
 GTimer *progress_timer = NULL;
 
 static GtkWidget     *notebook_frame = NULL;
@@ -69,7 +71,7 @@ static void toggle_unoffensive(void);
 static void toggle_nopromisc(void);
 
 static void gtkui_file_open(void);
-static void read_pcapfile(const char *file);
+static void read_pcapfile(gchar *file);
 static void gtkui_file_write(void);
 static void write_pcapfile(void);
 static void gtkui_unified_sniff(void);
@@ -346,10 +348,10 @@ static void gtkui_update(int target)
 {
     switch (target) {
         case UI_UPDATE_HOSTLIST:
-            g_idle_add((GtkFunction)gtkui_refresh_host_list, NULL);
+            g_idle_add((GSourceFunc)gtkui_refresh_host_list, NULL);
             break;
         case UI_UPDATE_PLUGINLIST:
-            g_idle_add((GtkFunction)gtkui_refresh_plugin_list, NULL);
+            g_idle_add((GSourceFunc)gtkui_refresh_plugin_list, NULL);
             break;
     }
 
@@ -433,16 +435,24 @@ static void gtkui_fatal_error(const char *msg)
  */
 void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void))
 {
-   GtkWidget *dialog, *entry, *label, *hbox, *image;
+   GtkWidget *dialog, *entry, *label, *hbox, *image, *content_area;
 
    dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+#if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+#endif
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
-   
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+#else
    hbox = gtk_hbox_new (FALSE, 6);
-   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
+#endif
+
+   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   gtk_container_add(GTK_CONTAINER(content_area), hbox);
    
    image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
    gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.0);
@@ -453,7 +463,8 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
    gtk_label_set_selectable (GTK_LABEL (label), TRUE);
    gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
    
-   entry = gtk_entry_new_with_max_length(n);
+   entry = gtk_entry_new();
+   gtk_entry_set_max_length(GTK_ENTRY(entry), n);
    g_object_set_data(G_OBJECT (entry), "dialog", dialog);
    g_signal_connect(G_OBJECT (entry), "activate", G_CALLBACK (gtkui_dialog_enter), NULL);
 
@@ -491,14 +502,22 @@ static void gtkui_progress(char *title, int value, int max)
       progress_dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
       gtk_window_set_title(GTK_WINDOW (progress_dialog), EC_PROGRAM);
       gtk_window_set_modal(GTK_WINDOW (progress_dialog), TRUE);
-      gtk_window_set_position(GTK_WINDOW (progress_dialog), GTK_WIN_POS_CENTER);
+      gtk_window_set_transient_for(GTK_WINDOW(progress_dialog), GTK_WINDOW(window));
+      gtk_window_set_position(GTK_WINDOW(progress_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
       gtk_container_set_border_width(GTK_CONTAINER (progress_dialog), 5);
       g_signal_connect(G_OBJECT (progress_dialog), "delete_event", G_CALLBACK (gtkui_progress_cancel), NULL);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+      hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3);
+#else
       hbox = gtk_hbox_new(FALSE, 3);
+#endif
       gtk_container_add(GTK_CONTAINER (progress_dialog), hbox);
     
       progress_bar = gtk_progress_bar_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
+      gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(progress_bar), TRUE);
+#endif
       gtk_box_pack_start(GTK_BOX (hbox), progress_bar, TRUE, TRUE, 0);
 
       button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
@@ -573,7 +592,7 @@ void gtkui_start(void)
 
    DEBUG_MSG("gtk_start");
 
-   idle_flush = gtk_timeout_add(500, gtkui_flush_msg, NULL);
+   idle_flush = g_timeout_add(500, gtkui_flush_msg, NULL);
    
    /* which interface do we have to display ? */
    if (GBL_OPTIONS->read)
@@ -584,7 +603,7 @@ void gtkui_start(void)
    /* the main gui loop, once this exits the gui will be destroyed */
    gtk_main();
 
-   gtk_timeout_remove(idle_flush);
+   g_source_remove(idle_flush);
 }
 
 static void toggle_unoffensive(void)
@@ -612,34 +631,149 @@ static void toggle_nopromisc(void)
 static void gtkui_setup(void)
 {
    GtkTextIter iter;
-   GtkWidget *item, *vbox, *scroll, *vpaned, *logo;
-   GtkItemFactory *item_factory;
+   GtkWidget *vbox, *scroll, *vpaned, *logo, *main_menu;
+   GtkActionGroup *menuactions;
+   GtkAction *action;
    GClosure *closure = NULL;
+   GError *error = NULL;
    GdkModifierType mods;
    gint keyval, width, height, left, top;
    char *path = NULL;
 
-   GtkItemFactoryEntry file_menu[] = {
-      { "/_File",         "<shift>F",   NULL,             0, "<Branch>", NULL },
-      { "/File/_Open",    "<control>O", gtkui_file_open,  0, "<StockItem>", GTK_STOCK_OPEN },
-      { "/File/_Save",    "<control>S", gtkui_file_write, 0, "<StockItem>", GTK_STOCK_SAVE },
-      { "/File/sep1",     NULL,         NULL,             0, "<Separator>", NULL },
-      { "/File/E_xit",    "<control>x", gtkui_exit,       0, "<StockItem>", GTK_STOCK_QUIT },
-      { "/_Sniff",        "<shift>S",   NULL,             0, "<Branch>", NULL },
-      { "/Sniff/Unified sniffing...",  "<shift>U", gtkui_unified_sniff, 0, "<StockItem>", GTK_STOCK_DND },
-      { "/Sniff/Bridged sniffing...",  "<shift>B", gtkui_bridged_sniff, 0, "<StockItem>", GTK_STOCK_DND_MULTIPLE },
-      { "/Sniff/sep2",    NULL,         NULL,             0, "<Separator>", NULL },
-      { "/Sniff/Set pcap filter...",    "p",       gtkui_pcap_filter,   0, "<StockItem>", GTK_STOCK_PREFERENCES },
-      { "/_Options",                    "<shift>O", NULL, 0, "<Branch>", NULL },
-      { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>", NULL },
-      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>", NULL },
-      { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>", NULL}
+   static const char *menu_structure = 
+      "<ui>"
+      "   <menubar name='MenuBar'>"
+      "      <menu name='FileMenu' action='FileMenuAction'>"
+      "         <menuitem name='Open' action='FileOpenAction' />"
+      "         <menuitem name='Save' action='FileSaveAction' />"
+      "         <separator />"
+      "         <menuitem name='Exit' action='FileExitAction' />"
+      "      </menu>"
+      "      <menu name='SniffMenu' action='SniffMenuAction'>"
+      "         <menuitem name='UnifiedSniffing' action='SniffUnifiedAction' />"
+      "         <menuitem name='BridgedSniffing' action='SniffBridgedAction' />"
+      "         <separator />"
+      "         <menuitem name='SniffFilter' action='SniffFilterAction' />"
+      "      </menu>"
+      "      <menu name='OptionsMenu' action='OptionsMenuAction'>"
+      "         <menuitem name='Unoffensive' action='OptionsUnoffensiveAction' />"
+      "         <menuitem name='Promisc' action='OptionsPromiscAction' />"
+      "         <menuitem name='Netmask' action='OptionsNetmaskAction' />"
+      "      </menu>"
 #ifndef OS_WINDOWS
-     ,{"/_?",          NULL,         NULL,             0, "<Branch>", NULL },
-      {"/?/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
+      "      <menu name='HelpMenu' action='HelpMenuAction'>"
+      "         <menuitem name='Contents' action='HelpContentsAction' />"
+      "      </menu>"
+#endif
+      "   </menubar>"
+      "</ui>";
+
+   GtkActionEntry menu_items[] = {
+      /* File Menu */
+      { 
+         "FileMenuAction", NULL,
+         "_File", "<shift>F",
+         NULL, NULL
+      },
+
+      { 
+         "FileOpenAction", GTK_STOCK_OPEN,
+         "_Open", "<control>O", 
+         "Open a PCAP file",
+         G_CALLBACK(gtkui_file_open) 
+      },
+
+      { 
+         "FileSaveAction", GTK_STOCK_SAVE, 
+         "_Save", "<control>S", 
+         "Save traffic as PCAP file", 
+         G_CALLBACK(gtkui_file_write) 
+      },
+
+      { 
+         "FileExitAction", GTK_STOCK_QUIT, 
+         "E_xit", "<control>Q", 
+         "Exit Ettercap", 
+         G_CALLBACK(gtkui_exit) 
+      },
+
+      /* Sniff Menu */
+      { 
+         "SniffMenuAction", NULL, 
+         "_Sniff", NULL,
+         NULL, NULL
+      },
+
+      { 
+         "SniffUnifiedAction", GTK_STOCK_DND, 
+         "Unified sniffing...", "<shift>U", 
+         "Switch to unified sniffing mode", 
+         G_CALLBACK(gtkui_unified_sniff) 
+      },
+
+      { 
+         "SniffBridgedAction", GTK_STOCK_DND_MULTIPLE, 
+         "Bridged sniffing...", "<shift>B", 
+         "Switch to bridged sniffing mode", 
+         G_CALLBACK(gtkui_bridged_sniff) 
+      },
+
+      { 
+         "SniffFilterAction", GTK_STOCK_PREFERENCES, 
+         "Set pcap filter...", "p", 
+         "Limit relevant traffic", 
+         G_CALLBACK(gtkui_pcap_filter)
+      },
+
+      /* Options Menu */
+      { 
+         "OptionsMenuAction", NULL, 
+         "_Options", "<shift>O",
+         NULL, NULL
+      },
+
+      { 
+         "OptionsNetmaskAction", NULL, 
+         "Set netmask", "n", 
+         "Override netmask", 
+         G_CALLBACK(gtkui_set_netmask) 
+      },
+
+#ifndef OS_WINDOWS
+      /* Help Menu */
+      { 
+         "HelpMenuAction", NULL, 
+         "_?", NULL ,
+         NULL, NULL
+      },
+
+      { 
+         "HelpContentsAction", GTK_STOCK_HELP, 
+         "Contents", NULL, 
+         "Ettercap documentation", 
+         G_CALLBACK(gtkui_help) 
+      }
 #endif
    };
-   gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);
+
+   GtkToggleActionEntry toggle_items[] = {
+      { 
+         "OptionsUnoffensiveAction", NULL, 
+         "Unoffensive", NULL, 
+         "Keep quiet", 
+         G_CALLBACK(toggle_unoffensive),
+         FALSE
+      },
+
+      { 
+         "OptionsPromiscAction", NULL, 
+         "Promisc mode", NULL, 
+         "Toogle promisc mode (default: on)", 
+         G_CALLBACK(toggle_nopromisc),
+         FALSE
+      }
+   };
+
 
    DEBUG_MSG("gtkui_setup");
 
@@ -658,39 +792,69 @@ static void gtkui_setup(void)
 
    g_signal_connect (G_OBJECT (window), "delete_event", G_CALLBACK (gtkui_exit), NULL);
 
-   accel_group = gtk_accel_group_new ();
-   item_factory = gtk_item_factory_new (GTK_TYPE_MENU_BAR, "<main>", accel_group);
-   gtk_item_factory_create_items (item_factory, nmenu_items, file_menu, NULL);
+   /* group GtkActions together to one group */
+   menuactions = gtk_action_group_new("MenuActions");
+   gtk_action_group_add_actions(menuactions, menu_items, G_N_ELEMENTS(menu_items), NULL);
+   gtk_action_group_add_toggle_actions(menuactions, toggle_items, G_N_ELEMENTS(toggle_items), NULL);
 
-   /* hidden shortcut to start Unified Sniffing with default interface */
+   /* create a new GtkUIManager instance and assing action group */
+   menu_manager = gtk_ui_manager_new();
+   gtk_ui_manager_insert_action_group(menu_manager, menuactions, 0);
+
+   /* Load the menu structure XML*/
+   merge_id = gtk_ui_manager_add_ui_from_string(menu_manager, menu_structure, -1, &error);
+   if (error) {
+      g_message("building menu failed: %s", error->message);
+      g_error_free(error);
+      error = NULL;
+   }
+
+   /* some hidden accelerators */
+   accel_group = gtk_accel_group_new ();
+
    closure = g_cclosure_new(G_CALLBACK(gtkui_unified_sniff_default), NULL, NULL);
    gtk_accelerator_parse ("u", &keyval, &mods);
    gtk_accel_group_connect(accel_group, keyval, mods, 0, closure);
+   
+   closure = g_cclosure_new(G_CALLBACK(gtkui_exit), NULL, NULL);
+   gtk_accelerator_parse("<control>X", &keyval, &mods);
+   gtk_accel_group_connect(accel_group, keyval, mods, 0, closure);
 
+   /* link accelerator groups to window widget */
+   gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
+   gtk_window_add_accel_group(GTK_WINDOW(window), gtk_ui_manager_get_accel_group(menu_manager));
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
    vbox = gtk_vbox_new(FALSE, 0);
+#endif
    gtk_container_add(GTK_CONTAINER (window), vbox);
    gtk_widget_show(vbox);
 
-   main_menu = gtk_item_factory_get_widget (item_factory, "<main>");
+   main_menu = gtk_ui_manager_get_widget(menu_manager, "/MenuBar");
    gtk_box_pack_start(GTK_BOX(vbox), main_menu, FALSE, FALSE, 0);
-   gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
    gtk_widget_show(main_menu);
 
    if(GBL_PCAP->promisc) {
       /* setting the menu item active will toggle this setting */
       /* it will be TRUE after the menu is updated */
       GBL_PCAP->promisc = 0;
-      item = gtk_item_factory_get_item(item_factory, "/Options/Promisc mode");
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+      action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/OptionsMenu/Promisc");
+      gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
    if(GBL_OPTIONS->unoffensive) {
       GBL_OPTIONS->unoffensive = 0;
-      item = gtk_item_factory_get_item(item_factory, "/Options/Unoffensive");
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+      action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/OptionsMenu/Unoffensive");
+      gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vpaned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+#else
    vpaned = gtk_vpaned_new();
+#endif
 
    /* notebook for MDI pages */
    notebook_frame = gtk_frame_new(NULL);
@@ -713,6 +877,7 @@ static void gtkui_setup(void)
    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll),
                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
+   gtk_widget_set_size_request(scroll, -1, 140);
    gtk_paned_pack2(GTK_PANED (vpaned), scroll, FALSE, TRUE);
    gtk_widget_show(scroll);
 
@@ -720,7 +885,6 @@ static void gtkui_setup(void)
    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (textview), GTK_WRAP_WORD_CHAR);
    gtk_text_view_set_editable(GTK_TEXT_VIEW (textview), FALSE);
    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (textview), FALSE);
-   gtk_widget_set_size_request(textview, -1, 140);
    gtk_container_add(GTK_CONTAINER (scroll), textview);
    gtk_widget_show(textview);
 
@@ -742,30 +906,38 @@ static void gtkui_setup(void)
 static void gtkui_file_open(void)
 {
    GtkWidget *dialog;
-   const char *filename;
+   gchar *filename;
    int response = 0;
 
    DEBUG_MSG("gtk_file_open");
 
-   dialog = gtk_file_selection_new ("Select a pcap file...");
+   dialog = gtk_file_chooser_dialog_new("Select a pcap file...", 
+            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, 
+            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+            NULL);
+
+   /* This way the file chooser dialog doesn't start in the recent section */
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), "");
 
    response = gtk_dialog_run (GTK_DIALOG (dialog));
 
    if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
       /* destroy needs to come before read_pcapfile so gtk_main_quit
          can reside inside read_pcapfile, which is why destroy is here
          twice and not after the if() block */
       gtk_widget_destroy (dialog);
 
       read_pcapfile (filename);
+      g_free(filename);
    } else {
       gtk_widget_destroy (dialog);
    }
 }
 
-static void read_pcapfile(const char *file)
+static void read_pcapfile(gchar *file)
 {
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
    
@@ -798,11 +970,36 @@ static void gtkui_file_write(void)
 {
 #define FILE_LEN  40
    
+   GtkWidget *dialog;
+   gchar *filename;
+   int response = 0;
+
    DEBUG_MSG("gtk_file_write");
    
-   SAFE_CALLOC(GBL_OPTIONS->pcapfile_out, FILE_LEN, sizeof(char));
+   dialog = gtk_file_chooser_dialog_new("Save traffic in a pcap file...", 
+            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE, 
+            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+            NULL);
 
-   gtkui_input("Output file :", GBL_OPTIONS->pcapfile_out, FILE_LEN, write_pcapfile);
+   /* This way the file chooser dialog doesn't start in the recent section */
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), "");
+
+   response = gtk_dialog_run (GTK_DIALOG (dialog));
+
+   if (response == GTK_RESPONSE_OK) {
+      gtk_widget_hide(dialog);
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+      /* destroy needs to come before read_pcapfile so gtk_main_quit
+         can reside inside read_pcapfile, which is why destroy is here
+         twice and not after the if() block */
+      gtk_widget_destroy (dialog);
+
+      GBL_OPTIONS->pcapfile_out = filename;
+      write_pcapfile();
+   } else {
+      gtk_widget_destroy (dialog);
+   }
 }
 
 static void write_pcapfile(void)
@@ -815,7 +1012,7 @@ static void write_pcapfile(void)
    f = fopen(GBL_OPTIONS->pcapfile_out, "w");
    if (f == NULL) {
       ui_error("Cannot write %s", GBL_OPTIONS->pcapfile_out);
-      SAFE_FREE(GBL_OPTIONS->pcapfile_out);
+      g_free(GBL_OPTIONS->pcapfile_out);
       return;
    }
  
@@ -833,23 +1030,34 @@ static void write_pcapfile(void)
  */
 static void gtkui_unified_sniff(void)
 {
-   GList *iface_list;
+   GtkListStore *iface_list;
+   GtkTreeIter iter;
+   GtkTreeModel *model;
+   GtkCellRenderer *cell;
    const char *iface_desc = NULL;
    char err[100];
    GtkWidget *iface_combo;
    pcap_if_t *dev;
-   GtkWidget *dialog, *label, *hbox, *image;
+   GtkWidget *dialog, *label, *hbox, *vbox, *image, *content_area;
 
    DEBUG_MSG("gtk_unified_sniff");
 
    dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+#if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+#endif
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
   
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+#else
    hbox = gtk_hbox_new (FALSE, 6);
-   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 0);
+#endif
+
+   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   gtk_container_add(GTK_CONTAINER(content_area), hbox);
   
    image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
    gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.0);
@@ -861,29 +1069,45 @@ static void gtkui_unified_sniff(void)
    gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
    /* make a list of network interfaces */
-   iface_list = NULL;
+   iface_list = gtk_list_store_new(1, G_TYPE_STRING);
    for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
-      iface_list = g_list_append(iface_list, dev->description);
+      gtk_list_store_append(iface_list, &iter);
+      gtk_list_store_set(iface_list, &iter, 0, dev->description, -1);
    }
 
    /* make a drop down box and assign the list to it */
-   iface_combo = gtk_combo_new();
-   gtk_combo_set_popdown_strings (GTK_COMBO (iface_combo), iface_list);
-   gtk_box_pack_start (GTK_BOX (hbox), iface_combo, FALSE, FALSE, 0);
+   iface_combo = gtk_combo_box_new();
+   gtk_combo_box_set_model(GTK_COMBO_BOX(iface_combo), GTK_TREE_MODEL(iface_list));
+
+   g_object_unref(iface_list);
+
+   cell = gtk_cell_renderer_text_new();
+   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(iface_combo), cell, TRUE);
+   gtk_cell_layout_set_attributes( GTK_CELL_LAYOUT( iface_combo ), cell, "text", 0, NULL );
+   gtk_combo_box_set_active(GTK_COMBO_BOX(iface_combo), 0);
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
+   vbox = gtk_vbox_new(FALSE, 0);
+#endif
+   gtk_box_pack_start(GTK_BOX(vbox), iface_combo, TRUE, FALSE, 0);
+   gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, FALSE, 0);
 
    /* hitting Enter in the drop down box clicks OK */
-   g_object_set_data(G_OBJECT (GTK_COMBO (iface_combo)->entry), "dialog", dialog);
-   g_signal_connect(G_OBJECT (GTK_COMBO (iface_combo)->entry), "activate", G_CALLBACK (gtkui_dialog_enter), NULL);
-
-   /* list is stored in the widget, can safely free this copy */
-   g_list_free(iface_list); 
+   g_object_set_data(G_OBJECT(GTK_COMBO_BOX(iface_combo)), "dialog", dialog);
+   g_signal_connect(G_OBJECT(GTK_COMBO_BOX(iface_combo)), 
+         "key-press-event", G_CALLBACK(gtkui_combo_enter), NULL);
 
    /* render the contents of the dialog */
    gtk_widget_show_all (hbox);
    /* show the dialog itself and become interactive */
    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
 
-      iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (iface_combo)->entry));
+      gtk_combo_box_get_active_iter(GTK_COMBO_BOX(iface_combo), &iter);
+      model = gtk_combo_box_get_model(GTK_COMBO_BOX(iface_combo));
+      gtk_tree_model_get(model, &iter, 0, &iface_desc, -1);
+
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
             
@@ -940,9 +1164,12 @@ static void gtkui_unified_sniff_default(void)
  */
 static void gtkui_bridged_sniff(void)
 {
-   GtkWidget *dialog, *vbox, *hbox, *image;
+   GtkWidget *dialog, *vbox, *hbox, *image, *content_area;
    GtkWidget *hbox_big, *label, *combo1, *combo2;
-   GList *iface_list;
+   GtkListStore *iface_list;
+   GtkTreeIter iter;
+   GtkTreeModel *model;
+   GtkCellRenderer *cell1, *cell2;
    const char *iface_desc = NULL;
    char err[100];
    pcap_if_t *dev;
@@ -953,69 +1180,108 @@ static void gtkui_bridged_sniff(void)
                                         GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
+#if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+#endif
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox_big = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
    hbox_big = gtk_hbox_new (FALSE, 5);
-   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox_big, FALSE, FALSE, 0);
-   gtk_widget_show(hbox_big);
+#endif
 
+   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   gtk_container_add(GTK_CONTAINER(content_area), hbox_big);
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
+   vbox = gtk_vbox_new(FALSE, 0);
+#endif
    image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
    gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.1);
-   gtk_box_pack_start (GTK_BOX (hbox_big), image, FALSE, FALSE, 5);
-   gtk_widget_show(image);
+   gtk_box_pack_start (GTK_BOX (vbox), image, TRUE, FALSE, 5);
+   gtk_box_pack_start(GTK_BOX(hbox_big), vbox, FALSE, FALSE, 0);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+#else
    vbox = gtk_vbox_new (FALSE, 2);
+#endif
    gtk_container_set_border_width(GTK_CONTAINER (vbox), 5);
    gtk_box_pack_start (GTK_BOX (hbox_big), vbox, TRUE, TRUE, 0);
-   gtk_widget_show(vbox);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
    hbox = gtk_hbox_new(FALSE, 0);
+#endif
    gtk_box_pack_start(GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
-   gtk_widget_show(hbox);
 
    label = gtk_label_new ("First network interface  : ");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
-   gtk_widget_show(label);
 
-   /* make a list of network interfaces */
-   iface_list = NULL;
-   for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
-      iface_list = g_list_append(iface_list, dev->description);
-   }
-
-   /* make a drop down box and assign the list to it */
-   combo1 = gtk_combo_new();
-   gtk_combo_set_popdown_strings (GTK_COMBO (combo1), iface_list);
-   gtk_box_pack_start (GTK_BOX (hbox), combo1, FALSE, FALSE, 0);
-   gtk_widget_show(combo1);
-
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
    hbox = gtk_hbox_new(FALSE, 0);
+#endif
    gtk_box_pack_start(GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
-   gtk_widget_show(hbox);
 
    label = gtk_label_new ("Second network interface : ");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
-   gtk_widget_show(label);
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
+   vbox = gtk_vbox_new(FALSE, 0);
+#endif
+   gtk_box_pack_start(GTK_BOX(hbox_big), vbox, TRUE, TRUE, 0);
+
+   /* make a list of network interfaces */
+   iface_list = gtk_list_store_new(1, G_TYPE_STRING);
+   for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+      gtk_list_store_append(iface_list, &iter);
+      gtk_list_store_set(iface_list, &iter, 0, dev->description, -1);
+   }
 
    /* make a drop down box and assign the list to it */
-   combo2 = gtk_combo_new();
-   gtk_combo_set_popdown_strings (GTK_COMBO (combo2), iface_list);
-   gtk_box_pack_start (GTK_BOX (hbox), combo2, FALSE, FALSE, 0);
-   gtk_widget_show(combo2);
+   combo1 = gtk_combo_box_new();
+   gtk_combo_box_set_model(GTK_COMBO_BOX(combo1), GTK_TREE_MODEL(iface_list));
 
-   /* pick the second interface by default, since they can't match */
-   if(iface_list && iface_list->next)
-      gtk_entry_set_text(GTK_ENTRY (GTK_COMBO (combo2)->entry), iface_list->next->data);
+   cell1 = gtk_cell_renderer_text_new();
+   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo1), cell1, TRUE);
+   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo1), cell1, "text", 0, NULL);
 
-   /* list is stored in the widget, can safely free this copy */
-   g_list_free(iface_list);
+   gtk_box_pack_start (GTK_BOX (vbox), combo1, TRUE, FALSE, 0);
+   gtk_combo_box_set_active(GTK_COMBO_BOX(combo1), 0);
+
+   /* make a drop down box and assign the list to it */
+   combo2 = gtk_combo_box_new();
+   gtk_combo_box_set_model(GTK_COMBO_BOX(combo2), GTK_TREE_MODEL(iface_list));
+
+   cell2 = gtk_cell_renderer_text_new();
+   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo2), cell2, TRUE);
+   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo2), cell2, "text", 0, NULL);
+
+   gtk_box_pack_start(GTK_BOX(vbox), combo2, TRUE, FALSE, 0);
+   gtk_combo_box_set_active(GTK_COMBO_BOX(combo2), 1);
+
+   g_object_unref(iface_list);
+
+   /* hitting Enter in the drop down box clicks OK */
+   gtk_widget_grab_focus(gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK));
+
+   gtk_widget_show_all(hbox_big);
 
    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
 
-      iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo1)->entry));
+      gtk_combo_box_get_active_iter(GTK_COMBO_BOX(combo1), &iter);
+      model = gtk_combo_box_get_model(GTK_COMBO_BOX(combo1));
+      gtk_tree_model_get(model, &iter, 0, &iface_desc, -1);
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
             
@@ -1035,7 +1301,10 @@ static void gtkui_bridged_sniff(void)
          return;
       }
 
-      iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo2)->entry));
+      gtk_combo_box_get_active_iter(GTK_COMBO_BOX(combo2), &iter);
+      model = gtk_combo_box_get_model(GTK_COMBO_BOX(combo2));
+      gtk_tree_model_get(model, &iter, 0, &iface_desc, -1);
+
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
                
@@ -1078,7 +1347,8 @@ static void gtkui_pcap_filter(void)
    
    DEBUG_MSG("gtk_pcap_filter");
    
-   SAFE_CALLOC(GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
+   if (GBL_PCAP->filter == NULL)
+       SAFE_CALLOC(GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
 
    /* 
     * no callback, the filter is set but we have to return to
@@ -1135,7 +1405,11 @@ GtkTextBuffer *gtkui_details_window(char *title)
    gtk_window_set_position(GTK_WINDOW (dwindow), GTK_WIN_POS_CENTER);
    g_signal_connect (G_OBJECT (dwindow), "delete_event", G_CALLBACK (gtk_widget_destroy), NULL);
    
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#else
    vbox = gtk_vbox_new(FALSE, 5);
+#endif
    gtk_container_add(GTK_CONTAINER (dwindow), vbox);
    gtk_widget_show(vbox);
    
@@ -1151,7 +1425,11 @@ GtkTextBuffer *gtkui_details_window(char *title)
    gtk_container_add(GTK_CONTAINER (dscrolled), dtextview);
    gtk_widget_show(dtextview);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
    hbox = gtk_hbox_new(FALSE, 0);
+#endif
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 
@@ -1178,6 +1456,24 @@ void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
    gtk_text_buffer_insert(textbuf, &iter, unicode, -1);
 }
 
+/* hitting "Enter" keyy in a combo box does the same as clicking OK button */
+gboolean gtkui_combo_enter(GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+   GtkWidget *dialog;
+
+   /* variable not used */
+   (void) data;
+
+   if (event->keyval == GDK_KEY_Return) {
+      dialog = g_object_get_data(G_OBJECT(widget), "dialog");
+      gtk_dialog_response(GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+
+      return TRUE;
+   }
+
+   return FALSE;
+}
+
 /* hitting "Enter" key in dialog does same as clicking OK button */
 void gtkui_dialog_enter(GtkWidget *widget, gpointer data) {
    GtkWidget *dialog;
@@ -1196,7 +1492,11 @@ GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(
    GtkWidget *hbox, *button, *image;
 
    /* a container to hold the close button and tab label */
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
    hbox = gtk_hbox_new(FALSE, 0);
+#endif
    gtk_widget_show(hbox);
 
    /* the label for the tab title */
@@ -1386,13 +1686,14 @@ void gtkui_filename_browse(GtkWidget *widget, gpointer data)
    /* variable not used */
    (void) widget;
 
-   dialog = gtk_file_selection_new ("Select a file...");
+   dialog = gtk_file_chooser_dialog_new("Select a file...",
+         NULL, GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL);
    
    response = gtk_dialog_run (GTK_DIALOG (dialog));
    
    if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog); 
-      filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (dialog));
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 
       gtk_entry_set_text(GTK_ENTRY (data), filename);
    }

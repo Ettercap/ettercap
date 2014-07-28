@@ -2,6 +2,7 @@
 #define ETTERCAP_GTK_H
 #define G_DISABLE_CONST_RETURNS
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 #define LOGO_FILE "ettercap.png"
 
@@ -18,6 +19,8 @@ struct gtk_conf_entry {
 extern GtkWidget *window;  /* main window */
 extern GtkWidget *notebook;
 extern GtkWidget *main_menu;
+extern GtkUIManager *menu_manager;
+extern guint merge_id;
 extern GTimer *progress_timer;
 
 extern void set_gtk_interface(void);
@@ -31,6 +34,7 @@ extern void gtkui_sniff_live(void);
 
 extern GtkTextBuffer *gtkui_details_window(char *title);
 extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
+extern gboolean gtkui_combo_enter(GtkWidget *widget, GdkEventKey *event, gpointer data);
 extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 extern gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
 extern void gtkui_filename_browse(GtkWidget *widget, gpointer data);

@@ -24,206 +24,567 @@
 
 /* globals */
 
-GtkItemFactoryEntry gmenu_start[] = {
-   {"/_Start",                NULL,          NULL,                 0, "<Branch>", NULL },
-   {"/Start/Start sniffing",  "<control>w",  gtkui_start_sniffing, 0, "<StockItem>", GTK_STOCK_YES },
-   {"/Start/Stop sniffing",   "<control>e",  gtkui_stop_sniffing,  0, "<StockItem>", GTK_STOCK_NO },
-   {"/Start/sep1",            NULL,          NULL,                 0, "<Separator>", NULL },
-   {"/Start/E_xit",           "<control>x",  gtkui_exit,        0, "<StockItem>", GTK_STOCK_QUIT }
-};
-
-GtkItemFactoryEntry gmenu_targets[] = {
-   {"/_Targets",                 NULL,          NULL,                  0, "<Branch>", NULL },
-   {"/Targets/Current _Targets", "t",           gtkui_current_targets, 0, "<StockItem>", GTK_STOCK_FIND },
-   {"/Targets/Select TARGET(s)", "<control>t",  gtkui_select_targets,  0, "<StockItem>", GTK_STOCK_ADD },
-   {"/Targets/sep1",             NULL,          NULL,                  0, "<Separator>", NULL },
-   {"/Targets/_Protocol...",     "p",           gtkui_select_protocol, 0, "<StockItem>", GTK_STOCK_JUMP_TO },
-   {"/Targets/Reverse matching", NULL,          toggle_reverse,        0, "<ToggleItem>", NULL },
-   {"/Targets/sep2",             NULL,          NULL,                  0, "<Separator>", NULL },
-   {"/Targets/_Wipe targets",    "<shift>W",    wipe_targets,          0, "<StockItem>", GTK_STOCK_CLEAR }
-};
-
-GtkItemFactoryEntry gmenu_hosts[] = {
-   {"/_Hosts",                  NULL,         NULL,             0, "<Branch>", NULL },
-   {"/Hosts/_Hosts list",       "h",          gtkui_host_list,  0, "<StockItem>", GTK_STOCK_INDEX },
-   {"/Hosts/sep1",              NULL,         NULL,             0, "<Separator>", NULL },
-#ifdef WITH_IPV6
-   {"/Hosts/Enable IPv6 scan",  NULL,         toggle_ip6scan,  0, "<ToggleItem>", NULL },
-#endif
-   {"/Hosts/_Scan for hosts",   "<control>s", gtkui_scan,       0, "<StockItem>", GTK_STOCK_FIND },
-   {"/Hosts/Load from file...", NULL,         gtkui_load_hosts, 0, "<StockItem>", GTK_STOCK_OPEN },
-   {"/Hosts/Save to file...",   NULL,         gtkui_save_hosts, 0, "<StockItem>", GTK_STOCK_SAVE }
-};
-
-GtkItemFactoryEntry gmenu_view[] = {
-   {"/_View",                        NULL, NULL,                   0, "<Branch>", NULL },
-   {"/View/_Connections",      "<shift>C", gtkui_show_connections, 0, "<StockItem>", GTK_STOCK_JUSTIFY_FILL },
-   {"/View/Pr_ofiles",         "<shift>O", gtkui_show_profiles,    0, "<StockItem>", GTK_STOCK_JUSTIFY_LEFT },
-   {"/View/_Statistics",              "s", gtkui_show_stats,       0, "<StockItem>", GTK_STOCK_PROPERTIES },
-   {"/View/sep1",                    NULL, NULL,                   0, "<Separator>", NULL },
-   {"/View/Resolve IP addresses",    NULL, toggle_resolve,         0, "<ToggleItem>", NULL },
-   {"/View/_Visualization method...", "v", gtkui_vis_method,       0, "<StockItem>", GTK_STOCK_PREFERENCES },
-   {"/View/Visualization _regex...",  "R", gtkui_vis_regex,        0, "<StockItem>", GTK_STOCK_FIND },
-   {"/View/sep1",                    NULL, NULL,                   0, "<Separator>", NULL },
-   {"/View/Set the _WiFi key...",      "w", gtkui_wifi_key,        0, "<StockItem>", GTK_STOCK_FIND }
-};
-
-GtkItemFactoryEntry gmenu_mitm[] = {
-   {"/_Mitm",                    NULL, NULL,                0, "<Branch>", NULL },
-   {"/Mitm/Arp poisoning...",    NULL, gtkui_arp_poisoning, 0, "<Item>", NULL },
-   {"/Mitm/Icmp redirect...",    NULL, gtkui_icmp_redir,    0, "<Item>", NULL },
-   {"/Mitm/Port stealing...",    NULL, gtkui_port_stealing, 0, "<Item>", NULL },
-   {"/Mitm/Dhcp spoofing...",    NULL, gtkui_dhcp_spoofing, 0, "<Item>", NULL },
-#ifdef WITH_IPV6
-   {"/Mitm/Ndp spoofing...",     NULL, gtkui_ndp_poisoning, 0, "<Item>", NULL },
-#endif
-   {"/Mitm/sep1",                NULL, NULL,                0, "<Separator>", NULL },
-   {"/Mitm/Stop mitm attack(s)", NULL, gtkui_mitm_stop,     0, "<StockItem>", GTK_STOCK_STOP }
-};
-
-GtkItemFactoryEntry gmenu_filters[] = {
-   {"/_Filters",                 NULL,         NULL,              0, "<Branch>", NULL },
-   {"/Filters/Load a filter...", "<control>f", gtkui_load_filter, 0, "<StockItem>", GTK_STOCK_OPEN },
-   {"/Filters/Stop _filtering",  "f",          gtkui_stop_filter, 0, "<StockItem>", GTK_STOCK_STOP }
-};
-
-GtkItemFactoryEntry gmenu_logging[] = {
-   {"/_Logging",                             NULL, NULL,            0, "<Branch>", NULL },
-   {"/Logging/Log all packets and infos...", "<shift>I", gtkui_log_all, 0, "<StockItem>", GTK_STOCK_SAVE },
-   {"/Logging/Log only infos...",            "i",  gtkui_log_info,  0, "<StockItem>", GTK_STOCK_SAVE_AS },
-   {"/Logging/Stop logging infos",           NULL, gtkui_stop_log,  0, "<StockItem>", GTK_STOCK_STOP },
-   {"/Logging/sep1",                         NULL, NULL,            0, "<Separator>", NULL },
-   {"/Logging/Log user messages...",         "m",  gtkui_log_msg,   0, "<StockItem>", GTK_STOCK_REVERT_TO_SAVED },
-   {"/Logging/Stop logging messages",        NULL, gtkui_stop_msg,  0, "<StockItem>", GTK_STOCK_STOP },
-   {"/Logging/sep2",                         NULL, NULL,            0, "<Separator>", NULL },
-   {"/Logging/Compressed file",              NULL, toggle_compress, 0, "<ToggleItem>", NULL }
-};
-
-GtkItemFactoryEntry gmenu_plugins[] = {
-   {"/_Plugins",                   NULL,         NULL,              0, "<Branch>", NULL },
-   {"/Plugins/Manage the plugins", "<control>p", gtkui_plugin_mgmt, 0, "<StockItem>", GTK_STOCK_EXECUTE },
-   {"/Plugins/Load a plugin...",   NULL,         gtkui_plugin_load, 0, "<StockItem>", GTK_STOCK_OPEN }
-};
-
-#ifndef OS_WINDOWS
-GtkItemFactoryEntry gmenu_help[] = {
-   {"/_?",                   NULL,         NULL,              0, "<Branch>", NULL },
-   {"/?/Contents", " ", gtkui_help, 0, "<StockItem>", GTK_STOCK_HELP }
-};
-#endif
-
-GtkItemFactoryEntry tab_menu[] = {
-  { "/Detach page",    "<control>D", gtkui_page_detach_current, 0, "<StockItem>", GTK_STOCK_GO_UP },
-  { "/Close page",     "<control>Q", gtkui_page_close_current,  0, "<StockItem>", GTK_STOCK_CLOSE },
-  { "/sep1",           NULL,         NULL,                      0, "<Separator>" , NULL },
-  { "/Next page",      "<control>0", gtkui_page_right,    0, "<StockItem>", GTK_STOCK_GO_FORWARD },
-  { "/Previous page",  "<control>9", gtkui_page_left,     0, "<StockItem>", GTK_STOCK_GO_BACK }
-};
-
 /*******************************************/
 
 void gtkui_create_menu(int live)
 {
    GtkAccelGroup *accel_group;
-   GtkWidget *vbox, *item;
-   GtkItemFactory *root_menu;
-   int num_items = 0;
+   GtkWidget *vbox, *main_menu;
+   GtkActionGroup *menuactions;
+   GtkAction *action;
+   GError *error = NULL;
+   GClosure *closure = NULL;
+   gint keyval;
+   GdkModifierType mods;
    
+   const gchar *menu_structure = 
+      "<ui>"
+      "  <menubar name='MenuBar'>"
+      "     <menu name='StartMenu' action='StartMenuAction'>"
+      "        <menuitem name='SniffStart' action='SniffStartAction' />"
+      "        <menuitem name='SniffStop' action='SniffStopAction' />"
+      "        <separator />"
+      "        <menuitem name='Exit' action='ExitAction' />"
+      "     </menu>"
+      "     <menu name='TargetsMenu' action='TargetsMenuAction'>"
+      "        <menuitem name='CurrentTargets' action='CurrentTargetsAction' />"
+      "        <menuitem name='SelectTargets' action='SelectTargetsAction' />"
+      "        <separator />"
+      "        <menuitem name='Protocol' action='ProtocolAction' />"
+      "        <menuitem name='ReverseMatching' action='ReverseMatchingAction' />"
+      "        <separator />"
+      "        <menuitem name='WipeTargets' action='WipeTargetsAction' />"
+      "     </menu>"
+      "     <menu name='HostsMenu' action='HostsMenuAction'>"
+      "        <menuitem name='HostsList' action='HostsListAction' />"
+      "        <separator />"
+#ifdef WITH_IPV6
+      "        <menuitem name='EnableIPv6Scan' action='EnableIPv6ScanAction' />"
+#endif
+      "        <menuitem name='ScanHosts' action='ScanHostsAction' />"
+      "        <menuitem name='LoadHosts' action='LoadHostsAction' />"
+      "        <menuitem name='SaveHosts' action='SaveHostsAction' />"
+      "     </menu>"
+      "     <menu name='ViewMenu' action='ViewMenuAction'>"
+      "        <menuitem name='ViewConnections' action='ViewConnectionsAction' />"
+      "        <menuitem name='ViewProfiles' action='ViewProfilesAction' />"
+      "        <menuitem name='ViewStatistics' action='ViewStatisticsAction' />"
+      "        <separator />"
+      "        <menuitem name='ResolveIpAddresses' action='ResolveIpAddressesAction' />"
+      "        <menuitem name='VisualisationMethod' action='VisualisationMethodAction' />"
+      "        <menuitem name='VisualisationRegex' action='VisualisationRegexAction' />"
+      "        <separator />"
+      "        <menuitem name='SetWifiKey' action='SetWifiKeyAction' />"
+      "     </menu>"
+      "     <menu name='MitmMenu' action='MitmMenuAction'>"
+      "        <menuitem name='ArpPoisoning' action='ArpPoisoningAction' />"
+      "        <menuitem name='IcmpRedirect' action='IcmpRedirectAction' />"
+      "        <menuitem name='PortStealing' action='PortStealingAction' />"
+      "        <menuitem name='DhcpSpoofing' action='DhcpSpoofingAction' />"
+#ifdef WITH_IPV6
+      "        <menuitem name='NdpPoisoning' action='NdpPoisoningAction' />"
+#endif
+      "        <separator />"
+      "        <menuitem name='StopMitmAttacks' action='StopMitmAttacksAction' />"
+      "     </menu>"
+      "     <menu name='FiltersMenu' action='FiltersMenuAction'>"
+      "        <menuitem name='LoadFilter' action='LoadFilterAction' />"
+      "        <menuitem name='StopFilter' action='StopFilterAction' />"
+      "     </menu>"
+      "     <menu name='LoggingMenu' action='LoggingMenuAction'>"
+      "        <menuitem name='LoggingAll' action='LoggingAllAction' />"
+      "        <menuitem name='LoggingInfo' action='LoggingInfoAction' />"
+      "        <menuitem name='LoggingStop' action='LoggingStopAction' />"
+      "        <separator />"
+      "        <menuitem name='LogMessages' action='LogMessagesAction' />"
+      "        <menuitem name='LogMessagesStop' action='LogMessagesStopAction' />"
+      "        <separator />"
+      "        <menuitem name='LogCompressed' action='LogCompressedAction' />"
+      "     </menu>"
+#ifdef HAVE_PLUGINS
+      "     <menu name='PluginsMenu' action='PluginsMenuAction'>"
+      "        <menuitem name='ManagePlugins' action='ManagePluginsAction' />"
+      "        <menuitem name='LoadPlugin' action='LoadPluginAction' />"
+      "     </menu>"
+#endif
+#ifndef OS_WINDOWS
+      "     <menu name='HelpMenu' action='HelpMenuAction'>"
+      "        <menuitem name='HelpContents' action='HelpContentsAction' />"
+      "     </menu>"
+#endif
+      "  </menubar>"
+      "</ui>";
+
+
+   GtkActionEntry start_menu_items[] = {
+      /* Start Menu */
+      {
+         "StartMenuAction", NULL, 
+         "_Start", NULL, 
+         NULL, NULL
+      },
+
+      {
+         "SniffStartAction", GTK_STOCK_YES,
+         "Start sniffing", "<control><shift>w",
+         NULL, G_CALLBACK(gtkui_start_sniffing)
+      },
+
+      {
+         "SniffStopAction", GTK_STOCK_NO,
+         "Stop sniffing", "<control><shift>e",
+         NULL, G_CALLBACK(gtkui_stop_sniffing)
+      },
+
+      {
+         "ExitAction", GTK_STOCK_QUIT,
+         "E_xit", "<control>q",
+         NULL, G_CALLBACK(gtkui_exit)
+      }
+   };
+
+   GtkActionEntry targets_menu_items[] = {
+      /* Targets Menu */
+      {
+         "TargetsMenuAction", NULL,
+         "_Targets", NULL,
+         NULL, NULL
+      },
+
+      {
+         "CurrentTargetsAction", GTK_STOCK_FIND,
+         "Current targets", "t",
+         NULL, G_CALLBACK(gtkui_current_targets)
+      },
+
+      {
+         "SelectTargetsAction", GTK_STOCK_ADD,
+         "Select target(s)", "<control>t",
+         NULL, G_CALLBACK(gtkui_select_targets)
+      },
+
+      {
+         "ProtocolAction", GTK_STOCK_JUMP_TO,
+         "_Protocol...", "p",
+         NULL, G_CALLBACK(gtkui_select_protocol)
+      },
+
+      {
+         "WipeTargetsAction", GTK_STOCK_CLEAR,
+         "_Wipe targets", "<shift>W",
+         NULL, G_CALLBACK(wipe_targets)
+      }
+   };
+
+   GtkActionEntry hosts_menu_items[] = {
+      /* Hosts Menu */
+      {
+         "HostsMenuAction", NULL,
+         "_Hosts", NULL,
+         NULL, NULL
+      },
+
+      {
+         "HostsListAction", GTK_STOCK_INDEX,
+         "_Hosts list", "h",
+         NULL, G_CALLBACK(gtkui_host_list)
+      },
+
+      {
+         "ScanHostsAction", GTK_STOCK_FIND,
+         "_Scan for hosts", "<control>s",
+         NULL, G_CALLBACK(gtkui_scan)
+      },
+
+      {
+         "LoadHostsAction", GTK_STOCK_OPEN,
+         "Load from file...", "",
+         NULL, G_CALLBACK(gtkui_load_hosts)
+      },
+
+      {
+         "SaveHostsAction", GTK_STOCK_SAVE,
+         "Save to file...", "",
+         NULL, G_CALLBACK(gtkui_save_hosts)
+      }
+   };
+
+   GtkActionEntry view_menu_items[] = {
+      /* View Menu */
+      {
+         "ViewMenuAction", NULL,
+         "_View", NULL,
+         NULL, NULL
+      },
+
+      {
+         "ViewConnectionsAction", GTK_STOCK_JUSTIFY_FILL,
+         "_Connections", "<shift>c",
+         NULL, G_CALLBACK(gtkui_show_connections)
+      },
+
+      {
+         "ViewProfilesAction", GTK_STOCK_JUSTIFY_LEFT,
+         "Pr_ofiles", "<shift>o",
+         NULL, G_CALLBACK(gtkui_show_profiles)
+      },
+
+      {
+         "ViewStatisticsAction", GTK_STOCK_PROPERTIES,
+         "_Statistics", "s",
+         NULL, G_CALLBACK(gtkui_show_stats)
+      },
+
+      {
+         "VisualisationMethodAction", GTK_STOCK_PREFERENCES,
+         "_Visualisation method...", "v",
+         NULL, G_CALLBACK(gtkui_vis_method)
+      },
+
+      {
+         "VisualisationRegexAction", GTK_STOCK_FIND,
+         "Visualisation _regex...", "R",
+         NULL, G_CALLBACK(gtkui_vis_regex)
+      },
+
+      {
+         "SetWifiKeyAction", GTK_STOCK_FIND,
+         "Set the _WiFi key...", "w",
+         NULL, G_CALLBACK(gtkui_wifi_key)
+      }
+   };
+
+   GtkActionEntry mitm_menu_items[] = {
+      /* Mitm Menu */
+      {
+         "MitmMenuAction", NULL,
+         "_Mitm", NULL,
+         NULL, NULL
+      },
+
+      {
+         "ArpPoisoningAction", NULL,
+         "ARP poisoning...", NULL,
+         NULL, G_CALLBACK(gtkui_arp_poisoning)
+      },
+
+      {
+         "IcmpRedirectAction", NULL,
+         "ICMP redirect...", NULL,
+         NULL, G_CALLBACK(gtkui_icmp_redir)
+      },
+
+      {
+         "PortStealingAction", NULL,
+         "Port stealing...", NULL,
+         NULL, G_CALLBACK(gtkui_port_stealing)
+      },
+
+      {
+         "DhcpSpoofingAction", NULL,
+         "DHCP spoofing...", NULL,
+         NULL, G_CALLBACK(gtkui_dhcp_spoofing)
+      },
+
+#ifdef WITH_IPV6
+      {
+         "NdpPoisoningAction", NULL,
+         "NDP poisoning...", NULL,
+         NULL, G_CALLBACK(gtkui_ndp_poisoning)
+      },
+#endif
+
+      { 
+         "StopMitmAttacksAction", NULL,
+         "Stop mitm attack(s)", NULL,
+         NULL, G_CALLBACK(gtkui_mitm_stop)
+      }
+   };
+
+   GtkActionEntry filters_menu_items[] = {
+      /* Filters Menu */
+      {
+         "FiltersMenuAction", NULL,
+         "_Filters", NULL,
+         NULL, NULL
+      },
+
+      {
+         "LoadFilterAction", GTK_STOCK_OPEN,
+         "Load a filter...", "<control>f",
+         NULL, G_CALLBACK(gtkui_load_filter)
+      },
+
+      {
+         "StopFilterAction", GTK_STOCK_STOP,
+         "Stop _filtering", "f",
+         NULL, G_CALLBACK(gtkui_stop_filter)
+      }
+   };
+
+   GtkActionEntry logging_menu_items[] = {
+      /* Logging Menu */
+      {
+         "LoggingMenuAction", NULL,
+         "_Logging", NULL,
+         NULL, NULL
+      },
+
+      {
+         "LoggingAllAction", GTK_STOCK_SAVE,
+         "Logging all packets and infos...", "<shift>i",
+         NULL, G_CALLBACK(gtkui_log_all)
+      },
+
+      {
+         "LoggingInfoAction", GTK_STOCK_SAVE_AS,
+         "Logging only infos...", "i",
+         NULL, G_CALLBACK(gtkui_log_info)
+      },
+
+      {
+         "LoggingStopAction", GTK_STOCK_STOP,
+         "Stop logging infos", NULL,
+         NULL, G_CALLBACK(gtkui_stop_log)
+      },
+
+      {
+         "LogMessagesAction", GTK_STOCK_REVERT_TO_SAVED,
+         "Log user messages...", "m",
+         NULL, G_CALLBACK(gtkui_log_msg)
+      },
+
+      {
+         "LogMessagesStopAction", GTK_STOCK_STOP,
+         "Stop logging messages", NULL,
+         NULL, G_CALLBACK(gtkui_stop_msg)
+      }
+   };
+
+#ifdef HAVE_PLUGINS
+   GtkActionEntry plugins_menu_items[] = {
+      /* Plugins Menu */
+      {
+         "PluginsMenuAction", NULL,
+         "_Plugins", NULL,
+         NULL, NULL
+      },
+
+      {
+         "ManagePluginsAction", GTK_STOCK_EXECUTE,
+         "Manage the plugins", "<control>p",
+         NULL, G_CALLBACK(gtkui_plugin_mgmt)
+      },
+
+      {
+         "LoadPluginAction", GTK_STOCK_OPEN,
+         "Load a plugin...", NULL,
+         NULL, G_CALLBACK(gtkui_plugin_load)
+      }
+   };
+#endif
+
+#ifndef OS_WINDOWS
+   GtkActionEntry help_menu_items[] = {
+      /* Help Menu */
+      {
+         "HelpMenuAction", NULL,
+         "_?", NULL,
+         NULL, NULL
+      },
+
+      {
+         "HelpContentsAction", GTK_STOCK_HELP,
+         "Contents", NULL,
+         NULL, G_CALLBACK(gtkui_help)
+      }
+#endif
+   };
+
+   GtkToggleActionEntry toggle_items[] = {
+      {
+         "ReverseMatchingAction", NULL,
+         "Reverse matching", NULL,
+         NULL, G_CALLBACK(toggle_reverse),
+         FALSE
+      },
+
+#ifdef WITH_IPV6
+      {
+         "EnableIPv6ScanAction", NULL,
+         "Enable IPv6 scan", NULL,
+         NULL, G_CALLBACK(toggle_ip6scan),
+         FALSE
+      },
+#endif
+
+      {
+         "ResolveIpAddressesAction", NULL,
+         "Resolve IP addresses", NULL,
+         NULL, G_CALLBACK(toggle_resolve),
+         FALSE
+      },
+
+      {
+         "LogCompressedAction", NULL,
+         "Compressed file", NULL,
+         NULL, G_CALLBACK(toggle_compress),
+         FALSE
+      }
+   };
+
    DEBUG_MSG("gtk_create_menu");
 
    /* remove old menu, it will be automatically destroyed by gtk_main */
    vbox = gtk_bin_get_child(GTK_BIN (window));
-   gtk_container_remove(GTK_CONTAINER (vbox), main_menu);
+   main_menu = gtk_ui_manager_get_widget(menu_manager, "/MenuBar");
+   gtk_widget_hide(main_menu);
+   gtk_ui_manager_remove_ui(menu_manager, merge_id);
 
-   /* Prepare to generate menus from the definitions in ec_gtk.h */
-   accel_group = gtk_accel_group_new ();
-   root_menu = gtk_item_factory_new (GTK_TYPE_MENU_BAR, "<main>", accel_group);
-   gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
-   
+   menuactions = gtk_action_group_new("MenuActions");
    /* Start Menu */
-   num_items = sizeof (gmenu_start) / sizeof (gmenu_start[0]);
-   gtk_item_factory_create_items (root_menu, num_items, gmenu_start, NULL);
-   
+   gtk_action_group_add_actions(menuactions, start_menu_items, G_N_ELEMENTS(start_menu_items), NULL);
    /* Targets Menu */
-   num_items = sizeof (gmenu_targets) / sizeof (gmenu_targets[0]);
-   gtk_item_factory_create_items (root_menu, num_items, gmenu_targets, NULL);
-   
+   gtk_action_group_add_actions(menuactions, targets_menu_items, G_N_ELEMENTS(targets_menu_items), NULL);
    /* Hosts Menu */
-   if (live > 0 && GBL_SNIFF->type != SM_BRIDGED) {
-      num_items = sizeof (gmenu_hosts) / sizeof (gmenu_hosts[0]);
-      gtk_item_factory_create_items (root_menu, num_items, gmenu_hosts, NULL);
-   }
-   
+   gtk_action_group_add_actions(menuactions, hosts_menu_items, G_N_ELEMENTS(hosts_menu_items), NULL);
    /* View Menu */
-   num_items = sizeof (gmenu_view) / sizeof (gmenu_view[0]);
-   gtk_item_factory_create_items (root_menu, num_items, gmenu_view, NULL);
-   
+   gtk_action_group_add_actions(menuactions, view_menu_items, G_N_ELEMENTS(view_menu_items), NULL);
    /* MITM Menu */
-   if (live > 0 && GBL_SNIFF->type != SM_BRIDGED) {
-      num_items = sizeof (gmenu_mitm) / sizeof (gmenu_mitm[0]);
-      gtk_item_factory_create_items (root_menu, num_items, gmenu_mitm, NULL);
-   }
-   
+   gtk_action_group_add_actions(menuactions, mitm_menu_items, G_N_ELEMENTS(mitm_menu_items), NULL);
    /* Filters Menu */
-   num_items = sizeof (gmenu_filters) / sizeof (gmenu_filters[0]);
-   gtk_item_factory_create_items (root_menu, num_items, gmenu_filters, NULL);
-   
+   gtk_action_group_add_actions(menuactions, filters_menu_items, G_N_ELEMENTS(filters_menu_items), NULL);
    /* Logging Menu */
-   num_items = sizeof (gmenu_logging) / sizeof (gmenu_logging[0]);
-   gtk_item_factory_create_items (root_menu, num_items, gmenu_logging, NULL);
-
+   gtk_action_group_add_actions(menuactions, logging_menu_items, G_N_ELEMENTS(logging_menu_items), NULL);
 #ifdef HAVE_PLUGINS
    /* Plugins Menu */
-   if(live > 0) {
-      num_items = sizeof (gmenu_plugins) / sizeof (gmenu_plugins[0]);
-      gtk_item_factory_create_items (root_menu, num_items, gmenu_plugins, NULL);
-   }
+   gtk_action_group_add_actions(menuactions, plugins_menu_items, G_N_ELEMENTS(plugins_menu_items), NULL);
 #endif
-
 #ifndef OS_WINDOWS
    /* Help Menu */
-   num_items = sizeof (gmenu_help) / sizeof (gmenu_help[0]);
-   gtk_item_factory_create_items (root_menu, num_items, gmenu_help, NULL);
+   gtk_action_group_add_actions(menuactions, help_menu_items, G_N_ELEMENTS(help_menu_items), NULL);
 #endif
+
+   gtk_action_group_add_toggle_actions(menuactions, toggle_items, G_N_ELEMENTS(toggle_items), NULL);
+
+   menu_manager = gtk_ui_manager_new();
+   gtk_ui_manager_insert_action_group(menu_manager, menuactions, 0);
+
+   merge_id = gtk_ui_manager_add_ui_from_string(menu_manager, menu_structure, -1, &error);
+   if (error) {
+      g_message("building menu failed: %s", error->message);
+      g_error_free(error);
+      error = NULL;
+   }
+
+   /* Some hidden accellerators */
+   accel_group = gtk_accel_group_new ();
+   closure = g_cclosure_new(G_CALLBACK(gtkui_exit), NULL, NULL);
+   gtk_accelerator_parse("<control>X", &keyval, &mods);
+   gtk_accel_group_connect(accel_group, keyval, mods, 0, closure);
+   gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
+   gtk_window_add_accel_group(GTK_WINDOW(window), gtk_ui_manager_get_accel_group(menu_manager));
+
+   
 
    if(GBL_OPTIONS->reversed) {
       GBL_OPTIONS->reversed = 0;
-      item = gtk_item_factory_get_item(root_menu, "/Targets/Reverse matching");
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+      action = gtk_ui_manager_get_action(menu_manager, "/TargetsMenu/ReverseMatching");
+      gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
    if(GBL_OPTIONS->resolve) {
       GBL_OPTIONS->resolve = 0;
-      item = gtk_item_factory_get_item(root_menu, "/View/Resolve IP addresses");
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+      action = gtk_ui_manager_get_action(menu_manager, "/ViewMenu/ResolveIpAddresses");
+      gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
    if(GBL_OPTIONS->compress) {
       GBL_OPTIONS->compress = 0;
-      item = gtk_item_factory_get_item(root_menu, "/Logging/Compressed file");
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM (item), TRUE);
+      action = gtk_ui_manager_get_action(menu_manager, "/LoggingMenu/LogCompressed");
+      gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
+   /* Some menus doesn't apply if started in offline or bridged sniffing mode */
+   if (live == 0 || GBL_SNIFF->type == SM_BRIDGED) {
+      gtk_widget_set_visible(gtk_ui_manager_get_widget(menu_manager, "/MenuBar/HostsMenu"), FALSE);
+      gtk_widget_set_visible(gtk_ui_manager_get_widget(menu_manager, "/MenuBar/MitmMenu"), FALSE);
+   }
+
+#ifdef HAVE_PLUGINS
+   if (live == 0)
+      gtk_widget_set_visible(gtk_ui_manager_get_widget(menu_manager, "/MenuBar/PluginsMenu"), FALSE);
+#endif
+
    /* get the menu widget and add it to the window */
-   main_menu = gtk_item_factory_get_widget (root_menu, "<main>");
+   main_menu = gtk_ui_manager_get_widget(menu_manager, "/MenuBar");
    gtk_box_pack_start(GTK_BOX(vbox), main_menu, FALSE, FALSE, 0);
    gtk_widget_show(main_menu);
+   
 }
 
 void gtkui_create_tab_menu(void)
 {
-   GtkAccelGroup *accel_group;
    GtkWidget *context;
-   GtkItemFactory *if_tabs;
+   GtkUIManager *tab_menu_manager;
+   GtkActionGroup *tabactions;
+   GError *error = NULL;
 
-   accel_group = gtk_accel_group_new ();
-   gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
+   static gchar *tab_menu_structure = 
+       "<ui>"
+       "   <popup name='NoteBook'>"
+       "      <menuitem name='DetachPage' action='DetachPageAction' />"
+       "      <menuitem name='ClosePage' action='ClosePageAction' />"
+       "      <separator />"
+       "      <menuitem name='NextPage' action='NextPageAction' />"
+       "      <menuitem name='PreviousPage' action='PreviousPageAction' />"
+       "   </popup>"
+       "</ui>";
+
+   GtkActionEntry tab_menu_items[] = {
+      {
+         "DetachPageAction", GTK_STOCK_GO_UP,
+         "Detach page", "<control>D",
+         NULL, G_CALLBACK(gtkui_page_detach_current)
+      },
+
+      {
+         "ClosePageAction", GTK_STOCK_CLOSE,
+         "Close page", "<control>W",
+         NULL, G_CALLBACK(gtkui_page_close_current)
+      },
+
+      {
+         "NextPageAction", GTK_STOCK_GO_FORWARD,
+         "Next page", "<control>Tab",
+         NULL, G_CALLBACK(gtkui_page_right)
+      },
+
+      {
+         "PreviousPageAction", GTK_STOCK_GO_BACK,
+         "Previous page", "<control><shift>Tab",
+         NULL, G_CALLBACK(gtkui_page_left)
+      }
+   };
+   /* Create Action Group for tab menu */
+   tabactions = gtk_action_group_new("TabActions");
+   gtk_action_group_add_actions(tabactions, tab_menu_items, G_N_ELEMENTS(tab_menu_items), NULL);
 
    /* context menu for notebook */
-   if_tabs = gtk_item_factory_new(GTK_TYPE_MENU, "<notebook>", accel_group);
-   gtk_item_factory_create_items(if_tabs, 5, tab_menu, NULL);
-   context = gtk_item_factory_get_widget(if_tabs, "<notebook>");
+   tab_menu_manager = gtk_ui_manager_new();
+   gtk_ui_manager_insert_action_group(tab_menu_manager, tabactions, 0);
+   gtk_ui_manager_add_ui_from_string(tab_menu_manager, tab_menu_structure, -1, &error);
+   if (error) {
+       g_message("building tab menu failed: %s", error->message);
+       g_error_free(error);
+       error = NULL;
+   }
 
+   /* Add Accelerators */
+   gtk_window_add_accel_group(GTK_WINDOW(window), gtk_ui_manager_get_accel_group(tab_menu_manager));
+
+   /* Bind popup menu to event */
+   context = gtk_ui_manager_get_widget(tab_menu_manager, "/NoteBook");
    g_signal_connect(G_OBJECT(notebook), "button-press-event", G_CALLBACK(gtkui_context_menu), context);
 }
 

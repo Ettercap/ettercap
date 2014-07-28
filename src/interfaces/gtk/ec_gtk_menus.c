@@ -109,7 +109,7 @@ void gtkui_create_menu(int live)
 #endif
 #ifndef OS_WINDOWS
       "     <menu name='HelpMenu' action='HelpMenuAction'>"
-      "        <menuitem name='HelpContents' action='HelpContentsAction' />"
+      "        <menuitem name='Help' action='HelpAction' />"
       "     </menu>"
 #endif
       "  </menubar>"
@@ -389,13 +389,13 @@ void gtkui_create_menu(int live)
       /* Help Menu */
       {
          "HelpMenuAction", NULL,
-         "_?", NULL,
+         "_Info", NULL,
          NULL, NULL
       },
 
       {
-         "HelpContentsAction", GTK_STOCK_HELP,
-         "Contents", NULL,
+         "HelpAction", GTK_STOCK_HELP,
+         "Help", "F1",
          NULL, G_CALLBACK(gtkui_help)
       }
 #endif

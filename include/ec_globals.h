@@ -119,6 +119,7 @@ struct pcap_env {
    char          *filter;        /* pcap filter */
    u_int16        snaplen;
    int            dlt;
+   pcap_dumper_t *dump;
    u_int32        dump_size;     /* total dump size */
    u_int32        dump_off;      /* current offset */
 };

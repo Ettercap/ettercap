@@ -5,6 +5,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #define LOGO_FILE "ettercap.png"
+#define ICON_FILE "ettercap.svg"
 
 #ifndef GTK_WRAP_WORD_CHAR
 #define GTK_WRAP_WORD_CHAR GTK_WRAP_WORD

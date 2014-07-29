@@ -399,7 +399,7 @@ void gtkui_about(void)
    GError *error = NULL;
    const gchar *path, *unicode;
    gchar *license, *authors;
-   gint length;
+   gsize length;
 
    dialog = gtk_dialog_new();
    gtk_window_set_title(GTK_WINDOW(dialog), "About");

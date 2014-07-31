@@ -5,6 +5,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #define LOGO_FILE "ettercap.png"
+#define LOGO_FILE_SMALL "ettercap-small.png"
 #define ICON_FILE "ettercap.svg"
 
 #ifndef GTK_WRAP_WORD_CHAR
@@ -25,6 +26,7 @@ extern guint merge_id;
 extern GTimer *progress_timer;
 
 extern void set_gtk_interface(void);
+extern void gtkui_about(void);
 extern void gtkui_message(const char *msg);
 extern void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
 extern void gtkui_exit(void);

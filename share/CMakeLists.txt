@@ -13,6 +13,7 @@ set(EC_CONFFILES
 
 set(EC_DATAFILES
             ettercap.png
+            ettercap-small.png
             etter.fields
             etter.filter
             etterfilter.cnt
@@ -27,6 +28,8 @@ set(EC_DATAFILES
             etter.mime
             etter.services
             etter.ssl.crt
+            ../LICENSE
+            ../AUTHORS
 )
 foreach (f IN LISTS EC_DATAFILES EC_CONFFILES)
 	configure_file(${f} ${f} COPYONLY)

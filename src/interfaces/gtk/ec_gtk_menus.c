@@ -107,11 +107,12 @@ void gtkui_create_menu(int live)
       "        <menuitem name='LoadPlugin' action='LoadPluginAction' />"
       "     </menu>"
 #endif
-#ifndef OS_WINDOWS
       "     <menu name='HelpMenu' action='HelpMenuAction'>"
+#ifndef OS_WINDOWS
       "        <menuitem name='Help' action='HelpAction' />"
-      "     </menu>"
 #endif
+      "        <menuitem name='About' action='AboutDialogAction' />"
+      "     </menu>"
       "  </menubar>"
       "</ui>";
 
@@ -384,7 +385,6 @@ void gtkui_create_menu(int live)
    };
 #endif
 
-#ifndef OS_WINDOWS
    GtkActionEntry help_menu_items[] = {
       /* Help Menu */
       {
@@ -393,12 +393,18 @@ void gtkui_create_menu(int live)
          NULL, NULL
       },
 
+#ifndef OS_WINDOWS
       {
          "HelpAction", GTK_STOCK_HELP,
          "Help", "F1",
          NULL, G_CALLBACK(gtkui_help)
-      }
+      },
 #endif
+      {
+         "AboutDialogAction", GTK_STOCK_ABOUT,
+         "About", NULL,
+         NULL, G_CALLBACK(gtkui_about)
+      }
    };
 
    GtkToggleActionEntry toggle_items[] = {

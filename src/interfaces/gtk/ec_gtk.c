@@ -392,7 +392,7 @@ gboolean gtkui_flush_msg(gpointer data)
  */
 void gtkui_about(void)
 {
-   GtkWidget *dialog, *notebook, *content, *scroll, *vbox, *logo, *label, *url;
+   GtkWidget *dialog, *notebook, *content, *scroll, *vbox, *logo, *label;
    GtkWidget *button, *textview;
    GtkTextBuffer *textbuf;
    GtkTextIter iter;
@@ -435,9 +435,9 @@ void gtkui_about(void)
          "</span>");
    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
-   url = gtk_link_button_new_with_label("http://www.ettercap-project.org",
-         "Ettercap homepage");
-   gtk_box_pack_start(GTK_BOX(vbox), url, FALSE, FALSE, 0);
+   label = gtk_label_new("www.ettercap-project.org");
+   gtk_label_set_selectable(GTK_LABEL(label), TRUE);
+   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new("General"));
 
    /* Authors page */

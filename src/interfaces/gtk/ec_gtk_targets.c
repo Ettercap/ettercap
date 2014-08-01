@@ -24,7 +24,6 @@
 
 /* proto */
 
-static void set_protocol(void);
 static void set_targets(void);
 static void gtkui_add_target1(void *);
 static void gtkui_add_target2(void *);
@@ -78,6 +77,11 @@ void wipe_targets(void)
  */
 void gtkui_select_protocol(void)
 {
+   GtkWidget *dialog, *content, *radio, *hbox, *frame;
+   GSList *list = NULL;
+   gint active = 1;
+   enum {proto_udp, proto_tcp, proto_all};
+
    DEBUG_MSG("gtk_select_protocol");
 
    /* this will contain 'all', 'tcp' or 'udp' */
@@ -86,17 +90,65 @@ void gtkui_select_protocol(void)
       strncpy(GBL_OPTIONS->proto, "all", 3);
    }
 
-   gtkui_input("Protocol :", GBL_OPTIONS->proto, 3, set_protocol);
-}
+   /* create dialog for selecting the protocol */
+   dialog = gtk_dialog_new_with_buttons("Set protocol", GTK_WINDOW(window),
+                                        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                        NULL);
+   content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-static void set_protocol(void)
-{
-   if (strcasecmp(GBL_OPTIONS->proto, "all") &&
-       strcasecmp(GBL_OPTIONS->proto, "tcp") &&
-       strcasecmp(GBL_OPTIONS->proto, "udp")) {
-      ui_error("Invalid protocol");
-      SAFE_FREE(GBL_OPTIONS->proto);
+   frame = gtk_frame_new("Select the protocol");
+   gtk_container_add(GTK_CONTAINER(content), frame);
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+#else
+   hbox = gtk_hbox_new(FALSE, 10);
+#endif
+   gtk_container_add(GTK_CONTAINER(frame), hbox);
+
+   radio = gtk_radio_button_new_with_mnemonic(NULL, "a_ll");
+   gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 2);
+   if (!strncasecmp(GBL_OPTIONS->proto, "all", 4))
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
+
+   radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(radio), "_tcp");
+   gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 2);
+   if (!strncasecmp(GBL_OPTIONS->proto, "tcp", 4))
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
+
+   radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(radio), "_udp");
+   gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 2);
+   if (!strncasecmp(GBL_OPTIONS->proto, "udp", 4))
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
+
+
+   gtk_widget_grab_focus(gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK));
+   gtk_widget_show_all(dialog);
+
+   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+      list = gtk_radio_button_get_group(GTK_RADIO_BUTTON(radio));
+      for(active = 0; list != NULL; list = list->next) {
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(list->data))) {
+            switch (active) {
+               case proto_all:
+                  strncpy(GBL_OPTIONS->proto, "all", 4);
+                  break;
+               case proto_tcp:
+                  strncpy(GBL_OPTIONS->proto, "tcp", 4);
+                  break;
+               case proto_udp:
+                  strncpy(GBL_OPTIONS->proto, "udp", 4);
+                  break;
+            }
+         }
+         active++;
+      } 
    }
+
+   gtk_widget_destroy(dialog);
+
 }
 
 /*

@@ -38,13 +38,13 @@ enum {
    NL_TYPE_ICMP  = 0x01,
    NL_TYPE_IPIP  = 0x04,
    NL_TYPE_IP6   = 0x29,
+   NL_TYPE_ESP   = 0x32,
    NL_TYPE_ICMP6 = 0x3a,
    NL_TYPE_TCP   = 0x06,
    NL_TYPE_UDP   = 0x11,
    NL_TYPE_GRE   = 0x2f,
    NL_TYPE_OSPF  = 0x59,
-   NL_TYPE_VRRP  = 0x70,
-   NL_TYPE_ESP   = 0x32,
+   NL_TYPE_VRRP  = 0x70
 };
 
 /* proto layer types */

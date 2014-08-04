@@ -54,14 +54,22 @@ FUNC_DECODER(decode_esp)
    FUNC_DECODER_PTR(next_decoder);
    struct esp_header *esp;
    
-   DECODED_LEN = sizeof(struct esp_header);
-   
    esp = (struct esp_header *)DECODE_DATA;
+   DECODED_LEN = sizeof(struct esp_header);
+
+   /* L4 header definition */
+   PACKET->L4.proto = NL_TYPE_ESP;
+   /* since ICMPv6 header has no such field */
+   PACKET->L4.len = PACKET->L3.payload_len;
+   PACKET->L4.header = (u_char*)DECODE_DATA;
+   PACKET->L4.options = NULL;
+   PACKET->L4.optlen = 0;
+   PACKET->L4.flags = 0;
 
    PACKET->DATA.data = ((u_char *)esp) + sizeof(struct esp_header);
    
    /* HOOK POINT: HOOK_PACKET_ESP */
-   hook_point(HOOK_PACKET_ESP, PACKET);
+   hook_point(HOOK_PACKET_ESP, po);
       
    /* get the next decoder */
    next_decoder = get_decoder(APP_LAYER, PL_DEFAULT);

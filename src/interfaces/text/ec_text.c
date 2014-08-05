@@ -584,9 +584,9 @@ static void text_stats(void)
    fprintf(stdout,   " Top Half packet rate    : worst: %8lu  adv: %8lu p/s\n\n", 
          GBL_STATS->th.rate_worst, GBL_STATS->th.rate_adv);
    
-   fprintf(stdout,   " Bottom Half thruoutput  : worst: %8lu  adv: %8lu b/s\n", 
+   fprintf(stdout,   " Bottom Half throughput  : worst: %8lu  adv: %8lu b/s\n", 
          GBL_STATS->bh.thru_worst, GBL_STATS->bh.thru_adv);
-   fprintf(stdout,   " Top Half thruoutput     : worst: %8lu  adv: %8lu b/s\n\n", 
+   fprintf(stdout,   " Top Half throughput     : worst: %8lu  adv: %8lu b/s\n\n", 
          GBL_STATS->th.thru_worst, GBL_STATS->th.thru_adv);
 }
 

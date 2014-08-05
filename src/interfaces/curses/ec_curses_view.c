@@ -172,9 +172,9 @@ static void refresh_stats(void)
    wdg_window_print(wdg_stats, 1, 13, "Top Half packet rate    : worst: %8d  adv: %8d p/s", 
          GBL_STATS->th.rate_worst, GBL_STATS->th.rate_adv);
    
-   wdg_window_print(wdg_stats, 1, 14, "Bottom Half thruoutput  : worst: %8d  adv: %8d b/s", 
+   wdg_window_print(wdg_stats, 1, 14, "Bottom Half throughput  : worst: %8d  adv: %8d b/s", 
          GBL_STATS->bh.thru_worst, GBL_STATS->bh.thru_adv);
-   wdg_window_print(wdg_stats, 1, 15, "Top Half thruoutput     : worst: %8d  adv: %8d b/s", 
+   wdg_window_print(wdg_stats, 1, 15, "Top Half throughput     : worst: %8d  adv: %8d b/s", 
          GBL_STATS->th.thru_worst, GBL_STATS->th.thru_adv);
 }
 

@@ -126,7 +126,9 @@ static void curses_select_targets(void)
 {
    wdg_t *in;
    
+#ifndef TARGET_LEN
 #define TARGET_LEN 50
+#endif
    
    DEBUG_MSG("curses_select_target1");
 

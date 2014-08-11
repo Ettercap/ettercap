@@ -22,9 +22,16 @@
 #include <wdg.h>
 
 #include <ncurses.h>
+#include <pthread.h>
 
 
 /* GLOBALS */
+
+/* mutexes */
+static pthread_mutex_t wdg_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define WDG_LOCK do { pthread_mutex_lock(&wdg_mutex); } while (0)
+#define WDG_UNLOCK do { pthread_mutex_unlock(&wdg_mutex); } while (0)
+
 
 /* information about the current screen */
 struct wdg_scr current_screen;
@@ -190,7 +197,9 @@ void wdg_exit(void)
  */
 void wdg_update_screen(void)
 {
+   WDG_LOCK;
    doupdate();
+   WDG_UNLOCK;
 }
 
 /* 
@@ -240,7 +249,9 @@ int wdg_events_handler(int exit_key)
             /* switch focus between objects */
             wdg_switch_focus(SWITCH_FOREWARD);
             /* update the screen */
+            WDG_LOCK;
             doupdate();
+            WDG_UNLOCK;
             break;
 
          case KEY_CTRL_L:
@@ -249,7 +260,9 @@ int wdg_events_handler(int exit_key)
             /* the screen has been resized */
             wdg_redraw_all();
             /* update the screen */
+            WDG_LOCK;
             doupdate();
+            WDG_UNLOCK;
             break;
             
          case ERR:
@@ -272,7 +285,9 @@ int wdg_events_handler(int exit_key)
              * update the screen.
              * all the function uses wnoutrefresh() funcions 
              */
+            WDG_LOCK;
             doupdate();
+            WDG_UNLOCK;
             break;
             
          default:
@@ -298,7 +313,9 @@ int wdg_events_handler(int exit_key)
             /* dispatch the user input */
             wdg_dispatch_msg(key, &mouse);
             /* update the screen */
+            WDG_LOCK;
             doupdate();
+            WDG_UNLOCK;
             break;
       }
    }

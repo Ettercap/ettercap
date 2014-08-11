@@ -35,10 +35,14 @@
 
 /* globals */
 static pthread_mutex_t scan_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define SCAN_LOCK     do{ if (pthread_mutex_trylock(&scan_mutex)) { \
-                              ec_thread_exit(); return NULL;} \
-                      } while(0)
-#define SCAN_UNLOCK   do{ pthread_mutex_unlock(&scan_mutex); } while(0)
+#define SCAN_LOCK   do{ if (pthread_mutex_trylock(&scan_mutex)) { \
+                            ec_thread_exit(); return NULL;} \
+                       } while(0)
+#define SCAN_UNLOCK do{ pthread_mutex_unlock(&scan_mutex); } while(0)
+
+#define SCANUI_LOCK do{ if (pthread_mutex_trylock(&scan_mutex)) { \
+                            return; } \
+                      } while (0)
 
 #define EC_CHECK_LIBNET_VERSION(major,minor)   \
    (LIBNET_VERSION_MAJOR > (major) ||          \
@@ -293,11 +297,15 @@ void del_hosts_list(void)
 {
    struct hosts_list *hl, *tmp = NULL;
 
+   SCANUI_LOCK;
+
    LIST_FOREACH_SAFE(hl, &GBL_HOSTLIST, next, tmp) {
       SAFE_FREE(hl->hostname);
       LIST_REMOVE(hl, next);
       SAFE_FREE(hl);
    }
+
+   SCAN_UNLOCK;
 }
 
 /*

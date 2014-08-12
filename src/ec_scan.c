@@ -431,6 +431,7 @@ static void scan_netmask(void)
             LIST_REMOVE(e, next);
             SAFE_FREE(e);
          }
+         SCAN_UNLOCK;
          /* cancel the scan thread */
          ec_thread_exit();
       }
@@ -500,6 +501,7 @@ static void scan_ip6_onlink(void)
          hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
          hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
          hook_del(HOOK_PACKET_ICMP6_PARM, &get_response);
+         SCAN_UNLOCK;
          /* cancel the scan thread */
          ec_thread_exit();
       }
@@ -647,6 +649,7 @@ static void scan_targets(void)
             LIST_REMOVE(e, next);
             SAFE_FREE(e);
          }
+         SCAN_UNLOCK;
          /* cancel the scan thread */
          ec_thread_exit();
       }

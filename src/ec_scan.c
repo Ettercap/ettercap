@@ -35,14 +35,24 @@
 
 /* globals */
 static pthread_mutex_t scan_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define SCAN_LOCK   do{ if (pthread_mutex_trylock(&scan_mutex)) { \
-                            ec_thread_exit(); return NULL;} \
-                       } while(0)
+/*
+ * SCAN_{LOCK,UNLOCK} and SCANUI_{LOCK,UNLOCK} are two macros
+ * that handles the SAME mutex "scan_mutex".
+ * They are intended to cancel threads that are not getting
+ * the lock (Pressing Crtl+S multiple times while scanning).
+ * They are split because the lock is used in different functions
+ * of different types (void/void*).
+ */
+#define SCAN_LOCK do{ if (pthread_mutex_trylock(&scan_mutex)) { \
+ ec_thread_exit(); return NULL;} \
+ } while(0)
 #define SCAN_UNLOCK do{ pthread_mutex_unlock(&scan_mutex); } while(0)
 
 #define SCANUI_LOCK do{ if (pthread_mutex_trylock(&scan_mutex)) { \
-                            return; } \
-                      } while (0)
+ return; } \
+ } while (0)
+
+#define SCANUI_UNLOCK SCAN_UNLOCK
 
 #define EC_CHECK_LIBNET_VERSION(major,minor)   \
    (LIBNET_VERSION_MAJOR > (major) ||          \
@@ -305,7 +315,7 @@ void del_hosts_list(void)
       SAFE_FREE(hl);
    }
 
-   SCAN_UNLOCK;
+   SCANUI_UNLOCK;
 }
 
 /*

@@ -494,6 +494,7 @@ static void scan_ip6_onlink(void)
 
       /* user has requested to stop the task */
       if (ret == UI_PROGRESS_INTERRUPTED) {
+         INSTANT_USER_MSG("Scan interrupted by user. Partial results may have been recorded...\n");
          /* stop the capture thread if sniffing is not active */
          if (!GBL_SNIFF->active)
             capture_stop(GBL_IFACE);

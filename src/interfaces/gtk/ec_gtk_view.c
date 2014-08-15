@@ -341,35 +341,35 @@ void gtkui_vis_method(void)
    gtk_container_add(GTK_CONTAINER(content_area), vbox);
 
    button = gtk_radio_button_new_with_label(NULL, 
-               "hex     Print the packets in hex format.");
+               "Print the packets in hex format.");
    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "hex") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
-               "ascii   Print only \"printable\" characters, the others are displayed as dots '.'");
+               "Print only \"printable\" characters, the others are displayed as dots '.'");
    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "ascii") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
-               "text    Print only the \"printable\" characters and skip the others.");
+               "Print only the \"printable\" characters and skip the others.");
    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "text") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
-               "ebcdic  Convert an EBCDIC text to ASCII.");
+               "Convert an EBCDIC text to ASCII.");
    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "ebcdic") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
-               "html    Strip all the html tags from the text. A tag is every string between < and >.");
+               "Strip all the html tags from the text. A tag is every string between < and >.");
    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "html") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
@@ -377,7 +377,7 @@ void gtkui_vis_method(void)
 
 /* start UTF8 */
    button = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (prev),
-               "utf8    Convert the data from the encoding specified below to UTF8 before displaying it.");
+               "Convert the data from the encoding specified below to UTF8 before displaying it.");
    gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, 0);
    if(strcmp(vmethod, "utf8") == 0)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
@@ -461,6 +461,8 @@ void gtkui_vis_method(void)
 
       /* set vmethod string */
       int i=0;
+      memset(vmethod, 0, VLEN);
+
       switch(active) {
          case 6: strncpy(vmethod, "hex", 3); break;
          case 5: strncpy(vmethod, "ascii", 5); break; 

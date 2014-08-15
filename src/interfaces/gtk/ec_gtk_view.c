@@ -327,8 +327,9 @@ void gtkui_vis_method(void)
 
    dialog = gtk_dialog_new_with_buttons("Visualization method...", GTK_WINDOW (window), 
                GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
                GTK_STOCK_OK, GTK_RESPONSE_OK, 
-               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+               NULL);
    gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
 
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));

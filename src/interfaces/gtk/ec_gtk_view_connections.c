@@ -1223,8 +1223,10 @@ static void gtkui_connection_inject(void)
       return;
 
    dialog = gtk_dialog_new_with_buttons("Character Injection", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        NULL);
    gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 200);
 #if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
@@ -1333,8 +1335,10 @@ static void gtkui_connection_inject_file(void)
       return;
 
    dialog = gtk_dialog_new_with_buttons("Character Injection", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        NULL);
    gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 150);
 #if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);

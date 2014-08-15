@@ -94,8 +94,8 @@ void gtkui_select_protocol(void)
    /* create dialog for selecting the protocol */
    dialog = gtk_dialog_new_with_buttons("Set protocol", GTK_WINDOW(window),
                                         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         NULL);
    content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -175,8 +175,8 @@ void gtkui_select_targets(void)
 
    dialog = gtk_dialog_new_with_buttons("Enter Targets", GTK_WINDOW(window),
                                         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, 
-                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         NULL);
    content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_set_border_width(GTK_CONTAINER(content), 20);

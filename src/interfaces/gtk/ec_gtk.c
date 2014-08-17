@@ -1772,9 +1772,16 @@ gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer d
    /* variable not used */
    (void) widget;
 
-    if(event->button == 3)
+    if(event->button == 3) {
         gtk_menu_popup(GTK_MENU(data), NULL, NULL, NULL, NULL, 3, event->time);
-    return(FALSE);
+        /* 
+         * button press event handle must return TRUE to keep the selection
+         * active when pressing the mouse button 
+         */
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 /* detach the currently focused notebook page into a free window */

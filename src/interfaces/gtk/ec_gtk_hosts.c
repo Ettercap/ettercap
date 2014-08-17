@@ -193,7 +193,7 @@ static void save_hosts(void)
  */
 void gtkui_host_list(void)
 {
-   GtkWidget *scrolled, *treeview, *vbox, *hbox, *button;
+   GtkWidget *scrolled, *treeview, *vbox, *hbox, *button, *item, *context_menu;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
    static gint host_delete = HOST_DELETE;
@@ -276,6 +276,25 @@ void gtkui_host_list(void)
    gtk_box_pack_start(GTK_BOX (hbox), button, TRUE, TRUE, 0);
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), &host_target2);
    gtk_widget_show(button);
+
+   context_menu = gtk_menu_new();
+   item = gtk_menu_item_new_with_label("Add to Target 1");
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), item);
+   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtkui_button_callback), &host_target1);
+   gtk_widget_show(item);
+
+   item = gtk_menu_item_new_with_label("Add to Target 2");
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), item);
+   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtkui_button_callback), &host_target2);
+   gtk_widget_show(item);
+
+   item = gtk_menu_item_new_with_label("Delete host");
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), item);
+   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtkui_button_callback), &host_delete);
+   gtk_widget_show(item);
+
+   g_signal_connect(G_OBJECT(treeview), "button-press-event", G_CALLBACK(gtkui_context_menu), context_menu);
+
 
    gtk_widget_show(hosts_window);
 }

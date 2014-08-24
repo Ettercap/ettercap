@@ -794,7 +794,7 @@ static void gtkui_setup(void)
       /* File Menu */
       { 
          "FileMenuAction", NULL,
-         "_File", "<shift>F",
+         "_File", NULL,
          NULL, NULL
       },
 
@@ -828,21 +828,21 @@ static void gtkui_setup(void)
 
       { 
          "SniffUnifiedAction", GTK_STOCK_DND, 
-         "Unified sniffing...", "<shift>U", 
+         "Unified sniffing...", "<control>U", 
          "Switch to unified sniffing mode", 
          G_CALLBACK(gtkui_unified_sniff) 
       },
 
       { 
          "SniffBridgedAction", GTK_STOCK_DND_MULTIPLE, 
-         "Bridged sniffing...", "<shift>B", 
+         "Bridged sniffing...", "<control>B", 
          "Switch to bridged sniffing mode", 
          G_CALLBACK(gtkui_bridged_sniff) 
       },
 
       { 
          "SniffFilterAction", GTK_STOCK_PREFERENCES, 
-         "Set pcap filter...", "p", 
+         "Set pcap filter...", "<control>P", 
          "Limit relevant traffic", 
          G_CALLBACK(gtkui_pcap_filter)
       },
@@ -850,13 +850,13 @@ static void gtkui_setup(void)
       /* Options Menu */
       { 
          "OptionsMenuAction", NULL, 
-         "_Options", "<shift>O",
+         "_Options", NULL,
          NULL, NULL
       },
 
       { 
          "OptionsNetmaskAction", NULL, 
-         "Set netmask", "n", 
+         "Set netmask", "<control>N", 
          "Override netmask", 
          G_CALLBACK(gtkui_set_netmask) 
       },

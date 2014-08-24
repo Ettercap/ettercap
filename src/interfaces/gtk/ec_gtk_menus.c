@@ -154,25 +154,25 @@ void gtkui_create_menu(int live)
 
       {
          "CurrentTargetsAction", GTK_STOCK_FIND,
-         "Current targets", "t",
+         "Current targets", "<control>t",
          NULL, G_CALLBACK(gtkui_current_targets)
       },
 
       {
          "SelectTargetsAction", GTK_STOCK_ADD,
-         "Select target(s)", "<control>t",
+         "Select target(s)", "<control><shift>t",
          NULL, G_CALLBACK(gtkui_select_targets)
       },
 
       {
          "ProtocolAction", GTK_STOCK_JUMP_TO,
-         "_Protocol...", "p",
+         "_Protocol...", "<control>p",
          NULL, G_CALLBACK(gtkui_select_protocol)
       },
 
       {
          "WipeTargetsAction", GTK_STOCK_CLEAR,
-         "_Wipe targets", "<shift>W",
+         "_Wipe targets", "<control>W",
          NULL, G_CALLBACK(wipe_targets)
       }
    };
@@ -187,7 +187,7 @@ void gtkui_create_menu(int live)
 
       {
          "HostsListAction", GTK_STOCK_INDEX,
-         "_Hosts list", "h",
+         "_Hosts list", "<control>h",
          NULL, G_CALLBACK(gtkui_host_list)
       },
 
@@ -220,37 +220,37 @@ void gtkui_create_menu(int live)
 
       {
          "ViewConnectionsAction", GTK_STOCK_JUSTIFY_FILL,
-         "_Connections", "<shift>c",
+         "_Connections", "<control><shift>c",
          NULL, G_CALLBACK(gtkui_show_connections)
       },
 
       {
          "ViewProfilesAction", GTK_STOCK_JUSTIFY_LEFT,
-         "Pr_ofiles", "<shift>o",
+         "Pr_ofiles", "<control>o",
          NULL, G_CALLBACK(gtkui_show_profiles)
       },
 
       {
          "ViewStatisticsAction", GTK_STOCK_PROPERTIES,
-         "_Statistics", "s",
+         "_Statistics", NULL,
          NULL, G_CALLBACK(gtkui_show_stats)
       },
 
       {
          "VisualisationMethodAction", GTK_STOCK_PREFERENCES,
-         "_Visualisation method...", "v",
+         "_Visualisation method...", "<control><shift>v",
          NULL, G_CALLBACK(gtkui_vis_method)
       },
 
       {
          "VisualisationRegexAction", GTK_STOCK_FIND,
-         "Visualisation _regex...", "R",
+         "Visualisation _regex...", "<control>R",
          NULL, G_CALLBACK(gtkui_vis_regex)
       },
 
       {
          "SetWifiKeyAction", GTK_STOCK_FIND,
-         "Set the _WiFi key...", "w",
+         "Set the _WiFi key...", NULL,
          NULL, G_CALLBACK(gtkui_wifi_key)
       }
    };
@@ -318,7 +318,7 @@ void gtkui_create_menu(int live)
 
       {
          "StopFilterAction", GTK_STOCK_STOP,
-         "Stop _filtering", "f",
+         "Stop _filtering", "<control><shift>f",
          NULL, G_CALLBACK(gtkui_stop_filter)
       }
    };
@@ -333,13 +333,13 @@ void gtkui_create_menu(int live)
 
       {
          "LoggingAllAction", GTK_STOCK_SAVE,
-         "Logging all packets and infos...", "<shift>i",
+         "Logging all packets and infos...", "<control><shift>i",
          NULL, G_CALLBACK(gtkui_log_all)
       },
 
       {
          "LoggingInfoAction", GTK_STOCK_SAVE_AS,
-         "Logging only infos...", "i",
+         "Logging only infos...", "<control>i",
          NULL, G_CALLBACK(gtkui_log_info)
       },
 
@@ -351,7 +351,7 @@ void gtkui_create_menu(int live)
 
       {
          "LogMessagesAction", GTK_STOCK_REVERT_TO_SAVED,
-         "Log user messages...", "m",
+         "Log user messages...", "<control>m",
          NULL, G_CALLBACK(gtkui_log_msg)
       },
 

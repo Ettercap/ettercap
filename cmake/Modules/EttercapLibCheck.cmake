@@ -238,6 +238,11 @@ if(HAVE_RESOLV)
     set(EC_LIBS ${EC_LIBS} ${HAVE_RESOLV})
     set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_RESOLV})
     set(HAVE_DN_EXPAND 1 CACHE PATH "Found dn_expand")
+else(HAVE_RESOLV)
+    if(OS_BSD)
+        # FreeBSD has dn_expand built in libc
+        CHECK_FUNCTION_EXISTS(dn_expand HAVE_DN_EXPAND)
+    endif(OS_BSD)
 endif(HAVE_RESOLV)
 
 find_package(PCRE)

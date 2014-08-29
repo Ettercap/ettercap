@@ -26,6 +26,7 @@
 #include <ec_services.h>
 #include <ec_format.h>
 #include <ec_inject.h>
+#include <ec_proto.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,6 +39,24 @@ struct row_pairs {
 
    struct row_pairs *next;
    struct row_pairs *prev;
+};
+
+/* filter objects */
+struct conn_filter {
+   /* model handle for filtered tree */
+   GtkTreeModel *model;
+   /* Host filter */
+   const gchar *host;
+   /* Protocol filter */
+   gboolean tcp;
+   gboolean udp;
+   gboolean other;
+   /* Connection state filter */
+   gboolean active;
+   gboolean idle;
+   gboolean closing;
+   gboolean closed;
+   gboolean killed;
 };
 
 /* proto */
@@ -68,6 +87,9 @@ static void gtkui_connection_inject(void);
 static void gtkui_inject_user(int side);
 static void gtkui_connection_inject_file(void);
 static void gtkui_inject_file(const char *filename, int side);
+static void set_connfilter(GtkWidget *widget, gpointer *data);
+static void set_connfilter_host(GtkWidget *widget, gpointer *data);
+static gboolean connfilter(GtkTreeModel *model, GtkTreeIter *iter, gpointer *data);
 
 extern void conntrack_lock(void);
 extern void conntrack_unlock(void);
@@ -81,6 +103,7 @@ static GtkWidget     *treeview = NULL; /* the visible part of the GTK list */
 static GtkListStore  *ls_conns = NULL; /* the data part */
 static GtkTreeSelection   *selection = NULL;
 static struct conn_object *curr_conn = NULL;
+static struct conn_filter filter;
 static guint connections_idle = 0;
 
 /* split and joined data views */
@@ -106,8 +129,11 @@ static u_char *injectbuf;
  */
 void gtkui_show_connections(void)
 {
-   GtkWidget *scrolled, *vbox, *items, *hbox, *button;
-   GtkWidget *context_menu;
+   GtkWidget *scrolled, *vbox, *items, *hbox, *button, *tbox;
+   GtkWidget *context_menu, *frame, *entry, *chkb_tcp, *chkb_udp, *chkb_other;
+   GtkWidget *chkb_active, *chkb_idle, *chkb_closing, *chkb_closed, *chkb_killed;
+   GtkTreeModel *model;
+   GtkToolItem *toolbutton;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
 
@@ -131,6 +157,102 @@ void gtkui_show_connections(void)
 #endif
    gtk_container_add(GTK_CONTAINER (conns_window), vbox);
    gtk_widget_show(vbox);
+
+   /* filter bar */
+#if GTK_CHECK_VERSION(3, 0, 0)
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+#else
+   hbox = gtk_hbox_new(FALSE, 10);
+#endif
+   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+
+   frame = gtk_frame_new("Host filter");
+#if GTK_CHECK_VERSION(3, 0, 0)
+   tbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
+   tbox = gtk_hbox_new(FALSE, 0);
+#endif
+   gtk_container_add(GTK_CONTAINER(frame), tbox);
+
+   entry = gtk_entry_new();
+   g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(set_connfilter_host), NULL);
+   gtk_box_pack_start(GTK_BOX(tbox), entry, FALSE, FALSE, 5);
+
+   toolbutton = gtk_tool_button_new_from_stock(GTK_STOCK_APPLY);
+   g_signal_connect_swapped(G_OBJECT(toolbutton), "clicked", G_CALLBACK(set_connfilter_host), entry);
+   gtk_box_pack_start(GTK_BOX(tbox), GTK_WIDGET(toolbutton), FALSE, FALSE, 5);
+
+   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
+
+   frame = gtk_frame_new("Protocol filter");
+#if GTK_CHECK_VERSION(3, 0, 0)
+   tbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
+   tbox = gtk_hbox_new(FALSE, 0);
+#endif
+   gtk_container_add(GTK_CONTAINER(frame), tbox);
+
+   chkb_tcp = gtk_check_button_new_with_label("TCP");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkb_tcp), TRUE);
+   filter.tcp = TRUE;
+   g_signal_connect(G_OBJECT(chkb_tcp), "toggled", G_CALLBACK(set_connfilter), &filter.tcp);
+   gtk_box_pack_start(GTK_BOX(tbox), chkb_tcp, FALSE, FALSE, 5);
+
+   chkb_udp = gtk_check_button_new_with_label("UDP");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkb_udp), TRUE);
+   filter.udp = TRUE;
+   g_signal_connect(G_OBJECT(chkb_udp), "toggled", G_CALLBACK(set_connfilter), &filter.udp);
+   gtk_box_pack_start(GTK_BOX(tbox), chkb_udp, FALSE, FALSE, 5);
+
+   chkb_other = gtk_check_button_new_with_label("Other");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkb_other), TRUE);
+   filter.other = TRUE;
+   g_signal_connect(G_OBJECT(chkb_other), "toggled", G_CALLBACK(set_connfilter), &filter.other);
+   gtk_box_pack_start(GTK_BOX(tbox), chkb_other, FALSE, FALSE, 5);
+
+   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
+
+   frame = gtk_frame_new("Connection state filter");
+#if GTK_CHECK_VERSION(3, 0, 0)
+   tbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
+   tbox = gtk_hbox_new(FALSE, 0);
+#endif
+   gtk_container_add(GTK_CONTAINER(frame), tbox);
+
+   chkb_active = gtk_check_button_new_with_label("Active");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkb_active), TRUE);
+   filter.active = TRUE;
+   g_signal_connect(G_OBJECT(chkb_active), "toggled", G_CALLBACK(set_connfilter), &filter.active);
+   gtk_box_pack_start(GTK_BOX(tbox), chkb_active, FALSE, FALSE, 5);
+
+   chkb_idle = gtk_check_button_new_with_label("Idle");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkb_idle), TRUE);
+   filter.idle = TRUE;
+   g_signal_connect(G_OBJECT(chkb_idle), "toggled", G_CALLBACK(set_connfilter), &filter.idle);
+   gtk_box_pack_start(GTK_BOX(tbox), chkb_idle, FALSE, FALSE, 5);
+
+   chkb_closing = gtk_check_button_new_with_label("Closing");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkb_closing), TRUE);
+   filter.closing = TRUE;
+   g_signal_connect(G_OBJECT(chkb_closing), "toggled", G_CALLBACK(set_connfilter), &filter.closing);
+   gtk_box_pack_start(GTK_BOX(tbox), chkb_closing, FALSE, FALSE, 5);
+
+   chkb_closed = gtk_check_button_new_with_label("Closed");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkb_closed), TRUE);
+   filter.closed = TRUE;
+   g_signal_connect(G_OBJECT(chkb_closed), "toggled", G_CALLBACK(set_connfilter), &filter.closed);
+   gtk_box_pack_start(GTK_BOX(tbox), chkb_closed, FALSE, FALSE, 5);
+
+   chkb_killed = gtk_check_button_new_with_label("Killed");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkb_killed), TRUE);
+   filter.killed = TRUE;
+   g_signal_connect(G_OBJECT(chkb_killed), "toggled", G_CALLBACK(set_connfilter), &filter.killed);
+   gtk_box_pack_start(GTK_BOX(tbox), chkb_killed, FALSE, FALSE, 5);
+
+   gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
+   gtk_widget_show_all(hbox);
+
 
    /* list */
    scrolled = gtk_scrolled_window_new(NULL, NULL);
@@ -237,7 +359,16 @@ void gtkui_show_connections(void)
    /* initialize the list */
    refresh_connections(NULL);
 
-   gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_conns));
+   /* init filter model handle */
+   filter.model = gtk_tree_model_filter_new(GTK_TREE_MODEL(ls_conns), NULL);
+   gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter.model), 
+                                          (GtkTreeModelFilterVisibleFunc)connfilter, NULL, NULL);
+
+   /* sorting model has to be explicitely created from the filtered model to support both */
+   model = gtk_tree_model_sort_new_with_model(filter.model);
+
+   /* link the Tree Model with the Tree View */
+   gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), model);
 
    /* refresh the list every 1000 ms */
    /* gtk_idle_add refreshes too fast, uses all cpu */
@@ -379,6 +510,9 @@ static gboolean refresh_connections(gpointer data)
       if(bottom.conn == list)
          break;
    } while(gtk_tree_model_iter_next(model, &iter));
+
+   /* finnaly apply the filter */
+   gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(filter.model));
   
    return(TRUE);
 }
@@ -1452,6 +1586,102 @@ static void gtkui_inject_file(const char *filename, int side)
    }
 
    SAFE_FREE(buf);
+}
+
+static void set_connfilter(GtkWidget *widget, gpointer *data)
+{
+   gboolean *value;
+
+   DEBUG_MSG("set_connfilter");
+
+   value = (gboolean*)data;
+   *value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+   /* reapply the filter */
+   gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(filter.model));
+}
+
+static void set_connfilter_host(GtkWidget *widget, gpointer *data)
+{
+   /* unused variable */
+   (void) data;
+   DEBUG_MSG("set_connfilter_host");
+
+   filter.host = gtk_entry_get_text(GTK_ENTRY(widget));
+
+   /* reapply the filter */
+   gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(filter.model));
+}
+
+static gboolean connfilter(GtkTreeModel *model, GtkTreeIter *iter, gpointer *data)
+{
+   gchar *src_host, *dst_host;
+   gboolean ret = TRUE;
+   struct conn_tail *conn = NULL;
+
+   /* unused variable */
+   (void) data;
+
+   /* fetch row values */
+   gtk_tree_model_get(model, iter, 1, &src_host, 4, &dst_host, 10, &conn, -1);
+
+   /* evaluate filter criteria */
+   /* host filter set - filter hosts that do not match */
+   if (filter.host && strlen(filter.host)) { 
+      if (src_host && !strcasestr(src_host, filter.host) && 
+          dst_host && !strcasestr(dst_host, filter.host)) {
+         ret = FALSE;
+         g_free(src_host);
+         g_free(dst_host);
+      }
+   }
+
+   if (conn && conn->co) {
+      /* protocol filter */
+      switch (conn->co->L4_proto) {
+         case NL_TYPE_UDP:
+            if (!filter.udp)
+               ret = FALSE;
+            break;
+         case NL_TYPE_TCP:
+            if (!filter.tcp)
+               ret = FALSE;
+            break;
+         default:
+            if (!filter.other)
+               ret = FALSE;
+      }
+
+      /* connection state filter */
+      switch (conn->co->status) {
+         case CONN_IDLE:
+            if (!filter.idle)
+               ret = FALSE;
+            break;
+         case CONN_ACTIVE:
+            if (!filter.active)
+               ret = FALSE;
+            break;
+         case CONN_CLOSING:
+            if (!filter.closing)
+               ret = FALSE;
+            break;
+         case CONN_CLOSED:
+            if (!filter.closed)
+               ret = FALSE;
+            break;
+         case CONN_KILLED:
+            if (!filter.killed)
+               ret = FALSE;
+            break;
+         default:
+            break;
+      }
+   }
+   else {
+      ret = FALSE;
+   }
+
+   return ret;
 }
 
 /* EOF */

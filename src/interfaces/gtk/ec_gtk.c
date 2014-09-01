@@ -1838,7 +1838,10 @@ void gtkui_filename_browse(GtkWidget *widget, gpointer data)
    (void) widget;
 
    dialog = gtk_file_chooser_dialog_new("Select a file...",
-         NULL, GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL);
+         NULL, GTK_FILE_CHOOSER_ACTION_OPEN, 
+         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+         GTK_STOCK_OK, GTK_RESPONSE_OK, 
+         NULL);
    
    response = gtk_dialog_run (GTK_DIALOG (dialog));
    

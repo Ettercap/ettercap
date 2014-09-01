@@ -1361,7 +1361,6 @@ static void gtkui_connection_inject(void)
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
                                         GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         NULL);
-   gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 200);
 #if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
@@ -1378,7 +1377,6 @@ static void gtkui_connection_inject(void)
    label = gtk_label_new ("Packet destination:");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
-   gtk_widget_show(label);
 
 #if GTK_CHECK_VERSION(3, 0, 0)
    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -1386,31 +1384,27 @@ static void gtkui_connection_inject(void)
    hbox = gtk_hbox_new(FALSE, 5);
 #endif
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-   gtk_widget_show(hbox);
 
    button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button1, FALSE, FALSE, 0);
-   gtk_widget_show(button1);
 
    button2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (button1),
                ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button2, FALSE, FALSE, 0);
-   gtk_widget_show(button2);
 
    label = gtk_label_new ("Characters to be injected:");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
-   gtk_widget_show(label);
 
    frame = gtk_frame_new(NULL);
    gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_IN);
    gtk_box_pack_start(GTK_BOX (vbox), frame, TRUE, TRUE, 5);
-   gtk_widget_show(frame);
 
    text = gtk_text_view_new();
    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (text), GTK_WRAP_CHAR);
    gtk_container_add(GTK_CONTAINER (frame), text);
-   gtk_widget_show(text);
+
+   gtk_widget_show_all(dialog);
     
    response = gtk_dialog_run(GTK_DIALOG(dialog));
    if(response == GTK_RESPONSE_OK) {
@@ -1490,7 +1484,6 @@ static void gtkui_connection_inject_file(void)
    label = gtk_label_new ("Packet destination:");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
-   gtk_widget_show(label);
 
 #if GTK_CHECK_VERSION(3, 0, 0)
    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -1498,7 +1491,6 @@ static void gtkui_connection_inject_file(void)
    hbox = gtk_hbox_new(FALSE, 5);
 #endif
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-   gtk_widget_show(hbox);
       
    button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button1, FALSE, FALSE, 0);
@@ -1507,12 +1499,10 @@ static void gtkui_connection_inject_file(void)
    button2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (button1),
                ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button2, FALSE, FALSE, 0);
-   gtk_widget_show(button2);
    
    label = gtk_label_new ("File to inject:");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
-   gtk_widget_show(label);
 
 #if GTK_CHECK_VERSION(3, 0, 0)
    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -1520,16 +1510,15 @@ static void gtkui_connection_inject_file(void)
    hbox = gtk_hbox_new(FALSE, 5);
 #endif
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-   gtk_widget_show(hbox);
 
    entry = gtk_entry_new();
    gtk_box_pack_start(GTK_BOX (hbox), entry, TRUE, TRUE, 0);
-   gtk_widget_show(entry);
 
    button = gtk_button_new_with_label("...");
    gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_filename_browse), entry);
-   gtk_widget_show(button);
+
+   gtk_widget_show_all(dialog);
 
    response = gtk_dialog_run(GTK_DIALOG (dialog));
    if(response == GTK_RESPONSE_OK) {

@@ -39,7 +39,7 @@ struct postgresql_status {
    u_char status;
    u_char user[65];
    u_char type;
-   u_char password[65];
+   u_char password[66];
    u_char hash[33];
    u_char salt[9];
    u_char database[65];
@@ -157,8 +157,12 @@ FUNC_DECODER(dissector_postgresql)
                int length;
                DEBUG_MSG("\tDissector_postgresql RESPONSE type is clear-text!");
                GET_ULONG_BE(length, ptr, 1);
-               strncpy((char*)conn_status->password, (char*)(ptr + 5), length - 4);
-               conn_status->password[length - 4] = 0;
+               length -= 4;
+               if (length < 0 || length > 65 || PACKET->DATA.len < length+5) {
+                   dissect_wipe_session(PACKET, DISSECT_CODE(dissector_postgresql));
+                   return NULL;
+               }
+               snprintf((char*)conn_status->password, length+1, "%s", (char*)(ptr + 5));
                DISSECT_MSG("PostgreSQL credentials:%s-%d:%s:%s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), conn_status->user, conn_status->password);
                dissect_wipe_session(PACKET, DISSECT_CODE(dissector_postgresql));
             }

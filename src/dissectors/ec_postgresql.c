@@ -157,6 +157,10 @@ FUNC_DECODER(dissector_postgresql)
                int length;
                DEBUG_MSG("\tDissector_postgresql RESPONSE type is clear-text!");
                GET_ULONG_BE(length, ptr, 1);
+               if (length < 4 || length > 65) {
+                   DEBUG_MSG("\tDissector_postgresql BUG, expected length less than 65");
+                   return NULL;
+               }
                strncpy((char*)conn_status->password, (char*)(ptr + 5), length - 4);
                conn_status->password[length - 4] = 0;
                DISSECT_MSG("PostgreSQL credentials:%s-%d:%s:%s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), conn_status->user, conn_status->password);

@@ -24,6 +24,13 @@
 
 /*******************************************/
 
+// we cannot use the libettercap functions, since theu use I/O functions, that in order
+// to work needs to drag in the ec_ui functions.
+
+static void add_port(void *ports, u_int n);
+static void add_ip(void *digit, u_int n);
+static int expand_range_ip(char *str, void *target);
+
 #ifdef WITH_IPV6
 /* Adds IPv6 address to the target list */
 static int expand_ipv6(char *str, struct target_env *target)
@@ -142,6 +149,119 @@ int compile_target(char *string, struct target_env *target)
    return ESUCCESS;
 }
 
+/*
+ * set the bit of the relative port 
+ */
+static void add_port(void *ports, u_int n)
+{
+   u_int8 *bitmap = ports;
+
+     if (n > 1<<16)
+      FATAL_ERROR("Port outside the range (65535) !!");
+
+   BIT_SET(bitmap, n);
+}
+
+/*
+ * this structure is used to contain all the possible
+ * value of a token.
+ * it is used as a digital clock.
+ * an impulse is made to the last digit and it increment
+ * its value, when it reach the maximum, it reset itself 
+ * and gives an impulse to the second to last digit.
+ * the impulse is propagated till the first digit so all
+ * the values are displayed as in a daytime from 00:00 to 23:59
+ */
+
+struct digit {
+   int n;
+   int cur;
+   u_char values[0xff];
+};
+
+/* 
+ * prepare the set of 4 digit to create an IP address
+ */
+
+static int expand_range_ip(char *str, void *target)
+{
+   struct digit ADDR[4];
+   struct ip_addr tmp;
+   struct in_addr ipaddr;
+   char *addr[4];
+   char parsed_ip[16];
+   char *p, *q;
+   int i = 0, j;
+   int permut = 1;
+   char *tok;
+
+   memset(&ADDR, 0, sizeof(ADDR));
+
+   p = str;
+
+   /* tokenize the ip into 4 slices */
+   while ((q = ec_strtok(p, ".", &tok)) ) {
+      addr[i++] = strdup(q);
+      /* reset p for the next strtok */
+      if (p != NULL) p = NULL;
+      if (i > 3) break;
+   }
+
+   if (i != 4)
+      FATAL_ERROR("Invalid IP format !!");
+
+   debug_msg("expand_range_ip -- [%s] [%s] [%s] [%s]", addr[0], addr[1], addr[2], addr[3]);
+
+   for (i = 0; i < 4; i++) {
+      p = addr[i];
+      if (expand_token(addr[i], 255, &add_ip, &ADDR[i]) == -EFATAL)
+         ui_fatal_error("Invalid port range");
+   }
+
+   /* count the free permutations */
+   for (i = 0; i < 4; i++)
+      permut *= ADDR[i].n;
+
+   /* give the impulses to the last digit */
+   for (i = 0; i < permut; i++) {
+
+      snprintf(parsed_ip, 16, "%d.%d.%d.%d",  ADDR[0].values[ADDR[0].cur],
+                                         ADDR[1].values[ADDR[1].cur],
+                                         ADDR[2].values[ADDR[2].cur],
+                                         ADDR[3].values[ADDR[3].cur]);
+
+      if (inet_aton(parsed_ip, &ipaddr) == 0)
+         FATAL_ERROR("Invalid IP address (%s)", parsed_ip);
+
+      ip_addr_init(&tmp, AF_INET,(u_char *)&ipaddr );
+      add_ip_list(&tmp, target);
+
+      /* give the impulse to the last octet */
+      ADDR[3].cur++;
+
+      /* adjust the other digits as in a digital clock */
+      for (j = 2; j >= 0; j--) {
+         if ( ADDR[j+1].cur >= ADDR[j+1].n  ) {
+            ADDR[j].cur++;
+            ADDR[j+1].cur = 0;
+         }
+      }
+   }
+
+   for (i = 0; i < 4; i++)
+      SAFE_FREE(addr[i]);
+
+   return ESUCCESS;
+}
+
+/* fill the digit structure with data */
+static void add_ip(void *digit, u_int n)
+{
+   struct digit *buf = digit;
+
+   buf->n++;
+   buf->values[buf->n - 1] = (u_char) n;
+}
 
 /*
  * return true if the packet conform to TARGET
@@ -159,7 +279,7 @@ int is_target_pck(struct log_header_packet *pck)
     * useless to parse the mac, ip and port
     */
 
-    if (!GBL_TARGET->proto || !strcasecmp(GBL_TARGET->proto, "all"))  
+    if (!GBL_TARGET->proto || !strcmp(GBL_TARGET->proto, "") || !strcasecmp(GBL_TARGET->proto, "all"))  
        proto = 1;
 
     if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "tcp") 
@@ -229,7 +349,7 @@ int is_target_info(struct host_profile *hst)
     * useless to parse the mac, ip and port
     */
 
-   if (!GBL_TARGET->proto || !strcasecmp(GBL_TARGET->proto, "all"))  
+   if (!GBL_TARGET->proto || !strcmp(GBL_TARGET->proto, "") || !strcasecmp(GBL_TARGET->proto, "all"))  
       proto = 1;
    
    /* all the ports are good */

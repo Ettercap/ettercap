@@ -35,9 +35,6 @@ EC_API_EXTERN void del_ip_list(struct ip_addr *ip, struct target_env *t);
 EC_API_EXTERN int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
 EC_API_EXTERN void add_ip_list(struct ip_addr *ip, struct target_env *t);
 EC_API_EXTERN void free_ip_list(struct target_env *t);
-EC_API_EXTERN void add_port(void *ports, u_int n);
-EC_API_EXTERN void add_ip(void *digit, u_int n);
-EC_API_EXTERN int expand_range_ip(char *str, void *target);
 
 #endif
 

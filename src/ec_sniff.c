@@ -35,6 +35,10 @@ static void set_interesting_flag(struct packet_object *po);
 
 void set_forwardable_flag(struct packet_object *po);
 
+static void add_port(void *ports, u_int n);
+static void add_ip(void *digit, u_int n);
+static int expand_range_ip(char *str, void *target);
+
 #ifdef WITH_IPV6
 static int expand_ipv6(char *str, struct target_env *target);
 #endif
@@ -390,7 +394,7 @@ int compile_target(char *string, struct target_env *target)
 /*
  * set the bit of the relative port 
  */
-void add_port(void *ports, u_int n)
+static void add_port(void *ports, u_int n)
 {
    u_int8 *bitmap = ports;
 
@@ -422,7 +426,7 @@ struct digit {
  * prepare the set of 4 digit to create an IP address
  */
 
-int expand_range_ip(char *str, void *target)
+static int expand_range_ip(char *str, void *target)
 {
    struct digit ADDR[4];
    struct ip_addr tmp;
@@ -508,7 +512,7 @@ static int expand_ipv6(char *str, struct target_env *target)
 #endif
 
 /* fill the digit structure with data */
-void add_ip(void *digit, u_int n)
+static void add_ip(void *digit, u_int n)
 {
    struct digit *buf = digit;
    

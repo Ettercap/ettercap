@@ -136,20 +136,13 @@ void build_hosts_list(void)
    /* delete the previous list */
    del_hosts_list();
 
-#ifdef OS_MINGW
-   /* FIXME: for some reason under windows it does not work in thread mode
-    * to be investigated...
-    */
-	scan_thread(NULL);
-#else
    /* check the type of UI we are running under... */
    if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
-      /* in text mode and demonized call the function directly */
+      /* in text mode and daemonized call the function directly */
       scan_thread(NULL);
    else 
       /* do the scan in a separate thread */
       ec_thread_new("scan", "scanning thread", &scan_thread, NULL);
-#endif
 }
 
 /*

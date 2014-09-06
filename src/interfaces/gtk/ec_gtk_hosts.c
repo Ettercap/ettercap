@@ -56,9 +56,6 @@ void toggle_ip6scan(void)
  */
 void gtkui_scan(void)
 {
-   /* wipe the current list */
-   del_hosts_list();
-
    /* no target defined...  force a full scan */
    if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip &&
        GBL_TARGET1->all_ip6 && GBL_TARGET2->all_ip6 &&

@@ -27,6 +27,7 @@
 #include <ec_resolv.h>
 #include <ec_file.h>
 #include <ec_sleep.h>
+#include <ec_capture.h>
 
 #include <pthread.h>
 #include <pcap.h>
@@ -34,10 +35,24 @@
 
 /* globals */
 static pthread_mutex_t scan_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define SCAN_LOCK     do{ if (pthread_mutex_trylock(&scan_mutex)) { \
-                             ec_thread_destroy(pid); return NULL;} \
-                      } while(0)
-#define SCAN_UNLOCK   do{ pthread_mutex_unlock(&scan_mutex); } while(0)
+/*
+ * SCAN_{LOCK,UNLOCK} and SCANUI_{LOCK,UNLOCK} are two macros
+ * that handles the SAME mutex "scan_mutex".
+ * They are intended to cancel threads that are not getting
+ * the lock (Pressing Crtl+S multiple times while scanning).
+ * They are split because the lock is used in different functions
+ * of different types (void/void*).
+ */
+#define SCAN_LOCK do{ if (pthread_mutex_trylock(&scan_mutex)) { \
+ ec_thread_exit(); return NULL;} \
+ } while(0)
+#define SCAN_UNLOCK do{ pthread_mutex_unlock(&scan_mutex); } while(0)
+
+#define SCANUI_LOCK do{ if (pthread_mutex_trylock(&scan_mutex)) { \
+ return; } \
+ } while (0)
+
+#define SCANUI_UNLOCK SCAN_UNLOCK
 
 #define EC_CHECK_LIBNET_VERSION(major,minor)   \
    (LIBNET_VERSION_MAJOR > (major) ||          \
@@ -53,11 +68,11 @@ static struct ip_list **rand_array;
 void build_hosts_list(void);
 void del_hosts_list(void);
 
-static void scan_netmask(pthread_t pid);
+static void scan_netmask();
 #ifdef WITH_IPV6
-static void scan_ip6_onlink(pthread_t pid);
+static void scan_ip6_onlink();
 #endif
-static void scan_targets(pthread_t pid);
+static void scan_targets();
 
 int scan_load_hosts(char *filename);
 int scan_save_hosts(char *filename);
@@ -67,9 +82,7 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name);
 static void random_list(struct ip_list *e, int max);
 
 static void get_response(struct packet_object *po);
-static EC_THREAD_FUNC(capture_scan);
 static EC_THREAD_FUNC(scan_thread);
-static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt);
 
 void __init hook_init(void);
 static void hosts_list_hook(struct packet_object *po);
@@ -123,20 +136,13 @@ void build_hosts_list(void)
    /* delete the previous list */
    del_hosts_list();
 
-#ifdef OS_MINGW
-   /* FIXME: for some reason under windows it does not work in thread mode
-    * to be investigated...
-    */
-	scan_thread(NULL);
-#else
    /* check the type of UI we are running under... */
-   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE || GBL_UI->type == UI_CURSES)
-      /* in text mode and demonized call the function directly */
+   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
+      /* in text mode and daemonized call the function directly */
       scan_thread(NULL);
    else 
       /* do the scan in a separate thread */
       ec_thread_new("scan", "scanning thread", &scan_thread, NULL);
-#endif
 }
 
 /*
@@ -144,7 +150,6 @@ void build_hosts_list(void)
  */
 static EC_THREAD_FUNC(scan_thread)
 {
-   pthread_t pid;
    struct hosts_list *hl;
    int i = 1, ret;
    int nhosts = 0;
@@ -156,7 +161,7 @@ static EC_THREAD_FUNC(scan_thread)
    DEBUG_MSG("scan_thread");
 
    /* in text mode and demonized this function should NOT be a thread */
-   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE || GBL_UI->type == UI_CURSES)
+   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
       threadize = 0;
 
 #ifdef OS_MINGW
@@ -170,6 +175,13 @@ static EC_THREAD_FUNC(scan_thread)
    if (threadize)
       ec_thread_init();
 
+   /* Only one thread is allowed to scan at a time */
+   SCAN_LOCK;
+
+   /* if sniffing is not yet started we need a decoder for the ARP/ND replies */
+   if (!GBL_SNIFF->active)
+      capture_start(GBL_IFACE);
+
    /*
     * create a simple decode thread, it will call
     * the right HOOK POINT. so we only have to hook to
@@ -181,10 +193,6 @@ static EC_THREAD_FUNC(scan_thread)
    hook_add(HOOK_PACKET_ICMP6_RPLY, &get_response);
    hook_add(HOOK_PACKET_ICMP6_PARM, &get_response);
 #endif
-   pid = ec_thread_new("scan_cap", "decoder module while scanning", &capture_scan, NULL);
-
-   /* Only one thread is allowed to scan at a time */
-   SCAN_LOCK;
 
    /*
     * if at least one ip target is ANY, scan the whole netmask
@@ -195,13 +203,13 @@ static EC_THREAD_FUNC(scan_thread)
     * FIXME: ipv4 host gets scanned twice if in target list
     */
    if(GBL_TARGET1->all_ip || GBL_TARGET2->all_ip) {
-      scan_netmask(pid);
+      scan_netmask();
 #ifdef WITH_IPV6
       if (GBL_OPTIONS->ip6scan) 
-          scan_ip6_onlink(pid);
+          scan_ip6_onlink();
 #endif
    }
-   scan_targets(pid);
+   scan_targets();
 
    /*
     * free the temporary array for random computations
@@ -215,17 +223,20 @@ static EC_THREAD_FUNC(scan_thread)
     */
    ec_usleep(SEC2MICRO(1));
 
-   /* Unlock Mutex */
-   SCAN_UNLOCK;
-
-   /* destroy the thread and remove the hook function */
-   ec_thread_destroy(pid);
+   /* remove the hooks for parsing the ARP/ND packets during scan */
    hook_del(HOOK_PACKET_ARP, &get_response);
 #ifdef WITH_IPV6
    hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
    hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
    hook_del(HOOK_PACKET_ICMP6_PARM, &get_response);
 #endif
+
+   /* if sniffing is not started we have to stop the decoder after scan */
+   if (!GBL_SNIFF->active)
+      capture_stop(GBL_IFACE);
+
+   /* Unlock Mutex */
+   SCAN_UNLOCK;
 
    /* count the hosts and print the message */
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
@@ -289,77 +300,16 @@ void del_hosts_list(void)
 {
    struct hosts_list *hl, *tmp = NULL;
 
+   SCANUI_LOCK;
+
    LIST_FOREACH_SAFE(hl, &GBL_HOSTLIST, next, tmp) {
       SAFE_FREE(hl->hostname);
       LIST_REMOVE(hl, next);
       SAFE_FREE(hl);
    }
+
+   SCANUI_UNLOCK;
 }
-
-
-/*
- * capture the packets and call the HOOK POINT
- */
-static EC_THREAD_FUNC(capture_scan)
-{
-   DEBUG_MSG("capture_scan");
-
-   ec_thread_init();
-
-   pcap_loop(GBL_IFACE->pcap, -1, scan_decode, EC_THREAD_PARAM);
-
-   return NULL;
-}
-
-
-/*
- * parses the POs and executes the HOOK POINTs
- */
-static void scan_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pkt)
-{
-   FUNC_DECODER_PTR(packet_decoder);
-   struct packet_object po;
-   u_int len;
-   u_char *data;
-   u_int datalen;
-
-   /* variable not used */
-   (void) param;
-
-   CANCELLATION_POINT();
-
-   /* extract data and datalen from pcap packet */
-   data = (u_char *)pkt;
-   datalen = pkthdr->caplen;
-
-   /* alloc the packet object structure to be passet through decoders */
-   packet_create_object(&po, data, datalen);
-
-   /* set the po timestamp */
-   memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
-
-   /*
-    * in this special parsing, the packet must be ignored by
-    * application layer, leave this untouched.
-    */
-   po.flags |= PO_DONT_DISSECT;
-
-   /*
-    * start the analysis through the decoders stack
-    * after this fuction the packet is completed (all flags set)
-    */
-   packet_decoder = get_decoder(LINK_LAYER, GBL_PCAP->dlt);
-   BUG_IF(packet_decoder == NULL);
-   packet_decoder(data, datalen, &len, &po);
-
-   /* free the structure */
-   packet_destroy_object(&po);
-
-   CANCELLATION_POINT();
-
-   return;
-}
-
 
 /*
  * receives the ARP and ICMPv6 ND packets 
@@ -415,7 +365,7 @@ static void get_response(struct packet_object *po)
 /*
  * scan the netmask to find all hosts
  */
-static void scan_netmask(pthread_t pid)
+static void scan_netmask(void)
 {
    u_int32 netmask, current, myip;
    int nhosts, i, ret;
@@ -464,14 +414,17 @@ static void scan_netmask(pthread_t pid)
       /* user has requested to stop the task */
       if (ret == UI_PROGRESS_INTERRUPTED) {
          INSTANT_USER_MSG("Scan interrupted by user. Partial results may have been recorded...\n");
-         /* destroy the capture thread and remove the hook function */
-         ec_thread_destroy(pid);
+         /* stop the capture thread if sniffing is not active */
+         if (!GBL_SNIFF->active)
+            capture_stop(GBL_IFACE);
+
          hook_del(HOOK_PACKET_ARP, &get_response);
          /* delete the temporary list */
          LIST_FOREACH_SAFE(e, &ip_list_head, next, tmp) {
             LIST_REMOVE(e, next);
             SAFE_FREE(e);
          }
+         SCAN_UNLOCK;
          /* cancel the scan thread */
          ec_thread_exit();
       }
@@ -495,7 +448,7 @@ static void scan_netmask(pthread_t pid)
 /*
  * probe active IPv6 hosts
  */
-static void scan_ip6_onlink(pthread_t pid)
+static void scan_ip6_onlink(void)
 {
    int ret, i = 0;
    struct net_list *e;
@@ -534,10 +487,15 @@ static void scan_ip6_onlink(pthread_t pid)
 
       /* user has requested to stop the task */
       if (ret == UI_PROGRESS_INTERRUPTED) {
-         ec_thread_destroy(pid);
+         INSTANT_USER_MSG("Scan interrupted by user. Partial results may have been recorded...\n");
+         /* stop the capture thread if sniffing is not active */
+         if (!GBL_SNIFF->active)
+            capture_stop(GBL_IFACE);
+
          hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
          hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
          hook_del(HOOK_PACKET_ICMP6_PARM, &get_response);
+         SCAN_UNLOCK;
          /* cancel the scan thread */
          ec_thread_exit();
       }
@@ -552,7 +510,7 @@ static void scan_ip6_onlink(pthread_t pid)
 /*
  * scan only the target hosts
  */
-static void scan_targets(pthread_t pid)
+static void scan_targets(void)
 {
    int nhosts = 0, found, n = 1, ret;
    struct ip_list *e, *i, *m, *tmp;
@@ -670,8 +628,10 @@ static void scan_targets(pthread_t pid)
       /* user has requested to stop the task */
       if (ret == UI_PROGRESS_INTERRUPTED) {
          INSTANT_USER_MSG("Scan interrupted by user. Partial results may have been recorded...\n");
-         /* destroy the capture thread and remove the hook function */
-         ec_thread_destroy(pid);
+         /* stop the capture thread if sniffing is not active */
+         if (!GBL_SNIFF->active)
+            capture_stop(GBL_IFACE);
+
          hook_del(HOOK_PACKET_ARP, &get_response);
 #ifdef WITH_IPV6
          hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
@@ -683,6 +643,7 @@ static void scan_targets(pthread_t pid)
             LIST_REMOVE(e, next);
             SAFE_FREE(e);
          }
+         SCAN_UNLOCK;
          /* cancel the scan thread */
          ec_thread_exit();
       }

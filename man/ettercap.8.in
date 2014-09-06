@@ -1,4 +1,4 @@
-.\"  ettercap \-\- a multipurpose sniffer/interceptor utility
+.\"  ettercap -- a multipurpose sniffer/interceptor utility
 .\"
 .\"  This program is free software; you can redistribute it and/or modify
 .\"  it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
 .\"
 .\"  You should have received a copy of the GNU General Public License
 .\"  along with this program; if not, write to the Free Software
-.\"  Foundation, Inc., 59 Temple Place \- Suite 330, Boston, MA 02111\-1307, USA.
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
 .de Sp
 .if n .sp
@@ -20,7 +20,7 @@
 ..
 .TH ETTERCAP "8" "" "ettercap @VERSION@"
 .SH NAME
-ettercap \- multipurpose sniffer/content filter for man in the middle attacks
+ettercap - multipurpose sniffer/content filter for man in the middle attacks
 
 .SH ***** IMPORTANT NOTE ******
 Since ettercap NG (formerly 0.7.0), all the options have been changed. Even the target
@@ -45,7 +45,7 @@ where IPs and PORTs can be ranges (e.g. /192.168.0.1\-30,40,50/20,22,25)
 .SH DESCRIPTION
 Ettercap was born as a sniffer for switched LAN (and obviously even "hubbed" ones),
 but during the development process it has gained more and more features that have
-changed it to a powerful and flexible tool for man\-in\-the\-middle attacks.
+changed it to a powerful and flexible tool for man-in-the-middle attacks.
 It supports active and passive dissection of many protocols (even ciphered ones)
 and includes many features for network and host analysis (such as OS fingerprint).
 .PP
@@ -84,7 +84,7 @@ The most relevant ettercap features are:
 .PP
 .B SSH1 support :
 you can sniff User and Pass, and even the data of an SSH1 connection. ettercap is the
-first software capable to sniff an SSH connection in FULL\-DUPLEX
+first software capable to sniff an SSH connection in FULL-DUPLEX
 .PP
 .B SSL support :
 you can sniff SSL secured data... a fake certificate is presented to the client and
@@ -102,9 +102,9 @@ whatever you want (see etterfilter(8)).
 .PP
 .B Remote traffic sniffing through tunnels and route mangling:
 You can play with linux cooked interfaces or use the integrated plugin to sniff
-tunneled or route\-mangled remote connections and perform mitm attacks on them.
+tunneled or route-mangled remote connections and perform mitm attacks on them.
 .PP
-.B Plug\-ins support :
+.B Plug-ins support :
 You can create your own plugin using the ettercap's API.
 .PP
 .B Password collector for :
@@ -122,7 +122,7 @@ from the connections list you can kill all the connections you want
 
 .SH TARGET SPECIFICATION
 There is no concept of SOURCE nor DEST. The two targets are intended to filter
-traffic coming from one to the other and vice\-versa (since the connection is
+traffic coming from one to the other and vice-versa (since the connection is
 bidirectional).
 .PP
 \fITARGET\fR is in the form \fIMAC/IPs/PORTs\fR. 
@@ -174,11 +174,11 @@ the subnet".
 .SH PRIVILEGES DROPPING
 ettercap needs root privileges to open the Link Layer sockets. After the
 initialization phase, the root privs are not needed anymore, so ettercap drops
-them to UID \= 65535 (nobody). Since ettercap has to write (create) log files,
+them to UID = 65535 (nobody). Since ettercap has to write (create) log files,
 it must be executed in a directory with the right permissions (e.g. /tmp/). If
 you want to drop privs to a different uid, you can export the environment
 variable EC_UID with the value of the uid you want to drop the privs to (e.g.
-export EC_UID\=500) or set the correct parameter in the etter.conf file.
+export EC_UID=500) or set the correct parameter in the etter.conf file.
 
 
 .SH SSL MITM ATTACK
@@ -224,7 +224,7 @@ You have full control of what ettercap should receive. You can use the internal
 mitm attacks, set the interface in promisc mode, use plugins or use every
 method you want.
 .Sp
-IMPORTANT NOTE: if you run ettercap on a gateway, remember to re\-enable the
+IMPORTANT NOTE: if you run ettercap on a gateway, remember to re-enable the
 ip_forwarding after you have killed ettercap. Since ettercap drops its
 privileges, it cannot restore the ip_forwarding for you.
 .TP
@@ -292,7 +292,7 @@ poisoned clients will not be able to navigate the Internet.
 This attack implements ICMP redirection. It sends a spoofed icmp redirect
 message to the hosts in the lan pretending to be a better route for internet. All
 connections to internet will be redirected to the attacker which, in turn,
-will forward them to the real gateway. The resulting attack is a HALF\-DUPLEX
+will forward them to the real gateway. The resulting attack is a HALF-DUPLEX
 mitm. Only the client is redirected, since the gateway will not accept redirect
 messages for a directly connected network. BE SURE TO NOT USE FILTERS THAT
 MODIFY THE PAYLOAD LENGTH. you can use a filter to modify packets, but the length
@@ -319,7 +319,7 @@ to win the race condition with the real one to force the client to accept
 the attacker's reply. This way ettercap is able to manipulate the GW parameter and
 hijack all the outgoing traffic generated by the clients.
 .br
-The resulting attack is a HALF\-DUPLEX mitm. So be sure to use appropriate
+The resulting attack is a HALF-DUPLEX mitm. So be sure to use appropriate
 filters (see above in the ICMP section).
 .Sp
 You have to pass the ip pool to be used, the netmask and the ip of the dns server.
@@ -369,8 +369,8 @@ by the attacker, winning the race condition with the real port owner.
 When the attacker receives packets for "stolen" hosts, it stops the flooding
 process and performs an ARP request for the real destination of the packet.
 When it receives the ARP reply it's sure that the victim has "taken back" his
-port, so ettercap can re\-send the packet to the destination as is.
-Now we can re\-start the flooding process waiting for new packets.
+port, so ettercap can re-send the packet to the destination as is.
+Now we can re-start the flooding process waiting for new packets.
 .Sp
 If you use the "tree" option, the destination MAC address of each stealing
 packet will be a bogus one, so these packets will be propagated to other
@@ -387,7 +387,7 @@ You can perform either HALF or FULL DUPLEX mitm according to target selection.
 NOTE: Use this mitm method only on ethernet switches. Use it carefully,
 it could produce performances loss or general havoc.
 .Sp
-NOTE: You can NOT use this method in only\-mitm mode (\-o flag), because it
+NOTE: You can NOT use this method in only-mitm mode (\-o flag), because it
 hooks the sniffing engine, and you can't use interactive data injection.
 .Sp
 NOTE: It could be dangerous to use it in conjunction with other mitm methods.
@@ -416,7 +416,10 @@ You will intercept and visualize all the traffic for 10.0.0.1.
 This MITM method is only supported if IPv6 support has been enabled.
 .Sp
 This method implements the NDP poisoning attack which is used for MITM of 
-IPv6 connections. ND requests/replies are sent to the victims to poison their neighbor cache. Once the cache has been poisoned the victims will send all IPv6 packets to the attacker which, in turn, can modify and forward them to the real destination.
+IPv6 connections. ND requests/replies are sent to the victims to poison 
+their neighbor cache. Once the cache has been poisoned the victims will send 
+all IPv6 packets to the attacker which, in turn, can modify and forward them 
+to the real destination.
 .Sp
 In silent mode (\-z option) only the first target is selected, if you want to
 poison multiple target in silent mode use the \-j option to load a list from a
@@ -512,7 +515,7 @@ can analyze them with other tools.
 .Sp
 TIP: you can use the \-w option in conjunction with the \-r one. This way you
 will be able to filter the payload of the dumped packets or decrypt
-WEP\-encrypted WiFi traffic and dump them to another file.
+WEP-encrypted WiFi traffic and dump them to another file.
 
 
 .TP
@@ -583,7 +586,7 @@ Tells Ettercap to process packets coming from Broadcast address.
 .TP
 \fB\-i\fR, \fB\-\-iface <IFACE>\fR
 Use this <IFACE> instead of the default one. The interface can be unconfigured
-(requires libnet >\= 1.1.2), but in this case you cannot use MITM attacks and
+(requires libnet >= 1.1.2), but in this case you cannot use MITM attacks and
 you should set the unoffensive flag.
 
 .TP
@@ -614,7 +617,7 @@ selected TARGET.
 
 .TP
 \fB\-t\fR, \fB\-\-proto <PROTO>\fR
-Sniff only PROTO packets (default is TCP \+ UDP).
+Sniff only PROTO packets (default is TCP + UDP).
 .br
 This is useful if you want to select a port via the TARGET specification but
 you want to differentiate between tcp or udp.
@@ -724,8 +727,8 @@ You can specify a key to decrypt WiFi packets (WEP or WPA). Only the packets dec
 successfully will be passed to the decoders stack, the others will be skipped
 with a message.
 .br
-The parameter has the following syntax: type:bits:t:string. Where 'type' can be: wep, wpa\-pws
-or wpa\-psk, 'bits' is the bit length of the key (64, 128 or 256), 't' is the type of the string
+The parameter has the following syntax: type:bits:t:string. Where 'type' can be: wep, wpa-pws
+or wpa-psk, 'bits' is the bit length of the key (64, 128 or 256), 't' is the type of the string
 ('s' for string and 'p' for passphrase). 'string' can be a string or an escaped hex sequences.
 .Sp
 example:
@@ -815,7 +818,7 @@ This is the title, but the following will not be displayed.
 
 .TP
 \fButf8\fR
-Print the packets in UTF\-8 format. The encoding used while performing the
+Print the packets in UTF-8 format. The encoding used while performing the
 conversion is declared in the etter.conf(5) file.
 
 .RE
@@ -863,21 +866,21 @@ ettercap \-TzQP finger /192.168.0.1/22
 \fB\-L\fR, \fB\-\-log <LOGFILE>\fR
 Log all the packets to binary files. These files can be parsed by etterlog(8) to
 extract human readable data. With this option, all packets sniffed by ettercap
-will be logged, together with all the passive info (host info \+ user & pass) it can
+will be logged, together with all the passive info (host info + user & pass) it can
 collect. Given a LOGFILE, ettercap will create LOGFILE.ecp (for packets) and
 LOGFILE.eci (for the infos).
 .Sp
 NOTE: if you specify this option on command line you don't have to take care of
 privileges since the log file is opened in the startup phase (with high
 privs). But if you enable the log option while ettercap is already started, you
-have to be in a directory where uid \= 65535 or uid \= EC_UID can write.
+have to be in a directory where uid = 65535 or uid = EC_UID can write.
 .Sp
 NOTE: the logfiles can be compressed with the deflate algorithm using the \-c
 option.
 
 .TP
 \fB\-l\fR, \fB\-\-log\-info <LOGFILE>\fR
-Very similar to \-L but it logs only passive information \+ users and passwords
+Very similar to \-L but it logs only passive information + users and passwords
 for each host. The file will be named LOGFILE.eci
 
 .TP
@@ -1040,16 +1043,16 @@ Our software never has bugs.
 .br
 It just develops random features.   ;)
 .PP
-.B KNOWN\-BUGS
+.B KNOWN-BUGS
 .PP
-\- ettercap doesn't handle fragmented packets... only the first segment
+- ettercap doesn't handle fragmented packets... only the first segment
 will be displayed by the sniffer. However all the fragments are correctly
 forwarded.
 .PP
-\+ please send bug\-report, patches or suggestions to <ettercap\-betatesting@lists.sourceforge.net>
++ please send bug-report, patches or suggestions to <ettercap\-betatesting@lists.sourceforge.net>
 or visit https://github.com/Ettercap/ettercap/issues.
 .PP
-\+ to report a bug, follow the instructions in the README.BUGS file
++ to report a bug, follow the instructions in the README.BUGS file
 
 
 .SH PHILOLOGICAL HISTORY
@@ -1071,5 +1074,5 @@ monsters have a powerful poison... and you know, arp poisoning... ;)
 
 .SH Last words
 "Programming today is a race between software engineers striving to build
-bigger and better idiot\-proof programs, and the Universe trying to produce
-bigger and better idiots. So far, the Universe is winning." \- Rich Cook
+bigger and better idiot-proof programs, and the Universe trying to produce
+bigger and better idiots. So far, the Universe is winning." - Rich Cook

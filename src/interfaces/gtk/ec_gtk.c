@@ -1600,6 +1600,43 @@ void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
    gtk_text_buffer_insert(textbuf, &iter, unicode, -1);
 }
 
+/*
+ * Callback for g_timeout_add() to resolve a IP to name asyncronously
+ * if the name is not already in the cache, host_iptoa
+ * immediately returns but starts the resolution process
+ * in the background. 
+ * This function periodically recalls this host_iptoa until
+ * a result in available in the cache and updates the widget.
+ * TODO support handling for different widget types.
+ */
+gboolean gtkui_iptoa_deferred(gpointer data)
+{
+   struct resolv_object *ro;
+   char name[MAX_HOSTNAME_LEN];
+   ro = (struct resolv_object *)data;
+
+   DEBUG_MSG("gtkui_iptoa_deferred");
+
+   if (host_iptoa(ro->ip, name) == E_SUCCESS) {
+      /* 
+       * Name has now been resolved in the background
+       * Set the widget text and destroy the timer
+       */
+      gtk_label_set_text(GTK_LABEL(ro->widget), name);
+      
+      /* Free allocated memory */
+      SAFE_FREE(ro);
+
+      /* destroy timer */
+      return FALSE;
+   }
+   else  {
+      /* Keep trying */
+      return TRUE;
+   }
+}
+
+
 /* hitting "Enter" keyy in a combo box does the same as clicking OK button */
 gboolean gtkui_combo_enter(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {

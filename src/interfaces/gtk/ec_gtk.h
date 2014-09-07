@@ -17,6 +17,12 @@ struct gtk_conf_entry {
    short value;
 };
 
+struct resolv_object {
+   /* Widget to be updated */
+   GtkWidget *widget;
+   struct ip_addr *ip;
+};
+
 /* ec_gtk.c */
 extern GtkWidget *window;  /* main window */
 extern GtkWidget *notebook;
@@ -37,6 +43,7 @@ extern void gtkui_sniff_live(void);
 
 extern GtkTextBuffer *gtkui_details_window(char *title);
 extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
+extern gboolean gtkui_iptoa_deferred(gpointer data);
 extern gboolean gtkui_combo_enter(GtkWidget *widget, GdkEventKey *event, gpointer data);
 extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 extern gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);

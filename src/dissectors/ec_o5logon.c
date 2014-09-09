@@ -66,7 +66,7 @@ FUNC_DECODER(dissector_o5logon)
 
    //suppress unused warning
    (void)end;
-   (void) DECODE_DATA; 
+   (void) DECODE_DATA;
    (void) DECODE_DATALEN;
    (void) DECODED_LEN;
 
@@ -108,6 +108,21 @@ FUNC_DECODER(dissector_o5logon)
 
             /* save the session */
             session_put(s);
+         }
+      }
+      else {
+         /* try to deal with stealth mode scans in which client stops talking
+          * after receiving AUTH_VFR_DATA */
+         conn_status = (struct o5logon_status *) s->data;
+         if (conn_status->status == WAIT_RESULT) {
+            /* is client trying to continue the authentication dance? */
+            unsigned char *cont = NULL;
+            if (PACKET->DATA.len > 12) {
+               cont = memmem(ptr, PACKET->DATA.len, "AUTH_SESSKEY", 12);
+            }
+            if (!cont) { /* seems like a fresh authentication attempt */
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_o5logon));
+            }
          }
       }
    } else {

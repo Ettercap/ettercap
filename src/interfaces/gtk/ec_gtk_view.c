@@ -80,6 +80,9 @@ void toggle_resolve(void)
          continue;
       host_iptoa(&hl->ip, name);
    }
+
+   /* actually refresh the host list */
+   GBL_UI->update(UI_UPDATE_HOSTLIST);
 }
 
 /*

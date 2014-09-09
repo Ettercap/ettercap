@@ -142,11 +142,12 @@ void gtkui_show_profiles(void)
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show_all(hbox);
 
-   gtk_widget_show(profiles_window);
-
    /* refresh the stats window every 1000 ms */
    /* GTK has a gtk_idle_add also but it calls too much and uses 100% cpu */
    profiles_idle = g_timeout_add(1000, refresh_profiles, NULL);
+
+   gtk_widget_show(profiles_window);
+
 }
 
 static void gtkui_profiles_detach(GtkWidget *child)
@@ -189,6 +190,7 @@ static gboolean refresh_profiles(gpointer data)
    struct open_port *o;
    struct active_user *u;
    char tmp[MAX_ASCII_ADDR_LEN];
+   char name[MAX_HOSTNAME_LEN];
    int found = 0;
 
    /* variable not used */
@@ -217,6 +219,29 @@ static gboolean refresh_profiles(gpointer data)
             }
 
             gtk_list_store_set (ls_profiles, &iter, 0, (found)?"X":" ", -1);
+
+            /* check if we have to update the hostname */
+            if (strcmp(hcurr->hostname,"")) {
+               gtk_list_store_set(ls_profiles, &iter, 2, hcurr->hostname, -1);
+            } else {
+               /* resolve the hostname (using the cache) */
+               if (host_iptoa(&hcurr->L3_addr, name) == -E_NOMATCH) {
+                  gtk_list_store_set(ls_profiles, &iter, 2, "resolving...", -1);
+                  struct resolv_object *ro;
+                  SAFE_CALLOC(ro, 1, sizeof(struct resolv_object));
+                  ro->type = GTK_TYPE_LIST_STORE; 
+                  ro->liststore = GTK_LIST_STORE(ls_profiles);
+                  ro->treeiter = iter;
+                  ro->column = 2;
+                  ro->ip = &hcurr->L3_addr;
+                  g_timeout_add(1000, gtkui_iptoa_deferred, ro);
+               }
+               else {
+                  strncpy(hcurr->hostname, name, MAX_HOSTNAME_LEN);
+                  gtk_list_store_set(ls_profiles, &iter, 2, hcurr->hostname, -1);
+               }
+            }
+
             break;
          }
          gotiter = gtk_tree_model_iter_next(model, &iter);
@@ -240,8 +265,29 @@ static gboolean refresh_profiles(gpointer data)
       gtk_list_store_set (ls_profiles, &iter, 
                           0, (found)?"X":" ",
                           1, ip_addr_ntoa(&hcurr->L3_addr, tmp), 
-                          2, (hcurr->hostname) ? hcurr->hostname : "",
                           3, hcurr, -1);
+
+      /* treat hostname resolution differently due to async processing */
+      if (strcmp(hcurr->hostname,"")) {
+         gtk_list_store_set(ls_profiles, &iter, 2, hcurr->hostname, -1);
+      } else {
+         /* resolve the hostname (using the cache) */
+         if (host_iptoa(&hcurr->L3_addr, name) == -E_NOMATCH) {
+            gtk_list_store_set(ls_profiles, &iter, 2, "resolving...", -1);
+            struct resolv_object *ro;
+            SAFE_CALLOC(ro, 1, sizeof(struct resolv_object));
+            ro->type = GTK_TYPE_LIST_STORE; 
+            ro->liststore = GTK_LIST_STORE(ls_profiles);
+            ro->treeiter = iter;
+            ro->column = 2;
+            ro->ip = &hcurr->L3_addr;
+            g_timeout_add(1000, gtkui_iptoa_deferred, ro);
+         }
+         else {
+            strncpy(hcurr->hostname, name, MAX_HOSTNAME_LEN);
+            gtk_list_store_set(ls_profiles, &iter, 2, hcurr->hostname, -1);
+         }
+      }
    }
 
    return TRUE;

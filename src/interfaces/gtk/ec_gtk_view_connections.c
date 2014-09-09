@@ -733,6 +733,7 @@ static void gtkui_connection_detail(void)
       /* IP not yet resolved - keep trying asyncronously */
       struct resolv_object *ro;
       SAFE_CALLOC(ro, 1, sizeof(struct resolv_object));
+      ro->type = GTK_TYPE_LABEL;
       ro->widget = label;
       ro->ip = &c->co->L3_addr1;
       detail_timer1 = g_timeout_add(1000, gtkui_iptoa_deferred, ro);
@@ -758,6 +759,7 @@ static void gtkui_connection_detail(void)
       /* IP not yet resolved - keep trying asyncronously */
       struct resolv_object *ro;
       SAFE_CALLOC(ro, 1, sizeof(struct resolv_object));
+      ro->type = GTK_TYPE_LABEL;
       ro->widget = label;
       ro->ip = &c->co->L3_addr2;
       detail_timer2 = g_timeout_add(1000, gtkui_iptoa_deferred, ro);

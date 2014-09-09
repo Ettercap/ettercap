@@ -366,8 +366,19 @@ gboolean gtkui_refresh_host_list(gpointer data)
          gtk_list_store_set (liststore, &iter, 2, hl->hostname, -1);
       } else {
          /* resolve the hostname (using the cache) */
-         host_iptoa(&hl->ip, name);
-         gtk_list_store_set (liststore, &iter, 2, name, -1);
+         if(host_iptoa(&hl->ip, name) == -E_NOMATCH) {
+            gtk_list_store_set(liststore, &iter, 2, "resolving...", -1);
+            struct resolv_object *ro;
+            SAFE_CALLOC(ro, 1, sizeof(struct resolv_object));
+            ro->type = GTK_TYPE_LIST_STORE;
+            ro->liststore = GTK_LIST_STORE(liststore);
+            ro->treeiter = iter;
+            ro->column = 2;
+            ro->ip = &hl->ip;
+            g_timeout_add(1000, gtkui_iptoa_deferred, ro);
+         }
+         else
+            gtk_list_store_set (liststore, &iter, 2, name, -1);
       }
    }
 

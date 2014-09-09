@@ -18,8 +18,16 @@ struct gtk_conf_entry {
 };
 
 struct resolv_object {
+   /* Widget type to be updated */
+   GType type;
    /* Widget to be updated */
    GtkWidget *widget;
+   /* List Stores are not of type GtkWidget */
+   GtkListStore *liststore;
+   /* some attributes needed to update the widget */
+   GtkTreeIter treeiter;
+   guint column;
+   /* The IP address to resolve */
    struct ip_addr *ip;
 };
 

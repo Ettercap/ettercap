@@ -1607,7 +1607,6 @@ void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
  * in the background. 
  * This function periodically recalls this host_iptoa until
  * a result in available in the cache and updates the widget.
- * TODO support handling for different widget types.
  */
 gboolean gtkui_iptoa_deferred(gpointer data)
 {
@@ -1622,7 +1621,11 @@ gboolean gtkui_iptoa_deferred(gpointer data)
        * Name has now been resolved in the background
        * Set the widget text and destroy the timer
        */
-      gtk_label_set_text(GTK_LABEL(ro->widget), name);
+      if (ro->type == GTK_TYPE_LABEL)
+            gtk_label_set_text(GTK_LABEL(ro->widget), name);
+      else if (ro->type == GTK_TYPE_LIST_STORE)
+            gtk_list_store_set(GTK_LIST_STORE(ro->liststore), 
+                  &ro->treeiter, ro->column, name, -1);
       
       /* Free allocated memory */
       SAFE_FREE(ro);

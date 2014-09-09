@@ -1,4 +1,4 @@
-.\"  ettercap \-\- a multipurpose sniffer/interceptor utility
+.\"  ettercap -- a multipurpose sniffer/interceptor utility
 .\"
 .\"  This program is free software; you can redistribute it and/or modify
 .\"  it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
 .\"
 .\"  You should have received a copy of the GNU General Public License
 .\"  along with this program; if not, write to the Free Software
-.\"  Foundation, Inc., 59 Temple Place \- Suite 330, Boston, MA 02111\-1307, USA.
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 .\"
 .de Sp
 .if n .sp
@@ -20,7 +20,7 @@
 ..
 .TH ETTERCAP "8" "" "ettercap @VERSION@"
 .SH NAME
-ettercap\-pkexec \- graphical pkexec\-based launcher for ettercap
+ettercap\-pkexec - graphical pkexec-based launcher for ettercap
 
 .br
 This launcher depends on policykit\-1 and the menu packages, and basically wraps the
@@ -103,13 +103,13 @@ Our software never has bugs.
 .br
 It just develops random features.   ;)
 .PP
-.B KNOWN\-BUGS
+.B KNOWN-BUGS
 .PP
-\- ettercap doesn't handle fragmented packets... only the first segment
+- ettercap doesn't handle fragmented packets... only the first segment
 will be displayed by the sniffer. However all the fragments are correctly
 forwarded.
 .PP
-+ please send bug\-report, patches or suggestions to <ettercap\-betatesting@lists.sourceforge.net>
++ please send bug-report, patches or suggestions to <ettercap\-betatesting@lists.sourceforge.net>
 or visit https://github.com/Ettercap/ettercap/issues.
 .PP
 + to report a bug, follow the instructions in the README.BUGS file
@@ -134,5 +134,5 @@ monsters have a powerful poison... and you know, arp poisoning... ;)
 
 .SH Last words
 "Programming today is a race between software engineers striving to build
-bigger and better idiot\-proof programs, and the Universe trying to produce
-bigger and better idiots. So far, the Universe is winning." \- Rich Cook
+bigger and better idiot-proof programs, and the Universe trying to produce
+bigger and better idiots. So far, the Universe is winning." - Rich Cook

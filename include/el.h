@@ -37,6 +37,7 @@
 #include <ec_profiles.h>
 #include <ec_strings.h>
 #include <ec_utils.h>
+#include <ec_sniff.h>
 #include <zlib.h>
 #include <regex.h>
 
@@ -67,17 +68,19 @@ struct ip_list {
 };
 
 struct target_env {
+   char scan_all:1;
    char all_mac:1;            /* these one bit flags are used as wildcards */
    char all_ip:1;
+   char all_ip6:1;
    char all_port:1;
    char *proto;
    u_char mac[MEDIA_ADDR_LEN];
-   SLIST_HEAD (, ip_list) ips;
+   LIST_HEAD(, ip_list) ips;
+   LIST_HEAD(, ip_list) ip6;
    u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };
 
-struct globals {
-   struct log_global_header hdr;
+struct el_options {
    char concat:1;
    char analyze:1;
    char no_headers:1;
@@ -92,7 +95,12 @@ struct globals {
    char passwords:1;
    char color:1;
    char xml:1;
-   char reverse;
+   char reverse:1;
+   char regex:1;
+};
+
+struct globals {
+   struct log_global_header hdr;
    int (*format)(const u_char *, size_t, u_char *);
    char *user;
    char *logfile;
@@ -100,6 +108,7 @@ struct globals {
    regex_t *regex;
    struct target_env *t;
    struct ip_addr client;
+   struct el_options *options;
 };
 
 /* in el_main.c */
@@ -110,6 +119,7 @@ extern struct globals *gbls;
 
 #define GBL_LOGFILE GBL->logfile
 #define GBL_LOG_FD  GBL->fd
+#define GBL_OPTIONS GBL->options
 #define GBL_TARGET (GBL->t)
 #define GBL_PROGRAM "etterlog"
 
@@ -150,6 +160,12 @@ extern struct globals *gbls;
 
 EC_API_EXTERN void globals_alloc(void);
 EC_API_EXTERN void globals_free(void);
+
+void debug_msg(const char *message, ...);
+void ui_msg(const char *fmt, ...);
+void ui_error(const char *fmt, ...);
+void ui_fatal_error(const char *fmt, ...);
+void ui_cleanup(void);
 
 
 #endif   /*  EL_H */

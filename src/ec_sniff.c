@@ -397,7 +397,10 @@ int compile_target(char *string, struct target_env *target)
 static void add_port(void *ports, u_int n)
 {
    u_int8 *bitmap = ports;
-  
+
+     if (n > 1<<16)
+      FATAL_ERROR("Port outside the range (65535) !!");
+
    BIT_SET(bitmap, n);
 }
 

@@ -22,13 +22,10 @@
 */
 
 #include <ef.h>
-#include <ec_packet.h>
-
 #include <stdarg.h>
 
 /* globals */
 FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
-struct ip_addr;
 
 /* protos */
 void debug_msg(const char *message, ...);
@@ -36,24 +33,21 @@ void ui_msg(const char *fmt, ...);
 void ui_error(const char *fmt, ...);
 void ui_fatal_error(const char *msg);
 void ui_cleanup(void);
-int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags);
-int send_L3_icmp_unreach(struct packet_object *po);
 
 /************************************************/
  
-/* the void implemetation */
+/* the void implementation */
 
 void debug_msg(const char *message, ...) 
 {
    (void) message;
 }
 
-
 /* fake the UI implementation */
 void ui_msg(const char *fmt, ...) 
 { 
    va_list ap;
-   /* print the mesasge */ 
+   /* print the message */ 
    va_start(ap, fmt);
    vfprintf (stderr, fmt, ap);
    va_end(ap);
@@ -63,44 +57,20 @@ void ui_msg(const char *fmt, ...)
 void ui_error(const char *fmt, ...) 
 { 
    va_list ap;
-   /* print the mesasge */ 
+   /* print the message */ 
    va_start(ap, fmt);
    vfprintf (stderr, fmt, ap);
    va_end(ap);
    fprintf(stderr, "\n");
 }
 
-void ui_fatal_error(const char *msg) 
-{ 
+void ui_fatal_error(const char *msg)
+{
    fprintf (stderr, "%s\n", msg);
-
    exit(-1);
 }
 
-void ui_cleanup(void) 
-{ 
-}
-
-/* remove ec_send.c dependency */
-int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags) 
-{ 
-   (void) sip;
-   (void) tip;
-   (void) sport;
-   (void) dport;
-   (void) seq;
-   (void) ack;
-   (void) flags;
-
-   return 0;
-}
-
-int send_L3_icmp_unreach(struct packet_object *po)
-{
-   (void) po;
-
-   return 0;
-}
+void ui_cleanup(void) { }
 
 /* EOF */
 

@@ -22,27 +22,14 @@
 */
 
 #include <el.h>
-
 #include <stdarg.h>
 
 /* globals */
 FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
 
-/* protos */
-void debug_msg(const char *message, ...);
-void ui_msg(const char *fmt, ...);
-void ui_error(const char *fmt, ...);
-void ui_fatal_error(const char *fmt, ...);
-void ui_cleanup(void);
-void * get_decoder(u_int8 level, u_int32 type);
-void open_socket(char *host, u_int16 port);
-void socket_send(int s, u_char *payload, size_t size);
-void socket_recv(int s, u_char *payload, size_t size);
-void close_socket(int s);
-
 /************************************************/
  
-/* the void implemetation */
+/* the void implementation */
 
 void debug_msg(const char *message, ...) 
 {
@@ -53,69 +40,34 @@ void debug_msg(const char *message, ...)
 void ui_msg(const char *fmt, ...) 
 { 
    va_list ap;
-   /* print the mesasge */ 
+   /* print the message */ 
    va_start(ap, fmt);
    vfprintf (stderr, fmt, ap);
    va_end(ap);
+   fprintf(stderr, "\n");
 }
 
 void ui_error(const char *fmt, ...) 
 { 
    va_list ap;
-   /* print the mesasge */ 
+   /* print the message */ 
    va_start(ap, fmt);
    vfprintf (stderr, fmt, ap);
    va_end(ap);
    fprintf(stderr, "\n");
 }
 
-void ui_fatal_error(const char *fmt, ...) 
-{ 
+void ui_fatal_error(const char *fmt, ...)
+{
    va_list ap;
-   /* print the mesasge */ 
    va_start(ap, fmt);
    vfprintf (stderr, fmt, ap);
    va_end(ap);
    fprintf(stderr, "\n");
-
    exit(-1);
 }
 
 void ui_cleanup(void) { }
-
-/* for ec_passive is_open_port */
-void * get_decoder(u_int8 level, u_int32 type)
-{
-   (void) level;
-   (void) type;
-
-   return NULL;
-}
-
-/* fake socket connections */
-void open_socket(char *host, u_int16 port) 
-{
-   (void) host;
-   (void) port;
-}
-
-void socket_send(int s, u_char *payload, size_t size) 
-{
-   (void) s;
-   (void) payload;
-   (void) size;
-}
-
-void socket_recv(int s, u_char *payload, size_t size) 
-{
-   (void) s;
-   (void) payload;
-   (void) size;
-}
-void close_socket(int s) 
-{
-   (void) s;
-}
 
 /* EOF */
 

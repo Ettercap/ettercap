@@ -102,7 +102,7 @@ void ef_debug(u_char level, const char *message, ...)
    if (GBL_OPTIONS->debug < level)
       return;
 
-   /* print the mesasge */ 
+   /* print the message */ 
    va_start(ap, message);
    vfprintf (stderr, message, ap);
    fflush(stderr);

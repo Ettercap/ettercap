@@ -47,6 +47,9 @@ int main(int argc, char *argv[])
    /* initialize to all target */
    GBL_TARGET->all_mac = 1;
    GBL_TARGET->all_ip = 1;
+#ifdef WITH_IPV6
+   GBL_TARGET->all_ip6 = 1;
+#endif
    GBL_TARGET->all_port = 1;
    
    /* getopt related parsing...  */
@@ -64,7 +67,7 @@ int main(int argc, char *argv[])
   
    
    /* analyze the logfile */
-   if (GBL->analyze)
+   if (GBL_OPTIONS->analyze)
       analyze();
 
    /* rewind the log file and skip the global header */
@@ -72,19 +75,19 @@ int main(int argc, char *argv[])
    get_header(&GBL->hdr);
    
    /* create the connection table (respecting the filters) */
-   if (GBL->connections)
+   if (GBL_OPTIONS->connections)
       conn_table_create();
 
    /* display the connection table */
-   if (GBL->connections && !GBL->decode)
+   if (GBL_OPTIONS->connections && !GBL_OPTIONS->decode)
       conn_table_display();
 
    /* extract files from the connections */
-   if (GBL->decode)
+   if (GBL_OPTIONS->decode)
       conn_decode();
    
    /* not interested in the content... only analysis */
-   if (GBL->analyze || GBL->connections)
+   if (GBL_OPTIONS->analyze || GBL_OPTIONS->connections)
       return 0;
    
    /* display the content of the logfile */
@@ -122,6 +125,7 @@ void globals_alloc(void)
 {
 
    SAFE_CALLOC(gbls, 1, sizeof(struct globals));
+   SAFE_CALLOC(gbls->options, 1, sizeof(struct el_options));
    SAFE_CALLOC(gbls->regex, 1, sizeof(regex_t));
    SAFE_CALLOC(gbls->t, 1, sizeof(struct target_env));
 
@@ -132,6 +136,7 @@ void globals_free(void)
 {
    SAFE_FREE(gbls->user);
    SAFE_FREE(gbls->logfile);
+   SAFE_FREE(gbls->options);
    SAFE_FREE(gbls->regex);
    SAFE_FREE(gbls->t);
    

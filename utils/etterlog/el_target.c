@@ -22,82 +22,145 @@
 #include <el.h>
 #include <el_functions.h>
 
-/* proto */
+/*******************************************/
+
+// we cannot use the libettercap functions, since theu use I/O functions, that in order
+// to work needs to drag in the ec_ui functions.
 
 static void add_port(void *ports, u_int n);
 static void add_ip(void *digit, u_int n);
-static void expand_range_ip(char *str, void *target);
-int cmp_ip_list(struct ip_addr *ip, struct target_env *t);
-void add_ip_list(struct ip_addr *ip, struct target_env *t);
+static int expand_range_ip(char *str, void *target);
 
-/*******************************************/
-
-
-void target_compile(char *target)
+#ifdef WITH_IPV6
+/* Adds IPv6 address to the target list */
+static int expand_ipv6(char *str, struct target_env *target)
 {
+   struct ip_addr ip;
+
+   if(ip_addr_pton(str, &ip) != ESUCCESS)
+      ui_error("Invalid IPv6 address");
+
+   add_ip_list(&ip, target);
+   return ESUCCESS;
+}
+#endif
+
+/*
+ * convert a string into a target env
+ */
+int compile_target(char *string, struct target_env *target)
+{
+
+#define MAC_TOK 0
+#define IP_TOK 1
+
+#ifdef WITH_IPV6
+#define IPV6_TOK 2
+#define PORT_TOK 3
+#define MAX_TOK 4
+#else
+#define PORT_TOK 2
 #define MAX_TOK 3
+#endif
+
    char valid[] = "1234567890/.,-;:ABCDEFabcdef";
    char *tok[MAX_TOK];
    char *p;
    int i = 0;
 
-   /* sanity check */ 
-   if (strlen(target) != strspn(target, valid))
-      FATAL_ERROR("TARGET contains invalid chars !");
+//   DEBUG_MSG("compile_target TARGET: %s", string);
+
+   /* reset the special marker */
+   target->all_mac = 0;
+   target->all_ip = 0;
+   target->all_ip6 = 0;
+   target->all_port = 0;
+   /* check for invalid char */
+   if (strlen(string) != strspn(string, valid))
+      FATAL_ERROR("TARGET (%s) contains invalid chars !", string);
 
    /* TARGET parsing */
-   for(p=strsep(&target, "/"); p != NULL; p=strsep(&target, "/")) {
+   for (p = strsep(&string, "/"); p != NULL; p = strsep(&string, "/")) {
       tok[i++] = strdup(p);
       /* bad parsing */
       if (i > (MAX_TOK - 1)) break;
    }
 
    if (i != MAX_TOK)
+#ifdef WITH_IPV6
+      FATAL_ERROR("Incorrect number of token (///) in TARGET !!");
+#else
       FATAL_ERROR("Incorrect number of token (//) in TARGET !!");
+#endif
 
-   /* reset the target */
-   GBL_TARGET->all_mac = 0;
-   GBL_TARGET->all_ip = 0;
-   GBL_TARGET->all_port = 0;
+//   DEBUG_MSG("MAC  : [%s]", tok[MAC_TOK]);
+//   DEBUG_MSG("IP   : [%s]", tok[IP_TOK]);
+//#ifdef WITH_IPV6
+//   DEBUG_MSG("IPv6 : [%s]", tok[IPV6_TOK]);
+//#endif
+//   DEBUG_MSG("PORT : [%s]", tok[PORT_TOK]);
 
    /* set the mac address */
-   if (!strcmp(tok[0], ""))
-      GBL_TARGET->all_mac = 1;
-   else if (mac_addr_aton(tok[0], GBL_TARGET->mac) == 0)
-      FATAL_ERROR("Incorrect TARGET MAC parsing... (%s)", tok[0]);
+   if (!strcmp(tok[MAC_TOK], ""))
+      target->all_mac = 1;
+   else if (mac_addr_aton(tok[MAC_TOK], target->mac) == 0)
+      FATAL_ERROR("Incorrect TARGET MAC parsing... (%s)", tok[MAC_TOK]);
 
    /* parse the IP range */
-   if (!strcmp(tok[1], ""))
-      GBL_TARGET->all_ip = 1;
+   if (!strcmp(tok[IP_TOK], ""))
+      target->all_ip = 1;
    else
-      for(p=strsep(&tok[1], ";"); p != NULL; p=strsep(&tok[1], ";"))
-         expand_range_ip(p, GBL_TARGET);
+     for(p = strsep(&tok[IP_TOK], ";"); p != NULL; p = strsep(&tok[IP_TOK], ";"))
+        expand_range_ip(p, target);
+
+#ifdef WITH_IPV6 
+   if(!strcmp(tok[IPV6_TOK], ""))
+      target->all_ip6 = 1;
+   else
+      for(p = strsep(&tok[IPV6_TOK], ";"); p != NULL; p = strsep(&tok[IPV6_TOK], ";"))
+         expand_ipv6(p, target);
+#endif
+
+   /* 
+    * if only one of IP address families is specified,
+    * the other is not automatically treated as ANY
+    * because that is not the natural behaviour of a filter
+    */
+   if (!target->all_ip || !target->all_ip6) {
+      /* one of the IP target was specified, reset the ANY state */
+      target->all_ip = 0;
+      target->all_ip6 = 0;
+   }
 
    /* 
     * expand the range into the port bitmap array
     * 1<<16 is MAX_PORTS 
     */
-   if (!strcmp(tok[2], ""))
-      GBL_TARGET->all_port = 1;
-   else
-      expand_token(tok[2], 1<<16, &add_port, GBL_TARGET->ports);
+   if (!strcmp(tok[PORT_TOK], ""))
+      target->all_port = 1;
+   else {
+      if (expand_token(tok[PORT_TOK], 1<<16, &add_port, target->ports) == -EFATAL)
+         FATAL_ERROR("Invalid port range");
+   }
 
-   /* free the data */
-   for(i=0; i < MAX_TOK; i++)
+   for(i = 0; i < MAX_TOK; i++)
       SAFE_FREE(tok[i]);
-                        
+
+   return ESUCCESS;
 }
 
+/*
+ * set the bit of the relative port 
+ */
 static void add_port(void *ports, u_int n)
 {
    u_int8 *bitmap = ports;
 
-   if (n > 1<<16)
+     if (n > 1<<16)
       FATAL_ERROR("Port outside the range (65535) !!");
 
    BIT_SET(bitmap, n);
 }
-
 
 /*
  * this structure is used to contain all the possible
@@ -116,12 +179,11 @@ struct digit {
    u_char values[0xff];
 };
 
-
 /* 
  * prepare the set of 4 digit to create an IP address
  */
 
-static void expand_range_ip(char *str, void *target)
+static int expand_range_ip(char *str, void *target)
 {
    struct digit ADDR[4];
    struct ip_addr tmp;
@@ -132,13 +194,13 @@ static void expand_range_ip(char *str, void *target)
    int i = 0, j;
    int permut = 1;
    char *tok;
-                     
+
    memset(&ADDR, 0, sizeof(ADDR));
 
    p = str;
 
    /* tokenize the ip into 4 slices */
-   while ( (q = ec_strtok(p, ".", &tok)) ) {
+   while ((q = ec_strtok(p, ".", &tok)) ) {
       addr[i++] = strdup(q);
       /* reset p for the next strtok */
       if (p != NULL) p = NULL;
@@ -148,19 +210,22 @@ static void expand_range_ip(char *str, void *target)
    if (i != 4)
       FATAL_ERROR("Invalid IP format !!");
 
+   debug_msg("expand_range_ip -- [%s] [%s] [%s] [%s]", addr[0], addr[1], addr[2], addr[3]);
+
    for (i = 0; i < 4; i++) {
       p = addr[i];
-      expand_token(addr[i], 255, &add_ip, &ADDR[i]);
+      if (expand_token(addr[i], 255, &add_ip, &ADDR[i]) == -EFATAL)
+         FATAL_ERROR("Invalid port range");
    }
 
    /* count the free permutations */
-   for (i = 0; i < 4; i++) 
+   for (i = 0; i < 4; i++)
       permut *= ADDR[i].n;
 
    /* give the impulses to the last digit */
    for (i = 0; i < permut; i++) {
 
-      sprintf(parsed_ip, "%d.%d.%d.%d",  ADDR[0].values[ADDR[0].cur],
+      snprintf(parsed_ip, 16, "%d.%d.%d.%d",  ADDR[0].values[ADDR[0].cur],
                                          ADDR[1].values[ADDR[1].cur],
                                          ADDR[2].values[ADDR[2].cur],
                                          ADDR[3].values[ADDR[3].cur]);
@@ -170,67 +235,33 @@ static void expand_range_ip(char *str, void *target)
 
       ip_addr_init(&tmp, AF_INET,(u_char *)&ipaddr );
       add_ip_list(&tmp, target);
-      
-      /* give the impulse to the last octet */ 
+
+      /* give the impulse to the last octet */
       ADDR[3].cur++;
 
       /* adjust the other digits as in a digital clock */
-      for (j = 2; j >= 0; j--) {    
+      for (j = 2; j >= 0; j--) {
          if ( ADDR[j+1].cur >= ADDR[j+1].n  ) {
             ADDR[j].cur++;
             ADDR[j+1].cur = 0;
          }
       }
-   } 
-  
+   }
+
    for (i = 0; i < 4; i++)
       SAFE_FREE(addr[i]);
-     
+
+   return ESUCCESS;
 }
 
 /* fill the digit structure with data */
 static void add_ip(void *digit, u_int n)
 {
    struct digit *buf = digit;
-   
+
    buf->n++;
    buf->values[buf->n - 1] = (u_char) n;
 }
-
-
-/*
- * add an IP to the list 
- */
-
-void add_ip_list(struct ip_addr *ip, struct target_env *t)
-{
-   struct ip_list *e;
-
-   SAFE_CALLOC(e, 1, sizeof(struct ip_list));
-
-   memcpy(&e->ip, ip, sizeof(struct ip_addr));
-
-   /* insert it at the beginning of the list */
-   SLIST_INSERT_HEAD (&t->ips, e, next); 
-
-   return;
-}
-
-/*
- * return true if the ip is in the list
- */
-
-int cmp_ip_list(struct ip_addr *ip, struct target_env *t)
-{
-   struct ip_list *e;
-
-   SLIST_FOREACH (e, &t->ips, next)
-      if (!ip_addr_cmp(&(e->ip), ip))
-         return 1;
-
-   return 0;
-}
-
 
 /*
  * return true if the packet conform to TARGET
@@ -240,6 +271,7 @@ int is_target_pck(struct log_header_packet *pck)
 {
    int proto = 0;
    int good = 0;
+   int all_ips = 0;
    
    /* 
     * first check the protocol.
@@ -247,7 +279,7 @@ int is_target_pck(struct log_header_packet *pck)
     * useless to parse the mac, ip and port
     */
 
-    if (!GBL_TARGET->proto || !strcasecmp(GBL_TARGET->proto, "all"))  
+    if (!GBL_TARGET->proto || !strcmp(GBL_TARGET->proto, "") || !strcasecmp(GBL_TARGET->proto, "all"))  
        proto = 1;
 
     if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "tcp") 
@@ -259,28 +291,40 @@ int is_target_pck(struct log_header_packet *pck)
        proto = 1;
     
     /* the protocol does not match */
-    if (!GBL->reverse && proto == 0)
+    if (!GBL_OPTIONS->reverse && proto == 0)
        return 0;
     
    /*
     * we have to check if the packet is complying with the filter
     * specified by the users.
     */
+
+   /* determine the address family of the current host */
+   switch (ntohs(pck->L3_src.addr_type)) {
+      case AF_INET:
+         all_ips = GBL_TARGET->all_ip;
+         break;
+      case AF_INET6:
+         all_ips = GBL_TARGET->all_ip6;
+         break;
+      default:
+         all_ips = 1;
+   }
  
    /* it is in the source */
    if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_src, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET->all_ip   || cmp_ip_list(&pck->L3_src, GBL_TARGET) ) &&
+        (            all_ips  || cmp_ip_list(&pck->L3_src, GBL_TARGET) ) &&
         (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_src))) )
       good = 1;
 
-   /* it is in the dest */
+   /* it is in the dest - we can assume the address family is the same as in src */
    if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_dst, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET->all_ip   || cmp_ip_list(&pck->L3_dst, GBL_TARGET)) &&
+        (            all_ips  || cmp_ip_list(&pck->L3_dst, GBL_TARGET)) &&
         (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_dst))) )
       good = 1;   
   
    /* check the reverse option */
-   if (GBL->reverse ^ (good && proto) ) 
+   if (GBL_OPTIONS->reverse ^ (good && proto) ) 
       return 1;
       
    
@@ -297,6 +341,7 @@ int is_target_info(struct host_profile *hst)
    int proto = 0;
    int port = 0;
    int host = 0;
+   int all_ips = 0;
    
    /* 
     * first check the protocol.
@@ -304,7 +349,7 @@ int is_target_info(struct host_profile *hst)
     * useless to parse the mac, ip and port
     */
 
-   if (!GBL_TARGET->proto || !strcasecmp(GBL_TARGET->proto, "all"))  
+   if (!GBL_TARGET->proto || !strcmp(GBL_TARGET->proto, "") || !strcasecmp(GBL_TARGET->proto, "all"))  
       proto = 1;
    
    /* all the ports are good */
@@ -334,14 +379,26 @@ int is_target_info(struct host_profile *hst)
     * specified by the users.
     */
  
-   /* it is in the source */
+   /* determine the address family of the current host */
+   switch (ntohs(hst->L3_addr.addr_type)) {
+      case AF_INET:
+         all_ips = GBL_TARGET->all_ip;
+         break;
+      case AF_INET6:
+         all_ips = GBL_TARGET->all_ip6;
+         break;
+      default:
+         all_ips = 1;
+   }
+
+   /* check if current host matches the filter */
    if ( (GBL_TARGET->all_mac || !memcmp(GBL_TARGET->mac, hst->L2_addr, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET->all_ip  || cmp_ip_list(&hst->L3_addr, GBL_TARGET) ) )
+        (all_ips  || cmp_ip_list(&hst->L3_addr, GBL_TARGET) ) )
       host = 1;
 
 
    /* check the reverse option */
-   if (GBL->reverse ^ (host && port) ) 
+   if (GBL_OPTIONS->reverse ^ (host && port) ) 
       return 1;
    else
       return 0;

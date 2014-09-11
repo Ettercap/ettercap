@@ -26,7 +26,7 @@ ettercap-plugins - A collection of plugins for ettercap
 .SH DESCRIPTION
 Ettercap(8) supports loadable modules at runtime. They are called plugins and
 they come within the source tarball. They are automatically compiled if your
-system supports them or until you specify -DENABLE_PLUGINS=OFF option to the
+system supports them or until you specify \-DENABLE_PLUGINS=OFF option to the
 cmake configure script.
 .br
 Some of older ettercap plugins (roper, banshee, and so on) have not been ported

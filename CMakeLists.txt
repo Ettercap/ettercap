@@ -33,10 +33,6 @@ if(contains_valid EQUAL -1)
 endif()
 UNSET(contains_valid)
 
-# Ensure that, when we link to stuff outside of our build path, we include the
-# library dir path in our RPATH.
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 include(CMakeDependentOption)
 
 # If SYSTEM_LIBS is set to off, then all SYSTEM_* options will be

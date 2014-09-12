@@ -489,19 +489,19 @@ void gtkui_create_menu(int live)
 
    if(GBL_OPTIONS->reversed) {
       GBL_OPTIONS->reversed = 0;
-      action = gtk_ui_manager_get_action(menu_manager, "/TargetsMenu/ReverseMatching");
+      action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/TargetsMenu/ReverseMatching");
       gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
    if(GBL_OPTIONS->resolve) {
       GBL_OPTIONS->resolve = 0;
-      action = gtk_ui_manager_get_action(menu_manager, "/ViewMenu/ResolveIpAddresses");
+      action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/ViewMenu/ResolveIpAddresses");
       gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
    if(GBL_OPTIONS->compress) {
       GBL_OPTIONS->compress = 0;
-      action = gtk_ui_manager_get_action(menu_manager, "/LoggingMenu/LogCompressed");
+      action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/LoggingMenu/LogCompressed");
       gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 

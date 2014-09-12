@@ -77,6 +77,5 @@ SET_TARGET_PROPERTIES(ec_interfaces PROPERTIES COMPILE_FLAGS -fPIC)
 set_target_properties(ec_interfaces PROPERTIES 
   ENABLE_EXPORTS On
   #  LINK_INTERFACE_LIBRARIES ""
-  #  INSTALL_RPATH ${INSTALL_LIBDIR}
   OUTPUT_NAME ec_interfaces 
   )

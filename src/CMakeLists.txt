@@ -200,7 +200,6 @@ endif(ENABLE_LUA)
 set_target_properties(lib_ettercap PROPERTIES 
   ENABLE_EXPORTS On
   #  LINK_INTERFACE_LIBRARIES ""
-  #  INSTALL_RPATH ${INSTALL_LIBDIR}
   OUTPUT_NAME ettercap
   VERSION 0.0.0
   SOVERSION 0
@@ -217,8 +216,6 @@ if (NOT LIBRARY_BUILD)
   endif(ENABLE_GTK)
   add_executable(ettercap ec_parser.c ec_main.c)
   target_link_libraries(ettercap ec_interfaces lib_ettercap ${EC_LIBS})
-  set_target_properties(ettercap PROPERTIES 
-  INSTALL_RPATH ${INSTALL_LIBDIR})
 endif(NOT LIBRARY_BUILD)
 
 install(TARGETS lib_ettercap DESTINATION ${INSTALL_LIBDIR})

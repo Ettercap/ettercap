@@ -135,7 +135,7 @@ void gtkui_help(void)
 
 void gtkui_help_open(char *file) {
    const char *full = "sh -c \"man %s | col -b\"";
-   char *data = NULL, *errors = NULL, *cmd;
+   char *data = NULL, *unicode = NULL, *errors = NULL, *cmd;
    gboolean ret = FALSE;
    gint len = 0;
 
@@ -153,9 +153,9 @@ void gtkui_help_open(char *file) {
 
    /* print output of command in help window */
    if(data && ret) {
-      gtk_text_buffer_set_text(textbuf, "", -1);
-   
-      gtkui_details_print(textbuf, data);
+      if ((unicode = gtkui_utf8_validate(data)))
+         gtk_text_buffer_set_text(textbuf, unicode, -1);
+
       g_free(data);
    }
 }

@@ -49,8 +49,6 @@ extern void gtkui_sniff_offline(void);
 extern void gtkui_sniff_live(void);
 
 
-extern GtkTextBuffer *gtkui_details_window(char *title);
-extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
 extern gboolean gtkui_iptoa_deferred(gpointer data);
 extern gboolean gtkui_combo_enter(GtkWidget *widget, GdkEventKey *event, gpointer data);
 extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);

@@ -145,10 +145,27 @@ void gtkui_help_open(char *file) {
    ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
    g_free(cmd);
 
-   /* TODO: use local copy of manpages as backup */
    if(ret && errors && strlen(errors) > 0) {
-      ui_error(errors);
       g_free(errors);
+      full = "sh -c \"man ./man/%s.8 | col -b\"";
+      len = strlen(file) + strlen(full);
+      cmd = g_malloc(sizeof(char) * len);
+      snprintf(cmd, len, full, file);
+      ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
+      g_free(cmd);
+      if(ret && errors && strlen(errors) > 0) {
+        g_free(errors);
+        full = "sh -c \"man ./man/%s.5 | col -b\"";
+        len = strlen(file) + strlen(full);
+        cmd = g_malloc(sizeof(char) * len);
+        snprintf(cmd, len, full, file);
+        ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
+        g_free(cmd);
+        if(ret && errors && strlen(errors) > 0) {
+          ui_error(errors);
+          g_free(errors);
+        }
+      }
    }
 
    /* print output of command in help window */

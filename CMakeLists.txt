@@ -120,6 +120,11 @@ set(APPDATA_DIR ${INSTALL_PREFIX}/share/appdata/ CACHE PATH "Appdata file instal
 set(ICON_DIR ${INSTALL_PREFIX}/share/pixmaps CACHE PATH "Icon file installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages") 
 
+if(NOT DISABLE_RPATH)
+  # Ensure that, when we link to stuff outside of our build path, we include the
+  # library dir path in our RPATH.
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif(NOT DISABLE_RPATH)
 set(CMAKE_C_FLAGS_DEBUG " -O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -pg -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -Wextra -Wredundant-decls" CACHE STRING "" FORCE)
 set(CMAKE_C_FLAGS_RELEASE " -O2 -w -D_FORTIFY_SOURCE=2" CACHE STRING "" FORCE)
 

@@ -155,10 +155,11 @@ FUNC_DECODER(dissector_postgresql)
             }
             else if (ptr[0] == 'p' && conn_status->type == CT) {
                int length;
+               int pcklen = PACKET->DATA.len;
                DEBUG_MSG("\tDissector_postgresql RESPONSE type is clear-text!");
                GET_ULONG_BE(length, ptr, 1);
                length -= 4;
-               if (length < 0 || length > 65 || PACKET->DATA.len < length+5) {
+               if (length < 0 || length > 65 || pcklen < length+5) {
                    dissect_wipe_session(PACKET, DISSECT_CODE(dissector_postgresql));
                    return NULL;
                }

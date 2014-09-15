@@ -1,9 +1,3 @@
-# since ettercap now uses this file as the application icon
-# we still need the icon even if the desktop file is not being installed
-if(ENABLE_GTK)
-  install(FILES ettercap.svg DESTINATION ${ICON_DIR})
-endif(ENABLE_GTK)
-
 if(INSTALL_DESKTOP AND ENABLE_GTK)
   configure_file(org.pkexec.ettercap.policy.in
     ${PKEXEC_INSTALL_WRAPPER}.policy @ONLY)

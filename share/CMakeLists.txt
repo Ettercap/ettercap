@@ -14,6 +14,7 @@ set(EC_CONFFILES
 set(EC_DATAFILES
             ettercap.png
             ettercap-small.png
+            ettercap.svg
             etter.fields
             etter.filter
             etterfilter.cnt
@@ -41,3 +42,10 @@ install(FILES
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/${EC_DATAFILES}
         DESTINATION ${INSTALL_DATADIR}/ettercap)
+
+# since ettercap now uses this file as the application icon
+# we still need the icon even if the desktop file is not being installed
+if(ENABLE_GTK)
+  install(FILES ettercap.svg DESTINATION ${ICON_DIR})
+endif(ENABLE_GTK)
+

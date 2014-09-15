@@ -446,14 +446,18 @@ void gtkui_about(void)
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
 
    /* load the authors file */
-   g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/AUTHORS",
+   g_file_get_contents("./AUTHORS",
          &authors, &length, &error);
    if (error != NULL) {
-      g_message("failed to load authors file: %s", error->message);
-      g_error_free(error);
-      return;
+      error = NULL;
+      g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/AUTHORS",
+            &authors, &length, &error);
+      if (error != NULL) {
+         g_message("failed to load authors file: %s", error->message);
+         g_error_free(error);
+         return;
+      }
    }
-
    textview = gtk_text_view_new();
    gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
    textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
@@ -470,11 +474,16 @@ void gtkui_about(void)
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
 
    /* load license file */
-   g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/LICENSE",
+   g_file_get_contents("./LICENSE",
          &license, &length, &error);
    if (error != NULL) {
-      g_message("failed to load license file: %s", error->message);
-      g_error_free(error);
+      error = NULL;
+      g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/LICENSE",
+            &license, &length, &error);
+      if (error != NULL) {
+         g_message("failed to load license file: %s", error->message);
+         g_error_free(error);
+      }
    }
 
    textview = gtk_text_view_new();

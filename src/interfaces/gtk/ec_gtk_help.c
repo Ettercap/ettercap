@@ -139,24 +139,27 @@ void gtkui_help_open(char *file) {
    gboolean ret = FALSE;
    gint len = 0;
 
-   len = strlen(file) + strlen(full);
+   len = strlen(file) + strlen(full) +1;
    cmd = g_malloc(sizeof(char) * len);
    snprintf(cmd, len, full, file);
+   // try to find the system installed man
    ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
    g_free(cmd);
 
    if(ret && errors && strlen(errors) > 0) {
       g_free(errors);
+      // system man not found, try to fallback to the man(8) in the build directory
       full = "sh -c \"man ./man/%s.8 | col -b\"";
-      len = strlen(file) + strlen(full);
+      len = strlen(file) + strlen(full) +1;
       cmd = g_malloc(sizeof(char) * len);
       snprintf(cmd, len, full, file);
       ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
       g_free(cmd);
       if(ret && errors && strlen(errors) > 0) {
         g_free(errors);
+        // man(8) in the build directory not found, but etter.conf is man(5)
         full = "sh -c \"man ./man/%s.5 | col -b\"";
-        len = strlen(file) + strlen(full);
+        len = strlen(file) + strlen(full) +1;
         cmd = g_malloc(sizeof(char) * len);
         snprintf(cmd, len, full, file);
         ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);

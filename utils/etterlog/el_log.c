@@ -59,14 +59,14 @@ int get_header(struct log_global_header *hdr)
    c = gzread(GBL_LOG_FD, hdr, sizeof(struct log_global_header));
 
    if (c != sizeof(struct log_global_header))
-      return -EINVALID;
+      return -E_INVALID;
    
    /* convert to host order */
    
    hdr->magic = ntohs(hdr->magic);
    
    if (hdr->magic != EC_LOG_MAGIC)
-      return -EINVALID;
+      return -E_INVALID;
    
    hdr->first_header = ntohs(hdr->first_header);
    gzseek(GBL_LOG_FD, hdr->first_header, SEEK_SET);
@@ -77,7 +77,7 @@ int get_header(struct log_global_header *hdr)
    
    hdr->type = ntohl(hdr->type);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -105,7 +105,7 @@ static int put_header(gzFile fd, struct log_global_header *hdr)
    hdr->tv.tv_usec = ntohl(hdr->tv.tv_usec);
    hdr->type = ntohl(hdr->type);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -120,7 +120,7 @@ int get_packet(struct log_header_packet *pck, u_char **buf)
    c = gzread(GBL_LOG_FD, pck, sizeof(struct log_header_packet));
 
    if (c != sizeof(struct log_header_packet))
-      return -EINVALID;
+      return -E_INVALID;
    
    pck->len = ntohl(pck->len);
   
@@ -135,9 +135,9 @@ int get_packet(struct log_header_packet *pck, u_char **buf)
    c = gzread(GBL_LOG_FD, *buf, pck->len);
    
    if ((size_t)c != pck->len)
-      return -EINVALID;
+      return -E_INVALID;
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -153,7 +153,7 @@ static int put_packet(gzFile fd, struct log_header_packet *pck, u_char *buf)
 
    c = gzwrite(fd, pck, sizeof(struct log_header_packet));
    if (c != sizeof(struct log_header_packet))
-      return -EINVALID;
+      return -E_INVALID;
    
    pck->len = ntohl(pck->len);
    pck->tv.tv_sec = ntohl(pck->tv.tv_sec);
@@ -162,9 +162,9 @@ static int put_packet(gzFile fd, struct log_header_packet *pck, u_char *buf)
    /* copy the data of the packet */
    c = gzwrite(fd, buf, pck->len);
    if ((size_t)c != pck->len)
-      return -EINVALID;
+      return -E_INVALID;
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -180,7 +180,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
 
    /* truncated ? */
    if (c != sizeof(struct log_header_info))
-      return -EINVALID;
+      return -E_INVALID;
 
    /* adjust the variable lengths */
    inf->var.user_len = ntohs(inf->var.user_len);
@@ -200,7 +200,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
       
       c = gzread(GBL_LOG_FD, buf->user, inf->var.user_len);
       if (c != inf->var.user_len)
-         return -EINVALID;
+         return -E_INVALID;
    }
    
    if (inf->var.pass_len) {
@@ -208,7 +208,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
       
       c = gzread(GBL_LOG_FD, buf->pass, inf->var.pass_len);
       if (c != inf->var.pass_len)
-         return -EINVALID;
+         return -E_INVALID;
    }
    
    if (inf->var.info_len) {
@@ -216,7 +216,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
       
       c = gzread(GBL_LOG_FD, buf->info, inf->var.info_len);
       if (c != inf->var.info_len)
-         return -EINVALID;
+         return -E_INVALID;
    }
    
    if (inf->var.banner_len) {
@@ -224,10 +224,10 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
       
       c = gzread(GBL_LOG_FD, buf->banner, inf->var.banner_len);
       if (c != inf->var.banner_len)
-         return -EINVALID;
+         return -E_INVALID;
    }
    
-   return ESUCCESS; 
+   return E_SUCCESS; 
 }
 
 /*
@@ -246,7 +246,7 @@ static int put_info(gzFile fd, struct log_header_info *inf, struct dissector_inf
    /* write the header */
    c = gzwrite(fd, inf, sizeof(struct log_header_info));
    if (c != sizeof(struct log_header_info))
-      return -EINVALID;
+      return -E_INVALID;
 
    /* reconvert for internal use */
    inf->var.user_len = ntohs(inf->var.user_len);
@@ -258,28 +258,28 @@ static int put_info(gzFile fd, struct log_header_info *inf, struct dissector_inf
    if (inf->var.user_len) {
       c = gzwrite(fd, buf->user, inf->var.user_len);
       if (c != inf->var.user_len)
-         return -EINVALID;
+         return -E_INVALID;
    }
    
    if (inf->var.pass_len) {
       c = gzwrite(fd, buf->pass, inf->var.pass_len);
       if (c != inf->var.pass_len)
-         return -EINVALID;
+         return -E_INVALID;
    }
    
    if (inf->var.info_len) {
       c = gzwrite(fd, buf->info, inf->var.info_len);
       if (c != inf->var.info_len)
-         return -EINVALID;
+         return -E_INVALID;
    }
    
    if (inf->var.banner_len) {
       c = gzwrite(fd, buf->banner, inf->var.banner_len);
       if (c != inf->var.banner_len)
-         return -EINVALID;
+         return -E_INVALID;
    }
    
-   return ESUCCESS; 
+   return E_SUCCESS; 
 }
 
 /*
@@ -305,7 +305,7 @@ void concatenate(int argc, char **argv)
    ON_ERROR(GBL_LOG_FD, NULL, "%s", gzerror(GBL_LOG_FD, &zerr));
    
    /* get the file header */
-   if (get_header(&hdr) != ESUCCESS)
+   if (get_header(&hdr) != E_SUCCESS)
       FATAL_ERROR("Invalid log file (%s)", argv[argc]);
 
    /* write the header */
@@ -326,7 +326,7 @@ void concatenate(int argc, char **argv)
       ON_ERROR(GBL_LOG_FD, NULL, "%s", gzerror(GBL_LOG_FD, &zerr));
    
       /* get the file header */
-      if (get_header(&tmp) != ESUCCESS)
+      if (get_header(&tmp) != E_SUCCESS)
          FATAL_ERROR("Invalid log file (%s)", argv[argc]);
      
       /* check if the files are compatible */
@@ -365,7 +365,7 @@ static void dump_file(gzFile fd, struct log_global_header *hdr)
    LOOP {
       switch (hdr->type) {
          case LOG_INFO:
-            if (get_info(&inf, &infbuf) != ESUCCESS) {
+            if (get_info(&inf, &infbuf) != E_SUCCESS) {
                printf("\n");
                return;
             }
@@ -375,7 +375,7 @@ static void dump_file(gzFile fd, struct log_global_header *hdr)
             break;
 
          case LOG_PACKET:
-            if (get_packet(&pck, &pckbuf) != ESUCCESS) {
+            if (get_packet(&pck, &pckbuf) != E_SUCCESS) {
                printf("\n");
                return;
             }

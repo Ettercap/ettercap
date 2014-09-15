@@ -37,11 +37,11 @@ static int expand_ipv6(char *str, struct target_env *target)
 {
    struct ip_addr ip;
 
-   if(ip_addr_pton(str, &ip) != ESUCCESS)
+   if(ip_addr_pton(str, &ip) != E_SUCCESS)
       ui_error("Invalid IPv6 address");
 
    add_ip_list(&ip, target);
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 #endif
 
@@ -139,14 +139,14 @@ int compile_target(char *string, struct target_env *target)
    if (!strcmp(tok[PORT_TOK], ""))
       target->all_port = 1;
    else {
-      if (expand_token(tok[PORT_TOK], 1<<16, &add_port, target->ports) == -EFATAL)
+      if (expand_token(tok[PORT_TOK], 1<<16, &add_port, target->ports) == -E_FATAL)
          FATAL_ERROR("Invalid port range");
    }
 
    for(i = 0; i < MAX_TOK; i++)
       SAFE_FREE(tok[i]);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -214,7 +214,7 @@ static int expand_range_ip(char *str, void *target)
 
    for (i = 0; i < 4; i++) {
       p = addr[i];
-      if (expand_token(addr[i], 255, &add_ip, &ADDR[i]) == -EFATAL)
+      if (expand_token(addr[i], 255, &add_ip, &ADDR[i]) == -E_FATAL)
          FATAL_ERROR("Invalid port range");
    }
 
@@ -251,7 +251,7 @@ static int expand_range_ip(char *str, void *target)
    for (i = 0; i < 4; i++)
       SAFE_FREE(addr[i]);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* fill the digit structure with data */
@@ -407,7 +407,7 @@ int is_target_info(struct host_profile *hst)
 
 
 /* 
- * return ESUCCESS if the user 'user' is in the user list
+ * return E_SUCCESS if the user 'user' is in the user list
  */
 
 int find_user(struct host_profile *hst, char *user)
@@ -416,16 +416,16 @@ int find_user(struct host_profile *hst, char *user)
    struct active_user *u;
       
    if (user == NULL)
-      return ESUCCESS;
+      return E_SUCCESS;
    
    LIST_FOREACH(o, &(hst->open_ports_head), next) {
       LIST_FOREACH(u, &(o->users_list_head), next) {
          if (strcasestr(u->user, user))
-            return ESUCCESS;
+            return E_SUCCESS;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 

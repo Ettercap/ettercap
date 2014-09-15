@@ -156,7 +156,7 @@ FUNC_DECODER(dissector_ssh)
     */
    
    if ((!GBL_CONF->aggressive_dissectors || GBL_OPTIONS->unoffensive || GBL_OPTIONS->read) 
-         || session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) { 
+         || session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) { 
       SAFE_FREE(ident);
       /* Create the session on first server's cleartext packet */
       if(!memcmp(PACKET->DATA.data,"SSH-", 4) && FROM_SERVER("ssh", PACKET)) {
@@ -199,7 +199,7 @@ FUNC_DECODER(dissector_ssh)
          PACKET->DATA.disp_len = 0;
 	 
          /* While there are packets to read from the stream */
-         while(read_packet(&crypted_packet, &(session_data->data_buffer[direction])) == ESUCCESS) {        
+         while(read_packet(&crypted_packet, &(session_data->data_buffer[direction])) == E_SUCCESS) {        
             ssh_len = pntol(crypted_packet);
             ssh_mod = 8 - (ssh_len % 8);
 
@@ -579,8 +579,8 @@ static int32 read_packet(u_char **buffer, struct stream_buf *dbuf)
    int32 length, mod;
    
    /* Read packet length and calculate modulus */
-   if (streambuf_read(dbuf, (u_char *)&length, 4, STREAM_ATOMIC) == -EINVALID)
-      return -EINVALID;
+   if (streambuf_read(dbuf, (u_char *)&length, 4, STREAM_ATOMIC) == -E_INVALID)
+      return -E_INVALID;
    length = ntohl(length);   
    mod = 8 - (length % 8);
 
@@ -589,14 +589,14 @@ static int32 read_packet(u_char **buffer, struct stream_buf *dbuf)
     */
    *buffer = (u_char *)malloc(length + mod + 4);
    if (*buffer == NULL)
-      return -EINVALID;
+      return -E_INVALID;
       
-   if (streambuf_get(dbuf, *buffer, length + mod + 4, STREAM_ATOMIC) == -EINVALID) {
+   if (streambuf_get(dbuf, *buffer, length + mod + 4, STREAM_ATOMIC) == -E_INVALID) {
       SAFE_FREE(*buffer);
-      return -EINVALID;
+      return -E_INVALID;
    }
       
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* 3DES and blowfish stuff - Thanks to Dug Song ;) */

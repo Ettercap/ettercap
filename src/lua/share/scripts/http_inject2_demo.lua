@@ -223,7 +223,7 @@ action = function(packet_object)
   local session_ptr = ffi.new("struct ec_session *")
   local session_ptr_ptr = ffi.new("struct ec_session *[1]", session_ptr)
   local ret = ffi.C.session_get(session_ptr_ptr, ident_ptr_ptr[0], ident_len) 
-  if ret == -ffi.C.ENOTFOUND then
+  if ret == -ffi.C.E_NOTFOUND then
     return nil
   end
 

@@ -696,8 +696,8 @@ int profile_dump_to_file(char *filename)
       fd.type = LOG_UNCOMPRESSED;
         
    /* open the file for dumping */
-   if (log_open(&fd, eci) != ESUCCESS)
-      return -EFATAL;
+   if (log_open(&fd, eci) != E_SUCCESS)
+      return -E_FATAL;
 
    /* this is an INFO file */
    log_write_header(&fd, LOG_INFO);
@@ -775,7 +775,7 @@ int profile_dump_to_file(char *filename)
    /* close the file */
    log_close(&fd);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* EOF */

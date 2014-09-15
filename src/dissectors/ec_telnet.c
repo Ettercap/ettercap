@@ -100,7 +100,7 @@ FUNC_DECODER(dissector_telnet)
    if (FROM_SERVER("telnet", PACKET) || FROM_SERVER("telnets", PACKET)) {
       
       /* start the collecting process when a "reserved" word is seen */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          if (match_login_regex((const char*)ptr)) {
             DEBUG_MSG("\tdissector_telnet - BEGIN");
          
@@ -116,7 +116,7 @@ FUNC_DECODER(dissector_telnet)
    } else {
       
       /* retrieve the session */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
 
          /* sanity check */
          if (s->data == NULL)

@@ -125,7 +125,7 @@ FUNC_DECODER(decode_eapol)
        * the group key is encrypted and we need a valid completed sa to decrypt it
        * the sa must be at state four
        */
-      if (wpa_sess_get(sta, &sa) == ESUCCESS && sa.state == EAPOL_4WAY_MESSAGE_FOUR) {
+      if (wpa_sess_get(sta, &sa) == E_SUCCESS && sa.state == EAPOL_4WAY_MESSAGE_FOUR) {
          rsn_ie = (struct rsn_ie_header *)(eapol_key + 1);
          wpa_decrypt_broadcast_key(eapol_key, rsn_ie, &sa);
       }
@@ -162,7 +162,7 @@ FUNC_DECODER(decode_eapol)
 
       case EAPOL_4WAY_MESSAGE_TWO:
          /* retrieve the session for this STA and check that the sate is consistent */
-         if (wpa_sess_get(sta, &sa) != ESUCCESS || sa.state != EAPOL_4WAY_MESSAGE_ONE)
+         if (wpa_sess_get(sta, &sa) != E_SUCCESS || sa.state != EAPOL_4WAY_MESSAGE_ONE)
             break;
 
          /*
@@ -181,7 +181,7 @@ FUNC_DECODER(decode_eapol)
          DEBUG_MSG("WPA PTK : %s", str_tohex(sa.ptk, WPA_PTK_LEN, tmp, sizeof(tmp)));
 
          /* verify the MIC (compare the MIC in the packet included in this message with a MIC calculated with the PTK) */
-         if (wpa_check_MIC(eapol, eapol_key, DECODED_LEN, sa.ptk, sa.algo) != ESUCCESS) {
+         if (wpa_check_MIC(eapol, eapol_key, DECODED_LEN, sa.ptk, sa.algo) != E_SUCCESS) {
             USER_MSG("WPA MIC does not match\n");
             break;
          }
@@ -198,7 +198,7 @@ FUNC_DECODER(decode_eapol)
 
       case EAPOL_4WAY_MESSAGE_THREE:
          /* retrieve the session for this STA and check that the sate is consistent */
-         if (wpa_sess_get(sta, &sa) != ESUCCESS || sa.state != EAPOL_4WAY_MESSAGE_TWO)
+         if (wpa_sess_get(sta, &sa) != E_SUCCESS || sa.state != EAPOL_4WAY_MESSAGE_TWO)
             break;
 
          /*
@@ -221,7 +221,7 @@ FUNC_DECODER(decode_eapol)
 
       case EAPOL_4WAY_MESSAGE_FOUR:
          /* retrieve the session for this STA and check that the sate is consistent */
-         if (wpa_sess_get(sta, &sa) != ESUCCESS || sa.state != EAPOL_4WAY_MESSAGE_THREE)
+         if (wpa_sess_get(sta, &sa) != E_SUCCESS || sa.state != EAPOL_4WAY_MESSAGE_THREE)
             break;
 
          /*
@@ -267,7 +267,7 @@ static int eapol_4way_handshake(struct eapol_key_header *eapol_key)
           (key_info & WPA_KEY_ACK) != 0) {
          return EAPOL_4WAY_MESSAGE_GROUP;
       }
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
    }
 
    /* message 1: Authenticator->Supplicant (Sec=0, Mic=0, Ack=1, Inst=0, Key=1(pairwise), KeyRSC=0, Nonce=ANonce, MIC=0)  */
@@ -310,7 +310,7 @@ static int eapol_4way_handshake(struct eapol_key_header *eapol_key)
       return EAPOL_4WAY_MESSAGE_FOUR;
 
    /* invalid packet */
-   return -ENOTHANDLED;
+   return -E_NOTHANDLED;
 }
 
 static int eapol_enc_algo(struct eapol_key_header *eapol_key)

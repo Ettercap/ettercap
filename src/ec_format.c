@@ -81,32 +81,32 @@ int set_format(char *format)
    
    if (!strcasecmp(format, "hex")) {
       GBL_FORMAT = &hex_format;
-      return ESUCCESS;
+      return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "ascii")) {
       GBL_FORMAT = &ascii_format;
-      return ESUCCESS;
+      return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "text")) {
       GBL_FORMAT = &text_format;
-      return ESUCCESS;
+      return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "html")) {
       GBL_FORMAT = &html_format;
-      return ESUCCESS;
+      return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "ebcdic")) {
       GBL_FORMAT = &ebcdic_format;
-      return ESUCCESS;
+      return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "utf8")) {
       GBL_FORMAT = &utf8_format;
-      return ESUCCESS;
+      return E_SUCCESS;
    }
 
    FATAL_MSG("Unsupported format (%s)", format);
@@ -404,14 +404,14 @@ int set_utf8_encoding(u_char *fromcode)
 #ifndef HAVE_UTF8
    (void) fromcode;
    USER_MSG("UTF-8 support not compiled in.\n");
-   return ESUCCESS;
+   return E_SUCCESS;
 #else
    iconv_t cd;
 
    DEBUG_MSG("set_utf8_encoding: %s", fromcode);
       
    if (fromcode == NULL || strlen((const char*)fromcode) < 1)
-      return -EINVALID;
+      return -E_INVALID;
 
    SAFE_FREE(utf8_encoding);
 
@@ -425,7 +425,7 @@ int set_utf8_encoding(u_char *fromcode)
 
    utf8_encoding = strdup((const char*)fromcode);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 #endif
 }
 

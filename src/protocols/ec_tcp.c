@@ -179,7 +179,7 @@ FUNC_DECODER(decode_tcp)
           *
           * if the source is the ettercap host, don't display the message 
           */
-         if (ip_addr_is_ours(&PACKET->L3.src) == EFOUND)
+         if (ip_addr_is_ours(&PACKET->L3.src) == E_FOUND)
             return NULL;
 #endif
          if (GBL_CONF->checksum_warning)
@@ -253,7 +253,7 @@ FUNC_DECODER(decode_tcp)
       
       /* Find or create the correct session */
       tcp_create_ident(&ident, PACKET);
-      if (session_get(&s, ident, TCP_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, TCP_IDENT_LEN) == -E_NOTFOUND) {
          tcp_create_session(&s, PACKET);
          session_put(s);
       }
@@ -350,9 +350,9 @@ FUNC_INJECTOR(inject_tcp)
        
    /* Find the correct session */
    tcp_create_ident(&ident, PACKET);
-   if (session_get(&s, ident, TCP_IDENT_LEN) == -ENOTFOUND) {
+   if (session_get(&s, ident, TCP_IDENT_LEN) == -E_NOTFOUND) {
       SAFE_FREE(ident); 
-      return -ENOTFOUND;
+      return -E_NOTFOUND;
    }
 
    /* Rember where the payload has to start */
@@ -380,7 +380,7 @@ FUNC_INJECTOR(inject_tcp)
 
    /* Is this an injectable connection? */
    if ((status->way[direction].injectable & INJ_FIN) || !(status->way[direction].injectable & INJ_FWD) || !(status->way[!direction].injectable & INJ_FWD)) 
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
          
    tcph->seq = htonl(status->way[direction].last_seq + status->way[direction].seq_adj);
    tcph->ack = htonl(status->way[direction].last_ack - status->way[!direction].seq_adj);
@@ -415,7 +415,7 @@ FUNC_INJECTOR(inject_tcp)
    tcph->csum = L4_checksum(PACKET);
   
    session_del(s->ident, TCP_IDENT_LEN); 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*******************************************/

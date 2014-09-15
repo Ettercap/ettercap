@@ -267,7 +267,7 @@ int str_replace(char **text, const char *s, const char *d)
 
    /* the search string does not exist */
    if (strstr(*text, s) == NULL)
-      return -ENOTFOUND;
+      return -E_NOTFOUND;
    
    /* search all the occurrence of 's' */
    while ( (p = strstr(q, s)) != NULL ) {
@@ -297,7 +297,7 @@ int str_replace(char **text, const char *s, const char *d)
       q = p + dlen;
    }
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -392,7 +392,7 @@ int str_hex_to_bytes(char *string, u_char *bytes)
    for (i = 0; i < slen; i++) {
       strncpy(value, string + i*2, 2);
       if (sscanf(value, "%02X", &value_bin) != 1)
-         return -EINVALID;
+         return -E_INVALID;
       bytes[i] = value_bin & 0x000000FF;
    }
 

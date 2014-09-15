@@ -157,7 +157,7 @@ void unified_check_forwarded(struct packet_object *po)
     */
    if (GBL_CONF->skip_forwarded && !GBL_OPTIONS->read &&
        !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
-       ip_addr_is_ours(&po->L3.src) != EFOUND) {
+       ip_addr_is_ours(&po->L3.src) != E_FOUND) {
       po->flags |= PO_FORWARDED;
    }
 }
@@ -176,7 +176,7 @@ void unified_set_forwardable(struct packet_object *po)
     */
    if (!memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) &&
        memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
-       ip_addr_is_ours(&po->L3.dst) != EFOUND) {
+       ip_addr_is_ours(&po->L3.dst) != E_FOUND) {
       po->flags |= PO_FORWARDABLE;
    }
    

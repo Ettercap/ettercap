@@ -71,7 +71,7 @@ int set_loglevel(int level, char *filename)
    /* if we want to stop logging, return here */
    if (level == LOG_STOP) {
       DEBUG_MSG("set_loglevel: stopping the log process");
-      return ESUCCESS;
+      return E_SUCCESS;
    }
    
    DEBUG_MSG("set_loglevel(%d, %s)", level, filename); 
@@ -102,8 +102,8 @@ int set_loglevel(int level, char *filename)
          }
          
          /* create the file */
-         if (log_open(&fdp, ecp) != ESUCCESS)
-            return -EFATAL;
+         if (log_open(&fdp, ecp) != E_SUCCESS)
+            return -E_FATAL;
 
          /* initialize the log file */
          log_write_header(&fdp, LOG_PACKET);
@@ -121,8 +121,8 @@ int set_loglevel(int level, char *filename)
          }
          
          /* create the file */
-         if (log_open(&fdi, eci) != ESUCCESS)
-            return -EFATAL;
+         if (log_open(&fdi, eci) != E_SUCCESS)
+            return -E_FATAL;
          
          /* initialize the log file */
          log_write_header(&fdi, LOG_INFO);
@@ -145,7 +145,7 @@ int set_loglevel(int level, char *filename)
 
    atexit(log_stop);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -186,7 +186,7 @@ int log_open(struct log_fd *fd, char *filename)
    /* set the permissions */
    chmod(filename, 0600);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* 
@@ -446,13 +446,13 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
 
    /* calculate if the dest is local or not */
    switch (ip_addr_is_local(&po->L3.dst, NULL)) {
-      case ESUCCESS:
+      case E_SUCCESS:
          hid.type |= FP_HOST_LOCAL;
          break;
-      case -ENOTFOUND:
+      case -E_NOTFOUND:
          hid.type |= FP_HOST_NONLOCAL;
          break;
-      case -EINVALID:
+      case -E_INVALID:
          hid.type = FP_UNKNOWN;
          break;
    }
@@ -635,7 +635,7 @@ int set_msg_loglevel(int level, char *filename)
          break;
    }
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* EOF */

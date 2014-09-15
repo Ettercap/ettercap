@@ -88,7 +88,7 @@ size_t inject_protocol(struct packet_object *po)
       return 0;
 
    /* Start the injector chain */
-   if (injector(po, &len) == ESUCCESS)
+   if (injector(po, &len) == E_SUCCESS)
       return len;
       
    /* if there's an error */
@@ -115,11 +115,11 @@ int inject_buffer(struct packet_object *po)
    struct packet_object *pd;
    size_t injected;
    u_char *pck_buf;
-   int ret = ESUCCESS;
+   int ret = E_SUCCESS;
   
    /* we can't inject in unoffensive mode or in bridge mode */
    if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read || GBL_OPTIONS->iface_bridge) {
-      return -EINVALID;
+      return -E_INVALID;
    }
    
    /* Duplicate the packet to modify the payload buffer */
@@ -141,7 +141,7 @@ int inject_buffer(struct packet_object *po)
       injected = inject_protocol(pd);
 
       if (injected == 0) {
-         ret = -ENOTHANDLED;
+         ret = -E_NOTHANDLED;
          break;
       }
       
@@ -192,7 +192,7 @@ int user_kill(struct conn_object *co)
 
    /* we can kill only tcp connection */
    if (co->L4_proto != NL_TYPE_TCP)
-      return -EFATAL;
+      return -E_FATAL;
    
    DEBUG_MSG("user_kill");
    
@@ -208,9 +208,9 @@ int user_kill(struct conn_object *co)
    ident_len = tcp_create_ident(&ident, &po);
 
    /* get the session */
-   if (session_get(&s, ident, ident_len) == -ENOTFOUND) {
+   if (session_get(&s, ident, ident_len) == -E_NOTFOUND) {
       SAFE_FREE(ident); 
-      return -EINVALID;
+      return -E_INVALID;
    }
    
    DEBUG_MSG("user_kill: session found");
@@ -225,7 +225,7 @@ int user_kill(struct conn_object *co)
    send_tcp(&po.L3.src, &po.L3.dst, po.L4.src, po.L4.dst, htonl(status->way[!direction].last_ack), 0, TH_RST, NULL, 0);
    send_tcp(&po.L3.dst, &po.L3.src, po.L4.dst, po.L4.src, htonl(status->way[direction].last_ack), 0, TH_RST, NULL, 0);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -265,7 +265,7 @@ int user_inject(u_char *buf, size_t size, struct conn_object *co, int which)
    /* mark the connection as injected */
    co->flags = CONN_INJECTED;
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* EOF */

@@ -87,12 +87,12 @@ int open_socket(const char *host, u_int16 port)
       memcpy(&sa_in.sin_addr, infh->h_addr, infh->h_length);
    else {
       if ( inet_aton(host, (struct in_addr *)&sa_in.sin_addr.s_addr) == 0 )
-         return -ENOADDRESS;
+         return -E_NOADDRESS;
    }
 
    /* open the socket */
    if ( (sh = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-      return -EFATAL;
+      return -E_FATAL;
  
    /* set nonblocking socket */
    set_blocking(sh, 0);
@@ -125,14 +125,14 @@ int open_socket(const char *host, u_int16 port)
    if (ret < 0 && (err == EINPROGRESS || err == EALREADY || err == EAGAIN)) {
       DEBUG_MSG("open_socket: connect() timeout: %d", err);
       close_socket(sh);
-      return -ETIMEOUT;
+      return -E_TIMEOUT;
    }
 
    /* error while connecting */
    if (ret < 0 && err != EISCONN) {
       DEBUG_MSG("open_socket: connect() error: %d", err);
       close_socket(sh);
-      return -EINVALID;
+      return -E_INVALID;
    }
       
    DEBUG_MSG("open_socket: connect() connected.");

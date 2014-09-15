@@ -129,7 +129,7 @@ static int wdg_menu_destroy(struct wdg_object *wo)
 
    WDG_SAFE_FREE(wo->extend);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -139,7 +139,7 @@ static int wdg_menu_resize(struct wdg_object *wo)
 {
    wdg_menu_redraw(wo);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -174,7 +174,7 @@ static int wdg_menu_redraw(struct wdg_object *wo)
 
       /* create the menu window (fixed dimensions) */
       if ((ww->menu = newwin(1, current_screen.cols, 0, 0)) == NULL)
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
 
       /* set the window color */
       wbkgd(ww->menu, COLOR_PAIR(wo->window_color));
@@ -194,7 +194,7 @@ static int wdg_menu_redraw(struct wdg_object *wo)
    
    wo->flags |= WDG_OBJ_VISIBLE;
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -208,7 +208,7 @@ static int wdg_menu_get_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_menu_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -225,7 +225,7 @@ static int wdg_menu_lost_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_menu_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -245,14 +245,14 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
             /* close any previously opened menu unit */
             wdg_menu_close(wo);
             /* if the mouse click was over a menu unit title */
-            if (wdg_menu_mouse_move(wo, mouse) == WDG_ESUCCESS)
+            if (wdg_menu_mouse_move(wo, mouse) == WDG_E_SUCCESS)
                wdg_menu_open(wo);
             /* redraw the menu */
             wdg_menu_redraw(wo);
          } else if (ww->focus_unit->active && wenclose(ww->focus_unit->win, mouse->y, mouse->x)) {
             wdg_menu_driver(wo, key, mouse);
          } else 
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
 
       case KEY_LEFT:
@@ -269,7 +269,7 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
             
             wdg_menu_redraw(wo);
          } else 
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
          
       case KEY_RETURN:
@@ -282,18 +282,18 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
             else
                wdg_menu_open(wo);
          } else
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
          
       case KEY_UP:
          /* move only if focused */
          if (wo->flags & WDG_OBJ_FOCUSED) {
-            if (wdg_menu_driver(wo, key, mouse) != WDG_ESUCCESS) {
+            if (wdg_menu_driver(wo, key, mouse) != WDG_E_SUCCESS) {
                wdg_menu_close(wo);
-               return -WDG_ENOTHANDLED;
+               return -WDG_E_NOTHANDLED;
             }
          }  else 
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
 
       /* message not handled */
@@ -302,7 +302,7 @@ static int wdg_menu_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          break;
    }
   
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -427,13 +427,13 @@ static int wdg_menu_mouse_move(struct wdg_object *wo, struct wdg_mouse_event *mo
       /* if the mouse is over a title */
       if (mouse->x >= x && mouse->x < x + strlen(mu->title) ) {
          ww->focus_unit = mu;
-         return WDG_ESUCCESS;
+         return WDG_E_SUCCESS;
       }
       /* move the pointer */   
       x += strlen(mu->title) + 2;
    }    
    
-   return -WDG_ENOTHANDLED;
+   return -WDG_E_NOTHANDLED;
 }
 
 /*
@@ -482,7 +482,7 @@ static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
    if (c == E_UNKNOWN_COMMAND) {
       /* the item is not selectable (probably selected with mouse */
       if ( !(item_opts(current_item(ww->focus_unit->m)) & O_SELECTABLE) )
-         return WDG_ESUCCESS;
+         return WDG_E_SUCCESS;
          
       /* retrieve the function pointer */
       kcall = item_userptr(current_item(ww->focus_unit->m));
@@ -493,16 +493,16 @@ static int wdg_menu_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
       /* execute the callback */
       WDG_EXECUTE(kcall->callback);
 
-      return WDG_ESUCCESS;
+      return WDG_E_SUCCESS;
    }
 
    /* tring to go outside edges */
    if (c == E_REQUEST_DENIED)
-      return -WDG_ENOTHANDLED;
+      return -WDG_E_NOTHANDLED;
 
    wnoutrefresh(ww->focus_unit->win);
       
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -638,7 +638,7 @@ static int wdg_menu_shortcut(struct wdg_object *wo, int key)
          ww->focus_unit = mu;
          wdg_menu_open(wo);
          wdg_menu_redraw(wo);
-         return WDG_ESUCCESS;
+         return WDG_E_SUCCESS;
       }
 
       /* then search in the menu items */
@@ -651,12 +651,12 @@ static int wdg_menu_shortcut(struct wdg_object *wo, int key)
          if (kcall->hotkey == key) {
             WDG_DEBUG_MSG("wdg_menu_shortcut: item callback");
             WDG_EXECUTE(kcall->callback);
-            return WDG_ESUCCESS;
+            return WDG_E_SUCCESS;
          }
       }
    }
    
-   return -WDG_ENOTHANDLED;
+   return -WDG_E_NOTHANDLED;
 }
 
 

@@ -106,7 +106,7 @@ FUNC_DECODER(dissector_portmap)
 
    /* CALL */
    if (FROM_CLIENT("portmap", PACKET)) {
-      if (type != 0 || session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (type != 0 || session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          SAFE_FREE(ident); 
          return NULL;
       }
@@ -131,7 +131,7 @@ FUNC_DECODER(dissector_portmap)
    }
 
    /* REPLY */
-   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
       SAFE_FREE(ident);
       return NULL;
    }
@@ -155,14 +155,14 @@ FUNC_DECODER(dissector_portmap)
               Available_RPC_Dissectors[i].version == pe->ver ) {
 
             if (pe->proto == IPPROTO_TCP) {
-               if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == ESUCCESS)
+               if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == E_SUCCESS)
                   break;
                dissect_add((char*)Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
                DISSECT_MSG("portmap : %s binds [%s] on port %d TCP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                                                        Available_RPC_Dissectors[i].name, 
                                                                        port);
             } else {
-               if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == ESUCCESS)
+               if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == E_SUCCESS)
                   break;
                dissect_add((char*)Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);
                DISSECT_MSG("portmap : %s binds [%s] on port %d UDP\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
@@ -190,7 +190,7 @@ FUNC_DECODER(dissector_portmap)
 
                if (proto == IPPROTO_TCP) {
 
-                  if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == ESUCCESS)
+                  if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_TCP) == E_SUCCESS)
                      break;
 
                   dissect_add((char*)Available_RPC_Dissectors[i].name, APP_LAYER_TCP, port, Available_RPC_Dissectors[i].dissector);
@@ -199,7 +199,7 @@ FUNC_DECODER(dissector_portmap)
                                                                           port);
                } else {
 
-                  if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == ESUCCESS)
+                  if (dissect_on_port_level((char*)Available_RPC_Dissectors[i].name, port, APP_LAYER_UDP) == E_SUCCESS)
                      break;
 
                   dissect_add((char*)Available_RPC_Dissectors[i].name, APP_LAYER_UDP, port, Available_RPC_Dissectors[i].dissector);

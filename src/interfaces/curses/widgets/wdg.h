@@ -44,10 +44,10 @@
 /********************************************/
 
 enum {
-   WDG_ESUCCESS    = 0,
-   WDG_ENOTHANDLED = 1,
+   WDG_E_SUCCESS    = 0,
+   WDG_E_NOTHANDLED = 1,
    WDG_EFINISHED   = 2,
-   WDG_EFATAL      = 255,
+   WDG_E_FATAL      = 255,
 };
 
 /* min and max */

@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
       fprintf(stdout, "\n\nThe script contains errors...\n\n");
   
    /* write to file */
-   if (write_output() != ESUCCESS)
+   if (write_output() != E_SUCCESS)
       FATAL_ERROR("Cannot write output file (%s)", GBL_OPTIONS->output_file);
    globals_free();
    return 0;

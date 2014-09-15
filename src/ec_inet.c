@@ -51,12 +51,12 @@ int ip_addr_init(struct ip_addr *sa, u_int16 type, u_char *addr)
          /* wipe the struct */
          memset(sa, 0, sizeof(struct ip_addr));
          BUG("Invalid ip_addr type");
-         return -EINVALID;
+         return -E_INVALID;
    }
    
    memcpy(&sa->addr, addr, ntohs(sa->addr_len));
    
-   return ESUCCESS;
+   return E_SUCCESS;
 };
 
 /*
@@ -66,7 +66,7 @@ int ip_addr_cpy(u_char *addr, struct ip_addr *sa)
 {
    memcpy(addr, &sa->addr, ntohs(sa->addr_len));
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* 
@@ -75,11 +75,11 @@ int ip_addr_cpy(u_char *addr, struct ip_addr *sa)
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
 {
    if (!sa || !sb)
-      return -EINVALID;
+      return -E_INVALID;
 
    /* different type are incompatible */
    if (sa->addr_type != sb->addr_type)
-      return -EINVALID;
+      return -E_INVALID;
 
    return memcmp(sa->addr, sb->addr, ntohs(sa->addr_len));
    
@@ -118,7 +118,7 @@ int ip_addr_is_zero(struct ip_addr *sa)
 
 /*
  * generates a random link-local ip address
- * returns ESUCCESS or -EINVALID if address family is unkown
+ * returns E_SUCCESS or -E_INVALID if address family is unkown
  */
 int ip_addr_random(struct ip_addr* ip, u_int16 type)
 {
@@ -149,15 +149,15 @@ int ip_addr_random(struct ip_addr* ip, u_int16 type)
       break;
 
       default:
-         return -EINVALID;
+         return -E_INVALID;
 
    }
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
  * initialize a solicited-node address from a given ip address.
- * returns ESUCCESS on success or -EINVALID in case of a 
+ * returns E_SUCCESS on success or -E_INVALID in case of a 
  * unsupported address familily (actually only IPv6 is supported)
  */
 int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip)
@@ -177,12 +177,12 @@ int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip)
          ip_addr_init(sn, AF_INET6, (u_char*)IP6_SOL_NODE);
          memcpy((sn->addr + 13), (ip->addr + 13), 3);
 
-         return ESUCCESS;
+         return E_SUCCESS;
       break;
 #endif
    }
 
-   return -EINVALID;
+   return -E_INVALID;
 }
 
 
@@ -324,9 +324,9 @@ int ip_addr_pton(char *str, struct ip_addr *addr)
    
    if(inet_pton(proto, str, buf) == 1) {
       ip_addr_init(addr, proto, buf);
-      return ESUCCESS;
+      return E_SUCCESS;
    } else {
-      return -EINVALID;
+      return -E_INVALID;
    }
 }
 
@@ -376,7 +376,7 @@ int mac_addr_aton(char *str, u_char *mac)
 /*
  * returns  1 if the ip is a Global Unicast 
  * returns  0 if not
- * returns -EINVALID if address family is unknown
+ * returns -E_INVALID if address family is unknown
  */
 int ip_addr_is_global(struct ip_addr *ip)
 {
@@ -399,7 +399,7 @@ int ip_addr_is_global(struct ip_addr *ip)
          } 
       break;
       default: 
-         return -EINVALID;
+         return -E_INVALID;
    }
 
    return 0;
@@ -408,7 +408,7 @@ int ip_addr_is_global(struct ip_addr *ip)
 /*
  * returns  1 if the ip is multicast
  * returns  0 if not
- * returns -EINVALID if address family is unknown
+ * returns -E_INVALID if address family is unknown
  */
 int ip_addr_is_multicast(struct ip_addr *ip)
 {
@@ -425,14 +425,14 @@ int ip_addr_is_multicast(struct ip_addr *ip)
       break;
 
       default:
-         return -EINVALID;
+         return -E_INVALID;
    }
 	return 0;
 }
 
 /*
- * returns  ESUCCESS if the ip is broadcast
- * returns -ENOTFOUND if not
+ * returns  E_SUCCESS if the ip is broadcast
+ * returns -E_NOTFOUND if not
  */
 int ip_addr_is_broadcast(struct ip_addr *sa)
 {
@@ -447,13 +447,13 @@ int ip_addr_is_broadcast(struct ip_addr *sa)
 	switch(ntohs(sa->addr_type)) {
 		case AF_INET:
          if(!GBL_IFACE->has_ipv4)
-            return -EINVALID;
+            return -E_INVALID;
 			nm = &GBL_IFACE->netmask;
 			nw = &GBL_IFACE->network;
 		
          /* 255.255.255.255 is definitely broadcast */
          if(!memcmp(sa->addr, "\xff\xff\xff\xff", IP_ADDR_LEN))
-            return ESUCCESS;
+            return E_SUCCESS;
 
 			address = sa->addr32;
 			netmask = nm->addr32;
@@ -462,31 +462,31 @@ int ip_addr_is_broadcast(struct ip_addr *sa)
 			broadcast = (*network) | ~(*netmask);
 
 			if (broadcast == *address)
-				return ESUCCESS;
+				return E_SUCCESS;
 		case AF_INET6:
 			if(!GBL_IFACE->has_ipv6)
-				return -EINVALID;
+				return -E_INVALID;
 
          /* IPv6 has no such thing as a broadcast address. The closest
           * equivalent is the multicast address ff02::1. Packets sent to that
           * address are delivered to all link-local nodes.
           */
          if(!memcmp(sa->addr, IP6_ALL_NODES, IP6_ADDR_LEN))
-            return ESUCCESS;
+            return E_SUCCESS;
          
 			break;
 	}
 
-	return -ENOTFOUND;
+	return -E_NOTFOUND;
 }
 
 /*
- * returns ESUCCESS if the ip address is local.
- * returns -ENOTFOUND if it is non local.
+ * returns E_SUCCESS if the ip address is local.
+ * returns -E_NOTFOUND if it is non local.
  * the choice is make reading the GBL_IFACE infos
  *
  * if the GBL_IFACE is not filled (while reading from files)
- * returns -EINVALID.
+ * returns -E_INVALID.
  */
 int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
 {
@@ -505,12 +505,12 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
          nw = &GBL_IFACE->network;
          /* the address 0.0.0.0 is used by DHCP and it is local for us*/
          if ( !memcmp(&sa->addr, "\x00\x00\x00\x00", ntohs(sa->addr_len)) )
-            return ESUCCESS;
+            return E_SUCCESS;
          
          /* make a check on GBL_IFACE (is it initialized ?) */
          if ( !memcmp(&nw->addr, "\x00\x00\x00\x00", ntohs(sa->addr_len)) )
             /* return UNKNOWN */
-            return -EINVALID;
+            return -E_INVALID;
    
          address = sa->addr32;
          netmask = nm->addr32;
@@ -519,12 +519,12 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
          if ((*address & *netmask) == *network) {
             if(ifaddr != NULL)
                memcpy(ifaddr, &GBL_IFACE->ip, sizeof(*ifaddr));
-            return ESUCCESS;
+            return E_SUCCESS;
          }
          break;
       case AF_INET6:
          if(!GBL_IFACE->has_ipv6)
-             return -EINVALID;
+             return -E_INVALID;
          LIST_FOREACH(ip6, &GBL_IFACE->ip6_list, next) {
             nm = &ip6->netmask;
             nw = &ip6->network;
@@ -550,13 +550,13 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
                memcpy(ifaddr, &ip6->ip, sizeof(*ifaddr));
             
             if (matched)
-               return ESUCCESS;
+               return E_SUCCESS;
          }
       
          break;
    };
 
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 int ip_addr_is_ours(struct ip_addr *ip)
@@ -565,22 +565,22 @@ int ip_addr_is_ours(struct ip_addr *ip)
    switch(ntohs(ip->addr_type)) {
       case AF_INET:
          if(!ip_addr_cmp(ip, &GBL_IFACE->ip))
-            return EFOUND;
+            return E_FOUND;
          else if(!ip_addr_cmp(ip, &GBL_BRIDGE->ip))
-            return EBRIDGE;
+            return E_BRIDGE;
          else
-            return -ENOTFOUND;
+            return -E_NOTFOUND;
          break;
 
       case AF_INET6:
          LIST_FOREACH(i, &GBL_IFACE->ip6_list, next) {
             if(!ip_addr_cmp(ip, &i->ip))
-               return EFOUND;
+               return E_FOUND;
          }
-         return -ENOTFOUND;
+         return -E_NOTFOUND;
    }
 
-   return -EINVALID;
+   return -E_INVALID;
 }
 
 int ip_addr_get_network(struct ip_addr *ip, struct ip_addr *netmask, struct ip_addr *network)
@@ -589,7 +589,7 @@ int ip_addr_get_network(struct ip_addr *ip, struct ip_addr *netmask, struct ip_a
    u_int32 ip6[IP6_ADDR_LEN / sizeof(u_int32)];
 
    if(ntohs(ip->addr_type) != ntohs(netmask->addr_type))
-      return -EINVALID;
+      return -E_INVALID;
 
    switch(ntohs(ip->addr_type)) {
       case AF_INET:
@@ -605,10 +605,10 @@ int ip_addr_get_network(struct ip_addr *ip, struct ip_addr *netmask, struct ip_a
          break;
       default:
          BUG("Invalid addr_type");
-         return -EINVALID;
+         return -E_INVALID;
          break;
    }
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 int ip_addr_get_prefix(struct ip_addr* netmask)

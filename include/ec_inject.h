@@ -21,9 +21,9 @@
    FUNC_INJECTOR_PTR(prev_injector);                  \
    prev_injector = get_injector(x, y);                \
    if (prev_injector == NULL)                         \
-      return -ENOTFOUND;                              \
-   if (prev_injector(PACKET, LENGTH_PTR) != ESUCCESS) \
-      return -ENOTHANDLED;                            \
+      return -E_NOTFOUND;                              \
+   if (prev_injector(PACKET, LENGTH_PTR) != E_SUCCESS) \
+      return -E_NOTHANDLED;                            \
 } while(0)
 
 EC_API_EXTERN int inject_buffer(struct packet_object *po);

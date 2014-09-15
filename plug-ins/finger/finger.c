@@ -92,9 +92,9 @@ static int finger_init(void *dummy)
     * can we use GBL_TARGETS ?
     * else ask the user
     */
-   if (good_target(&ip, &port) != ESUCCESS) {
+   if (good_target(&ip, &port) != E_SUCCESS) {
       /* get the target from user */
-      if (get_user_target(&ip, &port) == ESUCCESS) {
+      if (get_user_target(&ip, &port) == E_SUCCESS) {
          /* do the actual finterprinting */
          do_fingerprint();   
       }
@@ -168,10 +168,10 @@ static int good_target(struct ip_addr *p_ip, u_int16 *p_port)
       
       /* port was found */
       if (*p_port != 0xffff)
-         return ESUCCESS;
+         return E_SUCCESS;
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 
@@ -191,12 +191,12 @@ static int get_user_target(struct ip_addr *p_ip, u_int16 *p_port)
 
    /* no input was entered */
    if (strlen(input) == 0)
-      return -EINVALID;
+      return -E_INVALID;
    
    /* get the hostname */
    if ((p = ec_strtok(input, ":", &tok)) != NULL) {
       if (inet_aton(p, &ipaddr) == 0)
-         return -EINVALID;
+         return -E_INVALID;
 
       ip_addr_init(p_ip, AF_INET, (u_char *)&ipaddr);
 
@@ -206,11 +206,11 @@ static int get_user_target(struct ip_addr *p_ip, u_int16 *p_port)
 
          /* correct parsing */
          if (*p_port != 0)
-            return ESUCCESS;
+            return E_SUCCESS;
       }
    }
 
-   return -EINVALID;
+   return -E_INVALID;
 }
 
 
@@ -260,7 +260,7 @@ static void do_fingerprint(void)
    INSTANT_USER_MSG("\n FINGERPRINT      : %s\n", fingerprint);
 
    /* decode the finterprint */
-   if (fingerprint_search(fingerprint, os) == ESUCCESS)
+   if (fingerprint_search(fingerprint, os) == E_SUCCESS)
       INSTANT_USER_MSG(" OPERATING SYSTEM : %s \n\n", os);
    else {
       INSTANT_USER_MSG(" OPERATING SYSTEM : unknown fingerprint (please submit it) \n");

@@ -113,7 +113,7 @@ int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t )
   
    SAFE_FREE(str);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -134,7 +134,7 @@ int set_regex(char *regex)
    /* unset the regex if empty */
    if (!strcmp(regex, "")) {
       SAFE_FREE(GBL_OPTIONS->regex);
-      return ESUCCESS;
+      return E_SUCCESS;
    }
   
    /* allocate the new structure */
@@ -148,7 +148,7 @@ int set_regex(char *regex)
       FATAL_MSG("%s\n", errbuf);
    }
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 char **parse_iflist(char *list)

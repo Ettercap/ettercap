@@ -93,8 +93,8 @@ int plugin_load(void *handle)
    /* load the database of spoofed replies (etter.dns) 
     * return an error if we could not open the file
     */
-   if (load_db() != ESUCCESS)
-      return -EINVALID;
+   if (load_db() != E_SUCCESS)
+      return -E_INVALID;
    
    mdns_spoof_dump();
    return plugin_register(handle, &mdns_spoof_ops);
@@ -144,7 +144,7 @@ static int load_db(void)
    f = open_data("etc", ETTER_MDNS, FOPEN_READ_TEXT);
    if (f == NULL) {
       USER_MSG("mdns_spoof: Cannot open %s\n", ETTER_MDNS);
-      return -EINVALID;
+      return -E_INVALID;
    }
          
    /* load it in the list */
@@ -197,7 +197,7 @@ static int load_db(void)
 
    fclose(f);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -332,7 +332,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          char tmp[MAX_ASCII_ADDR_LEN];
          
          /* found the reply in the list */
-         if (get_spoofed_a(name, &reply) != ESUCCESS)
+         if (get_spoofed_a(name, &reply) != E_SUCCESS)
             return;
 
          /* check if the family matches the record type */
@@ -381,7 +381,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          char tmp[MAX_ASCII_ADDR_LEN];
          
          /* found the reply in the list */
-         if (get_spoofed_aaaa(name, &reply) != ESUCCESS)
+         if (get_spoofed_aaaa(name, &reply) != E_SUCCESS)
             return;
 
          /* check if the family matches the record type */
@@ -430,7 +430,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          int rlen;
          
          /* found the reply in the list */
-         if (get_spoofed_ptr(name, &a, &reply) != ESUCCESS)
+         if (get_spoofed_ptr(name, &a, &reply) != E_SUCCESS)
             return;
 
         /* 
@@ -478,7 +478,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
 
 
          /* found the reply in the list */
-         if (get_spoofed_srv(name, &reply, &port) != ESUCCESS) 
+         if (get_spoofed_srv(name, &reply, &port) != E_SUCCESS) 
             return;
 
          /*
@@ -587,11 +587,11 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip)
          /* return the pointer to the struct */
          *ip = &d->ip;
          
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -607,11 +607,11 @@ static int get_spoofed_aaaa(const char *a, struct ip_addr **ip)
          /* return the pointer to the struct */
          *ip = &d->ip;
          
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /* 
@@ -638,7 +638,7 @@ static int get_spoofed_ptr(const char *arpa, char **a, struct ip_addr **ip)
       /* parses the arpa format */
       if (sscanf(arpa, "%d.%d.%d.%d.in-addr.arpa", 
                &oct[3], &oct[2], &oct[1], &oct[0]) != 4)
-         return -EINVALID;
+         return -E_INVALID;
 
       /* collect octets */
       ipv4[0] = oct[0] & 0xff; 
@@ -665,7 +665,7 @@ static int get_spoofed_ptr(const char *arpa, char **a, struct ip_addr **ip)
                         &oct[11], &oct[10], &oct[9],  &oct[8],
                         &oct[7],  &oct[6],  &oct[5],  &oct[4],
                         &oct[3],  &oct[2],  &oct[1],  &oct[0]) != 32) {
-          return -EINVALID;
+          return -E_INVALID;
        }
        
        /* collect octets */
@@ -703,11 +703,11 @@ static int get_spoofed_ptr(const char *arpa, char **a, struct ip_addr **ip)
          *a = d->name;
          *ip = &d->ip;
          
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port) 
@@ -720,11 +720,11 @@ static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port)
             *ip = &d->ip;
             *port = d->port;
 
-            return ESUCCESS;
+            return E_SUCCESS;
         }
     }
 
-    return -ENOTFOUND;
+    return -E_NOTFOUND;
 }
 
 /*
@@ -746,27 +746,27 @@ static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_ad
          *target = &po->L3.src;
          *tmac = po->L2.src;
 
-         return ESUCCESS;
+         return E_SUCCESS;
 
       } else {
          /*
           * we can not use the spoofed address as the sender 
           * a random link-local address need to be generated
           */
-         if (ip_addr_random(&po->L3.dst, ntohs(po->L3.src.addr_type)) == ESUCCESS) {
+         if (ip_addr_random(&po->L3.dst, ntohs(po->L3.src.addr_type)) == E_SUCCESS) {
             DEBUG_MSG("mdns_spoof: random IP generated: %s\n", ip_addr_ntoa(&po->L3.dst, tmp));
 
             *sender = &po->L3.dst;
             *target = &po->L3.src;
             *tmac = po->L2.src;
 
-            return ESUCCESS;
+            return E_SUCCESS;
 
          } else {
             DEBUG_MSG("mdns_spoof: Random sender IP generation failed\n");
             DEBUG_MSG("mdns_spoof: Unknown address family: %s \n", ip_addr_ntoa(&po->L3.src,tmp));
             
-            return -ENOADDRESS;
+            return -E_NOADDRESS;
          }
       }
    } else if (!ip_addr_is_multicast(&po->L3.dst)) {
@@ -775,7 +775,7 @@ static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_ad
       *target = &po->L3.src;
       *tmac = po->L2.src;
 
-      return ESUCCESS;
+      return E_SUCCESS;
 
    } else { 
       /* normal multicast reply */
@@ -788,14 +788,14 @@ static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_ad
          *target = &po->L3.dst;
          *tmac = po->L2.dst;
 
-         return ESUCCESS;
+         return E_SUCCESS;
 
       } else {
          /*
           * we can not use the spoofed address as the sender 
           * a random link-local address need to be generated
           */
-         if (ip_addr_random(&po->L3.src, ntohs(po->L3.src.addr_type)) == ESUCCESS) {
+         if (ip_addr_random(&po->L3.src, ntohs(po->L3.src.addr_type)) == E_SUCCESS) {
             DEBUG_MSG("mdns_spoof: random IP generated: %s\n", ip_addr_ntoa(&po->L3.src, tmp));
 
             /* 
@@ -806,13 +806,13 @@ static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_ad
             *target = &po->L3.dst;
             *tmac = po->L2.dst;
 
-            return ESUCCESS;
+            return E_SUCCESS;
 
          } else {
             DEBUG_MSG("mdns_spoof: Random sender IP generation failed\n");
             DEBUG_MSG("mdns_spoof: Unknown address family: %s \n", ip_addr_ntoa(&po->L3.src,tmp));
             
-            return -ENOADDRESS;
+            return -E_NOADDRESS;
          }
       }
    }

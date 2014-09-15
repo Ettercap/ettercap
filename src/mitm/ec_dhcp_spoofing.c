@@ -103,7 +103,7 @@ static int dhcp_spoofing_start(char *args)
          /* add the / to be able to use the target parsing function */
          snprintf(tmp, strlen(p)+4, "/%s//", p);
 
-         if (compile_target(tmp, &dhcp_ip_pool) != ESUCCESS)
+         if (compile_target(tmp, &dhcp_ip_pool) != E_SUCCESS)
             break;
          
       /* second parameter (the netmask) */
@@ -135,7 +135,7 @@ static int dhcp_spoofing_start(char *args)
 
          /* se the pointer to the first ip pool address */
          dhcp_free_ip = LIST_FIRST(&dhcp_ip_pool.ips);
-         return ESUCCESS;
+         return E_SUCCESS;
       }
       
       i++;
@@ -144,7 +144,7 @@ static int dhcp_spoofing_start(char *args)
    /* error parsing the parameter */
    SEMIFATAL_ERROR("DHCP spoofing: parameter number %d is incorrect.\n", i);
 
-   return -EFATAL;
+   return -E_FATAL;
 }
 
 

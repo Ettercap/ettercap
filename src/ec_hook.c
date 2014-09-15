@@ -127,7 +127,7 @@ int hook_del(int point, void (*func)(struct packet_object *po) )
             SAFE_FREE(current);
             HOOK_PCK_UNLOCK;
             DEBUG_MSG("hook_del -- %d [%p]", point, func);
-            return ESUCCESS;
+            return E_SUCCESS;
          }
       }
  
@@ -141,14 +141,14 @@ int hook_del(int point, void (*func)(struct packet_object *po) )
             SAFE_FREE(current);
             HOOK_UNLOCK;
             DEBUG_MSG("hook_del -- %d [%p]", point, func);
-            return ESUCCESS;
+            return E_SUCCESS;
          }
       }
  
       HOOK_UNLOCK;
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 

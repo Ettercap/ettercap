@@ -108,7 +108,7 @@ FUNC_DECODER(dissector_postgresql)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_postgresql));
 
       /* if the session does not exist... */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          /* search for user and database strings, look for StartupMessage  */
          unsigned char *u = memmem(ptr, PACKET->DATA.len, "user", 4);
          unsigned char *d = memmem(ptr, PACKET->DATA.len, "database", 8);
@@ -173,7 +173,7 @@ FUNC_DECODER(dissector_postgresql)
          return NULL;
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_postgresql));
 
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          conn_status = (struct postgresql_status *) s->data;
          if (conn_status->status == WAIT_AUTH &&
                ptr[0] == 'R' && !memcmp(ptr + 1, "\x00\x00\x00\x0c", 4)  &&

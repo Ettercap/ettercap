@@ -293,7 +293,7 @@ int wdg_events_handler(int exit_key)
          default:
             /* emergency exit key */
             if (key == wdg_exit_key)
-               return WDG_ESUCCESS;
+               return WDG_E_SUCCESS;
 
 #ifdef NCURSES_MOUSE_VERSION
             /* handle mouse events */
@@ -322,7 +322,7 @@ int wdg_events_handler(int exit_key)
    
    /* NOT REACHED */
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -404,7 +404,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
        * other objects and needs to get the event first
        */
       if (wdg_root_obj != NULL) {
-         if (wdg_root_obj->get_msg(wdg_root_obj, key, mouse) == WDG_ESUCCESS)
+         if (wdg_root_obj->get_msg(wdg_root_obj, key, mouse) == WDG_E_SUCCESS)
             /* the root object handled the message */
             return;
       }
@@ -415,7 +415,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
        * to prevent an undesired raising of underlaying objects
        */
       if (wdg_focused_obj != NULL) {
-         if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse) == WDG_ESUCCESS)
+         if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse) == WDG_E_SUCCESS)
             /* the focused object handled the message */
             return;     
       }
@@ -423,7 +423,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
       /* dispatch to all the other objects */
       TAILQ_FOREACH(wl, &wdg_objects_list, next) {
          if ((wl->wo->flags & WDG_OBJ_WANT_FOCUS) && (wl->wo->flags & WDG_OBJ_VISIBLE) ) {
-            if (wl->wo->get_msg(wl->wo, key, mouse) == WDG_ESUCCESS)
+            if (wl->wo->get_msg(wl->wo, key, mouse) == WDG_E_SUCCESS)
                return;
          }
       }
@@ -433,7 +433,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
 
       /* first dispatch to the root object */
       if (wdg_root_obj != NULL) {
-         if (wdg_root_obj->get_msg(wdg_root_obj, key, mouse) == WDG_ESUCCESS)
+         if (wdg_root_obj->get_msg(wdg_root_obj, key, mouse) == WDG_E_SUCCESS)
             /* the root object handled the message */
             return;
          
@@ -451,7 +451,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
        * dispatch to the focused one
        */
       if (wdg_focused_obj != NULL) {
-         if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse) == WDG_ESUCCESS)
+         if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse) == WDG_E_SUCCESS)
             /* the focused object handled the message */
             return;      
          
@@ -618,7 +618,7 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
          
       default:
          WDG_SAFE_FREE(*wo);
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
          break;
    }
    
@@ -635,7 +635,7 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
    if (flags & WDG_OBJ_ROOT_OBJECT)
       wdg_root_obj = *wo;
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -649,7 +649,7 @@ int wdg_destroy_object(struct wdg_object **wo)
   
    /* sanity check */
    if (*wo == NULL)
-      return -WDG_ENOTHANDLED;
+      return -WDG_E_NOTHANDLED;
   
    /* delete it from the obj_list */
    TAILQ_FOREACH(wl, &wdg_objects_list, next) {
@@ -687,11 +687,11 @@ int wdg_destroy_object(struct wdg_object **wo)
          /* then free the object */
          WDG_SAFE_FREE(*wo);
          
-         return WDG_ESUCCESS;
+         return WDG_E_SUCCESS;
       }
    }
 
-   return -WDG_ENOTHANDLED;
+   return -WDG_E_NOTHANDLED;
 }
 
 /*

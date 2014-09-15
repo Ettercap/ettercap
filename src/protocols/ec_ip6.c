@@ -134,15 +134,15 @@ FUNC_DECODER(decode_ip6)
 
    /* calculate if the dest is local or not */
    switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
-      case ESUCCESS:
+      case E_SUCCESS:
          PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
          break;
-      case -ENOTFOUND:
+      case -E_NOTFOUND:
          PACKET->PASSIVE.flags &= ~FP_HOST_LOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
          break;
-      case -EINVALID:
+      case -E_INVALID:
          PACKET->PASSIVE.flags = FP_UNKNOWN;
          break;
    }
@@ -162,7 +162,7 @@ FUNC_DECODER(decode_ip6)
    if(!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
       ip6_create_ident(&ident, PACKET);
 
-      if(session_get(&s, ident, sizeof(struct ip6_ident)) == -ENOTFOUND) {
+      if(session_get(&s, ident, sizeof(struct ip6_ident)) == -E_NOTFOUND) {
          ip6_create_session(&s, PACKET);
          session_put(s);
       }
@@ -227,7 +227,7 @@ FUNC_INJECTOR(inject_ip6)
 
    /* i think im paranoid */
    if(LENGTH + sizeof(struct ip6_header) > GBL_IFACE->mtu)
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
 
    /* almost copied from ec_ip.c */
    PACKET->packet -= sizeof(struct ip6_header);
@@ -241,8 +241,8 @@ FUNC_INJECTOR(inject_ip6)
 
    s = PACKET->session;
    /* Renew session */
-   if(session_get(&s, s->ident, sizeof(struct ip6_ident)) == -ENOTFOUND)
-      return -ENOTFOUND;
+   if(session_get(&s, s->ident, sizeof(struct ip6_ident)) == -E_NOTFOUND)
+      return -E_NOTFOUND;
 
    ident = s->ident;
    memcpy(&ip6->flow_lbl, &ident->flow_lbl, 3);
@@ -272,7 +272,7 @@ FUNC_INJECTOR(inject_ip6)
       PACKET->fwd_len = PACKET->L3.len;
    }
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
    
 static size_t ip6_create_ident(void **i, struct packet_object *po)

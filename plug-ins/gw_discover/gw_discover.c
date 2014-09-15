@@ -83,7 +83,7 @@ static int gw_discover_init(void *dummy)
    /* wipe the global vars */
    memset(&ip, 0, sizeof(struct ip_addr));
 
-   if (get_remote_target(&ip, &port) == ESUCCESS) {
+   if (get_remote_target(&ip, &port) == E_SUCCESS) {
       /* do the actual finterprinting */
       do_discover();   
    }
@@ -119,12 +119,12 @@ static int get_remote_target(struct ip_addr *p_ip, u_int16 *p_port)
 
    /* no input was entered */
    if (strlen(input) == 0)
-      return -EINVALID;
+      return -E_INVALID;
    
    /* get the hostname */
    if ((p = ec_strtok(input, ":", &tok)) != NULL) {
       if (inet_aton(p, &ipaddr) == 0)
-         return -EINVALID;
+         return -E_INVALID;
 
       ip_addr_init(p_ip, AF_INET, (u_char *)&ipaddr);
 
@@ -134,11 +134,11 @@ static int get_remote_target(struct ip_addr *p_ip, u_int16 *p_port)
 
          /* correct parsing */
          if (*p_port != 0)
-            return ESUCCESS;
+            return E_SUCCESS;
       }
    }
 
-   return -EINVALID;
+   return -E_INVALID;
 }
 
 

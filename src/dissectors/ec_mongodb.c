@@ -74,7 +74,7 @@ FUNC_DECODER(dissector_mongodb)
 
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_mongodb));
       /* if the session does not exist... */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          unsigned char *noncep  = memmem(ptr, PACKET->DATA.len, "nonce", 5);
          unsigned char *gnoncep  = memmem(ptr, PACKET->DATA.len, "getnonce\x00", 9);
          unsigned char *keyp  = memmem(ptr, PACKET->DATA.len, "authenticate\x00", 12);
@@ -102,7 +102,7 @@ FUNC_DECODER(dissector_mongodb)
          }
       }
       else {
-              if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+              if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
                       conn_status = (struct mongodb_status *) s->data;
                       if (PACKET->DATA.len < 16)
                               return NULL;
@@ -121,7 +121,7 @@ FUNC_DECODER(dissector_mongodb)
    } else {
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_mongodb));
 
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          conn_status = (struct mongodb_status *) s->data;
          if (PACKET->DATA.len < 16)
                  return NULL;

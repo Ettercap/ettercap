@@ -49,7 +49,7 @@ int write_output(void)
    ninst = compile_tree(&fop);
 
    if (fop == NULL)
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
 
    /* create the file */
    fd = open(GBL_OPTIONS->output_file, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0644);
@@ -84,7 +84,7 @@ int write_output(void)
   
    fprintf(stdout, " -> Script encoded into %d instructions.\n\n", (int)(i - 1));
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*

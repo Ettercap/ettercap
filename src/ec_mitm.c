@@ -81,11 +81,11 @@ int mitm_set(char *name)
    SLIST_FOREACH(e, &mitm_table, next) {
       if (!strcasecmp(e->mm->name, name)) {
          e->selected = 1;
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
 
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -114,7 +114,7 @@ int mitm_start(void)
    /* reading from file we won't start mitm */
    if (GBL_OPTIONS->read || GBL_OPTIONS->unoffensive) {
       DEBUG_MSG("mitm_start: skipping");
-      return -EINVALID;
+      return -E_INVALID;
    }
 
       
@@ -137,14 +137,14 @@ int mitm_start(void)
           * if the mitm method does not start correctly,
           * deselect it !
           */
-         if (e->mm->start(mitm_args) == ESUCCESS)
+         if (e->mm->start(mitm_args) == E_SUCCESS)
             e->started = 1;
          else
             e->selected = 0;
       }
    }
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 

@@ -126,7 +126,7 @@ FUNC_DECODER(dissector_smtp)
    
    /* search the session (if it exist) */
    dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_smtp));
-   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
       SAFE_FREE(ident);
       return NULL;
    }

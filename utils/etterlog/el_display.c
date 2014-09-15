@@ -70,7 +70,7 @@ static void display_packet(void)
       ret = get_packet(&pck, &buf);
 
       /* on error exit the loop */
-      if (ret != ESUCCESS)
+      if (ret != E_SUCCESS)
          break;
 
       /* the packet should be compliant to the target specifications */
@@ -243,7 +243,7 @@ static void display_info(void)
          continue;
      
       /* we are searching one particular user */
-      if (find_user(h, GBL->user) == -ENOTFOUND)
+      if (find_user(h, GBL->user) == -E_NOTFOUND)
          continue;
      
       /* if the regex was set, respect it */

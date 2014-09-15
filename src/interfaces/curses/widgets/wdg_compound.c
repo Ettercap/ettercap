@@ -119,7 +119,7 @@ static int wdg_compound_destroy(struct wdg_object *wo)
 
    WDG_SAFE_FREE(wo->extend);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -129,7 +129,7 @@ static int wdg_compound_resize(struct wdg_object *wo)
 {
    wdg_compound_redraw(wo);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -164,7 +164,7 @@ static int wdg_compound_redraw(struct wdg_object *wo)
 
       /* create the outher window */
       if ((ww->win = newwin(l, c, y, x)) == NULL)
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
 
       /* draw the borders */
       wdg_compound_border(wo);
@@ -182,7 +182,7 @@ static int wdg_compound_redraw(struct wdg_object *wo)
       wdg_draw_object(e->wdg);
    }
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -205,7 +205,7 @@ static int wdg_compound_get_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_compound_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -228,7 +228,7 @@ static int wdg_compound_lost_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_compound_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -247,7 +247,7 @@ static int wdg_compound_get_msg(struct wdg_object *wo, int key, struct wdg_mouse
             wdg_set_focus(wo);
             /* dispatch to the proper widget */
             TAILQ_FOREACH(wl, &ww->widgets_list, next)
-               if (wl->wdg->get_msg(wl->wdg, key, mouse) == WDG_ESUCCESS) {
+               if (wl->wdg->get_msg(wl->wdg, key, mouse) == WDG_E_SUCCESS) {
                   /* 
                    * the widget has handled the message,
                    * set to the focused one 
@@ -262,7 +262,7 @@ static int wdg_compound_get_msg(struct wdg_object *wo, int key, struct wdg_mouse
                }
          }
          else 
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
 
       /* move the focus */
@@ -277,7 +277,7 @@ static int wdg_compound_get_msg(struct wdg_object *wo, int key, struct wdg_mouse
          break;
    }
   
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -335,7 +335,7 @@ static int wdg_compound_dispatch(struct wdg_object *wo, int key, struct wdg_mous
          /* execute the callback */
          WDG_EXECUTE(c->callback);
          
-         return WDG_ESUCCESS;
+         return WDG_E_SUCCESS;
       }
    }
 

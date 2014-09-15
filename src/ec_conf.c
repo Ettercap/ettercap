@@ -459,11 +459,11 @@ static void set_dissector(char *name, char *values, int lineno)
     
       /* the first value replaces all the previous */
       if (p == q) {
-         if (dissect_modify(MODE_REP, name, value) != ESUCCESS)
+         if (dissect_modify(MODE_REP, name, value) != E_SUCCESS)
             fprintf(stderr, "Dissector \"%s\" not supported (%s line %d)\n", name, ETTER_CONF, lineno);
       } else {
          /* the other values have to be added */
-         if (dissect_modify(MODE_ADD, name, value) != ESUCCESS)
+         if (dissect_modify(MODE_ADD, name, value) != E_SUCCESS)
             fprintf(stderr, "Dissector \"%s\" not supported (%s line %d)\n", name, ETTER_CONF, lineno);
       }
       

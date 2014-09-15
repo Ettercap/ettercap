@@ -219,7 +219,7 @@ FUNC_DECODER(decode_wifi)
       }
 
       /* decrypt the packet */
-      if (wep_decrypt((u_char *)wep, DECODE_DATALEN - DECODED_LEN, GBL_WIFI->wkey, GBL_WIFI->wkey_len) != ESUCCESS)
+      if (wep_decrypt((u_char *)wep, DECODE_DATALEN - DECODED_LEN, GBL_WIFI->wkey, GBL_WIFI->wkey_len) != E_SUCCESS)
          return NULL;
 
       /* the wep header was overwritten, remove it from the decoded portion */
@@ -239,7 +239,7 @@ FUNC_DECODER(decode_wifi)
        * if we don't have a valid SA there is no way to decrypt the packet.
        * the SA is calculated from the 4-way handshake into the EAPOL packets
        */
-      if (wpa_sess_get(PACKET->L2.src, &sa) == ESUCCESS || wpa_sess_get(PACKET->L2.dst, &sa) == ESUCCESS) {
+      if (wpa_sess_get(PACKET->L2.src, &sa) == E_SUCCESS || wpa_sess_get(PACKET->L2.dst, &sa) == E_SUCCESS) {
 
          /* get the WPA header (CCMP or TKIP initialization vector) */
          wpa = (struct wpa_header *)wifi_end;
@@ -254,7 +254,7 @@ FUNC_DECODER(decode_wifi)
          }
 
          /* decrypt the packet */
-         if (wpa_decrypt((u_char *)wifi, (u_char *)wpa, DECODE_DATALEN - DECODED_LEN, sa) != ESUCCESS) {
+         if (wpa_decrypt((u_char *)wifi, (u_char *)wpa, DECODE_DATALEN - DECODED_LEN, sa) != E_SUCCESS) {
             return NULL;
          }
 

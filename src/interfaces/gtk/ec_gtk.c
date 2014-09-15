@@ -948,7 +948,7 @@ static void read_pcapfile(gchar *file)
    snprintf(GBL_OPTIONS->pcapfile_in, strlen(file)+1, "%s", file);
 
    /* check if the file is good */
-   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, pcap_errbuf) != ESUCCESS) {
+   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, pcap_errbuf) != E_SUCCESS) {
       ui_error("%s", pcap_errbuf);
       SAFE_FREE(GBL_OPTIONS->pcapfile_in);
       return;

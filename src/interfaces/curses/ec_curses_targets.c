@@ -412,7 +412,7 @@ static void add_target1(void)
 {
    struct ip_addr ip;
 
-   if(ip_addr_pton(thost, &ip) == -EINVALID) { 
+   if(ip_addr_pton(thost, &ip) == -E_INVALID) { 
       curses_message("Invalid ip address");
       return;
    }
@@ -427,7 +427,7 @@ static void add_target2(void)
 {
    struct ip_addr ip;
 
-   if(ip_addr_pton(thost, &ip) == -EINVALID) { 
+   if(ip_addr_pton(thost, &ip) == -E_INVALID) { 
       curses_message("Invalid ip address");
       return;
    }

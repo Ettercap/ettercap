@@ -85,7 +85,7 @@ FUNC_DECODER(dissector_irc)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_irc));
       
       /* get the saved nick */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS)
          PACKET->DISSECTOR.user = strdup(s->data);
       else
          PACKET->DISSECTOR.user = strdup("unknown");
@@ -205,7 +205,7 @@ FUNC_DECODER(dissector_irc)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_irc));
       
       /* get the saved nick */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS)
          PACKET->DISSECTOR.user = strdup(s->data);
       else
          PACKET->DISSECTOR.user = strdup("unknown");
@@ -248,7 +248,7 @@ FUNC_DECODER(dissector_irc)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_irc));
       
       /* get the saved nick */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS)
          PACKET->DISSECTOR.user = strdup(s->data);
       else
          PACKET->DISSECTOR.user = strdup("unknown");
@@ -294,7 +294,7 @@ FUNC_DECODER(dissector_irc)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_irc));
       
       /* get the saved nick */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS)
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS)
          PACKET->DISSECTOR.user = strdup(s->data);
       else
          PACKET->DISSECTOR.user = strdup("unknown");

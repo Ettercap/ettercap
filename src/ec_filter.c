@@ -35,7 +35,7 @@
 #endif
 
 
-#define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x "\n", ## __VA_ARGS__); return -EFATAL; } while(0)
+#define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x "\n", ## __VA_ARGS__); return -E_FATAL; } while(0)
 
 /* since we need a recursive mutex, we cannot initialize it here statically */
 static pthread_mutex_t filters_mutex;
@@ -195,43 +195,43 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
    switch (fop->op.func.op) {
       case FFUNC_SEARCH:
          /* search the string */
-         if (func_search(fop, po) == ESUCCESS)
+         if (func_search(fop, po) == E_SUCCESS)
             return FLAG_TRUE;
          break;
          
       case FFUNC_REGEX:
          /* search the string with a regex */
-         if (func_regex(fop, po) == ESUCCESS)
+         if (func_regex(fop, po) == E_SUCCESS)
             return FLAG_TRUE;
          break;
          
       case FFUNC_PCRE:
          /* evaluate a perl regex */
-         if (func_pcre(fop, po) == ESUCCESS)
+         if (func_pcre(fop, po) == E_SUCCESS)
             return FLAG_TRUE;
          break;
 
       case FFUNC_REPLACE:
          /* replace the string */
-         if (func_replace(fop, po) == ESUCCESS)
+         if (func_replace(fop, po) == E_SUCCESS)
             return FLAG_TRUE;
          break;
          
       case FFUNC_INJECT:
          /* replace the string */
-         if (func_inject(fop, po) == ESUCCESS)
+         if (func_inject(fop, po) == E_SUCCESS)
             return FLAG_TRUE;
          break;
 
       case FFUNC_EXECINJECT:
          /* replace the string through output of a executable */
-         if (func_execinject(fop, po) == ESUCCESS)
+         if (func_execinject(fop, po) == E_SUCCESS)
             return FLAG_TRUE;
          break;
          
       case FFUNC_LOG:
          /* log the packet */
-         if (func_log(fop, po) == ESUCCESS)
+         if (func_log(fop, po) == E_SUCCESS)
             return FLAG_TRUE;
          break;
          
@@ -255,7 +255,7 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
          
       case FFUNC_EXEC:
          /* execute the command */
-         if (func_exec(fop) == ESUCCESS)
+         if (func_exec(fop) == E_SUCCESS)
             return FLAG_TRUE;
          break;
          
@@ -507,19 +507,19 @@ static int func_search(struct filter_op *fop, struct packet_object *po)
       case 5:
          /* search in the real packet */
          if (memmem(po->DATA.data, po->DATA.len, fop->op.func.string, fop->op.func.slen))
-            return ESUCCESS;
+            return E_SUCCESS;
          break;
       case 6:
          /* search in the decoded/decrypted packet */
          if (memmem(po->DATA.disp_data, po->DATA.disp_len, fop->op.func.string, fop->op.func.slen))
-            return ESUCCESS;
+            return E_SUCCESS;
          break;
       default:
          JIT_FAULT("unsupported search level [%d]", fop->op.func.level);
          break;
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -531,19 +531,19 @@ static int func_regex(struct filter_op *fop, struct packet_object *po)
       case 5:
          /* search in the real packet */
          if (regexec(fop->op.func.ropt->regex, (const char*)po->DATA.data, 0, NULL, 0) == 0)
-            return ESUCCESS;
+            return E_SUCCESS;
          break;
       case 6:
          /* search in the decoded/decrypted packet */
          if (regexec(fop->op.func.ropt->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) == 0)
-            return ESUCCESS;
+            return E_SUCCESS;
          break;
       default:
          JIT_FAULT("unsupported regex level [%d]", fop->op.func.level);
          break;
    }
 
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 
@@ -556,7 +556,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
    (void) fop;
    (void) po;
    JIT_FAULT("pcre_regex support not compiled in ettercap");
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 #else
    int ovec[PCRE_OVEC_SIZE];
    int ret;
@@ -570,7 +570,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
          
          /* search in the real packet */
          if ( (ret = pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.data, po->DATA.len, 0, 0, ovec, sizeof(ovec) / sizeof(*ovec))) < 0)
-            return -ENOTFOUND;
+            return -E_NOTFOUND;
 
          /* the pcre wants to modify the packet */
          if (fop->op.func.replace) {
@@ -678,14 +678,14 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
       case 6:
          /* search in the decoded one */
          if ( pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.disp_data, po->DATA.disp_len, 0, 0, NULL, 0) < 0)
-            return -ENOTFOUND;
+            return -E_NOTFOUND;
          break;
       default:
          JIT_FAULT("unsupported pcre_regex level [%d]", fop->op.func.level);
          break;
    }
 
-   return ESUCCESS;
+   return E_SUCCESS;
 #endif
 }
 
@@ -707,7 +707,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
    
    /* check if it exist at least one */
    if (!memmem(po->DATA.data, po->DATA.len, fop->op.func.string, fop->op.func.slen) )
-      return -ENOTFOUND;
+      return -E_NOTFOUND;
 
    DEBUG_MSG("filter engine: func_replace");
 
@@ -758,7 +758,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
 
    } while(ptr != NULL && ptr < end);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -780,7 +780,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    /* open the file */
    if ((fd = open((const char*)fop->op.func.string, O_RDONLY | O_BINARY)) == -1) {
       USER_MSG("filter engine: inject(): File not found (%s)\n", fop->op.func.string);
-      return -EFATAL;
+      return -E_FATAL;
    }
 
    /* get the size */
@@ -820,7 +820,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    /* close and unmap the file */
    SAFE_FREE(file);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -843,7 +843,7 @@ static int func_execinject(struct filter_op *fop, struct packet_object *po)
    /* open the pipe */
    if ((pstream = popen((const char*)fop->op.func.string, "r")) == NULL) {
       USER_MSG("filter engine: execinject(): Command not found (%s)\n", fop->op.func.string);
-      return -EFATAL;
+      return -E_FATAL;
    }
    
    while ((n = read(fileno(pstream), buf, size)) != 0) {
@@ -882,7 +882,7 @@ static int func_execinject(struct filter_op *fop, struct packet_object *po)
    /* free memory */
    SAFE_FREE(output);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -899,7 +899,7 @@ static int func_log(struct filter_op *fop, struct packet_object *po)
    fd = open((const char*)fop->op.func.string, O_CREAT | O_APPEND | O_RDWR | O_BINARY, 0600);
    if (fd == -1) {
       USER_MSG("filter engine: Cannot open file %s\n", fop->op.func.string);
-      return -EFATAL;
+      return -E_FATAL;
    }
 
    /* which data should I have to log ? */
@@ -920,7 +920,7 @@ static int func_log(struct filter_op *fop, struct packet_object *po)
    /* close the file */
    close(fd);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -937,7 +937,7 @@ static int func_drop(struct packet_object *po)
    po->DATA.delta -= po->DATA.len;
    po->DATA.len = 0;
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -961,7 +961,7 @@ static int func_kill(struct packet_object *po)
       send_L3_icmp_unreach(po);
    }
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -1026,7 +1026,7 @@ static int func_exec(struct filter_op *fop)
       _exit(-1);
    }
       
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -1136,12 +1136,12 @@ int filter_load_file(const char *filename, struct filter_list **list, uint8_t en
    FILTERS_UNLOCK;
 
    /* compile the regex to speed up the matching */
-   if (compile_regex(fenv) != ESUCCESS)
-      return -EFATAL;
+   if (compile_regex(fenv) != E_SUCCESS)
+      return -E_FATAL;
    
    USER_MSG("Content filters loaded from %s...\n", filename);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* 
@@ -1305,7 +1305,7 @@ static int compile_regex(struct filter_env *fenv)
       i++;
    } 
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*

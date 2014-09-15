@@ -60,7 +60,7 @@ void resolv_cache_insert(struct ip_addr *ip, char *name);
  * a cache of previously resolved hosts to increase
  * speed.
  * if the name can not be found in the cache and name
- * resolution is enabled, -ENOMATCH is returned indicating
+ * resolution is enabled, -E_NOMATCH is returned indicating
  * that the background resolution using getnameinfo 
  * starts and the the result is inserted in the cache.
  * The caller can fetch the name with a second call
@@ -77,15 +77,15 @@ int host_iptoa(struct ip_addr *ip, char *name)
   
    /* sanity check */
    if (ip_addr_is_zero(ip))
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
 
    /*
     * if the entry is already present in the cache
     * return that entry and don't call the real
     * getnameinfo. we want to increase the speed...
     */
-   if (resolv_cache_search(ip, name) == ESUCCESS)
-      return ESUCCESS;
+   if (resolv_cache_search(ip, name) == E_SUCCESS)
+      return E_SUCCESS;
 
    /*
     * the user has requested to not resolve the host,
@@ -94,14 +94,14 @@ int host_iptoa(struct ip_addr *ip, char *name)
     * request. it is resolution for free... ;)
     */
    if (!GBL_OPTIONS->resolve)
-      return -ENOTFOUND;
+      return -E_NOTFOUND;
   
    DEBUG_MSG("host_iptoa() %s not in cache", ip_addr_ntoa(ip, tmp));
 
    /* 
     * The host was not in the cache but requests to resolve,
     * so we continue resolving it in a non-blocking manner.
-    * We return -ENOMATCH to indicate that we try to resolve it
+    * We return -E_NOMATCH to indicate that we try to resolve it
     * and the result may be in the cache later.
     * That way we don't block the application if the OS is configured
     * to include mDNS in the host resolution process (/etc/nsswitch.conf).
@@ -111,7 +111,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
    snprintf(thread_name, sizeof(thread_name), "resolv[%s]", tmp);
    ec_thread_new(thread_name, "DNS resolver", &resolv_dns, ip);
 
-   return -ENOMATCH;
+   return -E_NOMATCH;
 }
 
 /* 
@@ -202,12 +202,12 @@ static int resolv_cache_search(struct ip_addr *ip, char *name)
                ip_addr_ntoa(ip, tmp), r->hostname);
          
          strlcpy(name, r->hostname, MAX_HOSTNAME_LEN - 1);
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
    /* cache miss */
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*

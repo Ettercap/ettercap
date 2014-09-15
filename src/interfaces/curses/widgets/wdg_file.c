@@ -127,7 +127,7 @@ static int wdg_file_destroy(struct wdg_object *wo)
 
    WDG_SAFE_FREE(wo->extend);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -137,7 +137,7 @@ static int wdg_file_resize(struct wdg_object *wo)
 {
    wdg_file_redraw(wo);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -196,7 +196,7 @@ static int wdg_file_redraw(struct wdg_object *wo)
 
       /* create the menu window (fixed dimensions) */
       if ((ww->win = newwin(l, c, y, x)) == NULL)
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
 
       /* create the file list */
       wdg_file_menu_create(wo);
@@ -221,7 +221,7 @@ static int wdg_file_redraw(struct wdg_object *wo)
    
    wo->flags |= WDG_OBJ_VISIBLE;
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -235,7 +235,7 @@ static int wdg_file_get_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_file_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -249,7 +249,7 @@ static int wdg_file_lost_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_file_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -267,10 +267,10 @@ static int wdg_file_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          if (wenclose(ww->win, mouse->y, mouse->x)) {
             wdg_set_focus(wo);
             /* pass it to the menu */
-            if (wdg_file_driver(wo, key, mouse) != WDG_ESUCCESS)
+            if (wdg_file_driver(wo, key, mouse) != WDG_E_SUCCESS)
                wdg_file_redraw(wo);
          } else 
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
 
       case KEY_RETURN:
@@ -280,10 +280,10 @@ static int wdg_file_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
       case KEY_NPAGE:
          /* move only if focused */
          if (wo->flags & WDG_OBJ_FOCUSED) {
-            if (wdg_file_driver(wo, key, mouse) != WDG_ESUCCESS)
+            if (wdg_file_driver(wo, key, mouse) != WDG_E_SUCCESS)
                wdg_file_redraw(wo);
          } else
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
         
       case KEY_ESC:
@@ -294,11 +294,11 @@ static int wdg_file_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          
       /* message not handled */
       default:
-         return -WDG_ENOTHANDLED;
+         return -WDG_E_NOTHANDLED;
          break;
    }
   
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -389,24 +389,24 @@ static int wdg_file_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
    if (c == E_UNKNOWN_COMMAND) {
       /* the item is not selectable (probably selected with mouse) */
       if ( !(item_opts(current_item(ww->m)) & O_SELECTABLE) )
-         return WDG_ESUCCESS;
+         return WDG_E_SUCCESS;
          
       stat(item_name(current_item(ww->m)), &buf);
       /* if it is a directory, change to it */
       if (S_ISDIR(buf.st_mode)) {
          chdir(item_name(current_item(ww->m)));
-         return -WDG_ENOTHANDLED;
+         return -WDG_E_NOTHANDLED;
       } else {
          /* invoke the callback and return */
          wdg_file_callback(wo, ww->curpath, (char *)item_name(current_item(ww->m)));
-         return WDG_ESUCCESS;
+         return WDG_E_SUCCESS;
       }
    
    }
 
    wnoutrefresh(ww->mwin);
       
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*

@@ -65,7 +65,7 @@ void conn_table_create(void)
       ret = get_packet(&pck, &buf);
 
       /* on error exit the loop */
-      if (ret != ESUCCESS)
+      if (ret != E_SUCCESS)
          break;
       
       count += insert_table(&pck, (char*)buf);

@@ -85,7 +85,7 @@ int send_to_L3(struct packet_object *po)
     * libnet handler is not initialized
     */
    if(l == NULL)
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
    
    SEND_LOCK;
 
@@ -134,7 +134,7 @@ int send_to_iface(struct packet_object *po, struct iface_env *iface)
    libnet_t *l;
 
    if(iface->unoffensive)
-      return -EINVALID;
+      return -E_INVALID;
 
    /* if not lnet warn the developer ;) */
    BUG_IF(iface->lnet == NULL);

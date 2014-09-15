@@ -176,11 +176,11 @@ int is_pcap_file(char *file, char *pcap_errbuf)
    
    pcap = pcap_open_offline(file, pcap_errbuf);
    if (pcap == NULL)
-      return -EINVALID;
+      return -E_INVALID;
 
    pcap_close(pcap);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*

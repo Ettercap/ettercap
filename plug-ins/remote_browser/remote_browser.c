@@ -103,7 +103,7 @@ static void remote_browser(struct packet_object *po)
    /* the client is making a request */
    if (po->DATA.disp_len != 0 && strstr((const char*)po->DATA.disp_data, "GET")) {
       /* I'm the sender, opening a browser with a request coming by me will trigger a loop in this function! */
-      if(ip_addr_is_ours(&po->L3.src) == EFOUND || ip_addr_is_ours(&po->L3.src) == EBRIDGE)
+      if(ip_addr_is_ours(&po->L3.src) == E_FOUND || ip_addr_is_ours(&po->L3.src) == E_BRIDGE)
          return;
 
       /* I'm not the sender, I can safely open the browser, the GET triggered by it shouldn't cause bad effects */
@@ -178,7 +178,7 @@ static void remote_browser(struct packet_object *po)
 
          execvp(param[0], param);
          WARN_MSG("Cannot launch the default browser (command: %s), please edit your etter.conf file and put a valid value in remote_browser field\n", GBL_CONF->remote_browser);
-         _exit(-EINVALID);
+         _exit(-E_INVALID);
       }
          
       //to free the char **param

@@ -76,7 +76,7 @@ static int icmp_redirect_start(char *args)
       /* add the / to be able to use the target parsing function */
       snprintf(temp, strlen(args)+3, "%s//", args);
       
-      if (compile_target(temp, &redirected_gw) != ESUCCESS)
+      if (compile_target(temp, &redirected_gw) != E_SUCCESS)
          SEMIFATAL_ERROR("Wrong target parameter");
    }
 
@@ -91,7 +91,7 @@ static int icmp_redirect_start(char *args)
    hook_add(HOOK_PACKET_TCP, &icmp_redirect);
    hook_add(HOOK_PACKET_UDP, &icmp_redirect);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 

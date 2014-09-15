@@ -184,11 +184,11 @@ static void curses_connection_detail(void *conn)
    wdg_window_print(wdg_conn_detail, 1, 2, "Destination MAC address :  %s", mac_addr_ntoa(c->co->L2_addr2, tmp));
    
    wdg_window_print(wdg_conn_detail, 1, 4, "Source IP address       :  %s", ip_addr_ntoa(&(c->co->L3_addr1), tmp));
-   if (host_iptoa(&(c->co->L3_addr1), name) == ESUCCESS)
+   if (host_iptoa(&(c->co->L3_addr1), name) == E_SUCCESS)
       wdg_window_print(wdg_conn_detail, 1, 5, "                           %s", name);
    
    wdg_window_print(wdg_conn_detail, 1, 6, "Destination IP address  :  %s", ip_addr_ntoa(&(c->co->L3_addr2), tmp));
-   if (host_iptoa(&(c->co->L3_addr2), name) == ESUCCESS)
+   if (host_iptoa(&(c->co->L3_addr2), name) == E_SUCCESS)
       wdg_window_print(wdg_conn_detail, 1, 7, "                           %s", name);
    
    switch (c->co->L4_proto) {
@@ -516,12 +516,12 @@ static void curses_connection_kill(void *conn)
   
    /* kill it */
    switch (user_kill(c->co)) {
-      case ESUCCESS:
+      case E_SUCCESS:
          /* set the status */
          c->co->status = CONN_KILLED;
          curses_message("The connection was killed !!");
          break;
-      case -EFATAL:
+      case -E_FATAL:
          curses_message("Cannot kill UDP connections !!");
          break;
    }

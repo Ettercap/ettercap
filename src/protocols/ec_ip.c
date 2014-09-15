@@ -191,15 +191,15 @@ FUNC_DECODER(decode_ip)
 
    /* calculate if the dest is local or not */
    switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
-      case ESUCCESS:
+      case E_SUCCESS:
          PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
          break;
-      case -ENOTFOUND:
+      case -E_NOTFOUND:
          PACKET->PASSIVE.flags &= ~FP_HOST_LOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
          break;
-      case -EINVALID:
+      case -E_INVALID:
          PACKET->PASSIVE.flags = FP_UNKNOWN;
          break;
    }
@@ -213,7 +213,7 @@ FUNC_DECODER(decode_ip)
       /* Find or create the correct session */
       ip_create_ident(&ident, PACKET);
    
-      if (session_get(&s, ident, IP_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, IP_IDENT_LEN) == -E_NOTFOUND) {
          ip_create_session(&s, PACKET);
          session_put(s);
       }
@@ -275,7 +275,7 @@ FUNC_INJECTOR(inject_ip)
    
    /* Paranoid check */
    if (LENGTH + sizeof(struct ip_header) > GBL_IFACE->mtu)
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
 
    /* Make space for ip header on packet stack... */      
    PACKET->packet -= sizeof(struct ip_header);
@@ -299,8 +299,8 @@ FUNC_INJECTOR(inject_ip)
    iph->id = htons(status->last_id + status->id_adj + 1);
 
    /* Renew session timestamp (XXX it locks the sessions) */
-   if (session_get(&s, s->ident, IP_IDENT_LEN) == -ENOTFOUND) 
-      return -ENOTFOUND;
+   if (session_get(&s, s->ident, IP_IDENT_LEN) == -E_NOTFOUND) 
+      return -E_NOTFOUND;
    
    /* Adjust headers length */   
    LENGTH += sizeof(struct ip_header);
@@ -341,7 +341,7 @@ FUNC_INJECTOR(inject_ip)
  
    /* Injectors executed, no need to keep the session */ 
    session_del(s->ident, IP_IDENT_LEN); 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* Used to link sessionless udp with correct ip session */
@@ -352,9 +352,9 @@ FUNC_INJECTOR(stateless_ip)
 
    /* Find the correct IP session */
    ip_create_ident(&ident, PACKET);
-   if (session_get(&s, ident, IP_IDENT_LEN) == -ENOTFOUND) {
+   if (session_get(&s, ident, IP_IDENT_LEN) == -E_NOTFOUND) {
       SAFE_FREE(ident);
-      return -ENOTFOUND;
+      return -E_NOTFOUND;
    }
 
    PACKET->session = s;
@@ -363,7 +363,7 @@ FUNC_INJECTOR(stateless_ip)
    EXECUTE_INJECTOR(CHAIN_LINKED, IP_MAGIC);
 
    SAFE_FREE(ident);
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*******************************************/

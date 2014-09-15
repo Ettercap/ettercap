@@ -275,7 +275,7 @@ void text_interface(void)
    
    LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
       /* check if the specified plugin exists */
-      if (search_plugin(plugin->name) != ESUCCESS) {
+      if (search_plugin(plugin->name) != E_SUCCESS) {
          plugin->exists = false;
          USER_MSG("Sorry, plugin '%s' can not be found - skipping!\n\n", 
                plugin->name);
@@ -435,7 +435,7 @@ static void text_run_plugin(void)
 #endif
    
    /* there are no plugins */
-   if (text_plugin("list") == -ENOTFOUND)
+   if (text_plugin("list") == -E_NOTFOUND)
       return;
    
    /* stop the visualization while the plugin interface is running */

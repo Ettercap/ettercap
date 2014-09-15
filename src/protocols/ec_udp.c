@@ -111,7 +111,7 @@ FUNC_DECODER(decode_udp)
           *
           * if the source is the ettercap host, don't display the message 
           */
-         if (!ip_addr_is_ours(&PACKET->L3.src) == EFOUND)
+         if (!ip_addr_is_ours(&PACKET->L3.src) == E_FOUND)
             return NULL;
 #endif
          if (GBL_CONF->checksum_warning)
@@ -189,7 +189,7 @@ FUNC_INJECTOR(inject_udp)
    udph->ulen = htons(PACKET->DATA.len + PACKET->L4.len);
    udph->csum = L4_checksum(PACKET);
       
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* EOF */

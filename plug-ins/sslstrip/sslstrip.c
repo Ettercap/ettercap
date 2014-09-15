@@ -86,7 +86,7 @@
 #define HTTP_MAX (1024*200) //200KB max for HTTP requests.
 
 #define BREAK_ON_ERROR(x,y,z) do {  \
-   if (x == -EINVALID ) {            \
+   if (x == -E_INVALID ) {            \
      http_wipe_connection(y);      \
      SAFE_FREE(z.DATA.data);       \
      SAFE_FREE(z.DATA.disp_data);  \
@@ -227,7 +227,7 @@ static int sslstrip_init(void *dummy)
 	/*
 	 * Add IPTables redirect for port 80
          */
-	if (http_bind_wrapper() != ESUCCESS) {
+	if (http_bind_wrapper() != E_SUCCESS) {
 		USER_MSG("SSLStrip: plugin load failed: Could not set up HTTP redirect\n");
 		return PLUGIN_FINISHED;
 	}
@@ -267,7 +267,7 @@ static int sslstrip_fini(void *dummy)
    (void) dummy;
 
 	DEBUG_MSG("SSLStrip: Removing redirect\n");
-	if (http_remove_redirect(bind_port) != ESUCCESS) {
+	if (http_remove_redirect(bind_port) != E_SUCCESS) {
 		USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.\n");
 	}
 
@@ -473,7 +473,7 @@ static int http_insert_redirect(u_int16 dport)
 	if (GBL_CONF->redir_command_on == NULL)
 	{
 		USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
-		return -EFATAL;
+		return -E_FATAL;
 	}
 	snprintf(asc_dport, 16, "%u", dport);
 
@@ -505,23 +505,23 @@ static int http_insert_redirect(u_int16 dport)
 			drop_privs();
 			WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
 			safe_free_http_redirect(param, &param_length, command, orig_command);
-			_exit(-EINVALID);
+			_exit(-E_INVALID);
 		case -1:
 			safe_free_http_redirect(param, &param_length, command, orig_command);
-			return -EINVALID;
+			return -E_INVALID;
 		default:
 			wait(&ret_val);
 			if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
 			    USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
 			    safe_free_http_redirect(param, &param_length, command, orig_command);
-			    return -EINVALID;
+			    return -E_INVALID;
 			}
 			break;
 	}
 
 	safe_free_http_redirect(param, &param_length, command, orig_command);
 
-	return ESUCCESS;
+	return E_SUCCESS;
 }
 
 static int http_remove_redirect(u_int16 dport)
@@ -535,7 +535,7 @@ static int http_remove_redirect(u_int16 dport)
         if (GBL_CONF->redir_command_off == NULL)
 	{
 		USER_MSG("SSLStrip: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
-		return -EFATAL;
+		return -E_FATAL;
 	}
 
         snprintf(asc_dport, 16, "%u", dport);
@@ -568,23 +568,23 @@ static int http_remove_redirect(u_int16 dport)
 			drop_privs();
 			WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
 			safe_free_http_redirect(param, &param_length, command, orig_command);
-			_exit(-EINVALID);
+			_exit(-E_INVALID);
                 case -1:
                         safe_free_http_redirect(param, &param_length, command, orig_command);
-                        return -EINVALID;
+                        return -E_INVALID;
                 default:
                         wait(&ret_val);
                         if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
                             USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
                             safe_free_http_redirect(param, &param_length, command, orig_command);
-                            return -EINVALID;
+                            return -E_INVALID;
                         }
                         break;
         }
 
         safe_free_http_redirect(param, &param_length, command, orig_command);
 
-        return ESUCCESS;
+        return E_SUCCESS;
 }
 
 static EC_THREAD_FUNC(http_accept_thread)
@@ -661,12 +661,12 @@ static int http_get_peer(struct http_connection *connection)
 	http_create_ident(&ident, &po);
 
 	/* Wait for sniffing thread */
-	for (i=0; i<HTTP_RETRY && session_get_and_del(&s, ident, HTTP_IDENT_LEN)!=ESUCCESS; i++)
+	for (i=0; i<HTTP_RETRY && session_get_and_del(&s, ident, HTTP_IDENT_LEN)!=E_SUCCESS; i++)
 	ec_usleep(SEC2MICRO(HTTP_WAIT));
 
 	if (i==HTTP_RETRY) {
 		SAFE_FREE(ident);
-		return -EINVALID;
+		return -E_INVALID;
 	}
 
 	memcpy(&connection->ip[HTTP_SERVER], s->data, sizeof(struct ip_addr));
@@ -683,7 +683,7 @@ static int http_get_peer(struct http_connection *connection)
 #endif
 
 	
-	return ESUCCESS;
+	return E_SUCCESS;
 
 }
 
@@ -709,12 +709,12 @@ static size_t http_create_ident(void **i, struct packet_object *po)
 
 static int http_sync_conn(struct http_connection *connection) 
 {
-	if (http_get_peer(connection) != ESUCCESS)
-		return -EINVALID;
+	if (http_get_peer(connection) != E_SUCCESS)
+		return -E_INVALID;
 
 
 	set_blocking(connection->fd, 0);
-	return ESUCCESS;
+	return E_SUCCESS;
 }
 
 static int http_read(struct http_connection *connection, struct packet_object *po)
@@ -726,7 +726,7 @@ static int http_read(struct http_connection *connection, struct packet_object *p
 	po->DATA.len = len;
 
 	if(len <= 0)
-		return -EINVALID;
+		return -E_INVALID;
 
 	return len;	
 }
@@ -906,7 +906,7 @@ static void http_send(struct http_connection *connection, struct packet_object *
 	DEBUG_MSG("SSLStrip: after removing all %s", connection->response->html);
 	//Send result back to client
 	DEBUG_MSG("SSLStrip: Sending response back to client");
-	if (http_write(connection->fd, connection->response->html, connection->response->len) != ESUCCESS){
+	if (http_write(connection->fd, connection->response->html, connection->response->len) != E_SUCCESS){
 		DEBUG_MSG("Unable to send HTTP response back to client\n");
 	} else {
 		DEBUG_MSG("Sent HTTP response back to client");
@@ -965,7 +965,7 @@ static int http_write(int fd, char *ptr, unsigned long int total_len)
 			err = GET_SOCK_ERRNO();
 			DEBUG_MSG("http_write: SOCK ERR: %d", err);
 			if (err != EAGAIN && err != EINTR)
-				return -EINVALID;
+				return -E_INVALID;
 		}
 
 		DEBUG_MSG("SSLStrip: Sent %d bytes", len);
@@ -979,7 +979,7 @@ static int http_write(int fd, char *ptr, unsigned long int total_len)
 	
 	}
 
-	return ESUCCESS;
+	return E_SUCCESS;
 }
 
 #if 0
@@ -1044,7 +1044,7 @@ EC_THREAD_FUNC(http_child_thread)
 	ec_thread_init();
 
 	/* Get peer and set to non-blocking */
-	if (http_sync_conn(connection) == -EINVALID) {
+	if (http_sync_conn(connection) == -E_INVALID) {
 		DEBUG_MSG("SSLStrip: Could not get peer!!");
 		if (connection->fd != -1)
 			close_socket(connection->fd);
@@ -1204,15 +1204,15 @@ static void http_parse_packet(struct http_connection *connection, int direction,
 	gettimeofday(&po->ts, NULL);
 
 	switch(ip_addr_is_local(&PACKET->L3.src, NULL)) {
-		case ESUCCESS:
+		case E_SUCCESS:
 			PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
 			PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
 			break;
-		case -ENOTFOUND:
+		case -E_NOTFOUND:
 			PACKET->PASSIVE.flags &= ~FP_HOST_LOCAL;
 			PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
 			break;
-		case -EINVALID:
+		case -E_INVALID:
 			PACKET->PASSIVE.flags = FP_UNKNOWN;
 			break;
 	}
@@ -1274,7 +1274,7 @@ static int http_bind_wrapper(void)
 	main_fd = socket(AF_INET, SOCK_STREAM, 0);
         if (main_fd == -1) { /* oops, unable to create socket */
             DEBUG_MSG("Unable to create socket() for HTTP...");
-            return -EFATAL;
+            return -E_FATAL;
         }
 	memset(&sa_in, 0, sizeof(sa_in));
 	sa_in.sin_family = AF_INET;
@@ -1287,14 +1287,14 @@ static int http_bind_wrapper(void)
 
 	if(listen(main_fd, 100) == -1) {
             DEBUG_MSG("SSLStrip plugin: unable to listen() on socket");
-            return -EFATAL;
+            return -E_FATAL;
         }
 	USER_MSG("SSLStrip plugin: bind 80 on %d\n", bind_port);
 	
-	if (http_insert_redirect(bind_port) != ESUCCESS)
-		return -EFATAL;
+	if (http_insert_redirect(bind_port) != E_SUCCESS)
+		return -E_FATAL;
 
-	return ESUCCESS;
+	return E_SUCCESS;
 
 }
 

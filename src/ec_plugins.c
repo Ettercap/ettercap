@@ -99,7 +99,7 @@ int plugin_load_single(const char *path, char *name)
 
    if (handle == NULL) {
       DEBUG_MSG("plugin_load_single - %s - dlopen() | %s", file, dlerror());
-      return -EINVALID;
+      return -E_INVALID;
    }
    
    /* find the loading function */
@@ -108,7 +108,7 @@ int plugin_load_single(const char *path, char *name)
    if (plugin_load == NULL) {
       DEBUG_MSG("plugin_load_single - %s - lt_dlsym() | %s", file, dlerror());
       dlclose(handle);
-      return -EINVALID;
+      return -E_INVALID;
    }
 
    /* 
@@ -121,7 +121,7 @@ int plugin_load_single(const char *path, char *name)
 #else
    (void) path;
    (void) name;
-   return -EINVALID;
+   return -E_INVALID;
 #endif
 }
 
@@ -181,18 +181,18 @@ void plugin_load_all(void)
    for(i = n-1; i >= 0; i--) {
       ret = plugin_load_single(where, namelist[i]->d_name);
       switch (ret) {
-         case ESUCCESS:
+         case E_SUCCESS:
             t++;
             break;
-         case -EDUPLICATE:
+         case -E_DUPLICATE:
             USER_MSG("plugin %s already loaded...\n", namelist[i]->d_name);
             DEBUG_MSG("plugin %s already loaded...", namelist[i]->d_name);
             break;
-         case -EVERSION:
+         case -E_VERSION:
             USER_MSG("plugin %s was compiled for a different ettercap version...\n", namelist[i]->d_name);
             DEBUG_MSG("plugin %s was compiled for a different ettercap version...", namelist[i]->d_name);
             break;
-         case -EINVALID:
+         case -E_INVALID:
          default:
             USER_MSG("plugin %s cannot be loaded...\n", namelist[i]->d_name);
             DEBUG_MSG("plugin %s cannot be loaded...", namelist[i]->d_name);
@@ -245,7 +245,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
    /* check for ettercap API version */
    if (strcmp(ops->ettercap_version, EC_VERSION)) {
       dlclose(handle);
-      return -EVERSION;
+      return -E_VERSION;
    }
    
    /* check that this plugin was not already loaded */
@@ -253,7 +253,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
       /* same name and same version */
       if (!strcmp(ops->name, pl->ops->name) && !strcmp(ops->version, pl->ops->version)) {
          dlclose(handle);
-         return -EDUPLICATE;
+         return -E_DUPLICATE;
       }
    }
 
@@ -264,11 +264,11 @@ int plugin_register(void *handle, struct plugin_ops *ops)
 
    SLIST_INSERT_HEAD(&plugin_head, p, next);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 #else
    (void) handle;
    (void) ops;
-   return -EINVALID;
+   return -E_INVALID;
 #endif
 }
 
@@ -293,7 +293,7 @@ int plugin_init(char *name)
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 
@@ -317,7 +317,7 @@ int plugin_fini(char *name)
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /* 
@@ -336,11 +336,11 @@ int plugin_kill_thread(char *name, char *thread)
 
    /* do not execute if not being a thread */
    if (pthread_equal(pid, EC_PTHREAD_NULL))
-      return -EINVALID;
+      return -E_INVALID;
 
    /* the thread can only kill itself */
    if (!pthread_equal(pid, pthread_self()))
-      return -EINVALID;
+      return -E_INVALID;
 
    DEBUG_MSG("plugin_kill_thread");
 
@@ -368,7 +368,7 @@ int plugin_kill_thread(char *name, char *thread)
    }
    KILL_UNLOCK;
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -399,7 +399,7 @@ int plugin_list_walk(int min, int max, void (*func)(char, struct plugin_ops *))
       i++;
    }
    
-   return (i == min) ? -ENOTFOUND : (i-1);
+   return (i == min) ? -E_NOTFOUND : (i-1);
 }
 
 /*
@@ -428,11 +428,11 @@ int search_plugin(char *name)
 
    SLIST_FOREACH(p, &plugin_head, next) {
       if (!strcmp(p->ops->name, name)) {
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -450,7 +450,7 @@ void plugin_list(void)
    /* print the list */
    fprintf(stdout, "\nAvailable plugins :\n\n");
    ret = plugin_list_walk(PLP_MIN, PLP_MAX, &plugin_print);
-   if (ret == -ENOTFOUND) {
+   if (ret == -E_NOTFOUND) {
       fprintf(stdout, "No plugin found !\n\n");
       return;
    }

@@ -194,7 +194,7 @@ static int port_stealing_start(char *args)
    /* create the stealing thread */
    ec_thread_new("port_stealer", "Port Stealing module", &port_stealer, NULL);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 

@@ -91,7 +91,7 @@ FUNC_DECODER(dissector_mysql)
    if (FROM_SERVER("mysql", PACKET)) {
 
       /* if the session does not exist... */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          u_int index = 5;
 
          /* Check magic numbers and catch the banner */
@@ -151,7 +151,7 @@ FUNC_DECODER(dissector_mysql)
       } 
    } else { /* Packets coming from the client */
       /* Only if we catched the connection from the beginning */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          if(!s->flag) {
             DEBUG_MSG("\tDissector_mysq DUMP ENCRYPTED");
             /* Reach and save the username */

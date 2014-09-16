@@ -86,7 +86,7 @@ char * ec_thread_getname(pthread_t id)
 
 /* 
  * returns the pid of a thread 
- * ZERO if not found !! (take care, not -ENOTFOUND !)
+ * ZERO if not found !! (take care, not -E_NOTFOUND !)
  */
 
 pthread_t ec_thread_getpid(char *name)

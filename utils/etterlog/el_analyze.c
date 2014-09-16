@@ -66,7 +66,7 @@ void analyze_packet(void)
       ret = get_packet(&pck, &buf);
 
       /* on error exit the loop */
-      if (ret != ESUCCESS)
+      if (ret != E_SUCCESS)
          break;
       
       count++;
@@ -122,7 +122,7 @@ void create_hosts_list(void)
       ret = get_info(&inf, &buf);
 
       /* on error exit the loop */
-      if (ret != ESUCCESS)
+      if (ret != E_SUCCESS)
          break;
    
       profile_add_info(&inf, &buf);

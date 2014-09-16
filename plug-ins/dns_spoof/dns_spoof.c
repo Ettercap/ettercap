@@ -119,8 +119,8 @@ int plugin_load(void *handle)
    /* load the database of spoofed replies (etter.dns) 
     * return an error if we could not open the file
     */
-   if (load_db() != ESUCCESS)
-      return -EINVALID;
+   if (load_db() != E_SUCCESS)
+      return -E_INVALID;
    
    dns_spoof_dump();
    return plugin_register(handle, &dns_spoof_ops);
@@ -173,7 +173,7 @@ static int load_db(void)
    f = open_data("etc", ETTER_DNS, FOPEN_READ_TEXT);
    if (f == NULL) {
       USER_MSG("dns_spoof: Cannot open %s\n", ETTER_DNS);
-      return -EINVALID;
+      return -E_INVALID;
    }
          
    /* load it in the list */
@@ -226,7 +226,7 @@ static int load_db(void)
    
    fclose(f);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -367,7 +367,7 @@ static void dns_spoof(struct packet_object *po)
          char tmp[MAX_ASCII_ADDR_LEN];
          
          /* found the reply in the list */
-         if (get_spoofed_a(name, &reply) != ESUCCESS)
+         if (get_spoofed_a(name, &reply) != E_SUCCESS)
             return;
 
          /* check if the family matches the record type */
@@ -422,7 +422,7 @@ static void dns_spoof(struct packet_object *po)
           char tmp[MAX_ASCII_ADDR_LEN];
 
           /* found the reply in the list */
-          if (get_spoofed_aaaa(name, &reply) != ESUCCESS)
+          if (get_spoofed_aaaa(name, &reply) != E_SUCCESS)
               return;
 
           /* check if the family matches the record type */
@@ -477,7 +477,7 @@ static void dns_spoof(struct packet_object *po)
          int rlen;
          
          /* found the reply in the list */
-         if (get_spoofed_ptr(name, &a) != ESUCCESS)
+         if (get_spoofed_ptr(name, &a) != E_SUCCESS)
             return;
    
          /* Do not forward query */
@@ -516,7 +516,7 @@ static void dns_spoof(struct packet_object *po)
          char mxoffset[2];
          
          /* found the reply in the list */
-         if (get_spoofed_mx(name, &reply) != ESUCCESS)
+         if (get_spoofed_mx(name, &reply) != E_SUCCESS)
             return;
 
          /* Do not forward query */
@@ -589,7 +589,7 @@ static void dns_spoof(struct packet_object *po)
          char tmp[MAX_ASCII_ADDR_LEN];
 
          /* found the reply in the list */
-         if (get_spoofed_wins(name, &reply) != ESUCCESS)
+         if (get_spoofed_wins(name, &reply) != E_SUCCESS)
             return;
 
          /* Do not forward query */
@@ -628,7 +628,7 @@ static void dns_spoof(struct packet_object *po)
 
 
          /* found the reply in the list */
-         if (get_spoofed_srv(name, &reply, &port) != ESUCCESS) 
+         if (get_spoofed_srv(name, &reply, &port) != E_SUCCESS) 
             return;
 
          /* Do not forward query */
@@ -764,11 +764,11 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip)
          /* return the pointer to the struct */
          *ip = &d->ip;
          
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -783,11 +783,11 @@ static int get_spoofed_aaaa(const char *a, struct ip_addr **ip)
             /* return the pointer to the struct */
             *ip = &d->ip;
 
-            return ESUCCESS;
+            return E_SUCCESS;
         }
     }
 
-    return -ENOTFOUND;
+    return -E_NOTFOUND;
 }
 
 
@@ -815,7 +815,7 @@ static int get_spoofed_ptr(const char *arpa, char **a)
        /* parses the arpa format */
        if (sscanf(arpa, "%d.%d.%d.%d.in-addr.arpa", 
                    &oct[3], &oct[2], &oct[1], &oct[0]) != 4)
-          return -EINVALID;
+          return -E_INVALID;
 
        /* collect octets */
        ipv4[0] = oct[0] & 0xff;
@@ -843,7 +843,7 @@ static int get_spoofed_ptr(const char *arpa, char **a)
                         &oct[11], &oct[10], &oct[9],  &oct[8],
                         &oct[7],  &oct[6],  &oct[5],  &oct[4],
                         &oct[3],  &oct[2],  &oct[1],  &oct[0]) != 32) {
-          return -EINVALID;
+          return -E_INVALID;
        }
 
        /* collect octets */
@@ -881,11 +881,11 @@ static int get_spoofed_ptr(const char *arpa, char **a)
          /* return the pointer to the name */
          *a = d->name;
          
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -901,11 +901,11 @@ static int get_spoofed_mx(const char *a, struct ip_addr **ip)
          /* return the pointer to the struct */
          *ip = &d->ip;
          
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -921,11 +921,11 @@ static int get_spoofed_wins(const char *a, struct ip_addr **ip)
          /* return the pointer to the struct */
          *ip = &d->ip;
 
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
 
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -941,11 +941,11 @@ static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port)
            *ip = &d->ip;
            *port = d->port;
 
-           return ESUCCESS;
+           return E_SUCCESS;
         }
     }
 
-    return -ENOTFOUND;
+    return -E_NOTFOUND;
 }
 
 char *type_str (int type)

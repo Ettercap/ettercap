@@ -111,7 +111,7 @@ void print_host(struct host_profile *h)
       
    
    fprintf(stdout, " FINGERPRINT      : %s\n", h->fingerprint);
-   if (fingerprint_search((const char*)h->fingerprint, os) == ESUCCESS)
+   if (fingerprint_search((const char*)h->fingerprint, os) == E_SUCCESS)
       fprintf(stdout, " OPERATING SYSTEM : %s \n\n", os);
    else {
       fprintf(stdout, " OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
@@ -181,7 +181,7 @@ void print_host_xml(struct host_profile *h)
   
    
    if (strcmp((const char*)h->fingerprint, "")) {
-      if (fingerprint_search((const char*)h->fingerprint, os) == ESUCCESS) {
+      if (fingerprint_search((const char*)h->fingerprint, os) == E_SUCCESS) {
          fprintf(stdout, "\t\t<fingerprint type=\"known\">%s</fingerprint>\n", h->fingerprint);
          fprintf(stdout, "\t\t<os type=\"exact\">%s</os>\n", os);
       } else {

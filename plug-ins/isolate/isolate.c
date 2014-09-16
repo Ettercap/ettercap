@@ -150,7 +150,7 @@ static void parse_arp(struct packet_object *po)
          }
 
          /* add to the list if good */
-         if (good && add_to_victims(po) == ESUCCESS) {
+         if (good && add_to_victims(po) == E_SUCCESS) {
             USER_MSG("isolate: %s added to the list\n", ip_addr_ntoa(&po->L3.dst, tmp));
             /* send the fake reply */
             send_arp(ARPOP_REPLY, &po->L3.dst, isolate_mac, &po->L3.src, po->L2.src);
@@ -169,7 +169,7 @@ static int add_to_victims(struct packet_object *po)
    /* search if it was already inserted in the list */
    LIST_FOREACH(h, &victims, next)
       if (!ip_addr_cmp(&h->ip, &po->L3.src)) 
-         return -ENOTHANDLED;
+         return -E_NOTHANDLED;
   
    SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
    
@@ -179,7 +179,7 @@ static int add_to_victims(struct packet_object *po)
      
    LIST_INSERT_HEAD(&victims, h, next);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*

@@ -127,7 +127,7 @@ static int arp_poisoning_start(char *args)
    else
       ret = create_list();
 
-   if (ret != ESUCCESS)
+   if (ret != E_SUCCESS)
       SEMIFATAL_ERROR("ARP poisoning process cannot start.\n");
 
    /* create a hook to look for ARP requests while poisoning */
@@ -136,7 +136,7 @@ static int arp_poisoning_start(char *args)
    /* create the poisoning thread */
    ec_thread_new("arp_poisoner", "ARP poisoning module", &arp_poisoner, NULL);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -379,7 +379,7 @@ static int create_silent_list(void)
       /* the the ip was specified, even the mac address must be specified */
       if (!memcmp(GBL_TARGET1->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) {
          USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
-         return -EFATAL;
+         return -E_FATAL;
       }
       
       USER_MSG(" TARGET 1 : %-15s %17s\n", ip_addr_ntoa(&i->ip, tmp), mac_addr_ntoa(GBL_TARGET1->mac, tmp2));
@@ -407,7 +407,7 @@ static int create_silent_list(void)
       /* the the ip was specified, even the mac address must be specified */
       if (!memcmp(GBL_TARGET2->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) {
          USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
-         return -EFATAL;
+         return -E_FATAL;
       }
       USER_MSG(" TARGET 2 : %-15s %17s\n", ip_addr_ntoa(&j->ip, tmp), mac_addr_ntoa(GBL_TARGET2->mac, tmp2));
       
@@ -434,14 +434,14 @@ static int create_silent_list(void)
       USER_MSG("\nERROR: Cannot ARP poison these targets...\n");
       SAFE_FREE(h);
       SAFE_FREE(g);
-      return -EFATAL;
+      return -E_FATAL;
    }
 
    /* add the elements in the two lists */
    LIST_INSERT_HEAD(&arp_group_one, h, next);
    LIST_INSERT_HEAD(&arp_group_two, g, next);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -542,7 +542,7 @@ static int create_list(void)
       }
    }
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* EOF */

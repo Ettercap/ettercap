@@ -54,7 +54,7 @@
 #include <openssl/ssl.h>
 
 #define BREAK_ON_ERROR(x,y,z) do {  \
-   if (x == -EINVALID) {            \
+   if (x == -E_INVALID) {            \
       SAFE_FREE(z.DATA.disp_data);  \
       sslw_initialize_po(&z, z.DATA.data); \
       z.len = 64;                   \
@@ -358,7 +358,7 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    if (GBL_CONF->redir_command_on == NULL)
    {
       USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
-      return -EFATAL;
+      return -E_FATAL;
    }
    snprintf(asc_sport, 16, "%u", sport);
    snprintf(asc_dport, 16, "%u", dport);
@@ -397,20 +397,20 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
          drop_privs();
          WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
          safe_free_mem(param, &param_length, command);
-         _exit(-EINVALID);
+         _exit(-E_INVALID);
       case -1:
          safe_free_mem(param, &param_length, command);
-         return -EINVALID;
+         return -E_INVALID;
       default:
          safe_free_mem(param, &param_length, command);
          wait(&ret_val);
          if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
             USER_MSG("sslwrap: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
-            return -EINVALID;
+            return -E_INVALID;
          }
    }    
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -429,7 +429,7 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
    if (GBL_CONF->redir_command_off == NULL)
    {
       USER_MSG("SSLStrip: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
-      return -EFATAL;
+      return -E_FATAL;
    }
 
    snprintf(asc_sport, 16, "%u", sport);
@@ -469,18 +469,18 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
          drop_privs();
          WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
          safe_free_mem(param, &param_length, command);
-         _exit(-EINVALID);
+         _exit(-E_INVALID);
       case -1:
          safe_free_mem(param, &param_length, command);
-         return -EINVALID;
+         return -E_INVALID;
       default:
          safe_free_mem(param, &param_length, command);
          wait(&ret_val);
-         if (ret_val == -EINVALID)
-            return -EINVALID;
+         if (ret_val == -E_INVALID)
+            return -E_INVALID;
    }    
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -533,7 +533,7 @@ static void sslw_bind_wrapper(void)
       DEBUG_MSG("sslw - bind %d on %d", le->sslw_port, le->redir_port);
       if(listen(le->fd, 100) == -1)
         FATAL_ERROR("Unable to accept connections for socket");      
-      if (sslw_insert_redirect(le->sslw_port, le->redir_port) != ESUCCESS)
+      if (sslw_insert_redirect(le->sslw_port, le->redir_port) != E_SUCCESS)
         FATAL_ERROR("Can't insert firewall redirects");
    }
 }
@@ -543,17 +543,17 @@ static void sslw_bind_wrapper(void)
  */
 static int sslw_sync_conn(struct accepted_entry *ae)
 {      
-   if(sslw_get_peer(ae) != ESUCCESS)
-         return -EINVALID;
+   if(sslw_get_peer(ae) != E_SUCCESS)
+         return -E_INVALID;
 	 
-   if(sslw_connect_server(ae) != ESUCCESS)
-         return -EINVALID;
+   if(sslw_connect_server(ae) != E_SUCCESS)
+         return -E_INVALID;
 
    /* set nonbloking socket */
    set_blocking(ae->fd[SSL_CLIENT], 0);
    set_blocking(ae->fd[SSL_SERVER], 0);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -569,19 +569,19 @@ static int sslw_ssl_connect(SSL *ssl_sk)
    do {
       /* connect to the server */
       if ( (ret = SSL_connect(ssl_sk)) == 1)
-         return ESUCCESS;
+         return E_SUCCESS;
 
       ssl_err = SSL_get_error(ssl_sk, ret);
       
       /* there was an error... */
       if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE) 
-         return -EINVALID;
+         return -E_INVALID;
       
       /* sleep a quirk of time... */
       ec_usleep(TSLEEP);
    } while(loops--);
 
-   return -EINVALID;
+   return -E_INVALID;
 }
 
 
@@ -597,19 +597,19 @@ static int sslw_ssl_accept(SSL *ssl_sk)
    do {
       /* accept the ssl connection */
       if ( (ret = SSL_accept(ssl_sk)) == 1)
-         return ESUCCESS;
+         return E_SUCCESS;
 
       ssl_err = SSL_get_error(ssl_sk, ret);
       
       /* there was an error... */
       if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE) 
-         return -EINVALID;
+         return -E_INVALID;
       
       /* sleep a quirk of time... */
       ec_usleep(TSLEEP);
    } while(loops--);
 
-   return -EINVALID;
+   return -E_INVALID;
 }
 
 
@@ -630,13 +630,13 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    ae->ssl[SSL_CLIENT] = SSL_new(ssl_ctx_client);
    SSL_set_fd(ae->ssl[SSL_CLIENT], ae->fd[SSL_CLIENT]);
     
-   if (sslw_ssl_connect(ae->ssl[SSL_SERVER]) != ESUCCESS) 
-      return -EINVALID;
+   if (sslw_ssl_connect(ae->ssl[SSL_SERVER]) != E_SUCCESS) 
+      return -E_INVALID;
 
    /* XXX - NULL cypher can give no certificate */
    if ( (server_cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
       DEBUG_MSG("Can't get peer certificate");
-      return -EINVALID;
+      return -E_INVALID;
    }
 
    if (!GBL_OPTIONS->ssl_cert) {
@@ -645,17 +645,17 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    	X509_free(server_cert);
 
    	if (ae->cert == NULL)
-      		return -EINVALID;
+      		return -E_INVALID;
 
    	SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
 
    }
    
-   if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != ESUCCESS) 
-      return -EINVALID;
+   if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != E_SUCCESS) 
+      return -E_INVALID;
 
 
-   return ESUCCESS;   
+   return E_SUCCESS;   
 }
 
 
@@ -686,12 +686,12 @@ static int sslw_get_peer(struct accepted_entry *ae)
     * A little waiting loop because the sniffing thread , 
     * which creates the session, may be slower than this
     */
-   for (i=0; i<SSLW_RETRY && session_get_and_del(&s, ident, SSLW_IDENT_LEN)!=ESUCCESS; i++)
+   for (i=0; i<SSLW_RETRY && session_get_and_del(&s, ident, SSLW_IDENT_LEN)!=E_SUCCESS; i++)
       ec_usleep(SEC2MICRO(SSLW_WAIT));
 
    if (i==SSLW_RETRY) {
       SAFE_FREE(ident);
-      return -EINVALID;
+      return -E_INVALID;
    }
    
    /* Remember the server IP address in the sessions */
@@ -708,7 +708,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
 
    ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET, (u_char *)&(sa_in.sin_addr.s_addr));
 #endif
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -732,11 +732,11 @@ static int sslw_connect_server(struct accepted_entry *ae)
    if (!dest_ip || (ae->fd[SSL_SERVER] = open_socket(dest_ip, ntohs(ae->port[SSL_SERVER]))) < 0) {
       SAFE_FREE(dest_ip);   
       DEBUG_MSG("Could not open socket");
-      return -EINVALID;
+      return -E_INVALID;
    }
    
    SAFE_FREE(dest_ip);	       
-   return ESUCCESS;   
+   return E_SUCCESS;   
 }
 
 
@@ -760,12 +760,12 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
       
       /* XXX - Is it necessary? */
       if (len == 0)
-         return -EINVALID;
+         return -E_INVALID;
 	       
       if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
-         return -ENOTHANDLED;
+         return -E_NOTHANDLED;
       else
-         return -EINVALID;
+         return -E_INVALID;
    }
 
    /* Only if no ssl */
@@ -773,14 +773,14 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
       int err = GET_SOCK_ERRNO();
 
       if (err == EINTR || err == EAGAIN)
-         return -ENOTHANDLED;
+         return -E_NOTHANDLED;
       else
-         return -EINVALID;
+         return -E_INVALID;
    }      
 
    /* XXX - On standard reads, close is 0? (EOF)*/
    if (len == 0) 
-      return -EINVALID;
+      return -E_INVALID;
 
    po->len = len;
    po->DATA.len = len;
@@ -797,7 +797,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
    packet_destroy_object(po);
    packet_disp_data(po, po->DATA.data, po->DATA.len);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -814,7 +814,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
    p_data = po->DATA.data;
 
    if (packet_len == 0)
-      return ESUCCESS;
+      return E_SUCCESS;
 
    do {
       not_written = 0;
@@ -830,7 +830,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
          if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
             not_written = 1;
          else
-            return -EINVALID;
+            return -E_INVALID;
       }
 
       if (len < 0 && !(ae->status & SSL_ENABLED)) {
@@ -839,7 +839,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
          if (err == EINTR || err == EAGAIN)
             not_written = 1;
          else
-            return -EINVALID;
+            return -E_INVALID;
       }      
 
       /* XXX - does some OS use partial writes for SSL? */
@@ -856,7 +856,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
 	 	 
    } while (not_written);
          
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -889,15 +889,15 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
 
    /* calculate if the dest is local or not */
    switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
-      case ESUCCESS:
+      case E_SUCCESS:
          PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
          break;
-      case -ENOTFOUND:
+      case -E_NOTFOUND:
          PACKET->PASSIVE.flags &= ~FP_HOST_LOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_NONLOCAL;
          break;
-      case -EINVALID:
+      case -E_INVALID:
          PACKET->PASSIVE.flags = FP_UNKNOWN;
          break;
    }
@@ -1077,7 +1077,7 @@ EC_THREAD_FUNC(sslw_child)
    ae->fd[SSL_SERVER] = -1;
 
    /* Contact the real server */
-   if (sslw_sync_conn(ae) == -EINVALID) {
+   if (sslw_sync_conn(ae) == -E_INVALID) {
       if (ae->fd[SSL_CLIENT] != -1)
          close_socket(ae->fd[SSL_CLIENT]);
       DEBUG_MSG("FAILED TO FIND PEER");
@@ -1086,7 +1086,7 @@ EC_THREAD_FUNC(sslw_child)
    }	    
 	    
    if ((ae->status & SSL_ENABLED) && 
-      sslw_sync_ssl(ae) == -EINVALID) {
+      sslw_sync_ssl(ae) == -E_INVALID) {
       sslw_wipe_connection(ae);
       ec_thread_exit();
    }
@@ -1109,7 +1109,7 @@ EC_THREAD_FUNC(sslw_child)
          BREAK_ON_ERROR(ret_val,ae,po);
 	 
          /* if we have data to read */
-         if (ret_val == ESUCCESS) {
+         if (ret_val == E_SUCCESS) {
             data_read = 1;
 
 
@@ -1150,7 +1150,7 @@ static int sslw_remove_sts(struct packet_object *po)
 	size_t slen = strlen("\r\nStrict-Transport-Security:");
 
 	if (!memmem(po->DATA.data, po->DATA.len, "\r\nStrict-Transport-Security:", slen)) {
-		return -ENOTFOUND;
+		return -E_NOTFOUND;
 	}
 
 	ptr = po->DATA.data;
@@ -1188,7 +1188,7 @@ static int sslw_remove_sts(struct packet_object *po)
 	po->flags |= PO_MODIFIED;
 
 
-	return ESUCCESS;
+	return E_SUCCESS;
 
 }
 

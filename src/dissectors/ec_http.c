@@ -175,7 +175,7 @@ FUNC_DECODER(dissector_http)
          Parse_Method_Post((char*)ptr + strlen("POST "), PACKET);
       else {
          dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_http));
-         if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+         if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
             conn_status = (struct http_status *) s->data;
 	 
             /* Are we waiting for post termination? */
@@ -219,7 +219,7 @@ static int Check_CONNECT(char *ptr, struct packet_object *po)
       return 0;
       
    dissect_create_ident(&ident, po, DISSECT_CODE(dissector_http));
-   if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
       conn_status = (struct http_status *) s->data;
 
       if (FROM_SERVER("proxy", po)) {
@@ -491,7 +491,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
       
       /* Take the challenge from the session */
       dissect_create_ident(&ident, po, DISSECT_CODE(dissector_http));
-      if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          conn_status = (struct http_status *) s->data;
 	 
          /* Are we waiting for client response? */
@@ -809,7 +809,7 @@ int http_fields_init(void)
    f = open_data("share", ETTER_FIELDS, FOPEN_READ_TEXT);
    if (f == NULL) {
       USER_MSG("Cannot open %s\n", ETTER_FIELDS);
-      return -EINVALID;
+      return -E_INVALID;
    }
          
    /* load it in the list */
@@ -852,7 +852,7 @@ int http_fields_init(void)
    
    fclose(f);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 

@@ -111,7 +111,7 @@ static int wdg_input_destroy(struct wdg_object *wo)
    
    WDG_SAFE_FREE(wo->extend);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -121,7 +121,7 @@ static int wdg_input_resize(struct wdg_object *wo)
 {
    wdg_input_redraw(wo);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -180,7 +180,7 @@ static int wdg_input_redraw(struct wdg_object *wo)
 
       /* create the menu window (fixed dimensions) */
       if ((ww->win = newwin(l, c, y, x)) == NULL)
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
 
       /* set the window color */
       wbkgd(ww->win, COLOR_PAIR(wo->window_color));
@@ -206,7 +206,7 @@ static int wdg_input_redraw(struct wdg_object *wo)
 
    wo->flags |= WDG_OBJ_VISIBLE;
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -220,7 +220,7 @@ static int wdg_input_get_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_input_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -234,7 +234,7 @@ static int wdg_input_lost_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_input_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -256,7 +256,7 @@ static int wdg_input_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_ev
             /* redraw the menu */
             wdg_input_redraw(wo);
          } else {
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          }
          break;
       
@@ -272,12 +272,12 @@ static int wdg_input_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_ev
          if (wo->flags & WDG_OBJ_FOCUSED) {
             return wdg_input_driver(wo, key, mouse);
          } else {
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          }
          break;
    }
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -413,7 +413,7 @@ static int wdg_input_driver(struct wdg_object *wo, int key, struct wdg_mouse_eve
 
    wnoutrefresh(ww->fwin);
       
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*

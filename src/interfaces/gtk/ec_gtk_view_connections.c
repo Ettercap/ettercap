@@ -533,7 +533,7 @@ static void gtkui_connection_detail(void)
    snprintf(line, 200, "Source IP address      : \t%s\n", ip_addr_ntoa(&(c->co->L3_addr1), tmp));
    gtkui_details_print(textbuf, line);
    
-   if (host_iptoa(&(c->co->L3_addr1), name) == ESUCCESS) {
+   if (host_iptoa(&(c->co->L3_addr1), name) == E_SUCCESS) {
       snprintf(line, 200, "                           %s\n", name);
       gtkui_details_print(textbuf, line);
    }
@@ -541,7 +541,7 @@ static void gtkui_connection_detail(void)
    snprintf(line, 200, "Destination IP address : \t%s\n", ip_addr_ntoa(&(c->co->L3_addr2), tmp));
    gtkui_details_print(textbuf, line);
    
-   if (host_iptoa(&(c->co->L3_addr2), name) == ESUCCESS) {
+   if (host_iptoa(&(c->co->L3_addr2), name) == E_SUCCESS) {
       snprintf(line, 200, "                           %s\n", name);
       gtkui_details_print(textbuf, line);
    }
@@ -1173,12 +1173,12 @@ static void gtkui_connection_kill(void *conn)
    
    /* kill it */
    switch (user_kill(c->co)) {
-      case ESUCCESS:
+      case E_SUCCESS:
          /* set the status */
          c->co->status = CONN_KILLED;
          gtkui_message("The connection was killed !!");
          break;
-      case -EFATAL:
+      case -E_FATAL:
          gtkui_message("Cannot kill UDP connections !!");
          break;
    }
@@ -1194,12 +1194,12 @@ static void gtkui_connection_kill_curr_conn(void)
    
    /* kill it */
    switch (user_kill(curr_conn)) {
-      case ESUCCESS:
+      case E_SUCCESS:
          /* set the status */
          curr_conn->status = CONN_KILLED;
          gtkui_message("The connection was killed !!");
          break;
-      case -EFATAL:
+      case -E_FATAL:
          gtkui_message("Cannot kill UDP connections !!");
          break;
    }

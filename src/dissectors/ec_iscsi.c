@@ -124,7 +124,7 @@ FUNC_DECODER(dissector_iscsi)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_iscsi));
 
       /* if the session does not exist... */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          /* search for CHAP ID and Message Challenge */
          char *i = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_I", 6);
          char *c = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_C", 6);
@@ -151,7 +151,7 @@ FUNC_DECODER(dissector_iscsi)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_iscsi));
 
       /* Only if we catched the connection from the beginning */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          conn_status = (struct iscsi_status *) s->data;
          char *n = NULL;
          char *r = NULL;

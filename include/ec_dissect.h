@@ -40,10 +40,10 @@ EC_API_EXTERN int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
 
 
 /* return true if the packet is coming from the server */
-#define FROM_SERVER(name, pack) (dissect_on_port(name, ntohs(pack->L4.src)) == ESUCCESS)
+#define FROM_SERVER(name, pack) (dissect_on_port(name, ntohs(pack->L4.src)) == E_SUCCESS)
 
 /* return true if the packet is coming from the client */
-#define FROM_CLIENT(name, pack) (dissect_on_port(name, ntohs(pack->L4.dst)) == ESUCCESS)
+#define FROM_CLIENT(name, pack) (dissect_on_port(name, ntohs(pack->L4.dst)) == E_SUCCESS)
 
 
 /*
@@ -52,7 +52,7 @@ EC_API_EXTERN int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
  */
 
 #define CREATE_SESSION_ON_SYN_ACK(name, session, func) do{              \
-      if ((PACKET->L4.flags & TH_SYN) && (PACKET->L4.flags & TH_ACK) && dissect_on_port(name, ntohs(PACKET->L4.src)) == ESUCCESS) { \
+      if ((PACKET->L4.flags & TH_SYN) && (PACKET->L4.flags & TH_ACK) && dissect_on_port(name, ntohs(PACKET->L4.src)) == E_SUCCESS) { \
          DEBUG_MSG("%s --> create_session_on_syn_ack", name);           \
          /* create the session */                                       \
          dissect_create_session(&session, PACKET, DISSECT_CODE(func));  \
@@ -78,7 +78,7 @@ EC_API_EXTERN int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
    if (FROM_SERVER(name, PACKET) && PACKET->L4.flags & TH_PSH) {              \
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(func));               \
       /* the session exist */                                                 \
-      if (session_get(&session, ident, sizeof(struct dissect_ident)) != -ENOTFOUND) { \
+      if (session_get(&session, ident, sizeof(struct dissect_ident)) != -E_NOTFOUND) { \
          /* prevent the deletion of session created for the user and pass */  \
          if (session->data == NULL)                                        
          
@@ -87,7 +87,7 @@ EC_API_EXTERN int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
    if ((FROM_SERVER(name, PACKET) || FROM_SERVER(names, PACKET)) && PACKET->L4.flags & TH_PSH) {  \
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(func));               \
       /* the session exist */                                                 \
-      if (session_get(&session, ident, sizeof(struct dissect_ident)) != -ENOTFOUND) { \
+      if (session_get(&session, ident, sizeof(struct dissect_ident)) != -E_NOTFOUND) { \
          /* prevent the deletion of session created for the user and pass */  \
          if (session->data == NULL)                                        
 

@@ -81,7 +81,7 @@ FUNC_DECODER(dissector_rlogin)
    /* this is the rlogin handshake */
    if (*ptr == '\0') {
       /* retrieve the session */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_rlogin));
          /* remember the state (used later) */
          s->data = strdup("HANDSHAKE");
@@ -95,7 +95,7 @@ FUNC_DECODER(dissector_rlogin)
    }
    
    /* the first packet after handshake */
-   if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS && s->data) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS && s->data) {
       if (!strcmp(s->data, "HANDSHAKE")) {
          char *localuser;
          char *remoteuser;
@@ -125,7 +125,7 @@ FUNC_DECODER(dissector_rlogin)
    }
    
    /* concat the pass to the collected user */
-   if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS && s->data) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS && s->data) {
       size_t i, stringlen;
       char *p;
       char str[strlen(s->data) + PACKET->DATA.disp_len + 2];

@@ -63,7 +63,7 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    AES_KEY aes_ctx;
 
    if (len > UINT16_MAX) {
-       return -ENOTHANDLED;
+       return -E_NOTHANDLED;
    }
 
    /* init the AES with the decryption key from SA */
@@ -102,7 +102,7 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    /* decrypt the packet */
    if (ccmp_decrypt(decbuf, BZERO, B, A, mic, len, &aes_ctx) != 0) {
       //DEBUG_MSG(D_VERBOSE, "WPA (CCMP) decryption failed, packet was skipped");
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
    }
 
    /*
@@ -119,7 +119,7 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
     */
    memset(data + len - WPA_CCMP_TRAILER, 0, WPA_CCMP_TRAILER);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 

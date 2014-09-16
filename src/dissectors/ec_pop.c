@@ -75,7 +75,7 @@ FUNC_DECODER(dissector_pop)
    if ((FROM_SERVER("pop3", PACKET) || FROM_SERVER("pop3s", PACKET)) && PACKET->L4.flags & TH_PSH) {  
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_pop));
       /* the session exist */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) != -ENOTFOUND) { 
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) != -E_NOTFOUND) { 
          /* prevent the deletion of session created for the user and pass */
          if (s->data == NULL) { 
             
@@ -174,7 +174,7 @@ FUNC_DECODER(dissector_pop)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_pop));
       
       /* retrieve the session and delete it */
-      if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          SAFE_FREE(ident);
          return NULL;
       }
@@ -229,7 +229,7 @@ FUNC_DECODER(dissector_pop)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_pop));
       
       /* retrieve the session and delete it */
-      if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          SAFE_FREE(ident);
          return NULL;
       }
@@ -310,7 +310,7 @@ FUNC_DECODER(dissector_pop)
    
    /* search the session (if it exist) */
    dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_pop));
-   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
       SAFE_FREE(ident);
       return NULL;
    }

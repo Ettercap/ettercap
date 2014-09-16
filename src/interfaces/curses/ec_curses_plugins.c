@@ -91,16 +91,16 @@ static void curses_load_plugin(const char *path, char *file)
 
    /* check the return code */
    switch (ret) {
-      case ESUCCESS:
+      case E_SUCCESS:
          curses_message("Plugin loaded successfully");
          break;
-      case -EDUPLICATE:
+      case -E_DUPLICATE:
          ui_error("plugin %s already loaded...", file);
          break;
-      case -EVERSION:
+      case -E_VERSION:
          ui_error("plugin %s was compiled for a different ettercap version...", file);
          break;
-      case -EINVALID:
+      case -E_INVALID:
       default:
          ui_error("Cannot load the plugin...\nthe file may be an invalid plugin\nor you don't have the permission to open it");
          break;
@@ -187,7 +187,7 @@ static void curses_create_plug_array(void)
    
    /* go thru the list of plugins */
    res = plugin_list_walk(PLP_MIN, PLP_MAX, &curses_wdg_plugin);
-   if (res == -ENOTFOUND) { 
+   if (res == -E_NOTFOUND) { 
       SAFE_CALLOC(wdg_plugin_elements, 1, sizeof(struct wdg_list));
       wdg_plugin_elements->desc = "No plugin found !";
    }

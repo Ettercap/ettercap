@@ -150,7 +150,7 @@ void dissect_wipe_session(struct packet_object *po, void *code)
    dissect_create_ident(&ident, po, code);
 
    /* retrieve the session and delete it */
-   if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+   if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
       SAFE_FREE(ident);
       return;
    }
@@ -221,7 +221,7 @@ int dissect_modify(int mode, char *name, u_int32 port)
                DEBUG_MSG("dissect_modify: %s added on %lu", name, (unsigned long)port);
                /* add in the lists */
                dissect_add(e->name, e->level, port, e->decoder);
-               return ESUCCESS;
+               return E_SUCCESS;
                break;
             case MODE_REP:
 
@@ -238,7 +238,7 @@ int dissect_modify(int mode, char *name, u_int32 port)
                /* a value of 0 will disable the dissector */
                if (port == 0) {
                   DEBUG_MSG("dissect_modify: %s disabled", name);
-                  return ESUCCESS;
+                  return E_SUCCESS;
                }
               
                DEBUG_MSG("dissect_modify: %s replaced to %lu", name, (unsigned long)port);
@@ -246,17 +246,17 @@ int dissect_modify(int mode, char *name, u_int32 port)
                /* add the new value */
                dissect_add(name, level, port, decoder);	       
 	       
-               return ESUCCESS;
+               return E_SUCCESS;
                break;
          }
       }
    }
 
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
- * return ESUCCESS if the dissector is on
+ * return E_SUCCESS if the dissector is on
  * the specified port 
  */
 int dissect_on_port(char *name, u_int16 port)
@@ -264,20 +264,20 @@ int dissect_on_port(char *name, u_int16 port)
    struct dissect_entry *e;
 
    /* 
-    * return ESUCCESS if at least one port is bound 
+    * return E_SUCCESS if at least one port is bound 
     * to the dissector name
     */
    SLIST_FOREACH (e, &dissect_list, next) {
       if (!strcasecmp(e->name, name) && e->type == port) {
-         return ESUCCESS;
+         return E_SUCCESS;
       } 
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
- * return ESUCCESS if the dissector is on
+ * return E_SUCCESS if the dissector is on
  * the specified port of the specified protocol (TCP or UDP)
  */
 int dissect_on_port_level(char *name, u_int16 port, u_int8 level)
@@ -285,16 +285,16 @@ int dissect_on_port_level(char *name, u_int16 port, u_int8 level)
    struct dissect_entry *e;
 
    /* 
-    * return ESUCCESS if at least one port is bound 
+    * return E_SUCCESS if at least one port is bound 
     * to the dissector name
     */
    SLIST_FOREACH (e, &dissect_list, next) {
       if (!strcasecmp(e->name, name) && e->type == port && e->level == level) {
-         return ESUCCESS;
+         return E_SUCCESS;
       } 
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 

@@ -87,7 +87,7 @@ static int wdg_window_destroy(struct wdg_object *wo)
 
    WDG_SAFE_FREE(wo->extend);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -97,7 +97,7 @@ static int wdg_window_resize(struct wdg_object *wo)
 {
    wdg_window_redraw(wo);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -137,14 +137,14 @@ static int wdg_window_redraw(struct wdg_object *wo)
 
       /* create the outher window */
       if ((ww->win = newwin(l, c, y, x)) == NULL)
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
 
       /* draw the borders */
       wdg_window_border(wo);
 
       /* create the inner (actual) window */
       if ((ww->sub = newwin(l - 2, c - 2, y + 1, x + 1)) == NULL)
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
       
       /* set the window color */
       wbkgd(ww->sub, COLOR_PAIR(wo->window_color));
@@ -166,7 +166,7 @@ static int wdg_window_redraw(struct wdg_object *wo)
    
    wo->flags |= WDG_OBJ_VISIBLE;
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -180,7 +180,7 @@ static int wdg_window_get_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_window_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -194,7 +194,7 @@ static int wdg_window_lost_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_window_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -211,16 +211,16 @@ static int wdg_window_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_e
          if (wenclose(ww->win, mouse->y, mouse->x))
             wdg_set_focus(wo);
          else 
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
 
       /* message not handled */
       default:
-         return -WDG_ENOTHANDLED;
+         return -WDG_E_NOTHANDLED;
          break;
    }
   
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*

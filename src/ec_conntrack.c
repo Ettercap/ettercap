@@ -136,7 +136,7 @@ static struct conn_object *conntrack_search(struct packet_object *po)
    h = conntrack_hash(po);
    
    LIST_FOREACH(cs, &conntrack_search_head[h], next) {
-      if (conntrack_match(cs->cl->co, po) == ESUCCESS) {
+      if (conntrack_match(cs->cl->co, po) == E_SUCCESS) {
          return cs->cl->co;
       }
    }
@@ -147,7 +147,7 @@ static struct conn_object *conntrack_search(struct packet_object *po)
    
    /* search in the list sequentially */
    TAILQ_FOREACH(cl, &conntrack_tail_head, next) {
-      if (conntrack_match(cl->co, po) == ESUCCESS) {
+      if (conntrack_match(cl->co, po) == E_SUCCESS) {
          return cl->co;
       }
    }
@@ -301,23 +301,23 @@ static int conntrack_match(struct conn_object *co, struct packet_object *po)
 {
    /* different protocol, they don't match */
    if (co->L4_proto != po->L4.proto)
-      return -EINVALID;
+      return -E_INVALID;
 
    /* match it in one way... */
    if (!ip_addr_cmp(&co->L3_addr1, &po->L3.src) &&
        !ip_addr_cmp(&co->L3_addr2, &po->L3.dst) &&
        co->L4_addr1 == po->L4.src &&
        co->L4_addr2 == po->L4.dst)
-      return ESUCCESS;
+      return E_SUCCESS;
 
    /* ...and in the other */
    if (!ip_addr_cmp(&co->L3_addr1, &po->L3.dst) &&
        !ip_addr_cmp(&co->L3_addr2, &po->L3.src) &&
        co->L4_addr1 == po->L4.dst &&
        co->L4_addr2 == po->L4.src)
-      return ESUCCESS;
+      return E_SUCCESS;
    
-   return -ENOMATCH;
+   return -E_NOMATCH;
 }
 
 /* 
@@ -495,12 +495,12 @@ int conntrack_hook_packet_add(struct packet_object *po, void (*func)(struct pack
       SLIST_INSERT_HEAD(&conn->hook_head, h, next);
       
       CONNTRACK_UNLOCK;
-      return ESUCCESS;
+      return E_SUCCESS;
    } 
    
    CONNTRACK_UNLOCK;
 
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 
@@ -531,12 +531,12 @@ int conntrack_hook_packet_del(struct packet_object *po, void (*func)(struct pack
       }
       
       CONNTRACK_UNLOCK;
-      return ESUCCESS;
+      return E_SUCCESS;
    }
    
    CONNTRACK_UNLOCK;
 
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -562,7 +562,7 @@ int conntrack_hook_conn_add(struct conn_object *co, void (*func)(struct packet_o
       
    CONNTRACK_UNLOCK;
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -586,7 +586,7 @@ int conntrack_hook_conn_del(struct conn_object *co, void (*func)(struct packet_o
    }
    
    CONNTRACK_UNLOCK;
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -707,13 +707,13 @@ void * conntrack_get(int mode, void *list, struct conn_object **conn)
 
 /*
  * copies the protocol string of a given connection object into pstr
- * ESUCCESS is returned on success
- * -EINVALID is returned if parameters are not initialized
+ * E_SUCCESS is returned on success
+ * -E_INVALID is returned if parameters are not initialized
  */
 int conntrack_protostr(struct conn_object *conn, char *pstr, int len)
 {
     if (pstr == NULL || conn == NULL)
-        return -EINVALID;
+        return -E_INVALID;
 
     memset(pstr, 0, len);
 
@@ -728,18 +728,18 @@ int conntrack_protostr(struct conn_object *conn, char *pstr, int len)
            strncpy(pstr, "   ", len - 1);
     }
 
-    return ESUCCESS;
+    return E_SUCCESS;
 }
 
 /*
  * copies the flags string of a given connection object into pstr
- * ESUCCESS is returned on success
- * -EINVALID is returned if parameters are not initialized
+ * E_SUCCESS is returned on success
+ * -E_INVALID is returned if parameters are not initialized
  */
 int conntrack_flagstr(struct conn_object *conn, char *pstr, int len)
 {
     if (pstr == NULL || conn == NULL)
-        return -EINVALID;
+        return -E_INVALID;
 
     memset(pstr, 0, len);
 
@@ -755,19 +755,19 @@ int conntrack_flagstr(struct conn_object *conn, char *pstr, int len)
     if (conn->DISSECTOR.user)
         strncpy(pstr, "*", len - 1);
 
-    return ESUCCESS;
+    return E_SUCCESS;
 }
 
 
 /*
  * copies the status string of a given connection object into pstr
- * ESUCCESS is returned on success
- * -EINVALID is returned if parameters are not initialized
+ * E_SUCCESS is returned on success
+ * -E_INVALID is returned if parameters are not initialized
  */
 int conntrack_statusstr(struct conn_object *conn, char *pstr, int len)
 {
     if (pstr == NULL || conn == NULL)
-        return -EINVALID;
+        return -E_INVALID;
 
     memset(pstr, 0, len);
 
@@ -796,7 +796,7 @@ int conntrack_statusstr(struct conn_object *conn, char *pstr, int len)
            break;
     }
 
-    return ESUCCESS;
+    return E_SUCCESS;
 }
 
 

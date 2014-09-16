@@ -134,13 +134,13 @@ int fingerprint_search(const char *f, char *dst)
 
    if (!strcmp(f, "")) {
       strncpy(dst, "UNKNOWN", 7);
-      return ESUCCESS;
+      return E_SUCCESS;
    }
    
    /* if the fingerprint matches, copy it in the dst and
-    * return ESUCCESS.
+    * return E_SUCCESS.
     * if it is not found, copy the next finger in dst 
-    * and return -ENOTFOUND, it is the nearest fingerprint
+    * and return -E_NOTFOUND, it is the nearest fingerprint
     */
    
    SLIST_FOREACH(l, &finger_head, next) {
@@ -148,7 +148,7 @@ int fingerprint_search(const char *f, char *dst)
       /* this is exact match */
       if ( memcmp(l->finger, f, FINGER_LEN) == 0) {
          strncpy(dst, l->os, OS_LEN+1);
-         return ESUCCESS;
+         return E_SUCCESS;
       }
       
       /* 
@@ -178,17 +178,17 @@ int fingerprint_search(const char *f, char *dst)
             if (match_pattern(l->finger, pattern)) {
                /* save the nearest one (wildcarded MSS) */
                strncpy(dst, l->os, OS_LEN+1); 
-               return -ENOTFOUND;
+               return -E_NOTFOUND;
             }
             l = SLIST_NEXT(l, next);
          }
-         return -ENOTFOUND;
+         return -E_NOTFOUND;
       }
    }
 
    if(GBL_CONF->submit_fingerprint)
    	fingerprint_submit(f, "Unknown");
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
@@ -306,7 +306,7 @@ int fingerprint_submit(const char *finger, char *os)
   
    /* some sanity checks */
    if (strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
-      return -EINVALID;
+      return -E_INVALID;
    
    USER_MSG("Connecting to http://%s...\n", host);
       
@@ -314,16 +314,16 @@ int fingerprint_submit(const char *finger, char *os)
    sock = open_socket(host, 80);
    
    switch(sock) {
-      case -ENOADDRESS:
+      case -E_NOADDRESS:
          FATAL_MSG("Cannot resolve %s", host);
          break;
-      case -EFATAL:
+      case -E_FATAL:
          FATAL_MSG("Cannot create the socket");
          break;
-      case -ETIMEOUT:
+      case -E_TIMEOUT:
          FATAL_MSG("Connect timeout to %s on port 80", host);
          break;
-      case -EINVALID:
+      case -E_INVALID:
          FATAL_MSG("Error connecting to %s on port 80", host);
          break;
    }
@@ -356,7 +356,7 @@ int fingerprint_submit(const char *finger, char *os)
 
    USER_MSG("New fingerprint submitted to the ettercap website...\n");
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* EOF */

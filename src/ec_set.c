@@ -42,7 +42,7 @@
 void set_mitm(char *mitm) 
 {
 	GBL_OPTIONS->mitm = 1;
-	if(mitm_set(mitm) != ESUCCESS)
+	if(mitm_set(mitm) != E_SUCCESS)
 		FATAL_ERROR("MiTM method '%s' not supported...\n", mitm);
 }
 
@@ -147,27 +147,27 @@ void set_filter(char *end, const char *filter)
 		f_enabled = !( *(end-1) == '0' );
 	}	
 	
-	if (filter_load_file(filter, GBL_FILTERS, f_enabled) != ESUCCESS)
+	if (filter_load_file(filter, GBL_FILTERS, f_enabled) != E_SUCCESS)
 		FATAL_ERROR("Cannot load filter file \"%s\"", filter);
 }
 
 
 void set_loglevel_packet(char *arg)
 {
-	if (set_loglevel(LOG_PACKET, arg) == -EFATAL)
-		clean_exit(-EFATAL);
+	if (set_loglevel(LOG_PACKET, arg) == -E_FATAL)
+		clean_exit(-E_FATAL);
 }
 
 void set_loglevel_info(char *arg)
 {
-	if (set_loglevel(LOG_INFO, arg) == -EFATAL)
-		clean_exit(-EFATAL);
+	if (set_loglevel(LOG_INFO, arg) == -E_FATAL)
+		clean_exit(-E_FATAL);
 }
 
 void set_loglevel_true(char *arg)
 {
-	if (set_msg_loglevel(LOG_TRUE, arg) == -EFATAL)
-		clean_exit(-EFATAL);
+	if (set_msg_loglevel(LOG_TRUE, arg) == -E_FATAL)
+		clean_exit(-E_FATAL);
 }
 
 void set_compress(void)
@@ -177,8 +177,8 @@ void set_compress(void)
 
 void opt_set_regex(char *regex)
 {
-	if (set_regex(regex) == -EFATAL)
-		clean_exit(-EFATAL);
+	if (set_regex(regex) == -E_FATAL)
+		clean_exit(-E_FATAL);
 }
 
 void set_superquiet()
@@ -238,8 +238,8 @@ void set_save_hosts(char *file)
 
 void opt_set_format(char *format)
 {
-	if (set_format(format) != ESUCCESS)
-		clean_exit(-EFATAL);	
+	if (set_format(format) != E_SUCCESS)
+		clean_exit(-E_FATAL);	
 }
 
 void set_ext_headers(void)

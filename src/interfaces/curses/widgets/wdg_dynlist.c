@@ -111,7 +111,7 @@ static int wdg_dynlist_destroy(struct wdg_object *wo)
 
    WDG_SAFE_FREE(wo->extend);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -121,7 +121,7 @@ static int wdg_dynlist_resize(struct wdg_object *wo)
 {
    wdg_dynlist_redraw(wo);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -161,14 +161,14 @@ static int wdg_dynlist_redraw(struct wdg_object *wo)
 
       /* create the outher window */
       if ((ww->win = newwin(l, c, y, x)) == NULL)
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
 
       /* draw the borders */
       wdg_dynlist_border(wo);
 
       /* create the inner (actual) window */
       if ((ww->sub = newwin(l - 4, c - 4, y + 2, x + 2)) == NULL)
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
       
       /* set the window color */
       wbkgd(ww->sub, COLOR_PAIR(wo->window_color));
@@ -189,7 +189,7 @@ static int wdg_dynlist_redraw(struct wdg_object *wo)
    
    wo->flags |= WDG_OBJ_VISIBLE;
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -203,7 +203,7 @@ static int wdg_dynlist_get_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_dynlist_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -217,7 +217,7 @@ static int wdg_dynlist_lost_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_dynlist_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -237,7 +237,7 @@ static int wdg_dynlist_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_
             else
                wdg_set_focus(wo);
          } else 
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
       
       case KEY_UP:
@@ -258,7 +258,7 @@ static int wdg_dynlist_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_
          break;
    }
   
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -361,11 +361,11 @@ static int wdg_dynlist_callback(struct wdg_object *wo, int key)
          if (ww->current)
             WDG_EXECUTE(c->callback, ww->current);
          
-         return WDG_ESUCCESS;
+         return WDG_E_SUCCESS;
       }
    }
 
-   return -WDG_ENOTHANDLED;
+   return -WDG_E_NOTHANDLED;
 }
 
 

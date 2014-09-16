@@ -177,12 +177,12 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
          if(primary)
             ON_ERROR(pcap, NULL, "pcap_open_live: %s", pcap_errbuf);
          else
-            return -EINITFAIL;
+            return -E_INITFAIL;
       }
    } else {
       /* secondary sources must not be offline */
       if(!primary)
-         return -ENOTHANDLED;
+         return -E_NOTHANDLED;
 
       struct stat st;
       int stat_result;
@@ -237,7 +237,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
       source->is_live = 1;
    } else {
       source->is_ready = 1;
-      return ESUCCESS;
+      return E_SUCCESS;
    }
 
    if(!GBL_OPTIONS->unoffensive && !source->unoffensive) {
@@ -331,7 +331,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 
    source->is_ready = 1;
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 static void source_close(struct iface_env *iface)

@@ -190,7 +190,7 @@ static void curses_profile_detail(void *profile)
     wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OBSERVED OS     : %s\n\n", h->os);
 
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " FINGERPRINT      : %s\n", h->fingerprint);
-   if (fingerprint_search((const char*)h->fingerprint, os) == ESUCCESS)
+   if (fingerprint_search((const char*)h->fingerprint, os) == E_SUCCESS)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OPERATING SYSTEM : %s \n\n", os);
    else {
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
@@ -267,7 +267,7 @@ static void curses_profiles_dump(void *dummy)
 static void dump_profiles(void)
 {
    /* dump the profiles */
-   if (profile_dump_to_file(logfile) == ESUCCESS)
+   if (profile_dump_to_file(logfile) == E_SUCCESS)
       curses_message("Profiles dumped to file");
 }
 

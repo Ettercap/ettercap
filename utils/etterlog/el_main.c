@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
    /* get the global header */
    ret = get_header(&GBL->hdr);
-   if (ret == -EINVALID)
+   if (ret == -E_INVALID)
       FATAL_ERROR("Invalid log file");
    
    fprintf(stderr, "Log file version    : %s\n", GBL->hdr.version);

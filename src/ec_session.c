@@ -146,13 +146,13 @@ int session_get(struct ec_session **s, void *ident, size_t ident_len)
          sl->ts = ti;
 
          SESSION_UNLOCK;
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
    SESSION_UNLOCK;
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 
@@ -184,13 +184,13 @@ int session_del(void *ident, size_t ident_len)
          SAFE_FREE(sl);
 
          SESSION_UNLOCK;
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
    SESSION_UNLOCK;
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 
@@ -223,13 +223,13 @@ int session_get_and_del(struct ec_session **s, void *ident, size_t ident_len)
          SAFE_FREE(sl);
 
          SESSION_UNLOCK;
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
    SESSION_UNLOCK;
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*

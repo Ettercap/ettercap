@@ -614,7 +614,7 @@ static void scan_targets(void)
             break;
 #ifdef WITH_IPV6
          case AF_INET6:
-            if (ip_addr_is_local(&e->ip, &ip) == ESUCCESS) {
+            if (ip_addr_is_local(&e->ip, &ip) == E_SUCCESS) {
                ip_addr_init_sol(&sn, &e->ip);
                send_icmp6_nsol(&ip, &sn, &e->ip, GBL_IFACE->mac);
             }
@@ -727,7 +727,7 @@ int scan_load_hosts(char *filename)
 
    DEBUG_MSG("scan_load_hosts: loaded %d hosts lines", nhosts);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -764,7 +764,7 @@ int scan_save_hosts(char *filename)
 
    INSTANT_USER_MSG("%d hosts saved to file %s\n", nhosts, filename);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -777,7 +777,7 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
    struct hosts_list *hl, *h;
 
    /* don't add to hostlist if the found IP is ours */
-   if (ip_addr_is_ours(ip) == EFOUND) 
+   if (ip_addr_is_ours(ip) == E_FOUND) 
       return;
 
    /* don't add undefined address */
@@ -871,12 +871,12 @@ void __init hook_init(void)
 static void hosts_list_hook(struct packet_object *po)
 {
    switch(ip_addr_is_ours(&po->L3.src)) {
-      case EFOUND:
-      case EBRIDGE:
+      case E_FOUND:
+      case E_BRIDGE:
          return;
    }
 
-   if(ip_addr_is_local(&po->L3.src, NULL) == ESUCCESS) {
+   if(ip_addr_is_local(&po->L3.src, NULL) == E_SUCCESS) {
       add_host(&po->L3.src, po->L2.src, NULL);
    }
 

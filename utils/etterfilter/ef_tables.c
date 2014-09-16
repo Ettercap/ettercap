@@ -228,14 +228,14 @@ int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset
                *level = t->level;
                *offset = o->offset;
                
-               return ESUCCESS;
+               return E_SUCCESS;
             }
          }
-         return -ENOTFOUND;
+         return -E_NOTFOUND;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 
@@ -328,11 +328,11 @@ int get_constant(char *name, u_int32 *value)
    SLIST_FOREACH(c, &const_head, next) {
       if (!strcmp(name, c->name)) {
          *value = c->value;
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /* EOF */

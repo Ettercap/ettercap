@@ -45,7 +45,7 @@ EC_API_EXTERN void ui_register(struct ui_ops *ops);
 
 #define INSTANT_USER_MSG(x, ...) do { ui_msg(x, ## __VA_ARGS__ ); ui_msg_flush(MSG_ALL); } while(0)
 
-#define FATAL_MSG(x, ...) do { ui_error(x, ## __VA_ARGS__ ); return (-EFATAL); } while(0)
+#define FATAL_MSG(x, ...) do { ui_error(x, ## __VA_ARGS__ ); return (-E_FATAL); } while(0)
 
 /* 
  * if we are using the text interface, exit with a fatal error,

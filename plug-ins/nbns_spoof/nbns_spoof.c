@@ -194,8 +194,8 @@ struct plugin_ops nbns_spoof_ops = {
 
 int plugin_load(void *handle)
 {
-	if (load_db() != ESUCCESS)
-		return -EINVALID;
+	if (load_db() != E_SUCCESS)
+		return -E_INVALID;
 
 	nbns_spoof_dump();
 	return plugin_register(handle, &nbns_spoof_ops);
@@ -238,7 +238,7 @@ static int load_db(void)
 	f = open_data("etc", ETTER_NBNS, FOPEN_READ_TEXT);
 
 	if (f == NULL) {
-		USER_MSG("Cannot open %s\n", ETTER_NBNS); return -EINVALID;
+		USER_MSG("Cannot open %s\n", ETTER_NBNS); return -E_INVALID;
 	}
 	
 	while (fgets(line, 128, f)) {
@@ -272,7 +272,7 @@ static int load_db(void)
 	}
 
 	fclose(f);	
-	return ESUCCESS;
+	return E_SUCCESS;
 }	
 
 /*
@@ -383,7 +383,7 @@ static void nbns_spoof(struct packet_object *po)
 	struct ip_addr *reply;
 	char tmp[MAX_ASCII_ADDR_LEN];
 
-	if (get_spoofed_nbns(name, &reply) != ESUCCESS)
+	if (get_spoofed_nbns(name, &reply) != E_SUCCESS)
 		return;
 
 	u_char *response;
@@ -444,11 +444,11 @@ static int get_spoofed_nbns(const char *a, struct ip_addr **ip)
 	SLIST_FOREACH(n, &nbns_spoof_head, next) {
 		if (match_pattern(a, n->name)) {
 			*ip = &n->ip;
-			return ESUCCESS;
+			return E_SUCCESS;
 		}
 	}
 
-	return -ENOTFOUND;
+	return -E_NOTFOUND;
 }
 
 static void nbns_spoof_dump(void)

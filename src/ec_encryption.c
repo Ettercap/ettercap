@@ -61,7 +61,7 @@ int wep_decrypt(u_char *buf, size_t len, u_char *wkey, size_t wlen)
 
    /* the key was not set, don't try to decript it */
    if (wlen == 0)
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
 
    /* get the wep header */
    wep = (struct wep_header *)buf;
@@ -73,7 +73,7 @@ int wep_decrypt(u_char *buf, size_t len, u_char *wkey, size_t wlen)
    /* sanity check on the key index */
    if (wep->key * 5 > (int)(MAX_WKEY_LEN - wlen)) {
       //DEBUG_MSG(D_VERBOSE, "WEP: invalid key index, the packet was skipped");
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
    }
 
    encbuf = (u_char *)(wep + 1);
@@ -102,7 +102,7 @@ int wep_decrypt(u_char *buf, size_t len, u_char *wkey, size_t wlen)
     */
    if (CRC_checksum(decbuf, len + WEP_CRC_LEN, CRC_INIT) != CRC_RESULT) {
       //DEBUG_MSG(D_VERBOSE, "WEP decryption failed, the packet was skipped");
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
    }
 
    /*
@@ -119,7 +119,7 @@ int wep_decrypt(u_char *buf, size_t len, u_char *wkey, size_t wlen)
     */
    memset(buf + len, 0, WEP_CRC_LEN);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -143,12 +143,12 @@ int wep_decrypt(u_char *buf, size_t len, u_char *wkey, size_t wlen)
 
 int wifi_key_prepare(char *key_string)
 {
-   int status = -EINVALID;
+   int status = -E_INVALID;
    char *ks;
    char *p;
 
    if (key_string == NULL)
-      return -EINVALID;
+      return -E_INVALID;
 
    ks = strdup(key_string);
 
@@ -237,7 +237,7 @@ int set_wep_key(char *string)
    memcpy(GBL_WIFI->wkey, tmp_wkey, sizeof(GBL_WIFI->wkey));
    GBL_WIFI->wkey_len = tmp_wkey_len;
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -342,7 +342,7 @@ static int set_wpa_key(char *string)
    /* print the final string */
    USER_MSG("Using WPA key: %s\n", str_tohex(GBL_WIFI->wkey, WPA_KEY_LEN, tmp, sizeof(tmp)));
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -421,12 +421,12 @@ int wpa_sess_get(u_char *sta, struct wpa_sa *sa)
       if (!memcmp(&e->sta, sta, ETH_ADDR_LEN)) {
          memcpy(sa, &e->sa, sizeof(struct wpa_sa));
          pthread_mutex_unlock(&root_mutex);
-         return ESUCCESS;
+         return E_SUCCESS;
       }
    }
    pthread_mutex_unlock(&root_mutex);
 
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /* Function used to derive the PTK. Refer to IEEE 802.11I-2004, 8.5.1 */
@@ -478,7 +478,7 @@ int wpa_generate_PTK(u_char *bssid, u_char *sta, u_char *pmk, u_char *snonce, u_
        HMAC(EVP_sha1(), pmk, WPA_KEY_LEN, buff, 100, kck + i * 20, &len);
    }
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -502,7 +502,7 @@ int wpa_check_MIC(struct eapol_header *eapol, struct eapol_key_header* eapol_key
        HMAC(EVP_sha1(), kck, WPA_KCK_LEN, (u_char *)eapol, eapol_len, hmac_mic, &len);
    } else
        /* key descriptor version not recognized */
-       return -EINVALID;
+       return -E_INVALID;
 
    /* restore the MIC in the EAPOL packet */
    memcpy(eapol_key->key_MIC, mic, WPA_MICKEY_LEN);
@@ -534,7 +534,7 @@ int wpa_decrypt_broadcast_key(struct eapol_key_header *eapol_key, struct rsn_ie_
 
    /* sanity check */
    if (key_len > sizeof(struct rsn_ie_header) || key_len == 0)
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
 
    /* Encrypted key is in the information element field of the EAPOL key packet */
    SAFE_CALLOC(encrypted_key, key_len, sizeof(u_int8));
@@ -622,7 +622,7 @@ int wpa_decrypt_broadcast_key(struct eapol_key_header *eapol_key, struct rsn_ie_
 
    SAFE_FREE(encrypted_key);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -640,7 +640,7 @@ int wpa_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    }
 
    /* not reached */
-   return -ENOTHANDLED;
+   return -E_NOTHANDLED;
 }
 
 /* EOF */

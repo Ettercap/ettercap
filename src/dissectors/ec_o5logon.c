@@ -78,7 +78,7 @@ FUNC_DECODER(dissector_o5logon)
 
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_o5logon));
       /* if the session does not exist... */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          unsigned char *skp  = memmem(ptr, PACKET->DATA.len, "AUTH_SESSKEY", 12);
          unsigned char *sp = memmem(ptr, PACKET->DATA.len, "AUTH_TERMINAL", 13);
          if (sp && !skp) {
@@ -128,7 +128,7 @@ FUNC_DECODER(dissector_o5logon)
    } else {
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_o5logon));
 
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          conn_status = (struct o5logon_status *) s->data;
          unsigned char *skp  = NULL;
          unsigned char *saltp = NULL;

@@ -99,13 +99,13 @@ static int dos_attack_init(void *dummy)
    memset(unused_addr, 0, sizeof(dos_addr));
 
    ui_input("Insert victim IP: ", dos_addr, sizeof(dos_addr), NULL);
-   if (ip_addr_pton(dos_addr, &victim_host) == -EINVALID) {
+   if (ip_addr_pton(dos_addr, &victim_host) == -E_INVALID) {
       INSTANT_USER_MSG("dos_attack: Invalid IP address.\n");
       return PLUGIN_FINISHED;
    }
 
    ui_input("Insert unused IP: ", unused_addr, sizeof(unused_addr), NULL);
-   if (ip_addr_pton(unused_addr, &fake_host) == -EINVALID) {
+   if (ip_addr_pton(unused_addr, &fake_host) == -E_INVALID) {
       INSTANT_USER_MSG("dos_attack: Invalid IP address.\n");
       return PLUGIN_FINISHED;
    }

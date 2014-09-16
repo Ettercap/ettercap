@@ -143,7 +143,7 @@ SPACES         [ \t]+
 {OFFSET} {
    ef_debug(4, "OFFSET: %s\n", yytext);
    
-   if (encode_offset(yytext, &yylval.fop) != ESUCCESS)
+   if (encode_offset(yytext, &yylval.fop) != E_SUCCESS)
       SCRIPT_ERROR("Offset \"%s\" not recognized", yytext);
    
    return TOKEN_OFFSET;
@@ -152,7 +152,7 @@ SPACES         [ \t]+
 {FUNCTION} {
    ef_debug(4, "FUNCTION: %s\n", yytext);
    
-   if (encode_function(yytext, &yylval.fop) != ESUCCESS)
+   if (encode_function(yytext, &yylval.fop) != E_SUCCESS)
       SCRIPT_ERROR("Function \"%s\" not recognized", yytext);
    
    return TOKEN_FUNCTION;
@@ -161,7 +161,7 @@ SPACES         [ \t]+
 {CONST} {
    ef_debug(4, "CONST: %s\n", yytext);
    
-   if (encode_const(yytext, &yylval.fop) != ESUCCESS)
+   if (encode_const(yytext, &yylval.fop) != E_SUCCESS)
       SCRIPT_ERROR("Constant \"%s\" not recognized", yytext);
    
    return TOKEN_CONST;
@@ -170,7 +170,7 @@ SPACES         [ \t]+
 {STRING} {
    ef_debug(4, "STRING: %s\n", yytext);
    
-   if (encode_const(yytext, &yylval.fop) != ESUCCESS)
+   if (encode_const(yytext, &yylval.fop) != E_SUCCESS)
       SCRIPT_ERROR("Invalid string [%s]", yytext);
    
    return TOKEN_STRING;
@@ -179,7 +179,7 @@ SPACES         [ \t]+
 {IPADDR} {
    ef_debug(4, "IPADDR: %s\n", yytext);
    
-   if (encode_const(yytext, &yylval.fop) != ESUCCESS)
+   if (encode_const(yytext, &yylval.fop) != E_SUCCESS)
       SCRIPT_ERROR("Invalid ip address [%s]", yytext);
   
    /* ip addresses are translated into network order integer */
@@ -189,7 +189,7 @@ SPACES         [ \t]+
 {IP6ADDR} {
    ef_debug(4, "IP6ADDR: %s\n", yytext);
    
-   if (encode_const(yytext, &yylval.fop) != ESUCCESS)
+   if (encode_const(yytext, &yylval.fop) != E_SUCCESS)
       SCRIPT_ERROR("Invalid ipv6 address [%s]", yytext);
   
    /* ip addresses are translated into network order integer */

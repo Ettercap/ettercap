@@ -81,7 +81,7 @@ FUNC_DECODER(dissector_socks)
     
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_socks));
       /* if the session does not exist... */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          /* create the new session */
          dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_socks));
 	 
@@ -95,7 +95,7 @@ FUNC_DECODER(dissector_socks)
    
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_socks));
       /* Only if the server accepted user/pass scheme */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          
          DEBUG_MSG("\tDissector_socks USER/PASSWORD");
 

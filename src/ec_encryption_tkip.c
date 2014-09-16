@@ -107,7 +107,7 @@ int wpa_tkip_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    u_char decbuf[len];
 
    if (len > UINT16_MAX) {
-       return -ENOTHANDLED;
+       return -E_NOTHANDLED;
    }
 
    /* get the TKIP Sequence Counter */
@@ -125,7 +125,7 @@ int wpa_tkip_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    /* decrypt the packet */
    if (tkip_decrypt(decbuf, len - WEP_CRC_LEN, wep_seed) != 0) {
       //DEBUG_MSG(D_VERBOSE, "WPA (TKIP) decryption failed, packet was skipped");
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
    }
 
    /*
@@ -142,7 +142,7 @@ int wpa_tkip_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
     */
    memset(data + len - WEP_CRC_LEN, 0, WEP_CRC_LEN);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /*
@@ -244,10 +244,10 @@ static int tkip_decrypt(u_char *decbuf, size_t len, u_int8 *wep_seed)
     */
    if (CRC_checksum(decbuf, len + WEP_CRC_LEN, CRC_INIT) != CRC_RESULT) {
       //DEBUG_MSG(D_VERBOSE, "WEP: invalid key, the packet was skipped\n");
-      return -ENOTHANDLED;
+      return -E_NOTHANDLED;
    }
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* EOF */

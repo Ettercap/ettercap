@@ -303,7 +303,7 @@ static void gtkui_profile_detail(void)
 
    snprintf(line, 200, " Fingerprint: \t%s\n", h->fingerprint);
    gtkui_details_print(textbuf, line);
-   if (fingerprint_search(h->fingerprint, os) == ESUCCESS)
+   if (fingerprint_search(h->fingerprint, os) == E_SUCCESS)
       snprintf(line, 200, " Operating System: \t%s \n\n", os);
    else {
       snprintf(line, 200, " Operating System: \tunknown fingerprint (please submit it) \n");
@@ -375,7 +375,7 @@ static void gtkui_profiles_dump(void *dummy)
 static void dump_profiles(void)
 {
    /* dump the profiles */
-   if (profile_dump_to_file(logfile) == ESUCCESS)
+   if (profile_dump_to_file(logfile) == E_SUCCESS)
       gtkui_message("Profiles dumped to file");
 }
 

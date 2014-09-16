@@ -162,7 +162,7 @@ static void set_interesting_flag(struct packet_object *po)
    /* T1.mac == src & T1.ip = src & T1.port = src */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.src, GBL_TARGET1) || 
-            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src, NULL) != ESUCCESS) ) &&
+            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src, NULL) != E_SUCCESS) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.src))) )
       value = 1;
 
@@ -170,8 +170,8 @@ static void set_interesting_flag(struct packet_object *po)
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2) || 
-            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == ESUCCESS) ||
-            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != ESUCCESS) ) &&
+            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == E_SUCCESS) ||
+            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != E_SUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
       good = 1;   
   
@@ -193,8 +193,8 @@ static void set_interesting_flag(struct packet_object *po)
    /* if broadcast then T2 -> broadcast */
    if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) || 
-            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == ESUCCESS) ||
-            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != ESUCCESS) ) &&
+            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == E_SUCCESS) ||
+            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != E_SUCCESS) ) &&
         (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.dst))) )
       value = 1;
 
@@ -202,7 +202,7 @@ static void set_interesting_flag(struct packet_object *po)
    if ( value && (
         (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
         (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.src, GBL_TARGET2) || 
-            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src, NULL) != ESUCCESS) ) &&
+            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src, NULL) != E_SUCCESS) ) &&
         (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.src))) ) )
       good = 1;   
   
@@ -292,7 +292,7 @@ int compile_display_filter(void)
    SAFE_FREE(t1);
    SAFE_FREE(t2);
    
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -380,14 +380,14 @@ int compile_target(char *string, struct target_env *target)
    if (!strcmp(tok[PORT_TOK], ""))
       target->all_port = 1;
    else {
-      if (expand_token(tok[PORT_TOK], 1<<16, &add_port, target->ports) == -EFATAL)
+      if (expand_token(tok[PORT_TOK], 1<<16, &add_port, target->ports) == -E_FATAL)
          SEMIFATAL_ERROR("Invalid port range");
    }
 
    for(i = 0; i < MAX_TOK; i++)
       SAFE_FREE(tok[i]);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 
@@ -457,7 +457,7 @@ static int expand_range_ip(char *str, void *target)
 
    for (i = 0; i < 4; i++) {
       p = addr[i];
-      if (expand_token(addr[i], 255, &add_ip, &ADDR[i]) == -EFATAL)
+      if (expand_token(addr[i], 255, &add_ip, &ADDR[i]) == -E_FATAL)
          SEMIFATAL_ERROR("Invalid port range");
    }
 
@@ -494,7 +494,7 @@ static int expand_range_ip(char *str, void *target)
    for (i = 0; i < 4; i++)
       SAFE_FREE(addr[i]);
      
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 #ifdef WITH_IPV6
@@ -503,11 +503,11 @@ static int expand_ipv6(char *str, struct target_env *target)
 {
    struct ip_addr ip;
    
-   if(ip_addr_pton(str, &ip) != ESUCCESS)
+   if(ip_addr_pton(str, &ip) != E_SUCCESS)
       SEMIFATAL_ERROR("Invalid IPv6 address");
 
    add_ip_list(&ip, target);
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 #endif
 

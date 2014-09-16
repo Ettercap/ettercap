@@ -115,7 +115,7 @@ int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode)
 
    /* check if we have enough data */
    if (mode == STREAM_ATOMIC && sb->size < len)
-      return -EINVALID;
+      return -E_INVALID;
 
    STREAMBUF_LOCK(sb->streambuf_mutex);
    
@@ -178,7 +178,7 @@ int streambuf_read(struct stream_buf *sb, u_char *buf, size_t len, int mode)
 
    /* check if we have enough data */
    if (mode == STREAM_ATOMIC && sb->size < len)
-      return -EINVALID;
+      return -E_INVALID;
 
    STREAMBUF_LOCK(sb->streambuf_mutex);
    

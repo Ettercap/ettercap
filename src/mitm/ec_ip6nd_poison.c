@@ -97,14 +97,14 @@ static int ndp_poison_start(char *args)
    } else 
       ret = create_list();
 
-   if (ret != ESUCCESS) {
+   if (ret != E_SUCCESS) {
       SEMIFATAL_ERROR("NDP poisoning failed to start");
    }
    /* hook necessary? - Maybe if solicitations are seen */
 
    ec_thread_new("ndp_poisoner", "NDP spoofing thread", &ndp_poisoner, NULL);
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 static void ndp_poison_stop(void)
@@ -309,7 +309,7 @@ static int create_list(void)
       }
    }
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 static int create_list_silent(void)
@@ -322,10 +322,10 @@ static int create_list_silent(void)
    DEBUG_MSG("create_list_silent");
 
    LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
-      if(ip_addr_is_local(&i->ip, NULL) == ESUCCESS) {
+      if(ip_addr_is_local(&i->ip, NULL) == E_SUCCESS) {
          if (!memcmp(GBL_TARGET1->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN)) {
             USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
-            return -EFATAL;
+            return -E_FATAL;
          }
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &i->ip, sizeof(struct ip_addr));
@@ -339,15 +339,15 @@ static int create_list_silent(void)
       else {
          USER_MSG("%s is not local. NDP poisoning impossible\n", 
                ip_addr_ntoa(&i->ip, tmp));
-         return -EFATAL;
+         return -E_FATAL;
       }
    }
 
    LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
-      if(ip_addr_is_local(&i->ip, NULL) == ESUCCESS) {
+      if(ip_addr_is_local(&i->ip, NULL) == E_SUCCESS) {
          if (!memcmp(GBL_TARGET2->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN)) {
             USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
-            return -EFATAL;
+            return -E_FATAL;
          }
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &i->ip, sizeof(struct ip_addr));
@@ -364,7 +364,7 @@ static int create_list_silent(void)
       }
    }
 
-   return ESUCCESS;
+   return E_SUCCESS;
 }
 
 /* restore neighbor cache of victims */
@@ -414,7 +414,7 @@ static void catch_response(struct packet_object *po)
    struct ip_list *i;
 
    /* if it is not response to our ping */
-   if(ip_addr_is_ours(&po->L3.dst) != EFOUND)
+   if(ip_addr_is_ours(&po->L3.dst) != E_FOUND)
       return; 
 
    /* 

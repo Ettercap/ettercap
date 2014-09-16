@@ -50,7 +50,7 @@ int text_plugin(char *plugin)
 
       INSTANT_USER_MSG("\nAvailable plugins :\n\n");
       type = plugin_list_walk(PLP_MIN, PLP_MAX, &text_plugin_list);
-      if (type == -ENOTFOUND) 
+      if (type == -E_NOTFOUND) 
          FATAL_MSG("No plugin found !\n");
       
       INSTANT_USER_MSG("\n\n");
@@ -58,12 +58,12 @@ int text_plugin(char *plugin)
        * return an error, so the text interface 
        * ends and returns to main
        */
-      return -EINVALID;
+      return -E_INVALID;
    }
    
 
    /* check if the plugin exists */
-   if (search_plugin(plugin) != ESUCCESS)
+   if (search_plugin(plugin) != E_SUCCESS)
       FATAL_MSG("%s plugin can not be found !", plugin);
    
    

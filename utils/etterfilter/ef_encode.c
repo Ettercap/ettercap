@@ -39,7 +39,7 @@ static char * strsep_quotes(char **stringp, const char delim);
 
 /*
  * search an offset and fill the filter_op structure
- * return ESUCCESS on error.
+ * return E_SUCCESS on error.
  */
 int encode_offset(char *string, struct filter_op *fop)
 {
@@ -66,7 +66,7 @@ int encode_offset(char *string, struct filter_op *fop)
     * results in q == NULL.
     */
    if (q == NULL)
-      return -ENOTFOUND;
+      return -E_NOTFOUND;
 
    /* the the virtual pointer from the table */
    ret = get_virtualpointer(p, q, &fop->op.test.level, &fop->op.test.offset, &fop->op.test.size);
@@ -90,12 +90,12 @@ int encode_const(char *string, struct filter_op *fop)
    /* it is an hexadecimal value */
    if (!strncmp(string, "0x", 2) && isdigit((int)string[2])) {
       fop->op.test.value = strtoul(string, NULL, 16);
-      return ESUCCESS;
+      return E_SUCCESS;
       
    /* it is an integer value */
    } else if (isdigit((int)string[0])) {
       fop->op.test.value = strtoul(string, NULL, 10);
-      return ESUCCESS;
+      return E_SUCCESS;
       
    /* it is an ip address */
    } else if (string[0] == '\'' && string[strlen(string) - 1] == '\'') {
@@ -115,10 +115,10 @@ int encode_const(char *string, struct filter_op *fop)
          memcpy(&fop->op.test.ipaddr, &ip6addr.s6_addr, 16);
       }
       else {
-         return -EFATAL;
+         return -E_FATAL;
       }
       
-      return ESUCCESS;
+      return E_SUCCESS;
       
    /* it is a string */
    } else if (string[0] == '\"' && string[strlen(string) - 1] == '\"') {
@@ -133,7 +133,7 @@ int encode_const(char *string, struct filter_op *fop)
       /* escape it in the structure */
       fop->op.test.slen = strescape((char*)fop->op.test.string, (char*)fop->op.test.string);
      
-      return ESUCCESS;
+      return E_SUCCESS;
       
    /* it is a constant */
    } else if (isalpha((int)string[0])) {
@@ -141,7 +141,7 @@ int encode_const(char *string, struct filter_op *fop)
    }
    
    /* anything else is an error */
-   return -ENOTFOUND;
+   return -E_NOTFOUND;
 }
 
 
@@ -151,7 +151,7 @@ int encode_const(char *string, struct filter_op *fop)
 int encode_function(char *string, struct filter_op *fop)
 {
    char *str = strdup(string);
-   int ret = -ENOTFOUND;
+   int ret = -E_NOTFOUND;
    char *name, *args;
    int nargs = 0, i;
    char **dec_args = NULL;
@@ -174,13 +174,13 @@ int encode_function(char *string, struct filter_op *fop)
    if (!strcmp(name, "search")) {
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */
-         if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+         if (encode_offset(dec_args[0], fop) == E_SUCCESS) {
             /* encode offset wipe the fop !! */
             fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_SEARCH;
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
             fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
-            ret = ESUCCESS;
+            ret = E_SUCCESS;
          } else
             SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
       } else
@@ -192,13 +192,13 @@ int encode_function(char *string, struct filter_op *fop)
          char errbuf[100];
          
          /* get the level (DATA or DECODED) */
-         if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+         if (encode_offset(dec_args[0], fop) == E_SUCCESS) {
             /* encode offset wipe the fop !! */
             fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_REGEX;
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
             fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
-            ret = ESUCCESS;
+            ret = E_SUCCESS;
          } else
             SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
 
@@ -224,13 +224,13 @@ int encode_function(char *string, struct filter_op *fop)
       if (nargs == 2) {
                      
          /* get the level (DATA or DECODED) */
-         if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+         if (encode_offset(dec_args[0], fop) == E_SUCCESS) {
             /* encode offset wipe the fop !! */
             fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_PCRE;
             fop->op.func.string = strdup(dec_args[1]);
             fop->op.func.slen = strlen(fop->op.func.string);
-            ret = ESUCCESS;
+            ret = E_SUCCESS;
          } else
             SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
 
@@ -250,7 +250,7 @@ int encode_function(char *string, struct filter_op *fop)
          fop->op.func.slen = strlen(fop->op.func.string);
          fop->op.func.replace = strdup(dec_args[2]);
          fop->op.func.rlen = strlen(fop->op.func.replace);
-         ret = ESUCCESS;
+         ret = E_SUCCESS;
          
          /* check if the pcre is valid */
          pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
@@ -270,7 +270,7 @@ int encode_function(char *string, struct filter_op *fop)
          fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
          fop->op.func.replace = (u_char*)strdup(dec_args[1]);
          fop->op.func.rlen = strescape((char*)fop->op.func.replace, (char*)fop->op.func.replace);
-         ret = ESUCCESS;
+         ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "inject")) {
@@ -280,7 +280,7 @@ int encode_function(char *string, struct filter_op *fop)
          fop->op.func.level = 5;
          fop->op.func.string = (u_char*)strdup(dec_args[0]);
          fop->op.func.slen = strlen((const char*)fop->op.func.string);
-         ret = ESUCCESS;
+         ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "execinject")) {
@@ -290,19 +290,19 @@ int encode_function(char *string, struct filter_op *fop)
          fop->op.func.level = 5;
          fop->op.func.string = (u_char*)strdup(dec_args[0]);
          fop->op.func.slen = strlen((const char*)fop->op.func.string);
-         ret = ESUCCESS;
+         ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "log")) {
       if (nargs == 2) {
          /* get the level (DATA or DECODED) */
-         if (encode_offset(dec_args[0], fop) == ESUCCESS) {
+         if (encode_offset(dec_args[0], fop) == E_SUCCESS) {
             /* encode offset wipe the fop !! */
             fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_LOG;
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
             fop->op.func.slen = strlen((const char*)fop->op.func.string);
-            ret = ESUCCESS;
+            ret = E_SUCCESS;
          } else
             SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
       } else
@@ -310,13 +310,13 @@ int encode_function(char *string, struct filter_op *fop)
    } else if (!strcmp(name, "drop")) {
       if (nargs == 0) {
          fop->op.func.op = FFUNC_DROP;
-         ret = ESUCCESS;
+         ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "kill")) {
       if (nargs == 0) {
          fop->op.func.op = FFUNC_KILL;
-         ret = ESUCCESS;
+         ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "msg")) {
@@ -324,7 +324,7 @@ int encode_function(char *string, struct filter_op *fop)
          fop->op.func.op = FFUNC_MSG;
          fop->op.func.string = (u_char*)strdup(dec_args[0]);
          fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
-         ret = ESUCCESS;
+         ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "exec")) {
@@ -332,13 +332,13 @@ int encode_function(char *string, struct filter_op *fop)
          fop->op.func.op = FFUNC_EXEC;
          fop->op.func.string = (u_char*)strdup(dec_args[0]);
          fop->op.func.slen = strlen((const char*)fop->op.func.string);
-         ret = ESUCCESS;
+         ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "exit")) {
       if (nargs == 0) {
          fop->opcode = FOP_EXIT;
-         ret = ESUCCESS;
+         ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    }

@@ -108,7 +108,7 @@ FUNC_DECODER(dissector_mountd)
 
    /* REPLY */
    dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_mountd));
-   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+   if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
       SAFE_FREE(ident);
       return NULL;
    }

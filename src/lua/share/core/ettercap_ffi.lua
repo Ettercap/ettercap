@@ -210,19 +210,19 @@ enum {
 };
 
 enum {
-   ESUCCESS    = 0,
-   ENOTFOUND   = 1,
-   ENOMATCH    = 2,
-   ENOTHANDLED = 3,
-   EINVALID    = 4,
-   ENOADDRESS  = 5,
-   EDUPLICATE  = 6,
-   ETIMEOUT    = 7,
-   EINITFAIL   = 8,
-   EFOUND      = 128,
-   EBRIDGE     = 129,
-   EVERSION    = 254,
-   EFATAL      = 255,
+   E_SUCCESS    = 0,
+   E_NOTFOUND   = 1,
+   E_NOMATCH    = 2,
+   E_NOTHANDLED = 3,
+   E_INVALID    = 4,
+   E_NOADDRESS  = 5,
+   E_DUPLICATE  = 6,
+   E_TIMEOUT    = 7,
+   E_INITFAIL   = 8,
+   E_FOUND      = 128,
+   E_BRIDGE     = 129,
+   E_VERSION    = 254,
+   E_FATAL      = 255,
 };
 
 // These are magic constants that ettercap uses to identify the session

@@ -70,7 +70,7 @@ FUNC_DECODER(dissector_msn)
 
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_msn));
       /* if the session does not exist... */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
       
          /* search the login */
          ptr = (u_char*)strstr((const char*)ptr, "MD5 I ");
@@ -98,7 +98,7 @@ FUNC_DECODER(dissector_msn)
          
          dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_msn));
          /* if the session does not exist... */
-         if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+         if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
          
             /* search the login */
             ptr = (u_char*)strstr((const char*)ptr, "MD5 S ");
@@ -149,7 +149,7 @@ FUNC_DECODER(dissector_msn)
       
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_msn));
       /* if the session does not exist... */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
       
          /* search the login */
          ptr = (u_char*)strstr((const char*)ptr, "MD5 S ");

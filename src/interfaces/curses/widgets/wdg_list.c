@@ -121,7 +121,7 @@ static int wdg_list_destroy(struct wdg_object *wo)
 
    WDG_SAFE_FREE(wo->extend);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -131,7 +131,7 @@ static int wdg_list_resize(struct wdg_object *wo)
 {
    wdg_list_redraw(wo);
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -171,7 +171,7 @@ static int wdg_list_redraw(struct wdg_object *wo)
 
       /* create the menu window (fixed dimensions) */
       if ((ww->win = newwin(l, c, y, x)) == NULL)
-         return -WDG_EFATAL;
+         return -WDG_E_FATAL;
 
       /* draw the titles */
       wdg_list_borders(wo);
@@ -192,7 +192,7 @@ static int wdg_list_redraw(struct wdg_object *wo)
    
    wo->flags |= WDG_OBJ_VISIBLE;
 
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -206,7 +206,7 @@ static int wdg_list_get_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_list_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -220,7 +220,7 @@ static int wdg_list_lost_focus(struct wdg_object *wo)
    /* redraw the window */
    wdg_list_redraw(wo);
    
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /* 
@@ -240,7 +240,7 @@ static int wdg_list_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
             /* pass the event to the menu */
             wdg_list_driver(wo, key, mouse);
          } else 
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
 
       case KEY_DOWN:
@@ -252,7 +252,7 @@ static int wdg_list_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
             /* pass the event to the menu */
             wdg_list_driver(wo, key, mouse);
          } else
-            return -WDG_ENOTHANDLED;
+            return -WDG_E_NOTHANDLED;
          break;
 
       case KEY_RETURN:
@@ -266,7 +266,7 @@ static int wdg_list_get_msg(struct wdg_object *wo, int key, struct wdg_mouse_eve
          break;
    }
   
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -399,11 +399,11 @@ static int wdg_list_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
    
    /* tring to go outside edges */
    if (c == E_REQUEST_DENIED)
-      return -WDG_ENOTHANDLED;
+      return -WDG_E_NOTHANDLED;
 
    wnoutrefresh(ww->mwin);
       
-   return WDG_ESUCCESS;
+   return WDG_E_SUCCESS;
 }
 
 /*
@@ -535,11 +535,11 @@ static int wdg_list_callback(struct wdg_object *wo, int key)
          /* execute the callback */
          WDG_EXECUTE(c->callback, value);
          
-         return WDG_ESUCCESS;
+         return WDG_E_SUCCESS;
       }
    }
 
-   return -WDG_ENOTHANDLED;
+   return -WDG_E_NOTHANDLED;
 }
 
 /*

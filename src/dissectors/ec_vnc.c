@@ -97,7 +97,7 @@ FUNC_DECODER(dissector_vnc)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_vnc));
 
       /* if the session does not exist... */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
 
          /* This is the first packet from the server (protocol version) */
          if (!strncmp((const char*)ptr, "RFB ", 4)) {
@@ -212,7 +212,7 @@ FUNC_DECODER(dissector_vnc)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_vnc));
 
       /* Only if we catched the connection from the beginning */
-      if (session_get(&s, ident, DISSECT_IDENT_LEN) == ESUCCESS) {
+      if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
 
          /* We have to catch even ACKs to dump
             LOGIN FAILURE information on a client's packet */

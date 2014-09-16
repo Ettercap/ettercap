@@ -22,7 +22,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(etterfilter ${EF_SRC} ${FLEX_EF_SCANNER_OUTPUTS} ${BISON_EF_PARSER_OUTPUTS})
 target_link_libraries(etterfilter lib_ettercap)
-set_target_properties(etterfilter PROPERTIES INSTALL_RPATH ${INSTALL_LIBDIR})
+if(NOT DISABLE_RPATH)
+  set_target_properties(etterfilter PROPERTIES INSTALL_RPATH ${INSTALL_LIBDIR})
+endif(NOT DISABLE_RPATH)
 
 ## Etterlog
 
@@ -43,6 +45,8 @@ set(EL_SRC
 
 add_executable(etterlog ${EL_SRC})
 target_link_libraries(etterlog lib_ettercap)
-set_target_properties(etterlog PROPERTIES INSTALL_RPATH ${INSTALL_LIBDIR})
 
+if(NOT DISABLE_RPATH)
+  set_target_properties(etterlog PROPERTIES INSTALL_RPATH ${INSTALL_LIBDIR})
+endif(NOT DISABLE_RPATH)
 install(TARGETS etterfilter etterlog DESTINATION ${INSTALL_BINDIR})

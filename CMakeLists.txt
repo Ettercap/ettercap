@@ -133,9 +133,13 @@ set(CMAKE_EXE_LINKER_FLAGS " -Wl" CACHE STRING "" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG " -Wl -pg" CACHE STRING "" FORCE)
 set(CMAKE_MODULE_LINKER_FLAGS " -Wl" CACHE STRING "" FORCE)
 else(OS_DARWIN)
-set(CMAKE_EXE_LINKER_FLAGS " -Wl,-export-dynamic" CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG " -Wl,-export-dynamic -pg" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS " -Wl,-export-dynamic" CACHE STRING "" FORCE)
+# FIXME do we really need them?
+# the following adds "-Wl,-export-dynamic" even if you already have it, leading
+# to an ucontrolled increase of flags in case of cmake rerun in the same directory.
+# (see CMakeCache.txt at each run of cmake .)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-export-dynamic" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS} -Wl,-export-dynamic -pg" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-export-dynamic" CACHE STRING "" FORCE)
 endif(OS_DARWIN)
 
 if(ENABLE_LUA)

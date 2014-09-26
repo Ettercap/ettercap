@@ -1,4 +1,3 @@
-message("Building ${PROJECT_NAME} for detected system: ${CMAKE_SYSTEM_NAME}")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(OS_LINUX 1)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")

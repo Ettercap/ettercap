@@ -57,6 +57,7 @@
 #cmakedefine INSTALL_BINDIR         "@INSTALL_BINDIR@"
 
 #cmakedefine ICON_DIR               "@ICON_DIR@"
+#cmakedefine MAN_INSTALLDIR         "@MAN_INSTALLDIR@"
 
 #cmakedefine JUST_LIBRARY
 

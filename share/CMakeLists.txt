@@ -29,9 +29,12 @@ set(EC_DATAFILES
             etter.mime
             etter.services
             etter.ssl.crt
-            ../LICENSE
             ../AUTHORS
 )
+if(NOT NO_INSTALL_LICENSE)
+   set(EC_DATAFILES ${EC_DATAFILES} ../LICENSE)
+endif(NOT NO_INSTALL_LICENSE)
+
 foreach (f IN LISTS EC_DATAFILES EC_CONFFILES)
 	configure_file(${f} ${f} COPYONLY)
 endforeach()

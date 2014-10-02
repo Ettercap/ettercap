@@ -480,11 +480,13 @@ void gtkui_about(void)
       error = NULL;
       g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/LICENSE",
             &license, &length, &error);
+#ifndef OS_WINDOWS
       if (error != NULL) {
          error = NULL;
          g_file_get_contents("/usr/share/common-licenses/GPL-2",
                &license, &length, &error);
          }
+#endif
          if (error != NULL) {
             g_message("failed to load license file: %s", error->message);
             g_error_free(error);

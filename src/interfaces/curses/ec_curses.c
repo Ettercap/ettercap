@@ -78,6 +78,7 @@ void set_curses_interface(void)
    /* register the functions */
    ops.init = &curses_init;
    ops.start = &curses_interface;
+   ops.type = UI_CURSES;
    ops.cleanup = &curses_cleanup;
    ops.msg = &curses_msg;
    ops.error = &curses_error;
@@ -85,7 +86,6 @@ void set_curses_interface(void)
    ops.input = &curses_input;
    ops.progress = &curses_progress;
    ops.update = &curses_update;
-   ops.type = UI_CURSES;
    
    ui_register(&ops);
 

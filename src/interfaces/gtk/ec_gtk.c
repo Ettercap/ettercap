@@ -267,7 +267,6 @@ void set_gtk_interface(void)
    ops.progress = &gtkui_progress_wrap;
    ops.update = &gtkui_update;
 
-   
    ui_register(&ops);
 
    DEBUG_MSG("GTK -> gtk+ %d.%d.%d\n", gtk_major_version, gtk_minor_version, gtk_micro_version);

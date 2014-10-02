@@ -449,19 +449,24 @@ void gtkui_about(void)
    g_file_get_contents("./AUTHORS",
          &authors, &length, &error);
    if (error != NULL) {
+      /* no debug message */
+      g_error_free(error);
       error = NULL;
+
+      /* 2nd try */
       g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/AUTHORS",
             &authors, &length, &error);
       if (error != NULL) {
-         g_message("failed to load authors file: %s", error->message);
+         DEBUG_MSG("failed to load authors file: %s", error->message);
+         gtkui_error("Failed to load AUTHORS file.");
          g_error_free(error);
-         return;
+         error = NULL;
       }
    }
    textview = gtk_text_view_new();
    gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
    textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-   if ((unicode = gtkui_utf8_validate(authors)) != NULL) {
+   if (authors && (unicode = gtkui_utf8_validate(authors)) != NULL) {
       gtk_text_buffer_get_end_iter(textbuf, &iter);
       gtk_text_buffer_insert(textbuf, &iter, unicode, -1);
    }
@@ -470,33 +475,44 @@ void gtkui_about(void)
 
    /* License page */
    scroll= gtk_scrolled_window_new(NULL, NULL); 
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll), 
+         GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
 
    /* load license file */
    g_file_get_contents("./LICENSE",
          &license, &length, &error);
    if (error != NULL) {
+      /* no debug message */
+      g_error_free(error);
       error = NULL;
+
+      /* 2nd try */
       g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/LICENSE",
             &license, &length, &error);
 #ifndef OS_WINDOWS
       if (error != NULL) {
+         DEBUG_MSG("failed to load license file: %s, try system path ...", error->message);
+         g_error_free(error);
          error = NULL;
+
+         /* 3rd try */
          g_file_get_contents("/usr/share/common-licenses/GPL-2",
                &license, &length, &error);
          }
 #endif
          if (error != NULL) {
-            g_message("failed to load license file: %s", error->message);
+            DEBUG_MSG("failed to load license file: %s", error->message);
+            gtkui_error("Failed to load LICENSE file.");
             g_error_free(error);
+            error = NULL;
       }
    }
 
    textview = gtk_text_view_new();
    gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
    textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-   if ((unicode = gtkui_utf8_validate(license)) != NULL) {
+   if (license && (unicode = gtkui_utf8_validate(license)) != NULL) {
       gtk_text_buffer_get_end_iter(textbuf, &iter);
       gtk_text_buffer_insert(textbuf, &iter, unicode, -1);
    }
@@ -517,8 +533,11 @@ void gtkui_about(void)
 
    gtk_dialog_run(GTK_DIALOG(dialog));
 
-   g_free(authors);
-   g_free(license);
+   if (authors)
+      g_free(authors);
+   if (license)
+      g_free(license);
+
    gtk_widget_destroy(dialog);
 
 }

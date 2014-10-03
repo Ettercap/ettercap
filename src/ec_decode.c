@@ -33,6 +33,9 @@
 #include <pcap.h>
 #include <libnet.h>
 #include <pthread.h>
+#ifdef OS_BSD_FREE
+#include <libgen.h>
+#endif
 
 /* globals */
 

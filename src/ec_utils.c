@@ -339,7 +339,7 @@ const char *ec_ctime(const struct timeval *tv)
    if (ts_str)
       sprintf(result, "%.24s", ts_str);
    else
-      snprintf(result, sizeof(result), "%lu.%06lu", tv->tv_sec, tv->tv_usec);
+      snprintf(result, sizeof(result), "%lu.%06lu", (unsigned long)tv->tv_sec, tv->tv_usec);
 
   return (result);
 }

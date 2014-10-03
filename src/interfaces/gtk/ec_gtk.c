@@ -388,6 +388,161 @@ gboolean gtkui_flush_msg(gpointer data)
 }
 
 /*
+ * display about dialog
+ */
+void gtkui_about(void)
+{
+   GtkWidget *dialog, *notebook, *content, *scroll, *vbox, *logo, *label;
+   GtkWidget *button, *textview;
+   GtkTextBuffer *textbuf;
+   GtkTextIter iter;
+   GError *error = NULL;
+   const gchar *path, *unicode;
+   gchar *license, *authors;
+   gsize length;
+
+   dialog = gtk_dialog_new();
+   gtk_window_set_title(GTK_WINDOW(dialog), "About");
+   gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
+   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+   gtk_window_set_default_size(GTK_WINDOW(dialog), 450, 300);
+
+   button = gtk_dialog_add_button(GTK_DIALOG(dialog), "Close", GTK_RESPONSE_CLOSE);
+   gtk_button_set_image(GTK_BUTTON(button), 
+         gtk_image_new_from_stock(GTK_STOCK_CLOSE, GTK_ICON_SIZE_BUTTON));
+
+   notebook = gtk_notebook_new();
+
+   /* General page */
+#if GTK_CHECK_VERSION(3, 0, 0)
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+#else
+   vbox = gtk_vbox_new(FALSE, 10);
+#endif
+
+   path = INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE_SMALL;
+   if(g_file_test(path, G_FILE_TEST_EXISTS))
+      logo = gtk_image_new_from_file(path);
+   else /* if neither path is valid gtk will use a broken image icon */
+      logo = gtk_image_new_from_file("./share/" LOGO_FILE_SMALL);
+   gtk_box_pack_start(GTK_BOX(vbox), logo, FALSE, FALSE, 0);
+
+   label = gtk_label_new("");
+   gtk_label_set_markup(GTK_LABEL(label), 
+         "<span size=\"xx-large\" weight=\"bold\">" 
+         EC_PROGRAM " " EC_VERSION 
+         "</span>");
+   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+
+   label = gtk_label_new("www.ettercap-project.org");
+   gtk_label_set_selectable(GTK_LABEL(label), TRUE);
+   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+   gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new("General"));
+
+   /* Authors page */
+   scroll= gtk_scrolled_window_new(NULL, NULL); 
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
+
+   /* load the authors file */
+   g_file_get_contents("./AUTHORS",
+         &authors, &length, &error);
+   if (error != NULL) {
+      /* no debug message */
+      g_error_free(error);
+      error = NULL;
+
+      /* 2nd try */
+      g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/AUTHORS",
+            &authors, &length, &error);
+      if (error != NULL) {
+         DEBUG_MSG("failed to load authors file: %s", error->message);
+         gtkui_error("Failed to load AUTHORS file.");
+         g_error_free(error);
+         error = NULL;
+      }
+   }
+   textview = gtk_text_view_new();
+   gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+   textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+   if (authors && (unicode = gtkui_utf8_validate(authors)) != NULL) {
+      gtk_text_buffer_get_end_iter(textbuf, &iter);
+      gtk_text_buffer_insert(textbuf, &iter, unicode, -1);
+   }
+   gtk_container_add(GTK_CONTAINER(scroll), textview);
+   gtk_notebook_append_page(GTK_NOTEBOOK(notebook), scroll, gtk_label_new("Authors"));
+
+   /* License page */
+   scroll= gtk_scrolled_window_new(NULL, NULL); 
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll), 
+         GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
+
+   /* load license file */
+   g_file_get_contents("./LICENSE",
+         &license, &length, &error);
+   if (error != NULL) {
+      /* no debug message */
+      g_error_free(error);
+      error = NULL;
+
+      /* 2nd try */
+      g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/LICENSE",
+            &license, &length, &error);
+#ifndef OS_WINDOWS
+      if (error != NULL) {
+         DEBUG_MSG("failed to load license file: %s, try system path ...", error->message);
+         g_error_free(error);
+         error = NULL;
+
+         /* 3rd try */
+         g_file_get_contents("/usr/share/common-licenses/GPL-2",
+               &license, &length, &error);
+         }
+#endif
+         if (error != NULL) {
+            DEBUG_MSG("failed to load license file: %s", error->message);
+            gtkui_error("Failed to load LICENSE file.");
+            g_error_free(error);
+            error = NULL;
+      }
+   }
+
+   textview = gtk_text_view_new();
+   gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+   textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+   if (license && (unicode = gtkui_utf8_validate(license)) != NULL) {
+      gtk_text_buffer_get_end_iter(textbuf, &iter);
+      gtk_text_buffer_insert(textbuf, &iter, unicode, -1);
+   }
+   gtk_container_add(GTK_CONTAINER(scroll), textview);
+
+   gtk_notebook_append_page(GTK_NOTEBOOK(notebook), scroll, gtk_label_new("License"));
+
+   content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   gtk_container_add(GTK_CONTAINER(content), notebook);
+
+   /* Hitting Enter closes the About dialog */
+   gtk_widget_grab_focus(
+         gtk_dialog_get_widget_for_response(
+            GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE));
+
+   gtk_widget_show_all(GTK_WIDGET(dialog));
+
+
+   gtk_dialog_run(GTK_DIALOG(dialog));
+
+   if (authors)
+      g_free(authors);
+   if (license)
+      g_free(license);
+
+   gtk_widget_destroy(dialog);
+
+}
+
+/*
  * print an error
  */
 static void gtkui_error(const char *msg)
@@ -437,8 +592,10 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
    GtkWidget *dialog, *entry, *label, *hbox, *image, *content_area;
 
    dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        NULL);
 #if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
@@ -630,7 +787,7 @@ static void toggle_nopromisc(void)
 static void gtkui_setup(void)
 {
    GtkTextIter iter;
-   GtkWidget *vbox, *scroll, *vpaned, *logo, *main_menu;
+   GtkWidget *vbox, *scroll, *vpaned, *logo, *icon, *main_menu;
    GtkActionGroup *menuactions;
    GtkAction *action;
    GClosure *closure = NULL;
@@ -659,11 +816,12 @@ static void gtkui_setup(void)
       "         <menuitem name='Promisc' action='OptionsPromiscAction' />"
       "         <menuitem name='Netmask' action='OptionsNetmaskAction' />"
       "      </menu>"
-#ifndef OS_WINDOWS
       "      <menu name='HelpMenu' action='HelpMenuAction'>"
-      "         <menuitem name='Contents' action='HelpContentsAction' />"
-      "      </menu>"
+#ifndef OS_WINDOWS
+      "         <menuitem name='Help' action='HelpAction' />"
 #endif
+      "         <menuitem name='About' action='AboutDialogAction' />"
+      "      </menu>"
       "   </menubar>"
       "</ui>";
 
@@ -671,7 +829,7 @@ static void gtkui_setup(void)
       /* File Menu */
       { 
          "FileMenuAction", NULL,
-         "_File", "<shift>F",
+         "_File", NULL,
          NULL, NULL
       },
 
@@ -705,21 +863,21 @@ static void gtkui_setup(void)
 
       { 
          "SniffUnifiedAction", GTK_STOCK_DND, 
-         "Unified sniffing...", "<shift>U", 
+         "Unified sniffing...", "<control>U", 
          "Switch to unified sniffing mode", 
          G_CALLBACK(gtkui_unified_sniff) 
       },
 
       { 
          "SniffBridgedAction", GTK_STOCK_DND_MULTIPLE, 
-         "Bridged sniffing...", "<shift>B", 
+         "Bridged sniffing...", "<control>B", 
          "Switch to bridged sniffing mode", 
          G_CALLBACK(gtkui_bridged_sniff) 
       },
 
       { 
          "SniffFilterAction", GTK_STOCK_PREFERENCES, 
-         "Set pcap filter...", "p", 
+         "Set pcap filter...", "<control>P", 
          "Limit relevant traffic", 
          G_CALLBACK(gtkui_pcap_filter)
       },
@@ -727,32 +885,38 @@ static void gtkui_setup(void)
       /* Options Menu */
       { 
          "OptionsMenuAction", NULL, 
-         "_Options", "<shift>O",
+         "_Options", NULL,
          NULL, NULL
       },
 
       { 
          "OptionsNetmaskAction", NULL, 
-         "Set netmask", "n", 
+         "Set netmask", "<control>N", 
          "Override netmask", 
          G_CALLBACK(gtkui_set_netmask) 
       },
 
-#ifndef OS_WINDOWS
       /* Help Menu */
       { 
          "HelpMenuAction", NULL, 
-         "_?", NULL ,
+         "_Info", NULL,
          NULL, NULL
       },
 
+#ifndef OS_WINDOWS
       { 
-         "HelpContentsAction", GTK_STOCK_HELP, 
-         "Contents", NULL, 
+         "HelpAction", GTK_STOCK_HELP, 
+         "Help", "F1", 
          "Ettercap documentation", 
          G_CALLBACK(gtkui_help) 
-      }
+      },
 #endif
+      {
+         "AboutDialogAction", GTK_STOCK_ABOUT,
+         "About", NULL,
+         "About Ettercap",
+         G_CALLBACK(gtkui_about)
+      }
    };
 
    GtkToggleActionEntry toggle_items[] = {
@@ -785,6 +949,18 @@ static void gtkui_setup(void)
    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
    gtk_window_set_title(GTK_WINDOW (window), EC_PROGRAM" "EC_VERSION);
    gtk_window_set_default_size(GTK_WINDOW (window), width, height);
+
+   /* set window icon */
+   path = ICON_DIR "/" ICON_FILE;
+   if (g_file_test(path, G_FILE_TEST_EXISTS)) {
+      icon = gtk_image_new_from_file(path);
+      gtk_window_set_icon(GTK_WINDOW(window), gtk_image_get_pixbuf(GTK_IMAGE(icon)));
+   }
+   else { /* if neither path is valid gtk will use a broken image icon */
+      icon = gtk_image_new_from_file("./share/" ICON_FILE);
+      gtk_window_set_icon(GTK_WINDOW(window), gtk_image_get_pixbuf(GTK_IMAGE(icon)));
+   }
+
 
    if(left > 0 || top > 0)
       gtk_window_move(GTK_WINDOW(window), left, top);
@@ -912,8 +1088,8 @@ static void gtkui_file_open(void)
 
    dialog = gtk_file_chooser_dialog_new("Select a pcap file...", 
             GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, 
-            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
             NULL);
 
    /* This way the file chooser dialog doesn't start in the recent section */
@@ -977,8 +1153,8 @@ static void gtkui_file_write(void)
    
    dialog = gtk_file_chooser_dialog_new("Save traffic in a pcap file...", 
             GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE, 
-            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
             NULL);
 
    /* This way the file chooser dialog doesn't start in the recent section */
@@ -1042,8 +1218,10 @@ static void gtkui_unified_sniff(void)
    DEBUG_MSG("gtk_unified_sniff");
 
    dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        NULL);
 #if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
@@ -1176,8 +1354,10 @@ static void gtkui_bridged_sniff(void)
    DEBUG_MSG("gtk_bridged_sniff");
 
    dialog = gtk_dialog_new_with_buttons("Bridged Sniffing", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        NULL);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 #if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
@@ -1383,77 +1563,46 @@ static void gtkui_set_netmask(void)
       SAFE_FREE(GBL_OPTIONS->netmask);
 }
 
-/* used for Profile and Connection details */
-GtkTextBuffer *gtkui_details_window(char *title)
+
+/*
+ * Callback for g_timeout_add() to resolve a IP to name asyncronously
+ * if the name is not already in the cache, host_iptoa
+ * immediately returns but starts the resolution process
+ * in the background. 
+ * This function periodically recalls this host_iptoa until
+ * a result in available in the cache and updates the widget.
+ */
+gboolean gtkui_iptoa_deferred(gpointer data)
 {
-   GtkWidget *dwindow, *dscrolled, *dtextview;
-   GtkWidget *vbox, *hbox, *button;
-   GdkGeometry hints;
+   struct resolv_object *ro;
+   char name[MAX_HOSTNAME_LEN];
+   ro = (struct resolv_object *)data;
 
-   DEBUG_MSG("gtkui_details_window");
-   
-   dwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (dwindow), title);
+   DEBUG_MSG("gtkui_iptoa_deferred");
 
-   hints.max_width = 640;
-   hints.max_height = 480;
-   gtk_window_set_geometry_hints(GTK_WINDOW (dwindow), dwindow, &hints, GDK_HINT_MAX_SIZE);
+   if (host_iptoa(ro->ip, name) == E_SUCCESS) {
+      /* 
+       * Name has now been resolved in the background
+       * Set the widget text and destroy the timer
+       */
+      if (ro->type == GTK_TYPE_LABEL)
+            gtk_label_set_text(GTK_LABEL(ro->widget), name);
+      else if (ro->type == GTK_TYPE_LIST_STORE)
+            gtk_list_store_set(GTK_LIST_STORE(ro->liststore), 
+                  &ro->treeiter, ro->column, name, -1);
+      
+      /* Free allocated memory */
+      SAFE_FREE(ro);
 
-   gtk_window_set_default_size(GTK_WINDOW (dwindow), 300, 300);
-   gtk_container_set_border_width(GTK_CONTAINER (dwindow), 5);
-   gtk_window_set_position(GTK_WINDOW (dwindow), GTK_WIN_POS_CENTER);
-   g_signal_connect (G_OBJECT (dwindow), "delete_event", G_CALLBACK (gtk_widget_destroy), NULL);
-   
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-#else
-   vbox = gtk_vbox_new(FALSE, 5);
-#endif
-   gtk_container_add(GTK_CONTAINER (dwindow), vbox);
-   gtk_widget_show(vbox);
-   
-   dscrolled = gtk_scrolled_window_new(NULL, NULL); 
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (dscrolled), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (dscrolled), GTK_SHADOW_IN);
-   gtk_box_pack_start(GTK_BOX(vbox), dscrolled, TRUE, TRUE, 0);
-   gtk_widget_show(dscrolled);
-
-   dtextview = gtk_text_view_new();
-   gtk_text_view_set_editable(GTK_TEXT_VIEW (dtextview), FALSE);
-   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (dtextview), FALSE);
-   gtk_container_add(GTK_CONTAINER (dscrolled), dtextview);
-   gtk_widget_show(dtextview);
-
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-   hbox = gtk_hbox_new(FALSE, 0);
-#endif
-   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-   gtk_widget_show(hbox);
-
-   button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-   g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(gtk_widget_destroy), dwindow);
-   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-   gtk_widget_show(button);
-
-   gtk_widget_show(dwindow);
-
-   return(gtk_text_view_get_buffer(GTK_TEXT_VIEW (dtextview)));
+      /* destroy timer */
+      return FALSE;
+   }
+   else  {
+      /* Keep trying */
+      return TRUE;
+   }
 }
 
-/* append a string to a GtkTextBuffer */
-void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
-{
-   GtkTextIter iter;
-   gchar *unicode;
-
-   if((unicode = gtkui_utf8_validate(data)) == NULL)
-      return;
-
-   gtk_text_buffer_get_end_iter(textbuf, &iter);
-   gtk_text_buffer_insert(textbuf, &iter, unicode, -1);
-}
 
 /* hitting "Enter" keyy in a combo box does the same as clicking OK button */
 gboolean gtkui_combo_enter(GtkWidget *widget, GdkEventKey *event, gpointer data)
@@ -1627,9 +1776,16 @@ gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer d
    /* variable not used */
    (void) widget;
 
-    if(event->button == 3)
+    if(event->button == 3) {
         gtk_menu_popup(GTK_MENU(data), NULL, NULL, NULL, NULL, 3, event->time);
-    return(FALSE);
+        /* 
+         * button press event handle must return TRUE to keep the selection
+         * active when pressing the mouse button 
+         */
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 /* detach the currently focused notebook page into a free window */
@@ -1686,7 +1842,10 @@ void gtkui_filename_browse(GtkWidget *widget, gpointer data)
    (void) widget;
 
    dialog = gtk_file_chooser_dialog_new("Select a file...",
-         NULL, GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL);
+         NULL, GTK_FILE_CHOOSER_ACTION_OPEN, 
+         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+         GTK_STOCK_OK, GTK_RESPONSE_OK, 
+         NULL);
    
    response = gtk_dialog_run (GTK_DIALOG (dialog));
    

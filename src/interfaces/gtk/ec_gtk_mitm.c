@@ -47,8 +47,10 @@ void gtkui_arp_poisoning(void)
 //   memset(params, '\0', PARAMS_LEN+1);
 
    dialog = gtk_dialog_new_with_buttons("MITM Attack: ARP Poisoning", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK, 
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK, 
+                                        NULL);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 #if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
@@ -131,8 +133,10 @@ void gtkui_icmp_redir(void)
    DEBUG_MSG("gtk_icmp_redir");
 
    dialog = gtk_dialog_new_with_buttons("MITM Attack: ICMP Redirect", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        NULL);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 #if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
@@ -212,8 +216,10 @@ void gtkui_port_stealing(void)
    DEBUG_MSG("gtk_port_stealing"); 
       
    dialog = gtk_dialog_new_with_buttons("MITM Attack: Port Stealing", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        NULL);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 #if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
@@ -291,8 +297,10 @@ void gtkui_dhcp_spoofing(void)
 //   memset(params, '\0', PARAMS_LEN+1);
    
    dialog = gtk_dialog_new_with_buttons("MITM Attack: DHCP Spoofing", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        NULL);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 #if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
@@ -385,8 +393,10 @@ void gtkui_ndp_poisoning(void)
 //   memset(params, '\0', PARAMS_LEN+1);
 
    dialog = gtk_dialog_new_with_buttons("MITM Attack: NDP Poisoning", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_OK, GTK_RESPONSE_OK, 
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+                                        GTK_DIALOG_MODAL, 
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK, 
+                                        NULL);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 #if !GTK_CHECK_VERSION(2, 22, 0)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);

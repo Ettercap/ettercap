@@ -63,8 +63,8 @@ void gtkui_plugin_load(void)
    
    dialog = gtk_file_chooser_dialog_new("Select a plugin...",
          GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
-         GTK_STOCK_OPEN, GTK_RESPONSE_OK,
          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+         GTK_STOCK_OPEN, GTK_RESPONSE_OK,
          NULL);
    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), path);
 

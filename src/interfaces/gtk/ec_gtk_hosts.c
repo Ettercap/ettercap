@@ -81,8 +81,8 @@ void gtkui_load_hosts(void)
 
    dialog = gtk_file_chooser_dialog_new("Select a hosts file...",
             GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
-            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
             NULL);
    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), "");
 
@@ -151,8 +151,8 @@ void gtkui_save_hosts(void)
 
    dialog = gtk_file_chooser_dialog_new("Save hosts to file...",
            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
-           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
            NULL);
    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");
 
@@ -193,7 +193,7 @@ static void save_hosts(void)
  */
 void gtkui_host_list(void)
 {
-   GtkWidget *scrolled, *treeview, *vbox, *hbox, *button;
+   GtkWidget *scrolled, *treeview, *vbox, *hbox, *button, *item, *context_menu;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
    static gint host_delete = HOST_DELETE;
@@ -277,6 +277,25 @@ void gtkui_host_list(void)
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_button_callback), &host_target2);
    gtk_widget_show(button);
 
+   context_menu = gtk_menu_new();
+   item = gtk_menu_item_new_with_label("Add to Target 1");
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), item);
+   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtkui_button_callback), &host_target1);
+   gtk_widget_show(item);
+
+   item = gtk_menu_item_new_with_label("Add to Target 2");
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), item);
+   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtkui_button_callback), &host_target2);
+   gtk_widget_show(item);
+
+   item = gtk_menu_item_new_with_label("Delete host");
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), item);
+   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtkui_button_callback), &host_delete);
+   gtk_widget_show(item);
+
+   g_signal_connect(G_OBJECT(treeview), "button-press-event", G_CALLBACK(gtkui_context_menu), context_menu);
+
+
    gtk_widget_show(hosts_window);
 }
 
@@ -347,8 +366,19 @@ gboolean gtkui_refresh_host_list(gpointer data)
          gtk_list_store_set (liststore, &iter, 2, hl->hostname, -1);
       } else {
          /* resolve the hostname (using the cache) */
-         host_iptoa(&hl->ip, name);
-         gtk_list_store_set (liststore, &iter, 2, name, -1);
+         if(host_iptoa(&hl->ip, name) == -E_NOMATCH) {
+            gtk_list_store_set(liststore, &iter, 2, "resolving...", -1);
+            struct resolv_object *ro;
+            SAFE_CALLOC(ro, 1, sizeof(struct resolv_object));
+            ro->type = GTK_TYPE_LIST_STORE;
+            ro->liststore = GTK_LIST_STORE(liststore);
+            ro->treeiter = iter;
+            ro->column = 2;
+            ro->ip = &hl->ip;
+            g_timeout_add(1000, gtkui_iptoa_deferred, ro);
+         }
+         else
+            gtk_list_store_set (liststore, &iter, 2, name, -1);
       }
    }
 

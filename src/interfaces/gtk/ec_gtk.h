@@ -5,6 +5,8 @@
 #include <gdk/gdkkeysyms.h>
 
 #define LOGO_FILE "ettercap.png"
+#define LOGO_FILE_SMALL "ettercap-small.png"
+#define ICON_FILE "ettercap.svg"
 
 #ifndef GTK_WRAP_WORD_CHAR
 #define GTK_WRAP_WORD_CHAR GTK_WRAP_WORD
@@ -13,6 +15,20 @@
 struct gtk_conf_entry {
    char *name;
    short value;
+};
+
+struct resolv_object {
+   /* Widget type to be updated */
+   GType type;
+   /* Widget to be updated */
+   GtkWidget *widget;
+   /* List Stores are not of type GtkWidget */
+   GtkListStore *liststore;
+   /* some attributes needed to update the widget */
+   GtkTreeIter treeiter;
+   guint column;
+   /* The IP address to resolve */
+   struct ip_addr *ip;
 };
 
 /* ec_gtk.c */
@@ -24,6 +40,7 @@ extern guint merge_id;
 extern GTimer *progress_timer;
 
 extern void set_gtk_interface(void);
+extern void gtkui_about(void);
 extern void gtkui_message(const char *msg);
 extern void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
 extern void gtkui_exit(void);
@@ -32,8 +49,7 @@ extern void gtkui_sniff_offline(void);
 extern void gtkui_sniff_live(void);
 
 
-extern GtkTextBuffer *gtkui_details_window(char *title);
-extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
+extern gboolean gtkui_iptoa_deferred(gpointer data);
 extern gboolean gtkui_combo_enter(GtkWidget *widget, GdkEventKey *event, gpointer data);
 extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 extern gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);

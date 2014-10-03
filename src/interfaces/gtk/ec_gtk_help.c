@@ -135,27 +135,57 @@ void gtkui_help(void)
 
 void gtkui_help_open(char *file) {
    const char *full = "sh -c \"man %s | col -b\"";
-   char *data = NULL, *errors = NULL, *cmd;
+   char *data = NULL, *unicode = NULL, *errors = NULL, *cmd;
    gboolean ret = FALSE;
    gint len = 0;
 
-   len = strlen(file) + strlen(full);
+   len = strlen(file) + strlen(full) +1;
    cmd = g_malloc(sizeof(char) * len);
    snprintf(cmd, len, full, file);
+   // try to find the system installed man
    ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
    g_free(cmd);
 
-   /* TODO: use local copy of manpages as backup */
    if(ret && errors && strlen(errors) > 0) {
-      ui_error(errors);
       g_free(errors);
+      // system man not found, try non-standard man(8) installation directory
+      full = "sh -c \"man -M " MAN_INSTALLDIR " %s | col -b\"";
+      len = strlen(file) + strlen(full) +1;
+      cmd = g_malloc(sizeof(char) * len);
+      snprintf(cmd, len, full, file);
+      ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
+      g_free(cmd);
+      if(ret && errors && strlen(errors) > 0) {
+         g_free(errors);
+         // man not found in the man installation directory, try build directory
+         full = "sh -c \"man ./man/%s.8 | col -b\"";
+         len = strlen(file) + strlen(full) +1;
+         cmd = g_malloc(sizeof(char) * len);
+         snprintf(cmd, len, full, file);
+         ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
+         g_free(cmd);
+         if(ret && errors && strlen(errors) > 0) {
+           g_free(errors);
+           // man(8) in the build directory not found, but etter.conf is man(5)
+           full = "sh -c \"man ./man/%s.5 | col -b\"";
+           len = strlen(file) + strlen(full) +1;
+           cmd = g_malloc(sizeof(char) * len);
+           snprintf(cmd, len, full, file);
+           ret = g_spawn_command_line_sync(cmd, &data, &errors, NULL, NULL);
+           g_free(cmd);
+           if(ret && errors && strlen(errors) > 0) {
+             ui_error(errors);
+             g_free(errors);
+           }
+         }
+      }
    }
 
    /* print output of command in help window */
    if(data && ret) {
-      gtk_text_buffer_set_text(textbuf, "", -1);
-   
-      gtkui_details_print(textbuf, data);
+      if ((unicode = gtkui_utf8_validate(data)))
+         gtk_text_buffer_set_text(textbuf, unicode, -1);
+
       g_free(data);
    }
 }

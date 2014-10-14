@@ -36,7 +36,7 @@ static u_int16 sum(u_int8 *buf, size_t len)
 {
    union u_pun {
       u_int8 b[4];
-      u_int16 w;
+      u_int16 w[2];
       u_int32 dw;
    };
    register u_int8 *cbuf = buf;
@@ -60,14 +60,14 @@ static u_int16 sum(u_int8 *buf, size_t len)
 
    while(nleft >= sizeof(u_int16)) {
       union u_pun u = { .b[0] = cbuf[0], .b[1] = cbuf[1] };
-      csum += u.w;
+      csum += u.w[0];
       cbuf += sizeof(u_int16);
       nleft -= sizeof(u_int16);
    }
 
    if(nleft) {
       union u_pun u = { .b[0] = cbuf[0], .b[1] = 0 };
-      csum += u.w;
+      csum += u.w[0];
       cbuf++;
       nleft--;
    }

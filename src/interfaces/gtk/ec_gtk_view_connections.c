@@ -186,7 +186,7 @@ void gtkui_show_connections(void)
    toolbutton = gtk_tool_button_new_from_stock(GTK_STOCK_APPLY);
    g_signal_connect_swapped(G_OBJECT(toolbutton), "clicked", G_CALLBACK(set_connfilter_host), entry);
    gtk_box_pack_start(GTK_BOX(tbox), GTK_WIDGET(toolbutton), FALSE, FALSE, 5);
-
+   filter.host = NULL;
    gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
 
    frame = gtk_frame_new("Protocol filter");

@@ -34,11 +34,12 @@ static u_int16 v6_checksum(struct packet_object *po);
 
 static u_int16 sum(u_int8 *buf, size_t len)
 {
-   union u_pun {
-      u_int8 b[4];
-      u_int16 w[2];
-      u_int32 dw;
-   };
+   /* create union for type punning - elements named as their rep. type */
+   union {
+      u_int8  u_int8 [4];
+      u_int16 u_int16[2];
+      u_int32 u_int32;
+   } u;
    register u_int8 *cbuf = buf;
 #if OS_SIZEOF_P == 8
    register u_int64 csum = 0;
@@ -50,24 +51,34 @@ static u_int16 sum(u_int8 *buf, size_t len)
 
 #if OS_SIZEOF_P == 8
    while(nleft >= sizeof(u_int32)) {
-      union u_pun u = { .b[0] = cbuf[0], .b[1] = cbuf[1],
-                         .b[2] = cbuf[2], .b[3] = cbuf[3] };
-      csum += u.dw;
+      /* assigning bytes from buffer to union for 64-bit systems */
+      u.u_int8[0] = cbuf[0];
+      u.u_int8[1] = cbuf[1];
+      u.u_int8[2] = cbuf[2];
+      u.u_int8[3] = cbuf[3];
+
+      csum += u.u_int32;
       cbuf += sizeof(u_int32);
       nleft -= sizeof(u_int32);
    }
 #endif
 
    while(nleft >= sizeof(u_int16)) {
-      union u_pun u = { .b[0] = cbuf[0], .b[1] = cbuf[1] };
-      csum += u.w[0];
+      /* assigning bytes from buffer to union for 32-bit systems */
+      u.u_int8[0] = cbuf[0];
+      u.u_int8[1] = cbuf[1];
+
+      csum += u.u_int16[0];
       cbuf += sizeof(u_int16);
       nleft -= sizeof(u_int16);
    }
 
    if(nleft) {
-      union u_pun u = { .b[0] = cbuf[0], .b[1] = 0 };
-      csum += u.w[0];
+      /* one word left */
+      u.u_int8[0] = cbuf[0];
+      u.u_int8[1] = 0;
+
+      csum += u.u_int16[0];
       cbuf++;
       nleft--;
    }

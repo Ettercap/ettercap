@@ -88,7 +88,7 @@ int encode_const(char *string, struct filter_op *fop)
    memset(fop, 0, sizeof(struct filter_op));
    
    /* it is an hexadecimal value */
-   if (!strncmp(string, "0x", 2) && isdigit((int)string[2])) {
+   if (!strncmp(string, "0x", 2) && isxdigit((int)string[2])) {
       fop->op.test.value = strtoul(string, NULL, 16);
       return E_SUCCESS;
       

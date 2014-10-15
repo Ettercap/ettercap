@@ -498,7 +498,7 @@ void gtkui_mitm_stop(void)
    /* create the dialog */
    dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL,
             GTK_MESSAGE_INFO, 0, "Stopping the mitm attack...");
-   gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
+   gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
    gtk_window_set_resizable(GTK_WINDOW (dialog), FALSE);
    gtk_widget_queue_draw(dialog);
    gtk_widget_show_now(dialog);

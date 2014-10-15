@@ -557,7 +557,7 @@ static void gtkui_error(const char *msg)
 
    dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL, 
                                    GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", unicode);
-   gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
+   gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
    /* blocking - displays dialog waits for user to click OK */
    gtk_dialog_run(GTK_DIALOG (dialog));
@@ -728,7 +728,7 @@ void gtkui_message(const char *msg)
 
    dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL, 
                                    GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s", msg);
-   gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
+   gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
    /* blocking - displays dialog waits for user to click OK */
    gtk_dialog_run(GTK_DIALOG (dialog));

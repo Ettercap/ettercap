@@ -131,6 +131,13 @@
    proto:2 = 2
 
 #
+# ESP is at layer 4
+#
+[esp][4]
+   spi:4 = 0
+   seq:4 = 4
+
+#
 # tcp is at layer 4
 #
 [tcp][4] 

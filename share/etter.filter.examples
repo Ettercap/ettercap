@@ -126,6 +126,11 @@ if (tcp.dst == 80) {
    tcp.dst += 2;
 }
 
+# identify and mangle ESP packets
+if (ip.proto == ESP) {
+   DATA.data = "DEADDECAF";
+}
+
 # eof
 
 # vim:ts=3:expandtab

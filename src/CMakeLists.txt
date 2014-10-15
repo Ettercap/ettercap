@@ -102,6 +102,7 @@ set(EC_SRC
         protocols/ec_eth.c
         protocols/ec_fddi.c
         protocols/ec_gre.c
+        protocols/ec_esp.c
         protocols/ec_icmp.c
         protocols/ec_ip.c
         protocols/ec_mpls.c

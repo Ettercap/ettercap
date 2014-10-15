@@ -1,8 +1,8 @@
 ############################################################################
 #                                                                          #
-#  etterfilter -- etterfilter.cnt -- constants for etterfilter             #
+#  ettercap -- etter.filter.esp -- filter source file                      #
 #                                                                          #
-#  Copyright (C) ALoR & NaGA                                               #
+#  Copyright (C) CaptainMcSpankyPants                                      #
 #                                                                          #
 #  This program is free software; you can redistribute it and/or modify    #
 #  it under the terms of the GNU General Public License as published by    #
@@ -10,28 +10,13 @@
 #  (at your option) any later version.                                     #
 #                                                                          #
 ############################################################################
-#                                                                          #
-#                                                                          #
-############################################################################
 
-# Layer 3 constants
-ARP = 0x0806
-IP = 0x0800
-IP6 = 0x86DD
-PPPOE = 0x880B
-PPTP = 0x880B
+##
+#
+#   This filter will detect and modify ESP traffic.
+#
+##
 
-# Layer 4 constants (IPPROTO_*)
-ICMP = 0x01
-ICMP6 = 0x3a
-
-ESP = 0x32
-
-TCP = 0x06
-UDP = 0x11
-GRE = 0x2f
-OSPF = 0x59
-VRRP = 0x70
-
-# EOF
-
+if (ip.proto == ESP) {
+   DATA.data = "0000000FACEFEED0000000";
+}

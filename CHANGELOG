@@ -5,6 +5,102 @@ Legend:
          !! bug fixed
 
 =========================================
+0.8.1-Lombroso 20141016
+   !! Fixed incorrect checksum computation on 64-bit systems
+   !! Fixed DNS resolution problems
+   !! Fixed hurd build failure (not specific to hurd but hurd seems the first OS defining ESUCCESS in glibc)
+   !! Fixed rpath handling
+   !! Fixed scan host crash with recent kernels
+   !! Fixed etter{log,filter} library path
+   !! O5LOGON dissector fixes for stealth mode scans
+   !! Fix constants to allow full hexadecimal characterset. Useful for filtering on ESP SPIs
+   !! Fixed some incoherencies in gbls pointers in utils and core
+   !! Fixed dhcp spoofing automatically start in text ui
+   !! Many fixes in filter compiler
+   !! Fixed lua installation path
+   !! Many ipv6 fixes and improvements
+   !! Fixed tests build failures
+   !! Fixed many iconv detection problems
+   !! Fixed many ctime problems
+   !! Fixed many dissector ports
+   !! Fixed timers incoherences
+   !! Fixed powerpc build failure
+   !! Fixed uniqueness of our include guards
+   !! Fixed cmake warnings, by correctly linking our libraries
+   !! Fixed clean target
+   !! Fixed COOKIE_PATTERN string
+   !! A ton of kfreebsd, freebsd, and MacOS fixes and build fixes
+   !! Fixed with a new "regain_privs" the ip forwarding restore
+   !! Fixed another scan crash
+   !! Fixed host list updated (delegated to the main thread)
+   !! Fixed etter.conf.v6 and etter.conf.v4 installation
+   !! Fixed (removed) some old code
+   !! Fixed (removed) some dbus interfaces listed in ettercap
+   !! Fixed some libraries link issues
+   !! Fixed various polkit installation directory issues
+   !! Fixed plugin path issues
+   !! Fixed bundled libs building order
+   !! Fixed undefined ips added to the host list (e.g. 0.0.0.0 in dhcp discover)
+   !! Fixed macosx builds
+   !! Moved check framework in bundled_libs directory
+   !! Fixed crash on scan for hosts, by adding a mutex
+   !! Fixed libettercap.so linking, by removing curses and gtk stuff
+   !! Fixed ip_add_to_int32 macro
+   !! Fixed a ton of warnings in gtk, curses and core
+   !! Fixed some documentation
+   !! Fixed tests with eglibc >= 2.17
+   !! Fixed check framework find, with fallback in the bundled
+      one if not available
+   !! Fixed bug in etter.finger.mac parsing
+   !! Fixed ssl checks on cmake, now it is mandatory
+   !! Fixed scan for hosts progress bar
+   !! Fixed linux.org ip address on etter.dns conf file
+   !! Fixed some memory leakages
+   !! Fixed missing RelWithDebInfo on Cmake
+   !! Fixed typos
+   !! Fixed some performance issues in scan for hosts function
+   !! Fixed race condition when scan progress was canceled
+   !! Fixed cmake flags passing
+   !! Fixed IPv6 build
+   !! Fixed debug messages
+    + experimental ESP detection/filtering
+    + make etter{log,filter} ipv6 compatible
+    + Enabled multithread scan for Curses interface
+    + New appdata xml file
+    + New experimental GTK3 support!
+    + New threaded host resolution!
+    + Many build and runtime performances improvements
+    + Ettercap builds on windows (MingW) again!
+    + New arp "smart" poisoning!
+    + New base64 encode and decode functions
+    + New execinject etterfilter command
+    + New ipv6 hidden scan mode
+    + New support for multiple plugins in UI mode
+    + New uninstall target
+    + Gnu/Hurd support!
+    + Automatically refresh plugin list
+    + Threading some plugins
+    + A new function for self-destruct plugins
+    + New INSTALL_EXEDIR cmake option, now you can have "ettercap" and
+      the other binaries in two different directories!
+    + New Null/Loopback decoder!
+    + Added automatic irc notifications!
+    + Added some debug and fortify-source flags
+    + Added some travis builds!
+    + Updated etter.finger.mac
+    + Added support for parsing RIPv2 and OSPF MD5 authentication packets
+    + Updated curl and check bundled libraries
+    + updated etter.filter.examples file
+    + updated TODO list
+    + etterfilter now is IPv6 ready!
+    + Documentation updated
+    + Man pages updated
+    + New nd-poisoning!
+    + Increased IPv6 probe delay from 2 seconds to 3
+    - Removed hex_encode stuff
+    - Removed ec_pap.c since it was already implemented in ec_ppp.c
+    - Removed duplicate code, in favour of libettercap usage
+
 0.8.0-Lacassagne 20130921
    !! Fixed some problems in fork and execve usage in case of command failure (sslstrip)
    !! Fixed dropping privileges for remote_browser plugin ran as root

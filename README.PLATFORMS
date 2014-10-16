@@ -94,7 +94,7 @@ No known issue, just be sure to have all the required components. (see README)
    S O L A R I S
 ------------------------------------------------------------------------------
 
-After installing the following packages from http://http://www.sunfreeware.com
+After installing the following packages from http://www.sunfreeware.com
 
    - libtool   1.5      (needed for libltdl)
    - libpcap   0.8.1
@@ -120,8 +120,6 @@ packages which you should install, such as ones with -dev or -shlibs
 extensions. There may be multiple versions of the software available - if in
 doubt, go with the latest copy.
 
-   autoconf >= 2.57-2
-   automake >= 1.7.6-2
    bison >= 1.875-1
    dlcompat >= 20030629-15
    libnet >= 1.1.2.1-1
@@ -204,7 +202,7 @@ doubt, go with the latest copy.
    4) unpak all the packages as shown in the following tree:
 
       .
-      |-> ettercap_ng
+      |-> ettercap
       |-> gtk
       |-> gw32c
       |-> libiconv
@@ -218,7 +216,7 @@ doubt, go with the latest copy.
       make sure each directory contains an 'include' dir with the .h files and a
       'lib' directory with the .a/.dll files.
   
-   5) enter the ettercap_ng directory and execute the configure script
+   5) enter the ettercap directory and execute the configure script
    6) issue the 'make' command and have fun :)
    7) ettercap/include/ec_os_mingw.h might need to be modified to not declare struct
       timezone as it is already defined in sys/time.h on latest MinGW version.
@@ -253,7 +251,7 @@ doubt, go with the latest copy.
          you have to search in the mailing list for the patch for cygwin.
          this is the hardest part... since libnet porting to cygwin is not
          fully working... my bad :(
-   5) run the ettercap NG configure script
+   5) run the ettercap cmake
    6) issue the 'make' command and have fun
 
 

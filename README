@@ -71,7 +71,7 @@ OPTIONAL:
 
    For the GTK+ GUI:
       - Glib      >= 2.2.2
-      - Gtk+      >= 2.2.2
+      - Gtk+      >= 2.2.2 or Gtk+3
       - Atk       >= 1.2.4
       - Pango     >= 1.2.3
 

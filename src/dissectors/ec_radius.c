@@ -203,7 +203,7 @@ static u_char * radius_get_attribute(u_int8 attr, u_int16 *attr_len, u_char *beg
    while (begin < end) {
 
       /* get the len of the attribute and subtract the header len */
-      *attr_len = *(begin + 1) - 2;
+      *attr_len = (u_char)*(begin + 1) - 2;
      
       /* we have found our attribute */
       if (*begin == attr) {

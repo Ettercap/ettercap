@@ -284,12 +284,15 @@ FUNC_DECODER(dissector_imap)
      
       DEBUG_MSG("\tDissector_imap AUTHENTICATE PLAIN USER/PASS");
       
-      //SAFE_CALLOC(cred, strlen((const char*)ptr), sizeof(char));
-      
       /* password is encoded in base64 */
       i = base64decode((const char *)ptr, &cred);
       p = cred;
       cred_end = cred+i;
+      if (p > cred_end) {
+          SAFE_FREE(cred);
+          dissect_wipe_session(PACKET, DISSECT_CODE(dissector_imap));
+          return NULL;
+      }
       /* move to the username right after the first \0  */
       while(*p && p!=cred_end) p++;
       if (p!=cred_end) p++;

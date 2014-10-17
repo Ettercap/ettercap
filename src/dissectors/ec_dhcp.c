@@ -256,7 +256,7 @@ FUNC_DECODER(dissector_dhcp)
                 (opt = get_dhcp_option(DHCP_OPT_FQDN, options, end)) != NULL)
             {
                 u_char size = opt[0];
-                if ((opt + size + 2) > end)
+                if ((opt + size + 2) > end || size < 3)
                 {
                     // the +2 accounts for a-rr and ptr-rr
                     return NULL;

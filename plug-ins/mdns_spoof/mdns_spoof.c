@@ -309,7 +309,8 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
     for (x = 0; x < mdns->questions; x++) {
 
       name_len = dn_expand((u_char*)mdns, end, q, name, sizeof(name));
-
+      if (name_len == -1)
+          return;
       q = data + name_len;
 
       if (q >= end || name_len == 0)

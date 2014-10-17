@@ -117,6 +117,8 @@ FUNC_DECODER(dissector_TN3270)
 		 username[511] = 0; /* Boundary */
 
                  int l = strlen(username);
+                 if (l < 2)
+                     return;
                  username[l-2] = 0;
                  DISSECT_MSG("%s:%d <= z/OS TSO Username : %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), username);
          }
@@ -125,6 +127,8 @@ FUNC_DECODER(dissector_TN3270)
                  strncpy(password, &output[i + 6], 512);
 		 password[511] = 0; /* Boundary */
                  int l = strlen(password);
+                 if (l < 2)
+                     return;
                  password[l-2] = 0;
                  DISSECT_MSG("%s:%d <= z/OS TSO Password : %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), password);
          }

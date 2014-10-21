@@ -232,8 +232,6 @@ FUNC_DECODER(dissector_imap)
      
       DEBUG_MSG("\tDissector_imap AUTHENTICATE LOGIN USER");
       
-      //SAFE_CALLOC(user, strlen((const char*)ptr), sizeof(char));
-     
       /* username is encoded in base64 */
       i = base64decode((const char*)ptr, &user);
      

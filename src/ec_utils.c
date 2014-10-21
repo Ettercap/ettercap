@@ -243,6 +243,10 @@ void drop_privs(void)
 int get_decode_len(const char *b64_str) {
    int len = strlen(b64_str);
    int padding = 0;
+
+   if (len < 2)
+       return 0;
+
    if (b64_str[len-1] == '=' && b64_str[len-2] == '=')
       padding = 2;
    else if (b64_str[len-1] == '=')

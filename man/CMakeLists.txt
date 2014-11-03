@@ -41,13 +41,14 @@ foreach (m IN LISTS MAN_NAMES)
           COMMENT "Creating PDF for ${ps}"
           VERBATIM)
           list(APPEND PDF_FILES ${pdf})
-        endif()
+          install(FILES ${pdf} DESTINATION ${INSTALL_DATADIR}/ettercap/doc)
+        endif(ENABLE_PDF_DOCS)
 endforeach()
 
 add_custom_target(man ALL DEPENDS ${MAN_FILES})
 if(ENABLE_PDF_DOCS)
   add_custom_target(pdf ALL DEPENDS ${PDF_FILES})
-endif()
+endif(ENABLE_PDF_DOCS)
 
 install(FILES ${CMAKE_BINARY_DIR}/man/ettercap.8 ${CMAKE_BINARY_DIR}/man/etterfilter.8 ${CMAKE_BINARY_DIR}/man/etterlog.8 DESTINATION ${MAN_INSTALLDIR}/man8/)
 configure_file("ettercap.8.in" "ettercap.8")
@@ -71,4 +72,3 @@ if (INSTALL_DESKTOP)
 endif(INSTALL_DESKTOP)
 
 install(FILES ${CMAKE_BINARY_DIR}/man/etter.conf.5 DESTINATION ${MAN_INSTALLDIR}/man5/)
-

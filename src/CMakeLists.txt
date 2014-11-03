@@ -200,13 +200,8 @@ IF(ENABLE_LUA)
   if(OS_DARWIN AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
     # On 64-bit OSX platforms, luajit requires the following flags to be added.
     # See: http://luajit.org/install.html
-    get_target_property(OLD_FLAGS ettercap LINK_FLAGS)
-    if(OLD_FLAGS STREQUAL "OLD_FLAGS-NOTFOUND")
-      set(OLD_FLAGS "")
-    endif()
-    set(NEW_FLAGS "${OLD_FLAGS} -pagezero_size 10000 -image_base 100000000")
-    SET_TARGET_PROPERTIES(ettercap PROPERTIES LINK_FLAGS "${NEW_FLAGS}")
-  endif()
+    target_link_libraries(ettercap "-pagezero_size 10000 -image_base 100000000")
+  endif(OS_DARWIN AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
 endif(ENABLE_LUA)
 
 #if(NOT LIBRARY_BUILD)

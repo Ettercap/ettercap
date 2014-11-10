@@ -414,7 +414,6 @@ FUNC_INJECTOR(inject_tcp)
    PACKET->DATA.len = LENGTH; 
    tcph->csum = L4_checksum(PACKET);
   
-   session_del(s->ident, TCP_IDENT_LEN); 
    return E_SUCCESS;
 }
 

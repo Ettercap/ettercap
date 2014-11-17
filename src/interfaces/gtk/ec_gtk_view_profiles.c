@@ -76,11 +76,7 @@ void gtkui_show_profiles(void)
    
    profiles_window = gtkui_page_new("Profiles", &gtkui_kill_profiles, &gtkui_profiles_detach);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-   vbox = gtk_vbox_new(FALSE, 0);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_container_add(GTK_CONTAINER (profiles_window), vbox);
    gtk_widget_show(vbox);
 
@@ -117,11 +113,7 @@ void gtkui_show_profiles(void)
    refresh_profiles(NULL);
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_profiles));
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-#else
-   hbox = gtk_hbox_new(TRUE, 5);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("Purge _Local");
@@ -323,11 +315,7 @@ static void gtkui_profile_detail(void)
    g_signal_connect(G_OBJECT(dwindow), "delete-event", 
          G_CALLBACK(gtkui_profile_detail_destroy), NULL);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-#else
-   vbox = gtk_vbox_new(FALSE, 5);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 5, FALSE);
    gtk_container_add(GTK_CONTAINER(dwindow), vbox);
 
    table = gtk_table_new(nrows, ncols, FALSE);
@@ -547,11 +535,7 @@ static void gtkui_profile_detail(void)
    gtk_table_resize(GTK_TABLE(table), row, ncols);
 
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-   hbox = gtk_hbox_new(FALSE, 0);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);

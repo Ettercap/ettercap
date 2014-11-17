@@ -148,11 +148,7 @@ void gtkui_plugin_mgmt(void)
 
    plugins_window = gtkui_page_new("Plugins", &gtkui_plug_destroy, &gtkui_plugins_detach);
    
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-   vbox = gtk_vbox_new(FALSE, 0);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_container_add(GTK_CONTAINER (plugins_window), vbox);
    gtk_widget_show(vbox);
    

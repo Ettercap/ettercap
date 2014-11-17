@@ -55,6 +55,7 @@ extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 extern gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
 extern void gtkui_filename_browse(GtkWidget *widget, gpointer data);
 extern char *gtkui_utf8_validate(char *data);
+extern GtkWidget *gtkui_box_new(gint orientation, gint spacing, gboolean homogenious);
 
 /* MDI pages */
 extern GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));

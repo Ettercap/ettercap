@@ -727,7 +727,7 @@ static void dns_spoof(struct packet_object *po)
                         ntohs(dns->id), answer, sizeof(answer), 1, 0, 1);
 
          USER_MSG("dns_spoof: SRV [%s] spoofed to [%s:%d]\n", name, ip_addr_ntoa(reply, tmp), port);
-      } else if (type == ns_t_txt) {
+      } else if (type == ns_t_txt) { /* TXT */
 
           char *text;
 
@@ -750,8 +750,8 @@ static void dns_spoof(struct packet_object *po)
           memcpy(p + 2, "\x00\x10", 2); /* type TXT */
           memcpy(p + 4, "\x00\x01", 2); /* class */
           memcpy(p + 6, "\x00\x00\x0e\x10", 4); /* TTL (1 hour) */
-          memcpy(p + 10, &datalen + 1, 1);  /* datalen */
-          memcpy(p + 11, &datalen, 1);  /* datalen */
+          char *temp = (char *) (p + 10);
+          NS_PUT16(datalen,temp);
           memcpy(p + 12, &textlen, 1);  /* textlen */
           memcpy(p + 13, text, textlen); /* actual text */
 
@@ -760,7 +760,7 @@ static void dns_spoof(struct packet_object *po)
                   ntohs(dns->id), answer, sizeof(answer), 1, 0, 0);
 
           USER_MSG("dns_spoof: TXT For [%s] spoofed answer is [%s]\n", name, text);
-      } else if (type == ns_t_any){ /* ANY  Just a Dirty Hack now*/
+      } else if (type == ns_t_any){ /* ANY */
           dns_spoof_any(po, name, q - data, dns->id, &is_negative, data);
       }
       if (is_negative) {
@@ -789,19 +789,19 @@ static void dns_spoof(struct packet_object *po)
          memcpy(p + 38, "\x00\x09\x3a\x80", 4);           /* erpire limit */
          memcpy(p + 42, "\x00\x00\x00\x3c", 4);           /* minimum TTL */
 
-         /* send the fake reply */
-         send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
-                        ntohs(dns->id), answer, sizeof(answer), 0, 1, 0);
+        /* send the fake reply */
+        send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
+                       ntohs(dns->id), answer, sizeof(answer), 0, 1, 0);
 
-         USER_MSG("dns_spoof: negative cache spoofed for [%s] type %s \n", name, type_str(type));
+        USER_MSG("dns_spoof: negative cache spoofed for [%s] type %s \n", name, type_str(type));
       }
 
    }
 }
 
 static void dns_spoof_any(struct packet_object *po, char *name, size_t size,
-        u_int16 id, bool *is_negative, u_char *data) {
-
+        u_int16 id, bool *is_negative, u_char *data)
+{
     struct ip_addr *reply;
     bool have_a = false, have_aaaa = false, have_txt = false;
     char tmp[MAX_ASCII_ADDR_LEN];
@@ -843,12 +843,12 @@ static void dns_spoof_any(struct packet_object *po, char *name, size_t size,
         USER_MSG("dns_spoof: AAAA [%s] spoofed to [%s]\n",
                 name, ip_addr_ntoa(reply, tmp));
     }
-    char *text;
-    u_int8 textlen = 0;
+    char *txt_text;
+    u_int8 text_len = 0;
     u_int8 t[12+256];
-    if (get_spoofed_txt(name, &text) == E_SUCCESS) {
-        textlen = (u_int8) strlen(text); /* Since max. 255 chars are parsed this cast should be save */
-        u_int16 datalen = ((u_int8) textlen) + 1;
+    if (get_spoofed_txt(name, &txt_text) == E_SUCCESS) {
+        text_len = (u_int8) strlen(txt_text); /* Since max. 255 chars are parsed this cast should be save */
+        u_int16 datalen =  text_len + 1;
         final_size += 12 + datalen;
         have_txt = true;
         po->flags |= PO_DROPPED;
@@ -856,11 +856,11 @@ static void dns_spoof_any(struct packet_object *po, char *name, size_t size,
         memcpy(t + 2, "\x00\x10", 2); /* Type TXT */
         memcpy(t + 4, "\x00\x01", 2); /* class inet */
         memcpy(t + 6, "\x00\x00\x0e\x10", 4); /* TTL (1 hour) */
-        memcpy(t + 10, "\x00", 1); /* datalen */
-        memcpy(t + 11, &datalen, 1); /* datalen */
-        memcpy(t + 12, &textlen, 1); /* textlen */
-        memcpy(t + 13, text, textlen); /* copy string */
-        USER_MSG("dns_spoof: TXT For [%s] spoofed answer is [%s]\n", name, text);
+        char *temp = (char *) (t + 10);
+        NS_PUT16(datalen, temp);
+        memcpy(t + 12, &text_len, 1); /* textlen */
+        memcpy(t + 13, txt_text, text_len); /* copy string */
+        USER_MSG("dns_spoof: TXT For [%s] spoofed answer is [%s]\n", name, txt_text);
     }
     u_int8 answer[final_size];
     u_int8 *p = answer + size;
@@ -878,11 +878,10 @@ static void dns_spoof_any(struct packet_object *po, char *name, size_t size,
         memcpy(p, aaaa, 12 + IP6_ADDR_LEN);
         p += 12 + IP6_ADDR_LEN;
     }
-
     if (have_txt){
         ++num_entries;
-        memcpy(p, t, 12 + 1 + textlen);
-        p += 12 + textlen + 1;
+        memcpy(p, t, 12 + 1 + text_len);
+        p += 12 + text_len + 1;
     }
 
     /* send reply */

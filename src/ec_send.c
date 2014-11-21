@@ -75,8 +75,10 @@ int send_to_L3(struct packet_object *po)
    switch(ntohs(po->L3.src.addr_type)) {
       case AF_INET:  l = GBL_LNET->lnet_IP4;
                      break;
+#ifdef WITH_IPV6
       case AF_INET6: l = GBL_LNET->lnet_IP6;
                      break;
+#endif
       default:       l = NULL;
                      break;
    }
@@ -952,7 +954,7 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
 int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr)
 {
    libnet_ptag_t t;
-   int c, proto;
+   int c, proto, ethertype;
    libnet_t *l;
    proto = ntohs(sip->addr_type);
 
@@ -1012,6 +1014,9 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
          /* auto calculate the checksum */
          libnet_toggle_checksum(l, t, LIBNET_ON);
    
+         /* set Ethertype to IPv4 */
+         ethertype = ETHERTYPE_IP;
+
          break;
       }
 #ifdef WITH_IPV6
@@ -1032,13 +1037,17 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
                l,                                                             /* libnet handle */
                0);
          ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(l));
+   
+         /* set Ethertype to IPv6 */
+         ethertype = ETHERTYPE_IPV6;
+
          break;
       }
 #endif
    };
   
    /* add the media header */
-   t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP, l);
+   t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ethertype, l);
    if (t == -1)
       FATAL_ERROR("Interface not suitable for layer2 sending");
    
@@ -1060,7 +1069,7 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
 int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr)
 {
    libnet_ptag_t t;
-   int c, proto;
+   int c, proto, ethertype;
    libnet_t *l;
 
    proto = ntohs(sip->addr_type);
@@ -1119,6 +1128,9 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
          ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(l));
          /* auto calculate the checksum */
          libnet_toggle_checksum(l, t, LIBNET_ON);
+
+         /* set Ethertype to IPv4 */
+         ethertype = ETHERTYPE_IP;
    
          break;
       }
@@ -1140,13 +1152,17 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
                l,                                                             /* libnet handle */
                0);
          ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(l));
+
+         /* set Ethertype to IPv6 */
+         ethertype = ETHERTYPE_IPV6;
+   
          break;
       }
 #endif
    };
   
    /* add the media header */
-   t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP, l);
+   t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ethertype, l);
    if (t == -1)
       FATAL_ERROR("Interface not suitable for layer2 sending");
    
@@ -1170,8 +1186,7 @@ int send_udp(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 spo
 	libnet_ptag_t t;
 	libnet_t *l;
 
-	int proto;
-	int c;
+	int c, proto, ethertype;
 
 	proto = ntohs(sip->addr_type);
 
@@ -1219,9 +1234,13 @@ const uint8_t *payload, uint32_t payload_s, libnet_t *l, libnet_ptag_t ptag)
 
 			libnet_toggle_checksum(l, t, LIBNET_ON);
 
+         /* set Ethertype to IPv4 */
+         ethertype = ETHERTYPE_IP;
+
 			break;
 		}	
 
+#ifdef WITH_IPV6
 		case AF_INET6: {
 			struct libnet_in6_addr src, dst;
 			memcpy(&src, sip->addr, sizeof(src));
@@ -1238,14 +1257,19 @@ const uint8_t *payload, uint32_t payload_s, libnet_t *l, libnet_ptag_t ptag)
 				0, 			/* its length */
 				l,			/* handle */
 				0);			/* ptag */
+
+         /* set Ethertype to IPv6 */
+         ethertype = ETHERTYPE_IPV6;
+
 			break;
 		}
+#endif
 	};
 
 	ON_ERROR(t, -1, "libnet_build_ipvX: %s", libnet_geterror(l));
 
    	/* add the media header */
-   	t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ETHERTYPE_IP, l);
+   	t = ec_build_link_layer(GBL_PCAP->dlt, tmac, ethertype, l);
    	if (t == -1)
       		FATAL_ERROR("Interface not suitable for layer2 sending");
 
@@ -1317,6 +1341,7 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
          libnet_toggle_checksum(l, t, LIBNET_ON);
          break;
       }
+#ifdef WITH_IPV6
       case AF_INET6: {
          struct libnet_in6_addr src, dst;
          memcpy(&src, sip->addr, sizeof(src));
@@ -1335,6 +1360,7 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
                   0);                                /* ptag */
          break;
       }
+#endif
    };
    ON_ERROR(t, -1, "libnet_build_ipvX: %s", libnet_geterror(l));
   
@@ -1356,8 +1382,10 @@ int send_tcp(struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dp
 int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int16 sport, u_int16 dport, u_int32 seq, u_int32 ack, u_int8 flags)
 {
    libnet_ptag_t t;
-   int c;
+   int c, proto, ethertype;
    libnet_t *l;
+
+   proto = ntohs(sip->addr_type);
 
    /* if not lnet warn the developer ;) */
    BUG_IF(GBL_IFACE->lnet == 0);
@@ -1383,28 +1411,63 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
    /* auto calculate the checksum */
    libnet_toggle_checksum(l, t, LIBNET_ON);
   
-   /* create the IP header */
-   t = libnet_build_ipv4(                                                                          
-           LIBNET_IPV4_H + LIBNET_TCP_H,       /* length */
-           0,                                  /* TOS */
-           htons(EC_MAGIC_16),                 /* IP ID */
-           0,                                  /* IP Frag */
-           64,                                 /* TTL */
-           IPPROTO_TCP,                        /* protocol */
-           0,                                  /* checksum */
-           *sip->addr32,                       /* source IP */
-           *tip->addr32,                       /* destination IP */
-           NULL,                               /* payload */
-           0,                                  /* payload size */
-           l,                                  /* libnet handle */ 
-           0);
-   ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(l));
+   switch (proto) {
+      case AF_INET: {
+         /* create the IP header */
+         t = libnet_build_ipv4(                                                                          
+                 LIBNET_IPV4_H + LIBNET_TCP_H,       /* length */
+                 0,                                  /* TOS */
+                 htons(EC_MAGIC_16),                 /* IP ID */
+                 0,                                  /* IP Frag */
+                 64,                                 /* TTL */
+                 IPPROTO_TCP,                        /* protocol */
+                 0,                                  /* checksum */
+                 *sip->addr32,                       /* source IP */
+                 *tip->addr32,                       /* destination IP */
+                 NULL,                               /* payload */
+                 0,                                  /* payload size */
+                 l,                                  /* libnet handle */ 
+                 0);
+         ON_ERROR(t, -1, "libnet_build_ipv4: %s", libnet_geterror(l));
   
-   /* auto calculate the checksum */
-   libnet_toggle_checksum(l, t, LIBNET_ON);
+         /* auto calculate the checksum */
+         libnet_toggle_checksum(l, t, LIBNET_ON);
+
+         /* set Ethertype to IPv4 */
+         ethertype = ETHERTYPE_IP;
+
+         break;
+      }
+#ifdef WITH_IPV6
+      case AF_INET6: {
+         struct libnet_in6_addr src, dst;
+         memcpy(&src, sip->addr, sizeof(src));
+         memcpy(&dst, tip->addr, sizeof(dst));
+         t = libnet_build_ipv6(
+               0,                                     /* traffic class */
+               0,                                     /* flow label */
+               LIBNET_IPV6_H + LIBNET_TCP_H ,         /* length */
+               IPPROTO_TCP,                           /* next header */
+               255,                                   /* hop limit */
+               src,                                   /* source IP */
+               dst,                                   /* destination IP */
+               NULL,                                  /* payload */
+               0,                                     /* payload size */
+               l,                                     /* libnet handle */
+               0);
+         ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(l));
+
+         /* set Ethertype to IPv6 */
+         ethertype = ETHERTYPE_IPV6;
+   
+         break;
+      }
+#endif
+   
+   }
    
    /* add the media header */
-   t = ec_build_link_layer(GBL_PCAP->dlt, dmac, ETHERTYPE_IP, l);
+   t = ec_build_link_layer(GBL_PCAP->dlt, dmac, ethertype, l);
    if (t == -1)
       FATAL_ERROR("Interface not suitable for layer2 sending");
  

@@ -1025,16 +1025,16 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
          memcpy(&src, sip->addr, sizeof(src));
          memcpy(&dst, tip->addr, sizeof(dst));
          t = libnet_build_ipv6(
-               0,                                                             /* traffic class */
-               0,                                                             /* flow label */
-               LIBNET_IPV6_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen,   /* length */
-               IPPROTO_UDP,                                                   /* next header */
-               255,                                                           /* hop limit */
-               src,                                                           /* source IP */
-               dst,                                                           /* destination IP */
-               NULL,                                                          /* payload */
-               0,                                                             /* payload size */
-               l,                                                             /* libnet handle */
+               0,                                             /* traffic class */
+               0,                                             /* flow label */
+               LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen,   /* payload length */
+               IPPROTO_UDP,                                   /* next header */
+               255,                                           /* hop limit */
+               src,                                           /* source IP */
+               dst,                                           /* destination IP */
+               NULL,                                          /* payload */
+               0,                                             /* payload size */
+               l,                                             /* libnet handle */
                0);
          ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(l));
    
@@ -1140,16 +1140,16 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
          memcpy(&src, sip->addr, sizeof(src));
          memcpy(&dst, tip->addr, sizeof(dst));
          t = libnet_build_ipv6(
-               0,                                                             /* traffic class */
-               0,                                                             /* flow label */
-               LIBNET_IPV6_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen,   /* length */
-               IPPROTO_UDP,                                                   /* next header */
-               255,                                                           /* hop limit */
-               src,                                                           /* source IP */
-               dst,                                                           /* destination IP */
-               NULL,                                                          /* payload */
-               0,                                                             /* payload size */
-               l,                                                             /* libnet handle */
+               0,                                             /* traffic class */
+               0,                                             /* flow label */
+               LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + datalen,   /* payload length */
+               IPPROTO_UDP,                                   /* next header */
+               255,                                           /* hop limit */
+               src,                                           /* source IP */
+               dst,                                           /* destination IP */
+               NULL,                                          /* payload */
+               0,                                             /* payload size */
+               l,                                             /* libnet handle */
                0);
          ON_ERROR(t, -1, "libnet_build_ipv6: %s", libnet_geterror(l));
 
@@ -1446,7 +1446,7 @@ int send_tcp_ether(u_int8 *dmac, struct ip_addr *sip, struct ip_addr *tip, u_int
          t = libnet_build_ipv6(
                0,                                     /* traffic class */
                0,                                     /* flow label */
-               LIBNET_IPV6_H + LIBNET_TCP_H ,         /* length */
+               LIBNET_TCP_H,                          /* payload length */
                IPPROTO_TCP,                           /* next header */
                255,                                   /* hop limit */
                src,                                   /* source IP */

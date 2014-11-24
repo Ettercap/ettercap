@@ -401,7 +401,7 @@ static void nbns_spoof(struct packet_object *po)
 	struct nbns_header *hdr = (struct nbns_header*)response;
 
 	hdr->response = 1;
-	hdr->opcode = ntohs(OPCODE_R+OPCODE_QUERY);
+	hdr->opcode = ntohs((OPCODE_R+OPCODE_QUERY) & OPCODE_MASK);
 	hdr->rcode = ntohs(0);
 	hdr->broadcast = ntohs(0);
 	hdr->an_count = ntohs(1);

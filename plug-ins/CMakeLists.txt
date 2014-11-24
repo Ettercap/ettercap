@@ -62,6 +62,10 @@ foreach(plugin ${PLUGINS})
                     GROUP_READ GROUP_EXECUTE
                     WORLD_READ WORLD_EXECUTE)
 endforeach(plugin)
-target_link_libraries(dns_spoof ${HAVE_RESOLV})
-target_link_libraries(mdns_spoof ${HAVE_RESOLV})
+
+if (NOT HAVE_DN_EXPAND)
+   target_link_libraries(dns_spoof ${HAVE_RESOLV})
+   target_link_libraries(mdns_spoof ${HAVE_RESOLV})
+endif (NOT HAVE_DN_EXPAND)
+
 target_link_libraries(dos_attack ${HAVE_LIBNET})

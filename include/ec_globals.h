@@ -117,7 +117,7 @@ struct pcap_env {
    u_int8         align;         /* alignment needed on sparc 4*n - sizeof(media_hdr) */
    char           promisc;
    char          *filter;        /* pcap filter */
-   u_int16        snaplen;
+   u_int32        snaplen;
    int            dlt;
    pcap_dumper_t *dump;
    u_int32        dump_size;     /* total dump size */

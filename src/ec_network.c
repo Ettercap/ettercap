@@ -55,7 +55,7 @@ void network_init()
 
    DEBUG_MSG("init_network");
 
-   GBL_PCAP->snaplen = UINT16_MAX;
+   GBL_PCAP->snaplen = UINT32_MAX;
    
    if(GBL_OPTIONS->read) {
       source_init(GBL_OPTIONS->pcapfile_in, GBL_IFACE, true, false);
@@ -155,7 +155,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    struct bpf_program bpf;
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
    char lnet_errbuf[LIBNET_ERRBUF_SIZE];
-   u_int16 snaplen;
+   u_int32 snaplen;
 
    struct libnet_ether_addr *mac;
    struct sockaddr_in *sa4;

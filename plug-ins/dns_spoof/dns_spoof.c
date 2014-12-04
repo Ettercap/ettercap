@@ -736,7 +736,7 @@ static void dns_spoof(struct packet_object *po)
 
           po->flags |= PO_DROPPED;
 
-          u_int8 textlen = (u_int16) strlen(text); /* Since max. 255 chars are parsed this cast should be save */
+          u_int8 textlen = (u_int8) strlen(text); /* Since max. 255 chars are parsed this cast should be safe */
           u_int16 datalen = textlen + 1;
           u_int8 answer[(q - data) + 12 + datalen];
           u_char *p = answer + (q - data);
@@ -847,7 +847,7 @@ static void dns_spoof_any(struct packet_object *po, char *name, size_t size,
     u_int8 text_len = 0;
     u_int8 t[12+256];
     if (get_spoofed_txt(name, &txt_text) == E_SUCCESS) {
-        text_len = (u_int8) strlen(txt_text); /* Since max. 255 chars are parsed this cast should be save */
+        text_len = (u_int8) strlen(txt_text); /* Since max. 255 chars are parsed this cast should be safe */
         u_int16 datalen =  text_len + 1;
         final_size += 12 + datalen;
         have_txt = true;

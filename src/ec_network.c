@@ -55,7 +55,7 @@ void network_init()
 
    DEBUG_MSG("init_network");
 
-   GBL_PCAP->snaplen = INT32_MAX;
+   GBL_PCAP->snaplen = UINT16_MAX;
    
    if(GBL_OPTIONS->read) {
       source_init(GBL_OPTIONS->pcapfile_in, GBL_IFACE, true, false);

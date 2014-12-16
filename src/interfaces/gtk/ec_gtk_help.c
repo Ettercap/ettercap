@@ -72,11 +72,7 @@ void gtkui_help(void)
 #endif
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-#else
-   hbox = gtk_hbox_new (FALSE, 6);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 6, FALSE);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_box_pack_start(GTK_BOX(content_area), hbox, TRUE, TRUE, 0);
 

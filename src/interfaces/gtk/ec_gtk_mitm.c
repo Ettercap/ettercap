@@ -56,11 +56,7 @@ void gtkui_arp_poisoning(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-#else
-   hbox = gtk_hbox_new (FALSE, 5);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -75,11 +71,7 @@ void gtkui_arp_poisoning(void)
    gtk_box_pack_start (GTK_BOX (hbox), frame, TRUE, TRUE, 0);
    gtk_widget_show(frame);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-#else
-   vbox = gtk_vbox_new (FALSE, 2);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 2, FALSE);
    gtk_container_set_border_width(GTK_CONTAINER (vbox), 5);
    gtk_container_add(GTK_CONTAINER (frame), vbox);
    gtk_widget_show(vbox);
@@ -142,11 +134,7 @@ void gtkui_icmp_redir(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-#else
-   hbox = gtk_hbox_new (FALSE, 5);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -225,11 +213,7 @@ void gtkui_port_stealing(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
          
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-#else
-   hbox = gtk_hbox_new (FALSE, 5);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -244,11 +228,7 @@ void gtkui_port_stealing(void)
    gtk_box_pack_start (GTK_BOX (hbox), frame, TRUE, TRUE, 0);
    gtk_widget_show(frame);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-#else
-   vbox = gtk_vbox_new (FALSE, 2);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 2, FALSE);
    gtk_container_set_border_width(GTK_CONTAINER (vbox), 5);
    gtk_container_add(GTK_CONTAINER (frame), vbox);
    gtk_widget_show(vbox);
@@ -306,11 +286,7 @@ void gtkui_dhcp_spoofing(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-#else
-   hbox = gtk_hbox_new (FALSE, 5);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -402,11 +378,7 @@ void gtkui_ndp_poisoning(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-#else
-   hbox = gtk_hbox_new (FALSE, 5);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -421,11 +393,7 @@ void gtkui_ndp_poisoning(void)
    gtk_box_pack_start (GTK_BOX (hbox), frame, TRUE, TRUE, 0);
    gtk_widget_show(frame);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-#else
-   vbox = gtk_vbox_new (FALSE, 2);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 2, FALSE);
    gtk_container_set_border_width(GTK_CONTAINER (vbox), 5);
    gtk_container_add(GTK_CONTAINER (frame), vbox);
    gtk_widget_show(vbox);

@@ -337,11 +337,7 @@ void gtkui_vis_method(void)
 
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-   vbox = gtk_vbox_new(FALSE, 0);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_container_add(GTK_CONTAINER(content_area), vbox);
 
    button = gtk_radio_button_new_with_label(NULL, 
@@ -387,11 +383,7 @@ void gtkui_vis_method(void)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-#else
-   hbox = gtk_hbox_new (FALSE, 6);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 6, FALSE);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    label = gtk_label_new ("Character encoding : ");

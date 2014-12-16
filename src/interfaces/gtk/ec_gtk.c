@@ -415,11 +415,7 @@ void gtkui_about(void)
    notebook = gtk_notebook_new();
 
    /* General page */
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-#else
-   vbox = gtk_vbox_new(FALSE, 10);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 10, FALSE);
 
    path = INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE_SMALL;
    if(g_file_test(path, G_FILE_TEST_EXISTS))
@@ -601,11 +597,7 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
 #endif
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-#else
-   hbox = gtk_hbox_new (FALSE, 6);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 6, FALSE);
 
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
@@ -663,11 +655,7 @@ static void gtkui_progress(char *title, int value, int max)
       gtk_container_set_border_width(GTK_CONTAINER (progress_dialog), 5);
       g_signal_connect(G_OBJECT (progress_dialog), "delete_event", G_CALLBACK (gtkui_progress_cancel), NULL);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-      hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3);
-#else
-      hbox = gtk_hbox_new(FALSE, 3);
-#endif
+      hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 3, FALSE);
       gtk_container_add(GTK_CONTAINER (progress_dialog), hbox);
     
       progress_bar = gtk_progress_bar_new();
@@ -999,11 +987,7 @@ static void gtkui_setup(void)
    gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
    gtk_window_add_accel_group(GTK_WINDOW(window), gtk_ui_manager_get_accel_group(menu_manager));
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-   vbox = gtk_vbox_new(FALSE, 0);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_container_add(GTK_CONTAINER (window), vbox);
    gtk_widget_show(vbox);
 
@@ -1227,11 +1211,7 @@ static void gtkui_unified_sniff(void)
 #endif
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
   
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-#else
-   hbox = gtk_hbox_new (FALSE, 6);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 6, FALSE);
 
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
@@ -1263,11 +1243,7 @@ static void gtkui_unified_sniff(void)
    gtk_cell_layout_set_attributes( GTK_CELL_LAYOUT( iface_combo ), cell, "text", 0, NULL );
    gtk_combo_box_set_active(GTK_COMBO_BOX(iface_combo), 0);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-   vbox = gtk_vbox_new(FALSE, 0);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX(vbox), iface_combo, TRUE, FALSE, 0);
    gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, FALSE, 0);
 
@@ -1363,60 +1339,36 @@ static void gtkui_bridged_sniff(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox_big = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-#else
-   hbox_big = gtk_hbox_new (FALSE, 5);
-#endif
+   hbox_big = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
 
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox_big);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-   vbox = gtk_vbox_new(FALSE, 0);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
    gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.1);
    gtk_box_pack_start (GTK_BOX (vbox), image, TRUE, FALSE, 5);
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, FALSE, FALSE, 0);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-#else
-   vbox = gtk_vbox_new (FALSE, 2);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 2, FALSE);
    gtk_container_set_border_width(GTK_CONTAINER (vbox), 5);
    gtk_box_pack_start (GTK_BOX (hbox_big), vbox, TRUE, TRUE, 0);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-   hbox = gtk_hbox_new(FALSE, 0);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
    label = gtk_label_new ("First network interface  : ");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-   hbox = gtk_hbox_new(FALSE, 0);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
    label = gtk_label_new ("Second network interface : ");
    gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
-#if GTK_CHECK_VERSION(3, 0, 0)
-   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-   vbox = gtk_vbox_new(FALSE, 0);
-#endif
+   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, TRUE, TRUE, 0);
 
    /* make a list of network interfaces */
@@ -1640,11 +1592,7 @@ GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(
    GtkWidget *hbox, *button, *image;
 
    /* a container to hold the close button and tab label */
-#if GTK_CHECK_VERSION(3, 0, 0)
-   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-   hbox = gtk_hbox_new(FALSE, 0);
-#endif
+   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
    gtk_widget_show(hbox);
 
    /* the label for the tab title */
@@ -1876,6 +1824,20 @@ char *gtkui_utf8_validate(char *data) {
    }
 
    return(unicode);
+}
+
+GtkWidget *gtkui_box_new(gint orientation, gint spacing, gboolean homogenious) 
+{
+#if GTK_CHECK_VERSION(3, 0, 0)
+   (void) homogenious;
+   return gtk_box_new(orientation, spacing);
+#else
+   if (orientation == GTK_ORIENTATION_VERTICAL)
+      return gtk_vbox_new(homogenious, spacing);
+   else 
+      return gtk_hbox_new(homogenious, spacing);
+
+#endif
 }
 
 /* EOF */

@@ -390,6 +390,10 @@ static void nbns_spoof(struct packet_object *po)
 
 	SAFE_CALLOC(response, NBNS_MSGLEN_QUERY_RESPONSE, sizeof(u_char));
 
+   if (po->DATA.len > 70) {
+       SAFE_FREE(response);
+       return;
+   }
 	memset(response, 0, NBNS_MSGLEN_QUERY_RESPONSE);
 
 	memcpy(response, po->DATA.data, po->DATA.len);

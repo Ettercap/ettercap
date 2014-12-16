@@ -96,16 +96,16 @@ FUNC_DECODER(dissector_cvs)
    /* move over the cvsroot path */
    ptr += strlen(CVS_LOGIN) + 1;
 
+   if (ptr >= end) 
+       return NULL;
    /* go until \n */
    while(*ptr != '\n' && ptr != end) ptr++;
    if (ptr == end) return NULL;
-
    PACKET->DISSECTOR.user = strdup((const char*)++ptr);
    
    /* cut the username on \n */
    if ( (p = strchr(PACKET->DISSECTOR.user, '\n')) != NULL )
       *p = '\0';
-   
    /* go until \n */
    while(*ptr != '\n' && ptr != end) ptr++;
    if (ptr == end) return NULL;

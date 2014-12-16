@@ -69,7 +69,7 @@ FUNC_DECODER(dissector_cvs)
 {
    DECLARE_DISP_PTR_END(ptr, end);
    char tmp[MAX_ASCII_ADDR_LEN];
-   char *p;
+   u_char *p;
    size_t i;
 
    /* don't complain about unused var */

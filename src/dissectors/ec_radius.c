@@ -82,7 +82,7 @@ struct radius_header {
 
 FUNC_DECODER(dissector_radius);
 void radius_init(void);
-static u_char * radius_get_attribute(u_int8 attr, u_int16 *attr_len, u_char *begin, u_char *end);
+static u_char * radius_get_attribute(u_int8 attr, u_int8 *attr_len, u_char *begin, u_char *end);
 
 /************************************************/
 
@@ -108,7 +108,7 @@ FUNC_DECODER(dissector_radius)
    struct radius_header *radius;
    u_char *attributes;
    char *attr;
-   u_int16 attr_len;
+   u_int8 attr_len;
    char user[0xff+1];
    char pass[0xff+1];
    char auth[0xff];
@@ -188,7 +188,7 @@ FUNC_DECODER(dissector_radius)
 /* 
  * find a radius attribute thru the list
  */
-static u_char * radius_get_attribute(u_int8 attr, u_int16 *attr_len, u_char *begin, u_char *end)
+static u_char * radius_get_attribute(u_int8 attr, u_int8 *attr_len, u_char *begin, u_char *end)
 {
    /* sanity check */
    if (begin == NULL || end == NULL)
@@ -203,7 +203,7 @@ static u_char * radius_get_attribute(u_int8 attr, u_int16 *attr_len, u_char *beg
    while (begin < end) {
 
       /* get the len of the attribute and subtract the header len */
-      *attr_len = (u_char)*(begin + 1) - 2;
+      *attr_len = *(begin + 1) - 2;
      
       /* we have found our attribute */
       if (*begin == attr) {

@@ -35,7 +35,11 @@ void ec_usleep(unsigned int usecs)
 
    nanosleep(&ts, NULL);
 #else
-   usleep(usecs);
+  /* As used from e.g. top_half(), the 1usec sleep there cause approx. 25% usage.
+   * So make Sleep() wait for at least 1 msec.
+   */
+  DWORD msecs = usecs / 1000;
+  Sleep (MAX(1, msecs));
 #endif
 }
 

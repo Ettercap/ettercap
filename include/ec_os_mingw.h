@@ -7,14 +7,6 @@
 #include <malloc.h>     /* for alloca() */
 #include <winsock2.h>   /* u_char etc. */
 
-#if !defined(HAVE_SLEEP)
-   #define sleep(sec)    Sleep (1000*(sec))
-#endif
-
-#if !defined(HAVE_USLEEP)
-   #define usleep(usec)  Sleep ((usec)/1000)
-#endif
-
 #if !defined(HAVE_GETUID)
    #define getuid()      (0)
 #endif

@@ -184,8 +184,8 @@ remote_browser = "xdg-open http://%host%url"
 #---------------
 
 # quick and dirty way:
-   #redir_command_on = "ipfw -q add set %set fwd 127.0.0.1,%rport tcp from any to any %port in via %iface"
-   #redir_command_off = "ipfw -q delete set %set"
+   #redir_command_on = "rdr pass on %iface inet proto tcp from any to 127.0.0.1 port %port -> 127.0.0.1 port %rport "
+   #redir_command_off = "pfctl -F all -f /etc/pf.conf"
 
 # a better solution is to use a script that keeps track of the rules interted
 # and then deletes them on exit:

@@ -178,8 +178,9 @@ remote_browser = "xdg-open http://%host%url"
 #---------------
 
 # quick and dirty way:
-   #redir_command_on = "ipfw add fwd 127.0.0.1,%rport tcp from any to any %port in via %iface"
-   #redir_command_off = "ipfw -q flush"
+   
+   #redir_command_on = "ipfw -q add set %set fwd 127.0.0.1,%rport tcp from any to any %port in via %iface"
+   #redir_command_off = "ipfw -q delete set %set"
    
    #for Mac Os X (Yosemite) use these commands instead:
    #redir_command_on = "echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport'"

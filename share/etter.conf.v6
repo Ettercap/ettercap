@@ -184,6 +184,7 @@ remote_browser = "xdg-open http://%host%url"
 #---------------
 
 # quick and dirty way:
+
    #redir_command_on = "ipfw -q add set %set fwd 127.0.0.1,%rport tcp from any to any %port in via %iface"
    #redir_command_off = "ipfw -q delete set %set"
    

@@ -44,22 +44,22 @@
 						Ettercap Source Code</a>
 				</h2>
 				<div class="entry">
-					The latest Ettercap release is: 0.8.1-Lombroso<br /> Release
-					date: October 16, 2014<br />
+					The latest Ettercap release is: 0.8.2-Ferri<br /> Release
+					date: March 14, 2015<br />
 					<blockquote> Click to Download the version with bundled libraries
 						<span><p>
 								<a
-									href="https://github.com/Ettercap/ettercap/archive/v0.8.1.tar.gz"><img
-									src="Download _256.png" alt="" title="Click to Download the version with bundled libraries" /><br />ettercap-0.8.1.tar.gz</a><br />
-								Sha1: 66362ce69cd9b82b9eb8ea6a52048700704a7d9b
+									href="https://github.com/Ettercap/ettercap/archive/v0.8.2.tar.gz"><img
+									src="Download _256.png" alt="" title="Click to Download the version with bundled libraries" /><br />ettercap-0.8.2.tar.gz</a><br />
+								Sha1: 7e528632ca01c5977da1a0af56a5e05fbc383832
 							</p></span>
 					</blockquote>
 					<blockquote> Click to Download the ettercap source only release
 						<span><p>
 								<a
-									href="https://github.com/Ettercap/ettercap/releases/download/v0.8.1/ettercap-0.8.1.tar.gz"><img
-									src="Download _256.png" alt="" title="Click to Download the ettercap source only release" /><br />ettercap-0.8.1.tar.gz</a><br />
-								Sha1: 1179923d94954cd6e00117c3492c4ca3991bc401
+									href="https://github.com/Ettercap/ettercap/releases/download/v0.8.2/ettercap-0.8.2.tar.gz"><img
+									src="Download _256.png" alt="" title="Click to Download the ettercap source only release" /><br />ettercap-0.8.2.tar.gz</a><br />
+								Sha1: 04f50925a5f3b2555371075a048ab7bfe3892976
 							</p></span>
 					</blockquote>
 					<br /> <br />
@@ -76,6 +76,22 @@
 								<td style="color: #fff; padding: 10px; text-align: center;">Version</td>
 								<td style="color: #fff; padding: 10px; text-align: center;">Sha-1
 									Hash</td>
+							</tr>
+							<tr>
+								<td bgcolor="#eaeaea">Oct 16, 2014</td>
+								<td bgcolor="#eaeaea"><a
+									href="https://github.com/Ettercap/ettercap/archive/v0.8.1.tar.gz"
+									class="down">ettercap-0.8.1.tar.gz</a></td>
+								<td bgcolor="#e5e5e5">0.8.1-Lombroso</td>
+								<td bgcolor="#eee">66362ce69cd9b82b9eb8ea6a52048700704a7d9b</td>
+							</tr>
+							<tr>
+								<td bgcolor="#eaeaea">Oct 16, 2014</td>
+								<td bgcolor="#eaeaea"><a
+									href="https://github.com/Ettercap/ettercap/releases/download/v0.8.1/ettercap-0.8.1.tar.gz"
+									class="down">ettercap-0.8.1.tar.gz (source only)</a></td>
+								<td bgcolor="#e5e5e5">0.8.1-Lombroso</td>
+								<td bgcolor="#eee">1179923d94954cd6e00117c3492c4ca3991bc401</td>
 							</tr>
 							<tr>
 								<td bgcolor="#eaeaea">Sep 21, 2013</td>
@@ -163,6 +179,62 @@
 					<br /> <br />
 					<h3>History</h3>
 					<div class="box">
+						<span class="title"><h3>0.8.2-Ferri</h3></span> <br /> <br />
+						<ul class="fancy_list">
+							<li class="circle_arrow">Bug Fix
+								<ul>
+									<li>!! Fixed some openssl deprecated functions usage</li>
+									<li>!! Fixed log file ownership</li>
+									<li>!! Fixed mixed output print</li>
+									<li>!! Fixed drop_privs function usage</li>
+									<li>!! Fixed nopromisc option usage.</li>
+									<li>!! Fixed missing break in parser code.</li>
+									<li>!! Improved redirect commands</li>
+									<li>!! Fix truncated VLAN packet headers</li>
+									<li>!! Fix ettercap.rc file (windows only)</li>
+									<li>!! Various cmake fixes</li>
+									<li>!! A ton of BSD bug fixes</li>
+									<li>!! Simplify macosx cmake files</li>
+									<li>!! Fix incorrect sequence number after TCP injection</li>
+									<li>!! Fix pcap length, and aligment problems with
+                                                                                libpcap</li>
+									<li>!! Bug fixes and gtk code refactor (gtk box wrapper)</li>
+									<li>!! Fix some ipv6 send issues</li>
+									<li>!! Fixed sleep time on Windows (high CPU usage)</li>
+									<li>!! Fixed many CVE vulnerabilities
+									     (some of them already fixed in 0.8.1)</li>
+									<ul>
+										<li>- CVE-2014-6395 (Length Parameter
+                                                                                      Inconsistency)</li>
+										<li>- CVE-2014-6396 (Arbitrary write)</li>
+										<li>- CVE-2014-9376 (Negative index/underflow)</li>
+										<li>- CVE-2014-9377 (Heap overflow)</li>
+										<li>- CVE-2014-9378 (Unchecked return value)</li>
+										<li>- CVE-2014-9379 (Incorrect cast)</li>
+										<li>- CVE-2014-9380 (Buffer over-read)</li>
+										<li>- CVE-2014-9381 (Signedness error)</li>
+									</ul>
+								</ul>
+							</li>
+						</ul>
+						<ul class="fancy_list">
+							<li class="circle_arrow">New Features
+								<ul>
+									<li>+ Updated etter.finger.mac</li>
+									<li>+ Add TXT and ANY query support on dns_spoof</li>
+									<li>+ New macosx travis-ci build!</li>
+									<li>+ Enable again PDF generation</li>
+								</ul>
+							</li>
+						</ul>
+						<ul class="fancy_list">
+							<li class="circle_arrow">Removed
+								<ul>
+									<li>- Remove gprof support</li>
+								</ul>
+							</li>
+						</ul>
+                                                <br /> <br />
 						<span class="title"><h3>0.8.1-Lombroso</h3></span> <br /> <br />
 						<ul class="fancy_list">
 							<li class="circle_arrow">Bug Fix

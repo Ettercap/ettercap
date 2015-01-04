@@ -449,26 +449,13 @@ static void Find_Url(u_char *to_parse, char **ret)
    Decode_Url((u_char *)*ret);
 }
 
-/* This function remove variables use by http_insert_redirect and http_remove_redirect functions */
-void safe_free_http_redirect(char **param, int *param_length, char *command, char *orig_command) {
-
-	int k;
-
-	SAFE_FREE(command);
-	SAFE_FREE(orig_command);
-
-	for(k= 0; k < (*param_length); ++k)
-		SAFE_FREE(param[k]);
-	SAFE_FREE(param);
-}
-
 /* HTTP handling functions */
 static int http_insert_redirect(u_int16 dport)
 {
 	char asc_dport[16];
-	int ret_val, i=0, param_length= 0;
-	char *command, *orig_command, *p;
-	char **param = NULL;
+	int ret_val = 0;
+	char *command;
+	char *param[4];
 
 	if (GBL_CONF->redir_command_on == NULL)
 	{
@@ -484,19 +471,14 @@ static int http_insert_redirect(u_int16 dport)
 #if defined(OS_DARWIN) || defined(OS_BSD)
 	str_replace(&command, "%set", SSLSTRIP_SET);
 #endif
-        orig_command = strdup(command);
 
 	DEBUG_MSG("http_insert_redirect: [%s]", command);
 
-	/* split the string into the parameter array */
-	for (p = strsep(&command, " "); p!=NULL; p = strsep(&command, " ")) {
-		SAFE_REALLOC(param, (i+1) * sizeof(char *));
-		param[i++] = strdup(p);
-	}
-
-	SAFE_REALLOC(param, (i+1) * sizeof(char *));
-	param[i] = NULL;
-	param_length= i + 1; //because there is a SAFE_REALLOC after the for.
+   /* construct the params array for execvp */
+	param[0] = "sh";
+	param[1] = "-c";
+	param[2] = command;
+	param[3] = NULL;
 
 	switch(fork()) {
 		case 0:
@@ -504,22 +486,22 @@ static int http_insert_redirect(u_int16 dport)
 			execvp(param[0], param);
 			drop_privs();
 			WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-			safe_free_http_redirect(param, &param_length, command, orig_command);
+			SAFE_FREE(command);
 			_exit(-E_INVALID);
 		case -1:
-			safe_free_http_redirect(param, &param_length, command, orig_command);
+			SAFE_FREE(command);
 			return -E_INVALID;
 		default:
 			wait(&ret_val);
 			if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
-			    USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
-			    safe_free_http_redirect(param, &param_length, command, orig_command);
+			    USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
+			    SAFE_FREE(command);
 			    return -E_INVALID;
 			}
 			break;
 	}
 
-	safe_free_http_redirect(param, &param_length, command, orig_command);
+	SAFE_FREE(command);
 
 	return E_SUCCESS;
 }
@@ -527,9 +509,9 @@ static int http_insert_redirect(u_int16 dport)
 static int http_remove_redirect(u_int16 dport)
 {
         char asc_dport[16];
-        int ret_val, i=0, param_length= 0;
-	char *command, *orig_command, *p;
-        char **param = NULL;
+        int ret_val = 0;
+        char *command;
+        char *param[4];
 
 
         if (GBL_CONF->redir_command_off == NULL)
@@ -547,19 +529,13 @@ static int http_remove_redirect(u_int16 dport)
 #if defined(OS_DARWIN) || defined(OS_BSD)
 	str_replace(&command, "%set", SSLSTRIP_SET);
 #endif
-        orig_command = strdup(command);
-
         DEBUG_MSG("http_remove_redirect: [%s]", command);
 
-        /* split the string into the parameter array */
-        for (p = strsep(&command, " "); p!=NULL; p = strsep(&command, " ")) {
-                SAFE_REALLOC(param, (i+1) * sizeof(char *));
-                param[i++] = strdup(p);
-        }
-
-        SAFE_REALLOC(param, (i+1) * sizeof(char *));
-        param[i] = NULL;
-        param_length= i + 1; //because there is a SAFE_REALLOC after the for.
+        /* construct the params array for execvp */
+        param[0] = "sh";
+        param[1] = "-c";
+        param[2] = command;
+        param[3] = NULL;
 
         switch(fork()) {
 		case 0:
@@ -567,22 +543,22 @@ static int http_remove_redirect(u_int16 dport)
 			execvp(param[0], param);
 			drop_privs();
 			WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-			safe_free_http_redirect(param, &param_length, command, orig_command);
+         SAFE_FREE(command);
 			_exit(-E_INVALID);
                 case -1:
-                        safe_free_http_redirect(param, &param_length, command, orig_command);
+                        SAFE_FREE(command);
                         return -E_INVALID;
                 default:
                         wait(&ret_val);
                         if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
-                            USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), orig_command);
-                            safe_free_http_redirect(param, &param_length, command, orig_command);
+                            USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
+                            SAFE_FREE(command);
                             return -E_INVALID;
                         }
                         break;
         }
 
-        safe_free_http_redirect(param, &param_length, command, orig_command);
+        SAFE_FREE(command);
 
         return E_SUCCESS;
 }

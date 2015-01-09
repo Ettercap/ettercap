@@ -1,5 +1,5 @@
 /*
-    ettercap -- dissector FTP -- TCP 21 992
+    ettercap -- dissector FTP -- TCP 21 990
 
     Copyright (C) ALoR & NaGA
 
@@ -40,7 +40,7 @@ void ftp_init(void);
 void __init ftp_init(void)
 {
    dissect_add("ftp", APP_LAYER_TCP, 21, dissector_ftp);
-   sslw_dissect_add("ftps", 992, dissector_ftp, SSL_ENABLED);
+   sslw_dissect_add("ftps", 990, dissector_ftp, SSL_ENABLED);
 }
 
 FUNC_DECODER(dissector_ftp)

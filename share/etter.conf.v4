@@ -207,9 +207,10 @@ remote_browser = "xdg-open http://%host%url"
 #   FreeBSD
 #---------------
 
-# Before OF can be used, make sure the kernel module has been loaded by
-# `kldstat | grep pf.ko`. If the rusult is empty, you can load it by
-# `kldload pf.ko` or add 'pf_enable="YES"' to the /etc/rc.conf and reboot.
+# Before PF can be used, make sure the kernel module has been loaded by
+# `kldstat | grep pf.ko`. If the rusult is empty, you can load it by `kldload pf.ko`.
+# To enable PF at startup add 'pf_enable="YES"' to the /etc/rc.conf, 
+# 'pf_load="YES"' to /boot/loader.conf and 'pfctl -e' to /etc/rc.local.
 
 # Check if the PF status is enabled by 
 # `pfctl -si | grep Status | awk '{print $2;}'`. If "Disabled", enable it with

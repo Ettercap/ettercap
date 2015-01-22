@@ -214,7 +214,7 @@ remote_browser = "xdg-open http://%host%url"
 # `pfctl -si | grep Status | awk '{print $2;}'`. If "Disabled", enable it with
 # `pfctl -e`.
 
-   #redir_command_on = "(pfctl -a sslsniff -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport') | pfctl -a sslsniff -f - 2> /dev/null"
+   #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
    #redir_command_off = "pfctl -a sslsniff -Fn 2> /dev/null"
 
 

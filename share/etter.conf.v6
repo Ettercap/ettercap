@@ -220,7 +220,7 @@ remote_browser = "xdg-open http://%host%url"
 # `pfctl -e`.
 
    #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
-   #redir_command_off = "pfctl -a sslsniff -Fn 2> /dev/null"
+   #redir_command_off = "pfctl -Psn 2> /dev/null | grep -v %port | pfctl -f - 2> /dev/null"
 
 
 #---------------

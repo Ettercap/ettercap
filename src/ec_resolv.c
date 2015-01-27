@@ -150,7 +150,7 @@ EC_THREAD_FUNC(resolv_dns)
    }
 
    /* not found or error */
-   if (getnameinfo((struct sockaddr *)&ss, sizeof(ss), 
+   if (getnameinfo((struct sockaddr *)&ss, sizeof(struct sockaddr), 
             host, MAX_HOSTNAME_LEN, NULL, 0, NI_NAMEREQD)) {
       /* 
        * insert the "" in the cache so we don't search for

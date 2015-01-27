@@ -24,6 +24,7 @@
 #cmakedefine HAVE_CTYPE_H
 #cmakedefine HAVE_INTTYPES_H
 #cmakedefine HAVE_MUTEX_RECURSIVE_NP
+#cmakedefine HAVE_LIBGEN_H
 
 #cmakedefine HAVE_PCRE
 #cmakedefine HAVE_POLL

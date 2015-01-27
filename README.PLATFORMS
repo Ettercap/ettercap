@@ -150,21 +150,10 @@ doubt, go with the latest copy.
    re-libtoolize the package and recompile it or download the cvs version and 
    run the autogen.sh script.
 
-   probably you will have to append the --with-iconv=/usr/local to the
-   configure command line.
-
    on some BSD configurations, even after installing the libtool and libltdl ports, 
    lt_dlopen might not be found by the configure script. To solve this, install the 
    libpcap port from /usr/ports/net and run configure this way:
    CFLAGS="-I /usr/local/include" LDFLAGS="-L /usr/local/lib" ./configure ....
-
-   libnet-devel should be installed from source since the port installs it in /usr/local/include/libnet11
-   and /usr/local/lib/libnet11 and the configure script can only search one path for libraries and
-   includes (might update script later).
-
-   Once libnet-devel, libpcap (port), libpcre (port), libiconv (port) are installed, 
-   make sure to add the --with-libnet=/usr/local --with-libpcap=/usr/local --with-libpcre=/usr/local
-   --with-iconv=/usr/local options
 
  + OPENBSD
 

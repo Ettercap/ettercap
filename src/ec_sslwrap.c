@@ -347,12 +347,11 @@ static void sslw_hook_handled(struct packet_object *po)
  */
 static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
 {
-   int param_length;
    char asc_sport[16];
    char asc_dport[16];
-   int ret_val, i = 0;
-   char *command, *p;
-   char **param = NULL;
+   int ret_val = 0;
+   char *command;
+   char *param[4];
  
    /* the script is not defined */
    if (GBL_CONF->redir_command_on == NULL)
@@ -375,19 +374,11 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    
    DEBUG_MSG("sslw_insert_redirect: [%s]", command);
    
-   /* split the string in the parameter array */
-   for (p = strsep(&command, " "); p != NULL; p = strsep(&command, " ")) {
-      /* allocate the array */
-      SAFE_REALLOC(param, (i + 1) * sizeof(char *));
-                        
-      /* copy the tokens in the array */
-      param[i++] = strdup(p);
-   }
-   /* NULL terminate the array */
-   SAFE_REALLOC(param, (i + 1) * sizeof(char *));
-               
-   param[i] = NULL;
-   param_length= i + 1; //because there is a SAFE_REALLOC after the for.
+   /* construct the params array for execvp */
+   param[0] = "sh";
+   param[1] = "-c";
+   param[2] = command;
+   param[3] = NULL;
                
    /* execute the script */ 
    switch (fork()) {
@@ -396,20 +387,21 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
          execvp(param[0], param);
          drop_privs();
          WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-         safe_free_mem(param, &param_length, command);
+         SAFE_FREE(command);
          _exit(-E_INVALID);
       case -1:
-         safe_free_mem(param, &param_length, command);
+         SAFE_FREE(command);
          return -E_INVALID;
       default:
-         safe_free_mem(param, &param_length, command);
          wait(&ret_val);
          if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
             USER_MSG("sslwrap: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
+            SAFE_FREE(command);
             return -E_INVALID;
          }
    }    
    
+   SAFE_FREE(command);
    return E_SUCCESS;
 }
 
@@ -418,12 +410,11 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
  */
 static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
 {
-   int param_length;
    char asc_sport[16];
    char asc_dport[16];
-   int ret_val, i = 0;
-   char *command, *p;
-   char **param = NULL;
+   int ret_val = 0;
+   char *command;
+   char *param[4];
  
    /* the script is not defined */
    if (GBL_CONF->redir_command_off == NULL)
@@ -447,20 +438,12 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
    
    DEBUG_MSG("sslw_remove_redirect: [%s]", command);
    
-   /* split the string in the parameter array */
-   for (p = strsep(&command, " "); p != NULL; p = strsep(&command, " ")) {
-      /* allocate the array */
-      SAFE_REALLOC(param, (i + 1) * sizeof(char *));
-                        
-      /* copy the tokens in the array */
-      param[i++] = strdup(p);
-   }
-   /* NULL terminate the array */
-   SAFE_REALLOC(param, (i + 1) * sizeof(char *));
-               
-   param[i] = NULL;
-   param_length= i + 1; //because there is a SAFE_REALLOC after the for.
-               
+   /* construct the params array for execvp */
+   param[0] = "sh";
+   param[1] = "-c";
+   param[2] = command;
+   param[3] = NULL;
+
    /* execute the script */ 
    switch (fork()) {
       case 0:
@@ -468,14 +451,14 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
          execvp(param[0], param);
          drop_privs();
          WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-         safe_free_mem(param, &param_length, command);
+         SAFE_FREE(command);
          _exit(-E_INVALID);
       case -1:
-         safe_free_mem(param, &param_length, command);
+         SAFE_FREE(command);
          return -E_INVALID;
       default:
-         safe_free_mem(param, &param_length, command);
          wait(&ret_val);
+         SAFE_FREE(command);
          if (ret_val == -E_INVALID)
             return -E_INVALID;
    }    

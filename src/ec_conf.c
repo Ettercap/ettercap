@@ -254,7 +254,7 @@ static void sanity_checks()
 void load_conf(void)
 {
    FILE *fc;
-   char line[128];
+   char line[256];
    char *p, *q, **tmp;
    int lineno = 0;
    size_t tmplen;
@@ -278,7 +278,7 @@ void load_conf(void)
    }
   
    /* read the file */
-   while (fgets(line, 128, fc) != 0) {
+   while (fgets(line, 256, fc) != 0) {
       
       /* update the line count */
       lineno++;

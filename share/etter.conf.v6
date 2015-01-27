@@ -163,9 +163,7 @@ remote_browser = "xdg-open http://%host%url"
 # they are dropped on startup). so you have to either: provide a setuid program
 # or set the ec_uid to 0, in order to be sure the cleanup script will be
 # executed properly
-# NOTE: this script is executed with an execve(), so you can't use pipes or
-# output redirection as if you were in a shell. We suggest you to make a script if
-# you need those commands.
+# NOTE: the script must fit into one line with a maximum of 255 characters
 
 #---------------
 #     Linux 
@@ -208,6 +206,21 @@ remote_browser = "xdg-open http://%host%url"
  #      rm -f /tmp/osx_ipfw_rules
  #   fi
  # ----- cut here -------
+
+#---------------
+#   FreeBSD
+#---------------
+
+# Before OF can be used, make sure the kernel module has been loaded by
+# `kldstat | grep pf.ko`. If the rusult is empty, you can load it by
+# `kldload pf.ko` or add 'pf_enable="YES"' to the /etc/rc.conf and reboot.
+
+# Check if the PF status is enabled by 
+# `pfctl -si | grep Status | awk '{print $2;}'`. If "Disabled", enable it with
+# `pfctl -e`.
+
+   #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
+   #redir_command_off = "pfctl -Psn 2> /dev/null | grep -v %port | pfctl -f - 2> /dev/null"
 
 
 #---------------

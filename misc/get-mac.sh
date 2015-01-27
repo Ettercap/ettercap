@@ -8,3 +8,5 @@ rm oui.txt
 echo "the maximum line SHOULD be less than 120 bytes (ec_manuf.c manuf_init function)"
 echo "maximum line of the newly generated file"
 wc -L etter.finger.mac
+dos2unix etter.finger.mac
+mv etter.finger.mac share

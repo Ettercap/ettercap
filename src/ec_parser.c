@@ -322,6 +322,7 @@ void parse_options(int argc, char **argv)
                   
          case 'L':
 		  set_loglevel_packet(optarg);
+		  break;
 
          case 'l':
 		  set_loglevel_info(optarg);

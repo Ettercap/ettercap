@@ -225,17 +225,17 @@ void drop_privs(void)
    else
       gid = GBL_CONF->ec_gid;
 
-   DEBUG_MSG("drop_privs: setuid(%d) setgid(%d)", uid, gid);
+   DEBUG_MSG("drop_privs: seteuid(%d) setegid(%d)", uid, gid);
 
    /* drop to a good uid/gid ;) */
-   if ( setgid(gid) < 0 )
-      ERROR_MSG("setgid()");
+   if ( setegid(gid) < 0 )
+      ERROR_MSG("setegid()");
 
    if ( seteuid(uid) < 0 )
       ERROR_MSG("seteuid()");
 
    DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
-   USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() );
+   USER_MSG("Privileges dropped to EUID %d EGID %d...\n\n", (int)geteuid(), (int)getegid() );
 }
 
 /* base64 stuff */

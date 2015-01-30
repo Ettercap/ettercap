@@ -42,6 +42,9 @@
 #    service._tcp|_udp.domain SRV 192.168.1.10:port                        #
 #    service._tcp|_udp.domain SRV [2001:db8::3]:port                       #
 #                                                                          #
+# or for TXT query (value must be wrapped in double quotes):               #
+#    google.com TXT "v=spf1 ip4:192.168.0.3/32 ~all"                       #
+#                                                                          #
 # NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
 #       so if you want to reverse poison you have to specify a plain       #
 #       host. (look at the www.microsoft.com example)                      #
@@ -53,9 +56,9 @@
 # redirect it to www.linux.org
 #
 
-microsoft.com      A   209.92.24.80
-*.microsoft.com    A   209.92.24.80
-www.microsoft.com  PTR 209.92.24.80      # Wildcards in PTR are not allowed
+microsoft.com      A   107.170.40.56
+*.microsoft.com    A   107.170.40.56
+www.microsoft.com  PTR 107.170.40.56      # Wildcards in PTR are not allowed
 
 ##########################################
 # no one out there can have our domains...
@@ -81,7 +84,7 @@ www.example.org  AAAA ::1
 
 www.ettercap.org           A  127.0.0.1
 www.ettercap-project.org   A  127.0.0.1
-ettercap.sourceforge.net   A  216.136.171.201
+ettercap.sourceforge.net   A  23.235.43.133
 www.ettercap.org           PTR ::1
 
 ###############################################
@@ -105,6 +108,12 @@ LAB-PC*  WINS  127.0.0.1
 
 xmpp-server._tcp.jabber.org SRV 192.168.1.10:5269     
 ldap._udp.mynet.com SRV [2001:db8:c001:beef::1]:389   
+
+###############################################
+# little example for TXT records
+#
+
+naga.org TXT "v=spf1 ip4:192.168.1.2 ip6:2001:db8:d0b1:beef::2 -all"
 
 
 # vim:ts=8:noexpandtab

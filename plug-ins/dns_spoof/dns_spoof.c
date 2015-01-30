@@ -157,13 +157,23 @@ static int dns_spoof_init(void *dummy)
 
 static int dns_spoof_fini(void *dummy) 
 {
+   struct dns_spoof_entry *d;
+
    /* variable not used */
    (void) dummy;
 
    /* remove the hook */
    hook_del(HOOK_PROTO_DNS, &dns_spoof);
 
-   // TODO - Free memory
+   /* Free dynamically allocated memory */
+   while (!SLIST_EMPTY(&dns_spoof_head)) {
+      d = SLIST_FIRST(&dns_spoof_head);
+      SLIST_REMOVE_HEAD(&dns_spoof_head, next);
+      SAFE_FREE(d->name);
+      SAFE_FREE(d->text);
+      SAFE_FREE(d);
+   }
+
 
    return PLUGIN_FINISHED;
 }
@@ -212,6 +222,7 @@ static int load_db(void)
       d->name = strdup(name);
       d->type = type;
       d->port = port;
+      d->text = NULL;
 
       /* convert the ip address */
       if (type == ns_t_txt) {

@@ -84,7 +84,7 @@ is not started yet. You have to launch it from the proper menu.
 .Sp
 This plugin intercepts DNS query and reply with a spoofed answer. You can chose
 to which address the plugin has to reply by modifying the etter.dns file. The
-plugin intercepts A, AAAA, PTR, MX, WINS and SRV request. If it was an A
+plugin intercepts A, AAAA, PTR, MX, WINS, SRV and TXT request. If it was an A
 request, the name is searched in the file and the IP address is returned
 (you can use wildcards in the name).
 .br
@@ -108,10 +108,18 @@ special reply is crafted. The host is resolved with a fake host 'srv.host' and
 the additional record contains the IP address of 'srv.host'. The IP address for
 SRV requests can be a IPv4 or a IPv6 address.
 .Sp
+In case of a TXT request, the string defined is being returned. The string has
+to be wrapped in double quotes. Wildcards for the requested name can also be 
+used.
+.Sp
 A special reply can be spoofed for A or AAAA requests, if the 'undefined
 address' is specified as the IP address in the file. Then the client gets a
 response which stops resolution processing imediately. This way one can control
 which address family is being used to access a dual-stacked host.
+.Sp
+In the case of an ANY request, all matching results of type A, AAAA, MX and TXT
+are returned in the reply. If the 'undefined address' for A or AAAA records is
+defined, nothing is returned for these types whether or not the name matches.
 
 
 .TP

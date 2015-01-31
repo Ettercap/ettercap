@@ -43,6 +43,9 @@
 #ifdef OS_LINUX
 #include <linux/netfilter_ipv4.h>
 #endif
+#if defined OS_LINUX && defined WITH_IPV6
+#include <linux/netfilter_ipv6/ip6_tables.h>
+#endif
 
 
 #ifdef HAVE_SYS_POLL_H
@@ -143,10 +146,9 @@ static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define LIST_UNLOCK   do{ pthread_mutex_unlock(&list_mutex); } while(0)
 
 /* globals */
-static int main_fd;
+static int main_fd, main_fd6;
+static struct pollfd poll_fd[2];
 static u_int16 bind_port;
-static struct pollfd poll_fd;
-
 static pcre *https_url_pcre;
 static regex_t find_cookie_re;
 
@@ -204,7 +206,7 @@ struct plugin_ops sslstrip_ops = {
 	.ettercap_version =	EC_VERSION, /* must match global EC_VERSION */
 	.name =			"sslstrip",
 	.info =			"SSLStrip plugin",
-	.version =		"1.1",
+	.version =		"1.2",
 	.init =			&sslstrip_init,
 	.fini =			&sslstrip_fini,
 };
@@ -256,7 +258,7 @@ static int sslstrip_init(void *dummy)
 
 	ec_thread_new_detached("http_accept_thread", "HTTP Accept thread", &http_accept_thread, NULL, 1);
 
-	USER_MSG("SSLStrip Plugin version 1.1 is still under experimental mode. Please reports any issues to the development team.\n");
+	USER_MSG("SSLStrip Plugin version 1.2 is still under experimental mode. Please reports any issues to the development team.\n");
 	return PLUGIN_RUNNING;
 }
 
@@ -293,6 +295,9 @@ static int sslstrip_fini(void *dummy)
 	} while (!pthread_equal(pid, EC_PTHREAD_NULL));
 
 	close(main_fd);
+#ifdef WITH_IPV6
+   close(main_fd6);
+#endif
 
 	/* Remove hook point */
 	hook_del(HOOK_HANDLED, &sslstrip);
@@ -566,10 +571,16 @@ static int http_remove_redirect(u_int16 dport)
 static EC_THREAD_FUNC(http_accept_thread)
 {
 	struct http_connection *connection;
-	u_int len = sizeof(struct sockaddr_in);
-	struct sockaddr_in client_sin;
-	int optval = 1;
+   struct sockaddr_storage client_ss;
+	u_int len = sizeof(client_ss);
+	int optval = 1, fd = 0, nfds = 1;
 	socklen_t optlen = sizeof(optval);
+   struct sockaddr *sa;
+   struct sockaddr_in *sa4;
+#ifdef WITH_IPV6
+   struct sockaddr_in6 *sa6;
+#endif
+
 
    /* variable not used */
    (void) EC_THREAD_PARAM;
@@ -578,44 +589,75 @@ static EC_THREAD_FUNC(http_accept_thread)
 
 	DEBUG_MSG("SSLStrip: http_accept_thread initialized and ready");
 
-	poll_fd.fd = main_fd;
-	poll_fd.events = POLLIN;
+   poll_fd[0].fd = main_fd;
+   poll_fd[0].events = POLLIN;
+#ifdef WITH_IPV6
+   poll_fd[1].fd = main_fd6;
+   poll_fd[1].events = POLLIN;
+   nfds++;
+#endif
 
 	LOOP {
-		poll(&poll_fd, 1, -1);
 
-		if (poll_fd.revents & POLLIN) {
-			SAFE_CALLOC(connection, 1, sizeof(struct http_connection));
-			BUG_IF(connection==NULL);
+      /* wait until one file descriptor becomes active */
+      poll(poll_fd, nfds, -1);
 
-			SAFE_CALLOC(connection->request, 1, sizeof(struct http_request));
-			BUG_IF(connection->request==NULL);
+      /* check which file descriptor became active */
+      if (poll_fd[0].revents & POLLIN)
+         fd = poll_fd[0].fd;
+#ifdef WITH_IPV6
+      else if (poll_fd[1].revents & POLLIN)
+         fd = poll_fd[1].fd;
+#endif
+      else 
+         continue;
 
-			SAFE_CALLOC(connection->response, 1, sizeof(struct http_response));
-			BUG_IF(connection->response==NULL);
+      /* accept incoming connection */
+		SAFE_CALLOC(connection, 1, sizeof(struct http_connection));
+		BUG_IF(connection==NULL);
 
-			connection->fd= accept(poll_fd.fd, (struct sockaddr *)&client_sin, &len);
+		SAFE_CALLOC(connection->request, 1, sizeof(struct http_request));
+		BUG_IF(connection->request==NULL);
 
-			DEBUG_MSG("SSLStrip: Received connection: %p %p\n", connection, connection->request);
-			if (connection->fd == -1) {
-				SAFE_FREE(connection->request);
-				SAFE_FREE(connection->response);
-				SAFE_FREE(connection);
-				continue;
-			}
+		SAFE_CALLOC(connection->response, 1, sizeof(struct http_response));
+		BUG_IF(connection->response==NULL);
 
-			ip_addr_init(&(connection->ip[HTTP_CLIENT]), AF_INET, (u_char *)&(client_sin.sin_addr.s_addr));
-			connection->port[HTTP_CLIENT] = client_sin.sin_port;
-			connection->port[HTTP_SERVER] = htons(80);
-			//connection->request->len = 0;
+		connection->fd = accept(fd, (struct sockaddr *)&client_ss, &len);
 
-			/* set SO_KEEPALIVE */
-			if (setsockopt(connection->fd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0) {
-				DEBUG_MSG("SSLStrip: Could not set up SO_KEEPALIVE");
-			}
-			/* create detached thread */
-			ec_thread_new_detached("http_child_thread", "http child", &http_child_thread, connection, 1);	
+		DEBUG_MSG("SSLStrip: Received connection: %p %p\n", connection, connection->request);
+		if (connection->fd == -1) {
+         DEBUG_MSG("SSLStrip: Failed to accept connection: %s.", strerror(errno));
+			SAFE_FREE(connection->request);
+			SAFE_FREE(connection->response);
+			SAFE_FREE(connection);
+			continue;
 		}
+
+      sa = (struct sockaddr *)&client_ss;
+      switch (sa->sa_family) {
+         case AF_INET:
+            sa4 = (struct sockaddr_in *)&client_ss;
+            ip_addr_init(&(connection->ip[HTTP_CLIENT]), AF_INET, (u_char *)&(sa4->sin_addr.s_addr));
+            connection->port[HTTP_CLIENT] = sa4->sin_port;
+            break;
+#ifdef WITH_IPV6
+         case AF_INET6:
+            sa6 = (struct sockaddr_in6 *)&client_ss;
+            ip_addr_init(&(connection->ip[HTTP_CLIENT]), AF_INET6, (u_char *)&(sa6->sin6_addr.s6_addr));
+            connection->port[HTTP_CLIENT] = sa6->sin6_port;
+            break;
+#endif
+      }
+
+		connection->port[HTTP_SERVER] = htons(80);
+		//connection->request->len = 0;
+
+		/* set SO_KEEPALIVE */
+		if (setsockopt(connection->fd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0) {
+			DEBUG_MSG("SSLStrip: Could not set up SO_KEEPALIVE");
+		}
+		/* create detached thread */
+		ec_thread_new_detached("http_child_thread", "http child", &http_child_thread, connection, 1);	
 	}
 
 	return NULL;
@@ -651,13 +693,28 @@ static int http_get_peer(struct http_connection *connection)
 	SAFE_FREE(s);
 	SAFE_FREE(ident);
 #else
-	 struct sockaddr_in sa_in;
-	 socklen_t sa_in_sz = sizeof(struct sockaddr_in);
-	 getsockopt (connection->fd, SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&sa_in, &sa_in_sz);
-
-	 ip_addr_init(&(connection->ip[HTTP_SERVER]), AF_INET, (u_char *)&(sa_in.sin_addr.s_addr));
+   struct sockaddr_storage ss;
+	 struct sockaddr_in *sa4;
+#if defined WITH_IPV6 && defined HAVE_IP6T_SO_ORIGINAL_DST
+    struct sockaddr_in6 *sa6;
 #endif
+	 socklen_t ss_len = sizeof(struct sockaddr_storage);
+    switch (ntohs(connection->ip[HTTP_CLIENT].addr_type)) {
+       case AF_INET:
+          getsockopt (connection->fd, SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len);
+          sa4 = (struct sockaddr_in *)&ss;
+          ip_addr_init(&(connection->ip[HTTP_SERVER]), AF_INET, (u_char *)&(sa4->sin_addr.s_addr));
+          break;
+#if defined WITH_IPV6 && defined HAVE_IP6T_SO_ORIGINAL_DST
+       case AF_INET6:
+          getsockopt (connection->fd, IPPROTO_IPV6, IP6T_SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len);
+          sa6 = (struct sockaddr_in6 *)&ss;
+          ip_addr_init(&(connection->ip[HTTP_SERVER]), AF_INET6, (u_char *)&(sa6->sin6_addr.s6_addr));
+          break;
+#endif
+    }
 
+#endif
 	
 	return E_SUCCESS;
 
@@ -1242,6 +1299,10 @@ static int http_bind_wrapper(void)
 {
 	bind_port = EC_MAGIC_16;
 	struct sockaddr_in sa_in;
+#ifdef WITH_IPV6
+   struct sockaddr_in6 sa_in6;
+   int optval = 1;
+#endif
 
 	ec_thread_init();
 
@@ -1265,6 +1326,46 @@ static int http_bind_wrapper(void)
             DEBUG_MSG("SSLStrip plugin: unable to listen() on socket");
             return -E_FATAL;
         }
+
+#ifdef WITH_IPV6
+   /* create & bind IPv6 socket on the same port */
+   main_fd6 = socket(AF_INET6, SOCK_STREAM, 0);
+   if (main_fd6 == -1) { /* unable to create socket */
+      DEBUG_MSG("SSLStrip: Unable to create socket() for HTTP over IPv6: %s.", 
+            strerror(errno));
+      return -E_FATAL;
+   }
+   memset(&sa_in6, 0, sizeof(sa_in6));
+   sa_in6.sin6_family = AF_INET6;
+   sa_in6.sin6_addr = in6addr_any;
+   sa_in6.sin6_port = htons(bind_port);
+
+   /* we only listen on v6 as we use dedicated sockets per AF */
+   if (setsockopt(main_fd6, IPPROTO_IPV6, IPV6_V6ONLY, 
+            &optval, sizeof(optval)) == -1) {
+      DEBUG_MSG("SSLStrip: Unable to set IPv6 socket to IPv6 only: %s.",
+            strerror(errno));
+      return -E_FATAL;
+   }
+
+   /* bind to IPv6 on the same port as the IPv4 socket */
+   if (bind(main_fd6, (struct sockaddr *)&sa_in6, sizeof(sa_in6)) == -1) {
+      DEBUG_MSG("SSLStrip: Unable to bind() IPv6 socket to port %d: %s.", 
+            bind_port, strerror(errno));
+      return -E_FATAL;
+   }
+
+   /* finally set socket into listen state */
+   if (listen(main_fd6, 100) == -1) {
+      DEBUG_MSG("SSLStrip: Unable to listen() on IPv6 socket: %s.", 
+            strerror(errno));
+      return -E_FATAL;
+   }
+#else
+   /* properly init fd even when not used - necessary for select call */
+   main_fd6 = 0;
+#endif
+
 	USER_MSG("SSLStrip plugin: bind 80 on %d\n", bind_port);
 	
 	if (http_insert_redirect(bind_port) != E_SUCCESS)

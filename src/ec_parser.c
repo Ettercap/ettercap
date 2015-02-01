@@ -196,7 +196,7 @@ void parse_options(int argc, char **argv)
       { "only-mitm", no_argument, NULL, 'o' },
       { "bridge", required_argument, NULL, 'B' },
       { "broadcast", required_argument, NULL, 'b' },
-      { "promisc", no_argument, NULL, 'p' },
+      { "nopromisc", no_argument, NULL, 'p' },
       { "gateway", required_argument, NULL, 'Y' },
       { "certificate", required_argument, NULL, 0 },
       { "private-key", required_argument, NULL, 0 },

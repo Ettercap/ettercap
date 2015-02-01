@@ -928,13 +928,15 @@ static void http_send(struct http_connection *connection, struct packet_object *
       strstr(connection->response->html, "\r\nTransfer-Encoding:")) {
       http_remove_header("Content-Encoding", connection);
       http_remove_header("Transfer-Encoding", connection);
-      http_update_content_length(connection);
    }
 
 
    if(strstr(connection->response->html, "\r\nStrict-Transport-Security:")) {
       http_remove_header("Strict-Transport-Security", connection);
    }
+
+   /* adjust content length header value */
+   http_update_content_length(connection);
 
    DEBUG_MSG("SSLStrip: after removing all %s", connection->response->html);
    //Send result back to client
@@ -1137,10 +1139,10 @@ static void http_remove_https(struct http_connection *connection)
    int rc;
    int ovector[30];
    char changed = 0;
-   char *new_html;
+   char *new_html, *url;
    size_t new_size = 0;
    size_t size = connection->response->len;
-   int i = 0;
+   int url_len, match_start, match_end = 0;
 
    if(!buf_cpy)
       return;
@@ -1149,16 +1151,27 @@ static void http_remove_https(struct http_connection *connection)
    BUG_IF(new_html==NULL);
 
    while(offset < size && (rc = pcre_exec(https_url_pcre, NULL, buf_cpy, size, offset, 0, ovector, 30)) > 0) {
-      memcpy(new_html+new_size, buf_cpy+offset, ovector[2*i]-offset);
-      new_size += ovector[2*i]-offset;
+      match_start = ovector[0];
+      match_end = ovector[1];
 
-      char *url = strndup(buf_cpy+ovector[2*i]+https_len, 
-         (ovector[2*i+1] - ovector[2*i]) - https_len);
-      memcpy(new_html+new_size, "http://", http_len);
+      /* copy 1:1 up to match */
+      memcpy(new_html + new_size, buf_cpy + offset, match_start - offset);
+      new_size += match_start - offset;
+
+      /* extract URL w/o https:// */
+      url_len = match_end - match_start - https_len;
+      url = strndup(buf_cpy + match_start + https_len, url_len);
+
+      /* copy "http://" */
+      memcpy(new_html + new_size, "http://", http_len);
       new_size += http_len;
-      memcpy(new_html+new_size, url, (ovector[2*i+1] - ovector[2*i]) - https_len);
-      new_size += (ovector[2*i+1] - ovector[2*i]) - https_len;
-      offset = ovector[1];
+
+      /* append URL */
+      memcpy(new_html + new_size, url, url_len);
+      new_size += url_len;
+
+      /* set new offset for next round */
+      offset = match_end;
 
       //Add URL to list
 
@@ -1177,9 +1190,9 @@ static void http_remove_https(struct http_connection *connection)
          SAFE_CALLOC(l, 1, sizeof(struct https_link));
          BUG_IF(l==NULL);
 
-         SAFE_CALLOC(l->url, 1, 1+((ovector[2*i+1] - ovector[2*i]) - https_len));
+         SAFE_CALLOC(l->url, 1, 1 + url_len);
          BUG_IF(l->url==NULL);
-         memcpy(l->url, url, (ovector[2*i+1] - ovector[2*i]) - https_len);
+         memcpy(l->url, url, url_len);
          Decode_Url((u_char *)l->url);
          l->last_used = time(NULL);
          DEBUG_MSG("SSLStrip: Inserting %s to HTTPS List", l->url);
@@ -1195,7 +1208,10 @@ static void http_remove_https(struct http_connection *connection)
    
    if (changed) {
       //Copy rest of data (if any)
-      memcpy(new_html+new_size, buf_cpy+offset, size-offset);
+      memcpy(new_html + new_size, buf_cpy + offset, size - offset);
+      new_size += size - offset;
+
+      /* replace response */
       SAFE_FREE(connection->response->html);   
       connection->response->html = new_html;
       connection->response->len = new_size;   
@@ -1475,9 +1491,9 @@ void http_update_content_length(struct http_connection *connection) {
 
       char c_length[20];
       memset(&c_length, '\0', 20);
-      snprintf(c_length, 20, "%lu", connection->response->len);
+      snprintf(c_length, 20, "%lu", connection->response->len - (strstr(buf, "\r\n\r\n") + 4 - buf));
 
-      memcpy(buf+(content_length-buf)-1, c_length, strlen(c_length));
+      memcpy(buf+(content_length-buf), c_length, strlen(c_length));
    }
 }
 

@@ -40,6 +40,9 @@
 #ifdef OS_LINUX
    #include <linux/netfilter_ipv4.h>
 #endif
+#if defined OS_LINUX && defined WITH_IPV6
+   #include <linux/netfilter_ipv6/ip6_tables.h>
+#endif
 
 #include <fcntl.h>
 #include <pthread.h>
@@ -74,6 +77,7 @@ static LIST_HEAD (, listen_entry) listen_ports;
 
 struct listen_entry {
    int fd;
+   int fd6;
    u_int16 sslw_port;   /* Port where we want to wrap SSL */
    u_int16 redir_port;  /* Port where accepts connections */
    u_char status;       /* Use directly SSL or not */
@@ -212,6 +216,11 @@ void ssl_wrap_init(void)
    number_of_services = 0;
    LIST_FOREACH(le, &listen_ports, next) 
       number_of_services++;
+
+#ifdef WITH_IPV6
+   /* with IPv6 enabled we actually duplicate the number of listener sockets */
+   number_of_services *= 2;
+#endif
    
    SAFE_CALLOC(poll_fd, 1, sizeof(struct pollfd) * number_of_services);
 
@@ -224,9 +233,13 @@ static void ssl_wrap_fini(void)
    struct listen_entry *le, *old;
 
    DEBUG_MSG("ATEXIT: ssl_wrap_fini");
-   /* remove every redirect rule */   
+   /* remove every redirect rule and close listener sockets */
    LIST_FOREACH_SAFE(le, &listen_ports, next, old) {
       sslw_remove_redirect(le->sslw_port, le->redir_port);
+      close(le->fd);
+#ifdef WITH_IPV6
+      close(le->fd6);
+#endif
       LIST_REMOVE(le, next);
       SAFE_FREE(le);
    }
@@ -243,8 +256,14 @@ EC_THREAD_FUNC(sslw_start)
 {
    struct listen_entry *le;
    struct accepted_entry *ae;
-   u_int len = sizeof(struct sockaddr_in), i;
-   struct sockaddr_in client_sin;
+   struct sockaddr_storage client_ss;
+   struct sockaddr *sa;
+   struct sockaddr_in *sa4;
+#ifdef WITH_IPV6
+   struct sockaddr_in6 *sa6;
+#endif
+   u_int len = sizeof(client_ss);
+   int fd, nfds, i = 0;
 
    /* variable not used */
    (void) EC_THREAD_PARAM;
@@ -254,55 +273,84 @@ EC_THREAD_FUNC(sslw_start)
    /* disabled if not aggressive */
    if (!GBL_CONF->aggressive_dissectors)
       return NULL;
-   
+
    /* a valid script for the redirection must be set */
    if (!GBL_CONF->redir_command_on)
       return NULL;
-   
+
    DEBUG_MSG("sslw_start: initialized and ready");
-   
-   /* Set the polling on all registered ssl services */
-   i=0;
+
+   /* set the polling on all registered services */
    LIST_FOREACH(le, &listen_ports, next) {
-      poll_fd[i].fd = le->fd;
-      poll_fd[i++].events = POLLIN;
+      poll_fd[nfds].fd = le->fd;
+      poll_fd[nfds].events = POLLIN;
+#ifdef WITH_IPV6
+      nfds++;
+      poll_fd[nfds].fd = le->fd6;
+      poll_fd[nfds].events = POLLIN;
+#endif
+      nfds++;
    }
 
    LOOP {
-      poll(poll_fd, number_of_services, -1);
-      
-      /* Check which port received connection */
-      for(i=0; i<number_of_services; i++) 
-         if (poll_fd[i].revents & POLLIN) {
-	 
-            LIST_FOREACH(le, &listen_ports, next) 
-               if (poll_fd[i].fd == le->fd)
-                  break;
-	    
-            DEBUG_MSG("ssl_wrapper -- got a connection on port %d [%d]", le->redir_port, le->sslw_port);
-            SAFE_CALLOC(ae, 1, sizeof(struct accepted_entry));
-	    
-            ae->fd[SSL_CLIENT] = accept(poll_fd[i].fd, (struct sockaddr *)&client_sin, &len);
-            
-            /* Error checking */
-            if (ae->fd[SSL_CLIENT] == -1) {
-               SAFE_FREE(ae);
-               continue;
+      poll(poll_fd, nfds, -1);
+
+      /* Find out which file descriptor got active */
+      for (i=0; i<nfds; i++) {
+         if (!(poll_fd[i].revents & POLLIN))
+            continue;
+
+         /* determine listen entry */
+         LIST_FOREACH(le, &listen_ports, next) {
+            if (poll_fd[i].fd == le->fd) {
+               fd = le->fd;
+               break;
             }
-	    
-            /* Set the server original port for protocol dissection */
-            ae->port[SSL_SERVER] = htons(le->sslw_port);
-            
-            /* Check if we have to enter SSL status */
-            ae->status = le->status;
-	       
-            /* Set the peer (client) in the connection list entry */
-            ae->port[SSL_CLIENT] = client_sin.sin_port;
-            ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (u_char *)&(client_sin.sin_addr.s_addr));
-	   
-            /* create a detached thread */ 
-            ec_thread_new_detached("sslw_child", "ssl child", &sslw_child, ae, 1);
+#ifdef WITH_IPV6
+            if (poll_fd[i].fd == le->fd6) {
+               fd = le->fd6;
+               break;
+            }
+#endif
          }
+
+         DEBUG_MSG("ssl_wrapper -- got a connection on port %d [%d]", le->redir_port, le->sslw_port);
+         SAFE_CALLOC(ae, 1, sizeof(struct accepted_entry));
+
+         ae->fd[SSL_CLIENT] = accept(fd, (struct sockaddr *)&client_ss, &len);
+         
+         /* Error checking */
+         if (ae->fd[SSL_CLIENT] == -1) {
+            SAFE_FREE(ae);
+            continue;
+         }
+
+         /* Set the server original port for protocol dissection */
+         ae->port[SSL_SERVER] = htons(le->sslw_port);
+         
+         /* Check if we have to enter SSL status */
+         ae->status = le->status;
+
+         /* Set the peer (client) in the connection list entry */
+         sa = (struct sockaddr *)&client_ss;
+         switch (sa->sa_family) {
+            case AF_INET:
+               sa4 = (struct sockaddr_in *)&client_ss;
+               ae->port[SSL_CLIENT] = sa4->sin_port;
+               ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET, (u_char *)&(sa4->sin_addr.s_addr));
+               break;
+#ifdef WITH_IPV6
+            case AF_INET6:
+               sa6 = (struct sockaddr_in6 *)&client_ss;
+               ae->port[SSL_CLIENT] = sa6->sin6_port;
+               ip_addr_init(&(ae->ip[SSL_CLIENT]), AF_INET6, (u_char *)&(sa6->sin6_addr.s6_addr));
+               break;
+#endif
+         }
+
+         /* create a detached thread */
+         ec_thread_new_detached("sslw_child", "ssl child", &sslw_child, ae, 1);
+      }
    }
 
    return NULL;
@@ -497,16 +545,20 @@ static void sslw_bind_wrapper(void)
    u_int16 bind_port = EC_MAGIC_16; 
    struct listen_entry *le;
    struct sockaddr_in sa_in;
+#ifdef WITH_IPV6
+   struct sockaddr_in6 sa_in6;
+   int optval = 1;
+#endif
 
-   LIST_FOREACH(le, &listen_ports, next) { 
-   
+   LIST_FOREACH(le, &listen_ports, next) {
+
       le->fd = socket(AF_INET, SOCK_STREAM, 0);
       if (le->fd == -1)
         FATAL_ERROR("Unable to create socket in sslw_bind_wrapper()");
       memset(&sa_in, 0, sizeof(sa_in));
       sa_in.sin_family = AF_INET;
       sa_in.sin_addr.s_addr = INADDR_ANY;
-   
+
       do {
          bind_port++;
          sa_in.sin_port = htons(bind_port);
@@ -515,7 +567,36 @@ static void sslw_bind_wrapper(void)
 
       DEBUG_MSG("sslw - bind %d on %d", le->sslw_port, le->redir_port);
       if(listen(le->fd, 100) == -1)
-        FATAL_ERROR("Unable to accept connections for socket");      
+        FATAL_ERROR("Unable to accept connections for socket");
+
+#ifdef WITH_IPV6
+      /* create & bind IPv6 socket on the same port */
+      le->fd6 = socket(AF_INET6, SOCK_STREAM, 0);
+      if (le->fd6 == -1)
+        FATAL_ERROR("Unable to create socket in sslw_bind_wrapper() for IPv6");
+      memset(&sa_in6, 0, sizeof(sa_in6));
+      sa_in6.sin6_family = AF_INET6;
+      sa_in6.sin6_addr = in6addr_any;
+      sa_in6.sin6_port = htons(bind_port);
+
+      /* we only listen on v6 as we use dedicated sockets per AF */
+      if (setsockopt(le->fd6, IPPROTO_IPV6, IPV6_V6ONLY,
+               &optval, sizeof(optval)) == -1) 
+         FATAL_ERROR("Unable to set IPv6 socket to IPv6 only in sslw_bind_wrapper(): %s", 
+               strerror(errno));
+
+      /* bind to IPv6 on the same port as the IPv4 socket */
+      if (bind(le->fd6, (struct sockaddr *)&sa_in6, sizeof(sa_in6)) == -1)
+         FATAL_ERROR("Unable to bind() IPv6 socket to port %d in sslw_bind_wrapper(): %s",
+               bind_port, strerror(errno));
+
+      if(listen(le->fd6, 100) == -1)
+        FATAL_ERROR("Unable to accept connections for IPv6 socket");
+#else
+      /* properly init fd even if unused - necessary for select call */
+      le->fd6 = 0;
+#endif
+
       if (sslw_insert_redirect(le->sslw_port, le->redir_port) != E_SUCCESS)
         FATAL_ERROR("Can't insert firewall redirects");
    }
@@ -684,12 +765,28 @@ static int sslw_get_peer(struct accepted_entry *ae)
    SAFE_FREE(s);
    SAFE_FREE(ident);
 #else
-   struct sockaddr_in sa_in;
-   socklen_t sa_in_sz = sizeof(struct sockaddr_in);
+   struct sockaddr_storage ss;
+   struct sockaddr_in *sa4;
+#if defined WITH_IPV6 && defined HAVE_IP6T_SO_ORIGINAL_DST
+   struct sockaddr_in6 *sa6;
+#endif
+   socklen_t ss_len = sizeof(struct sockaddr_storage);
 
-   getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&sa_in, &sa_in_sz);
+   switch (ntohs(ae->ip[SSL_CLIENT].addr_type)) {
+      case AF_INET:
+         getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len);
+         sa4 = (struct sockaddr_in *)&ss;
+         ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET, (u_char *)&(sa4->sin_addr.s_addr));
+         break;
+#if defined WITH_IPV6 && defined HAVE_IP6T_SO_ORIGINAL_DST
+      case AF_INET6:
+         getsockopt(ae->fd[SSL_CLIENT], IPPROTO_IPV6, IP6T_SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len);
+         sa6 = (struct sockaddr_in6 *)&ss;
+         ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET6, (u_char *)&(sa6->sin6_addr.s6_addr));
+         break;
+#endif
+   }
 
-   ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET, (u_char *)&(sa_in.sin_addr.s_addr));
 #endif
    return E_SUCCESS;
 }
@@ -702,23 +799,16 @@ static int sslw_get_peer(struct accepted_entry *ae)
  */
 static int sslw_connect_server(struct accepted_entry *ae)
 {
-   char *dest_ip;
+   char dest_ip[MAX_ASCII_ADDR_LEN];
    
-   /* 
-    * XXX - int_ntoa is not thread-safe. 
-    * strdup it to avoid race conditions.
-    * Btw int_ntoa is not so used in the code.
-    */
-   dest_ip = strdup(int_ntoa(*ae->ip[SSL_SERVER].addr32));
+   ip_addr_ntoa(&ae->ip[SSL_SERVER], dest_ip);
  
    /* Standard connection to the server */
-   if (!dest_ip || (ae->fd[SSL_SERVER] = open_socket(dest_ip, ntohs(ae->port[SSL_SERVER]))) < 0) {
-      SAFE_FREE(dest_ip);   
+   if ((ae->fd[SSL_SERVER] = open_socket(dest_ip, ntohs(ae->port[SSL_SERVER]))) < 0) {
       DEBUG_MSG("Could not open socket");
       return -E_INVALID;
    }
    
-   SAFE_FREE(dest_ip);	       
    return E_SUCCESS;   
 }
 

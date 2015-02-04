@@ -24,6 +24,7 @@
 #cmakedefine HAVE_CTYPE_H
 #cmakedefine HAVE_INTTYPES_H
 #cmakedefine HAVE_MUTEX_RECURSIVE_NP
+#cmakedefine HAVE_IP6T_SO_ORIGINAL_DST
 #cmakedefine HAVE_LIBGEN_H
 
 #cmakedefine HAVE_PCRE

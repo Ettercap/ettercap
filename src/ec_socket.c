@@ -21,7 +21,6 @@
 
 #include <ec.h>
 #include <ec_signals.h>
-#include <ec_poll.h>
 #include <ec_socket.h>
 #include <ec_sleep.h>
 
@@ -69,51 +68,62 @@ void set_blocking(int s, int set)
  */
 int open_socket(const char *host, u_int16 port)
 {
-   struct hostent *infh;
-   struct sockaddr_in sa_in;
+   struct addrinfo *result, *res;
+   struct addrinfo hints;
    int sh, ret, err = 0;
 #define TSLEEP (50*1000) /* 50 milliseconds */
    int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
+   char service[5+1];
 
    DEBUG_MSG("open_socket -- [%s]:[%d]", host, port);
 
-   /* prepare the structures */
-   memset((char*)&sa_in, 0, sizeof(sa_in));
-   sa_in.sin_family = AF_INET;
-   sa_in.sin_port = htons(port);
+   /* convert port number to string */
+   snprintf(service, 6, "%u", port);
+   
+   /* predefine TCP as socket type and protocol */
+   memset(&hints, 0, sizeof(struct addrinfo));
+   hints.ai_socktype = SOCK_STREAM;
 
-   /* resolve the hostname */
-   if ( (infh = gethostbyname(host)) != NULL )
-      memcpy(&sa_in.sin_addr, infh->h_addr, infh->h_length);
-   else {
-      if ( inet_aton(host, (struct in_addr *)&sa_in.sin_addr.s_addr) == 0 )
+   /* resolve hostname */
+   if ((ret = getaddrinfo(host, service, &hints, &result)) != 0) {
+      DEBUG_MSG("unable to resolve %s using getaddrinfo(): %s",
+            host, gai_strerror(ret));
          return -E_NOADDRESS;
    }
 
-   /* open the socket */
-   if ( (sh = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-      return -E_FATAL;
- 
-   /* set nonblocking socket */
-   set_blocking(sh, 0);
-  
-   do {
-      /* connect to the server */
-      ret = connect(sh, (struct sockaddr *)&sa_in, sizeof(sa_in));
-      
-      /* connect is in progress... */
-      if (ret < 0) {
-         err = GET_SOCK_ERRNO();
-         if (err == EINPROGRESS || err == EALREADY || err == EWOULDBLOCK || err == EAGAIN) {
-            /* sleep a quirk of time... */
-            DEBUG_MSG("open_socket: connect() retrying: %d", err);
-            ec_usleep(TSLEEP); /* 50000 microseconds */
-         }
-      } else { 
-         /* there was an error or the connect was successful */
-         break;
+   /* go though results and try to connect */
+   for (res = result; res != NULL; res = res->ai_next) {
+      /* open the socket */
+      if ( (sh = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0) {
+         freeaddrinfo(result);
+         return -E_FATAL;
       }
-   } while(loops--);
+    
+      /* set nonblocking socket */
+      set_blocking(sh, 0);
+     
+      do {
+         /* connect to the server */
+         ret = connect(sh, res->ai_addr, res->ai_addrlen);
+         
+         /* connect is in progress... */
+         if (ret < 0) {
+            err = GET_SOCK_ERRNO();
+            if (err == EINPROGRESS || err == EALREADY || err == EWOULDBLOCK || err == EAGAIN) {
+               /* sleep a quirk of time... */
+               DEBUG_MSG("open_socket: connect() retrying: %d", err);
+               ec_usleep(TSLEEP); /* 50000 microseconds */
+            }
+         } else { 
+            /* there was an error or the connect was successful */
+            break;
+         }
+      } while(loops--);
+
+      /* if connected we skip other addresses */
+      if (ret == 0)
+         break;
+   }
  
    /* 
     * we cannot recall get_sock_errno because under windows
@@ -125,6 +135,7 @@ int open_socket(const char *host, u_int16 port)
    if (ret < 0 && (err == EINPROGRESS || err == EALREADY || err == EAGAIN)) {
       DEBUG_MSG("open_socket: connect() timeout: %d", err);
       close_socket(sh);
+      freeaddrinfo(result);
       return -E_TIMEOUT;
    }
 
@@ -132,6 +143,7 @@ int open_socket(const char *host, u_int16 port)
    if (ret < 0 && err != EISCONN) {
       DEBUG_MSG("open_socket: connect() error: %d", err);
       close_socket(sh);
+      freeaddrinfo(result);
       return -E_INVALID;
    }
       
@@ -142,6 +154,7 @@ int open_socket(const char *host, u_int16 port)
    
    
    DEBUG_MSG("open_socket: %d", sh);
+   freeaddrinfo(result);
    
    return sh;
 }

@@ -225,6 +225,8 @@ void drop_privs(void)
    else
       gid = GBL_CONF->ec_gid;
 
+   reset_logfile_owners(geteuid(), getegid(), uid, gid);
+
    DEBUG_MSG("drop_privs: setuid(%d) setgid(%d)", uid, gid);
 
    /* drop to a good uid/gid ;) */

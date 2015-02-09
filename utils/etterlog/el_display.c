@@ -123,7 +123,8 @@ static void display_packet(void)
          set_color(color);
       }
       
-      /* print it */
+      /* sync steram/descriptor output and print the packet */
+      fflush(stdout);
       write(fileno(stdout), tmp, ret);
       
       if (GBL_OPTIONS->color) 
@@ -134,7 +135,7 @@ static void display_packet(void)
    }
 
    if (!GBL_OPTIONS->no_headers)
-      write(fileno(stdout), "\n\n", 2);
+      fprintf(stdout, "\n\n");
    
    return;
 }

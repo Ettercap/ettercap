@@ -58,6 +58,10 @@ struct ec_conf {
    struct curses_color colors;
    char *redir_command_on;
    char *redir_command_off;
+#ifdef WITH_IPV6
+   char *redir6_command_on;
+   char *redir6_command_off;
+#endif
    char *remote_browser;
    char *utf8_encoding;
    char *geoip_data_file;

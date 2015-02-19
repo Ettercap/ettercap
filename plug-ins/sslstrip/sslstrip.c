@@ -458,55 +458,77 @@ static void Find_Url(u_char *to_parse, char **ret)
 static int http_insert_redirect(u_int16 dport)
 {
    char asc_dport[16];
-   int ret_val = 0;
+   int i, ret_val = 0;
    char *command;
-   char *param[4];
+   char *param[4], *commands[2] = {NULL, NULL};
 
    if (GBL_CONF->redir_command_on == NULL)
    {
       USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
       return -E_FATAL;
    }
-   snprintf(asc_dport, 16, "%u", dport);
-
-   command = strdup(GBL_CONF->redir_command_on);
-   str_replace(&command, "%iface", GBL_OPTIONS->iface);
-   str_replace(&command, "%port", "80");
-   str_replace(&command, "%rport", asc_dport);
-#if defined(OS_DARWIN) || defined(OS_BSD)
-   str_replace(&command, "%set", SSLSTRIP_SET);
-#endif
-
-   DEBUG_MSG("http_insert_redirect: [%s]", command);
-
-   /* construct the params array for execvp */
-   param[0] = "sh";
-   param[1] = "-c";
-   param[2] = command;
-   param[3] = NULL;
-
-   switch(fork()) {
-      case 0:
-         regain_privs();
-         execvp(param[0], param);
-         drop_privs();
-         WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-         SAFE_FREE(command);
-         _exit(-E_INVALID);
-      case -1:
-         SAFE_FREE(command);
-         return -E_INVALID;
-      default:
-         wait(&ret_val);
-         if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
-             USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
-             SAFE_FREE(command);
-             return -E_INVALID;
-         }
-         break;
+   else {
+      commands[0] = strdup(GBL_CONF->redir_command_on);
    }
 
-   SAFE_FREE(command);
+#ifdef WITH_IPV6
+   /* execution of the redirect script for IPv6 is optional */
+   if (GBL_CONF->redir6_command_on == NULL)
+   {
+      WARN_MSG("SSLStrip: cannot setup the redirect for IPv6, did you uncomment the redir6_command_on in your etter.conf file?");
+   }
+   else {
+      commands[1] = strdup(GBL_CONF->redir6_command_on);
+   }
+#endif
+
+   snprintf(asc_dport, 16, "%u", dport);
+
+   for (i = 0; i < 2 && commands[i] != NULL; i++) {
+
+      command = commands[i];
+
+      str_replace(&command, "%iface", GBL_OPTIONS->iface);
+      str_replace(&command, "%port", "80");
+      str_replace(&command, "%rport", asc_dport);
+#if defined(OS_DARWIN) || defined(OS_BSD)
+      str_replace(&command, "%set", SSLSTRIP_SET);
+#endif
+
+      DEBUG_MSG("http_insert_redirect: [%s]", command);
+
+      /* construct the params array for execvp */
+      param[0] = "sh";
+      param[1] = "-c";
+      param[2] = command;
+      param[3] = NULL;
+
+      switch(fork()) {
+         case 0:
+            regain_privs();
+            execvp(param[0], param);
+            drop_privs();
+            WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
+            SAFE_FREE(command);
+            _exit(-E_INVALID);
+         case -1:
+            SAFE_FREE(command);
+            return -E_INVALID;
+         default:
+            wait(&ret_val);
+            if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
+               DEBUG_MSG("http_insert_redirect: child exited with non-zero return code: %d", 
+                     WEXITSTATUS(ret_val));
+               USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
+               SAFE_FREE(command);
+               return -E_INVALID;
+            }
+            break;
+      }
+
+      SAFE_FREE(command);
+
+   }
 
    return E_SUCCESS;
 }
@@ -514,9 +536,9 @@ static int http_insert_redirect(u_int16 dport)
 static int http_remove_redirect(u_int16 dport)
 {
    char asc_dport[16];
-   int ret_val = 0;
+   int i, ret_val = 0;
    char *command;
-   char *param[4];
+   char *param[4], *commands[2] = {NULL, NULL};
 
 
    if (GBL_CONF->redir_command_off == NULL)
@@ -524,46 +546,65 @@ static int http_remove_redirect(u_int16 dport)
       USER_MSG("SSLStrip: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
       return -E_FATAL;
    }
+   else {
+      commands[0] = strdup(GBL_CONF->redir_command_off);
+   }
+
+#ifdef WITH_IPV6
+   /* redirect script for IPv6 is optional */
+   if (GBL_CONF->redir6_command_off == NULL)
+   {
+      WARN_MSG("SSLStrip: cannot remove the redirect for IPv6, did you uncoment the redir6_command_off command in you etter.conf file?");
+   }
+   else {
+      commands[1] = strdup(GBL_CONF->redir6_command_off);
+   }
+#endif
 
    snprintf(asc_dport, 16, "%u", dport);
 
-   command = strdup(GBL_CONF->redir_command_off);
-   str_replace(&command, "%iface", GBL_OPTIONS->iface);
-   str_replace(&command, "%port", "80");
-   str_replace(&command, "%rport", asc_dport);
+   for (i = 0; i < 2 && commands[i] != NULL; i++) {
+
+      command = commands[i];
+
+      str_replace(&command, "%iface", GBL_OPTIONS->iface);
+      str_replace(&command, "%port", "80");
+      str_replace(&command, "%rport", asc_dport);
 #if defined(OS_DARWIN) || defined(OS_BSD)
-   str_replace(&command, "%set", SSLSTRIP_SET);
+      str_replace(&command, "%set", SSLSTRIP_SET);
 #endif
-   DEBUG_MSG("http_remove_redirect: [%s]", command);
+      DEBUG_MSG("http_remove_redirect: [%s]", command);
 
-   /* construct the params array for execvp */
-   param[0] = "sh";
-   param[1] = "-c";
-   param[2] = command;
-   param[3] = NULL;
+      /* construct the params array for execvp */
+      param[0] = "sh";
+      param[1] = "-c";
+      param[2] = command;
+      param[3] = NULL;
 
-   switch(fork()) {
-      case 0:
-         regain_privs();
-         execvp(param[0], param);
-         drop_privs();
-         WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-         SAFE_FREE(command);
-         _exit(-E_INVALID);
-      case -1:
-         SAFE_FREE(command);
-         return -E_INVALID;
-      default:
-         wait(&ret_val);
-         if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
-            USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
+      switch(fork()) {
+         case 0:
+            regain_privs();
+            execvp(param[0], param);
+            drop_privs();
+            WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
+            SAFE_FREE(command);
+            _exit(-E_INVALID);
+         case -1:
             SAFE_FREE(command);
             return -E_INVALID;
-         }
-         break;
-   }
+         default:
+            wait(&ret_val);
+            if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
+               USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
+               SAFE_FREE(command);
+               return -E_INVALID;
+            }
+            break;
+      }
 
-   SAFE_FREE(command);
+      SAFE_FREE(command);
+
+   }
 
    return E_SUCCESS;
 }

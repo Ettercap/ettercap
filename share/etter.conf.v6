@@ -183,9 +183,9 @@ geoip_data_file_v6 = "/path/to/GeoIPv6.dat"
    #redir_command_on = "iptables -t nat -A PREROUTING -i %iface -p tcp --dport %port -j REDIRECT --to-port %rport"
    #redir_command_off = "iptables -t nat -D PREROUTING -i %iface -p tcp --dport %port -j REDIRECT --to-port %rport"
 
-# pendant for IPv6 - Note that you need iptables 1.4.16 or newer to use IPv6 redirect
-   #redir_command_on = "ip6tables -t nat -A PREROUTING -i %iface -p tcp --dport %port -j REDIRECT --to-port %rport"
-   #redir_command_off = "ip6tables -t nat -D PREROUTING -i %iface -p tcp --dport %port -j REDIRECT --to-port %rport"
+# pendant for IPv6 - Note that you need iptables v1.4.16 or newer to use IPv6 redirect
+   #redir6_command_on = "ip6tables -t nat -A PREROUTING -i %iface -p tcp --dport %port -j REDIRECT --to-port %rport"
+   #redir6_command_off = "ip6tables -t nat -D PREROUTING -i %iface -p tcp --dport %port -j REDIRECT --to-port %rport"
 
 #---------------
 #    Mac Os X

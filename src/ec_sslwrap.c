@@ -107,8 +107,8 @@ struct sslw_ident {
 };
 #define SSLW_IDENT_LEN sizeof(struct sslw_ident)
 
-#define SSLW_RETRY 5
-#define SSLW_WAIT 10 /* 10 seconds */
+#define SSLW_RETRY 500
+#define SSLW_WAIT 10 /* 10 milliseconds */
 
 #if defined(OS_DARWIN) || defined(OS_BSD)
 #define SSLW_SET "20"
@@ -789,7 +789,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
     * which creates the session, may be slower than this
     */
    for (i=0; i<SSLW_RETRY && session_get_and_del(&s, ident, SSLW_IDENT_LEN)!=E_SUCCESS; i++)
-      ec_usleep(SEC2MICRO(SSLW_WAIT));
+      ec_usleep(MILLI2MICRO(SSLW_WAIT));
 
    if (i==SSLW_RETRY) {
       SAFE_FREE(ident);

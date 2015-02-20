@@ -77,8 +77,8 @@
 
 #define REQUEST_TIMEOUT 120 /* If a request has not been used in 120 seconds, remove it from list */
 
-#define HTTP_RETRY 5
-#define HTTP_WAIT 10
+#define HTTP_RETRY 500
+#define HTTP_WAIT 10 /* milliseconds */
 
 #define PROTO_HTTP 1
 #define PROTO_HTTPS 2
@@ -721,7 +721,7 @@ static int http_get_peer(struct http_connection *connection)
 
    /* Wait for sniffing thread */
    for (i=0; i<HTTP_RETRY && session_get_and_del(&s, ident, HTTP_IDENT_LEN)!=E_SUCCESS; i++)
-   ec_usleep(SEC2MICRO(HTTP_WAIT));
+   ec_usleep(MILLI2MICRO(HTTP_WAIT));
 
    if (i==HTTP_RETRY) {
       SAFE_FREE(ident);

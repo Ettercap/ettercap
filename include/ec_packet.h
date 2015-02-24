@@ -55,14 +55,14 @@ struct packet_object {
        * buffer containing the data to be displayed.
        * some dissector decripts the traffic, but the packet must be forwarded as
        * is, so the decripted data must be placed in a different buffer. 
-       * this is that bufffer and it is malloced by tcp or udp dissector.
+       * this is that buffer and it is malloced by tcp or udp dissector.
        */
       size_t disp_len;
       u_char * disp_data;
       /* for modified packet this is the delta for the length */
       int delta;  
       size_t inject_len;      /* len of the injection */
-      u_char *inject;         /* the fuffer used for injection */
+      u_char *inject;         /* the buffer used for injection */
 
    } DATA;
 

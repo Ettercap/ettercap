@@ -375,7 +375,7 @@ PASSIVE SCANNING OF THE LAN
  by sniffing packets and extracting useful information from them.
  This scan will let you know the hosts in the lan (it watches ARP request), the
  Operating System of the hosts (it uses passive os fingerprint... see next
- section), the open ports of an host (looking the syn+ack packet), the gateway,
+ section), the open ports of an host (looking the SYN+ACK packet), the gateway,
  the routers or hosts acting as a router (it watches ICMP messages).
  As a passive method it is useless on a switched lan (because it can make a
  topology only of the host that are connecting to you), but if you put it on a
@@ -385,7 +385,7 @@ PASSIVE SCANNING OF THE LAN
 
 PASSIVE OS FINGERPRINT
 
- The main idea is to analyze the passive information coming form an host
+ The main idea is to analyze the passive information coming from a host
  when it makes or receives connections with other hosts. This information
  is enough to detect the OS and the running services of the host.
  In this scenario, we look at SYN and SYN+ACK packet and collect some
@@ -398,7 +398,7 @@ PASSIVE OS FINGERPRINT
  NOP: if the TCP options contain a NOP
  DF: the IP header field Don't Fragment
  TIMESTAMP: if the TCP timestamp option is enabled
- and obviously the type of the packet (syn or syn+ack)
+ and obviously the type of the packet (SYN or SYN+ACK)
 
  The database contains different fingerprints for each type of packet
  because some OSes have different fingerprints from SYN to SYN+ACK.
@@ -407,15 +407,15 @@ PASSIVE OS FINGERPRINT
  have the SACK option even if the host support it). So while collecting
  information off the lan, if we receive a SYN+ACK we mark the OS of that
  host as temporary and when we receive a SYN we confirm that.
- Fingerprint ending with an ":A" are less reliable... this is the reason
+ Fingerprints ending with an ":A" are less reliable... this is 
  because some OS identification may change during the gathering process.
 
- The SYN+ACK packets are used also to discover the open ports of an host.
+ The SYN+ACK packets are also used to discover the open ports of a host.
  (see next section)
 
  The interesting thing is that firewalls, gateways and NAT are transparent to
  passive OS detection. So collecting info for the LAN will let you know info
- even for remote host. Only proxies aren't transparent because they make a
+ even for remote hosts. Only proxies aren't transparent because they make a
  new connection to the target.
 
  Our fingerprint database has to be enlarged, so if you find a host with an
@@ -426,12 +426,12 @@ PASSIVE OS FINGERPRINT
 
 OPEN PORTS
 
- Open ports are identified by looking for stn+ack packets.
- If a syn+ack comes form a port, it is for sure open, except for the
- channel command of FTP protocol, for that reason syn+ack going to port 20
+ Open ports are identified by looking for SYN+ACK packets.
+ If a SYN+ACK comes from a port, it is for sure open, except for the
+ channel command of FTP protocol, for that reason SYN+ACK going to port 20
  are not used to indicate a open port.
- For the udp ports the question is a little bit difficult because no syn or
- ack packet are present in the udp protocol, so ettercap assumes that a udp
+ For the udp ports the question is a little bit difficult because no SYN or
+ ACK packet are present in the udp protocol, so ettercap assumes that a udp
  port < 1024 that sends packets is opened. We know that in this way we cannot
  discover open ports > 1024 but they can go undetected as open when a client
  sends packet to a server.

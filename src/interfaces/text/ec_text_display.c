@@ -72,7 +72,7 @@ void text_print_packet(struct packet_object *po)
    /* print the headers */
    display_headers(po);
    
-   /* sync steram/descriptor output and print the packet */
+   /* sync stream/descriptor output and print the packet */
    fflush(stdout);
    write(fileno(stdout), tmp, ret);
 }     

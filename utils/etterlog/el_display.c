@@ -123,7 +123,7 @@ static void display_packet(void)
          set_color(color);
       }
       
-      /* sync steram/descriptor output and print the packet */
+      /* sync stream/descriptor output and print the packet */
       fflush(stdout);
       write(fileno(stdout), tmp, ret);
       

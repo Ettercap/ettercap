@@ -339,7 +339,7 @@ static void log_info(struct packet_object *po)
 
 /*
  * initialize the log file with 
- * the propre header
+ * the proper header
  */
 
 int log_write_header(struct log_fd *fd, int type)

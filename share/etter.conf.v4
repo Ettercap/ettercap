@@ -223,7 +223,7 @@ remote_browser = "xdg-open http://%host%url"
 #---------------
 
 # unfortunately the pfctl command does not accepts direct rules adding
-# you have to use a script wich executed the following command:
+# you have to use a script which executed the following command:
 
  # ----- cut here -------
  #   #!/bin/sh

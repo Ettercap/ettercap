@@ -468,7 +468,7 @@ static void scan_ip6_onlink(void)
        * ping to all-nodes from all ip addresses to get responses from all 
        * IPv6 networks (global, link-local, ...)
        */
-      send_icmp6_echo(&e->ip, &an);
+      send_L2_icmp6_echo(&e->ip, &an, LLA_IP6_ALLNODES_MULTICAST);
 
 #if EC_CHECK_LIBNET_VERSION(1,2)
       /*
@@ -477,7 +477,8 @@ static void scan_ip6_onlink(void)
        * since libnet < 1.2 has a bug when sending IPv6 option headers
        * we can only use this type of probe if we have at least libnet 1.2 or above
        */
-      send_icmp6_echo_opt(&e->ip, &an, IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN));
+      send_L2_icmp6_echo_opt(&e->ip, &an,
+            IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN), LLA_IP6_ALLNODES_MULTICAST);
 #endif
    }
 
@@ -519,6 +520,7 @@ static void scan_targets(void)
 #ifdef WITH_IPV6
    struct ip_addr ip;
    struct ip_addr sn;
+   u_int8 tmac[MEDIA_ADDR_LEN];
 #endif
 
    DEBUG_MSG("scan_targets: merging targets...");
@@ -615,8 +617,8 @@ static void scan_targets(void)
 #ifdef WITH_IPV6
          case AF_INET6:
             if (ip_addr_is_local(&e->ip, &ip) == E_SUCCESS) {
-               ip_addr_init_sol(&sn, &e->ip);
-               send_icmp6_nsol(&ip, &sn, &e->ip, GBL_IFACE->mac);
+               ip_addr_init_sol(&sn, &e->ip, tmac);
+               send_L2_icmp6_nsol(&ip, &sn, &e->ip, GBL_IFACE->mac, tmac);
             }
             break;
 #endif

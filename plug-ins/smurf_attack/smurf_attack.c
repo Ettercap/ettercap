@@ -116,7 +116,7 @@ static EC_THREAD_FUNC(smurfer)
          break;
 #ifdef WITH_IPV6
       case AF_INET6:
-         icmp_send = send_icmp6_echo;
+         icmp_send = send_L3_icmp6_echo;
          ips = (struct ip_list_t *)&GBL_TARGET2->ip6;
          break;
 #endif

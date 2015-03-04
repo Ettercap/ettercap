@@ -156,15 +156,18 @@ int ip_addr_random(struct ip_addr* ip, u_int16 type)
 }
 
 /*
- * initialize a solicited-node address from a given ip address.
- * returns E_SUCCESS on success or -E_INVALID in case of a 
- * unsupported address familily (actually only IPv6 is supported)
+ * initialize a solicited-node IPv6 and link-layer address from a
+ * given ip address.
+ *
+ * returns E_SUCCESS on success or -E_INVALID in case of a unsupported
+ * address familily (actually only IPv6 is supported)
  */
-int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip)
+int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip, u_int8 *tmac)
 {
    switch (ntohs(ip->addr_type)) {
       case AF_INET:
          (void) sn;
+         (void) tmac;
          /* not applicable for IPv4 */
       break;
 #ifdef WITH_IPV6
@@ -176,6 +179,15 @@ int ip_addr_init_sol(struct ip_addr* sn, struct ip_addr* ip)
           */
          ip_addr_init(sn, AF_INET6, (u_char*)IP6_SOL_NODE);
          memcpy((sn->addr + 13), (ip->addr + 13), 3);
+
+         /*
+          * initialize the MAC address derived from the solicited
+          * node multicast IPv6 address by overwriting the tailing
+          * 32-bit of the all-nodes link-layer multicast address for IPv6
+          */
+         memcpy(tmac, LLA_IP6_ALLNODES_MULTICAST, MEDIA_ADDR_LEN);
+         memcpy((tmac + 2), (sn->addr + 12), 4);
+
 
          return E_SUCCESS;
       break;

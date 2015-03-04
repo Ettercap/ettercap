@@ -91,7 +91,11 @@ static void display_headers(struct packet_object *po)
    memset(proto, 0, sizeof(proto));   
 
    /* display the date. ec_ctime() has no newline at end. */
+#if defined OS_DARWIN
+   fprintf(stdout, "\n\n%s [%d]\n", ec_ctime(&po->ts), po->ts.tv_usec);
+#else
    fprintf(stdout, "\n\n%s [%lu]\n", ec_ctime(&po->ts), po->ts.tv_usec);
+#endif
 
    if (GBL_OPTIONS->ext_headers) {
       /* display the mac addresses */

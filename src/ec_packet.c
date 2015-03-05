@@ -42,7 +42,7 @@ struct packet_object* packet_allocate_object(u_char *data, u_int len)
  * associate the buffer to the packet object
  */
 
-inline int packet_create_object(struct packet_object *po, u_char *buf, u_int len)
+int packet_create_object(struct packet_object *po, u_char *buf, u_int len)
 {
    /* clear the memory */
    memset(po, 0, sizeof(struct packet_object));
@@ -84,7 +84,7 @@ int packet_disp_data(struct packet_object *po, u_char *buf, u_int len)
  * free the packet object memory
  */
 
-inline int packet_destroy_object(struct packet_object *po)
+int packet_destroy_object(struct packet_object *po)
 {
    
    /* 

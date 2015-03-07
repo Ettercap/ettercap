@@ -197,8 +197,10 @@ EC_THREAD_FUNC(ndp_poisoner)
       }
 
       /* first warm up then release poison frequency */
-      if (i < 5) 
+      if (i < 5) {
+         i++;
          ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_warm_up));
+      }
       else 
          ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_delay));
 

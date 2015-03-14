@@ -5,6 +5,39 @@ Legend:
          !! bug fixed
 
 =========================================
+0.8.2-Ferri   20150314
+   !! Fixed some openssl deprecated functions usage
+   !! Fixed log file ownership
+   !! Fixed mixed output print
+   !! Fixed drop_privs function usage
+   !! Fixed nopromisc option usage
+   !! Fixed missing break in parser code
+   !! Improved redirect commands
+   !! Fix truncated VLAN packet headers
+   !! Fix ettercap.rc file (windows only)
+   !! Various cmake fixes
+   !! A ton of BSD bug fixes
+   !! Simplify macosx cmake files
+   !! Fix incorrect sequence number after TCP injection
+   !! Fix pcap length, and aligment problems with libpcap
+   !! Bug fixes and gtk code refactor (gtk box wrapper)
+   !! Fix some ipv6 send issues
+   !! Fixed sleep time on Windows (high CPU usage)
+   !! Fixed many CVE vulnerabilities (some of them already fixed in 0.8.1)
+    - CVE-2014-6395 (Length Parameter Inconsistency)
+    - CVE-2014-6396 (Arbitrary write)
+    - CVE-2014-9376 (Negative index/underflow)
+    - CVE-2014-9377 (Heap overflow)
+    - CVE-2014-9378 (Unchecked return value)
+    - CVE-2014-9379 (Incorrect cast)
+    - CVE-2014-9380 (Buffer over-read)
+    - CVE-2014-9381 (Signedness error)
+    + Updated etter.finger.mac
+    + Add TXT and ANY query support on dns_spoof
+    + New macosx travis-ci build!
+    + Enable again PDF generation
+    - Remove gprof support
+
 0.8.1-Lombroso 20141016
    !! Fixed incorrect checksum computation on 64-bit systems
    !! Fixed DNS resolution problems

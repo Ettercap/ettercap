@@ -274,6 +274,14 @@ void resolv_cache_insert_passive(struct ip_addr *ip, char *name)
    char thread_name[MAX_ASCII_ADDR_LEN + 14 + 2 + 1];
    char tmp[MAX_ASCII_ADDR_LEN];
 
+   /*
+    * if the entry is already present in the cache
+    * we don't need to insert it again - avoid duplicate
+    * DNS replies
+    */
+   if (resolv_cache_search(ip, name) == E_SUCCESS)
+      return;
+
    /* store params in one resolv_entry struct to be passed to the thread */
    memcpy(&r.ip, ip, sizeof(r.ip));
    r.hostname = name;

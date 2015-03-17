@@ -54,6 +54,12 @@
       - decryption with given keys
       - DES support
 
+   + name resolution flood prevention
+      - too many name resolutions (especially in passive mode)
+        can lead to exhaust stack memory
+      - all name resolution and cache insertions should be handled
+        only by a couple of threads 
+
 ==================
   LONG TERM TODO
 ==================

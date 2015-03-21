@@ -84,14 +84,16 @@ static void toggle_resolve(void)
    if (GBL_OPTIONS->resolve) {
       tag_resolve[0] = ' ';
       GBL_OPTIONS->resolve = 0;
+      resolv_thread_fini();
       return;
    } 
    
    DEBUG_MSG("toggle_resolve: activate name resolution");
 
-   /* set the option */
+   /* set the option and activate resolution threads */
    tag_resolve[0] = '*';
    GBL_OPTIONS->resolve = 1;
+   resolv_thread_init();
    
    /* run through the current hosts list and trigger resolution */
    LIST_FOREACH(hl, &GBL_HOSTLIST, next) {

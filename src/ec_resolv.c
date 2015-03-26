@@ -65,7 +65,6 @@ struct resolv_entry {
 };
 
 /* protos */
-EC_THREAD_FUNC(resolv_passive);
 EC_THREAD_FUNC(resolv_thread_main);
 static int resolv_dns(struct ip_addr *ip, char *hostname);
 static int resolv_cache_search(struct ip_addr *ip, char *name);
@@ -403,57 +402,10 @@ void resolv_cache_insert(struct ip_addr *ip, char *name)
  */
 void resolv_cache_insert_passive(struct ip_addr *ip, char *name)
 {
-   struct resolv_entry r;
-   char thread_name[MAX_ASCII_ADDR_LEN + 14 + 2 + 1];
-   char tmp[MAX_ASCII_ADDR_LEN];
-
-   /* store params in one resolv_entry struct to be passed to the thread */
-   memcpy(&r.ip, ip, sizeof(r.ip));
-   r.hostname = name;
-
-   /* create a new thread to write into the cache */
-   ip_addr_ntoa(ip, tmp);
-   snprintf(thread_name, sizeof(thread_name), "resolv_passive[%s]", tmp);
-   ec_thread_new(thread_name, "DNS resolver", &resolv_passive, &r);
-
-}
-
-/*
- * thread to insert into name cache
- * the threaded approach unblocks the dissector from waiting
- * for the lock to write the cache
- */
-EC_THREAD_FUNC(resolv_passive)
-{
-   struct resolv_entry *r;
-   struct ip_addr ip;
-   char hostname[MAX_HOSTNAME_LEN];
-   char tmp[MAX_ASCII_ADDR_LEN];
-   pthread_t pid;
-
-   r = EC_THREAD_PARAM;
-
-   /* copy param value to stack to avoid race conditions */
-   memcpy(&ip, &r->ip, sizeof(ip));
-   memcpy(hostname, r->hostname, sizeof(hostname));
-
-   ec_thread_init();
-
-   DEBUG_MSG("resolv_passive: inserting %s -> %s into name cache",
-         ip_addr_ntoa(&ip, tmp), hostname);
-
    /* wait for mutex and write cache entry */
    RESOLVC_LOCK;
-   resolv_cache_insert(&ip, hostname);
+   resolv_cache_insert(ip, name);
    RESOLVC_UNLOCK;
-
-   /* work done - self destroy thread */
-   pid = pthread_self();
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
-      ec_thread_destroy(pid);
-
-   /* only reached if not threaded */
-   return NULL;
 }
 
 /*

@@ -23,6 +23,11 @@
 #include <ec_resolv.h>
 #include <ec_hash.h>
 #include <ec_threads.h>
+#ifdef SIGUSR1
+#include <ec_signals.h>
+#else
+#include <ec_sleep.h>
+#endif
 
 #ifndef OS_WINDOWS
    #include <netdb.h>
@@ -33,12 +38,25 @@
 #define TABMASK   (TABSIZE-1) /* to mask fnv_1 hash algorithm */
 
 /* globals */
-static pthread_mutex_t resolv_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define RESOLV_LOCK do{pthread_mutex_lock(&resolv_mutex);}while(0)
-#define RESOLV_UNLOCK do{pthread_mutex_unlock(&resolv_mutex);}while(0)
+static pthread_mutex_t resolvc_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define RESOLVC_LOCK do{pthread_mutex_lock(&resolvc_mutex);}while(0)
+#define RESOLVC_UNLOCK do{pthread_mutex_unlock(&resolvc_mutex);}while(0)
 
+static pthread_mutex_t resolvq_mutex = PTHREAD_MUTEX_INITIALIZER;
+#define RESOLVQ_LOCK do{pthread_mutex_lock(&resolvq_mutex);}while(0)
+#define RESOLVQ_UNLOCK do{pthread_mutex_unlock(&resolvq_mutex);}while(0)
 
+#define NUM_RESOLV_THREADS 3
+#define MAX_RESOLVQ_LEN    512
+pthread_t resolv_threads[NUM_RESOLV_THREADS];
+
+static STAILQ_HEAD(, queue_entry) resolv_queue_head;
 static SLIST_HEAD(, resolv_entry) resolv_cache_head[TABSIZE];
+
+struct queue_entry {
+   struct ip_addr ip;
+   STAILQ_ENTRY(queue_entry) next;
+};
 
 struct resolv_entry {
    struct ip_addr ip;
@@ -47,10 +65,12 @@ struct resolv_entry {
 };
 
 /* protos */
-EC_THREAD_FUNC(resolv_dns);
-EC_THREAD_FUNC(resolv_passive);
+EC_THREAD_FUNC(resolv_thread_main);
+static int resolv_dns(struct ip_addr *ip, char *hostname);
 static int resolv_cache_search(struct ip_addr *ip, char *name);
 void resolv_cache_insert(struct ip_addr *ip, char *name);
+static int resolv_queue_push(struct ip_addr *ip);
+static int resolv_queue_pop(struct ip_addr *ip);
 
 /************************************************/
 
@@ -69,9 +89,12 @@ void resolv_cache_insert(struct ip_addr *ip, char *name);
 
 int host_iptoa(struct ip_addr *ip, char *name)
 {
+#ifdef SIGUSR1
+   int i;
+#endif
+   int ret = 0;
    char tmp[MAX_ASCII_ADDR_LEN];
-   char thread_name[MAX_ASCII_ADDR_LEN + 6 + 2 + 1];
-   
+
    /* initialize the name */
    strncpy(name, "", 1);
   
@@ -108,76 +131,185 @@ int host_iptoa(struct ip_addr *ip, char *name)
     * Including mDNS enriches the results but heavily delays if 
     * many hosts are online on the link.
     */
-   snprintf(thread_name, sizeof(thread_name), "resolv[%s]", tmp);
-   ec_thread_new(thread_name, "DNS resolver", &resolv_dns, ip);
+   RESOLVQ_LOCK;
+   ret = resolv_queue_push(ip);
+   RESOLVQ_UNLOCK;
+
+#ifdef SIGUSR1
+   /* Sending signal of updated resolv queue to all resolv threads */
+   if (ret == E_SUCCESS)
+      for (i = 0; i < NUM_RESOLV_THREADS; i++)
+         pthread_kill(resolv_threads[i], SIGUSR1);
+#endif
 
    return -E_NOMATCH;
 }
 
-/* 
- * perform the ip to name resolution as a dedicated thread per IP.
- * In any case the name cache is updated so that a second call of
- * of host_iptoa() gets a result.
+/*
+ * initialize <NUM_RESOLV_THREADS> number of threads
+ * acting as the working horses for the IP to name
+ * resolution in the background
  */
-EC_THREAD_FUNC(resolv_dns)
+void resolv_thread_init(void)
+{
+   int i;
+   char thread_name[16]; 
+
+   DEBUG_MSG("resolv_thread_init()");
+
+   /* initialize queue */
+   STAILQ_INIT(&resolv_queue_head);
+
+   /* spawn resolution worker threads */
+   for (i = 0; i < NUM_RESOLV_THREADS; i++) {
+      snprintf(thread_name, sizeof(thread_name), "resolver-%d", i+1);
+      resolv_threads[i] = ec_thread_new(thread_name, "DNS resolver", 
+            &resolv_thread_main, NULL);
+   }
+}
+
+/*
+ * gracefully shut down name resolution threads:
+ * - destroy all created threads
+ * - flush and free resolv queue completely
+ */
+void resolv_thread_fini(void)
+{
+   int i;
+   struct queue_entry *entry;
+
+   DEBUG_MSG("resolv_thread_fini()");
+
+   /* destroy resolution worker threads */
+   for (i = 0; i < NUM_RESOLV_THREADS; i++)
+      /* check if thread exists */
+      if (strcmp(ec_thread_getname(resolv_threads[i]), "NR_THREAD"))
+         /* send cancel signal to thread */
+         ec_thread_destroy(resolv_threads[i]);
+   
+   /* empty queue and free allocated memory if applicable */
+   RESOLVQ_LOCK;
+   while (!STAILQ_EMPTY(&resolv_queue_head)) {
+      entry = STAILQ_FIRST(&resolv_queue_head);
+      STAILQ_REMOVE_HEAD(&resolv_queue_head, entry, next);
+      SAFE_FREE(entry);
+   }
+   RESOLVQ_UNLOCK;
+}
+
+/*
+ * this function the resolution threads wait in this function
+ * until a IP address is to be resolved and inserted into the 
+ * name cache. With many IP hosts on the link, the number of
+ * parallel threads can be increased by NUM_RESOLV_THREADS.
+ */
+EC_THREAD_FUNC(resolv_thread_main)
 {
    struct ip_addr ip;
+   char host[MAX_HOSTNAME_LEN];
+   char tmp[MAX_ASCII_ADDR_LEN];
+   int ret = 0;
+#ifdef SIGUSR1
+   int sig;
+   sigset_t sigmask;
+#endif
+
+   /* variable not used */
+   (void) EC_THREAD_PARAM;
+
+   /* init the thread */
+   ec_thread_init();
+
+#ifdef SIGUSR1
+   /* initialize signal mask non-blocking */
+   sigfillset(&sigmask);
+   pthread_sigmask(SIG_UNBLOCK, &sigmask, NULL);
+#endif
+
+   /* wait for something to do */
+   LOOP {
+      /* provide the chance to cancel the thread */
+      CANCELLATION_POINT();
+
+      /* check if something is in the queue */
+      RESOLVQ_LOCK;
+      ret = resolv_queue_pop(&ip);
+      RESOLVQ_UNLOCK;
+
+      /* nothing to do - booring !! */
+      if (ret != E_SUCCESS) {
+         /* wait if something new comes in to do */
+#ifdef SIGUSR1
+         while (sigwait(&sigmask, &sig) == 0)
+            if (sig == SIGUSR1)
+               break;
+#else
+         ec_usleep(SEC2MICRO(1));
+#endif
+         /* broke off waiting - start over checking the queue */
+         continue;
+      }
+
+      /*
+       * yeah, we got something to do - lets rock..... 
+       * In any case the name cache is updated so that a second call of
+       * of host_iptoa() gets a result.
+       */
+      if (resolv_dns(&ip, host)) {
+         /* 
+          * insert the "" in the cache so we don't search for
+          * non existent hosts every new query.
+          */
+         DEBUG_MSG("resolv_dns: not found for %s", 
+               ip_addr_ntoa(&ip, tmp));
+
+         RESOLVC_LOCK;
+         resolv_cache_insert(&ip, "");
+         RESOLVC_UNLOCK;
+      } else {
+         DEBUG_MSG("resolv_dns: %s found for %s", host, 
+               ip_addr_ntoa(&ip, tmp));
+
+         /* insert the result in the cache for later use */
+         RESOLVC_LOCK;
+         resolv_cache_insert(&ip, host);
+         RESOLVC_UNLOCK;
+      }
+   }
+
+   return NULL;
+}
+
+/* 
+ * perform the ip to name resolution as a dedicated thread.
+ */
+static int resolv_dns(struct ip_addr *ip, char *hostname)
+{
    struct sockaddr_storage ss;
    struct sockaddr_in *sa4;
    struct sockaddr_in6 *sa6;
-   char host[MAX_HOSTNAME_LEN];
-   char tmp[MAX_ASCII_ADDR_LEN];
-   pthread_t pid;
-
-   /* immediatelly copy data avoiding race conditions */
-   memcpy(&ip, EC_THREAD_PARAM, sizeof(ip));
-
-   /* initialize the thread */
-   ec_thread_init();
+   socklen_t sa_len;
    
-   /* if not found in the cache, prepare struct and resolve it */
-   switch (ntohs(ip.addr_type)) {
+   /* prepare struct */
+   switch (ntohs(ip->addr_type)) {
       case AF_INET:
          sa4 = (struct sockaddr_in *)&ss;
          sa4->sin_family = AF_INET;
-         ip_addr_cpy((u_char*)&sa4->sin_addr.s_addr, &ip);
+         ip_addr_cpy((u_char*)&sa4->sin_addr.s_addr, ip);
+         sa_len = sizeof(struct sockaddr_in);
       break;
       case AF_INET6:
          sa6 = (struct sockaddr_in6 *)&ss;
          sa6->sin6_family = AF_INET6;
-         ip_addr_cpy((u_char*)&sa6->sin6_addr.s6_addr, &ip);
+         ip_addr_cpy((u_char*)&sa6->sin6_addr.s6_addr, ip);
+         sa_len = sizeof(struct sockaddr_in6);
       break;
    }
 
-   /* not found or error */
-   if (getnameinfo((struct sockaddr *)&ss, sizeof(struct sockaddr), 
-            host, MAX_HOSTNAME_LEN, NULL, 0, NI_NAMEREQD)) {
-      /* 
-       * insert the "" in the cache so we don't search for
-       * non existent hosts every new query.
-       */
-      DEBUG_MSG("resolv_dns: not found for %s", ip_addr_ntoa(&ip, tmp));
+   /* resolve */
+   return getnameinfo((struct sockaddr *)&ss, sa_len, 
+            hostname, MAX_HOSTNAME_LEN, NULL, 0, NI_NAMEREQD);
 
-      RESOLV_LOCK;
-      resolv_cache_insert(&ip, "");
-      RESOLV_UNLOCK;
-
-   } else {
-      DEBUG_MSG("resolv_dns: %s found for %s", host, ip_addr_ntoa(&ip, tmp));
-
-      /* insert the result in the cache for later use */
-      RESOLV_LOCK;
-      resolv_cache_insert(&ip, host);
-      RESOLV_UNLOCK;
-   }
-
-   /* work done - thread self destruction */
-   pid = pthread_self();
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
-      ec_thread_destroy(pid);
-
-   /* only reached if not threaded */
-   return NULL;
 }
 
 /*
@@ -270,59 +402,73 @@ void resolv_cache_insert(struct ip_addr *ip, char *name)
  */
 void resolv_cache_insert_passive(struct ip_addr *ip, char *name)
 {
-   struct resolv_entry r;
-   char thread_name[MAX_ASCII_ADDR_LEN + 14 + 2 + 1];
+   /* wait for mutex and write cache entry */
+   RESOLVC_LOCK;
+   resolv_cache_insert(ip, name);
+   RESOLVC_UNLOCK;
+}
+
+/*
+ * pushing a resolution request to the queue
+ */
+int resolv_queue_push(struct ip_addr *ip)
+{
+   struct queue_entry *entry;
    char tmp[MAX_ASCII_ADDR_LEN];
+   int i = 0;
 
-   /* store params in one resolv_entry struct to be passed to the thread */
-   memcpy(&r.ip, ip, sizeof(r.ip));
-   r.hostname = name;
+   /* avoid pushing duplicate IPs to the queue */
+   STAILQ_FOREACH(entry, &resolv_queue_head, next) {
+      if (!ip_addr_cmp(&entry->ip, ip))
+         return -E_DUPLICATE;
 
-   /* create a new thread to write into the cache */
-   ip_addr_ntoa(ip, tmp);
-   snprintf(thread_name, sizeof(thread_name), "resolv_passive[%s]", tmp);
-   ec_thread_new(thread_name, "DNS resolver", &resolv_passive, &r);
+      /* count queue length */
+      i++;
+   }
+
+   /* avoid memory exhaustion - limit queue length */
+   if (i >= MAX_RESOLVQ_LEN) {
+      DEBUG_MSG("resolv_queue_push(): maximum resolv queue length reached");
+      return -E_INVALID;
+   }
+
+   /* allocate memory for new queue entry and add to queue */
+   SAFE_CALLOC(entry, 1, sizeof(struct queue_entry));
+   memcpy(&entry->ip, ip, sizeof(struct ip_addr));
+
+   STAILQ_INSERT_TAIL(&resolv_queue_head, entry, next);
+
+   DEBUG_MSG("resolv_queue_push(): %s queued", ip_addr_ntoa(ip, tmp));
+
+   return E_SUCCESS;
 
 }
 
 /*
- * thread to insert into name cache
- * the threaded approach unblocks the dissector from waiting
- * for the lock to write the cache
+ * popping and returning a resolution request from the queue
  */
-EC_THREAD_FUNC(resolv_passive)
+int resolv_queue_pop(struct ip_addr *ip)
 {
-   struct resolv_entry *r;
-   struct ip_addr ip;
-   char hostname[MAX_HOSTNAME_LEN];
+   struct queue_entry *entry;
    char tmp[MAX_ASCII_ADDR_LEN];
-   pthread_t pid;
 
-   r = EC_THREAD_PARAM;
+   /* check if queue is emtpy */
+   if (STAILQ_EMPTY(&resolv_queue_head))
+      return -E_NOMATCH;
 
-   /* copy param value to stack to avoid race conditions */
-   memcpy(&ip, &r->ip, sizeof(ip));
-   memcpy(hostname, r->hostname, sizeof(hostname));
+   /* copy IP address to caller's memory */
+   entry = STAILQ_FIRST(&resolv_queue_head);
+   memcpy(ip, &entry->ip, sizeof(struct ip_addr));
 
-   ec_thread_init();
+   /* remove entry from queue and free memory */
+   STAILQ_REMOVE_HEAD(&resolv_queue_head, entry, next);
+   SAFE_FREE(entry);
 
-   DEBUG_MSG("resolv_passive: inserting %s -> %s into name cache",
-         ip_addr_ntoa(&ip, tmp), hostname);
+   DEBUG_MSG("resolv_queue_pop(): %s returned and removed from queue",
+         ip_addr_ntoa(ip, tmp));
 
-   /* wait for mutex and write cache entry */
-   RESOLV_LOCK;
-   resolv_cache_insert(&ip, hostname);
-   RESOLV_UNLOCK;
-
-   /* work done - self destroy thread */
-   pid = pthread_self();
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
-      ec_thread_destroy(pid);
-
-   /* only reached if not threaded */
-   return NULL;
+   return E_SUCCESS;
 }
-
 
 /* EOF */
 

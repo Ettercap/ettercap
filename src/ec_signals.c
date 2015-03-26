@@ -47,6 +47,7 @@ static handler_t *signal_handle(int signo, handler_t *handler, int flags);
 static void signal_SEGV(int sig);
 static void signal_TERM(int sig);
 static void signal_CHLD(int sig);
+static void signal_USR1(int sig);
 
 /*************************************/
 
@@ -87,6 +88,9 @@ void signal_handler(void)
 #endif
 #ifdef SIGTTIN
    signal_handle(SIGTTIN, SIG_IGN, 0);
+#endif
+#ifdef SIGUSR1
+   signal_handle(SIGUSR1, signal_USR1, 0);
 #endif
 }
 
@@ -244,6 +248,14 @@ static void signal_CHLD(int sig)
    /* wait for the child to return and not become a zombie */
    while (waitpid (-1, &stat, WNOHANG) > 0);
 #endif
+}
+
+static void signal_USR1(int sig)
+{
+   /* variable not used */
+   (void) sig;
+
+   /* nothing to do by signal handler */
 }
 
 /* EOF */

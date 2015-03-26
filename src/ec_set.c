@@ -221,6 +221,8 @@ void disable_sslmitm(void)
 void set_resolve(void)
 {
 	GBL_OPTIONS->resolve = 1;
+   resolv_thread_init();
+   atexit(resolv_thread_fini);
 }
 
 void set_load_hosts(char *file)

@@ -635,9 +635,17 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       /* determine the flags */
       conntrack_flagstr(c->co, flags, sizeof(flags));
       
-      snprintf(*desc, len, "%1s %15s:%-5d - %15s:%-5d %1s %s TX: %lu RX: %lu", flags, 
-                                           src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
-                                           proto, status, (unsigned long)c->co->tx, (unsigned long)c->co->rx);
+      strlen = snprintf(*desc, len, "%1s %15s:%-5d - %15s:%-5d %1s %s TX: %lu RX: %lu", 
+            flags, src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
+            proto, status, (unsigned long)c->co->tx, (unsigned long)c->co->rx);
+
+#ifdef WITH_GEOIP
+      if (len > strlen && len - strlen > 14 && GBL_CONF->geoip_support_enable) {
+         snprintf(*desc + strlen, len - strlen, ", CC: %2s > %2s", 
+               geoip_ccode_by_ip(&c->co->L3_addr1),
+               geoip_ccode_by_ip(&c->co->L3_addr2));
+      }
+#endif
    }
   
    /* return the next/prev/current to the caller */
@@ -799,6 +807,32 @@ int conntrack_statusstr(struct conn_object *conn, char *pstr, int len)
     return E_SUCCESS;
 }
 
+/*
+ * copies the country codes of a given connection object into pstr
+ * E_SUCCESS is returned on success
+ * -E_INVALID is returned if parameters are not initialized
+ * -E_INITFAIL if geoip API is not initialized properly
+ */
+int conntrack_countrystr(struct conn_object *conn, char *pstr, int len)
+{
+   const char *ccode_src, *ccode_dst = NULL;
+
+   if (pstr == NULL || conn == NULL)
+      return -E_INVALID;
+
+   if (!GBL_CONF->geoip_support_enable)
+      return -E_INITFAIL;
+
+   if ((ccode_src = geoip_ccode_by_ip(&conn->L3_addr1)) == NULL)
+      return -E_INITFAIL;
+
+   if ((ccode_dst = geoip_ccode_by_ip(&conn->L3_addr2)) == NULL)
+      return -E_INITFAIL;
+
+   snprintf(pstr, len, "%2s > %2s", ccode_src, ccode_dst);
+
+   return E_SUCCESS;
+}
 
 /* EOF */
 

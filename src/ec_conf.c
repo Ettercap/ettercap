@@ -179,6 +179,7 @@ static void init_structures(void)
    set_pointer(mitm, "ndp_poison_equal_mac", &GBL_CONF->ndp_poison_equal_mac);
    set_pointer(mitm, "icmp6_probe_delay", &GBL_CONF->icmp6_probe_delay);
 #endif
+
    set_pointer(connections, "connection_timeout", &GBL_CONF->connection_timeout);
    set_pointer(connections, "connection_idle", &GBL_CONF->connection_idle);
    set_pointer(connections, "connection_buffer", &GBL_CONF->connection_buffer);
@@ -284,7 +285,7 @@ void load_conf(void)
    }
   
    /* read the file */
-   while (fgets(line, 256, fc) != 0) {
+   while (fgets(line, sizeof(line), fc) != 0) {
       
       /* update the line count */
       lineno++;

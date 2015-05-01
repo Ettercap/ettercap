@@ -501,7 +501,7 @@ static gboolean refresh_connections(gpointer data)
 static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *conn, struct row_pairs **list) {
    GtkTreeIter iter;
    char flags[2], src[MAX_ASCII_ADDR_LEN], dst[MAX_ASCII_ADDR_LEN];
-   char proto[4], status[8];
+   char proto[4], status[8], ccodes[8];
    unsigned int src_port = 0, dst_port = 0, tx = 0, rx = 0;
    struct row_pairs *row = NULL;
 
@@ -516,11 +516,13 @@ static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *con
    memset(&src, 0, sizeof(src));
    memset(&dst, 0, sizeof(dst));
    memset(&status, 0, sizeof(status));
+   memset(&ccodes, 0, sizeof(ccodes));
 
    /* copy data from conntrack_print string */
    conntrack_flagstr(co, flags, sizeof(flags));
    conntrack_statusstr(co, status, sizeof(status));
    conntrack_protostr(co, proto, sizeof(proto));
+   conntrack_countrystr(co, ccodes, sizeof(ccodes));
 
    ip_addr_ntoa(&co->L3_addr1, src);
    ip_addr_ntoa(&co->L3_addr2, dst);

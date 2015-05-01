@@ -122,14 +122,14 @@ static struct conf_entry dissectors[] = {
 };
 
 static struct conf_section sections[] = {
-   { "privs", (struct conf_entry *)&privs},
-   { "mitm", (struct conf_entry *)&mitm},
-   { "connections", (struct conf_entry *)&connections},
-   { "stats", (struct conf_entry *)&stats},
-   { "misc", (struct conf_entry *)&misc},
-   { "dissectors", (struct conf_entry *)&dissectors},
-   { "curses", (struct conf_entry *)&curses},
-   { "strings", (struct conf_entry *)&strings},
+   { "privs", privs},
+   { "mitm", mitm},
+   { "connections", connections},
+   { "stats", stats},
+   { "misc", misc},
+   { "dissectors", dissectors},
+   { "curses", curses},
+   { "strings", strings},
    { NULL, NULL },
 };
 
@@ -137,7 +137,7 @@ static struct conf_section sections[] = {
 /* protos */
 
 static void init_structures(void);
-static void set_pointer(struct conf_entry *entry, char *name, void *ptr);
+static void set_pointer(struct conf_entry *entry, const char *name, void *ptr);
 static void sanity_checks(void);
 
 static void set_dissector(char *name, char *values, int lineno);
@@ -158,26 +158,26 @@ static void init_structures(void)
    
    DEBUG_MSG("init_structures");
    
-   set_pointer((struct conf_entry *)&privs, "ec_uid", &GBL_CONF->ec_uid);
-   set_pointer((struct conf_entry *)&privs, "ec_gid", &GBL_CONF->ec_gid);
-   set_pointer((struct conf_entry *)&mitm, "arp_storm_delay", &GBL_CONF->arp_storm_delay);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_smart", &GBL_CONF->arp_poison_smart);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_icmp", &GBL_CONF->arp_poison_icmp);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_reply", &GBL_CONF->arp_poison_reply);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_request", &GBL_CONF->arp_poison_request);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_equal_mac", &GBL_CONF->arp_poison_equal_mac);
-   set_pointer((struct conf_entry *)&mitm, "dhcp_lease_time", &GBL_CONF->dhcp_lease_time);
-   set_pointer((struct conf_entry *)&mitm, "port_steal_delay", &GBL_CONF->port_steal_delay);
-   set_pointer((struct conf_entry *)&mitm, "port_steal_send_delay", &GBL_CONF->port_steal_send_delay);
+   set_pointer(privs, "ec_uid", &GBL_CONF->ec_uid);
+   set_pointer(privs, "ec_gid", &GBL_CONF->ec_gid);
+   set_pointer(mitm, "arp_storm_delay", &GBL_CONF->arp_storm_delay);
+   set_pointer(mitm, "arp_poison_smart", &GBL_CONF->arp_poison_smart);
+   set_pointer(mitm, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
+   set_pointer(mitm, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
+   set_pointer(mitm, "arp_poison_icmp", &GBL_CONF->arp_poison_icmp);
+   set_pointer(mitm, "arp_poison_reply", &GBL_CONF->arp_poison_reply);
+   set_pointer(mitm, "arp_poison_request", &GBL_CONF->arp_poison_request);
+   set_pointer(mitm, "arp_poison_equal_mac", &GBL_CONF->arp_poison_equal_mac);
+   set_pointer(mitm, "dhcp_lease_time", &GBL_CONF->dhcp_lease_time);
+   set_pointer(mitm, "port_steal_delay", &GBL_CONF->port_steal_delay);
+   set_pointer(mitm, "port_steal_send_delay", &GBL_CONF->port_steal_send_delay);
 #ifdef WITH_IPV6
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_warm_up", &GBL_CONF->ndp_poison_warm_up);
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_delay", &GBL_CONF->ndp_poison_delay);
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_send_delay", &GBL_CONF->ndp_poison_send_delay);
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_icmp", &GBL_CONF->ndp_poison_icmp);
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_equal_mac", &GBL_CONF->ndp_poison_equal_mac);
-   set_pointer((struct conf_entry *)&mitm, "icmp6_probe_delay", &GBL_CONF->icmp6_probe_delay);
+   set_pointer(mitm, "ndp_poison_warm_up", &GBL_CONF->ndp_poison_warm_up);
+   set_pointer(mitm, "ndp_poison_delay", &GBL_CONF->ndp_poison_delay);
+   set_pointer(mitm, "ndp_poison_send_delay", &GBL_CONF->ndp_poison_send_delay);
+   set_pointer(mitm, "ndp_poison_icmp", &GBL_CONF->ndp_poison_icmp);
+   set_pointer(mitm, "ndp_poison_equal_mac", &GBL_CONF->ndp_poison_equal_mac);
+   set_pointer(mitm, "icmp6_probe_delay", &GBL_CONF->icmp6_probe_delay);
 #endif
    set_pointer(connections, "connection_timeout", &GBL_CONF->connection_timeout);
    set_pointer(connections, "connection_idle", &GBL_CONF->connection_idle);
@@ -233,7 +233,7 @@ static void init_structures(void)
  * associate the pointer to a struct
  */
 
-static void set_pointer(struct conf_entry *entry, char *name, void *ptr)
+static void set_pointer(struct conf_entry *entry, const char *name, void *ptr)
 {
    int i = 0;
 
@@ -357,7 +357,7 @@ void load_conf(void)
        * if it is the "dissector" section,
        * do it in a different way
        */
-      if (curr_section == (struct conf_entry *)&dissectors) {
+      if (curr_section == dissectors) {
          set_dissector(q, p, lineno);
          continue;
       }
@@ -367,7 +367,7 @@ void load_conf(void)
          FATAL_ERROR("Invalid entry in %s line %d", ETTER_CONF, lineno);
    
       /* strings must be handled in a different way */
-      if (curr_section == (struct conf_entry *)&strings) {
+      if (curr_section == strings) {
          /* trim the quotes */
          if (*p == '"')
             p++;

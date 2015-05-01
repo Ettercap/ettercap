@@ -316,7 +316,7 @@ static char *slashify (char *path)
  */
 const char *ec_win_get_user_dir (void)
 {
-  static char path[MAX_PATH] = "";
+  static char path[PATH_MAX] = "";
   char  *home;
 
   if (path[0])
@@ -346,7 +346,7 @@ const char *ec_win_get_user_dir (void)
  */
 const char *ec_win_get_ec_dir (void)
 {
-  static char path[MAX_PATH] = "c:\\";
+  static char path[PATH_MAX] = "c:\\";
   char *slash;
 
   if (GetModuleFileName(NULL,path,sizeof(path)) &&

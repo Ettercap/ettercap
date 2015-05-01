@@ -383,7 +383,16 @@ int ip_addr_is_global(struct ip_addr *ip)
 
    switch (ntohs(ip->addr_type)) {
       case AF_INET:
-         /* XXX one could implement here !RFC1918 address determination */
+         /* Global for IPv4 means not status "RESERVED" by IANA */
+         if (
+               *ip->addr != 0x0 &&                         /* not 0/8        */
+               *ip->addr != 0x7f &&                        /* not 127/8      */
+               *ip->addr != 0x0a &&                        /* not 10/8       */
+               (ntohs(*ip->addr16) & 0xfff0) != 0xac10 &&  /* not 172.16/12  */
+               ntohs(*ip->addr16) != 0xc0a8 &&             /* not 192.168/16 */
+               !ip_addr_is_multicast(ip)                   /* not 224/3      */
+            )
+            return 1;
       break;
       case AF_INET6:
          /* 

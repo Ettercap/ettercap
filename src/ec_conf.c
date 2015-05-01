@@ -81,6 +81,7 @@ static struct conf_entry misc[] = {
    { "checksum_check", NULL },
    { "submit_fingerprint", NULL },
    { "sniffing_at_startup", NULL },
+   { "geoip_support_enable", NULL },
    { NULL, NULL },
 };
 
@@ -109,6 +110,8 @@ static struct conf_entry strings[] = {
    { "redir_command_off", NULL },
    { "remote_browser", NULL },
    { "utf8_encoding", NULL },
+   { "geoip_data_file", NULL },
+   { "geoip_data_file_v6", NULL },
    { NULL, NULL },
 };
 
@@ -176,40 +179,43 @@ static void init_structures(void)
    set_pointer((struct conf_entry *)&mitm, "ndp_poison_equal_mac", &GBL_CONF->ndp_poison_equal_mac);
    set_pointer((struct conf_entry *)&mitm, "icmp6_probe_delay", &GBL_CONF->icmp6_probe_delay);
 #endif
-   set_pointer((struct conf_entry *)&connections, "connection_timeout", &GBL_CONF->connection_timeout);
-   set_pointer((struct conf_entry *)&connections, "connection_idle", &GBL_CONF->connection_idle);
-   set_pointer((struct conf_entry *)&connections, "connection_buffer", &GBL_CONF->connection_buffer);
-   set_pointer((struct conf_entry *)&connections, "connect_timeout", &GBL_CONF->connect_timeout);
-   set_pointer((struct conf_entry *)&stats, "sampling_rate", &GBL_CONF->sampling_rate);
-   set_pointer((struct conf_entry *)&misc, "close_on_eof", &GBL_CONF->close_on_eof);
-   set_pointer((struct conf_entry *)&misc, "store_profiles", &GBL_CONF->store_profiles);
-   set_pointer((struct conf_entry *)&misc, "aggressive_dissectors", &GBL_CONF->aggressive_dissectors);
-   set_pointer((struct conf_entry *)&misc, "skip_forwarded_pcks", &GBL_CONF->skip_forwarded);
-   set_pointer((struct conf_entry *)&misc, "checksum_warning", &GBL_CONF->checksum_warning);
-   set_pointer((struct conf_entry *)&misc, "checksum_check", &GBL_CONF->checksum_check);
-   set_pointer((struct conf_entry *)&misc, "submit_fingerprint", &GBL_CONF->submit_fingerprint);
-   set_pointer((struct conf_entry *)&misc, "sniffing_at_startup", &GBL_CONF->sniffing_at_startup);
-   set_pointer((struct conf_entry *)&curses, "color_bg", &GBL_CONF->colors.bg);
-   set_pointer((struct conf_entry *)&curses, "color_fg", &GBL_CONF->colors.fg);
-   set_pointer((struct conf_entry *)&curses, "color_join1", &GBL_CONF->colors.join1);
-   set_pointer((struct conf_entry *)&curses, "color_join2", &GBL_CONF->colors.join2);
-   set_pointer((struct conf_entry *)&curses, "color_border", &GBL_CONF->colors.border);
-   set_pointer((struct conf_entry *)&curses, "color_title", &GBL_CONF->colors.title);
-   set_pointer((struct conf_entry *)&curses, "color_focus", &GBL_CONF->colors.focus);
-   set_pointer((struct conf_entry *)&curses, "color_menu_bg", &GBL_CONF->colors.menu_bg);
-   set_pointer((struct conf_entry *)&curses, "color_menu_fg", &GBL_CONF->colors.menu_fg);
-   set_pointer((struct conf_entry *)&curses, "color_window_bg", &GBL_CONF->colors.window_bg);
-   set_pointer((struct conf_entry *)&curses, "color_window_fg", &GBL_CONF->colors.window_fg);
-   set_pointer((struct conf_entry *)&curses, "color_selection_bg", &GBL_CONF->colors.selection_bg);
-   set_pointer((struct conf_entry *)&curses, "color_selection_fg", &GBL_CONF->colors.selection_fg);
-   set_pointer((struct conf_entry *)&curses, "color_error_bg", &GBL_CONF->colors.error_bg);
-   set_pointer((struct conf_entry *)&curses, "color_error_fg", &GBL_CONF->colors.error_fg);
-   set_pointer((struct conf_entry *)&curses, "color_error_border", &GBL_CONF->colors.error_border);
+   set_pointer(connections, "connection_timeout", &GBL_CONF->connection_timeout);
+   set_pointer(connections, "connection_idle", &GBL_CONF->connection_idle);
+   set_pointer(connections, "connection_buffer", &GBL_CONF->connection_buffer);
+   set_pointer(connections, "connect_timeout", &GBL_CONF->connect_timeout);
+   set_pointer(stats, "sampling_rate", &GBL_CONF->sampling_rate);
+   set_pointer(misc, "close_on_eof", &GBL_CONF->close_on_eof);
+   set_pointer(misc, "store_profiles", &GBL_CONF->store_profiles);
+   set_pointer(misc, "aggressive_dissectors", &GBL_CONF->aggressive_dissectors);
+   set_pointer(misc, "skip_forwarded_pcks", &GBL_CONF->skip_forwarded);
+   set_pointer(misc, "checksum_warning", &GBL_CONF->checksum_warning);
+   set_pointer(misc, "checksum_check", &GBL_CONF->checksum_check);
+   set_pointer(misc, "submit_fingerprint", &GBL_CONF->submit_fingerprint);
+   set_pointer(misc, "sniffing_at_startup", &GBL_CONF->sniffing_at_startup);
+   set_pointer(misc, "geoip_support_enable", &GBL_CONF->geoip_support_enable);
+   set_pointer(curses, "color_bg", &GBL_CONF->colors.bg);
+   set_pointer(curses, "color_fg", &GBL_CONF->colors.fg);
+   set_pointer(curses, "color_join1", &GBL_CONF->colors.join1);
+   set_pointer(curses, "color_join2", &GBL_CONF->colors.join2);
+   set_pointer(curses, "color_border", &GBL_CONF->colors.border);
+   set_pointer(curses, "color_title", &GBL_CONF->colors.title);
+   set_pointer(curses, "color_focus", &GBL_CONF->colors.focus);
+   set_pointer(curses, "color_menu_bg", &GBL_CONF->colors.menu_bg);
+   set_pointer(curses, "color_menu_fg", &GBL_CONF->colors.menu_fg);
+   set_pointer(curses, "color_window_bg", &GBL_CONF->colors.window_bg);
+   set_pointer(curses, "color_window_fg", &GBL_CONF->colors.window_fg);
+   set_pointer(curses, "color_selection_bg", &GBL_CONF->colors.selection_bg);
+   set_pointer(curses, "color_selection_fg", &GBL_CONF->colors.selection_fg);
+   set_pointer(curses, "color_error_bg", &GBL_CONF->colors.error_bg);
+   set_pointer(curses, "color_error_fg", &GBL_CONF->colors.error_fg);
+   set_pointer(curses, "color_error_border", &GBL_CONF->colors.error_border);
    /* special case for strings */
-   set_pointer((struct conf_entry *)&strings, "redir_command_on", &GBL_CONF->redir_command_on);
-   set_pointer((struct conf_entry *)&strings, "redir_command_off", &GBL_CONF->redir_command_off);
-   set_pointer((struct conf_entry *)&strings, "remote_browser", &GBL_CONF->remote_browser);
-   set_pointer((struct conf_entry *)&strings, "utf8_encoding", &GBL_CONF->utf8_encoding);
+   set_pointer(strings, "redir_command_on", &GBL_CONF->redir_command_on);
+   set_pointer(strings, "redir_command_off", &GBL_CONF->redir_command_off);
+   set_pointer(strings, "remote_browser", &GBL_CONF->remote_browser);
+   set_pointer(strings, "utf8_encoding", &GBL_CONF->utf8_encoding);
+   set_pointer(strings, "geoip_data_file", &GBL_CONF->geoip_data_file);
+   set_pointer(strings, "geoip_data_file_v6", &GBL_CONF->geoip_data_file_v6);
 
    /* sanity check */
    do {

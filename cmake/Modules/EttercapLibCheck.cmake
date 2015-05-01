@@ -184,6 +184,11 @@ else(HAVE_PCAP)
     message(FATAL_ERROR "libpcap not found!")
 endif(HAVE_PCAP)
 
+find_library(HAVE_GEOIP GeoIP)
+if(HAVE_GEOIP)
+   set(WITH_GEOIP 1)
+   set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_GEOIP})
+endif(HAVE_GEOIP)
 # begin LIBNET 
 
 # This is a fake target that ettercap is dependant upon. If we end up using 

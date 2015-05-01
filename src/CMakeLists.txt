@@ -18,6 +18,7 @@ set(EC_SRC
         ec_filter.c
         ec_fingerprint.c
         ec_format.c
+        ec_geoip.c
         ec_globals.c
         ec_hash.c
         ec_hook.c

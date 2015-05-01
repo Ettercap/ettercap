@@ -103,7 +103,7 @@ void gtkui_conf_save(void) {
       fclose(fd);
    }
 
-   free(filename);
+   g_free(filename);
    filename = NULL;
 }
 

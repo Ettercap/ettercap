@@ -26,6 +26,7 @@
 #include <ec_fingerprint.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
+#include <ec_geoip.h>
 
 /************************************************/
   
@@ -88,10 +89,15 @@ void print_host(struct host_profile *h)
    fprintf(stdout, "==================================================\n");
    fprintf(stdout, " IP address   : %s \n", ip_addr_ntoa(&h->L3_addr, tmp));
    if (strcmp(h->hostname, ""))
-      fprintf(stdout, " Hostname     : %s \n\n", h->hostname);
-   else
-      fprintf(stdout, "\n");   
-      
+      fprintf(stdout, " Hostname     : %s \n", h->hostname);
+
+#ifdef WITH_GEOIP
+   if (GBL_CONF->geoip_support_enable)
+      fprintf(stdout, " Location     : %s \n", geoip_country_by_ip(&h->L3_addr));
+#endif
+
+   fprintf(stdout, "\n");
+
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       fprintf(stdout, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
       fprintf(stdout, " MANUFACTURER : %s \n\n", manuf_search((const char*)h->L2_addr));
@@ -162,6 +168,12 @@ void print_host_xml(struct host_profile *h)
    if (strcmp(h->hostname, ""))
       fprintf(stdout, "\t\t<hostname>%s</hostname>\n", h->hostname);
    
+#ifdef WITH_GEOIP
+   if (GBL_CONF->geoip_support_enable)
+      fprintf(stdout, "\t\t<location>%s</location>\n", 
+            geoip_country_by_ip(&h->L3_addr));
+#endif
+
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       fprintf(stdout, "\t\t<mac>%s</mac>\n", mac_addr_ntoa(h->L2_addr, tmp));
       fprintf(stdout, "\t\t<manuf>%s</manuf>\n", manuf_search((const char*)h->L2_addr));

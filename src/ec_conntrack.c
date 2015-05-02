@@ -27,6 +27,7 @@
 #include <ec_conntrack.h>
 #include <ec_hash.h>
 #include <ec_sleep.h>
+#include <ec_geoip.h>
 
 /* globals */
 
@@ -614,6 +615,7 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
    char proto[2], status[8], flags[2];
+   size_t slen;
 
    /* NULL is used to retrieve the first element */
    if (list == NULL)
@@ -635,13 +637,13 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       /* determine the flags */
       conntrack_flagstr(c->co, flags, sizeof(flags));
       
-      strlen = snprintf(*desc, len, "%1s %15s:%-5d - %15s:%-5d %1s %s TX: %lu RX: %lu", 
+      slen = snprintf(*desc, len, "%1s %15s:%-5d - %15s:%-5d %1s %s TX: %lu RX: %lu", 
             flags, src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
             proto, status, (unsigned long)c->co->tx, (unsigned long)c->co->rx);
 
 #ifdef WITH_GEOIP
-      if (len > strlen && len - strlen > 14 && GBL_CONF->geoip_support_enable) {
-         snprintf(*desc + strlen, len - strlen, ", CC: %2s > %2s", 
+      if (len > slen && len - slen > 14 && GBL_CONF->geoip_support_enable) {
+         snprintf(*desc + slen, len - slen, ", CC: %2s > %2s", 
                geoip_ccode_by_ip(&c->co->L3_addr1),
                geoip_ccode_by_ip(&c->co->L3_addr2));
       }

@@ -26,6 +26,7 @@
 #include <ec_profiles.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
+#include <ec_geoip.h>
 
 /* proto */
 
@@ -165,10 +166,15 @@ static void curses_profile_detail(void *profile)
    
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " IP address   : %s \n", ip_addr_ntoa(&h->L3_addr, tmp));
    if (strcmp(h->hostname, ""))
-      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Hostname     : %s \n\n", h->hostname);
-   else
-      wdg_scroll_print(wdg_pro_detail, EC_COLOR, "\n");   
+      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Hostname     : %s \n", h->hostname);
       
+#ifdef WITH_GEOIP
+   if (GBL_CONF->geoip_support_enable)
+      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Location     : %s \n", geoip_country_by_ip(&h->L3_addr));
+#endif
+
+   wdg_scroll_print(wdg_pro_detail, EC_COLOR, "\n");
+
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " MANUFACTURER : %s \n\n", manuf_search((const char*)h->L2_addr));

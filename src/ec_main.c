@@ -32,6 +32,7 @@
 #include <ec_plugins.h>
 #include <ec_format.h>
 #include <ec_fingerprint.h>
+#include <ec_geoip.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
 #include <ec_http.h>

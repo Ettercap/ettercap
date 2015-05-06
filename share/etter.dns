@@ -14,40 +14,42 @@
 # Sample hosts file for dns_spoof plugin                                   #
 #                                                                          #
 # the format is (for A query):                                             #
-#   www.myhostname.com A 168.11.22.33                                      #
-#   *.foo.com          A 168.44.55.66                                      #
+#   www.myhostname.com A 168.11.22.33 3600                                 #
+#   *.foo.com          A 168.44.55.66 [optional TTL]                       #
 #                                                                          #
 # ... for a AAAA query (same hostname allowed):                            #
 #   www.myhostname.com AAAA 2001:db8::1                                    #
-#   *.foo.com          AAAA 2001:db8::2                                    #
+#   *.foo.com          AAAA 2001:db8::2 [optional TTL]                     #
 #                                                                          #
 # or to skip a protocol family (useful with dual-stack):                   #
 #   www.hotmail.com    AAAA ::                                             #
 #   www.yahoo.com      A    0.0.0.0                                        #
 #                                                                          #
 # or for PTR query:                                                        #
-#   www.bar.com    PTR 10.0.0.10                                           #
-#   www.google.com PTR ::1                                                 #
+#   www.bar.com    PTR 10.0.0.10 [TTL]                                     #
+#   www.google.com PTR ::1 [TTL]                                           #
 #                                                                          #
 # or for MX query (either IPv4 or IPv6):                                   #
-#    domain.com MX xxx.xxx.xxx.xxx                                         #
+#    domain.com MX xxx.xxx.xxx.xxx [TTL]                                   #
 #    domain2.com MX xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx                #
 #    domain3.com MX xxxx:xxxx::y                                           #
 #                                                                          #
 # or for WINS query:                                                       #
-#    workgroup WINS 127.0.0.1                                              #
+#    workgroup WINS 127.0.0.1 [TTL]                                        #
 #    PC*       WINS 127.0.0.1                                              #
 #                                                                          #
 # or for SRV query (either IPv4 or IPv6):                                  #
-#    service._tcp|_udp.domain SRV 192.168.1.10:port                        #
+#    service._tcp|_udp.domain SRV 192.168.1.10:port [TTL]                  #
 #    service._tcp|_udp.domain SRV [2001:db8::3]:port                       #
 #                                                                          #
 # or for TXT query (value must be wrapped in double quotes):               #
-#    google.com TXT "v=spf1 ip4:192.168.0.3/32 ~all"                       #
+#    google.com TXT "v=spf1 ip4:192.168.0.3/32 ~all" [TTL]                 #
 #                                                                          #
 # NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
 #       so if you want to reverse poison you have to specify a plain       #
 #       host. (look at the www.microsoft.com example)                      #
+#                                                                          #
+# NOTE: Default DNS TTL is 3600s (1 hour). All TTL fields are optional.    #
 #                                                                          #
 ############################################################################
 
@@ -56,17 +58,17 @@
 # redirect it to www.linux.org
 #
 
-microsoft.com      A   107.170.40.56
-*.microsoft.com    A   107.170.40.56
+microsoft.com      A   107.170.40.56 1800
+*.microsoft.com    A   107.170.40.56 3600
 www.microsoft.com  PTR 107.170.40.56      # Wildcards in PTR are not allowed
 
 ##########################################
 # no one out there can have our domains...
 #
 
-www.alor.org  A 127.0.0.1
-www.naga.org  A 127.0.0.1
-www.naga.org  AAAA 2001:db8::2
+www.alor.org  A 127.0.0.1 2147483647         # It shall last forever!
+www.naga.org  A 127.0.0.1 30                 # Or only 30 seconds
+www.naga.org  AAAA 2001:db8::2               # Default is 3600 seconds (1 hour)
 
 ##########################################
 # dual stack enabled hosts does not make life easy
@@ -114,6 +116,5 @@ ldap._udp.mynet.com SRV [2001:db8:c001:beef::1]:389
 #
 
 naga.org TXT "v=spf1 ip4:192.168.1.2 ip6:2001:db8:d0b1:beef::2 -all"
-
 
 # vim:ts=8:noexpandtab

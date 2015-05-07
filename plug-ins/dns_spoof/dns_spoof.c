@@ -20,7 +20,8 @@
 */
 
 /*
-   Frekk - Added TTL option to thingy stuffs.
+ * May 2015
+ * Frekky - Added TTL option for spoofed DNS replies.
 */
 
 
@@ -37,6 +38,8 @@
 #ifndef ns_t_wins
 #define ns_t_wins 0xFF01      /* WINS name lookup */
 #endif
+
+#define MAX_DNS_TTL (1 << 31) - 1     /* Maximum DNS TTL according to RFC 2181 */
 
 /* globals */
 
@@ -279,7 +282,7 @@ static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int
       return (0);
    }
    
-   if (ttl > 2147483647) ttl = 3600; /* keep TTL within DNS standard limits (2^31 - 1) - see RFC 2181 */
+   if (ttl > MAX_DNS_TTL) ttl = 3600; /* keep TTL within DNS standard limits (2^31 - 1) - see RFC 2181 */
 
    *ttl_p = ttl;
 
@@ -506,18 +509,6 @@ static void dns_spoof(struct packet_object *po)
 }
 
 /*
- * Converts little-endian unsigned 32-bit integer to big-endian unsigned 32-bit integer
- */
-static u_int32 little_to_big(u_int32 n)
-{
-	/* Convert TTL to big-endian */
-	return ((n>>24)&0x000000ff) | // move byte 3 to byte 0
-					 ((n<<8)&0x00ff0000) | // move byte 1 to byte 2
-					 ((n>>8)&0x0000ff00) | // move byte 2 to byte 1
-					 ((n<<24)&0xff000000); // byte 0 to byte 3
-}
-
-/*
  * checks if a spoof entry extists for the name and type
  * the answer is prepared and stored in the global lists
  *  - answer_list
@@ -576,7 +567,7 @@ static int prepare_dns_reply(u_char *data, const char *name, int type, int *dns_
          p = answer;
 
          /* make TTL big-endian to work with DNS */
-         ttl_bige = little_to_big(ttl);
+         ttl_bige = htonl(ttl);
 
          /* prepare the answer */
          memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
@@ -639,7 +630,7 @@ any_aaaa:
          p = answer;
 
          /* make TTL big-endian to work with DNS */
-         ttl_bige = little_to_big(ttl);
+         ttl_bige = htonl(ttl);
 
          /* prepare the answer */
          memcpy(p,     "\xc0\x0c", 2);         /* compressed name offset */
@@ -682,7 +673,7 @@ any_mx:
       p = answer;
 
       /* make TTL big-endian to work with DNS */
-      ttl_bige = little_to_big(ttl);
+      ttl_bige = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                          /* compressed name offset */
@@ -784,7 +775,7 @@ any_wins:
       p = answer;
 
       /* make TTL big-endian to work with DNS */
-      ttl_bige = little_to_big(ttl);
+      ttl_bige = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
@@ -833,7 +824,7 @@ any_txt:
       p = answer;
 
       /* make TTL big-endian to work with DNS */
-      ttl_bige = little_to_big(ttl);
+      ttl_bige = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p,     "\xc0\x0c", 2);         /* compressed name offset */
@@ -876,7 +867,7 @@ any_txt:
       p = answer;
 
       /* make TTL big-endian to work with DNS */
-      ttl_bige = little_to_big(ttl);
+      ttl_bige = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
@@ -935,7 +926,7 @@ any_txt:
       tgtoffset[1] = 12 + dn_offset; /* offset to the actual domain name */
 
       /* make TTL big-endian to work with DNS */
-      ttl_bige = little_to_big(ttl);
+      ttl_bige = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                    /* compressed name offset */
@@ -1022,7 +1013,7 @@ any_txt:
       p = answer;
 
       /* make TTL big-endian to work with DNS */
-      ttl_bige = little_to_big(ttl);
+      ttl_bige = htonl(ttl);
 
       /* prepare the authorative record */
       memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */

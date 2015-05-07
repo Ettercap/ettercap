@@ -82,13 +82,18 @@ is not started yet. You have to launch it from the proper menu.
 .TP
 .B dns_spoof
 .Sp
-This plugin intercepts DNS query and reply with a spoofed answer. You can chose
-to which address the plugin has to reply by modifying the etter.dns file. The
-plugin intercepts A, AAAA, PTR, MX, WINS, SRV and TXT request. If it was an A
-request, the name is searched in the file and the IP address is returned
-(you can use wildcards in the name).
+This plugin intercepts DNS query and reply with a spoofed answer. You can choose
+to which addresses the plugin has to reply, and the expiry time in seconds (TTL)
+by modifying the etter.dns file. The plugin intercepts A, AAAA, PTR, MX, WINS,
+SRV and TXT request. If it was an A request, the name is searched in the file
+and the IP address is returned (you can use wildcards in the name).
 .br
 The same applies if it was a AAAA request.
+.Sp
+TTL is an optional field which is specified as the last option in an entry in
+the etter.dns file. The TTL is specified in a number of seconds from 0 to 2^31-1
+(see RFC 2181). TTL is specified on a per-host basis. If the TTL is not specified
+for a particular host, the default value is 3600 seconds (1 hour).
 .Sp
 If it was a PTR request, the IP address is searched in the file and the name is
 returned (except for those name containing a wildcard). For PTR requests, IPv4
@@ -132,7 +137,9 @@ file called etter.mdns. Due to the nature of mDNS, the plugin intercepts only A,
 AAAA, PTR and SRV requests.
 .Sp
 The way the mdns_spoof plugin interprets the etter.mdns file and the rules that
-apply are the same as with the dns_spoof plugin.
+apply are the same as with the dns_spoof plugin, although currently the
+mdns_spoof plugin lacks support for custom TTL. The TTL for all spoofed mDNS
+replies is 3600 seconds (1 hour).
 
 
 .TP

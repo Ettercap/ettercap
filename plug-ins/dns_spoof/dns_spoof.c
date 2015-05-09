@@ -19,12 +19,6 @@
 
 */
 
-/*
- * May 2015
- * Frekky - Added TTL option for spoofed DNS replies.
-*/
-
-
 #include <ec.h>                        /* required for global variables */
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_file.h>
@@ -39,7 +33,8 @@
 #define ns_t_wins 0xFF01      /* WINS name lookup */
 #endif
 
-#define MAX_DNS_TTL (1 << 31) - 1     /* Maximum DNS TTL according to RFC 2181 */
+/* Maximum DNS TTL according to RFC 2181 = 2^31 - 1*/
+#define MAX_DNS_TTL 2147483647
 
 /* globals */
 
@@ -276,12 +271,14 @@ static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int
    /* Set default TTL of 1 hour if not specified */
    ttl = 3600;
 
-   if (sscanf(str,"%100s %10s %40[^\r\n# ] %u", name, type, ip, &ttl) < 3) { /* TTL is optional therefore only require 3 things here */
+   /* TTL is optional therefore only require 3 options here */
+   if (sscanf(str,"%100s %10s %40[^\r\n# ] %u", name, type, ip, &ttl) < 3) {
       USER_MSG("dns_spoof: %s:%d Invalid entry '%s'\n", ETTER_DNS, line, str);
       return (0);
    }
    
-   if (ttl > MAX_DNS_TTL) ttl = 3600; /* keep TTL within DNS standard limits (2^31 - 1) - see RFC 2181 */
+   /* keep TTL within DNS standard limits (2^31 - 1) - see RFC 2181 */
+   if (ttl > MAX_DNS_TTL) ttl = 3600;
 
    *ttl_p = ttl;
 
@@ -524,9 +521,13 @@ static int prepare_dns_reply(u_char *data, const char *name, int type, int *dns_
    struct rr_entry *rr;
    bool is_negative;
    int len;
-   u_int32 ttl = 3600, ttl_bige = 0x10e00000; /* 1 hour by default in case something goes wrong / 3600 big-endian */
+   u_int32 ttl, ttl_bige;
    u_char *answer, *p;
    char tmp[MAX_ASCII_ADDR_LEN];
+
+   /* set TTL to 1 hour by default or in case something goes wrong */
+   ttl = 3600;
+   ttl_bige = 0x10e00000; /* big endian for network stuff */
 
    /* by default we want to spoof actual data */
    is_negative = false;
@@ -635,7 +636,7 @@ any_aaaa:
          ttl_bige = htonl(ttl);
 
          /* prepare the answer */
-         memcpy(p,     "\xc0\x0c", 2);         /* compressed name offset */
+         memcpy(p, "\xc0\x0c", 2);         /* compressed name offset */
          memcpy(p + 2, "\x00\x1c", 2);         /* type AAAA */
          memcpy(p + 4, "\x00\x01", 2);         /* class IN */
          memcpy(p + 6, &ttl_bige, 4);          /* TTL */
@@ -851,7 +852,8 @@ any_txt:
    if (type == ns_t_ptr) {
       
       u_char *answer, *p;
-      char *a, buf[256];
+      char *a;
+      u_char buf[256];
       int rlen;
       
       /* found the reply in the list */
@@ -1284,6 +1286,9 @@ static void dns_spoof_dump(void)
 {
    struct dns_spoof_entry *d;
    char tmp[MAX_ASCII_ADDR_LEN];
+
+   /* Unused variable */
+   (void) tmp;
 
    DEBUG_MSG("dns_spoof entries:");
    SLIST_FOREACH(d, &dns_spoof_head, next) {

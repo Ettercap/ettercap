@@ -1082,6 +1082,7 @@ static int get_spoofed_aaaa(const char *a, struct ip_addr **ip, u_int32 *ttl)
         if (d->type == ns_t_aaaa && match_pattern(a, d->name)) {
             /* return the pointer to the struct */
             *ip = &d->ip;
+            *ttl = d->ttl;
 
             return E_SUCCESS;
         }

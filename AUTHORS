@@ -58,6 +58,10 @@ CONTRIBUTORS:
    Eric Milam (Brav0Hax) <jbrav.hax@gmail.com> {
        User Testing
    }
+   
+   Frekky {
+       dns_spoof plugin TTL option
+   }
 
 
 CONTRIBUTORS (Lazarus):

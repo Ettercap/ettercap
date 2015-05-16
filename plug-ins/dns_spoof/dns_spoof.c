@@ -19,7 +19,6 @@
 
 */
 
-
 #include <ec.h>                        /* required for global variables */
 #include <ec_plugins.h>                /* required for plugin ops */
 #include <ec_file.h>
@@ -33,6 +32,9 @@
 #ifndef ns_t_wins
 #define ns_t_wins 0xFF01      /* WINS name lookup */
 #endif
+
+/* Maximum DNS TTL according to RFC 2181 = 2^31 - 1*/
+#define MAX_DNS_TTL 2147483647
 
 /* globals */
 
@@ -69,6 +71,7 @@ struct dns_header {
 
 struct dns_spoof_entry {
    int   type;   /* ns_t_a, ns_t_mx, ns_t_ptr, ns_t_wins */
+   u_int32 ttl; /* 0 - 2^31-1 seconds */
    char *name;
    struct ip_addr ip;
    u_int16 port;
@@ -93,16 +96,16 @@ int plugin_load(void *);
 static int dns_spoof_init(void *);
 static int dns_spoof_fini(void *);
 static int load_db(void);
-static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p);
+static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p, u_int32 *ttl_p);
 static void dns_spoof(struct packet_object *po);
 static int prepare_dns_reply(u_char *data, const char *name, int type, int *dns_len, int *n_answ, int *n_auth, int *n_addi);
-static int get_spoofed_a(const char *a, struct ip_addr **ip);
-static int get_spoofed_aaaa(const char *a, struct ip_addr **ip);
-static int get_spoofed_txt(const char *name, char **txt);
-static int get_spoofed_ptr(const char *arpa, char **a);
-static int get_spoofed_mx(const char *a, struct ip_addr **ip);
-static int get_spoofed_wins(const char *a, struct ip_addr **ip);
-static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port);
+static int get_spoofed_a(const char *a, struct ip_addr **ip, u_int32 *ttl);
+static int get_spoofed_aaaa(const char *a, struct ip_addr **ip, u_int32 *ttl);
+static int get_spoofed_txt(const char *name, char **txt, u_int32 *ttl);
+static int get_spoofed_ptr(const char *arpa, char **a, u_int32 *ttl);
+static int get_spoofed_mx(const char *a, struct ip_addr **ip, u_int32 *ttl);
+static int get_spoofed_wins(const char *a, struct ip_addr **ip, u_int32 *ttl);
+static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port, u_int32 *ttl);
 char *type_str(int type);
 static void dns_spoof_dump(void);
 
@@ -116,7 +119,7 @@ struct plugin_ops dns_spoof_ops = {
     /* a short description of the plugin (max 50 chars) */                    
    .info =              "Sends spoofed dns replies",  
    /* the plugin version. */ 
-   .version =           "1.2",   
+   .version =           "1.3",
    /* activation function */
    .init =              &dns_spoof_init,
    /* deactivation function */                     
@@ -190,6 +193,7 @@ static int load_db(void)
    FILE *f;
    char line[100+255+10+1];
    char *ptr, *ip, *name;
+   u_int32 ttl;
    int lines = 0, type;
    u_int16 port = 0;
    
@@ -214,7 +218,7 @@ static int load_db(void)
          continue;
       
       /* strip apart the line */
-      if (!parse_line(line, lines, &type, &ip, &port,  &name))
+      if (!parse_line(line, lines, &type, &ip, &port,  &name, &ttl))
          continue;
         
       /* create the entry */
@@ -223,6 +227,7 @@ static int load_db(void)
       d->type = type;
       d->port = port;
       d->text = NULL;
+      d->ttl = ttl;
 
       /* convert the ip address */
       if (type == ns_t_txt) {
@@ -251,21 +256,31 @@ static int load_db(void)
 }
 
 /*
- * Parse line on format "<name> <type> <IP-addr>".
+ * Parse line on format "<name> <type> <IP-addr> <ttl>".
  */
-static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p)
+static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p, u_int32 *ttl_p)
 {
    static char name[100+1];
    static char ip[MAX_ASCII_ADDR_LEN];
    static int port;
+   static u_int32 ttl;
    char type[10+1];
 
- DEBUG_MSG("%s:%d str '%s'", ETTER_DNS, line, str); 
+   DEBUG_MSG("%s:%d str '%s'", ETTER_DNS, line, str); 
 
-   if (sscanf(str,"%100s %10s %40[^\r\n# ]", name, type, ip) != 3) {
-      USER_MSG("dns_spoof: %s:%d Invalid entry %s\n", ETTER_DNS, line, str);
+   /* Set default TTL of 1 hour if not specified */
+   ttl = 3600;
+
+   /* TTL is optional therefore only require 3 options here */
+   if (sscanf(str,"%100s %10s %40[^\r\n# ] %u", name, type, ip, &ttl) < 3) {
+      USER_MSG("dns_spoof: %s:%d Invalid entry '%s'\n", ETTER_DNS, line, str);
       return (0);
    }
+   
+   /* keep TTL within DNS standard limits (2^31 - 1) - see RFC 2181 */
+   if (ttl > MAX_DNS_TTL) ttl = 3600;
+
+   *ttl_p = ttl;
 
    if (!strcasecmp(type,"PTR")) {
       if (strpbrk(name,"*?[]")) {
@@ -311,14 +326,17 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
       char txt[256];
 
       /* rescan line as spaces are supported in TXT records */
-      if (sscanf(str,"%100s %10s \"%255[^\r\n#\"]\"", name, type, txt) != 3) {
+      if (sscanf(str,"%100s %10s \"%255[^\r\n#\"]\" %u", name, type, txt, &ttl) < 3) {
          USER_MSG("dns_spoof: %s:%d Invalid entry %s\n", ETTER_DNS, line, str);
          return 0;
       }
 
+      if (ttl > MAX_DNS_TTL) ttl = 3600; /* keep TTL within DNS standard limits (2^31 - 1) - see RFC 2181 */
+
       *type_p = ns_t_txt;
       *name_p = name;
       *ip_p = txt;
+      *ttl_p = ttl;
       return (1);
    }
 
@@ -503,8 +521,13 @@ static int prepare_dns_reply(u_char *data, const char *name, int type, int *dns_
    struct rr_entry *rr;
    bool is_negative;
    int len;
+   u_int32 ttl, dns_ttl;
    u_char *answer, *p;
    char tmp[MAX_ASCII_ADDR_LEN];
+
+   /* set TTL to 1 hour by default or in case something goes wrong */
+   ttl = 3600;
+   dns_ttl = htonl(ttl); /* big endian for network stuff */
 
    /* by default we want to spoof actual data */
    is_negative = false;
@@ -513,7 +536,7 @@ static int prepare_dns_reply(u_char *data, const char *name, int type, int *dns_
    if (type == ns_t_a || type == ns_t_any) {
 
       /* found the reply in the list */
-      if (get_spoofed_a(name, &reply) != E_SUCCESS) {
+      if (get_spoofed_a(name, &reply, &ttl) != E_SUCCESS) {
           /* in case of ANY we have to proceed with the next section */
           if (type == ns_t_any)
             goto any_aaaa;
@@ -545,12 +568,15 @@ static int prepare_dns_reply(u_char *data, const char *name, int type, int *dns_
          len = 12 + IP_ADDR_LEN;
          SAFE_CALLOC(answer, len, sizeof(u_char));
          p = answer;
-      
+
+         /* make TTL big-endian to work with DNS */
+         dns_ttl = htonl(ttl);
+
          /* prepare the answer */
          memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
          memcpy(p + 2, "\x00\x01", 2);                    /* type A */
          memcpy(p + 4, "\x00\x01", 2);                    /* class */
-         memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
+         memcpy(p + 6, &dns_ttl, 4);                     /* TTL */
          memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
          ip_addr_cpy(p + 12, reply);                      /* data */
 
@@ -561,9 +587,9 @@ static int prepare_dns_reply(u_char *data, const char *name, int type, int *dns_
          SLIST_INSERT_HEAD(&answer_list, rr, next);
          *dns_len += len;
          *n_answ += 1;
-         
-         USER_MSG("dns_spoof: %s [%s] spoofed to [%s]\n", 
-               type_str(type), name, ip_addr_ntoa(reply, tmp));
+
+         USER_MSG("dns_spoof: %s [%s] spoofed to [%s] TTL [%u s]\n", 
+               type_str(type), name, ip_addr_ntoa(reply, tmp), ttl);
       }
    } /* A */
 
@@ -573,7 +599,7 @@ any_aaaa:
    if (type == ns_t_aaaa || type == ns_t_any) {
 
        /* found the reply in the list */
-       if (get_spoofed_aaaa(name, &reply) != E_SUCCESS) {
+       if (get_spoofed_aaaa(name, &reply, &ttl) != E_SUCCESS) {
           /* in case of ANY we have to proceed with the next section */
           if (type == ns_t_any)
              goto any_mx;
@@ -606,11 +632,14 @@ any_aaaa:
          SAFE_CALLOC(answer, len, sizeof(u_char));
          p = answer;
 
+         /* make TTL big-endian to work with DNS */
+         dns_ttl = htonl(ttl);
+
          /* prepare the answer */
-         memcpy(p,     "\xc0\x0c", 2);         /* compressed name offset */
+         memcpy(p, "\xc0\x0c", 2);         /* compressed name offset */
          memcpy(p + 2, "\x00\x1c", 2);         /* type AAAA */
          memcpy(p + 4, "\x00\x01", 2);         /* class IN */
-         memcpy(p + 6, "\x00\x00\x0e\x10", 4); /* TTL (1 hour) */
+         memcpy(p + 6, &dns_ttl, 4);          /* TTL */
          memcpy(p + 10, "\x00\x10", 2);        /* datalen */
          ip_addr_cpy(p + 12, reply);           /* data */
 
@@ -622,8 +651,8 @@ any_aaaa:
          *dns_len += len;
          *n_answ += 1;
          
-         USER_MSG("dns_spoof: %s [%s] spoofed to [%s]\n", 
-                  type_str(type), name, ip_addr_ntoa(reply, tmp));
+         USER_MSG("dns_spoof: %s [%s] spoofed to [%s] TTL [%u s]\n", 
+                  type_str(type), name, ip_addr_ntoa(reply, tmp), ttl);
       }
    } /* AAAA */
 
@@ -633,7 +662,7 @@ any_mx:
    if (type == ns_t_mx || type == ns_t_any) {
       
       /* found the reply in the list */
-      if (get_spoofed_mx(name, &reply) != E_SUCCESS) {
+      if (get_spoofed_mx(name, &reply, &ttl) != E_SUCCESS) {
           /* in case of ANY we have to proceed with the next section */
           if (type == ns_t_any)
             goto any_wins;
@@ -646,11 +675,14 @@ any_mx:
       SAFE_CALLOC(answer, len, sizeof(u_char));
       p = answer;
 
+      /* make TTL big-endian to work with DNS */
+      dns_ttl = htonl(ttl);
+
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                          /* compressed name offset */
       memcpy(p + 2, "\x00\x0f", 2);                      /* type MX */
       memcpy(p + 4, "\x00\x01", 2);                      /* class */
-      memcpy(p + 6, "\x00\x00\x0e\x10", 4);              /* TTL (1 hour) */
+      memcpy(p + 6, &dns_ttl, 4);                       /* TTL */
       memcpy(p + 10, "\x00\x09", 2);                     /* datalen */
       memcpy(p + 12, "\x00\x0a", 2);                     /* preference (highest) */
       /* 
@@ -680,7 +712,7 @@ any_mx:
          memcpy(p, "\x04mail\xc0\x0c", 7);             /* compressed name offset */
          memcpy(p + 7, "\x00\x01", 2);                 /* type A */
          memcpy(p + 9, "\x00\x01", 2);                 /* class */
-         memcpy(p + 11, "\x00\x00\x0e\x10", 4);        /* TTL (1 hour) */
+         memcpy(p + 11, &dns_ttl, 4);                      /* TTL */
          memcpy(p + 15, "\x00\x04", 2);                /* datalen */
          ip_addr_cpy(p + 17, reply);                   /* data */
       }
@@ -696,7 +728,7 @@ any_mx:
          memcpy(p, "\x04mail\xc0\x0c", 7);            /* compressed name offset */
          memcpy(p + 7, "\x00\x1c", 2);                /* type AAAA */
          memcpy(p + 9, "\x00\x01", 2);                /* class */
-         memcpy(p + 11, "\x00\x00\x0e\x10", 4);       /* TTL (1 hour) */
+         memcpy(p + 11, &dns_ttl, 4);                     /* TTL */
          memcpy(p + 15, "\x00\x10", 2);               /* datalen */
          ip_addr_cpy(p + 17, reply);                  /* data */
       }
@@ -713,8 +745,8 @@ any_mx:
       *dns_len += len;
       *n_addi += 1;
       
-      USER_MSG("dns_spoof: %s [%s] spoofed to [%s]\n", 
-            type_str(type), name, ip_addr_ntoa(reply, tmp));
+      USER_MSG("dns_spoof: %s [%s] spoofed to [%s] TTL [%u s]\n", 
+            type_str(type), name, ip_addr_ntoa(reply, tmp), ttl);
 
    } /* MX */
 
@@ -724,7 +756,7 @@ any_wins:
    if (type == ns_t_wins || type == ns_t_any) {
 
       /* found the reply in the list */
-      if (get_spoofed_wins(name, &reply) != E_SUCCESS) {
+      if (get_spoofed_wins(name, &reply, &ttl) != E_SUCCESS) {
           /* in case of ANY we have to proceed with the next section */
           if (type == ns_t_any)
             goto any_txt;
@@ -743,11 +775,14 @@ any_wins:
       SAFE_CALLOC(answer, len, sizeof(u_char));
       p = answer;
 
+      /* make TTL big-endian to work with DNS */
+      dns_ttl = htonl(ttl);
+
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
       memcpy(p + 2, "\xff\x01", 2);                    /* type WINS */
       memcpy(p + 4, "\x00\x01", 2);                    /* class IN */
-      memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
+      memcpy(p + 6, &dns_ttl, 4);                     /* TTL */
       memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
       ip_addr_cpy((u_char*)p + 12, reply);             /* data */
 
@@ -759,8 +794,8 @@ any_wins:
       *dns_len += len;
       *n_answ += 1;
       
-      USER_MSG("dns_spoof: %s [%s] spoofed to [%s]\n", 
-            type_str(type), name, ip_addr_ntoa(reply, tmp));
+      USER_MSG("dns_spoof: %s [%s] spoofed to [%s] TTL [%u s]\n", 
+            type_str(type), name, ip_addr_ntoa(reply, tmp), ttl);
 
    }
 
@@ -773,7 +808,7 @@ any_txt:
       u_int16 datalen;
 
       /* found the reply in the list */
-      if (get_spoofed_txt(name, &txt) != E_SUCCESS) {
+      if (get_spoofed_txt(name, &txt, &ttl) != E_SUCCESS) {
          /* in case of ANY we have to proceed with the next section */
          if (type == ns_t_any)
             goto exit;
@@ -789,11 +824,14 @@ any_txt:
       SAFE_CALLOC(answer, len, sizeof(u_char));
       p = answer;
 
+      /* make TTL big-endian to work with DNS */
+      dns_ttl = htonl(ttl);
+
       /* prepare the answer */
       memcpy(p,     "\xc0\x0c", 2);         /* compressed name offset */
       memcpy(p + 2, "\x00\x10", 2);         /* type TXT */
       memcpy(p + 4, "\x00\x01", 2);         /* class IN */
-      memcpy(p + 6, "\x00\x00\x0e\x10", 4); /* TTL (1 hour) */
+      memcpy(p + 6, &dns_ttl, 4);          /* TTL */
       memcpy(p + 10, &datalen, 2);          /* data len */
       memcpy(p + 12, &txtlen, 1);           /* TXT len */
       memcpy(p + 13, txt, txtlen);          /* string */
@@ -806,19 +844,20 @@ any_txt:
       *dns_len += len;
       *n_answ += 1;
       
-      USER_MSG("dns_spoof: %s [%s] spoofed to \"%s\"\n", 
-               type_str(type), name, txt);
+      USER_MSG("dns_spoof: %s [%s] spoofed to \"%s\" TTL [%u s]\n", 
+               type_str(type), name, txt, ttl);
    } /* TXT */
 
    /* it is a reverse query (ip to name) */
    if (type == ns_t_ptr) {
       
       u_char *answer, *p;
-      char *a, buf[256];
+      char *a;
+      u_char buf[256];
       int rlen;
       
       /* found the reply in the list */
-      if (get_spoofed_ptr(name, &a) != E_SUCCESS)
+      if (get_spoofed_ptr(name, &a, &ttl) != E_SUCCESS)
          return -E_NOTFOUND;
 
       /* compress the string into the buffer */
@@ -829,11 +868,14 @@ any_txt:
       SAFE_CALLOC(answer, len, sizeof(u_char)); 
       p = answer;
 
+      /* make TTL big-endian to work with DNS */
+      dns_ttl = htonl(ttl);
+
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
       memcpy(p + 2, "\x00\x0c", 2);                    /* type PTR */
       memcpy(p + 4, "\x00\x01", 2);                    /* class */
-      memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
+      memcpy(p + 6, &dns_ttl, 4);                     /* TTL */
       /* put the length before the dn_comp'd string */
       p += 10;
       NS_PUT16(rlen, p);
@@ -848,8 +890,8 @@ any_txt:
       *dns_len += len;
       *n_answ += 1;
       
-      USER_MSG("dns_spoof: %s [%s] spoofed to [%s]\n", 
-            type_str(type), name, a);
+      USER_MSG("dns_spoof: %s [%s] spoofed to [%s] TTL [%u s]\n", 
+            type_str(type), name, a, ttl);
       
    } /* PTR */
 
@@ -862,7 +904,7 @@ any_txt:
 
 
       /* found the reply in the list */
-      if (get_spoofed_srv(name, &reply, &port) != E_SUCCESS) 
+      if (get_spoofed_srv(name, &reply, &port, &ttl) != E_SUCCESS) 
          return -E_NOTFOUND;
 
       /* allocate memory for the answer */
@@ -885,11 +927,14 @@ any_txt:
       tgtoffset[0] = 0xc0; /* offset byte */
       tgtoffset[1] = 12 + dn_offset; /* offset to the actual domain name */
 
+      /* make TTL big-endian to work with DNS */
+      dns_ttl = htonl(ttl);
+
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                    /* compressed name offset */
       memcpy(p + 2, "\x00\x21", 2);                /* type SRV */
       memcpy(p + 4, "\x00\x01", 2);                /* class IN */
-      memcpy(p + 6, "\x00\x00\x0e\x10", 4);        /* TTL (1 hour) */
+      memcpy(p + 6, &dns_ttl, 4);                 /* TTL */
       memcpy(p + 10, "\x00\x0c", 2);               /* data length */
       memcpy(p + 12, "\x00\x00", 2);               /* priority */
       memcpy(p + 14, "\x00\x00", 2);               /* weight */
@@ -925,7 +970,7 @@ any_txt:
          memcpy(p + 4, tgtoffset, 2);             /* compressed name offset */
          memcpy(p + 6, "\x00\x01", 2);            /* type A */
          memcpy(p + 8, "\x00\x01", 2);            /* class */
-         memcpy(p + 10, "\x00\x00\x0e\x10", 4);   /* TTL (1 hour) */
+         memcpy(p + 10, &dns_ttl, 4);            /* TTL */
          memcpy(p + 14, "\x00\x04", 2);           /* datalen */
          ip_addr_cpy(p + 16, reply);              /* data */
       }
@@ -941,7 +986,7 @@ any_txt:
          memcpy(p + 4, tgtoffset, 2);             /* compressed name offset */
          memcpy(p + 6, "\x00\x1c", 2);            /* type AAAA */
          memcpy(p + 8, "\x00\x01", 2);            /* class */
-         memcpy(p + 10, "\x00\x00\x0e\x10", 4);   /* TTL (1 hour) */
+         memcpy(p + 10, &dns_ttl, 4);            /* TTL */
          memcpy(p + 14, "\x00\x10", 2);           /* datalen */
          ip_addr_cpy(p + 16, reply);              /* data */
       }
@@ -958,8 +1003,8 @@ any_txt:
       *dns_len += len;
       *n_addi += 1;
       
-      USER_MSG("dns_spoof: %s [%s] spoofed to [%s:%d]\n", 
-            type_str(type), name, ip_addr_ntoa(reply, tmp), port);
+      USER_MSG("dns_spoof: %s [%s] spoofed to [%s:%d] TTL [%u s]\n", 
+            type_str(type), name, ip_addr_ntoa(reply, tmp), port, ttl);
    } /* SRV */
 
    if (is_negative && type != ns_t_any) {
@@ -969,11 +1014,14 @@ any_txt:
       SAFE_CALLOC(answer, len, sizeof(u_char));
       p = answer;
 
+      /* make TTL big-endian to work with DNS */
+      dns_ttl = htonl(ttl);
+
       /* prepare the authorative record */
       memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
       memcpy(p + 2, "\x00\x06", 2);                    /* type SOA */
       memcpy(p + 4, "\x00\x01", 2);                    /* class */
-      memcpy(p + 6, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
+      memcpy(p + 6, &dns_ttl, 4);                     /* TTL (seconds) */
       memcpy(p + 10, "\x00\x22", 2);                   /* datalen */
       memcpy(p + 12, "\x03ns1", 4);                    /* primary server */
       memcpy(p + 16, "\xc0\x0c", 2);                   /* compressed name offeset */   
@@ -993,7 +1041,7 @@ any_txt:
       *dns_len += len;
       *n_auth += 1;
       
-      USER_MSG("dns_spoof: negative cache spoofed for [%s] type %s \n", name, type_str(type));
+      USER_MSG("dns_spoof: negative cache spoofed for [%s] type %s, TTL [%u s]\n", name, type_str(type), ttl);
    } /* SOA */
 
 exit:
@@ -1005,7 +1053,7 @@ exit:
 /*
  * return the ip address for the name - IPv4
  */
-static int get_spoofed_a(const char *a, struct ip_addr **ip)
+static int get_spoofed_a(const char *a, struct ip_addr **ip, u_int32 *ttl)
 {
    struct dns_spoof_entry *d;
 
@@ -1014,6 +1062,7 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip)
 
          /* return the pointer to the struct */
          *ip = &d->ip;
+         *ttl = d->ttl;
          
          return E_SUCCESS;
       }
@@ -1025,7 +1074,7 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip)
 /*
  * return the ip address for the name - IPv6
  */
-static int get_spoofed_aaaa(const char *a, struct ip_addr **ip)
+static int get_spoofed_aaaa(const char *a, struct ip_addr **ip, u_int32 *ttl)
 {
     struct dns_spoof_entry *d;
     
@@ -1033,6 +1082,7 @@ static int get_spoofed_aaaa(const char *a, struct ip_addr **ip)
         if (d->type == ns_t_aaaa && match_pattern(a, d->name)) {
             /* return the pointer to the struct */
             *ip = &d->ip;
+            *ttl = d->ttl;
 
             return E_SUCCESS;
         }
@@ -1044,7 +1094,7 @@ static int get_spoofed_aaaa(const char *a, struct ip_addr **ip)
 /*
  * return the TXT string for the name
  */
-static int get_spoofed_txt(const char *name, char **txt)
+static int get_spoofed_txt(const char *name, char **txt, u_int32 *ttl)
 {
    struct dns_spoof_entry *d;
 
@@ -1052,6 +1102,7 @@ static int get_spoofed_txt(const char *name, char **txt)
       if (d->type == ns_t_txt && match_pattern(name, d->name)) {
          /* return the pointer to the string */
          *txt = d->text;
+         *ttl = d->ttl;
 
          return E_SUCCESS;
       }
@@ -1063,7 +1114,7 @@ static int get_spoofed_txt(const char *name, char **txt)
 /* 
  * return the name for the ip address 
  */
-static int get_spoofed_ptr(const char *arpa, char **a)
+static int get_spoofed_ptr(const char *arpa, char **a, u_int32 *ttl)
 {
    struct dns_spoof_entry *d;
    struct ip_addr ptr;
@@ -1149,6 +1200,7 @@ static int get_spoofed_ptr(const char *arpa, char **a)
 
          /* return the pointer to the name */
          *a = d->name;
+         *ttl = d->ttl;
          
          return E_SUCCESS;
       }
@@ -1160,7 +1212,7 @@ static int get_spoofed_ptr(const char *arpa, char **a)
 /*
  * return the ip address for the name (MX records)
  */
-static int get_spoofed_mx(const char *a, struct ip_addr **ip)
+static int get_spoofed_mx(const char *a, struct ip_addr **ip, u_int32 *ttl)
 {
    struct dns_spoof_entry *d;
 
@@ -1169,6 +1221,7 @@ static int get_spoofed_mx(const char *a, struct ip_addr **ip)
 
          /* return the pointer to the struct */
          *ip = &d->ip;
+         *ttl = d->ttl;
          
          return E_SUCCESS;
       }
@@ -1180,7 +1233,7 @@ static int get_spoofed_mx(const char *a, struct ip_addr **ip)
 /*
  * return the ip address for the name (NetBIOS WINS records)
  */
-static int get_spoofed_wins(const char *a, struct ip_addr **ip)
+static int get_spoofed_wins(const char *a, struct ip_addr **ip, u_int32 *ttl)
 {
    struct dns_spoof_entry *d;
 
@@ -1189,7 +1242,7 @@ static int get_spoofed_wins(const char *a, struct ip_addr **ip)
 
          /* return the pointer to the struct */
          *ip = &d->ip;
-
+         *ttl = d->ttl;
          return E_SUCCESS;
       }
    }
@@ -1200,7 +1253,7 @@ static int get_spoofed_wins(const char *a, struct ip_addr **ip)
 /*
  * return the target for the SRV request
  */
-static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port) 
+static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port, u_int32 *ttl)
 {
     struct dns_spoof_entry *d;
 
@@ -1209,6 +1262,7 @@ static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port)
            /* return the pointer to the struct */
            *ip = &d->ip;
            *port = d->port;
+           *ttl = d->ttl;
 
            return E_SUCCESS;
         }
@@ -1234,31 +1288,34 @@ static void dns_spoof_dump(void)
    struct dns_spoof_entry *d;
    char tmp[MAX_ASCII_ADDR_LEN];
 
+   /* Unused variable */
+   (void) tmp;
+
    DEBUG_MSG("dns_spoof entries:");
    SLIST_FOREACH(d, &dns_spoof_head, next) {
       if (d->type == ns_t_txt) {
-         DEBUG_MSG("  %s -> \"%s\", type %s", d->name, d->text, type_str(d->type));
+         DEBUG_MSG("  %s -> \"%s\", type %s, TTL %u", d->name, d->text, type_str(d->type), d->ttl);
       }
       else if (ntohs(d->ip.addr_type) == AF_INET)
       {
          if (d->type == ns_t_srv) {
-            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv4", 
-                      d->name, ip_addr_ntoa(&d->ip, tmp), d->port, type_str(d->type));
+            DEBUG_MSG("  %s -> [%s:%d], type %s, TTL %u, family IPv4",
+                      d->name, ip_addr_ntoa(&d->ip, tmp), d->port, type_str(d->type), d->ttl);
          } 
          else {
-            DEBUG_MSG("  %s -> [%s], type %s, family IPv4", 
-                      d->name, ip_addr_ntoa(&d->ip, tmp), type_str(d->type));
+            DEBUG_MSG("  %s -> [%s], type %s, TTL %u, family IPv4",
+                      d->name, ip_addr_ntoa(&d->ip, tmp), type_str(d->type), d->ttl);
          }
       }
       else if (ntohs(d->ip.addr_type) == AF_INET6)
       {
          if (d->type == ns_t_srv) {
-            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv6", 
-                      d->name, ip_addr_ntoa(&d->ip, tmp), d->port, type_str(d->type));
+            DEBUG_MSG("  %s -> [%s:%d], type %s, TTL %u, family IPv6",
+                      d->name, ip_addr_ntoa(&d->ip, tmp), d->port, type_str(d->type), d->ttl);
          }
          else {
-            DEBUG_MSG("  %s -> [%s], type %s, family IPv6", 
-                      d->name, ip_addr_ntoa(&d->ip, tmp), type_str(d->type));
+            DEBUG_MSG("  %s -> [%s], type %s, TTL %u, family IPv6",
+                      d->name, ip_addr_ntoa(&d->ip, tmp), type_str(d->type), d->ttl);
          }
       }
       else

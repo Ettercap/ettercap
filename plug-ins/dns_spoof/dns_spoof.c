@@ -34,7 +34,7 @@
 #endif
 
 /* Maximum DNS TTL according to RFC 2181 = 2^31 - 1*/
-#define MAX_DNS_TTL 2147483647
+#define MAX_DNS_TTL INT_MAX
 
 /* globals */
 
@@ -527,7 +527,7 @@ static int prepare_dns_reply(u_char *data, const char *name, int type, int *dns_
 
    /* set TTL to 1 hour by default or in case something goes wrong */
    ttl = 3600;
-   dns_ttl = htonl(ttl); /* big endian for network stuff */
+   dns_ttl = htonl(ttl); /* reorder bytes for network stuff */
 
    /* by default we want to spoof actual data */
    is_negative = false;
@@ -569,14 +569,14 @@ static int prepare_dns_reply(u_char *data, const char *name, int type, int *dns_
          SAFE_CALLOC(answer, len, sizeof(u_char));
          p = answer;
 
-         /* make TTL big-endian to work with DNS */
+         /* convert to network-byte order */
          dns_ttl = htonl(ttl);
 
          /* prepare the answer */
          memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
          memcpy(p + 2, "\x00\x01", 2);                    /* type A */
          memcpy(p + 4, "\x00\x01", 2);                    /* class */
-         memcpy(p + 6, &dns_ttl, 4);                     /* TTL */
+         memcpy(p + 6, &dns_ttl, 4);                      /* TTL */
          memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
          ip_addr_cpy(p + 12, reply);                      /* data */
 
@@ -632,14 +632,14 @@ any_aaaa:
          SAFE_CALLOC(answer, len, sizeof(u_char));
          p = answer;
 
-         /* make TTL big-endian to work with DNS */
+         /* convert to network-byte order */
          dns_ttl = htonl(ttl);
 
          /* prepare the answer */
-         memcpy(p, "\xc0\x0c", 2);         /* compressed name offset */
+         memcpy(p, "\xc0\x0c", 2);             /* compressed name offset */
          memcpy(p + 2, "\x00\x1c", 2);         /* type AAAA */
          memcpy(p + 4, "\x00\x01", 2);         /* class IN */
-         memcpy(p + 6, &dns_ttl, 4);          /* TTL */
+         memcpy(p + 6, &dns_ttl, 4);           /* TTL */
          memcpy(p + 10, "\x00\x10", 2);        /* datalen */
          ip_addr_cpy(p + 12, reply);           /* data */
 
@@ -675,14 +675,14 @@ any_mx:
       SAFE_CALLOC(answer, len, sizeof(u_char));
       p = answer;
 
-      /* make TTL big-endian to work with DNS */
+      /* convert to network-byte order */
       dns_ttl = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                          /* compressed name offset */
       memcpy(p + 2, "\x00\x0f", 2);                      /* type MX */
       memcpy(p + 4, "\x00\x01", 2);                      /* class */
-      memcpy(p + 6, &dns_ttl, 4);                       /* TTL */
+      memcpy(p + 6, &dns_ttl, 4);                        /* TTL */
       memcpy(p + 10, "\x00\x09", 2);                     /* datalen */
       memcpy(p + 12, "\x00\x0a", 2);                     /* preference (highest) */
       /* 
@@ -712,7 +712,7 @@ any_mx:
          memcpy(p, "\x04mail\xc0\x0c", 7);             /* compressed name offset */
          memcpy(p + 7, "\x00\x01", 2);                 /* type A */
          memcpy(p + 9, "\x00\x01", 2);                 /* class */
-         memcpy(p + 11, &dns_ttl, 4);                      /* TTL */
+         memcpy(p + 11, &dns_ttl, 4);                  /* TTL */
          memcpy(p + 15, "\x00\x04", 2);                /* datalen */
          ip_addr_cpy(p + 17, reply);                   /* data */
       }
@@ -728,7 +728,7 @@ any_mx:
          memcpy(p, "\x04mail\xc0\x0c", 7);            /* compressed name offset */
          memcpy(p + 7, "\x00\x1c", 2);                /* type AAAA */
          memcpy(p + 9, "\x00\x01", 2);                /* class */
-         memcpy(p + 11, &dns_ttl, 4);                     /* TTL */
+         memcpy(p + 11, &dns_ttl, 4);                 /* TTL */
          memcpy(p + 15, "\x00\x10", 2);               /* datalen */
          ip_addr_cpy(p + 17, reply);                  /* data */
       }
@@ -775,14 +775,14 @@ any_wins:
       SAFE_CALLOC(answer, len, sizeof(u_char));
       p = answer;
 
-      /* make TTL big-endian to work with DNS */
+      /* convert to network-byte order */
       dns_ttl = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
       memcpy(p + 2, "\xff\x01", 2);                    /* type WINS */
       memcpy(p + 4, "\x00\x01", 2);                    /* class IN */
-      memcpy(p + 6, &dns_ttl, 4);                     /* TTL */
+      memcpy(p + 6, &dns_ttl, 4);                      /* TTL */
       memcpy(p + 10, "\x00\x04", 2);                   /* datalen */
       ip_addr_cpy((u_char*)p + 12, reply);             /* data */
 
@@ -824,14 +824,14 @@ any_txt:
       SAFE_CALLOC(answer, len, sizeof(u_char));
       p = answer;
 
-      /* make TTL big-endian to work with DNS */
+      /* convert to network-byte order */
       dns_ttl = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p,     "\xc0\x0c", 2);         /* compressed name offset */
       memcpy(p + 2, "\x00\x10", 2);         /* type TXT */
       memcpy(p + 4, "\x00\x01", 2);         /* class IN */
-      memcpy(p + 6, &dns_ttl, 4);          /* TTL */
+      memcpy(p + 6, &dns_ttl, 4);           /* TTL */
       memcpy(p + 10, &datalen, 2);          /* data len */
       memcpy(p + 12, &txtlen, 1);           /* TXT len */
       memcpy(p + 13, txt, txtlen);          /* string */
@@ -868,14 +868,14 @@ any_txt:
       SAFE_CALLOC(answer, len, sizeof(u_char)); 
       p = answer;
 
-      /* make TTL big-endian to work with DNS */
+      /* convert to network-byte order */
       dns_ttl = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
       memcpy(p + 2, "\x00\x0c", 2);                    /* type PTR */
       memcpy(p + 4, "\x00\x01", 2);                    /* class */
-      memcpy(p + 6, &dns_ttl, 4);                     /* TTL */
+      memcpy(p + 6, &dns_ttl, 4);                      /* TTL */
       /* put the length before the dn_comp'd string */
       p += 10;
       NS_PUT16(rlen, p);
@@ -927,14 +927,14 @@ any_txt:
       tgtoffset[0] = 0xc0; /* offset byte */
       tgtoffset[1] = 12 + dn_offset; /* offset to the actual domain name */
 
-      /* make TTL big-endian to work with DNS */
+      /* convert to network-byte order */
       dns_ttl = htonl(ttl);
 
       /* prepare the answer */
       memcpy(p, "\xc0\x0c", 2);                    /* compressed name offset */
       memcpy(p + 2, "\x00\x21", 2);                /* type SRV */
       memcpy(p + 4, "\x00\x01", 2);                /* class IN */
-      memcpy(p + 6, &dns_ttl, 4);                 /* TTL */
+      memcpy(p + 6, &dns_ttl, 4);                  /* TTL */
       memcpy(p + 10, "\x00\x0c", 2);               /* data length */
       memcpy(p + 12, "\x00\x00", 2);               /* priority */
       memcpy(p + 14, "\x00\x00", 2);               /* weight */
@@ -970,7 +970,7 @@ any_txt:
          memcpy(p + 4, tgtoffset, 2);             /* compressed name offset */
          memcpy(p + 6, "\x00\x01", 2);            /* type A */
          memcpy(p + 8, "\x00\x01", 2);            /* class */
-         memcpy(p + 10, &dns_ttl, 4);            /* TTL */
+         memcpy(p + 10, &dns_ttl, 4);             /* TTL */
          memcpy(p + 14, "\x00\x04", 2);           /* datalen */
          ip_addr_cpy(p + 16, reply);              /* data */
       }
@@ -986,7 +986,7 @@ any_txt:
          memcpy(p + 4, tgtoffset, 2);             /* compressed name offset */
          memcpy(p + 6, "\x00\x1c", 2);            /* type AAAA */
          memcpy(p + 8, "\x00\x01", 2);            /* class */
-         memcpy(p + 10, &dns_ttl, 4);            /* TTL */
+         memcpy(p + 10, &dns_ttl, 4);             /* TTL */
          memcpy(p + 14, "\x00\x10", 2);           /* datalen */
          ip_addr_cpy(p + 16, reply);              /* data */
       }
@@ -1014,14 +1014,14 @@ any_txt:
       SAFE_CALLOC(answer, len, sizeof(u_char));
       p = answer;
 
-      /* make TTL big-endian to work with DNS */
+      /* convert to network-byte order */
       dns_ttl = htonl(ttl);
 
       /* prepare the authorative record */
-      memcpy(p, "\xc0\x0c", 2);                        /* compressed name offset */
+      memcpy(p, "\xc0\x0c", 2);                        /* compressed named offset */
       memcpy(p + 2, "\x00\x06", 2);                    /* type SOA */
       memcpy(p + 4, "\x00\x01", 2);                    /* class */
-      memcpy(p + 6, &dns_ttl, 4);                     /* TTL (seconds) */
+      memcpy(p + 6, &dns_ttl, 4);                      /* TTL (seconds) */
       memcpy(p + 10, "\x00\x22", 2);                   /* datalen */
       memcpy(p + 12, "\x03ns1", 4);                    /* primary server */
       memcpy(p + 16, "\xc0\x0c", 2);                   /* compressed name offeset */   

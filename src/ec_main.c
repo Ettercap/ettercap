@@ -32,6 +32,7 @@
 #include <ec_plugins.h>
 #include <ec_format.h>
 #include <ec_fingerprint.h>
+#include <ec_geoip.h>
 #include <ec_manuf.h>
 #include <ec_services.h>
 #include <ec_http.h>
@@ -111,6 +112,10 @@ int main(int argc, char *argv[])
    /* initialize the network subsystem */
    network_init();
    
+   /* initialize the GeoIP API */
+   if (GBL_CONF->geoip_support_enable)
+      geoip_init();
+
    /* 
     * always disable the kernel ip forwarding (except when reading from file).
     * the forwarding will be done by ettercap.

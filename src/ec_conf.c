@@ -81,6 +81,7 @@ static struct conf_entry misc[] = {
    { "checksum_check", NULL },
    { "submit_fingerprint", NULL },
    { "sniffing_at_startup", NULL },
+   { "geoip_support_enable", NULL },
    { NULL, NULL },
 };
 
@@ -109,6 +110,8 @@ static struct conf_entry strings[] = {
    { "redir_command_off", NULL },
    { "remote_browser", NULL },
    { "utf8_encoding", NULL },
+   { "geoip_data_file", NULL },
+   { "geoip_data_file_v6", NULL },
    { NULL, NULL },
 };
 
@@ -119,14 +122,14 @@ static struct conf_entry dissectors[] = {
 };
 
 static struct conf_section sections[] = {
-   { "privs", (struct conf_entry *)&privs},
-   { "mitm", (struct conf_entry *)&mitm},
-   { "connections", (struct conf_entry *)&connections},
-   { "stats", (struct conf_entry *)&stats},
-   { "misc", (struct conf_entry *)&misc},
-   { "dissectors", (struct conf_entry *)&dissectors},
-   { "curses", (struct conf_entry *)&curses},
-   { "strings", (struct conf_entry *)&strings},
+   { "privs", privs},
+   { "mitm", mitm},
+   { "connections", connections},
+   { "stats", stats},
+   { "misc", misc},
+   { "dissectors", dissectors},
+   { "curses", curses},
+   { "strings", strings},
    { NULL, NULL },
 };
 
@@ -134,7 +137,7 @@ static struct conf_section sections[] = {
 /* protos */
 
 static void init_structures(void);
-static void set_pointer(struct conf_entry *entry, char *name, void *ptr);
+static void set_pointer(struct conf_entry *entry, const char *name, void *ptr);
 static void sanity_checks(void);
 
 static void set_dissector(char *name, char *values, int lineno);
@@ -155,61 +158,65 @@ static void init_structures(void)
    
    DEBUG_MSG("init_structures");
    
-   set_pointer((struct conf_entry *)&privs, "ec_uid", &GBL_CONF->ec_uid);
-   set_pointer((struct conf_entry *)&privs, "ec_gid", &GBL_CONF->ec_gid);
-   set_pointer((struct conf_entry *)&mitm, "arp_storm_delay", &GBL_CONF->arp_storm_delay);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_smart", &GBL_CONF->arp_poison_smart);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_icmp", &GBL_CONF->arp_poison_icmp);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_reply", &GBL_CONF->arp_poison_reply);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_request", &GBL_CONF->arp_poison_request);
-   set_pointer((struct conf_entry *)&mitm, "arp_poison_equal_mac", &GBL_CONF->arp_poison_equal_mac);
-   set_pointer((struct conf_entry *)&mitm, "dhcp_lease_time", &GBL_CONF->dhcp_lease_time);
-   set_pointer((struct conf_entry *)&mitm, "port_steal_delay", &GBL_CONF->port_steal_delay);
-   set_pointer((struct conf_entry *)&mitm, "port_steal_send_delay", &GBL_CONF->port_steal_send_delay);
+   set_pointer(privs, "ec_uid", &GBL_CONF->ec_uid);
+   set_pointer(privs, "ec_gid", &GBL_CONF->ec_gid);
+   set_pointer(mitm, "arp_storm_delay", &GBL_CONF->arp_storm_delay);
+   set_pointer(mitm, "arp_poison_smart", &GBL_CONF->arp_poison_smart);
+   set_pointer(mitm, "arp_poison_warm_up", &GBL_CONF->arp_poison_warm_up);
+   set_pointer(mitm, "arp_poison_delay", &GBL_CONF->arp_poison_delay);
+   set_pointer(mitm, "arp_poison_icmp", &GBL_CONF->arp_poison_icmp);
+   set_pointer(mitm, "arp_poison_reply", &GBL_CONF->arp_poison_reply);
+   set_pointer(mitm, "arp_poison_request", &GBL_CONF->arp_poison_request);
+   set_pointer(mitm, "arp_poison_equal_mac", &GBL_CONF->arp_poison_equal_mac);
+   set_pointer(mitm, "dhcp_lease_time", &GBL_CONF->dhcp_lease_time);
+   set_pointer(mitm, "port_steal_delay", &GBL_CONF->port_steal_delay);
+   set_pointer(mitm, "port_steal_send_delay", &GBL_CONF->port_steal_send_delay);
 #ifdef WITH_IPV6
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_warm_up", &GBL_CONF->ndp_poison_warm_up);
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_delay", &GBL_CONF->ndp_poison_delay);
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_send_delay", &GBL_CONF->ndp_poison_send_delay);
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_icmp", &GBL_CONF->ndp_poison_icmp);
-   set_pointer((struct conf_entry *)&mitm, "ndp_poison_equal_mac", &GBL_CONF->ndp_poison_equal_mac);
-   set_pointer((struct conf_entry *)&mitm, "icmp6_probe_delay", &GBL_CONF->icmp6_probe_delay);
+   set_pointer(mitm, "ndp_poison_warm_up", &GBL_CONF->ndp_poison_warm_up);
+   set_pointer(mitm, "ndp_poison_delay", &GBL_CONF->ndp_poison_delay);
+   set_pointer(mitm, "ndp_poison_send_delay", &GBL_CONF->ndp_poison_send_delay);
+   set_pointer(mitm, "ndp_poison_icmp", &GBL_CONF->ndp_poison_icmp);
+   set_pointer(mitm, "ndp_poison_equal_mac", &GBL_CONF->ndp_poison_equal_mac);
+   set_pointer(mitm, "icmp6_probe_delay", &GBL_CONF->icmp6_probe_delay);
 #endif
-   set_pointer((struct conf_entry *)&connections, "connection_timeout", &GBL_CONF->connection_timeout);
-   set_pointer((struct conf_entry *)&connections, "connection_idle", &GBL_CONF->connection_idle);
-   set_pointer((struct conf_entry *)&connections, "connection_buffer", &GBL_CONF->connection_buffer);
-   set_pointer((struct conf_entry *)&connections, "connect_timeout", &GBL_CONF->connect_timeout);
-   set_pointer((struct conf_entry *)&stats, "sampling_rate", &GBL_CONF->sampling_rate);
-   set_pointer((struct conf_entry *)&misc, "close_on_eof", &GBL_CONF->close_on_eof);
-   set_pointer((struct conf_entry *)&misc, "store_profiles", &GBL_CONF->store_profiles);
-   set_pointer((struct conf_entry *)&misc, "aggressive_dissectors", &GBL_CONF->aggressive_dissectors);
-   set_pointer((struct conf_entry *)&misc, "skip_forwarded_pcks", &GBL_CONF->skip_forwarded);
-   set_pointer((struct conf_entry *)&misc, "checksum_warning", &GBL_CONF->checksum_warning);
-   set_pointer((struct conf_entry *)&misc, "checksum_check", &GBL_CONF->checksum_check);
-   set_pointer((struct conf_entry *)&misc, "submit_fingerprint", &GBL_CONF->submit_fingerprint);
-   set_pointer((struct conf_entry *)&misc, "sniffing_at_startup", &GBL_CONF->sniffing_at_startup);
-   set_pointer((struct conf_entry *)&curses, "color_bg", &GBL_CONF->colors.bg);
-   set_pointer((struct conf_entry *)&curses, "color_fg", &GBL_CONF->colors.fg);
-   set_pointer((struct conf_entry *)&curses, "color_join1", &GBL_CONF->colors.join1);
-   set_pointer((struct conf_entry *)&curses, "color_join2", &GBL_CONF->colors.join2);
-   set_pointer((struct conf_entry *)&curses, "color_border", &GBL_CONF->colors.border);
-   set_pointer((struct conf_entry *)&curses, "color_title", &GBL_CONF->colors.title);
-   set_pointer((struct conf_entry *)&curses, "color_focus", &GBL_CONF->colors.focus);
-   set_pointer((struct conf_entry *)&curses, "color_menu_bg", &GBL_CONF->colors.menu_bg);
-   set_pointer((struct conf_entry *)&curses, "color_menu_fg", &GBL_CONF->colors.menu_fg);
-   set_pointer((struct conf_entry *)&curses, "color_window_bg", &GBL_CONF->colors.window_bg);
-   set_pointer((struct conf_entry *)&curses, "color_window_fg", &GBL_CONF->colors.window_fg);
-   set_pointer((struct conf_entry *)&curses, "color_selection_bg", &GBL_CONF->colors.selection_bg);
-   set_pointer((struct conf_entry *)&curses, "color_selection_fg", &GBL_CONF->colors.selection_fg);
-   set_pointer((struct conf_entry *)&curses, "color_error_bg", &GBL_CONF->colors.error_bg);
-   set_pointer((struct conf_entry *)&curses, "color_error_fg", &GBL_CONF->colors.error_fg);
-   set_pointer((struct conf_entry *)&curses, "color_error_border", &GBL_CONF->colors.error_border);
+
+   set_pointer(connections, "connection_timeout", &GBL_CONF->connection_timeout);
+   set_pointer(connections, "connection_idle", &GBL_CONF->connection_idle);
+   set_pointer(connections, "connection_buffer", &GBL_CONF->connection_buffer);
+   set_pointer(connections, "connect_timeout", &GBL_CONF->connect_timeout);
+   set_pointer(stats, "sampling_rate", &GBL_CONF->sampling_rate);
+   set_pointer(misc, "close_on_eof", &GBL_CONF->close_on_eof);
+   set_pointer(misc, "store_profiles", &GBL_CONF->store_profiles);
+   set_pointer(misc, "aggressive_dissectors", &GBL_CONF->aggressive_dissectors);
+   set_pointer(misc, "skip_forwarded_pcks", &GBL_CONF->skip_forwarded);
+   set_pointer(misc, "checksum_warning", &GBL_CONF->checksum_warning);
+   set_pointer(misc, "checksum_check", &GBL_CONF->checksum_check);
+   set_pointer(misc, "submit_fingerprint", &GBL_CONF->submit_fingerprint);
+   set_pointer(misc, "sniffing_at_startup", &GBL_CONF->sniffing_at_startup);
+   set_pointer(misc, "geoip_support_enable", &GBL_CONF->geoip_support_enable);
+   set_pointer(curses, "color_bg", &GBL_CONF->colors.bg);
+   set_pointer(curses, "color_fg", &GBL_CONF->colors.fg);
+   set_pointer(curses, "color_join1", &GBL_CONF->colors.join1);
+   set_pointer(curses, "color_join2", &GBL_CONF->colors.join2);
+   set_pointer(curses, "color_border", &GBL_CONF->colors.border);
+   set_pointer(curses, "color_title", &GBL_CONF->colors.title);
+   set_pointer(curses, "color_focus", &GBL_CONF->colors.focus);
+   set_pointer(curses, "color_menu_bg", &GBL_CONF->colors.menu_bg);
+   set_pointer(curses, "color_menu_fg", &GBL_CONF->colors.menu_fg);
+   set_pointer(curses, "color_window_bg", &GBL_CONF->colors.window_bg);
+   set_pointer(curses, "color_window_fg", &GBL_CONF->colors.window_fg);
+   set_pointer(curses, "color_selection_bg", &GBL_CONF->colors.selection_bg);
+   set_pointer(curses, "color_selection_fg", &GBL_CONF->colors.selection_fg);
+   set_pointer(curses, "color_error_bg", &GBL_CONF->colors.error_bg);
+   set_pointer(curses, "color_error_fg", &GBL_CONF->colors.error_fg);
+   set_pointer(curses, "color_error_border", &GBL_CONF->colors.error_border);
    /* special case for strings */
-   set_pointer((struct conf_entry *)&strings, "redir_command_on", &GBL_CONF->redir_command_on);
-   set_pointer((struct conf_entry *)&strings, "redir_command_off", &GBL_CONF->redir_command_off);
-   set_pointer((struct conf_entry *)&strings, "remote_browser", &GBL_CONF->remote_browser);
-   set_pointer((struct conf_entry *)&strings, "utf8_encoding", &GBL_CONF->utf8_encoding);
+   set_pointer(strings, "redir_command_on", &GBL_CONF->redir_command_on);
+   set_pointer(strings, "redir_command_off", &GBL_CONF->redir_command_off);
+   set_pointer(strings, "remote_browser", &GBL_CONF->remote_browser);
+   set_pointer(strings, "utf8_encoding", &GBL_CONF->utf8_encoding);
+   set_pointer(strings, "geoip_data_file", &GBL_CONF->geoip_data_file);
+   set_pointer(strings, "geoip_data_file_v6", &GBL_CONF->geoip_data_file_v6);
 
    /* sanity check */
    do {
@@ -227,7 +234,7 @@ static void init_structures(void)
  * associate the pointer to a struct
  */
 
-static void set_pointer(struct conf_entry *entry, char *name, void *ptr)
+static void set_pointer(struct conf_entry *entry, const char *name, void *ptr)
 {
    int i = 0;
 
@@ -278,7 +285,7 @@ void load_conf(void)
    }
   
    /* read the file */
-   while (fgets(line, 256, fc) != 0) {
+   while (fgets(line, sizeof(line), fc) != 0) {
       
       /* update the line count */
       lineno++;
@@ -351,7 +358,7 @@ void load_conf(void)
        * if it is the "dissector" section,
        * do it in a different way
        */
-      if (curr_section == (struct conf_entry *)&dissectors) {
+      if (curr_section == dissectors) {
          set_dissector(q, p, lineno);
          continue;
       }
@@ -361,7 +368,7 @@ void load_conf(void)
          FATAL_ERROR("Invalid entry in %s line %d", ETTER_CONF, lineno);
    
       /* strings must be handled in a different way */
-      if (curr_section == (struct conf_entry *)&strings) {
+      if (curr_section == strings) {
          /* trim the quotes */
          if (*p == '"')
             p++;

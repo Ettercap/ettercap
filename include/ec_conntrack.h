@@ -79,6 +79,7 @@ EC_API_EXTERN void * conntrack_get(int mode, void *list, struct conn_object **co
 EC_API_EXTERN int conntrack_protostr(struct conn_object *conn, char *pstr, int len);
 EC_API_EXTERN int conntrack_flagstr(struct conn_object *conn, char *pstr, int len);
 EC_API_EXTERN int conntrack_statusstr(struct conn_object *conn, char *pstr, int len);
+EC_API_EXTERN int conntrack_countrystr(struct conn_object *conn, char *pstr, int len);
 EC_API_EXTERN EC_THREAD_FUNC(conntrack_timeouter); 
 EC_API_EXTERN void conntrack_purge(void);
 

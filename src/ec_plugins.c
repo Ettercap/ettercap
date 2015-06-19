@@ -158,7 +158,7 @@ void plugin_load_all(void)
    /* Assume .DLLs are under "<ec_root>/lib". This should be unified for
     * all; ec_get_lib_path()?
     */
-   char path[MAX_PATH];
+   char path[PATH_MAX];
 
    snprintf(path, sizeof(path), "%s%s", ec_win_get_ec_dir(), INSTALL_LIBDIR);
    where = path;

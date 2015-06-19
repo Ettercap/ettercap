@@ -4,6 +4,7 @@
 <!ELEMENT host (hostname?, mac?, manuf?, distance, type, fingerprint?, os?, port*)>
 <!ATTLIST host ip CDATA #REQUIRED>
 <!ELEMENT hostname (#PCDATA)>
+<!ELEMENT location (#PCDATA)>
 <!ELEMENT mac (#PCDATA)>
 <!ELEMENT manuf (#PCDATA)>
 <!ELEMENT distance (#PCDATA)>

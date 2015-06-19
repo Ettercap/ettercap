@@ -27,6 +27,7 @@
 #include <ec_hook.h>
 #include <ec_scan.h>
 #include <ec_log.h>
+#include <ec_geoip.h>
 
 #define ONLY_REMOTE_PROFILES  3
 #define ONLY_LOCAL_PROFILES   2
@@ -634,6 +635,7 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
       struct open_port *o;
       struct active_user *u;
       int found = 0;
+      size_t slen;
          
       /* search at least one account */
       LIST_FOREACH(o, &(h->open_ports_head), next) {
@@ -643,9 +645,16 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
       }
       
       ip_addr_ntoa(&h->L3_addr, tmp);
-      snprintf(*desc, len, "%c %15s   %s", (found) ? '*' : ' ', 
-                                           tmp, 
-                                           (h->hostname) ? h->hostname : "" );
+      slen = snprintf(*desc, len, "%c %15s   %s", (found) ? '*' : ' ', 
+            tmp, (h->hostname) ? h->hostname : "" );
+
+#ifdef WITH_GEOIP
+      if (len > slen && len - slen > 14 && GBL_CONF->geoip_support_enable) {
+         snprintf(*desc + slen, len - slen, ", %s", 
+               geoip_country_by_ip(&h->L3_addr));
+      }
+#endif
+
    }
   
    /* return the next/prev/current to the caller */

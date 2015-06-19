@@ -53,12 +53,15 @@ struct ec_conf {
    int submit_fingerprint;
    int checksum_warning;
    int sniffing_at_startup;
+   int geoip_support_enable;
    int store_profiles;
    struct curses_color colors;
    char *redir_command_on;
    char *redir_command_off;
    char *remote_browser;
    char *utf8_encoding;
+   char *geoip_data_file;
+   char *geoip_data_file_v6;
 };
 
 /* options from getopt */

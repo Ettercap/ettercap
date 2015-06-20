@@ -209,14 +209,14 @@ void geoip_init (void)
 {
 }
 
-char* geoip_ccode_by_ip (struct ip_addr *ip)
+const char* geoip_ccode_by_ip (struct ip_addr *ip)
 {
    (void) ip;
 
    return "--";
 }
 
-char* geoip_country_by_ip (struct ip_addr *ip)
+const char* geoip_country_by_ip (struct ip_addr *ip)
 {
    (void) ip;
 

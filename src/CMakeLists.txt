@@ -18,7 +18,6 @@ set(EC_SRC
         ec_filter.c
         ec_fingerprint.c
         ec_format.c
-        ec_geoip.c
         ec_globals.c
         ec_hash.c
         ec_hook.c
@@ -122,6 +121,10 @@ set(EC_SRC
         protocols/ec_wifi_radiotap.c
 )
 
+
+if (HAVE_GEOIP)
+        set(EC_SRC ${EC_SRC} ec_geoip.c)
+endif(HAVE_GEOIP)
 
 if(ENABLE_IPV6)
     set(EC_SRC ${EC_SRC} protocols/ec_icmp6.c protocols/ec_ip6.c mitm/ec_ip6nd_poison.c)

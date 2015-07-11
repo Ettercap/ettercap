@@ -304,10 +304,12 @@ void gtkui_show_connections(void)
    gtk_tree_view_column_set_sort_column_id (column, 9);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
+#ifdef WITH_GEOIP
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("Countries", renderer, "text", 10, NULL);
    gtk_tree_view_column_set_sort_column_id (column, 10);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+#endif
 
    hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);

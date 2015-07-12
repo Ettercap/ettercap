@@ -203,23 +203,4 @@ const char* geoip_country_by_ip (struct ip_addr *ip)
    return GeoIP_name_by_id(id);
 }
 
-#else   /* !WITH_GEOIP */
-
-void geoip_init (void)
-{
-}
-
-const char* geoip_ccode_by_ip (struct ip_addr *ip)
-{
-   (void) ip;
-
-   return "--";
-}
-
-const char* geoip_country_by_ip (struct ip_addr *ip)
-{
-   (void) ip;
-
-   return "Not built with GeoIP";
-}
 #endif  /* WITH_GEOIP */

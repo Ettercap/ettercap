@@ -112,9 +112,11 @@ int main(int argc, char *argv[])
    /* initialize the network subsystem */
    network_init();
    
+#ifdef WITH_GEOIP
    /* initialize the GeoIP API */
    if (GBL_CONF->geoip_support_enable)
       geoip_init();
+#endif
 
    /* 
     * always disable the kernel ip forwarding (except when reading from file).

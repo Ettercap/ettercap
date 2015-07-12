@@ -615,7 +615,9 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
    char proto[2], status[8], flags[2];
+#ifdef WITH_GEOIP
    size_t slen;
+#endif
 
    /* NULL is used to retrieve the first element */
    if (list == NULL)
@@ -637,12 +639,16 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       /* determine the flags */
       conntrack_flagstr(c->co, flags, sizeof(flags));
       
-      slen = snprintf(*desc, len, "%1s %15s:%-5d - %15s:%-5d %1s %s TX: %lu RX: %lu", 
+      snprintf(*desc, len, "%1s %15s:%-5d - %15s:%-5d %1s %s TX: %lu RX: %lu", 
             flags, src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
             proto, status, (unsigned long)c->co->tx, (unsigned long)c->co->rx);
 
 #ifdef WITH_GEOIP
-      if (len > slen && len - slen > 14 && GBL_CONF->geoip_support_enable) {
+      /* determine current string length */
+      slen = strlen(*desc);
+
+      /* check if enough space is available to append the GeoIP info */
+      if (len - slen > 14 && GBL_CONF->geoip_support_enable) {
          snprintf(*desc + slen, len - slen, ", CC: %2s > %2s", 
                geoip_ccode_by_ip(&c->co->L3_addr1),
                geoip_ccode_by_ip(&c->co->L3_addr2));
@@ -817,11 +823,14 @@ int conntrack_statusstr(struct conn_object *conn, char *pstr, int len)
  */
 int conntrack_countrystr(struct conn_object *conn, char *pstr, int len)
 {
+#ifdef WITH_GEOIP
    const char *ccode_src, *ccode_dst = NULL;
+#endif
 
-   if (pstr == NULL || conn == NULL)
+   if (pstr == NULL || conn == NULL || len < 8)
       return -E_INVALID;
 
+#ifdef WITH_GEOIP
    if (!GBL_CONF->geoip_support_enable)
       return -E_INITFAIL;
 
@@ -832,6 +841,7 @@ int conntrack_countrystr(struct conn_object *conn, char *pstr, int len)
       return -E_INITFAIL;
 
    snprintf(pstr, len, "%2s > %2s", ccode_src, ccode_dst);
+#endif
 
    return E_SUCCESS;
 }

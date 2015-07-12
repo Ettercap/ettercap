@@ -635,7 +635,9 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
       struct open_port *o;
       struct active_user *u;
       int found = 0;
+#ifdef WITH_GEOIP
       size_t slen;
+#endif
          
       /* search at least one account */
       LIST_FOREACH(o, &(h->open_ports_head), next) {
@@ -645,11 +647,15 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
       }
       
       ip_addr_ntoa(&h->L3_addr, tmp);
-      slen = snprintf(*desc, len, "%c %15s   %s", (found) ? '*' : ' ', 
+      snprintf(*desc, len, "%c %15s   %s", (found) ? '*' : ' ', 
             tmp, (h->hostname) ? h->hostname : "" );
 
 #ifdef WITH_GEOIP
-      if (len > slen && len - slen > 14 && GBL_CONF->geoip_support_enable) {
+      /* determine current string length */
+      slen = strlen(*desc);
+
+      /* check if enough space is available to append the GeoIP info */
+      if (len - slen > 14 && GBL_CONF->geoip_support_enable) {
          snprintf(*desc + slen, len - slen, ", %s", 
                geoip_country_by_ip(&h->L3_addr));
       }

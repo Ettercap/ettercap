@@ -264,6 +264,10 @@ int base64decode(const char *src, char **outptr)
    char *dst;
 
    *outptr = (char *)malloc(decodeLen);
+   if (*outptr == NULL) {
+      ERROR_MSG("base64decode(): Unable to allocate memory");
+      return -ENOMEM;
+   }
    memset(*outptr, '\0', decodeLen);
 
    dst = *outptr;
@@ -294,6 +298,10 @@ int base64encode(const char *inputbuff, char **outptr)
    int i_shift = 0;
    int bytes_remaining = strlen(inputbuff);
    *outptr = (char *)malloc(bytes_remaining*4/3+4);
+   if (*outptr == NULL) {
+      ERROR_MSG("base64decode(): Unable to allocate memory");
+      return -ENOMEM;
+   }
    memset(*outptr, '\0', bytes_remaining*4/3+4); 
 
    ret = dst = *outptr;

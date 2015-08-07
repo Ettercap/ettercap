@@ -263,8 +263,7 @@ int base64decode(const char *src, char **outptr)
    int decodeLen = get_decode_len(src);
    char *dst;
 
-   *outptr = (char *)malloc(decodeLen);
-   memset(*outptr, '\0', decodeLen);
+   SAFE_CALLOC(*outptr, decodeLen, sizeof(char));
 
    dst = *outptr;
    unsigned int sizeof_array = (sizeof(map2) / sizeof(map2[0]));
@@ -293,8 +292,8 @@ int base64encode(const char *inputbuff, char **outptr)
    unsigned i_bits = 0;
    int i_shift = 0;
    int bytes_remaining = strlen(inputbuff);
-   *outptr = (char *)malloc(bytes_remaining*4/3+4);
-   memset(*outptr, '\0', bytes_remaining*4/3+4); 
+
+   SAFE_CALLOC(*outptr, bytes_remaining*4/3+4, sizeof(char));
 
    ret = dst = *outptr;
    while(bytes_remaining) {

@@ -831,7 +831,9 @@ static void http_handle_request(struct http_connection *connection, struct packe
    char *r = (char*)po->DATA.data;
 
    //Skip the first line of request
-   r = strstr((const char*)po->DATA.data, "\r\n");
+   if ((r = strstr((const char*)po->DATA.data, "\r\n")) == NULL)
+      return; // This doesn't seem to look as a HTTP header
+
    r += 2; //Skip \r\n
 
    char *h = strdup(r);

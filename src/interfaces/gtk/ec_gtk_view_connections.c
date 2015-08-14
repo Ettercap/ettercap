@@ -448,8 +448,7 @@ static gboolean refresh_connections(gpointer data)
               row->prev->next = row->next;
           else
               connections = row->next;
-          free(row);
-          row = NULL;
+          SAFE_FREE(row);
        }
        if(row)
            lastconn = row;
@@ -1473,7 +1472,7 @@ static void gtkui_connection_purge(void *conn)
    connections = NULL;
    for(row = list; row; row = nextrow) {
        nextrow = row->next;
-       free(row);
+       SAFE_FREE(row);
    }
 
    conntrack_purge();

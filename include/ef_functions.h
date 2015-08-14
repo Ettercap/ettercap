@@ -3,13 +3,13 @@
 
 #include <ec_filter.h>
 
-#define SCRIPT_ERROR(x, ...) FATAL_ERROR("\n[%s:%d]: "x, GBL_OPTIONS->source_file, GBL->lineno, ## __VA_ARGS__ );
+#define SCRIPT_ERROR(x, ...) FATAL_ERROR("\n[%s:%d]: "x, EF_GBL_OPTIONS->source_file, EF_GBL->lineno, ## __VA_ARGS__ );
 
 #define WARNING(x) do {                   \
-if (!GBL_OPTIONS->suppress_warnings)       \
-   FATAL_ERROR("\n[%s:%ld]: WARNING "x, GBL_OPTIONS->source_file, (unsigned long)GBL->lineno);  \
+if (!EF_GBL_OPTIONS->suppress_warnings)       \
+   FATAL_ERROR("\n[%s:%ld]: WARNING "x, EF_GBL_OPTIONS->source_file, (unsigned long)EF_GBL->lineno);  \
 else                                      \
-   fprintf(stderr, "\n[%s:%ld]: WARNING "x, GBL_OPTIONS->source_file, (unsigned long)GBL->lineno);  \
+   fprintf(stderr, "\n[%s:%ld]: WARNING "x, EF_GBL_OPTIONS->source_file, (unsigned long)EF_GBL->lineno);  \
 } while(0)
 
 /* ef_main */

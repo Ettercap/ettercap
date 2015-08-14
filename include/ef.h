@@ -65,12 +65,12 @@ struct globals {
 };
 
 /* in el_main.c */
-extern struct globals *gbls;
+extern struct globals *ef_gbls;
 
-#define GBL_OPTIONS  gbls
-#define GBL          gbls
+#define EF_GBL_OPTIONS ef_gbls
+#define EF_GBL         ef_gbls
 
-#define GBL_PROGRAM "etterfilter"
+#define EF_GBL_PROGRAM "etterfilter"
 
 
 #define BIT_SET(r,b)       ( r[b>>3] |=   1<<(b&7) )

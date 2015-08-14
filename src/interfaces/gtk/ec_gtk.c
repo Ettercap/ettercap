@@ -108,7 +108,7 @@ static void gtkui_cleanup_wrap(void)
 static gboolean gtkui_msg_shim(gpointer data)
 {
    gtkui_msg(data);
-   free(data);
+   SAFE_FREE(data);
    return FALSE;
 }
 
@@ -125,7 +125,7 @@ static void gtkui_msg_wrap(const char *msg)
 static gboolean gtkui_error_shim(gpointer data)
 {
    gtkui_error(data);
-   free(data);
+   SAFE_FREE(data);
    return FALSE;
 }
 
@@ -142,7 +142,7 @@ static void gtkui_error_wrap(const char *msg)
 
 static gboolean gtkui_fatal_error_shim(gpointer data) {
    gtkui_fatal_error(data);
-   free(data);
+   SAFE_FREE(data);
    return FALSE;
 }
 
@@ -205,8 +205,8 @@ static gboolean gtkui_progress_shim(gpointer data) {
    /* render progress bar if not canceled or lasting longer than 750 ms */
    if (!progress_canceled && delay >= 0.75)
       gtkui_progress(gpd->title, gpd->value, gpd->max);
-   free(gpd->title);
-   free(gpd);
+   SAFE_FREE(gpd->title);
+   SAFE_FREE(gpd);
    return FALSE;
 }
 

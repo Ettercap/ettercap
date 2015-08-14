@@ -163,30 +163,6 @@ struct gtkui_input_data {
    void (*callback)(void);
 };
 
-/*static gboolean gtkui_input_shim(gpointer data) {
-
-   struct gtkui_input_data *gid = data;
-   gtkui_input(gid->title, gid->input, gid->n, gid->callback);
-   free(gid->title);
-   free(gid);
-   return FALSE;
-}*/
-
-/*static void gtkui_input_wrap(const char *title, char *input, size_t n, void (*callback)(void)) {
-
-   struct gtkui_input_data *gid = malloc(sizeof *gid);
-   if (gid) {
-      gid->title = strdup(title);
-      gid->input = input;
-      gid->n = n;
-      gid->callback = callback;
-      //g_idle_add(gtkui_input_shim, gid);
-       gtkui_input_shim(gid);
-   } else {
-      FATAL_ERROR("out of memory");
-   }
-}*/
-
 struct gtkui_progress_data {
    char *title;
    int value;

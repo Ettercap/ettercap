@@ -94,13 +94,13 @@ static int gre_relay_init(void *dummy)
    (void) dummy;
 
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("gre_relay: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }
 
    /* don't display messages while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
 
    memset(tmp, 0, sizeof(tmp));
    
@@ -167,7 +167,7 @@ static void parse_arp(struct packet_object *po)
    
    ip_addr_init(&sa, AF_INET, (u_char *)&(fake_ip.s_addr));
    if (!ip_addr_cmp(&sa, &po->L3.dst))
-      send_arp(ARPOP_REPLY, &sa, GBL_IFACE->mac, &po->L3.src, po->L2.src);
+      send_arp(ARPOP_REPLY, &sa, EC_GBL_IFACE->mac, &po->L3.src, po->L2.src);
 }
 
 /* EOF */

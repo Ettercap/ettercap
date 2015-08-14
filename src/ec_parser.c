@@ -54,7 +54,7 @@ static void ec_usage(void);
 void ec_usage(void)
 {
 
-   fprintf(stdout, "\nUsage: %s [OPTIONS] [TARGET1] [TARGET2]\n", GBL_PROGRAM);
+   fprintf(stdout, "\nUsage: %s [OPTIONS] [TARGET1] [TARGET2]\n", EC_GBL_PROGRAM);
 
 #ifdef WITH_IPV6
    fprintf(stdout, "\nTARGET is in the format MAC/IP/IPv6/PORTs (see the man for further detail)\n");
@@ -211,12 +211,12 @@ void parse_options(int argc, char **argv)
    
 /* OPTIONS INITIALIZATION */
    
-   GBL_PCAP->promisc = 1;
-   GBL_FORMAT = &ascii_format;
-   GBL_OPTIONS->ssl_mitm = 1;
-   GBL_OPTIONS->broadcast = 0;
-   GBL_OPTIONS->ssl_cert = NULL;
-   GBL_OPTIONS->ssl_pkey = NULL;
+   EC_GBL_PCAP->promisc = 1;
+   EC_GBL_FORMAT = &ascii_format;
+   EC_GBL_OPTIONS->ssl_mitm = 1;
+   EC_GBL_OPTIONS->broadcast = 0;
+   EC_GBL_OPTIONS->ssl_cert = NULL;
+   EC_GBL_OPTIONS->ssl_pkey = NULL;
 
 /* OPTIONS INITIALIZED */
    
@@ -402,16 +402,16 @@ void parse_options(int argc, char **argv)
                   break;
 
          case 'v':
-                  printf("%s %s\n", GBL_PROGRAM, GBL_VERSION);
+                  printf("%s %s\n", EC_GBL_PROGRAM, EC_GBL_VERSION);
                   clean_exit(0);
                   break;
 
         /* Certificate and private key options */
          case 0:
 		if (!strcmp(long_options[option_index].name, "certificate")) {
-			GBL_OPTIONS->ssl_cert = strdup(optarg);	
+			EC_GBL_OPTIONS->ssl_cert = strdup(optarg);	
 		} else if (!strcmp(long_options[option_index].name, "private-key")) {
-			GBL_OPTIONS->ssl_pkey = strdup(optarg);
+			EC_GBL_OPTIONS->ssl_pkey = strdup(optarg);
 #ifdef HAVE_EC_LUA
                 } else if (!strcmp(long_options[option_index].name,"lua-args")) {
                     ec_lua_cli_add_args(strdup(optarg));
@@ -421,19 +421,19 @@ void parse_options(int argc, char **argv)
         break;
 #endif
 		} else {
-			fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
+			fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EC_GBL_PROGRAM);
 			clean_exit(-1);
 		}
 
 		break;
 
          case ':': // missing parameter
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EC_GBL_PROGRAM);
             clean_exit(-1);
          break;
 
          case '?': // unknown option
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EC_GBL_PROGRAM);
             clean_exit(-1);
          break;
       }
@@ -443,12 +443,12 @@ void parse_options(int argc, char **argv)
    
    /* TARGET1 and TARGET2 parsing */
    if (argv[optind]) {
-      GBL_OPTIONS->target1 = strdup(argv[optind]);
-      DEBUG_MSG("TARGET1: %s", GBL_OPTIONS->target1);
+      EC_GBL_OPTIONS->target1 = strdup(argv[optind]);
+      DEBUG_MSG("TARGET1: %s", EC_GBL_OPTIONS->target1);
       
       if (argv[optind+1]) {
-         GBL_OPTIONS->target2 = strdup(argv[optind+1]);
-         DEBUG_MSG("TARGET2: %s", GBL_OPTIONS->target2);
+         EC_GBL_OPTIONS->target2 = strdup(argv[optind+1]);
+         DEBUG_MSG("TARGET2: %s", EC_GBL_OPTIONS->target2);
       }
    }
 
@@ -459,43 +459,43 @@ void parse_options(int argc, char **argv)
    
    /* check for other options */
    
-   if (GBL_SNIFF->start == NULL)
+   if (EC_GBL_SNIFF->start == NULL)
       set_unified_sniff();
    
-   if (GBL_OPTIONS->read && GBL_PCAP->filter)
+   if (EC_GBL_OPTIONS->read && EC_GBL_PCAP->filter)
       FATAL_ERROR("Cannot read from file and set a filter on interface");
    
-   if (GBL_OPTIONS->read && GBL_SNIFF->type != SM_UNIFIED )
+   if (EC_GBL_OPTIONS->read && EC_GBL_SNIFF->type != SM_UNIFIED )
       FATAL_ERROR("You can read from a file ONLY in unified sniffing mode !");
    
-   if (GBL_OPTIONS->mitm && GBL_SNIFF->type != SM_UNIFIED )
+   if (EC_GBL_OPTIONS->mitm && EC_GBL_SNIFF->type != SM_UNIFIED )
       FATAL_ERROR("You can't do mitm attacks in bridged sniffing mode !");
 
-   if (GBL_SNIFF->type == SM_BRIDGED && GBL_PCAP->promisc == 0)
+   if (EC_GBL_SNIFF->type == SM_BRIDGED && EC_GBL_PCAP->promisc == 0)
       FATAL_ERROR("During bridged sniffing the iface must be in promisc mode !");
    
-   if (GBL_OPTIONS->quiet && GBL_UI->type != UI_TEXT)
+   if (EC_GBL_OPTIONS->quiet && EC_GBL_UI->type != UI_TEXT)
       FATAL_ERROR("The quiet option is useful only with text only UI");
   
-   if (GBL_OPTIONS->load_hosts && GBL_OPTIONS->save_hosts)
+   if (EC_GBL_OPTIONS->load_hosts && EC_GBL_OPTIONS->save_hosts)
       FATAL_ERROR("Cannot load and save at the same time the hosts list...");
   
-   if (GBL_OPTIONS->unoffensive && GBL_OPTIONS->mitm)
+   if (EC_GBL_OPTIONS->unoffensive && EC_GBL_OPTIONS->mitm)
       FATAL_ERROR("Cannot use mitm attacks in unoffensive mode");
    
-   if (GBL_OPTIONS->read && GBL_OPTIONS->mitm)
+   if (EC_GBL_OPTIONS->read && EC_GBL_OPTIONS->mitm)
       FATAL_ERROR("Cannot use mitm attacks while reading from file");
   
 #ifndef JUST_LIBRARY 
-   if (GBL_UI->init == NULL)
+   if (EC_GBL_UI->init == NULL)
       FATAL_ERROR("Please select an User Interface");
 #endif
      
    /* force text interface for only mitm attack */
   /* Do not select text interface for only MiTM mode 
 
-   if (GBL_OPTIONS->only_mitm) {
-      if (GBL_OPTIONS->mitm)
+   if (EC_GBL_OPTIONS->only_mitm) {
+      if (EC_GBL_OPTIONS->mitm)
          select_text_interface();
       else
          FATAL_ERROR("Only mitm requires at least one mitm method");

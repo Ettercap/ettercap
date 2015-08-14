@@ -58,9 +58,9 @@ static pthread_mutex_t ip6_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 void set_sniffing_method(struct sniffing_method *sm)
 {
    /* set the method and all its pointer */
-   memcpy(GBL_SNIFF, sm, sizeof(struct sniffing_method));
+   memcpy(EC_GBL_SNIFF, sm, sizeof(struct sniffing_method));
    /* on startup it is not active */
-   GBL_SNIFF->active = 0;
+   EC_GBL_SNIFF->active = 0;
 }
 
 /*
@@ -126,21 +126,21 @@ static void set_interesting_flag(struct packet_object *po)
     * useless to parse the mac, ip and port
     */
 
-    if (!GBL_OPTIONS->proto || !strcasecmp(GBL_OPTIONS->proto, "all"))  
+    if (!EC_GBL_OPTIONS->proto || !strcasecmp(EC_GBL_OPTIONS->proto, "all"))  
        proto = 1;
     else {
 
-       if (GBL_OPTIONS->proto && !strcasecmp(GBL_OPTIONS->proto, "tcp") 
+       if (EC_GBL_OPTIONS->proto && !strcasecmp(EC_GBL_OPTIONS->proto, "tcp") 
              && po->L4.proto == NL_TYPE_TCP)
           proto = 1;
       
-       if (GBL_OPTIONS->proto && !strcasecmp(GBL_OPTIONS->proto, "udp") 
+       if (EC_GBL_OPTIONS->proto && !strcasecmp(EC_GBL_OPTIONS->proto, "udp") 
              && po->L4.proto == NL_TYPE_UDP)
           proto = 1;
     }
 
     /* the protocol does not match */
-    if (!GBL_OPTIONS->reversed && proto == 0)
+    if (!EC_GBL_OPTIONS->reversed && proto == 0)
        return;
     
    /*
@@ -160,19 +160,19 @@ static void set_interesting_flag(struct packet_object *po)
    /* FROM TARGET1 TO TARGET2 */
    
    /* T1.mac == src & T1.ip = src & T1.port = src */
-   if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.src, GBL_TARGET1) || 
-            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src, NULL) != E_SUCCESS) ) &&
-        (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.src))) )
+   if ( (EC_GBL_TARGET1->all_mac  || !memcmp(EC_GBL_TARGET1->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
+        (EC_GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.src, EC_GBL_TARGET1) || 
+            (EC_GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src, NULL) != E_SUCCESS) ) &&
+        (EC_GBL_TARGET1->all_port || BIT_TEST(EC_GBL_TARGET1->ports, ntohs(po->L4.src))) )
       value = 1;
 
    /* T2.mac == dst & T2.ip = dst & T2.port = dst */
    if ( value && (
-        (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, GBL_TARGET2) || 
-            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == E_SUCCESS) ||
-            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != E_SUCCESS) ) &&
-        (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
+        (EC_GBL_TARGET2->all_mac || !memcmp(EC_GBL_TARGET2->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(EC_GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
+        (EC_GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.dst, EC_GBL_TARGET2) || 
+            (EC_GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == E_SUCCESS) ||
+            (EC_GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != E_SUCCESS) ) &&
+        (EC_GBL_TARGET2->all_port || BIT_TEST(EC_GBL_TARGET2->ports, ntohs(po->L4.dst))) ) )
       good = 1;   
   
    /* 
@@ -180,7 +180,7 @@ static void set_interesting_flag(struct packet_object *po)
     * if good && proto is false, we have to go on with
     * tests and evaluate it later
     */
-   if ((good && proto) && GBL_OPTIONS->reversed ^ (good && proto) ) {
+   if ((good && proto) && EC_GBL_OPTIONS->reversed ^ (good && proto) ) {
       po->flags &= ~PO_IGNORE;
       return;
    }
@@ -191,24 +191,24 @@ static void set_interesting_flag(struct packet_object *po)
    
    /* T1.mac == dst & T1.ip = dst & T1.port = dst */
    /* if broadcast then T2 -> broadcast */
-   if ( (GBL_TARGET1->all_mac  || !memcmp(GBL_TARGET1->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, GBL_TARGET1) || 
-            (GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == E_SUCCESS) ||
-            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != E_SUCCESS) ) &&
-        (GBL_TARGET1->all_port || BIT_TEST(GBL_TARGET1->ports, ntohs(po->L4.dst))) )
+   if ( (EC_GBL_TARGET1->all_mac  || !memcmp(EC_GBL_TARGET1->mac, po->L2.dst, MEDIA_ADDR_LEN) || !memcmp(EC_GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN)) &&
+        (EC_GBL_TARGET1->all_ip   || cmp_ip_list(&po->L3.dst, EC_GBL_TARGET1) || 
+            (EC_GBL_OPTIONS->broadcast && ip_addr_is_broadcast(&po->L3.dst) == E_SUCCESS) ||
+            (EC_GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.dst, NULL) != E_SUCCESS) ) &&
+        (EC_GBL_TARGET1->all_port || BIT_TEST(EC_GBL_TARGET1->ports, ntohs(po->L4.dst))) )
       value = 1;
 
    /* T2.mac == src & T2.ip = src & T2.port = src */
    if ( value && (
-        (GBL_TARGET2->all_mac || !memcmp(GBL_TARGET2->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
-        (GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.src, GBL_TARGET2) || 
-            (GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src, NULL) != E_SUCCESS) ) &&
-        (GBL_TARGET2->all_port || BIT_TEST(GBL_TARGET2->ports, ntohs(po->L4.src))) ) )
+        (EC_GBL_TARGET2->all_mac || !memcmp(EC_GBL_TARGET2->mac, po->L2.src, MEDIA_ADDR_LEN)) &&
+        (EC_GBL_TARGET2->all_ip || cmp_ip_list(&po->L3.src, EC_GBL_TARGET2) || 
+            (EC_GBL_OPTIONS->remote && ip_addr_is_local(&po->L3.src, NULL) != E_SUCCESS) ) &&
+        (EC_GBL_TARGET2->all_port || BIT_TEST(EC_GBL_TARGET2->ports, ntohs(po->L4.src))) ) )
       good = 1;   
   
 
    /* reverse the matching */ 
-   if (GBL_OPTIONS->reversed ^ (good && proto) ) {
+   if (EC_GBL_OPTIONS->reversed ^ (good && proto) ) {
       po->flags &= ~PO_IGNORE;
    }
  
@@ -244,49 +244,49 @@ int compile_display_filter(void)
   
 #ifdef WITH_IPV6 
    /* if not specified default to /// */
-   if (!GBL_OPTIONS->target1) {
-      GBL_OPTIONS->target1 = strdup("///");
-      GBL_TARGET1->scan_all = 1;
+   if (!EC_GBL_OPTIONS->target1) {
+      EC_GBL_OPTIONS->target1 = strdup("///");
+      EC_GBL_TARGET1->scan_all = 1;
    }
    /* if /// was specified, select all */
-   else if (!strncmp(GBL_OPTIONS->target1, "///", 3) && strlen(GBL_OPTIONS->target1) == 3)
-      GBL_TARGET1->scan_all = 1;
+   else if (!strncmp(EC_GBL_OPTIONS->target1, "///", 3) && strlen(EC_GBL_OPTIONS->target1) == 3)
+      EC_GBL_TARGET1->scan_all = 1;
    /* if not specified default to /// */
-   if (!GBL_OPTIONS->target2) {
-      GBL_OPTIONS->target2 = strdup("///");
-      GBL_TARGET2->scan_all = 1;
+   if (!EC_GBL_OPTIONS->target2) {
+      EC_GBL_OPTIONS->target2 = strdup("///");
+      EC_GBL_TARGET2->scan_all = 1;
    }
    /* if /// was specified, select all */
-   else if (!strncmp(GBL_OPTIONS->target2, "///", 3) && strlen(GBL_OPTIONS->target2) == 3)
-      GBL_TARGET2->scan_all = 1;
+   else if (!strncmp(EC_GBL_OPTIONS->target2, "///", 3) && strlen(EC_GBL_OPTIONS->target2) == 3)
+      EC_GBL_TARGET2->scan_all = 1;
 #else
    /* if not specified default to // */
-   if (!GBL_OPTIONS->target1) {
-      GBL_OPTIONS->target1 = strdup("//");
-      GBL_TARGET1->scan_all = 1;
+   if (!EC_GBL_OPTIONS->target1) {
+      EC_GBL_OPTIONS->target1 = strdup("//");
+      EC_GBL_TARGET1->scan_all = 1;
    }
    /* if // was specified, select all */
-   else if (!strncmp(GBL_OPTIONS->target1, "//", 2) && strlen(GBL_OPTIONS->target1) == 2)
-      GBL_TARGET1->scan_all = 1;
+   else if (!strncmp(EC_GBL_OPTIONS->target1, "//", 2) && strlen(EC_GBL_OPTIONS->target1) == 2)
+      EC_GBL_TARGET1->scan_all = 1;
    /* if not specified default to // */
-   if (!GBL_OPTIONS->target2) {
-      GBL_OPTIONS->target2 = strdup("//");
-      GBL_TARGET2->scan_all = 1;
+   if (!EC_GBL_OPTIONS->target2) {
+      EC_GBL_OPTIONS->target2 = strdup("//");
+      EC_GBL_TARGET2->scan_all = 1;
    }
    /* if // was specified, select all */
-   else if (!strncmp(GBL_OPTIONS->target2, "//", 2) && strlen(GBL_OPTIONS->target2) == 2)
-      GBL_TARGET2->scan_all = 1;
+   else if (!strncmp(EC_GBL_OPTIONS->target2, "//", 2) && strlen(EC_GBL_OPTIONS->target2) == 2)
+      EC_GBL_TARGET2->scan_all = 1;
 #endif
 
    /* make a copy to operate on */
-   t1 = strdup(GBL_OPTIONS->target1);
-   t2 = strdup(GBL_OPTIONS->target2);
+   t1 = strdup(EC_GBL_OPTIONS->target1);
+   t2 = strdup(EC_GBL_OPTIONS->target2);
    
    /* compile TARGET1 */
-   compile_target(t1, GBL_TARGET1);
+   compile_target(t1, EC_GBL_TARGET1);
    
    /* compile TARGET2 */
-   compile_target(t2, GBL_TARGET2);
+   compile_target(t2, EC_GBL_TARGET2);
 
    /* the strings were modified, we can't use them anymore */
    SAFE_FREE(t1);

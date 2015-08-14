@@ -68,12 +68,12 @@ struct wdg_menu menu_hosts[] = { {"Hosts",             'H',       "",    NULL},
 #ifdef WITH_IPV6
 static void toggle_ip6scan(void)
 {
-   if (GBL_OPTIONS->ip6scan) {
+   if (EC_GBL_OPTIONS->ip6scan) {
       tag_ip6scan[0] = ' ';
-      GBL_OPTIONS->ip6scan = 0;
+      EC_GBL_OPTIONS->ip6scan = 0;
    } else {
       tag_ip6scan[0] = '*';
-      GBL_OPTIONS->ip6scan = 1;
+      EC_GBL_OPTIONS->ip6scan = 1;
    }
 }
 #endif
@@ -85,11 +85,11 @@ static void toggle_ip6scan(void)
 static void curses_scan(void)
 {
    /* no target defined...  force a full scan */
-   if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip &&
-       GBL_TARGET1->all_ip6 && GBL_TARGET2->all_ip6 &&
-      !GBL_TARGET1->scan_all && !GBL_TARGET2->scan_all) {
-      GBL_TARGET1->scan_all = 1;
-      GBL_TARGET2->scan_all = 1;
+   if (EC_GBL_TARGET1->all_ip && EC_GBL_TARGET2->all_ip &&
+       EC_GBL_TARGET1->all_ip6 && EC_GBL_TARGET2->all_ip6 &&
+      !EC_GBL_TARGET1->scan_all && !EC_GBL_TARGET2->scan_all) {
+      EC_GBL_TARGET1->scan_all = 1;
+      EC_GBL_TARGET2->scan_all = 1;
    }
    
    /* perform a new scan */
@@ -162,10 +162,10 @@ static void curses_save_hosts(void)
    
    DEBUG_MSG("curses_save_hosts");
 
-   SAFE_FREE(GBL_OPTIONS->hostsfile);
-   SAFE_CALLOC(GBL_OPTIONS->hostsfile, FILE_LEN, sizeof(char));
+   SAFE_FREE(EC_GBL_OPTIONS->hostsfile);
+   SAFE_CALLOC(EC_GBL_OPTIONS->hostsfile, FILE_LEN, sizeof(char));
    
-   curses_input("Output file :", GBL_OPTIONS->hostsfile, FILE_LEN, save_hosts);
+   curses_input("Output file :", EC_GBL_OPTIONS->hostsfile, FILE_LEN, save_hosts);
 }
 
 static void save_hosts(void)
@@ -173,18 +173,18 @@ static void save_hosts(void)
    FILE *f;
    
    /* check if the file is writeable */
-   f = fopen(GBL_OPTIONS->hostsfile, "w");
+   f = fopen(EC_GBL_OPTIONS->hostsfile, "w");
    if (f == NULL) {
-      ui_error("Cannot write %s", GBL_OPTIONS->hostsfile);
-      SAFE_FREE(GBL_OPTIONS->hostsfile);
+      ui_error("Cannot write %s", EC_GBL_OPTIONS->hostsfile);
+      SAFE_FREE(EC_GBL_OPTIONS->hostsfile);
       return;
    }
  
    /* if ok, delete it */
    fclose(f);
-   unlink(GBL_OPTIONS->hostsfile);
+   unlink(EC_GBL_OPTIONS->hostsfile);
    
-   scan_save_hosts(GBL_OPTIONS->hostsfile);
+   scan_save_hosts(EC_GBL_OPTIONS->hostsfile);
 }
 
 /*
@@ -280,7 +280,7 @@ static void curses_create_hosts_array(void)
    nhosts = 0;
    
    /* walk the hosts list */
-   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(hl, &EC_GBL_HOSTLIST, next) {
       /* enlarge the array */ 
       SAFE_REALLOC(wdg_hosts_elements, (nhosts + 1) * sizeof(struct wdg_list));
 
@@ -345,7 +345,7 @@ static void curses_host_target1(void *host)
    hl = (struct hosts_list *)host;
   
    /* add the ip to the target */
-   add_ip_list(&hl->ip, GBL_TARGET1);
+   add_ip_list(&hl->ip, EC_GBL_TARGET1);
 
    USER_MSG("Host %s added to TARGET1\n", ip_addr_ntoa(&hl->ip, tmp));
 }
@@ -364,7 +364,7 @@ static void curses_host_target2(void *host)
    hl = (struct hosts_list *)host;
   
    /* add the ip to the target */
-   add_ip_list(&hl->ip, GBL_TARGET2);
+   add_ip_list(&hl->ip, EC_GBL_TARGET2);
    
    USER_MSG("Host %s added to TARGET2\n", ip_addr_ntoa(&hl->ip, tmp));
 }

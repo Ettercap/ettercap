@@ -479,23 +479,23 @@ static int http_insert_redirect(u_int16 dport)
    char *command;
    char *param[4], *commands[2] = {NULL, NULL};
 
-   if (GBL_CONF->redir_command_on == NULL)
+   if (EC_GBL_CONF->redir_command_on == NULL)
    {
       USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
       return -E_FATAL;
    }
    else {
-      commands[0] = strdup(GBL_CONF->redir_command_on);
+      commands[0] = strdup(EC_GBL_CONF->redir_command_on);
    }
 
 #ifdef WITH_IPV6
    /* execution of the redirect script for IPv6 is optional */
-   if (GBL_CONF->redir6_command_on == NULL)
+   if (EC_GBL_CONF->redir6_command_on == NULL)
    {
       WARN_MSG("SSLStrip: cannot setup the redirect for IPv6, did you uncomment the redir6_command_on in your etter.conf file?");
    }
    else {
-      commands[1] = strdup(GBL_CONF->redir6_command_on);
+      commands[1] = strdup(EC_GBL_CONF->redir6_command_on);
    }
 #endif
 
@@ -510,7 +510,7 @@ static int http_insert_redirect(u_int16 dport)
         USER_MSG("SSLStrip: bad redir_command_on or redir6_command_on values\n");
         return -E_FATAL;
       }
-      str_replace(&command, "%iface", GBL_OPTIONS->iface);
+      str_replace(&command, "%iface", EC_GBL_OPTIONS->iface);
       str_replace(&command, "%port", "80");
       str_replace(&command, "%rport", asc_dport);
 #if defined(OS_DARWIN) || defined(OS_BSD)
@@ -562,23 +562,23 @@ static int http_remove_redirect(u_int16 dport)
    char *param[4], *commands[2] = {NULL, NULL};
 
 
-   if (GBL_CONF->redir_command_off == NULL)
+   if (EC_GBL_CONF->redir_command_off == NULL)
    {
       USER_MSG("SSLStrip: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
       return -E_FATAL;
    }
    else {
-      commands[0] = strdup(GBL_CONF->redir_command_off);
+      commands[0] = strdup(EC_GBL_CONF->redir_command_off);
    }
 
 #ifdef WITH_IPV6
    /* redirect script for IPv6 is optional */
-   if (GBL_CONF->redir6_command_off == NULL)
+   if (EC_GBL_CONF->redir6_command_off == NULL)
    {
       WARN_MSG("SSLStrip: cannot remove the redirect for IPv6, did you uncoment the redir6_command_off command in you etter.conf file?");
    }
    else {
-      commands[1] = strdup(GBL_CONF->redir6_command_off);
+      commands[1] = strdup(EC_GBL_CONF->redir6_command_off);
    }
 #endif
 
@@ -593,7 +593,7 @@ static int http_remove_redirect(u_int16 dport)
         USER_MSG("SSLStrip: bad redir_command_off or redir6_command_off values\n");
         return -E_FATAL;
       }
-      str_replace(&command, "%iface", GBL_OPTIONS->iface);
+      str_replace(&command, "%iface", EC_GBL_OPTIONS->iface);
       str_replace(&command, "%port", "80");
       str_replace(&command, "%rport", asc_dport);
 #if defined(OS_DARWIN) || defined(OS_BSD)

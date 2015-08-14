@@ -202,7 +202,7 @@ FUNC_DECODER(decode_wifi)
     * the frame is encrypted.
     * check if the provided key is compatible with the schema
     */
-   if (wifi->control & WIFI_ENCRYPTED && enc_schema == WIFI_WEP && GBL_WIFI->wifi_schema == WIFI_WEP) {
+   if (wifi->control & WIFI_ENCRYPTED && enc_schema == WIFI_WEP && EC_GBL_WIFI->wifi_schema == WIFI_WEP) {
 
       DEBUG_MSG("%s: encrypted packet wep", __FUNCTION__);
 
@@ -219,7 +219,7 @@ FUNC_DECODER(decode_wifi)
       }
 
       /* decrypt the packet */
-      if (wep_decrypt((u_char *)wep, DECODE_DATALEN - DECODED_LEN, GBL_WIFI->wkey, GBL_WIFI->wkey_len) != E_SUCCESS)
+      if (wep_decrypt((u_char *)wep, DECODE_DATALEN - DECODED_LEN, EC_GBL_WIFI->wkey, EC_GBL_WIFI->wkey_len) != E_SUCCESS)
          return NULL;
 
       /* the wep header was overwritten, remove it from the decoded portion */
@@ -229,7 +229,7 @@ FUNC_DECODER(decode_wifi)
       wifi->control &= ~WIFI_ENCRYPTED;
    }
 
-   if (wifi->control & WIFI_ENCRYPTED && enc_schema == WIFI_WPA && GBL_WIFI->wifi_schema == WIFI_WPA) {
+   if (wifi->control & WIFI_ENCRYPTED && enc_schema == WIFI_WPA && EC_GBL_WIFI->wifi_schema == WIFI_WPA) {
       struct wpa_sa sa;
 
       DEBUG_MSG("%s: encrypted packet wpa", __FUNCTION__);

@@ -80,32 +80,32 @@ int set_format(char *format)
    DEBUG_MSG("set_format: %s", format);
    
    if (!strcasecmp(format, "hex")) {
-      GBL_FORMAT = &hex_format;
+      EC_GBL_FORMAT = &hex_format;
       return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "ascii")) {
-      GBL_FORMAT = &ascii_format;
+      EC_GBL_FORMAT = &ascii_format;
       return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "text")) {
-      GBL_FORMAT = &text_format;
+      EC_GBL_FORMAT = &text_format;
       return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "html")) {
-      GBL_FORMAT = &html_format;
+      EC_GBL_FORMAT = &html_format;
       return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "ebcdic")) {
-      GBL_FORMAT = &ebcdic_format;
+      EC_GBL_FORMAT = &ebcdic_format;
       return E_SUCCESS;
    }
 
    if (!strcasecmp(format, "utf8")) {
-      GBL_FORMAT = &utf8_format;
+      EC_GBL_FORMAT = &utf8_format;
       return E_SUCCESS;
    }
 

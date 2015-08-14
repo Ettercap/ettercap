@@ -46,7 +46,7 @@ void start_bridge_sniff(void)
 {
    DEBUG_MSG("start_bridge_sniff");
    
-   if (GBL_SNIFF->active == 1) {
+   if (EC_GBL_SNIFF->active == 1) {
       USER_MSG("Bridged sniffing already started...\n");
       return;
    }
@@ -54,7 +54,7 @@ void start_bridge_sniff(void)
    USER_MSG("Starting Bridged sniffing...\n\n");
    
    /* create the timeouter thread */
-   if (!GBL_OPTIONS->read) { 
+   if (!EC_GBL_OPTIONS->read) { 
       pthread_t pid;
       
       pid = ec_thread_getpid("timer");
@@ -63,12 +63,12 @@ void start_bridge_sniff(void)
    }
 
    /* create the thread for packet capture */
-   capture_start(GBL_IFACE);
+   capture_start(EC_GBL_IFACE);
    
    /* create the thread for packet capture on the bridged interface */
-   capture_start(GBL_BRIDGE);
+   capture_start(EC_GBL_BRIDGE);
 
-   GBL_SNIFF->active = 1;
+   EC_GBL_SNIFF->active = 1;
 }
 
 /*
@@ -78,18 +78,18 @@ void stop_bridge_sniff(void)
 {
    DEBUG_MSG("stop_bridge_sniff");
    
-   if (GBL_SNIFF->active == 0) {
+   if (EC_GBL_SNIFF->active == 0) {
       USER_MSG("Bridged sniffing is not running...\n");
       return;
    }
   
    /* kill it */
-   capture_stop(GBL_IFACE);
-   capture_stop(GBL_BRIDGE);
+   capture_stop(EC_GBL_IFACE);
+   capture_stop(EC_GBL_BRIDGE);
 
    USER_MSG("Bridged sniffing was stopped.\n");
 
-   GBL_SNIFF->active = 0;
+   EC_GBL_SNIFF->active = 0;
 }
 
 
@@ -192,11 +192,11 @@ void bridge_check_forwarded(struct packet_object *po)
 void bridge_set_forwardable(struct packet_object *po)
 {
    /* If for us on the iface */
-   if ( !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) || !memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) )
+   if ( !memcmp(EC_GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) || !memcmp(EC_GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) )
       return;
 
    /* If for us on the bridge */
-   if ( !memcmp(GBL_BRIDGE->mac, po->L2.src, MEDIA_ADDR_LEN) || !memcmp(GBL_BRIDGE->mac, po->L2.dst, MEDIA_ADDR_LEN) )
+   if ( !memcmp(EC_GBL_BRIDGE->mac, po->L2.src, MEDIA_ADDR_LEN) || !memcmp(EC_GBL_BRIDGE->mac, po->L2.dst, MEDIA_ADDR_LEN) )
       return;
 
    /* in bridged sniffing all the packet have to be forwarded */      

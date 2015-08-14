@@ -147,11 +147,11 @@ FUNC_DECODER(decode_ip)
    /* First IP decoder set its header as packet to be forwarded */
    if (PACKET->fwd_packet == NULL) {
       /* Don't parse packets we have forwarded */
-      EXECUTE(GBL_SNIFF->check_forwarded, PACKET);
+      EXECUTE(EC_GBL_SNIFF->check_forwarded, PACKET);
       if (PACKET->flags & PO_FORWARDED)
          return NULL;
       /* set PO_FORWARDABLE flag */
-      EXECUTE(GBL_SNIFF->set_forwardable, PACKET);
+      EXECUTE(EC_GBL_SNIFF->set_forwardable, PACKET);
       /* set the pointer to the data to be forwarded at layer 3 */
       PACKET->fwd_packet = (u_char *)DECODE_DATA;
       /* the len will be adjusted later...just in case of a brutal return */
@@ -169,9 +169,9 @@ FUNC_DECODER(decode_ip)
     *
     * don't perform the check in unoffensive mode
     */
-   if (GBL_CONF->checksum_check) {
-      if (!GBL_OPTIONS->unoffensive && (sum = L3_checksum(PACKET->L3.header, PACKET->L3.len)) != CSUM_RESULT) {
-         if (GBL_CONF->checksum_warning)
+   if (EC_GBL_CONF->checksum_check) {
+      if (!EC_GBL_OPTIONS->unoffensive && (sum = L3_checksum(PACKET->L3.header, PACKET->L3.len)) != CSUM_RESULT) {
+         if (EC_GBL_CONF->checksum_warning)
             USER_MSG("Invalid IP packet from %s : csum [%#x] should be (%#x)\n", int_ntoa(ip->saddr), 
                               ntohs(ip->csum), checksum_shouldbe(ip->csum, sum));      
          return NULL;
@@ -208,7 +208,7 @@ FUNC_DECODER(decode_ip)
    hook_point(HOOK_PACKET_IP, po);
 
    /* don't save the sessions in unoffensive mode */
-   if (GBL_FILTERS && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   if (EC_GBL_FILTERS && !EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->read) {
    
       /* Find or create the correct session */
       ip_create_ident(&ident, PACKET);
@@ -231,7 +231,7 @@ FUNC_DECODER(decode_ip)
    EXECUTE_DECODER(next_decoder);
    
    /* don't save the sessions in unoffensive mode */
-   if (GBL_FILTERS && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
+   if (EC_GBL_FILTERS && !EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
       /* 
        * Modification checks and adjustments.
        * - ip->id according to number of injected/dropped packets
@@ -274,7 +274,7 @@ FUNC_INJECTOR(inject_ip)
    u_int32 magic;
    
    /* Paranoid check */
-   if (LENGTH + sizeof(struct ip_header) > GBL_IFACE->mtu)
+   if (LENGTH + sizeof(struct ip_header) > EC_GBL_IFACE->mtu)
       return -E_NOTHANDLED;
 
    /* Make space for ip header on packet stack... */      
@@ -321,7 +321,7 @@ FUNC_INJECTOR(inject_ip)
    status->id_adj ++;
    
    /* Guess payload_len that will be used by ENTRY injector */
-   payload_len = GBL_IFACE->mtu - LENGTH;
+   payload_len = EC_GBL_IFACE->mtu - LENGTH;
    if (payload_len > PACKET->DATA.inject_len)
       payload_len = PACKET->DATA.inject_len;
 

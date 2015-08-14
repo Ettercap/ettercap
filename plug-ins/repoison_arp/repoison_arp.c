@@ -69,7 +69,7 @@ static int repoison_arp_init(void *dummy)
    (void) dummy;
 
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("repoison_arp: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }
@@ -107,22 +107,22 @@ void repoison_victims(void *group_ptr, struct packet_object *po)
 
    LIST_FOREACH(t, group_head, next) {
 
-      ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
+      ec_usleep(MILLI2MICRO(EC_GBL_CONF->arp_storm_delay));
 
       /* equal ip must be skipped, you cant poison itself */
       if (!ip_addr_cmp(&t->ip, &po->L3.src))
          continue;
 
-      if (!GBL_CONF->arp_poison_equal_mac)
+      if (!EC_GBL_CONF->arp_poison_equal_mac)
          /* skip even equal mac address... */
          if (!memcmp(t->mac, po->L2.src, MEDIA_ADDR_LEN))
             continue;
 
-      if (GBL_CONF->arp_poison_reply)
-         send_arp(ARPOP_REPLY, &po->L3.src, GBL_IFACE->mac, &t->ip, t->mac);
+      if (EC_GBL_CONF->arp_poison_reply)
+         send_arp(ARPOP_REPLY, &po->L3.src, EC_GBL_IFACE->mac, &t->ip, t->mac);
 	 
-      if (GBL_CONF->arp_poison_request)
-         send_arp(ARPOP_REQUEST, &po->L3.src, GBL_IFACE->mac, &t->ip, t->mac);
+      if (EC_GBL_CONF->arp_poison_request)
+         send_arp(ARPOP_REQUEST, &po->L3.src, EC_GBL_IFACE->mac, &t->ip, t->mac);
 	 
    }
 }

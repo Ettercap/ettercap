@@ -52,13 +52,13 @@ void geoip_init (void)
    /* not found, fallback in the configuration file value */
    if(!gi) {
 
-      if (!GBL_CONF->geoip_data_file)
+      if (!EC_GBL_CONF->geoip_data_file)
          return;
 
-      gi = GeoIP_open (GBL_CONF->geoip_data_file, GEOIP_MEMORY_CACHE);
+      gi = GeoIP_open (EC_GBL_CONF->geoip_data_file, GEOIP_MEMORY_CACHE);
       if (!gi)
       {
-         DEBUG_MSG ("geoip_init: %s not found.", GBL_CONF->geoip_data_file);
+         DEBUG_MSG ("geoip_init: %s not found.", EC_GBL_CONF->geoip_data_file);
          GeoIP_cleanup();
          return;
       }
@@ -82,13 +82,13 @@ void geoip_init (void)
 
    /* not found, fallback in the configuration file value */
    if (!gi6) {
-      if (!GBL_CONF->geoip_data_file_v6)
+      if (!EC_GBL_CONF->geoip_data_file_v6)
          return;
 
-      gi6 = GeoIP_open(GBL_CONF->geoip_data_file_v6, GEOIP_MEMORY_CACHE);
+      gi6 = GeoIP_open(EC_GBL_CONF->geoip_data_file_v6, GEOIP_MEMORY_CACHE);
       if (!gi6) {
          DEBUG_MSG("geoip_init: %s not found.\n", 
-               GBL_CONF->geoip_data_file_v6);
+               EC_GBL_CONF->geoip_data_file_v6);
          return;
       }
    }

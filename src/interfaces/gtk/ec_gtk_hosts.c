@@ -43,10 +43,10 @@ enum { HOST_DELETE, HOST_TARGET1, HOST_TARGET2 };
 #ifdef WITH_IPV6
 void toggle_ip6scan(void)
 {
-    if (GBL_OPTIONS->ip6scan) {
-        GBL_OPTIONS->ip6scan = 0;
+    if (EC_GBL_OPTIONS->ip6scan) {
+        EC_GBL_OPTIONS->ip6scan = 0;
     } else {
-        GBL_OPTIONS->ip6scan = 1;
+        EC_GBL_OPTIONS->ip6scan = 1;
     }
 }
 #endif
@@ -57,11 +57,11 @@ void toggle_ip6scan(void)
 void gtkui_scan(void)
 {
    /* no target defined...  force a full scan */
-   if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip &&
-       GBL_TARGET1->all_ip6 && GBL_TARGET2->all_ip6 &&
-      !GBL_TARGET1->scan_all && !GBL_TARGET2->scan_all) {
-      GBL_TARGET1->scan_all = 1;
-      GBL_TARGET2->scan_all = 1;
+   if (EC_GBL_TARGET1->all_ip && EC_GBL_TARGET2->all_ip &&
+       EC_GBL_TARGET1->all_ip6 && EC_GBL_TARGET2->all_ip6 &&
+      !EC_GBL_TARGET1->scan_all && !EC_GBL_TARGET2->scan_all) {
+      EC_GBL_TARGET1->scan_all = 1;
+      EC_GBL_TARGET2->scan_all = 1;
    }
    
    /* perform a new scan */
@@ -146,8 +146,8 @@ void gtkui_save_hosts(void)
    
    DEBUG_MSG("gtk_save_hosts");
 
-   SAFE_FREE(GBL_OPTIONS->hostsfile);
-   SAFE_CALLOC(GBL_OPTIONS->hostsfile, FILE_LEN, sizeof(char));
+   SAFE_FREE(EC_GBL_OPTIONS->hostsfile);
+   SAFE_CALLOC(EC_GBL_OPTIONS->hostsfile, FILE_LEN, sizeof(char));
 
    dialog = gtk_file_chooser_dialog_new("Save hosts to file...",
            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
@@ -160,7 +160,7 @@ void gtkui_save_hosts(void)
        gtk_widget_hide(dialog);
        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
        gtk_widget_destroy(dialog);
-       memcpy(GBL_OPTIONS->hostsfile, filename, FILE_LEN);
+       memcpy(EC_GBL_OPTIONS->hostsfile, filename, FILE_LEN);
        g_free(filename);
        save_hosts();
    } else {
@@ -174,18 +174,18 @@ static void save_hosts(void)
    FILE *f;
    
    /* check if the file is writeable */
-   f = fopen(GBL_OPTIONS->hostsfile, "w");
+   f = fopen(EC_GBL_OPTIONS->hostsfile, "w");
    if (f == NULL) {
-      ui_error("Cannot write %s", GBL_OPTIONS->hostsfile);
-      SAFE_FREE(GBL_OPTIONS->hostsfile);
+      ui_error("Cannot write %s", EC_GBL_OPTIONS->hostsfile);
+      SAFE_FREE(EC_GBL_OPTIONS->hostsfile);
       return;
    }
  
    /* if ok, delete it */
    fclose(f);
-   unlink(GBL_OPTIONS->hostsfile);
+   unlink(EC_GBL_OPTIONS->hostsfile);
    
-   scan_save_hosts(GBL_OPTIONS->hostsfile);
+   scan_save_hosts(EC_GBL_OPTIONS->hostsfile);
 }
 
 /*
@@ -346,7 +346,7 @@ gboolean gtkui_refresh_host_list(gpointer data)
       liststore = gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
 
    /* walk the hosts list */
-   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(hl, &EC_GBL_HOSTLIST, next) {
       /* enlarge the list */ 
       gtk_list_store_append (liststore, &iter);
       /* fill the element */
@@ -414,7 +414,7 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
             case HOST_TARGET1:
                DEBUG_MSG("gtkui_button_callback: add target1");
                /* add the ip to the target */
-               add_ip_list(&hl->ip, GBL_TARGET1);
+               add_ip_list(&hl->ip, EC_GBL_TARGET1);
                gtkui_create_targets_array();
 
                USER_MSG("Host %s added to TARGET1\n", ip_addr_ntoa(&hl->ip, tmp));
@@ -422,7 +422,7 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
             case HOST_TARGET2:
                DEBUG_MSG("gtkui_button_callback: add target2");
                /* add the ip to the target */
-               add_ip_list(&hl->ip, GBL_TARGET2);
+               add_ip_list(&hl->ip, EC_GBL_TARGET2);
                gtkui_create_targets_array();
 
                USER_MSG("Host %s added to TARGET2\n", ip_addr_ntoa(&hl->ip, tmp));

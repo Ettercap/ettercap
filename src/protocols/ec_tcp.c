@@ -159,8 +159,8 @@ FUNC_DECODER(decode_tcp)
     *
     * don't perform the check in unoffensive mode
     */
-   if (GBL_CONF->checksum_check) {
-      if (!GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
+   if (EC_GBL_CONF->checksum_check) {
+      if (!EC_GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
          char tmp[MAX_ASCII_ADDR_LEN];
 #if defined(OS_DARWIN) || defined (OS_WINDOWS) || defined(OS_LINUX)
          /* 
@@ -184,7 +184,7 @@ FUNC_DECODER(decode_tcp)
          if (ip_addr_is_ours(&PACKET->L3.src) == E_FOUND)
             return NULL;
 #endif
-         if (GBL_CONF->checksum_warning)
+         if (EC_GBL_CONF->checksum_warning)
             USER_MSG("Invalid TCP packet from %s:%d : csum [%#x] should be (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                     ntohs(tcp->sport), ntohs(tcp->csum), checksum_shouldbe(tcp->csum, sum));
          return NULL;
@@ -251,7 +251,7 @@ FUNC_DECODER(decode_tcp)
 
    /* don't save the sessions in unoffensive mode */
    /* don't save sessions if no filters chain are defined */
-   if (GBL_FILTERS && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   if (EC_GBL_FILTERS && !EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->read) {
       
       /* Find or create the correct session */
       tcp_create_ident(&ident, PACKET);
@@ -295,7 +295,7 @@ FUNC_DECODER(decode_tcp)
    EXECUTE_DECODER(next_decoder);
 
    /* don't save the sessions in unoffensive mode */
-   if (GBL_FILTERS && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   if (EC_GBL_FILTERS && !EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->read) {
       
       /* 
        * Take trace of the FIN flag (to block injection) 
@@ -402,7 +402,7 @@ FUNC_INJECTOR(inject_tcp)
     * Attach the data (LENGTH was adjusted by LINKED injectors).
     * Set LENGTH to injectable data len.
     */
-   LENGTH = GBL_IFACE->mtu - LENGTH;
+   LENGTH = EC_GBL_IFACE->mtu - LENGTH;
    if (LENGTH > PACKET->DATA.inject_len)
       LENGTH = PACKET->DATA.inject_len;
    memcpy(tcp_payload, PACKET->DATA.inject, LENGTH);   

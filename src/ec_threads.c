@@ -309,8 +309,8 @@ void ec_thread_kill_all(void)
 
 #ifdef OS_WINDOWS
    /* prevent hanging UI. Not sure how this works, but it does... */
-   if (GBL_IFACE->pcap)
-      ec_win_pcap_stop(GBL_IFACE->pcap);
+   if (EC_GBL_IFACE->pcap)
+      ec_win_pcap_stop(EC_GBL_IFACE->pcap);
 #endif
    
    LIST_FOREACH_SAFE(current, &thread_list_head, next, old) {

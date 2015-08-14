@@ -34,7 +34,7 @@
    #define MKDIR(path,acc)  mkdir(path,acc)
 #endif 
 
-/* globals */
+/* el_globals */
 
 static SLIST_HEAD (, dec_entry) extractor_table;
 

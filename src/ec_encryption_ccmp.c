@@ -26,7 +26,7 @@
 
 #include <openssl/aes.h>
 
-/* globals */
+/* ec_globals */
 
 #define CCMP_DECRYPT(_i, _b, _b0, _enc, _a, _len, _ctx) {  \
    /* Decrypt, with counter */                             \

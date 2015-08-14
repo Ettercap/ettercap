@@ -37,7 +37,7 @@
 #include <libgen.h>
 #endif
 
-/* globals */
+/* ec_globals */
 
 static struct dec_entry *protocols_table;
 static unsigned protocols_num;

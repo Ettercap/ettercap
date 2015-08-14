@@ -24,7 +24,7 @@
 #include <el.h>
 #include <stdarg.h>
 
-/* globals */
+/* el_globals */
 FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
 
 /************************************************/

@@ -33,7 +33,7 @@
 #include <pcap.h>
 #include <libnet.h>
 
-/* globals */
+/* ec_globals */
 static pthread_mutex_t scan_mutex = PTHREAD_MUTEX_INITIALIZER;
 /*
  * SCAN_{LOCK,UNLOCK} and SCANUI_{LOCK,UNLOCK} are two macros

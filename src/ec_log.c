@@ -35,7 +35,7 @@
 #include <zlib.h>
 #include <regex.h>
 
-/* globals */
+/* ec_globals */
 
 /* zero is formally a valid value for an opened file descriptor
  * so we need a custom initializer

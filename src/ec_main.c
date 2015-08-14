@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
 {
    /*
     * Alloc the global structures
-    * We can access these structs via the macro in ec_globals.h
+    * We can access these structs via the macro in ec_ec_globals.h
     */
         
-   globals_alloc();
+   ec_globals_alloc();
   
    EC_GBL_PROGRAM = strdup(EC_PROGRAM);
    EC_GBL_VERSION = strdup(EC_VERSION);

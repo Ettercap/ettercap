@@ -176,7 +176,7 @@ struct wifi_env {
 };
 
 /* the globals container */
-struct globals {
+struct ec_globals {
    struct ec_conf *conf;
    struct ec_options *options;
    struct gbl_stats *stats;
@@ -195,7 +195,7 @@ struct globals {
    struct filter_list *filters;
 };
 
-EC_API_EXTERN struct globals *ec_gbls;
+EC_API_EXTERN struct ec_globals *ec_gbls;
 
 #define EC_GBLS ec_gbls
 
@@ -224,8 +224,8 @@ EC_API_EXTERN struct globals *ec_gbls;
 
 /* exported functions */
 
-EC_API_EXTERN void globals_alloc(void);
-EC_API_EXTERN void globals_free(void);
+EC_API_EXTERN void ec_globals_alloc(void);
+EC_API_EXTERN void ec_globals_free(void);
 
 #endif
 

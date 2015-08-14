@@ -22,7 +22,7 @@
 #include <ef.h>
 #include <ef_functions.h>
 
-/* globals */
+/* ef_globals */
 
 /* 
  * the compiler works this way:

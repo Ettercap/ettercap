@@ -23,7 +23,7 @@
 #include <ec_log.h>
 #include <ec_profiles.h>
 
-/* globals */
+/* el_globals */
 
 TAILQ_HEAD(, host_profile) hosts_list_head = TAILQ_HEAD_INITIALIZER(hosts_list_head);
 

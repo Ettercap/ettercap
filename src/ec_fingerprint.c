@@ -33,7 +33,7 @@
    (p)->os[strlen(p->os)-1] = '\0';                            \
 } while (0)
 
-/* globals */
+/* ec_globals */
 
 static SLIST_HEAD(, entry) finger_head;
 

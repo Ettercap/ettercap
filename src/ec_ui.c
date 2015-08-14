@@ -25,7 +25,7 @@
 #include <stdarg.h>
 #include <pthread.h>
 
-/* globals */
+/* ec_globals */
 
 struct ui_message {
    char *message;
@@ -154,7 +154,7 @@ void ui_fatal_error(const char *msg)
 {
    /* 
     * call the function 
-    * make sure that the globals have been alloc'd
+    * make sure that the ec_globals have been alloc'd
     */
    if (EC_GBLS && EC_GBL_UI && EC_GBL_UI->fatal_error && EC_GBL_UI->initialized)
       EXECUTE(EC_GBL_UI->fatal_error, msg);

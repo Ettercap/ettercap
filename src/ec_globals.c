@@ -29,16 +29,16 @@
 
 /* global vars */
 
-struct globals *ec_gbls;
+struct ec_globals *ec_gbls;
 
 /* proto */
 
 /*******************************************/
 
-void globals_alloc(void)
+void ec_globals_alloc(void)
 {
    
-   SAFE_CALLOC(ec_gbls, 1, sizeof(struct globals));
+   SAFE_CALLOC(ec_gbls, 1, sizeof(struct ec_globals));
    SAFE_CALLOC(ec_gbls->conf, 1, sizeof(struct ec_conf)); 
    SAFE_CALLOC(ec_gbls->options, 1, sizeof(struct ec_options));         
    SAFE_CALLOC(ec_gbls->stats, 1, sizeof(struct gbl_stats));
@@ -63,7 +63,7 @@ void globals_alloc(void)
 }
 
 
-void globals_free(void)
+void ec_globals_free(void)
 {
  
    EC_GBL_FREE(ec_gbls->pcap);

@@ -25,7 +25,7 @@
 #include <ec_scan.h>
 #include <ec_sleep.h>
 
-/* globals */
+/* ec_globals */
 
 
 static SLIST_HEAD (, mitm_entry) mitm_table;

@@ -31,7 +31,7 @@
 #include <openssl/hmac.h>
 #include <openssl/aes.h>
 
-/* globals */
+/* ec_globals */
 
 static LIST_HEAD(, wpa_session) wpa_sess_root;
 static pthread_mutex_t root_mutex = PTHREAD_MUTEX_INITIALIZER;

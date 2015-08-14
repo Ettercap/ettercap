@@ -29,7 +29,7 @@ struct source_entry {
    LIST_ENTRY(source_entry) next;
 };
 
-/* globals */
+/* ec_globals */
 static LIST_HEAD(,source_entry) sources_list;
 static pthread_mutex_t sl_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define SOURCES_LIST_LOCK     do{ pthread_mutex_lock(&sl_mutex); }while(0)

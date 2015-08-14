@@ -24,7 +24,7 @@
 #include <ef.h>
 #include <stdarg.h>
 
-/* globals */
+/* ef_globals */
 FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
 
 /* protos */

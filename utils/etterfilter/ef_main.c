@@ -27,20 +27,20 @@
 
 #define EF_GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
 
-/* globals */
+/* ef_globals */
 
 extern FILE * yyin;           /* from scanner */
 extern int yyparse (void);    /* from parser */
 
 /* global options */
-struct globals *ef_gbls;
+struct ef_globals *ef_gbls;
 
 /*******************************************/
 
 int main(int argc, char *argv[])
 {
 
-   globals_alloc();
+   ef_globals_alloc();
    /* etterfilter copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       EF_GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
    /* write to file */
    if (write_output() != E_SUCCESS)
       FATAL_ERROR("Cannot write output file (%s)", EF_GBL_OPTIONS->output_file);
-   globals_free();
+   ef_globals_free();
    return 0;
 }
 
@@ -110,15 +110,15 @@ void ef_debug(u_char level, const char *message, ...)
    
 }
 
-void globals_alloc(void)
+void ef_globals_alloc(void)
 {
 
-   SAFE_CALLOC(ef_gbls, 1, sizeof(struct globals));
+   SAFE_CALLOC(ef_gbls, 1, sizeof(struct ef_globals));
 
    return;
 }
 
-void globals_free(void)
+void ef_globals_free(void)
 {
    SAFE_FREE(ef_gbls->source_file);
    SAFE_FREE(ef_gbls->output_file);

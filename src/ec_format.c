@@ -29,7 +29,7 @@
    #include <iconv.h>
 #endif
 
-/* globals */
+/* ec_globals */
 
 #ifdef HAVE_UTF8
    static char *utf8_encoding;

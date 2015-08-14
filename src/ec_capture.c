@@ -33,7 +33,7 @@
 #endif
 
 
-/* globals */
+/* ec_globals */
 
 static SLIST_HEAD (, align_entry) aligners_table;
 

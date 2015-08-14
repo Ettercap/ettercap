@@ -53,7 +53,7 @@ FUNC_DECODER(decode_icmp6)
    DECODED_LEN = sizeof(struct icmp6_hdr);
 
    /* this sucked. Now it sucks less. */ 
-   if(EC_GBL_CONF->checksum_check && !GBL_OPTIONS->unoffensive) {
+   if(EC_GBL_CONF->checksum_check && !EC_GBL_OPTIONS->unoffensive) {
       if((csum = L4_checksum(PACKET)) != CSUM_RESULT) {
          if(EC_GBL_CONF->checksum_warning) {
             char tmp[MAX_ASCII_ADDR_LEN];

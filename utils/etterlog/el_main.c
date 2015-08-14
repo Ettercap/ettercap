@@ -28,7 +28,7 @@
 #define EL_GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
 
 /* global options */
-struct globals *el_gbls;
+struct el_globals *el_gbls;
 
 /*******************************************/
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 {
    int ret;
    /* etterlog copyright */
-   globals_alloc();
+   el_globals_alloc();
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       EL_GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
   
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
    /* display the content of the logfile */
    display();
    
-   globals_free();
+   el_globals_free();
 
    return 0;
 }
@@ -123,10 +123,10 @@ void reset_color(void)
 #endif
 }
 
-void globals_alloc(void)
+void el_globals_alloc(void)
 {
 
-   SAFE_CALLOC(el_gbls, 1, sizeof(struct globals));
+   SAFE_CALLOC(el_gbls, 1, sizeof(struct el_globals));
    SAFE_CALLOC(el_gbls->options, 1, sizeof(struct el_options));
    SAFE_CALLOC(el_gbls->regex, 1, sizeof(regex_t));
    SAFE_CALLOC(el_gbls->t, 1, sizeof(struct target_env));
@@ -134,7 +134,7 @@ void globals_alloc(void)
    return;
 }
 
-void globals_free(void)
+void el_globals_free(void)
 {
    SAFE_FREE(el_gbls->user);
    SAFE_FREE(el_gbls->logfile);

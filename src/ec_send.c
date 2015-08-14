@@ -37,7 +37,7 @@
 #define PCAP_TIMEOUT 10
 
 
-/* globals */
+/* ec_globals */
 
 u_int8 MEDIA_BROADCAST[MEDIA_ADDR_LEN] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 u_int8 ARP_BROADCAST[MEDIA_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};

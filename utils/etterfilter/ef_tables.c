@@ -24,7 +24,7 @@
 
 #include <ctype.h>
 
-/* globals */
+/* ef_globals */
 
 struct off_entry {
    char *name;

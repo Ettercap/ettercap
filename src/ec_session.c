@@ -30,7 +30,7 @@
 #define TABSIZE   (1 << TABBIT)
 #define TABMASK   (TABSIZE - 1)
 
-/* globals */
+/* ec_globals */
 
 struct session_list {
    time_t ts;

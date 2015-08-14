@@ -71,7 +71,7 @@
    }                                \
 } while(0)
 
-/* globals */
+/* ec_globals */
 
 static LIST_HEAD (, listen_entry) listen_ports;
 

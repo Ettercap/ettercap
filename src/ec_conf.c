@@ -24,7 +24,7 @@
 #include <ec_file.h>
 #include <ec_dissect.h>
 
-/* globals */
+/* ec_globals */
    
 /* used only to keep track of how many dissector are loaded */
 int number_of_dissectors;

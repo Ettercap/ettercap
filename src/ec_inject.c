@@ -25,7 +25,7 @@
 #include <ec_send.h>
 #include <ec_session_tcp.h>
 
-/* globals */
+/* ec_globals */
 static SLIST_HEAD (, inj_entry) injectors_table;
 
 struct inj_entry {

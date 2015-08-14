@@ -49,7 +49,7 @@
 #endif
 #endif
 
-/* globals */
+/* ec_globals */
 
 FILE *debug_file = NULL;
 
@@ -86,7 +86,7 @@ void debug_init(void)
 	ec_lua_print_info(debug_file);
    #endif
 
-  	fprintf (debug_file, "-> %s %s\n\n", EC_GBL_PROGRAM, GBL_VERSION);
+  	fprintf (debug_file, "-> %s %s\n\n", EC_GBL_PROGRAM, EC_GBL_VERSION);
    #ifdef HAVE_SYS_UTSNAME_H
       uname(&buf);
       fprintf (debug_file, "-> running on %s %s %s\n", buf.sysname, buf.release, buf.machine);

@@ -29,7 +29,7 @@
 #include <ec_sleep.h>
 #include <ec_geoip.h>
 
-/* globals */
+/* ec_globals */
 
 /* the hash table used to index the tailq */
 struct conn_hash_search {

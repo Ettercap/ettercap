@@ -99,7 +99,7 @@ struct el_options {
    char regex:1;
 };
 
-struct globals {
+struct el_globals {
    struct log_global_header hdr;
    int (*format)(const u_char *, size_t, u_char *);
    char *user;
@@ -112,7 +112,7 @@ struct globals {
 };
 
 /* in el_main.c */
-extern struct globals *el_gbls;
+extern struct el_globals *el_gbls;
 
 #define EL_GBL el_gbls
 
@@ -158,8 +158,8 @@ extern struct globals *el_gbls;
 #define COL_MAGENTA  35
 #define COL_CYAN     36
 
-EC_API_EXTERN void globals_alloc(void);
-EC_API_EXTERN void globals_free(void);
+EC_API_EXTERN void el_globals_alloc(void);
+EC_API_EXTERN void el_globals_free(void);
 
 void debug_msg(const char *message, ...);
 void ui_msg(const char *fmt, ...);

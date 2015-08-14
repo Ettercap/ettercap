@@ -108,6 +108,10 @@ static struct conf_entry curses[] = {
 static struct conf_entry strings[] = {
    { "redir_command_on", NULL },
    { "redir_command_off", NULL },
+#ifdef WITH_IPV6
+   { "redir6_command_on", NULL },
+   { "redir6_command_off", NULL },
+#endif
    { "remote_browser", NULL },
    { "utf8_encoding", NULL },
    { "geoip_data_file", NULL },
@@ -213,6 +217,10 @@ static void init_structures(void)
    /* special case for strings */
    set_pointer(strings, "redir_command_on", &GBL_CONF->redir_command_on);
    set_pointer(strings, "redir_command_off", &GBL_CONF->redir_command_off);
+#ifdef WITH_IPV6
+   set_pointer(strings, "redir6_command_on", &GBL_CONF->redir6_command_on);
+   set_pointer(strings, "redir6_command_off", &GBL_CONF->redir6_command_off);
+#endif
    set_pointer(strings, "remote_browser", &GBL_CONF->remote_browser);
    set_pointer(strings, "utf8_encoding", &GBL_CONF->utf8_encoding);
    set_pointer(strings, "geoip_data_file", &GBL_CONF->geoip_data_file);

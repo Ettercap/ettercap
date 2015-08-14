@@ -182,23 +182,25 @@ EC_THREAD_FUNC(ndp_poisoner)
              * entry in the victims cache
              */
            if (i == 1 && GBL_CONF->ndp_poison_icmp) {
-              send_icmp6_echo(&t2->ip, &t1->ip);
+              send_L2_icmp6_echo(&t2->ip, &t1->ip, t1->mac);
               /* from T2 to T1 */
               if (!(flags & ND_ONEWAY)) 
-                 send_icmp6_echo(&t1->ip, &t2->ip);
+                 send_L2_icmp6_echo(&t1->ip, &t2->ip, t2->mac);
            } 
 
-            send_icmp6_nadv(&t1->ip, &t2->ip, GBL_IFACE->mac, flags);
+            send_L2_icmp6_nadv(&t1->ip, &t2->ip, GBL_IFACE->mac, flags, t2->mac);
             if(!(flags & ND_ONEWAY))
-               send_icmp6_nadv(&t2->ip, &t1->ip, GBL_IFACE->mac, flags & ND_ROUTER);
+               send_L2_icmp6_nadv(&t2->ip, &t1->ip, GBL_IFACE->mac, flags & ND_ROUTER, t1->mac);
 
             ec_usleep(GBL_CONF->ndp_poison_send_delay);
          }
       }
 
       /* first warm up then release poison frequency */
-      if (i < 5) 
+      if (i < 5) {
+         i++;
          ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_warm_up));
+      }
       else 
          ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_delay));
 
@@ -390,9 +392,9 @@ static void ndp_antidote(void)
                   continue;
 
             /* send neighbor advertisements with the correct information */
-            send_icmp6_nadv(&h1->ip, &h2->ip, h1->mac, flags);
+            send_L2_icmp6_nadv(&h1->ip, &h2->ip, h1->mac, flags, h2->mac);
             if(!(flags & ND_ONEWAY))
-               send_icmp6_nadv(&h2->ip, &h1->ip, h2->mac, flags & ND_ROUTER);
+               send_L2_icmp6_nadv(&h2->ip, &h1->ip, h2->mac, flags & ND_ROUTER, h1->mac);
 
             ec_usleep(GBL_CONF->ndp_poison_send_delay);
          }

@@ -45,8 +45,8 @@ function(_LIBNET_GET_VERSION _OUT_version _OUT_version_major _OUT_version_minor 
 
         set(${_OUT_version} ${${_OUT_version}} PARENT_SCOPE)
         
-        string(REGEX REPLACE "^([0-9]+)[0-9.]+.*" "\\1" ${_OUT_version_major} "${${_OUT_version}}")
-        string(REGEX REPLACE "^[0-9.]+([0-9]+).*" "\\1" ${_OUT_version_minor} "${${_OUT_version}}")
+        string(REGEX REPLACE "^([0-9]+)\\.[0-9]+.*" "\\1" ${_OUT_version_major} "${${_OUT_version}}")
+        string(REGEX REPLACE "^[0-9]+\\.([0-9]+).*" "\\1" ${_OUT_version_minor} "${${_OUT_version}}")
 
         if(NOT ${_OUT_version_major} MATCHES "[0-9]+" OR NOT ${_OUT_version_minor} MATCHES "[0-9]+")
             message(FATAL_ERROR "Version parsing failed for detailed LIBNET_VERSION!: '${_OUT_version}' '${_OUT_version_major}' '${_OUT_version_minor}'")

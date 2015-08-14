@@ -216,7 +216,7 @@ static void parse_icmp6(struct packet_object *po)
    struct ip_addr ip;
    ip_addr_init(&ip, AF_INET6, po->L4.options);
    if(!ip_addr_cmp(&fake_host, &ip))
-      send_icmp6_nadv(&fake_host, &po->L3.src, GBL_IFACE->mac, 0);
+      send_L2_icmp6_nadv(&fake_host, &po->L3.src, GBL_IFACE->mac, 0, po->L2.src);
 }
 #endif
 

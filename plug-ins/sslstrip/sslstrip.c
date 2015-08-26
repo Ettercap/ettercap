@@ -793,16 +793,37 @@ static int http_sync_conn(struct http_connection *connection)
 
 static int http_read(struct http_connection *connection, struct packet_object *po)
 {
-   int len = 0;   
+   int len = 0, ret = -E_INVALID;
+   int loops = HTTP_RETRY;
 
-   len = read(connection->fd, po->DATA.data, HTTP_MAX);
+   do {
+      len = read(connection->fd, po->DATA.data, HTTP_MAX);
+
+
+      if(len <= 0) {
+         /* in non-blocking mode we have to evaluate the socket error */
+         int err = 0;
+         err = GET_SOCK_ERRNO();
+
+         if (err == EINTR || err == EAGAIN) {
+            /* data not yet arrived, wait a bit and keep trying */
+            ec_usleep(MILLI2MICRO(HTTP_WAIT));
+         }
+         else
+            /* something went wrong */
+            break;
+      }
+      else {
+         /* we got data - break up */
+         ret = E_SUCCESS;
+         break;
+      }
+   } while (--loops > 0);
 
    po->DATA.len = len;
 
-   if(len <= 0)
-      return -E_INVALID;
-
-   return len;   
+   /* either we got data or something went wrong or timed out */
+   return ret;
 }
 
 static void http_handle_request(struct http_connection *connection, struct packet_object *po)
@@ -1148,7 +1169,7 @@ EC_THREAD_FUNC(http_child_thread)
       DEBUG_MSG("SSLStrip: Returned %d", ret_val);
       BREAK_ON_ERROR(ret_val, connection, po);
 
-      if (ret_val > 0)  {
+      if (ret_val == E_SUCCESS)  {
          /* Look in the https_links list and if the url matches, send to HTTPS server.
             Otherwise send to HTTP server */
               po.len = po.DATA.len;

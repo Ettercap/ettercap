@@ -1086,16 +1086,16 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
    
    if ((out_cert = X509_new()) == NULL)
       return NULL;
-      
+
    /* Set out public key, real server name... */
    X509_set_version(out_cert, X509_get_version(server_cert));
-   X509_set_serialNumber(out_cert, X509_get_serialNumber(server_cert));   
+   ASN1_INTEGER_set(X509_get_serialNumber(out_cert), EC_MAGIC_32);
    X509_set_notBefore(out_cert, X509_get_notBefore(server_cert));
    X509_set_notAfter(out_cert, X509_get_notAfter(server_cert));
    X509_set_pubkey(out_cert, global_pk);
    X509_set_subject_name(out_cert, X509_get_subject_name(server_cert));
    X509_set_issuer_name(out_cert, X509_get_issuer_name(server_cert));  
-   
+
    /* Modify the issuer a little bit */ 
    //X509_NAME_add_entry_by_txt(X509_get_issuer_name(out_cert), "L", MBSTRING_ASC, " ", -1, -1, 0);
 

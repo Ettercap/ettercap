@@ -109,8 +109,8 @@ struct packet_object {
 };
 
 EC_API_EXTERN struct packet_object* packet_allocate_object(u_char *data, u_int len);
-EC_API_EXTERN inline int packet_create_object(struct packet_object *po, u_char * buf, u_int len);
-EC_API_EXTERN inline int packet_destroy_object(struct packet_object *po);
+EC_API_EXTERN int packet_create_object(struct packet_object *po, u_char * buf, u_int len);
+EC_API_EXTERN int packet_destroy_object(struct packet_object *po);
 EC_API_EXTERN int packet_disp_data(struct packet_object *po, u_char *buf, u_int len);
 EC_API_EXTERN struct packet_object * packet_dup(struct packet_object *po, u_char flag);
 

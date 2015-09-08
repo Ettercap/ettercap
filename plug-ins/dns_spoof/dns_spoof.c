@@ -224,6 +224,10 @@ static int load_db(void)
       /* create the entry */
       SAFE_CALLOC(d, 1, sizeof(struct dns_spoof_entry));
       d->name = strdup(name);
+      if (d->name == NULL) {
+        USER_MSG("dns_spoof: Unable to allocate memory for d->name\n");
+        return -E_INVALID;
+      }
       d->type = type;
       d->port = port;
       d->text = NULL;
@@ -233,6 +237,12 @@ static int load_db(void)
       if (type == ns_t_txt) {
          /* Nothing to convert for TXT - just copy the string */
          d->text = strndup(ip, 255);
+        if (d->text == NULL) {
+           USER_MSG("dns_spoof: Unable to allocate memory for d->text\n");
+           free(d->name);
+           free(d);
+           return -E_INVALID;
+        }
       }
       else if (inet_pton(AF_INET, ip, &ipaddr) == 1) { /* try IPv4 */
          ip_addr_init(&d->ip, AF_INET, (u_char *)&ipaddr);

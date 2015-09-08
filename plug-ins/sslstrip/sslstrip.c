@@ -600,6 +600,8 @@ static int http_remove_redirect(u_int16 dport)
          default:
             wait(&ret_val);
             if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
+               DEBUG_MSG("http_remove_redirect: child exited with non-zero return code: %d",
+                     WEXITSTATUS(ret_val));
                USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
                SAFE_FREE(command);
                return -E_INVALID;
@@ -1466,23 +1468,12 @@ static void http_wipe_connection(struct http_connection *connection)
    DEBUG_MSG("SSLStrip: http_wipe_connection");
    close_socket(connection->fd);
 
-   if(connection->response->html)
-      SAFE_FREE(connection->response->html);
-
-   if(connection->request->payload)
-      SAFE_FREE(connection->request->payload);
-
-   if(connection->request->url)
-      SAFE_FREE(connection->request->url);
-
-   if(connection->request)
-      SAFE_FREE(connection->request);
-
-   if(connection->response)
-      SAFE_FREE(connection->response);
-
-   if (connection)
-      SAFE_FREE(connection);
+   SAFE_FREE(connection->response->html);
+   SAFE_FREE(connection->request->payload);
+   SAFE_FREE(connection->request->url);
+   SAFE_FREE(connection->request);
+   SAFE_FREE(connection->response);
+   SAFE_FREE(connection);
 }
 
 void http_remove_header(char *header, struct http_connection *connection) {

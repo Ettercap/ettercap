@@ -83,7 +83,7 @@ static void display_headers(struct packet_object *po)
 
    char tmp1[MAX_ASCII_ADDR_LEN];
    char tmp2[MAX_ASCII_ADDR_LEN];
-   char flags[8];
+   char flags[10];
    char *p = flags;
    char proto[5];
    
@@ -106,6 +106,10 @@ static void display_headers(struct packet_object *po)
    if (po->L4.flags & TH_RST) *p++ = 'R';
    if (po->L4.flags & TH_ACK) *p++ = 'A';
    if (po->L4.flags & TH_PSH) *p++ = 'P';
+   if (po->L4.flags & TH_URG) *p++ = 'U';
+   if (po->L4.flags & TH_ECE) *p++ = 'E'; /* rfc 2481/3168 */
+   if (po->L4.flags & TH_CWR) *p++ = 'C'; /* rfc 2481/3168 */
+   *p++ = '\0';
   
    /* determine the proto */
    switch(po->L4.proto) {

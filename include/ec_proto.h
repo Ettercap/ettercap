@@ -73,6 +73,8 @@ enum {
    TH_PSH = 0x08,
    TH_ACK = 0x10,
    TH_URG = 0x20,
+   TH_ECE = 0x40, /* rfc 2481/3168 */
+   TH_CWR = 0x80  /* rfc 2481/3168 */
 };
 
 /* ICMP types */

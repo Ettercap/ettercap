@@ -49,6 +49,8 @@ struct tcp_header {
 #define TH_PSH  0x08
 #define TH_ACK  0x10
 #define TH_URG  0x20
+#define TH_ECE  0x40    /* rfc 2481/3168 */
+#define TH_CWR  0x80    /* rfc 2481/3168 */
    u_int16  win;        /* window */
    u_int16  csum;       /* checksum */
    u_int16  urp;        /* urgent pointer */

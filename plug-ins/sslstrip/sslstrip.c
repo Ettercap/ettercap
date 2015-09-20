@@ -435,14 +435,31 @@ static void Find_Url(u_char *to_parse, char **ret)
 
    /* Get the page from the request */
    page = (u_char *)strdup((char *)to_parse);
+   if(page == NULL)
+   {
+      USER_MSG("SSLStrip: Find_Url: page is NULL\n");
+      return;
+   }
+
    ec_strtok((char *)page, " HTTP", &tok);
 
    /* If the path is relative, search for the Host */
    if ((*page=='/') && (fromhere = (u_char *)strstr((char *)to_parse, "Host: "))) {
       host = (u_char *)strdup( (char *)fromhere + strlen("Host: ") );
+      if(host == NULL)
+      {
+         USER_MSG("SSLStrip: Find_Url: host is NULL\n");
+         return;
+      }
       ec_strtok((char *)host, "\r", &tok);
-   } else
+   } else {
       host = (u_char*)strdup("");
+      if(host == NULL)
+      {
+         USER_MSG("SSLStrip: Find_Url: relative path, but host is NULL\n");
+         return;
+      }
+   }
 
    len = strlen((char *)page) + strlen((char *)host) + 2;
    SAFE_CALLOC(*ret, len, sizeof(char));
@@ -488,13 +505,17 @@ static int http_insert_redirect(u_int16 dport)
 
       command = commands[i];
 
+      if(command==NULL)
+      {
+        USER_MSG("SSLStrip: bad redir_command_on or redir6_command_on values\n");
+        return -E_FATAL;
+      }
       str_replace(&command, "%iface", GBL_OPTIONS->iface);
       str_replace(&command, "%port", "80");
       str_replace(&command, "%rport", asc_dport);
 #if defined(OS_DARWIN) || defined(OS_BSD)
       str_replace(&command, "%set", SSLSTRIP_SET);
 #endif
-
       DEBUG_MSG("http_insert_redirect: [%s]", command);
 
       /* construct the params array for execvp */
@@ -567,6 +588,11 @@ static int http_remove_redirect(u_int16 dport)
 
       command = commands[i];
 
+      if(command==NULL)
+      {
+        USER_MSG("SSLStrip: bad redir_command_off or redir6_command_off values\n");
+        return -E_FATAL;
+      }
       str_replace(&command, "%iface", GBL_OPTIONS->iface);
       str_replace(&command, "%port", "80");
       str_replace(&command, "%rport", asc_dport);
@@ -595,6 +621,8 @@ static int http_remove_redirect(u_int16 dport)
          default:
             wait(&ret_val);
             if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
+               DEBUG_MSG("http_remove_redirect: child exited with non-zero return code: %d",
+                     WEXITSTATUS(ret_val));
                USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
                SAFE_FREE(command);
                return -E_INVALID;
@@ -1226,6 +1254,12 @@ static void http_remove_https(struct http_connection *connection)
       url_len = match_end - match_start - https_len;
       url = strndup(buf_cpy + match_start + https_len, url_len);
 
+      if(url == NULL)
+      {
+         USER_MSG("SSLStrip: http_remove_https: url is NULL\n");
+         return;
+      }
+
       /* copy "http://" */
       memcpy(new_html + new_size, "http://", http_len);
       new_size += http_len;
@@ -1460,23 +1494,12 @@ static void http_wipe_connection(struct http_connection *connection)
    DEBUG_MSG("SSLStrip: http_wipe_connection");
    close_socket(connection->fd);
 
-   if(connection->response->html)
-      SAFE_FREE(connection->response->html);
-
-   if(connection->request->payload)
-      SAFE_FREE(connection->request->payload);
-
-   if(connection->request->url)
-      SAFE_FREE(connection->request->url);
-
-   if(connection->request)
-      SAFE_FREE(connection->request);
-
-   if(connection->response)
-      SAFE_FREE(connection->response);
-
-   if (connection)
-      SAFE_FREE(connection);
+   SAFE_FREE(connection->response->html);
+   SAFE_FREE(connection->request->payload);
+   SAFE_FREE(connection->request->url);
+   SAFE_FREE(connection->request);
+   SAFE_FREE(connection->response);
+   SAFE_FREE(connection);
 }
 
 void http_remove_header(char *header, struct http_connection *connection) {
@@ -1484,6 +1507,12 @@ void http_remove_header(char *header, struct http_connection *connection) {
    if (strstr(connection->response->html, header)) {
       char *r = strdup(connection->response->html);
       size_t len = strlen(connection->response->html);
+
+      if(r == NULL)
+      {
+         USER_MSG("SSLStrip: http_remove_header: r is NULL\n");
+         return;
+      }
 
       char *b = strstr(r, header);
       char *end = strstr(b, "\r\n");
@@ -1500,6 +1529,12 @@ void http_remove_header(char *header, struct http_connection *connection) {
       SAFE_FREE(connection->response->html);
 
       connection->response->html = strndup(r, len);
+      if(connection->response->html == NULL)
+      {
+         USER_MSG("SSLStrip: http_remove_header: connection->response->html is NULL\n");
+         return;
+      }
+
       connection->response->len = len;
    
       SAFE_FREE(remaining);

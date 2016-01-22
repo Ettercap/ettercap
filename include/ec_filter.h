@@ -69,6 +69,7 @@ struct filter_op {
             #define FTEST_GT   3
             #define FTEST_LEQ  4
             #define FTEST_GEQ  5
+	    #define FTEST_MOD  6
          u_int8   level;
          u_int8   size;
          u_int16  offset;

@@ -1,7 +1,7 @@
 /*
     etterfilter -- parsing utilities
 
-    Copyright (C) ALoR & NaGA
+    Copyright (C) Ettercap Development Team
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

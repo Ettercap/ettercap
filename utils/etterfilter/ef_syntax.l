@@ -92,6 +92,10 @@ SPACES         [ \t]+
    return TOKEN_OP_CMP_GEQ;
 }
 
+"%" {
+   return TOKEN_OP_CMP_MOD;
+}
+
 "=" {
    return TOKEN_OP_ASSIGN;
 }

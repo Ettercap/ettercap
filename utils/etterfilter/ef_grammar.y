@@ -1,7 +1,7 @@
 /*
     etterfilter -- grammar for filter source files
 
-    Copyright (C) ALoR & NaGA
+    Copyright (C) Ettercap Development Team
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,6 +72,7 @@ int yylex(void);
 %token TOKEN_OP_CMP_GT   /*  >   */
 %token TOKEN_OP_CMP_LEQ  /*  <=  */
 %token TOKEN_OP_CMP_GEQ  /*  >=  */
+%token TOKEN_OP_CMP_MOD  /* % */
 
 %token TOKEN_OP_END      /*  ;  */
 
@@ -309,6 +310,15 @@ condition:
             $$.op.test.value = $3.op.test.value;
             memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
+
+      |   offset TOKEN_OP_CMP_MOD TOKEN_CONST {
+             ef_debug(4, "\tcondition cmp mod\n");
+	     memcpy(&$$, &$1, sizeof(struct filter_op));
+             $$.opcode = FOP_TEST;
+             $$.op.test.op = FTEST_MOD;
+             $$.op.test.value = $3.op.test.value;
+             mempcy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
+         }
       
       |  TOKEN_FUNCTION { 
             ef_debug(4, "\tcondition func\n"); 
@@ -404,6 +414,7 @@ struct {
       { "TOKEN_OP_CMP_GT", "'>'" },
       { "TOKEN_OP_CMP_LEQ", "'<='" },
       { "TOKEN_OP_CMP_GEQ", "'>='" },
+      { "TOKEN_OP_CMP_MOD", "'%'" },
       { "TOKEN_OP_END", "';'" },
       { "TOKEN_OP_ADD", "'+'" },
       { "TOKEN_OP_MUL", "'*'" },

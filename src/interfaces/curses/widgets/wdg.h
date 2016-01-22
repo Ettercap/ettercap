@@ -1,8 +1,7 @@
-
-
 #ifndef WDG_H
 #define WDG_H
 
+#include <ec_stdint.h>
 #include <config.h>
 
 #include <stdio.h>
@@ -16,29 +15,6 @@
 
 #include <ec_queue.h>
 
-#include <limits.h>
-
-#if defined HAVE_STDINT_H && !defined OS_SOLARIS
-	#include <stdint.h>
-	#include <sys/types.h>
-#elif defined OS_SOLARIS
-	#include <sys/inttypes.h>
-#endif
-
-#ifndef TYPES_DEFINED
-#define TYPES_DEFINED
-	typedef int8_t    int8;
-	typedef int16_t   int16;
-	typedef int32_t   int32;
-	typedef int64_t   int64;
-
-	typedef uint8_t   u_int8;
-	typedef uint16_t  u_int16;
-	typedef uint32_t  u_int32;
-	typedef uint64_t  u_int64;
-#endif
-
-
 #define LIBWDG_VERSION "0.10.3"
    
 /********************************************/
@@ -50,14 +26,6 @@ enum {
    WDG_E_FATAL      = 255,
 };
 
-/* min and max */
-
-#ifndef MIN
-   #define MIN(a, b)    (((a) < (b)) ? (a) : (b))
-#endif
-#ifndef MAX
-   #define MAX(a, b)    (((a) > (b)) ? (a) : (b))
-#endif
 
 extern void wdg_debug_init(void);
 extern void wdg_debug_close(void);
@@ -320,4 +288,3 @@ extern size_t wdg_get_begin_y(wdg_t *wo);
 /* EOF */
 
 // vim:ts=3:expandtab
-

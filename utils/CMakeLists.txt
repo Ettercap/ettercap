@@ -2,7 +2,6 @@
 
 set(EF_SRC
             etterfilter/ef_compiler.c
-            etterfilter/ef_ec_compat.c
             etterfilter/ef_encode.c
             etterfilter/ef_main.c
             etterfilter/ef_output.c
@@ -34,7 +33,6 @@ set(EL_SRC
             etterlog/el_decode.c
             etterlog/el_decode_http.c
             etterlog/el_display.c
-            etterlog/el_ec_compat.c
             etterlog/el_log.c
             etterlog/el_main.c
             etterlog/el_parser.c

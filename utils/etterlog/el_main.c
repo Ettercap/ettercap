@@ -20,12 +20,13 @@
 */
 
 #include <el.h>
+#include <ec_libettercap.h>
 #include <el_functions.h>
-#include <ec_version.h>
 
 #include <fcntl.h>
 
 #define EL_GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
+struct ec_globals *ec_gbls;
 
 /* global options */
 struct el_globals *el_gbls;
@@ -34,11 +35,13 @@ struct el_globals *el_gbls;
 
 int main(int argc, char *argv[])
 {
+   libettercap_init();
    int ret;
    /* etterlog copyright */
    el_globals_alloc();
+
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
-                      EL_GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
+                      PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
   
   
    /* allocate the global target */

@@ -19,9 +19,6 @@
 #include <unistd.h>
 #include <time.h>
 
-#define EC_API_EXTERN
-#define EF_API_EXTERN
-
 #ifndef HAVE_STRSEP
    #include <missing/strsep.h>
 #endif

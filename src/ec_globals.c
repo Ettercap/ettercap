@@ -27,10 +27,6 @@
 #define EC_GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
 
 
-/* global vars */
-
-struct ec_globals *ec_gbls;
-
 /* proto */
 
 /*******************************************/

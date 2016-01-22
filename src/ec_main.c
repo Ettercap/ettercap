@@ -20,8 +20,8 @@
 */
 
 #include <ec.h>
-#include <ec_version.h>
-#include <ec_globals.h>
+#include <ec_conf.h>
+#include <ec_libettercap.h>
 #include <ec_network.h>
 #include <ec_signals.h>
 #include <ec_parser.h>
@@ -38,7 +38,6 @@
 #include <ec_http.h>
 #include <ec_scan.h>
 #include <ec_ui.h>
-#include <ec_conf.h>
 #include <ec_mitm.h>
 #include <ec_sslwrap.h>
 #include <ec_utils.h>
@@ -55,6 +54,8 @@ static void time_check(void);
 
 /*******************************************/
 
+struct ec_globals *ec_gbls;
+
 int main(int argc, char *argv[])
 {
    /*
@@ -62,14 +63,8 @@ int main(int argc, char *argv[])
     * We can access these structs via the macro in ec_ec_globals.h
     */
         
-   ec_globals_alloc();
-  
-   EC_GBL_PROGRAM = strdup(EC_PROGRAM);
-   EC_GBL_VERSION = strdup(EC_VERSION);
-   SAFE_CALLOC(EC_GBL_DEBUG_FILE, strlen(EC_PROGRAM) + strlen("-") + strlen(EC_VERSION) + strlen("_debug.log") + 1, sizeof(char));
-   sprintf(EC_GBL_DEBUG_FILE, "%s-%s_debug.log", EC_GBL_PROGRAM, EC_VERSION);
-   
-   DEBUG_INIT();
+   libettercap_init();
+   libettercap_load_conf();
    DEBUG_MSG("main -- here we go !!");
 
    /* initialize the filter mutex */
@@ -94,9 +89,6 @@ int main(int argc, char *argv[])
    /* check the date */
    time_check();
 
-   /* load the configuration file */
-   load_conf();
-  
    /* 
     * get the list of available interfaces 
     * 
@@ -106,9 +98,8 @@ int main(int argc, char *argv[])
     */
    capture_getifs();
    
-   /* initialize the user interface */
-   ui_init();
-   
+   libettercap_ui_init();
+
    /* initialize the network subsystem */
    network_init();
    

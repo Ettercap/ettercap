@@ -19,9 +19,6 @@
 #include <unistd.h>
 #include <time.h>
 
-#define EC_API_EXTERN
-#define EL_API_EXTERN
-
 #ifndef HAVE_STRSEP
    #include <missing/strsep.h>
 #endif
@@ -61,24 +58,6 @@
 #ifndef OS_WINDOWS
    #define O_BINARY  0
 #endif
-
-struct ip_list {
-   struct ip_addr ip;
-   SLIST_ENTRY(ip_list) next;
-};
-
-struct target_env {
-   char scan_all:1;
-   char all_mac:1;            /* these one bit flags are used as wildcards */
-   char all_ip:1;
-   char all_ip6:1;
-   char all_port:1;
-   char *proto;
-   u_char mac[MEDIA_ADDR_LEN];
-   LIST_HEAD(, ip_list) ips;
-   LIST_HEAD(, ip_list) ip6;
-   u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
-};
 
 struct el_options {
    char concat:1;
@@ -160,13 +139,6 @@ extern struct el_globals *el_gbls;
 
 EC_API_EXTERN void el_globals_alloc(void);
 EC_API_EXTERN void el_globals_free(void);
-
-void debug_msg(const char *message, ...);
-void ui_msg(const char *fmt, ...);
-void ui_error(const char *fmt, ...);
-void ui_fatal_error(const char *fmt, ...);
-void ui_cleanup(void);
-
 
 #endif   /*  EL_H */
 

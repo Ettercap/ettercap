@@ -56,7 +56,7 @@ void gtkui_plugin_load(void)
 #ifdef OS_WINDOWS
    char *path = get_full_path("/lib/", "");
 #else
-   char *path = INSTALL_LIBDIR "/" EC_PROGRAM "/";
+   char *path = INSTALL_LIBDIR "/" PROGRAM "/";
 #endif
    
    DEBUG_MSG("gtk_plugin_load");

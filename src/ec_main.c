@@ -56,8 +56,6 @@ static void time_check(void);
 
 struct ec_globals *ec_gbls;
 
-struct ec_globals *ec_gbls;
-
 int main(int argc, char *argv[])
 {
    /*

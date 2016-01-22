@@ -111,7 +111,7 @@ FUNC_DECODER(decode_udp)
           *
           * if the source is the ettercap host, don't display the message 
           */
-         if (!ip_addr_is_ours(&PACKET->L3.src) == E_FOUND)
+         if (ip_addr_is_ours(&PACKET->L3.src) == E_FOUND || ip_addr_is_ours(&PACKET->L3.src) == E_BRIDGE)
             return NULL;
 #endif
          if (EC_GBL_CONF->checksum_warning)

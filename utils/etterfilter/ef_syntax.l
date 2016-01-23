@@ -93,7 +93,7 @@ SPACES         [ \t]+
 }
 
 "%" {
-   return TOKEN_OP_CMP_MOD;
+   return TOKEN_OP_MOD;
 }
 
 "=" {

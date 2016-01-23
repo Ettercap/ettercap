@@ -70,7 +70,6 @@ static int cmp_lt(u_int32 a, u_int32 b);
 static int cmp_gt(u_int32 a, u_int32 b);
 static int cmp_leq(u_int32 a, u_int32 b);
 static int cmp_geq(u_int32 a, u_int32 b);
-static int cmp_mod(u_int32 a, u_int32 b);
 /*******************************************/
 
 /* initialize the filter mutex */
@@ -324,8 +323,6 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
       case FTEST_GEQ:
          cmp_func = &cmp_geq;
          break;
-      case FTEST_MOD:
-         cmp_func = &cmp_mod;
       default:
          JIT_FAULT("unsupported test operation");
          break;
@@ -349,11 +346,21 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          break;
       case 2:
          /* short int comparison */
+         if (fop->op.val) {
+            if (cmp_func(fop->op.val, (fop->op.test.value & 0xffff))) {
+                return FLAG_TRUE;
+            }
+         }
          if (cmp_func(htons(*(u_int16 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffff)) )
             return FLAG_TRUE;
          break;
       case 4:
          /* int comparison */
+	 if (fop->op.val) {
+             if(cmp_func(fop->op.val, (fop->op.test.value & 0xffffffff))) {
+                 return FLAG_TRUE;
+             }
+         }
          if (cmp_func(htonl(*(u_int32 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffffffff)) )
             return FLAG_TRUE;
          break;
@@ -1063,11 +1070,6 @@ static int cmp_leq(u_int32 a, u_int32 b)
 static int cmp_geq(u_int32 a, u_int32 b)
 {
    return (a >= b);
-}
-
-static int cmp_mod(u_int32 a, u_int32 b)
-{
-   return (a % b);
 }
 
 /*

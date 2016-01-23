@@ -72,7 +72,6 @@ int yylex(void);
 %token TOKEN_OP_CMP_GT   /*  >   */
 %token TOKEN_OP_CMP_LEQ  /*  <=  */
 %token TOKEN_OP_CMP_GEQ  /*  >=  */
-%token TOKEN_OP_CMP_MOD  /* % */
 
 %token TOKEN_OP_END      /*  ;  */
 
@@ -99,6 +98,7 @@ int yylex(void);
 /* precedences */
 %left TOKEN_OP_SUB TOKEN_OP_ADD
 %left TOKEN_OP_MUL TOKEN_OP_DIV
+%left TOKEN_OP_MOD
 %left TOKEN_UMINUS /* unary minus */
 
 %left TOKET_OP_AND
@@ -263,6 +263,7 @@ condition:
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
             $$.op.test.value = $3.op.test.value;
+            $$.op.test.size = 4;
             memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
       
@@ -311,15 +312,6 @@ condition:
             memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
 
-      |   offset TOKEN_OP_CMP_MOD TOKEN_CONST {
-             ef_debug(4, "\tcondition cmp mod\n");
-	     memcpy(&$$, &$1, sizeof(struct filter_op));
-             $$.opcode = FOP_TEST;
-             $$.op.test.op = FTEST_MOD;
-             $$.op.test.value = $3.op.test.value;
-             mempcy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
-         }
-      
       |  TOKEN_FUNCTION { 
             ef_debug(4, "\tcondition func\n"); 
             /* functions are encoded by the lexycal analyzer */
@@ -352,6 +344,12 @@ offset:
             if ($$.op.test.offset % $$.op.test.size)
                WARNING("Unaligned offset");
          }
+
+      |  offset TOKEN_OP_MOD math_expr {
+            ef_debug(4, "\toffset mod\n");
+            memcpy(&$$, &$1, sizeof(struct filter_op));
+	    $$.op.val = $1.op.test.offset % $3.op.test.value;
+         }
       ;
 
 /* math expression */
@@ -374,6 +372,10 @@ math_expr:
          
       |  math_expr TOKEN_OP_DIV math_expr {
             $$.op.test.value = $1.op.test.value / $3.op.test.value;
+         }
+   
+      |  math_expr TOKEN_OP_MOD math_expr {
+            $$.op.test.value = $1.op.test.value % $3.op.test.value;
          }
          
       |  TOKEN_OP_SUB math_expr %prec TOKEN_UMINUS {
@@ -414,11 +416,11 @@ struct {
       { "TOKEN_OP_CMP_GT", "'>'" },
       { "TOKEN_OP_CMP_LEQ", "'<='" },
       { "TOKEN_OP_CMP_GEQ", "'>='" },
-      { "TOKEN_OP_CMP_MOD", "'%'" },
       { "TOKEN_OP_END", "';'" },
       { "TOKEN_OP_ADD", "'+'" },
       { "TOKEN_OP_MUL", "'*'" },
       { "TOKEN_OP_DIV", "'/'" },
+      { "TOKEN_OP_MOD", "'%'" },
       { "TOKEN_OP_SUB", "'-'" },
       { "TOKEN_PAR_OPEN", "'('" },
       { "TOKEN_PAR_CLOSE", "')'" },

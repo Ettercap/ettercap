@@ -173,6 +173,11 @@ void print_test(struct filter_op *fop, u_int32 eip)
             fop->op.test.level, fop->op.test.offset, fop->op.test.size, (unsigned long)fop->op.test.value, (unsigned int)fop->op.test.value);
          break;
 
+      case FTEST_MOD_EQ:
+         fprintf(stdout, "%04lu: TEST level %d, offset %d, size %d MOD %lu == [%lu]\n", (unsigned long)eip,
+            fop->op.test.level, fop->op.test.offset, fop->op.test.size, (unsigned long)fop->op.test.mod, (unsigned long)fop->op.test.value);
+	 break;
+
       default:
          fprintf(stderr, "%04lu: UNDEFINED TEST OPCODE (%d) !!\n", (unsigned long)eip, fop->op.test.op);
          break;

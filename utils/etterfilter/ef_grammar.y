@@ -263,7 +263,6 @@ condition:
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
             $$.op.test.value = $3.op.test.value;
-            $$.op.test.size = 4;
             memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
       
@@ -283,6 +282,16 @@ condition:
             $$.op.test.op = FTEST_LT;
             $$.op.test.value = $3.op.test.value;
             memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
+         }
+      
+      |  offset TOKEN_OP_MOD TOKEN_CONST TOKEN_OP_CMP_EQ TOKEN_CONST {
+            ef_debug(4, "\tcondition mod cmp eq\n");
+            memcpy(&$$, &$1, sizeof(struct filter_op));
+            $$.opcode = FOP_TEST;
+            $$.op.test.op = FTEST_MOD_EQ;
+            $$.op.test.value = $5.op.test.value;
+            $$.op.test.mod = $3.op.test.value;
+	    memcpy(&$$.op.test.ipaddr, &$3.op.test.ipaddr, sizeof($3.op.test.ipaddr));
          }
 
       |  offset TOKEN_OP_CMP_GT TOKEN_CONST { 
@@ -345,11 +354,6 @@ offset:
                WARNING("Unaligned offset");
          }
 
-      |  offset TOKEN_OP_MOD math_expr {
-            ef_debug(4, "\toffset mod\n");
-            memcpy(&$$, &$1, sizeof(struct filter_op));
-	    $$.op.val = $1.op.test.offset % $3.op.test.value;
-         }
       ;
 
 /* math expression */

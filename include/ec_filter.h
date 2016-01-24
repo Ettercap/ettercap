@@ -69,10 +69,12 @@ struct filter_op {
             #define FTEST_GT   3
             #define FTEST_LEQ  4
             #define FTEST_GEQ  5
+	    #define FTEST_MOD_EQ 6
          u_int8   level;
          u_int8   size;
          u_int16  offset;
          u_int32  value;
+         u_int32  mod;
          u_int8   ipaddr[16];
          u_int8   *string;
          size_t   slen;
@@ -80,7 +82,6 @@ struct filter_op {
 
       /* jumps */
       u_int16 jmp;
-      u_int32 val;
    } op;
 };
 

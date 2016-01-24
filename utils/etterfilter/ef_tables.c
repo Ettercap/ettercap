@@ -218,6 +218,7 @@ int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset
    struct table_entry *t;
    struct off_entry *o;
 
+
    /* search the table and the offset */
    SLIST_FOREACH(t, &table_head, next) {
       if (!strcmp(t->name, name)) {
@@ -227,7 +228,7 @@ int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset
                *size = o->size;
                *level = t->level;
                *offset = o->offset;
-               
+         	      
                return E_SUCCESS;
             }
          }

@@ -70,6 +70,7 @@ static int cmp_lt(u_int32 a, u_int32 b);
 static int cmp_gt(u_int32 a, u_int32 b);
 static int cmp_leq(u_int32 a, u_int32 b);
 static int cmp_geq(u_int32 a, u_int32 b);
+static int cmp_mod_eq(u_int32 a, u_int32 b, u_int32 c);
 /*******************************************/
 
 /* initialize the filter mutex */
@@ -303,6 +304,8 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          break;
    }
 
+   /* needed for math comparisons */
+   u_int32 val = 0;
    /* set the pointer to the comparison function */
    switch(fop->op.test.op) {
       case FTEST_EQ:
@@ -322,6 +325,12 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          break;
       case FTEST_GEQ:
          cmp_func = &cmp_geq;
+         break;
+      case FTEST_MOD_EQ:
+	 /* always int */
+         val = htonl(*(u_int32 *)(base + fop->op.test.offset));
+         if (cmp_mod_eq(val, fop->op.test.mod, (fop->op.test.value & 0xffffffff)))
+             return FLAG_TRUE;
          break;
       default:
          JIT_FAULT("unsupported test operation");
@@ -346,21 +355,11 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          break;
       case 2:
          /* short int comparison */
-         if (fop->op.val) {
-            if (cmp_func(fop->op.val, (fop->op.test.value & 0xffff))) {
-                return FLAG_TRUE;
-            }
-         }
          if (cmp_func(htons(*(u_int16 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffff)) )
             return FLAG_TRUE;
          break;
       case 4:
          /* int comparison */
-	 if (fop->op.val) {
-             if(cmp_func(fop->op.val, (fop->op.test.value & 0xffffffff))) {
-                 return FLAG_TRUE;
-             }
-         }
          if (cmp_func(htonl(*(u_int32 *)(base + fop->op.test.offset)), (fop->op.test.value & 0xffffffff)) )
             return FLAG_TRUE;
          break;
@@ -1070,6 +1069,11 @@ static int cmp_leq(u_int32 a, u_int32 b)
 static int cmp_geq(u_int32 a, u_int32 b)
 {
    return (a >= b);
+}
+
+static int cmp_mod_eq(u_int32 a, u_int32 b, u_int32 c)
+{
+	return (a % b) == c;
 }
 
 /*

@@ -1,63 +1,8 @@
 #ifndef ETTERLOG_H
 #define ETTERLOG_H
 
-#include <config.h>
-
-#include <sys/types.h>
-#include <sys/time.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#if !defined (__USE_GNU)  /* for memmem(), strsignal(), etc etc... */
-   #define __USE_GNU
-#endif
-#include <string.h>
-#if defined (__USE_GNU)
-   #undef __USE_GNU
-#endif
-#include <strings.h>
-#include <unistd.h>
-#include <time.h>
-
-#ifndef HAVE_STRSEP
-   #include <missing/strsep.h>
-#endif
-
-#ifdef OS_WINDOWS
-   #include <windows.h>
-#endif
-
-#include <ec_queue.h>
-#include <ec_stdint.h>
-#include <ec_error.h>
+#include <ec.h>
 #include <ec_log.h>
-#include <ec_profiles.h>
-#include <ec_strings.h>
-#include <ec_utils.h>
-#include <ec_sniff.h>
-#include <zlib.h>
-#include <regex.h>
-
-#define SAFE_CALLOC(x, n, s) do { \
-   x = calloc(n, s); \
-   ON_ERROR(x, NULL, "virtual memory exhausted"); \
-} while(0)
-
-#define SAFE_REALLOC(x, s) do { \
-   x = realloc(x, s); \
-   ON_ERROR(x, NULL, "virtual memory exhausted"); \
-} while(0)
-
-#define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
-
-#define __init __attribute__ ((constructor))
-
-#define LOOP for(;;)
-
-/* file operations */ 
-#ifndef OS_WINDOWS
-   #define O_BINARY  0
-#endif
 
 struct el_options {
    char concat:1;

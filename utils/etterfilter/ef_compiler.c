@@ -241,12 +241,13 @@ size_t compile_tree(struct filter_op **fop)
 
    BUG_IF(tree_root == NULL);
   
-   USER_MSG(" Unfolding the meta-tree ");
+   fprintf(stdout, " Unfolding the meta-tree ");
+   fflush(stdout);
      
    /* start the recursion on the tree */
    unfold_blk(&tree_root);
 
-   USER_MSG(" done.\n\n");
+   fprintf(stdout, " done.\n\n");
 
    /* substitute the virtual labels with real offsets */
    labels_to_offsets();
@@ -428,7 +429,8 @@ static void labels_to_offsets(void)
    struct unfold_elm *s;
    u_int32 offset = 0;
 
-   USER_MSG(" Converting labels to real offsets ");
+   fprintf(stdout, " Converting labels to real offsets ");
+   fflush(stdout);
    
    TAILQ_FOREACH(ue, &unfolded_tree, next) {
       /* search only for jumps */
@@ -463,7 +465,7 @@ static void labels_to_offsets(void)
       }
    }
 
-   USER_MSG(" done.\n\n");
+   fprintf(stdout, " done.\n\n");
 }
 
 /* EOF */

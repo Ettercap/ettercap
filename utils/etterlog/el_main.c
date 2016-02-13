@@ -36,6 +36,8 @@ struct el_globals *el_gbls;
 int main(int argc, char *argv[])
 {
    libettercap_init();
+   select_text_interface();
+   libettercap_ui_init();
    int ret;
    /* etterlog copyright */
    el_globals_alloc();

@@ -43,6 +43,8 @@ int main(int argc, char *argv[])
 {
    libettercap_init();
    ef_globals_alloc();
+   select_text_interface();
+   libettercap_ui_init();
    /* etterfilter copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);

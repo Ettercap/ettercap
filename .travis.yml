@@ -46,13 +46,13 @@ env:
   # Disable Curses and Gtk
   - BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
 matrix:
-  allow_failures:
-    # We expect IPV6 + system libnet + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
-    # We expect system-only curl + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DBUNDLED_CURL=Off"
+  #allow_failures:
+  #  # We expect IPV6 + system libnet + ubuntu to fail :(
+  #  - os: linux
+  #    env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
+  #  # We expect system-only curl + ubuntu to fail :(
+  #  - os: linux
+  #    env: BUILD_ARGS="-DBUNDLED_CURL=Off"
   exclude:
     - os: osx
       env: BUILD_ARGS=""

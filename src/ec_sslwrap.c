@@ -1107,14 +1107,14 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
    if (index >=0) {
       ext = X509_get_ext(server_cert, index);
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-      ASN1_OCTET_STRING* data;
-      data = X509_EXTENSION_get_data (ext);
+      ASN1_OCTET_STRING* os;
+      os = X509_EXTENSION_get_data (ext);
 #endif
       if (ext) {
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-         data->data[7] = 0xe7;
-         data->data[8] = 0x7e;
-         X509_EXTENSION_set_data (ext, data);
+         os->data[7] = 0xe7;
+         os->data[8] = 0x7e;
+         X509_EXTENSION_set_data (ext, os);
 #else
          ext->value->data[7] = 0xe7;
          ext->value->data[8] = 0x7e;

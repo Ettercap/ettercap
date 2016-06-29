@@ -46,6 +46,24 @@ void o5logon_init(void);
 
 /************************************************/
 
+#undef memrchr
+#define memrchr my_memrchr
+
+static void *memrchr(const void *s, u_char c, size_t n)
+{
+   const u_char *cp;
+
+   if (n != 0) {
+      cp = (u_char*)s + n;
+      do {
+         if (*(--cp) == (u_char)c)
+            return (void*)cp;
+      } while (--n != 0);
+   }
+
+   return NULL;
+}
+
 /*
  * this function is the initializer.
  * it adds the entry in the table of registered decoder
@@ -133,28 +151,40 @@ FUNC_DECODER(dissector_o5logon)
          unsigned char *skp  = NULL;
          unsigned char *saltp = NULL;
          unsigned char *res = NULL;
+
          if (PACKET->DATA.len > 16) {
             skp  = memmem(ptr, PACKET->DATA.len, "AUTH_SESSKEY", 12);
             saltp = memmem(ptr, PACKET->DATA.len, "AUTH_VFR_DATA", 13);
             res = memmem(ptr, PACKET->DATA.len, "invalid username", 16);
          }
 
+         if (skp) {
+            if (memrchr(skp, 0x40, 20))
+               skp = memrchr(skp, 0x40, 20);
+            else
+               skp = memrchr(skp, 0x60, 20);
+         }
+
+         if (saltp)
+            saltp = memrchr(saltp, 0x14, 20);
 
          if (conn_status->status == WAIT_RESPONSE && skp && saltp) {
             unsigned char sk[97];
             unsigned char salt[21];
-            unsigned char *p = skp + 17;
-            if(*p == '@') {
-               /* Nmap generated packets? */
-               strncpy((char*)sk, (char*)p + 1, 64);
-               strncpy((char*)sk + 64, (char*)p + 66, 32);
-            }
-            else {
-               strncpy((char*)sk, (char*)skp + 17, 96);
+            int i;
+
+            skp++;
+            for (i = 0; i < 96; i++) {
+               while (*skp == ' ')
+                  skp++;
+               sk[i] = *skp++;
             }
             sk[96] = 0;
-            strncpy((char*)salt, (char*)saltp + 18, 20);
+
+            saltp++;
+            strncpy((char*)salt, (char*)saltp, 20);
             salt[20] = 0;
+
             DISSECT_MSG("%s-%s-%d:$o5logon$%s*%s\n", conn_status->user, ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), sk, salt);
             conn_status->status = WAIT_RESULT;
          }

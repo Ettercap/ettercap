@@ -131,8 +131,9 @@ int fingerprint_init(void)
 int fingerprint_search(const char *f, char *dst)
 {
    struct entry *l;
-
-   if (!strcmp(f, "")) {
+  
+   //Do not process if length is invalid
+   if (!strcmp(f, "") || strlen(f) != FINGER_LEN) {
       strncpy(dst, "UNKNOWN", 7);
       return E_SUCCESS;
    }

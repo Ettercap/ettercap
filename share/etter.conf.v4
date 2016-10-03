@@ -181,31 +181,14 @@ geoip_data_file_v6 = "/path/to/GeoIPv6.dat"
 #    Mac Os X
 #---------------
 
-# quick and dirty way:
+# if you use ipfw:
    #redir_command_on = "ipfw -q add set %set fwd 127.0.0.1,%rport tcp from any to any %port in via %iface"
    #redir_command_off = "ipfw -q delete set %set"
 
-# a better solution is to use a script that keeps track of the rules interted
-# and then deletes them on exit:
+# if you use BSD PF:
+   #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
+   #redir_command_off = "pfctl -sn 2> /dev/null | grep -v %port | pfctl -f - 2> /dev/null"
 
- # redir_command_on:
- # ----- cut here -------
- #   #!/bin/sh
- #   if [ -a "/tmp/osx_ipfw_rules" ]; then
- #      ipfw -q add `head -n 1 osx_ipfw_rules` fwd 127.0.0.1,$1 tcp from any to any $2 in via $3 
- #   else
- #      ipfw add fwd 127.0.0.1,$1 tcp from any to any $2 in via $3 | cut -d " " -f 1 >> /tmp/osx_ipfw_rules
- #   fi
- # ----- cut here -------
-
- # redir_command_off:
- # ----- cut here -------
- #   #!/bin/sh
- #   if [ -a "/tmp/osx_ipfw_rules" ]; then
- #      ipfw -q delete `head -n 1 /tmp/osx_ipfw_rules`
- #      rm -f /tmp/osx_ipfw_rules
- #   fi
- # ----- cut here -------
 
 #---------------
 #   FreeBSD

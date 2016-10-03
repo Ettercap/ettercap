@@ -187,7 +187,7 @@ geoip_data_file_v6 = "/path/to/GeoIPv6.dat"
 
 # if you use BSD PF:
    #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
-   #redir_command_off = "pfctl -Psn 2> /dev/null | grep -v %port | pfctl -f - 2> /dev/null"
+   #redir_command_off = "pfctl -sn 2> /dev/null | grep -v %port | pfctl -f - 2> /dev/null"
 
 
 #---------------

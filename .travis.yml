@@ -1,13 +1,58 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+
+# See YAML format https://en.wikipedia.org/wiki/YAML
+# See Travis CI (Continuous Integration) https://docs.travis-ci.com/
+
+
 language: c
+
 branches:
   except:
     gh-pages
+
 compiler:
   - gcc
   - clang
+
 os:
   - osx
   - linux
+
+addons:
+  apt:
+    packages:
+      - debhelper
+      - bison
+      - check
+      - cmake
+      - flex
+      - ghostscript
+      - libbsd-dev
+      - libcurl4-openssl-dev
+      - libgtk2.0-dev
+      - libltdl-dev
+      - libluajit-5.1-dev
+      - libncurses5-dev
+      - libnet1-dev
+      - libpcap-dev
+      - libpcre3-dev
+      - libssl-dev
+      - libgtk-3-dev
+      - libgeoip-dev
+
 env:
   # Default build. Release.
   - BUILD_ARGS=""
@@ -43,6 +88,7 @@ env:
   - BUILD_ARGS="-DENABLE_CURSES=Off"
   # Disable Curses and Gtk
   - BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
+
 matrix:
   allow_failures:
     # We expect IPV6 + system libnet + ubuntu to fail :(
@@ -92,12 +138,17 @@ matrix:
       env: BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
 
 before_install:
-    - if [ ${TRAVIS_OS_NAME} = "linux" ]; then sudo apt-get update -qq; sudo apt-get install debhelper bison check cmake flex ghostscript libbsd-dev libcurl4-openssl-dev libgtk2.0-dev libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev libgtk-3-dev libgeoip-dev; fi
     - if [ ${TRAVIS_OS_NAME} = "osx" ]; then brew update; brew install check curl; brew install ghostscript gtk+ gtk+3; brew install libidn libnet; brew install luajit openssl pcre rtmpdump geoip; fi
 before_script:
     - if [ ${TRAVIS_OS_NAME} = "osx" ]; then export BUILD_ARGS="$BUILD_ARGS -DOPENSSL_ROOT_DIR=`brew --prefix openssl`";fi
+
 script:
-  - mkdir build && cd build && cmake -DENABLE_TESTS=On $BUILD_ARGS .. && make && make test_verbose
+  - mkdir build
+  - cd build
+  - cmake -DENABLE_TESTS=On $BUILD_ARGS ..
+  - make
+  - make test_verbose
+
 notifications:
   irc:
     channels:

@@ -1,3 +1,53 @@
+# Temp files
+*~
+*.bak
+*.backup
+\#*
+.\#*
+*\#
+*.swp
+*.swap
+*.sav
+*.save
+*.autosav
+*.autosave
+
+# Generated binaries
+*.o
+*.obj
+*.elf
+*.lo
+*.ko
+*.so
+*.so.*
+*.dll
+*.dylib
+*.dynlib
+*.a
+*.la
+*.out
+*.output
+
+# Archives
+*.zip
+*.tar.*
+*.tgz
+*.gz
+*.bz2
+*.bzip
+*.xz
+*.lz
+*.lzma
+*.7z
+*.deb
+*.rpm
+*.apk
+*.exe
+*.msi
+*.dmg
+*.ipa
+
+# Others
 tags
 .clang_complete
 gmon.out

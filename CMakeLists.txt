@@ -194,3 +194,5 @@ if(NOT ("${CMAKE_CACHEFILE_DIR}" STREQUAL ""))
   message("")
 endif(NOT ("${CMAKE_CACHEFILE_DIR}" STREQUAL ""))
 
+include(FeatureSummary)
+feature_summary(WHAT ALL)

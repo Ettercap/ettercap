@@ -58,7 +58,7 @@ can use a mitm attack launched from a different tool and let ettercap modify the
 packets and forward them for you.
 .br
 The kernel ip_forwarding is always disabled by ettercap. This is done to
-prevent to forward a packet twice (one by ettercap and one by the kernel).
+prevent a forward of a packet twice (one by ettercap and one by the kernel).
 This is an invasive behaviour on gateways. So we recommend you to use ettercap
 on the gateways ONLY with the UNOFFENSIVE MODE ENABLED. Since ettercap listens
 only on one network interface, launching it on the gateway in offensive mode

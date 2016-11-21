@@ -303,6 +303,7 @@ int ui_msg_purge_all(void)
       /* free the message */
       SAFE_FREE(msg->message);
       SAFE_FREE(msg);
+      i++;
    }
    
    UI_MSG_UNLOCK;

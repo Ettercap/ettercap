@@ -283,9 +283,8 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
  */
  static void mdns_spoof(struct packet_object *po)
  {
-    po->flags |= PO_DROPPED; /* Do not forward query */
-
     struct mdns_header *mdns;
+    struct iface_env *iface;
     char name[NS_MAXDNAME];
     int name_len;
     u_char *q, *data, *end;;
@@ -304,6 +303,12 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
         //We only want queries.
         return;
     }
+
+    /* Do not forward query */
+    po->flags |= PO_DROPPED; 
+
+    /* set incoming interface as outgoing interface for reply */
+    iface = po->flags & PO_FROMIFACE ? GBL_IFACE : GBL_BRIDGE;
 
     /* process all the questions */
     for (x = 0; x < mdns->questions; x++) {
@@ -367,7 +372,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          /* send the reply back to the multicast or unicast address 
           * and set the faked address as the source address for the transport
           */
-         send_mdns_reply(po->L4.src, sender, target, tmac, 
+         send_mdns_reply(iface, po->L4.src, sender, target, tmac, 
                          ntohs(mdns->id), answer, sizeof(answer), 1, 0, 0);
          
          USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), ip_addr_ntoa(reply, tmp));
@@ -416,7 +421,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          /* send the reply back to the multicast or unicast address 
           * and set the faked address as the source address for the transport
           */
-         send_mdns_reply(po->L4.src, sender, target, tmac, 
+         send_mdns_reply(iface, po->L4.src, sender, target, tmac, 
                          ntohs(mdns->id), answer, sizeof(answer), 1, 0, 0);
          
          USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), ip_addr_ntoa(reply, tmp));
@@ -459,7 +464,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          prep_mdns_reply(po, class, &sender, &target, &tmac, reply);
 
          /* send the fake reply */
-         send_mdns_reply(po->L4.src, sender, target, tmac, 
+         send_mdns_reply(iface, po->L4.src, sender, target, tmac, 
                          ntohs(mdns->id), answer, name_len + 10 + rlen, 1, 0, 0);
          
          USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), a);
@@ -565,7 +570,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          /* send the reply back to the multicast or unicast address 
           * and set the faked address as the source address for the transport
           */
-         send_mdns_reply(po->L4.src, sender, target, tmac, 
+         send_mdns_reply(iface, po->L4.src, sender, target, tmac, 
                          ntohs(mdns->id), answer, sizeof(answer), 2, 0, 0);
 
          USER_MSG("mdns_spoof: SRV [%s] spoofed to [%s:%d]\n", name, ip_addr_ntoa(reply, tmp), port);

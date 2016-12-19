@@ -1023,7 +1023,7 @@ int send_dhcp_reply(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_in
 /*
  * send a mdns reply
  */
-int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr)
+int send_mdns_reply(struct iface_env *iface, u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr)
 {
    libnet_ptag_t t;
    int c, proto, ethertype;
@@ -1031,8 +1031,8 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
    proto = ntohs(sip->addr_type);
 
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_IFACE->lnet == 0);
-   l = GBL_IFACE->lnet;
+   BUG_IF(iface->lnet == 0);
+   l = iface->lnet;
   
    SEND_LOCK;
 
@@ -1138,7 +1138,7 @@ int send_mdns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_i
 /*
  * send a dns reply
  */
-int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr)
+int send_dns_reply(struct iface_env *iface, u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac, u_int16 id, u_int8 *data, size_t datalen, u_int16 anws_rr, u_int16 auth_rr, u_int16 addi_rr)
 {
    libnet_ptag_t t;
    int c, proto, ethertype;
@@ -1147,8 +1147,8 @@ int send_dns_reply(u_int16 dport, struct ip_addr *sip, struct ip_addr *tip, u_in
    proto = ntohs(sip->addr_type);
  
    /* if not lnet warn the developer ;) */
-   BUG_IF(GBL_IFACE->lnet == 0);
-   l = GBL_IFACE->lnet;
+   BUG_IF(iface->lnet == 0);
+   l = iface->lnet;
   
    SEND_LOCK;
 

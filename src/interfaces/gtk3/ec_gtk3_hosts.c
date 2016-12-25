@@ -81,8 +81,8 @@ void gtkui_load_hosts(void)
 
    dialog = gtk_file_chooser_dialog_new("Select a hosts file...",
             GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
-            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+            "_Cancel", GTK_RESPONSE_CANCEL,
+            "_OK",     GTK_RESPONSE_OK,
             NULL);
    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), "");
 
@@ -151,8 +151,8 @@ void gtkui_save_hosts(void)
 
    dialog = gtk_file_chooser_dialog_new("Save hosts to file...",
            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
-           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
+           "_Cancel", GTK_RESPONSE_CANCEL,
+           "_OK",     GTK_RESPONSE_OK,
            NULL);
    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");
 

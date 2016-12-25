@@ -305,14 +305,14 @@ static gboolean refresh_profiles(gpointer data)
  */
 static void gtkui_profile_detail(void)
 {
-   GtkWidget *dwindow, *vbox, *hbox, *table, *label, *button;
+   GtkWidget *dwindow, *vbox, *hbox, *grid, *label, *button;
    struct host_profile *h;
    struct open_port *o;
    struct active_user *u;
    char tmp[MAX_ASCII_ADDR_LEN];
    char os[OS_LEN+1];
    gchar *str, *markup;
-   guint nrows = 2, ncols = 3, col = 0, row = 0;
+   guint col = 0, row = 0;
 
    
    DEBUG_MSG("gtkui_profile_detail");
@@ -333,36 +333,36 @@ static void gtkui_profile_detail(void)
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 5, FALSE);
    gtk_container_add(GTK_CONTAINER(dwindow), vbox);
 
-   table = gtk_table_new(nrows, ncols, FALSE);
-   gtk_table_set_row_spacings(GTK_TABLE(table), 5);
-   gtk_table_set_col_spacings(GTK_TABLE(table), 5);
-   gtk_container_set_border_width(GTK_CONTAINER(table), 8);
-   gtk_box_pack_start(GTK_BOX(vbox), table, FALSE, FALSE, 0);
+   grid = gtk_grid_new();
+   gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+   gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+   gtk_container_set_border_width(GTK_CONTAINER(grid), 8);
+   gtk_box_pack_start(GTK_BOX(vbox), grid, FALSE, FALSE, 0);
 
    /* Host Information */
    label = gtk_label_new("Host Information:");
    markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", 
          gtk_label_get_text(GTK_LABEL(label)));
    gtk_label_set_markup(GTK_LABEL(label), markup);
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+3, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col, row, 3, 1);
    g_free(markup);
 
    row++;
    label = gtk_label_new("IP address:");
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
    label = gtk_label_new(ip_addr_ntoa(&h->L3_addr, tmp));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
 
    if (GBL_OPTIONS->resolve) {
       row++;
       label = gtk_label_new("Hostname:");
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
       label = gtk_label_new(h->hostname);
       if (!strcmp(h->hostname,"")) {
@@ -381,72 +381,72 @@ static void gtkui_profile_detail(void)
          }
       }
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
    }
 
 #ifdef WITH_GEOIP
    if (GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Location:");
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
       label = gtk_label_new(geoip_country_by_ip(&h->L3_addr));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
    }
 #endif
 
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       row++;
       label = gtk_label_new("MAC address:");
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
       label = gtk_label_new(mac_addr_ntoa(h->L2_addr, tmp));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
       
       row++;
       label = gtk_label_new("Manufacturer:");
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
       label = gtk_label_new(manuf_search(h->L2_addr));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
    }
 
    /* Connectivity information */
-   gtk_table_set_row_spacing(GTK_TABLE(table), row, 10);
    row++;
    label = gtk_label_new("Connectivity Information:");
    markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", 
          gtk_label_get_text(GTK_LABEL(label)));
    gtk_label_set_markup(GTK_LABEL(label), markup);
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+3, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_widget_set_margin_top(label, 10);
+   gtk_grid_attach(GTK_GRID(grid), label, col, row, 3, 1);
    g_free(markup);
 
    row++;
    label = gtk_label_new("Distance:");
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
    label = gtk_label_new((str = g_strdup_printf("%d", h->distance)));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
    g_free(str);
 
    row++;
    label = gtk_label_new("Type:");
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
    if (h->type & FP_GATEWAY)
       label = gtk_label_new("GATEWAY");
@@ -459,46 +459,46 @@ static void gtkui_profile_detail(void)
    else if (h->type == FP_UNKNOWN)
       label = gtk_label_new("unknown");
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
 
    /* OS and service information */
-   gtk_table_set_row_spacing(GTK_TABLE(table), row, 10);
    row++;
    label = gtk_label_new("OS and Service Information:");
    markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", 
          gtk_label_get_text(GTK_LABEL(label)));
    gtk_label_set_markup(GTK_LABEL(label), markup);
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+3, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_widget_set_margin_top(label, 10);
+   gtk_grid_attach(GTK_GRID(grid), label, col, row, 3, 1);
    g_free(markup);
 
    if (h->os) {
       row++;
       label = gtk_label_new("Observed OS:");
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
       label = gtk_label_new(h->os);
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
    }
 
    row++;
    label = gtk_label_new("Fingerprint:");
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
    label = gtk_label_new(h->fingerprint);
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
 
    row++;
    label = gtk_label_new("Operating System:");
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
    if (fingerprint_search(h->fingerprint, os) == E_SUCCESS) {
       label = gtk_label_new(os);
@@ -507,21 +507,21 @@ static void gtkui_profile_detail(void)
       g_free(str);
    }
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
 
    LIST_FOREACH(o, &(h->open_ports_head), next) {
 
       row++;
       label = gtk_label_new("Fingerprint:");
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
       str = g_strdup_printf("%s %d", (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP", ntohs(o->L4_addr));
       label = gtk_label_new(str);
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+2, row, row+1);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 1, 1);
       g_free(str);
 
       str = g_strdup_printf("%s [%s]", 
@@ -529,8 +529,8 @@ static void gtkui_profile_detail(void)
             (o->banner) ? o->banner : "");
       label = gtk_label_new(str);
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-      gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+2, col+3, row, row+1);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, col+2, row, 1, 1);
       g_free(str);
 
       LIST_FOREACH(u, &(o->users_list_head), next) {
@@ -539,37 +539,34 @@ static void gtkui_profile_detail(void)
             label = gtk_label_new("Account: *");
          else
             label = gtk_label_new("Account:");
-         gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-         gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+         gtk_widget_set_halign(label, GTK_ALIGN_START);
+         gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
          str = g_strdup_printf("%s / %s (%s)", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
          label = gtk_label_new(str);
          gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-         gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-         gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+         gtk_widget_set_halign(label, GTK_ALIGN_START);
+         gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
          g_free(str);
 
          if (u->info) {
             row++;
             label = gtk_label_new("Info:");
-            gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-            gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+            gtk_widget_set_halign(label, GTK_ALIGN_START);
+            gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
             label = gtk_label_new(u->info);
             gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-            gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-            gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+            gtk_widget_set_halign(label, GTK_ALIGN_START);
+            gtk_grid_attach(GTK_GRID(grid), label, col+1 ,row, 2, 1);
          }
       }
    }
-   /* resize table to the actual size */
-   gtk_table_resize(GTK_TABLE(table), row, ncols);
-
 
    hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-   button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+   button = gtk_button_new_with_label("Close");
    g_signal_connect_swapped(G_OBJECT(button), "clicked", 
          G_CALLBACK(gtkui_profile_detail_destroy), dwindow);
    gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);

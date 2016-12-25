@@ -92,11 +92,12 @@ void gtkui_select_protocol(void)
    }
 
    /* create dialog for selecting the protocol */
-   dialog = gtk_dialog_new_with_buttons("Set protocol", GTK_WINDOW(window),
-                                        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        NULL);
+   dialog = gtk_dialog_new_with_buttons("Set protocol", 
+         GTK_WINDOW(window), 
+         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, 
+         "_Cancel", GTK_RESPONSE_CANCEL, 
+         "_OK",     GTK_RESPONSE_OK, 
+         NULL);
    content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
    frame = gtk_frame_new("Select the protocol");
@@ -153,10 +154,10 @@ void gtkui_select_protocol(void)
  */
 void gtkui_select_targets(void)
 {
-   GtkWidget *dialog, *label, *table, *content;  
+   GtkWidget *dialog, *label, *grid, *content;  
    GtkWidget *frame1, *frame2;
    GtkWidget *t1_mac, *t1_ip, *t1_port, *t2_mac, *t2_ip, *t2_port;
-   gint ncols = 2, nrows = 3;
+   gint nrows = 3;
 #ifdef WITH_IPV6
    GtkWidget *t1_ipv6, *t2_ipv6;
    nrows = 4;
@@ -169,11 +170,12 @@ void gtkui_select_targets(void)
 
    DEBUG_MSG("gtk_select_targets");
 
-   dialog = gtk_dialog_new_with_buttons("Enter Targets", GTK_WINDOW(window),
-                                        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, 
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
-                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
-                                        NULL);
+   dialog = gtk_dialog_new_with_buttons("Enter Targets", 
+         GTK_WINDOW(window), 
+         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, 
+         "_Cancel", GTK_RESPONSE_CANCEL, 
+         "_OK",     GTK_RESPONSE_OK, 
+         NULL);
    content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_set_border_width(GTK_CONTAINER(content), 20);
 
@@ -182,50 +184,51 @@ void gtkui_select_targets(void)
 
    frame2 = gtk_frame_new("Target 2");
    gtk_container_add(GTK_CONTAINER(content), frame2);
+   gtk_widget_set_margin_bottom(frame2, 20);
 
-   table = gtk_table_new(nrows, ncols, FALSE);
-   gtk_table_set_row_spacings(GTK_TABLE (table), 5);
-   gtk_table_set_col_spacings(GTK_TABLE (table), 5);
-   gtk_container_set_border_width(GTK_CONTAINER (table), 8);
-   gtk_container_add(GTK_CONTAINER (frame1), table);
+   grid = gtk_grid_new();
+   gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+   gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+   gtk_container_set_border_width(GTK_CONTAINER (grid), 8);
+   gtk_container_add(GTK_CONTAINER (frame1), grid);
 
    label = gtk_label_new("MAC:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE (table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP, 1, 1);
 
    t1_mac = gtk_entry_new();
    gtk_entry_set_max_length(GTK_ENTRY(t1_mac), MAX_ASCII_ADDR_LEN);
    gtk_entry_set_width_chars(GTK_ENTRY(t1_mac), MAX_ASCII_ADDR_LEN);
-   gtk_table_attach_defaults(GTK_TABLE(table), t1_mac, 1, 2, 0, 1);
+   gtk_grid_attach(GTK_GRID(grid), t1_mac, GTK_POS_LEFT+1, GTK_POS_TOP, 1, 1);
 
    label = gtk_label_new("IP address:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+1, 1, 1);
 
    t1_ip = gtk_entry_new();
    gtk_entry_set_max_length(GTK_ENTRY(t1_ip), MAX_ASCII_ADDR_LEN);
    gtk_entry_set_width_chars(GTK_ENTRY(t1_ip), MAX_ASCII_ADDR_LEN);
-   gtk_table_attach_defaults(GTK_TABLE(table), t1_ip, 1, 2, 1, 2);
+   gtk_grid_attach(GTK_GRID(grid), t1_ip, GTK_POS_LEFT+1, GTK_POS_TOP+1, 1, 1);
 
 #ifdef WITH_IPV6
    label = gtk_label_new("IPv6 address:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+2, 1, 1);
 
    t1_ipv6 = gtk_entry_new();
    gtk_entry_set_max_length(GTK_ENTRY(t1_ipv6), MAX_ASCII_ADDR_LEN);
    gtk_entry_set_width_chars(GTK_ENTRY(t1_ipv6), MAX_ASCII_ADDR_LEN);
-   gtk_table_attach_defaults(GTK_TABLE(table), t1_ipv6, 1, 2, 2, 3);
+   gtk_grid_attach(GTK_GRID(grid), t1_ipv6, GTK_POS_LEFT+1, GTK_POS_TOP+2, 1, 1);
 #endif
 
    label = gtk_label_new("Port:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, 0, 1, nrows-1, nrows, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+nrows, 1, 1);
 
    t1_port = gtk_entry_new();
    gtk_entry_set_max_length(GTK_ENTRY(t1_port), MAX_ASCII_ADDR_LEN);
    gtk_entry_set_width_chars(GTK_ENTRY(t1_port), MAX_ASCII_ADDR_LEN);
-   gtk_table_attach_defaults(GTK_TABLE(table), t1_port, 1, 2, nrows-1, nrows);
+   gtk_grid_attach(GTK_GRID(grid), t1_port, GTK_POS_LEFT+1, GTK_POS_TOP+nrows, 1, 1);
 
    /* Fill previously set values */
    if (GBL_OPTIONS->target1) {
@@ -250,49 +253,49 @@ void gtkui_select_targets(void)
 
 
    /* Target 2: */
-   table = gtk_table_new(nrows, ncols, FALSE);
-   gtk_table_set_row_spacings(GTK_TABLE (table), 5);
-   gtk_table_set_col_spacings(GTK_TABLE (table), 5);
-   gtk_container_set_border_width(GTK_CONTAINER (table), 8);
-   gtk_container_add(GTK_CONTAINER (frame2), table);
+   grid = gtk_grid_new();
+   gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+   gtk_grid_set_column_spacing(GTK_GRID(grid), 5); 
+   gtk_container_set_border_width(GTK_CONTAINER (grid), 8);
+   gtk_container_add(GTK_CONTAINER (frame2), grid);
 
    label = gtk_label_new("MAC:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE (table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP, 1, 1);
 
    t2_mac = gtk_entry_new();
    gtk_entry_set_max_length(GTK_ENTRY(t2_mac), MAX_ASCII_ADDR_LEN);
    gtk_entry_set_width_chars(GTK_ENTRY(t2_mac), MAX_ASCII_ADDR_LEN);
-   gtk_table_attach_defaults(GTK_TABLE(table), t2_mac, 1, 2, 0, 1);
+   gtk_grid_attach(GTK_GRID(grid), t2_mac, GTK_POS_LEFT+1, GTK_POS_TOP, 1, 1);
 
    label = gtk_label_new("IP address:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+1, 1, 1);
 
    t2_ip = gtk_entry_new();
    gtk_entry_set_max_length(GTK_ENTRY(t2_ip), MAX_ASCII_ADDR_LEN);
    gtk_entry_set_width_chars(GTK_ENTRY(t2_ip), MAX_ASCII_ADDR_LEN);
-   gtk_table_attach_defaults(GTK_TABLE(table), t2_ip, 1, 2, 1, 2);
+   gtk_grid_attach(GTK_GRID(grid), t2_ip, GTK_POS_LEFT+1, GTK_POS_TOP+1, 1, 1);
 
 #ifdef WITH_IPV6
    label = gtk_label_new("IPv6 address:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+2, 1, 1);
 
    t2_ipv6 = gtk_entry_new();
    gtk_entry_set_max_length(GTK_ENTRY(t2_ipv6), MAX_ASCII_ADDR_LEN);
    gtk_entry_set_width_chars(GTK_ENTRY(t2_ipv6), MAX_ASCII_ADDR_LEN);
-   gtk_table_attach_defaults(GTK_TABLE(table), t2_ipv6, 1, 2, 2, 3);
+   gtk_grid_attach(GTK_GRID(grid), t2_ipv6, GTK_POS_LEFT+1, GTK_POS_TOP+2, 1, 1);
 #endif
 
    label = gtk_label_new("Port:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, 0, 1, nrows-1, nrows, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+nrows, 1, 1);
 
    t2_port = gtk_entry_new();
    gtk_entry_set_max_length(GTK_ENTRY(t2_port), MAX_ASCII_ADDR_LEN);
    gtk_entry_set_width_chars(GTK_ENTRY(t2_port), MAX_ASCII_ADDR_LEN);
-   gtk_table_attach_defaults(GTK_TABLE(table), t2_port, 1, 2, nrows-1, nrows);
+   gtk_grid_attach(GTK_GRID(grid), t2_port, GTK_POS_LEFT+1, GTK_POS_TOP+nrows, 1, 1);
 
    /* Fill previously set values */
    if (GBL_OPTIONS->target2) {

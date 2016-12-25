@@ -61,8 +61,8 @@ void gtkui_log_all(void)
 
    dialog = gtk_file_chooser_dialog_new("Save all to logfile...",
            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
-           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
+           "_Cancel", GTK_RESPONSE_CANCEL,
+           "_Save",   GTK_RESPONSE_OK,
            NULL);
    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");
 
@@ -106,8 +106,8 @@ void gtkui_log_info(void)
 
    dialog = gtk_file_chooser_dialog_new("Save infos to logfile...",
            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
-           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
+           "_Cancel", GTK_RESPONSE_CANCEL,
+           "_Save",   GTK_RESPONSE_OK,
            NULL);
    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");
 
@@ -157,8 +157,8 @@ void gtkui_log_msg(void)
 
    dialog = gtk_file_chooser_dialog_new("Safe Log Messages in file...",
            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
-           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-           GTK_STOCK_SAVE, GTK_RESPONSE_OK,
+           "_Cancel", GTK_RESPONSE_CANCEL,
+           "_Save",   GTK_RESPONSE_OK,
            NULL);
 
    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");

@@ -126,19 +126,19 @@ void gtkui_create_menu(int live)
       },
 
       {
-         "SniffStartAction", GTK_STOCK_YES,
+         "SniffStartAction", NULL,
          "Start sniffing", "<control><shift>w",
          NULL, G_CALLBACK(gtkui_start_sniffing)
       },
 
       {
-         "SniffStopAction", GTK_STOCK_NO,
+         "SniffStopAction", NULL,
          "Stop sniffing", "<control><shift>e",
          NULL, G_CALLBACK(gtkui_stop_sniffing)
       },
 
       {
-         "ExitAction", GTK_STOCK_QUIT,
+         "ExitAction", "application-exit",
          "E_xit", "<control>q",
          NULL, G_CALLBACK(gtkui_exit)
       }
@@ -153,25 +153,25 @@ void gtkui_create_menu(int live)
       },
 
       {
-         "CurrentTargetsAction", GTK_STOCK_FIND,
+         "CurrentTargetsAction", "edit-find",
          "Current targets", "<control>t",
          NULL, G_CALLBACK(gtkui_current_targets)
       },
 
       {
-         "SelectTargetsAction", GTK_STOCK_ADD,
+         "SelectTargetsAction", "list-add",
          "Select target(s)", "<control><shift>t",
          NULL, G_CALLBACK(gtkui_select_targets)
       },
 
       {
-         "ProtocolAction", GTK_STOCK_JUMP_TO,
+         "ProtocolAction", "go-jump",
          "_Protocol...", "<control>p",
          NULL, G_CALLBACK(gtkui_select_protocol)
       },
 
       {
-         "WipeTargetsAction", GTK_STOCK_CLEAR,
+         "WipeTargetsAction", "edit-clear",
          "_Wipe targets", "<control>W",
          NULL, G_CALLBACK(wipe_targets)
       }
@@ -186,25 +186,25 @@ void gtkui_create_menu(int live)
       },
 
       {
-         "HostsListAction", GTK_STOCK_INDEX,
+         "HostsListAction", NULL,
          "_Hosts list", "<control>h",
          NULL, G_CALLBACK(gtkui_host_list)
       },
 
       {
-         "ScanHostsAction", GTK_STOCK_FIND,
+         "ScanHostsAction", "edit-find",
          "_Scan for hosts", "<control>s",
          NULL, G_CALLBACK(gtkui_scan)
       },
 
       {
-         "LoadHostsAction", GTK_STOCK_OPEN,
+         "LoadHostsAction", "document-open",
          "Load from file...", "",
          NULL, G_CALLBACK(gtkui_load_hosts)
       },
 
       {
-         "SaveHostsAction", GTK_STOCK_SAVE,
+         "SaveHostsAction", "document-save",
          "Save to file...", "",
          NULL, G_CALLBACK(gtkui_save_hosts)
       }
@@ -219,37 +219,37 @@ void gtkui_create_menu(int live)
       },
 
       {
-         "ViewConnectionsAction", GTK_STOCK_JUSTIFY_FILL,
+         "ViewConnectionsAction", "format-justify-fill",
          "_Connections", "<control><shift>c",
          NULL, G_CALLBACK(gtkui_show_connections)
       },
 
       {
-         "ViewProfilesAction", GTK_STOCK_JUSTIFY_LEFT,
+         "ViewProfilesAction", "format-justify-left",
          "Pr_ofiles", "<control>o",
          NULL, G_CALLBACK(gtkui_show_profiles)
       },
 
       {
-         "ViewStatisticsAction", GTK_STOCK_PROPERTIES,
+         "ViewStatisticsAction", "document-properties",
          "_Statistics", NULL,
          NULL, G_CALLBACK(gtkui_show_stats)
       },
 
       {
-         "VisualisationMethodAction", GTK_STOCK_PREFERENCES,
+         "VisualisationMethodAction", "preferences-system",
          "_Visualisation method...", "<control><shift>v",
          NULL, G_CALLBACK(gtkui_vis_method)
       },
 
       {
-         "VisualisationRegexAction", GTK_STOCK_FIND,
+         "VisualisationRegexAction", "edit-find",
          "Visualisation _regex...", "<control>R",
          NULL, G_CALLBACK(gtkui_vis_regex)
       },
 
       {
-         "SetWifiKeyAction", GTK_STOCK_FIND,
+         "SetWifiKeyAction", "edit-find",
          "Set the _WiFi key...", NULL,
          NULL, G_CALLBACK(gtkui_wifi_key)
       }
@@ -311,13 +311,13 @@ void gtkui_create_menu(int live)
       },
 
       {
-         "LoadFilterAction", GTK_STOCK_OPEN,
+         "LoadFilterAction", "document-open",
          "Load a filter...", "<control>f",
          NULL, G_CALLBACK(gtkui_load_filter)
       },
 
       {
-         "StopFilterAction", GTK_STOCK_STOP,
+         "StopFilterAction", "process-stop",
          "Stop _filtering", "<control><shift>f",
          NULL, G_CALLBACK(gtkui_stop_filter)
       }
@@ -332,31 +332,31 @@ void gtkui_create_menu(int live)
       },
 
       {
-         "LoggingAllAction", GTK_STOCK_SAVE,
+         "LoggingAllAction", "document-save",
          "Logging all packets and infos...", "<control><shift>i",
          NULL, G_CALLBACK(gtkui_log_all)
       },
 
       {
-         "LoggingInfoAction", GTK_STOCK_SAVE_AS,
+         "LoggingInfoAction", "document-save-as",
          "Logging only infos...", "<control>i",
          NULL, G_CALLBACK(gtkui_log_info)
       },
 
       {
-         "LoggingStopAction", GTK_STOCK_STOP,
+         "LoggingStopAction", "process-stop",
          "Stop logging infos", NULL,
          NULL, G_CALLBACK(gtkui_stop_log)
       },
 
       {
-         "LogMessagesAction", GTK_STOCK_REVERT_TO_SAVED,
+         "LogMessagesAction", "document-revert",
          "Log user messages...", "<control>m",
          NULL, G_CALLBACK(gtkui_log_msg)
       },
 
       {
-         "LogMessagesStopAction", GTK_STOCK_STOP,
+         "LogMessagesStopAction", "process-stop",
          "Stop logging messages", NULL,
          NULL, G_CALLBACK(gtkui_stop_msg)
       }
@@ -372,13 +372,13 @@ void gtkui_create_menu(int live)
       },
 
       {
-         "ManagePluginsAction", GTK_STOCK_EXECUTE,
+         "ManagePluginsAction", "system-run",
          "Manage the plugins", "<control>p",
          NULL, G_CALLBACK(gtkui_plugin_mgmt)
       },
 
       {
-         "LoadPluginAction", GTK_STOCK_OPEN,
+         "LoadPluginAction", "document-open",
          "Load a plugin...", NULL,
          NULL, G_CALLBACK(gtkui_plugin_load)
       }
@@ -395,13 +395,13 @@ void gtkui_create_menu(int live)
 
 #ifndef OS_WINDOWS
       {
-         "HelpAction", GTK_STOCK_HELP,
+         "HelpAction", "help-browser",
          "Help", "F1",
          NULL, G_CALLBACK(gtkui_help)
       },
 #endif
       {
-         "AboutDialogAction", GTK_STOCK_ABOUT,
+         "AboutDialogAction", "help-about",
          "About", NULL,
          NULL, G_CALLBACK(gtkui_about)
       }
@@ -549,25 +549,25 @@ void gtkui_create_tab_menu(void)
 
    GtkActionEntry tab_menu_items[] = {
       {
-         "DetachPageAction", GTK_STOCK_GO_UP,
+         "DetachPageAction", "go-up",
          "Detach page", "<control>D",
          NULL, G_CALLBACK(gtkui_page_detach_current)
       },
 
       {
-         "ClosePageAction", GTK_STOCK_CLOSE,
+         "ClosePageAction", "window-close",
          "Close page", "<control>W",
          NULL, G_CALLBACK(gtkui_page_close_current)
       },
 
       {
-         "NextPageAction", GTK_STOCK_GO_FORWARD,
+         "NextPageAction", "go-next",
          "Next page", "<control>Tab",
          NULL, G_CALLBACK(gtkui_page_right)
       },
 
       {
-         "PreviousPageAction", GTK_STOCK_GO_BACK,
+         "PreviousPageAction", "go-previous",
          "Previous page", "<control><shift>Tab",
          NULL, G_CALLBACK(gtkui_page_left)
       }

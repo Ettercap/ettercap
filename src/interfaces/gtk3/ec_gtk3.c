@@ -386,7 +386,7 @@ void gtkui_about(void)
 
    button = gtk_dialog_add_button(GTK_DIALOG(dialog), "Close", GTK_RESPONSE_CLOSE);
    gtk_button_set_image(GTK_BUTTON(button), 
-         gtk_image_new_from_stock(GTK_STOCK_CLOSE, GTK_ICON_SIZE_BUTTON));
+         gtk_image_new_from_icon_name("window-close", GTK_ICON_SIZE_BUTTON));
 
    notebook = gtk_notebook_new();
 
@@ -565,8 +565,8 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
 
    dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, 
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
-                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        "_Cancel", GTK_RESPONSE_CANCEL, 
+                                        "_OK",     GTK_RESPONSE_OK,
                                         NULL);
 #if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
@@ -578,8 +578,7 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    
-   image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
-   gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.0);
+   image = gtk_image_new_from_icon_name("dialog-question", GTK_ICON_SIZE_DIALOG);
    gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
    
    label = gtk_label_new (title);
@@ -640,7 +639,7 @@ static void gtkui_progress(char *title, int value, int max)
 #endif
       gtk_box_pack_start(GTK_BOX (hbox), progress_bar, TRUE, TRUE, 0);
 
-      button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+      button = gtk_button_new_with_label("_Cancel");
       gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
       g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_progress_cancel), progress_dialog);
 
@@ -798,21 +797,21 @@ static void gtkui_setup(void)
       },
 
       { 
-         "FileOpenAction", GTK_STOCK_OPEN,
+         "FileOpenAction", "document-open",
          "_Open", "<control>O", 
          "Open a PCAP file",
          G_CALLBACK(gtkui_file_open) 
       },
 
       { 
-         "FileSaveAction", GTK_STOCK_SAVE, 
+         "FileSaveAction", "document-save", 
          "_Save", "<control>S", 
          "Save traffic as PCAP file", 
          G_CALLBACK(gtkui_file_write) 
       },
 
       { 
-         "FileExitAction", GTK_STOCK_QUIT, 
+         "FileExitAction", "application-exit", 
          "E_xit", "<control>Q", 
          "Exit Ettercap", 
          G_CALLBACK(gtkui_exit) 
@@ -826,21 +825,21 @@ static void gtkui_setup(void)
       },
 
       { 
-         "SniffUnifiedAction", GTK_STOCK_DND, 
+         "SniffUnifiedAction", NULL, 
          "Unified sniffing...", "<control>U", 
          "Switch to unified sniffing mode", 
          G_CALLBACK(gtkui_unified_sniff) 
       },
 
       { 
-         "SniffBridgedAction", GTK_STOCK_DND_MULTIPLE, 
+         "SniffBridgedAction", NULL, 
          "Bridged sniffing...", "<control>B", 
          "Switch to bridged sniffing mode", 
          G_CALLBACK(gtkui_bridged_sniff) 
       },
 
       { 
-         "SniffFilterAction", GTK_STOCK_PREFERENCES, 
+         "SniffFilterAction", "preferences-system", 
          "Set pcap filter...", "<control>P", 
          "Limit relevant traffic", 
          G_CALLBACK(gtkui_pcap_filter)
@@ -869,14 +868,14 @@ static void gtkui_setup(void)
 
 #ifndef OS_WINDOWS
       { 
-         "HelpAction", GTK_STOCK_HELP, 
+         "HelpAction", "help-browser", 
          "Help", "F1", 
          "Ettercap documentation", 
          G_CALLBACK(gtkui_help) 
       },
 #endif
       {
-         "AboutDialogAction", GTK_STOCK_ABOUT,
+         "AboutDialogAction", "help-about",
          "About", NULL,
          "About Ettercap",
          G_CALLBACK(gtkui_about)
@@ -1000,7 +999,6 @@ static void gtkui_setup(void)
    else /* if neither path is valid gtk will use a broken image icon */
       logo = gtk_image_new_from_file("./share/" LOGO_FILE);
 
-   gtk_misc_set_alignment (GTK_MISC (logo), 0.5, 0.5);
    gtk_container_add(GTK_CONTAINER (notebook_frame), logo);
    gtk_widget_show(logo);
 
@@ -1045,8 +1043,8 @@ static void gtkui_file_open(void)
 
    dialog = gtk_file_chooser_dialog_new("Select a pcap file...", 
             GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN, 
-            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+            "_Cancel", GTK_RESPONSE_CANCEL,
+            "_OK",     GTK_RESPONSE_OK,
             NULL);
 
    /* This way the file chooser dialog doesn't start in the recent section */
@@ -1110,8 +1108,8 @@ static void gtkui_file_write(void)
    
    dialog = gtk_file_chooser_dialog_new("Save traffic in a pcap file...", 
             GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE, 
-            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-            GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+            "_Cancel", GTK_RESPONSE_CANCEL,
+            "_Open",   GTK_RESPONSE_OK,
             NULL);
 
    /* This way the file chooser dialog doesn't start in the recent section */
@@ -1176,8 +1174,8 @@ static void gtkui_unified_sniff(void)
 
    dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, 
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
-                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        "_Cancel", GTK_RESPONSE_CANCEL, 
+                                        "_OK",     GTK_RESPONSE_OK,
                                         NULL);
 #if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
@@ -1189,8 +1187,7 @@ static void gtkui_unified_sniff(void)
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
   
-   image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
-   gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.0);
+   image = gtk_image_new_from_icon_name ("dialog-question", GTK_ICON_SIZE_DIALOG);
    gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
   
    label = gtk_label_new ("Network interface : ");
@@ -1304,8 +1301,8 @@ static void gtkui_bridged_sniff(void)
 
    dialog = gtk_dialog_new_with_buttons("Bridged Sniffing", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, 
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
-                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
+                                        "_Cancel", GTK_RESPONSE_CANCEL, 
+                                        "_OK",     GTK_RESPONSE_OK,
                                         NULL);
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 #if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
@@ -1318,8 +1315,7 @@ static void gtkui_bridged_sniff(void)
    gtk_container_add(GTK_CONTAINER(content_area), hbox_big);
 
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
-   image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
-   gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.1);
+   image = gtk_image_new_from_icon_name("dialog-question", GTK_ICON_SIZE_DIALOG);
    gtk_box_pack_start (GTK_BOX (vbox), image, TRUE, FALSE, 5);
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, FALSE, FALSE, 0);
 
@@ -1331,14 +1327,14 @@ static void gtkui_bridged_sniff(void)
    gtk_box_pack_start(GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
    label = gtk_label_new ("First network interface  : ");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
    hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX (vbox), hbox, TRUE, TRUE, 0);
 
    label = gtk_label_new ("Second network interface : ");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
    gtk_box_pack_start(GTK_BOX (hbox), label, TRUE, TRUE, 0);
 
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
@@ -1582,7 +1578,7 @@ GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(
    gtk_widget_show(button);
 
    /* an image for the button */
-   image = gtk_image_new_from_stock (GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
+   image = gtk_image_new_from_icon_name("window-close", GTK_ICON_SIZE_MENU);
    gtk_container_add(GTK_CONTAINER (button), image);
    gtk_widget_show(image);
 
@@ -1765,8 +1761,8 @@ void gtkui_filename_browse(GtkWidget *widget, gpointer data)
 
    dialog = gtk_file_chooser_dialog_new("Select a file...",
          NULL, GTK_FILE_CHOOSER_ACTION_OPEN, 
-         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-         GTK_STOCK_OK, GTK_RESPONSE_OK, 
+         "_Cancel", GTK_RESPONSE_CANCEL,
+         "_OK",     GTK_RESPONSE_OK, 
          NULL);
    
    response = gtk_dialog_run (GTK_DIALOG (dialog));

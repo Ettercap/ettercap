@@ -64,8 +64,11 @@ void gtkui_help(void)
 
    DEBUG_MSG("gtkui_help");
 
-   dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Help", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
+   dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Help", 
+         GTK_WINDOW (window), 
+         GTK_DIALOG_MODAL, 
+         "_Close", GTK_RESPONSE_CLOSE, 
+         NULL);
    gtk_window_set_default_size(GTK_WINDOW (dialog), 780, 580);
 #if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), TRUE);

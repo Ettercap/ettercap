@@ -92,7 +92,7 @@ void toggle_resolve(void)
  */
 void gtkui_show_stats(void)
 {
-   GtkWidget *table, *label;
+   GtkWidget *grid, *label;
 
    DEBUG_MSG("gtkui_show_stats");
 
@@ -109,120 +109,120 @@ void gtkui_show_stats(void)
    stats_window = gtkui_page_new("Statistics", &gtkui_stop_stats, &gtkui_stats_detach);
 
    /* alright, this is a lot of code but it'll keep everything lined up nicely */
-   /* if you need to add a row, don't forget to increase the number in gtk_table_new */
-   table = gtk_table_new(12, 2, FALSE); /* rows, cols, size */
-   gtk_table_set_col_spacings(GTK_TABLE (table), 10);
-   gtk_container_add(GTK_CONTAINER (stats_window), table);
+   grid = gtk_grid_new();
+   gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
+   gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
+   gtk_container_add(GTK_CONTAINER (stats_window), grid);
 
+   label = gtk_label_new( "Received packets:");
+   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP, 1, 1);
    packets_recv = gtk_label_new("      ");
    gtk_label_set_selectable(GTK_LABEL (packets_recv), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (packets_recv), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), packets_recv, 1, 2, 0, 1);
-   label        = gtk_label_new( "Received packets:");
-   gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 0, 1);
+   gtk_widget_set_halign(packets_recv, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), packets_recv, GTK_POS_LEFT+1, GTK_POS_TOP, 1, 1);
 
-   packets_drop = gtk_label_new("      ");
-   gtk_label_set_selectable(GTK_LABEL (packets_drop), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (packets_drop), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), packets_drop, 1, 2, 1, 2);
    label        = gtk_label_new("Dropped packets:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 1, 2);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+1, 1, 1);
+   packets_drop = gtk_label_new("      ");
+   gtk_label_set_selectable(GTK_LABEL (packets_drop), TRUE);
+   gtk_widget_set_halign(packets_drop, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), packets_drop, GTK_POS_LEFT+1, GTK_POS_TOP+1, 1, 1);
 
-   packets_forw = gtk_label_new("       0  bytes:        0 ");
-   gtk_label_set_selectable(GTK_LABEL (packets_forw), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (packets_forw), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), packets_forw, 1, 2, 2, 3);
    label        = gtk_label_new("Forwarded packets:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 2, 3);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+2, 1, 1);
+   packets_forw = gtk_label_new("       0  bytes:        0 ");
+   gtk_label_set_selectable(GTK_LABEL (packets_forw), TRUE);
+   gtk_widget_set_halign(packets_forw, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), packets_forw, GTK_POS_LEFT+1, GTK_POS_TOP+2, 1 ,1);
 
-   queue_len    = gtk_label_new("0/0 ");
-   gtk_label_set_selectable(GTK_LABEL (queue_len), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (queue_len), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), queue_len, 1, 2, 3, 4);
    label        = gtk_label_new("Current queue length:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 3, 4);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+3, 1, 1);
+   queue_len    = gtk_label_new("0/0 ");
+   gtk_label_set_selectable(GTK_LABEL (queue_len), TRUE);
+   gtk_widget_set_halign(queue_len, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), queue_len, GTK_POS_LEFT+1, GTK_POS_TOP+3, 1, 1);
 
-   sample_rate  = gtk_label_new("0     ");
-   gtk_label_set_selectable(GTK_LABEL (sample_rate), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (sample_rate), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), sample_rate, 1, 2, 4, 5);
    label        = gtk_label_new("Sampling rate:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 4, 5);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+4, 1, 1);
+   sample_rate  = gtk_label_new("0     ");
+   gtk_label_set_selectable(GTK_LABEL (sample_rate), TRUE);
+   gtk_widget_set_halign(sample_rate, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), sample_rate, GTK_POS_LEFT+1, GTK_POS_TOP+4, 1, 1);
 
-   recv_bottom  = gtk_label_new("pck:        0  bytes:        0");
-   gtk_label_set_selectable(GTK_LABEL (recv_bottom), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (recv_bottom), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), recv_bottom, 1, 2, 5, 6);
    label        = gtk_label_new("Bottom Half received packet:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 5, 6);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+5, 1, 1);
+   recv_bottom  = gtk_label_new("pck:        0  bytes:        0");
+   gtk_label_set_selectable(GTK_LABEL (recv_bottom), TRUE);
+   gtk_widget_set_halign(recv_bottom, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), recv_bottom, GTK_POS_LEFT+1 ,GTK_POS_TOP+5, 1, 1);
 
-   recv_top     = gtk_label_new("pck:        0  bytes:        0");
-   gtk_label_set_selectable(GTK_LABEL (recv_top), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (recv_top), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), recv_top, 1, 2, 6, 7);
    label        = gtk_label_new("Top Half received packet:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 6, 7);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+6, 1, 1);
+   recv_top     = gtk_label_new("pck:        0  bytes:        0");
+   gtk_label_set_selectable(GTK_LABEL (recv_top), TRUE);
+   gtk_widget_set_halign(recv_top, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), recv_top, GTK_POS_LEFT+1, GTK_POS_TOP+6, 1, 1);
 
-   interesting  = gtk_label_new("0.00 %");
-   gtk_label_set_selectable(GTK_LABEL (interesting), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (interesting), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), interesting, 1, 2, 7, 8);
    label        = gtk_label_new("Interesting packets:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 7, 8);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+7, 1, 1);
+   interesting  = gtk_label_new("0.00 %");
+   gtk_label_set_selectable(GTK_LABEL (interesting), TRUE);
+   gtk_widget_set_halign(interesting, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), interesting, GTK_POS_LEFT+1, GTK_POS_TOP+7, 1, 1);
 
-   rate_bottom  = gtk_label_new("worst:        0  adv:        0 b/s");
-   gtk_label_set_selectable(GTK_LABEL (rate_bottom), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (rate_bottom), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), rate_bottom, 1, 2, 8, 9);
    label        = gtk_label_new("Bottom Half packet rate:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 8, 9);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+8, 1, 1);
+   rate_bottom  = gtk_label_new("worst:        0  adv:        0 b/s");
+   gtk_label_set_selectable(GTK_LABEL (rate_bottom), TRUE);
+   gtk_widget_set_halign(rate_bottom, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), rate_bottom, GTK_POS_LEFT+1, GTK_POS_TOP+8, 1, 1);
 
-   rate_top     = gtk_label_new("worst:        0  adv:        0 b/s");
-   gtk_label_set_selectable(GTK_LABEL (rate_top), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (rate_top), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), rate_top, 1, 2, 9, 10);
    label        = gtk_label_new("Top Half packet rate:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 9, 10);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+9, 1, 1);
+   rate_top     = gtk_label_new("worst:        0  adv:        0 b/s");
+   gtk_label_set_selectable(GTK_LABEL (rate_top), TRUE);
+   gtk_widget_set_halign(rate_top, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), rate_top, GTK_POS_LEFT+1, GTK_POS_TOP+9, 1, 1);
 
-   through_bottom = gtk_label_new("worst:        0  adv:        0 b/s");
-   gtk_label_set_selectable(GTK_LABEL (through_bottom), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (through_bottom), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), through_bottom, 1, 2, 10, 11);
    label        = gtk_label_new("Bottom Half throughput:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 10, 11);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+10, 1, 1);
+   through_bottom = gtk_label_new("worst:        0  adv:        0 b/s");
+   gtk_label_set_selectable(GTK_LABEL (through_bottom), TRUE);
+   gtk_widget_set_halign(through_bottom, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), through_bottom, GTK_POS_LEFT+1, GTK_POS_TOP+10, 1, 1);
 
-   through_top  = gtk_label_new("worst:        0  adv:        0 b/s");
-   gtk_label_set_selectable(GTK_LABEL (through_top), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (through_top), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), through_top, 1, 2, 11, 12);
    label        = gtk_label_new("Top Half throughput:");
    gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 11, 12);
+   gtk_widget_set_halign(label, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), label, GTK_POS_LEFT, GTK_POS_TOP+11, 1, 1);
+   through_top  = gtk_label_new("worst:        0  adv:        0 b/s");
+   gtk_label_set_selectable(GTK_LABEL (through_top), TRUE);
+   gtk_widget_set_halign(through_top, GTK_ALIGN_START);
+   gtk_grid_attach(GTK_GRID(grid), through_top, GTK_POS_LEFT+1, GTK_POS_TOP+11, 1, 1);
 
-   gtk_widget_show_all(table);
+   gtk_widget_show_all(grid);
    gtk_widget_show(stats_window);
   
    /* display the stats */
@@ -332,8 +332,8 @@ void gtkui_vis_method(void)
 
    dialog = gtk_dialog_new_with_buttons("Visualization method...", GTK_WINDOW (window), 
                GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
-               GTK_STOCK_OK, GTK_RESPONSE_OK, 
+               "_Cancel", GTK_RESPONSE_CANCEL, 
+               "_OK",     GTK_RESPONSE_OK, 
                NULL);
    gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
 

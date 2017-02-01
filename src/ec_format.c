@@ -363,7 +363,7 @@ int utf8_format(const u_char *buf, size_t len, u_char *dst)
 #else
    
    iconv_t cd;
-#if (defined (OS_BSD) && !defined(OS_BSD_FREE)) || defined (OS_LINUX) || defined (OS_GNU) || defined (OS_DARWIN)
+#if defined (OS_BSD) || defined (OS_LINUX) || defined (OS_GNU) || defined (OS_DARWIN)
    char *inbuf;
 #else
    const char *inbuf;

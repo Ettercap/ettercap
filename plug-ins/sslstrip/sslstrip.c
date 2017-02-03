@@ -1352,7 +1352,7 @@ static void http_parse_packet(struct http_connection *connection, int direction,
 
    switch(ip_addr_is_local(&PACKET->L3.src, NULL)) {
       case E_SUCCESS:
-         PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
+         PACKET->PASSIVE.flags &= ~(FP_HOST_NONLOCAL);
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
          break;
       case -E_NOTFOUND:

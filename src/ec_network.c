@@ -417,9 +417,9 @@ static void l3_init(void)
    libnet_t *l6;
 #endif
 #ifdef OS_WINDOWS
-   const char *name = EC_GBL_OPTIONS->iface;
+   char *name = EC_GBL_OPTIONS->iface;
 #else
-   const char *name = NULL;
+   char *name = NULL;
 #endif
 
 

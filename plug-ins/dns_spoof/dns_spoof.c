@@ -391,6 +391,7 @@ static void dns_spoof(struct packet_object *po)
 {
    struct dns_header *dns;
    struct rr_entry *rr;
+   struct iface_env *iface;
    u_char *data, *end, *dns_reply;
    char name[NS_MAXDNAME];
    int name_len, dns_len, dns_off, n_answ, n_auth, n_addi;
@@ -450,6 +451,9 @@ static void dns_spoof(struct packet_object *po)
       /* Do not forward query */
       po->flags |= PO_DROPPED; 
 
+      /* set incoming interface as outgoing interface for reply */
+      iface = po->flags & PO_FROMIFACE ? GBL_IFACE : GBL_BRIDGE;
+
       /* allocate memory for the dns reply */
       SAFE_CALLOC(dns_reply, dns_len, sizeof(u_int8));
 
@@ -506,7 +510,7 @@ static void dns_spoof(struct packet_object *po)
       }
 
       /* send the reply */
-      send_dns_reply(po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
+      send_dns_reply(iface, po->L4.src, &po->L3.dst, &po->L3.src, po->L2.src,
                   ntohs(dns->id), dns_reply, dns_len, n_answ, n_auth, n_addi);
 
       /* spoofed DNS reply sent - free memory */

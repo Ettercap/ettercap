@@ -155,8 +155,12 @@ static void display_headers(struct log_header_packet *pck)
    memset(flags, 0, sizeof(flags));
    
    /* display the date. ec_ctime() has no newline at end. */
+#if defined OS_DARWIN
+   fprintf(stdout, "\n\n%s [%d]\n", ec_ctime(&pck->tv), pck->tv.tv_usec);
+#else
    fprintf(stdout, "\n\n%s [%lu]\n", ec_ctime(&pck->tv), pck->tv.tv_usec);
-  
+#endif
+
    if (GBL_OPTIONS->showmac) {
       /* display the mac addresses */
       mac_addr_ntoa(pck->L2_src, tmp1);

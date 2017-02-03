@@ -340,7 +340,11 @@ const char *ec_ctime(const struct timeval *tv)
    if (ts_str)
       sprintf(result, "%.24s", ts_str);
    else
+#if defined OS_DARWIN
+      snprintf(result, sizeof(result), "%lu.%06d", (unsigned long)tv->tv_sec, tv->tv_usec);
+#else
       snprintf(result, sizeof(result), "%lu.%06lu", (unsigned long)tv->tv_sec, tv->tv_usec);
+#endif
 
   return (result);
 }

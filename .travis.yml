@@ -1,3 +1,5 @@
+sudo: required
+dist: trusty
 language: c
 branches:
   except:
@@ -44,13 +46,13 @@ env:
   # Disable Curses and Gtk
   - BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
 matrix:
-  allow_failures:
-    # We expect IPV6 + system libnet + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
-    # We expect system-only curl + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DBUNDLED_CURL=Off"
+  #allow_failures:
+  #  # We expect IPV6 + system libnet + ubuntu to fail :(
+  #  - os: linux
+  #    env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
+  #  # We expect system-only curl + ubuntu to fail :(
+  #  - os: linux
+  #    env: BUILD_ARGS="-DBUNDLED_CURL=Off"
   exclude:
     - os: osx
       env: BUILD_ARGS=""
@@ -92,7 +94,7 @@ matrix:
       env: BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
 
 before_install:
-    - if [ ${TRAVIS_OS_NAME} = "linux" ]; then sudo apt-get update -qq; sudo apt-get install debhelper bison check cmake flex ghostscript libbsd-dev libcurl4-openssl-dev libgtk2.0-dev libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev libgtk-3-dev libgeoip-dev; fi
+    - if [ ${TRAVIS_OS_NAME} = "linux" ]; then sudo apt-get update -qq; sudo apt-get install -y debhelper bison check cmake flex ghostscript libbsd-dev libcurl4-openssl-dev libgtk2.0-dev libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev libgtk-3-dev libgeoip-dev; fi
     - if [ ${TRAVIS_OS_NAME} = "osx" ]; then brew update; brew install check curl; brew install ghostscript gtk+ gtk+3; brew install libidn libnet; brew install luajit openssl pcre rtmpdump geoip; fi
 before_script:
     - if [ ${TRAVIS_OS_NAME} = "osx" ]; then export BUILD_ARGS="$BUILD_ARGS -DOPENSSL_ROOT_DIR=`brew --prefix openssl`";fi

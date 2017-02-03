@@ -648,7 +648,7 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
       
       ip_addr_ntoa(&h->L3_addr, tmp);
       snprintf(*desc, len, "%c %15s   %s", (found) ? '*' : ' ', 
-            tmp, (h->hostname) ? h->hostname : "" );
+            tmp, h->hostname);
 
 #ifdef WITH_GEOIP
       /* determine current string length */

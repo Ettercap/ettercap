@@ -378,7 +378,7 @@ void text_interface(void)
       }
 
       /* print pending USER_MSG messages */
-      ui_msg_flush(10);
+      ui_msg_flush(INT_MAX);
                                  
    }
   

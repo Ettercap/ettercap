@@ -62,7 +62,11 @@ int main(int argc, char *argv[])
    
    fprintf(stderr, "Log file version    : %s\n", GBL->hdr.version);
    /* display the date. ec_ctime() has no newline at end. */
+#if defined OS_DARWIN
+   fprintf(stderr, "Timestamp           : %s [%d]\n", ec_ctime(&GBL->hdr.tv), GBL->hdr.tv.tv_usec);
+#else
    fprintf(stderr, "Timestamp           : %s [%lu]\n", ec_ctime(&GBL->hdr.tv), GBL->hdr.tv.tv_usec);
+#endif
    fprintf(stderr, "Type                : %s\n\n", (GBL->hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
   
    

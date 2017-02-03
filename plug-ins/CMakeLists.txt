@@ -50,7 +50,8 @@ search_promisc
 smb_clear
 smb_down
 smurf_attack
-stp_mangler)
+stp_mangler
+umsg_test)
 
 foreach(plugin ${PLUGINS})
 	add_library(${plugin} MODULE ${plugin}/${plugin}.c)

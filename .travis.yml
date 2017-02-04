@@ -148,8 +148,8 @@ script:
   - mkdir build
   - cd build
   - cmake -DENABLE_TESTS=On $BUILD_ARGS ..
-  - make
-  - make test_verbose
+  - make VERBOSE=1
+  - make VERBOSE=1 test_verbose
 
 notifications:
   irc:

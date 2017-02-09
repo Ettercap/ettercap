@@ -179,7 +179,7 @@ endif(NOT HAVE_GETOPT_LONG AND NOT HAVE_GETOPT_H)
 
 add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
-target_link_libraries(lib_ettercap ${EC_LIBS})
+target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
 
 if (NOT LIBRARY_BUILD)
   add_subdirectory(interfaces)

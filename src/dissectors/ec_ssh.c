@@ -63,8 +63,8 @@ typedef struct {
     RSA *myhostkey;
     u_int32 server_mod;
     u_int32 host_mod;
-    u_char server_exp;
-    u_char host_exp;
+    BIGNUM *server_exp;
+    BIGNUM *host_exp;
     struct ssh_my_key *next;
 } ssh_my_key;
 
@@ -366,7 +366,7 @@ FUNC_DECODER(dissector_ssh)
          if ((session_data->status == WAITING_PUBLIC_KEY || session_data->status == WAITING_SESSION_KEY) && ssh_packet_type == SMSG_PUBLIC_KEY) {
             ssh_my_key **index_ssl;
             u_int32 server_mod, host_mod, cypher_mask, my_mask=0;
-            BN_ULONG server_exp, host_exp;
+            BIGNUM *server_exp = NULL, *host_exp = NULL;
 	     
             /* Set the mask to 3DES or blowfish (if supported) */
             cypher_mask = *(u_int32 *)(PACKET->DATA.data + PACKET->DATA.len - 12);
@@ -443,11 +443,11 @@ FUNC_DECODER(dissector_ssh)
 #endif
 
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-               server_exp = BN_get_word(s_e);
-               host_exp   = BN_get_word(h_e);
+               server_exp = s_e;
+               host_exp   = h_e;
 #else
-               server_exp = *(session_data->serverkey->e->d);
-               host_exp   = *(session_data->hostkey->e->d);
+               BN_set_word(server_exp, *(session_data->serverkey->e->d));
+               BN_set_word(host_exp, *(session_data->hostkey->e->d));
 #endif
 
                /* Check if we already have a suitable RSA key to substitute */
@@ -464,17 +464,25 @@ FUNC_DECODER(dissector_ssh)
                   SAFE_CALLOC(*index_ssl, 1, sizeof(ssh_my_key));
 
                   /* Generate the new key */
-                  (*index_ssl)->myserverkey = (RSA *)RSA_generate_key_ex(server_mod, server_exp, NULL, NULL);
-                  (*index_ssl)->myhostkey = (RSA *)RSA_generate_key(host_mod, host_exp, NULL, NULL);
+                  (*index_ssl)->myserverkey = RSA_new();
+                  if (!RSA_generate_key_ex((*index_ssl)->myserverkey,
+                           server_mod, server_exp, NULL)) {
+                     RSA_free((*index_ssl)->myserverkey);
+                     SAFE_FREE(*index_ssl);
+                     return NULL;
+                  }
+                  (*index_ssl)->myhostkey = RSA_new();
+                  if (!RSA_generate_key_ex((*index_ssl)->myhostkey,
+                           host_mod, host_exp, NULL)) {
+                     RSA_free((*index_ssl)->myhostkey);
+                     SAFE_FREE(*index_ssl);
+                     return NULL;
+                  }
                   (*index_ssl)->server_mod = server_mod;
                   (*index_ssl)->host_mod = host_mod;
                   (*index_ssl)->server_exp = server_exp;
                   (*index_ssl)->host_exp = host_exp;		  
                   (*index_ssl)->next = NULL;
-                  if ((*index_ssl)->myserverkey == NULL || (*index_ssl)->myhostkey == NULL) {
-                     SAFE_FREE(*index_ssl);
-                     return NULL;
-                  }
                }
 	    
                /* Assign the key to the session */

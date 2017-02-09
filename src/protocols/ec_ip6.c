@@ -135,7 +135,7 @@ FUNC_DECODER(decode_ip6)
    /* calculate if the dest is local or not */
    switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
       case E_SUCCESS:
-         PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
+         PACKET->PASSIVE.flags &= ~(FP_HOST_NONLOCAL);
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
          break;
       case -E_NOTFOUND:

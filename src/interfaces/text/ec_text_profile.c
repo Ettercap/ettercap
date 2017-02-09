@@ -165,7 +165,7 @@ static void detail_select(void)
    
    /* go thru the list and print a profile for each host */
    TAILQ_FOREACH(h, &EC_GBL_PROFILES, next) {
-      fprintf(stdout, "%2d) %15s   %s\n", ++i, ip_addr_ntoa(&h->L3_addr, tmp), (h->hostname) ? h->hostname : "");
+      fprintf(stdout, "%2d) %15s   %s\n", ++i, ip_addr_ntoa(&h->L3_addr, tmp), h->hostname);
    }
       
    /* there aren't any profiles */

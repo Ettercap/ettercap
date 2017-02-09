@@ -41,6 +41,7 @@ struct ef_globals *ef_gbls;
 
 int main(int argc, char *argv[])
 {
+   int ret_value = 0;
    libettercap_init();
    ef_globals_alloc();
    select_text_interface();
@@ -88,8 +89,12 @@ int main(int argc, char *argv[])
       fprintf(stdout, "\n\nThe script contains errors...\n\n");
   
    /* write to file */
-   if (write_output() != E_SUCCESS)
-      FATAL_ERROR("Cannot write output file (%s)", EF_GBL_OPTIONS->output_file);
+   ret_value = write_output();
+   if (ret_value == -E_NOTHANDLED)
+      FATAL_ERROR("Cannot write output file (%s): the filter is not correctly handled.", EF_GBL_OPTIONS->output_file);
+   else if (ret_value == -E_INVALID)
+      FATAL_ERROR("Cannot write output file (%s): the filter format is not correct. ", EF_GBL_OPTIONS->output_file);
+
    ef_globals_free();
    return 0;
 }

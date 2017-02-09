@@ -267,7 +267,7 @@ EC_THREAD_FUNC(sslw_start)
    struct sockaddr_in6 *sa6;
 #endif
    u_int len = sizeof(client_ss);
-   int fd, nfds, i = 0;
+   int fd = 0, nfds = 0, i = 0;
 
    /* variable not used */
    (void) EC_THREAD_PARAM;
@@ -1005,7 +1005,7 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
    /* calculate if the dest is local or not */
    switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
       case E_SUCCESS:
-         PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
+         PACKET->PASSIVE.flags &= ~(FP_HOST_NONLOCAL);
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
          break;
       case -E_NOTFOUND:

@@ -349,8 +349,27 @@ const char *ec_ctime(const struct timeval *tv)
   return (result);
 }
 
+#if defined OS_DARWIN
+/*
+ * OS X lacks this function in its standard lib
+ */
+void *memrchr(const void *s, u_char c, size_t n)
+{
+   const u_char *cp;
+
+   if (n != 0) {
+      cp = (u_char*)s + n;
+      do {
+         if (*(--cp) == (u_char)c)
+            return (void*)cp;
+      } while (--n != 0);
+   }
+
+   return NULL;
+}
+#endif /* OS_DARWIN */
+
 /* EOF */
 
 
 // vim:ts=3:expandtab
-

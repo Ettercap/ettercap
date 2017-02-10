@@ -29,6 +29,7 @@
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_session.h>
+#include <ec_utils.h>
 
 #define EC_O5LOGON_DEBUG       0
 
@@ -64,24 +65,6 @@ FUNC_DECODER(dissector_o5logon);
 void o5logon_init(void);
 
 /************************************************/
-
-#undef memrchr
-#define memrchr my_memrchr
-
-static void *memrchr(const void *s, u_char c, size_t n)
-{
-   const u_char *cp;
-
-   if (n != 0) {
-      cp = (u_char*)s + n;
-      do {
-         if (*(--cp) == (u_char)c)
-            return (void*)cp;
-      } while (--n != 0);
-   }
-
-   return NULL;
-}
 
 /*
  * this function is the initializer.

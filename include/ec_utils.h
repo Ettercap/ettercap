@@ -11,8 +11,4 @@ EC_API_EXTERN int base64encode(const char *inputbuf, char **outptr);
 EC_API_EXTERN int base64decode(const char *src, char **outptr);
 EC_API_EXTERN const char *ec_ctime(const struct timeval *tv);
 
-#if defined OS_DARWIN
-EC_API_EXTERN void *memrchr(const void *s, u_char c, size_t n);
-#endif
-
 #endif

@@ -40,6 +40,7 @@
 #cmakedefine HAVE_STRSEP
 #cmakedefine HAVE_STRCASESTR
 #cmakedefine HAVE_MEMMEM
+#cmakedefine HAVE_MEMRCHR
 #cmakedefine HAVE_BASENAME
 
 #cmakedefine HAVE_NCURSES

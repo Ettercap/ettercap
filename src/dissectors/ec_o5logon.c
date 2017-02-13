@@ -109,8 +109,13 @@ FUNC_DECODER(dissector_o5logon)
           * We output this packet just in case, but we may see more data
           * later and output another copy with more fields. See issue #741.
           */
-         if (conn_status->flags.pkcs != EC_O5LOGON_NO_PKCS7 && conn_status->flags.user && conn_status->flags.s_sk && conn_status->flags.vfr) {
-            DISSECT_MSG("O5LOGON: %s@%s:$o5logon$%s*%s\n", conn_status->user, ip_addr_ntoa(&conn_status->srv_addr, tmp), conn_status->srv_sk, conn_status->salt);
+         if (conn_status->flags.pkcs != EC_O5LOGON_NO_PKCS7 && 
+               conn_status->flags.user && 
+               conn_status->flags.s_sk && 
+               conn_status->flags.vfr) {
+            DISSECT_MSG("O5LOGON: %s@%s:$o5logon$%s*%s\n", conn_status->user, 
+                  ip_addr_ntoa(&conn_status->srv_addr, tmp), 
+                  conn_status->srv_sk, conn_status->salt);
          }
          if (PACKET->L4.flags & (TH_FIN | TH_RST)) {
             dissect_wipe_session(PACKET, DISSECT_CODE(dissector_o5logon));
@@ -130,7 +135,8 @@ FUNC_DECODER(dissector_o5logon)
 
          ano += 25;
 #if EC_O5LOGON_DEBUG
-         DISSECT_MSG("O5LOGON: client ver %u.%u.%u.%u.%u (PKCS)\n", ano[0], ano[1] >> 4, ano[1] & 15 , ano[2], ano[3]);
+         DISSECT_MSG("O5LOGON: client ver %u.%u.%u.%u.%u (PKCS)\n", 
+               ano[0], ano[1] >> 4, ano[1] & 15 , ano[2], ano[3]);
 #endif
          if ((ano[0] << 16) + (ano[1] << 8) + ano[2] < 0x0a2003) {
             conn_status->flags.pkcs = EC_O5LOGON_PKCS7;
@@ -160,12 +166,20 @@ FUNC_DECODER(dissector_o5logon)
                ++start;
                size_t length = (size_t)(end - start) + 1;
 
-               strncpy((char*)conn_status->user, (char*)start, sizeof(conn_status->user) - 1);
+               strncpy((char*)conn_status->user, (char*)start, 
+                     sizeof(conn_status->user) - 1);
+
                if (length < sizeof(conn_status->user))
                   conn_status->user[length] = 0;
 
 #if EC_O5LOGON_DEBUG
-               DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got username %s%s\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst), conn_status->user, conn_status->flags.c_ano == 1 ? "" : "(no ANO seen)");
+               DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got username %s%s\n", 
+                     ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                     ntohs(PACKET->L4.src), 
+                     ip_addr_ntoa(&PACKET->L3.dst, tmp), 
+                     ntohs(PACKET->L4.dst), 
+                     conn_status->user, 
+                     conn_status->flags.c_ano == 1 ? "" : "(no ANO seen)");
 #endif
                conn_status->flags.user = 1;
             }
@@ -195,7 +209,11 @@ FUNC_DECODER(dissector_o5logon)
                password[pwlen] = 0;
                strncpy(conn_status->pw, password, sizeof(conn_status->pw));
 #if EC_O5LOGON_DEBUG
-               DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got encrypted password\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst));
+               DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got encrypted password\n", 
+                     ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                     ntohs(PACKET->L4.src), 
+                     ip_addr_ntoa(&PACKET->L3.dst, tmp), 
+                     ntohs(PACKET->L4.dst));
 #endif
                conn_status->flags.pw = 1;
             }
@@ -222,19 +240,36 @@ FUNC_DECODER(dissector_o5logon)
                strncpy(conn_status->cli_sk, sk, sizeof(conn_status->cli_sk));
                conn_status->flags.c_sk = 1;
 #if EC_O5LOGON_DEBUG
-               DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got client session key\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst));
+               DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got client session key\n", 
+                     ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                     ntohs(PACKET->L4.src), 
+                     ip_addr_ntoa(&PACKET->L3.dst, tmp), 
+                     ntohs(PACKET->L4.dst));
 #endif
             }
 #if EC_O5LOGON_DEBUG
             else {
-               DISSECT_MSG("O5LOGON: %s:%d->%s:%d saw AUTH_SESSKEY but couldn't parse client session key?\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst));
+               DISSECT_MSG("O5LOGON: %s:%d->%s:%d saw AUTH_SESSKEY but "
+                           "couldn't parse client session key?\n", 
+                     ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                     ntohs(PACKET->L4.src), 
+                     ip_addr_ntoa(&PACKET->L3.dst, tmp), 
+                     ntohs(PACKET->L4.dst));
             }
 #endif
          }
       }
 
-      if (conn_status && conn_status->flags.user && conn_status->flags.s_sk && conn_status->flags.vfr && conn_status->flags.pw && conn_status->flags.c_sk) {
-         DISSECT_MSG("O5LOGON: %s@%s:$o5logon$%s*%s*%s*%s\n", conn_status->user, ip_addr_ntoa(&conn_status->srv_addr, tmp), conn_status->srv_sk, conn_status->salt, conn_status->pw, conn_status->cli_sk);
+      if (conn_status && conn_status->flags.user && conn_status->flags.s_sk &&
+            conn_status->flags.vfr && conn_status->flags.pw && 
+            conn_status->flags.c_sk) {
+         DISSECT_MSG("O5LOGON: %s@%s:$o5logon$%s*%s*%s*%s\n", 
+               conn_status->user, 
+               ip_addr_ntoa(&conn_status->srv_addr, tmp), 
+               conn_status->srv_sk, 
+               conn_status->salt, 
+               conn_status->pw, 
+               conn_status->cli_sk);
          dissect_wipe_session(PACKET, DISSECT_CODE(dissector_o5logon));
       }
    }
@@ -251,7 +286,8 @@ FUNC_DECODER(dissector_o5logon)
                   ano += 25;
                   conn_status->flags.s_ano = 1;
 #if EC_O5LOGON_DEBUG
-                  DISSECT_MSG("O5LOGON: server ver %u.%u.%u.%u.%u\n", ano[0], ano[1] >> 4, ano[1] & 15 , ano[2], ano[3]);
+                  DISSECT_MSG("O5LOGON: server ver %u.%u.%u.%u.%u\n", ano[0], 
+                        ano[1] >> 4, ano[1] & 15 , ano[2], ano[3]);
 #endif
                   if (ano[0] >= 0x0c) {
                      conn_status->flags.pkcs = EC_O5LOGON_NO_PKCS7;
@@ -278,7 +314,11 @@ FUNC_DECODER(dissector_o5logon)
 
                   strncpy(conn_status->salt, salt, sizeof(conn_status->salt));
 #if EC_O5LOGON_DEBUG
-                  DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got VFR\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst));
+                  DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got VFR\n", 
+                        ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                        ntohs(PACKET->L4.src), 
+                        ip_addr_ntoa(&PACKET->L3.dst, tmp), 
+                        ntohs(PACKET->L4.dst));
 #endif
                   conn_status->flags.vfr = 1;
                }
@@ -305,10 +345,15 @@ FUNC_DECODER(dissector_o5logon)
                   }
                   sk[96] = 0;
 
-                  memcpy(&conn_status->srv_addr, &PACKET->L3.src, sizeof(conn_status->srv_addr));
+                  memcpy(&conn_status->srv_addr, &PACKET->L3.src, 
+                        sizeof(conn_status->srv_addr));
                   strncpy(conn_status->srv_sk, sk, sizeof(conn_status->srv_sk));
 #if EC_O5LOGON_DEBUG
-                  DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got server session key\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst));
+                  DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got server session key\n",
+                        ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                        ntohs(PACKET->L4.src), 
+                        ip_addr_ntoa(&PACKET->L3.dst, tmp), 
+                        ntohs(PACKET->L4.dst));
 #endif
                   conn_status->flags.s_sk = 1;
                }
@@ -316,7 +361,12 @@ FUNC_DECODER(dissector_o5logon)
          }
 
          if (memmem(ptr, PACKET->DATA.len, "invalid username", 16)) {
-            DISSECT_MSG("O5LOGON: Login to %s:%d as %s failed! Invalid username or password\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), conn_status->user);
+            DISSECT_MSG("O5LOGON: Login to %s:%d as %s failed! "
+                        "Invalid username or password\n", 
+                  ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                  ntohs(PACKET->L4.src), 
+                  conn_status->user);
+
             conn_status->flags.user = 0;
             conn_status->flags.s_sk = 0;
             conn_status->flags.vfr = 0;
@@ -324,7 +374,11 @@ FUNC_DECODER(dissector_o5logon)
             conn_status->flags.c_sk = 0;
          }
          else if (memmem(ptr, PACKET->DATA.len, "account is locked", 17)) {
-            DISSECT_MSG("O5LOGON: Login to %s:%d as %s failed, account locked!\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), conn_status->user);
+            DISSECT_MSG("O5LOGON: Login to %s:%d as %s failed, account locked!\n",
+                  ip_addr_ntoa(&PACKET->L3.src, tmp), 
+                  ntohs(PACKET->L4.src), 
+                  conn_status->user);
+
             conn_status->flags.user = 0;
             conn_status->flags.s_sk = 0;
             conn_status->flags.vfr = 0;
@@ -334,7 +388,11 @@ FUNC_DECODER(dissector_o5logon)
 
 #if EC_O5LOGON_DEBUG
       } else {
-         DISSECT_MSG("O5LOGON: No session; %s:%d -> %s:%d\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), ip_addr_ntoa(&PACKET->L3.dst, tmp), ntohs(PACKET->L4.dst));
+         DISSECT_MSG("O5LOGON: No session; %s:%d -> %s:%d\n", 
+               ip_addr_ntoa(&PACKET->L3.src, tmp), 
+               ntohs(PACKET->L4.src), 
+               ip_addr_ntoa(&PACKET->L3.dst, tmp), 
+               ntohs(PACKET->L4.dst));
 #endif
       }
    }

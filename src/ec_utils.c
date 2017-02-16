@@ -349,8 +349,8 @@ const char *ec_ctime(const struct timeval *tv)
   return (result);
 }
 
+
 /* EOF */
 
 
 // vim:ts=3:expandtab
-

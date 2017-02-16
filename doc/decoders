@@ -30,7 +30,7 @@ protocol).
 A decoder must use the macro provided in the ec_decode.h file. The main
 function must be declared as:
 
-   FUNC_DECODER(new_dissector) 
+   FUNC_DECODER(new_decoder)
    {
       ...
    }

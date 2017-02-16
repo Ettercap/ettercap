@@ -29,9 +29,10 @@
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_session.h>
-#include <ec_utils.h>
 
-#define EC_O5LOGON_DEBUG       0
+#ifndef EC_O5LOGON_VERBOSE
+#define EC_O5LOGON_VERBOSE 0
+#endif
 
 /* globals */
 
@@ -134,7 +135,7 @@ FUNC_DECODER(dissector_o5logon)
          conn_status->flags.c_ano = 1;
 
          ano += 25;
-#if EC_O5LOGON_DEBUG
+#if EC_O5LOGON_VERBOSE
          DISSECT_MSG("O5LOGON: client ver %u.%u.%u.%u.%u (PKCS)\n", 
                ano[0], ano[1] >> 4, ano[1] & 15 , ano[2], ano[3]);
 #endif
@@ -172,7 +173,7 @@ FUNC_DECODER(dissector_o5logon)
                if (length < sizeof(conn_status->user))
                   conn_status->user[length] = 0;
 
-#if EC_O5LOGON_DEBUG
+#if EC_O5LOGON_VERBOSE
                DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got username %s%s\n", 
                      ip_addr_ntoa(&PACKET->L3.src, tmp), 
                      ntohs(PACKET->L4.src), 
@@ -208,7 +209,7 @@ FUNC_DECODER(dissector_o5logon)
                }
                password[pwlen] = 0;
                strncpy(conn_status->pw, password, sizeof(conn_status->pw));
-#if EC_O5LOGON_DEBUG
+#if EC_O5LOGON_VERBOSE
                DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got encrypted password\n", 
                      ip_addr_ntoa(&PACKET->L3.src, tmp), 
                      ntohs(PACKET->L4.src), 
@@ -239,7 +240,7 @@ FUNC_DECODER(dissector_o5logon)
                sk[96] = 0;
                strncpy(conn_status->cli_sk, sk, sizeof(conn_status->cli_sk));
                conn_status->flags.c_sk = 1;
-#if EC_O5LOGON_DEBUG
+#if EC_O5LOGON_VERBOSE
                DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got client session key\n", 
                      ip_addr_ntoa(&PACKET->L3.src, tmp), 
                      ntohs(PACKET->L4.src), 
@@ -247,7 +248,7 @@ FUNC_DECODER(dissector_o5logon)
                      ntohs(PACKET->L4.dst));
 #endif
             }
-#if EC_O5LOGON_DEBUG
+#if EC_O5LOGON_VERBOSE
             else {
                DISSECT_MSG("O5LOGON: %s:%d->%s:%d saw AUTH_SESSKEY but "
                            "couldn't parse client session key?\n", 
@@ -285,7 +286,7 @@ FUNC_DECODER(dissector_o5logon)
                if (ano) {
                   ano += 25;
                   conn_status->flags.s_ano = 1;
-#if EC_O5LOGON_DEBUG
+#if EC_O5LOGON_VERBOSE
                   DISSECT_MSG("O5LOGON: server ver %u.%u.%u.%u.%u\n", ano[0], 
                         ano[1] >> 4, ano[1] & 15 , ano[2], ano[3]);
 #endif
@@ -313,7 +314,7 @@ FUNC_DECODER(dissector_o5logon)
                   salt[20] = 0;
 
                   strncpy(conn_status->salt, salt, sizeof(conn_status->salt));
-#if EC_O5LOGON_DEBUG
+#if EC_O5LOGON_VERBOSE
                   DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got VFR\n", 
                         ip_addr_ntoa(&PACKET->L3.src, tmp), 
                         ntohs(PACKET->L4.src), 
@@ -348,7 +349,7 @@ FUNC_DECODER(dissector_o5logon)
                   memcpy(&conn_status->srv_addr, &PACKET->L3.src, 
                         sizeof(conn_status->srv_addr));
                   strncpy(conn_status->srv_sk, sk, sizeof(conn_status->srv_sk));
-#if EC_O5LOGON_DEBUG
+#if EC_O5LOGON_VERBOSE
                   DISSECT_MSG("O5LOGON: %s:%d->%s:%d Got server session key\n",
                         ip_addr_ntoa(&PACKET->L3.src, tmp), 
                         ntohs(PACKET->L4.src), 
@@ -386,7 +387,7 @@ FUNC_DECODER(dissector_o5logon)
             conn_status->flags.c_sk = 0;
          }
 
-#if EC_O5LOGON_DEBUG
+#if EC_O5LOGON_VERBOSE
       } else {
          DISSECT_MSG("O5LOGON: No session; %s:%d -> %s:%d\n", 
                ip_addr_ntoa(&PACKET->L3.src, tmp), 

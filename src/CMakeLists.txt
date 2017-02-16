@@ -180,93 +180,25 @@ if(NOT HAVE_GETOPT_LONG AND NOT HAVE_GETOPT_H)
     set(EC_SRC ${EC_SRC} missing/getopt.c)
 endif(NOT HAVE_GETOPT_LONG AND NOT HAVE_GETOPT_H)
 
+add_library(lib_ettercap SHARED ${EC_SRC})
+add_dependencies(lib_ettercap libnet)
+target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
 
 if (NOT LIBRARY_BUILD)
-    set(EC_TEXT_SRC
-                interfaces/text/ec_text.c
-                interfaces/text/ec_text_conn.c
-                interfaces/text/ec_text_display.c
-                interfaces/text/ec_text_plugin.c
-                interfaces/text/ec_text_profile.c
-    )
-    include_directories(interfaces/text)
-
-    set(EC_DAEMON_SRC interfaces/daemon/ec_daemon.c)
-    include_directories(interfaces/daemon)
-
-    if(ENABLE_CURSES)
-        set(EC_CURSES_SRC
-                    interfaces/curses/ec_curses.c
-                    interfaces/curses/ec_curses_filters.c
-                    interfaces/curses/ec_curses_help.c
-                    interfaces/curses/ec_curses_hosts.c
-                    interfaces/curses/ec_curses_live.c
-                    interfaces/curses/ec_curses_logging.c
-                    interfaces/curses/ec_curses_mitm.c
-                    interfaces/curses/ec_curses_offline.c
-                    interfaces/curses/ec_curses_plugins.c
-                    interfaces/curses/ec_curses_start.c
-                    interfaces/curses/ec_curses_targets.c
-                    interfaces/curses/ec_curses_view.c
-                    interfaces/curses/ec_curses_view_connections.c
-                    interfaces/curses/ec_curses_view_profiles.c
-        )
-        include_directories(interfaces/curses)
-        set(EC_WDG_SRC
-                    interfaces/curses/widgets/wdg.c
-                    interfaces/curses/widgets/wdg_compound.c
-                    interfaces/curses/widgets/wdg_debug.c
-                    interfaces/curses/widgets/wdg_dialog.c
-                    interfaces/curses/widgets/wdg_dynlist.c
-                    interfaces/curses/widgets/wdg_error.c
-                    interfaces/curses/widgets/wdg_file.c
-                    interfaces/curses/widgets/wdg_input.c
-                    interfaces/curses/widgets/wdg_list.c
-                    interfaces/curses/widgets/wdg_menu.c
-                    interfaces/curses/widgets/wdg_panel.c
-                    interfaces/curses/widgets/wdg_percentage.c
-                    interfaces/curses/widgets/wdg_scroll.c
-                    interfaces/curses/widgets/wdg_window.c
-        )
-        include_directories(interfaces/curses/widgets)
-        # add_library(ec_wdg STATIC ${EC_WDG_SRC})
-        # target_link_libraries(ec_wdg ${EC_LIBS})
-    endif(ENABLE_CURSES)
-
-    if(ENABLE_GTK)
-        set(EC_GTK_SRC
-                    interfaces/gtk/ec_gtk.c
-                    interfaces/gtk/ec_gtk_conf.c
-                    interfaces/gtk/ec_gtk_filters.c
-                    interfaces/gtk/ec_gtk_help.c
-                    interfaces/gtk/ec_gtk_hosts.c
-                    interfaces/gtk/ec_gtk_live.c
-                    interfaces/gtk/ec_gtk_logging.c
-                    interfaces/gtk/ec_gtk_menus.c
-                    interfaces/gtk/ec_gtk_mitm.c
-                    interfaces/gtk/ec_gtk_offline.c
-                    interfaces/gtk/ec_gtk_plugins.c
-                    interfaces/gtk/ec_gtk_start.c
-                    interfaces/gtk/ec_gtk_targets.c
-                    interfaces/gtk/ec_gtk_view.c
-                    interfaces/gtk/ec_gtk_view_connections.c
-                    interfaces/gtk/ec_gtk_view_profiles.c
-        )
-        include_directories(interfaces/gtk)
-    endif(ENABLE_GTK)
-endif(NOT LIBRARY_BUILD)
-
-add_library(lib_ettercap SHARED ${EC_SRC} ec_interfaces.c ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_WDG_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
-add_dependencies(lib_ettercap libnet)
-target_link_libraries(lib_ettercap ${EC_INTERFACES_LIBS} ${EC_LIBS})
-
-if(NOT LIBRARY_BUILD)
-    add_executable(ettercap ec_parser.c ec_main.c)
-    target_link_libraries(ettercap lib_ettercap ${EC_LIBS})
-    if(NOT DISABLE_RPATH)
-        set_target_properties(ettercap PROPERTIES
-        INSTALL_RPATH ${INSTALL_LIBDIR})
-    endif(NOT DISABLE_RPATH)
+  add_subdirectory(interfaces)
+  include_directories( interfaces/daemon interfaces/text )
+  if (ENABLE_CURSES)
+    include_directories( interfaces/curses interfaces/curses/widgets )
+  endif (ENABLE_CURSES)
+  if (ENABLE_GTK)
+    include_directories( interfaces/gtk )
+  endif(ENABLE_GTK)
+  add_executable(ettercap ec_parser.c ec_main.c)
+  target_link_libraries(ettercap lib_ettercap ${EC_LIBS})
+  if(NOT DISABLE_RPATH)
+    set_target_properties(ettercap PROPERTIES
+    INSTALL_RPATH ${INSTALL_LIBDIR})
+  endif(NOT DISABLE_RPATH)
 endif(NOT LIBRARY_BUILD)
 
 # Only compile lua stuff if lua is enabled!

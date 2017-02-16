@@ -34,6 +34,9 @@
 #ifndef HAVE_MEMMEM
    #include <missing/memmem.h>
 #endif
+#ifndef HAVE_MEMRCHR
+   #include <missing/memrchr.h>
+#endif
 #ifndef HAVE_BASENAME
    #include <missing/basename.h>
 #endif

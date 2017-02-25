@@ -181,8 +181,9 @@ static int good_target(struct ip_addr *p_ip, u_int16 *p_port)
 static int get_user_target(struct ip_addr *p_ip, u_int16 *p_port)
 {
    struct in_addr ipaddr;
-   char input[24];
-   char *p, *tok;
+   struct in6_addr ip6addr;
+   char input[MAX_ASCII_ADDR_LEN+1+5+1];
+   char ipstr[MAX_ASCII_ADDR_LEN];
 
    memset(input, 0, sizeof(input));
    
@@ -194,21 +195,20 @@ static int get_user_target(struct ip_addr *p_ip, u_int16 *p_port)
       return -E_INVALID;
    
    /* get the hostname */
-   if ((p = ec_strtok(input, ":", &tok)) != NULL) {
-      if (inet_aton(p, &ipaddr) == 0)
-         return -E_INVALID;
+   if (ec_strsplit_ipport(input, ipstr, p_port))
+      return -E_INVALID;
 
+   /* convert IP string into ip_addr struct */
+   if (inet_pton(AF_INET, ipstr, &ipaddr) == 1) /* IPv4 address */
       ip_addr_init(p_ip, AF_INET, (u_char *)&ipaddr);
+   else if (inet_pton(AF_INET6, ipstr, &ip6addr) == 1) /* IPv6 address */
+      ip_addr_init(p_ip, AF_INET6, (u_char *)&ip6addr);
+   else
+      return -E_INVALID;
 
-      /* get the port */
-      if ((p = ec_strtok(NULL, ":", &tok)) != NULL) {
-         *p_port = atoi(p);
-
-         /* correct parsing */
-         if (*p_port != 0)
-            return E_SUCCESS;
-      }
-   }
+   /* correct parsing */
+   if (*p_port != 0)
+      return E_SUCCESS;
 
    return -E_INVALID;
 }

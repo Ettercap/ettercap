@@ -49,8 +49,9 @@ struct ip_header {
 /*The options start here. */
 };
 
+
 /* globals */
-struct in_addr fake_ip;
+struct ip_addr fake_ip;
 
 /* protos */
 int plugin_load(void *);
@@ -89,6 +90,8 @@ int plugin_load(void *handle)
 static int gre_relay_init(void *dummy) 
 {
    char tmp[MAX_ASCII_ADDR_LEN];
+   struct in_addr ipaddr;
+   struct in6_addr ip6addr;
 
    /* variable not used */
    (void) dummy;
@@ -105,7 +108,13 @@ static int gre_relay_init(void *dummy)
    memset(tmp, 0, sizeof(tmp));
    
    ui_input("Unused IP address: ", tmp, sizeof(tmp), NULL);
-   if (!inet_aton(tmp, &fake_ip)) {
+
+   /* convert IP string into ip_addr struct */
+   if (inet_pton(AF_INET, tmp, &ipaddr) == 1) /* IPv4 address */
+      ip_addr_init(&fake_ip, AF_INET, (u_char *)&ipaddr);
+   else if (inet_pton(AF_INET6, tmp, &ip6addr) == 1) /* IPv6 address */
+      ip_addr_init(&fake_ip, AF_INET6, (u_char *)&ip6addr);
+   else {
       INSTANT_USER_MSG("gre_relay: Bad IP address\n");
       return PLUGIN_FINISHED;
    }
@@ -145,16 +154,19 @@ static void parse_gre(struct packet_object *po)
 
    if ( (iph = (struct ip_header *)po->L3.header) == NULL)
       return;
-      
-   if ( iph->daddr != fake_ip.s_addr )
+
+   if ( ip_addr_cmp(&po->L3.dst, &fake_ip) )
       return;
       
    /* Switch source and dest IP address */
    iph->daddr = iph->saddr;
-   iph->saddr = fake_ip.s_addr;
+   iph->saddr = fake_ip.addr32[0];
+   // memcpy(&po->L3.dst, &po->L3.src, sizeof(po->L3.dst));
+   // memcpy(&po->L3.src, &fake_ip, sizeof(po->L3.src));
    
    /* Increase ttl */
    iph->ttl = 128;
+   //po->L3.ttl = 128;
 
    po->flags |= PO_MODIFIED;
 }
@@ -163,11 +175,8 @@ static void parse_gre(struct packet_object *po)
 /* Reply to requests for our fake host */
 static void parse_arp(struct packet_object *po)
 {
-   struct ip_addr sa;
-   
-   ip_addr_init(&sa, AF_INET, (u_char *)&(fake_ip.s_addr));
-   if (!ip_addr_cmp(&sa, &po->L3.dst))
-      send_arp(ARPOP_REPLY, &sa, GBL_IFACE->mac, &po->L3.src, po->L2.src);
+   if (!ip_addr_cmp(&fake_ip, &po->L3.dst))
+      send_arp(ARPOP_REPLY, &fake_ip, GBL_IFACE->mac, &po->L3.src, po->L2.src);
 }
 
 /* EOF */

@@ -231,7 +231,7 @@ privileges, it cannot restore the ip_forwarding for you.
 \fB\-M\fR, \fB\-\-mitm <METHOD:ARGS>\fR
 MITM attack
 .br
-This option will activate the man in the middle attack. The mimt attack is
+This option will activate the man in the middle attack. The mitm attack is
 totally independent from the sniffing. The aim of the attack is to hijack
 packets and redirect them to ettercap. The sniffing engine will forward them if
 necessary.

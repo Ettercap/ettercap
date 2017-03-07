@@ -51,6 +51,9 @@ int write_output(void)
    if (fop == NULL)
       return -E_NOTHANDLED;
 
+   if (ninst == 0)
+      return -E_INVALID;
+
    /* create the file */
    fd = open(GBL_OPTIONS->output_file, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0644);
    ON_ERROR(fd, -1, "Can't create file %s", GBL_OPTIONS->output_file);

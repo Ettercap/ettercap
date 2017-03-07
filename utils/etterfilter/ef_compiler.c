@@ -239,7 +239,9 @@ size_t compile_tree(struct filter_op **fop)
    struct filter_op *array = NULL;
    struct unfold_elm *ue;
 
-   BUG_IF(tree_root == NULL);
+   // invalid file
+   if (tree_root == NULL)
+      return 0;
   
    fprintf(stdout, " Unfolding the meta-tree ");
    fflush(stdout);

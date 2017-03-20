@@ -39,7 +39,7 @@ struct globals *gbls;
 
 int main(int argc, char *argv[])
 {
-
+   int ret_value = 0;
    globals_alloc();
    /* etterfilter copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
@@ -84,8 +84,12 @@ int main(int argc, char *argv[])
       fprintf(stdout, "\n\nThe script contains errors...\n\n");
   
    /* write to file */
-   if (write_output() != E_SUCCESS)
-      FATAL_ERROR("Cannot write output file (%s)", GBL_OPTIONS->output_file);
+   ret_value = write_output();
+   if (ret_value == -E_NOTHANDLED)
+      FATAL_ERROR("Cannot write output file (%s): the filter is not correctly handled.", GBL_OPTIONS->output_file);
+   else if (ret_value == -E_INVALID)
+      FATAL_ERROR("Cannot write output file (%s): the filter format is not correct. ", GBL_OPTIONS->output_file);
+
    globals_free();
    return 0;
 }

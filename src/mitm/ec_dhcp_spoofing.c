@@ -109,7 +109,7 @@ static int dhcp_spoofing_start(char *args)
       /* second parameter (the netmask) */
       } else if (i == 2) {
          /* convert from string */
-         if (inet_aton(p, &ipaddr) == 0)
+         if (inet_pton(AF_INET, p, &ipaddr) == 0)
             break;
          /* get the netmask */
          ip_addr_init(&dhcp_netmask, AF_INET, (u_char *)&ipaddr);
@@ -119,7 +119,7 @@ static int dhcp_spoofing_start(char *args)
          char tmp[MAX_ASCII_ADDR_LEN];
 
          /* convert from string */
-         if (inet_aton(p, &ipaddr) == 0)
+         if (inet_pton(AF_INET, p, &ipaddr) == 0)
             break;
          /* get the netmask */
          ip_addr_init(&dhcp_dns, AF_INET, (u_char *)&ipaddr);

@@ -265,7 +265,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
         if(GBL_OPTIONS->netmask) {
             struct in_addr net;
 
-            if(inet_aton(GBL_OPTIONS->netmask, &net) == 0)
+            if(inet_pton(AF_INET, GBL_OPTIONS->netmask, &net) == 0)
               FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
             ip_addr_init(&source->netmask, AF_INET, (u_char*)&net.s_addr);
         } else {
@@ -304,7 +304,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
          ip_addr_init(&source->ip, AF_INET, (u_char*)&sa4->sin_addr);
          if(GBL_OPTIONS->netmask) {
             struct in_addr net;
-            if(inet_aton(GBL_OPTIONS->netmask, &net) == 0)
+            if(inet_pton(AF_INET, GBL_OPTIONS->netmask, &net) == 0)
                FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
             ip_addr_init(&source->netmask, AF_INET, (u_char*)&net);
          } else {

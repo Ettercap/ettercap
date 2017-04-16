@@ -662,7 +662,8 @@ static void curses_set_netmask(void)
    curses_input("Netmask :", GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
 
    /* sanity check */
-   if (strcmp(GBL_OPTIONS->netmask, "") && inet_aton(GBL_OPTIONS->netmask, &net) == 0)
+   if (strcmp(GBL_OPTIONS->netmask, "") && 
+         inet_pton(AF_INET, GBL_OPTIONS->netmask, &net) == 0)
       ui_error("Invalid netmask %s", GBL_OPTIONS->netmask);
             
    /* if no netmask was specified, free it */

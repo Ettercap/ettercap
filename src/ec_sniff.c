@@ -473,7 +473,7 @@ static int expand_range_ip(char *str, void *target)
                                          ADDR[2].values[ADDR[2].cur],
                                          ADDR[3].values[ADDR[3].cur]);
 
-      if (inet_aton(parsed_ip, &ipaddr) == 0)
+      if (inet_pton(AF_INET, parsed_ip, &ipaddr) == 0)
          FATAL_ERROR("Invalid IP address (%s)", parsed_ip);
 
       ip_addr_init(&tmp, AF_INET,(u_char *)&ipaddr );

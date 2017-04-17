@@ -180,8 +180,6 @@ static int good_target(struct ip_addr *p_ip, u_int16 *p_port)
  */
 static int get_user_target(struct ip_addr *p_ip, u_int16 *p_port)
 {
-   struct in_addr ipaddr;
-   struct in6_addr ip6addr;
    char input[MAX_ASCII_ADDR_LEN+1+5+1];
    char ipstr[MAX_ASCII_ADDR_LEN];
 
@@ -199,11 +197,7 @@ static int get_user_target(struct ip_addr *p_ip, u_int16 *p_port)
       return -E_INVALID;
 
    /* convert IP string into ip_addr struct */
-   if (inet_pton(AF_INET, ipstr, &ipaddr) == 1) /* IPv4 address */
-      ip_addr_init(p_ip, AF_INET, (u_char *)&ipaddr);
-   else if (inet_pton(AF_INET6, ipstr, &ip6addr) == 1) /* IPv6 address */
-      ip_addr_init(p_ip, AF_INET6, (u_char *)&ip6addr);
-   else
+   if (ip_addr_pton(ipstr, p_ip))
       return -E_INVALID;
 
    /* correct parsing */

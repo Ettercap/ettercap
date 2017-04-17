@@ -673,10 +673,6 @@ int scan_load_hosts(char *filename)
    char ip[MAX_ASCII_ADDR_LEN];
    char mac[ETH_ASCII_ADDR_LEN];
    char name[MAX_HOSTNAME_LEN];
-   struct in_addr ipaddr;
-#ifdef WITH_IPV6
-   struct in6_addr ip6addr;
-#endif
    struct ip_addr hip;
    u_int8 hmac[MEDIA_ADDR_LEN];
 
@@ -702,15 +698,8 @@ int scan_load_hosts(char *filename)
          continue;
       }
 
-      if (inet_pton(AF_INET, ip, &ipaddr) == 1) { /* is IPv4 address*/
-         ip_addr_init(&hip, AF_INET, (u_char *)&ipaddr);
-      }
-#ifdef WITH_IPV6
-      else if (inet_pton(AF_INET6, ip, &ip6addr) == 1) { /* is IPv6 address */
-         ip_addr_init(&hip, AF_INET6, (u_char *)&ip6addr);
-      }
-#endif
-      else { /* neither IPv4 nor IPv6 - inform user and skip line*/
+      if (ip_addr_pton(ip, &hip) != E_SUCCESS) {
+         /* neither IPv4 nor IPv6 - inform user and skip line*/
          USER_MSG("Bad IP address while parsing line %d", nhosts + 1);
          continue;
          //del_hosts_list();

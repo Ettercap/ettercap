@@ -188,8 +188,6 @@ static int dns_spoof_fini(void *dummy)
 static int load_db(void)
 {
    struct dns_spoof_entry *d;
-   struct in_addr ipaddr;
-   struct in6_addr ip6addr;
    FILE *f;
    char line[100+255+10+1];
    char *ptr, *ip, *name;
@@ -244,13 +242,8 @@ static int load_db(void)
            return -E_INVALID;
         }
       }
-      else if (inet_pton(AF_INET, ip, &ipaddr) == 1) { /* try IPv4 */
-         ip_addr_init(&d->ip, AF_INET, (u_char *)&ipaddr);
-      }
-      else if (inet_pton(AF_INET6, ip, &ip6addr) == 1) { /* try IPv6 */
-         ip_addr_init(&d->ip, AF_INET6, (u_char *)&ip6addr);
-      }
-      else { /* neither IPv4 nor IPv6 - throw a message and skip line */
+      else if (ip_addr_pton(ip, &d->ip) != E_SUCCESS) {
+         /* neither IPv4 nor IPv6 - throw a message and skip line */
          USER_MSG("dns_spoof: %s:%d Invalid IPv4 or IPv6 address\n", ETTER_DNS, lines);
          SAFE_FREE(d);
          continue;

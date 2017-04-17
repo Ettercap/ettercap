@@ -116,8 +116,6 @@ int plugin_load(void *handle)
 static int gre_relay_init(void *dummy) 
 {
    char tmp[MAX_ASCII_ADDR_LEN];
-   struct in_addr ipaddr;
-   struct in6_addr ip6addr;
 
    /* variable not used */
    (void) dummy;
@@ -136,11 +134,7 @@ static int gre_relay_init(void *dummy)
    ui_input("Unused IP address: ", tmp, sizeof(tmp), NULL);
 
    /* convert IP string into ip_addr struct */
-   if (inet_pton(AF_INET, tmp, &ipaddr) == 1) /* IPv4 address */
-      ip_addr_init(&fake_ip, AF_INET, (u_char *)&ipaddr);
-   else if (inet_pton(AF_INET6, tmp, &ip6addr) == 1) /* IPv6 address */
-      ip_addr_init(&fake_ip, AF_INET6, (u_char *)&ip6addr);
-   else {
+   if (ip_addr_pton(tmp, &fake_ip) != E_SUCCESS) {
       INSTANT_USER_MSG("gre_relay: Bad IP address\n");
       return PLUGIN_FINISHED;
    }

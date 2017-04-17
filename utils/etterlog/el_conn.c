@@ -186,8 +186,6 @@ void filcon_compile(char *conn)
 {
 #define MAX_TOK 5
    char valid[] = "1234567890.:TCPUDtcpud";
-   struct in_addr ipaddr;
-   struct in6_addr ip6addr;
    char *tok[MAX_TOK];
    char *p;
    int i = 0;
@@ -219,18 +217,10 @@ void filcon_compile(char *conn)
    conn_target.L4_dst = htons(atoi(tok[4]));
 
    /* source and dest ip */
-   if (inet_pton(AF_INET, tok[1], &ipaddr) == 1)
-      ip_addr_init(&conn_target.L3_src, AF_INET, (u_char *)&ipaddr );
-   else if (inet_pton(AF_INET6, tok[1], &ip6addr) == 1)
-      ip_addr_init(&conn_target.L3_src, AF_INET6, (u_char *)&ip6addr );
-   else
+   if (ip_addr_pton(tok[1], &conn_target.L3_src) != E_SUCCESS)
       FATAL_ERROR("Invalid IP address (%s)", tok[1]);
 
-   if (inet_pton(AF_INET, tok[3], &ipaddr) == 1)
-      ip_addr_init(&conn_target.L3_dst, AF_INET, (u_char *)&ipaddr );
-   else if (inet_pton(AF_INET6, tok[3], &ip6addr) == 1)
-      ip_addr_init(&conn_target.L3_dst, AF_INET6, (u_char *)&ip6addr );
-   else
+   if (ip_addr_pton(tok[3], &conn_target.L3_dst) != E_SUCCESS)
       FATAL_ERROR("Invalid IP address (%s)", tok[3]);
 
      

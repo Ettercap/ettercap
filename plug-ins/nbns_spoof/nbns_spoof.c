@@ -229,8 +229,6 @@ static int nbns_spoof_fini(void *dummy)
 static int load_db(void)
 {
 	struct nbns_spoof_entry *d;
-	struct in_addr ipaddr;
-	struct in6_addr ip6addr;
 	FILE *f;
 	char line[128];
 	char *ptr, *ipstr, *name;
@@ -261,11 +259,7 @@ static int load_db(void)
 		SAFE_CALLOC(d, 1, sizeof(struct nbns_spoof_entry));
 		
       /* convert IP string into ip_addr struct */
-      if (inet_pton(AF_INET, ipstr, &ipaddr) == 1) /* IPv4 address */
-         ip_addr_init(&d->ip, AF_INET, (u_char *)&ipaddr);
-      else if (inet_pton(AF_INET6, ipstr, &ip6addr) == 1) /* IPv6 address */
-         ip_addr_init(&d->ip, AF_INET6, (u_char *)&ip6addr);
-      else {
+      if (ip_addr_pton(ipstr, &d->ip) != E_SUCCESS) {
 			USER_MSG("%s:%d Invalid IP addres\n", ETTER_NBNS, lines);
          SAFE_FREE(d);
 			continue;

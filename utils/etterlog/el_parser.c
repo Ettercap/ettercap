@@ -96,6 +96,7 @@ void parse_options(int argc, char **argv)
 {
    int c;
    struct in_addr ip;
+   struct in6_addr ip6;
 
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
@@ -210,11 +211,14 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'I':
-                  if (inet_aton(optarg, &ip) == 0) {
+                  if (inet_pton(AF_INET, optarg, &ip) == 1)
+                     ip_addr_init(&GBL->client, AF_INET, (u_char *)&ip);
+                  else if (inet_pton(AF_INET6, optarg, &ip6) == 1)
+                     ip_addr_init(&GBL->client, AF_INET6, (u_char *)&ip6);
+                  else {
                      FATAL_ERROR("Invalid client ip address");
                      return;                    
                   }
-                  ip_addr_init(&GBL->client, AF_INET, (u_char *)&ip);
                   break;
 
          case 'l':

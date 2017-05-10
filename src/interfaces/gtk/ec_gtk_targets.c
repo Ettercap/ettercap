@@ -585,21 +585,10 @@ static void gtkui_add_target2(void *entry)
 
 static void add_target1(void)
 {
-   struct in_addr ip;
-#ifdef WITH_IPV6
-   struct in6_addr ip6;
-#endif
    struct ip_addr host;
    
-   if (inet_pton(AF_INET, thost, &ip) == 1) { /* is IPv4 */
-      ip_addr_init(&host, AF_INET, (u_char *)&ip);
-   }
-#ifdef WITH_IPV6
-   else if (inet_pton(AF_INET6, thost, &ip6) == 1) { /* is IPv6 */
-      ip_addr_init(&host, AF_INET6, (u_char *)&ip6);
-   }
-#endif
-   else { /* neither IPv4 nor IPv6 - inform user */
+   if (ip_addr_pton(thost, &host) != E_SUCCESS) {
+      /* neither IPv4 nor IPv6 - inform user */
       gtkui_message("Invalid ip address");
       return;
    }
@@ -612,21 +601,10 @@ static void add_target1(void)
 
 static void add_target2(void)
 {
-   struct in_addr ip;
-#ifdef WITH_IPV6
-   struct in6_addr ip6;
-#endif
    struct ip_addr host;
    
-   if (inet_pton(AF_INET, thost, &ip) == 1) { /* is IPv4 */
-      ip_addr_init(&host, AF_INET, (u_char *)&ip);
-   }
-#ifdef WITH_IPV6
-   else if (inet_pton(AF_INET6, thost, &ip6) == 1) { /* is IPv6 */
-      ip_addr_init(&host, AF_INET6, (u_char *)&ip6);
-   }
-#endif
-   else { /* neither IPv4 nor IPv6 - inform user */
+   if (ip_addr_pton(thost, &host) != E_SUCCESS) {
+      /* neither IPv4 nor IPv6 - inform user */
       gtkui_message("Invalid ip address");
       return;
    }

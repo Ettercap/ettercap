@@ -181,10 +181,17 @@ FUNC_DECODER(decode_ip6)
    /* XXX - recheck this */
    if(!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
       if(PACKET->flags & PO_MODIFIED) {
-         PACKET->L3.payload_len += PACKET->DATA.delta;
-         ip6->payload_len = htons(PACKET->L3.payload_len);
+         ORDER_ADD_SHORT(PACKET->L3.payload_len, PACKET->DATA.delta);
 
-         PACKET->fwd_len = PACKET->L3.payload_len + DECODED_LEN;
+         /*
+          * In case some upper level encapsulated ip6 decoder
+          * modified it ... (required for ip6 in ip6 encapsulation)
+          */
+         PACKET->L3.header = (u_char*)ip6;
+         PACKET->L3.len = IP6_HDR_LEN;
+         PACKET->L3.payload_len = ntohs(ip6->payload_len);
+
+         PACKET->fwd_len = PACKET->L3.payload_len + PACKET->L3.len;
       }
    }
    

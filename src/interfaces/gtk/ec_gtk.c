@@ -1469,7 +1469,7 @@ static void gtkui_pcap_filter(void)
  */
 static void gtkui_set_netmask(void)
 {
-   struct in_addr net;
+   struct ip_addr net;
    
    DEBUG_MSG("gtkui_set_netmask");
   
@@ -1483,7 +1483,8 @@ static void gtkui_set_netmask(void)
    gtkui_input("Netmask :", GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
 
    /* sanity check */
-   if (strcmp(GBL_OPTIONS->netmask, "") && inet_aton(GBL_OPTIONS->netmask, &net) == 0)
+   if (strcmp(GBL_OPTIONS->netmask, "") && 
+         ip_addr_pton(GBL_OPTIONS->netmask, &net) != E_SUCCESS)
       ui_error("Invalid netmask %s", GBL_OPTIONS->netmask);
             
    /* if no netmask was specified, free it */

@@ -76,7 +76,6 @@ void __init dhcp_spoofing_init(void)
  */
 static int dhcp_spoofing_start(char *args)
 {
-   struct in_addr ipaddr;
    char *p;
    int i = 1;
   
@@ -108,21 +107,17 @@ static int dhcp_spoofing_start(char *args)
          
       /* second parameter (the netmask) */
       } else if (i == 2) {
-         /* convert from string */
-         if (inet_aton(p, &ipaddr) == 0)
+         /* convert from string and get the netmask */
+         if (ip_addr_pton(p, &dhcp_netmask) != E_SUCCESS)
             break;
-         /* get the netmask */
-         ip_addr_init(&dhcp_netmask, AF_INET, (u_char *)&ipaddr);
          
       /* third parameter (the dns server) */
       } else if (i == 3) {
          char tmp[MAX_ASCII_ADDR_LEN];
 
-         /* convert from string */
-         if (inet_aton(p, &ipaddr) == 0)
+         /* convert from string and get the netmask */
+         if (ip_addr_pton(p, &dhcp_dns) != E_SUCCESS)
             break;
-         /* get the netmask */
-         ip_addr_init(&dhcp_dns, AF_INET, (u_char *)&ipaddr);
          
          /* all the parameters were parsed correctly... */
          USER_MSG("DHCP spoofing: using specified ip_pool, netmask %s", ip_addr_ntoa(&dhcp_netmask, tmp));

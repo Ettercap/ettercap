@@ -229,10 +229,9 @@ static int nbns_spoof_fini(void *dummy)
 static int load_db(void)
 {
 	struct nbns_spoof_entry *d;
-	struct in_addr ipaddr;
 	FILE *f;
 	char line[128];
-	char *ptr, *ip, *name;
+	char *ptr, *ipstr, *name;
 	int lines = 0;
 
 	f = open_data("etc", ETTER_NBNS, FOPEN_READ_TEXT);
@@ -253,18 +252,19 @@ static int load_db(void)
 			continue;
 
 		/* strip apart the line */
-		if (!parse_line(line, lines, &ip, &name))
+		if (!parse_line(line, lines, &ipstr, &name))
 			continue;
-
-		if (inet_aton(ip, &ipaddr) == 0) {
-			USER_MSG("%s:%d Invalid IP addres\n", ETTER_NBNS, lines);
-			continue;
-		}
 
 		/* create the entry */
 		SAFE_CALLOC(d, 1, sizeof(struct nbns_spoof_entry));
 		
-		ip_addr_init(&d->ip, AF_INET, (u_char *)&ipaddr);
+      /* convert IP string into ip_addr struct */
+      if (ip_addr_pton(ipstr, &d->ip) != E_SUCCESS) {
+			USER_MSG("%s:%d Invalid IP addres\n", ETTER_NBNS, lines);
+         SAFE_FREE(d);
+			continue;
+		}
+
 		d->name = strdup(name);
 	
 		/* insert to list */

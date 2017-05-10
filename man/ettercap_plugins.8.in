@@ -264,7 +264,8 @@ It needs a "fake" host where the traffic has to be redirected to (to avoid
 kernel's responses). The "fake" IP will be the tunnel endpoint.
 Gre_relay plugin will impersonate the "fake" host.
 To find an unused IP address for the "fake" host you can use find_ip plugin.
-Based on the original Tunnelx technique by Anthony C. Zboralski.
+Based on the original Tunnelx technique by Anthony C. Zboralski 
+(http://www.phrack.org/archives/issues/56/10.txt).
 
 .TP
 .B gw_discover

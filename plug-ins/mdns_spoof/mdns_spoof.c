@@ -132,12 +132,10 @@ static int mdns_spoof_fini(void *dummy)
 static int load_db(void)
 {
    struct mdns_spoof_entry *d;
-   struct in_addr ipaddr;
-   struct in6_addr ip6addr;
    FILE *f;
    char line[128];
    char *ptr, *ip, *name;
-   int lines = 0, type, af = AF_INET;
+   int lines = 0, type;
    u_int16 port = 0;
    
    /* open the file */
@@ -164,32 +162,18 @@ static int load_db(void)
       if (!parse_line(line, lines, &type, &ip, &port, &name))
          continue;
         
-      /* convert the ip address */
-      if (inet_pton(AF_INET, ip, &ipaddr) == 1) { /* try IPv4 */
-         af = AF_INET;
-      }
-      else if (inet_pton(AF_INET6, ip, &ip6addr) == 1) { /* try IPv6 */
-         af = AF_INET6;
-      }
-      else {
-         USER_MSG("mdns_spoof: %s:%d Invalid IPv4 or IPv6 address\n", ETTER_MDNS, lines);
-         continue;
-      }
-        
       /* create the entry */
       SAFE_CALLOC(d, 1, sizeof(struct mdns_spoof_entry));
       d->name = strdup(name);
       d->type = type;
       d->port = port;
 
-      /* fill the struct */
-      if (af == AF_INET) {
-          ip_addr_init(&d->ip, AF_INET, (u_char *)&ipaddr);
-      } 
-      else if (af == AF_INET6) {
-          ip_addr_init(&d->ip, AF_INET6, (u_char *)&ip6addr);
-      } 
-
+      /* convert the ip address and fill the struct */
+      if (ip_addr_pton(ip, &d->ip) != E_SUCCESS) {
+         USER_MSG("mdns_spoof: %s:%d Invalid IPv4 or IPv6 address\n", ETTER_MDNS, lines);
+         SAFE_FREE(d);
+         continue;
+      }
 
       /* insert in the list */
       SLIST_INSERT_HEAD(&mdns_spoof_head, d, next);

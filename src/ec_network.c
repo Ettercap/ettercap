@@ -263,11 +263,8 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 
         ip_addr_init(&source->ip, AF_INET, (u_char*)&sa4->sin_addr);
         if(EC_GBL_OPTIONS->netmask) {
-            struct in_addr net;
-
-            if(inet_aton(EC_GBL_OPTIONS->netmask, &net) == 0)
+            if(ip_addr_pton(EC_GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
               FATAL_ERROR("Invalid netmask %s", EC_GBL_OPTIONS->netmask);
-            ip_addr_init(&source->netmask, AF_INET, (u_char*)&net.s_addr);
         } else {
             sa4 = (struct sockaddr_in*) dev->addresses->netmask;
             ip_addr_init(&source->netmask, AF_INET, (u_char*)&sa4->sin_addr);
@@ -303,10 +300,8 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
          sa4 = (struct sockaddr_in*)ifaddr->ifa_addr;
          ip_addr_init(&source->ip, AF_INET, (u_char*)&sa4->sin_addr);
          if(EC_GBL_OPTIONS->netmask) {
-            struct in_addr net;
-            if(inet_aton(EC_GBL_OPTIONS->netmask, &net) == 0)
+            if(ip_addr_pton(EC_GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
                FATAL_ERROR("Invalid netmask %s", EC_GBL_OPTIONS->netmask);
-            ip_addr_init(&source->netmask, AF_INET, (u_char*)&net);
          } else {
             sa4 = (struct sockaddr_in*)ifaddr->ifa_netmask;
             ip_addr_init(&source->netmask, AF_INET, (u_char*)&sa4->sin_addr);

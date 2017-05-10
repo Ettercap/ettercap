@@ -188,8 +188,6 @@ static int dns_spoof_fini(void *dummy)
 static int load_db(void)
 {
    struct dns_spoof_entry *d;
-   struct in_addr ipaddr;
-   struct in6_addr ip6addr;
    FILE *f;
    char line[100+255+10+1];
    char *ptr, *ip, *name;
@@ -244,13 +242,8 @@ static int load_db(void)
            return -E_INVALID;
         }
       }
-      else if (inet_pton(AF_INET, ip, &ipaddr) == 1) { /* try IPv4 */
-         ip_addr_init(&d->ip, AF_INET, (u_char *)&ipaddr);
-      }
-      else if (inet_pton(AF_INET6, ip, &ip6addr) == 1) { /* try IPv6 */
-         ip_addr_init(&d->ip, AF_INET6, (u_char *)&ip6addr);
-      }
-      else { /* neither IPv4 nor IPv6 - throw a message and skip line */
+      else if (ip_addr_pton(ip, &d->ip) != E_SUCCESS) {
+         /* neither IPv4 nor IPv6 - throw a message and skip line */
          USER_MSG("dns_spoof: %s:%d Invalid IPv4 or IPv6 address\n", ETTER_DNS, lines);
          SAFE_FREE(d);
          continue;
@@ -272,7 +265,7 @@ static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int
 {
    static char name[100+1];
    static char ip[MAX_ASCII_ADDR_LEN];
-   static int port;
+   static u_int16 port;
    static u_int32 ttl;
    char type[10+1];
 
@@ -352,31 +345,19 @@ static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int
 
    if (!strcasecmp(type, "SRV")) {
       /* 
-       * Additional format scan as SRV records has a different syntax
+       * SRV records have different syntax
        */
       static char ip_tmp[MAX_ASCII_ADDR_LEN];
-      if (sscanf(ip, "[%40[0-9a-fA-F:.]]:%d", ip_tmp, &port) == 2) {
-         strncpy(ip, ip_tmp, strlen(ip_tmp)+1);
-      }
-      else if (sscanf(ip, "%20[0-9.]:%d", ip_tmp, &port) == 2) {
-         strncpy(ip, ip_tmp, strlen(ip_tmp)+1);
-      }
-      else {
+      if (ec_strsplit_ipport(ip, ip_tmp, &port)) {
          USER_MSG("dns_spoof: %s:%d Unknown syntax for SRV record; %s\n",
                   ETTER_DNS, line, str);
          return (0);
       }
 
-      if (port > 0xffff || port <= 0) {
-         USER_MSG("dns_spoof: %s:%d Invalid value for port: %d\n", 
-                  ETTER_DNS, line, port);
-         return (0);
-      }
-
       *type_p = ns_t_srv;
       *name_p = name;
-      *ip_p = ip;
-      *port_p = port & 0x0000ffff;
+      *ip_p = ip_tmp;
+      *port_p = port;
       return (1);
    }
 

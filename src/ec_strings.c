@@ -413,6 +413,27 @@ char * str_tohex(u_char *bin, size_t len, char *dst, size_t dst_len)
    return dst;
 }
 
+/* split ip from port */
+int ec_strsplit_ipport(char *input, char *ip, u_int16 *port)
+{
+   static char ip_tmp[MAX_ASCII_ADDR_LEN];
+
+   /* Format for IPv4: 1.2.3.4:80 */
+   if (sscanf(input, "%20[0-9.]:%hu", ip_tmp, port) == 2) {
+      strncpy(ip, ip_tmp, strlen(ip_tmp)+1);
+      return E_SUCCESS;
+   }
+
+   /* Format for IPv6: [2001:db8::1]:80 */
+   if (sscanf(input, "[%40[0-9a-fA-F:.]]:%hu", ip_tmp, port) == 2) {
+      strncpy(ip, ip_tmp, strlen(ip_tmp)+1);
+      return E_SUCCESS;
+   }
+
+   DEBUG_MSG("ec_strsplit_ipport(): error splitting ip:port: '%s'\n", input);
+   return -E_INVALID;
+}
+
 /* EOF */
 
 // vim:ts=3:expandtab

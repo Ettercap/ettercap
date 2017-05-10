@@ -329,15 +329,22 @@ inet_ntop6(const u_char *src, char *dst, size_t size)
 /* Converts character string to IP address if possible */
 int ip_addr_pton(char *str, struct ip_addr *addr)
 {
-   u_int8 buf[MAX_IP_ADDR_LEN];
-   int proto;
-
-   proto = (strchr(str, ':')) ? AF_INET6 : AF_INET;
+   struct in_addr inaddr;
+#ifdef WITH_IPV6
+   struct in6_addr in6addr;
+#endif
    
-   if(inet_pton(proto, str, buf) == 1) {
-      ip_addr_init(addr, proto, buf);
+   if(inet_pton(AF_INET, str, &inaddr) == 1) { /* try IPv4 */
+      ip_addr_init(addr, AF_INET, (u_char*)&inaddr);
       return E_SUCCESS;
-   } else {
+   }
+#ifdef WITH_IPV6
+   else if (inet_pton(AF_INET6, str, &in6addr) == 1) { /* try IPv6 */
+      ip_addr_init(addr, AF_INET6, (u_char*)&in6addr);
+      return E_SUCCESS;
+   } 
+#endif
+   else {
       return -E_INVALID;
    }
 }

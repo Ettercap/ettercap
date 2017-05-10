@@ -95,7 +95,6 @@ void el_usage(void)
 void parse_options(int argc, char **argv)
 {
    int c;
-   struct in_addr ip;
 
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
@@ -210,11 +209,10 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'I':
-                  if (inet_aton(optarg, &ip) == 0) {
+                  if (ip_addr_pton(optarg, &EL_GBL->client) != E_SUCCESS) {
                      FATAL_ERROR("Invalid client ip address");
                      return;                    
                   }
-                  ip_addr_init(&EL_GBL->client, AF_INET, (u_char *)&ip);
                   break;
 
          case 'l':

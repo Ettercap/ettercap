@@ -99,20 +99,25 @@ int encode_const(char *string, struct filter_op *fop)
       
    /* it is an ip address */
    } else if (string[0] == '\'' && string[strlen(string) - 1] == '\'') {
-      struct in_addr ipaddr;
-      struct in6_addr ip6addr;
+      struct ip_addr ipaddr;
       
       /* remove the single quote */
       p = strchr(string + 1, '\'');
       *p = '\0';
 
-      if (inet_pton(AF_INET, string + 1, &ipaddr) == 1) { /* try IPv4 */
-         /* 4-bytes - handle as a integer */
-         fop->op.test.value = ntohl(ipaddr.s_addr);
-      }
-      else if (inet_pton(AF_INET6, string + 1, &ip6addr) == 1) { /* try IPv6 */
-         /* 16-bytes - handle as a byte pointer */
-         memcpy(&fop->op.test.ipaddr, &ip6addr.s6_addr, 16);
+      if (ip_addr_pton(string + 1, &ipaddr) == E_SUCCESS) {
+         switch (ntohs(ipaddr.addr_type)) {
+            case AF_INET:
+               /* 4-bytes - handle as a integer */
+               fop->op.test.value = ntohl(ipaddr.addr32[0]);
+               break;
+            case AF_INET6:
+               /* 16-bytes - handle as a byte pointer */
+               ip_addr_cpy((u_char*)&fop->op.test.ipaddr, &ipaddr);
+               break;
+            default:
+               return -E_FATAL;
+         }
       }
       else {
          return -E_FATAL;

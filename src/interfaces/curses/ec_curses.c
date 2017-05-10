@@ -648,7 +648,7 @@ static void curses_pcap_filter(void)
  */
 static void curses_set_netmask(void)
 {
-   struct in_addr net;
+   struct ip_addr net;
    
    DEBUG_MSG("curses_set_netmask");
   
@@ -663,6 +663,9 @@ static void curses_set_netmask(void)
 
    /* sanity check */
    if (strcmp(EC_GBL_OPTIONS->netmask, "") && inet_aton(EC_GBL_OPTIONS->netmask, &net) == 0)
+      ui_error("Invalid netmask %s", EC_GBL_OPTIONS->netmask);
+   if (strcmp(EC_GBL_OPTIONS->netmask, "") && 
+         ip_addr_pton(EC_GBL_OPTIONS->netmask, &net) != E_SUCCESS)
       ui_error("Invalid netmask %s", EC_GBL_OPTIONS->netmask);
             
    /* if no netmask was specified, free it */

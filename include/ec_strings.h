@@ -43,7 +43,7 @@
 
 EC_API_EXTERN int match_pattern(const char *s, const char *pattern);
 EC_API_EXTERN int base64_decode(char *bufplain, const char *bufcoded);
-EC_API_EXTERN int strescape(char *dst, char *src);
+EC_API_EXTERN int strescape(char *dst, char *src, size_t len);
 EC_API_EXTERN int str_replace(char **text, const char *s, const char *d);   
 EC_API_EXTERN size_t strlen_utf8(const char *s);
 EC_API_EXTERN char * ec_strtok(char *s, const char *delim, char **ptrptr);

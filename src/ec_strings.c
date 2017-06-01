@@ -167,13 +167,14 @@ static int hextoint(int c)
 /* 
  * convert the escaped string into a binary one
  */
-int strescape(char *dst, char *src)
+int strescape(char *dst, char *src, size_t len)
 {
    char  *olddst = dst;
+   char  *oldsrc = src;
    int   c;
    int   val;
 
-   while ((c = *src++) != '\0') {
+   while ((c = *src++) != '\0' && (size_t)(src - oldsrc) <= len) {
       if (c == '\\') {
          switch ((c = *src++)) {
             case '\0':
@@ -218,9 +219,11 @@ int strescape(char *dst, char *src)
                   if (c >= '0' && c <= '7')
                      val = (val << 3) | (c - '0');
                   else 
-                     --src;
+                     if (src > oldsrc) /* protect against buffer underflow */
+                        --src;
                } else 
-                  --src;
+                  if (src > oldsrc) /* protect against buffer underflow */
+                     --src;
                *dst++ = (char) val;
                break;
 
@@ -232,15 +235,17 @@ int strescape(char *dst, char *src)
                        c = hextoint(*src++);
                        if (c >= 0) 
                           val = (val << 4) + c;
-                       else 
-                          --src;
-               } else 
-                  --src;
+                       else if (src > oldsrc) /* protect against buffer underflow */
+                             --src;
+               } else if (src > oldsrc) /* protect against buffer underflow */
+                     --src;
                *dst++ = (char) val;
                break;
          }
-      } else if (c == 8 || c == 263)  /* the backspace */
-         dst--;
+      } else if (c == 8 || c == 263) {  /* the backspace */
+         if (dst > oldsrc) /* protect against buffer underflow */
+            dst--;
+      }
       else
          *dst++ = (char) c;
    }

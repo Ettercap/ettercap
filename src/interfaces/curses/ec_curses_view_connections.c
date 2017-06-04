@@ -614,7 +614,7 @@ static void inject_user(void)
    size_t len;
 
    /* escape the sequnces in the buffer */
-   len = strescape((char*)injectbuf, (char*)injectbuf);
+   len = strescape((char*)injectbuf, (char*)injectbuf, strlen(injectbuf)+1);
    
    /* check where to inject */
    if (wdg_c1->flags & WDG_OBJ_FOCUSED) {

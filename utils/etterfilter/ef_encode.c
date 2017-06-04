@@ -136,7 +136,8 @@ int encode_const(char *string, struct filter_op *fop)
       fop->op.test.string = (u_char*)strdup(string + 1);
          
       /* escape it in the structure */
-      fop->op.test.slen = strescape((char*)fop->op.test.string, (char*)fop->op.test.string);
+      fop->op.test.slen = strescape((char*)fop->op.test.string, 
+            (char*)fop->op.test.string, strlen(fop->op.test.string)+1);
      
       return E_SUCCESS;
       
@@ -184,7 +185,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_SEARCH;
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
-            fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
+            fop->op.func.slen = strescape((char*)fop->op.func.string, 
+                  (char*)fop->op.func.string, strlen(fop->op.func.string)+1);
             ret = E_SUCCESS;
          } else
             SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
@@ -202,7 +204,8 @@ int encode_function(char *string, struct filter_op *fop)
             fop->opcode = FOP_FUNC;
             fop->op.func.op = FFUNC_REGEX;
             fop->op.func.string = (u_char*)strdup(dec_args[1]);
-            fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
+            fop->op.func.slen = strescape((char*)fop->op.func.string, 
+                  (char*)fop->op.func.string, strlen(fop->op.func.string)+1);
             ret = E_SUCCESS;
          } else
             SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
@@ -272,9 +275,11 @@ int encode_function(char *string, struct filter_op *fop)
          /* replace always operate at DATA level */
          fop->op.func.level = 5;
          fop->op.func.string = (u_char*)strdup(dec_args[0]);
-         fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
+         fop->op.func.slen = strescape((char*)fop->op.func.string, 
+               (char*)fop->op.func.string, strlen(fop->op.func.string)+1);
          fop->op.func.replace = (u_char*)strdup(dec_args[1]);
-         fop->op.func.rlen = strescape((char*)fop->op.func.replace, (char*)fop->op.func.replace);
+         fop->op.func.rlen = strescape((char*)fop->op.func.replace, 
+               (char*)fop->op.func.replace, strlen(fop->op.func.replace)+1);
          ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
@@ -328,7 +333,8 @@ int encode_function(char *string, struct filter_op *fop)
       if (nargs == 1) {
          fop->op.func.op = FFUNC_MSG;
          fop->op.func.string = (u_char*)strdup(dec_args[0]);
-         fop->op.func.slen = strescape((char*)fop->op.func.string, (char*)fop->op.func.string);
+         fop->op.func.slen = strescape((char*)fop->op.func.string, 
+               (char*)fop->op.func.string, strlen(fop->op.func.string)+1);
          ret = E_SUCCESS;
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);

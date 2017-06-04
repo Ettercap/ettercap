@@ -126,7 +126,27 @@ if(NOT DISABLE_RPATH)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   set(CMAKE_MACOSX_RPATH 1)
 endif(NOT DISABLE_RPATH)
+
+# set general build flags for debug build-type
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -Wextra -Wredundant-decls" CACHE STRING "" FORCE)
+# append ASAN build flags if compiler version has support
+if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+   if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.8)
+      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer" CACHE STRING "" FORCE)
+      message("Building with ASAN support (GNU compiler)")
+   else (CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.8)
+      message("Building without ASAN support (GNU compiler)")
+   endif (CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.8)
+elseif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+   if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 3.1)
+      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer" CACHE STRING "" FORCE)
+      message("Building with ASAN support (Clang compiler)")
+   elseif (CMAKE_C_COMPILER_VERSION VERSION_GREATER 3.1)
+      message("Building without ASAN support (Clang compiler)")
+   endif (CMAKE_C_COMPILER_VERSION VERSION_GREATER 3.1)
+endif ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+
+# set build flags for release build-type
 set(CMAKE_C_FLAGS_RELEASE "-O2 -w -D_FORTIFY_SOURCE=2" CACHE STRING "" FORCE)
 
 if(OS_DARWIN)

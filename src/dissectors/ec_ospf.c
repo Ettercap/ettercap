@@ -39,21 +39,27 @@
  *      |                       Authentication                          |
  *      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *
+ *
+ * RFC 5709 is relevant for OSPFv2 HMAC-SHA Cryptographic Authentication.
 */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
 
-#define OSPF_NO_AUTH             0
-#define OSPF_AUTH                1  // OSPF_AUTH_SIMPLE
-#define OSPF_AUTH_CRYPTOGRAPHIC  2
+#define OSPF_NO_AUTH                0
+#define OSPF_AUTH                   1  // OSPF_AUTH_SIMPLE
+#define OSPF_AUTH_CRYPTOGRAPHIC     2
 
 /* borrowed from GNU Zebra project */
-#define BUFSIZE                  2048 /* big enough for OSPF */
-#define OSPF_HEADER_SIZE         24U
-#define OSPF_AUTH_SIMPLE_SIZE     8U
-#define OSPF_AUTH_MD5_SIZE       16U
+#define BUFSIZE                     2048 /* big enough for OSPF */
+#define OSPF_HEADER_SIZE            24U
+#define OSPF_AUTH_SIMPLE_SIZE        8U
+#define OSPF_AUTH_MD5_SIZE          16U
+#define OSPF_AUTH_HMAC_SHA1_SIZE    20U
+#define OSPF_AUTH_HMAC_SHA256_SIZE  32U
+#define OSPF_AUTH_HMAC_SHA384_SIZE  48U
+#define OSPF_AUTH_HMAC_SHA512_SIZE  64U
 
 struct ospf_header
 {
@@ -129,10 +135,8 @@ FUNC_DECODER(dissector_ospf)
         unsigned int i = 0;
 
         unsigned int length = ntohs(ohdr->length);
-
-        if (ohdr->u.crypt.auth_data_len != OSPF_AUTH_MD5_SIZE) {
-                return NULL;
-        }
+        unsigned auth_data_len = ohdr->u.crypt.auth_data_len;
+        int type = 0;
 
         /* validate the packet */
         if (length * 2 > BUFSIZE)
@@ -140,9 +144,27 @@ FUNC_DECODER(dissector_ospf)
         if (length > buflen)
                 return NULL;
 
-        DISSECT_MSG("OSPF-%s-%d:$netmd5$",
-                ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                ntohs(PACKET->L4.dst));
+        if (auth_data_len == OSPF_AUTH_MD5_SIZE) {
+                DISSECT_MSG("OSPF-%s-%d:$netmd5$",
+                        ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                        ntohs(PACKET->L4.dst));
+        } else if (auth_data_len == OSPF_AUTH_HMAC_SHA1_SIZE) {
+                type = 1;
+        } else if (auth_data_len == OSPF_AUTH_HMAC_SHA256_SIZE) {
+                type = 2;
+        } else if (auth_data_len == OSPF_AUTH_HMAC_SHA384_SIZE) {
+                type = 3;
+        } else if (auth_data_len == OSPF_AUTH_HMAC_SHA512_SIZE) {
+                type = 4;
+        } else {
+                return NULL;
+        }
+
+        if (type != 0) {
+                DISSECT_MSG("OSPF-%s-%d:$ospf$%d$",
+                        ip_addr_ntoa(&PACKET->L3.dst, tmp),
+                        ntohs(PACKET->L4.dst), type);
+        }
 
         for (i=0; i<length; i++) {
            if (ptr+i == NULL)
@@ -151,7 +173,7 @@ FUNC_DECODER(dissector_ospf)
            DISSECT_MSG("%02x", *(ptr+i));
         }
         DISSECT_MSG("$");
-        for (i=length; i<length+OSPF_AUTH_MD5_SIZE; i++) {
+        for (i=length; i<length+auth_data_len; i++) {
            if (ptr+i == NULL)
               return NULL;
 

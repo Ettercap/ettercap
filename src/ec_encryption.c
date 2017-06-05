@@ -218,7 +218,7 @@ int set_wep_key(char *string)
 
    if (type == 's') {
       /* escape the string and check its length */
-      if (strescape((char *)tmp_wkey, p) != (int)tmp_wkey_len)
+      if (strescape((char *)tmp_wkey, p, strlen(tmp_wkey)+1) != (int)tmp_wkey_len)
     	  SEMIFATAL_ERROR("Specified WEP key length does not match the given string");
    } else if (type == 'p') {
       /* create the key from the passphrase */

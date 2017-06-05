@@ -1627,7 +1627,7 @@ static void gtkui_inject_user(int side)
    size_t len;
     
    /* escape the sequnces in the buffer */
-   len = strescape(injectbuf, injectbuf);
+   len = strescape(injectbuf, injectbuf, strlen(injectbuf)+1);
 
    /* check where to inject */
    if (side == 1 || side == 2) {

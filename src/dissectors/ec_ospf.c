@@ -201,7 +201,7 @@ FUNC_DECODER(dissector_ospf)
    /* no authentication */
    else if ( ntohs(ohdr->auth_type) == OSPF_NO_AUTH ) {
       DEBUG_MSG("\tDissector_ospf NO AUTH");
-      strncpy(pass, "No Auth", 7);
+      strncpy(pass, "No Auth", 8);
 
       DISSECT_MSG("OSPF : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
                 ntohs(PACKET->L4.dst),

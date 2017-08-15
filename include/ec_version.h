@@ -6,7 +6,7 @@
 #define EC_VERSION_MINOR      8
 #define EC_VERSION_REVISION   2
 #define EC_PROGRAM            "ettercap"
-#define EC_COPYRIGHT          "2001-2015"
+#define EC_COPYRIGHT          "2001-2017"
 #define EC_AUTHORS            "Ettercap Development Team"
 
 #endif

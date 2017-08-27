@@ -296,7 +296,7 @@ static int l_hook_add(lua_State* state)
   return 0;
 }
 
-static const struct luaL_reg ec_lua_lib[] = {
+static const struct luaL_Reg ec_lua_lib[] = {
   {"hook_add", l_hook_add},
   {"log", l_log},
   {NULL, NULL}

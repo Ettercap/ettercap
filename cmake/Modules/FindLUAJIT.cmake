@@ -4,7 +4,7 @@
 #
 
 # Look for the header file
-FIND_PATH(LUAJIT_INCLUDE_DIR NAMES luajit.h PATH_SUFFIXES luajit-2.0 luajit)
+FIND_PATH(LUAJIT_INCLUDE_DIR NAMES luajit.h PATH_SUFFIXES luajit-2.1 luajit-2.0 luajit)
 MARK_AS_ADVANCED(LUAJIT_INCLUDE_DIR)
 
 #Look for the library

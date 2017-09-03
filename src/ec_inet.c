@@ -74,6 +74,8 @@ int ip_addr_cpy(u_char *addr, struct ip_addr *sa)
  */
 int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
 {
+   unsigned int cmp_len;
+
    if (!sa || !sb)
       return -E_INVALID;
 
@@ -81,8 +83,9 @@ int ip_addr_cmp(struct ip_addr *sa, struct ip_addr *sb)
    if (sa->addr_type != sb->addr_type)
       return -E_INVALID;
 
-   return memcmp(sa->addr, sb->addr, ntohs(sa->addr_len));
-   
+   cmp_len = (ntohs(sa->addr_len) > MAX_IP_ADDR_LEN) ? MAX_IP_ADDR_LEN : ntohs(sa->addr_len);
+
+   return memcmp(sa->addr, sb->addr, cmp_len);
 }
 
 /*

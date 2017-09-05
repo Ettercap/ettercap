@@ -122,7 +122,7 @@ void ec_usage(void)
    fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
    fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
    fprintf(stdout, "  -W, --wifi-key <wkey>       use this key to decrypt wifi packets (wep or wpa)\n");
-   fprintf(stdout, "  -a, --config <config>       use the alterative config file <config>\n");
+   fprintf(stdout, "  -a, --config <config>       use the alternative config file <config>\n");
    
    fprintf(stdout, "\nStandard options:\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");

@@ -76,7 +76,7 @@ int write_output(void)
    write(fd, data, fh.code - fh.data);
    
    /* write the instructions */
-   for (i = 0; i <= ninst; i++) {
+   for (i = 0; i < ninst; i++) {
       print_progress_bar(&fop[i]);
       write(fd, &fop[i], sizeof(struct filter_op));
    }

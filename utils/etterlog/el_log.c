@@ -226,7 +226,37 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
       if (c != inf->var.banner_len)
          return -E_INVALID;
    }
-   
+
+   /*
+    * sanity check for ip_addr struct
+    */
+   switch (ntohs(inf->L3_addr.addr_type)) {
+      case AF_INET:
+         if (ntohs(inf->L3_addr.addr_len) != IP_ADDR_LEN)
+            return -E_INVALID;
+         break;
+      case AF_INET6:
+         if (ntohs(inf->L3_addr.addr_len) != IP6_ADDR_LEN)
+            return -E_INVALID;
+         break;
+      default:
+         return -E_INVALID;
+   }
+
+   switch (ntohs(inf->client.addr_type)) {
+      case AF_INET:
+         if (ntohs(inf->client.addr_len) != IP_ADDR_LEN)
+            return -E_INVALID;
+         break;
+      case AF_INET6:
+         if (ntohs(inf->client.addr_len) != IP6_ADDR_LEN)
+            return -E_INVALID;
+         break;
+      default:
+         return -E_INVALID;
+   }
+
+
    return E_SUCCESS; 
 }
 

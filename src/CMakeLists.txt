@@ -1,5 +1,6 @@
 set(EC_SRC
-	ec_mem.c
+        ec_asn1.c
+        ec_mem.c
         ec_capture.c
         ec_checksum.c
         ec_conf.c
@@ -63,6 +64,7 @@ set(EC_SRC
         dissectors/ec_imap.c
         dissectors/ec_irc.c
         dissectors/ec_iscsi.c
+        dissectors/ec_kerberos.c
         dissectors/ec_ldap.c
         dissectors/ec_mdns.c
         dissectors/ec_mongodb.c

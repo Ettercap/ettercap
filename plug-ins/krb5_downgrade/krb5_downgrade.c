@@ -96,7 +96,7 @@ static int krb5_downgrade_init(void *dummy)
    (void)dummy;
 
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("krb5_downgrade: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }

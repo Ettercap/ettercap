@@ -58,6 +58,7 @@ enum {
    HOOK_PROTO_MDNS,
    HOOK_PROTO_NBNS,
    HOOK_PROTO_HTTP,
+   HOOK_PROTO_KRB5
 };
 
 EC_API_EXTERN void hook_add(int point, void (*func)(struct packet_object *po) );

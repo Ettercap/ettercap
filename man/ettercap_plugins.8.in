@@ -302,6 +302,14 @@ ettercap \-TP isolate /192.168.0.1/ /192.168.0.2\-30/
 
 
 .TP
+.B krb5_downgrade
+.Sp
+It downgrades Kerberos V5 security by modifying the etype values in client
+AS-REQ packets. This way, obtained hashes can be easily cracked by John the
+Ripper (JtR). You have to be in the "middle" of the connection to successfully
+use it. It hooks the kerberos dissector, so you have to keep it active.
+
+.TP
 .B link_type
 .Sp
 It performs a check of the link type (hub or switch) by sending a spoofed ARP

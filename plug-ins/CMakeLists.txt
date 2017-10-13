@@ -49,6 +49,7 @@ scan_poisoner
 search_promisc
 smb_clear
 smb_down
+krb5_downgrade
 smurf_attack
 stp_mangler)
 

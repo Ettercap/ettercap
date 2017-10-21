@@ -20,4 +20,3 @@ EC_API_EXTERN u_int16 checksum_shouldbe(u_int16 sum, u_int16 computed_sum);
 /* EOF */
 
 // vim:ts=3:expandtab
-

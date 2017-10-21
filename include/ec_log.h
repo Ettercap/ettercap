@@ -10,15 +10,13 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-
 struct log_fd {
    int type;
-      #define LOG_COMPRESSED     1
-      #define LOG_UNCOMPRESSED   0
+#define LOG_COMPRESSED     1
+#define LOG_UNCOMPRESSED   0
    gzFile cfd;
    int fd;
 };
-
 
 /*******************************************
  * NOTE:  all the int variable are stored  *
@@ -29,18 +27,18 @@ struct log_fd {
  *******************************************/
 
 /*
- * at the beginning of the file there 
+ * at the beginning of the file there
  * are the global information
  */
 
 struct log_global_header {
    /* a magic number for file identification */
    u_int16 magic;
-   #define EC_LOG_MAGIC 0xe77e
-   /* 
-    * offset to the first header in the log file 
-    * this assure that we can change this header 
-    * and the etterlog parser will be able to 
+#define EC_LOG_MAGIC 0xe77e
+   /*
+    * offset to the first header in the log file
+    * this assure that we can change this header
+    * and the etterlog parser will be able to
     * parse also files created by older version
     */
    u_int16 first_header;
@@ -52,8 +50,7 @@ struct log_global_header {
    u_int32 type;
 };
 
-
-/* 
+/*
  * every packet in the log file has this format:
  * [header][data][header][data]...
  */
@@ -62,25 +59,24 @@ struct log_global_header {
 struct log_header_packet {
 
    struct timeval tv;
-   
+
    u_int8 L2_src[MEDIA_ADDR_LEN];
    u_int8 L2_dst[MEDIA_ADDR_LEN];
 
    struct ip_addr L3_src;
    struct ip_addr L3_dst;
-   
+
    u_int8 L4_proto;
    u_int8 L4_flags;
    u_int16 L4_src;
    u_int16 L4_dst;
-   
+
    u_int32 len;
 };
 
-
-/* 
- * this is for host infos 
- * 
+/*
+ * this is for host infos
+ *
  * the format will be:
  *
  * [header][user][pass][info][banner][header][user][pass]....
@@ -89,11 +85,11 @@ struct log_header_packet {
  * of the successive banner, user, pass and info fields.
  */
 struct log_header_info {
-   
+
    u_int8 L2_addr[MEDIA_ADDR_LEN];
-   
+
    struct ip_addr L3_addr;
-   
+
    u_int16 L4_addr;
    u_int8 L4_proto;
 
@@ -101,9 +97,9 @@ struct log_header_info {
 
    u_int8 distance;
    u_int8 type;
-      #define LOG_ARP_HOST (1<<7)
-   
-   u_char fingerprint[FINGER_LEN+1];
+#define LOG_ARP_HOST (1 << 7)
+
+   u_char fingerprint[FINGER_LEN + 1];
 
    /* account information */
    u_int8 failed;
@@ -116,7 +112,6 @@ struct log_header_info {
       u_int16 banner_len;
    } var;
 };
-
 
 EC_API_EXTERN int set_loglevel(int level, char *filename);
 #define LOG_STOP     0
@@ -137,10 +132,8 @@ EC_API_EXTERN void log_write_packet(struct log_fd *fd, struct packet_object *po)
 EC_API_EXTERN void log_write_info(struct log_fd *fd, struct packet_object *po);
 EC_API_EXTERN void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po);
 
-
 #endif
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

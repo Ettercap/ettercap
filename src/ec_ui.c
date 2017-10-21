@@ -1,23 +1,23 @@
 /*
-    ettercap -- user interface stuff
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- user interface stuff
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_ui.h>
@@ -37,8 +37,8 @@ static STAILQ_HEAD(, ui_message) messages_queue = STAILQ_HEAD_INITIALIZER(messag
 /* global mutex on interface */
 
 static pthread_mutex_t ui_msg_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define UI_MSG_LOCK     do{ pthread_mutex_lock(&ui_msg_mutex); }while(0)
-#define UI_MSG_UNLOCK   do{ pthread_mutex_unlock(&ui_msg_mutex); }while(0)
+#define UI_MSG_LOCK     do { pthread_mutex_lock(&ui_msg_mutex); } while (0)
+#define UI_MSG_UNLOCK   do { pthread_mutex_unlock(&ui_msg_mutex); } while (0)
 
 /*******************************************/
 
@@ -61,8 +61,7 @@ void ui_start(void)
 
    if (GBL_UI->initialized)
       EXECUTE(GBL_UI->start);
-   else
-   {
+   else {
       DEBUG_MSG("ui_start called initialized");
    }
 }
@@ -90,7 +89,7 @@ int ui_progress(char *title, int value, int max)
 /* send an update notification */
 void ui_update(int target)
 {
-   if(GBL_UI->update) {
+   if (GBL_UI->update) {
       DEBUG_MSG("ui_update");
       GBL_UI->update(target);
    }
@@ -106,54 +105,53 @@ void ui_error(const char *fmt, ...)
    size_t size = 50;
    char *msg;
 
-   /* 
+   /*
     * we hope the message is shorter
     * than 'size', else realloc it
     */
-    
+
    SAFE_CALLOC(msg, size, sizeof(char));
 
    while (1) {
       /* Try to print in the allocated space. */
       va_start(ap, fmt);
-      n = vsnprintf (msg, size, fmt, ap);
+      n = vsnprintf(msg, size, fmt, ap);
       va_end(ap);
-      
+
       /* If that worked, we have finished. */
       if (n > -1 && (size_t)n < size)
          break;
-   
+
       /* Else try again with more space. */
       if (n > -1)    /* glibc 2.1 */
-         size = n+1; /* precisely what is needed */
+         size = n + 1; /* precisely what is needed */
       else           /* glibc 2.0 */
          size *= 2;  /* twice the old size */
-      
+
       SAFE_REALLOC(msg, size);
    }
 
    /* dump the error in the debug file */
    DEBUG_MSG("%s", msg);
-   
+
    /* call the function */
    if (GBL_UI->error)
       EXECUTE(GBL_UI->error, msg);
    /* the interface is not yet initialized */
    else
       fprintf(stderr, "\n%s\n", msg);
-   
+
    /* free the message */
    SAFE_FREE(msg);
 }
-
 
 /*
  * the FATAL_ERROR error handling function
  */
 void ui_fatal_error(const char *msg)
 {
-   /* 
-    * call the function 
+   /*
+    * call the function
     * make sure that the globals have been alloc'd
     */
    if (GBLS && GBL_UI && GBL_UI->fatal_error && GBL_UI->initialized)
@@ -163,9 +161,7 @@ void ui_fatal_error(const char *msg)
       fprintf(stderr, "\n%s\n\n", msg);
       exit(-1);
    }
-   
 }
-
 
 /*
  * this fuction enqueues the messages displayed by
@@ -181,29 +177,29 @@ void ui_msg(const char *fmt, ...)
 
    SAFE_CALLOC(msg, 1, sizeof(struct ui_message));
 
-   /* 
+   /*
     * we hope the message is shorter
     * than 'size', else realloc it
     */
-    
+
    SAFE_CALLOC(msg->message, size, sizeof(char));
 
    while (1) {
       /* Try to print in the allocated space. */
       va_start(ap, fmt);
-      n = vsnprintf (msg->message, size, fmt, ap);
+      n = vsnprintf(msg->message, size, fmt, ap);
       va_end(ap);
-      
+
       /* If that worked, we have finished. */
       if (n > -1 && (size_t)n < size)
          break;
-   
+
       /* Else try again with more space. */
       if (n > -1)    /* glibc 2.1 */
-         size = n+1; /* precisely what is needed */
+         size = n + 1; /* precisely what is needed */
       else           /* glibc 2.0 */
          size *= 2;  /* twice the old size */
-      
+
       SAFE_REALLOC(msg->message, size);
    }
 
@@ -212,20 +208,18 @@ void ui_msg(const char *fmt, ...)
       fprintf(GBL_OPTIONS->msg_fd, "%s", msg->message);
       fflush(GBL_OPTIONS->msg_fd);
    }
-   
-   /* 
+
+   /*
     * MUST use the mutex.
     * this MAY be a different thread !!
     */
    UI_MSG_LOCK;
-   
+
    /* add the message to the queue */
    STAILQ_INSERT_TAIL(&messages_queue, msg, next);
 
    UI_MSG_UNLOCK;
-   
 }
-
 
 /*
  * get the user input
@@ -237,7 +231,7 @@ void ui_input(const char *title, char *input, size_t n, void (*callback)(void))
    EXECUTE(GBL_UI->input, title, input, n, callback);
 }
 
-/* 
+/*
  * this function is used to display up to 'max' messages.
  * a user interface MUST use this to empty the message queue.
  */
@@ -247,23 +241,21 @@ int ui_msg_flush(int max)
    int i = 0;
    int old = 0;
    struct ui_message *msg;
-  
 
    /* sanity checks */
    if (!GBL_UI->initialized)
       return 0;
-     
+
    if (STAILQ_EMPTY(&messages_queue))
-	return 0; 
+      return 0;
 
    // don't allow the thread to cancel while holding the ui mutex
    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old);
 
    /* the queue is updated by other threads */
    UI_MSG_LOCK;
-   
 
-   while ( (msg = STAILQ_FIRST(&messages_queue)) != NULL) {
+   while ((msg = STAILQ_FIRST(&messages_queue)) != NULL) {
 
       /* diplay the message */
       GBL_UI->msg(msg->message);
@@ -272,19 +264,18 @@ int ui_msg_flush(int max)
       /* free the message */
       SAFE_FREE(msg->message);
       SAFE_FREE(msg);
-      
+
       /* do not display more then 'max' messages */
       if (++i == max)
          break;
    }
-   
+
    UI_MSG_UNLOCK;
 
    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &old);
 
    /* returns the number of displayed messages */
    return i;
-   
 }
 
 /*
@@ -297,54 +288,53 @@ int ui_msg_purge_all(void)
 
    /* the queue is updated by other threads */
    UI_MSG_LOCK;
-      
-   while ( (msg = STAILQ_FIRST(&messages_queue)) != NULL) {
+
+   while ((msg = STAILQ_FIRST(&messages_queue)) != NULL) {
       STAILQ_REMOVE_HEAD(&messages_queue, msg, next);
       /* free the message */
       SAFE_FREE(msg->message);
       SAFE_FREE(msg);
       i++;
    }
-   
+
    UI_MSG_UNLOCK;
-   
+
    /* returns the number of purgeded messages */
    return i;
-   
 }
 
 /*
  * register the function pointer for
  * the user interface.
- * a new user interface MUST implement this 
- * three function and use this function 
+ * a new user interface MUST implement this
+ * three function and use this function
  * to hook in the right place.
  */
 
 void ui_register(struct ui_ops *ops)
 {
-        
+
    BUG_IF(ops->init == NULL);
    GBL_UI->init = ops->init;
-   
+
    BUG_IF(ops->cleanup == NULL);
    GBL_UI->cleanup = ops->cleanup;
-   
+
    BUG_IF(ops->start == NULL);
    GBL_UI->start = ops->start;
-        
+
    BUG_IF(ops->msg == NULL);
    GBL_UI->msg = ops->msg;
-   
+
    BUG_IF(ops->error == NULL);
    GBL_UI->error = ops->error;
-   
+
    BUG_IF(ops->fatal_error == NULL);
    GBL_UI->fatal_error = ops->fatal_error;
-   
+
    BUG_IF(ops->input == NULL);
    GBL_UI->input = ops->input;
-   
+
    BUG_IF(ops->progress == NULL);
    GBL_UI->progress = ops->progress;
 
@@ -353,8 +343,6 @@ void ui_register(struct ui_ops *ops)
    GBL_UI->type = ops->type;
 }
 
-
 /* EOF */
 
 // vim:ts=3:expandtab
-

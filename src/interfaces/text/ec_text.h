@@ -12,4 +12,3 @@ extern void text_connections(void);
 /* EOF */
 
 // vim:ts=3:expandtab
-

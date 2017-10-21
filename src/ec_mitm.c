@@ -1,23 +1,23 @@
 /*
-    ettercap -- mitm management module
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- mitm management module
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_mitm.h>
@@ -27,14 +27,13 @@
 
 /* globals */
 
-
-static SLIST_HEAD (, mitm_entry) mitm_table;
+static SLIST_HEAD(, mitm_entry) mitm_table;
 
 struct mitm_entry {
    int selected;
    int started;
    struct mitm_method *mm;
-   SLIST_ENTRY (mitm_entry) next;
+   SLIST_ENTRY(mitm_entry) next;
 };
 
 static char *mitm_args = "";
@@ -42,7 +41,7 @@ static char *mitm_args = "";
 /*******************************************/
 
 /*
- * register a new mitm method in the table 
+ * register a new mitm method in the table
  */
 void mitm_add(struct mitm_method *mm)
 {
@@ -52,13 +51,11 @@ void mitm_add(struct mitm_method *mm)
 
    /* copy the mm struct */
    SAFE_CALLOC(e->mm, 1, sizeof(struct mitm_method));
-   
-   memcpy(e->mm, mm, sizeof(struct mitm_method));
-   
-   SLIST_INSERT_HEAD(&mitm_table, e, next);
-   
-}
 
+   memcpy(e->mm, mm, sizeof(struct mitm_method));
+
+   SLIST_INSERT_HEAD(&mitm_table, e, next);
+}
 
 /*
  * set the 'selected' flag in the table
@@ -70,13 +67,13 @@ int mitm_set(char *name)
 
    if ((mitm_args = strchr(name, ':')) != NULL) {
       *mitm_args = '\0';
-      mitm_args ++;
+      mitm_args++;
    } else {
       mitm_args = "";
    }
-   
+
    DEBUG_MSG("mitm_set: %s (%s)", name, mitm_args);
-   
+
    /* search the name and set it */
    SLIST_FOREACH(e, &mitm_table, next) {
       if (!strcasecmp(e->mm->name, name)) {
@@ -94,16 +91,16 @@ int mitm_set(char *name)
 int is_mitm_active(char *name)
 {
    struct mitm_entry *e;
-   
+
    /* search the name and set it */
    SLIST_FOREACH(e, &mitm_table, next)
-      if (!strcasecmp(e->mm->name, name))
-         return e->started;
-         
+   if (!strcasecmp(e->mm->name, name))
+      return e->started;
+
    return 0;
 }
 
-/* 
+/*
  * starts all the method with the selected flag set.
  * it is possible to start multiple method simultaneusly
  */
@@ -117,23 +114,22 @@ int mitm_start(void)
       return -E_INVALID;
    }
 
-      
    DEBUG_MSG("mitm_start");
-   
+
    /* start all the selected methods */
    SLIST_FOREACH(e, &mitm_table, next) {
       if (e->selected && !e->started) {
-   
+
          /* cant use -R with mitm methods */
          if (GBL_OPTIONS->reversed)
             SEMIFATAL_ERROR("Reverse target matching can't be used with MITM attacks");
-  
+
          if (!GBL_IFACE->is_ready)
             SEMIFATAL_ERROR("MITM attacks can't be used on unconfigured interfaces");
-         
+
          DEBUG_MSG("mitm_start: starting %s", e->mm->name);
 
-         /* 
+         /*
           * if the mitm method does not start correctly,
           * deselect it !
           */
@@ -147,7 +143,6 @@ int mitm_start(void)
    return E_SUCCESS;
 }
 
-
 /*
  * stop all the previously started method
  */
@@ -156,7 +151,7 @@ void mitm_stop(void)
    struct mitm_entry *e;
 
    DEBUG_MSG("mitm_stop");
-   
+
    /* stop all the started methods */
    SLIST_FOREACH(e, &mitm_table, next) {
       if (e->started) {
@@ -166,9 +161,7 @@ void mitm_stop(void)
          e->selected = 0;
       }
    }
-   
 }
-
 
 /*
  * keep the process running until the user exits
@@ -176,32 +169,32 @@ void mitm_stop(void)
 void only_mitm(void)
 {
    char ch = 0;
-   
+
    /* build the list of active hosts */
    build_hosts_list();
-   
+
    /* start the mitm attack */
    mitm_start();
 
    INSTANT_USER_MSG("Activated the mitm attack only... (press 'q' to exit)\n");
 
    if (GBL_UI->type == UI_DAEMONIZE)
-       LOOP {
-           ec_usleep(SEC2MICRO(1));
-       }
-  
-   /* wait for user to exit */
-   while (ch != 'q' && ch != 'Q') {
-      /* if there is a pending char to be read */
-      if ( ec_poll_in(fileno(stdin), 1) || ec_poll_buffer(GBL_OPTIONS->script) ) {
-         /* get the input from the stdin or the buffer */
-         if (ec_poll_buffer(GBL_OPTIONS->script))
-            ch = getchar_buffer(&GBL_OPTIONS->script);
-         else
-            ch = getchar();
+      LOOP {
+         ec_usleep(SEC2MICRO(1));
       }
-   }
-   
+
+      /* wait for user to exit */
+      while (ch != 'q' && ch != 'Q') {
+         /* if there is a pending char to be read */
+         if (ec_poll_in(fileno(stdin), 1) || ec_poll_buffer(GBL_OPTIONS->script)) {
+            /* get the input from the stdin or the buffer */
+            if (ec_poll_buffer(GBL_OPTIONS->script))
+               ch = getchar_buffer(&GBL_OPTIONS->script);
+            else
+               ch = getchar();
+         }
+      }
+
    INSTANT_USER_MSG("Exiting...\n\n");
 
    /* stop the process */
@@ -214,4 +207,3 @@ void only_mitm(void)
 /* EOF */
 
 // vim:ts=3:expandtab
-

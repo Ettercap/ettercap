@@ -7,7 +7,6 @@ struct mitm_method {
    void (*stop)(void);
 };
 
-
 /* exported functions */
 
 EC_API_EXTERN void mitm_add(struct mitm_method *mm);
@@ -16,7 +15,6 @@ EC_API_EXTERN int mitm_start(void);
 EC_API_EXTERN void mitm_stop(void);
 EC_API_EXTERN void only_mitm(void);
 EC_API_EXTERN int is_mitm_active(char *name);
-
 
 /* an ugly hack to make accessible the arp poisoning lists to plugins */
 
@@ -30,4 +28,3 @@ EC_API_EXTERN struct hosts_group arp_group_two;
 /* EOF */
 
 // vim:ts=3:expandtab
-

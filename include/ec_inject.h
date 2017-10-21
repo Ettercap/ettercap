@@ -10,25 +10,27 @@
 #define LENGTH *len
 #define LENGTH_PTR len
 
-#define SESSION_PASSTHRU(x,y) do{   \
-   x->prev_session = y->session;    \
-   y->session = x;                  \
-} while(0)
+#define SESSION_PASSTHRU(x, y) \
+   do { \
+      x->prev_session = y->session; \
+      y->session = x; \
+   } while (0)
 
-#define SESSION_CLEAR(x) (x->session=NULL)
+#define SESSION_CLEAR(x) (x->session = NULL)
 
-#define EXECUTE_INJECTOR(x,y) do{                     \
-   FUNC_INJECTOR_PTR(prev_injector);                  \
-   prev_injector = get_injector(x, y);                \
-   if (prev_injector == NULL)                         \
-      return -E_NOTFOUND;                              \
-   if (prev_injector(PACKET, LENGTH_PTR) != E_SUCCESS) \
-      return -E_NOTHANDLED;                            \
-} while(0)
+#define EXECUTE_INJECTOR(x, y) \
+   do { \
+      FUNC_INJECTOR_PTR(prev_injector); \
+      prev_injector = get_injector(x, y); \
+      if (prev_injector == NULL) \
+         return -E_NOTFOUND; \
+      if (prev_injector(PACKET, LENGTH_PTR) != E_SUCCESS) \
+         return -E_NOTHANDLED; \
+   } while (0)
 
 EC_API_EXTERN int inject_buffer(struct packet_object *po);
 EC_API_EXTERN void add_injector(u_int8 level, u_int32 type, FUNC_INJECTOR_PTR(injector));
-EC_API_EXTERN void * get_injector(u_int8 level, u_int32 type);
+EC_API_EXTERN void *get_injector(u_int8 level, u_int32 type);
 EC_API_EXTERN void inject_split_data(struct packet_object *po);
 
 EC_API_EXTERN int user_kill(struct conn_object *co);
@@ -45,4 +47,3 @@ EC_API_EXTERN int user_inject(u_char *buf, size_t size, struct conn_object *co, 
 /* EOF */
 
 // vim:ts=3:expandtab
-

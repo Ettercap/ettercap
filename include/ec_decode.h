@@ -19,7 +19,7 @@ enum {
    APP_LAYER_UDP = 52,
 };
 
-#define FUNC_DECODER(func) void * func(u_char *buf, u_int16 buflen, int *len, struct packet_object *po)
+#define FUNC_DECODER(func) void *func(u_char * buf, u_int16 buflen, int *len, struct packet_object *po)
 #define FUNC_DECODER_PTR(func) void * (*func)(u_char *buf, u_int16 buflen, int *len, struct packet_object *po)
 
 #define DECODE_DATALEN   buflen
@@ -27,21 +27,24 @@ enum {
 #define DECODED_LEN      *len
 #define PACKET           po
 
-#define EXECUTE_DECODER(x) do{ \
-   if (x) \
-      x(DECODE_DATA+DECODED_LEN, DECODE_DATALEN-DECODED_LEN, len, PACKET); \
-}while(0)
+#define EXECUTE_DECODER(x) \
+   do { \
+      if (x) \
+         x(DECODE_DATA + DECODED_LEN, DECODE_DATALEN - DECODED_LEN, len, PACKET); \
+   } while (0)
 
-#define DECLARE_REAL_PTR_END(x,y) u_char *x = po->DATA.data; \
-                                  u_char *y = x + po->DATA.len
+#define DECLARE_REAL_PTR_END(x, y) \
+   u_char * x = po->DATA.data; \
+   u_char *y = x + po->DATA.len
 
-#define DECLARE_DISP_PTR_END(x,y) u_char *x = po->DATA.disp_data; \
-                                  u_char *y = x + po->DATA.disp_len
+#define DECLARE_DISP_PTR_END(x, y) \
+   u_char * x = po->DATA.disp_data; \
+   u_char *y = x + po->DATA.disp_len
 
-#define DECLARE_DISP_PTR(x)       u_char *x = po->DATA.disp_data
-                                  
+#define DECLARE_DISP_PTR(x)       u_char * x = po->DATA.disp_data
+
 #define DISPLAY_DATA    po->disp_data
-#define DISPLAY_LEN     po->disp_len                             
+#define DISPLAY_LEN     po->disp_len
 
 /* exported functions */
 
@@ -55,4 +58,3 @@ EC_API_EXTERN void *get_decoder(u_int8 level, u_int32 type);
 /* EOF */
 
 // vim:ts=3:expandtab
-

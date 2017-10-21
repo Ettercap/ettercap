@@ -1,23 +1,23 @@
 /*
-    ettercap -- plugin handling
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- plugin handling
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_plugins.h>
@@ -25,25 +25,24 @@
 #include <dirent.h>
 
 #ifndef HAVE_SCANDIR
-   #include <missing/scandir.h>
+#include <missing/scandir.h>
 #endif
 
 #ifdef HAVE_PLUGINS
-   #ifdef HAVE_LTDL_H
-      #include <ltdl.h>
-   #endif
-   #ifdef HAVE_DLFCN_H
-      #include <dlfcn.h>
-   #endif
+#ifdef HAVE_LTDL_H
+#include <ltdl.h>
+#endif
+#ifdef HAVE_DLFCN_H
+#include <dlfcn.h>
+#endif
 #endif
 
 /* symbol prefix for some OSes */
 #ifdef NEED_USCORE
-   #define SYM_PREFIX "_"
+#define SYM_PREFIX "_"
 #else
-   #define SYM_PREFIX ""
+#define SYM_PREFIX ""
 #endif
-         
 
 /* global data */
 
@@ -62,10 +61,12 @@ static pthread_mutex_t kill_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define KILL_UNLOCK do { pthread_mutex_unlock(&kill_mutex); } while (0)
 
 static pthread_mutex_t plugin_list_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define PLUGIN_LIST_LOCK do { pthread_mutex_lock(&plugin_list_mutex); } \
-                         while (0)
-#define PLUGIN_LIST_UNLOCK do { pthread_mutex_unlock(&plugin_list_mutex); } \
-                           while (0)
+#define PLUGIN_LIST_LOCK \
+   do { pthread_mutex_lock(&plugin_list_mutex); } \
+   while (0)
+#define PLUGIN_LIST_UNLOCK \
+   do { pthread_mutex_unlock(&plugin_list_mutex); } \
+   while (0)
 
 /* protos... */
 
@@ -75,48 +76,48 @@ int plugin_filter(const struct dirent *d);
 
 /*******************************************/
 
-/* 
+/*
  * load a plugin given the full path
  */
 
 int plugin_load_single(const char *path, char *name)
 {
 #ifdef HAVE_PLUGINS
-   char file[strlen(path)+strlen(name)+2];
+   char file[strlen(path) + strlen(name) + 2];
    void *handle;
    int (*plugin_load)(void *);
-   
+
    snprintf(file, sizeof(file), "%s/%s", path, name);
-  
+
    DEBUG_MSG("plugin_load_single: %s", file);
-   
+
    /* load the plugin */
-   handle = dlopen(file, RTLD_NOW|RTLD_LOCAL);
+   handle = dlopen(file, RTLD_NOW | RTLD_LOCAL);
 
    if (handle == NULL) {
       DEBUG_MSG("plugin_load_single - %s - dlopen() | %s", file, dlerror());
       return -E_INVALID;
    }
-   
+
    /* find the loading function */
    plugin_load = dlsym(handle, SYM_PREFIX "plugin_load");
-   
+
    if (plugin_load == NULL) {
       DEBUG_MSG("plugin_load_single - %s - lt_dlsym() | %s", file, dlerror());
       dlclose(handle);
       return -E_INVALID;
    }
 
-   /* 
-    * return the same value of plugin_register 
+   /*
+    * return the same value of plugin_register
     * we pass the handle to the plugin, which
-    * in turn passes it to the plugin_register 
+    * in turn passes it to the plugin_register
     * function
     */
    return plugin_load(handle);
 #else
-   (void) path;
-   (void) name;
+   (void)path;
+   (void)name;
    return -E_INVALID;
 #endif
 }
@@ -126,7 +127,7 @@ int plugin_load_single(const char *path, char *name)
  */
 int plugin_filter(const struct dirent *d)
 {
-   if ( match_pattern(d->d_name, PLUGIN_PATTERN) )
+   if (match_pattern(d->d_name, PLUGIN_PATTERN))
       return 1;
 
    return 0;
@@ -143,7 +144,7 @@ void plugin_load_all(void)
    int n, i, ret;
    int t = 0;
    char *where;
-   
+
    DEBUG_MSG("plugin_loadall");
 
 #ifdef OS_WINDOWS
@@ -158,7 +159,7 @@ void plugin_load_all(void)
    /* default path */
    where = INSTALL_LIBDIR "/" EC_PROGRAM;
 #endif
-   
+
    /* first search in  INSTALL_LIBDIR/ettercap" */
    n = scandir(where, &namelist, plugin_filter, alphasort);
    /* on error fall back to the current dir */
@@ -169,40 +170,39 @@ void plugin_load_all(void)
       n = scandir(where, &namelist, plugin_filter, alphasort);
       DEBUG_MSG("plugin_loadall: %d found", n);
    }
-  
-   for(i = n-1; i >= 0; i--) {
+
+   for (i = n - 1; i >= 0; i--) {
       ret = plugin_load_single(where, namelist[i]->d_name);
       switch (ret) {
-         case E_SUCCESS:
-            t++;
-            break;
-         case -E_DUPLICATE:
-            USER_MSG("plugin %s already loaded...\n", namelist[i]->d_name);
-            DEBUG_MSG("plugin %s already loaded...", namelist[i]->d_name);
-            break;
-         case -E_VERSION:
-            USER_MSG("plugin %s was compiled for a different ettercap version...\n", namelist[i]->d_name);
-            DEBUG_MSG("plugin %s was compiled for a different ettercap version...", namelist[i]->d_name);
-            break;
-         case -E_INVALID:
-         default:
-            USER_MSG("plugin %s cannot be loaded...\n", namelist[i]->d_name);
-            DEBUG_MSG("plugin %s cannot be loaded...", namelist[i]->d_name);
-            break;
+      case E_SUCCESS:
+         t++;
+         break;
+      case -E_DUPLICATE:
+         USER_MSG("plugin %s already loaded...\n", namelist[i]->d_name);
+         DEBUG_MSG("plugin %s already loaded...", namelist[i]->d_name);
+         break;
+      case -E_VERSION:
+         USER_MSG("plugin %s was compiled for a different ettercap version...\n", namelist[i]->d_name);
+         DEBUG_MSG("plugin %s was compiled for a different ettercap version...", namelist[i]->d_name);
+         break;
+      case -E_INVALID:
+      default:
+         USER_MSG("plugin %s cannot be loaded...\n", namelist[i]->d_name);
+         DEBUG_MSG("plugin %s cannot be loaded...", namelist[i]->d_name);
+         break;
       }
       SAFE_FREE(namelist[i]);
    }
-   
+
    USER_MSG("%4d plugins\n", t);
 
    SAFE_FREE(namelist);
-   
+
    atexit(plugin_unload_all);
 #else
    USER_MSG("   0 plugins (disabled by configure...)\n");
 #endif
 }
-
 
 /*
  * unload all the plugin
@@ -211,20 +211,19 @@ void plugin_unload_all(void)
 {
 #ifdef HAVE_PLUGINS
    struct plugin_entry *p;
-   
-   DEBUG_MSG("ATEXIT: plugin_unload_all");   
-   
+
+   DEBUG_MSG("ATEXIT: plugin_unload_all");
+
    while (SLIST_FIRST(&plugin_head) != NULL) {
       p = SLIST_FIRST(&plugin_head);
-      if(plugin_is_activated(p->ops->name) == 1)
-		plugin_fini(p->ops->name);
+      if (plugin_is_activated(p->ops->name) == 1)
+         plugin_fini(p->ops->name);
       dlclose(p->handle);
       SLIST_REMOVE_HEAD(&plugin_head, next);
       SAFE_FREE(p);
    }
 #endif
 }
-
 
 /*
  * function used by plugins to register themself
@@ -239,7 +238,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
       dlclose(handle);
       return -E_VERSION;
    }
-   
+
    /* check that this plugin was not already loaded */
    SLIST_FOREACH(pl, &plugin_head, next) {
       /* same name and same version */
@@ -250,7 +249,7 @@ int plugin_register(void *handle, struct plugin_ops *ops)
    }
 
    SAFE_CALLOC(p, 1, sizeof(struct plugin_entry));
-   
+
    p->handle = handle;
    p->ops = ops;
 
@@ -258,16 +257,15 @@ int plugin_register(void *handle, struct plugin_ops *ops)
 
    return E_SUCCESS;
 #else
-   (void) handle;
-   (void) ops;
+   (void)handle;
+   (void)ops;
    return -E_INVALID;
 #endif
 }
 
-
-/* 
+/*
  * activate a plugin.
- * it launch the plugin init function 
+ * it launch the plugin init function
  */
 int plugin_init(char *name)
 {
@@ -284,14 +282,13 @@ int plugin_init(char *name)
          return ret;
       }
    }
-   
+
    return -E_NOTFOUND;
 }
 
-
-/* 
+/*
  * deactivate a plugin.
- * it launch the plugin fini function 
+ * it launch the plugin fini function
  */
 int plugin_fini(char *name)
 {
@@ -308,11 +305,11 @@ int plugin_fini(char *name)
          return ret;
       }
    }
-   
+
    return -E_NOTFOUND;
 }
 
-/* 
+/*
  * self-destruct a plugin thread.
  * it resets the activity state and destructs itself by calling the plugin fini function.
  * it does not replace the <plugin>_fini standard function rather than it depends on it.
@@ -324,7 +321,7 @@ int plugin_kill_thread(char *name, char *thread)
    int ret;
    pthread_t pid;
 
-   pid = ec_thread_getpid(thread); 
+   pid = ec_thread_getpid(thread);
 
    /* do not execute if not being a thread */
    if (pthread_equal(pid, EC_PTHREAD_NULL))
@@ -348,9 +345,9 @@ int plugin_kill_thread(char *name, char *thread)
          /* call plugin's destruction routine */
          ret = p->ops->fini(NULL);
          /*
-          * normally the thread should not return from the call - 
+          * normally the thread should not return from the call -
           * just in case the thread wasn't destroyed in the fini callback
-          * destroy it here 
+          * destroy it here
           */
          ec_thread_destroy(pid);
 
@@ -359,7 +356,7 @@ int plugin_kill_thread(char *name, char *thread)
       }
    }
    KILL_UNLOCK;
-   
+
    return -E_NOTFOUND;
 }
 
@@ -382,7 +379,7 @@ int plugin_list_walk(int min, int max, void (*func)(char, struct plugin_ops *))
 
    SLIST_FOREACH(p, &plugin_head, next) {
       if (i > max)
-         return (i-1);
+         return i - 1;
       if (i < min) {
          i++;
          continue;
@@ -390,8 +387,8 @@ int plugin_list_walk(int min, int max, void (*func)(char, struct plugin_ops *))
       func(p->activated, p->ops);
       i++;
    }
-   
-   return (i == min) ? -E_NOTFOUND : (i-1);
+
+   return (i == min) ? -E_NOTFOUND : (i - 1);
 }
 
 /*
@@ -407,7 +404,7 @@ int plugin_is_activated(char *name)
          return p->activated;
       }
    }
-   
+
    return 0;
 }
 
@@ -423,7 +420,7 @@ int search_plugin(char *name)
          return E_SUCCESS;
       }
    }
-   
+
    return -E_NOTFOUND;
 }
 
@@ -438,7 +435,7 @@ void plugin_list(void)
 
    /* load all the plugins */
    plugin_load_all();
-      
+
    /* print the list */
    fprintf(stdout, "\nAvailable plugins :\n\n");
    ret = plugin_list_walk(PLP_MIN, PLP_MAX, &plugin_print);
@@ -447,7 +444,6 @@ void plugin_list(void)
       return;
    }
    fprintf(stdout, "\n\n");
-
 }
 
 /*
@@ -469,17 +465,16 @@ void free_plugin_list(struct plugin_list_t plugins)
 }
 
 /*
- * callback function for displaying the plugin list 
+ * callback function for displaying the plugin list
  */
 static void plugin_print(char active, struct plugin_ops *ops)
 {
    /* variable not used */
-   (void) active;
+   (void)active;
 
-   fprintf(stdout, " %15s %4s  %s\n", ops->name, ops->version, ops->info);  
+   fprintf(stdout, " %15s %4s  %s\n", ops->name, ops->version, ops->info);
 }
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

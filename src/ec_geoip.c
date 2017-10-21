@@ -1,23 +1,23 @@
 /*
-    ettercap -- GeoIP interface; IPv4/6 address to geolocation lookup.
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- GeoIP interface; IPv4/6 address to geolocation lookup.
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_geoip.h>
@@ -26,14 +26,14 @@
 
 #include <GeoIP.h>
 
-static GeoIP *gi  = NULL;
+static GeoIP *gi = NULL;
 #ifdef WITH_IPV6
 static GeoIP *gi6 = NULL;
 #endif
 
-static void geoip_exit (void)
+static void geoip_exit(void)
 {
-   GeoIP_delete (gi);
+   GeoIP_delete(gi);
    gi = NULL;
 #ifdef WITH_IPV6
    GeoIP_delete(gi6);
@@ -42,7 +42,7 @@ static void geoip_exit (void)
    GeoIP_cleanup();
 }
 
-void geoip_init (void)
+void geoip_init(void)
 {
    char *gi_info;
 
@@ -50,27 +50,26 @@ void geoip_init (void)
    gi = GeoIP_open_type(GEOIP_COUNTRY_EDITION, GEOIP_MEMORY_CACHE);
 
    /* not found, fallback in the configuration file value */
-   if(!gi) {
+   if (!gi) {
 
       if (!GBL_CONF->geoip_data_file)
          return;
 
-      gi = GeoIP_open (GBL_CONF->geoip_data_file, GEOIP_MEMORY_CACHE);
-      if (!gi)
-      {
-         DEBUG_MSG ("geoip_init: %s not found.", GBL_CONF->geoip_data_file);
+      gi = GeoIP_open(GBL_CONF->geoip_data_file, GEOIP_MEMORY_CACHE);
+      if (!gi) {
+         DEBUG_MSG("geoip_init: %s not found.", GBL_CONF->geoip_data_file);
          GeoIP_cleanup();
          return;
       }
    }
-   gi_info = GeoIP_database_info (gi);
+   gi_info = GeoIP_database_info(gi);
 
-   DEBUG_MSG ("geoip_init: Description: %s.", 
-         GeoIPDBDescription[GEOIP_COUNTRY_EDITION]);
-   DEBUG_MSG ("geoip_init: Info:        %s. Countries: %u",
-         gi_info ? gi_info : "<none>", GeoIP_num_countries());
+   DEBUG_MSG("geoip_init: Description: %s.",
+             GeoIPDBDescription[GEOIP_COUNTRY_EDITION]);
+   DEBUG_MSG("geoip_init: Info:        %s. Countries: %u",
+             gi_info ? gi_info : "<none>", GeoIP_num_countries());
 
-   atexit (geoip_exit);
+   atexit(geoip_exit);
 
    SAFE_FREE(gi_info);
    gi_info = NULL;
@@ -87,18 +86,18 @@ void geoip_init (void)
 
       gi6 = GeoIP_open(GBL_CONF->geoip_data_file_v6, GEOIP_MEMORY_CACHE);
       if (!gi6) {
-         DEBUG_MSG("geoip_init: %s not found.\n", 
-               GBL_CONF->geoip_data_file_v6);
+         DEBUG_MSG("geoip_init: %s not found.\n",
+                   GBL_CONF->geoip_data_file_v6);
          return;
       }
    }
 
    gi_info = GeoIP_database_info(gi6);
 
-   DEBUG_MSG("geoip_init: Description: %s.", 
-         GeoIPDBDescription[GEOIP_COUNTRY_EDITION_V6]);
+   DEBUG_MSG("geoip_init: Description: %s.",
+             GeoIPDBDescription[GEOIP_COUNTRY_EDITION_V6]);
    DEBUG_MSG("geoip_init: Info:        %s. Countries: %u",
-         gi_info ? gi_info : "<none>", GeoIP_num_countries());
+             gi_info ? gi_info : "<none>", GeoIP_num_countries());
 
    SAFE_FREE(gi_info);
    gi_info = NULL;
@@ -113,7 +112,7 @@ void geoip_init (void)
  *  - "--" if ip address is not global
  * return NULL if GeoIP API isn't initialized properly
  */
-const char* geoip_ccode_by_ip (struct ip_addr *ip)
+const char *geoip_ccode_by_ip(struct ip_addr *ip)
 {
    int id;
 #ifdef WITH_IPV6
@@ -133,25 +132,25 @@ const char* geoip_ccode_by_ip (struct ip_addr *ip)
 
    /* Determine country id by IP address */
    switch (ntohs(ip->addr_type)) {
-      case AF_INET:
-         if (!gi)
-            return NULL;
-         id = GeoIP_id_by_ipnum(gi, ntohl(*ip->addr32));
-         break;
-#ifdef WITH_IPV6
-      case AF_INET6:
-         if (!gi6)
-            return NULL;
-         ip_addr_cpy((u_char *)geo_ip6.s6_addr, ip);
-         id = GeoIP_id_by_ipnum_v6(gi6, geo_ip6);
-         break;
-#endif
-      default:
+   case AF_INET:
+      if (!gi)
          return NULL;
+      id = GeoIP_id_by_ipnum(gi, ntohl(*ip->addr32));
+      break;
+#ifdef WITH_IPV6
+   case AF_INET6:
+      if (!gi6)
+         return NULL;
+      ip_addr_cpy((u_char *)geo_ip6.s6_addr, ip);
+      id = GeoIP_id_by_ipnum_v6(gi6, geo_ip6);
+      break;
+#endif
+   default:
+      return NULL;
    }
 
    DEBUG_MSG("geoip_ccode_by_ip: GeoIP country code for ip %s: %s",
-         ip_addr_ntoa(ip, tmp), GeoIP_code_by_id(id));
+             ip_addr_ntoa(ip, tmp), GeoIP_code_by_id(id));
 
    return GeoIP_code_by_id(id);
 }
@@ -160,7 +159,7 @@ const char* geoip_ccode_by_ip (struct ip_addr *ip)
  * returns the country name string for a given IP address
  * return NULL if GeoIP API isn't initialized properly
  */
-const char* geoip_country_by_ip (struct ip_addr *ip)
+const char *geoip_country_by_ip(struct ip_addr *ip)
 {
    int id;
 #ifdef WITH_IPV6
@@ -180,27 +179,27 @@ const char* geoip_country_by_ip (struct ip_addr *ip)
 
    /* Determine country id by IP address */
    switch (ntohs(ip->addr_type)) {
-      case AF_INET:
-         if (!gi)
-            return NULL;
-         id = GeoIP_id_by_ipnum(gi, ntohl(*ip->addr32));
-         break;
-#ifdef WITH_IPV6
-      case AF_INET6:
-         if (!gi6)
-            return NULL;
-         ip_addr_cpy((u_char *)geo_ip6.s6_addr, ip);
-         id = GeoIP_id_by_ipnum_v6(gi6, geo_ip6);
-         break;
-#endif
-      default:
+   case AF_INET:
+      if (!gi)
          return NULL;
+      id = GeoIP_id_by_ipnum(gi, ntohl(*ip->addr32));
+      break;
+#ifdef WITH_IPV6
+   case AF_INET6:
+      if (!gi6)
+         return NULL;
+      ip_addr_cpy((u_char *)geo_ip6.s6_addr, ip);
+      id = GeoIP_id_by_ipnum_v6(gi6, geo_ip6);
+      break;
+#endif
+   default:
+      return NULL;
    }
 
    DEBUG_MSG("geoip_country_by_ip: GeoIP country name for ip %s: %s",
-         ip_addr_ntoa(ip, tmp), GeoIP_name_by_id(id));
+             ip_addr_ntoa(ip, tmp), GeoIP_name_by_id(id));
 
    return GeoIP_name_by_id(id);
 }
 
-#endif  /* WITH_GEOIP */
+#endif /* WITH_GEOIP */

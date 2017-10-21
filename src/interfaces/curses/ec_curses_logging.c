@@ -1,23 +1,23 @@
 /*
-    ettercap -- curses GUI
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- curses GUI
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <wdg.h>
@@ -43,17 +43,16 @@ static void curses_stop_msg(void);
 static char tag_compress[] = " ";
 static char *logfile;
 
-struct wdg_menu menu_logging[] = { {"Logging",                      'L', "",  NULL},
-                                   {"Log all packets and infos...", 'I', "I", curses_log_all},
-                                   {"Log only infos...",            'i', "i", curses_log_info},
-                                   {"Stop logging infos",           0,   "",  curses_stop_log},
-                                   {"-",                            0,   "",  NULL},
-                                   {"Log user messages...",         'm', "m", curses_log_msg},
-                                   {"Stop logging messages",        0,   "",  curses_stop_msg},
-                                   {"-",                            0,   "",  NULL},
-                                   {"Compressed file",              0, tag_compress,  toggle_compress},
-                                   {NULL, 0, NULL, NULL},
-                                 };
+struct wdg_menu menu_logging[] = { { "Logging", 'L', "", NULL },
+                                   { "Log all packets and infos...", 'I', "I", curses_log_all },
+                                   { "Log only infos...", 'i', "i", curses_log_info },
+                                   { "Stop logging infos", 0, "", curses_stop_log },
+                                   { "-", 0, "", NULL },
+                                   { "Log user messages...", 'm', "m", curses_log_msg },
+                                   { "Stop logging messages", 0, "", curses_stop_msg },
+                                   { "-", 0, "", NULL },
+                                   { "Compressed file", 0, tag_compress, toggle_compress },
+                                   { NULL, 0, NULL, NULL }, };
 
 /*******************************************/
 
@@ -69,7 +68,7 @@ static void toggle_compress(void)
 }
 
 /*
- * display the log dialog 
+ * display the log dialog
  */
 static void curses_log_all(void)
 {
@@ -89,13 +88,13 @@ static void log_all(void)
       ui_error("Please specify a filename");
       return;
    }
-   
+
    set_loglevel(LOG_PACKET, logfile);
    SAFE_FREE(logfile);
 }
 
 /*
- * display the log dialog 
+ * display the log dialog
  */
 static void curses_log_info(void)
 {
@@ -127,7 +126,7 @@ static void curses_stop_log(void)
 }
 
 /*
- * display the log dialog 
+ * display the log dialog
  */
 static void curses_log_msg(void)
 {
@@ -147,7 +146,7 @@ static void log_msg(void)
       ui_error("Please specify a filename");
       return;
    }
-   
+
    set_msg_loglevel(LOG_TRUE, logfile);
    SAFE_FREE(logfile);
 }
@@ -161,4 +160,3 @@ static void curses_stop_msg(void)
 /* EOF */
 
 // vim:ts=3:expandtab
-

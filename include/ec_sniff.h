@@ -5,8 +5,8 @@
 
 struct sniffing_method {
    char type;              /* the type of the sniffing method */
-      #define SM_UNIFIED      0
-      #define SM_BRIDGED      1
+#define SM_UNIFIED      0
+#define SM_BRIDGED      1
    char active;            /* true if the sniff was started */
    void (*start)(void);
    void (*cleanup)(void);
@@ -41,4 +41,3 @@ EC_API_EXTERN void free_ip_list(struct target_env *t);
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -12,4 +12,3 @@ EC_API_EXTERN EC_THREAD_FUNC(top_half);
 /* EOF */
 
 // vim:ts=3:expandtab
-

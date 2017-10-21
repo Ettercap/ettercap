@@ -8,12 +8,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#if !defined (__USE_GNU)  /* for memmem(), strsignal(), etc etc... */
-   #define __USE_GNU
+#if !defined(__USE_GNU)   /* for memmem(), strsignal(), etc etc... */
+#define __USE_GNU
 #endif
 #include <string.h>
-#if defined (__USE_GNU)
-   #undef __USE_GNU
+#if defined(__USE_GNU)
+#undef __USE_GNU
 #endif
 #include <strings.h>
 #include <unistd.h>
@@ -23,11 +23,11 @@
 #define EL_API_EXTERN
 
 #ifndef HAVE_STRSEP
-   #include <missing/strsep.h>
+#include <missing/strsep.h>
 #endif
 
 #ifdef OS_WINDOWS
-   #include <windows.h>
+#include <windows.h>
 #endif
 
 #include <ec_queue.h>
@@ -41,25 +41,27 @@
 #include <zlib.h>
 #include <regex.h>
 
-#define SAFE_CALLOC(x, n, s) do { \
-   x = calloc(n, s); \
-   ON_ERROR(x, NULL, "virtual memory exhausted"); \
-} while(0)
+#define SAFE_CALLOC(x, n, s) \
+   do { \
+      x = calloc(n, s); \
+      ON_ERROR(x, NULL, "virtual memory exhausted"); \
+   } while (0)
 
-#define SAFE_REALLOC(x, s) do { \
-   x = realloc(x, s); \
-   ON_ERROR(x, NULL, "virtual memory exhausted"); \
-} while(0)
+#define SAFE_REALLOC(x, s) \
+   do { \
+      x = realloc(x, s); \
+      ON_ERROR(x, NULL, "virtual memory exhausted"); \
+   } while (0)
 
-#define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
+#define SAFE_FREE(x) do { if (x) { free(x); x = NULL; } } while (0)
 
 #define __init __attribute__ ((constructor))
 
-#define LOOP for(;;)
+#define LOOP for (;;)
 
-/* file operations */ 
+/* file operations */
 #ifndef OS_WINDOWS
-   #define O_BINARY  0
+#define O_BINARY  0
 #endif
 
 struct ip_list {
@@ -68,35 +70,35 @@ struct ip_list {
 };
 
 struct target_env {
-   char scan_all:1;
-   char all_mac:1;            /* these one bit flags are used as wildcards */
-   char all_ip:1;
-   char all_ip6:1;
-   char all_port:1;
+   char scan_all : 1;
+   char all_mac : 1;            /* these one bit flags are used as wildcards */
+   char all_ip : 1;
+   char all_ip6 : 1;
+   char all_port : 1;
    char *proto;
    u_char mac[MEDIA_ADDR_LEN];
    LIST_HEAD(, ip_list) ips;
    LIST_HEAD(, ip_list) ip6;
-   u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
+   u_int8 ports[1 << 13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };
 
 struct el_options {
-   char concat:1;
-   char analyze:1;
-   char no_headers:1;
-   char connections:1;
-   char decode:1;
-   char showmac:1;
-   char showclient:1;
-   char only_source:1;
-   char only_dest:1;
-   char only_local:1;
-   char only_remote:1;
-   char passwords:1;
-   char color:1;
-   char xml:1;
-   char reverse:1;
-   char regex:1;
+   char concat : 1;
+   char analyze : 1;
+   char no_headers : 1;
+   char connections : 1;
+   char decode : 1;
+   char showmac : 1;
+   char showclient : 1;
+   char only_source : 1;
+   char only_dest : 1;
+   char only_local : 1;
+   char only_remote : 1;
+   char passwords : 1;
+   char color : 1;
+   char xml : 1;
+   char reverse : 1;
+   char regex : 1;
 };
 
 struct globals {
@@ -116,39 +118,37 @@ extern struct globals *gbls;
 
 #define GBL gbls
 
-
 #define GBL_LOGFILE GBL->logfile
 #define GBL_LOG_FD  GBL->fd
 #define GBL_OPTIONS GBL->options
 #define GBL_TARGET (GBL->t)
 #define GBL_PROGRAM "etterlog"
 
-
-#define BIT_SET(r,b)       ( r[b>>3] |=   1<<(b&7) )
-#define BIT_RESET(r,b)     ( r[b>>3] &= ~ 1<<(b&7) )
-#define BIT_TEST(r,b)      ( r[b>>3]  &   1<<(b&7) )
-#define BIT_NOT(r,b)       ( r[b>>3] ^=   1<<(b&7) )
+#define BIT_SET(r, b)       (r[b >> 3] |= 1 << (b & 7))
+#define BIT_RESET(r, b)     (r[b >> 3] &= ~1 << (b & 7))
+#define BIT_TEST(r, b)      (r[b >> 3] & 1 << (b & 7))
+#define BIT_NOT(r, b)       (r[b >> 3] ^= 1 << (b & 7))
 
 /* ANSI colors */
 #ifndef OS_WINDOWS
-   #define EC_COLOR_END    "\033[0m"
-   #define EC_COLOR_BOLD   "\033[1m"
+#define EC_COLOR_END    "\033[0m"
+#define EC_COLOR_BOLD   "\033[1m"
 
-   #define EC_COLOR_RED    "\033[31m"EC_COLOR_BOLD
-   #define EC_COLOR_YELLOW "\033[33m"EC_COLOR_BOLD
-   #define EC_COLOR_GREEN  "\033[32m"EC_COLOR_BOLD
-   #define EC_COLOR_BLUE   "\033[34m"EC_COLOR_BOLD
-   #define EC_COLOR_CYAN   "\033[36m"EC_COLOR_BOLD
+#define EC_COLOR_RED    "\033[31m"EC_COLOR_BOLD
+#define EC_COLOR_YELLOW "\033[33m"EC_COLOR_BOLD
+#define EC_COLOR_GREEN  "\033[32m"EC_COLOR_BOLD
+#define EC_COLOR_BLUE   "\033[34m"EC_COLOR_BOLD
+#define EC_COLOR_CYAN   "\033[36m"EC_COLOR_BOLD
 #else
-   /* Windows console doesn't grok ANSI */
-   #define EC_COLOR_END
-   #define EC_COLOR_BOLD
-   
-   #define EC_COLOR_RED
-   #define EC_COLOR_YELLOW
-   #define EC_COLOR_GREEN
-   #define EC_COLOR_BLUE
-   #define EC_COLOR_CYAN
+/* Windows console doesn't grok ANSI */
+#define EC_COLOR_END
+#define EC_COLOR_BOLD
+
+#define EC_COLOR_RED
+#define EC_COLOR_YELLOW
+#define EC_COLOR_GREEN
+#define EC_COLOR_BLUE
+#define EC_COLOR_CYAN
 #endif
 
 #define COL_RED      31
@@ -167,10 +167,8 @@ void ui_error(const char *fmt, ...);
 void ui_fatal_error(const char *fmt, ...);
 void ui_cleanup(void);
 
-
-#endif   /*  EL_H */
+#endif /*  EL_H */
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

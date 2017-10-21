@@ -1,9 +1,9 @@
 /*
-        ettercap - ICMPv6 decoder module
-
-        Copyright (C) the braindamaged entities collective
-        GPL blah-blah-blah
-*/
+ *      ettercap - ICMPv6 decoder module
+ *
+ *      Copyright (C) the braindamaged entities collective
+ *      GPL blah-blah-blah
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -38,7 +38,7 @@ FUNC_DECODER(decode_icmp6)
    struct icmp6_hdr *icmp6;
    u_int16 csum;
 
-   icmp6 = (struct icmp6_hdr*)DECODE_DATA;
+   icmp6 = (struct icmp6_hdr *)DECODE_DATA;
 
    PACKET->L4.proto = NL_TYPE_ICMP6;
    /* since ICMPv6 header has no such field */
@@ -52,10 +52,10 @@ FUNC_DECODER(decode_icmp6)
 
    DECODED_LEN = sizeof(struct icmp6_hdr);
 
-   /* this sucked. Now it sucks less. */ 
-   if(GBL_CONF->checksum_check && !GBL_OPTIONS->unoffensive) {
-      if((csum = L4_checksum(PACKET)) != CSUM_RESULT) {
-         if(GBL_CONF->checksum_warning) {
+   /* this sucked. Now it sucks less. */
+   if (GBL_CONF->checksum_check && !GBL_OPTIONS->unoffensive) {
+      if ((csum = L4_checksum(PACKET)) != CSUM_RESULT) {
+         if (GBL_CONF->checksum_warning) {
             char tmp[MAX_ASCII_ADDR_LEN];
             USER_MSG("Invalid ICMPv6 packet from %s : csum [%#x] should be (%#x)\n",
                      ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(icmp6->csum),
@@ -68,49 +68,48 @@ FUNC_DECODER(decode_icmp6)
    /*
     * trying to detect a router
     */
-   switch(icmp6->type) {
-      case ICMP6_ROUTER_ADV:
-      case ICMP6_PKT_TOO_BIG:
+   switch (icmp6->type) {
+   case ICMP6_ROUTER_ADV:
+   case ICMP6_PKT_TOO_BIG:
+      PACKET->PASSIVE.flags |= FP_ROUTER;
+      break;
+   case ICMP6_NEIGH_ADV:
+      if ((*((u_int8 *)icmp6 + 4) & 0x80) == 0x80) {
+         /* Router flag set in neighbor advertisement */
          PACKET->PASSIVE.flags |= FP_ROUTER;
-         break;
-      case ICMP6_NEIGH_ADV:
-         if ((*((u_int8*)icmp6 + 4) & 0x80) == 0x80) {
-            /* Router flag set in neighbor advertisement */
-            PACKET->PASSIVE.flags |= FP_ROUTER;
-            PACKET->PASSIVE.flags |= FP_GATEWAY;
-         }
-         break;
+         PACKET->PASSIVE.flags |= FP_GATEWAY;
+      }
+      break;
    }
 
    hook_point(HOOK_PACKET_ICMP6, po);
 
    /* get the next decoder */
-   next_decoder =  get_decoder(APP_LAYER, PL_DEFAULT);
+   next_decoder = get_decoder(APP_LAYER, PL_DEFAULT);
    EXECUTE_DECODER(next_decoder);
-   
-   if(icmp6->type == ICMP6_NEIGH_SOL || icmp6->type == ICMP6_NEIGH_ADV) {
-      PACKET->L4.options = (u_char*)(icmp6) + 4;
+
+   if (icmp6->type == ICMP6_NEIGH_SOL || icmp6->type == ICMP6_NEIGH_ADV) {
+      PACKET->L4.options = (u_char *)(icmp6) + 4;
       PACKET->L4.optlen = PACKET->L4.len - sizeof(struct icmp6_hdr) - 4;
    }
 
    /*
     * Here come the hooks
     */
-   switch(icmp6->type) {
-      case ICMP6_NEIGH_SOL:
-         hook_point(HOOK_PACKET_ICMP6_NSOL, PACKET);
-         break;
-      case ICMP6_NEIGH_ADV:
-         hook_point(HOOK_PACKET_ICMP6_NADV, PACKET);
-         break;
-      case ICMP6_ECHOREPLY:
-         hook_point(HOOK_PACKET_ICMP6_RPLY, PACKET);
-         break;
-      case ICMP6_BAD_PARAM:
-         hook_point(HOOK_PACKET_ICMP6_PARM, PACKET);
-         break;
+   switch (icmp6->type) {
+   case ICMP6_NEIGH_SOL:
+      hook_point(HOOK_PACKET_ICMP6_NSOL, PACKET);
+      break;
+   case ICMP6_NEIGH_ADV:
+      hook_point(HOOK_PACKET_ICMP6_NADV, PACKET);
+      break;
+   case ICMP6_ECHOREPLY:
+      hook_point(HOOK_PACKET_ICMP6_RPLY, PACKET);
+      break;
+   case ICMP6_BAD_PARAM:
+      hook_point(HOOK_PACKET_ICMP6_PARM, PACKET);
+      break;
    }
 
    return NULL;
 }
-

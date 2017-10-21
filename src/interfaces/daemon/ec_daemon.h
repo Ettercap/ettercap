@@ -1,5 +1,4 @@
 
-
 #ifndef EC_DAEMON_H
 #define EC_DAEMON_H
 
@@ -18,10 +17,8 @@
 /* proto */
 extern void set_daemon_interface(void);
 
-
 #endif
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

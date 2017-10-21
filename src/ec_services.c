@@ -1,24 +1,24 @@
 /*
-    ettercap -- services list module
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-
-*/
+ *  ettercap -- services list module
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ *
+ */
 
 #include <ec.h>
 #include <ec_file.h>
@@ -39,10 +39,9 @@ struct entry {
 
 static void discard_servdb(void);
 int services_init(void);
-char * service_search(u_int32 serv, u_int8 proto);
+char *service_search(u_int32 serv, u_int8 proto);
 
 /*****************************************/
-
 
 static void discard_servdb(void)
 {
@@ -56,10 +55,9 @@ static void discard_servdb(void)
    }
 
    DEBUG_MSG("ATEXIT: discard_servdb");
-   
+
    return;
 }
-
 
 int services_init(void)
 {
@@ -89,26 +87,25 @@ int services_init(void)
          proto = NL_TYPE_UDP;
       else
          continue;
-      
+
       /* skip comments */
       if (strstr(name, "#"))
          continue;
 
       SAFE_CALLOC(s, 1, sizeof(struct entry));
-      
+
       s->name = strdup(name);
       s->serv = htons(serv);
       s->proto = proto;
-      
+
       SLIST_INSERT_HEAD(&serv_head, s, next);
 
       i++;
-
    }
 
    DEBUG_MSG("serv_init -- %d services loaded", i);
    USER_MSG("%4d known services\n", i);
-   
+
    fclose(f);
 
    atexit(discard_servdb);
@@ -117,25 +114,23 @@ int services_init(void)
 }
 
 /*
- * search for a service and 
+ * search for a service and
  * return its name
  */
 
-char * service_search(u_int32 serv, u_int8 proto)
+char *service_search(u_int32 serv, u_int8 proto)
 {
    struct entry *s;
 
    SLIST_FOREACH(s, &serv_head, next) {
       if (s->serv == serv && s->proto == proto)
-         return (s->name);
+         return s->name;
    }
 
    /* empty name for unknown services */
    return "";
 }
 
-
 /* EOF */
 
 // vim:ts=3:expandtab
-

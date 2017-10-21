@@ -1,23 +1,23 @@
 /*
-    mdns_spoof -- ettercap plugin -- spoofs mdns replies
-
-    Copyright (C) Ettercap Development Team
-    
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  mdns_spoof -- ettercap plugin -- spoofs mdns replies
+ *
+ *  Copyright (C) Ettercap Development Team
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>                        /* required for global variables */
 #include <ec_plugins.h>                /* required for plugin ops */
@@ -36,16 +36,16 @@
 #define MDNS_QU_FLAG 0x8000
 
 struct mdns_header {
-    uint16_t id;
-    uint16_t flags;
-    uint16_t questions;
-    uint16_t answer_rrs;
-    uint16_t auth_rrs;
-    uint16_t additional_rrs;
+   uint16_t id;
+   uint16_t flags;
+   uint16_t questions;
+   uint16_t answer_rrs;
+   uint16_t auth_rrs;
+   uint16_t additional_rrs;
 };
 
 struct mdns_spoof_entry {
-   int   type;   /* ns_t_a, ns_t_ptr, ns_t_srv */
+   int type;     /* ns_t_a, ns_t_ptr, ns_t_srv */
    char *name;
    struct ip_addr ip;
    u_int16 port; /* for SRV records */
@@ -66,59 +66,58 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip);
 static int get_spoofed_aaaa(const char *a, struct ip_addr **ip);
 static int get_spoofed_ptr(const char *arpa, char **a, struct ip_addr **ip);
 static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port);
-static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_addr **sender, struct ip_addr **target, u_int8 **tmac , struct ip_addr *reply);
+static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_addr **sender, struct ip_addr **target, u_int8 **tmac, struct ip_addr *reply);
 char *type_str(int type);
 static void mdns_spoof_dump(void);
 
 /* plugin operations */
 
-struct plugin_ops mdns_spoof_ops = { 
+struct plugin_ops mdns_spoof_ops = {
    /* ettercap version MUST be the global EC_VERSION */
-   .ettercap_version =  EC_VERSION,                        
+   .ettercap_version = EC_VERSION,
    /* the name of the plugin */
-   .name =              "mdns_spoof",  
-    /* a short description of the plugin (max 50 chars) */                    
-   .info =              "Sends spoofed mDNS replies",  
-   /* the plugin version. */ 
-   .version =           "1.0",   
+   .name = "mdns_spoof",
+   /* a short description of the plugin (max 50 chars) */
+   .info = "Sends spoofed mDNS replies",
+   /* the plugin version. */
+   .version = "1.0",
    /* activation function */
-   .init =              &mdns_spoof_init,
-   /* deactivation function */                     
-   .fini =              &mdns_spoof_fini,
+   .init = &mdns_spoof_init,
+   /* deactivation function */
+   .fini = &mdns_spoof_fini,
 };
 
 /* this function is called on plugin load */
-int plugin_load(void *handle) 
+int plugin_load(void *handle)
 {
-   /* load the database of spoofed replies (etter.dns) 
+   /* load the database of spoofed replies (etter.dns)
     * return an error if we could not open the file
     */
    if (load_db() != E_SUCCESS)
       return -E_INVALID;
-   
+
    mdns_spoof_dump();
    return plugin_register(handle, &mdns_spoof_ops);
 }
 
-static int mdns_spoof_init(void *dummy) 
+static int mdns_spoof_init(void *dummy)
 {
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
-   /* 
+   /*
     * add the hook in the dissector.
     * this will pass only valid dns packets
     */
    hook_add(HOOK_PROTO_MDNS, &mdns_spoof);
-   
+
    return PLUGIN_RUNNING;
 }
 
-
-static int mdns_spoof_fini(void *dummy) 
+static int mdns_spoof_fini(void *dummy)
 {
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    /* remove the hook */
    hook_del(HOOK_PROTO_MDNS, &mdns_spoof);
@@ -127,7 +126,7 @@ static int mdns_spoof_fini(void *dummy)
 }
 
 /*
- * load the database in the list 
+ * load the database in the list
  */
 static int load_db(void)
 {
@@ -137,31 +136,31 @@ static int load_db(void)
    char *ptr, *ip, *name;
    int lines = 0, type;
    u_int16 port = 0;
-   
+
    /* open the file */
    f = open_data("etc", ETTER_MDNS, FOPEN_READ_TEXT);
    if (f == NULL) {
       USER_MSG("mdns_spoof: Cannot open %s\n", ETTER_MDNS);
       return -E_INVALID;
    }
-         
+
    /* load it in the list */
    while (fgets(line, 128, f)) {
       /* count the lines */
       lines++;
 
       /* trim comments */
-      if ( (ptr = strchr(line, '#')) )
+      if ((ptr = strchr(line, '#')))
          *ptr = '\0';
 
       /* skip empty lines */
       if (!*line || *line == '\r' || *line == '\n')
          continue;
-      
+
       /* strip apart the line */
       if (!parse_line(line, lines, &type, &ip, &port, &name))
          continue;
-        
+
       /* create the entry */
       SAFE_CALLOC(d, 1, sizeof(struct mdns_spoof_entry));
       d->name = strdup(name);
@@ -187,58 +186,56 @@ static int load_db(void)
 /*
  * Parse line on format "<name> <type> <IP-addr>".
  */
-static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p)
+static int parse_line(const char *str, int line, int *type_p, char **ip_p, u_int16 *port_p, char **name_p)
 {
-   static char name[100+1];
+   static char name[100 + 1];
    static char ip[MAX_ASCII_ADDR_LEN];
    static int port;
-   char type[10+1];
+   char type[10 + 1];
 
- DEBUG_MSG("mdns_spoof: %s:%d str '%s'", ETTER_MDNS, line, str); 
+   DEBUG_MSG("mdns_spoof: %s:%d str '%s'", ETTER_MDNS, line, str);
 
-   if (sscanf(str,"%100s %10s %40[^\r\n# ]", name, type, ip) != 3) {
+   if (sscanf(str, "%100s %10s %40[^\r\n# ]", name, type, ip) != 3) {
       USER_MSG("mdns_spoof: %s:%d Invalid entry %s\n", ETTER_MDNS, line, str);
-      return (0);
+      return 0;
    }
 
-   if (!strcasecmp(type,"PTR")) {
-      if (strpbrk(name,"*?[]")) {
+   if (!strcasecmp(type, "PTR")) {
+      if (strpbrk(name, "*?[]")) {
          USER_MSG("mdns_spoof: %s:%d Wildcards in PTR records are not allowed; %s\n",
                   ETTER_MDNS, line, str);
-         return (0);
+         return 0;
       }
       *type_p = ns_t_ptr;
       *name_p = name;
       *ip_p = ip;
-      return (1);
+      return 1;
    }
 
-   if (!strcasecmp(type,"A")) {
+   if (!strcasecmp(type, "A")) {
       *type_p = ns_t_a;
       *name_p = name;
       *ip_p = ip;
-      return (1);
+      return 1;
    }
 
-   if (!strcasecmp(type,"AAAA")) {
+   if (!strcasecmp(type, "AAAA")) {
       *type_p = ns_t_aaaa;
       *name_p = name;
       *ip_p = ip;
-      return (1);
+      return 1;
    }
 
    if (!strcasecmp(type, "SRV")) {
-      /* 
+      /*
        * Additional format scan as SRV records have a different syntax
        */
       static char ip_tmp[MAX_ASCII_ADDR_LEN];
       if (sscanf(ip, "[%40[0-9a-fA-F:.]]:%d", ip_tmp, &port) == 2) {
-         strncpy(ip, ip_tmp, strlen(ip_tmp)+1);
-      }
-      else if (sscanf(ip, "%20[0-9.]:%d", ip_tmp, &port) == 2) {
-         strncpy(ip, ip_tmp, strlen(ip_tmp)+1);
-      }
-      else {
+         strncpy(ip, ip_tmp, strlen(ip_tmp) + 1);
+      } else if (sscanf(ip, "%20[0-9.]:%d", ip_tmp, &port) == 2) {
+         strncpy(ip, ip_tmp, strlen(ip_tmp) + 1);
+      } else {
          USER_MSG("mdns_spoof: %s:%d Unknown syntax for SRV record; %s\n",
                   ETTER_MDNS, line, str);
          return 0;
@@ -259,51 +256,50 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
    }
 
    USER_MSG("mdns_spoof: %s:%d Unknown record type %s\n", ETTER_MDNS, line, type);
-   return (0);
+   return 0;
 }
 
 /*
  * parse the request and return a spoofed response
  */
- static void mdns_spoof(struct packet_object *po)
- {
-    struct mdns_header *mdns;
-    struct iface_env *iface;
-    char name[NS_MAXDNAME];
-    int name_len;
-    u_char *q, *data, *end;;
-    u_int16 class;
-    u_int16 type;
-    int x;
+static void mdns_spoof(struct packet_object *po)
+{
+   struct mdns_header *mdns;
+   struct iface_env *iface;
+   char name[NS_MAXDNAME];
+   int name_len;
+   u_char *q, *data, *end;
+   u_int16 class;
+   u_int16 type;
+   int x;
 
-    mdns = (struct mdns_header *)po->DATA.data;
-    data = (u_char *)(mdns+1);
-    end = (u_char *)mdns + po->DATA.len;
+   mdns = (struct mdns_header *)po->DATA.data;
+   data = (u_char *)(mdns + 1);
+   end = (u_char *)mdns + po->DATA.len;
 
-    q = data;
+   q = data;
 
-    if (mdns->flags == 0x8400 || mdns->answer_rrs > 0)
-    {
-        //We only want queries.
-        return;
-    }
+   if (mdns->flags == 0x8400 || mdns->answer_rrs > 0) {
+      // We only want queries.
+      return;
+   }
 
-    /* Do not forward query */
-    po->flags |= PO_DROPPED; 
+   /* Do not forward query */
+   po->flags |= PO_DROPPED;
 
-    /* set incoming interface as outgoing interface for reply */
-    iface = po->flags & PO_FROMIFACE ? GBL_IFACE : GBL_BRIDGE;
+   /* set incoming interface as outgoing interface for reply */
+   iface = po->flags & PO_FROMIFACE ? GBL_IFACE : GBL_BRIDGE;
 
-    /* process all the questions */
-    for (x = 0; x < mdns->questions; x++) {
+   /* process all the questions */
+   for (x = 0; x < mdns->questions; x++) {
 
-      name_len = dn_expand((u_char*)mdns, end, q, name, sizeof(name));
+      name_len = dn_expand((u_char *)mdns, end, q, name, sizeof(name));
       if (name_len == -1)
-          return;
+         return;
       q = data + name_len;
 
       if (q >= end || name_len == 0)
-        return;
+         return;
 
       NS_GET16(type, q);
       NS_GET16(class, q);
@@ -312,7 +308,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
       if ((class & ~MDNS_QU_FLAG) != ns_c_in)
          return;
 
-      if(type == ns_t_a) {
+      if (type == ns_t_a) {
          struct ip_addr *reply;
          struct ip_addr *sender;
          struct ip_addr *target;
@@ -320,7 +316,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          u_int8 answer[name_len + 10 + 4];
          u_char *p = answer + name_len;
          char tmp[MAX_ASCII_ADDR_LEN];
-         
+
          /* found the reply in the list */
          if (get_spoofed_a(name, &reply) != E_SUCCESS)
             return;
@@ -332,14 +328,14 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
             return;
          }
 
-        /* 
-         * in MDNS the original question is not included 
-         * into the reply packet as with pure DNS - 
-         * fill the buffer with the questioned name of the request
-         * we will append the answer just after the quoted name 
-         */
+         /*
+          * in MDNS the original question is not included
+          * into the reply packet as with pure DNS -
+          * fill the buffer with the questioned name of the request
+          * we will append the answer just after the quoted name
+          */
          memcpy(answer, data, name_len);                  /* name */
-         memcpy(p    , "\x00\x01", 2);                    /* type A */
+         memcpy(p, "\x00\x01", 2);                        /* type A */
          memcpy(p + 2, "\x80\x01", 2);                    /* cache-flush-bit + class */
          memcpy(p + 4, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
          memcpy(p + 8, "\x00\x04", 2);                    /* datalen */
@@ -353,15 +349,15 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
           */
          prep_mdns_reply(po, class, &sender, &target, &tmac, reply);
 
-         /* send the reply back to the multicast or unicast address 
+         /* send the reply back to the multicast or unicast address
           * and set the faked address as the source address for the transport
           */
-         send_mdns_reply(iface, po->L4.src, sender, target, tmac, 
+         send_mdns_reply(iface, po->L4.src, sender, target, tmac,
                          ntohs(mdns->id), answer, sizeof(answer), 1, 0, 0);
-         
+
          USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), ip_addr_ntoa(reply, tmp));
       }
-      if(type == ns_t_aaaa) {
+      if (type == ns_t_aaaa) {
          struct ip_addr *reply;
          struct ip_addr *sender;
          struct ip_addr *target;
@@ -369,7 +365,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          u_int8 answer[name_len + 10 + 16];
          u_char *p = answer + name_len;
          char tmp[MAX_ASCII_ADDR_LEN];
-         
+
          /* found the reply in the list */
          if (get_spoofed_aaaa(name, &reply) != E_SUCCESS)
             return;
@@ -381,14 +377,14 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
             return;
          }
 
-        /* 
-         * in MDNS the original question is not included 
-         * into the reply packet as with pure DNS - 
-         * fill the buffer with the questioned name of the request
-         * we will append the answer just after the quoted name 
-         */
+         /*
+          * in MDNS the original question is not included
+          * into the reply packet as with pure DNS -
+          * fill the buffer with the questioned name of the request
+          * we will append the answer just after the quoted name
+          */
          memcpy(answer, data, name_len);                  /* name */
-         memcpy(p    , "\x00\x1c", 2);                    /* type AAAA */
+         memcpy(p, "\x00\x1c", 2);                        /* type AAAA */
          memcpy(p + 2, "\x80\x01", 2);                    /* cache-flush-bit + class */
          memcpy(p + 4, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
          memcpy(p + 8, "\x00\x10", 2);                    /* datalen */
@@ -402,39 +398,38 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
           */
          prep_mdns_reply(po, class, &sender, &target, &tmac, reply);
 
-         /* send the reply back to the multicast or unicast address 
+         /* send the reply back to the multicast or unicast address
           * and set the faked address as the source address for the transport
           */
-         send_mdns_reply(iface, po->L4.src, sender, target, tmac, 
+         send_mdns_reply(iface, po->L4.src, sender, target, tmac,
                          ntohs(mdns->id), answer, sizeof(answer), 1, 0, 0);
-         
+
          USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), ip_addr_ntoa(reply, tmp));
-       }
-       else if (type == ns_t_ptr) {
+      } else if (type == ns_t_ptr) {
          struct ip_addr *reply;
          struct ip_addr *sender;
          struct ip_addr *target;
          u_int8 *tmac;
          u_int8 answer[name_len + 256];
-         char *a, *p = (char*)answer + name_len;
+         char *a, *p = (char *)answer + name_len;
          int rlen;
-         
+
          /* found the reply in the list */
          if (get_spoofed_ptr(name, &a, &reply) != E_SUCCESS)
             return;
 
-        /* 
-         * in MDNS the original question is not included 
-         * into the reply packet as with pure DNS - 
-         * fill the buffer with the questioned name of the request
-         * we will append the answer just after the quoted name 
-         */
+         /*
+          * in MDNS the original question is not included
+          * into the reply packet as with pure DNS -
+          * fill the buffer with the questioned name of the request
+          * we will append the answer just after the quoted name
+          */
          memcpy(answer, data, name_len);                  /* name */
-         memcpy(p    , "\x00\x0c", 2);                    /* type PTR */
+         memcpy(p, "\x00\x0c", 2);                        /* type PTR */
          memcpy(p + 2, "\x80\x01", 2);                    /* cache-flush-bit + class */
          memcpy(p + 4, "\x00\x00\x0e\x10", 4);            /* TTL (1 hour) */
          /* compress the string into the buffer */
-         rlen = dn_comp(a, (u_char*)p + 10, 256, NULL, NULL);
+         rlen = dn_comp(a, (u_char *)p + 10, 256, NULL, NULL);
          /* put the length before the dn_comp'd string */
          p += 8;
          NS_PUT16(rlen, p);
@@ -448,12 +443,11 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          prep_mdns_reply(po, class, &sender, &target, &tmac, reply);
 
          /* send the fake reply */
-         send_mdns_reply(iface, po->L4.src, sender, target, tmac, 
+         send_mdns_reply(iface, po->L4.src, sender, target, tmac,
                          ntohs(mdns->id), answer, name_len + 10 + rlen, 1, 0, 0);
-         
+
          USER_MSG("mdns_spoof: [%s %s] spoofed to [%s]\n", name, type_str(type), a);
-      }
-      else if (type == ns_t_srv) {
+      } else if (type == ns_t_srv) {
          struct ip_addr *reply;
          struct ip_addr *sender;
          struct ip_addr *target;
@@ -466,17 +460,16 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          u_int16 port;
          int dn_offset = 0;
 
-
          /* found the reply in the list */
-         if (get_spoofed_srv(name, &reply, &port) != E_SUCCESS) 
+         if (get_spoofed_srv(name, &reply, &port) != E_SUCCESS)
             return;
 
          /*
           * to refer the target to a proper domain name, we have to strip the
           * service and protocol label from the questioned domain name
           */
-         dn_offset += *(data+dn_offset) + 1; /* first label (e.g. _ldap)*/
-         dn_offset += *(data+dn_offset) + 1; /* second label (e.g. _tcp) */
+         dn_offset += *(data + dn_offset) + 1; /* first label (e.g. _ldap)*/
+         dn_offset += *(data + dn_offset) + 1; /* second label (e.g. _tcp) */
 
          /* avoid offset overrun */
          if (dn_offset + 12 > 255) {
@@ -487,60 +480,59 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
          tgtoffset[1] = 12 + dn_offset; /* offset to the actual domain name */
 
          /*
-          * to inject the spoofed IP address in the additional section, 
-          * we have set the offset pointing to the spoofed domain name set 
-          * below (in turn, after the domain name [variable length] in the 
+          * to inject the spoofed IP address in the additional section,
+          * we have set the offset pointing to the spoofed domain name set
+          * below (in turn, after the domain name [variable length] in the
           * question section)
           */
          srvoffset[0] = 0xc0; /* offset byte */
          srvoffset[1] = 12 + name_len + 16; /* offset to the answer */
 
-        /* 
-         * in MDNS the original question is not included 
-         * into the reply packet as with pure DNS - 
-         * fill the buffer with the questioned name of the request
-         * we will append the answer just after the quoted name 
-         */
+         /*
+          * in MDNS the original question is not included
+          * into the reply packet as with pure DNS -
+          * fill the buffer with the questioned name of the request
+          * we will append the answer just after the quoted name
+          */
          memcpy(answer, data, name_len);              /* name */
-         memcpy(p    , "\x00\x21", 2);                /* type SRV */
+         memcpy(p, "\x00\x21", 2);                    /* type SRV */
          memcpy(p + 2, "\x80\x01", 2);                /* class IN */
          memcpy(p + 4, "\x00\x00\x0e\x10", 4);        /* TTL (1 hour) */
          memcpy(p + 8, "\x00\x0c", 2);                /* data length */
          memcpy(p + 10, "\x00\x00", 2);               /* priority */
          memcpy(p + 12, "\x00\x00", 2);               /* weight */
-         p+=14; 
-         NS_PUT16(port, p);                           /* port */ 
-         p-=16;             
-         /* 
+         p += 14;
+         NS_PUT16(port, p);                           /* port */
+         p -= 16;
+         /*
           * add "srv." in front of the stripped domain
-          * name and resolve it in the additional 
+          * name and resolve it in the additional
           * record (here `srvoffset' is pointing at)
           */
          memcpy(p + 16, "\x03\x73\x72\x76", 4);       /* target */
-         memcpy(p + 20, tgtoffset,2);                 /* compressed name offset */
-     
+         memcpy(p + 20, tgtoffset, 2);                 /* compressed name offset */
+
          /* add the additional record for the spoofed IPv4 address*/
          if (ntohs(reply->addr_type) == AF_INET) {
-             memcpy(p + 22, srvoffset, 2);            /* compressed name offset */
-             memcpy(p + 24, "\x00\x01", 2);           /* type A */
-             memcpy(p + 26, "\x80\x01", 2);           /* class */
-             memcpy(p + 28, "\x00\x00\x0e\x10", 4);   /* TTL (1 hour) */
-             memcpy(p + 32, "\x00\x04", 2);           /* datalen */
-             ip_addr_cpy(p + 34, reply);              /* data */
-             memset(p + 38, 0, 12);                   /* padding */
+            memcpy(p + 22, srvoffset, 2);             /* compressed name offset */
+            memcpy(p + 24, "\x00\x01", 2);            /* type A */
+            memcpy(p + 26, "\x80\x01", 2);            /* class */
+            memcpy(p + 28, "\x00\x00\x0e\x10", 4);    /* TTL (1 hour) */
+            memcpy(p + 32, "\x00\x04", 2);            /* datalen */
+            ip_addr_cpy(p + 34, reply);               /* data */
+            memset(p + 38, 0, 12);                    /* padding */
          }
          /* add the additional record for the spoofed IPv6 address*/
          else if (ntohs(reply->addr_type) == AF_INET6) {
-             memcpy(p + 22, srvoffset, 2);            /* compressed name offset */
-             memcpy(p + 24, "\x00\x1c", 2);           /* type AAAA */
-             memcpy(p + 26, "\x80\x01", 2);           /* class */
-             memcpy(p + 28, "\x00\x00\x0e\x10", 4);   /* TTL (1 hour) */
-             memcpy(p + 32, "\x00\x10", 2);           /* datalen */
-             ip_addr_cpy(p + 34, reply);              /* data */
-         }
-         else {
-             /* IP address not valid - abort */
-             return;
+            memcpy(p + 22, srvoffset, 2);             /* compressed name offset */
+            memcpy(p + 24, "\x00\x1c", 2);            /* type AAAA */
+            memcpy(p + 26, "\x80\x01", 2);            /* class */
+            memcpy(p + 28, "\x00\x00\x0e\x10", 4);    /* TTL (1 hour) */
+            memcpy(p + 32, "\x00\x10", 2);            /* datalen */
+            ip_addr_cpy(p + 34, reply);               /* data */
+         } else {
+            /* IP address not valid - abort */
+            return;
          }
 
          /*
@@ -551,18 +543,16 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
           */
          prep_mdns_reply(po, class, &sender, &target, &tmac, reply);
 
-         /* send the reply back to the multicast or unicast address 
+         /* send the reply back to the multicast or unicast address
           * and set the faked address as the source address for the transport
           */
-         send_mdns_reply(iface, po->L4.src, sender, target, tmac, 
+         send_mdns_reply(iface, po->L4.src, sender, target, tmac,
                          ntohs(mdns->id), answer, sizeof(answer), 2, 0, 0);
 
          USER_MSG("mdns_spoof: SRV [%s] spoofed to [%s:%d]\n", name, ip_addr_ntoa(reply, tmp), port);
       }
-    }
-
-
- }
+   }
+}
 
 /*
  * return the ip address for the name - IPv4
@@ -576,11 +566,11 @@ static int get_spoofed_a(const char *a, struct ip_addr **ip)
 
          /* return the pointer to the struct */
          *ip = &d->ip;
-         
+
          return E_SUCCESS;
       }
    }
-   
+
    return -E_NOTFOUND;
 }
 
@@ -596,16 +586,16 @@ static int get_spoofed_aaaa(const char *a, struct ip_addr **ip)
 
          /* return the pointer to the struct */
          *ip = &d->ip;
-         
+
          return E_SUCCESS;
       }
    }
-   
+
    return -E_NOTFOUND;
 }
 
-/* 
- * return the name for the ip address 
+/*
+ * return the name for the ip address
  */
 static int get_spoofed_ptr(const char *arpa, char **a, struct ip_addr **ip)
 {
@@ -626,65 +616,64 @@ static int get_spoofed_ptr(const char *arpa, char **a, struct ip_addr **ip)
 
    if (strncmp(arpa + len - v4len, v4tld, v4len) == 0) {
       /* parses the arpa format */
-      if (sscanf(arpa, "%d.%d.%d.%d.in-addr.arpa", 
-               &oct[3], &oct[2], &oct[1], &oct[0]) != 4)
+      if (sscanf(arpa, "%d.%d.%d.%d.in-addr.arpa",
+                 &oct[3], &oct[2], &oct[1], &oct[0]) != 4)
          return -E_INVALID;
 
       /* collect octets */
-      ipv4[0] = oct[0] & 0xff; 
-      ipv4[1] = oct[1] & 0xff; 
-      ipv4[2] = oct[2] & 0xff; 
+      ipv4[0] = oct[0] & 0xff;
+      ipv4[1] = oct[1] & 0xff;
+      ipv4[2] = oct[2] & 0xff;
       ipv4[3] = oct[3] & 0xff;
 
       /* init the ip_addr structure */
       ip_addr_init(&ptr, AF_INET, ipv4);
-
    }
    /* check the top level domain of the PTR query - IPv6 */
    else if (strncmp(arpa + len - v6len, v6tld, v6len) == 0) {
-       /* parses the ip6.arpa format for IPv6 reverse pointer */
-       if (sscanf(arpa, "%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x."
-                        "%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x."
-                        "%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x."
-                        "%1x.%1x.%1x.%1x.%1x.ip6.arpa", 
-                        &oct[31], &oct[30], &oct[29], &oct[28],
-                        &oct[27], &oct[26], &oct[25], &oct[24],
-                        &oct[23], &oct[22], &oct[21], &oct[20],
-                        &oct[19], &oct[18], &oct[17], &oct[16],
-                        &oct[15], &oct[14], &oct[13], &oct[12],
-                        &oct[11], &oct[10], &oct[9],  &oct[8],
-                        &oct[7],  &oct[6],  &oct[5],  &oct[4],
-                        &oct[3],  &oct[2],  &oct[1],  &oct[0]) != 32) {
-          return -E_INVALID;
-       }
-       
-       /* collect octets */
-       ipv6[0] = (oct[0] << 4) | oct[1];
-       ipv6[1] = (oct[2] << 4) | oct[3];
-       ipv6[2] = (oct[4] << 4) | oct[5];
-       ipv6[3] = (oct[6] << 4) | oct[7];
-       ipv6[4] = (oct[8] << 4) | oct[9];
-       ipv6[5] = (oct[10] << 4) | oct[11];
-       ipv6[6] = (oct[12] << 4) | oct[13];
-       ipv6[7] = (oct[14] << 4) | oct[15];
-       ipv6[8] = (oct[16] << 4) | oct[17];
-       ipv6[9] = (oct[18] << 4) | oct[19];
-       ipv6[10] = (oct[20] << 4) | oct[21];
-       ipv6[11] = (oct[22] << 4) | oct[23];
-       ipv6[12] = (oct[24] << 4) | oct[25];
-       ipv6[13] = (oct[26] << 4) | oct[27];
-       ipv6[14] = (oct[28] << 4) | oct[29];
-       ipv6[15] = (oct[30] << 4) | oct[31];
+      /* parses the ip6.arpa format for IPv6 reverse pointer */
+      if (sscanf(arpa, "%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x."
+                       "%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x."
+                       "%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x.%1x."
+                       "%1x.%1x.%1x.%1x.%1x.ip6.arpa",
+                 &oct[31], &oct[30], &oct[29], &oct[28],
+                 &oct[27], &oct[26], &oct[25], &oct[24],
+                 &oct[23], &oct[22], &oct[21], &oct[20],
+                 &oct[19], &oct[18], &oct[17], &oct[16],
+                 &oct[15], &oct[14], &oct[13], &oct[12],
+                 &oct[11], &oct[10], &oct[9], &oct[8],
+                 &oct[7], &oct[6], &oct[5], &oct[4],
+                 &oct[3], &oct[2], &oct[1], &oct[0]) != 32)
+      {
+         return -E_INVALID;
+      }
 
-       /* init the ip_addr structure */
-       ip_addr_init(&ptr, AF_INET6, ipv6);
+      /* collect octets */
+      ipv6[0] = (oct[0] << 4) | oct[1];
+      ipv6[1] = (oct[2] << 4) | oct[3];
+      ipv6[2] = (oct[4] << 4) | oct[5];
+      ipv6[3] = (oct[6] << 4) | oct[7];
+      ipv6[4] = (oct[8] << 4) | oct[9];
+      ipv6[5] = (oct[10] << 4) | oct[11];
+      ipv6[6] = (oct[12] << 4) | oct[13];
+      ipv6[7] = (oct[14] << 4) | oct[15];
+      ipv6[8] = (oct[16] << 4) | oct[17];
+      ipv6[9] = (oct[18] << 4) | oct[19];
+      ipv6[10] = (oct[20] << 4) | oct[21];
+      ipv6[11] = (oct[22] << 4) | oct[23];
+      ipv6[12] = (oct[24] << 4) | oct[25];
+      ipv6[13] = (oct[26] << 4) | oct[27];
+      ipv6[14] = (oct[28] << 4) | oct[29];
+      ipv6[15] = (oct[30] << 4) | oct[31];
 
+      /* init the ip_addr structure */
+      ip_addr_init(&ptr, AF_INET6, ipv6);
    }
 
    /* search in the list */
    SLIST_FOREACH(d, &mdns_spoof_head, next) {
-      /* 
-       * we cannot return whildcards in the reply, 
+      /*
+       * we cannot return whildcards in the reply,
        * so skip the entry if the name contains a '*'
        */
       if (d->type == ns_t_ptr && !ip_addr_cmp(&ptr, &d->ip)) {
@@ -692,44 +681,44 @@ static int get_spoofed_ptr(const char *arpa, char **a, struct ip_addr **ip)
          /* return the pointer to the name */
          *a = d->name;
          *ip = &d->ip;
-         
+
          return E_SUCCESS;
       }
    }
-   
+
    return -E_NOTFOUND;
 }
 
-static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port) 
+static int get_spoofed_srv(const char *name, struct ip_addr **ip, u_int16 *port)
 {
-    struct mdns_spoof_entry *d;
+   struct mdns_spoof_entry *d;
 
-    SLIST_FOREACH(d, &mdns_spoof_head, next) {
-        if (d->type == ns_t_srv && match_pattern(name, d->name)) {
-            /* return the pointer to the struct */
-            *ip = &d->ip;
-            *port = d->port;
+   SLIST_FOREACH(d, &mdns_spoof_head, next) {
+      if (d->type == ns_t_srv && match_pattern(name, d->name)) {
+         /* return the pointer to the struct */
+         *ip = &d->ip;
+         *port = d->port;
 
-            return E_SUCCESS;
-        }
-    }
+         return E_SUCCESS;
+      }
+   }
 
-    return -E_NOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*
- * define sender address and target address 
+ * define sender address and target address
  */
-static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_addr **sender, 
-                      struct ip_addr **target, u_int8 **tmac , struct ip_addr *reply)
+static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_addr **sender,
+                           struct ip_addr **target, u_int8 **tmac, struct ip_addr *reply)
 {
    char tmp[MAX_ASCII_ADDR_LEN];
 
-   if ((class & MDNS_QU_FLAG) == 0x8000 && ip_addr_is_multicast(&po->L3.dst)) { 
+   if ((class & MDNS_QU_FLAG) == 0x8000 && ip_addr_is_multicast(&po->L3.dst)) {
       /* received multicast but unicast response requested */
       if (reply != NULL && reply->addr_type == po->L3.src.addr_type) {
-         /* 
-          * address family of spoofed address matches address family 
+         /*
+          * address family of spoofed address matches address family
           * of the transport protocol - we use it as the sender
           */
          *sender = reply;
@@ -737,10 +726,9 @@ static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_ad
          *tmac = po->L2.src;
 
          return E_SUCCESS;
-
       } else {
          /*
-          * we can not use the spoofed address as the sender 
+          * we can not use the spoofed address as the sender
           * a random link-local address need to be generated
           */
          if (ip_addr_random(&po->L3.dst, ntohs(po->L3.src.addr_type)) == E_SUCCESS) {
@@ -751,11 +739,10 @@ static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_ad
             *tmac = po->L2.src;
 
             return E_SUCCESS;
-
          } else {
             DEBUG_MSG("mdns_spoof: Random sender IP generation failed\n");
-            DEBUG_MSG("mdns_spoof: Unknown address family: %s \n", ip_addr_ntoa(&po->L3.src,tmp));
-            
+            DEBUG_MSG("mdns_spoof: Unknown address family: %s \n", ip_addr_ntoa(&po->L3.src, tmp));
+
             return -E_NOADDRESS;
          }
       }
@@ -766,12 +753,11 @@ static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_ad
       *tmac = po->L2.src;
 
       return E_SUCCESS;
-
-   } else { 
+   } else {
       /* normal multicast reply */
       if (reply != NULL && reply->addr_type == po->L3.dst.addr_type) {
-         /* 
-          * send the reply back to the multicast address and set 
+         /*
+          * send the reply back to the multicast address and set
           * the spoofed address also as the source ip address
           */
          *sender = reply;
@@ -779,16 +765,15 @@ static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_ad
          *tmac = po->L2.dst;
 
          return E_SUCCESS;
-
       } else {
          /*
-          * we can not use the spoofed address as the sender 
+          * we can not use the spoofed address as the sender
           * a random link-local address need to be generated
           */
          if (ip_addr_random(&po->L3.src, ntohs(po->L3.src.addr_type)) == E_SUCCESS) {
             DEBUG_MSG("mdns_spoof: random IP generated: %s\n", ip_addr_ntoa(&po->L3.src, tmp));
 
-            /* 
+            /*
              * send the reply back to the multicast address and set the
              * faked address as the source
              */
@@ -797,26 +782,24 @@ static int prep_mdns_reply(struct packet_object *po, u_int16 class, struct ip_ad
             *tmac = po->L2.dst;
 
             return E_SUCCESS;
-
          } else {
             DEBUG_MSG("mdns_spoof: Random sender IP generation failed\n");
-            DEBUG_MSG("mdns_spoof: Unknown address family: %s \n", ip_addr_ntoa(&po->L3.src,tmp));
-            
+            DEBUG_MSG("mdns_spoof: Unknown address family: %s \n", ip_addr_ntoa(&po->L3.src, tmp));
+
             return -E_NOADDRESS;
          }
       }
    }
 }
 
-
-char *type_str (int type)
+char *type_str(int type)
 {
-   return (type == ns_t_a    ? "A" :
-           type == ns_t_aaaa ? "AAAA" :
-           type == ns_t_ptr  ? "PTR" :
-           type == ns_t_mx   ? "MX" :
-           type == ns_t_wins ? "WINS" :
-           type == ns_t_srv   ? "SRV" : "?");
+   return type == ns_t_a ? "A" :
+          type == ns_t_aaaa ? "AAAA" :
+          type == ns_t_ptr ? "PTR" :
+          type == ns_t_mx ? "MX" :
+          type == ns_t_wins ? "WINS" :
+          type == ns_t_srv ? "SRV" : "?";
 }
 
 static void mdns_spoof_dump(void)
@@ -828,29 +811,22 @@ static void mdns_spoof_dump(void)
    SLIST_FOREACH(d, &mdns_spoof_head, next) {
       if (ntohs(d->ip.addr_type) == AF_INET) {
          if (d->type == ns_t_srv) {
-            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv4", 
-                      d->name, ip_addr_ntoa(&d->ip, tmp), d->port , type_str(d->type));
-         }
-         else {
-            DEBUG_MSG("  %s -> [%s], type %s, family IPv4", 
+            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv4",
+                      d->name, ip_addr_ntoa(&d->ip, tmp), d->port, type_str(d->type));
+         } else {
+            DEBUG_MSG("  %s -> [%s], type %s, family IPv4",
                       d->name, ip_addr_ntoa(&d->ip, tmp), type_str(d->type));
          }
-      }
-      else if (ntohs(d->ip.addr_type) == AF_INET6) {
+      } else if (ntohs(d->ip.addr_type) == AF_INET6) {
          if (d->type == ns_t_srv) {
-            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv6", 
-                      d->name, ip_addr_ntoa(&d->ip, tmp), d->port , type_str(d->type));
-         }
-         else {
-            DEBUG_MSG("  %s -> [%s], type %s, family IPv6", 
+            DEBUG_MSG("  %s -> [%s:%d], type %s, family IPv6",
+                      d->name, ip_addr_ntoa(&d->ip, tmp), d->port, type_str(d->type));
+         } else {
+            DEBUG_MSG("  %s -> [%s], type %s, family IPv6",
                       d->name, ip_addr_ntoa(&d->ip, tmp), type_str(d->type));
          }
-      }
-      else
-      {
-         DEBUG_MSG("  %s -> ??", d->name);   
+      } else {
+         DEBUG_MSG("  %s -> ??", d->name);
       }
    }
 }
-
-

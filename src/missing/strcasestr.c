@@ -1,13 +1,13 @@
 
 /*
  * silly implementation for the strcasestr funcion.
- * 
+ *
  */
 
 #include <ec.h>
 
 char *strcasestr(const char *hailstack, const char *needle);
-   
+
 char *strcasestr(const char *hailstack, const char *needle)
 {
    register int lneed = strlen(needle);
@@ -23,4 +23,3 @@ char *strcasestr(const char *hailstack, const char *needle)
 }
 
 /* EOF */
-

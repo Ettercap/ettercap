@@ -1,23 +1,23 @@
 /*
-    ettercap -- Raw IP decoder module
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- Raw IP decoder module
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -44,15 +44,14 @@ void __init rawip_init(void)
    add_aligner(IL_TYPE_RAWIP, align_rawip);
 }
 
-
 FUNC_DECODER(decode_rawip)
 {
    FUNC_DECODER_PTR(next_decoder);
 
    DECODED_LEN = 0;
 
-   /* 
-    * there is no L2 header, it is raw ip, 
+   /*
+    * there is no L2 header, it is raw ip,
     * so skip the L2 and invoke directly
     * the L3 dissector
     */
@@ -60,7 +59,7 @@ FUNC_DECODER(decode_rawip)
    PACKET->L2.proto = IL_TYPE_RAWIP;
    PACKET->L2.len = DECODED_LEN;
 
-   next_decoder =  get_decoder(NET_LAYER, LL_TYPE_IP);
+   next_decoder = get_decoder(NET_LAYER, LL_TYPE_IP);
    EXECUTE_DECODER(next_decoder);
 
    return NULL;
@@ -78,4 +77,3 @@ FUNC_ALIGNER(align_rawip)
 /* EOF */
 
 // vim:ts=3:expandtab
-

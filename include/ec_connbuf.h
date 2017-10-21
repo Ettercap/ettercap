@@ -33,10 +33,8 @@ EC_API_EXTERN int connbuf_add(struct conn_buf *cb, struct packet_object *po);
 EC_API_EXTERN void connbuf_wipe(struct conn_buf *cb);
 EC_API_EXTERN int connbuf_print(struct conn_buf *cb, void (*)(u_char *, size_t, struct ip_addr *));
 
-
 #endif
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -1,23 +1,23 @@
 /*
-    ettercap -- GTK+ GUI
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- GTK+ GUI
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_gtk.h>
@@ -36,8 +36,8 @@ void gtkui_create_menu(int live)
    GClosure *closure = NULL;
    gint keyval;
    GdkModifierType mods;
-   
-   const gchar *menu_structure = 
+
+   const gchar *menu_structure =
       "<ui>"
       "  <menubar name='MenuBar'>"
       "     <menu name='StartMenu' action='StartMenuAction'>"
@@ -116,12 +116,11 @@ void gtkui_create_menu(int live)
       "  </menubar>"
       "</ui>";
 
-
    GtkActionEntry start_menu_items[] = {
       /* Start Menu */
       {
-         "StartMenuAction", NULL, 
-         "_Start", NULL, 
+         "StartMenuAction", NULL,
+         "_Start", NULL,
          NULL, NULL
       },
 
@@ -295,7 +294,7 @@ void gtkui_create_menu(int live)
       },
 #endif
 
-      { 
+      {
          "StopMitmAttacksAction", NULL,
          "Stop mitm attack(s)", NULL,
          NULL, G_CALLBACK(gtkui_mitm_stop)
@@ -442,7 +441,7 @@ void gtkui_create_menu(int live)
    DEBUG_MSG("gtk_create_menu");
 
    /* remove old menu, it will be automatically destroyed by gtk_main */
-   vbox = gtk_bin_get_child(GTK_BIN (window));
+   vbox = gtk_bin_get_child(GTK_BIN(window));
    main_menu = gtk_ui_manager_get_widget(menu_manager, "/MenuBar");
    gtk_widget_hide(main_menu);
    gtk_ui_manager_remove_ui(menu_manager, merge_id);
@@ -484,28 +483,26 @@ void gtkui_create_menu(int live)
    }
 
    /* Some hidden accellerators */
-   accel_group = gtk_accel_group_new ();
+   accel_group = gtk_accel_group_new();
    closure = g_cclosure_new(G_CALLBACK(gtkui_exit), NULL, NULL);
    gtk_accelerator_parse("<control>X", &keyval, &mods);
    gtk_accel_group_connect(accel_group, keyval, mods, 0, closure);
    gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
    gtk_window_add_accel_group(GTK_WINDOW(window), gtk_ui_manager_get_accel_group(menu_manager));
 
-   
-
-   if(GBL_OPTIONS->reversed) {
+   if (GBL_OPTIONS->reversed) {
       GBL_OPTIONS->reversed = 0;
       action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/TargetsMenu/ReverseMatching");
       gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
-   if(GBL_OPTIONS->resolve) {
+   if (GBL_OPTIONS->resolve) {
       GBL_OPTIONS->resolve = 0;
       action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/ViewMenu/ResolveIpAddresses");
       gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
-   if(GBL_OPTIONS->compress) {
+   if (GBL_OPTIONS->compress) {
       GBL_OPTIONS->compress = 0;
       action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/LoggingMenu/LogCompressed");
       gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
@@ -526,7 +523,6 @@ void gtkui_create_menu(int live)
    main_menu = gtk_ui_manager_get_widget(menu_manager, "/MenuBar");
    gtk_box_pack_start(GTK_BOX(vbox), main_menu, FALSE, FALSE, 0);
    gtk_widget_show(main_menu);
-   
 }
 
 void gtkui_create_tab_menu(void)
@@ -536,16 +532,16 @@ void gtkui_create_tab_menu(void)
    GtkActionGroup *tabactions;
    GError *error = NULL;
 
-   static gchar *tab_menu_structure = 
-       "<ui>"
-       "   <popup name='NoteBook'>"
-       "      <menuitem name='DetachPage' action='DetachPageAction' />"
-       "      <menuitem name='ClosePage' action='ClosePageAction' />"
-       "      <separator />"
-       "      <menuitem name='NextPage' action='NextPageAction' />"
-       "      <menuitem name='PreviousPage' action='PreviousPageAction' />"
-       "   </popup>"
-       "</ui>";
+   static gchar *tab_menu_structure =
+      "<ui>"
+      "   <popup name='NoteBook'>"
+      "      <menuitem name='DetachPage' action='DetachPageAction' />"
+      "      <menuitem name='ClosePage' action='ClosePageAction' />"
+      "      <separator />"
+      "      <menuitem name='NextPage' action='NextPageAction' />"
+      "      <menuitem name='PreviousPage' action='PreviousPageAction' />"
+      "   </popup>"
+      "</ui>";
 
    GtkActionEntry tab_menu_items[] = {
       {
@@ -581,9 +577,9 @@ void gtkui_create_tab_menu(void)
    gtk_ui_manager_insert_action_group(tab_menu_manager, tabactions, 0);
    gtk_ui_manager_add_ui_from_string(tab_menu_manager, tab_menu_structure, -1, &error);
    if (error) {
-       g_message("building tab menu failed: %s", error->message);
-       g_error_free(error);
-       error = NULL;
+      g_message("building tab menu failed: %s", error->message);
+      g_error_free(error);
+      error = NULL;
    }
 
    /* Add Accelerators */
@@ -594,8 +590,6 @@ void gtkui_create_tab_menu(void)
    g_signal_connect(G_OBJECT(notebook), "button-press-event", G_CALLBACK(gtkui_context_menu), context);
 }
 
-
 /* EOF */
 
 // vim:ts=3:expandtab
-

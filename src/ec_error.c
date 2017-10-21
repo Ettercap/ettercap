@@ -1,23 +1,23 @@
 /*
-    ettercap -- error handling module
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- error handling module
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_ui.h>
@@ -46,20 +46,19 @@ void error_msg(char *file, const char *function, int line, char *message, ...)
 #else
    err_code = errno;
 #endif
-   
 
    va_start(ap, message);
    vsnprintf(errmsg, ERROR_MSG_LEN, message, ap);
    va_end(ap);
 
-   DEBUG_MSG("ERROR : %d, %s\n[%s:%s:%d] %s \n",  err_code, strerror(err_code),
-                   file, function, line, errmsg );
-   
+   DEBUG_MSG("ERROR : %d, %s\n[%s:%s:%d] %s \n", err_code, strerror(err_code),
+             file, function, line, errmsg);
+
    /* close the interface and display the error */
    ui_cleanup();
-  
-   fprintf(stderr, "ERROR : %d, %s\n[%s:%s:%d]\n\n %s \n\n",  err_code, strerror(err_code),
-                   file, function, line, errmsg );
+
+   fprintf(stderr, "ERROR : %d, %s\n[%s:%s:%d]\n\n %s \n\n", err_code, strerror(err_code),
+           file, function, line, errmsg);
 
    clean_exit(-err_code);
 }
@@ -73,7 +72,6 @@ void warn_msg(char *file, const char *function, int line, char *message, ...)
    va_list ap;
    char warnmsg[ERROR_MSG_LEN + 1];
 
-
    va_start(ap, message);
    vsnprintf(warnmsg, ERROR_MSG_LEN, message, ap);
    va_end(ap);
@@ -81,7 +79,6 @@ void warn_msg(char *file, const char *function, int line, char *message, ...)
    DEBUG_MSG("WARNING: [%s:%s:%d] %s \n", file, function, line, warnmsg);
 
    fprintf(stdout, "WARNING: [%s:%s:%d]\n\n %s \n\n", file, function, line, warnmsg);
-
 }
 
 /*
@@ -116,18 +113,16 @@ void fatal_error(char *message, ...)
 
 void bug(char *file, const char *function, int line, char *message)
 {
-   DEBUG_MSG("BUG : [%s:%s:%d] %s \n", file, function, line, message );
-   
+   DEBUG_MSG("BUG : [%s:%s:%d] %s \n", file, function, line, message);
+
    /* close the interface and display the error */
    ui_cleanup();
-  
-   fprintf(stderr, "\n\nBUG at [%s:%s:%d]\n\n %s \n\n", file, function, line, message );
+
+   fprintf(stderr, "\n\nBUG at [%s:%s:%d]\n\n %s \n\n", file, function, line, message);
 
    clean_exit(-666);
 }
 
-
 /* EOF */
 
 // vim:ts=3:expandtab
-

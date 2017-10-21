@@ -1,25 +1,25 @@
 /*
-    ettercap -- dissector for MongoDB authenctication protocol -- TCP 1521
-
-    Copyright (C) Dhiru Kholia (dhiru at openwall.com)
-
-    Tested with MongoDB 2.2.1 on Arch Linux (November 2012)
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-*/
+ *  ettercap -- dissector for MongoDB authenctication protocol -- TCP 1521
+ *
+ *  Copyright (C) Dhiru Kholia (dhiru at openwall.com)
+ *
+ *  Tested with MongoDB 2.2.1 on Arch Linux (November 2012)
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -62,11 +62,11 @@ FUNC_DECODER(dissector_mongodb)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct mongodb_status *conn_status;
 
-   //suppress unused warning
+   // suppress unused warning
    (void)end;
-   (void) DECODE_DATA; 
-   (void) DECODE_DATALEN;
-   (void) DECODED_LEN;
+   (void)DECODE_DATA;
+   (void)DECODE_DATALEN;
+   (void)DECODED_LEN;
 
    if (FROM_SERVER("mongodb", PACKET)) {
       if (PACKET->DATA.len < 13)
@@ -75,9 +75,9 @@ FUNC_DECODER(dissector_mongodb)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_mongodb));
       /* if the session does not exist... */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
-         unsigned char *noncep  = memmem(ptr, PACKET->DATA.len, "nonce", 5);
-         unsigned char *gnoncep  = memmem(ptr, PACKET->DATA.len, "getnonce\x00", 9);
-         unsigned char *keyp  = memmem(ptr, PACKET->DATA.len, "authenticate\x00", 12);
+         unsigned char *noncep = memmem(ptr, PACKET->DATA.len, "nonce", 5);
+         unsigned char *gnoncep = memmem(ptr, PACKET->DATA.len, "getnonce\x00", 9);
+         unsigned char *keyp = memmem(ptr, PACKET->DATA.len, "authenticate\x00", 12);
          if (noncep && !gnoncep && !keyp) {
             /* create the new session */
             dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_mongodb));
@@ -85,13 +85,13 @@ FUNC_DECODER(dissector_mongodb)
             /* remember the state (used later) */
             SAFE_CALLOC(s->data, 1, sizeof(struct mongodb_status));
 
-            conn_status = (struct mongodb_status *) s->data;
+            conn_status = (struct mongodb_status *)s->data;
             conn_status->status = WAIT_RESPONSE;
 
             /* find and change nonce  */
             unsigned char *p = noncep;
             p += (5 + 1 + 4); /* skip over "nonce" + '\x00; + length */
-            strncpy((char*)conn_status->salt, (char*)p, 16);
+            strncpy((char *)conn_status->salt, (char *)p, 16);
             conn_status->salt[16] = 0;
 #ifdef MITM
             memset(p, 0, 16);
@@ -100,42 +100,40 @@ FUNC_DECODER(dissector_mongodb)
             /* save the session */
             session_put(s);
          }
-      }
-      else {
-              if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
-                      conn_status = (struct mongodb_status *) s->data;
-                      if (PACKET->DATA.len < 16)
-                              return NULL;
-                      unsigned char *res = memmem(ptr, PACKET->DATA.len, "fails", 5);
-                      unsigned char *gres = memmem(ptr, PACKET->DATA.len, "readOnly", 8);
-                      if (conn_status->status == WAIT_RESULT && res) {
-                              DISSECT_MSG("Login to %s-%d as %s failed!\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), conn_status->username);
-                              dissect_wipe_session(PACKET, DISSECT_CODE(dissector_mongodb));
-                      }
-                      else if (gres) {
-                              DISSECT_MSG("Login to %s-%d as %s succeeded!\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), conn_status->username) ;
-                              dissect_wipe_session(PACKET, DISSECT_CODE(dissector_mongodb));
-                      }
-              }
+      } else {
+         if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
+            conn_status = (struct mongodb_status *)s->data;
+            if (PACKET->DATA.len < 16)
+               return NULL;
+            unsigned char *res = memmem(ptr, PACKET->DATA.len, "fails", 5);
+            unsigned char *gres = memmem(ptr, PACKET->DATA.len, "readOnly", 8);
+            if (conn_status->status == WAIT_RESULT && res) {
+               DISSECT_MSG("Login to %s-%d as %s failed!\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), conn_status->username);
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_mongodb));
+            } else if (gres) {
+               DISSECT_MSG("Login to %s-%d as %s succeeded!\n", ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), conn_status->username);
+               dissect_wipe_session(PACKET, DISSECT_CODE(dissector_mongodb));
+            }
+         }
       }
    } else {
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_mongodb));
 
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
-         conn_status = (struct mongodb_status *) s->data;
+         conn_status = (struct mongodb_status *)s->data;
          if (PACKET->DATA.len < 16)
-                 return NULL;
+            return NULL;
 
-         unsigned char *noncep  = memmem(ptr, PACKET->DATA.len, "nonce", 5);
-         unsigned char *keyp  = memmem(ptr, PACKET->DATA.len, "key\x00", 4);
-         unsigned char *usernamep  = memmem(ptr, PACKET->DATA.len, "user\x00", 5);
+         unsigned char *noncep = memmem(ptr, PACKET->DATA.len, "nonce", 5);
+         unsigned char *keyp = memmem(ptr, PACKET->DATA.len, "key\x00", 4);
+         unsigned char *usernamep = memmem(ptr, PACKET->DATA.len, "user\x00", 5);
          if (conn_status->status == WAIT_RESPONSE && noncep && keyp) {
             usernamep += (4 + 1 + 4); /* skip over "user" + '\x00; + length */
-            strncpy((char*)conn_status->username, (char*)usernamep, 128);
+            strncpy((char *)conn_status->username, (char *)usernamep, 128);
             conn_status->username[128] = 0;
             unsigned char key[33];
             keyp += (3 + 1 + 4); /* skip over "key" + '\x00; + length */
-            strncpy((char*)key, (char*)keyp, 32);
+            strncpy((char *)key, (char *)keyp, 32);
             key[32] = 0;
             DISSECT_MSG("%s-%s-%d:$mongodb$1$%s$%s$%s\n", conn_status->username, ip_addr_ntoa(&PACKET->L3.src, tmp), ntohs(PACKET->L4.src), conn_status->username, conn_status->salt, key);
             conn_status->status = WAIT_RESULT;

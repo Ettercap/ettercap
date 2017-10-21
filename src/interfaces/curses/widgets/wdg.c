@@ -1,29 +1,28 @@
 /*
-    WDG -- widgets helper for ncurses
-
-    Copyright (C) ALoR
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  WDG -- widgets helper for ncurses
+ *
+ *  Copyright (C) ALoR
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <wdg.h>
 
 #include <ncurses.h>
 #include <pthread.h>
-
 
 /* GLOBALS */
 
@@ -31,7 +30,6 @@
 static pthread_mutex_t wdg_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define WDG_LOCK do { pthread_mutex_lock(&wdg_mutex); } while (0)
 #define WDG_UNLOCK do { pthread_mutex_unlock(&wdg_mutex); } while (0)
-
 
 /* information about the current screen */
 struct wdg_scr current_screen;
@@ -87,18 +85,18 @@ extern void wdg_create_dynlist(struct wdg_object *wo);
 void wdg_init(void)
 {
    WDG_DEBUG_INIT();
-   
+
    WDG_DEBUG_MSG("wdg_init: setting up the term...");
-   
+
    /* initialize the curses interface */
-   initscr(); 
+   initscr();
 
    /* disable buffering until carriage return */
-   cbreak(); 
+   cbreak();
 
    /* disable echo of typed chars */
    noecho();
-  
+
    /* better compatibility with return key */
    nonl();
 
@@ -110,10 +108,10 @@ void wdg_init(void)
 
    /* don't flush input on break */
    intrflush(stdscr, FALSE);
-  
-   /* enable function and arrow keys */ 
+
+   /* enable function and arrow keys */
    keypad(stdscr, TRUE);
-  
+
    /* activate colors if available */
    if (has_colors()) {
       current_screen.flags |= WDG_SCR_HAS_COLORS;
@@ -137,12 +135,11 @@ void wdg_init(void)
 
 #ifdef NCURSES_MOUSE_VERSION
    /* activate the mask to receive mouse events */
-   mousemask(ALL_MOUSE_EVENTS, (mmask_t *) 0);
+   mousemask(ALL_MOUSE_EVENTS, (mmask_t *)0);
 #endif
 
    WDG_DEBUG_MSG("wdg_init: initialized");
 }
-
 
 /*
  * cleanup the widgets interface
@@ -152,9 +149,9 @@ void wdg_cleanup(void)
    /* can only cleanup if it was initialized */
    if (!(current_screen.flags & WDG_SCR_INITIALIZED))
       return;
-   
+
    WDG_DEBUG_MSG("wdg_cleanup");
-   
+
    /* show the cursor */
    curs_set(TRUE);
 
@@ -172,22 +169,22 @@ void wdg_cleanup(void)
 
 #ifdef NCURSES_MOUSE_VERSION
    /* reset the mouse event reception */
-   mousemask(0, (mmask_t *) 0);
+   mousemask(0, (mmask_t *)0);
 #endif
-   
+
    WDG_DEBUG_CLOSE();
 }
 
 /*
  * used to exit from the events_handler.
  * this function will put in the input buffer
- * the exit key, so the handler will get it 
- * and perfrom a clean exit 
+ * the exit key, so the handler will get it
+ * and perfrom a clean exit
  */
 void wdg_exit(void)
 {
    WDG_DEBUG_MSG("wdg_exit");
-   
+
    /* put the exit key in the input buffer */
    ungetch(wdg_exit_key);
 }
@@ -202,15 +199,15 @@ void wdg_update_screen(void)
    WDG_UNLOCK;
 }
 
-/* 
+/*
  * called upon screen resize
  */
 void wdg_redraw_all(void)
 {
    struct wdg_obj_list *wl;
-   
+
    WDG_DEBUG_MSG("wdg_redraw_all");
-   
+
    /* remember the current screen size */
    getmaxyx(stdscr, current_screen.lines, current_screen.cols);
 
@@ -219,11 +216,10 @@ void wdg_redraw_all(void)
       WDG_BUG_IF(wl->wo->redraw == NULL);
       WDG_EXECUTE(wl->wo->redraw, wl->wo);
    }
-
 }
 
 /*
- * this function handles all the inputed keys 
+ * this function handles all the inputed keys
  * from the user and dispatches them to the
  * wdg objects
  */
@@ -231,12 +227,12 @@ int wdg_events_handler(int exit_key)
 {
    int key;
    struct wdg_mouse_event mouse;
-   
+
    WDG_DEBUG_MSG("wdg_events_handler (%c)", exit_key);
 
    /* set the global exit key (used by wdg_exit()) */
    wdg_exit_key = exit_key;
-   
+
    /* infinite loop */
    WDG_LOOP {
 
@@ -244,94 +240,94 @@ int wdg_events_handler(int exit_key)
       key = wgetch(stdscr);
 
       switch (key) {
-         
-         case KEY_TAB:
-            /* switch focus between objects */
-            wdg_switch_focus(SWITCH_FOREWARD);
-            /* update the screen */
-            WDG_LOCK;
-            doupdate();
-            WDG_UNLOCK;
-            break;
 
-         case KEY_CTRL_L:
-            /* redrawing the screen is equivalent to resizing it */
-         case KEY_RESIZE:
-            /* the screen has been resized */
-            wdg_redraw_all();
-            /* update the screen */
-            WDG_LOCK;
-            doupdate();
-            WDG_UNLOCK;
-            break;
-            
-         case ERR:
-            /* 
-             * non-blocking input reached the timeout:
-             * call the idle function if present, else
-             * sleep to not eat up all the cpu
-             */
-            if (SLIST_EMPTY(&wdg_callbacks_list)) {
-               /* sleep for milliseconds */
-               napms(WDG_INPUT_TIMEOUT * 10);
-               /* XXX - too many refresh ? */
-               refresh();
-            } else {
-               struct wdg_call_list *cl;
-               SLIST_FOREACH(cl, &wdg_callbacks_list, next)
-                  cl->idle_callback();
-            }
-            /* 
-             * update the screen.
-             * all the function uses wnoutrefresh() funcions 
-             */
-            WDG_LOCK;
-            doupdate();
-            WDG_UNLOCK;
-            break;
-            
-         default:
-            /* emergency exit key */
-            if (key == wdg_exit_key)
-               return WDG_E_SUCCESS;
+      case KEY_TAB:
+         /* switch focus between objects */
+         wdg_switch_focus(SWITCH_FOREWARD);
+         /* update the screen */
+         WDG_LOCK;
+         doupdate();
+         WDG_UNLOCK;
+         break;
+
+      case KEY_CTRL_L:
+      /* redrawing the screen is equivalent to resizing it */
+      case KEY_RESIZE:
+         /* the screen has been resized */
+         wdg_redraw_all();
+         /* update the screen */
+         WDG_LOCK;
+         doupdate();
+         WDG_UNLOCK;
+         break;
+
+      case ERR:
+         /*
+          * non-blocking input reached the timeout:
+          * call the idle function if present, else
+          * sleep to not eat up all the cpu
+          */
+         if (SLIST_EMPTY(&wdg_callbacks_list)) {
+            /* sleep for milliseconds */
+            napms(WDG_INPUT_TIMEOUT * 10);
+            /* XXX - too many refresh ? */
+            refresh();
+         } else {
+            struct wdg_call_list *cl;
+            SLIST_FOREACH(cl, &wdg_callbacks_list, next)
+            cl->idle_callback();
+         }
+         /*
+          * update the screen.
+          * all the function uses wnoutrefresh() funcions
+          */
+         WDG_LOCK;
+         doupdate();
+         WDG_UNLOCK;
+         break;
+
+      default:
+         /* emergency exit key */
+         if (key == wdg_exit_key)
+            return WDG_E_SUCCESS;
 
 #ifdef NCURSES_MOUSE_VERSION
-            /* handle mouse events */
-            if (key == KEY_MOUSE) {
-               MEVENT event;
-            
-               getmouse(&event);
-               mouse_trafo(&event.y, &event.x, TRUE);
-               mouse.x = event.x;
-               mouse.y = event.y;
-               mouse.event = event.bstate;
-            }
-#else            
-            /* we don't support mouse events */
-            memset(&mouse, 0, sizeof(mouse));
+         /* handle mouse events */
+         if (key == KEY_MOUSE) {
+            MEVENT event;
+
+            getmouse(&event);
+            mouse_trafo(&event.y, &event.x, TRUE);
+            mouse.x = event.x;
+            mouse.y = event.y;
+            mouse.event = event.bstate;
+         }
+#else
+         /* we don't support mouse events */
+         memset(&mouse, 0, sizeof(mouse));
 #endif
-            /* dispatch the user input */
-            wdg_dispatch_msg(key, &mouse);
-            /* update the screen */
-            WDG_LOCK;
-            doupdate();
-            WDG_UNLOCK;
-            break;
+         /* dispatch the user input */
+         wdg_dispatch_msg(key, &mouse);
+         /* update the screen */
+         WDG_LOCK;
+         doupdate();
+         WDG_UNLOCK;
+         break;
       }
    }
-   
+
    /* NOT REACHED */
-   
+
    return WDG_E_SUCCESS;
 }
 
 /*
- * add a function to the idle callbacks list 
+ * add a function to the idle callbacks list
  */
 void wdg_add_idle_callback(void (*callback)(void))
 {
    struct wdg_call_list *cl;
-   
+
    WDG_DEBUG_MSG("wdg_add_idle_callback (%p)", callback);
 
    WDG_SAFE_CALLOC(cl, 1, sizeof(struct wdg_call_list));
@@ -349,7 +345,7 @@ void wdg_add_idle_callback(void (*callback)(void))
 void wdg_del_idle_callback(void (*callback)(void))
 {
    struct wdg_call_list *cl;
-   
+
    WDG_DEBUG_MSG("wdg_del_idle_callback (%p)", callback);
 
    SLIST_FOREACH(cl, &wdg_callbacks_list, next) {
@@ -379,26 +375,26 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
          WDG_EXECUTE(wdg_focused_obj->wo->destroy_callback);
          wdg_destroy_object(&wo);
          wdg_redraw_all();
-         
+
          /* object was destroyed */
          return;
       }
 
       /* deliver the message normally */
       wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse);
-         
+
       /* other objects must not receive the msg */
       return;
    }
-   
+
    /*
-    * if it is a mouse event, we have to dispatch to all 
+    * if it is a mouse event, we have to dispatch to all
     * the object in the list until someone handles it
     */
    if (key == KEY_MOUSE) {
       struct wdg_obj_list *wl;
-      
-      /* 
+
+      /*
        * first dispatch to the root object,
        * since it is usually a menu, it may overlap
        * other objects and needs to get the event first
@@ -409,7 +405,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
             return;
       }
 
-      /* 
+      /*
        * then dispatch to the focused object.
        * it may overlap and needs to event before the others
        * to prevent an undesired raising of underlaying objects
@@ -417,18 +413,18 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
       if (wdg_focused_obj != NULL) {
          if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse) == WDG_E_SUCCESS)
             /* the focused object handled the message */
-            return;     
+            return;
       }
 
       /* dispatch to all the other objects */
       TAILQ_FOREACH(wl, &wdg_objects_list, next) {
-         if ((wl->wo->flags & WDG_OBJ_WANT_FOCUS) && (wl->wo->flags & WDG_OBJ_VISIBLE) ) {
+         if ((wl->wo->flags & WDG_OBJ_WANT_FOCUS) && (wl->wo->flags & WDG_OBJ_VISIBLE)) {
             if (wl->wo->get_msg(wl->wo, key, mouse) == WDG_E_SUCCESS)
                return;
          }
       }
 
-   /* it is a keyboard event */
+      /* it is a keyboard event */
    } else {
 
       /* first dispatch to the root object */
@@ -436,7 +432,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
          if (wdg_root_obj->get_msg(wdg_root_obj, key, mouse) == WDG_E_SUCCESS)
             /* the root object handled the message */
             return;
-         
+
          /* check the destroy callback */
          if (key == wdg_root_obj->destroy_key) {
             WDG_EXECUTE(wdg_root_obj->destroy_callback);
@@ -446,15 +442,15 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
          }
       }
 
-      /* 
+      /*
        * the root_object has not handled it.
        * dispatch to the focused one
        */
       if (wdg_focused_obj != NULL) {
          if (wdg_focused_obj->wo->get_msg(wdg_focused_obj->wo, key, mouse) == WDG_E_SUCCESS)
             /* the focused object handled the message */
-            return;      
-         
+            return;
+
          /* check the destroy callback */
          if (wdg_focused_obj->wo && key == wdg_focused_obj->wo->destroy_key) {
             struct wdg_object *wo = wdg_focused_obj->wo;
@@ -464,7 +460,7 @@ static void wdg_dispatch_msg(int key, struct wdg_mouse_event *mouse)
             return;
          }
       }
-      
+
       /* noone handled the message, flash an error */
       flash();
       beep();
@@ -482,13 +478,13 @@ static void wdg_switch_focus(int type)
    /* the focused object is modal ! don't switch */
    if (wdg_focused_obj && (wdg_focused_obj->wo->flags & WDG_OBJ_FOCUS_MODAL))
       return;
-  
+
    /* if there is not a focused object, create it */
    if (wdg_focused_obj == NULL) {
-   
+
       /* search the first "focusable" object */
       TAILQ_FOREACH(wl, &wdg_objects_list, next) {
-         if ((wl->wo->flags & WDG_OBJ_WANT_FOCUS) && (wl->wo->flags & WDG_OBJ_VISIBLE) ) {
+         if ((wl->wo->flags & WDG_OBJ_WANT_FOCUS) && (wl->wo->flags & WDG_OBJ_VISIBLE)) {
             /* set the focused object */
             wdg_focused_obj = wl;
             /* focus current object */
@@ -498,37 +494,36 @@ static void wdg_switch_focus(int type)
          }
       }
    }
-  
+
    /* unfocus the current object */
    WDG_BUG_IF(wdg_focused_obj->wo->lost_focus == NULL);
    WDG_EXECUTE(wdg_focused_obj->wo->lost_focus, wdg_focused_obj->wo);
-   
-   /* 
+
+   /*
     * focus the next/prev element in the list.
     * only focus objects that have the WDG_OBJ_WANT_FOCUS flag
     */
    do {
       switch (type) {
-         case SWITCH_FOREWARD:
-            wdg_focused_obj = TAILQ_NEXT(wdg_focused_obj, next);
-            /* we are at the end, move to the first element */
-            if (wdg_focused_obj == TAILQ_END(&wdg_objects_list))
-               wdg_focused_obj = TAILQ_FIRST(&wdg_objects_list);
-            break;
-         case SWITCH_BACKWARD:
-            /* we are on the head, move to the last element */
-            if (wdg_focused_obj == TAILQ_FIRST(&wdg_objects_list))
-               wdg_focused_obj = TAILQ_LAST(&wdg_objects_list, wol);
-            else
-               wdg_focused_obj = TAILQ_PREV(wdg_focused_obj, wol, next);
-            break;
+      case SWITCH_FOREWARD:
+         wdg_focused_obj = TAILQ_NEXT(wdg_focused_obj, next);
+         /* we are at the end, move to the first element */
+         if (wdg_focused_obj == TAILQ_END(&wdg_objects_list))
+            wdg_focused_obj = TAILQ_FIRST(&wdg_objects_list);
+         break;
+      case SWITCH_BACKWARD:
+         /* we are on the head, move to the last element */
+         if (wdg_focused_obj == TAILQ_FIRST(&wdg_objects_list))
+            wdg_focused_obj = TAILQ_LAST(&wdg_objects_list, wol);
+         else
+            wdg_focused_obj = TAILQ_PREV(wdg_focused_obj, wol, next);
+         break;
       }
-   } while ( !(wdg_focused_obj->wo->flags & WDG_OBJ_WANT_FOCUS) || !(wdg_focused_obj->wo->flags & WDG_OBJ_VISIBLE) );
+   } while (!(wdg_focused_obj->wo->flags & WDG_OBJ_WANT_FOCUS) || !(wdg_focused_obj->wo->flags & WDG_OBJ_VISIBLE));
 
    /* focus current object */
    WDG_BUG_IF(wdg_focused_obj->wo->get_focus == NULL);
    WDG_EXECUTE(wdg_focused_obj->wo->get_focus, wdg_focused_obj->wo);
-   
 }
 
 /*
@@ -540,7 +535,7 @@ void wdg_set_focus(struct wdg_object *wo)
 
    /* search the object and focus it */
    TAILQ_FOREACH(wl, &wdg_objects_list, next) {
-      if ( wl->wo == wo ) {
+      if (wl->wo == wo) {
          /* unfocus the current object */
          if (wdg_focused_obj)
             WDG_EXECUTE(wdg_focused_obj->wo->lost_focus, wdg_focused_obj->wo);
@@ -555,73 +550,73 @@ void wdg_set_focus(struct wdg_object *wo)
 }
 
 /*
- * create a wdg object 
+ * create a wdg object
  */
 int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
 {
    struct wdg_obj_list *wl;
-   
+
    WDG_DEBUG_MSG("wdg_create_object (%d)", type);
-   
+
    /* alloc the struct */
    WDG_SAFE_CALLOC(*wo, 1, sizeof(struct wdg_object));
 
    /* set the flags */
    (*wo)->flags = flags;
    (*wo)->type = type;
-  
+
    /* call the specific function */
    switch (type) {
-      case WDG_COMPOUND:
-         wdg_create_compound(*wo);
-         break;
-         
-      case WDG_WINDOW:
-         wdg_create_window(*wo);
-         break;
-         
-      case WDG_PANEL:
-         wdg_create_panel(*wo);
-         break;
-         
-      case WDG_SCROLL:
-         wdg_create_scroll(*wo);
-         break;
-         
-      case WDG_MENU:
-         wdg_create_menu(*wo);
-         break;
-         
-      case WDG_DIALOG:
-         wdg_create_dialog(*wo);
-         break;
-         
-      case WDG_PERCENTAGE:
-         wdg_create_percentage(*wo);
-         break;
-         
-      case WDG_FILE:
-         wdg_create_file(*wo);
-         break;
-         
-      case WDG_INPUT:
-         wdg_create_input(*wo);
-         break;
-         
-      case WDG_LIST:
-         wdg_create_list(*wo);
-         break;
-         
-      case WDG_DYNLIST:
-         wdg_create_dynlist(*wo);
-         break;
-         
-      default:
-         WDG_SAFE_FREE(*wo);
-         return -WDG_E_FATAL;
-         break;
+   case WDG_COMPOUND:
+      wdg_create_compound(*wo);
+      break;
+
+   case WDG_WINDOW:
+      wdg_create_window(*wo);
+      break;
+
+   case WDG_PANEL:
+      wdg_create_panel(*wo);
+      break;
+
+   case WDG_SCROLL:
+      wdg_create_scroll(*wo);
+      break;
+
+   case WDG_MENU:
+      wdg_create_menu(*wo);
+      break;
+
+   case WDG_DIALOG:
+      wdg_create_dialog(*wo);
+      break;
+
+   case WDG_PERCENTAGE:
+      wdg_create_percentage(*wo);
+      break;
+
+   case WDG_FILE:
+      wdg_create_file(*wo);
+      break;
+
+   case WDG_INPUT:
+      wdg_create_input(*wo);
+      break;
+
+   case WDG_LIST:
+      wdg_create_list(*wo);
+      break;
+
+   case WDG_DYNLIST:
+      wdg_create_dynlist(*wo);
+      break;
+
+   default:
+      WDG_SAFE_FREE(*wo);
+      return -WDG_E_FATAL;
+      break;
    }
-   
+
    /* alloc the element in the object list */
    WDG_SAFE_CALLOC(wl, 1, sizeof(struct wdg_obj_list));
 
@@ -630,11 +625,11 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
 
    /* insert it in the list */
    TAILQ_INSERT_TAIL(&wdg_objects_list, wl, next);
-   
+
    /* this is the root object */
    if (flags & WDG_OBJ_ROOT_OBJECT)
       wdg_root_obj = *wo;
-   
+
    return WDG_E_SUCCESS;
 }
 
@@ -644,29 +639,29 @@ int wdg_create_object(struct wdg_object **wo, size_t type, size_t flags)
 int wdg_destroy_object(struct wdg_object **wo)
 {
    struct wdg_obj_list *wl;
-   
+
    WDG_DEBUG_MSG("wdg_destroy_object (%p)", *wo);
-  
+
    /* sanity check */
    if (*wo == NULL)
       return -WDG_E_NOTHANDLED;
-  
+
    /* delete it from the obj_list */
    TAILQ_FOREACH(wl, &wdg_objects_list, next) {
       if (wl->wo == *wo) {
-         
+
          /* was it the root object ? */
          if ((*wo)->flags & WDG_OBJ_ROOT_OBJECT)
             wdg_root_obj = NULL;
-  
+
          /* it was the focused one */
          if (wdg_focused_obj && wdg_focused_obj->wo == *wo) {
             /* remove the modal flat to enable the switch */
             (*wo)->flags &= ~WDG_OBJ_FOCUS_MODAL;
             wdg_switch_focus(SWITCH_BACKWARD);
          }
-         
-         /* 
+
+         /*
           * check if it was the only object in the list
           * and it has gained the focus with the previous
           * call to wdg_switch_focus();
@@ -677,16 +672,16 @@ int wdg_destroy_object(struct wdg_object **wo)
          /* remove the object */
          TAILQ_REMOVE(&wdg_objects_list, wl, next);
          WDG_SAFE_FREE(wl);
-         
+
          /* call the specialized destroy function */
          WDG_BUG_IF((*wo)->destroy == NULL);
          WDG_EXECUTE((*wo)->destroy, *wo);
-   
+
          /* free the title */
          WDG_SAFE_FREE((*wo)->title);
          /* then free the object */
          WDG_SAFE_FREE(*wo);
-         
+
          return WDG_E_SUCCESS;
       }
    }
@@ -725,7 +720,7 @@ void wdg_set_size(struct wdg_object *wo, int x1, int y1, int x2, int y2)
 void wdg_draw_object(struct wdg_object *wo)
 {
    WDG_DEBUG_MSG("wdg_draw_object (%p)", wo);
-   
+
    /* display the object */
    WDG_BUG_IF(wo->redraw == NULL);
    WDG_EXECUTE(wo->redraw, wo);
@@ -739,30 +734,30 @@ size_t wdg_get_type(struct wdg_object *wo)
    return wo->type;
 }
 
-/* 
+/*
  * set the color of an object
  */
 void wdg_set_color(wdg_t *wo, size_t part, u_char pair)
 {
    switch (part) {
-      case WDG_COLOR_SCREEN:
-         wo->screen_color = pair;
-         break;
-      case WDG_COLOR_TITLE:
-         wo->title_color = pair;
-         break;
-      case WDG_COLOR_BORDER:
-         wo->border_color = pair;
-         break;
-      case WDG_COLOR_FOCUS:
-         wo->focus_color = pair;
-         break;
-      case WDG_COLOR_WINDOW:
-         wo->window_color = pair;
-         break;
-      case WDG_COLOR_SELECT:
-         wo->select_color = pair;
-         break;
+   case WDG_COLOR_SCREEN:
+      wo->screen_color = pair;
+      break;
+   case WDG_COLOR_TITLE:
+      wo->title_color = pair;
+      break;
+   case WDG_COLOR_BORDER:
+      wo->border_color = pair;
+      break;
+   case WDG_COLOR_FOCUS:
+      wo->focus_color = pair;
+      break;
+   case WDG_COLOR_WINDOW:
+      wo->window_color = pair;
+      break;
+   case WDG_COLOR_SELECT:
+      wo->select_color = pair;
+      break;
    }
 }
 
@@ -785,7 +780,7 @@ void wdg_screen_color(u_char pair)
 }
 
 /*
- * set the object's title 
+ * set the object's title
  */
 void wdg_set_title(struct wdg_object *wo, char *title, size_t align)
 {
@@ -794,26 +789,26 @@ void wdg_set_title(struct wdg_object *wo, char *title, size_t align)
    WDG_SAFE_STRDUP(wo->title, title);
 }
 
-/* 
+/*
  * functions to calculate real dimensions
- * from the given relative cohordinates 
+ * from the given relative cohordinates
  */
 
 size_t wdg_get_nlines(struct wdg_object *wo)
 {
    size_t a, b;
    int c = current_screen.lines;
-   
+
    if (wo->y1 >= 0)
       a = wo->y1;
-   else 
+   else
       a = (c + wo->y1 > 0) ? (c + wo->y1) : 0;
 
    if (wo->y2 > 0)
       b = wo->y2;
    else
       b = (c + wo->y2 > 0) ? (c + wo->y2) : 0;
-   
+
    /* only return positive values */
    return (b > a) ? b - a : 0;
 }
@@ -822,17 +817,17 @@ size_t wdg_get_ncols(struct wdg_object *wo)
 {
    size_t a, b;
    int c = current_screen.cols;
-   
+
    if (wo->x1 >= 0)
       a = wo->x1;
-   else 
+   else
       a = (c + wo->x1 > 0) ? (c + wo->x1) : 0;
 
    if (wo->x2 > 0)
       b = wo->x2;
    else
       b = (c + wo->x2 > 0) ? (c + wo->x2) : 0;
-   
+
    /* only return positive values */
    return (b > a) ? b - a : 0;
 }
@@ -860,4 +855,3 @@ size_t wdg_get_begin_y(struct wdg_object *wo)
 /* EOF */
 
 // vim:ts=3:expandtab
-

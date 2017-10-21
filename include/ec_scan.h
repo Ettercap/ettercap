@@ -13,4 +13,3 @@ EC_API_EXTERN int scan_save_hosts(char *filename);
 /* EOF */
 
 // vim:ts=3:expandtab
-

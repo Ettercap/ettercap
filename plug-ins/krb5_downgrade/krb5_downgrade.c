@@ -1,24 +1,24 @@
 /*
-    krb5_downgrade -- ettercap plugin - Downgrades Kerberos V5 security by
-    modifying AS-REQ packets
-
-    Copyright (C) Dhiru Kholia (dhiru at openwall.com)
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    This file borrows boilerplate code from the smb_down plugin.
+ *  krb5_downgrade -- ettercap plugin - Downgrades Kerberos V5 security by
+ *  modifying AS-REQ packets
+ *
+ *  Copyright (C) Dhiru Kholia (dhiru at openwall.com)
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ *  This file borrows boilerplate code from the smb_down plugin.
  */
 
 #include <ec.h>
@@ -28,38 +28,38 @@
 #include <ec_asn1.h>
 
 /* https://cwiki.apache.org/confluence/display/DIRxASN1/Kerberos
-
-   KDC-REQ         ::= SEQUENCE {
-        -- NOTE: first tag is [1], not [0]
-        pvno            [1] INTEGER (5) ,
-        msg-type        [2] INTEGER (10 -- AS -- | 12 -- TGS --),
-        padata          [3] SEQUENCE OF PA-DATA OPTIONAL
-                            -- NOTE: not empty --,
-        req-body        [4] KDC-REQ-BODY
-   }
-
-   KDC-REQ-BODY    ::= SEQUENCE {
-        kdc-options             [0] KDCOptions,
-        cname                   [1] PrincipalName OPTIONAL
-                                    -- Used only in AS-REQ --,
-        realm                   [2] Realm
-                                    -- Server's realm
-                                    -- Also client's in AS-REQ --,
-        sname                   [3] PrincipalName OPTIONAL,
-        from                    [4] KerberosTime OPTIONAL,
-        till                    [5] KerberosTime,
-        rtime                   [6] KerberosTime OPTIONAL,
-        nonce                   [7] UInt32,
-        etype                   [8] SEQUENCE OF Int32 -- EncryptionType
-                                    -- in preference order --,
-        addresses               [9] HostAddresses OPTIONAL,
-        enc-authorization-data  [10] EncryptedData OPTIONAL
-                                    -- AuthorizationData --,
-        additional-tickets      [11] SEQUENCE OF Ticket OPTIONAL
-                                        -- NOTE: not empty
-   }
-
-   AS-REQ          ::= [APPLICATION 10] KDC-REQ */
+ *
+ * KDC-REQ         ::= SEQUENCE {
+ *      -- NOTE: first tag is [1], not [0]
+ *      pvno            [1] INTEGER (5) ,
+ *      msg-type        [2] INTEGER (10 -- AS -- | 12 -- TGS --),
+ *      padata          [3] SEQUENCE OF PA-DATA OPTIONAL
+ *                          -- NOTE: not empty --,
+ *      req-body        [4] KDC-REQ-BODY
+ * }
+ *
+ * KDC-REQ-BODY    ::= SEQUENCE {
+ *      kdc-options             [0] KDCOptions,
+ *      cname                   [1] PrincipalName OPTIONAL
+ *                                  -- Used only in AS-REQ --,
+ *      realm                   [2] Realm
+ *                                  -- Server's realm
+ *                                  -- Also client's in AS-REQ --,
+ *      sname                   [3] PrincipalName OPTIONAL,
+ *      from                    [4] KerberosTime OPTIONAL,
+ *      till                    [5] KerberosTime,
+ *      rtime                   [6] KerberosTime OPTIONAL,
+ *      nonce                   [7] UInt32,
+ *      etype                   [8] SEQUENCE OF Int32 -- EncryptionType
+ *                                  -- in preference order --,
+ *      addresses               [9] HostAddresses OPTIONAL,
+ *      enc-authorization-data  [10] EncryptedData OPTIONAL
+ *                                  -- AuthorizationData --,
+ *      additional-tickets      [11] SEQUENCE OF Ticket OPTIONAL
+ *                                      -- NOTE: not empty
+ * }
+ *
+ * AS-REQ          ::= [APPLICATION 10] KDC-REQ */
 
 /* protos */
 int plugin_load(void *);

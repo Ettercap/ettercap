@@ -23,4 +23,3 @@ EC_API_EXTERN void add_aligner(int dlt, int (*aligner)(void));
 /* EOF */
 
 // vim:ts=3:expandtab
-

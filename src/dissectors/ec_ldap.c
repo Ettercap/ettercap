@@ -1,25 +1,25 @@
 /*
-    ettercap -- dissector ldap -- TCP 389
-
-    Copyright (C) ALoR & NaGA
-    
-    Additional Copyright for this file: LnZ Lorenzo Porro <lporro@libero.it>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-*/
+ *  ettercap -- dissector ldap -- TCP 389
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  Additional Copyright for this file: LnZ Lorenzo Porro <lporro@libero.it>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -51,22 +51,22 @@ FUNC_DECODER(dissector_ldap)
    char tmp[MAX_ASCII_ADDR_LEN];
 
    /* don't complain about unused var */
-   (void) DECODE_DATA; 
-   (void) DECODE_DATALEN;
-   (void) DECODED_LEN;
-   
+   (void)DECODE_DATA;
+   (void)DECODE_DATALEN;
+   (void)DECODED_LEN;
+
    /* We need at least 15 bytes of data to be interested*/
    if (PACKET->DATA.len < 15)
       return NULL;
-    
+
    /* Only packets coming from the server */
    if (FROM_SERVER("ldap", PACKET) || FROM_SERVER("ldaps", PACKET))
       return NULL;
 
    /* Message Type */
    type = (u_int16)ptr[5];
-   
-   if (type != 0x60 && type != 0x00) 
+
+   if (type != 0x60 && type != 0x00)
       return NULL;
 
    /* Quite self-explaining :) */
@@ -84,7 +84,7 @@ FUNC_DECODER(dissector_ldap)
       PACKET->DISSECTOR.user = strdup("[Anonymous Bind]");
       PACKET->DISSECTOR.pass = strdup("");
       DISSECT_MSG("LDAP : %s:%d -> Anonymous Bind\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                                      ntohs(PACKET->L4.dst));
+                  ntohs(PACKET->L4.dst));
       return NULL;
    }
 
@@ -96,14 +96,13 @@ FUNC_DECODER(dissector_ldap)
    memcpy(PACKET->DISSECTOR.pass, &ptr[14] + user_len, pass_len);
 
    DISSECT_MSG("LDAP : %s:%d -> USER: %s   PASS: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                                        ntohs(PACKET->L4.dst),
-                                                        PACKET->DISSECTOR.user,
-                                                        PACKET->DISSECTOR.pass);
-   
+               ntohs(PACKET->L4.dst),
+               PACKET->DISSECTOR.user,
+               PACKET->DISSECTOR.pass);
+
    return NULL;
-}      
+}
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

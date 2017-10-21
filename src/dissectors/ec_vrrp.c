@@ -1,27 +1,27 @@
 /*
-    ettercap -- dissector vrrp -- works over IP !
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- dissector vrrp -- works over IP !
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 /*
  * RFC: 2338
- * 
+ *
  *    0                   1                   2                   3
  *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -50,15 +50,15 @@
 
 /* globals */
 
-struct vrrp_hdr {                                                                                
-   u_char  ver;         /* Version */
-   u_char  id;          /* Virtual Router ID */
-   u_char  prio;        /* Router Priority */
-   u_char  naddr;       /* # of addresses */
-   u_char  auth;        /* Type of Authentication */
-   u_char  adv;         /* ADVERTISEMENT Interval */
+struct vrrp_hdr {
+   u_char ver;          /* Version */
+   u_char id;           /* Virtual Router ID */
+   u_char prio;         /* Router Priority */
+   u_char naddr;        /* # of addresses */
+   u_char auth;         /* Type of Authentication */
+   u_char adv;          /* ADVERTISEMENT Interval */
    u_short csum;        /* Checksum */
-};  
+};
 
 #define VRRP_AUTH_NONE          0
 #define VRRP_AUTH_SIMPLE        1
@@ -82,7 +82,7 @@ void __init vrrp_init(void)
    dissect_add("vrrp", PROTO_LAYER, NL_TYPE_VRRP, dissector_vrrp);
 }
 
-/* 
+/*
  * the passwords collected by vrrp will not be logged
  * in logfile since it is not over TCP or UDP.
  * anyway we can print them in the user message window
@@ -97,16 +97,16 @@ FUNC_DECODER(dissector_vrrp)
 
    /* don't complain about unused var */
    (void)end;
-   (void) DECODE_DATA; 
-   (void) DECODE_DATALEN;
-   (void) DECODED_LEN;
+   (void)DECODE_DATA;
+   (void)DECODE_DATALEN;
+   (void)DECODED_LEN;
 
    /* skip empty packets */
    if (PACKET->DATA.len < sizeof(struct vrrp_hdr))
       return NULL;
 
    DEBUG_MSG("VRRP --> dissector_vrrp");
-  
+
    vhdr = (struct vrrp_hdr *)ptr;
 
    /* not an authenticated message */
@@ -115,16 +115,14 @@ FUNC_DECODER(dissector_vrrp)
 
    /* point to the auth */
    auth = ptr + sizeof(struct vrrp_hdr) + (vhdr->naddr * IP_ADDR_LEN);
-   
+
    DISSECT_MSG("VRRP : %s:%d -> AUTH: %s \n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                             ntohs(PACKET->L4.dst), 
-                                             auth);
+               ntohs(PACKET->L4.dst),
+               auth);
 
    return NULL;
 }
 
-
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -1,23 +1,23 @@
 /*
-    etterfilter -- offset tables handling
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  etterfilter -- offset tables handling
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ef.h>
 #include <ec_file.h>
@@ -34,13 +34,13 @@ struct off_entry {
 };
 
 struct table_entry {
-   char * name;
+   char *name;
    u_int8 level;
-   SLIST_HEAD (, off_entry) offsets;
+   SLIST_HEAD(, off_entry) offsets;
    SLIST_ENTRY(table_entry) next;
 };
 
-static SLIST_HEAD (, table_entry) table_head;
+static SLIST_HEAD(, table_entry) table_head;
 
 struct const_entry {
    char *name;
@@ -48,7 +48,7 @@ struct const_entry {
    SLIST_ENTRY(const_entry) next;
 };
 
-static SLIST_HEAD (, const_entry) const_head;
+static SLIST_HEAD(, const_entry) const_head;
 
 /* protos */
 
@@ -61,8 +61,8 @@ int get_constant(char *name, u_int32 *value);
 
 /*******************************************/
 
-/* 
- * load the tables for file 
+/*
+ * load the tables for file
  */
 void load_tables(void)
 {
@@ -76,16 +76,16 @@ void load_tables(void)
    u_int16 offset = 0;
    char *tok;
 
-   /* open the file */ 
+   /* open the file */
    fc = open_data("share", "etterfilter.tbl", FOPEN_READ_TEXT);
    ON_ERROR(fc, NULL, "Cannot find file etterfilter.tbl");
 
    /* read the file */
    while (fgets(line, 128, fc) != 0) {
-     
+
       /* pointer to the end of the line */
       end = line + strlen(line);
-      
+
       /* count the lines */
       lineno++;
 
@@ -100,10 +100,10 @@ void load_tables(void)
       /* skip empty lines */
       if (line[0] == '\0')
          continue;
-      
+
       /* eat the empty spaces */
-      for (q = line; *q == ' ' && q < end; q++);
-      
+      for (q = line; *q == ' ' && q < end; q++) ;
+
       /* skip empty lines */
       if (*q == '\0')
          continue;
@@ -111,7 +111,7 @@ void load_tables(void)
       /* begin of a new section */
       if (*q == '[') {
          SAFE_FREE(name);
-         
+
          /* get the name in the brackets [ ] */
          if ((p = strchr(q, ']')))
             *p = '\0';
@@ -120,7 +120,7 @@ void load_tables(void)
 
          name = strdup(q + 1);
          ntables++;
-         
+
          /* get the level in the next brackets [ ] */
          q = p + 1;
          if ((p = strchr(q, ']')))
@@ -132,7 +132,7 @@ void load_tables(void)
 
          continue;
       }
-      
+
       /* parse the offsets and add them to the table */
       oname = ec_strtok(q, ":", &tok);
       q = ec_strtok(NULL, ":", &tok);
@@ -143,10 +143,10 @@ void load_tables(void)
 
       /* get the size */
       size = atoi(q);
-      
+
       /* get the offset */
-      for (q = p; !isdigit((int)*q) && q < end; q++);
-      
+      for (q = p; !isdigit((int)*q) && q < end; q++) ;
+
       offset = atoi(q);
 
       /* add to the table */
@@ -157,10 +157,9 @@ void load_tables(void)
    fprintf(stdout, "\n%3d protocol tables loaded:\n", ntables);
    fprintf(stdout, "\t");
    SLIST_FOREACH(t, &table_head, next)
-      fprintf(stdout, "%s ", t->name);
+   fprintf(stdout, "%s ", t->name);
    fprintf(stdout, "\n");
    fclose(fc);
-  
 }
 
 /*
@@ -183,9 +182,9 @@ static void add_virtualpointer(char *name, u_int8 level, char *offname, u_int16 
    /* the table was not found */
    if (!found) {
       SAFE_CALLOC(t, 1, sizeof(struct table_entry));
-     
+
       SAFE_CALLOC(o, 1, sizeof(struct off_entry));
-      
+
       /* fill the structures */
       t->name = strdup(name);
       t->level = level;
@@ -195,7 +194,6 @@ static void add_virtualpointer(char *name, u_int8 level, char *offname, u_int16 
 
       SLIST_INSERT_HEAD(&t->offsets, o, next);
       SLIST_INSERT_HEAD(&table_head, t, next);
-      
    } else {
       SAFE_CALLOC(o, 1, sizeof(struct off_entry));
 
@@ -207,7 +205,6 @@ static void add_virtualpointer(char *name, u_int8 level, char *offname, u_int16 
       /* t already points to the right tables */
       SLIST_INSERT_HEAD(&t->offsets, o, next);
    }
-
 }
 
 /*
@@ -227,20 +224,19 @@ int get_virtualpointer(char *name, char *offname, u_int8 *level, u_int16 *offset
                *size = o->size;
                *level = t->level;
                *offset = o->offset;
-               
+
                return E_SUCCESS;
             }
          }
          return -E_NOTFOUND;
       }
    }
-   
+
    return -E_NOTFOUND;
 }
 
-
 /*
- * load constants from the file 
+ * load constants from the file
  */
 void load_constants(void)
 {
@@ -249,17 +245,17 @@ void load_constants(void)
    char line[128];
    int lineno = 0, nconst = 0;
    char *p, *q, *end, *tok;
- 
-   /* open the file */ 
+
+   /* open the file */
    fc = open_data("share", "etterfilter.cnt", FOPEN_READ_TEXT);
    ON_ERROR(fc, NULL, "Cannot find file etterfilter.cnt");
 
    /* read the file */
    while (fgets(line, 128, fc) != 0) {
-     
+
       /* pointer to the end of the line */
       end = line + strlen(line);
-      
+
       /* count the lines */
       lineno++;
 
@@ -274,26 +270,26 @@ void load_constants(void)
       /* skip empty lines */
       if (line[0] == '\0')
          continue;
-      
+
       /* eat the empty spaces */
-      for (q = line; *q == ' ' && q < end; q++);
+      for (q = line; *q == ' ' && q < end; q++) ;
 
       /* get the constant */
       if (strstr(line, "=") && (q = ec_strtok(line, "=", &tok)) != NULL) {
          /* trim out the space */
          if ((p = strchr(q, ' ')))
             *p = '\0';
-        
+
          SAFE_CALLOC(c, 1, sizeof(struct const_entry));
-         
+
          /* get the name */
          c->name = strdup(q);
-         
+
          if ((q = ec_strtok(NULL, "=", &tok)) == NULL)
             FATAL_ERROR("Invalid constant on line %d", lineno);
 
          /* eat the empty spaces */
-         for (p = q; *p == ' ' && p < end; p++);
+         for (p = q; *p == ' ' && p < end; p++) ;
 
          c->value = strtoul(p, NULL, 16);
 
@@ -305,16 +301,15 @@ void load_constants(void)
       /* insert in the list */
       SLIST_INSERT_HEAD(&const_head, c, next);
    }
-   
+
    /* print some nice information */
    fprintf(stdout, "\n%3d constants loaded:\n", nconst);
    fprintf(stdout, "\t");
    SLIST_FOREACH(c, &const_head, next)
-      fprintf(stdout, "%s ", c->name);
+   fprintf(stdout, "%s ", c->name);
    fprintf(stdout, "\n");
    fclose(fc);
 }
-
 
 /*
  * return the value of a constant
@@ -331,11 +326,10 @@ int get_constant(char *name, u_int32 *value)
          return E_SUCCESS;
       }
    }
-   
+
    return -E_NOTFOUND;
 }
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

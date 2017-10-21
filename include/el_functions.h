@@ -34,7 +34,7 @@ EL_API_EXTERN void conn_decode(void);
 EL_API_EXTERN void filcon_compile(char *conn);
 EL_API_EXTERN int is_conn(struct log_header_packet *pck, int *versus);
 #define VERSUS_SOURCE   0
-#define VERSUS_DEST     1 
+#define VERSUS_DEST     1
 
 /* el_target */
 EL_API_EXTERN void target_compile(char *target);
@@ -59,17 +59,17 @@ struct so_offset {
 };
 
 struct stream_object {
-   TAILQ_HEAD (so_list_head, so_list) so_head;
+   TAILQ_HEAD(so_list_head, so_list) so_head;
    struct so_offset side1;
    struct so_offset side2;
 };
 
 EL_API_EXTERN void stream_init(struct stream_object *so);
 EL_API_EXTERN int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf);
-EL_API_EXTERN struct so_list * stream_search(struct stream_object *so, const char *buf, size_t buflen, int mode);
+EL_API_EXTERN struct so_list *stream_search(struct stream_object *so, const char *buf, size_t buflen, int mode);
 EL_API_EXTERN int stream_read(struct stream_object *so, u_char *buf, size_t size, int mode);
-   #define STREAM_SIDE1 0
-   #define STREAM_SIDE2 ~0
+#define STREAM_SIDE1 0
+#define STREAM_SIDE2 ~0
 EL_API_EXTERN int stream_move(struct stream_object *so, size_t offset, int whence, int mode);
 
 /* el_decode */
@@ -81,18 +81,19 @@ enum {
 
 #define FUNC_EXTRACTOR(func) int func(struct stream_object *so)
 #define FUNC_EXTRACTOR_PTR(func) int (*func)(struct stream_object *so)
-#define EXECUTE_EXTRACTOR(x, so, ret) do{ \
-   if (x) \
-      ret += x(so); \
-}while(0)
+#define EXECUTE_EXTRACTOR(x, so, ret) \
+   do { \
+      if (x) \
+         ret += x(so); \
+   } while (0)
 
 #define STREAM so
 
 EL_API_EXTERN int decode_stream(struct stream_object *so);
-   #define STREAM_SKIPPED  0
-   #define STREAM_DECODED  1
+#define STREAM_SKIPPED  0
+#define STREAM_DECODED  1
 EL_API_EXTERN void add_extractor(u_int8 level, u_int32 type, FUNC_EXTRACTOR_PTR(extractor));
-EL_API_EXTERN void * get_extractor(u_int8 level, u_int32 type);
+EL_API_EXTERN void *get_extractor(u_int8 level, u_int32 type);
 EL_API_EXTERN int decode_to_file(char *host, char *proto, char *file);
 
 #endif
@@ -100,4 +101,3 @@ EL_API_EXTERN int decode_to_file(char *host, char *proto, char *file);
 /* EOF */
 
 // vim:ts=3:expandtab
-

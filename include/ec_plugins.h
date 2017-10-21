@@ -6,8 +6,7 @@
 #include <ec_ui.h>
 #include <ec_threads.h>
 
-struct plugin_ops
-{
+struct plugin_ops {
    char *ettercap_version;          /* ettercap version MUST be the global EC_VERSION */
    char *name;                      /* the name of the plugin */
    char *info;                      /* a short description of the plugin */
@@ -16,17 +15,16 @@ struct plugin_ops
    int (*fini)(void *);          /* deactivation function */
 };
 
-struct plugin_list
-{
+struct plugin_list {
    char *name;
    bool exists;
    LIST_ENTRY(plugin_list) next;
 };
 
 #ifdef OS_WINDOWS
-  #define PLUGIN_PATTERN  "ec_*.dll"
+#define PLUGIN_PATTERN  "ec_*.dll"
 #else
-  #define PLUGIN_PATTERN  "ec_*.so"
+#define PLUGIN_PATTERN  "ec_*.so"
 #endif
 
 EC_API_EXTERN void plugin_load_all(void);
@@ -50,22 +48,21 @@ EC_API_EXTERN int plugin_kill_thread(char *name, char *thread);
 EC_API_EXTERN void plugin_list(void);
 EC_API_EXTERN void free_plugin_list(struct plugin_list_t plugins);
 
-#define PLUGIN_LOCK(x)                                \
-   do{                                                \
-       if (pthread_mutex_trylock(&x)) {               \
-          ec_thread_exit();                           \
-          return NULL;                                \
-       }                                              \
-   } while(0)
+#define PLUGIN_LOCK(x) \
+   do { \
+      if (pthread_mutex_trylock(&x)) { \
+         ec_thread_exit(); \
+         return NULL; \
+      } \
+   } while (0)
 
-#define PLUGIN_UNLOCK(x)                              \
-   do{                                                \
-       pthread_mutex_unlock(&x);                      \
-   } while(0)
+#define PLUGIN_UNLOCK(x) \
+   do { \
+      pthread_mutex_unlock(&x); \
+   } while (0)
 
-#endif 
+#endif
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -1,32 +1,32 @@
 /*
-    ettercap -- dissector snmp -- UDP 161
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- dissector snmp -- UDP 161
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
 #include <ec_dissect.h>
 #include <ec_resolv.h>
 
-#define ASN1_INTEGER    2                                                                           
-#define ASN1_STRING     4                                                                           
-#define ASN1_SEQUENCE   16 
+#define ASN1_INTEGER    2
+#define ASN1_STRING     4
+#define ASN1_SEQUENCE   16
 
 #define SNMP_VERSION_1  0
 #define SNMP_VERSION_2c 1
@@ -60,25 +60,25 @@ FUNC_DECODER(dissector_snmp)
    u_int32 version, n;
 
    /* don't complain about unused var */
-   (void) DECODE_DATA; 
-   (void) DECODE_DATALEN;
-   (void) DECODED_LEN;
-   
+   (void)DECODE_DATA;
+   (void)DECODE_DATALEN;
+   (void)DECODED_LEN;
+
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;
-   
+
    DEBUG_MSG("SNMP --> UDP dissector_snmp");
 
    /* get the version */
-   while (*ptr++ != ASN1_INTEGER && ptr < end);
-   
+   while (*ptr++ != ASN1_INTEGER && ptr < end) ;
+
    /* reached the end */
    if (ptr >= end) return NULL;
-      
-   // Check len + version    
+
+   // Check len + version
    if ((ptr + (*ptr) + 1) >= end) return NULL;
-   
+
    /* move to the len */
    ptr += *ptr;
 
@@ -90,37 +90,37 @@ FUNC_DECODER(dissector_snmp)
       version = 2;
    else if (version > 3)
       version = 3;
-   
+
    /* move till the community name len */
-   while(*ptr++ != ASN1_STRING && ptr < end);
-   
+   while (*ptr++ != ASN1_STRING && ptr < end) ;
+
    /* reached the end */
    if (ptr >= end) return NULL;
 
    /* get the community name length */
    n = *ptr;
-   
+
    if (n >= 128) {
       n &= ~128;
 
       if ((ptr + n) > end) return NULL;
       ptr += n;
-      
-      switch(*ptr) {
-         case 1:
-            clen = *ptr;
-            break;
-         case 2:
-            NS_GET16(clen, ptr);
-            break;
-         case 3:
-            ptr--;
-            NS_GET32(clen, ptr);
-            clen &= 0xfff;
-            break;
-         case 4:
-            NS_GET32(clen, ptr);
-            break;
+
+      switch (*ptr) {
+      case 1:
+         clen = *ptr;
+         break;
+      case 2:
+         NS_GET16(clen, ptr);
+         break;
+      case 3:
+         ptr--;
+         NS_GET32(clen, ptr);
+         clen &= 0xfff;
+         break;
+      case 4:
+         NS_GET32(clen, ptr);
+         break;
       }
    } else
       clen = *ptr;
@@ -131,7 +131,7 @@ FUNC_DECODER(dissector_snmp)
    /* Avoid bof */
    if (clen > MAX_COMMUNITY_LEN || ((ptr + clen) > end))
       return NULL;
-         
+
    SAFE_CALLOC(PACKET->DISSECTOR.user, clen + 2, sizeof(char));
 
    /* fill the structure */
@@ -140,18 +140,15 @@ FUNC_DECODER(dissector_snmp)
    PACKET->DISSECTOR.info = strdup("SNMP v ");
    /* put the number in the string */
    PACKET->DISSECTOR.info[6] = version + 48;
-   
+
    DISSECT_MSG("SNMP : %s:%d -> COMMUNITY: %s  INFO: %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                 ntohs(PACKET->L4.dst), 
-                                 PACKET->DISSECTOR.user,
-                                 PACKET->DISSECTOR.info);
-   
+               ntohs(PACKET->L4.dst),
+               PACKET->DISSECTOR.user,
+               PACKET->DISSECTOR.info);
 
    return NULL;
 }
 
-
 /* EOF */
 
 // vim:ts=3:expandtab
-

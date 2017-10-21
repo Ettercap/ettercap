@@ -8,4 +8,3 @@ EC_API_EXTERN void signal_handler(void);
 /* EOF */
 
 // vim:ts=3:expandtab
-

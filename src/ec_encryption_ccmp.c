@@ -1,23 +1,23 @@
 /*
-    ettercap -- encryption functions
-
-    Copyright (C) The Ettercap Dev Team
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- encryption functions
+ *
+ *  Copyright (C) The Ettercap Dev Team
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_encryption.h>
@@ -28,16 +28,17 @@
 
 /* globals */
 
-#define CCMP_DECRYPT(_i, _b, _b0, _enc, _a, _len, _ctx) {  \
-   /* Decrypt, with counter */                             \
-   _b0[14] = (u_int8)((_i >> 8) & 0xff);                   \
-   _b0[15] = (u_int8)(_i & 0xff);                          \
-   AES_encrypt(_b0, _b, _ctx);         \
-   XOR_BLOCK(_enc, _b, _len);          \
-   /* Authentication */                \
-   XOR_BLOCK(_a, _enc, _len);          \
-   AES_encrypt(_a, _a, _ctx);          \
-}
+#define CCMP_DECRYPT(_i, _b, _b0, _enc, _a, _len, _ctx) \
+   { \
+      /* Decrypt, with counter */ \
+      _b0[14] = (u_int8)((_i >> 8) & 0xff); \
+      _b0[15] = (u_int8)(_i & 0xff); \
+      AES_encrypt(_b0, _b, _ctx); \
+      XOR_BLOCK(_enc, _b, _len); \
+      /* Authentication */ \
+      XOR_BLOCK(_a, _enc, _len); \
+      AES_encrypt(_a, _a, _ctx); \
+   }
 
 /* protos */
 
@@ -57,13 +58,13 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    u_char mic[WPA_CCMP_TRAILER];
    u_char PN[6]; /* 48 bit Packet Number */
    size_t data_len = len - sizeof(struct wpa_header);
-   u_char AAD[AES_BLOCK_SIZE*2];
+   u_char AAD[AES_BLOCK_SIZE * 2];
    u_char BZERO[AES_BLOCK_SIZE], A[AES_BLOCK_SIZE], B[AES_BLOCK_SIZE];
    u_char decbuf[len];
    AES_KEY aes_ctx;
 
    if (len > UINT16_MAX) {
-       return -E_NOTHANDLED;
+      return -E_NOTHANDLED;
    }
 
    /* init the AES with the decryption key from SA */
@@ -101,7 +102,7 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
 
    /* decrypt the packet */
    if (ccmp_decrypt(decbuf, BZERO, B, A, mic, len, &aes_ctx) != 0) {
-      //DEBUG_MSG(D_VERBOSE, "WPA (CCMP) decryption failed, packet was skipped");
+      // DEBUG_MSG(D_VERBOSE, "WPA (CCMP) decryption failed, packet was skipped");
       return -E_NOTHANDLED;
    }
 
@@ -122,7 +123,6 @@ int wpa_ccmp_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    return E_SUCCESS;
 }
 
-
 /*
  * IEEE-802.11i-2004  8.3.3.2
  *
@@ -141,7 +141,6 @@ static inline void get_PN(u_char *PN, u_char *data)
    PN[5] = data[7];
 }
 
-
 static inline void get_BZERO(u_char *BZERO, u_char *mac, u_char *PN, size_t len)
 {
    BZERO[0] = 0x59;
@@ -149,15 +148,15 @@ static inline void get_BZERO(u_char *BZERO, u_char *mac, u_char *PN, size_t len)
 
    memcpy(BZERO + 2, mac + 10, ETH_ADDR_LEN);
 
-   BZERO[8]  = PN[5];
-   BZERO[9]  = PN[4];
+   BZERO[8] = PN[5];
+   BZERO[9] = PN[4];
    BZERO[10] = PN[3];
    BZERO[11] = PN[2];
    BZERO[12] = PN[1];
    BZERO[13] = PN[0];
 
-   BZERO[14] = ( len >> 8 ) & 0xFF;
-   BZERO[15] = ( len & 0xFF );
+   BZERO[14] = (len >> 8) & 0xFF;
+   BZERO[15] = (len & 0xFF);
 }
 
 static inline void get_AAD(u_char *AAD, u_char *mac, u_char *BZERO)
@@ -174,7 +173,7 @@ static inline void get_AAD(u_char *AAD, u_char *mac, u_char *BZERO)
    /* XXX - implement the case of AP to AP 4 addresses wifi header */
 
    /* if WIFI_DATA | WIFI_BACON, we have a QoS Packet */
-   if ( (mac[0] & (0x80 | 0x08)) == 0x88 ) {
+   if ((mac[0] & (0x80 | 0x08)) == 0x88) {
       AAD[24] = mac[24] & 0x0f; /* just priority bits */
       AAD[25] = 0;
       BZERO[1] = AAD[24];
@@ -185,7 +184,6 @@ static inline void get_AAD(u_char *AAD, u_char *mac, u_char *BZERO)
       AAD[1] = 22;
    }
 }
-
 
 static int ccmp_decrypt(u_char *enc, u_char *BZERO, u_char *B, u_char *A, u_char *mic, size_t len, AES_KEY *ctx)
 {
@@ -213,4 +211,3 @@ static int ccmp_decrypt(u_char *enc, u_char *BZERO, u_char *B, u_char *A, u_char
 /* EOF */
 
 // vim:ts=3:expandtab
-

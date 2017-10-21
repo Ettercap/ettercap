@@ -33,8 +33,8 @@
 #include <string.h>
 #endif
 
-void * memmem(const void *haystack, size_t haystacklen,
-              const void *needle, size_t needlelen);
+void *memmem(const void *haystack, size_t haystacklen,
+             const void *needle, size_t needlelen);
 
 /*
  *  DESCRIPTION
@@ -47,25 +47,24 @@ void * memmem(const void *haystack, size_t haystacklen,
  *        substring, or NULL if the substring is not found.
  */
 
-
-void * memmem(const void *haystack, size_t haystacklen,
-              const void *needle, size_t needlelen)
+void *memmem(const void *haystack, size_t haystacklen,
+             const void *needle, size_t needlelen)
 {
-	register const char *h = haystack;
-	register const char *n = needle;
-	register size_t hl = haystacklen;
-	register size_t nl = needlelen;
-	register size_t i;
+   register const char *h = haystack;
+   register const char *n = needle;
+   register size_t hl = haystacklen;
+   register size_t nl = needlelen;
+   register size_t i;
 
-	if (nl == 0) return (void *) haystack;    /* The first occurrence of the empty string is deemed to occur at
-                                                     the beginning of the string.  */
+   if (nl == 0) return (void *)haystack;    /* The first occurrence of the empty string is deemed to occur at
+                                             *       the beginning of the string.  */
 
-	for( i = 0; (i < hl) && (i + nl <= hl ); i++ )
-		if (h[i] == *n)	/* first match */
-			if ( !memcmp(&h[i]+1, n + 1, nl - 1) )
-				return (void *)(haystack+i);	/* returns a pointer to the substring */
+   for (i = 0; (i < hl) && (i + nl <= hl); i++)
+      if (h[i] == *n) /* first match */
+         if (!memcmp(&h[i] + 1, n + 1, nl - 1))
+            return (void *)(haystack + i); /* returns a pointer to the substring */
 
-	return (void *)NULL;	/* not found */
+   return (void *)NULL; /* not found */
 }
 
 /* EOF */

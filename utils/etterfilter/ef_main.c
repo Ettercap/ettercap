@@ -1,23 +1,23 @@
 /*
-    etterfilter -- filter compiler for ettercap content filtering engine
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  etterfilter -- filter compiler for ettercap content filtering engine
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ef.h>
 #include <ef_functions.h>
@@ -25,12 +25,12 @@
 
 #include <stdarg.h>
 
-#define GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
+#define GBL_FREE(x) do { if (x != NULL) { free(x); x = NULL; } } while (0)
 
 /* globals */
 
-extern FILE * yyin;           /* from scanner */
-extern int yyparse (void);    /* from parser */
+extern FILE *yyin;            /* from scanner */
+extern int yyparse(void);     /* from parser */
 
 /* global options */
 struct globals *gbls;
@@ -42,12 +42,12 @@ int main(int argc, char *argv[])
    int ret_value = 0;
    globals_alloc();
    /* etterfilter copyright */
-   fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
-                      GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
- 
+   fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n",
+           GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
+
    /* initialize the line number */
    GBL->lineno = 1;
-  
+
    /* getopt related parsing...  */
    parse_options(argc, argv);
 
@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
    setbuf(stdout, NULL);
    setbuf(stderr, NULL);
 
-   
    /* load the tables in etterfilter.tbl */
    load_tables();
    /* load the constants in etterfilter.cnt */
@@ -82,7 +81,7 @@ int main(int argc, char *argv[])
       fprintf(stdout, " done.\n\n");
    else
       fprintf(stdout, "\n\nThe script contains errors...\n\n");
-  
+
    /* write to file */
    ret_value = write_output();
    if (ret_value == -E_NOTHANDLED)
@@ -94,24 +93,22 @@ int main(int argc, char *argv[])
    return 0;
 }
 
-
 /*
  * print debug information
  */
 void ef_debug(u_char level, const char *message, ...)
-{ 
+{
    va_list ap;
-   
+
    /* if not in debug don't print anything */
    if (GBL_OPTIONS->debug < level)
       return;
 
-   /* print the message */ 
+   /* print the message */
    va_start(ap, message);
-   vfprintf (stderr, message, ap);
+   vfprintf(stderr, message, ap);
    fflush(stderr);
    va_end(ap);
-   
 }
 
 void globals_alloc(void)
@@ -129,10 +126,8 @@ void globals_free(void)
    SAFE_FREE(gbls);
 
    return;
-
 }
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

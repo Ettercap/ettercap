@@ -1,23 +1,23 @@
 /*
-    ettercap -- curses GUI
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- curses GUI
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <wdg.h>
@@ -46,11 +46,10 @@ static void curses_profiles_help(void *dummy);
 static wdg_t *wdg_profiles, *wdg_pro_detail;
 static char *logfile;
 
-
 /*******************************************/
 
 /*
- * the auto-refreshing list of profiles 
+ * the auto-refreshing list of profiles
  */
 void curses_show_profiles(void)
 {
@@ -61,9 +60,9 @@ void curses_show_profiles(void)
       wdg_set_focus(wdg_profiles);
       return;
    }
-   
+
    wdg_create_object(&wdg_profiles, WDG_DYNLIST, WDG_OBJ_WANT_FOCUS);
-   
+
    wdg_set_title(wdg_profiles, "Collected passive profiles:", WDG_ALIGN_LEFT);
    wdg_set_size(wdg_profiles, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
    wdg_set_color(wdg_profiles, WDG_COLOR_SCREEN, EC_COLOR);
@@ -72,15 +71,15 @@ void curses_show_profiles(void)
    wdg_set_color(wdg_profiles, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(wdg_profiles, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_draw_object(wdg_profiles);
- 
+
    wdg_set_focus(wdg_profiles);
 
    /* set the list print callback */
    wdg_dynlist_print_callback(wdg_profiles, profile_print);
-   
+
    /* set the select callback */
    wdg_dynlist_select_callback(wdg_profiles, curses_profile_detail);
-  
+
    /* add the callback on idle to refresh the profile list */
    wdg_add_idle_callback(refresh_profiles);
 
@@ -106,7 +105,7 @@ static void curses_kill_profiles(void)
 static void curses_profiles_help(void *dummy)
 {
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    char help[] = "HELP: shortcut list:\n\n"
                  "  ENTER - show the infos about the host\n"
@@ -123,7 +122,7 @@ static void refresh_profiles(void)
    /* if not focused don't refresh it */
    if (!(wdg_profiles->flags & WDG_OBJ_FOCUSED))
       return;
-   
+
    wdg_dynlist_refresh(wdg_profiles);
 }
 
@@ -136,8 +135,8 @@ static void curses_profile_detail(void *profile)
    struct open_port *o;
    struct active_user *u;
    char tmp[MAX_ASCII_ADDR_LEN];
-   char os[OS_LEN+1];
-  
+   char os[OS_LEN + 1];
+
    DEBUG_MSG("curses_profile_detail");
 
    /* if the object already exist, set the focus to it */
@@ -145,9 +144,9 @@ static void curses_profile_detail(void *profile)
       wdg_destroy_object(&wdg_pro_detail);
       wdg_pro_detail = NULL;
    }
-   
+
    wdg_create_object(&wdg_pro_detail, WDG_SCROLL, WDG_OBJ_WANT_FOCUS);
-   
+
    wdg_set_title(wdg_pro_detail, "Profile details:", WDG_ALIGN_LEFT);
    wdg_set_size(wdg_pro_detail, 1, 2, -1, SYSMSG_WIN_SIZE - 1);
    wdg_set_color(wdg_pro_detail, WDG_COLOR_SCREEN, EC_COLOR);
@@ -156,18 +155,18 @@ static void curses_profile_detail(void *profile)
    wdg_set_color(wdg_pro_detail, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(wdg_pro_detail, WDG_COLOR_TITLE, EC_COLOR_TITLE);
    wdg_draw_object(wdg_pro_detail);
- 
+
    wdg_set_focus(wdg_pro_detail);
 
    wdg_add_destroy_key(wdg_pro_detail, CTRL('Q'), NULL);
    wdg_scroll_set_lines(wdg_pro_detail, 100);
 
    memset(os, 0, sizeof(os));
-   
+
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " IP address   : %s \n", ip_addr_ntoa(&h->L3_addr, tmp));
    if (strcmp(h->hostname, ""))
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Hostname     : %s \n", h->hostname);
-      
+
 #ifdef WITH_GEOIP
    if (GBL_CONF->geoip_support_enable)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Location     : %s \n", geoip_country_by_ip(&h->L3_addr));
@@ -177,7 +176,7 @@ static void curses_profile_detail(void *profile)
 
    if (h->type & FP_HOST_LOCAL || h->type == FP_UNKNOWN) {
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " MAC address  : %s \n", mac_addr_ntoa(h->L2_addr, tmp));
-      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " MANUFACTURER : %s \n\n", manuf_search((const char*)h->L2_addr));
+      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " MANUFACTURER : %s \n\n", manuf_search((const char *)h->L2_addr));
    }
 
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " DISTANCE     : %d   \n", h->distance);
@@ -193,27 +192,26 @@ static void curses_profile_detail(void *profile)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " TYPE         : unknown\n\n");
 
    if (h->os)
-    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OBSERVED OS     : %s\n\n", h->os);
+      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OBSERVED OS     : %s\n\n", h->os);
 
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, " FINGERPRINT      : %s\n", h->fingerprint);
-   if (fingerprint_search((const char*)h->fingerprint, os) == E_SUCCESS)
+   if (fingerprint_search((const char *)h->fingerprint, os) == E_SUCCESS)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OPERATING SYSTEM : %s \n\n", os);
    else {
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " OPERATING SYSTEM : unknown fingerprint (please submit it) \n");
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " NEAREST ONE IS   : %s \n\n", os);
    }
-      
-   
+
    LIST_FOREACH(o, &(h->open_ports_head), next) {
-      
-      wdg_scroll_print(wdg_pro_detail, EC_COLOR, "   PORT     : %s %d | %s \t[%s]\n", 
-                  (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP" , 
-                  ntohs(o->L4_addr),
-                  service_search(o->L4_addr, o->L4_proto), 
-                  (o->banner) ? o->banner : "");
-      
+
+      wdg_scroll_print(wdg_pro_detail, EC_COLOR, "   PORT     : %s %d | %s \t[%s]\n",
+                       (o->L4_proto == NL_TYPE_TCP) ? "TCP" : "UDP",
+                       ntohs(o->L4_addr),
+                       service_search(o->L4_addr, o->L4_proto),
+                       (o->banner) ? o->banner : "");
+
       LIST_FOREACH(u, &(o->users_list_head), next) {
-        
+
          if (u->failed)
             wdg_scroll_print(wdg_pro_detail, EC_COLOR, "      ACCOUNT : * %s / %s  (%s)\n", u->user, u->pass, ip_addr_ntoa(&u->client, tmp));
          else
@@ -229,7 +227,7 @@ static void curses_profile_detail(void *profile)
 static void curses_profiles_local(void *dummy)
 {
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    profile_purge_remote();
    wdg_dynlist_reset(wdg_profiles);
@@ -239,7 +237,7 @@ static void curses_profiles_local(void *dummy)
 static void curses_profiles_remote(void *dummy)
 {
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    profile_purge_local();
    wdg_dynlist_reset(wdg_profiles);
@@ -249,7 +247,7 @@ static void curses_profiles_remote(void *dummy)
 static void curses_profiles_convert(void *dummy)
 {
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    profile_convert_to_hostlist();
    curses_message("The hosts list was populated with local profiles");
@@ -258,7 +256,7 @@ static void curses_profiles_convert(void *dummy)
 static void curses_profiles_dump(void *dummy)
 {
    /* variable not used */
-   (void) dummy;
+   (void)dummy;
 
    DEBUG_MSG("curses_profiles_dump");
 
@@ -267,7 +265,6 @@ static void curses_profiles_dump(void *dummy)
    SAFE_CALLOC(logfile, 50, sizeof(char));
 
    curses_input("Log File :", logfile, 50, dump_profiles);
-
 }
 
 static void dump_profiles(void)
@@ -280,4 +277,3 @@ static void dump_profiles(void)
 /* EOF */
 
 // vim:ts=3:expandtab
-

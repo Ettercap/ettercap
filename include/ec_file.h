@@ -1,9 +1,9 @@
 #ifndef ETTERCAP_FILE_H
 #define ETTERCAP_FILE_H
 
-EC_API_EXTERN FILE * open_data(char *dir, char *file, char *mode);
-EC_API_EXTERN char * get_full_path(const char *dir, const char *file);
-EC_API_EXTERN char * get_local_path(const char *file);
+EC_API_EXTERN FILE *open_data(char *dir, char *file, char *mode);
+EC_API_EXTERN char *get_full_path(const char *dir, const char *file);
+EC_API_EXTERN char *get_local_path(const char *file);
 
 #define MAC_FINGERPRINTS   "etter.finger.mac"
 #define TCP_FINGERPRINTS   "etter.finger.os"
@@ -16,9 +16,9 @@ EC_API_EXTERN char * get_local_path(const char *file);
 #define CERT_FILE          "etter.ssl.crt"
 
 /* fopen modes */
-#define FOPEN_READ_TEXT   "r"                                                                   
-#define FOPEN_READ_BIN    "rb"                                                                   
-#define FOPEN_WRITE_TEXT  "w"                                                                   
+#define FOPEN_READ_TEXT   "r"
+#define FOPEN_READ_BIN    "rb"
+#define FOPEN_WRITE_TEXT  "w"
 #define FOPEN_WRITE_BIN   "wb"
 
 #endif
@@ -26,4 +26,3 @@ EC_API_EXTERN char * get_local_path(const char *file);
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -8,4 +8,3 @@ EC_API_EXTERN int http_fields_init(void);
 /* EOF */
 
 // vim:ts=3:expandtab
-

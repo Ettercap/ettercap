@@ -1,23 +1,23 @@
 /*
-    ettercap -- dissector http and proxy -- TCP 80, 8080
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- dissector http and proxy -- TCP 80, 8080
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_file.h>
@@ -48,34 +48,34 @@ typedef struct {
 }tSmbStrHeader;
 
 typedef struct {
-   char 	ident[8];
-   u_int32	msgType;
+   char ident[8];
+   u_int32 msgType;
 }tSmbStdHeader;
 
 typedef struct {
-   char			ident[8];
-   u_int32		msgType;
-   tSmbStrHeader	uDomain;
-   u_int32		flags;
-   u_int8		challengeData[8];
-   u_int8		reserved[8];
-   tSmbStrHeader	emptyString;
-   u_int8		buffer[1024];
-   u_int32		bufIndex;
+   char ident[8];
+   u_int32 msgType;
+   tSmbStrHeader uDomain;
+   u_int32 flags;
+   u_int8 challengeData[8];
+   u_int8 reserved[8];
+   tSmbStrHeader emptyString;
+   u_int8 buffer[1024];
+   u_int32 bufIndex;
 }tSmbNtlmAuthChallenge;
 
 typedef struct {
-    char 		ident[8];
-    u_int32		msgType;
-    tSmbStrHeader	lmResponse;
-    tSmbStrHeader	ntResponse;
-    tSmbStrHeader	uDomain;
-    tSmbStrHeader	uUser;
-    tSmbStrHeader	uWks;
-    tSmbStrHeader	sessionKey;
-    u_int32		flags;
-    u_int8		buffer[1024];
-    u_int32		bufIndex;
+   char ident[8];
+   u_int32 msgType;
+   tSmbStrHeader lmResponse;
+   tSmbStrHeader ntResponse;
+   tSmbStrHeader uDomain;
+   tSmbStrHeader uUser;
+   tSmbStrHeader uWks;
+   tSmbStrHeader sessionKey;
+   u_int32 flags;
+   u_int8 buffer[1024];
+   u_int32 bufIndex;
 }tSmbNtlmAuthResponse;
 
 struct http_field_entry {
@@ -84,7 +84,6 @@ struct http_field_entry {
 };
 
 static SLIST_HEAD(, http_field_entry) http_fields[2];
-
 
 /* protos */
 FUNC_DECODER(dissector_http);
@@ -107,12 +106,12 @@ static char *unicodeToString(char *p, size_t len);
 static void dumpRaw(char *str, unsigned char *buf, size_t len);
 int http_fields_init(void);
 
-#define CVAL(buf,pos) (((unsigned char *)(buf))[pos])
-#define PVAL(buf,pos) ((unsigned)CVAL(buf,pos))
-#define SVAL(buf,pos) (PVAL(buf,pos)|PVAL(buf,(pos)+1)<<8)
-#define IVAL(buf,pos) (SVAL(buf,pos)|SVAL(buf,(pos)+2)<<16)
+#define CVAL(buf, pos) (((unsigned char *)(buf))[pos])
+#define PVAL(buf, pos) ((unsigned)CVAL(buf, pos))
+#define SVAL(buf, pos) (PVAL(buf, pos) | PVAL(buf, (pos) + 1) << 8)
+#define IVAL(buf, pos) (SVAL(buf, pos) | SVAL(buf, (pos) + 2) << 16)
 
-#define GetUnicodeString(structPtr, header) unicodeToString(((char*)structPtr) + IVAL(&structPtr->header.offset,0) , SVAL(&structPtr->header.len,0)/2)
+#define GetUnicodeString(structPtr, header) unicodeToString(((char *)structPtr) + IVAL(&structPtr->header.offset, 0), SVAL(&structPtr->header.len, 0) / 2)
 
 /************************************************/
 
@@ -128,7 +127,6 @@ void __init http_init(void)
    dissect_add("http", APP_LAYER_TCP, 80, dissector_http);
 }
 
-
 FUNC_DECODER(dissector_http)
 {
    DECLARE_DISP_PTR_END(ptr, end);
@@ -139,55 +137,58 @@ FUNC_DECODER(dissector_http)
 
    /* unused variable */
    (void)end;
-   (void) DECODE_DATA; 
-   (void) DECODE_DATALEN;
-   (void) DECODED_LEN;
+   (void)DECODE_DATA;
+   (void)DECODE_DATALEN;
+   (void)DECODED_LEN;
 
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;
 
    /* XXX - This way we won't catch ProxyAuth on CONNECT */
-   if (Check_CONNECT((char*)ptr, PACKET))
-      return NULL;         
+   if (Check_CONNECT((char *)ptr, PACKET))
+      return NULL;
 
    /* HOOK POINT: HOOK_PROTO_HTTP */
    hook_point(HOOK_PROTO_HTTP, PACKET);
-   
+
    /* Parse client requests.
-    * Check the request type first. 
+    * Check the request type first.
     */
    if (FROM_CLIENT("http", PACKET) || FROM_CLIENT("proxy", PACKET) || FROM_CLIENT("https", PACKET)) {
       /* Check Proxy or WWW auth first
        * then password in the GET or POST.
        */
-      if ((from_here = strstr((const char*)ptr, "Authorization: Passport")) && 
-         Parse_Passport_Auth(from_here + strlen("Authorization: Passport"), PACKET));       
-      else if ((from_here = strstr((const char*)ptr, ": NTLM ")) && 
-         Parse_NTLM_Auth((char*)ptr, from_here + strlen(": NTLM "), PACKET));
-      else if ((from_here = strstr((const char*)ptr, ": Basic ")) &&
-         Parse_Basic_Auth((char*)ptr, from_here  + strlen(": Basic "), PACKET));
-      else if ((from_here = strstr((const char*)ptr, "User-Agent: ")) &&
-          Parse_User_Agent(end, from_here + strlen("User-Agent: "), PACKET));
-      else if (!strncmp((const char*)ptr, "GET ", 4))
-         Parse_Method_Get((char*)ptr + strlen("GET "), PACKET);
-      else if (!strncmp((const char*)ptr, "POST ", 5))
-         Parse_Method_Post((char*)ptr + strlen("POST "), PACKET);
+      if ((from_here = strstr((const char *)ptr, "Authorization: Passport")) &&
+          Parse_Passport_Auth(from_here + strlen("Authorization: Passport"), PACKET)) ;
+      else if ((from_here = strstr((const char *)ptr, ": NTLM ")) &&
+               Parse_NTLM_Auth((char *)ptr, from_here + strlen(": NTLM "), PACKET))
+         ;
+      else if ((from_here = strstr((const char *)ptr, ": Basic ")) &&
+               Parse_Basic_Auth((char *)ptr, from_here + strlen(": Basic "), PACKET))
+         ;
+      else if ((from_here = strstr((const char *)ptr, "User-Agent: ")) &&
+               Parse_User_Agent(end, from_here + strlen("User-Agent: "), PACKET))
+         ;
+      else if (!strncmp((const char *)ptr, "GET ", 4))
+         Parse_Method_Get((char *)ptr + strlen("GET "), PACKET);
+      else if (!strncmp((const char *)ptr, "POST ", 5))
+         Parse_Method_Post((char *)ptr + strlen("POST "), PACKET);
       else {
          dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_http));
          if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
-            conn_status = (struct http_status *) s->data;
-	 
+            conn_status = (struct http_status *)s->data;
+
             /* Are we waiting for post termination? */
             if (conn_status->c_status == POST_WAIT_DELIMITER ||
                 conn_status->c_status == POST_LAST_CHANCE)
-               Parse_Post_Payload((char*)ptr, conn_status, PACKET);
+               Parse_Post_Payload((char *)ptr, conn_status, PACKET);
          }
          SAFE_FREE(ident);
-      } 	 
+      }
    } else { /* Server Replies */
-      if (!strncmp((const char*)ptr, "HTTP", 4)) {
-         Get_Banner((char*)ptr, PACKET);
+      if (!strncmp((const char *)ptr, "HTTP", 4)) {
+         Get_Banner((char *)ptr, PACKET);
 
          /* Since the server replies there's no need to
           * wait for POST termination or client response
@@ -195,12 +196,12 @@ FUNC_DECODER(dissector_http)
          dissect_wipe_session(PACKET, DISSECT_CODE(dissector_http));
 
          /* Check Proxy or WWW Auth (server challenge) */
-         /* XXX - Is the NTLM challenge always in the same 
+         /* XXX - Is the NTLM challenge always in the same
           * packet as HTTP header? Otherwise put these lines
           * out from the if (decrease performances, checks all pcks)
           */
-         if ((from_here = strstr((const char*)ptr, ": NTLM "))) 
-            Parse_NTLM_Auth((char*)ptr, from_here + strlen(": NTLM "), PACKET);
+         if ((from_here = strstr((const char *)ptr, ": NTLM ")))
+            Parse_NTLM_Auth((char *)ptr, from_here + strlen(": NTLM "), PACKET);
       }
    }
 
@@ -217,67 +218,67 @@ static int Check_CONNECT(char *ptr, struct packet_object *po)
    /* If we don't activate SSL wrappers we don't need to trace CONNECT */
    if (!GBL_CONF->aggressive_dissectors || GBL_OPTIONS->unoffensive || GBL_OPTIONS->read)
       return 0;
-      
+
    dissect_create_ident(&ident, po, DISSECT_CODE(dissector_http));
    if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
-      conn_status = (struct http_status *) s->data;
+      conn_status = (struct http_status *)s->data;
 
       if (FROM_SERVER("proxy", po)) {
-         if (conn_status->c_status == PROXY_WAIT_OK && !strncmp(ptr + 8, " 200 ", 5)) 
+         if (conn_status->c_status == PROXY_WAIT_OK && !strncmp(ptr + 8, " 200 ", 5))
             conn_status->c_status = PROXY_WAIT_DELIMITER;
 
-         if (conn_status->c_status == PROXY_WAIT_DELIMITER && 
-            (strstr(ptr, "\r\n\r\n") || (ptr[0]=='\r' && ptr[1]=='\n'))) {
+         if (conn_status->c_status == PROXY_WAIT_DELIMITER &&
+             (strstr(ptr, "\r\n\r\n") || (ptr[0] == '\r' && ptr[1] == '\n')))
+         {
             dissect_wipe_session(po, DISSECT_CODE(dissector_http));
             po->flags |= PO_SSLSTART;
             SAFE_FREE(ident);
             return 1;
          }
-      }      
+      }
    } else if (FROM_CLIENT("proxy", po) && !strncmp(ptr, "CONNECT ", 8)) {
       dissect_create_session(&s, po, DISSECT_CODE(dissector_http));
-      SAFE_CALLOC(s->data, 1, sizeof(struct http_status));                  
-      conn_status = (struct http_status *) s->data;
+      SAFE_CALLOC(s->data, 1, sizeof(struct http_status));
+      conn_status = (struct http_status *)s->data;
       conn_status->c_status = PROXY_WAIT_OK;
       session_put(s);
    }
 
    SAFE_FREE(ident);
-   if (conn_status && (conn_status->c_status == PROXY_WAIT_DELIMITER || conn_status->c_status == PROXY_WAIT_OK))  
+   if (conn_status && (conn_status->c_status == PROXY_WAIT_DELIMITER || conn_status->c_status == PROXY_WAIT_OK))
       return 1;
-      
+
    return 0;
 }
 
-/* Get the server banner from the headers */       
+/* Get the server banner from the headers */
 static void Get_Banner(char *ptr, struct packet_object *po)
 {
    char *start, *end;
    u_int32 len;
-   
-   /* This is the banner of the remote 
+
+   /* This is the banner of the remote
     * server and not of the proxy
     */
-    DEBUG_MSG("http - GET BANNER");
-    
+   DEBUG_MSG("http - GET BANNER");
+
    if (FROM_SERVER("proxy", po))
-      po->DISSECTOR.banner=strdup("Proxy");
+      po->DISSECTOR.banner = strdup("Proxy");
    else {
       /* Get the server version */
       if ((start = strstr(ptr, "Server: ")) && (end = strstr(start, "\r"))) {
          start += strlen("Server: ");
          len = end - start;
-	      
-         if (len>0 && len<1024) {
-            SAFE_CALLOC(po->DISSECTOR.banner, len+1, sizeof(char));
+
+         if (len > 0 && len < 1024) {
+            SAFE_CALLOC(po->DISSECTOR.banner, len + 1, sizeof(char));
             memcpy(po->DISSECTOR.banner, start, len);
          }
       }
    }
 }
 
-
-/* Parse Passport Authentication */ 
+/* Parse Passport Authentication */
 static int Parse_Passport_Auth(char *from_here, struct packet_object *po)
 {
    char *token, *to_decode, *tok;
@@ -287,18 +288,18 @@ static int Parse_Passport_Auth(char *from_here, struct packet_object *po)
    if (!(to_decode = strdup(from_here)))
       return 1;
 
-   if ( (token = strstr(to_decode, "OrgURL=")) == NULL ) {
+   if ((token = strstr(to_decode, "OrgURL=")) == NULL) {
       SAFE_FREE(to_decode);
       return 1;
    }
-   
+
    /* Catch the original URL */
    ec_strtok(token, ",", &tok);
    po->DISSECTOR.info = strdup(token + strlen("OrgURL="));
    Decode_Url(po->DISSECTOR.info);
-   
+
    /* Catch user and password */
-   while ( (token = ec_strtok(NULL, ",", &tok)) != NULL ) {
+   while ((token = ec_strtok(NULL, ",", &tok)) != NULL) {
       if (!strncmp(token, "sign-in=", strlen("sign-in="))) {
          po->DISSECTOR.user = strdup(token + strlen("sign-in="));
          Decode_Url(po->DISSECTOR.user);
@@ -312,11 +313,10 @@ static int Parse_Passport_Auth(char *from_here, struct packet_object *po)
 
    Print_Pass(po);
    SAFE_FREE(to_decode);
-   return 1;      
+   return 1;
 }
 
-
-/* Parse Basic Authentication for both Proxy and WWW Auth */ 
+/* Parse Basic Authentication for both Proxy and WWW Auth */
 static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
    int Proxy_Auth = 0;
@@ -328,7 +328,7 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
    /* If it's a proxy auth and we are not interested on proxy stuff
     * return 0, so the dissector will continue to parse GET and POST
     */
-   /* It stands for both Proxy-Authenticate and Authorization ;) */    
+   /* It stands for both Proxy-Authenticate and Authorization ;) */
    if (strstr(ptr, "Proxy-Auth") || strstr(ptr, "Proxy-auth")) {
       if (FROM_CLIENT("proxy", po))
          Proxy_Auth = 1;
@@ -338,35 +338,34 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
 
    if (!(to_decode = strdup(from_here)))
       return 1;
-       
+
    ec_strtok(to_decode, "\r", &tok);
 
    char *decoded;
    base64decode(to_decode, &decoded);
-  
-   DEBUG_MSG("Clear text AUTH: %s", decoded); 
 
-   /* clear text should be username:password 
+   DEBUG_MSG("Clear text AUTH: %s", decoded);
+
+   /* clear text should be username:password
     * this means that we must find the first instance of :
     * token shoul dbe username, and decoded should just be the password
     */
    /* Parse the cleartext auth string */
-  
 
    pass = NULL;
 
-   user = ec_strtok(decoded, ":", &pass); 
+   user = ec_strtok(decoded, ":", &pass);
 
    if (pass != NULL && user != NULL) {
       po->DISSECTOR.user = strdup(user);
-      po->DISSECTOR.pass = strdup(pass);	
- 
+      po->DISSECTOR.pass = strdup(pass);
+
       /* Are we authenticating to the proxy or to a website? */
       if (Proxy_Auth)
          po->DISSECTOR.info = strdup("Proxy Authentication");
-      else 
+      else
          Find_Url(ptr, &(po->DISSECTOR.info));
-   
+
       Print_Pass(po);
    }
 
@@ -375,151 +374,149 @@ static int Parse_Basic_Auth(char *ptr, char *from_here, struct packet_object *po
    return 1;
 }
 
-static int Parse_User_Agent(char* end, char *from_here, struct packet_object *po)
+static int Parse_User_Agent(char *end, char *from_here, struct packet_object *po)
 {
-    // find the end of the line
-    const char* line_end = (const char*)memchr(from_here, '\n', end - from_here);
-    if (line_end == NULL) {
-        return 0;
-    }
+   // find the end of the line
+   const char *line_end = (const char *)memchr(from_here, '\n', end - from_here);
+   if (line_end == NULL) {
+      return 0;
+   }
 
-    unsigned int line_length = line_end - from_here;
-    const char* comment_begin = (const char*)memchr(from_here, '(', line_length);
-    if (comment_begin == NULL || ((comment_begin + 1) >= end)) {
-        // no comments found
-        return 0;
-    }
-    ++comment_begin;
+   unsigned int line_length = line_end - from_here;
+   const char *comment_begin = (const char *)memchr(from_here, '(', line_length);
+   if (comment_begin == NULL || ((comment_begin + 1) >= end)) {
+      // no comments found
+      return 0;
+   }
+   ++comment_begin;
 
-    const char* comment_end = (const char*)memchr(comment_begin, ')', line_end - comment_begin);
-    if (comment_end == NULL) {
-        // couldn't find the close on the comment
-        return 0;
-    }
+   const char *comment_end = (const char *)memchr(comment_begin, ')', line_end - comment_begin);
+   if (comment_end == NULL) {
+      // couldn't find the close on the comment
+      return 0;
+   }
 
-    const char* os = NULL;
-    while (os == NULL && comment_begin != NULL) {
-        unsigned int comment_length = comment_end - comment_begin;
-        if ((comment_length > 10 && strncmp(comment_begin, "Windows NT", 10) == 0) ||
-            (comment_length > 9 && strncmp(comment_begin, "Intel Mac", 9) == 0) ||
-            (comment_length > 7 && strncmp(comment_begin, "PPC Mac", 7) == 0) ||
-            (comment_length > 10 && strncmp(comment_begin, "CPU iPhone", 10) == 0) ||
-            (comment_length > 8 && strncmp(comment_begin, "Android", 7) == 0) ||
-            (comment_length > 5 && strncmp(comment_begin, "CrOS", 4) == 0) || // Chrome OS
-            (comment_length > 5 && strncmp(comment_begin, "Linux", 5) == 0)) {
-            os = comment_begin;
-        }
+   const char *os = NULL;
+   while (os == NULL && comment_begin != NULL) {
+      unsigned int comment_length = comment_end - comment_begin;
+      if ((comment_length > 10 && strncmp(comment_begin, "Windows NT", 10) == 0) ||
+          (comment_length > 9 && strncmp(comment_begin, "Intel Mac", 9) == 0) ||
+          (comment_length > 7 && strncmp(comment_begin, "PPC Mac", 7) == 0) ||
+          (comment_length > 10 && strncmp(comment_begin, "CPU iPhone", 10) == 0) ||
+          (comment_length > 8 && strncmp(comment_begin, "Android", 7) == 0) ||
+          (comment_length > 5 && strncmp(comment_begin, "CrOS", 4) == 0) ||   // Chrome OS
+          (comment_length > 5 && strncmp(comment_begin, "Linux", 5) == 0))
+      {
+         os = comment_begin;
+      }
 
-        if (os == NULL) {
-            comment_begin = memchr(comment_begin, ';', comment_end - comment_begin);
-            if (comment_begin != NULL && ((comment_begin + 2) < comment_end)) {
-                // skip the ; and the ' '
-                comment_begin += 2;
-            }
-            else
-            {
-            	comment_begin = NULL;
-            }
-        } else {
-            const char* the_end = memchr(comment_begin, ';', comment_end - comment_begin);
-            if (the_end != NULL) {
-                comment_end = the_end;
-            }
+      if (os == NULL) {
+         comment_begin = memchr(comment_begin, ';', comment_end - comment_begin);
+         if (comment_begin != NULL && ((comment_begin + 2) < comment_end)) {
+            // skip the ; and the ' '
+            comment_begin += 2;
+         } else {
+            comment_begin = NULL;
+         }
+      } else {
+         const char *the_end = memchr(comment_begin, ';', comment_end - comment_begin);
+         if (the_end != NULL) {
+            comment_end = the_end;
+         }
 
-            SAFE_CALLOC(po->DISSECTOR.os, 1, (comment_end - os) + 1);
-            memcpy(po->DISSECTOR.os, os, comment_end - os);
-            po->DISSECTOR.os[comment_end - os] = 0;
-        }
-    }
+         SAFE_CALLOC(po->DISSECTOR.os, 1, (comment_end - os) + 1);
+         memcpy(po->DISSECTOR.os, os, comment_end - os);
+         po->DISSECTOR.os[comment_end - os] = 0;
+      }
+   }
 
-    // always return 0 so the main loop drops down to get/post
-    return 0;
+   // always return 0 so the main loop drops down to get/post
+   return 0;
 }
 
-/* Parse NTLM challenge and response for both Proxy and WWW Auth */ 
+/* Parse NTLM challenge and response for both Proxy and WWW Auth */
 static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
 {
-   char *to_decode, msgType, *tok; 
+   char *to_decode, msgType, *tok;
    tSmbStdHeader *hSmb;
    int Proxy_Auth = 0;
    void *ident = NULL;
    struct ec_session *s = NULL;
    struct http_status *conn_status;
-       
+
    DEBUG_MSG("HTTP --> dissector http (NTLM Auth)");
-   
+
    /* If it's a proxy auth and we are not interested on proxy stuff
     * return 0, so the dissector will continue to parse GET and POST
     */
-   /* It stands for both Proxy-Authenticate and Authorization ;) */    
+   /* It stands for both Proxy-Authenticate and Authorization ;) */
    if (strstr(ptr, "Proxy-Auth") || strstr(ptr, "Proxy-auth")) {
       if (FROM_CLIENT("proxy", po) || FROM_SERVER("proxy", po))
          Proxy_Auth = 1;
       else
          return 0;
    }
-   
+
    if (!(to_decode = strdup(from_here)))
       return 1;
-       
+
    ec_strtok(to_decode, "\r", &tok);
 
    char *decoded;
    base64decode(to_decode, &decoded);
-   hSmb = (tSmbStdHeader *) decoded;
+   hSmb = (tSmbStdHeader *)decoded;
    msgType = IVAL(&hSmb->msgType, 0);
 
    /* msgType 2 -> Server challenge
     * msgType 3 -> Client response
-    */    
-   if (msgType==2) {
+    */
+   if (msgType == 2) {
       tSmbNtlmAuthChallenge *challenge_struct;
 
-      challenge_struct = (tSmbNtlmAuthChallenge *) decoded;
-      
+      challenge_struct = (tSmbNtlmAuthChallenge *)decoded;
+
       /* Create a session to remember the server challenge */
       dissect_create_session(&s, po, DISSECT_CODE(dissector_http));
-      SAFE_CALLOC(s->data, 1, sizeof(struct http_status));                  
-      conn_status = (struct http_status *) s->data;
+      SAFE_CALLOC(s->data, 1, sizeof(struct http_status));
+      conn_status = (struct http_status *)s->data;
       conn_status->c_status = NTLM_WAIT_RESPONSE;
-      dumpRaw((char*)conn_status->c_data, challenge_struct->challengeData, 8);
+      dumpRaw((char *)conn_status->c_data, challenge_struct->challengeData, 8);
       session_put(s);
-
-   } else if (msgType==3) {   
-      tSmbNtlmAuthResponse  *response_struct;
+   } else if (msgType == 3) {
+      tSmbNtlmAuthResponse *response_struct;
       char *outstr;
-      
+
       /* Take the challenge from the session */
       dissect_create_ident(&ident, po, DISSECT_CODE(dissector_http));
       if (session_get_and_del(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
-         conn_status = (struct http_status *) s->data;
-	 
+         conn_status = (struct http_status *)s->data;
+
          /* Are we waiting for client response? */
          /* XXX- POST Continuation may conflict with NTLM Proxy auth
-          * if the client doesn't send Proxy-Authorization in the same 
+          * if the client doesn't send Proxy-Authorization in the same
           * packet as the POST
-          */  
+          */
          if (conn_status->c_status == NTLM_WAIT_RESPONSE) {
             /* Fill the user and passwords */
-            response_struct  = (tSmbNtlmAuthResponse *) to_decode;
+            response_struct = (tSmbNtlmAuthResponse *)to_decode;
             po->DISSECTOR.user = strdup(GetUnicodeString(response_struct, uUser));
             SAFE_CALLOC(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, sizeof(char));
             snprintf(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, "(NTLM) %s:\"\":\"\":", po->DISSECTOR.user);
             outstr = po->DISSECTOR.pass + strlen(po->DISSECTOR.pass);
-            dumpRaw(outstr,((unsigned char*)response_struct)+IVAL(&response_struct->lmResponse.offset,0), 24);	    	 
-            outstr[48] = ':';
-            outstr+=49;
-            dumpRaw(outstr,((unsigned char*)response_struct)+IVAL(&response_struct->ntResponse.offset,0), 24);	       	    
+            dumpRaw(outstr, ((unsigned char *)response_struct) + IVAL(&response_struct->lmResponse.offset, 0), 24);
             outstr[48] = ':';
             outstr += 49;
-            strcat(po->DISSECTOR.pass, (const char*)conn_status->c_data);
+            dumpRaw(outstr, ((unsigned char *)response_struct) + IVAL(&response_struct->ntResponse.offset, 0), 24);
+            outstr[48] = ':';
+            outstr += 49;
+            strcat(po->DISSECTOR.pass, (const char *)conn_status->c_data);
 
             /* Are we authenticating to the proxy or to a website? */
             if (Proxy_Auth)
                po->DISSECTOR.info = strdup("Proxy Authentication");
-            else 
+            else
                Find_Url(ptr, &(po->DISSECTOR.info));
-	    
+
             Print_Pass(po);
          }
          session_free(s);
@@ -531,31 +528,30 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
    return 1;
 }
 
-
 /* Deal with POST continuation */
 static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struct packet_object *po)
-{ 
-   char *user=NULL, *pass=NULL;
+{
+   char *user = NULL, *pass = NULL;
    u_char user_res, pass_res;
 
    DEBUG_MSG("HTTP - Parse First chance");
-   
+
    if (conn_status->c_status == POST_WAIT_DELIMITER)
-      if ((ptr = strstr(ptr, "\r\n\r\n"))) { 
-         ptr+=4;
+      if ((ptr = strstr(ptr, "\r\n\r\n"))) {
+         ptr += 4;
          conn_status->c_status = POST_LAST_CHANCE;
       }
    DEBUG_MSG("HTTP - Parse Last chance");
    if (conn_status->c_status == POST_LAST_CHANCE) {
-   DEBUG_MSG("HTTP - Parse Form");
+      DEBUG_MSG("HTTP - Parse Form");
 
-      user_res= Parse_Form(ptr, &user, USER);
-      pass_res= Parse_Form(ptr, &pass, PASS);
+      user_res = Parse_Form(ptr, &user, USER);
+      pass_res = Parse_Form(ptr, &pass, PASS);
       if (user_res || pass_res) {
          po->DISSECTOR.user = user;
          po->DISSECTOR.pass = pass;
-         po->DISSECTOR.content = strdup((const char*) ptr);
-         po->DISSECTOR.info = strdup((const char*)conn_status->c_data);
+         po->DISSECTOR.content = strdup((const char *)ptr);
+         po->DISSECTOR.info = strdup((const char *)conn_status->c_data);
          dissect_wipe_session(po, DISSECT_CODE(dissector_http));
          Print_Pass(po);
       } else {
@@ -565,58 +561,56 @@ static void Parse_Post_Payload(char *ptr, struct http_status *conn_status, struc
    }
 }
 
-
 /* Parse the POST header */
-static void Parse_Method_Post(char *ptr, struct packet_object *po) 
+static void Parse_Method_Post(char *ptr, struct packet_object *po)
 {
    char *url = NULL;
    struct ec_session *s = NULL;
    struct http_status *conn_status;
-     
+
    DEBUG_MSG("HTTP --> dissector http (method POST)");
-  
+
    Find_Url_Referer(ptr, &url);
-   
-   /* We create a session just in case the post was 
+
+   /* We create a session just in case the post was
     * fragmented into more packets. The session will be
     * wiped on HTTP server reply.
     */
    dissect_create_session(&s, po, DISSECT_CODE(dissector_http));
-   SAFE_CALLOC(s->data, 1, sizeof(struct http_status));                  
-   conn_status = (struct http_status *) s->data;
+   SAFE_CALLOC(s->data, 1, sizeof(struct http_status));
+   conn_status = (struct http_status *)s->data;
    conn_status->c_status = POST_WAIT_DELIMITER;
-   strlcpy((char*)conn_status->c_data, url, sizeof(conn_status->c_data));
+   strlcpy((char *)conn_status->c_data, url, sizeof(conn_status->c_data));
    session_put(s);
 
    Parse_Post_Payload(ptr, conn_status, po);
-   
+
    SAFE_FREE(url);
 }
 
-
 /* Search for passwords in the URL */
-static void Parse_Method_Get(char *ptr, struct packet_object *po) 
+static void Parse_Method_Get(char *ptr, struct packet_object *po)
 {
    char *to_parse = NULL;
    char *delimiter = NULL;
    char *user = NULL;
    char *pass = NULL;
-   
+
    DEBUG_MSG("HTTP --> dissector http (method GET)");
 
    /* Isolate the parameters and copy them into another string */
    if (!(to_parse = strstr(ptr, "?")))
       return;
-      
+
    if (!(to_parse = strdup(to_parse)))
-      return;      
-      
-   if (!(delimiter = strstr(to_parse, " HTTP"))) 
+      return;
+
+   if (!(delimiter = strstr(to_parse, " HTTP")))
       goto http_get_failure;
-   
+
    /* NULL terminate the newly created parameter string */
    *delimiter = 0;
-   
+
    /* Let's parse the parameter list */
    if (!Parse_Form(to_parse, &user, USER) || !Parse_Form(to_parse, &pass, PASS)) {
       SAFE_FREE(user);
@@ -628,13 +622,12 @@ static void Parse_Method_Get(char *ptr, struct packet_object *po)
 
    /* Fill the info with the URL */
    Find_Url_Referer(ptr, &(po->DISSECTOR.info));
-   
+
    Print_Pass(po);
-   
-http_get_failure:   
+
+http_get_failure:
    SAFE_FREE(to_parse);
 }
-
 
 /* Match users or passwords in a string */
 static u_char Parse_Form(char *to_parse, char **ret, int mode)
@@ -643,22 +636,22 @@ static u_char Parse_Form(char *to_parse, char **ret, int mode)
    struct http_field_entry *d;
 
    /* Strip the '?' from a GET method */
-   if (*to_parse == '?') to_parse++;    
-   if (*to_parse == 0) 
+   if (*to_parse == '?') to_parse++;
+   if (*to_parse == 0)
       return 0;
 
-   /* Search for users or passwords */   
+   /* Search for users or passwords */
 
-   /* Search matches between each parameter and 
-    * recognized users and passwords 
-    */      
+   /* Search matches between each parameter and
+    * recognized users and passwords
+    */
 
    SLIST_FOREACH(d, &(http_fields[mode]), next) {
-      q = to_parse;  
+      q = to_parse;
       do {
          if (*q == '&') q++;
-         
-         if (!strncasecmp(q, d->name, strlen(d->name)) && *(q+strlen(d->name)) == '=' ) {
+
+         if (!strncasecmp(q, d->name, strlen(d->name)) && *(q + strlen(d->name)) == '=') {
 
             /* Return the value past the '=' */
             if (!(*ret = strdup(q + strlen(d->name) + 1)))
@@ -666,17 +659,16 @@ static u_char Parse_Form(char *to_parse, char **ret, int mode)
 
             /* NULL terminate the value if it's not the last */
             if ((q = strchr(*ret, '&')))
-               *q = 0; 
+               *q = 0;
 
             Decode_Url(*ret);
             return 1;
          }
-      } while ( (q = strchr(q, '&')) );
+      } while ((q = strchr(q, '&')));
    }
-   
+
    return 0;
 }
-
 
 /* Unescape the string */
 static void Decode_Url(char *src)
@@ -687,14 +679,14 @@ static void Decode_Url(char *src)
    /* Paranoid test */
    if (!src)
       return;
-      
+
    /* NULL terminate for the strtoul */
    t[2] = 0;
-   
-   for (i=0, j=0; src[i] != 0; i++, j++) {
+
+   for (i = 0, j = 0; src[i] != 0; i++, j++) {
       ch = (u_int32)src[i];
       if (ch == '%' && isxdigit((u_int32)src[i + 1]) && isxdigit((u_int32)src[i + 2])) {
-         memcpy(t, src+i+1, 2);
+         memcpy(t, src + i + 1, 2);
          ch = strtoul(t, NULL, 16);
          i += 2;
       }
@@ -703,11 +695,10 @@ static void Decode_Url(char *src)
    src[j] = 0;
 }
 
-
 /* Gets the URL from the headers */
-static void Find_Url_Referer(char *to_parse, char **ret) 
+static void Find_Url_Referer(char *to_parse, char **ret)
 {
-   char *fromhere, *page=NULL, *host=NULL;     
+   char *fromhere, *page = NULL, *host = NULL;
    u_int32 len;
    char *tok;
 
@@ -721,28 +712,27 @@ static void Find_Url_Referer(char *to_parse, char **ret)
       ec_strtok(page, " HTTP", &tok);
 
       /* If the path is relative, search for the Host */
-      if ((*page=='/') && (fromhere = strstr(to_parse, "Host: "))) {
-         host = strdup( fromhere + strlen("Host: ") );
+      if ((*page == '/') && (fromhere = strstr(to_parse, "Host: "))) {
+         host = strdup(fromhere + strlen("Host: "));
          ec_strtok(host, "\r", &tok);
-      } else 
+      } else
          host = strdup("");
-	 
+
       len = strlen(page) + strlen(host) + 2;
       SAFE_CALLOC(*ret, len, sizeof(char));
       snprintf(*ret, len, "%s%s", host, page);
 
       SAFE_FREE(page);
-      SAFE_FREE(host);            
-   }    
-   
+      SAFE_FREE(host);
+   }
+
    Decode_Url(*ret);
 }
 
-
 /* Gets the URL from the request */
-static void Find_Url(char *to_parse, char **ret) 
+static void Find_Url(char *to_parse, char **ret)
 {
-   char *fromhere, *page=NULL, *host=NULL;     
+   char *fromhere, *page = NULL, *host = NULL;
    u_int32 len;
    char *tok;
 
@@ -750,27 +740,27 @@ static void Find_Url(char *to_parse, char **ret)
       to_parse += strlen("GET ");
    else if (!strncmp(to_parse, "POST ", 5))
       to_parse += strlen("POST ");
-   else 
-      return; 
-      
+   else
+      return;
+
    /* Get the page from the request */
    page = strdup(to_parse);
    ec_strtok(page, " HTTP", &tok);
 
    /* If the path is relative, search for the Host */
-   if ((*page=='/') && (fromhere = strstr(to_parse, "Host: "))) {
-      host = strdup( fromhere + strlen("Host: ") );
+   if ((*page == '/') && (fromhere = strstr(to_parse, "Host: "))) {
+      host = strdup(fromhere + strlen("Host: "));
       ec_strtok(host, "\r", &tok);
-   } else 
+   } else
       host = strdup("");
-	 
+
    len = strlen(page) + strlen(host) + 2;
    SAFE_CALLOC(*ret, len, sizeof(char));
    snprintf(*ret, len, "%s%s", host, page);
 
    SAFE_FREE(page);
-   SAFE_FREE(host);            
-       
+   SAFE_FREE(host);
+
    Decode_Url(*ret);
 }
 
@@ -778,7 +768,7 @@ static void Find_Url(char *to_parse, char **ret)
 static void Print_Pass(struct packet_object *po)
 {
    char tmp[MAX_ASCII_ADDR_LEN];
-   
+
    if (!po->DISSECTOR.user)
       po->DISSECTOR.user = strdup("");
 
@@ -786,15 +776,14 @@ static void Print_Pass(struct packet_object *po)
       po->DISSECTOR.pass = strdup("");
 
    DISSECT_MSG("HTTP : %s:%d -> USER: %s  PASS: %s  INFO: %s\n", ip_addr_ntoa(&po->L3.dst, tmp),
-                                                                 ntohs(po->L4.dst), 
-                                                                 po->DISSECTOR.user,
-                                                                 po->DISSECTOR.pass,
-                                                                 po->DISSECTOR.info);
+               ntohs(po->L4.dst),
+               po->DISSECTOR.user,
+               po->DISSECTOR.pass,
+               po->DISSECTOR.info);
 
    if (po->DISSECTOR.content)
-    DISSECT_MSG("CONTENT: %s\n\n", po->DISSECTOR.content);
+      DISSECT_MSG("CONTENT: %s\n\n", po->DISSECTOR.content);
 }
-
 
 /* Load known user/pass fields from file */
 int http_fields_init(void)
@@ -811,20 +800,20 @@ int http_fields_init(void)
       USER_MSG("Cannot open %s\n", ETTER_FIELDS);
       return -E_INVALID;
    }
-         
+
    /* load it in the list */
    while (fgets(line, 128, f)) {
-    
+
       /* trim comments */
-      if ( (ptr = strchr(line, '#')) )
+      if ((ptr = strchr(line, '#')))
          *ptr = 0;
 
       /* trim \n */
-      if ( (ptr = strchr(line, '\n')) )
+      if ((ptr = strchr(line, '\n')))
          *ptr = 0;
 
       /* trim ' ' */
-      if ( (ptr = strchr(line, ' ')) )
+      if ((ptr = strchr(line, ' ')))
          *ptr = 0;
 
       /* skip empty lines */
@@ -832,16 +821,16 @@ int http_fields_init(void)
          continue;
 
       /* Identify the section */
-      if(!strncmp(line, "[USER]", 6)) {
+      if (!strncmp(line, "[USER]", 6)) {
          pass_flag = USER;
          continue;
       }
 
-      if(!strncmp(line, "[PASS]", 6)) {
+      if (!strncmp(line, "[PASS]", 6)) {
          pass_flag = PASS;
          continue;
       }
-       
+
       /* create the entry */
       SAFE_CALLOC(d, 1, sizeof(struct http_field_entry));
       d->name = strdup(line);
@@ -849,19 +838,18 @@ int http_fields_init(void)
       /* insert in the right list */
       SLIST_INSERT_HEAD(&(http_fields[pass_flag]), d, next);
    }
-   
+
    fclose(f);
 
    return E_SUCCESS;
 }
-
 
 /* A little helper function */
 static void dumpRaw(char *str, unsigned char *buf, size_t len)
 {
    u_int32 i;
 
-   for (i=0; i<len; ++i, str+=2)
+   for (i = 0; i < len; ++i, str += 2)
       snprintf(str, 3, "%02x", buf[i]);
 }
 
@@ -872,7 +860,7 @@ static char *unicodeToString(char *p, size_t len)
    static char buf[1024];
 
    /* A string longer than 1024 chars???...it's a bogus packet */
-   for (i=0; i<len && i<1023; ++i) {
+   for (i = 0; i < len && i < 1023; ++i) {
       buf[i] = *p & 0x7f;
       p += 2;
    }

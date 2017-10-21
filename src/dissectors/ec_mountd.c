@@ -1,23 +1,23 @@
 /*
-    ettercap -- dissector mountd -- TCP 2049
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- dissector mountd -- TCP 2049
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -59,21 +59,21 @@ FUNC_DECODER(dissector_mountd)
 
    /* don't complain about unused var */
    (void)end;
-   (void) DECODE_DATA; 
-   (void) DECODE_DATALEN;
-   (void) DECODED_LEN;
+   (void)DECODE_DATA;
+   (void)DECODE_DATALEN;
+   (void)DECODED_LEN;
 
    /* skip packets which are not useful */
    if (PACKET->DATA.len < 24)
       return NULL;
-   
+
    DEBUG_MSG("mountd --> dissector_mountd");
 
    /* Offsets differs from TCP to UDP (?) */
    if (PACKET->L4.proto == NL_TYPE_TCP)
       ptr += 4;
 
-   xid  = pntol(ptr);
+   xid = pntol(ptr);
    type = pntol(ptr + 4);
 
    /* CALL */
@@ -81,28 +81,28 @@ FUNC_DECODER(dissector_mountd)
 
       program = pntol(ptr + 12);
       version = pntol(ptr + 16);
-      proc    = pntol(ptr + 20);
+      proc = pntol(ptr + 20);
 
-      if (type != 0 || program != 100005 || proc != 1 ) 
+      if (type != 0 || program != 100005 || proc != 1)
          return NULL;
 
-      /* Take remote dir (with some checks) */	
+      /* Take remote dir (with some checks) */
       cred = pntol(ptr + 28);
       if (cred > PACKET->DATA.len)
          return NULL;
-      flen  = pntol(ptr + 40 + cred);
+      flen = pntol(ptr + 40 + cred);
       if (flen > 100)
          return NULL;
-	 
+
       dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_mountd));
       SAFE_CALLOC(s->data, 1, sizeof(mountd_session));
       pe = (mountd_session *)s->data;
       pe->xid = xid;
       pe->ver = version;
       SAFE_CALLOC(pe->rem_dir, 1, flen + 1);
-      memcpy(pe->rem_dir, ptr + 44 + cred, flen); 
+      memcpy(pe->rem_dir, ptr + 44 + cred, flen);
       session_put(s);
-      
+
       return NULL;
    }
 
@@ -119,13 +119,13 @@ FUNC_DECODER(dissector_mountd)
    PACKET->DISSECTOR.banner = strdup("mountd");
 
    /* Unsuccess or not a reply */
-   if (!pe || !(pe->rem_dir) || pe->xid != xid || pntol(ptr + 24) != 0 || type != 1) 
+   if (!pe || !(pe->rem_dir) || pe->xid != xid || pntol(ptr + 24) != 0 || type != 1)
       return NULL;
 
    /* Take the handle */
    if (pe->ver == 3) {
       flen = pntol(ptr + 28);
-      if (flen > 64) 
+      if (flen > 64)
          flen = 64;
       offs = 32;
    } else {
@@ -134,14 +134,14 @@ FUNC_DECODER(dissector_mountd)
    }
 
    DISSECT_MSG("mountd : Server:%s Handle %s: [ ",
-         ip_addr_ntoa(&PACKET->L3.src, tmp), pe->rem_dir);
+               ip_addr_ntoa(&PACKET->L3.src, tmp), pe->rem_dir);
 
-   for (i=0; i<flen; i++) {
-      if ((i*3)+1 > (flen*3)+10)
+   for (i = 0; i < flen; i++) {
+      if ((i * 3) + 1 > (flen * 3) + 10)
          break;
       DISSECT_MSG("%02x ", ptr[i + offs]);
    }
-   
+
    DISSECT_MSG("]\n");
 
    SAFE_FREE(pe->rem_dir);
@@ -149,8 +149,6 @@ FUNC_DECODER(dissector_mountd)
    return NULL;
 }
 
-
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -1,21 +1,21 @@
 /*
-    ettercap -- cygwin specific functions
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- cygwin specific functions
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 
@@ -28,15 +28,14 @@ static HKEY handle;
 
 void disable_ip_forward(void)
 {
-   long       Status;
+   long Status;
 #ifdef WIN9X
-   DWORD      dim = 2;
-   char       IpForwardSz[2];
+   DWORD dim = 2;
+   char IpForwardSz[2];
 #else
-   DWORD      dim = 4;
+   DWORD dim = 4;
 #endif
-   DWORD      value = 3;
-
+   DWORD value = 3;
 
    Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 #ifdef WIN9X
@@ -45,12 +44,12 @@ void disable_ip_forward(void)
                          TEXT("SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters"),
 #endif
                          0,
-                         KEY_READ|KEY_SET_VALUE,
+                         KEY_READ | KEY_SET_VALUE,
                          &handle);
 
 #ifdef WIN9X
    Status = RegQueryValueEx(handle, TEXT("EnableRouting"), NULL, NULL, (LPBYTE)IpForwardSz, &dim);
-   value = IpForwardSz[0]-'0';
+   value = IpForwardSz[0] - '0';
 #else
    Status = RegQueryValueEx(handle, TEXT("IPEnableRouter"), NULL, NULL, (LPBYTE)&value, &dim);
 #endif
@@ -59,7 +58,7 @@ void disable_ip_forward(void)
 
    if (value == 0) {
       /* if forward is already 0 */
-      return;  
+      return;
    }
 
    saved_status = value;
@@ -92,16 +91,16 @@ void disable_ip_forward(void)
 void restore_ip_forward(void)
 {
 #ifdef WIN9X
-   DWORD      dim = 2;
-   char       IpForwardSz[2];
+   DWORD dim = 2;
+   char IpForwardSz[2];
 #else
-   DWORD      dim = 4;
+   DWORD dim = 4;
 #endif
 
    /* the handle was already opened in disable_ip_forward */
-   
+
    DEBUG_MSG("ATEXIT: restore_ip_forward: retoring to value %d", saved_status);
-   
+
 #ifdef WIN9X
    IpForwardSz[0] = saved_status + '0';
    IpForwardSz[1] = '\0';
@@ -111,27 +110,26 @@ void restore_ip_forward(void)
 #endif
 
    RegCloseKey(handle);
-
 }
 
 #ifdef WITH_IPV6
-/* 
+/*
  * empty wrapper functions until IPv6 support for Windows
  */
 void disable_ipv6_forward(void)
 {
-   DEBUG_MSG ("disable_ipv6_forward (no-op)\n");
+   DEBUG_MSG("disable_ipv6_forward (no-op)\n");
 }
 
 void restore_ipv6_forward(void)
 {
-   DEBUG_MSG ("restore_ipv6_forward (no-op)\n");
+   DEBUG_MSG("restore_ipv6_forward (no-op)\n");
 }
+
 #endif
 
-
-/* 
- * get the MTU parameter from the interface 
+/*
+ * get the MTU parameter from the interface
  */
 u_int16 get_iface_mtu(const char *iface)
 {
@@ -143,4 +141,3 @@ u_int16 get_iface_mtu(const char *iface)
 /* EOF */
 
 // vim:ts=3:expandtab
-

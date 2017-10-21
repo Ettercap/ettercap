@@ -70,25 +70,25 @@ struct ec_conf {
 
 /* options from getopt */
 struct ec_options {
-   char write:1;
-   char read:1;
-   char compress:1;
-   char quiet:1;
-   char superquiet:1;
-   char silent:1;
-   char ip6scan:1;
-   char unoffensive:1;
-   char ssl_mitm:1;
-   char load_hosts:1;
-   char save_hosts:1;
-   char resolve:1;
-   char ext_headers:1;
-   char mitm:1;
-   char only_mitm:1;
-   char remote:1;
-   char gateway:1;
-   char lifaces:1;
-   char broadcast:1;
+   char write : 1;
+   char read : 1;
+   char compress : 1;
+   char quiet : 1;
+   char superquiet : 1;
+   char silent : 1;
+   char ip6scan : 1;
+   char unoffensive : 1;
+   char ssl_mitm : 1;
+   char load_hosts : 1;
+   char save_hosts : 1;
+   char resolve : 1;
+   char ext_headers : 1;
+   char mitm : 1;
+   char only_mitm : 1;
+   char remote : 1;
+   char gateway : 1;
+   char lifaces : 1;
+   char broadcast : 1;
    char reversed;
    char *hostsfile;
    LIST_HEAD(plugin_list_t, plugin_list) plugins;
@@ -119,16 +119,16 @@ struct program_env {
 
 /* global pcap structure */
 struct pcap_env {
-   pcap_if_t     *ifs;
-   char          *buffer;        /* buffer to be used to handle all the packets */
-   u_int8         align;         /* alignment needed on sparc 4*n - sizeof(media_hdr) */
-   char           promisc;
-   char          *filter;        /* pcap filter */
-   int            snaplen;
-   int            dlt;
+   pcap_if_t *ifs;
+   char *buffer;                 /* buffer to be used to handle all the packets */
+   u_int8 align;                 /* alignment needed on sparc 4*n - sizeof(media_hdr) */
+   char promisc;
+   char *filter;                 /* pcap filter */
+   int snaplen;
+   int dlt;
    pcap_dumper_t *dump;
-   u_int32        dump_size;     /* total dump size */
-   u_int32        dump_off;      /* current offset */
+   u_int32 dump_size;            /* total dump size */
+   u_int32 dump_off;             /* current offset */
 };
 
 /* lnet structure */
@@ -153,26 +153,26 @@ struct hosts_list {
 
 /* target specifications */
 struct target_env {
-   char scan_all:1;
-   char all_mac:1;            /* these one bit flags are used as wildcards */
-   char all_ip:1;
-   char all_ip6:1;
-   char all_port:1;
+   char scan_all : 1;
+   char all_mac : 1;            /* these one bit flags are used as wildcards */
+   char all_ip : 1;
+   char all_ip6 : 1;
+   char all_port : 1;
    u_char mac[MEDIA_ADDR_LEN];
    LIST_HEAD(, ip_list) ips;
    LIST_HEAD(, ip_list) ip6;
-   u_int8 ports[1<<13];       /* in 8192 byte we have 65535 bits, use one bit per port */
+   u_int8 ports[1 << 13];       /* in 8192 byte we have 65535 bits, use one bit per port */
 };
 
 /* wifi network structure */
 struct wifi_env {
-	char wireless;               /* if the send interface is wireless */
-	u_char wifi_schema;
-      #define WIFI_WEP 0x01
-      #define WIFI_WPA 0x02
-	char *wifi_key;              /* user specified wifi_key */
-	u_char wkey[MAX_WKEY_LEN];   /* encoded wifi key, large enough for all encryption schemas */
-	size_t wkey_len;
+   char wireless;              /* if the send interface is wireless */
+   u_char wifi_schema;
+#define WIFI_WEP 0x01
+#define WIFI_WPA 0x02
+   char *wifi_key;             /* user specified wifi_key */
+   u_char wkey[MAX_WKEY_LEN];  /* encoded wifi key, large enough for all encryption schemas */
+   size_t wkey_len;
 };
 
 /* the globals container */
@@ -232,4 +232,3 @@ EC_API_EXTERN void globals_free(void);
 /* EOF */
 
 // vim:ts=3:expandtab
-

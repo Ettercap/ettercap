@@ -21,4 +21,3 @@ EC_API_EXTERN int set_format(char *format);
 /* EOF */
 
 // vim:ts=3:expandtab
-

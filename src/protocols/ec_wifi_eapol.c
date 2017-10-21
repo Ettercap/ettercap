@@ -1,23 +1,23 @@
 /*
-    ettercap -- EAP On Line 802.1x authentication packets for wifi
-
-    Copyright (C) The Ettercap Dev Team
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- EAP On Line 802.1x authentication packets for wifi
+ *
+ *  Copyright (C) The Ettercap Dev Team
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -52,7 +52,6 @@ void __init eapol_init(void)
    add_decoder(NET_LAYER, LL_TYPE_8021x, decode_eapol);
 }
 
-
 FUNC_DECODER(decode_eapol)
 {
    struct eapol_header *eapol;
@@ -65,8 +64,8 @@ FUNC_DECODER(decode_eapol)
    char tmp[512];
 
    /* don't complain about unused var */
-   (void) DECODE_DATALEN;
-   
+   (void)DECODE_DATALEN;
+
    /* analyze these only if we have a wpa key */
    if (GBL_WIFI->wifi_schema != WIFI_WPA)
       return NULL;
@@ -106,7 +105,8 @@ FUNC_DECODER(decode_eapol)
    if (message == EAPOL_4WAY_MESSAGE_GROUP) {
       memcpy(sta, PACKET->L2.dst, ETH_ADDR_LEN);
       memcpy(bssid, PACKET->L2.src, ETH_ADDR_LEN);
-   } if (message % 2) {
+   }
+   if (message % 2) {
       memcpy(sta, PACKET->L2.dst, ETH_ADDR_LEN);
       memcpy(bssid, PACKET->L2.src, ETH_ADDR_LEN);
    } else {
@@ -133,122 +133,119 @@ FUNC_DECODER(decode_eapol)
       return NULL;
    }
 
-
    USER_MSG("EAPOL packet: [%s] 4-way handshake %d [%s]\n", sta_address, message, (algo == WPA_KEY_TKIP) ? "TKIP (WPA)" : "CCMP (WPA2)");
 
    switch (message) {
-      case EAPOL_4WAY_MESSAGE_ONE:
-         /*
-          * On reception of Message 1, the Supplicant determines whether the Key Replay Counter field value has been
-          * used before with the current PMKSA. If the Key Replay Counter field value is less than or equal to the current
-          * local value, the Supplicant discards the message.
-          */
+   case EAPOL_4WAY_MESSAGE_ONE:
+      /*
+       * On reception of Message 1, the Supplicant determines whether the Key Replay Counter field value has been
+       * used before with the current PMKSA. If the Key Replay Counter field value is less than or equal to the current
+       * local value, the Supplicant discards the message.
+       */
 
-         /* save ANonce (from authenticator)  to derive the PTK with the SNonce (from the 2 message)   */
-         memcpy(sa.ANonce, eapol_key->key_nonce, WPA_NONCE_LEN);
+      /* save ANonce (from authenticator)  to derive the PTK with the SNonce (from the 2 message)   */
+      memcpy(sa.ANonce, eapol_key->key_nonce, WPA_NONCE_LEN);
 
-         DEBUG_MSG("WPA ANonce : %s", str_tohex(sa.ANonce, WPA_NONCE_LEN, tmp, sizeof(tmp)));
+      DEBUG_MSG("WPA ANonce : %s", str_tohex(sa.ANonce, WPA_NONCE_LEN, tmp, sizeof(tmp)));
 
-         /* get the Key Descriptor Version (to select algorithm used in decryption -CCMP or TKIP-)  */
-         sa.algo = algo;
+      /* get the Key Descriptor Version (to select algorithm used in decryption -CCMP or TKIP-)  */
+      sa.algo = algo;
 
-         /* remember the state of the 4-way handshake */
-         sa.state = EAPOL_4WAY_MESSAGE_ONE;
+      /* remember the state of the 4-way handshake */
+      sa.state = EAPOL_4WAY_MESSAGE_ONE;
 
-         /* save the status of the SA, overwrite it if it was an old one */
-         wpa_sess_add(sta, &sa);
+      /* save the status of the SA, overwrite it if it was an old one */
+      wpa_sess_add(sta, &sa);
 
+      break;
+
+   case EAPOL_4WAY_MESSAGE_TWO:
+      /* retrieve the session for this STA and check that the sate is consistent */
+      if (wpa_sess_get(sta, &sa) != E_SUCCESS || sa.state != EAPOL_4WAY_MESSAGE_ONE)
          break;
 
-      case EAPOL_4WAY_MESSAGE_TWO:
-         /* retrieve the session for this STA and check that the sate is consistent */
-         if (wpa_sess_get(sta, &sa) != E_SUCCESS || sa.state != EAPOL_4WAY_MESSAGE_ONE)
-            break;
+      /*
+       * On reception of Message 2, the Authenticator checks that the key replay counter corresponds to the
+       * outstanding Message 1. If not, it silently discards the message.
+       * If the calculated MIC does not match the MIC that the Supplicant included in the EAPOL-Key frame,
+       * the Authenticator silently discards Message 2.
+       */
+      memcpy(sa.SNonce, eapol_key->key_nonce, WPA_NONCE_LEN);
 
-         /*
-          * On reception of Message 2, the Authenticator checks that the key replay counter corresponds to the
-          * outstanding Message 1. If not, it silently discards the message.
-          * If the calculated MIC does not match the MIC that the Supplicant included in the EAPOL-Key frame,
-          * the Authenticator silently discards Message 2.
-          */
-         memcpy(sa.SNonce, eapol_key->key_nonce, WPA_NONCE_LEN);
+      DEBUG_MSG("WPA SNonce : %s", str_tohex(sa.SNonce, WPA_NONCE_LEN, tmp, sizeof(tmp)));
 
-         DEBUG_MSG("WPA SNonce : %s", str_tohex(sa.SNonce, WPA_NONCE_LEN, tmp, sizeof(tmp)));
+      /* derive the PTK from the BSSID, STA MAC, PMK (WPA-PSK), SNonce, ANonce */
+      wpa_generate_PTK(bssid, sta, GBL_WIFI->wkey, sa.SNonce, sa.ANonce, (sa.algo == WPA_KEY_TKIP) ? 512 : 384, sa.ptk);
 
-         /* derive the PTK from the BSSID, STA MAC, PMK (WPA-PSK), SNonce, ANonce */
-         wpa_generate_PTK(bssid, sta, GBL_WIFI->wkey, sa.SNonce, sa.ANonce, (sa.algo == WPA_KEY_TKIP) ? 512 : 384, sa.ptk);
+      DEBUG_MSG("WPA PTK : %s", str_tohex(sa.ptk, WPA_PTK_LEN, tmp, sizeof(tmp)));
 
-         DEBUG_MSG("WPA PTK : %s", str_tohex(sa.ptk, WPA_PTK_LEN, tmp, sizeof(tmp)));
+      /* verify the MIC (compare the MIC in the packet included in this message with a MIC calculated with the PTK) */
+      if (wpa_check_MIC(eapol, eapol_key, DECODED_LEN, sa.ptk, sa.algo) != E_SUCCESS) {
+         USER_MSG("WPA MIC does not match\n");
+         break;
+      }
 
-         /* verify the MIC (compare the MIC in the packet included in this message with a MIC calculated with the PTK) */
-         if (wpa_check_MIC(eapol, eapol_key, DECODED_LEN, sa.ptk, sa.algo) != E_SUCCESS) {
-            USER_MSG("WPA MIC does not match\n");
-            break;
-         }
+      DEBUG_MSG("WPA MIC : %s", str_tohex(eapol_key->key_MIC, WPA_MICKEY_LEN, tmp, sizeof(tmp)));
 
-         DEBUG_MSG("WPA MIC : %s", str_tohex(eapol_key->key_MIC, WPA_MICKEY_LEN, tmp, sizeof(tmp)));
+      /* remember the state of the 4-way handshake */
+      sa.state = EAPOL_4WAY_MESSAGE_TWO;
 
-         /* remember the state of the 4-way handshake */
-         sa.state = EAPOL_4WAY_MESSAGE_TWO;
+      /* save the status of the SA, overwrite it if it was an old one */
+      wpa_sess_add(sta, &sa);
 
-         /* save the status of the SA, overwrite it if it was an old one */
-         wpa_sess_add(sta, &sa);
+      break;
 
+   case EAPOL_4WAY_MESSAGE_THREE:
+      /* retrieve the session for this STA and check that the sate is consistent */
+      if (wpa_sess_get(sta, &sa) != E_SUCCESS || sa.state != EAPOL_4WAY_MESSAGE_TWO)
          break;
 
-      case EAPOL_4WAY_MESSAGE_THREE:
-         /* retrieve the session for this STA and check that the sate is consistent */
-         if (wpa_sess_get(sta, &sa) != E_SUCCESS || sa.state != EAPOL_4WAY_MESSAGE_TWO)
-            break;
+      /*
+       * On reception of Message 3, the Supplicant silently discards the message if the Key Replay Counter field
+       * value has already been used or if the ANonce value in Message 3 differs from the ANonce value in Message 1
+       * If using WPA2 PSK, message 3 will contain an RSN for the group key (GTK KDE).
+       * In order to properly support decrypting WPA2-PSK packets, we need to parse this to get the group key.
+       */
+      rsn_ie = (struct rsn_ie_header *)(eapol_key + 1);
 
-         /*
-          * On reception of Message 3, the Supplicant silently discards the message if the Key Replay Counter field
-          * value has already been used or if the ANonce value in Message 3 differs from the ANonce value in Message 1
-          * If using WPA2 PSK, message 3 will contain an RSN for the group key (GTK KDE).
-          * In order to properly support decrypting WPA2-PSK packets, we need to parse this to get the group key.
-          */
-         rsn_ie = (struct rsn_ie_header *)(eapol_key + 1);
+      wpa_decrypt_broadcast_key(eapol_key, rsn_ie, &sa);
 
-         wpa_decrypt_broadcast_key(eapol_key, rsn_ie, &sa);
+      /* remember the state of the 4-way handshake */
+      sa.state = EAPOL_4WAY_MESSAGE_THREE;
 
-         /* remember the state of the 4-way handshake */
-         sa.state = EAPOL_4WAY_MESSAGE_THREE;
+      /* save the status of the SA, overwrite it if it was an old one */
+      wpa_sess_add(sta, &sa);
 
-         /* save the status of the SA, overwrite it if it was an old one */
-         wpa_sess_add(sta, &sa);
+      break;
 
+   case EAPOL_4WAY_MESSAGE_FOUR:
+      /* retrieve the session for this STA and check that the sate is consistent */
+      if (wpa_sess_get(sta, &sa) != E_SUCCESS || sa.state != EAPOL_4WAY_MESSAGE_THREE)
          break;
 
-      case EAPOL_4WAY_MESSAGE_FOUR:
-         /* retrieve the session for this STA and check that the sate is consistent */
-         if (wpa_sess_get(sta, &sa) != E_SUCCESS || sa.state != EAPOL_4WAY_MESSAGE_THREE)
-            break;
+      /*
+       * On reception of Message 4, the Authenticator verifies that the Key Replay Counter field value is one
+       * that it used on this 4-Way Handshake; if it is not, it silently discards the message.
+       * If the calculated MIC does not match the MIC that the Supplicant included in the EAPOL-Key frame, the
+       * Authenticator silently discards Message 4.
+       */
 
-         /*
-          * On reception of Message 4, the Authenticator verifies that the Key Replay Counter field value is one
-          * that it used on this 4-Way Handshake; if it is not, it silently discards the message.
-          * If the calculated MIC does not match the MIC that the Supplicant included in the EAPOL-Key frame, the
-          * Authenticator silently discards Message 4.
-          */
+      /* we are done ! just copy the decryption key from PTK */
+      memcpy(sa.decryption_key, sa.ptk + 32, WPA_DEC_KEY_LEN);
 
-         /* we are done ! just copy the decryption key from PTK */
-         memcpy(sa.decryption_key, sa.ptk + 32, WPA_DEC_KEY_LEN);
+      USER_MSG("WPA KEY : %s\n", str_tohex(sa.decryption_key, WPA_DEC_KEY_LEN, tmp, sizeof(tmp)));
 
-         USER_MSG("WPA KEY : %s\n", str_tohex(sa.decryption_key, WPA_DEC_KEY_LEN, tmp, sizeof(tmp)));
+      /* remember the state of the 4-way handshake */
+      sa.state = EAPOL_4WAY_MESSAGE_FOUR;
 
-         /* remember the state of the 4-way handshake */
-         sa.state = EAPOL_4WAY_MESSAGE_FOUR;
+      /* save the status of the SA, overwrite it if it was an old one */
+      wpa_sess_add(sta, &sa);
 
-         /* save the status of the SA, overwrite it if it was an old one */
-         wpa_sess_add(sta, &sa);
-
-         break;
+      break;
    }
-
 
    return NULL;
 }
-
 
 static int eapol_4way_handshake(struct eapol_key_header *eapol_key)
 {
@@ -264,7 +261,8 @@ static int eapol_4way_handshake(struct eapol_key_header *eapol_key)
       /* Group Key (Sec=0, Mic=0, Ack=1)  */
       if ((key_info & WPA_KEY_SECURE) == 0 &&
           (key_info & WPA_KEY_MIC) == 0 &&
-          (key_info & WPA_KEY_ACK) != 0) {
+          (key_info & WPA_KEY_ACK) != 0)
+      {
          return EAPOL_4WAY_MESSAGE_GROUP;
       }
       return -E_NOTHANDLED;
@@ -292,9 +290,9 @@ static int eapol_4way_handshake(struct eapol_key_header *eapol_key)
     *    TKIP: Authenticator->Supplicant (Sec=0, Mic=1, Ack=1, Inst=1, Key=1(pairwise), KeyRSC=???, Nonce=ANonce, MIC=1)
     */
    if ( /* ((key_info & WPA_KEY_TKIP) || (key_info & WPA_KEY_SECURE) != 0) && */
-       (key_info & WPA_KEY_MIC) != 0 &&
-       (key_info & WPA_KEY_ACK) != 0 &&
-       (key_info & WPA_KEY_INSTALL) != 0)
+      (key_info & WPA_KEY_MIC) != 0 &&
+      (key_info & WPA_KEY_ACK) != 0 &&
+      (key_info & WPA_KEY_INSTALL) != 0)
       return EAPOL_4WAY_MESSAGE_THREE;
 
    /* message 4:
@@ -303,10 +301,10 @@ static int eapol_4way_handshake(struct eapol_key_header *eapol_key)
     *    to distinguish between message 2 and 4, check the len of the key_data_len (should be == 0)
     */
    if (/* ((key_info & WPA_KEY_TKIP) || (key_info & WPA_KEY_SECURE) != 0) && */
-       (key_info & WPA_KEY_MIC) != 0 &&
-       (key_info & WPA_KEY_ACK) == 0 &&
-       (key_info & WPA_KEY_INSTALL) == 0 &&
-       eapol_key->key_data_len == 0)
+      (key_info & WPA_KEY_MIC) != 0 &&
+      (key_info & WPA_KEY_ACK) == 0 &&
+      (key_info & WPA_KEY_INSTALL) == 0 &&
+      eapol_key->key_data_len == 0)
       return EAPOL_4WAY_MESSAGE_FOUR;
 
    /* invalid packet */
@@ -329,4 +327,3 @@ static int eapol_enc_algo(struct eapol_key_header *eapol_key)
 /* EOF */
 
 // vim:ts=3:expandtab
-

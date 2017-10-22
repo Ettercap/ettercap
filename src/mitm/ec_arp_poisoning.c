@@ -343,7 +343,7 @@ static void arp_poisoning_confirm(struct packet_object *po)
          LIST_FOREACH(g2, &arp_group_two, next) {
             if (!ip_addr_cmp(&po->L3.src, &g2->ip)) {
                /* confirm the sender with the poisoned ARP reply */
-               if(!poison_oneway)
+               if (!poison_oneway)
                   send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
             }
          }

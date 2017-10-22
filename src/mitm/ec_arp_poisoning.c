@@ -337,13 +337,16 @@ static void arp_poisoning_confirm(struct packet_object *po)
             }
          }
       }
-      /* else if the target is in group one ... */
-      if (!ip_addr_cmp(&po->L3.dst, &g1->ip)) {
-         /* look if the sender is in group two ... */
-         LIST_FOREACH(g2, &arp_group_two, next) {
-            if (!ip_addr_cmp(&po->L3.src, &g2->ip)) {
-               /* confirm the sender with the poisoned ARP reply */
-               send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
+
+      if (!poison_oneway) {
+         /* else if the target is in group one ... */
+         if (!ip_addr_cmp(&po->L3.dst, &g1->ip)) {
+            /* look if the sender is in group two ... */
+            LIST_FOREACH(g2, &arp_group_two, next) {
+               if (!ip_addr_cmp(&po->L3.src, &g2->ip)) {
+                  /* confirm the sender with the poisoned ARP reply */
+                     send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
+               }
             }
          }
       }

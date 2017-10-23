@@ -338,7 +338,7 @@ static void arp_poisoning_confirm(struct packet_object *po)
          }
       }
 
-      if (!oneway_poison) {
+      if (!poison_oneway) {
          /* else if the target is in group one ... */
          if (!ip_addr_cmp(&po->L3.dst, &g1->ip)) {
             /* look if the sender is in group two ... */

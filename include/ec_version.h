@@ -5,10 +5,10 @@
 #define EC_VERSION_MAJOR      0
 #define EC_VERSION_MINOR      8
 #define EC_VERSION_REVISION   2
-#if !defined PROGRAM
-   #define PROGRAM               "ettercap"
+#if !defined EC_PROGRAM
+  #define EC_PROGRAM            "ettercap"
 #endif
-#define EC_COPYRIGHT          "2001-2015"
+#define EC_COPYRIGHT          "2001-2017"
 #define EC_AUTHORS            "Ettercap Development Team"
 
 #endif

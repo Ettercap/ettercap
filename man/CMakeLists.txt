@@ -1,8 +1,17 @@
 # Add man page custom target
 if(ENABLE_PDF_DOCS)
-  find_program(GROFF_EXECUTABLE NAMES groff)
-  find_program(PS2PDF_EXECUTABLE NAMES ps2pdf)
-  set(PDF_FILES)
+        find_program(GROFF_EXECUTABLE NAMES groff)
+        set(PDF_FILES)
+
+# Check if groff supports PDF generation
+        execute_process(COMMAND ${GROFF_EXECUTABLE} -Tpdf -V
+        RESULT_VARIABLE GROFF_EXIT
+        ERROR_VARIABLE GROFF_ERROR
+        OUTPUT_QUIET)
+
+        if(NOT ${GROFF_EXIT} STREQUAL 0)
+          message(FATAL_ERROR "groff (at ${GROFF_EXECUTABLE}) does not seem to support PDF generation (${GROFF_EXIT}).\ngroff failed with output:\n${GROFF_ERROR}\nConsider upgrading the groff installation.\nUsers of Debian-based distributions must also install the full groff package.")
+        endif()
 endif()
 
 set (MAN_NAMES ettercap.8 etterfilter.8 etterlog.8 etter.conf.5)
@@ -25,20 +34,12 @@ foreach (m IN LISTS MAN_NAMES)
         list(APPEND MAN_FILES ${mf})
 
         if(ENABLE_PDF_DOCS)
-          set(ps ${CMAKE_BINARY_DIR}/man/${m}.ps)
           set(pdf ${CMAKE_BINARY_DIR}/man/${m}.pdf)
 
-          add_custom_command(OUTPUT ${mf}.ps
-          COMMAND ${GROFF_EXECUTABLE} -mandoc -Tps ${mf} > ${ps}
+          add_custom_command(OUTPUT ${mf}.pdf
+          COMMAND ${GROFF_EXECUTABLE} -mandoc -Tpdf ${mf} > ${pdf}
           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-          COMMENT "Building manpage ${mf}"
-          VERBATIM)
-
-          add_custom_command(OUTPUT ${pdf}
-          COMMAND ${PS2PDF_EXECUTABLE} ${ps} ${pdf}
-          WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-          DEPENDS ${mf}.ps
-          COMMENT "Creating PDF for ${ps}"
+          COMMENT "Creating PDF for ${mf}"
           VERBATIM)
           list(APPEND PDF_FILES ${pdf})
           install(FILES ${pdf} DESTINATION ${INSTALL_DATADIR}/ettercap/doc)

@@ -39,7 +39,7 @@ addons:
       - check
       - cmake
       - flex
-      - ghostscript
+      - groff
       - libbsd-dev
       - libcurl4-openssl-dev
       - libgtk2.0-dev
@@ -138,7 +138,7 @@ matrix:
       env: BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
 
 before_install:
-    - if [ ${TRAVIS_OS_NAME} = "osx" ]; then brew update; brew install check curl; brew install ghostscript gtk+ gtk+3; brew install libidn libnet; brew install luajit openssl pcre rtmpdump geoip; fi
+    - if [ ${TRAVIS_OS_NAME} = "osx" ]; then brew update; brew install check curl; brew install groff gtk+ gtk+3; brew install libidn libnet; brew install luajit openssl pcre rtmpdump geoip; fi
 before_script:
     - if [ ${TRAVIS_OS_NAME} = "osx" ]; then export BUILD_ARGS="$BUILD_ARGS -DOPENSSL_ROOT_DIR=`brew --prefix openssl`";fi
 

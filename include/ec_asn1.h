@@ -64,12 +64,12 @@ struct asn1_oid {
    size_t len;
 };
 
-int asn1_get_next(uint8_t *buf, size_t len, struct asn1_hdr *hdr);
-int asn1_parse_oid(uint8_t *buf, size_t len, struct asn1_oid *oid);
-int asn1_get_oid(uint8_t *buf, size_t len, struct asn1_oid *oid,
+EC_API_EXTERN int asn1_get_next(uint8_t *buf, size_t len, struct asn1_hdr *hdr);
+EC_API_EXTERN int asn1_parse_oid(uint8_t *buf, size_t len, struct asn1_oid *oid);
+EC_API_EXTERN int asn1_get_oid(uint8_t *buf, size_t len, struct asn1_oid *oid,
                  uint8_t **next);
-void asn1_oid_to_str(struct asn1_oid *oid, char *buf, size_t len);
-unsigned long asn1_bit_string_to_long(uint8_t *buf, size_t len);
+EC_API_EXTERN void asn1_oid_to_str(struct asn1_oid *oid, char *buf, size_t len);
+EC_API_EXTERN unsigned long asn1_bit_string_to_long(uint8_t *buf, size_t len);
 
 #endif /* ETTERCAP_ASN1_H */
 

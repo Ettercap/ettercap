@@ -12,16 +12,16 @@
 #endif
 
 #if defined(OS_BSD_OPEN) || defined(OS_LINUX)
-   /* LINUX does not care about timeout */
-   /* OPENBSD needs 0 */
-   #define PCAP_TIMEOUT 0
+/* LINUX does not care about timeout */
+/* OPENBSD needs 0 */
+#define PCAP_TIMEOUT 0
 #elif defined(OS_SOLARIS)
-   /* SOLARIS needs > 1 */
-   #define PCAP_TIMEOUT 10
+/* SOLARIS needs > 1 */
+#define PCAP_TIMEOUT 10
 #else
-   /* FREEBSD needs 1 */
-   /* MACOSX  needs 1 */
-   #define PCAP_TIMEOUT 1
+/* FREEBSD needs 1 */
+/* MACOSX  needs 1 */
+#define PCAP_TIMEOUT 1
 #endif
 
 struct source_entry {
@@ -30,10 +30,10 @@ struct source_entry {
 };
 
 /* globals */
-static LIST_HEAD(,source_entry) sources_list;
+static LIST_HEAD(, source_entry) sources_list;
 static pthread_mutex_t sl_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define SOURCES_LIST_LOCK     do{ pthread_mutex_lock(&sl_mutex); }while(0)
-#define SOURCES_LIST_UNLOCK   do{ pthread_mutex_unlock(&sl_mutex); }while(0)
+#define SOURCES_LIST_LOCK     do { pthread_mutex_lock(&sl_mutex); } while (0)
+#define SOURCES_LIST_UNLOCK   do { pthread_mutex_unlock(&sl_mutex); } while (0)
 
 /* protos */
 static void close_network();
@@ -56,8 +56,8 @@ void network_init()
    DEBUG_MSG("init_network");
 
    GBL_PCAP->snaplen = UINT16_MAX;
-   
-   if(GBL_OPTIONS->read) {
+
+   if (GBL_OPTIONS->read) {
       source_init(GBL_OPTIONS->pcapfile_in, GBL_IFACE, true, false);
       source_print(GBL_IFACE);
    } else {
@@ -65,46 +65,46 @@ void network_init()
       ON_ERROR(iface, NULL, "No suitable interface found...");
       source_init(iface, GBL_IFACE, true, true);
       source_print(GBL_IFACE);
-      if(GBL_SNIFF->type == SM_BRIDGED) {
+      if (GBL_SNIFF->type == SM_BRIDGED) {
          source_init(GBL_OPTIONS->iface_bridge, GBL_BRIDGE, true, true);
          source_print(GBL_BRIDGE);
-         if(GBL_BRIDGE->dlt != GBL_IFACE->dlt)
+         if (GBL_BRIDGE->dlt != GBL_IFACE->dlt)
             FATAL_ERROR("Can't bridge interfaces of different types");
       }
    }
 
-   if(get_decoder(LINK_LAYER, GBL_IFACE->dlt) == NULL) {
-      if(GBL_OPTIONS->read)
+   if (get_decoder(LINK_LAYER, GBL_IFACE->dlt) == NULL) {
+      if (GBL_OPTIONS->read)
          FATAL_ERROR("Dump file not supported (%s)", pcap_datalink_val_to_description(GBL_PCAP->dlt));
       else
          FATAL_ERROR("Interface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
    }
-   
-   if(GBL_OPTIONS->write)
+
+   if (GBL_OPTIONS->write)
       pcap_winit(GBL_IFACE->pcap);
-   
+
    GBL_PCAP->align = get_alignment(GBL_PCAP->dlt);
    SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align + 256, sizeof(char));
 
-   if(GBL_OPTIONS->secondary) {
+   if (GBL_OPTIONS->secondary) {
       secondary_sources_init(GBL_OPTIONS->secondary);
       atexit(close_secondary_sources);
    }
 
    /* Layer 3 handlers initialization */
-   if(!GBL_OPTIONS->unoffensive)
+   if (!GBL_OPTIONS->unoffensive)
       l3_init();
-      
+
    atexit(close_network);
 }
 
 static void close_network()
 {
    pcap_close(GBL_IFACE->pcap);
-   if(GBL_SNIFF->type == SM_BRIDGED)
+   if (GBL_SNIFF->type == SM_BRIDGED)
       pcap_close(GBL_BRIDGE->pcap);
 
-   if(GBL_OPTIONS->write)
+   if (GBL_OPTIONS->write)
       pcap_dump_close(GBL_PCAP->dump);
 
    libnet_destroy(GBL_IFACE->lnet);
@@ -126,14 +126,14 @@ static void source_print(struct iface_env *source)
    char strbuf[256];
    struct net_list *ip6;
 
-   if(source->is_live) {
+   if (source->is_live) {
       USER_MSG("Listening on:\n");
       USER_MSG("%6s -> %s\n", source->name, mac_addr_ntoa(source->mac, strbuf));
-      if(source->has_ipv4) {
+      if (source->has_ipv4) {
          USER_MSG("\t  %s/", ip_addr_ntoa(&source->ip, strbuf));
          USER_MSG("%s\n", ip_addr_ntoa(&source->netmask, strbuf));
       }
-      if(source->has_ipv6) {
+      if (source->has_ipv6) {
          LIST_FOREACH(ip6, &source->ip6_list, next) {
             USER_MSG("\t  %s/%d\n", ip_addr_ntoa(&ip6->ip, strbuf), ip6->prefix);
          }
@@ -144,7 +144,6 @@ static void source_print(struct iface_env *source)
    } else {
       USER_MSG("Reading from %s\n", source->name);
    }
-
 }
 
 static int source_init(char *name, struct iface_env *source, bool primary, bool live)
@@ -163,7 +162,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    struct net_list *ip6;
 
 #if !defined(OS_WINDOWS)
-  struct ifaddrs *ifaddrs, *ifaddr;
+   struct ifaddrs *ifaddrs, *ifaddr;
 #endif
 
    DEBUG_MSG("source_init %s", name);
@@ -171,22 +170,22 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    BUG_IF(source == NULL);
 
    /* ===pcap initialization=== */
-   if(live) {
+   if (live) {
       pcap = pcap_open_live(name, GBL_PCAP->snaplen, GBL_PCAP->promisc, PCAP_TIMEOUT, pcap_errbuf);
-      if(pcap == NULL) {
-         if(primary)
+      if (pcap == NULL) {
+         if (primary)
             ON_ERROR(pcap, NULL, "pcap_open_live: %s", pcap_errbuf);
          else
             return -E_INITFAIL;
       }
    } else {
       /* secondary sources must not be offline */
-      if(!primary)
+      if (!primary)
          return -E_NOTHANDLED;
 
       struct stat st;
       int stat_result;
-      FILE* pcap_file_h;
+      FILE *pcap_file_h;
 
       pcap = pcap_open_offline(name, pcap_errbuf);
       ON_ERROR(pcap, NULL, "pcap_open_offline: %s", pcap_errbuf);
@@ -200,47 +199,47 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
       GBL_PCAP->dump_size = st.st_size;
    }
    source->dlt = pcap_datalink(pcap);
-   if(primary)
+   if (primary)
       GBL_PCAP->dlt = source->dlt;
-   if(source->dlt == DLT_IEEE802_11) {
+   if (source->dlt == DLT_IEEE802_11) {
       DEBUG_MSG("Wireless monitor mode used, switching to unoffensive mode");
       source->unoffensive = 1;
-      if(primary)
+      if (primary)
          GBL_OPTIONS->unoffensive = 1;
    }
-   if(!strcmp(name, "lo")) {
+   if (!strcmp(name, "lo")) {
       DEBUG_MSG("Loopback interface used, switching to unoffensive mode");
       source->unoffensive = 1;
-      if(primary)
+      if (primary)
          GBL_OPTIONS->unoffensive = 1;
    }
 
-   if(GBL_PCAP->filter && strcmp(GBL_PCAP->filter, "") && live) {
+   if (GBL_PCAP->filter && strcmp(GBL_PCAP->filter, "") && live) {
       u_int net, mask;
-      if(pcap_lookupnet(name, &net, &mask, pcap_errbuf) == -1)
+      if (pcap_lookupnet(name, &net, &mask, pcap_errbuf) == -1)
          ERROR_MSG("%s - %s", name, pcap_errbuf);
-      if(pcap_compile(pcap, &bpf, GBL_PCAP->filter, 1, mask) < 0)
+      if (pcap_compile(pcap, &bpf, GBL_PCAP->filter, 1, mask) < 0)
          ERROR_MSG("Wrong pcap filter: %s - %s", name, pcap_geterr(pcap));
-      if(pcap_setfilter(pcap, &bpf) == 1)
+      if (pcap_setfilter(pcap, &bpf) == 1)
          ERROR_MSG("Cannot set pcap filter: %s - %s", name, pcap_geterr(pcap));
    }
 
    snaplen = pcap_snapshot(pcap);
    DEBUG_MSG("requested snaplen for %s: %d, assigned snaplen: %d", name, GBL_PCAP->snaplen, snaplen);
-   if(primary)
+   if (primary)
       GBL_PCAP->snaplen = snaplen;
    source->pcap = pcap;
 
    SAFE_STRDUP(source->name, name);
 
-   if(live) {
+   if (live) {
       source->is_live = 1;
    } else {
       source->is_ready = 1;
       return E_SUCCESS;
    }
 
-   if(!GBL_OPTIONS->unoffensive && !source->unoffensive) {
+   if (!GBL_OPTIONS->unoffensive && !source->unoffensive) {
       lnet = libnet_init(LIBNET_LINK_ADV, name, lnet_errbuf);
       ON_ERROR(lnet, NULL, "libnet_init: %s", lnet_errbuf);
 
@@ -252,68 +251,67 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 
    source->mtu = get_iface_mtu(name);
 #if defined(OS_WINDOWS)
-  pcap_if_t *dev;
+   pcap_if_t *dev;
 
-  for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev; dev = dev->next) {
-      if(strcmp(dev->name, name))
-        continue;
+   for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev; dev = dev->next) {
+      if (strcmp(dev->name, name))
+         continue;
 
-      if(dev->addresses->addr->sa_family == AF_INET) {
-        sa4 = (struct sockaddr_in*) dev->addresses->addr;
+      if (dev->addresses->addr->sa_family == AF_INET) {
+         sa4 = (struct sockaddr_in *)dev->addresses->addr;
 
-        ip_addr_init(&source->ip, AF_INET, (u_char*)&sa4->sin_addr);
-        if(GBL_OPTIONS->netmask) {
-            if(ip_addr_pton(GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
-              FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
-        } else {
-            sa4 = (struct sockaddr_in*) dev->addresses->netmask;
-            ip_addr_init(&source->netmask, AF_INET, (u_char*)&sa4->sin_addr);
-        }
-        ip_addr_get_network(&source->ip, &source->netmask, &source->network);
-        source->has_ipv4 = 1;
+         ip_addr_init(&source->ip, AF_INET, (u_char *)&sa4->sin_addr);
+         if (GBL_OPTIONS->netmask) {
+            if (ip_addr_pton(GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
+               FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
+         } else {
+            sa4 = (struct sockaddr_in *)dev->addresses->netmask;
+            ip_addr_init(&source->netmask, AF_INET, (u_char *)&sa4->sin_addr);
+         }
+         ip_addr_get_network(&source->ip, &source->netmask, &source->network);
+         source->has_ipv4 = 1;
+      } else if (dev->addresses->addr->sa_family == AF_INET6) {
+         SAFE_CALLOC(ip6, 1, sizeof(*ip6));
+         sa6 = (struct sockaddr_in6 *)dev->addresses->addr;
+         ip_addr_init(&ip6->ip, AF_INET6, (u_char *)&sa6->sin6_addr);
+
+         sa6 = (struct sockaddr_in6 *)dev->addresses->netmask;
+         ip_addr_init(&ip6->netmask, AF_INET6, (u_char *)&sa6->sin6_addr);
+         ip_addr_get_network(&ip6->ip, &ip6->netmask, &ip6->network);
+         ip6->prefix = ip_addr_get_prefix(&ip6->netmask);
+         LIST_INSERT_HEAD(&source->ip6_list, ip6, next);
+         source->has_ipv6 = 1;
       }
-      else if(dev->addresses->addr->sa_family == AF_INET6) {
-        SAFE_CALLOC(ip6, 1, sizeof(*ip6));
-        sa6 = (struct sockaddr_in6*) dev->addresses->addr;
-        ip_addr_init(&ip6->ip, AF_INET6, (u_char*)&sa6->sin6_addr);
-
-        sa6 = (struct sockaddr_in6*) dev->addresses->netmask;
-        ip_addr_init(&ip6->netmask, AF_INET6, (u_char*)&sa6->sin6_addr);
-        ip_addr_get_network(&ip6->ip, &ip6->netmask, &ip6->network);
-        ip6->prefix = ip_addr_get_prefix(&ip6->netmask);
-        LIST_INSERT_HEAD(&source->ip6_list, ip6, next);
-        source->has_ipv6 = 1;
-      }
-  }
+   }
 
 #else
    ret = getifaddrs(&ifaddrs);
    ON_ERROR(ret, -1, "getifaddrs: %s", strerror(errno));
 
-   for(ifaddr = ifaddrs; ifaddr; ifaddr = ifaddr->ifa_next) {
+   for (ifaddr = ifaddrs; ifaddr; ifaddr = ifaddr->ifa_next) {
       if (ifaddr->ifa_addr == NULL)
          continue;
-      if(strcmp(ifaddr->ifa_name, name))
+      if (strcmp(ifaddr->ifa_name, name))
          continue;
 
-      if(ifaddr->ifa_addr->sa_family == AF_INET) {
-         sa4 = (struct sockaddr_in*)ifaddr->ifa_addr;
-         ip_addr_init(&source->ip, AF_INET, (u_char*)&sa4->sin_addr);
-         if(GBL_OPTIONS->netmask) {
-            if(ip_addr_pton(GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
+      if (ifaddr->ifa_addr->sa_family == AF_INET) {
+         sa4 = (struct sockaddr_in *)ifaddr->ifa_addr;
+         ip_addr_init(&source->ip, AF_INET, (u_char *)&sa4->sin_addr);
+         if (GBL_OPTIONS->netmask) {
+            if (ip_addr_pton(GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
                FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
          } else {
-            sa4 = (struct sockaddr_in*)ifaddr->ifa_netmask;
-            ip_addr_init(&source->netmask, AF_INET, (u_char*)&sa4->sin_addr);
+            sa4 = (struct sockaddr_in *)ifaddr->ifa_netmask;
+            ip_addr_init(&source->netmask, AF_INET, (u_char *)&sa4->sin_addr);
          }
          ip_addr_get_network(&source->ip, &source->netmask, &source->network);
          source->has_ipv4 = 1;
-      } else if(ifaddr->ifa_addr->sa_family == AF_INET6) {
+      } else if (ifaddr->ifa_addr->sa_family == AF_INET6) {
          SAFE_CALLOC(ip6, 1, sizeof(*ip6));
-         sa6 = (struct sockaddr_in6*)ifaddr->ifa_addr;
-         ip_addr_init(&ip6->ip, AF_INET6, (u_char*)&sa6->sin6_addr);
-         sa6 = (struct sockaddr_in6*)ifaddr->ifa_netmask;
-         ip_addr_init(&ip6->netmask, AF_INET6, (u_char*)&sa6->sin6_addr);
+         sa6 = (struct sockaddr_in6 *)ifaddr->ifa_addr;
+         ip_addr_init(&ip6->ip, AF_INET6, (u_char *)&sa6->sin6_addr);
+         sa6 = (struct sockaddr_in6 *)ifaddr->ifa_netmask;
+         ip_addr_init(&ip6->netmask, AF_INET6, (u_char *)&sa6->sin6_addr);
          ip_addr_get_network(&ip6->ip, &ip6->netmask, &ip6->network);
          ip6->prefix = ip_addr_get_prefix(&ip6->netmask);
          LIST_INSERT_HEAD(&source->ip6_list, ip6, next);
@@ -322,7 +320,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
    }
 
    freeifaddrs(ifaddrs);
-#endif  /* OS_WINDOWS */
+#endif /* OS_WINDOWS */
 
    source->is_ready = 1;
 
@@ -337,13 +335,13 @@ static void source_close(struct iface_env *iface)
 
    iface->is_ready = 0;
 
-   if(iface->pcap != NULL)
+   if (iface->pcap != NULL)
       pcap_close(iface->pcap);
 
-   if(iface->lnet != NULL)
+   if (iface->lnet != NULL)
       libnet_destroy(iface->lnet);
-  
-#ifdef WITH_IPV6 
+
+#ifdef WITH_IPV6
    LIST_FOREACH(n, &iface->ip6_list, next) {
       LIST_REMOVE(n, next);
       SAFE_FREE(n);
@@ -361,14 +359,14 @@ static int secondary_sources_init(char **sources)
 
    SOURCES_LIST_LOCK;
 
-   for(n = 0; sources[n] != NULL; n++) {
+   for (n = 0; sources[n] != NULL; n++) {
       SAFE_CALLOC(se, 1, sizeof(*se));
 
       /* secondary interfaces are always live */
       source_init(sources[n], &se->iface, true, false);
-      if(se->iface.is_ready)
+      if (se->iface.is_ready)
          LIST_INSERT_HEAD(&sources_list, se, next);
-      else 
+      else
          SAFE_FREE(se);
    }
 
@@ -377,17 +375,17 @@ static int secondary_sources_init(char **sources)
    return n;
 }
 
-void secondary_sources_foreach(void (*callback)(struct iface_env*))
+void secondary_sources_foreach(void (*callback)(struct iface_env *))
 {
-    struct source_entry *se;
+   struct source_entry *se;
 
-    SOURCES_LIST_LOCK;
+   SOURCES_LIST_LOCK;
 
-    LIST_FOREACH(se, &sources_list, next) {
-        callback(&se->iface);
-    }
+   LIST_FOREACH(se, &sources_list, next) {
+      callback(&se->iface);
+   }
 
-    SOURCES_LIST_UNLOCK;
+   SOURCES_LIST_UNLOCK;
 }
 
 static void close_secondary_sources(void)
@@ -417,28 +415,27 @@ static void l3_init(void)
    char *name = NULL;
 #endif
 
-
    char lnet_errbuf[LIBNET_ERRBUF_SIZE];
 
    DEBUG_MSG("l3_init");
 
    /* open the socket at layer 3 */
-   l4 = libnet_init(LIBNET_RAW4_ADV, name, lnet_errbuf);               
+   l4 = libnet_init(LIBNET_RAW4_ADV, name, lnet_errbuf);
    if (l4 == NULL) {
       DEBUG_MSG("send_init: libnet_init(LIBNET_RAW4_ADV) failed: %s", lnet_errbuf);
       USER_MSG("Libnet failed IPv4 initialization. Don't send IPv4 packets.\n");
    }
 
-   GBL_LNET->lnet_IP4 = l4;               
+   GBL_LNET->lnet_IP4 = l4;
 
 #ifdef WITH_IPV6
    /* open the socket at layer 3 for IPv6 */
    l6 = libnet_init(LIBNET_RAW6_ADV, name, lnet_errbuf);
-   if(l6 == NULL) {
+   if (l6 == NULL) {
       DEBUG_MSG("%s: libnet_init(LIBNET_RAW6_ADV) failed: %s", __func__, lnet_errbuf);
       USER_MSG("Libnet failed IPv6 initialization. Don't send IPv6 packets.\n");
    }
-   
+
    GBL_LNET->lnet_IP6 = l6;
 #endif
 
@@ -447,24 +444,24 @@ static void l3_init(void)
 
 static void l3_close(void)
 {
-   if(GBL_LNET->lnet_IP4)
+   if (GBL_LNET->lnet_IP4)
       libnet_destroy(GBL_LNET->lnet_IP4);
 #ifdef WITH_IPV6
-   if(GBL_LNET->lnet_IP6)
+   if (GBL_LNET->lnet_IP6)
       libnet_destroy(GBL_LNET->lnet_IP6);
 #endif
-   
+
    DEBUG_MSG("ATEXIT: send_closed");
 }
 
-struct iface_env* iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN])
+struct iface_env *iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN])
 {
    struct source_entry *se;
 
    SOURCES_LIST_LOCK;
 
    LIST_FOREACH(se, &sources_list, next) {
-      if(!memcmp(se->iface.mac, mac, MEDIA_ADDR_LEN)) {
+      if (!memcmp(se->iface.mac, mac, MEDIA_ADDR_LEN)) {
          SOURCES_LIST_UNLOCK;
          return &se->iface;
       }
@@ -473,4 +470,3 @@ struct iface_env* iface_by_mac(u_int8 mac[MEDIA_ADDR_LEN])
    SOURCES_LIST_UNLOCK;
    return NULL;
 }
-

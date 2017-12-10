@@ -45,4 +45,3 @@ EC_API_EXTERN void select_gtk_interface(void);
 /* EOF */
 
 // vim:ts=3:expandtab
-

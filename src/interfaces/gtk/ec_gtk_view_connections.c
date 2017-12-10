@@ -1,23 +1,23 @@
 /*
-    ettercap -- GTK+ GUI
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- GTK+ GUI
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_gtk.h>
@@ -101,9 +101,9 @@ extern void conntrack_unlock(void);
 /* connection list */
 static struct row_pairs *connections = NULL;
 static GtkWidget *conns_window = NULL;
-static GtkWidget     *treeview = NULL; /* the visible part of the GTK list */
-static GtkListStore  *ls_conns = NULL; /* the data part */
-static GtkTreeSelection   *selection = NULL;
+static GtkWidget *treeview = NULL;     /* the visible part of the GTK list */
+static GtkListStore *ls_conns = NULL;  /* the data part */
+static GtkTreeSelection *selection = NULL;
 static struct conn_object *curr_conn = NULL;
 static struct conn_filter filter;
 static guint connections_idle = 0;
@@ -113,16 +113,16 @@ static guint detail_timer1 = 0;
 static guint detail_timer2 = 0;
 
 /* split and joined data views */
-static GtkWidget   *data_window = NULL;
-static GtkWidget     *textview1 = NULL; /* visible part of data output */
-static GtkWidget     *textview2 = NULL;
-static GtkWidget     *textview3 = NULL;
+static GtkWidget *data_window = NULL;
+static GtkWidget *textview1 = NULL;     /* visible part of data output */
+static GtkWidget *textview2 = NULL;
+static GtkWidget *textview3 = NULL;
 static GtkTextBuffer *splitbuf1 = NULL; /* where data is stored */
 static GtkTextBuffer *splitbuf2 = NULL;
 static GtkTextBuffer *joinedbuf = NULL;
-static GtkTextMark    *endmark1 = NULL; /* marks for auto-scrolling */
-static GtkTextMark    *endmark2 = NULL;
-static GtkTextMark    *endmark3 = NULL;
+static GtkTextMark *endmark1 = NULL;    /* marks for auto-scrolling */
+static GtkTextMark *endmark2 = NULL;
+static GtkTextMark *endmark3 = NULL;
 
 /* keep it global, so the memory region is always the same (reallocing it) */
 static u_char *dispbuf;
@@ -140,15 +140,15 @@ void gtkui_show_connections(void)
    GtkWidget *chkb_active, *chkb_idle, *chkb_closing, *chkb_closed, *chkb_killed;
    GtkTreeModel *model;
    GtkToolItem *toolbutton;
-   GtkCellRenderer   *renderer;
+   GtkCellRenderer *renderer;
    GtkTreeViewColumn *column;
 
    DEBUG_MSG("gtk_show_connections");
 
    /* if the object already exist, set the focus to it */
    if (conns_window) {
-      if(GTK_IS_WINDOW (conns_window))
-         gtk_window_present(GTK_WINDOW (conns_window));
+      if (GTK_IS_WINDOW(conns_window))
+         gtk_window_present(GTK_WINDOW(conns_window));
       else
          gtkui_page_present(conns_window);
       return;
@@ -157,7 +157,7 @@ void gtkui_show_connections(void)
    conns_window = gtkui_page_new("Connections", &gtkui_kill_connections, &gtkui_connections_detach);
 
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
-   gtk_container_add(GTK_CONTAINER (conns_window), vbox);
+   gtk_container_add(GTK_CONTAINER(conns_window), vbox);
    gtk_widget_show(vbox);
 
    /* filter bar */
@@ -239,76 +239,75 @@ void gtkui_show_connections(void)
    gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
    gtk_widget_show_all(hbox);
 
-
    /* list */
    scrolled = gtk_scrolled_window_new(NULL, NULL);
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scrolled), GTK_SHADOW_IN);
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled), GTK_SHADOW_IN);
    gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
    gtk_widget_show(scrolled);
 
    treeview = gtk_tree_view_new();
-   gtk_container_add(GTK_CONTAINER (scrolled), treeview);
+   gtk_container_add(GTK_CONTAINER(scrolled), treeview);
    gtk_widget_show(treeview);
 
-   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
-   gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-   g_signal_connect (G_OBJECT (treeview), "row_activated", G_CALLBACK (gtkui_connection_data), NULL);
+   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+   gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+   g_signal_connect(G_OBJECT(treeview), "row_activated", G_CALLBACK(gtkui_connection_data), NULL);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes (" ", renderer, "text", 0, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 0);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes(" ", renderer, "text", 0, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 0);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("Host       ", renderer, "text", 1, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 1);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("Host       ", renderer, "text", 1, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 1);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("Port", renderer, "text", 2, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 2);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("Port", renderer, "text", 2, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 2);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("-", renderer, "text", 3, NULL);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("-", renderer, "text", 3, NULL);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("Host       ", renderer, "text", 4, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 4);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("Host       ", renderer, "text", 4, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 4);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("Port", renderer, "text", 5, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 5);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("Port", renderer, "text", 5, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 5);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("Proto", renderer, "text", 6, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 6);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("Proto", renderer, "text", 6, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 6);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("State", renderer, "text", 7, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 7);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("State", renderer, "text", 7, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 7);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("TX Bytes", renderer, "text", 8, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 8);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("TX Bytes", renderer, "text", 8, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 8);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("RX Bytes", renderer, "text", 9, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 9);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("RX Bytes", renderer, "text", 9, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 9);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
 #ifdef WITH_GEOIP
-   renderer = gtk_cell_renderer_text_new ();
-   column = gtk_tree_view_column_new_with_attributes ("Countries", renderer, "text", 10, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 10);
-   gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
+   renderer = gtk_cell_renderer_text_new();
+   column = gtk_tree_view_column_new_with_attributes("Countries", renderer, "text", 10, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 10);
+   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 #endif
 
    hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
@@ -316,32 +315,32 @@ void gtkui_show_connections(void)
    gtk_widget_show(hbox);
 
    button = gtk_button_new_with_mnemonic("View _Details");
-   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_detail), NULL);
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_connection_detail), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Kill Connection");
-   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill), NULL);
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_connection_kill), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
-   
+
    button = gtk_button_new_with_mnemonic("E_xpunge Connections");
-   g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_purge), NULL);
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_connection_purge), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    /* context menu */
    context_menu = gtk_menu_new();
-   
+
    items = gtk_menu_item_new_with_label("View Details");
-   gtk_menu_shell_append (GTK_MENU_SHELL (context_menu), items);
-   g_signal_connect (G_OBJECT (items), "activate", G_CALLBACK (gtkui_connection_detail), NULL);
-   gtk_widget_show (items);
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), items);
+   g_signal_connect(G_OBJECT(items), "activate", G_CALLBACK(gtkui_connection_detail), NULL);
+   gtk_widget_show(items);
 
    items = gtk_menu_item_new_with_label("Kill Connection");
-   gtk_menu_shell_append (GTK_MENU_SHELL (context_menu), items);
-   g_signal_connect (G_OBJECT (items), "activate", G_CALLBACK (gtkui_connection_kill), NULL);
-   gtk_widget_show (items);
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), items);
+   g_signal_connect(G_OBJECT(items), "activate", G_CALLBACK(gtkui_connection_kill), NULL);
+   gtk_widget_show(items);
 
    g_signal_connect(G_OBJECT(treeview), "button-press-event", G_CALLBACK(gtkui_context_menu), context_menu);
 
@@ -350,14 +349,14 @@ void gtkui_show_connections(void)
 
    /* init filter model handle */
    filter.model = gtk_tree_model_filter_new(GTK_TREE_MODEL(ls_conns), NULL);
-   gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter.model), 
+   gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter.model),
                                           (GtkTreeModelFilterVisibleFunc)connfilter, NULL, NULL);
 
    /* sorting model has to be explicitely created from the filtered model to support both */
    model = gtk_tree_model_sort_new_with_model(filter.model);
 
    /* link the Tree Model with the Tree View */
-   gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), model);
+   gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);
 
    /* refresh the list every 1000 ms */
    /* gtk_idle_add refreshes too fast, uses all cpu */
@@ -370,16 +369,16 @@ void gtkui_show_connections(void)
 void gtkui_connections_detach(GtkWidget *child)
 {
    conns_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (conns_window), "Live connections");
-   gtk_window_set_default_size(GTK_WINDOW (conns_window), 500, 250);
+   gtk_window_set_title(GTK_WINDOW(conns_window), "Live connections");
+   gtk_window_set_default_size(GTK_WINDOW(conns_window), 500, 250);
    g_signal_connect(G_OBJECT(conns_window), "delete_event", G_CALLBACK(gtkui_kill_connections), NULL);
 
    /* make <ctrl>d shortcut turn the window back into a tab */
    gtkui_page_attach_shortcut(conns_window, gtkui_connections_attach);
 
-   gtk_container_add(GTK_CONTAINER (conns_window), child);
+   gtk_container_add(GTK_CONTAINER(conns_window), child);
 
-   gtk_window_present(GTK_WINDOW (conns_window));
+   gtk_window_present(GTK_WINDOW(conns_window));
 }
 
 /* callback for attaching the tab */
@@ -403,7 +402,7 @@ static void gtkui_kill_connections(void)
 static gboolean refresh_connections(gpointer data)
 {
    struct row_pairs *lastconn = NULL, *cache = NULL;
-   GtkTreeModel *model = GTK_TREE_MODEL (ls_conns);
+   GtkTreeModel *model = GTK_TREE_MODEL(ls_conns);
    void *list, *next, *listend;
    struct conn_object *conn;    /* stores connection details */
    GtkTreeIter iter;            /* points to a specific row */
@@ -412,62 +411,62 @@ static gboolean refresh_connections(gpointer data)
    struct row_pairs *row = NULL, *nextrow = NULL, top, bottom;
 
    /* variable not used */
-   (void) data;
+   (void)data;
 
    /* init strings */
    memset(&flags, 0, sizeof(flags));
    memset(&status, 0, sizeof(status));
 
    /* make sure the list has been created and window is visible */
-   if(ls_conns) {
+   if (ls_conns) {
       if (!gtk_widget_get_visible(conns_window))
-         return(FALSE);
+         return FALSE;
    } else {
       /* Columns:   Flags, Host, Port, "-",   Host, Port,
-                    Proto, State, TX Bytes, RX Bytes, Countries, (hidden) pointer */
-      ls_conns = gtk_list_store_new (12,
-                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
-                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
-                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, 
-                    G_TYPE_UINT,  G_TYPE_STRING, G_TYPE_POINTER);
+       *            Proto, State, TX Bytes, RX Bytes, Countries, (hidden) pointer */
+      ls_conns = gtk_list_store_new(12,
+                                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
+                                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
+                                    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
+                                    G_TYPE_UINT, G_TYPE_STRING, G_TYPE_POINTER);
       connections = NULL;
    }
 
    /* remove old connections */
-   for(row = connections; row; row = nextrow) {
-       nextrow = row->next;
-       if(conntrack_get(0, row->conn, NULL) == NULL) {
-          /* remove row from the GTK list */
-          gtk_list_store_remove(GTK_LIST_STORE(ls_conns), &row->iter);
+   for (row = connections; row; row = nextrow) {
+      nextrow = row->next;
+      if (conntrack_get(0, row->conn, NULL) == NULL) {
+         /* remove row from the GTK list */
+         gtk_list_store_remove(GTK_LIST_STORE(ls_conns), &row->iter);
 
-          /* remove pointers from the linked-list and free */
-          if(row->next)
-              row->next->prev = row->prev;
+         /* remove pointers from the linked-list and free */
+         if (row->next)
+            row->next->prev = row->prev;
 
-          if(row->prev)
-              row->prev->next = row->next;
-          else
-              connections = row->next;
-          SAFE_FREE(row);
-       }
-       if(row)
-           lastconn = row;
+         if (row->prev)
+            row->prev->next = row->next;
+         else
+            connections = row->next;
+         SAFE_FREE(row);
+      }
+      if (row)
+         lastconn = row;
    }
 
    /* make sure we have a place to start searching for new rows */
-   if(!lastconn) {
+   if (!lastconn) {
       listend = conntrack_get(0, NULL, NULL);
-      if(listend == NULL)
-         return(TRUE);
+      if (listend == NULL)
+         return TRUE;
    } else {
       listend = lastconn->conn;
    }
 
    /* add new connections */
-   for(list = conntrack_get(+1, listend, NULL); list; list = next) {
+   for (list = conntrack_get(+1, listend, NULL); list; list = next) {
       next = conntrack_get(+1, list, &conn);
       cache = gtkui_connections_add(conn, list, &connections);
-      if(cache)
+      if (cache)
          lastconn = cache;
    }
 
@@ -475,15 +474,15 @@ static gboolean refresh_connections(gpointer data)
    gtkui_connection_list_row(1, &top);
    gtkui_connection_list_row(0, &bottom);
 
-   if(top.conn == NULL) 
-      return(TRUE);
+   if (top.conn == NULL)
+      return TRUE;
 
    iter = top.iter; /* copy iter by value */
 
    /* update visible part of list */
    do {
       /* get the conntrack pointer for this row */
-      gtk_tree_model_get (model, &iter, 11, &list, -1);
+      gtk_tree_model_get(model, &iter, 11, &list, -1);
       conntrack_get(0, list, &conn);
 
       /* extract changing values from conntrack_print string */
@@ -492,20 +491,21 @@ static gboolean refresh_connections(gpointer data)
       tx = conn->tx;
       rx = conn->rx;
 
-      gtk_list_store_set (ls_conns, &iter, 0, flags, 7, status, 8, tx, 9, rx, -1);
+      gtk_list_store_set(ls_conns, &iter, 0, flags, 7, status, 8, tx, 9, rx, -1);
 
       /* when we reach the bottom of the visible part, stop updating */
-      if(bottom.conn == list)
+      if (bottom.conn == list)
          break;
-   } while(gtk_tree_model_iter_next(model, &iter));
+   } while (gtk_tree_model_iter_next(model, &iter));
 
    /* finnaly apply the filter */
    gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(filter.model));
-  
-   return(TRUE);
+
+   return TRUE;
 }
 
-static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *conn, struct row_pairs **list) {
+static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *conn, struct row_pairs **list)
+{
    GtkTreeIter iter;
    char flags[2], src[MAX_ASCII_ADDR_LEN], dst[MAX_ASCII_ADDR_LEN];
    char proto[4], status[8], ccodes[8];
@@ -514,8 +514,8 @@ static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *con
 
    /* even if list is empty, we need a pointer to the NULL pointer */
    /* so we can start a list */
-   if(!list)
-      return(NULL);
+   if (!list)
+      return NULL;
 
    /* init strings */
    memset(&flags, 0, sizeof(flags));
@@ -541,24 +541,24 @@ static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *con
    rx = co->rx;
 
    /* add it to GTK list */
-   gtk_list_store_append (ls_conns, &iter);
-   gtk_list_store_set (ls_conns, &iter,
-                       0, flags, 1, src,     2, src_port,
-                       3, "-",   4, dst,     5, dst_port,
-                       6, proto, 7, status,  8, tx,
-                       9, rx, 10, ccodes, 11, conn, -1);
+   gtk_list_store_append(ls_conns, &iter);
+   gtk_list_store_set(ls_conns, &iter,
+                      0, flags, 1, src, 2, src_port,
+                      3, "-", 4, dst, 5, dst_port,
+                      6, proto, 7, status, 8, tx,
+                      9, rx, 10, ccodes, 11, conn, -1);
    /* and add it to our linked list */
-   if(!*list) {
+   if (!*list) {
       row = malloc(sizeof(struct row_pairs));
-      if(row == NULL) {
+      if (row == NULL) {
          USER_MSG("Failed create new connection row\n");
          DEBUG_MSG("gktui_connections_add: failed to allocate memory for a new row");
       }
       row->prev = NULL;
    } else {
-      for(row = *list; row && row->next; row = row->next);
+      for (row = *list; row && row->next; row = row->next) ;
       row->next = malloc(sizeof(struct row_pairs));
-      if(row->next == NULL) {
+      if (row->next == NULL) {
          USER_MSG("Failed create new connection row\n");
          DEBUG_MSG("gktui_connections_add: failed to allocate memory for a new row");
       }
@@ -571,18 +571,19 @@ static struct row_pairs *gtkui_connections_add(struct conn_object *co, void *con
    row->next = NULL;
 
    /* in case this was the first list entry */
-   if(!*list)
-       *list = row;
+   if (!*list)
+      *list = row;
 
-   return(row);
+   return row;
 }
 
-/* 
+/*
  * get the top or bottom visible row in the connection list
  * returns TOP row if (int top) is > 0  and list is not empty
  * returns BOTTOM row if (int top) is 0 and visible area is full
  */
-static void gtkui_connection_list_row(int top, struct row_pairs *pair) {
+static void gtkui_connection_list_row(int top, struct row_pairs *pair)
+{
    GtkTreeIter iter;            /* points to a specific row */
    GtkTreePath *path = NULL;    /* for finding the first visible row */
    GtkTreeModel *model = NULL;  /* points to the list data */
@@ -590,34 +591,34 @@ static void gtkui_connection_list_row(int top, struct row_pairs *pair) {
    int wx = 0, wy = 0;          /* for converting tree view coords to widget coords */
    void *row = NULL;
 
-   if(!ls_conns || !pair)
+   if (!ls_conns || !pair)
       return;
 
    /* in case we don't get a row */
    pair->conn = NULL;
 
-   model = GTK_TREE_MODEL (ls_conns);
-   if(gtk_tree_model_get_iter_first(model, &iter)) {
+   model = GTK_TREE_MODEL(ls_conns);
+   if (gtk_tree_model_get_iter_first(model, &iter)) {
       gtk_tree_view_get_visible_rect(GTK_TREE_VIEW(treeview), &rect);
 
       /* get the first visible row */
-      gtk_tree_view_convert_bin_window_to_widget_coords(GTK_TREE_VIEW(treeview), 
-            rect.x, (top)?rect.y:rect.height, &wx, &wy);
+      gtk_tree_view_convert_bin_window_to_widget_coords(GTK_TREE_VIEW(treeview),
+                                                        rect.x, (top) ? rect.y : rect.height, &wx, &wy);
       path = gtk_tree_path_new();
-      if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), wx+2, (top)?wy+2:wy-2, &path, NULL, NULL, NULL)) {
+      if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), wx + 2, (top) ? wy + 2 : wy - 2, &path, NULL, NULL, NULL)) {
          gtk_tree_model_get_iter(model, &iter, path);
-         gtk_tree_model_get (model, &iter, 11, &row, -1);
+         gtk_tree_model_get(model, &iter, 11, &row, -1);
          pair->iter = iter;
          pair->conn = row;
       }
-      if(path)
+      if (path)
          gtk_tree_path_free(path);
    }
 
    return;
 }
 
-/* 
+/*
  * details for a connection
  */
 static void gtkui_connection_detail(void)
@@ -633,14 +634,14 @@ static void gtkui_connection_detail(void)
 
    DEBUG_MSG("gtk_connection_detail");
 
-   model = GTK_TREE_MODEL (ls_conns);
+   model = GTK_TREE_MODEL(ls_conns);
 
-   if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get (model, &iter, 11, &c, -1);
+   if (gtk_tree_selection_get_selected(GTK_TREE_SELECTION(selection), &model, &iter)) {
+      gtk_tree_model_get(model, &iter, 11, &c, -1);
    } else
       return; /* nothing is selected */
 
-   if(!c || !c->co)
+   if (!c || !c->co)
       return;
 
    dwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -649,8 +650,8 @@ static void gtkui_connection_detail(void)
    gtk_window_set_transient_for(GTK_WINDOW(dwindow), GTK_WINDOW(window));
    gtk_window_set_position(GTK_WINDOW(dwindow), GTK_WIN_POS_CENTER_ON_PARENT);
    gtk_container_set_border_width(GTK_CONTAINER(dwindow), 5);
-   g_signal_connect(G_OBJECT(dwindow), "delete-event", 
-         G_CALLBACK(gtkui_connection_detail_destroy), NULL);
+   g_signal_connect(G_OBJECT(dwindow), "delete-event",
+                    G_CALLBACK(gtkui_connection_detail_destroy), NULL);
 
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 5, FALSE);
    gtk_container_add(GTK_CONTAINER(dwindow), vbox);
@@ -663,59 +664,59 @@ static void gtkui_connection_detail(void)
 
    /* Layer 2 Information */
    label = gtk_label_new("Layer 2 Information:");
-   markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", 
-         gtk_label_get_text(GTK_LABEL(label)));
+   markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>",
+                                    gtk_label_get_text(GTK_LABEL(label)));
    gtk_label_set_markup(GTK_LABEL(label), markup);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+3, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 3, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
    g_free(markup);
 
    row++;
    label = gtk_label_new("Source MAC address:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
    label = gtk_label_new(mac_addr_ntoa(c->co->L2_addr1, tmp));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
 
    row++;
    label = gtk_label_new("Destination MAC address:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
    label = gtk_label_new(mac_addr_ntoa(c->co->L2_addr2, tmp));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
 
    /* Layer 3 information */
    row++;
    label = gtk_label_new("Layer 3 Information:");
-   markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", 
-         gtk_label_get_text(GTK_LABEL(label)));
+   markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>",
+                                    gtk_label_get_text(GTK_LABEL(label)));
    gtk_label_set_markup(GTK_LABEL(label), markup);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+3, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
-   gtk_table_set_row_spacing(GTK_TABLE(table), row-1, 10);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 3, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_set_row_spacing(GTK_TABLE(table), row - 1, 10);
    g_free(markup);
 
    row++;
    label = gtk_label_new("Source IP address:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
    label = gtk_label_new(ip_addr_ntoa(&c->co->L3_addr1, tmp));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
 
    if (GBL_OPTIONS->resolve) {
       row++;
       label = gtk_label_new("Source hostname:");
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
       label = gtk_label_new("resolving...");
       if (host_iptoa(&c->co->L3_addr1, name) == -E_NOMATCH) {
@@ -726,13 +727,12 @@ static void gtkui_connection_detail(void)
          ro->widget = label;
          ro->ip = &c->co->L3_addr1;
          detail_timer1 = g_timeout_add(1000, gtkui_iptoa_deferred, ro);
-      }
-      else {
+      } else {
          gtk_label_set_text(GTK_LABEL(label), name);
       }
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+      gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
    }
 
 #ifdef WITH_GEOIP
@@ -740,30 +740,30 @@ static void gtkui_connection_detail(void)
       row++;
       label = gtk_label_new("Source location:");
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
       label = gtk_label_new(geoip_country_by_ip(&c->co->L3_addr1));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+      gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
    }
 #endif
 
    row++;
    label = gtk_label_new("Destination IP address:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
    label = gtk_label_new(ip_addr_ntoa(&c->co->L3_addr2, tmp));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
 
    if (GBL_OPTIONS->resolve) {
       row++;
       label = gtk_label_new("Destination hostname:");
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
       label = gtk_label_new("resolving...");
       if (host_iptoa(&c->co->L3_addr2, name) == -E_NOMATCH) {
@@ -774,13 +774,12 @@ static void gtkui_connection_detail(void)
          ro->widget = label;
          ro->ip = &c->co->L3_addr2;
          detail_timer2 = g_timeout_add(1000, gtkui_iptoa_deferred, ro);
-      }
-      else {
+      } else {
          gtk_label_set_text(GTK_LABEL(label), name);
       }
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+      gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
    }
 
 #ifdef WITH_GEOIP
@@ -788,125 +787,125 @@ static void gtkui_connection_detail(void)
       row++;
       label = gtk_label_new("Destination location:");
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
       label = gtk_label_new(geoip_country_by_ip(&c->co->L3_addr2));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+      gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
    }
 #endif
 
    /* Layer 4 information */
    row++;
    label = gtk_label_new("Layer 4 Information:");
-   markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", 
-         gtk_label_get_text(GTK_LABEL(label)));
+   markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>",
+                                    gtk_label_get_text(GTK_LABEL(label)));
    gtk_label_set_markup(GTK_LABEL(label), markup);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+3, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
-   gtk_table_set_row_spacing(GTK_TABLE(table), row-1, 10);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 3, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_set_row_spacing(GTK_TABLE(table), row - 1, 10);
    g_free(markup);
 
    row++;
    label = gtk_label_new("Protocol:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
-   switch(c->co->L4_proto) {
-      case NL_TYPE_UDP:
-         label = gtk_label_new("UDP");
-         break;
-      case NL_TYPE_TCP:
-         label = gtk_label_new("TCP");
-         break;
-      default:
-         label = gtk_label_new("");
-         break;
+   switch (c->co->L4_proto) {
+   case NL_TYPE_UDP:
+      label = gtk_label_new("UDP");
+      break;
+   case NL_TYPE_TCP:
+      label = gtk_label_new("TCP");
+      break;
+   default:
+      label = gtk_label_new("");
+      break;
    }
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
 
    row++;
    label = gtk_label_new("Source port:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
    label = gtk_label_new((str = g_strdup_printf("%d", ntohs(c->co->L4_addr1))));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+2, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 2, row, row + 1);
    g_free(str);
 
    label = gtk_label_new(service_search(c->co->L4_addr1, c->co->L4_proto));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+2, col+3, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 2, col + 3, row, row + 1);
 
    row++;
    label = gtk_label_new("Destination port:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
    label = gtk_label_new((str = g_strdup_printf("%d", ntohs(c->co->L4_addr2))));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+2, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 2, row, row + 1);
    g_free(str);
 
    label = gtk_label_new(service_search(c->co->L4_addr2, c->co->L4_proto));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+2, col+3, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 2, col + 3, row, row + 1);
 
    row++;
    label = gtk_label_new("Transferred bytes:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+   gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
    label = gtk_label_new((str = g_strdup_printf("%d", c->co->xferred)));
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
    g_free(str);
 
    /* Additional information */
    if (c->co->DISSECTOR.user) {
       row++;
       label = gtk_label_new("Additional Information:");
-      markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", 
-            gtk_label_get_text(GTK_LABEL(label)));
+      markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>",
+                                       gtk_label_get_text(GTK_LABEL(label)));
       gtk_label_set_markup(GTK_LABEL(label), markup);
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+3, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
-      gtk_table_set_row_spacing(GTK_TABLE(table), row-1, 10);
+      gtk_table_attach(GTK_TABLE(table), label, col, col + 3, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_table_set_row_spacing(GTK_TABLE(table), row - 1, 10);
       g_free(markup);
 
       row++;
       label = gtk_label_new("Account:");
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+      gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
       label = gtk_label_new(c->co->DISSECTOR.user);
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+2, row, row+1);
+      gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 2, row, row + 1);
 
       label = gtk_label_new(c->co->DISSECTOR.pass);
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-      gtk_table_attach_defaults(GTK_TABLE(table), label, col+2, col+3, row, row+1);
+      gtk_table_attach_defaults(GTK_TABLE(table), label, col + 2, col + 3, row, row + 1);
 
       if (c->co->DISSECTOR.info) {
          label = gtk_label_new("Additional info:");
          gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-         gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
+         gtk_table_attach(GTK_TABLE(table), label, col, col + 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
          label = gtk_label_new(c->co->DISSECTOR.info);
          gtk_label_set_selectable(GTK_LABEL(label), TRUE);
          gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-         gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
+         gtk_table_attach_defaults(GTK_TABLE(table), label, col + 1, col + 3, row, row + 1);
       }
    }
 
@@ -917,20 +916,18 @@ static void gtkui_connection_detail(void)
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-   g_signal_connect_swapped(G_OBJECT(button), "clicked", 
-         G_CALLBACK(gtkui_connection_detail_destroy), dwindow);
+   g_signal_connect_swapped(G_OBJECT(button), "clicked",
+                            G_CALLBACK(gtkui_connection_detail_destroy), dwindow);
    gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
    gtk_widget_grab_focus(button);
-   
+
    gtk_widget_show_all(dwindow);
-
-
 }
 
 static void gtkui_connection_detail_destroy(GtkWidget *widget, gpointer *data)
 {
    /* unused variable */
-   (void) data;
+   (void)data;
 
    /* destroy timer if still running */
    if (detail_timer1)
@@ -949,17 +946,17 @@ static void gtkui_connection_data(void)
    struct conn_tail *c = NULL;
    DEBUG_MSG("gtk_connection_data");
 
-   model = GTK_TREE_MODEL (ls_conns);
+   model = GTK_TREE_MODEL(ls_conns);
 
-   if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get (model, &iter, 11, &c, -1);
+   if (gtk_tree_selection_get_selected(GTK_TREE_SELECTION(selection), &model, &iter)) {
+      gtk_tree_model_get(model, &iter, 11, &c, -1);
    } else
       return; /* nothing is selected */
 
-   if(c == NULL || c->co == NULL)
+   if (c == NULL || c->co == NULL)
       return; /* just to be safe */
-  
-   /* 
+
+   /*
     * remove any hook on the open connection.
     * this is done to prevent a switch of connection
     * with the panel opened
@@ -970,11 +967,11 @@ static void gtkui_connection_data(void)
       /* remove the viewing flag */
       curr_conn->flags &= ~CONN_VIEWING;
    }
-   
+
    /* set the global variable to pass the parameter to other functions */
    curr_conn = c->co;
    curr_conn->flags |= CONN_VIEWING;
-   
+
    /* default is split view */
    gtkui_connection_data_split();
 }
@@ -988,7 +985,7 @@ static void gtkui_connection_data_split(void)
    GtkWidget *hbox_big, *hbox_small, *button;
    GtkTextIter iter;
    char tmp[MAX_ASCII_ADDR_LEN];
-   char title[MAX_ASCII_ADDR_LEN+6];
+   char title[MAX_ASCII_ADDR_LEN + 6];
    static gint scroll_split = 1;
 
    DEBUG_MSG("gtk_connection_data_split");
@@ -996,12 +993,12 @@ static void gtkui_connection_data_split(void)
    /* if we're switching views, make sure old hook is gone */
    conntrack_hook_conn_del(curr_conn, join_print_po);
 
-   if(data_window) {
-      child = gtk_bin_get_child(GTK_BIN (data_window));
-      gtk_container_remove(GTK_CONTAINER (data_window), child);
+   if (data_window) {
+      child = gtk_bin_get_child(GTK_BIN(data_window));
+      gtk_container_remove(GTK_CONTAINER(data_window), child);
       textview3 = NULL;
       joinedbuf = NULL;
-      endmark3 = NULL;     
+      endmark3 = NULL;
    } else {
       data_window = gtkui_page_new("Connection data", &gtkui_destroy_conndata, &gtkui_connection_data_detach);
    }
@@ -1013,112 +1010,112 @@ static void gtkui_connection_data_split(void)
    gtk_container_add(GTK_CONTAINER(data_window), hbox_big);
    gtk_widget_show(hbox_big);
 
-  /*** left side ***/
+   /*** left side ***/
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, TRUE, TRUE, 0);
    gtk_widget_show(vbox);
 
-  /* title */
-   snprintf(title, MAX_ASCII_ADDR_LEN+6, "%s:%d", 
+   /* title */
+   snprintf(title, MAX_ASCII_ADDR_LEN + 6, "%s:%d",
             ip_addr_ntoa(&curr_conn->L3_addr1, tmp), ntohs(curr_conn->L4_addr1));
    label = gtk_label_new(title);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
    gtk_widget_show(label);
 
-  /* data */
+   /* data */
    scrolled = gtk_scrolled_window_new(NULL, NULL);
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled), 
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scrolled), GTK_SHADOW_IN);
+   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled), GTK_SHADOW_IN);
    gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
    gtk_widget_show(scrolled);
 
    textview1 = gtk_text_view_new();
-   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (textview1), GTK_WRAP_CHAR);
-   gtk_text_view_set_editable(GTK_TEXT_VIEW (textview1), FALSE);
-   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (textview1), FALSE);
-   gtk_text_view_set_right_margin(GTK_TEXT_VIEW (textview1), 5);
-   gtk_text_view_set_right_margin(GTK_TEXT_VIEW (textview1), 5);
-   gtk_container_add(GTK_CONTAINER (scrolled), textview1);
+   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview1), GTK_WRAP_CHAR);
+   gtk_text_view_set_editable(GTK_TEXT_VIEW(textview1), FALSE);
+   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textview1), FALSE);
+   gtk_text_view_set_right_margin(GTK_TEXT_VIEW(textview1), 5);
+   gtk_text_view_set_right_margin(GTK_TEXT_VIEW(textview1), 5);
+   gtk_container_add(GTK_CONTAINER(scrolled), textview1);
    gtk_widget_show(textview1);
 
-   splitbuf1 = gtk_text_view_get_buffer(GTK_TEXT_VIEW (textview1));
-   gtk_text_buffer_create_tag (splitbuf1, "blue_fg", "foreground", "blue", NULL);
-   gtk_text_buffer_create_tag (splitbuf1, "monospace", "family", "monospace", NULL);
+   splitbuf1 = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview1));
+   gtk_text_buffer_create_tag(splitbuf1, "blue_fg", "foreground", "blue", NULL);
+   gtk_text_buffer_create_tag(splitbuf1, "monospace", "family", "monospace", NULL);
    gtk_text_buffer_get_end_iter(splitbuf1, &iter);
    endmark1 = gtk_text_buffer_create_mark(splitbuf1, "end", &iter, FALSE);
 
-  /* first two buttons */
+   /* first two buttons */
    hbox_small = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
    gtk_box_pack_start(GTK_BOX(vbox), hbox_small, FALSE, FALSE, 0);
    gtk_widget_show(hbox_small);
 
    button = gtk_button_new_with_mnemonic("_Join Views");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_data_join), NULL);
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_connection_data_join), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Inject Data");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_inject), NULL);
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_connection_inject), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
-  /*** right side ***/
+   /*** right side ***/
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, TRUE, TRUE, 0);
    gtk_widget_show(vbox);
 
-  /* title */
-   snprintf(title, MAX_ASCII_ADDR_LEN+6, "%s:%d", 
+   /* title */
+   snprintf(title, MAX_ASCII_ADDR_LEN + 6, "%s:%d",
             ip_addr_ntoa(&curr_conn->L3_addr2, tmp), ntohs(curr_conn->L4_addr2));
    label = gtk_label_new(title);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
    gtk_widget_show(label);
 
-  /* data */
+   /* data */
    scrolled = gtk_scrolled_window_new(NULL, NULL);
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled),
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scrolled), GTK_SHADOW_IN);
+   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled), GTK_SHADOW_IN);
    gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
    gtk_widget_show(scrolled);
 
    textview2 = gtk_text_view_new();
-   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (textview2), GTK_WRAP_CHAR);
-   gtk_text_view_set_editable(GTK_TEXT_VIEW (textview2), FALSE);
-   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (textview2), FALSE);
-   gtk_text_view_set_right_margin(GTK_TEXT_VIEW (textview2), 5);
-   gtk_text_view_set_right_margin(GTK_TEXT_VIEW (textview2), 5);
-   gtk_container_add(GTK_CONTAINER (scrolled), textview2);
+   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview2), GTK_WRAP_CHAR);
+   gtk_text_view_set_editable(GTK_TEXT_VIEW(textview2), FALSE);
+   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textview2), FALSE);
+   gtk_text_view_set_right_margin(GTK_TEXT_VIEW(textview2), 5);
+   gtk_text_view_set_right_margin(GTK_TEXT_VIEW(textview2), 5);
+   gtk_container_add(GTK_CONTAINER(scrolled), textview2);
    gtk_widget_show(textview2);
 
-   splitbuf2 = gtk_text_view_get_buffer(GTK_TEXT_VIEW (textview2));
-   gtk_text_buffer_create_tag (splitbuf2, "blue_fg", "foreground", "blue", NULL);
-   gtk_text_buffer_create_tag (splitbuf2, "monospace", "family", "monospace", NULL);
+   splitbuf2 = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview2));
+   gtk_text_buffer_create_tag(splitbuf2, "blue_fg", "foreground", "blue", NULL);
+   gtk_text_buffer_create_tag(splitbuf2, "monospace", "family", "monospace", NULL);
    gtk_text_buffer_get_end_iter(splitbuf2, &iter);
    endmark2 = gtk_text_buffer_create_mark(splitbuf2, "end", &iter, FALSE);
 
-  /* second two buttons */
+   /* second two buttons */
    hbox_small = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
    gtk_box_pack_start(GTK_BOX(vbox), hbox_small, FALSE, FALSE, 0);
    gtk_widget_show(hbox_small);
 
-   button = gtk_button_new_with_mnemonic("Inject _File"); 
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_inject_file), NULL);
+   button = gtk_button_new_with_mnemonic("Inject _File");
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_connection_inject_file), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Kill Connection");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill_curr_conn), NULL);
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_connection_kill_curr_conn), NULL);
    gtk_box_pack_start(GTK_BOX(hbox_small), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    gtk_widget_show(data_window);
 
-   if(GTK_IS_WINDOW (data_window))
-      gtk_window_present(GTK_WINDOW (data_window));
+   if (GTK_IS_WINDOW(data_window))
+      gtk_window_present(GTK_WINDOW(data_window));
    else
       gtkui_page_present(data_window);
 
@@ -1136,9 +1133,9 @@ static void gtkui_connection_data_split(void)
 static void gtkui_connection_data_detach(GtkWidget *child)
 {
    data_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (data_window), "Connection data");
-   gtk_window_set_default_size(GTK_WINDOW (data_window), 600, 400);
-   gtk_container_set_border_width(GTK_CONTAINER (data_window), 5);
+   gtk_window_set_title(GTK_WINDOW(data_window), "Connection data");
+   gtk_window_set_default_size(GTK_WINDOW(data_window), 600, 400);
+   gtk_container_set_border_width(GTK_CONTAINER(data_window), 5);
    g_signal_connect(G_OBJECT(data_window), "delete_event", G_CALLBACK(gtkui_destroy_conndata), NULL);
 
    /* make <ctrl>d shortcut turn the window back into a tab */
@@ -1146,7 +1143,7 @@ static void gtkui_connection_data_detach(GtkWidget *child)
 
    gtk_container_add(GTK_CONTAINER(data_window), child);
 
-   gtk_window_present(GTK_WINDOW (data_window));
+   gtk_window_present(GTK_WINDOW(data_window));
 }
 
 /* attach connection data tab */
@@ -1156,7 +1153,7 @@ static void gtkui_connection_data_attach(void)
       conntrack_hook_conn_del(curr_conn, split_print_po);
       conntrack_hook_conn_del(curr_conn, join_print_po);
    }
-   
+
    gtk_widget_destroy(data_window);
    textview1 = NULL;
    textview2 = NULL;
@@ -1189,7 +1186,7 @@ static void gtkui_destroy_conndata(void)
 /* int buffer - 1 for left split view, 2 for right split view, 3 for joined view */
 /* char *data - string to print */
 /* int color  - 2 for blue text (used in joined view) */
-static void gtkui_data_print(int buffer, char *data, int color) 
+static void gtkui_data_print(int buffer, char *data, int color)
 {
    GtkTextIter iter;
    GtkTextBuffer *textbuf = NULL;
@@ -1197,58 +1194,58 @@ static void gtkui_data_print(int buffer, char *data, int color)
    GtkTextMark *endmark = NULL;
    char *unicode = NULL;
 
-   switch(buffer) {
-      case 1:
-         textbuf = splitbuf1;
-         textview = textview1;
-         endmark = endmark1;
-         break;
-      case 2:
-         textbuf = splitbuf2;
-         textview = textview2;
-         endmark = endmark2;
-         break;
-      case 3:
-         textbuf = joinedbuf;
-         textview = textview3;
-         endmark = endmark3;
-         break;
-      default:
-         return;
+   switch (buffer) {
+   case 1:
+      textbuf = splitbuf1;
+      textview = textview1;
+      endmark = endmark1;
+      break;
+   case 2:
+      textbuf = splitbuf2;
+      textview = textview2;
+      endmark = endmark2;
+      break;
+   case 3:
+      textbuf = joinedbuf;
+      textview = textview3;
+      endmark = endmark3;
+      break;
+   default:
+      return;
    }
 
-   
    /* make sure data is valid UTF8 */
    unicode = gtkui_utf8_validate(data);
 
    /* if interface has been destroyed or unicode conversion failed */
-   if(!data_window || !textbuf || !textview || !endmark || !unicode)
+   if (!data_window || !textbuf || !textview || !endmark || !unicode)
       return;
 
    gtk_text_buffer_get_end_iter(textbuf, &iter);
-   if(color == 2)
-      gtk_text_buffer_insert_with_tags_by_name(textbuf, &iter, unicode, 
-         -1, "blue_fg", "monospace", NULL);
+   if (color == 2)
+      gtk_text_buffer_insert_with_tags_by_name(textbuf, &iter, unicode,
+                                               -1, "blue_fg", "monospace", NULL);
    else
-      gtk_text_buffer_insert_with_tags_by_name(textbuf, &iter, unicode, 
-         -1, "monospace", NULL);
-   gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview), 
-      endmark, 0, FALSE, 0, 0); 
+      gtk_text_buffer_insert_with_tags_by_name(textbuf, &iter, unicode,
+                                               -1, "monospace", NULL);
+   gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(textview),
+                                endmark, 0, FALSE, 0, 0);
 }
 
 static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
 {
    int ret;
-   
+
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+   if (GBL_OPTIONS->regex &&
+       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0)
+   {
       return;
    }
 
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
-   
+
    /* format the data */
    ret = GBL_FORMAT(text, len, dispbuf);
    dispbuf[ret] = 0;
@@ -1262,24 +1259,25 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
 static void split_print_po(struct packet_object *po)
 {
    int ret;
-   
+
    /* if not open don't refresh it */
    if (!data_window)
       return;
-   
+
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+   if (GBL_OPTIONS->regex &&
+       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0)
+   {
       return;
    }
-   
+
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
-      
+
    /* format the data */
    ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
-        
+
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
       gtkui_data_print(1, dispbuf, 0);
    else
@@ -1287,13 +1285,13 @@ static void split_print_po(struct packet_object *po)
 }
 
 /*
- * show the data in a joined window 
+ * show the data in a joined window
  */
 static void gtkui_connection_data_join(void)
 {
    GtkWidget *hbox, *vbox, *label, *scrolled, *button, *child;
    GtkTextIter iter;
-   #define TITLE_LEN (MAX_ASCII_ADDR_LEN * 2) + 6
+#define TITLE_LEN (MAX_ASCII_ADDR_LEN * 2) + 6
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
    char title[TITLE_LEN];
@@ -1304,9 +1302,9 @@ static void gtkui_connection_data_join(void)
    /* if we're switching views, make sure old hook is gone */
    conntrack_hook_conn_del(curr_conn, split_print_po);
 
-   if(data_window) {
-      child = gtk_bin_get_child(GTK_BIN (data_window));
-      gtk_container_remove(GTK_CONTAINER (data_window), child);
+   if (data_window) {
+      child = gtk_bin_get_child(GTK_BIN(data_window));
+      gtk_container_remove(GTK_CONTAINER(data_window), child);
       textview1 = NULL;
       textview2 = NULL;
       splitbuf1 = NULL;
@@ -1319,40 +1317,40 @@ static void gtkui_connection_data_join(void)
 
    /* don't timeout this connection */
    curr_conn->flags |= CONN_VIEWING;
-   
+
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_container_add(GTK_CONTAINER(data_window), vbox);
    gtk_widget_show(vbox);
-   
-  /* title */
-   snprintf(title, TITLE_LEN, "%s:%d - %s:%d", 
+
+   /* title */
+   snprintf(title, TITLE_LEN, "%s:%d - %s:%d",
             ip_addr_ntoa(&curr_conn->L3_addr1, src), ntohs(curr_conn->L4_addr1),
             ip_addr_ntoa(&curr_conn->L3_addr2, dst), ntohs(curr_conn->L4_addr2));
    label = gtk_label_new(title);
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
    gtk_widget_show(label);
-   
-  /* data */
+
+   /* data */
    scrolled = gtk_scrolled_window_new(NULL, NULL);
-   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scrolled),
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scrolled), GTK_SHADOW_IN);
+   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled), GTK_SHADOW_IN);
    gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
-   gtk_widget_show(scrolled);     
-   
+   gtk_widget_show(scrolled);
+
    textview3 = gtk_text_view_new();
-   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (textview3), GTK_WRAP_CHAR);
-   gtk_text_view_set_editable(GTK_TEXT_VIEW (textview3), FALSE);
-   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (textview3), FALSE);
-   gtk_text_view_set_right_margin(GTK_TEXT_VIEW (textview3), 5);
-   gtk_text_view_set_right_margin(GTK_TEXT_VIEW (textview3), 5);
-   gtk_container_add(GTK_CONTAINER (scrolled), textview3);
+   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview3), GTK_WRAP_CHAR);
+   gtk_text_view_set_editable(GTK_TEXT_VIEW(textview3), FALSE);
+   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(textview3), FALSE);
+   gtk_text_view_set_right_margin(GTK_TEXT_VIEW(textview3), 5);
+   gtk_text_view_set_right_margin(GTK_TEXT_VIEW(textview3), 5);
+   gtk_container_add(GTK_CONTAINER(scrolled), textview3);
    gtk_widget_show(textview3);
 
-   joinedbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW (textview3));
-   gtk_text_buffer_create_tag (joinedbuf, "blue_fg", "foreground", "blue", NULL);
-   gtk_text_buffer_create_tag (joinedbuf, "monospace", "family", "monospace", NULL);
+   joinedbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview3));
+   gtk_text_buffer_create_tag(joinedbuf, "blue_fg", "foreground", "blue", NULL);
+   gtk_text_buffer_create_tag(joinedbuf, "monospace", "family", "monospace", NULL);
    gtk_text_buffer_get_end_iter(joinedbuf, &iter);
    endmark3 = gtk_text_buffer_create_mark(joinedbuf, "end", &iter, FALSE);
 
@@ -1361,19 +1359,19 @@ static void gtkui_connection_data_join(void)
    gtk_widget_show(hbox);
 
    button = gtk_button_new_with_mnemonic("_Split View");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_data_split), NULL);
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_connection_data_split), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    button = gtk_button_new_with_mnemonic("_Kill Connection");
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_connection_kill_curr_conn), NULL);
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_connection_kill_curr_conn), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show(button);
 
    gtk_widget_show(data_window);
 
-   if(GTK_IS_WINDOW (data_window))
-      gtk_window_present(GTK_WINDOW (data_window));
+   if (GTK_IS_WINDOW(data_window))
+      gtk_window_present(GTK_WINDOW(data_window));
    else
       gtkui_page_present(data_window);
 
@@ -1392,38 +1390,39 @@ static gboolean gtkui_connections_scroll(gpointer data)
    gint *type = data;
 
    if (type == NULL)
-       return FALSE;
+      return FALSE;
 
-   if(*type == 1 && textview1 && endmark1 && textview2 && endmark2) {
+   if (*type == 1 && textview1 && endmark1 && textview2 && endmark2) {
       /* scroll split data views to bottom */
-      gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview1), endmark1, 0, FALSE, 0, 0);
-      gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview2), endmark2, 0, FALSE, 0, 0); 
-   } else if(textview3 && endmark3) {
+      gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(textview1), endmark1, 0, FALSE, 0, 0);
+      gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(textview2), endmark2, 0, FALSE, 0, 0);
+   } else if (textview3 && endmark3) {
       /* scroll joined data view to bottom */
-      gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview3), endmark3, 0, FALSE, 0, 0);
+      gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(textview3), endmark3, 0, FALSE, 0, 0);
    }
 
    /* only execute once, don't repeat */
-   return(FALSE);
+   return FALSE;
 }
 
 static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
 {
    int ret;
-   
+
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+   if (GBL_OPTIONS->regex &&
+       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0)
+   {
       return;
    }
-   
+
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
-   
+
    /* format the data */
    ret = GBL_FORMAT(text, len, dispbuf);
    dispbuf[ret] = 0;
-   
+
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
       gtkui_data_print(3, dispbuf, 1);
    else
@@ -1437,20 +1436,21 @@ static void join_print_po(struct packet_object *po)
    /* if not focused don't refresh it */
    if (!data_window)
       return;
-   
+
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+   if (GBL_OPTIONS->regex &&
+       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0)
+   {
       return;
    }
-   
+
    /* use the global to reuse the same memory region */
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
-      
+
    /* format the data */
    ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
-        
+
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
       gtkui_data_print(3, dispbuf, 1);
    else
@@ -1465,18 +1465,18 @@ static void gtkui_connection_purge(void *conn)
    struct row_pairs *row, *nextrow, *list = connections;
 
    /* variable not used */
-   (void) conn;
+   (void)conn;
 
    DEBUG_MSG("gtkui_connection_purge");
 
    connections = NULL;
-   for(row = list; row; row = nextrow) {
-       nextrow = row->next;
-       SAFE_FREE(row);
+   for (row = list; row; row = nextrow) {
+      nextrow = row->next;
+      SAFE_FREE(row);
    }
 
    conntrack_purge();
-   gtk_list_store_clear(GTK_LIST_STORE (ls_conns));
+   gtk_list_store_clear(GTK_LIST_STORE(ls_conns));
 }
 
 /*
@@ -1489,51 +1489,51 @@ static void gtkui_connection_kill(void *conn)
    struct conn_tail *c = NULL;
 
    /* variable not used */
-   (void) conn;
+   (void)conn;
 
    DEBUG_MSG("gtkui_connection_kill");
 
-   model = GTK_TREE_MODEL (ls_conns);
+   model = GTK_TREE_MODEL(ls_conns);
 
-   if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get (model, &iter, 11, &c, -1);
+   if (gtk_tree_selection_get_selected(GTK_TREE_SELECTION(selection), &model, &iter)) {
+      gtk_tree_model_get(model, &iter, 11, &c, -1);
    } else
       return; /* nothing is selected */
 
    if (!c || !c->co)
       return;
-   
+
    /* kill it */
    switch (user_kill(c->co)) {
-      case E_SUCCESS:
-         /* set the status */
-         c->co->status = CONN_KILLED;
-         gtkui_message("The connection was killed !!");
-         break;
-      case -E_FATAL:
-         gtkui_message("Cannot kill UDP connections !!");
-         break;
+   case E_SUCCESS:
+      /* set the status */
+      c->co->status = CONN_KILLED;
+      gtkui_message("The connection was killed !!");
+      break;
+   case -E_FATAL:
+      gtkui_message("Cannot kill UDP connections !!");
+      break;
    }
 }
 
 /*
- * call the specialized funtion as this is a callback 
+ * call the specialized funtion as this is a callback
  * without the parameter
  */
 static void gtkui_connection_kill_curr_conn(void)
 {
    DEBUG_MSG("gtkui_connection_kill_curr_conn");
-   
+
    /* kill it */
    switch (user_kill(curr_conn)) {
-      case E_SUCCESS:
-         /* set the status */
-         curr_conn->status = CONN_KILLED;
-         gtkui_message("The connection was killed !!");
-         break;
-      case -E_FATAL:
-         gtkui_message("Cannot kill UDP connections !!");
-         break;
+   case E_SUCCESS:
+      /* set the status */
+      curr_conn->status = CONN_KILLED;
+      gtkui_message("The connection was killed !!");
+      break;
+   case -E_FATAL:
+      gtkui_message("Cannot kill UDP connections !!");
+      break;
    }
 }
 
@@ -1551,26 +1551,26 @@ static void gtkui_connection_inject(void)
 
    DEBUG_MSG("gtk_connection_inject");
 
-   if(curr_conn == NULL)
+   if (curr_conn == NULL)
       return;
 
-   dialog = gtk_dialog_new_with_buttons("Character Injection", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, 
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+   dialog = gtk_dialog_new_with_buttons("Character Injection", GTK_WINDOW(window),
+                                        GTK_DIALOG_MODAL,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                         GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         NULL);
 #if !GTK_CHECK_VERSION(2, 22, 0)
-   gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+   gtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
 #endif
-   gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
+   gtk_container_set_border_width(GTK_CONTAINER(dialog), 5);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
-   label = gtk_label_new ("Packet destination:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+   label = gtk_label_new("Packet destination:");
+   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
    hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
@@ -1578,44 +1578,44 @@ static void gtkui_connection_inject(void)
    button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button1, FALSE, FALSE, 0);
 
-   button2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (button1),
-               ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
+   button2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(button1),
+                                                         ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button2, FALSE, FALSE, 0);
 
-   label = gtk_label_new ("Characters to be injected:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+   label = gtk_label_new("Characters to be injected:");
+   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
    frame = gtk_frame_new(NULL);
-   gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_IN);
-   gtk_box_pack_start(GTK_BOX (vbox), frame, TRUE, TRUE, 5);
+   gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
+   gtk_box_pack_start(GTK_BOX(vbox), frame, TRUE, TRUE, 5);
 
    text = gtk_text_view_new();
-   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (text), GTK_WRAP_CHAR);
-   gtk_container_add(GTK_CONTAINER (frame), text);
+   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text), GTK_WRAP_CHAR);
+   gtk_container_add(GTK_CONTAINER(frame), text);
 
    gtk_widget_show_all(dialog);
-    
+
    response = gtk_dialog_run(GTK_DIALOG(dialog));
-   if(response == GTK_RESPONSE_OK) {
+   if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
 
       SAFE_REALLOC(injectbuf, 501 * sizeof(char));
       memset(injectbuf, 0, 501);
 
-      buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW (text));
+      buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text));
 
       /* initialize iters for get text */
       gtk_text_buffer_get_start_iter(buf, &start);
       gtk_text_buffer_get_start_iter(buf, &end);
       /* advance end iter to end of text, 500 char max */
       gtk_text_iter_forward_chars(&end, 500);
-      
+
       strncpy(injectbuf, gtk_text_buffer_get_text(buf, &start, &end, FALSE), 501);
 
-      if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1)))
+      if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button1)))
          gtkui_inject_user(1);
-      else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2)))
+      else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button2)))
          gtkui_inject_user(2);
    }
 
@@ -1625,9 +1625,9 @@ static void gtkui_connection_inject(void)
 static void gtkui_inject_user(int side)
 {
    size_t len;
-    
+
    /* escape the sequnces in the buffer */
-   len = strescape(injectbuf, injectbuf, strlen(injectbuf)+1);
+   len = strescape(injectbuf, injectbuf, strlen(injectbuf) + 1);
 
    /* check where to inject */
    if (side == 1 || side == 2) {
@@ -1636,7 +1636,7 @@ static void gtkui_inject_user(int side)
 }
 
 /*
- * inject form a file 
+ * inject form a file
  */
 static void gtkui_connection_inject_file(void)
 {
@@ -1646,66 +1646,66 @@ static void gtkui_connection_inject_file(void)
    char tmp[MAX_ASCII_ADDR_LEN];
    const char *filename = NULL;
    gint response = 0;
-   
+
    DEBUG_MSG("gtk_connection_inject_file");
 
-   if(curr_conn == NULL)
+   if (curr_conn == NULL)
       return;
 
-   dialog = gtk_dialog_new_with_buttons("Character Injection", GTK_WINDOW (window),
-                                        GTK_DIALOG_MODAL, 
-                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
+   dialog = gtk_dialog_new_with_buttons("Character Injection", GTK_WINDOW(window),
+                                        GTK_DIALOG_MODAL,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                         GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         NULL);
-   gtk_window_set_default_size(GTK_WINDOW (dialog), 400, 150);
+   gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 150);
 #if !GTK_CHECK_VERSION(2, 22, 0)
-   gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+   gtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
 #endif
-   gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
+   gtk_container_set_border_width(GTK_CONTAINER(dialog), 5);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-   
+
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
    gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
-   label = gtk_label_new ("Packet destination:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+   label = gtk_label_new("Packet destination:");
+   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
    hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
-   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-      
+   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+
    button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button1, FALSE, FALSE, 0);
    gtk_widget_show(button1);
-   
-   button2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON (button1),
-               ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
+
+   button2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(button1),
+                                                         ip_addr_ntoa(&curr_conn->L3_addr1, tmp));
    gtk_box_pack_start(GTK_BOX(hbox), button2, FALSE, FALSE, 0);
-   
-   label = gtk_label_new ("File to inject:");
-   gtk_misc_set_alignment(GTK_MISC (label), 0, 0.5);
-   gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+
+   label = gtk_label_new("File to inject:");
+   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
    hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
-   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    entry = gtk_entry_new();
-   gtk_box_pack_start(GTK_BOX (hbox), entry, TRUE, TRUE, 0);
+   gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
 
    button = gtk_button_new_with_label("...");
-   gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
-   g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_filename_browse), entry);
+   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(gtkui_filename_browse), entry);
 
    gtk_widget_show_all(dialog);
 
-   response = gtk_dialog_run(GTK_DIALOG (dialog));
-   if(response == GTK_RESPONSE_OK) {
+   response = gtk_dialog_run(GTK_DIALOG(dialog));
+   if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      filename = gtk_entry_get_text(GTK_ENTRY (entry));
-      if(filename && strlen(filename) > 0) {
-         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1)))
+      filename = gtk_entry_get_text(GTK_ENTRY(entry));
+      if (filename && strlen(filename) > 0) {
+         if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button1)))
             gtkui_inject_file(filename, 1);
-         else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2)))
+         else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button2)))
             gtkui_inject_file(filename, 2);
       }
    }
@@ -1720,24 +1720,24 @@ static void gtkui_inject_file(const char *filename, int side)
    int fd;
    void *buf;
    size_t size, ret;
-   
+
    DEBUG_MSG("inject_file %s", filename);
-   
+
    /* open the file */
    if ((fd = open(filename, O_RDONLY | O_BINARY)) == -1) {
       ui_error("Can't load the file");
       return;
    }
-      
+
    /* calculate the size of the file */
    size = lseek(fd, 0, SEEK_END);
-   
+
    /* load the file in memory */
    SAFE_CALLOC(buf, size, sizeof(char));
-            
+
    /* rewind the pointer */
    lseek(fd, 0, SEEK_SET);
-               
+
    ret = read(fd, buf, size);
 
    close(fd);
@@ -1746,7 +1746,7 @@ static void gtkui_inject_file(const char *filename, int side)
       ui_error("Cannot read the file into memory");
       return;
    }
-      
+
    /* check where to inject */
    if (side == 1 || side == 2) {
       user_inject(buf, size, curr_conn, side);
@@ -1761,7 +1761,7 @@ static void set_connfilter(GtkWidget *widget, gpointer *data)
 
    DEBUG_MSG("set_connfilter");
 
-   value = (gboolean*)data;
+   value = (gboolean *)data;
    *value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
    /* reapply the filter */
    gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(filter.model));
@@ -1770,7 +1770,7 @@ static void set_connfilter(GtkWidget *widget, gpointer *data)
 static void set_connfilter_host(GtkWidget *widget, gpointer *data)
 {
    /* unused variable */
-   (void) data;
+   (void)data;
    DEBUG_MSG("set_connfilter_host");
 
    filter.host = gtk_entry_get_text(GTK_ENTRY(widget));
@@ -1786,16 +1786,17 @@ static gboolean connfilter(GtkTreeModel *model, GtkTreeIter *iter, gpointer *dat
    struct conn_tail *conn = NULL;
 
    /* unused variable */
-   (void) data;
+   (void)data;
 
    /* fetch row values */
    gtk_tree_model_get(model, iter, 1, &src_host, 4, &dst_host, 11, &conn, -1);
 
    /* evaluate filter criteria */
    /* host filter set - filter hosts that do not match */
-   if (filter.host && strlen(filter.host)) { 
-      if (src_host && !strcasestr(src_host, filter.host) && 
-          dst_host && !strcasestr(dst_host, filter.host)) {
+   if (filter.host && strlen(filter.host)) {
+      if (src_host && !strcasestr(src_host, filter.host) &&
+          dst_host && !strcasestr(dst_host, filter.host))
+      {
          ret = FALSE;
          g_free(src_host);
          g_free(dst_host);
@@ -1805,46 +1806,45 @@ static gboolean connfilter(GtkTreeModel *model, GtkTreeIter *iter, gpointer *dat
    if (conn && conn->co) {
       /* protocol filter */
       switch (conn->co->L4_proto) {
-         case NL_TYPE_UDP:
-            if (!filter.udp)
-               ret = FALSE;
-            break;
-         case NL_TYPE_TCP:
-            if (!filter.tcp)
-               ret = FALSE;
-            break;
-         default:
-            if (!filter.other)
-               ret = FALSE;
+      case NL_TYPE_UDP:
+         if (!filter.udp)
+            ret = FALSE;
+         break;
+      case NL_TYPE_TCP:
+         if (!filter.tcp)
+            ret = FALSE;
+         break;
+      default:
+         if (!filter.other)
+            ret = FALSE;
       }
 
       /* connection state filter */
       switch (conn->co->status) {
-         case CONN_IDLE:
-            if (!filter.idle)
-               ret = FALSE;
-            break;
-         case CONN_ACTIVE:
-            if (!filter.active)
-               ret = FALSE;
-            break;
-         case CONN_CLOSING:
-            if (!filter.closing)
-               ret = FALSE;
-            break;
-         case CONN_CLOSED:
-            if (!filter.closed)
-               ret = FALSE;
-            break;
-         case CONN_KILLED:
-            if (!filter.killed)
-               ret = FALSE;
-            break;
-         default:
-            break;
+      case CONN_IDLE:
+         if (!filter.idle)
+            ret = FALSE;
+         break;
+      case CONN_ACTIVE:
+         if (!filter.active)
+            ret = FALSE;
+         break;
+      case CONN_CLOSING:
+         if (!filter.closing)
+            ret = FALSE;
+         break;
+      case CONN_CLOSED:
+         if (!filter.closed)
+            ret = FALSE;
+         break;
+      case CONN_KILLED:
+         if (!filter.killed)
+            ret = FALSE;
+         break;
+      default:
+         break;
       }
-   }
-   else {
+   } else {
       ret = FALSE;
    }
 
@@ -1854,4 +1854,3 @@ static gboolean connfilter(GtkTreeModel *model, GtkTreeIter *iter, gpointer *dat
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -8,11 +8,11 @@
 #define NCCS     12
 
 struct termios {
-       unsigned  c_lflag;
-       unsigned  c_cc [NCCS];
-     };
+   unsigned c_lflag;
+   unsigned c_cc[NCCS];
+};
 
-#define tcgetattr(x,y)     ((void)0)
-#define tcsetattr(x,y,z)   ((void)0)
+#define tcgetattr(x, y)     ((void)0)
+#define tcsetattr(x, y, z)   ((void)0)
 
 #endif

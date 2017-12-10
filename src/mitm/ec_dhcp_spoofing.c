@@ -1,23 +1,23 @@
 /*
-    ettercap -- DHCP spoofing mitm module
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- DHCP spoofing mitm module
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_mitm.h>
@@ -48,9 +48,8 @@ static void dhcp_setup_options(void);
 static struct ip_addr *dhcp_addr_reply(struct ip_addr *radd);
 
 /* from dissectors/ec_dhcp.c */
-extern u_int8 * get_dhcp_option(u_int8 opt, u_int8 *ptr, u_int8 *end);
+extern u_int8 *get_dhcp_option(u_int8 opt, u_int8 *ptr, u_int8 *end);
 extern void put_dhcp_option(u_int8 opt, u_int8 *value, u_int8 len, u_int8 **ptr);
-
 
 /*******************************************/
 
@@ -66,10 +65,9 @@ void __init dhcp_spoofing_init(void)
    mm.name = "dhcp";
    mm.start = &dhcp_spoofing_start;
    mm.stop = &dhcp_spoofing_stop;
-   
+
    mitm_add(&mm);
 }
-
 
 /*
  * init the ICMP REDIRECT attack
@@ -78,7 +76,7 @@ static int dhcp_spoofing_start(char *args)
 {
    char *p;
    int i = 1;
-  
+
    DEBUG_MSG("dhcp_spoofing_start");
 
    if (!strcmp(args, ""))
@@ -89,7 +87,7 @@ static int dhcp_spoofing_start(char *args)
     */
    if (GBL_UI->type != UI_TEXT && !GBL_SNIFF->active)
       SEMIFATAL_ERROR("DHCP spoofing requires sniffing to be active.\n");
-   
+
    /* check the parameter:
     *
     * ip_pool/netmask/dns
@@ -97,28 +95,28 @@ static int dhcp_spoofing_start(char *args)
    for (p = strsep(&args, "/"); p != NULL; p = strsep(&args, "/")) {
       /* first parameter (the ip_pool) */
       if (i == 1) {
-         char tmp[strlen(p)+4];
+         char tmp[strlen(p) + 4];
 
          /* add the / to be able to use the target parsing function */
-         snprintf(tmp, strlen(p)+4, "/%s//", p);
+         snprintf(tmp, strlen(p) + 4, "/%s//", p);
 
          if (compile_target(tmp, &dhcp_ip_pool) != E_SUCCESS)
             break;
-         
-      /* second parameter (the netmask) */
+
+         /* second parameter (the netmask) */
       } else if (i == 2) {
          /* convert from string and get the netmask */
          if (ip_addr_pton(p, &dhcp_netmask) != E_SUCCESS)
             break;
-         
-      /* third parameter (the dns server) */
+
+         /* third parameter (the dns server) */
       } else if (i == 3) {
          char tmp[MAX_ASCII_ADDR_LEN];
 
          /* convert from string and get the netmask */
          if (ip_addr_pton(p, &dhcp_dns) != E_SUCCESS)
             break;
-         
+
          /* all the parameters were parsed correctly... */
          USER_MSG("DHCP spoofing: using specified ip_pool, netmask %s", ip_addr_ntoa(&dhcp_netmask, tmp));
          USER_MSG(", dns %s\n", ip_addr_ntoa(&dhcp_dns, tmp));
@@ -132,7 +130,7 @@ static int dhcp_spoofing_start(char *args)
          dhcp_free_ip = LIST_FIRST(&dhcp_ip_pool.ips);
          return E_SUCCESS;
       }
-      
+
       i++;
    }
 
@@ -142,41 +140,37 @@ static int dhcp_spoofing_start(char *args)
    return -E_FATAL;
 }
 
-
 /*
  * shut down the redirect process
  */
 static void dhcp_spoofing_stop(void)
 {
-   
+
    DEBUG_MSG("dhcp_spoofing_stop");
-   
+
    USER_MSG("DHCP spoofing stopped.\n");
-   
+
    /* remove the hookpoint */
    hook_del(HOOK_PROTO_DHCP_REQUEST, dhcp_spoofing_req);
    hook_del(HOOK_PROTO_DHCP_DISCOVER, dhcp_spoofing_disc);
-
 }
 
-
-/* 
+/*
  * Find the right address to reply
  */
 static struct ip_addr *dhcp_addr_reply(struct ip_addr *radd)
 {
    static struct ip_addr broad_addr;
    u_int32 broad_int32 = 0xffffffff;
-   
+
    ip_addr_init(&broad_addr, AF_INET, (u_char *)&broad_int32);
-   
+
    /* check if the source is 0.0.0.0 */
-   if ( ip_addr_is_zero(radd) )
+   if (ip_addr_is_zero(radd))
       return &broad_addr;
-      
+
    return radd;
 }
-
 
 /*
  * parses the request and send the spoofed reply
@@ -188,7 +182,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
    u_int8 *options, *opt, *end;
    struct ip_addr client, server;
    char tmp[MAX_ASCII_ADDR_LEN];
-   
+
    DEBUG_MSG("dhcp_spoofing_req");
 
    /* get a local copy of the dhcp header */
@@ -203,7 +197,7 @@ static void dhcp_spoofing_req(struct packet_object *po)
    /* use the same dhcp header, but change the type of the message */
    dhcp->dhcp_opcode = LIBNET_DHCP_REPLY;
 
-   /* 
+   /*
     * if the client is requesting a particular IP address,
     * release it. so we don't mess the network too much...
     * only change the router ip ;)
@@ -219,40 +213,39 @@ static void dhcp_spoofing_req(struct packet_object *po)
       } else
          return;
    }
-  
+
    /* set the requested ip */
    dhcp->dhcp_yip = *client.addr32;
-  
+
    /* this is a dhcp ACK */
    dhcp_options[2] = DHCP_ACK;
-   
-   /* 
+
+   /*
     * if it is a request after an offer from a server,
     * spoof its ip to be stealth.
     */
    if ((opt = get_dhcp_option(DHCP_OPT_SRV_ADDR, options, end)) != NULL) {
       /* get the server id */
       ip_addr_init(&server, AF_INET, opt + 1);
-   
+
       /* set it in the header */
       dhcp->dhcp_sip = *server.addr32;
 
       /* set it in the options */
-      ip_addr_cpy((u_char*)dhcp_options + 5, &server);
-   
-      send_dhcp_reply(&server, dhcp_addr_reply(&po->L3.src), po->L2.src, (u_char*)dhcp_hdr, (u_char*)dhcp_options, dhcp_optlen);
-      
+      ip_addr_cpy((u_char *)dhcp_options + 5, &server);
+
+      send_dhcp_reply(&server, dhcp_addr_reply(&po->L3.src), po->L2.src, (u_char *)dhcp_hdr, (u_char *)dhcp_options, dhcp_optlen);
    } else {
-      /* 
+      /*
        * the request does not contain an identifier,
        * use our ip address
        */
       dhcp->dhcp_sip = *GBL_IFACE->ip.addr32;
-      
+
       /* set it in the options */
-      ip_addr_cpy((u_char*)dhcp_options + 5, &GBL_IFACE->ip);
-   
-      send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, (u_char*)dhcp_hdr, (u_char*)dhcp_options, dhcp_optlen);
+      ip_addr_cpy((u_char *)dhcp_options + 5, &GBL_IFACE->ip);
+
+      send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, (u_char *)dhcp_hdr, (u_char *)dhcp_options, dhcp_optlen);
    }
 
    USER_MSG("DHCP spoofing: fake ACK [%s] ", mac_addr_ntoa(po->L2.src, tmp));
@@ -273,7 +266,7 @@ static void dhcp_spoofing_disc(struct packet_object *po)
    /* no more ip available in the pool */
    if (dhcp_free_ip == SLIST_END(&dhcp_ip_pool.ips))
       return;
-   
+
    /* get a local copy of the dhcp header */
    memcpy(dhcp_hdr, po->DATA.data, LIBNET_DHCPV4_H);
 
@@ -287,16 +280,16 @@ static void dhcp_spoofing_disc(struct packet_object *po)
 
    /* set the free ip from the pool */
    dhcp->dhcp_yip = *dhcp_free_ip->ip.addr32;
-   
+
    /* set it in the header */
    dhcp->dhcp_sip = *GBL_IFACE->ip.addr32;
 
    /* set it in the options */
-   ip_addr_cpy((u_char*)dhcp_options + 5, &GBL_IFACE->ip);
-   
+   ip_addr_cpy((u_char *)dhcp_options + 5, &GBL_IFACE->ip);
+
    /* send the packet */
-   send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, (u_char*)dhcp_hdr, (u_char*)dhcp_options, dhcp_optlen);
-   
+   send_dhcp_reply(&GBL_IFACE->ip, dhcp_addr_reply(&po->L3.src), po->L2.src, (u_char *)dhcp_hdr, (u_char *)dhcp_options, dhcp_optlen);
+
    USER_MSG("DHCP spoofing: fake OFFER [%s] ", mac_addr_ntoa(po->L2.src, tmp));
    USER_MSG("offering %s \n", ip_addr_ntoa(&dhcp_free_ip->ip, tmp));
 
@@ -311,7 +304,7 @@ static void dhcp_spoofing_disc(struct packet_object *po)
 static void dhcp_setup_options(void)
 {
    int time;
-   u_int8 *p = (u_int8*)dhcp_options;
+   u_int8 *p = (u_int8 *)dhcp_options;
 
    DEBUG_MSG("dhcp_setup_options");
 
@@ -347,8 +340,6 @@ static void dhcp_setup_options(void)
    }
 }
 
-
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -3,14 +3,15 @@
 
 #include <ec_filter.h>
 
-#define SCRIPT_ERROR(x, ...) FATAL_ERROR("\n[%s:%d]: "x, GBL_OPTIONS->source_file, GBL->lineno, ## __VA_ARGS__ );
+#define SCRIPT_ERROR(x, ...) FATAL_ERROR("\n[%s:%d]: "x, GBL_OPTIONS->source_file, GBL->lineno, ## __VA_ARGS__);
 
-#define WARNING(x) do {                   \
-if (!GBL_OPTIONS->suppress_warnings)       \
-   FATAL_ERROR("\n[%s:%ld]: WARNING "x, GBL_OPTIONS->source_file, (unsigned long)GBL->lineno);  \
-else                                      \
-   fprintf(stderr, "\n[%s:%ld]: WARNING "x, GBL_OPTIONS->source_file, (unsigned long)GBL->lineno);  \
-} while(0)
+#define WARNING(x) \
+   do { \
+      if (!GBL_OPTIONS->suppress_warnings) \
+         FATAL_ERROR("\n[%s:%ld]: WARNING "x, GBL_OPTIONS->source_file, (unsigned long)GBL->lineno); \
+      else \
+         fprintf(stderr, "\n[%s:%ld]: WARNING "x, GBL_OPTIONS->source_file, (unsigned long)GBL->lineno); \
+   } while (0)
 
 /* ef_main */
 EF_API_EXTERN void ef_debug(u_char level, const char *message, ...);
@@ -49,8 +50,8 @@ struct block {
    } un;
    struct block *next;
    u_int8 type;
-      #define BLK_INSTR 0
-      #define BLK_IFBLK 1
+#define BLK_INSTR 0
+#define BLK_IFBLK 1
 };
 
 struct instruction {
@@ -67,23 +68,22 @@ struct condition {
    struct filter_op fop;
    struct condition *next;
    u_int16 op;
-      #define COND_AND  0
-      #define COND_OR  1
+#define COND_AND  0
+#define COND_OR  1
 };
 
 EF_API_EXTERN int compiler_set_root(struct block *blk);
 EF_API_EXTERN size_t compile_tree(struct filter_op **fop);
-EF_API_EXTERN struct block * compiler_add_instr(struct instruction *ins, struct block *blk);
-EF_API_EXTERN struct block * compiler_add_ifblk(struct ifblock *ifb, struct block *blk);
-EF_API_EXTERN struct instruction * compiler_create_instruction(struct filter_op *fop);
-EF_API_EXTERN struct condition * compiler_create_condition(struct filter_op *fop);
-EF_API_EXTERN struct condition * compiler_concat_conditions(struct condition *a, u_int16 op, struct condition *b);
-EF_API_EXTERN struct ifblock * compiler_create_ifblock(struct condition *conds, struct block *blk);
-EF_API_EXTERN struct ifblock * compiler_create_ifelseblock(struct condition *conds, struct block *blk, struct block *elseblk);
+EF_API_EXTERN struct block *compiler_add_instr(struct instruction *ins, struct block *blk);
+EF_API_EXTERN struct block *compiler_add_ifblk(struct ifblock *ifb, struct block *blk);
+EF_API_EXTERN struct instruction *compiler_create_instruction(struct filter_op *fop);
+EF_API_EXTERN struct condition *compiler_create_condition(struct filter_op *fop);
+EF_API_EXTERN struct condition *compiler_concat_conditions(struct condition *a, u_int16 op, struct condition *b);
+EF_API_EXTERN struct ifblock *compiler_create_ifblock(struct condition *conds, struct block *blk);
+EF_API_EXTERN struct ifblock *compiler_create_ifelseblock(struct condition *conds, struct block *blk, struct block *elseblk);
 
 #endif
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

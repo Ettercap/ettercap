@@ -14,4 +14,3 @@ EC_API_EXTERN void unified_set_forwardable(struct packet_object *po);
 /* EOF */
 
 // vim:ts=3:expandtab
-

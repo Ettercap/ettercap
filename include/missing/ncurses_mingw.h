@@ -14,13 +14,12 @@
 #include <ncurses_dll.h>  /* part of ncurses */
 
 /* from ncurses 5.4 <curses.h> */
-extern const char *curses_version (void);
+extern const char *curses_version(void);
 
-extern int vwprintw (WINDOW *, const char *,va_list);
+extern int vwprintw(WINDOW *, const char *, va_list);
 #define vw_printw vwprintw
 
-extern int  wresize (WINDOW *, int, int);
-extern bool wenclose (const WINDOW *, int, int);
+extern int  wresize(WINDOW *, int, int);
+extern bool wenclose(const WINDOW *, int, int);
 
-#endif  /* _NCURSES_FOR_WINDOWS_H */
-
+#endif /* _NCURSES_FOR_WINDOWS_H */

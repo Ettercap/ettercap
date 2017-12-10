@@ -1,23 +1,23 @@
 /*
-    ettercap -- statistics collection module
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- statistics collection module
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_stats.h>
@@ -32,7 +32,7 @@ unsigned long stats_queue_add(void)
 {
    /* increment the counter */
    GBL_STATS->queue_curr++;
-   
+
    /* check if the max has to be updated */
    if (GBL_STATS->queue_curr > GBL_STATS->queue_max)
       GBL_STATS->queue_max = GBL_STATS->queue_curr;
@@ -61,7 +61,7 @@ void stats_half_start(struct half_stats *hs)
 
 /*
  * update the packet (num and size) counters
- * and get the time diff to calculate the 
+ * and get the time diff to calculate the
  * rate
  */
 void stats_half_end(struct half_stats *hs, u_int len)
@@ -78,35 +78,34 @@ void stats_half_end(struct half_stats *hs, u_int len)
    time_add(&hs->tpar, &diff, &hs->tpar);
 
    /* calculate the rate (packet/time) */
-   ttime = hs->ttot.tv_sec + hs->ttot.tv_usec/1.0e6;
-   ptime = hs->tpar.tv_sec + hs->tpar.tv_usec/1.0e6;
+   ttime = hs->ttot.tv_sec + hs->ttot.tv_usec / 1.0e6;
+   ptime = hs->tpar.tv_sec + hs->tpar.tv_usec / 1.0e6;
 
    /* update the packet count */
    hs->pck_recv++;
    hs->pck_size += len;
    hs->tmp_size += len;
-   
-   if ( (hs->pck_recv % GBL_CONF->sampling_rate) == 0 ) {
+
+   if ((hs->pck_recv % GBL_CONF->sampling_rate) == 0) {
       /* save the average and the worst sampling */
-      hs->rate_adv = hs->pck_recv/ttime;
-      if (hs->rate_worst > GBL_CONF->sampling_rate/ptime || hs->rate_worst == 0)
-         hs->rate_worst = GBL_CONF->sampling_rate/ptime;
-      
-      hs->thru_adv = hs->pck_size/ttime;
-      if (hs->thru_worst > hs->tmp_size/ptime || hs->thru_worst == 0)
-         hs->thru_worst = hs->tmp_size/ptime;
+      hs->rate_adv = hs->pck_recv / ttime;
+      if (hs->rate_worst > GBL_CONF->sampling_rate / ptime || hs->rate_worst == 0)
+         hs->rate_worst = GBL_CONF->sampling_rate / ptime;
+
+      hs->thru_adv = hs->pck_size / ttime;
+      if (hs->thru_worst > hs->tmp_size / ptime || hs->thru_worst == 0)
+         hs->thru_worst = hs->tmp_size / ptime;
 
 #if 0
       DEBUG_MSG("PACKET RATE: %llu [%d] [%d] -- [%d] [%d]\n", hs->pck_recv,
-         hs->rate_worst, hs->rate_adv,
-         hs->thru_worst, hs->thru_adv);
+                hs->rate_worst, hs->rate_adv,
+                hs->thru_worst, hs->thru_adv);
 #endif
-            
+
       /* reset the partial */
       memset(&hs->tpar, 0, sizeof(struct timeval));
       hs->tmp_size = 0;
    }
-
 }
 
 /*
@@ -118,7 +117,7 @@ void stats_half_end(struct half_stats *hs, u_int len)
 void stats_wipe(void)
 {
    struct pcap_stat ps;
-   
+
    DEBUG_MSG("stats_wipe");
 
    /* wipe top and botto half statistics */
@@ -135,7 +134,7 @@ void stats_wipe(void)
    GBL_STATS->ps_sent_delta += GBL_STATS->ps_sent;
    GBL_STATS->bs_sent_delta += GBL_STATS->bs_sent;
 #endif
-   
+
    GBL_STATS->ps_recv = 0;
    GBL_STATS->ps_drop = 0;
    GBL_STATS->ps_ifdrop = 0;
@@ -152,8 +151,8 @@ void stats_update(void)
 {
    struct pcap_stat ps;
    struct libnet_stats ls;
-   
-   /* update the statistics 
+
+   /* update the statistics
     *
     * statistics are available only in live capture
     * no statistics are stored in savefiles
@@ -161,8 +160,8 @@ void stats_update(void)
    pcap_stats(GBL_IFACE->pcap, &ps);
    /* get the statistics for Layer 3 since we forward packets here */
    libnet_stats(GBL_LNET->lnet_IP4, &ls);
-      
-   /* on systems other than linux, the counter is not reset */ 
+
+   /* on systems other than linux, the counter is not reset */
    GBL_STATS->ps_recv = ps.ps_recv - GBL_STATS->ps_recv_delta;
    GBL_STATS->ps_drop = ps.ps_drop - GBL_STATS->ps_drop_delta;
 
@@ -174,4 +173,3 @@ void stats_update(void)
 /* EOF */
 
 // vim:ts=3:expandtab
-

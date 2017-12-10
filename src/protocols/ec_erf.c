@@ -1,23 +1,23 @@
 /*
-    ettercap -- ERF (endace) decoder module
-
-    Copyright (C) The Ettercap Dev Team
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- ERF (endace) decoder module
+ *
+ *  Copyright (C) The Ettercap Dev Team
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -25,15 +25,14 @@
 
 /* globals */
 
-struct erf_header
-{
-   u_int32  timestamp1;
-   u_int32  timestamp2;
-   u_int8   type;
-   u_int8   flags;
-   u_int16  rlen;
-   u_int16  color;
-   u_int16  wlen;
+struct erf_header {
+   u_int32 timestamp1;
+   u_int32 timestamp2;
+   u_int8 type;
+   u_int8 flags;
+   u_int16 rlen;
+   u_int16 color;
+   u_int16 wlen;
 };
 
 /* protos */
@@ -54,7 +53,6 @@ void __init erf_init(void)
    add_decoder(LINK_LAYER, IL_TYPE_ERF, decode_erf);
    add_aligner(IL_TYPE_ERF, align_erf);
 }
-
 
 FUNC_DECODER(decode_erf)
 {
@@ -100,4 +98,3 @@ FUNC_ALIGNER(align_erf)
 /* EOF */
 
 // vim:ts=3:expandtab
-

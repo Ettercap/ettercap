@@ -1,23 +1,23 @@
 /*
-    ettercap -- encryption functions
-
-    Copyright (C) The Ettercap Dev Team
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- encryption functions
+ *
+ *  Copyright (C) The Ettercap Dev Team
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_encryption.h>
@@ -79,9 +79,10 @@ static const u_int16 Sbox[256] = {
 #define Hi16(val) ((u_int16)((val) >> 16))
 #define _S_(v) ((u_int16)(Sbox[Lo8(v)] ^ ((Sbox[Hi8(v)] << 8) | (Sbox[Hi8(v)] >> 8))))
 
-#define pletohs(p)  ((u_int16)                              \
-                    ((u_int16)*((const u_int8 *)(p)+1)<<8|  \
-                    (u_int16)*((const u_int8 *)(p)+0)<<0))
+#define pletohs(p) \
+   ((u_int16) \
+    ((u_int16) * ((const u_int8 *)(p) + 1) << 8 | \
+     (u_int16) * ((const u_int8 *)(p) + 0) << 0))
 
 #define Mk16_le(v) ((u_int16)pletohs(v))
 
@@ -103,11 +104,11 @@ int wpa_tkip_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
    u_int32 TSC32; /* TKIP Sequence Counter ( 2, 3, 4, 5 ) */
    u_int16 TSC16; /* TKIP Sequence Counter ( 1, 0 ) */
    u_int16 TTAK[TKIP_TTAK_LEN];
-   u_int8  wep_seed[TKIP_WEP_128_KEY_LEN];
+   u_int8 wep_seed[TKIP_WEP_128_KEY_LEN];
    u_char decbuf[len];
 
    if (len > UINT16_MAX) {
-       return -E_NOTHANDLED;
+      return -E_NOTHANDLED;
    }
 
    /* get the TKIP Sequence Counter */
@@ -124,7 +125,7 @@ int wpa_tkip_decrypt(u_char *mac, u_char *data, size_t len, struct wpa_sa sa)
 
    /* decrypt the packet */
    if (tkip_decrypt(decbuf, len - WEP_CRC_LEN, wep_seed) != 0) {
-      //DEBUG_MSG(D_VERBOSE, "WPA (TKIP) decryption failed, packet was skipped");
+      // DEBUG_MSG(D_VERBOSE, "WPA (TKIP) decryption failed, packet was skipped");
       return -E_NOTHANDLED;
    }
 
@@ -157,11 +158,10 @@ static inline void get_TSC(u_int32 *TSC32, u_int16 *TSC16, u_char *data)
 
    *TSC16 = to_int16(data[0], data[2]);
 
-   *TSC32 = ( (u_int32)(data[7]) << 24 ) |
-            ( (u_int32)(data[6]) << 16 ) |
-            ( (u_int32)(data[5]) << 8 ) |
-            ( (u_int32)(data[4]) );
-
+   *TSC32 = ((u_int32)(data[7]) << 24) |
+      ((u_int32)(data[6]) << 16) |
+      ((u_int32)(data[5]) << 8) |
+      ((u_int32)(data[4]));
 }
 
 /*
@@ -180,13 +180,12 @@ static inline void tkip_mixing_phase1(u_int16 *TTAK, u_int8 *TK, u_int8 *TA, u_i
 
    for (i = 0; i < TKIP_PHASE1_LOOP_COUNT; i++) {
       j = (u_int16)(2 * (i & 1));
-      TTAK[0] = (u_int16)(TTAK[0] + _S_((u_int16)(TTAK[4] ^ to_int16(TK[1 + j],  TK[0 + j]))));
-      TTAK[1] = (u_int16)(TTAK[1] + _S_((u_int16)(TTAK[0] ^ to_int16(TK[5 + j],  TK[4 + j]))));
-      TTAK[2] = (u_int16)(TTAK[2] + _S_((u_int16)(TTAK[1] ^ to_int16(TK[9 + j],  TK[8 + j]))));
+      TTAK[0] = (u_int16)(TTAK[0] + _S_((u_int16)(TTAK[4] ^ to_int16(TK[1 + j], TK[0 + j]))));
+      TTAK[1] = (u_int16)(TTAK[1] + _S_((u_int16)(TTAK[0] ^ to_int16(TK[5 + j], TK[4 + j]))));
+      TTAK[2] = (u_int16)(TTAK[2] + _S_((u_int16)(TTAK[1] ^ to_int16(TK[9 + j], TK[8 + j]))));
       TTAK[3] = (u_int16)(TTAK[3] + _S_((u_int16)(TTAK[2] ^ to_int16(TK[13 + j], TK[12 + j]))));
-      TTAK[4] = (u_int16)(TTAK[4] + _S_((u_int16)(TTAK[3] ^ to_int16(TK[1 + j],  TK[0 + j]))) + i);
+      TTAK[4] = (u_int16)(TTAK[4] + _S_((u_int16)(TTAK[3] ^ to_int16(TK[1 + j], TK[0 + j]))) + i);
    }
-
 }
 
 static inline void tkip_mixing_phase2(u_int8 *WEP, u_int8 *TK, u_int16 *TTAK, u_int16 TSC16)
@@ -222,7 +221,6 @@ static inline void tkip_mixing_phase2(u_int8 *WEP, u_int8 *TK, u_int16 *TTAK, u_
       WEP[4 + (2 * i)] = Lo8(TTAK[i]);
       WEP[5 + (2 * i)] = Hi8(TTAK[i]);
    }
-
 }
 
 /*
@@ -243,7 +241,7 @@ static int tkip_decrypt(u_char *decbuf, size_t len, u_int8 *wep_seed)
     * at the end of the packet there is a CRC check
     */
    if (CRC_checksum(decbuf, len + WEP_CRC_LEN, CRC_INIT) != CRC_RESULT) {
-      //DEBUG_MSG(D_VERBOSE, "WEP: invalid key, the packet was skipped\n");
+      // DEBUG_MSG(D_VERBOSE, "WEP: invalid key, the packet was skipped\n");
       return -E_NOTHANDLED;
    }
 
@@ -253,4 +251,3 @@ static int tkip_decrypt(u_char *decbuf, size_t len, u_int8 *wep_seed)
 /* EOF */
 
 // vim:ts=3:expandtab
-

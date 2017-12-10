@@ -42,4 +42,3 @@ EC_API_EXTERN int streambuf_read(struct stream_buf *sb, u_char *buf, size_t len,
 /* EOF */
 
 // vim:ts=3:expandtab
-

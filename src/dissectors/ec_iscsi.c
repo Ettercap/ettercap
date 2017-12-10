@@ -1,28 +1,28 @@
 /*
-    ettercap -- dissector for iSCSI CHAP authentication -- TCP 860 3260
-
-    Copyright (C) Dhiru Kholia (dhiru at openwall.com)
-
-    Tested with,
-
-    1. Dell EqualLogic target and Open-iSCSI initiator on CentOS 6.2
-    2. LIO Target and Open-iSCSI initiator, both on Arch Linux 2012
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-*/
+ *  ettercap -- dissector for iSCSI CHAP authentication -- TCP 860 3260
+ *
+ *  Copyright (C) Dhiru Kholia (dhiru at openwall.com)
+ *
+ *  Tested with,
+ *
+ *  1. Dell EqualLogic target and Open-iSCSI initiator on CentOS 6.2
+ *  2. LIO Target and Open-iSCSI initiator, both on Arch Linux 2012
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -59,14 +59,14 @@ static unsigned char *_memmem(unsigned char *haystack, int hlen, char *needle, i
       return memchr(haystack, needle[0], hlen);
    case 2:     // use 16-bit compares for 2-byte needles
       for (i = 0; i < hlen - nlen + 1; i++) {
-         if (*(uint16_t *) (haystack + i) == *(uint16_t *) needle) {
+         if (*(uint16_t *)(haystack + i) == *(uint16_t *)needle) {
             return haystack + i;
          }
       }
       break;
    case 4:     // use 32-bit compares for 4-byte needles
       for (i = 0; i < hlen - nlen + 1; i++) {
-         if (*(uint32_t *) (haystack + i) == *(uint32_t *) needle) {
+         if (*(uint32_t *)(haystack + i) == *(uint32_t *)needle) {
             return haystack + i;
          }
       }
@@ -108,11 +108,11 @@ FUNC_DECODER(dissector_iscsi)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct iscsi_status *conn_status;
 
-   //suppress unused warning
+   // suppress unused warning
    (void)end;
-   (void) DECODE_DATA; 
-   (void) DECODE_DATALEN;
-   (void) DECODED_LEN;
+   (void)DECODE_DATA;
+   (void)DECODE_DATALEN;
+   (void)DECODED_LEN;
 
    /* Packets coming from the server */
    if (FROM_SERVER("iscsi", PACKET)) {
@@ -126,8 +126,8 @@ FUNC_DECODER(dissector_iscsi)
       /* if the session does not exist... */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -E_NOTFOUND) {
          /* search for CHAP ID and Message Challenge */
-         char *i = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_I", 6);
-         char *c = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_C", 6);
+         char *i = (char *)_memmem(ptr, PACKET->DATA.len, "CHAP_I", 6);
+         char *c = (char *)_memmem(ptr, PACKET->DATA.len, "CHAP_C", 6);
          if (i && c) {
             /* create the new session */
             dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_iscsi));
@@ -135,12 +135,12 @@ FUNC_DECODER(dissector_iscsi)
             /* remember the state (used later) */
             SAFE_CALLOC(s->data, 1, sizeof(struct iscsi_status));
 
-            conn_status = (struct iscsi_status *) s->data;
+            conn_status = (struct iscsi_status *)s->data;
             conn_status->status = WAIT_RESPONSE;
             conn_status->id = (u_char)atoi(i + 7);
 
             /* CHAP_C is always null-terminated */
-            strncpy((char*)conn_status->challenge, c + 9, 48);
+            strncpy((char *)conn_status->challenge, c + 9, 48);
             conn_status->challenge[48] = 0;
 
             /* save the session */
@@ -152,12 +152,12 @@ FUNC_DECODER(dissector_iscsi)
 
       /* Only if we catched the connection from the beginning */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == E_SUCCESS) {
-         conn_status = (struct iscsi_status *) s->data;
+         conn_status = (struct iscsi_status *)s->data;
          char *n = NULL;
          char *r = NULL;
          if (PACKET->DATA.len > 5) {
-            n = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_N", 6);
-            r = (char*)_memmem(ptr, PACKET->DATA.len, "CHAP_R", 6);
+            n = (char *)_memmem(ptr, PACKET->DATA.len, "CHAP_N", 6);
+            r = (char *)_memmem(ptr, PACKET->DATA.len, "CHAP_R", 6);
          }
 
          if (conn_status->status == WAIT_RESPONSE && n && r) {
@@ -172,7 +172,7 @@ FUNC_DECODER(dissector_iscsi)
             strncpy(user, n + 7, 64);
             user[64] = 0;
             DISSECT_MSG("%s-%s-%d:$chap$%d*%s*%s\n", user, ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                            ntohs(PACKET->L4.dst), conn_status->id, conn_status->challenge, response);
+                        ntohs(PACKET->L4.dst), conn_status->id, conn_status->challenge, response);
             dissect_wipe_session(PACKET, DISSECT_CODE(dissector_iscsi));
          }
       }

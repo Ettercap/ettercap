@@ -10,4 +10,3 @@ EC_API_EXTERN int ec_poll_buffer(char *buf);
 /* EOF */
 
 // vim:ts=3:expandtab
-

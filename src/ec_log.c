@@ -1,23 +1,23 @@
 /*
-    ettercap -- log handling module
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-*/
+ *  ettercap -- log handling module
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_log.h>
@@ -40,22 +40,21 @@
 /* zero is formally a valid value for an opened file descriptor
  * so we need a custom initializer
  */
-static struct log_fd fdp = {0, NULL, -1};
-static struct log_fd fdi = {0, NULL, -1};
+static struct log_fd fdp = { 0, NULL, -1 };
+static struct log_fd fdi = { 0, NULL, -1 };
 
 /* protos */
-
 
 static void log_packet(struct packet_object *po);
 static void log_info(struct packet_object *po);
 
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
-#define LOG_LOCK     do{ pthread_mutex_lock(&log_mutex); } while(0)
-#define LOG_UNLOCK   do{ pthread_mutex_unlock(&log_mutex); } while(0)
+#define LOG_LOCK     do { pthread_mutex_lock(&log_mutex); } while (0)
+#define LOG_UNLOCK   do { pthread_mutex_unlock(&log_mutex); } while (0)
 
 /************************************************/
 
-/* 
+/*
  * this function is executed at high privs.
  * open the file descriptor for later use
  * and set the log level
@@ -65,19 +64,19 @@ static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int set_loglevel(int level, char *filename)
 {
-   char eci[strlen(filename)+5];
-   char ecp[strlen(filename)+5];
- 
+   char eci[strlen(filename) + 5];
+   char ecp[strlen(filename) + 5];
+
    /* close any previously opened file */
    log_stop();
-  
+
    /* if we want to stop logging, return here */
    if (level == LOG_STOP) {
       DEBUG_MSG("set_loglevel: stopping the log process");
       return E_SUCCESS;
    }
-   
-   DEBUG_MSG("set_loglevel(%d, %s)", level, filename); 
+
+   DEBUG_MSG("set_loglevel(%d, %s)", level, filename);
 
    /* all the host type will be unknown, warn the user */
    if (GBL_OPTIONS->read) {
@@ -87,63 +86,63 @@ int set_loglevel(int level, char *filename)
       USER_MSG("the NIC may have been changed from the time of the dump. \n");
       USER_MSG("*********************************************************\n\n");
    }
-   
-   snprintf(eci, strlen(filename)+5, "%s.eci", filename);
-   snprintf(ecp, strlen(filename)+5, "%s.ecp", filename);
-   
+
+   snprintf(eci, strlen(filename) + 5, "%s.eci", filename);
+   snprintf(ecp, strlen(filename) + 5, "%s.ecp", filename);
+
    memset(&fdp, 0, sizeof(struct log_fd));
    memset(&fdi, 0, sizeof(struct log_fd));
 
    /* open the file(s) */
-   switch(level) {
+   switch (level) {
 
-      case LOG_PACKET:
-         if (GBL_OPTIONS->compress) {
-            fdp.type = LOG_COMPRESSED;
-         } else {
-            fdp.type = LOG_UNCOMPRESSED;
-         }
-         
-         /* create the file */
-         if (log_open(&fdp, ecp) != E_SUCCESS)
-            return -E_FATAL;
+   case LOG_PACKET:
+      if (GBL_OPTIONS->compress) {
+         fdp.type = LOG_COMPRESSED;
+      } else {
+         fdp.type = LOG_UNCOMPRESSED;
+      }
 
-         /* initialize the log file */
-         log_write_header(&fdp, LOG_PACKET);
-         
-         /* add the hook point to DISPATCHER */
-         hook_add(HOOK_DISPATCHER, &log_packet);
+      /* create the file */
+      if (log_open(&fdp, ecp) != E_SUCCESS)
+         return -E_FATAL;
 
-         /* no break here, loglevel is incremental */
-         
-      case LOG_INFO:
-         if (GBL_OPTIONS->compress) {
-            fdi.type = LOG_COMPRESSED;
-         } else {
-            fdi.type = LOG_UNCOMPRESSED;
-         }
-         
-         /* create the file */
-         if (log_open(&fdi, eci) != E_SUCCESS)
-            return -E_FATAL;
-         
-         /* initialize the log file */
-         log_write_header(&fdi, LOG_INFO);
+      /* initialize the log file */
+      log_write_header(&fdp, LOG_PACKET);
 
-         /* add the hook point to DISPATCHER */
-         hook_add(HOOK_DISPATCHER, &log_info);
-        
-         /* add the hook for the ARP packets */
-         hook_add(HOOK_PACKET_ARP, &log_info);
-         
-         /* add the hook for ICMP packets */
-         hook_add(HOOK_PACKET_ICMP, &log_info);
-         
-         /* add the hook for DHCP packets */
-         /* (fake icmp packets from DHCP discovered GW and DNS) */
-         hook_add(HOOK_PROTO_DHCP_PROFILE, &log_info);
+      /* add the hook point to DISPATCHER */
+      hook_add(HOOK_DISPATCHER, &log_packet);
 
-         break;
+   /* no break here, loglevel is incremental */
+
+   case LOG_INFO:
+      if (GBL_OPTIONS->compress) {
+         fdi.type = LOG_COMPRESSED;
+      } else {
+         fdi.type = LOG_UNCOMPRESSED;
+      }
+
+      /* create the file */
+      if (log_open(&fdi, eci) != E_SUCCESS)
+         return -E_FATAL;
+
+      /* initialize the log file */
+      log_write_header(&fdi, LOG_INFO);
+
+      /* add the hook point to DISPATCHER */
+      hook_add(HOOK_DISPATCHER, &log_info);
+
+      /* add the hook for the ARP packets */
+      hook_add(HOOK_PACKET_ARP, &log_info);
+
+      /* add the hook for ICMP packets */
+      hook_add(HOOK_PACKET_ICMP, &log_info);
+
+      /* add the hook for DHCP packets */
+      /* (fake icmp packets from DHCP discovered GW and DNS) */
+      hook_add(HOOK_PROTO_DHCP_PROFILE, &log_info);
+
+      break;
    }
 
    atexit(log_stop);
@@ -157,7 +156,7 @@ int set_loglevel(int level, char *filename)
 void log_stop(void)
 {
    DEBUG_MSG("log_stop");
-   
+
    /* remove all the hooks */
    hook_del(HOOK_DISPATCHER, &log_packet);
    hook_del(HOOK_DISPATCHER, &log_info);
@@ -182,45 +181,41 @@ void log_stop(void)
 int log_open(struct log_fd *fd, char *filename)
 {
 
-   fd->fd = open(filename, O_CREAT|O_TRUNC|O_RDWR|O_BINARY, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+   fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
    if (fd->fd == -1)
       SEMIFATAL_ERROR("Can't create %s: %s", filename, strerror(errno));
-   else
-   {
-      if (GBL_OPTIONS->compress)
-      {
+   else {
+      if (GBL_OPTIONS->compress) {
          int zerr;
          fd->cfd = gzdopen(fd->fd, "wb9");
          if (fd->cfd == NULL)
             SEMIFATAL_ERROR("%s", gzerror(fd->cfd, &zerr));
-      };
-   };
+      }
+   }
 
    return E_SUCCESS;
 }
 
-/* 
- * closes a log_fd struct 
+/*
+ * closes a log_fd struct
  */
 void log_close(struct log_fd *fd)
 {
    DEBUG_MSG("log_close: type: %d [%p][%d]", fd->type, fd->cfd, fd->fd);
 
-   if (fd->cfd)
-   {
+   if (fd->cfd) {
       /* gzclose() on the gzip stream descriptor (fd->cfd)
        * will also close the file descriptor (fd->fd)
        */
       gzclose(fd->cfd);
       fd->cfd = NULL;
       fd->fd = -1;  /* to prevent double closing the file descriptor */
-   };
+   }
 
-   if (fd->fd >= 0)
-   {
+   if (fd->fd >= 0) {
       close(fd->fd);
       fd->fd = -1;
-   };
+   }
 }
 
 /*
@@ -237,43 +232,37 @@ void reset_logfile_owners(uid_t old_uid, gid_t old_gid, uid_t new_uid, gid_t new
    gid_t gid;
 
    /* packet logfile */
-   if (fdp.fd >= 0)
-   {
+   if (fdp.fd >= 0) {
       DEBUG_MSG("reset_logfile_owners: packet log file");
-      if (fstat(fdp.fd, &f) == 0)
-      {
+      if (fstat(fdp.fd, &f) == 0) {
          uid = (f.st_uid == old_uid) ? new_uid : (uid_t)-1;
          gid = (f.st_gid == old_gid) ? new_gid : (gid_t)-1;
-         if ( fchown(fdp.fd, uid, gid) != 0 )
+         if (fchown(fdp.fd, uid, gid) != 0)
             ERROR_MSG("fchown()");
-      }
-      else
+      } else
          ERROR_MSG("fstat()");
-   };
+   }
 
    /* info logfile */
-   if (fdi.fd >= 0)
-   {
+   if (fdi.fd >= 0) {
       DEBUG_MSG("reset_logfile_owners: info log file");
-      if (fstat(fdi.fd, &f) == 0)
-      {
+      if (fstat(fdi.fd, &f) == 0) {
          uid = (f.st_uid == old_uid) ? new_uid : (uid_t)-1;
          gid = (f.st_gid == old_gid) ? new_gid : (gid_t)-1;
-         if ( fchown(fdi.fd, uid, gid) != 0 )
+         if (fchown(fdi.fd, uid, gid) != 0)
             ERROR_MSG("fchown()");
-      }
-      else
+      } else
          ERROR_MSG("fstat()");
-   };
+   }
 }
 
-/* 
+/*
  * function registered to HOOK_DISPATCHER
  * check the regex (if present) and log packets
  */
 static void log_packet(struct packet_object *po)
 {
-   /* 
+   /*
     * skip packet sent (spoofed) by us
     * else we will get duplicated hosts with our mac address
     * this is necessary because check_forwarded() is executed
@@ -290,27 +279,26 @@ static void log_packet(struct packet_object *po)
     */
    po->flags |= PO_IGNORE;
    EXECUTE(GBL_SNIFF->interesting, po);
-   if ( po->flags & PO_IGNORE )
-       return;
+   if (po->flags & PO_IGNORE)
+      return;
 
    /* the regex is set, respect it */
    if (GBL_OPTIONS->regex) {
-      if (regexec(GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) == 0)
+      if (regexec(GBL_OPTIONS->regex, (const char *)po->DATA.disp_data, 0, NULL, 0) == 0)
          log_write_packet(&fdp, po);
    } else {
       /* if no regex is set, dump all the packets */
       log_write_packet(&fdp, po);
    }
-   
 }
 
-/* 
+/*
  * function registered to HOOK_DISPATCHER
  * it is a wrapper to the real one
  */
 static void log_info(struct packet_object *po)
 {
-   /* 
+   /*
     * skip packet sent (spoofed) by us
     * else we will get duplicated hosts with our mac address
     * this is necessary because check_forwarded() is executed
@@ -327,18 +315,18 @@ static void log_info(struct packet_object *po)
     */
    po->flags |= PO_IGNORE;
    EXECUTE(GBL_SNIFF->interesting, po);
-   if ( po->flags & PO_IGNORE )
-       return;
+   if (po->flags & PO_IGNORE)
+      return;
 
    /* if all the tests are ok, write it to the disk */
    if (po->L4.proto == NL_TYPE_ICMP || po->L3.proto == htons(LL_TYPE_ARP))
-      log_write_info_arp_icmp(&fdi, po);      
+      log_write_info_arp_icmp(&fdi, po);
    else
       log_write_info(&fdi, po);
 }
 
 /*
- * initialize the log file with 
+ * initialize the log file with
  * the proper header
  */
 
@@ -346,28 +334,28 @@ int log_write_header(struct log_fd *fd, int type)
 {
    struct log_global_header lh;
    int c, zerr;
-   
+
    DEBUG_MSG("log_write_header : type %d", type);
 
    memset(&lh, 0, sizeof(struct log_global_header));
 
    /* the magic number */
    lh.magic = htons(EC_LOG_MAGIC);
-   
+
    /* the offset of the first header is equal to the size of this header */
    lh.first_header = htons(sizeof(struct log_global_header));
-   
+
    strlcpy(lh.version, GBL_VERSION, sizeof(lh.version));
-   
+
    /* creation time of the file */
    gettimeofday(&lh.tv, 0);
    lh.tv.tv_sec = htonl(lh.tv.tv_sec);
    lh.tv.tv_usec = htonl(lh.tv.tv_usec);
-      
+
    lh.type = htonl(type);
 
    LOG_LOCK;
-   
+
    if (fd->type == LOG_COMPRESSED) {
       c = gzwrite(fd->cfd, &lh, sizeof(lh));
       ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
@@ -377,11 +365,9 @@ int log_write_header(struct log_fd *fd, int type)
    }
 
    LOG_UNLOCK;
-   
+
    return c;
 }
-
-
 
 /* log all the packet to the logfile */
 
@@ -391,28 +377,28 @@ void log_write_packet(struct log_fd *fd, struct packet_object *po)
    int c, zerr;
 
    memset(&hp, 0, sizeof(struct log_header_packet));
-   
+
    /* adjust the timestamp */
    memcpy(&hp.tv, &po->ts, sizeof(struct timeval));
    hp.tv.tv_sec = htonl(hp.tv.tv_sec);
    hp.tv.tv_usec = htonl(hp.tv.tv_usec);
-  
+
    memcpy(&hp.L2_src, &po->L2.src, MEDIA_ADDR_LEN);
    memcpy(&hp.L2_dst, &po->L2.dst, MEDIA_ADDR_LEN);
-   
+
    memcpy(&hp.L3_src, &po->L3.src, sizeof(struct ip_addr));
    memcpy(&hp.L3_dst, &po->L3.dst, sizeof(struct ip_addr));
-  
+
    hp.L4_flags = po->L4.flags;
    hp.L4_proto = po->L4.proto;
    hp.L4_src = po->L4.src;
    hp.L4_dst = po->L4.dst;
- 
+
    /* the length of the payload */
    hp.len = htonl(po->DATA.disp_len);
 
    LOG_LOCK;
-   
+
    if (fd->type == LOG_COMPRESSED) {
       c = gzwrite(fd->cfd, &hp, sizeof(hp));
       ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
@@ -426,17 +412,16 @@ void log_write_packet(struct log_fd *fd, struct packet_object *po)
       c = write(fd->fd, po->DATA.disp_data, po->DATA.disp_len);
       ON_ERROR(c, -1, "Can't write to logfile");
    }
-   
+
    LOG_UNLOCK;
 }
-
 
 /*
  * log passive information
  *
  * hi is the source
  * hid is the dest, used to log password.
- *    since they must be associated to the 
+ *    since they must be associated to the
  *    server and not to the client.
  *    so we create a new entry in the logfile
  */
@@ -453,12 +438,12 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
    /* the mac address */
    memcpy(&hi.L2_addr, &po->L2.src, MEDIA_ADDR_LEN);
    memcpy(&hid.L2_addr, &po->L2.dst, MEDIA_ADDR_LEN);
-   
+
    /* the ip address */
    memcpy(&hi.L3_addr, &po->L3.src, sizeof(struct ip_addr));
    /* the account must be associated with the server, so use dst */
    memcpy(&hid.L3_addr, &po->L3.dst, sizeof(struct ip_addr));
-  
+
    /* the protocol */
    hi.L4_proto = po->L4.proto;
    hid.L4_proto = po->L4.proto;
@@ -470,7 +455,7 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
       hi.L4_addr = po->L4.src;
    else
       hi.L4_addr = 0;
-  
+
    /* open on the dest ? */
    if (is_open_port(po->L4.proto, po->L4.dst, po->L4.flags))
       hid.L4_addr = po->L4.dst;
@@ -485,11 +470,11 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
     * even if the resolv option was not specified,
     * the cache may have the dns answer passively sniffed.
     */
-   
+
    host_iptoa(&po->L3.src, hi.hostname);
    host_iptoa(&po->L3.dst, hid.hostname);
-   
-   /* 
+
+   /*
     * distance in hop :
     *
     * the distance is calculated as the difference between the
@@ -502,123 +487,121 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
 
    /* OS identification */
    memcpy(&hi.fingerprint, po->PASSIVE.fingerprint, FINGER_LEN);
-   
+
    /* local, non local ecc ecc */
    hi.type = po->PASSIVE.flags;
 
    /* calculate if the dest is local or not */
    switch (ip_addr_is_local(&po->L3.dst, NULL)) {
-      case E_SUCCESS:
-         hid.type |= FP_HOST_LOCAL;
-         break;
-      case -E_NOTFOUND:
-         hid.type |= FP_HOST_NONLOCAL;
-         break;
-      case -E_INVALID:
-         hid.type = FP_UNKNOWN;
-         break;
+   case E_SUCCESS:
+      hid.type |= FP_HOST_LOCAL;
+      break;
+   case -E_NOTFOUND:
+      hid.type |= FP_HOST_NONLOCAL;
+      break;
+   case -E_INVALID:
+      hid.type = FP_UNKNOWN;
+      break;
    }
-   
+
    /* set account information */
    hid.failed = po->DISSECTOR.failed;
    memcpy(&hid.client, &po->L3.src, sizeof(struct ip_addr));
-   
+
    /* set the length of the fields */
    if (po->DISSECTOR.user)
       hid.var.user_len = htons(strlen(po->DISSECTOR.user));
 
    if (po->DISSECTOR.pass)
       hid.var.pass_len = htons(strlen(po->DISSECTOR.pass));
-   
+
    if (po->DISSECTOR.info)
       hid.var.info_len = htons(strlen(po->DISSECTOR.info));
-   
+
    if (po->DISSECTOR.banner)
       hi.var.banner_len = htons(strlen(po->DISSECTOR.banner));
-  
+
    /* check if the packet is interesting... else return */
    if (hi.L4_addr == 0 &&                 // the port is not open
-       !strcmp((char*)hi.fingerprint, "") &&     // no fingerprint
+       !strcmp((char *)hi.fingerprint, "") &&     // no fingerprint
        hid.var.user_len == 0 &&           // no user and pass infos...
        hid.var.pass_len == 0 &&
        hid.var.info_len == 0 &&
        hi.var.banner_len == 0
-       ) {
+       )
+   {
       return;
    }
-   
+
    LOG_LOCK;
-   
+
    if (fd->type == LOG_COMPRESSED) {
       c = gzwrite(fd->cfd, &hi, sizeof(hi));
       ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
-    
+
       /* and now write the variable fields */
-      
+
       if (po->DISSECTOR.banner) {
-         c = gzwrite(fd->cfd, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
+         c = gzwrite(fd->cfd, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner));
          ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
       }
-      
    } else {
       c = write(fd->fd, &hi, sizeof(hi));
       ON_ERROR(c, -1, "Can't write to logfile");
-      
+
       if (po->DISSECTOR.banner) {
-         c = write(fd->fd, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner) );
+         c = write(fd->fd, po->DISSECTOR.banner, strlen(po->DISSECTOR.banner));
          ON_ERROR(c, -1, "Can't write to logfile");
       }
    }
-  
+
    /* write hid only if there is user and pass infos */
    if (hid.var.user_len == 0 &&
        hid.var.pass_len == 0 &&
-       hid.var.info_len == 0 
-       ) {
+       hid.var.info_len == 0
+       )
+   {
       LOG_UNLOCK;
       return;
    }
 
-   
    if (fd->type == LOG_COMPRESSED) {
       c = gzwrite(fd->cfd, &hid, sizeof(hi));
       ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
-    
+
       /* and now write the variable fields */
       if (po->DISSECTOR.user) {
-         c = gzwrite(fd->cfd, po->DISSECTOR.user, strlen(po->DISSECTOR.user) );
+         c = gzwrite(fd->cfd, po->DISSECTOR.user, strlen(po->DISSECTOR.user));
          ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
       }
 
       if (po->DISSECTOR.pass) {
-         c = gzwrite(fd->cfd, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass) );
+         c = gzwrite(fd->cfd, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass));
          ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
       }
 
       if (po->DISSECTOR.info) {
-         c = gzwrite(fd->cfd, po->DISSECTOR.info, strlen(po->DISSECTOR.info) );
+         c = gzwrite(fd->cfd, po->DISSECTOR.info, strlen(po->DISSECTOR.info));
          ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
       }
-      
    } else {
       c = write(fd->fd, &hid, sizeof(hi));
       ON_ERROR(c, -1, "Can't write to logfile");
-      
+
       if (po->DISSECTOR.user) {
-         c = write(fd->fd, po->DISSECTOR.user, strlen(po->DISSECTOR.user) );
+         c = write(fd->fd, po->DISSECTOR.user, strlen(po->DISSECTOR.user));
          ON_ERROR(c, -1, "Can't write to logfile");
       }
 
       if (po->DISSECTOR.pass) {
-         c = write(fd->fd, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass) );
+         c = write(fd->fd, po->DISSECTOR.pass, strlen(po->DISSECTOR.pass));
          ON_ERROR(c, -1, "Can't write to logfile");
       }
 
       if (po->DISSECTOR.info) {
-         c = write(fd->fd, po->DISSECTOR.info, strlen(po->DISSECTOR.info) );
+         c = write(fd->fd, po->DISSECTOR.info, strlen(po->DISSECTOR.info));
          ON_ERROR(c, -1, "Can't write to logfile");
       }
-      
    }
 
    LOG_UNLOCK;
@@ -637,19 +620,19 @@ void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po)
 
    /* the mac address */
    memcpy(&hi.L2_addr, &po->L2.src, MEDIA_ADDR_LEN);
-   
+
    /* the ip address */
    memcpy(&hi.L3_addr, &po->L3.src, sizeof(struct ip_addr));
-  
+
    /* set the distance */
    if (po->L3.ttl > 1)
       hi.distance = TTL_PREDICTOR(po->L3.ttl) - po->L3.ttl + 1;
    else
       hi.distance = po->L3.ttl;
-   
+
    /* resolve the host */
    host_iptoa(&po->L3.src, hi.hostname);
-   
+
    /* local, non local ecc ecc */
    if (po->L3.proto == htons(LL_TYPE_ARP)) {
       hi.type |= LOG_ARP_HOST;
@@ -657,9 +640,9 @@ void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po)
    } else {
       hi.type = po->PASSIVE.flags;
    }
-   
+
    LOG_LOCK;
-   
+
    if (fd->type == LOG_COMPRESSED) {
       c = gzwrite(fd->cfd, &hi, sizeof(hi));
       ON_ERROR(c, -1, "%s", gzerror(fd->cfd, &zerr));
@@ -671,30 +654,29 @@ void log_write_info_arp_icmp(struct log_fd *fd, struct packet_object *po)
    LOG_UNLOCK;
 }
 
-
 /*
  * open/close the file to store all the USER_MSG
  */
 int set_msg_loglevel(int level, char *filename)
 {
    switch (level) {
-      case LOG_TRUE:
-         /* close the filedesc if already opened */
-         set_msg_loglevel(LOG_FALSE, filename);
+   case LOG_TRUE:
+      /* close the filedesc if already opened */
+      set_msg_loglevel(LOG_FALSE, filename);
 
-         GBL_OPTIONS->msg_fd = fopen(filename, FOPEN_WRITE_TEXT);
-         if (GBL_OPTIONS->msg_fd == NULL)
-            FATAL_MSG("Cannot open \"%s\" for writing", filename);
+      GBL_OPTIONS->msg_fd = fopen(filename, FOPEN_WRITE_TEXT);
+      if (GBL_OPTIONS->msg_fd == NULL)
+         FATAL_MSG("Cannot open \"%s\" for writing", filename);
 
-         break;
-         
-      case LOG_FALSE:
-         /* close the file and set the pointer to NULL */
-         if (GBL_OPTIONS->msg_fd) {
-            fclose(GBL_OPTIONS->msg_fd);
-            GBL_OPTIONS->msg_fd = NULL;
-         }
-         break;
+      break;
+
+   case LOG_FALSE:
+      /* close the file and set the pointer to NULL */
+      if (GBL_OPTIONS->msg_fd) {
+         fclose(GBL_OPTIONS->msg_fd);
+         GBL_OPTIONS->msg_fd = NULL;
+      }
+      break;
    }
 
    return E_SUCCESS;
@@ -703,4 +685,3 @@ int set_msg_loglevel(int level, char *filename)
 /* EOF */
 
 // vim:ts=3:expandtab
-

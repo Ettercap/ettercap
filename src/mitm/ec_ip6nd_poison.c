@@ -20,13 +20,13 @@ struct hosts_group ndp_group_one;
 struct hosts_group ndp_group_two;
 
 #if 0
-static LIST_HEAD(,ip_list) ping_list_one;
-static LIST_HEAD(,ip_list) ping_list_two;
+static LIST_HEAD(, ip_list) ping_list_one;
+static LIST_HEAD(, ip_list) ping_list_two;
 #endif
 
 u_int8 flags;
-#define ND_ONEWAY    ((u_int8)(1<<0))
-#define ND_ROUTER    ((u_int8)(1<<2))
+#define ND_ONEWAY    ((u_int8)(1 << 0))
+#define ND_ROUTER    ((u_int8)(1 << 2))
 
 /* protos */
 void ndp_poison_init(void);
@@ -65,11 +65,11 @@ static int ndp_poison_start(char *args)
 
    flags = ND_ROUTER;
 
-   if(strcmp(args, "")) {
-      for(p = strsep(&args, ","); p != NULL; p = strsep(&args, ",")) {
-         if(!strcasecmp(p, "remote"))
+   if (strcmp(args, "")) {
+      for (p = strsep(&args, ","); p != NULL; p = strsep(&args, ",")) {
+         if (!strcasecmp(p, "remote"))
             GBL_OPTIONS->remote = 1;
-         else if(!strcasecmp(p, "oneway"))
+         else if (!strcasecmp(p, "oneway"))
             flags |= ND_ONEWAY;
          else
             SEMIFATAL_ERROR("NDP poisoning: incorrect arguments.\n");
@@ -79,7 +79,7 @@ static int ndp_poison_start(char *args)
    }
 
    /* we need the host list */
-   if (LIST_EMPTY(&GBL_HOSTLIST)) 
+   if (LIST_EMPTY(&GBL_HOSTLIST))
       SEMIFATAL_ERROR("NDP poisoning needs a non-emtpy hosts list.\n");
 
    /* clean the lists */
@@ -92,9 +92,9 @@ static int ndp_poison_start(char *args)
       SAFE_FREE(h);
    }
 
-   if(GBL_OPTIONS->silent) {
+   if (GBL_OPTIONS->silent) {
       ret = create_list_silent();
-   } else 
+   } else
       ret = create_list();
 
    if (ret != E_SUCCESS) {
@@ -113,9 +113,9 @@ static void ndp_poison_stop(void)
    pthread_t pid;
 
    DEBUG_MSG("ndp_poison_stop");
-   
+
    pid = ec_thread_getpid("ndp_poisoner");
-   if(!pthread_equal(pid, EC_PTHREAD_NULL))
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
    else {
       DEBUG_MSG("no poisoner thread found");
@@ -130,14 +130,14 @@ static void ndp_poison_stop(void)
    ui_msg_flush(2);
 
    /* delete the elements in the first list */
-   while(LIST_FIRST(&ndp_group_one) != NULL) {
+   while (LIST_FIRST(&ndp_group_one) != NULL) {
       h = LIST_FIRST(&ndp_group_one);
       LIST_REMOVE(h, next);
       SAFE_FREE(h);
    }
 
    /* delete the elements in the second list */
-   while(LIST_FIRST(&ndp_group_two) != NULL) {
+   while (LIST_FIRST(&ndp_group_two) != NULL) {
       h = LIST_FIRST(&ndp_group_two);
       LIST_REMOVE(h, next);
       SAFE_FREE(h);
@@ -155,21 +155,21 @@ EC_THREAD_FUNC(ndp_poisoner)
    struct hosts_list *t1, *t2;
 
    /* variable not used */
-   (void) EC_THREAD_PARAM;
+   (void)EC_THREAD_PARAM;
 
    ec_thread_init();
    DEBUG_MSG("ndp_poisoner");
 
    /* it's a loop */
    LOOP {
-      
+
       CANCELLATION_POINT();
 
       /* Here we go! */
       LIST_FOREACH(t1, &ndp_group_one, next) {
          LIST_FOREACH(t2, &ndp_group_two, next) {
 
-            if(!ip_addr_cmp(&t1->ip, &t2->ip))
+            if (!ip_addr_cmp(&t1->ip, &t2->ip))
                continue;
 
             if (!GBL_CONF->ndp_poison_equal_mac)
@@ -177,19 +177,19 @@ EC_THREAD_FUNC(ndp_poisoner)
                if (!memcmp(t1->mac, t2->mac, MEDIA_ADDR_LEN))
                   continue;
 
-            /* 
+            /*
              * send spoofed ICMP packet to trigger a neighbor cache
              * entry in the victims cache
              */
-           if (i == 1 && GBL_CONF->ndp_poison_icmp) {
-              send_L2_icmp6_echo(&t2->ip, &t1->ip, t1->mac);
-              /* from T2 to T1 */
-              if (!(flags & ND_ONEWAY)) 
-                 send_L2_icmp6_echo(&t1->ip, &t2->ip, t2->mac);
-           } 
+            if (i == 1 && GBL_CONF->ndp_poison_icmp) {
+               send_L2_icmp6_echo(&t2->ip, &t1->ip, t1->mac);
+               /* from T2 to T1 */
+               if (!(flags & ND_ONEWAY))
+                  send_L2_icmp6_echo(&t1->ip, &t2->ip, t2->mac);
+            }
 
             send_L2_icmp6_nadv(&t1->ip, &t2->ip, GBL_IFACE->mac, flags, t2->mac);
-            if(!(flags & ND_ONEWAY))
+            if (!(flags & ND_ONEWAY))
                send_L2_icmp6_nadv(&t2->ip, &t1->ip, GBL_IFACE->mac, flags & ND_ROUTER, t1->mac);
 
             ec_usleep(GBL_CONF->ndp_poison_send_delay);
@@ -200,10 +200,8 @@ EC_THREAD_FUNC(ndp_poisoner)
       if (i < 5) {
          i++;
          ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_warm_up));
-      }
-      else 
+      } else
          ec_usleep(SEC2MICRO(GBL_CONF->ndp_poison_delay));
-
    }
 
    return NULL;
@@ -220,7 +218,6 @@ static int create_list(void)
 
    USER_MSG("\nNDP poisoning victims:\n\n");
 
-
    /* the first group */
    LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
       /* walk through TARGET1 selected IPv6 addresses */
@@ -228,8 +225,8 @@ static int create_list(void)
          /* search matching entry in host list */
          if (!ip_addr_cmp(&i->ip, &h->ip)) {
             USER_MSG(" GROUP 1 : %s %s\n",
-                  ip_addr_ntoa(&h->ip, tmp),
-                  mac_addr_ntoa(h->mac, tmp2));
+                     ip_addr_ntoa(&h->ip, tmp),
+                     mac_addr_ntoa(h->mac, tmp2));
 
             /* create element and insert into list */
             SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
@@ -251,7 +248,7 @@ static int create_list(void)
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
 
          /* only IPv6 addresses are applicable */
-         if (ntohs(h->ip.addr_type) != AF_INET6) 
+         if (ntohs(h->ip.addr_type) != AF_INET6)
             continue;
 
          /* create the element and insert into list */
@@ -270,13 +267,13 @@ static int create_list(void)
 
    /* if the target was specified */
    LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
-   /* walk through TARGET1 selected IPv6 addresses */
+      /* walk through TARGET1 selected IPv6 addresses */
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
          /* search matching entry in host list */
          if (!ip_addr_cmp(&i->ip, &h->ip)) {
             USER_MSG(" GROUP 2 : %s %s\n",
-                  ip_addr_ntoa(&h->ip, tmp),
-                  mac_addr_ntoa(h->mac, tmp2));
+                     ip_addr_ntoa(&h->ip, tmp),
+                     mac_addr_ntoa(h->mac, tmp2));
 
             /* create the element and insert in the list */
             SAFE_CALLOC(g, 1, sizeof(struct hosts_list));
@@ -298,7 +295,7 @@ static int create_list(void)
       LIST_FOREACH(h, &GBL_HOSTLIST, next) {
 
          /* only IPv6 addresses are applicable */
-         if (ntohs(h->ip.addr_type) != AF_INET6) 
+         if (ntohs(h->ip.addr_type) != AF_INET6)
             continue;
 
          /* create the element and insert in the list */
@@ -324,7 +321,7 @@ static int create_list_silent(void)
    DEBUG_MSG("create_list_silent");
 
    LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
-      if(ip_addr_is_local(&i->ip, NULL) == E_SUCCESS) {
+      if (ip_addr_is_local(&i->ip, NULL) == E_SUCCESS) {
          if (!memcmp(GBL_TARGET1->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN)) {
             USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
             return -E_FATAL;
@@ -334,19 +331,18 @@ static int create_list_silent(void)
          memcpy(&h->mac, &GBL_TARGET1->mac, MEDIA_ADDR_LEN);
          LIST_INSERT_HEAD(&ndp_group_one, h, next);
 
-         USER_MSG(" TARGET 1 : %-40s %17s\n", 
-               ip_addr_ntoa(&i->ip, tmp),
-               mac_addr_ntoa(GBL_TARGET1->mac, tmp2));
-      }
-      else {
-         USER_MSG("%s is not local. NDP poisoning impossible\n", 
-               ip_addr_ntoa(&i->ip, tmp));
+         USER_MSG(" TARGET 1 : %-40s %17s\n",
+                  ip_addr_ntoa(&i->ip, tmp),
+                  mac_addr_ntoa(GBL_TARGET1->mac, tmp2));
+      } else {
+         USER_MSG("%s is not local. NDP poisoning impossible\n",
+                  ip_addr_ntoa(&i->ip, tmp));
          return -E_FATAL;
       }
    }
 
    LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
-      if(ip_addr_is_local(&i->ip, NULL) == E_SUCCESS) {
+      if (ip_addr_is_local(&i->ip, NULL) == E_SUCCESS) {
          if (!memcmp(GBL_TARGET2->mac, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN)) {
             USER_MSG("\nERROR: MAC address must be specified in silent mode.\n");
             return -E_FATAL;
@@ -356,13 +352,12 @@ static int create_list_silent(void)
          memcpy(&h->mac, &GBL_TARGET2->mac, MEDIA_ADDR_LEN);
          LIST_INSERT_HEAD(&ndp_group_two, h, next);
 
-         USER_MSG(" TARGET 2 : %-40s %17s\n", 
-               ip_addr_ntoa(&i->ip, tmp),
-               mac_addr_ntoa(GBL_TARGET2->mac, tmp2));
-      }
-      else {
-         USER_MSG("%s is not local. NDP poisoning impossible\n", 
-               ip_addr_ntoa(&i->ip, tmp));
+         USER_MSG(" TARGET 2 : %-40s %17s\n",
+                  ip_addr_ntoa(&i->ip, tmp),
+                  mac_addr_ntoa(GBL_TARGET2->mac, tmp2));
+      } else {
+         USER_MSG("%s is not local. NDP poisoning impossible\n",
+                  ip_addr_ntoa(&i->ip, tmp));
       }
    }
 
@@ -378,12 +373,12 @@ static void ndp_antidote(void)
    DEBUG_MSG("ndp_antidote");
 
    /* do it twice */
-   for(i = 0; i < 2; i++) {
+   for (i = 0; i < 2; i++) {
       LIST_FOREACH(h1, &ndp_group_one, next) {
          LIST_FOREACH(h2, &ndp_group_two, next) {
-            
+
             /* skip equal ip */
-            if(!ip_addr_cmp(&h1->ip, &h2->ip))
+            if (!ip_addr_cmp(&h1->ip, &h2->ip))
                continue;
 
             if (!GBL_CONF->ndp_poison_equal_mac)
@@ -393,7 +388,7 @@ static void ndp_antidote(void)
 
             /* send neighbor advertisements with the correct information */
             send_L2_icmp6_nadv(&h1->ip, &h2->ip, h1->mac, flags, h2->mac);
-            if(!(flags & ND_ONEWAY))
+            if (!(flags & ND_ONEWAY))
                send_L2_icmp6_nadv(&h2->ip, &h1->ip, h2->mac, flags & ND_ROUTER, h1->mac);
 
             ec_usleep(GBL_CONF->ndp_poison_send_delay);
@@ -404,8 +399,8 @@ static void ndp_antidote(void)
    }
 }
 
-/* 
- * This function has been written by the initial author but 
+/*
+ * This function has been written by the initial author but
  * doesn't seem to be necessary as ND poisoning has been brought
  * to a working state - keeping the code just in case - 2013-12-31
  */
@@ -416,16 +411,16 @@ static void catch_response(struct packet_object *po)
    struct ip_list *i;
 
    /* if it is not response to our ping */
-   if(ip_addr_is_ours(&po->L3.dst) != E_FOUND)
-      return; 
+   if (ip_addr_is_ours(&po->L3.dst) != E_FOUND)
+      return;
 
-   /* 
+   /*
     * search if the node address is in one of the ping lists
     * if so add the address to the poison list
     */
    LIST_FOREACH(i, &ping_list_one, next) {
       /* the source is in the ping hosts list */
-      if(!ip_addr_cmp(&po->L3.src, &i->ip)) {
+      if (!ip_addr_cmp(&po->L3.src, &i->ip)) {
          LIST_REMOVE(i, next);
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &po->L3.src, sizeof(struct ip_addr));
@@ -436,7 +431,7 @@ static void catch_response(struct packet_object *po)
    }
 
    LIST_FOREACH(i, &ping_list_two, next) {
-      if(!ip_addr_cmp(&po->L3.src, &i->ip)) {
+      if (!ip_addr_cmp(&po->L3.src, &i->ip)) {
          LIST_REMOVE(i, next);
          SAFE_CALLOC(h, 1, sizeof(struct hosts_list));
          memcpy(&h->ip, &po->L3.src, sizeof(struct ip_addr));
@@ -448,10 +443,11 @@ static void catch_response(struct packet_object *po)
 
    return;
 }
+
 #endif
 
-/* 
- * This function has been written by the initial author but 
+/*
+ * This function has been written by the initial author but
  * doesn't seem to be necessary as ND poisoning has been brought
  * to a working state - keeping the code just in case - 2013-12-31
  */
@@ -462,10 +458,10 @@ static void record_mac(struct packet_object *po)
    u_char *mac;
    struct hosts_list *h;
 
-   if(ip_addr_is_ours(&po->L3.src)) {
+   if (ip_addr_is_ours(&po->L3.src)) {
       ip = &po->L3.dst;
       mac = po->L2.dst;
-   } else if(ip_addr_is_ours(&po->L3.dst)) {
+   } else if (ip_addr_is_ours(&po->L3.dst)) {
       ip = &po->L3.src;
       mac = po->L2.src;
    } else {
@@ -473,17 +469,18 @@ static void record_mac(struct packet_object *po)
    }
 
    LIST_FOREACH(h, &ndp_group_one, next) {
-      if(!ip_addr_cmp(&h->ip, ip)) {
+      if (!ip_addr_cmp(&h->ip, ip)) {
          memcpy(&h->mac, mac, MEDIA_ADDR_LEN);
          return;
       }
    }
 
    LIST_FOREACH(h, &ndp_group_two, next) {
-      if(!ip_addr_cmp(&h->ip, ip)) {
+      if (!ip_addr_cmp(&h->ip, ip)) {
          memcpy(&h->mac, mac, MEDIA_ADDR_LEN);
          return;
       }
    }
 }
+
 #endif

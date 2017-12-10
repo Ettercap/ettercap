@@ -14,11 +14,11 @@ enum {
    HOOK_DISPATCHER   = 5,     /* in the TOP HALF (the packet is a copy) */
 };
 
-   /* these are used the hook received packets */
+/* these are used the hook received packets */
 enum {
    HOOK_PACKET_BASE  = 50,
    HOOK_PACKET_ETH,
-   HOOK_PACKET_FDDI,      
+   HOOK_PACKET_FDDI,
    HOOK_PACKET_TR,
    HOOK_PACKET_WIFI,
    HOOK_PACKET_ARP,
@@ -61,12 +61,11 @@ enum {
    HOOK_PROTO_KRB5
 };
 
-EC_API_EXTERN void hook_add(int point, void (*func)(struct packet_object *po) );
-EC_API_EXTERN int hook_del(int point, void (*func)(struct packet_object *po) );
+EC_API_EXTERN void hook_add(int point, void (*func)(struct packet_object *po));
+EC_API_EXTERN int hook_del(int point, void (*func)(struct packet_object *po));
 
 #endif
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

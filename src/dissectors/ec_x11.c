@@ -1,23 +1,23 @@
 /*
-    ettercap -- dissector X11 -- TCP 6000, 6001, ..., 6063
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- dissector X11 -- TCP 6000, 6001, ..., 6063
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_decode.h>
@@ -126,29 +126,28 @@ FUNC_DECODER(dissector_x11)
    char tmp[MAX_ASCII_ADDR_LEN];
    struct x11_request *x11;
    int i;
-   
+
    /* don't complain about unused var */
-   (void) DECODE_DATA; 
-   (void) DECODE_DATALEN;
-   (void) DECODED_LEN;
-   
-   /* 
+   (void)DECODE_DATA;
+   (void)DECODE_DATALEN;
+   (void)DECODED_LEN;
+
+   /*
     * check if it is the first packet sent by the server i
     * after the session is created (cookie already sent)
     */
    IF_FIRST_PACKET_FROM_SERVER("x11", s, ident, dissector_x11) {
-            
+
       DEBUG_MSG("\tdissector_x11 BANNER");
       /*
-       * get the banner 
+       * get the banner
        * this parsing is very ugly, but is works (at least for me)
-       * it should be better checked in the header to find the 
+       * it should be better checked in the header to find the
        * banner length etc etc...
        */
-      PACKET->DISSECTOR.banner = strdup((const char*)PACKET->DATA.disp_data + 40);
-     
+      PACKET->DISSECTOR.banner = strdup((const char *)PACKET->DATA.disp_data + 40);
    } ENDIF_FIRST_PACKET_FROM_SERVER(s, ident)
-   
+
    /* skip messages coming from the server */
    if (FROM_SERVER("x11", PACKET))
       return NULL;
@@ -156,56 +155,54 @@ FUNC_DECODER(dissector_x11)
    /* skip empty packets (ACK packets) */
    if (PACKET->DATA.len == 0)
       return NULL;
- 
+
    DEBUG_MSG("X11 --> TCP dissector_x11");
-   
+
    x11 = (struct x11_request *)PACKET->DATA.disp_data;
 
-   /* 
+   /*
     * can somebody test it under big-endian systems
     * and tell me what is the right parsing ?
     */
    if (x11->endianness != 0x6c)
       return NULL;
-   
+
    /* not supported other than MIT-MAGIC-COOKIE-1 */
    if (x11->name_len != 18 || x11->data_len != 16)
       return NULL;
-   
+
    /* check the magic string */
-   if (strncmp((const char*)x11->name, "MIT-MAGIC-COOKIE-1", x11->name_len))
+   if (strncmp((const char *)x11->name, "MIT-MAGIC-COOKIE-1", x11->name_len))
       return NULL;
-       
+
    DEBUG_MSG("\tDissector_x11 COOKIE");
-   
+
    /* fill the structure */
    PACKET->DISSECTOR.user = strdup("MIT-MAGIC-COOKIE-1");
-  
+
    /* the cookie's length is 32, take care of the null char */
    SAFE_CALLOC(PACKET->DISSECTOR.pass, 33, sizeof(char));
-      
-   for (i = 0; i < 16; i++)                                                                      
-      snprintf(PACKET->DISSECTOR.pass + (i * 2), 3, "%.2x", x11->data[i] ); 
-   
-   /* 
+
+   for (i = 0; i < 16; i++)
+      snprintf(PACKET->DISSECTOR.pass + (i * 2), 3, "%.2x", x11->data[i]);
+
+   /*
     * create the session to remember to check the
     * banner on the next packet sent by server
     * the check is made by IF_FIRST_PACKET_FROM_SERVER
     */
    dissect_create_session(&s, PACKET, DISSECT_CODE(dissector_x11));
    session_put(s);
-   
+
    /* print the message */
    DISSECT_MSG("X11 : %s:%d -> XAUTH: %s %s\n", ip_addr_ntoa(&PACKET->L3.dst, tmp),
-                                 ntohs(PACKET->L4.dst), 
-                                 PACKET->DISSECTOR.user,
-                                 PACKET->DISSECTOR.pass);
-   
+               ntohs(PACKET->L4.dst),
+               PACKET->DISSECTOR.user,
+               PACKET->DISSECTOR.pass);
+
    return NULL;
 }
-
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -8,4 +8,3 @@ EC_API_EXTERN void global_update(void);
 /* EOF */
 
 // vim:ts=3:expandtab
-

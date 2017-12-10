@@ -52,4 +52,3 @@ EC_API_EXTERN void set_target_target2(char *target2);
 /* EOF */
 
 // vim:ts=3:expandtab
-

@@ -27,7 +27,7 @@ EC_API_EXTERN int send_L3_icmp_unreach(struct packet_object *po);
 #ifdef WITH_IPV6
 EC_API_EXTERN int send_L3_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip);
 EC_API_EXTERN int send_L2_icmp6_echo(struct ip_addr *sip, struct ip_addr *tip, u_int8 *tmac);
-EC_API_EXTERN int send_L2_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8* o_data, u_int32 o_len, u_int8 *tmac);
+EC_API_EXTERN int send_L2_icmp6_echo_opt(struct ip_addr *sip, struct ip_addr *tip, u_int8 *o_data, u_int32 o_len, u_int8 *tmac);
 EC_API_EXTERN int send_L2_icmp6_nsol(struct ip_addr *sip, struct ip_addr *tip, struct ip_addr *tgt, u_int8 *macaddr, u_int8 *tmac);
 EC_API_EXTERN int send_L2_icmp6_nadv(struct ip_addr *sip, struct ip_addr *tip, u_int8 *macaddr, int router, u_int8 *tmac);
 #endif
@@ -37,8 +37,8 @@ EC_API_EXTERN void capture_only_incoming(pcap_t *p, libnet_t *l);
 EC_API_EXTERN u_int8 MEDIA_BROADCAST[MEDIA_ADDR_LEN];
 EC_API_EXTERN u_int8 ARP_BROADCAST[MEDIA_ADDR_LEN];
 
-#define FUNC_BUILDER(func)       libnet_ptag_t func(u_int8 *dst, u_int16 proto, libnet_t* l)
-#define FUNC_BUILDER_PTR(func)   libnet_ptag_t (*func)(u_int8 *dst, u_int16 proto, libnet_t* l)
+#define FUNC_BUILDER(func)       libnet_ptag_t func(u_int8 * dst, u_int16 proto, libnet_t * l)
+#define FUNC_BUILDER_PTR(func)   libnet_ptag_t (*func)(u_int8 *dst, u_int16 proto, libnet_t *l)
 
 EC_API_EXTERN void add_builder(u_int8 dlt, FUNC_BUILDER_PTR(builder));
 
@@ -47,4 +47,3 @@ EC_API_EXTERN void add_builder(u_int8 dlt, FUNC_BUILDER_PTR(builder));
 /* EOF */
 
 // vim:ts=3:expandtab
-

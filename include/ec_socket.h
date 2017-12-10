@@ -3,9 +3,9 @@
 
 /* The never ending errno problems... */
 #if defined(OS_WINDOWS) && !defined(OS_CYGWIN)
-    #define GET_SOCK_ERRNO()  WSAGetLastError()
+#define GET_SOCK_ERRNO()  WSAGetLastError()
 #else
-    #define GET_SOCK_ERRNO()  errno
+#define GET_SOCK_ERRNO()  errno
 #endif
 
 EC_API_EXTERN int open_socket(const char *host, u_int16 port);
@@ -19,4 +19,3 @@ EC_API_EXTERN int socket_recv(int s, u_char *payload, size_t size);
 /* EOF */
 
 // vim:ts=3:expandtab
-

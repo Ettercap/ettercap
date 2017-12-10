@@ -1,23 +1,23 @@
 /*
-    ettercap -- initial scan to build the hosts list
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- initial scan to build the hosts list
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_packet.h>
@@ -43,24 +43,25 @@ static pthread_mutex_t scan_mutex = PTHREAD_MUTEX_INITIALIZER;
  * They are split because the lock is used in different functions
  * of different types (void/void*).
  */
-#define SCAN_LOCK do{ if (pthread_mutex_trylock(&scan_mutex)) { \
- ec_thread_exit(); return NULL;} \
- } while(0)
-#define SCAN_UNLOCK do{ pthread_mutex_unlock(&scan_mutex); } while(0)
+#define SCAN_LOCK \
+   do { if (pthread_mutex_trylock(&scan_mutex)) { \
+           ec_thread_exit(); return NULL; } \
+   } while (0)
+#define SCAN_UNLOCK do { pthread_mutex_unlock(&scan_mutex); } while (0)
 
-#define SCANUI_LOCK do{ if (pthread_mutex_trylock(&scan_mutex)) { \
- return; } \
- } while (0)
+#define SCANUI_LOCK \
+   do { if (pthread_mutex_trylock(&scan_mutex)) { \
+           return; } \
+   } while (0)
 
 #define SCANUI_UNLOCK SCAN_UNLOCK
 
-#define EC_CHECK_LIBNET_VERSION(major,minor)   \
-   (LIBNET_VERSION_MAJOR > (major) ||          \
+#define EC_CHECK_LIBNET_VERSION(major, minor) \
+   (LIBNET_VERSION_MAJOR > (major) || \
     (LIBNET_VERSION_MAJOR == (major) && LIBNET_VERSION_MINOR >= (minor)))
 
-
 /* used to create the random list */
-static LIST_HEAD (, ip_list) ip_list_head;
+static LIST_HEAD(, ip_list) ip_list_head;
 static struct ip_list **rand_array;
 
 /* protos */
@@ -112,7 +113,7 @@ void build_hosts_list(void)
       scan_load_hosts(GBL_OPTIONS->hostsfile);
 
       LIST_FOREACH(hl, &GBL_HOSTLIST, next)
-         nhosts++;
+      nhosts++;
 
       INSTANT_USER_MSG("%d hosts added to the hosts list...\n", nhosts);
 
@@ -140,7 +141,7 @@ void build_hosts_list(void)
    if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
       /* in text mode and daemonized call the function directly */
       scan_thread(NULL);
-   else 
+   else
       /* do the scan in a separate thread */
       ec_thread_new("scan", "scanning thread", &scan_thread, NULL);
 }
@@ -156,7 +157,7 @@ static EC_THREAD_FUNC(scan_thread)
    int threadize = 1;
 
    /* variable not used */
-   (void) EC_THREAD_PARAM;
+   (void)EC_THREAD_PARAM;
 
    DEBUG_MSG("scan_thread");
 
@@ -202,11 +203,11 @@ static EC_THREAD_FUNC(scan_thread)
     *
     * FIXME: ipv4 host gets scanned twice if in target list
     */
-   if(GBL_TARGET1->all_ip || GBL_TARGET2->all_ip) {
+   if (GBL_TARGET1->all_ip || GBL_TARGET2->all_ip) {
       scan_netmask();
 #ifdef WITH_IPV6
-      if (GBL_OPTIONS->ip6scan) 
-          scan_ip6_onlink();
+      if (GBL_OPTIONS->ip6scan)
+         scan_ip6_onlink();
 #endif
    }
    scan_targets();
@@ -260,7 +261,7 @@ static EC_THREAD_FUNC(scan_thread)
    if (!GBL_OPTIONS->load_hosts && GBL_OPTIONS->resolve) {
       char title[50];
 
-      snprintf(title, sizeof(title)-1, "Resolving %d hostnames...", nhosts);
+      snprintf(title, sizeof(title) - 1, "Resolving %d hostnames...", nhosts);
 
       INSTANT_USER_MSG("%s\n", title);
 
@@ -292,7 +293,6 @@ static EC_THREAD_FUNC(scan_thread)
    return NULL;
 }
 
-
 /*
  * delete the hosts list
  */
@@ -312,7 +312,7 @@ void del_hosts_list(void)
 }
 
 /*
- * receives the ARP and ICMPv6 ND packets 
+ * receives the ARP and ICMPv6 ND packets
  */
 static void get_response(struct packet_object *po)
 {
@@ -331,36 +331,34 @@ static void get_response(struct packet_object *po)
 
    /* search in target 1 */
    LIST_FOREACH(t, &GBL_TARGET1->ips, next)
-      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
-         add_host(&po->L3.src, po->L2.src, NULL);
-         return;
-      }
+   if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+      add_host(&po->L3.src, po->L2.src, NULL);
+      return;
+   }
 
    /* search in target 2 */
    LIST_FOREACH(t, &GBL_TARGET2->ips, next)
-      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
-         add_host(&po->L3.src, po->L2.src, NULL);
-         return;
-      }
+   if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+      add_host(&po->L3.src, po->L2.src, NULL);
+      return;
+   }
 
 #ifdef WITH_IPV6
    /* same for IPv6 */
    /* search in target 1 */
    LIST_FOREACH(t, &GBL_TARGET1->ip6, next)
-      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
-         return;
-      }
+   if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+      return;
+   }
 
    /* search in target 2 */
    LIST_FOREACH(t, &GBL_TARGET2->ip6, next)
-      if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
-         add_host(&po->L3.src, po->L2.src, NULL);
-         return;
-      }
+   if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
+      add_host(&po->L3.src, po->L2.src, NULL);
+      return;
+   }
 #endif
-
 }
-
 
 /*
  * scan the netmask to find all hosts
@@ -395,10 +393,9 @@ static void scan_netmask(void)
 
       /* add to the list randomly */
       random_list(e, i);
-
    }
 
-   snprintf(title, sizeof(title)-1, "Scanning the whole netmask for %d hosts...", nhosts);
+   snprintf(title, sizeof(title) - 1, "Scanning the whole netmask for %d hosts...", nhosts);
    INSTANT_USER_MSG("%s\n", title);
 
    i = 1;
@@ -431,7 +428,6 @@ static void scan_netmask(void)
 
       /* wait for a delay */
       ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
-
    }
 
    /* delete the temporary list */
@@ -442,7 +438,6 @@ static void scan_netmask(void)
 
    DEBUG_MSG("scan_netmask: Complete");
 }
-
 
 #ifdef WITH_IPV6
 /*
@@ -457,7 +452,7 @@ static void scan_ip6_onlink(void)
 
    ip_addr_init(&an, AF_INET6, (u_char *)IP6_ALL_NODES);
 
-   snprintf(title, sizeof(title)-1, "Probing %d seconds for active IPv6 nodes ...", GBL_CONF->icmp6_probe_delay);
+   snprintf(title, sizeof(title) - 1, "Probing %d seconds for active IPv6 nodes ...", GBL_CONF->icmp6_probe_delay);
    INSTANT_USER_MSG("%s\n", title);
 
    DEBUG_MSG("scan_ip6_onlink: ");
@@ -465,24 +460,24 @@ static void scan_ip6_onlink(void)
    /* go through the list of IPv6 addresses on the selected interface */
    LIST_FOREACH(e, &GBL_IFACE->ip6_list, next) {
       /*
-       * ping to all-nodes from all ip addresses to get responses from all 
+       * ping to all-nodes from all ip addresses to get responses from all
        * IPv6 networks (global, link-local, ...)
        */
       send_L2_icmp6_echo(&e->ip, &an, LLA_IP6_ALLNODES_MULTICAST);
 
-#if EC_CHECK_LIBNET_VERSION(1,2)
+#if EC_CHECK_LIBNET_VERSION(1, 2)
       /*
-       * sending this special icmp probe motivates hosts to respond with a icmp 
+       * sending this special icmp probe motivates hosts to respond with a icmp
        * error message even if they are configured not to respond to icmp requests.
        * since libnet < 1.2 has a bug when sending IPv6 option headers
        * we can only use this type of probe if we have at least libnet 1.2 or above
        */
       send_L2_icmp6_echo_opt(&e->ip, &an,
-            IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN), LLA_IP6_ALLNODES_MULTICAST);
+                             IP6_DSTOPT_UNKN, sizeof(IP6_DSTOPT_UNKN), LLA_IP6_ALLNODES_MULTICAST);
 #endif
    }
 
-   for (i=0; i<=GBL_CONF->icmp6_probe_delay * 1000; i++) {
+   for (i = 0; i <= GBL_CONF->icmp6_probe_delay * 1000; i++) {
       /* update the progress bar */
       ret = ui_progress(title, i, GBL_CONF->icmp6_probe_delay * 1000);
 
@@ -503,10 +498,9 @@ static void scan_ip6_onlink(void)
       /* wait for a delay */
       ec_usleep(MILLI2MICRO(1)); // 1ms
    }
-   
 }
-#endif
 
+#endif
 
 /*
  * scan only the target hosts
@@ -560,10 +554,10 @@ static void scan_targets(void)
 
       /* search if it is already in the list */
       LIST_FOREACH(m, &ip_list_head, next)
-         if (!ip_addr_cmp(&m->ip, &i->ip)) {
-            found = 1;
-            break;
-         }
+      if (!ip_addr_cmp(&m->ip, &i->ip)) {
+         found = 1;
+         break;
+      }
 
       /* add it */
       if (!found) {
@@ -581,10 +575,10 @@ static void scan_targets(void)
       found = 0;
 
       LIST_FOREACH(m, &ip_list_head, next)
-         if (!ip_addr_cmp(&m->ip, &i->ip)) {
-            found = 1;
-            break;
-         }
+      if (!ip_addr_cmp(&m->ip, &i->ip)) {
+         found = 1;
+         break;
+      }
 
       if (!found) {
          SAFE_CALLOC(e, 1, sizeof(struct ip_list));
@@ -597,30 +591,29 @@ static void scan_targets(void)
    }
 #endif
 
-
    DEBUG_MSG("scan_targets: %d hosts to be scanned", nhosts);
 
    /* don't scan if there are no hosts */
    if (nhosts == 0)
       return;
 
-   snprintf(title, sizeof(title)-1, "Scanning for merged targets (%d hosts)...", nhosts);
+   snprintf(title, sizeof(title) - 1, "Scanning for merged targets (%d hosts)...", nhosts);
    INSTANT_USER_MSG("%s\n\n", title);
 
    /* and now scan the LAN */
    LIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
-      switch(ntohs(e->ip.addr_type)) {
-         case AF_INET:
-            send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
-            break;
+      switch (ntohs(e->ip.addr_type)) {
+      case AF_INET:
+         send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
+         break;
 #ifdef WITH_IPV6
-         case AF_INET6:
-            if (ip_addr_is_local(&e->ip, &ip) == E_SUCCESS) {
-               ip_addr_init_sol(&sn, &e->ip, tmac);
-               send_L2_icmp6_nsol(&ip, &sn, &e->ip, GBL_IFACE->mac, tmac);
-            }
-            break;
+      case AF_INET6:
+         if (ip_addr_is_local(&e->ip, &ip) == E_SUCCESS) {
+            ip_addr_init_sol(&sn, &e->ip, tmac);
+            send_L2_icmp6_nsol(&ip, &sn, &e->ip, GBL_IFACE->mac, tmac);
+         }
+         break;
 #endif
       }
 
@@ -652,7 +645,6 @@ static void scan_targets(void)
 
       /* wait for a delay */
       ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
-
    }
 
    /* delete the temporary list */
@@ -660,7 +652,6 @@ static void scan_targets(void)
       LIST_REMOVE(e, next);
       SAFE_FREE(e);
    }
-
 }
 
 /*
@@ -688,8 +679,8 @@ int scan_load_hosts(char *filename)
    /* read the file */
    for (nhosts = 0; !feof(hf); nhosts++) {
 
-      if (fscanf(hf, "%"EC_TOSTRING(MAX_ASCII_ADDR_LEN)"s %"EC_TOSTRING(ETH_ASCII_ADDR_LEN)"s %"EC_TOSTRING(MAX_HOSTNAME_LEN)"s\n", ip, mac, name) != 3 ||
-         *ip == '#' || *mac == '#' || *name == '#')
+      if (fscanf(hf, "%"EC_TOSTRING (MAX_ASCII_ADDR_LEN)"s %"EC_TOSTRING (ETH_ASCII_ADDR_LEN)"s %"EC_TOSTRING (MAX_HOSTNAME_LEN)"s\n", ip, mac, name) != 3 ||
+          *ip == '#' || *mac == '#' || *name == '#')
          continue;
 
       /* convert to network */
@@ -702,8 +693,8 @@ int scan_load_hosts(char *filename)
          /* neither IPv4 nor IPv6 - inform user and skip line*/
          USER_MSG("Bad IP address while parsing line %d", nhosts + 1);
          continue;
-         //del_hosts_list();
-         //SEMIFATAL_ERROR("Bad parsing on line %d", nhosts + 1);
+         // del_hosts_list();
+         // SEMIFATAL_ERROR("Bad parsing on line %d", nhosts + 1);
       }
 
       /* wipe the null hostname */
@@ -720,7 +711,6 @@ int scan_load_hosts(char *filename)
 
    return E_SUCCESS;
 }
-
 
 /*
  * save the host list to this file
@@ -758,7 +748,6 @@ int scan_save_hosts(char *filename)
    return E_SUCCESS;
 }
 
-
 /*
  * add an host to the list
  * order the list while inserting the elements
@@ -768,7 +757,7 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
    struct hosts_list *hl, *h;
 
    /* don't add to hostlist if the found IP is ours */
-   if (ip_addr_is_ours(ip) == E_FOUND) 
+   if (ip_addr_is_ours(ip) == E_FOUND)
       return;
 
    /* don't add undefined address */
@@ -792,7 +781,7 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
          SAFE_FREE(h->hostname);
          SAFE_FREE(h);
          return;
-      } else if (ip_addr_cmp(&hl->ip, &h->ip) < 0 && LIST_NEXT(hl, next) != LIST_END(&GBL_HOSTLIST) )
+      } else if (ip_addr_cmp(&hl->ip, &h->ip) < 0 && LIST_NEXT(hl, next) != LIST_END(&GBL_HOSTLIST))
          continue;
       else if (ip_addr_cmp(&h->ip, &hl->ip) > 0) {
          LIST_INSERT_AFTER(hl, h, next);
@@ -801,15 +790,12 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
          LIST_INSERT_BEFORE(hl, h, next);
          break;
       }
-
    }
 
    /* the first element */
    if (LIST_FIRST(&GBL_HOSTLIST) == LIST_END(&GBL_HOSTLIST))
       LIST_INSERT_HEAD(&GBL_HOSTLIST, h, next);
-
 }
-
 
 /*
  * insert the element in the list randomly.
@@ -824,7 +810,7 @@ static void random_list(struct ip_list *e, int max)
    /* calculate the position in the list. */
    rnd = rand() % ((max == 1) ? max : max - 1);
 
-   //rnd = 1+(int) ((float)max*rand()/(RAND_MAX+1.0));
+   // rnd = 1+(int) ((float)max*rand()/(RAND_MAX+1.0));
 
    /* allocate the array used to keep track of the pointer
     * to the elements in the list. this array speed up the
@@ -846,7 +832,6 @@ static void random_list(struct ip_list *e, int max)
    LIST_INSERT_AFTER(rand_array[rnd - 1], e, next);
    /* and add the pointer in the array */
    rand_array[max - 1] = e;
-
 }
 
 void __init hook_init(void)
@@ -861,13 +846,13 @@ void __init hook_init(void)
  */
 static void hosts_list_hook(struct packet_object *po)
 {
-   switch(ip_addr_is_ours(&po->L3.src)) {
-      case E_FOUND:
-      case E_BRIDGE:
-         return;
+   switch (ip_addr_is_ours(&po->L3.src)) {
+   case E_FOUND:
+   case E_BRIDGE:
+      return;
    }
 
-   if(ip_addr_is_local(&po->L3.src, NULL) == E_SUCCESS) {
+   if (ip_addr_is_local(&po->L3.src, NULL) == E_SUCCESS) {
       add_host(&po->L3.src, po->L2.src, NULL);
    }
 
@@ -877,4 +862,3 @@ static void hosts_list_hook(struct packet_object *po)
 /* EOF */
 
 // vim:ts=3:expandtab
-

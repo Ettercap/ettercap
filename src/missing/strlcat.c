@@ -1,5 +1,5 @@
 /*	$NetBSD: strlcat.c,v 1.5 1999/09/20 04:39:47 lukem Exp $	*/
-/*	from OpenBSD: strlcat.c,v 1.2 1999/06/17 16:28:58 millert Exp 	*/
+/*	from OpenBSD: strlcat.c,v 1.2 1999/06/17 16:28:58 millert Exp   */
 
 /*
  * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
@@ -41,31 +41,31 @@ size_t strlcat(char *, const char *, size_t);
  */
 size_t
 strlcat(dst, src, siz)
-	char *dst;
-	const char *src;
-	size_t siz;
+char *dst;
+const char *src;
+size_t siz;
 {
-	register char *d = dst;
-	register const char *s = src;
-	register size_t n = siz;
-	size_t dlen;
+   register char *d = dst;
+   register const char *s = src;
+   register size_t n = siz;
+   size_t dlen;
 
-	/* Find the end of dst and adjust bytes left but don't go past end */
-	while (*d != '\0' && n-- != 0)
-		d++;
-	dlen = d - dst;
-	n = siz - dlen;
+   /* Find the end of dst and adjust bytes left but don't go past end */
+   while (*d != '\0' && n-- != 0)
+      d++;
+   dlen = d - dst;
+   n = siz - dlen;
 
-	if (n == 0)
-		return(dlen + strlen(s));
-	while (*s != '\0') {
-		if (n != 1) {
-			*d++ = *s;
-			n--;
-		}
-		s++;
-	}
-	*d = '\0';
+   if (n == 0)
+      return dlen + strlen(s);
+   while (*s != '\0') {
+      if (n != 1) {
+         *d++ = *s;
+         n--;
+      }
+      s++;
+   }
+   *d = '\0';
 
-	return(dlen + (s - src));	/* count does not include NUL */
+   return dlen + (s - src); /* count does not include NUL */
 }

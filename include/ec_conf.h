@@ -11,7 +11,6 @@ struct conf_section {
    struct conf_entry *entries;
 };
 
-
 /* exported functions */
 
 EC_API_EXTERN void load_conf(void);
@@ -22,4 +21,3 @@ EC_API_EXTERN void conf_dissectors(void);
 /* EOF */
 
 // vim:ts=3:expandtab
-

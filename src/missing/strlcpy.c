@@ -38,24 +38,24 @@ size_t strlcpy(char *, const char *, size_t);
  * Returns strlen(src); if retval >= siz, truncation occurred.
  */
 size_t strlcpy(dst, src, siz)
-	char *dst;
-	const char *src;
-	size_t siz;
+char *dst;
+const char *src;
+size_t siz;
 {
-	register char *d = dst;
-	register const char *s = src;
-	register size_t n = siz;
+   register char *d = dst;
+   register const char *s = src;
+   register size_t n = siz;
 
-	if (n == 0)
-		return(strlen(s));
-	while (*s != '\0') {
-		if (n != 1) {
-			*d++ = *s;
-			n--;
-		}
-		s++;
-	}
-	*d = '\0';
+   if (n == 0)
+      return strlen(s);
+   while (*s != '\0') {
+      if (n != 1) {
+         *d++ = *s;
+         n--;
+      }
+      s++;
+   }
+   *d = '\0';
 
-	return(s - src);	/* count does not include NUL */
+   return s - src;  /* count does not include NUL */
 }

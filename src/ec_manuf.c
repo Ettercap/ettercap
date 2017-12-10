@@ -1,24 +1,24 @@
 /*
-    ettercap -- manufacturer finterprint module
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-
-*/
+ *  ettercap -- manufacturer finterprint module
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ *
+ */
 
 /*
  * MFDBL: mac fingerprint database library.
@@ -56,16 +56,16 @@
 #include <ec_file.h>
 #include <ec_hash.h>
 
-
 #define TABBIT    10 /* 2^10 bit tab entries: 1024 SLISTS */
-#define TABSIZE   (1UL<<TABBIT)
-#define TABMASK   (TABSIZE-1) /* to mask fnv_1 hash algorithm */
+#define TABSIZE   (1UL << TABBIT)
+#define TABMASK   (TABSIZE - 1) /* to mask fnv_1 hash algorithm */
 
-#define LOAD_ENTRY(p,h,v) do {                                 \
-   SAFE_CALLOC((p), 1, sizeof (struct entry));                 \
-   (p)->mac = (h);                                             \
-   (p)->vendor = strdup (v);                                   \
-} while (0)
+#define LOAD_ENTRY(p, h, v) \
+   do { \
+      SAFE_CALLOC((p), 1, sizeof(struct entry)); \
+      (p)->mac = (h); \
+      (p)->vendor = strdup(v); \
+   } while (0)
 
 /* globals */
 
@@ -81,10 +81,9 @@ struct entry {
 
 static void discard_macdb(void);
 int manuf_init(void);
-char * manuf_search(const char *m);
+char *manuf_search(const char *m);
 
 /*****************************************/
-
 
 static void discard_macdb(void)
 {
@@ -102,17 +101,16 @@ static void discard_macdb(void)
    }
 
    DEBUG_MSG("ATEXIT: discard_macdb");
-   
+
    return;
 }
-
 
 int manuf_init(void)
 {
    struct entry *p;
 
-   char line[6+1+120+1]; // MAC + Blank + Description + Newline
-   char name[120+1];
+   char line[6 + 1 + 120 + 1]; // MAC + Blank + Description + Newline
+   char name[120 + 1];
    union {
       char b[4];
       u_int32 i;
@@ -132,22 +130,21 @@ int manuf_init(void)
       if (sscanf(line, "%02X%02X%02X %120[^,\n],\n", &m1, &m2, &m3, name) != 4)
          continue;
 
-      mac.b[0] = (char) (m1);
-      mac.b[1] = (char) (m2);
-      mac.b[2] = (char) (m3);
+      mac.b[0] = (char)(m1);
+      mac.b[1] = (char)(m2);
+      mac.b[2] = (char)(m3);
       mac.b[3] = 0;
-      
+
       LOAD_ENTRY(p, mac.i, name);
 
       SLIST_INSERT_HEAD(&(manuf_head[fnv_32(mac.b, 4) & TABMASK]), p, entries);
 
       i++;
-
    }
 
    DEBUG_MSG("manuf_init -- %d fingers loaded", i);
    USER_MSG("%4d mac vendor fingerprint\n", i);
-   
+
    fclose(f);
 
    atexit(discard_macdb);
@@ -155,9 +152,7 @@ int manuf_init(void)
    return i;
 }
 
-
-
-char * manuf_search(const char *m)
+char *manuf_search(const char *m)
 {
    struct entry *l;
    union {
@@ -173,17 +168,15 @@ char * manuf_search(const char *m)
    mac.b[3] = 0;
 
    h = fnv_32(mac.b, 4) & TABMASK;
-   
+
    SLIST_FOREACH(l, &manuf_head[h], entries) {
       if (l->mac == mac.i)
-         return (l->vendor);
+         return l->vendor;
    }
 
    return "";
 }
 
-
 /* EOF */
 
 // vim:ts=3:expandtab
-

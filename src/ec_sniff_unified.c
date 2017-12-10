@@ -1,23 +1,23 @@
 /*
-    ettercap -- unified sniffing method module
-
-    Copyright (C) ALoR & NaGA
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-*/
+ *  ettercap -- unified sniffing method module
+ *
+ *  Copyright (C) ALoR & NaGA
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <ec.h>
 #include <ec_capture.h>
@@ -37,7 +37,7 @@ void unified_set_forwardable(struct packet_object *po);
 /*******************************************/
 
 /*
- * creates the threads for capturing 
+ * creates the threads for capturing
  */
 void start_unified_sniff(void)
 {
@@ -46,13 +46,13 @@ void start_unified_sniff(void)
       USER_MSG("Unified sniffing already started...\n");
       return;
    }
-   
+
    USER_MSG("Starting Unified sniffing...\n\n");
-   
+
    /* create the timeouter thread */
-   if (!GBL_OPTIONS->read) { 
+   if (!GBL_OPTIONS->read) {
       pthread_t pid;
-      
+
       pid = ec_thread_getpid("timer");
       if (pthread_equal(pid, EC_PTHREAD_NULL))
          ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
@@ -61,7 +61,7 @@ void start_unified_sniff(void)
    /* create the thread for packet capture */
    capture_start(GBL_IFACE);
 
-   if(GBL_OPTIONS->secondary)
+   if (GBL_OPTIONS->secondary)
       secondary_sources_foreach(capture_start);
 
    /* start ssl_wrapper thread */
@@ -71,27 +71,26 @@ void start_unified_sniff(void)
    GBL_SNIFF->active = 1;
 }
 
-
 /*
  * kill the capturing threads, but leave untouched the others
  */
 void stop_unified_sniff(void)
 {
    pthread_t pid;
-   
+
    DEBUG_MSG("stop_unified_sniff");
-   
+
    if (GBL_SNIFF->active == 0) {
       USER_MSG("Unified sniffing is not running...\n");
       return;
    }
-  
+
    /* kill it */
    capture_stop(GBL_IFACE);
 
-   if(GBL_OPTIONS->secondary)
+   if (GBL_OPTIONS->secondary)
       secondary_sources_foreach(capture_stop);
-   
+
    pid = ec_thread_getpid("sslwrap");
    if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
@@ -101,30 +100,29 @@ void stop_unified_sniff(void)
    GBL_SNIFF->active = 0;
 }
 
-
 void forward_unified_sniff(struct packet_object *po)
 {
    /* if it was not initialized, no packet are forwardable */
-   switch(ntohs(po->L3.proto)) {
-      case LL_TYPE_IP:
-         if(!GBL_LNET->lnet_IP4)
-            return;
-         if(!(GBL_IFACE->has_ipv4))
-            return;
-         break;
-      case LL_TYPE_IP6:
-         if(!GBL_LNET->lnet_IP6)
-            return;
-         if(!(GBL_IFACE->has_ipv6))
-            return;
-         break;
+   switch (ntohs(po->L3.proto)) {
+   case LL_TYPE_IP:
+      if (!GBL_LNET->lnet_IP4)
+         return;
+      if (!(GBL_IFACE->has_ipv4))
+         return;
+      break;
+   case LL_TYPE_IP6:
+      if (!GBL_LNET->lnet_IP6)
+         return;
+      if (!(GBL_IFACE->has_ipv6))
+         return;
+      break;
    }
-   
+
    /* if unoffensive is set, don't forward any packet */
    if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read)
       return;
 
-   /* 
+   /*
     * forward the packet to Layer 3, the kernel
     * will route them to the correct destination (host or gw)
     */
@@ -133,36 +131,37 @@ void forward_unified_sniff(struct packet_object *po)
    if ((po->flags & PO_DROPPED) == 0)
       send_to_L3(po);
 
-    /* 
-     * if the packet was modified and it exceeded the mtu,
-     * we have to inject the exceeded data
-     */
-    if (po->DATA.inject) 
-       inject_buffer(po); 
+   /*
+    * if the packet was modified and it exceeded the mtu,
+    * we have to inject the exceeded data
+    */
+   if (po->DATA.inject)
+      inject_buffer(po);
 }
 
 /*
  * check if the packet has been forwarded by us
  * the source mac address is our, but the ip address is different
  */
-void unified_check_forwarded(struct packet_object *po) 
+void unified_check_forwarded(struct packet_object *po)
 {
    /* the interface was not configured, the packets are not forwardable */
    if (!GBL_IFACE->is_ready)
       return;
-   
-   /* 
-    * dont sniff forwarded packets (equal mac, different ip) 
+
+   /*
+    * dont sniff forwarded packets (equal mac, different ip)
     * but only if we are on live connections
     */
    if (GBL_CONF->skip_forwarded && !GBL_OPTIONS->read &&
        !memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
-       ip_addr_is_ours(&po->L3.src) != E_FOUND) {
+       ip_addr_is_ours(&po->L3.src) != E_FOUND)
+   {
       po->flags |= PO_FORWARDED;
    }
 }
 
-/* 
+/*
  * if the dest mac address of the packet is
  * the same of GBL_IFACE->mac but the dest ip is
  * not the same as GBL_IFACE->ip, the packet is not
@@ -170,20 +169,18 @@ void unified_check_forwarded(struct packet_object *po)
  */
 void unified_set_forwardable(struct packet_object *po)
 {
-   /* 
+   /*
     * if the mac is our, but the ip is not...
     * it has to be forwarded
     */
    if (!memcmp(GBL_IFACE->mac, po->L2.dst, MEDIA_ADDR_LEN) &&
        memcmp(GBL_IFACE->mac, po->L2.src, MEDIA_ADDR_LEN) &&
-       ip_addr_is_ours(&po->L3.dst) != E_FOUND) {
+       ip_addr_is_ours(&po->L3.dst) != E_FOUND)
+   {
       po->flags |= PO_FORWARDABLE;
    }
-   
 }
-
 
 /* EOF */
 
 // vim:ts=3:expandtab
-

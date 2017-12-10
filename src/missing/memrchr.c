@@ -28,15 +28,15 @@
 #include <ec.h>
 
 void *memrchr(const void *s, u_char c, size_t n)
-{ 
+{
 
-/* 
+/*
  *  DESCRIPTION
  *        The  memrchr() function is like the memchr() function, except
  *        that it searches backward for the first instance of c from the
  *        end of the n bytes pointed to by s instead of forward from the
  *        beginning.
- *  
+ *
  *  RETURN VALUE
  *       The memrchr() functions return a pointer to the matching byte or
  *       NULL if the  character does not occur in the given memory area.
@@ -45,13 +45,12 @@ void *memrchr(const void *s, u_char c, size_t n)
    const u_char *cp;
 
    if (n != 0) {
-      cp = (u_char*)s + n;
+      cp = (u_char *)s + n;
       do {
          if (*(--cp) == (u_char)c)
-            return (void*)cp;
+            return (void *)cp;
       } while (--n != 0);
    }
 
    return NULL;
 }
-

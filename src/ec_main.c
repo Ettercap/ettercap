@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     * We can access these structs via the macro in ec_ec_globals.h
     */
         
-   libettercap_init();
+   libettercap_init(EC_PROGRAM, EC_VERSION);
    libettercap_load_conf();
    DEBUG_MSG("main -- here we go !!");
 

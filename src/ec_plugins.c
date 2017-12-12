@@ -156,7 +156,7 @@ void plugin_load_all(void)
    where = path;
 #else
    /* default path */
-   where = INSTALL_LIBDIR "/" PROGRAM;
+   where = INSTALL_LIBDIR "/" EC_PROGRAM;
 #endif
    
    /* first search in  INSTALL_LIBDIR/ettercap" */

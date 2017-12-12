@@ -2,6 +2,7 @@
 #define ETTERFILTER_H
 
 #include <ec.h>
+#include <ef_version.h>
 struct ef_globals {
    char *source_file;
    char *output_file;

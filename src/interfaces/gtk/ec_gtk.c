@@ -751,7 +751,7 @@ static void toggle_nopromisc(void)
 static void gtkui_setup(void)
 {
    GtkTextIter iter;
-   GtkWidget *vbox, *scroll, *vpaned, *logo, *icon, *main_menu;
+   GtkWidget *vbox, *scroll, *vpaned, *logo, *main_menu;
    GtkActionGroup *menuactions;
    GtkAction *action;
    GClosure *closure = NULL;
@@ -917,14 +917,11 @@ static void gtkui_setup(void)
    /* set window icon */
    path = ICON_DIR "/" ICON_FILE;
    if (g_file_test(path, G_FILE_TEST_EXISTS)) {
-      icon = gtk_image_new_from_file(path);
-      gtk_window_set_icon(GTK_WINDOW(window), gtk_image_get_pixbuf(GTK_IMAGE(icon)));
+      gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path, NULL));
    }
    else { /* if neither path is valid gtk will use a broken image icon */
-      icon = gtk_image_new_from_file("./share/" ICON_FILE);
-      gtk_window_set_icon(GTK_WINDOW(window), gtk_image_get_pixbuf(GTK_IMAGE(icon)));
+      gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file("./share/" ICON_FILE, NULL));
    }
-
 
    if(left > 0 || top > 0)
       gtk_window_move(GTK_WINDOW(window), left, top);

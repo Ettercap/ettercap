@@ -24,8 +24,11 @@
    #include <ec_curses.h>
 #endif
 #include <ec_daemon.h>
-#if defined HAVE_GTK || defined HAVE_GTK3
+#if defined HAVE_GTK
    #include <ec_gtk.h>
+#endif
+#if defined HAVE_GTK3
+   #include <ec_gtk3.h>
 #endif
 
 #include <ec_text.h>

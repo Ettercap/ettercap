@@ -419,7 +419,8 @@ FUNC_DECODER(dissector_ssh)
                   return NULL;
                }
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-               RSA_get0_key(session_data->serverkey, &s_n, &s_e, &s_d);
+               RSA_get0_key(session_data->serverkey, 
+                     (const BIGNUM**)&s_n, (const BIGNUM**)&s_e, (const BIGNUM**)&s_d);
                get_bn(s_e, &ptr);
                get_bn(s_n, &ptr);
 #else
@@ -434,7 +435,8 @@ FUNC_DECODER(dissector_ssh)
                }
 
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-               RSA_get0_key(session_data->hostkey, &h_n, &h_e, &h_d);
+               RSA_get0_key(session_data->hostkey, 
+                     (const BIGNUM**)&h_n, (const BIGNUM**)&h_e, (const BIGNUM**)&h_d);
                get_bn(h_e, &ptr);
                get_bn(h_n, &ptr);
 #else
@@ -493,7 +495,8 @@ FUNC_DECODER(dissector_ssh)
             key_to_put+=4;
 
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-            RSA_get0_key(session_data->ptrkey->myserverkey, &m_s_n, &m_s_e, &m_s_d);
+            RSA_get0_key(session_data->ptrkey->myserverkey, 
+                  (const BIGNUM**)&m_s_n, (const BIGNUM**)&m_s_e, (const BIGNUM**)&m_s_d);
             put_bn(m_s_e, &key_to_put);
             put_bn(m_s_n, &key_to_put);
 #else
@@ -503,7 +506,8 @@ FUNC_DECODER(dissector_ssh)
             key_to_put+=4;
 
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-            RSA_get0_key(session_data->ptrkey->myhostkey, &m_h_n, &m_h_e, &m_h_d);
+            RSA_get0_key(session_data->ptrkey->myhostkey, 
+                  (const BIGNUM**)&m_h_n, (const BIGNUM**)&m_h_e, (const BIGNUM**)&m_h_d);
             put_bn(m_h_e, &key_to_put);
             put_bn(m_h_n, &key_to_put);
 #else
@@ -798,9 +802,9 @@ static void rsa_public_encrypt(BIGNUM *out, BIGNUM *in, RSA *key)
    int32 len, ilen, olen;
 
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-   BIGNUM *n;
-   BIGNUM *e;
-   BIGNUM *d;
+   const BIGNUM *n;
+   const BIGNUM *e;
+   const BIGNUM *d;
    RSA_get0_key(key, &n, &e, &d);
    olen = BN_num_bytes(n);
 #else
@@ -835,9 +839,9 @@ static void rsa_private_decrypt(BIGNUM *out, BIGNUM *in, RSA *key)
    int32 len, ilen, olen;
 
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-   BIGNUM *n;
-   BIGNUM *e;
-   BIGNUM *d;
+   const BIGNUM *n;
+   const BIGNUM *e;
+   const BIGNUM *d;
    RSA_get0_key(key, &n, &e, &d);
    olen = BN_num_bytes(n);
 #else

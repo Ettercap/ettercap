@@ -16,6 +16,9 @@ set(cmake_generated ${CMAKE_BINARY_DIR}/CMakeCache.txt
                     ${CMAKE_BINARY_DIR}/src/
                     ${CMAKE_BINARY_DIR}/tests/
                     ${CMAKE_BINARY_DIR}/utils/
+                    ${CMAKE_BINARY_DIR}/Testing/
+                    ${CMAKE_BINARY_DIR}/AUTHORS
+                    ${CMAKE_BINARY_DIR}/LICENSE
 )
 
 foreach(file ${cmake_generated})

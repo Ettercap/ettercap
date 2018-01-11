@@ -31,7 +31,7 @@ void gtkui_sniff_live(void)
 {
    DEBUG_MSG("gtk_sniff_live");
 
-   gtkui_create_menu(1); /* online menus */
+   //gtkui_create_menu(1); /* online menus */
 }
 
 

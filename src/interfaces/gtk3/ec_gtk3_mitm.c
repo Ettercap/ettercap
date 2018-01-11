@@ -35,12 +35,16 @@ static char params[PARAMS_LEN+1];
 
 /*******************************************/
 
-void gtkui_arp_poisoning(void)
+void gtkui_arp_poisoning(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame, *content_area;
    gint response = 0;
    gboolean remote = FALSE;
    gboolean oneway = FALSE;
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_arp_poisoning");
 //   not needed, the \0 is already appended from snprintf
@@ -48,7 +52,7 @@ void gtkui_arp_poisoning(void)
 
    dialog = gtk_dialog_new_with_buttons("MITM Attack: ARP Poisoning", 
          GTK_WINDOW (window), 
-         GTK_DIALOG_MODAL, 
+         GTK_DIALOG_MODAL|GTK_DIALOG_USE_HEADER_BAR, 
          "_Cancel", GTK_RESPONSE_CANCEL, 
          "_OK",     GTK_RESPONSE_OK, 
          NULL);
@@ -57,7 +61,7 @@ void gtkui_arp_poisoning(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -71,7 +75,7 @@ void gtkui_arp_poisoning(void)
    gtk_box_pack_start (GTK_BOX (hbox), frame, TRUE, TRUE, 0);
    gtk_widget_show(frame);
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 2, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
    gtk_container_set_border_width(GTK_CONTAINER (vbox), 5);
    gtk_container_add(GTK_CONTAINER (frame), vbox);
    gtk_widget_show(vbox);
@@ -117,16 +121,20 @@ void gtkui_arp_poisoning(void)
     */
 }
 
-void gtkui_icmp_redir(void)
+void gtkui_icmp_redir(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog, *grid, *hbox, *image, *label, *entry1, *entry2, *frame, *content_area;
    gint response = 0;
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_icmp_redir");
 
    dialog = gtk_dialog_new_with_buttons("MITM Attack: ICMP Redirect", 
          GTK_WINDOW (window), 
-         GTK_DIALOG_MODAL, 
+         GTK_DIALOG_MODAL|GTK_DIALOG_USE_HEADER_BAR, 
          "_Cancel", GTK_RESPONSE_CANCEL, 
          "_OK",     GTK_RESPONSE_OK, 
          NULL);
@@ -135,7 +143,7 @@ void gtkui_icmp_redir(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -196,17 +204,21 @@ void gtkui_icmp_redir(void)
     */
 }
 
-void gtkui_port_stealing(void)
+void gtkui_port_stealing(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame, *content_area;
    gint response = 0;
    gboolean remote = FALSE;
    
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_port_stealing"); 
       
    dialog = gtk_dialog_new_with_buttons("MITM Attack: Port Stealing", 
          GTK_WINDOW (window), 
-         GTK_DIALOG_MODAL, 
+         GTK_DIALOG_MODAL|GTK_DIALOG_USE_HEADER_BAR, 
          "_Cancel", GTK_RESPONSE_CANCEL, 
          "_OK",     GTK_RESPONSE_OK, 
          NULL);
@@ -215,7 +227,7 @@ void gtkui_port_stealing(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
          
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -229,7 +241,7 @@ void gtkui_port_stealing(void)
    gtk_box_pack_start (GTK_BOX (hbox), frame, TRUE, TRUE, 0);
    gtk_widget_show(frame);
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 2, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
    gtk_container_set_border_width(GTK_CONTAINER (vbox), 5);
    gtk_container_add(GTK_CONTAINER (frame), vbox);
    gtk_widget_show(vbox);
@@ -269,17 +281,21 @@ void gtkui_port_stealing(void)
     */
 }
 
-void gtkui_dhcp_spoofing(void)
+void gtkui_dhcp_spoofing(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog, *grid, *hbox, *image, *label, *entry1, *entry2, *entry3, *frame, *content_area;
    gint response = 0;
    
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_dhcp_spoofing");
 //   memset(params, '\0', PARAMS_LEN+1);
    
    dialog = gtk_dialog_new_with_buttons("MITM Attack: DHCP Spoofing", 
          GTK_WINDOW (window), 
-         GTK_DIALOG_MODAL, 
+         GTK_DIALOG_MODAL|GTK_DIALOG_USE_HEADER_BAR, 
          "_Cancel", GTK_RESPONSE_CANCEL, 
          "_OK",     GTK_RESPONSE_OK, 
          NULL);
@@ -288,7 +304,7 @@ void gtkui_dhcp_spoofing(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -358,12 +374,16 @@ void gtkui_dhcp_spoofing(void)
 }
 
 #ifdef WITH_IPV6
-void gtkui_ndp_poisoning(void)
+void gtkui_ndp_poisoning(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame, *content_area;
    gint response = 0;
    gboolean remote = FALSE;
    gboolean oneway = FALSE;
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_ndp_poisoning");
 //   not needed, the \0 is already appended from snprintf
@@ -371,7 +391,7 @@ void gtkui_ndp_poisoning(void)
 
    dialog = gtk_dialog_new_with_buttons("MITM Attack: NDP Poisoning", 
          GTK_WINDOW (window), 
-         GTK_DIALOG_MODAL, 
+         GTK_DIALOG_MODAL|GTK_DIALOG_USE_HEADER_BAR, 
          "_Cancel", GTK_RESPONSE_CANCEL, 
          "_OK",     GTK_RESPONSE_OK, 
          NULL);
@@ -380,7 +400,7 @@ void gtkui_ndp_poisoning(void)
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
 #endif
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_container_add(GTK_CONTAINER(content_area), hbox);
    gtk_widget_show(hbox);
@@ -394,7 +414,7 @@ void gtkui_ndp_poisoning(void)
    gtk_box_pack_start (GTK_BOX (hbox), frame, TRUE, TRUE, 0);
    gtk_widget_show(frame);
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 2, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
    gtk_container_set_border_width(GTK_CONTAINER (vbox), 5);
    gtk_container_add(GTK_CONTAINER (frame), vbox);
    gtk_widget_show(vbox);
@@ -458,15 +478,20 @@ static void gtkui_start_mitm(void)
 /*
  * stop all the mitm attack(s)
  */
-void gtkui_mitm_stop(void)
+void gtkui_mitm_stop(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog;
    
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_mitm_stop");
 
    /* create the dialog */
-   dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL,
-            GTK_MESSAGE_INFO, 0, "Stopping the mitm attack...");
+   dialog = gtkui_message_dialog(GTK_WINDOW (window), 
+         GTK_DIALOG_MODAL|GTK_DIALOG_USE_HEADER_BAR,
+         GTK_MESSAGE_INFO, GTK_BUTTONS_NONE, "Stopping the mitm attack...");
    gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
    gtk_window_set_resizable(GTK_WINDOW (dialog), FALSE);
    gtk_widget_queue_draw(dialog);

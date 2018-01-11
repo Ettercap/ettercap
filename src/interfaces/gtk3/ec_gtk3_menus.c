@@ -21,578 +21,765 @@
 
 #include <ec.h>
 #include <ec_gtk3.h>
+#include <ec_version.h>
 
 /* globals */
+#define ENABLED "true"
+#define DISABLED "false"
+
+/* proto */
+static void toggle_sniffing(GtkToggleButton *button, gpointer data);
+static void scanbutton_clicked(GtkButton *button, gpointer data);
+static void hostlistbutton_clicked(GtkButton *button, gpointer data);
+static void mitmstopbutton_clicked(GtkButton *button, gpointer data);
 
 /*******************************************/
 
-void gtkui_create_menu(int live)
+
+void gtkui_create_menu(GApplication *app, gpointer data)
 {
-   GtkAccelGroup *accel_group;
-   GtkWidget *vbox, *main_menu;
-   GtkActionGroup *menuactions;
-   GtkAction *action;
-   GError *error = NULL;
-   GClosure *closure = NULL;
-   gint keyval;
-   GdkModifierType mods;
-   
-   const gchar *menu_structure = 
-      "<ui>"
-      "  <menubar name='MenuBar'>"
-      "     <menu name='StartMenu' action='StartMenuAction'>"
-      "        <menuitem name='SniffStart' action='SniffStartAction' />"
-      "        <menuitem name='SniffStop' action='SniffStopAction' />"
-      "        <separator />"
-      "        <menuitem name='Exit' action='ExitAction' />"
-      "     </menu>"
-      "     <menu name='TargetsMenu' action='TargetsMenuAction'>"
-      "        <menuitem name='CurrentTargets' action='CurrentTargetsAction' />"
-      "        <menuitem name='SelectTargets' action='SelectTargetsAction' />"
-      "        <separator />"
-      "        <menuitem name='Protocol' action='ProtocolAction' />"
-      "        <menuitem name='ReverseMatching' action='ReverseMatchingAction' />"
-      "        <separator />"
-      "        <menuitem name='WipeTargets' action='WipeTargetsAction' />"
-      "     </menu>"
-      "     <menu name='HostsMenu' action='HostsMenuAction'>"
-      "        <menuitem name='HostsList' action='HostsListAction' />"
-      "        <separator />"
-#ifdef WITH_IPV6
-      "        <menuitem name='EnableIPv6Scan' action='EnableIPv6ScanAction' />"
-#endif
-      "        <menuitem name='ScanHosts' action='ScanHostsAction' />"
-      "        <menuitem name='LoadHosts' action='LoadHostsAction' />"
-      "        <menuitem name='SaveHosts' action='SaveHostsAction' />"
-      "     </menu>"
-      "     <menu name='ViewMenu' action='ViewMenuAction'>"
-      "        <menuitem name='ViewConnections' action='ViewConnectionsAction' />"
-      "        <menuitem name='ViewProfiles' action='ViewProfilesAction' />"
-      "        <menuitem name='ViewStatistics' action='ViewStatisticsAction' />"
-      "        <separator />"
-      "        <menuitem name='ResolveIpAddresses' action='ResolveIpAddressesAction' />"
-      "        <menuitem name='VisualisationMethod' action='VisualisationMethodAction' />"
-      "        <menuitem name='VisualisationRegex' action='VisualisationRegexAction' />"
-      "        <separator />"
-      "        <menuitem name='SetWifiKey' action='SetWifiKeyAction' />"
-      "     </menu>"
-      "     <menu name='MitmMenu' action='MitmMenuAction'>"
-      "        <menuitem name='ArpPoisoning' action='ArpPoisoningAction' />"
-      "        <menuitem name='IcmpRedirect' action='IcmpRedirectAction' />"
-      "        <menuitem name='PortStealing' action='PortStealingAction' />"
-      "        <menuitem name='DhcpSpoofing' action='DhcpSpoofingAction' />"
-#ifdef WITH_IPV6
-      "        <menuitem name='NdpPoisoning' action='NdpPoisoningAction' />"
-#endif
-      "        <separator />"
-      "        <menuitem name='StopMitmAttacks' action='StopMitmAttacksAction' />"
-      "     </menu>"
-      "     <menu name='FiltersMenu' action='FiltersMenuAction'>"
-      "        <menuitem name='LoadFilter' action='LoadFilterAction' />"
-      "        <menuitem name='StopFilter' action='StopFilterAction' />"
-      "     </menu>"
-      "     <menu name='LoggingMenu' action='LoggingMenuAction'>"
-      "        <menuitem name='LoggingAll' action='LoggingAllAction' />"
-      "        <menuitem name='LoggingInfo' action='LoggingInfoAction' />"
-      "        <menuitem name='LoggingStop' action='LoggingStopAction' />"
-      "        <separator />"
-      "        <menuitem name='LogMessages' action='LogMessagesAction' />"
-      "        <menuitem name='LogMessagesStop' action='LogMessagesStopAction' />"
-      "        <separator />"
-      "        <menuitem name='LogCompressed' action='LogCompressedAction' />"
-      "     </menu>"
-#ifdef HAVE_PLUGINS
-      "     <menu name='PluginsMenu' action='PluginsMenuAction'>"
-      "        <menuitem name='ManagePlugins' action='ManagePluginsAction' />"
-      "        <menuitem name='LoadPlugin' action='LoadPluginAction' />"
-      "     </menu>"
-#endif
-      "     <menu name='HelpMenu' action='HelpMenuAction'>"
+   GtkWidget *header, *menubutton, *logo, *content, *vpaned, *scroll, *box;
+   GtkTextIter iter;
+   GtkBuilder *builder;
+   GMenu *menu;
+   gchar *title, *path;
+   guint i, live = GPOINTER_TO_INT(data);
+
+   /* accelerators */
+   // TODO shortcuts for start/stop sniffing
+   static gtkui_accel_map_t app_accels[] = {
 #ifndef OS_WINDOWS
-      "        <menuitem name='Help' action='HelpAction' />"
+      {"app.help", {"F1", NULL}},
 #endif
-      "        <menuitem name='About' action='AboutDialogAction' />"
-      "     </menu>"
-      "  </menubar>"
-      "</ui>";
-
-
-   GtkActionEntry start_menu_items[] = {
-      /* Start Menu */
-      {
-         "StartMenuAction", NULL, 
-         "_Start", NULL, 
-         NULL, NULL
-      },
-
-      {
-         "SniffStartAction", NULL,
-         "Start sniffing", "<control><shift>w",
-         NULL, G_CALLBACK(gtkui_start_sniffing)
-      },
-
-      {
-         "SniffStopAction", NULL,
-         "Stop sniffing", "<control><shift>e",
-         NULL, G_CALLBACK(gtkui_stop_sniffing)
-      },
-
-      {
-         "ExitAction", "application-exit",
-         "E_xit", "<control>q",
-         NULL, G_CALLBACK(gtkui_exit)
-      }
+      {"app.quit", {"<Primary>q", "<Primary>x", NULL}}
    };
-
-   GtkActionEntry targets_menu_items[] = {
-      /* Targets Menu */
-      {
-         "TargetsMenuAction", NULL,
-         "_Targets", NULL,
-         NULL, NULL
-      },
-
-      {
-         "CurrentTargetsAction", "edit-find",
-         "Current targets", "<control>t",
-         NULL, G_CALLBACK(gtkui_current_targets)
-      },
-
-      {
-         "SelectTargetsAction", "list-add",
-         "Select target(s)", "<control><shift>t",
-         NULL, G_CALLBACK(gtkui_select_targets)
-      },
-
-      {
-         "ProtocolAction", "go-jump",
-         "_Protocol...", "<control>p",
-         NULL, G_CALLBACK(gtkui_select_protocol)
-      },
-
-      {
-         "WipeTargetsAction", "edit-clear",
-         "_Wipe targets", "<control>W",
-         NULL, G_CALLBACK(wipe_targets)
-      }
+   static gtkui_accel_map_t targets_accels[] = {
+      {"app.current_targets", {"<Primary>t", NULL}},
+      {"app.select_targets", {"<Primary><Shift>t", NULL}},
+      {"app.set_protocol", {"<Primary>p", NULL}},
+      {"app.wipe_targets", {"<Primary>w", NULL}}
    };
-
-   GtkActionEntry hosts_menu_items[] = {
-      /* Hosts Menu */
-      {
-         "HostsMenuAction", NULL,
-         "_Hosts", NULL,
-         NULL, NULL
-      },
-
-      {
-         "HostsListAction", NULL,
-         "_Hosts list", "<control>h",
-         NULL, G_CALLBACK(gtkui_host_list)
-      },
-
-      {
-         "ScanHostsAction", "edit-find",
-         "_Scan for hosts", "<control>s",
-         NULL, G_CALLBACK(gtkui_scan)
-      },
-
-      {
-         "LoadHostsAction", "document-open",
-         "Load from file...", "",
-         NULL, G_CALLBACK(gtkui_load_hosts)
-      },
-
-      {
-         "SaveHostsAction", "document-save",
-         "Save to file...", "",
-         NULL, G_CALLBACK(gtkui_save_hosts)
-      }
+   static gtkui_accel_map_t hosts_accels[] = {
+      {"app.hosts_list", {"<Primary>h", NULL}},
+      {"app.scan_hosts", {"<Primary>s", NULL}}
    };
-
-   GtkActionEntry view_menu_items[] = {
-      /* View Menu */
-      {
-         "ViewMenuAction", NULL,
-         "_View", NULL,
-         NULL, NULL
-      },
-
-      {
-         "ViewConnectionsAction", "format-justify-fill",
-         "_Connections", "<control><shift>c",
-         NULL, G_CALLBACK(gtkui_show_connections)
-      },
-
-      {
-         "ViewProfilesAction", "format-justify-left",
-         "Pr_ofiles", "<control>o",
-         NULL, G_CALLBACK(gtkui_show_profiles)
-      },
-
-      {
-         "ViewStatisticsAction", "document-properties",
-         "_Statistics", NULL,
-         NULL, G_CALLBACK(gtkui_show_stats)
-      },
-
-      {
-         "VisualisationMethodAction", "preferences-system",
-         "_Visualisation method...", "<control><shift>v",
-         NULL, G_CALLBACK(gtkui_vis_method)
-      },
-
-      {
-         "VisualisationRegexAction", "edit-find",
-         "Visualisation _regex...", "<control>R",
-         NULL, G_CALLBACK(gtkui_vis_regex)
-      },
-
-      {
-         "SetWifiKeyAction", "edit-find",
-         "Set the _WiFi key...", NULL,
-         NULL, G_CALLBACK(gtkui_wifi_key)
-      }
+   static gtkui_accel_map_t view_accels[] = {
+      {"app.view_connections", {"<Primary><Shift>c", NULL}},
+      {"app.view_profiles", {"<Primary>o", NULL}},
+      {"app.visualization_method", {"<Primary><Shift>v", NULL}},
+      {"app.visualization_regex", {"<Primary>r", NULL}}
    };
+   static gtkui_accel_map_t filter_accels[] = {
+      {"app.filter_load", {"<Primary>f", NULL}},
+      {"app.filter_stop", {"<Primary><Shift>f", NULL}}
+   };
+   static gtkui_accel_map_t logging_accels[] = {
+      {"app.log_all", {"<Primary><Shift>i", NULL}},
+      {"app.log_info", {"<Primary>i", NULL}},
+      {"app.log_msg", {"<Primary>m", NULL}}
+   };
+#ifdef HAVE_PLUGINS
+   static gtkui_accel_map_t plugins_accels[] = {
+      {"app.plugin_manage", {"<Primary>p", NULL}}
+   };
+#endif
 
-   GtkActionEntry mitm_menu_items[] = {
-      /* Mitm Menu */
-      {
-         "MitmMenuAction", NULL,
-         "_Mitm", NULL,
-         NULL, NULL
-      },
+   /* actions */
+   static GActionEntry app_actions[] = {
+      /* app menu */
+      {"about", gtkui_about, NULL, NULL, NULL, {}},
+      {"shortcuts", gtkui_show_shortcuts, "s", NULL, NULL, {}},
+#ifndef OS_WINDOWS
+      {"help",  gtkui_help, NULL, NULL, NULL, {}},
+#endif
+      {"quit",  gtkui_exit, NULL, NULL, NULL, {}}
+   };
+   static GActionEntry targets_actions[] = {
+      /* targets menu */
+      {"current_targets",  gtkui_current_targets, NULL, NULL, NULL, {}},
+      {"select_targets",  gtkui_select_targets, NULL, NULL, NULL, {}},
+      {"set_protocol",  gtkui_select_protocol, NULL, NULL, NULL, {}},
+      {"reverse_matching",  NULL, NULL, DISABLED, toggle_reverse, {}},
+      {"wipe_targets",  wipe_targets, NULL, NULL, NULL, {}}
+   };
+   static GActionEntry hosts_actions[] = {
+      /* hosts menu */
+      {"hosts_list",  gtkui_host_list, NULL, NULL, NULL, {}},
+#ifdef WITH_IPV6
+      {"enable_ipv6scan",  NULL, NULL, DISABLED, toggle_ip6scan, {}},
+#endif
+      {"scan_hosts",  gtkui_scan, NULL, NULL, NULL, {}},
+      {"load_hosts",  gtkui_load_hosts, NULL, NULL, NULL, {}},
+      {"save_hosts",  gtkui_save_hosts, NULL, NULL, NULL, {}}
+   };
+   static GActionEntry view_actions[] = {
+      /* view menu */
+      {"view_connections",  gtkui_show_connections, NULL, NULL, NULL, {}},
+      {"view_profiles",  gtkui_show_profiles, NULL, NULL, NULL, {}},
+      {"view_statistics",  gtkui_show_stats, NULL, NULL, NULL, {}},
+      {"resolve_ipaddresses",  NULL, NULL, DISABLED, toggle_resolve, {}},
+      {"visualization_method",  gtkui_vis_method, NULL, NULL, NULL, {}},
+      {"visualization_regex",  gtkui_vis_regex, NULL, NULL, NULL, {}},
+      {"wifi_key",  gtkui_wifi_key, NULL, NULL, NULL, {}}
+   };
+   static GActionEntry mitm_actions[] = {
+      /* MITM menu */
+      {"arp_poisoning",  gtkui_arp_poisoning, NULL, NULL, NULL, {}},
+#ifdef WITH_IPV6
+      {"ndp_poisoning",  gtkui_ndp_poisoning, NULL, NULL, NULL, {}},
+#endif
+      {"icmp_redirect",  gtkui_icmp_redir, NULL, NULL, NULL, {}},
+      {"port_stealing",  gtkui_port_stealing, NULL, NULL, NULL, {}},
+      {"dhcp_spoofing",  gtkui_dhcp_spoofing, NULL, NULL, NULL, {}},
+      {"mitm_stop",  gtkui_mitm_stop, NULL, NULL, NULL, {}}
+   };
+   static GActionEntry filter_actions[] = {
+      /* filters menu */
+      {"filter_load",  gtkui_load_filter, NULL, NULL, NULL, {}},
+      {"filter_stop",  gtkui_stop_filter, NULL, NULL, NULL, {}}
+   };
+   static GActionEntry logging_actions[] = {
+      /* logging menu */
+      {"log_all",  gtkui_log_all, NULL, NULL, NULL, {}},
+      {"log_info",  gtkui_log_info, NULL, NULL, NULL, {}},
+      {"log_stop",  gtkui_stop_log, NULL, NULL, NULL, {}},
+      {"log_msg",  gtkui_log_msg, NULL, NULL, NULL, {}},
+      {"log_stop_msg",  gtkui_stop_msg, NULL, NULL, NULL, {}},
+      {"log_compress",  NULL, NULL, DISABLED, toggle_compress, {}}
+   };
+#ifdef HAVE_PLUGINS
+   static GActionEntry plugins_actions[] = {
+      /* plugins menu */
+      {"plugin_manage",  gtkui_plugin_mgmt, NULL, NULL, NULL, {}},
+      {"plugin_load",  gtkui_plugin_load, NULL, NULL, NULL, {}}
+   };
+#endif
 
-      {
-         "ArpPoisoningAction", NULL,
-         "ARP poisoning...", NULL,
-         NULL, G_CALLBACK(gtkui_arp_poisoning)
-      },
+   DEBUG_MSG("gtkui_create_menu - live: %d", live);
 
-      {
-         "IcmpRedirectAction", NULL,
-         "ICMP redirect...", NULL,
-         NULL, G_CALLBACK(gtkui_icmp_redir)
-      },
+   /* honor CLI options */
+   if (GBL_OPTIONS->reversed)
+      targets_actions[3].state = ENABLED;
 
-      {
-         "PortStealingAction", NULL,
-         "Port stealing...", NULL,
-         NULL, G_CALLBACK(gtkui_port_stealing)
-      },
+   if (GBL_OPTIONS->resolve)
+      view_actions[3].state = ENABLED;
 
-      {
-         "DhcpSpoofingAction", NULL,
-         "DHCP spoofing...", NULL,
-         NULL, G_CALLBACK(gtkui_dhcp_spoofing)
-      },
+   if (GBL_OPTIONS->compress)
+      logging_actions[5].state = ENABLED;
 
 #ifdef WITH_IPV6
-      {
-         "NdpPoisoningAction", NULL,
-         "NDP poisoning...", NULL,
-         NULL, G_CALLBACK(gtkui_ndp_poisoning)
-      },
+   if (GBL_OPTIONS->ip6scan)
+      hosts_actions[1].state = ENABLED;
 #endif
 
-      { 
-         "StopMitmAttacksAction", NULL,
-         "Stop mitm attack(s)", NULL,
-         NULL, G_CALLBACK(gtkui_mitm_stop)
-      }
-   };
+   /* add actions to the application */
+   g_action_map_add_action_entries(G_ACTION_MAP(app), app_actions,
+         G_N_ELEMENTS(app_actions), app);
 
-   GtkActionEntry filters_menu_items[] = {
-      /* Filters Menu */
-      {
-         "FiltersMenuAction", NULL,
-         "_Filters", NULL,
-         NULL, NULL
-      },
+   g_action_map_add_action_entries(G_ACTION_MAP(app), targets_actions,
+         G_N_ELEMENTS(targets_actions), app);
 
-      {
-         "LoadFilterAction", "document-open",
-         "Load a filter...", "<control>f",
-         NULL, G_CALLBACK(gtkui_load_filter)
-      },
+   /* some things doesn't apply when in bridge mode */
+   if (live == 1 && GBL_SNIFF->type == SM_UNIFIED)
+      g_action_map_add_action_entries(G_ACTION_MAP(app), hosts_actions,
+            G_N_ELEMENTS(hosts_actions), app);
 
-      {
-         "StopFilterAction", "process-stop",
-         "Stop _filtering", "<control><shift>f",
-         NULL, G_CALLBACK(gtkui_stop_filter)
-      }
-   };
+   g_action_map_add_action_entries(G_ACTION_MAP(app), view_actions,
+         G_N_ELEMENTS(view_actions), app);
 
-   GtkActionEntry logging_menu_items[] = {
-      /* Logging Menu */
-      {
-         "LoggingMenuAction", NULL,
-         "_Logging", NULL,
-         NULL, NULL
-      },
+   /* some things doesn't apply when in bridge mode */
+   if (live == 1 && GBL_SNIFF->type == SM_UNIFIED)
+      g_action_map_add_action_entries(G_ACTION_MAP(app), mitm_actions,
+            G_N_ELEMENTS(mitm_actions), app);
 
-      {
-         "LoggingAllAction", "document-save",
-         "Logging all packets and infos...", "<control><shift>i",
-         NULL, G_CALLBACK(gtkui_log_all)
-      },
+   g_action_map_add_action_entries(G_ACTION_MAP(app), filter_actions,
+         G_N_ELEMENTS(filter_actions), app);
 
-      {
-         "LoggingInfoAction", "document-save-as",
-         "Logging only infos...", "<control>i",
-         NULL, G_CALLBACK(gtkui_log_info)
-      },
-
-      {
-         "LoggingStopAction", "process-stop",
-         "Stop logging infos", NULL,
-         NULL, G_CALLBACK(gtkui_stop_log)
-      },
-
-      {
-         "LogMessagesAction", "document-revert",
-         "Log user messages...", "<control>m",
-         NULL, G_CALLBACK(gtkui_log_msg)
-      },
-
-      {
-         "LogMessagesStopAction", "process-stop",
-         "Stop logging messages", NULL,
-         NULL, G_CALLBACK(gtkui_stop_msg)
-      }
-   };
+   g_action_map_add_action_entries(G_ACTION_MAP(app), logging_actions,
+         G_N_ELEMENTS(logging_actions), app);
 
 #ifdef HAVE_PLUGINS
-   GtkActionEntry plugins_menu_items[] = {
-      /* Plugins Menu */
-      {
-         "PluginsMenuAction", NULL,
-         "_Plugins", NULL,
-         NULL, NULL
-      },
-
-      {
-         "ManagePluginsAction", "system-run",
-         "Manage the plugins", "<control>p",
-         NULL, G_CALLBACK(gtkui_plugin_mgmt)
-      },
-
-      {
-         "LoadPluginAction", "document-open",
-         "Load a plugin...", NULL,
-         NULL, G_CALLBACK(gtkui_plugin_load)
-      }
-   };
+   g_action_map_add_action_entries(G_ACTION_MAP(app), plugins_actions,
+         G_N_ELEMENTS(plugins_actions), app);
 #endif
 
-   GtkActionEntry help_menu_items[] = {
-      /* Help Menu */
-      {
-         "HelpMenuAction", NULL,
-         "_Info", NULL,
-         NULL, NULL
-      },
+   /* map accelerators to actions */
+   for (i=0; i < G_N_ELEMENTS(app_accels); i++)
+      gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+            app_accels[i].action, app_accels[i].accel);
 
+   for (i=0; i < G_N_ELEMENTS(targets_accels); i++)
+      gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+            targets_accels[i].action, targets_accels[i].accel);
+
+   /* some things doesn't apply when in bridge mode */
+   if (live == 1 && GBL_SNIFF->type == SM_UNIFIED)
+      for (i=0; i < G_N_ELEMENTS(hosts_accels); i++)
+         gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+               hosts_accels[i].action, hosts_accels[i].accel);
+
+   for (i=0; i < G_N_ELEMENTS(view_accels); i++)
+      gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+            view_accels[i].action, view_accels[i].accel);
+
+   for (i=0; i < G_N_ELEMENTS(filter_accels); i++)
+      gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+            filter_accels[i].action, filter_accels[i].accel);
+
+   for (i=0; i < G_N_ELEMENTS(logging_accels); i++)
+      gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+            logging_accels[i].action, logging_accels[i].accel);
+
+#ifdef HAVE_PLUGINS
+   for (i=0; i < G_N_ELEMENTS(plugins_accels); i++)
+      gtk_application_set_accels_for_action(GTK_APPLICATION(app),
+            plugins_accels[i].action, plugins_accels[i].accel);
+#endif
+
+
+   /* menu structures */
+   builder = gtk_builder_new();
+   gtk_builder_add_from_string(builder,
+         "<interface>"
+         "  <menu id='app-menu'>"
+         "    <section>"
 #ifndef OS_WINDOWS
-      {
-         "HelpAction", "help-browser",
-         "Help", "F1",
-         NULL, G_CALLBACK(gtkui_help)
-      },
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>Help</attribute>"
+         "        <attribute name='action'>app.help</attribute>"
+         "        <attribute name='icon'>help-browser</attribute>"
+         "      </item>"
 #endif
-      {
-         "AboutDialogAction", "help-about",
-         "About", NULL,
-         NULL, G_CALLBACK(gtkui_about)
-      }
-   };
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>Shortcuts</attribute>"
+         "        <attribute name='action'>app.shortcuts</attribute>"
+         "        <attribute name='target'>main-shortcuts</attribute>"
+         "      </item>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>_About Ettercap</attribute>"
+         "        <attribute name='action'>app.about</attribute>"
+         "        <attribute name='icon'>help-about</attribute>"
+         "      </item>"
+         "    </section>"
+         "    <section>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>_Quit</attribute>"
+         "        <attribute name='action'>app.quit</attribute>"
+         "        <attribute name='icon'>application-exit</attribute>"
+         "      </item>"
+         "    </section>"
+         "  </menu>"
 
-   GtkToggleActionEntry toggle_items[] = {
-      {
-         "ReverseMatchingAction", NULL,
-         "Reverse matching", NULL,
-         NULL, G_CALLBACK(toggle_reverse),
-         FALSE
-      },
+         "  <menu id='ettercap-menu'>"
+         "    <submenu id='targets-menu'>"
+         "      <attribute name='label' translatable='yes'>_Targets</attribute>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Current targets</attribute>"
+         "          <attribute name='action'>app.current_targets</attribute>"
+         "          <attribute name='icon'>edit-find</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Select targets</attribute>"
+         "          <attribute name='action'>app.select_targets</attribute>"
+         "          <attribute name='icon'>list-add</attribute>"
+         "        </item>"
+         "      </section>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>_Protocol</attribute>"
+         "          <attribute name='action'>app.set_protocol</attribute>"
+         "          <attribute name='icon'>go-jump</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Reverse matching</attribute>"
+         "          <attribute name='action'>app.reverse_matching</attribute>"
+         "        </item>"
+         "      </section>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>_Wipe targets</attribute>"
+         "          <attribute name='action'>app.wipe_targets</attribute>"
+         "          <attribute name='icon'>edit-clear</attribute>"
+         "        </item>"
+         "      </section>"
+         "    </submenu>"
 
+         "    <submenu id='hosts-menu'>"
+         "      <attribute name='label' translatable='yes'>_Hosts</attribute>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>_Hosts list</attribute>"
+         "          <attribute name='action'>app.hosts_list</attribute>"
+         "        </item>"
+         "      </section>"
+         "      <section>"
 #ifdef WITH_IPV6
-      {
-         "EnableIPv6ScanAction", NULL,
-         "Enable IPv6 scan", NULL,
-         NULL, G_CALLBACK(toggle_ip6scan),
-         FALSE
-      },
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Enable IPv6 Scan</attribute>"
+         "          <attribute name='action'>app.enable_ipv6scan</attribute>"
+         "        </item>"
 #endif
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>_Scan for hosts</attribute>"
+         "          <attribute name='action'>app.scan_hosts</attribute>"
+         "          <attribute name='icon'>edit-find</attribute>"
+         "        </item>"
+         "      </section>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Load hosts from file ...</attribute>"
+         "          <attribute name='action'>app.load_hosts</attribute>"
+         "          <attribute name='icon'>document-open</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Save hosts to file ...</attribute>"
+         "          <attribute name='action'>app.save_hosts</attribute>"
+         "          <attribute name='icon'>document-save</attribute>"
+         "        </item>"
+         "      </section>"
+         "    </submenu>"
 
-      {
-         "ResolveIpAddressesAction", NULL,
-         "Resolve IP addresses", NULL,
-         NULL, G_CALLBACK(toggle_resolve),
-         FALSE
-      },
+         "    <submenu id='view-menu'>"
+         "      <attribute name='label' translatable='yes'>_View</attribute>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>_Connections</attribute>"
+         "          <attribute name='action'>app.view_connections</attribute>"
+         "          <attribute name='icon'>format-justify-fill</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Pr_ofiles</attribute>"
+         "          <attribute name='action'>app.view_profiles</attribute>"
+         "          <attribute name='icon'>format-justify-left</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>_Statistics</attribute>"
+         "          <attribute name='action'>app.view_statistics</attribute>"
+         "          <attribute name='icon'>document-properties</attribute>"
+         "        </item>"
+         "      </section>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Resolve IP addresses</attribute>"
+         "          <attribute name='action'>app.resolve_ipaddresses</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>_Visualization method...</attribute>"
+         "          <attribute name='action'>app.visualization_method</attribute>"
+         "          <attribute name='icon'>preferences-system</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Visualization _regex...</attribute>"
+         "          <attribute name='action'>app.visualization_regex</attribute>"
+         "          <attribute name='icon'>edit-find</attribute>"
+         "        </item>"
+         "      </section>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Set the _WiFi key...</attribute>"
+         "          <attribute name='action'>app.wifi_key</attribute>"
+         "          <attribute name='icon'>edit-find</attribute>"
+         "        </item>"
+         "      </section>"
+         "    </submenu>"
 
-      {
-         "LogCompressedAction", NULL,
-         "Compressed file", NULL,
-         NULL, G_CALLBACK(toggle_compress),
-         FALSE
-      }
-   };
+         "    <submenu id='filters-menu'>"
+         "      <attribute name='label' translatable='yes'>_Filters</attribute>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Load a filter...</attribute>"
+         "          <attribute name='action'>app.filter_load</attribute>"
+         "          <attribute name='icon'>document-open</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Stop _filtering</attribute>"
+         "          <attribute name='action'>app.filter_stop</attribute>"
+         "          <attribute name='icon'>process-stop</attribute>"
+         "        </item>"
+         "      </section>"
+         "    </submenu>"
 
-   DEBUG_MSG("gtk_create_menu");
+         "    <submenu id='logging-menu'>"
+         "      <attribute name='label' translatable='yes'>_Logging</attribute>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Logging all packets and infos</attribute>"
+         "          <attribute name='action'>app.log_all</attribute>"
+         "          <attribute name='icon'>document-save</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Logging only infos</attribute>"
+         "          <attribute name='action'>app.log_info</attribute>"
+         "          <attribute name='icon'>document-save-as</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Stop logging infos</attribute>"
+         "          <attribute name='action'>app.log_stop</attribute>"
+         "          <attribute name='icon'>process-stop</attribute>"
+         "        </item>"
+         "      </section>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Log user messages</attribute>"
+         "          <attribute name='action'>app.log_msg</attribute>"
+         "          <attribute name='icon'>document-revert</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Stop logging messages</attribute>"
+         "          <attribute name='action'>app.log_stop_msg</attribute>"
+         "          <attribute name='icon'>process-stop</attribute>"
+         "        </item>"
+         "      </section>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Compressed logfile</attribute>"
+         "          <attribute name='action'>app.log_compress</attribute>"
+         "        </item>"
+         "      </section>"
+         "    </submenu>"
 
-   /* remove old menu, it will be automatically destroyed by gtk_main */
-   vbox = gtk_bin_get_child(GTK_BIN (window));
-   main_menu = gtk_ui_manager_get_widget(menu_manager, "/MenuBar");
-   gtk_widget_hide(main_menu);
-   gtk_ui_manager_remove_ui(menu_manager, merge_id);
-
-   menuactions = gtk_action_group_new("MenuActions");
-   /* Start Menu */
-   gtk_action_group_add_actions(menuactions, start_menu_items, G_N_ELEMENTS(start_menu_items), NULL);
-   /* Targets Menu */
-   gtk_action_group_add_actions(menuactions, targets_menu_items, G_N_ELEMENTS(targets_menu_items), NULL);
-   /* Hosts Menu */
-   gtk_action_group_add_actions(menuactions, hosts_menu_items, G_N_ELEMENTS(hosts_menu_items), NULL);
-   /* View Menu */
-   gtk_action_group_add_actions(menuactions, view_menu_items, G_N_ELEMENTS(view_menu_items), NULL);
-   /* MITM Menu */
-   gtk_action_group_add_actions(menuactions, mitm_menu_items, G_N_ELEMENTS(mitm_menu_items), NULL);
-   /* Filters Menu */
-   gtk_action_group_add_actions(menuactions, filters_menu_items, G_N_ELEMENTS(filters_menu_items), NULL);
-   /* Logging Menu */
-   gtk_action_group_add_actions(menuactions, logging_menu_items, G_N_ELEMENTS(logging_menu_items), NULL);
 #ifdef HAVE_PLUGINS
-   /* Plugins Menu */
-   gtk_action_group_add_actions(menuactions, plugins_menu_items, G_N_ELEMENTS(plugins_menu_items), NULL);
+         "    <submenu id='plugins-menu'>"
+         "      <attribute name='label' translatable='yes'>_Plugins</attribute>"
+         "      <section>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Manage plugins</attribute>"
+         "          <attribute name='action'>app.plugin_manage</attribute>"
+         "          <attribute name='icon'>system-run</attribute>"
+         "        </item>"
+         "        <item>"
+         "          <attribute name='label' translatable='yes'>Load a plugin...</attribute>"
+         "          <attribute name='action'>app.plugin_load</attribute>"
+         "          <attribute name='icon'>document-open</attribute>"
+         "        </item>"
+         "      </section>"
+         "    </submenu>"
 #endif
-#ifndef OS_WINDOWS
-   /* Help Menu */
-   gtk_action_group_add_actions(menuactions, help_menu_items, G_N_ELEMENTS(help_menu_items), NULL);
+         "  </menu>"
+         "  <menu id='mitm-menu'>"
+         "    <section>"
+         "      <attribute name='label' translatable='no'>MITM</attribute>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>ARP poisoning...</attribute>"
+         "        <attribute name='action'>app.arp_poisoning</attribute>"
+         "      </item>"
+#ifdef WITH_IPV6
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>NDP poisoning</attribute>"
+         "        <attribute name='action'>app.ndp_poisoning</attribute>"
+         "      </item>"
 #endif
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>ICMP redirect...</attribute>"
+         "        <attribute name='action'>app.icmp_redirect</attribute>"
+         "      </item>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>Port stealing...</attribute>"
+         "        <attribute name='action'>app.port_stealing</attribute>"
+         "      </item>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>DHCP spoofing...</attribute>"
+         "        <attribute name='action'>app.dhcp_spoofing</attribute>"
+         "      </item>"
+         "    </section>"
+         "    <section>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>Stop MITM attack(s)</attribute>"
+         "        <attribute name='action'>app.mitm_stop</attribute>"
+         "      </item>"
+         "    </section>"
+         "  </menu>"
 
-   gtk_action_group_add_toggle_actions(menuactions, toggle_items, G_N_ELEMENTS(toggle_items), NULL);
+         "</interface>", -1, NULL);
 
-   menu_manager = gtk_ui_manager_new();
-   gtk_ui_manager_insert_action_group(menu_manager, menuactions, 0);
+   /* set app menu */
+   gtk_application_set_app_menu(GTK_APPLICATION(app),
+         G_MENU_MODEL(gtk_builder_get_object(builder, "app-menu")));
 
-   merge_id = gtk_ui_manager_add_ui_from_string(menu_manager, menu_structure, -1, &error);
-   if (error) {
-      g_message("building menu failed: %s", error->message);
-      g_error_free(error);
-      error = NULL;
-   }
+   if (g_getenv("APP_MENU_FALLBACK"))
+      g_object_set(gtk_settings_get_default(), "gtk-shell-shows-app-menu", FALSE, NULL);
 
-   /* Some hidden accellerators */
-   accel_group = gtk_accel_group_new ();
-   closure = g_cclosure_new(G_CALLBACK(gtkui_exit), NULL, NULL);
-   gtk_accelerator_parse("<control>X", &keyval, &mods);
-   gtk_accel_group_connect(accel_group, keyval, mods, 0, closure);
-   gtk_window_add_accel_group(GTK_WINDOW(window), accel_group);
-   gtk_window_add_accel_group(GTK_WINDOW(window), gtk_ui_manager_get_accel_group(menu_manager));
 
+   /* Adjust titel formatting */
+   title = g_strdup(EC_PROGRAM);
+   *title = g_ascii_toupper(*title);
+
+
+   /* reuse main window */
+   gtk_application_add_window(GTK_APPLICATION(app), GTK_WINDOW(window));
    
+   /* create header bar and menubuttons */
+   header = gtk_header_bar_new();
+   gtk_header_bar_set_title(GTK_HEADER_BAR(header), title);
+   gtk_header_bar_set_subtitle(GTK_HEADER_BAR(header), EC_VERSION " (EB)");
+   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header), TRUE);
+   gtk_window_set_titlebar(GTK_WINDOW(window), header);
 
-   if(GBL_OPTIONS->reversed) {
-      GBL_OPTIONS->reversed = 0;
-      action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/TargetsMenu/ReverseMatching");
-      gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
+   /* start/stop sniffing button */
+   menubutton = gtk_toggle_button_new();
+   gtk_widget_set_tooltip_text(menubutton, "Start / Stop Sniffing");
+   if (GBL_CONF->sniffing_at_startup) {
+      gtk_button_set_image(GTK_BUTTON(menubutton), 
+            gtk_image_new_from_icon_name("media-playback-stop-symbolic", GTK_ICON_SIZE_BUTTON));
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(menubutton), TRUE);
+   }
+   else
+      gtk_button_set_image(GTK_BUTTON(menubutton), 
+            gtk_image_new_from_icon_name("media-playback-start-symbolic", GTK_ICON_SIZE_BUTTON));
+   gtk_header_bar_pack_start(GTK_HEADER_BAR(header), menubutton);
+   g_signal_connect(G_OBJECT(menubutton), "toggled", G_CALLBACK(toggle_sniffing), NULL);
+
+   /* menu button for Ettercap menu */
+   menubutton = gtk_menu_button_new();
+   menu = G_MENU(gtk_builder_get_object(builder, "ettercap-menu"));
+   gtk_widget_set_tooltip_text(menubutton, "Ettercap Menu");
+   if (live == 0 || GBL_SNIFF->type == SM_BRIDGED)
+      g_menu_remove(menu, 1); // Remove Hosts Menu
+   gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(menubutton), G_MENU_MODEL(menu));
+   gtk_button_set_image(GTK_BUTTON(menubutton),
+         gtk_image_new_from_icon_name("open-menu-symbolic", GTK_ICON_SIZE_BUTTON));
+   gtk_header_bar_pack_end(GTK_HEADER_BAR(header), menubutton);
+
+
+   /* some things doesn't apply when in bridge mode */
+   if (live == 1 && GBL_SNIFF->type == SM_UNIFIED) {
+      /* button for host scan */
+      menubutton = gtk_button_new();
+      gtk_widget_set_tooltip_text(menubutton, "Scan for hosts");
+      gtk_button_set_image(GTK_BUTTON(menubutton),
+            gtk_image_new_from_icon_name("edit-find-symbolic", GTK_ICON_SIZE_BUTTON));
+      gtk_header_bar_pack_start(GTK_HEADER_BAR(header), menubutton);
+      g_signal_connect(G_OBJECT(menubutton), "clicked", G_CALLBACK(scanbutton_clicked), NULL);
+
+      /* menu button for hosts menu */
+      menubutton = gtk_button_new();
+      gtk_widget_set_tooltip_text(menubutton, "Hosts List");
+      gtk_button_set_image(GTK_BUTTON(menubutton),
+            gtk_image_new_from_icon_name("network-server-symbolic", GTK_ICON_SIZE_BUTTON));
+      gtk_header_bar_pack_start(GTK_HEADER_BAR(header), menubutton);
+      g_signal_connect(G_OBJECT(menubutton), "clicked", G_CALLBACK(hostlistbutton_clicked), NULL);
+
+
+      /* menu button to stop MITM */
+      menubutton = gtk_button_new();
+      gtk_widget_set_tooltip_text(menubutton, "Stop MITM");
+      gtk_button_set_image(GTK_BUTTON(menubutton),
+            gtk_image_new_from_icon_name("process-stop-symbolic", GTK_ICON_SIZE_BUTTON));
+      gtk_header_bar_pack_end(GTK_HEADER_BAR(header), menubutton);
+      g_signal_connect(G_OBJECT(menubutton), "clicked", G_CALLBACK(mitmstopbutton_clicked), NULL);
+
+      /* menu button for MITM menu */
+      menubutton = gtk_menu_button_new();
+      gtk_widget_set_tooltip_text(menubutton, "MITM menu");
+      gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(menubutton),
+            G_MENU_MODEL(gtk_builder_get_object(builder, "mitm-menu")));
+      gtk_button_set_image(GTK_BUTTON(menubutton),
+            gtk_image_new_from_icon_name("network-workgroup-symbolic", GTK_ICON_SIZE_BUTTON));
+      gtk_header_bar_pack_end(GTK_HEADER_BAR(header), menubutton);
+
    }
 
-   if(GBL_OPTIONS->resolve) {
-      GBL_OPTIONS->resolve = 0;
-      action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/ViewMenu/ResolveIpAddresses");
-      gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
-   }
 
-   if(GBL_OPTIONS->compress) {
-      GBL_OPTIONS->compress = 0;
-      action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/LoggingMenu/LogCompressed");
-      gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
-   }
+   /* fetch and replace main content area */
+   content = gtk_bin_get_child(GTK_BIN(window));
+   gtk_container_remove(GTK_CONTAINER(window), content);
 
-   /* Some menus doesn't apply if started in offline or bridged sniffing mode */
-   if (live == 0 || GBL_SNIFF->type == SM_BRIDGED) {
-      gtk_widget_set_visible(gtk_ui_manager_get_widget(menu_manager, "/MenuBar/HostsMenu"), FALSE);
-      gtk_widget_set_visible(gtk_ui_manager_get_widget(menu_manager, "/MenuBar/MitmMenu"), FALSE);
-   }
+   box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+   gtk_container_add(GTK_CONTAINER(window), box);
 
-#ifdef HAVE_PLUGINS
-   if (live == 0)
-      gtk_widget_set_visible(gtk_ui_manager_get_widget(menu_manager, "/MenuBar/PluginsMenu"), FALSE);
-#endif
+   /* prepare infobar for later notifications */
+   infobar = gtk_info_bar_new();
+   gtk_widget_set_no_show_all(infobar, TRUE);
+   infolabel = gtk_label_new("");
+   gtk_widget_show(infolabel);
+   gtk_container_add(GTK_CONTAINER(
+            gtk_info_bar_get_content_area(GTK_INFO_BAR(infobar))), infolabel);
+   gtk_info_bar_add_button(GTK_INFO_BAR(infobar), "_OK", GTK_RESPONSE_OK);
+   infoframe = gtk_frame_new(NULL);
+   gtk_widget_set_no_show_all(infoframe, TRUE);
+   gtk_frame_set_shadow_type(GTK_FRAME(infoframe), GTK_SHADOW_NONE);
+   gtk_container_add(GTK_CONTAINER(infoframe), infobar);
+   g_signal_connect(G_OBJECT(infobar), "response", G_CALLBACK(gtkui_infobar_hide), NULL);
+   gtk_box_pack_start(GTK_BOX(box), infoframe, FALSE, FALSE, 0);
 
-   /* get the menu widget and add it to the window */
-   main_menu = gtk_ui_manager_get_widget(menu_manager, "/MenuBar");
-   gtk_box_pack_start(GTK_BOX(vbox), main_menu, FALSE, FALSE, 0);
-   gtk_widget_show(main_menu);
+   vpaned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+   gtk_box_pack_start(GTK_BOX(box), vpaned, TRUE, TRUE, 0);
+
+   notebook_frame = gtk_frame_new(NULL);
+   gtk_frame_set_shadow_type(GTK_FRAME(notebook_frame), GTK_SHADOW_IN);
+   gtk_paned_pack1(GTK_PANED(vpaned), notebook_frame, TRUE, TRUE);
    
+   path = INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE;
+   if(g_file_test(path, G_FILE_TEST_EXISTS))
+      logo = gtk_image_new_from_file(path);
+   else /* if neither path is valid gtk will use a broken image icon */
+      logo = gtk_image_new_from_file("./share/" LOGO_FILE);
+
+   gtk_widget_set_halign(logo, GTK_ALIGN_CENTER);
+   gtk_widget_set_valign(logo, GTK_ALIGN_CENTER);
+   gtk_container_add(GTK_CONTAINER(notebook_frame), logo);
+ 
+   /* messages */
+   scroll = gtk_scrolled_window_new(NULL, NULL);
+   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW (scroll),
+                                  GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
+   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
+   gtk_widget_set_size_request(scroll, -1, 140);
+   gtk_paned_pack2(GTK_PANED (vpaned), scroll, FALSE, TRUE);
+   gtk_widget_show(scroll);
+
+   textview = gtk_text_view_new();
+   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW (textview), GTK_WRAP_WORD_CHAR);
+   gtk_text_view_set_editable(GTK_TEXT_VIEW (textview), FALSE);
+   gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW (textview), FALSE);
+   gtk_container_add(GTK_CONTAINER (scroll), textview);
+   gtk_widget_show(textview);
+
+   msgbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (textview));
+   gtk_text_buffer_get_end_iter(msgbuffer, &iter);
+   endmark = gtk_text_buffer_create_mark(msgbuffer, "end", &iter, FALSE);
+
+ 
+
+   gtk_widget_show_all(window);
+
 }
 
 void gtkui_create_tab_menu(void)
 {
    GtkWidget *context;
-   GtkUIManager *tab_menu_manager;
-   GtkActionGroup *tabactions;
-   GError *error = NULL;
+   GtkBuilder *builder;
+   GSimpleActionGroup *actiongroup;
+   guint i;
 
-   static gchar *tab_menu_structure = 
-       "<ui>"
-       "   <popup name='NoteBook'>"
-       "      <menuitem name='DetachPage' action='DetachPageAction' />"
-       "      <menuitem name='ClosePage' action='ClosePageAction' />"
-       "      <separator />"
-       "      <menuitem name='NextPage' action='NextPageAction' />"
-       "      <menuitem name='PreviousPage' action='PreviousPageAction' />"
-       "   </popup>"
-       "</ui>";
-
-   GtkActionEntry tab_menu_items[] = {
-      {
-         "DetachPageAction", "go-up",
-         "Detach page", "<control>D",
-         NULL, G_CALLBACK(gtkui_page_detach_current)
-      },
-
-      {
-         "ClosePageAction", "window-close",
-         "Close page", "<control>W",
-         NULL, G_CALLBACK(gtkui_page_close_current)
-      },
-
-      {
-         "NextPageAction", "go-next",
-         "Next page", "<control>Tab",
-         NULL, G_CALLBACK(gtkui_page_right)
-      },
-
-      {
-         "PreviousPageAction", "go-previous",
-         "Previous page", "<control><shift>Tab",
-         NULL, G_CALLBACK(gtkui_page_left)
-      }
+   static GActionEntry tab_actions[] = {
+      {"detach_page", gtkui_page_detach_current, NULL, NULL, NULL, {}},
+      {"close_page",  gtkui_page_close_current, NULL, NULL, NULL, {}},
+      {"next_page",   gtkui_page_right, NULL, NULL, NULL, {}},
+      {"prev_page",   gtkui_page_left, NULL, NULL, NULL, {}}
    };
-   /* Create Action Group for tab menu */
-   tabactions = gtk_action_group_new("TabActions");
-   gtk_action_group_add_actions(tabactions, tab_menu_items, G_N_ELEMENTS(tab_menu_items), NULL);
 
-   /* context menu for notebook */
-   tab_menu_manager = gtk_ui_manager_new();
-   gtk_ui_manager_insert_action_group(tab_menu_manager, tabactions, 0);
-   gtk_ui_manager_add_ui_from_string(tab_menu_manager, tab_menu_structure, -1, &error);
-   if (error) {
-       g_message("building tab menu failed: %s", error->message);
-       g_error_free(error);
-       error = NULL;
-   }
+   static gtkui_accel_map_t tab_accels[] = {
+      {"tab.detach_page", {"<Primary>d", NULL}},
+      {"tab.close_page", {"<Primary>w", NULL}},
+      {"tab.next_page", {"<Primary>Tab", "<Primary>Right", NULL}},
+      {"tab.prev_page", {"<Primary><Shift>Tab", "<Primary>Left", NULL}}
+   };
 
-   /* Add Accelerators */
-   gtk_window_add_accel_group(GTK_WINDOW(window), gtk_ui_manager_get_accel_group(tab_menu_manager));
+   /* build menu structure */
+   builder = gtk_builder_new();
+   gtk_builder_add_from_string(builder,
+         "<interface>"
+         "  <menu id='tab-menu'>"
+         "    <section>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>Detach page</attribute>"
+         "        <attribute name='action'>tab.detach_page</attribute>"
+         "        <attribute name='icon'>go-up</attribute>"
+         "      </item>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>Close page</attribute>"
+         "        <attribute name='action'>tab.close_page</attribute>"
+         "        <attribute name='icon'>window-close</attribute>"
+         "      </item>"
+         "    </section>"
+         "    <section>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>Next page</attribute>"
+         "        <attribute name='action'>tab.next_page</attribute>"
+         "        <attribute name='icon'>go-next</attribute>"
+         "      </item>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>Previous page</attribute>"
+         "        <attribute name='action'>tab.prev_page</attribute>"
+         "        <attribute name='icon'>go-previous</attribute>"
+         "      </item>"
+         "    </section>"
+         "  </menu>"
+         "</interface>", -1, NULL);
 
-   /* Bind popup menu to event */
-   context = gtk_ui_manager_get_widget(tab_menu_manager, "/NoteBook");
+   /* create dedicated action group and attach to menu widget */
+   actiongroup = g_simple_action_group_new();
+   g_action_map_add_action_entries(G_ACTION_MAP(actiongroup), tab_actions,
+         G_N_ELEMENTS(tab_actions), NULL);
+
+   /* map accelerators to actions */ // FIXME doesn't work yet
+   for (i = 0; i < G_N_ELEMENTS(tab_accels); i++)
+      gtk_application_set_accels_for_action(GTK_APPLICATION(etterapp),
+            tab_accels[i].action, tab_accels[i].accel);
+
+   /* connect tab menu to right-click handler of notebook */
+   context = gtk_menu_new_from_model(G_MENU_MODEL(gtk_builder_get_object(builder, "tab-menu")));
+   gtk_widget_insert_action_group(context, "tab", G_ACTION_GROUP(actiongroup));
    g_signal_connect(G_OBJECT(notebook), "button-press-event", G_CALLBACK(gtkui_context_menu), context);
+
+   g_object_unref(builder);
+
 }
+
+/*
+ * callback to start and stop sniffing and swaping play-button
+ */
+static void toggle_sniffing(GtkToggleButton *button, gpointer data)
+{
+   (void) data;
+   if (gtk_toggle_button_get_active(button)) {
+      /* start sniffing */
+      gtkui_start_sniffing();
+      /* replace button image with stop icon */
+      gtk_button_set_image(GTK_BUTTON(button),
+            gtk_image_new_from_icon_name("media-playback-stop-symbolic",
+               GTK_ICON_SIZE_BUTTON));
+   }
+   else  {
+      /* stop sniffing */
+      gtkui_stop_sniffing();
+      /* replace button image with start icon */
+      gtk_button_set_image(GTK_BUTTON(button),
+            gtk_image_new_from_icon_name("media-playback-start-symbolic", 
+               GTK_ICON_SIZE_BUTTON));
+   }
+}
+
+
+/*
+ * callback when scan button is clicked
+ * - wrapper due to different callback function signatures
+ */
+static void scanbutton_clicked(GtkButton *button, gpointer data)
+{
+   (void) button;
+   (void) data;
+
+   gtkui_scan(NULL, NULL, NULL);
+}
+
+
+/*
+ * callback when hostlist button is clicked
+ * - wrapper due to different callback function signatures
+ */
+static void hostlistbutton_clicked(GtkButton *button, gpointer data)
+{
+   (void) button;
+   (void) data;
+
+   gtkui_host_list(NULL, NULL, NULL);
+}
+
+/*
+ * callback when scan button is clicked
+ * - wrapper due to different callback function signatures
+ */
+static void mitmstopbutton_clicked(GtkButton *button, gpointer data)
+{
+   (void) button;
+   (void) data;
+
+   gtkui_mitm_stop(NULL, NULL, NULL);
+}
+
 
 
 /* EOF */

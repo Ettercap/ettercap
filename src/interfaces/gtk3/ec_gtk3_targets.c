@@ -47,20 +47,24 @@ GtkListStore     *liststore2 = NULL;
 
 /*******************************************/
 
-void toggle_reverse(void)
+void toggle_reverse(GSimpleAction *action, GVariant *value, gpointer data)
 {
-   if (GBL_OPTIONS->reversed) {
-      GBL_OPTIONS->reversed = 0;
-   } else {
-      GBL_OPTIONS->reversed = 1;
-   }
+   (void) data;
+
+   g_simple_action_set_state(action, value);
+
+   GBL_OPTIONS->reversed ^= 1;
 }
 
 /*
  * wipe the targets struct setting both T1 and T2 to ANY/ANY/ANY
  */
-void wipe_targets(void)
+void wipe_targets(GSimpleAction *action, GVariant *value, gpointer data)
 {
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("wipe_targets");
    
    reset_display_filter(GBL_TARGET1);
@@ -76,12 +80,16 @@ void wipe_targets(void)
 /*
  * display the protocol dialog
  */
-void gtkui_select_protocol(void)
+void gtkui_select_protocol(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog, *content, *radio, *hbox, *frame;
    GSList *list = NULL;
    gint active = 1;
    enum {proto_udp, proto_tcp, proto_all};
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_select_protocol");
 
@@ -94,30 +102,31 @@ void gtkui_select_protocol(void)
    /* create dialog for selecting the protocol */
    dialog = gtk_dialog_new_with_buttons("Set protocol", 
          GTK_WINDOW(window), 
-         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, 
+         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR, 
          "_Cancel", GTK_RESPONSE_CANCEL, 
          "_OK",     GTK_RESPONSE_OK, 
          NULL);
    content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   gtk_container_set_border_width(GTK_CONTAINER(content), 10);
 
    frame = gtk_frame_new("Select the protocol");
    gtk_container_add(GTK_CONTAINER(content), frame);
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 10, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
    gtk_container_add(GTK_CONTAINER(frame), hbox);
 
    radio = gtk_radio_button_new_with_mnemonic(NULL, "a_ll");
-   gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 2);
+   gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 5);
    if (!strncasecmp(GBL_OPTIONS->proto, "all", 4))
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
 
    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(radio), "_tcp");
-   gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 2);
+   gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 5);
    if (!strncasecmp(GBL_OPTIONS->proto, "tcp", 4))
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
 
    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(radio), "_udp");
-   gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 2);
+   gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 5);
    if (!strncasecmp(GBL_OPTIONS->proto, "udp", 4))
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
 
@@ -152,7 +161,7 @@ void gtkui_select_protocol(void)
 /*
  * display the TARGET(s) dialog
  */
-void gtkui_select_targets(void)
+void gtkui_select_targets(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog, *label, *grid, *content;  
    GtkWidget *frame1, *frame2;
@@ -168,11 +177,15 @@ void gtkui_select_targets(void)
                    IP6_ASCII_ADDR_LEN + 1 + \
                    5 + 1
 
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_select_targets");
 
    dialog = gtk_dialog_new_with_buttons("Enter Targets", 
          GTK_WINDOW(window), 
-         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, 
+         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR, 
          "_Cancel", GTK_RESPONSE_CANCEL, 
          "_OK",     GTK_RESPONSE_OK, 
          NULL);
@@ -181,6 +194,7 @@ void gtkui_select_targets(void)
 
    frame1 = gtk_frame_new("Target 1");
    gtk_container_add(GTK_CONTAINER(content), frame1);
+   gtk_widget_set_margin_bottom(frame1, 10);
 
    frame2 = gtk_frame_new("Target 2");
    gtk_container_add(GTK_CONTAINER(content), frame2);
@@ -379,19 +393,23 @@ static void set_targets(void)
 
    /* if the 'current targets' window is displayed, refresh it */
    if (targets_window)
-      gtkui_current_targets();
+      gtkui_current_targets(NULL, NULL, NULL);
 }
 
 /*
  * display the list of current targets
  */
-void gtkui_current_targets(void)
+void gtkui_current_targets(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *scrolled, *treeview, *vbox, *hbox, *button;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
    static gint delete_targets1 = 1;
    static gint delete_targets2 = 2;
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_current_targets");
 
@@ -408,11 +426,11 @@ void gtkui_current_targets(void)
 
    targets_window = gtkui_page_new("Targets", &gtkui_targets_destroy, &gtkui_targets_detach);
 
-   vbox= gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox= gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_container_add(GTK_CONTAINER (targets_window), vbox);
    gtk_widget_show(vbox);
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
    gtk_widget_show(hbox);
 
@@ -457,7 +475,7 @@ void gtkui_current_targets(void)
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
    /* buttons */
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("Delete");
@@ -495,7 +513,7 @@ static void gtkui_targets_detach(GtkWidget *child)
 static void gtkui_targets_attach(void)
 {
    gtkui_targets_destroy();
-   gtkui_current_targets();
+   gtkui_current_targets(NULL, NULL, NULL);
 }
 
 static void gtkui_targets_destroy(void)

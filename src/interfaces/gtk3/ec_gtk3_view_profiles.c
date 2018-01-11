@@ -58,11 +58,15 @@ static guint detail_timer = 0;
 /*
  * the auto-refreshing list of profiles 
  */
-void gtkui_show_profiles(void)
+void gtkui_show_profiles(GSimpleAction *action, GVariant *value, gpointer data)
 {
-   GtkWidget *scrolled, *vbox, *hbox, *button;
+   GtkWidget *scrolled, *vbox, *hbox, *button, *context_menu, *item;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;  
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_show_profiles");
 
@@ -77,7 +81,7 @@ void gtkui_show_profiles(void)
    
    profiles_window = gtkui_page_new("Profiles", &gtkui_kill_profiles, &gtkui_profiles_detach);
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_container_add(GTK_CONTAINER (profiles_window), vbox);
    gtk_widget_show(vbox);
 
@@ -111,17 +115,17 @@ void gtkui_show_profiles(void)
    gtk_tree_view_column_set_sort_column_id (column, 2);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("Country", renderer, "text", 3, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 2);
+   gtk_tree_view_column_set_sort_column_id (column, 3);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 #endif
 
    refresh_profiles(NULL);
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_profiles));
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button = gtk_button_new_with_mnemonic("Purge _Local");
@@ -141,6 +145,15 @@ void gtkui_show_profiles(void)
    g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_profiles_dump), NULL);
    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
    gtk_widget_show_all(hbox);
+
+
+   context_menu = gtk_menu_new();
+   item = gtk_menu_item_new_with_label("Profile Details");
+   gtk_menu_shell_append(GTK_MENU_SHELL(context_menu), item);
+   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtkui_profile_detail), NULL);
+   gtk_widget_show(item);
+
+   g_signal_connect(G_OBJECT(treeview), "button-press-event", G_CALLBACK(gtkui_context_menu), context_menu);
 
    /* refresh the stats window every 1000 ms */
    /* GTK has a gtk_idle_add also but it calls too much and uses 100% cpu */
@@ -168,7 +181,7 @@ static void gtkui_profiles_detach(GtkWidget *child)
 static void gtkui_profiles_attach(void)
 {
    gtkui_kill_profiles();
-   gtkui_show_profiles();
+   gtkui_show_profiles(NULL, NULL, NULL);
 }
 
 static void gtkui_kill_profiles(void)
@@ -268,7 +281,7 @@ static gboolean refresh_profiles(gpointer data)
                           1, ip_addr_ntoa(&hcurr->L3_addr, tmp), 
                           4, hcurr, -1);
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
       if (GBL_CONF->geoip_support_enable)
          gtk_list_store_set(ls_profiles, &iter, 
                3, geoip_country_by_ip(&hcurr->L3_addr), -1);
@@ -305,7 +318,7 @@ static gboolean refresh_profiles(gpointer data)
  */
 static void gtkui_profile_detail(void)
 {
-   GtkWidget *dwindow, *vbox, *hbox, *grid, *label, *button;
+   GtkWidget *dwindow, *vbox, *hbox, *grid, *label, *header, *content;
    struct host_profile *h;
    struct open_port *o;
    struct active_user *u;
@@ -321,8 +334,13 @@ static void gtkui_profile_detail(void)
 
    memset(os, 0, sizeof(os));
 
-   dwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW(dwindow), "Profile Details");
+   header = gtk_header_bar_new();
+   gtk_header_bar_set_title(GTK_HEADER_BAR(header), "Profile Details");
+   gtk_header_bar_set_decoration_layout(GTK_HEADER_BAR(header), ":close");
+   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header), TRUE);
+
+   dwindow = gtk_dialog_new();
+   gtk_window_set_titlebar(GTK_WINDOW(dwindow), header);
    gtk_window_set_modal(GTK_WINDOW(dwindow), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW(dwindow), GTK_WINDOW(window));
    gtk_window_set_position(GTK_WINDOW(dwindow), GTK_WIN_POS_CENTER_ON_PARENT);
@@ -330,8 +348,9 @@ static void gtkui_profile_detail(void)
    g_signal_connect(G_OBJECT(dwindow), "delete-event", 
          G_CALLBACK(gtkui_profile_detail_destroy), NULL);
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 5, FALSE);
-   gtk_container_add(GTK_CONTAINER(dwindow), vbox);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+   content = gtk_dialog_get_content_area(GTK_DIALOG(dwindow));
+   gtk_container_add(GTK_CONTAINER(content), vbox);
 
    grid = gtk_grid_new();
    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
@@ -385,7 +404,7 @@ static void gtkui_profile_detail(void)
       gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
    }
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    if (GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Location:");
@@ -563,15 +582,9 @@ static void gtkui_profile_detail(void)
       }
    }
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-   button = gtk_button_new_with_label("Close");
-   g_signal_connect_swapped(G_OBJECT(button), "clicked", 
-         G_CALLBACK(gtkui_profile_detail_destroy), dwindow);
-   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-   gtk_widget_grab_focus(button);
-   
    gtk_widget_show_all(dwindow);
 
 }

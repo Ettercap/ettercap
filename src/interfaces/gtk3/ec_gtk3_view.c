@@ -58,10 +58,14 @@ static GtkWidget *stats_window, *packets_recv, *packets_drop, *packets_forw,
  * name resolution in the background. 
  * That way subsequent actions benefits from the filled cache
  */
-void toggle_resolve(void)
+void toggle_resolve(GSimpleAction *action, GVariant *value, gpointer data)
 {
    char name[MAX_HOSTNAME_LEN];
    struct hosts_list *hl;
+
+   (void) data;
+
+   g_simple_action_set_state(action, value);
 
    /* resolution already set */
    if (GBL_OPTIONS->resolve) {
@@ -90,9 +94,13 @@ void toggle_resolve(void)
 /*
  * display the statistics windows
  */
-void gtkui_show_stats(void)
+void gtkui_show_stats(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *grid, *label;
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtkui_show_stats");
 
@@ -251,7 +259,7 @@ static void gtkui_stats_detach(GtkWidget *child)
 static void gtkui_stats_attach(void)
 {
    gtkui_stop_stats();
-   gtkui_show_stats();
+   gtkui_show_stats(NULL, NULL, NULL);
 }
 
 static void gtkui_stop_stats(void)
@@ -315,7 +323,7 @@ static gboolean refresh_stats(gpointer data)
 /*
  * change the visualization method 
  */
-void gtkui_vis_method(void)
+void gtkui_vis_method(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog, *button, *prev, *vbox, *content_area;
    GSList *curr = NULL;
@@ -328,10 +336,14 @@ void gtkui_vis_method(void)
    char encoding[50], def_lang[75];
    const char *local_lang, *selected_lang;
 
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_vis_method");
 
    dialog = gtk_dialog_new_with_buttons("Visualization method...", GTK_WINDOW (window), 
-               GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+               GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR,
                "_Cancel", GTK_RESPONSE_CANCEL, 
                "_OK",     GTK_RESPONSE_OK, 
                NULL);
@@ -339,7 +351,7 @@ void gtkui_vis_method(void)
 
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_container_add(GTK_CONTAINER(content_area), vbox);
 
    button = gtk_radio_button_new_with_label(NULL, 
@@ -385,7 +397,7 @@ void gtkui_vis_method(void)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button), TRUE);
    prev = button;
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 6, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    label = gtk_label_new ("Character encoding : ");
@@ -491,8 +503,12 @@ void gtkui_vis_method(void)
 /*
  * set the visualization regex 
  */
-void gtkui_vis_regex(void)
+void gtkui_vis_regex(GSimpleAction *action, GVariant *value, gpointer data)
 {
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_vis_regex");
 
    gtkui_input("Visualization regex :", vregex, RLEN, gtkui_set_regex);
@@ -506,8 +522,12 @@ static void gtkui_set_regex(void)
 /*
  * set the Wifi key
  */
-void gtkui_wifi_key(void)
+void gtkui_wifi_key(GSimpleAction *action, GVariant *value, gpointer data)
 {
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_wifi_key");
 
    gtkui_input("WiFi key :", wkey, WLEN, gtkui_set_wifikey);

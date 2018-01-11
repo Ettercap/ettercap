@@ -3,6 +3,8 @@
 #define G_DISABLE_CONST_RETURNS
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <glib.h>
+#include <glib/gprintf.h>
 
 #define LOGO_FILE "ettercap.png"
 #define LOGO_FILE_SMALL "ettercap-small.png"
@@ -16,6 +18,16 @@ struct gtk_conf_entry {
    char *name;
    short value;
 };
+
+typedef struct gtk_accel_map {
+   /* detailed action name */
+   char *action;
+   /* 
+    * NULL terminated accelerator string-array,
+    * able to contain up to 2 accelerators per action
+    */
+   const char * const accel[3];
+} gtkui_accel_map_t;
 
 struct resolv_object {
    /* Widget type to be updated */
@@ -32,18 +44,27 @@ struct resolv_object {
 };
 
 /* ec_gtk.c */
+extern GtkApplication *etterapp;
 extern GtkWidget *window;  /* main window */
-extern GtkWidget *notebook;
-extern GtkWidget *main_menu;
-extern GtkUIManager *menu_manager;
-extern guint merge_id;
+extern GtkWidget *notebook, *notebook_frame;
+extern GtkWidget *textview;
+extern GtkWidget *infobar;
+extern GtkWidget *infolabel;
+extern GtkWidget *infoframe;
+extern GtkTextBuffer *msgbuffer;
+extern GtkTextMark *endmark;
 extern GTimer *progress_timer;
 
 extern void set_gtk_interface(void);
-extern void gtkui_about(void);
+extern void gtkui_about(GSimpleAction *action, GVariant *value, gpointer data);
+extern GtkWidget* gtkui_message_dialog(GtkWindow *parent, GtkDialogFlags flags, 
+      GtkMessageType type, GtkButtonsType buttons, const char *msg);
+extern GtkWidget* gtkui_infobar_new(GtkWidget *infoframe);
+extern void gtkui_infobar_show(GtkMessageType type, const gchar *msg);
+extern void gtkui_infobar_hide(GtkWidget *widget, gint response, gpointer data);
 extern void gtkui_message(const char *msg);
 extern void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
-extern void gtkui_exit(void);
+extern void gtkui_exit(GSimpleAction *action, GVariant *value, gpointer data);
 
 extern void gtkui_sniff_offline(void);
 extern void gtkui_sniff_live(void);
@@ -55,98 +76,101 @@ extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 extern gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
 extern void gtkui_filename_browse(GtkWidget *widget, gpointer data);
 extern char *gtkui_utf8_validate(char *data);
-extern GtkWidget *gtkui_box_new(gint orientation, gint spacing, gboolean homogenious);
 
 /* MDI pages */
 extern GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));
 extern void gtkui_page_present(GtkWidget *child);
 extern void gtkui_page_close(GtkWidget *widget, gpointer data);
-extern void gtkui_page_close_current(void);
-extern void gtkui_page_detach_current(void);
+extern void gtkui_page_close_current(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_page_detach_current(GSimpleAction *action, GVariant *value, gpointer data);
 extern void gtkui_page_attach_shortcut(GtkWidget *win, void (*attacher)(void));
-extern void gtkui_page_right(void);
-extern void gtkui_page_left(void);
+extern void gtkui_page_right(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_page_left(GSimpleAction *action, GVariant *value, gpointer data);
 
-/* ec_gtk_menus.c */
+/* ec_gtk3_menus.c */
 /*
  * 0 for offline menus
  * 1 for live menus
  */
-extern void gtkui_create_menu(int live);
+extern void gtkui_create_menu(GApplication *app, gpointer data);
 extern void gtkui_create_tab_menu(void);
 
-/* ec_gtk_start.c */
+
+/* ec_gtk3_start.c */
 extern void gtkui_start_sniffing(void);
 extern void gtkui_stop_sniffing(void);
 
-/* ec_gtk_filters.c */
-extern void gtkui_load_filter(void);
-extern void gtkui_stop_filter(void);
+/* ec_gtk3_filters.c */
+extern void gtkui_load_filter(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_stop_filter(GSimpleAction *action, GVariant *value, gpointer data);
 
-/* ec_gtk_hosts.c */
+/* ec_gtk3_hosts.c */
 #ifdef WITH_IPV6
-extern void toggle_ip6scan(void);
+extern void toggle_ip6scan(GSimpleAction *action, GVariant *value, gpointer data);
 #endif
-extern void gtkui_scan(void);
-extern void gtkui_load_hosts(void);
-extern void gtkui_save_hosts(void);
-extern void gtkui_host_list(void);
+extern void gtkui_scan(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_load_hosts(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_save_hosts(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_host_list(GSimpleAction *action, GVariant *value, gpointer data);
 extern gboolean gtkui_refresh_host_list(gpointer data);
 
-/* ec_gtk_view.c */
-extern void gtkui_show_stats(void);
-extern void toggle_resolve(void);
-extern void gtkui_vis_method(void);
-extern void gtkui_vis_regex(void);
-extern void gtkui_wifi_key(void);
+/* ec_gtk3_view.c */
+extern void gtkui_show_stats(GSimpleAction *action, GVariant *value, gpointer data);
+extern void toggle_resolve(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_vis_method(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_vis_regex(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_wifi_key(GSimpleAction *action, GVariant *value, gpointer data);
 
-/* ec_gtk_targets.c */
-extern void toggle_reverse(void);
-extern void gtkui_select_protocol(void);
-extern void wipe_targets(void);
-extern void gtkui_select_targets(void);
-extern void gtkui_current_targets(void);
+/* ec_gtk3_targets.c */
+extern void toggle_reverse(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_select_protocol(GSimpleAction *action, GVariant *value, gpointer data);
+extern void wipe_targets(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_select_targets(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_current_targets(GSimpleAction *action, GVariant *value, gpointer data);
 extern void gtkui_create_targets_array(void);
 
-/* ec_gtk_view_profiles.c */
-extern void gtkui_show_profiles(void);
+/* ec_gtk3_view_profiles.c */
+extern void gtkui_show_profiles(GSimpleAction *action, GVariant *value, gpointer data);
 
-/* ec_gtk_mitm.c */
-extern void gtkui_arp_poisoning(void);
-extern void gtkui_icmp_redir(void);
-extern void gtkui_port_stealing(void);
-extern void gtkui_dhcp_spoofing(void);
+/* ec_gtk3_mitm.c */
+extern void gtkui_arp_poisoning(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_icmp_redir(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_port_stealing(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_dhcp_spoofing(GSimpleAction *action, GVariant *value, gpointer data);
 #ifdef WITH_IPV6
-extern void gtkui_ndp_poisoning(void);
+extern void gtkui_ndp_poisoning(GSimpleAction *action, GVariant *value, gpointer data);
 #endif
-extern void gtkui_mitm_stop(void);
+extern void gtkui_mitm_stop(GSimpleAction *action, GVariant *value, gpointer data);
 
-/* ec_gtk_logging.c */
-extern void toggle_compress(void);
-extern void gtkui_log_all(void);
-extern void gtkui_log_info(void);
-extern void gtkui_log_msg(void);
-extern void gtkui_stop_log(void);
-extern void gtkui_stop_msg(void);
+/* ec_gtk3_logging.c */
+extern void toggle_compress(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_log_all(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_log_info(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_log_msg(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_stop_log(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_stop_msg(GSimpleAction *action, GVariant *value, gpointer data);
 
-/* ec_gtk_plugins.c */
-extern void gtkui_plugin_mgmt(void);
-extern void gtkui_plugin_load(void);
+/* ec_gtk3_plugins.c */
+extern void gtkui_plugin_mgmt(GSimpleAction *action, GVariant *value, gpointer data);
+extern void gtkui_plugin_load(GSimpleAction *action, GVariant *value, gpointer data);
 extern gboolean gtkui_refresh_plugin_list(gpointer data);
 
-/* ec_gtk_view_connections.c */
-extern void gtkui_show_connections(void);
+/* ec_gtk3_view_connections.c */
+extern void gtkui_show_connections(GSimpleAction *action, GVariant *value, gpointer data);
 
-/* ec_gtk_conf.c */
+/* ec_gtk3_conf.c */
 extern void gtkui_conf_set(char *name, short value);
 extern short gtkui_conf_get(char *name);
 extern void gtkui_conf_read(void);
 extern void gtkui_conf_save(void);
 
 #ifndef OS_WINDOWS
-/* ec_gtk_help.c */
-extern void gtkui_help(void);
+/* ec_gtk3_help.c */
+extern void gtkui_help(GSimpleAction *action, GVariant *value, gpointer data);
 #endif
+
+/* ec_gtk3_shortcuts.c */
+extern void gtkui_show_shortcuts(GSimpleAction *action, GVariant *value, gpointer data);
 
 #endif
 

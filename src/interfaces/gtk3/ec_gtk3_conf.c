@@ -27,7 +27,7 @@ static struct gtk_conf_entry settings[] = {
    { "window_top", 0 },
    { "window_left", 0 },
    { "window_height", 440 },
-   { "window_width", 600 },
+   { "window_width", 800 },
    { NULL, 0 },
 };
 

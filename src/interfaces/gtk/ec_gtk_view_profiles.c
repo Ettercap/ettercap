@@ -114,7 +114,7 @@ void gtkui_show_profiles(void)
 #ifdef HAVE_GEOIP
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("Country", renderer, "text", 3, NULL);
-   gtk_tree_view_column_set_sort_column_id (column, 2);
+   gtk_tree_view_column_set_sort_column_id (column, 3);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 #endif
 

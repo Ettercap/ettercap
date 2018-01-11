@@ -31,7 +31,7 @@ void gtkui_sniff_offline(void)
 {
    DEBUG_MSG("gtk_sniff_offline");
 
-   gtkui_create_menu(0); /* offline menus */
+   //gtkui_create_menu(0); /* offline menus */
 }
 
 

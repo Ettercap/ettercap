@@ -35,6 +35,7 @@ static void gtkui_plugins_detach(GtkWidget *child);
 static void gtkui_plugins_attach(void);
 static void gtkui_select_plugin(void);
 static void gtkui_create_plug_array(void);
+gboolean gtkui_plugin_context(GtkWidget *widget, GdkEventButton *event, gpointer data);
 
 /* globals */
 
@@ -48,9 +49,9 @@ static GtkTreeSelection *selection = NULL;
 /*
  * display the file open dialog
  */
-void gtkui_plugin_load(void)
+void gtkui_plugin_load(GSimpleAction *action, GVariant *value, gpointer data)
 {
-   GtkWidget *dialog;
+   GtkWidget *dialog, *chooser, *content;
    gchar *filename;
    int response = 0;
 #ifdef OS_WINDOWS
@@ -59,14 +60,26 @@ void gtkui_plugin_load(void)
    char *path = INSTALL_LIBDIR "/" EC_PROGRAM "/";
 #endif
    
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_plugin_load");
    
-   dialog = gtk_file_chooser_dialog_new("Select a plugin...",
-         GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
+   dialog = gtk_dialog_new_with_buttons("Select a plugin...",
+         GTK_WINDOW(window), 
+         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR,
          "_Cancel", GTK_RESPONSE_CANCEL,
          "_OK",     GTK_RESPONSE_OK,
          NULL);
-   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), path);
+   gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
+
+   content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_OPEN);
+   gtk_container_add(GTK_CONTAINER(content), chooser);
+   gtk_widget_show(chooser);
+
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), path);
 
 #ifdef OS_WINDOWS
    SAFE_FREE(path);
@@ -76,7 +89,7 @@ void gtkui_plugin_load(void)
    
    if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
       
       gtkui_load_plugin(filename);
 
@@ -129,11 +142,15 @@ static void gtkui_load_plugin(const char *full)
 /*
  * plugin management
  */
-void gtkui_plugin_mgmt(void)
+void gtkui_plugin_mgmt(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *scrolled, *vbox;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_plugin_mgmt");
    
@@ -148,7 +165,7 @@ void gtkui_plugin_mgmt(void)
 
    plugins_window = gtkui_page_new("Plugins", &gtkui_plug_destroy, &gtkui_plugins_detach);
    
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_container_add(GTK_CONTAINER (plugins_window), vbox);
    gtk_widget_show(vbox);
    
@@ -192,6 +209,8 @@ void gtkui_plugin_mgmt(void)
    gtkui_create_plug_array();
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (ls_plugins));   
 
+   g_signal_connect(G_OBJECT(treeview), "button-press-event", G_CALLBACK(gtkui_plugin_context), NULL);
+
    gtk_widget_show(plugins_window);
 }
 
@@ -213,7 +232,7 @@ static void gtkui_plugins_detach(GtkWidget *child)
 static void gtkui_plugins_attach(void)
 {
    gtkui_plug_destroy();
-   gtkui_plugin_mgmt();
+   gtkui_plugin_mgmt(NULL, NULL, NULL);
 }
 
 static void gtkui_plug_destroy(void)
@@ -324,6 +343,55 @@ gboolean gtkui_refresh_plugin_list(gpointer data)
 
    /* return FALSE so g_idle_add() only calls it once */
    return FALSE;
+}
+
+gboolean gtkui_plugin_context(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+   GtkTreeIter iter;
+   GtkTreeModel *model;
+   GtkWidget *menu, *item;
+   char *plugin = NULL;
+
+   (void) widget;
+   (void) data;
+
+   model = GTK_TREE_MODEL(ls_plugins);
+
+   menu = gtk_menu_new();
+   item = gtk_menu_item_new();
+   gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtkui_select_plugin), NULL);
+   gtk_widget_show(item);
+
+
+   if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION(selection), &model, &iter)) {
+      gtk_tree_model_get (model, &iter, 1, &plugin, -1);
+   } else
+      return FALSE; /* nothing is selected */
+
+   if(!plugin)
+      return FALSE; /* bad pointer from gtk_tree_model_get, shouldn't happen */
+
+   /* print the message */
+   if (plugin_is_activated(plugin) == 0)
+      gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Activate");
+   else
+      gtk_menu_item_set_label(GTK_MENU_ITEM(item), "Deactivate");
+         
+   if (event->button == 3) {
+#if GTK_CHECK_VERSION(3,22,0)
+      gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent*)event);
+#else
+      gtk_menu_popup(GTK_MENU(data), NULL, NULL, NULL, NULL, 3, event->time);
+#endif
+       /* 
+        * button press event handle must return TRUE to keep the selection
+        * active when pressing the mouse button 
+        */
+       return TRUE;
+    }
+
+    return FALSE;
 }
 
 /* EOF */

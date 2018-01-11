@@ -41,21 +41,25 @@ enum { HOST_DELETE, HOST_TARGET1, HOST_TARGET2 };
 /*******************************************/
 
 #ifdef WITH_IPV6
-void toggle_ip6scan(void)
+void toggle_ip6scan(GSimpleAction *action, GVariant *value, gpointer data)
 {
-    if (GBL_OPTIONS->ip6scan) {
-        GBL_OPTIONS->ip6scan = 0;
-    } else {
-        GBL_OPTIONS->ip6scan = 1;
-    }
+   (void) data;
+
+   g_simple_action_set_state(action, value);
+
+   GBL_OPTIONS->ip6scan ^= 1;
 }
 #endif
 
 /*
  * scan the lan for hosts 
  */
-void gtkui_scan(void)
+void gtkui_scan(GSimpleAction *action, GVariant *value, gpointer data)
 {
+   (void) action;
+   (void) value;
+   (void) data;
+
    /* no target defined...  force a full scan */
    if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip &&
        GBL_TARGET1->all_ip6 && GBL_TARGET2->all_ip6 &&
@@ -71,26 +75,38 @@ void gtkui_scan(void)
 /*
  * display the file open dialog
  */
-void gtkui_load_hosts(void)
+void gtkui_load_hosts(GSimpleAction *action, GVariant *value, gpointer data)
 {
-   GtkWidget *dialog;
+   GtkWidget *dialog, *chooser, *content;
    gchar *filename;
    int response = 0;
 
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_load_hosts");
 
-   dialog = gtk_file_chooser_dialog_new("Select a hosts file...",
-            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
+   dialog = gtk_dialog_new_with_buttons("Select a hosts file...",
+            GTK_WINDOW(window), 
+            GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR,
             "_Cancel", GTK_RESPONSE_CANCEL,
             "_OK",     GTK_RESPONSE_OK,
             NULL);
-   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), "");
+   gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
+
+   content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_OPEN);
+   gtk_container_add(GTK_CONTAINER(content), chooser);
+   gtk_widget_show(chooser);
+
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), "");
 
    response = gtk_dialog_run (GTK_DIALOG (dialog));
    
    if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
 
       load_hosts(filename);
       gtkui_refresh_host_list(NULL);
@@ -132,33 +148,45 @@ static void load_hosts(const char *file)
    
    SAFE_FREE(tmp);
    
-   gtkui_host_list();
+   gtkui_host_list(NULL, NULL, NULL);
 }
 
 /*
  * display the write file menu
  */
-void gtkui_save_hosts(void)
+void gtkui_save_hosts(GSimpleAction *action, GVariant *value, gpointer data)
 {
 #define FILE_LEN  40
-   GtkWidget *dialog;
+   GtkWidget *dialog, *chooser, *content;
    gchar *filename;
    
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_save_hosts");
 
    SAFE_FREE(GBL_OPTIONS->hostsfile);
    SAFE_CALLOC(GBL_OPTIONS->hostsfile, FILE_LEN, sizeof(char));
 
-   dialog = gtk_file_chooser_dialog_new("Save hosts to file...",
-           GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_SAVE,
+   dialog = gtk_dialog_new_with_buttons("Save hosts to file...",
+           GTK_WINDOW(window), 
+           GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR,
            "_Cancel", GTK_RESPONSE_CANCEL,
            "_OK",     GTK_RESPONSE_OK,
            NULL);
-   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), ".");
+   gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
+
+   content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_SAVE);
+   gtk_container_add(GTK_CONTAINER(content), chooser);
+   gtk_widget_show(chooser);
+
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), ".");
 
    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
        gtk_widget_hide(dialog);
-       filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+       filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
        gtk_widget_destroy(dialog);
        memcpy(GBL_OPTIONS->hostsfile, filename, FILE_LEN);
        g_free(filename);
@@ -191,7 +219,7 @@ static void save_hosts(void)
 /*
  * display the host list 
  */
-void gtkui_host_list(void)
+void gtkui_host_list(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *scrolled, *treeview, *vbox, *hbox, *button, *item, *context_menu;
    GtkCellRenderer   *renderer;
@@ -199,6 +227,10 @@ void gtkui_host_list(void)
    static gint host_delete = HOST_DELETE;
    static gint host_target1 = HOST_TARGET1;
    static gint host_target2 = HOST_TARGET2;
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_host_list");
 
@@ -212,7 +244,7 @@ void gtkui_host_list(void)
    
    hosts_window = gtkui_page_new("Host List", &gtkui_hosts_destroy, &gtkui_hosts_detach);
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_container_add(GTK_CONTAINER (hosts_window), vbox);
    gtk_widget_show(vbox);
 
@@ -250,7 +282,7 @@ void gtkui_host_list(void)
    /* set the elements */
    gtk_tree_view_set_model(GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (liststore));
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, TRUE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
    gtk_box_pack_start(GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 
@@ -312,7 +344,7 @@ static void gtkui_hosts_attach(void)
    gtkui_hosts_destroy();
 
    /* recreate the tab */
-   gtkui_host_list();
+   gtkui_host_list(NULL, NULL, NULL);
 }
 
 void gtkui_hosts_destroy(void)

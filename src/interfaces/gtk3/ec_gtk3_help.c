@@ -54,28 +54,39 @@ void gtkui_help_selected(GtkTreeSelection *treeselection, gpointer data);
 
 /********************************************/
 
-void gtkui_help(void)
+void gtkui_help(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog, *scrolled, *treeview, *hbox, *textview, *content_area;
+   GtkWidget *header;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
    GtkTreeIter iter;
    help_pair *section;
 
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtkui_help");
 
-   dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Help", 
-         GTK_WINDOW (window), 
-         GTK_DIALOG_MODAL, 
-         "_Close", GTK_RESPONSE_CLOSE, 
-         NULL);
+   header = gtk_header_bar_new();
+   gtk_header_bar_set_title(GTK_HEADER_BAR(header), EC_PROGRAM " Help");
+   gtk_header_bar_set_decoration_layout(GTK_HEADER_BAR(header), ":close");
+   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header), TRUE);
+
+   dialog = gtk_dialog_new();
+   gtk_window_set_title(GTK_WINDOW(dialog), EC_PROGRAM " Help");
+   gtk_window_set_titlebar(GTK_WINDOW(dialog), header);
+   gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
    gtk_window_set_default_size(GTK_WINDOW (dialog), 780, 580);
+   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
+   gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 #if !GTK_CHECK_VERSION(2, 22, 0) // depricated since Gtk 2.22
    gtk_dialog_set_has_separator(GTK_DIALOG (dialog), TRUE);
 #endif
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 6, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    gtk_box_pack_start(GTK_BOX(content_area), hbox, TRUE, TRUE, 0);
 
@@ -125,7 +136,7 @@ void gtkui_help(void)
 
    textbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW (textview));
 
-   gtk_widget_show_all(hbox);
+   gtk_widget_show_all(dialog);
 
    gtk_dialog_run(GTK_DIALOG (dialog));
 

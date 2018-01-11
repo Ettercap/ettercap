@@ -37,22 +37,26 @@ static char *logfile;
 
 /*******************************************/
 
-void toggle_compress(void)
+void toggle_compress(GSimpleAction *action, GVariant *value, gpointer data)
 {
-   if (GBL_OPTIONS->compress) {
-      GBL_OPTIONS->compress = 0;
-   } else {
-      GBL_OPTIONS->compress = 1;
-   }
+
+   (void) data;
+   g_simple_action_set_state(action, value);
+
+   GBL_OPTIONS->compress ^= 1;
 }
 
 /*
  * display the log dialog 
  */
-void gtkui_log_all(void)
+void gtkui_log_all(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog;
    gchar *filename;
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_log_all");
 
    /* make sure to free if already set */
@@ -93,10 +97,14 @@ static void log_all(void)
 /*
  * display the log dialog 
  */
-void gtkui_log_info(void)
+void gtkui_log_info(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog;
    gchar *filename;
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_log_info");
 
@@ -135,8 +143,12 @@ static void log_info(void)
    SAFE_FREE(logfile);
 }
 
-void gtkui_stop_log(void)
+void gtkui_stop_log(GSimpleAction *action, GVariant *value, gpointer data)
 {
+   (void) action;
+   (void) value;
+   (void) data;
+
    set_loglevel(LOG_STOP, "");
    gtkui_message("Logging was stopped.");
 }
@@ -144,11 +156,15 @@ void gtkui_stop_log(void)
 /*
  * display the log dialog 
  */
-void gtkui_log_msg(void)
+void gtkui_log_msg(GSimpleAction *action, GVariant *value, gpointer data)
 {
    GtkWidget *dialog;
    gchar *filename;
    
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_log_msg");
 
    /* make sure to free if already set */
@@ -187,8 +203,12 @@ static void log_msg(void)
    SAFE_FREE(logfile);
 }
 
-void gtkui_stop_msg(void)
+void gtkui_stop_msg(GSimpleAction *action, GVariant *value, gpointer data)
 {
+   (void) action;
+   (void) value;
+   (void) data;
+
    set_msg_loglevel(LOG_FALSE, NULL);
    gtkui_message("Message logging was stopped.");
 }

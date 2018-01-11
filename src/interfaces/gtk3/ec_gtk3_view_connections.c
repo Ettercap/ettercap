@@ -133,15 +133,19 @@ static u_char *injectbuf;
 /*
  * the auto-refreshing list of connections
  */
-void gtkui_show_connections(void)
+void gtkui_show_connections(GSimpleAction *action, GVariant *value, gpointer data)
 {
-   GtkWidget *scrolled, *vbox, *items, *hbox, *button, *tbox;
+   GtkWidget *scrolled, *vbox, *items, *hbox, *button, *tbox, *box;
    GtkWidget *context_menu, *frame, *entry, *chkb_tcp, *chkb_udp, *chkb_other;
    GtkWidget *chkb_active, *chkb_idle, *chkb_closing, *chkb_closed, *chkb_killed;
    GtkTreeModel *model;
    GtkToolItem *toolbutton;
    GtkCellRenderer   *renderer;
    GtkTreeViewColumn *column;
+
+   (void) action;
+   (void) value;
+   (void) data;
 
    DEBUG_MSG("gtk_show_connections");
 
@@ -156,21 +160,26 @@ void gtkui_show_connections(void)
 
    conns_window = gtkui_page_new("Connections", &gtkui_kill_connections, &gtkui_connections_detach);
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_container_add(GTK_CONTAINER (conns_window), vbox);
    gtk_widget_show(vbox);
 
    /* filter bar */
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 10, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+   gtk_widget_set_margin_top(hbox, 5);
+   gtk_widget_set_margin_bottom(hbox, 5);
+   gtk_widget_set_margin_start(hbox, 5);
 
    frame = gtk_frame_new("Host filter");
-   tbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
+   tbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
    gtk_container_add(GTK_CONTAINER(frame), tbox);
 
+   box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    entry = gtk_entry_new();
    g_signal_connect(G_OBJECT(entry), "activate", G_CALLBACK(set_connfilter_host), NULL);
-   gtk_box_pack_start(GTK_BOX(tbox), entry, FALSE, FALSE, 5);
+   gtk_box_pack_start(GTK_BOX(box), entry, TRUE, FALSE, 5);
+   gtk_box_pack_start(GTK_BOX(tbox), box, TRUE, FALSE, 5);
 
    toolbutton = gtk_tool_button_new(
          gtk_image_new_from_icon_name("system-search", GTK_ICON_SIZE_BUTTON), 
@@ -181,7 +190,7 @@ void gtkui_show_connections(void)
    gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
 
    frame = gtk_frame_new("Protocol filter");
-   tbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
+   tbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
    gtk_container_add(GTK_CONTAINER(frame), tbox);
 
    chkb_tcp = gtk_check_button_new_with_label("TCP");
@@ -205,7 +214,7 @@ void gtkui_show_connections(void)
    gtk_box_pack_start(GTK_BOX(hbox), frame, FALSE, FALSE, 0);
 
    frame = gtk_frame_new("Connection state filter");
-   tbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
+   tbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
    gtk_container_add(GTK_CONTAINER(frame), tbox);
 
    chkb_active = gtk_check_button_new_with_label("Active");
@@ -306,14 +315,14 @@ void gtkui_show_connections(void)
    gtk_tree_view_column_set_sort_column_id (column, 9);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("Countries", renderer, "text", 10, NULL);
    gtk_tree_view_column_set_sort_column_id (column, 10);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 #endif
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 
@@ -388,7 +397,7 @@ void gtkui_connections_detach(GtkWidget *child)
 static void gtkui_connections_attach(void)
 {
    gtkui_kill_connections();
-   gtkui_show_connections();
+   gtkui_show_connections(NULL, NULL, NULL);
 }
 
 /* connection list closed */
@@ -624,7 +633,7 @@ static void gtkui_connection_list_row(int top, struct row_pairs *pair) {
  */
 static void gtkui_connection_detail(void)
 {
-   GtkWidget *dwindow, *vbox, *hbox, *grid, *label, *button;
+   GtkWidget *dwindow, *vbox, *hbox, *grid, *label, *header, *content;
    GtkTreeIter iter;
    GtkTreeModel *model;
    struct conn_tail *c = NULL;
@@ -645,8 +654,13 @@ static void gtkui_connection_detail(void)
    if(!c || !c->co)
       return;
 
-   dwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW(dwindow), "Connection Details");
+   header = gtk_header_bar_new();
+   gtk_header_bar_set_title(GTK_HEADER_BAR(header), "Connection Details");
+   gtk_header_bar_set_decoration_layout(GTK_HEADER_BAR(header), ":close");
+   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header), TRUE);
+
+   dwindow = gtk_dialog_new();
+   gtk_window_set_titlebar(GTK_WINDOW(dwindow), header);
    gtk_window_set_modal(GTK_WINDOW(dwindow), TRUE);
    gtk_window_set_transient_for(GTK_WINDOW(dwindow), GTK_WINDOW(window));
    gtk_window_set_position(GTK_WINDOW(dwindow), GTK_WIN_POS_CENTER_ON_PARENT);
@@ -654,8 +668,9 @@ static void gtkui_connection_detail(void)
    g_signal_connect(G_OBJECT(dwindow), "delete-event", 
          G_CALLBACK(gtkui_connection_detail_destroy), NULL);
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 5, FALSE);
-   gtk_container_add(GTK_CONTAINER(dwindow), vbox);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+   content = gtk_dialog_get_content_area(GTK_DIALOG(dwindow));
+   gtk_container_add(GTK_CONTAINER(content), vbox);
 
    grid = gtk_grid_new();
    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
@@ -737,7 +752,7 @@ static void gtkui_connection_detail(void)
       gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
    }
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    if (GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Source location:");
@@ -785,7 +800,7 @@ static void gtkui_connection_detail(void)
       gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
    }
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    if (GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Destination location:");
@@ -913,15 +928,9 @@ static void gtkui_connection_detail(void)
       }
    }
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 0, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
-   button = gtk_button_new_with_label("Close");
-   g_signal_connect_swapped(G_OBJECT(button), "clicked", 
-         G_CALLBACK(gtkui_connection_detail_destroy), dwindow);
-   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-   gtk_widget_grab_focus(button);
-   
    gtk_widget_show_all(dwindow);
 
 
@@ -1009,12 +1018,12 @@ static void gtkui_connection_data_split(void)
    /* don't timeout this connection */
    curr_conn->flags |= CONN_VIEWING;
 
-   hbox_big = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
+   hbox_big = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_container_add(GTK_CONTAINER(data_window), hbox_big);
    gtk_widget_show(hbox_big);
 
   /*** left side ***/
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, TRUE, TRUE, 0);
    gtk_widget_show(vbox);
 
@@ -1050,7 +1059,7 @@ static void gtkui_connection_data_split(void)
    endmark1 = gtk_text_buffer_create_mark(splitbuf1, "end", &iter, FALSE);
 
   /* first two buttons */
-   hbox_small = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
+   hbox_small = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start(GTK_BOX(vbox), hbox_small, FALSE, FALSE, 0);
    gtk_widget_show(hbox_small);
 
@@ -1065,7 +1074,7 @@ static void gtkui_connection_data_split(void)
    gtk_widget_show(button);
 
   /*** right side ***/
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_box_pack_start(GTK_BOX(hbox_big), vbox, TRUE, TRUE, 0);
    gtk_widget_show(vbox);
 
@@ -1101,7 +1110,7 @@ static void gtkui_connection_data_split(void)
    endmark2 = gtk_text_buffer_create_mark(splitbuf2, "end", &iter, FALSE);
 
   /* second two buttons */
-   hbox_small = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
+   hbox_small = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start(GTK_BOX(vbox), hbox_small, FALSE, FALSE, 0);
    gtk_widget_show(hbox_small);
 
@@ -1320,7 +1329,7 @@ static void gtkui_connection_data_join(void)
    /* don't timeout this connection */
    curr_conn->flags |= CONN_VIEWING;
    
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_container_add(GTK_CONTAINER(data_window), vbox);
    gtk_widget_show(vbox);
    
@@ -1356,7 +1365,7 @@ static void gtkui_connection_data_join(void)
    gtk_text_buffer_get_end_iter(joinedbuf, &iter);
    endmark3 = gtk_text_buffer_create_mark(joinedbuf, "end", &iter, FALSE);
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, TRUE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
    gtk_widget_show(hbox);
 
@@ -1556,7 +1565,7 @@ static void gtkui_connection_inject(void)
 
    dialog = gtk_dialog_new_with_buttons("Character Injection", 
          GTK_WINDOW (window), 
-         GTK_DIALOG_MODAL, 
+         GTK_DIALOG_MODAL|GTK_DIALOG_USE_HEADER_BAR, 
          "_Cancel", GTK_RESPONSE_CANCEL, 
          "_OK",     GTK_RESPONSE_OK, 
          NULL);
@@ -1566,14 +1575,14 @@ static void gtkui_connection_inject(void)
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
    label = gtk_label_new ("Packet destination:");
    gtk_widget_set_halign(label, GTK_ALIGN_START);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
    button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
@@ -1655,7 +1664,7 @@ static void gtkui_connection_inject_file(void)
 
    dialog = gtk_dialog_new_with_buttons("Character Injection", 
          GTK_WINDOW (window), 
-         GTK_DIALOG_MODAL, 
+         GTK_DIALOG_MODAL|GTK_DIALOG_USE_HEADER_BAR, 
          "_Cancel", GTK_RESPONSE_CANCEL, 
          "_OK",     GTK_RESPONSE_OK, 
          NULL);
@@ -1666,14 +1675,14 @@ static void gtkui_connection_inject_file(void)
    gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
    
-   vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 0, FALSE);
+   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
    gtk_box_pack_start(GTK_BOX(content_area), vbox, FALSE, FALSE, 0);
 
    label = gtk_label_new ("Packet destination:");
    gtk_widget_set_halign(label, GTK_ALIGN_START);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
       
    button1 = gtk_radio_button_new_with_label(NULL, ip_addr_ntoa(&curr_conn->L3_addr2, tmp));
@@ -1688,7 +1697,7 @@ static void gtkui_connection_inject_file(void)
    gtk_widget_set_halign(label, GTK_ALIGN_START);
    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
 
-   hbox = gtkui_box_new(GTK_ORIENTATION_HORIZONTAL, 5, FALSE);
+   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
    entry = gtk_entry_new();

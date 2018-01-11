@@ -31,21 +31,33 @@
 /*
  * display the file open dialog
  */
-void gtkui_load_filter(void)
+void gtkui_load_filter(GSimpleAction *action, GVariant *value, gpointer data)
 {
-   GtkWidget *dialog;
+   GtkWidget *dialog, *chooser, *content;
    gchar *filename;
    int response = 0;
    char *path = get_full_path("share", "");
 
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_load_filter");
 
-   dialog = gtk_file_chooser_dialog_new("Select a precompiled filter file...",
-            GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
+   dialog = gtk_dialog_new_with_buttons("Select a precompiled filter file...",
+            GTK_WINDOW(window), 
+            GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR,
             "_Cancel", GTK_RESPONSE_CANCEL,
             "_OK",     GTK_RESPONSE_OK,
             NULL);
-   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), path);
+   gtk_container_set_border_width(GTK_CONTAINER(dialog), 10);
+
+   content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+   chooser = gtk_file_chooser_widget_new(GTK_FILE_CHOOSER_ACTION_OPEN);
+   gtk_container_add(GTK_CONTAINER(content), chooser);
+   gtk_widget_show(chooser);
+
+   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), path);
 
    SAFE_FREE(path);
 
@@ -53,7 +65,7 @@ void gtkui_load_filter(void)
 
    if (response == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
-      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+      filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
 
       /* 
        * load the filters chain.
@@ -69,8 +81,12 @@ void gtkui_load_filter(void)
 /*
  * uload the filter chain
  */
-void gtkui_stop_filter(void)
+void gtkui_stop_filter(GSimpleAction *action, GVariant *value, gpointer data)
 {
+   (void) action;
+   (void) value;
+   (void) data;
+
    DEBUG_MSG("gtk_stop_filter");
 
    filter_unload(GBL_FILTERS);

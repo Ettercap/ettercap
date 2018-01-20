@@ -203,7 +203,7 @@ SPACES         [ \t]+
 
 [\n\r] {
    /* increment the line number (used for error reporting) */
-   GBL->lineno++;
+   EF_GBL->lineno++;
 }
 
 . {

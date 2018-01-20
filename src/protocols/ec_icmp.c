@@ -89,10 +89,10 @@ FUNC_DECODER(decode_icmp)
     *
     * don't perform the check in unoffensive mode
     */
-   if (GBL_CONF->checksum_check) {
-      if (!GBL_OPTIONS->unoffensive && (sum = L3_checksum(PACKET->L4.header, PACKET->L4.len)) != CSUM_RESULT) {
+   if (EC_GBL_CONF->checksum_check) {
+      if (!EC_GBL_OPTIONS->unoffensive && (sum = L3_checksum(PACKET->L4.header, PACKET->L4.len)) != CSUM_RESULT) {
          char tmp[MAX_ASCII_ADDR_LEN];
-         if (GBL_CONF->checksum_warning)
+         if (EC_GBL_CONF->checksum_warning)
             USER_MSG("Invalid ICMP packet from %s : csum [%#x] should be (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp), 
                               ntohs(icmp->csum), checksum_shouldbe(icmp->csum, sum));      
          return NULL;

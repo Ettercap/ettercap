@@ -219,9 +219,9 @@ static void signal_TERM(int sig)
       fprintf(stderr, "\n\nUser requested a CTRL+C... (deprecated, next time use proper shutdown)\n\n");
    } else {
    #ifdef HAVE_STRSIGNAL
-      fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d | %s)\n\n", GBL_PROGRAM, sig, strsignal(sig));
+      fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d | %s)\n\n", EC_GBL_PROGRAM, sig, strsignal(sig));
    #else
-      fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d)\n\n", GBL_PROGRAM, sig);
+      fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d)\n\n", EC_GBL_PROGRAM, sig);
    #endif
    }
    

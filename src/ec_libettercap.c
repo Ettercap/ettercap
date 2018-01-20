@@ -1,5 +1,5 @@
 /*
-    ettercap -- GTK+ GUI
+    ettercap -- global variables handling module
 
     Copyright (C) ALoR & NaGA
 
@@ -19,30 +19,39 @@
 
 */
 
-#include <ec.h>
-#include <ec_gtk.h>
+#include <ec_libettercap.h>
+#include <ec_globals.h>
+#include <ec_conf.h>
+#include <ec_ui.h>
+#include <ec_file.h>
+/* global vars */
+
+/* proto */
 
 /*******************************************/
 
-
-void gtkui_start_sniffing(void)
+void libettercap_init(char* program, char* version)
 {
-   DEBUG_MSG("gtk_start_sniffing");
-   
-   /* start the sniffing method */
-   EXECUTE(EC_GBL_SNIFF->start);
+   ec_globals_alloc();
+   EC_GBL_PROGRAM = strdup(program);
+   EC_GBL_VERSION = strdup(version);
+   SAFE_CALLOC(EC_GBL_DEBUG_FILE, strlen(EC_GBL_PROGRAM) + strlen("-") + strlen(EC_GBL_VERSION) + strlen("_debug.log") + 1, sizeof(char));
+   sprintf(EC_GBL_DEBUG_FILE, "%s-%s_debug.log", EC_GBL_PROGRAM, EC_GBL_VERSION);
+
+   DEBUG_INIT();
 }
 
-void gtkui_stop_sniffing(void)
+void libettercap_load_conf(void)
 {
-   DEBUG_MSG("gtk_stop_sniffing");
-   
-   /* terminate the sniffing engine */
-   EXECUTE(EC_GBL_SNIFF->cleanup);
+   /* load the configuration file */
+   load_conf();
 }
 
-
+void libettercap_ui_init()
+{
+   /* initialize the user interface */
+   ui_init();
+}
 /* EOF */
 
 // vim:ts=3:expandtab
-

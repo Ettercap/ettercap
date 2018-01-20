@@ -22,7 +22,7 @@
 #include <el.h>
 #include <el_functions.h>
 
-/* globals */
+/* el_globals */
 
 /* protos */
 FUNC_EXTRACTOR(extractor_http);

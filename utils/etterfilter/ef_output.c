@@ -55,11 +55,11 @@ int write_output(void)
       return -E_INVALID;
 
    /* create the file */
-   fd = open(GBL_OPTIONS->output_file, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0644);
-   ON_ERROR(fd, -1, "Can't create file %s", GBL_OPTIONS->output_file);
+   fd = open(EF_GBL_OPTIONS->output_file, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0644);
+   ON_ERROR(fd, -1, "Can't create file %s", EF_GBL_OPTIONS->output_file);
 
    /* display the message */
-   fprintf(stdout, " Writing output to \'%s\' ", GBL_OPTIONS->output_file);
+   fprintf(stdout, " Writing output to \'%s\' ", EF_GBL_OPTIONS->output_file);
    fflush(stdout);
    
    /* compute the header */

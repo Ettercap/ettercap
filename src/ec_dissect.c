@@ -24,7 +24,7 @@
 #include <ec_packet.h>
 #include <ec_sslwrap.h>
 
-/* globals */
+/* ec_globals */
 
 static SLIST_HEAD (, dissect_entry) dissect_list;
 

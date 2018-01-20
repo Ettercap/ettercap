@@ -52,7 +52,7 @@ EC_API_EXTERN void ui_register(struct ui_ops *ops);
  * else display a message and continue with the current GUI (curses or gtk)
  */
 #define SEMIFATAL_ERROR(x, ...) do {                              \
-   if (!GBL_UI->initialized || GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)   \
+   if (!EC_GBL_UI->initialized || EC_GBL_UI->type == UI_TEXT || EC_GBL_UI->type == UI_DAEMONIZE)   \
       FATAL_ERROR(x, ## __VA_ARGS__);                             \
    else                                                           \
       FATAL_MSG(x, ## __VA_ARGS__);                               \

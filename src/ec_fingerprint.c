@@ -33,7 +33,7 @@
    (p)->os[strlen(p->os)-1] = '\0';                            \
 } while (0)
 
-/* globals */
+/* ec_globals */
 
 static SLIST_HEAD(, entry) finger_head;
 
@@ -187,7 +187,7 @@ int fingerprint_search(const char *f, char *dst)
       }
    }
 
-   if(GBL_CONF->submit_fingerprint)
+   if(EC_GBL_CONF->submit_fingerprint)
    	fingerprint_submit(f, "Unknown");
    return -E_NOTFOUND;
 }
@@ -341,7 +341,7 @@ int fingerprint_submit(const char *finger, char *os)
                                      "Host: %s\r\n"
                                      "Accept: */*\r\n"
                                      "User-Agent: %s (%s)\r\n"
-                                     "\r\n", page, finger, os_encoded, host, GBL_PROGRAM, GBL_VERSION );
+                                     "\r\n", page, finger, os_encoded, host, EC_GBL_PROGRAM, EC_GBL_VERSION );
   
    SAFE_FREE(os_encoded);
 

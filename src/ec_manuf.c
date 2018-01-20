@@ -67,7 +67,7 @@
    (p)->vendor = strdup (v);                                   \
 } while (0)
 
-/* globals */
+/* ec_globals */
 
 static SLIST_HEAD(, entry) manuf_head[TABSIZE];
 

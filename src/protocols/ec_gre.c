@@ -100,7 +100,7 @@ FUNC_DECODER(decode_gre)
    EXECUTE_DECODER(next_decoder);
  
    /* Adjust GRE payload len (if present) */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && 
+   if (!EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->read && 
          (PACKET->flags & PO_MODIFIED) && (PACKET->flags & PO_FORWARDABLE)) {
    /* XXX - Feature checksum re-calculation (if present) */
    /* XXX - Feature packet injection/dropping */

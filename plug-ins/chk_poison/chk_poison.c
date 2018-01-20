@@ -94,7 +94,7 @@ static int chk_poison_init(void *dummy)
    (void) dummy;
 
    /* don't show packets while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
       
    if (LIST_EMPTY(&arp_group_one) || LIST_EMPTY(&arp_group_two)) {
       INSTANT_USER_MSG("chk_poison: You have to run this plugin during a poisoning session.\n\n"); 
@@ -127,7 +127,7 @@ static int chk_poison_init(void *dummy)
    SLIST_FOREACH(p, &poison_table, next) {
       for (i = 0; i <= 1; i++) {
          send_L3_icmp_echo(&(p->ip[i]), &(p->ip[!i]));   
-         ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
+         ec_usleep(MILLI2MICRO(EC_GBL_CONF->arp_storm_delay));
       }
    }
          

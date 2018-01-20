@@ -27,7 +27,7 @@
 
 #include <openssl/rc4.h>
 
-/* globals */
+/* ec_globals */
 
 /* Note: copied from FreeBSD source code, RELENG 6, sys/net80211/ieee80211_crypto_tkip.c, 471 */
 static const u_int16 Sbox[256] = {

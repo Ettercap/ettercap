@@ -1,3 +1,5 @@
+sudo: required
+dist: trusty
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -90,13 +92,13 @@ env:
   - BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
 
 matrix:
-  allow_failures:
-    # We expect IPV6 + system libnet + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
-    # We expect system-only curl + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DBUNDLED_CURL=Off"
+  #allow_failures:
+  #  # We expect IPV6 + system libnet + ubuntu to fail :(
+  #  - os: linux
+  #    env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
+  #  # We expect system-only curl + ubuntu to fail :(
+  #  - os: linux
+  #    env: BUILD_ARGS="-DBUNDLED_CURL=Off"
   exclude:
     - os: osx
       env: BUILD_ARGS=""
@@ -146,8 +148,8 @@ script:
   - mkdir build
   - cd build
   - cmake -DENABLE_TESTS=On $BUILD_ARGS ..
-  - make
-  - make test_verbose
+  - make VERBOSE=1
+  - make VERBOSE=1 test_verbose
 
 notifications:
   irc:

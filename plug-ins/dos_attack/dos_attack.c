@@ -87,13 +87,13 @@ static int dos_attack_init(void *dummy)
    (void) dummy;
 
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("dos_attack: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }
    
    /* don't show packets while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
 
    memset(dos_addr, 0, sizeof(dos_addr));
    memset(unused_addr, 0, sizeof(dos_addr));
@@ -207,7 +207,7 @@ EC_THREAD_FUNC(syn_flooder)
 static void parse_arp(struct packet_object *po)
 {
    if (!ip_addr_cmp(&fake_host, &po->L3.dst)) 
-      send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
+      send_arp(ARPOP_REPLY, &po->L3.dst, EC_GBL_IFACE->mac, &po->L3.src, po->L2.src);
 }
 
 #ifdef WITH_IPV6
@@ -216,7 +216,7 @@ static void parse_icmp6(struct packet_object *po)
    struct ip_addr ip;
    ip_addr_init(&ip, AF_INET6, po->L4.options);
    if(!ip_addr_cmp(&fake_host, &ip))
-      send_L2_icmp6_nadv(&fake_host, &po->L3.src, GBL_IFACE->mac, 0, po->L2.src);
+      send_L2_icmp6_nadv(&fake_host, &po->L3.src, EC_GBL_IFACE->mac, 0, po->L2.src);
 }
 #endif
 

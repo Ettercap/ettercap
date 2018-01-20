@@ -37,7 +37,7 @@
 #define TABSIZE   (1UL<<TABBIT)
 #define TABMASK   (TABSIZE-1) /* to mask fnv_1 hash algorithm */
 
-/* globals */
+/* ec_globals */
 static pthread_mutex_t resolvc_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define RESOLVC_LOCK do{pthread_mutex_lock(&resolvc_mutex);}while(0)
 #define RESOLVC_UNLOCK do{pthread_mutex_unlock(&resolvc_mutex);}while(0)
@@ -116,7 +116,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
     * the passive engine might have intercepted some
     * request. it is resolution for free... ;)
     */
-   if (!GBL_OPTIONS->resolve)
+   if (!EC_GBL_OPTIONS->resolve)
       return -E_NOTFOUND;
   
    DEBUG_MSG("host_iptoa() %s not in cache", ip_addr_ntoa(ip, tmp));

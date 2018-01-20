@@ -83,7 +83,7 @@ void profile_parse(struct packet_object *po)
 {
 
    /* we don't want profiles in memory. */
-   if (!GBL_CONF->store_profiles) {
+   if (!EC_GBL_CONF->store_profiles) {
       return;
    }
    
@@ -93,7 +93,7 @@ void profile_parse(struct packet_object *po)
     * this is necessary because check_forwarded() is executed
     * in ec_ip.c, but here we are getting even arp packets...
     */
-   EXECUTE(GBL_SNIFF->check_forwarded, po);
+   EXECUTE(EC_GBL_SNIFF->check_forwarded, po);
    if (po->flags & PO_FORWARDED)
       return;
 
@@ -103,7 +103,7 @@ void profile_parse(struct packet_object *po)
     * packets that are before the test in ec_decode.c
     */
    po->flags |= PO_IGNORE;
-   EXECUTE(GBL_SNIFF->interesting, po);
+   EXECUTE(EC_GBL_SNIFF->interesting, po);
    if ( po->flags & PO_IGNORE )
        return;
    
@@ -173,8 +173,8 @@ static int profile_add_host(struct packet_object *po)
       return 0;
    
    /* We don't need a profile on ourselves, do we? */
-   if(!memcmp(&po->L2.src, &GBL_IFACE->mac, MEDIA_ADDR_LEN) ||
-      !memcmp(&po->L2.src, &GBL_BRIDGE->mac, MEDIA_ADDR_LEN))
+   if(!memcmp(&po->L2.src, &EC_GBL_IFACE->mac, MEDIA_ADDR_LEN) ||
+      !memcmp(&po->L2.src, &EC_GBL_BRIDGE->mac, MEDIA_ADDR_LEN))
       return 0;
    
    /* 
@@ -190,7 +190,7 @@ static int profile_add_host(struct packet_object *po)
    PROFILE_LOCK;
 
    /* search if it already exists */
-   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &EC_GBL_PROFILES, next) {
       /* an host is identified by the mac and the ip address */
       /* if the mac address is null also update it since it could
        * be captured as a DHCP packet specifying the GW 
@@ -217,11 +217,11 @@ static int profile_add_host(struct packet_object *po)
     */
    
    /* this is a local and we want only remote */
-   if ((po->PASSIVE.flags & FP_HOST_LOCAL) && (GBL_CONF->store_profiles == ONLY_REMOTE_PROFILES))
+   if ((po->PASSIVE.flags & FP_HOST_LOCAL) && (EC_GBL_CONF->store_profiles == ONLY_REMOTE_PROFILES))
       return 0;
    
    /* this is remote and we want only local */
-   if ((po->PASSIVE.flags & FP_HOST_NONLOCAL) && (GBL_CONF->store_profiles == ONLY_LOCAL_PROFILES))
+   if ((po->PASSIVE.flags & FP_HOST_NONLOCAL) && (EC_GBL_CONF->store_profiles == ONLY_LOCAL_PROFILES))
       return 0;
    
    /* create the new host */
@@ -233,18 +233,18 @@ static int profile_add_host(struct packet_object *po)
    update_info(h, po);
    
    /* search the right point to inser it (ordered ascending) */
-   TAILQ_FOREACH(c, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(c, &EC_GBL_PROFILES, next) {
       if ( ip_addr_cmp(&c->L3_addr, &h->L3_addr) > 0 )
          break;
       last = c;
    }
    
-   if (TAILQ_FIRST(&GBL_PROFILES) == NULL) 
-      TAILQ_INSERT_HEAD(&GBL_PROFILES, h, next);
+   if (TAILQ_FIRST(&EC_GBL_PROFILES) == NULL) 
+      TAILQ_INSERT_HEAD(&EC_GBL_PROFILES, h, next);
    else if (c != NULL) 
       TAILQ_INSERT_BEFORE(c, h, next);
    else 
-      TAILQ_INSERT_AFTER(&GBL_PROFILES, last, h, next);
+      TAILQ_INSERT_AFTER(&EC_GBL_PROFILES, last, h, next);
 
    PROFILE_UNLOCK;
    
@@ -314,7 +314,7 @@ static void set_gateway(u_char *L2_addr)
    
    PROFILE_LOCK;
 
-   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &EC_GBL_PROFILES, next) {
       if (!memcmp(h->L2_addr, L2_addr, MEDIA_ADDR_LEN) ) {
          h->type |= FP_GATEWAY; 
          PROFILE_UNLOCK;
@@ -436,7 +436,7 @@ static int profile_add_user(struct packet_object *po)
    PROFILE_LOCK; 
    
    /* search the right port on the right host */
-   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &EC_GBL_PROFILES, next) {
       
       /* right host */
       if ( !ip_addr_cmp(&h->L3_addr, &po->L3.dst) ) {
@@ -554,7 +554,7 @@ static void profile_purge(int flags)
 
    PROFILE_LOCK;
 
-   TAILQ_FOREACH_SAFE(h, &GBL_PROFILES, next, tmp_h) {
+   TAILQ_FOREACH_SAFE(h, &EC_GBL_PROFILES, next, tmp_h) {
 
       /* the host matches the flags */
       if (h->type & flags) {
@@ -576,7 +576,7 @@ static void profile_purge(int flags)
             SAFE_FREE(o);
          }
          SAFE_FREE(h->os);
-         TAILQ_REMOVE(&GBL_PROFILES, h, next);
+         TAILQ_REMOVE(&EC_GBL_PROFILES, h, next);
          SAFE_FREE(h);
       }
    }
@@ -602,7 +602,7 @@ int profile_convert_to_hostlist(void)
    /* now parse the profile list and create the hosts list */
    PROFILE_LOCK;
 
-   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &EC_GBL_PROFILES, next) {
       /* add only local hosts */
       if (h->type & FP_HOST_LOCAL) {
          /* the actual add */
@@ -628,7 +628,7 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
 
    /* NULL is used to retrieve the first element */
    if (list == NULL)
-      return TAILQ_FIRST(&GBL_PROFILES);
+      return TAILQ_FIRST(&EC_GBL_PROFILES);
 
    /* the caller wants the description */
    if (desc != NULL) {
@@ -655,7 +655,7 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
       slen = strlen(*desc);
 
       /* check if enough space is available to append the GeoIP info */
-      if (len - slen > 14 && GBL_CONF->geoip_support_enable) {
+      if (len - slen > 14 && EC_GBL_CONF->geoip_support_enable) {
          snprintf(*desc + slen, len - slen, ", %s", 
                geoip_country_by_ip(&h->L3_addr));
       }
@@ -673,7 +673,7 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
          break;
       case 0:
          /* if exists in the list, return it */
-         TAILQ_FOREACH(hl, &GBL_PROFILES, next) {
+         TAILQ_FOREACH(hl, &EC_GBL_PROFILES, next) {
             if (hl == h)
                return h;
          }
@@ -705,7 +705,7 @@ int profile_dump_to_file(char *filename)
    /* append the extension */
    snprintf(eci, strlen(filename)+5, "%s.eci", filename);
    
-   if (GBL_OPTIONS->compress)
+   if (EC_GBL_OPTIONS->compress)
       fd.type = LOG_COMPRESSED;
    else
       fd.type = LOG_UNCOMPRESSED;
@@ -720,7 +720,7 @@ int profile_dump_to_file(char *filename)
    /* now parse the profile list and dump to the file */
    PROFILE_LOCK;
 
-   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &EC_GBL_PROFILES, next) {
       
       memset(&po, 0, sizeof(struct packet_object));
       

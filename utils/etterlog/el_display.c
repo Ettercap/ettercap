@@ -44,7 +44,7 @@ static void print_pass(struct host_profile *h);
 
 void display(void)
 {
-   switch(GBL->hdr.type) {
+   switch(EL_GBL->hdr.type) {
       case LOG_PACKET:
          display_packet();
          break;
@@ -86,8 +86,8 @@ static void display_packet(void)
       }
      
       /* if the regex does not match, the packet is not interesting */
-      if (GBL_OPTIONS->regex && GBL->regex && 
-            regexec(GBL->regex, (const char*)buf, 0, NULL, 0) != 0) {
+      if (EL_GBL_OPTIONS->regex && EL_GBL->regex && 
+            regexec(EL_GBL->regex, (const char*)buf, 0, NULL, 0) != 0) {
          SAFE_FREE(buf);
          continue;
       }
@@ -100,17 +100,17 @@ static void display_packet(void)
       SAFE_CALLOC(tmp, hex_len(pck.len), sizeof(u_char));
 
       /* display the headers only if necessary */
-      if (!GBL_OPTIONS->no_headers)
+      if (!EL_GBL_OPTIONS->no_headers)
          display_headers(&pck);
       
       /* 
        * format the packet with the function
        * set by the user
        */
-      ret = GBL->format(buf, pck.len, tmp);
+      ret = EL_GBL->format(buf, pck.len, tmp);
      
       /* the ANSI escape for the color */
-      if (GBL_OPTIONS->color) {
+      if (EL_GBL_OPTIONS->color) {
          int color = 0;
          switch (versus) {
             case VERSUS_SOURCE:
@@ -127,14 +127,14 @@ static void display_packet(void)
       fflush(stdout);
       write(fileno(stdout), tmp, ret);
       
-      if (GBL_OPTIONS->color) 
+      if (EL_GBL_OPTIONS->color) 
          reset_color();
       
       SAFE_FREE(buf);
       SAFE_FREE(tmp);
    }
 
-   if (!GBL_OPTIONS->no_headers)
+   if (!EL_GBL_OPTIONS->no_headers)
       fprintf(stdout, "\n\n");
    
    return;
@@ -161,7 +161,7 @@ static void display_headers(struct log_header_packet *pck)
    fprintf(stdout, "\n\n%s [%lu]\n", ec_ctime(&pck->tv), pck->tv.tv_usec);
 #endif
 
-   if (GBL_OPTIONS->showmac) {
+   if (EL_GBL_OPTIONS->showmac) {
       /* display the mac addresses */
       mac_addr_ntoa(pck->L2_src, tmp1);
       mac_addr_ntoa(pck->L2_dst, tmp2);
@@ -203,10 +203,10 @@ void set_display_regex(char *regex)
    char errbuf[100];
 
    /* compile the regex */
-   err = regcomp(GBL->regex, regex, REG_EXTENDED | REG_NOSUB | REG_ICASE );
+   err = regcomp(EL_GBL->regex, regex, REG_EXTENDED | REG_NOSUB | REG_ICASE );
 
    if (err) {
-      regerror(err, GBL->regex, errbuf, sizeof(errbuf));
+      regerror(err, EL_GBL->regex, errbuf, sizeof(errbuf));
       FATAL_ERROR("%s\n", errbuf);
    }                      
 }
@@ -222,7 +222,7 @@ static void display_info(void)
    create_hosts_list(); 
 
    /* don't load if the user is interested only in passwords... */
-   if (!GBL_OPTIONS->passwords) {
+   if (!EL_GBL_OPTIONS->passwords) {
       /* load the fingerprint database */
       fingerprint_init();
 
@@ -234,7 +234,7 @@ static void display_info(void)
    }
 
    /* write the XML prolog */
-   if (GBL_OPTIONS->xml) {
+   if (EL_GBL_OPTIONS->xml) {
       fprintf(stdout, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n\n");
       fprintf(stdout, "<etterlog version=\"%s\" date=\"%s\">\n", EC_VERSION, ec_ctime(NULL));
    } else
@@ -248,7 +248,7 @@ static void display_info(void)
          continue;
      
       /* we are searching one particular user */
-      if (find_user(h, GBL->user) == -E_NOTFOUND)
+      if (find_user(h, EL_GBL->user) == -E_NOTFOUND)
          continue;
      
       /* if the regex was set, respect it */
@@ -256,14 +256,14 @@ static void display_info(void)
          continue;
       
       /* skip the host respecting the options */
-      if (GBL_OPTIONS->only_local && (h->type & FP_HOST_NONLOCAL))
+      if (EL_GBL_OPTIONS->only_local && (h->type & FP_HOST_NONLOCAL))
          continue;
       
-      if (GBL_OPTIONS->only_remote && (h->type & FP_HOST_LOCAL))
+      if (EL_GBL_OPTIONS->only_remote && (h->type & FP_HOST_LOCAL))
          continue;
       
       /* set the color */
-      if (GBL_OPTIONS->color) {
+      if (EL_GBL_OPTIONS->color) {
          if (h->type & FP_GATEWAY)
             set_color(COL_RED);
          else if (h->type & FP_HOST_LOCAL)
@@ -273,20 +273,20 @@ static void display_info(void)
       }
      
       /* print the infos */
-      if (GBL_OPTIONS->passwords)
+      if (EL_GBL_OPTIONS->passwords)
          print_pass(h);  
-      else if (GBL_OPTIONS->xml)
+      else if (EL_GBL_OPTIONS->xml)
          print_host_xml(h);
       else
          print_host(h);
       
       /* reset the color */
-      if (GBL_OPTIONS->color)
+      if (EL_GBL_OPTIONS->color)
          reset_color();
    }
    
    /* close the global tag */
-   if (GBL_OPTIONS->xml)
+   if (EL_GBL_OPTIONS->xml)
       fprintf(stdout, "</etterlog>\n");
    
    fprintf(stdout, "\n\n");
@@ -302,25 +302,25 @@ static int match_regex(struct host_profile *h)
    struct open_port *o;
    char os[OS_LEN+1];
 
-   if (!GBL_OPTIONS->regex || !GBL->regex)
+   if (!EL_GBL_OPTIONS->regex || !EL_GBL->regex)
       return 1;
 
    /* check the manufacturer */
-   if (regexec(GBL->regex, manuf_search((const char*)h->L2_addr), 0, NULL, 0) == 0)
+   if (regexec(EL_GBL->regex, manuf_search((const char*)h->L2_addr), 0, NULL, 0) == 0)
       return 1;
   
    /* check the OS */
    fingerprint_search((const char*)h->fingerprint, os);
    
-   if (regexec(GBL->regex, os, 0, NULL, 0) == 0)
+   if (regexec(EL_GBL->regex, os, 0, NULL, 0) == 0)
       return 1;
 
    /* check the open ports banners and service */
    LIST_FOREACH(o, &(h->open_ports_head), next) {
-      if (regexec(GBL->regex, service_search(o->L4_addr, o->L4_proto), 0, NULL, 0) == 0)
+      if (regexec(EL_GBL->regex, service_search(o->L4_addr, o->L4_proto), 0, NULL, 0) == 0)
          return 1;
       
-      if (o->banner && regexec(GBL->regex, o->banner, 0, NULL, 0) == 0)
+      if (o->banner && regexec(EL_GBL->regex, o->banner, 0, NULL, 0) == 0)
          return 1;
    }
       
@@ -343,7 +343,7 @@ static void print_pass(struct host_profile *h)
       LIST_FOREACH(u, &(o->users_list_head), next) {
 
          /* skip client not matching the filter */
-         if (!ip_addr_is_zero(&GBL->client) && ip_addr_cmp(&GBL->client, &u->client))
+         if (!ip_addr_is_zero(&EL_GBL->client) && ip_addr_cmp(&EL_GBL->client, &u->client))
             continue;
         
          fprintf(stdout, " %-15s ", ip_addr_ntoa(&h->L3_addr, tmp));
@@ -351,7 +351,7 @@ static void print_pass(struct host_profile *h)
             fprintf(stdout, "(%s)", h->hostname);
         
          /* print the client if requested */
-         if (GBL_OPTIONS->showclient)
+         if (EL_GBL_OPTIONS->showclient)
             fprintf(stdout, "(%s)", ip_addr_ntoa(&u->client, tmp));
 
          fprintf(stdout, " %s %-5d %s USER: %s \tPASS: %s ",

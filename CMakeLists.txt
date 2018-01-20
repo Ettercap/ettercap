@@ -149,12 +149,6 @@ set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign -D_FORTIFY_S
 # set build flags for release build-type
 set(CMAKE_C_FLAGS_RELEASE "-O2 -w -D_FORTIFY_SOURCE=2" CACHE STRING "" FORCE)
 
-if(OS_DARWIN)
-set(CMAKE_EXE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
-endif(OS_DARWIN)
-
 if(ENABLE_LUA)
   include(EttercapLuajit)
   set(HAVE_EC_LUA 1)

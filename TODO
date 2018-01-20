@@ -4,7 +4,7 @@
 
 >>> things to be fixed
 
-   + remove GBL_OPTIONS->quiet from some plugins
+   + remove EC_GBL_OPTIONS->quiet from some plugins
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)

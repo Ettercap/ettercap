@@ -97,10 +97,10 @@ static EC_THREAD_FUNC(link_type_thread)
    PLUGIN_LOCK(link_type_mutex);
    
    /* don't show packets while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
 
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("link_type: plugin doesn't work in UNOFFENSIVE mode\n");
       PLUGIN_UNLOCK(link_type_mutex);
       plugin_kill_thread("link_type", "link_type");
@@ -108,14 +108,14 @@ static EC_THREAD_FUNC(link_type_thread)
    }
 
   /* Performs some checks */
-   if (GBL_PCAP->dlt != IL_TYPE_ETH) {
+   if (EC_GBL_PCAP->dlt != IL_TYPE_ETH) {
       INSTANT_USER_MSG("link_type: This plugin works only on ethernet networks\n\n");
       PLUGIN_UNLOCK(link_type_mutex);
       plugin_kill_thread("link_type", "link_type");
       return PLUGIN_FINISHED;
    }
 
-   if (!GBL_PCAP->promisc) {
+   if (!EC_GBL_PCAP->promisc) {
       INSTANT_USER_MSG("link_type: You have to enable promisc mode to run this plugin\n\n");
       PLUGIN_UNLOCK(link_type_mutex);
       plugin_kill_thread("link_type", "link_type");
@@ -123,7 +123,7 @@ static EC_THREAD_FUNC(link_type_thread)
    }
    
    /* Take (if any) first two elements form the host list */
-   LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(h, &EC_GBL_HOSTLIST, next) {
       memcpy(&(targets[counter].ip), &h->ip, sizeof(struct ip_addr));
       memcpy(targets[counter].mac, h->mac, MEDIA_ADDR_LEN);
       counter++;
@@ -144,7 +144,7 @@ static EC_THREAD_FUNC(link_type_thread)
     */
    if (counter == 1) {   
       INSTANT_USER_MSG("link_type: Only one host in the list. Check will be less reliable\n\n"); 
-      memcpy(&(targets[1].ip), &GBL_IFACE->ip, sizeof(struct ip_addr));
+      memcpy(&(targets[1].ip), &EC_GBL_IFACE->ip, sizeof(struct ip_addr));
       memcpy(targets[1].mac, targets[0].mac, MEDIA_ADDR_LEN);        
    }
 

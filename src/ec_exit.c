@@ -35,7 +35,7 @@ void clean_exit(int errcode)
 {
    DEBUG_MSG("clean_exit: %d", errcode);
   
-   INSTANT_USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
+   INSTANT_USER_MSG("\nTerminating %s...\n", EC_GBL_PROGRAM);
 
 #ifdef HAVE_EC_LUA
    /* Cleanup lua */
@@ -49,7 +49,7 @@ void clean_exit(int errcode)
    mitm_stop();
 
    /* terminate the sniffing engine */
-   EXECUTE(GBL_SNIFF->cleanup);
+   EXECUTE(EC_GBL_SNIFF->cleanup);
 
    /* kill all the running threads but the current */
    ec_thread_kill_all();

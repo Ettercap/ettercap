@@ -24,7 +24,7 @@
 #include <ec_file.h>
 #include <ec_proto.h>
 
-/* globals */
+/* ec_globals */
 
 static SLIST_HEAD(, entry) serv_head;
 

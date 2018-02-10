@@ -59,19 +59,15 @@
 ==================
    
    + GTK
-      - Rework GTK3 UI using the latest API (GtkBuilder)
       - Phase out GTK2
+      - externalize XML code to own resouce files
+      - transform static widgets to GtkBuilder XML files
 
    + SSH2 dissection :) (yes, it can be done)
 
    + IPv6
       - router discovery
-      - UI support for IPv6 address
-      - neighbor discovery poisoning
-      - scan method for IPv6 hosts 
       - DHCPv6 MITM 
-      - make etterfilter IPv6 capable
-      - make etterlog IPv6 capable
 
    + Rendevouz mitm
 

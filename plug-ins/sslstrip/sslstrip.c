@@ -70,9 +70,9 @@
 
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)://([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
 //#define URL_PATTERN "(href=|src=|url\\(|action=)?[\"']?(https)(\\%3A|\\%3a|:)//([^ \r\\)/\"'>\\)]*)/?([^ \\)\"'>\\)\r]*)"
-#define URL_PATTERN "(https://[\\w\\d:#@%/;$()~_?\\+-=\\\\.&]*)"
+#define URL_PATTERN "(https://[\\w\\d:#@%/;$()~_?\\+=\\\\.&-]*)"
 //#define COOKIE_PATTERN "Set-Cookie: (.*?;)(.?Secure;|.?Secure)(.*?)\r\n"
-#define COOKIE_PATTERN "Set-Cookie: ([ \\w\\d:#@%/;$()~_?\\+-=\\\\.&]+); ?Secure"
+#define COOKIE_PATTERN "Set-Cookie: ([ \\w\\d:#@%/;$()~_?\\+=\\\\.&-]+); ?Secure"
 
 
 #define REQUEST_TIMEOUT 120 /* If a request has not been used in 120 seconds, remove it from list */

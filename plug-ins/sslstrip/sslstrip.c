@@ -245,7 +245,7 @@ static int sslstrip_init(void *dummy)
    err = regcomp(&find_cookie_re, COOKIE_PATTERN, REG_EXTENDED | REG_NEWLINE | REG_ICASE);
    if (err) {
       regerror(err, &find_cookie_re, errbuf, sizeof(errbuf));
-      USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex: %d\n", err);
+      USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex: %s (%d)\n", errbuf, err);
       pcre_free(https_url_pcre);
       http_remove_redirect(bind_port);
       return PLUGIN_FINISHED;

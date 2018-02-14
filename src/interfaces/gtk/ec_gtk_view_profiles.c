@@ -111,7 +111,7 @@ void gtkui_show_profiles(void)
    gtk_tree_view_column_set_sort_column_id (column, 2);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("Country", renderer, "text", 3, NULL);
    gtk_tree_view_column_set_sort_column_id (column, 2);
@@ -268,7 +268,7 @@ static gboolean refresh_profiles(gpointer data)
                           1, ip_addr_ntoa(&hcurr->L3_addr, tmp), 
                           4, hcurr, -1);
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
       if (GBL_CONF->geoip_support_enable)
          gtk_list_store_set(ls_profiles, &iter, 
                3, geoip_country_by_ip(&hcurr->L3_addr), -1);
@@ -385,7 +385,7 @@ static void gtkui_profile_detail(void)
       gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
    }
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    if (GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Location:");

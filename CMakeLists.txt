@@ -16,6 +16,7 @@ option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
 option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
 option(ENABLE_TESTS "Enable Unit Tests" OFF)
+option(ENABLE_GEOIP "Build with GeoIP support" ON)
 option(LIBRARY_BUILD "Build for libettercap only" OFF)
 option(INSTALL_DESKTOP "Install ettercap desktop files" ON)
 
@@ -164,7 +165,10 @@ set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/incl
 include_directories(${EC_INCLUDE_PATH})
 
 add_subdirectory(src)
-add_subdirectory(desktop)
+
+if(INSTALL_DESKTOP)
+  add_subdirectory(desktop)
+endif(INSTALL_DESKTOP)
 
 if(HAVE_PLUGINS)
     if(OS_MINGW)

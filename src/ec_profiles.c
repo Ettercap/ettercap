@@ -635,7 +635,7 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
       struct open_port *o;
       struct active_user *u;
       int found = 0;
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
       size_t slen;
 #endif
          
@@ -650,7 +650,7 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
       snprintf(*desc, len, "%c %15s   %s", (found) ? '*' : ' ', 
             tmp, h->hostname);
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
       /* determine current string length */
       slen = strlen(*desc);
 

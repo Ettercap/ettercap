@@ -615,7 +615,7 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
    char src[MAX_ASCII_ADDR_LEN];
    char dst[MAX_ASCII_ADDR_LEN];
    char proto[2], status[8], flags[2];
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    size_t slen;
 #endif
 
@@ -643,7 +643,7 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
             flags, src, ntohs(c->co->L4_addr1), dst, ntohs(c->co->L4_addr2),
             proto, status, (unsigned long)c->co->tx, (unsigned long)c->co->rx);
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
       /* determine current string length */
       slen = strlen(*desc);
 
@@ -823,14 +823,14 @@ int conntrack_statusstr(struct conn_object *conn, char *pstr, int len)
  */
 int conntrack_countrystr(struct conn_object *conn, char *pstr, int len)
 {
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    const char *ccode_src, *ccode_dst = NULL;
 #endif
 
    if (pstr == NULL || conn == NULL || len < 8)
       return -E_INVALID;
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    if (!GBL_CONF->geoip_support_enable)
       return -E_INITFAIL;
 

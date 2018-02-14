@@ -193,7 +193,7 @@ static void curses_connection_detail(void *conn)
    if (host_iptoa(&(c->co->L3_addr1), name) == E_SUCCESS)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Source hostname         :  %s", 
             name);
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    if (GBL_CONF->geoip_support_enable)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Source location         :  %s", 
             geoip_country_by_ip(&c->co->L3_addr1));
@@ -203,7 +203,7 @@ static void curses_connection_detail(void *conn)
          ip_addr_ntoa(&(c->co->L3_addr2), tmp));
    if (host_iptoa(&(c->co->L3_addr2), name) == E_SUCCESS)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Destination hostname    :  %s", name);
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    if (GBL_CONF->geoip_support_enable)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Destination location    :  %s",
             geoip_country_by_ip(&c->co->L3_addr2));

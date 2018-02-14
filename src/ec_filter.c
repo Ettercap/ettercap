@@ -1085,7 +1085,13 @@ int filter_load_file(const char *filename, struct filter_list **list, uint8_t en
 
    /* sanity checks */
    if (fh.magic != htons(EC_FILTER_MAGIC))
-      FATAL_MSG("Bad magic in filter file\nMake sure to compile the filter with etterfilter");
+      FATAL_MSG("Bad magic in filter file\n"
+            "Make sure to compile the filter with a current version of etterfilter");
+
+   /* check pointer alignment */
+   if (fh.code % 8)
+      FATAL_MSG("Bad instruction pointer alignment\n"
+            "Make sure to compile the filter with a current version of etterfilter");
   
    /* which version has compiled the filter ? */
    if (strcmp(fh.version, EC_VERSION))

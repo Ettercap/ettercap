@@ -184,11 +184,17 @@ else(HAVE_PCAP)
     message(FATAL_ERROR "libpcap not found!")
 endif(HAVE_PCAP)
 
-find_library(HAVE_GEOIP GeoIP)
-if(HAVE_GEOIP)
-   set(WITH_GEOIP 1)
-   set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_GEOIP})
-endif(HAVE_GEOIP)
+if(ENABLE_GEOIP)
+    message(STATUS "GeoIP support requested. Will look for the legacy GeoIP C library")
+    find_package(GEOIP)
+        if(GEOIP_FOUND)
+            set(HAVE_GEOIP 1)
+            set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${GEOIP_LIBRARIES})
+        else(GEOIP_FOUND)
+            message(FATAL_ERROR "GeoIP not found!")
+        endif(GEOIP_FOUND)
+endif(ENABLE_GEOIP)
+
 # begin LIBNET 
 
 # This is a fake target that ettercap is dependant upon. If we end up using 

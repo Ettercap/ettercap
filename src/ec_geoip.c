@@ -22,7 +22,7 @@
 #include <ec.h>
 #include <ec_geoip.h>
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
 
 #include <GeoIP.h>
 
@@ -203,4 +203,4 @@ const char* geoip_country_by_ip (struct ip_addr *ip)
    return GeoIP_name_by_id(id);
 }
 
-#endif  /* WITH_GEOIP */
+#endif  /* HAVE_GEOIP */

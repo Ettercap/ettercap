@@ -304,7 +304,7 @@ void gtkui_show_connections(void)
    gtk_tree_view_column_set_sort_column_id (column, 9);
    gtk_tree_view_append_column (GTK_TREE_VIEW(treeview), column);
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes ("Countries", renderer, "text", 10, NULL);
    gtk_tree_view_column_set_sort_column_id (column, 10);
@@ -735,7 +735,7 @@ static void gtkui_connection_detail(void)
       gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
    }
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    if (GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Source location:");
@@ -783,7 +783,7 @@ static void gtkui_connection_detail(void)
       gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
    }
 
-#ifdef WITH_GEOIP
+#ifdef HAVE_GEOIP
    if (GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Destination location:");

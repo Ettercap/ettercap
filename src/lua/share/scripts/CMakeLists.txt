@@ -7,4 +7,5 @@ install(FILES
             http_requests.lua
             inject_http.lua
             smtp_redir.lua
+            geoip_demo.lua
             DESTINATION ${INSTALL_LUA_SCRIPTS})

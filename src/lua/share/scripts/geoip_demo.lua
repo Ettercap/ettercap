@@ -13,7 +13,7 @@ local hook_points = require ("hook_points")
 hook_point = hook_points.filter
 
 is_ip = function(p)
-  return (p.L3 and p.L3.proto == 0x8)
+  return (p.L3 and (p.L3.proto == 0x8 or p.L3.proto == 0xDD86))
 end
 
 -- Optional, but we only want to look at IP-packets.

@@ -96,6 +96,12 @@
    + INET
       - handle fragmented packets
 
+   + LUA BINDINGS
+      - There's a lot to take care of.Too much to relate here. See:
+      https://github.com/Ettercap/ettercap/pull/858
+      https://github.com/Ettercap/ettercap/pull/869 and
+      https://github.com/Ettercap/ettercap/pull/698
+
 ==================
      FOR NOW
 =================

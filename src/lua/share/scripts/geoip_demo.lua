@@ -1,7 +1,9 @@
 ---
 
-description = [[ This demonstrates GeoIP information in ettercap.
-                 Ettercap MUST have been compiled '-DWITH_GEOIP'.
+description = [[ This demonstrates the use of GeoIP information in Ettercap.
+                 For this script to work, Ettercap MUST have been compiled
+                 with '-DHAVE_GEOIP', which is set by the cmake user option
+                 ENABLE_GEOIP (ON by default).
               ]]
 
 local ffi         = require ('ettercap_ffi')

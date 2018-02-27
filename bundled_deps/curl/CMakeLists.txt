@@ -3,79 +3,79 @@
 # This will build curl using the release that we've included with
 # our distribution of ettercap.
 include(ExternalProject)
-SET(CURL_VERSION 7.44.0)
-SET(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-SET(CURL_TARGET bundled-curl-${CURL_VERSION}-${CMAKE_BUILD_TYPE})
-SET(CURL_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${CURL_TARGET})
+set(CURL_VERSION 7.44.0)
+set(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(CURL_TARGET bundled-curl-${CURL_VERSION}-${CMAKE_BUILD_TYPE})
+set(CURL_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${CURL_TARGET})
 
-SET(CURL_CONFIGURE_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_configure_wrapper.sh)
-SET(CURL_BUILD_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_build_wrapper.sh)
-SET(CURL_INSTALL_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_install_wrapper.sh)
+set(CURL_CONFIGURE_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_configure_wrapper.sh)
+set(CURL_BUILD_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_build_wrapper.sh)
+set(CURL_INSTALL_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_install_wrapper.sh)
 
-SET(CURL_PREFIX ${CURL_BUILD_ROOT}/usr)
-SET(CURL_LIB_DIR ${CURL_PREFIX}/lib)
-SET(CURL_INCLUDE_DIR ${CURL_PREFIX}/include)
+set(CURL_PREFIX ${CURL_BUILD_ROOT}/usr)
+set(CURL_LIB_DIR ${CURL_PREFIX}/lib)
+set(CURL_INCLUDE_DIR ${CURL_PREFIX}/include)
 
-if (NOT OPENSSL_LIBRARIES)
+if(NOT OPENSSL_LIBRARIES)
   message(FATAL_ERROR "Cannot build bundled Curl without OpenSSL support enabled")
 endif()
 
-if (NOT ZLIB_LIBRARIES)
+if(NOT ZLIB_LIBRARIES)
   message(FATAL_ERROR "Cannot build bundled Curl without zlib")
 endif()
 
-find_package(LibIDN)
-if (NOT LIBIDN_FOUND)
-   message(FATAL_ERROR "Cannot build bundled Curl without idn")
-endif (NOT LIBIDN_FOUND)
+find_package(LIBIDN)
+if(NOT LIBIDN_FOUND)
+  message(FATAL_ERROR "Cannot build bundled Curl without idn")
+endif()
 
-find_package(LibRTMP)
-if (NOT RTMP_FOUND)
-   message(FATAL_ERROR "Cannot build bundled Curl without rtmp")
-endif (NOT RTMP_FOUND)
+find_package(LIBRTMP)
+if(NOT LIBRTMP_FOUND)
+  message(FATAL_ERROR "Cannot build bundled Curl without rtmp")
+endif()
 
 # Ensure that we include all the required stuff for linking to libcurl
-SET(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX}
+set(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX}
   ${OPENSSL_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${LIBIDN_LIBRARIES}
   ${RTMP_LIBRARIES}
-  )  
+  )
 
 #Figure out the parent directory for our openssl installation.
 get_filename_component(OPENSSL_ROOT_PATH ${OPENSSL_INCLUDE_DIR} PATH)
 
-SET(EXPORT_CC ${CMAKE_C_COMPILER})
+set(EXPORT_CC ${CMAKE_C_COMPILER})
 
 # -fPIC is required so that we can link in our static library, properly.
 # Add the cmake env cflags and all that jazz so we can inherit architectures
 # and the like.
-SET(EXPORT_C_FLAGS ${CMAKE_C_FLAGS} -fPIC)
+set(EXPORT_C_FLAGS ${CMAKE_C_FLAGS} -fPIC)
 
-IF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-  SET(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
-ELSEIF("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-  SET(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
-ENDIF("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-
-SET(EXPORT_PREFIX ${CURL_PREFIX})
-
-# Enable/Disable IPV6
-SET(EXPORT_IPV6_FLAGS --disable-ipv6)
-if(ENABLE_IPV6)
-  SET(EXPORT_IPV6_FLAGS --enable-ipv6)
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+  set(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
+elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+  set(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
 endif()
 
-CONFIGURE_FILE(${CURL_SOURCE_DIR}/curl_configure_wrapper.sh.in 
+set(EXPORT_PREFIX ${CURL_PREFIX})
+
+# Enable/Disable IPV6
+set(EXPORT_IPV6_FLAGS --disable-ipv6)
+if(ENABLE_IPV6)
+  set(EXPORT_IPV6_FLAGS --enable-ipv6)
+endif()
+
+configure_file(${CURL_SOURCE_DIR}/curl_configure_wrapper.sh.in
   ${CURL_CONFIGURE_WRAPPER} @ONLY)
-CONFIGURE_FILE(${CURL_SOURCE_DIR}/curl_build_wrapper.sh.in 
+configure_file(${CURL_SOURCE_DIR}/curl_build_wrapper.sh.in
   ${CURL_BUILD_WRAPPER} @ONLY)
-CONFIGURE_FILE(${CURL_SOURCE_DIR}/curl_install_wrapper.sh.in 
+configure_file(${CURL_SOURCE_DIR}/curl_install_wrapper.sh.in
   ${CURL_INSTALL_WRAPPER} @ONLY)
 
 #########################
 
-ExternalProject_Add(
+externalproject_add(
   ${CURL_TARGET}
   URL ${CURL_SOURCE_DIR}/curl-${CURL_VERSION}.tar.gz
   BUILD_IN_SOURCE 1

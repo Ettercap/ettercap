@@ -6,7 +6,7 @@
 #  GEOIP_LIBRARIES    - List of libraries when using GeoIP.
 #  GEOIP_FOUND        - True if GeoIP found.
 
-IF(GEOIP_INCLUDE_DIRS)
+if(GEOIP_INCLUDE_DIRS)
   # Already in cache, be silent
   set(GEOIP_FIND_QUIETLY TRUE)
 endif()
@@ -18,7 +18,7 @@ if(GEOIP_ROOT)
   set(GEOIP_ROOT PATHS ${GEOIP_ROOT} NO_DEFAULT_PATH)
 else()
   set(GEOIP_ROOT $ENV{GEOIP_ROOT})
-endif(GEOIP_ROOT)
+endif()
 
 find_package(PkgConfig)
 pkg_search_module(GEOIP geoip)
@@ -43,11 +43,11 @@ find_library(GEOIP_LIBRARY
 # handle the QUIETLY and REQUIRED arguments and set GEOIP_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(GEOIP DEFAULT_MSG GEOIP_LIBRARY GEOIP_INCLUDE_DIR)
+find_package_handle_standard_args(GEOIP DEFAULT_MSG GEOIP_LIBRARY GEOIP_INCLUDE_DIR)
 
 if(GEOIP_FOUND)
   set(GEOIP_LIBRARIES ${GEOIP_LIBRARY})
   set(GEOIP_INCLUDE_DIRS ${GEOIP_INCLUDE_DIR})
-endif(GEOIP_FOUND)
+endif()
 
 mark_as_advanced(GEOIP_LIBRARIES GEOIP_INCLUDE_DIRS)

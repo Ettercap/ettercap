@@ -143,6 +143,7 @@ before_script:
     - if [ ${TRAVIS_OS_NAME} = "osx" ]; then export BUILD_ARGS="$BUILD_ARGS -DOPENSSL_ROOT_DIR=`brew --prefix openssl`";fi
 
 script:
+  - if [[ "$CC" == "gcc" && "${BUILD_ARGS}" = "" ]]; then git clone https://github.com/richq/cmake-lint.git; cd cmake-lint; python setup.py install --user; cd -; ./misc/cmakelint.sh; fi
   - mkdir build
   - cd build
   - cmake -DENABLE_TESTS=On $BUILD_ARGS ..

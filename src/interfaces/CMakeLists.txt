@@ -11,7 +11,7 @@ set(EC_DAEMON_SRC daemon/ec_daemon.c)
 include_directories(daemon)
 
 if(ENABLE_CURSES)
-    set(EC_CURSES_SRC 
+    set(EC_CURSES_SRC
                 curses/ec_curses.c
                 curses/ec_curses_filters.c
                 curses/ec_curses_help.c
@@ -47,7 +47,7 @@ if(ENABLE_CURSES)
     include_directories(curses/widgets)
 #    add_library(ec_wdg STATIC ${EC_WDG_SRC})
 #    target_link_libraries(ec_wdg ${EC_LIBS})
-endif(ENABLE_CURSES)
+endif()
 
 if(ENABLE_GTK)
     set(EC_GTK_SRC
@@ -69,13 +69,14 @@ if(ENABLE_GTK)
                 gtk/ec_gtk_view_profiles.c
     )
     include_directories(gtk)
-endif(ENABLE_GTK)
+endif()
 
 
-add_library(ec_interfaces STATIC ../ec_interfaces.c ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_WDG_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
-set_target_properties(ec_interfaces PROPERTIES 
+add_library(ec_interfaces STATIC ../ec_interfaces.c
+${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_WDG_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
+set_target_properties(ec_interfaces PROPERTIES
   ENABLE_EXPORTS On
   COMPILE_FLAGS -fPIC
   #  LINK_INTERFACE_LIBRARIES ""
-  OUTPUT_NAME ec_interfaces 
+  OUTPUT_NAME ec_interfaces
   )

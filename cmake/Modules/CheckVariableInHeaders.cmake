@@ -1,12 +1,12 @@
-INCLUDE(CheckCSourceCompiles)
+include(CheckCSourceCompiles)
 
-MACRO(CHECK_VARIABLE_IN_HEADERS _SYMBOL _HEADER _RESULT)
-  SET(_INCLUDE_FILES)
-  FOREACH (it ${_HEADER})
-    SET(_INCLUDE_FILES "${_INCLUDE_FILES}#include <${it}>\n")
-  ENDFOREACH (it)
- 
-   SET(_CHECK_PROTO_EXISTS_SOURCE_CODE "
+macro(CHECK_VARIABLE_IN_HEADERS _SYMBOL _HEADER _RESULT)
+  set(_INCLUDE_FILES)
+  foreach(it ${_HEADER})
+    set(_INCLUDE_FILES "${_INCLUDE_FILES}#include <${it}>\n")
+  endforeach()
+
+  set(_CHECK_PROTO_EXISTS_SOURCE_CODE "
 ${_INCLUDE_FILES}
 void cmakeRequireSymbol(int dummy,...){(void)dummy;}
 int main()
@@ -15,15 +15,15 @@ int main()
   return 0;
 }
 ")
- 
-  CHECK_C_SOURCE_COMPILES("${_CHECK_PROTO_EXISTS_SOURCE_CODE}" ${_RESULT})
 
-  IF(${_RESULT})
-      FILE(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
-	"Variable ${_SYMBOL} was found in headers\n")
-  ELSE(${_RESULT})
-	FILE(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-	"Failed to find variable ${_SYMBOL}. Source: ${_CHECK_PROTO_EXISTS_SOURCE_CODE}\n")
-  ENDIF(${_RESULT})
-ENDMACRO(CHECK_VARIABLE_IN_HEADERS _SYMBOL _HEADER _RESULT)
+  check_c_source_compiles("${_CHECK_PROTO_EXISTS_SOURCE_CODE}" ${_RESULT})
+
+  if(${_RESULT})
+    file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeOutput.log
+    "Variable ${_SYMBOL} was found in headers\n")
+  else()
+    file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+    "Failed to find variable ${_SYMBOL}. Source: ${_CHECK_PROTO_EXISTS_SOURCE_CODE}\n")
+  endif()
+endmacro()
 

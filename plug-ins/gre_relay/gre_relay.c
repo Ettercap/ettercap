@@ -85,7 +85,10 @@ static int gre_relay_fini(void *);
 
 static void parse_gre(struct packet_object *po);
 static void parse_arp(struct packet_object *po);
+
+#ifdef WITH_IPV6
 static void parse_nd(struct packet_object *po);
+#endif
 
 /* plugin operations */
 struct plugin_ops gre_relay_ops = { 

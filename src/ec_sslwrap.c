@@ -552,7 +552,7 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
                return -E_INVALID;
       }
    }
-getsockopt
+
    return E_SUCCESS;
 }
 

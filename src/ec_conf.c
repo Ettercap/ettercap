@@ -82,6 +82,7 @@ static struct conf_entry misc[] = {
    { "submit_fingerprint", NULL },
    { "sniffing_at_startup", NULL },
    { "geoip_support_enable", NULL },
+   { "gtkui_prefer_dark_theme", NULL },
    { NULL, NULL },
 };
 
@@ -198,6 +199,7 @@ static void init_structures(void)
    set_pointer(misc, "submit_fingerprint", &GBL_CONF->submit_fingerprint);
    set_pointer(misc, "sniffing_at_startup", &GBL_CONF->sniffing_at_startup);
    set_pointer(misc, "geoip_support_enable", &GBL_CONF->geoip_support_enable);
+   set_pointer(misc, "gtkui_prefer_dark_theme", &GBL_CONF->gtkui_prefer_dark_theme);
    set_pointer(curses, "color_bg", &GBL_CONF->colors.bg);
    set_pointer(curses, "color_fg", &GBL_CONF->colors.fg);
    set_pointer(curses, "color_join1", &GBL_CONF->colors.join1);

@@ -268,6 +268,12 @@ static void gtkui_init(void)
 
    gtkui_conf_read();
 
+   /* try to explicitely enforce dark theme if preferred */
+   if (GBL_CONF->gtkui_prefer_dark_theme)
+      g_object_set(gtk_settings_get_default(), 
+            "gtk-application-prefer-dark-theme", TRUE,
+            NULL);
+
    etterapp = gtkui_setup(gtkui_build_widgets, NULL);
 
    /* initialize timer */

@@ -54,6 +54,7 @@ submit_fingerprint = 0        # boolean valid (set if you want ettercap to submi
 checksum_warning = 0          # boolean value (valid only if checksum_check is 1)
 sniffing_at_startup = 1       # boolean value
 geoip_support_enable = 1      # boolean value (set geoip_data_file of GeoIP database file cannot be located)
+gtkui_prefer_dark_theme = 0   # boolean value
 
 ############################################################################
 #

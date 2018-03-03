@@ -400,6 +400,9 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
     _gtk3_find_include_dir(GTK3_GOBJECT_INCLUDE_DIR gobject/gobject.h)
     _gtk3_find_library(GTK3_GOBJECT_LIBRARY gobject false true)
 
+    _gtk3_find_include_dir(GTK3_GIO_INCLUDE_DIR gio/gio.h)
+    _gtk3_find_library(GTK3_GIO_LIBRARY gio false true)
+
     _gtk3_find_include_dir(GTK3_GDK_PIXBUF_INCLUDE_DIR gdk-pixbuf/gdk-pixbuf.h)
     _gtk3_find_library(GTK3_GDK_PIXBUF_LIBRARY gdk_pixbuf false true)
 

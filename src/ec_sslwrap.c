@@ -817,7 +817,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
    switch (ntohs(ae->ip[SSL_CLIENT].addr_type)) {
       case AF_INET:
          if (getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len) == -1) {
-            FATAL_ERROR("getsockopt failed");
+            WARN_MSG("getsockopt failed: %s", strerror(errno));
             return -E_INVALID;
          }
          sa4 = (struct sockaddr_in *)&ss;
@@ -826,7 +826,7 @@ static int sslw_get_peer(struct accepted_entry *ae)
 #if defined WITH_IPV6 && defined HAVE_IP6T_SO_ORIGINAL_DST
       case AF_INET6:
          if (getsockopt(ae->fd[SSL_CLIENT], IPPROTO_IPV6, IP6T_SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len) == -1) {
-            FATAL_ERROR("getsockopt failed");
+            WARN_MSG("getsockopt failed: %s", strerror(errno));
             return -E_INVALID;
          }
          sa6 = (struct sockaddr_in6 *)&ss;

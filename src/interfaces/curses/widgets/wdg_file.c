@@ -123,7 +123,7 @@ static int wdg_file_destroy(struct wdg_object *wo)
    delwin(ww->win);
    
    /* restore the initial working directory */
-   if (chdir(ww->initpath))
+   if (chdir(ww->initpath) == -1)
        perror("chdir failed");
 
    WDG_SAFE_FREE(wo->extend);
@@ -395,7 +395,7 @@ static int wdg_file_driver(struct wdg_object *wo, int key, struct wdg_mouse_even
       stat(item_name(current_item(ww->m)), &buf);
       /* if it is a directory, change to it */
       if (S_ISDIR(buf.st_mode)) {
-         if (chdir(item_name(current_item(ww->m))))
+         if (chdir(item_name(current_item(ww->m))) == -1)
              perror("chdir failed");
          return -WDG_E_NOTHANDLED;
       } else {

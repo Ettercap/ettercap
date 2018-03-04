@@ -771,7 +771,7 @@ static int http_get_peer(struct http_connection *connection)
    switch (ntohs(connection->ip[HTTP_CLIENT].addr_type)) {
       case AF_INET:
          if (getsockopt (connection->fd, SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len) == -1) {
-            DEBUG_MSG("getsockopt failed: %s", strerror(errno));
+            WARN_MSG("getsockopt failed: %s", strerror(errno));
             return -E_INVALID;
          }
          sa4 = (struct sockaddr_in *)&ss;
@@ -780,7 +780,7 @@ static int http_get_peer(struct http_connection *connection)
 #if defined WITH_IPV6 && defined HAVE_IP6T_SO_ORIGINAL_DST
       case AF_INET6:
          if (getsockopt (connection->fd, IPPROTO_IPV6, IP6T_SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len) == -1) {
-            DEBUG_MSG("getsockopt failed: %s", strerror(errno));
+            WARN_MSG("getsockopt failed: %s", strerror(errno));
             return -E_INVALID;
          }
          sa6 = (struct sockaddr_in6 *)&ss;

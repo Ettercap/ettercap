@@ -816,13 +816,19 @@ static int sslw_get_peer(struct accepted_entry *ae)
 
    switch (ntohs(ae->ip[SSL_CLIENT].addr_type)) {
       case AF_INET:
-         getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len);
+         if (getsockopt(ae->fd[SSL_CLIENT], SOL_IP, SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len) == -1) {
+            WARN_MSG("getsockopt failed: %s", strerror(errno));
+            return -E_INVALID;
+         }
          sa4 = (struct sockaddr_in *)&ss;
          ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET, (u_char *)&(sa4->sin_addr.s_addr));
          break;
 #if defined WITH_IPV6 && defined HAVE_IP6T_SO_ORIGINAL_DST
       case AF_INET6:
-         getsockopt(ae->fd[SSL_CLIENT], IPPROTO_IPV6, IP6T_SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len);
+         if (getsockopt(ae->fd[SSL_CLIENT], IPPROTO_IPV6, IP6T_SO_ORIGINAL_DST, (struct sockaddr*)&ss, &ss_len) == -1) {
+            WARN_MSG("getsockopt failed: %s", strerror(errno));
+            return -E_INVALID;
+         }
          sa6 = (struct sockaddr_in6 *)&ss;
          ip_addr_init(&(ae->ip[SSL_SERVER]), AF_INET6, (u_char *)&(sa6->sin6_addr.s6_addr));
          break;

@@ -54,6 +54,7 @@ struct ec_conf {
    int checksum_warning;
    int sniffing_at_startup;
    int geoip_support_enable;
+   int gtkui_prefer_dark_theme;
    int store_profiles;
    struct curses_color colors;
    char *redir_command_on;

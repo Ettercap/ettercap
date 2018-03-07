@@ -301,6 +301,36 @@ ettercap spotting thru bad checsum packets (see Phrack 60.12). If you disable
 the check, you will be able to sniff even bad checksummed packet, but you will
 be spotted if someone is searching for you...
 
+.TP
+.B sniffing_at_startup
+If this option is set to 1, then ettercap will immediately start unified or 
+bridged sniffing after the setup phase has been completed. This option 
+helps to avoid traffic blocking when a MITM technique has been started but
+forgotten to start sniffing. Therefore this options is set to 1 by default.
+.br
+If this behaviour is not desired set it to 0 to manually control the status of
+unified or bridged sniffing after ettercap startet.
+However, sniffing can be stopped and started at any time while ettercap runs.
+
+.TP
+.B geoip_support_enable
+This option controls if GeoIP information shall be processed for IP addresses
+whether or not ettercap has been built with GeoIP support.
+
+.TP
+.B gtkui_prefer_dark_theme
+This option tries to enforce the dark variant of the applied theme. However
+this does only have an effect if the applied theme provides a dark variant.
+Normally the desktop environment controls the theme of applications. But some
+lightweight desktop environments doesn't support a configuraton option for 
+dark themes even when the theme provides a dark variant.
+To leave the theme variant setting to the desktop environment this option is
+set to 0 by default.
+.br
+.B NOTE: 
+This option is only relevant in GTK mode and if ettercap has been built with
+full GTK3 support.
+
 
 .TP 20
 .B [dissectors]

@@ -50,25 +50,49 @@ if(ENABLE_CURSES)
 endif()
 
 if(ENABLE_GTK)
-    set(EC_GTK_SRC
-                gtk/ec_gtk.c
-                gtk/ec_gtk_conf.c
-                gtk/ec_gtk_filters.c
-                gtk/ec_gtk_help.c
-                gtk/ec_gtk_hosts.c
-                gtk/ec_gtk_live.c
-                gtk/ec_gtk_logging.c
-                gtk/ec_gtk_menus.c
-                gtk/ec_gtk_mitm.c
-                gtk/ec_gtk_offline.c
-                gtk/ec_gtk_plugins.c
-                gtk/ec_gtk_start.c
-                gtk/ec_gtk_targets.c
-                gtk/ec_gtk_view.c
-                gtk/ec_gtk_view_connections.c
-                gtk/ec_gtk_view_profiles.c
-    )
+  if("${GTK_BUILD_TYPE}" STREQUAL "GTK2" OR "${HAVE_GTK3COMPAT}")
     include_directories(gtk)
+    set(EC_GTK_SRC
+      gtk/ec_gtk.c
+      gtk/ec_gtk_conf.c
+      gtk/ec_gtk_filters.c
+      gtk/ec_gtk_help.c
+      gtk/ec_gtk_hosts.c
+      gtk/ec_gtk_live.c
+      gtk/ec_gtk_logging.c
+      gtk/ec_gtk_menus.c
+      gtk/ec_gtk_mitm.c
+      gtk/ec_gtk_offline.c
+      gtk/ec_gtk_plugins.c
+      gtk/ec_gtk_start.c
+      gtk/ec_gtk_targets.c
+      gtk/ec_gtk_view.c
+      gtk/ec_gtk_view_connections.c
+      gtk/ec_gtk_view_profiles.c
+)
+  else()
+    # full GTK3 support, using gtk3 code
+    include_directories(gtk3)
+    set(EC_GTK_SRC
+      gtk3/ec_gtk3.c
+      gtk3/ec_gtk3_conf.c
+      gtk3/ec_gtk3_filters.c
+      gtk3/ec_gtk3_help.c
+      gtk3/ec_gtk3_hosts.c
+      gtk3/ec_gtk3_live.c
+      gtk3/ec_gtk3_logging.c
+      gtk3/ec_gtk3_menus.c
+      gtk3/ec_gtk3_mitm.c
+      gtk3/ec_gtk3_offline.c
+      gtk3/ec_gtk3_plugins.c
+      gtk3/ec_gtk3_start.c
+      gtk3/ec_gtk3_targets.c
+      gtk3/ec_gtk3_view.c
+      gtk3/ec_gtk3_view_connections.c
+      gtk3/ec_gtk3_view_profiles.c
+      gtk3/ec_gtk3_shortcuts.c
+)
+  endif()
 endif()
 
 

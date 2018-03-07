@@ -54,6 +54,14 @@
       - decryption with given keys
       - DES support
 
+   + ETTER.FINGER.MAC
+   Allow Ettercap to use oui.txt as downloaded, instead of etter.finger.mac.
+     Discussion: https://github.com/Ettercap/ettercap/pull/840
+      - change the code to use the standard oui.txt, and;
+      - use the system one when available. See:
+      https://packages.debian.org/sid/all/ieee-data/filelist
+      https://lintian.debian.org/tags/source-contains-data-from-ieee-data-oui-db.html
+
 ==================
   LONG TERM TODO
 ==================

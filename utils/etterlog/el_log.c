@@ -243,17 +243,20 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
          return -E_INVALID;
    }
 
-   switch (ntohs(inf->client.addr_type)) {
-      case AF_INET:
-         if (ntohs(inf->client.addr_len) != IP_ADDR_LEN)
+   /* if client IP address has been set otherwise skip */
+   if (!ip_addr_is_zero(&inf->client)) {
+      switch (ntohs(inf->client.addr_type)) {
+         case AF_INET:
+            if (ntohs(inf->client.addr_len) != IP_ADDR_LEN)
+               return -E_INVALID;
+            break;
+         case AF_INET6:
+            if (ntohs(inf->client.addr_len) != IP6_ADDR_LEN)
+               return -E_INVALID;
+            break;
+         default:
             return -E_INVALID;
-         break;
-      case AF_INET6:
-         if (ntohs(inf->client.addr_len) != IP6_ADDR_LEN)
-            return -E_INVALID;
-         break;
-      default:
-         return -E_INVALID;
+      }
    }
 
 

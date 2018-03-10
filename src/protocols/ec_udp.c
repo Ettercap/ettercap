@@ -91,8 +91,8 @@ FUNC_DECODER(decode_udp)
     *
     * don't perform the check in unoffensive mode
     */
-   if (GBL_CONF->checksum_check) {
-      if (!GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
+   if (EC_GBL_CONF->checksum_check) {
+      if (!EC_GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
          char tmp[MAX_ASCII_ADDR_LEN];
 #if defined(OS_DARWIN) || defined(OS_WINDOWS) || defined(OS_LINUX)
          /* 
@@ -114,7 +114,7 @@ FUNC_DECODER(decode_udp)
          if (ip_addr_is_ours(&PACKET->L3.src) != E_FOUND)
             return NULL;
 #endif
-         if (GBL_CONF->checksum_warning)
+         if (EC_GBL_CONF->checksum_warning)
             USER_MSG("Invalid UDP packet from %s:%d : csum [%#x] should be (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
                                     ntohs(udp->sport), ntohs(udp->csum), checksum_shouldbe(udp->csum, sum));
          return NULL;
@@ -177,7 +177,7 @@ FUNC_INJECTOR(inject_udp)
     * Attach the data (LENGTH was adjusted by LINKED injectors).
     * Set LENGTH to injectable data len.
     */
-   LENGTH = GBL_IFACE->mtu - LENGTH;
+   LENGTH = EC_GBL_IFACE->mtu - LENGTH;
    if (LENGTH > PACKET->DATA.inject_len)
       LENGTH = PACKET->DATA.inject_len;
    memcpy(udp_payload, PACKET->DATA.inject, LENGTH);   

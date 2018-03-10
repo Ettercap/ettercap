@@ -133,7 +133,7 @@ static void remote_browser(struct packet_object *po)
          goto bad;
            
       /* fill the command */
-      command = strdup(GBL_CONF->remote_browser);
+      command = strdup(EC_GBL_CONF->remote_browser);
       str_replace(&command, "%host", host);
       str_replace(&command, "%url", url);
       
@@ -177,7 +177,7 @@ static void remote_browser(struct packet_object *po)
             WARN_MSG("your ec_gid and ec_uid in etter.conf file are set to nobody (65535), you probably cannot open a new browser\n");
 
          execvp(param[0], param);
-         WARN_MSG("Cannot launch the default browser (command: %s), please edit your etter.conf file and put a valid value in remote_browser field\n", GBL_CONF->remote_browser);
+         WARN_MSG("Cannot launch the default browser (command: %s), please edit your etter.conf file and put a valid value in remote_browser field\n", EC_GBL_CONF->remote_browser);
          _exit(-E_INVALID);
       }
          

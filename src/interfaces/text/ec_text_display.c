@@ -42,7 +42,7 @@ void text_print_packet(struct packet_object *po)
    int ret;
 
    /* don't display the packet */
-   if (GBL_OPTIONS->quiet)
+   if (EC_GBL_OPTIONS->quiet)
       return;
    
    /* 
@@ -52,8 +52,8 @@ void text_print_packet(struct packet_object *po)
     * in this way we can match e.t.t.e.r.c.a.p in TEXT mode with
     * the "ettercap" regex
     */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, (const  char  *)po->DATA.disp_data, 0, NULL, 0) != 0) {
+   if (EC_GBL_OPTIONS->regex && 
+       regexec(EC_GBL_OPTIONS->regex, (const  char  *)po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
                
@@ -67,7 +67,7 @@ void text_print_packet(struct packet_object *po)
    /* 
     * format the packet with the function set by the user
     */
-   ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, tmp);
+   ret = EC_GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, tmp);
 
    /* print the headers */
    display_headers(po);
@@ -97,7 +97,7 @@ static void display_headers(struct packet_object *po)
    fprintf(stdout, "\n\n%s [%lu]\n", ec_ctime(&po->ts), po->ts.tv_usec);
 #endif
 
-   if (GBL_OPTIONS->ext_headers) {
+   if (EC_GBL_OPTIONS->ext_headers) {
       /* display the mac addresses */
       mac_addr_ntoa(po->L2.src, tmp1);
       mac_addr_ntoa(po->L2.dst, tmp2);

@@ -129,7 +129,7 @@ static int port_stealing_start(char *args)
             * allow sniffing of remote host even 
             * if the target is local (used for gw)
             */
-            GBL_OPTIONS->remote = 1;
+            EC_GBL_OPTIONS->remote = 1;
          } else if (!strcasecmp(p, "tree")) {
             steal_tree = 1; 
          } else {
@@ -139,17 +139,17 @@ static int port_stealing_start(char *args)
    }
  
    /* Port Stealing works only on ethernet switches */
-   if (GBL_PCAP->dlt != IL_TYPE_ETH)
+   if (EC_GBL_PCAP->dlt != IL_TYPE_ETH)
       SEMIFATAL_ERROR("Port Stealing does not support this media.\n");
 
-   if (LIST_EMPTY(&GBL_HOSTLIST)) 
+   if (LIST_EMPTY(&EC_GBL_HOSTLIST)) 
       SEMIFATAL_ERROR("Port stealing needs a non empty hosts list.\n");
       
    /* Avoid sniffing loops. XXX - it remains even after mitm stopping */
-   capture_only_incoming(GBL_IFACE->pcap, GBL_IFACE->lnet);
+   capture_only_incoming(EC_GBL_IFACE->pcap, EC_GBL_IFACE->lnet);
       
    /* Create the port stealing list from hosts list */   
-   LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(h, &EC_GBL_HOSTLIST, next) {
       /* create the element and insert it in steal lists */
       SAFE_CALLOC(s, 1, sizeof(struct steal_list));
       memcpy(&s->ip, &h->ip, sizeof(struct ip_addr));
@@ -171,7 +171,7 @@ static int port_stealing_start(char *args)
    if (steal_tree)
       memcpy(heth->dha, bogus_mac, ETH_ADDR_LEN);
    else
-      memcpy(heth->dha, GBL_IFACE->mac, ETH_ADDR_LEN);
+      memcpy(heth->dha, EC_GBL_IFACE->mac, ETH_ADDR_LEN);
 
    heth->proto = htons(LL_TYPE_ARP);
    harp->ar_hrd = htons(ARPHRD_ETHER);
@@ -235,8 +235,8 @@ static void port_stealing_stop(void)
     */
    for (i=0; i<2; i++) {
       LIST_FOREACH(s, &steal_table, next) {
-         send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
-         ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
+         send_arp(ARPOP_REQUEST, &EC_GBL_IFACE->ip, EC_GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
+         ec_usleep(MILLI2MICRO(EC_GBL_CONF->arp_storm_delay));
       }      
    }
    
@@ -285,11 +285,11 @@ EC_THREAD_FUNC(port_stealer)
             memcpy(heth->sha, s->mac, ETH_ADDR_LEN);
             send_to_L2(&fake_po); 
             /* FIXME: port_steal_delay is defined as seconds; not microseconds... */
-            ec_usleep(GBL_CONF->port_steal_delay);
+            ec_usleep(EC_GBL_CONF->port_steal_delay);
          }
       }      
       /* FIXME: port_steal_delay is defined as seconds; not microseconds... */
-      ec_usleep(GBL_CONF->port_steal_delay);
+      ec_usleep(EC_GBL_CONF->port_steal_delay);
    }
    
    return NULL; 
@@ -331,7 +331,7 @@ static void put_queue(struct packet_object *po)
           */
          if (!s->wait_reply) {
             s->wait_reply = 1;
-            send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
+            send_arp(ARPOP_REQUEST, &EC_GBL_IFACE->ip, EC_GBL_IFACE->mac, &s->ip, MEDIA_BROADCAST);
          }
 
          SAFE_CALLOC(p, 1, sizeof(struct packet_list));
@@ -364,7 +364,7 @@ static void send_queue(struct packet_object *po)
    int in_list, to_wait = 0;
 
    /* Check if it's an arp reply for us */
-   if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))
+   if (memcmp(po->L2.dst, EC_GBL_IFACE->mac, MEDIA_ADDR_LEN))
       return;
       
    LIST_FOREACH(s1, &steal_table, next) {
@@ -392,7 +392,7 @@ static void send_queue(struct packet_object *po)
                   heth = (struct eth_header *)p->po->packet;
                   /* Paranoid test */
                   if (p->po->len >= sizeof(struct eth_header))
-                     memcpy(heth->sha, GBL_IFACE->mac, ETH_ADDR_LEN);
+                     memcpy(heth->sha, EC_GBL_IFACE->mac, ETH_ADDR_LEN);
                }
 
                /* Send the packet on the wire */
@@ -408,7 +408,7 @@ static void send_queue(struct packet_object *po)
 	      
                /* Sleep only if we have more than one packet to send */
                if (to_wait) 
-                  ec_usleep(GBL_CONF->port_steal_send_delay);
+                  ec_usleep(EC_GBL_CONF->port_steal_send_delay);
                to_wait = 1;
             }
             /* Restart the stealing process for this host */

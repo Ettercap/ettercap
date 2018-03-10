@@ -87,17 +87,17 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    CANCELLATION_POINT();
 
    /* start the timer for the stats */
-   stats_half_start(&GBL_STATS->bh);
+   stats_half_start(&EC_GBL_STATS->bh);
   
    /* XXX -- remove this */
 #if 0
-   if (!GBL_OPTIONS->quiet)
+   if (!EC_GBL_OPTIONS->quiet)
       USER_MSG("CAPTURED: 0x%04x bytes form %s\n", pkthdr->caplen, iface->name );
 #endif
    
-   if (GBL_OPTIONS->read)
+   if (EC_GBL_OPTIONS->read)
       /* update the offset pointer */
-      GBL_PCAP->dump_off = ftell(pcap_file(GBL_IFACE->pcap));
+      EC_GBL_PCAP->dump_off = ftell(pcap_file(EC_GBL_IFACE->pcap));
    else {
       /* update the statistics */
       stats_update();
@@ -111,13 +111,13 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * filedump. See below where the file is dumped when reading
     * form other files (useful for decription).
     */
-   if (GBL_OPTIONS->write && !GBL_OPTIONS->read) {
+   if (EC_GBL_OPTIONS->write && !EC_GBL_OPTIONS->read) {
       /* 
        * we need to lock this because in SM_BRIDGED the
        * packets are dumped in the log file by two threads
        */
       DUMP_LOCK;
-      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, pkt);
+      pcap_dump((u_char *)EC_GBL_PCAP->dump, pkthdr, pkt);
       DUMP_UNLOCK;
    }
  
@@ -134,10 +134,10 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * also keep the buffer aligned !
     * the alignment is set by the media decoder.
     */
-   memcpy(GBL_PCAP->buffer + GBL_PCAP->align, pkt, pkthdr->caplen);
+   memcpy(EC_GBL_PCAP->buffer + EC_GBL_PCAP->align, pkt, pkthdr->caplen);
    
    /* extract data and datalen from pcap packet */
-   data = (u_char *)GBL_PCAP->buffer + GBL_PCAP->align;
+   data = (u_char *)EC_GBL_PCAP->buffer + EC_GBL_PCAP->align;
    datalen = pkthdr->caplen;
 
    /* 
@@ -145,7 +145,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * if someone has created a pcap file with the snaplen
     * too small we have to skip the packet (is not interesting for us)
     */
-   if (GBL_PCAP->snaplen <= datalen) {
+   if (EC_GBL_PCAP->snaplen <= datalen) {
       USER_MSG("Truncated packet detected, skipping...\n");
       return;
    }
@@ -159,9 +159,9 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    /* set the po timestamp */
    memcpy(&po.ts, &pkthdr->ts, sizeof(struct timeval));
    /* set the interface where the packet was captured */
-   if (GBL_OPTIONS->iface && !strcmp(iface->name, GBL_OPTIONS->iface))
+   if (EC_GBL_OPTIONS->iface && !strcmp(iface->name, EC_GBL_OPTIONS->iface))
       po.flags |= PO_FROMIFACE;
-   else if (GBL_OPTIONS->iface_bridge && !strcmp(iface->name, GBL_OPTIONS->iface_bridge))
+   else if (EC_GBL_OPTIONS->iface_bridge && !strcmp(iface->name, EC_GBL_OPTIONS->iface_bridge))
       po.flags |= PO_FROMBRIDGE;
 
    /* HOOK POINT: RECEIVED */ 
@@ -182,14 +182,14 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     *
     * after this fuction the packet is completed (all flags set)
     */
-   packet_decoder = get_decoder(LINK_LAYER, GBL_PCAP->dlt);
+   packet_decoder = get_decoder(LINK_LAYER, EC_GBL_PCAP->dlt);
    BUG_IF(packet_decoder == NULL);
    packet_decoder(data, datalen, &len, &po);
   
    /* special case for bridged sniffing */
-   if (GBL_SNIFF->type == SM_BRIDGED) {
-      EXECUTE(GBL_SNIFF->check_forwarded, &po);
-      EXECUTE(GBL_SNIFF->set_forwardable, &po);
+   if (EC_GBL_SNIFF->type == SM_BRIDGED) {
+      EXECUTE(EC_GBL_SNIFF->check_forwarded, &po);
+      EXECUTE(EC_GBL_SNIFF->set_forwardable, &po);
    }
    
    /* XXX - BIG WARNING !!
@@ -204,7 +204,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    if ( (po.flags & PO_FORWARDABLE) && !(po.flags & PO_FORWARDED) ) {
       /* HOOK POINT: PRE_FORWARD */ 
       hook_point(HOOK_PRE_FORWARD, &po);
-      EXECUTE(GBL_SNIFF->forward, &po);
+      EXECUTE(EC_GBL_SNIFF->forward, &po);
    }
 
 
@@ -213,10 +213,10 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * this is useful when decrypting packets or applying filters
     * on pcapfile and we want to save the result in a file
     */
-   if (GBL_OPTIONS->write && GBL_OPTIONS->read) {
+   if (EC_GBL_OPTIONS->write && EC_GBL_OPTIONS->read) {
       DUMP_LOCK;
       /* reuse the original pcap header, but with the modified packet */
-      pcap_dump((u_char *)GBL_PCAP->dump, pkthdr, po.packet);
+      pcap_dump((u_char *)EC_GBL_PCAP->dump, pkthdr, po.packet);
       DUMP_UNLOCK;
    }
    
@@ -226,7 +226,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
     * we have to do this because the last packet 
     * might be dropped by the filter.
     */
-   if (GBL_OPTIONS->read && GBL_PCAP->dump_size == GBL_PCAP->dump_off) {
+   if (EC_GBL_OPTIONS->read && EC_GBL_PCAP->dump_size == EC_GBL_PCAP->dump_off) {
       po.flags |= PO_EOF;
       top_half_queue_add(&po);
    }
@@ -235,7 +235,7 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    packet_destroy_object(&po);
    
    /* calculate the stats */
-   stats_half_end(&GBL_STATS->bh, pkthdr->caplen);
+   stats_half_end(&EC_GBL_STATS->bh, pkthdr->caplen);
    
    CANCELLATION_POINT();
 
@@ -265,7 +265,7 @@ FUNC_DECODER(decode_data)
       return NULL;
    
    /* reset the flag PO_IGNORE if the packet should be processed */
-   EXECUTE(GBL_SNIFF->interesting, po);
+   EXECUTE(EC_GBL_SNIFF->interesting, po);
 
    /* HOOK POINT: HANDLED */ 
    hook_point(HOOK_HANDLED, po);

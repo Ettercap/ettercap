@@ -92,7 +92,7 @@ void print_host(struct host_profile *h)
       fprintf(stdout, " Hostname     : %s \n", h->hostname);
 
 #ifdef HAVE_GEOIP
-   if (GBL_CONF->geoip_support_enable)
+   if (EC_GBL_CONF->geoip_support_enable)
       fprintf(stdout, " Location     : %s \n", geoip_country_by_ip(&h->L3_addr));
 #endif
 
@@ -169,7 +169,7 @@ void print_host_xml(struct host_profile *h)
       fprintf(stdout, "\t\t<hostname>%s</hostname>\n", h->hostname);
    
 #ifdef HAVE_GEOIP
-   if (GBL_CONF->geoip_support_enable)
+   if (EC_GBL_CONF->geoip_support_enable)
       fprintf(stdout, "\t\t<location>%s</location>\n", 
             geoip_country_by_ip(&h->L3_addr));
 #endif

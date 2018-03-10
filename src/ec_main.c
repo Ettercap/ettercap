@@ -62,12 +62,12 @@ int main(int argc, char *argv[])
     * We can access these structs via the macro in ec_globals.h
     */
         
-   globals_alloc();
+   ec_globals_alloc();
   
-   GBL_PROGRAM = strdup(EC_PROGRAM);
-   GBL_VERSION = strdup(EC_VERSION);
-   SAFE_CALLOC(GBL_DEBUG_FILE, strlen(EC_PROGRAM) + strlen("-") + strlen(EC_VERSION) + strlen("_debug.log") + 1, sizeof(char));
-   sprintf(GBL_DEBUG_FILE, "%s-%s_debug.log", GBL_PROGRAM, EC_VERSION);
+   EC_GBL_PROGRAM = strdup(EC_PROGRAM);
+   EC_GBL_VERSION = strdup(EC_VERSION);
+   SAFE_CALLOC(EC_GBL_DEBUG_FILE, strlen(EC_PROGRAM) + strlen("-") + strlen(EC_VERSION) + strlen("_debug.log") + 1, sizeof(char));
+   sprintf(EC_GBL_DEBUG_FILE, "%s-%s_debug.log", EC_GBL_PROGRAM, EC_VERSION);
    
    DEBUG_INIT();
    DEBUG_MSG("main -- here we go !!");
@@ -82,11 +82,11 @@ int main(int argc, char *argv[])
    signal_handler();
    
 #ifdef OS_GNU
-  fprintf(stdout,"%s is still not fully supported in this OS because of missing live capture support.", GBL_PROGRAM);
+  fprintf(stdout,"%s is still not fully supported in this OS because of missing live capture support.", EC_GBL_PROGRAM);
 #endif
    /* ettercap copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
-         GBL_PROGRAM, GBL_VERSION, EC_COPYRIGHT, EC_AUTHORS);
+         EC_GBL_PROGRAM, EC_GBL_VERSION, EC_COPYRIGHT, EC_AUTHORS);
    
    /* getopt related parsing...  */
    parse_options(argc, argv);
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
    
 #ifdef HAVE_GEOIP
    /* initialize the GeoIP API */
-   if (GBL_CONF->geoip_support_enable)
+   if (EC_GBL_CONF->geoip_support_enable)
       geoip_init();
 #endif
 
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     * always disable the kernel ip forwarding (except when reading from file).
     * the forwarding will be done by ettercap.
     */
-   if(!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm) {
+   if(!EC_GBL_OPTIONS->read && !EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->only_mitm) {
 #ifdef WITH_IPV6
       /*
        * disable_ipv6_forward() registers the restore function with atexit() 
@@ -136,16 +136,16 @@ int main(int argc, char *argv[])
       disable_ip_forward();
 	
 #ifdef OS_LINUX
-      if (!GBL_OPTIONS->read)
+      if (!EC_GBL_OPTIONS->read)
       	disable_interface_offload();
 #endif
       /* binds ports and set redirect for ssl wrapper */
-      if(GBL_SNIFF->type == SM_UNIFIED && GBL_OPTIONS->ssl_mitm)
+      if(EC_GBL_SNIFF->type == SM_UNIFIED && EC_GBL_OPTIONS->ssl_mitm)
          ssl_wrap_init();
 
 #if defined OS_LINUX && defined WITH_IPV6
       /* check if privacy extensions are enabled */
-      check_tempaddr(GBL_OPTIONS->iface);
+      check_tempaddr(EC_GBL_OPTIONS->iface);
 #endif
    }
    
@@ -182,10 +182,10 @@ int main(int argc, char *argv[])
 #endif
 
    /* set the encoding for the UTF-8 visualization */
-   set_utf8_encoding((u_char*)GBL_CONF->utf8_encoding);
+   set_utf8_encoding((u_char*)EC_GBL_CONF->utf8_encoding);
   
    /* print all the buffered messages */
-   if (GBL_UI->type == UI_TEXT)
+   if (EC_GBL_UI->type == UI_TEXT)
       USER_MSG("\n");
    
    ui_msg_flush(MSG_ALL);
@@ -196,19 +196,19 @@ int main(int argc, char *argv[])
     * we are interested only in the mitm attack i
     * if entered, this function will not return...
     */
-   if (GBL_OPTIONS->only_mitm)
+   if (EC_GBL_OPTIONS->only_mitm)
       only_mitm();
    
    /* create the dispatcher thread */
    ec_thread_new("top_half", "dispatching module", &top_half, NULL);
 
    /* this thread becomes the UI then displays it */
-   ec_thread_register(EC_PTHREAD_SELF, GBL_PROGRAM, "the user interface");
+   ec_thread_register(EC_PTHREAD_SELF, EC_GBL_PROGRAM, "the user interface");
 
    /* start unified sniffing for curses and GTK at startup */
-   if ((GBL_UI->type == UI_CURSES || GBL_UI->type == UI_GTK) &&
-         GBL_CONF->sniffing_at_startup)
-      EXECUTE(GBL_SNIFF->start);
+   if ((EC_GBL_UI->type == UI_CURSES || EC_GBL_UI->type == UI_GTK) &&
+         EC_GBL_CONF->sniffing_at_startup)
+      EXECUTE(EC_GBL_SNIFF->start);
 
    /* start the actual user interface */
    ui_start();

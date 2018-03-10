@@ -177,7 +177,7 @@ struct wifi_env {
 };
 
 /* the globals container */
-struct globals {
+struct ec_globals {
    struct ec_conf *conf;
    struct ec_options *options;
    struct gbl_stats *stats;
@@ -196,37 +196,37 @@ struct globals {
    struct filter_list *filters;
 };
 
-EC_API_EXTERN struct globals *gbls;
+EC_API_EXTERN struct ec_globals *ec_gbls;
 
-#define GBLS gbls
+#define EC_GBLS ec_gbls
 
-#define GBL_CONF           (GBLS->conf)
-#define GBL_OPTIONS        (GBLS->options)
-#define GBL_STATS          (GBLS->stats)
-#define GBL_UI             (GBLS->ui)
-#define GBL_ENV            (GBLS->env)
-#define GBL_PCAP           (GBLS->pcap)
-#define GBL_LNET           (GBLS->lnet)
-#define GBL_IFACE          (GBLS->iface)
-#define GBL_BRIDGE         (GBLS->bridge)
-#define GBL_SNIFF          (GBLS->sm)
-#define GBL_TARGET1        (GBLS->t1)
-#define GBL_TARGET2        (GBLS->t2)
-#define GBL_WIFI           (GBLS->wifi)
-#define GBL_HOSTLIST       (GBLS->hosts_list)
-#define GBL_PROFILES       (GBLS->profiles_list_head)
-#define GBL_FILTERS        &(GBLS->filters)
+#define EC_GBL_CONF           (EC_GBLS->conf)
+#define EC_GBL_OPTIONS        (EC_GBLS->options)
+#define EC_GBL_STATS          (EC_GBLS->stats)
+#define EC_GBL_UI             (EC_GBLS->ui)
+#define EC_GBL_ENV            (EC_GBLS->env)
+#define EC_GBL_PCAP           (EC_GBLS->pcap)
+#define EC_GBL_LNET           (EC_GBLS->lnet)
+#define EC_GBL_IFACE          (EC_GBLS->iface)
+#define EC_GBL_BRIDGE         (EC_GBLS->bridge)
+#define EC_GBL_SNIFF          (EC_GBLS->sm)
+#define EC_GBL_TARGET1        (EC_GBLS->t1)
+#define EC_GBL_TARGET2        (EC_GBLS->t2)
+#define EC_GBL_WIFI           (EC_GBLS->wifi)
+#define EC_GBL_HOSTLIST       (EC_GBLS->hosts_list)
+#define EC_GBL_PROFILES       (EC_GBLS->profiles_list_head)
+#define EC_GBL_FILTERS        &(EC_GBLS->filters)
 
-#define GBL_FORMAT         (GBL_OPTIONS->format)
+#define EC_GBL_FORMAT         (EC_GBL_OPTIONS->format)
 
-#define GBL_PROGRAM        (GBL_ENV->name)
-#define GBL_VERSION        (GBL_ENV->version)
-#define GBL_DEBUG_FILE     (GBL_ENV->debug_file)
+#define EC_GBL_PROGRAM        (EC_GBL_ENV->name)
+#define EC_GBL_VERSION        (EC_GBL_ENV->version)
+#define EC_GBL_DEBUG_FILE     (EC_GBL_ENV->debug_file)
 
 /* exported functions */
 
-EC_API_EXTERN void globals_alloc(void);
-EC_API_EXTERN void globals_free(void);
+EC_API_EXTERN void ec_globals_alloc(void);
+EC_API_EXTERN void ec_globals_free(void);
 
 #endif
 

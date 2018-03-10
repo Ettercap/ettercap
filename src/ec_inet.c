@@ -474,10 +474,10 @@ int ip_addr_is_broadcast(struct ip_addr *sa)
 
 	switch(ntohs(sa->addr_type)) {
 		case AF_INET:
-         if(!GBL_IFACE->has_ipv4)
+         if(!EC_GBL_IFACE->has_ipv4)
             return -E_INVALID;
-			nm = &GBL_IFACE->netmask;
-			nw = &GBL_IFACE->network;
+			nm = &EC_GBL_IFACE->netmask;
+			nw = &EC_GBL_IFACE->network;
 		
          /* 255.255.255.255 is definitely broadcast */
          if(!memcmp(sa->addr, "\xff\xff\xff\xff", IP_ADDR_LEN))
@@ -492,7 +492,7 @@ int ip_addr_is_broadcast(struct ip_addr *sa)
 			if (broadcast == *address)
 				return E_SUCCESS;
 		case AF_INET6:
-			if(!GBL_IFACE->has_ipv6)
+			if(!EC_GBL_IFACE->has_ipv6)
 				return -E_INVALID;
 
          /* IPv6 has no such thing as a broadcast address. The closest
@@ -511,9 +511,9 @@ int ip_addr_is_broadcast(struct ip_addr *sa)
 /*
  * returns E_SUCCESS if the ip address is local.
  * returns -E_NOTFOUND if it is non local.
- * the choice is make reading the GBL_IFACE infos
+ * the choice is make reading the EC_GBL_IFACE infos
  *
- * if the GBL_IFACE is not filled (while reading from files)
+ * if the EC_GBL_IFACE is not filled (while reading from files)
  * returns -E_INVALID.
  */
 int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
@@ -529,13 +529,13 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
 
    switch (ntohs(sa->addr_type)) {
       case AF_INET:
-         nm = &GBL_IFACE->netmask;
-         nw = &GBL_IFACE->network;
+         nm = &EC_GBL_IFACE->netmask;
+         nw = &EC_GBL_IFACE->network;
          /* the address 0.0.0.0 is used by DHCP and it is local for us*/
          if ( !memcmp(&sa->addr, "\x00\x00\x00\x00", ntohs(sa->addr_len)) )
             return E_SUCCESS;
          
-         /* make a check on GBL_IFACE (is it initialized ?) */
+         /* make a check on EC_GBL_IFACE (is it initialized ?) */
          if ( !memcmp(&nw->addr, "\x00\x00\x00\x00", ntohs(sa->addr_len)) )
             /* return UNKNOWN */
             return -E_INVALID;
@@ -546,14 +546,14 @@ int ip_addr_is_local(struct ip_addr *sa, struct ip_addr *ifaddr)
          /* check if it is local */
          if ((*address & *netmask) == *network) {
             if(ifaddr != NULL)
-               memcpy(ifaddr, &GBL_IFACE->ip, sizeof(*ifaddr));
+               memcpy(ifaddr, &EC_GBL_IFACE->ip, sizeof(*ifaddr));
             return E_SUCCESS;
          }
          break;
       case AF_INET6:
-         if(!GBL_IFACE->has_ipv6)
+         if(!EC_GBL_IFACE->has_ipv6)
              return -E_INVALID;
-         LIST_FOREACH(ip6, &GBL_IFACE->ip6_list, next) {
+         LIST_FOREACH(ip6, &EC_GBL_IFACE->ip6_list, next) {
             nm = &ip6->netmask;
             nw = &ip6->network;
             address = sa->addr32;
@@ -592,16 +592,16 @@ int ip_addr_is_ours(struct ip_addr *ip)
    struct net_list *i;
    switch(ntohs(ip->addr_type)) {
       case AF_INET:
-         if(!ip_addr_cmp(ip, &GBL_IFACE->ip))
+         if(!ip_addr_cmp(ip, &EC_GBL_IFACE->ip))
             return E_FOUND;
-         else if(!ip_addr_cmp(ip, &GBL_BRIDGE->ip))
+         else if(!ip_addr_cmp(ip, &EC_GBL_BRIDGE->ip))
             return E_BRIDGE;
          else
             return -E_NOTFOUND;
          break;
 
       case AF_INET6:
-         LIST_FOREACH(i, &GBL_IFACE->ip6_list, next) {
+         LIST_FOREACH(i, &EC_GBL_IFACE->ip6_list, next) {
             if(!ip_addr_cmp(ip, &i->ip))
                return E_FOUND;
          }

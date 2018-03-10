@@ -102,7 +102,7 @@ EC_API_EXTERN int dissect_on_port_level(char *name, u_int16 port, u_int8 level);
 
 
 #define DISSECT_MSG(x, ...) do {    \
-   if (!GBL_OPTIONS->superquiet)    \
+   if (!EC_GBL_OPTIONS->superquiet)    \
       USER_MSG(x, ## __VA_ARGS__ ); \
 } while(0)
 

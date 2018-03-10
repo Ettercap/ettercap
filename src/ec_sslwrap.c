@@ -198,13 +198,13 @@ void ssl_wrap_init(void)
    struct listen_entry *le;
 
    /* disable if the aggressive flag is not set */
-   if (!GBL_CONF->aggressive_dissectors) {
+   if (!EC_GBL_CONF->aggressive_dissectors) {
       DEBUG_MSG("ssl_wrap_init: not aggressive");
       return;
    }
    
    /* a valid script for the redirection must be set */
-   if (!GBL_CONF->redir_command_on) {
+   if (!EC_GBL_CONF->redir_command_on) {
       DEBUG_MSG("ssl_wrap_init: no redirect script");
       USER_MSG("SSL dissection needs a valid 'redir_command_on' script in the etter.conf file\n");
       return;
@@ -275,11 +275,11 @@ EC_THREAD_FUNC(sslw_start)
    ec_thread_init();
 
    /* disabled if not aggressive */
-   if (!GBL_CONF->aggressive_dissectors)
+   if (!EC_GBL_CONF->aggressive_dissectors)
       return NULL;
 
    /* a valid script for the redirection must be set */
-   if (!GBL_CONF->redir_command_on)
+   if (!EC_GBL_CONF->redir_command_on)
       return NULL;
 
    DEBUG_MSG("sslw_start: initialized and ready");
@@ -406,23 +406,23 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
    char *param[4], *commands[2] = {NULL, NULL};
  
    /* the script is not defined */
-   if (GBL_CONF->redir_command_on == NULL)
+   if (EC_GBL_CONF->redir_command_on == NULL)
    {
       USER_MSG("sslwrap: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
       return -E_FATAL;
    }
    else  {
-      commands[0] = strdup(GBL_CONF->redir_command_on);
+      commands[0] = strdup(EC_GBL_CONF->redir_command_on);
    }
 
 #ifdef WITH_IPV6
    /* IPv6 redirect script is optional */
-   if (GBL_CONF->redir6_command_on == NULL)
+   if (EC_GBL_CONF->redir6_command_on == NULL)
    {
       WARN_MSG("sslwrap: cannot setup the redirect for IPv6, did you uncomment the redir6_command_on command on your etter.conf file?\n");
    }
    else {
-      commands[1] = strdup(GBL_CONF->redir6_command_on);
+      commands[1] = strdup(EC_GBL_CONF->redir6_command_on);
    }
 #endif
 
@@ -433,7 +433,7 @@ static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
       command = commands[i];
 
       /* make the substitutions in the script */
-      str_replace(&command, "%iface", GBL_OPTIONS->iface);
+      str_replace(&command, "%iface", EC_GBL_OPTIONS->iface);
       str_replace(&command, "%port", asc_sport);
       str_replace(&command, "%rport", asc_dport);
 
@@ -489,23 +489,23 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
    char *param[4], *commands[2] = {NULL, NULL};
 
    /* the script is not defined */
-   if (GBL_CONF->redir_command_off == NULL)
+   if (EC_GBL_CONF->redir_command_off == NULL)
    {
       USER_MSG("sslwrap: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
       return -E_FATAL;
    }
    else {
-      commands[0] = strdup(GBL_CONF->redir_command_off);
+      commands[0] = strdup(EC_GBL_CONF->redir_command_off);
    }
 
 #ifdef WITH_IPV6
    /* the script for IPv6 is optional */
-   if (GBL_CONF->redir6_command_off == NULL)
+   if (EC_GBL_CONF->redir6_command_off == NULL)
    {
       WARN_MSG("sslwrap: cannot remove the redirect for IPv6, did you uncommend the redir6_command_off command in your etter.conf file?");
    }
    else {
-      commands[1] = strdup(GBL_CONF->redir6_command_off);
+      commands[1] = strdup(EC_GBL_CONF->redir6_command_off);
    }
 #endif
 
@@ -517,7 +517,7 @@ static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
 
       command = commands[i];
 
-      str_replace(&command, "%iface", GBL_OPTIONS->iface);
+      str_replace(&command, "%iface", EC_GBL_OPTIONS->iface);
       str_replace(&command, "%port", asc_sport);
       str_replace(&command, "%rport", asc_dport);
 
@@ -669,7 +669,7 @@ static int sslw_sync_conn(struct accepted_entry *ae)
  */
 static int sslw_ssl_connect(SSL *ssl_sk)
 { 
-   int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
+   int loops = (EC_GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    int ret, ssl_err;
 
    do {
@@ -697,7 +697,7 @@ static int sslw_ssl_connect(SSL *ssl_sk)
  */
 static int sslw_ssl_accept(SSL *ssl_sk)
 { 
-   int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
+   int loops = (EC_GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    int ret, ssl_err;
 
    do {
@@ -745,7 +745,7 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
       return -E_INVALID;
    }
 
-   if (!GBL_OPTIONS->ssl_cert) {
+   if (!EC_GBL_OPTIONS->ssl_cert) {
    	/* Create the fake certificate */
    	ae->cert = sslw_create_selfsigned(server_cert);  
    	X509_free(server_cert);
@@ -994,7 +994,7 @@ static void sslw_parse_packet(struct accepted_entry *ae, u_int32 direction, stru
     * ssl childs keep the connection alive even if the sniffing thread
     * was stopped. But don't add packets to top-half queue.
     */
-   if (!GBL_SNIFF->active)
+   if (!EC_GBL_SNIFF->active)
       return;
 
    memcpy(&po->L3.src, &ae->ip[direction], sizeof(struct ip_addr));
@@ -1156,20 +1156,20 @@ static void sslw_init(void)
    ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
    ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");
 
-   if(GBL_OPTIONS->ssl_pkey) {
+   if(EC_GBL_OPTIONS->ssl_pkey) {
 	/* Get our private key from the file specified from cmd-line */
-	DEBUG_MSG("Using custom private key %s", GBL_OPTIONS->ssl_pkey);
-	if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, GBL_OPTIONS->ssl_pkey, SSL_FILETYPE_PEM) == 0) {
-		FATAL_ERROR("Can't open \"%s\" file : %s", GBL_OPTIONS->ssl_pkey, strerror(errno));
+	DEBUG_MSG("Using custom private key %s", EC_GBL_OPTIONS->ssl_pkey);
+	if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, EC_GBL_OPTIONS->ssl_pkey, SSL_FILETYPE_PEM) == 0) {
+		FATAL_ERROR("Can't open \"%s\" file : %s", EC_GBL_OPTIONS->ssl_pkey, strerror(errno));
 	}
 
-	if (GBL_OPTIONS->ssl_cert) {
-		if (SSL_CTX_use_certificate_file(ssl_ctx_client, GBL_OPTIONS->ssl_cert, SSL_FILETYPE_PEM) == 0) {
-			FATAL_ERROR("Can't open \"%s\" file : %s", GBL_OPTIONS->ssl_cert, strerror(errno));
+	if (EC_GBL_OPTIONS->ssl_cert) {
+		if (SSL_CTX_use_certificate_file(ssl_ctx_client, EC_GBL_OPTIONS->ssl_cert, SSL_FILETYPE_PEM) == 0) {
+			FATAL_ERROR("Can't open \"%s\" file : %s", EC_GBL_OPTIONS->ssl_cert, strerror(errno));
 		}
 
 		if (!SSL_CTX_check_private_key(ssl_ctx_client)) {
-			FATAL_ERROR("Certificate \"%s\" does not match private key \"%s\"", GBL_OPTIONS->ssl_cert, GBL_OPTIONS->ssl_pkey);
+			FATAL_ERROR("Certificate \"%s\" does not match private key \"%s\"", EC_GBL_OPTIONS->ssl_cert, EC_GBL_OPTIONS->ssl_pkey);
 		}
 	}
    } else {

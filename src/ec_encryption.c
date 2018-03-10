@@ -157,13 +157,13 @@ int wifi_key_prepare(char *key_string)
 
    /* the following string is a definition for WEP */
    if (!strcasecmp(ks, "wep")) {
-      GBL_WIFI->wifi_schema = WIFI_WEP;
+      EC_GBL_WIFI->wifi_schema = WIFI_WEP;
       status = set_wep_key(p + 1);
    }
 
    /* the following string is a definition for WPA */
    if (!strcasecmp(ks, "wpa")) {
-      GBL_WIFI->wifi_schema = WIFI_WPA;
+      EC_GBL_WIFI->wifi_schema = WIFI_WPA;
       status = set_wpa_key(p + 1);
    }
 
@@ -182,8 +182,8 @@ int set_wep_key(char *string)
    size_t tmp_wkey_len;
    char tmp[128];
 
-   memset(GBL_WIFI->wkey, 0, sizeof(GBL_WIFI->wkey));
-   GBL_WIFI->wkey_len = 0;
+   memset(EC_GBL_WIFI->wkey, 0, sizeof(EC_GBL_WIFI->wkey));
+   EC_GBL_WIFI->wkey_len = 0;
 
    strcpy(s, string);
 
@@ -234,8 +234,8 @@ int set_wep_key(char *string)
    /* print the final string */
    USER_MSG("Using WEP key: %s\n", str_tohex(tmp_wkey, tmp_wkey_len, tmp, sizeof(tmp)));
 
-   memcpy(GBL_WIFI->wkey, tmp_wkey, sizeof(GBL_WIFI->wkey));
-   GBL_WIFI->wkey_len = tmp_wkey_len;
+   memcpy(EC_GBL_WIFI->wkey, tmp_wkey, sizeof(EC_GBL_WIFI->wkey));
+   EC_GBL_WIFI->wkey_len = tmp_wkey_len;
 
    return E_SUCCESS;
 }
@@ -323,7 +323,7 @@ static int set_wpa_key(char *string)
        * undocumented function from OPENSSL which implement the PBKDF2 function used to generate the passphrase
        * the 4096 number of iterations was taken from wpa_passphrase.c of wpa_supplicant package
        */
-      PKCS5_PBKDF2_HMAC_SHA1(pass, strlen(pass), (u_char *)ssid, strlen(ssid), 4096, 32, GBL_WIFI->wkey);
+      PKCS5_PBKDF2_HMAC_SHA1(pass, strlen(pass), (u_char *)ssid, strlen(ssid), 4096, 32, EC_GBL_WIFI->wkey);
 
       SAFE_FREE(pass);
       SAFE_FREE(ssid);
@@ -336,11 +336,11 @@ static int set_wpa_key(char *string)
          SEMIFATAL_ERROR("Invalid parsing of the WPA-PSK password (must be 64 chars)");
       }
       /* parse the hex string into bytes */
-      str_hex_to_bytes(string + strlen("psk") + 1, GBL_WIFI->wkey);
+      str_hex_to_bytes(string + strlen("psk") + 1, EC_GBL_WIFI->wkey);
    }
 
    /* print the final string */
-   USER_MSG("Using WPA key: %s\n", str_tohex(GBL_WIFI->wkey, WPA_KEY_LEN, tmp, sizeof(tmp)));
+   USER_MSG("Using WPA key: %s\n", str_tohex(EC_GBL_WIFI->wkey, WPA_KEY_LEN, tmp, sizeof(tmp)));
 
    return E_SUCCESS;
 }

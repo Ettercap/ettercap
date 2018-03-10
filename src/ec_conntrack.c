@@ -271,7 +271,7 @@ static void conntrack_add(struct packet_object *po)
    cl->co->L4_proto = po->L4.proto;
  
    /* initialize the connection buffer */
-   connbuf_init(&cl->co->data, GBL_CONF->connection_buffer);
+   connbuf_init(&cl->co->data, EC_GBL_CONF->connection_buffer);
    
    /* update the connection entry */
    conntrack_update(cl->co, po);
@@ -393,7 +393,7 @@ EC_THREAD_FUNC(conntrack_timeouter)
        * sleep for the maximum time possible
        * (determined as the minumum of the timeouts)
        */
-      sec = MIN(GBL_CONF->connection_idle, GBL_CONF->connection_timeout);
+      sec = MIN(EC_GBL_CONF->connection_idle, EC_GBL_CONF->connection_timeout);
 
       DEBUG_MSG("conntrack_timeouter: sleeping for %lu sec", (unsigned long)sec);
       
@@ -430,11 +430,11 @@ EC_THREAD_FUNC(conntrack_timeouter)
           * update it only if the staus is active,
           * all the other status must be left as they are
           */
-         if (cl->co->status == CONN_ACTIVE && diff.tv_sec >= GBL_CONF->connection_idle)
+         if (cl->co->status == CONN_ACTIVE && diff.tv_sec >= EC_GBL_CONF->connection_idle)
             cl->co->status = CONN_IDLE;
          
          /* delete the timeouted connections */
-         if (diff.tv_sec >= GBL_CONF->connection_timeout) {
+         if (diff.tv_sec >= EC_GBL_CONF->connection_timeout) {
             /* wipe the connection */
             conntrack_del(cl->co);
             /* remove the element in the hash table */
@@ -648,7 +648,7 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       slen = strlen(*desc);
 
       /* check if enough space is available to append the GeoIP info */
-      if (len - slen > 14 && GBL_CONF->geoip_support_enable) {
+      if (len - slen > 14 && EC_GBL_CONF->geoip_support_enable) {
          snprintf(*desc + slen, len - slen, ", CC: %2s > %2s", 
                geoip_ccode_by_ip(&c->co->L3_addr1),
                geoip_ccode_by_ip(&c->co->L3_addr2));
@@ -831,7 +831,7 @@ int conntrack_countrystr(struct conn_object *conn, char *pstr, int len)
       return -E_INVALID;
 
 #ifdef HAVE_GEOIP
-   if (!GBL_CONF->geoip_support_enable)
+   if (!EC_GBL_CONF->geoip_support_enable)
       return -E_INITFAIL;
 
    if ((ccode_src = geoip_ccode_by_ip(&conn->L3_addr1)) == NULL)

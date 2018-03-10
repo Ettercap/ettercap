@@ -215,7 +215,7 @@ static int Check_CONNECT(char *ptr, struct packet_object *po)
    struct http_status *conn_status = NULL;
 
    /* If we don't activate SSL wrappers we don't need to trace CONNECT */
-   if (!GBL_CONF->aggressive_dissectors || GBL_OPTIONS->unoffensive || GBL_OPTIONS->read)
+   if (!EC_GBL_CONF->aggressive_dissectors || EC_GBL_OPTIONS->unoffensive || EC_GBL_OPTIONS->read)
       return 0;
       
    dissect_create_ident(&ident, po, DISSECT_CODE(dissector_http));

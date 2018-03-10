@@ -123,11 +123,11 @@ FUNC_DECODER(decode_ip6)
    PACKET->L3.ttl = ip6->hop_limit;
 
    if(PACKET->fwd_packet == NULL) {
-      EXECUTE(GBL_SNIFF->check_forwarded, PACKET);
+      EXECUTE(EC_GBL_SNIFF->check_forwarded, PACKET);
       /* if it is already forwarded */
       if(PACKET->flags & PO_FORWARDED)
          return NULL;
-      EXECUTE(GBL_SNIFF->set_forwardable, PACKET);
+      EXECUTE(EC_GBL_SNIFF->set_forwardable, PACKET);
       PACKET->fwd_packet = (u_char *)DECODE_DATA;
       PACKET->fwd_len = PACKET->L3.payload_len + DECODED_LEN;
    }
@@ -159,7 +159,7 @@ FUNC_DECODER(decode_ip6)
    /* HOOK POINT: HOOK_PACKET_IP6 */
    hook_point(HOOK_PACKET_IP6, po);
 
-   if(!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   if(!EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->read) {
       ip6_create_ident(&ident, PACKET);
 
       if(session_get(&s, ident, sizeof(struct ip6_ident)) == -E_NOTFOUND) {
@@ -179,7 +179,7 @@ FUNC_DECODER(decode_ip6)
     * as the packet to be forwarded.
     */
    /* XXX - recheck this */
-   if(!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
+   if(!EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
       if(PACKET->flags & PO_MODIFIED) {
          ORDER_ADD_SHORT(PACKET->L3.payload_len, PACKET->DATA.delta);
 
@@ -233,7 +233,7 @@ FUNC_INJECTOR(inject_ip6)
 //   DEBUG_MSG("inject_ip6");
 
    /* i think im paranoid */
-   if(LENGTH + sizeof(struct ip6_header) > GBL_IFACE->mtu)
+   if(LENGTH + sizeof(struct ip6_header) > EC_GBL_IFACE->mtu)
       return -E_NOTHANDLED;
 
    /* almost copied from ec_ip.c */
@@ -267,8 +267,8 @@ FUNC_INJECTOR(inject_ip6)
       EXECUTE_INJECTOR(CHAIN_LINKED, magic);
    } 
 
-   plen = GBL_IFACE->mtu - LENGTH < PACKET->DATA.inject_len
-          ? GBL_IFACE->mtu - LENGTH : PACKET->DATA.inject_len;
+   plen = EC_GBL_IFACE->mtu - LENGTH < PACKET->DATA.inject_len
+          ? EC_GBL_IFACE->mtu - LENGTH : PACKET->DATA.inject_len;
    ip6->payload_len = htons(plen);
    
    PACKET->L3.len = flen + plen;

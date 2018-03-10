@@ -158,17 +158,17 @@ void gtkui_create_menu(GApplication *app, gpointer data)
    DEBUG_MSG("gtkui_create_menu - live: %d", live);
 
    /* honor CLI options */
-   if (GBL_OPTIONS->reversed)
+   if (EC_GBL_OPTIONS->reversed)
       targets_actions[3].state = ENABLED;
 
-   if (GBL_OPTIONS->resolve)
+   if (EC_GBL_OPTIONS->resolve)
       view_actions[3].state = ENABLED;
 
-   if (GBL_OPTIONS->compress)
+   if (EC_GBL_OPTIONS->compress)
       logging_actions[5].state = ENABLED;
 
 #ifdef WITH_IPV6
-   if (GBL_OPTIONS->ip6scan)
+   if (EC_GBL_OPTIONS->ip6scan)
       hosts_actions[1].state = ENABLED;
 #endif
 
@@ -180,7 +180,7 @@ void gtkui_create_menu(GApplication *app, gpointer data)
          G_N_ELEMENTS(targets_actions), app);
 
    /* some things doesn't apply when in bridge mode */
-   if (live == 1 && GBL_SNIFF->type == SM_UNIFIED)
+   if (live == 1 && EC_GBL_SNIFF->type == SM_UNIFIED)
       g_action_map_add_action_entries(G_ACTION_MAP(app), hosts_actions,
             G_N_ELEMENTS(hosts_actions), app);
 
@@ -188,7 +188,7 @@ void gtkui_create_menu(GApplication *app, gpointer data)
          G_N_ELEMENTS(view_actions), app);
 
    /* some things doesn't apply when in bridge mode */
-   if (live == 1 && GBL_SNIFF->type == SM_UNIFIED)
+   if (live == 1 && EC_GBL_SNIFF->type == SM_UNIFIED)
       g_action_map_add_action_entries(G_ACTION_MAP(app), mitm_actions,
             G_N_ELEMENTS(mitm_actions), app);
 
@@ -213,7 +213,7 @@ void gtkui_create_menu(GApplication *app, gpointer data)
             targets_accels[i].action, targets_accels[i].accel);
 
    /* some things doesn't apply when in bridge mode */
-   if (live == 1 && GBL_SNIFF->type == SM_UNIFIED)
+   if (live == 1 && EC_GBL_SNIFF->type == SM_UNIFIED)
       for (i=0; i < G_N_ELEMENTS(hosts_accels); i++)
          gtk_application_set_accels_for_action(GTK_APPLICATION(app),
                hosts_accels[i].action, hosts_accels[i].accel);
@@ -519,7 +519,7 @@ void gtkui_create_menu(GApplication *app, gpointer data)
    /* start/stop sniffing button */
    menubutton = gtk_toggle_button_new();
    gtk_widget_set_tooltip_text(menubutton, "Start / Stop Sniffing");
-   if (GBL_CONF->sniffing_at_startup) {
+   if (EC_GBL_CONF->sniffing_at_startup) {
       gtk_button_set_image(GTK_BUTTON(menubutton), 
             gtk_image_new_from_icon_name("media-playback-stop-symbolic", GTK_ICON_SIZE_BUTTON));
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(menubutton), TRUE);
@@ -534,7 +534,7 @@ void gtkui_create_menu(GApplication *app, gpointer data)
    menubutton = gtk_menu_button_new();
    menu = G_MENU(gtk_builder_get_object(builder, "ettercap-menu"));
    gtk_widget_set_tooltip_text(menubutton, "Ettercap Menu");
-   if (live == 0 || GBL_SNIFF->type == SM_BRIDGED)
+   if (live == 0 || EC_GBL_SNIFF->type == SM_BRIDGED)
       g_menu_remove(menu, 1); // Remove Hosts Menu
    gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(menubutton), G_MENU_MODEL(menu));
    gtk_button_set_image(GTK_BUTTON(menubutton),
@@ -543,7 +543,7 @@ void gtkui_create_menu(GApplication *app, gpointer data)
 
 
    /* some things doesn't apply when in bridge mode */
-   if (live == 1 && GBL_SNIFF->type == SM_UNIFIED) {
+   if (live == 1 && EC_GBL_SNIFF->type == SM_UNIFIED) {
       /* button for host scan */
       menubutton = gtk_button_new();
       gtk_widget_set_tooltip_text(menubutton, "Scan for hosts");

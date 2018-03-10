@@ -269,7 +269,7 @@ static void gtkui_init(void)
    gtkui_conf_read();
 
    /* try to explicitely enforce dark theme if preferred */
-   if (GBL_CONF->gtkui_prefer_dark_theme)
+   if (EC_GBL_CONF->gtkui_prefer_dark_theme)
       g_object_set(gtk_settings_get_default(), 
             "gtk-application-prefer-dark-theme", TRUE,
             NULL);
@@ -285,7 +285,7 @@ static void gtkui_init(void)
    g_application_run(G_APPLICATION(etterapp), 0, NULL);
    g_object_unref(G_OBJECT(etterapp));
 
-   GBL_UI->initialized = 1;
+   EC_GBL_UI->initialized = 1;
 }
 
 /*
@@ -923,7 +923,7 @@ void gtkui_start(void)
    idle_flush = g_timeout_add(500, gtkui_flush_msg, NULL);
 
    /* which interface do we have to display ? */
-   online = (GBL_OPTIONS->read ? 0 : 1);
+   online = (EC_GBL_OPTIONS->read ? 0 : 1);
 
    /* create second instance of the UI application */
    etterapp = gtkui_setup(gtkui_create_menu, GINT_TO_POINTER(online));
@@ -941,7 +941,7 @@ static void toggle_unoffensive(GSimpleAction *action, GVariant *value, gpointer 
 
    g_simple_action_set_state(action, value); 
 
-   GBL_OPTIONS->unoffensive ^= 1;
+   EC_GBL_OPTIONS->unoffensive ^= 1;
 }
 
 static void toggle_nopromisc(GSimpleAction *action, GVariant *value, gpointer data)
@@ -950,7 +950,7 @@ static void toggle_nopromisc(GSimpleAction *action, GVariant *value, gpointer da
 
    g_simple_action_set_state(action, value); 
 
-   GBL_PCAP->promisc ^= 1;
+   EC_GBL_PCAP->promisc ^= 1;
 }
 
 /*
@@ -1022,12 +1022,12 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    DEBUG_MSG("gtkui_build_widgets (activate method)");
 
    /* honor CLI options */
-   if(!GBL_PCAP->promisc)
+   if(!EC_GBL_PCAP->promisc)
       /* setting the menu item active will toggle this setting */
       /* it will be TRUE after the menu is updated */
       action_entries[0].state = DISABLED;
 
-   if(GBL_OPTIONS->unoffensive)
+   if(EC_GBL_OPTIONS->unoffensive)
       action_entries[1].state = ENABLED;
 
 
@@ -1206,7 +1206,7 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
 
    /* make a list of network interfaces */
    iface_list = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-   for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+   for (dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
       gtk_list_store_append(iface_list, &iter);
       gtk_list_store_set(iface_list, &iter, 
             0, dev->name, 1, dev->description, -1); 
@@ -1239,7 +1239,7 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    gtk_box_set_homogeneous(GTK_BOX(box), FALSE);
    gtk_box_pack_start(GTK_BOX(box), switcher, FALSE, FALSE, 0);
    gtk_grid_attach(GTK_GRID(grid), box, 1, 0, 1, 1);
-   if (GBL_CONF->sniffing_at_startup)
+   if (EC_GBL_CONF->sniffing_at_startup)
       gtk_switch_set_active(GTK_SWITCH(switcher), TRUE);
    g_signal_connect(G_OBJECT(switcher), "state-set",
          G_CALLBACK(gtkui_autostart_switch), NULL);
@@ -1359,22 +1359,22 @@ static void read_pcapfile(gchar *file)
    
    DEBUG_MSG("read_pcapfile %s", file);
    
-   SAFE_CALLOC(GBL_OPTIONS->pcapfile_in, strlen(file)+1, sizeof(char));
+   SAFE_CALLOC(EC_GBL_OPTIONS->pcapfile_in, strlen(file)+1, sizeof(char));
 
-   snprintf(GBL_OPTIONS->pcapfile_in, strlen(file)+1, "%s", file);
+   snprintf(EC_GBL_OPTIONS->pcapfile_in, strlen(file)+1, "%s", file);
 
    /* check if the file is good */
-   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, pcap_errbuf) != E_SUCCESS) {
+   if (is_pcap_file(EC_GBL_OPTIONS->pcapfile_in, pcap_errbuf) != E_SUCCESS) {
       ui_error("%s", pcap_errbuf);
-      SAFE_FREE(GBL_OPTIONS->pcapfile_in);
+      SAFE_FREE(EC_GBL_OPTIONS->pcapfile_in);
       return;
    }
    
    /* set the options for reading from file */
-   GBL_OPTIONS->silent = 1;
-   GBL_OPTIONS->unoffensive = 1;
-   GBL_OPTIONS->write = 0;
-   GBL_OPTIONS->read = 1;
+   EC_GBL_OPTIONS->silent = 1;
+   EC_GBL_OPTIONS->unoffensive = 1;
+   EC_GBL_OPTIONS->write = 0;
+   EC_GBL_OPTIONS->read = 1;
 
    gtk_main_quit();
 }
@@ -1422,7 +1422,7 @@ static void gtkui_file_write(GSimpleAction *action, GVariant *value, gpointer da
          twice and not after the if() block */
       gtk_widget_destroy (dialog);
 
-      GBL_OPTIONS->pcapfile_out = filename;
+      EC_GBL_OPTIONS->pcapfile_out = filename;
       write_pcapfile();
    } else {
       gtk_widget_destroy (dialog);
@@ -1436,20 +1436,20 @@ static void write_pcapfile(void)
    DEBUG_MSG("write_pcapfile");
    
    /* check if the file is writeable */
-   f = fopen(GBL_OPTIONS->pcapfile_out, "w");
+   f = fopen(EC_GBL_OPTIONS->pcapfile_out, "w");
    if (f == NULL) {
-      ui_error("Cannot write %s", GBL_OPTIONS->pcapfile_out);
-      g_free(GBL_OPTIONS->pcapfile_out);
+      ui_error("Cannot write %s", EC_GBL_OPTIONS->pcapfile_out);
+      g_free(EC_GBL_OPTIONS->pcapfile_out);
       return;
    }
  
    /* if ok, delete it */
    fclose(f);
-   unlink(GBL_OPTIONS->pcapfile_out);
+   unlink(EC_GBL_OPTIONS->pcapfile_out);
 
    /* set the options for writing to a file */
-   GBL_OPTIONS->write = 1;
-   GBL_OPTIONS->read = 0;
+   EC_GBL_OPTIONS->write = 1;
+   EC_GBL_OPTIONS->read = 0;
 }
 
 
@@ -1468,10 +1468,9 @@ static void gtkui_set_iface_unified(GtkComboBox *combo, gpointer data)
 
    DEBUG_MSG("gtkui_set_iface_unified: set iface '%s'", iface);
 
-   SAFE_FREE(GBL_OPTIONS->iface);
-   SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-   strncpy(GBL_OPTIONS->iface, iface, IFACE_LEN);
-
+   SAFE_FREE(EC_GBL_OPTIONS->iface);
+   SAFE_CALLOC(EC_GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+   strncpy(EC_GBL_OPTIONS->iface, iface, IFACE_LEN);
 }
 
 /*
@@ -1489,9 +1488,9 @@ static void gtkui_set_iface_bridge(GtkComboBox *combo, gpointer data)
 
    DEBUG_MSG("gtkui_set_iface_bridge: set iface '%s'", iface);
 
-   SAFE_FREE(GBL_OPTIONS->iface_bridge);
-   SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
-   strncpy(GBL_OPTIONS->iface_bridge, iface, IFACE_LEN);
+   SAFE_FREE(EC_GBL_OPTIONS->iface_bridge);
+   SAFE_CALLOC(EC_GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
+   strncpy(EC_GBL_OPTIONS->iface_bridge, iface, IFACE_LEN);
 }
 
 
@@ -1518,7 +1517,7 @@ static gboolean gtkui_autostart_switch(GtkSwitch *switcher, gboolean state, gpoi
    (void) data;
    //gtk_switch_set_active(switcher, state);
    gtk_switch_set_state(switcher, state);
-   GBL_CONF->sniffing_at_startup = gtk_switch_get_active(switcher);
+   EC_GBL_CONF->sniffing_at_startup = gtk_switch_get_active(switcher);
 
    return TRUE;
 }
@@ -1554,14 +1553,14 @@ static void gtkui_pcap_filter(GSimpleAction *action, GVariant *value, gpointer d
    
    DEBUG_MSG("gtk_pcap_filter");
    
-   if (GBL_PCAP->filter == NULL)
-       SAFE_CALLOC(GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
+   if (EC_GBL_PCAP->filter == NULL)
+       SAFE_CALLOC(EC_GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
 
    /* 
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   gtkui_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
+   gtkui_input("Pcap filter :", EC_GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
 /*
@@ -1577,23 +1576,23 @@ static void gtkui_set_netmask(GSimpleAction *action, GVariant *value, gpointer d
    
    DEBUG_MSG("gtkui_set_netmask");
   
-   if (GBL_OPTIONS->netmask == NULL)
-      SAFE_CALLOC(GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, sizeof(char));
+   if (EC_GBL_OPTIONS->netmask == NULL)
+      SAFE_CALLOC(EC_GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, sizeof(char));
 
    /* 
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   gtkui_input("Netmask :", GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
+   gtkui_input("Netmask :", EC_GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
 
    /* sanity check */
-   if (strcmp(GBL_OPTIONS->netmask, "") && 
-         ip_addr_pton(GBL_OPTIONS->netmask, &net) != E_SUCCESS)
-      ui_error("Invalid netmask %s", GBL_OPTIONS->netmask);
+   if (strcmp(EC_GBL_OPTIONS->netmask, "") && 
+         ip_addr_pton(EC_GBL_OPTIONS->netmask, &net) != E_SUCCESS)
+      ui_error("Invalid netmask %s", EC_GBL_OPTIONS->netmask);
             
    /* if no netmask was specified, free it */
-   if (!strcmp(GBL_OPTIONS->netmask, ""))
-      SAFE_FREE(GBL_OPTIONS->netmask);
+   if (!strcmp(EC_GBL_OPTIONS->netmask, ""))
+      SAFE_FREE(EC_GBL_OPTIONS->netmask);
 }
 
 

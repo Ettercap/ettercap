@@ -728,7 +728,7 @@ static void gtkui_connection_detail(void)
    gtk_widget_set_halign(label, GTK_ALIGN_START);
    gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
 
-   if (GBL_OPTIONS->resolve) {
+   if (EC_GBL_OPTIONS->resolve) {
       row++;
       label = gtk_label_new("Source hostname:");
       gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -753,7 +753,7 @@ static void gtkui_connection_detail(void)
    }
 
 #ifdef HAVE_GEOIP
-   if (GBL_CONF->geoip_support_enable) {
+   if (EC_GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Source location:");
       gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -776,7 +776,7 @@ static void gtkui_connection_detail(void)
    gtk_widget_set_halign(label, GTK_ALIGN_START);
    gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
 
-   if (GBL_OPTIONS->resolve) {
+   if (EC_GBL_OPTIONS->resolve) {
       row++;
       label = gtk_label_new("Destination hostname:");
       gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -801,7 +801,7 @@ static void gtkui_connection_detail(void)
    }
 
 #ifdef HAVE_GEOIP
-   if (GBL_CONF->geoip_support_enable) {
+   if (EC_GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Destination location:");
       gtk_widget_set_halign(label, GTK_ALIGN_START);
@@ -1250,8 +1250,8 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
    int ret;
    
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+   if (EC_GBL_OPTIONS->regex && 
+       regexec(EC_GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
       return;
    }
 
@@ -1259,7 +1259,7 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
    
    /* format the data */
-   ret = GBL_FORMAT(text, len, dispbuf);
+   ret = EC_GBL_FORMAT(text, len, dispbuf);
    dispbuf[ret] = 0;
 
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
@@ -1277,8 +1277,8 @@ static void split_print_po(struct packet_object *po)
       return;
    
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+   if (EC_GBL_OPTIONS->regex && 
+       regexec(EC_GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -1286,7 +1286,7 @@ static void split_print_po(struct packet_object *po)
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
       
    /* format the data */
-   ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
+   ret = EC_GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
         
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
@@ -1421,8 +1421,8 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
    int ret;
    
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
+   if (EC_GBL_OPTIONS->regex && 
+       regexec(EC_GBL_OPTIONS->regex, text, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -1430,7 +1430,7 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
    
    /* format the data */
-   ret = GBL_FORMAT(text, len, dispbuf);
+   ret = EC_GBL_FORMAT(text, len, dispbuf);
    dispbuf[ret] = 0;
    
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
@@ -1448,8 +1448,8 @@ static void join_print_po(struct packet_object *po)
       return;
    
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
+   if (EC_GBL_OPTIONS->regex && 
+       regexec(EC_GBL_OPTIONS->regex, po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -1457,7 +1457,7 @@ static void join_print_po(struct packet_object *po)
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
       
    /* format the data */
-   ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
+   ret = EC_GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
         
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))

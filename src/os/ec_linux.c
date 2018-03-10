@@ -112,7 +112,7 @@ void disable_ipv6_forward(void)
    fclose(fd);
 
    /* interface specific configuration */
-   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", GBL_OPTIONS->iface);
+   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", EC_GBL_OPTIONS->iface);
 
    fd = fopen(fpath_iface, "r");
    ON_ERROR(fd, NULL, "failed to open %s", fpath_iface);
@@ -133,7 +133,7 @@ void disable_ipv6_forward(void)
    fclose(fd);
 
    DEBUG_MSG("disable_ipv6_forward: old value = %c/%c (global/interface %s)", 
-         saved_status_v6_global, saved_status_v6_iface, GBL_OPTIONS->iface);
+         saved_status_v6_global, saved_status_v6_iface, EC_GBL_OPTIONS->iface);
  
    
    atexit(restore_ipv6_forward);
@@ -166,7 +166,7 @@ void restore_ipv6_forward(void)
    fclose(fd);
    
    /* interface specific configuration */
-   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", GBL_OPTIONS->iface);
+   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", EC_GBL_OPTIONS->iface);
 
    fd = fopen(fpath_iface, "r");
    ON_ERROR(fd, NULL, "failed to open %s", fpath_iface);
@@ -176,7 +176,7 @@ void restore_ipv6_forward(void)
    
    DEBUG_MSG("ATEXIT: restore_ipv6_forward: curr: %c/%c saved: %c/%c (global/interface %s)", 
          current_status_global, current_status_iface, 
-         saved_status_v6_global, saved_status_v6_iface, GBL_OPTIONS->iface);
+         saved_status_v6_global, saved_status_v6_iface, EC_GBL_OPTIONS->iface);
 
    if (current_status_global == saved_status_v6_global && 
          current_status_iface == saved_status_v6_iface) {
@@ -202,7 +202,7 @@ void restore_ipv6_forward(void)
       fclose(fd);
 
       DEBUG_MSG("ATEXIT: restore_ipv6_forward: restore %s to %c", 
-            GBL_OPTIONS->iface, saved_status_v6_iface);
+            EC_GBL_OPTIONS->iface, saved_status_v6_iface);
    } else {
       FATAL_ERROR("interface ipv6_forwarding was disabled, but we cannot re-enable it now.\n"
                   "remember to re-enable it manually\n");
@@ -258,9 +258,9 @@ void disable_interface_offload(void)
 	BUG_IF(command==NULL);
 
 	memset(command, '\0', 100);	
-	snprintf(command, 99, "ethtool -K %s tso off gso off gro off lro off", GBL_OPTIONS->iface);
+	snprintf(command, 99, "ethtool -K %s tso off gso off gro off lro off", EC_GBL_OPTIONS->iface);
 
-	DEBUG_MSG("disable_interface_offload: Disabling offload on %s", GBL_OPTIONS->iface);
+	DEBUG_MSG("disable_interface_offload: Disabling offload on %s", EC_GBL_OPTIONS->iface);
 
 	for(p = strsep(&command, " "); p != NULL; p = strsep(&command, " ")) {
 		SAFE_REALLOC(param, (i+1) * sizeof(char *));
@@ -278,7 +278,7 @@ void disable_interface_offload(void)
 			close(2);
 #endif
 			execvp(param[0], param);
-			WARN_MSG("cannot disable offload on %s, do you have ethtool installed?", GBL_OPTIONS->iface);
+			WARN_MSG("cannot disable offload on %s, do you have ethtool installed?", EC_GBL_OPTIONS->iface);
 			safe_free_mem(param, &param_length, command);
 			_exit(-E_INVALID);
 		case -1:

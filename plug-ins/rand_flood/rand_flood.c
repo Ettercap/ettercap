@@ -97,7 +97,7 @@ static int rand_flood_init(void *dummy)
    (void) dummy;
 
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("rand_flood: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }
@@ -183,7 +183,7 @@ EC_THREAD_FUNC(flooder)
       /* Send on the wire and wait */
       send_to_L2(&fake_po); 
 
-      ec_usleep(GBL_CONF->port_steal_send_delay);
+      ec_usleep(EC_GBL_CONF->port_steal_send_delay);
    }
    
    return NULL; 

@@ -43,7 +43,7 @@ void toggle_compress(GSimpleAction *action, GVariant *value, gpointer data)
    (void) data;
    g_simple_action_set_state(action, value);
 
-   GBL_OPTIONS->compress ^= 1;
+   EC_GBL_OPTIONS->compress ^= 1;
 }
 
 /*

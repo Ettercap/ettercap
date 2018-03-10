@@ -36,7 +36,7 @@ void curses_sniff_offline(void)
 
    wdg_create_object(&menu, WDG_MENU, WDG_OBJ_WANT_FOCUS | WDG_OBJ_ROOT_OBJECT);
 
-   wdg_set_title(menu, GBL_VERSION, WDG_ALIGN_RIGHT);
+   wdg_set_title(menu, EC_GBL_VERSION, WDG_ALIGN_RIGHT);
    wdg_set_color(menu, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(menu, WDG_COLOR_WINDOW, EC_COLOR_MENU);
    wdg_set_color(menu, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);

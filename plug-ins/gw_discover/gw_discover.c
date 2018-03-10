@@ -78,7 +78,7 @@ static int gw_discover_init(void *dummy)
    (void) dummy;
 
    /* don't show packets while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
    
    /* wipe the global vars */
    memset(&ip, 0, sizeof(struct ip_addr));
@@ -153,12 +153,12 @@ static void do_discover(void)
    
    INSTANT_USER_MSG("\nRemote target is %s:%d...\n\n", tmp, port);
       
-   LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(h, &EC_GBL_HOSTLIST, next) {
       
       INSTANT_USER_MSG("Sending the SYN packet to %-15s [%s]\n", ip_addr_ntoa(&h->ip, tmp), mac_addr_ntoa(h->mac, tmp2));
       
       /* send the syn packet */
-      send_tcp_ether(h->mac, &GBL_IFACE->ip, &ip, htons(EC_MAGIC_16), htons(port), 0xabadc0de, 0xabadc0de, TH_SYN);
+      send_tcp_ether(h->mac, &EC_GBL_IFACE->ip, &ip, htons(EC_MAGIC_16), htons(port), 0xabadc0de, 0xabadc0de, TH_SYN);
    }
   
    /* wait some time for slower replies */
@@ -193,7 +193,7 @@ static void get_replies(struct packet_object *po)
       return;
 
    /* search the source mac address in the host list */
-   LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(h, &EC_GBL_HOSTLIST, next) {
       if (!memcmp(po->L2.src, h->mac, MEDIA_ADDR_LEN)) {
          INSTANT_USER_MSG("[%s] %s is probably a gateway for the LAN\n", mac_addr_ntoa(po->L2.src, tmp2), ip_addr_ntoa(&h->ip, tmp));
       }

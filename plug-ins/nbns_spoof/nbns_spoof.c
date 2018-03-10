@@ -427,7 +427,7 @@ static void nbns_spoof(struct packet_object *po)
 	rdata->addr = *reply->addr32;
 	
 	/* send fake reply */
-	send_udp(&GBL_IFACE->ip, &po->L3.src, po->L2.src, po->L4.dst, po->L4.src, response, NBNS_MSGLEN_QUERY_RESPONSE);
+	send_udp(&EC_GBL_IFACE->ip, &po->L3.src, po->L2.src, po->L4.dst, po->L4.src, response, NBNS_MSGLEN_QUERY_RESPONSE);
 	USER_MSG("nbns_spoof: Query [%s] spoofed to [%s]\n", name, ip_addr_ntoa(reply, tmp));
 
 	/* Do not forward request */

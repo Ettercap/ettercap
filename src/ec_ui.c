@@ -48,9 +48,9 @@ void ui_init(void)
 {
    DEBUG_MSG("ui_init");
 
-   EXECUTE(GBL_UI->init);
+   EXECUTE(EC_GBL_UI->init);
 
-   GBL_UI->initialized = 1;
+   EC_GBL_UI->initialized = 1;
 }
 
 /* called to run the user interface */
@@ -59,8 +59,8 @@ void ui_start(void)
 {
    DEBUG_MSG("ui_start");
 
-   if (GBL_UI->initialized)
-      EXECUTE(GBL_UI->start);
+   if (EC_GBL_UI->initialized)
+      EXECUTE(EC_GBL_UI->start);
    else
    {
       DEBUG_MSG("ui_start called initialized");
@@ -71,18 +71,18 @@ void ui_start(void)
 
 void ui_cleanup(void)
 {
-   if (GBL_UI->initialized) {
+   if (EC_GBL_UI->initialized) {
       DEBUG_MSG("ui_cleanup");
-      EXECUTE(GBL_UI->cleanup);
-      GBL_UI->initialized = 0;
+      EXECUTE(EC_GBL_UI->cleanup);
+      EC_GBL_UI->initialized = 0;
    }
 }
 
 /* implement the progress bar */
 int ui_progress(char *title, int value, int max)
 {
-   if (GBL_UI->progress)
-      return GBL_UI->progress(title, value, max);
+   if (EC_GBL_UI->progress)
+      return EC_GBL_UI->progress(title, value, max);
 
    return UI_PROGRESS_UPDATED;
 }
@@ -90,9 +90,9 @@ int ui_progress(char *title, int value, int max)
 /* send an update notification */
 void ui_update(int target)
 {
-   if(GBL_UI->update) {
+   if(EC_GBL_UI->update) {
       DEBUG_MSG("ui_update");
-      GBL_UI->update(target);
+      EC_GBL_UI->update(target);
    }
 }
 
@@ -136,8 +136,8 @@ void ui_error(const char *fmt, ...)
    DEBUG_MSG("%s", msg);
    
    /* call the function */
-   if (GBL_UI->error)
-      EXECUTE(GBL_UI->error, msg);
+   if (EC_GBL_UI->error)
+      EXECUTE(EC_GBL_UI->error, msg);
    /* the interface is not yet initialized */
    else
       fprintf(stderr, "\n%s\n", msg);
@@ -156,8 +156,8 @@ void ui_fatal_error(const char *msg)
     * call the function 
     * make sure that the globals have been alloc'd
     */
-   if (GBLS && GBL_UI && GBL_UI->fatal_error && GBL_UI->initialized)
-      EXECUTE(GBL_UI->fatal_error, msg);
+   if (EC_GBLS && EC_GBL_UI && EC_GBL_UI->fatal_error && EC_GBL_UI->initialized)
+      EXECUTE(EC_GBL_UI->fatal_error, msg);
    /* the interface is not yet initialized */
    else {
       fprintf(stderr, "\n%s\n\n", msg);
@@ -208,9 +208,9 @@ void ui_msg(const char *fmt, ...)
    }
 
    /* log the messages if needed */
-   if (GBL_OPTIONS->msg_fd) {
-      fprintf(GBL_OPTIONS->msg_fd, "%s", msg->message);
-      fflush(GBL_OPTIONS->msg_fd);
+   if (EC_GBL_OPTIONS->msg_fd) {
+      fprintf(EC_GBL_OPTIONS->msg_fd, "%s", msg->message);
+      fflush(EC_GBL_OPTIONS->msg_fd);
    }
    
    /* 
@@ -234,7 +234,7 @@ void ui_input(const char *title, char *input, size_t n, void (*callback)(void))
 {
    DEBUG_MSG("ui_input");
 
-   EXECUTE(GBL_UI->input, title, input, n, callback);
+   EXECUTE(EC_GBL_UI->input, title, input, n, callback);
 }
 
 /* 
@@ -250,7 +250,7 @@ int ui_msg_flush(int max)
   
 
    /* sanity checks */
-   if (!GBL_UI->initialized)
+   if (!EC_GBL_UI->initialized)
       return 0;
      
    if (STAILQ_EMPTY(&messages_queue))
@@ -266,7 +266,7 @@ int ui_msg_flush(int max)
    while ( (msg = STAILQ_FIRST(&messages_queue)) != NULL) {
 
       /* diplay the message */
-      GBL_UI->msg(msg->message);
+      EC_GBL_UI->msg(msg->message);
 
       STAILQ_REMOVE_HEAD(&messages_queue, msg, next);
       /* free the message */
@@ -325,32 +325,32 @@ void ui_register(struct ui_ops *ops)
 {
         
    BUG_IF(ops->init == NULL);
-   GBL_UI->init = ops->init;
+   EC_GBL_UI->init = ops->init;
    
    BUG_IF(ops->cleanup == NULL);
-   GBL_UI->cleanup = ops->cleanup;
+   EC_GBL_UI->cleanup = ops->cleanup;
    
    BUG_IF(ops->start == NULL);
-   GBL_UI->start = ops->start;
+   EC_GBL_UI->start = ops->start;
         
    BUG_IF(ops->msg == NULL);
-   GBL_UI->msg = ops->msg;
+   EC_GBL_UI->msg = ops->msg;
    
    BUG_IF(ops->error == NULL);
-   GBL_UI->error = ops->error;
+   EC_GBL_UI->error = ops->error;
    
    BUG_IF(ops->fatal_error == NULL);
-   GBL_UI->fatal_error = ops->fatal_error;
+   EC_GBL_UI->fatal_error = ops->fatal_error;
    
    BUG_IF(ops->input == NULL);
-   GBL_UI->input = ops->input;
+   EC_GBL_UI->input = ops->input;
    
    BUG_IF(ops->progress == NULL);
-   GBL_UI->progress = ops->progress;
+   EC_GBL_UI->progress = ops->progress;
 
-   GBL_UI->update = ops->update;
+   EC_GBL_UI->update = ops->update;
 
-   GBL_UI->type = ops->type;
+   EC_GBL_UI->type = ops->type;
 }
 
 

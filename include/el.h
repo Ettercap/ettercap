@@ -99,7 +99,7 @@ struct el_options {
    char regex:1;
 };
 
-struct globals {
+struct el_globals {
    struct log_global_header hdr;
    int (*format)(const u_char *, size_t, u_char *);
    char *user;
@@ -112,16 +112,16 @@ struct globals {
 };
 
 /* in el_main.c */
-extern struct globals *gbls;
+extern struct el_globals *el_gbls;
 
-#define GBL gbls
+#define EL_GBL el_gbls
 
 
-#define GBL_LOGFILE GBL->logfile
-#define GBL_LOG_FD  GBL->fd
-#define GBL_OPTIONS GBL->options
-#define GBL_TARGET (GBL->t)
-#define GBL_PROGRAM "etterlog"
+#define EL_GBL_LOGFILE EL_GBL->logfile
+#define EL_GBL_LOG_FD  EL_GBL->fd
+#define EL_GBL_OPTIONS EL_GBL->options
+#define EL_GBL_TARGET (EL_GBL->t)
+#define EL_GBL_PROGRAM "etterlog"
 
 
 #define BIT_SET(r,b)       ( r[b>>3] |=   1<<(b&7) )
@@ -158,8 +158,8 @@ extern struct globals *gbls;
 #define COL_MAGENTA  35
 #define COL_CYAN     36
 
-EC_API_EXTERN void globals_alloc(void);
-EC_API_EXTERN void globals_free(void);
+EC_API_EXTERN void el_globals_alloc(void);
+EC_API_EXTERN void el_globals_free(void);
 
 void debug_msg(const char *message, ...);
 void ui_msg(const char *fmt, ...);

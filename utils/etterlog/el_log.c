@@ -42,10 +42,10 @@ void open_log(char *file)
 {
    int zerr;
    
-   GBL_LOGFILE = strdup(file);
-   GBL_LOG_FD = gzopen(file, "rb");
-   if(GBL_LOG_FD == Z_NULL)
-      FATAL_ERROR("Cannot read the log file, please ensure you have enough permissions to read %s: error %s", file, gzerror(GBL_LOG_FD, &zerr));
+   EL_GBL_LOGFILE = strdup(file);
+   EL_GBL_LOG_FD = gzopen(file, "rb");
+   if(EL_GBL_LOG_FD == Z_NULL)
+      FATAL_ERROR("Cannot read the log file, please ensure you have enough permissions to read %s: error %s", file, gzerror(EL_GBL_LOG_FD, &zerr));
 }
 
 /*
@@ -56,7 +56,7 @@ int get_header(struct log_global_header *hdr)
 {
    int c;
 
-   c = gzread(GBL_LOG_FD, hdr, sizeof(struct log_global_header));
+   c = gzread(EL_GBL_LOG_FD, hdr, sizeof(struct log_global_header));
 
    if (c != sizeof(struct log_global_header))
       return -E_INVALID;
@@ -69,7 +69,7 @@ int get_header(struct log_global_header *hdr)
       return -E_INVALID;
    
    hdr->first_header = ntohs(hdr->first_header);
-   gzseek(GBL_LOG_FD, hdr->first_header, SEEK_SET);
+   gzseek(EL_GBL_LOG_FD, hdr->first_header, SEEK_SET);
   
    /* adjust the timestamp */
    hdr->tv.tv_sec = ntohl(hdr->tv.tv_sec);
@@ -117,7 +117,7 @@ int get_packet(struct log_header_packet *pck, u_char **buf)
 {
    int c;
 
-   c = gzread(GBL_LOG_FD, pck, sizeof(struct log_header_packet));
+   c = gzread(EL_GBL_LOG_FD, pck, sizeof(struct log_header_packet));
 
    if (c != sizeof(struct log_header_packet))
       return -E_INVALID;
@@ -132,7 +132,7 @@ int get_packet(struct log_header_packet *pck, u_char **buf)
    SAFE_CALLOC(*buf, pck->len, sizeof(u_char));
 
    /* copy the data of the packet */
-   c = gzread(GBL_LOG_FD, *buf, pck->len);
+   c = gzread(EL_GBL_LOG_FD, *buf, pck->len);
    
    if ((size_t)c != pck->len)
       return -E_INVALID;
@@ -176,7 +176,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
    int c;
 
    /* get the whole header */
-   c = gzread(GBL_LOG_FD, inf, sizeof(struct log_header_info));
+   c = gzread(EL_GBL_LOG_FD, inf, sizeof(struct log_header_info));
 
    /* truncated ? */
    if (c != sizeof(struct log_header_info))
@@ -198,7 +198,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
    if (inf->var.user_len) {
       SAFE_CALLOC(buf->user, inf->var.user_len + 1, sizeof(char));
       
-      c = gzread(GBL_LOG_FD, buf->user, inf->var.user_len);
+      c = gzread(EL_GBL_LOG_FD, buf->user, inf->var.user_len);
       if (c != inf->var.user_len)
          return -E_INVALID;
    }
@@ -206,7 +206,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
    if (inf->var.pass_len) {
       SAFE_CALLOC(buf->pass, inf->var.pass_len + 1, sizeof(char));
       
-      c = gzread(GBL_LOG_FD, buf->pass, inf->var.pass_len);
+      c = gzread(EL_GBL_LOG_FD, buf->pass, inf->var.pass_len);
       if (c != inf->var.pass_len)
          return -E_INVALID;
    }
@@ -214,7 +214,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
    if (inf->var.info_len) {
       SAFE_CALLOC(buf->info, inf->var.info_len + 1, sizeof(char));
       
-      c = gzread(GBL_LOG_FD, buf->info, inf->var.info_len);
+      c = gzread(EL_GBL_LOG_FD, buf->info, inf->var.info_len);
       if (c != inf->var.info_len)
          return -E_INVALID;
    }
@@ -222,7 +222,7 @@ int get_info(struct log_header_info *inf, struct dissector_info *buf)
    if (inf->var.banner_len) {
       SAFE_CALLOC(buf->banner, inf->var.banner_len + 1, sizeof(char));
       
-      c = gzread(GBL_LOG_FD, buf->banner, inf->var.banner_len);
+      c = gzread(EL_GBL_LOG_FD, buf->banner, inf->var.banner_len);
       if (c != inf->var.banner_len)
          return -E_INVALID;
    }
@@ -324,15 +324,15 @@ void concatenate(int argc, char **argv)
    memset(&hdr, 0, sizeof(struct log_global_header));
 
    /* open the output file for writing */
-   fd = gzopen(GBL_LOGFILE, "wb");
+   fd = gzopen(EL_GBL_LOGFILE, "wb");
    ON_ERROR(fd, NULL, "%s", gzerror(fd, &zerr));
 
    /* 
-    * use GBL_LOG_FD here so the get_header function
+    * use EL_GBL_LOG_FD here so the get_header function
     * will use this file 
     */
-   GBL_LOG_FD = gzopen(argv[argc], "rb");
-   ON_ERROR(GBL_LOG_FD, NULL, "%s", gzerror(GBL_LOG_FD, &zerr));
+   EL_GBL_LOG_FD = gzopen(argv[argc], "rb");
+   ON_ERROR(EL_GBL_LOG_FD, NULL, "%s", gzerror(EL_GBL_LOG_FD, &zerr));
    
    /* get the file header */
    if (get_header(&hdr) != E_SUCCESS)
@@ -352,8 +352,8 @@ void concatenate(int argc, char **argv)
    /* cicle thru the file list */
    while(argv[argc] != NULL) {
    
-      GBL_LOG_FD = gzopen(argv[argc], "rb");
-      ON_ERROR(GBL_LOG_FD, NULL, "%s", gzerror(GBL_LOG_FD, &zerr));
+      EL_GBL_LOG_FD = gzopen(argv[argc], "rb");
+      ON_ERROR(EL_GBL_LOG_FD, NULL, "%s", gzerror(EL_GBL_LOG_FD, &zerr));
    
       /* get the file header */
       if (get_header(&tmp) != E_SUCCESS)
@@ -368,13 +368,13 @@ void concatenate(int argc, char **argv)
       /* concatenate this file */
       dump_file(fd, &tmp);
 
-      gzclose(GBL_LOG_FD);
+      gzclose(EL_GBL_LOG_FD);
       argc++;
    }
 
    gzclose(fd);
 
-   printf("\nAll files concatenated into: %s\n\n", GBL_LOGFILE);
+   printf("\nAll files concatenated into: %s\n\n", EL_GBL_LOGFILE);
 
    exit(0);
 }

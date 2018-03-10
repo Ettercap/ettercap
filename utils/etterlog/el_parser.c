@@ -42,7 +42,7 @@ static void el_usage(void);
 void el_usage(void)
 {
 
-   fprintf(stdout, "\nUsage: %s [OPTIONS] logfile\n", GBL_PROGRAM);
+   fprintf(stdout, "\nUsage: %s [OPTIONS] logfile\n", EL_GBL_PROGRAM);
 
    fprintf(stdout, "\nGeneral Options:\n");
    fprintf(stdout, "  -a, --analyze               analyze a log file and return useful infos\n");
@@ -145,16 +145,16 @@ void parse_options(int argc, char **argv)
       switch (c) {
 
          case 'a':
-                  GBL_OPTIONS->analyze = 1;
+                  EL_GBL_OPTIONS->analyze = 1;
                   break;
                   
          case 'c':
-                  GBL_OPTIONS->connections = 1;
+                  EL_GBL_OPTIONS->connections = 1;
                   break;
                   
          case 'D':
-                  GBL_OPTIONS->connections = 1;
-                  GBL_OPTIONS->decode = 1;
+                  EL_GBL_OPTIONS->connections = 1;
+                  EL_GBL_OPTIONS->decode = 1;
                   NOT_IMPLEMENTED();
                   break;
          
@@ -162,13 +162,13 @@ void parse_options(int argc, char **argv)
 #ifdef WITH_IPV6
                   if (!strncmp(optarg, "///", 3) &&
                         strlen(optarg) == 3)
-                     GBL_TARGET->scan_all = 1;
+                     EL_GBL_TARGET->scan_all = 1;
 #else
                   if (!strncmp(optarg, "//", 2) &&
                         strlen(optarg) == 2)
-                     GBL_TARGET->scan_all = 1;
+                     EL_GBL_TARGET->scan_all = 1;
 #endif
-                  compile_target(optarg, GBL_TARGET);
+                  compile_target(optarg, EL_GBL_TARGET);
 
                   break;
 
@@ -177,108 +177,108 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 's':
-                  GBL_OPTIONS->only_source = 1;
+                  EL_GBL_OPTIONS->only_source = 1;
                   break;
                   
          case 'd':
-                  GBL_OPTIONS->only_dest = 1;
+                  EL_GBL_OPTIONS->only_dest = 1;
                   break;
                   
          case 'k':
-                  GBL_OPTIONS->color = 1;
+                  EL_GBL_OPTIONS->color = 1;
                   break;
                      
          case 'r':
-                  GBL_OPTIONS->reverse = 1;
+                  EL_GBL_OPTIONS->reverse = 1;
                   break;
                   
          case 't':
-                  GBL_TARGET->proto = strdup(optarg);
+                  EL_GBL_TARGET->proto = strdup(optarg);
                   break;
                   
          case 'n':
-                  GBL_OPTIONS->no_headers = 1;
+                  EL_GBL_OPTIONS->no_headers = 1;
                   break;
                   
          case 'm':
-                  GBL_OPTIONS->showmac = 1;
+                  EL_GBL_OPTIONS->showmac = 1;
                   break;
                   
          case 'i':
-                  GBL_OPTIONS->showclient = 1;
+                  EL_GBL_OPTIONS->showclient = 1;
                   break;
                   
          case 'I':
-                  if (ip_addr_pton(optarg, &GBL->client) != E_SUCCESS) {
+                  if (ip_addr_pton(optarg, &EL_GBL->client) != E_SUCCESS) {
                      FATAL_ERROR("Invalid client ip address");
                      return;                    
                   }
                   break;
 
          case 'l':
-                  GBL_OPTIONS->only_local = 1;
+                  EL_GBL_OPTIONS->only_local = 1;
                   break;
          
          case 'L':
-                  GBL_OPTIONS->only_remote = 1;
+                  EL_GBL_OPTIONS->only_remote = 1;
                   break;
                   
          case 'u':
-                  GBL->user = strdup(optarg);
+                  EL_GBL->user = strdup(optarg);
                   break;
                   
          case 'p':
-                  GBL_OPTIONS->passwords = 1;
+                  EL_GBL_OPTIONS->passwords = 1;
                   break;
 
          case 'e':
-                  GBL_OPTIONS->regex = 1;
+                  EL_GBL_OPTIONS->regex = 1;
                   set_display_regex(optarg);
                   break;
                  
          case 'o':
-                  GBL_LOGFILE = strdup(optarg);
+                  EL_GBL_LOGFILE = strdup(optarg);
                   break;
                   
          case 'C':
-                  GBL_OPTIONS->concat = 1;
+                  EL_GBL_OPTIONS->concat = 1;
                   break;
                   
          case 'B':
-                  GBL->format = &bin_format;
+                  EL_GBL->format = &bin_format;
                   break;
                   
          case 'X':
-                  GBL->format = &hex_format;
+                  EL_GBL->format = &hex_format;
                   break;
                   
          case 'A':
-                  GBL->format = &ascii_format;
+                  EL_GBL->format = &ascii_format;
                   break;
                   
          case 'T':
-                  GBL->format = &text_format;
+                  EL_GBL->format = &text_format;
                   break;
                   
          case 'E':
-                  GBL->format = &ebcdic_format;
+                  EL_GBL->format = &ebcdic_format;
                   break;
                   
          case 'H':
-                  GBL->format = &html_format;
+                  EL_GBL->format = &html_format;
                   break;
                   
          case 'U':
                   set_utf8_encoding((u_char*)optarg);
-                  GBL->format = &utf8_format;
+                  EL_GBL->format = &utf8_format;
                   break;
                   
          case 'Z':
-                  GBL->format = &zero_format;
+                  EL_GBL->format = &zero_format;
                   break;
                   
          case 'x':
-                  GBL_OPTIONS->xml = 1;
+                  EL_GBL_OPTIONS->xml = 1;
                   break;
                   
          case 'h':
@@ -286,24 +286,24 @@ void parse_options(int argc, char **argv)
                   break;
 
          case 'v':
-                  printf("%s %s\n", GBL_PROGRAM, EC_VERSION);
+                  printf("%s %s\n", EL_GBL_PROGRAM, EC_VERSION);
                   exit(0);
                   break;
 
          case ':': // missing parameter
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EL_GBL_PROGRAM);
             exit(0);
          break;
 
          case '?': // unknown option
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EL_GBL_PROGRAM);
             exit(0);
          break;
       }
    }
 
    /* file concatenation */
-   if (GBL_OPTIONS->concat) {
+   if (EL_GBL_OPTIONS->concat) {
       if (argv[optind] == NULL)
          FATAL_ERROR("You MUST specify at least one logfile");
    
@@ -318,8 +318,8 @@ void parse_options(int argc, char **argv)
       FATAL_ERROR("You MUST specify a logfile\n");
   
    /* default to ASCII view */ 
-   if (GBL->format == NULL)
-      GBL->format = &ascii_format;
+   if (EL_GBL->format == NULL)
+      EL_GBL->format = &ascii_format;
 
    return;
 }

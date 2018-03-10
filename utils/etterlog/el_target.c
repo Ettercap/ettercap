@@ -279,19 +279,19 @@ int is_target_pck(struct log_header_packet *pck)
     * useless to parse the mac, ip and port
     */
 
-    if (!GBL_TARGET->proto || !strcmp(GBL_TARGET->proto, "") || !strcasecmp(GBL_TARGET->proto, "all"))  
+    if (!EL_GBL_TARGET->proto || !strcmp(EL_GBL_TARGET->proto, "") || !strcasecmp(EL_GBL_TARGET->proto, "all"))  
        proto = 1;
 
-    if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "tcp") 
+    if (EL_GBL_TARGET->proto && !strcasecmp(EL_GBL_TARGET->proto, "tcp") 
           && pck->L4_proto == NL_TYPE_TCP)
        proto = 1;
    
-    if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "udp") 
+    if (EL_GBL_TARGET->proto && !strcasecmp(EL_GBL_TARGET->proto, "udp") 
           && pck->L4_proto == NL_TYPE_UDP)
        proto = 1;
     
     /* the protocol does not match */
-    if (!GBL_OPTIONS->reverse && proto == 0)
+    if (!EL_GBL_OPTIONS->reverse && proto == 0)
        return 0;
     
    /*
@@ -302,29 +302,29 @@ int is_target_pck(struct log_header_packet *pck)
    /* determine the address family of the current host */
    switch (ntohs(pck->L3_src.addr_type)) {
       case AF_INET:
-         all_ips = GBL_TARGET->all_ip;
+         all_ips = EL_GBL_TARGET->all_ip;
          break;
       case AF_INET6:
-         all_ips = GBL_TARGET->all_ip6;
+         all_ips = EL_GBL_TARGET->all_ip6;
          break;
       default:
          all_ips = 1;
    }
  
    /* it is in the source */
-   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_src, MEDIA_ADDR_LEN)) &&
-        (            all_ips  || cmp_ip_list(&pck->L3_src, GBL_TARGET) ) &&
-        (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_src))) )
+   if ( (EL_GBL_TARGET->all_mac  || !memcmp(EL_GBL_TARGET->mac, pck->L2_src, MEDIA_ADDR_LEN)) &&
+        (            all_ips  || cmp_ip_list(&pck->L3_src, EL_GBL_TARGET) ) &&
+        (EL_GBL_TARGET->all_port || BIT_TEST(EL_GBL_TARGET->ports, ntohs(pck->L4_src))) )
       good = 1;
 
    /* it is in the dest - we can assume the address family is the same as in src */
-   if ( (GBL_TARGET->all_mac  || !memcmp(GBL_TARGET->mac, pck->L2_dst, MEDIA_ADDR_LEN)) &&
-        (            all_ips  || cmp_ip_list(&pck->L3_dst, GBL_TARGET)) &&
-        (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(pck->L4_dst))) )
+   if ( (EL_GBL_TARGET->all_mac  || !memcmp(EL_GBL_TARGET->mac, pck->L2_dst, MEDIA_ADDR_LEN)) &&
+        (            all_ips  || cmp_ip_list(&pck->L3_dst, EL_GBL_TARGET)) &&
+        (EL_GBL_TARGET->all_port || BIT_TEST(EL_GBL_TARGET->ports, ntohs(pck->L4_dst))) )
       good = 1;   
   
    /* check the reverse option */
-   if (GBL_OPTIONS->reverse ^ (good && proto) ) 
+   if (EL_GBL_OPTIONS->reverse ^ (good && proto) ) 
       return 1;
       
    
@@ -349,25 +349,25 @@ int is_target_info(struct host_profile *hst)
     * useless to parse the mac, ip and port
     */
 
-   if (!GBL_TARGET->proto || !strcmp(GBL_TARGET->proto, "") || !strcasecmp(GBL_TARGET->proto, "all"))  
+   if (!EL_GBL_TARGET->proto || !strcmp(EL_GBL_TARGET->proto, "") || !strcasecmp(EL_GBL_TARGET->proto, "all"))  
       proto = 1;
    
    /* all the ports are good */
-   if (GBL_TARGET->all_port && proto)
+   if (EL_GBL_TARGET->all_port && proto)
       port = 1;
    else {
       LIST_FOREACH(o, &(hst->open_ports_head), next) {
     
-         if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "tcp") 
+         if (EL_GBL_TARGET->proto && !strcasecmp(EL_GBL_TARGET->proto, "tcp") 
              && o->L4_proto == NL_TYPE_TCP)
             proto = 1;
    
-         if (GBL_TARGET->proto && !strcasecmp(GBL_TARGET->proto, "udp") 
+         if (EL_GBL_TARGET->proto && !strcasecmp(EL_GBL_TARGET->proto, "udp") 
              && o->L4_proto == NL_TYPE_UDP)
             proto = 1;
 
          /* if the port is open, it matches */
-         if (proto && (GBL_TARGET->all_port || BIT_TEST(GBL_TARGET->ports, ntohs(o->L4_addr))) ) {
+         if (proto && (EL_GBL_TARGET->all_port || BIT_TEST(EL_GBL_TARGET->ports, ntohs(o->L4_addr))) ) {
             port = 1;
             break;
          }
@@ -382,23 +382,23 @@ int is_target_info(struct host_profile *hst)
    /* determine the address family of the current host */
    switch (ntohs(hst->L3_addr.addr_type)) {
       case AF_INET:
-         all_ips = GBL_TARGET->all_ip;
+         all_ips = EL_GBL_TARGET->all_ip;
          break;
       case AF_INET6:
-         all_ips = GBL_TARGET->all_ip6;
+         all_ips = EL_GBL_TARGET->all_ip6;
          break;
       default:
          all_ips = 1;
    }
 
    /* check if current host matches the filter */
-   if ( (GBL_TARGET->all_mac || !memcmp(GBL_TARGET->mac, hst->L2_addr, MEDIA_ADDR_LEN)) &&
-        (all_ips  || cmp_ip_list(&hst->L3_addr, GBL_TARGET) ) )
+   if ( (EL_GBL_TARGET->all_mac || !memcmp(EL_GBL_TARGET->mac, hst->L2_addr, MEDIA_ADDR_LEN)) &&
+        (all_ips  || cmp_ip_list(&hst->L3_addr, EL_GBL_TARGET) ) )
       host = 1;
 
 
    /* check the reverse option */
-   if (GBL_OPTIONS->reverse ^ (host && port) ) 
+   if (EL_GBL_OPTIONS->reverse ^ (host && port) ) 
       return 1;
    else
       return 0;

@@ -404,7 +404,7 @@ static void dump_file(gzFile fd, struct log_global_header *hdr)
             }
             /* write the info */
             put_info(fd, &inf, &infbuf);
-	    SAFE_FREE(infbuf.user);
+            SAFE_FREE(infbuf.user);
             SAFE_FREE(infbuf.pass);
             SAFE_FREE(infbuf.info);
             SAFE_FREE(infbuf.banner);

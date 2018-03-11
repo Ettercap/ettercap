@@ -111,12 +111,15 @@ FUNC_DECODER(decode_udp)
           *
           * if the source is the ettercap host, don't display the message 
           */
-         if (ip_addr_is_ours(&PACKET->L3.src) != E_FOUND)
+         if (ip_addr_is_ours(&PACKET->L3.src) == E_FOUND ||
+             ip_addr_is_ours(&PACKET->L3.src) == E_BRIDGE)
             return NULL;
 #endif
          if (EC_GBL_CONF->checksum_warning)
-            USER_MSG("Invalid UDP packet from %s:%d : csum [%#x] should be (%#x)\n", ip_addr_ntoa(&PACKET->L3.src, tmp),
-                                    ntohs(udp->sport), ntohs(udp->csum), checksum_shouldbe(udp->csum, sum));
+            USER_MSG("Invalid UDP packet from %s:%d : csum [%#x] should be (%#x)\n", 
+                  ip_addr_ntoa(&PACKET->L3.src, tmp),
+                  ntohs(udp->sport), ntohs(udp->csum), 
+                  checksum_shouldbe(udp->csum, sum));
          return NULL;
       }
    }

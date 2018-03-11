@@ -104,3 +104,4 @@ set_target_properties(ec_interfaces PROPERTIES
   #  LINK_INTERFACE_LIBRARIES ""
   OUTPUT_NAME ec_interfaces
   )
+target_link_libraries(ec_interfaces ${EC_INTERFACES_LIBS})

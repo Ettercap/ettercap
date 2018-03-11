@@ -10,6 +10,7 @@ EC_API_EXTERN void libettercap_init(void);
 EC_API_EXTERN void libettercap_load_conf(void);
 EC_API_EXTERN void libettercap_ui_init(void);
 EC_API_EXTERN void libettercap_ui_start(void);
+EC_API_EXTERN void libettercap_ui_cleanup(void);
 
 #endif
 

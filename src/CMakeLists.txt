@@ -189,7 +189,7 @@ endif()
 
 add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
-target_link_libraries(lib_ettercap ${EC_LIBETTERCAP_LIBS})
+target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
 
 if(NOT LIBRARY_BUILD)
   add_subdirectory(interfaces)
@@ -198,7 +198,7 @@ if(NOT LIBRARY_BUILD)
     include_directories(interfaces/curses interfaces/curses/widgets)
   endif()
   add_executable(ettercap ec_parser.c ec_main.c)
-  target_link_libraries(ettercap ec_interfaces lib_ettercap ${EC_LIBS})
+  target_link_libraries(ettercap lib_ettercap)
   if(NOT DISABLE_RPATH)
     set_target_properties(ettercap PROPERTIES
     INSTALL_RPATH ${INSTALL_LIBDIR})

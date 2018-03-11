@@ -39,6 +39,8 @@ int main(int argc, char *argv[])
 {
    int ret;
    libettercap_init();
+   select_text_interface();
+   libettercap_ui_init();
    /* etterlog copyright */
    el_globals_alloc();
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
@@ -101,6 +103,7 @@ int main(int argc, char *argv[])
    /* display the content of the logfile */
    display();
    
+   libettercap_ui_cleanup();
    el_globals_free();
 
    return 0;

@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
    int ret_value = 0;
    libettercap_init();
    ef_globals_alloc();
+   select_text_interface();
+   libettercap_ui_init();
    /* etterfilter copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
@@ -94,6 +96,7 @@ int main(int argc, char *argv[])
    else if (ret_value == -E_INVALID)
       FATAL_ERROR("Cannot write output file (%s): the filter format is not correct. ", EF_GBL_OPTIONS->output_file);
 
+   libettercap_ui_cleanup();
    ef_globals_free();
    return 0;
 }

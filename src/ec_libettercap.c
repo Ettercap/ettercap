@@ -58,6 +58,12 @@ void libettercap_ui_start()
    /* start the actual user interface */
    ui_start();
 }
+
+void libettercap_ui_cleanup()
+{
+   /* start the actual user interface */
+   ui_cleanup();
+}
 /* EOF */
 
 // vim:ts=3:expandtab

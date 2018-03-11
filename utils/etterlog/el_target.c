@@ -210,7 +210,7 @@ static int expand_range_ip(char *str, void *target)
    if (i != 4)
       FATAL_ERROR("Invalid IP format !!");
 
-   debug_msg("expand_range_ip -- [%s] [%s] [%s] [%s]", addr[0], addr[1], addr[2], addr[3]);
+   DEBUG_MSG("expand_range_ip -- [%s] [%s] [%s] [%s]", addr[0], addr[1], addr[2], addr[3]);
 
    for (i = 0; i < 4; i++) {
       p = addr[i];

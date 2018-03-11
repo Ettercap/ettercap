@@ -20,6 +20,7 @@
 */
 
 #include <el.h>
+#include <el_version.h>
 #include <ec_version.h>
 #include <ec_log.h>
 #include <ec_format.h>

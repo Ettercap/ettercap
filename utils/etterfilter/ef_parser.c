@@ -21,6 +21,7 @@
 
 
 #include <ef.h>
+#include <ef_version.h>
 #include <ec_version.h>
 #include <ec_format.h>
 #include <ef_functions.h>
@@ -40,7 +41,7 @@ static void ef_usage(void);
 void ef_usage(void)
 {
 
-   fprintf(stdout, "\nUsage: %s [OPTIONS] filterfile\n", EF_GBL_PROGRAM);
+   fprintf(stdout, "\nUsage: %s [OPTIONS] filterfile\n", PROGRAM);
 
    fprintf(stdout, "\nGeneral Options:\n");
    fprintf(stdout, "  -o, --output <file>         output file (default is filter.ef)\n");
@@ -103,17 +104,17 @@ void parse_options(int argc, char **argv)
                   break;
 
          case 'v':
-                  printf("%s %s\n", EF_GBL_PROGRAM, EC_VERSION);
+                  printf("%s %s\n", PROGRAM, EC_VERSION);
                   exit(0);
                   break;
 
          case ':': // missing parameter
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EF_GBL_PROGRAM);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
             exit(0);
          break;
 
          case '?': // unknown option
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EF_GBL_PROGRAM);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
             exit(0);
          break;
       }

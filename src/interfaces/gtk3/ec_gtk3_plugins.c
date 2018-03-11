@@ -57,7 +57,7 @@ void gtkui_plugin_load(GSimpleAction *action, GVariant *value, gpointer data)
 #ifdef OS_WINDOWS
    char *path = get_full_path("/lib/", "");
 #else
-   char *path = INSTALL_LIBDIR "/" EC_PROGRAM "/";
+   char *path = INSTALL_LIBDIR "/" PROGRAM "/";
 #endif
    
    (void) action;

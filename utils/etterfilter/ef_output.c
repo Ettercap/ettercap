@@ -21,8 +21,9 @@
 
 #include <ef.h>
 #include <ef_functions.h>
-#include <ec_filter.h>
+#include <ef_version.h>
 #include <ec_version.h>
+#include <ec_filter.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>

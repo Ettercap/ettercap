@@ -21,7 +21,9 @@
 
 #include <ef.h>
 #include <ef_functions.h>
+#include <ef_version.h>
 #include <ec_version.h>
+#include <ec_libettercap.h>
 
 #include <stdarg.h>
 
@@ -33,6 +35,7 @@ extern FILE * yyin;           /* from scanner */
 extern int yyparse (void);    /* from parser */
 
 /* global options */
+struct ec_globals *ec_gbls;
 struct ef_globals *ef_gbls;
 
 /*******************************************/
@@ -40,10 +43,11 @@ struct ef_globals *ef_gbls;
 int main(int argc, char *argv[])
 {
    int ret_value = 0;
+   libettercap_init();
    ef_globals_alloc();
    /* etterfilter copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
-                      EF_GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
+                      PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
  
    /* initialize the line number */
    EF_GBL->lineno = 1;

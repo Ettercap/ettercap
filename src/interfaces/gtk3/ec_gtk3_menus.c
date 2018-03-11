@@ -502,7 +502,7 @@ void gtkui_create_menu(GApplication *app, gpointer data)
 
 
    /* Adjust titel formatting */
-   title = g_strdup(EC_PROGRAM);
+   title = g_strdup(PROGRAM);
    *title = g_ascii_toupper(*title);
 
 
@@ -610,7 +610,7 @@ void gtkui_create_menu(GApplication *app, gpointer data)
    gtk_frame_set_shadow_type(GTK_FRAME(notebook_frame), GTK_SHADOW_IN);
    gtk_paned_pack1(GTK_PANED(vpaned), notebook_frame, TRUE, TRUE);
    
-   path = INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE;
+   path = INSTALL_DATADIR "/" PROGRAM "/" LOGO_FILE;
    if(g_file_test(path, G_FILE_TEST_EXISTS))
       logo = gtk_image_new_from_file(path);
    else /* if neither path is valid gtk will use a broken image icon */

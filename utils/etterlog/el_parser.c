@@ -21,6 +21,7 @@
 
 
 #include <el.h>
+#include <el_version.h>
 #include <ec_version.h>
 #include <ec_format.h>
 #include <el_functions.h>
@@ -42,7 +43,7 @@ static void el_usage(void);
 void el_usage(void)
 {
 
-   fprintf(stdout, "\nUsage: %s [OPTIONS] logfile\n", EL_GBL_PROGRAM);
+   fprintf(stdout, "\nUsage: %s [OPTIONS] logfile\n", PROGRAM);
 
    fprintf(stdout, "\nGeneral Options:\n");
    fprintf(stdout, "  -a, --analyze               analyze a log file and return useful infos\n");
@@ -286,17 +287,17 @@ void parse_options(int argc, char **argv)
                   break;
 
          case 'v':
-                  printf("%s %s\n", EL_GBL_PROGRAM, EC_VERSION);
+                  printf("%s %s\n", PROGRAM, EC_VERSION);
                   exit(0);
                   break;
 
          case ':': // missing parameter
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EL_GBL_PROGRAM);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
             exit(0);
          break;
 
          case '?': // unknown option
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EL_GBL_PROGRAM);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
             exit(0);
          break;
       }

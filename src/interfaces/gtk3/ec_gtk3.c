@@ -413,7 +413,7 @@ void gtkui_about(GSimpleAction *action, GVariant *value, gpointer data)
    /* General page */
    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
-   path = INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE_SMALL;
+   path = INSTALL_DATADIR "/" PROGRAM "/" LOGO_FILE_SMALL;
    if(g_file_test(path, G_FILE_TEST_EXISTS))
       logo = gtk_image_new_from_file(path);
    else /* if neither path is valid gtk will use a broken image icon */
@@ -423,7 +423,7 @@ void gtkui_about(GSimpleAction *action, GVariant *value, gpointer data)
    label = gtk_label_new("");
    gtk_label_set_markup(GTK_LABEL(label), 
          "<span size=\"xx-large\" weight=\"bold\">" 
-         EC_PROGRAM " " EC_VERSION 
+         PROGRAM " " EC_VERSION 
          "</span>");
    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
@@ -450,7 +450,7 @@ void gtkui_about(GSimpleAction *action, GVariant *value, gpointer data)
       error = NULL;
 
       /* 2nd try */
-      g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/AUTHORS",
+      g_file_get_contents(INSTALL_DATADIR "/" PROGRAM "/AUTHORS",
             &authors, &length, &error);
       if (error != NULL) {
          DEBUG_MSG("failed to load authors file: %s", error->message);
@@ -484,7 +484,7 @@ void gtkui_about(GSimpleAction *action, GVariant *value, gpointer data)
       error = NULL;
 
       /* 2nd try */
-      g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/LICENSE",
+      g_file_get_contents(INSTALL_DATADIR "/" PROGRAM "/LICENSE",
             &license, &length, &error);
 #ifndef OS_WINDOWS
       if (error != NULL) {
@@ -781,7 +781,7 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
 {
    GtkWidget *dialog, *entry, *label, *hbox, *vbox, *image, *content_area;
 
-   dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
+   dialog = gtk_dialog_new_with_buttons(PROGRAM" Input", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL|GTK_DIALOG_USE_HEADER_BAR, 
                                         "_Cancel", GTK_RESPONSE_CANCEL, 
                                         "_OK",     GTK_RESPONSE_OK,
@@ -846,7 +846,7 @@ static void gtkui_progress(char *title, int value, int max)
       gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header), TRUE);
 
       progress_dialog = gtk_dialog_new();
-      gtk_window_set_title(GTK_WINDOW (progress_dialog), EC_PROGRAM);
+      gtk_window_set_title(GTK_WINDOW (progress_dialog), PROGRAM);
       gtk_window_set_titlebar(GTK_WINDOW(progress_dialog), header);
       gtk_window_set_modal(GTK_WINDOW (progress_dialog), TRUE);
       gtk_window_set_transient_for(GTK_WINDOW(progress_dialog), GTK_WINDOW(window));
@@ -1124,7 +1124,7 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    height = height < 400 ? 400 : height;
 
    /* Adjust title formatting */
-   title = g_strdup(EC_PROGRAM);
+   title = g_strdup(PROGRAM);
    *title = g_ascii_toupper(*title);
 
    /* create main window */
@@ -1173,7 +1173,7 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    gtk_box_pack_start(GTK_BOX(box), infoframe, FALSE, FALSE, 0);
 
    /* the ettercap logo */
-   path = INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE;
+   path = INSTALL_DATADIR "/" PROGRAM "/" LOGO_FILE;
    if(g_file_test(path, G_FILE_TEST_EXISTS))
       logo = gtk_image_new_from_file(path);
    else /* if neither path is valid gtk will use a broken image icon */

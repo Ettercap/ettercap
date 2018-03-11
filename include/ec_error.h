@@ -1,6 +1,7 @@
 #ifndef ETTERCAP_ERROR_H
 #define ETTERCAP_ERROR_H
 
+#include <ec.h>
 #include <errno.h>
 
 enum {

@@ -28,49 +28,49 @@
 FILE *debug_file = (void *)1;  /* not NULL to avoid FATAL_ERROR */
 
 /* protos */
-void debug_msg(const char *message, ...);
-void ui_msg(const char *fmt, ...);
-void ui_error(const char *fmt, ...);
-void ui_fatal_error(const char *msg);
-void ui_cleanup(void);
+// void debug_msg(const char *message, ...);
+// void ui_msg(const char *fmt, ...);
+// void ui_error(const char *fmt, ...);
+// void ui_fatal_error(const char *msg);
+// void ui_cleanup(void);
 
 /************************************************/
  
 /* the void implementation */
 
-void debug_msg(const char *message, ...) 
-{
-   (void) message;
-}
-
-/* fake the UI implementation */
-void ui_msg(const char *fmt, ...) 
-{ 
-   va_list ap;
-   /* print the message */ 
-   va_start(ap, fmt);
-   vfprintf (stderr, fmt, ap);
-   va_end(ap);
-   fprintf(stderr, "\n");
-}
-
-void ui_error(const char *fmt, ...) 
-{ 
-   va_list ap;
-   /* print the message */ 
-   va_start(ap, fmt);
-   vfprintf (stderr, fmt, ap);
-   va_end(ap);
-   fprintf(stderr, "\n");
-}
-
-void ui_fatal_error(const char *msg)
-{
-   fprintf (stderr, "%s\n", msg);
-   exit(-1);
-}
-
-void ui_cleanup(void) { }
+// void debug_msg(const char *message, ...) 
+// {
+//    (void) message;
+// }
+// 
+// /* fake the UI implementation */
+// void ui_msg(const char *fmt, ...) 
+// { 
+//    va_list ap;
+//    /* print the message */ 
+//    va_start(ap, fmt);
+//    vfprintf (stderr, fmt, ap);
+//    va_end(ap);
+//    fprintf(stderr, "\n");
+// }
+// 
+// void ui_error(const char *fmt, ...) 
+// { 
+//    va_list ap;
+//    /* print the message */ 
+//    va_start(ap, fmt);
+//    vfprintf (stderr, fmt, ap);
+//    va_end(ap);
+//    fprintf(stderr, "\n");
+// }
+// 
+// void ui_fatal_error(const char *msg)
+// {
+//    fprintf (stderr, "%s\n", msg);
+//    exit(-1);
+// }
+// 
+// void ui_cleanup(void) { }
 
 /* EOF */
 

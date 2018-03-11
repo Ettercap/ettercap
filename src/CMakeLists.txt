@@ -24,6 +24,7 @@ set(EC_SRC
     ec_hook.c
     ec_inet.c
     ec_inject.c
+    ec_libettercap.c
     ec_log.c
     ec_manuf.c
     ec_mitm.c

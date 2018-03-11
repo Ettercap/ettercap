@@ -159,6 +159,7 @@ struct target_env {
    char all_ip:1;
    char all_ip6:1;
    char all_port:1;
+   char *proto;
    u_char mac[MEDIA_ADDR_LEN];
    LIST_HEAD(, ip_list) ips;
    LIST_HEAD(, ip_list) ip6;

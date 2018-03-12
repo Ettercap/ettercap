@@ -3,6 +3,8 @@
 
 #include <ec.h>
 #include <ec_log.h>
+#include <el_version.h>
+#include <ec_version.h>
 
 struct el_options {
    char concat:1;

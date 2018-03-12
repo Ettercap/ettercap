@@ -155,7 +155,8 @@ static void signal_SEGV(int sig)
    fprintf (stderr, "  1) set ec_uid to 0 (so the core will be dumped)\n\n");
    fprintf (stderr, "  2) execute ettercap with \"-w debug_dump.pcap\"\n\n");
    fprintf (stderr, "  3) reproduce the critical situation\n\n");
-   fprintf (stderr, "  4) make a report : \n\t\"tar zcvf error.tar.gz %s-%s_debug.log debug_dump.pcap\"\n\n", PROGRAM, EC_VERSION);
+   fprintf (stderr, "  4) make a report : \n\t\"tar zcvf error.tar.gz %s-%s_debug.log debug_dump.pcap\"\n\n", 
+         PROGRAM, EC_VERSION);
    fprintf (stderr, "  5) get the gdb backtrace :\n"
                     "  \t - \"gdb %s core\"\n"
                     "  \t - at the gdb prompt \"bt\"\n"
@@ -219,9 +220,9 @@ static void signal_TERM(int sig)
       fprintf(stderr, "\n\nUser requested a CTRL+C... (deprecated, next time use proper shutdown)\n\n");
    } else {
    #ifdef HAVE_STRSIGNAL
-      fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d | %s)\n\n", EC_GBL_PROGRAM, sig, strsignal(sig));
+      fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d | %s)\n\n", PROGRAM, sig, strsignal(sig));
    #else
-      fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d)\n\n", EC_GBL_PROGRAM, sig);
+      fprintf(stderr, "\n\n Shutting down %s (received SIGNAL: %d)\n\n", PROGRAM, sig);
    #endif
    }
    

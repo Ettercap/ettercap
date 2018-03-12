@@ -21,8 +21,6 @@
 
 #include <ef.h>
 #include <ef_functions.h>
-#include <ef_version.h>
-#include <ec_version.h>
 #include <ec_libettercap.h>
 
 #include <stdarg.h>
@@ -43,7 +41,7 @@ struct ef_globals *ef_gbls;
 int main(int argc, char *argv[])
 {
    int ret_value = 0;
-   libettercap_init();
+   libettercap_init(PROGRAM, EC_VERSION);
    ef_globals_alloc();
    select_text_interface();
    libettercap_ui_init();

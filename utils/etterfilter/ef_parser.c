@@ -21,8 +21,6 @@
 
 
 #include <ef.h>
-#include <ef_version.h>
-#include <ec_version.h>
 #include <ec_format.h>
 #include <ef_functions.h>
 

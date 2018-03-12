@@ -20,8 +20,6 @@
 */
 
 #include <ef.h>
-#include <ef_version.h>
-#include <ec_version.h>
 #include <ec_filter.h>
 
 #ifndef OS_WINDOWS

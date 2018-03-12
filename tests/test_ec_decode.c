@@ -47,7 +47,7 @@ Suite* ts_test_decode (void) {
 
 int main () {
   int number_failed;
-  libettercap_init();
+  libettercap_init("test", "0.0.1");
   Suite *suite = ts_test_decode();
   SRunner *runner = srunner_create(suite);
   srunner_run_all(runner, CK_VERBOSE);

@@ -20,8 +20,6 @@
 */
 
 #include <el.h>
-#include <el_version.h>
-#include <ec_version.h>
 #include <ec_libettercap.h>
 #include <el_functions.h>
 
@@ -38,7 +36,7 @@ struct el_globals *el_gbls;
 int main(int argc, char *argv[])
 {
    int ret;
-   libettercap_init();
+   libettercap_init(PROGRAM, EC_VERSION);
    select_text_interface();
    libettercap_ui_init();
    /* etterlog copyright */

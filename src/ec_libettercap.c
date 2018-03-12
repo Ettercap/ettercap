@@ -30,13 +30,14 @@
 
 /*******************************************/
 
-void libettercap_init(void)
+void libettercap_init(char* program, char* version)
 {
    ec_globals_alloc();
-   EC_GBL_PROGRAM = strdup(PROGRAM);
-   EC_GBL_VERSION = strdup(EC_VERSION);
-   SAFE_CALLOC(EC_GBL_DEBUG_FILE, strlen(PROGRAM) + strlen("-") + strlen(EC_VERSION) + strlen("_debug.log") + 1, sizeof(char));
-   sprintf(EC_GBL_DEBUG_FILE, "%s-%s_debug.log", EC_GBL_PROGRAM, EC_VERSION);
+   EC_GBL_PROGRAM = strdup(program);
+   EC_GBL_VERSION = strdup(version);
+   SAFE_CALLOC(EC_GBL_DEBUG_FILE, strlen(EC_GBL_PROGRAM) + strlen("-") + 
+         strlen(EC_GBL_VERSION) + strlen("_debug.log") + 1, sizeof(char));
+   sprintf(EC_GBL_DEBUG_FILE, "%s-%s_debug.log", EC_GBL_PROGRAM, EC_GBL_VERSION);
 
    DEBUG_INIT();
 }

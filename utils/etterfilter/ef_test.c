@@ -58,7 +58,7 @@ void test_filter(char *filename)
    
    /* load the file */
    if (filter_load_file(filename, &flist, 1) != E_SUCCESS) {
-      exit(-1);
+      ef_exit(-1);
    }
    fenv = &flist->env;
 
@@ -79,7 +79,7 @@ void test_filter(char *filename)
 
    printf("\n %d instructions decoded.\n\n", (int)(fenv->len / sizeof(struct filter_op)));
 
-   exit(0);
+   ef_exit(0);
 }
 
 /*
@@ -126,7 +126,7 @@ void print_fop(struct filter_op *fop, u_int32 eip)
             
          default:
             fprintf(stderr, "UNDEFINED OPCODE (%d) !!\n", fop->opcode);
-            exit(-1);
+            ef_exit(-1);
             break;
       }
 }

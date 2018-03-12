@@ -94,9 +94,7 @@ int main(int argc, char *argv[])
    else if (ret_value == -E_INVALID)
       FATAL_ERROR("Cannot write output file (%s): the filter format is not correct. ", EF_GBL_OPTIONS->output_file);
 
-   libettercap_ui_cleanup();
-   ef_globals_free();
-   return 0;
+   ef_exit(0);
 }
 
 
@@ -135,6 +133,13 @@ void ef_globals_free(void)
 
    return;
 
+}
+
+void ef_exit(int code)
+{
+   libettercap_ui_cleanup();
+   ef_globals_free();
+   exit(code);
 }
 
 /* EOF */

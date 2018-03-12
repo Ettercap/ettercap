@@ -57,6 +57,7 @@ extern struct el_globals *el_gbls;
 
 EC_API_EXTERN void el_globals_alloc(void);
 EC_API_EXTERN void el_globals_free(void);
+EC_API_EXTERN void el_exit(int code);
 
 #endif   /*  EL_H */
 

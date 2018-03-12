@@ -379,7 +379,7 @@ void concatenate(int argc, char **argv)
 
    printf("\nAll files concatenated into: %s\n\n", EL_GBL_LOGFILE);
 
-   exit(0);
+   el_exit(0);
 }
 
 

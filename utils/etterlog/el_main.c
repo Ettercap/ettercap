@@ -39,8 +39,8 @@ int main(int argc, char *argv[])
    libettercap_init(PROGRAM, EC_VERSION);
    select_text_interface();
    libettercap_ui_init();
-   /* etterlog copyright */
    el_globals_alloc();
+   /* etterlog copyright */
    fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
   
@@ -96,15 +96,12 @@ int main(int argc, char *argv[])
    
    /* not interested in the content... only analysis */
    if (EL_GBL_OPTIONS->analyze || EL_GBL_OPTIONS->connections)
-      return 0;
+      el_exit(0);
    
    /* display the content of the logfile */
    display();
    
-   libettercap_ui_cleanup();
-   el_globals_free();
-
-   return 0;
+   el_exit(0);
 }
 
 /* ANSI color escapes */
@@ -156,7 +153,13 @@ void el_globals_free(void)
    return;
 
 }
-  
+
+void el_exit(int code)
+{
+   libettercap_ui_cleanup();
+   el_globals_free();
+   exit(code);
+}
 
 // vim:ts=3:expandtab
 

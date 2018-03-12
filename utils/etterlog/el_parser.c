@@ -87,7 +87,7 @@ void el_usage(void)
 
    fprintf(stdout, "\n\n");
 
-   exit(0);
+   el_exit(0);
 }
 
 
@@ -286,17 +286,17 @@ void parse_options(int argc, char **argv)
 
          case 'v':
                   printf("%s %s\n", PROGRAM, EC_VERSION);
-                  exit(0);
+                  el_exit(0);
                   break;
 
          case ':': // missing parameter
             fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
-            exit(0);
+            el_exit(0);
          break;
 
          case '?': // unknown option
             fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
-            exit(0);
+            el_exit(0);
          break;
       }
    }

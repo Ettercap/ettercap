@@ -21,6 +21,7 @@ extern struct ef_globals *ef_gbls;
 
 EC_API_EXTERN void ef_globals_alloc(void);
 EC_API_EXTERN void ef_globals_free(void);
+EC_API_EXTERN void ef_exit(int code);
 
 #endif   /*  EL_H */
 

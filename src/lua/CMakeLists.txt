@@ -12,7 +12,7 @@ configure_file(ec_lua_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/ec_lua_
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 include_directories(${LUAJIT_INCLUDE_DIR})
 add_library(ec_lua ec_lua.c)
-set_target_properties(ec_lua PROPERTIES COMPILE_FLAGS -fPIC)
+set_target_properties(ec_lua PROPERTIES POSITION_INDEPENDENT_CODE ON)
 add_dependencies(ec_lua luajit)
 
 # Add our 'shared' code.

@@ -344,7 +344,7 @@ void concatenate(int argc, char **argv)
    /* write the header */
    put_header(fd, &hdr);
       
-   printf("Concatenating file [%s]", argv[argc]);
+   USER_MSG("Concatenating file [%s]", argv[argc]);
    
    /* copy the first file into the output */
    dump_file(fd, &hdr);
@@ -366,7 +366,7 @@ void concatenate(int argc, char **argv)
       if (hdr.type != tmp.type)
          FATAL_ERROR("Cannot concatenate different type of file");
 
-      printf("Concatenating file [%s]", argv[argc]);
+      USER_MSG("Concatenating file [%s]", argv[argc]);
       
       /* concatenate this file */
       dump_file(fd, &tmp);
@@ -377,7 +377,7 @@ void concatenate(int argc, char **argv)
 
    gzclose(fd);
 
-   printf("\nAll files concatenated into: %s\n\n", EL_GBL_LOGFILE);
+   USER_MSG("\nAll files concatenated into: %s\n\n", EL_GBL_LOGFILE);
 
    el_exit(0);
 }
@@ -399,7 +399,7 @@ static void dump_file(gzFile fd, struct log_global_header *hdr)
       switch (hdr->type) {
          case LOG_INFO:
             if (get_info(&inf, &infbuf) != E_SUCCESS) {
-               printf("\n");
+               USER_MSG("\n");
                return;
             }
             /* write the info */
@@ -413,7 +413,7 @@ static void dump_file(gzFile fd, struct log_global_header *hdr)
 
          case LOG_PACKET:
             if (get_packet(&pck, &pckbuf) != E_SUCCESS) {
-               printf("\n");
+               USER_MSG("\n");
                return;
             }
             /* write the data */
@@ -428,7 +428,7 @@ static void dump_file(gzFile fd, struct log_global_header *hdr)
       
       /* a dot every 10 packets */
       if (count++ % 10 == 0) {
-         printf(".");
+         USER_MSG(".");
          fflush(stdout);
       }
    }

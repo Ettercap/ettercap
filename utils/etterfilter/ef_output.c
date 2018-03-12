@@ -58,8 +58,7 @@ int write_output(void)
    ON_ERROR(fd, -1, "Can't create file %s", EF_GBL_OPTIONS->output_file);
 
    /* display the message */
-   fprintf(stdout, " Writing output to \'%s\' ", EF_GBL_OPTIONS->output_file);
-   fflush(stdout);
+   USER_MSG(" Writing output to \'%s\' ", EF_GBL_OPTIONS->output_file);
    
    /* compute the header */
    fh.magic = htons(EC_FILTER_MAGIC);
@@ -86,9 +85,9 @@ int write_output(void)
 
    close(fd);
    
-   fprintf(stdout, " done.\n\n");
+   USER_MSG(" done.\n\n");
   
-   fprintf(stdout, " -> Script encoded into %d instructions.\n\n", (int)(i - 1));
+   USER_MSG(" -> Script encoded into %d instructions.\n\n", (int)(i - 1));
    
    return E_SUCCESS;
 }

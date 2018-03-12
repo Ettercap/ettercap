@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
    libettercap_ui_init();
    el_globals_alloc();
    /* etterlog copyright */
-   fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
+   USER_MSG("\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
   
   
@@ -64,14 +64,14 @@ int main(int argc, char *argv[])
    if (ret == -E_INVALID)
       FATAL_ERROR("Invalid log file");
    
-   fprintf(stderr, "Log file version    : %s\n", EL_GBL->hdr.version);
+   USER_MSG("Log file version    : %s\n", EL_GBL->hdr.version);
    /* display the date. ec_ctime() has no newline at end. */
 #if defined OS_DARWIN
-   fprintf(stderr, "Timestamp           : %s [%d]\n", ec_ctime(&EL_GBL->hdr.tv), EL_GBL->hdr.tv.tv_usec);
+   USER_MSG("Timestamp           : %s [%d]\n", ec_ctime(&EL_GBL->hdr.tv), EL_GBL->hdr.tv.tv_usec);
 #else
-   fprintf(stderr, "Timestamp           : %s [%lu]\n", ec_ctime(&EL_GBL->hdr.tv), EL_GBL->hdr.tv.tv_usec);
+   USER_MSG("Timestamp           : %s [%lu]\n", ec_ctime(&EL_GBL->hdr.tv), EL_GBL->hdr.tv.tv_usec);
 #endif
-   fprintf(stderr, "Type                : %s\n\n", (EL_GBL->hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
+   USER_MSG("Type                : %s\n\n", (EL_GBL->hdr.type == LOG_PACKET) ? "LOG_PACKET" : "LOG_INFO" );
   
    
    /* analyze the logfile */

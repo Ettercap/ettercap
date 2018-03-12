@@ -154,11 +154,11 @@ void load_tables(void)
    }
 
    /* print some nice information */
-   fprintf(stdout, "\n%3d protocol tables loaded:\n", ntables);
-   fprintf(stdout, "\t");
+   USER_MSG("\n%3d protocol tables loaded:\n", ntables);
+   USER_MSG("\t");
    SLIST_FOREACH(t, &table_head, next)
-      fprintf(stdout, "%s ", t->name);
-   fprintf(stdout, "\n");
+      USER_MSG("%s ", t->name);
+   USER_MSG("\n");
    fclose(fc);
   
 }
@@ -307,11 +307,11 @@ void load_constants(void)
    }
    
    /* print some nice information */
-   fprintf(stdout, "\n%3d constants loaded:\n", nconst);
-   fprintf(stdout, "\t");
+   USER_MSG("\n%3d constants loaded:\n", nconst);
+   USER_MSG("\t");
    SLIST_FOREACH(c, &const_head, next)
-      fprintf(stdout, "%s ", c->name);
-   fprintf(stdout, "\n");
+      USER_MSG("%s ", c->name);
+   USER_MSG("\n");
    fclose(fc);
 }
 

@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
    select_text_interface();
    libettercap_ui_init();
    /* etterfilter copyright */
-   fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
+   USER_MSG("\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
  
    /* initialize the line number */
@@ -76,16 +76,15 @@ int main(int argc, char *argv[])
    load_constants();
 
    /* print the message */
-   fprintf(stdout, "\n Parsing source file \'%s\' ", EF_GBL_OPTIONS->source_file);
-   fflush(stdout);
+   USER_MSG("\n Parsing source file \'%s\' ", EF_GBL_OPTIONS->source_file);
 
    ef_debug(1, "\n");
 
    /* begin the parsing */
    if (yyparse() == 0)
-      fprintf(stdout, " done.\n\n");
+      USER_MSG(" done.\n\n");
    else
-      fprintf(stdout, "\n\nThe script contains errors...\n\n");
+      USER_MSG("\n\nThe script contains errors...\n\n");
   
    /* write to file */
    ret_value = write_output();

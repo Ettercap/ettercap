@@ -14,6 +14,10 @@
    #include <windows.h>
 #endif
 
+#ifdef OS_DARWIN
+   #include <sys/types.h>
+#endif
+
 #include <ec_stdint.h>
 #include <ec_queue.h>
 

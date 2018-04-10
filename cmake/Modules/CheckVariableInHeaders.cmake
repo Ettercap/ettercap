@@ -23,7 +23,9 @@ int main()
     "Variable ${_SYMBOL} was found in headers\n")
   else()
     file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
-    "Failed to find variable ${_SYMBOL}. Source: ${_CHECK_PROTO_EXISTS_SOURCE_CODE}\n")
+      "Failed to find variable ${_SYMBOL}. \
+      Source: ${_CHECK_PROTO_EXISTS_SOURCE_CODE}\n"
+    )
   endif()
 endmacro()
 

@@ -6,7 +6,9 @@ set(INSTALL_LUA_LIBS ${INSTALL_LUA_ROOT}/lib)
 set(INSTALL_LUA_THIRD_PARTY ${INSTALL_LUA_ROOT}/third-party)
 set(INSTALL_LUA_SCRIPTS ${INSTALL_LUA_ROOT}/scripts)
 
-configure_file(ec_lua_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/include/ec_lua_config.h)
+configure_file(ec_lua_config.h.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/include/ec_lua_config.h
+)
 
 # Take care of building our C-based stuff.
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)

@@ -20,10 +20,18 @@ find_library(LIBCHECK_LIBRARY NAMES check libcheck
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBCHECK_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(LIBCHECK DEFAULT_MSG
-                                  LIBCHECK_LIBRARY LIBCHECK_INCLUDE_DIR)
+find_package_handle_standard_args(LIBCHECK
+  DEFAULT_MSG LIBCHECK_LIBRARY LIBCHECK_INCLUDE_DIR
+)
+
 if(LIBCHECK_FOUND)
-  set(LIBCHECK_LDFLAGS ${PC_CHECK_LIBRARIES} ${PC_LIBCHECK_LIBRARIES} ${PC_CHECK_LDFLAGS} ${PC_LIBCHECK_LDFLGAS})
+  set(LIBCHECK_LDFLAGS
+    ${PC_CHECK_LIBRARIES}
+    ${PC_LIBCHECK_LIBRARIES}
+    ${PC_CHECK_LDFLAGS}
+    ${PC_LIBCHECK_LDFLGAS}
+  )
+
   set(LIBCHECK_LIBRARIES ${LIBCHECK_LIBRARY})
   set(LIBCHECK_INCLUDE_DIRS ${LIBCHECK_INCLUDE_DIR})
 endif()

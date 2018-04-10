@@ -7,14 +7,21 @@ set(LIBNET_VERSION 1.1.6)
 set(LIBNET_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBNET_TARGET bundled-libnet-${LIBNET_VERSION}-${CMAKE_BUILD_TYPE})
 set(LIBNET_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${LIBNET_TARGET})
-set(LIBNET_CONFIGURE_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/libnet_configure_wrapper.sh)
+set(LIBNET_CONFIGURE_WRAPPER
+  ${CMAKE_CURRENT_BINARY_DIR}/libnet_configure_wrapper.sh
+)
+
 set(LIBNET_BUILD_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/libnet_build_wrapper.sh)
-set(LIBNET_INSTALL_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/libnet_install_wrapper.sh)
+set(LIBNET_INSTALL_WRAPPER
+  ${CMAKE_CURRENT_BINARY_DIR}/libnet_install_wrapper.sh
+)
 
 set(LIBNET_PREFIX ${LIBNET_BUILD_ROOT}/usr)
 set(LIBNET_LIB_DIR ${LIBNET_PREFIX}/lib)
 set(LIBNET_INCLUDE_DIR ${LIBNET_PREFIX}/include)
-set(LIBNET_LIBRARY ${LIBNET_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}net${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(LIBNET_LIBRARY "${LIBNET_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}\
+net${CMAKE_STATIC_LIBRARY_SUFFIX}"
+)
 
 # Configure the Makefile wrapper. The purpose of this wrapper is to set up
 # the environment for building libnet. ExternalProject_Add doesn't

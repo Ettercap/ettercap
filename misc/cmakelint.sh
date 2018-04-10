@@ -26,14 +26,13 @@
 # https://github.com/Ettercap/ettercap/wiki
 #
 # TODO:
-# 1. Enforce maximum line length of 80 characters (requires cmake version >= 3)
-# 2. Fix (variables passed to std args in) FindGTK3.cmake
-# 3. Move the description about this script to Etterwiki
+# 1. Fix (variables passed to std args in) FindGTK3.cmake
+# 2. Move the description about this script to Etterwiki
 
 [ -f cmakelint.sh ] && ECROOT=.. || ECROOT=.
 
 FILTERS=\
--linelength,\
++linelength,\
 -package/stdargs,\
 +convention/filename,\
 +package/consistency,\

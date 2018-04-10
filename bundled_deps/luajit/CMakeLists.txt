@@ -4,7 +4,9 @@ set(LUAJIT_TARGET bundled-luajit-${LUAJIT_VERSION}-${CMAKE_BUILD_TYPE})
 set(LUAJIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LUAJIT_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${LUAJIT_TARGET})
 set(LUAJIT_BUILD_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/luajit_build_wrapper.sh)
-set(LUAJIT_INSTALL_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/luajit_install_wrapper.sh)
+set(LUAJIT_INSTALL_WRAPPER
+  ${CMAKE_CURRENT_BINARY_DIR}/luajit_install_wrapper.sh
+)
 
 set(LUAJIT_PREFIX ${LUAJIT_BUILD_ROOT}/usr)
 set(LUAJIT_LIB_DIR ${LUAJIT_PREFIX}/lib)
@@ -24,10 +26,11 @@ endif()
 
 
 set(LUAJIT_LIBRARY
-  ${LUAJIT_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}luajit-5.1${CMAKE_STATIC_LIBRARY_SUFFIX}
+  "${LUAJIT_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}\
+luajit-5.1${CMAKE_STATIC_LIBRARY_SUFFIX}"
   ${LIB_M}
   ${LIB_DL}
-  )
+)
 
 # Configure the Makefile wrapper. The purpose of this wrapper is to set up
 # the environment for building luajit. ExternalProject_Add doesn't

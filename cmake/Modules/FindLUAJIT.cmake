@@ -4,7 +4,11 @@
 #
 
 # Look for the header file
-find_path(LUAJIT_INCLUDE_DIR NAMES luajit.h PATH_SUFFIXES luajit-2.1 luajit-2.0 luajit)
+find_path(LUAJIT_INCLUDE_DIR
+  NAMES luajit.h
+  PATH_SUFFIXES luajit-2.1 luajit-2.0 luajit
+)
+
 mark_as_advanced(LUAJIT_INCLUDE_DIR)
 
 #Look for the library
@@ -35,9 +39,11 @@ endif()
 function(_LUAJIT_GET_VERSION _OUT_version _luajit_hdr)
   file(READ ${_luajit_hdr} _contents)
   if(_contents)
-    # Example: #define LUAJIT_VERSION_NUM      20000  /* Version 2.0.0 = 02.00.00. */
-    string(REGEX REPLACE ".*#define LUAJIT_VERSION_NUM[ \t]+([0-9]+)([0-9][0-9])([0-9][0-9])[^0-9].*"
-"\\1.\\2.\\3" ${_OUT_version} "${_contents}")
+    # E.g.: #define LUAJIT_VERSION_NUM    20000  /* Version 2.0.0 = 02.00.00. */
+    string(REGEX REPLACE
+    ".*#define LUAJIT_VERSION_NUM[ \t]+([0-9]+)([0-9][0-9])([0-9][0-9])[^0-9].*"
+    "\\1.\\2.\\3" ${_OUT_version} "${_contents}"
+    )
 
     if(NOT ${_OUT_version} MATCHES "[0-9.]+")
       message(FATAL_ERROR "Version parsing failed for LUAJIT_VERSION!")
@@ -58,20 +64,26 @@ if(LUAJIT_FIND_VERSION)
       set(LUAJIT_FAILED_VERSION_CHECK false)
     endif()
   else()
-  if(LUAJIT_VERSION VERSION_EQUAL   LUAJIT_FIND_VERSION OR
-    LUAJIT_VERSION VERSION_GREATER LUAJIT_FIND_VERSION)
-    set(LUAJIT_FAILED_VERSION_CHECK false)
-  endif()
+    if(LUAJIT_VERSION VERSION_EQUAL LUAJIT_FIND_VERSION OR
+      LUAJIT_VERSION VERSION_GREATER LUAJIT_FIND_VERSION)
+      set(LUAJIT_FAILED_VERSION_CHECK false)
+    endif()
   endif()
 
   if(LUAJIT_FAILED_VERSION_CHECK)
     if(LUAJIT_FIND_REQUIRED AND NOT LUAJIT_FIND_QUIETLY)
       if(LUAJIT_FIND_VERSION_EXACT)
         message(FATAL_ERROR "LUAJIT version check failed.
-Version ${LUAJIT_VERSION} was found, version ${LUAJIT_FIND_VERSION} is needed exactly.")
+Version ${LUAJIT_VERSION} was found, \
+version ${LUAJIT_FIND_VERSION} is needed exactly."
+        )
+
       else()
         message(FATAL_ERROR "LUAJIT version check failed.
-Version ${LUAJIT_VERSION} was found, at least version ${LUAJIT_FIND_VERSION} is required")
+Version ${LUAJIT_VERSION} was found, \
+at least version ${LUAJIT_FIND_VERSION} is required"
+        )
+
       endif()
     endif()
 
@@ -84,7 +96,9 @@ endif()
 #handle the QUIETLY and REQUIRED arguments and set LUAJIT_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LUAJIT DEFAULT_MSG LUAJIT_LIBRARY LUAJIT_INCLUDE_DIR)
+find_package_handle_standard_args(LUAJIT
+  DEFAULT_MSG LUAJIT_LIBRARY LUAJIT_INCLUDE_DIR
+)
 
 if(LUAJIT_FOUND)
   set(LUAJIT_LIBRARY ${LUAJIT_LIBRARY})

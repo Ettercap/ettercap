@@ -36,8 +36,10 @@ if(CURL_FIND_VERSION)
   # Try to find the version number.
   foreach(_curl_version_header curlver.h curl.h)
     if(EXISTS "${CURL_INCLUDE_DIR}/curl/${_curl_version_header}")
-      file(STRINGS "${CURL_INCLUDE_DIR}/curl/${_curl_version_header}" curl_version_str
-        REGEX "^#define[\t ]+LIBCURL_VERSION[\t ]+\".*\"")
+      file(STRINGS "${CURL_INCLUDE_DIR}/curl/${_curl_version_header}"
+        curl_version_str REGEX "^#define[\t ]+LIBCURL_VERSION[\t ]+\".*\""
+      )
+
       string(REGEX REPLACE "^#define[\t ]+LIBCURL_VERSION[\t ]+\"([^\"]*)\".*"
 "\\1" CURL_VERSION_STRING "${curl_version_str}")
       unset(curl_version_str)
@@ -62,10 +64,15 @@ if(CURL_FIND_VERSION)
     if(CURL_FIND_REQUIRED AND NOT CURL_FIND_QUIETLY)
       if(CURL_FIND_VERSION_EXACT)
         message(FATAL_ERROR "CURL version check failed.
-Version ${CURL_VERSION_STRING} was found, version ${CURL_FIND_VERSION} is needed exactly.")
+Version ${CURL_VERSION_STRING} was found, \
+version ${CURL_FIND_VERSION} is needed exactly."
+        )
       else()
         message(FATAL_ERROR "CURL version check failed.
-Version ${CURL_VERSION_STRING} was found, at least version ${CURL_FIND_VERSION} is required")
+Version ${CURL_VERSION_STRING} was found, \
+at least version ${CURL_FIND_VERSION} is required"
+        )
+
       endif()
     endif()
 
@@ -77,7 +84,9 @@ endif()
 #handle the QUIETLY and REQUIRED arguments and set CURL_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(CURL DEFAULT_MSG CURL_LIBRARY CURL_INCLUDE_DIR)
+find_package_handle_standard_args(CURL
+  DEFAULT_MSG CURL_LIBRARY CURL_INCLUDE_DIR
+)
 
 if(CURL_FOUND)
   set(CURL_LIBRARY ${CURL_LIBRARY})

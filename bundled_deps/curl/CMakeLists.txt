@@ -8,7 +8,10 @@ set(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CURL_TARGET bundled-curl-${CURL_VERSION}-${CMAKE_BUILD_TYPE})
 set(CURL_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${CURL_TARGET})
 
-set(CURL_CONFIGURE_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_configure_wrapper.sh)
+set(CURL_CONFIGURE_WRAPPER
+  ${CMAKE_CURRENT_BINARY_DIR}/curl_configure_wrapper.sh
+)
+
 set(CURL_BUILD_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_build_wrapper.sh)
 set(CURL_INSTALL_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/curl_install_wrapper.sh)
 
@@ -17,7 +20,9 @@ set(CURL_LIB_DIR ${CURL_PREFIX}/lib)
 set(CURL_INCLUDE_DIR ${CURL_PREFIX}/include)
 
 if(NOT OPENSSL_LIBRARIES)
-  message(FATAL_ERROR "Cannot build bundled Curl without OpenSSL support enabled")
+  message(FATAL_ERROR
+    "Cannot build bundled Curl without OpenSSL support enabled"
+  )
 endif()
 
 if(NOT ZLIB_LIBRARIES)
@@ -35,7 +40,9 @@ if(NOT LIBRTMP_FOUND)
 endif()
 
 # Ensure that we include all the required stuff for linking to libcurl
-set(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX}
+set(CURL_LIBRARY
+  "${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}\
+curl${CMAKE_STATIC_LIBRARY_SUFFIX}"
   ${OPENSSL_LIBRARIES}
   ${ZLIB_LIBRARIES}
   ${LIBIDN_LIBRARIES}

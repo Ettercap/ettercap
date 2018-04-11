@@ -28,21 +28,13 @@ option(LIBRARY_BUILD "Build for libettercap only" OFF)
 option(INSTALL_DESKTOP "Install ettercap desktop files" ON)
 
 
-set(VALID_BUILD_TYPES Debug Release RelWithDebInfo)
+set(VALID_BUILD_TYPES Debug, Release, RelWithDebInfo and MinSizeRel)
 
 if(NOT CMAKE_BUILD_TYPE)
   # Default to using "Release" as our build type.
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING
     "Choose the type of build, options are: ${VALID_BUILD_TYPES}." FORCE)
 endif()
-list(FIND VALID_BUILD_TYPES ${CMAKE_BUILD_TYPE} contains_valid)
-if(contains_valid EQUAL -1)
-  message(FATAL_ERROR "Unknown CMAKE_BUILD_TYPE: '${CMAKE_BUILD_TYPE}'. \
-  Valid options are: ${VALID_BUILD_TYPES}")
-endif()
-unset(contains_valid)
-
-include(CMakeDependentOption)
 
 # If SYSTEM_LIBS is set to off, then all SYSTEM_* options will be
 # set to off.

@@ -25,8 +25,9 @@ option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
 option(ENABLE_TESTS "Enable Unit Tests" OFF)
 option(ENABLE_GEOIP "Build with GeoIP support" ON)
 option(LIBRARY_BUILD "Build for libettercap only" OFF)
-option(INSTALL_DESKTOP "Install ettercap desktop files" ON)
 
+cmake_dependent_option(INSTALL_DESKTOP "Install ettercap desktop files" ON
+  "NOT WIN32" OFF)
 
 set(VALID_BUILD_TYPES Debug, Release, RelWithDebInfo and MinSizeRel)
 

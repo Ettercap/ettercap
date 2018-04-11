@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(ettercap VERSION 0.8.3 LANGUAGES C)
 
-# Include cmake modules
+# Include our cmake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
 
@@ -16,9 +16,10 @@ include(EttercapOSTest)
 include(CMakeDependentOption)
 
 cmake_dependent_option(ENABLE_CURSES "Enable curses interface" ON
-  "NOT OS_WINDOWS" OFF)
+  "NOT OS_WINDOWS;NOT LIBRARY_BUILD" OFF)
 
-option(ENABLE_GTK "Enable GTK interface" ON)
+cmake_dependent_option(ENABLE_GTK "Enable GTK interface" ON
+  "NOT LIBRARY_BUILD" OFF)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
@@ -106,8 +107,6 @@ if(NOT OS_DARWIN AND NOT OS_WINDOWS)
 endif()
 
 if(LIBRARY_BUILD)
-  set(ENABLE_GTK OFF)
-  set(ENABLE_CURSES OFF)
   set(JUST_LIBRARY 1)
 endif()
 

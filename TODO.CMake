@@ -28,13 +28,19 @@
 - LIBRARY_BUILD
     - add a (travis) build matrix for LIBRARY_BUILD
     - select_text_interface() is not shown in -h option of the text interface.
-      Seems curcular to me. Unless the text interface is selected by default of course.
+      Seems circular to me. Unless the text interface is selected by default of course.
       Investigating...
 
 - INSTALL_PREFIX
     - Setting the INSTALL_PREFIX and sub directories can be done much cleaner,
-      much more relieably and much eleganyly.
-      See the buildin module GNUInstallDirs and/or cmake-init
+      much more reliably and much elegantly.
+      See the build-in module GNUInstallDirs and/or cmake-init
+    - INSTALL_EXECPREFIX, and (if INSTALL_DESKTOP is set
+      to OFF) DESKTOP_DIR, APPDATA_DIR, POLKIT_DIR and PKEXEC_INSTALL_WRAPPER are unused.
+      I'll keep them still since they maybe useful in the future(like adding a
+      desktop icon on windows, or looking for etter.conf in APPDATA_DIR as well).
+
+- divide top-level CMakeLists.txt into sections
 
 ==================================
   Out of scope TODOs for fix-cmake
@@ -42,10 +48,11 @@
 
 - Curses
     - Port curses UI to windows
+
 - INSTALL_PREFIX
     - It should be possible to relocate ettercap and/or its
       configuration files and still use it. Ettercap should be taught to look for its
-      files in diffent places or there should be options in etter.conf to specify these
+      files in different places or there should be options in etter.conf to specify these
       locations.
       See Gisle's wsock-trace for a great example.
 

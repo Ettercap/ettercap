@@ -31,6 +31,7 @@ option(LIBRARY_BUILD "Build for libettercap only" OFF)
 cmake_dependent_option(INSTALL_DESKTOP "Install ettercap desktop files" ON
   "NOT OS_WINDOWS" OFF)
 
+# XXX - remove this or move this lower
 set(VALID_BUILD_TYPES Debug, Release, RelWithDebInfo and MinSizeRel)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -101,14 +102,19 @@ endif()
 # XXX - you look lost...
 include(CheckVariableInHeaders)
 
+# XXX - remove this or move this lower
 if(NOT OS_DARWIN AND NOT OS_WINDOWS)
   set(FIND_LIBRARY_USE_LIB32_PATHS 1)
   set(FIND_LIBRARY_USE_LIB64_PATHS 1)
 endif()
 
+# XXX - move this lower
 include(EttercapHeadersCheck)
 include(EttercapLibCheck)
 include(EttercapVariableCheck)
+
+# INSTALL AND/OR OUTPUT DIRECTORIES
+# =================================
 
 set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Installation prefix")
 
@@ -169,12 +175,16 @@ set(MAN_INSTALLDIR
   ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages"
 )
 
+# XXX - remove this or move this into correct section
 if(NOT DISABLE_RPATH)
   # Ensure that, when we link to stuff outside of our build path, we include the
   # library dir path in our RPATH.
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   set(CMAKE_MACOSX_RPATH 1)
 endif()
+
+# GLOBAL BUILD FLAGS
+# ==================
 
 # set general build flags for debug build-type
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign \

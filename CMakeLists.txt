@@ -9,13 +9,15 @@ set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
 include(MacroEnsureOutOfSourceBuild)
 macro_ensure_out_of_source_build()
 
+include(EttercapOSTest)
+
 # USER OPTIONS
 # ============
 
 include(CMakeDependentOption)
 
 cmake_dependent_option(ENABLE_CURSES "Enable curses interface" ON
-  "NOT WIN32" OFF)
+  "NOT OS_WINDOWS" OFF)
 
 option(ENABLE_GTK "Enable GTK interface" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
@@ -27,7 +29,7 @@ option(ENABLE_GEOIP "Build with GeoIP support" ON)
 option(LIBRARY_BUILD "Build for libettercap only" OFF)
 
 cmake_dependent_option(INSTALL_DESKTOP "Install ettercap desktop files" ON
-  "NOT WIN32" OFF)
+  "NOT OS_WINDOWS" OFF)
 
 set(VALID_BUILD_TYPES Debug, Release, RelWithDebInfo and MinSizeRel)
 
@@ -97,7 +99,6 @@ if(ENABLE_TESTS)
 endif()
 
 include(CheckVariableInHeaders)
-include(EttercapOSTest)
 
 #Check and see if we're running Darwin, specify the CMAKE_LIBARY_PATH to do so
 if(NOT OS_DARWIN AND NOT OS_WINDOWS)

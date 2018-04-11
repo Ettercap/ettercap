@@ -186,9 +186,11 @@ endif()
 # GLOBAL BUILD FLAGS
 # ==================
 
+add_definitions(-D_FORTIFY_SOURCE=2)
+
 # set general build flags for debug build-type
 set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign \
--D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security \
+-Wformat -Wformat-security -Werror=format-security \
 -Wextra -Wredundant-decls" CACHE STRING "" FORCE
 )
 
@@ -210,9 +212,6 @@ set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign \
 #      message("Building without ASAN support (Clang compiler)")
 #   endif()
 #endif()
-
-# set build flags for release build-type
-set(CMAKE_C_FLAGS_RELEASE "-O2 -w -D_FORTIFY_SOURCE=2" CACHE STRING "" FORCE)
 
 if(OS_DARWIN)
 set(CMAKE_EXE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)

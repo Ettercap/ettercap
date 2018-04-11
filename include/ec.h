@@ -59,7 +59,7 @@
 #include <ec_globals.h>
 #include <ec_strings.h>
 
-#ifdef OS_MINGW
+#ifdef OS_WINDOWS
    #include <ec_os_mingw.h>
 #endif
 

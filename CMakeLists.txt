@@ -225,7 +225,7 @@ if(INSTALL_DESKTOP)
 endif()
 
 if(HAVE_PLUGINS)
-  if(OS_MINGW)
+  if(OS_WINDOWS)
     message("Sorry, plugins support on Windows is currently unavailable")
   else()
     add_subdirectory(plug-ins)

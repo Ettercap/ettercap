@@ -100,7 +100,6 @@ endif()
 
 include(CheckVariableInHeaders)
 
-#Check and see if we're running Darwin, specify the CMAKE_LIBARY_PATH to do so
 if(NOT OS_DARWIN AND NOT OS_WINDOWS)
   set(FIND_LIBRARY_USE_LIB32_PATHS 1)
   set(FIND_LIBRARY_USE_LIB64_PATHS 1)

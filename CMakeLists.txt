@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(ettercap VERSION 0.8.3 LANGUAGES C)
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+# Include cmake modules
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
 
 include(MacroEnsureOutOfSourceBuild)

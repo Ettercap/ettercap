@@ -96,22 +96,13 @@ if(ENABLE_TESTS)
   )
 endif()
 
-set(SPECIAL_LIB_DIR
-  "" CACHE PATH
-  "Special (non-traditional) root directory where \
-  headers/libraries are installed"
-)
-
 include(CheckVariableInHeaders)
 include(EttercapOSTest)
 
 #Check and see if we're running Darwin, specify the CMAKE_LIBARY_PATH to do so
-if(OS_DARWIN)
-  set(CMAKE_SYSTEM_NAME Darwin)
-  set(CMAKE_LIBRARY_PATH ${SPECIAL_LIB_DIR}/lib ${CMAKE_LIBRARY_PATH})
-  set(CMAKE_INCLUDE_PATH ${SPECIAL_LIB_DIR}/include ${CMAKE_INCLUDE_PATH})
-else()
-  set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /usr/lib64 /usr/lib32)
+if(NOT OS_DARWIN AND NOT OS_WINDOWS)
+  set(FIND_LIBRARY_USE_LIB32_PATHS 1)
+  set(FIND_LIBRARY_USE_LIB64_PATHS 1)
 endif()
 
 if(LIBRARY_BUILD)

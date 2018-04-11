@@ -16,6 +16,11 @@
 - Why are we enforcing an out-of-source build?
   This should be optional
 
+- Deal with BUNDLED_LIBS (except libnet)
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================
+
+- Curses
+    - Port curses UI to windows

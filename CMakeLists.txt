@@ -13,7 +13,14 @@ Please create a separate build directory and run \
 'cmake /path/to/${PROJECT_NAME} [options]' there."
 )
 
-option(ENABLE_CURSES "Enable curses interface" ON)
+# USER OPTIONS
+# ============
+
+include(CMakeDependentOption)
+
+cmake_dependent_option(ENABLE_CURSES "Enable curses interface" ON
+  "NOT WIN32" OFF)
+
 option(ENABLE_GTK "Enable GTK interface" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)

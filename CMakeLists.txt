@@ -111,7 +111,15 @@ include(EttercapLibCheck)
 include(EttercapVariableCheck)
 
 set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Installation prefix")
-set(INSTALL_SYSCONFDIR /etc CACHE PATH "System configuration directory")
+
+if(UNIX)
+  set(INSTALL_SYSCONFDIR /etc CACHE PATH "System configuration directory")
+  else()
+  set(INSTALL_SYSCONFDIR
+    ${INSTALL_PREFIX}/etc CACHE PATH "System configuration directory"
+  )
+endif()
+
 set(INSTALL_LIBDIR
   ${INSTALL_PREFIX}/lib${LIB_SUFFIX} CACHE PATH
   "Library installation directory"

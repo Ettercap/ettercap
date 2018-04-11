@@ -26,10 +26,15 @@
 - macro CHECK_VARIABLE_IN_HEADERS seems unused...
 
 - LIBRARY_BUILD
-- add a (travis) build matrix for LIBRARY_BUILD
-- select_text_interface() is not shown in -h option of the text interface.
-  Seems curcular to me. Unless the text interface is selected by default of course.
-  Investigating...
+    - add a (travis) build matrix for LIBRARY_BUILD
+    - select_text_interface() is not shown in -h option of the text interface.
+      Seems curcular to me. Unless the text interface is selected by default of course.
+      Investigating...
+
+- INSTALL_PREFIX
+    - Setting the INSTALL_PREFIX and sub directories can be done much cleaner,
+      much more relieably and much eleganyly.
+      See the buildin module GNUInstallDirs and/or cmake-init
 
 ==================================
   Out of scope TODOs for fix-cmake
@@ -37,3 +42,10 @@
 
 - Curses
     - Port curses UI to windows
+- INSTALL_PREFIX
+    - It should be possible to relocate ettercap and/or its
+      configuration files and still use it. Ettercap should be taught to look for its
+      files in diffent places or there should be options in etter.conf to specify these
+      locations.
+      See Gisle's wsock-trace for a great example.
+

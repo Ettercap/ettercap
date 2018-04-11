@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-project(ettercap C)
-
-set(VERSION "0.8.2")
+project(ettercap VERSION 0.8.3 LANGUAGES C)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
@@ -98,6 +96,7 @@ if(ENABLE_TESTS)
   )
 endif()
 
+# XXX - you look lost...
 include(CheckVariableInHeaders)
 
 if(NOT OS_DARWIN AND NOT OS_WINDOWS)

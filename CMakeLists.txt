@@ -7,11 +7,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
 
 include(MacroEnsureOutOfSourceBuild)
-macro_ensure_out_of_source_build("${PROJECT_NAME} \
-requires an out of source build.
-Please create a separate build directory and run \
-'cmake /path/to/${PROJECT_NAME} [options]' there."
-)
+macro_ensure_out_of_source_build()
 
 # USER OPTIONS
 # ============

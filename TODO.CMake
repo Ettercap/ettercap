@@ -13,6 +13,9 @@
     - FindCurses.cmake should look for libformw when CURSES_NEED_WIDE
       is true. Report to upstream?
 
+- Why are we enforcing an out-of-source build?
+  This should be optional
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================

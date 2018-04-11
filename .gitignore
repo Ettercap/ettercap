@@ -56,3 +56,5 @@ libwdg-*_debug.log
 build*
 include/config.h
 /obj-*/
+CMakeFiles
+CMakeCache.txt

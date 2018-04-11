@@ -68,8 +68,6 @@
 
 # Version 0.2 (3/02/2018)
 #   * Run git diff against this file to see all changes
-
-
 #=============================================================
 # _GTK3_GET_VERSION
 # Internal function to parse the version number in gtkversion.h
@@ -95,7 +93,6 @@ function(_GTK3_GET_VERSION _OUT_major _OUT_minor _OUT_micro _gtkversion_hdr)
       ".*#define GTK_MICRO_VERSION[ \t]+\\(([0-9]+)\\).*"
       "\\1" ${_OUT_micro} "${_contents}"
     )
-
     if(NOT ${_OUT_major} MATCHES "[0-9]+")
       message(FATAL_ERROR "Version parsing failed for GTK3_MAJOR_VERSION!")
     endif()
@@ -161,11 +158,10 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
 
   find_path(${_var} ${_hdr}
     PATHS
-      # Support for Msys2 (MinGW), which for some reason has glibconfig.h
-      # in $PREFIX/lib/glib-2.0/include.
-      C:/msys64/mingw64/lib/glib-2.0
-      C:/msys64/mingw32/lib/glib-2.0
-      $ENV{HOMEDRIVE}/$ENV{MSYS2_DIR}/$ENV{MSYSTEM}/lib/glib-2.0
+      # On Windows, glibconfig.h is located
+      # under $PREFIX/lib/glib-2.0/include.
+      C:/GTK/lib/glib-2.0/include
+      C:/msys64/$ENV{MSYSTEM}/lib/glib-2.0
       # end
       /usr/local/lib64
       /usr/local/lib
@@ -320,7 +316,6 @@ function(_GTK3_FIND_LIBRARY _var _lib _expand_vc _append_version)
       optimized ${${_var}}
       debug ${${_var}_DEBUG}
     )
-
     set(GTK3_LIBRARIES ${GTK3_LIBRARIES} PARENT_SCOPE)
   endif()
   else()
@@ -393,13 +388,11 @@ if(GTK3_FIND_VERSION)
 Version ${GTK3_VERSION} was found, \
 version ${GTK3_FIND_VERSION} is needed exactly."
         )
-
       else()
         message(FATAL_ERROR "GTK3 version check failed.
 Version ${GTK3_VERSION} was found, \
 at least version ${GTK3_FIND_VERSION} is required"
         )
-
       endif()
     endif()
 

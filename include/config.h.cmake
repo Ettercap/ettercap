@@ -67,7 +67,7 @@
 #cmakedefine ICON_DIR               "@ICON_DIR@"
 #cmakedefine MAN_INSTALLDIR         "@MAN_INSTALLDIR@"
 
-#cmakedefine JUST_LIBRARY
+#cmakedefine LIBRARY_BUILD
 
 #cmakedefine LIBNET_VERSION         "@LIBNET_VERSION@"
 #cmakedefine LIBNET_VERSION_MAJOR   @LIBNET_VERSION_MAJOR@

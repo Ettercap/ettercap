@@ -106,10 +106,6 @@ if(NOT OS_DARWIN AND NOT OS_WINDOWS)
   set(FIND_LIBRARY_USE_LIB64_PATHS 1)
 endif()
 
-if(LIBRARY_BUILD)
-  set(JUST_LIBRARY 1)
-endif()
-
 include(EttercapHeadersCheck)
 include(EttercapLibCheck)
 include(EttercapVariableCheck)

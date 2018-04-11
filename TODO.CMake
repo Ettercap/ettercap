@@ -25,7 +25,11 @@
 
 - macro CHECK_VARIABLE_IN_HEADERS seems unused...
 
+- LIBRARY_BUILD
 - add a (travis) build matrix for LIBRARY_BUILD
+- select_text_interface() is not shown in -h option of the text interface.
+  Seems curcular to me. Unless the text interface is selected by default of course.
+  Investigating...
 
 ==================================
   Out of scope TODOs for fix-cmake

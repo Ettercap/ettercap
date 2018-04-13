@@ -21,6 +21,7 @@
 #cmakedefine HAVE_UTSNAME_H
 #cmakedefine HAVE_STDINT_H
 #cmakedefine HAVE_GETOPT_H
+#cmakedefine HAVE_NAMESER_H
 #cmakedefine HAVE_ARPA_NAMESER_H
 #cmakedefine HAVE_LTDL_H
 #cmakedefine HAVE_DLFCN_H

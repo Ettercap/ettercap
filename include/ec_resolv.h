@@ -3,7 +3,9 @@
 
 #include <ec_inet.h>
 
-#ifdef HAVE_ARPA_NAMESER_H
+#if defined HAVE_NAMESER_H
+   #include <nameser.h>
+#elif defined HAVE_ARPA_NAMESER_H
    #include <arpa/nameser.h>
    #ifndef OS_BSD_OPEN
       #include <arpa/nameser_compat.h>

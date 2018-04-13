@@ -9,6 +9,7 @@ check_include_file(getopt.h HAVE_GETOPT_H)
 check_include_file(ctype.h HAVE_CTYPE_H)
 check_include_file(inttypes.h HAVE_INTTYPES_H)
 
+check_include_file(nameser.h HAVE_NAMESER_H)
 check_include_file(arpa/nameser.h HAVE_ARPA_NAMESER_H)
 
 check_include_file(ltdl.h HAVE_LTDL_H)

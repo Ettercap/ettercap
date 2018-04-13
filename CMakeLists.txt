@@ -5,8 +5,9 @@ project(ettercap VERSION 0.8.3 LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
 
-include(MacroEnsureOutOfSourceBuild)
-macro_ensure_out_of_source_build()
+include(EttercapMacrosAndFunctions)
+
+ensure_out_of_source_build()
 
 include(EttercapOSTest)
 
@@ -30,15 +31,6 @@ option(LIBRARY_BUILD "Build for libettercap only" OFF)
 
 cmake_dependent_option(INSTALL_DESKTOP "Install ettercap desktop files" ON
   "NOT OS_WINDOWS" OFF)
-
-# XXX - remove this or move this lower
-set(VALID_BUILD_TYPES Debug, Release, RelWithDebInfo and MinSizeRel)
-
-if(NOT CMAKE_BUILD_TYPE)
-  # Default to using "Release" as our build type.
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING
-    "Choose the type of build, options are: ${VALID_BUILD_TYPES}." FORCE)
-endif()
 
 # If SYSTEM_LIBS is set to off, then all SYSTEM_* options will be
 # set to off.
@@ -186,13 +178,41 @@ endif()
 # GLOBAL BUILD FLAGS
 # ==================
 
+# XXX - move this line to EttercapOSTest.cmake
+get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+set(VALID_BUILD_TYPES "Debug, Release, RelWithDebInfo and MinSizeRel")
+if(NOT CMAKE_BUILD_TYPE AND NOT "${IS_MULTI_CONFIG}")
+  # On "single-configuration generators", default to the "Release" build type.
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+    "Choose the type of build, options are: ${VALID_BUILD_TYPES}." FORCE
+  )
+endif()
+
 add_definitions(-D_FORTIFY_SOURCE=2)
 
-# set general build flags for debug build-type
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -Wall -Wno-pointer-sign \
--Wformat -Wformat-security -Werror=format-security \
--Wextra -Wredundant-decls" CACHE STRING "" FORCE
-)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_CONFIGURATION_TYPES)
+# Set build flags for debug builds
+
+  add_definitions(-DDEBUG)
+  add_definitions(-D_DEBUG)
+
+  # Check and add compiler options if they exist.
+  # ---------------------------------------------
+  #
+  # You may add any kind of compiler flag to this.
+  # If your compiler supports it, it will be added, if not, it will be skipped.
+  check_and_add_compiler_option(-O0)
+  check_and_add_compiler_option(-ggdb3)
+  check_and_add_compiler_option(-Wall)
+  check_and_add_compiler_option(-Wno-pointer-sign)
+  check_and_add_compiler_option(-Wformat)
+  check_and_add_compiler_option(-Werror=format-security)
+  check_and_add_compiler_option(-Wextra)
+  check_and_add_compiler_option(-Wredundant-decls)
+  check_and_add_compiler_option(-W4) # MSVC only
+  check_and_add_compiler_option(-Wused-but-marked-unused) # Clang/llVM only
+endif()
 
 ## append ASAN build flags if compiler version has support
 #if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")

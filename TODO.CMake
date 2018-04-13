@@ -42,6 +42,8 @@
 
 - divide top-level CMakeLists.txt into sections
 
+- create and use a check_and_add_linker_option() macro
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================

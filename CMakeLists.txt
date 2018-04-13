@@ -214,25 +214,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_CONFIGURATION_TYPES)
   check_and_add_compiler_option(-Wused-but-marked-unused) # Clang/llVM only
 endif()
 
-## append ASAN build flags if compiler version has support
-#if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-#   if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.8)
-#      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address
-#         -fno-omit-frame-pointer" CACHE STRING "" FORCE)
-#      message("Building with ASAN support (GNU compiler)")
-#   else()
-#      message("Building without ASAN support (GNU compiler)")
-#   endif()
-#elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-#   if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 3.1)
-#      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address
-#         -fno-omit-frame-pointer" CACHE STRING "" FORCE)
-#      message("Building with ASAN support (Clang compiler)")
-#   elseif(CMAKE_C_COMPILER_VERSION VERSION_GREATER 3.1)
-#      message("Building without ASAN support (Clang compiler)")
-#   endif()
-#endif()
-
 if(OS_DARWIN)
 set(CMAKE_EXE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl" CACHE STRING "" FORCE)

@@ -43,6 +43,8 @@
 
 - create and use a check_and_add_linker_option() macro
 
+- add a clang-tidy (make) target (instead of ASAN support)
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================

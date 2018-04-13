@@ -172,11 +172,18 @@ add_definitions(-D_FORTIFY_SOURCE=2)
 # Global include directories
 # --------------------------
 
-set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include
-  ${CMAKE_SOURCE_DIR}/include ${EC_INCLUDE}
+include_directories(
+  ${CMAKE_BINARY_DIR}/include
+  ${CMAKE_SOURCE_DIR}/include
 )
 
-include_directories(${EC_INCLUDE_PATH})
+# Automatically add CMAKE_CURRENT_SOURCE_DIR and CMAKE_CURRENT_BINARY_DIR to
+# the include directories in every processed CMakeLists.txt.
+set(CMAKE_INCLUDE_CURRENT_DIR 1)
+
+# Order the include directories so that directories which are in the source or
+# build tree always come before directories outside the project.
+set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE 1)
 
 if(NOT OS_DARWIN AND NOT OS_WINDOWS)
   set(FIND_LIBRARY_USE_LIB32_PATHS 1)

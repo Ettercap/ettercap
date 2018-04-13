@@ -25,9 +25,6 @@ flex_target(EF_SCANNER
 
 add_flex_bison_dependency(EF_SCANNER EF_PARSER)
 
-# For ef_grammar.h
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 add_executable(etterfilter
   ${EF_SRC}
   ${FLEX_EF_SCANNER_OUTPUTS}

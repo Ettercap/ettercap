@@ -1,5 +1,5 @@
 
-include_directories(. ../include ${LIBCHECK_INCLUDE_DIRS})
+include_directories(${LIBCHECK_INCLUDE_DIRS})
 
 add_custom_target(test_verbose COMMAND ${CMAKE_CTEST_COMMAND} -V)
 

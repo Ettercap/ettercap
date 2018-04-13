@@ -49,7 +49,7 @@
 #=============================================================================
 # Copyright 2009 Kitware, Inc.
 # Copyright 2008-2009 Philip Lowman <philip@yhbt.com>
-# Copyright 2018 Ettercap Development Team <info@ettercap-project.org>
+# Copyright 2014-2018 Ettercap Development Team <info@ettercap-project.org>
 #
 # Distributed under the OSI-approved BSD License (the "License");
 # see accompanying file Copyright.txt for details.
@@ -405,7 +405,7 @@ endif()
 # Find all components
 #
 
-find_package(Freetype)
+find_package(Freetype QUIET)
 list(APPEND GTK3_INCLUDE_DIRS ${FREETYPE_INCLUDE_DIRS})
 list(APPEND GTK3_LIBRARIES ${FREETYPE_LIBRARIES})
 

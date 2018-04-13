@@ -45,6 +45,8 @@
 
 - add a clang-tidy (make) target (instead of ASAN support)
 
+- Add a nicer build summary at the end
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================

@@ -91,20 +91,6 @@ if(ENABLE_TESTS)
   )
 endif()
 
-# XXX - you look lost...
-include(CheckVariableInHeaders)
-
-# XXX - remove this or move this lower
-if(NOT OS_DARWIN AND NOT OS_WINDOWS)
-  set(FIND_LIBRARY_USE_LIB32_PATHS 1)
-  set(FIND_LIBRARY_USE_LIB64_PATHS 1)
-endif()
-
-# XXX - move this lower
-include(EttercapHeadersCheck)
-include(EttercapLibCheck)
-include(EttercapVariableCheck)
-
 # INSTALL AND/OR OUTPUT DIRECTORIES
 # =================================
 
@@ -175,8 +161,39 @@ if(NOT DISABLE_RPATH)
   set(CMAKE_MACOSX_RPATH 1)
 endif()
 
-# GLOBAL BUILD FLAGS
-# ==================
+# GLOBAL BUILD PARAMETERS
+# =======================
+
+# Global compile definitions
+# --------------------------
+
+add_definitions(-D_FORTIFY_SOURCE=2)
+
+# Global include directories
+# --------------------------
+
+set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include
+  ${CMAKE_SOURCE_DIR}/include ${EC_INCLUDE}
+)
+
+include_directories(${EC_INCLUDE_PATH})
+
+if(NOT OS_DARWIN AND NOT OS_WINDOWS)
+  set(FIND_LIBRARY_USE_LIB32_PATHS 1)
+  set(FIND_LIBRARY_USE_LIB64_PATHS 1)
+endif()
+
+# Global linker flags
+# -------------------
+
+if(OS_DARWIN)
+set(CMAKE_EXE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
+endif()
+
+# Set build Type
+# --------------
 
 # XXX - move this line to EttercapOSTest.cmake
 get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -189,7 +206,8 @@ if(NOT CMAKE_BUILD_TYPE AND NOT "${IS_MULTI_CONFIG}")
   )
 endif()
 
-add_definitions(-D_FORTIFY_SOURCE=2)
+# Debug build Type
+# ----------------
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_CONFIGURATION_TYPES)
 # Set build flags for debug builds
@@ -214,22 +232,20 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_CONFIGURATION_TYPES)
   check_and_add_compiler_option(-Wused-but-marked-unused) # Clang/llVM only
 endif()
 
-if(OS_DARWIN)
-set(CMAKE_EXE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
-endif()
+# SUBDIRECTORIES
+# ==============
+
+# XXX - you look lost...
+include(CheckVariableInHeaders)
+
+include(EttercapHeadersCheck)
+include(EttercapLibCheck)
+include(EttercapVariableCheck)
 
 if(ENABLE_LUA)
   include(EttercapLuajit)
   set(HAVE_EC_LUA 1)
 endif()
-
-set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include
-  ${CMAKE_SOURCE_DIR}/include ${EC_INCLUDE}
-)
-
-include_directories(${EC_INCLUDE_PATH})
 
 add_subdirectory(src)
 
@@ -248,6 +264,14 @@ add_subdirectory(utils)
 add_subdirectory(share)
 add_subdirectory(man)
 
+if(ENABLE_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+
+# MISCELLANEOUS
+# =============
+
 if(ENABLE_IPV6)
   set(WITH_IPV6 TRUE)
 endif()
@@ -257,10 +281,8 @@ configure_file(include/config.h.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/include/config.h
 )
 
-if(ENABLE_TESTS)
-  enable_testing()
-  add_subdirectory(tests)
-endif()
+# UNINSTALLATION
+# ==============
 
 # uninstall target
 configure_file(
@@ -278,6 +300,8 @@ add_custom_target(clean-all
   COMMAND ${CMAKE_BUILD_TOOL} clean
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SCRIPT_PATH}/clean-all.cmake
 )
+
+# XXX - Add a nicer build summary at the end
 
 # If we notice that this isn't the first time they've run
 if(NOT ("${CMAKE_CACHEFILE_DIR}" STREQUAL ""))

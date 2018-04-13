@@ -1,36 +1,43 @@
 ## The easy part
 
-set(EC_LIBS)
-set(EC_LIBETTERCAP_LIBS)
-set(EC_INCLUDE)
-
-# Generic target that will build all enabled bundled libs.
-add_custom_target(bundled)
+if(BUNDLED_LIBS)
+  # Generic target that will build all enabled bundled libs.
+  add_custom_target(bundled)
+endif()
 
 if(ENABLE_CURSES)
   set(CURSES_NEED_NCURSES TRUE)
-  find_package(Curses REQUIRED)
+  find_package(CURSES REQUIRED)
   set(HAVE_NCURSES 1)
   set(EC_LIBS ${EC_LIBS} ${CURSES_LIBRARIES})
-  set(EC_LIBS ${EC_LIBS} ${CURSES_NCURSES_LIBRARY})
-  set(EC_LIBS ${EC_LIBS} ${CURSES_FORM_LIBRARY})
-  set(EC_INCLUDE ${EC_INCLUDE}
-    ${CURSES_INCLUDE_DIR}
-    ${CURSES_INCLUDE_DIR}/ncurses
+  set(EC_INCLUDE ${EC_INCLUDE} ${CURSES_INCLUDE_DIRS})
+
+  if(CURSES_HAVE_NCURSES_NCURSES_H)
+    set(EC_INCLUDE ${EC_INCLUDE} ${CURSES_INCLUDE_DIRS}/ncurses)
+  endif()
+
+  if(CURSES_NEED_WIDE)
+    set(CURSES_WIDE w)
+  endif()
+
+  find_library(CURSES_PANEL_LIBRARY panel${CURSES_WIDE}
+    DOC "Panel stack extension for ncurses"
+    HINTS "${_cursesLibDir}" # Don't Try This at Home.
+  )
+  find_library(CURSES_MENU_LIBRARY menu${CURSES_WIDE}
+    DOC "ncurses extension for programming menus"
+    HINTS "${_cursesLibDir}" # Don't Try This at Home.
   )
 
-  find_library(FOUND_PANEL panel)
-  find_library(FOUND_MENU menu)
-
-  if(FOUND_PANEL)
-    set(EC_LIBS ${EC_LIBS} ${FOUND_PANEL})
+  if(CURSES_PANEL_LIBRARY AND CURSES_MENU_LIBRARY)
+    set(EC_LIBS ${EC_LIBS} ${CURSES_PANEL_LIBRARY} ${CURSES_MENU_LIBRARY})
+  elseif(NOT CURSES_PANEL_LIBRARY)
+    message(FATAL_ERROR "libpanel${CURSES_WIDE} not found.")
+  else()
+    message(FATAL_ERROR "libmenu${CURSES_WIDE} not found.")
   endif()
 
-  if(FOUND_MENU)
-    set(EC_LIBS ${EC_LIBS} ${FOUND_MENU})
-  endif()
 endif()
-
 
 if(ENABLE_GTK)
   set(VALID_GTK_TYPES GTK2 GTK3)

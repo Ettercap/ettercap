@@ -47,6 +47,8 @@
 
 - Add a nicer build summary at the end
 
+- use CMakePushCheckState throughout
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================

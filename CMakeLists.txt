@@ -235,9 +235,6 @@ endif()
 # SUBDIRECTORIES
 # ==============
 
-# XXX - you look lost...
-include(CheckVariableInHeaders)
-
 include(EttercapHeadersCheck)
 include(EttercapLibCheck)
 include(EttercapVariableCheck)

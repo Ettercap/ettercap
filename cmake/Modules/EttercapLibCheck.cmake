@@ -35,9 +35,12 @@ endif()
 if(ENABLE_GTK)
   set(VALID_GTK_TYPES GTK2 GTK3)
   if(NOT DEFINED GTK_BUILD_TYPE)
-    message(STATUS "No GTK_BUILD_TYPE defined, default is GTK2")
-    set(GTK_BUILD_TYPE GTK2 CACHE STRING
-    "Choose the type of gtk build, options are: ${VALID_GTK_TYPES}." FORCE)
+    message(STATUS "No GTK_BUILD_TYPE defined, default is GTK3")
+    set(GTK_BUILD_TYPE GTK3 CACHE STRING
+      "Choose the type of gtk build, options are: ${VALID_GTK_TYPES}." FORCE)
+  else()
+    set(GTK_BUILD_TYPE ${GTK_BUILD_TYPE} CACHE STRING
+      "Choose the type of gtk build, options are: ${VALID_GTK_TYPES}." FORCE)
   endif()
   list(FIND VALID_GTK_TYPES ${GTK_BUILD_TYPE} contains_valid)
   if(contains_valid EQUAL -1)
@@ -47,12 +50,26 @@ if(ENABLE_GTK)
   endif()
   unset(contains_valid)
   if(GTK_BUILD_TYPE STREQUAL GTK3)
-    find_package(GTK3 REQUIRED gtk)
-    if(NOT GTK3_FOUND)
-      message(FATAL_ERROR "You choose to build against GTK3, \
-        please install it, or build against GTK2")
+    set(GTK3_FIND_VERSION 1)
+    find_package(GTK3 3.12.0)
+    if(GTK3_FOUND)
+      set(HAVE_GTK3 1)
+    else()
+      # give it another try but only in GTK3 compatibility mode
+      find_package(GTK3 REQUIRED)
+      if(GTK3_FOUND)
+        message("\n\
+Your version of GTK3 (${GTK3_VERSION}) is not \
+sufficient for full GTK3 support.\n\
+Full support requires >= 3.12.\n\
+Building in GTK3 compatibility mode.\n")
+        set(HAVE_GTK3COMPAT 1)
+      else()
+        message(FATAL_ERROR
+"You choose to build against GTK3.\
+Please install it, or build against GTK1")
+      endif()
     endif()
-    set(HAVE_GTK3 1)
     set(EC_LIBS ${EC_LIBS} ${GTK3_LIBRARIES})
     set(EC_INCLUDE ${EC_INCLUDE} ${GTK3_INCLUDE_DIRS})
     include_directories(${GTK3_INCLUDE_DIRS})
@@ -104,7 +121,7 @@ include(CheckLibraryExists)
 include(CheckIncludeFile)
 
 # Iconv
-find_library(HAVE_ICONV iconv)
+find_library(HAVE_ICONV NAMES iconv libiconv)
 check_function_exists(iconv HAVE_UTF8)
 if(HAVE_ICONV)
   # Seem that we have a dedicated iconv library

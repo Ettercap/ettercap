@@ -6,6 +6,7 @@
 
 - GTK
     - how to tell find_path() to look in any "lib" directory for glibconfig.h?
+    - disable HAVE_GTK3COMPAT related warnings only
 
 - Curses
     - FindCurses.cmake should look for libformw when CURSES_NEED_WIDE
@@ -48,6 +49,10 @@
 - Add a nicer build summary at the end
 
 - use CMakePushCheckState throughout
+
+- reduce use of include_directories()
+
+- link targets only with libs they really depend on (e.g. tests)
 
 ==================================
   Out of scope TODOs for fix-cmake

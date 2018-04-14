@@ -5,10 +5,8 @@ set(EC_TEXT_SRC
             text/ec_text_plugin.c
             text/ec_text_profile.c
 )
-include_directories(text)
 
 set(EC_DAEMON_SRC daemon/ec_daemon.c)
-include_directories(daemon)
 
 if(ENABLE_CURSES)
     set(EC_CURSES_SRC
@@ -27,7 +25,7 @@ if(ENABLE_CURSES)
                 curses/ec_curses_view_connections.c
                 curses/ec_curses_view_profiles.c
     )
-    include_directories(curses)
+
     set(EC_WDG_SRC
                 curses/widgets/wdg.c
                 curses/widgets/wdg_compound.c
@@ -44,14 +42,13 @@ if(ENABLE_CURSES)
                 curses/widgets/wdg_scroll.c
                 curses/widgets/wdg_window.c
     )
-    include_directories(curses/widgets)
+
 #    add_library(ec_wdg STATIC ${EC_WDG_SRC})
 #    target_link_libraries(ec_wdg ${EC_LIBS})
 endif()
 
 if(ENABLE_GTK)
   if("${GTK_BUILD_TYPE}" STREQUAL "GTK2" OR "${HAVE_GTK3COMPAT}")
-    include_directories(gtk)
     set(EC_GTK_SRC
       gtk/ec_gtk.c
       gtk/ec_gtk_conf.c
@@ -72,7 +69,6 @@ if(ENABLE_GTK)
 )
   else()
     # full GTK3 support, using gtk3 code
-    include_directories(gtk3)
     set(EC_GTK_SRC
       gtk3/ec_gtk3.c
       gtk3/ec_gtk3_conf.c
@@ -101,6 +97,15 @@ ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_WDG_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
 set_target_properties(ec_interfaces PROPERTIES
   ENABLE_EXPORTS On
   COMPILE_FLAGS -fPIC
-  #  LINK_INTERFACE_LIBRARIES ""
   OUTPUT_NAME ec_interfaces
   )
+target_include_directories(ec_interfaces
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/curses
+  ${CMAKE_CURRENT_SOURCE_DIR}/curses/widgets
+  ${CMAKE_CURRENT_SOURCE_DIR}/daemon
+  ${CMAKE_CURRENT_SOURCE_DIR}/gtk
+  ${CMAKE_CURRENT_SOURCE_DIR}/gtk3
+  ${CMAKE_CURRENT_SOURCE_DIR}/text
+  ${EC_UI_INCLUDE}
+)

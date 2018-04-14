@@ -434,6 +434,18 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
       _gtk3_find_library(GTK3_GDK_LIBRARY gdk false true)
       _gtk3_find_library(GTK3_GTK_LIBRARY gtk false true)
     else()
+    # ********* There are various gtk3 builds/packages/bundles
+    # ********* available on Windows. Some of them follow the
+    # ********* classic naming scheme (libs with -win32 suffix)
+    # ********* and others prefer the original names.
+    # ********* Because we want to support as many packages
+    # ********* as possible, we search for both naming styles.
+    # ********* Starting with the original names.
+    # *********
+    # ********* Tested with both vcpkg (gtk+-3.22.19)
+    # ********* and Msys2 (gtk+-3.22.28)
+      _gtk3_find_library(GTK3_GDK_LIBRARY gdk false true)
+      _gtk3_find_library(GTK3_GTK_LIBRARY gtk false true)
       _gtk3_find_library(GTK3_GDK_LIBRARY gdk-win32 false true)
       _gtk3_find_library(GTK3_GTK_LIBRARY gtk-win32 false true)
     endif()

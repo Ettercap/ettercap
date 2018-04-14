@@ -44,10 +44,10 @@ if(ENABLE_GTK)
   if(NOT DEFINED GTK_BUILD_TYPE)
     message(STATUS "No GTK_BUILD_TYPE defined, default is GTK3")
     set(GTK_BUILD_TYPE GTK3 CACHE STRING
-      "Choose the type of gtk build, options are: ${VALID_GTK_TYPES}." FORCE)
+      "Choose the type of GTK build, options are: ${VALID_GTK_TYPES}." FORCE)
   else()
     set(GTK_BUILD_TYPE ${GTK_BUILD_TYPE} CACHE STRING
-      "Choose the type of gtk build, options are: ${VALID_GTK_TYPES}." FORCE)
+      "Choose the type of GTK build, options are: ${VALID_GTK_TYPES}." FORCE)
   endif()
   list(FIND VALID_GTK_TYPES ${GTK_BUILD_TYPE} contains_valid)
   if(contains_valid EQUAL -1)
@@ -74,7 +74,7 @@ Building in GTK3 compatibility mode.\n")
       else()
         message(FATAL_ERROR
 "You choose to build against GTK3.\
-Please install it, or build against GTK1")
+Please install it, or build against GTK2")
       endif()
     endif()
     set(EC_UI_LIBS ${EC_UI_LIBS} ${GTK3_LIBRARIES})
@@ -122,8 +122,8 @@ endif()
 ## Thats all with packages, now we are on our own :(
 
 include(CheckFunctionExists)
-include(CheckLibraryExists)
-include(CheckIncludeFile)
+# include(CheckLibraryExists)
+# include(CheckIncludeFile)
 
 # Iconv
 find_library(HAVE_ICONV NAMES iconv libiconv)

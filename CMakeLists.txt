@@ -18,6 +18,9 @@ include(CMakeDependentOption)
 
 cmake_dependent_option(ENABLE_CURSES "Enable curses interface" ON
   "NOT OS_WINDOWS;NOT LIBRARY_BUILD" OFF)
+cmake_dependent_option(CURSES_NEED_WIDE "Enable Unicode functionality in \
+curses (wide character support)" OFF
+  "ENABLE_CURSES" OFF)
 
 cmake_dependent_option(ENABLE_GTK "Enable GTK interface" ON
   "NOT LIBRARY_BUILD" OFF)

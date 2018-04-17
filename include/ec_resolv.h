@@ -5,6 +5,9 @@
 
 #if defined HAVE_NAMESER_H
    #include <nameser.h>
+   #ifndef OS_WINDOWS
+      #include <resolv.h>
+   #endif
 #elif defined HAVE_ARPA_NAMESER_H
    #include <arpa/nameser.h>
    #ifndef OS_BSD_OPEN
@@ -27,7 +30,9 @@
    #define NS_PUT16     PUTSHORT
    #define NS_PUT32     PUTLONG
    /* constants */
+   #ifndef NS_MAXDNAME
    #define NS_MAXDNAME  MAXDNAME
+   #endif
    #define ns_c_in      C_IN
    #define ns_r_noerror NOERROR
    #define ns_t_cname   T_CNAME

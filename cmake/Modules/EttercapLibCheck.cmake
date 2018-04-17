@@ -133,19 +133,17 @@ endif()
 
 ## Thats all with packages, now we are on our own :(
 
-include(CheckFunctionExists)
-# include(CheckLibraryExists)
-# include(CheckIncludeFile)
 
-# Iconv
+# Find the iconv() POSIX.1 functions
 find_library(HAVE_ICONV NAMES iconv libiconv)
-check_function_exists(iconv HAVE_UTF8)
 if(HAVE_ICONV)
   # Seem that we have a dedicated iconv library
   # not built in libc (e.g. FreeBSD)
   set(HAVE_UTF8 1)
   set(EC_LIBS ${EC_LIBS} ${HAVE_ICONV})
 else()
+  include(CheckFunctionExists)
+  check_function_exists(iconv HAVE_UTF8)
   if(HAVE_UTF8)
   # iconv built in libc
   else()

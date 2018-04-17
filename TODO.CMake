@@ -62,6 +62,12 @@
     - Place/Generate proper etter.conf, etter.dns, etter.mdns into build
       directory (IPV4 vs IPV6)
 
+- Add/Improve find modules:
+    - pcap
+    - packet API (Windows)
+    - libnet
+    - libGeoIP
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================

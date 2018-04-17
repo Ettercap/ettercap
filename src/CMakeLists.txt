@@ -189,6 +189,10 @@ if(NOT HAVE_GETOPT_LONG AND NOT HAVE_GETOPT_H)
   set(EC_SRC ${EC_SRC} missing/getopt.c)
 endif()
 
+if(NOT HAVE_SCANDIR)
+  set(EC_SRC ${EC_SRC} missing/scandir.c)
+endif()
+
 add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
 target_link_libraries(lib_ettercap ${EC_LIBS})

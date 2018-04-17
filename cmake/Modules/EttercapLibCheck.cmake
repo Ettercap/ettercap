@@ -133,6 +133,7 @@ endif()
 
 ## Thats all with packages, now we are on our own :(
 
+include(CheckFunctionExists)
 
 # Find the iconv() POSIX.1 functions
 find_library(HAVE_ICONV NAMES iconv libiconv)
@@ -142,7 +143,6 @@ if(HAVE_ICONV)
   set(HAVE_UTF8 1)
   set(EC_LIBS ${EC_LIBS} ${HAVE_ICONV})
 else()
-  include(CheckFunctionExists)
   check_function_exists(iconv HAVE_UTF8)
   if(HAVE_UTF8)
   # iconv built in libc
@@ -153,7 +153,9 @@ endif()
 
 # LTDL
 if(ENABLE_PLUGINS)
-  if(CMAKE_DL_LIBS)
+  if(OS_WINDOWS)
+    set(HAVE_PLUGINS 1)
+  elseif(CMAKE_DL_LIBS)
     # dedicated libdl library
     set(HAVE_PLUGINS 1)
     set(EC_LIBS ${EC_LIBS} ${CMAKE_DL_LIBS})
@@ -167,8 +169,10 @@ if(ENABLE_PLUGINS)
 endif()
 
 if(HAVE_PLUGINS)
-  # Fake target for curl
-  add_custom_target(curl)
+  if(BUNDLED_LIBS)
+    # Fake target for curl
+    add_custom_target(curl)
+  endif()
 
   # sslstrip has a requirement for libcurl >= 7.26.0
   if(SYSTEM_CURL)

@@ -54,6 +54,14 @@
 
 - link targets only with libs they really depend on (e.g. tests)
 
+- An official FindIconv.cmake was added to cmake master 5 months ago.
+  It will probably be released with the next version of cmake.
+  Keep an eye on that...
+
+- Plug-ins
+    - Place/Generate proper etter.conf, etter.dns, etter.mdns into build
+      directory (IPV4 vs IPV6)
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================
@@ -67,4 +75,7 @@
       files in different places or there should be options in etter.conf to specify these
       locations.
       See Gisle's wsock-trace for a great example.
+
+- Plug-ins
+    - Port sslstrip plugin to windows
 

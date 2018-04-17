@@ -6,7 +6,9 @@ if(HAVE_PCRE)
       ${CURL_INCLUDE_DIR}
       ${PCRE_INCLUDE_DIR}
     )
-    add_dependencies(sslstrip curl)
+    if(BUNDLED_LIBS)
+      add_dependencies(sslstrip curl)
+    endif()
     target_link_libraries(sslstrip ${CURL_LIBRARY} ${PCRE_LIBRARY})
     target_link_libraries(sslstrip lib_ettercap)
     set_target_properties(sslstrip PROPERTIES PREFIX "ec_")

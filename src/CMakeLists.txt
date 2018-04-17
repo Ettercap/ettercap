@@ -196,6 +196,10 @@ target_include_directories(lib_ettercap
   PRIVATE
   ${EC_INCLUDE}
 )
+target_compile_definitions(lib_ettercap
+  PRIVATE
+  ${EC_DEFINITIONS}
+)
 
 if(NOT LIBRARY_BUILD)
   add_subdirectory(interfaces)

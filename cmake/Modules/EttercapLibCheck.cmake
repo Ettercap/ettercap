@@ -288,11 +288,25 @@ find_library(HAVE_RESOLV resolv)
 if(HAVE_RESOLV)
   set(EC_LIBS ${EC_LIBS} ${HAVE_RESOLV})
   set(HAVE_DN_EXPAND 1 CACHE PATH "Found dn_expand")
+elseif(OS_BSD)
+  # FreeBSD has dn_expand built in libc
+  cmake_push_check_state(RESET)
+  check_function_exists(dn_expand HAVE_DN_EXPAND)
+  cmake_pop_check_state()
+elseif(OS_WINDOWS)
+  # Windows has dn_expand built in mswsock.
+  # http://www.sockets.com/mswsock.htm
+  # But we aren't using it (yet or never; I'm not sure, maybe it's a stub).
+  # We have our own ec_win_dn_expand() that does the job for us.
+  # So for now, the success of this test is only meant for
+  # HAVE_DN_EXPAND to become True (if it isn't already via HAVE_RESOLV).
+  cmake_push_check_state(RESET)
+  # set(CMAKE_REQUIRED_QUIET 1)
+  set(CMAKE_REQUIRED_LIBRARIES mswsock)
+  check_function_exists(dn_expand HAVE_DN_EXPAND)
+  cmake_pop_check_state()
 else()
-  if(OS_BSD)
-    # FreeBSD has dn_expand built in libc
-    check_function_exists(dn_expand HAVE_DN_EXPAND)
-  endif()
+    message(FATAL_ERROR "Neither libresolv nor dn_expand() found.")
 endif()
 
 find_package(PCRE)

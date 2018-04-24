@@ -236,14 +236,12 @@ elseif(NOT PCAP_INCLUDE_DIRS)
 endif()
 
 if(ENABLE_GEOIP)
-  message(STATUS "GeoIP support requested. \
-    Will look for the legacy GeoIP C library")
-  find_package(GEOIP)
+  find_package(GEOIP 1.6.4 REQUIRED)
   if(GEOIP_FOUND)
     set(HAVE_GEOIP 1)
     set(EC_LIBS ${EC_LIBS} ${GEOIP_LIBRARIES})
-  else()
-    message(FATAL_ERROR "GeoIP not found!")
+    set(EC_INCLUDE ${EC_INCLUDE} ${GEOIP_INCLUDE_DIRS})
+    set(EC_DEFINITIONS ${EC_DEFINITIONS} ${GEOIP_DEFINITIONS})
   endif()
 endif()
 
@@ -264,7 +262,7 @@ if(SYSTEM_LIBNET)
 
   if(NOT LIBNET_FOUND)
     message(STATUS "Couldn't find a suitable system-provided \
-      version of LIBNET")
+version of LIBNET")
   endif()
 endif()
 

@@ -68,11 +68,16 @@
     - libnet
     - libGeoIP
 
+- Improve find modules documentation
+    - see cmake-developer(7) for correct format
+
 - Use SelectLibraryConfigurations (See FindZLIB.cmake)
 
 - BUILD_SHARED_LIBS
     - prepare libettercap
     - adjust tests
+
+- the PTHREAD_MUTEX_RECURSIVE_NP test sucks
 
 ==================================
   Out of scope TODOs for fix-cmake

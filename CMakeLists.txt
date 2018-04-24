@@ -33,6 +33,7 @@ option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
 option(ENABLE_TESTS "Enable Unit Tests" OFF)
 option(ENABLE_GEOIP "Build with GeoIP support" ON)
 option(LIBRARY_BUILD "Build for libettercap only" OFF)
+option(BUILD_SHARED_LIBS "Build shared instead of static libettercap." ON)
 
 cmake_dependent_option(INSTALL_DESKTOP "Install ettercap desktop files" ON
   "NOT OS_WINDOWS" OFF)

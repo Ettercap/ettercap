@@ -68,6 +68,12 @@
     - libnet
     - libGeoIP
 
+- Use SelectLibraryConfigurations (See FindZLIB.cmake)
+
+- BUILD_SHARED_LIBS
+    - prepare libettercap
+    - adjust tests
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================

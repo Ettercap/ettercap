@@ -24,6 +24,8 @@ curses (wide character support)" OFF
 
 cmake_dependent_option(ENABLE_GTK "Enable GTK interface" ON
   "NOT LIBRARY_BUILD" OFF)
+cmake_dependent_option(ENABLE_UTILS "Build Etterlog and Etterfilter" ON
+  "NOT LIBRARY_BUILD" OFF)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
@@ -264,7 +266,10 @@ if(HAVE_PLUGINS)
   add_subdirectory(plug-ins)
 endif()
 
-add_subdirectory(utils)
+if(ENABLE_UTILS)
+  add_subdirectory(utils)
+endif()
+
 add_subdirectory(share)
 add_subdirectory(man)
 

@@ -28,16 +28,16 @@ find_path(GEOIP_INCLUDE_DIR GeoIP.h
 # https://github.com/maxmind/geoip-api-c/pull/102
 
 set(names)
-if(MSVC AND GEOIP_USE_STATIC_LIBS)
-  set(names libGeoIP)
+  if(MSVC AND GEOIP_USE_STATIC_LIBS)
+    set(names libGeoIP)
 
-  set(GEOIP_DEFINITIONS
-    ${GEOIP_DEFINITIONS}
-    -DGEOIP_STATIC
-  )
+    set(GEOIP_DEFINITIONS
+      ${GEOIP_DEFINITIONS}
+      -DGEOIP_STATIC
+    )
 
-else()
-  set(names GeoIP)
+  else()
+    set(names GeoIP)
 endif()
 
 # Find the library

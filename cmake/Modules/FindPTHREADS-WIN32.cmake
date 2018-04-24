@@ -141,21 +141,12 @@ endif()
 set(names)
 if(MSVC)
   set(names pthreadV${PTHREADS-WIN32_EXCEPTION_SCHEME}2)
-elseif(MINGW)
-  set(names pthreadG${PTHREADS-WIN32_EXCEPTION_SCHEME}2)
-endif()
-
-if(VCPKG_TARGET_TRIPLET OR "$ENV{VCPKG_DEFAULT_TRIPLET}")
-  # Special case:
-  # Microsoft's vcpkg decided to rename pthreadV${PTHREADS_EXCEPTION_SCHEME}2
-  # to simply pthreads.lib and to not support PTHREADS_EXCEPTION_SCHEME.
-  # This may change so we look for both libs.
-  #
-  # In case you *really* need to disable this behavior
-  # set this (internal) variable.
-  if(NOT __skipvcpkg AND NOT MINGW)
+  list(APPEND names pthreadsV${PTHREADS-WIN32_EXCEPTION_SCHEME}2)
+  if(VCPKG_TARGET_TRIPLET OR "$ENV{VCPKG_DEFAULT_TRIPLET}")
     list(APPEND names pthreads)
   endif()
+elseif(MINGW)
+  set(names pthreadG${PTHREADS-WIN32_EXCEPTION_SCHEME}2)
 endif()
 
 # Support the directory structure of the
@@ -197,6 +188,7 @@ winpthreads was found in your compiler's path and BEFORE \
 Pthreads-win32.\n\
 To use Pthreads-win32, make sure it's included FIRST.\n")
   endif()
+
   check_symbol_exists(_PTHREAD_H
     "pthread.h" HAVE_UNIX_PTHREADS_H
   )
@@ -250,6 +242,15 @@ find_package_handle_standard_args(PTHREADS-WIN32
 if(PTHREADS-WIN32_FOUND)
   set(PTHREADS-WIN32_INCLUDE_DIRS ${PTHREADS-WIN32_INCLUDE_DIR})
   set(PTHREADS-WIN32_LIBRARIES ${PTHREADS-WIN32_LIBRARY})
+
+  if(NOT TARGET PTHREADS-WIN32::PTHREADS-WIN32)
+    add_library(PTHREADS-WIN32::PTHREADS-WIN32 UNKNOWN IMPORTED)
+    set_target_properties(PTHREADS-WIN32::PTHREADS-WIN32 PROPERTIES
+      IMPORTED_LOCATION "${PTHREADS-WIN32_LIBRARY}"
+      INTERFACE_COMPILE_DEFINITIONS "${PTHREADS-WIN32_DEFINITIONS}"
+      INTERFACE_INCLUDE_DIRECTORIES "${PTHREADS-WIN32_INCLUDE_DIR}")
+  endif()
+
 endif()
 
 mark_as_advanced(PTHREADS-WIN32_INCLUDE_DIR PTHREADS-WIN32_LIBRARY)

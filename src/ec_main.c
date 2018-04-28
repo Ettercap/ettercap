@@ -49,8 +49,6 @@
 
 /* global vars */
 
-struct ec_globals *ec_gbls;
-
 /* protos */
 
 static void time_check(void);

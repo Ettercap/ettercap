@@ -62,7 +62,7 @@ void libettercap_ui_start()
 
 void libettercap_ui_cleanup()
 {
-   /* start the actual user interface */
+   /* shutdown the user interface */
    ui_cleanup();
 }
 /* EOF */

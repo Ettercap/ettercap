@@ -226,7 +226,7 @@ set_target_properties(lib_ettercap PROPERTIES
   ENABLE_EXPORTS On
   #  LINK_INTERFACE_LIBRARIES ""
   OUTPUT_NAME ettercap
-  VERSION 0.0.0
+  VERSION ${VERSION}
   SOVERSION 0
   )
 

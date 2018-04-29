@@ -70,8 +70,8 @@ void debug_init(void)
 #endif
    DEBUG_LOCK;
    
-   if ((debug_file = fopen (GBL_DEBUG_FILE, "w")) == NULL)
-      ERROR_MSG("Couldn't open for writing %s", GBL_DEBUG_FILE);
+   if ((debug_file = fopen (EC_GBL_DEBUG_FILE, "w")) == NULL)
+      ERROR_MSG("Couldn't open for writing %s", EC_GBL_DEBUG_FILE);
    
    fprintf (debug_file, "\n==============================================================\n\n");
                    
@@ -86,7 +86,7 @@ void debug_init(void)
 	ec_lua_print_info(debug_file);
    #endif
 
-  	fprintf (debug_file, "-> %s %s\n\n", GBL_PROGRAM, GBL_VERSION);
+  	fprintf (debug_file, "-> %s %s\n\n", EC_GBL_PROGRAM, EC_GBL_VERSION);
    #ifdef HAVE_SYS_UTSNAME_H
       uname(&buf);
       fprintf (debug_file, "-> running on %s %s %s\n", buf.sysname, buf.release, buf.machine);
@@ -108,7 +108,7 @@ void debug_init(void)
    #endif
    fprintf (debug_file, "-> lib     %s\n", SSLeay_version(SSLEAY_VERSION));
    fprintf (debug_file, "-> headers %s\n", OPENSSL_VERSION_TEXT);
-   fprintf (debug_file, "\n\nDEVICE OPENED FOR %s DEBUGGING\n\n", GBL_PROGRAM);
+   fprintf (debug_file, "\n\nDEVICE OPENED FOR %s DEBUGGING\n\n", EC_GBL_PROGRAM);
    fflush(debug_file);
    
    DEBUG_UNLOCK;

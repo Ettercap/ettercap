@@ -59,12 +59,12 @@ struct wdg_menu menu_logging[] = { {"Logging",                      'L', "",  NU
 
 static void toggle_compress(void)
 {
-   if (GBL_OPTIONS->compress) {
+   if (EC_GBL_OPTIONS->compress) {
       tag_compress[0] = ' ';
-      GBL_OPTIONS->compress = 0;
+      EC_GBL_OPTIONS->compress = 0;
    } else {
       tag_compress[0] = '*';
-      GBL_OPTIONS->compress = 1;
+      EC_GBL_OPTIONS->compress = 1;
    }
 }
 

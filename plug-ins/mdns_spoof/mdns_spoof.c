@@ -292,7 +292,7 @@ static int parse_line (const char *str, int line, int *type_p, char **ip_p, u_in
     po->flags |= PO_DROPPED; 
 
     /* set incoming interface as outgoing interface for reply */
-    iface = po->flags & PO_FROMIFACE ? GBL_IFACE : GBL_BRIDGE;
+    iface = po->flags & PO_FROMIFACE ? EC_GBL_IFACE : EC_GBL_BRIDGE;
 
     /* process all the questions */
     for (x = 0; x < mdns->questions; x++) {

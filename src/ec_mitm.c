@@ -112,7 +112,7 @@ int mitm_start(void)
    struct mitm_entry *e;
 
    /* reading from file we won't start mitm */
-   if (GBL_OPTIONS->read || GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->read || EC_GBL_OPTIONS->unoffensive) {
       DEBUG_MSG("mitm_start: skipping");
       return -E_INVALID;
    }
@@ -125,10 +125,10 @@ int mitm_start(void)
       if (e->selected && !e->started) {
    
          /* cant use -R with mitm methods */
-         if (GBL_OPTIONS->reversed)
+         if (EC_GBL_OPTIONS->reversed)
             SEMIFATAL_ERROR("Reverse target matching can't be used with MITM attacks");
   
-         if (!GBL_IFACE->is_ready)
+         if (!EC_GBL_IFACE->is_ready)
             SEMIFATAL_ERROR("MITM attacks can't be used on unconfigured interfaces");
          
          DEBUG_MSG("mitm_start: starting %s", e->mm->name);
@@ -185,7 +185,7 @@ void only_mitm(void)
 
    INSTANT_USER_MSG("Activated the mitm attack only... (press 'q' to exit)\n");
 
-   if (GBL_UI->type == UI_DAEMONIZE)
+   if (EC_GBL_UI->type == UI_DAEMONIZE)
        LOOP {
            ec_usleep(SEC2MICRO(1));
        }
@@ -193,10 +193,10 @@ void only_mitm(void)
    /* wait for user to exit */
    while (ch != 'q' && ch != 'Q') {
       /* if there is a pending char to be read */
-      if ( ec_poll_in(fileno(stdin), 1) || ec_poll_buffer(GBL_OPTIONS->script) ) {
+      if ( ec_poll_in(fileno(stdin), 1) || ec_poll_buffer(EC_GBL_OPTIONS->script) ) {
          /* get the input from the stdin or the buffer */
-         if (ec_poll_buffer(GBL_OPTIONS->script))
-            ch = getchar_buffer(&GBL_OPTIONS->script);
+         if (ec_poll_buffer(EC_GBL_OPTIONS->script))
+            ch = getchar_buffer(&EC_GBL_OPTIONS->script);
          else
             ch = getchar();
       }

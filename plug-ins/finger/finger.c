@@ -82,14 +82,14 @@ static int finger_init(void *dummy)
    (void) dummy;
 
    /* don't show packets while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
    
    /* wipe the global vars */
    memset(&ip, 0, sizeof(struct ip_addr));
    port = 0;
 
    /* 
-    * can we use GBL_TARGETS ?
+    * can we use EC_GBL_TARGETS ?
     * else ask the user
     */
    if (good_target(&ip, &port) != E_SUCCESS) {
@@ -102,7 +102,7 @@ static int finger_init(void *dummy)
       struct ip_list *host;
    
       /* look over all the hosts in the TARGET */ 
-      LIST_FOREACH(host, &GBL_TARGET1->ips, next) {
+      LIST_FOREACH(host, &EC_GBL_TARGET1->ips, next) {
          /* 
           * copy the ip address 
           * the port was alread retrived by good_target()
@@ -111,7 +111,7 @@ static int finger_init(void *dummy)
 
          /* cicle thru all the specified port */
          for (port = 0; port < 0xffff; port++) {
-            if (BIT_TEST(GBL_TARGET1->ports, port)) {
+            if (BIT_TEST(EC_GBL_TARGET1->ports, port)) {
                /* do the actual finterprinting */
                do_fingerprint();
             }
@@ -147,21 +147,21 @@ static void get_finger(struct packet_object *po)
 }
 
 /*
- * check if we can use GBL_TARGETS
+ * check if we can use EC_GBL_TARGETS
  */
 static int good_target(struct ip_addr *p_ip, u_int16 *p_port)
 {
    struct ip_list *host;
    
-   /* is it possible to get it from GBL_TARGETS ? */
-   if ((host = LIST_FIRST(&GBL_TARGET1->ips)) != NULL) {
+   /* is it possible to get it from EC_GBL_TARGETS ? */
+   if ((host = LIST_FIRST(&EC_GBL_TARGET1->ips)) != NULL) {
       
       /* copy the ip address */
       memcpy(p_ip, &host->ip, sizeof(struct ip_addr));
       
       /* find the port */
       for (*p_port = 0; *p_port < 0xffff; (*p_port)++) {
-         if (BIT_TEST(GBL_TARGET1->ports, *p_port)) {
+         if (BIT_TEST(EC_GBL_TARGET1->ports, *p_port)) {
             break;
          }
       }

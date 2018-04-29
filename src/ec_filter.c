@@ -176,7 +176,7 @@ static int filter_engine(struct filter_op *fop, struct packet_object *po)
  */
 void filter_packet(struct packet_object *po) {
    struct filter_list **l;
-   for (l = GBL_FILTERS; *l != NULL; l = &(*l)->next) {
+   for (l = EC_GBL_FILTERS; *l != NULL; l = &(*l)->next) {
       /* if a script drops the packet, do not present it to following scripts */
       if ( po->flags & PO_DROPPED )
          break;
@@ -375,7 +375,7 @@ static int execute_assign(struct filter_op *fop, struct packet_object *po)
    u_char *base = po->L2.header;
 
    /* check the offensiveness */
-   if (GBL_OPTIONS->unoffensive)
+   if (EC_GBL_OPTIONS->unoffensive)
       JIT_FAULT("Cannot modify packets in unoffensive mode");
    
    DEBUG_MSG("filter engine: execute_assign: L%d O%d S%d", fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size);
@@ -438,7 +438,7 @@ static int execute_incdec(struct filter_op *fop, struct packet_object *po)
    u_char *base = po->L2.header;
 
    /* check the offensiveness */
-   if (GBL_OPTIONS->unoffensive)
+   if (EC_GBL_OPTIONS->unoffensive)
       JIT_FAULT("Cannot modify packets in unoffensive mode");
    
    DEBUG_MSG("filter engine: execute_incdec: L%d O%d S%d", fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size);
@@ -580,7 +580,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
             int slen = 0;
 
             /* don't modify if in unoffensive mode */
-            if (GBL_OPTIONS->unoffensive)
+            if (EC_GBL_OPTIONS->unoffensive)
                JIT_FAULT("Cannot modify packets in unoffensive mode");
              
             /* 
@@ -651,7 +651,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
 
             /* check if we are overflowing pcap buffer */
             BUG_IF(po->DATA.data < po->packet);
-            BUG_IF((u_int16)(GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <= po->DATA.len+delta);
+            BUG_IF((u_int16)(EC_GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <= po->DATA.len+delta);
 
             /* if the substitution string has a different length than the
              * matched original string, we have to move around some data
@@ -702,7 +702,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
    size_t rlen = fop->op.func.rlen;
   
    /* check the offensiveness */
-   if (GBL_OPTIONS->unoffensive)
+   if (EC_GBL_OPTIONS->unoffensive)
       JIT_FAULT("Cannot modify packets in unoffensive mode");
    
    /* check if it exist at least one */
@@ -713,7 +713,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
 
    /* 
     * XXX BIG WARNING:
-    * maxlen is GBL_PCAP->snaplen, but we can't 
+    * maxlen is EC_GBL_PCAP->snaplen, but we can't 
     * rely on this forever...
     */
    
@@ -742,7 +742,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po)
       
       /* check if we are overflowing pcap buffer */
       BUG_IF(po->DATA.data < po->packet);
-      BUG_IF((u_int16)(GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <=  po->DATA.len);
+      BUG_IF((u_int16)(EC_GBL_PCAP->snaplen - (po->DATA.data - po->packet)) <=  po->DATA.len);
       
       /* move the buffer to make room for the replacement string */   
       memmove(ptr + rlen, ptr + slen, len); 
@@ -771,7 +771,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    size_t size, ret;
    
    /* check the offensiveness */
-   if (GBL_OPTIONS->unoffensive)
+   if (EC_GBL_OPTIONS->unoffensive)
       JIT_FAULT("Cannot inject packets in unoffensive mode");
    
 
@@ -800,7 +800,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
       FATAL_MSG("Cannot read the file into memory");
  
    /* check if we are overflowing pcap buffer */
-   if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + (unsigned)size)
+   if(EC_GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + (unsigned)size)
       JIT_FAULT("injected file too long");
          
    /* copy the file into the buffer */
@@ -834,7 +834,7 @@ static int func_execinject(struct filter_op *fop, struct packet_object *po)
    unsigned char buf[size];
    
    /* check the offensiveness */
-   if (GBL_OPTIONS->unoffensive)
+   if (EC_GBL_OPTIONS->unoffensive)
       JIT_FAULT("Cannot inject packets in unoffensive mode");
    
 
@@ -862,7 +862,7 @@ static int func_execinject(struct filter_op *fop, struct packet_object *po)
    pclose(pstream);
 
    /* check if we are overflowing pcap buffer */
-   if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + (unsigned)offset)
+   if(EC_GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + (unsigned)offset)
       JIT_FAULT("injected output too long");
          
    /* copy the output into the buffer */
@@ -1208,7 +1208,7 @@ void filter_unload(struct filter_list **list)
 
 void filter_clear(void) {
    FILTERS_LOCK;
-   struct filter_list **l = GBL_FILTERS;
+   struct filter_list **l = EC_GBL_FILTERS;
    while (*l) {
       filter_unload(l);
    }
@@ -1323,7 +1323,7 @@ static int compile_regex(struct filter_env *fenv)
 void filter_walk_list( int(*cb)(struct filter_list*, void*), void *arg) {
    struct filter_list **l;
    FILTERS_LOCK;
-   for (l = GBL_FILTERS; *l != NULL; l = &(*l)->next) {
+   for (l = EC_GBL_FILTERS; *l != NULL; l = &(*l)->next) {
       /* do not traverse the list any further if the callback tells us so */
       if (!cb(*l, arg))
          break;

@@ -194,7 +194,7 @@ static void curses_connection_detail(void *conn)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Source hostname         :  %s", 
             name);
 #ifdef HAVE_GEOIP
-   if (GBL_CONF->geoip_support_enable)
+   if (EC_GBL_CONF->geoip_support_enable)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Source location         :  %s", 
             geoip_country_by_ip(&c->co->L3_addr1));
 #endif
@@ -204,7 +204,7 @@ static void curses_connection_detail(void *conn)
    if (host_iptoa(&(c->co->L3_addr2), name) == E_SUCCESS)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Destination hostname    :  %s", name);
 #ifdef HAVE_GEOIP
-   if (GBL_CONF->geoip_support_enable)
+   if (EC_GBL_CONF->geoip_support_enable)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Destination location    :  %s",
             geoip_country_by_ip(&c->co->L3_addr2));
 #endif
@@ -317,8 +317,8 @@ static void curses_connection_data_split(void)
    wdg_set_size(wdg_c2, current_screen.cols / 2 + 1, 3, -2, SYSMSG_WIN_SIZE - 2);
 
    /* set the buffers */
-   wdg_scroll_set_lines(wdg_c1, GBL_CONF->connection_buffer / (current_screen.cols / 2));
-   wdg_scroll_set_lines(wdg_c2, GBL_CONF->connection_buffer / (current_screen.cols / 2));
+   wdg_scroll_set_lines(wdg_c1, EC_GBL_CONF->connection_buffer / (current_screen.cols / 2));
+   wdg_scroll_set_lines(wdg_c2, EC_GBL_CONF->connection_buffer / (current_screen.cols / 2));
    
    /* link the widget together within the compound */
    wdg_compound_add(wdg_conndata, wdg_c1);
@@ -360,8 +360,8 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
    int ret;
    
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, (const char*)text, 0, NULL, 0) != 0) {
+   if (EC_GBL_OPTIONS->regex && 
+       regexec(EC_GBL_OPTIONS->regex, (const char*)text, 0, NULL, 0) != 0) {
       return;
    }
 
@@ -369,7 +369,7 @@ static void split_print(u_char *text, size_t len, struct ip_addr *L3_src)
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
    
    /* format the data */
-   ret = GBL_FORMAT(text, len, dispbuf);
+   ret = EC_GBL_FORMAT(text, len, dispbuf);
    dispbuf[ret] = 0;
 
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
@@ -392,8 +392,8 @@ static void split_print_po(struct packet_object *po)
       return;
    
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) != 0) {
+   if (EC_GBL_OPTIONS->regex && 
+       regexec(EC_GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -401,7 +401,7 @@ static void split_print_po(struct packet_object *po)
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
       
    /* format the data */
-   ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
+   ret = EC_GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
         
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
@@ -449,7 +449,7 @@ static void curses_connection_data_join(void)
    wdg_set_size(wdg_join, 2, 3, -2, SYSMSG_WIN_SIZE - 2);
    
    /* set the buffers */
-   wdg_scroll_set_lines(wdg_join, GBL_CONF->connection_buffer / (current_screen.cols / 2) );
+   wdg_scroll_set_lines(wdg_join, EC_GBL_CONF->connection_buffer / (current_screen.cols / 2) );
    
    /* link the widget together within the compound */
    wdg_compound_add(wdg_conndata, wdg_join);
@@ -480,8 +480,8 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
    int ret;
    
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, (const char*)text, 0, NULL, 0) != 0) {
+   if (EC_GBL_OPTIONS->regex && 
+       regexec(EC_GBL_OPTIONS->regex, (const char*)text, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -489,7 +489,7 @@ static void join_print(u_char *text, size_t len, struct ip_addr *L3_src)
    SAFE_REALLOC(dispbuf, hex_len(len) * sizeof(u_char) + 1);
    
    /* format the data */
-   ret = GBL_FORMAT(text, len, dispbuf);
+   ret = EC_GBL_FORMAT(text, len, dispbuf);
    dispbuf[ret] = 0;
    
    if (!ip_addr_cmp(L3_src, &curr_conn->L3_addr1))
@@ -511,8 +511,8 @@ static void join_print_po(struct packet_object *po)
       return;
    
    /* check the regex filter */
-   if (GBL_OPTIONS->regex && 
-       regexec(GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) != 0) {
+   if (EC_GBL_OPTIONS->regex && 
+       regexec(EC_GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) != 0) {
       return;
    }
    
@@ -520,7 +520,7 @@ static void join_print_po(struct packet_object *po)
    SAFE_REALLOC(dispbuf, hex_len(po->DATA.disp_len) * sizeof(u_char) + 1);
       
    /* format the data */
-   ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
+   ret = EC_GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
         
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))

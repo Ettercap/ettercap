@@ -33,7 +33,7 @@ void analyze_info(void);
 
 void analyze(void)
 {
-   switch(GBL->hdr.type) {
+   switch(EL_GBL->hdr.type) {
       case LOG_PACKET:
          analyze_packet();
          break;
@@ -82,7 +82,7 @@ void analyze_packet(void)
    }
 
    /* get the file stat */
-   ret = stat(GBL->logfile, &st);
+   ret = stat(EL_GBL->logfile, &st);
    ON_ERROR(ret, -1, "Cannot stat file");
    
    fprintf(stdout, "\n\n");

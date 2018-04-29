@@ -49,10 +49,10 @@ GtkListStore     *liststore2 = NULL;
 
 void toggle_reverse(void)
 {
-   if (GBL_OPTIONS->reversed) {
-      GBL_OPTIONS->reversed = 0;
+   if (EC_GBL_OPTIONS->reversed) {
+      EC_GBL_OPTIONS->reversed = 0;
    } else {
-      GBL_OPTIONS->reversed = 1;
+      EC_GBL_OPTIONS->reversed = 1;
    }
 }
 
@@ -63,8 +63,8 @@ void wipe_targets(void)
 {
    DEBUG_MSG("wipe_targets");
    
-   reset_display_filter(GBL_TARGET1);
-   reset_display_filter(GBL_TARGET2);
+   reset_display_filter(EC_GBL_TARGET1);
+   reset_display_filter(EC_GBL_TARGET2);
 
    /* update the GTK liststores */
    gtkui_create_targets_array();
@@ -86,9 +86,9 @@ void gtkui_select_protocol(void)
    DEBUG_MSG("gtk_select_protocol");
 
    /* this will contain 'all', 'tcp' or 'udp' */
-   if (!GBL_OPTIONS->proto) {
-      SAFE_CALLOC(GBL_OPTIONS->proto, 4, sizeof(char));
-      strncpy(GBL_OPTIONS->proto, "all", 3);
+   if (!EC_GBL_OPTIONS->proto) {
+      SAFE_CALLOC(EC_GBL_OPTIONS->proto, 4, sizeof(char));
+      strncpy(EC_GBL_OPTIONS->proto, "all", 3);
    }
 
    /* create dialog for selecting the protocol */
@@ -107,17 +107,17 @@ void gtkui_select_protocol(void)
 
    radio = gtk_radio_button_new_with_mnemonic(NULL, "a_ll");
    gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 2);
-   if (!strncasecmp(GBL_OPTIONS->proto, "all", 4))
+   if (!strncasecmp(EC_GBL_OPTIONS->proto, "all", 4))
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
 
    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(radio), "_tcp");
    gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 2);
-   if (!strncasecmp(GBL_OPTIONS->proto, "tcp", 4))
+   if (!strncasecmp(EC_GBL_OPTIONS->proto, "tcp", 4))
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
 
    radio = gtk_radio_button_new_with_mnemonic_from_widget(GTK_RADIO_BUTTON(radio), "_udp");
    gtk_box_pack_start(GTK_BOX(hbox), radio, TRUE, TRUE, 2);
-   if (!strncasecmp(GBL_OPTIONS->proto, "udp", 4))
+   if (!strncasecmp(EC_GBL_OPTIONS->proto, "udp", 4))
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio), TRUE);
 
 
@@ -130,13 +130,13 @@ void gtkui_select_protocol(void)
          if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(list->data))) {
             switch (active) {
                case proto_all:
-                  strncpy(GBL_OPTIONS->proto, "all", 4);
+                  strncpy(EC_GBL_OPTIONS->proto, "all", 4);
                   break;
                case proto_tcp:
-                  strncpy(GBL_OPTIONS->proto, "tcp", 4);
+                  strncpy(EC_GBL_OPTIONS->proto, "tcp", 4);
                   break;
                case proto_udp:
-                  strncpy(GBL_OPTIONS->proto, "udp", 4);
+                  strncpy(EC_GBL_OPTIONS->proto, "udp", 4);
                   break;
             }
          }
@@ -228,9 +228,9 @@ void gtkui_select_targets(void)
    gtk_table_attach_defaults(GTK_TABLE(table), t1_port, 1, 2, nrows-1, nrows);
 
    /* Fill previously set values */
-   if (GBL_OPTIONS->target1) {
+   if (EC_GBL_OPTIONS->target1) {
       gchar **tokens, **p;
-      tokens = g_strsplit(GBL_OPTIONS->target1, "/", nrows);
+      tokens = g_strsplit(EC_GBL_OPTIONS->target1, "/", nrows);
       p = tokens;
 
       /* MAC */
@@ -295,9 +295,9 @@ void gtkui_select_targets(void)
    gtk_table_attach_defaults(GTK_TABLE(table), t2_port, 1, 2, nrows-1, nrows);
 
    /* Fill previously set values */
-   if (GBL_OPTIONS->target2) {
+   if (EC_GBL_OPTIONS->target2) {
       gchar **tokens, **p;
-      tokens = g_strsplit(GBL_OPTIONS->target2, "/", nrows);
+      tokens = g_strsplit(EC_GBL_OPTIONS->target2, "/", nrows);
       p = tokens;
 
       /* MAC */
@@ -319,31 +319,31 @@ void gtkui_select_targets(void)
    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
 
-      SAFE_FREE(GBL_OPTIONS->target1);
-      SAFE_FREE(GBL_OPTIONS->target2);
+      SAFE_FREE(EC_GBL_OPTIONS->target1);
+      SAFE_FREE(EC_GBL_OPTIONS->target2);
 
-      SAFE_CALLOC(GBL_OPTIONS->target1, TARGET_LEN, sizeof(char));
-      SAFE_CALLOC(GBL_OPTIONS->target2, TARGET_LEN, sizeof(char));
+      SAFE_CALLOC(EC_GBL_OPTIONS->target1, TARGET_LEN, sizeof(char));
+      SAFE_CALLOC(EC_GBL_OPTIONS->target2, TARGET_LEN, sizeof(char));
 
 #ifdef WITH_IPV6
-      snprintf(GBL_OPTIONS->target1, TARGET_LEN, "%s/%s/%s/%s",
+      snprintf(EC_GBL_OPTIONS->target1, TARGET_LEN, "%s/%s/%s/%s",
             gtk_entry_get_text(GTK_ENTRY(t1_mac)),
             gtk_entry_get_text(GTK_ENTRY(t1_ip)),
             gtk_entry_get_text(GTK_ENTRY(t1_ipv6)),
             gtk_entry_get_text(GTK_ENTRY(t1_port)));
 
-      snprintf(GBL_OPTIONS->target2, TARGET_LEN, "%s/%s/%s/%s",
+      snprintf(EC_GBL_OPTIONS->target2, TARGET_LEN, "%s/%s/%s/%s",
             gtk_entry_get_text(GTK_ENTRY(t2_mac)),
             gtk_entry_get_text(GTK_ENTRY(t2_ip)),
             gtk_entry_get_text(GTK_ENTRY(t2_ipv6)),
             gtk_entry_get_text(GTK_ENTRY(t2_port)));
 #else
-      snprintf(GBL_OPTIONS->target1, TARGET_LEN, "%s/%s/%s",
+      snprintf(EC_GBL_OPTIONS->target1, TARGET_LEN, "%s/%s/%s",
             gtk_entry_get_text(GTK_ENTRY(t1_mac)),
             gtk_entry_get_text(GTK_ENTRY(t1_ip)),
             gtk_entry_get_text(GTK_ENTRY(t1_port)));
 
-      snprintf(GBL_OPTIONS->target2, TARGET_LEN, "%s/%s/%s",
+      snprintf(EC_GBL_OPTIONS->target2, TARGET_LEN, "%s/%s/%s",
             gtk_entry_get_text(GTK_ENTRY(t2_mac)),
             gtk_entry_get_text(GTK_ENTRY(t2_ip)),
             gtk_entry_get_text(GTK_ENTRY(t2_port)));
@@ -360,16 +360,16 @@ void gtkui_select_targets(void)
 static void set_targets(void)
 {
    /* delete the previous filters */
-   reset_display_filter(GBL_TARGET1);
-   reset_display_filter(GBL_TARGET2);
+   reset_display_filter(EC_GBL_TARGET1);
+   reset_display_filter(EC_GBL_TARGET2);
 
    /* free empty filters */
-   if (!strcmp(GBL_OPTIONS->target1, ""))
-      SAFE_FREE(GBL_OPTIONS->target1);
+   if (!strcmp(EC_GBL_OPTIONS->target1, ""))
+      SAFE_FREE(EC_GBL_OPTIONS->target1);
    
    /* free empty filters */
-   if (!strcmp(GBL_OPTIONS->target2, ""))
-      SAFE_FREE(GBL_OPTIONS->target2);
+   if (!strcmp(EC_GBL_OPTIONS->target2, ""))
+      SAFE_FREE(EC_GBL_OPTIONS->target2);
    
    /* compile the filters */
    compile_display_filter();
@@ -519,7 +519,7 @@ void gtkui_create_targets_array(void)
       liststore1 = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_POINTER);
    
    /* walk TARGET 1 */
-   LIST_FOREACH(il, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(il, &EC_GBL_TARGET1->ips, next) {
       /* enlarge the array */
       gtk_list_store_append (liststore1, &iter);
       /* fill the element */
@@ -528,7 +528,7 @@ void gtkui_create_targets_array(void)
 
 #ifdef WITH_IPV6
    /* walk TARGET 1 - IPv6 */
-   LIST_FOREACH(il, &GBL_TARGET1->ip6, next) {
+   LIST_FOREACH(il, &EC_GBL_TARGET1->ip6, next) {
       /* enlarge the array */
       gtk_list_store_append (liststore1, &iter);
       /* fill the element */
@@ -542,7 +542,7 @@ void gtkui_create_targets_array(void)
       liststore2 = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_POINTER);
    
    /* walk TARGET 2 */
-   LIST_FOREACH(il, &GBL_TARGET2->ips, next) {
+   LIST_FOREACH(il, &EC_GBL_TARGET2->ips, next) {
       /* enlarge the array */
       gtk_list_store_append (liststore2, &iter);
       /* fill the element */
@@ -551,7 +551,7 @@ void gtkui_create_targets_array(void)
    
 #ifdef WITH_IPV6
    /* walk TARGET 2 - IPv6 */
-   LIST_FOREACH(il, &GBL_TARGET2->ip6, next) {
+   LIST_FOREACH(il, &EC_GBL_TARGET2->ip6, next) {
       /* enlarge the array */
       gtk_list_store_append (liststore2, &iter);
       /* fill the element */
@@ -593,7 +593,7 @@ static void add_target1(void)
       return;
    }
    
-   add_ip_list(&host, GBL_TARGET1);
+   add_ip_list(&host, EC_GBL_TARGET1);
    
    /* refresh the list */
    gtkui_create_targets_array();
@@ -609,7 +609,7 @@ static void add_target2(void)
       return;
    }
    
-   add_ip_list(&host, GBL_TARGET2);
+   add_ip_list(&host, EC_GBL_TARGET2);
    
    /* refresh the list */
    gtkui_create_targets_array();
@@ -640,7 +640,7 @@ static void gtkui_delete_targets(GtkWidget *widget, gpointer data) {
                gtk_tree_model_get (model, &iter, 1, &il, -1);
 
                /* remove the host from the list */
-               del_ip_list(&il->ip, GBL_TARGET1);
+               del_ip_list(&il->ip, EC_GBL_TARGET1);
 
                gtk_list_store_remove(GTK_LIST_STORE (liststore1), &iter);
             }
@@ -657,7 +657,7 @@ static void gtkui_delete_targets(GtkWidget *widget, gpointer data) {
                gtk_tree_model_get (model, &iter, 1, &il, -1);
 
                /* remove the host from the list */
-               del_ip_list(&il->ip, GBL_TARGET2);
+               del_ip_list(&il->ip, EC_GBL_TARGET2);
 
                gtk_list_store_remove(GTK_LIST_STORE (liststore2), &iter);
             }

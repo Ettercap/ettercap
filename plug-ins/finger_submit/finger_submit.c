@@ -72,7 +72,7 @@ static int finger_submit_init(void *dummy)
    (void) dummy;
 
    /* don't display messages while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
  
    memset(finger, 0, sizeof(finger));
    memset(os, 0, sizeof(finger));

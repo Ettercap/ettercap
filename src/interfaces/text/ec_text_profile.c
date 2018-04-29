@@ -57,13 +57,13 @@ void text_profiles(void)
       CANCELLATION_POINT();
       
       /* if there is a pending char to be read */
-      if ( ec_poll_in(fileno(stdin), 10) || ec_poll_buffer(GBL_OPTIONS->script) ) {
+      if ( ec_poll_in(fileno(stdin), 10) || ec_poll_buffer(EC_GBL_OPTIONS->script) ) {
          
          char ch = 0;
 
          /* get the input from the stdin or the buffer */
-         if (ec_poll_buffer(GBL_OPTIONS->script))
-            ch = getchar_buffer(&GBL_OPTIONS->script);
+         if (ec_poll_buffer(EC_GBL_OPTIONS->script))
+            ch = getchar_buffer(&EC_GBL_OPTIONS->script);
          else
             ch = getchar();
 
@@ -132,7 +132,7 @@ static void detail_hosts(int type)
    int at_least_one = 0;
    
    /* go thru the list and print a profile for each host */
-   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &EC_GBL_PROFILES, next) {
 
       if (h->type & type) {
          
@@ -145,7 +145,7 @@ static void detail_hosts(int type)
       
    /* there aren't any profiles */
    if (!at_least_one) {
-      if (GBL_OPTIONS->read) {
+      if (EC_GBL_OPTIONS->read) {
          fprintf(stdout, "Can't determine host type when reading from file !!\n");
          fprintf(stdout, "Use the select option !!\n");
       } else
@@ -164,7 +164,7 @@ static void detail_select(void)
    int i = 0, n = -1;
    
    /* go thru the list and print a profile for each host */
-   TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(h, &EC_GBL_PROFILES, next) {
       fprintf(stdout, "%2d) %15s   %s\n", ++i, ip_addr_ntoa(&h->L3_addr, tmp), h->hostname);
    }
       
@@ -196,13 +196,13 @@ static void detail_select(void)
          break;
       case 0:
          /* print ALL the profiles */
-         TAILQ_FOREACH(h, &GBL_PROFILES, next)
+         TAILQ_FOREACH(h, &EC_GBL_PROFILES, next)
             print_host(h);
          
          break;
       default:
          i = 1;
-         TAILQ_FOREACH(h, &GBL_PROFILES, next) {
+         TAILQ_FOREACH(h, &EC_GBL_PROFILES, next) {
             if (i++ == n)
                print_host(h);
          }

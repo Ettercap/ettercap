@@ -433,7 +433,7 @@ static void dns_spoof(struct packet_object *po)
       po->flags |= PO_DROPPED; 
 
       /* set incoming interface as outgoing interface for reply */
-      iface = po->flags & PO_FROMIFACE ? GBL_IFACE : GBL_BRIDGE;
+      iface = po->flags & PO_FROMIFACE ? EC_GBL_IFACE : EC_GBL_BRIDGE;
 
       /* allocate memory for the dns reply */
       SAFE_CALLOC(dns_reply, dns_len, sizeof(u_int8));

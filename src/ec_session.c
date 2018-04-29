@@ -86,7 +86,7 @@ void session_put(struct ec_session *s)
          return;
       }
 
-      if (sl->ts < (ti - GBL_CONF->connection_timeout) ) {
+      if (sl->ts < (ti - EC_GBL_CONF->connection_timeout) ) {
          DEBUG_MSG("session_put: [%p] timeouted", sl->s->ident);
          session_free(sl->s);
          LIST_REMOVE(sl, next);

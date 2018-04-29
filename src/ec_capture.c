@@ -90,7 +90,7 @@ EC_THREAD_FUNC(capture)
    ret = pcap_loop(iface->pcap, -1, ec_decode, EC_THREAD_PARAM);
    ON_ERROR(ret, -1, "Error while capturing: %s", pcap_geterr(iface->pcap));
 
-   if (GBL_OPTIONS->read) {
+   if (EC_GBL_OPTIONS->read) {
    	if (ret==0) {
 		USER_MSG("\n\nCapture file read completely, please exit at your convenience.\n\n");
    	}
@@ -110,11 +110,11 @@ void capture_getifs(void)
    DEBUG_MSG("capture_getifs");
   
    /* retrieve the list */
-   if (pcap_findalldevs((pcap_if_t **)&GBL_PCAP->ifs, pcap_errbuf) == -1)
+   if (pcap_findalldevs((pcap_if_t **)&EC_GBL_PCAP->ifs, pcap_errbuf) == -1)
       ERROR_MSG("%s", pcap_errbuf);
 
    /* analize the list and remove unwanted entries */
-   for (pdev = dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = ndev) {
+   for (pdev = dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = ndev) {
       
       /* the next entry in the list */
       ndev = dev->next;
@@ -133,8 +133,8 @@ void capture_getifs(void)
       /* remove the pseudo device 'dbus-system' and 'dbus-session' shown on mac when ran without sudo*/
       if (!strcmp(dev->name, "any") || !strcmp(dev->name, "nflog") || !strcmp(dev->name, "nfqueue")  || !strcmp(dev->name, "dbus-system") || !strcmp(dev->name, "dbus-session")) {
          /* check if it is the first in the list */
-         if (dev == GBL_PCAP->ifs)
-            GBL_PCAP->ifs = ndev;
+         if (dev == EC_GBL_PCAP->ifs)
+            EC_GBL_PCAP->ifs = ndev;
          else
             pdev->next = ndev;
 
@@ -152,12 +152,12 @@ void capture_getifs(void)
    }
 
    /* do we have to print the list ? */
-   if (GBL_OPTIONS->lifaces) {
+   if (EC_GBL_OPTIONS->lifaces) {
      
       /* we are before ui_init(), can use printf */
       fprintf(stdout, "List of available Network Interfaces:\n\n");
       
-      for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next)
+      for (dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = dev->next)
          fprintf(stdout, " %s  \t%s\n", dev->name, dev->description);
 
       fprintf(stdout, "\n\n");

@@ -31,7 +31,7 @@ EC_API_EXTERN void ec_thread_init(void);
 EC_API_EXTERN void ec_thread_kill_all(void);
 EC_API_EXTERN void ec_thread_exit(void);
 
-#define RETURN_IF_NOT_MAIN() do{ if (strcmp(ec_thread_getname(EC_PTHREAD_SELF), GBL_PROGRAM)) return; }while(0)
+#define RETURN_IF_NOT_MAIN() do{ if (strcmp(ec_thread_getname(EC_PTHREAD_SELF), EC_GBL_PROGRAM)) return; }while(0)
 
 #define CANCELLATION_POINT()  pthread_testcancel()
 

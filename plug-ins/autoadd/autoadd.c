@@ -99,9 +99,9 @@ static void parse_arp(struct packet_object *po)
       return;
 
    /* don't add our addresses */
-   if (!ip_addr_cmp(&GBL_IFACE->ip, &po->L3.src))
+   if (!ip_addr_cmp(&EC_GBL_IFACE->ip, &po->L3.src))
       return;
-   if (!memcmp(&GBL_IFACE->mac, &po->L2.src, MEDIA_ADDR_LEN))
+   if (!memcmp(&EC_GBL_IFACE->mac, &po->L2.src, MEDIA_ADDR_LEN))
       return;
 
    /* don't add undefined address */
@@ -109,22 +109,22 @@ static void parse_arp(struct packet_object *po)
       return;
    
    /* search in target 1 */
-   if (GBL_TARGET1->all_ip) {
+   if (EC_GBL_TARGET1->all_ip) {
       if (add_to_victims(&arp_group_one, po) == E_SUCCESS)
          USER_MSG("autoadd: %s %s added to GROUP1\n", ip_addr_ntoa(&po->L3.src, tmp), mac_addr_ntoa(po->L2.src, tmp2));
    } else {
-      LIST_FOREACH(t, &GBL_TARGET1->ips, next) 
+      LIST_FOREACH(t, &EC_GBL_TARGET1->ips, next) 
          if (!ip_addr_cmp(&t->ip, &po->L3.src)) 
             if (add_to_victims(&arp_group_one, po) == E_SUCCESS)
                USER_MSG("autoadd: %s %s added to GROUP1\n", ip_addr_ntoa(&po->L3.src, tmp), mac_addr_ntoa(po->L2.src, tmp2));
    }
    
    /* search in target 2 */
-   if (GBL_TARGET2->all_ip) {
+   if (EC_GBL_TARGET2->all_ip) {
       if (add_to_victims(&arp_group_two, po) == E_SUCCESS)
          USER_MSG("autoadd: %s %s added to GROUP2\n", ip_addr_ntoa(&po->L3.src, tmp), mac_addr_ntoa(po->L2.src, tmp2));
    } else {
-      LIST_FOREACH(t, &GBL_TARGET2->ips, next) 
+      LIST_FOREACH(t, &EC_GBL_TARGET2->ips, next) 
          if (!ip_addr_cmp(&t->ip, &po->L3.src)) 
             if (add_to_victims(&arp_group_two, po) == E_SUCCESS)
                USER_MSG("autoadd: %s %s added to GROUP2\n", ip_addr_ntoa(&po->L3.src, tmp), mac_addr_ntoa(po->L2.src, tmp2));
@@ -158,7 +158,7 @@ static int add_to_victims(void *group, struct packet_object *po)
    LIST_INSERT_HEAD(head, h, next);
    
    /* add the host even in the hosts list */
-   LIST_FOREACH(h, &GBL_HOSTLIST, next)
+   LIST_FOREACH(h, &EC_GBL_HOSTLIST, next)
       if (!ip_addr_cmp(&h->ip, &po->L3.src)) 
          return E_SUCCESS;
    
@@ -172,7 +172,7 @@ static int add_to_victims(void *group, struct packet_object *po)
    memcpy(&h->mac, &po->L2.src, MEDIA_ADDR_LEN);
    
    DEBUG_MSG("autoadd: added %s to hosts list", ip_addr_ntoa(&h->ip, tmp));
-   LIST_INSERT_HEAD(&GBL_HOSTLIST, h, next);
+   LIST_INSERT_HEAD(&EC_GBL_HOSTLIST, h, next);
    
    return E_SUCCESS;
 }

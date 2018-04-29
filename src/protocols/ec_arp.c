@@ -114,7 +114,7 @@ FUNC_DECODER(decode_arp)
          hook_point(HOOK_PACKET_ARP_RP, po);
       
       /* ARP packets are always local (our machine is at distance 0) */
-      if (!ip_addr_cmp(&po->L3.src, &GBL_IFACE->ip))
+      if (!ip_addr_cmp(&po->L3.src, &EC_GBL_IFACE->ip))
          PACKET->L3.ttl = 0;
       else
          PACKET->L3.ttl = 1;

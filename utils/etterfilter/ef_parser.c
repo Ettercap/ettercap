@@ -21,7 +21,6 @@
 
 
 #include <ef.h>
-#include <ec_version.h>
 #include <ec_format.h>
 #include <ef_functions.h>
 
@@ -40,7 +39,7 @@ static void ef_usage(void);
 void ef_usage(void)
 {
 
-   fprintf(stdout, "\nUsage: %s [OPTIONS] filterfile\n", GBL_PROGRAM);
+   fprintf(stdout, "\nUsage: %s [OPTIONS] filterfile\n", PROGRAM);
 
    fprintf(stdout, "\nGeneral Options:\n");
    fprintf(stdout, "  -o, --output <file>         output file (default is filter.ef)\n");
@@ -54,7 +53,7 @@ void ef_usage(void)
 
    fprintf(stdout, "\n\n");
 
-   exit(0);
+   ef_exit(0);
 }
 
 
@@ -86,16 +85,16 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'o':
-                  GBL_OPTIONS->output_file = strdup(optarg);
+                  EF_GBL_OPTIONS->output_file = strdup(optarg);
                   break;
                   
          case 'd':
                   /* use many times to encrease debug level */
-                  GBL_OPTIONS->debug++;
+                  EF_GBL_OPTIONS->debug++;
                   break;
                   
          case 'w':
-                  GBL_OPTIONS->suppress_warnings = 1;
+                  EF_GBL_OPTIONS->suppress_warnings = 1;
                   break;
                   
          case 'h':
@@ -103,30 +102,30 @@ void parse_options(int argc, char **argv)
                   break;
 
          case 'v':
-                  printf("%s %s\n", GBL_PROGRAM, EC_VERSION);
-                  exit(0);
+                  printf("%s %s\n", PROGRAM, EC_VERSION);
+                  ef_exit(0);
                   break;
 
          case ':': // missing parameter
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
-            exit(0);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
+            ef_exit(0);
          break;
 
          case '?': // unknown option
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
-            exit(0);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
+            ef_exit(0);
          break;
       }
    }
 
    /* the source file to be compiled */
    if (argv[optind]) {
-      GBL_OPTIONS->source_file = strdup(argv[optind]);
+      EF_GBL_OPTIONS->source_file = strdup(argv[optind]);
    }
    
    /* make the default name */
-   if (GBL_OPTIONS->output_file == NULL)
-      GBL_OPTIONS->output_file = strdup("filter.ef");
+   if (EF_GBL_OPTIONS->output_file == NULL)
+      EF_GBL_OPTIONS->output_file = strdup("filter.ef");
    
    return;
 }

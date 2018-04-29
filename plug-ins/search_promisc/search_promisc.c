@@ -98,17 +98,17 @@ static EC_THREAD_FUNC(search_promisc_thread)
    PLUGIN_LOCK(search_promisc_mutex);
 
    /* don't show packets while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
       
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("search_promisc: plugin doesn't work in UNOFFENSIVE mode.\n\n");
       PLUGIN_UNLOCK(search_promisc_mutex);
       plugin_kill_thread("search_promisc", "search_promisc");
       return PLUGIN_FINISHED;
    }
 
-   if (LIST_EMPTY(&GBL_HOSTLIST)) {
+   if (LIST_EMPTY(&EC_GBL_HOSTLIST)) {
       INSTANT_USER_MSG("search_promisc: You have to build host-list to run this plugin.\n\n"); 
       PLUGIN_UNLOCK(search_promisc_mutex);
       plugin_kill_thread("search_promisc", "search_promisc");
@@ -126,9 +126,9 @@ static EC_THREAD_FUNC(search_promisc_thread)
        * First and second time we'll use different 
        * dest mac addresses
        */
-      LIST_FOREACH(h, &GBL_HOSTLIST, next) {
-         send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &h->ip, bogus_mac[i]);   
-         ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
+      LIST_FOREACH(h, &EC_GBL_HOSTLIST, next) {
+         send_arp(ARPOP_REQUEST, &EC_GBL_IFACE->ip, EC_GBL_IFACE->mac, &h->ip, bogus_mac[i]);   
+         ec_usleep(MILLI2MICRO(EC_GBL_CONF->arp_storm_delay));
       }
       
       /* Wait for responses */
@@ -192,7 +192,7 @@ static void parse_arp(struct packet_object *po)
    struct hosts_list *h;
 
    /* We'll parse only replies for us */
-   if (memcmp(po->L2.dst, GBL_IFACE->mac, MEDIA_ADDR_LEN))
+   if (memcmp(po->L2.dst, EC_GBL_IFACE->mac, MEDIA_ADDR_LEN))
       return;
    
    /* Check if it's already in the list */

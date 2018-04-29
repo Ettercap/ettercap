@@ -55,44 +55,44 @@ void network_init()
 
    DEBUG_MSG("init_network");
 
-   GBL_PCAP->snaplen = UINT16_MAX;
+   EC_GBL_PCAP->snaplen = UINT16_MAX;
    
-   if(GBL_OPTIONS->read) {
-      source_init(GBL_OPTIONS->pcapfile_in, GBL_IFACE, true, false);
-      source_print(GBL_IFACE);
+   if(EC_GBL_OPTIONS->read) {
+      source_init(EC_GBL_OPTIONS->pcapfile_in, EC_GBL_IFACE, true, false);
+      source_print(EC_GBL_IFACE);
    } else {
-      iface = GBL_OPTIONS->iface ? GBL_OPTIONS->iface : (GBL_OPTIONS->iface = pcap_lookupdev(perrbuf));
+      iface = EC_GBL_OPTIONS->iface ? EC_GBL_OPTIONS->iface : (EC_GBL_OPTIONS->iface = pcap_lookupdev(perrbuf));
       ON_ERROR(iface, NULL, "No suitable interface found...");
-      source_init(iface, GBL_IFACE, true, true);
-      source_print(GBL_IFACE);
-      if(GBL_SNIFF->type == SM_BRIDGED) {
-         source_init(GBL_OPTIONS->iface_bridge, GBL_BRIDGE, true, true);
-         source_print(GBL_BRIDGE);
-         if(GBL_BRIDGE->dlt != GBL_IFACE->dlt)
+      source_init(iface, EC_GBL_IFACE, true, true);
+      source_print(EC_GBL_IFACE);
+      if(EC_GBL_SNIFF->type == SM_BRIDGED) {
+         source_init(EC_GBL_OPTIONS->iface_bridge, EC_GBL_BRIDGE, true, true);
+         source_print(EC_GBL_BRIDGE);
+         if(EC_GBL_BRIDGE->dlt != EC_GBL_IFACE->dlt)
             FATAL_ERROR("Can't bridge interfaces of different types");
       }
    }
 
-   if(get_decoder(LINK_LAYER, GBL_IFACE->dlt) == NULL) {
-      if(GBL_OPTIONS->read)
-         FATAL_ERROR("Dump file not supported (%s)", pcap_datalink_val_to_description(GBL_PCAP->dlt));
+   if(get_decoder(LINK_LAYER, EC_GBL_IFACE->dlt) == NULL) {
+      if(EC_GBL_OPTIONS->read)
+         FATAL_ERROR("Dump file not supported (%s)", pcap_datalink_val_to_description(EC_GBL_PCAP->dlt));
       else
-         FATAL_ERROR("Interface \"%s\" not supported (%s)", GBL_OPTIONS->iface, pcap_datalink_val_to_description(GBL_PCAP->dlt));
+         FATAL_ERROR("Interface \"%s\" not supported (%s)", EC_GBL_OPTIONS->iface, pcap_datalink_val_to_description(EC_GBL_PCAP->dlt));
    }
    
-   if(GBL_OPTIONS->write)
-      pcap_winit(GBL_IFACE->pcap);
+   if(EC_GBL_OPTIONS->write)
+      pcap_winit(EC_GBL_IFACE->pcap);
    
-   GBL_PCAP->align = get_alignment(GBL_PCAP->dlt);
-   SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align + 256, sizeof(char));
+   EC_GBL_PCAP->align = get_alignment(EC_GBL_PCAP->dlt);
+   SAFE_CALLOC(EC_GBL_PCAP->buffer, UINT16_MAX + EC_GBL_PCAP->align + 256, sizeof(char));
 
-   if(GBL_OPTIONS->secondary) {
-      secondary_sources_init(GBL_OPTIONS->secondary);
+   if(EC_GBL_OPTIONS->secondary) {
+      secondary_sources_init(EC_GBL_OPTIONS->secondary);
       atexit(close_secondary_sources);
    }
 
    /* Layer 3 handlers initialization */
-   if(!GBL_OPTIONS->unoffensive)
+   if(!EC_GBL_OPTIONS->unoffensive)
       l3_init();
       
    atexit(close_network);
@@ -100,15 +100,15 @@ void network_init()
 
 static void close_network()
 {
-   pcap_close(GBL_IFACE->pcap);
-   if(GBL_SNIFF->type == SM_BRIDGED)
-      pcap_close(GBL_BRIDGE->pcap);
+   pcap_close(EC_GBL_IFACE->pcap);
+   if(EC_GBL_SNIFF->type == SM_BRIDGED)
+      pcap_close(EC_GBL_BRIDGE->pcap);
 
-   if(GBL_OPTIONS->write)
-      pcap_dump_close(GBL_PCAP->dump);
+   if(EC_GBL_OPTIONS->write)
+      pcap_dump_close(EC_GBL_PCAP->dump);
 
-   libnet_destroy(GBL_IFACE->lnet);
-   libnet_destroy(GBL_BRIDGE->lnet);
+   libnet_destroy(EC_GBL_IFACE->lnet);
+   libnet_destroy(EC_GBL_BRIDGE->lnet);
 
    DEBUG_MSG("ATEXIT: close_network");
 }
@@ -116,9 +116,9 @@ static void close_network()
 static void pcap_winit(pcap_t *pcap)
 {
    pcap_dumper_t *pdump;
-   pdump = pcap_dump_open(pcap, GBL_OPTIONS->pcapfile_out);
+   pdump = pcap_dump_open(pcap, EC_GBL_OPTIONS->pcapfile_out);
    ON_ERROR(pdump, NULL, "pcap_dump_open: %s", pcap_geterr(pcap));
-   GBL_PCAP->dump = pdump;
+   EC_GBL_PCAP->dump = pdump;
 }
 
 static void source_print(struct iface_env *source)
@@ -172,7 +172,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 
    /* ===pcap initialization=== */
    if(live) {
-      pcap = pcap_open_live(name, GBL_PCAP->snaplen, GBL_PCAP->promisc, PCAP_TIMEOUT, pcap_errbuf);
+      pcap = pcap_open_live(name, EC_GBL_PCAP->snaplen, EC_GBL_PCAP->promisc, PCAP_TIMEOUT, pcap_errbuf);
       if(pcap == NULL) {
          if(primary)
             ON_ERROR(pcap, NULL, "pcap_open_live: %s", pcap_errbuf);
@@ -197,38 +197,38 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
       stat_result = fstat(fileno(pcap_file_h), &st);
       ON_ERROR(stat_result, -1, "fstat failed.");
 
-      GBL_PCAP->dump_size = st.st_size;
+      EC_GBL_PCAP->dump_size = st.st_size;
    }
    source->dlt = pcap_datalink(pcap);
    if(primary)
-      GBL_PCAP->dlt = source->dlt;
+      EC_GBL_PCAP->dlt = source->dlt;
    if(source->dlt == DLT_IEEE802_11) {
       DEBUG_MSG("Wireless monitor mode used, switching to unoffensive mode");
       source->unoffensive = 1;
       if(primary)
-         GBL_OPTIONS->unoffensive = 1;
+         EC_GBL_OPTIONS->unoffensive = 1;
    }
    if(!strcmp(name, "lo")) {
       DEBUG_MSG("Loopback interface used, switching to unoffensive mode");
       source->unoffensive = 1;
       if(primary)
-         GBL_OPTIONS->unoffensive = 1;
+         EC_GBL_OPTIONS->unoffensive = 1;
    }
 
-   if(GBL_PCAP->filter && strcmp(GBL_PCAP->filter, "") && live) {
+   if(EC_GBL_PCAP->filter && strcmp(EC_GBL_PCAP->filter, "") && live) {
       u_int net, mask;
       if(pcap_lookupnet(name, &net, &mask, pcap_errbuf) == -1)
          ERROR_MSG("%s - %s", name, pcap_errbuf);
-      if(pcap_compile(pcap, &bpf, GBL_PCAP->filter, 1, mask) < 0)
+      if(pcap_compile(pcap, &bpf, EC_GBL_PCAP->filter, 1, mask) < 0)
          ERROR_MSG("Wrong pcap filter: %s - %s", name, pcap_geterr(pcap));
       if(pcap_setfilter(pcap, &bpf) == 1)
          ERROR_MSG("Cannot set pcap filter: %s - %s", name, pcap_geterr(pcap));
    }
 
    snaplen = pcap_snapshot(pcap);
-   DEBUG_MSG("requested snaplen for %s: %d, assigned snaplen: %d", name, GBL_PCAP->snaplen, snaplen);
+   DEBUG_MSG("requested snaplen for %s: %d, assigned snaplen: %d", name, EC_GBL_PCAP->snaplen, snaplen);
    if(primary)
-      GBL_PCAP->snaplen = snaplen;
+      EC_GBL_PCAP->snaplen = snaplen;
    source->pcap = pcap;
 
    SAFE_STRDUP(source->name, name);
@@ -240,7 +240,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
       return E_SUCCESS;
    }
 
-   if(!GBL_OPTIONS->unoffensive && !source->unoffensive) {
+   if(!EC_GBL_OPTIONS->unoffensive && !source->unoffensive) {
       lnet = libnet_init(LIBNET_LINK_ADV, name, lnet_errbuf);
       ON_ERROR(lnet, NULL, "libnet_init: %s", lnet_errbuf);
 
@@ -254,7 +254,7 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
 #if defined(OS_WINDOWS)
   pcap_if_t *dev;
 
-  for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev; dev = dev->next) {
+  for (dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev; dev = dev->next) {
       if(strcmp(dev->name, name))
         continue;
 
@@ -262,9 +262,9 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
         sa4 = (struct sockaddr_in*) dev->addresses->addr;
 
         ip_addr_init(&source->ip, AF_INET, (u_char*)&sa4->sin_addr);
-        if(GBL_OPTIONS->netmask) {
-            if(ip_addr_pton(GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
-              FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
+        if(EC_GBL_OPTIONS->netmask) {
+            if(ip_addr_pton(EC_GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
+              FATAL_ERROR("Invalid netmask %s", EC_GBL_OPTIONS->netmask);
         } else {
             sa4 = (struct sockaddr_in*) dev->addresses->netmask;
             ip_addr_init(&source->netmask, AF_INET, (u_char*)&sa4->sin_addr);
@@ -299,9 +299,9 @@ static int source_init(char *name, struct iface_env *source, bool primary, bool 
       if(ifaddr->ifa_addr->sa_family == AF_INET) {
          sa4 = (struct sockaddr_in*)ifaddr->ifa_addr;
          ip_addr_init(&source->ip, AF_INET, (u_char*)&sa4->sin_addr);
-         if(GBL_OPTIONS->netmask) {
-            if(ip_addr_pton(GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
-               FATAL_ERROR("Invalid netmask %s", GBL_OPTIONS->netmask);
+         if(EC_GBL_OPTIONS->netmask) {
+            if(ip_addr_pton(EC_GBL_OPTIONS->netmask, &source->netmask) != E_SUCCESS)
+               FATAL_ERROR("Invalid netmask %s", EC_GBL_OPTIONS->netmask);
          } else {
             sa4 = (struct sockaddr_in*)ifaddr->ifa_netmask;
             ip_addr_init(&source->netmask, AF_INET, (u_char*)&sa4->sin_addr);
@@ -412,7 +412,7 @@ static void l3_init(void)
    libnet_t *l6;
 #endif
 #ifdef OS_WINDOWS
-   char *name = GBL_OPTIONS->iface;
+   char *name = EC_GBL_OPTIONS->iface;
 #else
    char *name = NULL;
 #endif
@@ -429,7 +429,7 @@ static void l3_init(void)
       USER_MSG("Libnet failed IPv4 initialization. Don't send IPv4 packets.\n");
    }
 
-   GBL_LNET->lnet_IP4 = l4;               
+   EC_GBL_LNET->lnet_IP4 = l4;               
 
 #ifdef WITH_IPV6
    /* open the socket at layer 3 for IPv6 */
@@ -439,7 +439,7 @@ static void l3_init(void)
       USER_MSG("Libnet failed IPv6 initialization. Don't send IPv6 packets.\n");
    }
    
-   GBL_LNET->lnet_IP6 = l6;
+   EC_GBL_LNET->lnet_IP6 = l6;
 #endif
 
    atexit(l3_close);
@@ -447,11 +447,11 @@ static void l3_init(void)
 
 static void l3_close(void)
 {
-   if(GBL_LNET->lnet_IP4)
-      libnet_destroy(GBL_LNET->lnet_IP4);
+   if(EC_GBL_LNET->lnet_IP4)
+      libnet_destroy(EC_GBL_LNET->lnet_IP4);
 #ifdef WITH_IPV6
-   if(GBL_LNET->lnet_IP6)
-      libnet_destroy(GBL_LNET->lnet_IP6);
+   if(EC_GBL_LNET->lnet_IP6)
+      libnet_destroy(EC_GBL_LNET->lnet_IP6);
 #endif
    
    DEBUG_MSG("ATEXIT: send_closed");

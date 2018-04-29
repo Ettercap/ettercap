@@ -141,7 +141,7 @@ void daemon_interface(void)
 
    struct plugin_list *plugin, *tmp;
 
-   LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
+   LIST_FOREACH_SAFE(plugin, &EC_GBL_OPTIONS->plugins, next, tmp) {
       /* check if the plugin exists */
       if (search_plugin(plugin->name) != E_SUCCESS)
          plugin->exists = false;
@@ -156,10 +156,10 @@ void daemon_interface(void)
    mitm_start();
    
    /* initialize the sniffing method */
-   EXECUTE(GBL_SNIFF->start);
+   EXECUTE(EC_GBL_SNIFF->start);
    
    /* if we have to activate a plugin */
-   LIST_FOREACH_SAFE(plugin, &GBL_OPTIONS->plugins, next, tmp) {
+   LIST_FOREACH_SAFE(plugin, &EC_GBL_OPTIONS->plugins, next, tmp) {
       if (plugin->exists && plugin_init(plugin->name) != PLUGIN_RUNNING)
          /* skip plugin */
          USER_MSG("Plugin '%s' can not be started - skipping!\n\n", plugin->name);
@@ -185,7 +185,7 @@ static void daemonize(void)
 
    DEBUG_MSG("daemonize: (daemon)");
    
-   fprintf(stdout, "Daemonizing %s...\n\n", GBL_PROGRAM);
+   fprintf(stdout, "Daemonizing %s...\n\n", EC_GBL_PROGRAM);
    
    /* 
     * daemonze the process.
@@ -193,14 +193,14 @@ static void daemonize(void)
     * close stdin, out and err
     */
    ret = daemon(1, 0);
-   ON_ERROR(ret, -1, "Can't demonize %s", GBL_PROGRAM);
+   ON_ERROR(ret, -1, "Can't demonize %s", EC_GBL_PROGRAM);
    
 #else
    pid_t pid;
   
    DEBUG_MSG("daemonize: (manual)");
 
-   fprintf(stdout, "Daemonizing %s...\n\n", GBL_PROGRAM);
+   fprintf(stdout, "Daemonizing %s...\n\n", EC_GBL_PROGRAM);
    
    if((signal(SIGTTOU, SIG_IGN)) == SIG_ERR)
       ERROR_MSG("signal()");

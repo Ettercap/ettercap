@@ -101,17 +101,17 @@ void build_hosts_list(void)
    DEBUG_MSG("build_hosts_list");
 
    /* don't create the list in bridged mode */
-   if (GBL_SNIFF->type == SM_BRIDGED)
+   if (EC_GBL_SNIFF->type == SM_BRIDGED)
       return;
 
    /*
     * load the list from the file
-    * this option automatically enable GBL_OPTIONS->silent
+    * this option automatically enable EC_GBL_OPTIONS->silent
     */
-   if (GBL_OPTIONS->load_hosts) {
-      scan_load_hosts(GBL_OPTIONS->hostsfile);
+   if (EC_GBL_OPTIONS->load_hosts) {
+      scan_load_hosts(EC_GBL_OPTIONS->hostsfile);
 
-      LIST_FOREACH(hl, &GBL_HOSTLIST, next)
+      LIST_FOREACH(hl, &EC_GBL_HOSTLIST, next)
          nhosts++;
 
       INSTANT_USER_MSG("%d hosts added to the hosts list...\n", nhosts);
@@ -120,24 +120,24 @@ void build_hosts_list(void)
    }
 
    /* in silent mode, the list should not be created */
-   if (GBL_OPTIONS->silent)
+   if (EC_GBL_OPTIONS->silent)
       return;
 
    /* it not initialized don't make the list */
-   if (GBL_IFACE->lnet == NULL)
+   if (EC_GBL_IFACE->lnet == NULL)
       return;
 
    /* no target defined... */
-   if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip &&
-       GBL_TARGET1->all_ip6 && GBL_TARGET2->all_ip6 &&
-       !GBL_TARGET1->scan_all && !GBL_TARGET2->scan_all)
+   if (EC_GBL_TARGET1->all_ip && EC_GBL_TARGET2->all_ip &&
+       EC_GBL_TARGET1->all_ip6 && EC_GBL_TARGET2->all_ip6 &&
+       !EC_GBL_TARGET1->scan_all && !EC_GBL_TARGET2->scan_all)
       return;
 
    /* delete the previous list */
    del_hosts_list();
 
    /* check the type of UI we are running under... */
-   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
+   if (EC_GBL_UI->type == UI_TEXT || EC_GBL_UI->type == UI_DAEMONIZE)
       /* in text mode and daemonized call the function directly */
       scan_thread(NULL);
    else 
@@ -161,7 +161,7 @@ static EC_THREAD_FUNC(scan_thread)
    DEBUG_MSG("scan_thread");
 
    /* in text mode and demonized this function should NOT be a thread */
-   if (GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE)
+   if (EC_GBL_UI->type == UI_TEXT || EC_GBL_UI->type == UI_DAEMONIZE)
       threadize = 0;
 
 #ifdef OS_MINGW
@@ -179,8 +179,8 @@ static EC_THREAD_FUNC(scan_thread)
    SCAN_LOCK;
 
    /* if sniffing is not yet started we need a decoder for the ARP/ND replies */
-   if (!GBL_SNIFF->active)
-      capture_start(GBL_IFACE);
+   if (!EC_GBL_SNIFF->active)
+      capture_start(EC_GBL_IFACE);
 
    /*
     * create a simple decode thread, it will call
@@ -202,10 +202,10 @@ static EC_THREAD_FUNC(scan_thread)
     *
     * FIXME: ipv4 host gets scanned twice if in target list
     */
-   if(GBL_TARGET1->all_ip || GBL_TARGET2->all_ip) {
+   if(EC_GBL_TARGET1->all_ip || EC_GBL_TARGET2->all_ip) {
       scan_netmask();
 #ifdef WITH_IPV6
-      if (GBL_OPTIONS->ip6scan) 
+      if (EC_GBL_OPTIONS->ip6scan) 
           scan_ip6_onlink();
 #endif
    }
@@ -232,14 +232,14 @@ static EC_THREAD_FUNC(scan_thread)
 #endif
 
    /* if sniffing is not started we have to stop the decoder after scan */
-   if (!GBL_SNIFF->active)
-      capture_stop(GBL_IFACE);
+   if (!EC_GBL_SNIFF->active)
+      capture_stop(EC_GBL_IFACE);
 
    /* Unlock Mutex */
    SCAN_UNLOCK;
 
    /* count the hosts and print the message */
-   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(hl, &EC_GBL_HOSTLIST, next) {
       char tmp[MAX_ASCII_ADDR_LEN];
       (void)tmp;
       DEBUG_MSG("Host: %s", ip_addr_ntoa(&hl->ip, tmp));
@@ -257,14 +257,14 @@ static EC_THREAD_FUNC(scan_thread)
     * already in the file.
     */
 
-   if (!GBL_OPTIONS->load_hosts && GBL_OPTIONS->resolve) {
+   if (!EC_GBL_OPTIONS->load_hosts && EC_GBL_OPTIONS->resolve) {
       char title[50];
 
       snprintf(title, sizeof(title)-1, "Resolving %d hostnames...", nhosts);
 
       INSTANT_USER_MSG("%s\n", title);
 
-      LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+      LIST_FOREACH(hl, &EC_GBL_HOSTLIST, next) {
          char tmp[MAX_HOSTNAME_LEN];
 
          host_iptoa(&hl->ip, tmp);
@@ -281,8 +281,8 @@ static EC_THREAD_FUNC(scan_thread)
    }
 
    /* save the list to the file */
-   if (GBL_OPTIONS->save_hosts)
-      scan_save_hosts(GBL_OPTIONS->hostsfile);
+   if (EC_GBL_OPTIONS->save_hosts)
+      scan_save_hosts(EC_GBL_OPTIONS->hostsfile);
 
    /* if necessary, don't create the thread */
    if (threadize)
@@ -302,7 +302,7 @@ void del_hosts_list(void)
 
    SCANUI_LOCK;
 
-   LIST_FOREACH_SAFE(hl, &GBL_HOSTLIST, next, tmp) {
+   LIST_FOREACH_SAFE(hl, &EC_GBL_HOSTLIST, next, tmp) {
       SAFE_FREE(hl->hostname);
       LIST_REMOVE(hl, next);
       SAFE_FREE(hl);
@@ -322,7 +322,7 @@ static void get_response(struct packet_object *po)
    DEBUG_MSG("get_response from %s", ip_addr_ntoa(&po->L3.src, tmp));
 
    /* if at least one target is the whole netmask, add the entry */
-   if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all) {
+   if (EC_GBL_TARGET1->scan_all || EC_GBL_TARGET2->scan_all) {
       add_host(&po->L3.src, po->L2.src, NULL);
       return;
    }
@@ -330,14 +330,14 @@ static void get_response(struct packet_object *po)
    /* else only add arp and icmp6 replies within the targets */
 
    /* search in target 1 */
-   LIST_FOREACH(t, &GBL_TARGET1->ips, next)
+   LIST_FOREACH(t, &EC_GBL_TARGET1->ips, next)
       if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
          add_host(&po->L3.src, po->L2.src, NULL);
          return;
       }
 
    /* search in target 2 */
-   LIST_FOREACH(t, &GBL_TARGET2->ips, next)
+   LIST_FOREACH(t, &EC_GBL_TARGET2->ips, next)
       if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
          add_host(&po->L3.src, po->L2.src, NULL);
          return;
@@ -346,13 +346,13 @@ static void get_response(struct packet_object *po)
 #ifdef WITH_IPV6
    /* same for IPv6 */
    /* search in target 1 */
-   LIST_FOREACH(t, &GBL_TARGET1->ip6, next)
+   LIST_FOREACH(t, &EC_GBL_TARGET1->ip6, next)
       if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
          return;
       }
 
    /* search in target 2 */
-   LIST_FOREACH(t, &GBL_TARGET2->ip6, next)
+   LIST_FOREACH(t, &EC_GBL_TARGET2->ip6, next)
       if (!ip_addr_cmp(&t->ip, &po->L3.src)) {
          add_host(&po->L3.src, po->L2.src, NULL);
          return;
@@ -373,8 +373,8 @@ static void scan_netmask(void)
    struct ip_list *e, *tmp;
    char title[100];
 
-   netmask = *GBL_IFACE->netmask.addr32;
-   myip = *GBL_IFACE->ip.addr32;
+   netmask = *EC_GBL_IFACE->netmask.addr32;
+   myip = *EC_GBL_IFACE->ip.addr32;
 
    /* the number of hosts in this netmask */
    nhosts = ntohl(~netmask);
@@ -406,7 +406,7 @@ static void scan_netmask(void)
    /* send the actual ARP request */
    LIST_FOREACH(e, &ip_list_head, next) {
       /* send the arp request */
-      send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
+      send_arp(ARPOP_REQUEST, &EC_GBL_IFACE->ip, EC_GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
 
       /* update the progress bar */
       ret = ui_progress(title, i++, nhosts);
@@ -415,8 +415,8 @@ static void scan_netmask(void)
       if (ret == UI_PROGRESS_INTERRUPTED) {
          INSTANT_USER_MSG("Scan interrupted by user. Partial results may have been recorded...\n");
          /* stop the capture thread if sniffing is not active */
-         if (!GBL_SNIFF->active)
-            capture_stop(GBL_IFACE);
+         if (!EC_GBL_SNIFF->active)
+            capture_stop(EC_GBL_IFACE);
 
          hook_del(HOOK_PACKET_ARP, &get_response);
          /* delete the temporary list */
@@ -430,7 +430,7 @@ static void scan_netmask(void)
       }
 
       /* wait for a delay */
-      ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
+      ec_usleep(MILLI2MICRO(EC_GBL_CONF->arp_storm_delay));
 
    }
 
@@ -457,13 +457,13 @@ static void scan_ip6_onlink(void)
 
    ip_addr_init(&an, AF_INET6, (u_char *)IP6_ALL_NODES);
 
-   snprintf(title, sizeof(title)-1, "Probing %d seconds for active IPv6 nodes ...", GBL_CONF->icmp6_probe_delay);
+   snprintf(title, sizeof(title)-1, "Probing %d seconds for active IPv6 nodes ...", EC_GBL_CONF->icmp6_probe_delay);
    INSTANT_USER_MSG("%s\n", title);
 
    DEBUG_MSG("scan_ip6_onlink: ");
 
    /* go through the list of IPv6 addresses on the selected interface */
-   LIST_FOREACH(e, &GBL_IFACE->ip6_list, next) {
+   LIST_FOREACH(e, &EC_GBL_IFACE->ip6_list, next) {
       /*
        * ping to all-nodes from all ip addresses to get responses from all 
        * IPv6 networks (global, link-local, ...)
@@ -482,16 +482,16 @@ static void scan_ip6_onlink(void)
 #endif
    }
 
-   for (i=0; i<=GBL_CONF->icmp6_probe_delay * 1000; i++) {
+   for (i=0; i<=EC_GBL_CONF->icmp6_probe_delay * 1000; i++) {
       /* update the progress bar */
-      ret = ui_progress(title, i, GBL_CONF->icmp6_probe_delay * 1000);
+      ret = ui_progress(title, i, EC_GBL_CONF->icmp6_probe_delay * 1000);
 
       /* user has requested to stop the task */
       if (ret == UI_PROGRESS_INTERRUPTED) {
          INSTANT_USER_MSG("Scan interrupted by user. Partial results may have been recorded...\n");
          /* stop the capture thread if sniffing is not active */
-         if (!GBL_SNIFF->active)
-            capture_stop(GBL_IFACE);
+         if (!EC_GBL_SNIFF->active)
+            capture_stop(EC_GBL_IFACE);
 
          hook_del(HOOK_PACKET_ICMP6_NADV, &get_response);
          hook_del(HOOK_PACKET_ICMP6_RPLY, &get_response);
@@ -531,7 +531,7 @@ static void scan_targets(void)
     */
 
    /* first get all the target1 ips */
-   LIST_FOREACH(i, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET1->ips, next) {
 
       SAFE_CALLOC(e, 1, sizeof(struct ip_list));
 
@@ -543,7 +543,7 @@ static void scan_targets(void)
       random_list(e, nhosts);
    }
 #ifdef WITH_IPV6
-   LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET1->ip6, next) {
 
       SAFE_CALLOC(e, 1, sizeof(struct ip_list));
       memcpy(&e->ip, &i->ip, sizeof(struct ip_addr));
@@ -554,7 +554,7 @@ static void scan_targets(void)
 #endif
 
    /* then merge the target2 ips */
-   LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET2->ips, next) {
 
       found = 0;
 
@@ -577,7 +577,7 @@ static void scan_targets(void)
    }
 
 #ifdef WITH_IPV6
-   LIST_FOREACH(i, &GBL_TARGET2->ip6, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET2->ip6, next) {
       found = 0;
 
       LIST_FOREACH(m, &ip_list_head, next)
@@ -612,13 +612,13 @@ static void scan_targets(void)
       /* send the arp request */
       switch(ntohs(e->ip.addr_type)) {
          case AF_INET:
-            send_arp(ARPOP_REQUEST, &GBL_IFACE->ip, GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
+            send_arp(ARPOP_REQUEST, &EC_GBL_IFACE->ip, EC_GBL_IFACE->mac, &e->ip, MEDIA_BROADCAST);
             break;
 #ifdef WITH_IPV6
          case AF_INET6:
             if (ip_addr_is_local(&e->ip, &ip) == E_SUCCESS) {
                ip_addr_init_sol(&sn, &e->ip, tmac);
-               send_L2_icmp6_nsol(&ip, &sn, &e->ip, GBL_IFACE->mac, tmac);
+               send_L2_icmp6_nsol(&ip, &sn, &e->ip, EC_GBL_IFACE->mac, tmac);
             }
             break;
 #endif
@@ -631,8 +631,8 @@ static void scan_targets(void)
       if (ret == UI_PROGRESS_INTERRUPTED) {
          INSTANT_USER_MSG("Scan interrupted by user. Partial results may have been recorded...\n");
          /* stop the capture thread if sniffing is not active */
-         if (!GBL_SNIFF->active)
-            capture_stop(GBL_IFACE);
+         if (!EC_GBL_SNIFF->active)
+            capture_stop(EC_GBL_IFACE);
 
          hook_del(HOOK_PACKET_ARP, &get_response);
 #ifdef WITH_IPV6
@@ -651,7 +651,7 @@ static void scan_targets(void)
       }
 
       /* wait for a delay */
-      ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
+      ec_usleep(MILLI2MICRO(EC_GBL_CONF->arp_storm_delay));
 
    }
 
@@ -740,7 +740,7 @@ int scan_save_hosts(char *filename)
       SEMIFATAL_ERROR("Cannot open %s for writing", filename);
 
    /* save the list */
-   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(hl, &EC_GBL_HOSTLIST, next) {
       fprintf(hf, "%s ", ip_addr_ntoa(&hl->ip, tmp));
       fprintf(hf, "%s ", mac_addr_ntoa(hl->mac, tmp));
       if (hl->hostname && *hl->hostname != '\0')
@@ -785,14 +785,14 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
       h->hostname = strdup(name);
 
    /* insert in order (ascending) */
-   LIST_FOREACH(hl, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(hl, &EC_GBL_HOSTLIST, next) {
 
       if (ip_addr_cmp(&h->ip, &hl->ip) == 0) {
          /* the ip was already collected skip it */
          SAFE_FREE(h->hostname);
          SAFE_FREE(h);
          return;
-      } else if (ip_addr_cmp(&hl->ip, &h->ip) < 0 && LIST_NEXT(hl, next) != LIST_END(&GBL_HOSTLIST) )
+      } else if (ip_addr_cmp(&hl->ip, &h->ip) < 0 && LIST_NEXT(hl, next) != LIST_END(&EC_GBL_HOSTLIST) )
          continue;
       else if (ip_addr_cmp(&h->ip, &hl->ip) > 0) {
          LIST_INSERT_AFTER(hl, h, next);
@@ -805,8 +805,8 @@ void add_host(struct ip_addr *ip, u_int8 mac[MEDIA_ADDR_LEN], char *name)
    }
 
    /* the first element */
-   if (LIST_FIRST(&GBL_HOSTLIST) == LIST_END(&GBL_HOSTLIST))
-      LIST_INSERT_HEAD(&GBL_HOSTLIST, h, next);
+   if (LIST_FIRST(&EC_GBL_HOSTLIST) == LIST_END(&EC_GBL_HOSTLIST))
+      LIST_INSERT_HEAD(&EC_GBL_HOSTLIST, h, next);
 
 }
 

@@ -69,9 +69,9 @@ static int find_ip_init(void *dummy)
    (void) dummy;
 
    /* don't show packets while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
       
-   if (LIST_EMPTY(&GBL_HOSTLIST)) {
+   if (LIST_EMPTY(&EC_GBL_HOSTLIST)) {
       INSTANT_USER_MSG("find_ip: You have to build host-list to run this plugin.\n\n"); 
       return PLUGIN_FINISHED;
    }
@@ -79,7 +79,7 @@ static int find_ip_init(void *dummy)
    INSTANT_USER_MSG("find_ip: Searching an unused IP address...\n");
 
    /* If one of the targets is // search in the whole subnet */
-   if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
+   if (EC_GBL_TARGET1->scan_all || EC_GBL_TARGET2->scan_all)
       e = search_netmask();
    else
       e = search_targets();
@@ -108,7 +108,7 @@ static int in_list(struct ip_addr *scanip)
 {
    struct hosts_list *h;
 
-   LIST_FOREACH(h, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(h, &EC_GBL_HOSTLIST, next) {
       if (!ip_addr_cmp(scanip, &h->ip)) {
          return 1;
       }
@@ -124,8 +124,8 @@ static struct ip_addr *search_netmask(void)
    int nhosts, i;
    static struct ip_addr scanip;
 
-   netmask = *GBL_IFACE->netmask.addr32;
-   myip = *GBL_IFACE->ip.addr32;
+   netmask = *EC_GBL_IFACE->netmask.addr32;
+   myip = *EC_GBL_IFACE->ip.addr32;
    
    /* the number of hosts in this netmask */
    nhosts = ntohl(~netmask);
@@ -148,12 +148,12 @@ static struct ip_addr *search_targets(void)
 {
    struct ip_list *i;
   
-   LIST_FOREACH(i, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET1->ips, next) {
       if (!in_list(&i->ip))
          return(&i->ip);
    }
 
-   LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET2->ips, next) {
       if (!in_list(&i->ip))
          return(&i->ip);
    }

@@ -21,11 +21,11 @@
 
 #include <ef.h>
 #include <ef_functions.h>
-#include <ec_version.h>
+#include <ec_libettercap.h>
 
 #include <stdarg.h>
 
-#define GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
+#define EF_GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
 
 /* globals */
 
@@ -33,27 +33,31 @@ extern FILE * yyin;           /* from scanner */
 extern int yyparse (void);    /* from parser */
 
 /* global options */
-struct globals *gbls;
+struct ec_globals *ec_gbls;
+struct ef_globals *ef_gbls;
 
 /*******************************************/
 
 int main(int argc, char *argv[])
 {
    int ret_value = 0;
-   globals_alloc();
+   libettercap_init(PROGRAM, EC_VERSION);
+   ef_globals_alloc();
+   select_text_interface();
+   libettercap_ui_init();
    /* etterfilter copyright */
-   fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
-                      GBL_PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
+   USER_MSG("\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
+                      PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);
  
    /* initialize the line number */
-   GBL->lineno = 1;
+   EF_GBL->lineno = 1;
   
    /* getopt related parsing...  */
    parse_options(argc, argv);
 
    /* set the input for source file */
-   if (GBL_OPTIONS->source_file) {
-      yyin = fopen(GBL_OPTIONS->source_file, "r");
+   if (EF_GBL_OPTIONS->source_file) {
+      yyin = fopen(EF_GBL_OPTIONS->source_file, "r");
       if (yyin == NULL)
          FATAL_ERROR("Input file not found !");
    } else {
@@ -72,26 +76,24 @@ int main(int argc, char *argv[])
    load_constants();
 
    /* print the message */
-   fprintf(stdout, "\n Parsing source file \'%s\' ", GBL_OPTIONS->source_file);
-   fflush(stdout);
+   USER_MSG("\n Parsing source file \'%s\' ", EF_GBL_OPTIONS->source_file);
 
    ef_debug(1, "\n");
 
    /* begin the parsing */
    if (yyparse() == 0)
-      fprintf(stdout, " done.\n\n");
+      USER_MSG(" done.\n\n");
    else
-      fprintf(stdout, "\n\nThe script contains errors...\n\n");
+      USER_MSG("\n\nThe script contains errors...\n\n");
   
    /* write to file */
    ret_value = write_output();
    if (ret_value == -E_NOTHANDLED)
-      FATAL_ERROR("Cannot write output file (%s): the filter is not correctly handled.", GBL_OPTIONS->output_file);
+      FATAL_ERROR("Cannot write output file (%s): the filter is not correctly handled.", EF_GBL_OPTIONS->output_file);
    else if (ret_value == -E_INVALID)
-      FATAL_ERROR("Cannot write output file (%s): the filter format is not correct. ", GBL_OPTIONS->output_file);
+      FATAL_ERROR("Cannot write output file (%s): the filter format is not correct. ", EF_GBL_OPTIONS->output_file);
 
-   globals_free();
-   return 0;
+   ef_exit(0);
 }
 
 
@@ -103,7 +105,7 @@ void ef_debug(u_char level, const char *message, ...)
    va_list ap;
    
    /* if not in debug don't print anything */
-   if (GBL_OPTIONS->debug < level)
+   if (EF_GBL_OPTIONS->debug < level)
       return;
 
    /* print the message */ 
@@ -114,22 +116,29 @@ void ef_debug(u_char level, const char *message, ...)
    
 }
 
-void globals_alloc(void)
+void ef_globals_alloc(void)
 {
 
-   SAFE_CALLOC(gbls, 1, sizeof(struct globals));
+   SAFE_CALLOC(ef_gbls, 1, sizeof(struct ef_globals));
 
    return;
 }
 
-void globals_free(void)
+void ef_globals_free(void)
 {
-   SAFE_FREE(gbls->source_file);
-   SAFE_FREE(gbls->output_file);
-   SAFE_FREE(gbls);
+   SAFE_FREE(ef_gbls->source_file);
+   SAFE_FREE(ef_gbls->output_file);
+   SAFE_FREE(ef_gbls);
 
    return;
 
+}
+
+void ef_exit(int code)
+{
+   libettercap_ui_cleanup();
+   ef_globals_free();
+   exit(code);
 }
 
 /* EOF */

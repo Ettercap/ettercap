@@ -977,6 +977,9 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    GtkWidget *header, *menubutton, *logo, *switcher;
    GtkWidget *layout, *label, *combo1, *combo2, *setting_frame, *grid, *box;
    GtkBuilder *builder;
+   GtkListStore *iface_list;
+   GtkTreeIter iter;
+   GtkCellRenderer *cell1, *cell2;
    gint width, height, left, top;
    gchar *title = NULL;
    char *path = NULL, *markup = NULL;
@@ -1201,12 +1204,23 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    gtk_grid_attach(GTK_GRID(grid), label, 0, 1, 1, 1);
    g_free(markup);
 
-   /* make a drop down box with a list of network interfaces */
-   combo1 = gtk_combo_box_text_new();
-   for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next)
-      gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo1), 
-            dev->name, dev->description);
-   g_signal_connect(G_OBJECT(combo1), "changed", G_CALLBACK(gtkui_set_iface_unified), NULL);
+   /* make a list of network interfaces */
+   iface_list = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+   for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+      gtk_list_store_append(iface_list, &iter);
+      gtk_list_store_set(iface_list, &iter, 
+            0, dev->name, 1, dev->description, -1); 
+   }
+
+   /* make a drop down box for the primary interface and attach the list */
+   combo1 = gtk_combo_box_new();
+   gtk_combo_box_set_model(GTK_COMBO_BOX(combo1), GTK_TREE_MODEL(iface_list));
+   cell1 = gtk_cell_renderer_text_new();
+   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo1), cell1, TRUE);
+   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo1), cell1, 
+         "text", 1, NULL);
+   g_signal_connect(G_OBJECT(combo1), "changed", 
+         G_CALLBACK(gtkui_set_iface_unified), NULL);
    gtk_combo_box_set_active(GTK_COMBO_BOX(combo1), 0);
    gtk_grid_attach(GTK_GRID(grid), combo1, 1, 1, 1, 1);
 
@@ -1253,13 +1267,15 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    gtk_widget_set_halign(label, GTK_ALIGN_START);
    gtk_grid_attach(GTK_GRID(grid), label, 0, 3, 1, 1);
 
-   /* make a drop down box and assign the list to it */
-   combo2 = gtk_combo_box_text_new();
-   /* List of network interfaces */
-   for (dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next)
-      gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo2), 
-            dev->name, dev->description);
-   g_signal_connect(G_OBJECT(combo2), "changed", G_CALLBACK(gtkui_set_iface_bridge), NULL);
+   /* make a drop down box for the bridge interface and assign the list to it */
+   combo2 = gtk_combo_box_new();
+   gtk_combo_box_set_model(GTK_COMBO_BOX(combo2), GTK_TREE_MODEL(iface_list));
+   cell2 = gtk_cell_renderer_text_new();
+   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo2), cell2, TRUE);
+   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo2), cell2, 
+         "text", 1, NULL);
+   g_signal_connect(G_OBJECT(combo2), "changed", 
+         G_CALLBACK(gtkui_set_iface_bridge), NULL);
    gtk_combo_box_set_active(GTK_COMBO_BOX(combo2), 1);
    gtk_grid_attach(GTK_GRID(grid), combo2, 1, 3 , 1, 1);
    gtk_widget_set_sensitive(combo2, FALSE);
@@ -1279,6 +1295,7 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    
    gtk_widget_show_all(GTK_WIDGET(window));
 
+   g_object_unref(iface_list);
    g_object_unref(builder);
    g_free(title);
 
@@ -1441,15 +1458,20 @@ static void write_pcapfile(void)
  */
 static void gtkui_set_iface_unified(GtkComboBox *combo, gpointer data)
 {
+   GtkTreeIter iter;
    gchar *iface;
 
    (void) data;
 
-   iface = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combo));
+   gtk_combo_box_get_active_iter(combo, &iter);
+   gtk_tree_model_get(gtk_combo_box_get_model(combo), &iter, 0, &iface, -1);
+
+   DEBUG_MSG("gtkui_set_iface_unified: set iface '%s'", iface);
 
    SAFE_FREE(GBL_OPTIONS->iface);
    SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
    strncpy(GBL_OPTIONS->iface, iface, IFACE_LEN);
+
 }
 
 /*
@@ -1457,11 +1479,15 @@ static void gtkui_set_iface_unified(GtkComboBox *combo, gpointer data)
  */
 static void gtkui_set_iface_bridge(GtkComboBox *combo, gpointer data)
 {
+   GtkTreeIter iter;
    gchar *iface;
 
    (void) data;
 
-   iface = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combo));
+   gtk_combo_box_get_active_iter(combo, &iter);
+   gtk_tree_model_get(gtk_combo_box_get_model(combo), &iter, 0, &iface, -1);
+
+   DEBUG_MSG("gtkui_set_iface_bridge: set iface '%s'", iface);
 
    SAFE_FREE(GBL_OPTIONS->iface_bridge);
    SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));

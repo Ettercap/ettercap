@@ -11,8 +11,8 @@ set(EF_SRC
   etterfilter/ef_test.c
 )
 
-find_package(BISON)
-find_package(FLEX)
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
 bison_target(EF_PARSER
   etterfilter/ef_grammar.y
   ${CMAKE_CURRENT_BINARY_DIR}/ef_grammar.c

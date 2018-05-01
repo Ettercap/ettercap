@@ -24,6 +24,10 @@ curses (wide character support)" OFF
 
 cmake_dependent_option(ENABLE_GTK "Enable GTK interface" ON
   "NOT LIBRARY_BUILD" OFF)
+
+cmake_dependent_option(ENABLE_DAEMON "Enable Daemon interface" ON
+  "NOT OS_WINDOWS;NOT LIBRARY_BUILD" OFF)
+
 cmake_dependent_option(ENABLE_UTILS "Build Etterlog and Etterfilter" ON
   "NOT LIBRARY_BUILD" OFF)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
@@ -282,6 +286,11 @@ endif()
 # MISCELLANEOUS
 # =============
 
+if(ENABLE_DAEMON)
+  set(HAVE_DAEMON TRUE)
+endif()
+
+# XXX - move to EttercapLibCheck
 if(ENABLE_IPV6)
   set(WITH_IPV6 TRUE)
 endif()

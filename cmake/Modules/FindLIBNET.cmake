@@ -1,127 +1,152 @@
-# Copyright 2013 Ettercap Development Team.
+# Copyright 2013-2018 Ettercap Development Team.
 #
-# Distributed under GPL license.
+# Distributed under the GPL.
 #
+
+find_package(PkgConfig QUIET)
+if(PKG_CONFIG_FOUND)
+  pkg_search_module(PC_LIBNET QUIET IMPORTED_TARGET libnet net)
+elseif(NOT MSVC)
+  find_program(LIBNET_CONFIG libnet-config)
+
+  if(LIBNET_CONFIG)
+    # First, get the include directory.
+    execute_process(COMMAND sh "${LIBNET_CONFIG}" "--cflags"
+      RESULT_VARIABLE LIBNET_CONFIG_RESULT
+      OUTPUT_VARIABLE LIBNET_CONFIG_OUTPUT
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(LIBNET_CONFIG_RESULT EQUAL 0)
+      string(REGEX REPLACE "-I" ""
+        LIBNET_CONFIG_INCLUDE_DIRS
+        ${LIBNET_CONFIG_OUTPUT}
+      )
+    endif()
+
+    # Get all libraries and their library directory.
+    execute_process(COMMAND ${_shell} "${LIBNET_CONFIG}" "--libs"
+      RESULT_VARIABLE LIBNET_CONFIG_RESULT
+      OUTPUT_VARIABLE LIBNET_CONFIG_OUTPUT
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(LIBNET_CONFIG_RESULT EQUAL 0)
+      string(REGEX REPLACE "-l[lL]?[iI]?[bB]?net" ""
+        LIBNET_CONFIG_OUTPUT
+        ${LIBNET_CONFIG_OUTPUT}
+      )
+      separate_arguments(LIBNET_CONFIG_LDFLAGS
+        UNIX_COMMAND
+        ${LIBNET_CONFIG_OUTPUT}
+      )
+    endif()
+
+    # Get preprocessor definitions.
+    execute_process(COMMAND ${_shell} "${LIBNET_CONFIG}" "--defines"
+      RESULT_VARIABLE LIBNET_CONFIG_RESULT
+      OUTPUT_VARIABLE LIBNET_CONFIG_OUTPUT
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(LIBNET_CONFIG_RESULT EQUAL 0)
+      set(LIBNET_CONFIG_DEFINITIONS ${LIBNET_CONFIG_OUTPUT})
+      message(STATUS "LIBNET_CONFIG_DEFINITIONS: ${LIBNET_CONFIG_DEFINITIONS}")
+    endif()
+
+    # Get install prefix.
+    execute_process(COMMAND ${_shell} "${LIBNET_CONFIG}" "--prefix"
+      RESULT_VARIABLE LIBNET_CONFIG_RESULT
+      OUTPUT_VARIABLE LIBNET_CONFIG_OUTPUT
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(LIBNET_CONFIG_RESULT EQUAL 0)
+      list(APPEND CMAKE_FIND_ROOT_PATH ${LIBNET_CONFIG_OUTPUT})
+      set(LIBNET_CONFIG_PREFIX ${LIBNET_CONFIG_OUTPUT})
+    endif()
+
+    # Get version string
+    execute_process(COMMAND ${_shell} "${LIBNET_CONFIG}" "--version"
+      RESULT_VARIABLE LIBNET_CONFIG_RESULT
+      OUTPUT_VARIABLE LIBNET_CONFIG_OUTPUT
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(LIBNET_CONFIG_RESULT EQUAL 0)
+      set(LIBNET_CONFIG_VERSION ${LIBNET_CONFIG_OUTPUT})
+    endif()
+
+  endif()
+endif()
 
 # Look for the header file
-find_path(LIBNET_INCLUDE_DIR NAMES libnet.h PATH_SUFFIXES libnet11)
-mark_as_advanced(LIBNET_INCLUDE_DIR)
+find_path(LIBNET_INCLUDE_DIR
+  DOC "The directory containing libnet.h"
+  NAMES libnet.h
+  PATHS
+    ${PC_LIBNET_INCLUDE_DIRS}
+    ${PC_LIBNET_INCLUDEDIR}
+    ${LIBNET_CONFIG_INCLUDE_DIRS}
+  PATH_SUFFIXES libnet)
 
 #Look for the library
-find_library(LIBNET_LIBRARY NAMES net libnet PATH_SUFFIXES libnet11)
-mark_as_advanced(LIBNET_LIBRARY)
+find_library(LIBNET_LIBRARY
+  DOC "The libnet library"
+  NAMES net libnet libnet-static
+  PATHS ${PC_LIBNET_LIBRARY_DIRS})
 
-# Make sure we've got an include dir.
-if(NOT LIBNET_INCLUDE_DIR)
-  if(LIBNET_FIND_REQUIRED AND NOT LIBNET_FIND_QUIETLY)
-    message(FATAL_ERROR "Could not find LIBNET include directory.")
+if(PC_LIBNET_VERSION)
+  set(LIBNET_VERSION ${PC_LIBNET_VERSION})
+elseif(LIBNET_CONFIG_VERSION)
+  set(LIBNET_VERSION ${LIBNET_CONFIG_VERSION})
+else()
+  if(LIBNET_INCLUDE_DIR)
+  # Get '#define LIBNET_VERSION X.X.X...'
+    file(STRINGS ${LIBNET_INCLUDE_DIR}/libnet.h LIBNET_HEADER_DUMP
+      REGEX "^#[d].*([0-9]+.)"
+    )
+    string(REGEX MATCH "([0-9]+.)([0-9]+[.]*)([0-9]*)"
+      LIBNET_VERSION
+      "${LIBNET_HEADER_DUMP}"
+    )
+    string(REGEX MATCHALL "([0-9]+)" LIBNET_VERLIST ${LIBNET_VERSION})
+    list(GET LIBNET_VERLIST 0 LIBNET_VERSION_MAJOR)
+    list(GET LIBNET_VERLIST 1 LIBNET_VERSION_MINOR)
+    list(GET LIBNET_VERLIST 2 LIBNET_VERSION_PATCH) # unused
   endif()
-  return()
 endif()
 
-if(NOT LIBNET_LIBRARY)
-  if(LIBNET_FIND_REQUIRED AND NOT LIBNET_FIND_QUIETLY)
-    message(FATAL_ERROR "Could not find LIBNET library.")
-  endif()
-  return()
-endif()
-
-#=============================================================
-# _LIBNET_GET_VERSION
-# Internal function to parse the version number in libnet.h
-#   _OUT_version = The full version number
-#   _OUT_version_major = The major version number only
-#   _OUT_version_minor = The minor version number only
-#   _libnet_hdr = Header file to parse
-#=============================================================
-function(_LIBNET_GET_VERSION
-  _OUT_version _OUT_version_major _OUT_version_minor _libnet_hdr)
-  file(READ ${_libnet_hdr} _contents)
-  if(_contents)
-    string(REGEX REPLACE
-      ".*#define LIBNET_VERSION[ \t]+\"([0-9.rc-]+)\".*" "\\1"
-      ${_OUT_version} "${_contents}"
-    )
-
-    if(NOT ${_OUT_version} MATCHES "[0-9.rc-]+")
-      message(FATAL_ERROR "Version parsing failed for LIBNET_VERSION!")
-    endif()
-
-    set(${_OUT_version} ${${_OUT_version}} PARENT_SCOPE)
-
-    string(REGEX REPLACE "^([0-9]+)\\.[0-9]+.*" "\\1"
-      ${_OUT_version_major} "${${_OUT_version}}"
-    )
-
-    string(REGEX REPLACE "^[0-9]+\\.([0-9]+).*" "\\1"
-      ${_OUT_version_minor} "${${_OUT_version}}"
-    )
-
-    if(NOT ${_OUT_version_major} MATCHES "[0-9]+"
-      OR NOT ${_OUT_version_minor} MATCHES "[0-9]+")
-      message(FATAL_ERROR
-"Version parsing failed for detailed LIBNET_VERSION!:
-'${_OUT_version}' '${_OUT_version_major}' '${_OUT_version_minor}'"
-      )
-    endif()
-
-    set(${_OUT_version_major} ${${_OUT_version_major}} PARENT_SCOPE)
-    set(${_OUT_version_minor} ${${_OUT_version_minor}} PARENT_SCOPE)
-
-  else()
-    message(FATAL_ERROR "Include file ${_libnet_hdr} does not exist")
-  endif()
-endfunction()
-
-if(LIBNET_FIND_VERSION)
-  set(LIBNET_FAILED_VERSION_CHECK true)
-  _libnet_get_version(LIBNET_VERSION
-    LIBNET_VERSION_MAJOR LIBNET_VERSION_MINOR ${LIBNET_INCLUDE_DIR}/libnet.h
-  )
-
-  if(LIBNET_FIND_VERSION_EXACT)
-    if(LIBNET_VERSION VERSION_EQUAL LIBNET_FIND_VERSION)
-      set(LIBNET_FAILED_VERSION_CHECK false)
-    endif()
-  else()
-    if(LIBNET_VERSION VERSION_EQUAL   LIBNET_FIND_VERSION OR
-      LIBNET_VERSION VERSION_GREATER LIBNET_FIND_VERSION)
-      set(LIBNET_FAILED_VERSION_CHECK false)
-    endif()
-  endif()
-
-  if(LIBNET_FAILED_VERSION_CHECK)
-    if(LIBNET_FIND_REQUIRED AND NOT LIBNET_FIND_QUIETLY)
-      if(LIBNET_FIND_VERSION_EXACT)
-        message(FATAL_ERROR "LIBNET version check failed.
-Version ${LIBNET_VERSION} was found, \
-version ${LIBNET_FIND_VERSION} is needed exactly."
-        )
-      else()
-      message(FATAL_ERROR "LIBNET version check failed.
-Version ${LIBNET_VERSION} was found, \
-at least version ${LIBNET_FIND_VERSION} is required"
-      )
-      endif()
-    endif()
-
-    # If the version check fails, exit out of the module here
-    return()
-  endif()
-
-endif()
-
-#handle the QUIETLY and REQUIRED arguments and set LIBNET_FOUND to TRUE if
-# all listed variables are TRUE
+# Handle the QUIETLY and REQUIRED arguments and set LIBNET_FOUND to TRUE if
+# all listed variables are TRUE.
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LIBNET
-  DEFAULT_MSG LIBNET_LIBRARY LIBNET_INCLUDE_DIR
+  REQUIRED_VARS
+    LIBNET_LIBRARY
+    LIBNET_INCLUDE_DIR
+  VERSION_VAR LIBNET_VERSION
 )
 
 if(LIBNET_FOUND)
-  set(LIBNET_LIBRARY ${LIBNET_LIBRARY})
-  set(LIBNET_INCLUDE_DIR ${LIBNET_INCLUDE_DIR})
-  set(LIBNET_VERSION ${LIBNET_VERSION})
-  set(LIBNET_VERSION_MAJOR ${LIBNET_VERSION_MAJOR})
-  set(LIBNET_VERSION_MINOR ${LIBNET_VERSION_MINOR})
+  set(LIBNET_INCLUDE_DIRS ${LIBNET_INCLUDE_DIR})
+  set(LIBNET_LIBRARIES ${LIBNET_LIBRARY})
+
+  if(PC_LIBNET_FOUND)
+    set(LIBNET_LDFLAGS ${PC_LIBNET_LDFLAGS})
+    set(LIBNET_DEFINITIONS ${PC_LIBNET_CFLAGS_OTHER})
+  elseif(LIBNET_CONFIG)
+    set(LIBNET_LDFLAGS ${LIBNET_CONFIG_LDFLAGS})
+    set(LIBNET_DEFINITIONS ${LIBNET_CONFIG_DEFINITIONS})
+  endif()
+
+  if(NOT TARGET LIBNET::LIBNET)
+    add_library(LIBNET::LIBNET UNKNOWN IMPORTED)
+    set_target_properties(LIBNET::LIBNET PROPERTIES
+      IMPORTED_LOCATION "${LIBNET_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${LIBNET_INCLUDE_DIR}"
+      INTERFACE_COMPILE_DEFINITIONS "${LIBNET_DEFINITIONS}"
+      INTERFACE_LINK_LIBRARIES "${LIBNET_LDFLAGS}")
+  endif()
 endif()
+
+mark_as_advanced(LIBNET_LIBRARY LIBNET_INCLUDE_DIR)

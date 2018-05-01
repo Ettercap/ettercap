@@ -182,7 +182,7 @@ if(HAVE_PLUGINS)
 
     if(NOT CURL_FOUND)
       message(STATUS "Couldn't find a suitable \
-        system-provided version of Curl")
+system-provided version of Curl")
     endif()
   endif()
 
@@ -278,8 +278,9 @@ if(NOT LIBNET_FOUND)
   message(FATAL_ERROR "Could not find LIBNET!")
 endif()
 
-set(EC_INCLUDE ${EC_INCLUDE} ${LIBNET_INCLUDE_DIR})
-set(EC_LIBS ${EC_LIBS} ${LIBNET_LIBRARY})
+set(EC_INCLUDE ${EC_INCLUDE} ${LIBNET_INCLUDE_DIRS})
+set(EC_LIBS ${EC_LIBS} ${LIBNET_LIBRARIES})
+set(EC_DEFINITIONS ${EC_DEFINITIONS} ${LIBNET_DEFINITIONS})
 
 # end LIBNET
 

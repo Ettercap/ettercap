@@ -7,6 +7,7 @@
 - GTK
     - how to tell find_path() to look in any "lib" directory for glibconfig.h?
     - disable HAVE_GTK3COMPAT related warnings only
+    - move gthread-2.0 libcheck to FindGTK3.cmake
 
 - Curses
     - FindCurses.cmake should look for libformw when CURSES_NEED_WIDE

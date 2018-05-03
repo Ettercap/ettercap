@@ -106,10 +106,12 @@ else()
     file(STRINGS ${LIBNET_INCLUDE_DIR}/libnet.h LIBNET_HEADER_DUMP
       REGEX "^#[d].*([0-9]+.)"
     )
+
     string(REGEX MATCH "([0-9]+.)([0-9]+[.]*)([0-9]*)"
       LIBNET_VERSION
       "${LIBNET_HEADER_DUMP}"
     )
+
     string(REGEX MATCHALL "([0-9]+)" LIBNET_VERLIST ${LIBNET_VERSION})
     list(GET LIBNET_VERLIST 0 LIBNET_VERSION_MAJOR)
     list(GET LIBNET_VERLIST 1 LIBNET_VERSION_MINOR)

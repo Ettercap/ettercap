@@ -19,7 +19,6 @@
 
 find_package(PkgConfig QUIET)
 pkg_search_module(PC_PCRE QUIET IMPORTED_TARGET libpcre)
-# pkg-config --list-all | grep pcre
 
 # Look for the header file
 find_path(PCRE_INCLUDE_DIR pcre.h

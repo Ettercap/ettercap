@@ -79,12 +79,22 @@
 
 - the PTHREAD_MUTEX_RECURSIVE_NP test sucks
 
+- wrong etter.conf is copied when -DENABLE_IPV6 is OFF
+
+- libettercap should also be an Import library so other targets can include it
+
+- merge config.h with ec_lua_config.h
+
 ==================================
   Out of scope TODOs for fix-cmake
 ==================================
 
 - Curses
     - Port curses UI to windows
+
+
+- Daemon
+    - Port Daemon interface UI to windows
 
 - INSTALL_PREFIX
     - It should be possible to relocate ettercap and/or its
@@ -95,4 +105,8 @@
 
 - Plug-ins
     - Port sslstrip plugin to windows
+
+- scandir()'s availability is very inconsistent on Windows.
+  We need a local one that is better than src/missing/scandir.c
+  See https://github.com/tronkko/dirent
 

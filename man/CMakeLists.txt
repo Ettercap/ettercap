@@ -1,22 +1,7 @@
 # Add man page custom target
 if(ENABLE_PDF_DOCS)
-  find_program(GROFF_EXECUTABLE NAMES groff)
-  set(PDF_FILES)
-
-# Check if groff supports PDF generation
-  execute_process(COMMAND ${GROFF_EXECUTABLE} -Tpdf -V
-  RESULT_VARIABLE GROFF_EXIT
-  ERROR_VARIABLE GROFF_ERROR
-  OUTPUT_QUIET)
-
-  if(NOT ${GROFF_EXIT} STREQUAL 0)
-    message(FATAL_ERROR
-"groff (at ${GROFF_EXECUTABLE}) \
-does not seem to support PDF generation (${GROFF_EXIT}).
-groff failed with output:\n${GROFF_ERROR}
-Consider upgrading the groff installation.
-Users of Debian-based distributions must also install the full groff package.")
-  endif()
+  set(GROFF_NEED_PDF TRUE)
+  find_package(GROFF REQUIRED)
 endif()
 
 set(MAN_NAMES ettercap.8 etterfilter.8 etterlog.8 etter.conf.5)

@@ -252,14 +252,8 @@ endif()
 # SUBDIRECTORIES
 # ==============
 
-include(EttercapHeadersCheck)
 include(EttercapLibCheck)
-include(EttercapVariableCheck)
-
-if(ENABLE_LUA)
-  include(EttercapLuajit)
-  set(HAVE_EC_LUA 1)
-endif()
+include(EttercapFeatureCheck)
 
 add_subdirectory(src)
 

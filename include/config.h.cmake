@@ -17,6 +17,7 @@
 #cmakedefine CC_VERSION "@CC_VERSION@"
 
 #cmakedefine HAVE_SYS_SELECT_H
+#cmakedefine HAVE_POLL_H
 #cmakedefine HAVE_SYS_POLL_H
 #cmakedefine HAVE_UTSNAME_H
 #cmakedefine HAVE_STDINT_H
@@ -51,6 +52,7 @@
 #cmakedefine HAVE_GTK
 #cmakedefine HAVE_GTK3
 #cmakedefine HAVE_GTK3COMPAT
+#cmakedefine HAVE_DAEMON
 
 #cmakedefine HAVE_UTF8
 #cmakedefine HAVE_PLUGINS

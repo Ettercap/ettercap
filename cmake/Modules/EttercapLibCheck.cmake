@@ -200,29 +200,6 @@ system-provided version of Curl")
 
 endif()
 
-check_function_exists(poll HAVE_POLL)
-check_function_exists(strtok_r HAVE_STRTOK_R)
-check_function_exists(select HAVE_SELECT)
-check_function_exists(scandir HAVE_SCANDIR)
-
-check_function_exists(strlcat HAVE_STRLCAT_FUNCTION)
-check_function_exists(strlcpy HAVE_STRLCPY_FUNCTION)
-
-if(NOT HAVE_STRLCAT_FUNCTION OR NOT HAVE_STRLCPY_FUNCTION)
-  check_library_exists(bsd strlcat "bsd/string.h" HAVE_STRLCAT)
-  check_library_exists(bsd strlcpy "bsd/string.h" HAVE_STRLCPY)
-  if(HAVE_STRLCAT OR HAVE_STRLCPY)
-    set(EC_LIBS ${EC_LIBS} bsd)
-  endif()
-endif()
-
-check_function_exists(strsep HAVE_STRSEP)
-check_function_exists(strcasestr HAVE_STRCASESTR)
-check_function_exists(memmem HAVE_MEMMEM)
-check_function_exists(memrchr HAVE_MEMRCHR)
-check_function_exists(basename HAVE_BASENAME)
-check_function_exists(strndup HAVE_STRNDUP)
-
 find_library(PCAP_LIBRARIES NAMES pcap wpcap)
 find_path(PCAP_INCLUDE_DIRS pcap.h)
 if(PCAP_LIBRARIES AND PCAP_INCLUDE_DIRS)

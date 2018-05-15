@@ -109,23 +109,23 @@ static void curses_init(void)
     * during this function.
     * we cant wait to return to set the flag...
     */
-   GBL_UI->initialized = 1;
+   EC_GBL_UI->initialized = 1;
 
    DEBUG_MSG("curses_init: screen %dx%d colors: %d", (int)current_screen.cols, (int)current_screen.lines,
                                                      (int)(current_screen.flags & WDG_SCR_HAS_COLORS));
 
    /* initialize the colors */
-   wdg_init_color(EC_COLOR, GBL_CONF->colors.fg, GBL_CONF->colors.bg);
-   wdg_init_color(EC_COLOR_JOIN1, GBL_CONF->colors.join1, GBL_CONF->colors.bg);
-   wdg_init_color(EC_COLOR_JOIN2, GBL_CONF->colors.join2, GBL_CONF->colors.bg);
-   wdg_init_color(EC_COLOR_BORDER, GBL_CONF->colors.border, GBL_CONF->colors.bg);
-   wdg_init_color(EC_COLOR_TITLE, GBL_CONF->colors.title, GBL_CONF->colors.bg);
-   wdg_init_color(EC_COLOR_FOCUS, GBL_CONF->colors.focus, GBL_CONF->colors.bg);
-   wdg_init_color(EC_COLOR_MENU, GBL_CONF->colors.menu_fg, GBL_CONF->colors.menu_bg);
-   wdg_init_color(EC_COLOR_WINDOW, GBL_CONF->colors.window_fg, GBL_CONF->colors.window_bg);
-   wdg_init_color(EC_COLOR_SELECTION, GBL_CONF->colors.selection_fg, GBL_CONF->colors.selection_bg);
-   wdg_init_color(EC_COLOR_ERROR, GBL_CONF->colors.error_fg, GBL_CONF->colors.error_bg);
-   wdg_init_color(EC_COLOR_ERROR_BORDER, GBL_CONF->colors.error_border, GBL_CONF->colors.error_bg);
+   wdg_init_color(EC_COLOR, EC_GBL_CONF->colors.fg, EC_GBL_CONF->colors.bg);
+   wdg_init_color(EC_COLOR_JOIN1, EC_GBL_CONF->colors.join1, EC_GBL_CONF->colors.bg);
+   wdg_init_color(EC_COLOR_JOIN2, EC_GBL_CONF->colors.join2, EC_GBL_CONF->colors.bg);
+   wdg_init_color(EC_COLOR_BORDER, EC_GBL_CONF->colors.border, EC_GBL_CONF->colors.bg);
+   wdg_init_color(EC_COLOR_TITLE, EC_GBL_CONF->colors.title, EC_GBL_CONF->colors.bg);
+   wdg_init_color(EC_COLOR_FOCUS, EC_GBL_CONF->colors.focus, EC_GBL_CONF->colors.bg);
+   wdg_init_color(EC_COLOR_MENU, EC_GBL_CONF->colors.menu_fg, EC_GBL_CONF->colors.menu_bg);
+   wdg_init_color(EC_COLOR_WINDOW, EC_GBL_CONF->colors.window_fg, EC_GBL_CONF->colors.window_bg);
+   wdg_init_color(EC_COLOR_SELECTION, EC_GBL_CONF->colors.selection_fg, EC_GBL_CONF->colors.selection_bg);
+   wdg_init_color(EC_COLOR_ERROR, EC_GBL_CONF->colors.error_fg, EC_GBL_CONF->colors.error_bg);
+   wdg_init_color(EC_COLOR_ERROR_BORDER, EC_GBL_CONF->colors.error_border, EC_GBL_CONF->colors.error_bg);
 
    /* set the screen color */
    wdg_screen_color(EC_COLOR);
@@ -346,7 +346,7 @@ void curses_interface(void)
    DEBUG_MSG("curses_interface");
    
    /* which interface do we have to display ? */
-   if (GBL_OPTIONS->read)
+   if (EC_GBL_OPTIONS->read)
       curses_sniff_offline();
    else
       curses_sniff_live();
@@ -358,23 +358,23 @@ void curses_interface(void)
 
 static void toggle_unoffensive(void)
 {
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       tag_unoff[0] = ' ';
-      GBL_OPTIONS->unoffensive = 0;
+      EC_GBL_OPTIONS->unoffensive = 0;
    } else {
       tag_unoff[0] = '*';
-      GBL_OPTIONS->unoffensive = 1;
+      EC_GBL_OPTIONS->unoffensive = 1;
    }
 }
 
 static void toggle_nopromisc(void)
 {
-   if (GBL_PCAP->promisc) {
+   if (EC_GBL_PCAP->promisc) {
       tag_promisc[0] = ' ';
-      GBL_PCAP->promisc = 0;
+      EC_GBL_PCAP->promisc = 0;
    } else {
       tag_promisc[0] = '*';
-      GBL_PCAP->promisc = 1;
+      EC_GBL_PCAP->promisc = 1;
    }
 }
 
@@ -414,7 +414,7 @@ static void curses_setup(void)
    
    wdg_create_object(&menu, WDG_MENU, WDG_OBJ_WANT_FOCUS | WDG_OBJ_ROOT_OBJECT);
    
-   wdg_set_title(menu, GBL_VERSION, WDG_ALIGN_RIGHT);
+   wdg_set_title(menu, EC_GBL_VERSION, WDG_ALIGN_RIGHT);
    wdg_set_color(menu, WDG_COLOR_SCREEN, EC_COLOR);
    wdg_set_color(menu, WDG_COLOR_WINDOW, EC_COLOR_MENU);
    wdg_set_color(menu, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
@@ -446,12 +446,12 @@ static void curses_setup(void)
    DEBUG_MSG("curses_setup: sysmsg created");
   
    /* initialize the options */
-   if (GBL_OPTIONS->unoffensive)
+   if (EC_GBL_OPTIONS->unoffensive)
       tag_unoff[0] = '*';
    else
       tag_unoff[0] = ' ';
 
-   if (GBL_PCAP->promisc)
+   if (EC_GBL_PCAP->promisc)
       tag_promisc[0] = '*';
    else
       tag_promisc[0] = ' ';
@@ -495,22 +495,22 @@ static void read_pcapfile(const char *path, char *file)
    
    DEBUG_MSG("read_pcapfile %s/%s", path, file);
    
-   SAFE_CALLOC(GBL_OPTIONS->pcapfile_in, strlen(path)+strlen(file)+2, sizeof(char));
+   SAFE_CALLOC(EC_GBL_OPTIONS->pcapfile_in, strlen(path)+strlen(file)+2, sizeof(char));
 
-   snprintf(GBL_OPTIONS->pcapfile_in, strlen(path)+strlen(file)+2, "%s/%s", path, file);
+   snprintf(EC_GBL_OPTIONS->pcapfile_in, strlen(path)+strlen(file)+2, "%s/%s", path, file);
 
    /* check if the file is good */
-   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, pcap_errbuf) != E_SUCCESS) {
+   if (is_pcap_file(EC_GBL_OPTIONS->pcapfile_in, pcap_errbuf) != E_SUCCESS) {
       ui_error("%s", pcap_errbuf);
-      SAFE_FREE(GBL_OPTIONS->pcapfile_in);
+      SAFE_FREE(EC_GBL_OPTIONS->pcapfile_in);
       return;
    }
    
    /* set the options for reading from file */
-   GBL_OPTIONS->silent = 1;
-   GBL_OPTIONS->unoffensive = 1;
-   GBL_OPTIONS->write = 0;
-   GBL_OPTIONS->read = 1;
+   EC_GBL_OPTIONS->silent = 1;
+   EC_GBL_OPTIONS->unoffensive = 1;
+   EC_GBL_OPTIONS->write = 0;
+   EC_GBL_OPTIONS->read = 1;
    
    /* exit the setup interface, and go to the primary one */
    wdg_exit();
@@ -525,9 +525,9 @@ static void curses_file_write(void)
    
    DEBUG_MSG("curses_file_write");
    
-   SAFE_CALLOC(GBL_OPTIONS->pcapfile_out, FILE_LEN, sizeof(char));
+   SAFE_CALLOC(EC_GBL_OPTIONS->pcapfile_out, FILE_LEN, sizeof(char));
 
-   curses_input("Output file :", GBL_OPTIONS->pcapfile_out, FILE_LEN, write_pcapfile);
+   curses_input("Output file :", EC_GBL_OPTIONS->pcapfile_out, FILE_LEN, write_pcapfile);
 }
 
 static void write_pcapfile(void)
@@ -537,20 +537,20 @@ static void write_pcapfile(void)
    DEBUG_MSG("write_pcapfile");
    
    /* check if the file is writeable */
-   f = fopen(GBL_OPTIONS->pcapfile_out, "w");
+   f = fopen(EC_GBL_OPTIONS->pcapfile_out, "w");
    if (f == NULL) {
-      ui_error("Cannot write %s", GBL_OPTIONS->pcapfile_out);
-      SAFE_FREE(GBL_OPTIONS->pcapfile_out);
+      ui_error("Cannot write %s", EC_GBL_OPTIONS->pcapfile_out);
+      SAFE_FREE(EC_GBL_OPTIONS->pcapfile_out);
       return;
    }
  
    /* if ok, delete it */
    fclose(f);
-   unlink(GBL_OPTIONS->pcapfile_out);
+   unlink(EC_GBL_OPTIONS->pcapfile_out);
 
    /* set the options for writing to a file */
-   GBL_OPTIONS->write = 1;
-   GBL_OPTIONS->read = 0;
+   EC_GBL_OPTIONS->write = 1;
+   EC_GBL_OPTIONS->read = 0;
 }
 
 /*
@@ -565,18 +565,18 @@ static void curses_unified_sniff(void)
    DEBUG_MSG("curses_unified_sniff");
   
    /* if the user has not specified an interface, get the first one */
-   if (GBL_OPTIONS->iface == NULL) {
+   if (EC_GBL_OPTIONS->iface == NULL) {
       char *iface;
       
-      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+      SAFE_CALLOC(EC_GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
       iface = pcap_lookupdev(err);
       ON_ERROR(iface, NULL, "pcap_lookupdev: %s", err);
 
-      strncpy(GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
+      strncpy(EC_GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
    }
 
    /* calling wdg_exit will go to the next interface :) */
-   curses_input("Network interface :", GBL_OPTIONS->iface, IFACE_LEN, wdg_exit);
+   curses_input("Network interface :", EC_GBL_OPTIONS->iface, IFACE_LEN, wdg_exit);
 }
 
 /*
@@ -590,18 +590,18 @@ static void curses_bridged_sniff(void)
    DEBUG_MSG("curses_bridged_sniff");
    
    /* if the user has not specified an interface, get the first one */
-   if (GBL_OPTIONS->iface == NULL) {
-      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+   if (EC_GBL_OPTIONS->iface == NULL) {
+      SAFE_CALLOC(EC_GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
    /* if ettercap is started with a non root account pcap_lookupdev(err) == NULL (Fedora bug 783675) */
       if(pcap_lookupdev(err) != NULL)
-         strncpy(GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
+         strncpy(EC_GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
    /* else
 	here we have to gracefully exit, since we don't have any available interface
   */
 	
    }
    
-   SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
+   SAFE_CALLOC(EC_GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
 
    wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
    wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
@@ -609,8 +609,8 @@ static void curses_bridged_sniff(void)
    wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
    wdg_input_size(in, strlen("Second network interface :") + IFACE_LEN, 4);
-   wdg_input_add(in, 1, 1, "First network interface  :", GBL_OPTIONS->iface, IFACE_LEN, 1);
-   wdg_input_add(in, 1, 2, "Second network interface :", GBL_OPTIONS->iface_bridge, IFACE_LEN, 1);
+   wdg_input_add(in, 1, 1, "First network interface  :", EC_GBL_OPTIONS->iface, IFACE_LEN, 1);
+   wdg_input_add(in, 1, 2, "Second network interface :", EC_GBL_OPTIONS->iface_bridge, IFACE_LEN, 1);
    wdg_input_set_callback(in, bridged_sniff);
    
    wdg_draw_object(in);
@@ -634,13 +634,13 @@ static void curses_pcap_filter(void)
    
    DEBUG_MSG("curses_pcap_filter");
    
-   SAFE_CALLOC(GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
+   SAFE_CALLOC(EC_GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
 
    /* 
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   curses_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
+   curses_input("Pcap filter :", EC_GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
 /*
@@ -652,23 +652,23 @@ static void curses_set_netmask(void)
    
    DEBUG_MSG("curses_set_netmask");
   
-   if (GBL_OPTIONS->netmask == NULL)
-      SAFE_CALLOC(GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, sizeof(char));
+   if (EC_GBL_OPTIONS->netmask == NULL)
+      SAFE_CALLOC(EC_GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, sizeof(char));
 
    /* 
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   curses_input("Netmask :", GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
+   curses_input("Netmask :", EC_GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
 
    /* sanity check */
-   if (strcmp(GBL_OPTIONS->netmask, "") && 
-         ip_addr_pton(GBL_OPTIONS->netmask, &net) != E_SUCCESS)
-      ui_error("Invalid netmask %s", GBL_OPTIONS->netmask);
+   if (strcmp(EC_GBL_OPTIONS->netmask, "") && 
+         ip_addr_pton(EC_GBL_OPTIONS->netmask, &net) != E_SUCCESS)
+      ui_error("Invalid netmask %s", EC_GBL_OPTIONS->netmask);
             
    /* if no netmask was specified, free it */
-   if (!strcmp(GBL_OPTIONS->netmask, ""))
-      SAFE_FREE(GBL_OPTIONS->netmask);
+   if (!strcmp(EC_GBL_OPTIONS->netmask, ""))
+      SAFE_FREE(EC_GBL_OPTIONS->netmask);
             
 }
 

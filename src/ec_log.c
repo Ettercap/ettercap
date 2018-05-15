@@ -80,7 +80,7 @@ int set_loglevel(int level, char *filename)
    DEBUG_MSG("set_loglevel(%d, %s)", level, filename); 
 
    /* all the host type will be unknown, warn the user */
-   if (GBL_OPTIONS->read) {
+   if (EC_GBL_OPTIONS->read) {
       USER_MSG("*********************************************************\n");
       USER_MSG("WARNING: while reading form file we cannot determine     \n");
       USER_MSG("if an host is local or not because the ip address of     \n");
@@ -98,7 +98,7 @@ int set_loglevel(int level, char *filename)
    switch(level) {
 
       case LOG_PACKET:
-         if (GBL_OPTIONS->compress) {
+         if (EC_GBL_OPTIONS->compress) {
             fdp.type = LOG_COMPRESSED;
          } else {
             fdp.type = LOG_UNCOMPRESSED;
@@ -117,7 +117,7 @@ int set_loglevel(int level, char *filename)
          /* no break here, loglevel is incremental */
          
       case LOG_INFO:
-         if (GBL_OPTIONS->compress) {
+         if (EC_GBL_OPTIONS->compress) {
             fdi.type = LOG_COMPRESSED;
          } else {
             fdi.type = LOG_UNCOMPRESSED;
@@ -187,7 +187,7 @@ int log_open(struct log_fd *fd, char *filename)
       SEMIFATAL_ERROR("Can't create %s: %s", filename, strerror(errno));
    else
    {
-      if (GBL_OPTIONS->compress)
+      if (EC_GBL_OPTIONS->compress)
       {
          int zerr;
          fd->cfd = gzdopen(fd->fd, "wb9");
@@ -279,7 +279,7 @@ static void log_packet(struct packet_object *po)
     * this is necessary because check_forwarded() is executed
     * in ec_ip.c, but here we are getting even arp packets...
     */
-   EXECUTE(GBL_SNIFF->check_forwarded, po);
+   EXECUTE(EC_GBL_SNIFF->check_forwarded, po);
    if (po->flags & PO_FORWARDED)
       return;
 
@@ -289,13 +289,13 @@ static void log_packet(struct packet_object *po)
     * packets that are before the test in ec_decode.c
     */
    po->flags |= PO_IGNORE;
-   EXECUTE(GBL_SNIFF->interesting, po);
+   EXECUTE(EC_GBL_SNIFF->interesting, po);
    if ( po->flags & PO_IGNORE )
        return;
 
    /* the regex is set, respect it */
-   if (GBL_OPTIONS->regex) {
-      if (regexec(GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) == 0)
+   if (EC_GBL_OPTIONS->regex) {
+      if (regexec(EC_GBL_OPTIONS->regex, (const char*)po->DATA.disp_data, 0, NULL, 0) == 0)
          log_write_packet(&fdp, po);
    } else {
       /* if no regex is set, dump all the packets */
@@ -316,7 +316,7 @@ static void log_info(struct packet_object *po)
     * this is necessary because check_forwarded() is executed
     * in ec_ip.c, but here we are getting even arp packets...
     */
-   EXECUTE(GBL_SNIFF->check_forwarded, po);
+   EXECUTE(EC_GBL_SNIFF->check_forwarded, po);
    if (po->flags & PO_FORWARDED)
       return;
 
@@ -326,7 +326,7 @@ static void log_info(struct packet_object *po)
     * packets that are before the test in ec_decode.c
     */
    po->flags |= PO_IGNORE;
-   EXECUTE(GBL_SNIFF->interesting, po);
+   EXECUTE(EC_GBL_SNIFF->interesting, po);
    if ( po->flags & PO_IGNORE )
        return;
 
@@ -357,7 +357,7 @@ int log_write_header(struct log_fd *fd, int type)
    /* the offset of the first header is equal to the size of this header */
    lh.first_header = htons(sizeof(struct log_global_header));
    
-   strlcpy(lh.version, GBL_VERSION, sizeof(lh.version));
+   strlcpy(lh.version, EC_GBL_VERSION, sizeof(lh.version));
    
    /* creation time of the file */
    gettimeofday(&lh.tv, 0);
@@ -497,7 +497,7 @@ void log_write_info(struct log_fd *fd, struct packet_object *po)
     */
    hi.distance = TTL_PREDICTOR(po->L3.ttl) - po->L3.ttl + 1;
    /* our machine is at distance 0 (special case) */
-   if (!ip_addr_cmp(&po->L3.src, &GBL_IFACE->ip))
+   if (!ip_addr_cmp(&po->L3.src, &EC_GBL_IFACE->ip))
       hi.distance = 0;
 
    /* OS identification */
@@ -682,17 +682,17 @@ int set_msg_loglevel(int level, char *filename)
          /* close the filedesc if already opened */
          set_msg_loglevel(LOG_FALSE, filename);
 
-         GBL_OPTIONS->msg_fd = fopen(filename, FOPEN_WRITE_TEXT);
-         if (GBL_OPTIONS->msg_fd == NULL)
+         EC_GBL_OPTIONS->msg_fd = fopen(filename, FOPEN_WRITE_TEXT);
+         if (EC_GBL_OPTIONS->msg_fd == NULL)
             FATAL_MSG("Cannot open \"%s\" for writing", filename);
 
          break;
          
       case LOG_FALSE:
          /* close the file and set the pointer to NULL */
-         if (GBL_OPTIONS->msg_fd) {
-            fclose(GBL_OPTIONS->msg_fd);
-            GBL_OPTIONS->msg_fd = NULL;
+         if (EC_GBL_OPTIONS->msg_fd) {
+            fclose(EC_GBL_OPTIONS->msg_fd);
+            EC_GBL_OPTIONS->msg_fd = NULL;
          }
          break;
    }

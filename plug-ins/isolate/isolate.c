@@ -76,7 +76,7 @@ static int isolate_init(void *dummy)
    (void) dummy;
 
    /* sanity check */
-   if (LIST_EMPTY(&GBL_TARGET1->ips) && LIST_EMPTY(&GBL_TARGET1->ip6)) {
+   if (LIST_EMPTY(&EC_GBL_TARGET1->ips) && LIST_EMPTY(&EC_GBL_TARGET1->ip6)) {
       INSTANT_USER_MSG("isolate: please specify the TARGET host\n");
       return PLUGIN_FINISHED;
    }
@@ -88,7 +88,7 @@ static int isolate_init(void *dummy)
    hook_add(HOOK_PACKET_ARP_RQ, &parse_arp);
 
    /* spawn a thread to force arp of already cached hosts */
-   LIST_FOREACH(t, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(t, &EC_GBL_TARGET1->ips, next) {
       ec_thread_new("isolate", "Isolate thread", &isolate, t);
    }
    
@@ -135,16 +135,16 @@ static void parse_arp(struct packet_object *po)
     */
    u_char *isolate_mac = po->L2.src;
 
-   LIST_FOREACH(h, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(h, &EC_GBL_TARGET1->ips, next) {
       /* process only arp requests from this host */
       if (!ip_addr_cmp(&h->ip, &po->L3.src)) { 
          int good = 0;
          
          /* is good if target 2 is any or if it is in the target 2 list */
-         if(GBL_TARGET2->all_ip) {
+         if(EC_GBL_TARGET2->all_ip) {
             good = 1;
          } else {
-            LIST_FOREACH(t, &GBL_TARGET2->ips, next) 
+            LIST_FOREACH(t, &EC_GBL_TARGET2->ips, next) 
                if (!ip_addr_cmp(&t->ip, &po->L3.dst)) 
                   good = 1;
          }
@@ -206,11 +206,11 @@ EC_THREAD_FUNC(isolate)
          /* send the fake arp message */
          send_arp(ARPOP_REPLY, &h->ip, h->mac, &t->ip, h->mac);
          
-         ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
+         ec_usleep(MILLI2MICRO(EC_GBL_CONF->arp_storm_delay));
       }
       
       /* sleep between two storms */
-      ec_usleep(SEC2MICRO(GBL_CONF->arp_poison_warm_up * 3));
+      ec_usleep(SEC2MICRO(EC_GBL_CONF->arp_poison_warm_up * 3));
    }
 
    return NULL;

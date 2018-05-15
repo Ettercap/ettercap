@@ -3,10 +3,13 @@
 #include <check.h>
 
 #include <ec.h>
+#include <ec_libettercap.h>
 #include <ec_decode.h>
 #include <ec_proto.h>
 
 /* Yes, this is hack-ish. We can change it later. */
+struct ec_globals *ec_gbls;
+
 
 START_TEST (test_get_decoder_default)
 {
@@ -56,6 +59,7 @@ Suite* ts_test_decode (void) {
 
 int main () {
   int number_failed;
+  libettercap_init("test", "0.0.1");
   Suite *suite = ts_test_decode();
   SRunner *runner = srunner_create(suite);
   srunner_run_all(runner, CK_VERBOSE);

@@ -118,7 +118,7 @@ int inject_buffer(struct packet_object *po)
    int ret = E_SUCCESS;
   
    /* we can't inject in unoffensive mode or in bridge mode */
-   if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read || GBL_OPTIONS->iface_bridge) {
+   if (EC_GBL_OPTIONS->unoffensive || EC_GBL_OPTIONS->read || EC_GBL_OPTIONS->iface_bridge) {
       return -E_INVALID;
    }
    
@@ -126,7 +126,7 @@ int inject_buffer(struct packet_object *po)
    pd = packet_dup(po, PO_DUP_NONE);
 
    /* Allocate memory for the packet (double sized)*/
-   SAFE_CALLOC(pck_buf, 1, (GBL_IFACE->mtu * 2));
+   SAFE_CALLOC(pck_buf, 1, (EC_GBL_IFACE->mtu * 2));
          
    /* Loop until there's data to send */
    do {
@@ -135,7 +135,7 @@ int inject_buffer(struct packet_object *po)
        * Slide to middle. First part is for header's stack'ing.
        * Second part is for packet data. 
        */
-      pd->packet = pck_buf + GBL_IFACE->mtu;
+      pd->packet = pck_buf + EC_GBL_IFACE->mtu;
 
       /* Start the injector cascade */
       injected = inject_protocol(pd);
@@ -168,7 +168,7 @@ void inject_split_data(struct packet_object *po)
 {
    size_t max_len;
    
-   max_len = GBL_IFACE->mtu - (po->L4.header - (po->packet + po->L2.len) + po->L4.len);
+   max_len = EC_GBL_IFACE->mtu - (po->L4.header - (po->packet + po->L2.len) + po->L4.len);
 
    /* the packet has exceeded the MTU */
    if (po->DATA.len > max_len) {

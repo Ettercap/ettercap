@@ -24,80 +24,80 @@
 #include <ec_filter.h>
 #include <ec_plugins.h>
 
-#define GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
+#define EC_GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
 
 
 /* global vars */
 
-struct globals *gbls;
+struct ec_globals *ec_gbls;
 
 /* proto */
 
 /*******************************************/
 
-void globals_alloc(void)
+void ec_globals_alloc(void)
 {
    
-   SAFE_CALLOC(gbls, 1, sizeof(struct globals));
-   SAFE_CALLOC(gbls->conf, 1, sizeof(struct ec_conf)); 
-   SAFE_CALLOC(gbls->options, 1, sizeof(struct ec_options));         
-   SAFE_CALLOC(gbls->stats, 1, sizeof(struct gbl_stats));
-   SAFE_CALLOC(gbls->ui, 1, sizeof(struct ui_ops));
-   SAFE_CALLOC(gbls->env, 1, sizeof(struct program_env)); 
-   SAFE_CALLOC(gbls->pcap, 1, sizeof(struct pcap_env));
-   SAFE_CALLOC(gbls->lnet, 1, sizeof(struct lnet_env)); 
-   SAFE_CALLOC(gbls->iface, 1, sizeof(struct iface_env));
-   SAFE_CALLOC(gbls->bridge, 1, sizeof(struct iface_env));
-   SAFE_CALLOC(gbls->sm, 1, sizeof(struct sniffing_method));
-   SAFE_CALLOC(gbls->t1, 1, sizeof(struct target_env));
-   SAFE_CALLOC(gbls->t2, 1, sizeof(struct target_env));
-   SAFE_CALLOC(gbls->wifi, 1, sizeof(struct wifi_env));
+   SAFE_CALLOC(ec_gbls, 1, sizeof(struct ec_globals));
+   SAFE_CALLOC(ec_gbls->conf, 1, sizeof(struct ec_conf)); 
+   SAFE_CALLOC(ec_gbls->options, 1, sizeof(struct ec_options));         
+   SAFE_CALLOC(ec_gbls->stats, 1, sizeof(struct gbl_stats));
+   SAFE_CALLOC(ec_gbls->ui, 1, sizeof(struct ui_ops));
+   SAFE_CALLOC(ec_gbls->env, 1, sizeof(struct program_env)); 
+   SAFE_CALLOC(ec_gbls->pcap, 1, sizeof(struct pcap_env));
+   SAFE_CALLOC(ec_gbls->lnet, 1, sizeof(struct lnet_env)); 
+   SAFE_CALLOC(ec_gbls->iface, 1, sizeof(struct iface_env));
+   SAFE_CALLOC(ec_gbls->bridge, 1, sizeof(struct iface_env));
+   SAFE_CALLOC(ec_gbls->sm, 1, sizeof(struct sniffing_method));
+   SAFE_CALLOC(ec_gbls->t1, 1, sizeof(struct target_env));
+   SAFE_CALLOC(ec_gbls->t2, 1, sizeof(struct target_env));
+   SAFE_CALLOC(ec_gbls->wifi, 1, sizeof(struct wifi_env));
    /* filter list entries are allocated as needed */
-   gbls->filters = NULL;
+   ec_gbls->filters = NULL;
 
    /* init the structures */
-   TAILQ_INIT(&GBL_PROFILES);
-   LIST_INIT(&GBL_HOSTLIST);
+   TAILQ_INIT(&EC_GBL_PROFILES);
+   LIST_INIT(&EC_GBL_HOSTLIST);
    
    return;
 }
 
 
-void globals_free(void)
+void ec_globals_free(void)
 {
  
-   GBL_FREE(gbls->pcap);
-   GBL_FREE(gbls->lnet);
-   GBL_FREE(gbls->iface);
-   GBL_FREE(gbls->bridge);
-   GBL_FREE(gbls->sm);
-   GBL_FREE(gbls->filters);
+   EC_GBL_FREE(ec_gbls->pcap);
+   EC_GBL_FREE(ec_gbls->lnet);
+   EC_GBL_FREE(ec_gbls->iface);
+   EC_GBL_FREE(ec_gbls->bridge);
+   EC_GBL_FREE(ec_gbls->sm);
+   EC_GBL_FREE(ec_gbls->filters);
 
-   free_ip_list(gbls->t1);
-   GBL_FREE(gbls->t1);
-   free_ip_list(gbls->t2);
-   GBL_FREE(gbls->t2);
+   free_ip_list(ec_gbls->t1);
+   EC_GBL_FREE(ec_gbls->t1);
+   free_ip_list(ec_gbls->t2);
+   EC_GBL_FREE(ec_gbls->t2);
    
-   GBL_FREE(gbls->env->name);
-   GBL_FREE(gbls->env->version);
-   GBL_FREE(gbls->env->debug_file);
-   GBL_FREE(gbls->env);
+   EC_GBL_FREE(ec_gbls->env->name);
+   EC_GBL_FREE(ec_gbls->env->version);
+   EC_GBL_FREE(ec_gbls->env->debug_file);
+   EC_GBL_FREE(ec_gbls->env);
    
-   free_plugin_list(gbls->options->plugins);
-   GBL_FREE(gbls->options->proto);
-   GBL_FREE(gbls->options->pcapfile_in);
-   GBL_FREE(gbls->options->pcapfile_out);
-   GBL_FREE(gbls->options->iface);
-   GBL_FREE(gbls->options->iface_bridge);
-   GBL_FREE(gbls->options->target1);
-   GBL_FREE(gbls->options->target2);
-   GBL_FREE(gbls->stats);
-   GBL_FREE(gbls->options);
-   GBL_FREE(gbls->conf);
+   free_plugin_list(ec_gbls->options->plugins);
+   EC_GBL_FREE(ec_gbls->options->proto);
+   EC_GBL_FREE(ec_gbls->options->pcapfile_in);
+   EC_GBL_FREE(ec_gbls->options->pcapfile_out);
+   EC_GBL_FREE(ec_gbls->options->iface);
+   EC_GBL_FREE(ec_gbls->options->iface_bridge);
+   EC_GBL_FREE(ec_gbls->options->target1);
+   EC_GBL_FREE(ec_gbls->options->target2);
+   EC_GBL_FREE(ec_gbls->stats);
+   EC_GBL_FREE(ec_gbls->options);
+   EC_GBL_FREE(ec_gbls->conf);
    /* destroy the list structure */
    filter_clear();
    
-   GBL_FREE(gbls);
+   EC_GBL_FREE(ec_gbls);
    
    return;
 }

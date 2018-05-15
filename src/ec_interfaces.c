@@ -59,7 +59,7 @@ void select_curses_interface(void)
    
    set_curses_interface();
 #else
-   FATAL_ERROR("Curses support not compiled in %s", GBL_PROGRAM);
+   FATAL_ERROR("Curses support not compiled in %s", EC_GBL_PROGRAM);
 #endif
    
 }
@@ -70,7 +70,7 @@ void select_gtk_interface(void)
 #if defined HAVE_GTK || defined HAVE_GTK3 || defined HAVE_GTK3COMPAT
    set_gtk_interface();
 #else
-   FATAL_ERROR("GTK support is not compiled in %s", GBL_PROGRAM);
+   FATAL_ERROR("GTK support is not compiled in %s", EC_GBL_PROGRAM);
 #endif
 }
 

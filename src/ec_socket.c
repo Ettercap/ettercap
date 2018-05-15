@@ -72,7 +72,7 @@ int open_socket(const char *host, u_int16 port)
    struct addrinfo hints;
    int sh, ret, err = 0;
 #define TSLEEP (50*1000) /* 50 milliseconds */
-   int loops = (GBL_CONF->connect_timeout * 10e5) / TSLEEP;
+   int loops = (EC_GBL_CONF->connect_timeout * 10e5) / TSLEEP;
    char service[5+1];
 
    DEBUG_MSG("open_socket -- [%s]:[%d]", host, port);

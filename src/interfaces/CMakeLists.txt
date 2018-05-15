@@ -92,20 +92,27 @@ if(ENABLE_GTK)
 endif()
 
 
-add_library(ec_interfaces STATIC ../ec_interfaces.c
+add_library(ec_interfaces SHARED ../ec_interfaces.c
 ${EC_TEXT_SRC} ${EC_DAEMON_SRC} ${EC_WDG_SRC} ${EC_CURSES_SRC} ${EC_GTK_SRC})
-set_target_properties(ec_interfaces PROPERTIES
-  ENABLE_EXPORTS On
-  COMPILE_FLAGS -fPIC
-  OUTPUT_NAME ec_interfaces
-  )
+
+set_target_properties(ec_interfaces
+  PROPERTIES
+    ENABLE_EXPORTS ON
+    POSITION_INDEPENDENT_CODE ON
+    OUTPUT_NAME ettercap-ui
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 0
+)
+
 target_include_directories(ec_interfaces
   PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/curses
-  ${CMAKE_CURRENT_SOURCE_DIR}/curses/widgets
-  ${CMAKE_CURRENT_SOURCE_DIR}/daemon
-  ${CMAKE_CURRENT_SOURCE_DIR}/gtk
-  ${CMAKE_CURRENT_SOURCE_DIR}/gtk3
-  ${CMAKE_CURRENT_SOURCE_DIR}/text
-  ${EC_UI_INCLUDE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/curses
+    ${CMAKE_CURRENT_SOURCE_DIR}/curses/widgets
+    ${CMAKE_CURRENT_SOURCE_DIR}/daemon
+    ${CMAKE_CURRENT_SOURCE_DIR}/gtk
+    ${CMAKE_CURRENT_SOURCE_DIR}/gtk3
+    ${CMAKE_CURRENT_SOURCE_DIR}/text
+    ${EC_UI_INCLUDE}
 )
+target_link_libraries(ec_interfaces ${EC_UI_LIBS} ${EC_LIBS})
+install(TARGETS ec_interfaces DESTINATION ${INSTALL_LIBDIR})

@@ -39,10 +39,10 @@ static char *logfile;
 
 void toggle_compress(void)
 {
-   if (GBL_OPTIONS->compress) {
-      GBL_OPTIONS->compress = 0;
+   if (EC_GBL_OPTIONS->compress) {
+      EC_GBL_OPTIONS->compress = 0;
    } else {
-      GBL_OPTIONS->compress = 1;
+      EC_GBL_OPTIONS->compress = 1;
    }
 }
 

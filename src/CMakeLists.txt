@@ -24,6 +24,7 @@ set(EC_SRC
   ec_hook.c
   ec_inet.c
   ec_inject.c
+  ec_libettercap.c
   ec_log.c
   ec_manuf.c
   ec_mitm.c
@@ -195,7 +196,7 @@ endif()
 
 add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
-target_link_libraries(lib_ettercap ${EC_LIBS})
+target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
 target_include_directories(lib_ettercap
   PRIVATE
   ${EC_INCLUDE}
@@ -208,7 +209,7 @@ target_compile_definitions(lib_ettercap
 if(NOT LIBRARY_BUILD)
   add_subdirectory(interfaces)
   add_executable(ettercap ec_parser.c ec_main.c)
-  target_link_libraries(ettercap ec_interfaces lib_ettercap ${EC_UI_LIBS})
+  target_link_libraries(ettercap lib_ettercap ${EC_LIBS})
   if(NOT DISABLE_RPATH)
     set_target_properties(ettercap PROPERTIES
     INSTALL_RPATH ${INSTALL_LIBDIR})
@@ -236,9 +237,9 @@ set_target_properties(lib_ettercap PROPERTIES
   ENABLE_EXPORTS On
   #  LINK_INTERFACE_LIBRARIES ""
   OUTPUT_NAME ettercap
-  VERSION 0.0.0
+  VERSION ${PROJECT_VERSION}
   SOVERSION 0
-  )
+)
 
 install(TARGETS lib_ettercap DESTINATION ${INSTALL_LIBDIR})
 if(NOT LIBRARY_BUILD)

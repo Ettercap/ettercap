@@ -106,7 +106,7 @@ static int stp_mangler_init(void *dummy)
    (void) dummy;
 
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("stp_mangler: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }
@@ -157,16 +157,16 @@ EC_THREAD_FUNC(mangler)
    /* Create a fake STP packet */
    heth->proto = htons(0x0026);
    memcpy(heth->dha, MultiMAC, ETH_ADDR_LEN);
-   memcpy(heth->sha, GBL_IFACE->mac, ETH_ADDR_LEN);
+   memcpy(heth->sha, EC_GBL_IFACE->mac, ETH_ADDR_LEN);
 
    hllc->dsap = 0x42;
    hllc->ssap = 0x42;
    hllc->cf   = 0x03;
    
    hstp->root_priority = 0;
-   memcpy(hstp->root_id, GBL_IFACE->mac, ETH_ADDR_LEN);
+   memcpy(hstp->root_id, EC_GBL_IFACE->mac, ETH_ADDR_LEN);
    hstp->bridge_priority = 0;
-   memcpy(hstp->bridge_id, GBL_IFACE->mac, ETH_ADDR_LEN);
+   memcpy(hstp->bridge_id, EC_GBL_IFACE->mac, ETH_ADDR_LEN);
    hstp->port_id = htons(0x8000);
    hstp->max_age = htons_inv(20);
    hstp->hello_time = htons_inv(2);

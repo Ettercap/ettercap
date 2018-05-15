@@ -73,7 +73,7 @@ EC_THREAD_FUNC(top_half)
     * we don't want profiles in memory.
     * remove the hooks and return
     */
-   if (!GBL_CONF->store_profiles) {
+   if (!EC_GBL_CONF->store_profiles) {
       DEBUG_MSG("top_half: profile collection disabled");
       hook_del(HOOK_PACKET_ARP, &profile_parse);
       hook_del(HOOK_PACKET_ICMP, &profile_parse);
@@ -99,7 +99,7 @@ EC_THREAD_FUNC(top_half)
       }
   
       /* start the counter for the TopHalf */
-      stats_half_start(&GBL_STATS->th);
+      stats_half_start(&EC_GBL_STATS->th);
        
       /* remove the packet form the queue */
       STAILQ_REMOVE_HEAD(&po_queue, e, next);
@@ -122,7 +122,7 @@ EC_THREAD_FUNC(top_half)
       if (e->po->flags & PO_EOF) {
          DEBUG_MSG("End of dump file...");
          USER_MSG("\nEnd of dump file...\n");
-         if ((GBL_UI->type == UI_TEXT || GBL_UI->type == UI_DAEMONIZE) && GBL_CONF->close_on_eof)
+         if ((EC_GBL_UI->type == UI_TEXT || EC_GBL_UI->type == UI_DAEMONIZE) && EC_GBL_CONF->close_on_eof)
             clean_exit(0);
          else {
             SAFE_FREE(e);
@@ -142,7 +142,7 @@ EC_THREAD_FUNC(top_half)
       SAFE_FREE(e);
       
       /* start the counter for the TopHalf */
-      stats_half_end(&GBL_STATS->th, pck_len);
+      stats_half_end(&EC_GBL_STATS->th, pck_len);
    } 
 
    return NULL;

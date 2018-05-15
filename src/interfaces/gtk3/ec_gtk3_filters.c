@@ -71,7 +71,7 @@ void gtkui_load_filter(GSimpleAction *action, GVariant *value, gpointer data)
        * load the filters chain.
        * errors are spawned by the function itself
        */
-      filter_load_file(filename, GBL_FILTERS, 1);
+      filter_load_file(filename, EC_GBL_FILTERS, 1);
 
       g_free(filename);
    }
@@ -89,7 +89,7 @@ void gtkui_stop_filter(GSimpleAction *action, GVariant *value, gpointer data)
 
    DEBUG_MSG("gtk_stop_filter");
 
-   filter_unload(GBL_FILTERS);
+   filter_unload(EC_GBL_FILTERS);
    
    gtkui_message("Filters were unloaded");
 }

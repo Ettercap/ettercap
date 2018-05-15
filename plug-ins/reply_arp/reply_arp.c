@@ -65,7 +65,7 @@ static int reply_arp_init(void *dummy)
    (void) dummy;
 
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("reply_arp: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }
@@ -97,17 +97,17 @@ static void parse_arp(struct packet_object *po)
    struct ip_list *i;
    int in_list = 0;
 
-   if (GBL_TARGET1->scan_all || GBL_TARGET2->scan_all)
+   if (EC_GBL_TARGET1->scan_all || EC_GBL_TARGET2->scan_all)
       in_list = 1;
       
-   LIST_FOREACH(i, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET1->ips, next) {
       if (!ip_addr_cmp(&i->ip, &po->L3.dst)) {
          in_list = 1;
          break;
       }
    }
 
-   LIST_FOREACH(i, &GBL_TARGET2->ips, next) {
+   LIST_FOREACH(i, &EC_GBL_TARGET2->ips, next) {
       if (!ip_addr_cmp(&i->ip, &po->L3.dst)) {
          in_list = 1;
          break;
@@ -115,7 +115,7 @@ static void parse_arp(struct packet_object *po)
    }
    
    if (in_list)
-      send_arp(ARPOP_REPLY, &po->L3.dst, GBL_IFACE->mac, &po->L3.src, po->L2.src);
+      send_arp(ARPOP_REPLY, &po->L3.dst, EC_GBL_IFACE->mac, &po->L3.src, po->L2.src);
 }
 
 /* EOF */

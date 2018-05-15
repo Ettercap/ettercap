@@ -41,35 +41,35 @@
 /* set functions */
 void set_mitm(char *mitm) 
 {
-	GBL_OPTIONS->mitm = 1;
+	EC_GBL_OPTIONS->mitm = 1;
 	if(mitm_set(mitm) != E_SUCCESS)
 		FATAL_ERROR("MiTM method '%s' not supported...\n", mitm);
 }
 
 void set_onlymitm(void)
 {
-	GBL_OPTIONS->only_mitm = 1;
+	EC_GBL_OPTIONS->only_mitm = 1;
 }
 
 void set_broadcast(void)
 {
-	GBL_OPTIONS->broadcast = 1;
+	EC_GBL_OPTIONS->broadcast = 1;
 }
 
 void set_iface_bridge(char *iface)
 {
-	GBL_OPTIONS->iface_bridge = strdup(iface);
+	EC_GBL_OPTIONS->iface_bridge = strdup(iface);
 	set_bridge_sniff();
 }
 
 void set_promisc(void)
 {
-	GBL_PCAP->promisc = 0;
+	EC_GBL_PCAP->promisc = 0;
 }
 
 void set_reversed(void)
 {
-	GBL_OPTIONS->reversed = 1;
+	EC_GBL_OPTIONS->reversed = 1;
 }
 
 void set_plugin(char *name)
@@ -84,59 +84,59 @@ void set_plugin(char *name)
     SAFE_CALLOC(plugin, 1, sizeof(struct plugin_list));
     plugin->name = strdup(name);
     plugin->exists = true;
-    LIST_INSERT_HEAD(&GBL_OPTIONS->plugins, plugin, next);
+    LIST_INSERT_HEAD(&EC_GBL_OPTIONS->plugins, plugin, next);
 
 }
 
 void set_proto(char *proto)
 {
-	GBL_OPTIONS->proto = strdup(proto);
+	EC_GBL_OPTIONS->proto = strdup(proto);
 }
 
 void set_iface(char *iface)
 {
-	GBL_OPTIONS->iface = strdup(iface);
+	EC_GBL_OPTIONS->iface = strdup(iface);
 }
 
 void set_lifaces(void)
 {
 #ifndef JUST_LIBRARY
-	GBL_OPTIONS->lifaces = 1;
+	EC_GBL_OPTIONS->lifaces = 1;
 #endif
 }
 
 void set_secondary(char *iface)
 {
-	GBL_OPTIONS->secondary = parse_iflist(iface);
+	EC_GBL_OPTIONS->secondary = parse_iflist(iface);
 }
 
 void set_netmask(char *netmask)
 {
-	GBL_OPTIONS->netmask = strdup(netmask);
+	EC_GBL_OPTIONS->netmask = strdup(netmask);
 }
 
 void set_address(char *address)
 {
-	GBL_OPTIONS->address = strdup(address);
+	EC_GBL_OPTIONS->address = strdup(address);
 }
 
 void set_read_pcap(char *pcap_file)
 {
 	/* we don't want to scan th eLAN while reading from file */
-	GBL_OPTIONS->silent = 1;
-	GBL_OPTIONS->read = 1;
-	GBL_OPTIONS->pcapfile_in = strdup(pcap_file);
+	EC_GBL_OPTIONS->silent = 1;
+	EC_GBL_OPTIONS->read = 1;
+	EC_GBL_OPTIONS->pcapfile_in = strdup(pcap_file);
 }
 
 void set_write_pcap(char *pcap_file)
 {
-	GBL_OPTIONS->write = 1;
-	GBL_OPTIONS->pcapfile_out = strdup(pcap_file);
+	EC_GBL_OPTIONS->write = 1;
+	EC_GBL_OPTIONS->pcapfile_out = strdup(pcap_file);
 }
 
 void set_pcap_filter(char *filter)
 {
-	GBL_PCAP->filter = strdup(filter);
+	EC_GBL_PCAP->filter = strdup(filter);
 }
 
 void set_filter(char *end, const char *filter)
@@ -147,7 +147,7 @@ void set_filter(char *end, const char *filter)
 		f_enabled = !( *(end-1) == '0' );
 	}	
 	
-	if (filter_load_file(filter, GBL_FILTERS, f_enabled) != E_SUCCESS)
+	if (filter_load_file(filter, EC_GBL_FILTERS, f_enabled) != E_SUCCESS)
 		FATAL_ERROR("Cannot load filter file \"%s\"", filter);
 }
 
@@ -172,7 +172,7 @@ void set_loglevel_true(char *arg)
 
 void set_compress(void)
 {
-	GBL_OPTIONS->compress = 1;
+	EC_GBL_OPTIONS->compress = 1;
 }
 
 void opt_set_regex(char *regex)
@@ -183,59 +183,59 @@ void opt_set_regex(char *regex)
 
 void set_superquiet()
 {
-	GBL_OPTIONS->superquiet = 1;
+	EC_GBL_OPTIONS->superquiet = 1;
 }
 
 void set_quiet(void)
 {
-	GBL_OPTIONS->quiet = 1;
+	EC_GBL_OPTIONS->quiet = 1;
 }
 
 void set_script(char *script)
 {
-	GBL_OPTIONS->script = strdup(script);
+	EC_GBL_OPTIONS->script = strdup(script);
 }
 
 void set_silent(void)
 {
-	GBL_OPTIONS->silent = 1;
+	EC_GBL_OPTIONS->silent = 1;
 }
 
 #ifdef WITH_IPV6
 void set_ip6scan(void)
 {
-	GBL_OPTIONS->ip6scan = 1;
+	EC_GBL_OPTIONS->ip6scan = 1;
 }
 #endif
 
 void set_unoffensive(void)
 {
-	GBL_OPTIONS->unoffensive = 1;
+	EC_GBL_OPTIONS->unoffensive = 1;
 }
 
 void disable_sslmitm(void)
 {
-	GBL_OPTIONS->ssl_mitm = 0;
+	EC_GBL_OPTIONS->ssl_mitm = 0;
 }
 
 void set_resolve(void)
 {
-	GBL_OPTIONS->resolve = 1;
+	EC_GBL_OPTIONS->resolve = 1;
    resolv_thread_init();
    atexit(resolv_thread_fini);
 }
 
 void set_load_hosts(char *file)
 {
-	GBL_OPTIONS->silent = 1;
-	GBL_OPTIONS->load_hosts = 1;
-	GBL_OPTIONS->hostsfile = strdup(file);
+	EC_GBL_OPTIONS->silent = 1;
+	EC_GBL_OPTIONS->load_hosts = 1;
+	EC_GBL_OPTIONS->hostsfile = strdup(file);
 }
 
 void set_save_hosts(char *file)
 {
-	GBL_OPTIONS->save_hosts = 1;
-	GBL_OPTIONS->hostsfile = strdup(file);
+	EC_GBL_OPTIONS->save_hosts = 1;
+	EC_GBL_OPTIONS->hostsfile = strdup(file);
 }
 
 void opt_set_format(char *format)
@@ -246,7 +246,7 @@ void opt_set_format(char *format)
 
 void set_ext_headers(void)
 {
-	GBL_OPTIONS->ext_headers = 1;
+	EC_GBL_OPTIONS->ext_headers = 1;
 }
 
 void set_wifi_key(char *key)
@@ -256,17 +256,17 @@ void set_wifi_key(char *key)
 
 void set_conf_file(char *file)
 {
-	GBL_CONF->file = strdup(file);
+	EC_GBL_CONF->file = strdup(file);
 }
 
 void set_ssl_cert(char *cert)
 {
-	GBL_OPTIONS->ssl_cert = strdup(cert);
+	EC_GBL_OPTIONS->ssl_cert = strdup(cert);
 }
 
 void set_ssl_key(char *key)
 {
-	GBL_OPTIONS->ssl_pkey = strdup(key);
+	EC_GBL_OPTIONS->ssl_pkey = strdup(key);
 }
 
 #ifdef HAVE_EC_LUA
@@ -283,12 +283,12 @@ void set_lua_script(char *script)
 
 void set_target_target1(char *target1)
 {
-	GBL_OPTIONS->target1 = strdup(target1);
+	EC_GBL_OPTIONS->target1 = strdup(target1);
 }
 
 void set_target_target2(char *target2)
 {
-	GBL_OPTIONS->target2 = strdup(target2);
+	EC_GBL_OPTIONS->target2 = strdup(target2);
 }
 
 /* EOF */

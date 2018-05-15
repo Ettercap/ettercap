@@ -68,7 +68,7 @@ FUNC_DECODER(decode_eapol)
    (void) DECODE_DATALEN;
    
    /* analyze these only if we have a wpa key */
-   if (GBL_WIFI->wifi_schema != WIFI_WPA)
+   if (EC_GBL_WIFI->wifi_schema != WIFI_WPA)
       return NULL;
 
    /* get the EAPOL packet */
@@ -176,7 +176,7 @@ FUNC_DECODER(decode_eapol)
          DEBUG_MSG("WPA SNonce : %s", str_tohex(sa.SNonce, WPA_NONCE_LEN, tmp, sizeof(tmp)));
 
          /* derive the PTK from the BSSID, STA MAC, PMK (WPA-PSK), SNonce, ANonce */
-         wpa_generate_PTK(bssid, sta, GBL_WIFI->wkey, sa.SNonce, sa.ANonce, (sa.algo == WPA_KEY_TKIP) ? 512 : 384, sa.ptk);
+         wpa_generate_PTK(bssid, sta, EC_GBL_WIFI->wkey, sa.SNonce, sa.ANonce, (sa.algo == WPA_KEY_TKIP) ? 512 : 384, sa.ptk);
 
          DEBUG_MSG("WPA PTK : %s", str_tohex(sa.ptk, WPA_PTK_LEN, tmp, sizeof(tmp)));
 

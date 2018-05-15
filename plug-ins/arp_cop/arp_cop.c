@@ -118,7 +118,7 @@ static void parse_arp(struct packet_object *po)
          LIST_FOREACH(h2, &arp_cop_table, next) {
             if (!memcmp(po->L2.src, h2->mac, MEDIA_ADDR_LEN)) {
                /* don't report my own poisoning */
-               if (ip_addr_cmp(&h2->ip, &GBL_IFACE->ip))
+               if (ip_addr_cmp(&h2->ip, &EC_GBL_IFACE->ip))
                   USER_MSG("arp_cop: (WARNING) %s[%s] pretends to be %s[%s]\n", ip_addr_ntoa(&h2->ip, tmp1), 
                                                                              mac_addr_ntoa(h2->mac, str1), 
                                                                              ip_addr_ntoa(&h1->ip, tmp2),
@@ -164,7 +164,7 @@ static void arp_init_list()
       return;
       
    /* Fill the arp_cop_table with the initial host list */
-   LIST_FOREACH(h1, &GBL_HOSTLIST, next) {
+   LIST_FOREACH(h1, &EC_GBL_HOSTLIST, next) {
       SAFE_CALLOC(h2, 1, sizeof(struct hosts_list));
       memcpy(&h2->ip, &h1->ip, sizeof(struct ip_addr));
       memcpy(h2->mac, h1->mac, MEDIA_ADDR_LEN);
@@ -173,8 +173,8 @@ static void arp_init_list()
    
    /* Add our IP address */
    SAFE_CALLOC(h2, 1, sizeof(struct hosts_list));
-   memcpy(&h2->ip, &GBL_IFACE->ip, sizeof(struct ip_addr));
-   memcpy(h2->mac, GBL_IFACE->mac, MEDIA_ADDR_LEN);
+   memcpy(&h2->ip, &EC_GBL_IFACE->ip, sizeof(struct ip_addr));
+   memcpy(h2->mac, EC_GBL_IFACE->mac, MEDIA_ADDR_LEN);
    LIST_INSERT_HEAD(&arp_cop_table, h2, next);
 }
 

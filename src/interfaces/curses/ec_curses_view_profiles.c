@@ -169,7 +169,7 @@ static void curses_profile_detail(void *profile)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Hostname     : %s \n", h->hostname);
       
 #ifdef HAVE_GEOIP
-   if (GBL_CONF->geoip_support_enable)
+   if (EC_GBL_CONF->geoip_support_enable)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Location     : %s \n", geoip_country_by_ip(&h->L3_addr));
 #endif
 

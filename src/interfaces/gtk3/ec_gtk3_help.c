@@ -70,12 +70,12 @@ void gtkui_help(GSimpleAction *action, GVariant *value, gpointer data)
    DEBUG_MSG("gtkui_help");
 
    header = gtk_header_bar_new();
-   gtk_header_bar_set_title(GTK_HEADER_BAR(header), EC_PROGRAM " Help");
+   gtk_header_bar_set_title(GTK_HEADER_BAR(header), PROGRAM " Help");
    gtk_header_bar_set_decoration_layout(GTK_HEADER_BAR(header), ":close");
    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header), TRUE);
 
    dialog = gtk_dialog_new();
-   gtk_window_set_title(GTK_WINDOW(dialog), EC_PROGRAM " Help");
+   gtk_window_set_title(GTK_WINDOW(dialog), PROGRAM " Help");
    gtk_window_set_titlebar(GTK_WINDOW(dialog), header);
    gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
    gtk_window_set_default_size(GTK_WINDOW (dialog), 780, 580);

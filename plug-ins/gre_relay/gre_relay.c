@@ -124,13 +124,13 @@ static int gre_relay_init(void *dummy)
    (void) dummy;
 
    /* It doesn't work if unoffensive */
-   if (GBL_OPTIONS->unoffensive) {
+   if (EC_GBL_OPTIONS->unoffensive) {
       INSTANT_USER_MSG("gre_relay: plugin doesn't work in UNOFFENSIVE mode\n");
       return PLUGIN_FINISHED;
    }
 
    /* don't display messages while operating */
-   GBL_OPTIONS->quiet = 1;
+   EC_GBL_OPTIONS->quiet = 1;
 
    memset(tmp, 0, sizeof(tmp));
    
@@ -221,7 +221,7 @@ static void parse_gre(struct packet_object *po)
 static void parse_arp(struct packet_object *po)
 {
    if (!ip_addr_cmp(&fake_ip, &po->L3.dst))
-      send_arp(ARPOP_REPLY, &fake_ip, GBL_IFACE->mac, &po->L3.src, po->L2.src);
+      send_arp(ARPOP_REPLY, &fake_ip, EC_GBL_IFACE->mac, &po->L3.src, po->L2.src);
 }
 
 #ifdef WITH_IPV6
@@ -235,7 +235,7 @@ static void parse_nd(struct packet_object *po)
    ip_addr_init(&target, AF_INET6, (u_char*)nsol->target);
 
    if (!ip_addr_cmp(&fake_ip, &target))
-      send_L2_icmp6_nadv(&fake_ip, &po->L3.src, GBL_IFACE->mac, 0, po->L2.src);
+      send_L2_icmp6_nadv(&fake_ip, &po->L3.src, EC_GBL_IFACE->mac, 0, po->L2.src);
 }
 #endif
 

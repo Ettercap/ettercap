@@ -205,7 +205,7 @@ static gboolean refresh_profiles(gpointer data)
    model = GTK_TREE_MODEL(ls_profiles);
    gotiter = gtk_tree_model_get_iter_first(model, &iter);
 
-   TAILQ_FOREACH(hcurr, &GBL_PROFILES, next) {
+   TAILQ_FOREACH(hcurr, &EC_GBL_PROFILES, next) {
       /* see if the item is already in our list */
       gotiter = gtk_tree_model_get_iter_first(model, &iter);
       while(gotiter) {
@@ -269,7 +269,7 @@ static gboolean refresh_profiles(gpointer data)
                           4, hcurr, -1);
 
 #ifdef HAVE_GEOIP
-      if (GBL_CONF->geoip_support_enable)
+      if (EC_GBL_CONF->geoip_support_enable)
          gtk_list_store_set(ls_profiles, &iter, 
                3, geoip_country_by_ip(&hcurr->L3_addr), -1);
 #endif
@@ -358,7 +358,7 @@ static void gtkui_profile_detail(void)
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
    gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
 
-   if (GBL_OPTIONS->resolve) {
+   if (EC_GBL_OPTIONS->resolve) {
       row++;
       label = gtk_label_new("Hostname:");
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
@@ -386,7 +386,7 @@ static void gtkui_profile_detail(void)
    }
 
 #ifdef HAVE_GEOIP
-   if (GBL_CONF->geoip_support_enable) {
+   if (EC_GBL_CONF->geoip_support_enable) {
       row++;
       label = gtk_label_new("Location:");
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0);

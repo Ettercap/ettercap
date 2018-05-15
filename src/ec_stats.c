@@ -31,21 +31,21 @@
 unsigned long stats_queue_add(void)
 {
    /* increment the counter */
-   GBL_STATS->queue_curr++;
+   EC_GBL_STATS->queue_curr++;
    
    /* check if the max has to be updated */
-   if (GBL_STATS->queue_curr > GBL_STATS->queue_max)
-      GBL_STATS->queue_max = GBL_STATS->queue_curr;
+   if (EC_GBL_STATS->queue_curr > EC_GBL_STATS->queue_max)
+      EC_GBL_STATS->queue_max = EC_GBL_STATS->queue_curr;
 
-   return GBL_STATS->queue_curr;
+   return EC_GBL_STATS->queue_curr;
 }
 
 unsigned long stats_queue_del(void)
 {
    /* decrement the current counter */
-   GBL_STATS->queue_curr--;
+   EC_GBL_STATS->queue_curr--;
 
-   return GBL_STATS->queue_curr;
+   return EC_GBL_STATS->queue_curr;
 }
 
 /*
@@ -86,11 +86,11 @@ void stats_half_end(struct half_stats *hs, u_int len)
    hs->pck_size += len;
    hs->tmp_size += len;
    
-   if ( (hs->pck_recv % GBL_CONF->sampling_rate) == 0 ) {
+   if ( (hs->pck_recv % EC_GBL_CONF->sampling_rate) == 0 ) {
       /* save the average and the worst sampling */
       hs->rate_adv = hs->pck_recv/ttime;
-      if (hs->rate_worst > GBL_CONF->sampling_rate/ptime || hs->rate_worst == 0)
-         hs->rate_worst = GBL_CONF->sampling_rate/ptime;
+      if (hs->rate_worst > EC_GBL_CONF->sampling_rate/ptime || hs->rate_worst == 0)
+         hs->rate_worst = EC_GBL_CONF->sampling_rate/ptime;
       
       hs->thru_adv = hs->pck_size/ttime;
       if (hs->thru_worst > hs->tmp_size/ptime || hs->thru_worst == 0)
@@ -122,27 +122,27 @@ void stats_wipe(void)
    DEBUG_MSG("stats_wipe");
 
    /* wipe top and botto half statistics */
-   memset(&GBL_STATS->bh, 0, sizeof(struct half_stats));
-   memset(&GBL_STATS->th, 0, sizeof(struct half_stats));
+   memset(&EC_GBL_STATS->bh, 0, sizeof(struct half_stats));
+   memset(&EC_GBL_STATS->th, 0, sizeof(struct half_stats));
 
    /* now the global stats */
-   pcap_stats(GBL_IFACE->pcap, &ps);
+   pcap_stats(EC_GBL_IFACE->pcap, &ps);
 
    /* XXX - fix this with libpcap 0.8.2 */
 #ifndef OS_LINUX
-   GBL_STATS->ps_recv_delta += ps.ps_recv;
-   GBL_STATS->ps_drop_delta += ps.ps_drop;
-   GBL_STATS->ps_sent_delta += GBL_STATS->ps_sent;
-   GBL_STATS->bs_sent_delta += GBL_STATS->bs_sent;
+   EC_GBL_STATS->ps_recv_delta += ps.ps_recv;
+   EC_GBL_STATS->ps_drop_delta += ps.ps_drop;
+   EC_GBL_STATS->ps_sent_delta += EC_GBL_STATS->ps_sent;
+   EC_GBL_STATS->bs_sent_delta += EC_GBL_STATS->bs_sent;
 #endif
    
-   GBL_STATS->ps_recv = 0;
-   GBL_STATS->ps_drop = 0;
-   GBL_STATS->ps_ifdrop = 0;
-   GBL_STATS->ps_sent = 0;
-   GBL_STATS->bs_sent = 0;
-   GBL_STATS->queue_max = 0;
-   GBL_STATS->queue_curr = 0;
+   EC_GBL_STATS->ps_recv = 0;
+   EC_GBL_STATS->ps_drop = 0;
+   EC_GBL_STATS->ps_ifdrop = 0;
+   EC_GBL_STATS->ps_sent = 0;
+   EC_GBL_STATS->bs_sent = 0;
+   EC_GBL_STATS->queue_max = 0;
+   EC_GBL_STATS->queue_curr = 0;
 }
 
 /*
@@ -158,17 +158,17 @@ void stats_update(void)
     * statistics are available only in live capture
     * no statistics are stored in savefiles
     */
-   pcap_stats(GBL_IFACE->pcap, &ps);
+   pcap_stats(EC_GBL_IFACE->pcap, &ps);
    /* get the statistics for Layer 3 since we forward packets here */
-   libnet_stats(GBL_LNET->lnet_IP4, &ls);
+   libnet_stats(EC_GBL_LNET->lnet_IP4, &ls);
       
    /* on systems other than linux, the counter is not reset */ 
-   GBL_STATS->ps_recv = ps.ps_recv - GBL_STATS->ps_recv_delta;
-   GBL_STATS->ps_drop = ps.ps_drop - GBL_STATS->ps_drop_delta;
+   EC_GBL_STATS->ps_recv = ps.ps_recv - EC_GBL_STATS->ps_recv_delta;
+   EC_GBL_STATS->ps_drop = ps.ps_drop - EC_GBL_STATS->ps_drop_delta;
 
    /* from libnet */
-   GBL_STATS->ps_sent = ls.packets_sent - GBL_STATS->ps_sent_delta;
-   GBL_STATS->bs_sent = ls.bytes_written - GBL_STATS->bs_sent_delta;
+   EC_GBL_STATS->ps_sent = ls.packets_sent - EC_GBL_STATS->ps_sent_delta;
+   EC_GBL_STATS->bs_sent = ls.bytes_written - EC_GBL_STATS->bs_sent_delta;
 }
 
 /* EOF */

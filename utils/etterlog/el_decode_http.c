@@ -129,7 +129,7 @@ FUNC_EXTRACTOR(extractor_http)
          memset(header, 0, sizeof(header));
          stream_read(STREAM, header, 10, ret2->side);
          printf("header: [%s]\n", header);
-         exit(0);
+         el_exit(0);
 #endif    
          
          //continue;

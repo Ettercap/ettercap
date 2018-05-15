@@ -181,6 +181,12 @@ set(CMAKE_INCLUDE_CURRENT_DIR 1)
 # Order the include directories so that directories which are in the source or
 # build tree always come before directories outside the project.
 set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE 1)
+if(OS_DARWIN)
+set(CMAKE_EXE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-Wl" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS "-Wl" CACHE STRING "" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS "-undefined dynamic_lookup" CACHE STRING "" FORCE)
+endif()
 
 if(NOT OS_DARWIN AND NOT OS_WINDOWS)
   set(FIND_LIBRARY_USE_LIB32_PATHS 1)

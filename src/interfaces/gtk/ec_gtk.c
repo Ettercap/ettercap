@@ -280,7 +280,7 @@ static void gtkui_init(void)
    /* remove the keyboard shortcuts for the setup menus */
    gtk_window_remove_accel_group(GTK_WINDOW (window), accel_group);
 
-   GBL_UI->initialized = 1;
+   EC_GBL_UI->initialized = 1;
 }
 
 /*
@@ -393,7 +393,7 @@ void gtkui_about(void)
    /* General page */
    vbox = gtkui_box_new(GTK_ORIENTATION_VERTICAL, 10, FALSE);
 
-   path = INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE_SMALL;
+   path = INSTALL_DATADIR "/" PROGRAM "/" LOGO_FILE_SMALL;
    if(g_file_test(path, G_FILE_TEST_EXISTS))
       logo = gtk_image_new_from_file(path);
    else /* if neither path is valid gtk will use a broken image icon */
@@ -403,7 +403,7 @@ void gtkui_about(void)
    label = gtk_label_new("");
    gtk_label_set_markup(GTK_LABEL(label), 
          "<span size=\"xx-large\" weight=\"bold\">" 
-         EC_PROGRAM " " EC_VERSION 
+         PROGRAM " " EC_VERSION 
          "</span>");
    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
@@ -426,7 +426,7 @@ void gtkui_about(void)
       error = NULL;
 
       /* 2nd try */
-      g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/AUTHORS",
+      g_file_get_contents(INSTALL_DATADIR "/" PROGRAM "/AUTHORS",
             &authors, &length, &error);
       if (error != NULL) {
          DEBUG_MSG("failed to load authors file: %s", error->message);
@@ -460,7 +460,7 @@ void gtkui_about(void)
       error = NULL;
 
       /* 2nd try */
-      g_file_get_contents(INSTALL_DATADIR "/" EC_PROGRAM "/LICENSE",
+      g_file_get_contents(INSTALL_DATADIR "/" PROGRAM "/LICENSE",
             &license, &length, &error);
 #ifndef OS_WINDOWS
       if (error != NULL) {
@@ -563,7 +563,7 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
 {
    GtkWidget *dialog, *entry, *label, *hbox, *image, *content_area;
 
-   dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
+   dialog = gtk_dialog_new_with_buttons(PROGRAM" Input", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, 
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
                                         GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -624,7 +624,7 @@ static void gtkui_progress(char *title, int value, int max)
    /* the first time, create the object */
    if (progress_bar == NULL) {
       progress_dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-      gtk_window_set_title(GTK_WINDOW (progress_dialog), EC_PROGRAM);
+      gtk_window_set_title(GTK_WINDOW (progress_dialog), PROGRAM);
       gtk_window_set_modal(GTK_WINDOW (progress_dialog), TRUE);
       gtk_window_set_transient_for(GTK_WINDOW(progress_dialog), GTK_WINDOW(window));
       gtk_window_set_position(GTK_WINDOW(progress_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
@@ -715,7 +715,7 @@ void gtkui_start(void)
    idle_flush = g_timeout_add(500, gtkui_flush_msg, NULL);
    
    /* which interface do we have to display ? */
-   if (GBL_OPTIONS->read)
+   if (EC_GBL_OPTIONS->read)
       gtkui_sniff_offline();
    else
       gtkui_sniff_live();
@@ -728,19 +728,19 @@ void gtkui_start(void)
 
 static void toggle_unoffensive(void)
 {
-   if (GBL_OPTIONS->unoffensive) {
-      GBL_OPTIONS->unoffensive = 0;
+   if (EC_GBL_OPTIONS->unoffensive) {
+      EC_GBL_OPTIONS->unoffensive = 0;
    } else {
-      GBL_OPTIONS->unoffensive = 1;
+      EC_GBL_OPTIONS->unoffensive = 1;
    }
 }
 
 static void toggle_nopromisc(void)
 {
-   if (GBL_PCAP->promisc) {
-      GBL_PCAP->promisc = 0;
+   if (EC_GBL_PCAP->promisc) {
+      EC_GBL_PCAP->promisc = 0;
    } else {
-      GBL_PCAP->promisc = 1;
+      EC_GBL_PCAP->promisc = 1;
    }
 }
 
@@ -911,7 +911,7 @@ static void gtkui_setup(void)
 
    /* create menu window */
    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-   gtk_window_set_title(GTK_WINDOW (window), EC_PROGRAM" "EC_VERSION);
+   gtk_window_set_title(GTK_WINDOW (window), PROGRAM" "EC_VERSION);
    gtk_window_set_default_size(GTK_WINDOW (window), width, height);
 
    /* set window icon */
@@ -968,16 +968,16 @@ static void gtkui_setup(void)
    gtk_box_pack_start(GTK_BOX(vbox), main_menu, FALSE, FALSE, 0);
    gtk_widget_show(main_menu);
 
-   if(GBL_PCAP->promisc) {
+   if(EC_GBL_PCAP->promisc) {
       /* setting the menu item active will toggle this setting */
       /* it will be TRUE after the menu is updated */
-      GBL_PCAP->promisc = 0;
+      EC_GBL_PCAP->promisc = 0;
       action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/OptionsMenu/Promisc");
       gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
 
-   if(GBL_OPTIONS->unoffensive) {
-      GBL_OPTIONS->unoffensive = 0;
+   if(EC_GBL_OPTIONS->unoffensive) {
+      EC_GBL_OPTIONS->unoffensive = 0;
       action = gtk_ui_manager_get_action(menu_manager, "/MenuBar/OptionsMenu/Unoffensive");
       gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), TRUE);
    }
@@ -994,7 +994,7 @@ static void gtkui_setup(void)
    gtk_paned_pack1(GTK_PANED(vpaned), notebook_frame, TRUE, TRUE);
    gtk_widget_show(notebook_frame);
 
-   path = INSTALL_DATADIR "/" EC_PROGRAM "/" LOGO_FILE;
+   path = INSTALL_DATADIR "/" PROGRAM "/" LOGO_FILE;
    if(g_file_test(path, G_FILE_TEST_EXISTS))
       logo = gtk_image_new_from_file(path);
    else /* if neither path is valid gtk will use a broken image icon */
@@ -1075,22 +1075,22 @@ static void read_pcapfile(gchar *file)
    
    DEBUG_MSG("read_pcapfile %s", file);
    
-   SAFE_CALLOC(GBL_OPTIONS->pcapfile_in, strlen(file)+1, sizeof(char));
+   SAFE_CALLOC(EC_GBL_OPTIONS->pcapfile_in, strlen(file)+1, sizeof(char));
 
-   snprintf(GBL_OPTIONS->pcapfile_in, strlen(file)+1, "%s", file);
+   snprintf(EC_GBL_OPTIONS->pcapfile_in, strlen(file)+1, "%s", file);
 
    /* check if the file is good */
-   if (is_pcap_file(GBL_OPTIONS->pcapfile_in, pcap_errbuf) != E_SUCCESS) {
+   if (is_pcap_file(EC_GBL_OPTIONS->pcapfile_in, pcap_errbuf) != E_SUCCESS) {
       ui_error("%s", pcap_errbuf);
-      SAFE_FREE(GBL_OPTIONS->pcapfile_in);
+      SAFE_FREE(EC_GBL_OPTIONS->pcapfile_in);
       return;
    }
    
    /* set the options for reading from file */
-   GBL_OPTIONS->silent = 1;
-   GBL_OPTIONS->unoffensive = 1;
-   GBL_OPTIONS->write = 0;
-   GBL_OPTIONS->read = 1;
+   EC_GBL_OPTIONS->silent = 1;
+   EC_GBL_OPTIONS->unoffensive = 1;
+   EC_GBL_OPTIONS->write = 0;
+   EC_GBL_OPTIONS->read = 1;
 
    gtk_main_quit();
 }
@@ -1127,7 +1127,7 @@ static void gtkui_file_write(void)
          twice and not after the if() block */
       gtk_widget_destroy (dialog);
 
-      GBL_OPTIONS->pcapfile_out = filename;
+      EC_GBL_OPTIONS->pcapfile_out = filename;
       write_pcapfile();
    } else {
       gtk_widget_destroy (dialog);
@@ -1141,20 +1141,20 @@ static void write_pcapfile(void)
    DEBUG_MSG("write_pcapfile");
    
    /* check if the file is writeable */
-   f = fopen(GBL_OPTIONS->pcapfile_out, "w");
+   f = fopen(EC_GBL_OPTIONS->pcapfile_out, "w");
    if (f == NULL) {
-      ui_error("Cannot write %s", GBL_OPTIONS->pcapfile_out);
-      g_free(GBL_OPTIONS->pcapfile_out);
+      ui_error("Cannot write %s", EC_GBL_OPTIONS->pcapfile_out);
+      g_free(EC_GBL_OPTIONS->pcapfile_out);
       return;
    }
  
    /* if ok, delete it */
    fclose(f);
-   unlink(GBL_OPTIONS->pcapfile_out);
+   unlink(EC_GBL_OPTIONS->pcapfile_out);
 
    /* set the options for writing to a file */
-   GBL_OPTIONS->write = 1;
-   GBL_OPTIONS->read = 0;
+   EC_GBL_OPTIONS->write = 1;
+   EC_GBL_OPTIONS->read = 0;
 }
 
 /*
@@ -1174,7 +1174,7 @@ static void gtkui_unified_sniff(void)
 
    DEBUG_MSG("gtk_unified_sniff");
 
-   dialog = gtk_dialog_new_with_buttons(EC_PROGRAM" Input", GTK_WINDOW (window),
+   dialog = gtk_dialog_new_with_buttons(PROGRAM" Input", GTK_WINDOW (window),
                                         GTK_DIALOG_MODAL, 
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
                                         GTK_STOCK_OK, GTK_RESPONSE_OK,
@@ -1200,7 +1200,7 @@ static void gtkui_unified_sniff(void)
 
    /* make a list of network interfaces */
    iface_list = gtk_list_store_new(1, G_TYPE_STRING);
-   for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+   for(dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
       gtk_list_store_append(iface_list, &iter);
       gtk_list_store_set(iface_list, &iter, 0, dev->description, -1);
    }
@@ -1234,19 +1234,19 @@ static void gtkui_unified_sniff(void)
       model = gtk_combo_box_get_model(GTK_COMBO_BOX(iface_combo));
       gtk_tree_model_get(model, &iter, 0, &iface_desc, -1);
 
-      for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+      for(dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
             
-            SAFE_FREE(GBL_OPTIONS->iface);
-            SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+            SAFE_FREE(EC_GBL_OPTIONS->iface);
+            SAFE_CALLOC(EC_GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
 
-            strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
+            strncpy(EC_GBL_OPTIONS->iface, dev->name, IFACE_LEN);
             break;
          }
       }
 
       /* if no match in list */
-      if(GBL_OPTIONS->iface == NULL) {
+      if(EC_GBL_OPTIONS->iface == NULL) {
          snprintf(err, 100, "Invalid interface: %s", iface_desc);
          gtkui_error(err);
          gtk_widget_destroy(dialog);
@@ -1271,14 +1271,14 @@ static void gtkui_unified_sniff_default(void)
    DEBUG_MSG("gtkui_unified_sniff_default");
 
    /* the ec_capture will find the interface for us */
-   if (GBL_OPTIONS->iface == NULL) {
+   if (EC_GBL_OPTIONS->iface == NULL) {
       char *iface;
 
-      SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+      SAFE_CALLOC(EC_GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
       iface = pcap_lookupdev(err);
       ON_ERROR(iface, NULL, "pcap_lookupdev: %s", err);
    
-      strncpy(GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
+      strncpy(EC_GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
    }
 
    /* close setup interface and start sniffing */
@@ -1346,7 +1346,7 @@ static void gtkui_bridged_sniff(void)
 
    /* make a list of network interfaces */
    iface_list = gtk_list_store_new(1, G_TYPE_STRING);
-   for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+   for(dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
       gtk_list_store_append(iface_list, &iter);
       gtk_list_store_set(iface_list, &iter, 0, dev->description, -1);
    }
@@ -1386,19 +1386,19 @@ static void gtkui_bridged_sniff(void)
       gtk_combo_box_get_active_iter(GTK_COMBO_BOX(combo1), &iter);
       model = gtk_combo_box_get_model(GTK_COMBO_BOX(combo1));
       gtk_tree_model_get(model, &iter, 0, &iface_desc, -1);
-      for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+      for(dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
             
-            SAFE_FREE(GBL_OPTIONS->iface);
-            SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+            SAFE_FREE(EC_GBL_OPTIONS->iface);
+            SAFE_CALLOC(EC_GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
 
-            strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
+            strncpy(EC_GBL_OPTIONS->iface, dev->name, IFACE_LEN);
             break;                      
          }                              
       }
 
       /* if no match in list */
-      if(GBL_OPTIONS->iface == NULL) {
+      if(EC_GBL_OPTIONS->iface == NULL) {
          snprintf(err, 100, "Invalid interface: %s", iface_desc);
          gtkui_error(err);
          gtk_widget_destroy(dialog);
@@ -1409,19 +1409,19 @@ static void gtkui_bridged_sniff(void)
       model = gtk_combo_box_get_model(GTK_COMBO_BOX(combo2));
       gtk_tree_model_get(model, &iter, 0, &iface_desc, -1);
 
-      for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
+      for(dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
                
-            SAFE_FREE(GBL_OPTIONS->iface_bridge);
-            SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
+            SAFE_FREE(EC_GBL_OPTIONS->iface_bridge);
+            SAFE_CALLOC(EC_GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
 
-            strncpy(GBL_OPTIONS->iface_bridge, dev->name, IFACE_LEN);
+            strncpy(EC_GBL_OPTIONS->iface_bridge, dev->name, IFACE_LEN);
             break;
          }
       }
 
       /* if no match in list */
-      if(GBL_OPTIONS->iface_bridge == NULL) {
+      if(EC_GBL_OPTIONS->iface_bridge == NULL) {
          snprintf(err, 100, "Invalid interface: %s", iface_desc);
          gtkui_error(err);
          gtk_widget_destroy(dialog);
@@ -1451,14 +1451,14 @@ static void gtkui_pcap_filter(void)
    
    DEBUG_MSG("gtk_pcap_filter");
    
-   if (GBL_PCAP->filter == NULL)
-       SAFE_CALLOC(GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
+   if (EC_GBL_PCAP->filter == NULL)
+       SAFE_CALLOC(EC_GBL_PCAP->filter, PCAP_FILTER_LEN, sizeof(char));
 
    /* 
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   gtkui_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
+   gtkui_input("Pcap filter :", EC_GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
 }
 
 /*
@@ -1470,23 +1470,23 @@ static void gtkui_set_netmask(void)
    
    DEBUG_MSG("gtkui_set_netmask");
   
-   if (GBL_OPTIONS->netmask == NULL)
-      SAFE_CALLOC(GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, sizeof(char));
+   if (EC_GBL_OPTIONS->netmask == NULL)
+      SAFE_CALLOC(EC_GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, sizeof(char));
 
    /* 
     * no callback, the filter is set but we have to return to
     * the interface for other user input
     */
-   gtkui_input("Netmask :", GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
+   gtkui_input("Netmask :", EC_GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
 
    /* sanity check */
-   if (strcmp(GBL_OPTIONS->netmask, "") && 
-         ip_addr_pton(GBL_OPTIONS->netmask, &net) != E_SUCCESS)
-      ui_error("Invalid netmask %s", GBL_OPTIONS->netmask);
+   if (strcmp(EC_GBL_OPTIONS->netmask, "") && 
+         ip_addr_pton(EC_GBL_OPTIONS->netmask, &net) != E_SUCCESS)
+      ui_error("Invalid netmask %s", EC_GBL_OPTIONS->netmask);
             
    /* if no netmask was specified, free it */
-   if (!strcmp(GBL_OPTIONS->netmask, ""))
-      SAFE_FREE(GBL_OPTIONS->netmask);
+   if (!strcmp(EC_GBL_OPTIONS->netmask, ""))
+      SAFE_FREE(EC_GBL_OPTIONS->netmask);
 }
 
 

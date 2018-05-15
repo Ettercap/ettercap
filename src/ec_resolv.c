@@ -116,7 +116,7 @@ int host_iptoa(struct ip_addr *ip, char *name)
     * the passive engine might have intercepted some
     * request. it is resolution for free... ;)
     */
-   if (!GBL_OPTIONS->resolve)
+   if (!EC_GBL_OPTIONS->resolve)
       return -E_NOTFOUND;
   
    DEBUG_MSG("host_iptoa() %s not in cache", ip_addr_ntoa(ip, tmp));

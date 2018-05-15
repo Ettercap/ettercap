@@ -66,12 +66,12 @@ struct wdg_menu menu_targets[] = { {"Targets",          'T',       "",    NULL},
 
 static void toggle_reverse(void)
 {
-   if (GBL_OPTIONS->reversed) {
+   if (EC_GBL_OPTIONS->reversed) {
       tag_reverse[0] = ' ';
-      GBL_OPTIONS->reversed = 0;
+      EC_GBL_OPTIONS->reversed = 0;
    } else {
       tag_reverse[0] = '*';
-      GBL_OPTIONS->reversed = 1;
+      EC_GBL_OPTIONS->reversed = 1;
    }
 }
 
@@ -82,8 +82,8 @@ static void wipe_targets(void)
 {
    DEBUG_MSG("wipe_targets");
    
-   reset_display_filter(GBL_TARGET1);
-   reset_display_filter(GBL_TARGET2);
+   reset_display_filter(EC_GBL_TARGET1);
+   reset_display_filter(EC_GBL_TARGET2);
 
    /* display the message */
    curses_message("TARGETS were reset to ANY/ANY/ANY");
@@ -101,21 +101,21 @@ static void curses_select_protocol(void)
    DEBUG_MSG("curses_select_protocol");
 
    /* this will contain 'all', 'tcp' or 'udp' */
-   if (!GBL_OPTIONS->proto) {
-      SAFE_CALLOC(GBL_OPTIONS->proto, 4, sizeof(char));
-      strncpy(GBL_OPTIONS->proto, "all", 3);
+   if (!EC_GBL_OPTIONS->proto) {
+      SAFE_CALLOC(EC_GBL_OPTIONS->proto, 4, sizeof(char));
+      strncpy(EC_GBL_OPTIONS->proto, "all", 3);
    }
 
-   curses_input("Protocol :", GBL_OPTIONS->proto, 3, set_protocol);
+   curses_input("Protocol :", EC_GBL_OPTIONS->proto, 3, set_protocol);
 }
 
 static void set_protocol(void)
 {
-   if (strcasecmp(GBL_OPTIONS->proto, "all") &&
-       strcasecmp(GBL_OPTIONS->proto, "tcp") &&
-       strcasecmp(GBL_OPTIONS->proto, "udp")) {
+   if (strcasecmp(EC_GBL_OPTIONS->proto, "all") &&
+       strcasecmp(EC_GBL_OPTIONS->proto, "tcp") &&
+       strcasecmp(EC_GBL_OPTIONS->proto, "udp")) {
       ui_error("Invalid protocol");
-      SAFE_FREE(GBL_OPTIONS->proto);
+      SAFE_FREE(EC_GBL_OPTIONS->proto);
    }
 }
 
@@ -133,8 +133,8 @@ static void curses_select_targets(void)
    DEBUG_MSG("curses_select_target1");
 
    /* make sure we have enough space */
-   SAFE_REALLOC(GBL_OPTIONS->target1, TARGET_LEN * sizeof(char));
-   SAFE_REALLOC(GBL_OPTIONS->target2, TARGET_LEN * sizeof(char));
+   SAFE_REALLOC(EC_GBL_OPTIONS->target1, TARGET_LEN * sizeof(char));
+   SAFE_REALLOC(EC_GBL_OPTIONS->target2, TARGET_LEN * sizeof(char));
    
    wdg_create_object(&in, WDG_INPUT, WDG_OBJ_WANT_FOCUS | WDG_OBJ_FOCUS_MODAL);
    wdg_set_color(in, WDG_COLOR_SCREEN, EC_COLOR);
@@ -142,8 +142,8 @@ static void curses_select_targets(void)
    wdg_set_color(in, WDG_COLOR_FOCUS, EC_COLOR_FOCUS);
    wdg_set_color(in, WDG_COLOR_TITLE, EC_COLOR_MENU);
    wdg_input_size(in, strlen("TARGET1 :") + TARGET_LEN, 4);
-   wdg_input_add(in, 1, 1, "TARGET1 :", GBL_OPTIONS->target1, TARGET_LEN, 1);
-   wdg_input_add(in, 1, 2, "TARGET2 :", GBL_OPTIONS->target2, TARGET_LEN, 1);
+   wdg_input_add(in, 1, 1, "TARGET1 :", EC_GBL_OPTIONS->target1, TARGET_LEN, 1);
+   wdg_input_add(in, 1, 2, "TARGET2 :", EC_GBL_OPTIONS->target2, TARGET_LEN, 1);
    wdg_input_set_callback(in, set_targets);
    
    wdg_draw_object(in);
@@ -157,16 +157,16 @@ static void curses_select_targets(void)
 static void set_targets(void)
 {
    /* delete the previous filters */
-   reset_display_filter(GBL_TARGET1);
-   reset_display_filter(GBL_TARGET2);
+   reset_display_filter(EC_GBL_TARGET1);
+   reset_display_filter(EC_GBL_TARGET2);
 
    /* free empty filters */
-   if (!strcmp(GBL_OPTIONS->target1, ""))
-      SAFE_FREE(GBL_OPTIONS->target1);
+   if (!strcmp(EC_GBL_OPTIONS->target1, ""))
+      SAFE_FREE(EC_GBL_OPTIONS->target1);
    
    /* free empty filters */
-   if (!strcmp(GBL_OPTIONS->target2, ""))
-      SAFE_FREE(GBL_OPTIONS->target2);
+   if (!strcmp(EC_GBL_OPTIONS->target2, ""))
+      SAFE_FREE(EC_GBL_OPTIONS->target2);
    
    /* compile the filters */
    compile_display_filter();
@@ -284,7 +284,7 @@ static void curses_create_targets_array(void)
     */
 
    /* walk TARGET 1 */
-   LIST_FOREACH(il, &GBL_TARGET1->ips, next) {
+   LIST_FOREACH(il, &EC_GBL_TARGET1->ips, next) {
       /* enlarge the array */ 
       SAFE_REALLOC(wdg_t1_elm, (nhosts + 1) * sizeof(struct wdg_list));
 
@@ -298,7 +298,7 @@ static void curses_create_targets_array(void)
       nhosts++;
    }
    /* same for IPv6 targets */
-   LIST_FOREACH(il, &GBL_TARGET1->ip6, next) {
+   LIST_FOREACH(il, &EC_GBL_TARGET1->ip6, next) {
       /* enlarge the array */ 
       SAFE_REALLOC(wdg_t1_elm, (nhosts + 1) * sizeof(struct wdg_list));
 
@@ -318,7 +318,7 @@ static void curses_create_targets_array(void)
    
    nhosts = 0;
    /* walk TARGET 2 */
-   LIST_FOREACH(il, &GBL_TARGET2->ips, next) {
+   LIST_FOREACH(il, &EC_GBL_TARGET2->ips, next) {
       /* enlarge the array */ 
       SAFE_REALLOC(wdg_t2_elm, (nhosts + 1) * sizeof(struct wdg_list));
 
@@ -332,7 +332,7 @@ static void curses_create_targets_array(void)
       nhosts++;
    }
 
-   LIST_FOREACH(il, &GBL_TARGET2->ip6, next) {
+   LIST_FOREACH(il, &EC_GBL_TARGET2->ip6, next) {
       /* enlarge the array */ 
       SAFE_REALLOC(wdg_t2_elm, (nhosts + 1) * sizeof(struct wdg_list));
 
@@ -365,7 +365,7 @@ static void curses_delete_target1(void *host)
    il = (struct ip_list *)host;
 
    /* remove the host from the list */
-   del_ip_list(&il->ip, GBL_TARGET1);
+   del_ip_list(&il->ip, EC_GBL_TARGET1);
 
    /* redraw the window */
    curses_current_targets();
@@ -381,7 +381,7 @@ static void curses_delete_target2(void *host)
    il = (struct ip_list *)host;
 
    /* remove the host from the list */
-   del_ip_list(&il->ip, GBL_TARGET2);
+   del_ip_list(&il->ip, EC_GBL_TARGET2);
 
    /* redraw the window */
    curses_current_targets();
@@ -419,7 +419,7 @@ static void add_target1(void)
       return;
    }
    
-   add_ip_list(&ip, GBL_TARGET1);
+   add_ip_list(&ip, EC_GBL_TARGET1);
    
    /* redraw the window */
    curses_current_targets();
@@ -434,7 +434,7 @@ static void add_target2(void)
       return;
    }
 
-   add_ip_list(&ip, GBL_TARGET2);
+   add_ip_list(&ip, EC_GBL_TARGET2);
    
    /* redraw the window */
    curses_current_targets();

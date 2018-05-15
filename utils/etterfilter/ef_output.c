@@ -22,7 +22,6 @@
 #include <ef.h>
 #include <ef_functions.h>
 #include <ec_filter.h>
-#include <ec_version.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -55,12 +54,11 @@ int write_output(void)
       return -E_INVALID;
 
    /* create the file */
-   fd = open(GBL_OPTIONS->output_file, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0644);
-   ON_ERROR(fd, -1, "Can't create file %s", GBL_OPTIONS->output_file);
+   fd = open(EF_GBL_OPTIONS->output_file, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0644);
+   ON_ERROR(fd, -1, "Can't create file %s", EF_GBL_OPTIONS->output_file);
 
    /* display the message */
-   fprintf(stdout, " Writing output to \'%s\' ", GBL_OPTIONS->output_file);
-   fflush(stdout);
+   USER_MSG(" Writing output to \'%s\' ", EF_GBL_OPTIONS->output_file);
    
    /* compute the header */
    fh.magic = htons(EC_FILTER_MAGIC);
@@ -87,9 +85,9 @@ int write_output(void)
 
    close(fd);
    
-   fprintf(stdout, " done.\n\n");
+   USER_MSG(" done.\n\n");
   
-   fprintf(stdout, " -> Script encoded into %d instructions.\n\n", (int)(i - 1));
+   USER_MSG(" -> Script encoded into %d instructions.\n\n", (int)(i - 1));
    
    return E_SUCCESS;
 }

@@ -27,6 +27,9 @@ struct iface_env {
 
    pcap_t* pcap;
    libnet_t* lnet;
+
+   u_char* pbuf; /* buffer to be used to handle the packet on the arriving interface*/
+
 };
 
 

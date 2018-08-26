@@ -128,16 +128,16 @@ void ec_decode(u_char *param, const struct pcap_pkthdr *pkthdr, const u_char *pk
    }
    
    /* 
-    * copy the packet in a "safe" buffer 
+    * copy the packet in a "dedicated" buffer
     * we don't want other packets after the end of the packet (as in BPF)
     *
     * also keep the buffer aligned !
     * the alignment is set by the media decoder.
     */
-   memcpy(EC_GBL_PCAP->buffer + EC_GBL_PCAP->align, pkt, pkthdr->caplen);
+   memcpy(iface->pbuf + EC_GBL_PCAP->align, pkt, pkthdr->caplen);
    
    /* extract data and datalen from pcap packet */
-   data = (u_char *)EC_GBL_PCAP->buffer + EC_GBL_PCAP->align;
+   data = (u_char *)iface->pbuf + EC_GBL_PCAP->align;
    datalen = pkthdr->caplen;
 
    /* 

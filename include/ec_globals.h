@@ -121,7 +121,6 @@ struct program_env {
 /* global pcap structure */
 struct pcap_env {
    pcap_if_t     *ifs;
-   char          *buffer;        /* buffer to be used to handle all the packets */
    u_int8         align;         /* alignment needed on sparc 4*n - sizeof(media_hdr) */
    char           promisc;
    char          *filter;        /* pcap filter */

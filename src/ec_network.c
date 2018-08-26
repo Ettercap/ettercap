@@ -83,8 +83,11 @@ void network_init()
    if(EC_GBL_OPTIONS->write)
       pcap_winit(EC_GBL_IFACE->pcap);
    
+   /* determine alignment margin and allocate packet buffer per interface */
    EC_GBL_PCAP->align = get_alignment(EC_GBL_PCAP->dlt);
-   SAFE_CALLOC(EC_GBL_PCAP->buffer, UINT16_MAX + EC_GBL_PCAP->align + 256, sizeof(char));
+   SAFE_CALLOC(EC_GBL_IFACE->pbuf, UINT16_MAX + EC_GBL_PCAP->align + 256, sizeof(char));
+   if (!EC_GBL_OPTIONS->read && EC_GBL_SNIFF->type == SM_BRIDGED)
+      SAFE_CALLOC(EC_GBL_BRIDGE->pbuf, UINT16_MAX + EC_GBL_PCAP->align + 256, sizeof(char));
 
    if(EC_GBL_OPTIONS->secondary) {
       secondary_sources_init(EC_GBL_OPTIONS->secondary);
@@ -101,8 +104,11 @@ void network_init()
 static void close_network()
 {
    pcap_close(EC_GBL_IFACE->pcap);
-   if(EC_GBL_SNIFF->type == SM_BRIDGED)
+   SAFE_FREE(EC_GBL_IFACE->pbuf);
+   if(EC_GBL_SNIFF->type == SM_BRIDGED) {
       pcap_close(EC_GBL_BRIDGE->pcap);
+      SAFE_FREE(EC_GBL_BRIDGE->pbuf);
+   }
 
    if(EC_GBL_OPTIONS->write)
       pcap_dump_close(EC_GBL_PCAP->dump);

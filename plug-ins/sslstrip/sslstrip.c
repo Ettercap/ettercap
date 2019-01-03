@@ -31,8 +31,7 @@
 #include <ec_decode.h>
 #include <ec_utils.h>
 #include <ec_sleep.h>
-
-#include <sys/wait.h>
+#include <ec_redirect.h>
 
 #include <pcre.h>
 
@@ -158,7 +157,6 @@ static int sslstrip_init(void *);
 static int sslstrip_fini(void *);
 static void sslstrip(struct packet_object *po);
 static int sslstrip_is_http(struct packet_object *po);
-void safe_free_http_redirect(char **param, int *param_length, char *command, char *orig_command);
 
 #ifndef OS_LINUX
 static void sslstrip_create_session(struct ec_session **s, struct packet_object *po);
@@ -174,8 +172,6 @@ static int http_sync_conn(struct http_connection *connection);
 static int http_get_peer(struct http_connection *connection);
 static int http_read(struct http_connection *connection, struct packet_object *po);
 static int http_write(int fd, char *ptr, unsigned long int total_len);
-static int http_insert_redirect(u_int16 dport);
-static int http_remove_redirect(u_int16 port);
 static void http_remove_header(char *header, struct http_connection *connection);
 static void http_update_content_length(struct http_connection *connection);
 static void http_initialize_po(struct packet_object *po, u_char *p_data, size_t len);
@@ -238,7 +234,13 @@ static int sslstrip_init(void *dummy)
 
    if (!https_url_pcre) {
       USER_MSG("SSLStrip: plugin load failed: pcre_compile failed (offset: %d), %s\n", erroroffset, error);
-      http_remove_redirect(bind_port);
+      ec_redirect(EC_REDIR_ACTION_REMOVE, "http", EC_REDIR_PROTO_IPV4,
+            NULL, NULL, 80, bind_port);
+#ifdef WITH_IPV6
+      ec_redirect(EC_REDIR_ACTION_REMOVE, "http", EC_REDIR_PROTO_IPV6,
+            NULL, NULL, 80, bind_port);
+#endif
+
       return PLUGIN_FINISHED;
    }   
 
@@ -247,7 +249,13 @@ static int sslstrip_init(void *dummy)
       regerror(err, &find_cookie_re, errbuf, sizeof(errbuf));
       USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex: %s (%d)\n", errbuf, err);
       pcre_free(https_url_pcre);
-      http_remove_redirect(bind_port);
+      ec_redirect(EC_REDIR_ACTION_REMOVE, "http" , EC_REDIR_PROTO_IPV4,
+            NULL, NULL, 80, bind_port);
+#ifdef WITH_IPV6
+      ec_redirect(EC_REDIR_ACTION_REMOVE, "http" , EC_REDIR_PROTO_IPV6,
+            NULL, NULL, 80, bind_port);
+#endif
+
       return PLUGIN_FINISHED;
    }
 
@@ -269,9 +277,18 @@ static int sslstrip_fini(void *dummy)
    (void) dummy;
 
    DEBUG_MSG("SSLStrip: Removing redirect\n");
-   if (http_remove_redirect(bind_port) != E_SUCCESS) {
-      USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so manually.\n");
+   if (ec_redirect(EC_REDIR_ACTION_REMOVE, "http", EC_REDIR_PROTO_IPV4,
+            NULL, NULL, 80, bind_port) != E_SUCCESS) {
+      USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so "
+            "manually.\n");
    }
+#ifdef WITH_IPV6
+   if (ec_redirect(EC_REDIR_ACTION_REMOVE, "http", EC_REDIR_PROTO_IPV6,
+            NULL, NULL, 80, bind_port) != E_SUCCESS) {
+      USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so "
+            "manually.\n");
+   }
+#endif
 
    // Free regexes.
    if (https_url_pcre)
@@ -471,171 +488,6 @@ static void Find_Url(u_char *to_parse, char **ret)
    Decode_Url((u_char *)*ret);
 }
 
-/* HTTP handling functions */
-static int http_insert_redirect(u_int16 dport)
-{
-   char asc_dport[16];
-   int i, ret_val = 0;
-   char *command;
-   char *param[4], *commands[2] = {NULL, NULL};
-
-   if (EC_GBL_CONF->redir_command_on == NULL)
-   {
-      USER_MSG("SSLStrip: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
-      return -E_FATAL;
-   }
-   else {
-      commands[0] = strdup(EC_GBL_CONF->redir_command_on);
-   }
-
-#ifdef WITH_IPV6
-   /* execution of the redirect script for IPv6 is optional */
-   if (EC_GBL_CONF->redir6_command_on == NULL)
-   {
-      WARN_MSG("SSLStrip: cannot setup the redirect for IPv6, did you uncomment the redir6_command_on in your etter.conf file?");
-   }
-   else {
-      commands[1] = strdup(EC_GBL_CONF->redir6_command_on);
-   }
-#endif
-
-   snprintf(asc_dport, 16, "%u", dport);
-
-   for (i = 0; i < 2 && commands[i] != NULL; i++) {
-
-      command = commands[i];
-
-      if(command==NULL)
-      {
-        USER_MSG("SSLStrip: bad redir_command_on or redir6_command_on values\n");
-        return -E_FATAL;
-      }
-      str_replace(&command, "%iface", EC_GBL_OPTIONS->iface);
-      str_replace(&command, "%port", "80");
-      str_replace(&command, "%rport", asc_dport);
-#if defined(OS_DARWIN) || defined(OS_BSD)
-      str_replace(&command, "%set", SSLSTRIP_SET);
-#endif
-      DEBUG_MSG("http_insert_redirect: [%s]", command);
-
-      /* construct the params array for execvp */
-      param[0] = "sh";
-      param[1] = "-c";
-      param[2] = command;
-      param[3] = NULL;
-
-      switch(fork()) {
-         case 0:
-            regain_privs();
-            execvp(param[0], param);
-            drop_privs();
-            WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-            SAFE_FREE(command);
-            _exit(-E_INVALID);
-         case -1:
-            SAFE_FREE(command);
-            return -E_INVALID;
-         default:
-            wait(&ret_val);
-            if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
-               DEBUG_MSG("http_insert_redirect: child exited with non-zero return code: %d", 
-                     WEXITSTATUS(ret_val));
-               USER_MSG("SSLStrip: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
-               SAFE_FREE(command);
-               return -E_INVALID;
-            }
-            break;
-      }
-
-      SAFE_FREE(command);
-
-   }
-
-   return E_SUCCESS;
-}
-
-static int http_remove_redirect(u_int16 dport)
-{
-   char asc_dport[16];
-   int i, ret_val = 0;
-   char *command;
-   char *param[4], *commands[2] = {NULL, NULL};
-
-
-   if (EC_GBL_CONF->redir_command_off == NULL)
-   {
-      USER_MSG("SSLStrip: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
-      return -E_FATAL;
-   }
-   else {
-      commands[0] = strdup(EC_GBL_CONF->redir_command_off);
-   }
-
-#ifdef WITH_IPV6
-   /* redirect script for IPv6 is optional */
-   if (EC_GBL_CONF->redir6_command_off == NULL)
-   {
-      WARN_MSG("SSLStrip: cannot remove the redirect for IPv6, did you uncoment the redir6_command_off command in you etter.conf file?");
-   }
-   else {
-      commands[1] = strdup(EC_GBL_CONF->redir6_command_off);
-   }
-#endif
-
-   snprintf(asc_dport, 16, "%u", dport);
-
-   for (i = 0; i < 2 && commands[i] != NULL; i++) {
-
-      command = commands[i];
-
-      if(command==NULL)
-      {
-        USER_MSG("SSLStrip: bad redir_command_off or redir6_command_off values\n");
-        return -E_FATAL;
-      }
-      str_replace(&command, "%iface", EC_GBL_OPTIONS->iface);
-      str_replace(&command, "%port", "80");
-      str_replace(&command, "%rport", asc_dport);
-#if defined(OS_DARWIN) || defined(OS_BSD)
-      str_replace(&command, "%set", SSLSTRIP_SET);
-#endif
-      DEBUG_MSG("http_remove_redirect: [%s]", command);
-
-      /* construct the params array for execvp */
-      param[0] = "sh";
-      param[1] = "-c";
-      param[2] = command;
-      param[3] = NULL;
-
-      switch(fork()) {
-         case 0:
-            regain_privs();
-            execvp(param[0], param);
-            drop_privs();
-            WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-            SAFE_FREE(command);
-            _exit(-E_INVALID);
-         case -1:
-            SAFE_FREE(command);
-            return -E_INVALID;
-         default:
-            wait(&ret_val);
-            if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
-               DEBUG_MSG("http_remove_redirect: child exited with non-zero return code: %d",
-                     WEXITSTATUS(ret_val));
-               USER_MSG("SSLStrip: redir_command_off had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
-               SAFE_FREE(command);
-               return -E_INVALID;
-            }
-            break;
-      }
-
-      SAFE_FREE(command);
-
-   }
-
-   return E_SUCCESS;
-}
 
 static EC_THREAD_FUNC(http_accept_thread)
 {
@@ -1488,8 +1340,15 @@ static int http_bind_wrapper(void)
 
    USER_MSG("SSLStrip plugin: bind 80 on %d\n", bind_port);
    
-   if (http_insert_redirect(bind_port) != E_SUCCESS)
+   if (ec_redirect(EC_REDIR_ACTION_INSERT, "http", EC_REDIR_PROTO_IPV4,
+            NULL, NULL, 80, bind_port) != E_SUCCESS)
       return -E_FATAL;
+
+#ifdef WITH_IPV6
+   if (ec_redirect(EC_REDIR_ACTION_INSERT, "http", EC_REDIR_PROTO_IPV6,
+            NULL, NULL, 80, bind_port) != E_SUCCESS)
+      return -E_FATAL;
+#endif
 
    return E_SUCCESS;
 

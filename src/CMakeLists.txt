@@ -34,6 +34,7 @@ set(EC_SRC
     ec_plugins.c
     ec_poll.c
     ec_profiles.c
+    ec_redirect.c
     ec_resolv.c
     ec_scan.c
     ec_send.c

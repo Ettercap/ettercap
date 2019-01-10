@@ -131,7 +131,8 @@ void gtkui_create_menu(GApplication *app, gpointer data)
       {"icmp_redirect",  gtkui_icmp_redir, NULL, NULL, NULL, {}},
       {"port_stealing",  gtkui_port_stealing, NULL, NULL, NULL, {}},
       {"dhcp_spoofing",  gtkui_dhcp_spoofing, NULL, NULL, NULL, {}},
-      {"mitm_stop",  gtkui_mitm_stop, NULL, NULL, NULL, {}}
+      {"mitm_stop",  gtkui_mitm_stop, NULL, NULL, NULL, {}},
+      {"sslredir",  gtkui_sslredir_show, NULL, NULL, NULL, {}}
    };
    static GActionEntry filter_actions[] = {
       /* filters menu */
@@ -487,6 +488,12 @@ void gtkui_create_menu(GApplication *app, gpointer data)
          "      <item>"
          "        <attribute name='label' translatable='yes'>Stop MITM attack(s)</attribute>"
          "        <attribute name='action'>app.mitm_stop</attribute>"
+         "      </item>"
+         "    </section>"
+         "    <section>"
+         "      <item>"
+         "        <attribute name='label' translatable='yes'>SSL Intercept</attribute>"
+         "        <attribute name='action'>app.sslredir</attribute>"
          "      </item>"
          "    </section>"
          "  </menu>"

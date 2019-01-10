@@ -85,6 +85,7 @@ if(ENABLE_GTK)
       gtk3/ec_gtk3_mitm.c
       gtk3/ec_gtk3_offline.c
       gtk3/ec_gtk3_plugins.c
+      gtk3/ec_gtk3_redirect.c
       gtk3/ec_gtk3_start.c
       gtk3/ec_gtk3_targets.c
       gtk3/ec_gtk3_view.c

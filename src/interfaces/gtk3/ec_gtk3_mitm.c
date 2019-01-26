@@ -80,6 +80,7 @@ void gtkui_arp_poisoning(GSimpleAction *action, GVariant *value, gpointer data)
    gtk_widget_show(vbox);
 
    button1 = gtk_check_button_new_with_label("Sniff remote connections.");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button1), TRUE);
    gtk_box_pack_start(GTK_BOX (vbox), button1, FALSE, FALSE, 0);
    gtk_widget_show(button1);
 
@@ -412,6 +413,7 @@ void gtkui_ndp_poisoning(GSimpleAction *action, GVariant *value, gpointer data)
    gtk_widget_show(vbox);
 
    button1 = gtk_check_button_new_with_label("Sniff remote connections.");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button1), TRUE);
    gtk_box_pack_start(GTK_BOX (vbox), button1, FALSE, FALSE, 0);
    gtk_widget_show(button1);
 

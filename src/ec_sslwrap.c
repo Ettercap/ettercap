@@ -1150,8 +1150,8 @@ static void sslw_init(void)
    SSL_library_init();
 
    /* Create the two global CTX */
-   ssl_ctx_client = SSL_CTX_new(SSLv23_server_method());
-   ssl_ctx_server = SSL_CTX_new(SSLv23_client_method());
+   ssl_ctx_client = SSL_CTX_new(TLS_server_method());
+   ssl_ctx_server = SSL_CTX_new(TLS_client_method());
 
    ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
    ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");

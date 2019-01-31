@@ -40,7 +40,6 @@ void gtkui_arp_poisoning(void)
    GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame, *content_area;
    gint response = 0;
    gboolean remote = FALSE;
-   gboolean oneway = FALSE;
 
    DEBUG_MSG("gtk_arp_poisoning");
 //   not needed, the \0 is already appended from snprintf
@@ -77,6 +76,7 @@ void gtkui_arp_poisoning(void)
    gtk_widget_show(vbox);
 
    button1 = gtk_check_button_new_with_label("Sniff remote connections.");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button1), TRUE);
    gtk_box_pack_start(GTK_BOX (vbox), button1, FALSE, FALSE, 0);
    gtk_widget_show(button1);
 
@@ -90,22 +90,17 @@ void gtkui_arp_poisoning(void)
       const char *s_remote = "", *comma = "", *s_oneway = "";
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1))) {
-	s_remote="remote";
+        s_remote="remote";
         remote = TRUE;
       }
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
          if(remote)
-		comma = ",";
+            comma = ",";
 
-	 s_oneway = "oneway";	
-         oneway = TRUE;
+         s_oneway = "oneway";
       } 
 
-      if(!remote && !oneway) {
-         ui_error("You must select at least one ARP mode");
-         return;
-      }
       snprintf(params, PARAMS_LEN+1, "arp:%s%s%s", s_remote, comma, s_oneway);
       gtkui_start_mitm();
    }
@@ -254,7 +249,7 @@ void gtkui_port_stealing(void)
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button2))) {
          if(remote)
               comma = ",";
-	 tree = "tree";
+         tree = "tree";
       }
   
       snprintf(params, PARAMS_LEN+1, "port:%s%s%s", s_remote, comma, tree); 
@@ -362,7 +357,6 @@ void gtkui_ndp_poisoning(void)
    GtkWidget *dialog, *vbox, *hbox, *image, *button1, *button2, *frame, *content_area;
    gint response = 0;
    gboolean remote = FALSE;
-   gboolean oneway = FALSE;
 
    DEBUG_MSG("gtk_ndp_poisoning");
 //   not needed, the \0 is already appended from snprintf
@@ -399,6 +393,7 @@ void gtkui_ndp_poisoning(void)
    gtk_widget_show(vbox);
 
    button1 = gtk_check_button_new_with_label("Sniff remote connections.");
+   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (button1), TRUE);
    gtk_box_pack_start(GTK_BOX (vbox), button1, FALSE, FALSE, 0);
    gtk_widget_show(button1);
 
@@ -421,13 +416,8 @@ void gtkui_ndp_poisoning(void)
             comma = ",";
 
          s_oneway = "oneway";
-         oneway = TRUE;
       } 
 
-      if(!remote && !oneway) {
-         ui_error("You must select at least one NDP mode");
-         return;
-      }
       snprintf(params, PARAMS_LEN+1, "ndp:%s%s%s", 
             s_remote, comma, s_oneway);
       gtkui_start_mitm();

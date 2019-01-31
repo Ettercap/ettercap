@@ -74,8 +74,6 @@ static int ndp_poison_start(char *args)
          else
             SEMIFATAL_ERROR("NDP poisoning: incorrect arguments.\n");
       }
-   } else {
-      SEMIFATAL_ERROR("NDP poisoning: missing arguments.\n");
    }
 
    /* we need the host list */

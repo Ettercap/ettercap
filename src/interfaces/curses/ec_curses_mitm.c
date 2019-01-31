@@ -60,11 +60,12 @@ struct wdg_menu menu_mitm[] = { {"Mitm",                'M', "", NULL},
 static void curses_arp_poisoning(void)
 {
    char *method = "arp:";
+   char *default_param = "remote";
    size_t len = strlen(method);
    
    DEBUG_MSG("curses_arp_poisoning");
 
-   strncpy(params, method, len);
+   snprintf(params, PARAMS_LEN, "%s%s", method, default_param);
 
    curses_input("Parameters :", params + len, PARAMS_LEN - len - 1, curses_start_mitm);
 }
@@ -109,11 +110,12 @@ static void curses_dhcp_spoofing(void)
 static void curses_ndp_poisoning(void)
 {
    char *method = "ndp:";
+   char *default_param = "remote";
    size_t len = strlen(method);
 
    DEBUG_MSG("curses_ndp_poisoning");
 
-   strncpy(params, method, len);
+   snprintf(params, PARAMS_LEN, "%s%s", method, default_param);
 
    curses_input("Parameters :", params + len, PARAMS_LEN - len - 1, curses_start_mitm);
 }

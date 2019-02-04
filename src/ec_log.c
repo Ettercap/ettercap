@@ -115,6 +115,7 @@ int set_loglevel(int level, char *filename)
          hook_add(HOOK_DISPATCHER, &log_packet);
 
          /* no break here, loglevel is incremental */
+         __attribute__((fallthrough));
          
       case LOG_INFO:
          if (EC_GBL_OPTIONS->compress) {

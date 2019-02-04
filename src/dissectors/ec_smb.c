@@ -253,7 +253,7 @@ FUNC_DECODER(dissector_smb)
                if (pwlen > 1) 
                   memcpy(session_data->response1, Blob, sizeof(session_data->response1) - 1);
                else
-                  snprintf((char*)session_data->response1, 7, "(empty)");
+                  snprintf((char*)session_data->response1, 8, "(empty)");
 
                IF_IN_PCK(Blob, PACKET)		  	 
                   Blob = GetUser(Blob+pwlen+unilen, session_data->user, 200);
@@ -336,7 +336,7 @@ FUNC_DECODER(dissector_smb)
                     memcmp(session_data->response1, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 24) ) {
                     memset(session_data->response1, 0, 24);
                     memset(session_data->response2, 0, 24);
-                    strncpy((char*)session_data->user, "(empty)", 7);
+                    strncpy((char*)session_data->user, "(empty)", 8);
                     session_data->domain[0]=0;		    		    
                }
 	       

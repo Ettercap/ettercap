@@ -240,7 +240,7 @@ FUNC_DECODER(dissector_vnc)
                SAFE_CALLOC(PACKET->DISSECTOR.pass, 256, sizeof(char));
 
                /* Dump Challenge and Response */
-               snprintf(PACKET->DISSECTOR.pass, 10, "Challenge:");
+               snprintf(PACKET->DISSECTOR.pass, 11, "Challenge:");
                str_ptr = (u_char*)PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
 
                for (index = 0; index < 16; index++)

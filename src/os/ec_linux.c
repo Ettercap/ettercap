@@ -283,6 +283,7 @@ void disable_interface_offload(void)
 			_exit(-E_INVALID);
 		case -1:
 			safe_free_mem(param, &param_length, command);
+         break;
 		default:
 			safe_free_mem(param, &param_length, command);
 			wait(&ret_val);

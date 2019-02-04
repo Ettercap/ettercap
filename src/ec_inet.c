@@ -224,7 +224,7 @@ inet_ntop4(const u_char *src, char *dst, size_t size)
    char str[IP_ASCII_ADDR_LEN];
    int n;
    
-	n = snprintf(str, IP_ASCII_ADDR_LEN, "%u.%u.%u.%u", src[0], src[1], src[2], src[3]);
+   n = snprintf(str, IP_ASCII_ADDR_LEN, "%u.%u.%u.%u", src[0], src[1], src[2], src[3]);
    
    str[n] = '\0';
  
@@ -236,90 +236,90 @@ inet_ntop4(const u_char *src, char *dst, size_t size)
 const char *
 inet_ntop6(const u_char *src, char *dst, size_t size)
 {
-	/*
-	 * Note that int32_t and int16_t need only be "at least" large enough
-	 * to contain a value of the specified size.  On some systems, like
-	 * Crays, there is no such thing as an integer variable with 16 bits.
-	 * Keep this in mind if you think this function should have been coded
-	 * to use pointer overlays.  All the world's not a VAX.
-	 */
-	char tmp[IP6_ASCII_ADDR_LEN], *tp;
-	struct { int base, len; } best, cur;
-	u_int words[NS_IN6ADDRSZ / NS_INT16SZ];
-	int i;
+   /*
+    * Note that int32_t and int16_t need only be "at least" large enough
+    * to contain a value of the specified size.  On some systems, like
+    * Crays, there is no such thing as an integer variable with 16 bits.
+    * Keep this in mind if you think this function should have been coded
+    * to use pointer overlays.  All the world's not a VAX.
+    */
+   char tmp[IP6_ASCII_ADDR_LEN], *tp;
+   struct { int base, len; } best, cur;
+   u_int words[NS_IN6ADDRSZ / NS_INT16SZ];
+   int i;
 
-	best.len = 0;
-	cur.len = 0;
+   best.len = 0;
+   cur.len = 0;
 
-	/*
-	 * Preprocess:
-	 *	Copy the input (bytewise) array into a wordwise array.
-	 *	Find the longest run of 0x00's in src[] for :: shorthanding.
-	 */
-	memset(words, '\0', sizeof words);
-	for (i = 0; i < NS_IN6ADDRSZ; i += 2)
-		words[i / 2] = (src[i] << 8) | src[i + 1];
-	best.base = -1;
-	cur.base = -1;
-	for (i = 0; i < (NS_IN6ADDRSZ / NS_INT16SZ); i++) {
-		if (words[i] == 0) {
-			if (cur.base == -1)
-				cur.base = i, cur.len = 1;
-			else
-				cur.len++;
-		} else {
-			if (cur.base != -1) {
-				if (best.base == -1 || cur.len > best.len)
-					best = cur;
-				cur.base = -1;
-			}
-		}
-	}
-	if (cur.base != -1) {
-		if (best.base == -1 || cur.len > best.len)
-			best = cur;
-	}
-	if (best.base != -1 && best.len < 2)
-		best.base = -1;
+   /*
+    * Preprocess:
+    *   Copy the input (bytewise) array into a wordwise array.
+    *   Find the longest run of 0x00's in src[] for :: shorthanding.
+    */
+   memset(words, '\0', sizeof words);
+   for (i = 0; i < NS_IN6ADDRSZ; i += 2)
+      words[i / 2] = (src[i] << 8) | src[i + 1];
+   best.base = -1;
+   cur.base = -1;
+   for (i = 0; i < (NS_IN6ADDRSZ / NS_INT16SZ); i++) {
+      if (words[i] == 0) {
+         if (cur.base == -1)
+            cur.base = i, cur.len = 1;
+         else
+            cur.len++;
+      } else {
+         if (cur.base != -1) {
+            if (best.base == -1 || cur.len > best.len)
+               best = cur;
+            cur.base = -1;
+         }
+      }
+   }
+   if (cur.base != -1) {
+      if (best.base == -1 || cur.len > best.len)
+         best = cur;
+   }
+   if (best.base != -1 && best.len < 2)
+      best.base = -1;
 
-	/*
-	 * Format the result.
-	 */
-	tp = tmp;
-	for (i = 0; i < (NS_IN6ADDRSZ / NS_INT16SZ); i++) {
-		/* Are we inside the best run of 0x00's? */
-		if (best.base != -1 && i >= best.base &&
-		    i < (best.base + best.len)) {
-			if (i == best.base)
-				*tp++ = ':';
-			continue;
-		}
-		/* Are we following an initial run of 0x00s or any real hex? */
-		if (i != 0)
-			*tp++ = ':';
-		/* Is this address an encapsulated IPv4? */
-		if (i == 6 && best.base == 0 &&
-		    (best.len == 6 || (best.len == 5 && words[5] == 0xffff))) {
-			if (inet_ntop4(src+12, tp, IP_ASCII_ADDR_LEN) != 0)
-				return (NULL);
-			tp += strlen(tp);
-			break;
-		}
-		tp += sprintf(tp, "%x", words[i]);
-	}
-	/* Was it a trailing run of 0x00's? */
-	if (best.base != -1 && (best.base + best.len) == 
-	    (NS_IN6ADDRSZ / NS_INT16SZ))
-		*tp++ = ':';
-	*tp++ = '\0';
+   /*
+    * Format the result.
+    */
+   tp = tmp;
+   for (i = 0; i < (NS_IN6ADDRSZ / NS_INT16SZ); i++) {
+      /* Are we inside the best run of 0x00's? */
+      if (best.base != -1 && i >= best.base &&
+          i < (best.base + best.len)) {
+         if (i == best.base)
+            *tp++ = ':';
+         continue;
+      }
+      /* Are we following an initial run of 0x00s or any real hex? */
+      if (i != 0)
+         *tp++ = ':';
+      /* Is this address an encapsulated IPv4? */
+      if (i == 6 && best.base == 0 &&
+          (best.len == 6 || (best.len == 5 && words[5] == 0xffff))) {
+         if (inet_ntop4(src+12, tp, IP_ASCII_ADDR_LEN) != 0)
+            return (NULL);
+         tp += strlen(tp);
+         break;
+      }
+      tp += sprintf(tp, "%x", words[i]);
+   }
+   /* Was it a trailing run of 0x00's? */
+   if (best.base != -1 && (best.base + best.len) == 
+       (NS_IN6ADDRSZ / NS_INT16SZ))
+      *tp++ = ':';
+   *tp++ = '\0';
 
-  	/*
-	 * Check for overflow, copy, and we're done.
-	 */
-	if ((size_t)(tp - tmp) > size) {
-		__set_errno (ENOSPC);
-		return (NULL);
-	}
+     /*
+    * Check for overflow, copy, and we're done.
+    */
+   if ((size_t)(tp - tmp) > size) {
+      __set_errno (ENOSPC);
+      return (NULL);
+   }
 
    strncpy(dst, tmp, size);
    
@@ -357,7 +357,7 @@ char *mac_addr_ntoa(u_char *mac, char *dst)
    char str[ETH_ASCII_ADDR_LEN];
    int n;
    
-	n = snprintf(str, ETH_ASCII_ADDR_LEN, "%02X:%02X:%02X:%02X:%02X:%02X", 
+   n = snprintf(str, ETH_ASCII_ADDR_LEN, "%02X:%02X:%02X:%02X:%02X:%02X", 
          mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
    
    str[n] = '\0';
@@ -455,7 +455,7 @@ int ip_addr_is_multicast(struct ip_addr *ip)
       default:
          return -E_INVALID;
    }
-	return 0;
+   return 0;
 }
 
 /*
@@ -464,36 +464,38 @@ int ip_addr_is_multicast(struct ip_addr *ip)
  */
 int ip_addr_is_broadcast(struct ip_addr *sa)
 {
-	struct ip_addr *nw;
-	struct ip_addr *nm;
+   struct ip_addr *nw;
+   struct ip_addr *nm;
 
-	u_int32* address;
-	u_int32* netmask;
-	u_int32* network;
-	u_int32 broadcast;
+   u_int32* address;
+   u_int32* netmask;
+   u_int32* network;
+   u_int32 broadcast;
 
-	switch(ntohs(sa->addr_type)) {
-		case AF_INET:
+   switch(ntohs(sa->addr_type)) {
+      case AF_INET:
          if(!EC_GBL_IFACE->has_ipv4)
             return -E_INVALID;
-			nm = &EC_GBL_IFACE->netmask;
-			nw = &EC_GBL_IFACE->network;
-		
+         nm = &EC_GBL_IFACE->netmask;
+         nw = &EC_GBL_IFACE->network;
+
          /* 255.255.255.255 is definitely broadcast */
          if(!memcmp(sa->addr, "\xff\xff\xff\xff", IP_ADDR_LEN))
             return E_SUCCESS;
 
-			address = sa->addr32;
-			netmask = nm->addr32;
-			network = nw->addr32;
+         address = sa->addr32;
+         netmask = nm->addr32;
+         network = nw->addr32;
 
-			broadcast = (*network) | ~(*netmask);
+         broadcast = (*network) | ~(*netmask);
 
-			if (broadcast == *address)
-				return E_SUCCESS;
-		case AF_INET6:
-			if(!EC_GBL_IFACE->has_ipv6)
-				return -E_INVALID;
+         if (broadcast == *address)
+            return E_SUCCESS;
+
+         break;
+      case AF_INET6:
+         if(!EC_GBL_IFACE->has_ipv6)
+            return -E_INVALID;
 
          /* IPv6 has no such thing as a broadcast address. The closest
           * equivalent is the multicast address ff02::1. Packets sent to that
@@ -502,10 +504,10 @@ int ip_addr_is_broadcast(struct ip_addr *sa)
          if(!memcmp(sa->addr, IP6_ALL_NODES, IP6_ADDR_LEN))
             return E_SUCCESS;
          
-			break;
-	}
+         break;
+   }
 
-	return -E_NOTFOUND;
+   return -E_NOTFOUND;
 }
 
 /*

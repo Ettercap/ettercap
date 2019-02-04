@@ -474,11 +474,11 @@ void gtkui_vis_method(GSimpleAction *action, GVariant *value, gpointer data)
       memset(vmethod, 0, VLEN);
 
       switch(active) {
-         case 6: strncpy(vmethod, "hex", 3); break;
-         case 5: strncpy(vmethod, "ascii", 5); break; 
-         case 4: strncpy(vmethod, "text", 4); break;
-         case 3: strncpy(vmethod, "ebcdic", 6); break;
-         case 2: strncpy(vmethod, "html", 4); break;
+         case 6: strncpy(vmethod, "hex", 4); break;
+         case 5: strncpy(vmethod, "ascii", 6); break; 
+         case 4: strncpy(vmethod, "text", 5); break;
+         case 3: strncpy(vmethod, "ebcdic", 7); break;
+         case 2: strncpy(vmethod, "html", 5); break;
          case 1: /* utf8 */
             /* copy first word from encoding choice */
             gtk_combo_box_get_active_iter(GTK_COMBO_BOX(lang_combo), &iter);
@@ -487,11 +487,12 @@ void gtkui_vis_method(GSimpleAction *action, GVariant *value, gpointer data)
             i=sscanf(selected_lang, "%[^ ]", encoding);
             BUG_IF(i!=1);
             if(strlen(encoding) > 0) {
-               strncpy(vmethod, "utf8", 4);
+               strncpy(vmethod, "utf8", 5);
                set_utf8_encoding(encoding);
                break;
             }
-         default: strncpy(vmethod, "ascii", 5);
+            __attribute__((fallthrough));
+         default: strncpy(vmethod, "ascii", 6);
       }
 
       set_format(vmethod);

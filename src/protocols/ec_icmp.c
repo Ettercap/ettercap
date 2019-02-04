@@ -111,6 +111,7 @@ FUNC_DECODER(decode_icmp)
                PACKET->PASSIVE.flags |= FP_ROUTER;
                break;
          }
+         break;
       case ICMP_REDIRECT:
       case ICMP_TIME_EXCEEDED:
          PACKET->PASSIVE.flags |= FP_ROUTER;

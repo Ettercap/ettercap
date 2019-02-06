@@ -343,7 +343,7 @@ void parse_options(int argc, char **argv)
          case 'Q':
                   set_superquiet();
                   /* no break, quiet must be enabled */
-                  __attribute__((fallthrough));
+                  /* fall through */
          case 'q':
 		  set_quiet();
                   break;

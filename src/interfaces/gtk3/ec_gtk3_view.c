@@ -491,7 +491,7 @@ void gtkui_vis_method(GSimpleAction *action, GVariant *value, gpointer data)
                set_utf8_encoding(encoding);
                break;
             }
-            __attribute__((fallthrough));
+            /* fall through */
          default: strncpy(vmethod, "ascii", 6);
       }
 

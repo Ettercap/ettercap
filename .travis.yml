@@ -52,6 +52,7 @@ addons:
       - libssl-dev
       - libgtk-3-dev
       - libgeoip-dev
+    update: true
 
 env:
   # Default build. Release.

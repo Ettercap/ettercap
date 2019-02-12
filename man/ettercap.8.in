@@ -700,7 +700,7 @@ NOTE: you can also activate plugins directly from the interfaces (always press
 "h" to get the inline help)
 .Sp
 More detailed info about plugins and about how to write your own are found in
-the man page ettercap_plugin(8)
+the man page ettercap_plugins(8)
 
 .TP
 \fB\-F\fR, \fB\-\-filter <FILE>\fR

@@ -64,6 +64,7 @@ if(ENABLE_GTK)
       gtk/ec_gtk_mitm.c
       gtk/ec_gtk_offline.c
       gtk/ec_gtk_plugins.c
+      gtk/ec_gtk_redirect.c
       gtk/ec_gtk_start.c
       gtk/ec_gtk_targets.c
       gtk/ec_gtk_view.c

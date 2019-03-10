@@ -121,6 +121,9 @@ extern void gtkui_ndp_poisoning(void);
 #endif
 extern void gtkui_mitm_stop(void);
 
+/* ec_gtk_redirect.c */
+extern void gtkui_sslredir_show(void);
+
 /* ec_gtk_logging.c */
 extern void toggle_compress(void);
 extern void gtkui_log_all(void);

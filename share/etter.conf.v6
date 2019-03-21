@@ -134,7 +134,7 @@ color_border = 7
 color_title = 3 
 color_focus = 6 
 color_menu_bg = 4
-color_menu_fg = 6 
+color_menu_fg = 7
 color_window_bg = 4 
 color_window_fg = 7 
 color_selection_bg = 6 
@@ -209,7 +209,7 @@ geoip_data_file_v6 = "/usr/local/share/GeoIP/GeoIPv6.dat"
 #   FreeBSD
 #---------------
 
-# Before OF can be used, make sure the kernel module has been loaded by
+# Before PF can be used, make sure the kernel module has been loaded by
 # `kldstat | grep pf.ko`. If the rusult is empty, you can load it by
 # `kldload pf.ko` or add 'pf_enable="YES"' to the /etc/rc.conf and reboot.
 

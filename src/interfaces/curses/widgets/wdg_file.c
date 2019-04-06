@@ -482,8 +482,8 @@ static void wdg_file_menu_create(struct wdg_object *wo)
           * transform the current dir into the root.
           * useful to exit from a path whose parent is not readable 
           */
-         if (!strcmp(ww->namelist[i]->d_name, ".")) {
-            strncpy(ww->namelist[i]->d_name, "/", 1);
+         if (*ww->namelist[i]->d_name == '.') {
+            *ww->namelist[i]->d_name = '/';
             ww->nitems++;
             WDG_SAFE_REALLOC(ww->items, ww->nitems * sizeof(ITEM *));
             ww->items[ww->nitems - 1] = new_item(ww->namelist[i]->d_name, "root");

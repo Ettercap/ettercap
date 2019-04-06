@@ -96,7 +96,7 @@ void gtkui_select_protocol(GSimpleAction *action, GVariant *value, gpointer data
    /* this will contain 'all', 'tcp' or 'udp' */
    if (!EC_GBL_OPTIONS->proto) {
       SAFE_CALLOC(EC_GBL_OPTIONS->proto, 4, sizeof(char));
-      strncpy(EC_GBL_OPTIONS->proto, "all", 3);
+      strncpy(EC_GBL_OPTIONS->proto, "all", 4);
    }
 
    /* create dialog for selecting the protocol */
@@ -688,8 +688,7 @@ static void gtkui_delete_targets(GtkWidget *widget, gpointer data) {
    
    /* free the list of selections */
    if(list) {
-      g_list_foreach (list,(GFunc) gtk_tree_path_free, NULL);
-      g_list_free (list);
+      g_list_free_full(list, (GDestroyNotify)gtk_tree_path_free);
    }
 }
 

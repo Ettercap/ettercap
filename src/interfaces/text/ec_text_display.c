@@ -118,10 +118,10 @@ static void display_headers(struct packet_object *po)
    /* determine the proto */
    switch(po->L4.proto) {
       case NL_TYPE_TCP:
-         strncpy(proto, "TCP", 3);
+         strncpy(proto, "TCP", 4);
          break;
       case NL_TYPE_UDP:
-         strncpy(proto, "UDP", 3);
+         strncpy(proto, "UDP", 4);
          break;
    }
    

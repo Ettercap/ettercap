@@ -179,7 +179,7 @@ FUNC_DECODER(dissector_bgp)
          
          /* Get authentication data */
          if (length > 1) {
-            snprintf(PACKET->DISSECTOR.pass, 4, "Hex(");
+            snprintf(PACKET->DISSECTOR.pass, 5, "Hex(");
             str_ptr = PACKET->DISSECTOR.pass + strlen(PACKET->DISSECTOR.pass);
 
             for (j = 0; j < (length-1); j++) {

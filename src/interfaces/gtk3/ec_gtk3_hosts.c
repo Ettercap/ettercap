@@ -463,8 +463,7 @@ void gtkui_button_callback(GtkWidget *widget, gpointer data)
       }
 
       /* free the list of selections */
-      g_list_foreach (list,(GFunc) gtk_tree_path_free, NULL);
-      g_list_free (list);
+      g_list_free_full(list, (GDestroyNotify)gtk_tree_path_free);
    }
 }
 

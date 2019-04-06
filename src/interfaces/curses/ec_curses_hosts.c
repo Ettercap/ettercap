@@ -267,7 +267,7 @@ static void curses_create_hosts_array(void)
    char name[MAX_HOSTNAME_LEN];
    size_t nhosts;
 
-#define MAX_DESC_LEN 70
+#define MAX_DESC_LEN MAX_ASCII_ADDR_LEN*2 + MAX_HOSTNAME_LEN + 4
    
    DEBUG_MSG("curses_create_hosts_array");
    

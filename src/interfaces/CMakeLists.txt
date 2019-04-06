@@ -4,6 +4,7 @@ set(EC_TEXT_SRC
             text/ec_text_display.c
             text/ec_text_plugin.c
             text/ec_text_profile.c
+            text/ec_text_redirect.c
 )
 include_directories(text)
 

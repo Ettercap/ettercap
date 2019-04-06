@@ -61,6 +61,7 @@ static void text_stop_cont(void);
 static void text_hosts_list(void);
 static void text_profile_list(void);
 static void text_visualization(void);
+static void text_redirects(void);
 
 /*******************************************/
 
@@ -368,6 +369,10 @@ void text_interface(void)
             case ' ':
                text_stop_cont();
                break;
+            case 'R':
+            case 'r':
+               text_redirects();
+               break;
             case 'Q':
             case 'q':
                USER_MSG("Closing text interface...\n\n");
@@ -397,6 +402,7 @@ static void text_help(void)
    fprintf(stderr, " [lL]      - print the hosts list\n");
    fprintf(stderr, " [oO]      - print the profiles list\n");
    fprintf(stderr, " [cC]      - print the connections list\n");
+   fprintf(stderr, " [rR]      - adjust SSL intercept rules\n");
    fprintf(stderr, " [sS]      - print interfaces statistics\n");
    fprintf(stderr, " [<space>] - stop/cont printing packets\n");
    fprintf(stderr, " [qQ]      - quit\n\n");
@@ -677,6 +683,78 @@ static void text_profile_list(void)
       text_stop_cont();
 }
 
+/* 
+ * print all redirect rules and ask user to add or delete
+ */
+static void text_redirects(void)
+{
+   char input[20];
+   int restore = 0, num, ret;
+   char *p, cmd;
+
+   
+   /* print registered entries */
+   text_redirect_print();
+
+   /* stop the virtualization while the redirect interface is running */
+   if (!EC_GBL_OPTIONS->quiet) {
+      text_stop_cont();
+      restore = 1;
+   }
+   /* print all pending user messages */
+   ui_msg_flush(MSG_ALL);
+
+   tcsetattr(0, TCSANOW, &old_tc);
+
+   /* print instructions */
+   fprintf(stdout, "'d <number>' to delete or 'i' to insert new redirect "
+         "(0 to quit): ");
+   fflush(stdout);
+
+   /* get user input */
+   fgets(input, 20, stdin);
+
+   do {
+      /* remote trailing line feed */
+      if ((p = strrchr(input, '\n')) != NULL)
+         *p = 0;
+
+      ret = sscanf(input, "%c %d", &cmd, &num);
+
+      if (ret == 1 && tolower(cmd) == 'i') {
+         text_redirect_add();
+
+         /* print registered entries */
+         text_redirect_print();
+
+
+      }
+      else if (ret == 2 && tolower(cmd) == 'd') {
+         text_redirect_del(num);
+
+         /* print registered entries */
+         text_redirect_print();
+      }
+      else if (!strcmp(input, "0") || !strcmp(input, "exit"))
+         break;
+
+      else
+         INSTANT_USER_MSG("Invalid input\n");
+      
+      /* print instructions */
+      fprintf(stdout, "'d <number>' to delete or 'i' to insert new redirect "
+            "(0 to quit): ");
+      fflush(stdout);
+
+   } while (fgets(input, 20, stdin) != NULL);
+
+
+   /* disable buffered input */
+   tcsetattr(0, TCSANOW, &new_tc);
+
+   if (restore)
+      text_stop_cont();
+}
 /* EOF */
 
 // vim:ts=3:expandtab

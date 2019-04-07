@@ -209,7 +209,7 @@ elseif(NOT PCAP_INCLUDE_DIRS)
 endif()
 
 if(ENABLE_GEOIP)
-  find_package(GEOIP 1.6.4 REQUIRED)
+  find_package(GEOIP 1.6.0 REQUIRED)
   if(GEOIP_FOUND)
     set(HAVE_GEOIP 1)
     list(APPEND EC_LIBS ${GEOIP_LIBRARIES})

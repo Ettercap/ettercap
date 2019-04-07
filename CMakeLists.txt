@@ -211,6 +211,10 @@ if(HAVE_PLUGINS)
   add_subdirectory(plug-ins)
 endif()
 
+if(ENABLE_IPV6)
+set(WITH_IPV6 TRUE)
+endif()
+
 if(ENABLE_UTILS)
   add_subdirectory(utils)
 endif()

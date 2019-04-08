@@ -67,7 +67,7 @@ externalproject_add(
 
 # Now export our variables to our parent's scope.
 set(LIBNET_VERSION ${LIBNET_VERSION} PARENT_SCOPE)
-set(LIBNET_LIBRARY ${LIBNET_LIBRARY} PARENT_SCOPE)
+set(LIBNET_LIBRARIES ${LIBNET_LIBRARY} PARENT_SCOPE)
 set(LIBNET_INCLUDE_DIR ${LIBNET_INCLUDE_DIR} PARENT_SCOPE)
 set(LIBNET_FOUND TRUE PARENT_SCOPE)
 add_custom_target(bundled_libnet)

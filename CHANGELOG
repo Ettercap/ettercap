@@ -16,6 +16,7 @@ Legend:
    !! Lots of buffer under-/overflow conditions fixed
    !! CVE-2017-6430 (Fix invalid read on crafted file in etterfilter)
    !! fix dns_spoof plugin when used in bridge mode
+    + SSL redirects are now customizable at runtime
     + GeoIP detection / support using CMake
     + Rework of GTK3 UI - modern GNOME3 look
     + New Kerberos 5 downgrade plugin

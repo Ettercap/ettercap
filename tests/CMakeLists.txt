@@ -15,7 +15,12 @@ add_custom_target(test_verbose
 # Adds a test by name
 macro(_t NAME)
   add_executable(test_${NAME} test_${NAME}.c)
-  target_link_libraries(test_${NAME} lib_ettercap CHECK::CHECK)
+  if(TARGET CHECK::CHECK)
+    target_link_libraries(test_${NAME} lib_ettercap CHECK::CHECK)
+  else()
+    include_directories(. ../include ${LIBCHECK_INCLUDE_DIRS})
+    target_link_libraries(test_${NAME} lib_ettercap ${LIBCHECK_LIBRARIES})
+  endif()
   add_test(test_${NAME} ${CMAKE_CURRENT_BINARY_DIR}/test_${NAME})
 endmacro()
 

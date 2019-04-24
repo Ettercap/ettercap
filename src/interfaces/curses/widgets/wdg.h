@@ -14,7 +14,7 @@
    #include <windows.h>
 #endif
 
-#ifdef OS_DARWIN
+#if defined(OS_DARWIN) || defined(OS_LINUX)
    #include <sys/types.h>
 #endif
 

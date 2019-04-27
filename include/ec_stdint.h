@@ -39,6 +39,8 @@
 	typedef uint32_t  u_int32;
 	typedef uint64_t  u_int64;
 
+   typedef unsigned char u_char;
+
    #if defined OS_BSD_OPEN && !defined HAVE_STDINT_H
       #define INT8_MAX     CHAR_MAX
       #define UINT8_MAX    UCHAR_MAX

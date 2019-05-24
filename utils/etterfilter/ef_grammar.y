@@ -162,10 +162,11 @@ instruction:
             ef_debug(3, "\tassignment string\n");
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_ASSIGN;
-            $$.op.assign.string = (u_char*)strdup((char*)$3.op.assign.string);
+            $$.op.assign.string = (u_char*)calloc($3.op.assign.slen, sizeof(char));
             $$.op.assign.slen = $3.op.assign.slen;
             /* this is a string */
             $$.op.assign.size = 0;
+            memcpy($$.op.assign.string, $3.op.assign.string, $3.op.assign.slen);
          }
 
       |  offset TOKEN_OP_ASSIGN math_expr {
@@ -239,10 +240,11 @@ condition:
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_EQ;
-            $$.op.test.string = (u_char*)strdup((char*)$3.op.test.string);
+            $$.op.test.string = (u_char*)calloc($3.op.assign.slen, sizeof(char));
             $$.op.test.slen = $3.op.assign.slen;
             /* this is a string */
             $$.op.test.size = 0;
+            memcpy($$.op.test.string, $3.op.test.string, $3.op.assign.slen);
          }
 
       |  offset TOKEN_OP_CMP_NEQ TOKEN_STRING {
@@ -250,10 +252,11 @@ condition:
             memcpy(&$$, &$1, sizeof(struct filter_op));
             $$.opcode = FOP_TEST;
             $$.op.test.op = FTEST_NEQ;
-            $$.op.test.string = (u_char*)strdup((char*)$3.op.test.string);
+            $$.op.test.string = (u_char*)calloc($3.op.assign.slen, sizeof(char));
             $$.op.test.slen = $3.op.assign.slen;
             /* this is a string */
             $$.op.test.size = 0;
+            memcpy($$.op.test.string, $3.op.test.string, $3.op.assign.slen);
          }
 
       |  offset TOKEN_OP_CMP_EQ TOKEN_CONST {

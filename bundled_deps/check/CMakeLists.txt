@@ -7,14 +7,19 @@ set(CHECK_VERSION 0.10.0)
 set(CHECK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CHECK_TARGET bundled-check-${CHECK_VERSION}-${CMAKE_BUILD_TYPE})
 set(CHECK_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${CHECK_TARGET})
-set(CHECK_CONFIGURE_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/check_configure_wrapper.sh)
+set(CHECK_CONFIGURE_WRAPPER
+  ${CMAKE_CURRENT_BINARY_DIR}/check_configure_wrapper.sh
+)
+
 set(CHECK_BUILD_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/check_build_wrapper.sh)
 set(CHECK_INSTALL_WRAPPER ${CMAKE_CURRENT_BINARY_DIR}/check_install_wrapper.sh)
 
 set(CHECK_PREFIX ${CHECK_BUILD_ROOT}/usr)
 set(CHECK_LIB_DIR ${CHECK_PREFIX}/lib)
 set(CHECK_INCLUDE_DIR ${CHECK_PREFIX}/include)
-set(CHECK_LIBRARY ${CHECK_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}check${CMAKE_SHARED_LIBRARY_SUFFIX})
+set(CHECK_LIBRARY "${CHECK_LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}\
+check${CMAKE_SHARED_LIBRARY_SUFFIX}"
+)
 
 # Configure the Makefile wrapper. The purpose of this wrapper is to set up
 # the environment for building check. ExternalProject_Add doesn't

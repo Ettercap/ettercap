@@ -21,7 +21,9 @@ else()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LIBIDN DEFAULT_MSG LIBIDN_LIBRARIES LIBIDN_INCLUDE_DIR)
+find_package_handle_standard_args(LIBIDN
+  DEFAULT_MSG LIBIDN_LIBRARIES LIBIDN_INCLUDE_DIR
+)
 
 if(LIBIDN_FOUND)
   set(LIBIDN_LIBRARY ${LIBIDN_LIBRARIES})

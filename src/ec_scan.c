@@ -164,7 +164,7 @@ static EC_THREAD_FUNC(scan_thread)
    if (EC_GBL_UI->type == UI_TEXT || EC_GBL_UI->type == UI_DAEMONIZE)
       threadize = 0;
 
-#ifdef OS_MINGW
+#ifdef OS_WINDOWS
    /* FIXME: for some reason under windows it does not work in thread mode
     * to be investigated...
     */

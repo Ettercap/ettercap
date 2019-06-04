@@ -32,7 +32,9 @@
 #include <ec_utils.h>
 #include <ec_sleep.h>
 
+#ifndef OS_WINDOWS
 #include <sys/wait.h>
+#endif
 
 #include <pcre.h>
 

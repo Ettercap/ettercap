@@ -7,6 +7,9 @@
 #cmakedefine OS_BSD_OPEN
 #cmakedefine OS_DARWIN
 #cmakedefine OS_GNU
+#cmakedefine OS_WINDOWS
+#cmakedefine OS_MINGW
+#cmakedefine OS_CYGWIN
 
 #cmakedefine WORDS_BIGENDIAN
 #cmakedefine OS_SIZEOF_P @OS_SIZEOF_P@
@@ -14,10 +17,12 @@
 #cmakedefine CC_VERSION "@CC_VERSION@"
 
 #cmakedefine HAVE_SYS_SELECT_H
+#cmakedefine HAVE_POLL_H
 #cmakedefine HAVE_SYS_POLL_H
 #cmakedefine HAVE_UTSNAME_H
 #cmakedefine HAVE_STDINT_H
 #cmakedefine HAVE_GETOPT_H
+#cmakedefine HAVE_NAMESER_H
 #cmakedefine HAVE_ARPA_NAMESER_H
 #cmakedefine HAVE_LTDL_H
 #cmakedefine HAVE_DLFCN_H
@@ -47,6 +52,7 @@
 #cmakedefine HAVE_GTK
 #cmakedefine HAVE_GTK3
 #cmakedefine HAVE_GTK3COMPAT
+#cmakedefine HAVE_DAEMON
 
 #cmakedefine HAVE_UTF8
 #cmakedefine HAVE_PLUGINS
@@ -64,7 +70,7 @@
 #cmakedefine ICON_DIR               "@ICON_DIR@"
 #cmakedefine MAN_INSTALLDIR         "@MAN_INSTALLDIR@"
 
-#cmakedefine JUST_LIBRARY
+#cmakedefine LIBRARY_BUILD
 
 #cmakedefine LIBNET_VERSION         "@LIBNET_VERSION@"
 #cmakedefine LIBNET_VERSION_MAJOR   @LIBNET_VERSION_MAJOR@

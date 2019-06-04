@@ -1,8 +1,14 @@
 if(HAVE_PCRE)
   if(CURL_FOUND)
     add_library(sslstrip MODULE sslstrip/sslstrip.c)
-    include_directories(${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})
-    add_dependencies(sslstrip curl)
+    target_include_directories(sslstrip
+      PRIVATE
+      ${CURL_INCLUDE_DIR}
+      ${PCRE_INCLUDE_DIR}
+    )
+    if(BUNDLED_LIBS)
+      add_dependencies(sslstrip curl)
+    endif()
     target_link_libraries(sslstrip ${CURL_LIBRARY} ${PCRE_LIBRARY})
     target_link_libraries(sslstrip lib_ettercap)
     set_target_properties(sslstrip PROPERTIES PREFIX "ec_")

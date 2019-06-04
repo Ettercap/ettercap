@@ -1,93 +1,75 @@
-# Copyright 2013 Ettercap Development Team.
+# Copyright 2018 Ettercap Development Team.
 #
-# Distributed under GPL licnse.
+# Distributed under the GPL.
 #
+# - Find LUAJIT
+# Find library and includes of the Just-in-time compiler for Lua.
+#
+#  LUAJIT_INCLUDE_DIRS - Where to find pcre.h.
+#  LUAJIT_LIBRARIES    - List of libraries when using LUAJIT.
+#  LUAJIT_FOUND        - True if LUAJIT is found.
+#  LUAJIT_VERSION      - The version of LUAJIT found
+#
+
+find_package(PkgConfig QUIET)
+pkg_search_module(PC_LUAJIT QUIET IMPORTED_TARGET luajit)
 
 # Look for the header file
-find_path(LUAJIT_INCLUDE_DIR NAMES luajit.h PATH_SUFFIXES luajit-2.1 luajit-2.0 luajit)
-mark_as_advanced(LUAJIT_INCLUDE_DIR)
+find_path(LUAJIT_INCLUDE_DIR luajit.h
+  PATHS
+    ${PC_LUAJIT_INCLUDE_DIRS}
+  PATH_SUFFIXES luajit-2.1 luajit-2.0 luajit
+)
 
 #Look for the library
-find_library(LUAJIT_LIBRARY NAMES luajit-5.1)
-mark_as_advanced(LUAJIT_LIBRARY)
-
-# Make sure we've got an include dir.
-if(NOT LUAJIT_INCLUDE_DIR)
-  if(LUAJIT_FIND_REQUIRED AND NOT LUAJIT_FIND_QUIETLY)
-    message(FATAL_ERROR "Could not find LUAJIT include directory.")
-  endif()
-  return()
+set(names luajit-5.1)
+if(WIN32)
+  list(APPEND names lua51)
 endif()
 
-if(NOT LUAJIT_LIBRARY)
-  if(LUAJIT_FIND_REQUIRED AND NOT LUAJIT_FIND_QUIETLY)
-    message(FATAL_ERROR "Could not find LUAJIT library.")
-  endif()
-  return()
+find_library(LUAJIT_LIBRARY NAMES ${names}
+  PATHS
+    ${PC_LUAJIT_LIBRARY_DIRS}
+)
+
+# Get version string.
+if(PC_LUAJIT_VERSION)
+  set(LUAJIT_VERSION ${PC_LUAJIT_VERSION})
+else()
+  # Get '#define LUAJIT_VERSION "LuaJIT X.X.X"'
+  file(STRINGS ${LUAJIT_INCLUDE_DIR}/luajit.h LUAJIT_HEADER_DUMP
+    LENGTH_MINIMUM 30
+    LENGTH_MAXIMUM 40
+    REGEX "^#define LUAJIT_VERSION[\t]+.*"
+  )
+
+  string(REGEX MATCH "([0-9]+.)([0-9]+[.]*)([0-9]*)"
+    LUAJIT_VERSION
+    "${LUAJIT_HEADER_DUMP}"
+  )
 endif()
 
-#=============================================================
-# _LUAJIT_GET_VERSION
-# Internal function to parse the version number in luajit.h
-#   _OUT_version = The version number
-#   _luajit_hdr = Header file to parse
-#=============================================================
-function(_LUAJIT_GET_VERSION _OUT_version _luajit_hdr)
-  file(READ ${_luajit_hdr} _contents)
-  if(_contents)
-    # Example: #define LUAJIT_VERSION_NUM      20000  /* Version 2.0.0 = 02.00.00. */
-    string(REGEX REPLACE ".*#define LUAJIT_VERSION_NUM[ \t]+([0-9]+)([0-9][0-9])([0-9][0-9])[^0-9].*"
-"\\1.\\2.\\3" ${_OUT_version} "${_contents}")
-
-    if(NOT ${_OUT_version} MATCHES "[0-9.]+")
-      message(FATAL_ERROR "Version parsing failed for LUAJIT_VERSION!")
-    endif()
-
-    set(${_OUT_version} ${${_OUT_version}} PARENT_SCOPE)
-  else()
-    message(FATAL_ERROR "Include file ${_luajit_hdr} does not exist")
-  endif()
-endfunction()
-
-if(LUAJIT_FIND_VERSION)
-  set(LUAJIT_FAILED_VERSION_CHECK true)
-  _luajit_get_version(LUAJIT_VERSION ${LUAJIT_INCLUDE_DIR}/luajit.h)
-
-  if(LUAJIT_FIND_VERSION_EXACT)
-    if(LUAJIT_VERSION VERSION_EQUAL LUAJIT_FIND_VERSION)
-      set(LUAJIT_FAILED_VERSION_CHECK false)
-    endif()
-  else()
-  if(LUAJIT_VERSION VERSION_EQUAL   LUAJIT_FIND_VERSION OR
-    LUAJIT_VERSION VERSION_GREATER LUAJIT_FIND_VERSION)
-    set(LUAJIT_FAILED_VERSION_CHECK false)
-  endif()
-  endif()
-
-  if(LUAJIT_FAILED_VERSION_CHECK)
-    if(LUAJIT_FIND_REQUIRED AND NOT LUAJIT_FIND_QUIETLY)
-      if(LUAJIT_FIND_VERSION_EXACT)
-        message(FATAL_ERROR "LUAJIT version check failed.
-Version ${LUAJIT_VERSION} was found, version ${LUAJIT_FIND_VERSION} is needed exactly.")
-      else()
-        message(FATAL_ERROR "LUAJIT version check failed.
-Version ${LUAJIT_VERSION} was found, at least version ${LUAJIT_FIND_VERSION} is required")
-      endif()
-    endif()
-
-    # If the version check fails, exit out of the module here
-    return()
-  endif()
-
-endif()
-
-#handle the QUIETLY and REQUIRED arguments and set LUAJIT_FOUND to TRUE if
-# all listed variables are TRUE
+# Handle the QUIETLY and REQUIRED arguments and set LUAJIT_FOUND to TRUE if
+# all listed variables are TRUE.
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LUAJIT DEFAULT_MSG LUAJIT_LIBRARY LUAJIT_INCLUDE_DIR)
+find_package_handle_standard_args(LUAJIT
+  REQUIRED_VARS
+    LUAJIT_LIBRARY
+    LUAJIT_INCLUDE_DIR
+  VERSION_VAR LUAJIT_VERSION
+)
 
 if(LUAJIT_FOUND)
-  set(LUAJIT_LIBRARY ${LUAJIT_LIBRARY})
-  set(LUAJIT_INCLUDE_DIR ${LUAJIT_INCLUDE_DIR})
-  set(LUAJIT_VERSION ${LUAJIT_VERSION})
+  set(LUAJIT_LIBRARIES ${LUAJIT_LIBRARY})
+  set(LUAJIT_INCLUDE_DIRS ${LUAJIT_INCLUDE_DIR})
+
+  if(NOT TARGET LUAJIT::LUAJIT)
+    add_library(LUAJIT::LUAJIT UNKNOWN IMPORTED)
+    set_target_properties(LUAJIT::LUAJIT PROPERTIES
+      IMPORTED_LOCATION "${LUAJIT_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${LUAJIT_INCLUDE_DIR}")
+  endif()
+
 endif()
+
+mark_as_advanced(LUAJIT_INCLUDE_DIR LUAJIT_LIBRARY)

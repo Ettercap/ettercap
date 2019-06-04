@@ -3,7 +3,7 @@
 # optional components like gtkmm, glade, and glademm.
 #
 # NOTE: If you intend to use version checking, CMake 2.6.2 or later is
-#       required.
+# required.
 #
 # Specify one or more of the following components
 # as you call this find module. See example below.
@@ -49,6 +49,7 @@
 #=============================================================================
 # Copyright 2009 Kitware, Inc.
 # Copyright 2008-2009 Philip Lowman <philip@yhbt.com>
+# Copyright 2014-2018 Ettercap Development Team <info@ettercap-project.org>
 #
 # Distributed under the OSI-approved BSD License (the "License");
 # see accompanying file Copyright.txt for details.
@@ -65,7 +66,8 @@
 #   * First cut at a GTK3 version (Heavily derived from
 #     FindGTK2.cmake)
 
-
+# Version 0.2 (3/02/2018)
+#   * Run git diff against this file to see all changes
 #=============================================================
 # _GTK3_GET_VERSION
 # Internal function to parse the version number in gtkversion.h
@@ -77,10 +79,20 @@
 function(_GTK3_GET_VERSION _OUT_major _OUT_minor _OUT_micro _gtkversion_hdr)
   file(READ ${_gtkversion_hdr} _contents)
   if(_contents)
-    string(REGEX REPLACE ".*#define GTK_MAJOR_VERSION[ \t]+\\(([0-9]+)\\).*" "\\1" ${_OUT_major} "${_contents}")
-    string(REGEX REPLACE ".*#define GTK_MINOR_VERSION[ \t]+\\(([0-9]+)\\).*" "\\1" ${_OUT_minor} "${_contents}")
-    string(REGEX REPLACE ".*#define GTK_MICRO_VERSION[ \t]+\\(([0-9]+)\\).*" "\\1" ${_OUT_micro} "${_contents}")
+    string(REGEX REPLACE
+      ".*#define GTK_MAJOR_VERSION[ \t]+\\(([0-9]+)\\).*"
+      "\\1" ${_OUT_major} "${_contents}"
+    )
 
+    string(REGEX REPLACE
+      ".*#define GTK_MINOR_VERSION[ \t]+\\(([0-9]+)\\).*"
+      "\\1" ${_OUT_minor} "${_contents}"
+    )
+
+    string(REGEX REPLACE
+      ".*#define GTK_MICRO_VERSION[ \t]+\\(([0-9]+)\\).*"
+      "\\1" ${_OUT_micro} "${_contents}"
+    )
     if(NOT ${_OUT_major} MATCHES "[0-9]+")
       message(FATAL_ERROR "Version parsing failed for GTK3_MAJOR_VERSION!")
     endif()
@@ -146,6 +158,11 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
 
   find_path(${_var} ${_hdr}
     PATHS
+      # On Windows, glibconfig.h is located
+      # under $PREFIX/lib/glib-2.0/include.
+      C:/GTK/lib/glib-2.0/include
+      C:/msys64/$ENV{MSYSTEM}/lib/glib-2.0
+      # end
       /usr/local/lib64
       /usr/local/lib
       # fix for Ubuntu == 11.04 (Natty Narwhal)
@@ -156,23 +173,16 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
       /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}
       # end
       /usr/lib64
-      /usr/lib
-      /opt/gnome/include
-      /opt/gnome/lib
-      /opt/openwin/include
-      /usr/openwin/lib
-      /sw/include
-      /sw/lib
-      /opt/local/include
-      /opt/local/lib
-      $ENV{GTKMM_BASEPATH}/include
-      $ENV{GTKMM_BASEPATH}/lib
-      [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]/include
-      [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]/lib
-      [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]/include
-      [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]/lib
+      /usr
+      /opt/gnome
+      /usr/openwin
+      /sw
+      /opt/local
+      $ENV{GTKMM_BASEPATH}
+      [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
+      [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
   PATH_SUFFIXES
-      ${_suffixes}
+      ${_suffixes} include lib
   )
 
   if(${_var})
@@ -242,7 +252,7 @@ function(_GTK3_FIND_LIBRARY _var _lib _expand_vc _append_version)
 
   if(GTK3_DEBUG)
     message(STATUS "[FindGTK3.cmake:${CMAKE_CURRENT_LIST_LINE}]     "
-            "library list = ${_lib_list} and library debug list = ${_libd_list}")
+"library list = ${_lib_list} and library debug list = ${_libd_list}")
   endif()
 
   # For some silly reason the MSVC libraries use _ instead of .
@@ -267,41 +277,45 @@ function(_GTK3_FIND_LIBRARY _var _lib _expand_vc _append_version)
 
   if(GTK3_DEBUG)
     message(STATUS "[FindGTK3.cmake:${CMAKE_CURRENT_LIST_LINE}]     "
-            "While searching for ${_var}, our proposed library list is ${_lib_list}")
+"While searching for ${_var}, our proposed library list is ${_lib_list}")
   endif()
 
   find_library(${_var}
     NAMES ${_lib_list}
     PATHS
-      /opt/gnome/lib
-      /opt/gnome/lib64
-      /usr/openwin/lib
-      /usr/openwin/lib64
-      /sw/lib
-      $ENV{GTKMM_BASEPATH}/lib
-      [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]/lib
-      [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]/lib
+      /opt/gnome
+      /usr/openwin
+      /sw
+      $ENV{GTKMM_BASEPATH}
+      [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
+      [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
+    PATH_SUFFIXES lib lib64
   )
 
   if(_expand_vc AND MSVC)
     if(GTK3_DEBUG)
       message(STATUS "[FindGTK3.cmake:${CMAKE_CURRENT_LIST_LINE}]     "
-              "While searching for ${_var}_DEBUG our proposed library list is ${_libd_list}")
+"While searching for ${_var}_DEBUG our proposed library list is ${_libd_list}")
     endif()
 
   find_library(${_var}_DEBUG
     NAMES ${_libd_list}
     PATHS
-      $ENV{GTKMM_BASEPATH}/lib
-      [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]/lib
-      [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]/lib
+      $ENV{GTKMM_BASEPATH}
+      [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
+      [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
+    PATH_SUFFIXES lib
   )
 
   if(${_var} AND ${_var}_DEBUG)
     if(NOT GTK3_SKIP_MARK_AS_ADVANCED)
       mark_as_advanced(${_var}_DEBUG)
     endif()
-    set(GTK3_LIBRARIES ${GTK3_LIBRARIES} optimized ${${_var}} debug ${${_var}_DEBUG})
+    set(GTK3_LIBRARIES
+      ${GTK3_LIBRARIES}
+      optimized ${${_var}}
+      debug ${${_var}_DEBUG}
+    )
     set(GTK3_LIBRARIES ${GTK3_LIBRARIES} PARENT_SCOPE)
   endif()
   else()
@@ -371,10 +385,14 @@ if(GTK3_FIND_VERSION)
     if(GTK3_FIND_REQUIRED AND NOT GTK3_FIND_QUIETLY)
       if(GTK3_FIND_VERSION_EXACT)
         message(FATAL_ERROR "GTK3 version check failed.
-Version ${GTK3_VERSION} was found, version ${GTK3_FIND_VERSION} is needed exactly.")
+Version ${GTK3_VERSION} was found, \
+version ${GTK3_FIND_VERSION} is needed exactly."
+        )
       else()
         message(FATAL_ERROR "GTK3 version check failed.
-Version ${GTK3_VERSION} was found, at least version ${GTK3_FIND_VERSION} is required")
+Version ${GTK3_VERSION} was found, \
+at least version ${GTK3_FIND_VERSION} is required"
+        )
       endif()
     endif()
 
@@ -387,7 +405,7 @@ endif()
 # Find all components
 #
 
-find_package(Freetype)
+find_package(Freetype QUIET)
 list(APPEND GTK3_INCLUDE_DIRS ${FREETYPE_INCLUDE_DIRS})
 list(APPEND GTK3_LIBRARIES ${FREETYPE_LIBRARIES})
 
@@ -416,6 +434,18 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
       _gtk3_find_library(GTK3_GDK_LIBRARY gdk false true)
       _gtk3_find_library(GTK3_GTK_LIBRARY gtk false true)
     else()
+    # ********* There are various gtk3 builds/packages/bundles
+    # ********* available on Windows. Some of them follow the
+    # ********* classic naming scheme (libs with -win32 suffix)
+    # ********* and others prefer the original names.
+    # ********* Because we want to support as many packages
+    # ********* as possible, we search for both naming styles.
+    # ********* Starting with the original names.
+    # *********
+    # ********* Tested with both vcpkg (gtk+-3.22.19)
+    # ********* and Msys2 (gtk+-3.22.28)
+      _gtk3_find_library(GTK3_GDK_LIBRARY gdk false true)
+      _gtk3_find_library(GTK3_GTK_LIBRARY gtk false true)
       _gtk3_find_library(GTK3_GDK_LIBRARY gdk-win32 false true)
       _gtk3_find_library(GTK3_GTK_LIBRARY gtk-win32 false true)
     endif()
@@ -487,7 +517,10 @@ if(NOT GTK3_FIND_VERSION AND GTK3_GTK_INCLUDE_DIR)
                     GTK3_MINOR_VERSION
                     GTK3_PATCH_VERSION
                     ${GTK3_GTK_INCLUDE_DIR}/gtk/gtkversion.h)
-  set(GTK3_VERSION ${GTK3_MAJOR_VERSION}.${GTK3_MINOR_VERSION}.${GTK3_PATCH_VERSION})
+  set(GTK3_VERSION
+    ${GTK3_MAJOR_VERSION}.${GTK3_MINOR_VERSION}.${GTK3_PATCH_VERSION}
+  )
+
 endif()
 
 #
@@ -503,7 +536,8 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
   string(TOUPPER ${_GTK3_component} _COMPONENT_UPPER)
 
   if(_GTK3_component STREQUAL "gtk")
-    find_package_handle_standard_args(GTK3_${_COMPONENT_UPPER} "Some or all of the gtk libraries were not found."
+    find_package_handle_standard_args(GTK3_${_COMPONENT_UPPER}
+      "Some or all of the gtk libraries were not found."
       GTK3_GTK_LIBRARY
       GTK3_GTK_INCLUDE_DIR
 
@@ -516,7 +550,8 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
       GTK3_GDK_LIBRARY
     )
   elseif(_GTK3_component STREQUAL "gtkmm")
-    find_package_handle_standard_args(GTK3_${_COMPONENT_UPPER} "Some or all of the gtkmm libraries were not found."
+    find_package_handle_standard_args(GTK3_${_COMPONENT_UPPER}
+      "Some or all of the gtkmm libraries were not found."
       GTK3_GTKMM_LIBRARY
       GTK3_GTKMM_INCLUDE_DIR
       GTK3_GTKMMCONFIG_INCLUDE_DIR
@@ -530,12 +565,14 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
       GTK3_GDKMM_LIBRARY
     )
   elseif(_GTK3_component STREQUAL "glade")
-    find_package_handle_standard_args(GTK3_${_COMPONENT_UPPER} "The glade library was not found."
+    find_package_handle_standard_args(GTK3_${_COMPONENT_UPPER}
+      "The glade library was not found."
       GTK3_GLADE_LIBRARY
       GTK3_GLADE_INCLUDE_DIR
     )
   elseif(_GTK3_component STREQUAL "glademm")
-    find_package_handle_standard_args(GTK3_${_COMPONENT_UPPER} "The glademm library was not found."
+    find_package_handle_standard_args(GTK3_${_COMPONENT_UPPER}
+      "The glademm library was not found."
       GTK3_GLADEMM_LIBRARY
       GTK3_GLADEMM_INCLUDE_DIR
       GTK3_GLADEMMCONFIG_INCLUDE_DIR

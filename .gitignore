@@ -53,6 +53,8 @@ tags
 gmon.out
 ettercap-*_debug.log
 libwdg-*_debug.log
-build/
+build*
 include/config.h
 /obj-*/
+CMakeFiles
+CMakeCache.txt

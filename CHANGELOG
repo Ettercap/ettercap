@@ -5,7 +5,8 @@ Legend:
          !! bug fixed
 
 =========================================
-0.8.3-?       2018mmdd
+0.8.3-Bertillon
+   !! Fix binary comparsion and assignment in etterfilter
    !! Fixed packetbuffer racecond. in BRIDGE mode (e.g. Message too long)
    !! Non-aligned filters are no longer supported (recompilation with etterfilter required)
    !! Fixed sslstrip plugin startup issue due to regex compilation error

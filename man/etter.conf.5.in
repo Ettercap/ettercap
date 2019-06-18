@@ -369,7 +369,7 @@ specifies the encoding to be used while displaying the packets in UTF-8 format.
 Use the `iconv \-\-list` command for a list of supported encodings.
 
 .TP
-.B remote_broswer
+.B remote_browser
 This command is executed by the remote_browser plugin each time it catches a
 good URL request into an HTTP connection.
 The command should be able to get 2 parameters:
@@ -387,11 +387,17 @@ The page requested inside the GET request.
 .B redir_command_on
 You must provide a valid command (or script) to enable tcp redirection at the
 kernel level in order to be able to use SSL dissection. Your script should be
-able to get 3 parameters:
+able to get 5 parameters:
 .RS
 .TP
 .B %iface
 The network interface on which the rule must be set
+.TP
+.B %source
+The source IP or network matching the packets to be redirected (default is 0.0.0.0/0, ::/0 resp. or any)
+.TP
+.B %destination
+The destination IP or network matching the packets to be redirected (default is 0.0.0.0/0, ::/0 resp. or any)
 .TP
 .B %port
 The source port of the packets to be redirected (443 for HTTPS, 993 for imaps,
@@ -401,8 +407,9 @@ etc).
 The internally bound port to which ettercap listens for connections.
 .RE
 NOTE: this script is executed with an execve(), so you cannot use pipes or
-output redirection as if you were in a shell. We suggest you to make a script if
-you need those commands.
+output redirection as if you were in a shell. We suggest you to make a script if you need those commands.
+
+NOTE: for this to work, you must set ec_uid to a UID what is privileged to execute the redir_command or provide a setuid program.
 
 .TP
 .B redir_command_off

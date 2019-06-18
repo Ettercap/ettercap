@@ -128,7 +128,7 @@ color_border = 7
 color_title = 3 
 color_focus = 6 
 color_menu_bg = 4
-color_menu_fg = 6 
+color_menu_fg = 7
 color_window_bg = 4 
 color_window_fg = 7 
 color_selection_bg = 6 
@@ -171,24 +171,24 @@ geoip_data_file_v6 = "/usr/local/share/GeoIP/GeoIPv6.dat"
 #---------------
 
 # if you use ipchains:
-   #redir_command_on = "ipchains -A input -i %iface -p tcp -s 0/0 -d 0/0 %port -j REDIRECT %rport"
-   #redir_command_off = "ipchains -D input -i %iface -p tcp -s 0/0 -d 0/0 %port -j REDIRECT %rport"
+   #redir_command_on = "ipchains -A input -i %iface -p tcp -s %source -d %destination %port -j REDIRECT %rport"
+   #redir_command_off = "ipchains -D input -i %iface -p tcp -s %source -d %destination %port -j REDIRECT %rport"
 
 # if you use iptables:
-   #redir_command_on = "iptables -t nat -A PREROUTING -i %iface -p tcp --dport %port -j REDIRECT --to-port %rport"
-   #redir_command_off = "iptables -t nat -D PREROUTING -i %iface -p tcp --dport %port -j REDIRECT --to-port %rport"
+   #redir_command_on = "iptables -t nat -A PREROUTING -i %iface -p tcp -s %source -d %destination --dport %port -j REDIRECT --to-port %rport"
+   #redir_command_off = "iptables -t nat -D PREROUTING -i %iface -p tcp -s %source -d %destination --dport %port -j REDIRECT --to-port %rport"
 
 #---------------
 #    Mac Os X
 #---------------
 
 # if you use ipfw:
-   #redir_command_on = "ipfw -q add set %set fwd 127.0.0.1,%rport tcp from any to any %port in via %iface"
+   #redir_command_on = "ipfw -q add set %set fwd 127.0.0.1,%rport tcp from %source to %destination %port in via %iface"
    #redir_command_off = "ipfw -q delete set %set"
 
 # if you use BSD PF:
-   #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
-   #redir_command_off = "pfctl -sn 2> /dev/null | grep -v %port | pfctl -f - 2> /dev/null"
+   #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from %source to %destination port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
+   #redir_command_off = "pfctl -Psn 2> /dev/null | egrep -v 'inet .+ %source to %destination port = %port' | pfctl -f - 2> /dev/null"
 
 
 #---------------
@@ -204,8 +204,8 @@ geoip_data_file_v6 = "/usr/local/share/GeoIP/GeoIPv6.dat"
 # `pfctl -si | grep Status | awk '{print $2;}'`. If "Disabled", enable it with
 # `pfctl -e`.
 
-   #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from any to any port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
-   #redir_command_off = "pfctl -Psn 2> /dev/null | grep -v %port | pfctl -f - 2> /dev/null"
+   #redir_command_on = "(pfctl -sn 2> /dev/null; echo 'rdr pass on %iface inet proto tcp from %source to %destination port %port -> localhost port %rport') | pfctl -f - 2> /dev/null"
+   #redir_command_off = "pfctl -Psn 2> /dev/null | egrep -v 'inet .+ %source to %destination port = %port' | pfctl -f - 2> /dev/null"
 
 
 #---------------

@@ -86,6 +86,8 @@ void gtkui_create_menu(int live)
 #endif
       "        <separator />"
       "        <menuitem name='StopMitmAttacks' action='StopMitmAttacksAction' />"
+      "        <separator />"
+      "        <menuitem name='SSLRedirects' action='SSLRedirectsAction' />"
       "     </menu>"
       "     <menu name='FiltersMenu' action='FiltersMenuAction'>"
       "        <menuitem name='LoadFilter' action='LoadFilterAction' />"
@@ -299,6 +301,12 @@ void gtkui_create_menu(int live)
          "StopMitmAttacksAction", NULL,
          "Stop mitm attack(s)", NULL,
          NULL, G_CALLBACK(gtkui_mitm_stop)
+      },
+
+      {
+         "SSLRedirectsAction", NULL,
+         "SSL Intercept", NULL,
+         NULL, G_CALLBACK(gtkui_sslredir_show)
       }
    };
 

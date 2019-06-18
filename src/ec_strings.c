@@ -439,6 +439,32 @@ int ec_strsplit_ipport(char *input, char *ip, u_int16 *port)
    return -E_INVALID;
 }
 
+/* duplicate string in all letters lowercase */
+const char *ec_strlc(const char *input)
+{
+   char *output, *ptr;
+
+   ptr = output = strdup(input);
+   do {
+      *ptr = tolower(*ptr);
+   } while (*(ptr++) != 0);
+
+   return output;
+}
+
+/* duplicate string in all letters uppercase */
+const char *ec_struc(const char *input)
+{
+   char *output, *ptr;
+
+   ptr = output = strdup(input);
+   do {
+      *ptr = toupper(*ptr);
+   } while (*(ptr++) != 0);
+
+   return output;
+}
+
 /* EOF */
 
 // vim:ts=3:expandtab

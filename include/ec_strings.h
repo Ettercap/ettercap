@@ -51,6 +51,8 @@ EC_API_EXTERN char getchar_buffer(char **buf);
 EC_API_EXTERN int str_hex_to_bytes(char *string, u_char *bytes);
 EC_API_EXTERN char * str_tohex(u_char *bin, size_t len, char *dst, size_t dst_len);
 EC_API_EXTERN int ec_strsplit_ipport(char *input, char *ip, u_int16 *port);
+EC_API_EXTERN const char * ec_strlc(const char *input);
+EC_API_EXTERN const char * ec_struc(const char *input);
 
 #define strtok(x,y) DON_T_USE_STRTOK_DIRECTLY_USE__EC_STRTOK__INSTEAD
 

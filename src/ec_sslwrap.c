@@ -31,11 +31,9 @@
 #include <ec_socket.h>
 #include <ec_utils.h>
 #include <ec_sleep.h>
+#include <ec_redirect.h>
 
 #include <sys/types.h>
-#ifndef OS_WINDOWS
-   #include <sys/wait.h>
-#endif
 
 #ifdef OS_LINUX
    #include <linux/netfilter_ipv4.h>
@@ -114,10 +112,6 @@ struct sslw_ident {
 #define SSLW_RETRY 500
 #define SSLW_WAIT 10 /* 10 milliseconds */
 
-#if defined(OS_DARWIN) || defined(OS_BSD)
-#define SSLW_SET "20"
-#endif
-
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
 
@@ -142,8 +136,6 @@ static void sslw_create_session(struct ec_session **s, struct packet_object *po)
 static size_t sslw_create_ident(void **i, struct packet_object *po);            
 static void sslw_hook_handled(struct packet_object *po);
 static X509 *sslw_create_selfsigned(X509 *serv_cert);
-static int sslw_insert_redirect(u_int16 sport, u_int16 dport);
-static int sslw_remove_redirect(u_int16 sport, u_int16 dport);
 static void ssl_wrap_fini(void);
 static int sslw_ssl_connect(SSL *ssl_sk);
 static int sslw_ssl_accept(SSL *ssl_sk);
@@ -239,7 +231,6 @@ static void ssl_wrap_fini(void)
    DEBUG_MSG("ATEXIT: ssl_wrap_fini");
    /* remove every redirect rule and close listener sockets */
    LIST_FOREACH_SAFE(le, &listen_ports, next, old) {
-      sslw_remove_redirect(le->sslw_port, le->redir_port);
       close(le->fd);
 #ifdef WITH_IPV6
       close(le->fd6);
@@ -250,6 +241,9 @@ static void ssl_wrap_fini(void)
 
    SSL_CTX_free(ssl_ctx_server);
    SSL_CTX_free(ssl_ctx_client);
+
+   /* remove redirects */
+   ec_redirect_cleanup();
 
 }
 
@@ -394,168 +388,6 @@ static void sslw_hook_handled(struct packet_object *po)
       po->flags |= PO_IGNORE;
 }
 
-/*
- * execute the script to add the redirection
- */
-static int sslw_insert_redirect(u_int16 sport, u_int16 dport)
-{
-   char asc_sport[16];
-   char asc_dport[16];
-   int i, ret_val = 0;
-   char *command;
-   char *param[4], *commands[2] = {NULL, NULL};
- 
-   /* the script is not defined */
-   if (EC_GBL_CONF->redir_command_on == NULL)
-   {
-      USER_MSG("sslwrap: cannot setup the redirect, did you uncomment the redir_command_on command on your etter.conf file?\n");
-      return -E_FATAL;
-   }
-   else  {
-      commands[0] = strdup(EC_GBL_CONF->redir_command_on);
-   }
-
-#ifdef WITH_IPV6
-   /* IPv6 redirect script is optional */
-   if (EC_GBL_CONF->redir6_command_on == NULL)
-   {
-      WARN_MSG("sslwrap: cannot setup the redirect for IPv6, did you uncomment the redir6_command_on command on your etter.conf file?\n");
-   }
-   else {
-      commands[1] = strdup(EC_GBL_CONF->redir6_command_on);
-   }
-#endif
-
-   snprintf(asc_sport, 16, "%u", sport);
-   snprintf(asc_dport, 16, "%u", dport);
-
-   for (i = 0; i < 2 && commands[i] != NULL; i++) {
-      command = commands[i];
-
-      /* make the substitutions in the script */
-      str_replace(&command, "%iface", EC_GBL_OPTIONS->iface);
-      str_replace(&command, "%port", asc_sport);
-      str_replace(&command, "%rport", asc_dport);
-
-#if defined(OS_DARWIN) || defined(OS_BSD)
-      str_replace(&command, "%set", SSLW_SET);
-#endif
-
-      DEBUG_MSG("sslw_insert_redirect: [%s]", command);
-
-      /* construct the params array for execvp */
-      param[0] = "sh";
-      param[1] = "-c";
-      param[2] = command;
-      param[3] = NULL;
-
-      /* execute the script */
-      switch (fork()) {
-         case 0:
-            regain_privs();
-            execvp(param[0], param);
-            drop_privs();
-            WARN_MSG("Cannot setup http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-            SAFE_FREE(command);
-            _exit(-E_INVALID);
-         case -1:
-            SAFE_FREE(command);
-            return -E_INVALID;
-         default:
-            wait(&ret_val);
-            if (WIFEXITED(ret_val) && WEXITSTATUS(ret_val)) {
-               DEBUG_MSG("sslw_insert_redirect: child exited with non-zero return code: %d",
-                     WEXITSTATUS(ret_val));
-               USER_MSG("sslwrap: redir_command_on had non-zero exit status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
-               SAFE_FREE(command);
-               return -E_INVALID;
-            }
-      }
-
-      SAFE_FREE(command);
-   }
-   return E_SUCCESS;
-}
-
-/*
- * execute the script to remove the redirection
- */
-static int sslw_remove_redirect(u_int16 sport, u_int16 dport)
-{
-   char asc_sport[16];
-   char asc_dport[16];
-   int i, ret_val = 0;
-   char *command;
-   char *param[4], *commands[2] = {NULL, NULL};
-
-   /* the script is not defined */
-   if (EC_GBL_CONF->redir_command_off == NULL)
-   {
-      USER_MSG("sslwrap: cannot remove the redirect, did you uncomment the redir_command_off command on your etter.conf file?");
-      return -E_FATAL;
-   }
-   else {
-      commands[0] = strdup(EC_GBL_CONF->redir_command_off);
-   }
-
-#ifdef WITH_IPV6
-   /* the script for IPv6 is optional */
-   if (EC_GBL_CONF->redir6_command_off == NULL)
-   {
-      WARN_MSG("sslwrap: cannot remove the redirect for IPv6, did you uncommend the redir6_command_off command in your etter.conf file?");
-   }
-   else {
-      commands[1] = strdup(EC_GBL_CONF->redir6_command_off);
-   }
-#endif
-
-   snprintf(asc_sport, 16, "%u", sport);
-   snprintf(asc_dport, 16, "%u", dport);
-
-   /* make the substitutions in the script */
-   for (i = 0; i < 2 && commands[i] != NULL; i++) {
-
-      command = commands[i];
-
-      str_replace(&command, "%iface", EC_GBL_OPTIONS->iface);
-      str_replace(&command, "%port", asc_sport);
-      str_replace(&command, "%rport", asc_dport);
-
-#if defined(OS_DARWIN) || defined(OS_BSD)
-      str_replace(&command, "%set", SSLW_SET);
-#endif
-
-      DEBUG_MSG("sslw_remove_redirect: [%s]", command);
-
-      /* construct the params array for execvp */
-      param[0] = "sh";
-      param[1] = "-c";
-      param[2] = command;
-      param[3] = NULL;
-
-      /* execute the script */
-      switch (fork()) {
-         case 0:
-            regain_privs();
-            execvp(param[0], param);
-            drop_privs();
-            WARN_MSG("Cannot remove http redirect (command: %s), please edit your etter.conf file and put a valid value in redir_command_on field\n", param[0]);
-            SAFE_FREE(command);
-            _exit(-E_INVALID);
-         case -1:
-            SAFE_FREE(command);
-            return -E_INVALID;
-         default:
-            wait(&ret_val);
-            SAFE_FREE(command);
-            if (ret_val == -E_INVALID)
-               return -E_INVALID;
-      }
-   }
-
-   return E_SUCCESS;
-}
-
 
 /* 
  * Check if this packet is for ssl wrappers 
@@ -639,8 +471,18 @@ static void sslw_bind_wrapper(void)
       le->fd6 = 0;
 #endif
 
-      if (sslw_insert_redirect(le->sslw_port, le->redir_port) != E_SUCCESS)
+      if (ec_redirect(EC_REDIR_ACTION_INSERT, le->name,
+               EC_REDIR_PROTO_IPV4, NULL, NULL,
+               le->sslw_port, le->redir_port) != E_SUCCESS)
         FATAL_ERROR("Can't insert firewall redirects");
+
+#ifdef WITH_IPV6
+      if (ec_redirect(EC_REDIR_ACTION_INSERT, le->name,
+               EC_REDIR_PROTO_IPV6, NULL, NULL,
+               le->sslw_port, le->redir_port) != E_SUCCESS)
+        FATAL_ERROR("Can't insert firewall redirects");
+#endif
+
    }
 }
 

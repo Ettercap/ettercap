@@ -4,6 +4,7 @@ set(EC_TEXT_SRC
             text/ec_text_display.c
             text/ec_text_plugin.c
             text/ec_text_profile.c
+            text/ec_text_redirect.c
 )
 include_directories(text)
 
@@ -64,6 +65,7 @@ if(ENABLE_GTK)
       gtk/ec_gtk_mitm.c
       gtk/ec_gtk_offline.c
       gtk/ec_gtk_plugins.c
+      gtk/ec_gtk_redirect.c
       gtk/ec_gtk_start.c
       gtk/ec_gtk_targets.c
       gtk/ec_gtk_view.c
@@ -85,6 +87,7 @@ if(ENABLE_GTK)
       gtk3/ec_gtk3_mitm.c
       gtk3/ec_gtk3_offline.c
       gtk3/ec_gtk3_plugins.c
+      gtk3/ec_gtk3_redirect.c
       gtk3/ec_gtk3_start.c
       gtk3/ec_gtk3_targets.c
       gtk3/ec_gtk3_view.c

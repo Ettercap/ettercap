@@ -182,6 +182,17 @@ export EC_UID=500) or set the correct parameter in the etter.conf file.
 
 
 .SH SSL MITM ATTACK
+SSL mitm attack is dependent on TCP traffic redirection to a custom listener
+port of ettercap. The redir_command_on and redir_command_off configuration
+variables take care of this (see "etter.conf(5)").
+.br
+However, when ettercap starts, traffic for any source and any destination
+targeted for the redirectable services will be redirected to ettercap and the
+SSL stream will be intercepted.
+.br
+This may not be the desired behaviour. Therefore you can adjust the redirect
+rules after ettercap has been started using the selected user interface.
+.Sp
 While performing the SSL mitm attack, ettercap substitutes the real ssl
 certificate with its own. The fake certificate is created on the fly and all
 the fields are filled according to the real cert presented by the server. Only

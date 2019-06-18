@@ -142,6 +142,9 @@ extern void gtkui_ndp_poisoning(GSimpleAction *action, GVariant *value, gpointer
 #endif
 extern void gtkui_mitm_stop(GSimpleAction *action, GVariant *value, gpointer data);
 
+/* ec_gtk3_redirect.c */
+extern void gtkui_sslredir_show(GSimpleAction *action, GVariant *value, gpointer data);
+
 /* ec_gtk3_logging.c */
 extern void toggle_compress(GSimpleAction *action, GVariant *value, gpointer data);
 extern void gtkui_log_all(GSimpleAction *action, GVariant *value, gpointer data);

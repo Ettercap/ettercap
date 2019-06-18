@@ -95,6 +95,8 @@ extern void wdg_bug(char *file, const char *function, int line, char *message);
 #define CTRL(x)      ((x) & 0x1f)
 #endif
 #define KEY_ESC      CTRL('[')
+#define KEY_DC		0512		/* delete-character key */
+#define KEY_IC		0513		/* insert-character key */
 
 /* information about the current screen */
 struct wdg_scr {

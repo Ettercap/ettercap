@@ -5,7 +5,7 @@ Legend:
          !! bug fixed
 
 =========================================
-0.8.3-Bertillon
+0.8.3-Bertillon    20190701
    !! Fix binary comparsion and assignment in etterfilter
    !! Fixed packetbuffer racecond. in BRIDGE mode (e.g. Message too long)
    !! Non-aligned filters are no longer supported (recompilation with etterfilter required)

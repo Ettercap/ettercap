@@ -2,7 +2,7 @@
 # set -xe
 
 # geolite-update.sh -- update GeoIP lite databases.
-# (C) 2017 Ettercap Development Team.
+# (C) 2017-2019 Ettercap Development Team.
 
 # Ettercap can use MaxMind's GeoIP databases to look up the country for an IP address.
 # This simple shell script helps in downloading and installing the *free* GeoLite

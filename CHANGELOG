@@ -5,6 +5,32 @@ Legend:
          !! bug fixed
 
 =========================================
+0.8.3-Bertillon    20190701
+   !! Fix binary comparsion and assignment in etterfilter
+   !! Fixed packetbuffer racecond. in BRIDGE mode (e.g. Message too long)
+   !! Non-aligned filters are no longer supported (recompilation with etterfilter required)
+   !! Fixed sslstrip plugin startup issue due to regex compilation error
+   !! Fixed lots of build warnings
+   !! Proper separation of library and executable code
+   !! Fixed heap-buffer-overflow in write_output in etterfilter
+   !! ip_addr sanity check when etterlog processes info logfile
+   !! Lots of buffer under-/overflow conditions fixed
+   !! CVE-2017-6430 (Fix invalid read on crafted file in etterfilter)
+   !! fix dns_spoof plugin when used in bridge mode
+    + SSL redirects are now customizable at runtime
+    + GeoIP detection / support using CMake
+    + Rework of GTK3 UI - modern GNOME3 look
+    + New Kerberos 5 downgrade plugin
+    + GTK3 is the new default GTK_BUILD_TYPE
+    + OSPF dissector supports more authentication methods in hash-cracker friendly format
+    + Rework of Oracle O5LOGON dissector
+    + Multi-threaded name resolution
+    + Updated etter.finger.mac
+    - GTK2 phase out initialized
+    - Usage of deprecated inet_aton replaced with current successor functions
+
+
+
 0.8.2-Ferri   20150314
    !! Fixed some openssl deprecated functions usage
    !! Fixed log file ownership

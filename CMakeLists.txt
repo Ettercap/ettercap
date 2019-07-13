@@ -120,7 +120,7 @@ else()
 endif()
 set(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap CACHE PATH "Name of the pkexec action file")
 set(DESKTOP_DIR ${INSTALL_PREFIX}/share/applications/ CACHE PATH "Desktop file installation directory")
-set(APPDATA_DIR ${INSTALL_PREFIX}/share/appdata/ CACHE PATH "Appdata file installation directory")
+set(METAINFO_DIR ${INSTALL_PREFIX}/share/metainfo/ CACHE PATH "Metainfo file installation directory")
 set(ICON_DIR ${INSTALL_PREFIX}/share/pixmaps CACHE PATH "Icon file installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages")
 

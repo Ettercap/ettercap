@@ -177,7 +177,7 @@ FUNC_DECODER(decode_tcp)
           * For Windows at least, TCP checksum off-loading can be disabled with a
           * registry setting.
           *
-          * Same for Linux, but sometimes even ethtool doesnt turn this feature off.
+          * Same for Linux, but sometimes even ethtool doesn't turn this feature off.
           *
           * if the source is the ettercap host, don't display the message 
           */

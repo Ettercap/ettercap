@@ -242,7 +242,7 @@ has the focus as the injected data will be sent to that address.
 HINT: connections marked with an asterisk contain account(s) information.
 .TP
 .B Profiles
-Diplays the passive profile hosts list. Selecting a host will display the
+Displays the passive profile hosts list. Selecting a host will display the
 relative details (including account with user and pass for that host).
 .br
 You can convert the passive profile list into the hosts list by pressing 'c'.

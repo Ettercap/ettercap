@@ -197,7 +197,7 @@ static void parse_icmp(struct packet_object *po)
       return; 
 
    /* Check if it's in the poisoning list. If so this poisoning 
-    * is successfull.
+    * is successful.
     */
     POISON_LOCK;
     SLIST_FOREACH(p, &poison_table, next) {

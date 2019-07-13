@@ -461,9 +461,9 @@ table in the kernel specifying the GW. If your routing table is incorrect, the
 poisoned clients will not be able to navigate the Internet.
 .Sp
 NOTE: in IPv6 usually the link-local address of the router is being used as
-the gateway address. Therefor you need to set the link-local address of the
+the gateway address. Therefore you need to set the link-local address of the
 router as one target and the global-unicast address of the victim as the other
-in order to set up a successfull IPv6 MITM attack using NDP poisoning.
+in order to set up a successful IPv6 MITM attack using NDP poisoning.
 .RE
 
 .TP
@@ -698,7 +698,7 @@ the list to a file, then to load the information from it use the \-j <filename> 
 .TP
 \fB\-P\fR, \fB\-\-plugin <PLUGIN>\fR
 Run the selected PLUGIN. Many plugins need target specification, use TARGET as
-always. Use multiple occurances of this parameter to select multiple plugins.
+always. Use multiple occurrences of this parameter to select multiple plugins.
 .br
 In console mode (\-C option), standalone plugins are executed and then the
 application exits. Hook plugins are activated and the normal sniffing is

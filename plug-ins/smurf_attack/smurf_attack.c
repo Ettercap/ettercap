@@ -46,7 +46,7 @@ static int smurf_attack_init(void *dummy)
    DEBUG_MSG("smurf_attack_init");
 
    if(EC_GBL_OPTIONS->unoffensive) {
-      INSTANT_USER_MSG("smurf_attack: plugin doesnt work in unoffensive mode\n");
+      INSTANT_USER_MSG("smurf_attack: plugin doesn't work in unoffensive mode\n");
       return PLUGIN_FINISHED;
    }
 

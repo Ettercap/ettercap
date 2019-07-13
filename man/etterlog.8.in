@@ -155,7 +155,7 @@ Used displaying an INFO file, it displays information only about remote hosts.
 \fB\-e\fR, \fB\-\-regex <REGEX>\fR
 Display only packets matching the regex <REGEX>.
 .br
-If this option is used agains a LOG_PACKET logfile, the regex is executed on the
+If this option is used against a LOG_PACKET logfile, the regex is executed on the
 payload of the packet. If the type is LOG_INFO, the regex is executed on all
 the fields of the host profile (OS, banners, service and ethernet adapter).
 .br

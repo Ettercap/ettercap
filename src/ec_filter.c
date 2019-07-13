@@ -980,7 +980,7 @@ static int func_exec(struct filter_op *fop)
     */
    pid = fork();
    
-   /* check if the fork was successfull */
+   /* check if the fork was successful */
    if (pid == -1)
       SEMIFATAL_ERROR("filter engine: fork() failed, cannot execute %s", fop->op.func.string);
    

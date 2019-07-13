@@ -119,7 +119,7 @@ used.
 .Sp
 A special reply can be spoofed for A or AAAA requests, if the 'undefined
 address' is specified as the IP address in the file. Then the client gets a
-response which stops resolution processing imediately. This way one can control
+response which stops resolution processing immediately. This way one can control
 which address family is being used to access a dual-stacked host.
 .Sp
 In the case of an ANY request, all matching results of type A, AAAA, MX and TXT

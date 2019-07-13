@@ -289,7 +289,7 @@ EC_THREAD_FUNC(arp_poisoner)
          }
       }
       
-      /* if smart poisoning is enabled only poison inital and then only on request */
+      /* if smart poisoning is enabled only poison initial and then only on request */
       if (EC_GBL_CONF->arp_poison_smart && i >= 3)
           return NULL;
 

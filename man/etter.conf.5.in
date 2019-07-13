@@ -75,7 +75,7 @@ randomized scan plus a high delay can fool some types of ARP scan detectors.
 
 .TP
 .B arp_poison_smart
-With this variable set, only 3 inital poisoned ARP messages are sent to the 
+With this variable set, only 3 initial poisoned ARP messages are sent to the 
 victims. This poisoned status is kept up by ettercap with responding to ARP 
 requests from victims that want to refresh their ARP cache. This makes the 
 ARP poisoning very stealthy but may be unreliable on shared media such as
@@ -322,7 +322,7 @@ whether or not ettercap has been built with GeoIP support.
 This option tries to enforce the dark variant of the applied theme. However
 this does only have an effect if the applied theme provides a dark variant.
 Normally the desktop environment controls the theme of applications. But some
-lightweight desktop environments doesn't support a configuraton option for 
+lightweight desktop environments doesn't support a configuration option for 
 dark themes even when the theme provides a dark variant.
 To leave the theme variant setting to the desktop environment this option is
 set to 0 by default.

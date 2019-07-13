@@ -431,7 +431,7 @@ static void curses_sslredir_create_lists(void)
    if (res == -E_NOTFOUND) {
       SAFE_CALLOC(wdg_redirect_elements, 1, sizeof(struct wdg_list));
       wdg_redirect_elements->desc = "No rules found. "
-         "Redirects may be not enalbed in etter.conf?";
+         "Redirects may be not enabled in etter.conf?";
    }
 
 }

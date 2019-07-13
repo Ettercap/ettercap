@@ -260,7 +260,7 @@ static int load_db(void)
 		
       /* convert IP string into ip_addr struct */
       if (ip_addr_pton(ipstr, &d->ip) != E_SUCCESS) {
-			USER_MSG("%s:%d Invalid IP addres\n", ETTER_NBNS, lines);
+			USER_MSG("%s:%d Invalid IP address\n", ETTER_NBNS, lines);
          SAFE_FREE(d);
 			continue;
 		}

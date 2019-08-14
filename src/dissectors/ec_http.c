@@ -501,7 +501,7 @@ static int Parse_NTLM_Auth(char *ptr, char *from_here, struct packet_object *po)
           */  
          if (conn_status->c_status == NTLM_WAIT_RESPONSE) {
             /* Fill the user and passwords */
-            response_struct  = (tSmbNtlmAuthResponse *) to_decode;
+            response_struct  = (tSmbNtlmAuthResponse *) decoded;
             po->DISSECTOR.user = strdup(GetUnicodeString(response_struct, uUser));
             SAFE_CALLOC(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, sizeof(char));
             snprintf(po->DISSECTOR.pass, strlen(po->DISSECTOR.user) + 150, "(NTLM) %s:\"\":\"\":", po->DISSECTOR.user);

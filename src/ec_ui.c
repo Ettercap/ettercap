@@ -212,6 +212,11 @@ void ui_msg(const char *fmt, ...)
       fprintf(EC_GBL_OPTIONS->msg_fd, "%s", msg->message);
       fflush(EC_GBL_OPTIONS->msg_fd);
    }
+
+#ifdef DEBUG
+   /* include user messages in debug log file */
+   DEBUG_MSG("USER_MSG(): %s", msg->message);
+#endif
    
    /* 
     * MUST use the mutex.

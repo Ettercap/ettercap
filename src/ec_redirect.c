@@ -113,6 +113,12 @@ int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
             }
          }
          command = commands[EC_REDIR_COMMAND_INSERT];
+         if (command == NULL) {
+            DEBUG_MSG("ec_redirect(): redirect insert command for %s desired "
+                  "but not set in etter.conf - skipping...",
+                  proto == EC_REDIR_PROTO_IPV4 ? "IPv4" : "IPv6");
+            return -E_NOTHANDLED;
+         }
          break;
       case EC_REDIR_ACTION_REMOVE:
          /* check if entry is still present */
@@ -123,6 +129,12 @@ int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
                 sport == re->from_port && dport == re->to_port) {
                /* entry present - ready to be removed */
                command = commands[EC_REDIR_COMMAND_REMOVE];
+               if (command == NULL) {
+                  DEBUG_MSG("ec_redirect(): redirect insert command for %s "
+                        "desired but not set in etter.conf - skipping...",
+                        proto == EC_REDIR_PROTO_IPV4 ? "IPv4" : "IPv6");
+                  return -E_NOTHANDLED;
+               }
                break;
             }
          }

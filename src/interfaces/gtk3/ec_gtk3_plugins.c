@@ -33,9 +33,13 @@ static void gtkui_add_plugin(char active, struct plugin_ops *ops);
 static void gtkui_plug_destroy(void);
 static void gtkui_plugins_detach(GtkWidget *child);
 static void gtkui_plugins_attach(void);
-static void gtkui_select_plugin(void);
+static int  gtkui_select_plugin(gchar *plugin);
+static void gtkui_select_plugin_menu(GtkMenuItem *item, gpointer data);
+static void gtkui_select_plugin_treeview(GtkTreeView *treeview,
+      GtkTreePath *path, GtkTreeViewColumn *column, gpointer data);
 static void gtkui_create_plug_array(void);
-gboolean gtkui_plugin_context(GtkWidget *widget, GdkEventButton *event, gpointer data);
+gboolean gtkui_plugin_context(GtkWidget *widget, GdkEventButton *event,
+   gpointer data);
 
 /* globals */
 
@@ -182,7 +186,8 @@ void gtkui_plugin_mgmt(GSimpleAction *action, GVariant *value, gpointer data)
 
    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (treeview));
    gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
-   g_signal_connect (G_OBJECT (treeview), "row_activated", G_CALLBACK (gtkui_select_plugin), NULL);
+   g_signal_connect (G_OBJECT (treeview), "row-activated",
+         G_CALLBACK(gtkui_select_plugin_treeview), NULL);
    
    renderer = gtk_cell_renderer_text_new ();
    column = gtk_tree_view_column_new_with_attributes (" ", renderer, "text", 0, NULL);
@@ -262,11 +267,13 @@ static void gtkui_create_plug_array(void)
    /* go thru the list of plugins */
    res = plugin_list_walk(PLP_MIN, PLP_MAX, &gtkui_add_plugin);
    if (res == -E_NOTFOUND) { 
-      blocked = g_signal_handlers_block_by_func (G_OBJECT (treeview), G_CALLBACK (gtkui_select_plugin), NULL);
+      blocked = g_signal_handlers_block_by_func(G_OBJECT(treeview),
+            G_CALLBACK(gtkui_select_plugin_treeview), NULL);
       gtk_list_store_append (ls_plugins, &iter);
       gtk_list_store_set (ls_plugins, &iter, 0, " ", 1, "No Plugins Loaded", -1);
    } else if(blocked > 0) {
-      g_signal_handlers_unblock_by_func (G_OBJECT (treeview), G_CALLBACK (gtkui_select_plugin), NULL);
+      g_signal_handlers_unblock_by_func(G_OBJECT(treeview),
+            G_CALLBACK(gtkui_select_plugin_treeview), NULL);
       blocked = 0;
    }
 }
@@ -291,23 +298,15 @@ static void gtkui_add_plugin(char active, struct plugin_ops *ops)
 }
 
 /*
- * callback function for a plugin 
+ * toggle state of a plugin
  */
-static void gtkui_select_plugin(void)
+static int gtkui_select_plugin(gchar *plugin)
 {
-   GtkTreeIter iter;
-   GtkTreeModel *model;
-   char *plugin = NULL;
-
-   model = GTK_TREE_MODEL (ls_plugins);
-
-   if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION (selection), &model, &iter)) {
-      gtk_tree_model_get (model, &iter, 1, &plugin, -1);
-   } else
-      return; /* nothing is selected */
+   int ret;
 
    if(!plugin)
-      return; /* bad pointer from gtk_tree_model_get, shouldn't happen */
+      /* bad pointer from gtk_tree_model_get, shouldn't happen */
+      return -E_NOTHANDLED;
 
    /* print the message */
    if (plugin_is_activated(plugin) == 0)
@@ -323,12 +322,90 @@ static void gtkui_select_plugin(void)
     * and immediately return
     */
    if (plugin_is_activated(plugin) == 1)
-      plugin_fini(plugin);   
+      ret = plugin_fini(plugin);
    else
-      plugin_init(plugin);
+      ret = plugin_init(plugin);
         
    /* refresh the list to mark plugin active */
    gtkui_create_plug_array();
+
+   return ret;
+}
+
+/*
+ * callback when plugin is selected using the context menu
+ */
+static void gtkui_select_plugin_menu(GtkMenuItem *item, gpointer data)
+{
+   gchar *plugin;
+
+   (void) item;
+
+   plugin = data;
+
+   gtkui_select_plugin(plugin);
+
+}
+
+/*
+ * callback when plugin is double clicked in the treeview
+ */
+static void gtkui_select_plugin_treeview(GtkTreeView *treeview,
+      GtkTreePath *path, GtkTreeViewColumn *column, gpointer data)
+{
+   GtkTreeIter iter;
+   GtkTreeModel *model;
+   GtkTreeSelection *selection;
+   gchar *plugin;
+
+   (void) path;
+   (void) column;
+   (void) data;
+
+   model = gtk_tree_view_get_model(treeview);
+   selection = gtk_tree_view_get_selection(treeview);
+
+   if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+      gtk_tree_model_get (model, &iter, 1, &plugin, -1);
+   } else
+      return; /* nothing is selected */
+
+   gtkui_select_plugin(plugin);
+}
+
+/*
+ * check if plugins have been supplied on the CLI
+ * and try to start all provided plugins
+ */
+gboolean gtkui_plugins_autostart(gpointer data)
+{
+   struct plugin_list *plugin, *tmp;
+
+   (void) data;
+
+   DEBUG_MSG("gtkui_plugins_autostart()");
+
+   /* if plugins have been defined on the CLI */
+   if (!LIST_EMPTY(&EC_GBL_OPTIONS->plugins)) {
+      LIST_FOREACH_SAFE(plugin, &EC_GBL_OPTIONS->plugins, next, tmp) {
+         /* first check if the plugin exists */
+         if (search_plugin(plugin->name) != E_SUCCESS) {
+            plugin->exists = false;
+            USER_MSG("Sorry, plugin '%s' can not be found - skipping!\n\n",
+                  plugin->name);
+         }
+         else {
+            /* now we can try to start the plugin */
+            plugin->exists = true;
+            if (gtkui_select_plugin(plugin->name) != PLUGIN_RUNNING) {
+               USER_MSG("Plugin '%s' can not be started - skipping!\n\n",
+                     plugin->name);
+            }
+         }
+      }
+   }
+
+   return FALSE;
 }
 
 gboolean gtkui_refresh_plugin_list(gpointer data)
@@ -357,12 +434,6 @@ gboolean gtkui_plugin_context(GtkWidget *widget, GdkEventButton *event, gpointer
 
    model = GTK_TREE_MODEL(ls_plugins);
 
-   menu = gtk_menu_new();
-   item = gtk_menu_item_new();
-   gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(gtkui_select_plugin), NULL);
-   gtk_widget_show(item);
-
 
    if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION(selection), &model, &iter)) {
       gtk_tree_model_get (model, &iter, 1, &plugin, -1);
@@ -371,6 +442,14 @@ gboolean gtkui_plugin_context(GtkWidget *widget, GdkEventButton *event, gpointer
 
    if(!plugin)
       return FALSE; /* bad pointer from gtk_tree_model_get, shouldn't happen */
+   /* create context menu and bind event to menu item */
+   menu = gtk_menu_new();
+   item = gtk_menu_item_new();
+   gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+   g_signal_connect(G_OBJECT(item), "activate",
+         G_CALLBACK(gtkui_select_plugin_menu), plugin);
+   gtk_widget_show(item);
+
 
    /* print the message */
    if (plugin_is_activated(plugin) == 0)

@@ -928,6 +928,9 @@ void gtkui_start(void)
 
    /* create second instance of the UI application */
    etterapp = gtkui_setup(gtkui_create_menu, GINT_TO_POINTER(online));
+
+   /* start plugins defined on CLI */
+   g_idle_add(gtkui_plugins_autostart, NULL);
    
    /* the main gui loop, once this exits the gui will be destroyed */
    g_application_run(G_APPLICATION(etterapp), 0, NULL);

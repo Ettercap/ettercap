@@ -157,6 +157,7 @@ extern void gtkui_stop_msg(GSimpleAction *action, GVariant *value, gpointer data
 extern void gtkui_plugin_mgmt(GSimpleAction *action, GVariant *value, gpointer data);
 extern void gtkui_plugin_load(GSimpleAction *action, GVariant *value, gpointer data);
 extern gboolean gtkui_refresh_plugin_list(gpointer data);
+extern gboolean gtkui_plugins_autostart(gpointer data);
 
 /* ec_gtk3_view_connections.c */
 extern void gtkui_show_connections(GSimpleAction *action, GVariant *value, gpointer data);

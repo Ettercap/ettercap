@@ -720,6 +720,9 @@ void gtkui_start(void)
       gtkui_sniff_offline();
    else
       gtkui_sniff_live();
+
+   /* start plugins defined on CLI */
+   g_idle_add(gtkui_plugins_autostart, NULL);
    
    /* the main gui loop, once this exits the gui will be destroyed */
    gtk_main();

@@ -136,6 +136,7 @@ extern void gtkui_stop_msg(void);
 extern void gtkui_plugin_mgmt(void);
 extern void gtkui_plugin_load(void);
 extern gboolean gtkui_refresh_plugin_list(gpointer data);
+extern gboolean gtkui_plugins_autostart(gpointer data);
 
 /* ec_gtk_view_connections.c */
 extern void gtkui_show_connections(void);

@@ -36,6 +36,7 @@ static void curses_wdg_plugin(char active, struct plugin_ops *ops);
 static void curses_refresh_plug_array(char active, struct plugin_ops *ops);
 static void curses_plug_destroy(void);
 static void curses_select_plugin(void *plugin);
+static int  curses_start_plugin(char *plugin);
 static void curses_create_plug_array(void);
 static void curses_plugin_help(void *dummy);
 
@@ -230,9 +231,24 @@ static void curses_wdg_plugin(char active, struct plugin_ops *ops)
  */
 static void curses_select_plugin(void *plugin)
 {
+   /* start or stop the plugin */
+   curses_start_plugin(plugin);
+
+   /* refresh the array for the list widget */
+   curses_plugins_update();
+
+}
+
+/*
+ * toggle the state of a plugin
+ */
+static int curses_start_plugin(char *plugin)
+{
+   int ret;
+
    /* prevent the selection when the list is empty */
    if (plugin == NULL)
-      return;
+      return -E_NOTHANDLED;
         
    /* print the message */
    if (plugin_is_activated(plugin) == 0)
@@ -248,12 +264,11 @@ static void curses_select_plugin(void *plugin)
     * and immediately return
     */
    if (plugin_is_activated(plugin) == 1)
-      plugin_fini(plugin);   
+      ret = plugin_fini(plugin);
    else
-      plugin_init(plugin);
+      ret = plugin_init(plugin);
         
-   /* refres the array for the list widget */
-   curses_plugins_update();
+   return ret;
 }
 
 void curses_plugins_update(void)
@@ -270,6 +285,37 @@ void curses_plugins_update(void)
    wdg_list_refresh(wdg_plugin);
 
    CURSES_UNLOCK(pluginlist_mutex);
+}
+
+/*
+ * check if plugins have been provided on CLI
+ * and try to start all provided plugins
+ */
+void curses_autostart_plugins(void)
+{
+   struct plugin_list *plugin, *tmp;
+
+   DEBUG_MSG("curses_autostart_plugins()");
+
+   /* if plugins have been defined on the CLI */
+   if (!LIST_EMPTY(&EC_GBL_OPTIONS->plugins)) {
+      LIST_FOREACH_SAFE(plugin, &EC_GBL_OPTIONS->plugins, next, tmp) {
+         /* first check if the plugin exists */
+         if (search_plugin(plugin->name) != E_SUCCESS) {
+            plugin->exists = false;
+            USER_MSG("Sorry, plugin '%s' can not be found - skipping\n\n",
+                  plugin->name);
+         }
+         else {
+            /* now we can try to start the plugin */
+            plugin->exists = true;
+            if (curses_start_plugin(plugin->name) != PLUGIN_RUNNING) {
+               USER_MSG("Plugin '%s' can not be started - skipping\n\n",
+                     plugin->name);
+            }
+         }
+      }
+   }
 }
 
 

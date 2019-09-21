@@ -113,7 +113,8 @@ void ec_usage(void)
    fprintf(stdout, "  -Y, --secondary <ifaces>    list of secondary network interfaces\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -A, --address <address>     force this local <address> on iface\n");
-   fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
+   fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin> - multiple occurance allowed\n");
+   fprintf(stdout, "      --plugin-list <plugin1>,[<plugin2>,...]       comma-separated list of plugins\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
 #ifdef WITH_IPV6
@@ -155,6 +156,7 @@ void parse_options(int argc, char **argv)
       { "proto", required_argument, NULL, 't' },
       
       { "plugin", required_argument, NULL, 'P' },
+      { "plugin-list", required_argument, NULL, 0 },
       
       { "filter", required_argument, NULL, 'F' },
 #ifdef HAVE_EC_LUA
@@ -423,6 +425,9 @@ void parse_options(int argc, char **argv)
                ec_lua_cli_add_script(strdup(optarg));
                break;
 #endif
+            }
+            else if (!strcmp(long_options[option_index].name, "plugin-list")) {
+               set_plugin_list(strdup(optarg));
             }
             else {
                fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EC_GBL_PROGRAM);

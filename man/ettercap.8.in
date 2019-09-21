@@ -714,6 +714,12 @@ More detailed info about plugins and about how to write your own are found in
 the man page ettercap_plugins(8)
 
 .TP
+\fB\-\-plugin-list <PLUGIN1>[,<PLUGIN2>,...]\fR
+Instead of providing multiple occurances of \-P plugin, \-\-plugin-list can be
+used followed by a comma sepaparated list without any spaces.
+(e.g. ./ettercap \-\-plugin-list plugin1,plugin2).
+
+.TP
 \fB\-F\fR, \fB\-\-filter <FILE>\fR
 Load the filter from the file <FILE>. The filter must be compiled with
 etterfilter(8). The utility will compile the filter script and produce an

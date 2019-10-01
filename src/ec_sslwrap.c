@@ -934,6 +934,7 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
 {   
    X509 *out_cert;
    X509_EXTENSION *ext;
+   const EVP_MD *md;
    int index = 0;
    
    if ((out_cert = X509_new()) == NULL)
@@ -971,8 +972,22 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
       }
    }
 
+   /* take over SAN extension from peer certificate */
+   index = X509_get_ext_by_NID(server_cert, NID_subject_alt_name, index);
+   if (index >= 0) {
+      X509_add_ext(out_cert, X509_get_ext(server_cert, index), -1);
+   }
+
+   /* grab digest algorithm from peer certificate */
+   md = EVP_get_digestbynid(X509_get_signature_nid(server_cert));
+   if (md == NULL) {
+      DEBUG_MSG("Error determining message digest algorithm for signing.");
+      /* Falling back to SHA1 signing algorithm */
+      md = EVP_sha1();
+   }
+
    /* Self-sign our certificate */
-   if (!X509_sign(out_cert, global_pk, EVP_sha1())) {
+   if (!X509_sign(out_cert, global_pk, md)) {
       X509_free(out_cert);
       DEBUG_MSG("Error self-signing X509");
       return NULL;
@@ -992,8 +1007,8 @@ static void sslw_init(void)
    SSL_library_init();
 
    /* Create the two global CTX */
-   ssl_ctx_client = SSL_CTX_new(SSLv23_server_method());
-   ssl_ctx_server = SSL_CTX_new(SSLv23_client_method());
+   ssl_ctx_client = SSL_CTX_new(TLS_server_method());
+   ssl_ctx_server = SSL_CTX_new(TLS_client_method());
 
    ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
    ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");

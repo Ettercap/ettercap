@@ -58,6 +58,10 @@
 #define HAVE_OPAQUE_RSA_DSA_DH 1 /* since 1.1.0 -pre5 */
 #endif
 
+#if (OPENSSL_VERSION_NUMBER >= 0x10101000L)
+#define HAVE_OPENSSL_1_1_1
+#endif
+
 #define BREAK_ON_ERROR(x,y,z) do {  \
    if (x == -E_INVALID) {            \
       SAFE_FREE(z.DATA.disp_data);  \
@@ -94,6 +98,7 @@ struct accepted_entry {
    SSL *ssl[2];
    u_char status;
    X509 *cert;
+   char *hostname;
    #define SSL_CLIENT 0
    #define SSL_SERVER 1
 };
@@ -140,6 +145,10 @@ static void ssl_wrap_fini(void);
 static int sslw_ssl_connect(SSL *ssl_sk);
 static int sslw_ssl_accept(SSL *ssl_sk);
 static int sslw_remove_sts(struct packet_object *po);
+#ifdef HAVE_OPENSSL_1_1_1
+static int sslw_clienthello_cb(SSL *ssl_sk, int *alert, void *arg);
+static char* sslw_get_clienthello_sni(SSL *ssl);
+#endif
 
 /*******************************************/
 
@@ -532,6 +541,54 @@ static int sslw_ssl_connect(SSL *ssl_sk)
    return -E_INVALID;
 }
 
+/*
+ * ClientHello Callback to intercept SSL handshake after ClientHello
+ */
+#ifdef HAVE_OPENSSL_1_1_1
+static int sslw_clienthello_cb(SSL *ssl, int *alert, void *arg)
+{
+   (void) alert;
+   char **hostname;
+
+   hostname = (char **)arg;
+
+   /* suspend if hostname hasn't been extracted */
+   if (*hostname == NULL) {
+      /* extract hostname value from SNI extension */
+      *hostname = sslw_get_clienthello_sni(ssl);
+      if (*hostname == NULL)
+         /* no SNI given - set to non-NULL */
+         *hostname = "";
+      /* suspend client side TLS handshake */
+      return SSL_CLIENT_HELLO_RETRY;
+   }
+
+   return SSL_CLIENT_HELLO_SUCCESS;
+
+}
+
+static char* sslw_get_clienthello_sni(SSL *ssl)
+{
+   const unsigned char* sni;
+   size_t len;
+   uint8_t sni_type;
+   uint16_t sni_len, val_len;
+
+   if (SSL_client_hello_get0_ext(ssl, TLSEXT_TYPE_server_name, &sni, &len)) {
+      if (len > 5) {
+         sni_len = sni[0] << 8 | sni[1];
+         sni_type = sni[2];
+         val_len = sni[3] << 8 | sni[4];
+
+         if (sni_type == TLSEXT_NAMETYPE_host_name)
+            return strndup(sni+5, val_len);
+      }
+   }
+
+   return NULL;
+}
+#endif
+
 
 /* 
  * Perform a blocking SSL_accept with a
@@ -548,9 +605,15 @@ static int sslw_ssl_accept(SSL *ssl_sk)
          return E_SUCCESS;
 
       ssl_err = SSL_get_error(ssl_sk, ret);
+
+#ifdef HAVE_OPENSSL_1_1_1
+      /* return successfully if handshake has been suspended by callback */
+      if (ssl_err == SSL_ERROR_WANT_CLIENT_HELLO_CB)
+         return E_SUCCESS;
+#endif
       
-      /* there was an error... */
-      if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE) 
+      /* there was an error...  but only if it's not just pending further progress */
+      if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE)
          return -E_INVALID;
       
       /* sleep a quirk of time... */
@@ -572,15 +635,33 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
 
    X509 *server_cert;
    
+#ifdef HAVE_OPENSSL_1_1_1
+   /* Set a Callback for the SSL client context to pause the Client Handshake */
+   SSL_CTX_set_client_hello_cb(ssl_ctx_client, sslw_clienthello_cb, (void*)&ae->hostname);
+#endif
+
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
    SSL_set_connect_state(ae->ssl[SSL_SERVER]);
    SSL_set_fd(ae->ssl[SSL_SERVER], ae->fd[SSL_SERVER]);
    ae->ssl[SSL_CLIENT] = SSL_new(ssl_ctx_client);
    SSL_set_fd(ae->ssl[SSL_CLIENT], ae->fd[SSL_CLIENT]);
+
+#ifdef HAVE_OPENSSL_1_1_1
+   /* Begin SSL handshake to extract SNI - then suspend by callback */
+   if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != E_SUCCESS)
+      return -E_INVALID;
+
+   /* if SNI has been set */
+   if (ae->hostname != NULL && strcmp(ae->hostname, ""))
+      /* set hostname as SNI for server SSL */
+      SSL_set_tlsext_host_name(ae->ssl[SSL_SERVER], ae->hostname);
+#endif
     
+   /* Connect to actual SSL server */
    if (sslw_ssl_connect(ae->ssl[SSL_SERVER]) != E_SUCCESS) 
       return -E_INVALID;
 
+   /* Extract certificate from actual SSL server */
    /* XXX - NULL cypher can give no certificate */
    if ( (server_cert = SSL_get_peer_certificate(ae->ssl[SSL_SERVER])) == NULL) {
       DEBUG_MSG("Can't get peer certificate");
@@ -588,19 +669,24 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    }
 
    if (!EC_GBL_OPTIONS->ssl_cert) {
-   	/* Create the fake certificate */
+   	/* Create the fake certificate based on actual certificate */
    	ae->cert = sslw_create_selfsigned(server_cert);  
    	X509_free(server_cert);
 
    	if (ae->cert == NULL)
       		return -E_INVALID;
 
+      /* use faked certificate for further SSL client connection */
    	SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
 
    }
    
+   /* continue SSL handshake with SSL client */
    if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != E_SUCCESS) 
       return -E_INVALID;
+
+   /* TLS handshake done - SNI hostname not longer required: free */
+   SAFE_FREE(ae->hostname);
 
 
    return E_SUCCESS;   
@@ -982,8 +1068,8 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
    md = EVP_get_digestbynid(X509_get_signature_nid(server_cert));
    if (md == NULL) {
       DEBUG_MSG("Error determining message digest algorithm for signing.");
-      /* Falling back to SHA1 signing algorithm */
-      md = EVP_sha1();
+      /* Falling back to SHA256 signing algorithm which is the default in TLS1.3 */
+      md = EVP_sha256();
    }
 
    /* Self-sign our certificate */
@@ -995,7 +1081,6 @@ static X509 *sslw_create_selfsigned(X509 *server_cert)
      
    return out_cert;
 }
-
 
 /* 
  * Initialize SSL stuff 

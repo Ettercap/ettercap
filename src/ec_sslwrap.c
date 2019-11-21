@@ -58,6 +58,10 @@
 #define HAVE_OPAQUE_RSA_DSA_DH 1 /* since 1.1.0 -pre5 */
 #endif
 
+#if (OPENSSL_VERSION_NUMBER >= 0x10002000L)
+#define HAVE_OPENSSL_1_0_2
+#endif
+
 #if (OPENSSL_VERSION_NUMBER >= 0x10101000L)
 #define HAVE_OPENSSL_1_1_1
 #endif
@@ -1094,6 +1098,12 @@ static void sslw_init(void)
    /* Create the two global CTX */
    ssl_ctx_client = SSL_CTX_new(TLS_server_method());
    ssl_ctx_server = SSL_CTX_new(TLS_client_method());
+
+#ifdef HAVE_OPENSSL_1_0_2
+   SSL_CTX_set_ecdh_auto(ssl_ctx_client, 1);
+   SSL_CTX_set_ecdh_auto(ssl_ctx_server, 1);
+#endif
+
 
    ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
    ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");

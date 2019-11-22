@@ -51,7 +51,6 @@ static void l3_close(void);
 void network_init()
 {
    char *iface;
-   char perrbuf[PCAP_ERRBUF_SIZE];
 
    DEBUG_MSG("init_network");
 
@@ -61,7 +60,7 @@ void network_init()
       source_init(EC_GBL_OPTIONS->pcapfile_in, EC_GBL_IFACE, true, false);
       source_print(EC_GBL_IFACE);
    } else {
-      iface = EC_GBL_OPTIONS->iface ? EC_GBL_OPTIONS->iface : (EC_GBL_OPTIONS->iface = pcap_lookupdev(perrbuf));
+      iface = EC_GBL_OPTIONS->iface ? EC_GBL_OPTIONS->iface : (EC_GBL_OPTIONS->iface = capture_default_if());
       ON_ERROR(iface, NULL, "No suitable interface found...");
       source_init(iface, EC_GBL_IFACE, true, true);
       source_print(EC_GBL_IFACE);

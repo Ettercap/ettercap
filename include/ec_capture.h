@@ -11,6 +11,7 @@ EC_API_EXTERN EC_THREAD_FUNC(capture);
 
 EC_API_EXTERN int is_pcap_file(char *file, char *pcap_errbuf);
 EC_API_EXTERN void capture_getifs(void);
+EC_API_EXTERN char* capture_default_if(void);
 
 #define FUNC_ALIGNER(func) int func(void)
 #define FUNC_ALIGNER_PTR(func) int (*func)(void)

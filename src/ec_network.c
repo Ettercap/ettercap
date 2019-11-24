@@ -11,14 +11,14 @@
 #include <ifaddrs.h>
 #endif
 
-#if defined(OS_BSD_OPEN) || defined(OS_LINUX)
-   /* LINUX does not care about timeout */
+#if defined(OS_BSD_OPEN)
    /* OPENBSD needs 0 */
    #define PCAP_TIMEOUT 0
 #elif defined(OS_SOLARIS)
    /* SOLARIS needs > 1 */
    #define PCAP_TIMEOUT 10
 #else
+   /* LINUX needs > 0 */
    /* FREEBSD needs 1 */
    /* MACOSX  needs 1 */
    #define PCAP_TIMEOUT 1

@@ -43,6 +43,8 @@ addons:
       - libbsd-dev
       - libcurl4-openssl-dev
       - libgtk2.0-dev
+      - libidn11-dev
+      - librtmp-dev
       - libltdl-dev
       - libluajit-5.1-dev
       - libncurses5-dev
@@ -138,9 +140,10 @@ matrix:
       env: BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
 
 before_install:
-    - if [ ${TRAVIS_OS_NAME} = "osx" ]; then brew update; brew install check curl; brew install groff gtk+ gtk+3; brew install libidn libnet; brew install luajit openssl pcre rtmpdump geoip; fi
+    - if [ ${TRAVIS_OS_NAME} = "osx" ]; then brew update; brew install check curl; brew install groff gtk+ gtk+3 harfbuzz; brew install libidn libnet; brew install luajit openssl pcre rtmpdump geoip; fi
 before_script:
     - if [ ${TRAVIS_OS_NAME} = "osx" ]; then export BUILD_ARGS="$BUILD_ARGS -DOPENSSL_ROOT_DIR=`brew --prefix openssl`";fi
+    - if [ ${TRAVIS_OS_NAME} = "osx" ]; then export BUILD_ARGS="$BUILD_ARGS -DHARFBUZZ_DIR=`brew --prefix harfbuzz`"; fi
 
 script:
   - if [[ "$CC" == "gcc" && "${BUILD_ARGS}" = "" ]]; then git clone https://github.com/richq/cmake-lint.git; cd cmake-lint; python setup.py install --user; cd -; ./misc/cmakelint.sh; fi

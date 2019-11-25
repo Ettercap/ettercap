@@ -155,7 +155,8 @@ static void gtkui_fatal_error_wrap(const char *msg) {
 
    char *copy = strdup(msg);
    if (msg) {
-      g_idle_add(gtkui_fatal_error_shim, copy);
+      gtkui_fatal_error_shim(copy);
+      //g_idle_add(gtkui_fatal_error_shim, copy);
    } else {
       FATAL_ERROR("out of memory");
    }

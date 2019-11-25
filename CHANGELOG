@@ -14,7 +14,7 @@ Legend:
    !! Proper separation of library and executable code
    !! Fixed heap-buffer-overflow in write_output in etterfilter
    !! ip_addr sanity check when etterlog processes info logfile
-   !! Lots of buffer under-/overflow conditions fixed
+   !! CVE-2017-8366 (Lots of buffer under-/overflow conditions fixed)
    !! CVE-2017-6430 (Fix invalid read on crafted file in etterfilter)
    !! fix dns_spoof plugin when used in bridge mode
     + SSL redirects are now customizable at runtime

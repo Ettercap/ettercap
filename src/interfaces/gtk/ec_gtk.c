@@ -1267,7 +1267,6 @@ static void gtkui_unified_sniff(void)
  */
 static void gtkui_unified_sniff_default(void) 
 {
-   char err[PCAP_ERRBUF_SIZE];
    
    DEBUG_MSG("gtkui_unified_sniff_default");
 
@@ -1276,8 +1275,8 @@ static void gtkui_unified_sniff_default(void)
       char *iface;
 
       SAFE_CALLOC(EC_GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-      iface = pcap_lookupdev(err);
-      ON_ERROR(iface, NULL, "pcap_lookupdev: %s", err);
+      iface = capture_default_if();
+      ON_ERROR(iface, NULL, "No suitable interface found....");
    
       strncpy(EC_GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
    }

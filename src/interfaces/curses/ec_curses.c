@@ -558,7 +558,6 @@ static void write_pcapfile(void)
  */
 static void curses_unified_sniff(void)
 {
-   char err[PCAP_ERRBUF_SIZE];
    
 #define IFACE_LEN  50
    
@@ -569,8 +568,8 @@ static void curses_unified_sniff(void)
       char *iface;
       
       SAFE_CALLOC(EC_GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-      iface = pcap_lookupdev(err);
-      ON_ERROR(iface, NULL, "pcap_lookupdev: %s", err);
+      iface = capture_default_if();
+      ON_ERROR(iface, NULL, "No suitable interface found...");
 
       strncpy(EC_GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
    }
@@ -585,20 +584,17 @@ static void curses_unified_sniff(void)
 static void curses_bridged_sniff(void)
 {
    wdg_t *in;
-   char err[PCAP_ERRBUF_SIZE];
+   char *iface;
    
    DEBUG_MSG("curses_bridged_sniff");
    
    /* if the user has not specified an interface, get the first one */
    if (EC_GBL_OPTIONS->iface == NULL) {
       SAFE_CALLOC(EC_GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
-   /* if ettercap is started with a non root account pcap_lookupdev(err) == NULL (Fedora bug 783675) */
-      if(pcap_lookupdev(err) != NULL)
-         strncpy(EC_GBL_OPTIONS->iface, pcap_lookupdev(err), IFACE_LEN - 1);
-   /* else
-	here we have to gracefully exit, since we don't have any available interface
-  */
-	
+
+      iface = capture_default_if();
+      ON_ERROR(iface, NULL, "No suitable interface found....");
+      strncpy(EC_GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
    }
    
    SAFE_CALLOC(EC_GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));

@@ -11,14 +11,14 @@
 #include <ifaddrs.h>
 #endif
 
-#if defined(OS_BSD_OPEN) || defined(OS_LINUX)
-   /* LINUX does not care about timeout */
+#if defined(OS_BSD_OPEN)
    /* OPENBSD needs 0 */
    #define PCAP_TIMEOUT 0
 #elif defined(OS_SOLARIS)
    /* SOLARIS needs > 1 */
    #define PCAP_TIMEOUT 10
 #else
+   /* LINUX needs > 0 */
    /* FREEBSD needs 1 */
    /* MACOSX  needs 1 */
    #define PCAP_TIMEOUT 1
@@ -51,7 +51,6 @@ static void l3_close(void);
 void network_init()
 {
    char *iface;
-   char perrbuf[PCAP_ERRBUF_SIZE];
 
    DEBUG_MSG("init_network");
 
@@ -61,7 +60,7 @@ void network_init()
       source_init(EC_GBL_OPTIONS->pcapfile_in, EC_GBL_IFACE, true, false);
       source_print(EC_GBL_IFACE);
    } else {
-      iface = EC_GBL_OPTIONS->iface ? EC_GBL_OPTIONS->iface : (EC_GBL_OPTIONS->iface = pcap_lookupdev(perrbuf));
+      iface = EC_GBL_OPTIONS->iface ? EC_GBL_OPTIONS->iface : (EC_GBL_OPTIONS->iface = capture_default_if());
       ON_ERROR(iface, NULL, "No suitable interface found...");
       source_init(iface, EC_GBL_IFACE, true, true);
       source_print(EC_GBL_IFACE);

@@ -168,6 +168,24 @@ void capture_getifs(void)
 }
 
 /*
+ * return default interface
+ */
+char* capture_default_if(void)
+{
+   /*
+    * as per deprecation message of pcap_lookupdev() the new way to determine
+    * the default interface, is to use the first interface detected by the call
+    * of pcap_findalldevs(). This is already determined in capture_getifs() and
+    * stored in EC_GBL_PCAP->ifs
+    */
+
+   if (EC_GBL_PCAP && EC_GBL_PCAP->ifs)
+      return EC_GBL_PCAP->ifs->name;
+
+   return NULL;
+}
+
+/*
  * check if the given file is a pcap file
  */
 int is_pcap_file(char *file, char *pcap_errbuf)

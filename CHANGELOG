@@ -3,6 +3,11 @@ Legend:
          + new feature
          - old feature removed
          !! bug fixed
+=========================================
+x.X.X-XXXXXXXXX    YYYYMMDD
+   !! Fix TLS 1.3 interception issues (replace fake certificate with proper key length)
+    + Take over client-side SNI extension in ClientHello in SSL interception (req. OpenSSL 1.1.1)
+    + Take over SAN certificate extension from server certificate in SSL interception
 
 =========================================
 0.8.4-XXXXXXXXX    00000000

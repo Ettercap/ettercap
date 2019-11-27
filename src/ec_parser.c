@@ -113,7 +113,8 @@ void ec_usage(void)
    fprintf(stdout, "  -Y, --secondary <ifaces>    list of secondary network interfaces\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -A, --address <address>     force this local <address> on iface\n");
-   fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
+   fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin> - multiple occurance allowed\n");
+   fprintf(stdout, "      --plugin-list <plugin1>,[<plugin2>,...]       comma-separated list of plugins\n");
    fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
    fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
 #ifdef WITH_IPV6
@@ -155,6 +156,7 @@ void parse_options(int argc, char **argv)
       { "proto", required_argument, NULL, 't' },
       
       { "plugin", required_argument, NULL, 'P' },
+      { "plugin-list", required_argument, NULL, 0 },
       
       { "filter", required_argument, NULL, 'F' },
 #ifdef HAVE_EC_LUA
@@ -232,201 +234,207 @@ void parse_options(int argc, char **argv)
       switch (c) {
 
          case 'M':
-		  set_mitm(optarg);
-                  break;
+            set_mitm(optarg);
+            break;
                   
          case 'o':
-		  set_onlymitm();
-                  //select_text_interface();
-                  break;
+            set_onlymitm();
+            //select_text_interface();
+            break;
 
          case 'b':
-		  set_broadcast();
-		  break;
+            set_broadcast();
+            break;
                   
          case 'B':
-		  set_iface_bridge(optarg);
-                  break;
+            set_iface_bridge(optarg);
+            break;
                   
          case 'p':
-		  set_promisc();
-                  break;
+            set_promisc();
+            break;
 #ifndef JUST_LIBRARY 
          case 'T':
-                  select_text_interface();
-                  break;
+            select_text_interface();
+            break;
                   
          case 'C':
-                  select_curses_interface();
-                  break;
+            select_curses_interface();
+            break;
 
          case 'G':
-                  select_gtk_interface();
-                  break;
+            select_gtk_interface();
+            break;
 
                   
          case 'D':
-                  select_daemon_interface();
-                  break;
+            select_daemon_interface();
+            break;
 #endif
                   
          case 'R':
-		  set_reversed();
-                  break;
+            set_reversed();
+            break;
                   
          case 't':
-		  set_proto(optarg);
-                  break;
+            set_proto(optarg);
+            break;
                   
          case 'P':
-		  set_plugin(optarg);
-                  break;
+            set_plugin(optarg);
+            break;
                   
          case 'i':
-  set_iface(optarg);
-                  break;
+            set_iface(optarg);
+            break;
                   
          case 'I':
-                  /* this option is only useful in the text interface */
-          set_lifaces();
-  select_text_interface();
-                  break;
+            /* this option is only useful in the text interface */
+            set_lifaces();
+            select_text_interface();
+            break;
 
          case 'Y':
-                  set_secondary(optarg);
-                  break;
+            set_secondary(optarg);
+            break;
          
          case 'n':
-                  set_netmask(optarg);
-                  break;
+            set_netmask(optarg);
+            break;
 
          case 'A':
-                  set_address(optarg);
-                  break;
+            set_address(optarg);
+            break;
                   
          case 'r':
-                  set_read_pcap(optarg);
-                  break;
+            set_read_pcap(optarg);
+            break;
                  
          case 'w':
-		  set_write_pcap(optarg);
-                  break;
+            set_write_pcap(optarg);
+            break;
                   
          case 'f':
-		  set_pcap_filter(optarg);
-                  break;
+            set_pcap_filter(optarg);
+            break;
                   
          case 'F':
-		  set_filter(opt_end, optarg);
-                  break;
+            set_filter(opt_end, optarg);
+            break;
                   
          case 'L':
-		  set_loglevel_packet(optarg);
-		  break;
+            set_loglevel_packet(optarg);
+            break;
 
          case 'l':
-		  set_loglevel_info(optarg);
-                  break;
+            set_loglevel_info(optarg);
+            break;
 
          case 'm':
-	          set_loglevel_true(optarg);
-                  break;
+            set_loglevel_true(optarg);
+            break;
                   
          case 'c':
-		  set_compress();
-                  break;
+            set_compress();
+            break;
 
          case 'e':
-                  opt_set_regex(optarg);
-                  break;
+            opt_set_regex(optarg);
+            break;
          
          case 'Q':
-                  set_superquiet();
-                  /* no break, quiet must be enabled */
-                  /* fall through */
+            set_superquiet();
+            /* no break, quiet must be enabled */
+            /* fall through */
          case 'q':
-		  set_quiet();
-                  break;
+            set_quiet();
+            break;
                   
          case 's':
-                  set_script(optarg);
-                  break;
+            set_script(optarg);
+            break;
                   
          case 'z':
-                  set_silent();
-                  break;
+            set_silent();
+            break;
                   
 #ifdef WITH_IPV6
          case '6':
-                  set_ip6scan();
-                  break;
+            set_ip6scan();
+            break;
 #endif
 
          case 'u':
-                  set_unoffensive();
-                  break;
+            set_unoffensive();
+            break;
 
          case 'S':
-                  disable_sslmitm();
-                  break;
+            disable_sslmitm();
+            break;
  
          case 'd':
-                  set_resolve();
-                  break;
+            set_resolve();
+            break;
                   
          case 'j':
-                  set_load_hosts(optarg);
-                  break;
+            set_load_hosts(optarg);
+            break;
                   
          case 'k':
-	          set_save_hosts(optarg);
-                  break;
+            set_save_hosts(optarg);
+            break;
                   
          case 'V':
-                  opt_set_format(optarg);
-                  break;
+            opt_set_format(optarg);
+            break;
                   
          case 'E':
-                  set_ext_headers();
-                  break;
+            set_ext_headers();
+            break;
                   
          case 'W':
-                  set_wifi_key(optarg);
-                  break;
+            set_wifi_key(optarg);
+            break;
                   
          case 'a':
-                  set_conf_file(optarg);
-                  break;
+            set_conf_file(optarg);
+            break;
          
          case 'h':
-                  ec_usage();
-                  break;
+            ec_usage();
+            break;
 
          case 'v':
-                  printf("%s %s\n", EC_GBL_PROGRAM, EC_GBL_VERSION);
-                  clean_exit(0);
-                  break;
+            printf("%s %s\n", EC_GBL_PROGRAM, EC_GBL_VERSION);
+            clean_exit(0);
+            break;
 
         /* Certificate and private key options */
          case 0:
-		if (!strcmp(long_options[option_index].name, "certificate")) {
-			EC_GBL_OPTIONS->ssl_cert = strdup(optarg);	
-		} else if (!strcmp(long_options[option_index].name, "private-key")) {
-			EC_GBL_OPTIONS->ssl_pkey = strdup(optarg);
+            if (!strcmp(long_options[option_index].name, "certificate")) {
+               EC_GBL_OPTIONS->ssl_cert = strdup(optarg);   
+            }
+            else if (!strcmp(long_options[option_index].name, "private-key")) {
+               EC_GBL_OPTIONS->ssl_pkey = strdup(optarg);
 #ifdef HAVE_EC_LUA
-                } else if (!strcmp(long_options[option_index].name,"lua-args")) {
-                    ec_lua_cli_add_args(strdup(optarg));
-                } 
-                else if (!strcmp(long_options[option_index].name,"lua-script")) {
-                    ec_lua_cli_add_script(strdup(optarg));
-        break;
+            }
+            else if (!strcmp(long_options[option_index].name,"lua-args")) {
+               ec_lua_cli_add_args(strdup(optarg));
+            } 
+            else if (!strcmp(long_options[option_index].name,"lua-script")) {
+               ec_lua_cli_add_script(strdup(optarg));
+               break;
 #endif
-		} else {
-			fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EC_GBL_PROGRAM);
-			clean_exit(-1);
-		}
+            }
+            else if (!strcmp(long_options[option_index].name, "plugin-list")) {
+               set_plugin_list(strdup(optarg));
+            }
+            else {
+               fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EC_GBL_PROGRAM);
+               clean_exit(-1);
+            }
 
-		break;
+            break;
 
          case ':': // missing parameter
             fprintf(stdout, "\nTry `%s --help' for more options.\n\n", EC_GBL_PROGRAM);

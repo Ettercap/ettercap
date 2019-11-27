@@ -17,6 +17,7 @@ extern void curses_sniff_offline(void);
 extern void curses_sniff_live(void);
 void curses_hosts_update(void);
 void curses_plugins_update(void);
+void curses_autostart_plugins(void);
 
 /* menus */
 extern struct wdg_menu menu_filters[]; 

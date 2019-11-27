@@ -345,12 +345,14 @@ void curses_interface(void)
 {
    DEBUG_MSG("curses_interface");
    
+   /* if we have to activate a plugin */
+   curses_autostart_plugins();
+
    /* which interface do we have to display ? */
    if (EC_GBL_OPTIONS->read)
       curses_sniff_offline();
    else
       curses_sniff_live();
-   
 
    /* destroy the previously allocated object */
    wdg_destroy_object(&sysmsg_win);

@@ -74,18 +74,41 @@ void set_reversed(void)
 
 void set_plugin(char *name)
 {
-    struct plugin_list *plugin;
+    struct plugin_list *plugin, *tmp;
 
     if(!strcasecmp(name, "list")) {
         plugin_list();
         clean_exit(0);
     }
 
+    /* check if plugin name is a duplicate */
+    LIST_FOREACH_SAFE(plugin, &EC_GBL_OPTIONS->plugins, next, tmp)
+       if (!strcmp(plugin->name, name))
+             return;
+
     SAFE_CALLOC(plugin, 1, sizeof(struct plugin_list));
     plugin->name = strdup(name);
     plugin->exists = true;
     LIST_INSERT_HEAD(&EC_GBL_OPTIONS->plugins, plugin, next);
 
+}
+
+void set_plugin_list(char *list)
+{
+   char *tmp, *p, *plugin;
+
+   p = list;
+
+   while((plugin = ec_strtok(p, ",", &tmp))) {
+      if (plugin) {
+         set_plugin(plugin);
+         p = NULL;
+      }
+      else
+         break;
+   }
+
+   SAFE_FREE(list);
 }
 
 void set_proto(char *proto)

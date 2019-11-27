@@ -5,6 +5,13 @@ Legend:
          !! bug fixed
 
 =========================================
+0.8.4-XXXXXXXXX    00000000
+    + CLI provided plugins are now also autostarted in graphical UI
+
+
+
+
+
 0.8.3-Bertillon    20190701
    !! Fix binary comparsion and assignment in etterfilter
    !! Fixed packetbuffer racecond. in BRIDGE mode (e.g. Message too long)

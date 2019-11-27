@@ -62,6 +62,12 @@
 #define HAVE_OPENSSL_1_0_2
 #endif
 
+#if (OPENSSL_VERSION_NUMBER <= 0x100020700L)
+/* prior 1.0.2g TLS_client_method macro wasn't available */
+#define TLS_client_method SSLv23_client_method
+#define TLS_server_method SSLv23_server_method
+#endif
+
 #if (OPENSSL_VERSION_NUMBER >= 0x10101000L)
 #define HAVE_OPENSSL_1_1_1
 #endif

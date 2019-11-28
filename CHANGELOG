@@ -4,16 +4,20 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
-x.X.X-XXXXXXXXX    YYYYMMDD
+0.8.4-XXXXXXXXX    YYYYMMDD
    !! Fix TLS 1.3 interception issues (replace fake certificate with proper key length)
+   !! Fix segmentation fault when parsing HTTP NTLM handshake (fixes #922)
+   !! Fix crash if one redirect command is not enabled
+   !! Fix build on MacOSX detecting new dependency HarfBuzz
+   !! Fix warnings when parsing etter.(m)dns file when built w/o IPv6 support
+   !! Fix capture delay with libpcap v1.9.1 (fixes #974)
     + Take over client-side SNI extension in ClientHello in SSL interception (req. OpenSSL 1.1.1)
     + Take over SAN certificate extension from server certificate in SSL interception
-
-=========================================
-0.8.4-XXXXXXXXX    00000000
+    + Use server certificate sign algorithm to sign fake certificate defaulting to SHA256
     + CLI provided plugins are now also autostarted in graphical UI
-
-
+    + Added --plugin-list CLI parameter
+    - Remove of deprecated redirect commands from etter.conf
+    - Remove Easter Egg (Sorry ALoR and NaGA)
 
 
 

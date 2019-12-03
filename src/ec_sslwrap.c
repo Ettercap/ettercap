@@ -582,11 +582,12 @@ static char* sslw_get_clienthello_sni(SSL *ssl)
    const unsigned char* sni;
    size_t len;
    uint8_t sni_type;
-   uint16_t sni_len, val_len;
+   uint16_t val_len;
+   // uint16_t sni_len;
 
    if (SSL_client_hello_get0_ext(ssl, TLSEXT_TYPE_server_name, &sni, &len)) {
       if (len > 5) {
-         sni_len = sni[0] << 8 | sni[1];
+         // sni_len = sni[0] << 8 | sni[1];
          sni_type = sni[2];
          val_len = sni[3] << 8 | sni[4];
 

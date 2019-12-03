@@ -89,6 +89,10 @@ Please install it, or build against GTK1")
         if(FOUND_GTHREAD)
             set(EC_INTERFACES_LIBS ${EC_INTERFACES_LIBS} ${FOUND_GTHREAD})
         endif()
+    else()
+        set(EC_INTERFACES_LIBS ${EC_INTERFACES_LIBS} gthread-2.0)
+    endif()
+    if(OS_DARWIN)
         #
         # harfbuzz is dependent by pango but is not found by
         # FindGTK3.cmake on MacOS X.
@@ -98,8 +102,6 @@ Please install it, or build against GTK1")
         find_package(HARFBUZZ)
         set(EC_INCLUDE ${EC_INCLUDE} ${HARFBUZZ_INCLUDE_DIRS})
         set(EC_INTERFACE_LIBS ${EC_INTERFACE_LIBS} ${HARFBUZZ_LIBRARRIES})
-    else()
-        set(EC_INTERFACES_LIBS ${EC_INTERFACES_LIBS} gthread-2.0)
     endif()
 endif()
 

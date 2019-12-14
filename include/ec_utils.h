@@ -10,5 +10,6 @@ EC_API_EXTERN void regain_privs_atexit(void);
 EC_API_EXTERN int base64encode(const char *inputbuf, char **outptr);
 EC_API_EXTERN int base64decode(const char *src, char **outptr);
 EC_API_EXTERN const char *ec_ctime(const struct timeval *tv);
+EC_API_EXTERN u_char *ec_plen_to_binary(size_t buflen, u_int16 plen);
 
 #endif

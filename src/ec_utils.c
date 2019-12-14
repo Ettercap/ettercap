@@ -349,6 +349,37 @@ const char *ec_ctime(const struct timeval *tv)
   return (result);
 }
 
+/*
+ * convert a prefix length to a bit pattern buffer that can be freed
+ *  - expects the length of memory to allocate
+ *  - expects the prefix mask bit length
+ *  - returns a byte string pointer to the allocated memory containing
+ *    the bit mask corresponding to the prefix bit length
+ */
+u_char *ec_plen_to_binary(size_t buflen, u_int16 plen)
+{
+   size_t len;
+   u_char *buf, *p;
+   u_int32 i;
+
+   /* determine the network-host boundary byte */
+   len = plen % 8 ? plen / 8 + 1 : plen / 8;
+   BUG_IF(len > buflen);
+
+   /* allocate enough buffer */
+   SAFE_CALLOC(buf, buflen, sizeof(u_char));
+   p = buf;
+
+   for (i = 0; i < len; i++)
+      if (i == len-1)
+         *p++ = 0xff << (8-(plen-8*i));
+      else
+         *p++ = 0xff;
+
+   return buf;
+
+}
+
 
 /* EOF */
 

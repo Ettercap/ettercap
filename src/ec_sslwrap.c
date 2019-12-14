@@ -413,18 +413,15 @@ static void sslw_hook_handled(struct packet_object *po)
  */
 static int sslw_is_ssl(struct packet_object *po)
 {
-   struct listen_entry *le;
-   
    /* If it's already coming from ssl wrapper 
     * or the connection is not TCP */ 
    if (po->flags & PO_FROMSSL || po->L4.proto != NL_TYPE_TCP) 
       return 0;
 
-   LIST_FOREACH(le, &listen_ports, next) {
-      if (ntohs(po->L4.dst) == le->sslw_port ||
-          ntohs(po->L4.src) == le->sslw_port)
-         return 1;
-   }
+   /* check if packet matches one of the registered redirects */
+   if (ec_redirect_lookup(po) == E_SUCCESS)
+      return 1;
+
    return 0;
 }
 

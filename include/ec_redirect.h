@@ -18,6 +18,10 @@ struct redir_entry {
    char                   *destination;
    u_int16                 from_port;
    u_int16                 to_port;
+   struct ip_addr          src_network;
+   struct ip_addr          src_netmask;
+   struct ip_addr          dst_network;
+   struct ip_addr          dst_netmask;
    LIST_ENTRY(redir_entry) next;
 };
 
@@ -34,6 +38,7 @@ EC_API_EXTERN int ec_redirect(ec_redir_act_t action, char *name,
       u_int16 sport, u_int16 dport);
 EC_API_EXTERN int ec_walk_redirects(void (*func)(struct redir_entry*));
 EC_API_EXTERN int ec_walk_redirect_services(void (*func)(struct serv_entry*));
+EC_API_EXTERN int ec_redirect_lookup(struct packet_object *po);
 EC_API_EXTERN void ec_redirect_cleanup(void);
 
 

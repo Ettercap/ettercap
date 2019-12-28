@@ -88,7 +88,7 @@ void gtkui_select_protocol(void)
    /* this will contain 'all', 'tcp' or 'udp' */
    if (!EC_GBL_OPTIONS->proto) {
       SAFE_CALLOC(EC_GBL_OPTIONS->proto, 4, sizeof(char));
-      strncpy(EC_GBL_OPTIONS->proto, "all", 3);
+      strncpy(EC_GBL_OPTIONS->proto, "all", 4);
    }
 
    /* create dialog for selecting the protocol */

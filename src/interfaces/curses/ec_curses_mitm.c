@@ -77,7 +77,6 @@ static size_t n_redir = 0;
 static size_t n_serv  = 0;
 static char redir_proto[5] = "ipv4";
 static char redir_name[50] = "ftps";
-static char redir_source[MAX_ASCII_ADDR_LEN] = "0.0.0.0/0";
 static char redir_destination[MAX_ASCII_ADDR_LEN] = "0.0.0.0/0";
 
 
@@ -274,9 +273,7 @@ static void curses_sslredir_add(void *dummy)
    wdg_input_size(wdg_input, strlen("Destination: ") + 
          MAX_ASCII_ADDR_LEN, 6);
    wdg_input_add(wdg_input, 1, 1, "IP Version:  ", redir_proto, 5, 1);
-   wdg_input_add(wdg_input, 1, 2, "Source:      ", redir_source, 
-         MAX_ASCII_ADDR_LEN, 1);
-   wdg_input_add(wdg_input, 1, 3, "Destination: ", redir_destination, 
+   wdg_input_add(wdg_input, 1, 3, "Server IP: ", redir_destination, 
          MAX_ASCII_ADDR_LEN, 1);
    wdg_input_add(wdg_input, 1, 4, "Service:     ", redir_name, 10, 1);
 
@@ -354,13 +351,13 @@ static void curses_sslredir_add_rule(void)
 
    /* do the actual redirect insertion */
    ret = ec_redirect(EC_REDIR_ACTION_INSERT, se->name, proto,
-         redir_source, redir_destination, se->from_port, se->to_port);
+         redir_destination, se->from_port, se->to_port);
 
    /* inform user if redirect insertion wasn't successful */
    if (ret != E_SUCCESS) {
-      DEBUG_MSG("calling ec_redirect('%s', '%s', '%s', '%s', '%s', '%d', '%d'"
+      DEBUG_MSG("calling ec_redirect('%s', '%s', '%s', '%s', '%d', '%d'"
             " failed", "insert", se->name, redir_proto, 
-            redir_source, redir_destination, se->from_port, se->to_port);
+            redir_destination, se->from_port, se->to_port);
 
       INSTANT_USER_MSG("Inserting redirect for %s/%s failed!\n",
             redir_proto, redir_name);
@@ -386,14 +383,14 @@ static void curses_sslredir_del(void *dummy)
    /* remove the redirect */
    re = (struct redir_entry *)dummy;
    ret = ec_redirect(EC_REDIR_ACTION_REMOVE, re->name, re->proto,
-         re->source, re->destination, re->from_port, re->to_port);
+         re->destination, re->from_port, re->to_port);
 
 
    if (ret != E_SUCCESS) {
-      DEBUG_MSG("calling ec_redirect('%s', '%s', '%s', '%s', '%s', '%d', '%d'"
+      DEBUG_MSG("calling ec_redirect('%s', '%s', '%s', '%s', '%d', '%d'"
             " failed", "remove", re->name, 
             (re->proto == EC_REDIR_PROTO_IPV4 ? "ipv4" : "ipv6"),
-            re->source, re->destination, re->from_port, re->to_port);
+            re->destination, re->from_port, re->to_port);
 
       INSTANT_USER_MSG("Removing redirect for %s/%s failed!\n",
             (re->proto == EC_REDIR_PROTO_IPV4 ? "ipv4" : "ipv6"), re->name);
@@ -446,9 +443,8 @@ static void curses_sslredir_add_list(struct redir_entry *re)
          sizeof(char));
 
    snprintf(wdg_redirect_elements[n_redir].desc, MAX_DESC_LEN,
-         "%s %30s %30s %s", 
+         "%s %30s %s", 
          (re->proto == EC_REDIR_PROTO_IPV4 ? "ipv4" : "ipv6"),
-         re->source,
          re->destination,
          re->name);
 

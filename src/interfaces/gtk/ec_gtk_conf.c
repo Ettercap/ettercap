@@ -78,8 +78,7 @@ void gtkui_conf_read(void) {
      if(!p)
          continue;
       *p = '\0';
-      snprintf(name, sizeof(name), "%s", line);
-      strlcpy(name, line, sizeof(name) - 1);
+      strlcpy(name, line, sizeof(name));
       g_strstrip(name);
       value = atoi(p + 1);
       gtkui_conf_set(name, value);

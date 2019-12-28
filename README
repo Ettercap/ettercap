@@ -62,7 +62,6 @@ OPTIONAL:
       - libbsd
 
    To enable PDF documentation generation (enable via ENABLE_PDF_DOCS=On):
-      - ghostscript (ps2pdf)
       - groff
 
    To enable plugins:
@@ -76,7 +75,6 @@ OPTIONAL:
 
    For the GTK+ GUI:
       - Glib      >= 2.2.2
-      - Gtk+      >= 2.2.2 (recommended >= 2.22.0) - deprecated
       - Gtk+3     >= 3.12.0 (recommended >= 3.22.0)
       - Atk       >= 1.2.4
       - Pango     >= 1.2.3
@@ -84,10 +82,9 @@ OPTIONAL:
 If you are running on debian, or any debian based distro you can install
 the required dependencies by running:
 
-apt-get install debhelper bison check cmake flex ghostscript libbsd-dev \
-      libcurl4-openssl-dev libgeoip-dev libltdl-dev libluajit-5.1-dev \
-      libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev \
-      libgtk-3-dev libgtk2.0-dev 
+apt-get install debhelper bison check cmake flex groff libbsd-dev \
+      libcurl4-openssl-dev libgeoip-dev libgtk-3-dev libltdl-dev libluajit-5.1-dev \
+      libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev
 
 ============================================================================
                                    LICENSE

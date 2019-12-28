@@ -43,6 +43,8 @@ endforeach()
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/${EC_CONFFILES}
         ${CMAKE_CURRENT_BINARY_DIR}/etter.conf
+        ${CMAKE_CURRENT_BINARY_DIR}/etter.dns
+        ${CMAKE_CURRENT_BINARY_DIR}/etter.mdns
         DESTINATION ${INSTALL_SYSCONFDIR}/ettercap)
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/${EC_DATAFILES}

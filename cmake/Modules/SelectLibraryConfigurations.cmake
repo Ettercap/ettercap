@@ -49,8 +49,8 @@ macro(select_library_configurations basename)
 
     get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if( ${basename}_LIBRARY_DEBUG AND ${basename}_LIBRARY_RELEASE AND
-           NOT ${basename}_LIBRARY_DEBUG STREQUAL ${basename}_LIBRARY_RELEASE AND
-           ( _isMultiConfig OR CMAKE_BUILD_TYPE ) )
+      NOT ${basename}_LIBRARY_DEBUG STREQUAL ${basename}_LIBRARY_RELEASE AND
+      ( _isMultiConfig OR CMAKE_BUILD_TYPE ) )
         # if the generator is multi-config or if CMAKE_BUILD_TYPE is set for
         # single-config generators, set optimized and debug libraries
         set( ${basename}_LIBRARY "" )
@@ -65,7 +65,7 @@ macro(select_library_configurations basename)
     elseif( ${basename}_LIBRARY_DEBUG )
         set( ${basename}_LIBRARY ${${basename}_LIBRARY_DEBUG} )
     else()
-        set( ${basename}_LIBRARY "${basename}_LIBRARY-NOTFOUND")
+        set( ${basename}_LIBRARY "${basename}_LIBRARY-NOTFOUND" )
     endif()
 
     set( ${basename}_LIBRARIES "${${basename}_LIBRARY}" )
@@ -75,6 +75,5 @@ macro(select_library_configurations basename)
     endif()
 
     mark_as_advanced( ${basename}_LIBRARY_RELEASE
-        ${basename}_LIBRARY_DEBUG
-    )
+        ${basename}_LIBRARY_DEBUG )
 endmacro()

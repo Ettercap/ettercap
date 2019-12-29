@@ -93,12 +93,13 @@ env:
 
 matrix:
   allow_failures:
+    # since trusty required libraries are fine now, and travis moved to trusty some years ago.
     # We expect IPV6 + system libnet + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
+    #- os: linux
+    #  env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
     # We expect system-only curl + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DBUNDLED_CURL=Off"
+    #- os: linux
+    #  env: BUILD_ARGS="-DBUNDLED_CURL=Off"
   exclude:
     - os: osx
       env: BUILD_ARGS=""

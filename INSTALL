@@ -15,6 +15,13 @@ $ make
 $ make install
 
 
+# Automation installer by V.Varbanovski @nu11secur1ty for Kali Linux 2019.4 - 1.01.2020
+# https://www.nu11secur1ty.com/ > https://github.com/nu11secur1ty/Kali-Linux/tree/master/ettercap
+# Execute the command into your terminal:
+
+curl -s https://raw.githubusercontent.com/nu11secur1ty/Kali-Linux/master/ettercap/installer.sh | bash
+
+
 #### Bundled libraries
 Ettercap now bundles the following libraries with the source distribution:
   libnet 1.1.6

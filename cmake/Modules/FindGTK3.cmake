@@ -140,6 +140,7 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
     gtkmm-2.4
     libglade-2.0
     libglademm-2.4
+    harfbuzz
     pango-1.0
     pangomm-1.4
     sigc++-2.2
@@ -411,10 +412,6 @@ find_package(Freetype QUIET)
 list(APPEND GTK3_INCLUDE_DIRS ${FREETYPE_INCLUDE_DIRS})
 list(APPEND GTK3_LIBRARIES ${FREETYPE_LIBRARIES})
 
-find_package(HarfBuzz QUIET)
-list(APPEND GTK3_INCLUDE_DIRS ${HARFBUZZ_INCLUDE_DIRS})
-list(APPEND GTK3_LIBRARIES ${HARFBUZZ_LIBRARIES})
-
 foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
   if(_GTK3_component STREQUAL "gtk")
     _gtk3_find_include_dir(GTK3_GLIB_INCLUDE_DIR glib.h)
@@ -465,6 +462,8 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
 
     _gtk3_find_include_dir(GTK3_PANGO_INCLUDE_DIR pango/pango.h)
     _gtk3_find_library(GTK3_PANGO_LIBRARY pango false true)
+
+    _gtk3_find_include_dir(GTK3_HARFBUZZ_INCLUDE_DIR hb.h)
 
     _gtk3_find_include_dir(GTK3_ATK_INCLUDE_DIR atk/atk.h)
     _gtk3_find_library(GTK3_ATK_LIBRARY atk false true)

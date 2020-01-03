@@ -64,10 +64,10 @@ env:
   - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On"
   # Everything that's optional, in Debug-mode
   - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DCMAKE_BUILD_TYPE=Debug"
-  # Everything that's optional, GTK3
-  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK3"
-  # Everything that's optional, GTK3 in Debug-mode
-  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK3 -DCMAKE_BUILD_TYPE=Debug"
+  # Everything that's optional, GTK2
+  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2"
+  # Everything that's optional, GTK2 in Debug-mode
+  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug"
   # IPV6 + system libnet
   - BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
   # IPV6 + bundled libnet
@@ -93,12 +93,13 @@ env:
 
 matrix:
   allow_failures:
+    # since trusty required libraries are fine now, and travis moved to trusty some years ago.
     # We expect IPV6 + system libnet + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
+    #- os: linux
+    #  env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
     # We expect system-only curl + ubuntu to fail :(
-    - os: linux
-      env: BUILD_ARGS="-DBUNDLED_CURL=Off"
+    #- os: linux
+    #  env: BUILD_ARGS="-DBUNDLED_CURL=Off"
   exclude:
     - os: osx
       env: BUILD_ARGS=""
@@ -112,10 +113,10 @@ matrix:
       env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DCMAKE_BUILD_TYPE=Debug"
     - os: osx
       compiler: gcc
-      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK3"
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2"
     - os: osx
       compiler: gcc
-      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK3 -DCMAKE_BUILD_TYPE=Debug"
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug"
     - os: osx
       env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
     - os: osx
@@ -140,10 +141,9 @@ matrix:
       env: BUILD_ARGS="-DENABLE_GTK=Off -DENABLE_CURSES=Off"
 
 before_install:
-    - if [ ${TRAVIS_OS_NAME} = "osx" ]; then brew update; brew install check curl; brew install groff gtk+ gtk+3 harfbuzz; brew install libidn libnet; brew install luajit openssl pcre rtmpdump geoip; fi
+    - if [ ${TRAVIS_OS_NAME} = "osx" ]; then brew update; brew install check curl; brew install groff gtk+ gtk+3; brew install libidn libnet; brew install luajit openssl pcre rtmpdump geoip; fi
 before_script:
     - if [ ${TRAVIS_OS_NAME} = "osx" ]; then export BUILD_ARGS="$BUILD_ARGS -DOPENSSL_ROOT_DIR=`brew --prefix openssl`";fi
-    - if [ ${TRAVIS_OS_NAME} = "osx" ]; then export BUILD_ARGS="$BUILD_ARGS -DHARFBUZZ_DIR=`brew --prefix harfbuzz`"; fi
 
 script:
   - if [[ "$CC" == "gcc" && "${BUILD_ARGS}" = "" ]]; then git clone https://github.com/richq/cmake-lint.git; cd cmake-lint; python setup.py install --user; cd -; ./misc/cmakelint.sh; fi

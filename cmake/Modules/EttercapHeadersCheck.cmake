@@ -9,7 +9,10 @@ check_include_file(getopt.h HAVE_GETOPT_H)
 check_include_file(ctype.h HAVE_CTYPE_H)
 check_include_file(inttypes.h HAVE_INTTYPES_H)
 
-check_include_file(arpa/nameser.h HAVE_ARPA_NAMESER_H)
+# The nameser.h on OpenBSD is not usable, falling back to missing nameser.h
+if(NOT OS_BSD_OPEN)
+  check_include_file(arpa/nameser.h HAVE_ARPA_NAMESER_H)
+endif()
 
 check_include_file(ltdl.h HAVE_LTDL_H)
 check_include_file(dlfcn.h HAVE_DLFCN_H)

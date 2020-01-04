@@ -4,11 +4,15 @@
 #
 
 # Look for the header file
-find_path(LIBNET_INCLUDE_DIR NAMES libnet.h PATH_SUFFIXES libnet11)
+find_path(LIBNET_INCLUDE_DIR
+      NAMES libnet.h
+      PATH_SUFFIXES libnet11 libnet-1.1)
 mark_as_advanced(LIBNET_INCLUDE_DIR)
 
 #Look for the library
-find_library(LIBNET_LIBRARY NAMES net libnet PATH_SUFFIXES libnet11)
+find_library(LIBNET_LIBRARY
+      NAMES net libnet
+      PATH_SUFFIXES libnet11 libnet-1.1)
 mark_as_advanced(LIBNET_LIBRARY)
 
 # Make sure we've got an include dir.

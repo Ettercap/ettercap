@@ -8,10 +8,11 @@
    #ifndef OS_BSD_OPEN
       #include <arpa/nameser_compat.h>
    #endif
-   #include <resolv.h>
 #else
    #include <missing/nameser.h>
 #endif
+
+#include <resolv.h>
 
 /*
  * glibc 2.1.x does not have new NG_GET* macros...

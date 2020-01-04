@@ -468,6 +468,9 @@ typedef enum __ns_cert_types {
 	(cp) += NS_INT32SZ; \
 } while (0)
 
+#ifndef __THROW
+#define __THROW
+#endif
 __BEGIN_DECLS
 int		ns_msg_getflag (ns_msg, int) __THROW;
 u_int		ns_get16 (const u_char *) __THROW;
@@ -528,7 +531,11 @@ int		ns_samename (const char *, const char *) __THROW;
 __END_DECLS
 
 #ifdef BIND_4_COMPAT
-#include <arpa/nameser_compat.h>
+   #ifdef HAVE_ARPA_NAMESER_H
+      #include <arpa/nameser_compat.h>
+   #else
+      #include <missing/nameser_compat.h>
+   #endif
 #endif
 
 #endif /* !_ARPA_NAMESER_H_ */

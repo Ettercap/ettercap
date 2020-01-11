@@ -1,0 +1,10 @@
+--- a/include/libnet.h	2012-03-06 01:45:46.000000000 +0100
++++ b/include/libnet.h	2020-01-11 10:01:52.877539205 +0100
+@@ -100,6 +100,7 @@
+ 
+ #if !defined(__WIN32__)
+ # include <arpa/inet.h>
++# include <netinet/in.h>
+ # include <sys/time.h>
+ # include <netdb.h>
+ #endif /* __WIN32__ */

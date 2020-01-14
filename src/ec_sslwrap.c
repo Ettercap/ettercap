@@ -108,7 +108,11 @@ struct accepted_entry {
    SSL *ssl[2];
    u_char status;
    X509 *cert;
+#ifdef HAVE_OPENSSL_1_1_1
+   unsigned int tls_handshake_state;
+#define SSL_CLIENTHELLO_INTERCEPTED 1
    char *hostname;
+#endif
    #define SSL_CLIENT 0
    #define SSL_SERVER 1
 };
@@ -555,17 +559,15 @@ static int sslw_ssl_connect(SSL *ssl_sk)
 static int sslw_clienthello_cb(SSL *ssl, int *alert, void *arg)
 {
    (void) alert;
-   char **hostname;
+   struct accepted_entry *ae;
 
-   hostname = (char **)arg;
+   ae = (struct accepted_entry *)arg;
 
-   /* suspend if hostname hasn't been extracted */
-   if (*hostname == NULL) {
-      /* extract hostname value from SNI extension */
-      *hostname = sslw_get_clienthello_sni(ssl);
-      if (*hostname == NULL)
-         /* no SNI given - set to non-NULL */
-         *hostname = "";
+   /* extract hostname value from SNI extension */
+   ae->hostname = sslw_get_clienthello_sni(ssl);
+
+   if (ae->tls_handshake_state != SSL_CLIENTHELLO_INTERCEPTED) {
+      ae->tls_handshake_state = SSL_CLIENTHELLO_INTERCEPTED;
       /* suspend client side TLS handshake */
       return SSL_CLIENT_HELLO_RETRY;
    }
@@ -645,7 +647,7 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    
 #ifdef HAVE_OPENSSL_1_1_1
    /* Set a Callback for the SSL client context to pause the Client Handshake */
-   SSL_CTX_set_client_hello_cb(ssl_ctx_client, sslw_clienthello_cb, (void*)&ae->hostname);
+   SSL_CTX_set_client_hello_cb(ssl_ctx_client, sslw_clienthello_cb, (void*)ae);
 #endif
 
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
@@ -659,9 +661,8 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != E_SUCCESS)
       return -E_INVALID;
 
-   /* if SNI has been set */
-   if (ae->hostname != NULL && strcmp(ae->hostname, ""))
-      /* set hostname as SNI for server SSL */
+   if (ae->hostname)
+      /* set SNI for server-side connection */
       SSL_set_tlsext_host_name(ae->ssl[SSL_SERVER], ae->hostname);
 #endif
     

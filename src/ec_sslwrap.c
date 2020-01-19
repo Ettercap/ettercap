@@ -53,6 +53,9 @@
 /* don't include kerberos. RH sux !! */
 #define OPENSSL_NO_KRB5 1
 #include <openssl/ssl.h>
+#ifdef DEBUG
+   #include <openssl/err.h>
+#endif
 
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
 #define HAVE_OPAQUE_RSA_DSA_DH 1 /* since 1.1.0 -pre5 */
@@ -623,8 +626,14 @@ static int sslw_ssl_accept(SSL *ssl_sk)
 #endif
       
       /* there was an error...  but only if it's not just pending further progress */
-      if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE)
+      if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE) {
+#ifdef DEBUG
+         char error_msg[256], *error;
+         error = ERR_error_string(ERR_get_error(), error_msg);
+         DEBUG_MSG("sslw_ssl_accept(): SSL_accept() failed with '%s'", error);
+#endif
          return -E_INVALID;
+      }
       
       /* sleep a quirk of time... */
       ec_usleep(TSLEEP);

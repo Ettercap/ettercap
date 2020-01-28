@@ -1777,7 +1777,7 @@ void gtkui_page_close_current(GSimpleAction *action, GVariant *value, gpointer d
    gtkui_page_close(NULL, child);
 }
 
-/* show the context menu when the notebook tabs recieve a mouse right-click */
+/* show the context menu when the notebook tabs receive a mouse right-click */
 gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data) {
    /* variable not used */
    (void) widget;
@@ -1887,7 +1887,7 @@ char *gtkui_utf8_validate(char *data) {
 
    unicode = data;
    if(!g_utf8_validate (data, -1, &end)) {
-      /* if "end" pointer is at begining of string, we have no valid text to print */
+      /* if "end" pointer is at beginning of string, we have no valid text to print */
       if(end == unicode) return(NULL);
 
       /* cut off the invalid part so we don't lose the whole string */

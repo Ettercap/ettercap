@@ -181,7 +181,7 @@ EC_API_EXTERN int ec_lua_fini()
         // we are at.
         ui_msg_flush(MSG_ALL);
         
-        // Dump our error and exit. We can't continue on becuase it is very
+        // Dump our error and exit. We can't continue on because it is very
         // possible that we still have hooks dangling around out there, and
         // if we're only partially handling things then we could very well
         // get segfaults and such.

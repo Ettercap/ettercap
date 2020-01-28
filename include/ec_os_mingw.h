@@ -111,7 +111,7 @@ EC_API_EXTERN const char *ec_win_strsignal (int signo);
 struct pollfd {
        int fd;
        int events;     /* in param: what to poll for */
-       int revents;    /* out param: what events occured */
+       int revents;    /* out param: what events occurred */
      };
 
 #undef  HAVE_POLL

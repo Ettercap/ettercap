@@ -546,7 +546,7 @@ int ec_win_wait (int *status)
  * BIND resolver stuff:
  *
  * Expand compressed domain name 'comp_dn' to full domain name.
- * 'msg' is a pointer to the begining of the message,
+ * 'msg' is a pointer to the beginning of the message,
  * 'eom_orig' points to the first location after the message,
  * 'exp_dn' is a pointer to a buffer of size 'length' for the result.
  * Return size of compressed name or -1 if there was an error.

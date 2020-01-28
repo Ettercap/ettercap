@@ -76,7 +76,7 @@ static int cmp_geq(u_int32 a, u_int32 b);
 void filter_init_mutex(void) {
    pthread_mutexattr_t at;
    pthread_mutexattr_init(&at);
-   /* we want an recursive mutex, so we can re-aquire it in the same thread */
+   /* we want an recursive mutex, so we can re-acquire it in the same thread */
    pthread_mutexattr_settype(&at, PTHREAD_MUTEX_RECURSIVE_NP);
    pthread_mutex_init(&filters_mutex, &at);
 }

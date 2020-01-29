@@ -176,6 +176,11 @@ struct wifi_env {
 	size_t wkey_len;
 };
 
+/* threads structure */
+struct thread_env {
+   pthread_t ec_pthread_null;
+};
+
 /* the globals container */
 struct ec_globals {
    struct ec_conf *conf;
@@ -191,6 +196,7 @@ struct ec_globals {
    struct target_env *t1;
    struct target_env *t2;
    struct wifi_env *wifi;
+   struct thread_env *thread;
    LIST_HEAD(, hosts_list) hosts_list;
    TAILQ_HEAD(gbl_ptail, host_profile) profiles_list_head;
    struct filter_list *filters;
@@ -213,6 +219,7 @@ EC_API_EXTERN struct ec_globals *ec_gbls;
 #define EC_GBL_TARGET1        (EC_GBLS->t1)
 #define EC_GBL_TARGET2        (EC_GBLS->t2)
 #define EC_GBL_WIFI           (EC_GBLS->wifi)
+#define EC_GBL_THREAD         (EC_GBLS->thread)
 #define EC_GBL_HOSTLIST       (EC_GBLS->hosts_list)
 #define EC_GBL_PROFILES       (EC_GBLS->profiles_list_head)
 #define EC_GBL_FILTERS        &(EC_GBLS->filters)

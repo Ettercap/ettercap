@@ -52,6 +52,7 @@ void ec_globals_alloc(void)
    SAFE_CALLOC(ec_gbls->t1, 1, sizeof(struct target_env));
    SAFE_CALLOC(ec_gbls->t2, 1, sizeof(struct target_env));
    SAFE_CALLOC(ec_gbls->wifi, 1, sizeof(struct wifi_env));
+   SAFE_CALLOC(ec_gbls->thread, 1, sizeof(struct thread_env));
    /* filter list entries are allocated as needed */
    ec_gbls->filters = NULL;
 
@@ -72,6 +73,8 @@ void ec_globals_free(void)
    EC_GBL_FREE(ec_gbls->bridge);
    EC_GBL_FREE(ec_gbls->sm);
    EC_GBL_FREE(ec_gbls->filters);
+   EC_GBL_FREE(ec_gbls->wifi);
+   EC_GBL_FREE(ec_gbls->thread);
 
    free_ip_list(ec_gbls->t1);
    EC_GBL_FREE(ec_gbls->t1);

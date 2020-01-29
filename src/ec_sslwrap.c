@@ -71,6 +71,10 @@
 #define TLS_server_method SSLv23_server_method
 #endif
 
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+#define HAVE_OPENSSL_1_1_0
+#endif
+
 #if (OPENSSL_VERSION_NUMBER >= 0x10101000L)
 #define HAVE_OPENSSL_1_1_1
 #endif
@@ -137,6 +141,9 @@ struct sslw_ident {
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
 
+#ifdef HAVE_OPENSSL_1_1_0
+static SSL_CONF_CTX *ssl_conf_client, *ssl_conf_server;
+#endif
 static SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
 static EVP_PKEY *global_pk;
 static u_int16 number_of_services;
@@ -267,6 +274,10 @@ static void ssl_wrap_fini(void)
 
    SSL_CTX_free(ssl_ctx_server);
    SSL_CTX_free(ssl_ctx_client);
+#ifdef HAVE_OPENSSL_1_1_0
+   SSL_CONF_CTX_free(ssl_conf_client);
+   SSL_CONF_CTX_free(ssl_conf_server);
+#endif
 
    /* remove redirects */
    ec_redirect_cleanup();
@@ -703,8 +714,10 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != E_SUCCESS) 
       return -E_INVALID;
 
+#ifdef HAVE_OPENSSL_1_1_1
    /* TLS handshake done - SNI hostname not longer required: free */
    SAFE_FREE(ae->hostname);
+#endif
 
 
    return E_SUCCESS;   
@@ -1107,20 +1120,37 @@ static void sslw_init(void)
 {
    SSL *dummy_ssl=NULL;
 
+#ifndef HAVE_OPENSSL_1_1_0
    SSL_library_init();
+#endif
 
    /* Create the two global CTX */
    ssl_ctx_client = SSL_CTX_new(TLS_server_method());
    ssl_ctx_server = SSL_CTX_new(TLS_client_method());
+
+   ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
+   ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");
 
 #ifdef HAVE_OPENSSL_1_0_2
    SSL_CTX_set_ecdh_auto(ssl_ctx_client, 1);
    SSL_CTX_set_ecdh_auto(ssl_ctx_server, 1);
 #endif
 
+#ifdef HAVE_OPENSSL_1_1_0
+   ssl_conf_client = SSL_CONF_CTX_new();
+   ssl_conf_server = SSL_CONF_CTX_new();
+   SSL_CONF_CTX_set_flags(ssl_conf_client, SSL_CONF_FLAG_FILE);
+   SSL_CONF_CTX_set_flags(ssl_conf_server, SSL_CONF_FLAG_FILE);
 
-   ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
-   ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");
+   SSL_CONF_CTX_set_ssl_ctx(ssl_conf_client, ssl_ctx_client);
+   SSL_CONF_CTX_set_ssl_ctx(ssl_conf_server, ssl_ctx_server);
+
+   /* Backward compatibility for older TLS versions and ciphers */
+   SSL_CONF_cmd(ssl_conf_client, "MinProtocol", "TLSv1");
+   SSL_CONF_cmd(ssl_conf_server, "MinProtocol", "TLSv1");
+   SSL_CONF_cmd(ssl_conf_client, "CipherString", "DEFAULT");
+   SSL_CONF_cmd(ssl_conf_server, "CipherString", "DEFAULT");
+#endif
 
    if(EC_GBL_OPTIONS->ssl_pkey) {
 	/* Get our private key from the file specified from cmd-line */

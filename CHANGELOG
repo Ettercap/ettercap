@@ -11,6 +11,7 @@ Legend:
    !! Fix build on MacOSX detecting new dependency HarfBuzz
    !! Fix warnings when parsing etter.(m)dns file when built w/o IPv6 support
    !! Fix capture delay with libpcap v1.9.1 (fixes #974)
+   !! Fix segmentation fault when etterlog concatinate files
     + Take over client-side SNI extension in ClientHello in SSL interception (req. OpenSSL 1.1.1)
     + Take over SAN certificate extension from server certificate in SSL interception
     + Use server certificate sign algorithm to sign fake certificate defaulting to SHA256

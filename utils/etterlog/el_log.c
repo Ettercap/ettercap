@@ -394,6 +394,11 @@ static void dump_file(gzFile fd, struct log_global_header *hdr)
    u_char *pckbuf;
    int count = 0;
 
+
+   memset(&pck,0,sizeof(struct log_header_packet));
+   memset(&inf,0,sizeof(struct log_header_info));
+   memset(&infbuf,0,sizeof(struct dissector_info));
+
    /* loop until EOF */
    LOOP {
       switch (hdr->type) {

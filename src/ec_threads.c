@@ -46,6 +46,8 @@ static pthread_cond_t init_cond = PTHREAD_COND_INITIALIZER;
 #define INIT_LOCK     do{ DEBUG_MSG("thread_init_lock"); pthread_mutex_lock(&init_mtx); } while(0)
 #define INIT_UNLOCK   do{ DEBUG_MSG("thread_init_unlock"); pthread_mutex_unlock(&init_mtx); } while(0)
 
+pthread_t EC_PTHREAD_NULL;
+
 /* protos... */
 
 pthread_t ec_thread_detached(char *name, char *desc, void *(*function)(void *), void *args, int detached);

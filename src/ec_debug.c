@@ -143,7 +143,7 @@ void debug_msg(const char *message, ...)
    if (debug_file == NULL)
       return;
 
-   fprintf(debug_file, "[%9s]\t", ec_thread_getname(EC_PTHREAD_SELF));
+   fprintf(debug_file, "[%9s]\t", ec_thread_getname(ec_thread_getpid(NULL)));
 
    strlcpy(debug_message, message, sizeof(debug_message));
    strlcat(debug_message, "\n", sizeof(debug_message));

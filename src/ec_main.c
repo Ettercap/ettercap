@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
    filter_init_mutex();
    
    /* register the main thread as "init" */
-   ec_thread_register(EC_PTHREAD_SELF, "init", "initialization phase");
+   ec_thread_register(ec_thread_getpid(NULL), "init", "initialization phase");
    
    /* activate the signal handler */
    signal_handler();
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
    ec_thread_new("top_half", "dispatching module", &top_half, NULL);
 
    /* this thread becomes the UI then displays it */
-   ec_thread_register(EC_PTHREAD_SELF, EC_GBL_PROGRAM, "the user interface");
+   ec_thread_register(ec_thread_getpid(NULL), EC_GBL_PROGRAM, "the user interface");
 
    /* start unified sniffing for curses and GTK at startup */
    if ((EC_GBL_UI->type == UI_CURSES || EC_GBL_UI->type == UI_GTK) &&

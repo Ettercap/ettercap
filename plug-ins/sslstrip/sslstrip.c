@@ -299,17 +299,17 @@ static int sslstrip_fini(void *dummy)
    /* stop accept wrapper */
    pthread_t pid = ec_thread_getpid("http_accept_thread");
    
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
            ec_thread_destroy(pid);
 
    /* now destroy all http_child_thread */
    do {
       pid = ec_thread_getpid("http_child_thread");
       
-      if(!pthread_equal(pid, EC_PTHREAD_NULL))
+      if(!pthread_equal(pid, ec_thread_getpid(NULL)))
          ec_thread_destroy(pid);
 
-   } while (!pthread_equal(pid, EC_PTHREAD_NULL));
+   } while (!pthread_equal(pid, ec_thread_getpid(NULL)));
 
    close(main_fd);
 #ifdef WITH_IPV6

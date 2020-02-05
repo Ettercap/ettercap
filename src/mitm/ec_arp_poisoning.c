@@ -156,7 +156,7 @@ static void arp_poisoning_stop(void)
    pid = ec_thread_getpid("arp_poisoner");
 
    /* the thread is active or not ? */
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
       ec_thread_destroy(pid);
    else
       return;

@@ -54,7 +54,7 @@ void start_unified_sniff(void)
       pthread_t pid;
       
       pid = ec_thread_getpid("timer");
-      if (pthread_equal(pid, EC_PTHREAD_NULL))
+      if (pthread_equal(pid, ec_thread_getpid(NULL)))
          ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
    }
 
@@ -93,7 +93,7 @@ void stop_unified_sniff(void)
       secondary_sources_foreach(capture_stop);
    
    pid = ec_thread_getpid("sslwrap");
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
       ec_thread_destroy(pid);
 
    USER_MSG("Unified sniffing was stopped.\n");

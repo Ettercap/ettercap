@@ -60,7 +60,7 @@ void capture_stop(struct iface_env *iface)
 
    snprintf(thread_name, sizeof(thread_name), "capture[%s]", iface->name);
    pid = ec_thread_getpid(thread_name);
-   if(!pthread_equal(pid, EC_PTHREAD_NULL))
+   if(!pthread_equal(pid, ec_thread_getpid(NULL)))
       ec_thread_destroy(pid);
 }
 

@@ -359,7 +359,7 @@ void resolv_cache_insert(struct ip_addr *ip, char *name)
     * can lead to segmentation faults due to race conditions
     */
    pid = pthread_self();
-   if (pthread_equal(pid, EC_PTHREAD_NULL)) {
+   if (pthread_equal(pid, ec_thread_getpid(NULL))) {
       DEBUG_MSG("resolv_cache_insert: not called by a thread - aborting");
       return;
    }

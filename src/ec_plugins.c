@@ -327,7 +327,7 @@ int plugin_kill_thread(char *name, char *thread)
    pid = ec_thread_getpid(thread); 
 
    /* do not execute if not being a thread */
-   if (pthread_equal(pid, EC_PTHREAD_NULL))
+   if (pthread_equal(pid, ec_thread_getpid(NULL)))
       return -E_INVALID;
 
    /* the thread can only kill itself */

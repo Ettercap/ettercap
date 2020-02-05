@@ -11,9 +11,6 @@ struct ec_thread {
    pthread_t id;
 };
 
-/* a value to be used to return errors in fuctcions using pthread_t values */
-pthread_t EC_PTHREAD_NULL;
-#define EC_PTHREAD_SELF EC_PTHREAD_NULL
 #define PTHREAD_ID(id)  (*(unsigned long*)&(id)) 
 
 #define EC_THREAD_FUNC(x) void * x(void *args)

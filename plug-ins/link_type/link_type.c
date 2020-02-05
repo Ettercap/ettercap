@@ -186,7 +186,7 @@ static int link_type_fini(void *dummy)
 
    pid = ec_thread_getpid("link_type");
 
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
          ec_thread_destroy(pid);
 
    INSTANT_USER_MSG("link_type: plugin terminated...\n");

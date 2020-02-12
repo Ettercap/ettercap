@@ -113,7 +113,7 @@ static void ndp_poison_stop(void)
    DEBUG_MSG("ndp_poison_stop");
    
    pid = ec_thread_getpid("ndp_poisoner");
-   if(!pthread_equal(pid, EC_PTHREAD_NULL))
+   if(!pthread_equal(pid, ec_thread_getpid(NULL)))
       ec_thread_destroy(pid);
    else {
       DEBUG_MSG("no poisoner thread found");

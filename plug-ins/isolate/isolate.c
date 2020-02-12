@@ -108,7 +108,7 @@ static int isolate_fini(void *dummy)
    hook_del(HOOK_PACKET_ARP_RQ, &parse_arp);
    
    /* get those pids and kill 'em all */ 
-   while(!pthread_equal(pid = ec_thread_getpid("isolate"), EC_PTHREAD_NULL))
+   while(!pthread_equal(pid = ec_thread_getpid("isolate"), ec_thread_getpid(NULL)))
       ec_thread_destroy(pid);   
    
    /* free the list */

@@ -32,6 +32,11 @@ struct thread_list {
 
 
 /* global data */
+
+/* a value to be used to return errors in fuctcions using pthread_t values */
+static pthread_t EC_PTHREAD_NULL = 0;
+#define EC_PTHREAD_SELF EC_PTHREAD_NULL
+
 #define DETACHED_THREAD 1
 #define JOINABLE_THREAD 0
 
@@ -93,6 +98,13 @@ pthread_t ec_thread_getpid(char *name)
 {
    struct thread_list *current;
    pthread_t pid;
+
+   /*
+    * if "name" is explicitely set up NULL, the top-level pthread_t 
+    * is returned w/o iterating through the thread-list
+    */
+   if (name == NULL)
+      return EC_PTHREAD_NULL;
    
    THREADS_LOCK;
 

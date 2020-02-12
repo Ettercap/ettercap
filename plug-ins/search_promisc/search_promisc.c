@@ -176,7 +176,7 @@ static int search_promisc_fini(void *dummy)
 
    pid = ec_thread_getpid("search_promisc");
 
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
          ec_thread_destroy(pid);
 
    INSTANT_USER_MSG("search_promisc: plugin terminated...\n");

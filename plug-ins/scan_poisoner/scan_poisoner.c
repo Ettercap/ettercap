@@ -164,7 +164,7 @@ static int scan_poisoner_fini(void *dummy)
 
    pid = ec_thread_getpid("scan_poisoner");
 
-   if (!pthread_equal(pid, EC_PTHREAD_NULL))
+   if (!pthread_equal(pid, ec_thread_getpid(NULL)))
          ec_thread_destroy(pid);
 
    INSTANT_USER_MSG("scan_poisoner: plugin terminated...\n");

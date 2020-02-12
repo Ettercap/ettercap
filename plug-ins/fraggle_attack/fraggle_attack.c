@@ -88,7 +88,7 @@ static int fraggle_attack_fini(void *dummy)
 
    DEBUG_MSG("fraggle_attack_fini");
 
-   while(!pthread_equal(EC_PTHREAD_NULL, pid = ec_thread_getpid("fraggler"))) {
+   while(!pthread_equal(ec_thread_getpid(NULL), pid = ec_thread_getpid("fraggler"))) {
       ec_thread_destroy(pid);
    }
 
@@ -116,7 +116,7 @@ static EC_THREAD_FUNC(fraggler)
    length= (size_t) sizeof(payload);
 
    if((proto != AF_INET) && (proto != AF_INET6))
-	   ec_thread_destroy(EC_PTHREAD_SELF);
+	   ec_thread_destroy(ec_thread_getpid(NULL));
 
    LOOP {
       CANCELLATION_POINT();

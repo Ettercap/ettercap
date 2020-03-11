@@ -206,7 +206,7 @@ void sslw_dissect_move(char *name, u_int16 port)
       if(!strcmp(name, le->name)) {
          DEBUG_MSG("sslw_dissect_move: %s [%u]", name, port);
          le->sslw_port = port;
-	 
+
       /* Move to zero means disable */
       if (port == 0) {
          LIST_REMOVE(le, next);
@@ -389,8 +389,8 @@ EC_THREAD_FUNC(sslw_start)
    }
 
    return NULL;
-   
-}	 
+
+}
 
 /* 
  * Filter SSL related packets and create NAT sessions.
@@ -403,7 +403,7 @@ static void sslw_hook_handled(struct packet_object *po)
    /* We have nothing to do with this packet */
    if (!sslw_is_ssl(po))
       return;
-     
+
    /* If it's an ssl packet don't forward */
    po->flags |= PO_DROPPED;
    
@@ -411,7 +411,7 @@ static void sslw_hook_handled(struct packet_object *po)
    if ( (po->flags & PO_FORWARDABLE) && 
         (po->L4.flags & TH_SYN) &&
         !(po->L4.flags & TH_ACK) ) {
-	
+
       sslw_create_session(&s, PACKET);
 
 #ifndef OS_LINUX
@@ -419,7 +419,7 @@ static void sslw_hook_handled(struct packet_object *po)
       memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
       session_put(s);
 #else
-	SAFE_FREE(s); /* Just get rid of it */
+      SAFE_FREE(s); /* Just get rid of it */
 #endif
    } else /* Pass only the SYN for conntrack */
       po->flags |= PO_IGNORE;
@@ -527,7 +527,7 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 {      
    if(sslw_get_peer(ae) != E_SUCCESS)
          return -E_INVALID;
-	 
+
    if(sslw_connect_server(ae) != E_SUCCESS)
          return -E_INVALID;
 
@@ -698,15 +698,15 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    }
 
    if (!EC_GBL_OPTIONS->ssl_cert) {
-   	/* Create the fake certificate based on actual certificate */
-   	ae->cert = sslw_create_selfsigned(server_cert);  
-   	X509_free(server_cert);
+      /* Create the fake certificate based on actual certificate */
+      ae->cert = sslw_create_selfsigned(server_cert);  
+      X509_free(server_cert);
 
-   	if (ae->cert == NULL)
-      		return -E_INVALID;
+      if (ae->cert == NULL)
+         return -E_INVALID;
 
       /* use faked certificate for further SSL client connection */
-   	SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
+      SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
 
    }
    
@@ -841,7 +841,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
       /* XXX - Is it necessary? */
       if (len == 0)
          return -E_INVALID;
-	       
+
       if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
          return -E_NOTHANDLED;
       else
@@ -933,7 +933,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       /* XXX - Set a proper sleep time */
       if (not_written)
          ec_usleep(SEC2MICRO(1));
-	 	 
+
    } while (not_written);
          
    return E_SUCCESS;
@@ -1025,8 +1025,8 @@ static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
       SAFE_CALLOC(po->DATA.data, 1, UINT16_MAX);
    } else {
       if (po->DATA.data != p_data) {
-      	  SAFE_FREE(po->DATA.data);
-          po->DATA.data = p_data;
+         SAFE_FREE(po->DATA.data);
+         po->DATA.data = p_data;
       }
    }
       
@@ -1153,29 +1153,38 @@ static void sslw_init(void)
 #endif
 
    if(EC_GBL_OPTIONS->ssl_pkey) {
-	/* Get our private key from the file specified from cmd-line */
-	DEBUG_MSG("Using custom private key %s", EC_GBL_OPTIONS->ssl_pkey);
-	if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, EC_GBL_OPTIONS->ssl_pkey, SSL_FILETYPE_PEM) == 0) {
-		FATAL_ERROR("Can't open \"%s\" file : %s", EC_GBL_OPTIONS->ssl_pkey, strerror(errno));
-	}
+      /* Get our private key from the file specified from cmd-line */
+      DEBUG_MSG("Using custom private key %s", EC_GBL_OPTIONS->ssl_pkey);
+      if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client,
+               EC_GBL_OPTIONS->ssl_pkey, SSL_FILETYPE_PEM) == 0) {
+         FATAL_ERROR("Can't open \"%s\" file : %s",
+               EC_GBL_OPTIONS->ssl_pkey, strerror(errno));
+      }
 
-	if (EC_GBL_OPTIONS->ssl_cert) {
-		if (SSL_CTX_use_certificate_file(ssl_ctx_client, EC_GBL_OPTIONS->ssl_cert, SSL_FILETYPE_PEM) == 0) {
-			FATAL_ERROR("Can't open \"%s\" file : %s", EC_GBL_OPTIONS->ssl_cert, strerror(errno));
-		}
+      if (EC_GBL_OPTIONS->ssl_cert) {
+         if (SSL_CTX_use_certificate_file(ssl_ctx_client,
+                  EC_GBL_OPTIONS->ssl_cert, SSL_FILETYPE_PEM) == 0) {
+            FATAL_ERROR("Can't open \"%s\" file : %s",
+                  EC_GBL_OPTIONS->ssl_cert, strerror(errno));
+         }
 
-		if (!SSL_CTX_check_private_key(ssl_ctx_client)) {
-			FATAL_ERROR("Certificate \"%s\" does not match private key \"%s\"", EC_GBL_OPTIONS->ssl_cert, EC_GBL_OPTIONS->ssl_pkey);
-		}
-	}
+         if (!SSL_CTX_check_private_key(ssl_ctx_client)) {
+            FATAL_ERROR("Certificate \"%s\" does not match private key \"%s\"",
+                  EC_GBL_OPTIONS->ssl_cert, EC_GBL_OPTIONS->ssl_pkey);
+         }
+      }
    } else {
-   	/* Get our private key from our cert file */
-   	if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, INSTALL_DATADIR "/" PROGRAM "/" CERT_FILE, SSL_FILETYPE_PEM) == 0) {
-      		DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- trying ./share/%s",  CERT_FILE);
+      /* Get our private key from our cert file */
+      if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client,
+               INSTALL_DATADIR"/"PROGRAM"/"CERT_FILE, SSL_FILETYPE_PEM) == 0) {
+            DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- trying ./share/%s",
+                  CERT_FILE);
 
-      		if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, "./share/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         		FATAL_ERROR("Can't open \"./share/%s\" file : %s", CERT_FILE, strerror(errno));
-   	}
+            if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client,
+                     "./share/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
+               FATAL_ERROR("Can't open \"./share/%s\" file : %s",
+                     CERT_FILE, strerror(errno));
+      }
    }
 
    dummy_ssl = SSL_new(ssl_ctx_client);
@@ -1210,8 +1219,8 @@ EC_THREAD_FUNC(sslw_child)
       DEBUG_MSG("FAILED TO FIND PEER");
       SAFE_FREE(ae);
       ec_thread_exit();
-   }	    
-	    
+   }
+
    if ((ae->status & SSL_ENABLED) && 
       sslw_sync_ssl(ae) == -E_INVALID) {
       sslw_wipe_connection(ae);
@@ -1234,7 +1243,7 @@ EC_THREAD_FUNC(sslw_child)
 
          ret_val = sslw_read_data(ae, direction, &po);
          BREAK_ON_ERROR(ret_val,ae,po);
-	 
+
          /* if we have data to read */
          if (ret_val == E_SUCCESS) {
             data_read = 1;
@@ -1244,16 +1253,16 @@ EC_THREAD_FUNC(sslw_child)
 
             if (po.flags & PO_DROPPED)
                continue;
-	
+
             ret_val = sslw_write_data(ae, !direction, &po);
             BREAK_ON_ERROR(ret_val,ae,po);
-	    
+
             if ((po.flags & PO_SSLSTART) && !(ae->status & SSL_ENABLED)) {
                ae->status |= SSL_ENABLED; 
                ret_val = sslw_sync_ssl(ae);
                BREAK_ON_ERROR(ret_val,ae,po);
             }
-	    
+
             sslw_initialize_po(&po, po.DATA.data);
          }  
       }
@@ -1270,52 +1279,52 @@ EC_THREAD_FUNC(sslw_child)
 
 static int sslw_remove_sts(struct packet_object *po)
 {
-	u_char *ptr;
-	u_char *end;
-	u_char *h_end;
-	size_t len = po->DATA.len;
-	size_t slen = strlen("\r\nStrict-Transport-Security:");
+   u_char *ptr;
+   u_char *end;
+   u_char *h_end;
+   size_t len = po->DATA.len;
+   size_t slen = strlen("\r\nStrict-Transport-Security:");
 
-	if (!memmem(po->DATA.data, po->DATA.len, "\r\nStrict-Transport-Security:", slen)) {
-		return -E_NOTFOUND;
-	}
+   if (!memmem(po->DATA.data, po->DATA.len, "\r\nStrict-Transport-Security:", slen)) {
+      return -E_NOTFOUND;
+   }
 
-	ptr = po->DATA.data;
-	end = ptr + po->DATA.len;
+   ptr = po->DATA.data;
+   end = ptr + po->DATA.len;
 
-	len = end - ptr;
+   len = end - ptr;
 
-	ptr = (u_char*)memmem(ptr, len, "\r\nStrict-Transport-Security:", slen);
-	ptr += 2;
+   ptr = (u_char*)memmem(ptr, len, "\r\nStrict-Transport-Security:", slen);
+   ptr += 2;
 
-	h_end = (u_char*)memmem(ptr, len, "\r\n", 2);
-	h_end += 2;
+   h_end = (u_char*)memmem(ptr, len, "\r\n", 2);
+   h_end += 2;
 
-	size_t before_header = ptr - po->DATA.data;
-	size_t header_length = h_end - ptr;
-	size_t new_len = 0;
+   size_t before_header = ptr - po->DATA.data;
+   size_t header_length = h_end - ptr;
+   size_t new_len = 0;
 
-	u_char *new_html;
-	SAFE_CALLOC(new_html, len, sizeof(u_char));
+   u_char *new_html;
+   SAFE_CALLOC(new_html, len, sizeof(u_char));
 
-	BUG_IF(new_html == NULL);
+   BUG_IF(new_html == NULL);
 
-	memcpy(new_html, po->DATA.data, before_header);
-	new_len += before_header;
+   memcpy(new_html, po->DATA.data, before_header);
+   new_len += before_header;
 
-	memcpy(new_html+new_len, h_end, (len - header_length) - before_header);
-	new_len += (len - header_length) - before_header;
-
-
-	memset(po->DATA.data, '\0', po->DATA.len);
-
-	memcpy(po->DATA.data, new_html, new_len);
-	po->DATA.len = new_len;
-
-	po->flags |= PO_MODIFIED;
+   memcpy(new_html+new_len, h_end, (len - header_length) - before_header);
+   new_len += (len - header_length) - before_header;
 
 
-	return E_SUCCESS;
+   memset(po->DATA.data, '\0', po->DATA.len);
+
+   memcpy(po->DATA.data, new_html, new_len);
+   po->DATA.len = new_len;
+
+   po->flags |= PO_MODIFIED;
+
+
+   return E_SUCCESS;
 
 }
 

@@ -106,21 +106,15 @@ void gtkui_sslredir_show(void)
    gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
    renderer = gtk_cell_renderer_text_new();
-   column = gtk_tree_view_column_new_with_attributes("Source", renderer,
+   column = gtk_tree_view_column_new_with_attributes("Server IP", renderer,
          "text", 2, NULL);
-   gtk_tree_view_column_set_sort_column_id(column, 1);
-   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
-
-   renderer = gtk_cell_renderer_text_new();
-   column = gtk_tree_view_column_new_with_attributes("Destination", renderer,
-         "text", 3, NULL);
    gtk_tree_view_column_set_sort_column_id(column, 2);
    gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
    renderer = gtk_cell_renderer_text_new();
    column = gtk_tree_view_column_new_with_attributes("Service", renderer,
-         "text", 7, NULL);
-   gtk_tree_view_column_set_sort_column_id(column, 3);
+         "text", 6, NULL);
+   gtk_tree_view_column_set_sort_column_id(column, 6);
    gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
    gtkui_sslredir_create_lists();
@@ -178,16 +172,15 @@ void gtkui_sslredir_show(void)
 static void gtkui_sslredir_add(GtkWidget *widget, gpointer data)
 {
 
-   GtkWidget *dialog, *content, *table, *source, *destination, *label, *frame;
+   GtkWidget *dialog, *content, *table, *destination, *label, *frame;
    GtkWidget *proto, *af;
    GtkTreeModel *model;
    GtkTreeIter iter;
    GtkCellRenderer *cell1, *cell2;
-   GtkWidget *entry_widgets[2];
    int ret = 0;
    guint32 from_port, to_port;
    gchar *name;
-   const gchar *from, *to;
+   const gchar *server;
    ec_redir_proto_t ip_ver;
 
    /* unused variabled */
@@ -248,27 +241,17 @@ static void gtkui_sslredir_add(GtkWidget *widget, gpointer data)
          "text", 0, NULL);
    gtk_table_attach_defaults(GTK_TABLE(table), af, 1, 2, 0, 1);
 
-   label = gtk_label_new("Source:");
+   label = gtk_label_new("Destination:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
    gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 1, 2);
 
-   source = gtk_entry_new();
-   gtk_entry_set_text(GTK_ENTRY(source), "0.0.0.0/0");
-   gtk_widget_grab_focus(source);
-   gtk_widget_activate(source);
-   gtk_table_attach_defaults(GTK_TABLE(table), source, 1, 2, 1, 2);
-
-   label = gtk_label_new("Destination:");
-   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 2, 3);
-
    destination = gtk_entry_new();
    gtk_entry_set_text(GTK_ENTRY(destination), "0.0.0.0/0");
-   gtk_table_attach_defaults(GTK_TABLE(table), destination, 1, 2, 2, 3);
+   gtk_table_attach_defaults(GTK_TABLE(table), destination, 1, 2, 1, 2);
 
    label = gtk_label_new("Service:");
    gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 3, 4);
+   gtk_table_attach_defaults(GTK_TABLE(table), label, 0, 1, 2, 3);
 
    proto = gtk_combo_box_new();
    gtk_combo_box_set_model(GTK_COMBO_BOX(proto), GTK_TREE_MODEL(proto_list));
@@ -278,14 +261,13 @@ static void gtkui_sslredir_add(GtkWidget *widget, gpointer data)
    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(proto), cell2, TRUE);
    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(proto), cell2, 
          "text", 1, NULL);
-   gtk_table_attach_defaults(GTK_TABLE(table), proto, 1, 2, 3, 4);
+   gtk_table_attach_defaults(GTK_TABLE(table), proto, 1, 2, 2, 3);
 
-   entry_widgets[0] = source;
-   entry_widgets[1] = destination;
    g_signal_connect(G_OBJECT(af), "changed", 
-         G_CALLBACK(gtkui_sslredir_af_changed), entry_widgets);
+         G_CALLBACK(gtkui_sslredir_af_changed), destination);
 
    gtk_widget_show_all(dialog);
+   gtk_widget_grab_focus(destination);
 
    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
       gtk_widget_hide(dialog);
@@ -300,12 +282,11 @@ static void gtkui_sslredir_add(GtkWidget *widget, gpointer data)
       gtk_tree_model_get(model, &iter, 0, &name,
             2, &from_port, 3, &to_port, -1);
 
-      from = gtk_entry_get_text(GTK_ENTRY(source));
-      to = gtk_entry_get_text(GTK_ENTRY(destination));
+      server = gtk_entry_get_text(GTK_ENTRY(destination));
 
       /* execute redirect action */
       ret = ec_redirect(EC_REDIR_ACTION_INSERT, name, ip_ver,
-            from, to, from_port, to_port);
+            server, from_port, to_port);
 
 
       /* inform user if redirect execution wasn't successful */
@@ -317,12 +298,11 @@ static void gtkui_sslredir_add(GtkWidget *widget, gpointer data)
          gtk_list_store_set(redirrules, &iter,
                0, ip_ver,
                1, (ip_ver == EC_REDIR_PROTO_IPV4 ? "IPv4" : "IPv6"),
-               2, from,
-               3, to,
-               4, from_port,
-               5, to_port,
-               6, ec_strlc(name),
-               7, ec_struc(name),
+               2, server,
+               3, from_port,
+               4, to_port,
+               5, ec_strlc(name),
+               6, ec_struc(name),
                -1);
       }
       
@@ -344,7 +324,7 @@ void gtkui_sslredir_del(GtkWidget *widget, gpointer data)
    GtkTreeModel *model;
    int ret;
    gchar *name;
-   const gchar *from, *to;
+   const gchar *server;
    guint32 from_port, to_port;
    ec_redir_proto_t ip_ver;
 
@@ -363,16 +343,15 @@ void gtkui_sslredir_del(GtkWidget *widget, gpointer data)
          gtk_tree_model_get_iter(model, &iter, list->data);
          gtk_tree_model_get(model, &iter, 
                0, &ip_ver,
-               2, &from,
-               3, &to,
-               4, &from_port,
-               5, &to_port,
-               6, &name,
+               2, &server,
+               3, &from_port,
+               4, &to_port,
+               5, &name,
                -1);
 
          /* execute redirect action */
          ret = ec_redirect(EC_REDIR_ACTION_REMOVE, name, ip_ver,
-               from, to, from_port, to_port);
+               server, from_port, to_port);
 
          /* inform user if redirect execution wasn't successful */
          if (ret != E_SUCCESS)
@@ -447,10 +426,9 @@ static void gtkui_sslredir_create_lists(void)
 
    /* populate redirect rules */
    if (redirrules == NULL) {
-      redirrules = gtk_list_store_new(8,
+      redirrules = gtk_list_store_new(7,
             G_TYPE_UINT,    /* IP address family */
             G_TYPE_STRING,  /* IP address family human readable */
-            G_TYPE_STRING,  /* source definition */
             G_TYPE_STRING,  /* destination definition */
             G_TYPE_UINT,    /* protocol registered port */
             G_TYPE_UINT,    /* ettercap listener port */
@@ -520,12 +498,11 @@ static void gtkui_sslredir_add_list(struct redir_entry *re)
    gtk_list_store_set(redirrules, &iter,
          0, re->proto,
          1, (re->proto == EC_REDIR_PROTO_IPV4 ? "IPv4" : "IPv6"),
-         2, re->source,
-         3, re->destination,
-         4, re->from_port,
-         5, re->to_port,
-         6, ec_strlc(re->name),
-         7, ec_struc(re->name),
+         2, re->destination,
+         3, re->from_port,
+         4, re->to_port,
+         5, ec_strlc(re->name),
+         6, ec_struc(re->name),
          -1);
 
 }
@@ -537,12 +514,9 @@ static void gtkui_sslredir_add_list(struct redir_entry *re)
  */
 void gtkui_sslredir_af_changed(GtkWidget *widget, gpointer data)
 {
-   GtkWidget **widgets;
    GtkTreeModel *model;
    GtkTreeIter iter;
    ec_redir_proto_t proto;
-
-   widgets = data;
 
    model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
    gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter);
@@ -550,14 +524,12 @@ void gtkui_sslredir_af_changed(GtkWidget *widget, gpointer data)
 
    switch (proto) {
       case EC_REDIR_PROTO_IPV4:
-         gtk_entry_set_text(GTK_ENTRY(widgets[0]), "0.0.0.0/0");
-         gtk_entry_set_text(GTK_ENTRY(widgets[1]), "0.0.0.0/0");
-         gtk_widget_grab_focus(widgets[0]);
+         gtk_entry_set_text(GTK_ENTRY(data), "0.0.0.0/0");
+         gtk_widget_grab_focus(data);
          break;
       case EC_REDIR_PROTO_IPV6:
-         gtk_entry_set_text(GTK_ENTRY(widgets[0]), "::/0");
-         gtk_entry_set_text(GTK_ENTRY(widgets[1]), "::/0");
-         gtk_widget_grab_focus(widgets[0]);
+         gtk_entry_set_text(GTK_ENTRY(data), "::/0");
+         gtk_widget_grab_focus(data);
          break;
       default:
          break;

@@ -54,32 +54,30 @@ enum {
  * execute the script to add or remove the redirection
  */
 int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
-      const char *source, const char *destination,
-      u_int16 sport, u_int16 dport)
+      const char *destination, u_int16 sport, u_int16 dport)
 {
    char asc_sport[16];
    char asc_dport[16];
-   char asc_source[MAX_ASCII_ADDR_LEN];
    char asc_destination[MAX_ASCII_ADDR_LEN];
    int  ret_val = 0;
    char *param[4];
    char *commands[2] = {NULL, NULL};
    char *command = NULL;
    struct redir_entry *re, *tmp;
+   char *str_dstnet = NULL;
+   char *str_dstmask = NULL;
+   char *str_tmp = NULL;
+   u_char *binmask = NULL;
 
    /* undefined defaults to any */
    switch (proto) {
       case EC_REDIR_PROTO_IPV4:
-         if (source == NULL || !strcmp(source, "0.0.0.0/0"))
-            source = IPV4_ANY;
-         if (destination == NULL || !strcmp(destination, "0.0.0.0/0"))
-            destination = IPV4_ANY;
+         if (destination == NULL)
+            destination = "0.0.0.0/0";
          break;
       case EC_REDIR_PROTO_IPV6:
-         if (source == NULL || !strcmp(source, "::/0"))
-            source = IPV6_ANY;
-         if (destination == NULL || !strcmp(destination, "::/0"))
-            destination = IPV6_ANY;
+         if (destination == NULL)
+            destination = "::/0";
          break;
       default:
          DEBUG_MSG("ec_redirect(): invalid address family given");
@@ -87,11 +85,10 @@ int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
    }
 
 
-   DEBUG_MSG("ec_redirect(\"%s\", \"%s\", %s, %s, %s, %d, %d)",
+   DEBUG_MSG("ec_redirect(\"%s\", \"%s\", %s, %s, %d, %d)",
          (action == EC_REDIR_ACTION_INSERT ? "insert" : "remove"),
          name,
          (proto == EC_REDIR_PROTO_IPV4 ? "IPv4" : "IPv6"),
-         source,
          destination,
          sport,
          dport);
@@ -105,13 +102,13 @@ int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
          /* check if entry is already present */
          LIST_FOREACH_SAFE(re, &redirect_entries, next, tmp) {
             if (proto == re->proto &&
-                !strcmp(source, re->source) &&
                 !strcmp(destination, re->destination) &&
                 sport == re->from_port && dport == re->to_port) {
                DEBUG_MSG("ec_redirect(): redirect entry already present");
                return -E_INVALID;
             }
          }
+         /* get command and check if it's defined */
          command = commands[EC_REDIR_COMMAND_INSERT];
          if (command == NULL) {
             DEBUG_MSG("ec_redirect(): redirect insert command for %s desired "
@@ -119,12 +116,81 @@ int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
                   proto == EC_REDIR_PROTO_IPV4 ? "IPv4" : "IPv6");
             return -E_NOTHANDLED;
          }
+
+         /* allocate memory for redirect entry and parse input and set values */
+         SAFE_CALLOC(re, 1, sizeof(struct redir_entry));
+
+         re->name = strdup(name);
+         re->proto = proto;
+         re->destination = strdup(destination);
+         re->from_port = sport;
+         re->to_port = dport;
+         re->orig_nport = htons(sport);
+
+         /* parse destination specification */
+         str_tmp = strdup(destination);
+         str_dstnet = ec_strtok(str_tmp, "/", &str_dstmask);
+         if (str_dstnet != NULL) {
+            /* convert network */
+            if (ip_addr_pton(str_dstnet, &re->dst_network) != E_SUCCESS)
+               goto clean_abort;
+
+            /* convert prefix length to netmask */
+            if (str_dstmask != NULL && strlen(str_dstmask)) {
+               /* prefix length specified */
+               u_int32 dstmask;
+               if ((dstmask = strtoul(str_dstmask, NULL, 10)) <= 128) {
+                  binmask = ec_plen_to_binary(ntohs(re->dst_network.addr_len), dstmask);
+                  ip_addr_init(&re->dst_netmask, ntohs(re->dst_network.addr_type), binmask);
+                  SAFE_FREE(binmask);
+                  SAFE_FREE(str_tmp);
+               }
+               else
+                  goto clean_abort;
+            }
+            else {
+               /* no prefix length specified */
+               u_int32 dstmask;
+
+               /* assume full (host) prefix length */
+               dstmask = ntohs(re->dst_network.addr_len) * 8;
+               binmask = ec_plen_to_binary(ntohs(re->dst_network.addr_len), dstmask);
+               ip_addr_init(&re->dst_netmask, ntohs(re->dst_network.addr_type), binmask);
+               SAFE_FREE(binmask);
+               SAFE_FREE(str_tmp);
+            }
+         }
+         else /* destination specification invalid */
+            goto clean_abort;
+
+         /* sanity check */
+         switch (proto) {
+            case EC_REDIR_PROTO_IPV4:
+               if (ntohs(re->dst_network.addr_type) != AF_INET) {
+                  DEBUG_MSG("ec_redirect(): address family mixup! - aborting");
+                  goto clean_abort;
+               }
+               break;
+            case EC_REDIR_PROTO_IPV6:
+               if (ntohs(re->dst_network.addr_type) != AF_INET6) {
+                  DEBUG_MSG("ec_redirect(): address family mixup! - aborting");
+                  goto clean_abort;
+               }
+               break;
+            default:
+clean_abort:
+               SAFE_FREE(re->name);
+               SAFE_FREE(re->destination);
+               SAFE_FREE(re);
+               SAFE_FREE(str_tmp);
+               return -E_INVALID;
+               break;
+         }
          break;
       case EC_REDIR_ACTION_REMOVE:
          /* check if entry is still present */
          LIST_FOREACH_SAFE(re, &redirect_entries, next, tmp) {
             if (proto == re->proto &&
-                !strcmp(source, re->source) &&
                 !strcmp(destination, re->destination) &&
                 sport == re->from_port && dport == re->to_port) {
                /* entry present - ready to be removed */
@@ -149,15 +215,22 @@ int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
    }
 
    /* ready to complete redirect commands */
-   snprintf(asc_source, MAX_ASCII_ADDR_LEN, "%s", source);
-   snprintf(asc_destination, MAX_ASCII_ADDR_LEN, "%s", destination);
+   if (!strcmp(destination, "0.0.0.0/0")) {
+      snprintf(asc_destination, MAX_ASCII_ADDR_LEN, "%s", IPV4_ANY);
+   }
+   else if (!strcmp(destination, "::/0")) {
+      snprintf(asc_destination, MAX_ASCII_ADDR_LEN, "%s", IPV6_ANY);
+   }
+   else {
+      snprintf(asc_destination, MAX_ASCII_ADDR_LEN, "%s", destination);
+   }
+
    snprintf(asc_sport, 16, "%u", sport);
    snprintf(asc_dport, 16, "%u", dport);
 
 
    /* make the substitutions in the script */
    str_replace(&command, "%iface", EC_GBL_OPTIONS->iface);
-   str_replace(&command, "%source", asc_source);
    str_replace(&command, "%destination", asc_destination);
    str_replace(&command, "%port", asc_sport);
    str_replace(&command, "%rport", asc_dport);
@@ -184,6 +257,9 @@ int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
                "etter.conf file and put a valid value in redir_command_on"
                "|redir_command_off field\n", param[0]);
          SAFE_FREE(command);
+         SAFE_FREE(re->name);
+         SAFE_FREE(re->destination);
+         SAFE_FREE(re);
          _exit(-E_INVALID);
       case -1:
          SAFE_FREE(command);
@@ -196,36 +272,27 @@ int ec_redirect(ec_redir_act_t action, char *name, ec_redir_proto_t proto,
             USER_MSG("ec_redirect(): redir_command_on had non-zero exit "
                   "status (%d): [%s]\n", WEXITSTATUS(ret_val), command);
             SAFE_FREE(command);
+            SAFE_FREE(re->name);
+            SAFE_FREE(re->destination);
+            SAFE_FREE(re);
             return -E_INVALID;
          }
          else { /* redirect command exited normally */
-            /* register entry */
             switch (action) {
                case EC_REDIR_ACTION_INSERT:
-                  SAFE_CALLOC(re, 1, sizeof(struct redir_entry));
-
-                  re->name = strdup(name);
-                  re->proto = proto;
-                  re->source = strdup(source);
-                  re->destination = strdup(destination);
-                  re->from_port = sport;
-                  re->to_port = dport;
-
+                  /* register entry */
                   LIST_INSERT_HEAD(&redirect_entries, re, next);
                   register_redir_service(name, sport, dport);
-
                   break;
                case EC_REDIR_ACTION_REMOVE:
                   /* remove entry from list */
                   LIST_FOREACH_SAFE(re, &redirect_entries, next, tmp) {
                      if (re->proto == proto && 
-                         !strcmp(re->source, source) &&
                          !strcmp(re->destination, destination) &&
                          sport == re->from_port &&
                          dport == re->to_port) {
                         LIST_REMOVE(re, next);
                         SAFE_FREE(re->name);
-                        SAFE_FREE(re->source);
                         SAFE_FREE(re->destination);
                         SAFE_FREE(re);
                      }
@@ -328,6 +395,31 @@ int ec_walk_redirects(void (*func)(struct redir_entry*))
 }
 
 /*
+ * check if a packet matches a installed redirect
+ */
+int ec_redirect_lookup(struct packet_object *po)
+{
+   struct redir_entry *re, *tmp;
+   struct ip_addr srv_network;
+
+   LIST_FOREACH_SAFE(re, &redirect_entries, next, tmp) {
+      if (po->L4.dst == re->orig_nport) {
+         /* port matched - now check on the IPs */
+         ip_addr_get_network(&po->L3.dst, &re->dst_netmask, &srv_network);
+         if (!ip_addr_cmp(&re->dst_network, &srv_network))
+            return E_SUCCESS;
+      }
+      else if (po->L4.src == re->orig_nport) {
+         /* port matched - now check on the IPs */
+         ip_addr_get_network(&po->L3.src, &re->dst_netmask, &srv_network);
+         if (!ip_addr_cmp(&re->dst_network, &srv_network))
+            return E_SUCCESS;
+      }
+   }
+   return -E_NOMATCH;
+}
+
+/*
  * remove all registered redirects
  */
 void ec_redirect_cleanup(void)
@@ -339,7 +431,7 @@ void ec_redirect_cleanup(void)
 
    LIST_FOREACH_SAFE(re, &redirect_entries, next, tmp)
       ec_redirect(EC_REDIR_ACTION_REMOVE, re->name, re->proto,
-            re->source, re->destination, re->from_port, re->to_port);
+            re->destination, re->from_port, re->to_port);
 
    SLIST_FOREACH_SAFE(se, &redirect_services, next, stmp) {
       SAFE_FREE(se->name);

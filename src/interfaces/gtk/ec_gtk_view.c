@@ -462,11 +462,11 @@ void gtkui_vis_method(void)
       memset(vmethod, 0, VLEN);
 
       switch(active) {
-         case 6: strncpy(vmethod, "hex", 3); break;
-         case 5: strncpy(vmethod, "ascii", 5); break; 
-         case 4: strncpy(vmethod, "text", 4); break;
-         case 3: strncpy(vmethod, "ebcdic", 6); break;
-         case 2: strncpy(vmethod, "html", 4); break;
+         case 6: strncpy(vmethod, "hex", 4); break;
+         case 5: strncpy(vmethod, "ascii", 6); break; 
+         case 4: strncpy(vmethod, "text", 5); break;
+         case 3: strncpy(vmethod, "ebcdic", 7); break;
+         case 2: strncpy(vmethod, "html", 5); break;
          case 1: /* utf8 */
             /* copy first word from encoding choice */
             gtk_combo_box_get_active_iter(GTK_COMBO_BOX(lang_combo), &iter);

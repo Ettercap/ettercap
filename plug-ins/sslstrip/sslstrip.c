@@ -235,10 +235,10 @@ static int sslstrip_init(void *dummy)
    if (!https_url_pcre) {
       USER_MSG("SSLStrip: plugin load failed: pcre_compile failed (offset: %d), %s\n", erroroffset, error);
       ec_redirect(EC_REDIR_ACTION_REMOVE, "http", EC_REDIR_PROTO_IPV4,
-            NULL, NULL, 80, bind_port);
+            NULL, 80, bind_port);
 #ifdef WITH_IPV6
       ec_redirect(EC_REDIR_ACTION_REMOVE, "http", EC_REDIR_PROTO_IPV6,
-            NULL, NULL, 80, bind_port);
+            NULL, 80, bind_port);
 #endif
 
       return PLUGIN_FINISHED;
@@ -250,10 +250,10 @@ static int sslstrip_init(void *dummy)
       USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex: %s (%d)\n", errbuf, err);
       pcre_free(https_url_pcre);
       ec_redirect(EC_REDIR_ACTION_REMOVE, "http" , EC_REDIR_PROTO_IPV4,
-            NULL, NULL, 80, bind_port);
+            NULL, 80, bind_port);
 #ifdef WITH_IPV6
       ec_redirect(EC_REDIR_ACTION_REMOVE, "http" , EC_REDIR_PROTO_IPV6,
-            NULL, NULL, 80, bind_port);
+            NULL, 80, bind_port);
 #endif
 
       return PLUGIN_FINISHED;
@@ -278,13 +278,13 @@ static int sslstrip_fini(void *dummy)
 
    DEBUG_MSG("SSLStrip: Removing redirect\n");
    if (ec_redirect(EC_REDIR_ACTION_REMOVE, "http", EC_REDIR_PROTO_IPV4,
-            NULL, NULL, 80, bind_port) != E_SUCCESS) {
+            NULL, 80, bind_port) != E_SUCCESS) {
       USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so "
             "manually.\n");
    }
 #ifdef WITH_IPV6
    if (ec_redirect(EC_REDIR_ACTION_REMOVE, "http", EC_REDIR_PROTO_IPV6,
-            NULL, NULL, 80, bind_port) != E_SUCCESS) {
+            NULL, 80, bind_port) != E_SUCCESS) {
       USER_MSG("SSLStrip: Unable to remove HTTP redirect, please do so "
             "manually.\n");
    }
@@ -1341,12 +1341,12 @@ static int http_bind_wrapper(void)
    USER_MSG("SSLStrip plugin: bind 80 on %d\n", bind_port);
    
    if (ec_redirect(EC_REDIR_ACTION_INSERT, "http", EC_REDIR_PROTO_IPV4,
-            NULL, NULL, 80, bind_port) != E_SUCCESS)
+            NULL, 80, bind_port) != E_SUCCESS)
       return -E_FATAL;
 
 #ifdef WITH_IPV6
    if (ec_redirect(EC_REDIR_ACTION_INSERT, "http", EC_REDIR_PROTO_IPV6,
-            NULL, NULL, 80, bind_port) != E_SUCCESS)
+            NULL, 80, bind_port) != E_SUCCESS)
       return -E_FATAL;
 #endif
 

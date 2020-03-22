@@ -14,10 +14,12 @@ typedef enum {
 struct redir_entry {
    char                   *name;
    ec_redir_proto_t        proto;
-   char                   *source;
    char                   *destination;
    u_int16                 from_port;
    u_int16                 to_port;
+   u_int16                 orig_nport;
+   struct ip_addr          dst_network;
+   struct ip_addr          dst_netmask;
    LIST_ENTRY(redir_entry) next;
 };
 
@@ -30,10 +32,11 @@ struct serv_entry {
 
 /* proto */
 EC_API_EXTERN int ec_redirect(ec_redir_act_t action, char *name,
-      ec_redir_proto_t proto, const char *source, const char *destination,
+      ec_redir_proto_t proto, const char *destination,
       u_int16 sport, u_int16 dport);
 EC_API_EXTERN int ec_walk_redirects(void (*func)(struct redir_entry*));
 EC_API_EXTERN int ec_walk_redirect_services(void (*func)(struct serv_entry*));
+EC_API_EXTERN int ec_redirect_lookup(struct packet_object *po);
 EC_API_EXTERN void ec_redirect_cleanup(void);
 
 

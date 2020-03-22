@@ -45,8 +45,8 @@ void text_redirect_print(void)
 
    /* print header */
    fprintf(stdout, "SSL Intercepts\n");
-   fprintf(stdout, " # proto %30s %30s service\n",
-         "source", "destination");
+   fprintf(stdout, " # IP Version %25s Service\n",
+         "Server IP");
 
    /* print rules */
    ec_walk_redirects(text_redirect_print_rule);
@@ -70,16 +70,16 @@ void text_redirect_del(int num)
    re = redirect_list[num - 1];
 
    ret = ec_redirect(EC_REDIR_ACTION_REMOVE, re->name, re->proto, 
-         re->source, re->destination, re->from_port, re->to_port);
+         re->destination, re->from_port, re->to_port);
 
    if (ret == E_SUCCESS)
       INSTANT_USER_MSG("Redirect removed successfully\n",
             (re->proto == EC_REDIR_PROTO_IPV4 ? "ipv4" : "ipv6"),
-            re->source, re->destination, re->name);
+            re->destination, re->name);
    else
       INSTANT_USER_MSG("Removing redirect [%s] %s -> %s:%s failed!\n",
             (re->proto == EC_REDIR_PROTO_IPV4 ? "ipv4" : "ipv6"),
-            re->source, re->destination, re->name);
+            re->destination, re->name);
 
 }
 
@@ -89,8 +89,8 @@ void text_redirect_del(int num)
 void text_redirect_add(void)
 {
    char ipver[20], service[20];
-   char sourcebuf[MAX_ASCII_ADDR_LEN], destinationbuf[MAX_ASCII_ADDR_LEN];
-   char *p, *source, *destination;
+   char destinationbuf[MAX_ASCII_ADDR_LEN];
+   char *p, *destination;
    int i, ret, found = 0, invalid = 0;
    ec_redir_proto_t proto;
 
@@ -107,13 +107,7 @@ void text_redirect_add(void)
    if ((p = strrchr(ipver, '\n')) != NULL)
       *p = 0;
    
-   fprintf(stdout, "Source [any]: ");
-   fgets(sourcebuf, MAX_ASCII_ADDR_LEN, stdin);
-   /* remove trailing line feed */
-   if ((p = strrchr(sourcebuf, '\n')) != NULL)
-      *p = 0;
-   
-   fprintf(stdout, "Destination [any]: ");
+   fprintf(stdout, "Server IP [any]: ");
    fgets(destinationbuf, MAX_ASCII_ADDR_LEN, stdin);
    /* remove trailing line feed */
    if ((p = strrchr(destinationbuf, '\n')) != NULL)
@@ -138,12 +132,7 @@ void text_redirect_add(void)
       invalid = 1;
    }
 
-   /* check user input for source and destination */
-   if (!strcmp(sourcebuf, "") || !strcasecmp(sourcebuf, "any"))
-      source = NULL;
-   else
-      source = sourcebuf;
-
+   /* check user input for server IP */
    if (!strcmp(destinationbuf, "") || !strcasecmp(destinationbuf, "any"))
       destination = NULL;
    else
@@ -171,7 +160,7 @@ void text_redirect_add(void)
    }
 
    ret = ec_redirect(EC_REDIR_ACTION_INSERT, service_list[i]->name,
-         proto, source, destination, service_list[i]->from_port,
+         proto, destination, service_list[i]->from_port,
          service_list[i]->to_port);
 
    if (ret == E_SUCCESS)
@@ -194,9 +183,9 @@ static void text_redirect_print_rule(struct redir_entry *re)
    n_redir++;
 
    /* print the rule */
-   fprintf(stdout, "%2d %5s %30s %30s %s\n", n_redir, 
+   fprintf(stdout, "%2d %5s %30s %s\n", n_redir, 
          (re->proto == EC_REDIR_PROTO_IPV4 ? "ipv4" : "ipv6"),
-         re->source, re->destination, re->name);
+         re->destination, re->name);
 
 }
 

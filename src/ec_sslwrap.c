@@ -53,6 +53,9 @@
 /* don't include kerberos. RH sux !! */
 #define OPENSSL_NO_KRB5 1
 #include <openssl/ssl.h>
+#ifdef DEBUG
+   #include <openssl/err.h>
+#endif
 
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
 #define HAVE_OPAQUE_RSA_DSA_DH 1 /* since 1.1.0 -pre5 */
@@ -66,6 +69,10 @@
 /* prior 1.0.2g TLS_client_method macro wasn't available */
 #define TLS_client_method SSLv23_client_method
 #define TLS_server_method SSLv23_server_method
+#endif
+
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
+#define HAVE_OPENSSL_1_1_0
 #endif
 
 #if (OPENSSL_VERSION_NUMBER >= 0x10101000L)
@@ -108,7 +115,11 @@ struct accepted_entry {
    SSL *ssl[2];
    u_char status;
    X509 *cert;
+#ifdef HAVE_OPENSSL_1_1_1
+   unsigned int tls_handshake_state;
+#define SSL_CLIENTHELLO_INTERCEPTED 1
    char *hostname;
+#endif
    #define SSL_CLIENT 0
    #define SSL_SERVER 1
 };
@@ -130,6 +141,9 @@ struct sslw_ident {
 
 #define TSLEEP (50*1000) /* 50 milliseconds */
 
+#ifdef HAVE_OPENSSL_1_1_0
+static SSL_CONF_CTX *ssl_conf_client, *ssl_conf_server;
+#endif
 static SSL_CTX *ssl_ctx_client, *ssl_ctx_server;
 static EVP_PKEY *global_pk;
 static u_int16 number_of_services;
@@ -192,7 +206,7 @@ void sslw_dissect_move(char *name, u_int16 port)
       if(!strcmp(name, le->name)) {
          DEBUG_MSG("sslw_dissect_move: %s [%u]", name, port);
          le->sslw_port = port;
-	 
+
       /* Move to zero means disable */
       if (port == 0) {
          LIST_REMOVE(le, next);
@@ -260,6 +274,10 @@ static void ssl_wrap_fini(void)
 
    SSL_CTX_free(ssl_ctx_server);
    SSL_CTX_free(ssl_ctx_client);
+#ifdef HAVE_OPENSSL_1_1_0
+   SSL_CONF_CTX_free(ssl_conf_client);
+   SSL_CONF_CTX_free(ssl_conf_server);
+#endif
 
    /* remove redirects */
    ec_redirect_cleanup();
@@ -371,8 +389,8 @@ EC_THREAD_FUNC(sslw_start)
    }
 
    return NULL;
-   
-}	 
+
+}
 
 /* 
  * Filter SSL related packets and create NAT sessions.
@@ -385,7 +403,7 @@ static void sslw_hook_handled(struct packet_object *po)
    /* We have nothing to do with this packet */
    if (!sslw_is_ssl(po))
       return;
-     
+
    /* If it's an ssl packet don't forward */
    po->flags |= PO_DROPPED;
    
@@ -393,7 +411,7 @@ static void sslw_hook_handled(struct packet_object *po)
    if ( (po->flags & PO_FORWARDABLE) && 
         (po->L4.flags & TH_SYN) &&
         !(po->L4.flags & TH_ACK) ) {
-	
+
       sslw_create_session(&s, PACKET);
 
 #ifndef OS_LINUX
@@ -401,7 +419,7 @@ static void sslw_hook_handled(struct packet_object *po)
       memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
       session_put(s);
 #else
-	SAFE_FREE(s); /* Just get rid of it */
+      SAFE_FREE(s); /* Just get rid of it */
 #endif
    } else /* Pass only the SYN for conntrack */
       po->flags |= PO_IGNORE;
@@ -413,18 +431,15 @@ static void sslw_hook_handled(struct packet_object *po)
  */
 static int sslw_is_ssl(struct packet_object *po)
 {
-   struct listen_entry *le;
-   
    /* If it's already coming from ssl wrapper 
     * or the connection is not TCP */ 
    if (po->flags & PO_FROMSSL || po->L4.proto != NL_TYPE_TCP) 
       return 0;
 
-   LIST_FOREACH(le, &listen_ports, next) {
-      if (ntohs(po->L4.dst) == le->sslw_port ||
-          ntohs(po->L4.src) == le->sslw_port)
-         return 1;
-   }
+   /* check if packet matches one of the registered redirects */
+   if (ec_redirect_lookup(po) == E_SUCCESS)
+      return 1;
+
    return 0;
 }
 
@@ -491,13 +506,13 @@ static void sslw_bind_wrapper(void)
 #endif
 
       if (ec_redirect(EC_REDIR_ACTION_INSERT, le->name,
-               EC_REDIR_PROTO_IPV4, NULL, NULL,
+               EC_REDIR_PROTO_IPV4, NULL,
                le->sslw_port, le->redir_port) != E_SUCCESS)
         FATAL_ERROR("Can't insert firewall redirects");
 
 #ifdef WITH_IPV6
       if (ec_redirect(EC_REDIR_ACTION_INSERT, le->name,
-               EC_REDIR_PROTO_IPV6, NULL, NULL,
+               EC_REDIR_PROTO_IPV6, NULL,
                le->sslw_port, le->redir_port) != E_SUCCESS)
         FATAL_ERROR("Can't insert firewall redirects");
 #endif
@@ -512,7 +527,7 @@ static int sslw_sync_conn(struct accepted_entry *ae)
 {      
    if(sslw_get_peer(ae) != E_SUCCESS)
          return -E_INVALID;
-	 
+
    if(sslw_connect_server(ae) != E_SUCCESS)
          return -E_INVALID;
 
@@ -558,17 +573,15 @@ static int sslw_ssl_connect(SSL *ssl_sk)
 static int sslw_clienthello_cb(SSL *ssl, int *alert, void *arg)
 {
    (void) alert;
-   char **hostname;
+   struct accepted_entry *ae;
 
-   hostname = (char **)arg;
+   ae = (struct accepted_entry *)arg;
 
-   /* suspend if hostname hasn't been extracted */
-   if (*hostname == NULL) {
-      /* extract hostname value from SNI extension */
-      *hostname = sslw_get_clienthello_sni(ssl);
-      if (*hostname == NULL)
-         /* no SNI given - set to non-NULL */
-         *hostname = "";
+   /* extract hostname value from SNI extension */
+   ae->hostname = sslw_get_clienthello_sni(ssl);
+
+   if (ae->tls_handshake_state != SSL_CLIENTHELLO_INTERCEPTED) {
+      ae->tls_handshake_state = SSL_CLIENTHELLO_INTERCEPTED;
       /* suspend client side TLS handshake */
       return SSL_CLIENT_HELLO_RETRY;
    }
@@ -624,8 +637,14 @@ static int sslw_ssl_accept(SSL *ssl_sk)
 #endif
       
       /* there was an error...  but only if it's not just pending further progress */
-      if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE)
+      if (ssl_err != SSL_ERROR_WANT_READ && ssl_err != SSL_ERROR_WANT_WRITE) {
+#ifdef DEBUG
+         char error_msg[256], *error;
+         error = ERR_error_string(ERR_get_error(), error_msg);
+         DEBUG_MSG("sslw_ssl_accept(): SSL_accept() failed with '%s'", error);
+#endif
          return -E_INVALID;
+      }
       
       /* sleep a quirk of time... */
       ec_usleep(TSLEEP);
@@ -648,7 +667,7 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    
 #ifdef HAVE_OPENSSL_1_1_1
    /* Set a Callback for the SSL client context to pause the Client Handshake */
-   SSL_CTX_set_client_hello_cb(ssl_ctx_client, sslw_clienthello_cb, (void*)&ae->hostname);
+   SSL_CTX_set_client_hello_cb(ssl_ctx_client, sslw_clienthello_cb, (void*)ae);
 #endif
 
    ae->ssl[SSL_SERVER] = SSL_new(ssl_ctx_server);
@@ -662,9 +681,8 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != E_SUCCESS)
       return -E_INVALID;
 
-   /* if SNI has been set */
-   if (ae->hostname != NULL && strcmp(ae->hostname, ""))
-      /* set hostname as SNI for server SSL */
+   if (ae->hostname)
+      /* set SNI for server-side connection */
       SSL_set_tlsext_host_name(ae->ssl[SSL_SERVER], ae->hostname);
 #endif
     
@@ -680,15 +698,15 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    }
 
    if (!EC_GBL_OPTIONS->ssl_cert) {
-   	/* Create the fake certificate based on actual certificate */
-   	ae->cert = sslw_create_selfsigned(server_cert);  
-   	X509_free(server_cert);
+      /* Create the fake certificate based on actual certificate */
+      ae->cert = sslw_create_selfsigned(server_cert);  
+      X509_free(server_cert);
 
-   	if (ae->cert == NULL)
-      		return -E_INVALID;
+      if (ae->cert == NULL)
+         return -E_INVALID;
 
       /* use faked certificate for further SSL client connection */
-   	SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
+      SSL_use_certificate(ae->ssl[SSL_CLIENT], ae->cert);
 
    }
    
@@ -696,8 +714,10 @@ static int sslw_sync_ssl(struct accepted_entry *ae)
    if (sslw_ssl_accept(ae->ssl[SSL_CLIENT]) != E_SUCCESS) 
       return -E_INVALID;
 
+#ifdef HAVE_OPENSSL_1_1_1
    /* TLS handshake done - SNI hostname not longer required: free */
    SAFE_FREE(ae->hostname);
+#endif
 
 
    return E_SUCCESS;   
@@ -821,7 +841,7 @@ static int sslw_read_data(struct accepted_entry *ae, u_int32 direction, struct p
       /* XXX - Is it necessary? */
       if (len == 0)
          return -E_INVALID;
-	       
+
       if (ret_err == SSL_ERROR_WANT_READ || ret_err == SSL_ERROR_WANT_WRITE)
          return -E_NOTHANDLED;
       else
@@ -913,7 +933,7 @@ static int sslw_write_data(struct accepted_entry *ae, u_int32 direction, struct 
       /* XXX - Set a proper sleep time */
       if (not_written)
          ec_usleep(SEC2MICRO(1));
-	 	 
+
    } while (not_written);
          
    return E_SUCCESS;
@@ -1005,8 +1025,8 @@ static void sslw_initialize_po(struct packet_object *po, u_char *p_data)
       SAFE_CALLOC(po->DATA.data, 1, UINT16_MAX);
    } else {
       if (po->DATA.data != p_data) {
-      	  SAFE_FREE(po->DATA.data);
-          po->DATA.data = p_data;
+         SAFE_FREE(po->DATA.data);
+         po->DATA.data = p_data;
       }
    }
       
@@ -1100,45 +1120,71 @@ static void sslw_init(void)
 {
    SSL *dummy_ssl=NULL;
 
+#ifndef HAVE_OPENSSL_1_1_0
    SSL_library_init();
+#endif
 
    /* Create the two global CTX */
    ssl_ctx_client = SSL_CTX_new(TLS_server_method());
    ssl_ctx_server = SSL_CTX_new(TLS_client_method());
+
+   ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
+   ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");
 
 #ifdef HAVE_OPENSSL_1_0_2
    SSL_CTX_set_ecdh_auto(ssl_ctx_client, 1);
    SSL_CTX_set_ecdh_auto(ssl_ctx_server, 1);
 #endif
 
+#ifdef HAVE_OPENSSL_1_1_0
+   ssl_conf_client = SSL_CONF_CTX_new();
+   ssl_conf_server = SSL_CONF_CTX_new();
+   SSL_CONF_CTX_set_flags(ssl_conf_client, SSL_CONF_FLAG_FILE);
+   SSL_CONF_CTX_set_flags(ssl_conf_server, SSL_CONF_FLAG_FILE);
 
-   ON_ERROR(ssl_ctx_client, NULL, "Could not create client SSL CTX");
-   ON_ERROR(ssl_ctx_server, NULL, "Could not create server SSL CTX");
+   SSL_CONF_CTX_set_ssl_ctx(ssl_conf_client, ssl_ctx_client);
+   SSL_CONF_CTX_set_ssl_ctx(ssl_conf_server, ssl_ctx_server);
+
+   /* Backward compatibility for older TLS versions and ciphers */
+   SSL_CONF_cmd(ssl_conf_client, "MinProtocol", "TLSv1");
+   SSL_CONF_cmd(ssl_conf_server, "MinProtocol", "TLSv1");
+   SSL_CONF_cmd(ssl_conf_client, "CipherString", "DEFAULT");
+   SSL_CONF_cmd(ssl_conf_server, "CipherString", "DEFAULT");
+#endif
 
    if(EC_GBL_OPTIONS->ssl_pkey) {
-	/* Get our private key from the file specified from cmd-line */
-	DEBUG_MSG("Using custom private key %s", EC_GBL_OPTIONS->ssl_pkey);
-	if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, EC_GBL_OPTIONS->ssl_pkey, SSL_FILETYPE_PEM) == 0) {
-		FATAL_ERROR("Can't open \"%s\" file : %s", EC_GBL_OPTIONS->ssl_pkey, strerror(errno));
-	}
+      /* Get our private key from the file specified from cmd-line */
+      DEBUG_MSG("Using custom private key %s", EC_GBL_OPTIONS->ssl_pkey);
+      if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client,
+               EC_GBL_OPTIONS->ssl_pkey, SSL_FILETYPE_PEM) == 0) {
+         FATAL_ERROR("Can't open \"%s\" file : %s",
+               EC_GBL_OPTIONS->ssl_pkey, strerror(errno));
+      }
 
-	if (EC_GBL_OPTIONS->ssl_cert) {
-		if (SSL_CTX_use_certificate_file(ssl_ctx_client, EC_GBL_OPTIONS->ssl_cert, SSL_FILETYPE_PEM) == 0) {
-			FATAL_ERROR("Can't open \"%s\" file : %s", EC_GBL_OPTIONS->ssl_cert, strerror(errno));
-		}
+      if (EC_GBL_OPTIONS->ssl_cert) {
+         if (SSL_CTX_use_certificate_file(ssl_ctx_client,
+                  EC_GBL_OPTIONS->ssl_cert, SSL_FILETYPE_PEM) == 0) {
+            FATAL_ERROR("Can't open \"%s\" file : %s",
+                  EC_GBL_OPTIONS->ssl_cert, strerror(errno));
+         }
 
-		if (!SSL_CTX_check_private_key(ssl_ctx_client)) {
-			FATAL_ERROR("Certificate \"%s\" does not match private key \"%s\"", EC_GBL_OPTIONS->ssl_cert, EC_GBL_OPTIONS->ssl_pkey);
-		}
-	}
+         if (!SSL_CTX_check_private_key(ssl_ctx_client)) {
+            FATAL_ERROR("Certificate \"%s\" does not match private key \"%s\"",
+                  EC_GBL_OPTIONS->ssl_cert, EC_GBL_OPTIONS->ssl_pkey);
+         }
+      }
    } else {
-   	/* Get our private key from our cert file */
-   	if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, INSTALL_DATADIR "/" PROGRAM "/" CERT_FILE, SSL_FILETYPE_PEM) == 0) {
-      		DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- trying ./share/%s",  CERT_FILE);
+      /* Get our private key from our cert file */
+      if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client,
+               INSTALL_DATADIR"/"PROGRAM"/"CERT_FILE, SSL_FILETYPE_PEM) == 0) {
+            DEBUG_MSG("sslw -- SSL_CTX_use_PrivateKey_file -- trying ./share/%s",
+                  CERT_FILE);
 
-      		if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client, "./share/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
-         		FATAL_ERROR("Can't open \"./share/%s\" file : %s", CERT_FILE, strerror(errno));
-   	}
+            if (SSL_CTX_use_PrivateKey_file(ssl_ctx_client,
+                     "./share/" CERT_FILE, SSL_FILETYPE_PEM) == 0)
+               FATAL_ERROR("Can't open \"./share/%s\" file : %s",
+                     CERT_FILE, strerror(errno));
+      }
    }
 
    dummy_ssl = SSL_new(ssl_ctx_client);
@@ -1173,8 +1219,8 @@ EC_THREAD_FUNC(sslw_child)
       DEBUG_MSG("FAILED TO FIND PEER");
       SAFE_FREE(ae);
       ec_thread_exit();
-   }	    
-	    
+   }
+
    if ((ae->status & SSL_ENABLED) && 
       sslw_sync_ssl(ae) == -E_INVALID) {
       sslw_wipe_connection(ae);
@@ -1197,7 +1243,7 @@ EC_THREAD_FUNC(sslw_child)
 
          ret_val = sslw_read_data(ae, direction, &po);
          BREAK_ON_ERROR(ret_val,ae,po);
-	 
+
          /* if we have data to read */
          if (ret_val == E_SUCCESS) {
             data_read = 1;
@@ -1207,16 +1253,16 @@ EC_THREAD_FUNC(sslw_child)
 
             if (po.flags & PO_DROPPED)
                continue;
-	
+
             ret_val = sslw_write_data(ae, !direction, &po);
             BREAK_ON_ERROR(ret_val,ae,po);
-	    
+
             if ((po.flags & PO_SSLSTART) && !(ae->status & SSL_ENABLED)) {
                ae->status |= SSL_ENABLED; 
                ret_val = sslw_sync_ssl(ae);
                BREAK_ON_ERROR(ret_val,ae,po);
             }
-	    
+
             sslw_initialize_po(&po, po.DATA.data);
          }  
       }
@@ -1233,52 +1279,52 @@ EC_THREAD_FUNC(sslw_child)
 
 static int sslw_remove_sts(struct packet_object *po)
 {
-	u_char *ptr;
-	u_char *end;
-	u_char *h_end;
-	size_t len = po->DATA.len;
-	size_t slen = strlen("\r\nStrict-Transport-Security:");
+   u_char *ptr;
+   u_char *end;
+   u_char *h_end;
+   size_t len = po->DATA.len;
+   size_t slen = strlen("\r\nStrict-Transport-Security:");
 
-	if (!memmem(po->DATA.data, po->DATA.len, "\r\nStrict-Transport-Security:", slen)) {
-		return -E_NOTFOUND;
-	}
+   if (!memmem(po->DATA.data, po->DATA.len, "\r\nStrict-Transport-Security:", slen)) {
+      return -E_NOTFOUND;
+   }
 
-	ptr = po->DATA.data;
-	end = ptr + po->DATA.len;
+   ptr = po->DATA.data;
+   end = ptr + po->DATA.len;
 
-	len = end - ptr;
+   len = end - ptr;
 
-	ptr = (u_char*)memmem(ptr, len, "\r\nStrict-Transport-Security:", slen);
-	ptr += 2;
+   ptr = (u_char*)memmem(ptr, len, "\r\nStrict-Transport-Security:", slen);
+   ptr += 2;
 
-	h_end = (u_char*)memmem(ptr, len, "\r\n", 2);
-	h_end += 2;
+   h_end = (u_char*)memmem(ptr, len, "\r\n", 2);
+   h_end += 2;
 
-	size_t before_header = ptr - po->DATA.data;
-	size_t header_length = h_end - ptr;
-	size_t new_len = 0;
+   size_t before_header = ptr - po->DATA.data;
+   size_t header_length = h_end - ptr;
+   size_t new_len = 0;
 
-	u_char *new_html;
-	SAFE_CALLOC(new_html, len, sizeof(u_char));
+   u_char *new_html;
+   SAFE_CALLOC(new_html, len, sizeof(u_char));
 
-	BUG_IF(new_html == NULL);
+   BUG_IF(new_html == NULL);
 
-	memcpy(new_html, po->DATA.data, before_header);
-	new_len += before_header;
+   memcpy(new_html, po->DATA.data, before_header);
+   new_len += before_header;
 
-	memcpy(new_html+new_len, h_end, (len - header_length) - before_header);
-	new_len += (len - header_length) - before_header;
-
-
-	memset(po->DATA.data, '\0', po->DATA.len);
-
-	memcpy(po->DATA.data, new_html, new_len);
-	po->DATA.len = new_len;
-
-	po->flags |= PO_MODIFIED;
+   memcpy(new_html+new_len, h_end, (len - header_length) - before_header);
+   new_len += (len - header_length) - before_header;
 
 
-	return E_SUCCESS;
+   memset(po->DATA.data, '\0', po->DATA.len);
+
+   memcpy(po->DATA.data, new_html, new_len);
+   po->DATA.len = new_len;
+
+   po->flags |= PO_MODIFIED;
+
+
+   return E_SUCCESS;
 
 }
 

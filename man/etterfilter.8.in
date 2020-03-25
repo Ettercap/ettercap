@@ -360,6 +360,19 @@ execinject("/bin/cat /tmp/foo")
 
 
 .TP
+.B execreplace(\fIcommand\fR)
+this function operates similar to the \fBreplace\fR function except that it uses the output of a shell command to replace entire data rather than the contents of a file.
+An other difference, is that orinal packet content is pass to the shell command in stdin.
+It always injects in DATA.data. You can use it to replace the entire packet with a 
+fake one depending on the original one.
+
+.Sp
+example:
+.br
+execreplace("tr A-Z a-z")
+
+
+.TP
 .B exit()
 this function causes the filter engine to stop executing the code. It is useful
 to stop the execution of the script on some circumstance checked by an 'if' statement.

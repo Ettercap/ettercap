@@ -59,6 +59,7 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po);
 static int func_replace(struct filter_op *fop, struct packet_object *po);
 static int func_inject(struct filter_op *fop, struct packet_object *po);
 static int func_execinject(struct filter_op *fop, struct packet_object *po);
+static int func_execreplace(struct filter_op *fop, struct packet_object *po);
 static int func_log(struct filter_op *fop, struct packet_object *po);
 static int func_drop(struct packet_object *po);
 static int func_kill(struct packet_object *po);
@@ -226,6 +227,12 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
       case FFUNC_EXECINJECT:
          /* replace the string through output of a executable */
          if (func_execinject(fop, po) == E_SUCCESS)
+            return FLAG_TRUE;
+         break;
+         
+      case FFUNC_EXECREPLACE:
+         /* replace the string through output of a executable */
+         if (func_execreplace(fop, po) == E_SUCCESS)
             return FLAG_TRUE;
          break;
          
@@ -882,6 +889,98 @@ static int func_execinject(struct filter_op *fop, struct packet_object *po)
    /* free memory */
    SAFE_FREE(output);
    
+   return E_SUCCESS;
+}
+
+/*
+ * replace output of a executable into the communication
+ * executable takes communication before any change in input
+ */
+static int func_execreplace(struct filter_op *fop, struct packet_object *po)
+{
+   int child_stdout[2], child_stdin[2];
+   pid_t child_pid;
+   unsigned char *output = NULL;
+   size_t n = 0, offset = 0, size = 128;
+   unsigned char buf[size];
+
+   /* check the offensiveness */
+   if (EC_GBL_OPTIONS->unoffensive)
+      JIT_FAULT("Cannot replace packets in unoffensive mode");
+
+
+   DEBUG_MSG("filter engine: func_execreplace %s", fop->op.func.string);
+
+   /* open the pipe */
+   if (pipe(child_stdin) != 0 || pipe(child_stdout) != 0) {
+      USER_MSG("filter engine: execreplace(): failed to create pipes\n");
+      return -E_FATAL;
+   }
+   if ((child_pid = fork()) < 0) {
+      USER_MSG("filter engine: execreplace(): failed to fork\n");
+      return -E_FATAL;
+   }
+   if (child_pid == 0) {
+       char *const argv[] = { "/bin/sh", "-c", (const char*)fop->op.func.string };
+       if (dup2(child_stdin[0], STDIN_FILENO) == -1 || dup2(child_stdout[1], STDOUT_FILENO) == -1) {
+           exit(EXIT_FAILURE);
+       }
+       close(child_stdin[1]);
+       close(child_stdout[0]);
+
+       execv(argv[0], argv);
+       exit(EXIT_FAILURE);
+   }
+
+   close(child_stdin[0]);
+   close(child_stdout[1]);
+   /* fill child STDIN with DATA */
+   while (offset < po->DATA.len) {
+       n = write(child_stdin[1], po->DATA.data + offset, po->DATA.len - offset);
+       if (n == (size_t)-1) {
+           break;
+       }
+       offset += n;
+   }
+   close(child_stdin[1]);
+
+   /* Fill child STDIN with DATA */
+   offset = 0;
+   while ((n = read(child_stdout[0], buf, size)) != 0) {
+      if (output == NULL) {
+         SAFE_CALLOC(output, offset+n, sizeof(unsigned char));
+      }
+      else {
+         SAFE_REALLOC(output, sizeof(unsigned char)*(offset+n));
+      }
+
+      memcpy(output+offset, buf, n);
+      offset += n;
+   }
+   /* close pipe stream */
+   close(child_stdout[0]);
+
+   /* check if we are overflowing pcap buffer */
+   if(EC_GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + (unsigned)offset)
+      JIT_FAULT("replaced output too long");
+
+   /* copy the output into the buffer */
+   memcpy(po->DATA.data, output, offset);
+
+   /* Adjust packet len and delta */
+   po->DATA.delta = offset;
+   po->DATA.len = offset;
+
+   /* mark the packet as modified */
+   po->flags |= PO_MODIFIED;
+
+   /* unset the flag to be dropped */
+   if (po->flags & PO_DROPPED)
+      po->flags ^= PO_DROPPED;
+
+   /* free memory */
+   SAFE_FREE(output);
+
    return E_SUCCESS;
 }
 

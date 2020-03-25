@@ -4,6 +4,10 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
+0.8.5-XXXXXXXXX    YYYYMMDD
+    + New execreplace etterfilter command
+
+=========================================
 0.8.4-XXXXXXXXX    YYYYMMDD
    !! Fix SSL protocol failure with older TLS client/server versions (min. TLS1.0)
    !! Fix blackholing SSL packets when specific redirection is used

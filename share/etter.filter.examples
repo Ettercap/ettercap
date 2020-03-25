@@ -100,6 +100,11 @@ if (udp.dst == 53 && pcre_regex(DATA.data, ".*\x03com\x00.*")) {
    msg("faked");
 }
 
+if (udp.dst == 53 && pcre_regex(DATA.data, ".*\x03com\x00.*")) {
+   execreplace("/bin/sed 's/\x03com\x00/\x02my\x04page\x02de\x00/g'");
+   msg("faked");
+}
+
 # filter only a specific ip address
 if (ip.src == '192.168.0.2') {
    drop();

@@ -968,7 +968,11 @@ static int func_execreplace(struct filter_op *fop, struct packet_object *po)
    memcpy(po->DATA.data, output, offset);
 
    /* Adjust packet len and delta */
-   po->DATA.delta = offset;
+   if ((u_int)offset > po->DATA.len) {
+      po->DATA.delta += (int)((u_int)offset - po->DATA.len);
+   } else {
+      po->DATA.delta -= (int)(po->DATA.len - (u_int)offset);
+   }
    po->DATA.len = offset;
 
    /* mark the packet as modified */

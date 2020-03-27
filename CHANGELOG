@@ -4,10 +4,6 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
-0.8.5-XXXXXXXXX    YYYYMMDD
-    + New execreplace etterfilter command
-
-=========================================
 0.8.4-XXXXXXXXX    YYYYMMDD
    !! Fix SSL protocol failure with older TLS client/server versions (min. TLS1.0)
    !! Fix blackholing SSL packets when specific redirection is used
@@ -24,6 +20,7 @@ Legend:
     + Use server certificate sign algorithm to sign fake certificate defaulting to SHA256
     + CLI provided plugins are now also autostarted in graphical UI
     + Added --plugin-list CLI parameter
+    + New execreplace etterfilter command
     - Remove source IP specification from customizable SSL redirects
     - Remove of deprecated redirect commands from etter.conf
     - Remove Easter Egg (Sorry ALoR and NaGA)

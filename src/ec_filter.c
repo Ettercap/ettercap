@@ -921,7 +921,7 @@ static int func_execreplace(struct filter_op *fop, struct packet_object *po)
       return -E_FATAL;
    }
    if (child_pid == 0) {
-       char *const argv[] = { "/bin/sh", "-c", fop->op.func.string };
+       char *const argv[] = { "/bin/sh", "-c", fop->op.func.string, NULL };
        if (dup2(child_stdin[0], STDIN_FILENO) == -1 || dup2(child_stdout[1], STDOUT_FILENO) == -1) {
            exit(EXIT_FAILURE);
        }

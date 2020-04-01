@@ -140,6 +140,7 @@ FUNC_DECODER(decode_udp)
    /* Adjustments after filters */
    if ((PACKET->flags & PO_MODIFIED) && (PACKET->flags & PO_FORWARDABLE)) {
             
+      ORDER_ADD_SHORT(udp->ulen, PACKET->DATA.delta);
       /* Recalculate checksum */
       udp->csum = CSUM_INIT; 
       udp->csum = L4_checksum(PACKET);

@@ -15,6 +15,7 @@ Legend:
    !! Fix capture delay with libpcap v1.9.1 (fixes #974)
    !! Fix segmentation fault when etterlog concatinate files
    !! Fix compiling with GCC version / defaulting to -fno-common
+   !! Fix bad UDP length for packets changed with replace()
     + Take over client-side SNI extension in ClientHello in SSL interception (req. OpenSSL 1.1.1)
     + Take over SAN certificate extension from server certificate in SSL interception
     + Use server certificate sign algorithm to sign fake certificate defaulting to SHA256

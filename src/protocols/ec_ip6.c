@@ -181,7 +181,7 @@ FUNC_DECODER(decode_ip6)
    /* XXX - recheck this */
    if(!EC_GBL_OPTIONS->unoffensive && !EC_GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
       if(PACKET->flags & PO_MODIFIED) {
-         ORDER_ADD_SHORT(PACKET->L3.payload_len, PACKET->DATA.delta);
+         ORDER_ADD_SHORT(ip6->payload_len, PACKET->DATA.delta);
 
          /*
           * In case some upper level encapsulated ip6 decoder

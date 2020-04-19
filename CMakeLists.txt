@@ -113,6 +113,7 @@ set(INSTALL_DATADIR ${INSTALL_PREFIX}/share CACHE PATH "Data installation direct
 set(INSTALL_EXECPREFIX ${INSTALL_PREFIX} CACHE PATH "")
 set(INSTALL_BINDIR  ${INSTALL_PREFIX}/bin CACHE PATH "Binary files installation directory")
 if(OS_DARWIN OR OS_BSD_FREE OR OS_WINDOWS)
+  set(INSTALL_SYSCONFDIR ${INSTALL_PREFIX}/etc CACHE PATH "System configuration directory")
   set(POLKIT_DIR ${INSTALL_PREFIX}/share/polkit-1/actions/ CACHE PATH "Polkit installation directory")
 else()
 #at least on ubuntu, polkit dir couldn't be /usr/local/share, but should be /usr/share

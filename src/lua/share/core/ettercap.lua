@@ -145,6 +145,7 @@ do
 
     local env = {
       SCRIPT_PATH = script_path,
+      SCRIPT_ARGS = script_params,
       dependencies = {},
     };
 

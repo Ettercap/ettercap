@@ -28,7 +28,7 @@ Script Parameters:
    ettercap [OPTIONS] --lua-args n1=v1,[n2=v2,...]
 
    To access these parameters in the LUA script, they're available as a
-   table variable called SCRIPT_AGRS. So the following example access the
+   table variable called SCRIPT_ARGS. So the following example access the
    parameter key "n1":
 
    ettercap.log("value for n1: %s", SCRIPT_ARGS["n1"])

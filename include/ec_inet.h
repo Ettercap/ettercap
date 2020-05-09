@@ -151,7 +151,7 @@ EC_API_EXTERN void check_tempaddr(const char *iface);
    #define htons_inv(x) (u_int16)(x << 8) | (x >> 8) 
 
    #define ORDER_ADD_SHORT(a, b)   a = a + b
-   #define ORDER_ADD_LONG(a, b)	  a = a + b
+   #define ORDER_ADD_LONG(a, b)    a = a + b
 
 #else
    /* LITTLE ENDIAN */
@@ -164,8 +164,8 @@ EC_API_EXTERN void check_tempaddr(const char *iface);
    /* return little endian */
    #define htons_inv(x) (u_int16)x
    
-   #define ORDER_ADD_SHORT(a, b)   a = htons(ntohs(a) + (int16)b)
-   #define ORDER_ADD_LONG(a, b)	  a = htonl(ntohl(a) + (int32)b)
+   #define ORDER_ADD_SHORT(a, b)   a = htons(ntohs(a) + (int16_t)b)
+   #define ORDER_ADD_LONG(a, b)    a = htonl(ntohl(a) + (int32_t)b)
 
 #endif
       

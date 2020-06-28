@@ -1,15 +1,12 @@
 
 if(ENABLE_IPV6)
   configure_file(etter.conf.v6 etter.conf COPYONLY)
-  configure_file(etter.dns.v6 etter.dns COPYONLY)
-  configure_file(etter.mdns.v6 etter.mdns COPYONLY)
 else()
   configure_file(etter.conf.v4 etter.conf COPYONLY)
-  configure_file(etter.dns.v4 etter.dns COPYONLY)
-  configure_file(etter.mdns.v4 etter.mdns COPYONLY)
 endif()
 
 set(EC_CONFFILES
+    etter.dns
     etter.nbns
 )
 
@@ -17,6 +14,8 @@ set(EC_DATAFILES
     ettercap.png
     ettercap-small.png
     ettercap.svg
+    etter.dns.examples
+    etter.mdns.examples
     etter.fields
     etter.filter
     etterfilter.cnt

@@ -23,6 +23,7 @@ Legend:
     + CLI provided plugins are now also autostarted in graphical UI
     + Added --plugin-list CLI parameter
     + New execreplace etterfilter command
+    - Separate etter.dns and etter.mdns examples in dedicated examples file
     - Remove source IP specification from customizable SSL redirects
     - Remove of deprecated redirect commands from etter.conf
     - Remove Easter Egg (Sorry ALoR and NaGA)

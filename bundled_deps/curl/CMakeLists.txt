@@ -34,6 +34,12 @@ if(NOT LIBRTMP_FOUND)
   message(FATAL_ERROR "Cannot build bundled Curl without rtmp")
 endif()
 
+set(CMAKE_THREAD_PREFER_PTHREAD 1)
+find_package(Threads REQUIRED)
+if(NOT CMAKE_USE_PTHREADS_INIT)
+    message(FATAL_ERROR "Cannot build bundled Curl without pthreads")
+endif()
+
 # Ensure that we include all the required stuff for linking to libcurl
 set(CURL_LIBRARY ${CURL_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}curl${CMAKE_STATIC_LIBRARY_SUFFIX}
   ${OPENSSL_LIBRARIES}
@@ -51,6 +57,8 @@ set(EXPORT_CC ${CMAKE_C_COMPILER})
 # Add the cmake env cflags and all that jazz so we can inherit architectures
 # and the like.
 set(EXPORT_C_FLAGS ${CMAKE_C_FLAGS} -fPIC)
+
+set(EXPORT_LD_FLAGS ${CMAKE_THREAD_LIBS_INIT})
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   set(EXPORT_C_FLAGS "${EXPORT_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")

@@ -8,7 +8,7 @@
 #ifndef PROGRAM
    #define PROGRAM            "ettercap"
 #endif
-#define EC_COPYRIGHT          "2001-2019"
+#define EC_COPYRIGHT          "2001-2020"
 #define EC_AUTHORS            "Ettercap Development Team"
 
 #endif

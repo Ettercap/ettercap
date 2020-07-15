@@ -1,4 +1,4 @@
 #!/bin/sh
 autoreconf -fi
-./configure --disable-static --prefix="@CHECK_PREFIX@" --includedir="@CHECK_INCLUDE_DIR@" --libdir="@CHECK_LIB_DIR@"
+./configure --disable-static --enable-build-docs=no --prefix="@CHECK_PREFIX@" --includedir="@CHECK_INCLUDE_DIR@" --libdir="@CHECK_LIB_DIR@"
 

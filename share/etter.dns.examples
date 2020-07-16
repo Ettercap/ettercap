@@ -30,8 +30,8 @@ www.example.org  AAAA ::1
 #
 
 www.ettercap.org           A  127.0.0.1
-www.ettercap-project.org   A  127.0.0.1
-ettercap.sourceforge.net   A  23.235.43.133
+www.ettercap-project.org   A  104.24.100.131
+ettercap.sourceforge.net   A  104.24.100.131
 www.ettercap.org           PTR ::1
 
 ###############################################

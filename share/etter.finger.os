@@ -36,13 +36,10 @@
 #       if irrilevant or unknown it is "LT"                                #
 # OS  : an ascii string representing the OS                                #
 #                                                                          #
-# IF YOU FIND A NEW FINGERPRING, PLEASE MAIL IT US WITH THE RESPECTIVE OS  #
-# or use the appropriate form at:                                          #
-#    http://ettercap.sourceforge.net/index.php?s=stuff&p=fingerprint       #
+# IF YOU FIND A NEW FINGERPRINT, PLEASE MAIL IT US WITH THE RESPECTIVE OS  #
+# or use the ettercap with submit_fingerprint = 1 in etter.conf            #
+#    www.ettercap-project.org/fingerprint.php                              #
 #                                                                          #
-# TO GET THE LATEST DATABASE:                                              #
-#                                                                          #
-#    ettercap -U                                                           #
 #                                                                          #
 ############################################################################
 

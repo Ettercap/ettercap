@@ -297,7 +297,7 @@ u_int8 TTL_PREDICTOR(u_int8 x)
 int fingerprint_submit(const char *finger, char *os)
 {
    int sock;
-   char host[] = "ettercap.sourceforge.net";
+   char host[] = "www.ettercap-project.org";
    char page[] = "/fingerprint.php";
    char getmsg[1024];
    char *os_encoded;

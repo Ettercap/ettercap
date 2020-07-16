@@ -24,6 +24,7 @@
 #include <ec_file.h>
 #include <ec_socket.h>
 #include <ec_fingerprint.h>
+#include <curl/curl.h>
 
 #define LOAD_ENTRY(p,h,v) do {                                 \
    SAFE_CALLOC((p), 1, sizeof(struct entry));                  \
@@ -46,7 +47,7 @@ struct entry {
 /* protos */
 
 static void fingerprint_discard(void);
-   
+
 /*****************************************/
 
 
@@ -62,7 +63,7 @@ static void fingerprint_discard(void)
    }
 
    DEBUG_MSG("ATEXIT: fingerprint_discard");
-   
+
    return;
 }
 
@@ -71,7 +72,7 @@ int fingerprint_init(void)
 {
    struct entry *p;
    struct entry *last = NULL;
-   
+
    int i;
 
    char line[128];
@@ -87,14 +88,14 @@ int fingerprint_init(void)
    ON_ERROR(f, NULL, "Cannot open %s", TCP_FINGERPRINTS);
 
    while (fgets(line, 128, f) != 0) {
-      
+
       if ( (ptr = strchr(line, '#')) )
          *ptr = 0;
 
       /*  skip 0 length line */
-      if (!strlen(line))  
+      if (!strlen(line))
          continue;
-        
+
       strncpy(finger, line, FINGER_LEN);
       strncpy(os, line + FINGER_LEN + 1, OS_LEN);
 
@@ -116,7 +117,7 @@ int fingerprint_init(void)
 
    DEBUG_MSG("fingerprint_init -- %d fingers loaded", i);
    USER_MSG("%4d tcp OS fingerprint\n", i);
-   
+
    fclose(f);
 
    atexit(fingerprint_discard);
@@ -131,43 +132,43 @@ int fingerprint_init(void)
 int fingerprint_search(const char *f, char *dst)
 {
    struct entry *l;
-  
+
    //Do not process if length is invalid
    if (!strcmp(f, "") || strlen(f) != FINGER_LEN) {
       strncpy(dst, "UNKNOWN", 8);
       return E_SUCCESS;
    }
-   
+
    /* if the fingerprint matches, copy it in the dst and
     * return E_SUCCESS.
-    * if it is not found, copy the next finger in dst 
+    * if it is not found, copy the next finger in dst
     * and return -E_NOTFOUND, it is the nearest fingerprint
     */
-   
+
    SLIST_FOREACH(l, &finger_head, next) {
-   
+
       /* this is exact match */
       if ( memcmp(l->finger, f, FINGER_LEN) == 0) {
          strncpy(dst, l->os, OS_LEN+1);
          return E_SUCCESS;
       }
-      
-      /* 
-       * if not found seach with wildcalderd MSS 
+
+      /*
+       * if not found seach with wildcalderd MSS
        * but he same WINDOW size
        */
       if ( memcmp(l->finger, f, FINGER_LEN) > 0) {
-         
+
          /* the window field is FINGER_MSS bytes */
          char win[FINGER_MSS];
          char pattern[FINGER_LEN+1];
-         
+
          /* the is the next in the list */
-         strncpy(dst, l->os, OS_LEN+1);  
-        
+         strncpy(dst, l->os, OS_LEN+1);
+
          strncpy(win, f, FINGER_MSS);
          win[FINGER_MSS-1] = '\0';
-         
+
          /* pattern will be something like:
           *
           *  0000:*:TT:WS:0:0:0:0:F:LT
@@ -178,7 +179,7 @@ int fingerprint_search(const char *f, char *dst)
          while (l != SLIST_END(&finger_head) && !strncmp(l->finger, win, 4)) {
             if (match_pattern(l->finger, pattern)) {
                /* save the nearest one (wildcarded MSS) */
-               strncpy(dst, l->os, OS_LEN+1); 
+               strncpy(dst, l->os, OS_LEN+1);
                return -E_NOTFOUND;
             }
             l = SLIST_NEXT(l, next);
@@ -198,12 +199,12 @@ int fingerprint_search(const char *f, char *dst)
 
 void fingerprint_default(char *finger)
 {
-   /* 
-    * initialize the fingerprint 
+   /*
+    * initialize the fingerprint
     *
     * WWWW:_MSS:TT:WS:S:N:D:T:F:LT
     */
-   strncpy(finger,"0000:_MSS:TT:WS:0:0:0:0:F:LT", 29);  
+   strncpy(finger,"0000:_MSS:TT:WS:0:0:0:0:F:LT", 29);
 }
 
 /*
@@ -216,7 +217,7 @@ void fingerprint_push(char *finger, int param, int value)
    int lt_old = 0;
 
    ON_ERROR(finger, NULL, "finger_push used on NULL string !!");
-   
+
    switch (param) {
       case FINGER_WINDOW:
          snprintf(tmp, sizeof(tmp), "%04X", value);
@@ -265,7 +266,7 @@ void fingerprint_push(char *finger, int param, int value)
          lt_old = strtoul(finger + FINGER_LT, NULL, 16);
          snprintf(tmp, sizeof(tmp), "%02X", value + lt_old);
          strncpy(finger + FINGER_LT, tmp, 3);
-         break;                                 
+         break;
    }
 }
 
@@ -274,7 +275,7 @@ void fingerprint_push(char *finger, int param, int value)
  */
 
 u_int8 TTL_PREDICTOR(u_int8 x)
-{                            
+{
    register u_int8 i = x;
    register u_int8 j = 1;
    register u_int8 c = 0;
@@ -296,66 +297,52 @@ u_int8 TTL_PREDICTOR(u_int8 x)
  */
 int fingerprint_submit(const char *finger, char *os)
 {
-   int sock;
-   char host[] = "ettercap.sourceforge.net";
-   char page[] = "/fingerprint.php";
-   char getmsg[1024];
+   char postparams[512];
    char *os_encoded;
    size_t i, os_enclen;
- 
-   memset(getmsg, 0, sizeof(getmsg));
-  
+   CURL *curl;
+   CURLCode res;
+
+   memset(postparams, 0, sizeof(getmsg));
+
    /* some sanity checks */
    if (strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
       return -E_INVALID;
-   
-   USER_MSG("Connecting to http://%s...\n", host);
-      
-   /* prepare the socket */
-   sock = open_socket(host, 80);
-   
-   switch(sock) {
-      case -E_NOADDRESS:
-         FATAL_MSG("Cannot resolve %s", host);
-         break;
-      case -E_FATAL:
-         FATAL_MSG("Cannot create the socket");
-         break;
-      case -E_TIMEOUT:
-         FATAL_MSG("Connect timeout to %s on port 80", host);
-         break;
-      case -E_INVALID:
-         FATAL_MSG("Error connecting to %s on port 80", host);
-         break;
-   }
-  
+
    os_encoded = strdup(os);
    /* sanitize the os (encode the ' ' to '+') */
    os_enclen = strlen(os_encoded);
    for (i = 0; i < os_enclen; i++)
-      if (os_encoded[i] == ' ') 
+      if (os_encoded[i] == ' ')
          os_encoded[i] = '+';
-      
-   /* prepare the HTTP request */
-   snprintf(getmsg, sizeof(getmsg), "POST %s?finger=%s&os=%s HTTP/1.1\r\n"
-                                     "Host: %s\r\n"
-                                     "Accept: */*\r\n"
-                                     "User-Agent: %s (%s)\r\n"
-                                     "\r\n", page, finger, os_encoded, host, EC_GBL_PROGRAM, EC_GBL_VERSION );
-  
-   SAFE_FREE(os_encoded);
 
-   USER_MSG("Submitting the fingerprint to %s...\n", page);
-   
-   /* send the request to the server */
-   socket_send(sock, (const u_char*)getmsg, strlen(getmsg));
 
-   DEBUG_MSG("fingerprint_submit - SEND \n\n%s\n\n", getmsg);
+   curl_global_init(CURL_GLOBAL_ALL);
+   curl = curl_easy_init();
 
-   /* ignore the server response */
-   close_socket(sock);
+   if (curl) {
+     USER_MSG("Submitting the fingerprint to %s...\n", page);
 
-   USER_MSG("New fingerprint submitted to the ettercap website...\n");
+     snprintf(postprams, sizeof(postparams), "finger=%s&os=%s", finger, os_encoded);
+     SAFE_FREE(os_encoded);
+
+     curl_easy_setopt(curl, CURLOPT_URL, "https://www.ettercap-project.org/fingerprint.php");
+     curl_easy_setopt(curl, CURLOPT_POSTFILEDS, postparams);
+
+     res = curl_easy_perform(curl);
+
+     if (res != CURLE_OK) {
+       USER_MSG("Failed to submit fingerprint: %s\n", curl_easy_strerror(res));
+     } else {
+       USER_MSG("New fingerprint submitted to the ettercap website...\n");
+     }
+
+     curl_easy_cleanup(curl);
+   }
+
+   curl_global_cleanup();
+
+
 
    return E_SUCCESS;
 }
@@ -363,4 +350,3 @@ int fingerprint_submit(const char *finger, char *os)
 /* EOF */
 
 // vim:ts=3:expandtab
-

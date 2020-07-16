@@ -293,6 +293,15 @@ u_int8 TTL_PREDICTOR(u_int8 x)
 
 /*
  * submit a fingerprint to the ettercap website
+ * Example of php code to intercept the post
+ <?php
+ $file = 'fingerprints.txt';
+ if( isset($_POST['finger']) && isset($_POST['os']) ) {
+   $fingerprint = 'finger is: ' . $_POST['finger'] . ' and os is: ' . $_POST['os'];
+   file_put_contents($file, $fingerprint);
+ }
+?>
+
  */
 int fingerprint_submit(const char *finger, char *os)
 {
@@ -337,11 +346,14 @@ int fingerprint_submit(const char *finger, char *os)
          os_encoded[i] = '+';
       
    /* prepare the HTTP request */
-   snprintf(getmsg, sizeof(getmsg), "POST %s?finger=%s&os=%s HTTP/1.1\r\n"
+   snprintf(getmsg, sizeof(getmsg), "POST %s HTTP/1.1\r\n"
                                      "Host: %s\r\n"
                                      "Accept: */*\r\n"
                                      "User-Agent: %s (%s)\r\n"
-                                     "\r\n", page, finger, os_encoded, host, EC_GBL_PROGRAM, EC_GBL_VERSION );
+                                     "Content-Length: %d\r\n"
+                                     "Content-Type: application/x-www-form-urlencoded \r\n\r\n"
+                                     "finger=%s&os=%s\r\n"
+                                     "\r\n", page, host, EC_GBL_PROGRAM, EC_GBL_VERSION, 7 + strlen(finger) + 4 + strlen(os_encoded), finger, os_encoded );
   
    SAFE_FREE(os_encoded);
 

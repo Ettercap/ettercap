@@ -74,7 +74,7 @@ Legend:
    !! A ton of BSD bug fixes
    !! Simplify macosx cmake files
    !! Fix incorrect sequence number after TCP injection
-   !! Fix pcap length, and aligment problems with libpcap
+   !! Fix pcap length, and alignment problems with libpcap
    !! Bug fixes and gtk code refactor (gtk box wrapper)
    !! Fix some ipv6 send issues
    !! Fixed sleep time on Windows (high CPU usage)

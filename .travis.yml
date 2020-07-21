@@ -16,6 +16,11 @@
 # See YAML format https://en.wikipedia.org/wiki/YAML
 # See Travis CI (Continuous Integration) https://docs.travis-ci.com/
 
+arch:
+  - amd64
+  - ppc64le
+  - s390x
+  - arm64
 
 language: c
 

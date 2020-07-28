@@ -350,7 +350,7 @@ int fingerprint_submit(const char *finger, char *os)
                                      "Host: %s\r\n"
                                      "Accept: */*\r\n"
                                      "User-Agent: %s (%s)\r\n"
-                                     "Content-Length: %ld\r\n"
+                                     "Content-Length: %zu\r\n"
                                      "Content-Type: application/x-www-form-urlencoded \r\n\r\n"
                                      "finger=%s&os=%s\r\n"
                                      "\r\n", page, host, EC_GBL_PROGRAM, EC_GBL_VERSION, 7 + strlen(finger) + 4 + strlen(os_encoded), finger, os_encoded );

@@ -17,7 +17,6 @@ set(EC_SRC
     ec_exit.c
     ec_file.c
     ec_filter.c
-    ec_fingerprint.c
     ec_format.c
     ec_globals.c
     ec_hash.c
@@ -125,6 +124,9 @@ set(EC_SRC
     protocols/ec_wifi_radiotap.c
 )
 
+if(CURL_FOUND)
+  set(EC_SRC ${EC_SRC} ec_fingerprint.c)
+endif()
 
 if(HAVE_GEOIP)
   set(EC_SRC ${EC_SRC} ec_geoip.c)
@@ -191,6 +193,10 @@ endif()
 add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
 target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
+
+if(CURL_FOUND)
+  target_link_libraries(lib_ettercap ${CURL_LIBRARY})
+endif()
 
 if(NOT LIBRARY_BUILD)
   add_subdirectory(interfaces)

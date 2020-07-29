@@ -4,7 +4,7 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
-0.8.3.1-Bertillon    20200721
+0.8.3.1-Bertillon    20200801
    !! Fix SSL protocol failure with older TLS client/server versions (min. TLS1.0)
    !! Fix blackholing SSL packets when specific redirection is used
    !! Fix TLS 1.3 interception issues (replace fake certificate with proper key length)

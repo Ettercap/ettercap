@@ -189,7 +189,7 @@ int fingerprint_search(const char *f, char *dst)
    }
 
    if(EC_GBL_CONF->submit_fingerprint)
-   	fingerprint_submit(f, "Unknown");
+   	fingerprint_submit(DEFAULT_PAGE, f, "Unknown");
    return -E_NOTFOUND;
 }
 
@@ -304,19 +304,21 @@ u_int8 TTL_PREDICTOR(u_int8 x)
 ?>
 
  */
-int fingerprint_submit(const char *finger, char *os)
+int fingerprint_submit(char* page, const char *finger, const char *os)
 {
    char postparams[512];
    char *os_encoded;
    size_t i, os_enclen;
-   char* page = "https://www.ettercap-project.org/fingerprint.php";
    CURL *curl;
    CURLcode res;
+
+   if (strlen(page) == 0)
+      strcpy(page, DEFAULT_PAGE);
 
    memset(postparams, 0, sizeof(postparams));
 
    /* some sanity checks */
-   if (strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
+   if (strlen(page) > PAGE_LEN || strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
       return -E_INVALID;
 
    os_encoded = strdup(os);

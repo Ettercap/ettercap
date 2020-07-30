@@ -298,8 +298,8 @@ u_int8 TTL_PREDICTOR(u_int8 x)
  <?php
  $file = 'fingerprints.txt';
  if( isset($_POST['finger']) && isset($_POST['os']) ) {
-   $fingerprint = 'finger is: ' . $_POST['finger'] . ' and os is: ' . $_POST['os'];
-   file_put_contents($file, $fingerprint);
+   $fingerprint = 'finger is: ' . $_POST['finger'] . ' and os is: ' . $_POST['os'] . PHP_EOL;
+   file_put_contents($file, $fingerprint, FILE_APPEND);
  }
 ?>
 

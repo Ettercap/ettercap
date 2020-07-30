@@ -24,7 +24,9 @@
 #include <ec_file.h>
 #include <ec_socket.h>
 #include <ec_fingerprint.h>
-#include <curl/curl.h>
+#ifdef HAVE_CURL
+   #include <curl/curl.h>
+#endif
 
 #define LOAD_ENTRY(p,h,v) do {                                 \
    SAFE_CALLOC((p), 1, sizeof(struct entry));                  \
@@ -306,12 +308,17 @@ u_int8 TTL_PREDICTOR(u_int8 x)
  */
 int fingerprint_submit(char* host, char* page, const char *finger, const char *os)
 {
-   char postparams[512];
+   char postparams[1024];
    char *os_encoded;
    size_t i, os_enclen;
+   char fullpage [ PAGE_LEN + 1 ];
    char fullurl[HOST_LEN + PAGE_LEN + 2];
+#ifdef HAVE_CURL
    CURL *curl;
    CURLcode res;
+#else
+   int sock;
+#endif
 
    if (strlen(host) == 0)
       strcpy(host, DEFAULT_HOST);
@@ -319,10 +326,18 @@ int fingerprint_submit(char* host, char* page, const char *finger, const char *o
    if (strlen(page) == 0)
       strcpy(page, DEFAULT_PAGE);
 
+   if (page[0] != '/')
+      strcpy(fullpage, "/");
+
+   strcat(fullpage, page);
+
+   strcpy(fullurl, host);
+   strcat(fullurl, fullpage);
+
    memset(postparams, 0, sizeof(postparams));
 
    /* some sanity checks */
-   if (strlen(host) > HOST_LEN || strlen(page) > PAGE_LEN || strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
+   if (strlen(host) > HOST_LEN || strlen(fullpage) > PAGE_LEN || strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
       return -E_INVALID;
 
    os_encoded = strdup(os);
@@ -332,38 +347,76 @@ int fingerprint_submit(char* host, char* page, const char *finger, const char *o
       if (os_encoded[i] == ' ') 
          os_encoded[i] = '+';
 
+   USER_MSG("Submitting the fingerprint to %s...\n", fullurl);
 
-   strcpy(fullurl, host);
-   if (page[0] != '/')
-      strcat(fullurl, "/");
-   strcat(fullurl, page);
-
+#ifdef HAVE_CURL
    curl_global_init(CURL_GLOBAL_ALL);
    curl = curl_easy_init();
 
    if (curl) {
-     USER_MSG("Submitting the fingerprint to %s...\n", fullurl);
 
-     snprintf(postparams, sizeof(postparams), "finger=%s&os=%s", finger, os_encoded);
-     SAFE_FREE(os_encoded);
+      snprintf(postparams, sizeof(postparams), "finger=%s&os=%s", finger, os_encoded);
+      SAFE_FREE(os_encoded);
 
-     curl_easy_setopt(curl, CURLOPT_URL, fullurl);
-     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postparams);
+      curl_easy_setopt(curl, CURLOPT_URL, fullurl);
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postparams);
 
-     res = curl_easy_perform(curl);
+      res = curl_easy_perform(curl);
 
-     if (res != CURLE_OK) {
-       USER_MSG("Failed to submit fingerprint: %s\n", curl_easy_strerror(res));
-     } else {
-       USER_MSG("New fingerprint submitted to the ettercap website...\n");
-     }
+      DEBUG_MSG("Post request content is: %s\n", postparams);
+      if (res != CURLE_OK) {
+         USER_MSG("Failed to submit fingerprint: %s\n", curl_easy_strerror(res));
+      } else {
+         USER_MSG("New fingerprint submitted to the remote website...\n");
+      }
 
-     curl_easy_cleanup(curl);
+      curl_easy_cleanup(curl);
    }
 
    curl_global_cleanup();
 
+#else
+      
+   /* prepare the socket */
+   sock = open_socket(host, 80);
+   
+   switch(sock) {
+      case -E_NOADDRESS:
+         FATAL_MSG("Cannot resolve %s", host);
+         break;
+      case -E_FATAL:
+         FATAL_MSG("Cannot create the socket");
+         break;
+      case -E_TIMEOUT:
+         FATAL_MSG("Connect timeout to %s on port 80", host);
+         break;
+      case -E_INVALID:
+         FATAL_MSG("Error connecting to %s on port 80", host);
+         break;
+   }
 
+   /* prepare the HTTP request */
+   snprintf(postparams, sizeof(postparams), "POST %s HTTP/1.1\r\n"
+                                     "Host: %s\r\n"
+                                     "Accept: */*\r\n"
+                                     "User-Agent: %s (%s)\r\n"
+                                     "Content-Length: %zu\r\n"
+                                     "Content-Type: application/x-www-form-urlencoded \r\n\r\n"
+                                     "finger=%s&os=%s\r\n"
+                                     "\r\n", fullpage, host, EC_GBL_PROGRAM, EC_GBL_VERSION, 7 + strlen(finger) + 4 + strlen(os_encoded), finger, os_encoded );
+  
+   SAFE_FREE(os_encoded);
+
+   /* send the request to the server */
+   socket_send(sock, (const u_char*)postparams, strlen(postparams));
+
+   /* ignore the server response */
+   close_socket(sock);
+
+   DEBUG_MSG("Post request content is: %s\n", postparams);
+   USER_MSG("New fingerprint submitted to the remote website...\n");
+
+#endif
 
    return E_SUCCESS;
 }

@@ -167,6 +167,10 @@ if(ENABLE_LUA)
   set(HAVE_EC_LUA 1)
 endif()
 
+if(CURL_FOUND)
+  set(HAVE_CURL 1)
+endif()
+
 set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/include ${EC_INCLUDE})
 include_directories(${EC_INCLUDE_PATH})
 

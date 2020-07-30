@@ -17,6 +17,7 @@ set(EC_SRC
     ec_exit.c
     ec_file.c
     ec_filter.c
+    ec_fingerprint.c
     ec_format.c
     ec_globals.c
     ec_hash.c
@@ -123,10 +124,6 @@ set(EC_SRC
     protocols/ec_wifi_prism.c
     protocols/ec_wifi_radiotap.c
 )
-
-if(CURL_FOUND)
-  set(EC_SRC ${EC_SRC} ec_fingerprint.c)
-endif()
 
 if(HAVE_GEOIP)
   set(EC_SRC ${EC_SRC} ec_geoip.c)

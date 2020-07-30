@@ -189,7 +189,7 @@ int fingerprint_search(const char *f, char *dst)
    }
 
    if(EC_GBL_CONF->submit_fingerprint)
-   	fingerprint_submit(DEFAULT_PAGE, f, "Unknown");
+   	fingerprint_submit(NULL, NULL, f, "Unknown");
    return -E_NOTFOUND;
 }
 
@@ -304,13 +304,17 @@ u_int8 TTL_PREDICTOR(u_int8 x)
 ?>
 
  */
-int fingerprint_submit(char* page, const char *finger, const char *os)
+int fingerprint_submit(char* host, char* page, const char *finger, const char *os)
 {
    char postparams[512];
    char *os_encoded;
    size_t i, os_enclen;
+   char fullurl[HOST_LEN + PAGE_LEN + 2];
    CURL *curl;
    CURLcode res;
+
+   if (strlen(host) == 0)
+      strcpy(host, DEFAULT_HOST);
 
    if (strlen(page) == 0)
       strcpy(page, DEFAULT_PAGE);
@@ -318,7 +322,7 @@ int fingerprint_submit(char* page, const char *finger, const char *os)
    memset(postparams, 0, sizeof(postparams));
 
    /* some sanity checks */
-   if (strlen(page) > PAGE_LEN || strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
+   if (strlen(host) > HOST_LEN || strlen(page) > PAGE_LEN || strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
       return -E_INVALID;
 
    os_encoded = strdup(os);
@@ -329,16 +333,21 @@ int fingerprint_submit(char* page, const char *finger, const char *os)
          os_encoded[i] = '+';
 
 
+   strcpy(fullurl, host);
+   if (page[0] != '/')
+      strcat(fullurl, "/");
+   strcat(fullurl, page);
+
    curl_global_init(CURL_GLOBAL_ALL);
    curl = curl_easy_init();
 
    if (curl) {
-     USER_MSG("Submitting the fingerprint to %s...\n", page);
+     USER_MSG("Submitting the fingerprint to %s...\n", fullurl);
 
      snprintf(postparams, sizeof(postparams), "finger=%s&os=%s", finger, os_encoded);
      SAFE_FREE(os_encoded);
 
-     curl_easy_setopt(curl, CURLOPT_URL, page);
+     curl_easy_setopt(curl, CURLOPT_URL, fullurl);
      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postparams);
 
      res = curl_easy_perform(curl);

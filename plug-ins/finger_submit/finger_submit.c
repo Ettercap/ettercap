@@ -65,6 +65,7 @@ int plugin_load(void *handle)
 
 static int finger_submit_init(void *dummy) 
 {
+   char host[HOST_LEN + 1];
    char page[PAGE_LEN + 1];
    char finger[FINGER_LEN + 1];
    char os[OS_LEN + 1];
@@ -75,12 +76,21 @@ static int finger_submit_init(void *dummy)
    /* don't display messages while operating */
    EC_GBL_OPTIONS->quiet = 1;
  
+   memset(host, 0, sizeof(host));
    memset(page, 0, sizeof(page));
    memset(finger, 0, sizeof(finger));
    memset(os, 0, sizeof(os));
    
    /* get the user input */
-   ui_input("Remote website (enter for default " DEFAULT_PAGE " page) ('quit' to exit) : ", page, sizeof(page), NULL);
+   ui_input("Remote website (enter for default " DEFAULT_HOST " website) ('quit' to exit) : ", host, sizeof(host), NULL);
+   /* exit on user request */
+   if (!strcasecmp(host, "quit"))
+      return PLUGIN_FINISHED;
+   
+   if(!strcmp(host, ""))
+      strcpy(host, DEFAULT_HOST);
+
+   ui_input("Remote webpage (enter for default " DEFAULT_PAGE " page) ('quit' to exit) : ", page, sizeof(page), NULL);
    
    /* exit on user request */
    if (!strcasecmp(page, "quit"))
@@ -105,7 +115,7 @@ static int finger_submit_init(void *dummy)
    USER_MSG("\n");
 
    /* send the fingerprint */
-   fingerprint_submit(page, finger, os);
+   fingerprint_submit(host, page, finger, os);
 
    /* flush all the messages */
    ui_msg_flush(MSG_ALL);

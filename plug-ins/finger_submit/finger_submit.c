@@ -75,7 +75,7 @@ static int finger_submit_init(void *dummy)
    EC_GBL_OPTIONS->quiet = 1;
  
    memset(finger, 0, sizeof(finger));
-   memset(os, 0, sizeof(finger));
+   memset(os, 0, sizeof(os));
    
    /* get the user input */
    ui_input("Fingerprint      ('quit' to exit) : ", finger, sizeof(finger), NULL);

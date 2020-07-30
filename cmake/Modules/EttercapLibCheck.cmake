@@ -149,32 +149,29 @@ if(ENABLE_PLUGINS)
     endif()
 endif()
 
-if(HAVE_PLUGINS)
-    # Fake target for curl
-    add_custom_target(curl)
+# Fake target for curl
+add_custom_target(curl)
 
-    # sslstrip has a requirement for libcurl >= 7.26.0
-    if(SYSTEM_CURL)
-        message(STATUS "CURL support requested. Will look for curl >= 7.26.0")
-        find_package(CURL 7.26.0)
+# sslstrip has a requirement for libcurl >= 7.26.0
+if(SYSTEM_CURL)
+    message(STATUS "CURL support requested. Will look for curl >= 7.26.0")
+    find_package(CURL 7.26.0)
 
-        if(NOT CURL_FOUND)
-            message(STATUS "Couldn't find a suitable system-provided version of Curl")
-        endif()
-    endif()
-
-    if(BUNDLED_CURL AND (NOT CURL_FOUND))
-        message(STATUS "Using bundled version of Curl")
-        add_subdirectory(bundled_deps/curl) # EXCLUDE_FROM_ALL)
-        add_dependencies(curl bundled_curl)
-        add_dependencies(bundled bundled_curl)
-    endif()
-
-    # Still haven't found curl? Bail!
     if(NOT CURL_FOUND)
-        message(FATAL_ERROR "Could not find Curl!")
+        message(STATUS "Couldn't find a suitable system-provided version of Curl")
     endif()
+endif()
 
+if(BUNDLED_CURL AND (NOT CURL_FOUND))
+    message(STATUS "Using bundled version of Curl")
+    add_subdirectory(bundled_deps/curl) # EXCLUDE_FROM_ALL)
+    add_dependencies(curl bundled_curl)
+    add_dependencies(bundled bundled_curl)
+endif()
+
+# Still haven't found curl? Bail!
+if(NOT CURL_FOUND)
+    message(STATUS "Could not find Curl, sslstrip and curl support will be disabled!")
 endif()
 
 check_function_exists(poll HAVE_POLL)

@@ -32,7 +32,7 @@ Gadu-Gadu (http://www.gadu-gadu.pl/) is the most widely used IM network in Polan
 
 Protocol description taken from http://ekg.chmurka.net/docs/protocol.html + own research (7.x).
 
-The newest version can be found at http://ettercap-gg.sourceforge.net/
+The newest version can be found at https://www.ettercap-project.org/downloads.html
 
 FEATURES:
 

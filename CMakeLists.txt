@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(ettercap C)
 
-set(VERSION "0.8.4-rc")
+set(VERSION "0.8.3.1")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
@@ -165,6 +165,10 @@ endif()
 if(ENABLE_LUA)
   include(EttercapLuajit)
   set(HAVE_EC_LUA 1)
+endif()
+
+if(CURL_FOUND)
+  set(HAVE_CURL 1)
 endif()
 
 set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/include ${EC_INCLUDE})

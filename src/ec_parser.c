@@ -27,6 +27,7 @@
 #include <ec_send.h>
 #include <ec_log.h>
 #include <ec_format.h>
+#include <ec_update.h>
 #include <ec_mitm.h>
 #include <ec_filter.h>
 #include <ec_plugins.h>
@@ -126,6 +127,9 @@ void ec_usage(void)
    fprintf(stdout, "  -a, --config <config>       use the alternative config file <config>\n");
    
    fprintf(stdout, "\nStandard options:\n");
+#ifdef WITH_UPDATE
+   fprintf(stdout, "  -U, --update                updates the databases from ettercap website\n");
+#endif
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
 
@@ -141,8 +145,11 @@ void parse_options(int argc, char **argv)
    int c;
 
    static struct option long_options[] = {
-      { "help", no_argument, NULL, 'h' },
+#ifdef WITH_UPDATE
+      { "update", no_argument, NULL, 'U' },
+#endif
       { "version", no_argument, NULL, 'v' },
+      { "help", no_argument, NULL, 'h' },
       
       { "iface", required_argument, NULL, 'i' },
       { "lifaces", no_argument, NULL, 'I' },
@@ -225,7 +232,7 @@ void parse_options(int argc, char **argv)
    optind = 0;
    int option_index = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:uV:vW:w:Y:z6", long_options, &option_index)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:uUV:vW:w:Y:z6", long_options, &option_index)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -400,6 +407,15 @@ void parse_options(int argc, char **argv)
             set_conf_file(optarg);
             break;
          
+#ifdef WITH_UPDATE
+         case 'U':
+	    /* load the conf for the connect timeout value */
+	    libettercap_load_conf();
+	    global_update();
+            /* NOT REACHED */
+            break;
+#endif
+
          case 'h':
             ec_usage();
             break;

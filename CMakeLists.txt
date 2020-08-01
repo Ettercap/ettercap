@@ -13,6 +13,7 @@ Please create a separate build directory and run 'cmake /path/to/${PROJECT_NAME}
 option(ENABLE_CURSES "Enable curses interface" ON)
 option(ENABLE_GTK "Enable GTK interface" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
+option(ENABLE_UPDATE "Enable Self-Update support" OFF)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
 option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
@@ -190,6 +191,10 @@ endif()
 add_subdirectory(utils)
 add_subdirectory(share)
 add_subdirectory(man)
+
+if(ENABLE_UPDATE)
+    set(WITH_UPDATE TRUE)
+endif()
 
 if(ENABLE_IPV6)
     set(WITH_IPV6 TRUE)

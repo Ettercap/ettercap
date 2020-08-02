@@ -1,0 +1,10 @@
+--- a/src/libnet_link_bpf.c	2012-03-19 17:59:50.000000000 +0100
++++ b/src/libnet_link_bpf.c	2020-01-05 23:28:18.034699834 +0100
+@@ -28,7 +28,6 @@
+  */
+ 
+ #include <sys/param.h>  /* optionally get BSD define */
+-#include <sys/timeb.h>
+ #include <sys/file.h>
+ #include <sys/ioctl.h>
+ 

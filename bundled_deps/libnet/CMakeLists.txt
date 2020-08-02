@@ -16,6 +16,20 @@ set(LIBNET_LIB_DIR ${LIBNET_PREFIX}/lib)
 set(LIBNET_INCLUDE_DIR ${LIBNET_PREFIX}/include)
 set(LIBNET_LIBRARY ${LIBNET_LIB_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}net${CMAKE_STATIC_LIBRARY_SUFFIX})
 
+if(OS_BSD_OPEN)
+# On OpenBSD, timeb.h has been dropped since quite some time
+# Actually the libnet code doesn't really depend on it
+# so the patch just removes the unnecessary #include <sys/timeb.h>
+  set(LIBNET_TIMEB_PATCH ${CMAKE_CURRENT_SOURCE_DIR}/libnet-timeb.patch)
+endif()
+
+if(OS_BSD_FREE)
+# On FreeBSD, arpa/inet.h does not include netinet/in.h even though
+# it's available and contains the required symbols. So the patch
+# includes this header file explicitely on FreeBSD.
+  set(LIBNET_IN_H_PATCH ${CMAKE_CURRENT_SOURCE_DIR}/libnet-in.h.patch)
+endif()
+
 # Configure the Makefile wrapper. The purpose of this wrapper is to set up
 # the environment for building libnet. ExternalProject_Add doesn't
 # support setting up any sort of environment, nor does it handle arguments to

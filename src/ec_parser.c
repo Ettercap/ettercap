@@ -104,7 +104,7 @@ void ec_usage(void)
 
 #ifdef HAVE_EC_LUA
    fprintf(stdout, "\nLUA options:\n");
-   fprintf(stdout, "      --lua-script <script1>,[<script2>,...]     comma-separted list of LUA scripts\n");
+   fprintf(stdout, "      --lua-script <script1>,[<script2>,...]     comma-separated list of LUA scripts\n");
    fprintf(stdout, "      --lua-args n1=v1,[n2=v2,...]               comma-separated arguments to LUA script(s)\n");
 #endif
    

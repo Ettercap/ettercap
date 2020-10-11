@@ -49,6 +49,9 @@
 #       so if you want to reverse poison you have to specify a plain       #
 #       host. (look at the www.microsoft.com example)                      #
 #                                                                          #
+# NOTE: wildcard names should be defined first otherwise they will shadow  #
+#       the more specific names of the same domain.                        #
+#                                                                          #
 # NOTE: Default DNS TTL is 3600s (1 hour). All TTL fields are optional.    #
 #                                                                          #
 # NOTE: IPv6 specific do not work because ettercap has been built without  #

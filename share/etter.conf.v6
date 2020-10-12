@@ -171,6 +171,12 @@ geoip_data_file_v6 = "/usr/local/share/GeoIP/GeoIPv6.dat"
 # or set the ec_uid to 0, in order to be sure the cleanup script will be
 # executed properly
 # NOTE: the script must fit into one line with a maximum of 255 characters
+#
+# IMPORTANT NOTE related to IPv6:
+# Ettercap has been compiled with IPv6 support. That means that you must
+# uncomment the redir6_command_on and redir6_command_off lines as well.
+# It's also important that you have to plan for IPv6 as well for SSL
+# dissection when the underlying network supports both IPv4 and IPv6.
 
 #---------------
 #     Linux 

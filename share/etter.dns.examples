@@ -3,8 +3,8 @@
 # redirect it to www.linux.org
 #
 
-microsoft.com      A   107.170.40.56 1800
 *.microsoft.com    A   107.170.40.56 3600
+microsoft.com      A   107.170.40.56 1800
 www.microsoft.com  PTR 107.170.40.56      # Wildcards in PTR are not allowed
 
 ##########################################

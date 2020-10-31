@@ -23,6 +23,7 @@
 #include <ec_sniff.h>
 #include <ec_filter.h>
 #include <ec_plugins.h>
+#include <ec_capture.h>
 
 #define EC_GBL_FREE(x) do{ if (x != NULL) { free(x); x = NULL; } }while(0)
 
@@ -58,6 +59,10 @@ void ec_globals_alloc(void)
    /* init the structures */
    TAILQ_INIT(&EC_GBL_PROFILES);
    LIST_INIT(&EC_GBL_HOSTLIST);
+
+   /* properly free at exit */
+   /* 1st call of atexit - will be executed last */
+   atexit(ec_globals_free);
    
    return;
 }
@@ -66,6 +71,7 @@ void ec_globals_alloc(void)
 void ec_globals_free(void)
 {
  
+   capture_freeifs();
    EC_GBL_FREE(ec_gbls->pcap);
    EC_GBL_FREE(ec_gbls->lnet);
    EC_GBL_FREE(ec_gbls->iface);

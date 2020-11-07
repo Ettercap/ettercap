@@ -105,11 +105,11 @@ mdns = 5353                # udp    5353
 vnc = 5900,5901,5902,5903  # tcp    5900 5901 5902 5903
 x11 = 6000,6001,6002,6003  # tcp    6000 6001 6002 6003
 irc = 6666,6667,6668,6669  # tcp    6666 6667 6668 6669
-gg = 8074	           # tcp    8074
+gg = 8074                  # tcp    8074
 proxy = 8080               # tcp    8080
 rcon = 27015,27960         # udp    27015 27960
 ppp = 34827                # special case ;) this is the Net Layer code
-TN3270 = 23,992            # tcp    23 992
+TN3270 = 623               # tcp    623
 
 # 
 # you can change the colors of the curses GUI.

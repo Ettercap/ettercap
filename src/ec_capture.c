@@ -133,19 +133,20 @@ void capture_getifs(void)
          )
          continue;
 
-      /* set the description for the local loopback */
-      if (dev->flags & PCAP_IF_LOOPBACK) {
-         SAFE_FREE(dev->description);
-         dev->description = strdup("Local Loopback");
-      }
-     
-      /* fill the empty descriptions */
-      if (dev->description == NULL)
-         dev->description = strdup(dev->name);
-
       /* take over entry in filtered list */
       SAFE_CALLOC(cdev, 1, sizeof(pcap_if_t));
       memcpy(cdev, dev, sizeof(pcap_if_t));
+
+      /* set the description for the local loopback */
+      if (cdev->flags & PCAP_IF_LOOPBACK) {
+         SAFE_FREE(cdev->description);
+         cdev->description = strdup("Local Loopback");
+      }
+     
+      /* fill the empty descriptions */
+      if (cdev->description == NULL)
+         cdev->description = strdup(cdev->name);
+
       DEBUG_MSG("capture_getifs: [%s] %s", cdev->name, cdev->description);
 
       /* reset link to next list element */
@@ -189,6 +190,7 @@ void capture_freeifs(void)
    for (dev = EC_GBL_PCAP->ifs; dev != NULL; dev = ndev) {
       /* save the next entry in the list and free memory for the entry */
       ndev = dev->next;
+      SAFE_FREE(dev->description);
       SAFE_FREE(dev);
    }
 

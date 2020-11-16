@@ -82,7 +82,7 @@ OPTIONAL:
 If you are running on debian, or any debian based distro you can install
 the required dependencies by running:
 
-apt-get install debhelper bison check cmake flex groff libbsd-dev \
+apt-get install build-essential debhelper bison check cmake flex groff libbsd-dev \
       libcurl4-openssl-dev libgeoip-dev libgtk-3-dev libltdl-dev libluajit-5.1-dev \
       libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev
 
@@ -118,7 +118,7 @@ apt-get install debhelper bison check cmake flex groff libbsd-dev \
     cmake ..
     (Use ccmake . to change options such as disabling IPv6 support, add
     plugins support, etc).
-    make install
+    sudo make install
 
  read INSTALL for further details... and README.PLATFORMS for any issue
  regarding your operating system.

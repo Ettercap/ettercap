@@ -4,7 +4,7 @@ $ mkdir build
 $ cd build
 $ cmake ../
 $ make
-$ make install
+$ sudo make install
 
 If the build fails because you're missing a dependency:
 
@@ -12,7 +12,7 @@ $ (Install any missing dependencies.)
 $ make clean-all
 $ cmake ../
 $ make
-$ make install
+$ sudo make install
 
 
 #### Bundled libraries

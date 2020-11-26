@@ -118,7 +118,7 @@ EC_API_EXTERN void disable_interface_offload(void);
 #endif
 
 #if defined OS_LINUX && defined WITH_IPV6
-EC_API_EXTERN void check_tempaddr(const char *iface);
+EC_API_EXTERN void check_tempaddr(const char *interface);
 #endif
 
 /********************/

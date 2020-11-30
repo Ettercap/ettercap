@@ -27,6 +27,8 @@ compiler:
   - gcc
   - clang
 
+dist: focal
+
 os:
   - osx
   - linux
@@ -150,8 +152,7 @@ script:
   - mkdir build
   - cd build
   - cmake -DENABLE_TESTS=On $BUILD_ARGS ..
-  - make
-  - make test_verbose
+  - make && make test_verbose
 
 notifications:
   irc:

@@ -23,6 +23,7 @@
 #include <ec.h>
 #include <ec_parser.h>
 #include <ec_interfaces.h>
+#include <ec_libettercap.h>
 #include <ec_sniff.h>
 #include <ec_send.h>
 #include <ec_log.h>

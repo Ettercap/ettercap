@@ -133,7 +133,7 @@ if(NOT DISABLE_RPATH)
 endif()
 
 # set general build flags for debug build-type
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -fno-common -Wall -Wno-pointer-sign -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -Wextra -Wredundant-decls" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -fno-common -Wall -Werror -Wno-pointer-sign -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -Wextra -Wredundant-decls" CACHE STRING "" FORCE)
 ## append ASAN build flags if compiler version has support
 #if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
 #   if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.8)

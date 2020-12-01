@@ -143,9 +143,9 @@ FUNC_DECODER(dissector_ssh)
    u_int32 ssh_len, ssh_mod;
    u_char ssh_packet_type, *ptr, *key_to_put;
 #ifdef HAVE_OPAQUE_RSA_DSA_DH
-   BIGNUM *h_n, *s_n, *m_h_n, *m_s_n;
-   BIGNUM *h_e, *s_e, *m_h_e, *m_s_e;
-   BIGNUM *h_d, *s_d, *m_h_d, *m_s_d;
+   BIGNUM *h_n = NULL, *s_n = NULL, *m_h_n = NULL, *m_s_n = NULL;
+   BIGNUM *h_e = NULL, *s_e = NULL, *m_h_e = NULL, *m_s_e = NULL;
+   BIGNUM *h_d = NULL, *s_d = NULL, *m_h_d = NULL, *m_s_d = NULL;
 #endif
 
    /* don't complain about unused var */

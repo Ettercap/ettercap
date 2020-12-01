@@ -102,6 +102,9 @@ matrix:
     # We expect system-only curl + ubuntu to fail :(
     #- os: linux
     #  env: BUILD_ARGS="-DBUNDLED_CURL=Off"
+    # since focal, gtk2 gives lots of warnings due to new compiler, nothing we can fix on our own
+    - os: linux
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug"
   exclude:
     - os: osx
       env: BUILD_ARGS=""

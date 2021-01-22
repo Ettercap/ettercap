@@ -37,6 +37,7 @@ connect_timeout = 5           # seconds
 
 [stats]
 sampling_rate = 50            # number of packets 
+packet_update_count = 50      # number of packets
 
 [misc]
 close_on_eof = 1              # boolean value

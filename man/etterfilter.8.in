@@ -373,6 +373,24 @@ execreplace("tr A-Z a-z")
 
 
 .TP
+.B random(\fIwhere\fR, \fIoffset\fR, \fIlength\fR)
+this function randomizes \fBlength\fR bytes at the buffer \fBwhere\fR. If
+\fBlength\fR exceeds the available buffer of \fBwhere\fR, the \fBlength\fR is
+automatically truncated. With \fBoffset\fR, the start of random bytes can be
+moved forward within the buffer \fBwhere\fR.
+\fBwhere\fR can be \fIDATA.data\fR or \fIDECODED.data\fR or any other virtual pointer like \fIip.src\fR or \fItcp.dst\fR.
+.Sp
+example:
+.br
+random(DATA.data, 0, 16)
+.br
+random(ipv6.src, 8, 8)
+.Sp
+The first example, replaces first 16 bytes of the payload (data) with random bytes.
+.br
+The second example, replaces the host portion (last 64 bit) of the IPv6 source
+address with random bytes while the IPv6 network part is kept intact.
+.TP
 .B exit()
 this function causes the filter engine to stop executing the code. It is useful
 to stop the execution of the script on some circumstance checked by an 'if' statement.

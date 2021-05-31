@@ -1138,7 +1138,7 @@ static void gtkui_build_widgets(GApplication* app, gpointer data)
    gtk_window_set_default_size(GTK_WINDOW(window), width, height);
 
    /* set window icon */
-   path = ICON_DIR "/" ICON_FILE;
+   path = ICON_DIR "/scalable/apps/" ICON_FILE;
    if (g_file_test(path, G_FILE_TEST_EXISTS)) {
       gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path, NULL));
    }

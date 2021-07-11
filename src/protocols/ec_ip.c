@@ -185,8 +185,9 @@ FUNC_DECODER(decode_ip)
   
       /* collect infos for passive fingerprint */
       fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_TTL, ip->ttl);
-      fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_DF, ntohs(ip->frag_off) & IP_DF);
       fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_LT, ip->ihl * 4);
+      if (ntohs(ip->frag_off) & IP_DF)
+         fingerprint_push(PACKET->PASSIVE.fingerprint, FINGER_DF, 1);
    }
 
    /* calculate if the dest is local or not */

@@ -32,7 +32,7 @@ port_steal_send_delay = 2000  # microseconds
 [connections]
 connection_timeout = 300      # seconds
 connection_idle = 5           # seconds
-connection_buffer = 10000     # bytes
+connection_buffer = 10000000  # bytes
 connect_timeout = 5           # seconds
 
 [stats]

@@ -223,41 +223,41 @@ void fingerprint_push(char *finger, int param, int value)
    switch (param) {
       case FINGER_WINDOW:
          snprintf(tmp, sizeof(tmp), "%04X", value);
-         strncpy(finger + FINGER_WINDOW, tmp, 5);
+         memcpy(finger + FINGER_WINDOW, tmp, 4);
          break;
       case FINGER_MSS:
          snprintf(tmp, sizeof(tmp), "%04X", value);
-         strncpy(finger + FINGER_MSS, tmp, 5);
+         memcpy(finger + FINGER_MSS, tmp, 4);
          break;
       case FINGER_TTL:
          snprintf(tmp, sizeof(tmp), "%02X", TTL_PREDICTOR(value));
-         strncpy(finger + FINGER_TTL, tmp, 3);
+         memcpy(finger + FINGER_TTL, tmp, 2);
          break;
       case FINGER_WS:
          snprintf(tmp, sizeof(tmp), "%02X", value);
-         strncpy(finger + FINGER_WS, tmp, 3);
+         memcpy(finger + FINGER_WS, tmp, 2);
          break;
       case FINGER_SACK:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + FINGER_SACK, tmp, 2);
+         memcpy(finger + FINGER_SACK, tmp, 1);
          break;
       case FINGER_NOP:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + FINGER_NOP, tmp, 2);
+         memcpy(finger + FINGER_NOP, tmp, 1);
          break;
       case FINGER_DF:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + FINGER_DF, tmp, 2);
+         memcpy(finger + FINGER_DF, tmp, 1);
          break;
       case FINGER_TIMESTAMP:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + FINGER_TIMESTAMP, tmp, 2);
+         memcpy(finger + FINGER_TIMESTAMP, tmp, 1);
          break;
       case FINGER_TCPFLAG:
          if (value == 1)
-            strncpy(finger + FINGER_TCPFLAG, "A", 2);
+            memcpy(finger + FINGER_TCPFLAG, "A", 1);
          else
-            strncpy(finger + FINGER_TCPFLAG, "S", 2);
+            memcpy(finger + FINGER_TCPFLAG, "S", 1);
          break;
       case FINGER_LT:
          /*
@@ -267,7 +267,7 @@ void fingerprint_push(char *finger, int param, int value)
           */
          lt_old = strtoul(finger + FINGER_LT, NULL, 16);
          snprintf(tmp, sizeof(tmp), "%02X", value + lt_old);
-         strncpy(finger + FINGER_LT, tmp, 3);
+         memcpy(finger + FINGER_LT, tmp, 2);
          break;                                 
    }
 }

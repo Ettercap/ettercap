@@ -13,6 +13,7 @@ Please create a separate build directory and run 'cmake /path/to/${PROJECT_NAME}
 option(ENABLE_CURSES "Enable curses interface" ON)
 option(ENABLE_GTK "Enable GTK interface" ON)
 option(ENABLE_PLUGINS "Enable plugins support" ON)
+option(ENABLE_UPDATE "Enable Self-Update support" OFF)
 option(ENABLE_IPV6 "Enable IPv6 support" OFF)
 option(ENABLE_LUA "Enable LUA support (EXPERIMENTAL)" OFF)
 option(ENABLE_PDF_DOCS "Enable PDF document generation" OFF)
@@ -132,7 +133,7 @@ if(NOT DISABLE_RPATH)
 endif()
 
 # set general build flags for debug build-type
-set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -fno-common -Wall -Wno-pointer-sign -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -Wextra -Wredundant-decls" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb3 -DDEBUG -fno-common -Wall -Werror -Wno-pointer-sign -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -Wextra -Wredundant-decls" CACHE STRING "" FORCE)
 ## append ASAN build flags if compiler version has support
 #if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
 #   if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 4.8)
@@ -190,6 +191,10 @@ endif()
 add_subdirectory(utils)
 add_subdirectory(share)
 add_subdirectory(man)
+
+if(ENABLE_UPDATE)
+    set(WITH_UPDATE TRUE)
+endif()
 
 if(ENABLE_IPV6)
     set(WITH_IPV6 TRUE)

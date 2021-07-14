@@ -27,6 +27,8 @@ compiler:
   - gcc
   - clang
 
+dist: focal
+
 os:
   - osx
   - linux
@@ -61,13 +63,13 @@ env:
   # Debug build
   - BUILD_ARGS="-DCMAKE_BUILD_TYPE=Debug"
   # Everything that's optional
-  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On"
+  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On"
   # Everything that's optional, in Debug-mode
-  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DCMAKE_BUILD_TYPE=Debug"
+  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DCMAKE_BUILD_TYPE=Debug"
   # Everything that's optional, GTK2
-  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2"
+  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2"
   # Everything that's optional, GTK2 in Debug-mode
-  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug"
+  - BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug"
   # IPV6 + system libnet
   - BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
   # IPV6 + bundled libnet
@@ -100,6 +102,17 @@ matrix:
     # We expect system-only curl + ubuntu to fail :(
     #- os: linux
     #  env: BUILD_ARGS="-DBUNDLED_CURL=Off"
+    # since focal, gtk2 gives lots of warnings due to new compiler, nothing we can fix on our own
+    - os: linux
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug"
+    - os: osx
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On"
+    - os: osx
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DCMAKE_BUILD_TYPE=Debug"
+    - os: osx
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2"
+    - os: osx
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug"
   exclude:
     - os: osx
       env: BUILD_ARGS=""
@@ -107,16 +120,16 @@ matrix:
       env: BUILD_ARGS="-DCMAKE_BUILD_TYPE=Debug"
     - os: osx
       compiler: gcc
-      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On"
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On"
     - os: osx
       compiler: gcc
-      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DCMAKE_BUILD_TYPE=Debug"
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DCMAKE_BUILD_TYPE=Debug"
     - os: osx
       compiler: gcc
-      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2"
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2"
     - os: osx
       compiler: gcc
-      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug"
+      env: BUILD_ARGS="-DENABLE_PDF_DOCS=On -DENABLE_IPV6=On -DENABLE_UPDATE=On -DENABLE_LUA=On -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug"
     - os: osx
       env: BUILD_ARGS="-DENABLE_IPV6=On -DBUNDLED_LIBNET=Off"
     - os: osx
@@ -150,8 +163,7 @@ script:
   - mkdir build
   - cd build
   - cmake -DENABLE_TESTS=On $BUILD_ARGS ..
-  - make
-  - make test_verbose
+  - make && make test_verbose
 
 notifications:
   irc:

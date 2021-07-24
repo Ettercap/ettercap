@@ -6,6 +6,7 @@ Legend:
 =========================================
 0.8.4-nnnnnnnn    YYYYMMDD
    !! Fix fingerprint composition
+   !! Default connection buffer size increased from 10KByte to 10MByte
 
 0.8.3.1-Bertillon    20200801
    !! Fix SSL protocol failure with older TLS client/server versions (min. TLS1.0)

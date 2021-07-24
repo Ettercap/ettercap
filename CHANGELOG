@@ -4,6 +4,9 @@ Legend:
          - old feature removed
          !! bug fixed
 =========================================
+0.8.4-nnnnnnnn    YYYYMMDD
+   !! Fix fingerprint composition
+
 0.8.3.1-Bertillon    20200801
    !! Fix SSL protocol failure with older TLS client/server versions (min. TLS1.0)
    !! Fix blackholing SSL packets when specific redirection is used

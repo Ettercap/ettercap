@@ -1,0 +1,43 @@
+############################################################################
+#                                                                          #
+#  ettercap -- etter.filter -- filter source file                          #
+#                                                                          #
+#  Copyright (C) ALoR & NaGA                                               #
+#                                                                          #
+#  This program is free software; you can redistribute it and/or modify    #
+#  it under the terms of the GNU General Public License as published by    #
+#  the Free Software Foundation; either version 2 of the License, or       #
+#  (at your option) any later version.                                     #
+#                                                                          #
+############################################################################
+
+##
+#
+#   This filter shows some examples how the random function can be used.
+#   Typical use-cases are fuzzing certain protocols to test the robustness
+#   of the server/client implementations.
+#   The examples are not exhaustive, but should just give an idea what
+#   can be done with the random filter function.
+#
+##
+
+# Replacing specific Data at a certain known offset
+if (ip.proto == TCP) {
+   if (tcp.dst == 8080) {
+      if (DATA.data + 12 == "\x33\x33\x55\x55") {
+         msg("Data found. Randomizing...");
+         random(DATA.data, 12, 4);
+      }
+   }
+}
+
+# The following expression will distrub any IPsec traffic
+if (ip.proto == ESP || ipv6.nh == ESP) {
+   random(esp.spi, 0, 4);
+}
+else {
+   # in NAT-T mode, the ESP header is nested in the UDP payload
+   if (udp.src == 4500 || udp.dst == 4500) {
+      random(DATA.data, 0, 4);
+   }
+}

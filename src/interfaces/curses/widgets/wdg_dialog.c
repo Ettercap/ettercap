@@ -209,7 +209,7 @@ static int wdg_dialog_redraw(struct wdg_object *wo)
   
    /* print the message text */
    wmove(ww->sub, 0, 0);
-   wprintw(ww->sub, ww->text);
+   wprintw(ww->sub, "%s", ww->text);
    
    /* refresh the window */
    redrawwin(ww->sub);
@@ -327,7 +327,7 @@ static void wdg_dialog_border(struct wdg_object *wo)
             wmove(ww->win, 0, c - strlen(wo->title) - 3);
             break;
       }
-      wprintw(ww->win, wo->title);
+      wprintw(ww->win, "%s", wo->title);
    }
    
    /* restore the attribute */

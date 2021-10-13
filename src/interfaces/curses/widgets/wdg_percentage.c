@@ -279,7 +279,7 @@ static void wdg_percentage_border(struct wdg_object *wo)
    /* there is a title: print it */
    if (wo->title) {
       wmove(ww->sub, 1, 2);
-      wprintw(ww->sub, wo->title);
+      wprintw(ww->sub, "%s", wo->title);
    }
    
    /* restore the attribute */

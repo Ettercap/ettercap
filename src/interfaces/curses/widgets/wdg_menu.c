@@ -319,7 +319,7 @@ static void wdg_menu_titles(struct wdg_object *wo)
       wmove(ww->menu, 0, current_screen.cols - strlen(wo->title) - 1);
       wbkgdset(ww->menu, COLOR_PAIR(wo->title_color));
       wattron(ww->menu, A_BOLD);
-      wprintw(ww->menu, wo->title);
+      wprintw(ww->menu, "%s", wo->title);
       wattroff(ww->menu, A_BOLD);
       wbkgdset(ww->menu, COLOR_PAIR(wo->window_color));
    }
@@ -338,7 +338,7 @@ static void wdg_menu_titles(struct wdg_object *wo)
          wprintw(ww->menu, "%s", mu->title);
 
       /* separator between two unit title */
-      wprintw(ww->menu, "  ");
+      wprintw(ww->menu, "%s", "  ");
    }
    
 }

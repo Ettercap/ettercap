@@ -309,7 +309,7 @@ static void wdg_scroll_border(struct wdg_object *wo)
             wmove(ww->win, 0, c - strlen(wo->title) - 3);
             break;
       }
-      wprintw(ww->win, wo->title);
+      wprintw(ww->win, "%s", wo->title);
    }
    
    /* restore the attribute */

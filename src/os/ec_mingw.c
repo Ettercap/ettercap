@@ -1060,7 +1060,7 @@ int vwprintw (WINDOW *win, const char *fmt, va_list args)
   if (trace_on)
      PDC_debug ("vwprintw() - called\n");
   _vsnprintf (buf, sizeof(buf), fmt, args);
-  return wprintw (win, buf);
+  return wprintw (win, "%s", buf);
 }
 #endif  /* HAVE_NCURSES && !BUILDING_UTILS */
 

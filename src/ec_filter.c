@@ -1002,7 +1002,7 @@ static int func_execreplace(struct filter_op *fop, struct packet_object *po)
 static int func_random(struct filter_op *fop, struct packet_object *po)
 {
    unsigned char *base, *ptr, *end;
-   size_t len, cnt;
+   size_t len = 0, cnt;
    struct timeval seed;
    long int rnd;
 

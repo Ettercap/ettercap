@@ -43,6 +43,8 @@ int main(int argc, char *argv[])
    int ret_value = 0;
    libettercap_init(PROGRAM, EC_VERSION);
    ef_globals_alloc();
+   filter_init_mutex();
+
    select_text_interface();
    libettercap_ui_init();
    /* etterfilter copyright */

@@ -272,6 +272,8 @@ is used only internally and never reaches the wire.
 example:
 .br
 replace("ethercap", "ettercap")
+.br
+replace("\x00\x00\xa2", "\x00\x01\xa2")
 
 
 .TP
@@ -280,7 +282,7 @@ this function injects the content of the file 'what' after the packet being
 processed. It always injects in DATA.data. You can use it to replace the entire
 packet with a fake one using the drop() function right before the inject() command.
 In that case the filtering engine will drop the current packet and inject the
-fake one.
+fake one. Also you can also use log() function to capture payload of a packet and use it as 'what' file to send it with inject() function.
 .Sp
 example:
 .br

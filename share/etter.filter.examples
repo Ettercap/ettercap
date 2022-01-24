@@ -24,7 +24,7 @@ if (ip.proto == TCP) {
 
 
 # log all IEC 61850 traffic when the destination ip is 192.168.1.2
-if (if (ip.dst == '192.168.1.2' && tcp.src == 102) {
+if (ip.dst == '192.168.1.2' && tcp.src == 102) {
       log(DATA.data, "./logfile.log");
    }
 }

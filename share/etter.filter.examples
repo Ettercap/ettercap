@@ -26,7 +26,6 @@ if (ip.proto == TCP) {
 # log all IEC 61850 traffic when the destination ip is 192.168.1.2
 if (ip.dst == '192.168.1.2' && tcp.src == 102) {
       log(DATA.data, "./logfile.log");
-   }
 }
 # tip: if you get "filter engine: Cannot open file ./logfile.log" error, just chmod -R 777 ./logfile.log and run the filter again.
 

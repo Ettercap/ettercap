@@ -33,9 +33,6 @@
 
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
-#ifdef HAVE_PCRE
-   #include <pcre.h>
-#endif
 
 #include <libnet.h>
 #include <pcap.h>
@@ -102,6 +99,12 @@ void debug_init(void)
    fprintf(debug_file, "-> libz version %s\n", zlibVersion());
    #ifdef HAVE_PCRE
    fprintf(debug_file, "-> libpcre version %s\n", pcre_version());
+   #endif
+   #ifdef HAVE_PCRE2
+   if(EC_TOSTRING(PCRE2_PRERELEASE)[1] == 0)
+       fprintf(debug_file, "-> libpcre2 version %s.%s %s\n", EC_TOSTRING(PCRE2_MAJOR), EC_TOSTRING(PCRE2_MINOR), EC_TOSTRING(PCRE2_DATE));
+   else
+       fprintf(debug_file, "-> libpcre2 version %s.%s %s %s\n", EC_TOSTRING(PCRE2_MAJOR), EC_TOSTRING(PCRE2_MINOR), EC_TOSTRING(PCRE2_PRERELEASE), EC_TOSTRING(PCRE2_DATE));
    #endif
    #ifdef HAVE_EC_LUA
 	ec_lua_print_version(debug_file);

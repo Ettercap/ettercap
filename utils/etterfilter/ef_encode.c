@@ -25,11 +25,6 @@
 
 #include <ctype.h>
 
-#include <regex.h>
-#ifdef HAVE_PCRE
-   #include <pcre.h>
-#endif
-
 /* protos */
 
 static char ** decode_args(char *args, int *nargs);
@@ -222,12 +217,20 @@ int encode_function(char *string, struct filter_op *fop)
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
    } else if (!strcmp(name, "pcre_regex")) {
-#ifndef HAVE_PCRE
+#if !defined HAVE_PCRE && !defined HAVE_PCRE2
       WARNING("The script contains pcre_regex, but you don't have support for it.");
 #else
-      pcre *pregex;
+
+#ifdef HAVE_PCRE2
+      int errbuf;
+      pcre2_code *pregex;
+      PCRE2_SIZE erroff;
+#else
       const char *errbuf = NULL;
+      pcre *pregex;
       int erroff;
+#endif
+
       
       if (nargs == 2) {
                      
@@ -243,11 +246,27 @@ int encode_function(char *string, struct filter_op *fop)
             SCRIPT_ERROR("Unknown offset %s ", dec_args[0]);
 
          /* check if the pcre is valid */
+#ifdef HAVE_PCRE2
+         pregex = pcre2_compile(fop->op.func.string, 0, 0, &errbuf, &erroff, NULL );
+#else
          pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
-         if (pregex == NULL)
-            SCRIPT_ERROR("%s\n", errbuf);
+#endif
 
+         if (pregex == NULL)
+         {
+#ifdef HAVE_PCRE2
+            PCRE2_UCHAR buffer[256];
+            pcre2_get_error_message(errbuf, buffer, sizeof(buffer));
+            SCRIPT_ERROR("%s\n", buffer);
+#else
+            SCRIPT_ERROR("%s\n", errbuf);
+#endif
+         }
+#ifdef HAVE_PCRE2
+         pcre2_code_free(pregex);
+#else
          pcre_free(pregex);
+#endif
       } else if (nargs == 3) {
             
          fop->opcode = FOP_FUNC;
@@ -261,11 +280,27 @@ int encode_function(char *string, struct filter_op *fop)
          ret = E_SUCCESS;
          
          /* check if the pcre is valid */
+#ifdef HAVE_PCRE2
+         pregex = pcre2_compile(fop->op.func.string, 0, 0, &errbuf, &erroff, NULL );
+#else
          pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
+#endif
          if (pregex == NULL)
+         {
+#ifdef HAVE_PCRE2
+            PCRE2_UCHAR buffer[256];
+            pcre2_get_error_message(errbuf, buffer, sizeof(buffer));
+            SCRIPT_ERROR("%s\n", buffer);
+#else
             SCRIPT_ERROR("%s\n", errbuf);
+#endif
+         }
 
+#ifdef HAVE_PCRE2
+         pcre2_code_free(pregex);
+#else
          pcre_free(pregex);
+#endif
       } else
          SCRIPT_ERROR("Wrong number of arguments for function \"%s\" ", name);
 #endif

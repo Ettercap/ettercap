@@ -29,12 +29,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <regex.h>
-#ifdef HAVE_PCRE
-   #include <pcre.h>
-#endif
-
-
 #define JIT_FAULT(x, ...) do { USER_MSG("JIT FILTER FAULT: " x "\n", ## __VA_ARGS__); return -E_FATAL; } while(0)
 
 /* since we need a recursive mutex, we cannot initialize it here statically */
@@ -566,25 +560,38 @@ static int func_regex(struct filter_op *fop, struct packet_object *po)
  */
 static int func_pcre(struct filter_op *fop, struct packet_object *po)
 {
-#ifndef HAVE_PCRE
+#if !defined HAVE_PCRE && !defined HAVE_PCRE2
    (void) fop;
    (void) po;
    JIT_FAULT("pcre_regex support not compiled in ettercap");
    return -E_NOTFOUND;
 #else
+#ifdef HAVE_PCRE2
+   PCRE2_SIZE *ovec;
+   pcre2_match_data *match_data;
+#else
    int ovec[PCRE_OVEC_SIZE];
+   memset(&ovec, 0, sizeof(ovec));
+#endif
    int ret;
    
    DEBUG_MSG("filter engine: func_pcre");
-   
-   memset(&ovec, 0, sizeof(ovec));
    
    switch (fop->op.func.level) {
       case 5:
          
          /* search in the real packet */
+#ifdef HAVE_PCRE2
+         match_data = pcre2_match_data_create_from_pattern(fop->op.func.ropt->pregex, NULL);
+         if ( (ret = pcre2_match(fop->op.func.ropt->pregex, (PCRE2_SPTR)po->DATA.data, po->DATA.len, 0, 0, match_data, NULL)) < 0)
+#else
          if ( (ret = pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.data, po->DATA.len, 0, 0, ovec, sizeof(ovec) / sizeof(*ovec))) < 0)
+#endif
             return -E_NOTFOUND;
+
+#ifdef HAVE_PCRE2
+         pcre2_match_data_free(match_data);
+#endif
 
          /* the pcre wants to modify the packet */
          if (fop->op.func.replace) {
@@ -614,6 +621,9 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
             }
             /* now: i = strlen(q) */
 
+#ifdef HAVE_PCRE2
+            ovec = pcre2_get_ovector_pointer(match_data);
+#endif
             SAFE_CALLOC(replaced, markers*(ovec[1]-ovec[0]) + i + 1, sizeof(char));
           
             po->flags |= PO_MODIFIED;
@@ -672,7 +682,11 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
              */
             int size_left = po->DATA.len - ovec[0] - slen;
             int data_left = po->DATA.len - ovec[1];
+#ifdef HAVE_PCRE2
+            DEBUG_MSG("func_pcre: match from %ld to %ld, substitution length is %d\n", ovec[0], ovec[1], slen);
+#else
             DEBUG_MSG("func_pcre: match from %d to %d, substitution length is %d\n", ovec[0], ovec[1], slen);
+#endif
             DEBUG_MSG("func_pcre: packet size changed by %d bytes\n", delta);
             if (delta != 0) {
                /* copy everything behind the matched string to the new position */
@@ -691,8 +705,17 @@ static int func_pcre(struct filter_op *fop, struct packet_object *po)
          break;
       case 6:
          /* search in the decoded one */
+#ifdef HAVE_PCRE2
+         match_data = pcre2_match_data_create_from_pattern(fop->op.func.ropt->pregex, NULL);
+         if ( pcre2_match(fop->op.func.ropt->pregex, (PCRE2_SPTR)po->DATA.disp_data, po->DATA.disp_len, 0, 0, match_data, NULL) < 0)
+#else
          if ( pcre_exec(fop->op.func.ropt->pregex, fop->op.func.ropt->preg_extra, po->DATA.disp_data, po->DATA.disp_len, 0, 0, NULL, 0) < 0)
+#endif
             return -E_NOTFOUND;
+
+#ifdef HAVE_PCRE2
+         pcre2_match_data_free(match_data);
+#endif
          break;
       default:
          JIT_FAULT("unsupported pcre_regex level [%d]", fop->op.func.level);
@@ -1395,10 +1418,13 @@ void filter_unload(struct filter_list **list)
                break;
                
             case FFUNC_PCRE:
-               #ifdef HAVE_PCRE
-               pcre_free(fop[i].op.func.ropt->pregex);
-               pcre_free(fop[i].op.func.ropt->preg_extra);
-               SAFE_FREE(fop[i].op.func.ropt);
+               #ifdef HAVE_PCRE2
+                  pcre2_code_free(fop[i].op.func.ropt->pregex);
+                  SAFE_FREE(fop[i].op.func.ropt);
+               #else
+                  pcre_free(fop[i].op.func.ropt->pregex);
+                  pcre_free(fop[i].op.func.ropt->preg_extra);
+                  SAFE_FREE(fop[i].op.func.ropt);
                #endif               
                break;
          }
@@ -1482,9 +1508,12 @@ static int compile_regex(struct filter_env *fenv)
    size_t i = 0;
    struct filter_op *fop = fenv->chain;
    char errbuf[100];
-   int err;
-#ifdef HAVE_PCRE
+#ifdef HAVE_PCRE2
+   int perrbuf;
+   PCRE2_SIZE err;
+#else
    const char *perrbuf = NULL;
+   int err;
 #endif
      
    /* parse all the instruction */ 
@@ -1508,7 +1537,21 @@ static int compile_regex(struct filter_env *fenv)
                break;
                
             case FFUNC_PCRE:
-               #ifdef HAVE_PCRE
+               #ifdef HAVE_PCRE2
+
+               /* alloc the structure */
+               SAFE_CALLOC(fop[i].op.func.ropt, 1, sizeof(struct regex_opt));
+
+               /* prepare the regex (with default option) */
+               fop[i].op.func.ropt->pregex = pcre2_compile(fop[i].op.func.string, 0, 0, &perrbuf, &err, NULL );
+               if (fop[i].op.func.ropt->pregex == NULL)
+               {
+                  PCRE2_UCHAR buffer[256];
+                  pcre2_get_error_message(err, buffer, sizeof(buffer));
+                  FATAL_MSG("filter engine: %s\n", buffer);
+               }
+
+               #else
 
                /* alloc the structure */
                SAFE_CALLOC(fop[i].op.func.ropt, 1, sizeof(struct regex_opt));

@@ -33,8 +33,6 @@
 #include <ec_sleep.h>
 #include <ec_redirect.h>
 
-#include <pcre.h>
-
 #ifndef HAVE_STRNDUP
 #include <missing/strndup.h>
 #endif
@@ -148,7 +146,12 @@ static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int main_fd, main_fd6;
 static struct pollfd poll_fd[2];
 static u_int16 bind_port;
+#ifdef HAVE_PCRE
 static pcre *https_url_pcre;
+#endif
+#ifdef HAVE_PCRE2
+static pcre2_code *https_url_pcre;
+#endif
 static regex_t find_cookie_re;
 
 /* protos */
@@ -214,8 +217,13 @@ int plugin_load(void *handle)
 
 static int sslstrip_init(void *dummy)
 {
+#ifdef HAVE_PCRE2
+    int error;
+    PCRE2_SIZE erroroffset;
+#else
    const char *error;
    int erroroffset;
+#endif
    int err;
    char errbuf[100];
 
@@ -230,10 +238,21 @@ static int sslstrip_init(void *dummy)
       return PLUGIN_FINISHED;
    }
 
+#ifdef HAVE_PCRE2
+   https_url_pcre = pcre2_compile(URL_PATTERN, PCRE2_MULTILINE|PCRE2_CASELESS, 0, &error, &erroroffset, NULL);
+#else
    https_url_pcre = pcre_compile(URL_PATTERN, PCRE_MULTILINE|PCRE_CASELESS, &error, &erroroffset, NULL);
+#endif
 
    if (!https_url_pcre) {
+#ifdef HAVE_PCRE2
+      PCRE2_UCHAR buffer[256];
+      pcre2_get_error_message(error, buffer, sizeof(buffer));
+      USER_MSG("SSLStrip: plugin load failed: pcre_compile failed (offset: %d), %s\n", erroroffset, buffer);
+#else
       USER_MSG("SSLStrip: plugin load failed: pcre_compile failed (offset: %d), %s\n", erroroffset, error);
+#endif
+
       ec_redirect(EC_REDIR_ACTION_REMOVE, "http", EC_REDIR_PROTO_IPV4,
             NULL, 80, bind_port);
 #ifdef WITH_IPV6
@@ -248,7 +267,12 @@ static int sslstrip_init(void *dummy)
    if (err) {
       regerror(err, &find_cookie_re, errbuf, sizeof(errbuf));
       USER_MSG("SSLStrip: plugin load failed: Could not compile find_cookie regex: %s (%d)\n", errbuf, err);
+#ifdef HAVE_PCRE2
+      pcre2_code_free(https_url_pcre);
+#else
       pcre_free(https_url_pcre);
+#endif
+
       ec_redirect(EC_REDIR_ACTION_REMOVE, "http" , EC_REDIR_PROTO_IPV4,
             NULL, 80, bind_port);
 #ifdef WITH_IPV6

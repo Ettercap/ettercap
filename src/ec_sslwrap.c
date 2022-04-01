@@ -419,6 +419,7 @@ static void sslw_hook_handled(struct packet_object *po)
       memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
       session_put(s);
 #else
+      SAFE_FREE(s->data);
       SAFE_FREE(s); /* Just get rid of it */
 #endif
    } else /* Pass only the SYN for conntrack */

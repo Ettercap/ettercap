@@ -1,4 +1,4 @@
-if(HAVE_PCRE)
+if(HAVE_PCRE OR HAVE_PCRE2)
   if(CURL_FOUND)
     add_library(sslstrip MODULE sslstrip/sslstrip.c)
     include_directories(${CURL_INCLUDE_DIR} ${PCRE_INCLUDE_DIR})

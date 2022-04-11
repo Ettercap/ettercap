@@ -316,7 +316,11 @@ static int sslstrip_fini(void *dummy)
 
    // Free regexes.
    if (https_url_pcre)
-     pcre_free(https_url_pcre);
+#ifdef HAVE_PCRE2
+      pcre2_code_free(https_url_pcre);
+#else
+      pcre_free(https_url_pcre);
+#endif
 
    regfree(&find_cookie_re);
 
@@ -1111,7 +1115,12 @@ static void http_remove_https(struct http_connection *connection)
    struct https_link *l, *link;
    size_t offset = 0;
    int rc;
+#ifdef HAVE_PCRE2
+   PCRE2_SIZE *ovector;
+   pcre2_match_data *match_data;
+#else
    int ovector[30];
+#endif
    char changed = 0;
    char *new_html, *url;
    size_t new_size = 0;
@@ -1124,7 +1133,17 @@ static void http_remove_https(struct http_connection *connection)
    SAFE_CALLOC(new_html, 1, connection->response->len);
    BUG_IF(new_html==NULL);
 
+#ifdef HAVE_PCRE2
+   match_data = pcre2_match_data_create_from_pattern(https_url_pcre, NULL);
+   while(offset < size && (rc = pcre2_match(https_url_pcre, (PCRE2_SPTR)buf_cpy, size, offset, 0, match_data, NULL)) > 0) {
+#else
    while(offset < size && (rc = pcre_exec(https_url_pcre, NULL, buf_cpy, size, offset, 0, ovector, 30)) > 0) {
+#endif
+
+#ifdef HAVE_PCRE2
+      ovector = pcre2_get_ovector_pointer(match_data);
+#endif
+
       match_start = ovector[0];
       match_end = ovector[1];
 
@@ -1185,6 +1204,9 @@ static void http_remove_https(struct http_connection *connection)
          changed=1;
    }
 
+#ifdef HAVE_PCRE2
+   pcre2_match_data_free(match_data);
+#endif
    
    if (changed) {
       //Copy rest of data (if any)

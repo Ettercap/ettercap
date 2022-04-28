@@ -247,7 +247,7 @@ int encode_function(char *string, struct filter_op *fop)
 
          /* check if the pcre is valid */
 #ifdef HAVE_PCRE2
-         pregex = pcre2_compile(fop->op.func.string, 0, 0, &errbuf, &erroff, NULL );
+         pregex = pcre2_compile(fop->op.func.string, PCRE2_MULTILINE|PCRE2_CASELESS|PCRE2_ZERO_TERMINATED, 0, &errbuf, &erroff, NULL );
 #else
          pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
 #endif
@@ -281,7 +281,7 @@ int encode_function(char *string, struct filter_op *fop)
          
          /* check if the pcre is valid */
 #ifdef HAVE_PCRE2
-         pregex = pcre2_compile(fop->op.func.string, 0, 0, &errbuf, &erroff, NULL );
+         pregex = pcre2_compile(fop->op.func.string, PCRE2_MULTILINE|PCRE2_CASELESS|PCRE2_ZERO_TERMINATED, 0, &errbuf, &erroff, NULL );
 #else
          pregex = pcre_compile(fop->op.func.string, 0, &errbuf, &erroff, NULL );
 #endif

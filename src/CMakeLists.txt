@@ -125,6 +125,10 @@ set(EC_SRC
     protocols/ec_wifi_radiotap.c
 )
 
+if(ENABLE_UPDATE)
+  set(EC_SRC ${EC_SRC} ec_update.c)
+endif()
+
 if(HAVE_GEOIP)
   set(EC_SRC ${EC_SRC} ec_geoip.c)
 endif()

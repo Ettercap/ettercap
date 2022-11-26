@@ -6,8 +6,10 @@ EC_API_EXTERN int fingerprint_search(const char *f, char *dst);
 EC_API_EXTERN void fingerprint_default(char *finger);
 EC_API_EXTERN void fingerprint_push(char *finger, int param, int value);
 EC_API_EXTERN u_int8 TTL_PREDICTOR(u_int8 x);
-EC_API_EXTERN int fingerprint_submit(const char *finger, char *os);
+EC_API_EXTERN int fingerprint_submit(char* host, char* page, const char *finger, const char *os);
 
+#define DEFAULT_HOST "https://www.ettercap-project.org"
+#define DEFAULT_PAGE "fingerprint.php"
 
 /*
  *  The fingerprint database has the following structure:                  
@@ -36,6 +38,8 @@ EC_API_EXTERN int fingerprint_submit(const char *finger, char *os);
 enum {
    FINGER_LEN = 28,
    OS_LEN     = 60,
+   HOST_LEN   = 100,
+   PAGE_LEN   = 100,
    FINGER_WINDOW     = 0,
    FINGER_MSS        = 5,
    FINGER_TTL        = 10,

@@ -1,0 +1,29 @@
+
+################################
+# microsoft sucks ;)
+# redirect it to www.linux.org
+#
+
+microsoft.com      A   198.182.196.56
+*.microsoft.com    A   198.182.196.56
+www.microsoft.com  PTR 198.182.196.56      # Wildcards in PTR are not allowed
+
+##########################################
+# normally .local is dedicated use for mDNS
+# try to redirect the router admin
+
+router.local       A    192.168.0.25
+router.local       AAAA 2001:db8::25       # our router supports also IPv6
+router.local       PTR  192.168.0.25
+router.local       PTR  2001:db8::25
+
+
+###############################################
+# some service discovery examples
+
+xmpp-server._tcp.jabber.org SRV 192.168.1.10:5269     
+domain._udp.local SRV [2001:db8:c001:beef::1]:53   
+
+
+
+# vim:ts=8:noexpandtab

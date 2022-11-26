@@ -23,6 +23,13 @@ if (ip.proto == TCP) {
 }
 
 
+# log all IEC 61850 traffic when the destination ip is 192.168.1.2
+if (ip.dst == '192.168.1.2' && tcp.src == 102) {
+      log(DATA.data, "./logfile.log");
+}
+# tip: if you get "filter engine: Cannot open file ./logfile.log" error, just chmod -R 777 ./logfile.log and run the filter again.
+
+
 # log all telnet traffic, also execute ./program on every packet
 if (ip.proto == TCP) {
    if (tcp.src == 23 || tcp.dst == 23) {
@@ -38,8 +45,14 @@ if (ip.proto == TCP && tcp.src != 80 && tcp.dst != 80) {
 }
 
 
+# log all traffic except http
+if (ip.proto == TCP && tcp.src != 80 && tcp.dst != 80) {
+   log(DATA.data, "./logfile.log");
+}
+
+
 # some operation on the payload of the packet
-if ( DATA.data + 20 == 0x4142 ) {
+if (DATA.data + 20 == 0x4142) {
    DATA.data + 20 = 0x4243;
 } else {
    DATA.data = "modified";
@@ -76,7 +89,7 @@ if (eth.proto == IP6 && ipv6.hl < 5) {
 
 # string comparison at a given offset
 if (DATA.data + 40 == "ette") {
-   log(DATA.data, "./logfile");
+   log(DATA.data, "./logfile.log");
 }
 
 # inject a file after a specific packet
@@ -84,10 +97,10 @@ if (tcp.src == 21 && search(DATA.data, "root")) {
    inject("./fake_response");
 }
 
-# replace the entire packet with another
+# replace the entire packet with another log file
 if (tcp.src == 23 && search(DATA.data, "microsoft")) {
    drop();
-   inject("./fake_telnet");
+   inject("./logfile.log");
 }
 
 # Modifying binary data by using external commands

@@ -1,3 +1,4 @@
 #!/bin/sh
+./autogen.sh
 ./configure --disable-shared --disable-samples --enable-static --prefix="@LIBNET_PREFIX@" --includedir="@LIBNET_INCLUDE_DIR@" --libdir="@LIBNET_LIB_DIR@"
 

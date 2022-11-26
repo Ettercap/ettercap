@@ -4,7 +4,7 @@
 LANGUAGE            0x09,0x01
 ETTERCAP_ICON ICON  "contrib/nsis/eNG.ico"
 
-#define RC_VERSION  EC_VERSION_MAJOR, EC_VERSION_MINOR, EC_VERSION_REVISION, 0
+#define RC_VERSION  EC_VERSION_MAJOR, EC_VERSION_MINOR, EC_VERSION_REVISION, EC_VERSION_SUBREVISION, 0
 
 VS_VERSION_INFO VERSIONINFO
   FILEVERSION     RC_VERSION
@@ -24,7 +24,7 @@ BEGIN
   BEGIN
     BLOCK "040904b0"
     BEGIN
-      VALUE "CompanyName",      "The EtterCap community, http://ettercap.sourceforge.net/\0"
+      VALUE "CompanyName",      "The EtterCap community, https://www.ettercap-project.org\0"
       VALUE "FileDescription",  "EtterCap sniffer\0"
       VALUE "FileVersion",      EC_VERSION "\0"
       VALUE "InternalName",     "ettercap-NG\0"

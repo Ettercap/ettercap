@@ -1,0 +1,64 @@
+############################################################################
+#                                                                          #
+#  ettercap -- etter.dns -- host file for dns_spoof plugin                 #
+#                                                                          #
+#  Copyright (C) ALoR & NaGA                                               #
+#                                                                          #
+#  This program is free software; you can redistribute it and/or modify    #
+#  it under the terms of the GNU General Public License as published by    #
+#  the Free Software Foundation; either version 2 of the License, or       #
+#  (at your option) any later version.                                     #
+#                                                                          #
+############################################################################
+#                                                                          #
+# Sample hosts file for dns_spoof plugin                                   #
+#                                                                          #
+# the format is (for A query):                                             #
+#   www.myhostname.com A 168.11.22.33 3600                                 #
+#   *.foo.com          A 168.44.55.66 [optional TTL]                       #
+#                                                                          #
+# ... for a AAAA query (same hostname allowed):                            #
+#   www.myhostname.com AAAA 2001:db8::1                                    #
+#   *.foo.com          AAAA 2001:db8::2 [optional TTL]                     #
+#                                                                          #
+# or to skip a protocol family (useful with dual-stack):                   #
+#   www.hotmail.com    AAAA ::                                             #
+#   www.yahoo.com      A    0.0.0.0                                        #
+#                                                                          #
+# or for PTR query:                                                        #
+#   www.bar.com    PTR 10.0.0.10 [TTL]                                     #
+#   www.google.com PTR ::1 [TTL]                                           #
+#                                                                          #
+# or for MX query (either IPv4 or IPv6):                                   #
+#    domain.com MX xxx.xxx.xxx.xxx [TTL]                                   #
+#    domain2.com MX xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx                #
+#    domain3.com MX xxxx:xxxx::y                                           #
+#                                                                          #
+# or for WINS query:                                                       #
+#    workgroup WINS 127.0.0.1 [TTL]                                        #
+#    PC*       WINS 127.0.0.1                                              #
+#                                                                          #
+# or for SRV query (either IPv4 or IPv6):                                  #
+#    service._tcp|_udp.domain SRV 192.168.1.10:port [TTL]                  #
+#    service._tcp|_udp.domain SRV [2001:db8::3]:port                       #
+#                                                                          #
+# or for TXT query (value must be wrapped in double quotes):               #
+#    google.com TXT "v=spf1 ip4:192.168.0.3/32 ~all" [TTL]                 #
+#                                                                          #
+# NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
+#       so if you want to reverse poison you have to specify a plain       #
+#       host. (look at the www.microsoft.com example)                      #
+#                                                                          #
+# NOTE: wildcard names should be defined first otherwise they will shadow  #
+#       the more specific names of the same domain.                        #
+#                                                                          #
+# NOTE: Default DNS TTL is 3600s (1 hour). All TTL fields are optional.    #
+#                                                                          #
+# NOTE: IPv6 specific do not work because ettercap has been built without  #
+#       IPv6 support. Therefore the IPv6 specific examples has been        #
+#       commented out to avoid ettercap throwing warnings during startup.  #
+#                                                                          #
+############################################################################
+
+
+# vim:ts=8:noexpandtab

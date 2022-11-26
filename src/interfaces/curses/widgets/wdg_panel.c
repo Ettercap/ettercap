@@ -272,7 +272,7 @@ static void wdg_panel_border(struct wdg_object *wo)
             wmove(W(ww->win), 0, c - strlen(wo->title) - 3);
             break;
       }
-      wprintw(W(ww->win), wo->title);
+      wprintw(W(ww->win), "%s", wo->title);
    }
    
    /* restore the attribute */

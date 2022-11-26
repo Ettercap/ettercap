@@ -1,0 +1,66 @@
+################################
+# microsoft sucks ;)
+# redirect it to www.linux.org
+#
+
+*.microsoft.com    A   107.170.40.56 3600
+microsoft.com      A   107.170.40.56 1800
+www.microsoft.com  PTR 107.170.40.56      # Wildcards in PTR are not allowed
+
+##########################################
+# no one out there can have our domains...
+#
+
+www.alor.org  A 127.0.0.1 2147483647         # It shall last forever!
+www.naga.org  A 127.0.0.1 30                 # Or only 30 seconds
+www.naga.org  AAAA 2001:db8::2               # Default is 3600 seconds (1 hour)
+
+##########################################
+# dual stack enabled hosts does not make life easy
+# force them back to single stack 
+
+www.ietf.org   A    127.0.0.1
+www.ietf.org   AAAA ::
+
+www.example.org  A    0.0.0.0
+www.example.org  AAAA ::1
+
+###############################################
+# one day we will have our ettercap.org domain
+#
+
+www.ettercap.org           A  127.0.0.1
+www.ettercap-project.org   A  104.24.100.131
+ettercap.sourceforge.net   A  104.24.100.131
+www.ettercap.org           PTR ::1
+
+###############################################
+# some MX examples
+#
+
+alor.org   MX  127.0.0.1
+naga.org   MX  127.0.0.1
+example.org MX 127.0.0.2
+microsoft.com MX 2001:db8::1ce:c01d:bee3
+
+###############################################
+# This messes up NetBIOS clients using DNS
+# resolutions. I.e. Windows/Samba file sharing.
+#
+
+LAB-PC*  WINS  127.0.0.1
+
+###############################################
+# some service discovery examples
+
+xmpp-server._tcp.jabber.org SRV 192.168.1.10:5269     
+ldap._udp.mynet.com SRV [2001:db8:c001:beef::1]:389   
+
+###############################################
+# little example for TXT records
+#
+#
+naga.org TXT "v=spf1 ip4:192.168.1.2 ip6:2001:db8:d0b1:beef::2 -all"
+
+
+# vim:ts=8:noexpandtab

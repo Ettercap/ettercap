@@ -53,6 +53,7 @@
 #cmakedefine WITH_IPV6
 #cmakedefine HAVE_GEOIP
 #cmakedefine HAVE_EC_LUA
+#cmakedefine HAVE_CURL
 
 #cmakedefine INSTALL_PREFIX         "@INSTALL_PREFIX@"
 #cmakedefine INSTALL_SYSCONFDIR     "@INSTALL_SYSCONFDIR@"

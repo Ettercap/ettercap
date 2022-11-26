@@ -103,6 +103,7 @@ void disable_ipv6_forward(void)
    FILE *fd;
    char fpath_global[] = "/proc/sys/net/ipv6/conf/all/forwarding";
    char fpath_iface[64];
+   char *iface, *end;
    
    /* global configuration */
    fd = fopen(fpath_global, "r");
@@ -111,8 +112,13 @@ void disable_ipv6_forward(void)
    fscanf(fd, "%c", &saved_status_v6_global);
    fclose(fd);
 
+   /* early terminate interface name if sub-interface is provided e.g. eth0:0 */
+   iface = strdup(EC_GBL_OPTIONS->iface);
+   if ((end = strchr(iface, ':')))
+      *end = 0;
+
    /* interface specific configuration */
-   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", EC_GBL_OPTIONS->iface);
+   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", iface);
 
    fd = fopen(fpath_iface, "r");
    ON_ERROR(fd, NULL, "failed to open %s", fpath_iface);
@@ -133,8 +139,9 @@ void disable_ipv6_forward(void)
    fclose(fd);
 
    DEBUG_MSG("disable_ipv6_forward: old value = %c/%c (global/interface %s)", 
-         saved_status_v6_global, saved_status_v6_iface, EC_GBL_OPTIONS->iface);
+         saved_status_v6_global, saved_status_v6_iface, iface);
  
+   SAFE_FREE(iface);
    
    atexit(restore_ipv6_forward);
 }
@@ -145,6 +152,7 @@ void restore_ipv6_forward(void)
    char current_status_global, current_status_iface;
    char fpath_global[] = "/proc/sys/net/ipv6/conf/all/forwarding";
    char fpath_iface[64];
+   char *iface, *end;
    
    /* no modification needed */
    if (saved_status_v6_global == '0' && saved_status_v6_iface == '0')
@@ -165,8 +173,13 @@ void restore_ipv6_forward(void)
    fscanf(fd, "%c", &current_status_global);
    fclose(fd);
    
+   /* early terminate interface name if sub-interface is provided e.g. eth0:0 */
+   iface = strdup(EC_GBL_OPTIONS->iface);
+   if ((end = strchr(iface, ':')))
+      *end = 0;
+
    /* interface specific configuration */
-   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", EC_GBL_OPTIONS->iface);
+   snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/forwarding", iface);
 
    fd = fopen(fpath_iface, "r");
    ON_ERROR(fd, NULL, "failed to open %s", fpath_iface);
@@ -176,7 +189,7 @@ void restore_ipv6_forward(void)
    
    DEBUG_MSG("ATEXIT: restore_ipv6_forward: curr: %c/%c saved: %c/%c (global/interface %s)", 
          current_status_global, current_status_iface, 
-         saved_status_v6_global, saved_status_v6_iface, EC_GBL_OPTIONS->iface);
+         saved_status_v6_global, saved_status_v6_iface, iface);
 
    if (current_status_global == saved_status_v6_global && 
          current_status_iface == saved_status_v6_iface) {
@@ -202,11 +215,13 @@ void restore_ipv6_forward(void)
       fclose(fd);
 
       DEBUG_MSG("ATEXIT: restore_ipv6_forward: restore %s to %c", 
-            EC_GBL_OPTIONS->iface, saved_status_v6_iface);
+            iface, saved_status_v6_iface);
    } else {
       FATAL_ERROR("interface ipv6_forwarding was disabled, but we cannot re-enable it now.\n"
                   "remember to re-enable it manually\n");
    }
+
+   SAFE_FREE(iface);
 
 }
 #endif
@@ -303,12 +318,18 @@ void disable_interface_offload(void)
  * however investigation of the root cause continues but as long as 
  * it isn't identified and fixed, this function is being kept.
  */
-void check_tempaddr(const char *iface)
+void check_tempaddr(const char *interface)
 {
    FILE *fd;
    int mode_global, mode_iface;
    char fpath_global[] = "/proc/sys/net/ipv6/conf/all/use_tempaddr";
    char fpath_iface[64];
+   char *iface, *end;
+
+   /* early terminate interface name if sub-interface is provided e.g. eth0:0 */
+   iface = strdup(interface);
+   if ((end = strchr(iface, ':')))
+      *end = 0;
 
    snprintf(fpath_iface, 63, "/proc/sys/net/ipv6/conf/%s/use_tempaddr", iface);
    
@@ -339,6 +360,8 @@ void check_tempaddr(const char *iface)
    if (mode_iface != '0')
       USER_MSG("Ettercap might not work correctly. %s is not set to 0.\n", 
             fpath_iface);
+
+   SAFE_FREE(iface);
 
 }
 #endif

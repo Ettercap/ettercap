@@ -4,7 +4,7 @@ $ mkdir build
 $ cd build
 $ cmake ../
 $ make
-$ make install
+$ sudo make install
 
 If the build fails because you're missing a dependency:
 
@@ -12,15 +12,15 @@ $ (Install any missing dependencies.)
 $ make clean-all
 $ cmake ../
 $ make
-$ make install
+$ sudo make install
 
 
 #### Bundled libraries
 Ettercap now bundles the following libraries with the source distribution:
-  libnet 1.1.6
-  curl 7.44.0
-  luajit 2.0.4
-  check 0.10.0
+  libnet 1.2
+  curl 7.71.1
+  luajit 2.0.5
+  check 0.15.0
 
 
 We will build bundled libraries that Ettercap depends upon, so you 

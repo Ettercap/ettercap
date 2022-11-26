@@ -24,6 +24,9 @@
 #include <ec_file.h>
 #include <ec_socket.h>
 #include <ec_fingerprint.h>
+#ifdef HAVE_CURL
+   #include <curl/curl.h>
+#endif
 
 #define LOAD_ENTRY(p,h,v) do {                                 \
    SAFE_CALLOC((p), 1, sizeof(struct entry));                  \
@@ -188,7 +191,7 @@ int fingerprint_search(const char *f, char *dst)
    }
 
    if(EC_GBL_CONF->submit_fingerprint)
-   	fingerprint_submit(f, "Unknown");
+   	fingerprint_submit(NULL, NULL, f, "Unknown");
    return -E_NOTFOUND;
 }
 
@@ -220,41 +223,41 @@ void fingerprint_push(char *finger, int param, int value)
    switch (param) {
       case FINGER_WINDOW:
          snprintf(tmp, sizeof(tmp), "%04X", value);
-         strncpy(finger + FINGER_WINDOW, tmp, 5);
+         memcpy(finger + FINGER_WINDOW, tmp, 4);
          break;
       case FINGER_MSS:
          snprintf(tmp, sizeof(tmp), "%04X", value);
-         strncpy(finger + FINGER_MSS, tmp, 5);
+         memcpy(finger + FINGER_MSS, tmp, 4);
          break;
       case FINGER_TTL:
          snprintf(tmp, sizeof(tmp), "%02X", TTL_PREDICTOR(value));
-         strncpy(finger + FINGER_TTL, tmp, 3);
+         memcpy(finger + FINGER_TTL, tmp, 2);
          break;
       case FINGER_WS:
          snprintf(tmp, sizeof(tmp), "%02X", value);
-         strncpy(finger + FINGER_WS, tmp, 3);
+         memcpy(finger + FINGER_WS, tmp, 2);
          break;
       case FINGER_SACK:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + FINGER_SACK, tmp, 2);
+         memcpy(finger + FINGER_SACK, tmp, 1);
          break;
       case FINGER_NOP:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + FINGER_NOP, tmp, 2);
+         memcpy(finger + FINGER_NOP, tmp, 1);
          break;
       case FINGER_DF:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + FINGER_DF, tmp, 2);
+         memcpy(finger + FINGER_DF, tmp, 1);
          break;
       case FINGER_TIMESTAMP:
          snprintf(tmp, sizeof(tmp), "%d", value);
-         strncpy(finger + FINGER_TIMESTAMP, tmp, 2);
+         memcpy(finger + FINGER_TIMESTAMP, tmp, 1);
          break;
       case FINGER_TCPFLAG:
          if (value == 1)
-            strncpy(finger + FINGER_TCPFLAG, "A", 2);
+            memcpy(finger + FINGER_TCPFLAG, "A", 1);
          else
-            strncpy(finger + FINGER_TCPFLAG, "S", 2);
+            memcpy(finger + FINGER_TCPFLAG, "S", 1);
          break;
       case FINGER_LT:
          /*
@@ -264,7 +267,7 @@ void fingerprint_push(char *finger, int param, int value)
           */
          lt_old = strtoul(finger + FINGER_LT, NULL, 16);
          snprintf(tmp, sizeof(tmp), "%02X", value + lt_old);
-         strncpy(finger + FINGER_LT, tmp, 3);
+         memcpy(finger + FINGER_LT, tmp, 2);
          break;                                 
    }
 }
@@ -293,23 +296,86 @@ u_int8 TTL_PREDICTOR(u_int8 x)
 
 /*
  * submit a fingerprint to the ettercap website
+ * Example of php code to intercept the post
+ <?php
+ $file = 'fingerprints.txt';
+ if( isset($_POST['finger']) && isset($_POST['os']) ) {
+   $fingerprint = 'finger is: ' . $_POST['finger'] . ' and os is: ' . $_POST['os'] . PHP_EOL;
+   file_put_contents($file, $fingerprint, FILE_APPEND);
+ }
+?>
+
  */
-int fingerprint_submit(const char *finger, char *os)
+int fingerprint_submit(char* host, char* page, const char *finger, const char *os)
 {
-   int sock;
-   char host[] = "ettercap.sourceforge.net";
-   char page[] = "/fingerprint.php";
-   char getmsg[1024];
+   char postparams[1024];
    char *os_encoded;
    size_t i, os_enclen;
- 
-   memset(getmsg, 0, sizeof(getmsg));
-  
+   char fullpage [ PAGE_LEN + 1 ];
+   char fullurl[HOST_LEN + PAGE_LEN + 2];
+#ifdef HAVE_CURL
+   CURL *curl;
+   CURLcode res;
+#else
+   int sock;
+#endif
+
+   if (strlen(host) == 0)
+      strcpy(host, DEFAULT_HOST);
+
+   if (strlen(page) == 0)
+      strcpy(page, DEFAULT_PAGE);
+
+   if (page[0] != '/')
+      strcpy(fullpage, "/");
+
+   strcat(fullpage, page);
+
+   strcpy(fullurl, host);
+   strcat(fullurl, fullpage);
+
+   memset(postparams, 0, sizeof(postparams));
+
    /* some sanity checks */
-   if (strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
+   if (strlen(host) > HOST_LEN || strlen(fullpage) > PAGE_LEN || strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
       return -E_INVALID;
-   
-   USER_MSG("Connecting to http://%s...\n", host);
+
+   os_encoded = strdup(os);
+   /* sanitize the os (encode the ' ' to '+') */
+   os_enclen = strlen(os_encoded);
+   for (i = 0; i < os_enclen; i++)
+      if (os_encoded[i] == ' ') 
+         os_encoded[i] = '+';
+
+   USER_MSG("Submitting the fingerprint to %s...\n", fullurl);
+
+#ifdef HAVE_CURL
+   curl_global_init(CURL_GLOBAL_ALL);
+   curl = curl_easy_init();
+
+   if (curl) {
+
+      snprintf(postparams, sizeof(postparams), "finger=%s&os=%s", finger, os_encoded);
+      SAFE_FREE(os_encoded);
+
+      curl_easy_setopt(curl, CURLOPT_URL, fullurl);
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postparams);
+
+      res = curl_easy_perform(curl);
+
+      DEBUG_MSG("Post request content is: %s\n", postparams);
+      if (res != CURLE_OK) {
+         USER_MSG("Failed to submit fingerprint: %s\n", curl_easy_strerror(res));
+      } else {
+         USER_MSG("New fingerprint submitted to the remote website...\n");
+      }
+
+      curl_easy_cleanup(curl);
+   }
+
+   curl_global_cleanup();
+
+#else
       
    /* prepare the socket */
    sock = open_socket(host, 80);
@@ -328,34 +394,29 @@ int fingerprint_submit(const char *finger, char *os)
          FATAL_MSG("Error connecting to %s on port 80", host);
          break;
    }
-  
-   os_encoded = strdup(os);
-   /* sanitize the os (encode the ' ' to '+') */
-   os_enclen = strlen(os_encoded);
-   for (i = 0; i < os_enclen; i++)
-      if (os_encoded[i] == ' ') 
-         os_encoded[i] = '+';
-      
+
    /* prepare the HTTP request */
-   snprintf(getmsg, sizeof(getmsg), "POST %s?finger=%s&os=%s HTTP/1.1\r\n"
+   snprintf(postparams, sizeof(postparams), "POST %s HTTP/1.1\r\n"
                                      "Host: %s\r\n"
                                      "Accept: */*\r\n"
                                      "User-Agent: %s (%s)\r\n"
-                                     "\r\n", page, finger, os_encoded, host, EC_GBL_PROGRAM, EC_GBL_VERSION );
+                                     "Content-Length: %zu\r\n"
+                                     "Content-Type: application/x-www-form-urlencoded \r\n\r\n"
+                                     "finger=%s&os=%s\r\n"
+                                     "\r\n", fullpage, host, EC_GBL_PROGRAM, EC_GBL_VERSION, 7 + strlen(finger) + 4 + strlen(os_encoded), finger, os_encoded );
   
    SAFE_FREE(os_encoded);
 
-   USER_MSG("Submitting the fingerprint to %s...\n", page);
-   
    /* send the request to the server */
-   socket_send(sock, (const u_char*)getmsg, strlen(getmsg));
-
-   DEBUG_MSG("fingerprint_submit - SEND \n\n%s\n\n", getmsg);
+   socket_send(sock, (const u_char*)postparams, strlen(postparams));
 
    /* ignore the server response */
    close_socket(sock);
 
-   USER_MSG("New fingerprint submitted to the ettercap website...\n");
+   DEBUG_MSG("Post request content is: %s\n", postparams);
+   USER_MSG("New fingerprint submitted to the remote website...\n");
+
+#endif
 
    return E_SUCCESS;
 }

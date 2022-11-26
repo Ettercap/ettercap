@@ -60,6 +60,7 @@ static int func_replace(struct filter_op *fop, struct packet_object *po);
 static int func_inject(struct filter_op *fop, struct packet_object *po);
 static int func_execinject(struct filter_op *fop, struct packet_object *po);
 static int func_execreplace(struct filter_op *fop, struct packet_object *po);
+static int func_random(struct filter_op *fop, struct packet_object *po);
 static int func_log(struct filter_op *fop, struct packet_object *po);
 static int func_drop(struct packet_object *po);
 static int func_kill(struct packet_object *po);
@@ -236,6 +237,12 @@ static int execute_func(struct filter_op *fop, struct packet_object *po)
             return FLAG_TRUE;
          break;
          
+      case FFUNC_RANDOM:
+         /* replace the string through output of a executable */
+         if (func_random(fop, po) == E_SUCCESS)
+            return FLAG_TRUE;
+         break;
+
       case FFUNC_LOG:
          /* log the packet */
          if (func_log(fop, po) == E_SUCCESS)
@@ -988,6 +995,115 @@ static int func_execreplace(struct filter_op *fop, struct packet_object *po)
    return E_SUCCESS;
 }
 
+
+/*
+ * replace data with a random value
+ */
+static int func_random(struct filter_op *fop, struct packet_object *po)
+{
+   unsigned char *base, *ptr, *end;
+   size_t len = 0, cnt;
+   struct timeval seed;
+   long int rnd;
+
+   DEBUG_MSG("filter engine: func_random()");
+
+   /* check the offensiveness */
+   if (EC_GBL_OPTIONS->unoffensive)
+      JIT_FAULT("Cannot replace packets in unoffensive mode");
+
+   /* define base memory and length */
+   switch (fop->op.test.level) {
+      case 2:
+         /* check if packet contains enough data */
+         if (po->L2.len < fop->op.test.offset + fop->op.test.size) {
+            USER_MSG("filter engine: random(): packet length %d is smaller "
+                  "than the offset to be randomized", po->L2.len);
+            return -E_FATAL;
+         }
+         /* set base and length */
+         base = po->L2.header + fop->op.test.offset;
+         len = fop->op.test.size;
+         break;
+      case 3:
+         /* check if packet contains enough data */
+         if (po->L3.len < fop->op.test.offset + fop->op.test.size) {
+            USER_MSG("filter engine: random(): packet length %d is smaller "
+                  "than the offset to be randomized", po->L3.len);
+            return -E_FATAL;
+         }
+         /* set base and length */
+         base = po->L3.header + fop->op.test.offset;
+         len = fop->op.test.size;
+         break;
+      case 4:
+         /* check if packet contains enough data */
+         if (po->L4.len < fop->op.test.offset + fop->op.test.size) {
+            USER_MSG("filter engine: random(): packet length %d is smaller "
+                  "than the offset to be randomized", po->L4.len);
+            return -E_FATAL;
+         }
+         /* set base and length */
+         base = po->L4.header + fop->op.test.offset;
+         len = fop->op.test.size;
+         break;
+      case 5:
+         base = po->DATA.data;
+         len = po->DATA.len;
+         break;
+      case 6:
+         base = po->DATA.disp_data;
+         len = po->DATA.disp_len;
+         break;
+      default:
+         DEBUG_MSG("filter engine: random(): unsupported level for randomizing");
+         break;
+   }
+
+   /* check if offset advances the available buffer */
+   if (fop->op.func.offset > len) {
+      USER_MSG("filter engine: random(): offset %d advances the available"
+            " buffer of %d bytes - skipping randomization\n",
+            fop->op.func.offset, len);
+      return E_SUCCESS;
+   }
+
+   /* check if enough bytes are available for ranomization offset */
+   if (fop->op.func.offset + fop->op.func.olen > len) {
+      DEBUG_MSG("filter engine: random(): too few bytes (%zu) available to be "
+            "randomized at offset %d(%zu) - truncating\n", len,
+            fop->op.func.offset, fop->op.func.olen);
+      fop->op.func.olen = len - fop->op.func.offset;
+   }
+
+   /* build random seed */
+   gettimeofday(&seed, NULL);
+   srandom(seed.tv_sec ^ seed.tv_usec);
+
+   /* build random data */
+   ptr = base + fop->op.func.offset;
+   end = ptr + fop->op.func.olen;
+   while (ptr < end) {
+      /* define how much bytes from random number to be used */
+      cnt = end - ptr;
+      if (cnt > sizeof(RAND_MAX))
+         cnt = sizeof(RAND_MAX);
+      /* generate random number, replace target and accelerate pointer */
+      rnd = random();
+      memcpy(ptr, &rnd, cnt);
+      ptr += cnt;
+   }
+
+   /* mark the packet as modified */
+   po->flags |= PO_MODIFIED;
+
+   /* unset the flag to be dropped */
+   if (po->flags & PO_DROPPED)
+      po->flags ^= PO_DROPPED;
+
+   return E_SUCCESS;
+
+}
 
 /*
  * log the packet to a file

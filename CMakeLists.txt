@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(ettercap C)
 
-set(VERSION "0.8.3")
+set(VERSION "0.8.4-rc")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
@@ -122,7 +122,7 @@ endif()
 set(PKEXEC_INSTALL_WRAPPER org.pkexec.ettercap CACHE PATH "Name of the pkexec action file")
 set(DESKTOP_DIR ${INSTALL_PREFIX}/share/applications/ CACHE PATH "Desktop file installation directory")
 set(METAINFO_DIR ${INSTALL_PREFIX}/share/metainfo/ CACHE PATH "Metainfo file installation directory")
-set(ICON_DIR ${INSTALL_PREFIX}/share/pixmaps CACHE PATH "Icon file installation directory")
+set(ICON_DIR ${INSTALL_PREFIX}/share/icons/hicolor CACHE PATH "XDG hicolor icon theme installation directory")
 set(MAN_INSTALLDIR ${INSTALL_PREFIX}/share/man CACHE PATH "Path for manual pages")
 
 if(NOT DISABLE_RPATH)
@@ -166,6 +166,10 @@ endif()
 if(ENABLE_LUA)
   include(EttercapLuajit)
   set(HAVE_EC_LUA 1)
+endif()
+
+if(CURL_FOUND)
+  set(HAVE_CURL 1)
 endif()
 
 set(EC_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/include ${CMAKE_SOURCE_DIR}/include ${EC_INCLUDE})

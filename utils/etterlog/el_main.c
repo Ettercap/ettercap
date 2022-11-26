@@ -40,6 +40,8 @@ int main(int argc, char *argv[])
    select_text_interface();
    libettercap_ui_init();
    el_globals_alloc();
+   filter_init_mutex();
+
    /* etterlog copyright */
    USER_MSG("\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
                       PROGRAM, EC_VERSION, EC_COPYRIGHT, EC_AUTHORS);

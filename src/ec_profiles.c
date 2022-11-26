@@ -175,7 +175,13 @@ static int profile_add_host(struct packet_object *po)
    /* We don't need a profile on ourselves, do we? */
    if(!memcmp(&po->L2.src, &EC_GBL_IFACE->mac, MEDIA_ADDR_LEN) ||
       !memcmp(&po->L2.src, &EC_GBL_BRIDGE->mac, MEDIA_ADDR_LEN))
-      return 0;
+      /*
+       * This check does not apply when the packet is subject to SSL
+       * interception as the decrypted packet object is a constructed
+       * packet object w/o L2 info
+       */
+      if (!(po->flags & PO_FROMSSL))
+         return 0;
    
    /* 
     * if the type is FP_HOST_NONLOCAL 

@@ -104,51 +104,63 @@ EC_THREAD_FUNC(capture)
  */
 void capture_getifs(void)
 {
-   pcap_if_t *dev, *pdev, *ndev;
+   pcap_if_t *dev, *pdev, *ndev, *cdev;
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
    
    DEBUG_MSG("capture_getifs");
+
+   /* pointer for the filtered list */
+   pdev = cdev = NULL;
   
-   /* retrieve the list */
-   if (pcap_findalldevs((pcap_if_t **)&EC_GBL_PCAP->ifs, pcap_errbuf) == -1)
+   /* retrieve the list of all interfaces */
+   if (pcap_findalldevs((pcap_if_t **)&EC_GBL_PCAP->allifs, pcap_errbuf) == -1)
       ERROR_MSG("%s", pcap_errbuf);
 
-   /* analize the list and remove unwanted entries */
-   for (pdev = dev = (pcap_if_t *)EC_GBL_PCAP->ifs; dev != NULL; dev = ndev) {
+   /* analyze the list and take over only wanted entries to the filtered list */
+   for (dev = (pcap_if_t *)EC_GBL_PCAP->allifs; dev != NULL; dev = ndev) {
       
       /* the next entry in the list */
       ndev = dev->next;
       
+      /* skip the pseudo device 'any' 'nflog' and 'nfqueue' */
+      /* skip the pseudo device 'dbus-system' and 'dbus-session' shown on mac when ran without sudo*/
+      if (
+            !strcmp(dev->name, "any") ||
+            !strcmp(dev->name, "nflog") ||
+            !strcmp(dev->name, "nfqueue")  ||
+            !strcmp(dev->name, "dbus-system") ||
+            !strcmp(dev->name, "dbus-session")
+         )
+         continue;
+
+      /* take over entry in filtered list */
+      SAFE_CALLOC(cdev, 1, sizeof(pcap_if_t));
+      memcpy(cdev, dev, sizeof(pcap_if_t));
+
       /* set the description for the local loopback */
-      if (dev->flags & PCAP_IF_LOOPBACK) {
-         SAFE_FREE(dev->description);
-         dev->description = strdup("Local Loopback");
+      if (cdev->flags & PCAP_IF_LOOPBACK) {
+         SAFE_FREE(cdev->description);
+         cdev->description = strdup("Local Loopback");
       }
      
       /* fill the empty descriptions */
-      if (dev->description == NULL)
-         dev->description = dev->name;
+      if (cdev->description == NULL)
+         cdev->description = strdup(cdev->name);
 
-      /* remove the pseudo device 'any' 'nflog' and 'nfqueue' */
-      /* remove the pseudo device 'dbus-system' and 'dbus-session' shown on mac when ran without sudo*/
-      if (!strcmp(dev->name, "any") || !strcmp(dev->name, "nflog") || !strcmp(dev->name, "nfqueue")  || !strcmp(dev->name, "dbus-system") || !strcmp(dev->name, "dbus-session")) {
-         /* check if it is the first in the list */
-         if (dev == EC_GBL_PCAP->ifs)
-            EC_GBL_PCAP->ifs = ndev;
-         else
-            pdev->next = ndev;
+      DEBUG_MSG("capture_getifs: [%s] %s", cdev->name, cdev->description);
 
-         SAFE_FREE(dev->name);
-         SAFE_FREE(dev->description);
-         SAFE_FREE(dev);
+      /* reset link to next list element */
+      cdev->next = NULL;
 
-         continue;
-      }
+      /* Safe the head of list of not done already */
+      if (EC_GBL_PCAP->ifs == NULL)
+         EC_GBL_PCAP->ifs = cdev;
+      else /* redefine list link */
+         pdev->next = cdev;
+
+      /* preserve pointer for next run */
+      pdev = cdev;
      
-      /* remember the previous device for the next loop */
-      pdev = dev;
-      
-      DEBUG_MSG("capture_getifs: [%s] %s", dev->name, dev->description);
    }
 
    /* do we have to print the list ? */
@@ -165,6 +177,26 @@ void capture_getifs(void)
       clean_exit(0);
    }
                    
+}
+
+/*
+ * properly free interfaces list from libpcap
+ */
+void capture_freeifs(void)
+{
+   pcap_if_t *dev, *ndev;
+
+   /* first free filtered list entries */
+   for (dev = EC_GBL_PCAP->ifs; dev != NULL; dev = ndev) {
+      /* save the next entry in the list and free memory for the entry */
+      ndev = dev->next;
+      SAFE_FREE(dev->description);
+      SAFE_FREE(dev);
+   }
+
+   /* Finally free the complete data structure using libpcap */
+   if (EC_GBL_PCAP && EC_GBL_PCAP->allifs)
+      pcap_freealldevs(EC_GBL_PCAP->allifs);
 }
 
 /*

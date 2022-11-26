@@ -113,8 +113,8 @@ static int isolate_fini(void *dummy)
    
    /* free the list */
    LIST_FOREACH_SAFE(h, &victims, next, tmp) {
-      SAFE_FREE(h);
       LIST_REMOVE(h, next);
+      SAFE_FREE(h);
    }
    
    return PLUGIN_FINISHED;

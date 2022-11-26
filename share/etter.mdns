@@ -1,0 +1,41 @@
+############################################################################
+#                                                                          #
+#  ettercap -- etter.mdns -- host file for mdns_spoof plugin               #
+#                                                                          #
+#  Copyright (C) ALoR & NaGA                                               #
+#                                                                          #
+#  This program is free software; you can redistribute it and/or modify    #
+#  it under the terms of the GNU General Public License as published by    #
+#  the Free Software Foundation; either version 2 of the License, or       #
+#  (at your option) any later version.                                     #
+#                                                                          #
+############################################################################
+#                                                                          #
+# Sample hosts file for mdns_spoof plugin                                  #
+#                                                                          #
+# the format is (for A query):                                             #
+#   www.myhostname.com A 168.11.22.33                                      #
+#   *.foo.com          A 168.44.55.66                                      #
+#                                                                          #
+# ... for a AAAA query (same hostname allowed):                            #
+#   www.myhostname.com AAAA 2001:db8::1                                    #
+#   *.foo.com          AAAA 2001:db8::2                                    #
+#                                                                          #
+# or for PTR query:                                                        #
+#   www.bar.com    PTR 10.0.0.10                                           #
+#   www.google.com PTR ::1                                                 #
+#                                                                          #
+# or for SRV query (either IPv4 or IPv6):                                  #
+#    service._tcp|_udp.domain SRV 192.168.1.10:port                        #
+#    service._tcp|_udp.domain SRV [2001:db8::3]:port                       #
+#                                                                          #
+# NOTE: the wildcarded hosts can't be used to poison the PTR requests      #
+#       so if you want to reverse poison you have to specify a plain       #
+#       host. (look at the www.microsoft.com example)                      #
+#                                                                          #
+############################################################################
+
+
+
+
+# vim:ts=8:noexpandtab

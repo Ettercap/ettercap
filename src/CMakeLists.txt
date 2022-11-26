@@ -125,7 +125,6 @@ set(EC_SRC
     protocols/ec_wifi_radiotap.c
 )
 
-
 if(HAVE_GEOIP)
   set(EC_SRC ${EC_SRC} ec_geoip.c)
 endif()
@@ -191,6 +190,10 @@ endif()
 add_library(lib_ettercap SHARED ${EC_SRC})
 add_dependencies(lib_ettercap libnet)
 target_link_libraries(lib_ettercap ec_interfaces ${EC_LIBS})
+
+if(CURL_FOUND)
+  target_link_libraries(lib_ettercap ${CURL_LIBRARY})
+endif()
 
 if(NOT LIBRARY_BUILD)
   add_subdirectory(interfaces)

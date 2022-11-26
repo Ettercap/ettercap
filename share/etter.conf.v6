@@ -38,7 +38,7 @@ icmp6_probe_delay = 3         # seconds
 [connections]
 connection_timeout = 300      # seconds
 connection_idle = 5           # seconds
-connection_buffer = 10000     # bytes
+connection_buffer = 10000000  # bytes
 connect_timeout = 5           # seconds
 
 [stats]
@@ -111,11 +111,11 @@ mdns = 5353                # udp    5353
 vnc = 5900,5901,5902,5903  # tcp    5900 5901 5902 5903
 x11 = 6000,6001,6002,6003  # tcp    6000 6001 6002 6003
 irc = 6666,6667,6668,6669  # tcp    6666 6667 6668 6669
-gg = 8074	           # tcp    8074
+gg = 8074                  # tcp    8074
 proxy = 8080               # tcp    8080
 rcon = 27015,27960         # udp    27015 27960
 ppp = 34827                # special case ;) this is the Net Layer code
-TN3270 = 23,992            # tcp    23 992
+TN3270 = 623               # tcp    623
 
 # 
 # you can change the colors of the curses GUI.
@@ -171,6 +171,12 @@ geoip_data_file_v6 = "/usr/local/share/GeoIP/GeoIPv6.dat"
 # or set the ec_uid to 0, in order to be sure the cleanup script will be
 # executed properly
 # NOTE: the script must fit into one line with a maximum of 255 characters
+#
+# IMPORTANT NOTE related to IPv6:
+# Ettercap has been compiled with IPv6 support. That means that you must
+# uncomment the redir6_command_on and redir6_command_off lines as well.
+# It's also important that you have to plan for IPv6 as well for SSL
+# dissection when the underlying network supports both IPv4 and IPv6.
 
 #---------------
 #     Linux 

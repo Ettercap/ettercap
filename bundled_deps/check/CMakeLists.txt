@@ -3,7 +3,7 @@
 # This will build check using the release that we've included with
 # our distribution of ettercap.
 include(ExternalProject)
-set(CHECK_VERSION 0.15.0)
+set(CHECK_VERSION 0.15.2)
 set(CHECK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CHECK_TARGET bundled-check-${CHECK_VERSION}-${CMAKE_BUILD_TYPE})
 set(CHECK_BUILD_ROOT ${CMAKE_CURRENT_BINARY_DIR}/${CHECK_TARGET})

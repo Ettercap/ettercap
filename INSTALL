@@ -20,7 +20,7 @@ Ettercap now bundles the following libraries with the source distribution:
   libnet 1.2
   curl 7.71.1
   luajit 2.0.5
-  check 0.15.0
+  check 0.15.2
 
 
 We will build bundled libraries that Ettercap depends upon, so you 

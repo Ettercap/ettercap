@@ -1,2 +1,10 @@
 #!/bin/sh
+if [ -n "@LIBNET_TIMEB_PATCH@" ]; then
+    patch -fsp1 < "@LIBNET_TIMEB_PATCH@"
+fi
+
+if [ -n "@LIBNET_IN_H_PATCH@" ]; then
+    patch -fsp1 < "@LIBNET_IN_H_PATCH@"
+fi
+
 make PREFIX="@EXPORT_PREFIX@" CFLAGS="@EXPORT_C_FLAGS@" CC="@EXPORT_CC@"

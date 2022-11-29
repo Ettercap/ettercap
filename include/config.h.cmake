@@ -28,6 +28,7 @@
 #cmakedefine HAVE_LIBGEN_H
 
 #cmakedefine HAVE_PCRE
+#cmakedefine HAVE_PCRE2
 #cmakedefine HAVE_POLL
 #cmakedefine HAVE_STRTOK_R
 #cmakedefine HAVE_STRNDUP

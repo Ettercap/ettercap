@@ -273,7 +273,7 @@ example:
 .br
 replace("ethercap", "ettercap")
 .br
-replace("\x00\x00\xa2", "\x00\x01\xa2")
+replace("\\x00\\x00\\xa2", "\\x00\\x01\\xa2")
 
 
 .TP

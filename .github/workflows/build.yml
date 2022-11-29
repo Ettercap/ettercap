@@ -1,0 +1,71 @@
+name: Github Actions for Ettercap
+
+run-name: ${{ github.actor }} is running GitHub Actions 🚀
+
+on: [push]
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    strategy:    
+      matrix:
+        cc: [gcc, clang]
+        os: [ubuntu-20.04, ubuntu-22.04]
+        args: [-DCMAKE_BUILD_TYPE=Release,
+          -DENABLE_PDF_DOCS=ON -DENABLE_IPV6=ON -DENABLE_LUA=ON -DCMAKE_BUILD_TYPE=Debug,
+          -DENABLE_PDF_DOCS=ON -DENABLE_IPV6=ON -DENABLE_LUA=ON -DGTK_BUILD_TYPE=GTK2 -DCMAKE_BUILD_TYPE=Debug,
+          -DENABLE_IPV6=ON -DBUNDLED_LIBNET=OFF -DBUNDLED_CURL=OFF -DBUNDLED_LIBCHECK=OFF -DENABLE_LUA=ON -DBUNDLED_LUAJIT=OFF -DCMAKE_BUILD_TYPE=Debug,
+          -DENABLE_IPV6=ON -DSYSTEM_LIBNET=OFF -DSYSTEM_CURL=OFF -DSYSTEM_LIBCHECK=OFF -DENABLE_LUA=ON -DSYSTEM_LUAJIT=OFF -DCMAKE_BUILD_TYPE=Debug,
+          -DENABLE_GTK=OFF,
+          -DENABLE_CURSES=OFF,
+          -DENABLE_GTK=OFF -DENABLE_CURSES=OFF]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Start worker
+      run: |
+        env
+        echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+        echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+        echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+
+    - name: Check out repository code
+      run: |
+        echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+        echo "🖥️ The workflow is now ready to test your code on the runner."
+
+    - name: Install dependencies
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.cc }} debhelper bison check cmake flex groff libbsd-dev libcurl4-openssl-dev libgtk2.0-dev libidn11-dev librtmp-dev libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev libgtk-3-dev libgeoip-dev
+        fi
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          brew update
+          brew install check curl
+          brew install groff gtk+ gtk+3
+          brew install libidn libnet
+          brew install luajit openssl pcre rtmpdump geoip
+        fi
+
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          VERBOSE=1 cmake -B ${{github.workspace}}/build -DENABLE_TESTS=ON ${{matrix.args}}
+        fi
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          VERBOSE=1 cmake -B ${{github.workspace}}/build -DENABLE_TESTS=ON ${{matrix.args}} -DOPENSSL_ROOT_DIR=`brew --prefix openssl`
+        fi
+    - name: Build
+      # Build your program with the given configuration
+      run: VERBOSE=1 cmake --build ${{github.workspace}}/build --config Debug
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: VERBOSE=1 make -C ${{github.workspace}}/build test_verbose

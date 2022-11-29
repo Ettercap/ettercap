@@ -7,6 +7,10 @@
 #ifdef HAVE_PCRE
    #include <pcre.h>
 #endif
+#ifdef HAVE_PCRE2
+   #define PCRE2_CODE_UNIT_WIDTH 8
+   #include <pcre2.h>
+#endif
 
 /* 
  * this is the struct used by the filtering engine
@@ -130,6 +134,9 @@ struct regex_opt {
 #ifdef HAVE_PCRE
    pcre *pregex;
    pcre_extra *preg_extra;   
+#endif
+#ifdef HAVE_PCRE2
+   pcre2_code *pregex;
 #endif
 };
 

@@ -37,6 +37,10 @@ if(NOT NO_INSTALL_LICENSE)
   set(EC_DATAFILES ${EC_DATAFILES} ../LICENSE)
 endif()
 
+if(HAVE_GEOIP)
+  set(EC_DATAFILES ${EC_DATAFILES} GeoLite2-Country.mmdb)
+endif()
+
 foreach(f IN LISTS EC_DATAFILES EC_CONFFILES)
   configure_file(${f} ${f} COPYONLY)
 endforeach()

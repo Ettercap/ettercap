@@ -155,10 +155,8 @@ utf8_encoding = "ISO-8859-1"
 # the command used by the remote_browser plugin
 remote_browser = "xdg-open http://%host%url"
 
-# location of the GeoIP database file in case it's not the standard location
-# this is mostly necessary on Windows or if libgeoip is manually build
-geoip_data_file = "/usr/local/share/GeoIP/GeoIP.dat"
-geoip_data_file_v6 = "/usr/local/share/GeoIP/GeoIPv6.dat"
+# alternative location of the GeoIP database file
+geoip_data_file = ""
 
 
 #####################################

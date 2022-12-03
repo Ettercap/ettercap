@@ -21,89 +21,77 @@
 
 #include <ec.h>
 #include <ec_geoip.h>
+#include <ec_version.h>
 
 #ifdef HAVE_GEOIP
 
-#include <GeoIP.h>
+#include <maxminddb.h>
 
-static GeoIP *gi  = NULL;
-#ifdef WITH_IPV6
-static GeoIP *gi6 = NULL;
-#endif
+static MMDB_s* mmdb = NULL;
+
+static int geoip_open(const char* filename)
+{
+   int ret;
+
+   ret = MMDB_open(filename, MMDB_MODE_MMAP, mmdb);
+   if (ret != MMDB_SUCCESS) { // Default path to GeoIP Database didn't worked out
+
+      WARN_MSG("geoip_init: MaxMind database file %s cannot be opened: %s",
+            filename, MMDB_strerror(ret));
+
+      if (ret == MMDB_IO_ERROR)
+         DEBUG_MSG("geoip_init: IO Error opening database file '%s': %s",
+            filename, strerror(errno));
+   }
+
+   return ret;
+}
 
 static void geoip_exit (void)
 {
-   GeoIP_delete (gi);
-   gi = NULL;
-#ifdef WITH_IPV6
-   GeoIP_delete(gi6);
-   gi6 = NULL;
-#endif
-   GeoIP_cleanup();
+   MMDB_close(mmdb);
+   SAFE_FREE(mmdb);
 }
 
 void geoip_init (void)
 {
-   char *gi_info;
+   int ret;
+   const char* mmdb_default_file;
+   MMDB_description_s* descr;
 
-   /* try to find and open it in the default location */
-   gi = GeoIP_open_type(GEOIP_COUNTRY_EDITION, GEOIP_MEMORY_CACHE);
+   SAFE_CALLOC(mmdb, 1, sizeof(MMDB_s));
 
-   /* not found, fallback in the configuration file value */
-   if(!gi) {
+   /* Database file delivered with Ettercap installation */
+   mmdb_default_file = INSTALL_DATADIR "/" PROGRAM "/" MMDB_FILENAME;
 
-      if (!EC_GBL_CONF->geoip_data_file)
-         return;
+   /* First try to open alternative database file if one is provided */
+   if (EC_GBL_CONF->geoip_data_file && strlen(EC_GBL_CONF->geoip_data_file)) {
 
-      gi = GeoIP_open (EC_GBL_CONF->geoip_data_file, GEOIP_MEMORY_CACHE);
-      if (!gi)
-      {
-         DEBUG_MSG ("geoip_init: %s not found.", EC_GBL_CONF->geoip_data_file);
-         GeoIP_cleanup();
-         return;
-      }
+      ret = geoip_open(EC_GBL_CONF->geoip_data_file);
+
+      /* No success to open alternative database file - fallback to default */
+      if (ret != MMDB_SUCCESS)
+         ret = geoip_open(mmdb_default_file);
    }
-   gi_info = GeoIP_database_info (gi);
+   /* No alternative database file set - use default */
+   else
+      ret = geoip_open(mmdb_default_file);
 
-   DEBUG_MSG ("geoip_init: Description: %s.", 
-         GeoIPDBDescription[GEOIP_COUNTRY_EDITION]);
-   DEBUG_MSG ("geoip_init: Info:        %s. Countries: %u",
-         gi_info ? gi_info : "<none>", GeoIP_num_countries());
+   /* No success opening the alternative or the default database file */
+   if (ret != MMDB_SUCCESS) {
+      SAFE_FREE(mmdb);
+      return;
+   }
 
+   /* Metainfo of MaxMind DB for debug purpose */
+   descr = mmdb->metadata.description.descriptions[0];
+   DEBUG_MSG("geoip_init: Description: %s Lang: %s.",
+         descr->description, descr->language);
+   DEBUG_MSG("geoip_init: Info: IP version: %d, Epoch: %lu",
+         mmdb->metadata.ip_version, mmdb->metadata.build_epoch);
+
+   /* Cleanup */
    atexit (geoip_exit);
-
-   SAFE_FREE(gi_info);
-   gi_info = NULL;
-
-#ifdef WITH_IPV6
-
-   /* try to find and open it in the default location */
-   gi6 = GeoIP_open_type(GEOIP_COUNTRY_EDITION_V6, GEOIP_MEMORY_CACHE);
-
-   /* not found, fallback in the configuration file value */
-   if (!gi6) {
-      if (!EC_GBL_CONF->geoip_data_file_v6)
-         return;
-
-      gi6 = GeoIP_open(EC_GBL_CONF->geoip_data_file_v6, GEOIP_MEMORY_CACHE);
-      if (!gi6) {
-         DEBUG_MSG("geoip_init: %s not found.\n", 
-               EC_GBL_CONF->geoip_data_file_v6);
-         return;
-      }
-   }
-
-   gi_info = GeoIP_database_info(gi6);
-
-   DEBUG_MSG("geoip_init: Description: %s.", 
-         GeoIPDBDescription[GEOIP_COUNTRY_EDITION_V6]);
-   DEBUG_MSG("geoip_init: Info:        %s. Countries: %u",
-         gi_info ? gi_info : "<none>", GeoIP_num_countries());
-
-   SAFE_FREE(gi_info);
-   gi_info = NULL;
-
-#endif
 }
 
 /*
@@ -113,13 +101,19 @@ void geoip_init (void)
  *  - "--" if ip address is not global
  * return NULL if GeoIP API isn't initialized properly
  */
-const char* geoip_ccode_by_ip (struct ip_addr *ip)
+char* geoip_ccode_by_ip (struct ip_addr *ip, char* buffer, size_t len)
 {
-   int id;
+   int ret, mmdb_error;
+   struct sockaddr_storage ss;
+   struct sockaddr* sa;
+   struct sockaddr_in* sa4;
 #ifdef WITH_IPV6
-   struct in6_addr geo_ip6;
+   struct sockaddr_in6* sa6;
 #endif
    char tmp[MAX_ASCII_ADDR_LEN];
+
+   MMDB_lookup_result_s result;
+   MMDB_entry_data_s entry;
 
    /* 0.0.0.0 or :: */
    if (ip_addr_is_zero(ip)) {
@@ -131,76 +125,156 @@ const char* geoip_ccode_by_ip (struct ip_addr *ip)
       return "--";
    }
 
-   /* Determine country id by IP address */
+   /* not initialized - database file couldn't be opened */
+   if (!mmdb) {
+      DEBUG_MSG("geoip_ccode_by_ip: MaxMind API not initialized");
+      return NULL;
+   }
+
+   /* Convert ip_addr struct to sockaddr struct */
+   sa = (struct sockaddr *) &ss;
    switch (ntohs(ip->addr_type)) {
       case AF_INET:
-         if (!gi)
-            return NULL;
-         id = GeoIP_id_by_ipnum(gi, ntohl(*ip->addr32));
+         sa4 = (struct sockaddr_in *) &ss;
+         sa4->sin_family = ntohs(ip->addr_type);
+         ip_addr_cpy((u_char*)&sa4->sin_addr.s_addr, ip);
          break;
 #ifdef WITH_IPV6
       case AF_INET6:
-         if (!gi6)
-            return NULL;
-         ip_addr_cpy((u_char *)geo_ip6.s6_addr, ip);
-         id = GeoIP_id_by_ipnum_v6(gi6, geo_ip6);
+         sa6 = (struct sockaddr_in6 *) &ss;
+         sa6->sin6_family = ntohs(ip->addr_type);
+         ip_addr_cpy((u_char*)&sa6->sin6_addr.s6_addr, ip);
          break;
 #endif
       default:
          return NULL;
    }
 
-   DEBUG_MSG("geoip_ccode_by_ip: GeoIP country code for ip %s: %s",
-         ip_addr_ntoa(ip, tmp), GeoIP_code_by_id(id));
+   result = MMDB_lookup_sockaddr(mmdb, sa, &mmdb_error);
 
-   return GeoIP_code_by_id(id);
+   if (mmdb_error != MMDB_SUCCESS) {
+      DEBUG_MSG("geoip_ccode_by_ip: Error looking up IP address %s in maxmind database",
+            ip_addr_ntoa(ip, tmp));
+      return NULL;
+   }
+
+   if (result.found_entry) {
+      ret = MMDB_get_value(&result.entry, &entry, "country", "iso_code", NULL);
+      if (ret != MMDB_SUCCESS) {
+         DEBUG_MSG("Error extracting entry from result: %s", MMDB_strerror(ret));
+         return NULL;
+      }
+      if (entry.has_data) {
+         if (entry.type == MMDB_DATA_TYPE_UTF8_STRING) {
+            /* zero buffer */
+            memset(buffer, 0, len);
+            /* make sure to copy the exact string or less */
+            if (len <= entry.data_size)
+               len = len-1;
+            else
+               len = entry.data_size;
+            memcpy(buffer, entry.utf8_string, len);
+         }
+      }
+   }
+   else
+      return "--";
+
+   /* Determine country id by IP address */
+   DEBUG_MSG("geoip_ccode_by_ip: GeoIP country code for ip %s: %s",
+         ip_addr_ntoa(ip, tmp), buffer);
+
+   return buffer;
 }
 
 /*
  * returns the country name string for a given IP address
- * return NULL if GeoIP API isn't initialized properly
+ * return NULL if MaxMind API isn't initialized properly
  */
-const char* geoip_country_by_ip (struct ip_addr *ip)
+char* geoip_country_by_ip (struct ip_addr *ip, char* buffer, size_t len)
 {
-   int id;
+   int ret, mmdb_error;
+   struct sockaddr_storage ss;
+   struct sockaddr* sa;
+   struct sockaddr_in* sa4;
 #ifdef WITH_IPV6
-   struct in6_addr geo_ip6;
+   struct sockaddr_in6* sa6;
 #endif
    char tmp[MAX_ASCII_ADDR_LEN];
 
+   MMDB_lookup_result_s result;
+   MMDB_entry_data_s entry;
+
    /* 0.0.0.0 or :: */
    if (ip_addr_is_zero(ip)) {
-      return "No unique location";
+      return "00";
    }
 
    /* only global IP addresses can have a location */
    if (!ip_addr_is_global(ip)) {
-      return "No unique location";
+      return "--";
    }
 
-   /* Determine country id by IP address */
+   /* not initialized - databse file couldn't be opened */
+   if (!mmdb) {
+      DEBUG_MSG("geoip_country_by_ip: MaxMind API not initialized");
+      return NULL;
+   }
+
+   /* Convert ip_addr struct to sockaddr struct */
+   sa = (struct sockaddr *) &ss;
    switch (ntohs(ip->addr_type)) {
       case AF_INET:
-         if (!gi)
-            return NULL;
-         id = GeoIP_id_by_ipnum(gi, ntohl(*ip->addr32));
+         sa4 = (struct sockaddr_in *) &ss;
+         sa4->sin_family = ntohs(ip->addr_type);
+         ip_addr_cpy((u_char*)&sa4->sin_addr.s_addr, ip);
          break;
 #ifdef WITH_IPV6
       case AF_INET6:
-         if (!gi6)
-            return NULL;
-         ip_addr_cpy((u_char *)geo_ip6.s6_addr, ip);
-         id = GeoIP_id_by_ipnum_v6(gi6, geo_ip6);
+         sa6 = (struct sockaddr_in6 *) &ss;
+         sa6->sin6_family = ntohs(ip->addr_type);
+         ip_addr_cpy((u_char*)&sa6->sin6_addr.s6_addr, ip);
          break;
 #endif
       default:
          return NULL;
    }
 
-   DEBUG_MSG("geoip_country_by_ip: GeoIP country name for ip %s: %s",
-         ip_addr_ntoa(ip, tmp), GeoIP_name_by_id(id));
+   result = MMDB_lookup_sockaddr(mmdb, sa, &mmdb_error);
 
-   return GeoIP_name_by_id(id);
+   if (mmdb_error != MMDB_SUCCESS) {
+      DEBUG_MSG("geoip_country_by_ip: Error looking up IP address %s in maxmind database",
+            ip_addr_ntoa(ip, tmp));
+      return NULL;
+   }
+
+   if (result.found_entry) {
+      ret = MMDB_get_value(&result.entry, &entry, "country", "names", "en", NULL);
+      if (ret != MMDB_SUCCESS) {
+         DEBUG_MSG("Error extracting entry from result: %s", MMDB_strerror(ret));
+         return NULL;
+      }
+      if (entry.has_data) {
+         if (entry.type == MMDB_DATA_TYPE_UTF8_STRING) {
+            /* zero buffer */
+            memset(buffer, 0, len);
+            /* make sure to copy the exact string or less */
+            if (len <= entry.data_size)
+               len = len-1;
+            else
+               len = entry.data_size;
+            memcpy(buffer, entry.utf8_string, len);
+         }
+      }
+   }
+   else
+      return "--";
+
+   /* Determine country id by IP address */
+   DEBUG_MSG("geoip_country_by_ip: GeoIP country name for ip %s: %s",
+         ip_addr_ntoa(ip, tmp), buffer);
+
+   return buffer;
 }
 
 #endif  /* HAVE_GEOIP */

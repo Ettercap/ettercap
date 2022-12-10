@@ -318,6 +318,12 @@ This option controls if GeoIP information shall be processed for IP addresses
 whether or not ettercap has been built with GeoIP support.
 
 .TP
+.B geoip_data_file
+This option may point to a local GeoLite2 database downloaded from
+Maxmind which might be more recent than the database bundled with Ettercap.
+If the option is left blank, the bundled database file will be used.
+
+.TP
 .B gtkui_prefer_dark_theme
 This option tries to enforce the dark variant of the applied theme. However
 this does only have an effect if the applied theme provides a dark variant.

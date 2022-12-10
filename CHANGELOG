@@ -9,6 +9,7 @@ Legend:
    !! Default connection buffer size increased from 10KByte to 10MByte
    !! /etc/ettercap is now by default /usr/local/etc/ettercap under MacOSX, FreeBSD and Windows
    ++ new random etterfilter function
+   ++ superseded legacy GeoIP C API with libmaxminddb C API
 
 0.8.3.1-Bertillon    20200801
    !! Fix SSL protocol failure with older TLS client/server versions (min. TLS1.0)

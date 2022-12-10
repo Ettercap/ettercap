@@ -40,8 +40,8 @@ action = function (p)
 
   src = string.format ("%s:%d", packet.src_ip(p), packet.src_port(p))
   dst = string.format ("%s:%d", packet.dst_ip(p), packet.dst_port(p))
-  src_c = ffi.string (ffi.C.geoip_ccode_by_ip(p.L3.src, src_ccode, 3))
-  dst_c = ffi.string (ffi.C.geoip_ccode_by_ip(p.L3.dst, dst_ccode, 3))
+  src_c = ffi.string (ffi.C.geoip_get_by_ip(p.L3.src, 1, src_ccode, 3))
+  dst_c = ffi.string (ffi.C.geoip_get_by_ip(p.L3.dst, 1, dst_ccode, 3))
 
   ettercap.log("%s: %-20s -> %-20s: %s -> %s", tstamp, src, dst, src_c, dst_c)
 end

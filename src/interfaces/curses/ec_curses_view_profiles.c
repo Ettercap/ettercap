@@ -174,7 +174,7 @@ static void curses_profile_detail(void *profile)
 #ifdef HAVE_GEOIP
    if (EC_GBL_CONF->geoip_support_enable)
       wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Location     : %s \n",
-            geoip_country_by_ip(&h->L3_addr, country, MAX_GEOIP_STR_LEN));
+            geoip_get_by_ip(&h->L3_addr, GEOIP_CNAME, country, MAX_GEOIP_STR_LEN));
 #endif
 
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, "\n");

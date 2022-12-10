@@ -98,13 +98,10 @@ void geoip_init (void)
 }
 
 /*
- * returns the country code string for a given IP address ...
- *  - the two letter country code from GeoIP database
- *  - "00" if ip address is the default or undefined address
- *  - "--" if ip address is not global
+ * returns the GeoIP information for a given IP address ...
  * return NULL if GeoIP API isn't initialized properly
  */
-char* geoip_ccode_by_ip (struct ip_addr *ip, char* buffer, size_t len)
+char* geoip_get_by_ip (struct ip_addr *ip, const int get_type, char* buffer, size_t len)
 {
    int ret, mmdb_error;
    struct sockaddr_storage ss;
@@ -118,14 +115,16 @@ char* geoip_ccode_by_ip (struct ip_addr *ip, char* buffer, size_t len)
    MMDB_lookup_result_s result;
    MMDB_entry_data_s entry;
 
-   /* 0.0.0.0 or :: */
-   if (ip_addr_is_zero(ip)) {
-      return "00";
-   }
+   if (get_type == GEOIP_CCODE) {
+      /* 0.0.0.0 or :: */
+      if (ip_addr_is_zero(ip)) {
+         return "00";
+      }
 
-   /* only global IP addresses can have a location */
-   if (!ip_addr_is_global(ip)) {
-      return "--";
+      /* only global IP addresses can have a location */
+      if (!ip_addr_is_global(ip)) {
+         return "--";
+      }
    }
 
    /* not initialized - database file couldn't be opened */
@@ -162,7 +161,17 @@ char* geoip_ccode_by_ip (struct ip_addr *ip, char* buffer, size_t len)
    }
 
    if (result.found_entry) {
-      ret = MMDB_get_value(&result.entry, &entry, "country", "iso_code", NULL);
+      switch (get_type) {
+         case GEOIP_CCODE:
+            ret = MMDB_get_value(&result.entry, &entry, "country", "iso_code", NULL);
+            break;
+         case GEOIP_CNAME:
+            ret = MMDB_get_value(&result.entry, &entry, "country", "names", "en", NULL);
+            break;
+         default:
+            return NULL;
+            break;
+      }
       if (ret != MMDB_SUCCESS) {
          DEBUG_MSG("Error extracting entry from result: %s", MMDB_strerror(ret));
          return NULL;
@@ -184,100 +193,11 @@ char* geoip_ccode_by_ip (struct ip_addr *ip, char* buffer, size_t len)
       return "--";
 
    /* Determine country id by IP address */
-   DEBUG_MSG("geoip_ccode_by_ip: GeoIP country code for ip %s: %s",
-         ip_addr_ntoa(ip, tmp), buffer);
+   DEBUG_MSG("geoip_get_by_ip(%d): GeoIP information for ip %s: %s",
+         get_type, ip_addr_ntoa(ip, tmp), buffer);
 
    return buffer;
 }
 
-/*
- * returns the country name string for a given IP address
- * return NULL if MaxMind API isn't initialized properly
- */
-char* geoip_country_by_ip (struct ip_addr *ip, char* buffer, size_t len)
-{
-   int ret, mmdb_error;
-   struct sockaddr_storage ss;
-   struct sockaddr* sa;
-   struct sockaddr_in* sa4;
-#ifdef WITH_IPV6
-   struct sockaddr_in6* sa6;
-#endif
-   char tmp[MAX_ASCII_ADDR_LEN];
-
-   MMDB_lookup_result_s result;
-   MMDB_entry_data_s entry;
-
-   /* 0.0.0.0 or :: */
-   if (ip_addr_is_zero(ip)) {
-      return "00";
-   }
-
-   /* only global IP addresses can have a location */
-   if (!ip_addr_is_global(ip)) {
-      return "--";
-   }
-
-   /* not initialized - databse file couldn't be opened */
-   if (!mmdb) {
-      DEBUG_MSG("geoip_country_by_ip: MaxMind API not initialized");
-      return NULL;
-   }
-
-   /* Convert ip_addr struct to sockaddr struct */
-   sa = (struct sockaddr *) &ss;
-   switch (ntohs(ip->addr_type)) {
-      case AF_INET:
-         sa4 = (struct sockaddr_in *) &ss;
-         sa4->sin_family = ntohs(ip->addr_type);
-         ip_addr_cpy((u_char*)&sa4->sin_addr.s_addr, ip);
-         break;
-#ifdef WITH_IPV6
-      case AF_INET6:
-         sa6 = (struct sockaddr_in6 *) &ss;
-         sa6->sin6_family = ntohs(ip->addr_type);
-         ip_addr_cpy((u_char*)&sa6->sin6_addr.s6_addr, ip);
-         break;
-#endif
-      default:
-         return NULL;
-   }
-
-   result = MMDB_lookup_sockaddr(mmdb, sa, &mmdb_error);
-
-   if (mmdb_error != MMDB_SUCCESS) {
-      DEBUG_MSG("geoip_country_by_ip: Error looking up IP address %s in maxmind database",
-            ip_addr_ntoa(ip, tmp));
-      return NULL;
-   }
-
-   if (result.found_entry) {
-      ret = MMDB_get_value(&result.entry, &entry, "country", "names", "en", NULL);
-      if (ret != MMDB_SUCCESS) {
-         DEBUG_MSG("Error extracting entry from result: %s", MMDB_strerror(ret));
-         return NULL;
-      }
-      if (entry.has_data) {
-         if (entry.type == MMDB_DATA_TYPE_UTF8_STRING) {
-            /* zero buffer */
-            memset(buffer, 0, len);
-            /* make sure to copy the exact string or less */
-            if (len <= entry.data_size)
-               len = len-1;
-            else
-               len = entry.data_size;
-            memcpy(buffer, entry.utf8_string, len);
-         }
-      }
-   }
-   else
-      return "--";
-
-   /* Determine country id by IP address */
-   DEBUG_MSG("geoip_country_by_ip: GeoIP country name for ip %s: %s",
-         ip_addr_ntoa(ip, tmp), buffer);
-
-   return buffer;
-}
 
 #endif  /* HAVE_GEOIP */

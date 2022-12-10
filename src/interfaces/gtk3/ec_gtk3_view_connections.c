@@ -763,7 +763,7 @@ static void gtkui_connection_detail(void)
       gtk_widget_set_halign(label, GTK_ALIGN_START);
       gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
-      label = gtk_label_new(geoip_country_by_ip(&c->co->L3_addr1, src_country, MAX_GEOIP_STR_LEN));
+      label = gtk_label_new(geoip_get_by_ip(&c->co->L3_addr1, GEOIP_CNAME, src_country, MAX_GEOIP_STR_LEN));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_widget_set_halign(label, GTK_ALIGN_START);
       gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);
@@ -811,7 +811,7 @@ static void gtkui_connection_detail(void)
       gtk_widget_set_halign(label, GTK_ALIGN_START);
       gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
-      label = gtk_label_new(geoip_country_by_ip(&c->co->L3_addr2, dst_country, MAX_GEOIP_STR_LEN));
+      label = gtk_label_new(geoip_get_by_ip(&c->co->L3_addr2, GEOIP_CNAME, dst_country, MAX_GEOIP_STR_LEN));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_widget_set_halign(label, GTK_ALIGN_START);
       gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);

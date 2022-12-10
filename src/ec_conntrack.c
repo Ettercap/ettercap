@@ -652,8 +652,8 @@ void * conntrack_print(int mode, void *list, char **desc, size_t len)
       /* check if enough space is available to append the GeoIP info */
       if (len - slen > 14 && EC_GBL_CONF->geoip_support_enable) {
          snprintf(*desc + slen, len - slen, ", CC: %2s > %2s", 
-               geoip_ccode_by_ip(&c->co->L3_addr1, src_ccode, 3),
-               geoip_ccode_by_ip(&c->co->L3_addr2, dst_ccode, 3));
+               geoip_get_by_ip(&c->co->L3_addr1, GEOIP_CCODE, src_ccode, 3),
+               geoip_get_by_ip(&c->co->L3_addr2, GEOIP_CCODE, dst_ccode, 3));
       }
 #endif
    }
@@ -838,10 +838,10 @@ int conntrack_countrystr(struct conn_object *conn, char *pstr, int len)
    if (!EC_GBL_CONF->geoip_support_enable)
       return -E_INITFAIL;
 
-   if ((src = geoip_ccode_by_ip(&conn->L3_addr1, ccode_src, 3)) == NULL)
+   if ((src = geoip_get_by_ip(&conn->L3_addr1, GEOIP_CCODE, ccode_src, 3)) == NULL)
       return -E_INITFAIL;
 
-   if ((dst = geoip_ccode_by_ip(&conn->L3_addr2, ccode_dst, 3)) == NULL)
+   if ((dst = geoip_get_by_ip(&conn->L3_addr2, GEOIP_CCODE, ccode_dst, 3)) == NULL)
       return -E_INITFAIL;
 
    snprintf(pstr, len, "%2s > %2s", src, dst);

@@ -664,7 +664,7 @@ void * profile_print(int mode, void *list, char **desc, size_t len)
       /* check if enough space is available to append the GeoIP info */
       if (len - slen > 14 && EC_GBL_CONF->geoip_support_enable) {
          snprintf(*desc + slen, len - slen, ", %s", 
-               geoip_country_by_ip(&h->L3_addr, country, MAX_GEOIP_STR_LEN));
+               geoip_get_by_ip(&h->L3_addr, GEOIP_CNAME, country, MAX_GEOIP_STR_LEN));
       }
 #endif
 

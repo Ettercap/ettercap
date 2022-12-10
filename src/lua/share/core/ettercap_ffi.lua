@@ -264,6 +264,7 @@ uint16_t ntohs(uint16_t netshort);
 size_t tcp_create_ident(void **i, struct packet_object *po);            
 int tcp_find_direction(void *ids, void *id);
 int session_get(struct ec_session **s, void *ident, size_t ident_len);
+char *geoip_ccode_by_ip(struct ip_addr *ip, char* buffer, size_t len);
 ]]
 
 return ettercap_ffi

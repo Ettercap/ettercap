@@ -90,6 +90,9 @@ void geoip_init (void)
    DEBUG_MSG("geoip_init: Info: IP version: %d, Epoch: %lu",
          mmdb->metadata.ip_version, mmdb->metadata.build_epoch);
 
+   /* Output mandatory attribution for Maxmind Geolite2 database */
+   USER_MSG("This product includes GeoLite2 Data created by MaxMind, available from https://www.maxmind.com/.\n");
+
    /* Cleanup */
    atexit (geoip_exit);
 }

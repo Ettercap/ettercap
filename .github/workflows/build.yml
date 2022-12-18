@@ -49,7 +49,7 @@ jobs:
           brew install check curl
           brew install groff gtk+ gtk+3
           brew install libidn libnet
-          brew install luajit openssl pcre rtmpdump geoip
+          brew install luajit openssl pcre rtmpdump libmaxminddb
         fi
 
     - name: Configure CMake

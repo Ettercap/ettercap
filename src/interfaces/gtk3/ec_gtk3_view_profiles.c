@@ -205,6 +205,9 @@ static gboolean refresh_profiles(gpointer data)
    char tmp[MAX_ASCII_ADDR_LEN];
    char name[MAX_HOSTNAME_LEN];
    int found = 0;
+#ifdef HAVE_GEOIP
+   char country[MAX_GEOIP_STR_LEN];
+#endif
 
    /* variable not used */
    (void) data;
@@ -284,7 +287,7 @@ static gboolean refresh_profiles(gpointer data)
 #ifdef HAVE_GEOIP
       if (EC_GBL_CONF->geoip_support_enable)
          gtk_list_store_set(ls_profiles, &iter, 
-               3, geoip_country_by_ip(&hcurr->L3_addr), -1);
+               3, geoip_get_by_ip(&hcurr->L3_addr, GEOIP_CNAME, country, MAX_GEOIP_STR_LEN), -1);
 #endif
 
       /* treat hostname resolution differently due to async processing */
@@ -326,6 +329,9 @@ static void gtkui_profile_detail(void)
    char os[OS_LEN+1];
    gchar *str, *markup;
    guint col = 0, row = 0;
+#ifdef HAVE_GEOIP
+   char country[MAX_GEOIP_STR_LEN];
+#endif
 
    
    DEBUG_MSG("gtkui_profile_detail");
@@ -411,7 +417,7 @@ static void gtkui_profile_detail(void)
       gtk_widget_set_halign(label, GTK_ALIGN_START);
       gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
 
-      label = gtk_label_new(geoip_country_by_ip(&h->L3_addr));
+      label = gtk_label_new(geoip_get_by_ip(&h->L3_addr, GEOIP_CNAME, country, MAX_GEOIP_STR_LEN));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_widget_set_halign(label, GTK_ALIGN_START);
       gtk_grid_attach(GTK_GRID(grid), label, col+1, row, 2, 1);

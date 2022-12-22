@@ -21,10 +21,10 @@ else()
 endif()
 
 find_package(PkgConfig)
-pkg_search_module(GEOIP geoip)
+pkg_search_module(GEOIP libmaxminddb)
 
 # Find the header
-find_path(GEOIP_INCLUDE_DIR GeoIP.h
+find_path(GEOIP_INCLUDE_DIR maxminddb.h
   HINTS
     "${GEOIP_INCLUDEDIR}"
     "${GEOIP_ROOT}"
@@ -33,7 +33,7 @@ find_path(GEOIP_INCLUDE_DIR GeoIP.h
 
 # Find the library
 find_library(GEOIP_LIBRARY
-  NAMES GeoIP libGeoIP-1
+  NAMES maxminddb
   HINTS
     "${GEOIP_LIBDIR}"
     "${GEOIP_ROOT}"

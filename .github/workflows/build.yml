@@ -42,14 +42,14 @@ jobs:
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           sudo apt-get update
-          sudo apt-get install -y ${{ matrix.cc }} debhelper bison check cmake flex groff libbsd-dev libcurl4-openssl-dev libgtk2.0-dev libidn11-dev librtmp-dev libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev libgtk-3-dev libgeoip-dev
+          sudo apt-get install -y ${{ matrix.cc }} debhelper bison check cmake flex groff libbsd-dev libcurl4-openssl-dev libgtk2.0-dev libidn11-dev librtmp-dev libltdl-dev libluajit-5.1-dev libncurses5-dev libnet1-dev libpcap-dev libpcre3-dev libssl-dev libgtk-3-dev libmaxminddb-dev
         fi
         if [ "$RUNNER_OS" == "macOS" ]; then
           brew update
           brew install check curl
           brew install groff gtk+ gtk+3
           brew install libidn libnet
-          brew install luajit openssl pcre rtmpdump geoip
+          brew install luajit openssl pcre rtmpdump libmaxminddb
         fi
 
     - name: Configure CMake

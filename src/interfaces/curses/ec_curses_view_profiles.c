@@ -137,6 +137,9 @@ static void curses_profile_detail(void *profile)
    struct active_user *u;
    char tmp[MAX_ASCII_ADDR_LEN];
    char os[OS_LEN+1];
+#ifdef HAVE_GEOIP
+   char country[MAX_GEOIP_STR_LEN];
+#endif
   
    DEBUG_MSG("curses_profile_detail");
 
@@ -170,7 +173,8 @@ static void curses_profile_detail(void *profile)
       
 #ifdef HAVE_GEOIP
    if (EC_GBL_CONF->geoip_support_enable)
-      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Location     : %s \n", geoip_country_by_ip(&h->L3_addr));
+      wdg_scroll_print(wdg_pro_detail, EC_COLOR, " Location     : %s \n",
+            geoip_get_by_ip(&h->L3_addr, GEOIP_CNAME, country, MAX_GEOIP_STR_LEN));
 #endif
 
    wdg_scroll_print(wdg_pro_detail, EC_COLOR, "\n");

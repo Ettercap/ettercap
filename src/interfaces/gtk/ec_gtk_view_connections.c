@@ -630,6 +630,10 @@ static void gtkui_connection_detail(void)
    char name[MAX_HOSTNAME_LEN];
    gchar *str, *markup;
    guint nrows = 14, ncols = 3, row = 0, col = 0;
+#ifdef HAVE_GEOIP
+   char src_country[MAX_GEOIP_STR_LEN];
+   char dst_country[MAX_GEOIP_STR_LEN];
+#endif
 
    DEBUG_MSG("gtk_connection_detail");
 
@@ -742,7 +746,7 @@ static void gtkui_connection_detail(void)
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
       gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
 
-      label = gtk_label_new(geoip_country_by_ip(&c->co->L3_addr1));
+      label = gtk_label_new(geoip_get_by_ip(&c->co->L3_addr1, GEOIP_CNAME, src_country, MAX_GEOIP_STR_LEN));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
       gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);
@@ -790,7 +794,7 @@ static void gtkui_connection_detail(void)
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
       gtk_table_attach(GTK_TABLE(table), label, col, col+1, row, row+1, GTK_FILL, GTK_FILL, 0, 0);
 
-      label = gtk_label_new(geoip_country_by_ip(&c->co->L3_addr2));
+      label = gtk_label_new(geoip_get_by_ip(&c->co->L3_addr2, GEOIP_CNAME, dst_country, MAX_GEOIP_STR_LEN));
       gtk_label_set_selectable(GTK_LABEL(label), TRUE);
       gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
       gtk_table_attach_defaults(GTK_TABLE(table), label, col+1, col+3, row, row+1);

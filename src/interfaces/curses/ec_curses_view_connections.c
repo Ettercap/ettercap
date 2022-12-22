@@ -156,6 +156,10 @@ static void curses_connection_detail(void *conn)
    char *proto = "";
    char name[MAX_HOSTNAME_LEN];
    unsigned int row = 0;
+#ifdef HAVE_GEOIP
+   char src_country[MAX_GEOIP_STR_LEN];
+   char dst_country[MAX_GEOIP_STR_LEN];
+#endif
    
    DEBUG_MSG("curses_connection_detail");
 
@@ -196,7 +200,7 @@ static void curses_connection_detail(void *conn)
 #ifdef HAVE_GEOIP
    if (EC_GBL_CONF->geoip_support_enable)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Source location         :  %s", 
-            geoip_country_by_ip(&c->co->L3_addr1));
+            geoip_get_by_ip(&c->co->L3_addr1, GEOIP_CNAME, src_country, MAX_GEOIP_STR_LEN));
 #endif
    
    wdg_window_print(wdg_conn_detail, 1, ++row,    "Destination IP address  :  %s", 
@@ -206,7 +210,7 @@ static void curses_connection_detail(void *conn)
 #ifdef HAVE_GEOIP
    if (EC_GBL_CONF->geoip_support_enable)
       wdg_window_print(wdg_conn_detail, 1, ++row, "Destination location    :  %s",
-            geoip_country_by_ip(&c->co->L3_addr2));
+            geoip_get_by_ip(&c->co->L3_addr2, GEOIP_CNAME, dst_country, MAX_GEOIP_STR_LEN));
 #endif
    ++row;
 

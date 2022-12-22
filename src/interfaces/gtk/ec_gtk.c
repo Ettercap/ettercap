@@ -411,6 +411,14 @@ void gtkui_about(void)
    label = gtk_label_new("www.ettercap-project.org");
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+#ifdef HAVE_GEOIP
+   if (EC_GBL_CONF->geoip_support_enable) {
+      label = gtk_label_new("This product includes GeoLite2 Data created by MaxMind,");
+      gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+      label = gtk_label_new("available from https://www.maxmind.com/.");
+      gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+   }
+#endif
    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, gtk_label_new("General"));
 
    /* Authors page */

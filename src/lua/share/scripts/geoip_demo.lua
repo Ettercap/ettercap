@@ -31,13 +31,17 @@ end
 -- Here's your action.
 --
 action = function (p)
+  local src_ccode = ffi.new("char[3]")
+  local dst_ccode = ffi.new("char[3]")
+  local epoch_sec = tonumber(p.ts.tv_sec)
+  local epoch_usec = tonumber(p.ts.tv_usec)
 
-  tstamp = os.date ("%X", p.ts.tv_sec) .. string.format (".%06d", p.ts.tv_usec)
+  tstamp = os.date ("%X", epoch_sec) .. string.format (".%06d", epoch_usec)
 
   src = string.format ("%s:%d", packet.src_ip(p), packet.src_port(p))
   dst = string.format ("%s:%d", packet.dst_ip(p), packet.dst_port(p))
-  src_c = ffi.string (ffi.C.geoip_ccode_by_ip(p.L3.src))
-  dst_c = ffi.string (ffi.C.geoip_ccode_by_ip(p.L3.dst))
+  src_c = ffi.string (ffi.C.geoip_get_by_ip(p.L3.src, 1, src_ccode, 3))
+  dst_c = ffi.string (ffi.C.geoip_get_by_ip(p.L3.dst, 1, dst_ccode, 3))
 
   ettercap.log("%s: %-20s -> %-20s: %s -> %s", tstamp, src, dst, src_c, dst_c)
 end

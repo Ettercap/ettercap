@@ -161,7 +161,7 @@ static int sslstrip_fini(void *);
 static void sslstrip(struct packet_object *po);
 static int sslstrip_is_http(struct packet_object *po);
 
-#if defined OS_LINUX || defined OS_DARWIN
+#if defined OS_LINUX || defined OS_DARWIN || defined OS_BSD
 static void sslstrip_create_session(struct ec_session **s, struct packet_object *po);
 static int sslstrip_match(void *id_sess, void *id_curr);
 static size_t http_create_ident(void **i, struct packet_object *po);
@@ -366,7 +366,7 @@ static int sslstrip_is_http(struct packet_object *po)
    return 0;
 }
 
-#if defined OS_LINUX || defined OS_DARWIN
+#if defined OS_LINUX || defined OS_DARWIN || defined OS_BSD
 static int sslstrip_match(void *id_sess, void *id_curr)
 {
    struct  http_ident *ids = id_sess;
@@ -426,7 +426,7 @@ static void sslstrip(struct packet_object *po)
    if ( (po->flags & PO_FORWARDABLE) &&
         (po->L4.flags & TH_SYN) &&
        !(po->L4.flags & TH_ACK) ) {
-#if defined OS_LINUX || defined OS_DARWIN
+#if defined OS_LINUX || defined OS_DARWIN || defined OS_BSD
       struct ec_session *s = NULL;
       sslstrip_create_session(&s, PACKET);   
       memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
@@ -676,7 +676,7 @@ static int http_get_peer(struct http_connection *connection)
 }
 
 
-#if defined OS_LINUX || defined OS_DARWIN
+#if defined OS_LINUX || defined OS_DARWIN || defined OS_BSD
 static size_t http_create_ident(void **i, struct packet_object *po)
 {
    struct http_ident *ident;

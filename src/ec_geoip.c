@@ -87,7 +87,7 @@ void geoip_init (void)
    descr = mmdb->metadata.description.descriptions[0];
    DEBUG_MSG("geoip_init: Description: %s Lang: %s.",
          descr->description, descr->language);
-   DEBUG_MSG("geoip_init: Info: IP version: %d, Epoch: %lu",
+   DEBUG_MSG("geoip_init: Info: IP version: %d, Epoch: %" PRIu64,
          mmdb->metadata.ip_version, mmdb->metadata.build_epoch);
 
    /* Output mandatory attribution for Maxmind Geolite2 database */

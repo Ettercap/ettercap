@@ -407,7 +407,6 @@ static void sslw_hook_handled(struct packet_object *po)
    /* If it's an ssl packet don't forward */
    po->flags |= PO_DROPPED;
    
-#if defined OS_LINUX || defined OS_DARWIN
    /* If it's a new connection */
    if ( (po->flags & PO_FORWARDABLE) && 
         (po->L4.flags & TH_SYN) &&
@@ -418,7 +417,6 @@ static void sslw_hook_handled(struct packet_object *po)
       /* Remember the real destination IP */
       memcpy(s->data, &po->L3.dst, sizeof(struct ip_addr));
       session_put(s);
-#endif
    } else /* Pass only the SYN for conntrack */
       po->flags |= PO_IGNORE;
 }

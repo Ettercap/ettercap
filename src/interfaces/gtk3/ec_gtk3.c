@@ -432,7 +432,7 @@ void gtkui_about(GSimpleAction *action, GVariant *value, gpointer data)
    label = gtk_label_new("www.ettercap-project.org");
    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
    gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
-   label = gtk_label_new("#ettercap on FreeNode IRC");
+   label = gtk_label_new("#ettercap on Libera.Chat IRC (irc.libera.chat:6697)");
    gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
 #ifdef HAVE_GEOIP
    if (EC_GBL_CONF->geoip_support_enable) {

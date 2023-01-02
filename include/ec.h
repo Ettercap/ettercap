@@ -14,11 +14,6 @@
    #include <windows.h>
 #endif
 
-#if defined OS_DARWIN || defined OS_BSD
-   #define PCAP_DONT_INCLUDE_PCAP_BPF_H 1
-   #include <net/bpf.h>
-#endif
-
 #ifndef PATH_MAX
    #define PATH_MAX  1024
 #endif
@@ -51,6 +46,12 @@
    #define EC_API_EXTERN extern
 #endif
 
+/* on MacOSX net/bpf.h must be included before pcap.h in ec_globals.h */
+#ifdef OS_DARWIN
+   #define PCAP_DONT_INCLUDE_PCAP_BPF_H 1
+   #include <net/bpf.h>
+#endif
+
 /* these are often needed... */
 #include <ec_queue.h>
 #include <ec_error.h>
@@ -61,6 +62,12 @@
 
 #ifdef OS_MINGW
    #include <ec_os_mingw.h>
+#endif
+
+/* on BSD net/bpf.h must be included after queue.h in ec_queue.h */
+#ifdef OS_BSD
+   #define PCAP_DONT_INCLUDE_PCAP_BPF_H 1
+   #include <net/bpf.h>
 #endif
 
 

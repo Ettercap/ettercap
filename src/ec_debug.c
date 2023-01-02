@@ -101,10 +101,14 @@ void debug_init(void)
    fprintf(debug_file, "-> libpcre version %s\n", pcre_version());
    #endif
    #ifdef HAVE_PCRE2
-   if(EC_TOSTRING(PCRE2_PRERELEASE)[1] == 0)
-       fprintf(debug_file, "-> libpcre2 version %s.%s %s\n", EC_TOSTRING(PCRE2_MAJOR), EC_TOSTRING(PCRE2_MINOR), EC_TOSTRING(PCRE2_DATE));
+   if(strlen(EC_TOSTRING(PCRE2_PRERELEASE)))
+       fprintf(debug_file, "-> libpcre2 version %s.%s %s %s\n",
+             EC_TOSTRING(PCRE2_MAJOR), EC_TOSTRING(PCRE2_MINOR),
+             EC_TOSTRING(PCRE2_PRERELEASE), EC_TOSTRING(PCRE2_DATE));
    else
-       fprintf(debug_file, "-> libpcre2 version %s.%s %s %s\n", EC_TOSTRING(PCRE2_MAJOR), EC_TOSTRING(PCRE2_MINOR), EC_TOSTRING(PCRE2_PRERELEASE), EC_TOSTRING(PCRE2_DATE));
+       fprintf(debug_file, "-> libpcre2 version %s.%s %s\n",
+             EC_TOSTRING(PCRE2_MAJOR), EC_TOSTRING(PCRE2_MINOR),
+             EC_TOSTRING(PCRE2_DATE));
    #endif
    #ifdef HAVE_EC_LUA
 	ec_lua_print_version(debug_file);

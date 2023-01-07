@@ -72,6 +72,7 @@ void ec_globals_free(void)
 {
  
    capture_freeifs();
+   EC_GBL_FREE(ec_gbls->pcap->filter);
    EC_GBL_FREE(ec_gbls->pcap);
    EC_GBL_FREE(ec_gbls->lnet);
    EC_GBL_FREE(ec_gbls->iface);
@@ -98,8 +99,15 @@ void ec_globals_free(void)
    EC_GBL_FREE(ec_gbls->options->iface_bridge);
    EC_GBL_FREE(ec_gbls->options->target1);
    EC_GBL_FREE(ec_gbls->options->target2);
+   EC_GBL_FREE(ec_gbls->options->script_orig);
+   EC_GBL_FREE(ec_gbls->options->address);
+   EC_GBL_FREE(ec_gbls->options->netmask);
+   EC_GBL_FREE(ec_gbls->options->hostsfile);
+   EC_GBL_FREE(ec_gbls->options->ssl_cert);
+   EC_GBL_FREE(ec_gbls->options->ssl_pkey);
    EC_GBL_FREE(ec_gbls->stats);
    EC_GBL_FREE(ec_gbls->options);
+   EC_GBL_FREE(ec_gbls->conf->file);
    EC_GBL_FREE(ec_gbls->conf);
    /* destroy the list structure */
    filter_clear();

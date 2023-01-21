@@ -70,6 +70,7 @@ static pthread_mutex_t plugin_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 /* protos... */
 
 void plugin_unload_all(void);
+int plugin_unload(char* name);
 static void plugin_print(char active, struct plugin_ops *ops);
 int plugin_filter(const struct dirent *d);
 
@@ -217,7 +218,8 @@ void plugin_unload_all(void)
    while (SLIST_FIRST(&plugin_head) != NULL) {
       p = SLIST_FIRST(&plugin_head);
       if(plugin_is_activated(p->ops->name) == 1)
-		plugin_fini(p->ops->name);
+         plugin_fini(p->ops->name);
+      plugin_unload(p->ops->name);
       dlclose(p->handle);
       SLIST_REMOVE_HEAD(&plugin_head, next);
       SAFE_FREE(p);
@@ -311,6 +313,28 @@ int plugin_fini(char *name)
    
    return -E_NOTFOUND;
 }
+
+
+/*
+ * unload a plugin.
+ * it launches the plugin_unload function as a clean-up before program quits
+ */
+int plugin_unload(char* name)
+{
+   struct plugin_entry *p;
+   int ret;
+
+   SLIST_FOREACH(p, &plugin_head, next) {
+      if (!strcmp(p->ops->name, name)) {
+         /* get the response from the plugin */
+         ret = p->ops->unload(NULL);
+         return ret;
+      }
+   }
+
+   return -E_NOTFOUND;
+}
+
 
 /* 
  * self-destruct a plugin thread.
